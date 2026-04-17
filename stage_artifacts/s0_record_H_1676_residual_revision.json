@@ -57,8 +57,9 @@
     }
   },
 
-  "expected_role": "core_alpha",
+  "expected_role": "diversifier",
   "RoleBias": "RoleBias_Diversifier",
+  "role_revision_note": "R1 Governor 지적 반영: 원안 core_alpha → diversifier 정정. 이유: (1) PG0 gap 상 Core 기여보다 Diversifier 포지션이 ρ<0.2 독립 alpha 요건에 정합. (2) 잔차 ICIR 0.35~0.40 예상 수준은 SR 2.0 단독 해소가 아닌 blend 개선 기여. (3) STR_1679 anchor가 이미 Core. H_1676은 보완적 Diversifier sleeve.",
 
   "why_now": {
     "pg0_gap": "portfolio_gap_vector.json v1.0.3: SR gap 0.807 (현재 1.193 → 목표 2.0). CAGR 16.14% ACHIEVED, MDD -21.27% ACHIEVED. sleeve_needs = 'diversifier'. cold_start_phase=2.",
@@ -146,6 +147,11 @@
       "lcode": "L-041",
       "summary": "Q17+Q23 ICIR 1.27 → 포트폴리오 SR 0.296, FF3/5 alpha 음수. ICIR 강하지만 portfolio alpha 없음. Size exposure 흡수.",
       "compliance": "PASS(설계) — 본 가설은 Size 잔차화 명시적으로 수행. L-041 재현 방지 설계."
+    },
+    {
+      "lcode": "STR_1537_Grade_F",
+      "summary": "STR_1537_revision_breadth_tp_mom (Grade F, Score 42.3, SR 0.590, MDD 59.1%, CAGR 13.6%). Revision Breadth + TP_Gap + Momentum 조합이 한국시장 standalone 실패한 직접 선행 사례. H_1676의 C13 Revision Breadth signal이 이 전략과 부분 겹침.",
+      "compliance": "AWARE_FIX — H_1676은 STR_1537과 두 가지 핵심 차이: (1) 잔차화 (size·idio vol OLS residual) → STR_1537은 raw revision_breadth 사용. (2) TP_Gap + Momentum 추가 블렌딩 없음, C13 residual 단일 signal. STR_1537 실패의 주요 원인은 multi-factor 희석(L-119 패턴)일 가능성. H_1676 설계가 이 실패 패턴 회피 여부 S1에서 실증 필수. 실패 시 STR_1537 재현으로 간주하고 drop."
     }
   ],
 
