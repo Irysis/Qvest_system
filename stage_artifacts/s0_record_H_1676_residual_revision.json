@@ -162,7 +162,10 @@
     "위험 4 — L-127 (IC ≠ SR): 잔차 IC가 portfolio SR로 전환되지 않을 가능성. Barber·Odean·Hirshleifer 전통상 revision alpha는 실재하나, 한국시장 유동성·거래비용 고려 시 감쇠 예상.",
     "위험 5 — Rolling 3Y ICIR decay: recent_3y_icir 0.438은 전체 기간 대비 낮을 수 있음. alpha decay trend 확인 필요 (S2 rolling IC analysis).",
     "위험 6 — C19 합성 내부 구조상 ESBR(Earnings Surprise Base Revision) 자체가 revision 정보 포함 → C19 residual → C13_resid 상관이 예상보다 높을 수 있음. S3에서 partial correlation 측정 필수.",
-    "위험 7 — Single-month cross-section OLS 잔차화의 statistical power: 1,200~1,500 종목 n에 2개 regressor은 충분하나, outlier 민감. winsorization 1~99% 권고."
+    "위험 7 — Single-month cross-section OLS 잔차화의 statistical power: 1,200~1,500 종목 n에 2개 regressor은 충분하나, outlier 민감. winsorization 1~99% 권고.",
+    "위험 8 — Market beta 잔존 노출 (R1 Risk Manager + Codex Critic 공통 지적): Size와 IdioVol 잔차화만으로는 CAPM market beta 직교화 미흡. H_1676 포트폴리오가 STR_1679 앵커와 portfolio-level ρ를 0.2 초과할 구조적 위험. S1 구현 시 market beta(M01_Mom12_1 또는 CAPM beta) 추가 regressor 투입 고려. S3에서 portfolio-level beta 노출 측정 필수 (L-118-ext 재현 방지).",
+    "위험 9 — R12_Idiosyncratic_Risk 자체 alpha 편향 (R1 Quant 지적): R12 자체가 cross-section에서 weak alpha 신호(recent_3y_icir 0.582, ic_bad +0.014) 보유. 잔차화 regressor로 사용 시 C13 signal 중 R12 correlated 부분이 과도 제거될 수 있음. S2 rolling IC 검증으로 잔차 ICIR이 시간에 따라 안정적인지 확인 필수. 불안정하면 R12 대신 순수 vol (D01 raw 또는 historical std) 사용 고려.",
+    "위험 10 — S5 mutation slate 사전 등록 (R1 APPROVE_CONDITIONAL 조건): S1 pure signal 단독으로 SR 0.807 gap 전부 해소 불가. S5 단계에서 (a) DD 8/22 overlay 재도입 (b) factor risk management weight scaling (Barroso&Santa-Clara 2015) (c) STR_1679 anchor와의 sleeve 분리 조합 등 mutation 사전 등록 필요. APPROVE_CONDITIONAL 시 S5 slate에 명시."
   ],
 
   "s1_gate_criteria": {
@@ -170,7 +173,9 @@
     "pit_gate": "C1~C15 전수 통과",
     "portfolio_gate": "MDD < 45% (Hurdle v2.2 Hard Fail 기준 내)",
     "liquidity_gate": "유동성 필터 후 average daily holdings ≥ 20",
-    "s3_gate_prospective": "vs STR_1679 portfolio-level ρ < 0.2 (독립 alpha 요건, 본 가설 제1 why_now)"
+    "s3_gate_prospective": "vs STR_1679 portfolio-level ρ < 0.2 (독립 alpha 요건, 본 가설 제1 why_now)",
+    "s2_gate_r12_stability": "R12 잔차화 regressor 안정성 확인 — rolling 3Y 잔차 ICIR drift < 30% (R1 Quant 조건 반영)",
+    "market_beta_gate": "S1 구현 시 market beta(CAPM) 추가 잔차화 투입 → portfolio-level beta 노출 |β| < 0.15 (R1 Risk Manager + Codex 조건 반영)"
   },
 
   "forge_handoff_plan": {
