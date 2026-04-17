@@ -472,8 +472,9 @@ setkey(FACTORS, Date, Ticker)
 # ===================================================================
 # 8. Backtest
 # ===================================================================
-cat("\n[Step 8] Backtest (sleeve-weighted via custom_weights)...\n")
+cat("\n[Step 8] Backtest (sleeve-weighted via calc_ivol_weights override)...\n")
 
+# Pre-build ticker-key -> weight lookup (no sig_date needed in override)
 hwl <- setNames(
   lapply(unique(as.character(FACTORS_ALL$Date)), function(d_str) {
     mf <- FACTORS_ALL[Date == as.Date(d_str)]
@@ -481,14 +482,30 @@ hwl <- setNames(
   }),
   unique(as.character(FACTORS_ALL$Date))
 )
+ticker_key_map <- setNames(
+  lapply(hwl, function(wv) wv),
+  sapply(hwl, function(wv) paste(sort(names(wv)), collapse = "|"))
+)
+
+orig_ivol <- calc_ivol_weights
+calc_ivol_weights <<- function(tickers, ret_dt, n_days = 60, max_w = 0.15) {
+  key <- paste(sort(tickers), collapse = "|")
+  wv  <- ticker_key_map[[key]]
+  if (!is.null(wv)) {
+    w <- wv[tickers]; w[is.na(w)] <- 0
+    ws <- sum(w); if (ws > 1e-10) return(as.numeric(w / ws))
+  }
+  rep(1 / length(tickers), length(tickers))
+}
 
 sim_primary <- run_monthly_simulation(
   RAWDATA, BM_DT, FACTORS,
-  n_holdings     = N_HOLD, weight_method = "equal",
-  commission     = COMMISSION,
-  buffer_zone    = list(keep_n = N_HOLD + 3L, entry_n = N_HOLD),
-  custom_weights = hwl
+  n_holdings  = N_HOLD, weight_method = "ivol",
+  commission  = COMMISSION,
+  buffer_zone = list(keep_n = N_HOLD + 3L, entry_n = N_HOLD)
 )
+calc_ivol_weights <<- orig_ivol
+
 perf_primary <- summarise_perf(sim_primary$strategy_xts, "STR_1679v2_sleeve")
 to_primary   <- calc_turnover(sim_primary$PORTFOLIO_LOG, sim_primary$DAILY_NAV_DT)
 cat(sprintf("[Step 8] Turnover: %.1f%%\n", to_primary)); print(perf_primary)
@@ -502,7 +519,7 @@ perf_ew <- summarise_perf(sim_ew$strategy_xts, "STR_1679v2_ew")
 to_ew   <- calc_turnover(sim_ew$PORTFOLIO_LOG, sim_ew$DAILY_NAV_DT)
 cat(sprintf("[Step 8b] EW Turnover: %.1f%%\n", to_ew)); print(perf_ew)
 
-rm(WEIGHT_MAP, hwl); gc(verbose = FALSE)
+rm(hwl, ticker_key_map); gc(verbose = FALSE)
 
 # ===================================================================
 # 9. Regime Overlay (3-Layer)

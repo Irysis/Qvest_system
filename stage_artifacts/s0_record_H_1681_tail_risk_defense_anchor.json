@@ -1,0 +1,202 @@
+{
+  "hypothesis_id": "H_1681",
+  "name": "Tail-Risk Defense Anchor — CVaR/VaR Composite + Q07 Cross-Family (AX-005 회피)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "timestamp": "2026-04-17T08:30:00",
+  "designer": "Scout",
+  "pathway": "A",
+
+  "hypothesis_text": "한국시장에서 left-tail risk가 낮은 종목(D47_CVaR_5pct + D48_VaR_5pct + D45_Downside_Dev composite 상위)을 Q07_Earnings_Stability anchor와 cross-family composite로 결합하면, AX-005 scope(low-beta/Q07+D25/BAB) 완전 회피 + AX-004 quality_profitability 회피 + Defense anchor role 달성한다. Tail-risk는 가격 기반 채널(return distribution left tail), Q07은 회계 기반 채널(earnings stability) — 두 독립 채널의 cross-family composite가 한국시장 Defense 공석을 채운다.",
+
+  "economic_family": "tail_risk_defense",
+  "sub_family": "cvar_q07_cross_family_composite",
+
+  "mechanism": {
+    "core": "Defense 역할은 '위기 구간 alpha + Core 대비 MDD 축소'의 조건부 성과로 정의된다(AX-001). 기존 Defense anchor 3방향은 각각 한계 존재: (a) low-beta/BAB (AX-005 차단), (b) Q07+D25 combo (AX-005 차단), (c) quality_profitability composite (AX-004 차단). 본 가설은 tail-risk 가격 분포 기반 채널 + earnings stability 회계 기반 채널 cross-family composite로 3건 axiom 모두 회피한다.",
+    "why_works": "(1) Bollerslev, Tauchen & Zhou (2009 RFS): Variance Risk Premium과 expected stock returns 음의 관계 — 고변동성/tail-risk 종목 미래 수익 낮음. Low tail-risk 종목 long. (2) Kelly & Jiang (2014 RFS) 'Tail Risk and Asset Prices': 횡단면에서 tail-risk 노출 premium. Low tail-risk tilt = defensive posture. (3) Dichev & Tang (2009 TAR): earnings volatility 낮은 기업이 미래 이익 예측력 높고 위기 시 펀더멘털 훼손 제한. Q07 stress ICIR +0.753 (L-121 실증). (4) Cross-family orthogonality: 가격 기반 tail-risk와 회계 기반 earnings stability는 독립 채널 — beta orthogonality 보장 (L-118-ext 대응).",
+    "information_channel": "cross-section에서 두 축의 독립 Z-score: (a) Z_tail = Z(D47_CVaR_5pct) + Z(D48_VaR_5pct) + Z(D45_Downside_Dev) (3-factor tail-risk composite), (b) Z_stability = Z(Q07_Earnings_Stability). Defense_score = 0.6·Z_stability + 0.4·Z_tail (Q07 anchor 60% + tail 40%). AX-005 Q07_D25_combo 금지에서 Q07을 anchor로 사용은 허용됨 (D25 미사용).",
+    "why_different_from_existing": "(1) H_1675 Q07_D29_ConditionalDefense: Q07+D29 조합 (D29 grey area AX-005). H_1681은 D29 대신 D47/D48/D45 tail-risk family 사용 → AX-005 명확히 회피. (2) H_1677 STR_1439 v53 repair: 4 sub-strategy regime weight 조합 (return-blend 해소). H_1681은 단일 Defense composite 설계. (3) STR_1662 D25+Q07 정적 (AX-005 supporting): D25 미사용으로 완전 구조적 분리. (4) STR_1500 R01_VaR / STR_1502 R03_CVaR standalone 실패 (L-005/L-013): R_* 대신 D_* 계열 사용 + Q07 cross-family 추가 + standalone 탈피."
+  },
+
+  "signal_construction": {
+    "data_source": "Factor DB monthly (load_month_factors 경유, C15): D47_CVaR_5pct, D48_VaR_5pct, D45_Downside_Dev, Q07_Earnings_Stability. 모두 Z_Score_Aligned 보유 확인 완료.",
+    "signal": "매월 t 시점: Z_tail = (z_D47 + z_D48 + z_D45) / 3 (tail-risk composite), Z_stability = z_Q07. Defense_score = 0.6·Z_stability + 0.4·Z_tail. Top 20 EW long only.",
+    "normalization": "Cross-sectional Z_Score_Aligned (expanding window, C1). 수동 방향 반전 금지 (C13).",
+    "rebalance": "Monthly (end-of-month). t+1 적용 (C2).",
+    "universe": "KOSPI + KOSDAQ, LIQ_THRESHOLD = 2e8 (C10).",
+    "portfolio": "S1 baseline: EW Top 20 (v53), commission 15bps, buffer_zone = list(keep_n=22, entry_n=20).",
+    "overlay": "none (S0/S1 pure signal). L-013 CVaR standalone MDD 52.7% Hard Fail 전례 상 S5 DD 6/20 overlay 도입이 alpha 보존에 효과적이나 S0/S1 금지 규정 준수. S5 mutation slate 사전 등록.",
+    "pit_compliance": "C1: expanding Z-score. C2: t→t+1 lag. C4: Q07 재무제표 Usable_Date 경유, D47/D48/D45 daily return 기반이라 C4 무관. C13: Z_Score_Aligned. C14: load_month_factors(). C15: parquet 직접 로드 금지."
+  },
+
+  "pre_screening": {
+    "factor_ic_summary": {
+      "D47_CVaR_5pct":    {"ic_all": 0.0537, "ic_bad": 0.0189, "icir": 0.447, "used": false},
+      "D48_VaR_5pct":     {"ic_all": 0.0515, "ic_bad": 0.0206, "icir": 0.417, "used": false},
+      "D45_Downside_Dev": {"ic_all": 0.0552, "ic_bad": 0.0199, "icir": 0.443, "used": false},
+      "Q07_Earnings_Stability": {"ic_all": 0.0399, "ic_bad": 0.0306, "icir": 0.929, "used": false, "stress_icir_L121": 0.753},
+      "source": ".cache/conditional_ic_matrix.csv"
+    },
+    "composite_expected_icir": {
+      "rationale": "4-factor composite 예상: single-factor ICIR 평균 0.56 → composite ICIR 0.5~0.7 범위 (factor 간 상관 낮다고 가정). Q07 주도(60%) + tail-risk 보완(40%).",
+      "verification_required": "S1 baseline에서 실측. Alpha Lab Gate ICIR ≥ 0.20 통과 확신 수준."
+    },
+    "expected_portfolio_sr": {
+      "rationale": "L-013 전례: R03_CVaR standalone SR 0.554 / DD 6/20 후 SR 0.598. H_1681은 D_* + Q07 cross-family composite로 standalone 이상 예상. L-112 Q07 standalone SR 0.597. Composite effect: SR 0.65~0.85 예상 (S1 pure).",
+      "verification_required": "S1 실측"
+    },
+    "factor_correlations": {
+      "D47_D48_expected": "매우 높음 (0.8+) — 모두 5% percentile left tail. 실제로 composite 내 정보 중복",
+      "D47_D45_expected": "높음 (0.6~0.8) — tail vs downside dev",
+      "tail_Q07_expected": "낮음 (<0.2) — 가격 vs 회계 채널 분리",
+      "mitigation": "tail-risk 3-factor composite는 정보 중복 감안 시 2-factor로 축소 가능 (D47 + D45 또는 D47만). S1 baseline 후 IC redundancy 측정하여 최적 조합 결정"
+    }
+  },
+
+  "expected_role": "defense",
+  "RoleBias": "RoleBias_Defense",
+
+  "why_now": {
+    "pg0_gap": "portfolio_gap_vector v1.0.3: SR gap 0.807 (1.193 → 2.0). CAGR/MDD ACHIEVED. Defense sleeve 공석 (Governor 최신 진단: Judge-verified defensive Grade A 0건).",
+    "defense_anchor_vacuum": "Session 65 Governor: STR_1439 B downgrade, STR_943/944 F, STR_1631 family 35% 초과 → defensive role 0건. H_1681이 PG1 admission 시 Defense sleeve 최초 채움.",
+    "axiom_compliance_why_unique": "3개 활성 Axiom 모두 회피: AX-003 (value 무관), AX-004 (quality_profitability 무관, Q07은 earnings stability), AX-005 (low-beta/BAB/Q07+D25 무관, D25 미사용). 현재 Defense 후보 중 가장 안전한 구조.",
+    "governor_direction": "Governor 후보 A 'Tail-risk focused' 1순위 권고 수용. KR 실증 희소 (novelty), Factor DB 매핑 명확, AX 제약 제로.",
+    "bucket_alignment": "**exploit bucket** (Judge-verified Grade A 중 defensive 0건 → 신규 Defense anchor 생성으로 defensive family 활성화). explore 86.7% 과잉 완화에는 제한적 기여이나 Defense gap 해소가 더 시급.",
+    "differentiation_from_existing": "H_1675(Q07+D29) REVISE, STR_1679 D안(Q07+D29), H_1677(STR_1439 repair 4 sub) 모두 AX-005 grey area 또는 다른 구조. H_1681만 AX-005 완전 회피 + tail-risk family novelty."
+  },
+
+  "core_reference": [
+    {
+      "id": "Bollerslev_Tauchen_Zhou_2009",
+      "title": "Expected Stock Returns and Variance Risk Premia",
+      "journal": "Review of Financial Studies, 22(11), 4463-4492",
+      "relevance": "Variance Risk Premium 학술 기반. 고변동성/tail-risk 종목 미래 수익 낮음 — low tail-risk long 근거.",
+      "part_A_section": "A3 Volatility / Tail Risk"
+    },
+    {
+      "id": "Kelly_Jiang_2014",
+      "title": "Tail Risk and Asset Prices",
+      "journal": "Review of Financial Studies, 27(10), 2841-2871",
+      "relevance": "횡단면 tail-risk premium 실증. Low tail-risk tilt 방어적 포지션 근거.",
+      "part_A_section": "A3 Tail Risk"
+    },
+    {
+      "id": "Dichev_Tang_2009",
+      "title": "Earnings Volatility and Earnings Predictability",
+      "journal": "The Accounting Review, 84(5), 1425-1460",
+      "relevance": "Q07_Earnings_Stability 학술 기반. 이익 변동성 낮은 기업이 미래 이익 예측력 높음.",
+      "part_A_section": "A3 Quality Earnings"
+    },
+    {
+      "id": "Bali_Cakici_Whitelaw_2011",
+      "title": "Maxing Out: Stocks as Lotteries and the Cross-Section of Expected Returns",
+      "journal": "Journal of Financial Economics, 99(2), 427-446",
+      "relevance": "MAX effect / D05_MaxRet premium 관련. 본 가설의 D45_Downside_Dev와 경제적 mechanism 연결 (extreme return distribution asymmetry).",
+      "part_A_section": "A3 Tail Risk / Lottery"
+    },
+    {
+      "id": "Acerbi_Tasche_2002",
+      "title": "On the coherence of expected shortfall",
+      "journal": "Journal of Banking & Finance, 26(7), 1487-1503",
+      "relevance": "CVaR/Expected Shortfall coherent risk measure 이론. D47 사용 근거 (L-005 VaR non-coherent 한계 회피).",
+      "part_A_section": "A3 Risk Measures"
+    }
+  ],
+
+  "lesson_check": [
+    {
+      "lcode": "L-005",
+      "summary": "STR_1500 R01_VaR_95 standalone: IC 0.042 (2위) but FF alpha 음수 (t=-1.15~-1.49). VaR non-coherent 한계. R03_CVaR 우월.",
+      "compliance": "PASS — H_1681은 R01/R03 (risk family) 아닌 D47/D48/D45 (defense family, 가격 기반 return distribution tail) 사용. 또한 standalone 아닌 Q07과 cross-family composite."
+    },
+    {
+      "lcode": "L-013",
+      "summary": "STR_1502 R03_CVaR95 standalone SR 0.554, MDD 52.7% Hard Fail. DD 6/20 overlay SR 0.598 + MDD 30.4%. Alpha decay 모니터링 필요.",
+      "compliance": "AWARE — CVaR-like single-factor standalone의 MDD Hard Fail 위험 확인. H_1681은 (a) 4-factor composite, (b) Q07 cross-family anchor, (c) S5 DD overlay 사전 등록으로 L-013 전례 극복 설계. S1 pure SR MDD 확인 필수."
+    },
+    {
+      "lcode": "L-054",
+      "summary": "STR_1561 D43_Skewness standalone Grade F. Higher-moment 팩터 standalone 실패.",
+      "compliance": "PASS — H_1681은 D43 미사용. D47/D48/D45 (tail size measure)는 higher-moment와 다른 카테고리."
+    },
+    {
+      "lcode": "L-012",
+      "summary": "STR_?? D41_Vol_of_Vol + Q07 blend 실패 (SR 0.342, FF5 alpha 음수). 2nd-order vol은 1st-order IdioVol과 중복.",
+      "compliance": "AWARE — D41 미사용. H_1681의 D47/D48/D45는 left-tail distribution 직접 측정이지 vol-of-vol 아님. 단 구조적으로 'Q07 + vol-related composite' 패턴 유사 → S1 실증에서 FF5 alpha 확인 필수."
+    },
+    {
+      "lcode": "L-103",
+      "summary": "STR_1623 R01_VaR + Q01_GPA defense: SR 0.535, MDD 49.8% hard fail. Alpha decay 심각 (recent 3Y SR 0.013).",
+      "compliance": "AWARE_DISTINCT — H_1681과 구조 차이: (1) R01 대신 D47 (L-005 권고), (2) Q01_GPA 대신 Q07_Earnings_Stability (Q01 = quality_profitability scope AX-004 위반), (3) 4-factor composite vs 2-factor. Alpha decay는 S1 rolling IC로 모니터링."
+    },
+    {
+      "lcode": "L-112",
+      "summary": "Q07 standalone SR 0.597, MDD 62.7% Hard Fail. Single-factor quality defense 실패.",
+      "compliance": "PASS(설계) — H_1681은 Q07 standalone 아닌 tail-risk 3-factor와 cross-family composite. L-112 회피 설계."
+    },
+    {
+      "lcode": "L-121",
+      "summary": "Q07 288팩터 중 양쪽 위기(stress + 4r) 최강 defense. stress ICIR +0.753, C19 상관 -0.092.",
+      "compliance": "LEVERAGE — H_1681에서 Q07을 anchor(60%)로 사용. L-121 발견을 직접 활용."
+    },
+    {
+      "lcode": "L-118-ext",
+      "summary": "단면 상관 낮아도 beta 지배로 포트폴리오 상관 0.78 전례. Beta orthogonality > family orthogonality.",
+      "compliance": "AWARE — S3에서 H_1681 portfolio beta 노출 측정 필수. STR_1679 anchor와 portfolio ρ 계산."
+    },
+    {
+      "lcode": "L-119",
+      "summary": "정적 EW 팩터 블렌드 alpha 희석. 국면 조건부 동적 배분 필요.",
+      "compliance": "CONDITIONAL_PASS — H_1681은 정적 60/40 Q07 anchor + tail composite. L-119 경계. 단 Q07 단일 anchor 강도로 L-048(C19+V14+D01 정적 3F Grade A 전례)과 유사 패턴. S5에서 regime-conditional weight (STR_1679 구조 참고) mutation slate 등록."
+    },
+    {
+      "lcode": "AX-003",
+      "summary": "value family KR standalone 금지.",
+      "compliance": "PASS — value factor 미사용."
+    },
+    {
+      "lcode": "AX-004",
+      "summary": "quality_profitability standalone/composite/cash-based/gross 금지.",
+      "compliance": "PASS — Q07_Earnings_Stability는 earnings volatility measure, profitability (ROE/ROA/GP/RMW) 아님. AX-004 scope 명시: 'quality_profitability standalone long-only는 (1) 성장주 우위로 profitability premium 약화, (2) Ball 2016 cash-profitability, (3) Growth Stability composite 실패' — Q07 earnings stability는 이 cluster와 다른 sub-family. AX-004 supporting L-code (L-133 GSCD / L-134 CBPQ / L-139 Novy-Marx GP) 모두 profitability 계열. Q07은 Dichev-Tang 2009 earnings volatility."
+    },
+    {
+      "lcode": "AX-005",
+      "summary": "defense family low-beta standalone / Q07+D25 combo / BAB 금지.",
+      "compliance": "PASS — (1) low-beta 미사용 (D02/D04 beta factor 없음), (2) Q07+D25 미사용 (D25 Accounting Beta full 미사용), (3) BAB framework 미사용. H_1681 structure: Q07 + D47/D48/D45 (CVaR/VaR/Downside_Dev) — AX-005 모든 조항 명확히 구조적 회피."
+    }
+  ],
+
+  "risks": [
+    "위험 1 — Q07 single-factor anchor bias: Q07 60% 가중은 L-112 standalone 실패 (MDD 62.7%) 재현 가능성. tail-risk 40% 보완이 충분한지 S1 실증 필수.",
+    "위험 2 — D47/D48 정보 중복: 두 factor 모두 5% percentile tail size → 상관 0.8+ 예상. 3-factor composite 내 1.5-factor 수준 정보. S1 실측 후 D48 또는 D45 drop 고려.",
+    "위험 3 — L-013 MDD Hard Fail 재현: CVaR standalone MDD 52.7% 전례. Cross-family composite로 mitigate 의도이나 보장 없음. S5 DD 6/20 overlay 사전 등록 필수.",
+    "위험 4 — L-103 alpha decay 재현: R01+Q01 defense recent 3Y SR 0.013 소멸. D_* + Q07도 비슷한 decay 가능성. Rolling 3Y ICIR 모니터링 gate 필요.",
+    "위험 5 — 평시 drag (opportunity cost): Defense tilt는 정상 regime에서 CAGR 낮음 (L-144 STR_1662 CAGR 2.59%). H_1681은 standalone Defense anchor이므로 regime-conditional 없이 drag 전체 구간 노출. CAGR 예상 8~12% → Core combination 시 portfolio 기여 확인 필수.",
+    "위험 6 — Q07_D25 AX-005 grey area 해석 확장: Judge가 'Q07 + Accounting Beta 계열 (D25 외 D29 등)도 scope IN' 판정 시 H_1681은 Q07 + tail-risk로 안전. 단 'Q07 + 모든 Defense factor 조합 금지' 극단 해석 시 H_1681도 위반. Judge AX-005 scope 최종 확정 요청 필요.",
+    "위험 7 — H_1675/STR_1679 D안과 Q07 중복 사용: portfolio-level에서 Q07이 여러 전략에 anchor로 사용 시 concentration 위험. Governor가 family_concentration 모니터링 필수. Herfindahl 재계산 후 허용 여부 판단.",
+    "위험 8 — FF5 alpha 흡수 (L-013 전례): R03_CVaR standalone FF5 alpha 음수 — tail-risk premium이 기존 factor model에 흡수됨. Q07 cross-family가 FF5 alpha 분리 기여 기대. FMB t > 2.0 최소 목표 (Harvey 3.0 이상적)."
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR ≥ 0.20 (composite)",
+    "ax_001_defense_evaluation": "(a) stress 6구간 IC 평균 > 0.02, (b) Core(STR_1679/1631 VD+) 대비 MDD 최소 5%p 축소, (c) bad/good regime IC ratio > 1.0",
+    "pit_gate": "C1~C15 전수 통과",
+    "portfolio_gate": "MDD < 55% (pure signal, L-013 52.7% 전례 허용). Hurdle v2.2 Hard Fail 45%는 S5 DD overlay로 해결 예상.",
+    "sr_gate": "SR ≥ 0.70 (pure signal. L-112 Q07 0.597 + L-013 CVaR 0.554 평균 대비 cross-family composite 개선 기대)",
+    "ff_gate": "FMB t > 2.0 (L-103 alpha decay 회피)",
+    "beta_gate": "portfolio |β_market| < 0.85 (Defense 역할, low-beta 탈피)"
+  },
+
+  "forge_handoff_plan": {
+    "s1_implementation_notes": "(1) load_month_factors()로 D47/D48/D45/Q07 로드. (2) 각 factor Z_Score_Aligned 사용 (C13). (3) Z_tail = mean(z_D47, z_D48, z_D45). Z_stability = z_Q07. Defense_score = 0.6·Z_stability + 0.4·Z_tail. (4) Top 20 EW, 15bps, buffer 22/20. (5) No overlay (S1 pure, L-013 전례상 MDD Hard Fail 가능성 감수).",
+    "baseline_comparison": "Forge는 추가로 Q07 standalone baseline (L-112 재현 확인) 및 D47 standalone baseline (L-013 D_* 버전 검증) parallel 측정 권고.",
+    "estimated_sr": "pure composite 0.65~0.85 (Q07 0.597 + D47 0.55 평균 이상, cross-family synergy)",
+    "estimated_mdd": "45~58% (pure, overlay 제거). S5 DD 6/20 → 28~35% 예상",
+    "s5_mutation_slate_preregistered": "(a) DD 6/20 overlay (L-013 성공 전례, MDD 30.4% 달성), (b) Regime-conditional weight (H_1675 구조, Normal 정상 가중 / Crisis Defense 강화), (c) Tail-factor redundancy 해소 (D47 단독 또는 D47+D45 2F composite 테스트)",
+    "synthesis_candidate": "STR_1679 Core + H_1681 Defense sleeve 교체 가능성 (Q07+D29 → Q07+tail-risk) — AX-005 grey area 해소 효과. PG1 admission 후 STR_1679 D안 재조정 논의."
+  },
+
+  "bucket_tag": "exploit",
+  "governor_alignment": "Direction 2 (Defense anchor 신규 설계). Governor 후보 A (Tail-risk focused) 1순위 권고 수용. KR novelty + axiom 전수 회피."
+}
