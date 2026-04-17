@@ -1,0 +1,76 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG1_VERDICT",
+  "stage": "PG1_Admission",
+  "timestamp": "2026-04-17T17:00:00+09:00",
+  "session": 65,
+  "strategy_id": "STR_1662a",
+  "variant": "M6_IVOL",
+  "claimed_role": "defense",
+  "verdict": "DEFER",
+  "portfolio_impact_hypothesis": "Defense sleeve 공석 해소 후보 — 그러나 admission 전 보완 필수",
+
+  "pg0_gap_context": {
+    "gap_vector_version": "1.0.3",
+    "current_admitted": ["STR_1631_SYN_05 (80%)", "STR_1656_MLRA_M05 (20%)"],
+    "sleeve_needs": "diversifier (Sharpe gap 0.807 우선)",
+    "defense_slot": "vacant",
+    "regime": "CAUTION 29.2",
+    "note": "Defense 공석이나 sleeve_needs 우선순위는 diversifier. Defense는 MDD gap +3.73pp 내 허용 범위."
+  },
+
+  "admission_checks": {
+    "judge_s6_verdict": "PASS_CONDITIONAL (B_DEFENSE, AX-001 override)",
+    "pit_clean": "PASS (C1~C15 all pass)",
+    "role_honesty_judge_evidence": "HONEST (stress_sr 1.309 / normal 0.512 = 2.56x, 7/7 crisis outperform, C19 corr -0.092)",
+    "role_honesty_audit_automated": {
+      "status": "SCHEMA_ERROR",
+      "issue": "role_honesty_STR_1662a.json declared_role='core_alpha' 오기재. 실제 defense. confidence=0 ambiguous=true.",
+      "corrective_action": "Forge/Judge에서 declared_role='defense' 재실행 필요"
+    },
+    "gate_6_tail_risk": "NOT_COMPUTED (Judge 명시적 PG2 전 필수 조건)",
+    "ax005_v2_scope_check": {
+      "scope_definition": "KR defense standalone long-only low-beta OR Q07+D25 single-sleeve combo = 구조적 실패",
+      "str_1662a_structure": "Q07 Earnings Stability + IVOL weighting, D25 미사용",
+      "determination": "standalone single-factor defense. Q07+D25 combo 아님(D25 none). 그러나 standalone long-only defense 범주 근접.",
+      "exemption_path": "multi-sleeve portfolio 편입(Core+Div+Def 구조) 하에서만 AX-005 v2 exempt. Standalone 편입 금지."
+    }
+  },
+
+  "antipattern_check": {
+    "single_factor_dependency": "RISK (Q07 단일 팩터 의존, 단일 장애점)",
+    "recent_efficacy_decay": "RISK (2017~2026 SR 0.12~0.17 추세적 약화)",
+    "ic_decay": "L-121/L-123 노트 — Q07 양쪽 위기 최강 확인되나 최근 10년 약화 추세"
+  },
+
+  "defer_conditions": [
+    "C1: L13 Risk Engine tail_risk_suite 실행 (EVT/GPD/CDaR). PG2 전 필수.",
+    "C2: role_honesty_STR_1662a.json declared_role='defense'로 수정 재실행.",
+    "C3: 2017~2026 Q07 rolling IC 분기 모니터링 설계 문서화 (PG3 조건).",
+    "C4: 편입 구조는 반드시 multi-sleeve (Core STR_1631 + Div STR_1656 + Def STR_1662a). Standalone 금지.",
+    "C5: 보완 Defense signal(H_1682 distress_calmar_defense debate 결과) 대기 권장 — 단일 팩터 장애 방지."
+  ],
+
+  "next_action_if_conditions_met": {
+    "path_A_single_defense": "tail_risk + role_honesty 보정 → PG2 배분 설계. 예비 배분: Core 65~70% + Div 15~20% + Def 10~15%. allocation_method: equal_weight 시작.",
+    "path_B_wait_for_H_1682": "H_1682 Defense(Distress+Calmar) 실증 완료 대기 → 2개 Defense ensemble (STR_1662a + H_1682 전략) → risk_parity. 권장 경로 (AX-005 v2 exempt 구조 확정)."
+  },
+
+  "family_concentration_forecast": {
+    "before_admission": {"consensus": 0.5, "ML_complexity": 0.5},
+    "after_admission_path_A": {"consensus": 0.45, "ML_complexity": 0.45, "defense_Q07": 0.10},
+    "max_family_cap": 0.35,
+    "compliance": "PASS (모든 family 35% 미만)"
+  },
+
+  "governor_recommendation": "DEFER to path_B (H_1682 Defense 실증 후 2-defense ensemble). Gap 우선순위는 diversifier이므로 Defense 편입 긴급도 낮음. Q07 single-factor 장애 방지를 위해 추가 Defense 대안 확보 후 동시 편입이 전략적으로 우수.",
+
+  "next_review_trigger": [
+    "Forge: tail_risk_suite 실행 완료 (JUDGE_VERDICT_STR_1662a_tail_risk_DONE.json)",
+    "Forge/Judge: role_honesty_STR_1662a.json declared_role 재실행",
+    "H_1682 Forge S1 실증 완료 → S3~S6 완료 시 2-defense ensemble 재검토"
+  ],
+
+  "l_code_note": "L-123 (Q07 IVOL defense, 2017~2026 약화 추세) + L-136/L-140/L-143/L-145 (AX-005 v2 근거) 교차 참조"
+}
