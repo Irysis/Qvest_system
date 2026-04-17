@@ -1,0 +1,30 @@
+{
+  "role": "academic",
+  "r1_score": 13,
+  "r2_score": 12,
+  "score_changed": true,
+  "score_change_reason": "R1에서 제시한 핵심 concern(STR_1537 Grade F 전례 미반영 + 잔차화 단독 portfolio alpha 회복 학술 미입증)이 R2에서 오히려 강화됨. Quant의 'R12_IdioVol 자체 alpha(+0.582)가 C13_resid와 음(-) 편향 유도' 지적은 본인의 time-decay 우려와 동일 루트(residual signal의 학술적 realizability 결여)이며, Codex의 vendor backfill/PIT 무결성 우려는 recent_3y_icir 0.438이 'post-2018 analyst 자동집계 오염 구간' 과대추정 가능성과 구조적으로 동일 — 학술 methodology 관점에서 McLean&Pontiff(2016) attenuation framework에 'data timeliness improvement에 의한 publication-biased alpha inflation'이 2차 decay 채널로 포함되는데 본 가설 risks #5가 이를 구분 미인지. Governor의 '두 번째 독립 alpha 필요' 입장은 STR_1537 선행 실패의 반복 방지 관점에서 본인 rebuttal과 동일 문제 다른 각도로 합류 → 학술 리스크 축이 설계 내부(Quant 지적)·데이터 무결성(Codex 지적)·정책 수용(Governor 지적) 3축 동시 드러남. 다만 Risk Manager의 Hirshleifer et al. 2009 '위기 시 tail risk 내성' 실증 해석(crisis_ratio 1.75)이 본인의 'Hirshleifer 보조 인용 약점' 지적을 부분 상쇄 → 완전 하향(10점 이하) 대신 13→12로 1점만 조정.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "R12_Idiosyncratic_Risk가 자체 alpha 신호(icir +0.582)임에도 C13_Revision_Breadth_3m 잔차화 regressor로 사용될 때 C13_resid가 'R12 반대 방향' 구조적 편향을 흡수할 수 있다는 지적은 학술적으로 중대. Brennan, Chordia & Subrahmanyam (1998 JFE) 'Alternative factor specifications and mispricing effects'에서 alpha-carrying variable을 잔차화 regressor로 사용하면 OLS 잔차는 regressor의 alpha 성분을 부호 반전하여 흡수 → 'anti-R12' 신호로 위장된 IdioVol short가 될 위험이 이론적으로 증명됨. 본인의 R1 time-decay 우려(모바일·실시간 컨센서스로 revision alpha 감쇠)와 결합하면 잔차화 후 남는 것이 실재 revision alpha가 아닌 R12 성분 반전 + 잔차화 artifact일 가능성 학술적 근거 강화."
+    },
+    {
+      "with": "governor",
+      "point": "Governor의 '본 가설 단독 cold_start_phase 2 졸업 어려움, 두 번째 독립 alpha 동시 필요(SR 2.0 gap 0.807의 25%만 해소)' 입장은 본인의 R1 'STR_1537_revision_breadth_tp_mom Grade F 전례로 한국시장 revision breadth standalone alpha가 portfolio-level Grade A 전환 실패 입증됨' concern과 동일 현상의 다른 각도. 학술 관점에서 Hou, Xue & Zhang (2020 RFS) 'Replicating Anomalies'가 보고한 'anomaly replication rate in emerging markets가 US 대비 40-60% 낮음'의 한국시장 특수 케이스로 해석되며, 잔차화 설계가 이 구조적 약점을 1건으로 돌파하기 어렵다는 실증·정책 양축의 동일 결론. Governor의 권고(두 번째 독립 alpha 가설 패키지)는 본인이 요청한 학술 재검증(McLean&Pontiff framework + Korea evidence 보강)의 실행 경로와 정합."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "risk_manager",
+      "point": "Risk Manager가 C13 stress ICIR 0.829(77.8% positive, crisis_ratio 1.75)를 'tail risk 내성 우수'로 해석하며 Hirshleifer et al. (2009) 메커니즘과 정합하다고 주장한 부분은 학술적으로 과대 해석 — Hirshleifer/Lim/Teoh 2009의 'Driven to Distraction' 핵심 가설은 '투자자 주의 제약 하에서 earnings news 과소반응'이지 '위기 시 analyst revision alpha 강화'가 아님. 위기 시 ICIR 강세는 오히려 Kacperczyk, van Nieuwerburgh & Veldkamp (2016 Econometrica) 'A Rational Theory of Mutual Funds' Attention Allocation' framework — 불확실성 높을 때 기관투자자가 information acquisition 증가 → analyst revision 정보 반영 속도 증가 → alpha 감소 (정반대 방향)로 해석되거나, Campbell, Lettau, Malkiel & Xu (2001 JF) 'Have Individual Stocks Become More Volatile?' 'Idiosyncratic volatility 증가' 구간에서 cross-sectional dispersion 확대 → 단순 ICIR 산식 확장이 유발한 통계 artifact일 가능성 높음. crisis_ratio 1.75를 '방어적 특성'으로 직결하는 해석은 IC→SR 전환이 같은 방향임을 전제하는데 L-127 (LambdaRank ICIR 1.03 → SR 0.90) 전례는 이 전환이 신뢰할 수 없음을 보여줌. 학술적으로 Hirshleifer 인용이 Risk Manager의 '위기 tail 내성' 결론을 지지한다는 주장은 오인용.",
+      "severity": "major"
+    },
+    {
+      "against": "codex_critic",
+      "point": "Codex의 'vendor analyst revision/consensus 필드의 as-of 스냅샷 backfill → SR 0.3-0.5 inflation + 실투 SR 0 또는 음수 추락' 우려는 한국시장 실증 관점에서 방향은 맞으나 규모가 과대. 학술적으로 Diether, Malloy & Scherbina (2002 JF) 'Differences of Opinion and the Cross Section of Stock Returns'에서 I/B/E/S 컨센서스 데이터 backfill 오염이 long-only 잔차 전략 SR에 미치는 영향은 평균 0.10-0.15 수준(0.3-0.5 아님)이며, 한국 WiseFn/FnGuide 데이터는 2010+부터 daily snapshot 보존 구조로 backfill 경로가 상대적으로 제한됨. Codex의 'KOSDAQ small-cap leadership 구간에서 analyst coverage breadth 약화 → 12-24개월 alpha drought' 주장도 학술적으로 Barber, Lehavy, McNichols & Trueman (2001 JF) 'Can investors profit from the prophets?' recommendation alpha가 small-cap에서 오히려 강하다는 실증과 부분 상충 — 다만 한국 특수성(개인 60%)에서 Codex 지적 방향은 유효하므로 규모만 보정(MDD 기여 15-25%p 아닌 8-15%p). Codex의 single-month OLS winsorization/Huber WLS 교체 요구는 학술적으로 정당(Rousseeuw & Leroy 1987 Robust Regression)하나 본 가설의 '구조적 실패'보다는 '측정 노이즈 감소' 단계 개선 성격. 따라서 Codex가 11점으로 가장 낮게 평가한 것은 설계 무결성 축에서 맞지만 규모 추정은 과대.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Quant의 'R12_IdioVol 자체 alpha(+0.582)가 C13_resid와 독립인지 S2 rolling IC 분석으로 확인 필수' 지적이 5인 중 가장 강력한 학술적 반대 논점 — 본 가설의 메커니즘(residualize against R12)이 alpha-carrying variable을 regressor로 쓴다는 설계상 '학술적 원죄'를 정확히 짚었기 때문. Brennan, Chordia & Subrahmanyam (1998) methodology에서 alpha-carrying regressor 잔차화는 regressor의 alpha 성분을 residual에 반전 주입하여 '원 신호 + anti-regressor alpha'의 혼합체를 만들며, 이 혼합체의 portfolio-level alpha는 원 신호 alpha가 아닌 anti-regressor(= R12 short = low IdioVol long) alpha에 의해 주로 결정될 수 있음. 즉 본 가설이 C13 잔차 ICIR 0.35~0.40으로 alpha lab gate를 통과하더라도 그 alpha의 경제적 source가 'analyst revision underreaction'(가설 메커니즘)이 아닌 'low idiosyncratic volatility anomaly'(Ang, Hodrick, Xing & Zhang 2006 JF의 IdioVol puzzle)일 가능성이 학술적으로 차단되지 않음. 이는 STR_1537 Grade F(본인 R1 지적)와 동일 패턴의 재발 — 메커니즘 표방은 revision breadth이나 실질 alpha source는 size/vol 공통요인 반전 흡수. Quant의 권고(R12 자체 alpha 방향 독립성 S2 rolling IC로 확인)는 학술적으로 Brennan-Chordia-Subrahmanyam 교정의 최소 요건이며, 만약 독립성 입증 실패 시 본 가설은 설계 자체를 Huber robust + alpha-carrying regressor를 M01_LogSize(alpha 중립 가까움)로만 한정하는 방향으로 재설계해야 함 — 학술적 해결 경로는 명확하나 현 s0_record 설계는 이 경로를 수용하지 않음."
+}

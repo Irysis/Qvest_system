@@ -321,7 +321,7 @@ stopifnot(max_n <= 20L, n_dup == 0L)
 FACTORS_CORE <- FACTORS_ALL[Sleeve == "Core", .(Date, Ticker, Score)]
 pf_ok <- preflight_run(FACTORS_CORE, config = list(strategy_id = "STR_1679v2"),
                        min_tickers = 10L, min_years = 5, verbose = TRUE)
-if (!isTRUE(pf_ok)) stop("[preflight] FAILED")
+if (!isTRUE(pf_ok$pass)) stop("[preflight] FAILED")
 cat("[preflight] PASS\n")
 
 rm(RAW_SCORES, SIG_SNAP, month_results); gc(verbose = FALSE)

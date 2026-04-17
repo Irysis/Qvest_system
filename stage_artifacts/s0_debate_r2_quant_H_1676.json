@@ -1,0 +1,40 @@
+{
+  "hypothesis_id": "H_1676",
+  "role": "quant",
+  "round": 2,
+  "r1_score": 15,
+  "r2_score": 13,
+  "score_changed": true,
+  "score_change_reason": "Codex의 '분석가 스냅샷 PIT 재구성 미입증' 지적이 결정적 — as-of timestamp + publication timestamp + T+1 execution lag 없이는 잔차화 후 IC 추정치 0.35~0.40 자체가 룩어헤드 오염 가능. 내 R1 논거('n≈1,200~1,500 충분한 power')는 OLS 통계적 power에 국한된 주장이었으나, Codex의 비판은 power가 아닌 data integrity 축 공격 — 반박 불가. 다만 RM의 market beta 직교화 누락은 S1 문제가 아닌 S5 설계 문제로 범주 분리 가능하고, Academic의 STR_1537 실패는 signal-level이 아닌 portfolio-level 문제이므로 해당 2건은 R1 입장 유지. Governor의 expected_role 라벨 모순은 설계 결함이지 통계적 power 문제 아님 → 공감. 종합 -2점.",
+
+  "agreements": [
+    {
+      "with": "governor",
+      "point": "expected_role='core_alpha'와 RoleBias='RoleBias_Diversifier'의 라벨 모순 지적은 계량적으로도 정합적 — 잔차화 설계 자체가 기존 앵커(STR_1679) 대비 ρ<0.2를 '구조적으로 보장'한다고 주장하는데, 이는 정의상 Diversifier 트랙. core_alpha는 독립적으로 높은 SR을 목표로 하는 역할로, 잔차화로 alpha가 희석된 파생 신호가 아님. Governor가 요구하는 expected_role 정정은 Role Honesty Audit(L-122) 회피를 위해서도 선행 수정 필수. 이 수정 없이는 S3 이후 단계에서 Judge의 역할 위장 탐지 REJECT 위험이 수식으로도 피할 수 없음."
+    },
+    {
+      "with": "codex_critic",
+      "point": "분석가 스냅샷 PIT 재구성 요구는 타당 — 특히 month-end ingest 과정에서 vendor가 backfill correction을 적용하거나 timestamp을 소급 수정할 경우 C13_Revision_Breadth_3m 자체가 C14 위반(Usable_Date 이후 수정된 데이터)이 될 수 있음. as-of snapshot 검증 없이 Factor DB 등록 시점 기준으로만 PIT 준수를 주장하는 것은 C14 충족 근거로 불충분. 내 R1에서 'Factor DB 정상 등록(254개월) → load_month_factors() 즉시 가능'은 접근성을 논한 것이고, snapshot PIT는 별개 축 — 이 점 인정."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "academic",
+      "point": "STR_1537_revision_breadth_tp_mom Grade F(SR 0.590, MDD 59.1%) 실패를 C13_resid 신호의 statistical power 결함으로 귀속시키는 것은 역할 분리 오류 — STR_1537은 (1) 잔차화 미적용(raw C13 또는 C04 기반), (2) 포트폴리오 구성에서 TP_Mom 가중 혼합, (3) 종목수 및 오버레이 구조 상이로 인한 portfolio-level 실패. 본 가설은 C13 단독 cross-sectional OLS 잔차화 후 Top 20 EW라는 구조적으로 다른 설계. STR_1537 실패가 증명하는 것은 'raw revision breadth + TP momentum blend 포트폴리오의 MDD'이지, 'C13_resid 신호의 IC 또는 ICIR'이 아님. 따라서 이 실패가 본 가설의 S1 alpha 가능성을 직접 부정하는 Korea evidence로 사용될 수 없음. 단, lesson_check에 STR_1537 전례 명시 + '잔차화로 무엇이 구조적으로 다른지' 반박 서술은 필요하므로 s0_record 보완은 수용.",
+      "severity": "major"
+    },
+    {
+      "against": "risk_manager",
+      "point": "CAPM beta 직교화 누락을 S1 설계 결함으로 제기했으나, 이는 S5 mutation 단계에서 해소해야 할 문제이지 S0 가설 기각 사유가 아님 — CLAUDE.md 규정상 S1은 'pure factor signal 측정'으로 EW 20종목 + 15bps + 유동성만 적용, S1에서 CAPM beta 잔차화 추가는 '오버레이 S5에서만' 규정과 충돌. 또한 Long-only 한국시장에서 market beta 0.8~1.0은 시장 자체 특성이지 설계 결함이 아님 — beta 직교화를 원할 경우 Market-Neutral 구조가 필요하나 이는 롱온리 규정(CLAUDE.md) 위반. RM이 제시한 'M01_CAPM_Beta를 3번째 잔차화 변수로 S5 mutation slate 사전 등록' 조건은 타당하나, 이는 S5 slate 설계 문제이지 S0 가설 점수 감점 사유 불충분. 다만 S1 결과에서 beta 측정 필수 + STR_1679 대비 수익률 상관 3분해(total/market-beta/residual) 조건은 수용.",
+      "severity": "minor"
+    },
+    {
+      "against": "codex_critic",
+      "point": "KOSDAQ small-cap leadership 국면에서 'analyst coverage breadth 구조적 약화 → 신호가 대형주/커버리지 프록시 퇴화' 비판은 coverage bias를 과대평가한 것으로 반박 가능 — (1) 잔차화에서 log(MarketCap) 명시적 제거로 size 공통요인은 cross-sectionally 제거됨, (2) 소형주 analyst coverage 부재는 애초에 universe 편향이지 신호 오염이 아님 — 유동성 필터(2e8 KRW) 적용 후 남은 종목들은 대체로 analyst coverage 있음, (3) KOSDAQ leadership 국면에서 대형주 집중 → benchmark 대비 active return 감소는 timing bet 문제이지 잔차화 signal의 validity 문제 아님. 단, KOSPI vs KOSDAQ 분리 성과 진단 조건은 S2에서 확인 가능한 항목으로 수용.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Codex의 '분석가 스냅샷 strict PIT 재구성 미입증' — as-of timestamp + publication timestamp + T+1 execution lag 없이 S1을 실행하면 C13_Revision_Breadth_3m의 Factor DB Usable_Date 자체가 vendor backfill에 의해 오염되었을 가능성 배제 불가. 이 경우 잔차화 후 ICIR 0.35~0.40, SR 0.4~0.7 예상치 전부가 룩어헤드 상태에서 도출된 것이 될 수 있고, C14 위반 + 실투 SR 0 또는 음수 전락이라는 시나리오는 Factor DB 구축 프로세스(Phase 6~10) 문서 + as-of snapshot 검증 없이는 반박 불가. 내 R1의 'Factor DB 정상 등록' 논거는 이 공격에 무력하며, S0 APPROVE 전에 Factor DB C13 필드의 as-of PIT 재구성 증빙이 선행되어야 한다는 Codex 요구는 강도와 범주 모두 최강."
+}
