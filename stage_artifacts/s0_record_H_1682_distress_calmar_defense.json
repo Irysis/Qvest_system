@@ -1,0 +1,217 @@
+{
+  "hypothesis_id": "H_1682",
+  "name": "Distress + Calmar Defense Anchor — Q25_Ohlson × R16_Calmar Cross-Family Composite",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "timestamp": "2026-04-17T09:30:00",
+  "designer": "Scout",
+  "pathway": "A",
+  "revision_from": "H_1681 (REVISE 55/100, Q07+tail composite 근본 재고) + Governor 후보 C Distress avoidance 수용",
+
+  "hypothesis_text": "한국시장에서 Ohlson O-Score (distress probability) 낮은 종목과 Calmar ratio (return/MDD) 높은 종목의 cross-family composite는 AX-003/AX-004/AX-005 전수 회피 + Q07 배제 + stress 구간 양쪽 strong defense (Q25 stress_icir 0.659, R16_Calmar stress_icir 2.655) 실증 기반 Defense anchor를 제공한다. 회계 기반 distress(default probability) + 가격 기반 path-dependent risk(drawdown ratio) 독립 채널 결합으로 portfolio-level beta dominance (L-118-ext) 회피 설계.",
+
+  "economic_family": "distress_path_dependent_defense",
+  "sub_family": "ohlson_calmar_cross_family",
+
+  "mechanism": {
+    "core": "Defense 역할은 위기 구간 alpha + Core 대비 MDD 축소의 조건부 성과(AX-001)로 정의. H_1681 R2 consensus 'Defense 근본 재고' 수용하여 Q07 의존 탈피. Cross-family 설계 기준 3건: (1) 회계 distress (Ohlson O-Score), (2) 가격 historical drawdown ratio (Calmar), (3) AX 전수 회피. 두 factor 모두 stress 구간 양수 IC 확정 (실증 기반 설계).",
+    "why_q25_primary": "Ohlson (1980 JAR) O-Score는 logit 회귀 기반 default probability 예측 모델 — TotalLiab/TotalAssets, WorkingCapital/TotalAssets 등 회계 비율 9개 조합. **AX-004 quality_profitability 아님** (profitability는 ROE/ROA/GP, Ohlson은 financial distress). **stress 실증** (8대 급락): stress_icir +0.659, stress_pct_pos 0.80, crisis_ratio 1.55. recent_3y_icir +0.633. bad regime IC +0.033, good regime IC +0.031 — 전기간 안정적 defense.",
+    "why_r16_secondary": "Young (1991) Calmar ratio = CAGR / MaxDD. 역사적 drawdown 회복력 측정. **stress 실증 최강**: stress_icir **+2.655**, stress_pct_pos **1.00** (40 stress months 전부 양수 IC), crisis_ratio 0.98. 학술: Young (1991 FA Journal) + Chekhlov et al. (2005 JBF) drawdown risk 연구. risk family factor, AX-005 low-beta/BAB 무관.",
+    "why_q24_excluded": "Q24_Altman_Z는 stress_icir **-0.695** (역방향), stress_pct_pos **0.25**, crisis_ratio **-2.89** — 위기 구간 역방향 작용. L-104 STR_1624 (Q24+V05+L04 Grade F) 실패 원인의 일부일 수 있음. **완전 배제**.",
+    "why_q07_excluded": "H_1681 R2 consensus 'Q07 의존 재고' + L-143 Q07+D29 CAGR 2.93% empirical failure. Q07 대신 Q25 Ohlson 채택 (distress ≠ earnings stability, 독립 mechanism).",
+    "why_cross_family_robust": "L-118-ext: 'beta orthogonality > family orthogonality'. Q25 (accounting ratios logit) + R16 (price return distribution ratio) = 완전 독립 정보 채널. Q25 ↔ R16 cross-sectional 상관 예상 <0.2 (S3 실측 필요).",
+    "information_channel": "Z_distress = z(Q25_Ohlson_O) (기업 재무 건전성). Z_drawdown = z(R16_Calmar) (과거 경로 회복력). Composite = 0.6·Z_distress + 0.4·Z_drawdown. Z-score 높은 (distress prob 낮고 Calmar 높은) 종목 long."
+  },
+
+  "signal_construction": {
+    "data_source": "Factor DB monthly (load_month_factors 경유, C15): Q25_Ohlson_O, R16_Calmar. 모두 Z_Score_Aligned 보유. 표준 Factor DB 등록 factor.",
+    "signal": "매월 t 시점: Z_distress = z_Q25_Ohlson_O, Z_drawdown = z_R16_Calmar. Defense_score = 0.6·Z_distress + 0.4·Z_drawdown. Top 20 EW long only.",
+    "normalization": "Cross-sectional Z_Score_Aligned (expanding window, C1). 수동 방향 반전 금지 (C13).",
+    "rebalance": "Monthly (end-of-month). t+1 적용 (C2).",
+    "universe": "KOSPI + KOSDAQ, LIQ_THRESHOLD = 2e8 (C10).",
+    "portfolio": "S1 baseline: EW Top 20 (v53), commission 15bps, buffer_zone = list(keep_n=22, entry_n=20).",
+    "overlay": "none (S0/S1 pure signal). S5 mutation slate에 DD 6/20 + Regime weight 사전 등록.",
+    "pit_compliance": "C1: expanding Z-score. C2: t→t+1 lag. C4: Q25 재무제표 Usable_Date 경유 (annual/quarterly), R16 daily return 기반 monthly aggregate (C4 무관). C13: Z_Score_Aligned. C14: load_month_factors() Usable_Date. C15: parquet 직접 로드 금지."
+  },
+
+  "pre_screening": {
+    "factor_ic_stress": {
+      "Q25_Ohlson_O": {
+        "stress_ic_mean": 0.0456,
+        "stress_icir": 0.659,
+        "stress_pct_pos": 0.80,
+        "normal_icir": 0.415,
+        "crisis_ratio": 1.55,
+        "source": ".cache/stress_factor_ic_analysis.csv"
+      },
+      "R16_Calmar": {
+        "stress_ic_mean": 0.2202,
+        "stress_icir": 2.655,
+        "stress_pct_pos": 1.00,
+        "normal_icir": 1.473,
+        "crisis_ratio": 0.98,
+        "source": ".cache/stress_factor_ic_analysis.csv"
+      }
+    },
+    "factor_ic_conditional": {
+      "Q25_Ohlson_O": {"ic_all": 0.0316, "ic_bad": 0.0333, "icir": 0.633, "used": false},
+      "R16_Calmar": {"ic_all": 0.0014, "ic_bad": 0.0056, "icir": 0.220, "used": false}
+    },
+    "composite_expected": {
+      "rationale": "Q25 primary (stress strong, conditional moderate) + R16 secondary (stress extreme strong 2.655, conditional weak 0.22). Stress 기준 composite ICIR 예상 1.0~1.5, 평시 0.4~0.6. Defense role: 평시 moderate drag + 위기 strong alpha.",
+      "verification_required": "S1 측정 필수. Alpha Lab Gate ICIR ≥ 0.20 통과 확신 수준."
+    },
+    "factor_correlations_expected": {
+      "Q25_R16_crosssection": "예상 <0.2 — 회계 기반 distress vs 가격 기반 drawdown path. 독립 채널.",
+      "vs_C19_Core": "예상 <0.1 — defense factor vs momentum/consensus alpha",
+      "vs_STR_1679_portfolio": "S3 실측 필요. 목표 ρ<0.3 (Defense 역할 정합). STR_1679 D안 Grade C MDD 53.5%에서 H_1682이 diversifier 기여 시 blended MDD 개선 기대."
+    },
+    "portfolio_level_sr_expected": {
+      "pure_composite": "0.50~0.80 (Defense role, 평시 drag 수용)",
+      "crisis_alpha_annual": "+2~4%/y (stress alpha 기준)",
+      "mdd_estimate": "25~35% (Calmar strong but pure signal 한계. S5 DD overlay 시 15~22%)"
+    }
+  },
+
+  "expected_role": "defense",
+  "RoleBias": "RoleBias_Defense",
+
+  "why_now": {
+    "pg0_gap": "portfolio_gap_vector v1.0.3: SR gap 0.807. Defense sleeve 공석 (Judge-verified defensive Grade A 0건). STR_1679 D안 Grade C MDD 53.5% Hard Fail → Defense anchor 긴급 필요.",
+    "h1681_revise_direct_response": "H_1681 REVISE 55/100 Requirement 7 'Defense 역할 근본 재고' 직접 수용. Q07 의존 탈피 + Q + tail 설계에서 Distress + Calmar 설계로 fundamental shift.",
+    "l143_empirical_avoidance": "L-143 (Q07+D29 CAGR 2.93%) empirical warning 완전 회피. Q07 미사용.",
+    "axiom_compliance": "AX-003 value 무관 / AX-004 quality_profitability 아님 (Ohlson = distress, not profitability) / AX-005 low-beta/BAB/Q07+D25 무관 → 전수 structural PASS.",
+    "stress_empirical_basis": "Q25 stress_icir 0.659 + R16 stress_icir 2.655 = 양쪽 factor 모두 8대 급락 실증 확정. Design by evidence (empirical-first).",
+    "family_diversity": "distress (accounting-based default prob) + drawdown (path-dependent risk) = H_1675 Q07+D29 (earnings stability + accounting beta), H_1681 Q07+tail (earnings stability + return distribution tail)과 완전 다른 family.",
+    "governor_direction_c": "Governor 후보 C (Distress avoidance) 수용. 단 Governor 조건 'Q + Non-Q composite' 중 'Non-Q' 부분을 R16 Calmar (risk family)로 충족."
+  },
+
+  "core_reference": [
+    {
+      "id": "Ohlson_1980",
+      "title": "Financial Ratios and the Probabilistic Prediction of Bankruptcy",
+      "journal": "Journal of Accounting Research, 18(1), 109-131",
+      "relevance": "Q25_Ohlson_O score 학술 원전. Logit 기반 default probability 예측.",
+      "part_A_section": "A3 Distress / Bankruptcy"
+    },
+    {
+      "id": "Campbell_Hilscher_Szilagyi_2008",
+      "title": "In Search of Distress Risk",
+      "journal": "Journal of Finance, 63(6), 2899-2939",
+      "relevance": "Distress risk와 주식 수익률 관계 top-tier 실증. Distress 낮은 종목 long tilt 근거.",
+      "part_A_section": "A3 Distress"
+    },
+    {
+      "id": "Young_1991",
+      "title": "Calmar Ratio: A Smoother Tool",
+      "journal": "Futures Magazine, 20(1), 40",
+      "relevance": "R16_Calmar 원전. CAGR/MaxDD ratio로 drawdown 회복력 측정.",
+      "part_A_section": "A3 Drawdown Risk"
+    },
+    {
+      "id": "Chekhlov_Uryasev_Zabarankin_2005",
+      "title": "Drawdown Measure in Portfolio Optimization",
+      "journal": "International Journal of Theoretical and Applied Finance, 8(1), 13-58",
+      "relevance": "Conditional Drawdown at Risk 이론. R16_Calmar와 연결된 drawdown-based risk 학술 근거.",
+      "part_A_section": "A3 Drawdown Risk"
+    },
+    {
+      "id": "Dichev_1998",
+      "title": "Is the Risk of Bankruptcy a Systematic Risk?",
+      "journal": "Journal of Finance, 53(3), 1131-1147",
+      "relevance": "Distress risk가 체계적 위험 여부 실증. 본 가설의 Ohlson-based signal의 위기 robustness 설명.",
+      "part_A_section": "A3 Distress"
+    }
+  ],
+
+  "lesson_check": [
+    {
+      "lcode": "L-104",
+      "summary": "STR_1624 Q24+V05+L04 defense 조합 MDD 61% Hard Fail. Altman Z + value + liquidity 혼합.",
+      "compliance": "AWARE_DISTINCT — H_1682은 (1) Q24 완전 배제 (stress_icir -0.695 역방향 확인), (2) V05 value 미사용 (AX-003 회피), (3) L04 liquidity 미사용. Single pathway: Q25 Ohlson + R16 Calmar cross-family. L-104 실패 요인 전부 회피."
+    },
+    {
+      "lcode": "L-118-ext",
+      "summary": "단면 상관 낮아도 beta 지배로 portfolio 상관 0.78. Beta orthogonality > family orthogonality.",
+      "compliance": "AWARE — S3에서 H_1682 portfolio CAPM beta 측정 필수. Defense role 허용 |β|<0.85. Cross-family design이 beta 완화 기여 기대."
+    },
+    {
+      "lcode": "L-119",
+      "summary": "정적 EW 팩터 블렌드 alpha 희석. 국면 조건부 동적 배분 필요.",
+      "compliance": "CONDITIONAL_PASS — H_1682은 정적 60/40. 단 Q25 stress ICIR 0.66 + R16 stress 2.66 모두 strong individual alpha → 희석 효과 최소. 그래도 S5 regime-conditional weight mutation 사전 등록."
+    },
+    {
+      "lcode": "L-121",
+      "summary": "Q07 양쪽 위기 최강. stress ICIR +0.753, 4r CRISIS +0.413, C19 상관 -0.092.",
+      "compliance": "AWARE_REJECTED — Q07은 L-121 근거로 H_1675/STR_1679/H_1681에 사용되었으나 portfolio-level Grade C CAGR 2.93% (L-143) + H_1681 R2 'Q07 근본 재고'로 기각. H_1682은 Q25로 Q07 대체."
+    },
+    {
+      "lcode": "L-143",
+      "summary": "Q07+D29 Defense 30종목 standalone Grade C CAGR 2.93% empirical 실패. Q07+Accounting Beta 계열 회피 권고.",
+      "compliance": "DIRECT_FIX — H_1682은 L-143 recommendations[2] 'Q07+Accounting Beta 회피' 완전 수용. Q07 미사용 + Accounting Beta 계열(D25/D29) 미사용."
+    },
+    {
+      "lcode": "L-129",
+      "summary": "CDaR LP 단독 가중치는 한국 ML 포트폴리오 MDD 악화. HRP+DD Brake가 우월.",
+      "compliance": "AWARE_DISTINCT — L-129는 CDaR LP portfolio **weight** 방식 실패. H_1682은 R16_Calmar를 **factor score** (종목 선정용)로 사용. Weight method는 EW 표준. L-129 scope 밖."
+    },
+    {
+      "lcode": "H_1681_REVISE_Requirement_7",
+      "summary": "Defense 역할 근본 재고. Governor 후보 B/C/D 재탐색 권장.",
+      "compliance": "DIRECT_ACCEPT — Option B + 후보 C 선택. Q07 의존 탈피 + distress family 채택."
+    },
+    {
+      "lcode": "AX-003",
+      "summary": "value family KR standalone 금지.",
+      "compliance": "PASS — value factor 미사용."
+    },
+    {
+      "lcode": "AX-004",
+      "summary": "quality_profitability standalone/composite/cash-based/gross 금지.",
+      "compliance": "PASS — Ohlson O는 distress (default probability), profitability(ROE/GP/ROA) 아님. AX-004 supporting L-133/L-134/L-139 모두 profitability 계열. Q25는 구조적으로 다른 sub-family. Calmar는 risk family."
+    },
+    {
+      "lcode": "AX-005",
+      "summary": "defense family low-beta standalone / Q07+D25 combo / BAB 금지.",
+      "compliance": "PASS — (1) low-beta(D02/D04) 미사용, (2) Q07 미사용, D25 미사용, (3) BAB 미사용. AX-005 supporting L-136/L-140 모두 다른 construction type. H_1682은 distress + drawdown composite."
+    }
+  ],
+
+  "risks": [
+    "위험 1 — Q25 Ohlson O 복원 품질: Ohlson 원 logit 모델의 한국 재무 적용. Factor DB compute_quality.R 구현 품질 확인 필요 (L-126 Q35 Factor DB 버그 선례). S1 실행 전 Q25 Raw_Value 분포 확인.",
+    "위험 2 — R16_Calmar 정의 & 계산 기간: CAGR/MaxDD ratio는 lookback 기간에 민감 (12m vs 36m vs since-inception). Factor DB 기본 정의 확인 필요. 너무 짧으면 noise, 너무 길면 slow.",
+    "위험 3 — 정적 60/40 가중의 자의성 (L-119 경계): Q25 ICIR 0.66 + R16 stress 2.66 strong individual → 희석 낮음 예상이나 S1 실증 필요.",
+    "위험 4 — R16 평시 IC 약함 (ICIR 0.22): 정상 regime에서는 Calmar가 alpha 기여 미미. 평시 drag 가능. 단 Defense role에는 적합 (위기 편향).",
+    "위험 5 — Q25 크기/성장주 편향: Ohlson score는 기업 재무 건전성 → 대형 안정주 편향. Small-cap growth 배제 가능. KOSPI top tier 쏠림 예상.",
+    "위험 6 — Portfolio CAPM beta 노출: H_1676 VERDICT 선례상 debate에서 반드시 제기. Defense role 허용 |β|<0.85. 안정주 long이므로 beta 0.7~0.9 예상.",
+    "위험 7 — Judge AX-004 해석 확장 위험: 일부 Judge가 'Ohlson O 포함 Q_* family 전체 quality_profitability scope IN' 해석 시 AX-004 위반 가능성. Technical 명확 분리이나 debate에서 명시 방어 필요.",
+    "위험 8 — L-143 후속 empirical: Q07+D29 CAGR 2.93% warning이 Q25+R16 조합에 재현될 가능성 (Defense drag). 단 R16 stress alpha 2.66이 정적 blend drag 상쇄 기대.",
+    "위험 9 — 데이터 가용성: R16_Calmar Factor DB 등록 확인. conditional_ic_matrix에 R16 ic_all 0.0014, icir 0.22로 기록되어 등록 상태. Forge 실행 시 load_month_factors() 확인.",
+    "위험 10 — H_1681 R2 Codex 8점 같은 패턴: composite redundancy 또는 PIT 미명세 지적 예상. H_1682은 (1) 2F 단순화 (3F → 2F), (2) PIT C4 Q25 재무제표 Usable_Date 명시 대응."
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR ≥ 0.20 (composite)",
+    "ax_001_defense_evaluation": "(a) stress 6구간 IC 평균 > 0.03, (b) Core (STR_1631 VD+ 또는 STR_1679 Core 단독) 대비 MDD 최소 8%p 축소, (c) bad/good regime IC ratio > 1.2",
+    "pit_gate": "C1~C15 전수 통과 (특히 C4 Q25 재무제표 Usable_Date + C14 load_month_factors)",
+    "portfolio_gate": "MDD < 40% (Defense role, Hurdle v2.2 45% 기준보다 엄격)",
+    "liquidity_gate": "유동성 필터 후 average daily holdings ≥ 20",
+    "market_beta_gate": "portfolio |β_market| < 0.85 (Defense 역할 허용)",
+    "sr_gate": "SR ≥ 0.50 (pure, Defense role 수용 범위)",
+    "crisis_alpha_gate": "stress 6구간 composite IC average > 0.03 (Q25 0.046 + R16 0.22 mix)",
+    "s3_gate_prospective": "vs STR_1679 portfolio-level ρ < 0.3 (Defense 보완 관계)"
+  },
+
+  "forge_handoff_plan": {
+    "s1_implementation_notes": "(1) load_month_factors()로 Q25_Ohlson_O, R16_Calmar 로드. (2) 각 factor Z_Score_Aligned 사용 (C13). (3) Defense_score = 0.6·z_Q25 + 0.4·z_R16. (4) Top 20 EW, 15bps, buffer 22/20. (5) No overlay (S1 pure). (6) portfolio CAPM beta 측정 (H_1676 선례 반영).",
+    "baseline_comparison": "Forge는 Q25 standalone baseline + R16 standalone baseline parallel 측정 권고 (incremental 입증, H_1681 VERDICT Requirement 6 선례 반영).",
+    "estimated_sr": "pure 2F: 0.50~0.80 (Defense role). overlay(S5): 0.70~1.00",
+    "estimated_mdd": "25~35% (pure). S5 DD overlay: 15~22%",
+    "s5_mutation_slate_preregistered": "(a) DD 6/20 overlay, (b) Regime-conditional weight (MRS>50 시 Q25 weight 50% → 70% 상향), (c) Tail factor 추가 테스트 (D47_CVaR_5pct 투입 시 effect)",
+    "synthesis_candidate": "STR_1679 Defense sleeve 5종목 교체 후보: Q07+D29 → Q25+R16 signal. L-143 warning 해소 + AX-005 완전 회피 + stress 실증 우월."
+  },
+
+  "bucket_tag": "exploit",
+  "governor_alignment": "후보 C (Distress avoidance) 수용 + 'Q + Non-Q composite' 조건 충족 (Q25 quality family + R16 risk family)",
+  "h1681_supersede": "H_1681 (Tail-Risk Defense) REVISE → H_1682 pivot. Tail-risk 3F redundancy (D47-D48-D45 상관 0.87~0.93) + Q07 의존 재고 → Q25 + R16 cross-family 대체"
+}
