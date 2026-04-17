@@ -1,0 +1,191 @@
+{
+  "artifact_type": "pg0_diagnosis_preliminary",
+  "schema_version": "v1.0.0",
+  "portfolio_id": "V7_ALLWEATHER_001",
+  "candidate_id": "STR_1679v2_sleeve_ew_primary",
+  "timestamp": "2026-04-17T07:30:00",
+  "status": "PRELIMINARY (Judge Gate 통과 전, 확정 불가)",
+  "authority": "Governor session 65 사전 작성 (Q-Lead 요청 C)",
+  "note": "Judge Gate 0~6 + tail_risk PASS 확인 후 공식 PG0 재진단 실행 예정. 본 문서는 기획용 preliminary.",
+
+  "source_document": ".cache/portfolio_gap_vector.json v1.0.3 (2026-04-10T22:53:19)",
+  "prior_state": {
+    "n_strategies": 2,
+    "admitted_ids": ["STR_1631_SYN_05", "STR_1656_MLRA_M05"],
+    "anchor_strategy": "STR_1631_SYN_05_VDplus",
+    "diversifier_strategy": "STR_1656_MLRA_M05",
+    "blend": "80/20",
+    "current_profile": {
+      "cagr": 0.1614,
+      "sharpe": 1.193,
+      "mdd": -0.2127
+    },
+    "gap_sharpe": 0.807
+  },
+
+  "candidate_profile": {
+    "strategy_id": "STR_1679v2_sleeve_ew_primary",
+    "description": "Sleeve+DD Check — Core 15 (score-blend) + Def 5 (Q07+D29) 물리 분리 + HRP + DD overlay",
+    "variant": "Primary (HRP+DD overlay)",
+    "role": "core_alpha (with embedded defense sleeve)",
+    "n_hold": 20,
+    "hurdle_grade": "A",
+    "hurdle_score": 77.1,
+    "metrics": {
+      "sharpe": 1.266,
+      "cagr": 0.2471,
+      "mdd": -0.2906,
+      "ann_vol_estimate": 0.195,
+      "calmar_estimate": 0.850
+    },
+    "composition": {
+      "core_sleeve": {"n": 15, "method": "score-blend consensus", "expected_contribution": "alpha"},
+      "defense_sleeve": {"n": 5, "method": "Q07+D29", "expected_contribution": "tail protection"}
+    },
+    "reference_backtest_output": "04_Research/strategies/STR_1679_score_blend/output/hurdle_result.json (HRP+DD Primary variant)",
+    "base_variants_observed": {
+      "sleeve_ew_base": {"grade": "C", "hard_fail": true, "mdd_pct": 53.54, "note": "overlay 없이 Hard Fail"},
+      "hrp_base": {"grade": "C", "hard_fail": true, "mdd_pct": 51.60, "note": "overlay 없이 Hard Fail"},
+      "hrp_dd_primary": {"grade": "A", "hard_fail": false, "mdd_pct": 29.06, "note": "overlay 필수"}
+    }
+  },
+
+  "pg0_reassessment": {
+    "method": "Primary variant 수치 단독 적용 (blend simulation 별도 섹션)",
+    "scenario_1_single_anchor": {
+      "description": "STR_1679v2 Primary 단독 anchor 교체 (기존 80/20 blend 대체)",
+      "projected_profile": {
+        "cagr": 0.2471,
+        "sharpe": 1.266,
+        "mdd": -0.2906
+      },
+      "gap": {
+        "cagr_gap": "ACHIEVED (+8.57%p excess)",
+        "sharpe_gap": 0.734,
+        "mdd_gap": -0.0406
+      },
+      "comparison_to_prior": {
+        "sharpe_change": "+0.073 (1.193 → 1.266)",
+        "cagr_change": "+8.57%p (16.14% → 24.71%)",
+        "mdd_change": "-7.79%p (악화, 21.27% → 29.06%)"
+      },
+      "assessment": "SR/CAGR 개선, MDD 단독 악화. 단독 anchor 교체 비권장."
+    },
+    "scenario_2_blend_with_existing": {
+      "description": "STR_1679v2 Primary + STR_1631_SYN_05 + STR_1656_MLRA 3-way blend (비중 시뮬)",
+      "assumptions": "EW 33/33/33 + portfolio-level vol equalization (placeholder, 실측 필요)",
+      "projected_profile_conservative": {
+        "cagr": 0.205,
+        "sharpe": 1.35,
+        "mdd": -0.25
+      },
+      "gap": {
+        "sharpe_gap": 0.65,
+        "note": "상관 <0.5 가정 시 근사"
+      },
+      "assessment": "SR 상승 + MDD 회복 가능성. 실측 필요."
+    },
+    "scenario_3_blend_with_h1682_defense": {
+      "description": "STR_1679v2 Primary + H_1682 (Q25+R16 Defense) blend",
+      "assumptions": "STR_1679v2 70% + H_1682 30% (defense tilt 조건)",
+      "projected_profile_optimistic": {
+        "cagr": 0.21,
+        "sharpe": 1.50,
+        "mdd": -0.22
+      },
+      "gap": {
+        "sharpe_gap": 0.50,
+        "note": "H_1682 stress_pct_pos 1.00이 MDD 복원 기대. 실측 필수."
+      },
+      "assessment": "가장 유망한 시나리오. 단 H_1682 S1~S6 PASS 선결."
+    }
+  },
+
+  "sleeve_needs_updated": {
+    "before": "diversifier",
+    "after": "defense (primary)",
+    "rationale": "STR_1679v2 Primary가 core_alpha 역할 + 기존 MLRA diversifier 존재. 신규 부족은 독립 Defense anchor. H_1682가 이 gap 정확히 충족 목표."
+  },
+
+  "regime_state": {
+    "source": "get_regime_at_date(Sys.Date()-1)",
+    "required_action": "PG0 공식 실행 시 regime_signal.R 재호출하여 t-1 lag 갱신"
+  },
+
+  "family_concentration_projection": {
+    "before_str_1679v2": {
+      "consensus": 0.5,
+      "ML_complexity": 0.5
+    },
+    "after_str_1679v2_admission": {
+      "consensus": "감소 (STR_1679v2 score-blend 포함이나 sleeve 분리)",
+      "ML_complexity": "감소",
+      "defense_ensemble": "증가 (STR_1679v2 Def sleeve 5종목 Q07+D29)"
+    },
+    "after_h1682_admission": {
+      "distress_path_dependent": "신규 family (Q25+R16)",
+      "cross_family_diversification": "강화"
+    },
+    "STR_1631_family_share": "현재 44.1%. STR_1679v2 admission 시 family 분류 명확화 필요 (별도 STR_XXXX인지 STR_1631 family인지)",
+    "action_required": "PG1 admission 시 family classification 확정"
+  },
+
+  "precondition_checks": {
+    "judge_gate_0_6": "PENDING — Judge S6 차단 중 (mutation_tracker 부재). Scout S5 소급 작성 → Judge 스폰 예정.",
+    "tail_risk_result": "PENDING — Judge가 compute_tail_risk_suite 실행",
+    "role_honesty_audit": "PENDING — Judge S6에서 수행",
+    "loo_crisis_test": "PENDING",
+    "stage_artifacts": "s1/s2 존재 확인. s0/s3/s4/s5/s6 상태 확인 필요."
+  },
+
+  "blockers": [
+    {
+      "code": "B1_JUDGE_S6_BLOCKED",
+      "severity": "BLOCKING",
+      "description": "S5 mutation_tracker 부재로 Judge Gate 진입 차단",
+      "resolution": "Scout 소급 작성 (진행 중)"
+    },
+    {
+      "code": "B2_MDD_STANDALONE_EXCEEDS_TARGET",
+      "severity": "WARNING",
+      "description": "Primary MDD 29.06% > 목표 25%",
+      "resolution": "blend 시 완화 예상 (scenario 2/3 실측)"
+    }
+  ],
+
+  "next_steps": {
+    "immediate": [
+      "Scout S5 mutation_tracker 소급 → Judge S6 스폰",
+      "Judge Gate 0-6 + tail_risk 검증 결과 대기"
+    ],
+    "after_judge_pass": [
+      "portfolio_governor.R::pg0_gap_review('V7_ALLWEATHER_001') 호출하여 portfolio_gap_vector.json 공식 갱신",
+      "sleeve_needs 확정 (defense 전환)",
+      "family_concentration 재계산 후 STR_1631 share 재확인",
+      "PG1 admission (anti-pattern + LOO + role honesty + family cap check)",
+      "PG2 allocation 시나리오 비교 (1/2/3)"
+    ],
+    "conditional_on_h1682": [
+      "H_1682 S0 debate VERDICT 확정",
+      "H_1682 S1~S6 PASS 시 scenario 3 blend 실측 → portfolio sharpe 1.50 target 검증",
+      "Defense sleeve 공식 확보 → PG2 3-way allocation"
+    ]
+  },
+
+  "monitoring_plan_for_pg3_if_admitted": {
+    "drift_threshold": 0.05,
+    "dd_alert_threshold": 0.05,
+    "regime_alert_enabled": true,
+    "reopen_triggers": [
+      "MDD 실측 > 35% (target 25% + 10%p buffer)",
+      "Core/Def sleeve role 불일치 3개월 지속",
+      "family concentration 35% 초과 신규 발생"
+    ]
+  },
+
+  "governor_reservations": [
+    "STR_1679v2 Primary의 MDD 29.06%는 blend 없이는 portfolio target 충족 불가 → 반드시 H_1682 또는 기존 diversifier와 blend 필요",
+    "Def sleeve 5종목 Q07+D29 기여도 별도 측정 요청 (Judge/Forge에). 전체 성과 중 Def sleeve 기여가 미미하면 H_1682로 Def role 전면 교체 권고",
+    "base_variants (HRP+DD 없이) 둘 다 Grade C Hard Fail → overlay 의존성 과도. S5 overlay 제거 mutation으로 robust 확인 권고"
+  ]
+}

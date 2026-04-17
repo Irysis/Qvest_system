@@ -1,0 +1,87 @@
+{
+  "l_code": "L-144",
+  "strategy_id": "Q24_Altman_Z_factor_empirical_discovery",
+  "title": "Q24_Altman_Z stress 구간 역방향 작용 — defense factor로서 무력 empirical 실증",
+  "grade": "N/A (factor-level discovery)",
+  "core_reference": "Altman (1968 JoF) 'Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy' + Campbell, Hilscher & Szilagyi (2008 JF) 'In Search of Distress Risk' + Dichev (1998 JF) 'Is the Risk of Bankruptcy a Systematic Risk?'",
+  "lesson_text": "Q24_Altman_Z (1968 Altman discriminant analysis 기반 bankruptcy prediction) 팩터의 한국시장 cross-section 실증에서 **stress 6대 급락 구간 역방향 작용** 확정. stress_icir -0.695, stress_pct_pos 0.25 (40 stress months 중 25%만 양수), crisis_ratio -2.89. 즉 Z-score 높은 (Altman 기준 '안전') 종목이 급락 시 오히려 underperform. Defense factor 용도로 구조적 부적합. 이는 Campbell-Hilscher-Szilagyi (2008) 'distress risk premium' 연구와 한국시장 결과 괴리 — 미국 원논문은 distress risk가 positive cross-section premium (high distress → low return, avoid 시 alpha)이나 한국에서는 급락 시 Altman metric이 **역방향**. L-104 STR_1624 (Q24+V05+L04 defense 조합, MDD 61% Grade F) 실패의 핵심 원인 중 하나로 재해석 가능 — 기존에는 V05 AX-003 위반 + multi-factor 혼탁으로만 해석했으나, Q24 자체의 stress 역방향이 defense 역할 실패의 독립 원인. 향후 Defense anchor 설계 시 Q24 단독 또는 composite 포함 금지. 대안: Q25_Ohlson_O (stress_icir +0.659, stress_pct_pos 0.80) 또는 cross-family (R16_Calmar stress_icir +2.655) 사용.",
+  "empirical_evidence": {
+    "factor": "Q24_Altman_Z",
+    "stress_data_source": ".cache/stress_factor_ic_analysis.csv",
+    "stress_metrics": {
+      "stress_ic_mean": -0.0634,
+      "stress_ic_sd": 0.0913,
+      "stress_icir": -0.695,
+      "stress_n_months": 40,
+      "stress_pct_positive": 0.25,
+      "normal_ic_mean": -0.0220,
+      "normal_icir": -0.182,
+      "crisis_premium": -0.0415,
+      "crisis_ratio": -2.89
+    },
+    "conditional_ic_4regime": {
+      "source": ".cache/conditional_ic_matrix.csv",
+      "ic_all": -0.0140,
+      "ic_bad_4regime": 0.0134,
+      "ic_good_4regime": -0.0201,
+      "note": "4-regime bad IC 양수(+0.013)와 6대 stress IC -0.063의 괴리는 L-120 교훈(stress vs 4-regime 정의 차이)의 대표 사례. Defense 평가에는 stress 기준이 적합."
+    },
+    "audit_date": "2026-04-17"
+  },
+  "mechanism_hypothesis": {
+    "why_reverse_in_stress": [
+      "한국시장 distress risk premium 부재: Campbell et al.(2008) US 실증은 high distress 종목이 low return이지만 한국에서는 이 관계 약화 또는 역전 가능성 (Park 2024, 시장이상현상 차이)",
+      "Altman Z 공식 (WC/TA + RE/TA + EBIT/TA + MVEq/TL + S/TA)가 한국 재무 환경과 부적합: 특히 MVEq/TL (시가총액/총부채) 비율이 한국 재벌 구조에서 왜곡 가능",
+      "급락 시 대형주 (Altman Z 높음) 평균 outperform 패턴의 한국 특수성: KOSPI200 위주 하락에서 Altman 안전 대형주가 더 큰 낙폭 — market beta dominance",
+      "Small-cap Altman Z 왜곡: 한국 소형주 재무 노이즈로 Altman 값 극단. Z-score 정규화 후에도 이상치 효과 잔존"
+    ],
+    "comparison_with_Q25_Ohlson": [
+      "Q25 Ohlson O-score도 distress prediction이지만 logit 기반 + 9개 회계 비율 (더 세밀)",
+      "Q25 stress_icir +0.659 vs Q24 stress_icir -0.695 → 같은 distress family 내에서도 construction 차이로 상반 결과",
+      "Ohlson (1980) logit 접근이 Altman (1968) discriminant보다 한국시장 cross-section에 더 robust"
+    ]
+  },
+  "implications": {
+    "L_104_reinterpretation": {
+      "original_interpretation": "STR_1624 Q24+V05+L04 Grade F 원인: V05 value standalone 실패 (AX-003) + multi-factor 혼탁",
+      "L_144_additional_interpretation": "Q24 자체의 stress 역방향이 defense 역할 실패의 독립 원인. V05 제거 + Q24 단독이어도 여전히 실패했을 가능성."
+    },
+    "defense_design_rules": [
+      "Q24_Altman_Z 단독 Defense anchor 금지",
+      "Defense composite 내 Q24 포함 금지 (Q24 역방향이 composite 성능 오염)",
+      "대안 1: Q25_Ohlson_O 단독 또는 anchor (stress 양수)",
+      "대안 2: Cross-family composite (Q25 + R16_Calmar 등)",
+      "H_1682 설계가 이 원칙 선제 수용"
+    ],
+    "future_factor_evaluation_rule": [
+      "Defense factor 평가 시 conditional_ic (4-regime bad IC)만 보지 말 것",
+      "stress_factor_ic (6대 급락 실증) 반드시 병행 검토",
+      "stress_pct_pos < 0.5 + stress_icir 음수 = Defense factor 자격 미달",
+      "L-120 교훈 강화: 두 기준 괴리 시 stress 기준이 defense 평가에 우선"
+    ]
+  },
+  "tags": [
+    "ALTMAN_STRESS_REVERSE",
+    "DEFENSE_FACTOR_DISQUALIFIED",
+    "DISTRESS_FAMILY_KR_ANOMALY",
+    "L104_REINTERPRETATION",
+    "EMPIRICAL_DEFENSE_EVALUATION_RULE"
+  ],
+  "supporting_references": {
+    "H_1682_design_application": "stage_artifacts/s0_record_H_1682_distress_calmar_defense.json (Q24 배제 + R16_Calmar 대체 선제 설계)",
+    "L_104_original": "STR_1624 Q24+V05+L04 Grade F record",
+    "L_120_foundation": "stress IC vs 4-regime CRISIS IC 정의 차이 교훈",
+    "data_sources": [
+      ".cache/stress_factor_ic_analysis.csv (8대 stress 구간)",
+      ".cache/conditional_ic_matrix.csv (4-regime)"
+    ]
+  },
+  "future_axiom_consideration": {
+    "candidate_rule": "Defense factor 선정 시 stress_icir > 0 + stress_pct_pos ≥ 0.5 필수 요건",
+    "supporting_evidence_needed": "L-144 (Q24) + 추가 factor 최소 2건 실증",
+    "next_review": "2026-07-16 AX-005 quarterly review 시 함께 검토"
+  },
+  "created_at": "2026-04-17",
+  "created_by": "Scout",
+  "q_lead_directive": "Q24 역방향 발견의 L-code화 지시 (2026-04-17, H_1682 승인 메시지 내)"
+}
