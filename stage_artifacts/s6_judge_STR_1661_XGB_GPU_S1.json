@@ -1,0 +1,198 @@
+{
+  "schema": "judge_s1_verdict",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "factor_id": "ML_XGB_GPU_LR",
+  "parent_strategy": "STR_1656_MLRA",
+  "hypothesis_id": "H_1661",
+  "stage_reviewed": "S1",
+  "judge_timestamp": "2026-04-17T17:15:00+09:00",
+  "auditor": "Judge (agent)",
+  "overall_verdict": "S1_PASS_WITH_NOTES",
+  "advance_to_s2": true,
+  "advance_to_s5": false,
+  "reason_not_s5": "V2/V3 Base 백테스트 hard_fail (MDD -50.98/-51.37, SR 0.90/0.69). S1 순수 팩터 신호 측정 목적만 달성. S5 Mutation Lab 진입 전에 S2 프로파일/S3 직교성/S4 한계기여 선행 필요.",
+  "gate_results": {
+    "alpha_lab_gate": {
+      "status": "PASS",
+      "threshold": 0.20,
+      "v1_icir": 0.8723,
+      "v2_icir": 1.0291,
+      "v3_icir": 1.0971,
+      "all_variants_pass": true
+    },
+    "icir_5y_significance": {
+      "status": "PASS_EXCELLENT",
+      "v2_ic_tstat": 14.77,
+      "v3_ic_tstat": 15.71,
+      "harvey_2016_threshold": 3.0,
+      "comment": "t-stat 14~15는 Harvey t>3.0 임계 대비 4~5배. 다중검정 보정 후에도 statistically significant. IC 계열 견고."
+    },
+    "lambdarank_keep_decision": {
+      "v2_icir": 1.0291,
+      "v0_icir": 0.8496,
+      "delta": 0.1795,
+      "keep_threshold": 0.8196,
+      "verdict": "KEEP",
+      "reason": "V2 ICIR 1.0291 > V0 0.8496 + (threshold V0-0.03 = 0.8196) 충분히 상회. LambdaRank 구조적 개선 실증."
+    },
+    "v3_hp_overfitting_check": {
+      "v2_icir": 1.0291,
+      "v3_icir": 1.0971,
+      "gap_ratio": 1.066,
+      "overfitting_threshold": 2.0,
+      "status": "PASS",
+      "comment": "gap_ratio 1.07 < 2.0. V3 HP tuning 과적합 없음. 다만 V3 backtest CAGR 11.68 < V2 18.01로 alpha→수익 전환 비효율적. Judge 권고: V2 채택 (Optuna 30 trials HP multi-testing 부담 회피)"
+    },
+    "v2_backtest_performance": {
+      "cagr": 18.01,
+      "sr": 0.8997,
+      "mdd": -50.98,
+      "hard_fail": true,
+      "reason": "MDD > 45%"
+    },
+    "v3_backtest_performance": {
+      "cagr": 11.68,
+      "sr": 0.6923,
+      "mdd": -51.37,
+      "hard_fail": true,
+      "reason": "MDD > 45% + SR<0.8"
+    }
+  },
+  "pit_audit": {
+    "C1_expanding_only": {
+      "status": "PASS",
+      "evidence": "run_all.R L422-443 V3 Optuna HP 탐색을 is_hp=copy(is_dt) 내부에서만 수행. OOS 미접촉. Walk-forward expanding per OOS year."
+    },
+    "C2_t1_lag": {
+      "status": "PASS",
+      "evidence": "L400 val_me_d는 is_last + PURGE_DAYS(21d) 이후만 선택. L414 oos_me_d는 독립. same-day circular 없음."
+    },
+    "C3_same_period_aggregation": {
+      "status": "PASS",
+      "evidence": "MI prefilter(L182-216)는 expanding 누적 기반. top_B 재계산 매 OOS year."
+    },
+    "C4_financial_statement_lag": {
+      "status": "PASS_IMPLICIT",
+      "evidence": "일간 Factor DB(factor_db_daily) 경유. 월간 factor_db_builder에서 이미 재무제표 lag 반영(L-120 factor_db 구조)."
+    },
+    "C5_overlay_t1": {
+      "status": "N/A",
+      "evidence": "Overlay 미사용 (S1 순수 팩터 신호)."
+    },
+    "C6_survivorship": {
+      "status": "PASS",
+      "evidence": "load_rawdata(use_cache=TRUE) 전체 universe. survivor bias 제거."
+    },
+    "C7_auto_detected_patterns": {
+      "status": "PASS",
+      "evidence": "lookahead_detector 자동 검출 패턴 미히트."
+    },
+    "C8_fm_same_day": {"status": "N/A", "evidence": "Factor momentum 미사용."},
+    "C9_vt_dd_lag": {"status": "N/A", "evidence": "VT/DD overlay 없음 (S1)."},
+    "C10_liquidity_filter": {
+      "status": "PASS",
+      "evidence": "L389 Size >= LIQ_THRESHOLD (2e8). Size 자체는 daily DB에 t-1 price*volume이므로 통과."
+    },
+    "C11_data_time_axis": {
+      "status": "PASS",
+      "evidence": "fwd_ret_21d는 t+1~t+21 로그수익률 누적 (L125-129). label과 feature 정확히 분리."
+    },
+    "C12_shift_hygiene": {"status": "PASS", "evidence": "shift()/cumsum 경계 처리 정확."},
+    "C13_z_score_aligned": {
+      "status": "PASS",
+      "evidence": "일간 Factor DB는 phase6~10에서 이미 Z_Score_Aligned로 정규화(L-Session54). 수동 FLIP 없음."
+    },
+    "C14_ic_usable_date": {
+      "status": "PASS",
+      "evidence": "PURGE_DAYS=21d embargo (L400). fwd_ret이 IS label이고 OOS 예측은 학습 후에만 사용."
+    },
+    "C15_factor_db_loader": {
+      "status": "PASS",
+      "evidence": "Arrow open_dataset + filter predicate pushdown (L154, L167-177). 직접 parquet 반복 로드 없음. arrow_collect 함수 경유."
+    }
+  },
+  "statistical_defense": {
+    "harvey_2016_awareness": true,
+    "ic_tstat_v2": 14.77,
+    "ic_tstat_v3": 15.71,
+    "n_months_v2": 206,
+    "n_months_v3": 205,
+    "dsr": "NOT_COMPUTED",
+    "dsr_note": "S1 단계에서 DSR 필수 아님. S6 진입 시 필수. V2/V3 중 V2 채택 시 multi-testing 부담 단순화(V3 30 Optuna trials 회피).",
+    "multi_testing_penalty": {
+      "v0_to_v2_comparison": "LambdaRank single structural change. 1회 A/B.",
+      "v3_hp_trials": 30,
+      "risk": "V3의 30 Optuna trials는 DSR 하향 압력. V3 CAGR 11.68 < V2 18.01로 실제 경제가치 없음. V2 채택 시 최소화."
+    }
+  },
+  "role_honesty": {
+    "declared_role": "diversifier (expected_role in s2_profile)",
+    "parent_comparison": "STR_1656_MLRA S6 M05 Grade A, SR 1.2122, MDD -31.89, anchor_corr 0.3544",
+    "str_1661_best_v3": {"SR": 0.6923, "CAGR": 11.68, "MDD": -51.37},
+    "str_1661_best_v2": {"SR": 0.8997, "CAGR": 18.01, "MDD": -50.98},
+    "assessment": "S1 base EW 백테 기준 SR 0.69~0.90, MDD -51%는 parent STR_1656 S1 SR 0.927보다 낮음. ICIR 상승에도 수익 전환 비효율. S5 Mutation Lab에서 M05 구조 계승(HRP+CDaR/IV) + DD overlay + 30주→20주 compaction 필수. Diversifier 역할은 STR_1631 앵커와의 S3 anchor_corr 측정 이후 확정."
+  },
+  "concerns": [
+    {
+      "code": "S1_HARD_FAIL_MDD",
+      "severity": "MEDIUM",
+      "description": "V2/V3 모두 EW 30주 Base MDD -50~-51% hard_fail. 순수 팩터 신호 강하지만 포트폴리오 구조 없이는 Grade A 불가. S5에서 HRP/CDaR + DD 기본 장착 필수."
+    },
+    {
+      "code": "ALPHA_RETURN_EFFICIENCY_GAP",
+      "severity": "MEDIUM",
+      "description": "V3 ICIR 1.0971(V2 대비 +0.07) vs V3 CAGR 11.68(V2 대비 -6.33pp). HP tuning이 ICIR을 개선하나 실제 Top-30 선별 효율 하락. V2 채택 권고."
+    },
+    {
+      "code": "ANCHOR_CORR_UNKNOWN",
+      "severity": "MEDIUM",
+      "description": "STR_1631(앵커) 대비 max_corr 측정 필요(S3 단계). 0.40 미만이면 diversifier 자격, 이상이면 ML family internal redundancy."
+    },
+    {
+      "code": "N_HOLD_30_STOCK_V53_VIOLATION",
+      "severity": "LOW",
+      "description": "run_all.R N_HOLDINGS=30은 v53 20주 제한 위반. S1은 순수 신호 측정 목적으로 기존 30주 관용되나, S5 mutation에서 반드시 20주로 재측정 필요. STR_1656 M05 구조와 일관성 있게 HRP+CDaR + 20주 설계 필수."
+    },
+    {
+      "code": "TURNOVER_NOT_REPORTED",
+      "severity": "LOW",
+      "description": "S1 결과에 turnover 수치 없음. ICIR 높으나 월별 rebalancing turnover가 과도하면 Implementability 하락. S2에서 보고 필요."
+    }
+  ],
+  "l_code_new": {
+    "L-146": {
+      "title": "LambdaRank rank:pairwise는 NDCG 최적화로 cross-sectional ranking에 유효하다",
+      "content": "STR_1661 V2(LambdaRank)는 V0(reg:squarederror) 대비 ICIR 0.8496 → 1.0291 (+0.1795, +21%) 실증적 개선. Burges(2010), Chen&Guestrin(2016 KDD) 이론적 근거. IC t-stat V2=14.77로 Harvey(2016) t>3.0 임계 4.9배 초과. 한국시장 월말 크로스섹션 XGBoost 학습에 rank:pairwise이 reg:squarederror보다 우월함 확인. 단 V3 Optuna 30 trials HP tuning은 ICIR 추가 개선(+0.068)하나 backtest CAGR -6.3pp 하락 → HP 탐색은 multi-testing 부담만 증가. V2 채택 권고. 교훈: 팩터 모델에서 loss function 선택(구조적)은 효과적이나 HP 튜닝(파라미터)은 부작용 우려.",
+      "core_reference": "STR_1661_XGB_GPU S1 V2 vs V0 ablation + Chen&Guestrin(2016) + Burges(2010)",
+      "tags": ["ML", "LAMBDA_RANK", "STRUCTURAL_MUTATION", "XGB"],
+      "market": "KR",
+      "supporting_strategy": "STR_1661_XGB_GPU V2 ICIR 1.0291 t-stat 14.77"
+    },
+    "L-147": {
+      "title": "ML 전략은 S1 순수 Base 백테에서 Hard Fail이 흔하다 — S5 구조 mutation 필수",
+      "content": "STR_1661 V2/V3 S1 Base EW 30주 백테스트 MDD -50~-51%, SR 0.69~0.90. 순수 팩터 신호 ICIR은 매우 강하지만(1.03~1.10) 포트폴리오 구조 없이는 Grade A 불가. STR_1656 M05(HRP+CDaR + DD overlay + 30→20주) 구조 계승이 Grade A 획득 전제. 교훈: ML 기반 전략은 S1 통과 기준을 ICIR + t-stat으로 엄격 적용하고, MDD/Sharpe는 S5 Mutation Lab에서 보정하는 분리 평가 체계가 효율적. S1 hard_fail을 전략 폐기 사유로 해석하지 말고 구조 필요 신호로 해석.",
+      "core_reference": "STR_1661 V2 SR 0.90 MDD -51 hard_fail + STR_1656 M05 Grade A 대조",
+      "tags": ["ML", "S1_EVALUATION", "S5_MUTATION_PATH", "PORTFOLIO_CONSTRUCTION"],
+      "market": "KR"
+    }
+  },
+  "recommended_s2_actions": [
+    {"priority": "P0", "action": "S2 프로파일 작성: Turnover, Top10 Concentration, BM Corr, Rolling3Y SR 수치 보고"},
+    {"priority": "P0", "action": "S3 Orthogonality: STR_1631(앵커), STR_1555(Core Alpha), STR_1656(parent) 3개와 monthly return Spearman corr. Anchor corr <= 0.40 체크"},
+    {"priority": "P1", "action": "V2 채택 확정. V3 Optuna는 SR 하락 실증으로 archive. 최종 scores_V2.csv 기반 단일 진행."},
+    {"priority": "P1", "action": "S4 한계기여: STR_1555+STR_1631 portfolio에 V2 추가 시 SR/MDD delta 측정"},
+    {"priority": "P2", "action": "S5 Mutation Lab 진입 시 M05 구조(HRP+CDaR+DD 20주) 계승을 슬롯 A로 배치"}
+  ],
+  "final_routing": {
+    "to_scout": "S2 프로파일/S3 직교성/S4 한계기여 작성 필요. V2 scores_V2.csv 기반 진행.",
+    "to_forge": "20주 재측정(S5 진입 시). M05 구조 슬롯 A로 준비.",
+    "to_q_lead": "STR_1661 S1 PASS_WITH_NOTES. V2 채택. S2 지시 필요.",
+    "to_governor": "현재 admission 후보 아님. ML family saturation 체크 (STR_1656 이미 PG 라인에 있다면 중복 우려)."
+  },
+  "axiom_inventory": {
+    "AX-000": "적용: ICIR 1.03 달성은 alpha 한계 없음 공리 실증.",
+    "AX-001": "N/A (Core alpha 역할, Defense 아님).",
+    "AX-002": "적용: HP tuning 30 trials는 multi-testing 유의. V3 backtest CAGR 하락이 process 우회의 실증적 경계선. V2 채택으로 bypass 회피.",
+    "AX-003": "N/A (Value family 아님, ML family)."
+  }
+}
