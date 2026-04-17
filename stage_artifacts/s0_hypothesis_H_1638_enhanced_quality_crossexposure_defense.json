@@ -1,0 +1,103 @@
+{
+  "hypothesis_id": "H_1638",
+  "stage": "S0",
+  "version": "1.0",
+  "timestamp": "2026-04-08T21:35:00",
+  "designer": "Scout",
+
+  "title": "Enhanced Quality Defense: GPA + Cross-Exposure Controlled (Kim 2021 Method)",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "why_now": "PG0 MDD gap +9.9%p. H_1637과 병렬 탐색. Kim (2021) enhanced factor 방법론을 defense sleeve에 직접 적용하는 구조적 차별화.",
+
+  "economic_family": "quality_profitability_enhanced",
+  "factor_taxonomy_section": "Quality/Profitability + Cross-Exposure Control (QEPM Section 9)",
+
+  "mechanism": {
+    "thesis": "Kim (2021)은 한국시장에서 unintended negative factor exposure 종목 제거 시 팩터 포트폴리오 성과가 크게 개선됨을 실증했다. 본 가설은 Q01_GPA를 primary alpha source로 사용하되, value(V01_BM)와 momentum(M01_Mom12)에 대한 음(-) z-score 노출 종목을 제거하는 enhanced factor 접근을 적용한다. GPA 상위 종목 중 value/momentum 음수 종목이 제거되면, (1) value trap 회피, (2) momentum crash 회피, (3) 순수 quality premium 추출이 동시 달성된다.",
+    "why_defense": "Q01_GPA bad regime IC 0.044 (quality 최고) + cross-exposure 통제로 위기 시 MDD 확대 원인인 음(-) value/momentum 종목 사전 제거. Asness et al. (2019) QMJ의 safety 구성요소와 Kim (2021)의 enhanced factor를 결합한 방법론.",
+    "differentiation_from_H_1637": "H_1637은 2팩터 EW 블렌드 + MAX exclusion. H_1638은 단일 팩터(GPA) + cross-exposure 필터(value/momentum 음수 제거). 메커니즘이 근본적으로 다름: 블렌드 vs 필터."
+  },
+
+  "core_reference": [
+    {
+      "ref_id": "KR-FACTOR-1",
+      "paper": "Kim, Saejoon (2021) 'Enhanced Factor Investing in Korean Market', Pacific-Basin Finance Journal 67",
+      "relevance": "핵심 방법론 원천. 한국시장 long-only에서 unintended negative exposure 종목 제거가 성과를 유의하게 개선."
+    },
+    {
+      "ref_id": "A5.01",
+      "paper": "Novy-Marx (2013) 'The Other Side of Value: The Gross Profitability Premium', JFE",
+      "relevance": "GPA가 primary alpha. HML과 음의 상관이므로 value cross-exposure 통제가 더욱 중요."
+    },
+    {
+      "ref_id": "KR-FACTOR-2",
+      "paper": "박종원·엄윤성·엄철준 (2024) '시장이상현상을 활용한 팩터 투자전략 성과 분석', 재무관리연구 41(1)",
+      "relevance": "GPA 롱사이드 유의 확인. Low-risk sorting 대안으로 quality 접근 정당화."
+    },
+    {
+      "ref_id": "A3.Quality",
+      "paper": "Asness, Frazzini & Pedersen (2019) 'Quality Minus Junk'",
+      "relevance": "Quality의 safety 구성요소(low leverage, low vol of profitability)가 defense 역할의 이론적 기반."
+    }
+  ],
+
+  "factors": {
+    "primary": [
+      {"name": "Q01_GPA", "weight": 1.00, "rationale": "단일 팩터 집중. Bad regime IC 0.044. 박종원(2024) 한국시장 롱사이드 유의 확인."}
+    ],
+    "cross_exposure_filter": {
+      "description": "GPA 상위 50종목(후보군) 중 V01_BM z-score < -1.0 OR M01_Mom12 z-score < -1.0인 종목 제거 후 상위 30종목 선별",
+      "filter_factors": ["V01_BM", "M01_Mom12_1"],
+      "threshold": "z-score < -1.0 (하위 ~16%)",
+      "rationale": "Kim (2021) enhanced factor method. Value/momentum에 대한 강한 음(-) 노출 종목이 위기 시 MDD 확대 원인. 이들을 사전 제거하면 순수 quality premium만 잔존."
+    },
+    "exclusion_filter": {
+      "name": "MAX_top20pct_exclusion (선택적)",
+      "rationale": "H_1637과 동일 논리. 그러나 cross-exposure 필터가 MAX 종목을 이미 부분적으로 걸러낼 수 있으므로 S1에서 효과 비교."
+    }
+  },
+
+  "construction": {
+    "scoring": "Z_Score_Aligned(Q01_GPA) 단일 점수 → 상위 50 후보 → cross-exposure 필터 → 상위 30 선별",
+    "n_stocks": 30,
+    "sector_neutral": false,
+    "rebalancing": "monthly",
+    "commission_bps": 15,
+    "liquidity_filter": "20일 평균 거래대금 >= 2억원"
+  },
+
+  "expected_profile": {
+    "target_beta": "0.70~0.85 (cross-exposure 필터로 extreme 종목 제거)",
+    "target_correlation_with_core": "<0.55 (GPA-C19 상관이 낮을 것으로 기대)",
+    "target_mdd_contribution": "portfolio MDD를 34.9% -> 28~30% 수준으로 축소",
+    "expected_sr": "0.45~0.75 (순수 팩터, overlay 전)",
+    "expected_cagr": "8~13%"
+  },
+
+  "lesson_check": [
+    {"code": "L-088", "summary": "Kim (2021) cross-exposure 통제 필수. 본 가설의 핵심 방법론 원천."},
+    {"code": "L-087", "summary": "Low-risk sorting 롱온리 불가 → quality 기반 defense 유일 경로. GPA 선택 근거."},
+    {"code": "L-106", "summary": "Market beta 지배. Cross-exposure 필터가 beta 축소에도 기여할지 S1에서 확인."},
+    {"code": "L-049", "summary": "D01+D02+Q07 defense 실패. Risk 팩터 조합 대신 단일 quality + 필터 접근."},
+    {"code": "L-008", "summary": "ROIC+Skewness 실패. Quality 내에서도 팩터 선택이 중요. GPA가 한국시장 최적."}
+  ],
+
+  "risk_assessment": {
+    "risk_1": "Cross-exposure 필터가 너무 많은 종목을 제거하여 후보군 부족. 50→30 필터 비율 모니터링.",
+    "risk_2": "V01_BM/M01_Mom12 z-score 기준(-1.0)이 임의적. S1에서 -0.5, -1.0, -1.5 민감도 분석.",
+    "risk_3": "GPA 단일 팩터의 ICIR 0.081이 낮아 안정적 alpha 생성이 불확실.",
+    "mitigation": "필터 기준을 S1에서 실험적으로 조정. 후보군 60→30으로 확장 가능."
+  },
+
+  "success_criteria": {
+    "s1_pass": "MDD < 55% AND SR > 0.40 AND beta < 0.85",
+    "s2_target": "ICIR >= 0.15 AND bad_regime_IC > 0.03",
+    "s3_target": "Core 대비 수익률 상관 < 0.55",
+    "defense_validation": "위기 4구간 중 3건 이상 시장 대비 outperform",
+    "vs_H_1637": "동일 조건 비교에서 MDD 또는 stress outperform 우위 확인"
+  },
+
+  "exploration_bucket": "Explore (defense family, enhanced factor 미탐색 영역)",
+  "path_type": "A (논문 -> 가설)"
+}

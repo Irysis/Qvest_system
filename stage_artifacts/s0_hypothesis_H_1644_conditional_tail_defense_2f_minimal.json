@@ -1,0 +1,144 @@
+{
+  "hypothesis_id": "H_1644",
+  "stage": "S0",
+  "version": "1.0",
+  "timestamp": "2026-04-08T23:10:00",
+  "designer": "Scout",
+
+  "title": "Conditional Tail Defense 2F Minimal: Beta Asymmetry + Short Pressure (Trigger-Activated)",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "why_now": "PG0 MDD gap +9.9%p. H_1643의 최소 구조 대안. V24(Residual Income)는 Q02_ROE와 상관 0.739(L-code)로 Quality 클러스터 오염 리스크 존재. 순수 비-Quality 축으로만 defense를 구성하여 L-113(Quality defense 실패) 교훈을 완전 회피. 2팩터 최소 구조로 과적합 리스크 감소.",
+
+  "economic_family": "defense_asymmetric_risk",
+  "factor_taxonomy_section": "Defense/Asymmetric-Beta + Crowding (QEPM Section 9)",
+
+  "mechanism": {
+    "thesis": "Ang, Chen & Xing (2006): 상방/하방 beta 비대칭(D07_Beta_Asymmetry = Downside Beta - Upside Beta)은 종목의 위기 취약성을 직접 측정한다. D07이 낮은(= upside beta > downside beta) 종목은 시장 상승 시 더 많이 오르고 하락 시 덜 빠지는 '볼록(convex)' 수익 구조를 갖는다. CR05_Short_Pressure_Proxy(Diether et al. 2009)는 매도 압력 비대칭으로, 공매도 압력이 낮은 종목은 위기 시 패닉 셀링에서 상대적으로 보호된다. 두 팩터 모두 '비대칭성(asymmetry)' 개념으로 통합되며, stress_factor_ic_analysis에서 D07은 crisis premium +0.047 (6/6 승리), CR05는 stress ICIR 0.77 (6/6 승리)로 완벽한 위기 방어 실적을 보유.",
+    "why_2f_not_3f": "V24_Residual_Income은 stress IC 0.074로 유효하나, (1) Q02_ROE와 상관 0.739 -- Value/Quality 클러스터 내 중복, (2) update_freq quarterly vs D07/CR05 daily -- 시간 해상도 mismatch, (3) L-113 Quality defense 실패의 연장 리스크. 2팩터 구조는 순수 'asymmetric risk' 축으로만 defense를 구성하여 메커니즘 순수성 확보.",
+    "why_defense": "D07 crisis premium +0.047 (6/6), CR05 stress ICIR 0.77 (6/6). 두 팩터 모두 평상시 IC approx 0. C19 앵커 대비 상관 < 0.28. 위기에서만 작동하는 순수 crisis alpha.",
+    "trigger_mechanism": {
+      "fast_trigger": "BM 5일 수익률 < -3% OR VKOSPI 일간 변동 > +3pp (t-1 기준)",
+      "confirmation": "MRS Caution Score >= 20 (regime_engine v7.1, t-1 lag)",
+      "exit": "BM 5일 수익률 > 0% AND MRS < 15",
+      "note": "H_1643과 동일 트리거. S5에서 threshold sensitivity 비교."
+    },
+    "differentiation_from_H1643": "H_1643: 3F(D25+CR05+V24) -- tail-risk/crowding/value 3축. H_1644: 2F(D07+CR05) -- asymmetric-beta/crowding 2축. V24 제거로 Quality 클러스터 오염 제거 + 최소 구조. D25 대신 D07 사용 -- D07은 upside/downside beta '차이'로 볼록성(convexity)을 직접 측정하여 더 깨끗한 defense 메커니즘."
+  },
+
+  "core_reference": [
+    {
+      "ref_id": "A7.01",
+      "paper": "Ang, Chen & Xing (2006) 'Downside Risk', Review of Financial Studies",
+      "relevance": "D07_Beta_Asymmetry 근거. Downside beta와 upside beta의 차이가 횡단면 수익률 예측. H_1644는 이 비대칭을 defense에 직접 활용."
+    },
+    {
+      "ref_id": "A7.05",
+      "paper": "Lettau, Maggiori & Weber (2014) 'Conditional Risk Premia in Currency Markets and Other Asset Classes', JFE",
+      "relevance": "Downside beta premium은 conditional risk premium의 일종. 위기 시에만 premia가 발현하는 학술 근거."
+    },
+    {
+      "ref_id": "A7.02",
+      "paper": "Diether, Lee & Werner (2009) 'Short-Sale Strategies and Return Predictability', Review of Financial Studies",
+      "relevance": "CR05_Short_Pressure_Proxy 근거. 공매도 비대칭이 수익률 예측. 한국시장 stress ICIR 0.77."
+    },
+    {
+      "ref_id": "KR-FACTOR-2",
+      "paper": "박종원 et al. (2024) 한국시장 32년 팩터 실증",
+      "relevance": "한국시장 롱사이드 팩터 구조. Defense 팩터 조건부 평가(L-112)."
+    }
+  ],
+
+  "factors": {
+    "primary": [
+      {
+        "name": "D07_Beta_Asymmetry",
+        "weight": 0.55,
+        "rationale": "Crisis premium +0.047, 6/6 승리. DownsideBeta - UpsideBeta가 낮은 종목 = 볼록 수익 구조 = 위기 방어. 평상시 IC approx 0.",
+        "direction": "lower_better (Z_Score_Aligned 사용)",
+        "update_freq": "daily"
+      },
+      {
+        "name": "CR05_Short_Pressure_Proxy",
+        "weight": 0.45,
+        "rationale": "Stress ICIR 0.77, 6/6 승리. 공매도 압력 비대칭. 매도 압력 낮은 종목 선별. 평상시 IC +0.025.",
+        "direction": "higher_better (negate 적용 완료)",
+        "update_freq": "daily"
+      }
+    ],
+    "anchor_correlation": {
+      "vs_C19": "D07 < 0.28, CR05 < 0.28",
+      "inter_factor": "|r| < 0.15",
+      "vs_quality": "D07/CR05 모두 Quality(Q01/Q02/Q04)와 경제적 메커니즘 무관 -- L-113 실패 경로와 완전 분리"
+    }
+  },
+
+  "construction": {
+    "scoring": "0.55 * Z_Score_Aligned(D07) + 0.45 * Z_Score_Aligned(CR05)",
+    "n_stocks": 30,
+    "sector_neutral": false,
+    "rebalancing": "monthly (S1 정적), event-triggered (S5 조건부)",
+    "commission_bps": 15,
+    "liquidity_filter": "20일 평균 거래대금 >= 2억원",
+    "weight_rationale": "D07에 약간 높은 비중 -- beta asymmetry가 defense의 핵심 메커니즘(시장 하락 민감도 직접 측정). CR05는 보조적 crowding 신호."
+  },
+
+  "portfolio_integration": {
+    "normal_regime": "Core C19 100%. Defense sleeve 비활성.",
+    "alert_regime": "Core 70% + Defense(H_1644) 30%.",
+    "crisis_regime": "Core 50% + Defense 30% + Cash/Inverse 20%.",
+    "transition_lag": "모든 트리거 t-1 기준 (C5 준수).",
+    "comparison_with_H1643": "H_1643 vs H_1644 -- S1/S2 단계에서 병렬 비교. 더 나은 stress outperform + 더 낮은 Core 상관을 보이는 쪽 채택."
+  },
+
+  "expected_profile": {
+    "s1_standalone_sr": "0.15~0.40 (H_1643보다 낮을 수 있음 -- V24의 평상시 IC +0.055 기여 없음)",
+    "s1_standalone_mdd": "45~60% (2팩터 최소 구조이므로 분산 효과 약함)",
+    "stress_outperform": "6/6 시장 대비 outperform 목표 (D07+CR05 모두 6/6)",
+    "target_correlation_with_core": "<0.30 (Quality 축 완전 배제 효과)",
+    "portfolio_mdd_contribution": "Core+Defense 70/30 시 MDD 34.9% -> 27~30%"
+  },
+
+  "lesson_check": [
+    {
+      "code": "L-112",
+      "summary": "Defense는 조건부 성과로 평가. Standalone SR 낮아도 stress outperform이 핵심 지표."
+    },
+    {
+      "code": "L-113",
+      "summary": "Quality defense 실패 (위기 상관 0.89). H_1644는 Quality 축 완전 배제로 이 실패를 구조적으로 회피."
+    },
+    {
+      "code": "L-115",
+      "summary": "Low-beta 필터링 단독 불충분. H_1644는 beta 필터가 아닌 beta asymmetry 팩터를 scoring에 직접 사용."
+    },
+    {
+      "code": "L-106",
+      "summary": "Market beta 지배. D07은 market beta가 아닌 beta의 비대칭(convexity)을 측정 -- 다른 차원."
+    },
+    {
+      "code": "L-081",
+      "summary": "Regime-conditional 2-sleeve 구조적 유효. 조건부 활성화의 선례."
+    }
+  ],
+
+  "risk_assessment": {
+    "risk_1": "2팩터만으로 30종목 선별 시 집중 리스크 -- 특정 섹터/스타일 쏠림 가능.",
+    "risk_2": "D07 daily update인데 monthly 리밸런싱 시 정보 손실. Beta asymmetry는 느리게 변하므로 월간도 수용 가능하나 검증 필요.",
+    "risk_3": "Standalone SR이 0.15 미만으로 나올 경우 S1 defense 기준에도 미달 가능.",
+    "risk_4": "D07과 D25의 선택 -- D07(asymmetry)이 D25(tail beta) 대비 더 나은 defense인지 S1에서 비교 필요.",
+    "mitigation": "Risk 1: 섹터 집중도 모니터링 (HHI > 0.25 시 경고). Risk 3: stress outperform 4/6 이상이면 SR 낮아도 통과 (L-112). Risk 4: H_1643(D25) vs H_1644(D07) 병렬 비교."
+  },
+
+  "s1_implementation_note": "S1은 D07(55%) + CR05(45%) 정적 EW 30종목으로 순수 팩터 테스트. 최소 구조이므로 S1 결과가 빠르게 나옴. H_1643과 병렬 실행하여 D25 vs D07, 3F vs 2F 구조 비교.",
+
+  "success_criteria": {
+    "s1_pass": "stress outperform 4/6 이상 AND MDD < 55%",
+    "s2_pass": "Stress ICIR >= 0.40 AND Core(C19) 대비 stress 상관 < 0.45",
+    "s3_pass": "Core 대비 수익률 상관 < 0.40 AND Quality(Q01/Q02) 상관 < 0.25",
+    "s5_target": "조건부 활성화 시 Core+Defense MDD < 30%"
+  },
+
+  "exploration_bucket": "Explore (defense_asymmetric_risk = 미탐색 family)",
+  "path_type": "A (논문 -> 가설: Ang et al. 2006 downside beta asymmetry -> crisis premium 실증 -> 2F 최소 defense 가설)"
+}

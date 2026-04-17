@@ -1,0 +1,15 @@
+{
+  "role": "codex_critic",
+  "score": 9,
+  "arguments": [
+    "CR05/V24 제거와 Q07 채택은 L-113/121 교훈을 반영한 올바른 방향이나, 2팩터 구조의 위기 의존성이 여전히 높음. 평상시 IC(D25: 0.013, Q07: 0.040)가 약해 위기 미발생 시 장기 underperform 위험.",
+    "288팩터 중 최강이라는 Q07 선정 방식 자체가 선택편의(selection bias) 위험. full-sample ranking에서 1위 팩터를 defense로 채택하는 것은 data mining의 변형일 수 있으며, expanding-window 기반 OOS 검증이 필수.",
+    "D25의 crisis_ratio 30.7x는 극단적 context-dependency를 의미. 위기 정의가 조금만 달라져도 성과가 급변. Q07도 crisis/normal 비율 1.04x로 안정적이나 블렌드 시 D25의 이진(on/off) 특성이 전체를 지배."
+  ],
+  "concern": "위기 방어 2팩터라는 메커니즘이 기존 실패군(Quality defense)과 같은 family에 속할 수 있으며, 288팩터 ranking에서의 최강 선택은 selection bias 위험이 높아 재현성 리스크가 큼.",
+  "conditions": [
+    "Q07 산출 전 항목에 엄격한 PIT 지연 규칙(분기/연간 공시 지연, 정정공시 시점 고정)과 버전드 데이터 검증 로그를 제출할 것.",
+    "D25/Q07 가중치, 상관, 직교화는 expanding-window로만 추정하고 full-sample 통계 기반 고정값 사용을 금지할 것.",
+    "위기 라벨을 사후 정의하지 않고 실시간 관측 가능한 변수만으로 운용 가능한 규칙을 명시할 것."
+  ]
+}

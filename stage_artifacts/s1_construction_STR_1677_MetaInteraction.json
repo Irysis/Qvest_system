@@ -1,0 +1,64 @@
+{
+  "stage": "S1",
+  "strategy_id": "STR_1677_MetaInteraction",
+  "strategy_name": "Regime x Factor Interaction XGBoost",
+  "created_at": "2026-04-13",
+  "created_by": "Forge",
+  "base_strategy": "STR_1675_QRebal_Hybrid",
+  "hypothesis_reference": "Phase 3b — fix for STR_1676 regime feature collinearity (regime probs same per date, no ranking power). Solution: interaction terms z_fi * prob_k are stock-specific.",
+  "academic_basis": [
+    "Gu, Kelly & Xiu (2020, RFS) — XGBoost for asset pricing",
+    "Kan & Zhang (1999, JF) — useless factors in cross-sectional regressions",
+    "Barroso & Santa-Clara (2015, JFE) — risk-managed momentum"
+  ],
+  "key_modification": {
+    "type": "feature_augmentation",
+    "description": "After MI prefilter selects top-50 factors, top-5 MI factors are identified. Interaction features z_fi * prob_k (5 factors x 5 regime probs = 25 terms) are appended to feature matrix. Total features: 75.",
+    "why_interactions": "Regime probs are market-wide (same for all stocks at date d). Direct inclusion does not change cross-sectional ranking. Interaction terms are STOCK-SPECIFIC because factor z-scores differ per stock.",
+    "example": "In liquidity stress (high prob_2), stock A with high z_quality gets high z_quality*prob_2; stock B with low z_quality gets low z_quality*prob_2 — XGBoost can learn to upweight quality in stress regimes."
+  },
+  "rebalancing": "QUARTERLY (3/6/9/12 month-end trading days)",
+  "refit_cycle": "21 trading days",
+  "mi_refresh": "63 trading days",
+  "features": {
+    "base": 50,
+    "interaction": 25,
+    "total": 75,
+    "interaction_construction": "top-5 MI factors (highest IC in IS window) x 5 regime probs (prob_1 ~ prob_5)"
+  },
+  "regime_data": {
+    "source": ".cache/regime_factor_clusters.parquet",
+    "columns": ["Date", "cluster_id", "prob_1", "prob_2", "prob_3", "prob_4", "prob_5"],
+    "frequency": "monthly (month-end dates)",
+    "pit_note": "Regime date d covers IS period [IS_START, is_end_d]. Rolling join (data.table roll=TRUE) maps daily dates to most-recent prior regime month."
+  },
+  "pit_checks": {
+    "C1": "Expanding window IS only. No full-sample statistics.",
+    "C2": "21d purge gap between IS end and OOS start. Quarter-end scores used next day.",
+    "C13": "zscore_by_date applied to factor columns. Z_Score_Aligned enforced.",
+    "C14": "fwd_ret_21d IS target computed from t+1 to t+21 returns. Month-end only. Regime probs from past expanding PCA/Kmeans at t-1 months.",
+    "C9": "Regime probs from t-1 month-end. Rolling join ensures no future regime data leaks.",
+    "interaction_pit": "z_score(stock d) x prob(market, from regime at t-1 months). Both components observable at decision date d."
+  },
+  "config": {
+    "n_holdings": 30,
+    "commission": 0.0015,
+    "liq_threshold": 200000000,
+    "mi_top_n": 50,
+    "interaction_top_n": 5,
+    "n_regime_probs": 5,
+    "purge_days": 21,
+    "seeds": [42, 123, 456],
+    "buffer_zone": {"keep_n": 45, "entry_n": 28},
+    "xgb_max_rows": 80000
+  },
+  "baseline_comparison": {
+    "STR_1675_QRebal_Hybrid": {"SR": 0.72, "note": "original quarterly, no regime interaction"},
+    "STR_1676_MetaRegime": {"SR": "failed", "note": "regime features same per date, no ranking power"}
+  },
+  "opt_compliance": {
+    "OPT1": "Arrow open_dataset with predicate pushdown",
+    "OPT2": "load_rawdata(use_cache=TRUE) once",
+    "regime_load": "read_parquet once at startup (small file ~200 rows)"
+  }
+}

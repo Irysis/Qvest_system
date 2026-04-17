@@ -1,0 +1,60 @@
+{
+  "strategy_id": "STR_1570",
+  "strategy_name": "SUE_NetDebt_DD1225",
+  "parent": "STR_1453",
+  "mutation_type": "S5_M-DD",
+  "timestamp": "2026-03-28T18:41:00Z",
+  "judge_gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "C9 compliant: dd_lag <- c(0, dd_pct[-n]) uses t-1 only. Factor engine unchanged from PIT-clean STR_1453. Lookahead detector CLEAN on both run_all.R and factor_engine.R."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "SR=0.993 (>=0.8), CAGR=17.07% (>=16%), MDD=35.0% (<45%), Turnover=77.7% (<600%). No hard fail. Score 66.1.",
+      "metrics": {
+        "CAGR": 17.07,
+        "Sharpe": 0.993,
+        "MDD": 35.04,
+        "Calmar": 0.487,
+        "IR": 0.477,
+        "Turnover": 77.7
+      }
+    },
+    "gate2_robustness": {
+      "pass": true,
+      "detail": "OOS retention 0.75 (IS SR 1.087 / OOS SR 0.816). Rolling 3Y positive 93%. Alpha trend improving (ratio 1.40). IC stable (ICIR 0.538, pos_rate 70%)."
+    },
+    "gate3_fmb": {
+      "pass": true,
+      "detail": "FMB Score lambda NW t=7.09 (>3.0 Harvey threshold). Size t=-1.48 (insignificant). Mom t=1.18 (insignificant). Alpha is independent of size/momentum."
+    },
+    "gate4_stress": {
+      "pass": true,
+      "detail": "GFC: +6.0% alpha. COVID: -0.7% alpha (slight underperformance). Rate_2022: +8.3% alpha. EuDebt_2011: +22.6% alpha. 2/3 stress periods outperform."
+    },
+    "gate5_diversity": {
+      "pass": "deferred",
+      "detail": "No Grade A composite cache available for correlation check."
+    }
+  },
+  "grade": "B",
+  "score": 66.1,
+  "role": "diversifier",
+  "role_basis": "RoleBias_Core candidate but MDD 35% and Calmar 0.487 limit core potential. Diversifier role appropriate.",
+  "before_after": {
+    "parent_STR_1453": { "SR": 1.005, "CAGR": 22.2, "MDD": 55.4, "grade": "F_hard_fail" },
+    "STR_1570_DD1225": { "SR": 0.993, "CAGR": 17.07, "MDD": 35.04, "grade": "B" }
+  },
+  "dd_overlay_analysis": {
+    "dd_short": 12,
+    "dd_long": 25,
+    "brake_active_pct": 25.6,
+    "fully_braked_days": 186,
+    "total_days": 5220,
+    "mdd_reduction": "55.4% -> 35.0% (-20.4pp)",
+    "sr_impact": "1.005 -> 0.993 (-0.012, negligible)",
+    "cagr_impact": "22.2% -> 17.1% (-5.1pp, cost of tail protection)"
+  },
+  "verdict": "DD 12/25 successfully rescues STR_1453 from hard fail (MDD 55.4% -> 35.0%). SR nearly preserved (0.993 vs 1.005). CAGR drops from 22.2% to 17.1% but remains above 16% target. L-802 lesson confirmed: wider DD parameters suit Korean market volatility. Grade B due to score 66.1 (below 40-based Grade A threshold at hurdle gate axis scoring). Strong diversifier candidate."
+}

@@ -1,0 +1,106 @@
+===============================================================================
+Scout: Factor Alpha Vitality Scan — Session 45
+Date: 2026-03-25
+Objective: Find NEW independent alpha sources with STRONG RECENT 3Y performance
+Root Cause: Session 44 failures from optimizing weights on DECAYING factors
+===============================================================================
+
+METHODOLOGY
+-----------
+1. Loaded factor_ic_monthly.parquet (269 factors, 62,885 obs, 2005-01 to 2026-02)
+2. Computed Full-Period ICIR and Recent 3Y ICIR (2023-03 to 2026-02)
+3. ICIR Trend = Recent 3Y / Full Period (>1.0 = strengthening)
+4. Filtered: Rec3Y ICIR > 0.3, Trend > 1.0, NOT usual suspects
+5. Cross-sectional independence check vs 5 references:
+   C04_ESBR, D01_IdioVol, V01_BM, Q01_GPA, M01_Mom_12_1
+
+GLOBAL STATISTICS
+-----------------
+Total factors with valid ICIR: 268
+Factors with Rec3Y ICIR > 0.3: 105 (39%)
+Factors with ICIR Trend > 1.0: 182 (68%)
+Both criteria (alive + improving): 98 (37%)
+Orthogonal to ESBR (|CS corr| < 0.3): 47
+
+KEY FINDING: The majority of factors are STRENGTHENING in recent years.
+The problem is NOT lack of alpha — it's redundancy with ESBR.
+
+===============================================================================
+TOP 3 CANDIDATES (Independent + Alive + Improving)
+===============================================================================
+
+#1: Q07_Earnings_Stability
+    Full ICIR: 0.382 | Recent 3Y ICIR: 0.929 | Trend: 2.43x | Hit: 83%
+    CS Corr vs ESBR: -0.034 | Max ref corr: 0.140
+    Independence: FULLY INDEPENDENT of ALL 5 reference factors
+    Rationale: Earnings stability = consistency of EPS over time. Firms with
+    stable earnings command a growing premium. Completely orthogonal to
+    consensus revision (ESBR) — captures earnings LEVEL vs earnings CHANGE.
+    Forge contract: SF_10_earnings_stability_pure.json
+
+#2: R18_Book_Leverage
+    Full ICIR: 0.236 | Recent 3Y ICIR: 0.670 | Trend: 2.84x | Hit: 75%
+    CS Corr vs ESBR: 0.011 | Max ref corr: 0.087
+    Independence: MOST ORTHOGONAL factor in entire Factor DB
+    Rationale: Low-leverage firms earn a premium that has strengthened
+    dramatically post-2020 (2.84x trend). Rising rates + credit tightening
+    make conservative balance sheets more valuable. Near-zero correlation
+    with every single reference factor.
+    Forge contract: SF_11_book_leverage_alpha.json
+
+#3: AC21_CF_to_Accrual_Ratio
+    Full ICIR: 0.417 | Recent 3Y ICIR: 0.706 | Trend: 1.69x | Hit: 69%
+    CS Corr vs ESBR: 0.117 | Max ref corr: 0.132
+    Independence: INDEPENDENT — accrual anomaly is distinct dimension
+    Rationale: Ratio of operating cash flow to accruals. High ratio =
+    high cash earnings quality. The accrual anomaly is one of the most
+    robust in academic literature (Sloan 1996). This variant captures
+    the cash-vs-accrual quality dimension.
+    Forge contract: SF_12_cf_accrual_ratio.json
+
+===============================================================================
+HONORABLE MENTIONS (Next candidates if top 3 succeed)
+===============================================================================
+
+#4: C09_Earnings_Surprise_Sq
+    Rec3Y ICIR: 0.777 | Trend: 1.55x | Max ref corr: 0.223
+    Squared surprise — captures magnitude of surprise, not direction.
+
+#5: V23_RAFI_Weight
+    Rec3Y ICIR: 0.677 | Trend: 2.42x | Max ref corr: 0.215
+    Fundamental-weighted size — truly different from BM or market cap.
+
+#6: Q28_Cash_Conversion
+    Rec3Y ICIR: 0.605 | Trend: 1.45x | Max ref corr: 0.201
+    Cash conversion cycle efficiency.
+
+#7: D33_Beta_Persistence
+    Rec3Y ICIR: 0.645 | Trend: 2.22x | Max ref corr: 0.241
+    Stocks with persistent betas — regime stability factor.
+
+===============================================================================
+CRITICAL WARNING: REDUNDANCY CLUSTERS
+===============================================================================
+
+Many top-ICIR factors are REDUNDANT with ESBR cross-sectionally:
+- L31_Vol_Concentration: CS corr ESBR = 0.748 (REDUNDANT)
+- L40_VWAP_Spread: CS corr ESBR = 0.818 (REDUNDANT)
+- D41_Vol_of_Vol: CS corr ESBR = 0.705 (REDUNDANT)
+- L13_Vol_Variance_Ratio: CS corr ESBR = 0.691 (REDUNDANT)
+- D43_Skewness: CS corr ESBR = 0.513 (REDUNDANT)
+
+These look like independent alpha on ICIR alone, but pick the SAME stocks
+as ESBR. Using them in multi-factor composites adds NOISE, not signal.
+This explains why 4-factor composites underperformed ESBR alone (L-056).
+
+Q17_ROIC: Strong ICIR but corr Q01_GPA = 0.410 (partially redundant with quality)
+Q32_Interest_Coverage: corr Q01_GPA = 0.324 (partially redundant)
+
+===============================================================================
+FORGE INBOX STATUS
+===============================================================================
+SF_10_earnings_stability_pure.json — Priority: HIGH
+SF_11_book_leverage_alpha.json — Priority: HIGH
+SF_12_cf_accrual_ratio.json — Priority: HIGH
+
+All contracts in: .cache/forge_inbox/

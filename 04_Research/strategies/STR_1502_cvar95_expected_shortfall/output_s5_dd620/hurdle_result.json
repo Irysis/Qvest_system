@@ -1,0 +1,214 @@
+{
+  "pass": false,
+  "score": 36.1,
+  "grade": "C",
+  "role": "diversifier",
+  "axes": {
+    "Return": 10,
+    "Risk": 42,
+    "Robustness": 52,
+    "Implementability": 77,
+    "Diversification": 69
+  },
+  "verdict": {
+    "strategy": "CVaR95_Expected_Shortfall_DD620",
+    "timestamp": "2026-03-26 15:56:55",
+    "pass": false,
+    "hard_fail": true,
+    "fail_reasons": "No set.seed() found",
+    "total_score": 28.8,
+    "grade": "B",
+    "role": "diversifier",
+    "axes": {
+      "Return": 10,
+      "Risk": 42,
+      "Robustness": 52,
+      "Implementability": 77,
+      "Diversification": 69
+    },
+    "score_breakdown": {
+      "sharpe": {
+        "score": 3.7,
+        "max": 15,
+        "value": 0.598,
+        "code": "D011"
+      },
+      "ir": {
+        "score": 0,
+        "max": 10,
+        "value": -0.133,
+        "code": "D012"
+      },
+      "cagr": {
+        "score": 1.2,
+        "max": 15,
+        "value": 6.93,
+        "code": "D013"
+      },
+      "calmar": {
+        "score": 0,
+        "max": 10,
+        "value": 0.228,
+        "code": "D014"
+      },
+      "mdd": {
+        "score": 5.5,
+        "max": 10,
+        "value": 30.42,
+        "code": "D031"
+      },
+      "rolling": {
+        "score": 7.5,
+        "max": 10,
+        "value": 0.754,
+        "code": "D041"
+      },
+      "params": {
+        "score": 5,
+        "max": 5,
+        "value": 30,
+        "code": "D051"
+      },
+      "stress": {
+        "score": 10,
+        "max": 10,
+        "value": "3/3 outperform",
+        "code": "D042"
+      },
+      "alpha_trend": {
+        "score": -9.3,
+        "max": 10,
+        "value": 0.536,
+        "code": "D061"
+      },
+      "oos": {
+        "score": -0.1,
+        "max": 8,
+        "value": 0.497,
+        "code": "D062"
+      },
+      "ic_stability": {
+        "score": 5.3,
+        "max": 6,
+        "value": 5.3,
+        "code": "D063"
+      },
+      "dsr": {
+        "score": 0,
+        "max": 0,
+        "value": "NA",
+        "code": "D071"
+      },
+      "div_gate": {
+        "score": 0,
+        "max": 0,
+        "value": "NA",
+        "code": "D081"
+      }
+    },
+    "metrics": {
+      "CAGR": 6.93,
+      "AnnVol": 11.58,
+      "Sharpe": 0.598,
+      "Sharpe_m": 0.578,
+      "IR": -0.133,
+      "MDD": 30.42,
+      "Calmar": 0.228,
+      "Turnover_Ann": 127.7,
+      "Top10_Conc": 50,
+      "Rolling3Y_Pos": 75.4,
+      "BM_Corr": 0.677,
+      "ES99_d": 3.12,
+      "ES99_m": 8.34,
+      "GradeA_Corr": "NA",
+      "Rolling6M_Hit": 58.2,
+      "Worst6M_Ret": -16.18,
+      "MaxConsecNegAlpha": 10,
+      "Rolling12M_Hit": 60.6
+    },
+    "statistical_defense": {
+      "dsr": "NA",
+      "dsr_significant": false,
+      "sr_max_expected": "NA",
+      "n_trials": "NA"
+    },
+    "diagnostics": [
+      {
+        "code": "D000",
+        "msg": "PIT check PASS — all signals precede execution"
+      },
+      {
+        "code": "D005",
+        "msg": "Missing set.seed() — reproducibility not guaranteed"
+      },
+      {
+        "code": "D011",
+        "msg": "Net Sharpe: 0.598 (3.7/15 pts)"
+      },
+      {
+        "code": "D012",
+        "msg": "Net IR: -0.133 (0.0/10 pts)"
+      },
+      {
+        "code": "D013",
+        "msg": "Net CAGR: 6.93% (1.2/15 pts, target 16%)"
+      },
+      {
+        "code": "D014",
+        "msg": "Calmar: 0.228 (0.0/10 pts)"
+      },
+      {
+        "code": "D031",
+        "msg": "MDD: 30.42% (5.5/10 pts)"
+      },
+      {
+        "code": "D041",
+        "msg": "3Y rolling Sharpe > 0 ratio: 75.4% (7.5/10 pts)"
+      },
+      {
+        "code": "D043",
+        "msg": "6M Rolling Hit Rate: 58.2% | Worst 6M Return: -16.18%"
+      },
+      {
+        "code": "D045",
+        "msg": "Max Consecutive Negative Alpha Months: 10"
+      },
+      {
+        "code": "D046",
+        "msg": "12M Rolling Hit Rate: 60.6%"
+      },
+      {
+        "code": "D042",
+        "msg": "Stress outperformance: 3/3 (10.0/10 pts)"
+      },
+      {
+        "code": "D061",
+        "msg": "Alpha Trend: recent 3Y SR 0.320 / full SR 0.598 = ratio 0.54 → decaying ↓ (adj -9.3 pts)"
+      },
+      {
+        "code": "D062",
+        "msg": "OOS Validation: IS SR 0.711 / OOS SR 0.353 = retention 0.50 → acceptable → (adj -0.1 pts)"
+      },
+      {
+        "code": "D063",
+        "msg": "IC Stability: full IC 0.0406 / recent 3Y IC 0.0584 = ratio 1.44 → IC improving ↑ (adj 5.3 pts)"
+      },
+      {
+        "code": "D071",
+        "msg": "DSR: DSR module not available (score adj: +0 pts)"
+      },
+      {
+        "code": "D081",
+        "msg": "Gate 5 (Diversification): No Grade A composite cache (adj +0 pts)"
+      },
+      {
+        "code": "D072",
+        "msg": "Confidence: No family data (28.8 -> 28.8)"
+      }
+    ]
+  },
+  "verification": {},
+  "hurdle_version": "v2.2",
+  "v22_old_score": 36.1,
+  "v22_updated_at": "2026-03-28T23:00:00"
+}

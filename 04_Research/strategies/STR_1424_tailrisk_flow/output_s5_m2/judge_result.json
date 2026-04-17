@@ -1,0 +1,50 @@
+{
+  "strategy_id": "STR_1424_tailrisk_flow_s5_m2",
+  "judge_timestamp": "2026-03-26 10:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on run_s5_m2.R (30 lines), factor_engine.R (89 lines), run_all.R (145 lines). Manual C1-C11: DD brake uses 1-day lag (dd_lag = c(0, dd_pct[-n_f])), no full-sample stats, Factor DB Z_Score_Aligned only, liquidity filter AvgTV20 >= 2e8 with shift(lag=1). No FRED/VT/FM. All clear."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR=0.161 (target 2.0), CAGR=1.57% (target 16%), MDD=36.38% (target <25%), IR=-0.46, Calmar=0.043. All core metrics far below hurdle targets. Score 41.6/100 (Grade B). DD 5/15 overlay too aggressive — DD_MIN_EXP=0.35 crushes returns (base had SR~0.209). M2 mutation degraded the already-weak base."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "Full S0-S5 pipeline present: s0_record_MF03_TailRiskFlow.json, s1_construction, s2_profile, s3_orthogonality, s4_integration_R10_CR09.json, s5_research_slate_R10+CR09.json. All artifacts consistent and well-formed."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "high-beta-drag with crisis partial defense",
+      "detail": "BM_Corr=0.678 is too high for a true diversifier (expect <0.40). MDD=36.38% vs BM MDD=52.92% — some protection but still severe. Stress: 3/4 outperform (GFC +9.25%, COVID +1.29%, EuDebt +17.11%) but FAILED Rate_2022 (-3.81%). The strategy behaves as a dampened beta exposure, not an independent diversifier. S3 orthogonality tagged 'redundant' (max_corr=0.729 with R10_Cokurtosis). Role claim not verified."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR=NA (not computed). Rolling 3Y Sharpe>0 ratio=44.9% (<50% threshold). 12M rolling hit=42.4%. OOS retention=1.79 (favorable but from very low base: IS SR=0.135, OOS SR=0.242). Max consecutive negative alpha months=10. Alpha trend ratio=1.58 (recent improving but still sub-1.0 absolute SR). Insufficient statistical evidence for persistent alpha."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "No FF5 regression available for s5_m2 output. Base strategy FMB shows Score t=3.29 (significant) but this applies to pre-DD-overlay base, not M2. DD overlay modifies returns post-hoc — FF5 on M2 returns not available. Cannot confirm alpha survives factor adjustment for this variant."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 41.6,
+    "fail_reasons": [
+      "Gate 1 FAIL: SR 0.161, CAGR 1.57%, MDD 36.38% — all below targets",
+      "Gate 3 FAIL: Role dishonesty — claimed diversifier but BM_Corr=0.678, MDD=36.38%",
+      "Gate 4 FAIL: Rolling 3Y Sharpe>0 only 44.9%, DSR unavailable",
+      "Gate 5 FAIL: No FF5 alpha verification for M2 variant"
+    ],
+    "recommendation": "DISCARD this mutation. DD 5/15 with 35% min exposure is far too aggressive for an already-weak base (SR=0.209). The base STR_1424 itself was routed to S5 because it failed S4 (delta_sharpe=-0.815, kospi_beat=FALSE). The tail risk x flow combination (R10+CR09) shows structural weakness in Korean markets — CAGR 1.57% over 20+ years is economically meaningless. S3 flagged 'redundant' orthogonality. Recommend: do not pursue further mutations on STR_1424. The R10_Cokurtosis factor may have value as a pure exclusion gate in other strategies but not as a scoring factor."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr=0.678 (diversifier expects <0.40), MDD=36.38% (not defensive), S3 orthogonality='redundant' (max_corr=0.729). Failed Rate_2022 stress period. Strategy is a dampened market beta, not an independent alpha source."
+  }
+}

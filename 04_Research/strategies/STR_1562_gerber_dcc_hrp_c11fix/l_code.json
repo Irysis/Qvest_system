@@ -1,0 +1,14 @@
+{
+  "l_code": "L-795",
+  "strategy_id": "STR_1562",
+  "base_strategy": "STR_1028",
+  "family": "gerber_dcc_hrp",
+  "economic_family": "multi_alpha_portfolio_optimization",
+  "grade": "A",
+  "tags": ["C11_fix", "FRED_lag", "MRS_t1_month", "Gerber_DCC_HRP", "5sleeve", "PIT_compliance", "stress_defense", "core_alpha"],
+  "lesson_text": "STR_1562 Gerber-DCC-HRP C11 fix: FRED same-month lookahead in Soft MRS overlay (run_all.R Phase 4) and ConsGate regime check (consgate_pure_engine.R) fixed to t-1 month lag. SR 1.300->1.333 (improved), CAGR 16.65->17.58%, OOS 0.906->1.09 (removing IS overfitting from MRS), but MDD worsened 26.01->31.78% (delayed regime response loses ~6pp MDD protection). The Gerber statistic + EWMA-DCC + HRP stock-level allocation was always PIT-clean (120-day trailing windows). Same-month MRS was adding IS-specific regime timing that appeared protective but was lookahead — under C11 conditions, OOS retention actually improved. MDD worsening from C11 fix is expected and acceptable (QEPM S10). 4/4 stress outperformance (GFC +23.7%, Rate2022 +20.9%) is the strongest defensive signal in the registry. Recommend S5 mutation for MDD reduction below 25%.",
+  "core_reference": "QEPM S10 (statistical defense), L-450 (C11 data time-axis verification), L-441 (FRED month-end publication -> same-month access is lookahead), Gerber et al. (2022) 'The Gerber Statistic', De Prado (2016) HRP, Engle (2002) DCC-GARCH",
+  "condition": "C11 FRED same-month access violation in MRS overlay and ConsGate regime check — fixed with t-1 month lag. Under clean conditions SR improves but MDD worsens.",
+  "success": true,
+  "timestamp": "2026-03-28T16:40:00+09:00"
+}

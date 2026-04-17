@@ -1,0 +1,158 @@
+{
+  "hypothesis_id": "H_1674",
+  "name": "Individual Contrarian Flow (Noise Trader Reversal)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "timestamp": "2026-04-12T23:15:00",
+  "designer": "Q-Lead",
+  "pathway": "B",
+
+  "hypothesis_text": "한국 개인투자자의 월간 순매도가 큰 종목은 다음 달 양(+)의 초과수익을 생성한다. 개인투자자는 주의(attention) 기반 매매와 패닉 매도로 인해 일시적 과매도를 유발하고, 이는 정보 기반 투자자(외국인/기관)의 역행 매수로 교정되며 contrarian alpha를 생성한다.",
+
+  "economic_family": "investor_flow",
+  "sub_family": "retail_contrarian",
+
+  "mechanism": {
+    "core": "개인투자자 noise trading → 일시적 mispricing → mean reversion. Barber & Odean (2008)의 attention-driven buying 역현상: 개인이 집중적으로 매도하는 종목은 패닉/주의편향에 의한 과매도 상태.",
+    "why_works": "한국 개인투자자 비중 ~60% (미국 25%)로 noise trading 영향 극대화. Kang (2026c): 개인은 유동성 공급자, 외국인/기관은 영구적 가격 발견자. 개인 매도 폭발 시 near-explosive self-excitation 발생 (Hawkes process).",
+    "information_channel": "개인 순매도 = (1) 패닉 매도 (위기 시), (2) attention shift (뉴스/테마 이동), (3) 손절 매도 (손실 회피). 세 경우 모두 일시적 가격 압력 후 반등.",
+    "why_different_from_existing": "기존 FLOW_SmartMoney_60d (ICIR -0.109): Smart money 매수에 초점. 우리 신호: 개인 매도에 초점 (ICIR 1.258). 핵심 차이 — alpha는 smart money의 정보가 아닌 dumb money의 오류에서 발생. Akbas (2015): dumb money가 mispricing을 악화시키고, 그 해소가 alpha."
+  },
+
+  "signal_construction": {
+    "data_source": "QuantiWise investor_wide.parquet (2000-2026, 3,410 stocks, daily)",
+    "signal": "Monthly sum of Individual net buying * (-1) → cross-sectional Z-score (size-neutralized)",
+    "normalization": "Cross-sectional rank → residualize against log(MarketCap) → Z-score",
+    "rebalance": "Monthly (end-of-month)",
+    "universe": "KOSPI + KOSDAQ, 유동성 필터 (20일 평균 거래대금 >= 2억원)",
+    "portfolio": "EW Top 30, 15bps commission",
+    "overlay": "None (S1 pure signal)",
+    "pit_compliance": "C2: 신호 = t월 개인순매수 합계, 포트폴리오 = t+1월 적용 (1개월 lag). C14: 신호는 실시간 거래 데이터에서 월말 집계, Usable_Date = 월 마지막 거래일."
+  },
+
+  "pre_screening": {
+    "raw_ic": {
+      "mean_ic": 0.0783,
+      "icir": 1.240,
+      "t_stat": 19.81,
+      "hit_rate": 0.906,
+      "n_months": 255
+    },
+    "size_neutral_ic": {
+      "mean_ic": 0.0757,
+      "icir": 1.258,
+      "t_stat": 20.10,
+      "hit_rate": 0.914,
+      "ic_retained_pct": 97.0
+    },
+    "liquidity_filtered_ic": {
+      "mean_ic": 0.0674,
+      "icir": 0.939,
+      "t_stat": 15.00,
+      "hit_rate": 0.839,
+      "filter": "top 50% by 20d average volume"
+    },
+    "rolling_3y_icir": {
+      "recent_range": "0.746 ~ 1.058",
+      "latest_2026_03": 0.746,
+      "peak_2025_09": 1.058,
+      "trend": "stable_high, slight recent decline"
+    },
+    "stress_ic": {
+      "GFC_2008": 0.0493,
+      "EuDebt_2011": 0.0559,
+      "COVID_2020": 0.0703,
+      "Rate_2022": 0.0171
+    },
+    "factor_correlations": {
+      "vs_C19_Consensus": 0.034,
+      "vs_Q07_EarningsStab": 0.044,
+      "vs_M01_Mom12_1": 0.053,
+      "vs_V02_EP": 0.025,
+      "vs_D01_IdioVol": 0.082,
+      "vs_INV02_Foreign60d": 0.257,
+      "max_correlation": 0.257,
+      "verdict": "all_below_0.30_novelty_bonus_eligible"
+    }
+  },
+
+  "expected_role": "core_alpha",
+  "RoleBias": "RoleBias_Core",
+
+  "why_now": {
+    "pg0_gap": "SR gap 0.807 (1.193 → 2.0). CAGR/MDD 달성, SR만 미달.",
+    "family_saturation": "consensus 50% 포화 (saturation penalty -20). investor_flow family = 0% (미개척).",
+    "data_availability": "QuantiWise 26년 일간 데이터 보유, Factor DB 미등록. 기존 strategies는 Naver 5년 데이터로 제한 (L-027 해소).",
+    "uncorrelated_alpha": "기존 303 팩터 전체와 상관 < 0.10. 포트폴리오 SR 직접 개선 가능.",
+    "academic_convergence": "Kang (2025-2026) 시리즈 5편이 한국시장 직접 실증. 메커니즘 확립됨."
+  },
+
+  "core_reference": [
+    {
+      "id": "Barber_Odean_2008",
+      "title": "All That Glitters: The Effect of Attention and News on the Buying Behavior of Individual and Institutional Investors",
+      "journal": "Review of Financial Studies, 21(2), 785-818",
+      "relevance": "개인투자자 attention-driven buying → underperformance 메커니즘. 한국 개인비중 60%로 효과 증폭."
+    },
+    {
+      "id": "Kang_2026c",
+      "title": "The Physics of Price Discovery: Deconvolving Information, Volatility, and the Critical Breakdown of Signal during Retail Herding",
+      "journal": "arXiv:2601.11602v2 (Statistical Finance)",
+      "relevance": "한국시장 직접 실증. 개인=유동성공급자, 기관/외국인=영구적 가격발견. 개인 급증 시 near-explosive self-excitation."
+    },
+    {
+      "id": "Akbas_2015",
+      "title": "Smart Money, Dumb Money, and Capital Market Anomalies",
+      "journal": "Journal of Financial Economics, 118(2), 355-382",
+      "relevance": "Dumb money(개인) 유입 → mispricing 악화. Smart money(외국인)가 교정. Divergence = alpha."
+    },
+    {
+      "id": "Kang_2025",
+      "title": "Optimal Signal Extraction from Order Flow: A Matched Filter Perspective",
+      "journal": "arXiv:2512.18648v3 (Computational Finance)",
+      "relevance": "투자자별 최적 정규화. 외국인: 거래대금 정규화(t=16.35), 기관: 시가총액 정규화(t=9.65). 한국 2020-2024 실증."
+    },
+    {
+      "id": "Kang_2026d",
+      "title": "The Limits of Complexity: Why Feature Engineering Beats Deep Learning in Investor Flow Prediction",
+      "journal": "arXiv:2601.07131v1 (Computational Finance)",
+      "relevance": "단순 선형 모델 SR 1.30 >> LSTM SR 0.07. Feature engineering > algorithm complexity."
+    }
+  ],
+
+  "lesson_check": [
+    {
+      "lcode": "L-027",
+      "summary": "Foreign flow alpha: 데이터 2020+ 한정 시 통계적 신뢰 부족 → QuantiWise 26년으로 해소",
+      "compliance": "PASS — 255개월 데이터, t=20.10"
+    },
+    {
+      "lcode": "L-125",
+      "summary": "2+팩터 블렌드에서 약팩터가 강팩터 희석 → standalone 설계",
+      "compliance": "PASS — Individual Contrarian 단일 팩터, 블렌드 없음"
+    },
+    {
+      "lcode": "L-130",
+      "summary": "ICIR 기반 팩터 선택 6가설 연속 실패 → 사전 IC 검증 필수",
+      "compliance": "PASS — size-neutral ICIR 1.258, 유동성필터 ICIR 0.939, 스트레스 IC 전부 양수"
+    },
+    {
+      "lcode": "L-131",
+      "summary": "한국시장 팩터 SR 천장 ~1.0-1.2 → 새 alpha 축 필요",
+      "compliance": "PASS — 기존 303팩터와 상관 < 0.10. 완전히 새로운 investor_flow family"
+    },
+    {
+      "lcode": "L-127",
+      "summary": "IC ≠ SR. V02 ICIR 0.36 → CAGR -1.7%. 팩터 IC → 포트폴리오 SR 전환 보장 안 됨",
+      "compliance": "AWARE — ICIR 1.258은 역대 최고 수준이나 portfolio SR는 S1 백테스트에서 확인 필요"
+    }
+  ],
+
+  "risks": [
+    "Rolling 3Y ICIR 최근 하락 (1.058 → 0.746): 신호 약화 가능성",
+    "유동성 필터 적용 시 ICIR 0.939로 하락: 대형주에서 개인 contrarian 약해질 수 있음",
+    "Rate_2022 스트레스 IC 0.017로 낮음: 금리 인상기 약점",
+    "L-127: ICIR→SR 전환 보장 안 됨. S1 백테스트 필수",
+    "기존 FLOW_SmartMoney_60d 실패 (ICIR -0.109): 구축 방법 차이 확인 필요"
+  ]
+}

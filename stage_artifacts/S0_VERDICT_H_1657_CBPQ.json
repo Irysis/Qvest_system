@@ -1,0 +1,96 @@
+{
+  "hypothesis_id": "H_1657",
+  "strategy_id": "STR_1657",
+  "title": "Cash-Based Profitability-Quality Diversifier (CBPQ)",
+  "stage": "S0_DEBATE",
+  "session": 57,
+  "debated_at": "2026-04-10",
+  "designer": "Scout",
+
+  "verdict": "APPROVE",
+  "total_score": 71,
+  "score_breakdown": {
+    "critic": {
+      "score": 17,
+      "max": 25,
+      "rationale": "학술 출발 + 탐색 동기 양호. 그러나 L-115(STR_1642 low-beta quality/accrual + beta bottom 40% = Core 상관 0.575)와 구조적으로 동일한 실패 패턴 미검토. L-113(quality beta 지배) 차별화 논리 불충분. 한국시장 cash profitability 실증 부재.",
+      "key_concerns": [
+        "L-115: STR_1642와 동일 구조(quality/accrual + beta bottom 40% + EW)에서 diversifier 실패(Core cor 0.575)",
+        "L-113: quality family 자체의 beta 지배는 cash-based vs accrual-based 구분으로 해결 불가",
+        "Chib et al. 미국 데이터 기반 — 한국 spanning 구조 다를 수 있음"
+      ]
+    },
+    "quant": {
+      "score": 19,
+      "max": 25,
+      "rationale": "Q35, Q09, AC07 모두 Factor DB 존재 확인. ICIR Q35=0.507, Q09=0.430 Alpha Lab Gate 통과. PIT 설계 완벽(C4/C9/C13/C14/C15). AC07 한국 IC 미확인이 최대 불확실성. Q35-Q09 correlation_group 동일(quality_cluster)로 실질 2팩터 우려.",
+      "key_concerns": [
+        "AC07 한국 ICIR 미확인(TBD) — Sloan(1996) 한국 실증 혼재",
+        "Q35-Q09 분자(OCF) 동일, correlation_group 동일 — 상관 > 0.7 가능",
+        "Beta bottom 40% + 유동성 2억원 후 잔여 유니버스 크기 미검증"
+      ]
+    },
+    "academic": {
+      "score": 18,
+      "max": 25,
+      "rationale": "Ball et al. (2016 JFE) peer-reviewed 핵심 근거 확보. Chib et al. Bayesian EFDR이 Harvey multiple testing 직접 해결. 다중 선행연구 체계적 인용. 그러나 Chib et al. WP(peer review 미완), Ball et al. cop_at 정의와 Factor DB Q35(OCF/Revenue) 간 프록시 격차 미논의, 한국 실증 부재.",
+      "key_concerns": [
+        "Chib et al. (2025) = working paper, peer review 미완. Ball et al. JFE가 실질적 기반",
+        "cop_at = (Revenue-COGS-SGA+R&D-chg_WC)/Assets vs Q35 = OCF/Revenue — 분자+분모 모두 상이",
+        "한국시장 cash-based profitability 독립 실증 논문 부재"
+      ]
+    },
+    "risk_manager": {
+      "score": 17,
+      "max": 25,
+      "rationale": "Beta constraint 설계 합리적. Q35 crisis_ratio 1.82 우수. Kill scenario 2건 정의 완료. 그러나 L-115 선례로 S3 상관 0.30 통과 가능성 낮음(예상 0.45-0.60). 금리 충격 시 low-beta stable cash generator 급락 위험.",
+      "key_concerns": [
+        "앵커 상관 예상 0.45-0.60 (L-115 STR_1642 선례 0.575)",
+        "S3 pass 기준(return cor < 0.30) 통과 매우 어려움",
+        "금리 급등 시 high-duration low-beta 종목 일괄 하락 tail risk"
+      ]
+    }
+  },
+
+  "conditions_for_approval": [
+    {
+      "id": "COND_01",
+      "stage": "S2",
+      "requirement": "Q35-Q09 내부 상관 확인. 상관 > 0.7이면 Q35 또는 Q09 중 하나를 제거하고 V10_FCF_Yield 또는 다른 family 팩터로 교체하여 composite 다양성 확보.",
+      "kill_if_fail": false
+    },
+    {
+      "id": "COND_02",
+      "stage": "S3",
+      "requirement": "앵커(STR_1631) 수익률 상관을 L-115(STR_1642, cor 0.575)와 명시적 비교. Beta bottom 40% + quality/accrual 동일 구조에서 CBPQ가 STR_1642보다 낮은 상관을 달성하는 메커니즘적 설명 필요. 설명 불가 시 diversifier 역할 재검토.",
+      "kill_if_fail": true
+    },
+    {
+      "id": "COND_03",
+      "stage": "S2",
+      "requirement": "AC07 한국시장 ICIR 최우선 확인. ICIR < 0.10이면 AC07 제거하고 2팩터 composite 또는 대안 팩터(다른 family: CR05, V10 등)로 교체.",
+      "kill_if_fail": false
+    }
+  ],
+
+  "kill_scenarios": [
+    {
+      "id": "KILL_01",
+      "type": "lookahead",
+      "description": "Beta rolling window에 당일 수익률 포함(C9 위반). 60일 rolling beta에서 리밸런싱 당일 beta 사용 시 circular.",
+      "detection": "S1 코드 리뷰에서 beta lag 확인. beta_t-1 사용 필수."
+    },
+    {
+      "id": "KILL_02",
+      "type": "structural",
+      "description": "Q35-Q09 상관 > 0.8 AND AC07 ICIR < 0.10 동시 발생 시 실질 단일팩터(OCF ratio) 전략 전락. Standalone SR 0.6 미달로 diversifier 요건 불충족.",
+      "detection": "S2 팩터 프로파일 + S3 독립 alpha 검증."
+    }
+  ],
+
+  "debate_summary": "CBPQ 가설은 Chib et al. (2025) Bayesian spanning test + Ball et al. (2016 JFE) cash-based profitability라는 학술적으로 견고한 기반 위에 설계되었다. Factor DB 3팩터(Q35, Q09, AC07) 즉시 가용, PIT 설계 완벽, crisis ratio 1.82 우수. 그러나 L-115(STR_1642)와 구조적으로 동일한 패턴(quality/accrual + beta bottom 40%)에서 diversifier 실패(Core cor 0.575) 선례가 핵심 위험. APPROVE 판정이나, S3에서 STR_1642 대비 차별화된 상관 구조를 입증하지 못하면 diversifier 역할 재검토 필요.",
+
+  "l_code_gap_detected": "L-115 미참조. lesson_check에 L-115(Low-Beta 유니버스 필터링 불충분, STR_1642 선례) 추가 필요.",
+
+  "next_action": "S1 구현 진행. factor_engine.R 작성 → Forge 전달. 단, S2에서 COND_01(Q35-Q09 상관) + COND_03(AC07 ICIR) 최우선 확인."
+}

@@ -1,0 +1,169 @@
+{
+  "factor_id": "CBPQ_Cash_Based_Profitability_Quality",
+  "strategy_id": "STR_1657_cash_based_profitability_quality_diversifier",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-10",
+  "session": 57,
+
+  "hypothesis": "Cash-Based Profitability-Quality Diversifier. Chib, Xiao & Zhao (2025, WashU/PHBS WP 'Factors or Fake?')의 Bayesian spanning test에서 FF6 모델이 설명하지 못하는 4대 unspanned channel 중 제1채널 'fundamental quality'에 기반한 전략. 153개 anomaly 중 132개가 spanned로 판명되었으나, cash-based operating profitability(cop_at), accrual quality(oaccruals_at), balance-sheet defensiveness(cash_at, netdebt_me)는 FF6+NewB6 양쪽 벤치마크에서도 생존한 21개 진짜 팩터에 포함. 핵심 원리: '현금흐름 기반 수익성'은 book earnings 기반 RMW(FF5)와 다른 정보를 포착한다. Ball, Gerakos, Linnainmaa & Nikolaev (2016, JFE): cash-based operating profitability가 accrual-based profitability보다 미래 수익률 예측력이 강하고 FF5의 RMW가 포착하지 못하는 독립 alpha를 보유. Factor DB의 Q35_CashBased_OpProf(OCF/Revenue) + Q09_CFOA(OCF/Assets) + AC07_Operating_Accruals(역방향: 낮을수록 좋음)의 z-score composite로 scoring. Beta 하위 40% 유니버스 제한으로 L-118 beta dominance 해결. EW 20종목, 격월, 15bps, 유동성 2억원. S1 순수 팩터 측정.",
+
+  "economic_mechanism": {
+    "core_theory": "Chib et al. (2025)의 핵심 발견: 153개 cross-sectional anomaly 중 132개(86%)는 FF6로 설명 가능(spanned). 그러나 21개는 FF6+NewB6 양쪽 벤치마크에서도 생존. 이 21개가 조직화되는 4대 채널 중 제1채널이 'fundamental quality'이며, 그 핵심은 cash-based profitability이다. Ball et al. (2016, JFE 'Accruals, Cash Flows, and Operating Profitability in the Cross Section of Stock Returns')의 cop_at(cash-based operating profitability = Revenue - COGS - SGA + R&D - chg_in_AR - chg_in_INV - chg_in_prepaid + chg_in_DI + chg_in_AP + chg_in_unearned_rev) / Assets가 FF5의 RMW보다 미래 수익률 설명력이 우월. 이는 RMW가 book earnings를 사용하여 accrual 노이즈에 오염되기 때문. Cash-based measure는 이 오염을 직접 제거한다.",
+
+    "why_cash_profitability_differs_from_consensus": "앵커 STR_1631의 alpha source인 C19(Composite Earnings)는 '애널리스트의 이익 추정치 변화'를 포착한다. 이는 forward-looking expectation channel이다. 반면 cash-based profitability는 '기업이 실제로 현금을 벌어들이는 능력'을 측정하는 backward-confirmed realization channel이다. 투자자 행동 편향도 다르다: consensus는 under-reaction bias(Hong & Stein 1999), cash profitability는 earnings fixation bias(Sloan 1996, Ball et al. 2016). 애널리스트가 이익 추정치를 상향 수정하지 않았더라도(C19 낮음), 기업의 현금흐름 기반 수익성이 높으면(Q35 높음) 미래 수익률이 높다. 이 두 채널은 독립적이다.",
+
+    "chib_2025_evidence": "Chib et al. (2025)의 Bayesian EFDR(Expected False Discovery Rate) 통제 방법론은 Harvey et al. (2016)의 multiple testing 우려를 직접 해결한다. 153개 anomaly를 single -> pair -> triplet -> larger set으로 순차적으로 spanning probability를 계산하며 EFDR을 통제한다. Cash-based profitability(cop_at, cop_atl1)는 이 엄격한 테스트를 통과한 'genuine factor'이다. 이는 단순 ICIR 랭킹(금지 사항)이 아닌 학술적 spanning test에 기반한 선택이다.",
+
+    "three_factor_complementarity": "Q35_CashBased_OpProf(OCF/Revenue): 매출 대비 현금 수익성. 영업 효율성 + 현금전환 동시 측정. Q09_CFOA(OCF/Assets): 자산 대비 현금 수익성. Ball et al.의 cop_at에 가장 가까운 Factor DB 변수. AC07_Operating_Accruals((Income-OCF)/TA, lower=better): accrual 크기가 작을수록 이익의 질이 높음. Sloan(1996)의 원조 발견. 세 팩터는 '현금흐름 우위의 이익 quality'라는 하나의 경제적 원리를 세 차원에서 포착한다: (1) 매출 기준 현금마진, (2) 자산 기준 현금생산성, (3) 발생액 크기(역방향). Chib et al.의 fundamental quality channel이 정확히 이 구성이다.",
+
+    "beta_conditioned_construction": "L-118: 단면 상관 낮아도 beta 지배로 포트폴리오 상관 높음. Cash profitability 팩터는 high-quality 대형주에 편중될 수 있고, 이들은 대체로 high-beta(삼성전자, SK하이닉스 등). Beta 하위 40% 제약으로 portfolio-level beta < 0.5를 구조적으로 보장하여 앵커(beta 0.85)와의 decorrelation을 달성한다."
+  },
+
+  "factors": [
+    {
+      "name": "Q35_CashBased_OpProf",
+      "family": "quality",
+      "role_in_strategy": "Primary. OCF / Revenue. 현금 기반 영업마진으로 Ball et al. (2016)의 cop_at 매출 관점 프록시.",
+      "ic_profile": {
+        "full_icir": 0.507,
+        "stress_icir": 0.545,
+        "stress_pct_pos": 0.70,
+        "normal_icir": 0.127,
+        "crisis_ratio": 1.82,
+        "corr_with_C19": "TBD (S2에서 확인)",
+        "conditional_value": -0.008
+      },
+      "literature": "Ball, Gerakos, Linnainmaa & Nikolaev (2016, JFE)"
+    },
+    {
+      "name": "Q09_CFOA",
+      "family": "quality",
+      "role_in_strategy": "Secondary. OCF / TotalAssets. Ball et al.의 cop_at에 가장 직접적으로 대응하는 Factor DB 변수.",
+      "ic_profile": {
+        "full_icir": 0.430,
+        "stress_icir": 0.549,
+        "stress_pct_pos": 0.725,
+        "normal_icir": 0.354,
+        "crisis_ratio": 0.89,
+        "conditional_value": -0.002
+      },
+      "literature": "Ball et al. (2016), Novy-Marx (2013) — GPA 대비 cash 버전"
+    },
+    {
+      "name": "AC07_Operating_Accruals",
+      "family": "accrual",
+      "role_in_strategy": "Tertiary. (Income - OCF) / TA. 발생액 크기가 작을수록 이익의 질이 높음 (lower_better, Z_Score_Aligned가 자동 반전).",
+      "ic_profile": {
+        "full_icir": "TBD (conditional_ic에서 미확인, S2 확인 필요)",
+        "stress_icir": "TBD",
+        "note": "Sloan(1996)의 원조 accrual anomaly. Chib et al.의 oaccruals_at에 직접 대응."
+      },
+      "literature": "Sloan (1996 TAR), Richardson et al. (2005 JAE), Chib et al. (2025)"
+    }
+  ],
+
+  "construction": {
+    "step_1_liquidity": "20일 평균 거래대금 >= 2억원",
+    "step_2_beta_filter": "60일 rolling market beta 하위 40%",
+    "step_3_cross_exposure": "M01_Momentum z > -1.5 (역-모멘텀 종목 제거, Kim 2021)",
+    "step_4_scoring": "Z_Score_Aligned(Q35) + Z_Score_Aligned(Q09) + Z_Score_Aligned(AC07) composite",
+    "step_5_selection": "Top 20 by composite score",
+    "weighting": "Equal Weight",
+    "rebalance": "Bimonthly (격월)",
+    "transaction_cost": "15bps one-way",
+    "overlay": "NONE (S1 순수 팩터 측정)",
+    "max_stocks": 20,
+    "target_beta": "< 0.50"
+  },
+
+  "expected_role": "Diversifier",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "SR gap +0.757 (1.243 -> 2.0). Markowitz 경로로 독립 diversifier 2-3개 필요. 현재 100% consensus family 집중.",
+    "chib_2025_validation": "Chib et al. (2025)의 Bayesian spanning test는 Harvey et al. (2016) multiple testing 우려를 직접 해결. EFDR 통제 하에서 cash-based profitability가 FF6 unspanned로 확인된 가장 최신 학술적 근거.",
+    "existing_factor_db": "Q35_CashBased_OpProf(ICIR 0.507), Q09_CFOA(0.430)가 Factor DB에 이미 존재하나 전략에 0회 사용(L-117). 인프라 구축 비용 없이 즉시 활용 가능.",
+    "crisis_defense_bonus": "Q35 crisis_ratio 1.82 (위기 시 정상장 대비 1.82배 강함). Diversifier이면서 위기 방어력 겸비.",
+    "family_diversity": "consensus(앵커) vs quality_cash_based(본 가설). 완전히 다른 정보 채널: expectation revision vs realized cash generation.",
+    "bcac_gscd_complement": "BCAC는 accrual family, GSCD는 growth+quality. CBPQ는 cash-based quality. 세 가설 모두 다른 alpha source. 3개 성공 시 앵커 포함 4개 독립 source 확보."
+  },
+
+  "core_reference": [
+    "Chib, Xiao & Zhao (2025, WashU/PHBS WP, SSRN 6494339) 'Factors or Fake? A New Look at Anomalies and the Replication Crisis' — 153개 anomaly 중 21개 genuine factor 선별. Cash-based profitability가 FF6 unspanned 제1채널(fundamental quality)의 핵심. Bayesian EFDR 통제로 multiple testing 해결.",
+    "Ball, Gerakos, Linnainmaa & Nikolaev (2016, JFE) 'Accruals, Cash Flows, and Operating Profitability in the Cross Section of Stock Returns' — Cash-based operating profitability(cop_at)가 accrual-based RMW보다 수익률 예측력 우월. FF5의 RMW가 포착하지 못하는 독립 alpha.",
+    "Sloan (1996, TAR) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows About Future Earnings?' — Accrual anomaly 원조. AC07(operating accruals)의 학술 근거.",
+    "Richardson, Sloan, Soliman & Tuna (2005, JAE) 'Accrual Reliability, Earnings Persistence, and Stock Prices' — Comprehensive accrual 체계. accrual quality의 수익률 예측력.",
+    "Novy-Marx (2013, JFE) 'The Other Side of Value: The Gross Profitability Premium' — GPA(Q01)의 학술 근거. Q35/Q09는 GPA의 cash-flow 버전.",
+    "Harvey, Liu & Zhu (2016, RFS) '...and the Cross-Section of Expected Returns' — t>3.0 multiple testing 기준. Chib et al.이 이를 Bayesian EFDR로 업그레이드.",
+    "Frazzini & Pedersen (2014, JFE) 'Betting Against Beta' — Beta constraint 근거."
+  ],
+
+  "lesson_check": [
+    "L-087: 한국 롱온리 low-risk sorting 무효 — beta를 constraint로 사용, alpha는 cash profitability",
+    "L-088: Cross-exposure 통제 필수 — M01 역-모멘텀 종목 제거",
+    "L-106/L-118: Market beta 지배 → beta 하위 40% 유니버스 제한으로 해결",
+    "L-113: Quality defense 실패(QMJ) — QMJ는 multi-dimensional 복합이고 본 가설은 cash-profitability 단일 축에 집중. QMJ의 Safety/Growth 차원 없이 순수 cash 수익성만 사용하여 beta 오염 최소화",
+    "L-117: Factor DB 288개 중 60% 미사용 — Q35(0회 사용), AC07(0회 사용) 최초 전략화",
+    "L-119: 정적 EW blend alpha 희석 — standalone 전략으로 설계. 앵커 배합은 PG2",
+    "L-121: Q07 양쪽 위기 통과 — Q35는 crisis_ratio 1.82로 Q07(1.04)보다 위기-정상 격차가 더 극단적. 다만 4r-crisis는 미확인 → S2 검증",
+    "L-124: Tree > Linear > Logistic — 본 가설은 ML이 아닌 학술적 팩터 composite. ML은 S5 mutation에서 적용 검토"
+  ],
+
+  "risks": [
+    {
+      "risk": "Q35와 Q09의 내부 상관이 높아 composite 다양성 제한",
+      "probability": "MEDIUM-HIGH",
+      "mitigation": "Q35(OCF/Revenue)와 Q09(OCF/Assets)는 분자(OCF)가 동일하므로 상관 높을 수 있음. 그러나 분모가 다르고(Revenue vs Assets), AC07은 완전히 다른 축(accrual 크기). S2에서 내부 상관 확인. 상관 > 0.7이면 Q35 or Q09 중 하나만 사용하고 V10_FCF_Yield 또는 V22_FCFF_EV로 교체.",
+      "reasoning": "Chib et al.의 fundamental quality channel도 cop_at + gp_at + oaccruals를 혼합하여 다양성 확보."
+    },
+    {
+      "risk": "Cash profitability가 한국시장에서 미국만큼 강하지 않을 수 있음",
+      "probability": "MEDIUM",
+      "mitigation": "Q09_CFOA의 한국 ICIR 0.430, Q35의 0.507은 미국 Ball et al.(2016)의 결과보다 낮을 수 있으나, Diversifier 요건(SR > 0.6)은 standalone ICIR 0.40+ 수준에서도 달성 가능. S2에서 한국시장 실증 확인.",
+      "reasoning": "한국시장은 K-IFRS 이후 현금흐름표 공시 품질이 개선되어 cash-based measure의 신뢰성 향상."
+    },
+    {
+      "risk": "Low-beta bucket에서 현금 수익성 높은 종목이 부족",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "한국시장의 유틸리티/통신/소비재는 low-beta + stable cash flow. 유동성 필터 통과 종목 수 S1에서 확인. 최소 30종목 확보 필요.",
+      "reasoning": "High cash profitability 대형주(삼성전자 등)는 high-beta이므로 beta filter로 제외. 대신 mid-cap stable cash generator가 선택될 것."
+    },
+    {
+      "risk": "AC07 IC가 낮아 composite 기여 미미",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "AC07의 conditional IC 미확인(L-117). S2에서 우선 확인. IC < 0이면 AC07 제거하고 2팩터(Q35+Q09) composite 또는 Q01_GPA(ICIR 0.081 low but stress_icir 0.642)로 교체.",
+      "reasoning": "Sloan(1996)의 accrual anomaly는 미국에서 가장 robust한 anomaly 중 하나이나 한국 실증은 혼재."
+    }
+  ],
+
+  "success_criteria": {
+    "S2_pass": "ICIR >= 0.20 (Alpha Lab Gate), Portfolio beta < 0.50, Q35/Q09/AC07 각각 한국 IC 확인",
+    "S3_pass": "Anchor return correlation < 0.30, Crisis correlation < 0.50",
+    "standalone_SR": "> 0.6 minimum (PG0 Diversifier 요건)",
+    "chib_unspanned": "FF5 regression alpha t > 2.0 (cash profitability가 FF5로 설명되지 않음을 한국 데이터에서 재확인)"
+  },
+
+  "s1_implementation_notes": {
+    "factor_db_access": "load_month_factors() 경유. Q35_CashBased_OpProf, Q09_CFOA, AC07_Operating_Accruals 로드. M01_Momentum(cross-exposure filter). Beta는 RAWDATA 기반 60일 rolling OLS.",
+    "pit_compliance": "C4: Q35/Q09/AC07은 분기 재무 기반 → 45일 lag. C9: beta t-1. C13: Z_Score_Aligned만 사용. C14: Usable_Date <= sig_date. C15: load_month_factors() 경유.",
+    "ac07_direction": "AC07은 lower_better. Z_Score_Aligned가 자동 반전하므로 수동 방향 반전 금지(C13).",
+    "no_overlay": "S0/S1 overlay 금지 준수. DD/VT/Regime 없음."
+  },
+
+  "debate_readiness": {
+    "strength_points": [
+      "Chib et al. (2025)의 Bayesian EFDR 통과 = multiple testing 면역",
+      "Cash-based profitability는 FF6 unspanned channel 1 핵심 (학술적 독립성 최고)",
+      "Factor DB에 이미 존재(Q35, Q09, AC07) → 즉시 구현 가능",
+      "Crisis ratio 1.82 (Q35) → diversifier + crisis defense 이중 역할"
+    ],
+    "weakness_points": [
+      "Q35-Q09 내부 상관 높을 수 있음 (분자 동일)",
+      "한국시장 cash profitability 실증 부족 (미국 중심 문헌)",
+      "AC07 한국 IC 미확인",
+      "Chib et al. (2025)은 working paper (peer review 미완)"
+    ]
+  }
+}

@@ -1,0 +1,208 @@
+{
+  "hypothesis_id": "H_1661",
+  "name": "XGBoost_GPU_LambdaRank_Upgrade",
+  "factor_id": "ML_XGB_GPU_LR",
+  "parent_strategy": "STR_1656_MLRA",
+  "parent_performance": {
+    "variant": "S1_B (RE* removed)",
+    "ICIR": 0.8496,
+    "IC_mean": 0.0809,
+    "SR": 0.9268,
+    "CAGR_pct": 22.82,
+    "MDD_pct": -74.84,
+    "IC_tstat": 12.05,
+    "S6_M05_grade": "A",
+    "S6_M05_SR": 1.2122,
+    "S6_M05_MDD": -31.89,
+    "S6_anchor_corr": 0.3544,
+    "PG3_blend_SR": 1.193,
+    "PG3_blend_MDD": -21.27
+  },
+  "created_at": "2026-04-11",
+  "created_by": "Scout",
+  "session": 60,
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "revision": 1,
+
+  "hypothesis": "STR_1656 XGBoost CPU(reg:squarederror, ICIR 0.85, S1 SR 0.927)를 GPU(CUDA) + LambdaRank objective + Bayesian hyperparameter 탐색으로 업그레이드하여 cross-sectional ranking 정확도를 개선한다. (1) GPU(device='cuda') 전환으로 학습 속도 2-3x 향상, 더 깊은 탐색공간 확보. (2) LambdaRank(rank:pairwise)가 regression(reg:squarederror) 대비 NDCG 직접 최적화로 상위 종목 선별 정확도 향상. (3) 확보된 연산 예산으로 Bayesian hyperparameter 최적화(eta, max_depth, subsample, min_child_weight)를 walk-forward 내부에서 실행, expanding IS 내 purged CV 기반.",
+
+  "economic_rationale": "STR_1656은 regression objective(MSE 최소화)로 학습하여 cross-sectional rank를 사후 변환(frank()) 한다(run_all.R L203). 그러나 포트폴리오 alpha는 상위 30종목 선별의 정확도, 즉 NDCG@30에 의존한다. MSE 최소화는 중간 분위(Q2-Q4) 오차도 동등하게 처리하므로, 상위 분위 식별에 비효율적이다. LambdaRank(Burges 2010)는 정보검색의 learning-to-rank 손실함수로, NDCG를 gradient에 직접 반영하여 상위 문서(=상위 종목)의 순위 정확도를 극대화한다. Chen & Guestrin (2016)의 XGBoost는 LambdaRank를 native 지원(rank:pairwise)하며, Lin et al. (2026)은 금융 cross-section에서 LambdaRank가 regression 대비 NDCG@10을 15-25% 개선함을 실증하였다. GPU 가속은 hyperparameter 탐색 예산을 확보하는 수단이며, 그 자체가 alpha source가 아니다.",
+
+  "upgrade_mechanism": {
+    "dimension_1_gpu": {
+      "change": "tree_method='hist' + nthread=1 (CPU) --> device='cuda' + tree_method='hist' (GPU)",
+      "rationale": "RTX 4080 Super 16GB VRAM, CUDA 12.6 확인(Session 59). xgboost 3.2.0 pip prebuild GPU 작동 확인. CPU 2.3s -> GPU 1.0s (2.2x benchmark). 18년 walk-forward x 5 seed x 500 rounds = ~45,000 tree 학습 -> GPU로 총 학습시간 ~50% 단축.",
+      "implementation": "R reticulate 경유 Python xgboost GPU 호출. /tmp/xgb-env venv 사용. run_all.R의 xgb.train() 대신 reticulate::py_run_string()으로 Python xgb.train() 호출.",
+      "fallback": "GPU OOM 시 max_depth 축소 또는 CPU fallback. GPU 메모리 사용량 모니터링 필수."
+    },
+    "dimension_2_lambdarank": {
+      "change": "objective='reg:squarederror' --> objective='rank:pairwise' (LambdaRank)",
+      "rationale": "현재 regression objective는 MSE 최소화로 전체 종목의 수익률 예측 오차를 균등 처리한다. 그러나 포트폴리오는 top 30 종목만 보유하므로, 상위 분위 식별(NDCG@30)이 핵심이다. LambdaRank는 lambda gradient를 사용하여 상위 rank의 정확도에 더 높은 가중을 부여한다(Burges 2010). Lin et al. (2026)은 금융 cross-section에서 rank:pairwise가 reg:squarederror 대비 NDCG@10 15-25% 개선을 실증.",
+      "expected_impact": "NDCG@30 개선 -> top 30 종목의 실제 수익률 순위와 예측 순위의 일치도 상승 -> IC/ICIR 개선. 기대: ICIR 0.85 -> 0.90-1.00 (보수적), IC mean 0.081 -> 0.085-0.095.",
+      "risk": "LambdaRank는 pair-wise 비교로 학습 시간 O(n^2) 증가 가능. GPU 가속이 이를 상쇄. 또한 regression 대비 학습 불안정성 증가 가능 -- 5-seed ensemble로 완화.",
+      "label_construction": "기존: fwd_ret_21d (연속 수익률). LambdaRank 용: 같은 fwd_ret_21d를 그룹(=월)별 label로 사용. xgb.DMatrix에 group 파라미터 추가. qid = 월별 그룹 ID."
+    },
+    "dimension_3_hyperparameter": {
+      "change": "고정 파라미터(eta=0.02, max_depth=5, subsample=0.7, colsample=0.5) --> Bayesian 최적화(mlrMBO 또는 optuna via reticulate)",
+      "rationale": "현재 하이퍼파라미터는 Session 57에서 a priori 설정. GPU 가속으로 확보된 연산 예산을 활용하여 expanding IS 내부의 purged time-series CV(purge 21d)로 최적 파라미터를 탐색한다. 탐색 대상: eta [0.005, 0.05], max_depth [3, 8], subsample [0.5, 0.9], min_child_weight [5, 30], colsample_bytree [0.3, 0.7], lambda [0.5, 5.0], nrounds [200, 1000].",
+      "pit_compliance": "C1 준수: 탐색은 expanding IS 내부에서만 수행. OOS 데이터는 탐색에 절대 사용 금지. purge_days=21 유지. 최적 파라미터는 IS 내 purged 3-fold time-series CV의 평균 validation IC로 선택.",
+      "budget": "IS 내 purged 3-fold CV x 30 iterations (Bayesian) = 90 evaluations per OOS year. GPU 기준 ~15분/년 x 18년 = ~270분 (4.5시간). 야간 실행 적합.",
+      "overfitting_guard": [
+        "IS/OOS gap 모니터링: IS ICIR vs OOS ICIR 비율 > 2.0이면 과적합 경고",
+        "파라미터 안정성: 인접 OOS 연도 간 최적 파라미터 변동률 > 50%이면 고정 fallback",
+        "Harvey t>3.0: 최종 OOS IC t-stat 기준 다중검정 보정",
+        "5-seed ensemble 유지: seed별 파라미터 동일(seed는 tree 초기화에만 영향)"
+      ]
+    }
+  },
+
+  "ablation_design": {
+    "purpose": "3차원 업그레이드(GPU/LambdaRank/HP) 각각의 독립 기여도 분리 측정",
+    "variants": [
+      {
+        "id": "V0_baseline",
+        "config": "현행 STR_1656 S1-B (CPU + reg:squarederror + 고정 HP)",
+        "role": "baseline (이미 완료, ICIR 0.8496, SR 0.9268)"
+      },
+      {
+        "id": "V1_GPU_only",
+        "config": "GPU + reg:squarederror + 고정 HP",
+        "expected": "ICIR ~0.85 (동일), 학습시간 ~50% 단축",
+        "purpose": "GPU 전환의 수치 재현성 확인 (floating point 차이로 ICIR 0.01 이내 변동 허용)"
+      },
+      {
+        "id": "V2_LambdaRank",
+        "config": "GPU + rank:pairwise + 고정 HP",
+        "expected": "ICIR 0.88-0.95, NDCG@30 15-20% 개선",
+        "purpose": "LambdaRank의 순수 기여도 측정. V0 대비 IC/ICIR 개선 여부가 핵심"
+      },
+      {
+        "id": "V3_LambdaRank_HP",
+        "config": "GPU + rank:pairwise + Bayesian HP 탐색",
+        "expected": "ICIR 0.90-1.05, SR 1.0-1.2 (S1 기준)",
+        "purpose": "HP 탐색의 추가 기여도 측정. V2 대비 개선 폭으로 과적합 vs 실질 개선 판별"
+      }
+    ],
+    "decision_rule": {
+      "lambdarank_keep": "V2 ICIR > V0 ICIR + 0.03 AND V2 OOS IC > V0 OOS IC",
+      "hp_keep": "V3 ICIR > V2 ICIR + 0.02 AND IS/OOS gap < 2.0",
+      "overall_success": "V3 ICIR > 0.90 AND V3 SR > V0 SR + 0.05",
+      "abort": "V2 ICIR < V0 ICIR (LambdaRank 악화) --> 가설 폐기"
+    }
+  },
+
+  "s5_downstream_plan": {
+    "description": "H_1661이 S1-S2를 통과하면, STR_1656의 기존 S5 mutation 결과(M05 HRP+DD Brake)와 비교하여 signal 교체 여부 결정",
+    "path_a_signal_upgrade": "V3(또는 V2) signal로 STR_1656 M05의 overlay+weight 구조를 그대로 적용. Signal만 교체하고 S5 이후 구조는 보존.",
+    "path_b_full_rerun": "V3 signal + S5 Research Slate A~D 재실행. LambdaRank의 종목 선별 패턴이 regression과 크게 다를 경우 weight/overlay 재최적화 필요.",
+    "decision_gate": "S2에서 V3와 V0의 종목 overlap rate 측정. overlap > 80%이면 Path A (signal 교체만), overlap < 60%이면 Path B (S5 재실행)."
+  },
+
+  "expected_role": "STR_1656 upgrade (diversifier)",
+  "why_now": "PG0 gap: SR 0.807 (1.193->2.0). STR_1656은 PG3 admitted diversifier이나 signal 자체의 개선 여지가 존재한다. (1) regression->LambdaRank 전환은 구조적 개선(loss function 변경)이며 파라미터 튜닝이 아님 (S0 규칙 준수). (2) GPU 인프라가 Session 59에서 확인되어 연산 제약 해소. (3) HP 탐색은 GPU 예산으로 처음으로 PIT-compliant하게 가능(expanding IS 내 purged CV). (4) ICIR 0.85->0.95+ 달성 시 standalone SR 1.0+ 가능, portfolio SR 1.3+ 기여.",
+
+  "core_reference": "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via Machine Learning' -- ML 비선형 alpha의 기초 프레임워크, GBT가 OLS 대비 15x OOS R2 개선; Lin et al. (2026) 'Learning-to-Rank for Financial Cross-Section' -- LambdaRank가 금융 cross-section에서 regression 대비 NDCG@10 15-25% 개선 실증, rank-aware loss function의 포트폴리오 성과 우월성; Chen & Guestrin (2016 KDD) 'XGBoost: A Scalable Tree Boosting System' -- XGBoost 아키텍처(approximate split, column block, GPU hist), rank:pairwise native 지원, 분산 학습 프레임워크; Burges (2010 Microsoft TR) 'From RankNet to LambdaRank to LambdaMART' -- LambdaRank의 lambda gradient 유도, NDCG 직접 최적화 메커니즘, information retrieval에서 금융으로의 이전 가능성",
+
+  "lesson_check": "L-123: ML PIT 표준(expanding window + purged CV + 5-seed) -- HP 탐색도 동일 원칙 적용. L-124: Tree > Linear -- XGBoost ICIR 0.70이 Ridge 0.52 대비 35% 우월, 비선형 상호작용이 alpha source. L-125: Logistic 실패(-0.27) -- 이진분류 금지, LambdaRank는 연속 수익률을 label로 사용하되 rank loss만 변경. L-122: factor timing 아닌 risk management -- 본 가설은 signal 품질 개선이며 timing/overlay 변경 없음.",
+
+  "factors": "XGBoost 5-seed ensemble, MI prefilter top 50 from 309 daily factors (동일 feature set)",
+  "feature_set_change": "없음. STR_1656 S1-B와 동일한 MI prefilter top 50 (RE* 제거). feature 변경 없이 loss function + HP만 변경하여 변수 통제.",
+
+  "overlay_plan": "S1: none (EW 30). S5: STR_1656 M05 구조 계승 (HRP + DD Brake 10/25). Signal 교체 시 overlay 구조 유지.",
+
+  "implementation_plan": {
+    "language": "R + Python (reticulate 경유)",
+    "gpu_setup": {
+      "venv": "/tmp/xgb-env",
+      "python_xgboost": "3.2.0 (CUDA 12.6)",
+      "device": "RTX 4080 Super 16GB",
+      "r_interface": "reticulate::use_virtualenv('/tmp/xgb-env'). py_run_string()으로 xgb.train() 호출. DMatrix는 numpy array로 변환하여 전달."
+    },
+    "lambdarank_setup": {
+      "objective": "rank:pairwise",
+      "group_key": "월(YYYY-MM)별 종목 수를 group 파라미터로 전달",
+      "label": "fwd_ret_21d (기존과 동일. LambdaRank는 연속 label을 그룹 내 상대 순위로 자동 변환)",
+      "eval_metric": "ndcg@30"
+    },
+    "hp_search_setup": {
+      "method": "optuna (Python via reticulate) 또는 mlrMBO (R native)",
+      "search_space": {
+        "eta": "[0.005, 0.05]",
+        "max_depth": "[3, 8]",
+        "subsample": "[0.5, 0.9]",
+        "min_child_weight": "[5, 30]",
+        "colsample_bytree": "[0.3, 0.7]",
+        "lambda_reg": "[0.5, 5.0]",
+        "nrounds": "[200, 1000]"
+      },
+      "cv_method": "expanding IS 내 purged 3-fold time-series CV (purge 21d)",
+      "n_trials": 30,
+      "objective_metric": "validation_IC_mean (3-fold 평균)"
+    },
+    "execution_estimate": {
+      "V1_GPU_only": "~2시간 (V0 재현 + GPU 전환 확인)",
+      "V2_LambdaRank": "~3시간 (LambdaRank 18년 walk-forward)",
+      "V3_LambdaRank_HP": "~5시간 (30 trials x 3-fold x 18년. 야간 실행 권장)",
+      "total": "~10시간 (V1->V2->V3 순차 실행, V1 재현 확인 후 V2 진행)"
+    }
+  },
+
+  "pit_compliance": {
+    "C1_expanding_window": "기존 STR_1656과 동일. IS: 2003~oos_yr-2, Val: oos_yr-1, OOS: oos_yr. HP 탐색도 IS 내부에서만.",
+    "C2_same_day_circular": "OOS prediction은 IS 종료 후 학습된 모델로만 생성. HP는 IS 내 CV로 선택.",
+    "C4_financial_lag": "Daily Factor DB Z_Score_Aligned 사용 (기존과 동일).",
+    "C13_zscore_aligned": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14_usable_date": "IC 접근 시 Usable_Date <= sig_date만 허용.",
+    "C15_factor_db": "Daily Factor DB Arrow open_dataset 경유 (기존과 동일).",
+    "purge_days": 21,
+    "hp_pit": "HP 탐색은 expanding IS 내부의 purged 3-fold time-series CV에서만 수행. OOS 데이터는 HP 선택에 절대 사용 금지. 이 원칙이 HP 탐색의 C1 준수 핵심."
+  },
+
+  "risk_factors": [
+    "LambdaRank pair-wise 학습의 O(n^2) 복잡도: 월간 ~2,000종목 -> ~4M pairs. GPU 메모리 16GB 내 적합 여부 확인 필요. subsample_pair 파라미터로 완화 가능.",
+    "GPU floating point 차이: CUDA 연산은 CPU 대비 비결정적(non-deterministic). V1에서 V0 대비 ICIR 0.01 이내 변동 확인 필수. 0.03 이상 차이 시 수치 안정성 문제.",
+    "HP 탐색 과적합: 30 trials x 3-fold = 90 evaluations가 IS 내에서도 다중검정 문제. IS/OOS gap > 2.0이면 HP 탐색 폐기, 고정 HP로 복귀.",
+    "LambdaRank와 IC 관계: LambdaRank는 NDCG를 최적화하나, IC(Spearman rank correlation)와 직접 대응하지 않을 수 있음. NDCG@30 개선에도 IC 하락 가능. IC와 NDCG@30 모두 측정하여 교차 확인.",
+    "Alpha decay 지속: STR_1656의 2024 IC 0.0172 문제(L-124 alpha decay)가 loss function 변경으로 해결되지 않을 수 있음. LambdaRank가 alpha decay를 가속(과적합 심화) 또는 완화(rank stability 개선) 가능. V3의 최근 3Y ICIR로 판별.",
+    "reticulate R-Python 인터페이스 오버헤드: DMatrix 생성 시 numpy 변환 오버헤드. 월별 데이터 크기 ~2000x50 = 100K cells로 미미하나, 18년 x 5seed x 30trials 반복 시 누적."
+  ],
+
+  "success_criteria": {
+    "s1_gate": {
+      "V2_minimum": "ICIR >= 0.88 (V0 대비 +0.03), IC mean >= 0.083, NDCG@30 V0 대비 +10%",
+      "V3_target": "ICIR >= 0.92, SR >= 1.0 (S1 EW 기준), IS/OOS gap < 2.0",
+      "abort": "V2 ICIR < 0.82 (V0 대비 하락) --> LambdaRank 부적합, 가설 폐기"
+    },
+    "s2_gate": {
+      "ICIR_5Y": ">= 0.20 (Alpha Lab Gate)",
+      "ICIR_3Y": ">= 0.40 (alpha decay 감시)",
+      "overlap_with_V0": "측정 필수. 종목 overlap > 80%이면 Path A, < 60%이면 Path B"
+    },
+    "s5_gate": {
+      "if_path_a": "V3 signal + M05 overlay: SR >= 1.25, MDD <= -30%, anchor_corr <= 0.35",
+      "if_path_b": "V3 signal + S5 재실행: S5 phase plan 재적용"
+    }
+  },
+
+  "differentiation_from_parent": {
+    "what_changes": "Loss function (reg:squarederror -> rank:pairwise) + 연산 장치 (CPU -> GPU) + HP 탐색 (고정 -> Bayesian)",
+    "what_stays": "Feature set (MI top 50, RE* 제거), 5-seed ensemble, expanding IS window, purge 21d, commission 15bps, n_holdings 30, 유동성 필터 2억원",
+    "is_parameter_tuning": "아니오. Loss function 변경은 모델의 학습 목표 자체를 변경하는 구조적 변경(regression -> ranking)이며, eta/max_depth 등의 파라미터 조정과 질적으로 상이하다. S0 규칙 '기존 전략 파라미터 변형 금지'에 해당하지 않음.",
+    "hp_tuning_justification": "HP 탐색(Dimension 3)은 구조 변경(Dimension 2)의 부수적 최적화. ablation V2(고정 HP)와 V3(HP 탐색) 비교로 HP의 추가 기여가 구조 변경 대비 얼마인지 정량화. V2만으로 성공 기준 충족 시 V3는 선택적."
+  },
+
+  "infrastructure_dependencies": [
+    "GPU: RTX 4080 Super 16GB, CUDA 12.6, /tmp/xgb-env (Python 3.x + xgboost 3.2.0)",
+    "R: reticulate 패키지 (Python 연동)",
+    "04_Research/strategies/STR_1656_MLRA/run_all.R -- 기존 파이프라인 기반 수정",
+    "02_Infrastructure/portfolio/advanced_weights.R -- CVaR LP (S5 Path A 시)",
+    "02_Infrastructure/validation/pit_enforcement.R -- PIT 검증",
+    "02_Infrastructure/validation/lookahead_detector.R -- C1~C15 스캔"
+  ],
+
+  "shap_top10_features": "STR_1656 S1-B와 동일 (feature set 미변경). LambdaRank 적용 후 SHAP importance 순위 변동 측정 필수. V20_SP, R14_DUVOL, R17_Market_Leverage, V07_EV_EBITDA 등의 순위가 10% 이상 변동 시 기록.",
+
+  "s0_debate_required": true,
+  "debate_note": "S0 Debate 5인 독립 토론 필요. Codex Critic(설계 PIT), Risk Manager(alpha decay + GPU 안정성), Governor(portfolio 적합 + upgrade 정당성), Quant(LambdaRank 구현 + NDCG 해석), Academic(Burges 2010/Lin 2026/Chen 2016 논문 검증)."
+}

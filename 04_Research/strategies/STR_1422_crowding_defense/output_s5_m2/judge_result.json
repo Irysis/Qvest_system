@@ -1,0 +1,113 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1422_crowding_defense_s5_m2",
+  "variant": "S5_M2_DD5_15",
+  "description": "DD-Aggressive overlay (DD_START=5%, DD_FULL=15%, MIN_EXP=35%) on CR08+D01 crowding defense base",
+  "timestamp": "2026-03-26T16:00:00+09:00",
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "lookahead_detector": "CLEAN (run_all.R, factor_engine.R, run_s5_m2.R all clean)",
+      "c1_full_sample": "PASS - DD brake uses expanding cummax/cumprod, no full-sample stats",
+      "c2_same_day_circular": "PASS - dd_lag = c(0, dd_pct[-n_f]) provides proper 1-day lag",
+      "c3_same_period_agg": "PASS - no within-period aggregate applied to same period",
+      "c4_financial_lag": "N/A - overlay only, no financial statement data",
+      "c5_overlay_t_minus_1": "PASS - DD brake uses dd_lag (t-1)",
+      "c6_survivorship": "PASS - inherits parent sim with LIQ_THRESHOLD=2e8 filter",
+      "c7_auto_detect": "PASS - lookahead_detector clean on all 3 scripts",
+      "c8_fm_same_day": "N/A - no factor momentum in this variant",
+      "c9_vt_dd_same_day": "PASS - DD uses dd_lag (1-day lagged drawdown)",
+      "c10_liquidity_filter": "PASS - inherited from parent (AvgTV20 >= 2e8)",
+      "c11_data_time_axis": "PASS - no external data sources, uses only strategy returns",
+      "c13_negate_factors": "PASS - factor_engine uses Z_Score_Aligned via align_factor_direction()",
+      "c14_ic_usable_date": "N/A - no IC access in this variant",
+      "c15_factor_db_load": "PASS - factor_engine uses arrow::open_dataset() bulk load, not load_month_factors loop"
+    },
+    "gate1_performance": {
+      "pass": false,
+      "sharpe": 0.646,
+      "cagr_pct": 6.75,
+      "mdd_pct": 23.89,
+      "ir": -0.131,
+      "calmar": 0.283,
+      "sortino": 0.884,
+      "ann_vol": 10.46,
+      "win_rate": 53.6,
+      "assessment": "FAIL - SR 0.646 well below 1.0 threshold. CAGR 6.75% far below 16% target. IR negative = underperforms benchmark on risk-adjusted basis. MDD 23.89% is acceptable. DD brake reduced MDD from 31.77% (base) to 23.89% but at severe CAGR cost (7.98% -> 6.75%)."
+    },
+    "gate2_artifacts": {
+      "pass": true,
+      "s0_record": true,
+      "s1_construction": true,
+      "s2_profile": true,
+      "s3_orthogonality": true,
+      "s4_integration": true,
+      "charts": {
+        "equity_curve": true,
+        "annual_returns": true
+      },
+      "assessment": "All stage artifacts present (S0-S4). Charts generated."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "s3_role_hint": "diversifier",
+      "s4_provisional_role": "core_alpha",
+      "assessment": "MIXED - S3 hints diversifier (factor_mean_max_corr=0.943 = highly redundant), S4 claims core_alpha. Given SR 0.646 and negative IR, diversifier is more honest. The S4 core_alpha classification appears optimistic -- strategy does not generate sufficient independent alpha for core status. Judge overrides to DIVERSIFIER (weak)."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "oos_retention": 0.353,
+      "is_sharpe": 0.785,
+      "oos_sharpe": 0.277,
+      "alpha_trend_ratio": 0.701,
+      "recent_3y_sr": 0.452,
+      "rolling_3y_pos": 0.87,
+      "stress_outperform": "3/3",
+      "ic_stability": "N/A (no analysis_ic.csv in output_s5_m2)",
+      "dsr": "N/A",
+      "assessment": "FAIL - OOS retention 35.3% (IS SR 0.785 -> OOS 0.277) indicates significant overfitting or alpha decay. Alpha trend ratio 0.70 (recent 3Y SR 0.452 vs full 0.646) shows decaying alpha. Strong stress performance (3/3) and rolling consistency (87%) partially offset but insufficient."
+    },
+    "gate5_ff5": {
+      "pass": "NOT_TESTED",
+      "assessment": "FF5 not run for this S5 mutation variant. Base strategy (output/) has no FF5 result either. Cannot verify factor-adjusted alpha."
+    }
+  },
+  "s3_orthogonality_review": {
+    "factor_mean_max_corr": 0.943,
+    "novelty_score": 0.324,
+    "max_return_corr": 0.829,
+    "assessment": "POOR - Factor correlation 0.943 indicates CR08 and D01 are near-redundant in this blend. Return correlation 0.829 with existing strategies = high overlap. Novelty 0.324 is low. This strategy does not add meaningful diversification to the portfolio."
+  },
+  "mutation_assessment": {
+    "parent_base": {
+      "sharpe": 0.633,
+      "cagr": 7.98,
+      "mdd": 31.77
+    },
+    "m2_variant": {
+      "sharpe": 0.646,
+      "cagr": 6.75,
+      "mdd": 23.89
+    },
+    "m1_variant": {
+      "sharpe": 0.566,
+      "cagr": 6.91,
+      "mdd": 26.9
+    },
+    "m3_variant": {
+      "sharpe": 0.598,
+      "cagr": 6.25,
+      "mdd": 23.75
+    },
+    "assessment": "M2 (DD 5/15) is the best mutation by SR (0.646 vs M1 0.566, M3 0.598) and achieves acceptable MDD (23.89%). However, the aggressive DD brake (start at 5% drawdown) clips too much upside -- CAGR drops from 7.98% to 6.75%. The Calmar ratio (0.283) remains poor. None of the mutations achieve meaningful improvement over the weak base signal."
+  },
+  "overall_verdict": {
+    "grade": "C",
+    "score": 24.1,
+    "pass": false,
+    "hard_fail": false,
+    "disposition": "KEEP_ARCHIVE",
+    "summary": "STR_1422_s5_m2 is PIT-clean but fundamentally weak. The CR08+D01 crowding-defense blend produces a mediocre signal (base SR 0.633, CAGR 7.98%) with high factor redundancy (corr 0.943). The DD 5/15 aggressive brake successfully reduces MDD from 31.77% to 23.89% but sacrifices too much return (CAGR 6.75%). OOS degradation (35% retention) and alpha decay (ratio 0.70) suggest the limited alpha is not robust. Negative IR means KOSPI outperforms on a risk-adjusted basis. The crowding concept (CR08 Volume-Price Divergence) has theoretical merit per Lou & Polk (2022) but the implementation does not extract sufficient alpha in the Korean market, likely because CR08's ICIR of 0.498 does not survive the 2-factor blend with D01."
+  }
+}

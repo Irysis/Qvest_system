@@ -1,0 +1,462 @@
+{
+  "stage": "S5_ScoreTilt_Advanced_Mutations",
+  "version": "1.0.0",
+  "timestamp": "2026-04-08T22:00:00",
+  "designer": "Scout",
+  "parent": "STR_1631_M23_score_tilt",
+  "parent_profile": {
+    "sr": 1.118,
+    "cagr": 21.61,
+    "mdd": 29.74,
+    "turnover": 576.6,
+    "formula": "w = (1-alpha)*HRP_w + alpha*score_proportional, alpha=0.4 fixed",
+    "weighting_base": "HRP + Gerber(0.5) + RMT Denoise (60d, t-1)",
+    "score_source": "C19 = (z_SUE + z_ESBR + z_EPS_CHG_1M + z_TP_Gap) / 4",
+    "pit_compliance": "Score = t-1 frozen (C2 safe)"
+  },
+
+  "design_objective": "MDD 29.7% -> 25% 돌파. SR >= 1.0 유지. TO < 600% hard fail 회피.",
+
+  "variants": [
+    {
+      "variant_id": "V1_REGIME_ALPHA",
+      "title": "Regime-Conditional Alpha (국면 연동 동적 alpha)",
+      "axis": "weight",
+      "category": "adaptive_alpha",
+      "description": "alpha를 고정(0.4)이 아닌 Regime Engine v7.1 레이어에 연동하여 동적 조절. 정상(Layer 1)에서는 alpha를 높여 Score 신호에 베팅하고, Caution/Crisis에서는 alpha를 낮춰 HRP의 분산 보호를 극대화. 핵심 논리: 위기 시 팩터 신호의 IC가 급락하므로(L-109 conditional_value 참고), Score 비중을 줄이고 HRP 리스크 분산에 의존하는 것이 MDD 감소에 직결.",
+      "formula": {
+        "main": "w_t = (1 - alpha_t) * HRP_w_t + alpha_t * score_prop_t",
+        "alpha_rule": "alpha_t = f(Layer_{t-1}): Layer1(Normal) -> 0.5, Layer2(Caution) -> 0.2, Layer3(Crisis) -> 0.0",
+        "pit_note": "Layer_{t-1}: Regime 판정은 전일(t-1) 기준. C5 준수. Score는 전월(t-1 month) frozen. C2 준수."
+      },
+      "academic_basis": [
+        "Ang & Bekaert (2002) 'International Asset Allocation with Regime Shifts' — 국면별 상관구조 변화에 따른 동적 배분의 이론적 정당성",
+        "Guidolin & Timmermann (2007) 'Asset Allocation under Multivariate Regime Switching' — Markov 국면 전환 시 최적 가중이 국면 의존적",
+        "L-110 Overlay Multiplier Principle — base alpha가 없으면 overlay가 곱셈기처럼 작용. Score tilt의 alpha 축소는 alpha source 약화 시 보호 효과"
+      ],
+      "expected_effect": {
+        "sr": "1.05~1.12 (Normal alpha 상향으로 소폭 개선 가능)",
+        "cagr": "20.0~22.0%",
+        "mdd": "26~29% (Crisis 시 pure HRP 전환으로 MDD 직접 감소)",
+        "to": "576~580% (리밸런싱 빈도 불변)",
+        "mechanism": "Crisis에서 Score tilt 제거 -> HRP의 분산 최소화 효과만 남음 -> 위기 시 집중 리스크 해소"
+      },
+      "implementation_difficulty": "low",
+      "implementation_notes": [
+        "Regime Engine v7.1의 Layer(1/2/3) 그대로 사용. 추가 파라미터: alpha_map = c(0.5, 0.2, 0.0)",
+        "Layer는 일간 판정이나 리밸런싱은 월간 → 리밸런싱일의 Layer 값 사용",
+        "t-1 lag: 리밸런싱일 전일의 Layer 참조 (C5)"
+      ],
+      "risk_factors": [
+        "Layer 전환 직후 alpha 급변으로 종목 비중 급변 → TO 일시 증가 가능",
+        "Layer 2(Caution)에서 alpha=0.2가 너무 보수적일 수 있음. 0.3도 검토 대상"
+      ]
+    },
+
+    {
+      "variant_id": "V2_IC_CONFIDENCE_ALPHA",
+      "title": "Expanding IC Confidence Alpha (IC 신뢰도 연동 alpha)",
+      "axis": "weight",
+      "category": "adaptive_alpha",
+      "description": "alpha를 expanding window IC(Spearman)의 크기에 비례하여 동적 결정. IC가 높으면 Score 신호를 더 신뢰하여 alpha 상향, IC가 낮으면 HRP에 의존. IC 자체가 팩터 신호 품질의 직접 측정이므로, 국면이 아닌 신호 품질로 alpha를 조절. L-109에서 확인된 IC 변동성을 직접 활용.",
+      "formula": {
+        "main": "w_t = (1 - alpha_t) * HRP_w_t + alpha_t * score_prop_t",
+        "alpha_rule": "IC_expanding_t = mean(IC_1, ..., IC_{t-1}), alpha_t = clip(IC_expanding_t / IC_target, 0.1, 0.6)",
+        "IC_target": "IC_target = 0.10 (ICIR 0.20 / sqrt(12) 근사. 월간 IC 기준 합리적 기대)",
+        "pit_note": "IC 계산: Spearman(Score_{t-k}, Ret_{t-k+1}) for k=1..t-1. 모두 과거 데이터만 사용. C1(expanding window) + C2(t-1 lag) 준수."
+      },
+      "academic_basis": [
+        "Grinold & Kahn (2000) 'Active Portfolio Management' — IC를 alpha 신뢰도의 직접 측정치로 사용. IC-based optimal portfolio sizing: w* proportional to IC * volatility",
+        "Qian & Hua (2004) 'Active Risk and Information Ratio' — IC 변동이 최적 aggressiveness를 결정",
+        "Arnott et al. (2019) IC-based factor weighting — expanding IC 활용의 선례 (SYN_04에서 팩터 가중에 적용, 여기서는 alpha 조절에 적용)"
+      ],
+      "expected_effect": {
+        "sr": "1.08~1.15 (IC 높은 구간에서 alpha 상향 → alpha capture 개선)",
+        "cagr": "20.5~22.5%",
+        "mdd": "27~30% (IC 약화 구간에서 자동으로 HRP 의존 증가)",
+        "to": "576~590%",
+        "mechanism": "IC가 높은 정상기에 Score 베팅 강화, IC 급락 위기기에 자동 HRP 전환"
+      },
+      "implementation_difficulty": "medium",
+      "implementation_notes": [
+        "매월 Score vs Next-month Ret의 Spearman IC 계산 → expanding mean 축적",
+        "IC_MIN_MONTHS=12: 12개월 미만이면 alpha=0.4 (prior) fallback",
+        "IC_target=0.10은 하이퍼파라미터이나 ICIR 기반 이론값이므로 구조적",
+        "clip(0.1, 0.6): alpha 하한 0.1(순수 HRP 방지), 상한 0.6(과도 집중 방지)"
+      ],
+      "risk_factors": [
+        "Expanding IC가 장기 평균에 수렴하면 alpha가 거의 고정됨 → V1(Regime)보다 반응성 떨어질 수 있음",
+        "IC_target 선택이 결과에 민감. 0.05~0.15 범위 검토 필요"
+      ]
+    },
+
+    {
+      "variant_id": "V3_RANK_PERCENTILE_SCORE",
+      "title": "Rank Percentile Score Transformation (순위 백분위 변환)",
+      "axis": "weight",
+      "category": "score_transform",
+      "description": "Raw C19 score를 rank percentile로 변환 후 Score Tilt에 사용. 극단 score 종목이 비중을 과점하는 문제를 해결. rank percentile은 분포 형태에 무관하게 균등한 spacing을 보장하여, outlier 1종목이 비중 15%를 독점하는 상황을 방지. MDD 감소의 핵심 경로: 집중 리스크 완화.",
+      "formula": {
+        "main": "w_t = (1 - alpha) * HRP_w_t + alpha * rank_prop_t",
+        "rank_transform": "rank_score_i = rank(Score_i) / (N+1), rank_prop_i = rank_score_i / sum(rank_score_j)",
+        "alpha": "0.4 (고정, V1/V2와 조합 가능)",
+        "pit_note": "Score_{t-1}에 대한 rank 변환. 순수 cross-sectional 변환이므로 추가 PIT 이슈 없음."
+      },
+      "academic_basis": [
+        "Blitz & Vliet (2007) 'The Volatility Effect' — rank-based scoring이 outlier에 robust",
+        "Jegadeesh & Titman (1993) — 원조 모멘텀 연구에서 decile rank 사용의 전통",
+        "DeMiguel et al. (2009) '1/N' — 극단 추정 오차가 최적 비중을 지배하는 문제. Rank = implicit regularization"
+      ],
+      "expected_effect": {
+        "sr": "1.05~1.12 (alpha capture 소폭 감소, 분산 효과로 상쇄)",
+        "cagr": "20.0~21.5%",
+        "mdd": "27~30% (집중 리스크 완화로 MDD 직접 감소)",
+        "to": "576~585%",
+        "mechanism": "Top score 종목의 비중 독점 방지 → worst-case drawdown 시 단일 종목 기여도 제한"
+      },
+      "implementation_difficulty": "low",
+      "implementation_notes": [
+        "rank(Score) / (N+1): N+1로 나눠 0~1 범위 개방 구간 (0, 1) 확보",
+        "기존 calc_score_tilt_weights()에서 sc 변환 1줄 추가로 구현 가능",
+        "N=20일 때 rank spacing = 0.048. 최소 비중 차이가 보장됨"
+      ],
+      "risk_factors": [
+        "Score 절대값 정보 손실: Score 1위와 2위가 큰 차이여도 rank 차이는 동일",
+        "alpha capture 감소 가능성: 확신도 높은 종목에 충분히 베팅 못함"
+      ]
+    },
+
+    {
+      "variant_id": "V4_SOFTMAX_SCORE",
+      "title": "Softmax Temperature Score (온도 조절 Softmax 변환)",
+      "axis": "weight",
+      "category": "score_transform",
+      "description": "Raw score를 softmax(Score/tau)로 변환. 온도 파라미터 tau가 집중도를 제어: tau 높으면 균등(HRP에 가까움), tau 낮으면 집중(Winner-take-all). tau를 volatility regime에 연동하면 V1과 결합 효과: 고변동 시 tau 상향(분산) + 저변동 시 tau 하향(집중).",
+      "formula": {
+        "main": "w_t = (1 - alpha) * HRP_w_t + alpha * softmax_prop_t",
+        "softmax": "softmax_i = exp(Score_i / tau) / sum(exp(Score_j / tau))",
+        "tau_fixed": "tau = 1.0 (기본. Score z-score이므로 tau=1이 자연 척도)",
+        "tau_adaptive": "tau_t = 0.5 + 1.5 * (vol_expanding_t / vol_target): 변동성 높으면 tau 상향 → 분산",
+        "pit_note": "vol_expanding: expanding window realized vol (t-1). C1+C2 준수."
+      },
+      "academic_basis": [
+        "Hinton et al. (2015) 'Distilling Knowledge in Neural Networks' — Softmax temperature의 이론적 기초 (ML 영역이나 portfolio에도 적용)",
+        "Garlappi et al. (2007) 'Portfolio Selection with Parameter Uncertainty' — 추정 불확실성에 따른 최적 집중도 조절이 MDD 감소에 기여",
+        "Kirby & Ostdiek (2012) 'Optimizing the Performance of Sample Mean-Variance Efficient Portfolios' — 비중 분산 패널티의 portfolio 성과 개선 효과"
+      ],
+      "expected_effect": {
+        "sr": "1.05~1.15 (tau 조절 범위에 따라 변동)",
+        "cagr": "20.0~22.0%",
+        "mdd": "26~29% (adaptive tau 시 위기 분산 효과)",
+        "to": "576~590%",
+        "mechanism": "Softmax가 극단 score outlier를 자연스럽게 완화하면서도 순서 정보 보존"
+      },
+      "implementation_difficulty": "low",
+      "implementation_notes": [
+        "exp() overflow 방지: Score - max(Score) 후 softmax 적용",
+        "tau_fixed=1.0 먼저 테스트 → 유효하면 adaptive tau 확장",
+        "adaptive tau 시 vol_target은 expanding window 전체 평균 vol 사용"
+      ],
+      "risk_factors": [
+        "tau 하이퍼파라미터 민감도: tau=0.5 vs 1.0 vs 2.0에서 결과 차이 클 수 있음",
+        "adaptive tau에서 vol_target 선택이 추가 자유도"
+      ]
+    },
+
+    {
+      "variant_id": "V5_BAYESIAN_SHRINKAGE_ALPHA",
+      "title": "Bayesian Shrinkage Alpha (사전 분포 축소 추정 alpha)",
+      "axis": "weight",
+      "category": "adaptive_alpha",
+      "description": "alpha에 Bayesian shrinkage 적용. Prior: alpha_0 = 0.4 (현행 최적값). Posterior: 최근 N개월 Score Tilt vs Pure HRP의 성과 차이를 likelihood로, prior와 결합하여 posterior alpha 산출. 데이터가 적으면 prior(0.4)에 수렴하고, 데이터가 많아지면 실현 성과에 적응. Ledoit-Wolf shrinkage의 alpha 버전.",
+      "formula": {
+        "main": "w_t = (1 - alpha_post_t) * HRP_w_t + alpha_post_t * score_prop_t",
+        "bayesian_update": "alpha_post_t = (n_0 * alpha_0 + n_data * alpha_data_t) / (n_0 + n_data)",
+        "alpha_data": "alpha_data_t = argmax_{a in [0,1]} SR(portfolio with alpha=a) over expanding window",
+        "n_0": "n_0 = 24 (prior strength: 24개월 상당. prior가 상당히 강함)",
+        "pit_note": "alpha_data는 과거 실현 수익률의 expanding window 최적화. C1(expanding) + C2(t-1) 준수. n_0=24로 초기 2년은 거의 prior=0.4 유지."
+      },
+      "academic_basis": [
+        "Ledoit & Wolf (2004) 'A Well-Conditioned Estimator for Large-Dimensional Covariance Matrices' — shrinkage intensity의 data-driven 결정. 여기서 alpha가 shrinkage intensity 역할",
+        "Black & Litterman (1992) — prior(equilibrium)과 views(data)의 Bayesian 결합. alpha_0가 equilibrium, alpha_data가 view",
+        "Jorion (1986) 'Bayes-Stein Estimation for Portfolio Analysis' — Bayes-Stein shrinkage의 포트폴리오 적용 원조"
+      ],
+      "expected_effect": {
+        "sr": "1.10~1.18 (장기적으로 최적 alpha에 수렴)",
+        "cagr": "20.5~22.5%",
+        "mdd": "27~30% (과적합 방지로 안정적)",
+        "to": "576~590%",
+        "mechanism": "Prior가 과적합을 방지하고, expanding data가 시장 구조 변화에 적응"
+      },
+      "implementation_difficulty": "high",
+      "implementation_notes": [
+        "alpha_data 계산: 매월 alpha grid [0.0, 0.1, ..., 1.0] 중 expanding SR 최대 선택",
+        "grid search이므로 연산 부담 있으나 11개 grid point x monthly = manageable",
+        "n_0=24는 보수적 choice. n_0=12(1년)로 줄이면 더 반응적",
+        "초기 24개월은 alpha 거의 0.4 → 기존 M23과 동일 성과 보장"
+      ],
+      "risk_factors": [
+        "alpha_data 최적화 자체가 일종의 in-sample fitting. expanding window이므로 PIT는 준수하나 과적합 잔류 가능",
+        "n_0=24가 과도하면 적응이 느리고, n_0=12가 부족하면 과적합"
+      ]
+    },
+
+    {
+      "variant_id": "V6_ENTROPY_REGULARIZED",
+      "title": "Entropy-Regularized Tilt (엔트로피 정규화 틸트)",
+      "axis": "weight",
+      "category": "statistical_blend",
+      "description": "Score Tilt 최적화에 엔트로피 정규화 항을 추가. 표준 Score Tilt는 score가 극단적이면 특정 종목에 집중되나, 엔트로피 항이 비중의 균등 분포로 끌어당기는 정규화 역할. 최적화 목표: max(alpha * score_exposure - lambda * concentration_penalty). lambda가 분산 보장 강도를 제어.",
+      "formula": {
+        "main": "w* = argmax_w [ alpha * (w' * score) + lambda * H(w) ]  s.t.  sum(w)=1, w>=0",
+        "entropy": "H(w) = -sum(w_i * log(w_i)): Shannon entropy. H(EW) = log(N)이 최대",
+        "closed_form": "w_i proportional to exp(alpha * score_i / lambda): Softmax(score * alpha/lambda)와 동치",
+        "lambda_rule": "lambda = 1.0 (기본). alpha/lambda 비율이 집중도 결정",
+        "blend": "final_w = (1 - beta) * HRP_w + beta * w_entropy, beta = 0.4",
+        "pit_note": "Score_{t-1} 사용. Cross-sectional 최적화이므로 시계열 PIT 이슈 없음."
+      },
+      "academic_basis": [
+        "Bera & Park (2008) 'Optimal Portfolio Diversification Using Maximum Entropy Principle' — 엔트로피 최대화 포트폴리오의 이론적 정당성",
+        "Zhou et al. (2020) 'Entropy-regularized portfolio optimization' — 엔트로피 정규화가 out-of-sample 성과 개선",
+        "s5_weight_comparison_full_STR_1631.json의 Entropy method (SR 1.055, MDD 34.09%) — 순수 entropy는 이미 비교됨. 여기서는 Score Tilt와의 hybrid"
+      ],
+      "expected_effect": {
+        "sr": "1.08~1.15 (score exposure + diversification 균형)",
+        "cagr": "20.5~22.0%",
+        "mdd": "27~30% (entropy가 집중도 제한 → tail risk 감소)",
+        "to": "576~585%",
+        "mechanism": "Entropy 항이 비중 분산을 보장하면서도 Score 순서는 존중 → V3(rank)보다 정보 보존 우수"
+      },
+      "implementation_difficulty": "medium",
+      "implementation_notes": [
+        "Closed-form이 Softmax(score * alpha/lambda)와 동치이므로 V4와 구현이 유사",
+        "차이: V4는 tau를 직접 설정, V6는 alpha/lambda 비율로 결정 + HRP blend 유지",
+        "lambda=1.0, alpha=0.4 → effective tau = lambda/alpha = 2.5",
+        "HRP blend beta=0.4 유지: entropy 비중이 HRP를 완전 대체하지 않음"
+      ],
+      "risk_factors": [
+        "lambda 하이퍼파라미터 민감도",
+        "V4(Softmax)와 수학적으로 동치 가능성 → 실질 차별화 제한적"
+      ]
+    },
+
+    {
+      "variant_id": "V7_CVAR_CONSTRAINED_TILT",
+      "title": "CVaR-Constrained Score Tilt (조건부 VaR 제약 틸트)",
+      "axis": "weight",
+      "category": "statistical_blend",
+      "description": "Score Tilt 비중에 CVaR(Conditional Value-at-Risk) 상한 제약을 추가. 비중이 Score에 비례하되, 포트폴리오의 tail risk(CVaR 95%)가 임계값을 초과하면 고위험 종목의 비중을 자동 축소. MDD 25% 달성의 가장 직접적 경로: tail risk를 직접 제약.",
+      "formula": {
+        "main": "w* = argmax_w [ w' * score ]  s.t.  CVaR_95(w) <= threshold, sum(w)=1, w>=0",
+        "cvar_approx": "CVaR_95 approximated from expanding window historical returns: sort(portfolio_ret), mean of worst 5%",
+        "threshold": "threshold = expanding 95% CVaR * 0.9 (현행 대비 10% 감소 목표)",
+        "fallback": "CVaR 제약 binding 시: w = (1-gamma)*score_tilt + gamma*minvar, gamma 증가하여 CVaR 충족까지",
+        "pit_note": "CVaR 계산: expanding window 과거 수익률만 사용. C1(expanding) + C2(t-1) 준수."
+      },
+      "academic_basis": [
+        "Rockafellar & Uryasev (2000) 'Optimization of Conditional Value-at-Risk' — CVaR 최적화의 원조. LP로 풀 수 있는 coherent risk measure",
+        "Krokhmal et al. (2002) 'Portfolio Optimization with CVaR Constraints' — CVaR 제약이 MDD 감소에 효과적",
+        "Alexander & Baptista (2004) 'A Comparison of VaR and CVaR Constraints' — CVaR 제약이 VaR 제약보다 우월한 tail protection",
+        "arXiv 2406.00610 (2024) 'Portfolio Optimization with Robust Covariance and CVaR' — robust cov + CVaR 제약 결합의 최신 연구"
+      ],
+      "expected_effect": {
+        "sr": "1.05~1.12 (tail cut으로 SR 소폭 감소 가능)",
+        "cagr": "19.5~21.5%",
+        "mdd": "24~28% (CVaR 직접 제약이 MDD 감소의 가장 직접적 경로)",
+        "to": "576~600% (비중 조정 증가로 TO 소폭 상승)",
+        "mechanism": "Tail risk 직접 제한 → worst-case loss 축소 → MDD 감소"
+      },
+      "implementation_difficulty": "high",
+      "implementation_notes": [
+        "Full CVaR optimization은 LP solver 필요 (R: lpSolve 또는 CVXR)",
+        "Simpler fallback: iterative gamma blending (score_tilt -> minvar 방향으로 CVaR 충족까지)",
+        "expanding window 최소 24개월 필요 (tail 추정 안정성)",
+        "threshold 설정: 현행 CVaR의 90%를 목표 → 과도 제약 방지"
+      ],
+      "risk_factors": [
+        "CVaR 추정 오차: expanding window 초기에 tail 추정 불안정",
+        "LP solver 도입 시 backtest 속도 저하 (월당 LP 1회)",
+        "CVaR 제약이 너무 tight하면 Score Tilt의 alpha capture 파괴"
+      ]
+    },
+
+    {
+      "variant_id": "V8_NCO_SCORE_TILT",
+      "title": "NCO + Score Tilt Hybrid (클러스터 최적화 + 신호 틸트)",
+      "axis": "weight",
+      "category": "hrp_axis_improvement",
+      "description": "HRP 대신 NCO(Nested Cluster Optimization)를 base weight로 사용하고 Score Tilt를 결합. NCO는 HRP의 계층적 구조를 유지하면서 클러스터 내 최적화를 추가하여 SR을 개선. s5_weight_comparison에서 NCO 단독 SR=1.097, MDD=34.61%. Score Tilt와 결합 시 NCO의 SR 열위를 Score가 보상하고, NCO의 클러스터 최적화가 HRP보다 나은 분산 효과 제공 가능.",
+      "formula": {
+        "main": "w_t = (1 - alpha) * NCO_w_t + alpha * score_prop_t, alpha = 0.4",
+        "nco": "NCO: HRP 클러스터링 후 각 클러스터 내 MinVar 최적화 (Marcos Lopez de Prado, 2020)",
+        "pit_note": "NCO 가중: 과거 60d 수익률로 계산 (t-1). Score: t-1 month frozen."
+      },
+      "academic_basis": [
+        "Lopez de Prado (2020) 'Machine Learning for Asset Managers' — NCO(Nested Clustered Optimization)의 원조",
+        "Lopez de Prado (2016) 'Building Diversified Portfolios that Outperform Out-of-Sample' — HRP 원조. NCO가 HRP의 상위 호환",
+        "s5_weight_comparison: NCO SR=1.097 vs HRP SR=1.136 — 현재 NCO가 HRP 대비 열위이나, Score Tilt 결합 시 역전 가능"
+      ],
+      "expected_effect": {
+        "sr": "1.05~1.12",
+        "cagr": "20.0~22.0%",
+        "mdd": "28~32% (NCO 단독 MDD=34.6%에서 Score Tilt로 개선 기대)",
+        "to": "576~590%",
+        "mechanism": "NCO 클러스터 내 MinVar가 HRP 재귀 이분보다 정밀한 리스크 배분 → Score Tilt와 시너지"
+      },
+      "implementation_difficulty": "medium",
+      "implementation_notes": [
+        "backtest_harness.R에 NCO weight 계산 이미 구현되어 있음 (Method='nco')",
+        "NCO weight를 HRP weight 대신 base로 사용. alpha=0.4 유지",
+        "NCO fallback: 클러스터 내 종목 < 2이면 EW"
+      ],
+      "risk_factors": [
+        "NCO 단독 성과(SR 1.097, MDD 34.61%)가 HRP(SR 1.136, MDD 33.94%)보다 열위",
+        "클러스터 내 MinVar가 추가 추정 오차 도입 → noise 증가 가능"
+      ]
+    },
+
+    {
+      "variant_id": "V9_WINSORIZED_ZSCORE",
+      "title": "Winsorized Z-Score Transformation (극단값 제어 표준화)",
+      "axis": "weight",
+      "category": "score_transform",
+      "description": "Score를 z-score 변환 후 +/-2 sigma에서 winsorize. 기존 Score Tilt는 raw C19 score(이미 z-score 평균)를 사용하나, 개별 z-score가 극단적이면 합산 score도 극단화. Winsorizing으로 극단 score의 비중 독점을 완화하되, rank 변환(V3)보다 정보 보존이 우수.",
+      "formula": {
+        "main": "w_t = (1 - alpha) * HRP_w_t + alpha * winz_prop_t",
+        "winsorize": "score_winz_i = clip(score_i, mu - 2*sigma, mu + 2*sigma), where mu,sigma = cross-sectional mean,sd",
+        "prop": "winz_prop_i = (score_winz_i - min + epsilon) / sum(score_winz_j - min + epsilon)",
+        "alpha": "0.4 (고정)",
+        "pit_note": "Cross-sectional winsorize. Score_{t-1} 사용. 추가 PIT 이슈 없음."
+      },
+      "academic_basis": [
+        "Tukey (1962) 'The Future of Data Analysis' — Winsorizing의 원조. Robust statistics의 기본 도구",
+        "Green et al. (2017) 'The Characteristics that Matter' — cross-sectional factor 연구에서 표준 winsorization 사용",
+        "Factor DB 인프라에서 이미 2% winsorize 적용 (factor_db_daily_phase6~10.R) — 동일 원리를 비중 결정에 확장"
+      ],
+      "expected_effect": {
+        "sr": "1.08~1.15 (V3 rank보다 정보 보존 우수 → alpha capture 유지)",
+        "cagr": "20.5~22.0%",
+        "mdd": "28~30% (극단 집중 완화, V3보다 효과 작을 수 있음)",
+        "to": "576~585%",
+        "mechanism": "극단 score outlier 완화 → 집중 리스크 감소 → MDD 감소. rank보다 온건한 처리"
+      },
+      "implementation_difficulty": "low",
+      "implementation_notes": [
+        "1줄 추가: sc <- pmin(pmax(sc, mu - 2*sd_sc), mu + 2*sd_sc)",
+        "기존 calc_score_tilt_weights()에 삽입 위치: sc 계산 직후",
+        "2 sigma가 아닌 3 sigma로 변경 시 V3(rank)와 원본 사이의 중간 지점"
+      ],
+      "risk_factors": [
+        "N=20에서 z-score 분포가 정규와 거리가 멀 수 있음 → 2 sigma cutoff이 과도할 수 있음",
+        "효과가 미미할 수 있음: C19 score가 4개 z-score 평균이므로 이미 극단값이 희석"
+      ]
+    },
+
+    {
+      "variant_id": "V10_REGIME_ALPHA_PLUS_SOFTMAX",
+      "title": "Regime Alpha + Softmax Score (V1 + V4 조합 Synthesis)",
+      "axis": "weight",
+      "category": "synthesis",
+      "description": "V1(Regime-Conditional Alpha)과 V4(Softmax Temperature)를 결합. Regime에 따라 alpha와 tau를 동시에 조절: Normal(alpha=0.5, tau=0.8: 집중), Caution(alpha=0.3, tau=1.5: 분산), Crisis(alpha=0.0, tau=inf: pure HRP). 2차원 동적 조절로 MDD 25% 달성 확률 극대화.",
+      "formula": {
+        "main": "w_t = (1 - alpha_t) * HRP_w_t + alpha_t * softmax(Score_{t-1} / tau_t)",
+        "regime_map": {
+          "Layer1_Normal": "alpha=0.5, tau=0.8 (Score에 집중 베팅)",
+          "Layer2_Caution": "alpha=0.3, tau=1.5 (분산 강화)",
+          "Layer3_Crisis": "alpha=0.0 (pure HRP, tau irrelevant)"
+        },
+        "pit_note": "Layer_{t-1} + Score_{t-1}. 이중 t-1 lag. C2+C5 준수."
+      },
+      "academic_basis": [
+        "V1 + V4의 학술 근거 결합",
+        "Ang & Bekaert (2002) + Garlappi et al. (2007)",
+        "2축 동시 조절이 1축보다 효과적: regime이 alpha를 조절하고, tau가 비중 분포를 조절하는 독립적 차원"
+      ],
+      "expected_effect": {
+        "sr": "1.08~1.18 (Normal에서 집중 + Caution에서 보호)",
+        "cagr": "20.0~22.5%",
+        "mdd": "24~28% (이중 보호: alpha 축소 + tau 확대)",
+        "to": "576~600% (regime 전환 시 비중 급변 → TO 상승 가능)",
+        "mechanism": "Normal: Score 신뢰 극대화 → CAGR 보호. Crisis: HRP 분산 → MDD 보호. 2축 독립 조절."
+      },
+      "implementation_difficulty": "medium",
+      "implementation_notes": [
+        "V1과 V4의 코드를 결합. Regime layer 판정 + Softmax 변환 + alpha 조절",
+        "파라미터 6개 (alpha x 3, tau x 3). 구조적 선택이므로 과적합 제한적",
+        "Phase 7 Complexity 검증 대상: 파라미터 수 증가"
+      ],
+      "risk_factors": [
+        "파라미터 6개로 V1/V4 단독보다 복잡",
+        "Regime 전환 시 alpha+tau 동시 변경 → 비중 급변 → TO spike",
+        "Phase 7 Complexity 검증에서 거부 가능성"
+      ]
+    }
+  ],
+
+  "priority_ranking": [
+    {
+      "rank": 1,
+      "variant_id": "V1_REGIME_ALPHA",
+      "rationale": "구현 난이도 low + MDD 감소 메커니즘 가장 직접적 (Crisis에서 pure HRP) + Regime Engine v7.1 이미 구축완료. 추가 인프라 불필요."
+    },
+    {
+      "rank": 2,
+      "variant_id": "V7_CVAR_CONSTRAINED_TILT",
+      "rationale": "MDD 25% 달성 확률 최고. CVaR 직접 제약이 tail risk를 구조적으로 제한. 다만 구현 난이도 high."
+    },
+    {
+      "rank": 3,
+      "variant_id": "V4_SOFTMAX_SCORE",
+      "rationale": "구현 난이도 low + entropy regularization과 수학적 동치 → 이론적 탄탄. tau=1.0 fixed로 먼저 테스트."
+    },
+    {
+      "rank": 4,
+      "variant_id": "V2_IC_CONFIDENCE_ALPHA",
+      "rationale": "IC 기반 alpha가 가장 정보 효율적. Grinold-Kahn 이론에 직접 근거. 다만 expanding IC 수렴 속도 우려."
+    },
+    {
+      "rank": 5,
+      "variant_id": "V3_RANK_PERCENTILE_SCORE",
+      "rationale": "가장 단순한 outlier 처리. 1줄 변경으로 구현. 효과 미미할 수 있으나 baseline 확인용."
+    }
+  ],
+
+  "execution_plan": {
+    "phase_1_parallel": {
+      "description": "V1, V3, V4 병렬 실행 (구현 난이도 low 3건)",
+      "expected_time": "3건 x 15분 = ~15분 (병렬)"
+    },
+    "phase_2_parallel": {
+      "description": "V2, V9 병렬 실행 (medium 2건)",
+      "expected_time": "2건 x 20분 = ~20분 (병렬)"
+    },
+    "phase_3_sequential": {
+      "description": "V5, V7 순차 실행 (high 난이도 2건)",
+      "expected_time": "2건 x 30분 = ~60분"
+    },
+    "phase_4_synthesis": {
+      "description": "Top 3 단독 결과에서 V10(Synthesis) 구성 여부 결정",
+      "condition": "V1 또는 V4 단독으로 MDD < 27% 달성 시 V10 실행"
+    },
+    "phase_5_selection": {
+      "description": "Score 최고 + MDD < 25% + TO < 600% 선택",
+      "criteria": "MDD 우선 → SR 보조 → TO 안전"
+    }
+  },
+
+  "s5_compliance": {
+    "total_variants": 10,
+    "categories": ["adaptive_alpha(3)", "score_transform(3)", "statistical_blend(2)", "hrp_axis_improvement(1)", "synthesis(1)"],
+    "category_count": 5,
+    "structural_before_parameter": true,
+    "pit_compliance_all": true,
+    "minimum_9_mutations_met": true,
+    "notes": "S5 Rules v7 요구사항 충족: 10건 > 9건 최소, 5 카테고리 > 4+ 최소, structural mutations(V1/V7/V8) 우선 설계"
+  },
+
+  "l_code_check": {
+    "L-109": "M11 S5 전체 Grade A. Score Tilt(M23) Score 65.5 최고. HRP+Score Tilt 조합이 가장 효율적.",
+    "L-110": "Overlay Multiplier Principle. base SR < 1.0이면 overlay 무효. M23 base SR=1.118 > 1.0이므로 overlay/tilt 확장 안전.",
+    "lesson_applied": "V1에서 Crisis 시 alpha=0은 L-110의 multiplier 원리 직접 적용: 위기 시 Score 신호(alpha source)의 IC 급락 → tilt 제거가 합리적."
+  }
+}

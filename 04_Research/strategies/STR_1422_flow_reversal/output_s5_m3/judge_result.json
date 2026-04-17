@@ -1,0 +1,71 @@
+{
+  "judge_version": "v7",
+  "strategy": "S5_M3_FlowRev_DD8_20_TightBuf",
+  "strategy_id": "STR_1422",
+  "mutation": "s5_m3",
+  "l_code": "L-635",
+  "timestamp": "2026-03-26",
+  "verdict": "REJECT",
+  "grade": "C",
+  "score": 22.9,
+  "role_declared": "diversifier",
+  "role_honest": true,
+  "role_note": "Diversifier claim plausible (BM_Corr=0.755, stress 3/3). But performance too weak for any portfolio role.",
+
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN (89 lines). DD brake uses t-1 lag. Liquidity filter uses shift(1L, lag). No PIT violations."
+    },
+    "gate1_return": {
+      "pass": false,
+      "detail": "CAGR 3.10% << 16% target. SR 0.226 << 0.5 minimum. IR -0.531 (underperforms BM). Calmar 0.067. All return metrics FAIL."
+    },
+    "gate2_risk": {
+      "pass": false,
+      "detail": "MDD 46.25% > 45% hard cap. Turnover 3218% >> 600% hard cap. Two hard_fail triggers. Tighter buffer (40/20) did NOT reduce turnover."
+    },
+    "gate3_robustness": {
+      "pass": false,
+      "detail": "OOS retention -0.087 (IS SR 0.359 vs OOS SR -0.031) = NEGATIVE out-of-sample performance. Rolling 3Y SR>0 only 39.5%. MaxConsecNegAlpha=11 months."
+    },
+    "gate4_implementability": {
+      "pass": false,
+      "detail": "Turnover 3218% is catastrophic (5.4x the 600% hard cap). Tighter buffer zone (40/20 vs 50/25 in m1) actually INCREASED turnover by 13bps. Signal instability overwhelms any buffer."
+    },
+    "gate5_diversification": {
+      "pass": false,
+      "detail": "BM_Corr=0.755 somewhat high. No Grade A composite for correlation check. Standalone performance too weak for portfolio inclusion."
+    }
+  },
+
+  "c_checklist": {
+    "C1_full_sample": "PASS - no full-sample statistics",
+    "C2_same_day_circular": "PASS - DD brake uses t-1 lag",
+    "C3_same_period_agg": "PASS - no same-period aggregation",
+    "C4_financial_lag": "PASS - signal from pre-built parquet with proper dating",
+    "C5_overlay_t1": "PASS - DD overlay uses dd_lag (t-1)",
+    "C6_survivorship": "PASS - uses RAWDATA universe",
+    "C7_auto_detect": "PASS - lookahead_detector clean",
+    "C8_FM_same_day": "N/A - no factor momentum",
+    "C9_VT_DD_same_day": "PASS - DD uses c(0, dd_pct[-n_f])",
+    "C10_liq_filter": "PASS - AvgTV20 uses shift(1L, lag)",
+    "C11_data_time_axis": "PASS - signal parquet dates verified"
+  },
+
+  "hard_fails": [
+    "Turnover 3218% > 600% (5.4x cap)",
+    "MDD 46.25% > 45% hard cap"
+  ],
+
+  "critical_issues": [
+    "Turnover 3218% nearly identical to m1 (3205%) and m2 (3205%). Tighter buffer made it WORSE.",
+    "CAGR 3.10% — no alpha. Tighter DD (8/20) slightly reduced MDD (46.3% vs 48.2%) but still fails.",
+    "OOS retention NEGATIVE (-0.087) — worse than m1. Strategy anti-persists out of sample.",
+    "Tighter buffer experiment conclusively proves: buffer cannot fix unstable signal."
+  ],
+
+  "comparison_to_m1_m2": "All three mutations share identical turnover pathology (~3200%). M3's tighter buffer (40/20) actually worsened turnover vs M1's (50/25). M3's tighter DD (8/20) marginally helped MDD (46.3 vs 48.2) but still above 45% cap. The flow reversal signal itself is the root cause.",
+
+  "recommendation": "REJECT. Third confirmation that flow reversal signal is fundamentally unsuitable. All three S5 mutations (m1/m2/m3) produce ~3200% turnover and sub-4% CAGR. The signal ranks change too drastically month-to-month for any buffer/overlay to stabilize. STR_1422 family should be archived as structurally failed."
+}

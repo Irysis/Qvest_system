@@ -1,0 +1,63 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1671",
+  "round": "R1",
+  "score": 11,
+  "arguments": [
+    "V23_RAFI_Weight의 stress ICIR(0.459)과 normal ICIR(0.698) 비교 시 crisis_ratio가 -0.036으로 음수이다. 위기 시 IC가 오히려 감소하는 팩터를 diversifier 50% 비중으로 편입하면, 정작 방어가 필요한 구간에서 alpha가 소멸한다. 4-regime 분석에서 V23 CALM IC는 -0.015, CRISIS IC도 -0.003으로 양쪽 극단 국면 모두 음수이며, NORMAL(+0.009)에서만 겨우 양수이다. 이는 Arnott(2005) Fundamental Index의 한국시장 적용 한계를 보여주며, 정상 시에만 작동하고 위기 시 무력한 팩터가 diversifier를 자처하는 것은 역할 위장에 해당한다.",
+    "L-106(market beta 지배) 교훈에 따르면, AC21과 V23 모두 long-only 전략에서 market beta 0.85~0.93 범위에 놓일 가능성이 높다. 두 팩터의 C19 상관이 각각 0.038, 0.150으로 단면에서 독립적이지만, L-118-ext 교훈이 명확히 경고한 바와 같이 단면 독립이 포트폴리오 독립을 보장하지 않는다. STR_1636 사례에서 종목 겹침 3%에도 수익률 상관 0.78을 기록했다. AC21+V23 블렌드의 포트폴리오 레벨 상관이 현 앵커(STR_1631) 대비 0.6 이상으로 나올 경우, SR gap 0.807 해소에 기여하지 못하고 MDD만 증가시킬 위험이 있다.",
+    "L-119(정적 EW 팩터 블렌드 alpha 희석) 교훈이 직접적으로 적용된다. STR_1650에서 C19+AC21+CR05 1/3 EW 블렌드가 SR 0.38, MDD 71.5%로 Hard Fail한 선례가 있으며, AC21 standalone SR은 0.572에 불과하다. V23은 STR_1612에서 SR 0(사실상 alpha 부재)으로 이미 Grade F 판정을 받았다(L-078). AC21(SR 0.572) + V23(SR ~0) EW 50/50 블렌드의 합성 SR은 개별 팩터 SR의 가중평균(~0.29) 부근으로 추정되며, 이는 KOSPI200(SR 0.49)조차 하회하는 수준이다. S5 overlay 없이는 구제 불가능한 base alpha 부족이 핵심 위험이다."
+  ],
+  "concern": "V23_RAFI_Weight가 STR_1612에서 SR 0, Grade F로 확정된 alpha-dead 팩터이며, 4-regime 분석에서도 CALM/CRISIS 양 극단 국면 모두 IC 음수이다. 이 팩터에 50% 비중을 부여하면 L-119(alpha 희석) + L-078(V23 alpha 부재) 패턴이 정확히 반복되어, 현 포트폴리오의 SR 1.193을 훼손할 확률이 높다.",
+  "conditions": [
+    "S1 순수 팩터 테스트에서 AC21+V23 EW blend SR이 최소 0.6 이상이고 MDD 50% 미만일 때만 S2 진행 가능. 이하이면 V23 비중 축소 또는 팩터 교체 필수.",
+    "S3에서 반드시 포트폴리오 레벨 수익률 상관(STR_1631 대비)을 DCC-GARCH로 측정하고, 위기 구간(MRS>=50) 조건부 상관이 0.7 이하임을 확인해야 한다. L-106 교훈에 따라 단면 상관만으로 직교성을 주장해서는 안 된다.",
+    "V23_RAFI_Weight 50% 비중 대신, AC21 70% + V23 30% 또는 AC21 단독으로 재설계를 권고한다. V23의 crisis IC 음수 패턴(-0.015 CALM, -0.003 CRISIS)이 해소되지 않는 한, 동일 비중은 위기 시 전략 전체의 defense 역량을 약화시킨다."
+  ],
+  "kill_scenarios": [
+    {
+      "scenario": "GFC-type 급락 시 V23 RAFI 붕괴",
+      "description": "V23 stress ICIR 0.459 vs normal ICIR 0.698. crisis_ratio -0.036(음수)으로 위기 시 IC 감소. GFC 급락 구간에서 RAFI(매출/영업CF/배당/장부가 가중)는 금융주 과대비중으로 시장 대비 초과 손실 기록. Arnott(2005)의 실증은 미국시장 기반이며, 한국시장 금융주 비중 이상치(시가총액 대비 펀더멘털 과대)로 RAFI = value trap에 빠질 수 있다.",
+      "probability": "중간-높음"
+    },
+    {
+      "scenario": "미래참조 경로: Expanding window IC 기반 팩터 가중 수렴",
+      "description": "AC21+V23 EW 50/50이 S5에서 IC-weighted로 전환될 경우, expanding window ICIR로 V23 가중이 0에 수렴하여 사실상 AC21 단독 전략이 되는 경로. 이 경우 2팩터 diversifier 가설 자체가 붕괴하며, AC21 standalone(SR 0.572, MDD 55.9%)과 동일한 결과에 도달한다. 2팩터 조합의 'diversification benefit' 주장이 사후적으로 무효화되는 경로이다.",
+      "probability": "높음"
+    }
+  ],
+  "scoring_breakdown": {
+    "tail_risk_assessment": {
+      "score": 2,
+      "max": 4,
+      "rationale": "AC21 stress ICIR 0.796은 양호하나, V23 crisis_ratio -0.036으로 위기 시 IC 감소. 4-regime 분석에서 V23 CALM(-0.015)/CRISIS(-0.003) 양쪽 음수. AC21도 4r-CRISIS ICIR +0.029로 사실상 무력(L-120 참조). 블렌드의 합성 tail risk 프로파일은 stress 기준으로만 양호하고, slow crisis(4-regime)에서는 두 팩터 모두 방어 불가."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "max": 4,
+      "rationale": "2건 제시(GFC-type V23 붕괴 + IC 수렴 미래참조 경로). V23 alpha 부재(L-078, SR 0)와 crisis_ratio 음수는 실증적 근거가 명확하며, expanding window IC 수렴 경로는 L-010(adaptive IC rotation = consensus 수렴) 교훈과 일치."
+    },
+    "beta_orthogonality": {
+      "score": 2,
+      "max": 4,
+      "rationale": "단면 상관(AC21-C19: 0.038, V23-C19: 0.150)은 낮으나 L-106/L-118-ext 교훈에 의해 포트폴리오 레벨 상관은 미측정. Long-only market beta 지배 구조에서 AC21(accrual)+V23(value)는 quality/value tilt 공유로 style beta 유사할 가능성 높음. DCC-GARCH 실측 전까지 beta orthogonality 확인 불가."
+    },
+    "mdd_contribution": {
+      "score": 2,
+      "max": 4,
+      "rationale": "AC21 standalone MDD 55.9%, V23 standalone SR 0/MDD 미측정(L-078에서 0%로 기록되나 이는 데이터 오류 가능성). STR_1650(C19+AC21+CR05 EW) MDD 71.5% 선례. 블렌드 MDD가 현 포트폴리오 MDD 21.3%를 악화시킬 위험이 높으며, diversifier 편입 시 전체 MDD 25% 초과 가능."
+    },
+    "regime_vulnerability": {
+      "score": 2,
+      "max": 4,
+      "rationale": "V23 4-regime 프로파일: NORMAL에서만 IC 양수(+0.009), CALM/CAUTION/CRISIS 모두 음수 또는 0 근방. AC21도 CALM(+0.018)에서만 양수, CRISIS(+0.001) 사실상 무력. 현 MRS 29.2(CAUTION) 구간에서 양 팩터 모두 IC가 약해지는 국면이며, 위기 전환(MRS>=50) 시 방어력 추가 악화 예상."
+    }
+  },
+  "references": {
+    "l_codes": ["L-078", "L-106", "L-115", "L-118-ext", "L-119", "L-120", "L-122", "L-127"],
+    "data_sources": ["stress_factor_ic_analysis.csv", "conditional_ic_matrix_4regime.csv", "portfolio_gap_vector.json"],
+    "tools": ["compute_tail_risk_suite()", "fit_dcc_garch()", "compute_copula_tdc()"]
+  },
+  "timestamp": "2026-04-12T15:30:00",
+  "agent_id": "risk_manager_H1671_R1"
+}

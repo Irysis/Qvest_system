@@ -1,0 +1,77 @@
+{
+  "strategy_id": "STR_1652_DFA_on_VDplus",
+  "judge_date": "2026-04-16",
+  "stage": "S6",
+  "disposition": "Archive",
+  "validated_role": "Core_Alpha",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "notes": "C1 expanding IC(Date<sd), C2 prev-bimonthly scores, C4 roll=7L PIT, C9 MRS t-1 in engine, C10 LIQ shift(1L), C13 Z_Score_Aligned. C15 soft concern: Q07/Q03/D29 direct arrow load instead of load_month_factors() — temporal safety manually enforced via avail_d<=sig_date."
+    },
+    "gate1_implementation": {
+      "pass": true,
+      "n_holdings": 20,
+      "commission_bps": 15,
+      "liq_threshold": 200000000,
+      "set_seed": 1652,
+      "buffer_zone": {"keep_n": 35, "entry_n": 20}
+    },
+    "gate2_robustness": {
+      "pass": true,
+      "rolling_3y_sr_positive": 1.0,
+      "oos_retention": 0.51,
+      "stress_outperform": "2/3",
+      "alpha_trend_ratio": 1.19
+    },
+    "gate3_performance": {
+      "pass": true,
+      "sharpe": 1.226,
+      "cagr": 21.89,
+      "mdd": 30.23,
+      "calmar": 0.724,
+      "ir": 0.821
+    },
+    "gate4_statistics": {
+      "pass_conventional": true,
+      "pass_harvey": false,
+      "ff5_model": "FF5",
+      "ff5_alpha_ann_pct": 9.19,
+      "ff5_alpha_t": 2.126,
+      "ff5_alpha_p": 0.036,
+      "ff5_r2": 0.505,
+      "ff5_n_months": 107,
+      "dsr": 1.0,
+      "dsr_z": 7.296,
+      "recent_3y_sr": 1.461,
+      "alpha_decay": false
+    },
+    "gate5_diversity": {
+      "pass": null,
+      "note": "No Grade A composite cache — diversity check skipped"
+    }
+  },
+  "role_honesty_audit": {
+    "claimed_role": "core",
+    "validated_role": "Core_Alpha",
+    "audit_pass": true,
+    "bm_corr": 0.737,
+    "notes": "75% Normal regime에서 STR_1631과 동일 구조. Caution/Crisis에서만 Q07/Q03/D29 추가. Core Alpha 역할 정당."
+  },
+  "ab_comparison": {
+    "anchor": "STR_1631_VD+",
+    "anchor_cagr": 22.53,
+    "anchor_sr": 1.243,
+    "anchor_mdd": 25.4,
+    "dfa_cagr": 21.89,
+    "dfa_sr": 1.226,
+    "dfa_mdd": 30.23,
+    "delta_cagr": -0.64,
+    "delta_sr": -0.017,
+    "delta_mdd": 4.83,
+    "verdict": "DFA inferior to anchor on all three key metrics. Archive."
+  },
+  "summary": "STR_1652는 Gate 0-4 개별 통과(Grade A 62.9점, SR 1.226, CAGR 21.89%)하나, 앵커 STR_1631 VD+ 대비 전 지표 열화. DFA 오버레이(MRS 국면별 Q07/Q03/D29 블렌딩)는 Base MDD 48.2%→30.2% 축소 효과 있으나, 기존 VD+ 3-Layer overlay가 더 효율적. 최적화 여지 있으나 현 상태로는 앵커 대체 불가. Archive.",
+  "hurdle_score": 62.9,
+  "grade": "A"
+}

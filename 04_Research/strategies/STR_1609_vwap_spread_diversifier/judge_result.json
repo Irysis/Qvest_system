@@ -1,0 +1,25 @@
+{
+  "strategy_id": "STR_1609",
+  "strategy_name": "VWAP_Spread_Diversifier",
+  "judge_date": "2026-03-29",
+  "grade": "F",
+  "score": 34.9,
+  "sharpe": 0.501,
+  "cagr": 8.68,
+  "mdd": 51.04,
+  "turnover": 132.2,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — C13 Z_Score_Aligned confirmed (line 21/23). C15 minor: direct parquet via open_dataset+factor_db_connector instead of load_month_factors(), functionally equivalent. C1 no full-sample stats. C2 no same-day circular. Liquidity lag correct (shift 1L). set.seed(1609) present in run_all.R line 2.",
+    "G1_Implementation": "PASS — EW 30 stocks, 15bps commission, buffer zone 50/25, no overlay (pure S1 factor test).",
+    "G2_Robustness": "DECENT — Rolling 3Y positive 82.6% (good). IC improving (recent/full ratio 1.45). OOS retention 0.51 (marginal). Stress outperformance 2/3.",
+    "G3_Performance": "FAIL — SR 0.501 (target 0.8), CAGR 8.68% (target 16%), MDD 51.04% > 45% HARD FAIL. Calmar 0.170 (poor). IR -0.015 (negative — underperforms BM). Turnover 132.2% (elevated for EW strategy).",
+    "G4_Statistics": "NA — DSR not computed. Harvey t>3.0 awareness: SR 0.501 insufficient. Negative IR means no systematic alpha over benchmark.",
+    "G5_Diversity": "NA — Hard fail, diversity assessment not applicable."
+  },
+  "role_honesty": "NA — Hard fail. Note: s0_record claims 'diversifier' with ICIR 0.826 and liquidity microstructure alpha. However IR -0.015 (negative) means strategy actually underperforms BM net of costs. ICIR from profile stage did not translate to realized excess returns. Role claim as diversifier is undermined by negative IR.",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 51.04% > 45%",
+  "verdict": "Discard",
+  "reason": "L40_VWAP_Spread는 높은 ICIR(0.826)에도 불구하고 IR -0.015로 초과수익 음수. MDD 51.0%로 hard fail. Kyle(1985) market microstructure 메커니즘이 한국시장 월간 리밸런싱에서는 alpha로 전환되지 않음. IC improving(ratio 1.45)은 긍정적이나 standalone 전략으로 불충분. 높은 turnover(132.2%)도 실투 비용 우려."
+}

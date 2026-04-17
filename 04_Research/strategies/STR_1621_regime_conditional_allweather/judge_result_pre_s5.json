@@ -1,0 +1,26 @@
+{
+  "strategy_id": "STR_1621",
+  "strategy_name": "regime_conditional_allweather",
+  "judge_date": "2026-03-29",
+  "grade": "C",
+  "score": 62,
+  "sharpe": 0.95,
+  "cagr": 20.34,
+  "mdd": 52.3,
+  "turnover": 286.7,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — C15 준수 (load_month_factors() 경유, 매월 호출), C13 준수 (Z_Score_Aligned 사용), C5 준수 (Regime_Score t-1 lag via shift()), C1 위반 없음, C2 준수 (AvgTV20 t-1 lag). Regime은 alpha source로 S1 사용 정당.",
+    "G1_Implementation": "PASS — EW 30종목, 15bps commission, LIQ >= 2e8, monthly rebalance. 2-sleeve dynamic allocation (core_w/def_w).",
+    "G2_Robustness": "PASS — Robustness 79/100. Rolling3Y_Pos 100%, OOS retention 0.70, IC improving (ratio 1.21), Alpha trend 1.26x. MaxConsecNegAlpha 4 (우수).",
+    "G3_Performance": "FAIL — MDD 52.3% > 45% HARD FAIL. 하지만 SR 0.95, CAGR 20.34%, IR 0.804는 Grade A 수준. Return axis 47/100 최상위.",
+    "G4_Statistics": "NA — DSR 미산출. SR 0.95는 Harvey t>3.0 기준 근접 가능성 있으나 미검증.",
+    "G5_Diversity": "NA — Hard fail"
+  },
+  "role_honesty": "NA — Hard fail. 단, detected_family=defense이나 실제 구조는 core(C19+V14) + defense(D01+D44) 2-sleeve로 diversifier 역할이 더 적합. Role 재평가 필요.",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 52.3% > 45%",
+  "verdict": "Archive",
+  "reason": "Hard fail (MDD 52.3%) but Score 62 is exceptional — Grade A threshold (score>=40, CAGR>=16%, SR>=0.8) 모두 충족하나 MDD만 미달. SR 0.95 + CAGR 20.34% + IR 0.804 + Rolling3Y 100% + OOS 0.70은 현재 연구 포트폴리오 내 최상위급. Regime-conditional 2-sleeve 구조의 alpha source 유효성이 확인됨. S5 mutation 최최우선 후보.",
+  "salvage_note": "S5 mutation 최최우선 후보 (전체 파이프라인 내 1순위). Score 62 + SR 0.95 + CAGR 20.34%는 hard fail 전략 중 역대 최고 수준. MDD 52.3%는 DD brake overlay만으로 45% 미만 달성 가능성이 매우 높음 (7.3%p gap). 구체적 mutation 제안: (1) DD brake 6-8% threshold + 20-25% cash ramp, (2) Defense sleeve weight floor 0.3 -> 0.4로 상향, (3) Slow-crisis regime engine v7.1 연동. Rolling3Y_Pos 100%는 alpha가 전 기간 양수임을 의미 — 구조적으로 건전한 전략. Regime을 alpha source로 사용하는 설계가 핵심 차별점."
+}

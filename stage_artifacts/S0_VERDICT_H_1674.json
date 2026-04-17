@@ -1,0 +1,91 @@
+{
+  "hypothesis_id": "H_1674",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 68,
+
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "total": 65,
+        "entries": [
+          {"role": "governor", "score": 17},
+          {"role": "academic", "score": 15},
+          {"role": "risk_manager", "score": 13},
+          {"role": "codex_critic", "score": 10},
+          {"role": "quant", "score": 10}
+        ]
+      },
+      {
+        "round": 2,
+        "total": 56,
+        "entries": [
+          {"role": "quant", "score": 17, "delta": 7, "key": "Quintile reversal=SIZE artifact. Reverse causality rejected. Alpha decay rejected. 3MA ICIR 1.89. TO 1346% still hard fail."},
+          {"role": "governor", "score": 12, "delta": -5},
+          {"role": "academic", "score": 10, "delta": -5},
+          {"role": "codex_critic", "score": 9, "delta": -1},
+          {"role": "risk_manager", "score": 8, "delta": -5}
+        ]
+      },
+      {
+        "round": 3,
+        "total": 68,
+        "entries": [
+          {"role": "quant", "score": 17, "delta": 0, "key": "CONDITIONAL_ADVANCE. 신호 유효, 설계 수정으로 회전율 해결 가능."},
+          {"role": "governor", "score": 15, "delta": 3, "key": "Quintile 수정 반영. CONDITIONAL_APPROVE. 회전율만 미해결."},
+          {"role": "academic", "score": 15, "delta": 5, "key": "DSSW 예측 재확인. 메커니즘 정합 회복. Kaniel(2008) 추가 권고."},
+          {"role": "risk_manager", "score": 12, "delta": 4, "key": "REJECT→REVISE. KS-2 철회. Alpha 존재 인정, 설계 결함 문제."},
+          {"role": "codex_critic", "score": 9, "delta": 0}
+        ]
+      }
+    ]
+  },
+
+  "final_scores": {
+    "quant": {"r1": 10, "r2": 17, "r3": 17, "final": 17, "delta": 7},
+    "governor": {"r1": 17, "r2": 12, "r3": 15, "final": 15, "delta": -2},
+    "academic": {"r1": 15, "r2": 10, "r3": 15, "final": 15, "delta": 0},
+    "risk_manager": {"r1": 13, "r2": 8, "r3": 12, "final": 12, "delta": -1},
+    "codex_critic": {"r1": 10, "r2": 9, "r3": 9, "final": 9, "delta": -1}
+  },
+
+  "consensus_points": [
+    "ICIR 1.26+ 통계적 확인 (Harvey t>3.0 6배 초과, 255개월)",
+    "기존 303팩터 전체와 상관 <0.10 — 완전히 새로운 정보 축",
+    "investor_flow family 0% saturation — 포트폴리오 다양성 결정적 기여",
+    "Alpha decay 부재 (2020-2026 ICIR 2.23 > 전기간 1.41, sub-period 전부 Harvey t>3.0)",
+    "역인과(KS-2) 실증 기각 (상관 0.069, reversal 통제 후 ICIR 2.16으로 상승)",
+    "Quintile Q5(개인 매도 최다) = 월 3.66% 최고 — 가설 방향 지지 (사이즈 편향 제거 후)",
+    "DSSW(1990) noise trader reversal 메커니즘 한국시장 정합성 확인"
+  ],
+
+  "unresolved_disputes": [
+    "회전율: 3MA 적용 후 1346% — 600% hard fail 2.2배 초과 (S1 설계로 해결 필요)",
+    "소형주 Q1 distress contamination — 사이즈 이중통제 또는 유동성 강화 필요",
+    "Kaniel, Saar & Titman (2008, JF) core_reference 미인용",
+    "Z-score expanding window 명시 필요 (C1 준수)",
+    "PIT as-of timing + T+1 체결 명시 필요 (C2 준수)",
+    "Kang 시리즈 3편 arXiv preprint 의존 (peer-reviewed 2/5)"
+  ],
+
+  "conditions_for_s1": [
+    "회전율 600% 이내 달성: 3MA smoothing + buffer_zone(keep=50, entry=25) + 분기 리밸런싱 조합",
+    "Z-score: expanding window only (C1 full-sample 금지)",
+    "PIT: 월말 집계 후 T+1 체결 (C2 준수)",
+    "소형주 distress filter: 유동성 2억원 + 시총 하한",
+    "core_reference에 Kaniel, Saar & Titman (2008, JF) 추가",
+    "S1 standalone SR >= 0.8 확인 후 S2 진입",
+    "S1 후 tail_risk_suite 실행 (EVT, CDaR, ES)"
+  ],
+
+  "debaters": [
+    {"agent_id": "quant_H1674", "role": "quant", "score": 17, "findings": "ICIR confirmed 1.26. Quintile reversal=size artifact (self-corrected R2). Reverse causality rejected. Alpha decay rejected. TO 1346% remains hard fail. CONDITIONAL_ADVANCE."},
+    {"agent_id": "governor_H1674", "role": "governor", "score": 15, "findings": "Gap alignment perfect. Family saturation 0%. Quintile corrected R3. TO only remaining issue. CONDITIONAL_APPROVE."},
+    {"agent_id": "academic_H1674_r1", "role": "academic", "score": 15, "findings": "DSSW mechanism confirmed. Preprint dependency. Kaniel(2008) missing. Sub-period stability confirmed. Time decay concern reduced."},
+    {"agent_id": "risk_manager_H1674_r1", "role": "risk_manager", "score": 12, "findings": "KS-2 withdrawn (data rejected). KS-1 downgraded to medium. Alpha exists but design flawed. REVISE for TO fix."},
+    {"agent_id": "codex_critic_H1674", "role": "codex_critic", "score": 9, "findings": "PIT elevated. Weakest assumption (informed selling) partially addressed. TO + implementation concerns remain. 3 kill scenarios."}
+  ],
+
+  "next_action": "STR_1674 번호 할당 → Forge에 S1 팩터 구축 위임. 3MA smoothing + buffer zone + 분기 리밸런싱 필수 적용. 회전율 600% 이내 미달 시 즉시 기각.",
+  "timestamp": "2026-04-13T00:00:00"
+}

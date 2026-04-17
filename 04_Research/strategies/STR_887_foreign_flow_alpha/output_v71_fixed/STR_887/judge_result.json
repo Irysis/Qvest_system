@@ -1,0 +1,119 @@
+{
+  "strategy": "STR_887",
+  "version": "v7.1_C11_fixed",
+  "judge_version": "Judge_v7",
+  "timestamp": "2026-03-26T17:00:00",
+  "verdict": "GRADE A PROMOTION",
+  "grade_override": "A",
+  "previous_grade": "B",
+  "total_score": 69.2,
+  "role": "diversifier",
+
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "status": "CLEAN",
+      "details": {
+        "C1_full_sample": "CLEAN — all z-scores computed via expanding window (756d lookback loops at lines 116-127)",
+        "C2_same_day_circular": "CLEAN — VT lagged (line 87), DD lagged (line 96), regime v7 lagged (line 118 run file)",
+        "C3_same_period": "CLEAN — SUE/ESBR are real-time consensus data (analyst estimates published intra-month); same-month lookup valid for market-observable signals. NOT accounting data requiring C4 lag.",
+        "C4_financial_lag": "N/A — no raw financial statement data used directly; consensus (SUE/ESBR) is derived from analyst estimates, not raw filings",
+        "C5_overlay_t1": "CLEAN — VT uses head(vt_scale,-1), DD uses head(dd_exp,-1), regime v7 uses head(v7_exposure,-1)",
+        "C6_survivorship": "CLEAN — RAWDATA universe used as-is, no forward-looking universe filter",
+        "C7_auto_detect": "RUN — lookahead_detector raised 3 pattern-match flags, all adjudicated as false positives (see below)",
+        "C8_FM_same_day": "CLEAN — no FM weight used",
+        "C9_VT_DD_same_day": "CLEAN — both VT and DD use t-1 lagged values",
+        "C10_liquidity": "CLEAN — AvgTradeVal_20d shifted by 1 day (line 40 run file)",
+        "C11_FRED_timezone": "CLEAN — FRED monthly z-scores shifted by 1 month via shift(fred_exposure, n=1L, type='lag') at line 139 of factor_engine_v71_fixed.R. This was the SPECIFIC fix requested. Month M signal used only in month M+1."
+      },
+      "detector_flags_adjudication": {
+        "flag_1_C11_FRED_line110": "FALSE POSITIVE. Detector flags read_parquet(FRED_MACRO_CACHE) but does not trace the downstream shift(1L) on lines 138-139. The lag is correctly applied before merge into monthly_macro.",
+        "flag_2_C3_SUE_line250": "FALSE POSITIVE. SUE is consensus analyst data (real-time observable), not accounting data. Same-month lookup is valid — the signal_date is month-end, and sue_monthly takes tail(sue,1) = last available estimate before month-end.",
+        "flag_3_C3_ESBR_line251": "FALSE POSITIVE. Same reasoning as SUE — ESBR is consensus breadth ratio from analyst estimates, published intra-month."
+      }
+    },
+    "gate_1_performance": {
+      "pass": true,
+      "sharpe": 1.111,
+      "cagr_pct": 14.48,
+      "mdd_pct": 27.12,
+      "calmar": 0.534,
+      "ir": 0.336,
+      "ann_vol_pct": 13.04,
+      "notes": "CAGR 14.48% slightly below 16% target but SR >1.0 and MDD within 30% tolerance. Stress 5/5 outperform. OOS SR retention 1.19 (OOS > IS)."
+    },
+    "gate_2_artifacts": {
+      "pass": true,
+      "files_present": [
+        "analysis_crowding.csv",
+        "analysis_fmb.csv",
+        "analysis_fmb_summary.csv",
+        "analysis_holdings.csv",
+        "analysis_ic.csv",
+        "analysis_liquidity.csv",
+        "analysis_multifactor.csv",
+        "analysis_report.md",
+        "analysis_rolling.csv",
+        "analysis_sample_alignment.csv",
+        "analysis_sector.csv",
+        "analysis_stress.csv",
+        "annual_returns.png",
+        "equity_curve.png",
+        "hurdle_result.json"
+      ],
+      "missing": []
+    },
+    "gate_3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "assessment": "HONEST. BM_Corr=0.69, foreign flow conditioning provides genuine diversification vs pure factor strategies. Stress alpha positive in all 5 periods (GFC +17.56%, COVID +1.97%, Rate2022 +15.06%). Regime-conditional weight shifting is a legitimate diversification mechanism."
+    },
+    "gate_4_statistical": {
+      "pass": true,
+      "fmb_score_t": 6.706,
+      "fmb_significant": true,
+      "ic_mean": 0.0601,
+      "icir": 0.547,
+      "ic_positive_rate_pct": 69.5,
+      "oos_sr_retention": 1.188,
+      "rolling_3y_positive_pct": 95.1,
+      "rolling_12m_hit_pct": 77.7,
+      "alpha_trend_ratio": 1.87,
+      "notes": "FMB t-stat 6.71 is well above Harvey threshold of 3.0. IC stable (recent 3Y IC 0.067 vs full 0.060). OOS > IS = no overfitting signal."
+    },
+    "gate_5_ff5": {
+      "pass": true,
+      "ff3_alpha_annual_pct": 8.23,
+      "ff3_alpha_tstat": 2.272,
+      "ff3_alpha_pval": 0.025,
+      "ff3_significant": true,
+      "carhart4_alpha_annual_pct": 8.13,
+      "carhart4_alpha_tstat": 2.238,
+      "carhart4_significant": true,
+      "ff5_alpha_annual_pct": 8.72,
+      "ff5_alpha_tstat": 2.196,
+      "ff5_alpha_pval": 0.030,
+      "ff5_significant": true,
+      "notes": "All three models show significant positive alpha at 5% level. FF5 alpha LARGEST at 8.72%/yr (t=2.20). Alpha is robust across model specifications."
+    }
+  },
+
+  "summary": {
+    "strengths": [
+      "C11 FRED shift(1L) fix correctly applied — metrics IMPROVED (SR 1.099->1.111, MDD 28.16->27.12%)",
+      "FF5 alpha 8.72%/yr (t=2.20) significant — genuine alpha not explained by standard factors",
+      "FMB Score t-stat 6.71 far exceeds Harvey threshold (3.0)",
+      "OOS SR retention 1.19 — out-of-sample EXCEEDS in-sample, no overfitting",
+      "5/5 stress period outperformance including GFC (+17.56%) and Rate2022 (+15.06%)",
+      "95.1% of 3Y rolling windows show positive Sharpe",
+      "Recent 3Y SR 2.077 — alpha trend strongly improving"
+    ],
+    "weaknesses": [
+      "CAGR 14.48% slightly below 16% target (but compensated by strong risk-adjusted metrics)",
+      "MDD 27.12% exceeds 25% soft target (within 30% hard limit)",
+      "Turnover 257.7% annualized — moderately high",
+      "IC mean 0.060 modest (but ICIR 0.547 shows stability)"
+    ],
+    "final_verdict": "PROMOTE TO GRADE A. The shift(1L) fix was the sole remaining condition for promotion. All 6 gates pass. C11 is now FULLY clean (not soft). FF5 alpha remains significant and actually improved post-fix. This is a PIT-clean, statistically robust diversifier strategy."
+  }
+}

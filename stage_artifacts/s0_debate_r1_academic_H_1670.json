@@ -1,0 +1,16 @@
+{
+  "role": "academic",
+  "score": 8,
+  "arguments": [
+    "L31_Vol_Concentration는 Herfindahl 집중도 이론에 기반하나, Brennan & Subrahmanyam (1998)의 market microstructure 메커니즘(거래비용 구조)과 L31 구현(거래량 HHI) 간 1단계 불연속 존재. 거래량 분산 → 거래비용 저감 인과관계를 실증 없이 가정.",
+    "L40_VWAP_Spread는 Goyenko et al. (2009)을 인용하나, 원 논문의 VWAP spread(실거래 가격-벤치마크 거리)와 L40 구현(volume-weighted absolute return)의 정의 불일치. 메커니즘 치환(substitution without equivalence).",
+    "Amihud(2002), Pastor & Stambaugh(2003) 원문의 peer-review 신뢰도는 높으나(3,500+, 2,000+ citations), L31/L40은 직접 구현이 아닌 차용. 28년/17년 경과 + HFT 확대로 시장 미시구조 급변 → 원 메커니즘 약화 우려."
+  ],
+  "concern": "L40의 VWAP Spread 정의가 원 논문과 수학적 동치가 아닌 점이 가장 심각. Diversifier 역할 부여 전 정의 재검토 + 한국 시장 실증 검증 필수.",
+  "conditions": [
+    "S1: L31 vs L02(Turnover), L05(Dollar Volume) 상관 실측. |r|>0.60이면 고유값 부재",
+    "S1: L40 정의 재검토 — 원 Goyenko 정의(실거래 VWAP gap)로 재구현 필요",
+    "S2: 한국 KOSPI/KOSDAQ 분리 IC 유의성 확인 (t>1.96)",
+    "S3: sub-period(2005-10/10-15/15-24) IC 비교. variance >30%면 시대 부적합"
+  ]
+}

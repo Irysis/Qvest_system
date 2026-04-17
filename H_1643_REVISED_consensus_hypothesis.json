@@ -1,0 +1,204 @@
+{
+  "hypothesis_id": "H_1643_REVISED",
+  "stage": "S0",
+  "version": "2.0_post_debate",
+  "timestamp": "2026-04-12T15:31:56.386894",
+  "designer": "Scout",
+  "revision_basis": "3-Round Debate REJECT (39/100) -> 토론 합의점 기반 재설계",
+  "title": "Conditional Tail Defense 2F: Left-Tail Beta + Earnings Stability (Trigger-Activated)",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "why_now": "\nPG0 MDD gap +9.9%p 해결 필요.\nH_1643 3-Factor 구조 REJECT 근거:\n  - CR05 (35% 비중) REJECT: Factor DB stress ICIR -0.168 실측 vs 0.77 주장 불일치,\n    Registry crisis=negative, GFC/EU Debt 양대 위기 역작동 확정\n  - V24 (25% 비중) REJECT: 전기간 ICIR -0.282 (drag), 영구 배치 부적절\n  \n토론 5인 전원 합의 내용 반영:\n  1. CR05/V24 제거 (재현 불가 + 내부 일관성 위반)\n  2. D25 유일한 생존 후보 확인 (Crisis premium +0.057, 평상시 IC near-zero)\n  3. D25 단독으로 불충분 -> 보강 필요\n  4. Defense family 자체는 구조적 필요성 인정\n  \n토론에서 제시된 대안:\n  - Governor: Q07_Earnings_Stability 제안 (L-121: 양쪽 위기 최강, stress ICIR +0.753, 4r CRISIS ICIR +0.413)\n  - Governor: H_1644 검토 (2F minimal)\n  - Academic: V24 조건부 활성화 (5-10% only in crisis)\n  - Risk Manager: D25 + Q07 2팩터 재설계\n  \n최종 선택: D25 + Q07 2-Factor 구조\n  - D25: Tail-Risk mechanism (시장 하락 민감도), Crisis premium 극대화 (30.7x ratio)\n  - Q07: Earnings Stability mechanism (기본실적 안정성), Crisis ICIR 최강 (0.753)\n  - 메커니즘 직교성: Beta vs Earnings → L-113(Quality defense 실패) 경로와 차별화\n  - 모두 평상시 IC near-zero 또는 통제 가능 수준\n",
+  "economic_family": "defense_tail_and_stability",
+  "factor_taxonomy_section": "Defense/Tail-Risk + Quality-Stability (QEPM Section 9)",
+  "mechanism": {
+    "thesis": "\n1. D25_Left_Tail_Beta (Ang, Chen & Xing 2006)\n   - 최악 10% 수익률 구간의 beta를 negate하여 'tail-risk-averse' 종목 선별\n   - 정의: -(Beta | worst 10% returns)\n   - 의미: 시장이 급락할 때 덜 빠지는 종목 (downside protection)\n   - 한국시장 실증: Crisis ICIR 0.393, Crisis premium +0.057 (40개월, 2008-2026 분석)\n   - 특징: Full period IC 0.013 (low) -> 평상시 drag 최소, Crisis ratio 30.7x (극단적 context-dependency)\n\n2. Q07_Earnings_Stability (새로운 디펜스 축, L-121 근거)\n   - 정의: 1 - sd(earnings changes over 5 years) / mean(|earnings changes|)\n   - 의미: 장기 이익 변동성이 낮은 종목 = 사이클 저항성 (cyclical resistance)\n   - 한국시장 실증: Crisis ICIR 0.753, Stress IC 0.0572, 4r CRISIS ICIR 0.413\n   - 특징: Full period IC 0.040 (normal) + Crisis ratio 1.04x (일관성 있는 성과, D25와 대비)\n   - L-121 검증: 양쪽 위기 기준(stress + 4-regime) 모두 통과 (288팩터 중 최강)\n   - vs L-113(Quality defense 실패): QMJ는 Profitability+Growth+Safety 혼합이고, Q07은 순수 Earnings Stability만\n     -> L-113의 실패 경로(Quality -> market beta 지배)와 메커니즘 완전 분리\n\n경제적 메커니즘 완전 직교:\n  - D25: β-기반 시장 민감도 (시장 하락 시 exposure 감소)\n  - Q07: 기본실적 안정성 (이익 변동성 감소)\n  - 상관 추정: |r| < 0.20 (Beta 팩터 vs Earnings Stability 팩터 -> 역사적으로 저상관)\n\n위기 진입 시나리오별 작동:\n  1. \"Slow decay\" (경기 둔화): Q07 강하게 작동 (earnings stability 가치↑)\n  2. \"Sharp crash\" (시장 급락): D25 강하게 작동 (tail-risk hedging)\n  3. \"V-recovery\": D25가 먼저 반등하고 Q07이 뒤따름 (regimes간 시차)\n",
+    "why_not_cr05": "\nCR05_Short_Pressure_Proxy REJECTION 근거:\n\n수치 불일치 이슈:\n  H_1643 주장: \"Stress ICIR 0.77 (6/6 승리)\"\n  Factor DB 실측 (stress_factor_ic_analysis.csv): ICIR 0.769532 (높음, 맞음)\n  BUT 테스트 당시 Factor DB stress ICIR: -0.168 (음수!) ← Quant R1에서 재현 불가 지적\n\nRegistry 메타데이터:\n  regime_profile: {risk_on: neutral, elevated: NEGATIVE, crisis: NEGATIVE}\n  -> 이것이 숨겨진 True Signal\n\n토론 합의 (전원):\n  \"GFC(2008) crisis IC 악화 확인, EU Debt crisis(2011-2012)에서 명시적 역작동\"\n  -> Amihud down/up ratio가 위기 시 '공매도 감소'가 아닌 '거래량 급감'만 포착하는 한계\n\n기각 결정:\n  SR drag 미미해 보이나 (Normal ICIR 0.359), 위기의 신뢰성 최악\n  -> D25 + Q07로 대체 (둘 다 crisis=positive 확정)\n",
+    "why_not_v24": "\nV24_Residual_Income REJECTION 근거:\n\n전기간 SR drag:\n  Full period ICIR: -0.282 (심각한 drag)\n  Q02_ROE와 상관: 0.739 (Quality 클러스터 오염, L-113 실패 경로 재현 위험)\n  평상시 IC: 0.0008 (noise level)\n\n위기 성과는 우수 (Crisis ICIR 0.845) → Academic 제안 채택:\n  \"조건부 활성화: 위기 시만 5-10%, 평상시 0%\" (S5 mutation)\n  \n현 단계(S0)에서는 배제:\n  - 정적 30종목 구성 테스트 기간 동안 drag 불가피\n  - H_1645 (Conditional V24) 별도 가설로 분리 권고\n",
+    "trigger_mechanism": {
+      "fast_trigger": "BM 5일 수익률 < -3% OR VKOSPI 일간 변동 > +3pp (t-1 기준, C5 준수)",
+      "confirmation": "MRS Caution Score >= 20 (regime_engine v7.1, t-1 lag)",
+      "exit": "BM 5일 수익률 > 0% AND MRS < 15 (2조건 동시 충족 시 정상 복귀)",
+      "note": "S1에서는 트리거 없이 정적 30종목 EW로 순수 팩터 성과 테스트. 조건부 활성화는 S5 mutation."
+    }
+  },
+  "factors": {
+    "primary": [
+      {
+        "name": "D25_Left_Tail_Beta",
+        "weight": 0.55,
+        "rationale": "\n                Crisis ICIR 0.393 (높음)\n                Crisis premium +0.057 (극대값, 30.7x ratio)\n                Full period IC 0.013 (평상시 drag 최소)\n                Data: 2003~2026 (188개월)\n                \n                선택 이유: \n                  - 유일한 토론 합의 생존 팩터\n                  - Tail-risk mechanism의 핵심\n                  - Quarterly Q07과 Daily update 조합 시 Daily가 빠른 반응 담당\n                ",
+        "direction": "higher_better (negate 적용 완료: -(beta_tail))",
+        "update_freq": "daily",
+        "data_source": "rawdata"
+      },
+      {
+        "name": "Q07_Earnings_Stability",
+        "weight": 0.45,
+        "rationale": "\n                Crisis ICIR 0.753 (최강: L-121 검증)\n                4-regime CRISIS ICIR 0.413 (양쪽 기준 최강)\n                Stress IC 0.0572, Positive rate 77.5%\n                Full period IC 0.040 (Q02_ROE와 달리 순수 Earnings Stability)\n                Data: 2003~2026 (163개월)\n                \n                선택 이유:\n                  - Governor/Academic 공동 제안\n                  - L-121: 288팩터 중 유일하게 양쪽 위기 기준 통과\n                  - L-113(QMJ 실패)와 메커니즘 분리: Earnings volatility만 측정\n                  - D25의 약한 평상시 성과를 보강하면서 고도로 직교\n                ",
+        "direction": "higher_better",
+        "update_freq": "quarterly",
+        "data_source": "fundamental",
+        "special_note": "Quarterly update이므로 월간 리밸런싱 시 정보 손실 있으나, 평상시 drag가 최소 수준이고 위기 예측력이 뛰어남 -> S1에서는 월간, S5에서는 분기말 또는 MRS trigger 시에만 업데이트 검토"
+      }
+    ],
+    "anchor_correlation": {
+      "vs_C19_Composite_Earnings": "D25 r<0.15, Q07 r<0.25 (estimated, L-121 기준 Q07-C19 상관 -0.092로 음수)",
+      "inter_factor_D25_Q07": "|r| < 0.20 (Beta vs Earnings Stability -> 역사적 저상관)",
+      "vs_Quality_cluster": "Q07은 Q02_ROE와 차별화 (0.739 상관 V24 제거로 해결), D25는 Quality축과 무관"
+    },
+    "rejection_summary": {
+      "CR05_REMOVED": "Registry crisis=negative, GFC/EU Debt 역작동, -0.168 실측값 불일치",
+      "V24_REMOVED": "Full ICIR -0.282 drag, Q02_ROE 상관 0.739 (Quality 오염), Academic 제안 5-10% 조건부만 사용"
+    }
+  },
+  "construction": {
+    "scoring": "0.55 * Z_Score_Aligned(D25) + 0.45 * Z_Score_Aligned(Q07)",
+    "n_stocks": 30,
+    "sector_neutral": false,
+    "rebalancing": "monthly (S1 정적), event-triggered (S5 조건부)",
+    "commission_bps": 15,
+    "liquidity_filter": "20일 평균 거래대금 >= 2억원",
+    "weight_rationale": "\n        D25: 55% (주요 defense mechanism)\n          - Crisis ICIR이 Q07 대비 낮으나 Crisis ratio 극대값(30.7x)\n          - Tail-risk hedging의 핵심 역할\n          \n        Q07: 45% (보강 및 일관성)\n          - Crisis ICIR 최강 (0.753)\n          - 평상시 IC 정상 수준으로 포트폴리오 stability 제공\n          - D25의 약한 정상기 성과 상쇄\n        ",
+    "construction_notes": "D25는 daily rawdata 기반, Q07은 quarterly fundamental 기반 -> 월간 리밸런싱 시 Q07은 분기말 업데이트만 반영하고 분기간 유지. Or S5에서 adaptive frequency 검토."
+  },
+  "portfolio_integration": {
+    "normal_regime": "Core C19 100%. Defense sleeve 비활성 (현금 0%).",
+    "alert_regime": "Core 70% + Defense(H_1643_REVISED) 30%. Fast trigger 발동 시.",
+    "crisis_regime": "Core 50% + Defense 30% + Cash/Inverse 20%. MRS confirmation 시.",
+    "transition_lag": "모든 트리거 t-1 기준 (C5 준수).",
+    "hypothesis_comparison": "H_1643_REVISED(D25+Q07 2F) vs H_1644(D07+CR05 2F) -- S1/S2 단계에서 병렬 비교"
+  },
+  "expected_profile": {
+    "s1_standalone_sr": "0.20~0.45 (D25 평상시 IC 0.013은 낮으나 Q07 IC 0.040 보강)",
+    "s1_standalone_mdd": "50~65% (2팩터 최소 구조 -> 분산 효과 약함)",
+    "stress_outperform": "5/6 이상 목표 (D25+Q07 둘 다 crisis=positive)",
+    "target_correlation_with_core": "<0.35 (L-113 QMJ 상관 0.89 vs 목표 <0.35)",
+    "portfolio_mdd_contribution": "Core+Defense 70/30 시 MDD 34.9% -> 28~32% 목표",
+    "stress_ic_composite": "Blended Crisis IC = 0.55*0.0549 + 0.45*0.0572 = 0.0559 (우수)"
+  },
+  "lesson_check": [
+    {
+      "code": "L-112",
+      "summary": "Defense는 조건부 성과로 평가. Standalone SR 낮아도 stress outperform이 핵심 지표.",
+      "applied": "H_1643_REVISED는 S1 SR < 0.5여도 Stress ICIR > 0.35 + Crisis IC > 0.055면 통과로 설정"
+    },
+    {
+      "code": "L-113",
+      "summary": "Quality defense 실패 (위기 상관 0.89). Q07을 포함하되 순수 Earnings Stability로 한정",
+      "applied": "H_1643_REVISED: Q07은 QMJ(Profitability+Growth+Safety) 아닌 순수 earnings_volatility -> L-113 실패 경로 회피"
+    },
+    {
+      "code": "L-115",
+      "summary": "Low-beta 필터링 단독 불충분. Beta 팩터를 scoring에 직접 사용.",
+      "applied": "D25(tail-beta factor)를 weight 55%로 직접 사용 (filter 아닌 score 구성요소)"
+    },
+    {
+      "code": "L-121",
+      "summary": "Q07_Earnings_Stability는 양쪽 위기 기준 최강 defense. 288팩터 중 유일.",
+      "applied": "Q07을 weight 45%로 defense 보강 팩터로 정식 채택"
+    },
+    {
+      "code": "L-122",
+      "summary": "Factor timing은 학술적 취약 -> factor risk management로 설계.",
+      "applied": "조건부 활성화는 MRS timing이 아닌 regime detection (regime_engine v7.1) 기반의 risk management"
+    }
+  ],
+  "risk_assessment": {
+    "risk_1_concentration": {
+      "description": "2팩터만으로 30종목 선별 시 집중 리스크",
+      "mitigation": "HHI sector concentration 모니터링, >0.25 시 경고 및 cross-sector diversification 강화"
+    },
+    "risk_2_frequency_mismatch": {
+      "description": "D25 daily vs Q07 quarterly -> 정보 비동기",
+      "mitigation": "S1: monthly rebalance 기준, Q07은 분기말만 업데이트. S5: MRS trigger 시 분기말 전 업데이트 검토"
+    },
+    "risk_3_low_normal_ic": {
+      "description": "D25 평상시 IC 0.013 (매우 낮음) -> S1 SR <0.25 가능성",
+      "mitigation": "L-112 Defense 기준 적용: SR < 0.25여도 Stress ICIR >= 0.35면 통과"
+    },
+    "risk_4_q07_quarterly_lag": {
+      "description": "Q07 quarterly update -> 트리거 발동 후 Q07 재계산까지 1-3개월 지연",
+      "mitigation": "S5 mutation: Trigger 발동 시 즉시 Q07 재계산 또는 Linear interpolation 적용"
+    },
+    "risk_5_D25_vs_D07_선택": {
+      "description": "D25 vs H_1644의 D07 비교 -> D07이 더 나을 가능성",
+      "mitigation": "S1 병렬 테스트: H_1643_REVISED(D25+Q07) vs H_1644(D07+CR05) 동시 실행, S2에서 더 강한 stress outperform 선택"
+    }
+  },
+  "debate_reflection": {
+    "codex_critic_feedback": "재현 불가 + 내부 일관성 위반 -> CR05/V24 제거로 해결",
+    "risk_manager_feedback": "CR05 per-crisis 역작동, V24 ICIR drag -> 정합 완료",
+    "governor_feedback": "3팩터 중 2팩터 부적합 -> D25 + Q07 2팩터로 축소, Q07 추가로 강화",
+    "quant_feedback": "CR05 -0.168 실측, V24 0.007 noise -> 수치 일관성 회복",
+    "academic_feedback": "교차검증 미실시 오류 지적 반영 -> Q07(L-121) 기반 추가, V24 조건부 활성화 S5로 보류"
+  },
+  "unresolved_issues_addressed": {
+    "issue_1_cr05_db_mismatch": {
+      "original": "stress ICIR 0.77 주장 vs Factor DB -0.168 실측",
+      "resolution": "CR05 기각 -> Registry regime_profile 'crisis=negative' 확인으로 통합",
+      "lesson": "차후 팩터 제안 시 Registry 메타데이터 먼저 확인"
+    },
+    "issue_2_d25_single_dependency": {
+      "original": "H_1643은 D25 단일팩터(40%)에만 의존 -> 분산 부족",
+      "resolution": "Q07(45%) 추가로 2팩터 구조로 확장, D25 비중 55%로 상향",
+      "new_issue": "Quarterly Q07의 시간 해상도 문제 -> S5에서 해결"
+    },
+    "issue_3_defense_vs_quality_confusion": {
+      "original": "L-113(Quality defense 실패) vs L-121(Q07 최강)",
+      "resolution": "Q07은 QMJ의 혼합이 아닌 순수 Earnings Stability -> 메커니즘 분리",
+      "clarification": "L-113 = Quality cluster (Profitability+Growth+Safety) 배합 불가, L-121 = 단일 Earnings volatility 팩터는 가능"
+    }
+  },
+  "s1_implementation_plan": "\n정적 30종목 EW (조건부 활성화 없음):\n  - Scoring: 0.55*Z(D25) + 0.45*Z(Q07)\n  - Q07: 최근 분기 실적 기준 (당월 기준일 현재)\n  - D25: 당월 최종 영업일 종가 기준\n  - Rebalance: 매월 초 (또는 월말 final trading day)\n  \nS1 통과 기준:\n  - Stress outperform: 4/6 위기 기간 이상\n  - Stress ICIR: >= 0.35\n  - Full period IC: >= 0.010 (drag < noise)\n  - Core(C19) 대비 stress 상관: < 0.45\n  \nS1 실패 시 경로:\n  - MDD > 70% AND Stress ICIR < 0.25 -> Hypothesis 폐기\n  - MDD < 70% AND Stress ICIR >= 0.25 -> S2 진입 (조건부)\n  - SR > 0.40 (unexpected) -> Core 배합 검토\n",
+  "comparison_with_alternatives": {
+    "vs_H_1644": "\n        H_1644: D07(55%) + CR05(45%)\n        \n        H_1643_REVISED: D25(55%) + Q07(45%)\n        \n        비교축:\n        1. Crisis ICIR: \n           H_1644 = 0.55*0.372 + 0.45*0.770 = 0.549\n           H_1643_REVISED = 0.55*0.393 + 0.45*0.753 = 0.573 (H_1643_REVISED 우수)\n        \n        2. Crisis Ratio (극단성):\n           H_1644 = D07(9.98x) + CR05(2.0x) = 중간 정도\n           H_1643_REVISED = D25(30.7x) + Q07(1.04x) = 극단 vs 안정성 혼합\n        \n        3. Registry regime_profile:\n           H_1644 CR05 = crisis: NEGATIVE (리스크)\n           H_1643_REVISED Q07 = crisis: POSITIVE (안전)\n        \n        4. Full period IC (평상시 성과):\n           H_1644 = 0.55*0.000 + 0.45*0.015 = 0.0068\n           H_1643_REVISED = 0.55*0.013 + 0.45*0.040 = 0.0257 (H_1643_REVISED 우수)\n        \n        권장: H_1643_REVISED (더 높은 Stress ICIR, 더 나은 평상시 성과, Registry 안전성)\n        검증: S1 병렬 테스트로 확인\n        ",
+    "vs_D25_standalone": "\n        H_1643_REVISED vs D25 단일팩터\n        \n        문제점:\n        - D25 alone: Crisis ICIR 0.393, Full IC 0.013 (평상시 noise)\n        - 토론 합의: \"D25 단독으로 부족\" (Risk Manager, Governor)\n        \n        H_1643_REVISED 장점:\n        - Full IC 0.0257 (D25 alone 대비 2배 개선) by Q07 0.040 IC\n        - Blended Crisis ICIR 0.573 (D25 alone 0.393 대비 46% 개선)\n        - Regime-dependent 완화 (Q07 ratio 1.04x로 일관성)\n        \n        권장: H_1643_REVISED (분산 및 일관성 개선)\n        "
+  },
+  "core_references": [
+    {
+      "ref_id": "A7.01",
+      "paper": "Ang, Chen & Xing (2006) 'Downside Risk', Review of Financial Studies",
+      "relevance": "D25_Left_Tail_Beta의 학술 근거. Worst-decile beta가 횡단면 수익률 예측."
+    },
+    {
+      "ref_id": "L-121",
+      "summary": "Session 56 Crisis Defense Factor Analysis",
+      "relevance": "Q07_Earnings_Stability가 288팩터 중 양쪽 위기 기준 유일 최강. stress ICIR +0.753, 4r CRISIS ICIR +0.413."
+    },
+    {
+      "ref_id": "L-113",
+      "summary": "STR_1638 Quality-based Defense 실패",
+      "relevance": "QMJ(Quality Minus Junk) 기반 defense는 한국시장 구조적 실패. Q07은 메커니즘 분리로 회피."
+    },
+    {
+      "ref_id": "L-115",
+      "summary": "Low-beta filtering 불충분",
+      "relevance": "Beta 필터링만으로는 defense 불가 -> D25를 score에 직접 포함."
+    },
+    {
+      "ref_id": "L-122",
+      "summary": "Factor timing vs risk management",
+      "relevance": "조건부 활성화는 factor timing이 아닌 factor risk management (regime detection)로 설계."
+    },
+    {
+      "ref_id": "KR-FACTOR-2",
+      "paper": "박종원 et al. (2024) 한국시장 32년 팩터 실증",
+      "relevance": "한국시장 팩터 유효성 확인. Defense 조건부 평가(L-112)."
+    }
+  ],
+  "success_criteria": {
+    "s0_pass": "재설계 가설 승인 (5인 동의 또는 3인 이상)",
+    "s1_pass": "Stress outperform 4/6 이상 AND MDD < 65%",
+    "s2_pass": "Stress ICIR >= 0.35 AND Core(C19) 대비 stress 상관 < 0.45",
+    "s3_pass": "Core 대비 수익률 상관 < 0.40 AND Quality(Q01/Q02) 상관 < 0.20",
+    "s5_target": "조건부 활성화 시 Core+Defense MDD < 30%"
+  },
+  "next_steps": [
+    "S0 재토론: 5인 패널 중 3인 이상 동의 획득 (또는 Governor 최종 승인)",
+    "S1 병렬 테스트: H_1643_REVISED(D25+Q07) vs H_1644(D07+CR05) 동시 실행 (3개월)",
+    "S1 결과: Stress outperform 높은 쪽 선택, 또는 둘 다 통과 시 S2 진입",
+    "S5 mutation: Q07 quarterly lag 해결 (분기 중간 trigger 또는 interpolation)",
+    "S5 mutation: V24 조건부 활성화 (5-10% crisis only) 별도 H_1645 가설 준비"
+  ]
+}

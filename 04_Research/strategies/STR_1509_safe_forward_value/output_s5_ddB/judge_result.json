@@ -1,0 +1,78 @@
+{
+  "strategy_id": "STR_1509_safe_forward_value_S5_ddB",
+  "parent_id": "STR_1509_safe_forward_value",
+  "mutation": "DD 10/25 (moderate), min_exp 30%",
+  "judge_version": "v7",
+  "judge_date": "2026-03-26",
+  "grade": "C",
+  "score": 15.2,
+  "verdict": "C — Moderate DD overlay. MDD 35.9% (improved from 58.1%). CAGR 9.6% (sacrifice 28%). FF5 alpha +4.19%. No promotion — same structural issues as ddA with slightly worse risk-adjusted metrics.",
+  "l_code": "L-716",
+  "gates": {
+    "gate0_pit": {
+      "result": "PASS",
+      "c1_full_sample": "PASS",
+      "c2_same_day_circular": "PASS",
+      "c3_same_period": "PASS",
+      "c4_financial_lag": "PASS",
+      "c5_overlay_t1": "PASS — same dd_lag = c(0, dd_pct[-n_f]) as ddA",
+      "c6_survivorship": "PASS",
+      "c7_auto_detect": "PASS — CLEAN",
+      "c8_fm_same_day": "N/A",
+      "c9_vt_dd_same_day": "PASS — dd_lag is t-1 lag. Same code path as ddA, only DD_START/DD_FULL differ.",
+      "c10_liquidity": "PASS",
+      "c11_data_time_axis": "PASS",
+      "lookahead_detector": "CLEAN",
+      "detail": "Identical PIT structure to ddA. Only parameters differ (10/25 vs 7/22). All C1-C11 PASS."
+    },
+    "gate1_performance": {
+      "result": "MARGINAL",
+      "sharpe": 0.581,
+      "cagr_pct": 9.55,
+      "mdd_pct": 35.93,
+      "ir": 0.031,
+      "calmar": 0.266,
+      "ann_vol": 16.43,
+      "worst_month": -12.33,
+      "stress_outperform": "3/3",
+      "detail": "MDD 35.9% vs ddA 35.0% — nearly identical. CAGR 9.6% identical to ddA. But SR 0.581 < ddA 0.620 because vol is higher (16.4% vs 15.4%). The wider DD threshold lets more drawdown pass before braking, increasing vol without improving CAGR.",
+      "mdd_improvement": "58.1% -> 35.9% (-22.2pp)",
+      "cagr_sacrifice": "13.3% -> 9.6% (-3.75pp, -28.2%)",
+      "sr_change": "0.547 -> 0.581 (+6.2%)"
+    },
+    "gate2_artifacts": {
+      "result": "PASS",
+      "files": "performance.csv, hurdle_result.json, sim_result.rds, equity_curve.png, annual_returns.png, analysis_multifactor.csv"
+    },
+    "gate3_role_honesty": {
+      "result": "MARGINAL",
+      "expected_role": "core_alpha",
+      "actual_role": "diversifier",
+      "detail": "Same issue as ddA. CAGR 9.6% cannot support core_alpha. Diversifier is honest."
+    },
+    "gate4_statistical": {
+      "result": "WEAK",
+      "oos_ratio": 0.148,
+      "alpha_trend_slope": 0.068,
+      "rolling_sharpe_positive_rate": 0.783,
+      "detail": "OOS 0.148 even weaker than ddA (0.156). Rolling positive rate 78.3% < ddA 82.6%. Moderate DD lets more OOS degradation through."
+    },
+    "gate5_ff5": {
+      "result": "PASS_WEAK",
+      "ff3_alpha_annual_pct": 2.42,
+      "ff3_alpha_tstat": 0.636,
+      "carhart4_alpha_annual_pct": 2.39,
+      "carhart4_alpha_tstat": 0.626,
+      "ff5_alpha_annual_pct": 4.19,
+      "ff5_alpha_tstat": 1.014,
+      "ff5_adj_r2": 0.377,
+      "ff5_n_obs": 106,
+      "base_ff5_alpha_annual_pct": 6.61,
+      "alpha_survival_rate": 0.634,
+      "detail": "FF5 alpha +4.19%/yr (t=1.014). Survival rate 63.4% — worse than ddA (68.4%). Wider DD threshold absorbs more alpha. HML -0.42 (stronger anti-value than ddA -0.38)."
+    }
+  },
+  "comparison_note": "Strictly dominated by ddA: similar CAGR, similar MDD, but worse SR (0.581 vs 0.620) and worse OOS (0.148 vs 0.156). No advantage over ddA.",
+  "promotion_candidate": false,
+  "promotion_reason": "Dominated by ddA on all key metrics. CAGR 9.6% < 16% target."
+}

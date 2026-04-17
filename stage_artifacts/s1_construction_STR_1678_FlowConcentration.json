@@ -1,0 +1,97 @@
+{
+  "artifact_type": "s1_construction",
+  "strategy_id": "STR_1678",
+  "strategy_name": "FlowConcentration_ML",
+  "created": "2026-04-13",
+  "agent": "Forge",
+  "stage": "S1",
+
+  "hypothesis_ref": "s0_record_H_1678_flow_concentration_ml",
+  "core_idea": "기관·외국인 순매수 흐름에는 수일~수주의 자기상관(momentum)이 존재한다. 따라서 '누가 다음에 살 것인가'는 수익률 예측보다 예측 가능하다. XGBoost로 다음 21거래일의 기관+외국인 순매수 집중 종목을 사전 예측하여 포트폴리오를 구성한다.",
+  "academic_basis": "Sias (2004) 'Institutional Herding'; Nofsinger & Sias (1999) 'Herding and Feedback Trading by Institutional and Individual Investors'; Lakonishok et al. (1992) 'The impact of institutional trading on stock prices'",
+
+  "factor_id": "STR_1678",
+  "factor_family": "Flow_Momentum",
+  "expected_role": "core_alpha",
+  "why_now": "Factor DB 288팩터 중 Flow 계열 미활용(0건). 기관·외국인 수급 herding 현상은 한국시장에서 실증된 바 있으며(KSE/KOSDAQ 수급 데이터 2000~2026 확보), PG0 gap: SR 2.0+ 미달 상태에서 새로운 alpha source 필요.",
+
+  "pit_checklist": {
+    "C1": "PASS — 피처는 모두 rolling/expanding (full-sample 통계 없음)",
+    "C2": "PASS — 타겟은 t+1~t+21 (예측 대상), 피처는 t-1 기준 lag 적용",
+    "C3": "PASS — 피처 집계기간(1~60d past)과 타겟 기간(future 21d) 완전 분리",
+    "C4": "N/A — 재무제표 미사용",
+    "C5": "PASS — 오버레이 없음 (S1 순수 팩터 측정)",
+    "C9": "PASS — DD/VT 사용 없음",
+    "C13": "PASS — Z_Score_Aligned 사용, 수동 방향 반전 없음",
+    "C14": "PASS — Factor DB 접근 시 월말 기준 사용",
+    "C15": "PASS — load_month_factors() 경유 예정"
+  },
+
+  "universe": "KSE + KOSDAQ 전체 (유동성 필터: 20일 평균 거래대금 >= 2억원)",
+  "rebalance": "월간 (walk-forward expanding window, 63거래일 리피트)",
+  "holding_period": "1개월",
+  "num_stocks": 20,
+  "commission_bps": 15,
+
+  "features": {
+    "flow_features": [
+      "inst_netbuy_5d", "inst_netbuy_20d", "inst_netbuy_60d",
+      "foreign_netbuy_5d", "foreign_netbuy_20d", "foreign_netbuy_60d",
+      "individual_netbuy_5d",
+      "inst_flow_momentum", "foreign_flow_momentum",
+      "inst_concentration"
+    ],
+    "price_volume_features": [
+      "ret_5d", "ret_20d", "volume_ratio_20d", "log_mcap", "turnover_chg_20d"
+    ]
+  },
+
+  "target": {
+    "name": "fwd_inst_foreign_netbuy_21d",
+    "definition": "sum(institutional + foreign NetBuy over next 21 trading days), cross-sectional z-score per date",
+    "binary_variant": "top-20% per date = 1, rest = 0"
+  },
+
+  "models": [
+    {
+      "name": "XGBoost_Regression",
+      "objective": "reg:squarederror",
+      "output": "z-scored flow prediction → rank → top 20"
+    },
+    {
+      "name": "XGBoost_Classification",
+      "objective": "binary:logistic",
+      "output": "P(top-20% flow) → rank → top 20"
+    }
+  ],
+
+  "backtest_design": {
+    "IS": "2000-01 ~ 2007-12",
+    "OOS": "2008-01 ~ 2025-12",
+    "walk_forward": "expanding window, refit every 63 trading days",
+    "simulation_A": "Flow standalone: top-20 by predicted flow, EW, monthly rebal",
+    "simulation_B": "VDplus synergy: C19 top-20 pool, weight by predicted flow score"
+  },
+
+  "output_dir": "04_Research/strategies/flow_concentration_ml/",
+  "scripts": ["01_flow_features.R", "02_flow_model.R"],
+
+  "data_sources": [
+    ".cache/investor_stock/investor_institutional.parquet",
+    ".cache/investor_stock/investor_foreign.parquet",
+    ".cache/investor_stock/investor_individual.parquet",
+    ".cache/factor_db/factor_db_YYYYMM.parquet (C19_Composite_Earnings)",
+    "RAWDATA via load_rawdata(use_cache=TRUE)"
+  ],
+
+  "opt_compliance": {
+    "OPT1": "모든 parquet 한 번 로드 (루프 내 반복 로드 없음)",
+    "OPT2": "load_rawdata(use_cache=TRUE) 1회만",
+    "OPT3": "data.table frollsum/frollmean (for 루프 금지)",
+    "OPT4": "setkey(dt, Date, Ticker) 적용",
+    "OPT5": "gc() 대형 작업 후 호출"
+  },
+
+  "validation_status": "PENDING_EXECUTION",
+  "notes": "S1 단계: 순수 팩터 신호 측정. DD/VT/Regime 오버레이 없음. EW 20종목 + 15bps 커미션."
+}

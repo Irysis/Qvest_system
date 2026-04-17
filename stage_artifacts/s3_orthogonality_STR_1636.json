@@ -1,0 +1,152 @@
+{
+  "stage": "S3",
+  "strategy_id": "STR_1636",
+  "strategy_name": "Piotroski_RetAutocorr_Diversifier",
+  "analysis_date": "2026-04-08",
+  "role_bias": "RoleBias_Diversifier",
+  "reference_strategy": "STR_1631_v5_M11_hrp",
+  "common_period": "2005-08-03 ~ 2026-03-27 (3927 days)",
+
+  "return_correlation": {
+    "full_period": {
+      "R1636_vs_M11": 0.7834,
+      "R1636_vs_STR1550": 0.0323,
+      "R1636_vs_STR1555": 0.0275,
+      "M11_vs_STR1550": 0.0320,
+      "M11_vs_STR1555": 0.0315,
+      "threshold": 0.30,
+      "pass": false,
+      "note": "M11 대비 0.78 — diversifier 역할 불성립"
+    },
+    "recent_252d": {
+      "period": "2024-11-25 ~ 2026-03-27",
+      "R1636_vs_M11": 0.7944,
+      "R1636_vs_STR1550": 0.2997,
+      "R1636_vs_STR1555": 0.3016,
+      "note": "최근 1년도 M11과 0.79 — 개선 징후 없음"
+    },
+    "rolling_36m": {
+      "mean": 0.7408,
+      "median": 0.7327,
+      "min": 0.5435,
+      "max": 0.8992,
+      "pct_below_030": 0.0,
+      "note": "최소 0.54, 0.30 이하 구간 전무 — 구조적 고상관"
+    }
+  },
+
+  "crisis_correlation": {
+    "GFC_2008": {
+      "period": "2008-01 ~ 2009-03 (240 obs)",
+      "correlation": 0.9139,
+      "threshold": 0.50,
+      "pass": false
+    },
+    "EuDebt_2011": {
+      "period": "2011-06 ~ 2012-06 (209 obs)",
+      "correlation": 0.7802,
+      "threshold": 0.50,
+      "pass": false
+    },
+    "COVID_2020": {
+      "period": "2020-01 ~ 2020-06 (95 obs)",
+      "correlation": 0.9024,
+      "threshold": 0.50,
+      "pass": false
+    },
+    "RateHike_2022": {
+      "period": "2022-01 ~ 2022-12 (190 obs)",
+      "correlation": 0.8921,
+      "threshold": 0.50,
+      "pass": false
+    },
+    "all_pass": false,
+    "note": "4/4 위기 구간 전부 FAIL. 위기 시 오히려 상관 상승 (0.78→0.91)"
+  },
+
+  "correlation_decomposition": {
+    "method": "OLS market beta regression (BM = KOSPI200)",
+    "market_betas": {
+      "STR_1636": 0.934,
+      "M11": 0.854,
+      "STR_1550": 0.060,
+      "STR_1555": 0.047
+    },
+    "total_corr_1636_M11": 0.7834,
+    "residual_corr_1636_M11": 0.4320,
+    "market_component": 0.3514,
+    "note": "시장 제거 후에도 잔차 상관 0.43 — 공통 alpha 팩터 노출 의심 (size/value bias 유사)"
+  },
+
+  "stock_overlap": {
+    "mean_overlap_count": 0.9,
+    "mean_overlap_pct": 2.9,
+    "median": 1.0,
+    "min": 0,
+    "max": 4,
+    "pct_above_15": 0.0,
+    "n_1636_avg": 30.0,
+    "n_m11_avg": 20.0,
+    "threshold_pct": 50,
+    "pass": true,
+    "note": "종목 겹침 2.9% — 극도로 낮음. 상관의 원인은 종목이 아닌 팩터 스타일 노출"
+  },
+
+  "score_correlation": {
+    "valid_obs": 0,
+    "note": "공통 보유 종목이 0~4개로 Score 상관 계산 불가. 종목 겹침이 사실상 없음"
+  },
+
+  "marginal_contribution": {
+    "m11_standalone": {
+      "SR": 0.913,
+      "CAGR_pct": 19.90,
+      "MDD_pct": 45.2,
+      "Vol_pct": 21.8
+    },
+    "m11_plus_1636_ew": {
+      "SR": 0.748,
+      "CAGR_pct": 16.48,
+      "MDD_pct": 50.6,
+      "Vol_pct": 22.0
+    },
+    "delta": {
+      "SR": -0.165,
+      "CAGR_pp": -3.41,
+      "MDD_pp": 5.5,
+      "Vol_pp": 0.2
+    },
+    "sr_positive": false,
+    "mdd_negative": false,
+    "pass": false,
+    "note": "M11에 추가 시 SR -0.17, MDD +5.5pp — 순수 가치 파괴"
+  },
+
+  "s3_criteria_summary": {
+    "C1_return_corr_below_030": {"pass": false, "actual": 0.7834, "threshold": 0.30},
+    "C2_crisis_corr_below_050": {"pass": false, "worst": 0.9139, "threshold": 0.50},
+    "C3_stock_overlap_below_50pct": {"pass": true, "actual_pct": 2.9, "threshold": 50},
+    "C4_marginal_contribution_positive": {"pass": false, "sr_delta": -0.165, "mdd_delta": 5.5},
+    "criteria_passed": 1,
+    "criteria_total": 4
+  },
+
+  "s3_pass": false,
+  "s3_verdict": "FAIL",
+  "s3_reason": "M11 대비 수익률 상관 0.78 (허들 0.30의 2.6배), 위기 시 최대 0.91 (correlation breakdown), 한계 기여 음수 (SR -0.17, MDD +5.5pp). 종목 겹침은 2.9%로 극히 낮으나, 양 전략 모두 시장 beta 0.85~0.93으로 높고 잔차 상관 0.43으로 공통 스타일 노출이 존재. diversifier 역할 불성립.",
+
+  "mechanism_diagnosis": {
+    "root_cause": "STR_1636(Q04 Piotroski + L22 Ret Autocorr)과 M11(ConsensusRev 기반 HRP)이 모두 한국 시장 mid-cap value 영역에 집중. 시장 beta가 유사(0.93 vs 0.85)하고, 잔차에서도 공통 size/value 팩터 노출이 상관 0.43을 유발.",
+    "implication": "Q04(재무건전성)와 M11(애널리스트 컨센서스)이 종목은 다르지만 동일한 경기 사이클에 순행하는 quality factor 군에 속함. 위기 시 quality 팩터 전반이 동반 하락하여 상관 급등(0.91).",
+    "lesson": "economic_family 직교만으로 diversifier 효과를 예단할 수 없음. 팩터 스타일(quality/value) 수준의 체계적 노출이 수익률 상관을 지배."
+  },
+
+  "s4_eligible": false,
+  "s4_block_reason": "S3 FAIL — diversifier 역할 증명 실패. M11 보완 목적의 S4 진행 불가.",
+
+  "recommendations": [
+    "STR_1636은 독립 전략으로 재포지셔닝 가능 (ICIR 3.5, FMB t=6.08 — 신호 품질 자체는 우수)",
+    "M11 diversifier 역할 위해선 beta/style 직교 필요: momentum, low-vol, 또는 시장중립 구조 탐색",
+    "STR_1550/1555와는 상관 0.03으로 극도로 직교 — 이 축으로의 diversifier 가능성 재검토"
+  ]
+}

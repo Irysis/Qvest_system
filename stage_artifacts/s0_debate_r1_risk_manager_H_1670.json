@@ -1,0 +1,53 @@
+{
+  "role": "risk_manager",
+  "score": 10,
+  "arguments": [
+    "L31_Vol_Concentration의 위기 시 치명적 붕괴: stress_factor_ic_analysis 실증 데이터에서 L31의 crisis_ratio는 -9.25로 288팩터 중 최악 수준이다. stress ICIR -0.308(pct_pos 40%)로 6대 스트레스 구간에서 신호가 역전된다. 이는 위기 시 거래량 집중도가 급격히 변동하면서(유동성 증발 + 패닉 매도 집중) 정상 시 유효했던 cross-sectional 패턴이 완전히 깨지기 때문이다. L-117에서 이미 경고한 바와 같이 'ICIR 높다고 위기에도 강한 것은 아님'이 L31에 정확히 적용된다. 50% 비중의 L31이 위기 시 포트폴리오 전체를 오염시킬 위험이 있으며, L-106(market beta 지배) 교훈에 따르면 위기 시 팩터 간 상관이 급등하여 L40의 양수 stress IC(+0.247)마저 L31의 음수 drag에 의해 상쇄될 가능성이 높다.",
+    "Diversifier 역할 주장 vs beta 지배 현실의 괴리: L-106/L-115 교훈이 이 가설에 직접 적용된다. 단면 상관(C19 대비 0.004/0.010)이 낮아도 long-only 전략에서는 market beta 0.85~0.93이 수익률 상관을 지배한다(STR_1636 사례: 단면 상관 낮아도 포트폴리오 상관 0.78). Liquidity 팩터로 선별한 종목이라도 KOSPI 소형주 유니버스의 beta 구조에서 벗어날 수 없다. STR_1609(L40 단독) 실증에서 BM_Corr 0.701로 높은 시장 상관이 이미 확인되었다. 2팩터 블렌드가 beta orthogonality를 달성할 메커니즘이 제시되지 않았으며, L-115에서 beta bottom 40% 필터링조차 Core 상관 0.575로 diversifier 실패했다는 점은 유동성 팩터의 diversifier 역할에 근본적 의문을 제기한다.",
+    "선행 실증의 반복 실패 패턴 무시: STR_1609(L40 단독)는 Grade F(MDD 51.04%, IR -0.015), STR_1465(L40+overlay)는 Grade C(MDD 29.45%, IR -0.163), STR_1508(L31 단독)은 S5 FAIL이다. 3건의 선행 전략이 모두 유동성 팩터의 한국시장 한계를 입증했다. 특히 STR_1609의 IR이 음수(-0.015)라는 것은 ICIR 0.826의 팩터 수준 예측력이 포트폴리오 수준 초과수익으로 전환되지 않음을 뜻한다(L-127 IC!=SR 교훈과 동일 구조). L31+L40 2팩터 블렌드가 각 단독 실패를 구제할 학술적 메커니즘이 부재하며, L-119(정적 EW 블렌드는 alpha 희석)에 따르면 약한 팩터끼리의 50/50 블렌드는 강한 쪽의 alpha마저 희석시킨다."
+  ],
+  "concern": "L31_Vol_Concentration의 crisis_ratio -9.25는 이 프로젝트에서 관측된 가장 극단적인 위기 시 팩터 붕괴 사례이다. 정상 시 ICIR 0.990의 매력적 수치 이면에 stress ICIR -0.308, pct_pos 40%라는 위험이 숨어 있다. 현 포트폴리오(STR_1631+STR_1656)가 SR 1.193으로 달성한 안정성을 이 조합이 위기 시 훼손할 가능성을 정량적으로 배제할 수 없다. Diversifier는 정상 시가 아니라 위기 시에 가치를 증명해야 한다.",
+  "conditions": [
+    "S2에서 L31+L40 블렌드의 stress 구간별 IC를 반드시 분리 계산하고, stress ICIR이 양수가 아니면 L31 비중을 30% 이하로 하향 또는 L40 단독으로 전환할 것",
+    "S3에서 STR_1631과의 포트폴리오 수준 수익률 상관(beta 분해 포함)을 측정하여 잔차 상관 0.40 이하를 확인할 것 — L-106 교훈 준수",
+    "S5 진입 전 STR_1609/STR_1465/STR_1508의 3건 실패 원인(IR 음수, MDD 50%+, alpha decay ratio 0.55)이 2팩터 블렌드에서 구조적으로 해소되는 근거를 제시할 것"
+  ],
+  "kill_scenarios": [
+    {
+      "id": "KS1_CRISIS_L31_COLLAPSE",
+      "type": "empirical_tail",
+      "description": "GFC/COVID급 위기 시 L31 crisis_ratio -9.25 발동 시나리오. 패닉 매도로 거래량이 소수 대형주에 집중되면서 Vol_Concentration 팩터 신호가 완전 역전. L31 비중 50%에서 포트폴리오 월간 손실이 BM 대비 -5~-8%p 추가 발생. STR_1631 Core Alpha의 위기 시 방어력(COVID MDD 1.4%)을 diversifier가 오히려 훼손하는 역설적 상황."
+    },
+    {
+      "id": "KS2_LOOKAHEAD_ICIR_SELECTION",
+      "type": "future_reference_path",
+      "description": "ICIR 0.990이라는 극단적 수치 자체가 미래참조 경로의 징후. Factor DB 전체 기간(1990~2026) IC 통계로 팩터를 선별한 것이 implicit C1 위반일 가능성. Expanding window ICIR로 검증하면 초기 구간(2005 이전)에서 L31 ICIR이 0.5 미만일 수 있으며, 2020년대 데이터가 전체 ICIR을 끌어올린 recency bias가 의심된다. L-107(ICIR 고정 가중 C1 위반)과 같은 구조로, 팩터 선택 자체가 ex-post 최적화일 수 있다."
+    }
+  ],
+  "scoring_detail": {
+    "tail_risk_assessment": 2,
+    "tail_risk_reasoning": "L31 crisis_ratio -9.25는 극단적 위기 시 붕괴를 예고. stress ICIR -0.308. 2팩터 중 50%가 위기 시 역전되는 구조는 tail risk 관점에서 용인 불가. L40의 stress ICIR +0.247만으로는 L31의 drag를 상쇄할 수 없음. EVT shape parameter 측정 전이나 선행 STR_1609의 ES99_d 3.11%가 이미 경고 수준.",
+    "kill_scenario": 3,
+    "kill_scenario_reasoning": "2건 제시(경험적 꼬리 + 미래참조 경로). KS1은 stress_factor_ic_analysis 실증 데이터에 기반한 구체적 시나리오. KS2는 ICIR 0.990의 통계적 이상치를 미래참조 관점으로 해석한 도전. 양쪽 모두 실현 가능성이 높음.",
+    "beta_orthogonality": 2,
+    "beta_orthogonality_reasoning": "L-106/L-115가 직접 적용. 단면 상관 낮음에도 beta 0.85~0.93 지배로 포트폴리오 수준 diversification 실패 패턴이 반복될 구조. STR_1609 BM_Corr 0.701이 이미 입증. Beta orthogonality 메커니즘 부재.",
+    "mdd_contribution": 2,
+    "mdd_contribution_reasoning": "STR_1609 MDD 51.04%, STR_1465 MDD 29.45%(overlay 적용 후). Standalone liquidity 팩터의 MDD 제어 불가 패턴 3회 반복. 현 포트폴리오 MDD 21.27%를 악화시킬 가능성이 개선 가능성보다 높음. 위기 시 L31 붕괴가 MDD 기여를 추가 악화.",
+    "regime_vulnerability": 1,
+    "regime_vulnerability_reasoning": "L31은 정상 시에만 작동하고 위기 시 완전 역전되는 극단적 regime-conditional 팩터. Crisis ratio -9.25는 regime 전환 시 가장 취약한 팩터임을 의미. L40은 상대적으로 안정(crisis_ratio 0.89)이나, EW 블렌드에서 L31의 regime 취약성이 지배적. DCC-GARCH 분석 없이도 regime 전환 시 tail dependence 급등이 예상됨."
+  },
+  "references": [
+    "L-106: Market beta 지배 — 종목 겹침 3%에도 수익률 상관 0.78",
+    "L-115: Low-Beta 필터링만으로 분산 불충분 — beta 0.93→0.40에도 Core 상관 0.575",
+    "L-117: L31 ICIR 0.99이나 crisis ratio -9.25 — 위기 시 붕괴",
+    "L-119: 정적 EW 블렌드 = alpha 희석",
+    "L-127: IC!=SR — ICIR 높아도 포트폴리오 SR 전환 실패",
+    "STR_1609: L40 단독 Grade F (MDD 51.04%, IR -0.015)",
+    "STR_1465: L40+overlay Grade C (MDD 29.45%, IR -0.163)",
+    "STR_1508: L31 단독 S5 FAIL",
+    "stress_factor_ic_analysis.csv: L31 stress ICIR -0.308, L40 stress ICIR +0.247"
+  ],
+  "agent_id": "risk_manager_H1670_r1",
+  "debate_round": "R1",
+  "timestamp": "2026-04-12"
+}

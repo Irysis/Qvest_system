@@ -1,0 +1,154 @@
+{
+  "factor_id": "DFA_C19_AC21_CR05",
+  "strategy_id": "STR_1651_dynamic_factor_allocation",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-09",
+
+  "hypothesis": "MRS 국면 기반 동적 팩터 배분(Dynamic Factor Allocation). 정상장(MRS<20, ~76%)에서는 C19_Composite_Earnings 100%로 alpha 희석 제로, 경계장(MRS 20~50, ~16%)에서는 C19 60% + AC21 25% + CR05 15%, 위기장(MRS>=50, ~8%)에서는 C19 30% + AC21 40% + CR05 30% + VD+ overlay(inverse 30%, cash 30%). 2축 방어 구조: Axis 1(기존 VD+ overlay — position sizing/exposure 조절) + Axis 2(신규 — alpha source 자체를 위기에 강한 팩터로 전환). STR_1650 EW 정적 블렌드(SR 0.38, MDD 71.5% Hard Fail)의 근본 실패 원인인 '항시 방어팩터 노출에 의한 정상장 alpha 희석'을 해결한다.",
+
+  "economic_mechanism": {
+    "why_it_works": "세 가지 독립적 학술 메커니즘의 국면 조건부 결합. (1) Consensus/Analyst Revision (C19): 애널리스트 이익 수정은 투자자의 과소반응(Hong & Stein 1999 gradual information diffusion)과 처분효과(Shefrin & Statman 1985)로 인해 가격에 점진적으로 반영. 정상장에서 정보 흐름이 원활할 때 가장 강력한 alpha source — stress_ic_analysis 기준 normal IC 0.027 vs crisis IC 0.010으로 정상장 우위 확인. (2) Accrual Quality (AC21): Sloan(1996)의 발생액 이상현상 — 현금흐름 대비 발생액 비율이 높은 기업은 이익의 질이 낮아 미래 실적 하락. Richardson et al.(2005) 발생액 신뢰도(reliability)가 낮을수록 평균회귀 빠름. 위기 시 시장이 이익의 질을 더 엄격히 평가하므로 accrual factor의 분별력 상승 — stress ICIR +0.80, crisis ratio 1.20. (3) Crowding/Short Pressure (CR05): Lou & Polk(2022)의 crowding reversal — 과밀 종목은 외생 유동성 충격에 취약. 위기 시 forced selling으로 crowded position이 급격히 해소되며, 비과밀 종목이 상대적 outperform. crisis ICIR +0.77, crisis ratio 2.00(정상장 대비 2배).",
+    "why_dynamic_beats_static": "Arnott, Harvey & Kalesnik(2016) 'Timing Smart Beta — Buy Low': 팩터 수익률은 밸류에이션 사이클에 의존하며, 역발상 타이밍이 추세추종보다 일관적으로 우월. Guidolin & Timmermann(2007): 다중국면 하 동적 배분이 정적 배분 대비 Sharpe Ratio 유의미 개선. 핵심 통찰: STR_1650 Hard Fail은 정상장(76%)에서 방어팩터가 alpha를 희석했기 때문. 국면 조건부 배분은 '정상장에서는 순수 alpha, 위기에서만 방어'를 구현하여 정적 블렌드의 구조적 한계를 해소한다. 이는 Ang & Timmermann(2012)의 'regime changes significantly affect optimal portfolio allocation — ignoring regimes leaves money on the table' 결론과 정확히 일치.",
+    "why_these_three_factors": "AC21(ρ=0.038 with C19, IC timing cor=0.012)과 CR05(ρ=0.012, overlap 0.0%)는 C19과 단면 상관이 사실상 제로. 즉 이들은 같은 종목을 선택하지 않으며, 다른 경제적 정보 채널(consensus revision vs accounting quality vs crowding risk)에서 alpha를 추출. Markowitz 원리에 의해 상관이 낮은 alpha source를 결합할 때 portfolio SR = sqrt(SR1^2 + SR2^2)에 수렴 — 3개 독립 source의 이론적 SR 상한이 개별 SR 대비 sqrt(3)배."
+  },
+
+  "factors": [
+    {
+      "name": "C19_Composite_Earnings",
+      "family": "consensus",
+      "role_in_strategy": "Primary alpha source. 정상장 100%, 경계장 60%, 위기장 30%.",
+      "ic_profile": {"full_ic": 0.044, "icir": 0.543, "stress_ic": 0.010, "normal_ic": 0.027, "crisis_ratio": 0.37},
+      "literature": "Hong & Stein (1999), Shefrin & Statman (1985), core_knowledge_base A1"
+    },
+    {
+      "name": "AC21_CF_to_Accrual_Ratio",
+      "family": "accrual",
+      "role_in_strategy": "Crisis-resilient alpha. 정상장 0%, 경계장 25%, 위기장 40%.",
+      "ic_profile": {"full_ic": 0.036, "icir": 0.706, "stress_ic": 0.047, "normal_ic": 0.039, "stress_icir": 0.795, "crisis_ratio": 1.20},
+      "literature": "Sloan (1996 TAR), Richardson et al. (2005 JAE), Bradshaw et al. (2001)"
+    },
+    {
+      "name": "CR05_Short_Pressure_Proxy",
+      "family": "crowding",
+      "role_in_strategy": "Crisis hedge alpha. 정상장 0%, 경계장 15%, 위기장 30%.",
+      "ic_profile": {"full_ic": 0.015, "icir": 0.569, "stress_ic": 0.050, "normal_ic": 0.025, "stress_icir": 0.770, "crisis_ratio": 2.00},
+      "literature": "Lou & Polk (2022), Stein (2009), Dechow et al. (2001)"
+    }
+  ],
+
+  "allocation_rule": {
+    "regime_source": "regime_signal.R (Regime Engine v7.1, L-442). t-1 lag mandatory (C5).",
+    "thresholds": {
+      "normal": {"condition": "MRS < 20", "frequency": "~76%", "weights": {"C19": 1.0, "AC21": 0.0, "CR05": 0.0}},
+      "caution": {"condition": "20 <= MRS < 50", "frequency": "~16%", "weights": {"C19": 0.6, "AC21": 0.25, "CR05": 0.15}},
+      "crisis":  {"condition": "MRS >= 50", "frequency": "~8%",  "weights": {"C19": 0.3, "AC21": 0.4, "CR05": 0.3}}
+    },
+    "overlay_vdplus": {
+      "condition": "Crisis only (MRS >= 50)",
+      "effect": "inverse ETF 30% + cash 30% (existing VD+ mechanism from L-114)",
+      "rationale": "Axis 1 defense: position sizing. Axis 2 (factor selection)와 독립적 방어축."
+    },
+    "implementation": "Final_Score = w_C19 * Z(C19) + w_AC21 * Z(AC21) + w_CR05 * Z(CR05). Z = Z_Score_Aligned from Factor DB (C13). Weights determined by t-1 MRS. Top 30 EW, 15bps commission, LIQ >= 2e8."
+  },
+
+  "expected_role": "Core Alpha with embedded defense",
+  "expected_role_detail": "정상장(76%)에서는 C19 단독 = STR_1631과 동일한 pure alpha. 위기 전환 시 factor selection이 자동으로 crisis-resilient alpha(AC21, CR05)로 교체 + VD+ overlay로 exposure 축소. 단일 전략 내에서 Core Alpha와 Defense를 국면에 따라 전환하는 meta-strategy.",
+  "role_bias_tag": "RoleBias_Core",
+
+  "why_now": {
+    "gap_vector": {
+      "sr_gap": "+0.757 (1.243 -> 2.0)",
+      "cagr_gap": "-0.031 (19.1% > 16%, ACHIEVED)",
+      "mdd_gap": "+0.004 (25.4% ~= 25%, NEAR_TARGET)"
+    },
+    "primary_gap": "SR gap이 유일한 미달 지표. Markowitz formula에 의해 독립적 alpha source 2~3개 추가 시 portfolio SR 2.0 달성 가능(gap_vector.markowitz_path 참조).",
+    "concentration_risk": "현재 100% consensus family 집중(family_concentration.consensus=1.0). accrual + crowding family 추가로 3-family 분산 달성. Factor Taxonomy QEPM 9 기준 미구축 family 우선 탐색 원칙 준수.",
+    "diversifier_urgency": "PG0 sleeve_needs = ['diversifier'], count_needed = '2-3 independent alpha sources'. AC21(accrual)과 CR05(crowding) 모두 priority_families에 명시됨.",
+    "static_blend_failure": "STR_1650 EW 1/3 블렌드 Hard Fail(SR 0.38, MDD 71.5%). 정적 배분의 구조적 한계 확인 — 정상장에서 방어팩터 노출이 alpha를 파괴. 동적 배분이 논리적 필연.",
+    "regime_infra_ready": "Regime Engine v7.1 PIT-clean 확인(L-442~446), expanding percentile threshold, slow-crisis defense. 인프라 즉시 활용 가능."
+  },
+
+  "core_reference": {
+    "primary": [
+      "A3: Sloan (1996, TAR) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows?' — accrual anomaly의 원조. AC21의 이론적 토대.",
+      "Richardson, Sloan, Soliman & Tuna (2005, JAE) 'Accrual Reliability, Earnings Persistence and Stock Prices' — accrual 신뢰도 기반 alpha 강화.",
+      "Lou & Polk (2022) 'Comomentum: Inferring Arbitrage Activity from Return Correlations' — crowding reversal 메커니즘. CR05의 이론적 토대.",
+      "Arnott, Harvey, Kalesnik & Linnainmaa (2016) 'Timing Smart Beta Strategies' — 팩터 타이밍에서 역발상(contrarian) > 추세추종. 밸류에이션 사이클에 따른 동적 배분 근거.",
+      "Guidolin & Timmermann (2007, JEE) 'Asset Allocation Under Multivariate Regime Switching' — 다중국면 하 동적 배분이 정적 배분 대비 SR 유의미 개선.",
+      "Ang & Timmermann (2012) 'Regime Changes and Financial Markets' — 국면 변화가 최적 포트폴리오 배분에 유의한 영향."
+    ],
+    "supporting": [
+      "Hong & Stein (1999, JF) 'A Unified Theory of Underreaction, Momentum, and Overreaction' — gradual information diffusion으로 consensus revision alpha 설명.",
+      "Bradshaw, Richardson & Sloan (2001) — 애널리스트도 accrual 정보 미활용 → 퀀트 전략 활용 가치.",
+      "Stein (2009, JF) 'Sophisticated Investors and Market Efficiency' — crowding이 차익거래 효율성을 저하시키는 메커니즘.",
+      "Dechow, Hutton & Sloan (2001) — short selling과 accrual anomaly의 교차점."
+    ]
+  },
+
+  "lesson_check": {
+    "L-111": "STR_1631 SYN_05 Grade A (SR 1.248, CAGR 22.5%). C19 IC-weighted blend 유효성 확인. 본 전략의 정상장 모듈이 SYN_05와 동일 구조.",
+    "L-113": "Quality 기반 Defense는 한국시장에서 구조적 역 defense(위기 상관 0.89, 하방 beta 1.09). 따라서 본 전략은 quality가 아닌 accrual/crowding으로 defense 팩터를 구성.",
+    "L-114": "VD+ overlay(Enhanced Regime + DD Brake)로 MDD 33.9% -> 25.4% 달성. Axis 1 defense 유효성 확인. 본 전략은 Axis 2(factor selection)를 추가하여 2축 방어 구현.",
+    "L-115": "Low-Beta 유니버스 필터링만으로는 분산 불충분. 본 전략은 beta 필터 대신 factor family 다양성으로 분산 추구.",
+    "L-116": "조건부 defense 개념은 유효하나 현 시점 diversifier 우선(REVISE). 본 전략은 defense를 독립 sleeve가 아닌 동적 factor weight로 내장하여 복잡성 감소.",
+    "L-118": "Market beta가 long-only 상관을 지배. Beta orthogonality가 family orthogonality보다 중요. AC21/CR05의 beta profile S2에서 반드시 확인 필요.",
+    "L-110": "Overlay Multiplier Principle — base SR < 1.0이면 overlay 무효. 본 전략의 정상장 base는 C19 단독(SR ~1.25)이므로 overlay 적용 조건 충족.",
+    "L-484": "수익률 블렌드 앙상블 30종목 위반. 본 전략은 score-level blending(Z-score 가중합)이므로 단일 Top 30 포트폴리오 유지."
+  },
+
+  "pit_safeguards": {
+    "C1": "MRS threshold(20/50)는 사전 고정(not optimized). Cross-validation 불필요.",
+    "C2": "Factor weight는 t-1 MRS 기준으로 결정. Same-day circular 원천 차단.",
+    "C4": "AC21 재무제표 기반 — 연간 5월, 분기 45일 lag. Factor DB load_month_factors() 경유(C15).",
+    "C5": "MRS는 전월말 값 사용(t-1 lag). regime_signal.R이 이미 구현.",
+    "C9": "DD/VT overlay도 t-1 lag 사용(VD+ 인프라에서 이미 검증).",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date 준수.",
+    "C15": "Factor DB parquet 직접 로드 금지. load_month_factors() 사용."
+  },
+
+  "risks": {
+    "factor_timing_overfit": "MRS threshold(20/50)가 in-sample 최적이 아닌 논문 기반 사전 고정이므로 과적합 위험 낮음. 그러나 한국시장에서 threshold sensitivity는 S5에서 robustness check 필요.",
+    "regime_misclassification": "MRS 오판 시 잘못된 팩터 노출. 특히 false crisis(MRS>50 but 실제 정상) 시 C19 비중 축소로 alpha 손실. Regime Engine v7.1의 expanding percentile + slow-crisis mechanism이 false positive 억제.",
+    "ac21_cr05_standalone_unverified": "AC21(STR_1576)은 S2 profiling 완료(ICIR 0.71) but standalone backtest 미실행. CR05는 standalone IC 0.015로 낮음(ICIR 0.57). 두 팩터의 단독 alpha는 미검증 — 본 전략에서는 위기 조건부로만 활용하므로 전기간 standalone alpha는 덜 중요하나, stress period IC/ICIR이 실제 백테스트에서 재현되는지 S2에서 확인 필요.",
+    "transition_cost": "국면 전환 시 factor weight 변경으로 추가 turnover 발생. 특히 정상→경계 전환 시 30종목 중 상당수 교체 가능. 격월 리밸런싱으로 완화 + S5에서 buffer zone mutation 검토.",
+    "sample_size_crisis": "위기장 8%(~20개월)로 AC21/CR05의 crisis alpha 추정이 소표본 문제. Bootstrap confidence interval S2에서 확인.",
+    "complexity_risk": "3팩터 + 국면 전환 + VD+ overlay = 자유도 증가. S7 Complexity Gate에서 과적합 vs 구조적 alpha 판별 필수."
+  },
+
+  "implementation_notes": {
+    "s1_pure_signal": "S0/S1에서는 DD/VT/Regime overlay 금지 원칙에 대한 예외 적용: 국면 전환 자체가 alpha source이므로 regime 허용(CLAUDE.md 예외조항). 단, S1에서는 순수 factor weight 전환만 측정. VD+ overlay는 S5에서 추가.",
+    "rebalance": "격월(bimonthly) — STR_1631 SYN_05와 동일. 국면 전환이 격월 리밸런싱 주기 내에서 발생하면 다음 리밸런싱까지 대기.",
+    "stock_selection": "Z_final = w_C19*Z(C19) + w_AC21*Z(AC21) + w_CR05*Z(CR05). Top 30 EW. 15bps commission. LIQ >= 2e8.",
+    "factor_db_access": "load_month_factors(factors=c('C19_Composite_Earnings','AC21_CF_to_Accrual_Ratio','CR05_Short_Pressure_Proxy')). 3팩터만 필터 로드."
+  },
+
+  "prior_art_gate": {
+    "C19": "PG2 (STR_1550/1555). Grade A confirmed.",
+    "AC21": "S2 profiled (STR_1576). ICIR 0.71. Standalone backtest pending.",
+    "CR05": "S2 profiled. ICIR 0.57. Standalone backtest pending.",
+    "DFA_combination": "Novel. Regime-conditional factor weight switching not tested in V7 pipeline. STR_1621(regime conditional allweather)은 유사 개념이나 D01/D44(risk 팩터) 기반 — 본 전략은 accrual/crowding family 기반으로 차별화. PASS."
+  },
+
+  "soft_prior": {
+    "consensus_family": "C19 단독 SR ~1.25 확인. 정상장 alpha 기대치 높음.",
+    "accrual_family": "Factor DB 288 중 미탐색. 한국시장 다중검정 후 유의성 불확실(Leippold & Lohre 2012). 조건부(위기장) 활용으로 리스크 완화.",
+    "crowding_family": "CR05 full-sample IC 0.015로 낮으나 crisis IC 0.050(3.3x). 조건부 활용에 적합한 profile."
+  },
+
+  "success_criteria": {
+    "minimum": "SR > 1.30 (STR_1631 VD+ 1.243 대비 개선), MDD < 25%, CAGR > 16%",
+    "target": "SR > 1.50, MDD < 22%, CAGR > 18%",
+    "stretch": "SR > 1.80 (portfolio SR 2.0 달성에 근접)"
+  },
+
+  "gap_vector_snapshot": {
+    "sr_gap": 0.757,
+    "cagr_gap": -0.031,
+    "mdd_gap": 0.004,
+    "sleeve_needs": ["diversifier"],
+    "family_concentration": {"consensus": 1.0}
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "role": "risk_manager",
+  "r1_score": 14,
+  "r2_score": 13,
+  "score_changed": true,
+  "score_change_reason": "Quant의 D25 실측 ICIR 0.119(허들 미달) + IC 상관 0.430 확인으로 D25 위험이 R1 우려보다 더 구조적임이 입증됨. 다만 Governor의 regime-conditional 배분 조건(정상기 0~10%)이 D25 정상기 drag 완화에 유효한 설계이고, Q07 단독 전환 경로가 명시적으로 열려 있으므로 1점만 하향",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "D25 실측 ICIR 0.119 허들 미달 + 4-regime 전 구간 불안정(CRISIS -0.174, NORMAL -0.245)은 R1에서 내가 지적한 '4-regime CRISIS 반전' 우려를 정량적으로 확인해준다. stress 6대 사건(n=40)에서만 양수이고 나머지 전 구간에서 음수/무의미한 팩터를 상시 defense로 편입하는 것은 과적합 위험이 크다. Quant가 제시한 EU_Debt ICIR -0.159, COVID ICIR -0.011도 D25가 '모든 위기에서 방어'가 아닌 '특정 유형 위기에서만 작동'하는 conditional factor임을 뒷받침한다"
+    },
+    {
+      "with": "codex_critic",
+      "point": "288팩터 ranking에서 Q07 최강 선정의 selection bias 우려에 동의한다. 다만 Codex Critic의 지적을 리스크 관점으로 확장하면, Q07의 crisis_ratio 1.04x(정상-위기 거의 동일)는 defense가 아니라 all-weather 팩터 특성이다. 이것이 defense로 분류되면 AX-001(조건부 성과 평가) 기준에서 역설이 발생한다: 위기 시 특별히 더 좋아지지 않는 팩터가 defense 역할을 할 수 있는가? crisis_ratio 1.04x는 방어력이 아니라 안정성이며, 이 구분이 PG2 배분 설계에 직결된다"
+    },
+    {
+      "with": "governor",
+      "point": "Defense family 0%의 구조적 공백 인식과 regime-conditional 배분(정상기 0~10%, 위기 시 확대) 설계는 L-119(정적 블렌드 alpha 희석) 교훈에 정확히 부합한다. 정적 30% 고정 배분 금지 조건은 D25 정상기 drag 문제를 구조적으로 완화하는 올바른 방향이다"
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Governor는 D25+Q07 blended crisis IC 0.056을 근거로 '위기 시 명확한 한계기여'를 주장했으나, 이 수치는 stress 6대 사건 기준(n=40)에 편향된 추정치다. 4-regime 데이터로 재계산하면 D25 CRISIS IC -0.021 + Q07 CRISIS IC +0.023이므로 55:45 blend crisis IC = 0.55*(-0.021) + 0.45*(0.023) = -0.001로 사실상 zero다. 현 포트폴리오의 PG0 gap은 SR 0.807이지 MDD가 아니다(MDD -21.3%, 목표 -25% 이미 달성). Defense sleeve가 SR gap을 얼마나 축소하는지 메커니즘이 제시되지 않았다. L-119 교훈(C19+AC21+CR05 EW blend SR 0.38, MDD 71.5%)이 경고하는 것은 정확히 이 시나리오다: alpha가 약한 팩터를 Core에 합산하면 SR이 오히려 하락한다. D25 전기간 ICIR -0.051(4-regime 기준), Q07 전기간 ICIR 0.401 -- 두 팩터의 blend ICIR은 Q07 단독보다 반드시 낮아진다",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "Academic가 Ang, Chen & Xing(2006) 원문 메커니즘 충실 구현을 인정했으나, 리스크 관점에서 20년 전 논문의 한국시장 적용 가능성에 대한 kill scenario를 제시한다. Ang et al.(2006)의 downside beta premium은 미국 cross-section에서 발견되었고, 한국시장 실증에서 D25 전기간 ICIR -0.051(conditional_ic_matrix 기준)로 premium이 아예 존재하지 않는다. D25 normal IC -0.002, bad regime IC -0.001로 프리미엄 부재가 확인된다. 20년 경과로 post-publication decay를 우려했다면 한국 데이터가 이미 이를 보여주고 있다. 학술적 메커니즘 정합성과 실증적 재현성은 별개 문제이며, L-115(Low-Beta 필터링으로 분산 불충분)가 정확히 같은 패턴이다: 이론적으로 옳아도 한국 long-only에서는 market beta가 지배한다(L-106)",
+      "severity": "major"
+    },
+    {
+      "against": "quant",
+      "point": "Quant가 D25 x Q07 IC 상관 0.430을 보고했는데, 이 수치의 리스크 함의를 더 깊이 분석해야 한다. 0.430은 '스트레스 구간에서 동반 강화 또는 동반 약화' 패턴 여부에 따라 의미가 완전히 달라진다. D25 CRISIS ICIR -0.174 + Q07 CRISIS ICIR +0.413이므로 위기 시 반대 방향으로 움직인다(D25 악화, Q07 개선). 이는 정상기 상관 0.430과 위기 시 상관의 구조적 불안정성(regime-dependent correlation)을 시사한다. DCC-GARCH로 동적 상관을 측정하지 않으면 55:45 고정 비율이 regime 전환 시 어떻게 작동하는지 예측 불가능하다. Quant는 스트레스 구간 한정 상관 추가 계산을 조건으로 걸었는데, 이것이 S1이 아닌 S0에서 이미 available한 데이터로 계산 가능함에도 미제출된 것은 검증 불충분이다",
+      "severity": "minor"
+    }
+  ],
+  "kill_scenarios": [
+    {
+      "id": "KILL-1_REGIME_TRANSITION_WHIPSAW",
+      "type": "future_path",
+      "description": "MRS 29.2(Caution) 현 상태에서 40~50 구간으로 진입 시 -- regime-conditional 배분이 defense 비중 확대를 트리거하지만, 4-regime CAUTION에서 D25 ICIR 0.201(유일한 양수 구간)이 CRISIS 진입과 동시에 -0.174로 반전. 즉 defense가 필요한 바로 그 순간에 D25가 역방향으로 전환되는 구조적 모순이 발생한다. Q07은 CRISIS 0.413으로 유지되나 D25 55% 비중이 blend를 끌어내린다. regime 전환 시점의 whipsaw가 MDD를 오히려 확대하는 시나리오"
+    },
+    {
+      "id": "KILL-2_BETA_DOMINATION_REPLAY",
+      "type": "historical_replay",
+      "description": "L-106(market beta 지배) + L-115(low-beta 필터 분산 불충분) 재현. STR_1642(Low-Beta 3F)는 beta 0.93->0.40 절반 감소에도 Core 상관 0.575로 diversifier 실패. D25 Left Tail Beta 기반 종목 선택이 low-tail-beta = low-market-beta 종목을 선호하여 L-115와 동일한 함정에 빠질 가능성. DCC-GARCH 없이는 위기 시 상관 급등(L-113: 위기 상관 0.89)으로 분산 효과 소멸. 이 가설의 defense sleeve가 Core(STR_1631)와 위기 시 상관 0.70+ 된다면 MDD 개선 불가"
+    }
+  ],
+  "new_conditions": [
+    "D25 비중 55%는 R2 토론 결과 과도함. S1에서 Q07 단독(100%) vs D25+Q07(55:45) vs D25+Q07(30:70) 3-way 비교를 수행하고, Q07 단독이 stress outperform 4/6 이상이면 D25 제거를 기본 경로로 설정할 것",
+    "S1 전 4-regime x D25 x Q07 교차 상관(regime-conditional IC correlation)을 계산할 것. CRISIS 구간에서 상관이 0.430보다 높아지면(동반 약화) blend 자체를 기각",
+    "Q07의 defense 역할 분류 적합성을 crisis_ratio 1.04x 기준으로 재검토할 것. crisis_ratio < 1.5이면 'all-weather stabilizer'로 재분류하고 PG2 배분 로직을 defense가 아닌 stabilizer 경로로 설계"
+  ],
+  "strongest_opposing_argument": "Governor의 'Defense family 0%는 구조적 공백이며 regime-conditional 배분으로 정상기 drag를 통제할 수 있다'는 주장이 가장 강력하다. 실제로 현 포트폴리오가 consensus 50% + ML 50%의 양극 구조이므로, 제3의 축 자체는 포트폴리오 이론상 필요하다. 다만 그 축이 D25+Q07인지, Q07 단독인지, 혹은 전혀 다른 접근(DD Brake 파라미터 최적화 등 overlay 강화)인지는 S1 실증 후 결정해야 한다"
+}

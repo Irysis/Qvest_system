@@ -1,0 +1,26 @@
+{
+  "strategy_id": "STR_1615",
+  "strategy_name": "Accrual_Vol_CashConv",
+  "judge_date": "2026-03-29",
+  "grade": "F",
+  "score": 49.2,
+  "sharpe": 0.517,
+  "cagr": 12.17,
+  "mdd": 64.77,
+  "turnover": 207.5,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — Z_Score_Aligned 사용(C13), shift lag 적용(C2), cross-sectional only(C1). C15 minor: open_dataset 직접 호출(load_month_factors 미사용)",
+    "G1_Implementation": "PASS — EW 30종목, 15bps commission, BZ 50/25, 유동성 필터 2억원",
+    "G2_Robustness": "STRONG — OOS retention 1.88 (IS 0.396 vs OOS 0.745), Alpha Trend 2.03x, Rolling3Y hit 84.1%, IC improving 1.33x",
+    "G3_Performance": "FAIL — CAGR 12.17% < 16%, SR 0.517 < 0.8, MDD 64.8% > 45% HARD FAIL",
+    "G4_Statistics": "SKIP — DSR unavailable",
+    "G5_Diversity": "NA — Hard fail"
+  },
+  "role_honesty": "NA — Hard fail",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 64.8% > 45%",
+  "verdict": "Discard",
+  "reason": "AC22_Accrual_Volatility + Q28_Cash_Conversion은 Score 49.2로 robustness 지표가 우수(OOS 1.88, Alpha Trend 2.03, Rolling3Y 84.1%). 그러나 MDD 64.8%로 hard fail. 순수 팩터 alpha는 존재하나(recent 3Y SR 1.049) MDD 제어 수단 부재. S5 mutation에서 DD Brake + Vol Target 오버레이 적용 시 구제 가능성 있으나, 현 단계에서는 Discard. 향후 탐색 메모로 기록.",
+  "salvage_note": "Score 49.2 notable. OOS retention 1.88 + Alpha Trend 2.03x는 genuine alpha signal 시사. Accrual quality family에서 S5 mutation 후보로 재활용 가치 있음."
+}

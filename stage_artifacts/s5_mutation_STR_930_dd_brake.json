@@ -1,0 +1,85 @@
+{
+  "artifact_type": "s5_mutation",
+  "strategy_id": "STR_930",
+  "strategy_name": "OtherCorp + Foreign Agreement + ESBR Triple Confirmation",
+  "mutation_type": "DD_Brake_Overlay",
+  "created": "2026-04-12",
+  "stage": "S5",
+  "pit_checks": {
+    "C9": "dd_lag <- c(0, head(dd_pct, -1)) — t-1 lag 엄격 적용. 당일 DD로 당일 비중 결정 금지.",
+    "C2": "sim_result의 S1 combined_ret 기반. 원시 신호 재사용, 추가 순환참조 없음."
+  },
+  "baseline": {
+    "label": "S1_Baseline",
+    "CAGR": 4.85,
+    "SR": 0.521,
+    "MDD": -54.15,
+    "Vol": 10.08,
+    "hard_fail": true,
+    "hard_fail_reason": "MDD 54.15% > 45% 기준"
+  },
+  "variants": [
+    {
+      "label": "M1_Standard",
+      "threshold_pct": 8.0,
+      "full_cash_pct": 25.0,
+      "CAGR": 3.85,
+      "SR": 0.536,
+      "MDD": -27.15,
+      "Vol": 7.59,
+      "TO_annual_pct": 186.1,
+      "exposure_mean_pct": 38.8,
+      "cash_days_pct": 43.7,
+      "hard_fail": false
+    },
+    {
+      "label": "M2_Relaxed",
+      "threshold_pct": 10.0,
+      "full_cash_pct": 30.0,
+      "CAGR": 3.99,
+      "SR": 0.527,
+      "MDD": -29.44,
+      "Vol": 8.04,
+      "TO_annual_pct": 173.6,
+      "exposure_mean_pct": 45.8,
+      "cash_days_pct": 35.3,
+      "hard_fail": false
+    },
+    {
+      "label": "M3_Conservative",
+      "threshold_pct": 6.0,
+      "full_cash_pct": 20.0,
+      "CAGR": 3.63,
+      "SR": 0.543,
+      "MDD": -25.49,
+      "Vol": 7.03,
+      "TO_annual_pct": 203.7,
+      "exposure_mean_pct": 32.2,
+      "cash_days_pct": 55.1,
+      "hard_fail": false
+    }
+  ],
+  "best_variant": "M3_Conservative",
+  "best_variant_rationale": "Hard Fail 해소 3건 중 SR 최고 (0.543). MDD -25.49% — 가장 보수적 통제.",
+  "hard_fail_resolved": true,
+  "hurdle_v22_gate": {
+    "hard_fail": false,
+    "grade_A": false,
+    "grade_A_NOVEL": false,
+    "expected_grade": "B",
+    "reason": "Hard Fail 해소 성공. 단, SR 0.543 < 0.8 (Grade A 미달), CAGR 3.63% < 12% (A_NOVEL 미달). Grade B 수준."
+  },
+  "structural_concern": {
+    "cash_days_M3": "55.1% — 전체 거래일 중 절반 이상 현금 보유. 전략 특성상 위기 구간에 잠식됨.",
+    "exposure_mean_M3": "32.2% — 평균 노출도가 낮아 alpha 희석 우려.",
+    "root_cause": "S1 baseline MDD 54%가 과도하게 크므로 DD Brake가 매우 공격적으로 작동. 근본적으로 S1 신호의 강도(IC 0.072 수준) 개선이 필요."
+  },
+  "mutations_attempted": 3,
+  "f_category_count": 1,
+  "synthesis_tested": false,
+  "next_step_recommendation": "Grade B 확정 후 S7 Disposition(보관) 처리 권고. 추가 mutation 방향: (1) Vol Target 강화 (Variant별 vol 억제 병합), (2) Factor 신호 강도 개선 (ESBR 비중 확대 또는 대체).",
+  "output_files": [
+    "04_Research/strategies/STR_930_oc_foreign_esbr/output/s5_dd_brake_variants.csv",
+    "04_Research/strategies/STR_930_oc_foreign_esbr/s5_dd_brake_mutation.R"
+  ]
+}

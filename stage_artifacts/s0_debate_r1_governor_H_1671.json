@@ -1,0 +1,79 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1671",
+  "round": 1,
+  "score": 15,
+  "scoring_detail": {
+    "gap_alignment": {
+      "score": 4,
+      "max": 4,
+      "rationale": "SR gap 0.807이 유일한 미충족 gap이며 sleeve_needs=diversifier와 정확히 일치. CAGR 16.14%(달성), MDD 21.27%(달성). 낮은 상관(0.038/0.150) 기반 diversifier 추가는 SR 개선의 정석적 경로."
+    },
+    "role_match": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Diversifier 역할 선언과 포트폴리오 수요 일치. 다만 conditional_value 음수(AC21: -0.023, V23: -0.027)로 bad 구간 IC 열화. 4-regime CRISIS ICIR도 AC21 +0.029, V23 -0.041로 위기 구간 방어력 부재. 순수 diversifier로는 적합하나 defense 기능은 기대 불가."
+    },
+    "family_saturation": {
+      "score": 4,
+      "max": 4,
+      "rationale": "현 포트폴리오 family 구성: consensus 50% + ML_complexity 50%. Accrual과 Value family는 0% 표현. 35% 한도 대비 완전 미사용 family 2개 동시 진입. 13개 family 중 2개 신규 추가는 Factor Taxonomy 다양성 극대화에 부합."
+    },
+    "marginal_contribution": {
+      "score": 3,
+      "max": 4,
+      "rationale": "C19 상관 0.038(AC21)/0.150(V23)으로 기존 anchor와 독립성 매우 높음. 그러나 4-regime 분석에서 V23 전 국면 IC 음수(CALM -0.015, CAUTION -0.004, CRISIS -0.003, NORMAL +0.009), AC21도 CAUTION/CRISIS에서 미약. 전기간 ICIR 0.706/0.677은 양호하나 국면 조건부 기여가 불균일. SR 한계기여 실물 검증 필요."
+    },
+    "implementation_feasibility": {
+      "score": 1,
+      "max": 4,
+      "rationale": "Factor DB에 AC21/V23 모두 등록 완료(active). EW 30종목 + 15bps 표준 하니스 적용 가능. 분기 fundamental 기반으로 turnover 낮을 전망. 2팩터 50/50 blend는 S1 구현 단순. 단, evidence_tier 둘 다 B등급으로 A급 학술 근거 부족."
+    }
+  },
+  "arguments": [
+    "SR gap 0.807 해소가 최우선 과제인 상황에서 기존 anchor(C19 기반)와 상관 0.038~0.150의 독립적 alpha source 2개를 동시 투입하는 설계는 포트폴리오 이론상 SR 개선의 정석적 경로이며, family 다양화(Accrual 0%+Value 0% 신규 진입)도 35% 집중 한도 내에서 구조적으로 건전합니다.",
+    "현 포트폴리오가 consensus(50%)+ML(50%)로 2-family 집중 상태인데, Accrual-Quality와 Value라는 경제적 메커니즘이 완전히 다른 2개 family를 동시 확보하면 13개 family 중 4개 표현으로 확장되어, 단일 economic_family 고착 금지(qepm 1조) 원칙에 부합합니다.",
+    "전기간 ICIR 0.706/0.677은 Alpha Lab Gate 기준(0.20) 대비 3배 이상으로 충분하고, C19 대비 상관이 극히 낮아 신호 독립성이 보장되므로, 3번째 sleeve로 편입 시 포트폴리오 레벨 SR 제고에 실질적으로 기여할 가능성이 높습니다."
+  ],
+  "concern": "4-regime conditional IC 분석 결과 V23_RAFI_Weight는 전 국면에서 IC 음수(-0.015~+0.009), AC21도 CAUTION/CRISIS 구간 ICIR이 0.03 미만으로 사실상 무력합니다. 전기간 ICIR이 양호한 이유는 CALM 국면(AC21 ICIR +0.577)에 편중된 성과 때문이며, 현재 MRS 29.2(CAUTION) 상태에서 즉시 기여를 기대하기 어렵습니다. Diversifier 역할이 국면 비조건적(unconditional)이라면 수용 가능하나, 위기 방어 기능을 겸하려는 의도가 있다면 role 위장(AX-001 위반)에 해당할 수 있습니다.",
+  "conditions": [
+    "S2 프로파일에서 4-regime conditional ICIR을 반드시 검증하고, CRISIS/CAUTION 구간 ICIR < 0.05인 경우 expected_role을 순수 diversifier로 한정할 것 (defense 겸용 주장 금지).",
+    "PG1 admission 시 STR_1631(anchor) + STR_1656(ML) + H_1671(diversifier) 3-sleeve LOO 검증을 수행하여, H_1671 제거 시 SR 하락폭이 0.05 이상인 경우에만 편입을 승인할 것.",
+    "V23_RAFI_Weight의 4-regime 전 국면 IC 음수 문제에 대해 S3 직교성 검증에서 V23 단독 기여도를 분리 측정하고, 기여 미달 시 AC21 단독 또는 대체 Value 팩터(V01_BM 등 evidence_tier A)로 교체를 검토할 것."
+  ],
+  "metadata": {
+    "portfolio_state": {
+      "n_strategies": 2,
+      "admitted": ["STR_1631_SYN_05", "STR_1656_MLRA_M05"],
+      "blend": "80/20",
+      "sharpe": 1.193,
+      "cagr": 0.1614,
+      "mdd": -0.2127,
+      "sr_gap": 0.807,
+      "sleeve_needs": "diversifier"
+    },
+    "family_check": {
+      "current_families": {"consensus": 0.5, "ML_complexity": 0.5},
+      "proposed_new": ["accrual", "value"],
+      "post_admission_families": 4,
+      "max_single_family": 0.5,
+      "saturation_penalty": 0,
+      "within_35pct_limit": true
+    },
+    "factor_quality": {
+      "AC21_full_icir": 0.706,
+      "V23_full_icir": 0.677,
+      "AC21_crisis_icir_4r": 0.029,
+      "V23_crisis_icir_4r": -0.041,
+      "AC21_c19_corr": 0.038,
+      "V23_c19_corr": 0.150,
+      "AC21_evidence_tier": "B",
+      "V23_evidence_tier": "B"
+    },
+    "regime_state": {
+      "date": "2026-04-09",
+      "category": "CAUTION",
+      "score": 29.2
+    }
+  }
+}

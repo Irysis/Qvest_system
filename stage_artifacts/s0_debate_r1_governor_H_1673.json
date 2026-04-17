@@ -1,0 +1,31 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1673",
+  "round": "R1",
+  "score": 13,
+  "arguments": [
+    "PG0 gap 정합성 양호: 현재 SR 1.193 대비 목표 SR 2.0으로 gap 0.807이 존재하며, sleeve_needs='diversifier'와 H_1673의 multi-family diversifier 역할 선언이 일치한다. 현 포트폴리오(consensus 50% + ML 50%)에 value/quality/growth 3개 신규 family 동시 편입은 family 집중도를 해소하는 방향이다.",
+    "Family 다양화 기여 확인: 현재 family_concentration이 consensus 50% + ML_complexity 50%로 양극화되어 있다. V02_EP(value), Q28_Cash_Conversion(quality), GR02_Earnings_Growth(growth) 3개 family가 모두 0%에서 신규 진입하므로, 35% family cap 준수하며 집중도 완화에 직접 기여한다. Exploration Rules(4-bucket)의 Explore 버킷에도 적합하다.",
+    "그러나 포트폴리오 레벨 실현 가능성에 핵심적 우려가 있다. GR02_Earnings_Growth는 L-098에서 standalone MDD 59.5%(Hard Fail), SR 0.509로 확인되었고, regime_profile에서 crisis=negative이다. V02_EP는 conditional_ic_matrix에서 ic_bad(0.034) < ic_good(0.057)로 위기 시 IC가 하락하며, crisis_ratio 0.75는 위기 시 25% alpha 감소를 의미한다. 3팩터 정적 EW 블렌드는 L-119(STR_1650 Hard Fail: SR 0.38, MDD 71.5%)에서 alpha 희석 패턴이 반복 확인되었다. 정적 블렌드가 아닌 국면 조건부 동적 배분이 필수이다."
+  ],
+  "concern": "최대 우려는 3팩터 정적 블렌드의 alpha 희석 위험이다. L-119에서 C19+AC21+CR05 정적 EW 블렌드가 C19 단독 대비 SR 67% 하락(1.243->0.38)을 기록했다. H_1673도 V02_EP(IC 0.045)에 Q28(IC 0.029)과 GR02(IC 0.032)를 정적 혼합하면 동일 패턴이 반복될 가능성이 높다. 또한 GR02의 crisis=negative 프로파일은 위기 시 앵커(STR_1631) 방어력과 충돌한다. 현 포트폴리오의 MDD -21.3%는 defense(Q07) 기여가 큰데, GR02가 위기 시 손실을 확대하면 MDD 목표(<25%) 달성이 위협받는다.",
+  "conditions": [
+    "S1에서 3팩터 정적 EW 블렌드와 함께, 국면 조건부 동적 가중(정상 시 V02 주도, 위기 시 Q28 주도) 변형을 반드시 병행 테스트할 것. 정적 블렌드만 테스트하면 L-119 반복 우려.",
+    "S2에서 ICIR >= 0.20 확인 필수(Alpha Lab Gate). V02 단독 ICIR은 conditional_ic_matrix에서 확인 가능하나, 3팩터 합성 신호의 ICIR은 별도 측정이 필요하다. Q28(recent_3y_icir 0.605)과 GR02(0.531)의 개별 ICIR은 양호하나 합성 후 희석 여부가 관건.",
+    "S3 직교성에서 현 앵커(STR_1631, consensus family)와의 max_abs_corr < 0.5 확인 필수. L-098에서 GR02 standalone의 기존 Grade A 대비 max_corr이 0.801로 매우 높았는데, 3팩터 합성 후에도 상관이 높으면 diversifier 역할을 수행할 수 없다.",
+    "RoleBias 태깅을 RoleBias_Diversifier로 명확히 하되, S4 한계기여 테스트에서 blended SR 개선(delta_sr > 0)이 0이거나 음수이면 즉시 중단. 현 blend SR 1.193에서 3번째 전략 추가 시 오히려 SR 하락 가능성도 있다.",
+    "GR02의 crisis=negative 프로파일 때문에, PG1 role_admission에서 defense 겸업 선언 금지. Diversifier 전용으로만 심사하며, crisis 구간 payoff가 음수이면 PG1 차단."
+  ],
+  "portfolio_context": {
+    "current_strategies": ["STR_1631_SYN_05_VDplus (core_alpha, consensus)", "STR_1656_MLRA_M05 (diversifier, ML_complexity)"],
+    "current_blend": "80/20",
+    "current_sr": 1.193,
+    "current_mdd": -0.2127,
+    "target_sr": 2.0,
+    "sr_gap": 0.807,
+    "family_concentration": {"consensus": 0.5, "ML_complexity": 0.5, "value": 0, "quality": 0, "growth": 0},
+    "regime_state": "CAUTION (MRS 29.2)"
+  },
+  "l_code_references": ["L-098 (GR02 standalone Hard Fail MDD 59.5%)", "L-119 (정적 EW blend alpha 희석)", "L-066 (GR02 S1 baseline SR 0)", "L-009 (Q28+AC22 MDD 64.8% Hard Fail)", "L-122 (factor timing vs risk management)"],
+  "timestamp": "2026-04-12T14:30:00"
+}

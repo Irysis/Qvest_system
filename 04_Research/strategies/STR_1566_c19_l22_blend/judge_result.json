@@ -1,0 +1,109 @@
+{
+  "strategy_id": "STR_1566",
+  "strategy_name": "C19_L22_Blend",
+  "judge_timestamp": "2026-03-29T10:00:00+09:00",
+  "judge_version": "S6_v7_gate0to5",
+  "grade": "B",
+  "score": 68.9,
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 47.57% > 45% threshold",
+  "pass": false,
+  "s7_verdict": "ARCHIVE",
+  "s7_reason": "Alpha source is real (FMB t=4.918, ICIR 0.368, OOS 90%). Archive for S5 mutation with DD Brake overlay to compress MDD below 30%.",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "details": {
+        "C1_full_sample": "PASS — no full-sample statistics used",
+        "C2_same_day_circular": "PASS — month-end signals applied next month via run_monthly_simulation",
+        "C4_financial_lag": "PASS — load_month_factors() handles internally",
+        "C9_dd_vt_overlay": "N/A — pure factor backtest, no overlay",
+        "C13_z_score_aligned": "PASS — Z_Score_Aligned used exclusively (factor_engine.R lines 26-27)",
+        "C14_usable_date": "PASS — load_month_factors(sd) called with signal date",
+        "C15_load_month_factors": "PASS — load_month_factors() used (factor_engine.R line 19)",
+        "blend_weights": "PASS — fixed 60/40 (0.6*C19_Z + 0.4*L22_Z), no optimization",
+        "set_seed": "PASS — set.seed(1566) at run_all.R line 4",
+        "lookahead_detector": "PASS — both run_all.R and factor_engine.R CLEAN"
+      }
+    },
+    "gate_1_performance": {
+      "pass": false,
+      "hard_fail": true,
+      "metrics": {
+        "SR": 0.927,
+        "CAGR_pct": 20.12,
+        "MDD_pct": 47.57,
+        "IR": 0.777,
+        "Calmar": 0.423,
+        "Turnover_Ann_pct": 479.8,
+        "AnnVol_pct": 21.7
+      },
+      "notes": "CAGR strong at 20.1%, SR 0.927 meets Grade A threshold. MDD 47.57% triggers hard fail (>45%). Calmar 0.42 very weak — tail risk unmanaged."
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "metrics": {
+        "OOS_retention": 0.90,
+        "IS_SR": 0.963,
+        "OOS_SR": 0.867,
+        "rolling_3y_positive_pct": 95.8,
+        "alpha_trend_ratio": 1.507,
+        "IC_stability_ratio": 1.07,
+        "rolling_12m_hit_pct": 73.4,
+        "rolling_6m_hit_pct": 68.7
+      },
+      "notes": "Excellent robustness across all metrics. OOS retention 90%, alpha improving over time."
+    },
+    "gate_3_statistical_defense": {
+      "pass": true,
+      "metrics": {
+        "FMB_t_stat": 4.918,
+        "harvey_threshold": 3.0,
+        "harvey_pass": true,
+        "IC_mean": 0.0275,
+        "ICIR": 0.368,
+        "IC_data_points": 254,
+        "DSR": "NA — module unavailable"
+      },
+      "notes": "FMB t=4.918 exceeds Harvey 3.0 threshold convincingly. ICIR 0.368 > 0.20. Statistically legitimate alpha."
+    },
+    "gate_4_stress": {
+      "pass": true,
+      "stress_periods": {
+        "GFC_2008": {"outperform": true, "strat_mdd_pct": 47.57, "note": "Portfolio max drawdown originates here"},
+        "COVID_2020": {"outperform": true, "strat_mdd_pct": 39.78},
+        "Rate_2022": {"outperform": true, "strat_mdd_pct": 25.10},
+        "EuDebt_2011": {"outperform": true, "strat_mdd_pct": 22.88}
+      },
+      "notes": "4/4 stress outperformance. GFC MDD 47.6% is the structural vulnerability — DD Brake overlay needed."
+    },
+    "gate_5_diversification": {
+      "pass": "NA",
+      "notes": "No Grade A composite cache available. C19-L22 factor correlation = -0.108 (intra-strategy diversification excellent)."
+    }
+  },
+  "role_honesty_audit": {
+    "declared_role": "diversifier",
+    "actual_assessment": "core_alpha_hybrid",
+    "flag": "ROLE_RECLASSIFICATION_RECOMMENDED",
+    "reason": "C19 (Composite Earnings) is a core alpha factor with 60% weight. L22 (Ret Autocorr) is microstructure diversifier at 40%. Blend is more core-like than diversifier-like. Recommend reclassification to Core Alpha or Hybrid."
+  },
+  "strengths": [
+    "Genuine alpha: FMB t=4.918 (well above Harvey 3.0), ICIR 0.368",
+    "Excellent robustness: OOS retention 90%, 3Y rolling positive 95.8%, alpha trend improving",
+    "Negative factor correlation (C19-L22 corr=-0.108) provides intra-strategy diversification",
+    "Clean PIT: all C-checks pass, load_month_factors(), Z_Score_Aligned, fixed 60/40 blend"
+  ],
+  "weaknesses": [
+    "HARD FAIL: MDD 47.57% > 45% — driven entirely by GFC drawdown",
+    "Calmar 0.42 — inadequate risk-adjusted return given tail exposure",
+    "Worst 6M return -36.7% — severe left-tail loss without overlay",
+    "Max consecutive negative alpha months: 8 — extended underperformance periods"
+  ],
+  "recommendation": "ARCHIVE with S5 mutation priority. Alpha source is legitimate and robust. DD Brake (6/20 or 8/25) should compress MDD to <30%. Strong candidate for Core Alpha role after overlay.",
+  "s5_mutation_candidates": [
+    "DD Brake 6/20 or 8/25 to cap GFC-era drawdown",
+    "Vol Target expanding window to reduce tail exposure",
+    "Weight rebalance: test 50/50 or 40/60 (more L22) for lower MDD"
+  ]
+}

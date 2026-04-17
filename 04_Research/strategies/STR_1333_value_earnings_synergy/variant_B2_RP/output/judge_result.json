@@ -1,0 +1,73 @@
+{
+  "strategy_id": "STR_1333_B2_RP",
+  "strategy_name": "Value Earnings Synergy — Risk Parity Variant",
+  "family": "value_catalyst",
+  "judge_version": "v7",
+  "judge_timestamp": "2026-03-26 15:30:00",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on run_all.R (257 lines) + s5_variants.R (288 lines). C1: RP covariance uses trailing 120-day Ledoit-Wolf shrinkage via .ledoit_wolf_shrink(ret_mat) — NOT full sample. lookback_dates bounded by all_dates[all_dates <= exec_date]. C2: DD brake uses dd_exp_lagged = c(1.0, head(dd_exposure, -1)) — t-1 lag confirmed. C4: Factor DB load_month_factors(sig_d) with Z_Score_Aligned. C5: MRS overlay reads daily_regime at signal date. C10: AvgTV20 uses shift(n=1L, type='lag'). C11: No direct FRED access. C13/C14/C15: Compliant."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR 0.800 < 1.0 target. CAGR 11.7% < 16% target. MDD 37.91% > 25% target. All three primary metrics below Grade A thresholds. Worse than BASE (SR 0.857, CAGR 13.43%, MDD 34.31%) — RP weighting degraded all metrics."
+    },
+    "gate2_robustness": {
+      "pass": true,
+      "detail": "Rolling 3Y Sharpe positive 85.1% (good). Stress outperformance 2/3. OOS retention 0.441 (IS SR 1.048 vs OOS SR 0.462 — weak but above 0.40 minimum). Worst 6M return -19.64%. Max consecutive negative alpha months: 8."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "detail": "Self-labeled 'diversifier'. BM_Corr=0.628 (moderate, consistent with diversifier role). Not claiming core_alpha with sub-1.0 SR. Honest."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "FF5a annual alpha 5.70% with t-stat 1.41 (p=0.160). Not statistically significant at 5%. FF3 alpha t=1.15, Carhart4 t=1.17 — all insignificant. DSR not available. No Harvey (2016) t>3.0 significance."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "FF5 alpha t-stat 1.41 < 1.96. Alpha directionally positive (5.70% annual) but not robust. FMB Score lambda t=2.05 (significant), intercept t=2.94 — factor pricing power exists but total strategy alpha insufficient. Note: FF5 results from base strategy (overlays are same family, factor construction identical)."
+    }
+  },
+  "verdict": {
+    "grade": "C",
+    "pass": false,
+    "score": 32.1,
+    "confidence": "high",
+    "reason": "RP weighting degraded STR_1333 base (SR 0.857→0.800, CAGR 13.43→11.7%, MDD 34.31→37.91%). Risk Parity did NOT help — Ledoit-Wolf cov estimation on 30 stocks with 120-day lookback is noisy in Korean market, leading to suboptimal allocation vs equal weight. Grade C: below all three primary targets."
+  },
+  "comparison_vs_base": {
+    "base_sr": 0.857,
+    "variant_sr": 0.800,
+    "delta_sr": -0.057,
+    "base_cagr": 13.43,
+    "variant_cagr": 11.7,
+    "delta_cagr": -1.73,
+    "base_mdd": 34.31,
+    "variant_mdd": 37.91,
+    "delta_mdd": 3.60,
+    "conclusion": "RP variant is strictly dominated by EW base on all three metrics. Discard."
+  },
+  "metrics": {
+    "CAGR": 11.7,
+    "AnnVol": 14.62,
+    "Sharpe": 0.800,
+    "Sharpe_m": 0.823,
+    "IR": 0.216,
+    "MDD": 37.91,
+    "Calmar": 0.309,
+    "Turnover_Ann": 95.5,
+    "Rolling3Y_Pos": 85.1,
+    "BM_Corr": 0.628,
+    "ES99_d": 3.81,
+    "ES99_m": 11.9,
+    "OOS_retention": 0.441
+  },
+  "commentary": {
+    "strength": "PIT fully clean (C1-C15). Robust rolling 3Y positive rate 85.1%. Stress outperformance 2/3. Factor scoring (BM+ESBR synergy) concept remains valid.",
+    "weakness": "RP weighting worse than EW on all metrics. MDD 37.91% is the worst among STR_1333 variants. OOS retention 0.441 weak. FF5 alpha not significant (t=1.41).",
+    "verdict_reason": "Risk Parity on 30 Korean stocks with 120-day cov is unreliable — high estimation noise. Maillard et al. (2010) showed RP benefits require stable covariance structure; 30 Korean mid/small caps have regime-dependent correlation that defeats RP. EW dominates in this setting.",
+    "improvement": "Not recommended. EW or IC-weighting is structurally superior for this factor set. If RP desired, needs larger universe (50+) with more stable covariance."
+  }
+}

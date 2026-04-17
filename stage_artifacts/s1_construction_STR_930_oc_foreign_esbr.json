@@ -1,0 +1,39 @@
+{
+  "factor_id": "OC_FOREIGN_ESBR_TRIPLE",
+  "strategy_id": "STR_930",
+  "stage": "S1",
+  "created_at": "2026-04-12",
+  "hypothesis_source": "DESIGN_DELIVERABLE_STR_930_935.md",
+  "description": "OtherCorp 기타법인 순매수 + Foreign 외국인 순매수 + ESBR 이익서프라이즈 triple confirmation",
+  "academic_reference": "Grinblatt & Keloharju (2000) informed trading; Ke & Petroni (2004) corporate insider buying; Chan & Lakonishok (1993) institutional trading",
+  "signals": {
+    "OC_40d": "기타법인 40일 누적 순매수 / 시가총액 정규화",
+    "Foreign_40d": "외국인 40일 누적 순매수 / 시가총액 정규화",
+    "ESBR": "C04_ESBR 이익서프라이즈 비율 (consensus.esbr.parquet)",
+    "IdioVol": "252일 expanding OLS residual volatility"
+  },
+  "weights": {
+    "W_IVOL": 0.35,
+    "W_FLOW": 0.30,
+    "W_ESBR": 0.35
+  },
+  "implementation_profile": {
+    "n_holdings": 20,
+    "commission_bps": 15,
+    "liq_threshold_krw": 200000000,
+    "weight_method": "EW",
+    "sector_neutral": true,
+    "flow_window": 40,
+    "lookback": 252,
+    "overlay": "VT 18% + DD brake(4/35/30%) + Soft MRS(15/30)"
+  },
+  "pit_compliance": {
+    "C2": "sig_date snapshot = t-1 rolling sum PASS",
+    "C9": "VT/DD 1-day lag PASS",
+    "C13": "Z_Score_Aligned only PASS",
+    "C15": "investor_wide bulk preload, no loop read_parquet PASS"
+  },
+  "expected_grade": "A",
+  "expected_ff5_alpha_pct": "10-12",
+  "expected_sharpe": "1.3-1.5"
+}

@@ -1,0 +1,24 @@
+{
+  "factor_id": "STR_1679_score_blend",
+  "parent": "STR_1631_M29_facvol + STR_1675c",
+  "stage": "S5",
+  "mutation_type": "score_level_blend",
+  "description": "Score-level Core(C19 ICIR) + Defense(Q07+D29) blend. Unlike return-level blend (STR_1631_core_defense_blend, 50 stocks L-484 violation), this computes composite scores at stock level then selects Top 30. MRS conditional weights: Normal(95/5), Caution(80/20), Crisis(60/40). L-484 compliant.",
+  "components": {
+    "core": "C19 consensus (SUE, ESBR, EPS1M, TP_Gap) with ICIR weighting",
+    "defense": "Q07_Earnings_Stability (80%) + D29_Accounting_Beta (20%)",
+    "filter": "D04_Downside_Beta bottom 10% exclusion",
+    "regime": "MRS t-1 for score blend weight (not overlay)"
+  },
+  "research_slate": "Score-level blend to fix L-484 violation in return-level blend",
+  "s5_entry_basis": "s5_research_slate_STR_1631_core_defense_blend.json (return-level SR 1.347 but 50 stocks)",
+  "pit_notes": {
+    "C1": "expanding IC only",
+    "C2": "consensus roll=7, Factor DB Date < sig_date",
+    "C5": "MRS t-1 lagged",
+    "C13": "Z_Score_Aligned only",
+    "C15": "Factor DB via load_month_factors()"
+  },
+  "created": "2026-04-16",
+  "created_by": "Forge"
+}

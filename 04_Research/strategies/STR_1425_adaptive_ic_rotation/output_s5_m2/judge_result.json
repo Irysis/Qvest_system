@@ -1,0 +1,49 @@
+{
+  "strategy_id": "STR_1425_adaptive_ic_rotation_s5_m2",
+  "judge_timestamp": "2026-03-26 15:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on both run_s5_m2.R and factor_engine.R. Manual C1-C11 review: C1 PASS (expanding ICIR with 2-month lag, no full-sample IC), C2 PASS (no same-day circular), C5 PASS (VT lagged t-1 line 32, DD lagged t-1 line 39), C9 PASS (VT/DD both use t-1), C10 PASS (AvgTV20 shift lag=1), C11 PASS (no FRED dependency, Factor DB dates valid), C13 PASS (Z_Score_Aligned only), C14 PASS (IC cutoff = sig_d - 2 months). CRITICAL CHECK: IC is expanding-window with 2-month lag (factor_engine.R line 119), NOT full-sample. PIT compliant."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "SR=0.834, CAGR=9.47%, MDD=23.38%, Calmar=0.405. Hurdle grade B (44.2). SR below 1.0 target, CAGR far below 16% target. MDD acceptable (<25%). IR=0.028 (near zero BM outperformance). OOS retention 0.54 (IS SR 0.976 / OOS SR 0.526). Rolling 3Y positive ratio 88.4%. Stress 3/3 outperform. Weak absolute returns but decent risk management via VT+DD overlay."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required stage artifacts present: s0_record (Scout hypothesis), s1_construction, s2_profile, s3_orthogonality (novelty_score=0.31, max Grade-A corr=0.698 vs STR_1033), s4_integration (provisional_role=core_alpha, admitted to S6). Stage gate sequence S0->S1->S2->S3->S4 properly followed."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier (hurdle_result.json) / core_alpha (s4_integration)",
+      "actual_behavior": "Neither core_alpha nor effective diversifier. CAGR 9.47% barely beats BM 9.03% (delta 0.44%). IR 0.028 indicates negligible alpha. BM_Corr 0.686 is moderate but not low enough for pure diversifier. FF5 alpha = -0.09% (t=-0.03) = zero alpha.",
+      "detail": "Role inconsistency: s4 claims core_alpha (role_admission=S6), hurdle_result claims diversifier. Actual performance shows neither meaningful alpha generation (core_alpha) nor low-correlation diversification benefit (diversifier). The strategy is essentially a beta exposure with VT+DD risk management overlay. Role honesty FAIL."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR: not available (module missing). OOS retention: 0.54 (IS SR 0.976 vs OOS SR 0.526) -- borderline acceptable but shows significant IS/OOS decay (~46% loss). Rolling 3Y Sharpe positive 88.4% is good. However, IC stability score = 0 (analysis_ic.csv not found for S5_M2 variant). Alpha trend ratio 1.07 (slight recent improvement). Max consecutive negative alpha months = 6. Overall statistical defense is WEAK: no DSR, no IC stability, significant OOS decay."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "Base strategy FF5 alpha = -0.09% annual (t=-0.03, p=0.976). FF3 alpha = 0.24% annual (t=0.087, p=0.931). Carhart 4F alpha = 0.28% annual (t=0.10, p=0.919). ALL insignificant. Adj R2=0.65-0.67 confirms strategy returns are fully explained by known factor exposures. No independent alpha. FMB Score lambda t=3.76 is significant but this measures cross-sectional factor pricing, not time-series alpha after controlling for FF5. The S5_M2 VT+DD overlay on this base cannot create alpha where none exists."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 44.2,
+    "fail_reasons": [
+      "Gate 3 FAIL: Role dishonesty -- claimed core_alpha/diversifier but delivers neither meaningful alpha (FF5 alpha t=-0.03) nor diversification (BM_Corr=0.686)",
+      "Gate 4 FAIL: Weak statistical defense -- no DSR, OOS retention 0.54 (46% decay), no IC stability data for S5_M2 variant",
+      "Gate 5 FAIL: FF5 alpha is zero (t=-0.03, p=0.976). Strategy returns fully explained by known factor exposures (Adj R2=0.67)"
+    ],
+    "recommendation": "REJECT for promotion. The adaptive IC rotation concept is PIT-clean (Gate 0 PASS) and the implementation is correct, but the strategy delivers no alpha beyond known factor exposures. The VT 15% + DD 8/20 overlay in S5_M2 provides good risk management (MDD 23.38%) but cannot compensate for zero FF5 alpha. The 2-month IC lag (conservative PIT compliance) may be too aggressive, killing any timing signal. Consider: (1) testing 1-month IC lag if PIT-justifiable, (2) using different factor combinations with higher conditional IC, (3) abandoning IC-rotation in favor of regime-conditional static weights which showed better results in Korean market (see STR_1433 approach)."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "core_alpha (s4) / diversifier (hurdle)",
+    "verified": false,
+    "evidence": "S4 integration claims core_alpha with delta_sharpe=0.331 vs KOSPI. But FF5 regression shows zero alpha (t=-0.03). IR=0.028 (no BM outperformance). BM_Corr=0.686 is too high for diversifier. The strategy is a repackaged beta exposure with risk overlays. Role inconsistency between s4 (core_alpha) and hurdle (diversifier) is itself a red flag."
+  }
+}

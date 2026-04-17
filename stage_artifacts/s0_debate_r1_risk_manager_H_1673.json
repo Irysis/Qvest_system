@@ -1,0 +1,16 @@
+{
+  "role": "risk_manager",
+  "score": 12,
+  "arguments": [
+    "V02_EP의 crisis_ratio 0.75는 위기 시 IC가 평시의 75% 수준으로 하락한다는 의미이며, 이를 '양수이니 괜찮다'고 해석하면 위험 과소평가다. stress_factor_ic_analysis.csv 확인 결과 V02_EP stress ICIR 0.510 vs normal ICIR 0.739로 위기 시 신호 품질이 31% 열화된다. Value 팩터는 GFC 같은 급락 장에서 구조적으로 MDD가 깊고(L-002 V05 MDD 60.7%, L-017 V04 MDD 58.1%), crisis_premium이 -0.014로 음수 -- 위기 시 value trap에 빠져 손실이 확대되는 팩터다. 40% 배분이면 포트폴리오 tail risk의 주된 원천이 된다.",
+    "GR02_Earnings_Growth의 registry regime_profile에 crisis: negative로 명시되어 있다. conditional_ic_matrix에서 ic_bad(MRS bad regime) = 0.002로 사실상 제로이며, ic_all(0.032) 대비 conditional_value가 -0.032로 가장 큰 음의 조건부 가치를 보인다. 이익 성장주는 경기 후퇴 시 이익 추정치 급락과 함께 종목 가격이 급변(negative convexity)하므로 위기 구간 tail risk 기여가 비대칭적으로 커진다. 25% 배분이지만 위기 시 실질 손실 기여는 가중치 이상이 될 것이다.",
+    "L-106(market beta 지배) 교훈이 이 가설에 직접 적용된다. 3개 팩터 모두 fundamental 기반이고 quarterly update이며, 한국시장 롱온리 팩터 전략에서 market beta 0.85~0.93이 수익률 상관을 지배한다. V02(value), Q28(quality), GR02(growth)는 경제적 family는 다르지만, 위기 시 quality-to-junk rotation과 flight-to-safety가 동시에 발동되면 세 팩터 모두 beta 경로를 통해 동시 하락한다. DCC-Copula 기반 tail dependence coefficient 분석 없이 '잔차 alpha R^2 약 0' 주장은 정상 국면 통계에 의존한 것이며, 위기 시 상관 급등(correlation breakdown) 가능성을 무시한다."
+  ],
+  "concern": "핵심 우려: 3개 팩터가 모두 fundamental quarterly 기반이므로 위기 시 동시 MDD 경로를 공유하며, 특히 V02_EP(40%) + GR02(25%)의 합산 65%가 위기에 취약하다. 현 포트폴리오(Core consensus 50% + ML 50%)에 이 sleeve가 추가되면, ML의 비선형 alpha와의 R^2 약 0은 정상 국면에서만 성립하고 위기 시에는 market beta 경로(L-106)를 통해 상관이 급등할 것이다. compute_tail_risk_suite() 없이 crisis_ratio > 0이라는 단순 필터만으로 tail risk를 통과시킨 것은 EVT shape parameter, CDaR 95%, ES 99% 수준의 검증이 결여된 것이다.",
+  "conditions": [
+    "S1 구현 후 반드시 compute_tail_risk_suite()로 EVT VaR 99%, CF-VaR, CDaR 95%, ES 99%를 측정하고, EVT shape parameter xi > 0.3이면 팩터 비중 재조정 필요",
+    "regime_garch.R의 DCC-Copula로 3팩터 간 + 기존 포트폴리오(STR_1631, STR_1656) 간 tail dependence coefficient를 산출하여 위기 시 상관 급등 정도를 정량화할 것 -- L-106 교훈에 따라 수익률 상관 분해(market beta + residual) 필수",
+    "V02_EP 비중 40%는 위기 시 value trap MDD 기여가 과다 -- S5 mutation에서 V02 30% 이하 + Q28 40% 이상으로 defensive tilt 또는 DD Brake overlay 동반 설계를 권고",
+    "GR02_Earnings_Growth의 regime_profile crisis=negative가 factor_registry에 명시되어 있으므로, MRS Crisis 국면에서 GR02 비중을 0으로 전환하는 조건부 설계가 필수 -- 정적 25% 유지는 L-122(factor risk management) 원칙 위반"
+  ]
+}

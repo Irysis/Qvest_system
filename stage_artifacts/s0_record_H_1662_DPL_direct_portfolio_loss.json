@@ -1,0 +1,238 @@
+{
+  "hypothesis_id": "H_1662",
+  "name": "Direct_Portfolio_Loss_XGBoost",
+  "factor_id": "ML_XGB_DPL",
+  "parent_strategy": "STR_1661_XGB_GPU",
+  "parent_performance": {
+    "V0_baseline": {
+      "ICIR": 0.8496,
+      "SR": 0.9268,
+      "CAGR_pct": 22.82,
+      "objective": "reg:squarederror"
+    },
+    "V2_LambdaRank": {
+      "ICIR": 1.0291,
+      "SR": 0.8997,
+      "CAGR_pct": 18.01,
+      "MDD_pct": -50.98,
+      "objective": "rank:pairwise"
+    },
+    "V3_LambdaRank_HP": {
+      "ICIR": 1.0971,
+      "SR": 0.6923,
+      "CAGR_pct": 11.68,
+      "MDD_pct": -51.37,
+      "objective": "rank:pairwise + optuna"
+    },
+    "diagnosis": "ICIR +21% 개선(V0→V2)에도 SR -3% 하락. IC 최적화와 포트폴리오 수익률 사이의 prediction-optimization gap 확인. V3(HP 탐색)에서 ICIR +29% 추가 개선에도 SR -26% 급락 -- HP 탐색이 IC 과적합을 가속화하여 실제 portfolio utility를 파괴."
+  },
+  "created_at": "2026-04-12",
+  "created_by": "Scout",
+  "session": 61,
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "revision": 2,
+  "revision_note": "rev2: (1) MonLR cross-section(동일 월) pair + constant hessian=1.0, (2) tau 하한 0.1→0.3 (vanishing gradient가 진짜 위험), (3) DSR 다중검정 6건 보정 명시",
+
+  "hypothesis": "XGBoost의 loss function을 IC/NDCG 대신 Top-30 포트폴리오의 실현 수익률(Direct Portfolio Loss)로 교체하여 prediction-optimization gap을 해소한다. Zhong et al.(2024, DSPO)의 Monotonical Logistic Regression과 Guo et al.(2024, Guided Learning)의 portfolio utility loss를 XGBoost custom objective로 변환 적용한다. 핵심 메커니즘: (1) Top-k Utility Loss -- 예측 점수 상위 30종목의 실제 21일 수익률 합을 differentiable softmax selection으로 최대화. (2) Pairwise Monotonicity Loss -- DSPO의 MonLR을 XGBoost gradient/hessian으로 변환하여 예측-실제 순위 일치 확률을 직접 최적화. (3) Hybrid Loss -- IC guide(Guo 2024)를 보조 손실로 유지하되 주 손실을 portfolio return으로 전환하여 학습 안정성 확보.",
+
+  "problem_statement": {
+    "observed_anomaly": "STR_1661 V2: ICIR 1.03(+21%) but SR 0.900(-3% vs V0 0.927). V3: ICIR 1.10(+29%) but SR 0.692(-25%). IC 개선이 SR 개선으로 전이되지 않고 오히려 악화.",
+    "root_cause": "Prediction-optimization gap (Elmachtoub & Grigas 2022). IC/NDCG는 전체 cross-section의 순위 상관을 측정하지만, 포트폴리오는 top-30 종목만 보유한다. IC가 Q2-Q4 중간 분위의 순위 정확도 개선으로 상승해도 Q1(상위) 종목의 실제 수익률은 개선되지 않을 수 있다. 특히 LambdaRank는 상위 종목의 '상대 순서'를 최적화하지만, 실제로 필요한 것은 상위 종목의 '절대 수익률 수준'이다.",
+    "academic_framing": "Guo et al.(2024) Table 1: Stage-wise(IC→portfolio) SR 0.73 vs End-to-end(portfolio loss) SR 0.94 → +29% 개선. IC-Guide(hybrid) SR 1.06 → +45%. 이 gap은 모델이 복잡할수록(파라미터가 많을수록) 확대된다."
+  },
+
+  "economic_rationale": "팩터 투자에서 alpha는 '어떤 종목을 고르느냐'(selection)에서 발생한다. IC는 전체 universe의 순위 상관이므로 실제 보유 종목(top-k)의 수익률과 직접 대응하지 않는다. 예를 들어 IC가 동일해도 (a) top-30의 실제 수익률이 고르게 양수인 경우와 (b) top-30 중 5개가 극단적 음수인 경우의 포트폴리오 성과는 판이하다. Direct Portfolio Loss는 이 괴리를 해소하여 '실제로 돈을 버는 종목 선별'을 학습 목표로 설정한다. 이는 Markowitz(1952) 이후 asset pricing 전체를 관통하는 prediction-optimization gap 문제의 ML 시대 해법이며, Zhong et al.(2024)이 NYSE에서 RankIC 10.12% + 누적 121.94%로 실증한 접근법이다.",
+
+  "mechanism": {
+    "loss_1_topk_utility": {
+      "name": "Top-k Differentiable Portfolio Return",
+      "description": "예측 점수 z_i에 대해 softmax temperature selection으로 top-30 종목의 가중치를 근사: w_i = softmax(z_i / tau). 포트폴리오 수익률 R_p = sum(w_i * r_i)를 최대화. tau는 학습 중 annealing(0.5 → 0.3)하여 초기에는 smooth gradient 확보, 후기에는 상위 종목에 집중. [rev2] tau 하한 0.3: tau→0일 때 softmax→argmax 수렴으로 gradient vanishing이 발생하며, 이는 spike보다 근본적으로 위험(학습 자체가 멈춤). 0.3이면 top-5~10 종목에 gradient가 분산되어 30종목 포트폴리오 학습에 적합.",
+      "xgb_custom_obj": "gradient: dL/dz_i = -w_i * (r_i - R_p) / tau. 상위 종목 중 수익률이 평균 이하이면 점수를 낮추고, 평균 이상이면 높이는 방향. hessian: d2L/dz_i2 = w_i * (1 - w_i) * (r_i - R_p)^2 / tau^2. 표준 Newton step 보장.",
+      "advantage_over_lambdarank": "LambdaRank는 종목 간 상대 순서(pairwise)를 최적화하지만, top-30 바깥 종목의 순서 변경도 동등하게 처리. Top-k utility는 top-30에 집중하여 실제 포트폴리오 P&L에 직접 연결.",
+      "reference": "Zhong et al.(2024) MonLR의 top-k 특화 변형 + Guo et al.(2024)의 utility function U(W,R)"
+    },
+    "loss_2_pairwise_monotonicity": {
+      "name": "Monotonical Logistic Regression (MonLR) for XGBoost",
+      "description": "DSPO의 MonLR을 XGBoost custom objective로 변환. P(sign(z_i - z_j) = sign(r_i - r_j))를 최대화. tanh smoothing으로 gradient 전파. Zhong et al.(2024) Eq.4-5의 XGBoost 적응. [rev2] 글로벌 pair가 아닌 동일 월(cross-section) 내에서만 pair를 구성한다. 이유: (1) cross-section 팩터 모델의 학습 목표는 동일 시점 종목 간 상대 순서이므로, 서로 다른 월의 종목 pair는 의미 없는 비교(시장 환경·수익률 스케일이 다름). (2) 글로벌 pair는 시계열 방향의 노이즈를 주입하여 gradient 분산을 불필요하게 증가시킨다. (3) Zhong et al.(2024)도 cross-sectional sub-sampling을 명시적으로 사용.",
+      "xgb_custom_obj": "gradient: dL/dz_i = -sum_{j in same_month} [tanh'(z_i - z_j) * sign(r_i - r_j)] / n_pairs_month. 동일 월 내에서만 pair 구성(m = 200*n_month). hessian: constant 1.0 (rev2 변경). 이유: (1) tanh''(z_i - z_j)는 |z_i - z_j|가 클 때 0에 수렴하여 학습이 사실상 중단됨. (2) XGBoost의 Newton step = -grad/hess이므로, hessian이 0에 수렴하면 step size가 발산하거나 수치적으로 불안정. (3) constant hessian=1.0은 gradient descent와 동일한 효과를 주며, XGBoost의 regularization(lambda, gamma)이 step size를 자연스럽게 제어. (4) LightGBM의 LambdaRank 구현도 유사하게 hessian을 단순화하는 선례가 있음.",
+      "advantage_over_lambdarank": "LambdaRank의 NDCG lambda gradient는 전체 종목 순위에 의존하여 상위 종목에 과도한 gradient 집중 가능. MonLR은 동일 월 내 모든 pair를 동등하게 처리하되, sub-sampling 비율로 top-k pair 가중 조절 가능. cross-section pair 한정으로 시계열 노이즈 제거.",
+      "reference": "Zhong et al.(2024) Section 3.3 Monotonic Logistic Regression Loss"
+    },
+    "loss_3_hybrid": {
+      "name": "Portfolio-Primary + IC-Guide Hybrid",
+      "description": "Guo et al.(2024)의 Guided Learning 핵심 통찰 적용: 최종 목표(portfolio return)를 primary loss로, IC를 guide(보조) loss로. L_total = alpha * L_portfolio + (1-alpha) * L_IC. alpha는 0.7로 시작하여 portfolio loss에 70% 가중. IC guide가 학습 초기 붕괴를 방지하고, portfolio loss가 최종 종목 선별 품질을 직접 개선.",
+      "guo_evidence": "Table 1: Guide-free E2E SR 0.94, IC-Guide SR 1.05(+12%), IC+Return Guide SR 1.06(+13%). Guide가 학습 안정화에 필수적이며, Guide 없는 E2E는 불안정.",
+      "alpha_tuning": "alpha를 [0.5, 0.7, 0.9]로 ablation. alpha=1.0(IC 없이 portfolio만)은 Guo(2024)의 Guide-free 결과(불안정)를 재현할 위험.",
+      "reference": "Guo et al.(2024) Section 'Guided Learning' Eq.7, Table 1"
+    }
+  },
+
+  "ablation_design": {
+    "purpose": "3가지 loss function의 독립 기여도 + V0/V2 baseline 대비 portfolio SR 개선 측정",
+    "variants": [
+      {
+        "id": "V0_ref",
+        "config": "STR_1656 S1-B (reg:squarederror, 기존)",
+        "role": "reference baseline (ICIR 0.85, SR 0.927)"
+      },
+      {
+        "id": "V2_ref",
+        "config": "STR_1661 V2 (rank:pairwise LambdaRank, 기존)",
+        "role": "IC-optimized reference (ICIR 1.03, SR 0.900)"
+      },
+      {
+        "id": "D1_TopK",
+        "config": "GPU + custom obj: Top-k Utility Loss (tau annealing 0.5→0.3, k=30) + 고정 HP",
+        "expected": "SR > V0(0.927), ICIR < V2(1.03) but SR >> V2(0.900). Portfolio return 직접 최적화로 IC는 낮아도 SR 개선.",
+        "purpose": "Top-k utility의 순수 기여도. IC와 SR의 탈동조화(decoupling) 확인."
+      },
+      {
+        "id": "D2_MonLR",
+        "config": "GPU + custom obj: MonLR pairwise (DSPO Eq.4-5 변환, cross-section pair + constant hessian=1.0) + 고정 HP",
+        "expected": "ICIR V2 수준(1.0+), SR V2~V0 사이. MonLR은 IC/NDCG와 유사한 ranking loss이므로 SR 개선은 제한적일 수 있음.",
+        "purpose": "MonLR이 LambdaRank 대비 SR 개선 가능한지 확인. 불가 시 ranking loss 계열 전체의 한계 실증."
+      },
+      {
+        "id": "D3_Hybrid",
+        "config": "GPU + custom obj: 0.7*TopK + 0.3*IC_MSE + 고정 HP",
+        "expected": "SR > D1 (IC guide가 학습 안정화), ICIR D1~V2 사이. Guo(2024) 결과 재현: hybrid가 단독 E2E보다 우월.",
+        "purpose": "IC guide의 stabilization 효과 측정. D3 > D1이면 hybrid 채택."
+      },
+      {
+        "id": "D4_Hybrid_Tuned",
+        "config": "GPU + D3 best loss + alpha/tau grid search (expanding IS 내 purged CV)",
+        "expected": "SR > D3 (alpha, tau 최적화로 추가 개선). 단, IS/OOS gap < 2.0 유지.",
+        "purpose": "최종 후보. V3(HP tuning, SR 0.692)의 과적합 재현 여부 주시."
+      }
+    ],
+    "decision_rule": {
+      "topk_keep": "D1 SR > V0 SR(0.927) + 0.02 AND D1 SR > V2 SR(0.900)",
+      "monlr_keep": "D2 SR > V2 SR(0.900) + 0.03",
+      "hybrid_keep": "D3 SR > D1 SR (IC guide 효과 확인)",
+      "overall_success": "best variant SR > 1.0 (S1 EW 기준)",
+      "abort": "D1 SR < V2 SR(0.900) AND D2 SR < V2 SR → portfolio loss 접근 자체의 한계, 가설 폐기",
+      "overfitting_guard": "D4 SR < D3 SR이면 D4 폐기(HP tuning이 portfolio loss에서도 과적합). STR_1661 V3 교훈 반영."
+    }
+  },
+
+  "implementation_plan": {
+    "language": "R + Python (reticulate 경유, STR_1661 인프라 계승)",
+    "gpu_setup": {
+      "venv": "/tmp/xgb-env",
+      "python_xgboost": "3.2.0 (CUDA 12.6)",
+      "device": "RTX 4080 Super 16GB",
+      "custom_obj_location": "xgb_dpl_predict.py (xgb_gpu_predict.py 확장)"
+    },
+    "custom_objective_implementation": {
+      "topk_utility": {
+        "gradient": "w_i = softmax(z_i / tau); grad_i = -w_i * (r_i - sum(w_j * r_j)) / tau",
+        "hessian": "hess_i = w_i * (1 - w_i) * (r_i - R_p)^2 / tau^2 + eps (수치 안정성)",
+        "tau_annealing": "epoch 1-100: tau=0.5, 101-300: tau=0.3. tau 하한 0.3 (rev2). 기존 0.1 하한 폐기.",
+        "tau_floor_rationale_rev2": "tau→0이면 softmax가 argmax에 수렴. 이때 w_i는 top-1 종목에만 1.0, 나머지 0.0이 되어 gradient가 top-1 외 종목에서 vanishing된다. (1) gradient vanishing이 spike보다 훨씬 위험: spike는 learning rate나 clipping으로 제어 가능하지만, vanishing은 학습 자체가 멈춤. (2) tau=0.1일 때 z_i/tau의 스케일이 ~10x로 확대되어 softmax 출력이 사실상 one-hot에 가까워짐. 30종목 포트폴리오인데 gradient가 1종목에만 집중되면 나머지 29종목의 가중치 학습이 불가. (3) tau=0.3이면 softmax 분포가 적절히 peaked되면서도 top-5~10 종목에 gradient가 분산되어, 30종목 EW 포트폴리오의 종목 선별 학습에 충분한 signal 전파 가능.",
+        "note": "xgboost custom_objective(predt, dtrain) 인터페이스. predt = raw prediction (leaf value sum), dtrain = DMatrix with label = fwd_ret_21d"
+      },
+      "monlr": {
+        "gradient": "sum over same-month pairs: -tanh'(z_i - z_j) * sign(r_i - r_j) [rev2: cross-section(동일 월) pair만 사용]",
+        "hessian": "constant 1.0 [rev2 변경]. tanh''는 |z_i-z_j| 클 때 0 수렴 → Newton step 발산/학습 중단. constant hessian = gradient descent와 동등, XGBoost regularization이 step size 제어.",
+        "pair_sample_ratio": "200 * n_month_stocks (동일 월 내에서만 pair 구성. 월간 ~2000종목이면 ~400K pairs/month)",
+        "note": "[rev2] 글로벌 pair → cross-section pair 전환. 서로 다른 월의 종목 비교는 시장 환경·수익률 스케일 차이로 무의미. Zhong et al.(2024) cross-sectional sub-sampling 전략과 일치."
+      },
+      "hybrid": {
+        "gradient": "alpha * grad_topk + (1-alpha) * grad_mse",
+        "hessian": "alpha * hess_topk + (1-alpha) * hess_mse",
+        "alpha_default": 0.7,
+        "note": "MSE(=reg:squarederror) gradient가 IC guide 역할. Guo(2024)의 'phased goal' 구현."
+      }
+    },
+    "walk_forward": "STR_1661과 동일. expanding IS (2003~oos_yr-2), Val (oos_yr-1), OOS (oos_yr). 18년 OOS.",
+    "seed_ensemble": "5-seed (42, 123, 456, 789, 2024). 동일 seed set으로 V0/V2/D1~D4 비교.",
+    "execution_estimate": {
+      "D1_TopK": "~3시간 (custom obj 오버헤드 + 18년 walk-forward x 5 seed)",
+      "D2_MonLR": "~4시간 (pair sampling 오버헤드)",
+      "D3_Hybrid": "~3시간",
+      "D4_Hybrid_Tuned": "~6시간 (alpha/tau grid 5x3 = 15 configs x 18년)",
+      "total": "~16시간 (D1→D2 병렬 가능, D3는 D1 결과 확인 후, D4는 D3 후)"
+    }
+  },
+
+  "expected_role": "core_alpha (STR_1656 signal 교체 후보)",
+  "why_now": "PG0 gap: SR 1.193 → 2.0 (gap 0.807). STR_1661 V2에서 IC 최적화의 한계가 실증적으로 확인되었다 (ICIR +21% but SR -3%). 이 gap은 '더 정확한 IC'가 아닌 '다른 종류의 loss function'으로만 해소 가능하다. (1) DSPO(Zhong 2024)와 Guided Learning(Guo 2024)이 portfolio-level loss의 우월성을 독립적으로 실증. (2) STR_1661의 GPU 인프라와 Python custom objective 파이프라인이 이미 가동 중이므로 구현 비용이 낮다. (3) H_1661의 LambdaRank 실험이 '이 방향(ranking loss 계열)의 천장'을 보여줬으므로, 질적으로 다른 방향(portfolio loss)으로의 전환이 논리적 다음 스텝.",
+
+  "core_reference": "Zhong, Xu, Wang, Wen, Guo & Xu (2024) 'DSPO: An End-to-End Framework for Direct Sorted Portfolio Construction' arXiv:2405.15833 -- Monotonical Logistic Regression loss로 sorted portfolio 구성 확률을 직접 최대화. NYSE 2023-2024에서 RankIC 10.12%, 누적 수익률 121.94%. Cross-sectional sub-sampling으로 소표본 문제 완화; Guo, Wang & Qi (2024) 'Guided Learning: Lubricating End-to-End Modeling for Multi-stage Decision-making' arXiv:2411.10496 -- Multi-stage decision의 prediction-optimization gap 해소. IC-Guide + portfolio utility loss hybrid가 stage-wise(SR 0.73) 대비 SR 1.06(+45%) 달성. Guide가 E2E 학습 안정화에 필수적임을 실증; Bongiorno, Manolakis & Mantegna (2025) 'End-to-End Large Portfolio Optimization' arXiv:2507.01918 -- 실현 포트폴리오 분산을 end-to-end loss로 직접 최적화하여 analytical competitor 대비 체계적으로 우월한 OOS 성과. 2000-2024 미국 1000종목; Elmachtoub & Grigas (2022, Management Science) 'Smart Predict then Optimize' -- prediction loss와 decision loss의 misalignment을 이론적으로 정립. SPO+ loss가 MSE 대비 decision quality에서 우월함을 증명.",
+
+  "lesson_check": "L-124: Tree > Linear, 비선형이 alpha 핵심 -- custom objective도 비선형 상호작용 보존 필요. Top-k utility가 tree 구조에서 작동하려면 gradient가 leaf value에 대해 smooth해야 함. L-123: ML PIT 표준(expanding + purged CV + 5-seed) -- D4 HP 탐색도 동일 원칙. L-125: Logistic 실패 -- 이진 분류가 아닌 연속 수익률 직접 사용(Top-k utility). L-010: ICIR 기반 가중의 한계(adaptive weighting of correlated factors) -- IC 최적화 자체의 한계를 portfolio loss로 우회. STR_1661 V2/V3 교훈: ICIR +21%에도 SR -3%, HP tuning이 IC 과적합 가속 -- portfolio loss로 loss function 자체를 교체하는 것이 파라미터 수준 개선보다 구조적.",
+
+  "factors": "XGBoost 5-seed ensemble, MI prefilter top 50 from 309 daily factors (STR_1661과 동일 feature set)",
+  "feature_set_change": "없음. STR_1661과 동일한 MI prefilter top 50 (RE* 제거). Feature 변경 없이 loss function만 변경하여 변수 통제.",
+
+  "overlay_plan": "S1: none (EW 30). S5: STR_1656 M05 구조 계승 가능 (HRP + DD Brake 10/25). Signal 교체 시 overlay 구조 유지.",
+
+  "pit_compliance": {
+    "C1_expanding_window": "STR_1661과 동일. IS: 2003~oos_yr-2, Val: oos_yr-1, OOS: oos_yr. Portfolio return 계산도 IS label(fwd_ret_21d)만 사용.",
+    "C2_same_day_circular": "OOS prediction은 IS 종료 후 학습 모델로만 생성. Custom objective의 r_i(실제 수익률)는 IS train label에서만 참조.",
+    "C3_same_period": "Top-k utility의 r_i는 학습용 fwd_ret_21d (IS 기간). OOS 기간의 실제 수익률은 loss에 절대 미포함.",
+    "C4_financial_lag": "Daily Factor DB Z_Score_Aligned 사용 (기존과 동일).",
+    "C13_zscore_aligned": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14_usable_date": "IC 접근 시 Usable_Date <= sig_date만 허용.",
+    "C15_factor_db": "Daily Factor DB Arrow open_dataset 경유 (기존과 동일).",
+    "purge_days": 21,
+    "custom_obj_pit_note": "Custom objective 내부에서 사용하는 fwd_ret_21d는 DMatrix label로 전달되며, 이는 walk-forward IS 기간의 target만 포함. OOS 예측 시에는 학습된 tree 구조만 사용하고 label은 참조하지 않음. Portfolio return을 loss로 사용하더라도 IS/OOS 분리 원칙은 동일하게 적용."
+  },
+
+  "risk_factors": [
+    "[rev2] XGBoost custom objective의 수치 안정성: softmax(z/tau)에서 tau가 작아지면 gradient spike가 아닌 vanishing이 진짜 위험. tau→0일 때 softmax→argmax 수렴으로 top-1 종목 외 gradient가 소멸하여 학습이 멈춤. tau 하한 0.3으로 상향하여 top-5~10 종목에 gradient 분산 보장. gradient clipping은 보조적 안전장치로 유지하되, vanishing 방지가 핵심.",
+    "Top-k utility의 non-convexity: portfolio return 최대화는 non-convex 문제. XGBoost의 greedy tree building이 local optima에 빠질 수 있음. 5-seed ensemble로 완화하나, MSE 대비 variance 증가 예상.",
+    "[rev2] MonLR cross-section pair + constant hessian: 동일 월 내 pair만 사용하므로 글로벌 pair 대비 gradient 분산 감소. constant hessian=1.0으로 tanh'' vanishing 문제 해소. 남은 위험: 월별 종목 수 편차로 pair 수 불균형 → gradient 스케일링(pair 수로 정규화) 필요.",
+    "Hybrid alpha 민감도: Guo(2024) Figure 5에서 alpha에 대해 non-monotonic response 확인. 최적 alpha가 데이터/시장에 따라 다를 수 있음.",
+    "Portfolio loss와 IC의 관계: Top-k utility 최적화 시 IC가 하락할 수 있음. IC 하락이 S2 Alpha Lab Gate(ICIR >= 0.20) 미달로 이어지면 S2 gate fail. IC와 SR 모두 보고하여 tradeoff 파악.",
+    "과적합 위험 계승: STR_1661 V3 교훈. D4(HP tuning)에서 동일 패턴(IC 과적합) 재현 가능. IS/OOS gap 2.0 hard limit 유지.",
+    "Gradient/Hessian 구현 오류: custom objective의 수학적 유도가 정확해도 Python 코드에서 부호/스케일 오류 가능. D1을 MSE로 검증(gradient = 2*(pred - label)과 비교)한 후 custom objective 전환."
+  ],
+
+  "success_criteria": {
+    "s1_gate": {
+      "primary": "best_variant SR > V0 SR(0.927) — portfolio loss가 IC loss 대비 SR에서 우월함을 실��",
+      "secondary": "best_variant SR > 1.0 (S1 EW 기준, STR_1656 M05 진입 기준)",
+      "icir_note": "ICIR은 보조 지표. ICIR < V2(1.03)이어도 SR > V0(0.927)이면 가설 성공. Prediction-optimization gap 해소가 목적이므로 SR이 primary metric.",
+      "abort": "D1 SR < V2 SR(0.900) AND D3 SR < V2 SR → ranking loss 포함 모든 종류의 loss가 reg:squarederror 대비 SR 열위 → 가설 폐기"
+    },
+    "s2_gate": {
+      "ICIR_5Y": ">= 0.20 (Alpha Lab Gate)",
+      "note": "portfolio loss 최적화 시 IC가 하락할 수 있으므로, ICIR 0.20 미달 가능성 존재. 이 경우 hybrid alpha를 IC 방향으로 조정(alpha 0.5 등)하여 재시도."
+    },
+    "dsr_multiple_testing_rev2": {
+      "description": "[rev2] D1~D4 + V0/V2 총 6건 variant를 동일 데이터에서 비교하므로, 다중검정 보정이 필수. best variant의 SR이 '6번 시도 중 우연히 높은 것'일 가능성을 DSR로 검증.",
+      "method": "Harvey et al.(2016) 기준. DSR = SR * sqrt(1 - skew*SR/4 + (kurt-3)*SR^2/8) / sqrt(1 + (N_tests - 1) * var_haircut). N_tests = 6 (V0, V2, D1, D2, D3, D4).",
+      "dsr_threshold": "DSR > 0 (p < 0.05). 즉 6건 비교 후에도 best variant의 Sharpe가 통계적으로 유의해야 함.",
+      "reporting": "S1 ablation 결과 보고 시 raw SR과 함께 DSR(6건 보정)을 반드시 병기. DSR < 0이면 best variant 채택 불가.",
+      "rationale": "QEPM 10 + Harvey et al.(2016): 다중검정 보정 없는 best variant 선택은 data snooping과 동치. 6건이면 Bonferroni 기준 개별 p-value 0.05/6 = 0.0083에 해당하는 수준의 엄격성 필요."
+    }
+  },
+
+  "differentiation_from_parent": {
+    "vs_H_1661": "H_1661은 loss function을 MSE→LambdaRank(ranking loss)로 변경. H_1662는 MSE→Portfolio Return(decision loss)으로 변경. 둘 다 loss function 변경이나, 최적화 대상이 질적으로 다름(순위 정확도 vs 포트폴리오 수익률).",
+    "vs_V0": "V0는 수익률 예측 오차(MSE) 최소화 → 사후 순위 변환 → top-30 선별. H_1662는 top-30 수익률 직접 최대화 → 예측-결정 정렬.",
+    "is_parameter_tuning": "아니오. Loss function 교체(regression → portfolio utility)는 학습 목표 자체의 질적 변경이며, 파라미터(eta, max_depth 등) 조정과 근본적으로 다르다. S0 규칙 준수.",
+    "novelty": "DSPO(Zhong 2024)는 neural network(end-to-end)에서 구현. XGBoost custom objective로의 변환은 본 가설의 고유 기여. GBT의 custom objective 인터페이스를 활용한 portfolio-aware learning은 선행 연구에서 미탐색."
+  },
+
+  "infrastructure_dependencies": [
+    "GPU: RTX 4080 Super 16GB, CUDA 12.6, /tmp/xgb-env (Python 3.x + xgboost 3.2.0)",
+    "R: reticulate 패키지 (Python 연동) -- STR_1661에서 검증 완료",
+    "xgb_dpl_predict.py: STR_1661의 xgb_gpu_predict.py 확장 (custom objective 추가)",
+    "04_Research/strategies/STR_1661_XGB_GPU/run_all.R 기반 수정 (Python 호출부 교체)",
+    "02_Infrastructure/validation/pit_enforcement.R -- PIT 검증",
+    "02_Infrastructure/validation/lookahead_detector.R -- C1-C15 스캔"
+  ],
+
+  "s5_downstream_plan": {
+    "description": "D3(또는 D1/D4) best variant가 S1-S2 통과 시 STR_1656 M05의 overlay 구조와 결합",
+    "path_a_signal_upgrade": "DPL signal로 STR_1656 M05의 HRP + DD Brake(10/25) 구조를 그대로 적용. Signal만 교체.",
+    "path_b_full_rerun": "DPL signal의 종목 선별 패턴이 V0와 크게 다를 경우(overlap < 60%) S5 재실행.",
+    "decision_gate": "S2에서 V0/V2와의 종목 overlap rate 측정. 또한 DPL signal의 portfolio return 분포가 V0와 질적으로 다른지(fat tail, skewness) 확인."
+  },
+
+  "s0_debate_required": true,
+  "debate_note": "S0 Debate 5인 독립 토론 필요. Codex Critic(custom objective gradient 유도 PIT 검증 + softmax tau 수렴), Risk Manager(non-convexity + gradient spike + tail risk), Governor(PG0 gap 정렬 + ML family concentration), Quant(XGBoost custom objective 구현 + 수치 안정성 + pair sampling), Academic(Zhong 2024 + Guo 2024 + Elmachtoub 2022 논문 검증 + XGBoost 적용 타당성)."
+}

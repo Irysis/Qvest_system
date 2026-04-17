@@ -1,0 +1,173 @@
+{
+  "strategy_id": "STR_1549",
+  "strategy_name": "Defense Core Alpha (D01+D02+Q07)",
+  "judge_version": "v7.0",
+  "timestamp": "2026-03-28T23:30:00+09:00",
+  "overall_verdict": "FAIL",
+  "s7_disposition": "ARCHIVE",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 54.8% > 45% threshold",
+
+  "hurdle_summary": {
+    "grade": "C",
+    "grade_v21": "C",
+    "total_score": 25,
+    "pass": false,
+    "sharpe": 0.399,
+    "cagr_pct": 8.59,
+    "mdd_pct": 54.81,
+    "ir": -0.101,
+    "calmar": 0.157,
+    "turnover_pct": 162.5,
+    "novelty_bonus": 0,
+    "saturation_penalty": -20,
+    "axes": {
+      "Return": 7,
+      "Risk": 7,
+      "Robustness": 79,
+      "Implementability": 80,
+      "Diversification": 45
+    }
+  },
+
+  "gate_0_data_integrity": {
+    "verdict": "PASS",
+    "detail": "sim_result.rds present (5,219 daily obs, 2005-2026). run_all.R: load_rawdata(use_cache=TRUE), factor_engine.R sourced, run_monthly_simulation with N=30, EW, commission=0.0015, buffer_zone(40/30). hurdle_result.json in output/ with total_score=25, grade=C. Charts (equity_curve.png, annual_returns.png) present."
+  },
+
+  "gate_1_pit_compliance": {
+    "verdict": "PASS",
+    "checks": {
+      "C1_full_sample_stats": {
+        "pass": true,
+        "detail": "No full-sample statistics. All ranking cross-sectional per signal date."
+      },
+      "C2_same_day_circular": {
+        "pass": true,
+        "detail": "Factor DB loaded via Arrow open_dataset(), merged by fdb_dates <= sig_d. No same-day circular dependency."
+      },
+      "C4_accounting_lag": {
+        "pass": true,
+        "detail": "Factor DB handles internally (annual->May, quarterly->45d). Z_Score_Aligned embeds proper lag."
+      },
+      "C10_liquidity_lag": {
+        "pass": true,
+        "detail": "factor_engine.R line 49-50: shift(frollmean(TradingValue, n=20L), n=1L, type='lag'). Correctly t-1 lagged."
+      },
+      "C13_z_score_aligned": {
+        "pass": true,
+        "detail": "align_factor_direction() from factor_db_connector.R (line 35). dcast on Z_Score_Aligned (line 84). No manual sign flip."
+      },
+      "C14_usable_date": {
+        "pass": true,
+        "detail": "fdb_dates[fdb_dates <= sig_d] on line 76. Only data available on/before signal date used."
+      },
+      "C15_factor_db_access": {
+        "pass": true,
+        "detail": "Arrow open_dataset(CACHE_DIR_FDB) + align_factor_direction() + .load_registry(). Proper Factor DB pipeline."
+      },
+      "S1_no_overlay": {
+        "pass": true,
+        "detail": "No DD/VT/Regime/FM overlay. Pure EW 30 stocks + 15bps + liquidity filter. run_all.R line 92-96 confirms."
+      }
+    }
+  },
+
+  "gate_2_statistical_defense": {
+    "verdict": "PASS (signal valid, implementation weak)",
+    "dsr": 1.0,
+    "dsr_detail": "DSR=1.000 (SR=0.399, N=465, T=5219, SR*=0.050). Signal is real, not statistical artifact.",
+    "fmb_t": 4.115,
+    "fmb_detail": "Score lambda t=4.11 > 3.0 Harvey threshold. Cross-sectional pricing power confirmed.",
+    "ic_mean": 0.0484,
+    "ic_ir": 0.459,
+    "ic_t_stat": 7.296,
+    "ic_detail": "ICIR 0.459 > 0.20 Alpha Lab Gate. t-stat 7.30 >> 3.0. Signal statistically robust.",
+    "harvey_awareness": "FMB t=4.11 passes Harvey et al. (2016) multiple testing threshold of 3.0. However, portfolio-level SR 0.399 is economically insufficient."
+  },
+
+  "gate_3_overfitting": {
+    "verdict": "PASS",
+    "oos_retention": 0.983,
+    "is_sharpe": 0.401,
+    "oos_sharpe": 0.395,
+    "alpha_trend_ratio": 2.686,
+    "detail": "OOS retention 0.98 = near-perfect IS/OOS alignment. No overfitting. Alpha improving (recent 3Y SR 1.071 vs full 0.399). IC improving (recent 3Y ICIR 0.819 vs full 0.459)."
+  },
+
+  "gate_4_distortion": {
+    "verdict": "PASS",
+    "flags": 0,
+    "detail": "3-Axis verification CLEAN. No data distortion artifacts."
+  },
+
+  "gate_5_portfolio_fit": {
+    "verdict": "FAIL",
+    "detail": "MDD 54.8% = hard fail (threshold 45%). IR vs KOSPI = -0.101 (negative). BM correlation 0.885 = highly redundant with market. Defense mandate unfulfilled: pure low-vol/quality combo tracks market too closely. Family defense_core_alpha: 16 trials, 0 passes -- structural limitation confirmed.",
+    "role_assessment": "Declared: core_alpha. Detected: weak_defense. SR 0.399 < 0.6 target, MDD 54.8% > 40% target. Role honesty: DISHONEST (cannot serve as core_alpha with these metrics)."
+  },
+
+  "role_honesty_audit": {
+    "honest": false,
+    "declared_role": "core_alpha",
+    "detected_role": "weak_defense",
+    "reason": "Strategy declared core_alpha but delivers SR 0.399 (target >= 0.6), MDD 54.8% (target <= 40%), IR -0.101 (negative vs BM). KOSPI underperformed in 9/11 S5 mutations. Cannot fulfill core_alpha mandate.",
+    "red_flags": [
+      "KOSPI underperform in 9/11 mutations",
+      "BM correlation 0.885 = near-market-proxy",
+      "MDD 54.8% exceeds market-level drawdown protection expectation"
+    ]
+  },
+
+  "s5_mutation_summary": {
+    "total_mutations": 11,
+    "categories": 6,
+    "best_mutation": "M6 (Consensus cross-family C19, SR 0.684, Score 31.8, Grade C)",
+    "kospi_beat_count": 2,
+    "all_grades": ["C", "F", "F", "F", "F", "F", "C", "F", "F", "C", "C", "C"],
+    "synthesis_tested": true,
+    "exhaustion_confirmed": true,
+    "detail": "11 mutations across 6+ categories. Best = M6 (C19 Consensus cross-family) at SR 0.684, but still MDD 52.5% hard fail. No mutation achieved Grade A or B. All mutations MDD > 45%."
+  },
+
+  "l_code_audit": {
+    "l_code_L767": {
+      "fields_valid": true,
+      "has_grade": true,
+      "has_lesson_text": true,
+      "has_core_reference": true,
+      "grade_value": "C",
+      "length_chars": 578,
+      "length_valid": true,
+      "content_quality": "Excellent. Identifies D01 as true alpha source, Q07 as noise filter, C19 cross-family as viable path. References 6 papers/L-codes. 7 tags."
+    },
+    "l_code_STR_1549": {
+      "fields_valid": true,
+      "has_grade": true,
+      "has_lesson_text": true,
+      "has_core_reference": true,
+      "grade_value": "C (Archive)",
+      "length_chars": 522,
+      "length_valid": true,
+      "content_quality": "Good. Covers S5 mutation results, identifies M6 C19 as viable direction, MDD hard fail. References 3 papers."
+    },
+    "field_name_compliance": "PASS -- Both L-codes use correct field names: grade (NOT verdict), lesson_text (NOT lesson), core_reference (NOT core_ref)."
+  },
+
+  "pit_cleanliness_summary": "CLEAN -- All C1/C2/C4/C10/C13/C14/C15 checks pass. No S1 overlay violation. Factor DB access properly Arrow-based with Z_Score_Aligned. Liquidity filter correctly t-1 lagged. Signal itself is valid (ICIR 0.459, FMB t=4.11); failure is market-level drawdown exposure, not PIT violation.",
+
+  "s7_final_verdict": {
+    "disposition": "ARCHIVE",
+    "grade": "C",
+    "score": 25,
+    "rationale": "Grade C with hard_fail (MDD 54.8% > 45%). Signal quality is genuine -- ICIR 0.459, FMB t=4.11 (Harvey-compliant), OOS retention 0.98, DSR 1.0. PIT compliance is perfect across all C1-C15 checks. However, standalone defense factors in Korean market cannot avoid 50%+ MDD. BM correlation 0.885 renders it a weak market proxy, not a defense vehicle. S5 exhausted 11 mutations across 6 categories with zero Grade A/B results. Family defense_core_alpha has 16 consecutive failures -- structural limitation confirmed. Archive for signal research value; do NOT pursue further standalone defense strategies.",
+    "production_eligible": false,
+    "archive_reason": "Valid signal (research value) + structural performance limitation (not fixable within family)",
+    "viable_successor_paths": [
+      "D01 + C19 Consensus cross-family combination (S5 M6 showed SR +71% improvement to 0.684)",
+      "D01 as sleeve component in multi-factor ensemble with DD/Regime overlay at S5 stage",
+      "Defense factors as portfolio-level hedge rather than standalone alpha source"
+    ],
+    "family_recommendation": "PIVOT -- defense_core_alpha family exhausted after 16 failures. Redirect research budget to cross-family combinations (D01+C19) or defense-as-sleeve architectures."
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "strategy_id": "STR_1567_c19_l22_dd820",
+  "judge_timestamp": "2026-03-28T12:00:00+09:00",
+  "hurdle_grade": "B",
+  "hurdle_score": 44.5,
+  "hard_fail": true,
+  "fail_reasons": ["MDD 32.0% PASS but set.seed not found by hurdle scanner"],
+  "gate_0_pit": {
+    "C1_full_sample": "PASS — rolling/expanding only",
+    "C2_same_day": "PASS — dd_lag uses c(0, dd_pct[-n]) = t-1",
+    "C3_period_aggregate": "PASS",
+    "C4_financial_lag": "PASS — Factor DB handles lag",
+    "C5_overlay_t1": "PASS — DD overlay uses dd_lag (t-1)",
+    "C9_dd_vt_lag": "PASS — line 64: dd_lag <- c(0, dd_pct[-n]); line 67: dd_scale uses dd_lag",
+    "C13_z_score_aligned": "PASS — uses Z_Score_Aligned from Factor DB",
+    "C14_ic_usable_date": "N/A — no IC-based selection",
+    "C15_load_month_factors": "PASS — uses load_month_factors()"
+  },
+  "gate_1_performance": {
+    "SR": 0.834,
+    "CAGR_pct": 12.94,
+    "MDD_pct": 32.0,
+    "turnover_pct": 479.8,
+    "comment": "DD 8/20 reduced parent MDD from 47.6% to 32.0%, but also cut CAGR from 20.1% to 12.9%. SR dropped from 0.927 to 0.834."
+  },
+  "gate_2_robustness": {
+    "axes": {"Return": 23.0, "Risk": 40.0, "Robustness": 73.0, "Implementability": 60.0, "Diversification": 54.0},
+    "role": "diversifier"
+  },
+  "gate_3_structural": "DD brake overly aggressive — 8/20 window too narrow, killing returns disproportionately to risk reduction",
+  "gate_4_marginal": "Score 44.5 < 50 threshold. C19+L22 blend has value but DD 8/20 overlay destroys alpha.",
+  "gate_5_verdict": "Grade B. DD overlay successfully reduces MDD below 45% hard fail threshold, but at too high a cost to returns. Parent STR_1566 alpha partially preserved. Wider DD parameters (e.g., 10/25) or DD+Regime combination may improve."
+}

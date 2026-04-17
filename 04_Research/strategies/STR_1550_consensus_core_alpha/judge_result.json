@@ -1,0 +1,144 @@
+{
+  "strategy_id": "STR_1550",
+  "strategy_name": "Consensus_Core_Alpha",
+  "judge_timestamp": "2026-03-28T14:25:00+09:00",
+  "judge_agent": "Judge",
+
+  "gate_0_pit": {
+    "pass": true,
+    "violations": 0,
+    "details": [
+      "C1: No full-sample statistics. Rolling/expanding only.",
+      "C2: No same-day circular. AvgTV20 uses shift(n=1, type='lag').",
+      "C3: No same-period aggregate-apply. FDB date <= sig_date enforced.",
+      "C4: Factor DB handles fiscal lag internally (C19 uses analyst forecast dates).",
+      "C5: No overlay in S1 pure factor. N/A.",
+      "C13: Z_Score_Aligned only via align_factor_direction(). No manual NEGATE/FLIP.",
+      "C14: FDB fdb_dates <= sig_d check on line 43-44 of factor_engine.R.",
+      "C15: Factor DB loaded via open_dataset + align_factor_direction (connector pattern)."
+    ],
+    "lookahead_detector": "CLEAN (run_all.R + factor_engine.R both passed)"
+  },
+
+  "gate_1_implementability": {
+    "pass": true,
+    "n_stocks": 30,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "liquidity_filter": "AvgTV20 >= 2e8 (20-day avg trading value, 1-day lagged)",
+    "turnover_annual": 379.3,
+    "turnover_check": "PASS (< 600% hard limit)",
+    "crowding_risk": "LOW (persistent>75%: 0, common>50%: 0)"
+  },
+
+  "gate_2_robustness": {
+    "pass": true,
+    "oos_retention": 0.96,
+    "oos_detail": "IS SR 1.017 / OOS SR 0.978 = 0.96 retention. Robust.",
+    "rolling_3y_positive": 1.0,
+    "stress_outperform": "3/3 (COVID-2020, GFC-2008, Taper-2013 all outperformed BM)",
+    "alpha_trend": "Improving. Recent 3Y SR 1.737 vs full SR 1.001 = ratio 1.73.",
+    "ic_stability": "Decaying. Full IC 0.0466 / Recent 3Y IC 0.0363 = ratio 0.78.",
+    "ic_stability_concern": "IC decaying but SR improving => recent signal quality lower but stock selection still works. Monitor."
+  },
+
+  "gate_3_performance": {
+    "pass": false,
+    "hard_fail": true,
+    "hard_fail_reason": "MDD 52.85% > 45% threshold",
+    "metrics": {
+      "CAGR": 22.69,
+      "AnnVol": 22.66,
+      "Sharpe": 1.001,
+      "Sharpe_m": 0.986,
+      "IR": 0.958,
+      "MDD": 52.85,
+      "Calmar": 0.429,
+      "Sortino": 1.392,
+      "WinRate": 60.6,
+      "WorstMonth": -29.57,
+      "Worst3M": -35.7,
+      "ES99_d": 5.8,
+      "ES99_m": 20.64
+    },
+    "grade_if_no_hard_fail": "A (Score 70.9 with strong CAGR/SR)",
+    "note": "S1 pure factor. MDD is structural (no DD overlay). S5 M4_DD8_22 reduces MDD to 37.1%."
+  },
+
+  "gate_4_statistical_defense": {
+    "dsr": 1.0,
+    "dsr_significant": true,
+    "dsr_detail": "SR=1.001, N_trials=465, T=5219 obs, SR_max_expected=0.076. DSR >> 0.95.",
+    "fmb_t_stat": 4.641,
+    "fmb_significant": true,
+    "fmb_detail": "Score lambda=0.00343, NW t=4.641 > 3.0 (Harvey et al. 2016 threshold). Alpha is real.",
+    "harvey_threshold": "PASS (t=4.641 > 3.0)",
+    "3axis_verification": "PASS (Hallucination/DSR: PASS, Loss/Overfitting: ROBUST, Distortion: CLEAN)"
+  },
+
+  "gate_5_diversification": {
+    "bm_corr": 0.808,
+    "max_abs_corr_db": 0.25,
+    "most_correlated": "C07_ESBR (same Consensus family)",
+    "independence_class": "independent",
+    "role_declared": "core_alpha",
+    "role_detected": "core_alpha",
+    "role_honesty": "PASS (no role disguise detected)",
+    "role_bias_tag": "RoleBias_Core"
+  },
+
+  "s2_profile_summary": {
+    "icir": 0.57,
+    "ic_t_stat": 9.11,
+    "tag": "Strong",
+    "alpha_lab_gate": "PASS (ICIR 0.57 >= 0.20, 5Y IC t=9.11 significant)"
+  },
+
+  "s5_mutation_summary": {
+    "mutations_attempted": 9,
+    "categories_covered": 4,
+    "synthesis_tested": true,
+    "best_mutation": "M4_DD8_22",
+    "best_grade": "A",
+    "best_score": 83,
+    "best_sr": 0.996,
+    "best_cagr": 17.79,
+    "best_mdd": 37.1
+  },
+
+  "overall_verdict": {
+    "s1_pure_grade": "C",
+    "s1_pure_score": 70.9,
+    "s1_hard_fail": "MDD 52.85% > 45%",
+    "s5_best_grade": "A",
+    "s5_best_score": 83,
+    "s7_disposition": "Approved_for_Governor",
+    "final_assessment": "S1 pure factor is Grade C (Hard Fail MDD). With DD 8/22 overlay (S5 M4), achieves Grade A (83). C19_Composite_Earnings is a validated Core Alpha anchor for V7 portfolio. FMB t=4.641 confirms real cross-sectional alpha. ICIR 0.57 = Strong. OOS retention 96%. Key risk: IC decaying (0.78 ratio) requires monitoring. Turnover 379% manageable with BZ 50/25."
+  },
+
+  "strengths": [
+    "FMB t=4.641 >> Harvey 3.0 threshold: genuine cross-sectional alpha",
+    "OOS retention 96%: no overfitting",
+    "ICIR 0.57 (Strong): robust predictive signal",
+    "CAGR 22.69% >> 16% target",
+    "Stress 3/3 outperform: crisis-resilient alpha",
+    "Alpha trend improving (recent 3Y SR 1.737 vs full 1.001)"
+  ],
+
+  "weaknesses": [
+    "MDD 52.85% (Hard Fail without overlay)",
+    "IC decaying: full 0.0466 vs recent 3Y 0.0363 (0.78 ratio)",
+    "BM correlation 0.808: high systematic exposure",
+    "Worst month -29.57%: extreme left tail",
+    "No FF5 alpha test available (Multi-Factor Alpha: N/A)"
+  ],
+
+  "recommendations": [
+    "DD 8/22 overlay is essential for production (MDD 52.85% -> 37.1%)",
+    "Consider DD+Regime (M5) for further MDD reduction to 32.9%",
+    "Monitor IC decay: if 12M rolling IC drops below 0.02, reassess",
+    "FF5 alpha test needed before PG2 production allocation",
+    "Cross-validate with C07_ESBR standalone to confirm C19 composite superiority"
+  ]
+}

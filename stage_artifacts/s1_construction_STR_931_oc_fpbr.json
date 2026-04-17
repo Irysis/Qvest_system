@@ -1,0 +1,34 @@
+{
+  "factor_id": "OC_fPBR_VALUE",
+  "strategy_id": "STR_931_oc_fpbr",
+  "stage": "S1",
+  "created_at": "2026-04-12",
+  "hypothesis_ref": "DESIGN_DELIVERABLE_STR_930_935.md STR_931 — OtherCorp + fPBR Value Targeting",
+  "academic_ref": "Ke & Petroni (2004) insider trading & value discovery; Fama & French (1992) B/M premium",
+  "signals": {
+    "primary": ["OC_40d (내부자 순매수 40일 누적, mcap 정규화)", "V05_fPBR (forward PBR, 역순위 = 저평가)"],
+    "risk_control": "IdioVol (252d expanding CAPM 잔차 변동성)",
+    "weights": {"W_IVOL": 0.35, "W_OC": 0.25, "W_FPBR": 0.40}
+  },
+  "implementation_profile": {
+    "flow_window_days": 40,
+    "lookback_days": 252,
+    "min_obs": 200,
+    "n_holdings": 20,
+    "commission_bps": 15,
+    "liq_threshold_krw": 200000000,
+    "overlay": "없음 S1 순수 팩터",
+    "weight_method": "EW",
+    "sector_neutral": true
+  },
+  "pit_compliance": {
+    "C2": "inv_raw frollsum 40d → sig_date snapshot (t-1 guaranteed)",
+    "C9": "overlay 없음 (S1 단계)",
+    "C13": "Z_Score_Aligned 직접 사용, 방향 반전 금지",
+    "C14": "load_month_factors(sig_date) → Usable_Date <= sig_date",
+    "C15": "load_month_factors() 경유, parquet 직접 로드 금지",
+    "OPT1": "FDB_ALL 일괄 lapply 로드, 루프 내 반복 로드 금지"
+  },
+  "differentiation": "STR_930 ESBR 대신 fPBR(V05) 적용 — Balance-sheet value vs consensus axis",
+  "test_question": "fPBR value premium이 EV/EBITDA(STR_923)과 독립적 alpha 제공하는가?"
+}

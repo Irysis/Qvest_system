@@ -1,0 +1,145 @@
+{
+  "factor_id": "BCAC_Beta_Conditioned_Accrual",
+  "strategy_id": "STR_1653_beta_conditioned_accrual_diversifier",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-09",
+
+  "hypothesis": "Beta-Conditioned Accrual Composite Diversifier. 전체 유니버스에서 (1) 60일 rolling beta 하위 40% 종목으로 유니버스를 제한한 뒤, (2) AC21_CF_to_Accrual_Ratio + AC22_Accrual_Volatility + AC17_Accrual_Reversal의 z-score 합산 composite로 Top 20 선택. beta를 '제약조건'으로, accrual alpha를 '목적함수'로 분리하여 구조적으로 portfolio beta < 0.5를 달성하면서도 accrual anomaly의 alpha를 추출한다. Kim(2021)의 cross-exposure 통제를 적용하여, low-beta bucket 내에서 value/momentum에 대한 음(-) 노출 종목을 추가 필터링한다. EW 20종목, 격월 리밸런싱, 15bps 거래비용, 유동성 2억원 이상. S1에서 순수 팩터 신호 측정 — DD/VT/Regime overlay 없음.",
+
+  "economic_mechanism": {
+    "core_theory": "두 가지 독립적 학술 메커니즘의 교차 결합. (1) Betting Against Beta (Frazzini & Pedersen 2014): 레버리지 제약 투자자가 고beta 주식에 과도하게 기울어져 SML이 평탄화됨. Low-beta 종목은 위험 대비 초과수익이 체계적으로 높음. BAB는 미국 SR 0.78, 20개국+채권+선물에서 일관. 한국시장에서 BAB 단독은 롱온리 제약으로 alpha 부족(L-087, 박종원 2024 실증)이나, BAB를 alpha source가 아닌 '유니버스 필터'로 활용하면 구조적 문제를 회피할 수 있다. (2) Accrual Anomaly (Sloan 1996, Richardson et al. 2005): 발생주의 이익의 현금전환 실패가 미래 수익률을 예측. AC21(현금흐름/발생액 비율)은 이익의 질을 직접 측정, AC22(발생액 변동성)은 이익 조작 가능성을, AC17(발생액 반전)은 극단적 발생액의 평균회귀를 포착.",
+
+    "why_beta_filter_not_sorting": "L-087은 'low-risk sorting 기반 defense는 한국시장 롱온리에서 불가'로 결론짓고 있다. 그러나 L-087의 실패는 beta를 alpha source로 사용한 것(즉, low-beta 종목 자체에서 alpha를 기대)이 문제였다. 본 가설은 beta를 alpha source가 아닌 유니버스 제한 조건으로만 사용한다. Alpha는 accrual composite에서 추출하되, low-beta bucket이라는 제약조건 하에서 추출한다. 이는 Frazzini & Pedersen(2014)의 'BAB as a constraint rather than alpha' 해석과 일치하며, L-087과 구조적으로 다른 접근이다.",
+
+    "why_accrual_is_orthogonal_to_consensus": "앵커 STR_1631의 alpha source는 C19_Composite_Earnings(애널리스트 이익 수정). Accrual 팩터는 '회계적 이익의 질'을 측정하며, 애널리스트 합의치와 전혀 다른 정보 채널이다. 상관 행렬에서 AC21-C19 = 0.038, AC22-C19 = 0.055, AC17-C19 = 0.056으로 사실상 독립. 더 중요하게, accrual과 consensus는 이론적으로 다른 투자자 행동 편향에 기반한다: consensus는 과소반응(Hong & Stein 1999), accrual은 이익 고착(Sloan 1996). 투자자 편향이 다르면 같은 시점에 같은 종목을 선택할 이유가 없다.",
+
+    "how_beta_constraint_solves_L118": "L-118의 핵심 교훈: '단면 상관 낮아도 beta 지배로 포트폴리오 상관 높음'. STR_1636은 팩터 상관 < 0.06이었지만 포트폴리오 상관 0.78(beta 0.93). 본 가설은 beta 하위 40% 유니버스 제한으로 구조적 portfolio beta < 0.5를 강제한다. Low-beta bucket 선택 + accrual scoring → 선택된 종목 자체가 low-beta이므로 앵커(beta 0.85)와의 portfolio-level 상관이 구조적으로 낮아진다. 이는 L-118이 제시한 'beta orthogonality가 family orthogonality보다 중요'하다는 교훈의 직접 해법이다.",
+
+    "cross_exposure_control": "Kim(2021, PBF 67): low-beta 포트폴리오에서 value/momentum에 대한 음(-) 노출 종목이 성과를 훼손. 본 가설은 low-beta bucket 내에서 accrual composite score 적용 후, Q03_ROA와 M01_Momentum의 z-score가 -1.5 이하인 종목을 제거하는 cross-exposure 필터를 추가한다(L-088). 이는 accrual alpha의 순도를 높이고 의도하지 않은 역-quality/역-momentum 노출을 방지한다."
+  },
+
+  "factors": [
+    {
+      "name": "AC21_CF_to_Accrual_Ratio",
+      "family": "accrual",
+      "role_in_strategy": "Primary scoring factor. 현금흐름 대비 발생액 비율로 이익의 질 측정.",
+      "ic_profile": {
+        "full_icir": 0.706,
+        "stress_icir": 0.796,
+        "4r_crisis_icir": 0.029,
+        "corr_with_C19": 0.038,
+        "crisis_ratio": 1.20
+      },
+      "literature": "Sloan (1996 TAR), Richardson et al. (2005 JAE)"
+    },
+    {
+      "name": "AC22_Accrual_Volatility",
+      "family": "accrual",
+      "role_in_strategy": "Secondary scoring factor. 발생액의 시계열 변동성으로 이익 조작/불안정성 포착.",
+      "ic_profile": {
+        "full_icir": 0.710,
+        "corr_with_C19": 0.055,
+        "note": "AC21과 내부 상관 0.34 — 중복 제한적, 상호보완적"
+      },
+      "literature": "Hribar & Collins (2002), Dechow & Dichev (2002)"
+    },
+    {
+      "name": "AC17_Accrual_Reversal",
+      "family": "accrual",
+      "role_in_strategy": "Tertiary scoring factor. 극단적 발생액의 평균회귀 포착.",
+      "ic_profile": {
+        "full_icir": 0.670,
+        "stress_icir": 0.737,
+        "4r_crisis_icir": 0.442,
+        "corr_with_C19": -0.012,
+        "crisis_ratio": 1.25
+      },
+      "literature": "Allen, Larson & Sloan (2009), Sloan (1996)"
+    }
+  ],
+
+  "construction": {
+    "universe_filter_1": "유동성 >= 2억원 (20일 평균 거래대금)",
+    "universe_filter_2": "60일 rolling market beta 하위 40% (약 상위 400종목 중 160종목)",
+    "cross_exposure_filter": "Q03_ROA z-score > -1.5 AND M01_Momentum z-score > -1.5 (Kim 2021)",
+    "scoring": "Z_Score_Aligned(AC21) + Z_Score_Aligned(AC22) + Z_Score_Aligned(AC17) — 단순 합산",
+    "selection": "Top 20 by composite score",
+    "weighting": "Equal Weight",
+    "rebalance": "Bimonthly (격월)",
+    "transaction_cost": "15bps one-way",
+    "overlay": "NONE (S1 순수 팩터 측정. Overlay는 S5에서만)",
+    "max_stocks": 20,
+    "beta_constraint_note": "Beta 하위 40% 유니버스 제한이 portfolio beta < 0.5를 구조적으로 보장. L-115(Low-Beta 유니버스 필터링만으로 불충분)의 교훈은 beta 자체를 alpha로 사용했을 때의 결론이며, beta를 constraint + accrual을 alpha로 결합하는 본 접근과 구조적으로 다름."
+  },
+
+  "expected_role": "Diversifier",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "SR gap +0.757 (1.243 -> 2.0). Markowitz 경로로 독립 diversifier 2-3개 필요. 현재 family_concentration 100% consensus.",
+    "accrual_untapped": "Accrual family 3개 팩터 모두 ICIR 0.67~0.71로 양호하나 전략 미구축. 288개 Factor DB 중 accrual family는 0% 활용 (L-117 audit).",
+    "beta_problem_solution": "L-118 beta dominance 문제를 최초로 정면 해결. 기존 50+ S3/S5 FAIL의 근본 원인(long-only beta 지배)에 대한 구조적 해법 제시.",
+    "family_diversity": "consensus(앵커) vs accrual(본 가설) — 경제적 채널 완전 분리. 애널리스트 수정 vs 회계적 이익 질."
+  },
+
+  "core_reference": [
+    "Frazzini & Pedersen (2014) 'Betting Against Beta' — BAB SR 0.78, 20개국 일관. Beta constraint의 학술적 근거.",
+    "Sloan (1996 TAR) 'Do Stock Prices Fully Reflect Information in Accruals?' — Accrual anomaly 원조.",
+    "Richardson, Sloan, Soliman & Tuna (2005 JAE) 'Accrual Reliability and Earnings Persistence' — Comprehensive accrual 정의.",
+    "Allen, Larson & Sloan (2009) 'Accrual Reversals, Earnings and Stock Returns' — AC17 학술 근거.",
+    "Kim, Saejoon (2021 PBF 67) 'Enhanced Factor Investing in Korean Market' — Cross-exposure 통제 필수.",
+    "[KR-FACTOR-2] 박종원 et al. (2024 재무관리연구) — 한국시장 BAB 롱온리 한계 실증."
+  ],
+
+  "lesson_check": [
+    "L-087: 한국 롱온리 low-risk sorting 무효 — 본 가설은 beta를 sorting이 아닌 constraint로 사용하여 구조적으로 다름",
+    "L-088: Cross-exposure 통제 필수 — Q03/M01 음(-) 노출 종목 필터 포함",
+    "L-106/L-118: Market beta 지배 → beta orthogonality 최우선 — beta 하위 40% 유니버스 제한으로 직접 해결",
+    "L-115: Low-Beta 유니버스 필터링만으로 불충분 — L-115는 beta가 유일한 alpha였음. 본 가설은 accrual이 alpha, beta는 constraint",
+    "L-119: 정적 EW blend는 alpha 희석 — 본 가설은 standalone 전략으로 설계. 앵커와의 배합은 PG2에서 결정",
+    "L-484: 30종목 제한 — 20종목으로 설계. 앵커 10 + 본 전략 20 = 30종목 이내"
+  ],
+
+  "risks": [
+    {
+      "risk": "Low-beta bucket에서 accrual alpha가 소멸",
+      "probability": "MEDIUM",
+      "mitigation": "S2 프로파일에서 low-beta subset ICIR 확인. 소멸 시 beta 40% -> 50% 완화 또는 sector-adjusted beta 사용.",
+      "literature": "Fama-French(2018): 팩터 프리미엄은 size/beta subset에서 변동 가능. S2에서 검증."
+    },
+    {
+      "risk": "Low-beta 종목이 소형주에 편중되어 유동성 부족",
+      "probability": "MEDIUM-HIGH",
+      "mitigation": "유동성 2억원 필터가 1차 방어. 추가로 시가총액 하위 10% 제외 가능. 한국시장 low-beta에는 유틸리티/통신/소비재 대형주도 포함.",
+      "reasoning": "박종원 et al. (2024): 소형주 제외 시 beta 유의성 사라짐 → low-beta 대형주만으로는 alpha 부족 가능. 유동성 필터 통과 종목 수 확인 필수."
+    },
+    {
+      "risk": "Portfolio beta 0.5는 달성하나 return correlation이 여전히 0.3 초과",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "Beta 외에 sector exposure도 상관에 기여. Sector-neutral 변형을 S5 mutation으로 준비.",
+      "reasoning": "L-118 결론의 핵심은 beta 지배이므로 beta 해결이 상관 해결의 필요조건. 충분조건 여부는 S2에서 검증."
+    },
+    {
+      "risk": "Accrual 3팩터 내부 상관 (AC17-AC22: 0.53)으로 composite 분산효과 제한",
+      "probability": "LOW",
+      "mitigation": "AC17-AC22 상관 0.53은 중간 수준. AC21은 AC17(0.31), AC22(0.34)와 상대적으로 독립적. 3팩터 composite이 단일 팩터보다 안정적 IC 제공 기대.",
+      "reasoning": "Richardson et al. (2005): comprehensive accrual이 단일 WC accrual보다 alpha 큼."
+    }
+  ],
+
+  "success_criteria": {
+    "S2_pass": "ICIR >= 0.20 (Alpha Lab Gate), Portfolio beta < 0.50",
+    "S3_pass": "Anchor return correlation < 0.30, Crisis correlation < 0.50",
+    "standalone_SR": "> 0.6 minimum (PG0 Diversifier 요건)",
+    "family_orthogonality": "Accrual vs Consensus — 단면 상관 < 0.06 확인됨"
+  },
+
+  "s1_implementation_notes": {
+    "beta_calculation": "60-day rolling OLS beta vs KOSPI. Expanding window는 룩어헤드 위험. Rolling 60일 = 약 3개월 추정 기간.",
+    "pit_compliance": "C4: 재무제표 lag 필수 (AC21/AC22/AC17은 분기 재무 기반 → 45일 lag). C9: beta는 t-1 기준. C14: Z_Score_Aligned만 사용.",
+    "factor_db_access": "load_month_factors() 경유. AC21, AC22, AC17, Q03, M01 로드. Beta는 별도 계산 (RAWDATA Close/BM_Ret 기반).",
+    "no_overlay": "S0/S1 overlay 금지 규칙 준수. DD/VT/Regime 없음."
+  }
+}

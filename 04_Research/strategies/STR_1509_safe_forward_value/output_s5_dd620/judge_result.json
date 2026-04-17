@@ -1,0 +1,20 @@
+{
+  "strategy_id": "STR_1509_safe_forward_value_S5_dd620",
+  "judge_timestamp": "2026-03-26 20:15:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {"pass": true, "detail": "Same run_s5_dd.R as ddA/B/C. DD brake t-1 lagged (dd_lag = c(0, dd_pct[-n_f])). C1-C11 clean. Already verified in L-715/716/717."},
+    "gate1_performance": {"pass": false, "detail": "Grade F, Score 10.7. SR 0.636, CAGR 9.44%, MDD 34.54%. MDD improved from 58.1% but CAGR/SR still below targets."},
+    "gate2_stage_artifacts": {"pass": true, "detail": "Parent stage_artifacts present."},
+    "gate3_role_honesty": {"pass": false, "detail": "F grade. Diversifier at best but too weak for any portfolio role."},
+    "gate4_statistical": {"pass": false, "detail": "Base OOS 0.156 issue persists across all DD variants."},
+    "gate5_ff5": {"pass": false, "detail": "Per ddA analysis, FF5 alpha ~4.5% survives but t<1.96. Variant dd620 likely similar."}
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "F",
+    "score": 10.7,
+    "fail_reasons": ["Score below C threshold", "CAGR 9.44% far below 16%", "OOS retention ~15%"],
+    "recommendation": "Archive. ddA (7/22) remains best variant of STR_1509 family."
+  }
+}

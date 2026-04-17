@@ -1,0 +1,98 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1422_crowding_defense_s5_m1",
+  "variant": "S5_M1_DD10_25",
+  "description": "DD-Only overlay (DD_START=10%, DD_FULL=25%, MIN_EXP=30%) on CR08+D01 crowding defense base. No VT.",
+  "timestamp": "2026-03-26T18:00:00+09:00",
+  "l_code": "L-632",
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "lookahead_detector": "CLEAN (run_s5_m1.R, factor_engine.R both clean)",
+      "c1_full_sample": "PASS - DD brake uses expanding cummax/cumprod, no full-sample stats",
+      "c2_same_day_circular": "PASS - dd_lag = c(0, dd_pct[-n_f]) provides 1-day lag",
+      "c3_same_period_agg": "PASS",
+      "c4_financial_lag": "N/A - overlay only",
+      "c5_overlay_t_minus_1": "PASS - DD uses dd_lag (t-1)",
+      "c6_survivorship": "PASS - inherited parent LIQ_THRESHOLD=2e8",
+      "c7_auto_detect": "PASS - lookahead_detector clean",
+      "c8_fm_same_day": "N/A",
+      "c9_vt_dd_same_day": "PASS - DD uses dd_lag (1-day lag)",
+      "c10_liquidity_filter": "PASS - inherited",
+      "c11_data_time_axis": "PASS - no external data",
+      "c13_negate_factors": "PASS - Z_Score_Aligned via align_factor_direction()",
+      "c14_ic_usable_date": "N/A",
+      "c15_factor_db_load": "PASS - arrow bulk load"
+    },
+    "gate1_performance": {
+      "pass": false,
+      "sharpe": 0.566,
+      "cagr_pct": 6.91,
+      "mdd_pct": 26.9,
+      "ir": -0.124,
+      "calmar": 0.257,
+      "ann_vol": 12.21,
+      "turnover_ann": 214,
+      "assessment": "FAIL - Worst SR among all variants (0.566). CAGR 6.91% below target. MDD 26.9% exceeds 25%. IR most negative of all variants (-0.124). DD-only without VT fails to control vol, resulting in higher vol (12.21% vs s5's 11.89%) without compensating return."
+    },
+    "gate2_artifacts": {
+      "pass": true,
+      "s0_record": true,
+      "s1_construction": true,
+      "s2_profile": true,
+      "s3_orthogonality": true,
+      "s4_integration": true,
+      "charts": true,
+      "assessment": "All artifacts present."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "assessment": "Diversifier role is honest given negative IR and sub-benchmark risk-adjusted returns."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "oos_retention": 0.158,
+      "is_sharpe": 0.726,
+      "oos_sharpe": 0.114,
+      "alpha_trend_ratio": 0.211,
+      "recent_3y_sr": 0.119,
+      "rolling_3y_pos_pct": 84.1,
+      "stress_outperform": "3/3",
+      "max_consec_neg_alpha_months": 10,
+      "assessment": "FAIL - WORST OOS retention of all variants: 15.8% (IS 0.726 -> OOS 0.114). Alpha almost completely decayed: recent 3Y SR 0.119 (ratio 0.21 vs full). This variant shows the most severe alpha exhaustion in the family."
+    },
+    "gate5_ff5": {
+      "pass": "NOT_TESTED",
+      "assessment": "Not run. SR 0.566 makes FF5 alpha virtually impossible."
+    }
+  },
+  "s3_orthogonality_review": {
+    "factor_mean_max_corr": 0.943,
+    "novelty_score": 0.324,
+    "max_return_corr": 0.829,
+    "assessment": "POOR - Inherited from base. Factor redundancy unaddressed."
+  },
+  "mutation_comparison": {
+    "base": { "sharpe": 0.633, "cagr": 7.98, "mdd": 31.77 },
+    "m1_dd10_25": { "sharpe": 0.566, "cagr": 6.91, "mdd": 26.9 },
+    "delta_vs_base": "SR -0.067, CAGR -1.07pp, MDD -4.87pp",
+    "vs_m2": "M1 (SR 0.566) < M2 (SR 0.646). M1 uses wider DD band (10/25 vs 5/15) but no VT. Worse in every metric except MDD which is similar.",
+    "assessment": "DD-only approach is strictly inferior to VT+DD combinations. Removing VT increases vol without benefit. The wider DD band (10/25) activates later and less aggressively than M2 (5/15), resulting in worse MDD control."
+  },
+  "overall_verdict": {
+    "grade": "C",
+    "score": 16.0,
+    "pass": false,
+    "hard_fail": false,
+    "disposition": "REJECT",
+    "rejection_reasons": [
+      "Factor redundancy: CR08-D01 corr=0.943 (inherited, fundamental flaw)",
+      "Worst SR in family: 0.566 (below even the unoptimized base 0.633)",
+      "Most severe alpha decay: recent 3Y SR 0.119 (ratio 0.21)",
+      "Worst OOS retention: 15.8% (near-complete alpha loss out-of-sample)",
+      "DD-only mutation rationale unsound: removing VT increases vol without compensating"
+    ],
+    "summary": "STR_1422_s5_m1 (DD-only 10/25) is PIT-clean but the weakest variant in the family. Removing VT and using only a DD brake with wide thresholds (10%/25%) produces the worst SR (0.566), worst OOS retention (15.8%), and worst alpha decay (ratio 0.21). The mutation hypothesis -- that a simpler DD-only overlay might be more robust -- is disproven. The underlying problem remains: CR08+D01 factor pair has 0.943 correlation, making the signal effectively single-factor with insufficient alpha."
+  }
+}

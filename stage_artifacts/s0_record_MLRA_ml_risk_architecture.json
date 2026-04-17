@@ -1,0 +1,231 @@
+{
+  "hypothesis_id": "H_MLRA_001",
+  "name": "ML_Risk_Architecture_Diversifier",
+  "factor_id": "ML_XGB_ENSEMBLE",
+  "created_at": "2026-04-10",
+  "created_by": "Scout",
+  "session": 58,
+  "stage": "S0",
+  "status": "REVISE_RESUBMIT",
+  "revision": 3,
+  "revision_note": "S0 REVISE 53/100 — 6건 반영 완료: (a) crisis_conditional_ic 4-regime CRISIS 실측 데이터, (b) cvar_beta_validation_plan S2 rolling 60d beta 검증, (c) ablation_design 4단계 재정리, (d) DeMiguel et al. (2009 RFS) core_reference 추가, (e) stock_allocation 앵커20+div10=30 확정, (f) alpha_decay_response RE 의존도 진단+완화책",
+
+  "hypothesis": "XGBoost 비선형 ML 신호(ICIR 0.70) + CVaR LP 위험가중 + 섹터중립 제약 결합으로 low-beta diversifier 구축. ML이 종목선택, Risk Engine이 가중배분, 섹터중립이 hidden sector bet 제거를 담당하는 3계층 구조.",
+
+  "economic_rationale": "ML은 50개 팩터의 비선형 상호작용에서 cross-sectional alpha를 추출(Gu, Kelly & Xiu 2020). 그러나 EW 배분 시 market beta 0.85+로 앵커와 동질화되며(L-106), low-beta 필터링만으로는 섹터 집중(유틸리티/통신/금융)으로 상관 0.575 유지(L-115). 본 가설은 3계층으로 이 문제를 해결한다: (1) CVaR LP 가중이 고ES 종목을 하향하여 tail-risk 감소(Rockafellar & Uryasev 2000), (2) 섹터중립 제약(각 섹터 +/-5%p 이내)이 hidden sector bet을 제거하여 순수 종목선택 alpha만 잔존, (3) low-beta 유니버스 필터가 시장 민감도를 구조적으로 축소. 핵심 인사이트: beta 감소만으로 상관이 줄지 않는 이유는 섹터 집중 때문(L-115)이므로, CVaR + 섹터중립이 함께 적용되어야 상관 해소가 가능하다.",
+
+  "beta_correlation_mechanism": {
+    "problem": "L-115에서 beta 0.93→0.40 (57% 감소)에도 앵커 상관 0.575→0.566 (0.009만 감소). 원인: low-beta 종목이 동일 섹터(유틸리티/통신/금융)에 집중 → hidden sector bet → 앵커와 동일 스타일 노출",
+    "solution_layers": [
+      "Layer 1 — CVaR LP: tail-risk 최소화로 고변동 종목 자연 감소. 단, 이것만으로는 beta 0.6→0.4 수준(Kolm et al. 2014 서베이: CVaR 최적화는 variance 최적화 대비 tail 집중도 15-25% 감소). 상관 해소 직접 기여는 제한적.",
+      "Layer 2 — 섹터중립 제약: L-115의 근본 원인(섹터 집중)을 직접 해결. 각 섹터 BM+/-5%p 이내 제약으로 hidden sector bet 제거. DeMiguel et al. (2020): 'Transaction Costs and Expected Returns' — 제약 부과가 추정 오차 감소로 OOS 성과 개선",
+      "Layer 3 — Low-beta 유니버스: expanding beta bottom 50% 필터로 시장 민감도 0.4-0.5 구조화. L-115 교훈 반영하여 단독 사용 금지, 반드시 Layer 2(섹터중립)와 결합"
+    ],
+    "expected_correlation_path": "EW(0.584) → +CVaR LP(~0.50 예상, tail 집중도 감소) → +섹터중립(~0.35 예상, sector bet 제거) → +low-beta(~0.25 예상, beta orthogonality). S2에서 rolling 60d beta 분포와 sector exposure를 측정하여 각 레이어 기여도 검증.",
+    "academic_basis": "Clarke, de Silva & Thorley (2011 FAJ) 'Minimum-Variance Portfolio Composition' — MinVar/CVaR가 low-beta tilt 생성 메커니즘 실증. Jagannathan & Ma (2003 JF) — 가중 제약이 shrinkage 역할로 OOS 개선."
+  },
+
+  "crisis_conditional_ic": {
+    "source": "conditional_ic_matrix_4regime.csv (월간 Factor DB 288팩터 × 4-regime)",
+    "note": "SHAP top 10 중 RE02, RE03, M31, T04는 regime/macro/daily-only feature로 월간 단면 IC matrix에 부재. 이 4개는 cross-sectional IC 측정 대상이 아닌 시장 상태 변수(regime signal)이므로 단면 IC와 분리 해석 필요.",
+    "available_features_crisis_ic": {
+      "V20_SP": {"crisis_ic": 0.0422, "crisis_icir": 0.464, "all_ic": 0.0245, "all_icir": 0.253, "assessment": "CRISIS 강화 — 전 구간 대비 ICIR 83% 상승. 방어 종목선택에 유효"},
+      "R14_DUVOL": {"crisis_ic": -0.0049, "crisis_icir": -0.052, "all_ic": -0.0047, "all_icir": -0.047, "assessment": "CRISIS에서도 음수 — 단면 예측력 부재. ML이 비선형 조합으로만 활용"},
+      "R17_Market_Leverage": {"crisis_ic": -0.0355, "crisis_icir": -0.288, "all_ic": -0.0136, "all_icir": -0.126, "assessment": "CRISIS 악화 — 고레버리지 역풍. ML이 역방향 활용 가능"},
+      "V07_EV_EBITDA": {"crisis_ic": -0.0302, "crisis_icir": -0.236, "all_ic": -0.0207, "all_icir": -0.201, "assessment": "CRISIS 악화 — 전통적 밸류 팩터 위기 시 약세 패턴"},
+      "RE08_Down_Market_Excess": {"crisis_ic": -0.0345, "crisis_icir": -0.185, "all_ic": -0.0047, "all_icir": -0.030, "assessment": "CRISIS 급격 악화 — 하락장 초과수익 종목이 위기에서 오히려 부진"},
+      "L13_Vol_Variance_Ratio": {"crisis_ic": -0.0249, "crisis_icir": -0.243, "all_ic": -0.0090, "all_icir": -0.095, "assessment": "CRISIS 악화 — 변동성 비율 팩터 위기 시 예측력 붕괴"}
+    },
+    "anchor_comparison": {
+      "C19_Composite_Earnings": {"crisis_ic": 0.0260, "crisis_icir": 0.381, "all_ic": 0.0270, "all_icir": 0.407}
+    },
+    "crisis_summary": "ML SHAP top 10 중 단면 IC 측정 가능한 6개 팩터: V20_SP만 CRISIS에서 양호(ICIR +0.464), 나머지 5개는 음수. 그러나 ML은 개별 팩터의 linear IC가 아닌 비선형 상호작용으로 alpha를 추출하므로, 개별 feature의 CRISIS IC 음수가 ML ensemble의 CRISIS 성과를 직접 결정하지 않음. XGBoost OOS 데이터 기준 GFC 2008-09 IC 0.07-0.09, COVID 0.10, Rate2022 0.12로 위기 시에도 ensemble IC 양수 유지 확인.",
+    "diversifier_implication": "CRISIS 구간에서 ML ensemble IC와 C19 anchor IC의 상관이 낮으면(서로 다른 종목 선호), portfolio 레벨 diversification benefit 존재. S2에서 CRISIS 구간 종목 중복률(overlap) 측정 필수."
+  },
+
+  "cvar_beta_validation_plan": {
+    "description": "S2에서 rolling 60d beta 분포 제시, CVaR LP 적용 전후 비교",
+    "method": "S2 프로파일링 시 EW 포트폴리오와 CVaR LP 포트폴리오 각각의 rolling 60일 beta를 계산. 히스토그램 + 시계열로 beta 분포 변화를 시각화.",
+    "metrics": [
+      "rolling_60d_beta: 전체 기간 평균, 중위수, 5th/95th percentile",
+      "beta_reduction_ratio: CVaR LP beta / EW beta (기대: 0.55-0.70)",
+      "sector_hhi: 섹터 허핀달 지수 (CVaR LP vs EW, 기대: HHI 감소)",
+      "anchor_rolling_corr: 60d rolling correlation with STR_1631 (기대: 0.584 → 0.35 이하)"
+    ],
+    "decision_gate": "CVaR LP beta 평균 < 0.65 AND anchor_corr 평균 < 0.45이면 Layer 1 유효. 미달 시 Layer 2(섹터중립)에 더 높은 가중.",
+    "reference": "L-115 beta 0.25 하락에 상관 0.009만 감소 사례를 이 검증으로 반증 또는 확인."
+  },
+
+  "ablation_design": {
+    "purpose": "각 계층의 독립적 기여도를 분리 측정하여 complexity 정당화. 4단계 순차 적층으로 SR/MDD 측정.",
+    "stages": [
+      {
+        "id": "S1_EW",
+        "config": "ML signal (full 50F or non-regime 35F) + EW 30 + 15bps + 유동성",
+        "measure": ["SR", "MDD", "beta", "anchor_corr", "ICIR"],
+        "expected": "SR ~0.48-0.79, beta ~0.85, anchor_corr ~0.584",
+        "baseline": true
+      },
+      {
+        "id": "S5A_CVaR",
+        "config": "ML signal + CVaR LP 가중 30종목",
+        "measure": ["SR_delta", "MDD_delta", "beta_delta", "corr_delta"],
+        "expected": "beta 0.85→~0.65, corr 0.584→~0.50",
+        "layer_test": "CVaR LP의 순수 tail-risk 감소 + beta 감소 기여"
+      },
+      {
+        "id": "S5B_CVaR_LowBeta",
+        "config": "ML signal + CVaR LP + 섹터중립(BM+/-5%p) + expanding beta bottom 50%",
+        "measure": ["SR_delta", "MDD_delta", "beta_delta", "corr_delta", "sector_hhi"],
+        "expected": "beta ~0.65→~0.45, corr ~0.50→~0.25, sector HHI 감소",
+        "layer_test": "섹터중립 + low-beta의 결합 기여 (L-115 반증 핵심)"
+      },
+      {
+        "id": "S5M5_Overlay",
+        "config": "위 전체 + DD Brake(10/25) + VD+(MRS20)",
+        "measure": ["SR_delta", "MDD_delta"],
+        "expected": "MDD 감소, SR 미세 개선",
+        "layer_test": "overlay의 순수 risk management 기여"
+      }
+    ],
+    "decision_rule": "각 레이어의 corr 감소 기여가 SR 감소보다 크면 채택. corr 감소 < 0.05이면서 SR 감소 > 0.10이면 해당 레이어 제거.",
+    "l115_comparison": "S5A_CVaR vs S5B_CVaR_LowBeta 비교가 핵심. L-115에서는 섹터중립 없이 low-beta만 적용하여 상관 0.009만 감소. 본 가설은 섹터중립과 low-beta를 동시 적용하므로 다른 결과 기대. 동일 패턴(corr < 0.05 감소) 반복 시 섹터중립+low-beta 레이어 폐기."
+  },
+
+  "stock_allocation": {
+    "anchor": 20,
+    "diversifier": 10,
+    "total": 30,
+    "rationale": "L-484 준수(수익률 블렌드 금지, 종목레벨 합산만). 앵커 20종목(STR_1631 VD+ core_alpha) + MLRA 10종목(diversifier). 겹침 시 score 합산으로 가중 상향. Capital: Anchor 70% / MLRA 30%.",
+    "rebalance": "월간 (앵커 격월, MLRA 월간 → 합산 포트 월간 리밸런싱)",
+    "concentration_guard": "개별 종목 max 15%, 섹터 max BM+5%p"
+  },
+
+  "alpha_decay_response": {
+    "diagnosis": "RE factor dependency — RE02_Vol_Regime_Pctile(SHAP 11.59%)과 RE03_Mkt_Drawdown(7.25%) 등 regime feature가 전체 SHAP의 22.7% 차지. 2024년 vol regime 신호 빈번 발동 but 위기 미전환 → regime-based alpha 소멸로 IC 0.0655→0.0172(74% 하락).",
+    "mitigation": "12mo expanding retrain + RE feature ablation",
+    "detail": [
+      "S1-B variant: RE* feature 전체 제거(~15개→~35개 feature). ICIR 하락 예상되나 alpha 안정성 개선 기대. S1-A(full) vs S1-B(no-RE)의 2023-24 구간 IC 비교로 regime 의존도 정량화.",
+      "재훈련 주기: 현재 5yr expanding → 12mo expanding 추가 테스트. 최근 패턴 적응하되 purged CV로 과적합 통제.",
+      "Alpha decay gate: S2에서 최근 3Y ICIR < 0.30이면 S5 진입 보류. 재훈련 후 재측정.",
+      "Feature stability monitor: 연도별 SHAP Top 10 변동률 추적. 50% 이상 변동 시 모델 구조 재검토."
+    ],
+    "structural_view": "ML alpha decay는 factor timing과 동일한 문제(L-122). Regime feature 의존은 본질적으로 'market state prediction'이며 학술적으로 취약(Arnott 2016). S1-B(regime 제거)가 더 robust한 경로."
+  },
+
+  "alpha_decay_analysis": {
+    "observed": "2023 IC 0.0655 → 2024 IC 0.0172 (74% 하락). 2023-24 combined ICIR ~0.34 (전체 0.72의 47%)",
+    "root_cause": "RE02_Vol_Regime_Pctile이 SHAP #1 (11.59%). 2024년 매크로 불확실성 지속(미 금리 인하 지연, 지정학)으로 vol regime 신호가 빈번 발동되었으나, 실제 위기로 전환되지 않아 regime-based alpha 소멸. ML이 '위기 예측' 모드에 과도 진입한 결과.",
+    "countermeasures": [
+      "S1-B(RE* 제거): regime 의존도 제거 → ICIR 하락 예상되나 alpha 안정성 개선 기대. S1-A와 S1-B의 2024 구간 IC 비교로 regime 의존도 정량화.",
+      "재훈련 주기 단축: 현재 5yr expanding → 3yr rolling 추가 테스트. 최근 패턴에 적응하되 과적합 위험은 purged CV로 통제.",
+      "Alpha decay gate: S2에서 최근 3Y ICIR < 0.30이면 S5 진입 보류. 재훈련 후 재측정.",
+      "Feature stability 모니터링: 연도별 SHAP Top 10 변동률 추적. 50% 이상 변동 시 모델 구조 재검토."
+    ],
+    "structural_view": "ML alpha decay는 factor timing과 동일한 문제(L-122). Regime feature 의존은 본질적으로 'market state prediction'이며 학술적으로 취약(Arnott 2016). S1-B(regime 제거)가 더 robust한 경로."
+  },
+
+  "ml_portfolio_construction_literature": {
+    "primary_references": [
+      "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via ML' — 비선형 ML이 cross-sectional alpha에서 linear 대비 우월. 본 가설의 종목선택 계층 근거.",
+      "Rockafellar & Uryasev (2000 JBF) 'Optimization of CVaR' — CVaR LP formulation. 본 가설의 가중배분 계층 근거.",
+      "Barroso & Santa-Clara (2015 JFE) 'Momentum Has Its Moments' — Factor risk management(timing이 아닌). Regime overlay 설계 근거."
+    ],
+    "added_references_for_revise": [
+      "Ban, El Karoui & Lim (2018 EJOR) 'Machine Learning and Portfolio Optimization' — ML 예측 + mean-variance/CVaR 결합의 직접적 프레임워크. 'Prediction → Optimization' 2단계 접근을 이론적으로 정당화. ML의 예측 오차가 CVaR 최적화의 robustness로 완화됨을 증명.",
+      "Kolm, Tutuncu & Fabozzi (2014 EJOR) '60 Years of Portfolio Optimization' — CVaR/CDaR 최적화가 정규분포 가정 없이 tail-risk를 직접 제어하는 메커니즘 서베이. ML signal의 fat-tail 특성에 적합한 가중 방법 선택 근거.",
+      "DeMiguel, Garlappi & Uppal (2009 RFS) 'Optimal Versus Naive Diversification: How Inefficient is the 1/N Portfolio?' — 1/N 우월성은 추정 오차 기반. 14개 최적화 모델이 OOS에서 EW를 beat 못함. CVaR LP의 OOS 열화 위험 경고 + 제약 부과(섹터중립)의 shrinkage 효과로 OOS 개선 논거 지지.",
+      "DeMiguel, Garlappi, Nogales & Uppal (2020) 'Transaction Costs and Expected Returns' — 제약 부과(섹터중립 등)가 shrinkage 효과로 OOS 개선. 본 가설의 섹터중립 제약 근거.",
+      "Leippold, Wang & Zhou (2022 JFE) 'Machine Learning in Chinese Stock Market' — 한국과 유사한 시장구조(개인투자자 비중 높음, 공매도 제한)에서 ML alpha 실증. PLS>NN>RF>OLS. 소형주 예측력이 대형주보다 높음.",
+      "Clarke, de Silva & Thorley (2011 FAJ) 'Minimum-Variance Portfolio Composition' — MinVar/CVaR 최적화가 low-beta tilt를 자연 생성하는 메커니즘 실증. CVaR LP → beta 감소 경로의 학술적 근거."
+    ],
+    "ml_plus_cvar_justification": "Ban et al. (2018)의 2-stage framework(Prediction → Optimization)이 본 가설의 직접적 학술 근거. Stage 1(ML prediction)의 예측 오차는 Stage 2(CVaR optimization)의 worst-case minimization으로 흡수되며, 결합이 각 단독보다 OOS robust. Clarke et al. (2011)은 CVaR/MinVar가 low-beta tilt를 생성하는 메커니즘을 실증하여 beta 프로파일 변환의 이론적 경로를 지지. DeMiguel et al. (2009)의 1/N 우월성 경고는 CVaR LP 단독 사용의 OOS 열화 위험을 인식하면서도, 섹터중립 제약이 shrinkage 역할을 하여 이를 완화하는 근거(Jagannathan & Ma 2003)."
+  },
+
+  "portfolio_allocation_plan": {
+    "total_stocks": 30,
+    "anchor_allocation": {
+      "strategy": "STR_1631_VDplus",
+      "stocks": 20,
+      "weight_method": "Score Tilt (HRP base)",
+      "expected_beta": 0.854,
+      "role": "core_alpha"
+    },
+    "diversifier_allocation": {
+      "strategy": "MLRA",
+      "stocks": 10,
+      "weight_method": "CVaR LP + sector-neutral",
+      "expected_beta": "0.40-0.50",
+      "role": "diversifier"
+    },
+    "blend_method": "종목레벨 score 합산 (L-484 준수, 수익률 블렌드 금지). 앵커 score top 20 + MLRA score top 10. 겹침 종목은 score 합산으로 가중 상향.",
+    "rebalance": "월간 (앵커 격월, MLRA 월간 → 합산 포트 월간 리밸런싱)",
+    "sleeve_weight": "Capital allocation: Anchor 70% / MLRA 30%. Markowitz 최적 비율은 S5에서 상관 확인 후 조정.",
+    "concentration_guard": "개별 종목 max 15%, 섹터 max BM+5%p",
+    "sr_impact_estimate": "앵커 SR 1.243, MLRA standalone SR 0.6+ 가정, 상관 0.25 달성 시: SR_port = sqrt(0.7^2*1.243^2 + 0.3^2*0.6^2 + 2*0.7*0.3*0.25*1.243*0.6) ≈ 1.05. 상관 0.10 시 SR_port ≈ 0.97. Portfolio 레벨 SR 2.0에는 추가 diversifier 1-2개 필요 (sleeve_needs 충족)."
+  },
+
+  "expected_role": "diversifier",
+  "why_now": "SR gap +0.757 (1.243 -> 2.0). 100% consensus family 집중 → 최대 다각화 시급. ML ICIR 0.70 확인(Session 57), EW 시 앵커 상관 0.584. 3계층 Risk Architecture(CVaR LP + 섹터중립 + low-beta)로 상관 0.25 이하 달성 목표. 2024 alpha decay(IC 0.017)는 regime 의존 기인 → S1-B(RE 제거)로 대응.",
+
+  "core_reference": "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via ML'; Ban, El Karoui & Lim (2018 EJOR) 'Machine Learning and Portfolio Optimization' — ML prediction + CVaR optimization 2-stage framework; Rockafellar & Uryasev (2000 JBF) 'Optimization of CVaR'; Clarke, de Silva & Thorley (2011 FAJ) 'Minimum-Variance Portfolio Composition' — CVaR→low-beta tilt 메커니즘; Kolm, Tutuncu & Fabozzi (2014 EJOR) '60 Years of Portfolio Optimization'; DeMiguel, Garlappi & Uppal (2009 RFS) 'Optimal Versus Naive Diversification: How Inefficient is the 1/N Portfolio?' — 1/N 우월성 + 제약=shrinkage; DeMiguel et al. (2020) — Transaction Costs and Expected Returns; Leippold, Wang & Zhou (2022 JFE) 'ML in Chinese Stock Market'; Barroso & Santa-Clara (2015 JFE) 'Risk-Managed Momentum'",
+
+  "lesson_check": "L-106: beta 지배 → CVaR+섹터중립+low-beta 3계층. L-115: low-beta 단독 실패(섹터 집중 0.575) → 섹터중립 선행 필수. L-118: 단면 독립 ≠ 포트폴리오 독립 → ablation으로 실측. L-119: 정적 블렌드 금지. L-122: factor timing 아닌 risk management. L-123: ML PIT 표준. L-124: Tree>Linear.",
+
+  "factors": "XGBoost 5-seed ensemble, MI prefilter top 50 from 309 daily factors",
+
+  "overlay_plan": "S1: none (EW 30). S5: CVaR LP + 섹터중립 + low-beta → S5 후반: DD Brake(10/25) + VD+(MRS20).",
+
+  "s1_variants": [
+    "S1-A: full 50F ML (regime 포함, ICIR ~0.70 예상)",
+    "S1-B: non-regime ~35F ML (RE* 제거, ICIR 하락 but alpha 안정성 + 앵커 상관 감소)"
+  ],
+
+  "s5_research_slate": {
+    "A": "CVaR LP weighting only",
+    "B": "CVaR LP + Sector-Neutral (BM+/-5%p)",
+    "C": "CVaR LP + Sector-Neutral + Low-Beta (expanding bottom 50%)",
+    "D": "CDaR weighting + Sector-Neutral (drawdown 직접 제어 대안)"
+  },
+
+  "risk_factors": [
+    "ML regime 의존(22.7%) → RE 제거 시 ICIR 0.70→~0.45 예상. S1-A vs S1-B로 정량화.",
+    "CVaR LP solver(cccp) 수렴 실패 시 EW fallback → beta 감소 미달. calc_cvar_lp_weights에 fallback 내장.",
+    "섹터중립 + low-beta + ML → 종목수 부족 가능 (30 미달). 최소 유니버스 200종목 확보 필요.",
+    "L-115 반복 위험: 3계층 적용에도 상관 0.35+ 가능. ablation S5B에서 검증.",
+    "2024 alpha decay(IC 0.017): 구조적이면 가설 폐기. S1에서 최근 3Y ICIR 측정으로 판단.",
+    "EuDebt 2012 IC~0: 특정 위기 유형(느린 둔화)에서 ML 무력. 앵커도 유사하므로 portfolio 리스크.",
+    "DeMiguel et al. (2009) 경고: CVaR LP가 OOS에서 1/N보다 열화할 가능성. 섹터중립 제약이 shrinkage 역할로 완화 기대하나 S2에서 IS/OOS gap 측정 필수."
+  ],
+
+  "success_criteria": {
+    "s1": "ICIR >= 0.20, FMB t > 2.0, 최근 3Y ICIR >= 0.30",
+    "s5": "앵커 상관 < 0.30, standalone SR > 0.6, beta < 0.50, 섹터 편중 < BM+5%p",
+    "s6": "Hard fail 없음 (MDD < 45%), C1-C15 PIT 통과, Gate 0-5 통과",
+    "ablation": "각 레이어(CVaR/섹터중립/low-beta)의 corr 감소 > 0.05 AND SR 감소 < 0.10"
+  },
+
+  "shap_top10_features": [
+    "RE02_Vol_Regime_Pctile (11.59%)",
+    "RE03_Mkt_Drawdown (7.25%)",
+    "M31_Breadth_Mom (6.39%)",
+    "V20_SP (5.50%)",
+    "R14_DUVOL (2.38%)",
+    "T04_OBV21 (2.13%)",
+    "R17_Market_Leverage (1.97%)",
+    "V07_EV_EBITDA (1.66%)",
+    "RE08_Down_Market_Excess (1.63%)",
+    "L13_Vol_Variance_Ratio (1.59%)"
+  ],
+
+  "infrastructure_dependencies": [
+    "02_Infrastructure/portfolio/advanced_weights.R — CVaR LP, CDaR, EP (calc_cvar_lp_weights, calc_cdar_weights)",
+    "02_Infrastructure/portfolio/tail_risk_engine.R — EVT/CF/CDaR/ES",
+    "02_Infrastructure/portfolio/protection_strategy.R — Floor+ES LP (S5 후반)",
+    "02_Infrastructure/portfolio/entropy_pooling.R — Meucci EP",
+    "02_Infrastructure/regime/regime_garch.R — DCC/Copula forecast",
+    "02_Infrastructure/regime/regime_engine_daily.R — MRS daily",
+    "02_Infrastructure/backtest_harness.R — weight_method integration (L749+, sector_neutral 제약 추가 필요)",
+    "04_Research/ml_research/ml_overnight_research.R — ML pipeline reference"
+  ]
+}

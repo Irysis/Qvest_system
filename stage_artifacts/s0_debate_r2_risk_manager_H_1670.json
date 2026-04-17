@@ -1,0 +1,51 @@
+{
+  "role": "risk_manager",
+  "r1_score": 10,
+  "r2_score": 8,
+  "score_changed": true,
+  "score_change_reason": "Quant의 R1 실측 데이터가 L31의 구조적 위험을 추가 확인. L-037(STR_1508)에서 L31은 L13과 r=0.980 중복, FF5 alpha -3.0%(t=-0.80), FMB t=0.31(pricing power ZERO)로 이미 폐기 판정된 팩터. 이 사실이 R1에서 미처 강조하지 못했으나 crisis_ratio -9.25 + FF5 음수 alpha + FMB t=0.31 3중 실패는 L31을 포트폴리오에 편입할 근거를 완전히 소멸시킨다. L40 단독 전환도 STR_1609/STR_1465의 MDD 51% 실증이 남아있어 위험이 해소되지 않으므로 2점 하향.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "ICIR 0.990이 최근 3Y(N=36) 편향이라는 실측은 결정적이다. 전기간 월간 raw ICIR 0.275는 연환산 0.953으로 허들은 통과하나, 가설 제출 시 3Y 수치를 전기간인 것처럼 제시한 것은 위험 평가를 왜곡한다. L-127(IC != SR) 교훈과 결합하면, ICIR 0.953이라도 포트폴리오 SR로의 전환은 전혀 보장되지 않는다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "정적 50/50 블렌드가 L-119(Hard Fail)와 동일 구조라는 지적에 전면 동의한다. L31 standalone SR 0.456 + L40 standalone SR 0.501, 두 팩터 모두 SR < 0.6으로 L-119가 입증한 '약한 팩터끼리의 EW 블렌드는 alpha 희석'에 정확히 해당한다."
+    },
+    {
+      "with": "academic",
+      "point": "L40 VWAP Spread의 원논문(Goyenko 2009) 정의 불일치 지적은 위험 관점에서도 중요하다. 메커니즘이 불분명한 팩터는 위기 시 행동을 예측할 수 없으며, L40의 GFC 구간 IC -0.0262가 이를 실증한다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Governor의 '유일한 미달 축인 SR gap 0.807 해소에 Liquidity family가 구조적으로 적합'이라는 주장은 위험 관점에서 심각하게 부정확하다. 첫째, L-037(STR_1508)에서 L31은 이미 폐기(Discard) 판정을 받은 팩터다: L13과 r=0.980 중복, FF5 alpha -3.0%(t=-0.80), FMB Score lambda t=0.31(pricing power ZERO), COVID MDD -45.6%. 폐기된 팩터를 재편입하는 것은 stage gate 무결성을 위반한다. 둘째, 현 포트폴리오 SR 1.193을 2.0으로 올리려면 추가 슬리브의 한계기여 SR이 최소 0.4+(배분 비중 고려)여야 하는데, L31 단독 SR 0.456, L40 단독 SR 0.501로 BM(KOSPI SR 0.49)과 거의 동일한 수준이다. SR gap 해소 능력이 구조적으로 결여되어 있다.",
+      "severity": "major"
+    },
+    {
+      "against": "governor",
+      "point": "C19 대비 단면 상관 0.004/0.010으로 '독립성 실증적 보장'이라는 주장은 L-106/L-118-ext가 직접 부정한다. STR_1636 사례: 단면 상관 낮아도 포트폴리오 수준 상관 0.78(beta 0.93 지배). STR_1609(L40 단독) 실증에서도 BM_Corr 0.701로 높은 시장 상관이 이미 확인되었다. 단면 독립성을 diversifier 근거로 제시하는 것은 L-106 교훈을 무시하는 것이며, beta 분해 없는 상관 주장은 위험 평가에 사용할 수 없다.",
+      "severity": "major"
+    },
+    {
+      "against": "quant",
+      "point": "Quant가 'L31 ic_bad=0.0242, L40 ic_bad=0.0197로 위기 구간 IC가 모두 양수'라고 보고했으나, 이는 4-regime MRS 기준 bad regime IC이다. 실제 6대 스트레스 구간(stress_factor_ic_analysis) 실측에서 L31 stress IC mean = -0.0275, stress ICIR = -0.308, pct_pos = 40%로 신호가 역전된다. L-120(위기 IC 정의 차이)가 정확히 적용되는 사례이며, 4-regime bad와 실제 급락 스트레스는 전혀 다른 현상이다. Quant가 두 기준을 혼용한 부분은 수정이 필요하다.",
+      "severity": "minor"
+    },
+    {
+      "against": "academic",
+      "point": "Academic의 'sub-period IC variance >30%면 시대 부적합' 조건은 방향은 옳으나 임계치가 너무 관대하다. L31의 전기간 ICIR 0.275 vs 최근3Y ICIR 0.990은 260% 차이다. 이 수준의 시간 불안정성은 단순히 '시대 부적합'이 아니라 팩터 자체의 regime-dependency를 의미한다. Sub-period variance 기준으로는 30%가 아닌, ICIR 비율(max_period / min_period) < 3.0을 사용해야 정권 전환 민감도를 포착할 수 있다.",
+      "severity": "minor"
+    }
+  ],
+  "new_evidence_r2": [
+    "L-037(STR_1508) 실증: L31_Vol_Concentration은 L13_Vol_Variance_Ratio와 r=0.980 중복. FF5 alpha -3.0%(t=-0.80), FMB Score lambda t=0.31(pricing power ZERO). COVID MDD -45.6%. 이미 Discard 판정된 팩터.",
+    "L-076(STR_1465) 실증: L40 단독 FMB t=3.01(Harvey 통과)이나 SR 0.498, MDD 51.04%. C19+L40 블렌드로 SR 0.821까지 올라가나 이때 L40는 '보조 팩터'이지 '주 팩터'가 아니다. H_1670에서 L31+L40 50/50은 C19 없이 약한 팩터 둘만 합치는 구조.",
+    "L-127(IC != SR) 정량 확인: LambdaRank ICIR 1.03에도 SR 0.90. ICIR과 포트폴리오 SR의 비선형 관계가 입증됨. L31 전기간 연환산 ICIR 0.953이라도 standalone SR 0.456이라는 현실이 이를 재확인.",
+    "Kill Scenario 1 (위기 시 이중 붕괴): L31 crisis_ratio -9.25 + L40 GFC IC -0.0262 → 위기 시 두 팩터 모두 역전. 50/50 블렌드라면 portfolio IC가 음수로 전환. 현 포트폴리오(STR_1631 VD+ 5/6 스트레스 outperform)의 안정성을 직접 훼손.",
+    "Kill Scenario 2 (미래참조 경로): L31 ICIR 0.990(3Y)은 2023-2026 한국시장 유동성 확대기에 해당. 이 기간 거래량 분산 구조(HHI 감소)가 일시적 regime일 가능성. 2020 COVID, 2022 금리 급등기에 유동성 증발 시 HHI가 급등하며 L31 신호 역전(stress IC -0.0275 실증). 최근 3Y의 높은 ICIR를 forward-looking으로 사용하면 survivorship bias와 유사한 구조적 미래참조."
+  ],
+  "strongest_opposing_argument": "Governor의 'Liquidity family 0%는 family 편중이며 QEPM 제9조 미구축 family 우선 탐색 원칙에 부합'이라는 주장은 구조적으로 맞다. Liquidity family 44개 팩터가 포트폴리오에 전무한 상태는 탐색 방향으로서 정당성이 있다. 다만 탐색 가치가 있다는 것과 L31+L40 50/50 정적 블렌드가 유효하다는 것은 별개의 문제이며, 위험 관점에서는 탐색 대상을 L31(이미 폐기)이 아닌 다른 Liquidity 팩터(예: L22_Ret_Autocorr, L-067에서 C19 상관 -0.108 확인)로 전환하고, 블렌드 구조를 C19 보조 편입(L-076의 SR 0.821 패턴)으로 재설계하는 것이 위험 대비 기대수익을 개선한다."
+}

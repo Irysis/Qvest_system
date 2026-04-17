@@ -1,0 +1,298 @@
+{
+  "factor_id": "DFA_v2_Q07_Q03_D29",
+  "strategy_id": "STR_1652_dynamic_factor_allocation_v2",
+  "stage": "S0",
+  "version": "3.0",
+  "revision_from": "DFA_C19_AC21_CR05 (v1.0, 40/100 REVISE)",
+  "designer": "Scout",
+  "created_at": "2026-04-09",
+
+  "hypothesis": "Regime-conditional defense factor augmentation for STR_1631 VD+ anchor. 정상장(MRS<20, ~76%)에서는 C19 100% (STR_1631 동일 alpha source). 경계장(20<=MRS<50, ~16%)에서는 C19 60% + Q07 20% + Q03 10% + D29 10%. 위기장(MRS>=50, ~8%)에서는 C19 30% + Q07 30% + Q03 20% + D29 20% + VD+ overlay(inverse 30%, cash 30%). v1 대비 핵심 변경: (1) Factor timing -> Factor risk management 패러다임 전환 - 미래 수익 예측이 아닌, 위기에서 검증된 방어력 기반 노출 조절, (2) AC21/CR05 -> Q07/Q03/D29 교체 - 양쪽 위기 기준(stress 6대 급락 + 4-regime CRISIS) 모두 통과하는 defense 팩터, (3) CR05 완전 제거 (L-001 crowding 한국시장 실패 + 4r CRISIS ICIR -0.10).",
+
+  "economic_mechanism": {
+    "paradigm_shift": "v3 핵심 변경: (1) DUAL-AXIS RISK MANAGEMENT 명시 — Axis A: VD+ overlay가 전체 equity exposure를 축소(inverse 30%+cash 30%). Axis B: 팩터 전환이 잔여 exposure 내에서 방어력 강화. A+B 결합이 진정한 risk management이다(Academic v2 피드백). (2) 학술 근거 보강: Bender, Briand, Melas & Subramanian (2018, FAJ) 'A Framework for Conditional Factor Allocation' — 국면별 팩터 가중 전환의 직접 학술 근거. Barroso/Moreira는 단일 팩터 vol-scaling이므로 '일반 원칙' 수준으로 격하하고, Bender(2018)를 primary로 승격. (3) D29 defense 평가 기준 명시: L-112 '방어형 팩터는 조건부 성과로 평가'. 전체기간 ICIR(0.068)이 아닌 stress ICIR(0.737)+4r CRISIS ICIR(0.315)가 defense 평가 기준. DFA에서 D29는 위기(8%)에서만 20% 가중이므로 전체기간 ICIR은 무관.",
+
+    "why_q07_earnings_stability": "Dichev & Tang(2009) 'Earnings Volatility and Earnings Predictability': 이익 변동성이 낮은 기업은 이익 예측력이 높고, 투자자가 이를 과소반영하여 체계적 초과수익 발생. Frankel & Litov(2009): 이익 안정성이 높은 기업은 정보 비대칭이 낮아 위기 시 불확실성 프리미엄 축소 효과. Q07은 QMJ(Quality Minus Junk, Asness et al. 2019)의 하위 구성요소이지만, QMJ 전체가 한국시장에서 실패(L-113)하는 이유는 Profitability+Growth+Safety의 혼합이 beta 지배를 받기 때문. Q07 단독은 이익 변동성 단일 차원만 측정하여 QMJ의 복합적 beta 노출 문제를 회피한다. 실증: stress ICIR +0.753, 4r-CRISIS ICIR +0.413, 전기간 ICIR 0.929 -- 양쪽 위기 정의 모두에서 최강.",
+
+    "why_q03_roa": "Novy-Marx(2013) 'The Other Side of Value': 수익성(gross profitability)은 가치 팩터와 독립적인 alpha source. Fama & French(2015)에서 RMW 팩터로 공식화. Q03_ROA는 자산 대비 순이익으로, 효율적 자본 활용 기업이 위기 시에도 현금흐름을 유지하는 메커니즘. 실증: stress ICIR +0.743, 4r-CRISIS ICIR +0.375, C19 상관 -0.020(독립).",
+
+    "why_d29_accounting_beta": "Beaver, Kettler & Scholes(1970): 회계 변수 기반 beta는 시장 beta보다 안정적이고 미래 beta 예측력이 높음. Campbell, Hilscher & Szilagyi(2008): 재무적 취약성이 주가 하방 리스크를 설명. D29는 이익-시장수익률 회귀 기반 회계 beta로, 시장 beta와 달리 분기 재무제표 발표 시점에만 업데이트되어 noise가 적고 구조적 위험을 포착. crisis_ratio 1.42(위기 시 방어력 42% 증폭), 4r-CRISIS ICIR +0.315, beta family로서 quality(Q07/Q03)와 다른 경제적 채널.",
+
+    "why_not_ac21_cr05": "AC21_CF_to_Accrual_Ratio: stress ICIR +0.80(급락에서 강함)이나 4r-CRISIS ICIR +0.029(느린 하락에서 무력). 즉 6대 급락에서만 작동하고 지속적 약세장에서는 방어 실패. 보조 역할로 유지 가능하나 주력 defense 팩터로 부적합. CR05_Short_Pressure_Proxy: 4r-CRISIS ICIR -0.10(음수, 위기에서 역 defense) + L-001 crowding 한국시장 구조적 실패 이력. 완전 제거.",
+
+    "l113_distinction": "L-113은 'Quality 기반 Defense는 한국시장에서 구조적 역 defense'로 결론. 그러나 L-113의 실패 사례는 Q01_GPA(Gross Profit/Assets)로, QMJ 광의의 quality 팩터이다. Q07(Earnings_Stability)과 Q03(ROA)는 QMJ와 구조적으로 다르다: (1) QMJ = Profitability + Growth + Safety의 혼합 -> market beta에 지배됨(위기상관 0.89). (2) Q07 = 이익 변동성 단일 차원 -> 위기 시 '안정적 현금흐름 기업 선호' 메커니즘이 beta와 독립적으로 작동. (3) Q03 = 수익성 단일 차원 -> Fama-French RMW와 동일 논리, market beta 노출 제한적. 핵심 차이: QMJ가 실패한 것은 multi-dimension composite의 beta 오염이지, quality dimension 자체의 실패가 아님. Q07/Q03의 C19 상관(-0.092/-0.020)이 이를 뒷받침 -- QMJ가 C19과 높은 상관을 가졌다면 동일 실패, 그러나 Q07/Q03는 독립적. S2에서 반드시 검증: Q07/Q03의 Core(STR_1631)와 위기 상관, 하방 beta, 70/30 배합 MDD 변화."
+  },
+
+  "factors": [
+    {
+      "name": "C19_Composite_Earnings",
+      "family": "consensus",
+      "role_in_strategy": "Primary alpha source. 정상장 100%, 경계장 60%, 위기장 30%.",
+      "ic_profile": {
+        "full_ic": 0.044, "icir": 0.543,
+        "stress_icir": "N/A (consensus, alpha source)",
+        "normal_ic": 0.027, "crisis_ratio": 0.37
+      },
+      "literature": "Hong & Stein (1999), Shefrin & Statman (1985), core_knowledge_base A1"
+    },
+    {
+      "name": "Q07_Earnings_Stability",
+      "family": "quality_earnings",
+      "role_in_strategy": "Primary defense factor. 정상장 0%, 경계장 20%, 위기장 30%. 양쪽 위기 기준 모두 최강.",
+      "ic_profile": {
+        "full_ic": 0.040, "icir": 0.929,
+        "stress_icir": 0.753, "4r_crisis_icir": 0.413,
+        "corr_with_C19": -0.092, "crisis_ratio": 1.04,
+        "normal_icir": 0.776
+      },
+      "literature": "Dichev & Tang (2009, TAR), Frankel & Litov (2009), Asness et al. (2019) QMJ decomposition"
+    },
+    {
+      "name": "Q03_ROA",
+      "family": "quality_profitability",
+      "role_in_strategy": "Secondary defense factor. 정상장 0%, 경계장 10%, 위기장 20%. 수익성 기반 방어.",
+      "ic_profile": {
+        "full_ic": 0.041, "icir": 0.546,
+        "stress_icir": 0.743, "4r_crisis_icir": 0.375,
+        "corr_with_C19": -0.020, "crisis_ratio": 1.12,
+        "normal_icir": 0.664
+      },
+      "literature": "Novy-Marx (2013, JFE), Fama & French (2015) RMW factor"
+    },
+    {
+      "name": "D29_Accounting_Beta",
+      "family": "beta",
+      "role_in_strategy": "Structural risk defense. 정상장 0%, 경계장 10%, 위기장 20%. Quality와 다른 경제적 채널.",
+      "ic_profile": {
+        "full_ic": 0.007, "icir": 0.109,
+        "stress_icir": 0.737, "4r_crisis_icir": 0.315,
+        "corr_with_C19": -0.039, "crisis_ratio": 1.42,
+        "normal_icir": 0.362
+      },
+      "literature": "Beaver, Kettler & Scholes (1970), Campbell, Hilscher & Szilagyi (2008)"
+    }
+  ],
+
+  "factors_removed": [
+    {
+      "name": "AC21_CF_to_Accrual_Ratio",
+      "reason": "4r-CRISIS ICIR +0.029 (느린 하락에서 무력). stress에서만 유효(+0.80). 일관적 defense 불가. 보조 역할로도 complexity 증가 대비 한계 기여 미미.",
+      "optional_reintroduce": "S5 mutation에서 AC21을 5th factor로 추가하는 변이 가능 (급락 전용 보강)"
+    },
+    {
+      "name": "CR05_Short_Pressure_Proxy",
+      "reason": "4r-CRISIS ICIR -0.10 (위기에서 역 defense). L-001: crowding 한국시장 구조적 실패. 완전 제거."
+    }
+  ],
+
+  "allocation_rule": {
+    "regime_source": "regime_signal.R (Regime Engine v7.1, L-442). t-1 lag mandatory (C5).",
+    "thresholds_preregistered": {
+      "note": "MRS threshold 20/50은 regime_engine_daily.R 기존 값으로 사전 고정. in-sample 최적화 아님 (Codex 피드백 반영).",
+      "normal": {"condition": "MRS < 20", "frequency": "~76%", "weights": {"C19": 1.0, "Q07": 0.0, "Q03": 0.0, "D29": 0.0}},
+      "caution": {"condition": "20 <= MRS < 50", "frequency": "~16%", "weights": {"C19": 0.6, "Q07": 0.2, "Q03": 0.1, "D29": 0.1}},
+      "crisis":  {"condition": "MRS >= 50", "frequency": "~8%",  "weights": {"C19": 0.3, "Q07": 0.3, "Q03": 0.2, "D29": 0.2}}
+    },
+    "weight_discretization": "팩터 가중은 3단계 이산값(0%, 중간%, 최대%)으로 사전 정의. 연속 최적화 금지 (Codex 피드백 반영).",
+    "overlay_vdplus": {
+      "condition": "Crisis only (MRS >= 50)",
+      "effect": "inverse ETF 30% + cash 30% (existing VD+ mechanism from L-114)",
+      "rationale": "Axis 1 defense: position sizing/exposure 축소. Axis 2(factor selection) 와 독립적 방어축."
+    },
+    "implementation": "Final_Score = w_C19 * Z(C19) + w_Q07 * Z(Q07) + w_Q03 * Z(Q03) + w_D29 * Z(D29). Z = Z_Score_Aligned from Factor DB (C13). Weights determined by t-1 MRS. Top 30 EW, 15bps commission, LIQ >= 2e8."
+  },
+
+  "expected_role": "Anchor Upgrade with regime-conditional defense",
+  "expected_role_detail": "이것은 독립 diversifier가 아님 (Gov-proxy 피드백 반영). STR_1631 VD+의 v2로 포지셔닝. 정상장(76%)에서 C19 단독 alpha는 STR_1631과 동일. 경계/위기장에서만 Q07/Q03/D29 방어 팩터가 활성화되어 alpha source 자체의 위기 내성을 강화. PG0 sleeve_needs의 diversifier 요구는 별도 전략(H_1640/H_1641 계열)으로 해결해야 한다.",
+  "role_bias_tag": "RoleBias_Core",
+
+  "why_now": {
+    "gap_vector": {
+      "sr_gap": "+0.757 (1.243 -> 2.0)",
+      "cagr_gap": "-0.031 (19.1% > 16%, ACHIEVED)",
+      "mdd_gap": "+0.004 (25.4% ~= 25%, NEAR_TARGET)"
+    },
+    "primary_rationale": "STR_1631 VD+ anchor upgrade. MDD 25.4% -> sub-25% 달성 + SR 유지/개선. anchor 강화는 diversifier 탐색과 독립적으로 가치 있음 -- 더 강한 anchor는 diversifier 요구 수준을 낮춘다.",
+    "v1_failure_lessons": "DFA v1(STR_1651)은 AC21/CR05의 4r-CRISIS 취약성, Arnott factor timing 논리 상충, Role 오정의(Core vs Diversifier)로 Debate 40/100. v2는 (1) 검증된 defense 팩터(양쪽 위기 기준 통과), (2) risk management 패러다임, (3) Role 명확화로 구조적 결함 해소.",
+    "concentration_note": "이 전략은 consensus family 집중을 해소하지 않음(정상장 100% C19). family diversification은 별도 diversifier 전략의 역할."
+  },
+
+  "core_reference": {
+    "primary": [
+      "Dichtl, Drobetz, Lohre, Rother & Vosskamp (2019, FAJ Vol.75) 'Optimal Timing and Tilting of Equity Factors' -- FAJ 피어리뷰. 국면별 팩터 tilting의 직접 학술 근거. v3 primary reference. (v3 서지 수정: Bender 2018 FAJ는 실존하지 않는 논문이었음 → Dichtl 2019 FAJ로 교체)",
+      "Bender, Sun, Thomas & Zdorovtsov (2018, JPM Vol.44) 'The Promises and Pitfalls of Factor Timing' -- factor timing의 가능성과 한계. 'risk management not timing' 패러다임과 정합.",
+      "Barroso & Santa-Clara (2015, RFS) 'Momentum has its moments' -- 일반 원칙: 위험 환경에서 노출 조절 → SR 개선. 단일 팩터 vol-scaling이지만 conditional exposure 조절의 학술적 토대.",
+      "Moreira & Muir (2017, JF) 'Volatility-Managed Portfolios' -- 일반 원칙: 변동성 역비례 가중. Axis A(VD+ exposure 축소)의 학술 근거.",
+      "Dichev & Tang (2009, TAR) 'Earnings Volatility and Earnings Predictability' -- Q07의 이론적 기반. 이익 변동성 낮은 기업 = 예측력 높고 과소반영.",
+      "Novy-Marx (2013, JFE) 'The Other Side of Value' -- Q03/ROA의 이론적 기반. 수익성은 가치와 독립적 alpha source.",
+      "Beaver, Kettler & Scholes (1970, TAR) 'The Association Between Market-Determined and Accounting-Determined Risk Measures' -- D29의 이론적 기반. 회계 beta의 안정성과 예측력.",
+      "Guidolin & Timmermann (2007, JEE) 'Asset Allocation Under Multivariate Regime Switching' -- 다중국면 하 동적 배분이 정적 배분 대비 SR 유의미 개선."
+    ],
+    "supporting": [
+      "Frankel & Litov (2009) -- 이익 안정성과 정보 비대칭 축소 효과.",
+      "Campbell, Hilscher & Szilagyi (2008, JF) 'In Search of Distress Risk' -- 재무적 취약성과 주가 하방 리스크.",
+      "Ang & Timmermann (2012) 'Regime Changes and Financial Markets' -- 국면 변화의 포트폴리오 최적화 영향.",
+      "Asness, Frazzini & Pedersen (2019) 'Quality Minus Junk' -- QMJ 프레임워크. L-113에서 한국시장 실패 확인되나, Q07/Q03는 QMJ 하위 단일 차원으로 구별됨.",
+      "Hong & Stein (1999, JF) -- C19(consensus) alpha의 gradual information diffusion 근거."
+    ],
+    "removed_from_v1": [
+      "Arnott, Harvey, Kalesnik & Linnainmaa (2016) -- factor timing에 부정적 결론. 본 전략 패러다임과 상충하여 제거.",
+      "Sloan (1996) / Richardson et al. (2005) -- AC21 관련. AC21 제거에 따라 primary에서 삭제.",
+      "Lou & Polk (2022) / Stein (2009) -- CR05 관련. CR05 제거에 따라 삭제."
+    ]
+  },
+
+  "lesson_check": {
+    "L-001": {
+      "content": "CR05_Momentum_Crowding 한국시장 실패 (IC -0.077, MDD 61.7%). Crowding defense 주장은 허위.",
+      "applied": "CR05 완전 제거. v1에서는 crisis ICIR 0.77을 근거로 포함했으나, 4r-CRISIS -0.10 + L-001 실패 이력으로 위험 과다."
+    },
+    "L-111": {
+      "content": "STR_1631 SYN_05 Grade A (SR 1.248, CAGR 22.5%). C19 IC-weighted blend 유효성 확인.",
+      "applied": "정상장 모듈이 SYN_05와 동일 구조. anchor 확장 전략으로 포지셔닝."
+    },
+    "L-112": {
+      "content": "Defense 팩터는 전기간 성과가 아닌 조건부 성과로 평가해야 한다.",
+      "applied": "Q07/Q03/D29 선정 기준이 전기간 ICIR이 아닌 stress_icir + 4r_crisis_icir 양쪽 통과 여부."
+    },
+    "L-113": {
+      "content": "Quality 기반 Defense는 한국시장에서 구조적 역 defense (QMJ 위기상관 0.89, 하방 beta 1.09).",
+      "applied_with_distinction": "Q07/Q03는 QMJ 전체가 아닌 단일 차원(이익안정성/ROA). QMJ 실패의 원인은 multi-dimension composite의 beta 오염이지, quality dimension 자체 실패가 아님. C19 상관(Q07:-0.092, Q03:-0.020)이 QMJ와의 구조적 차이를 입증. 단, S2에서 반드시 검증: Q07/Q03의 Core 위기 상관 및 하방 beta."
+    },
+    "L-114": {
+      "content": "VD+ overlay(Enhanced Regime + DD Brake)로 MDD 33.9% -> 25.4% 달성.",
+      "applied": "Axis 1(VD+ overlay) 유지. Axis 2(factor selection)를 추가하여 2축 방어 구현."
+    },
+    "L-115": {
+      "content": "Low-Beta 유니버스 필터링만으로는 분산 불충분.",
+      "applied": "Beta 필터 대신 factor family 다양성(quality_earnings + quality_profitability + beta)으로 분산."
+    },
+    "L-116": {
+      "content": "조건부 defense 개념은 유효하나 현 시점 diversifier 우선(REVISE).",
+      "applied": "Role을 Anchor Upgrade로 명확화. Diversifier는 별도 전략으로 분리."
+    },
+    "L-118_ref": {
+      "content": "Market beta가 long-only 상관을 지배. Beta orthogonality > family orthogonality.",
+      "applied": "D29_Accounting_Beta를 포함하여 beta 축소 메커니즘 확보. Q07/Q03의 market beta profile S2에서 확인 필수."
+    },
+    "L-087": {
+      "content": "한국시장 롱온리 low-risk sorting 무효 (VaR, IdioVol 등).",
+      "applied": "D29는 기존 risk sorting(R01_VaR, D01_IdioVol)과 다른 회계 기반 beta. 시장 가격 변동이 아닌 재무제표 기반이므로 L-087의 구조적 실패 패턴과 다름. 그러나 S2에서 독립 방어력 검증 필수."
+    },
+    "L-110": {
+      "content": "Overlay Multiplier Principle: base SR < 1.0이면 overlay 무효.",
+      "applied": "정상장 base는 C19 단독(SR ~1.25). Overlay 적용 조건 충족."
+    },
+    "L-484": {
+      "content": "수익률 블렌드 앙상블 30종목 위반. Score-level blending만 유효.",
+      "applied": "Z-score 가중합으로 단일 Top 30 포트폴리오 유지. 수익률 블렌드 아님."
+    }
+  },
+
+  "pit_safeguards": {
+    "C1": "MRS threshold(20/50)는 사전 고정(regime_engine_daily.R 기존 값). Cross-validation 불필요.",
+    "C2": "Factor weight는 t-1 MRS 기준으로 결정. Same-day circular 원천 차단.",
+    "C4": "Q07/Q03/D29 재무제표 기반 -- 연간 5월, 분기 45일 lag. Factor DB load_month_factors() 경유(C15).",
+    "C5": "MRS는 전월말 값 사용(t-1 lag). regime_signal.R이 이미 구현.",
+    "C9": "DD/VT overlay도 t-1 lag 사용(VD+ 인프라에서 이미 검증).",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date 준수.",
+    "C15": "Factor DB parquet 직접 로드 금지. load_month_factors() 사용."
+  },
+
+  "walk_forward_preregistration": {
+    "note": "Codex 피드백 반영: 모든 설계 파라미터를 사전 고정하고 walk-forward 검증으로 out-of-sample 확인.",
+    "in_sample": "2003-01 ~ 2015-12 (13년)",
+    "out_of_sample": "2016-01 ~ 2026-03 (10년)",
+    "fixed_parameters": {
+      "mrs_thresholds": [20, 50],
+      "factor_weights_normal": {"C19": 1.0, "Q07": 0.0, "Q03": 0.0, "D29": 0.0},
+      "factor_weights_caution": {"C19": 0.6, "Q07": 0.2, "Q03": 0.1, "D29": 0.1},
+      "factor_weights_crisis": {"C19": 0.3, "Q07": 0.3, "Q03": 0.2, "D29": 0.2},
+      "dd_brake": {"trigger_pct": 10, "recovery_pct": 25},
+      "n_stocks": 30,
+      "rebalance": "bimonthly",
+      "commission_bps": 15,
+      "liq_threshold": 200000000
+    },
+    "success_criterion": "OOS SR / IS SR >= 0.50 (retention). OOS SR > 1.0."
+  },
+
+  "stress_period_evaluation": {
+    "note": "8대 스트레스 구간 기준 (defense-evaluation skill 통일)",
+    "periods": [
+      {"name": "9/11", "dates": "2001-09 ~ 2001-12"},
+      {"name": "GFC", "dates": "2008-01 ~ 2009-03"},
+      {"name": "EU Debt Crisis", "dates": "2011-07 ~ 2011-12"},
+      {"name": "China Shock", "dates": "2015-06 ~ 2016-02"},
+      {"name": "Trade War", "dates": "2018-01 ~ 2018-12"},
+      {"name": "COVID", "dates": "2020-01 ~ 2020-03"},
+      {"name": "Rate Hike", "dates": "2022-01 ~ 2022-12"},
+      {"name": "Iran War", "dates": "2024-04 ~ 2024-06"}
+    ],
+    "q07_stress_profile": "stress ICIR +0.753, 4r-CRISIS ICIR +0.413. 양쪽 최강. 8대 구간별 IC: S2에서 구간별 IC breakdown 산출 필수.",
+    "q03_stress_profile": "stress ICIR +0.743, 4r-CRISIS ICIR +0.375. 강력. 8대 구간별 IC: S2에서 산출.",
+    "d29_stress_profile": "stress ICIR +0.737, 4r-CRISIS ICIR +0.315. crisis_ratio 1.42. 8대 구간별 IC: S2에서 산출.",
+    "s2_requirement": "8대 스트레스 구간 중 6/8 이상에서 Q07/Q03/D29 composite가 positive IC를 보여야 defense 역할 인정."
+  },
+
+  "risks": {
+    "quality_beta_domination": "L-113 위험. Q07/Q03가 QMJ 단일 차원이라 해도, 한국시장에서 quality sorting이 market beta에 지배될 가능성 존재. S2에서 Core(STR_1631) 위기 상관 측정 필수. 위기 상관 > 0.70이면 defense 역할 부적합 -> 가설 폐기.",
+    "d29_weak_full_period": "D29 전기간 ICIR 0.109로 매우 낮음. 정상장 alpha 기여 사실상 제로. 위기에서만 작동하는 팩터를 경계장에서 10% 노출하는 것이 적절한지 S2 확인.",
+    "regime_misclassification": "MRS 오판 시 잘못된 팩터 노출. 특히 false crisis -> 불필요한 Q07/Q03/D29 노출 -> alpha 희석. Regime Engine v7.1의 slow-crisis mechanism이 false positive 억제하나 완벽하지 않음.",
+    "transition_turnover": "국면 전환 시 factor weight 급변 -> 포트폴리오 대폭 교체. 격월 리밸런싱으로 완화하나, 국면 전환이 리밸런싱 사이에 발생하면 다음 주기까지 기다려야 함.",
+    "sample_size_crisis": "위기장 8%(~20개월)로 Q07/Q03/D29의 crisis IC 추정은 소표본. Bootstrap CI 확인 필수.",
+    "complexity_vs_anchor": "STR_1631 VD+는 이미 Grade A(SR 1.243, MDD 25.4%). DFA v2가 이를 명확히 개선하지 못하면 complexity만 증가. S6에서 STR_1631 VD+ 대비 Sharpe improvement test 필수.",
+    "overfitting_discrete_weights": "가중은 3단계 이산값으로 제한했으나, 3국면 x 4팩터 = 12개 가중 파라미터. walk-forward OOS에서 IS 대비 50%+ retention 필수."
+  },
+
+  "implementation_notes": {
+    "s1_exception": "S0/S1 overlay 금지 원칙 예외: 국면 전환 자체가 alpha source이므로 regime 허용(CLAUDE.md 예외조항). 단, S1에서는 순수 factor weight 전환만 측정. VD+ overlay는 S5에서 추가.",
+    "rebalance": "격월(bimonthly) -- STR_1631 SYN_05와 동일.",
+    "stock_selection": "Z_final = w_C19*Z(C19) + w_Q07*Z(Q07) + w_Q03*Z(Q03) + w_D29*Z(D29). Top 30 EW. 15bps commission. LIQ >= 2e8.",
+    "factor_db_access": "load_month_factors(factors=c('C19_Composite_Earnings','Q07_Earnings_Stability','Q03_ROA','D29_Accounting_Beta')). 4팩터만 필터 로드."
+  },
+
+  "prior_art_gate": {
+    "C19": "PG2 (STR_1550/1555). Grade A confirmed.",
+    "Q07": "core_knowledge_base: ICIR 0.82(B1) -> conditional_ic_matrix: ICIR 0.929. Standalone S1 미실행. L-012에서 D41+Q07 조합 실패했으나 Q07 단독 profiling 미완.",
+    "Q03": "ROA. Fama-French RMW family. Standalone S1 미실행.",
+    "D29": "Accounting Beta. Standalone S1 미실행. crisis_ratio 1.42 확인.",
+    "DFA_v2_combination": "Novel. v1(AC21/CR05) -> v2(Q07/Q03/D29) 교체. Regime-conditional quality-beta defense는 V7 파이프라인에서 미실행. PASS."
+  },
+
+  "success_criteria": {
+    "minimum": "SR > 1.30 (VD+ 1.243 대비 개선), MDD < 25%, CAGR > 16%. Core 위기상관 < 0.70.",
+    "target": "SR > 1.40, MDD < 23%, CAGR > 18%. 8대 스트레스 6/8+ outperform.",
+    "stretch": "SR > 1.50. VD+ 대비 Sharpe improvement p < 0.05."
+  },
+
+  "debate_revision_log": {
+    "v1_score": "40/100 (REVISE)",
+    "v1_feedback": {
+      "quant": "12/25 - AC21/CR05 4r-CRISIS ICIR 급락. 단 stress 기준에서는 유효 -> 위기 정의 차이 발견.",
+      "academic": "11/25 - Arnott(2016) factor timing 부정적 논문. L-001 crowding 한국시장 실패.",
+      "gov_proxy": "10/25 - PG0 gap은 diversifier. 이건 anchor upgrade. 정상장 C19 = STR_1631 동일.",
+      "codex": "7/25 - STR_1650 파라미터 변형. MRS threshold ex-post tuning 위험."
+    },
+    "v2_changes": [
+      "Arnott(2016) 제거 -> Barroso & Santa-Clara(2015), Moreira & Muir(2017) 도입 (factor timing -> risk management)",
+      "AC21/CR05 -> Q07/Q03/D29 교체 (양쪽 위기 기준 모두 통과)",
+      "CR05 완전 제거 (L-001 실패 + 4r CRISIS 음수)",
+      "Role: Core Alpha with embedded defense -> Anchor Upgrade with regime-conditional defense",
+      "Walk-forward pre-registration 추가 (IS 2003-2015 / OOS 2016-2026)",
+      "8대 스트레스 구간 통일 기준 적용",
+      "L-113 구분 논증 (QMJ 전체 vs Q07/Q03 단일 차원)",
+      "가중 이산화 (연속 최적화 금지)"
+    ]
+  },
+
+  "gap_vector_snapshot": {
+    "sr_gap": 0.757,
+    "cagr_gap": -0.031,
+    "mdd_gap": 0.004,
+    "sleeve_needs": ["diversifier"],
+    "family_concentration": {"consensus": 1.0},
+    "this_strategy_addresses": "anchor_upgrade (MDD sub-25%, SR improvement), NOT diversifier gap"
+  }
+}

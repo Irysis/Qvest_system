@@ -1,0 +1,30 @@
+{
+  "role": "codex_critic",
+  "r1_score": 9,
+  "r2_score": 7,
+  "score_changed": true,
+  "score_change_reason": "quant/risk_manager의 실측 검증이 D25의 재현성과 안정성을 추가로 약화시켰다(ICIR 0.119 vs 주장 0.393, 4-regime CRISIS ICIR -0.174, D25-Q07 상관 약 0.43). 내 기존 우려(선택편의·위기정의 민감도·분산효과 과대평가)가 강화되었다.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "D25 실측 성과가 주장 대비 크게 낮고 일부 위기에서 음수 반전된 점은 내 '위기 의존/재현성 리스크' 우려를 직접 지지한다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "stress 이벤트 기준과 MRS 4-regime 기준에서 D25 신호가 반전된다는 지적에 동의한다. 위기 정의가 바뀌면 성과가 급변하는 구조다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Defense family가 필요하다는 포트폴리오 구조 논리는 맞지만, 그것이 현재 후보(D25+Q07)의 채택 근거가 되지는 않는다. family 필요성과 특정 가설의 실증 적합성은 분리해야 하며, 현 실측은 D25를 정적 편입하기에 취약하다.",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "D25-Q07 직교성(|r|<0.20) 전제는 quant의 실측 상관 0.430과 충돌한다. 이 값이 확인되면 2팩터 분산효과 가정은 성립하지 않는다.",
+      "severity": "major"
+    }
+  ],
+  "strongest_opposing_argument": "governor의 '현 포트폴리오의 consensus/ML 양극 구조를 완화하려면 defense 축 추가가 구조적으로 필요하며, defense는 전기간 SR이 아니라 위기 구간 기여로 평가해야 한다'는 주장."
+}

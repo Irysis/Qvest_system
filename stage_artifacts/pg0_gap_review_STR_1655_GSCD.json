@@ -1,0 +1,74 @@
+{
+  "pg0_gap_review": {
+    "strategy_id": "STR_1655_growth_stability_composite_diversifier",
+    "factor_id": "GSCD_Growth_Stability_Composite",
+    "reviewer": "Governor",
+    "review_date": "2026-04-09",
+    "session": 56,
+    "expected_role": "Diversifier",
+    "total_score": 18,
+    "max_score": 25,
+    "verdict": "CONDITIONAL_PASS"
+  },
+
+  "criteria": {
+    "role_match": {
+      "score": 4,
+      "max": 5,
+      "assessment": "sleeve_needs=['diversifier']와 정합. Beta < 0.50 목표: 60일 rolling beta 하위 40% 유니버스 제한은 BCSNA와 동일한 메커니즘. 단, GSCD는 sector-neutral 구조가 없어 growth+quality 팩터가 선호하는 특정 업종(IT, 바이오, 소비재)에 편중될 수 있다. L-115 실패에서 low-beta bucket이 특정 sector에 편중되어 diversifier 실패한 선례가 있다. GSCD의 GR02+Q07+Q28 composite는 '안정적 성장 기업'을 선택하므로 defensive sector(유틸리티, 통신)나 stable growth sector(소비재, 헬스케어)에 집중 가능성이 높다. 이 경우 beta 목표는 달성하나 sector bet이 잔존하여 앵커와의 진정한 독립성이 의문. 1점 감점: sector-neutral 구조 없이 beta < 0.50만으로는 L-115 재현 우려.",
+      "evidence": "gap_vector.sleeve_needs=diversifier. beta_target<0.50. No sector-neutral constraint."
+    },
+
+    "family_diverse": {
+      "score": 3,
+      "max": 5,
+      "assessment": "앵커 family: consensus(100%). GSCD family: growth(GR02) + quality(Q07, Q28). Growth family는 gap_vector의 priority_families에 명시적으로 포함되지 않음(accrual, liquidity_microstructure, crowding, value_composite가 우선). Quality는 L-113에서 '한국시장에서 구조적 실패'로 플래깅된 family. S0 record에서 'QMJ가 아닌 단일차원'이라는 차별화 논리를 제시하나, 3팩터 중 2개(Q07, Q28)가 quality family. 실질적으로 quality 60% + growth 40% 구성. L-113의 실패 원인이 'QMJ 복합의 beta 오염'이라면 단일차원 quality로 회피 가능하나, 한국시장에서 quality premium 자체가 구조적으로 약한 문제(FF5a 계수 음수, L-394/402)는 단일차원으로도 해결 불가. GR02-C19 corr=0.125로 accrual 팩터(0.04~0.06)보다 2~3배 높아 consensus와의 거리가 더 가까움. 2점 감점: (1) quality family L-113 리스크, (2) C19 corr 상대적으로 높음.",
+      "evidence": "GR02-C19_corr=0.125 (AC21: 0.038). Q07, Q28 = quality family. L-113 flag."
+    },
+
+    "cond_value": {
+      "score": 5,
+      "max": 5,
+      "assessment": "Conditional IC 분석에서 GSCD가 BCSNA를 압도. GR02: stress_ICIR=0.842 (DB 상위 5%), crisis_ratio=1.17. Q07: 3y_ICIR=0.929 (DB 최상위), stress_ICIR=0.753, crisis_4r_ICIR=0.413 — 양쪽 위기 기준 모두 통과(L-121). Q28: stress_ICIR=0.798, crisis_ratio=1.37. 세 팩터 모두 위기 시 방어력이 정상장보다 강화되는 패턴. 이는 'diversifier + 위기 방어' 이중 역할을 시사. Conditional IC matrix에서 Q07의 ic_bad=0.031, ic_good=0.042 → 하락장에서도 양의 IC 유지하며 정상장과 차이 작음(-0.011). GR02는 ic_bad=0.002로 하락장에서 거의 0 수준이나 여전히 양(+). 위기 방어력에서 GSCD > BCSNA.",
+      "evidence": "Q07_3y_ICIR=0.929. GR02_stress=0.842. Q28_crisis_ratio=1.37. All positive in bad regime."
+    },
+
+    "stock_limit": {
+      "score": 4,
+      "max": 5,
+      "assessment": "Top 20 by composite score. 30종목 제한 내. BCSNA의 sector-neutral 구조와 달리 종목 수 부족 리스크가 낮다 — low-beta(40%) + liquidity(2억원) 통과 유니버스에서 GR02+Q07+Q28 composite top 20 선택은 실행 가능성이 높음. 단, beta filter 후 유니버스가 약 120~150종목으로 축소되므로 scoring이 의미 있으려면 충분한 분산이 필요. GR02가 NI 기반이므로 적자 기업 제외 시 유효 유니버스가 더 축소될 수 있음. 1점 감점: GR02 적자기업 제외 시 유효 유니버스 축소 가능성.",
+      "evidence": "max_stocks=20. No sector constraint = larger effective universe. GR02 NI-based."
+    },
+
+    "mdd_contrib": {
+      "score": 2,
+      "max": 5,
+      "assessment": "SR 2.0 Markowitz 경로 기여도. GSCD의 위기 방어력은 개별 팩터 수준에서 우수하나, portfolio-level SR과 앵커 상관이 핵심. 앵커 상관 < 0.30 달성 가능성 평가: GR02-C19 corr=0.125로 BCSNA(0.038~0.055)보다 높음. Q07-C19=-0.092, Q28-C19=-0.111로 음의 상관이지만, composite 전체 corr은 약 0.04~0.06 추정. 그러나 factor-level corr과 portfolio return corr은 별개이며, L-115 경험에서 factor corr 낮아도 beta 공유로 return corr 0.575에 달했음. GSCD는 sector-neutral 구조가 없어 BCSNA보다 sector bet → beta → 앵커 상관 경로에 더 취약. Markowitz 기여도에서 핵심은 rho(앵커,diversifier)이며, rho > 0.3이면 SR 개선 효과가 급감. GSCD의 rho 달성 불확실성이 BCSNA보다 높다. MDD 직접 기여: 위기 방어력은 우수하나 portfolio 차원에서 앵커와 동조화될 경우 MDD 개선 불가. 3점 감점: (1) C19 corr 높음, (2) sector-neutral 부재로 L-115 재현 위험, (3) Markowitz SR 기여도 불확실.",
+      "evidence": "GR02-C19=0.125. No sector-neutral. L-115 precedent: factor corr low but return corr=0.575."
+    }
+  },
+
+  "strengths": [
+    "위기 방어력 최강: Q07 양쪽 위기 기준 통과(L-121), GR02 stress ICIR 0.842(DB 상위 5%)",
+    "Q07 3y_ICIR 0.929 — DB 전체에서 최상위 팩터 중 하나",
+    "Growth family 0% 활용(L-117) → 미개척 alpha source",
+    "'안정적 이익 성장'이라는 단일 경제원리에서 3팩터가 수렴하는 깔끔한 가설 구조",
+    "Diversifier + 위기방어 이중역할 가능성"
+  ],
+
+  "weaknesses": [
+    "Quality family(Q07, Q28)가 60% 차지 — L-113(한국 quality defense 실패) 리스크 잔존",
+    "GR02-C19 corr=0.125 → accrual 팩터(0.04~0.06) 대비 앵커와 가까움",
+    "Sector-neutral 구조 없음 → L-115(hidden sector bet → 앵커 상관) 재현 위험",
+    "GR02 전체기간 ICIR 미확인(stress에서만 강한지, normal에서도 유효한지 불명)",
+    "gap_vector priority_families에 growth가 명시적으로 포함되지 않음"
+  ],
+
+  "conditional_requirements": [
+    "S1 완료 후 GR02 전체기간 ICIR >= 0.20 확인 필수. 미달 시 GR01_Revenue_Growth 또는 GR05_ROE_Growth로 교체 검토",
+    "S2에서 sector exposure 분석 필수 — 특정 업종 > 25% 편중 시 S5 mutation으로 sector-neutral 구조 추가",
+    "S3에서 앵커 return correlation 측정 — 0.35 초과 시 GSCD보다 BCSNA 우선"
+  ],
+
+  "governor_notes": "GSCD는 개별 팩터 품질(Q07 ICIR 0.929, GR02 stress 0.842)과 위기 방어력에서 BCSNA를 능가한다. 그러나 PG0 정합성 관점에서 핵심 문제가 있다: (1) gap_vector의 최우선 요구는 '앵커와 독립적인 diversifier'이며 이를 위한 핵심 조건은 return correlation < 0.30이다. GSCD는 C19 corr이 높고 sector-neutral 구조가 없어 L-115 재현 위험이 BCSNA보다 크다. (2) Quality family 비중 60%는 L-113 리스크를 완전히 해소하지 못한다. CONDITIONAL_PASS 부여: S1-S2를 진행하되, sector exposure와 GR02 ICIR를 조기 검증해야 한다. BCSNA가 S3에서 앵커 상관 < 0.30을 달성하면 GSCD는 2순위로 대기하는 것이 자원 효율적이다."
+}

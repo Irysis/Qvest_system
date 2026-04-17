@@ -1,0 +1,76 @@
+{
+  "strategy_id": "STR_1332",
+  "strategy_name": "Bayesian_Shrinkage_GARP",
+  "family": "bayesian_garp",
+  "judge_timestamp": "2026-03-28T22:00:00",
+  "s6_verdict": "ARCHIVE",
+  "grade": "B",
+  "score": 36.9,
+  "hard_fail": false,
+  "hard_fail_reason": null,
+
+  "gate_results": {
+    "G0_PIT": {
+      "pass": "CONDITIONAL",
+      "detail": "Factor DB parquet 직접 로드(line 68-75) -- C15 위반 의심. load_month_factors() 미경유. 다만 Z_Score_Aligned를 IC sign 기반으로 정렬(line 80-90). IC 사용 시 Usable_Date <= sd 조건 확인(line 143-144, C14 준수). DD/MRS overlay는 t-1 lag 적용(dd_lag = c(0, dd_pct[-n_f]), mrs_lag = c(0, dd2$MRS[-n_f])). 전체적으로 PIT 실질 준수하나 C15 형식 위반."
+    },
+    "G1_constraints": {
+      "pass": true,
+      "detail": "N=23~30(mean 27.8), commission=15bps, LIQ>=2e8, buffer_zone(50/25). 종목수 30 이하 준수."
+    },
+    "G2_oos_retention": {
+      "pass": false,
+      "detail": "IS 3Y rolling SR mean=1.072, OOS mean=0.061. Retention=0.06 (극도로 낮음). 하지만 최근 3Y SR=0.972로 회복세. OOS 평균이 낮은 것은 2015-2020 구간의 구조적 약세."
+    },
+    "G3_performance": {
+      "pass": false,
+      "detail": "SR=0.813(>=0.8 PASS), CAGR=10.96%(<16% fail), MDD=34.94%(<45% OK). Turnover 240.9%(<600% OK). SR은 통과하나 CAGR 미달."
+    },
+    "G4_alpha": {
+      "pass": false,
+      "detail": "FMB Score t=2.57(<3.0 Harvey threshold 미달, 단 실질적으로 유의). Recent 3Y SR=0.972(>0.3 no decay). Alpha trend improving."
+    },
+    "G5_correlation": {
+      "pass": "N/A",
+      "detail": "Grade A composite cache 미가용. Role=diversifier(hurdle 판정)."
+    }
+  },
+
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "assessed_role": "diversifier",
+    "honesty": true,
+    "detail": "Bayesian shrinkage로 ICIR 기반 동적 가중 -- 기존 fixed-weight GARP과 차별. 방어앵커(D01_IdioVol 25%) 내장. CAGR 미달이나 MDD 34.94%로 방어력 양호. Diversifier 역할 합당."
+  },
+
+  "pit_checklist": {
+    "C1_full_sample": "CLEAN -- IC lookback 36개월 rolling, Bayesian shrinkage lambda 동적",
+    "C2_same_day": "CLEAN -- DD lag c(0, dd_pct[-n_f]), MRS lag c(0, dd2$MRS[-n_f])",
+    "C4_fundamental_lag": "N/A -- Factor DB 경유(parquet에 Factor_Date 내장)",
+    "C5_overlay_lag": "CLEAN -- VT는 harness(vol_lookback=60), DD/MRS는 수동 1일 lag",
+    "C9_dd_vt_lag": "CLEAN -- dd_lag=c(0,dd_pct[-n_f]), mrs_lag=c(0,dd2$MRS[-n_f]) (L-code 패턴 준수)",
+    "C10_liquidity": "CLEAN -- AvgTV20 computed from RAWDATA[Date <= sd]",
+    "C11_data_time": "CLEAN -- no external macro timing in factor scoring",
+    "C13_z_score": "CLEAN -- Z_Score_Aligned 사용(IC sign alignment, line 86)",
+    "C14_ic_usable_date": "CLEAN -- Usable_Date <= sd 조건(line 144)",
+    "C15_factor_db": "WARN -- load_month_factors() 미경유, 직접 parquet 로드. 실질적으로 동일 데이터이나 형식 위반."
+  },
+
+  "strengths": [
+    "SR 0.813 (Grade A 최소 기준 통과)",
+    "MDD 34.94% (양호한 위험 관리)",
+    "FMB Score t=2.57 (실질적 유의성 있음)",
+    "Recent 3Y SR=0.972 (강한 최근 성과)",
+    "Bayesian shrinkage로 과적합 방지 메커니즘 내장",
+    "D01_IdioVol 방어앵커 + D47_CVaR gate -- 구조적 방어"
+  ],
+  "weaknesses": [
+    "CAGR 10.96% (<16% Grade A 기준 미달)",
+    "IS-OOS retention 0.06 (극도로 낮음 -- 중간기간 약세)",
+    "C15 형식 위반 (load_month_factors() 미경유)",
+    "Harvey t=2.57 (<3.0 다중검정 기준 미달)",
+    "Score 36.9 (<40 Grade A 기준 미달)"
+  ],
+
+  "recommendation": "ARCHIVE (Grade B 확정). SR은 Grade A 최소 기준 통과하나, CAGR 10.96%와 Score 36.9로 Grade A 진입 불가. Bayesian shrinkage 메커니즘 자체는 유효하므로 S5 mutation으로 CAGR 개선 여지 있음. C15 형식 위반은 load_month_factors() 경유로 수정 권고."
+}

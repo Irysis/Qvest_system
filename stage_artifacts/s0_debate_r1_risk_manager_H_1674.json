@@ -1,0 +1,55 @@
+{
+  "hypothesis_id": "H_1674",
+  "round": 1,
+  "role": "risk_manager",
+  "score": 13,
+  "score_breakdown": {
+    "tail_risk": 3,
+    "kill_scenario": 3,
+    "beta_orthogonality": 3,
+    "mdd_contribution": 2,
+    "regime_vulnerability": 2
+  },
+  "arguments": [
+    "L-127(IC!=SR) 교훈 직접 적용: Size-neutral ICIR 1.258은 인상적이나, 기존 flow 전략(STR_1422 flow_reversal: TO 3205%, STR_930/931: Grade C/F)의 일관된 SR 전환 실패 패턴이 존재한다. ICIR 1.03에도 SR 0.90(MDD 74%)을 기록한 LambdaRank(L-127)처럼, 횡단면 순위 예측력이 포트폴리오 수익률로 전환되지 않는 구조적 원인(turnover, 집중도, 비선형 거래비용)을 사전에 진단해야 한다. 다만 기존 실패는 외국인 flow 또는 20일 rolling 기반이었고, H_1674는 월간 개인 순매도 합산(저빈도)이라 turnover 문제는 L-019(TO 3205%) 대비 경감될 여지가 있다. 핵심 질문: 월간 리밸런싱에서 effective turnover가 600% 상한 이내인지 S1에서 반드시 측정해야 한다.",
+    "L-106(market beta 지배) 관점에서 가장 중요한 우려: 개인 순매도 상위 종목은 대형주/고유동성주에 편향될 가능성이 높다(개인 거래대금 자체가 size와 양의 상관). Size-neutral 처리가 이를 부분 제어하나, Long-only 환경에서 market beta 0.85~0.93이 수익률 상관을 지배한다는 L-106 교훈에 따르면, 기존 Core Alpha(STR_1631 C19)와의 수익률 상관이 기존 303팩터 상관 <0.10이라는 주장과 괴리될 수 있다. 팩터 수준 상관 <0.10이 포트폴리오 수익률 상관 <0.40을 보장하지 않는다는 점은 STR_1636(종목 겹침 3%에도 수익률 상관 0.78)에서 실증되었다. S3 직교성 검증에서 반드시 수익률 상관 분해(market beta 기여 vs residual 기여)를 수행해야 한다.",
+    "Stress IC 프로파일에서 Rate_2022 구간 IC 0.017은 양수이나 거의 noise 수준이다. 금리 인상기에 개인투자자 행동이 '반대 포지션 = alpha'라는 메커니즘이 약화되는 구조적 이유가 있다: 금리 인상기에는 개인이 주식 시장에서 이탈(채권/예금 전환)하면서 순매도 자체의 정보량이 감소하고, 남은 참여자는 상대적으로 정보를 가진 투자자이므로 noise trader reversal 프리미엄이 축소된다. 이는 H_1674의 경제적 메커니즘이 '개인 = noise trader' 가정에 전적으로 의존하는 단일 요소 리스크이며, 시장 미시구조 변화(공매도 금지, ETF 성장으로 개인 매매 패턴 변화)에 취약하다."
+  ],
+  "concern": "프로젝트 내 flow 기반 전략은 5건 연속 SR 전환 실패(STR_887 A_CONDITIONAL 제외)의 패턴을 보이며, 특히 L-019(TO 3205%)와 L-022(OOS retention -0.087)는 flow 신호의 구조적 noisy 특성을 입증한다. H_1674의 ICIR 1.258은 역대급이나, L-127(ICIR 1.03 -> SR 0.90) 교훈에서 확인된 IC-SR 괴리가 동일하게 발현할 위험이 크다. 더불어 Rolling 3Y ICIR의 최근 하락(1.058->0.746)은 alpha decay 초기 신호일 수 있으며, 이는 2020년 이후 한국 개인투자 구조 변화(동학개미, MTS/앱 트레이딩 성장)로 noise trader 비율이 변화하는 regime shift와 일치한다. Kill scenario: (1) 개인투자자의 정보력 향상(유튜브/커뮤니티 기반 집단 학습)으로 noise trader reversal 프리미엄 소멸, (2) 2020년 이후 ETF 매매 비중 확대로 개인 순매도의 '종목 선별 noise' 특성이 '시장 전체 리스크 조절'로 전환되어 종목 횡단면 예측력 상실.",
+  "conditions": [
+    "S1에서 effective turnover 측정 필수: 600% 상한 이내 확인. L-019 turnover 폭발(3205%) 재현 시 즉시 중단. Buffer zone(keep=35, entry=20) 적용 후에도 TO > 600%이면 분기 리밸런싱으로 전환 검토.",
+    "S3 직교성 검증에서 포트폴리오 수익률 상관 분해(market beta vs residual) 필수 수행. L-106 교훈에 따라 팩터 상관 <0.10이더라도 수익률 상관 > 0.50이면 diversifier 실격. Core(STR_1631)와의 하방 상관(drawdown correlation)도 별도 측정하여 위기 시 동시 하락 위험을 정량화해야 한다.",
+    "Rolling 3Y ICIR 추세 모니터링: 0.746이 추가 하락하여 0.50 이하 진입 시 alpha decay 확정 판단. 2020 전후 sub-sample 분리 분석(pre-2020 vs post-2020 ICIR)을 S2에서 수행하여 '동학개미' regime shift 이후 메커니즘 건재 여부를 실증해야 한다.",
+    "Rate_2022 구간 stress IC 0.017의 원인 분석: 금리 인상기에 개인 순매도 신호의 정보량 저하 여부를 확인. 향후 금리 인상 재개 시 전략 비활성화 트리거 설계 필요.",
+    "S1 백테스트 후 compute_tail_risk_suite() 실행하여 EVT shape parameter(xi), CDaR 95%, ES 99% 보고 필수. EVT xi > 0.30이면 fat tail 경고, CDaR > 40%이면 포트폴리오 편입 시 MDD 기여도 초과 위험."
+  ],
+  "kill_scenarios": [
+    {
+      "id": "KS-1",
+      "type": "structural_regime_shift",
+      "description": "개인투자자 정보력 향상에 의한 noise premium 소멸. 2020년 동학개미 이후 개인투자자가 유튜브/커뮤니티 기반 집단 학습으로 정보 비대칭 축소. Barber&Odean(2008)의 '개인 = noise trader' 전제가 한국시장에서 2020년대 구조적으로 약화. Rolling 3Y ICIR 1.058->0.746 하락이 이미 이 경로를 반영 중일 가능성."
+    },
+    {
+      "id": "KS-2",
+      "type": "future_reference_pathway",
+      "description": "월간 순매도 합산이 당월 수익률과 동시 측정되는 C2(same-day circular) 위험. 개인이 월중 가격 하락에 반응하여 매도하면, 순매도는 가격 하락의 결과이지 원인이 아님. 이 경우 '다음 달 반등'은 단순 mean-reversion이며 flow 신호가 아니라 단기 수익률 반전과 등가. S1에서 전월 순매도 vs 당월 말일 수익률의 lead-lag 관계를 엄밀하게 검증해야 하며, 1-month momentum reversal 팩터와의 상관이 0.30 이상이면 독립 alpha 부재."
+    }
+  ],
+  "risk_metrics_required": {
+    "evt_var_99": "S1 후 compute_evt_var() 실행",
+    "cf_var_99": "S1 후 compute_cf_var() 실행",
+    "cdar_95": "S1 후 compute_cdar() 실행",
+    "es_99": "S1 후 compute_es() 실행",
+    "dcc_tail_dependence": "S3에서 Core와의 tail dependence coefficient 측정",
+    "regime_conditional_beta": "regime_garch.R로 국면별 beta 프로파일 산출"
+  },
+  "methodology_references": [
+    "L-106: Long-only market beta가 수익률 상관을 지배. 팩터 직교 != 포트폴리오 직교.",
+    "L-115: Beta 감소 != 상관 감소. Beta 절반 줄여도 Core 상관 0.575 (STR_1642).",
+    "L-127: ICIR 1.03에도 SR 0.90 (MDD 74%). IC-SR 괴리는 flow 신호에서 더 심각할 가능성.",
+    "L-019: Flow reversal TO 3205% (hard cap 5배 초과). Flow 신호의 구조적 noisy 특성.",
+    "L-022: Flow reversal OOS retention -0.087 (음수). Buffer 강화가 오히려 TO 증가."
+  ],
+  "timestamp": "2026-04-12T23:45:00",
+  "agent_id": "risk_manager_H1674_r1"
+}

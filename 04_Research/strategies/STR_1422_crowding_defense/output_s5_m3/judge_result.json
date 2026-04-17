@@ -1,0 +1,100 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1422_crowding_defense_s5_m3",
+  "variant": "S5_M3_VT15_DD8_20",
+  "description": "VT 15% (expanding, t-1) + DD 8/20 brake overlay on CR08+D01 crowding defense base. Tighter VT + tighter DD vs S5.",
+  "timestamp": "2026-03-26T18:00:00+09:00",
+  "l_code": "L-633",
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "lookahead_detector": "CLEAN (run_s5_m3.R, factor_engine.R both clean)",
+      "c1_full_sample": "PASS - expanding vol uses raw_ret[1:(i-1)]",
+      "c2_same_day_circular": "PASS - vt_lagged = c(1.0, head(vt_scalar, -1)); dd_lag = c(0, dd_pct[-n_f])",
+      "c3_same_period_agg": "PASS",
+      "c4_financial_lag": "N/A - overlay only",
+      "c5_overlay_t_minus_1": "PASS - both VT and DD use t-1",
+      "c6_survivorship": "PASS - inherited parent LIQ_THRESHOLD=2e8",
+      "c7_auto_detect": "PASS - lookahead_detector clean",
+      "c8_fm_same_day": "N/A",
+      "c9_vt_dd_same_day": "PASS - VT uses vt_lagged, DD uses dd_lag",
+      "c10_liquidity_filter": "PASS - inherited",
+      "c11_data_time_axis": "PASS - no external data",
+      "c13_negate_factors": "PASS - Z_Score_Aligned via align_factor_direction()",
+      "c14_ic_usable_date": "N/A",
+      "c15_factor_db_load": "PASS - arrow bulk load"
+    },
+    "gate1_performance": {
+      "pass": false,
+      "sharpe": 0.598,
+      "cagr_pct": 6.25,
+      "mdd_pct": 23.75,
+      "ir": -0.161,
+      "calmar": 0.263,
+      "ann_vol": 10.45,
+      "turnover_ann": 214,
+      "assessment": "FAIL - SR 0.598 below 1.0. CAGR 6.25% is the lowest in the family (vs 7.98% base). MDD 23.75% is the best in the family and within 25% target, but at extreme CAGR sacrifice. IR -0.161 is the most negative = worst benchmark underperformance. The tighter VT (15%) aggressively scales down exposure, crushing returns."
+    },
+    "gate2_artifacts": {
+      "pass": true,
+      "s0_record": true,
+      "s1_construction": true,
+      "s2_profile": true,
+      "s3_orthogonality": true,
+      "s4_integration": true,
+      "charts": true,
+      "assessment": "All artifacts present."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "assessment": "Diversifier role honest. IR -0.161 confirms strategy cannot serve as core_alpha."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "oos_retention": 0.230,
+      "is_sharpe": 0.753,
+      "oos_sharpe": 0.173,
+      "alpha_trend_ratio": 0.288,
+      "recent_3y_sr": 0.172,
+      "rolling_3y_pos_pct": 84.1,
+      "stress_outperform": "3/3",
+      "max_consec_neg_alpha_months": 10,
+      "assessment": "FAIL - OOS retention 23.0% = severe degradation. Alpha trend ratio 0.288 (recent 3Y SR 0.172 vs full 0.598) = alpha nearly exhausted. Tighter overlays do not fix alpha decay -- they merely compress vol, making the low SR appear slightly better via lower denominator."
+    },
+    "gate5_ff5": {
+      "pass": "NOT_TESTED",
+      "assessment": "Not run. SR 0.598 makes FF5 alpha almost certainly insignificant."
+    }
+  },
+  "s3_orthogonality_review": {
+    "factor_mean_max_corr": 0.943,
+    "novelty_score": 0.324,
+    "max_return_corr": 0.829,
+    "assessment": "POOR - Inherited from base. Factor redundancy unaddressed."
+  },
+  "mutation_comparison": {
+    "base": { "sharpe": 0.633, "cagr": 7.98, "mdd": 31.77 },
+    "m3_vt15_dd8_20": { "sharpe": 0.598, "cagr": 6.25, "mdd": 23.75 },
+    "delta_vs_base": "SR -0.035, CAGR -1.73pp, MDD -8.02pp",
+    "vs_m2": "M3 achieves lower MDD (23.75% vs 23.89%) but at much worse CAGR (6.25% vs 6.75%) and SR (0.598 vs 0.646). Tighter VT target (15% vs no-VT in M2) is the primary difference.",
+    "vs_s5": "M3 uses tighter VT (15% vs 18%) and tighter DD (8/20 vs 7/22). Achieves 3pp better MDD (23.75% vs 26.76%) but 1.08pp worse CAGR. Net effect: marginally better risk control at disproportionate return cost.",
+    "assessment": "M3 is the most conservative variant. Best MDD (23.75%) but worst CAGR (6.25%) and most negative IR (-0.161). The aggressive vol targeting reduces exposure to the point where the already-weak alpha is nearly extinguished."
+  },
+  "overall_verdict": {
+    "grade": "C",
+    "score": 16.8,
+    "pass": false,
+    "hard_fail": false,
+    "disposition": "REJECT",
+    "rejection_reasons": [
+      "Factor redundancy: CR08-D01 corr=0.943 (inherited, fundamental flaw)",
+      "Lowest CAGR in family: 6.25% (tighter overlays crush already-weak alpha)",
+      "Most negative IR: -0.161 (worst benchmark-relative performance)",
+      "Alpha decay: recent 3Y SR 0.172 (ratio 0.29)",
+      "OOS degradation: 23.0% retention",
+      "Tighter overlays do not fix insufficient base alpha -- they only compress returns"
+    ],
+    "summary": "STR_1422_s5_m3 (VT15+DD8/20) is PIT-clean but the most conservative -- and most return-destructive -- variant. Tightening VT to 15% and DD to 8/20 achieves the family's best MDD (23.75%) but at extreme cost: CAGR drops to 6.25% (lowest), IR to -0.161 (most negative). This confirms L-631 insight: no overlay parameterization can rescue a signal with 0.943 factor redundancy and 0.633 base SR. The tighter the overlay, the more it exposes the core problem -- there is not enough alpha to survive any meaningful risk management."
+  }
+}

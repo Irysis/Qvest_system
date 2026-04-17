@@ -1,0 +1,71 @@
+{
+  "judge_version": "v7",
+  "strategy": "S5_M1_FlowRev_DD10_25",
+  "strategy_id": "STR_1422",
+  "mutation": "s5_m1",
+  "l_code": "L-634",
+  "timestamp": "2026-03-26",
+  "verdict": "REJECT",
+  "grade": "C",
+  "score": 22.5,
+  "role_declared": "diversifier",
+  "role_honest": true,
+  "role_note": "Diversifier claim plausible (BM_Corr=0.794 is high but stress 3/3 outperform). However performance too weak to serve any role.",
+
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN (92 lines). DD brake uses t-1 lag (dd_lag=c(0,dd_pct[-n_f])). Liquidity filter uses shift(...,1L,'lag'). Signal loaded from pre-built parquet."
+    },
+    "gate1_return": {
+      "pass": false,
+      "detail": "CAGR 3.26% << 16% target. SR 0.214 << 0.5 minimum. IR -0.563 (underperforms BM). Calmar 0.068. All return metrics FAIL."
+    },
+    "gate2_risk": {
+      "pass": false,
+      "detail": "MDD 48.17% >> 45% hard cap. Turnover 3205% >> 600% hard cap. Two hard_fail triggers. ES99_d=4.02, ES99_m=15.64."
+    },
+    "gate3_robustness": {
+      "pass": false,
+      "detail": "OOS retention 0.034 (IS SR 0.318 vs OOS SR 0.011) = near-zero out-of-sample validity. Rolling 3Y SR>0 only 39.5%. MaxConsecNegAlpha=12 months. IC stability not available."
+    },
+    "gate4_implementability": {
+      "pass": false,
+      "detail": "Turnover 3205% is catastrophic (5.3x the 600% hard cap). At 15bps commission this destroys ~4.8% annually. Buffer zone 50/25 insufficient for flow reversal's signal instability."
+    },
+    "gate5_diversification": {
+      "pass": false,
+      "detail": "BM_Corr=0.794 very high for a 'diversifier'. No Grade A composite cache for correlation check. Diversification value minimal given terrible standalone performance."
+    }
+  },
+
+  "c_checklist": {
+    "C1_full_sample": "PASS - no full-sample statistics",
+    "C2_same_day_circular": "PASS - DD brake uses t-1 lag",
+    "C3_same_period_agg": "PASS - no same-period aggregation",
+    "C4_financial_lag": "PASS - signal from pre-built parquet with proper dating",
+    "C5_overlay_t1": "PASS - DD overlay uses dd_lag (t-1)",
+    "C6_survivorship": "PASS - uses RAWDATA universe",
+    "C7_auto_detect": "PASS - lookahead_detector clean",
+    "C8_FM_same_day": "N/A - no factor momentum",
+    "C9_VT_DD_same_day": "PASS - DD uses c(0, dd_pct[-n_f])",
+    "C10_liq_filter": "PASS - AvgTV20 uses shift(1L, lag)",
+    "C11_data_time_axis": "PASS - signal parquet dates verified"
+  },
+
+  "hard_fails": [
+    "Turnover 3205% > 600% (5.3x cap)",
+    "MDD 48.17% > 45% hard cap"
+  ],
+
+  "critical_issues": [
+    "Identical turnover problem as s5_m2 (3205% vs 3205%). Flow reversal signal inherently unstable month-to-month.",
+    "CAGR 3.26% barely above cash rate. No alpha whatsoever.",
+    "OOS retention 0.034 = strategy does not generalize.",
+    "IR -0.563 = consistently underperforms benchmark."
+  ],
+
+  "comparison_to_m2": "s5_m1 has same turnover pathology as s5_m2 (3205% vs 3205%). DD 10/25 overlay reduces MDD from ~55%(base) to 48.2% but still fails. CAGR slightly better than m2 (3.26% vs 1.86%) but still catastrophic.",
+
+  "recommendation": "REJECT. Flow reversal signal has fundamental signal instability causing ~3200% turnover across all mutations. The alpha source itself is broken for monthly rebalancing. No overlay (DD, buffer) can fix a signal that flips 30-stock portfolios almost entirely each month. Abandon STR_1422 flow reversal family entirely."
+}

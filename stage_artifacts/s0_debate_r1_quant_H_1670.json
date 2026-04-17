@@ -1,0 +1,77 @@
+{
+  "role": "quant",
+  "hypothesis": "H_1670",
+  "debater": "Quant",
+  "round": "R1",
+  "timestamp": "2026-04-12",
+  "score": 12,
+  "score_breakdown": {
+    "icir_pass": 2,
+    "internal_corr": 3,
+    "c19_corr": 4,
+    "defense_ic": 1,
+    "data_avail": 2
+  },
+  "arguments": [
+    "ICIR 주장 수치는 최근 3Y(2023-03~2026-02) 국한 수치이며 전기간과 크게 괴리된다. Factor DB factor_ic_monthly.parquet 실측 결과: L31 ICIR_monthly_raw=0.275(전기간,N=254) vs 0.990(최근3Y,N=36), L40=0.368(전기간) vs 0.826(최근3Y). 연환산 기준 L31 full=0.953, L40 full=1.275로 허들(ICIR≥0.20)은 통과하나, 주장한 0.990/0.826는 3Y 구간 편향이며 IC_mean은 실측과 일치(L31=0.0324 vs 주장 0.032, L40=0.0566 vs 주장 0.057). conditional_ic_matrix의 recent_3y_icir이 주장 수치의 출처로 추정.",
+    "L31 x L40 IC 시계열 상관이 0.589로 내부 상관이 높다. 두 팩터 모두 '거래 집중도·비유동성'을 포착하는 동일 메커니즘에서 출발하여 50:50 블렌드의 다양성 효과가 제한적이다. 개별 팩터 허들(ICIR≥0.20)은 각각 통과하나, L31 full 연환산=0.953, L40 full=1.275로 L40이 우월함에도 동일 비중 배분은 최적이 아니다. L31 ic_bad=0.0242, L40 ic_bad=0.0197로 위기 구간 IC가 모두 양수지만 낮아 defense 특성은 제한적이다.",
+    "C19_Composite_Earnings와 IC 시계열 상관: L31 x C19=-0.025, L40 x C19=+0.104로 L31은 실질적으로 독립(상관 거의 0), L40는 약한 양의 상관이다. C19 factor_correlation_analysis에서 L31 x C19=0.0037(팩터값 레벨)로 직교성이 양호하다. Diversifier 역할 관점에서 L31은 C19와 독립성이 확인되나, 6대 위기 Stress IC 실측에서 L31 stress_avg=+0.0054, L40 stress_avg=+0.0299로 위기 선별 능력이 약하다(GFC 구간: L31=-0.0087, L40=-0.0262로 오히려 음수). Defense 로직이 필요하면 Q07_Earnings_Stability(stress ICIR +0.753)가 훨씬 우월하다."
+  ],
+  "concern": "주장 ICIR(L31=0.990, L40=0.826)은 최근 3Y 구간(2023~2026) 편향 수치로, 전기간 월간raw ICIR은 L31=0.275, L40=0.368(연환산 각각 0.953, 1.275)이다. 3Y 구간 과대추정이 전략 기대 성과를 왜곡할 위험이 있다. 또한 L31 x L40 내부 상관 0.589는 두 팩터의 독립성이 낮아 '2팩터 분산 효과'가 과장되어 있으며, 6대 위기 구간에서 두 팩터 모두 IC가 양수를 유지하지 못하는 사례(GFC: 음수)가 있어 defense 특성 근거가 부족하다.",
+  "conditions": [
+    "ICIR 기준을 '최근 3Y' 단기 수치가 아닌 전기간(N=254개월) 기준으로 재산정하여 제시할 것",
+    "L31 x L40 내부 상관 0.589를 감안하여 단순 50:50 대신 IC-가중(ICIR 역가중 또는 PCA 직교 성분) 블렌드 또는 L40 단독 전략으로 설계를 재검토할 것",
+    "6대 위기 구간 stress IC가 일관되게 양수를 유지하는지 추가 검증 필요. GFC/EuroDebt 구간 음수가 허들 통과 전략의 defense 주장과 모순임을 명시할 것",
+    "C19_Composite_Earnings와 실질 독립성 확보를 위해 IC 시계열 상관 임계치(<0.30)를 S3 직교성 검증에서 확인할 것"
+  ],
+  "raw_data": {
+    "L31_full_period": {
+      "icir_monthly_raw": 0.275,
+      "icir_annualized": 0.953,
+      "ic_mean": 0.0324,
+      "ic_sd": 0.1179,
+      "n_months": 254
+    },
+    "L40_full_period": {
+      "icir_monthly_raw": 0.368,
+      "icir_annualized": 1.275,
+      "ic_mean": 0.0566,
+      "ic_sd": 0.1538,
+      "n_months": 254
+    },
+    "L31_recent_3Y": {
+      "icir_monthly_raw": 0.990,
+      "icir_annualized": 3.429,
+      "n_months": 36
+    },
+    "L40_recent_3Y": {
+      "icir_monthly_raw": 0.826,
+      "icir_annualized": 2.863,
+      "n_months": 36
+    },
+    "correlations": {
+      "L31_x_L40_IC_series": 0.589,
+      "L31_x_C19_IC_series": -0.025,
+      "L40_x_C19_IC_series": 0.104,
+      "L31_x_C19_factor_level": 0.0037
+    },
+    "stress_IC": {
+      "GFC_200809_200902": {"L31": -0.0087, "L40": -0.0262, "n": 6},
+      "EuroDebt_201108_201112": {"L31": -0.0130, "L40": -0.0058, "n": 5},
+      "ChinaShock_201508_201509": {"L31": -0.0587, "L40": 0.0151, "n": 2},
+      "COVID_202002_202003": {"L31": -0.0189, "L40": -0.0193, "n": 2},
+      "RateShock_202201_202209": {"L31": 0.0340, "L40": 0.0756, "n": 9},
+      "Legoland_202210_202211": {"L31": 0.0536, "L40": 0.1454, "n": 2},
+      "stress_overall_avg": {"L31": 0.0054, "L40": 0.0299}
+    },
+    "claim_vs_actual": {
+      "L31_claimed_icir": 0.990,
+      "L31_actual_icir_full": 0.275,
+      "L31_actual_icir_3y": 0.990,
+      "L40_claimed_icir": 0.826,
+      "L40_actual_icir_full": 0.368,
+      "L40_actual_icir_3y": 0.826,
+      "note": "주장 수치는 conditional_ic_matrix recent_3y_icir 기준이며 전기간과 대조 필요"
+    }
+  }
+}

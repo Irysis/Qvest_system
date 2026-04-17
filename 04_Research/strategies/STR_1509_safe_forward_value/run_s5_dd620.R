@@ -1,0 +1,73 @@
+cat("=== STR_1509 S5: DD Brake 6/20 Overlay ===\n")
+## Scout 설계: DD brake dd_start=0.06, dd_full=0.20, min_exposure=0.30
+## C9: t-1 lag 필수. exposure <- c(1.0, head(dd_exp, -1))
+set.seed(15091); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
+STRATEGY_NAME <- "Safe_Forward_Value_DD620"; STRATEGY_ID <- "STR_1509"; STRATEGY_FAMILY <- "s5_dd_overlay"
+QEPM_AUTO_COMMIT <- TRUE
+
+SCRIPT_DIR <- tryCatch(dirname(sys.frame(1)$ofile), error=function(e) getwd())
+INFRA_DIR <- file.path(SCRIPT_DIR, "..", "..", "..", "02_Infrastructure")
+if (!file.exists(file.path(INFRA_DIR, "config.R")))
+  INFRA_DIR <- file.path("/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot", "02_Infrastructure")
+source(file.path(INFRA_DIR, "config.R")); source(file.path(INFRA_DIR, "backtest_harness.R"))
+library(data.table); library(xts)
+
+## Load parent sim (pure factor baseline)
+sim_parent <- readRDS(file.path(SCRIPT_DIR, "sim_result.rds"))
+raw_ret <- as.numeric(sim_parent$strategy_xts)
+raw_ret[is.na(raw_ret)] <- 0
+raw_dates <- as.Date(index(sim_parent$strategy_xts))
+n_f <- length(raw_ret)
+
+## DD brake 6/20 parameters
+DD_START <- 0.06; DD_FULL <- 0.20; DD_MIN_EXP <- 0.30
+cat(sprintf("  DD brake: start=%.0f%% full=%.0f%% min_exp=%.0f%%\n", DD_START*100, DD_FULL*100, DD_MIN_EXP*100))
+
+## Compute drawdown
+nav_dd <- cumprod(1 + raw_ret)
+dd_pct <- 1 - nav_dd / cummax(nav_dd)
+
+## C9 t-1 lag: today's exposure uses YESTERDAY's drawdown
+dd_lag <- c(0, dd_pct[-n_f])
+
+dd_exp <- fifelse(
+  dd_lag <= DD_START, 1.0,
+  fifelse(dd_lag >= DD_FULL, DD_MIN_EXP,
+          pmax(DD_MIN_EXP, 1.0 - (dd_lag - DD_START) / (DD_FULL - DD_START) * (1 - DD_MIN_EXP))))
+
+final_ret <- raw_ret * dd_exp
+combined_xts <- xts(final_ret, order.by = raw_dates)
+names(combined_xts) <- "Strategy"
+
+sim <- sim_parent
+sim$strategy_xts <- combined_xts
+sim$bm_xts <- sim_parent$bm_xts[raw_dates]
+sim$DAILY_NAV_DT <- data.table(Date = raw_dates, NAV = cumprod(1 + final_ret) * 10000, Strategy_Ret = final_ret)
+
+output_dir <- file.path(SCRIPT_DIR, "output_s5_dd620")
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+
+perf_strat <- summarise_perf(sim$strategy_xts, STRATEGY_NAME)
+perf_bm <- summarise_perf(sim$bm_xts, "BM")
+cat(sprintf("  %s: SR=%.3f CAGR=%.2f%% MDD=%.1f%%\n", STRATEGY_ID, perf_strat$Sharpe, perf_strat$CAGR, perf_strat$MDD))
+
+generate_charts(sim, output_dir = output_dir, strategy_name = STRATEGY_NAME)
+fwrite(rbind(perf_strat, perf_bm), file.path(output_dir, "performance.csv"))
+saveRDS(sim, file.path(output_dir, "sim_result.rds")); saveRDS(sim, file.path(SCRIPT_DIR, "sim_result_s5_dd620.rds"))
+
+## Load RAWDATA for analysis
+res <- load_rawdata(use_cache=TRUE); RAWDATA <- res$RAWDATA; BM_DT <- res$BM_DT; rm(res); gc(verbose=FALSE)
+source(file.path(SCRIPT_DIR, "factor_engine.R"))
+
+tryCatch({ source(file.path(INFRA_DIR, "strategy_analyzer.R")); run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir, strategy_name=paste0(STRATEGY_ID,"_DD620")) }, error=function(e) cat("[WARN]", e$message, "\n"))
+
+source(file.path(INFRA_DIR, "hurdle_gate.R"))
+hurdle <- run_hurdle_gate(sim_result=sim, FACTORS=FACTORS, strategy_name=STRATEGY_NAME, strategy_file=file.path(SCRIPT_DIR,"factor_engine.R"), output_dir=output_dir)
+jsonlite::write_json(hurdle, file.path(output_dir, "hurdle_result.json"), auto_unbox=TRUE, pretty=TRUE)
+cat(sprintf("  Grade: %s | Score: %.1f\n", hurdle$grade, hurdle$total_score %||% hurdle$score %||% 0))
+
+tryCatch({ source(file.path(TELEGRAM_DIR, "telegram_notify.R")); hr <- jsonlite::fromJSON(file.path(output_dir, "hurdle_result.json")); tg_strategy_result_with_chart(paste0(STRATEGY_ID,"_DD620"), hr, output_dir) }, error=function(e) cat("[TG]", e$message, "\n"))
+
+if (isTRUE(QEPM_AUTO_COMMIT)) tryCatch({ qh <- file.path(dirname(dirname(dirname(SCRIPT_DIR))), "qepm", "scripts", "hybrid_mode.R"); if(file.exists(qh)) { source(qh); if(exists("hybrid_commit")) hybrid_commit(strategy_name=paste0(STRATEGY_ID,"_DD620"), family=STRATEGY_FAMILY, hurdle_result=hurdle, artifact_paths=list(output_dir)) } }, error=function(e) cat("[QEPM]", e$message, "\n"))
+
+cat(sprintf("\n=== %s S5 DD620 Complete. Grade=%s Score=%.1f ===\n", STRATEGY_ID, hurdle$grade, hurdle$total_score %||% hurdle$score %||% 0))

@@ -1,0 +1,26 @@
+{
+  "strategy_id": "STR_1622",
+  "strategy_name": "IC_Weighted_Blend_5F",
+  "judge_date": "2026-03-30",
+  "grade": "C",
+  "score": 24.5,
+  "sharpe": 0.754,
+  "cagr": 13.9,
+  "mdd": 50.46,
+  "turnover": 179.1,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PARTIAL FAIL — C15 위반: open_dataset(pq_files) 직접 접근 (line 22-26), load_month_factors() 미사용. C13 부분 위반: Z_Score를 Z_Score_Aligned으로 단순 rename (line 31) — 방향 정렬 없이 이름만 변경. NEGATE 팩터(D01_IdioVol 등)의 방향이 올바르지 않을 수 있음. IC 계산의 t-1 lag는 정상 (past_dates < sig_d, line 99). Liquidity lag 정상.",
+    "G1_Implementation": "PASS — EW 30 stocks, 15bps commission, buffer zone 50/25. No overlay. IC shrinkage 50% EW + floor 5% + cap 40%.",
+    "G2_Robustness": "FAIL — OOS retention 0.30 (IS SR 1.016 vs OOS SR 0.304) = 심각한 과적합. IC stability ratio 0.78 (decaying). Rolling3Y 84.5%. MaxConsecNegAlpha 6개월. DeMiguel(2009) 1/N 우위 결론과 일치하는 패턴.",
+    "G3_Performance": "HARD FAIL — MDD 50.46% > 45%. SR 0.754, CAGR 13.9% (target 16% 미달), IR 0.322 (저조). Calmar 0.276.",
+    "G4_Statistics": "Recent 3Y SR 0.817 (alpha decay 미미). 그러나 OOS 0.30이 전체 유의성을 훼손. IC decaying은 향후 성과 악화 가능성.",
+    "G5_Diversity": "NA — Hard fail + overfitting으로 diversity 평가 불적용."
+  },
+  "role_honesty": "NA — Hard fail + C15 위반 + 심각한 과적합으로 역할 평가 불가.",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 50.46% > 45%",
+  "pit_violations": ["C15: open_dataset 직접 접근 (load_month_factors 미사용)", "C13: Z_Score→Z_Score_Aligned 단순 rename (방향 정렬 누락 가능)"],
+  "verdict": "Discard",
+  "reason": "STR_1622는 C15 위반(직접 parquet 접근) + C13 부분 위반(방향 정렬 누락)으로 PIT 신뢰도 저하. OOS retention 0.30은 IS 과적합 확정. IC-weighted 동적 가중이 한국시장 IC 시변성을 극복하지 못함 — DeMiguel(2009)의 1/N 우위와 일치. 5팩터 IC weighting보다 3팩터 EW가 OOS에서 안정적(STR_1621 대비). Discard 판정, 교훈만 보존."
+}

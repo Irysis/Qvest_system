@@ -1,0 +1,52 @@
+{
+  "factor_id": "OC_FPER_REVMOM_GARP",
+  "strategy_id": "STR_935",
+  "stage": "S1",
+  "created_at": "2026-04-12",
+  "hypothesis_source": "GARP Trifecta: insider demand + forward valuation + price momentum",
+  "description": "OtherCorp 기타법인 40일 순매수(level) + fPER 저평가(V04_fPER, load_month_factors 경유) + RevMom 12M-1M 가격 모멘텀 triple GARP 신호",
+  "academic_reference": "Asness et al. (2019) Quality Minus Junk; Jegadeesh & Titman (1993) momentum; Grinblatt & Keloharju (2000) informed corporate buying; Fama & French (1992) value",
+  "signals": {
+    "OC_40d": "기타법인 40일 누적 순매수 / 시가총액 (level, not acceleration). inv_preloaded 재사용.",
+    "fPER": "V04_fPER Z_Score_Aligned (load_month_factors() 경유, C15 준수). direction=lower_better → align 후 높을수록 저PER.",
+    "RevMom": "ret_12m - ret_1m: 12개월 수익률 - 최근 1개월(21일) 수익률. 가격 모멘텀 skip-1M.",
+    "IdioVol": "sd(Ret) 경량 방식 (OLS 대신 — 타임아웃 방지). LOOKBACK 252일 window 내 계산."
+  },
+  "weights": {
+    "W_IVOL": 0.35,
+    "W_OC": 0.25,
+    "W_FPER": 0.20,
+    "W_REVMOM": 0.20
+  },
+  "implementation_profile": {
+    "n_holdings": 20,
+    "commission_bps": 15,
+    "liq_threshold_krw": 200000000,
+    "weight_method": "EW",
+    "sector_neutral": true,
+    "flow_window": 40,
+    "lookback": 252,
+    "min_obs": 60,
+    "overlay": "S1 순수 팩터 신호 측정 — overlay 없음 (S5 Mutation 이후 추가)"
+  },
+  "data_sources": {
+    "RAWDATA": "load_rawdata(use_cache=TRUE) 1회",
+    "investor_flow": "STR_930 data_loader.R 재사용 — inv_preloaded (OtherCorp 40d rolling)",
+    "factor_db_fper": "load_month_factors(sig_date, coverage_min=0.05) 경유 V04_fPER",
+    "macro_regime": "STR_930 data_loader.R 재사용 — macro_regime_dt"
+  },
+  "pit_compliance": {
+    "C2": "sig_date snapshot = t-1 rolling sum (data_loader.R pre-computed) PASS",
+    "C4": "fPER: consensus 기반, load_month_factors() 내부에서 Date<=sig_d 보장 PASS",
+    "C13": "Z_Score_Aligned only (align_factor_direction 자동 처리, 수동 반전 금지) PASS",
+    "C14": "load_month_factors(sig_date) → 해당 월 이전 Factor DB 파일 사용 PASS",
+    "C15": "Factor DB parquet 직접 로드 금지. load_month_factors() 경유만 PASS"
+  },
+  "expected_grade": "A",
+  "expected_ff5_alpha_pct": "11-12",
+  "expected_sharpe": "1.3-1.5",
+  "comparison_baseline": {
+    "STR_930": "SR 0.48, CAGR 4.85%, MDD 54.2% (Grade C, Hard Fail)",
+    "STR_931": "SR -0.05, CAGR -1.24%, MDD 98.4% (Grade F, Hard Fail)"
+  }
+}

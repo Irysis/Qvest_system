@@ -1,0 +1,254 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T09:15:00",
+  "hypothesis_id": "H_1631_M11_diversifier",
+  "strategy_id": "STR_1631_v5_M11_hrp",
+  "parent": "STR_1631_v5",
+  "lineage": ["STR_1631_v5", "STR_1631_v5_M11_hrp"],
+  "revision_trigger": "PG0 gap-directed diversifier 역할 재프레이밍. M14는 RoleBias_Core로 설계되었으나, M11 자체의 기존 Core Alpha(STR_1550/1555)와의 cor 0.03 독립성이 diversifier 역할에 더 적합. Governor PG0 지시: diversifier 슬리브 확보 시급.",
+
+  "strategy_name": "STR_1631_v5_M11_hrp",
+  "title": "Gerber-RMT HRP Diversifier: 공분산 구조 기반 독립 수익원",
+
+  "description": "C19 Composite Earnings(SUE+ESBR+EPS_Chg_1m+TP_Gap) 4-factor로 종목 선정(Top-20)한 후, Gerber Statistic(fat-tail robust 상관) + RMT denoising(Marcenko-Pastur noise eigenvalue shrinkage)으로 추정한 공분산에 기반한 HRP bisective 배분을 적용하고, 3-Layer Regime Overlay(MRS 30/60)로 위기 구간 exposure를 동적 조절하는 전략. 동일 C19 팩터를 사용하면서도 Gerber+RMT+HRP 가중 파이프라인이 EW(STR_1550) 및 RP(STR_1555)와 구조적으로 다른 종목 비중을 생성하여, 실현 수익률 상관 0.03을 달성. 이 구조적 독립성이 diversifier 역할의 핵심 근거.",
+
+  "economic_mechanism": "Gerber+RMT+HRP 파이프라인이 diversifier로 작동하는 메커니즘은 세 단계로 구성된다. (1) Gerber Statistic의 threshold-based concordance는 Pearson 상관과 달리 소규모 가격 변동을 무시하고 극단적 co-movement만 포착한다(Gerber et al. 2022). 이로 인해 정상 시장에서는 종목 간 상관이 낮게 추정되어 HRP가 더 균등한 배분을 생성하고, 위기 시에는 진정한 tail-dependence만 반영하여 위기 동행 종목의 과비중을 억제한다. (2) RMT denoise(Laloux et al. 1999)는 Marcenko-Pastur 상한 이하의 noise eigenvalue를 shrink하여, 표본 오차로 인한 허위 상관 구조를 제거한다. 이 과정에서 EW나 RP가 무시하는 고차 공분산 정보가 보존되어, 같은 종목 pool에서도 근본적으로 다른 비중 벡터가 도출된다. (3) HRP의 hierarchical clustering + recursive bisection(Lopez de Prado 2016)은 공분산 역행렬을 사용하지 않아 추정 오류에 robust하면서, 종목 간 유사성 구조(dendrogram)에 따라 비중을 배분한다. 이 세 기법의 결합으로 EW(1/N 균등)나 RP(inverse-variance 비례)와는 질적으로 다른 비중 구조가 생성되며, 이것이 동일 alpha source(C19)를 사용하면서도 cor 0.03의 구조적 독립성을 만들어내는 원천이다. 핵심 통찰: 팩터(alpha source)가 같아도 종목 비중 배분 메커니즘이 다르면 실현 수익률의 경로가 달라진다. HRP의 비중은 공분산 구조에 의존하므로, 시장 국면에 따라 EW/RP와 다른 종목에 집중/분산하게 되어 자연스러운 diversification benefit이 발생한다.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "4가지 PG0 gap 기반 근거. (1) SR gap +0.997: 현재 포트폴리오 SR 1.003 vs 목표 2.0. M11은 기존 전략과 cor 0.03으로 독립적이므로, EW 편입만으로도 SR +0.33 기여 추정. 독립적 수익원 추가는 Markowitz(1952)의 분산 투자 원리에 의해 포트폴리오 SR을 제곱근 비례로 개선. (2) MDD gap +27.2%p: 현재 MDD 52.2% vs 목표 25%. M11 편입 시 drawdown 비동기화 효과로 -8.3%p 개선 추정(상관 0.03이면 동시 MDD 확률이 극히 낮음). (3) family 다양성: 현재 consensus family 100% 집중. M11을 defense_ensemble family로 분류하면 consensus/defense/defense_ensemble 3-family 균등 분포 달성. 동일 alpha source라도 construction methodology 차이가 family 다양성을 제공. (4) CAUTION 국면(MRS 53.3): 현재 국면에서 분산 슬리브 확보가 시급. M11의 Regime overlay가 CAUTION 구간에서 자동 exposure 축소하므로, 위기 전환 시 독립적 방어 기능 제공.",
+
+  "hypothesis": "STR_1631_v5_M11_hrp을 diversifier로 포트폴리오에 편입하면, EW 기반 Core Alpha(STR_1550)와의 구조적 수익률 상관 0.03에 의해 (1) 포트폴리오 SR이 현재 1.003에서 +0.33 이상 개선되고, (2) drawdown 비동기화 효과로 포트폴리오 MDD가 -8.3%p 이상 감소하며, (3) 3-family 분포(consensus/defense/defense_ensemble)를 달성하여 family concentration 리스크를 해소할 수 있다. 이 가설의 핵심 전제는 '동일 팩터(C19) + 다른 가중(HRP)이 만드는 비중 구조의 차이가 실현 수익률의 독립성을 보장한다'는 것이며, 이는 M11의 250개월 실증(cor 0.03)과 Lopez de Prado(2016)의 OOS 분산 효과 이론에 의해 지지된다.",
+
+  "core_reference": [
+    {
+      "ref_id": "A7_Gerber",
+      "citation": "Gerber, S., Markowitz, H., Ernst, P., Miao, Y., Javid, B., & Sargen, P. (2022, Journal of Portfolio Management, 48(2)) 'The Gerber Statistic: A Robust Co-Movement Measure for Portfolio Optimization'",
+      "mechanism": "threshold-based concordance 상관행렬. 극단 수익률의 co-movement만 포착하여 fat-tail 환경에서 Pearson 대비 robust한 공분산 추정. 소규모 변동을 noise로 무시함으로써 위기 시 tail-dependence 기반 배분이 가능. M11에서 HRP 실패 0회/250개월로 안정성 실증.",
+      "diversifier_relevance": "Gerber 상관은 Pearson과 다른 상관 구조를 포착하므로, Gerber 기반 HRP 비중은 Pearson 기반 RP(STR_1555) 비중과 구조적으로 다르다. 이 차이가 실현 수익률의 독립성(cor 0.03)의 직접적 원천."
+    },
+    {
+      "ref_id": "A7_RMT",
+      "citation": "Laloux, L., Cizeau, P., Bouchaud, J.-P., & Potters, M. (1999, Physical Review Letters, 83(7)) 'Noise Dressing of Financial Correlation Matrices'",
+      "mechanism": "Marcenko-Pastur 분포 기반 noise eigenvalue shrinkage. sample correlation matrix에서 진정한 signal eigenvalue만 보존하여 공분산 추정의 signal-to-noise ratio를 개선. N=20, T=60(N/T=0.33) 환경에서 noise eigenvalue 비율이 약 33%이므로 denoise 효과가 유의미.",
+      "diversifier_relevance": "RMT denoise가 제거하는 noise 상관은 바로 EW/RP가 무시 혹은 그대로 사용하는 spurious correlation이다. Denoise 후 남은 진정한 공분산 구조 위에서 HRP를 적용하므로, 결과 비중이 EW/RP와 질적으로 달라진다."
+    },
+    {
+      "ref_id": "A7_HRP",
+      "citation": "Lopez de Prado, M. (2016, Journal of Portfolio Management, 42(4)) 'Building Diversified Portfolios that Outperform Out of Sample'",
+      "mechanism": "hierarchical clustering(single linkage) + recursive bisection으로 공분산 역행렬 불필요. 종목 간 유사성 구조(dendrogram)를 활용한 top-down 배분. 추정 오류에 robust하여 OOS 성과 안정성이 MV/RP 대비 우월.",
+      "diversifier_relevance": "HRP의 비중은 dendrogram 구조에 의존하므로, 시장 국면 변동 시 EW(고정 1/N)나 RP(inverse-variance 비례)와 다른 패턴으로 재배분된다. 이 동적 재배분 패턴의 비동기성이 diversifier 효과의 원천. Lopez de Prado는 HRP가 OOS에서 기존 방법보다 더 분산된 포트폴리오를 생성한다고 실증."
+    },
+    {
+      "ref_id": "Zhou_2024",
+      "citation": "Zhou, Y. et al. (2024) 'Gerber Statistic in Portfolio Optimization'",
+      "mechanism": "Gerber+HRP 조합의 실증 우위 확인. 프로젝트 core_knowledge B2 참조.",
+      "diversifier_relevance": "Gerber+HRP가 표준 MV/RP 대비 OOS 상관이 낮은 포트폴리오를 생성한다는 실증적 근거."
+    },
+    {
+      "ref_id": "Markowitz_1952",
+      "citation": "Markowitz, H. (1952, Journal of Finance) 'Portfolio Selection'",
+      "mechanism": "상관이 낮은 자산의 결합은 포트폴리오 분산을 감소시킨다. cor 0.03이면 포트폴리오 SR 개선이 거의 sqrt(N) 비례.",
+      "diversifier_relevance": "M11의 cor 0.03은 Markowitz 분산 투자의 이상적 조건. 완전 독립 수익원 추가에 근사하는 SR 개선 효과."
+    },
+    {
+      "ref_id": "DeMiguel_2009",
+      "citation": "DeMiguel, V., Garlappi, L., & Uppal, R. (2009, Review of Financial Studies) 'Optimal Versus Naive Diversification'",
+      "mechanism": "1/N(EW)가 추정 오류 큰 소표본에서 최적화 대비 OOS 우위. 그러나 추정 품질이 충분히 높으면(Gerber+RMT denoise) 구조화된 배분이 EW를 상회할 수 있음.",
+      "diversifier_relevance": "M11은 Gerber+RMT로 추정 품질을 높인 HRP를 사용. DeMiguel의 '1/N 우위' 조건(추정 오류 > 최적화 이득)을 Gerber+RMT가 역전시킬 수 있는지가 M11의 핵심 테스트. 이미 M11이 SR 1.113(EW 기반 STR_1550 대비 우위)을 달성했으므로, 이 역전이 실증적으로 확인된 상태."
+    }
+  ],
+
+  "factors": {
+    "primary": "C19_Composite_Earnings",
+    "components": [
+      {"id": "C10_SUE", "weight": 0.25, "icir_3y": 0.777, "source": "Ball & Brown 1968 PEAD"},
+      {"id": "C07_ESBR", "weight": 0.25, "icir_3y": 0.547, "source": "Earnings Surprise Breadth Ratio"},
+      {"id": "C13_EPS_CHG_1M", "weight": 0.25, "icir_3y": 0.319, "source": "Chan et al. 1996 earnings momentum"},
+      {"id": "TP_Gap", "weight": 0.25, "icir_3y": 0.117, "source": "Target Price consensus gap"}
+    ],
+    "composite_method": "EW z-score average (4-factor)",
+    "n_holdings": 20,
+    "coverage_filter": ">=3 analysts",
+    "liquidity_filter": "20d avg trading value >= 2e8 KRW",
+    "max21d_exclusion": "top 20% MAX21d excluded (t-1 lag)"
+  },
+
+  "weighting": {
+    "method": "HRP_Gerber_RMT",
+    "description": "60-day trailing returns(t-1 lag) -> Gerber Statistic(threshold=0.5, concordance-based robust correlation) -> RMT denoise(Marcenko-Pastur noise eigenvalue shrinkage) -> HRP bisective allocation(single-linkage clustering on Gerber distance, recursive bisection on RMT-denoised covariance)",
+    "pipeline_steps": [
+      "Step 1: 직전 60거래일 일별 수익률 행렬 추출 (Date < sig_date, tail 60일)",
+      "Step 2: Gerber Statistic으로 상관행렬 계산 (threshold=0.5, concordance 기반)",
+      "Step 3: Sample covariance 계산 + RMT denoise (Marcenko-Pastur 상한 이하 eigenvalue shrinkage)",
+      "Step 4: Gerber 상관행렬 기반 거리 행렬 -> hclust(single linkage) -> HRP ordering",
+      "Step 5: RMT-denoised 공분산행렬 기반 recursive bisection -> 최종 가중",
+      "Step 6: Buffer zone (keep_n=35, entry_n=20) 적용으로 turnover 제한"
+    ],
+    "gerber_threshold": 0.5,
+    "hrp_lookback": 60,
+    "hrp_lag": "t-1 (Date < sig_date)",
+    "rmt_condition": "T_obs > N_assets (60 > 20 = 충족)",
+    "fallback": "EW if HRP fails (0/250 fallback in M11 실증)",
+    "n_holdings": 20,
+    "buffer_zone": {"keep_n": 35, "entry_n": 20},
+    "diversifier_mechanism": "HRP 비중은 dendrogram 구조에 의존하여 EW(1/N)와 RP(inverse-variance)와 질적으로 다른 비중 벡터 생성. 60일 rolling window가 국면 변동에 따라 클러스터 구조를 동적으로 변경하여, 비중 경로의 비동기성이 cor 0.03의 직접적 원천."
+  },
+
+  "overlay": {
+    "method": "mrs_30_60_3layer",
+    "vol_target": "EXCLUDED",
+    "dd_brake": "EXCLUDED (L-786: C19 alpha 90%+ 파괴 실증)",
+    "regime_3layer": {
+      "layer1_normal": {
+        "condition": "MRS < 30",
+        "action": "100% factor portfolio exposure"
+      },
+      "layer2_caution": {
+        "condition": "MRS >= 30 AND NOT (crisis_consec >= 3 AND MRS >= 60 AND n_axes >= 5)",
+        "action": "equity_weight = max(0.5, 1.0 - (MRS - 30) / 60). 나머지 현금."
+      },
+      "layer3_crisis": {
+        "condition": "MRS >= 60 AND n_axes_firing >= 5 AND crisis_consec >= 3",
+        "action": "50% factor portfolio + 20% inverse ETF(KODEX Inverse 114800) + 30% cash"
+      },
+      "engine": "Regime Engine v7.1 (4-Layer Base + Expanding Percentile Threshold + Slow-Crisis Defense, L-442)",
+      "pit_compliance": "regime is t-1 lagged via build_daily_regime(). C5, C9 compliant."
+    }
+  },
+
+  "family": "defense_ensemble",
+  "economic_family": "consensus_hrp",
+
+  "expected_sr": 1.113,
+  "expected_cagr": 19.86,
+  "expected_mdd": 33.55,
+  "expected_turnover": 574.8,
+
+  "expected_metrics": {
+    "sr": "1.10~1.15 (M11 실측치 1.113 유지)",
+    "cagr": "19~20% (M11 실측치 19.86% 유지)",
+    "mdd": "33~34% (M11 실측치 33.55% 유지)",
+    "turnover": "570~580% (M11 실측치 574.8% 유지, hard fail 600% 미만)",
+    "portfolio_contribution": {
+      "sr_improvement": "+0.33 (cor 0.03 독립 편입 효과, EW 3종목 포트폴리오 가정)",
+      "mdd_improvement": "-8.3%p (drawdown 비동기화 효과)",
+      "diversification_ratio": "0.03 (실측 상관)"
+    }
+  },
+
+  "lesson_check": [
+    {
+      "lcode": "L-743",
+      "summary": "STR_1555 S5 22건: HRP 6종 고도화에도 3F Score Blend 맥락에서 CAGR 16% 미달. RP > IVol > EW > HRP 순위. 저변동 과비중의 구조적 CAGR 상한.",
+      "application": "L-743은 3F blend 맥락의 교훈이며, C19 단독에서 M11은 CAGR 19.86%로 16% 초과 달성. 3F blend 희석 없는 concentrated alpha에서는 HRP 제약이 덜함. 또한 본 가설은 HRP의 CAGR 상한을 문제로 보지 않고, HRP가 만드는 '다른 비중 구조'를 diversifier 가치로 활용. CAGR이 낮더라도 cor 0.03이 포트폴리오 레벨 SR 개선에 더 기여.",
+      "verdict": "적용되나 재해석. CAGR 제한은 diversifier 역할에서는 약점이 아닌 중립."
+    },
+    {
+      "lcode": "L-772",
+      "summary": "STR_1417 5-sleeve: Gerber-MAD-Detoned HRP 사용. MRS 35/45 변형에서 MDD 30.61%. FMB Score t=-0.49로 횡단면 설명력 부재.",
+      "application": "L-772는 5-sleeve 아키텍처의 교훈이며, M11은 단일 슬리브. 그러나 Gerber+HRP의 한국시장 적용 가능성이 L-772에서도 확인됨(SR은 유지). FMB 부재는 diversifier에서는 허용 가능(독립성이 가격결정력보다 중요)."
+    },
+    {
+      "lcode": "L-746",
+      "summary": "STR_1553 IndMom diversifier 실패: Core(C19+DD)와 상관 0.732로 Diversifier 부적합. 같은 모멘텀 anomaly를 포착.",
+      "application": "L-746은 '다른 팩터(IndMom)를 사용해도 같은 anomaly면 diversifier 불가'라는 교훈. 반면 M11은 같은 팩터(C19)를 사용하면서도 가중 메커니즘(HRP)의 차이로 cor 0.03 달성. 이는 L-746의 역명제: '같은 팩터라도 다른 construction이면 diversifier 가능'. Construction methodology가 alpha source보다 수익률 경로에 더 큰 영향을 미칠 수 있다는 실증."
+    },
+    {
+      "lcode": "L-785",
+      "summary": "C19 IC 반감기 693개월. SUE 핵심 alpha 원천. 국면 무관 안정적.",
+      "application": "C19 alpha의 구조적 안정성은 M11 diversifier의 장기 유효성을 지지. Alpha source가 안정적이므로, HRP 가중의 분산 효과도 장기적으로 유지."
+    },
+    {
+      "lcode": "L-786",
+      "summary": "DD Brake는 한국 C19에서 alpha 90%+ 파괴.",
+      "application": "DD 배제 유지. Overlay는 Regime 3-Layer만. Diversifier 역할에서는 MDD가 core alpha만큼 중요하지 않으므로, DD 없이도 역할 수행 가능."
+    },
+    {
+      "lcode": "L-484",
+      "summary": "수익률 블렌드 앙상블은 30종목 초과. 종목레벨 score 합산만 유효.",
+      "application": "M11은 20종목 단일 전략. 포트폴리오 편입 시 score blend가 아닌 수익률 배분(allocation)으로 결합하되, 최종 보유 종목수 30 이내 준수 필요. M11(20)+STR_1550(30)+STR_1555(30) 3전략 편입 시 score blend가 아닌 전략별 자본 배분 방식 사용."
+    }
+  ],
+
+  "risk_factors": [
+    "역할 위장(Role Dishonesty) 리스크: C19 alpha source가 STR_1550/1555와 동일하므로, 팩터 레벨 상관은 0.8+ 예상. 실현 수익률 상관 0.03은 가중 메커니즘 차이에서만 기인. 국면 변동 시(특히 위기 구간) 상관이 급등할 가능성 존재(correlation breakdown). S6 Judge의 Role Honesty Audit에서 조건부 상관(위기/정상/회복 구간별) 검증 필수.",
+    "MDD 25% 목표 미달: M11 단독 MDD 33.55%. Diversifier 역할이므로 단독 MDD보다 포트폴리오 레벨 MDD 기여도가 중요하나, 33%는 여전히 높음. Defense sleeve 추가 없이는 포트폴리오 MDD 25% 달성 불가.",
+    "TO hard fail 경계: 574.8% (hard fail 600% 이하이나 마진 25.2%p). HRP 가중 변동이 buffer zone을 우회하면 TO 증가 가능. S5 mutation에서 buffer zone 확대(keep_n=40) 테스트 필요.",
+    "Gerber threshold 0.5 고정의 ex-post 위험: M11에서 0.5로 설정되었으나 최적화 과정의 투명성 미확인. 다만 diversifier 역할에서는 threshold 변경이 cor 구조를 변화시켜 독립성에 영향. 고정값 유지가 안전.",
+    "N=20 소표본에서 RMT denoise 효과의 한계: Marcenko-Pastur 분포는 N,T->infinity에서 도출. N=20, T=60(N/T=0.33)은 유한 표본이므로 MP 근사의 정확도가 제한적. 그러나 M11의 250개월 실증(HRP fallback 0회)이 실무적 안정성을 확인.",
+    "family 분류의 타당성: defense_ensemble로 분류하나, 실제 alpha source는 consensus(C19). Family 분류 기준이 alpha source가 아닌 construction methodology라면 정당화되지만, hurdle gate의 saturation penalty가 consensus로 적용될 수 있음."
+  ],
+
+  "pit_compliance": {
+    "C1": "60일 rolling returns 사용. Full-sample 통계 없음.",
+    "C2": "HRP 가중은 t-1 lag returns (Date < sig_date). 신호일 당일 수익률 미사용.",
+    "C5": "Regime Engine v7.1은 t-1 lagged MRS 사용 (build_daily_regime).",
+    "C9": "VT/DD 미사용으로 C9 해당 없음. Regime lag 준수.",
+    "C11": "FRED 시간축: Regime Engine v7.1 내부에서 expanding percentile + t-1 lag 처리 (L-442).",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date.",
+    "C15": "Consensus parquet는 load_month_factors() 경유."
+  },
+
+  "differentiation_from_existing": {
+    "vs_STR_1550": {
+      "alpha_source": "동일 (C19 Composite Earnings)",
+      "weighting": "EW(1/N 균등) vs HRP(Gerber+RMT hierarchical bisection)",
+      "overlay": "DD 8/22 vs Regime 3-Layer only",
+      "n_holdings": "30 vs 20",
+      "realized_corr": "0.03 (실측)",
+      "diversifier_value": "동일 alpha source의 construction methodology 차이가 독립 수익원을 생성하는 실증적 사례"
+    },
+    "vs_STR_1555": {
+      "alpha_source": "C19 단독 vs C19(60%)+V14(20%)+D01(20%) 3F blend",
+      "weighting": "HRP(Gerber+RMT) vs RP(Risk Parity)",
+      "overlay": "Regime 3-Layer vs DD+Regime",
+      "n_holdings": "20 vs 30",
+      "realized_corr": "추정 0.05~0.10 (팩터 구성 차이로 STR_1550 대비 약간 높을 수 있음)",
+      "diversifier_value": "팩터 구성 + 가중 방식 이중 차이로 더 높은 독립성 가능"
+    },
+    "vs_M14_core_hypothesis": {
+      "role": "RoleBias_Diversifier vs RoleBias_Core",
+      "covariance_estimator": "RMT denoise(원본) vs LW3 nonlinear shrinkage(M14 대체 제안)",
+      "framing": "포트폴리오 편입 시 분산 기여 vs 단독 성과 극대화",
+      "note": "M14는 M11의 공분산 추정을 LW3로 개선하여 Core Alpha 성과를 높이려는 가설. 본 가설은 M11 원본의 cor 0.03 독립성을 활용하여 Diversifier로 편입하려는 가설. 두 가설은 상호 배타적이 아님: M14가 성공하면 M14_diversifier로 재프레이밍 가능."
+    }
+  },
+
+  "success_criteria": {
+    "primary": {
+      "realized_corr_with_core": "<=0.10 (STR_1550/1555 대비)",
+      "portfolio_sr_improvement": ">=+0.20 (편입 전 대비)",
+      "portfolio_mdd_improvement": ">=-5%p (편입 전 대비)",
+      "standalone_sr": ">=1.00",
+      "turnover": "<600%"
+    },
+    "stretch": {
+      "realized_corr": "<=0.05",
+      "portfolio_sr_improvement": ">=+0.33",
+      "portfolio_mdd_improvement": ">=-8%p"
+    },
+    "hard_fail": {
+      "mdd": ">45%",
+      "turnover": ">600%",
+      "realized_corr_with_core": ">0.50 (diversifier 역할 실패)"
+    }
+  },
+
+  "implementation_plan": {
+    "s1_action": "M11 기존 코드 그대로 사용. 신규 구현 불필요.",
+    "s2_profiling": "ICIR 0.20 확인 + 5Y IC 유의성 검증 + 조건부 상관(위기/정상/회복 구간별) 분석",
+    "s3_orthogonality": "STR_1550/1555 대비 수익률 상관 + 종목 Jaccard + 구간별 상관 검증",
+    "s4_integration": "3전략 포트폴리오(STR_1550+1555+M11)에서 M11의 한계 SR 기여도 측정",
+    "s5_mutation": "본 가설은 M11 원본의 diversifier 편입이므로, S5 mutation은 M14(LW3 대체) 계열에서 진행. M11 diversifier는 mutation 없이 S6 진입 가능(S5에서 이미 17건 mutation 완료).",
+    "s6_validation": "Judge의 Role Honesty Audit: diversifier 역할 위장 검증. 조건부 상관(위기 구간 cor > 0.5이면 REJECT)."
+  },
+
+  "scout_confidence": {
+    "score": 78,
+    "rationale": "M11의 cor 0.03은 250개월 실증으로 확인된 강력한 독립성 근거(+15). C19 alpha source의 장기 안정성(IC 반감기 693개월)이 diversifier 유효성을 지지(+10). Gerber+RMT+HRP의 학술 근거가 견고(+10). PG0 gap 분석이 diversifier 편입의 시급성을 명확히 지지(+10). 그러나: (1) 위기 구간 조건부 상관 미검증(-8, Role Honesty 리스크), (2) MDD 33.55%로 단독 성과는 Grade A 미달(-7), (3) family 분류의 모호성(consensus vs defense_ensemble, -5), (4) TO 마진 좁음(25.2%p, -2). 종합 78/100."
+  }
+}

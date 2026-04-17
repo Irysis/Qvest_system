@@ -1,0 +1,82 @@
+{
+  "hypothesis_id": "H_1670",
+  "round_1": [
+    {
+      "role": "academic",
+      "score": 8,
+      "arguments": [
+        "L31_Vol_Concentration는 Herfindahl 집중도 이론에 기반하나, Brennan & Subrahmanyam (1998)의 market microstructure 메커니즘(거래비용 구조)과 L31 구현(거래량 HHI) 간 1단계 불연속 존재. 거래량 분산 → 거래비용 저감 인과관계를 실증 없이 가정.",
+        "L40_VWAP_Spread는 Goyenko et al. (2009)을 인용하나, 원 논문의 VWAP spread(실거래 가격-벤치마크 거리)와 L40 구현(volume-weighted absolute return)의 정의 불일치. 메커니즘 치환(substitution without equivalence).",
+        "Amihud(2002), Pastor & Stambaugh(2003) 원문의 peer-review 신뢰도는 높으나(3,500+, 2,000+ citations), L31/L40은 직접 구현이 아닌 차용. 28년/17년 경과 + HFT 확대로 시장 미시구조 급변 → 원 메커니즘 약화 우려."
+      ],
+      "concern": "L40의 VWAP Spread 정의가 원 논문과 수학적 동치가 아닌 점이 가장 심각. Diversifier 역할 부여 전 정의 재검토 + 한국 시장 실증 검증 필수.",
+      "conditions": [
+        "S1: L31 vs L02(Turnover), L05(Dollar Volume) 상관 실측. |r|>0.60이면 고유값 부재",
+        "S1: L40 정의 재검토 — 원 Goyenko 정의(실거래 VWAP gap)로 재구현 필요",
+        "S2: 한국 KOSPI/KOSDAQ 분리 IC 유의성 확인 (t>1.96)",
+        "S3: sub-period(2005-10/10-15/15-24) IC 비교. variance >30%면 시대 부적합"
+      ]
+    },
+    {
+      "role": "codex_critic",
+      "score": 5,
+      "arguments": [
+        "정적 50/50 블렌드가 L-119(STR_1650 Hard Fail)와 동일 구조. EW dilution 경고 직접 충돌. 동적 배분 또는 score-weighted 대안 없이 진행하면 alpha 희석 재현.",
+        "ICIR 0.990/0.826은 극히 높은 수치로 sample luck 가능성. CR05 교훈(0.77→-0.168)과 동일 패턴 의심. Factor DB 독립 교차검증 결과 없이 주장치만 제시됨.",
+        "거래량/VWAP 기반 팩터는 한국시장 마이크로스트럭처 변화(HFT 도입, 거래세 변경, 공매도 규제)에 극도로 민감. 2015년 이전 vs 이후 regime break 검증 필수."
+      ],
+      "concern": "L31 ICIR 0.990은 288팩터 중 거의 1위 수준 — 이런 극단치는 data mining이나 위기 정의 편향의 산물일 가능성이 높으며, CR05와 동일한 재현 불가 패턴을 반복할 위험.",
+      "conditions": [
+        "Factor DB 독립 교차검증 (Quant 실측) 통과 전 진행 불가",
+        "sub-period 분석: 2005-2015 vs 2016-2026 ICIR 비교",
+        "L-119 회피: 동적 배분 또는 regime-conditional 설계 필수"
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 18,
+      "arguments": [
+        "현재 포트폴리오의 유일한 미달 축인 SR gap 0.807 해소에 Liquidity family Diversifier가 구조적으로 적합합니다. Consensus 50% + ML 50% 구성에서 Liquidity 0%는 family 편중 상태이며, L31/L40의 C19 상관 0.004/0.010은 기존 Core Alpha와의 독립성을 실증적으로 보장합니다.",
+        "Family saturation 관점에서 327개 레지스트리 중 44개 Liquidity 팩터가 포트폴리오에서 전무한 상태는 탐색 우선순위가 가장 높은 미개척 영역입니다. QEPM 제9조 Factor Taxonomy 기준, 미구축 family 우선 탐색 원칙에 부합하며 family concentration cap 35%에 여유가 충분합니다.",
+        "ICIR 0.990(L31)과 0.826(L40)은 Alpha Lab Gate 기준(0.20)을 4~5배 초과하는 수치로, 신호 안정성이 매우 높습니다. 다만 conditional IC matrix에서 두 팩터 모두 bad regime IC가 good regime IC보다 낮고(conditional_value 음수), regime_profile crisis=negative이므로 위기 방어력은 Defense 슬리브(Q07)에 위임하는 역할 분리가 전제되어야 합니다."
+      ],
+      "concern": "두 팩터가 동일한 liquidity_cluster 상관 그룹에 속하고 regime_profile crisis=negative라는 점에서, 실질 분산 기여가 단일 팩터 대비 제한적일 수 있습니다. S3 직교성 검증에서 L31-L40 간 상관을 반드시 확인하고, 위기 국면 IC 하락 폭이 포트폴리오 MDD에 미치는 영향을 S4 한계기여 단계에서 정량 측정해야 합니다.",
+      "conditions": [
+        "S3 직교성 검증에서 L31-L40 팩터 간 상관계수가 0.6 이하임을 확인할 것. 초과 시 단일 팩터(ICIR 상위)로 전환 검토",
+        "S4 한계기여에서 위기 국면(MRS CAUTION/RISK_OFF) 포트폴리오 MDD 악화가 2%p 이내임을 확인할 것. Defense(Q07) 슬리브와의 역할 보완성 정량 검증 필수",
+        "S2 프로파일에서 turnover_profile=high 레이블에 대해 실제 연간 회전율이 600% hard fail 기준 이내이고, 거래비용 감안 후 net ICIR >= 0.20 유지를 확인할 것"
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 12,
+      "arguments": [
+        "ICIR 주장 수치는 최근 3Y(2023-03~2026-02) 국한 수치이며 전기간과 크게 괴리된다. Factor DB factor_ic_monthly.parquet 실측 결과: L31 ICIR_monthly_raw=0.275(전기간,N=254) vs 0.990(최근3Y,N=36), L40=0.368(전기간) vs 0.826(최근3Y). 연환산 기준 L31 full=0.953, L40 full=1.275로 허들(ICIR≥0.20)은 통과하나, 주장한 0.990/0.826는 3Y 구간 편향이며 IC_mean은 실측과 일치(L31=0.0324 vs 주장 0.032, L40=0.0566 vs 주장 0.057). conditional_ic_matrix의 recent_3y_icir이 주장 수치의 출처로 추정.",
+        "L31 x L40 IC 시계열 상관이 0.589로 내부 상관이 높다. 두 팩터 모두 '거래 집중도·비유동성'을 포착하는 동일 메커니즘에서 출발하여 50:50 블렌드의 다양성 효과가 제한적이다. 개별 팩터 허들(ICIR≥0.20)은 각각 통과하나, L31 full 연환산=0.953, L40 full=1.275로 L40이 우월함에도 동일 비중 배분은 최적이 아니다. L31 ic_bad=0.0242, L40 ic_bad=0.0197로 위기 구간 IC가 모두 양수지만 낮아 defense 특성은 제한적이다.",
+        "C19_Composite_Earnings와 IC 시계열 상관: L31 x C19=-0.025, L40 x C19=+0.104로 L31은 실질적으로 독립(상관 거의 0), L40는 약한 양의 상관이다. C19 factor_correlation_analysis에서 L31 x C19=0.0037(팩터값 레벨)로 직교성이 양호하다. Diversifier 역할 관점에서 L31은 C19와 독립성이 확인되나, 6대 위기 Stress IC 실측에서 L31 stress_avg=+0.0054, L40 stress_avg=+0.0299로 위기 선별 능력이 약하다(GFC 구간: L31=-0.0087, L40=-0.0262로 오히려 음수). Defense 로직이 필요하면 Q07_Earnings_Stability(stress ICIR +0.753)가 훨씬 우월하다."
+      ],
+      "concern": "주장 ICIR(L31=0.990, L40=0.826)은 최근 3Y 구간(2023~2026) 편향 수치로, 전기간 월간raw ICIR은 L31=0.275, L40=0.368(연환산 각각 0.953, 1.275)이다. 3Y 구간 과대추정이 전략 기대 성과를 왜곡할 위험이 있다. 또한 L31 x L40 내부 상관 0.589는 두 팩터의 독립성이 낮아 '2팩터 분산 효과'가 과장되어 있으며, 6대 위기 구간에서 두 팩터 모두 IC가 양수를 유지하지 못하는 사례(GFC: 음수)가 있어 defense 특성 근거가 부족하다.",
+      "conditions": [
+        "ICIR 기준을 '최근 3Y' 단기 수치가 아닌 전기간(N=254개월) 기준으로 재산정하여 제시할 것",
+        "L31 x L40 내부 상관 0.589를 감안하여 단순 50:50 대신 IC-가중(ICIR 역가중 또는 PCA 직교 성분) 블렌드 또는 L40 단독 전략으로 설계를 재검토할 것",
+        "6대 위기 구간 stress IC가 일관되게 양수를 유지하는지 추가 검증 필요. GFC/EuroDebt 구간 음수가 허들 통과 전략의 defense 주장과 모순임을 명시할 것",
+        "C19_Composite_Earnings와 실질 독립성 확보를 위해 IC 시계열 상관 임계치(<0.30)를 S3 직교성 검증에서 확인할 것"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "score": 10,
+      "arguments": [
+        "L31_Vol_Concentration의 위기 시 치명적 붕괴: stress_factor_ic_analysis 실증 데이터에서 L31의 crisis_ratio는 -9.25로 288팩터 중 최악 수준이다. stress ICIR -0.308(pct_pos 40%)로 6대 스트레스 구간에서 신호가 역전된다. 이는 위기 시 거래량 집중도가 급격히 변동하면서(유동성 증발 + 패닉 매도 집중) 정상 시 유효했던 cross-sectional 패턴이 완전히 깨지기 때문이다. L-117에서 이미 경고한 바와 같이 'ICIR 높다고 위기에도 강한 것은 아님'이 L31에 정확히 적용된다. 50% 비중의 L31이 위기 시 포트폴리오 전체를 오염시킬 위험이 있으며, L-106(market beta 지배) 교훈에 따르면 위기 시 팩터 간 상관이 급등하여 L40의 양수 stress IC(+0.247)마저 L31의 음수 drag에 의해 상쇄될 가능성이 높다.",
+        "Diversifier 역할 주장 vs beta 지배 현실의 괴리: L-106/L-115 교훈이 이 가설에 직접 적용된다. 단면 상관(C19 대비 0.004/0.010)이 낮아도 long-only 전략에서는 market beta 0.85~0.93이 수익률 상관을 지배한다(STR_1636 사례: 단면 상관 낮아도 포트폴리오 상관 0.78). Liquidity 팩터로 선별한 종목이라도 KOSPI 소형주 유니버스의 beta 구조에서 벗어날 수 없다. STR_1609(L40 단독) 실증에서 BM_Corr 0.701로 높은 시장 상관이 이미 확인되었다. 2팩터 블렌드가 beta orthogonality를 달성할 메커니즘이 제시되지 않았으며, L-115에서 beta bottom 40% 필터링조차 Core 상관 0.575로 diversifier 실패했다는 점은 유동성 팩터의 diversifier 역할에 근본적 의문을 제기한다.",
+        "선행 실증의 반복 실패 패턴 무시: STR_1609(L40 단독)는 Grade F(MDD 51.04%, IR -0.015), STR_1465(L40+overlay)는 Grade C(MDD 29.45%, IR -0.163), STR_1508(L31 단독)은 S5 FAIL이다. 3건의 선행 전략이 모두 유동성 팩터의 한국시장 한계를 입증했다. 특히 STR_1609의 IR이 음수(-0.015)라는 것은 ICIR 0.826의 팩터 수준 예측력이 포트폴리오 수준 초과수익으로 전환되지 않음을 뜻한다(L-127 IC!=SR 교훈과 동일 구조). L31+L40 2팩터 블렌드가 각 단독 실패를 구제할 학술적 메커니즘이 부재하며, L-119(정적 EW 블렌드는 alpha 희석)에 따르면 약한 팩터끼리의 50/50 블렌드는 강한 쪽의 alpha마저 희석시킨다."
+      ],
+      "concern": "L31_Vol_Concentration의 crisis_ratio -9.25는 이 프로젝트에서 관측된 가장 극단적인 위기 시 팩터 붕괴 사례이다. 정상 시 ICIR 0.990의 매력적 수치 이면에 stress ICIR -0.308, pct_pos 40%라는 위험이 숨어 있다. 현 포트폴리오(STR_1631+STR_1656)가 SR 1.193으로 달성한 안정성을 이 조합이 위기 시 훼손할 가능성을 정량적으로 배제할 수 없다. Diversifier는 정상 시가 아니라 위기 시에 가치를 증명해야 한다.",
+      "conditions": [
+        "S2에서 L31+L40 블렌드의 stress 구간별 IC를 반드시 분리 계산하고, stress ICIR이 양수가 아니면 L31 비중을 30% 이하로 하향 또는 L40 단독으로 전환할 것",
+        "S3에서 STR_1631과의 포트폴리오 수준 수익률 상관(beta 분해 포함)을 측정하여 잔차 상관 0.40 이하를 확인할 것 — L-106 교훈 준수",
+        "S5 진입 전 STR_1609/STR_1465/STR_1508의 3건 실패 원인(IR 음수, MDD 50%+, alpha decay ratio 0.55)이 2팩터 블렌드에서 구조적으로 해소되는 근거를 제시할 것"
+      ]
+    }
+  ]
+}

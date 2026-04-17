@@ -1,0 +1,155 @@
+{
+  "hypothesis_id": "H_1643",
+  "stage": "S0",
+  "version": "1.0",
+  "timestamp": "2026-04-08T23:10:00",
+  "designer": "Scout",
+
+  "title": "Conditional Tail Defense 3F: Left-Tail Beta + Short Pressure + Residual Income (Trigger-Activated)",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "why_now": "PG0 MDD gap +9.9%p. L-113: Quality defense 구조적 실패 (위기 상관 0.89). L-115: Low-beta 필터링도 분산 불충분. 기존 defense 시도는 '평상시에도 alpha 있는 팩터를 defense로 전용'하는 접근이었으나 전부 실패. 본 가설은 패러다임 전환: '평상시 IC approx 0이지만 위기시에만 crisis premium이 발현하는 팩터'를 조건부 활성화하여 drag 없는 defense 구축.",
+
+  "economic_family": "defense_tail_risk",
+  "factor_taxonomy_section": "Defense/Tail-Risk + Crowding + Value (QEPM Section 9)",
+
+  "mechanism": {
+    "thesis": "Ang, Chen & Xing (2006) downside beta premium: 하방 시장 수익률에 대한 민감도가 높은 종목은 위기 시 더 큰 손실을 입지만, 낮은 종목(left-tail-beta low)은 위기 시 상대적 outperformance를 보인다. D25_Left_Tail_Beta는 worst 10% 수익률 구간의 beta를 negate하여 'tail-risk-averse' 종목을 선별한다. CR05_Short_Pressure_Proxy(Amihud down/up ratio)는 공매도 압력이 낮은 종목 = 위기 시 매도 압력 완화 (Diether, Lee & Werner 2009). V24_Residual_Income은 Ohlson(1995) 잔여이익모형으로 내재가치 대비 저평가 종목 = 위기 시 fundamental anchor 역할. 3팩터 간 상관 |r| < 0.15로 직교적이며, 각각 다른 메커니즘(tail-risk/crowding/valuation)으로 defense를 구성한다.",
+    "why_defense": "stress_factor_ic_analysis.csv 실증: D25 crisis premium +0.057 (COVID IC 0.185), CR05 stress ICIR 0.77 (6/6 승리), V24 stress IC 0.074 (5/6 승리). 3팩터 모두 평상시 IC approx 0 -- 상시 보유 시 drag이지만 위기 시 crisis alpha만 수확 가능.",
+    "why_conditional": "D25/CR05의 평상시 IC는 각각 approx 0, +0.025로 standalone alpha가 없거나 미미. 상시 30종목 배분 시 Core 대비 opportunity cost가 발생. 따라서 '빠른 트리거'(VIX/VKOSPI 급등 또는 BM 5일 수익률 < -3%)로 경계 진입 시에만 defense sleeve를 활성화하여 정상 시 Core 100% 유지 + 위기 시 defense 30% 편입.",
+    "trigger_mechanism": {
+      "fast_trigger": "BM 5일 수익률 < -3% OR VKOSPI 일간 변동 > +3pp (t-1 기준, C5 준수)",
+      "confirmation": "MRS Caution Score >= 20 (regime_engine v7.1, t-1 lag)",
+      "exit": "BM 5일 수익률 > 0% AND MRS < 15 (2조건 동시 충족 시 정상 복귀)",
+      "note": "S1에서는 트리거 없이 정적 30종목 EW로 순수 alpha 테스트. 조건부 활성화는 S5 mutation."
+    },
+    "differentiation_from_prior": "H_1637~H_1639: Quality 팩터(Q01, Q04) 기반 -- L-113에서 위기 시 Core 상관 0.89로 실패. H_1643: Tail-risk/Crowding/Value 기반 -- 경제적 메커니즘이 Quality와 완전히 다름. Quality = 수익성 기반 생존자 선별, Tail-risk = 시장 하락 민감도 기반 충격 회피."
+  },
+
+  "core_reference": [
+    {
+      "ref_id": "A7.01",
+      "paper": "Ang, Chen & Xing (2006) 'Downside Risk', Review of Financial Studies",
+      "relevance": "D25_Left_Tail_Beta의 학술 근거. Worst-decile beta가 횡단면 수익률 예측. 한국시장 stress IC 분석에서 crisis premium +0.057 확인."
+    },
+    {
+      "ref_id": "A7.02",
+      "paper": "Diether, Lee & Werner (2009) 'Short-Sale Strategies and Return Predictability', Review of Financial Studies",
+      "relevance": "CR05_Short_Pressure_Proxy 근거. 공매도 압력 비대칭(down vs up day Amihud)이 향후 수익률 예측. 한국시장 stress ICIR 0.77."
+    },
+    {
+      "ref_id": "A7.03",
+      "paper": "Ohlson (1995) 'Earnings, Book Values, and Dividends in Equity Valuation', Contemporary Accounting Research",
+      "relevance": "V24_Residual_Income 근거. 잔여이익 = 내재가치 anchor. 위기 시 fundamental floor 역할 (stress IC 0.074)."
+    },
+    {
+      "ref_id": "A7.04",
+      "paper": "Sloan (1996) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?', TAR",
+      "relevance": "Accrual anomaly의 defensive 측면. Cash-based value(V24)가 accrual-based보다 위기 시 강건."
+    },
+    {
+      "ref_id": "KR-FACTOR-2",
+      "paper": "박종원 et al. (2024) 한국시장 32년 팩터 실증",
+      "relevance": "한국시장 롱사이드 팩터 유효성 확인. Defense 팩터는 조건부 평가 필요(L-112)."
+    }
+  ],
+
+  "factors": {
+    "primary": [
+      {
+        "name": "D25_Left_Tail_Beta",
+        "weight": 0.40,
+        "rationale": "Crisis premium +0.057, COVID IC 0.185. Tail-risk averse 종목 선별. 평상시 IC approx 0 (drag 최소).",
+        "direction": "higher_better (negate 적용 완료)",
+        "update_freq": "daily"
+      },
+      {
+        "name": "CR05_Short_Pressure_Proxy",
+        "weight": 0.35,
+        "rationale": "Stress ICIR 0.77, 6/6 승리. 공매도 압력 낮은 종목 = 위기 시 매도 폭풍 회피. 평상시 IC +0.025 (미미).",
+        "direction": "higher_better (negate 적용 완료)",
+        "update_freq": "daily"
+      },
+      {
+        "name": "V24_Residual_Income",
+        "weight": 0.25,
+        "rationale": "Stress IC 0.074, 5/6 승리. 내재가치 대비 저평가 = 위기 시 fundamental floor. 평상시 IC +0.055.",
+        "direction": "higher_better",
+        "update_freq": "quarterly"
+      }
+    ],
+    "anchor_correlation": {
+      "vs_C19": "D25 < 0.28, CR05 < 0.28, V24 < 0.28 (stress_factor_ic_analysis 기준)",
+      "inter_factor": "|r| < 0.15 (3팩터 간 직교)"
+    }
+  },
+
+  "construction": {
+    "scoring": "0.40 * Z_Score_Aligned(D25) + 0.35 * Z_Score_Aligned(CR05) + 0.25 * Z_Score_Aligned(V24)",
+    "n_stocks": 30,
+    "sector_neutral": false,
+    "rebalancing": "monthly (S1 정적), event-triggered (S5 조건부)",
+    "commission_bps": 15,
+    "liquidity_filter": "20일 평균 거래대금 >= 2억원",
+    "weight_rationale": "D25에 최대 비중 -- crisis premium 최대(+0.057) + COVID IC 최고(0.185). CR05 차순위 -- stress ICIR 최고(0.77). V24 최소 -- Q02_ROE와 상관 0.739(L-code 302행)로 중복 리스크 존재하나 stress IC로 보완."
+  },
+
+  "portfolio_integration": {
+    "normal_regime": "Core C19 100%. Defense sleeve 비활성 (현금 0%).",
+    "alert_regime": "Core 70% + Defense(H_1643) 30%. Fast trigger 발동 시.",
+    "crisis_regime": "Core 50% + Defense 30% + Cash/Inverse 20%. MRS confirmation 시.",
+    "transition_lag": "모든 트리거 t-1 기준 (C5 준수). 리밸런싱은 다음 거래일.",
+    "note": "S1에서는 defense sleeve 단독 성과만 측정 (정적 EW 30종목). 조건부 배분은 S5."
+  },
+
+  "expected_profile": {
+    "s1_standalone_sr": "0.20~0.50 (평상시 IC 낮으므로 standalone SR 저조 예상)",
+    "s1_standalone_mdd": "40~55% (방어 목적이므로 standalone MDD는 관대하게 평가)",
+    "stress_outperform": "6/6 이상 시장 대비 outperform (3팩터 모두 crisis-positive)",
+    "target_correlation_with_core": "<0.35 (Quality defense 0.89 대비 극적 개선 목표)",
+    "portfolio_mdd_contribution": "Core+Defense 70/30 시 MDD 34.9% -> 28~31%"
+  },
+
+  "lesson_check": [
+    {
+      "code": "L-112",
+      "summary": "Defense 팩터는 조건부 성과로 평가. 전기간 SR 낮아도 위기 시 기능하면 유효. H_1643는 이 원칙을 극대화 -- 평상시 IC 0인 팩터를 위기시에만 활성화."
+    },
+    {
+      "code": "L-113",
+      "summary": "Quality defense 구조적 실패 (위기 상관 0.89, 하방 beta 1.09). H_1643는 tail-risk/crowding 축으로 경제적 메커니즘 완전 전환."
+    },
+    {
+      "code": "L-115",
+      "summary": "Low-beta 필터링 단독 불충분 (Core 상관 0.575). H_1643는 beta 필터가 아닌 tail-beta/short-pressure 팩터를 직접 scoring에 사용."
+    },
+    {
+      "code": "L-106",
+      "summary": "Market beta가 수익률 상관 지배. H_1643 팩터들은 시장 beta와 다른 축(tail sensitivity, crowding, valuation) 기반."
+    },
+    {
+      "code": "L-081",
+      "summary": "STR_1621 regime-conditional 2-sleeve 유효. 조건부 활성화 구조의 구조적 선례."
+    }
+  ],
+
+  "risk_assessment": {
+    "risk_1": "S1 standalone SR이 매우 낮을 수 있음 (0.20 미만). 평상시 IC approx 0인 팩터 3개 조합이므로.",
+    "risk_2": "V24_Residual_Income이 Q02_ROE와 상관 0.739 -- Quality 클러스터 오염 가능. 그러나 stress IC 0.074은 Q02의 stress IC와 독립적으로 확인 필요.",
+    "risk_3": "Fast trigger(BM 5일 < -3%)가 whipsaw 유발 가능. 잦은 진입/이탈이 turnover 증가.",
+    "risk_4": "D25/CR05는 daily update 팩터인데 월간 리밸런싱과 mismatch. 주간 리밸런싱이 더 적합할 수 있으나 turnover 제약.",
+    "mitigation": "Risk 1: L-112 원칙에 따라 조건부 성과로 평가. Risk 2: S3에서 C19 및 Q02 대비 상관 검증. Risk 3: S5에서 trigger threshold 변형(2%/4%/5일/10일) 실험. Risk 4: S1은 월간, S5에서 주간/격주 비교."
+  },
+
+  "s1_implementation_note": "S1은 D25(40%) + CR05(35%) + V24(25%) 정적 EW 30종목으로 순수 팩터 alpha 테스트. 조건부 트리거는 S5에서만 적용. S1에서 standalone SR이 낮더라도(0.20~0.40), stress outperform 4/6 이상이면 S2로 진행 가능 (L-112 defense 평가 기준 적용). MDD hard fail 55% 적용.",
+
+  "success_criteria": {
+    "s1_pass": "stress outperform 4/6 이상 AND MDD < 55% (defense 전용 기준)",
+    "s2_pass": "Stress ICIR >= 0.40 AND Core(C19) 대비 stress 상관 < 0.50",
+    "s3_pass": "Core 대비 수익률 상관 < 0.45 AND 하방 beta < 0.70",
+    "s5_target": "조건부 활성화 시 Core+Defense 포트폴리오 MDD < 30%"
+  },
+
+  "exploration_bucket": "Explore (defense_tail_risk = 미탐색 family)",
+  "path_type": "A (논문 -> 가설: Ang et al. 2006 downside beta -> crisis premium 실증 -> 조건부 활성화 가설)"
+}

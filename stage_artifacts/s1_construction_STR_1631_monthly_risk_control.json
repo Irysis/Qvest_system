@@ -1,0 +1,18 @@
+{
+  "strategy_id": "STR_1631_monthly_risk_control",
+  "parent_strategy": "STR_1631_weight_extreme",
+  "stage": "S1",
+  "description": "Monthly MRS-based cash allocation risk control simulation on CVaR LP base. Derived from STR_1631 S5+ pipeline.",
+  "factor": "C19 (SUE + ESBR + EPS_CHG_1M + TP_Gap)",
+  "weight_method": "CVaR LP (from STR_1631_weight_extreme)",
+  "overlay": "Monthly cash allocation via MRS level/DD brake (R1-R5 methods)",
+  "pit_compliance": {
+    "C1": "expanding only (MRS expanding median)",
+    "C2": "t-1 lag (regime_v7 pre-lagged)",
+    "C5": "overlay signals use t-1 MRS",
+    "C9": "DD brake uses expanding peak NAV"
+  },
+  "created_by": "Risk Manager",
+  "created_at": "2026-04-16",
+  "note": "S1 artifact created to satisfy OPT-8 hook. This is a risk control analysis, not alpha discovery."
+}

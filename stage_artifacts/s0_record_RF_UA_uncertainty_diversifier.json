@@ -1,0 +1,185 @@
+{
+  "record_type": "s0_record",
+  "hypothesis_id": "H_1659",
+  "strategy_id_proposed": "STR_1659_RF_UA",
+  "name": "RF_Uncertainty_Aware_Diversifier",
+  "created_at": "2026-04-10T23:30:00",
+  "revised_at": "2026-04-11T02:15:00",
+  "created_by": "Scout",
+  "session": 58,
+  "stage": "S0",
+  "status": "READY_FOR_DEBATE",
+  "revision": 2,
+  "revision_history": [
+    {
+      "version": 1,
+      "date": "2026-04-10T23:30:00",
+      "status": "REVISE",
+      "debate_score": 53,
+      "key_issues": "동일 feature space(MI top 50) -> 종목 수렴 -> diversifier 무효"
+    },
+    {
+      "version": 2,
+      "date": "2026-04-11T02:15:00",
+      "changes": ["REV-1: Family-Based Feature Space Split", "REV-2: kappa=1.0 고정", "REV-3: S1-B primary 사전 등록", "REV-4: IC decay 94% 정정"]
+    }
+  ],
+
+  "hypothesis_summary": "Random Forest의 OOB prediction + inter-tree variance로 예측 불확실성을 정량화하고, Uncertainty-Adjusted Sorting(Liu et al. 2026, kappa=1.0 고정)으로 포트폴리오를 구성하되, RF와 XGBoost가 Family-Based Feature Space Split으로 완전히 다른 팩터 풀을 사용하여 종목 수렴을 원천 차단. RF는 저빈도 fundamental 팩터(V/Q/AC), XGBoost는 고빈도 momentum/risk 팩터(M/D/L/R)를 각각 전담함으로써 구조적으로 독립적인 diversifier를 구축.",
+
+  "economic_mechanism": {
+    "alpha_source_1": "Noise Filtering -- 예측 불확실성이 높은(high tree variance) 종목을 배제하여 false positive 감소. Liu et al.(2026): 주로 변동성 감소 채널로 OOS SR 개선.",
+    "alpha_source_2": "Epistemic Uncertainty Premium -- 모호성 회피(Ellsberg 1961)로 인해 불확실성이 높은 종목은 과소평가. RF의 cross-sectional uncertainty ranking이 이 premium을 체계적으로 수확.",
+    "structural_differentiation": {
+      "v1_issue": "v1에서는 RF와 XGBoost가 동일 feature space(MI top 50 from 309 daily factors)를 공유 -> 종목 수렴 -> diversifier 무효 (Debate 4인 공통 우려).",
+      "v2_solution": "Family-Based Feature Space Split: RF는 저빈도 fundamental 팩터 풀(V/Q/AC/GR/IN/S/XF_DU, ~96개)에서 MI top 50, XGBoost는 고빈도 momentum/risk 팩터 풀(M/D/L/R/RE/CR/TR/C/MA/SE/XF_EF+CF+MG/MK, ~231개)에서 MI top 50. Feature overlap = 0%.",
+      "economic_rationale_for_split": "RF-bagging은 안정적 fundamental signal(Value/Quality/Accruals)에서 variance reduction이 자연스러움(Breiman 2001). XGB-boosting은 noisy high-frequency signal(Momentum/Risk/Liquidity)에서 bias reduction이 강점(Chen & Guestrin 2016). Inductive bias와 feature frequency의 이중 분리가 종목 선택의 구조적 독립성을 보장.",
+      "diversifier_mechanism": "Fundamental-driven RF 포트폴리오는 momentum crash(2020-03, 2022)에서 XGB의 momentum/risk 중심 포트폴리오와 다른 국면 반응을 보일 가능성이 높음. Alpha source 자체가 다르므로 수익률 상관이 구조적으로 낮아짐."
+    }
+  },
+
+  "core_reference": [
+    "Liu, Luo, Wang & Zhang (2026) 'UA Sorting' arXiv:2601.00593",
+    "Liao, Ma, Neuhierl & Schilling (2025) 'ML Uncertainty in Asset Pricing' arXiv:2503.00549",
+    "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via ML'",
+    "Breiman (2001) 'Random Forests' ML 45(1)",
+    "Meinshausen (2006 JMLR) 'Quantile Regression Forests'",
+    "Garlappi, Uppal & Wang (2007 RFS) 'Portfolio Selection with Uncertainty'",
+    "Taheri Hosseinkhani et al. (2026 SSRN 6412360) 'Transformer Uncertainty and Cross-Section'"
+  ],
+
+  "lesson_check": {
+    "L-124": "Tree > Linear. RF 0.69 vs XGB 0.70. v2에서는 다른 feature pool 사용하므로 순수 ICIR 비교 불가 -> RF의 fundamental-only ICIR이 별도 측정 대상.",
+    "L-123": "ML PIT 표준. 동일 파이프라인 적용.",
+    "L-010": "ICIR instability 회피. UA bounds != ICIR ranking.",
+    "L-119": "정적 블렌드 금지. RF 단일 모델 내부 uncertainty 활용.",
+    "L-106": "Beta 지배 인식. Family split으로 fundamental RF는 low-beta 경향 자연 발생 가능 -> S2에서 rolling beta 프로파일 측정 필수.",
+    "L-115": "Low-beta 단독 실패 인식. S5에서 섹터중립 결합.",
+    "L-122": "Factor timing != factor risk management. kappa=1.0 고정은 timing 아닌 risk management 설계."
+  },
+
+  "expected_role": "diversifier",
+  "role_bias_tag": "RoleBias_Diversifier",
+
+  "why_now": "SR gap +0.807. ML_complexity family 50% 집중. XGBoost alpha decay 확인(2024 IC 94% 하락: 0.0655 -> 0.0057). RF UA Sorting + Family-Based Feature Split으로 XGBoost와 구조적으로 독립적인 diversifier 구축. 최신 학술 프레임워크(Liu 2026) 직접 적용. v1 Debate에서 지적된 feature space 수렴 문제를 family 단위 분리로 원천 차단.",
+
+  "factors": {
+    "model": "Random Forest (ranger R package)",
+    "feature_pool_design": {
+      "design_principle": "Family-Based Feature Space Split -- REV-1 적용",
+      "rf_pool": {
+        "families": "V*(24) + Q*(32) + AC*(22) + GR*(7) + IN*(6) + S*(2) + XF_DU*(3)",
+        "total": "~96 factors",
+        "economic_character": "저빈도 fundamental: 가치, 수익성, 발생액, 성장, 투자, 규모",
+        "mi_prefilter": "top 50 from 96"
+      },
+      "xgb_pool_reference": {
+        "families": "M*(32) + D*(56) + L*(44) + R*(19) + RE*(16) + CR*(11) + TR*(2) + C*(19) + MA*(7) + SE*(3) + XF_EF+CF+MG*(21) + MK*(1)",
+        "total": "~231 factors",
+        "economic_character": "고빈도 momentum/risk/liquidity/sentiment/macro",
+        "mi_prefilter": "top 50 from 231 (STR_1656 기존)"
+      },
+      "feature_overlap": "0% (family 단위 분리이므로 원천 차단)"
+    },
+    "ensemble": "5-seed (1234, 2345, 3456, 4567, 5678)",
+    "uncertainty_methods": ["inter-tree variance", "OOB prediction interval", "Quantile Regression Forest"]
+  },
+
+  "s1_variants": {
+    "primary": "S1-B",
+    "pre_registration": {
+      "rule": "S1-B 결과가 ICIR >= 0.20 충족 여부의 판단 기준. S2 진입 결정은 S1-B 기준.",
+      "exception": "S1-B ICIR < 0.10이면서 S1-C 또는 S1-D ICIR >= 0.20인 경우에만, 사유를 명시하고 primary 변경 가능.",
+      "prohibition": "모든 variant 실행 후 최고 SR/ICIR 선택 = 금지 (다중검정 문제)"
+    },
+    "S1-A": {
+      "name": "RF Point Prediction (baseline)",
+      "description": "RF 5-seed ensemble의 평균 예측값으로 standard sorting. XGBoost와 동일한 sorting 방식이나 fundamental-only feature pool 사용.",
+      "role": "supplementary (baseline comparison)"
+    },
+    "S1-B": {
+      "name": "RF UA Tree Variance (kappa=1.0 fixed)",
+      "description": "UA Score = E_hat - 1.0 * sigma_tree. Liu et al.(2026) 기본값. Parameter-free UA Sorting.",
+      "kappa": 1.0,
+      "kappa_rationale": "Liu et al.(2026) baseline. C1 위반 경로(expanding window kappa 학습) 원천 차단. REV-2 적용.",
+      "role": "PRIMARY -- S2 진입 기준"
+    },
+    "S1-C": {
+      "name": "RF UA OOB Prediction Interval (lower bound 80% PI)",
+      "description": "OOB residual의 10th percentile로 lower bound 구축. 80% prediction interval의 하한.",
+      "role": "supplementary"
+    },
+    "S1-D": {
+      "name": "RF QRF Positive Probability (P(r>0|x) sorting)",
+      "description": "Quantile Regression Forest로 P(r > 0 | x) 추정. 양수 수익률 확률 기반 sorting.",
+      "role": "supplementary"
+    }
+  },
+
+  "overlay_plan": "S1: none (EW 30, 15bps, LIQ 2e8). S5: DD Brake + VD+ 후 CVaR LP 검토.",
+
+  "s5_research_slate": {
+    "A": "UA Sorting expanding window kappa (S1에서 고정한 kappa=1.0을 S5에서만 expanding 학습 허용)",
+    "B": "UA Sorting + DD Brake(10/25)",
+    "C": "UA Sorting + CVaR LP weighting (uncertainty-based stock selection + risk-based weighting)",
+    "D": "RF(fundamental) + XGBoost(momentum) ensemble UA (model disagreement를 추가 uncertainty로 활용)"
+  },
+
+  "risk_factors": [
+    "RF fundamental-only feature pool(~96)에서 MI top 50이면 거의 전체 풀 사용 -> MI prefilter 효과 약화. 순수 fundamental이 한국시장에서 약한 alpha source일 수 있음 (L-124의 0.69는 309개 전체 사용 기준).",
+    "Family split 후 RF ICIR이 0.69에서 크게 하락할 가능성. Fundamental-only RF의 독립 alpha가 ICIR 0.20 미달 가능.",
+    "kappa=1.0 고정이 한국시장에 최적이 아닐 수 있음. 그러나 이는 S5에서만 검증 가능하며 S1에서는 parameter-free 설계 유지.",
+    "Tree variance의 비일관성: Breiman(2001)의 variance 추정이 과소추정될 수 있음(Wager et al. 2014).",
+    "한국시장 소규모 cross-section: ~2,000종목에서 RF 500 trees의 OOB 커버리지 부족 가능.",
+    "Fundamental RF가 low-beta 종목에 집중 -> L-106 beta 지배 위험. S2 rolling beta 필수.",
+    "Computational cost: RF 500 trees x 5 seeds x walk-forward = 2,500 RF 모델. XGBoost 대비 2-3x."
+  ],
+
+  "success_criteria": {
+    "s1_icir": ">= 0.20 (S1-B primary 기준)",
+    "s1_overlap_with_xgb": "< 50% (feature split 반영, v1의 70% -> v2의 50%로 강화)",
+    "s2_corr_with_xgb": "< 0.50 (v1의 0.60 -> v2의 0.50으로 강화, feature split 효과 기대)",
+    "s2_fmb_t": "> 2.0",
+    "s2_rolling_beta_diff": "> 0.05 (Risk Manager 조건 반영)",
+    "s2_crisis_ic_corr": "< 0.80 (Risk Manager 조건: tail diversification 확인)",
+    "s3_anchor_corr": "< 0.50",
+    "s5_standalone_sr": "> 0.50",
+    "s5_mdd": "< 45%"
+  },
+
+  "infrastructure_dependencies": [
+    "ranger R package (CRAN)",
+    "04_Research/strategies/STR_1656_MLRA/run_all.R -- 기존 ML pipeline 참조 (mi_prefilter_chunked 함수 재사용)",
+    "02_Infrastructure/factor_db/ -- 일간 309팩터 DB (RF는 fundamental family만 로드)",
+    "02_Infrastructure/backtest_harness.R -- 백테스트 실행"
+  ],
+
+  "forge_instructions": {
+    "priority_order": "S1-B(primary UA tree variance, kappa=1.0) -> S1-A(baseline) -> S1-C(OOB PI) -> S1-D(QRF)",
+    "key_implementation": [
+      "0. [CRITICAL] Feature pool 분리 구현:",
+      "   RF_FAMILIES <- c('V','Q','AC','GR','IN','S','XF_DU')",
+      "   RF_POOL <- ALL_FCOLS[grepl('^(V[0-9]|Q[0-9]|AC[0-9]|GR[0-9]|IN[0-9]|S[0-9]|XF_DU)', ALL_FCOLS)]",
+      "   XGB_POOL <- setdiff(ALL_FCOLS, RF_POOL)  # STR_1656 기존과 동일하게 유지하지 않음. XGB는 나머지 전체.",
+      "   RF top 50 = mi_prefilter_chunked()에 RF_POOL만 입력",
+      "1. ranger 설치 확인: install.packages('ranger')",
+      "2. 기존 ml_overnight_research.R의 walk-forward expanding loop 복제",
+      "3. XGBoost 부분을 ranger로 교체. 핵심: keep.inbag=TRUE 설정 필수 (OOB 예측용)",
+      "4. predict(type='se')로 sigma_tree 추출. NaN 발생 시 해당 종목 sigma = Inf 처리 (UA Score = -Inf -> 자동 제외)",
+      "5. UA Score = E_hat - 1.0 * sigma_hat 계산 후 standard backtest_harness에 feed (kappa=1.0 고정, grid search 금지)",
+      "6. S1-A는 UA Score가 아닌 E_hat으로만 sorting (baseline)",
+      "7. 5-seed ensemble: 각 seed별 RF 학습 -> 예측 평균 + variance 평균",
+      "8. S1 결과 보고 시 RF-XGB 종목 overlap % 반드시 포함"
+    ],
+    "pit_checklist": "C1(expanding only), C2(features t-1), C14(Usable_Date), C15(daily pipeline). 기존 ML 파이프라인과 동일.",
+    "kappa_rule": "S1에서 kappa=1.0 고정. kappa grid search 금지. expanding window kappa 학습은 S5 슬롯 A에서만 허용."
+  },
+
+  "debate_questions_for_team": [
+    "Q1: Family-Based Feature Split(V/Q/AC vs M/D/L/R) 후 RF의 fundamental-only ICIR이 0.20 이상을 달성할 수 있는가? 한국시장에서 순수 fundamental ML의 alpha가 충분한가?",
+    "Q2: RF_POOL ~96개에서 MI top 50은 사실상 거의 전체 풀 사용. MI prefilter의 noise filtering 효과가 약화되는 것은 아닌가? top 30이나 top 40이 더 적절한가?",
+    "Q3: kappa=1.0 고정이 충분한가? Liu et al.(2026)의 미국시장 기본값이 한국시장에서도 적합한가?",
+    "Q4: Fundamental RF가 value/quality factor와 유사한 종목을 선택하여 STR_1631(앵커)과 overlap이 오히려 높아질 가능성은?",
+    "Q5: Feature split으로 종목 overlap은 낮아지지만, 두 모델의 beta profile이 유사하면 여전히 diversifier 무효. Rolling beta 프로파일 차이를 S1에서도 측정해야 하는가?"
+  ]
+}

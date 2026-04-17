@@ -1,0 +1,25 @@
+{
+  "strategy_id": "STR_1622",
+  "strategy_name": "ic_weighted_statistical_blend",
+  "judge_date": "2026-03-29",
+  "grade": "C",
+  "score": 24.5,
+  "sharpe": 0.754,
+  "cagr": 13.9,
+  "mdd": 50.46,
+  "turnover": 179.1,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "WARN — C15 위반: open_dataset() 직접 parquet 접근, load_month_factors() 미경유. C13 부분 위반: Z_Score를 Z_Score_Aligned로 단순 rename (align_factor_direction 미적용). IC 가중치 산출은 t-1 lag 준수 (past_dates < sig_d). C1 준수 (expanding 12M rolling IC). C14 형식적 준수 (Usable_Date = Date로 fallback).",
+    "G1_Implementation": "PASS — EW 30종목, 15bps commission, LIQ >= 2e8, monthly rebalance. IC shrinkage(0.5*IC + 0.5*EW) + floor 5% + cap 40%.",
+    "G2_Robustness": "WARN — Robustness 34/100. OOS retention 0.30 (심각한 열화), IC decaying (ratio 0.78). Alpha trend 1.08 (미약한 개선). IS SR 1.016 vs OOS SR 0.304 — 과적합 우려.",
+    "G3_Performance": "FAIL — MDD 50.5% > 45% HARD FAIL. SR 0.754, CAGR 13.9%.",
+    "G4_Statistics": "NA — DSR 미산출.",
+    "G5_Diversity": "NA — Hard fail"
+  },
+  "role_honesty": "NA — Hard fail",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 50.5% > 45%",
+  "verdict": "Discard",
+  "reason": "Hard fail (MDD 50.5%) + C15 위반(direct parquet) + C13 부분 위반(Z_Score rename). OOS retention 0.30은 심각한 과적합 시사. IC weighting 메커니즘 자체는 유효하나(Arnott et al. 2019), 5팩터 blend에서 IC 기반 최적화가 OOS에서 붕괴. 한국시장 IC의 시변성이 12M rolling window보다 빠르게 변화하는 것으로 추정. C15 위반 수정 후에도 salvage 가치 제한적."
+}

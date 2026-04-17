@@ -1,0 +1,94 @@
+{
+  "strategy_id": "STR_944",
+  "strategy_name": "OtherCorp + SUE Earnings Surprise",
+  "judge_date": "2026-03-28",
+  "hurdle_result": {
+    "grade": "A",
+    "grade_v21": "A",
+    "total_score": 49.8,
+    "pass": true,
+    "metrics": {
+      "Sharpe": 1.429,
+      "CAGR": 17.6,
+      "MDD": 22.8,
+      "IR": 0.492,
+      "Calmar": 0.772
+    },
+    "axes": {
+      "Return": 49,
+      "Risk": 62,
+      "Robustness": 73,
+      "Implementability": 68,
+      "Diversity": 71
+    },
+    "DSR": 1.0,
+    "OOS_retention": 0.69
+  },
+  "gate_results": {
+    "gate0_pit_check": {
+      "pass": false,
+      "violations": [
+        {
+          "code": "C9",
+          "severity": "HIGH",
+          "description": "DD brake same-day circular: dd_pct computed from cumprod(1+raw_ret) includes current day return, then dd_exp applied to same day return (lines 100-102). No t-1 lag on dd_pct.",
+          "line_refs": [100, 101, 102]
+        },
+        {
+          "code": "C5",
+          "severity": "MEDIUM",
+          "description": "MRS overlay uses same-month FRED regime data (macro_regime_dt[YM==daily_ym[i]]) applied to all daily returns within that month. Old FRED MRS pattern flagged in L-441 as SR ~18% overestimation.",
+          "line_refs": [103, 104]
+        },
+        {
+          "code": "C11",
+          "severity": "MEDIUM",
+          "description": "FRED_REGIME_CACHE data time-axis: monthly FRED data applied same-month via YM matching. FRED publishes month-end, applying to entire month = look-ahead within month.",
+          "line_refs": [30, 46, 103]
+        }
+      ]
+    },
+    "gate1_statistical_defense": {
+      "pass": true,
+      "DSR": 1.0,
+      "note": "DSR=1.000, SR=1.429, N=465 trials. Harvey t-stat well above 3.0."
+    },
+    "gate2_oos_robustness": {
+      "pass": true,
+      "IS_SR": 1.596,
+      "OOS_SR": 1.101,
+      "retention": 0.69,
+      "note": "OOS retention 69% = robust."
+    },
+    "gate3_distortion": {
+      "pass": true,
+      "flags": 0,
+      "note": "3-Axis Verification: CLEAN."
+    },
+    "gate4_economic_logic": {
+      "pass": true,
+      "mechanism": "Post-Earnings-Announcement Drift (PEAD) + OtherCorp net buying = institutional informed flow. Low idiovol provides stability. Academic basis: Ball & Brown (1968) for PEAD, Sias (2004) for institutional flow.",
+      "note": "Sound economic rationale. SUE captures earnings surprise; OtherCorp captures institutional conviction."
+    },
+    "gate5_diversity": {
+      "pass": true,
+      "note": "No Grade A composite cache available for correlation check. Family oc_sue has 4 trials, 4 passes."
+    }
+  },
+  "c_code_summary": {
+    "C1": "PASS - rolling 252d window",
+    "C2": "PASS - signal computed before next-month application",
+    "C3": "PASS - no same-period aggregate-apply",
+    "C4": "PASS - SUE data filtered up to sig_d with 7-day lookback",
+    "C5": "FAIL - MRS overlay same-month application (old pattern L-441)",
+    "C6": "PASS - no survivorship issue detected",
+    "C7": "N/A - auto-detection deferred",
+    "C8": "PASS - no FM weight same-day",
+    "C9": "FAIL - DD brake same-day circular (no t-1 lag)",
+    "C10": "PASS - 20d avg volume used from lookback window",
+    "C11": "FAIL - FRED monthly data same-month application"
+  },
+  "overall_verdict": "CONDITIONAL_PASS",
+  "verdict_reasoning": "Grade A with strong fundamentals (SR 1.429, CAGR 17.6%, MDD 22.8%, OOS 69%). However, C9 (DD same-day) and C5/C11 (old MRS pattern) violations mean the overlay-enhanced metrics are unreliable. The BASE signal (IVOL + OtherCorp + SUE) is clean. Recommend: (1) apply t-1 lag to DD brake, (2) replace old MRS with Regime Engine v7.1 or remove MRS overlay entirely, (3) re-run to get clean metrics.",
+  "RoleBias": "RoleBias_Core"
+}

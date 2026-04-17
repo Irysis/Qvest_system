@@ -1,0 +1,81 @@
+{
+  "hypothesis_id": "H_1643_REVISED",
+  "round_1": [
+    {
+      "role": "academic",
+      "score": 16,
+      "arguments": [
+        "D25_Left_Tail_Beta는 Ang, Chen & Xing (2006) 원문 메커니즘을 충실히 구현하며 한국 위기에서 Crisis ICIR 0.393 재현 완료. 다만 원문 출판 이후 20년 경과로 post-publication testing 강건성 재검증 필요.",
+        "Q07_Earnings_Stability는 L-121의 288팩터 선별에서 양쪽 위기 기준(stress+4-regime) 모두 최강(ICIR 0.753, 0.413)으로 확인되었으며, Novy-Marx (2013)과 Asness et al. (2019)의 profitability-stability 분해 이론에 부합. 순수 earnings volatility 측정으로 L-113(QMJ 혼합 기반 실패)의 메커니즘적 차별화 달성.",
+        "D25와 Q07의 상관 |r|<0.20으로 경제적 직교성 확보(tail-risk beta vs earnings volatility 분리). CR05/V24 기각으로 원안의 재현 불가/drag 문제를 해결했으나, 위기 유형별 장기 안정성 및 post-2015 HFT 환경 적응 검증은 S1에서 필수."
+      ],
+      "concern": "Q07의 학술 근거가 earnings stability의 가치 창출 메커니즘(information uncertainty reduction)에 있는데, Novy-Marx (2013)과 Asness et al. (2019) 모두 profitability/quality composite 맥락에서 earnings stability를 다룸. 순수 earnings volatility만으로 defense factor 기능 여부가 이론적으로 완전히 규명되지 않음. Asness(2019)의 Safety 정의가 low-beta+low-leverage+low-volatility 배합이므로, Q07이 독립 메커니즘인지 volatility risk premium 부분집합인지 불명확.",
+      "conditions": [
+        "S1: Q07-C19 상관 실측. 주장 -0.092 vs Factor DB 실측. >0.40이면 Quality cluster 오염 가능",
+        "S1: 위기 분류별 sub-period 분석 (2008/2011/2020). ICIR 편차 >0.30이면 crisis-specific overfitting",
+        "S2: Novy-Marx (2013) earnings stability 정확한 정의 확인. Profitability-size interaction 결과인지 구분",
+        "S2: Asness (2019) Safety 성분과 Q07 정의 수학적 동치성 검증"
+      ]
+    },
+    {
+      "role": "codex_critic",
+      "score": 9,
+      "arguments": [
+        "CR05/V24 제거와 Q07 채택은 L-113/121 교훈을 반영한 올바른 방향이나, 2팩터 구조의 위기 의존성이 여전히 높음. 평상시 IC(D25: 0.013, Q07: 0.040)가 약해 위기 미발생 시 장기 underperform 위험.",
+        "288팩터 중 최강이라는 Q07 선정 방식 자체가 선택편의(selection bias) 위험. full-sample ranking에서 1위 팩터를 defense로 채택하는 것은 data mining의 변형일 수 있으며, expanding-window 기반 OOS 검증이 필수.",
+        "D25의 crisis_ratio 30.7x는 극단적 context-dependency를 의미. 위기 정의가 조금만 달라져도 성과가 급변. Q07도 crisis/normal 비율 1.04x로 안정적이나 블렌드 시 D25의 이진(on/off) 특성이 전체를 지배."
+      ],
+      "concern": "위기 방어 2팩터라는 메커니즘이 기존 실패군(Quality defense)과 같은 family에 속할 수 있으며, 288팩터 ranking에서의 최강 선택은 selection bias 위험이 높아 재현성 리스크가 큼.",
+      "conditions": [
+        "Q07 산출 전 항목에 엄격한 PIT 지연 규칙(분기/연간 공시 지연, 정정공시 시점 고정)과 버전드 데이터 검증 로그를 제출할 것.",
+        "D25/Q07 가중치, 상관, 직교화는 expanding-window로만 추정하고 full-sample 통계 기반 고정값 사용을 금지할 것.",
+        "위기 라벨을 사후 정의하지 않고 실시간 관측 가능한 변수만으로 운용 가능한 규칙을 명시할 것."
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 18,
+      "arguments": [
+        "Defense family 비중 0%인 현 포트폴리오에서 신규 family 진입은 구조적으로 필수이며, family_concentration 35% 상한 대비 여유가 충분하여 saturation penalty가 전혀 없다. consensus 50% + ML 50%의 양극 구조에 defense 축을 추가하면 3-family 분산이 달성되어 포트폴리오 안정성의 구조적 결함이 해소된다.",
+        "D25+Q07 2팩터 구성은 원안 H_1643의 CR05(Registry crisis=negative) 및 V24(ICIR -0.282 drag) 기각 근거를 정확히 반영한 재설계이며, L-121(Q07 양쪽 위기 최강) + L-113(Quality defense 실패 회피) + L-115(beta scoring 직접 사용) 교훈 3건을 모두 준수한다. 이전 토론에서 Governor가 직접 제안한 Q07 채택이 반영된 점에서 PG0 gap 진단과의 일관성이 높다.",
+        "AX-001 기준 조건부 성과 평가 프레임워크에 정확히 부합한다. Defense는 전기간 SR이 아닌 위기 구간 alpha로 평가해야 하며, D25 Crisis ratio 30.7x + Q07 stress ICIR 0.753의 조합은 blended crisis IC 0.056으로 위기 시 명확한 한계기여를 제공한다. S1 standalone SR 0.20~0.45 예상은 defense 역할에 합당한 범위이다."
+      ],
+      "concern": "PG0 gap vector의 sleeve_needs가 'diversifier'로 명시되어 있고 MDD는 이미 21.3%로 목표 25% 내 달성된 상태이므로, defense sleeve의 긴급도가 SR gap 0.807 해소에 비해 낮다. 또한 marginal_screening에서 D25(IC_Marginal -0.0915)와 Q07(IC_Marginal -0.1462)이 모두 음수권으로, 정상 구간에서 포트폴리오 전체 IC를 희석할 가능성이 있다. 조건부 활성화(S5 mutation)가 아닌 정적 배합으로 진행할 경우, 정상기 drag가 SR gap 해소를 오히려 방해할 수 있다.",
+      "conditions": [
+        "S1 정적 테스트에서 Core(C19) 대비 위기 상관이 0.45 미만이고 stress outperform이 4/6 이상일 것. 이 두 조건 미달 시 S2 진입을 불허하며, 정상기 drag 수준(full period IC)이 -0.010 이하로 악화될 경우 정적 배합이 아닌 조건부 활성화 전용으로 경로를 변경할 것.",
+        "PG2 배분 설계 시 Defense sleeve 비중은 최대 30%로 제한하고, 정상 구간에서는 0~10%로 축소 운용하는 regime-conditional 배분을 기본 전제로 할 것. 정적 30% 고정 배분은 정상기 IC 희석으로 인해 SR gap 해소에 역행하므로 금지한다.",
+        "H_1644(D07+CR05)와의 S1 병렬 비교를 반드시 수행하고, S2 단계에서 두 가설 중 stress outperform이 높은 쪽만 S3 이후로 진행할 것. 두 가설 모두 stress outperform 4/6 미달 시 defense family 자체의 재검토(PG0 복귀)를 수행할 것."
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 13,
+      "arguments": [
+        "Q07_Earnings_Stability 전기간 ICIR 0.382로 ICIR 허들(≥0.20) 통과, GFC 구간 ICIR 0.210·Rate_Hike 구간 ICIR 0.398로 복수 스트레스에서 일관된 방어력 확인. 단, 주장치(위기 ICIR 0.753)는 실측 재현 불가 — 전체 stress 합산 ICIR 0.228에 그침. COVID IC_mean +0.013으로 정방향 유지하나 표본 6건으로 통계적 유의성 불충분.",
+        "D25_Left_Tail_Beta 전기간 ICIR 0.119로 허들 미달(주장치 0.393 대비 실측 0.075~0.168 구간). EU_Debt 구간 ICIR -0.159, COVID 구간 ICIR -0.011로 일부 스트레스에서 음수 반전 발생. 데이터 시작 2005-01-31로 China_Shock(2015~2016) 이전 구간은 커버하나, 가장 극단적 하락 구간(GFC ICIR 0.065)에서도 방어력 미약.",
+        "D25 x Q07 IC 상관 0.430으로 분산 효과 제한적 — 상관 0.30 이하 기대에서 유의미하게 상회. Q07 x Q02_ROE IC 상관 0.407로 Quality family 오염 위험 존재. C19_Earnings_Momentum은 DB 내 해당 팩터명 부재(C19_Composite_Earnings와 Q07 상관은 0.184로 낮음). 두 팩터의 공통 관측 기간은 163개월(2010-11~2026-02)로 백테스트 길이는 충분하나 구조적 내부 상관이 포트폴리오 효율을 저해할 수 있음."
+      ],
+      "concern": "D25의 실측 ICIR(0.119)이 주장치(0.393)의 30% 수준에 불과하며, EU_Debt·COVID 구간에서 음수 전환됨. D25·Q07 IC 상관 0.430은 동일 방향 팩터로 작동할 가능성을 시사하므로, 55:45 배분이 실질적 분산 효과를 제공하는지 의문. Q07의 Quality family 오염(Q02_ROE 상관 0.407)으로 인해 Core Alpha 전략과의 중복 위험도 점검 필요.",
+      "conditions": [
+        "D25 ICIR이 0.20 이상인 하위 기간(특정 Regime)이 존재하는지 4-Regime × D25 IC 교차분석으로 진입 조건 정의할 것 — RISK_ON 구간 ICIR 0.147로 전 Regime에서 일관성 낮음",
+        "D25 x Q07 IC 상관이 스트레스 구간에서도 0.430 유지되는지 확인 — 위기 시 동반 강화 또는 동반 약화 패턴이면 분산 효과 없음. 스트레스 구간 한정 상관 추가 계산 필요",
+        "Q07의 GFC ICIR 0.210·Rate_Hike ICIR 0.398 기준 충족이지만 EU_Debt ICIR 0.016으로 유럽 재정위기 방어력 미흡 — 한국 특유의 외생 충격(EM 자본 유출) 구간에서도 방어력 검증 필요"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "score": 14,
+      "arguments": [
+        "D25_Left_Tail_Beta의 stress ICIR 0.393과 Q07_Earnings_Stability의 stress ICIR 0.753은 실증적으로 가장 강건한 defense 조합이다. 특히 Q07은 4-regime CRISIS ICIR 0.413으로 양쪽 위기 정의(급락 + 느린 둔화) 모두 통과하는 288팩터 최강 방어 팩터이며(L-121), 원안 CR05(실측 ICIR -0.168)/V24(ICIR -0.282) 대비 수치적 근거가 확실히 개선되었다. D25(beta축)와 Q07(earnings축)의 직교 구조는 단일 economic family 집중 리스크를 회피한다.",
+        "D25_Left_Tail_Beta의 평상시 IC -0.002(사실상 zero)는 crisis_ratio 30.7x의 이면이다. 이 팩터는 위기 외 구간에서 약한 역풍(drag)을 발생시키며, 4-regime 분석에서 D25 CALM ICIR 0.078, CAUTION 0.201로 양호하나 CRISIS ICIR -0.174, NORMAL ICIR -0.245로 오히려 음수 전환된다. 이는 stress 6대 사건 기준과 MRS 4-regime 기준의 위기 정의 괴리(L-120)를 반영하며, MRS 기반 느린 둔화기에서 D25가 오히려 역방향으로 작동할 위험이 있다. Q07의 4r CRISIS ICIR +0.413 vs D25의 -0.174 차이는 blend 위기 IC 0.056 추정치가 stress 기준에 편향되었을 가능성을 시사한다.",
+        "현 포트폴리오(STR_1631 80% + STR_1656 20%)의 MDD -21.3%는 이미 목표(-25%) 달성 상태이고, PG0 gap은 SR 0.807이다. Defense sleeve 추가가 SR gap을 축소하는 메커니즘이 불명확하다. D25 평상시 IC -0.002 + Q07 평상시 IC 0.040의 가중 blend IC 0.025는 S2 프로파일 ICIR 0.20 관문(Alpha Lab Gate)을 통과할 수 있으나, Core(C19 기반 STR_1631)와의 포트폴리오 수준 상관이 L-106(market beta 지배) 패턴을 반복할 경우 분산 효과 없이 alpha만 희석되는 L-119 시나리오가 재현될 수 있다."
+      ],
+      "concern": "가장 큰 우려는 D25_Left_Tail_Beta의 이중적 성격이다. stress 6대 사건(GFC, COVID 등 급락) 기준 ICIR +0.393이지만, MRS 4-regime CRISIS 기준 ICIR -0.174로 완전히 반전된다. 현 포트폴리오의 MRS Caution 29.2 환경에서 D25는 오히려 drag을 유발하며, MRS가 Crisis로 상승해도 4-regime 정의의 느린 둔화기에서는 방어력이 사라진다. Q07은 양쪽 기준 모두 견고하지만, D25+Q07 55:45 블렌드의 위기 IC 0.056은 stress 기준에 과적합된 추정치일 가능성이 있다. 또한 L-115(beta 감소 =/= 상관 감소) 교훈에 따르면, D25 기반 low-tail-beta 종목 선택이 Core와의 포트폴리오 수준 상관을 실질적으로 낮추는지는 S3에서 DCC-GARCH 기반 위기 시 동적 상관 분석 없이는 사전 확인할 수 없다.",
+      "conditions": [
+        "S1 완료 후 반드시 compute_tail_risk_suite()로 EVT shape parameter(xi), CDaR 95%, ES 99%를 측정하고, xi > 0.5(heavy tail 경고)이면 D25 비중 하향 또는 Q07 단독 전환을 검토할 것",
+        "S3에서 fit_dcc_garch()로 Core(STR_1631) 대비 위기 시 동적 상관(Tail Dependence Coefficient)을 측정하고, TDC > 0.4이면 분산 효과 부재로 판단하여 defense sleeve 대신 overlay 강화(DD Brake 파라미터 조정) 대안으로 전환할 것",
+        "D25의 4-regime CRISIS ICIR -0.174 문제를 S2에서 명시적으로 검증할 것 -- regime_factor_ranking 기준 D25 conditional_value -0.027은 전체 기간 IC 기준으로도 음수이며, stress 6대 사건에서만 양수인 팩터를 상시 defense로 사용하는 것은 과적합 위험이 있다. 위기 구간 표본 수(stress n=40)의 통계적 유의성(Harvey t>3.0 미달 여부) 확인 필수"
+      ]
+    }
+  ]
+}

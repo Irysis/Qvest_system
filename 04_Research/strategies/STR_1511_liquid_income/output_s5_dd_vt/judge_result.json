@@ -1,0 +1,48 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1511_DD_VT",
+  "timestamp": "2026-03-26T19:00:00+09:00",
+  "l_code": "L-760",
+  "final_grade": "REJECT",
+  "final_score": 0,
+  "judge_verdict": "REJECT_SQRT_BUG",
+  "gate_results": {
+    "gate0_pit": {
+      "pass": false,
+      "detail": "CRITICAL BUG: run_s5_dd_vt.R line 17 uses sqrt(12) to annualize daily return volatility. Daily sd * sqrt(12) = monthly annualization factor applied to daily data. Correct: sqrt(252). This means cum_vol is underestimated by factor of sqrt(252/12) = 4.58x, so VT overlay almost never triggers (VOL_TARGET=0.20 vs actual annualized vol ~12% after sqrt(12) scaling). The VT component is effectively non-functional. ALL results from this run are INVALID."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "INVALID due to sqrt(12) bug. Reported: SR 0.576, CAGR 6.95%, MDD 32.49%. Even without the bug, underlying signal is extremely weak (FMB t=-0.189, FF3 alpha -1.08%)."
+    },
+    "gate2_robustness": {
+      "pass": false,
+      "detail": "INVALID. Alpha trend ratio 0.31 (severe decay — recent 3Y SR 0.180 vs full 0.576). MaxConsecNegAlpha=10 months."
+    },
+    "gate3_multifactor": {
+      "pass": false,
+      "detail": "INVALID. FMB Score lambda -0.00012, t=-0.189 (NOT significant, effectively ZERO). FF3 alpha -1.08% (negative). No alpha exists in this factor combination."
+    },
+    "gate4_implementation": {
+      "pass": true,
+      "detail": "30 stocks, EW. Liquidity filtered. Turnover 218.7%. Sector HHI 0.096. Implementation mechanics are correct apart from the sqrt(12) bug."
+    },
+    "gate5_diversification": {
+      "pass": true,
+      "detail": "BM correlation 0.652. Role: diversifier."
+    }
+  },
+  "critical_issues": [
+    "FATAL: sqrt(12) bug in VT annualization (line 17). Must be sqrt(252) for daily data. VT overlay non-functional.",
+    "FMB Score t-stat = -0.189: NO cross-sectional alpha exists",
+    "FF3 alpha = -1.08% (negative): strategy destroys value vs factor model",
+    "MDD 32.49% far exceeds 25% target",
+    "Alpha decay severe (ratio 0.31)",
+    "hurdle_gate passed factor_engine.R as strategy_file instead of run_s5_dd_vt.R causing false set.seed() hard_fail"
+  ],
+  "strengths": [
+    "Stress 3/3 outperform (defensive characteristics from low-vol factor)",
+    "IC improving recently (ratio 2.89)"
+  ],
+  "recommendation": "REJECT. Results invalid due to sqrt(12) bug. Even fixing the bug would not save this strategy — L04_Bid_Ask_Proxy + V17_Payout_Ratio combination has zero cross-sectional alpha (FMB t=-0.189) and negative FF3 alpha. The factor combination itself is not viable. Do not re-run with sqrt(252) fix — underlying signal is dead."
+}

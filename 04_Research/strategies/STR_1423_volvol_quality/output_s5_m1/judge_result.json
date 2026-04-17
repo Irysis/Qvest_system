@@ -1,0 +1,50 @@
+{
+  "strategy_id": "STR_1423_volvol_quality_s5_m1",
+  "judge_timestamp": "2026-03-26 14:22:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on both run_s5_m1.R (40 lines) and factor_engine.R (78 lines). Manual C1-C11 all PASS. DD brake uses proper t-1 lag via c(0, dd_pct[-n_f]). AvgTV20 liquidity filter lagged with shift(). Z_Score_Aligned only (C13). Arrow bulk load (C15). No full-sample stats (C1). No same-day circular (C2/C9)."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "Grade B, Score 44.7. SR=0.348, CAGR=4.22%, MDD=30.87%, IR=-0.286. Underperforms benchmark (SR 0.427, CAGR 9.03%). Return axis extremely weak (1/100). Stress outperformance 3/3 is the one bright spot. OOS retention 0.789 is good. The S5 M1 mutation (DD 10/25) DEGRADED performance vs base (SR 0.54 -> 0.348, CAGR 8.35% -> 4.22%). The tighter DD brake (10/25 vs 15/35) over-constrained exposure, destroying returns while only modestly reducing MDD (38.71% -> 30.87%)."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required artifacts present: s0_record (Scout hypothesis with economic rationale + Baltussen 2018/Dichev 2009 refs), s1_construction (Forge build spec), s2_profile, s3_orthogonality (factor_mean_max_corr=0.83, verdict=STOP but proceeded via S4), s4_integration (delta_sharpe=0.113, role=diversifier), s5_research_slate (4 slots A/B/C/D defined). Pipeline followed S0->S1->S2->S3->S4->S5 correctly."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "Fails diversifier criteria. BM_Corr=0.608 (high, not diversifying). IR=-0.286 (negative excess return vs benchmark). CAGR 4.22% << BM 9.03%. A true diversifier should provide meaningful return independent of benchmark or outperform in stress regimes, but 0.608 correlation means it largely tracks the market while losing 4.81% annualized vs BM.",
+      "detail": "Stress outperformance 3/3 is the only diversifier-positive signal. However, overall return destruction and high BM correlation undermine the diversifier claim. The S3 orthogonality already flagged factor_mean_max_corr=0.83 as 'redundant' with verdict STOP."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR: Not available (NA). OOS retention: 0.789 (good). Rolling 3Y Sharpe > 0 ratio: 56.5% (barely above random). Alpha trend ratio 2.12 suggests recent improvement but off a very low base (full SR 0.348, recent 3Y SR 0.738). IC stability: not computed (analysis_ic.csv missing). Max consecutive negative alpha months: 8 (concerning). The strategy lacks statistical significance -- SR 0.348 over ~20 years is indistinguishable from noise."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "No FF5 alpha test available in output_s5_m1. Cannot verify factor-model residual alpha. Given SR=0.348 and IR=-0.286, FF5 alpha is very unlikely to be significant."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 44.7,
+    "fail_reasons": [
+      "Gate 3 FAIL: Role honesty -- claimed diversifier but BM_Corr=0.608, IR=-0.286",
+      "Gate 4 FAIL: Statistical defense insufficient -- SR 0.348 not significant, DSR unavailable, 8 consecutive negative alpha months",
+      "Gate 5 FAIL: No FF5 alpha test available",
+      "S5 M1 mutation DEGRADED base: SR 0.54->0.348, CAGR 8.35%->4.22%. DD 10/25 over-constrains exposure"
+    ],
+    "recommendation": "DISCARD S5_M1 mutation. The tighter DD brake (10/25 vs base 15/35) destroyed returns without proportional risk reduction. Base strategy itself is marginal (SR 0.54, Grade B 39.1). S3 orthogonality already flagged factor pair as redundant (corr 0.83). Recommend abandoning this factor combination (D41+Q07) entirely -- the S0 hypothesis that D41 and Q07 provide independent alpha is not supported by evidence. If VolVol research continues, try D41 with a genuinely orthogonal partner."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr=0.608 (too high for diversifier), IR=-0.286 (negative), CAGR 4.22% << BM 9.03%. S3 factor_mean_max_corr=0.83 already indicated factor pair redundancy. Only positive: stress outperformance 3/3. Insufficient to justify diversifier role."
+  }
+}

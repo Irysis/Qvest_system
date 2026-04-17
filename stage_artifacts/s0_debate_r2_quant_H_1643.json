@@ -1,0 +1,46 @@
+{
+  "debate_id": "S0_DEBATE_H_1643",
+  "hypothesis_id": "H_1643",
+  "round": "R2",
+  "role": "quant",
+  "timestamp": "2026-04-12T00:00:00+09:00",
+  "r1_score": 7,
+  "r2_score": 6,
+  "score_changed": true,
+  "score_change_reason": "R1에서 CR05/V24/D25 수치 불일치 3건을 제기했으나, Risk_Manager와 Governor의 R1 주장을 교차 검토한 결과 CR05의 4-regime CRISIS ICIR 음수가 Factor Registry에 이미 crisis=negative로 등록되어 있다는 사실이 추가 확인됨. 이는 Quant가 R1에서 period-mean ICIR -0.168로 제기한 수치 불일치를 Registry 수준에서 corroborate하므로 CR05 반박의 신뢰도는 오히려 상승. 그러나 V24에 대해 risk_manager가 지적한 '25% 상시 비중 + full-sample ICIR -0.282 = 영구적 SR drag'는 Quant R1보다 더 강력한 프레임으로 흡수 가능. 반면 D25 데이터 갭 이슈는 risk_manager의 EVT/GPD 각도와 다른 축이므로 원 비판 유지. 종합적으로 CR05의 가설 내 지위가 R1 비판 이상으로 취약하며 가설 구조 자체가 사실상 단일 팩터(D25)로 지탱되는 구조적 취약성이 드러나므로 점수 1점 추가 하향.",
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "V24의 full-sample ICIR -0.282 + 상시 25% 비중 = 포트폴리오 SR에 영구 drag 구조라는 진단에 동의. Quant R1에서 ICIR 0.0068로 제기했으나, risk_manager가 제시한 -0.282는 더 불리한 추정치이며 조건부 활성화(S5)로 해결될 수 없음. 이유: S1에서 '정적 EW 30종목'으로 순수 alpha 테스트하는 구조이므로 V24의 정상 구간 drag는 S1 pass/fail 판단에서 이미 반영되어야 함. risk_manager가 CDaR recovery ratio 0.70 초과를 예측한 것은 정량적으로 타당하며 Quant도 동의."
+    },
+    {
+      "with": "governor",
+      "point": "CR05가 Factor Registry에 crisis=negative로 등록되어 있으며 DFA v2에서 이미 제거된 팩터라는 사실 확인에 동의. Quant R1의 period-mean ICIR -0.168 계산(GFC: -0.060, EU Debt: -0.033)은 Registry 메타데이터의 crisis=negative 판정과 완전히 정합함. 한국 시장에서 가장 큰 두 위기(GFC 2008, EU Debt 2011)에서 CR05가 음수 IC를 기록하는 구조는 defense 팩터의 최소 조건을 충족하지 못함."
+    },
+    {
+      "with": "academic",
+      "point": "V24-CR05 상관 검증 조건(claimed |r|<0.15 vs 실제)은 Quant R1에서 V24의 Q02_ROE 상관 0.739로 Quality 클러스터 오염을 제기한 맥락과 동일선상. academic이 요구한 'S1: V24-CR05 상관 검증'은 정량 검증으로 타당하며, 이 조건이 충족되지 않으면 V24를 '직교 defense 팩터'로 분류한 가설 전제 자체가 붕괴함."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex_Critic이 제기한 '위기 IC/ICIR 수치가 사후적 위기 구간 피팅일 가능성'은 방법론적으로 부분적으로만 타당. 핵심 반박: 6대 위기 구간(reference_stress_periods.md)은 사전 정의된 표준 기간이며, Quant가 Factor DB에서 직접 계산한 CR05 period-mean ICIR -0.168과 D25 crisis IC는 이 동일한 6개 구간을 사용한 결과임. 즉 문제는 '구간 피팅'이 아니라 가설에서 주장한 수치 자체가 현재 Factor DB와 불일치한다는 것. Codex_Critic의 '사후 피팅' 프레임은 올바른 문제를 잘못 진단한 것: 사후 구간 선택이 아니라 수치 재현 불가능성이 실제 결함. 다만 expanding-window 실시간 위기 정의로 재검증 요구는 추가적 조건으로 유효하며 minor agreement.",
+      "severity": "minor"
+    },
+    {
+      "against": "risk_manager",
+      "point": "Risk_Manager가 'MDD gap이 이미 달성(-21.27% vs -25% 목표)되었으므로 defense sleeve 추가 시 SR만 감소'라는 주장은 중요한 정보를 누락. 반박 근거: (1) portfolio_gap_vector.json의 MDD -21.27% 달성은 현재 Core 100% 구성 기준. defense sleeve를 S5에서 30% 조건부 편입 시 Core 비중이 70%로 축소되며, Core 70% 단독의 MDD는 별도 계산 필요. (2) 조건부 활성화 설계에서 'SR 감소' 논리는 정상 구간에서 Core 100% = defense 비활성화이므로 정상 구간 drag가 아닌 '위기 진입 시 교체 비용(turnover + 수익률 전환 지연)'이 SR에 미치는 영향으로 재해석해야 함. (3) 그러나 risk_manager 주장의 핵심인 'V24 full-sample ICIR -0.282 = 상시 drag'는 S1 정적 테스트에서는 유효한 비판이므로, S1 실행 목적과 S5 조건부 구조를 혼용하지 않는 것이 정확한 평가. Risk_Manager의 비판은 S1 정적 테스트 맥락에서는 강하나 S5 조건부 구조에 대한 적용은 과대확장.",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "Academic이 제기한 '18-30년된 논문의 time decay 위험'은 일반론으로는 타당하지만, H_1643 맥락에서 과소평가된 요소가 있음. 반박: Ang et al. (2006) downside beta premium은 출판 후 20년간 한국시장 포함 복수 실증에서 지속 확인됨(L-code 상의 crisis premium +0.057은 Factor DB 실측치). 논문 연령이 아닌 최근 3년 ICIR 감쇠 여부가 실질적 기준. 단 academic이 요구한 '위기 유형별 sub-period 분석(2008 금융 vs 2020 COVID)'은 Quant가 R1에서 직접 제시한 구간별 IC(GFC -0.060, EU Debt -0.033, China +0.027, COVID +0.007 등)와 정합하며, 이 분析이 이미 가설 주장과 심각하게 괴리하는 것이 Quant 핵심 발견. 따라서 academic의 time decay 비판은 수치 재현 불가능성이라는 더 심각한 문제에 의해 흡수되므로 독립적 비판 강도는 약함.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Risk_Manager의 'V24_Residual_Income이 full-sample ICIR -0.282로 정상 구간 영구 drag를 유발하며, 포트폴리오의 binding constraint가 SR 개선(+0.807 gap)인 상황에서 정상 구간에 drag를 추가하는 것은 gap 해소 방향과 정반대'라는 주장이 가장 강력. Quant R1에서는 V24 ICIR을 +0.0068로 보고했으나 risk_manager 수치 -0.282는 방향 자체가 음수로 더 심각한 경우. 어느 추정치가 맞든 V24의 '평상시 IC approx 0'이라는 가설 전제는 최소한 -0.282에서 +0.0068 사이의 불확실 구간에 있으며, 이 불확실성 자체가 25% 비중 배분을 정당화하지 못함. D25(40%)만으로 defense thesis를 지탱해야 하는 구조로 귀결되며, 이는 3-factor 설계의 존재 이유를 스스로 부정함. CR05 crisis 방향 역전 + V24 정상 구간 drag라는 두 팩터의 동시 실패는 H_1643를 사실상 D25 단일 팩터 defense 가설로 축소시키며, 40% 비중 단일 팩터로 defense sleeve의 경제적 정당성을 확보하기 어려움."
+}

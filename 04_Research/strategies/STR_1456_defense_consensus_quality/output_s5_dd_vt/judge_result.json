@@ -1,0 +1,69 @@
+{
+  "strategy_id": "STR_1456",
+  "variant": "output_s5_dd_vt",
+  "judge_version": "v7",
+  "timestamp": "2026-03-26T19:00:00+09:00",
+  "verdict": "REJECT",
+  "grade": "C",
+  "score": 49.9,
+  "downgrade_reason": "sqrt(12) bug invalidates VT overlay; VT effectively disabled",
+  "gate_results": {
+    "gate0_stage_artifacts": {
+      "pass": true,
+      "note": "S0-S5 artifacts present (s0_record, s1_construction, s2_profile, s3_orthogonality, s4_integration, s5_mutation_design, s5_research_slate)"
+    },
+    "gate1_pit_c1_c11": {
+      "pass": false,
+      "violations": [
+        "C9_PARTIAL: sqrt(12) bug in VT annualization (line 17 of run_s5_dd_vt.R). Daily returns annualized with sqrt(12) instead of sqrt(252). This underestimates realized vol by 4.58x, making VT exposure ~1.0 always. VT overlay is effectively dead code. The DD brake alone is driving the result.",
+        "C2_CLEAN: DD brake uses dd_lag = c(0, dd_pct[-n_f]) — proper 1-day lag.",
+        "C13_CLEAN: Z_Score_Aligned used, no manual sign flipping.",
+        "C15_CLEAN: Arrow dataset bulk load with filter on NEEDED_FACTORS.",
+        "C14_CLEAN: FDB accessed at signal date only."
+      ],
+      "severity": "HIGH — VT overlay results are meaningless; reported SR/MDD reflect DD-only, not DD+VT as labeled"
+    },
+    "gate2_performance": {
+      "pass": false,
+      "metrics": {
+        "SR": 0.659,
+        "CAGR_pct": 8.98,
+        "MDD_pct": 34.42,
+        "IR": -0.003,
+        "Calmar": 0.261,
+        "AnnVol": 13.64
+      },
+      "note": "SR 0.659 below 1.0 threshold. CAGR 8.98% below 16% target. MDD 34.42% exceeds 25% cap. IR negative — no excess return over BM. Even if sqrt bug is fixed, unlikely to reach Grade A given weak base signal."
+    },
+    "gate3_robustness": {
+      "pass": true,
+      "oos_retention": 0.989,
+      "rolling3y_pos": 0.754,
+      "ic_mean": 0.0527,
+      "icir": 0.588,
+      "stress_outperform": "3/3",
+      "note": "Robustness metrics are decent (OOS 0.989, IC stable). But these reflect DD-only behavior, not VT contribution."
+    },
+    "gate4_multifactor": {
+      "pass": false,
+      "ff3_alpha_annual_pct": -0.31,
+      "ff3_alpha_tstat": -0.141,
+      "ff5_alpha_annual_pct": 0.87,
+      "ff5_alpha_tstat": 0.358,
+      "carhart4_alpha_annual_pct": -0.39,
+      "carhart4_alpha_tstat": -0.179,
+      "fmb_score_tstat": 4.513,
+      "note": "No significant alpha in any factor model. FF3/C4 alpha negative. FF5 alpha positive but t=0.36 (insignificant). FMB t=4.51 is significant cross-sectionally, but time-series alpha is zero."
+    },
+    "gate5_diversification": {
+      "pass": "SKIP",
+      "note": "No Grade A composite cache available. BM_Corr=0.709 (moderate). Sector HHI=0.112 (diversified)."
+    }
+  },
+  "critical_findings": [
+    "SQRT(12) BUG CONFIRMED: run_s5_dd_vt.R line 17 uses sd(raw_ret[1:i]) * sqrt(12) on daily returns. Correct annualization is sqrt(252). This makes cum_vol ~4.58x too low, so vt_exp = min(1, 0.20/cum_vol) ≈ 1.0 always. The VT overlay has zero effect.",
+    "This strategy is labeled 'DD+VT dual overlay' but actually only has DD brake active.",
+    "All reported metrics (SR 0.659, MDD 34.42%) are from DD-only, mislabeled as DD+VT."
+  ],
+  "recommendation": "REJECT. Fix sqrt(12) → sqrt(252) and re-run. Current results are mislabeled. Even after fix, base alpha is too weak for Grade A consideration (FF3 alpha negative)."
+}

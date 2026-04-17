@@ -1,0 +1,146 @@
+{
+  "strategy_id": "STR_1470_skew_stability_surprise_s5_dd722",
+  "judge_version": "V7.0",
+  "timestamp": "2026-03-26 10:00:00",
+  "variant": "S5 DD 7/22 overlay on D01_IdioVol + Q07_EarningsStability + C01_SUE composite",
+  "s6_entry": {
+    "ok": true,
+    "reason": "S3 orthogonality + S4 integration artifacts present in stage_artifacts/"
+  },
+  "gates": {
+    "gate0": {
+      "name": "PIT / Lookahead Detection",
+      "pass": true,
+      "details": {
+        "lookahead_detector": "CLEAN on factor_engine.R, run_s5_dd722.R, run_all.R (all 3 files)",
+        "C1_full_sample": "PASS. DD params (7/22/0.30) are hardcoded S5 mutation constants, not derived from in-sample optimization within backtest loop. Factor scoring uses rolling Factor DB Z_Score_Aligned.",
+        "C2_same_day_circular": "PASS. DD overlay uses dd_lag = c(0, dd_pct[-n_f]) = t-1 lagged drawdown.",
+        "C3_same_period_agg": "PASS. No same-period aggregation.",
+        "C4_financial_lag": "PASS. Factor DB handles PIT via Usable_Date.",
+        "C5_overlay_t1": "PASS. DD signal lagged by 1 day.",
+        "C6_survivorship": "PASS. Inherited from RAWDATA universe.",
+        "C7_auto_detection": "PASS. detect_lookahead() clean on all files.",
+        "C8_FM_same_day": "PASS. No factor momentum used.",
+        "C9_VT_DD_same_day": "PASS. dd_lag uses shift(1) = t-1.",
+        "C10_liquidity": "PASS. AvgTV20 uses shift(1L, type='lag') in factor_engine.R.",
+        "C11_data_time_axis": "PASS. No external time-series feeds (FRED/ECOS). Factor DB only.",
+        "C13_direction": "PASS. Z_Score_Aligned only, no manual NEGATE.",
+        "C15_factor_load": "PASS. Arrow Dataset bulk load, not direct parquet read."
+      }
+    },
+    "gate1": {
+      "name": "Implementation Quality",
+      "pass": true,
+      "details": {
+        "n_holdings": 30,
+        "commission_bps": 15,
+        "liquidity_filter": "AvgTV20 >= 2e8 (lagged)",
+        "turnover_ann": 188.6,
+        "buffer_zone": "50/25 (inherited from parent)",
+        "weight_method": "EW",
+        "sector_neutral": true,
+        "verdict": "PASS. Standard implementation. Turnover 189% acceptable (<600%)."
+      }
+    },
+    "gate2": {
+      "name": "Robustness",
+      "pass": false,
+      "details": {
+        "oos_retention": 1.91,
+        "oos_verdict": "Excellent (OOS SR > IS SR)",
+        "rolling_3y_pos": "52.2% (weak, barely above 50%)",
+        "stress_outperform": "2/3 (adequate)",
+        "alpha_trend_ratio": 1.938,
+        "alpha_trend_verdict": "Improving (recent 3Y SR 0.555 vs full 0.286)",
+        "max_consec_neg_alpha": 12,
+        "max_consec_verdict": "SEVERE -- 12 consecutive negative alpha months",
+        "verdict": "FAIL. Despite good OOS retention and improving trend, 12 consecutive negative alpha months and barely-positive rolling 3Y ratio indicate unreliable alpha generation."
+      }
+    },
+    "gate3": {
+      "name": "Performance",
+      "pass": false,
+      "details": {
+        "sharpe": 0.286,
+        "cagr_pct": 3.84,
+        "mdd_pct": 43.7,
+        "ir": -0.343,
+        "calmar": 0.088,
+        "sortino": 0.382,
+        "verdict": "HARD FAIL. SR 0.286 (need 1.0+). CAGR 3.84% (need 16%+). MDD 43.7% (need <25%). Negative IR = underperforms KOSPI. DD 7/22 overlay reduced MDD from 54.3% to 43.7% (-10.6pp) and CAGR from 9.06% to 3.84% (-5.2pp). The DD brake over-dampened returns without adequately controlling drawdown."
+      }
+    },
+    "gate4": {
+      "name": "Statistical Defense",
+      "pass": false,
+      "details": {
+        "dsr": "Not available",
+        "ff5_alpha_t": "Not available (no FMB run on DD variant)",
+        "ic_stability": 0,
+        "verdict": "FAIL. No statistical defense available. IC stability = 0 (analysis_ic.csv missing for this variant)."
+      }
+    },
+    "gate5": {
+      "name": "Diversification / Role Honesty",
+      "pass": false,
+      "details": {
+        "assigned_role": "diversifier",
+        "bm_corr": 0.702,
+        "role_honesty": "QUESTIONABLE. Labeled 'diversifier' but BM correlation 0.702 is high for a diversifier. A true diversifier should have lower market beta.",
+        "gradeA_corr": "Not available",
+        "verdict": "FAIL. High BM correlation undermines diversifier role claim. No Grade A composite data."
+      }
+    }
+  },
+  "dd_overlay_analysis": {
+    "parent_baseline": {
+      "sharpe": 0.479,
+      "cagr": 9.06,
+      "mdd": 54.28,
+      "grade": "F (base judge), C (hurdle score 41.3)"
+    },
+    "dd722_variant": {
+      "sharpe": 0.286,
+      "cagr": 3.84,
+      "mdd": 43.7,
+      "grade": "C (hurdle score 37.4)"
+    },
+    "dd_impact": {
+      "sharpe_delta": -0.193,
+      "cagr_delta": -5.22,
+      "mdd_delta": -10.58,
+      "mdd_improvement_ratio": 0.195,
+      "verdict": "DD 7/22 reduced MDD by 10.6pp but destroyed 5.2pp CAGR and 0.19 SR. Cost/benefit ratio poor: gave up 57% of CAGR for only 19.5% MDD reduction. The DD brake is too aggressive for this low-volatility, low-return strategy."
+    }
+  },
+  "s5_factor_mutation_note": "S5 replaced D43_Skewness with D01_IdioVol. Original S0 hypothesis was D43+Q07+C01. The factor_engine.R now uses D01+Q07+C01. This is a valid S5 mutation but changes the fundamental thesis from 'skewness premium' to 'idiosyncratic volatility premium'.",
+  "verdict": {
+    "grade": "C",
+    "pass": false,
+    "score": 37.4,
+    "gates_passed": ["Gate 0 (PIT)", "Gate 1 (Implementation)"],
+    "gates_failed": ["Gate 2 (Robustness)", "Gate 3 (Performance)", "Gate 4 (Statistical)", "Gate 5 (Diversification)"],
+    "reasons": [
+      "SR 0.286 far below 1.0 minimum",
+      "CAGR 3.84% far below 16% target",
+      "MDD 43.7% far above 25% limit",
+      "Negative IR (-0.343): KOSPI underperformance",
+      "12 consecutive negative alpha months",
+      "DD 7/22 overlay destroyed more value than it protected",
+      "Role honesty concern: 'diversifier' with 0.702 BM correlation"
+    ],
+    "strengths": [
+      "PIT fully clean (C1-C15 all pass)",
+      "OOS retention 1.91 (no overfit signal)",
+      "Alpha trend improving (recent 3Y SR higher)",
+      "Good implementation quality (sector neutral, lagged filters)"
+    ],
+    "weaknesses": [
+      "Catastrophic performance: SR/CAGR/MDD all fail hard",
+      "DD 7/22 overlay net-negative: cost 5.2pp CAGR for 10.6pp MDD relief",
+      "D01+Q07+C01 composite lacks standalone alpha strength",
+      "S3 orthogonality only 'partial' (D43 -> C04_ESBR corr 0.465)"
+    ],
+    "recommendation": "DISCARD this DD variant. The underlying D01+Q07+C01 composite has insufficient alpha (parent SR 0.479, CAGR 9.06%). DD overlay further degrades an already weak signal. Recommend: (1) abandon DD calibration on this factor combination, (2) if pursuing skewness alpha, test D43 in a different composite with stronger complementary factors, (3) Q07+C01 pair may retain value as satellite components in a stronger composite."
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "role": "governor",
+  "r1_score": 18,
+  "r2_score": 16,
+  "score_changed": true,
+  "score_change_reason": "Quant의 실측치(D25 ICIR 0.119 허들 미달, D25xQ07 IC 상관 0.430)와 Risk Manager의 4-regime CRISIS ICIR -0.174 발견이 R1에서 전제한 '위기 시 명확한 한계기여'를 구조적으로 약화시킴. Defense family 신설의 구조적 필요성(gap_alignment + family_saturation 무패널티)은 여전히 유효하나, D25 단독의 포트폴리오 적합성이 크게 하락하여 marginal_contribution을 3에서 1로 하향 조정.",
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "D25의 4-regime CRISIS ICIR -0.174는 Governor 관점에서 가장 심각한 발견. 현 포트폴리오의 MRS 29.2 Caution 환경에서 MRS가 Crisis로 상승하더라도, '느린 둔화' 유형의 위기에서 D25가 drag을 유발한다면, defense sleeve가 SR gap 0.807을 오히려 확대시키는 역설이 발생한다. R1에서 제시한 'regime-conditional 배분(정상 0~10%, 위기 최대 30%)' 설계도, 위기의 정의 자체가 stress와 4-regime에서 상충하면 전환 시점을 특정할 수 없게 된다. Kill scenario '느린 둔화기 D25 역풍'은 PG2 배분 설계의 핵심 리스크로 격상되어야 한다."
+    },
+    {
+      "with": "quant",
+      "point": "D25 전기간 ICIR 0.119가 허들(0.20) 미달이라는 실측 결과는 Alpha Lab Gate(qepm S8) 기준으로 S2 프로파일 진입 자체가 불허되는 수치. R1에서 D25의 포트폴리오 적합성을 AX-001 조건부 평가로 정당화했으나, 조건부 평가가 적용되려면 최소한 해당 조건(위기) 하에서의 ICIR이 안정적으로 양수여야 하는데, EU_Debt ICIR -0.159 + COVID ICIR -0.011은 이 전제마저 훼손한다. D25는 GFC+Rate_Hike라는 특정 2개 위기 유형에서만 기능하는 과적합 팩터일 가능성이 높다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "288팩터 ranking 기반 Q07 선정의 선택편의 우려에 동의. 다만 Governor 관점에서 이는 Q07 자체의 결격이라기보다, 선정 과정의 투명성 문제. expanding-window OOS 검증 조건은 S1~S2에서 반드시 이행되어야 하며, 이를 R2 조건에 추가 반영한다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "risk_manager",
+      "point": "D25 문제가 심각하다는 점에는 동의하나, 'defense sleeve 대신 overlay 강화(DD Brake 파라미터 조정) 대안 전환'이라는 Risk Manager의 TDC>0.4 시 대안은 과도한 결론. 포트폴리오에 defense family가 0%인 구조적 결함은 overlay 파라미터 조정으로 해소되지 않는다. overlay는 alpha source가 아닌 risk management 수단이므로(L-122), family 다각화와는 본질적으로 다른 축의 문제이다. D25가 부적합하면 D25를 대체할 defense 팩터를 탐색하는 것이 올바른 경로이지, defense family 자체를 포기하고 overlay로 우회하는 것은 PG0 gap의 3-family 분산 목표를 영구히 달성하지 못하는 결과를 초래한다.",
+      "severity": "major"
+    },
+    {
+      "against": "quant",
+      "point": "Q07xQ02_ROE IC 상관 0.407을 근거로 한 'Quality family 오염' 판정은 팩터 수준 IC 상관과 포트폴리오 수준 역할 중복을 혼동하고 있다. Q07-C19_Composite 상관이 0.184로 낮다는 Quant 자신의 실측이 이를 반증한다. Core Alpha 전략(STR_1631)이 사용하는 것은 C19_Composite이지 Q02_ROE가 아니며, Q07이 Q02와 상관이 있더라도 Core와의 실질적 역할 중복 여부는 포트폴리오 수준 수익률 상관(S3 직교성)에서 판단해야 한다. 팩터 IC 상관 != 전략 수익률 상관이라는 기본 구분이 필요하다.",
+      "severity": "minor"
+    },
+    {
+      "against": "academic",
+      "point": "Q07이 Asness(2019) Safety의 부분집합인지 독립 메커니즘인지에 대한 학술적 불확실성은 인정하나, Governor 관점에서 이는 S0 가설 통과 여부에 영향을 주지 않는다. 포트폴리오 적합성 판단에 필요한 것은 (1) Core 대비 낮은 상관, (2) 위기 시 양수 IC, (3) family 비중복이며, Q07은 이 세 가지를 모두 충족한다. 학술적 메커니즘의 정밀한 귀속은 S2~S3에서 점진적으로 해소해도 무방하다.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Quant의 D25 전기간 ICIR 0.119(허들 미달) + EU_Debt/COVID 구간 음수 전환, 그리고 Risk Manager의 4-regime CRISIS ICIR -0.174 발견의 교차 검증 결과가 가장 강력한 반론이다. 이 두 발견을 종합하면, D25는 '6대 급락 사건의 소수 표본(n~40월)에서만 양수 IC를 보이는 과적합 팩터'일 가능성이 높으며, stress 기준과 4-regime 기준이 상충하는 위기에서 regime-conditional 배분의 전환 시점 자체를 설계할 수 없게 된다. D25를 defense sleeve의 주팩터(55%)로 유지하는 것은 PG2 배분 설계에서 해결 불가능한 난제를 생성한다.",
+  "r2_position_update": "R1의 핵심 논지 3개 중 2개는 유지하되 D25 관련 부분을 전면 수정한다. (1) Defense family 0% -> 신설 필요성: 유지. (2) D25+Q07 조합의 포트폴리오 적합성: D25 적합성을 '조건부 인정'에서 '중대 의문'으로 하향. Q07 단독 또는 D25 대체 팩터 탐색을 S1 병렬 경로로 추가. (3) AX-001 조건부 평가 충족: Q07은 여전히 충족하나, D25는 '조건(위기)' 자체의 정의가 불안정하여 AX-001 적용 전제가 훼손됨.",
+  "updated_conditions": [
+    "S1에서 D25+Q07 55:45 블렌드 외에, Q07 단독(defense_weight=1.0) 경로를 반드시 병렬 테스트할 것. Q07 단독의 전기간 ICIR(0.382)이 블렌드보다 안정적이고 위기 IC 일관성(4/6 stress 양수)이 높다면, D25를 제거하고 Q07 단독 defense sleeve로 전환할 것.",
+    "D25를 유지하려면 S2에서 4-regime x stress 교차분석을 통해, D25가 양수 IC를 보이는 위기 유형을 명시적으로 정의하고, 해당 위기 유형을 실시간 식별할 수 있는 관측 가능한 변수(VIX/VRP/신용스프레드 등)를 제시할 것. 정의 불가 시 D25 폐기.",
+    "PG2 배분 설계의 선행조건을 강화: Defense sleeve의 regime-conditional 전환은 stress 기준과 4-regime 기준의 교집합 위기(급락 + MRS 급등 동시 발생)에서만 활성화하는 보수적 설계를 기본으로 할 것. 교집합이 지나치게 좁아(n<20월) 통계적 유의성이 부족하면 defense sleeve 정적 저비중(10~15%) 고정 배분으로 전환.",
+    "R1 조건 유지: H_1644(D07+CR05) 병렬 비교, stress outperform 4/6 미달 시 PG0 복귀."
+  ],
+  "scoring_detail_r2": {
+    "gap_alignment": 3,
+    "role_match": 4,
+    "family_saturation": 4,
+    "marginal_contribution": 1,
+    "implementation_feasibility": 4
+  },
+  "timestamp": "2026-04-12T17:30:00"
+}

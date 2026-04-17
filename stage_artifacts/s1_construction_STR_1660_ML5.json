@@ -1,0 +1,39 @@
+{
+  "factor_id": "ML5_RANK_ENS",
+  "strategy_id": "STR_1660_ML5_ENSEMBLE",
+  "stage": "S1",
+  "created_at": "2026-04-11 14:36:32.838041",
+  "variants": ["S1_A_5M_full", "ablation_3M", "ablation_2M"],
+  "implementation_profile": {
+    "models": ["XGBoost_5seed", "RandomForest_5seed", "Ridge_glmnet", "ElasticNet_alpha_CV", "PLS_plsr"],
+    "rank_average": "equal-weight 5-model rank avg (Timmermann 2006)",
+    "mi_prefilter_top": 50,
+    "window_type": "expanding walk-forward",
+    "purge_method": "1yr_val_gap (OOS_yr-1 전체)",
+    "n_holdings": 30,
+    "commission_bps": 15,
+    "liq_threshold_krw": 200000000,
+    "signal_only": "EW 30 순수 팩터 신호 (S5에서 브레이크/포지션조절 추가 예정)",
+    "weight_method": "EW"
+  },
+  "ablation": {
+    "decision": "5M_ADOPTED (ICIR 동등 이상)",
+    "ICIR_5M": 0.7104,
+    "ICIR_3M": 0.6809,
+    "ICIR_2M": 0.6474,
+    "IC_sd_5M": 0.0935,
+    "IC_sd_3M": 0.0908,
+    "IC_sd_2M": 0.0864
+  },
+  "turnover_risk": "중간",
+  "capacity_risk": "낮음",
+  "pit_compliance": {
+    "C1": "expanding only PASS",
+    "C2": "t-1 feature PASS",
+    "C13": "Z_Score_Aligned PASS",
+    "C14": "fwd_ret t+1~t+21 PASS",
+    "C15": "일간 DB open_dataset PASS",
+    "OPT1": "Arrow pushdown PASS",
+    "purge": "1yr val gap PASS"
+  }
+}

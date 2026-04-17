@@ -1,0 +1,95 @@
+{
+  "stage": "PG3_research",
+  "version": "1.0.0",
+  "portfolio_id": "V7_ALLWEATHER_001",
+  "strategy": "STR_1555_score_blend_3factor",
+  "description": "C19+V14+D01 Score Blend + DD 8/22",
+  "timestamp": "2026-03-28T23:15:21",
+  "analysis_type": "20Y_standalone_crisis_backtest",
+  "period": {
+    "start": "2005-02-06",
+    "end": "2026-03-28",
+    "years": 21.1
+  },
+  "full_period": {
+    "cagr_pct": 20.11,
+    "ann_vol_pct": 20.54,
+    "sharpe": 0.979,
+    "sortino": 1.207,
+    "mdd_pct": -51.57,
+    "calmar": 0.39,
+    "monthly_win_rate": 0.614
+  },
+  "crisis_periods": {
+    "GFC": {
+      "period": "2008-01 ~ 2009-03",
+      "total_ret_pct": -21.17,
+      "period_mdd_pct": -50.1,
+      "ann_vol_pct": 37.24,
+      "recovered_in_period": false
+    },
+    "GFC_peak": {
+      "period": "2008-09 ~ 2009-03",
+      "total_ret_pct": -7.89,
+      "period_mdd_pct": -41.43,
+      "ann_vol_pct": 50.25
+    },
+    "GFC_recovery": {
+      "period": "2009-04 ~ 2009-12",
+      "total_ret_pct": 43.45,
+      "period_mdd_pct": -8.45
+    },
+    "COVID": {
+      "period": "2020-01 ~ 2020-06",
+      "total_ret_pct": -8.64,
+      "period_mdd_pct": -39.47,
+      "ann_vol_pct": 40.66,
+      "recovered_in_period": false
+    },
+    "Rate_Hike_2022": {
+      "period": "2022-01 ~ 2022-12",
+      "total_ret_pct": -9.45,
+      "period_mdd_pct": -22.99,
+      "ann_vol_pct": 20.14,
+      "recovered_in_period": false
+    }
+  },
+  "rolling_3y": {
+    "n_windows": 71,
+    "sr_min": -0.105,
+    "sr_max": 2.545,
+    "sr_median": 0.717,
+    "sr_mean": 0.872,
+    "cagr_min_pct": -2.3,
+    "cagr_max_pct": 54.8,
+    "cagr_median_pct": 14.6,
+    "mdd_min_pct": -51.6,
+    "mdd_max_pct": -13.1,
+    "mdd_median_pct": -25.5,
+    "positive_sr_pct": 98.6,
+    "sr_above_1_pct": 31,
+    "worst_window": {
+      "period": "2017-07 ~ 2020-08",
+      "sr": -0.105,
+      "cagr_pct": -2.3,
+      "mdd_pct": -45.8
+    }
+  },
+  "dd_brake_analysis": {
+    "dd_gt_8pct_days": 2085,
+    "dd_gt_8pct_ratio": 0.4,
+    "dd_gt_22pct_days": 233,
+    "dd_gt_22pct_ratio": 0.045,
+    "time_underwater_gt1pct": 0.793,
+    "max_consecutive_underwater_days": 687
+  },
+  "reopen_triggers": {
+    "mdd_breach": true,
+    "mdd_reason": "MDD -51.6% >> target 25%",
+    "underwater_concern": true,
+    "underwater_reason": "79.3% time underwater, max 687 consecutive days",
+    "crisis_protection_absent": true,
+    "crisis_reason": "GFC MDD -50.1%, COVID MDD -39.5% — no tail protection"
+  },
+  "verdict": "Defense sleeve essential. Pure alpha signal is strong (CAGR 20.1%, 98.6% positive 3Y SR) but drawdown management absent. DD 8/22 brake insufficient for crisis scenarios."
+}

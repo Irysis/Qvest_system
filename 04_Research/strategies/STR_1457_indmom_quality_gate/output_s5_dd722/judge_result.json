@@ -1,0 +1,52 @@
+{
+  "strategy_id": "STR_1457_indmom_quality_gate_s5_dd722",
+  "judge_timestamp": "2026-03-26 09:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on run_s5_dd722.R, factor_engine.R, run_all.R. Manual C1-C11 verified: C2/C9 DD brake uses dd_lag=c(0,dd_pct[-n_f]) (proper 1-day lag). C10 liquidity uses shift(,1L,'lag'). C13 Z_Score_Aligned only. C15 Arrow dataset. C11 no FRED dependency. No same-day circular detected."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR=0.325 (target 2.0+), CAGR=4.57% (target 16%+), MDD=37.35% (target <25%). Calmar=0.122. IR=-0.268 (underperforms BM SR=0.427). Score=28.2 Grade B. DD 7/22 overlay reduced pure factor returns without achieving meaningful drawdown control (MDD still 37.35%)."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "S0 (s0_record_MF07_MomQualGate.json), S1 (s1_construction), S2 (s2_profile), S3 (s3_orthogonality), S4 (s4_integration) all present. S3 shows max_abs_corr=0.353 vs M14_RiskAdj_Mom (partial independence). S4 delta_sharpe=-0.103, kospi_beat=false."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "underperforming_correlated",
+      "detail": "Claimed diversifier but BM_Corr=0.619 (moderate, not low enough for diversifier). Negative IR (-0.268) means it diversifies returns downward. Stress: GFC -6.03% alpha, Rate2022 -8.03% alpha (underperforms in 2/4 stress periods). A diversifier should show low BM correlation or positive crisis alpha; this variant shows neither consistently."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR: not available. OOS retention=0.337 (IS SR=0.414, OOS SR=0.139) — severe degradation (66% decay). Rolling 3Y Sharpe>0 ratio=55.1% (barely above 50%). FMB Score t-stat=1.35 (not significant). Max consecutive negative alpha months=13. No evidence of robust statistical edge."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "FF5 alpha=-5.25% annual (t=-0.91, p=0.365). FF3 alpha=-5.89% (t=-1.09). Carhart4 alpha=-6.33% (t=-1.19). All negative alphas, none statistically significant. The strategy is explained away by standard factors — no incremental alpha detected. DD 7/22 overlay on IndMom+QualGate does not generate alpha beyond FF5 factors."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 28.2,
+    "gates_passed": 2,
+    "gates_failed": 4,
+    "fail_reasons": [
+      "Gate 1: SR 0.325, CAGR 4.57%, MDD 37.35% — all below targets",
+      "Gate 3: Claimed diversifier but BM_Corr=0.619, negative IR, weak crisis alpha",
+      "Gate 4: OOS retention 0.337, DSR unavailable, 13 consecutive neg alpha months",
+      "Gate 5: FF5 alpha -5.25% (t=-0.91) — negative and not significant"
+    ],
+    "recommendation": "DISCARD variant. DD 7/22 calibration on IndMom+QualGate is ineffective: MDD only reduced marginally while destroying returns (CAGR 4.57% vs BM 9.03%). The underlying pure factor (S2 base) already showed weak alpha; the DD overlay cannot rescue a fundamentally weak signal. Consider: (1) IndMom may require sector-neutral scoring rather than quality gate, (2) DD 7/22 parameters too aggressive for a low-vol strategy — floor at 30% exposure drains returns in prolonged drawdowns."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr=0.619 too high for diversifier. Negative alpha in FF3/FF5. Underperforms BM in 2/4 stress periods. S4 delta_sharpe=-0.103 (detracts from portfolio). A diversifier needs either low correlation (<0.3) or consistent positive crisis alpha; this variant has neither."
+  }
+}

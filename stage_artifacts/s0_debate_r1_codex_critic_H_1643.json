@@ -1,0 +1,25 @@
+{
+  "role": "codex_critic",
+  "score": 6,
+  "arguments": [
+    "위기 IC/ICIR 수치가 사후적 위기 구간 피팅일 가능성 높음. 6대 위기 구간에서만 측정한 성과는 표본 외 예측력을 보장하지 않으며, 실시간 위기 정의(expanding-window threshold)로 재검증 필수.",
+    "CR05 공매도 압력 프록시가 한국 공매도 규제 변경(2020 금지, 2021 재개)에 극도로 취약. 공매도 스퀴즈 시 defense sleeve가 오히려 역행할 위험. kill scenario: MDD +8~12%p 악화.",
+    "V24 잔여이익이 Quality 축으로 회귀할 위험(L-113). Ohlson(1995)의 earnings-based valuation이 한국 위기 시 accrual quality 붕괴와 동조화될 가능성."
+  ],
+  "concern": "전체 설계가 사후적 위기 에피소드 피팅에 의존. 실시간 위기 탐지 없이는 활성화 시점 지연 + 오작동으로 defense 역할 실패.",
+  "conditions": [
+    "실시간 위기 정의를 expanding-window 기반으로 사전 등록 후 재검증",
+    "market beta + downside beta 통제 후 잔여 defense alpha 확인",
+    "purged walk-forward로 미포함 위기 구간에서 안정성 검증",
+    "공매도 규제 변경 구간(2020-2021) 별도 분석"
+  ],
+  "raw_codex_output": {
+    "total_25scale": 8,
+    "breakdown_25scale": {"l_code_check": 1, "failure_avoidance": 2, "banned_factor": 2, "lesson_check": 2, "structural_risk": 1},
+    "kill_scenarios": [
+      {"scenario": "위기 국면 라벨링이 full-sample 기반 → 실시간 배포 시 활성화 지연", "probability": "medium", "blind_spot": true},
+      {"scenario": "공매도 규제 변경으로 CR05 신호 반전", "probability": "high", "blind_spot": false},
+      {"scenario": "V24 재무제표 래깅으로 위기 시 1-2분기 지연 반영", "probability": "medium", "blind_spot": true}
+    ]
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1422_crowding_defense_s5",
+  "variant": "S5_VT18_DD7_22",
+  "description": "VT 18% (expanding, t-1) + DD 7/22 brake overlay on CR08+D01 crowding defense base",
+  "timestamp": "2026-03-26T18:00:00+09:00",
+  "l_code": "L-631",
+  "gate_results": {
+    "gate0_pit": {
+      "pass": true,
+      "lookahead_detector": "CLEAN (run_s5_mutation.R, factor_engine.R both clean)",
+      "c1_full_sample": "PASS - expanding vol uses raw_ret[1:(i-1)], no full-sample stats",
+      "c2_same_day_circular": "PASS - vt_lagged = c(1.0, head(vt_scalar, -1)) provides 1-day lag; dd_lag = c(0, dd_pct[-n_f]) provides 1-day lag",
+      "c3_same_period_agg": "PASS - no within-period aggregate applied to same period",
+      "c4_financial_lag": "N/A - overlay only, no financial statement data",
+      "c5_overlay_t_minus_1": "PASS - both VT and DD use t-1 signals",
+      "c6_survivorship": "PASS - inherits parent sim with LIQ_THRESHOLD=2e8 filter",
+      "c7_auto_detect": "PASS - lookahead_detector clean on all scripts",
+      "c8_fm_same_day": "N/A - no factor momentum",
+      "c9_vt_dd_same_day": "PASS - VT uses vt_lagged (1-day lag), DD uses dd_lag (1-day lag)",
+      "c10_liquidity_filter": "PASS - inherited from parent (AvgTV20 >= 2e8)",
+      "c11_data_time_axis": "PASS - no external data sources, uses only strategy returns",
+      "c13_negate_factors": "PASS - factor_engine uses Z_Score_Aligned via align_factor_direction()",
+      "c14_ic_usable_date": "N/A - no IC access",
+      "c15_factor_db_load": "PASS - factor_engine uses arrow::open_dataset() bulk load"
+    },
+    "gate1_performance": {
+      "pass": false,
+      "sharpe": 0.616,
+      "cagr_pct": 7.33,
+      "mdd_pct": 26.76,
+      "ir": -0.098,
+      "calmar": 0.274,
+      "ann_vol": 11.89,
+      "turnover_ann": 214,
+      "assessment": "FAIL - SR 0.616 far below 1.0 threshold. CAGR 7.33% far below 16% target. IR negative = KOSPI outperforms risk-adjusted. MDD 26.76% exceeds 25% target. VT+DD overlay reduced MDD from 31.77% (base) to 26.76% but at CAGR cost (7.98% -> 7.33%). Overlay achieves minimal benefit."
+    },
+    "gate2_artifacts": {
+      "pass": true,
+      "s0_record": true,
+      "s1_construction": true,
+      "s2_profile": true,
+      "s3_orthogonality": true,
+      "s4_integration": true,
+      "charts": {
+        "equity_curve": true,
+        "annual_returns": true
+      },
+      "assessment": "All stage artifacts present (S0-S4). Charts generated."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "s3_role_hint": "diversifier",
+      "s4_provisional_role": "core_alpha",
+      "assessment": "S4 claims core_alpha but S3 shows factor_mean_max_corr=0.943 (near-redundant factors). SR 0.616 and negative IR disqualify core_alpha. Judge overrides to DIVERSIFIER (weak). Role mismatch is honest on the hurdle side (declared diversifier)."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "oos_retention": 0.294,
+      "is_sharpe": 0.763,
+      "oos_sharpe": 0.224,
+      "alpha_trend_ratio": 0.485,
+      "recent_3y_sr": 0.299,
+      "rolling_3y_pos_pct": 84.1,
+      "stress_outperform": "3/3",
+      "max_consec_neg_alpha_months": 10,
+      "assessment": "FAIL - OOS retention 29.4% (IS SR 0.763 -> OOS 0.224) = severe overfitting/alpha decay. Alpha trend ratio 0.485 (recent 3Y SR 0.299 vs full 0.616) = alpha halved in recent period. 10 consecutive negative alpha months is concerning. Strong stress outperformance (3/3) is the only positive signal."
+    },
+    "gate5_ff5": {
+      "pass": "NOT_TESTED",
+      "assessment": "FF5 not run. Cannot verify factor-adjusted alpha. Given base SR 0.616, FF5 alpha is almost certainly insignificant."
+    }
+  },
+  "s3_orthogonality_review": {
+    "factor_mean_max_corr": 0.943,
+    "novelty_score": 0.324,
+    "max_return_corr": 0.829,
+    "assessment": "POOR - Factor correlation 0.943 = CR08 and D01 are near-identical signals. Novelty 0.324 = low. Return corr 0.829 = high overlap with existing strategies. The 2-factor blend is effectively a 1-factor strategy."
+  },
+  "mutation_comparison": {
+    "base": { "sharpe": 0.633, "cagr": 7.98, "mdd": 31.77 },
+    "s5_vt18_dd7_22": { "sharpe": 0.616, "cagr": 7.33, "mdd": 26.76 },
+    "delta_vs_base": "SR -0.017, CAGR -0.65pp, MDD -5.01pp",
+    "assessment": "VT18+DD7/22 trades 0.65pp CAGR for 5pp MDD reduction. SR actually decreased. Calmar unchanged (0.274 vs 0.251). Not a meaningful improvement."
+  },
+  "overall_verdict": {
+    "grade": "C",
+    "score": 17.1,
+    "pass": false,
+    "hard_fail": false,
+    "disposition": "REJECT",
+    "rejection_reasons": [
+      "Factor redundancy: CR08-D01 corr=0.943 renders 2-factor blend a single-factor strategy",
+      "Base signal too weak: SR 0.633 pre-overlay, no overlay can fix underlying alpha deficit",
+      "Severe alpha decay: recent 3Y SR 0.299 vs full 0.616 (ratio 0.49)",
+      "OOS degradation: 29.4% retention = likely overfitted or time-varying alpha exhausted",
+      "Negative IR: benchmark outperforms on risk-adjusted basis"
+    ],
+    "summary": "STR_1422_s5 (VT18+DD7/22) is PIT-clean but fundamentally unsalvageable. The CR08+D01 crowding-defense factor pairing has 0.943 cross-correlation, making the 2-factor blend effectively single-factor. The base signal (SR 0.633) is too weak for any overlay to rescue to Grade A territory. Alpha has decayed to SR 0.299 in the most recent 3 years. OOS retention of 29.4% confirms the limited alpha is not robust. The VT+DD overlay marginally improves MDD but does not address the core problem: insufficient and decaying alpha from a redundant factor pair."
+  }
+}

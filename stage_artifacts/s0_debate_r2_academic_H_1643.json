@@ -1,0 +1,18 @@
+{
+  "role": "academic",
+  "r1_score": 14,
+  "r2_score": 8,
+  "score_changed": true,
+  "score_change_reason": "Quant의 Factor DB 검증에서 CR05 stress ICIR = -0.168 (0.77 아님), GFC/EU Debt 모두 음수. V24 전기간 ICIR = -0.282. Governor가 CR05를 crisis=negative로 확인, DFA v2에서 제거 완료. 위기 방어의 실증 근거가 근본적으로 훼손됨. R1에서 stress_factor_ic_analysis.csv를 Factor DB와 교차검증하지 않은 것이 오류.",
+  "agreements": [
+    {"with": "quant", "point": "CR05 stress ICIR = -0.168이 Factor DB 표준 6-stress-period 정의로 재현됨. GFC(-0.060), EU Debt(-0.033) 모두 음수로 defense 논거 반전."},
+    {"with": "risk_manager", "point": "V24 전기간 ICIR -0.282는 비위기 75-85% 기간 동안 alpha 파괴. SR이 binding constraint인 포트폴리오에서 25% 비중은 최적화 논리에 반함."},
+    {"with": "governor", "point": "CR05가 Factor Registry에서 crisis=negative, DFA v2에서 제거된 것은 프로젝트 내부 학습. 새 근거 없이 35% 비중 재투입은 후퇴."}
+  ],
+  "rebuttals": [
+    {"against": "quant", "point": "V24의 월별 ICIR 0.0068이 noise이지만 위기 국면에서는 구조가 있음 (COVID +0.033, TechSell +0.033). 완전 제거보다는 위기 조건부 활성화(bad regime 5-10%, normal 0%)가 적절.", "severity": "minor"},
+    {"against": "risk_manager", "point": "L-106/L-115 return correlation 우려는 유효하나 D25에도 동일 적용. S2 DCC-GARCH로 crisis TDC 직접 측정 필요. TDC 0.30 미만이면 defense 효과 실질적일 수 있음.", "severity": "minor"},
+    {"against": "codex_critic", "point": "사후적 위기 피팅 우려는 구조적으로 타당하나, expanding-window 실시간 위기 탐지는 사전 threshold 미지로 비현실적일 수 있음. 대안: held-out 위기(예: COVID 제외 학습 → COVID 테스트)로 부분 검증이 더 실용적.", "severity": "major"}
+  ],
+  "strongest_opposing_argument": "Quant의 CR05 실증 검증: 0.77 stress ICIR이 Factor DB 표준 6-stress-period에서 재현 불가. GFC(-0.060), EU Debt(-0.033) 모두 음수. Governor도 CR05가 DFA v2에서 crisis=negative로 제거됨을 확인. 가설이 프로젝트가 이미 기각한 팩터를 재제안하고 있음."
+}

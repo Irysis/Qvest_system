@@ -1,0 +1,82 @@
+{
+  "role": "quant",
+  "hypothesis_id": "H_1643",
+  "debate_round": 1,
+  "timestamp": "2026-04-12",
+  "score": 7,
+  "score_breakdown": {
+    "icir_pass": 1,
+    "internal_corr": 4,
+    "c19_corr": 4,
+    "defense_ic": 0,
+    "data_avail": 1,
+    "notes": "icir_pass: CR05 ICIR 0.0068(V24) vs claimed 0.77 — catastrophic miss. data_avail: D25 missing 2008-2011 GFC/EU_Debt stress windows (only 188 of 436 months), compromising stress coverage. defense_ic: crisis IC pattern does NOT hold. internal_corr + c19_corr are the only claims that hold."
+  },
+  "arguments": [
+    "CR05 stress ICIR FAIL (claimed 0.77 vs actual period-mean ICIR = -0.17): Factor DB IC history shows CR05_Short_Pressure_Proxy per-period crisis means of -0.060(GFC), -0.033(EU_Debt), +0.027(China), +0.007(COVID), +0.008(Ukraine), +0.017(TechSell) — only 4/6 wins and the two largest crises (GFC 2008, EU Debt 2011) are LOSSES. Net period-mean ICIR = -0.168, directly contradicting the 0.77 claim. Full-history IC monthly ICIR = +0.186, suggesting claimed 0.77 was computed over a highly selective subset.",
+    "V24 full-history ICIR = 0.0068 (near-zero signal): V24_Residual_Income shows Mean_IC = 0.00077 across 254 months, ICIR = 0.0068 — statistically indistinguishable from zero. Stress crisis wins: 2/6 (COVID +0.033, TechSell +0.033 vs GFC -0.032, EU_Debt -0.095, China -0.044, Ukraine -0.006). The claimed 'stress IC 0.074 / 5/6 wins' is not reproducible in the Factor DB. V24 appears to add near-zero standalone signal; the weight of 0.25 to this factor dilutes the composite without crisis benefit.",
+    "D25 data coverage gap 2005-2011 inflates crisis statistics: D25_Left_Tail_Beta has IC history from 2005-01-31 but only 188 months vs 436 months for other factors — missing 2008-2011 period in the stress analysis. When constrained to available windows, D25 shows GFC +0.012 and COVID -0.008 (LOSS), Ukraine +0.034, TechSell -0.024 — only 2/6 crisis wins. Full-history ICIR = 0.1185, below the S2 hurdle of 0.20. The crisis premium claim of +0.057 and COVID IC 0.185 cannot be reproduced."
+  ],
+  "concern": "The CR05 stress ICIR claim of 0.77 is the most serious discrepancy: actual Factor DB computation yields period-mean ICIR = -0.168, with GFC and EU_Debt (the two largest historical Korean market stress events) both showing NEGATIVE IC. This inverts the defense thesis. The hypothesis likely derived its claim from a stress_factor_ic_analysis.csv computed on a non-standard stress window definition or a different factor version than currently in the DB. A defense strategy anchored on a factor that underperforms during the two largest crises is structurally flawed.",
+  "conditions": [
+    "Scout must clarify the exact stress window definition and data version used to derive CR05 stress ICIR = 0.77 — the number is not reproducible from the current Factor DB IC monthly history using the standard 6-stress-period set (reference_stress_periods.md).",
+    "V24 must be replaced or substantially justified: ICIR = 0.0068 over 254 months is not a defense factor — it is statistical noise. The hypothesis notes V24 correlation with Q02_ROE = 0.739, which raises Quality-cluster contamination risk that is not mitigated by near-zero stress IC.",
+    "D25 pre-2012 data gap must be acknowledged in the S1 success criteria: with only 188 months of IC history starting 2005 (irregular), GFC 2008 and EU Debt 2011 stress coverage is structurally incomplete. S1 stress evaluation must clearly bound this."
+  ],
+  "data_verification": {
+    "method": "Factor DB load_month_factors() via factor_db_connector.R + factor_ic_monthly.parquet",
+    "ic_history_rows": 62885,
+    "ic_history_factors": 269,
+    "D25_Left_Tail_Beta": {
+      "in_registry": true,
+      "ic_months": 188,
+      "date_range": "2005-01-31 to 2026-02-28",
+      "mean_ic": 0.0129,
+      "icir_fullhistory": 0.1185,
+      "hit_rate": 0.537,
+      "crisis_wins": "2/6 (GFC+WIN, EU_Debt=NO_DATA, China=NO_DATA, COVID=LOSS, Ukraine=WIN, TechSell=LOSS)",
+      "claimed_crisis_ic": 0.185,
+      "actual_covid_ic": -0.0077
+    },
+    "CR05_Short_Pressure_Proxy": {
+      "in_registry": true,
+      "ic_months": 254,
+      "date_range": "2005-01-31 to 2026-02-28",
+      "mean_ic": 0.0150,
+      "icir_fullhistory": 0.1858,
+      "hit_rate": 0.571,
+      "crisis_period_mean_icir": -0.1684,
+      "crisis_wins": "4/6 (GFC=LOSS, EU_Debt=LOSS, China=WIN, COVID=WIN, Ukraine=WIN, TechSell=WIN)",
+      "claimed_stress_icir": 0.77,
+      "actual_stress_icir": -0.1684
+    },
+    "V24_Residual_Income": {
+      "in_registry": true,
+      "ic_months": 254,
+      "date_range": "2005-01-31 to 2026-02-28",
+      "mean_ic": 0.00077,
+      "icir_fullhistory": 0.0068,
+      "hit_rate": 0.547,
+      "crisis_wins": "2/6 (GFC=LOSS, EU_Debt=LOSS, China=LOSS, COVID=WIN, Ukraine=LOSS, TechSell=WIN)",
+      "claimed_stress_ic": 0.074,
+      "claimed_wins": "5/6"
+    },
+    "internal_correlations": {
+      "D25_vs_CR05": -0.0225,
+      "D25_vs_V24": -0.0272,
+      "CR05_vs_V24": 0.1133,
+      "claimed_max": 0.15,
+      "all_pass": true,
+      "months_averaged": 36
+    },
+    "c19_correlations": {
+      "c19_factor_used": "C19_Composite_Earnings",
+      "D25_vs_C19": 0.0119,
+      "CR05_vs_C19": -0.0053,
+      "V24_vs_C19": -0.0221,
+      "claimed_max": 0.28,
+      "all_pass": true,
+      "months_averaged": 36
+    }
+  }
+}

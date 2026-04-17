@@ -1,0 +1,148 @@
+{
+  "factor_id": "BCSNA_Sector_Neutral_Accrual",
+  "strategy_id": "STR_1654_beta_conditioned_sector_neutral_accrual",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-09",
+  "session": 56,
+
+  "hypothesis": "Beta-Conditioned Sector-Neutral Accrual Composite Diversifier. BCAC(STR_1653)의 진화형. 3단계 구조적 beta 축소: (1) 60일 rolling beta 하위 40% 유니버스 제한, (2) 업종별 동일 종목수 배분(sector-neutral), (3) 업종 내 AC21+AC22+AC17 z-score 합산 Top 선택. BCAC의 취약점(L-115: beta 커팅은 필요조건이지 충분조건이 아님)을 sector-neutral 구조로 보완한다. 한국시장에서 삼성전자+SK하이닉스가 KOSPI의 30%+를 차지하므로, IT sector overweight = market beta. Sector-neutral construction은 이 구조적 sector bet을 제거하여 진정한 pure factor alpha만 추출한다. EW 20종목(10개 업종 x 2종목), 격월 리밸런싱, 15bps, 유동성 2억원. S1 순수 팩터 측정.",
+
+  "economic_mechanism": {
+    "core_theory": "세 가지 독립적 학술 메커니즘의 구조적 결합. (1) Betting Against Beta (Frazzini & Pedersen 2014): low-beta 유니버스 제한으로 portfolio beta < 0.5를 1차 확보. (2) Accrual Anomaly (Sloan 1996, Richardson et al. 2005): 발생주의 이익의 현금전환 실패가 미래 수익률 예측. Consensus와 독립적 alpha source. (3) Sector-Neutral Construction (Barra methodology, Grinold & Kahn 2000 'Active Portfolio Management'): 업종별 동일 배분으로 common factor(market, sector) 노출을 제거하고 stock-specific alpha만 추출.",
+
+    "why_sector_neutral_solves_L115": "L-115의 핵심 발견: 'Beta 0.93->~0.40 절반 감소에도 Core 상관 0.575로 diversifier 실패. 원인: Low-beta 종목들이 여전히 같은 quality/accrual 스타일 공유.' 이것은 low-beta bucket이 특정 sector(유틸리티/통신/금융)에 편중되어 발생한다. Sector-neutral 구조는 이 편중을 원천 차단한다. 모든 업종에서 low-beta이면서 high-accrual인 종목을 선택하므로, (a) sector exposure ≈ 0, (b) beta exposure < 0.5, (c) accrual alpha만 남음.",
+
+    "why_different_from_bcac": "BCAC(STR_1653)은 low-beta bucket에서 accrual top 20을 EW 선택. 문제: low-beta bucket이 업종 편중될 수 있어 sector bet이 hidden beta로 작용. BCSNA는 sector-neutral 제약을 추가하여 sector bet을 명시적으로 제거. 이론적으로 BCSNA의 residual beta는 BCAC보다 더 낮을 것이며, 이는 앵커(STR_1631)와의 상관을 더 낮출 수 있다.",
+
+    "sector_neutral_in_korea": "한국시장 WICS 기준 10대 업종. IT(삼성전자/하이닉스)이 시가총액 30%+ 차지. 시장 수익률의 상당 부분이 IT sector 움직임. Sector-neutral은 이 IT 집중 리스크를 제거. Grinold & Kahn (2000): sector-neutral portfolio의 tracking error는 더 크지만 information ratio는 더 높음. Pure alpha를 위해 common factor noise를 제거하는 표준 기법.",
+
+    "cross_exposure_control": "Kim(2021, PBF 67): 한국시장에서 cross-exposure 통제 필수. Sector-neutral 구조가 1차 cross-exposure 통제 역할(value/growth sector tilt 방지). 추가로 sector 내에서 Q03_ROA z > -1.5, M01_Mom z > -1.5 필터 적용.",
+
+    "accrual_mechanism": "Sloan (1996): 발생액 고착. Richardson et al. (2005): comprehensive accrual. 현금흐름 기반 이익 > 발생액 기반 이익의 지속성. AC21(현금/발생액), AC22(발생액 변동성), AC17(발생액 반전)의 3차원 composite. 내부 상관: AC21-AC22 0.34, AC21-AC17 0.31, AC22-AC17 0.53 — 중간 수준으로 상호보완적."
+  },
+
+  "factors": [
+    {
+      "name": "AC21_CF_to_Accrual_Ratio",
+      "family": "accrual",
+      "role": "Primary. 현금흐름/발생액 비율 = 이익의 질.",
+      "icir": 0.706,
+      "stress_icir": 0.796,
+      "crisis_4r_icir": 0.029,
+      "corr_C19": 0.038,
+      "crisis_ratio": 1.20,
+      "literature": "Sloan (1996 TAR), Richardson et al. (2005 JAE)"
+    },
+    {
+      "name": "AC22_Accrual_Volatility",
+      "family": "accrual",
+      "role": "Secondary. 발생액 시계열 변동성 = 이익 조작/불안정성.",
+      "icir": 0.710,
+      "corr_C19": 0.055,
+      "literature": "Hribar & Collins (2002), Dechow & Dichev (2002)"
+    },
+    {
+      "name": "AC17_Accrual_Reversal",
+      "family": "accrual",
+      "role": "Tertiary. 극단적 발생액의 평균회귀.",
+      "icir": 0.670,
+      "stress_icir": 0.737,
+      "crisis_4r_icir": 0.442,
+      "corr_C19": -0.012,
+      "crisis_ratio": 1.25,
+      "literature": "Allen, Larson & Sloan (2009)"
+    }
+  ],
+
+  "construction": {
+    "step_1_liquidity": "20일 평균 거래대금 >= 2억원",
+    "step_2_beta_filter": "60일 rolling market beta 하위 40% (전체 유니버스 기준)",
+    "step_3_cross_exposure": "Q03_ROA z > -1.5 AND M01_Mom z > -1.5 (Kim 2021)",
+    "step_4_sector_neutral": "WICS 대분류 10개 업종별 동일 종목수 배분 (2종목/업종 x 10업종 = 20종목). 업종 내 종목이 2개 미만인 경우 해당 업종 skip, 잔여를 차순위 업종에 재배분.",
+    "step_5_scoring": "업종 내에서 Z_Score_Aligned(AC21) + Z_Score_Aligned(AC22) + Z_Score_Aligned(AC17) composite Top 2 선택",
+    "weighting": "Equal Weight (업종 내, 업종 간 모두 EW)",
+    "rebalance": "Bimonthly (격월)",
+    "transaction_cost": "15bps one-way",
+    "overlay": "NONE (S1 순수 팩터 측정)",
+    "max_stocks": 20,
+    "target_beta": "< 0.40 (beta filter + sector-neutral 이중 제약)"
+  },
+
+  "expected_role": "Diversifier",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "SR gap +0.757 (1.243 -> 2.0). Markowitz 경로로 독립 diversifier 2-3개 필요.",
+    "bcac_evolution": "BCAC(STR_1653)이 S1에서 beta 목표는 달성하나 Core 상관이 여전히 높을 위험(L-115). Sector-neutral 추가로 hidden sector bet 제거.",
+    "accrual_untapped": "Accrual family 0% 활용 (L-117). Consensus와 단면 상관 < 0.06으로 독립.",
+    "family_diversity": "consensus(앵커) vs accrual(본 가설). 애널리스트 수정 vs 회계적 이익질. 경제적 채널 완전 분리.",
+    "sector_neutral_untested": "한국시장에서 sector-neutral + beta-conditioned 조합은 미시도. 기존 50+ S3/S5 FAIL의 공통 원인(sector bet -> beta -> 앵커 상관)을 정면 해결."
+  },
+
+  "core_reference": [
+    "Frazzini & Pedersen (2014) 'Betting Against Beta' — BAB SR 0.78, 20개국 일관",
+    "Sloan (1996 TAR) 'Do Stock Prices Fully Reflect Information in Accruals?' — Accrual anomaly 원조",
+    "Richardson, Sloan, Soliman & Tuna (2005 JAE) 'Accrual Reliability and Earnings Persistence'",
+    "Grinold & Kahn (2000) 'Active Portfolio Management' — Sector-neutral portfolio construction",
+    "Kim, Saejoon (2021 PBF 67) 'Enhanced Factor Investing in Korean Market' — Cross-exposure 통제",
+    "[KR-FACTOR-2] 박종원 et al. (2024 재무관리연구) — 한국시장 low-beta 롱온리 한계 실증"
+  ],
+
+  "lesson_check": [
+    "L-087: 한국 롱온리 low-risk sorting 무효 — beta를 sorting이 아닌 constraint로 사용 (BCAC와 동일 해법)",
+    "L-088: Cross-exposure 통제 필수 — (1) sector-neutral이 1차 통제, (2) Q03/M01 필터가 2차 통제",
+    "L-106/L-118: Market beta 지배 — beta filter(40%) + sector-neutral 이중 구조로 해결",
+    "L-115: Low-Beta 필터링만으로 불충분 — 'L-115의 원인 3: Low-beta 종목들이 같은 스타일 공유'를 sector-neutral로 직접 해결. 다른 업종에서 low-beta+high-accrual을 분산 선택하여 스타일 편중 방지.",
+    "L-119: 정적 EW blend alpha 희석 — standalone 전략으로 설계. 배합은 PG2에서",
+    "L-113: Quality defense 실패 — 본 가설은 quality가 아닌 accrual family. Quality와 구조적으로 다른 alpha channel"
+  ],
+
+  "risks": [
+    {
+      "risk": "Sector-neutral 제약으로 유효 종목이 부족 (일부 업종에서 low-beta + liquidity 통과 종목 < 2개)",
+      "probability": "MEDIUM-HIGH",
+      "mitigation": "업종별 최소 종목 수를 1로 낮추거나, WICS 대분류 10개 -> 중분류로 재정의. 또는 beta threshold 40% -> 50% 완화.",
+      "impact": "종목 수 부족 시 scoring 의미 퇴색. S1에서 유효 종목 수 모니터링 필수."
+    },
+    {
+      "risk": "Sector-neutral이 accrual alpha를 희석 (accrual alpha가 특정 sector에 집중)",
+      "probability": "MEDIUM",
+      "mitigation": "Sloan(1996)의 원론적 결과는 cross-sectional이므로 전 업종에서 유효해야 함. 단, 한국시장 특수성으로 제조업에 accrual alpha 집중 가능. S2에서 sector별 accrual ICIR 분석.",
+      "reasoning": "Richardson et al.(2005): comprehensive accrual은 industry-adjusted에서도 유의. Industry effect가 아닌 firm-specific effect."
+    },
+    {
+      "risk": "20종목(10업종x2)으로 분산 과다 — 개별 종목 확신도 낮음",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "Diversifier 역할에서는 alpha 크기보다 독립성이 중요. 분산이 오히려 장점. 만약 alpha 부족 시 업종 수를 8개로 축소(2.5종목/업종 평균)."
+    },
+    {
+      "risk": "BCAC와 거의 동일한 종목이 선택되어 차별화 부족",
+      "probability": "LOW",
+      "mitigation": "Sector-neutral 제약이 종목 구성을 근본적으로 변경. BCAC는 low-beta bucket에서 accrual top 20 → 특정 업종 편중 가능. BCSNA는 모든 업종에서 고르게 선택. S2에서 BCAC 대비 종목 overlap 측정."
+    }
+  ],
+
+  "success_criteria": {
+    "S2_pass": "ICIR >= 0.20, Portfolio beta < 0.40, Sector exposure < 5%",
+    "S3_pass": "Anchor return cor < 0.30, Crisis cor < 0.50",
+    "standalone_SR": "> 0.6 minimum",
+    "vs_bcac": "BCAC 대비 Core 상관 최소 0.10 낮아야 sector-neutral 효과 입증"
+  },
+
+  "s1_implementation_notes": {
+    "sector_mapping": "RAWDATA의 WICS 대분류(또는 KRX 업종분류) 사용. 10개 업종으로 매핑.",
+    "beta_calculation": "60일 rolling OLS beta vs KOSPI. t-1 기준 (C9 준수).",
+    "pit_compliance": "C4: 분기 재무 45일 lag. C9: beta t-1. C13: Z_Score_Aligned만. C14: Usable_Date. C15: load_month_factors().",
+    "factor_db_access": "load_month_factors() 경유. AC21, AC22, AC17, Q03, M01 로드.",
+    "no_overlay": "S0/S1 overlay 금지 준수."
+  },
+
+  "comparison_with_bcac": {
+    "bcac_STR_1653": "Beta filter(40%) + Accrual composite top 20 EW. Sector exposure 미제약.",
+    "bcsna_STR_1654": "Beta filter(40%) + Sector-neutral(10업종x2) + Accrual composite. Sector exposure ≈ 0.",
+    "key_difference": "Sector-neutral 추가로 hidden sector bet 제거. L-115의 '같은 스타일 공유' 문제 해결.",
+    "parallel_test": "S1에서 BCAC와 BCSNA를 병렬 실행하여 sector-neutral 효과 직접 비교 가능."
+  }
+}

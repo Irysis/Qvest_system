@@ -1,0 +1,23 @@
+{
+  "hypothesis_id": "H_MLRA_001",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 66,
+  "attempt": 2,
+  "max_attempts": 3,
+  "timestamp": "2026-04-10T11:30:00",
+  "round1_score": 53,
+  "score_improvement": 13,
+  "scores": {
+    "critic": {"total": 9},
+    "quant": {"total": 20},
+    "academic": {"total": 18},
+    "govproxy": {"total": 19}
+  },
+  "conditions": [
+    "S2에서 rolling 60d beta 분포 + CVaR 적용 전후 비교 필수 (beta<0.65 AND corr<0.45)",
+    "backtest_harness.R에 sector_neutral 제약 추가 구현 필요 (S1 실행 전)",
+    "S1-B(RE 제거) variant 필수 병행 — alpha decay 진단",
+    "S5 ablation 4단계 각각 SR/MDD 측정 필수",
+    "cccp solver 수렴 실패율 사전 시뮬레이션 (EW fallback 비율 5% 이하)"
+  ]
+}

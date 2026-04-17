@@ -1,0 +1,159 @@
+{
+  "factor_id": "STR_1662a",
+  "stage": "S5",
+  "timestamp": "2026-04-12 16:58:26.222979",
+  "base_performance": {
+    "SR": 0.597,
+    "CAGR": 0.0259,
+    "MDD": -0.102
+  },
+  "mutations_attempted": 9,
+  "f_category_count": 5,
+  "synthesis_tested": true,
+  "categories": {
+    "A": "N_hold 변형 (15, 25)",
+    "B": "리밸 주기 (격월, 분기)",
+    "C": "가중 방식 (Score, IVOL)",
+    "D": "오버레이 (DD Brake, Vol Target — C9 t-1 lag)",
+    "E": "유동성 필터 (5e8)"
+  },
+  "mutations": [
+    {
+      "mutation": "M0_Base_Q07_EW20",
+      "category": "Base",
+      "cagr": 0.0259,
+      "sharpe": 0.597,
+      "mdd": -0.102,
+      "turnover": 0.92,
+      "n_hold": 30,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 9.4
+    },
+    {
+      "mutation": "M1_N15",
+      "category": "A_NHold",
+      "cagr": 0.0195,
+      "sharpe": 0.439,
+      "mdd": -0.131,
+      "turnover": 1.15,
+      "n_hold": 15,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 4.8
+    },
+    {
+      "mutation": "M2_N25",
+      "category": "A_NHold",
+      "cagr": 0.0235,
+      "sharpe": 0.582,
+      "mdd": -0.107,
+      "turnover": 0.9,
+      "n_hold": 25,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 8.8
+    },
+    {
+      "mutation": "M3_Bimonthly",
+      "category": "B_Rebal",
+      "cagr": 0.0246,
+      "sharpe": 0.587,
+      "mdd": -0.102,
+      "turnover": 1.27,
+      "n_hold": 20,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 9
+    },
+    {
+      "mutation": "M4_Quarterly",
+      "category": "B_Rebal",
+      "cagr": 0.0242,
+      "sharpe": 0.585,
+      "mdd": -0.108,
+      "turnover": 1.51,
+      "n_hold": 20,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 8.9
+    },
+    {
+      "mutation": "M5_ScoreWt",
+      "category": "C_Weight",
+      "cagr": 0.014,
+      "sharpe": 0.304,
+      "mdd": -0.172,
+      "turnover": 1.04,
+      "n_hold": 20,
+      "weight_mode": "Score",
+      "grade": "C",
+      "hurdle_score": 0.9
+    },
+    {
+      "mutation": "M6_IVOL",
+      "category": "C_Weight",
+      "cagr": 0.0289,
+      "sharpe": 0.724,
+      "mdd": -0.093,
+      "turnover": 0.68,
+      "n_hold": 20,
+      "weight_mode": "IVOL",
+      "grade": "C",
+      "hurdle_score": 12.8
+    },
+    {
+      "mutation": "M7_DDBrake",
+      "category": "D_Overlay",
+      "cagr": 0.0256,
+      "sharpe": 0.611,
+      "mdd": -0.102,
+      "turnover": 0.97,
+      "n_hold": 20,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 9.7
+    },
+    {
+      "mutation": "M8_VolTarget",
+      "category": "D_Overlay",
+      "cagr": 0.0387,
+      "sharpe": 0.627,
+      "mdd": -0.15,
+      "turnover": 0.97,
+      "n_hold": 20,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 11.3
+    },
+    {
+      "mutation": "M9_LIQ5e8",
+      "category": "E_Liq",
+      "cagr": 0.0217,
+      "sharpe": 0.481,
+      "mdd": -0.116,
+      "turnover": 1,
+      "n_hold": 20,
+      "weight_mode": "EW",
+      "grade": "C",
+      "hurdle_score": 6.1
+    }
+  ],
+  "best_mutation": {
+    "mutation": "M6_IVOL",
+    "category": "C_Weight",
+    "sharpe": 0.724,
+    "cagr": 0.0289,
+    "mdd": -0.093,
+    "grade": "C"
+  },
+  "pit_compliance": {
+    "C1": "rolling/expanding only — no full-sample",
+    "C2": "liq_lag t-1",
+    "C9": "DD/VT c(0, head(x,-1)) pattern",
+    "C13": "Z_Score_Aligned via align_factor_direction",
+    "C15": "factor_db_connector.R 경유"
+  },
+  "role_bias": "RoleBias_Defense",
+  "ax001_note": "Defense: 전기간 SR보다 위기 alpha + Core 대비 MDD 우선"
+}

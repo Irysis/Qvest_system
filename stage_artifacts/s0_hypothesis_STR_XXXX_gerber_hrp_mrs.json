@@ -1,0 +1,115 @@
+{
+  "s0_version": "7.0",
+  "scout_timestamp": "2026-04-06T12:00:00",
+  "stage": "S0",
+  "status": "DESIGNED",
+
+  "strategy_name": "STR_XXXX_gerber_hrp_mrs",
+  "strategy_title": "Gerber+RMT HRP with MRS25 Regime Overlay on C19 4-Factor",
+  "expected_role": "core_alpha",
+  "family": "consensus_hrp",
+  "economic_family": "consensus",
+
+  "hypothesis": "C19 Composite Earnings(SUE+ESBR+EPS_Chg_1m+TP_Gap) 4-factor scoring으로 종목 선정(Top-20)한 후, Gerber Statistic(fat-tail robust 상관) + RMT denoising(Marcenko-Pastur noise 제거)으로 추정한 공분산에 기반한 HRP bisective 배분을 적용하고, MRS 25/60 3-Layer Regime Overlay(NORMAL 100%→CAUTION linear ramp→CRISIS 50%+inverse 20%)로 위기 구간 exposure를 동적 조절하면, (1) EW 대비 리스크 조정 수익률이 개선(Gerber의 극단값 robust 상관이 위기 구간 포트폴리오 집중 방지)되고, (2) 낮은 MRS 임계치(25)가 조기 경고 효과로 MDD를 추가 억제하여, SR 1.1+ / CAGR 19%+ / MDD 30% 이하를 달성할 수 있다.",
+
+  "why_now": "PG0 gap 분석: SR 1.003→2.0(gap +0.997), MDD 52.2%→25%(gap -27.2%). 현재 포트폴리오는 consensus family(STR_1550, STR_1555) 2건에 100% 집중. STR_1631 v5 S5 mutation 17건 중 M11(Gerber+RMT HRP)이 SR 1.113으로 전체 최고 기록. M09(MRS25)는 SR 1.026으로 overlay 효과 확인. 두 축의 synthesis가 MDD 25% 목표 접근의 유일한 경로. sleeve_needs=[core_alpha, defense]에서 core_alpha 강화가 우선 과제.",
+
+  "core_reference": [
+    "Gerber, S., Markowitz, H., Ernst, P., Miao, Y., Javid, B., & Sargen, P. (2022). 'The Gerber Statistic: A Robust Co-Movement Measure for Portfolio Optimization.' Journal of Portfolio Management, 48(2). -- 극단값에 robust한 concordance 기반 상관행렬. Pearson 대비 fat-tail 환경에서 공분산 추정 안정성 우월.",
+    "Lopez de Prado, M. (2016). 'Building Diversified Portfolios that Outperform Out of Sample.' Journal of Portfolio Management, 42(4). -- HRP: hierarchical clustering + recursive bisection으로 공분산 역행렬 불필요. 추정 오류에 robust, OOS 성과 안정.",
+    "Laloux, L., Cizeau, P., Bouchaud, J.-P., & Potters, M. (1999). 'Noise Dressing of Financial Correlation Matrices.' Physical Review Letters, 83(7). -- RMT: Marcenko-Pastur 분포 기반 noise eigenvalue 제거. N/T 비율 높을수록 효과적.",
+    "Ledoit, O. & Wolf, M. (2004). 'A well-conditioned estimator for large-dimensional covariance matrices.' Journal of Multivariate Analysis, 88(2). -- Shrinkage 추정량의 일반 이론. RMT denoise와 상호보완적.",
+    "Zhou, Y. et al. (2024). 'Gerber Statistic in Portfolio Optimization.' -- Gerber+HRP 조합의 실증 우위 확인. 프로젝트 core_knowledge B2 참조.",
+    "Yadav, S. et al. (2026). 'Ledoit-Wolf 2-parameter shrinkage.' -- LW 2-param과 Gerber의 비교. 프로젝트 L-743 참조.",
+    "[Regime] (2024). 'Downside Risk Reduction: Regime-Switching.' -- 위기 국면 진입 시 soft 전환 > hard 전환. v7.1 Slow-Crisis와 일치. A7 참조."
+  ],
+
+  "factors": {
+    "primary": "C19_Composite_Earnings",
+    "components": [
+      {"id": "C01_SUE", "weight": 0.25, "ic_all": 0.047, "icir_3y": 0.777, "source": "Ball & Brown 1968 PEAD"},
+      {"id": "C04_ESBR", "weight": 0.25, "ic_all": 0.051, "icir_3y": 0.547, "source": "Earnings Surprise Breadth"},
+      {"id": "C02_EPS_Chg_1m", "weight": 0.25, "ic_all": 0.024, "icir_3y": 0.319, "source": "Chan et al. 1996 momentum"},
+      {"id": "C06_TP_Gap", "weight": 0.25, "ic_all": 0.021, "icir_3y": 0.117, "source": "Target Price consensus gap"}
+    ],
+    "composite_ic_all": 0.044,
+    "composite_icir_3y": 0.543,
+    "scoring_method": "equal_weight_z_score",
+    "coverage_filter": ">=3 analysts",
+    "n_holdings": 20,
+    "liquidity_filter": "20d avg trading value >= 2e8 KRW",
+    "max21d_exclusion": "top 20% excluded"
+  },
+
+  "weighting": {
+    "method": "gerber_rmt_hrp",
+    "description": "60-day trailing returns(t-1 lag) -> Gerber Statistic(threshold=0.5, concordance-based) -> RMT denoise(Marcenko-Pastur upper bound shrinkage) -> HRP bisective allocation(single-linkage clustering)",
+    "gerber_threshold": 0.5,
+    "hrp_lookback": 60,
+    "hrp_lag": "t-1 (Date < sig_date)",
+    "rmt_condition": "T_obs > N_assets",
+    "fallback": "EW if HRP fails (0/250 fallback in M11 test)",
+    "mechanism": "Gerber 상관은 Pearson과 달리 threshold 이하 소규모 변동을 무시하여 극단값 동행성만 포착. RMT는 N/T 비율에서 noise eigenvalue를 mean-shrink하여 signal eigenvalue만 보존. 두 기법의 결합으로 '진짜 상관 구조'에 기반한 HRP 배분이 가능."
+  },
+
+  "overlay": {
+    "method": "mrs_25_60_3layer",
+    "description": "Regime Engine v7.1 기반 3-Layer overlay. MRS 25 임계치(기존 30에서 하향)로 조기 방어 진입.",
+    "layers": {
+      "L1_NORMAL": {"condition": "MRS < 25 OR (MRS < 60 AND n_axes < 5 AND crisis_consec < 3)", "action": "100% factor exposure"},
+      "L2_CAUTION": {"condition": "MRS >= 25 AND NOT crisis", "action": "linear ramp: f_w = max(0.5, 1.0 - (MRS-25)/60). f_w * strategy + (1-f_w) * cash"},
+      "L3_CRISIS": {"condition": "MRS >= 60 AND n_axes >= 5 AND crisis_consec >= 3", "action": "50% strategy + 20% inverse ETF + 30% cash"}
+    },
+    "regime_engine": "v7.1 (4-Layer Base + Expanding Percentile + Slow-Crisis Defense)",
+    "pit_compliance": "regime is t-1 lagged via build_daily_regime(). No same-day circular (C5, C9 compliant)",
+    "inverse_etf": "KODEX Inverse (114800), conservative ADJ=0 before 2009"
+  },
+
+  "lesson_check": [
+    "L-441: 구 MRS(FRED 월말→월전체) 전면 무효. Regime Engine v7.1로 대체 완료. 본 가설은 v7.1 기반으로 C11 FRED 시차 위반 없음.",
+    "L-443: 정상 시 헤지 안함 + 위기 확인 시에만 헤지. MRS 25 임계치가 이 원칙과 충돌 가능성 검토 필요 — 25는 '조기 경고'이지 '조기 헤지'가 아님. CAUTION 구간에서는 exposure를 점진적으로 줄이되 inverse는 사용하지 않음(L3에서만 inverse).",
+    "L-484: 30종목 제한. N_HOLD=20으로 준수. 멀티슬리브 합산 아님(단일 슬리브 전략).",
+    "L-743: STR_1555 맥락에서 'HRP는 CAGR 16% 미달, RP > HRP' 교훈. 그러나 STR_1555는 3-factor Score Blend(C19 60%+V14 20%+D01 20%) 기반이었고, 본 가설은 C19 단독 4-factor 기반. M11 실제 CAGR=19.86%로 16% 초과 달성. 차이의 원인: (1) C19 단독의 alpha 밀도가 3F blend보다 높음(희석 없음), (2) 20종목 집중 포트폴리오에서 HRP의 분산 효과가 30종목 대비 더 유효. 따라서 L-743의 교훈은 'HRP+Score Blend' 맥락에 한정하고, C19 단독에서는 적용되지 않음을 확인.",
+    "L-742: C19 단독 Core Alpha 확정. S1 순수 SR 1.001, DD overlay로 Grade A 달성. 본 가설의 alpha source는 검증 완료.",
+    "L-745: Defense sleeve는 Core와 DD 패턴이 달라야 유효. 본 가설은 Defense sleeve가 아닌 Core Alpha 강화이므로 직접 관련은 없으나, 향후 포트폴리오 조합 시 overlay 동기화 리스크 인지."
+  ],
+
+  "risk_factors": [
+    "TO hard fail 경계: 현재 574.8% (hard fail 600% 이하이나 마진 25.2%p만 남음). MRS25의 조기 CAUTION 진입이 추가 리밸런싱을 유발하면 TO 증가 가능.",
+    "MDD 25% 목표 미달: M11 단독 MDD 33.55%, M09 단독 MDD 38.52%. synthesis가 반드시 min(33.55, 38.52)보다 낮아지지 않음 — regime overlay 간섭 가능.",
+    "L-743 역교훈: HRP의 저변동 과비중이 CAGR을 제한하는 메커니즘은 여전히 존재. C19 단독에서 19.86%를 달성했지만, MRS25 추가 시 CAUTION 구간 확대로 CAGR 하락 가능(M09의 CAGR 20.03% vs baseline 20.4% = -0.37%p).",
+    "Gerber threshold sensitivity: threshold=0.5는 M11에서 검증되었으나, MRS25 overlay와 결합 시 CAUTION 구간에서 상관 구조 변동이 가중치를 왜곡할 수 있음.",
+    "Regime Engine v7.1 의존: 국면 분류의 정확도가 overlay 효과를 결정. v7.1은 미래참조 ZERO이나, expanding percentile threshold의 구조적 한계(초기 학습 기간 noise)는 잔존.",
+    "Overfitting 경계: M11+M09 synthesis는 '최고 SR mutation + 최저 MRS threshold mutation'의 조합. 두 축 모두 전체 표본에서 선택된 것이므로, IS/OOS 분리 검증이 S2에서 필수."
+  ],
+
+  "implementation_plan": {
+    "s1_factor_construction": "기존 M11 코드의 C19 4-factor scoring 재사용. z_safe() 함수, coverage>=3, LIQ>=2e8, MAX21d top-20% 제외.",
+    "s1_weighting": "M11의 Gerber→RMT→HRP 파이프라인 재사용. compute_hrp_weights(ret_matrix, use_gerber=TRUE, use_rmt=TRUE).",
+    "s1_overlay": "M09의 MRS25 3-Layer 오버레이 + M11의 기존 3-Layer 결합. CAUTION 임계치만 30→25로 변경. CRISIS 조건 동일(MRS>=60, n_axes>=5, crisis_consec>=3).",
+    "s1_buffer": "buffer_zone = list(keep_n=35, entry_n=20). 기존 M11과 동일.",
+    "s1_commission": "15bps (0.0015).",
+    "s1_benchmark": "KOSPI200"
+  },
+
+  "success_criteria": {
+    "primary": {"SR": ">=1.10", "CAGR": ">=19%", "MDD": "<=33%"},
+    "stretch": {"SR": ">=1.20", "MDD": "<=30%"},
+    "hard_fail": {"MDD": ">45%", "TO": ">600%"},
+    "stage_gate": "S1→S2 profiling→S3 orthogonality→S4 integration→S5(이미 mutation 완료)→S6 Judge"
+  },
+
+  "differentiation_from_existing": {
+    "vs_STR_1550": "STR_1550은 C19+DD(8/22) EW 가중. 본 가설은 HRP 가중 + MRS25 overlay. 종목 비중 배분 메커니즘이 근본적으로 다름(EW vs risk-parity-like HRP).",
+    "vs_STR_1555": "STR_1555는 C19(60%)+V14(20%)+D01(20%) 3F Score Blend + RP + DD + Regime. 본 가설은 C19 단독 + HRP(Gerber+RMT) + MRS25. 팩터 구성과 종목 비중 메커니즘 모두 상이.",
+    "vs_M11_standalone": "M11은 MRS30 (기존 임계치). 본 가설은 MRS25로 조기 CAUTION 진입. 5%p 낮은 임계치가 MDD 억제에 미치는 한계효과를 검증.",
+    "vs_M09_standalone": "M09는 EW 가중 + MRS25. 본 가설은 HRP 가중 + MRS25. 가중 방법의 차이가 위기 구간 포트폴리오 행태에 미치는 영향을 검증."
+  },
+
+  "scout_confidence": {
+    "score": 72,
+    "rationale": "M11(SR 1.113)과 M09(SR 1.026) 모두 독립적으로 검증된 mutation. 조합의 방향성은 합리적(risk-adjusted weighting + early regime warning). 그러나 (1) L-743 역교훈(HRP CAGR 제한)이 MRS25 추가로 악화될 수 있고, (2) MDD 25% 목표 달성은 불확실(33.55%에서 8.55%p 추가 개선 필요), (3) TO 마진이 좁음(25.2%p). 따라서 72/100."
+  },
+
+  "role_bias_tag": "RoleBias_Core"
+}

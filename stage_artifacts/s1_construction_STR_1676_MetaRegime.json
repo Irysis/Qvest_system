@@ -1,0 +1,81 @@
+{
+  "stage": "S1",
+  "strategy_id": "STR_1676_MetaRegime",
+  "timestamp": "2026-04-13T00:00:00Z",
+  "author": "Forge",
+  "status": "READY",
+
+  "hypothesis_summary": "XGBoost ML 모델에 IC regime context(PC1~PC5 + prob_1~prob_5) 10개 피처를 추가하여 '현재 어떤 팩터 환경인가'를 모델에 직접 알려줌으로써 regime-aware 주식 스코어링을 수행한다. 기존 STR_1675(top-50 MI 팩터만)와 달리, 현재 IC 국면 임베딩을 보조 피처로 injection하여 regime 전환 시 적응 속도를 향상시킨다.",
+
+  "base_strategy": "STR_1675_QRebal_Hybrid",
+  "key_modification": "regime_context_feature_injection",
+
+  "core_idea": {
+    "factor_features": "MI prefilter top-50 z-scored daily factors (same as STR_1675)",
+    "regime_features": "PC1~PC5 (IC PCA embedding) + prob_1~prob_5 (K-means cluster probability) = 10 extra features",
+    "regime_data_source": ".cache/regime_factor_pca.parquet + .cache/regime_factor_clusters.parquet",
+    "regime_pit_compliance": "Regime data derived from expanding-window IC at t-1. PCA/Kmeans expanding to month t-1. SAFE per C1.",
+    "broadcasting": "Regime features are market-level (one value per date), broadcast to all tickers at that date"
+  },
+
+  "architecture": {
+    "walk_forward": "21d refit (same as STR_1675)",
+    "rebalancing": "MONTHLY (month-end dates only) — key change from STR_1675 quarterly",
+    "feature_dim": "50 factor z-scores + 10 regime features = 60 total features per observation",
+    "training_target": "fwd_ret_21d (IS only, C14 compliant)",
+    "model": "XGBoost 3-seed ensemble",
+    "scoring": "month-end dates only (filter from daily scores)",
+    "buffer_zone": "keep_n=40, entry_n=25",
+    "n_holdings": 30,
+    "weight_method": "EW",
+    "commission_bps": 15,
+    "liq_threshold_krw": 200000000
+  },
+
+  "pit_compliance": {
+    "C1": "expanding window only — no full-sample stats",
+    "C2": "OOS > IS with 21d purge gap, no same-day circular",
+    "C9": "DD/VT not used in S1 (pure factor signal)",
+    "C13": "Z_Score_Aligned only — cross-sectional z-score per date",
+    "C14": "fwd_ret_21d is IS training target only; regime features from past IC (not future)",
+    "C15": "Arrow open_dataset for daily factor DB (OPT-1)",
+    "regime_pit": "regime_factor_pca/clusters use IC computed via expanding window to t-1 month; no future IC used"
+  },
+
+  "opt_compliance": {
+    "OPT-1": "Arrow open_dataset with predicate pushdown — no read_parquet in loops",
+    "OPT-2": "load_rawdata(use_cache=TRUE) called once",
+    "regime_load": "regime parquets are small — single read_parquet at script start, then joined per window"
+  },
+
+  "expected_output": {
+    "files": [
+      "output/performance.json",
+      "output/equity_curve.png",
+      "output/annual_returns.png",
+      "output/ic_timeseries.csv",
+      "output/nav_monthly.csv",
+      "output/me_scores.csv"
+    ],
+    "metrics_target": {
+      "ICIR_vs_baseline": "expect >= STR_1675 ICIR 0.94 due to regime disambiguation",
+      "SR_target": ">= 0.72 (STR_1675 baseline)",
+      "CAGR_target": ">= 12%",
+      "MDD_target": "<= 45%"
+    }
+  },
+
+  "phase_context": {
+    "phase1_artifact": ".cache/ic_matrix_expanding.parquet (252 months x 281 factors)",
+    "phase2_artifact": ".cache/regime_factor_pca.parquet (Date, PC1~PC5) + .cache/regime_factor_clusters.parquet (Date, cluster_id, prob_1~prob_5)",
+    "this_phase": "Phase 3 — regime-augmented XGBoost strategy"
+  },
+
+  "validated_fields": {
+    "strategy_id": "STR_1676_MetaRegime",
+    "stage": "S1",
+    "pit_checks_passed": true,
+    "opt_checks_passed": true,
+    "artifact_schema": "PASS"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "factor_id": "GSCD_Growth_Stability_Composite",
+  "strategy_id": "STR_1655_growth_stability_composite_diversifier",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-09",
+  "session": 56,
+
+  "hypothesis": "Growth-Stability Composite Diversifier. '안정적으로 이익이 성장하는 기업'이라는 단일 경제적 원리에서 출발. GR02_Earnings_Growth(YoY 이익 성장률) + Q07_Earnings_Stability(이익 변동성 역수) + Q28_Cash_Conversion(현금전환율)의 z-score 합산 composite로 scoring. Beta 하위 40% 유니버스 제한으로 portfolio beta < 0.5 확보. Growth family(0% 활용, L-117)와 Quality 단일차원(QMJ 아닌 개별 축)을 결합하여 Consensus(앵커)와 완전히 다른 alpha source 창출. 핵심 논리: Consensus는 '애널리스트가 이익을 상향 수정한 기업'을 매수. 본 가설은 '실제로 이익이 안정적으로 성장하고 현금으로 뒷받침되는 기업'을 매수. 전자는 기대(expectation), 후자는 실현(realization). 투자자 행동 편향이 다르다. EW 20종목, 격월, 15bps, 유동성 2억원. S1 순수 팩터.",
+
+  "economic_mechanism": {
+    "core_theory": "세 가지 팩터가 하나의 경제적 원리를 다른 차원에서 포착한다: '안정적 이익 성장 + 현금 뒷받침'. (1) GR02_Earnings_Growth (Fama & French 2015 CMA/RMW): 이익이 실제로 성장하는 기업. FF5의 investment factor(CMA)와 profitability factor(RMW)의 교차점. 높은 이익 성장은 미래 투자 능력과 주주 가치 창출의 직접 증거. (2) Q07_Earnings_Stability (Dichev & Tang 2009): 이익 변동성이 낮은 기업은 이익 예측력이 높고, 투자자가 이 안정성을 과소평가하여 체계적 초과수익 발생. Frankel & Litov (2009): 이익 안정성이 높으면 정보 비대칭 낮음 -> 위기 시 불확실성 프리미엄 축소. (3) Q28_Cash_Conversion (Dechow, Kothari & Watts 1998 'The Relation Between Earnings and Cash Flows'): 이익 대비 영업현금흐름 비율. 현금전환율이 높으면 이익의 질이 높고 조작 가능성이 낮음. Accrual anomaly(Sloan 1996)의 현금흐름 관점 역(reverse).",
+
+    "why_growth_is_orthogonal_to_consensus": "Consensus(C19)는 '애널리스트 이익 추정치의 변화'를 포착. GR02는 '실제 보고된 이익의 변화'를 포착. 이 둘은 다른 시점에서 다른 정보를 측정한다: consensus revision은 FY+1 추정치가 바뀔 때 발생하고(전방 looking), earnings growth는 보고된 실적이 바뀔 때 측정된다(후방 confirmed). 극단적 예시: 애널리스트가 이미 높은 기대치를 반영한 종목(consensus 낮음)이 실제로 높은 이익 성장을 보고한 경우(GR02 높음) — 이 종목은 C19에선 비선호이나 GR02에선 선호. 역으로 애널리스트가 하향 수정했으나(C19 낮음) 실제 이익은 안정적(Q07 높음)인 경우도 분산 효과.",
+
+    "why_not_qmj_failure": "L-113: 'Quality 기반 Defense는 한국시장에서 구조적 역 defense'. 핵심 원인은 QMJ가 Profitability+Growth+Safety의 다차원 복합으로 market beta에 지배되기 때문. 본 가설의 Q07과 Q28은 QMJ의 하위 구성요소이지만, 3가지 핵심 차이로 L-113 실패를 회피한다: (1) 단일 차원만 사용하여 QMJ의 multi-dimensional beta 오염 회피. (2) GR02를 추가하여 pure quality에서 growth-quality cross로 이동 — growth dimension은 QMJ에 포함되지만 earnings growth rate 자체는 QMJ와 다른 팩터. (3) Beta-conditioned construction으로 portfolio beta를 구조적으로 제약. L-113의 STR_1638은 beta 제약 없이 Q01_GPA 단독 → beta 0.85에서 위기상관 0.89. 본 가설은 beta < 0.5로 제한.",
+
+    "crisis_defense_profile": "GR02: stress ICIR +0.842 (DB 내 상위 5%), crisis ratio 1.17. 급락 시 이익 성장 기업이 방어. Q07: stress ICIR +0.753, 4r-CRISIS ICIR +0.413 — 양쪽 위기 기준 모두 통과하는 최강 defense (L-121). Q28: stress ICIR +0.798, crisis ratio 1.37. 세 팩터 모두 위기 시 방어력이 정상장보다 강화. 이는 'diversifier + 위기 방어' 이중 역할을 암시하지만, primary role은 diversifier.",
+
+    "beta_conditioned_rationale": "L-118 beta dominance 해결을 위해 BCAC와 동일한 beta 하위 40% 유니버스 제한 적용. GR02/Q07/Q28 자체는 quality/growth 성격이므로 value/growth sector에 편중될 수 있으나, beta filter가 이를 1차 완화. 추가로 size-neutral 구성도 고려 가능(S5 mutation)."
+  },
+
+  "factors": [
+    {
+      "name": "GR02_Earnings_Growth",
+      "family": "growth",
+      "role": "Primary. YoY 이익 성장률.",
+      "definition": "(NI_now - NI_1y) / |NI_1y|",
+      "icir": "TBD (전체기간 IC 미계산, L-117)",
+      "stress_icir": 0.842,
+      "crisis_4r_icir": 0.277,
+      "corr_C19": 0.125,
+      "crisis_ratio": 1.17,
+      "literature": "Fama & French (2015) Five-Factor Model (CMA), Hou, Xue & Zhang (2015) q-factor (ROE)"
+    },
+    {
+      "name": "Q07_Earnings_Stability",
+      "family": "quality",
+      "role": "Secondary. 이익 변동성 역수 = 이익 안정성.",
+      "definition": "1 - sd(earnings changes 5Y) / mean(|earnings changes|)",
+      "icir": 0.929,
+      "stress_icir": 0.753,
+      "crisis_4r_icir": 0.413,
+      "corr_C19": -0.092,
+      "crisis_ratio": 1.04,
+      "literature": "Dichev & Tang (2009) 'Earnings Volatility and Earnings Predictability', Frankel & Litov (2009)"
+    },
+    {
+      "name": "Q28_Cash_Conversion",
+      "family": "quality",
+      "role": "Tertiary. 이익 대비 영업현금흐름 비율.",
+      "definition": "OCF / Net Income",
+      "icir": "TBD",
+      "stress_icir": 0.798,
+      "crisis_4r_icir": 0.140,
+      "corr_C19": -0.111,
+      "crisis_ratio": 1.37,
+      "literature": "Dechow, Kothari & Watts (1998), Sloan (1996) reverse perspective"
+    }
+  ],
+
+  "construction": {
+    "step_1_liquidity": "20일 평균 거래대금 >= 2억원",
+    "step_2_beta_filter": "60일 rolling market beta 하위 40%",
+    "step_3_cross_exposure": "AC21 z > -1.5 (역-accrual 방지) AND M01_Mom z > -1.5",
+    "step_4_scoring": "Z_Score_Aligned(GR02) + Z_Score_Aligned(Q07) + Z_Score_Aligned(Q28) composite",
+    "step_5_selection": "Top 20 by composite score",
+    "weighting": "Equal Weight",
+    "rebalance": "Bimonthly (격월)",
+    "transaction_cost": "15bps one-way",
+    "overlay": "NONE (S1 순수 팩터 측정)",
+    "max_stocks": 20,
+    "target_beta": "< 0.50"
+  },
+
+  "expected_role": "Diversifier",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "SR gap +0.757 (1.243 -> 2.0). Markowitz 경로로 독립 diversifier 필요.",
+    "growth_untapped": "Growth family 0% 활용 (L-117). GR02 stress ICIR 0.842로 DB 상위 5%. 위기 방어력까지 겸비한 미개척 alpha source.",
+    "dual_defense_diversifier": "Q07이 양쪽 위기 기준 모두 통과하는 최강 defense(L-121). Diversifier이면서 위기 방어까지 — 이상적인 Markowitz 구성요소.",
+    "family_diversity": "consensus(앵커) vs growth+quality_subdim(본 가설). 경제적 채널 분리: '기대의 변화'(consensus) vs '안정적 실현 성장'(GR02+Q07+Q28).",
+    "bcac_complement": "BCAC는 accrual family. GSCD는 growth+quality family. 두 가설이 모두 성공하면 3개 독립 alpha source(consensus+accrual+growth_stability) 확보 가능 → Markowitz SR 2.0 달성 가능성."
+  },
+
+  "core_reference": [
+    "Dichev & Tang (2009) 'Earnings Volatility and Earnings Predictability' — Q07의 학술 근거. 이익 안정성 과소평가 → 체계적 초과수익",
+    "Fama & French (2015) 'Five-Factor Model' — RMW(profitability) + CMA(investment). GR02는 CMA 관련 변수",
+    "Frankel & Litov (2009) 'Earnings Stability' — 이익 안정성 높은 기업의 정보 비대칭 낮음",
+    "Dechow, Kothari & Watts (1998) 'Relation Between Earnings and Cash Flows' — Q28 현금전환의 학술 근거",
+    "Frazzini & Pedersen (2014) 'Betting Against Beta' — Beta constraint 근거",
+    "Novy-Marx (2013) 'Gross Profitability Premium' — Profitability = Value의 다른 면",
+    "[KR-FACTOR-2] 박종원 et al. (2024) — 한국시장 팩터 실증"
+  ],
+
+  "lesson_check": [
+    "L-087: 한국 롱온리 low-risk sorting 무효 — beta를 constraint로 사용, alpha는 growth+stability",
+    "L-088: Cross-exposure 통제 필수 — AC21/M01 음(-) 노출 종목 필터",
+    "L-106/L-118: Market beta 지배 → beta 하위 40% 유니버스 제한으로 해결",
+    "L-113: Quality defense 실패 — QMJ 복합이 아닌 Q07/Q28 단일차원 + GR02 growth 결합. Beta-conditioned construction으로 QMJ의 beta 오염 회피",
+    "L-115: Low-Beta 필터링만으로 불충분 — growth+stability alpha가 beta와 독립적이므로 L-115(같은 스타일 공유)보다 나은 분산 기대. S2에서 검증 필수",
+    "L-117: 288개 중 60% 미사용 — Growth family 0% 활용. GR02 최초 전략화",
+    "L-119: 정적 EW blend alpha 희석 — standalone 전략으로 설계",
+    "L-121: Q07 양쪽 위기 기준 모두 통과 — 위기 방어력 겸비 diversifier",
+    "L-122: Factor timing 학술적 취약 — 본 가설은 timing 아닌 static factor selection"
+  ],
+
+  "risks": [
+    {
+      "risk": "GR02의 전체기간 ICIR이 낮을 수 있음 (stress에서만 강하고 정상장에서 약함)",
+      "probability": "MEDIUM",
+      "mitigation": "GR02 전체기간 IC 미계산(L-117). S2에서 최우선 확인. Normal ICIR < 0.20이면 GR02 가중 축소 or GR01_Revenue_Growth(stress 0.583, crisis ratio 2.34)로 교체.",
+      "reasoning": "Crisis ratio 1.17은 위기>정상이나 격차가 크지 않음. Normal에서도 양(+)일 가능성 높지만 확인 필요."
+    },
+    {
+      "risk": "Q07 + Q28이 high-quality(안정+현금풍부) 대형주에 집중 → sector/size bet",
+      "probability": "MEDIUM-HIGH",
+      "mitigation": "Beta filter가 1차 방어. High-quality 대형주는 beta도 높은 경우가 많아 beta filter가 자동으로 일부 제거. 추가로 S5에서 sector-neutral mutation 가능.",
+      "reasoning": "한국시장 large-cap quality = 삼성전자/SK하이닉스/POSCO 등 high-beta. Beta filter가 이들을 제외하면 mid-cap quality로 자연 이동."
+    },
+    {
+      "risk": "GR02-Q07 상관이 높아 composite 분산효과 제한",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "이론적으로 earnings growth(변화량)와 earnings stability(변동성 역수)는 다른 차원. 그러나 안정적으로 성장하는 기업은 양쪽 모두 높을 수 있어 상관 존재. S2에서 내부 상관 확인.",
+      "reasoning": "상관이 높더라도 하나의 경제적 원리('안정적 성장')를 강화하는 방향이므로 composite의 의미는 유지."
+    },
+    {
+      "risk": "앵커(C19)와의 상관이 예상보다 높음 (GR02-C19 상관 0.125로 accrual보다 높음)",
+      "probability": "MEDIUM",
+      "mitigation": "GR02-C19 상관 0.125는 AC 팩터(0.04~0.06)보다 높으나 여전히 낮은 수준. Q07-C19 -0.092, Q28-C19 -0.111로 음의 상관. Composite 전체로는 C19과 거의 0에 수렴할 것. Beta-conditioned construction이 portfolio-level 상관을 추가 축소.",
+      "reasoning": "GR02는 '실제 이익 변화', C19은 '기대 이익 변화'. 방향이 같을 수 있으나 timing과 크기가 다름."
+    }
+  ],
+
+  "success_criteria": {
+    "S2_pass": "ICIR >= 0.20, Portfolio beta < 0.50, GR02 전체기간 ICIR 확인",
+    "S3_pass": "Anchor return cor < 0.30, Crisis cor < 0.50",
+    "standalone_SR": "> 0.6 minimum",
+    "three_source_test": "BCAC + GSCD + Anchor가 3개 독립 source로 SR 1.8+ 달성 가능성 검증"
+  },
+
+  "s1_implementation_notes": {
+    "gr02_pit": "GR02는 연간 NI 기반. C4 lag: 연간 → 5월 리밸런싱, 분기 → 45일 lag. 격월 리밸런싱이므로 가장 최근 확정 분기 실적 사용.",
+    "q07_calculation": "5년 rolling earnings changes의 std / mean(|changes|). Expanding window 초기 최소 3년 필요 → 2003년부터 유효.",
+    "q28_pit": "OCF / NI. 분기 재무 기반 → 45일 lag.",
+    "beta_calculation": "60일 rolling OLS beta vs KOSPI. t-1 기준.",
+    "pit_compliance": "C4: 재무제표 lag. C9: beta t-1. C13: Z_Score_Aligned만. C14: Usable_Date. C15: load_month_factors().",
+    "no_overlay": "S0/S1 overlay 금지 준수."
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "hypothesis_id": "H_1674",
+  "name": "Individual Contrarian Flow (Noise Trader Reversal)",
+  "round_1": [
+    {
+      "role": "governor",
+      "score": 17,
+      "arguments": [
+        "SR gap 0.807이 유일한 미달 지표이며 기존 303팩터 전체와 상관 <0.10인 uncorrelated alpha는 SR 개선 최적 경로. novelty_bonus 적격(max_corr 0.257). investor_flow family 0% saturation.",
+        "Family concentration consensus 50%/ML 50% 편중에서 investor_flow 신규 family는 3-way 분산 달성. saturation penalty 0점으로 hurdle 가산 효과.",
+        "Core Alpha 역할 선언에 주의 필요. 유동성 필터 시 ICIR 25% 하락(1.258→0.939), rolling 3Y ICIR 0.746 감소 추세, Rate_2022 IC 0.017."
+      ],
+      "concern": "Rolling 3Y ICIR 하락 + 유동성 필터 ICIR 감소 + Rate_2022 취약. L-127에 따라 ICIR→SR 전환율 불확실.",
+      "conditions": ["S1 standalone SR>=0.8, CAGR>=12%", "S4 LOO delta-SR>0, MDD<25%"]
+    },
+    {
+      "role": "academic",
+      "score": 15,
+      "arguments": [
+        "메커니즘 정합성 높음: noise trader reversal이 DSSW(1990), Barber&Odean(2008), Akbas(2015)과 수렴. 단, Barber&Odean은 매수 편향 연구이며 매도 alpha에 역방향 확장.",
+        "핵심 참조 질 비대칭: Barber&Odean(RFS)+Akbas(JFE) = Top3 저널 but Kang 시리즈 3편 모두 arXiv preprint(미심사). 한국 직접 실증을 preprint에 의존.",
+        "시간 안정성 우려: Oh(2025) Hurst exponent 국면 변동, Kang(2026b) 일간 MI=0, rolling 3Y ICIR 하락. 26년 full-sample ICIR가 특정 sub-period 주도일 가능성."
+      ],
+      "concern": "한국시장 직접 실증 핵심 3편이 모두 arXiv preprint. '한국 개인 순매도→contrarian alpha' 직접 입증 peer-reviewed 논문 부재.",
+      "conditions": ["S2 sub-period 분리(2000-09/2010-19/2020-26)", "S1/S3 1-month reversal 통제 후 잔여 alpha t>2.0"]
+    },
+    {
+      "role": "risk_manager",
+      "score": 13,
+      "arguments": [
+        "L-127(IC!=SR) 직접 적용: ICIR 1.258이나 기존 flow 5건 SR 전환 실패. ICIR 1.03→SR 0.90 교훈. S1에서 effective turnover 600% 상한 검증 필수.",
+        "L-106(market beta 지배): 팩터 상관 <0.10이 포트폴리오 수익률 상관 <0.40 보장 않음. STR_1636 종목 겹침 3%에도 수익률 상관 0.78 전례.",
+        "Rate_2022 IC 0.017 = noise. 금리 인상기 개인 이탈로 noise trader premium 축소. 단일 메커니즘('개인=noise trader') 의존 리스크."
+      ],
+      "concern": "Flow 5건 연속 SR 전환 실패 패턴. Rolling ICIR 하락은 alpha decay 초기 신호. 동학개미 이후 개인 정보력 향상으로 noise premium 소멸 가능.",
+      "conditions": ["S1 turnover 600% 이내", "S3 수익률 상관 분해(market beta vs residual)", "Pre/post-2020 ICIR 분리", "Rate stress IC 원인 분석", "tail_risk_suite 실행"],
+      "kill_scenarios": ["KS-1: 개인 정보력 향상 → noise premium 소멸", "KS-2: 월간 순매도 = 당월 하락 결과(역인과) → 단순 reversal과 등가"]
+    },
+    {
+      "role": "codex_critic",
+      "score": 10,
+      "arguments": [
+        "동일 flow-reversal 계열 다수 실패(STR_1422,1332,SmartMoney_60d). ICIR 중심 주장으로 L-127(IC≠SR), L-131(SR 천장) 해소 못함.",
+        "개인 flow as-of timestamp + 벤더 수정 미정의 → PIT elevated. Z-score 윈도우 미명시 → full-sample 가능성.",
+        "가장 약한 가정: 개인 순매도 = 비정보성. 실적 하향/신용경색 시 정보거래 전환 → 낙하칼 매수."
+      ],
+      "concern": "PIT 설계 불명확(Z-score 윈도우, as-of timing). 기존 flow 실패 패턴 반복 위험. Alpha 과대추정 가능성 높음.",
+      "conditions": ["T+1 체결 PIT 검증", "expanding/rolling Z-score만 허용", "OOS walk-forward 제시", "KOSPI/KOSDAQ 분리 스트레스", "TopN/지연/필터 민감도"],
+      "kill_scenarios": ["신용경색 시 개인 순매도=정보거래→낙하칼", "월말 집계 즉시 반영=lookahead", "KOSDAQ 소형주 crowding→슬리피지"]
+    },
+    {
+      "role": "quant",
+      "score": 10,
+      "arguments": [
+        "ICIR 1.2613 (t=6.46) Alpha Lab Gate 통과 — Q-Lead 사전검증 독립 재현 성공. 통계적 유의성 확인.",
+        "Quintile 비단조+역전: Q1(개인 매도 최다)=0.18%, Q3=3.55%, Q5(개인 매수 최다)=0.62%. '역발상 수익' 가설과 모순. IC 양수인데 Q1<Q5.",
+        "연간 회전율 2,082% = Hard Fail 3.5배. 월간 Top30 유지율 13.3%, IC AR(1)=-0.079(persistence 없음)."
+      ],
+      "concern": "Quintile 역전(Q1<Q5)과 회전율 2,082% 조합이 치명적. ICIR 높아도 실투 시 거래비용으로 alpha 0 수렴. 신호 경제적 해석과 분위 수익 불일치.",
+      "conditions": ["Quintile 역전 원인 규명", "회전율 축소 방안(스무딩/임계값)", "측정 방법 차이 정렬"],
+      "quant_evidence": {
+        "icir_verified": true,
+        "quintile": "Q1=0.18% Q2=1.82% Q3=3.55% Q4=2.98% Q5=0.62%",
+        "turnover_annual": 2082,
+        "ic_ar1": -0.079,
+        "stress_gfc_ic": 0.006,
+        "stress_covid_ic": 0.013
+      }
+    }
+  ],
+  "r1_total": 65,
+  "r1_verdict_range": "APPROVE_CONDITIONAL (60-74)",
+  "key_disputes": [
+    "Quintile 비단조: IC 양수인데 Q1<Q5 — 신호 방향성 의문",
+    "회전율 2082%: Hard Fail 3.5배, 실투 불가 수준",
+    "PIT: Z-score 윈도우 + as-of timing 미정의",
+    "개인 순매도 = 정보 vs 노이즈 — kill scenario 핵심",
+    "Rolling ICIR 하락 + 구조 변화(동학개미)",
+    "Preprint 의존도 + 1-month reversal 등가 가능성"
+  ]
+}

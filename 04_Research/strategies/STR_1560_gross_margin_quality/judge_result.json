@@ -1,0 +1,137 @@
+{
+  "strategy_id": "STR_1560",
+  "strategy_name": "STR_1560_gross_margin_quality",
+  "factor_id": "Q10_Gross_Margin",
+  "judge_version": "v6.0",
+  "judge_date": "2026-03-28",
+  "judged_at": "2026-03-28 20:55:00",
+  "final_verdict": "Archive",
+  "grade": "C",
+  "grade_v21": "C",
+  "total_score": 44.3,
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 51.01% > 45% hard ceiling",
+  "provisional_role": "diversifier",
+  "validated_role": null,
+  "role_bias": "RoleBias_Diversifier",
+  "hurdle_metrics": {
+    "SR": 0.503,
+    "CAGR_pct": 12.4,
+    "MDD_pct": 51.01,
+    "Turnover_pct": 44,
+    "IR": 0.14,
+    "Calmar": 0.243,
+    "Sharpe_m": 0.605,
+    "ES99_d": 5.63,
+    "ES99_m": 18.7
+  },
+  "five_axis": {
+    "Return": 14,
+    "Risk": 9,
+    "Robustness": 71,
+    "Implementability": 87,
+    "Diversification": 54
+  },
+  "verification_3axis": {
+    "axis1_hallucination_dsr": "PASS (DSR=1.000, SR*=0.048)",
+    "axis2_loss_overfitting": "ROBUST (IS SR=0.516, OOS SR=0.486, retention=0.94)",
+    "axis3_distortion": "CLEAN (0 flags)",
+    "overall": "PASS"
+  },
+  "alpha_trend": {
+    "recent_3y_sr": 1.195,
+    "full_sr": 0.503,
+    "ratio": 2.38,
+    "direction": "improving"
+  },
+  "dsr": {
+    "value": 1.0,
+    "sr": 0.503,
+    "n_trials": 465,
+    "t_obs": 5220,
+    "sr_star": 0.048
+  },
+  "s6_entry_gate": {
+    "pass": false,
+    "reason": "Artifact fields incomplete (S0 prior_art format, S1-S3 missing optional fields). Auto-generated artifacts. Not a stage skip: substantive content exists S0-S5. Proceeding with manual Gate 0-5 verification.",
+    "missing_fields": [
+      "S0: prior_art format mismatch",
+      "S1: signal_file, coverage, period, pit_log",
+      "S2: monotonicity, turnover, quintile_spread (ic_ir/t_stat as string NA)",
+      "S3: value_matrix_cell"
+    ]
+  },
+  "gate_results": {
+    "G0_PIT": {
+      "pass": true,
+      "C1_full_sample": "PASS - no full-sample statistics used",
+      "C2_same_day_circular": "PASS - no VT/DD/FM overlay, no circular dependency",
+      "C3_period_aggregate": "PASS - no same-period aggregate-apply pattern",
+      "C4_financial_lag": "PASS - Factor DB handles financial statement lagging via Usable_Date",
+      "C5_overlay_lag": "N/A - no overlay applied (S1 pure factor test)",
+      "C9_dd_vt_lag": "N/A - no DD/VT applied",
+      "C10_liquidity_filter": "PASS - LIQ_THRESHOLD=2e8 set (line 14)",
+      "C13_z_score_aligned": "PASS - uses Z_Score_Aligned from Factor DB (factor_engine.R line 23)",
+      "C14_ic_usable_date": "N/A - no IC access in factor engine",
+      "C15_factor_db_load": "PASS - load_month_factors() used (factor_engine.R line 18)",
+      "lookahead_detector": "CLEAN - both run_all.R and factor_engine.R scanned, 0 violations",
+      "summary": "All PIT checks PASS. Clean S1 pure factor implementation via load_month_factors() + Z_Score_Aligned."
+    },
+    "G1_Implementation": {
+      "pass": true,
+      "n_holdings": 30,
+      "commission_bps": 15,
+      "liquidity_threshold": 200000000,
+      "buffer_zone": "keep_n=50, entry_n=25",
+      "weight_method": "equal",
+      "detail": "All implementation constraints met. Standard S1 configuration."
+    },
+    "G2_Robustness": {
+      "pass": true,
+      "oos_retention": 0.942,
+      "is_sr": 0.516,
+      "oos_sr": 0.486,
+      "quarter_consistency": 1.0,
+      "rolling_3y_positive_pct": 67.6,
+      "stress_outperformance": "2/3",
+      "detail": "OOS retention 0.94 is excellent. No overfitting concern. 3-Axis Verification overall PASS."
+    },
+    "G3_Performance": {
+      "pass": false,
+      "hard_fail": true,
+      "sr_vs_target": "0.503 < 0.8 FAIL",
+      "cagr_vs_target": "12.4% < 16% FAIL",
+      "mdd_vs_hard_ceiling": "51.01% > 45% HARD FAIL",
+      "calmar": 0.243,
+      "detail": "Triple miss on all performance targets. MDD 51.01% triggers automatic hard fail. Single-factor Q10 lacks crisis protection."
+    },
+    "G4_Statistics": {
+      "pass": false,
+      "ff5_alpha_t": "Not computed (pure factor standalone)",
+      "dsr": 1.0,
+      "recent_3y_sr": 1.195,
+      "alpha_decay": "No decay - improving (ratio 2.38)",
+      "ic_stability": "Not computed (analysis_ic.csv missing)",
+      "detail": "DSR significant but FF5 regression not run. Recent improvement notable but insufficient to overcome structural weakness."
+    },
+    "G5_Diversity": {
+      "pass": true,
+      "s3_max_abs_corr": 0.662,
+      "most_correlated": "Q01_GPA",
+      "c19_corr": -0.044,
+      "d01_corr": 0.011,
+      "novelty_score": 0.53,
+      "independence_class": "redundant (vs Q01_GPA only)",
+      "detail": "Near-zero correlation with C19 (-0.044) and D01 (0.011). Q01_GPA overlap (0.662) is within quality family only. As standalone diversifier: favorable independence from existing portfolio."
+    }
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "audit_result": "INCONCLUSIVE_DUE_TO_HARD_FAIL",
+    "suspicion_flags": 0,
+    "detail": "C19 corr=-0.044, D01 corr=0.011 confirm near-zero overlap with existing core/defense -- consistent with diversifier claim. Q01_GPA corr=0.662 is intra-quality redundancy, not portfolio-level concern. However, MDD 51.01% (worse than benchmark 52.92% by only ~2pp) means zero diversification benefit in drawdown. A true diversifier must reduce portfolio tail risk; this strategy essentially tracks market drawdowns. Role claim is structurally honest but functionally irrelevant due to hard fail."
+  },
+  "s7_verdict": "Archive",
+  "s7_reason": "Hard fail on MDD (51.01% > 45%). SR 0.503 and CAGR 12.4% both below targets. Pure Q10_Gross_Margin standalone has insufficient alpha in Korean market. However: (1) OOS retention 0.94 indicates real signal, not noise. (2) Recent 3Y SR 1.195 shows improving trend. (3) Near-zero C19/D01 correlation is valuable for multi-factor composition. (4) Very low turnover (44%) is implementation-friendly. ARCHIVE for potential use as secondary factor in multi-factor S5 combinations. Do not DISCARD -- Novy-Marx GPA mechanism is economically sound.",
+  "judge_verdict": "REJECT -> Archive. Hard fail MDD 51.01%. PIT clean, OOS robust (0.94), improving alpha trend. Archive for multi-factor combination potential."
+}

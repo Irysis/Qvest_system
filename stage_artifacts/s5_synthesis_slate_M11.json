@@ -1,0 +1,181 @@
+{
+  "stage": "S5_Phase5_Synthesis",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T19:00:00",
+  "designer": "Scout",
+  "parent": "STR_1631_v5_M11_hrp",
+  "parent_profile": {
+    "sr": 1.113, "cagr": 19.86, "mdd": 33.55, "turnover": 574.8,
+    "factors": "C19 = SUE + ESBR + EPS_CHG_1M + TP_Gap (EW z-score)",
+    "weighting": "HRP + Gerber(0.5) + RMT Denoise (60d, t-1)",
+    "overlay": "3-Layer Regime (MRS>=60 & 5axes => crisis)",
+    "n_holdings": 20, "buffer": "keep_n=35, entry_n=20", "commission": "15bps"
+  },
+
+  "mutation_performance_summary": {
+    "M19_bimonthly":   {"axis": "structural", "sr": 1.036, "cagr": 18.52, "mdd": 32.24, "to": 357.7, "score": 62.4},
+    "M20_hrp120d":     {"axis": "weight",     "sr": 1.104, "cagr": 19.76, "mdd": 34.63, "to": 576.6, "score": 64.3},
+    "M21_revbreadth":  {"axis": "factor",     "sr": 1.095, "cagr": 18.13, "mdd": 43.23, "to": 150.3, "score": 64.7},
+    "M22_5f_q07":      {"axis": "factor",     "sr": 0.963, "cagr": 16.56, "mdd": 32.41, "to": 560.3, "score": 53.4},
+    "M23_score_tilt":  {"axis": "weight",     "sr": 1.100, "cagr": 19.64, "mdd": 33.28, "to": 576.6, "score": 65.5}
+  },
+
+  "synthesis_design_rationale": {
+    "principle": "S5 Synthesis Rules v7: 3축 병렬 결합. Structural mutation before parameter tuning.",
+    "exclusion_M22": "M22(5F Q07)는 SR 0.963으로 M11 원본(1.113) 대비 alpha 희석 확인. Earnings Stability 추가가 consensus alpha를 상쇄. Synthesis에서 제외.",
+    "exclusion_DD_brake": "Codex S5 Review에서 M_C1(DD Brake) 거부. base SR=1.009가 경계값이라 whipsaw 위험. Synthesis에서도 DD Brake 금지.",
+    "best_single": "M23(Score Tilt) Score 65.5 최고 + SR 1.10 + CAGR 19.64%. Weight 축 최강.",
+    "best_TO": "M19(격월) TO 357.7%로 hard fail 리스크 완전 해소.",
+    "best_factor": "M21(RevBreadth) TO 150.3% 극저 + SR 1.095. 팩터 교체 단독 효과 확인.",
+    "best_cov": "M20(HRP 120d) SR 1.104 + CAGR 19.76%. 공분산 안정화 효과."
+  },
+
+  "synthesis_candidates": [
+    {
+      "synthesis_id": "SYN_01",
+      "title": "Score Tilt + Bimonthly (Weight x Structural)",
+      "components": ["M23_score_tilt", "M19_bimonthly"],
+      "axes_combined": ["weight", "structural"],
+      "description": "M23의 0.6*HRP + 0.4*Score hybrid 가중에 M19의 격월 리밸런싱을 결합. Score Tilt가 alpha 집중을 제공하고, 격월 리밸런싱이 TO를 ~50% 절감. M23 단독 TO=576.6%에서 ~300% 이하로 감소 기대. TO hard fail 리스크를 완전 해소하면서 Score Tilt의 SR 우위(1.10)를 보존.",
+      "structural_changes": [
+        "SIG_DATES를 격월로 필터 (seq(1, n, by=2))",
+        "HRP-Score Tilt hybrid: 0.6*HRP + 0.4*Score(t-1 frozen)",
+        "나머지(C19 팩터, Regime overlay, buffer) M11과 동일"
+      ],
+      "expected_performance": {
+        "sr": "1.03~1.08",
+        "cagr": "18.0~19.5%",
+        "mdd": "31~34%",
+        "to": "280~330%",
+        "score": "60~66"
+      },
+      "risk_assessment": "격월 리밸런싱으로 Score 반영 지연(최대 2개월). Score Tilt의 alpha 포착력이 소폭 감소할 수 있으나, C19의 IC 반감기가 극도로 긴 점(693개월)이 이를 보상. 위기 시 Regime overlay가 factor-level 지연을 보완.",
+      "academic_basis": "Novy-Marx & Velikov (2016) rebalancing frequency trade-off + Briere & Szafarz (2021) factor exposure-risk diversification hybrid.",
+      "priority": 1,
+      "directory": "STR_1631_SYN_01"
+    },
+    {
+      "synthesis_id": "SYN_02",
+      "title": "Score Tilt + RevBreadth (Weight x Factor)",
+      "components": ["M23_score_tilt", "M21_revbreadth"],
+      "axes_combined": ["weight", "factor"],
+      "description": "M23의 HRP-Score Tilt hybrid를 M21의 C19_Rev 팩터(TP_Gap->RevBreadth3m)와 결합. M21의 팩터 교체로 TO가 150.3%로 극적으로 감소하는 구조적 효과를 보존하면서, Score Tilt가 상위 종목에 비중을 집중시켜 alpha를 강화. RevBreadth의 높은 ICIR(0.438 vs TP_Gap 0.117)이 Score Tilt의 종목 선택 품질을 개선.",
+      "structural_changes": [
+        "C19_Rev = (z_SUE + z_ESBR + z_EPS_CHG_1M + z_RevBreadth3m) / 4 (M21 팩터 구조)",
+        "C15: load_month_factors() 경유 Factor DB 접근",
+        "HRP-Score Tilt hybrid: 0.6*HRP + 0.4*Score(t-1 frozen)",
+        "월간 리밸런싱 유지",
+        "나머지(Regime overlay, buffer) M11과 동일"
+      ],
+      "expected_performance": {
+        "sr": "1.05~1.12",
+        "cagr": "18.0~19.5%",
+        "mdd": "40~44%",
+        "to": "140~180%",
+        "score": "60~67"
+      },
+      "risk_assessment": "M21 단독 MDD가 43.23%로 높아 MDD 45% hard fail 근접. Score Tilt가 집중도를 높여 MDD를 추가 악화시킬 가능성. 다만 RevBreadth의 conditional_value=+0.006(위기시 IC 개선)이 Regime overlay와 시너지. TO 측면에서 가장 안전한 조합.",
+      "academic_basis": "Barber et al. (2001) revision breadth anomaly + Asness et al. (2013) factor exposure concentration benefits.",
+      "priority": 2,
+      "directory": "STR_1631_SYN_02"
+    },
+    {
+      "synthesis_id": "SYN_03",
+      "title": "Score Tilt + HRP120d + Bimonthly (Weight x Weight x Structural = 3축)",
+      "components": ["M23_score_tilt", "M20_hrp120d", "M19_bimonthly"],
+      "axes_combined": ["weight", "weight", "structural"],
+      "description": "3축 동시 결합: M23의 Score Tilt + M20의 120d HRP lookback + M19의 격월 리밸런싱. HRP 120d가 공분산 추정을 안정화시키고, Score Tilt가 alpha를 집중하며, 격월이 TO를 절감. M20의 SR 1.104(120d lookback의 N/T=0.17 개선 효과)와 M23의 Score Tilt를 동시에 취하되, 격월로 거래 빈도를 낮춤.",
+      "structural_changes": [
+        "HRP_LOOKBACK <- 120L (M20)",
+        "SIG_DATES를 격월 필터 (M19)",
+        "HRP-Score Tilt hybrid: 0.6*HRP_120d + 0.4*Score(t-1 frozen) (M23)",
+        "120d lookback valid_cols threshold: 60L (M20과 동일)",
+        "나머지(C19 팩터, Regime overlay, buffer) M11과 동일"
+      ],
+      "expected_performance": {
+        "sr": "1.05~1.12",
+        "cagr": "18.5~20.0%",
+        "mdd": "32~36%",
+        "to": "280~340%",
+        "score": "62~68"
+      },
+      "risk_assessment": "3축 결합의 복잡성: Phase 7 Complexity 검증에서 과적합 의심 가능. 다만 각 축이 독립적 구조 변경(lookback 확장, 리밸런싱 빈도 감소, 비중 hybrid)이므로 파라미터 조합이 아닌 structural 결합. 120d lookback + 격월이 위기 반응 지연을 이중으로 유발할 수 있으나, Regime overlay가 일간 단위로 작동하여 보완.",
+      "academic_basis": "Ledoit & Wolf (2004) T/N ratio + Novy-Marx & Velikov (2016) rebalancing + Briere & Szafarz (2021) hybrid weighting.",
+      "priority": 1,
+      "directory": "STR_1631_SYN_03"
+    },
+    {
+      "synthesis_id": "SYN_04",
+      "title": "Expanding IC-Weighted Factor Blend (PIT-safe M_A3)",
+      "components": ["SYN_04_new_factor_weight"],
+      "axes_combined": ["factor_weight"],
+      "description": "C19의 EW(25%씩) 가중을 expanding window IC 비례 가중으로 대체. w_i(t) = mean(IC_i(1:t-1)) / sum(IC_j(1:t-1)). M_A3(고정 ICIR 가중, Codex 거부)의 PIT-safe 버전. Expanding window이므로 C1(full-sample 금지) 준수. t-1 lag로 C2 준수. IC가 높은 팩터(SUE, ESBR)에 자동 집중하면서, 시장 국면 변화에 따라 IC가 변동하면 가중도 적응적으로 조정.",
+      "structural_changes": [
+        "3-pass 구조: (1) 월간 raw z-score 계산, (2) 월간 IC(Spearman) 축적, (3) expanding mean IC로 가중",
+        "IC_MIN_MONTHS=12: 12개월 미만이면 EW fallback",
+        "음수 IC는 0으로 clamp (zero-weight, 방향 반전 금지 = C13 정신 준수)",
+        "HRP 가중 유지 (M11 동일 60d), Score Tilt 미적용"
+      ],
+      "expected_performance": {
+        "sr": "1.10~1.18",
+        "cagr": "19.5~21.0%",
+        "mdd": "33~36%",
+        "to": "560~580%",
+        "score": "63~68"
+      },
+      "risk_assessment": "Expanding IC가 초기 몇 년 데이터에 과도하게 의존할 수 있음. 다만 expanding window이 자동으로 최근 데이터를 포함하므로 시간 경과에 따라 자연적으로 안정화. TO는 M11과 유사(월간 리밸런싱, 종목 구성만 변경).",
+      "academic_basis": "Arnott et al. (2019) IC-based factor weighting. Expanding window = adaptive learning.",
+      "priority": 2,
+      "directory": "STR_1631_SYN_04"
+    },
+    {
+      "synthesis_id": "SYN_05",
+      "title": "IC-Weighted + Score Tilt + Bimonthly (3축: Factor x Weight x Structural)",
+      "components": ["SYN_04_ic_weighted", "M23_score_tilt", "M19_bimonthly"],
+      "axes_combined": ["factor_weight", "stock_weight", "structural"],
+      "description": "SYN_04의 IC-weighted blend + M23의 Score Tilt(0.6*HRP+0.4*Score) + M19의 격월 리밸런싱을 3축 결합. IC 가중이 팩터 선택 품질을 개선하고, Score Tilt가 종목 비중에서 alpha를 집중하며, 격월이 TO를 절감. IC 계산은 모든 월간 데이터로 수행하되, FACTORS와 리밸런싱은 격월만.",
+      "structural_changes": [
+        "IC history: ALL monthly dates로 expanding IC 축적 (정보량 극대화)",
+        "FACTORS: bimonthly dates만 사용 (TO 절감)",
+        "Score Tilt: 0.6*HRP + 0.4*Score(t-1 frozen)",
+        "나머지(HRP 60d, Regime overlay, buffer) M11과 동일"
+      ],
+      "expected_performance": {
+        "sr": "1.05~1.12",
+        "cagr": "18.5~20.5%",
+        "mdd": "32~35%",
+        "to": "280~340%",
+        "score": "63~70"
+      },
+      "risk_assessment": "3축 결합 복잡성. Phase 7 Complexity 검증 필요. 다만 각 축이 독립적 structural 변경이므로 파라미터 조합이 아닌 메커니즘 조합. IC 계산 월간 + 리밸런싱 격월 = IC 정보 활용도 저하 없이 TO 절감.",
+      "academic_basis": "Arnott et al. (2019) + Briere & Szafarz (2021) + Novy-Marx & Velikov (2016).",
+      "priority": 1,
+      "directory": "STR_1631_SYN_05"
+    }
+  ],
+
+  "execution_plan": {
+    "phase_5a": {
+      "description": "SYN_01, SYN_02, SYN_03, SYN_04, SYN_05 병렬 실행 (5건)",
+      "parallel": true
+    },
+    "phase_5b": {
+      "description": "결과 비교: SR/CAGR/MDD/TO + hurdle score. TO 600% 미달 확인.",
+      "selection_criteria": "Score 최고 + TO < 600% + MDD < 45%"
+    },
+    "phase_6": {
+      "description": "Phase 5 최종 선택 → synthesis_tested = TRUE. Phase 7 Complexity 검증 준비.",
+      "complexity_check": "각 SYN의 구성요소 수 <= 3. 파라미터 수 증가분 확인."
+    }
+  },
+
+  "s5_compliance": {
+    "synthesis_candidates_5": true,
+    "total_mutations_attempted": 5,
+    "total_including_phase1_3": "11 (M_A1~D3) + 5 (M19~M23 selected) + 5 SYN = 21건",
+    "category_count": 4,
+    "structural_before_parameter": true,
+    "dd_brake_excluded": true,
+    "m22_excluded_reason": "SR 0.963 < M11 원본 1.113 (alpha 희석)"
+  }
+}

@@ -1,0 +1,171 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T23:30:00",
+  "hypothesis_id": "H_1640_lowbeta_accrual_reversal_diversifier",
+  "strategy_id": "pending_STR_assignment",
+  "parent": null,
+  "lineage": [],
+
+  "title": "Low-Beta Accrual Reversal Diversifier: Beta < 0.5 universe + AC17 Accrual Reversal scoring",
+
+  "description": "시장 베타 하위 50% 유니버스(rolling 252d beta < median)에서 AC17_Accrual_Reversal을 핵심 alpha source로 사용하는 diversifier 전략. AC17은 극단 발생액의 기계적 반전(reversal)을 포착하는 팩터로, 4-regime 전 구간에서 양수 IC(CALM 0.062, CAUTION 0.006, CRISIS 0.036, NORMAL 0.024)를 보이며 ICIR_CALM 0.78, ICIR_CRISIS 0.44로 장기 전구간 안정적. Recent 3Y ICIR 0.674. 핵심 메커니즘: (1) Low-beta 유니버스 필터로 포트폴리오 beta를 구조적으로 0.3~0.5 수준으로 낮춤 -- 앵커(beta 0.854)와의 상관을 beta 축에서 절반으로 절단. (2) Accrual reversal은 회계 발생액의 기계적 평균회귀에 기반하여 consensus revision(C19)과 정보 원천이 근본적으로 다름. Sloan(1996)의 이익 고착(earnings fixation) + Allen, Larson & Sloan(2009)의 강제 반전(forced reversal)이 메커니즘. (3) Low-beta 종목은 기관 커버리지가 상대적으로 낮아 accrual mispricing이 더 오래 지속될 가능성(Palmon et al. 2008). Beta 필터와 accrual scoring의 교차가 정보 비대칭 영역을 정밀 타게팅.",
+
+  "economic_mechanism": "3단계 메커니즘. (1) Beta 유니버스 필터(Frazzini & Pedersen 2014 BAB): Rolling 252d beta 하위 50% 선별. BAB 논문에서 low-beta 종목은 레버리지 제약으로 체계적으로 과소가격(underpriced)되며, 이 유니버스 자체가 시장 대비 높은 위험조정 수익을 제공. 한국시장에서 low-beta sorting 단독은 alpha 없으나(L-087), 유니버스 필터로 사용 시 포트폴리오 beta를 0.3~0.5로 구조적 절단하여 앵커와의 상관을 beta 축에서 분리. (2) AC17 Accrual Reversal(Allen, Larson & Sloan 2009): 극단 양(+) 발생액은 추정오차의 기계적 반전으로 후속기 극단 음(-) 발생액으로 전환. 이 반전은 재고 감모(write-down), 매출채권 대손 등 회계적 필연에 의해 발생하며, 투자자가 반전 확률을 과소평가하여 mispricing 지속. Sloan(1996) accrual anomaly의 핵심 메커니즘인 현금흐름 > 발생액 이익 지속성의 직접적 표현. (3) Low-beta x Accrual 교차: Palmon et al.(2008)에 의하면 소형주/저커버리지 종목에서 accrual anomaly가 더 강함. Low-beta 종목은 대체로 낮은 기관 관심도를 보이므로 accrual mispricing 지속 기간이 길다. 이 교차 영역이 consensus(분석가 이익 수정)와 완전히 다른 정보 채널에서 alpha를 추출하는 핵심.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "5가지 근거. (1) SR gap +0.757: 현재 SR 1.243 vs 목표 2.0. Markowitz 분산 효과로 독립 수익원 추가가 유일한 해법. (2) Beta 직교성: L-118 'long-only beta 0.85~0.93이 상관 지배'. Low-beta 유니버스 필터로 포트폴리오 beta를 0.3~0.5로 낮추면, 앵커(beta 0.854)와의 수익률 상관이 beta 축에서 구조적으로 절반 이하로 감소. (3) AC17 4-regime 안정성: CALM ICIR 0.78, CRISIS ICIR 0.44, NORMAL ICIR 0.39. 4개 regime 전구간에서 양수 IC를 보이는 유일한 accrual 팩터. Conditional IC matrix에서 recent_3y_icir 0.674. (4) Family 다양성: 현재 100% consensus family. Accrual은 미구축 family로 Factor Taxonomy 9조 기준 우선 탐색 대상. (5) Consensus와 정보 원천 직교: AC17(회계 발생액 기계적 반전)은 C19(분석가 이익 수정)와 근본적으로 다른 데이터 생성 과정.",
+
+  "core_reference": [
+    {
+      "ref_id": "A3_Sloan1996",
+      "citation": "Sloan, R. (1996, The Accounting Review) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows?'",
+      "mechanism": "현금흐름 > 발생액 이익 지속성. 투자자 이익 고착으로 차별적 지속성 미반영. 저발생액 롱/고발생액 숏 = 유의미 초과수익.",
+      "diversifier_relevance": "Accrual anomaly의 원조. Consensus revision과 완전히 다른 정보 원천(회계 발생액 vs 분석가 수정)."
+    },
+    {
+      "ref_id": "A3_AllenLarsonSloan2009",
+      "citation": "Allen, E., Larson, C. & Sloan, R. (2009, Journal of Accounting and Economics) 'Accrual Reversals, Earnings and Stock Returns'",
+      "mechanism": "극단 발생액의 추정오차는 반드시 반전(reversal). 반전 빈도가 예상 초과. 이 반전이 Sloan(1996)의 예측가능 이익변화+주가수익을 완전 설명.",
+      "diversifier_relevance": "AC17_Accrual_Reversal의 직접적 학술 근거. 기계적 반전은 시장 국면과 무관하게 작동(4-regime IC 전구간 양수)."
+    },
+    {
+      "ref_id": "A3_FrazziniPedersen2014",
+      "citation": "Frazzini, A. & Pedersen, L. (2014, Journal of Financial Economics) 'Betting Against Beta'",
+      "mechanism": "레버리지 제약이 SML 평탄화 유발. Low-beta 종목은 위험조정 기준으로 체계적 과소가격. BAB SR 0.78(20개국+채권+선물).",
+      "diversifier_relevance": "Low-beta 유니버스 필터의 학술적 근거. Beta를 alpha source가 아닌 유니버스 선별 기준으로 사용하여 포트폴리오 beta 구조적 절단."
+    },
+    {
+      "ref_id": "A3_PalmonSuditYezegel2008",
+      "citation": "Palmon, D., Sudit, E. & Yezegel, A. (2008, Journal of Accounting, Auditing & Finance) 'The Accruals Anomaly and Company Size'",
+      "mechanism": "소형주/저커버리지 종목에서 accrual anomaly 더 강함. 정보 비대칭이 mispricing 지속 기간 연장.",
+      "diversifier_relevance": "Low-beta x accrual 교차의 이론적 근거. Low-beta 종목의 낮은 기관 관심도가 accrual mispricing 증폭."
+    },
+    {
+      "ref_id": "KR_FACTOR_2",
+      "citation": "박종원, 엄윤성, 엄철준 (2024, 재무관리연구 41(1)) '시장이상현상을 활용한 팩터 투자전략 성과 분석'",
+      "mechanism": "한국시장 32년 실증. Low-risk sorting 단독은 alpha 없으나(소형주 제외 시 유의성 소멸), accrual anomaly는 다중검정 후에도 조건부 유의.",
+      "diversifier_relevance": "L-087의 학술적 근거. Beta를 sorting이 아닌 filter로 사용하는 본 가설의 설계 근거."
+    }
+  ],
+
+  "factors": ["AC17_Accrual_Reversal"],
+  "universe_filter": "D02_Beta rolling 252d, bottom 50%",
+  "family": "accrual",
+  "economic_family_breakdown": {
+    "AC17": "accrual (100%)",
+    "D02_Beta": "risk (universe filter only, NOT scoring)"
+  },
+
+  "factor_profile": {
+    "AC17_Accrual_Reversal": {
+      "ic_all": 0.029,
+      "ic_bad": 0.010,
+      "conditional_value": -0.029,
+      "recent_3y_icir": 0.674,
+      "icir_CALM": 0.780,
+      "icir_CAUTION": 0.084,
+      "icir_CRISIS": 0.442,
+      "icir_NORMAL": 0.394,
+      "ic_CALM": 0.062,
+      "ic_CRISIS": 0.036,
+      "KOSPI_icir": 0.382,
+      "KOSDAQ_icir": 0.089,
+      "note": "4-regime 전구간 양수 IC. CALM+CRISIS 모두 강건 = 진정한 all-weather 팩터."
+    },
+    "D02_Beta_filter": {
+      "role": "universe_filter_only",
+      "method": "rolling 252d beta, bottom 50% selection",
+      "expected_portfolio_beta": "0.30~0.50",
+      "note": "L-087에 의거, beta를 alpha source가 아닌 유니버스 필터로만 사용."
+    }
+  },
+
+  "construction": {
+    "step1_universe": "전체 유동성 필터(20d ADV >= 2억원) 통과 종목에서 rolling 252d CAPM beta 계산 (expanding window 최소 60d). Beta 하위 50% 선별.",
+    "step2_scoring": "AC17_Accrual_Reversal Z_Score_Aligned 기준 상위 20~30종목 선별.",
+    "step3_weighting": "EW (S1 순수 팩터 측정. S5에서 IVol 등 대안 탐색).",
+    "step4_rebalance": "월간 (accrual data 특성상 분기 lag 반영).",
+    "beta_lag": "t-1 beta 사용 (C2 준수). 리밸런싱 시점에서 전월 말 기준 beta로 유니버스 확정.",
+    "accrual_lag": "C4 준수. 연간 재무제표 5월, 분기 45일 lag."
+  },
+
+  "expected_sr": 0.50,
+  "expected_cagr": 9.0,
+  "expected_mdd": 40.0,
+  "expected_turnover": 120,
+  "expected_portfolio_beta": 0.40,
+
+  "expected_metrics_detail": {
+    "sr_range": "0.35~0.65 (AC17 standalone ICIR 0.674, low-beta 유니버스에서 IC 강화 가능성 존재하나, 유니버스 축소로 분산 감소 리스크)",
+    "cagr_range": "6~12% (low-beta 유니버스의 구조적 market underperformance 감안. Bull 시장에서 lagging 불가피)",
+    "mdd_range": "30~45% (low-beta 유니버스이므로 앵커 대비 MDD 감소 기대, 단 standalone은 overlay 전)",
+    "turnover": "80~160% (beta 유니버스 변동 + accrual scoring 변동)",
+    "portfolio_corr_with_anchor": "0.30~0.50 (beta 0.40 vs 앵커 beta 0.85 → 시장 공통 노출 절반 이하)",
+    "portfolio_sr_contribution": "+0.10~0.25 (앵커 대비 상관 0.40 가정 시 Markowitz 기여)"
+  },
+
+  "m11_complementarity": "3차원 보완. (1) Beta 직교: 앵커 beta 0.854, 본 전략 예상 beta 0.40. 시장 수익률에 의한 공통 변동이 앵커의 절반 수준이므로 수익률 상관이 구조적으로 0.30~0.50으로 억제됨. L-118의 핵심 장벽(beta가 상관 지배)을 직접 공략. (2) 정보 원천 직교: AC17(회계 발생액 기계적 반전) vs C19(분석가 이익 수정). 전혀 다른 데이터 생성 과정. (3) 국면 보완: AC17은 CRISIS ICIR 0.44로 위기에서도 alpha 유지. 앵커의 consensus가 위기 시 confusion 상태에 빠질 때 독립적 수익원 역할.",
+
+  "lesson_check": [
+    {
+      "lcode": "L-087",
+      "summary": "한국시장 롱온리 low-risk sorting(VaR, IdioVol, Beta) 무효. 박종원(2024) 32년 실증 근거.",
+      "application": "Beta를 sorting(alpha source)이 아닌 유니버스 필터로만 사용. Beta 하위 50% 종목에서 AC17으로 scoring. L-087의 'sorting 무효'를 우회하는 설계.",
+      "verdict": "직접 적용. Beta = filter, NOT alpha source."
+    },
+    {
+      "lcode": "L-113",
+      "summary": "Quality 기반 Defense는 한국시장에서 구조적 역 defense. Core와 위기 상관 0.89.",
+      "application": "경고 교훈. Quality가 아닌 accrual(회계 발생액)을 사용하므로 L-113의 quality defense 실패 패턴과 다름. 단, accrual도 quality family 인접이므로 S3에서 위기 상관 검증 필수.",
+      "verdict": "주의 적용. Accrual != quality이나 인접 family이므로 S3 위기 상관 확인."
+    },
+    {
+      "lcode": "L-118",
+      "summary": "Long-only beta 0.85~0.93이 상관 지배. Diversifier의 핵심 장벽.",
+      "application": "본 가설의 핵심 설계 동기. Low-beta 유니버스 필터로 beta를 0.40 수준으로 낮추어 상관 지배 구조를 직접 공략.",
+      "verdict": "직접 적용. 본 가설의 존재 이유."
+    },
+    {
+      "lcode": "L-009",
+      "summary": "STR_1615_accrual_vol_cashconv 교훈.",
+      "application": "기존 accrual 시도의 교훈 참조. AC17(reversal)은 AC21/AC22와 다른 메커니즘(기계적 반전 vs CF비율/변동성)이므로 차별화.",
+      "verdict": "참조 적용. AC17의 차별적 메커니즘 확인."
+    }
+  ],
+
+  "risk_factors": [
+    "유니버스 축소 리스크: Beta 하위 50% 필터로 투자 유니버스가 절반. 유동성 필터(ADV >= 2억) 추가 적용 시 실질 유니버스가 100~150종목으로 축소될 수 있음. 분산 효과 감소.",
+    "Bull 시장 lagging: Low-beta 유니버스는 상승장에서 시장 대비 underperform이 구조적. 앵커와 합산 시 전체 CAGR 하락 가능.",
+    "Accrual 한국시장 유의성 불확실: Leippold & Lohre(2012) 글로벌 accrual anomaly 다중검정 후 유의성 약화. 한국시장 특이 구조(회계기준 차이, IFRS 전환)로 추가 불확실성.",
+    "Beta-Accrual 교차 효과 미검증: Low-beta 유니버스에서 AC17 IC가 전체 유니버스 대비 강화되는지, 약화되는지 S2에서 확인 필수.",
+    "Turnover 증가: Beta 유니버스 변동 + accrual scoring 변동의 이중 회전. TO 200% 초과 시 transaction cost가 alpha를 잠식."
+  ],
+
+  "pit_compliance": {
+    "C1": "AC17은 연간/분기 재무제표 기반. Rolling beta는 expanding window. Full-sample 통계 미사용.",
+    "C2": "Beta 유니버스 확정 시 t-1 beta 사용. Accrual scoring도 t-1 lag.",
+    "C4": "Accrual: 연간 재무제표 5월 리밸런싱, 분기 45일 lag.",
+    "C5": "Overlay 미적용(S1). S5에서 추가 시 t-1 lag 준수.",
+    "C9": "해당 없음(S1에서 VT/DD 미적용).",
+    "C13": "Z_Score_Aligned만 사용. AC17 방향 수동 반전 금지.",
+    "C15": "load_month_factors() 경유."
+  },
+
+  "implementation_plan": {
+    "s1_action": "Beta 하위 50% 유니버스에서 AC17 Z_Score_Aligned Top 20, EW weight, 15bps commission, LIQ >= 2e8. 월간 리밸런싱.",
+    "s1_expected": "SR 0.30~0.50, CAGR 6~10%, MDD 35~50% (overlay 전). Beta ~0.40.",
+    "s2_profiling": "ICIR >= 0.20 확인, 5Y IC 유의성, low-beta 유니버스 내 AC17 IC 안정성 별도 측정.",
+    "s3_orthogonality": "앵커(STR_1631) 대비 수익률 상관(목표 < 0.40), 종목 Jaccard, beta profile 검증.",
+    "s4_integration": "앵커 + H_1640 2전략 포트폴리오에서 한계 SR 기여도.",
+    "s5_mutation": "Low-beta threshold(30%/40%/50%), N_HOLD(15/20/25), VT overlay, DD Brake, buffer zone.",
+    "s6_validation": "Judge Gate 0-5, C1-C15, Role Honesty Audit(diversifier -- 앵커 대비 beta profile 확인)."
+  },
+
+  "scout_confidence": {
+    "score": 58,
+    "rationale": "강점: (1) AC17 4-regime 전구간 양수 IC(유일), ICIR_CALM 0.78 + ICIR_CRISIS 0.44 (+8). (2) Low-beta 유니버스 필터로 L-118 직접 공략(+7). (3) Sloan(1996) + Allen et al.(2009) 강건한 학술 근거(+6). (4) Consensus와 정보 원천 완전 직교(+5). 감점: (1) Accrual 한국시장 다중검정 후 유의성 불확실(-8). (2) Low-beta x accrual 교차 효과 미검증(-7). (3) Bull 시장 structural lagging(-5). (4) conditional_value 음수(-0.029), bad regime에서 약화(-4). (5) 유니버스 축소로 분산 감소(-3). 총 58/100."
+  }
+}

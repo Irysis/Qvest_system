@@ -1,0 +1,58 @@
+{
+  "artifact_type": "s1_construction",
+  "strategy_id": "STR_1674",
+  "strategy_name": "individual_contrarian_flow",
+  "stage": "S1",
+  "created_at": "2026-04-12",
+  "agent": "Forge",
+  "hypothesis_ref": "H_1674_individual_contrarian_flow",
+  "debate_ref": "S0 Debate APPROVE_CONDITIONAL — Noise Trader Reversal (De Long et al. 1990)",
+
+  "factor_universe": {
+    "factors": ["Individual_NetSelling_3MA"],
+    "data_source": "investor_wide.parquet (QuantiWise 거래주체 일별 순매수)",
+    "blend_type": "standalone_100pct",
+    "rationale": "개인투자자 noise trader 역방향 신호. 개인 순매도 상위 = 과잉 비관론 대상 → contrarian alpha. 3MA 평활로 turnover 감소, size 중립화로 소형주 편향 제거."
+  },
+
+  "signal_construction": {
+    "raw_signal": "monthly_sum(Individual) per stock (from daily investor_wide.parquet)",
+    "contrarian_flip": "ContrarianRaw = -IndividualNetBuy (경제적 부호 설정, C13 위반 없음)",
+    "smoothing": "3-month moving average (frollmean, align=right, C1 준수)",
+    "size_neutralization": "cross-sectional OLS residual vs log(MarketCap) per month",
+    "zscore": "cross-sectional rank → probit transform (expanding-window 불필요, rank 기반 비모수)",
+    "direction": "higher_better (개인 순매도 클수록 contrarian alpha 기대)"
+  },
+
+  "portfolio_construction": {
+    "n_hold": 30,
+    "weighting": "EW",
+    "rebalance_freq": "quarterly (3/6/9/12월)",
+    "buffer_zone": "keep_n=50, entry_n=25",
+    "commission_bps": 15,
+    "liq_threshold": 200000000,
+    "liq_lag": "shift(liq_20d, 1L) — C2 t-1 준수",
+    "overlay": "none (S1 순수 팩터 신호만)"
+  },
+
+  "pit_checklist": {
+    "C1": "PASS — rank-Z (no full-sample). frollmean(n=3, align=right) for 3MA",
+    "C2": "PASS — signal=month-end-t, execution=t+1. liq_lag=shift(liq_20d,1L)",
+    "C3": "PASS — aggregation period (month t) != application period (month t+1)",
+    "C9": "PASS — no DD/VT overlay in S1",
+    "C13": "PASS — contrarian direction via economic sign (-IndividualNetBuy). no manual flip",
+    "C14": "N/A — investor flow data, not Factor DB",
+    "C15": "N/A — investor flow via load_investor() / direct parquet (investor_wide.parquet)"
+  },
+
+  "expected_outcomes": {
+    "role_bias": "RoleBias_Core",
+    "expected_icir": "1.89 (S0 Debate: 3MA smoothing 적용 기준)",
+    "target_sr": "0.8+",
+    "target_turnover": "< 600% (quarterly + buffer zone 설계)",
+    "family": "behavioral",
+    "economic_mechanism": "De Long et al. (1990) noise trader risk. Kumar & Lee (2006) retail investor sentiment"
+  },
+
+  "validation_status": "PENDING_S1_BACKTEST"
+}

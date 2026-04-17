@@ -1,0 +1,50 @@
+{
+  "strategy_id": "STR_1423_volvol_quality_s5_m3",
+  "judge_timestamp": "2026-03-26 14:35:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Automated lookahead_detector CLEAN on both run_s5_m3.R (52 lines) and factor_engine.R (78 lines). Manual C1-C11 review: C1 CLEAN (expanding window vol, sd(raw_ret[1:(i-1)])), C2 CLEAN (no same-day circular), C5 CLEAN (VT lagged via c(1.0, head(vt_scalar,-1)), DD lagged via c(0, dd_pct[-n_f])), C9 CLEAN (both overlays properly lagged), C10 CLEAN (AvgTV20 with shift lag in factor_engine.R), C11 CLEAN (no external data sources in overlay), C13 CLEAN (Z_Score_Aligned only), C15 CLEAN (Arrow batch load). No violations found."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR 0.364 (target 2.0, FAIL), CAGR 3.87% (target 16%, FAIL), MDD 27.7% (target <25%, FAIL), IR -0.302 (negative, underperforms BM, FAIL), Calmar 0.14 (FAIL). Strategy dramatically underperforms KOSPI benchmark (BM SR 0.427, CAGR 9.03%). VT15%+DD8/20 overlay crushed already-weak returns. Score 45.6 (Grade B) but absolute performance is unacceptable for any production role."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required artifacts present: s0_record_MF02_VolVolQuality.json (Scout hypothesis with Baltussen 2018 + Dichev 2009 references), s1_construction_MF02_VolVolQuality.json (2-factor EW blend D41+Q07), s2_profile_MF02_VolVolQuality.json (Grade F, MDD 60.5%), s3_orthogonality_D41_Q07.json (redundant, mean_max_corr 0.83), s4_integration_D41+Q07.json (diversifier role, delta_sharpe 0.113), s5_research_slate_D41+Q07.json (4-slot A/B/C/D). Pipeline compliant."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "weak_correlated_underperformer",
+      "detail": "ROLE FRAUD DETECTED. Claimed role: diversifier. Evidence against: (1) BM_Corr 0.595 -- too high for a genuine diversifier (expect <0.3 for defense, <0.5 for diversifier), (2) IR -0.302 -- negative information ratio means it systematically underperforms BM, (3) S3 orthogonality factor_mean_max_corr 0.83 -- D41 and Q07 are highly redundant with existing factors, novelty_score only 0.17, (4) CAGR 3.87% vs BM 9.03% -- diversifier must at least not destroy capital this severely. Stress 3/3 outperform is the only positive signal, but insufficient to justify diversifier claim given correlated underperformance."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR: not computed (module unavailable). OOS retention: 0.867 (decent, IS SR 0.381 / OOS SR 0.331). Rolling 3Y Sharpe >0 ratio: 56.5% (barely majority positive). Alpha trend: improving (recent 3Y SR 0.766 vs full 0.364, ratio 2.11). However, base SR 0.364 is statistically indistinguishable from zero given ~20 years of data (t-stat ~1.6). Without DSR confirmation, cannot claim statistical significance. IC stability: not available."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "No FF5 regression output available for s5_m3 variant. S2 profile shows base strategy FF5 alpha t-stat = -0.35 (insignificant, negative alpha). FMB t-stat = -0.07. The VolVol+Quality factor combination shows no independent alpha beyond Fama-French factors. VT/DD overlay cannot create alpha, only reshape risk -- so FF5 alpha for s5_m3 is expected to be equally or more negative."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 45.6,
+    "fail_reasons": [
+      "Gate 1 FAIL: SR 0.364, CAGR 3.87%, MDD 27.7%, IR -0.302 -- all below targets",
+      "Gate 3 FAIL: Role fraud -- claimed diversifier but BM_Corr 0.595, IR negative, factor novelty 0.17",
+      "Gate 4 FAIL: No DSR, base SR statistically insignificant",
+      "Gate 5 FAIL: No FF5 alpha (S2 base t=-0.35, FMB t=-0.07)"
+    ],
+    "recommendation": "DISCARD. The D41_VolVol + Q07_Earnings_Stability combination lacks independent alpha in the Korean market. S3 already flagged high redundancy (corr 0.83) and recommended STOP. S5 VT15%+DD8/20 mutation reduced MDD from catastrophic 60.5% to 27.7% but destroyed returns further. The Baltussen 2018 vol-of-vol premium does not translate to KOSPI with this construction. Recommend: (1) Do not pursue further S5 mutations on this base, (2) D41_VolVol may have value as a tertiary factor in a 3+ factor blend where it contributes <20% weight, (3) Q07 standalone or in different combination may be more productive."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr 0.595 (too high for diversifier), IR -0.302 (negative), factor novelty_score 0.17, factor_mean_max_corr 0.83. Strategy behaves as a correlated underperformer, not a genuine diversifier. Stress outperformance 3/3 is the sole positive signal but does not offset systematic underperformance."
+  }
+}

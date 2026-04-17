@@ -1,0 +1,151 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T10:45:00",
+  "hypothesis_id": "H_1636_gpa_ret_autocorr_diversifier",
+  "strategy_id": "STR_1636_gpa_ret_autocorr_diversifier",
+  "parent": null,
+  "lineage": [],
+
+  "title": "Gross Profitability + Return Autocorrelation Diversifier: 독립 alpha source 2F 직교 블렌드",
+
+  "description": "Q10_Gross_Margin(Novy-Marx 2013 GPA) + L22_Ret_Autocorr(Lo & MacKinlay 1990 Variance Ratio) 2팩터 EW z-score blend를 diversifier sleeve로 설계한다. Q10은 C19 상관 -0.044(음의 상관), L22는 C19 상관 -0.108(음의 상관, L-591에서 실증)로, 두 팩터 모두 M11의 core alpha(C19)와 근본적으로 다른 경제적 원천에서 alpha를 추출한다. Q10(영업이익률 기반 quality premium)과 L22(가격 자기상관 기반 microstructure friction)의 조합은 cross-family(quality x liquidity) 교차로 단일 family 집중을 회피하면서, M11과의 상관이 0에 가까운(또는 음의) diversifier 역할을 수행한다.",
+
+  "economic_mechanism": "두 팩터의 diversifier 메커니즘은 M11(consensus)과 완전히 다른 정보 원천에서 작동한다. (1) Q10 Gross Profitability(Novy-Marx 2013, JFE): 매출총이익/총자산은 기업의 핵심 영업효율성을 측정한다. Novy-Marx는 GP/A가 Book-to-Market과 동등한 예측력을 가지면서 음의 상관을 보인다고 실증했다. 이 팩터가 diversifier로 작동하는 이유: (a) GP/A는 기업의 경쟁우위(competitive moat)를 반영하며, 이는 분석가 consensus revision(C19)과 독립적인 구조적 특성이다. Consensus는 단기 이익 서프라이즈에 반응하지만, GP/A는 산업 구조와 비용 구조에 의존하여 변동이 느리다. (b) 한국시장에서 Q10의 위기 IC(0.044)가 전체 IC(0.022)의 2배(L-750)로, 위기 시 오히려 alpha가 강화된다. C19가 위기 시 consensus confusion으로 신호 품질이 저하되는 것과 반대 방향이다. (c) C19와 상관 -0.044는 단순 독립이 아닌 약한 역상관을 의미 -- 포트폴리오 분산 효과가 독립보다 우월하다. (2) L22 Return Autocorrelation(Lo & MacKinlay 1990, RFS): 수익률 자기상관은 시장 미시구조(microstructure friction)를 반영한다. L22가 diversifier로 작동하는 이유: (a) 가격 발견(price discovery) 속도가 느린 종목은 정보가 점진적으로 반영되어 양(+)의 자기상관을 보인다. 이는 분석가 coverage(C19의 기반)와는 독립적인 시장 구조적 현상이다. (b) L-591에서 L22+C19 조합의 상관이 -0.108으로 확인되었으며, M6(L22+C19+DD+Regime)에서 SR 0.893, MDD 32.2%의 defense 잠재력이 실증되었다. (c) Lo & MacKinlay의 variance ratio는 시장 효율성 이탈을 측정하므로, consensus(정보 반영 속도)와 구조적으로 직교한다. Q10+L22 조합의 diversifier 핵심 메커니즘: 두 팩터는 서로 다른 정보 계층(기업 기본적 분석 vs 시장 미시구조)에서 alpha를 추출하므로, 결합 시 정보 원천의 중복이 최소화된다. M11(consensus revision)과의 3중 직교(fundamental quality / microstructure / consensus)가 포트폴리오 SR 개선의 이론적 기반이다.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "PG0 gap 기반 4가지 근거. (1) SR gap +0.887: M11 SR 1.113 vs 목표 2.0. 독립 수익원 추가는 Markowitz(1952)에 의해 포트폴리오 SR을 제곱근 비례로 개선. M11과 상관 -0.05~-0.10 범위의 diversifier 편입 시 SR +0.3~0.5 기여 추정. (2) family 다양성: M11은 consensus family 100% 집중. Q10(quality) + L22(liquidity)는 consensus와 다른 family로 family concentration을 완화. 단일 family 35% 상한 준수. (3) 검증된 building block: Q10은 L-750(C19 상관 -0.044, 위기 IC 2배, TO 44%), L22는 L-591(C19 상관 -0.108, M6 SR 0.893)에서 각각 독립적으로 M11 보완 잠재력이 검증됨. 두 팩터의 조합은 미검증이나, 개별 검증 결과가 조합의 성공 확률을 높인다. (4) TO budget 적합: Q10 TO 44%(L-750) + L22 TO 추정 80~120% = 합산 TO < 200% budget 내 운용 가능. M11 TO 574.8%와 합산해도 포트폴리오 총 TO 관리 가능.",
+
+  "core_reference": [
+    {
+      "ref_id": "A3_NovyMarx",
+      "citation": "Novy-Marx, R. (2013, Journal of Financial Economics) 'The Other Side of Value: The Gross Profitability Premium'",
+      "mechanism": "GP/A(매출총이익/총자산)가 B/M(장부가/시장가)과 동등한 횡단면 예측력을 보유. 고수익성 기업 매수 = '생산적 자산 매수'로 가치투자의 다른 차원. GP/A와 B/M은 음의 상관이면서 각각 독립적 alpha 제공. FF5 RMW의 원천.",
+      "diversifier_relevance": "GP/A는 earnings consensus(C19)와 다른 정보 원천(영업비용 구조 vs 분석가 수정). C19 상관 -0.044는 약한 역상관으로 diversifier에 이상적."
+    },
+    {
+      "ref_id": "A3_BallDeflating",
+      "citation": "Ball, R., Gerakos, J., Linnainmaa, J. & Nikolaev, V. (2015, Journal of Financial Economics) 'Deflating Profitability'",
+      "mechanism": "수익성 지표를 자산이 아닌 매출액으로 scale하면 예측력 강화. GP/A의 robustness 확인. 수익성 프리미엄이 데이터마이닝이 아닌 실재하는 anomaly임을 확인.",
+      "diversifier_relevance": "GP/A의 학술적 robustness가 diversifier로서의 장기 유효성을 지지."
+    },
+    {
+      "ref_id": "A3_LoMacKinlay",
+      "citation": "Lo, A. & MacKinlay, A.C. (1990, Review of Financial Studies) 'When Are Contrarian Profits Due to Stock Market Overreaction?'",
+      "mechanism": "주간/월간 수익률의 양(+) 자기상관은 시장 과소반응(underreaction)의 증거. 자기상관이 높은 종목은 정보 반영 속도가 느려 predictable price pattern 존재. Variance Ratio 검정으로 시장 효율성 이탈 정도 측정.",
+      "diversifier_relevance": "L22(Return Autocorrelation)는 시장 미시구조 현상. Consensus revision(정보 반영)과 구조적으로 직교. C19 상관 -0.108(L-591)."
+    },
+    {
+      "ref_id": "A3_HouMoskowitz",
+      "citation": "Hou, K. & Moskowitz, T. (2005, Review of Financial Studies) 'Market Frictions, Price Delay, and the Cross-Section of Expected Returns'",
+      "mechanism": "Price delay(가격 반영 지연)이 높은 종목은 미래 수익률이 높다. 정보 비대칭과 시장 미시구조 마찰이 원인. 자기상관은 price delay의 한 측면.",
+      "diversifier_relevance": "L22는 price delay의 proxy. Information friction 기반 alpha는 consensus(information processing) 기반 alpha와 독립적 정보 채널."
+    },
+    {
+      "ref_id": "Revisiting_Quality",
+      "citation": "Revisiting Quality Investing (Literature collection, 1-3.Quality)",
+      "mechanism": "GP/A(Novy-Marx)가 가장 강력한 단일 quality 지표. HML과 음의 상관이면서 독립 alpha. 복합 스코어 > 단일 지표이나, GP/A 단독도 유효.",
+      "diversifier_relevance": "GP/A의 HML 역상관 특성은 value-tilted 포트폴리오에 대한 자연스러운 hedge. M11이 value exposure를 보유할 경우 Q10이 이를 상쇄."
+    },
+    {
+      "ref_id": "KR_FACTOR_2",
+      "citation": "박종원, 엄윤성, 엄철준 (2024, 재무관리연구) '시장이상현상을 활용한 팩터 투자전략 성과 분석'",
+      "mechanism": "한국시장 32년 실증. 롱온리 defense 경로: Quality/Profitability 기반(GPA 롱사이드 유의).",
+      "diversifier_relevance": "Q10(GPA)의 한국시장 롱사이드 유효성을 지지하는 독립적 실증."
+    }
+  ],
+
+  "factors": ["Q10_Gross_Margin", "L22_Ret_Autocorr"],
+  "family": "quality_liquidity_diversifier",
+  "economic_family_breakdown": {
+    "Q10": "quality (50%)",
+    "L22": "liquidity/microstructure (50%)"
+  },
+
+  "expected_sr": 0.70,
+  "expected_cagr": 12.0,
+  "expected_mdd": 30.0,
+  "expected_turnover": 100,
+
+  "expected_metrics_detail": {
+    "sr_range": "0.55~0.85 (Q10 standalone SR 0.503 + L22 standalone SR 0.397, 2F blend 시 diversification benefit으로 개선 기대)",
+    "cagr_range": "10~14% (standalone alpha 약하나, defense/defense_ensemble과의 결합에서 포트폴리오 레벨 기여가 핵심)",
+    "mdd_range": "25~35% (두 팩터 모두 standalone MDD 50%+ hard fail이나, VT 12% + Regime overlay로 30% 이하 기대)",
+    "turnover": "60~140% (Q10 TO 44% + L22 microstructure 팩터 TO 추정 100~200%, blend 시 buffer zone으로 관리)",
+    "portfolio_corr_with_m11": "-0.10 ~ 0.05 (Q10 -0.044, L22 -0.108의 가중평균)",
+    "portfolio_sr_contribution": "+0.25~0.45 (cor -0.05 감안 Markowitz 분산 효과)"
+  },
+
+  "to_budget": "< 200%",
+
+  "m11_complementarity": "M11과의 보완성은 네 차원에서 발생한다. (1) 정보 원천 직교: M11은 consensus revision(분석가 이익 수정), Q10은 영업비용 구조(재무제표), L22는 가격 미시구조(거래 패턴). 세 정보 원천은 독립적 데이터 생성 과정을 가진다. (2) 시간축 분리: M11의 C19는 월간 consensus 업데이트에 반응하는 단기 신호. Q10은 연간/분기 재무제표 업데이트에 반응하는 중기 신호. L22는 일간 거래 패턴에서 추출한 초단기 신호의 월간 집계. 이 시간축 차이가 수익률 경로의 비동기성을 만든다. (3) 위기 행동 역상관: M11의 C19는 위기 시 consensus confusion으로 signal noise 증가. Q10은 위기 시 IC가 2배로 강화(L-750). L22는 위기 시 시장 비효율성 증가로 자기상관 패턴이 강화될 수 있음. 이 역방향 IC 변동이 portfolio-level drawdown 완화에 기여. (4) TO 보완: M11 TO 574.8% vs STR_1636 예상 TO 60~140%. 포트폴리오 총 TO budget 관리에 유리.",
+
+  "lesson_check": [
+    {
+      "lcode": "L-750",
+      "summary": "Q10_Gross_Margin standalone: MDD 51%, SR 0.503. C19 상관 -0.044, D01 상관 0.011. 위기 IC(0.044) = 전체 IC(0.022)의 2배. TO 44% 극히 낮음. 멀티팩터 secondary factor로 활용 가치.",
+      "application": "Q10을 diversifier의 50% 구성요소로 사용. Standalone alpha는 약하나 M11 대비 역상관(-0.044)과 위기 IC 강화가 diversifier 역할의 핵심 자질. TO 44%는 포트폴리오 총 TO 관리에 유리.",
+      "verdict": "직접 적용. Q10의 diversifier 자질(역상관, 위기 IC, 저TO)을 활용."
+    },
+    {
+      "lcode": "L-591",
+      "summary": "L22_Ret_Autocorr standalone: SR 0.397, MDD 64%. C19 상관 -0.108(진정한 diversifier). M6(L22+C19+DD+Regime): SR 0.893, MDD 32.2%. Rolling z-score 변환은 신호 파괴. Microstructure 팩터는 원시 값 사용 최적.",
+      "application": "L22의 C19 역상관(-0.108)이 본 가설의 핵심 근거. L-591의 교훈: (1) rolling z-score 변환 금지 -- L22는 raw z_safe() 변환만 적용. (2) M6에서 C19+L22 조합이 SR 0.893 달성 -- L22의 diversifier 가치 실증. 다만 본 가설에서는 C19 대신 Q10과 결합하여 M11과의 독립성을 극대화.",
+      "verdict": "직접 적용. L22 raw value 사용, rolling z-score 변환 금지."
+    },
+    {
+      "lcode": "L-746",
+      "summary": "STR_1553 IndMom diversifier 실패: Core(C19+DD)와 상관 0.732. 같은 모멘텀 anomaly. Diversifier는 근본적으로 다른 메커니즘(Value, Quality, Flow)에서 찾아야.",
+      "application": "L-746의 핵심 교훈 준수: Q10(quality)과 L22(microstructure)는 C19(consensus)와 근본적으로 다른 경제적 메커니즘. IndMom 실패가 '다른 데이터소스도 같은 anomaly면 diversifier 불가'임을 보여주었고, Q10/L22는 실제로 다른 anomaly(profitability premium / microstructure friction)에 기반.",
+      "verdict": "핵심 적용. L-746의 교훈을 설계 원칙으로 반영."
+    },
+    {
+      "lcode": "L-STR1618",
+      "summary": "M21_Seasonality + Q01_GPA: MDD 60.2%, SR 0.316. 두 약한 팩터의 EW 결합은 시너지 없음. 개별 standalone alpha 부재하면 결합 효과 없음.",
+      "application": "경고 교훈: Q10(SR 0.503)과 L22(SR 0.397) 모두 standalone alpha가 약하다. L-STR1618처럼 두 약한 팩터의 결합이 시너지 없이 실패할 리스크 존재. 차별점: (1) Q10은 Q01보다 한국시장 IC가 높고(0.022 vs 0.024 유사), 위기 IC 2배 특성이 우월. (2) L22는 M21(seasonality, 미국 기반 효과)과 달리 한국시장 microstructure 효과가 실증됨(L-591 M6 SR 0.893). (3) Q10과 L22의 cross-family 결합은 Q01+M21의 same-direction 결합(둘 다 약한 long-side)보다 diversification benefit이 크다.",
+      "verdict": "경고 적용. 약한 팩터 조합 리스크 인식하에 차별점 논증. S1에서 2F blend SR이 max(Q10 SR, L22 SR)을 초과하는지 검증 필수."
+    },
+    {
+      "lcode": "L-784",
+      "summary": "VT 12%만 MDD 45% 미만 달성. DD brake는 alpha 파괴.",
+      "application": "VT 12% + Regime 3-Layer를 MDD 관리 도구로 채택. DD brake 제외. Q10+L22의 원시 SR이 C19보다 낮으므로(0.5~0.7 vs 1.0), VT가 alpha를 더 많이 잠식할 수 있다. VT 15%로 완화 옵션도 S5에서 탐색.",
+      "verdict": "조건부 적용. VT level은 base alpha 수준에 따라 조정."
+    }
+  ],
+
+  "risk_factors": [
+    "약한 standalone alpha: Q10 SR 0.503, L22 SR 0.397. 2F blend도 SR 0.6~0.8 예상으로 Grade A(SR >= 0.8) 미달 가능. Diversifier 역할에서는 standalone 성과보다 포트폴리오 기여도가 중요하나, standalone SR < 0.6이면 overlay 적용 시 alpha 완전 소멸 리스크.",
+    "두 약한 팩터 조합의 시너지 부재 리스크: L-STR1618(Q01+M21 실패)의 패턴 반복 가능. Q10과 L22의 pairwise 상관이 확인되지 않음. 두 팩터가 동방향(같은 종목 선택)이면 diversification benefit 없이 약한 alpha의 중복.",
+    "L22 microstructure 팩터의 비안정성: Lo & MacKinlay(1990)의 variance ratio는 시장 구조 변화(HFT 증가, 거래 메커니즘 변경)에 민감. 한국시장의 2020-2024 공매도 금지 기간 중 L22 신호 품질 변화 가능.",
+    "VT overlay 시 과도한 alpha 잠식: base SR 0.5~0.7에 VT 12% 적용 시 CAGR 10% 미만으로 하락 가능. Defense sleeve(가설 A)와 달리 diversifier는 CAGR 기여가 중요하므로, alpha 잠식이 역할 수행을 방해할 수 있다.",
+    "Q10 한국시장 특수성: Novy-Marx(2013)는 미국시장 실증. KB증권(2018)에서 한국시장 ROE+이익안정성+재무건전성 유의성은 확인했으나, GP/A 단독의 한국시장 long-only 프리미엄은 L-750에서 약한 것으로 확인됨(IR -0.083, BM 하회). 다만 위기 IC 강화 특성이 diversifier에서는 오히려 장점."
+  ],
+
+  "pit_compliance": {
+    "C1": "Q10은 연간/분기 재무제표 기반. L22는 rolling window. Full-sample 통계 미사용.",
+    "C2": "팩터 신호 t-1 lag. Same-day circular 방지.",
+    "C4": "Q10: 연간 재무제표 5월 리밸런싱. 분기 45일 lag.",
+    "C5": "VT overlay: expanding window vol, t-1 lag.",
+    "C9": "VT same-day 금지. vol_lag <- c(vol[1], head(vol, -1)).",
+    "C11": "Regime Engine v7.1 FRED lag 처리.",
+    "C13": "Z_Score_Aligned만 사용.",
+    "C15": "load_month_factors() 경유. L22는 raw value 사용(rolling z-score 변환 금지, L-591)."
+  },
+
+  "implementation_plan": {
+    "s1_action": "Q10+L22 2팩터 EW z_safe() blend, Top 20, EW weight, 15bps commission, LIQ >= 2e8. L22는 raw z_safe() 적용(rolling z-score 금지). S1은 순수 팩터 신호 측정.",
+    "s1_expected": "SR 0.45~0.65, CAGR 10~14%, MDD 55~65% (overlay 전)",
+    "s2_profiling": "ICIR 0.20 확인, 5Y IC 유의성, Q10-L22 pairwise 상관 확인, 조건부 IC",
+    "s3_orthogonality": "M11(C19+HRP) 대비 수익률 상관, 종목 Jaccard, STR_1635(가설 A) 대비 직교성",
+    "s4_integration": "M11+STR_1636 2전략 포트폴리오, M11+STR_1635+STR_1636 3전략 포트폴리오에서 한계 기여도",
+    "s5_mutation": "VT 12~15%, Regime 3-Layer, 가중 방식(EW vs IVol), buffer zone, N_HOLD(15 vs 20 vs 25), Q10/L22 비중(50/50 vs 60/40 vs 40/60)",
+    "s6_validation": "Judge Gate 0-5, C1-C15, Role Honesty Audit(diversifier 역할 적합성 -- M11 대비 cor < 0.10 필수)"
+  },
+
+  "scout_confidence": {
+    "score": 58,
+    "rationale": "Q10과 L22 각각 M11(C19) 대비 독립성이 실증됨(Q10: -0.044, L22: -0.108, +12). L-591에서 L22+C19 조합의 diversifier 효과 실증(M6 SR 0.893, +8). Q10 위기 IC 2배 특성은 diversifier에 이상적(+7). Cross-family(quality x liquidity) 교차로 family 다양성 확보(+6). 박종원(2024) 한국시장 quality 롱사이드 유효성 지지(+5). 그러나: standalone alpha가 매우 약함(Q10 0.503, L22 0.397, -12). L-STR1618 패턴(약한 팩터 조합 실패) 반복 리스크(-10). Q10-L22 pairwise 상관 미확인(-5). VT overlay 시 alpha 완전 소멸 가능(-5). L22 microstructure 비안정성(-3). 종합 58/100. 가설 A(defense, 72점)보다 낮은 이유: 검증된 원시 alpha(L-747 FMB t=4.60)가 없고, 두 약한 팩터의 시너지가 미검증."
+  }
+}

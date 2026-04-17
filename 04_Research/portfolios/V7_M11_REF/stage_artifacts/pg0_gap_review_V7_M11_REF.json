@@ -1,0 +1,83 @@
+{
+  "stage": "PG0",
+  "version": "1.0.0",
+  "portfolio_id": "V7_M11_REF",
+  "timestamp": "2026-04-08T07:37:57",
+  "cold_start_phase": 1,
+  "n_strategies": 1,
+  "reference_strategy": {
+    "strategy_id": "STR_1631_v5_M11_hrp",
+    "family": "defense_ensemble",
+    "factors": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C06_TP_Gap"],
+    "weighting": "HRP_Gerber_RMT",
+    "overlay": "3-Layer Regime",
+    "n_holdings": 20
+  },
+  "current_profile": {
+    "cagr": 0.1986,
+    "sharpe": 1.113,
+    "mdd": 0.3355,
+    "ann_vol": 0.1785,
+    "sortino": 1.565,
+    "calmar": 0.592,
+    "turnover": 574.8,
+    "win_rate": 61,
+    "worst_month": -14.97,
+    "es99_daily": 4.42
+  },
+  "target_profile": {
+    "cagr": 0.16,
+    "sharpe": 2,
+    "mdd": 0.25
+  },
+  "gap": {
+    "cagr_gap": -0.0386,
+    "sharpe_gap": 0.887,
+    "mdd_gap": 0.0855
+  },
+  "sleeve_needs": {
+    "primary": "defense",
+    "secondary": "diversifier",
+    "tertiary": "core_alpha"
+  },
+  "regime_state": {
+    "date": "2026-04-07",
+    "category": "CAUTION",
+    "score": 53.3
+  },
+  "family_concentration": {
+    "defense_ensemble": 1,
+    "consensus": 0,
+    "value": 0,
+    "quality": 0,
+    "momentum": 0,
+    "risk": 0,
+    "flow": 0,
+    "crowding": 0,
+    "liquidity": 0
+  },
+  "m11_weakness_analysis": {
+    "primary_weakness": "MDD 33.55% vs target 25%",
+    "secondary_weakness": "SR 1.113 vs target 2.0",
+    "turnover_risk": "TO 574.8% near 600% hard fail",
+    "worst_years": "2008(-6.6%), 2011(-5.3%), 2014(-1.5%), 2022(-10.2%)"
+  },
+  "scout_direction": {
+    "priority_1_defense": {
+      "expected_role": "defense",
+      "why_now": "MDD gap +8.55%p, CAUTION regime 53.3",
+      "family_explore": ["quality", "risk"],
+      "notes": "Quality(GPA,ROIC,Gross_Margin) bad regime IC positive"
+    },
+    "priority_2_diversifier": {
+      "expected_role": "diversifier",
+      "why_now": "SR gap +0.887 needs uncorrelated alpha",
+      "family_explore": ["crowding", "value", "liquidity"],
+      "notes": "CR07_Momentum_Crowding conditional_value 0.114 rank 1"
+    },
+    "caution": {
+      "to_budget": "TO < 200% for any new sleeve",
+      "family_cap": "single family max 35%"
+    }
+  }
+}

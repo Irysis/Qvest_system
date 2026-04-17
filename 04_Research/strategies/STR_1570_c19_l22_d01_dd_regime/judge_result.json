@@ -1,0 +1,24 @@
+{
+  "strategy_id": "STR_1570",
+  "strategy_name": "C19_L22_D01_DD_Regime",
+  "judge_date": "2026-03-28",
+  "grade": "B",
+  "score": 57.7,
+  "sharpe": 0.793,
+  "cagr": 11.53,
+  "mdd": 29.99,
+  "turnover": 364.7,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — C1~C15 clean. dd_lag=c(0,dd[-nf]), cash_lag=c(0,cash_pct[-nf]), Z_Score_Aligned, load_month_factors()",
+    "G1_Implementation": "PASS — N=30, commission=15bps, LIQ>=2e8, buffer_zone(50/25)",
+    "G2_Robustness": "WARN — OOS retention=0.62 (SR H1=1.029, H2=0.636). SR 후반기 하락 뚜렷",
+    "G3_Performance": "FAIL — CAGR 11.53% < 16% hurdle. SR 0.793 < 0.8 marginal miss",
+    "G4_Statistics": "PARTIAL — SR_3Y=1.411 (no alpha decay). FF5 alpha 미확인",
+    "G5_Diversity": "PASS — L22(microstructure) diversifier로 C19 corr=-0.108"
+  },
+  "role_honesty": "PASS — diversifier 역할 주장 합당. L22 corr=-0.108",
+  "hard_fail": false,
+  "verdict": "Archive",
+  "reason": "CAGR 11.53% < 16%, SR 0.793 < 0.8 미달. 견고성 우려(OOS ret 0.62). Grade B Archive. L22 diversifier 효과는 유의미하나 alpha 부족."
+}

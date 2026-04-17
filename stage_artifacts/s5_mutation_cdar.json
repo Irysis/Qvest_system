@@ -1,0 +1,374 @@
+{
+  "stage": "S5_MUTATION_DESIGN",
+  "version": "1.0.0",
+  "strategy_id": "STR_1656_MLRA",
+  "base_mutation": "M05",
+  "base_profile": {
+    "label": "HRP_DD_Brake_10_25",
+    "SR": 1.2122,
+    "CAGR_pct": 29.1,
+    "MDD_pct": -31.89,
+    "Sortino": 1.8931,
+    "overlay": "DD Brake (threshold -10%, full cash at -25%)",
+    "weakness": "고정 파라미터 10/25 룰 -- 국면 무관 단일 임계치, 학술 기반 최적화 부재"
+  },
+  "design_timestamp": "2026-04-11T14:00:00",
+  "designed_by": "Scout",
+
+  "academic_foundation": {
+    "primary": {
+      "paper": "Peng, Kim & Mittnik (2020)",
+      "arxiv": "arXiv:2009.11367v3",
+      "title": "Portfolio Optimization on Multivariate Regime Switching GARCH Model with Normal Tempered Stable Innovation",
+      "mechanism": "MRS-GARCH 모형으로 국면별 시뮬레이션 경로 생성 후 CDaR/CVaR 꼬리 위험 측도로 직접 최적화. OOS에서 표준편차 기반 최적화 및 EW 대비 우월한 성과와 더 robust한 효율 프런티어 확인.",
+      "key_finding": "CDaR 최적 포트폴리오가 SD 최적 대비 drawdown을 유의하게 제어하면서 수익률 손실 최소화"
+    },
+    "secondary": [
+      {
+        "paper": "Chekhlov, Uryasev & Zabarankin (2005)",
+        "journal": "Journal of Banking & Finance 29(10): 2443-2466",
+        "title": "Drawdown Measure in Portfolio Optimization",
+        "mechanism": "CDaR = E[DD | DD > VaR_alpha(DD)] -- 드로다운의 조건부 기대값. CVaR의 drawdown 버전으로 LP 정식화 가능 (선형 계획법). Coherent risk measure 조건 충족.",
+        "relevance": "calc_cdar_weights()의 수학적 기초. LP 변수: [w, q, m, u, zeta] 내 drawdown 선형화"
+      },
+      {
+        "paper": "Barroso & Santa-Clara (2015)",
+        "journal": "Journal of Financial Economics 118(1): 111-138",
+        "title": "Momentum is not dead",
+        "mechanism": "실현 변동성의 역수로 팩터 exposure를 조절하는 risk-managed momentum. Factor timing(어느 팩터가 좋을지 예측)이 아닌 factor risk management(위험 시 exposure 축소).",
+        "relevance": "L-122 교훈 -- DD Brake의 학술적 정당화. 고정 파라미터가 아닌 위험 측도 기반 동적 exposure 조절의 근거"
+      },
+      {
+        "paper": "Moreira & Muir (2017)",
+        "journal": "Journal of Finance 72(4): 1611-1644",
+        "title": "Volatility-Managed Portfolios",
+        "mechanism": "조건부 변동성이 높을 때 exposure를 줄이면 위험-보상 트레이드오프 개선. 시장 타이밍이 아닌 위험 관리.",
+        "relevance": "국면별 CDaR 예산 차등의 학술적 근거 -- CRISIS 국면에서 CDaR 예산 축소 = 변동성 관리 포트폴리오의 drawdown 버전"
+      },
+      {
+        "paper": "Pfaff (2016)",
+        "book": "Financial Risk Modelling and Portfolio Optimization with R",
+        "chapters": "Ch.11 (PMTD), Ch.12 (CDaR/ES), Ch.13.6.4 (CPPI/Floor)",
+        "relevance": "advanced_weights.R, tail_risk_engine.R, protection_strategy.R의 구현 기초"
+      }
+    ]
+  },
+
+  "lesson_check": {
+    "L-060": "STR_1434 HERC-CDaR A_CONDITIONAL -- CDaR weighting 구조는 유효하나 C11 FRED 위반으로 재검증 필요. 본 mutation은 Regime Engine v7.1(미래참조 ZERO) 사용으로 C11 안전.",
+    "L-119": "정적 EW 팩터 블렌드 = alpha 희석. 국면별 동적 가중만 유효 -- CDaR 예산을 국면별 차등으로 설계.",
+    "L-122": "Factor timing 아닌 factor risk management. DD Brake를 CDaR LP로 대체 = 휴리스틱에서 최적화 기반으로 전환.",
+    "L-484": "30종목 제한 준수. CDaR weight는 종목 내 가중 방식이므로 종목수 불변."
+  },
+
+  "infrastructure_mapping": {
+    "calc_cdar_weights": {
+      "path": "02_Infrastructure/portfolio/advanced_weights.R:996",
+      "interface": "calc_cdar_weights(tickers, ret_dt, alpha=0.95, n_days=120, max_w=0.15, max_cdar=NULL)",
+      "solver": "cccp LP (Chekhlov 정식화) | FRAPO::PMinCDaR 폴백 | min-vol 최종 폴백",
+      "note": "max_cdar 파라미터 활용 가능 -- 국면별 CDaR budget을 max_cdar에 전달"
+    },
+    "compute_cdar": {
+      "path": "02_Infrastructure/portfolio/tail_risk_engine.R:167",
+      "interface": "compute_cdar(nav, alpha=0.95)",
+      "output": "cdar, var_dd, max_dd, avg_dd, recovery_ratio",
+      "note": "사후 검증용. CDaR weight 산출 후 실현 CDaR 모니터링"
+    },
+    "regime_engine": {
+      "path": "02_Infrastructure/regime/regime_signal.R",
+      "classify": "classify_regime_category(score) -> RISK_ON/NEUTRAL/CAUTION/RISK_OFF",
+      "thresholds": "RISK_ON(<25) / NEUTRAL(25-45) / CAUTION(45-70) / RISK_OFF(>=70)",
+      "note": "v7.1 미래참조 ZERO 확인. Expanding percentile threshold."
+    },
+    "get_regime_label": {
+      "path": "02_Infrastructure/regime/regime_factor_alloc_engine.R:37",
+      "interface": "get_regime_label(mrs_val, mrs_history) -> normal/elevated/crisis",
+      "thresholds": "expanding p60/p80 percentile",
+      "note": "PIT 준수. mrs_history는 sig_date 이전만 사용."
+    }
+  },
+
+  "mutations": {
+    "M-CDaR-1": {
+      "label": "CDaR_LP_Replace_DD_Brake",
+      "category": "StockWeight_CDaR",
+      "axis": "Stock Weight",
+      "description": "DD Brake 10/25 고정 룰을 CDaR LP 최적 가중으로 완전 대체. 종목 가중을 HRP 대신 CDaR LP로 산출하여 drawdown 꼬리 위험을 직접 최소화.",
+      "mechanism": {
+        "academic_basis": "Chekhlov et al. (2005) CDaR LP 정식화. min CDaR(alpha=0.95) s.t. sum(w)=1, 0<=w<=max_w. Drawdown 상위 5%의 조건부 기대값을 목적함수로 직접 최소화.",
+        "why_better_than_dd_brake": "DD Brake는 사후 drawdown 관측 후 반응하는 reactive 룰. CDaR LP는 과거 수익률 경로에서 drawdown 분포를 추정하여 사전적(proactive)으로 가중 배분. 반응 속도가 아닌 구조적 배분으로 drawdown 제어.",
+        "implementation": [
+          "1. M12 HRP base NAV 대신, 매 리밸런싱 시점에 calc_cdar_weights() 호출",
+          "2. ret_dt: 과거 120일 일간 수익률 (n_days=120, expanding 가능)",
+          "3. alpha=0.95 (상위 5% drawdown의 조건부 기대값)",
+          "4. max_w=0.15 (집중도 제한, 30종목 기준 최대 15%)",
+          "5. DD Brake overlay 제거. CDaR weight 자체가 drawdown 제어",
+          "6. C9 준수: t-1 수익률로 weight 산출 -> t일 적용"
+        ]
+      },
+      "config": {
+        "weight_method": "cdar_lp",
+        "alpha": 0.95,
+        "n_days": 120,
+        "max_w": 0.15,
+        "overlay_dd_brake": false,
+        "overlay_regime": false,
+        "rebalance": "monthly",
+        "pit_lag": "t-1 returns -> t weights (C9)"
+      },
+      "expected_effect": {
+        "SR": "1.10 ~ 1.25 (M05 대비 유사 또는 소폭 하락 가능 -- DD Brake의 adaptive cash 없이 weight만으로 제어)",
+        "MDD": "-25% ~ -35% (목표: M05의 -31.9% 이하)",
+        "CAGR": "22% ~ 30% (DD Brake 현금화 제거로 full-invested 기간 증가)",
+        "mechanism_delta": "reactive DD Brake -> proactive CDaR weight. 현금 비율 감소, drawdown 구조적 제어"
+      },
+      "kill_scenario": [
+        {
+          "condition": "MDD > -45%",
+          "reason": "Hard fail. CDaR LP만으로 drawdown 제어 불충분",
+          "action": "M-CDaR-3 (CDaR + DD Brake 결합)으로 전환"
+        },
+        {
+          "condition": "SR < 0.80",
+          "reason": "CDaR 최적화가 과도한 집중/분산으로 alpha 훼손",
+          "action": "max_w 조정 (0.10 -> 0.20 범위 탐색) 또는 폐기"
+        },
+        {
+          "condition": "cccp LP solver 수렴 실패율 > 20%",
+          "reason": "수치 불안정. 30종목 + 120일 = LP 변수 360+ 차원",
+          "action": "n_days 축소(60일) 또는 FRAPO 폴백 확인"
+        },
+        {
+          "condition": "Turnover > 600%",
+          "reason": "CDaR weight 불안정 (월간 대폭 변동)",
+          "action": "buffer_zone 또는 weight 변화 상한(20%/월) 부과"
+        }
+      ]
+    },
+
+    "M-CDaR-2": {
+      "label": "Regime_Conditional_CDaR_Budget",
+      "category": "StockWeight_CDaR_Regime",
+      "axis": "Stock Weight x Overlay",
+      "description": "국면별 CDaR 예산을 차등 적용. NORMAL에서는 CDaR 제약 완화(공격적), CAUTION에서는 중간, CRISIS에서는 CDaR 예산 강화(보수적). Peng et al. (2020)의 MRS-CDaR 직접 최적화를 Regime Engine v7.1과 결합.",
+      "mechanism": {
+        "academic_basis": "Peng, Kim & Mittnik (2020, arXiv:2009.11367): MRS-GARCH 기반 국면별 시뮬레이션 + CDaR 최적화. 본 mutation은 시뮬레이션 대신 실현 수익률 + Regime Engine v7.1 국면 분류를 사용하여 CDaR budget을 국면별 차등화. Moreira & Muir (2017) volatility-managed portfolios의 drawdown 버전.",
+        "regime_cdar_mapping": {
+          "NORMAL_RISK_ON": {
+            "regime_score": "< 25",
+            "cdar_alpha": 0.90,
+            "max_cdar": null,
+            "n_days": 120,
+            "max_w": 0.15,
+            "rationale": "낮은 위험 국면. CDaR 제약 완화 (alpha 0.90 = 상위 10% drawdown, 더 관대). Full risk budget 활용하여 수익률 극대화."
+          },
+          "NEUTRAL": {
+            "regime_score": "25 ~ 45",
+            "cdar_alpha": 0.95,
+            "max_cdar": null,
+            "n_days": 120,
+            "max_w": 0.12,
+            "rationale": "기본 국면. 표준 CDaR LP (alpha 0.95). max_w 소폭 축소로 집중도 제한 강화."
+          },
+          "CAUTION": {
+            "regime_score": "45 ~ 70",
+            "cdar_alpha": 0.95,
+            "max_cdar": 0.20,
+            "n_days": 90,
+            "max_w": 0.10,
+            "rationale": "경계 국면. CDaR 상한 20% 명시적 부과. 최근 90일 (변동성 확대기 반영). max_w 10%로 집중도 엄격 제한."
+          },
+          "CRISIS_RISK_OFF": {
+            "regime_score": ">= 70",
+            "cdar_alpha": 0.99,
+            "max_cdar": 0.15,
+            "n_days": 60,
+            "max_w": 0.08,
+            "rationale": "위기 국면. CDaR 상위 1% drawdown까지 제어 (alpha 0.99, 극도로 보수적). max_cdar 15%로 엄격 상한. 60일 최근 데이터 + 극도 분산 (max_w 8%). Regime Engine v7.1의 crisis cash allocation(50%+)과 독립적으로 작동."
+          }
+        },
+        "implementation": [
+          "1. 리밸런싱 시점에서 Regime Engine v7.1 호출: classify_regime_category(score)",
+          "2. 국면에 따라 {alpha, max_cdar, n_days, max_w} 파라미터 세트 선택",
+          "3. calc_cdar_weights(tickers, ret_dt, alpha, n_days, max_w, max_cdar) 호출",
+          "4. C5 준수: regime score는 t-1 값 사용 (shift(Regime_Score, 1))",
+          "5. C9 준수: ret_dt는 t-1까지의 수익률만 사용",
+          "6. 국면 전환 시 weight 급변 방지: 전환일 weight = 0.7*new + 0.3*old (smooth transition)"
+        ]
+      },
+      "config": {
+        "weight_method": "regime_conditional_cdar_lp",
+        "regime_source": "regime_signal.R (v7.1)",
+        "regime_lag": "t-1 (C5)",
+        "return_lag": "t-1 (C9)",
+        "smooth_transition": 0.7,
+        "overlay_dd_brake": false,
+        "rebalance": "monthly"
+      },
+      "expected_effect": {
+        "SR": "1.15 ~ 1.35 (국면별 risk budget 최적화로 M05/M-CDaR-1 대비 개선 기대)",
+        "MDD": "-22% ~ -30% (CRISIS에서 극도 보수적 CDaR로 drawdown 직접 억제)",
+        "CAGR": "20% ~ 28% (NORMAL에서 공격적 배분 -> CAGR 유지, CRISIS에서 보호)",
+        "mechanism_delta": "고정 CDaR -> 국면 조건부 CDaR. 위기 시 drawdown budget 축소 = 구조적 보호. 정상 시 budget 확장 = alpha 극대화."
+      },
+      "kill_scenario": [
+        {
+          "condition": "MDD > -45%",
+          "reason": "Hard fail. CRISIS CDaR budget으로도 drawdown 미통제",
+          "action": "CRISIS에서 cash allocation 병행 (M-CDaR-3 방향)"
+        },
+        {
+          "condition": "NORMAL vs CRISIS 국면별 SR 편차 > 0.5",
+          "reason": "국면별 파라미터 차이가 과도하여 불안정한 성과 프로파일",
+          "action": "파라미터 범위 축소 (alpha 0.92~0.97로 좁히기)"
+        },
+        {
+          "condition": "국면 전환 빈도 > 월 2회 (whipsaw)",
+          "reason": "Regime Engine 과민 반응으로 CDaR 파라미터 잦은 변동",
+          "action": "smooth_transition 비율 0.5로 강화 또는 전환 후 2주 유지 규칙"
+        },
+        {
+          "condition": "Turnover > 600%",
+          "reason": "국면 전환마다 weight 구조 전면 변경",
+          "action": "turnover penalty 부과 또는 weight 변화 상한"
+        },
+        {
+          "condition": "CRISIS 구간 CAGR < -5% (annualized)",
+          "reason": "CDaR 보수화만으로 CRISIS drawdown 방어 불충분 -- 현금화 필요",
+          "action": "M-CDaR-3 또는 Regime cash allocation 결합"
+        }
+      ]
+    },
+
+    "M-CDaR-3": {
+      "label": "CDaR_LP_Plus_DD_Brake_Dual",
+      "category": "StockWeight_CDaR_Overlay_DD",
+      "axis": "Stock Weight x Overlay",
+      "description": "CDaR LP weight (구조적 보호, 1차 방어선) + DD Brake (반응적 보호, 2차 방어선) 이중 보호. 평상시 CDaR weight로 drawdown 구조 최적화, 급락 시 DD Brake가 추가 현금화. Belt-and-suspenders 접근.",
+      "mechanism": {
+        "academic_basis": "Chekhlov et al. (2005) CDaR LP (1차: 사전적 가중 최적화) + Barroso & Santa-Clara (2015) 위험 관리 접근 (2차: 사후 drawdown 반응). 두 계층이 독립적으로 작동하여 단일 방어선 실패 시 보완. CPPI/Floor 개념(Pfaff Ch.13.6.4)의 CDaR 적용 변형.",
+        "layer_1_proactive": {
+          "method": "CDaR LP weight (calc_cdar_weights)",
+          "alpha": 0.95,
+          "n_days": 120,
+          "max_w": 0.15,
+          "role": "구조적 drawdown 최소화. 종목별 가중을 CDaR LP로 산출하여 drawdown 꼬리를 사전적으로 제어."
+        },
+        "layer_2_reactive": {
+          "method": "DD Brake (M05와 동일 구조)",
+          "dd_threshold_start": -0.10,
+          "dd_threshold_full_cash": -0.25,
+          "lag": "t-1 (C9)",
+          "role": "비상 현금화. CDaR weight로 구조가 최적화되었더라도, 예기치 못한 급락(regime shift, black swan) 시 사후 방어. exposure = pmax(0, pmin(1, 1 - ((-dd_lag) - 0.10) / 0.15))"
+        },
+        "interaction": "CDaR weight -> 포트폴리오 구성 -> DD Brake -> exposure 조절. 두 계층은 순차적. CDaR weight가 먼저 종목 배분, DD Brake가 전체 exposure 조절. 이중 계수가 곱셈이므로 과도한 보수화 가능성 인지.",
+        "implementation": [
+          "1. 리밸런싱 시점: calc_cdar_weights()로 종목 가중 산출",
+          "2. 가중 적용하여 일간 포트폴리오 수익률 계산",
+          "3. 누적 NAV에서 drawdown 계산",
+          "4. C9: dd_lag = shift(dd, 1). exposure = pmax(0, pmin(1, 1-((-dd_lag)-0.10)/0.15))",
+          "5. C9: exposure_lag = shift(exposure, 1, fill=1)",
+          "6. adj_ret = port_ret * exposure_lag",
+          "7. 이중 보호 비용 모니터링: 평균 현금 비율 추적"
+        ]
+      },
+      "config": {
+        "weight_method": "cdar_lp",
+        "alpha": 0.95,
+        "n_days": 120,
+        "max_w": 0.15,
+        "overlay_dd_brake": true,
+        "dd_threshold_start": -0.10,
+        "dd_threshold_full_cash": -0.25,
+        "dd_lag": "t-1 (C9)",
+        "overlay_regime": false,
+        "rebalance": "monthly"
+      },
+      "expected_effect": {
+        "SR": "1.05 ~ 1.20 (이중 보호 비용으로 M05 대비 SR 소폭 하락 가능)",
+        "MDD": "-18% ~ -28% (이중 방어선으로 최저 MDD 달성 기대 -- 핵심 목표)",
+        "CAGR": "18% ~ 26% (DD Brake 현금화 빈도 감소 -- CDaR weight가 구조적으로 drawdown 억제하므로 DD Brake 발동 빈도 하락)",
+        "mechanism_delta": "M05 대비: HRP -> CDaR LP (구조 개선) + DD Brake 유지 (안전망). CDaR weight가 drawdown 원인을 사전 제거하므로 DD Brake 발동 빈도 자체가 감소 기대."
+      },
+      "kill_scenario": [
+        {
+          "condition": "평균 현금 비율 > 30%",
+          "reason": "Over-hedging. CDaR 보수화 + DD Brake 이중으로 과도한 현금화",
+          "action": "DD Brake 임계치 완화 (-15/-30) 또는 CDaR alpha 0.90으로 완화"
+        },
+        {
+          "condition": "CAGR < 15%",
+          "reason": "이중 보호 비용이 alpha를 과도하게 잠식",
+          "action": "Layer 2(DD Brake) 제거하고 M-CDaR-1로 전환"
+        },
+        {
+          "condition": "MDD > -45%",
+          "reason": "Hard fail. 이중 방어선으로도 극단적 시나리오 미통제",
+          "action": "M-CDaR-2(국면별)와 DD Brake 결합 검토 또는 폐기"
+        },
+        {
+          "condition": "SR < 0.70",
+          "reason": "이중 비용 > 보호 효과. 비용 대비 효용 음수",
+          "action": "M-CDaR-1 또는 M05(원래 DD Brake)로 회귀"
+        },
+        {
+          "condition": "DD Brake 발동 횟수 = 0 (전체 기간)",
+          "reason": "CDaR weight만으로 충분. DD Brake가 redundant",
+          "action": "M-CDaR-1이 이미 충분 -- M-CDaR-3 불필요 판정"
+        }
+      ]
+    }
+  },
+
+  "cross_mutation_analysis": {
+    "orthogonality": {
+      "M-CDaR-1_vs_M05": "축 변경: Stock Weight(CDaR LP) vs Overlay(DD Brake). 같은 drawdown 목표를 사전적 vs 사후적으로 접근.",
+      "M-CDaR-2_vs_M-CDaR-1": "국면 조건 추가. M-CDaR-1의 고정 CDaR -> 국면별 CDaR 예산 차등. Overlay 축 결합.",
+      "M-CDaR-3_vs_M-CDaR-1": "DD Brake 추가. 1차(구조) + 2차(반응) 이중 방어. Overlay 축 결합.",
+      "M-CDaR-2_vs_M-CDaR-3": "국면 조건 vs 이중 방어. 국면 인식이 중요한지, 이중 방어가 중요한지 비교."
+    },
+    "expected_ranking": {
+      "SR_order": ["M-CDaR-2", "M-CDaR-1", "M-CDaR-3"],
+      "MDD_order": ["M-CDaR-3", "M-CDaR-2", "M-CDaR-1"],
+      "rationale": "M-CDaR-2는 국면별 최적화로 SR 최고 기대. M-CDaR-3은 이중 방어로 MDD 최저 기대. M-CDaR-1은 baseline."
+    },
+    "synthesis_path": {
+      "if_M-CDaR-2_best": "M-CDaR-2 + DD Brake light(-15/-30) = 국면별 CDaR + 완화된 이중 방어",
+      "if_M-CDaR-3_best": "M-CDaR-3에 CRISIS 국면 alpha 0.99 적용 = 이중 방어 + 국면 강화",
+      "if_M-CDaR-1_sufficient": "CDaR LP만으로 MDD < -30% + SR > 1.15이면 추가 복잡도 불필요. 파시모니 원칙."
+    }
+  },
+
+  "pit_compliance": {
+    "C2_circular": "CDaR weight는 t-1까지의 수익률로 산출, t일 적용. Same-day circular 없음.",
+    "C5_overlay_lag": "Regime score는 t-1 값 사용. shift(Regime_Score, 1).",
+    "C9_dd_vt_lag": "DD Brake의 dd_lag = shift(dd, 1). exposure_lag = shift(exposure, 1).",
+    "C11_data_timeline": "Regime Engine v7.1: expanding percentile threshold. FRED 시차 완전 처리(L-441, L-450).",
+    "C13_z_score": "해당 없음 (CDaR은 수익률 기반 최적화, Z-Score 사용하지 않음).",
+    "C14_usable_date": "해당 없음 (IC 접근 없음).",
+    "C15_factor_db": "해당 없음 (CDaR은 포트폴리오 구성 단계, Factor DB 이후)."
+  },
+
+  "execution_plan": {
+    "phase": "S5 Sprint 5 (CDaR mutations)",
+    "priority_order": ["M-CDaR-1", "M-CDaR-2", "M-CDaR-3"],
+    "rationale": "M-CDaR-1(baseline CDaR)로 CDaR LP weight의 기본 성능 확인 -> M-CDaR-2(국면 조건부)로 국면 효과 확인 -> M-CDaR-3(이중 방어)으로 비용 대비 효용 확인.",
+    "estimated_runtime": "각 5~10분 (LP 최적화 포함). 총 15~30분.",
+    "forge_instruction": "M12 HRP base NAV가 아닌 M12의 종목 리스트 + 일간 수익률을 입력으로 사용. calc_cdar_weights()에 종목별 수익률 data.table 전달.",
+    "base_data_required": [
+      "M12 HRP 종목 리스트 (월별 30종목)",
+      "종목별 일간 수익률 (RAWDATA.Ret)",
+      "Regime Engine v7.1 일간 Regime_Score",
+      "M05 NAV (벤치마크 비교용)"
+    ]
+  },
+
+  "s5_stage_status": {
+    "mutations_before": 11,
+    "mutations_after_design": 14,
+    "new_categories": ["StockWeight_CDaR", "StockWeight_CDaR_Regime", "StockWeight_CDaR_Overlay_DD"],
+    "f_category_count_before": 4,
+    "f_category_count_after": 6,
+    "note": "S5 규칙: 최소 9건 mutation, 4+ 카테고리 -- 기존 11건/4카테고리에서 14건/6카테고리로 확장. 구조적 mutation(Stock Weight 축) 우선, 파라미터 튜닝 최소."
+  }
+}

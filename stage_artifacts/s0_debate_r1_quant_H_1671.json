@@ -1,0 +1,117 @@
+{
+  "role": "quant",
+  "hypothesis_id": "H_1671",
+  "hypothesis": "Accrual + Value Diversifier — AC21_CF_to_Accrual_Ratio(50%) + V23_RAFI_Weight(50%)",
+  "score": 10,
+  "score_breakdown": {
+    "icir_pass": 2,
+    "internal_corr": 2,
+    "c19_corr": 4,
+    "defense_ic": 1,
+    "data_avail": 4,
+    "notes": "icir_pass: 주장 수치(3년 rolling)가 전기간 ICIR 대비 과대. internal_corr: IC 시계열 상관 0.474로 다양성 훼손. defense_ic: AC21 x Q07 IC 상관 0.635 — DFA와 중복 심각. c19_corr: V23/AC21 모두 C19와 무상관(+4 만점). data_avail: AC21 188M, V23 254M, 두 팩터 모두 주요 위기 포함(+4 만점)."
+  },
+  "measured_icir": {
+    "AC21_full_period": 0.417,
+    "AC21_n_months": 188,
+    "AC21_ic_mean": 0.036,
+    "AC21_ic_pos_pct": 0.654,
+    "V23_full_period": 0.280,
+    "V23_n_months": 254,
+    "V23_ic_mean": 0.036,
+    "V23_ic_pos_pct": 0.610,
+    "AC21_recent_3y_icir_cache": 0.706,
+    "V23_recent_3y_icir_cache": 0.678,
+    "source": "factor_ic_monthly.parquet — 전기간 계산. 주장 수치는 conditional_ic_matrix.csv recent_3y_icir(최근 3년)에서 유래한 것으로 확인."
+  },
+  "stress_ic": {
+    "AC21": {
+      "GFC_2008_09":    {"ic_mean": 0.039, "icir": 0.313, "n": 9},
+      "COVID_2020":     {"ic_mean": -0.006, "icir": -0.179, "n": 6},
+      "Ukraine_2022":   {"ic_mean": 0.009, "icir": 0.336, "n": 6},
+      "Iran_2019":      {"ic_mean": 0.028, "icir": 0.389, "n": 6},
+      "stress_icir_from_cache": 0.796,
+      "comment": "GFC 양수 유지. COVID에서 음전환(-0.006) — 급락 시 신호 불안정. stress_icir 0.796(캐시)은 6대 위기 합산 기준이며 전기간 ICIR 0.417 대비 과대 표현될 수 있음."
+    },
+    "V23": {
+      "GFC_2008_09":    {"ic_mean": 0.052, "icir": 0.443, "n": 9},
+      "COVID_2020":     {"ic_mean": -0.043, "icir": -0.407, "n": 6},
+      "Ukraine_2022":   {"ic_mean": 0.042, "icir": 0.224, "n": 6},
+      "Eurozone_2011":  {"ic_mean": -0.026, "icir": -0.234, "n": 12},
+      "comment": "COVID에서 IC -0.043으로 급락. GFC는 양호. 위기 일관성 부족."
+    },
+    "C19_reference": {
+      "GFC_2008_09":    {"ic_mean": -0.007, "icir": -0.063, "n": 9},
+      "COVID_2020":     {"ic_mean": 0.052, "icir": 0.813, "n": 6},
+      "stress_icir_cache": 0.200,
+      "comment": "C19는 COVID 강세, GFC 약세. AC21/V23와 위기 내 행동 패턴 다름."
+    }
+  },
+  "correlation_analysis": {
+    "ic_time_series_corr": {
+      "AC21_x_V23":  0.474,
+      "AC21_x_C19":  0.114,
+      "AC21_x_Q07":  0.635,
+      "V23_x_C19":   0.023,
+      "V23_x_Q07":   0.487,
+      "method": "IC 시계열 254개월 pairwise 상관",
+      "note": "IC 시계열 상관은 '같은 국면에서 같이 오르내리는지' 측정. AC21 x Q07 0.635는 diversifier 역할로 구분 어려움을 시사."
+    },
+    "cross_sectional_score_corr_10yr": {
+      "AC21_x_V23":  0.050,
+      "AC21_x_C19":  0.008,
+      "AC21_x_Q07":  0.047,
+      "V23_x_C19":  -0.001,
+      "V23_x_Q07":   0.028,
+      "method": "2015~2024 매년 6월 단면 Z_Score 상관 평균(n=10)",
+      "note": "단면 score 상관은 낮음 — 종목 선정 레벨에서 두 팩터는 실질적으로 독립."
+    },
+    "overlap_analysis_cache": {
+      "AC21_tier": "Tier1_Crisis",
+      "avg_jaccard": 0.006,
+      "avg_overlap_pct": 0.563,
+      "note": "V23는 overlap_analysis에 미등재. AC21은 Tier1_Crisis 분류."
+    }
+  },
+  "regime_4state_ic": {
+    "AC21": {
+      "CALM":    {"icir": 0.577, "ic_mean": 0.018, "n": 35},
+      "CAUTION": {"icir": -0.062, "ic_mean": -0.003, "n": 54},
+      "CRISIS":  {"icir": 0.029, "ic_mean": 0.001, "n": 51},
+      "NORMAL":  {"icir": 0.098, "ic_mean": 0.004, "n": 61},
+      "icir_all": 0.098,
+      "comment": "CALM 국면에서만 유의미(ICIR 0.577). CAUTION 음전환. CRISIS 거의 0 — 진정한 위기 방어력 미약."
+    },
+    "V23": {
+      "CALM":    {"icir": -0.202, "ic_mean": -0.015, "n": 56},
+      "CAUTION": {"icir": -0.045, "ic_mean": -0.004, "n": 64},
+      "CRISIS":  {"icir": -0.041, "ic_mean": -0.003, "n": 65},
+      "NORMAL":  {"icir": 0.142, "ic_mean": 0.009, "n": 69},
+      "icir_all": -0.033,
+      "comment": "4-state regime 기준 전기간 ICIR -0.033. NORMAL 국면에서만 약양. CALM/CRISIS 모두 음수. 심각한 regime 불안정."
+    },
+    "source": "conditional_ic_matrix_4regime.csv"
+  },
+  "arguments": [
+    "ICIR 주장-실측 괴리: 주장 수치(AC21 0.706, V23 0.677)는 conditional_ic_matrix.csv의 recent_3y_icir(최근 3년 rolling)에서 유래. 전기간(2005~2026) IC monthly 기준 실측 시 AC21 ICIR 0.417(188M), V23 ICIR 0.280(254M)으로 각각 41%, 59% 하락. V23는 4-state regime 전기간 ICIR -0.033으로 평균적으로 음수 — 최근 3년 국면이 전역 대표성을 보장하지 않음을 실증.",
+    "AC21 x Q07 중복 위험: IC 시계열 상관 0.635 — AC21이 Defense 팩터 Q07과 고상관. 단면 score 상관(0.047)은 낮지만, '위기 시 같이 오르고 같이 내리는' 행동 패턴이 동조함을 IC 상관이 보여줌. Diversifier를 표방하나 DFA(Q07 중심) 전략과 payoff profile 중복 가능성이 높음. COVID 구간 AC21 IC -0.006, V23 IC -0.043으로 동반 음전환 확인.",
+    "V23 x C19 독립성 확인 및 데이터 가용성 양호: V23-C19 단면 상관 -0.001, IC 시계열 상관 0.023으로 실질적으로 무상관. AC21-C19도 단면 0.008로 독립. 두 팩터 모두 C19(Consensus) 알파와 중복 없이 다른 채널에서 작동. 데이터 가용성은 AC21 188개월(GFC~Ukraine 전 위기 포함), V23 254개월(1990~) 모두 충분."
+  ],
+  "concern": "V23의 4-state regime 전기간 ICIR이 -0.033으로 분류 자체가 불안정하고, COVID 급락 시 AC21(-0.006)·V23(-0.043) 동시 음전환이 확인됨. Diversifier를 표방하는데 위기 시 보호 기능이 실측으로 검증되지 않는다. 또한 AC21 x Q07 IC상관 0.635는 DFA Defense와 역할 혼재를 시사하며, 50:50 블렌드가 AC21 단독 대비 ICIR을 실질적으로 개선하는지 별도 포트폴리오 시뮬레이션이 필요함.",
+  "conditions": [
+    "V23 ICIR 전기간 기준 검증: recent_3y(0.678)가 아닌 전기간(0.280) ICIR로 허들 재산정 필요. 전기간 기준 허들 ICIR 0.20 충족 여부는 V23 단독으로는 경계선 수준(0.280).",
+    "4-state CRISIS 국면 AC21 ICIR 0.029, V23 ICIR -0.041 — 진정한 위기 시 두 팩터 모두 방어력 미검증. COVID 음전환 메커니즘(발생 사유) 경제적 설명 보완 필요.",
+    "AC21 x Q07 IC 시계열 상관 0.635를 감안하여 DFA 포트폴리오 추가 시 tail contribution 중복 여부 Judge Gate 6 통과 조건으로 부과."
+  ],
+  "data_sources": [
+    "factor_ic_monthly.parquet — 전기간 ICIR 직접 계산",
+    "conditional_ic_matrix.csv — ic_bad/ic_good, recent_3y_icir",
+    "conditional_ic_matrix_4regime.csv — 4-state regime별 ICIR",
+    "stress_factor_ic_analysis.csv — 6대 위기 stress IC",
+    "factor_correlation_analysis.csv — AC21 단면 상관 행렬",
+    "factor_overlap_analysis.csv — Jaccard overlap"
+  ],
+  "timestamp": "2026-04-12",
+  "pit_compliant": true,
+  "c15_compliant": "load_month_factors() 경유 단면 상관. IC 계산은 factor_ic_monthly.parquet(Usable_Date 기반 사전 집계) 사용."
+}

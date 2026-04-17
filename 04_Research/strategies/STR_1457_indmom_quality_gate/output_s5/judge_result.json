@@ -1,0 +1,34 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1457",
+  "variant": "S5_VT18_DD7_22",
+  "l_code": "L-706",
+  "timestamp": "2026-03-26",
+  "decision": "REJECT",
+  "grade": "F",
+  "score": 7.6,
+  "pit_check": {
+    "lookahead_detector": "CLEAN",
+    "manual_review": "CLEAN",
+    "vt_lag": "t-1 expanding (OK)",
+    "dd_lag": "t-1 (OK)",
+    "factor_engine": "Z_Score_Aligned, no C1-C11 violations"
+  },
+  "key_metrics": {
+    "sharpe": 0.234,
+    "cagr_pct": 2.61,
+    "mdd_pct": 30.79,
+    "ir": -0.346,
+    "calmar": 0.085,
+    "oos_retention": -0.405,
+    "alpha_trend_ratio": 0.025
+  },
+  "reject_reasons": [
+    "OOS retention -0.405 — catastrophic IS/OOS divergence (IS SR 0.379, OOS SR -0.153)",
+    "Alpha trend ratio 0.025 — recent 3Y SR near zero vs full-sample",
+    "SR 0.234 below 0.5 minimum",
+    "CAGR 2.61% far below 16% target",
+    "Severe alpha decay: strategy worked early, completely dead recently"
+  ],
+  "verdict": "IndMom+QualityGate alpha is entirely historical — IS SR 0.379 collapsed to OOS -0.153. Recent 3Y SR ~0. S5 overlay could not revive dead alpha. Momentum-quality interaction non-stationary in KR market."
+}

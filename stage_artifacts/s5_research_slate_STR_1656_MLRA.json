@@ -1,0 +1,430 @@
+{
+  "strategy_id": "STR_1656_MLRA",
+  "stage": "S5",
+  "created_at": "2026-04-10",
+  "created_by": "Scout",
+  "session": 58,
+  "signal_variant": "S1_B",
+  "signal_rationale": "S1-B(RE* 제거) ICIR 0.850 > S1-A 0.844, SR 0.927 > 0.708. Alpha decay 저항성 + standalone 성과 모두 우위. L-122 factor timing 취약성 회피.",
+
+  "research_slate": {
+    "A": {
+      "label": "CVaR_LP_Only",
+      "description": "ML signal + CVaR LP 가중 30종목. Slot A = ablation baseline.",
+      "weight_method": "cvar_lp",
+      "overlay": "none",
+      "constraints": {"liq_threshold": 2e8, "max_w": 0.15},
+      "n_holdings": 30,
+      "universe": "full",
+      "expected": {"beta": 0.60, "corr": 0.42, "mdd_reduction": "~30%"},
+      "measure": ["SR", "CAGR", "MDD", "Sortino", "TO", "rolling_60d_beta", "rolling_60d_anchor_corr", "sector_hhi"],
+      "academic": "Rockafellar & Uryasev (2000 JBF); Clarke et al. (2011 FAJ)"
+    },
+    "B": {
+      "label": "CVaR_LP_SectorNeutral",
+      "description": "ML signal + CVaR LP + 섹터중립(BM+/-5%p). Layer 2 적용.",
+      "weight_method": "cvar_lp",
+      "overlay": "none",
+      "constraints": {"liq_threshold": 2e8, "max_w": 0.15, "sector_neutral": true, "sector_band": 0.05},
+      "n_holdings": 30,
+      "universe": "full",
+      "expected": {"beta": 0.55, "corr": 0.35, "sector_hhi": "감소"},
+      "measure": ["SR", "CAGR", "MDD", "Sortino", "TO", "rolling_60d_beta", "rolling_60d_anchor_corr", "sector_hhi"],
+      "academic": "DeMiguel et al. (2020); Jagannathan & Ma (2003 JF) — constraint = shrinkage"
+    },
+    "C": {
+      "label": "CVaR_LP_SN_LowBeta",
+      "description": "ML signal + CVaR LP + 섹터중립 + expanding beta bottom 50%. 3계층 완전체.",
+      "weight_method": "cvar_lp",
+      "overlay": "none",
+      "constraints": {"liq_threshold": 2e8, "max_w": 0.15, "sector_neutral": true, "sector_band": 0.05, "beta_filter": "expanding_bottom_50pct"},
+      "n_holdings": 30,
+      "universe": "low_beta_bottom_50",
+      "expected": {"beta": 0.45, "corr": 0.25, "l115_falsification": true},
+      "measure": ["SR", "CAGR", "MDD", "Sortino", "TO", "rolling_60d_beta", "rolling_60d_anchor_corr", "sector_hhi", "beta_vs_corr_scatter"],
+      "academic": "Clarke, de Silva & Thorley (2011 FAJ) — MinVar/CVaR → low-beta tilt",
+      "l115_test": "L-115에서 beta 50% 감소에 corr 0.009만 감소. 섹터중립 동시 적용 시 다른 결과 기대. 동일 패턴 반복 시 Layer 3 폐기."
+    },
+    "D": {
+      "label": "CDaR_SectorNeutral",
+      "description": "ML signal + CDaR 가중 + 섹터중립. Drawdown 경로 직접 최소화 대안.",
+      "weight_method": "cdar",
+      "overlay": "none",
+      "constraints": {"liq_threshold": 2e8, "max_w": 0.15, "sector_neutral": true, "sector_band": 0.05},
+      "n_holdings": 30,
+      "universe": "full",
+      "expected": {"mdd_reduction": "CVaR 대비 10-15%p 추가 감소", "sr_tradeoff": "SR 소폭 하락 가능"},
+      "measure": ["SR", "CAGR", "MDD", "Sortino", "TO", "rolling_60d_beta", "rolling_60d_anchor_corr"],
+      "academic": "Chekhlov, Uryasev & Zabarankin (2005); Kolm et al. (2014 EJOR)"
+    }
+  },
+
+  "mutations": [
+    {
+      "mutation_id": "M01",
+      "category": "Stock_Weight",
+      "slot": "A",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": false,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Rockafellar & Uryasev (2000 JBF) CVaR LP formulation; Ban et al. (2018 EJOR) ML+CVaR 2-stage",
+      "lesson_check": "L-124 (Tree>Linear), L-106 (beta 지배 → weight-level 해결)",
+      "expected_effect": "beta 0.75->0.60, tail-risk 축소, corr 0.486->0.42",
+      "phase": 1
+    },
+    {
+      "mutation_id": "M02",
+      "category": "Stock_Weight_Universe",
+      "slot": "B",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "DeMiguel et al. (2020) constraint=shrinkage; Jagannathan & Ma (2003 JF)",
+      "lesson_check": "L-115 (low-beta 단독 실패 → 섹터중립 선행 필수)",
+      "expected_effect": "sector HHI 감소, hidden sector bet 제거, corr 0.42->0.35",
+      "phase": 1
+    },
+    {
+      "mutation_id": "M03",
+      "category": "Stock_Weight_Universe",
+      "slot": "C",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": "expanding_bottom_50pct",
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Clarke, de Silva & Thorley (2011 FAJ) CVaR→low-beta tilt; DeMiguel (2009) constraint shrinkage",
+      "lesson_check": "L-115 반증 핵심, L-106 (beta dominance), L-118-ext (단면 독립 ≠ 포트폴리오 독립)",
+      "expected_effect": "beta 0.45, corr 0.25, L-115 반증 또는 확인",
+      "phase": 1,
+      "priority": "HIGH — S0 ablation 핵심 실험"
+    },
+    {
+      "mutation_id": "M04",
+      "category": "Stock_Weight",
+      "slot": "D",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cdar",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Chekhlov, Uryasev & Zabarankin (2005) CDaR LP; Kolm et al. (2014 EJOR) 60 Years survey",
+      "lesson_check": "L-110 (overlay multiplier — CDaR는 weight-level에서 drawdown 직접 제어)",
+      "expected_effect": "MDD 직접 최소화, CVaR 대비 MDD 10-15%p 추가 감소",
+      "phase": 1
+    },
+    {
+      "mutation_id": "M05",
+      "category": "Overlay",
+      "slot": "C+overlay",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": [10, 25],
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": "expanding_bottom_50pct",
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Barroso & Santa-Clara (2015 JFE) risk-managed momentum — DD as risk management, not timing",
+      "lesson_check": "L-122 (risk mgmt > timing), L-110 (base SR > 0.6 조건부)",
+      "expected_effect": "MDD ~-55% -> ~-35%, SR 유지 또는 미세 개선",
+      "phase": 2,
+      "dependency": "M03 결과 base SR > 0.6 확인 후 실행"
+    },
+    {
+      "mutation_id": "M06",
+      "category": "Overlay",
+      "slot": "C+VD",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": null,
+        "overlay_regime": true,
+        "regime_threshold": 20,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": "expanding_bottom_50pct",
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Moreira & Muir (2017 JF) volatility-managed portfolios; Regime Engine v7.1 (L-442)",
+      "lesson_check": "L-110 (overlay multiplier), L-122 (risk management framing)",
+      "expected_effect": "vol scaling으로 위기 구간 exposure 자동 감축",
+      "phase": 2,
+      "dependency": "M03 결과 확인 후"
+    },
+    {
+      "mutation_id": "M07",
+      "category": "Overlay",
+      "slot": "C+DD+VD",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cvar_lp",
+        "overlay_dd": [10, 25],
+        "overlay_regime": true,
+        "regime_threshold": 20,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": "expanding_bottom_50pct",
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Barroso & Santa-Clara (2015) + Moreira & Muir (2017) dual protection",
+      "lesson_check": "L-122, L-110. DD와 Regime 이중 보호의 상호작용 측정",
+      "expected_effect": "MDD ~-30% 이하 목표, SR 약간 하락 수용",
+      "phase": 2,
+      "dependency": "M03 base SR 확인 후"
+    },
+    {
+      "mutation_id": "M08",
+      "category": "Factor_Weight",
+      "slot": "score_tilt",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "score_tilt",
+        "score_tilt_gamma": 2.0,
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Arnott, Harvey & Markowitz (2019) — signal-proportional weighting; DeMiguel et al. (2009) 1/N vs optimal",
+      "lesson_check": "L-109 (Score Tilt 최우수 — M11 S5에서 검증됨)",
+      "expected_effect": "강 신호 종목 집중으로 ICIR 개선, EW 대비 hit rate 상승",
+      "phase": 1
+    },
+    {
+      "mutation_id": "M09",
+      "category": "Allocation",
+      "slot": "80_20_blend",
+      "config": {
+        "base_mutation": "Phase 2 Top (M05/M06/M07 중 최우수)",
+        "anchor_weight": 0.80,
+        "mlra_weight": 0.20,
+        "blend_method": "score_level_합산 (L-484 준수)",
+        "anchor_stocks": 20,
+        "mlra_stocks": 10,
+        "total_stocks": 30
+      },
+      "academic_basis": "DeMiguel et al. (2009 RFS) — 추정 오차 감소 위해 단순 배분 선호; Markowitz (1952)",
+      "lesson_check": "L-119 (정적 blend alpha 희석 → standalone SR > 0.6 확인), L-484 (30종목 score 합산)",
+      "expected_effect": "S4 80/20 MDD -30.6% 기준, overlay 적용 후 MDD ~-28% 예상",
+      "phase": 3,
+      "dependency": "Phase 2 최우수 mutation 확정 후"
+    },
+    {
+      "mutation_id": "M10",
+      "category": "Allocation",
+      "slot": "85_15_blend",
+      "config": {
+        "base_mutation": "Phase 2 Top",
+        "anchor_weight": 0.85,
+        "mlra_weight": 0.15,
+        "blend_method": "score_level_합산 (L-484 준수)",
+        "anchor_stocks": 22,
+        "mlra_stocks": 8,
+        "total_stocks": 30
+      },
+      "academic_basis": "DeMiguel et al. (2009) 1/N shrinkage; Kolm et al. (2014)",
+      "lesson_check": "L-119, L-484. 보수적 배분으로 MDD 최소화",
+      "expected_effect": "MDD ~-25% 이하 (anchor 수준 유지), SR +0.05~0.07",
+      "phase": 3,
+      "dependency": "Phase 2 최우수 mutation 확정 후"
+    },
+    {
+      "mutation_id": "M11",
+      "category": "Universe",
+      "slot": "full_universe_cdar",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "cdar",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Chekhlov et al. (2005) — CDaR가 자체적으로 drawdown 경로 최적화하므로 beta 필터 불필요 가설; Kolm et al. (2014)",
+      "lesson_check": "L-118-ext (단면 독립 ≠ 포트폴리오 독립). CDaR가 beta 필터를 대체할 수 있는지 검증",
+      "expected_effect": "M04와 동일 (CDaR+SN) — beta 필터 유무 비교용 벤치마크",
+      "phase": 1,
+      "note": "M04와 config 동일. 실제로는 M04의 중복이므로 Phase 1에서 M04 결과를 M11로 간주 가능. 대신 M03 vs M04(=M11) 비교로 beta 필터 효과 분리 측정."
+    },
+    {
+      "mutation_id": "M12",
+      "category": "Stock_Weight",
+      "slot": "minvar_benchmark",
+      "config": {
+        "signal": "S1_B_ML_ensemble",
+        "weight_method": "minvar",
+        "overlay_dd": null,
+        "overlay_regime": false,
+        "sector_neutral": true,
+        "sector_band": 0.05,
+        "beta_filter": null,
+        "n_holdings": 30,
+        "max_w": 0.15,
+        "commission": 0.0015,
+        "rebalance": "monthly"
+      },
+      "academic_basis": "Jagannathan & Ma (2003 JF) — constrained MinVar = shrinkage; DeMiguel (2009) 1/N vs MinVar; Clarke et al. (2011 FAJ)",
+      "lesson_check": "L-106 (beta dominance → MinVar의 natural low-beta tilt 활용)",
+      "expected_effect": "CVaR LP 대비 벤치마크. MinVar는 CVaR보다 안정적이나 tail-risk 직접 제어 약함",
+      "phase": 1
+    }
+  ],
+
+  "phase_plan": {
+    "phase_1_parallel": {
+      "mutations": ["M01", "M02", "M03", "M04", "M08", "M12"],
+      "note": "M11은 M04와 config 동일 → M04 결과 참조. 6건 병렬 실행.",
+      "execution": "mclapply(6 cores). 각 mutation 독립적. overlay 없음.",
+      "estimated_time": "15-20분 (일간 ML signal 재활용, 월간 리밸런싱)"
+    },
+    "phase_4_top_select": {
+      "criteria": [
+        "anchor_corr < 0.35 (diversifier 역할 충족)",
+        "SR > 0.5 (standalone alpha 유의)",
+        "MDD > -60% (hard fail 회피 여유)",
+        "파레토: SR 최대화 × MDD 최소화 × corr 최소화"
+      ],
+      "select_n": 3,
+      "expected_top": "M03 (corr 최저), M04 (MDD 최저), M08 또는 M02"
+    },
+    "phase_5_overlay": {
+      "mutations": ["M05", "M06", "M07"],
+      "base": "Phase 4 Top #1 (예상: M03)",
+      "condition": "base SR > 0.6 (L-110 Overlay Multiplier Principle)",
+      "execution": "3건 병렬. Phase 4 Top의 signal + weight를 그대로 사용, overlay만 추가."
+    },
+    "phase_6_allocation": {
+      "mutations": ["M09", "M10"],
+      "base": "Phase 5 최우수 overlay mutation",
+      "execution": "2건 순차. anchor NAV + MLRA NAV 합산 포트폴리오 시뮬레이션.",
+      "final_select": "SR > 1.0 AND MDD < -30% 달성 여부로 최종 확정"
+    },
+    "phase_7_complexity": {
+      "checks": [
+        "CVaR LP solver 수렴률 > 95% (cccp convergence)",
+        "IS/OOS gap < 50% (2008-2018 vs 2019-2026)",
+        "ablation: 각 레이어 제거 시 SR 변화 측정 (SR 감소 < 0.10이면 해당 레이어 불필요)",
+        "OOS 단독 SR > 0.4 (최근 8년 성과 유지)",
+        "Turnover < 600% (hard fail 기준)"
+      ]
+    }
+  },
+
+  "mdd_resolution_strategy": {
+    "problem": "S4 70/30 blend MDD -38.3% (anchor -25.4% 대비 12.9%p 악화). MLRA standalone vol 25.82%.",
+    "four_stage_approach": [
+      {
+        "stage": "Weight-level",
+        "mutations": ["M01", "M02", "M04", "M12"],
+        "mechanism": "CVaR LP/CDaR/MinVar가 고tail-risk 종목 가중 하향",
+        "expected_mdd_reduction": "-78% -> ~-50% (CVaR), ~-45% (CDaR)"
+      },
+      {
+        "stage": "Universe-level",
+        "mutations": ["M03"],
+        "mechanism": "Expanding beta bottom 50% + 섹터중립으로 고beta/편중 종목 사전 제거",
+        "expected_mdd_reduction": "~-50% -> ~-40%"
+      },
+      {
+        "stage": "Overlay-level",
+        "mutations": ["M05", "M06", "M07"],
+        "mechanism": "DD Brake(10/25) + VD+(MRS20)로 위기 시 exposure 감축",
+        "expected_mdd_reduction": "~-40% -> ~-30%"
+      },
+      {
+        "stage": "Allocation-level",
+        "mutations": ["M09", "M10"],
+        "mechanism": "MLRA 비중 20-15%로 축소하여 vol 기여도 감소",
+        "expected_mdd_reduction": "blend MDD ~-28% (80/20), ~-25% (85/15)"
+      }
+    ],
+    "target": "blend MDD < -30%, standalone MLRA MDD < -45%, SR > 1.0"
+  },
+
+  "success_criteria": {
+    "phase_1": "M01~M04 중 최소 1건 anchor corr < 0.35 AND SR > 0.5",
+    "phase_5": "overlay 적용 후 MDD < -45% AND SR 유지 (base 대비 -0.05 이내)",
+    "phase_6": "blend SR > 1.0 AND MDD < -30%",
+    "phase_7": "IS/OOS gap < 50%, solver convergence > 95%, ablation pass"
+  },
+
+  "decision_rules": {
+    "layer_keep": "각 레이어의 corr 감소 > 0.05 AND SR 감소 < 0.10이면 채택",
+    "layer_drop": "corr 감소 < 0.05이면서 SR 감소 > 0.10이면 해당 레이어 제거",
+    "overlay_condition": "L-110: base SR > 0.6이어야 overlay 적용. SR < 0.6이면 M05~M07 skip",
+    "l115_falsification": "M02 vs M03 비교: 섹터중립+low-beta 동시 적용에도 corr 감소 < 0.05이면 L-115 재확인 → Layer 3(low-beta) 폐기",
+    "cdar_vs_cvar": "M01 vs M04: CDaR MDD가 CVaR보다 10%p 이상 우월하면 CDaR 채택. SR 차이 < 0.05 이내일 때.",
+    "allocation_final": "SR > 1.0 AND MDD < -30%를 동시 달성하는 최소 MLRA 비중 선택"
+  },
+
+  "forge_execution_notes": {
+    "ml_signal_source": "04_Research/strategies/STR_1656_MLRA/output/nav_S1_B.csv 또는 ML pipeline에서 월별 score 추출",
+    "weight_functions": {
+      "cvar_lp": "02_Infrastructure/portfolio/advanced_weights.R::calc_cvar_lp_weights(tickers, ret_dt, alpha=0.95, max_w=0.15)",
+      "cdar": "02_Infrastructure/portfolio/advanced_weights.R::calc_cdar_weights(tickers, ret_dt, alpha=0.95, max_w=0.15)",
+      "minvar": "backtest_harness.R weight_method='minvar'",
+      "score_tilt": "backtest_harness.R weight_method='score_tilt'"
+    },
+    "sector_neutral_impl": "s5_mutation_runner.R L104-107: Score를 섹터별 demean. 추가로 CVaR LP에 섹터 weight 상한/하한 제약 필요.",
+    "beta_filter_impl": "expanding window로 rolling 60d beta 계산 후 median 이하만 유니버스로 제한. setkey(dt, Date) 후 expanding percentile.",
+    "overlay_impl": "s5_mutation_runner.R L144-183: DD Brake + Regime v7.1 이미 구현됨. overlay_dd=c(10,25), overlay_regime=TRUE로 설정.",
+    "pit_compliance": "C1: expanding only, C2: t-1 lag for DD/VT, C5: overlay t-1, C9: DD lag 내장, C13: Z_Score_Aligned"
+  }
+}

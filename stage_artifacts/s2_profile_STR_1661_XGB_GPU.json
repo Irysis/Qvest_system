@@ -1,0 +1,47 @@
+{
+  "factor_id": "ML_XGB_GPU_LR",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "stage": "S2",
+  "created_at": "2026-04-11 21:29:34.8052",
+  "parent": "STR_1656_MLRA",
+  "primary_variant": "V3",
+  "s1_b_best": {
+    "IC_IR": 1.0971,
+    "IC_mean": 0.1067,
+    "N_months": 205,
+    "IC_IR_3y": 1.6628,
+    "CAGR": 11.68,
+    "SR": 0.6923,
+    "MDD": -51.37,
+    "delta_vs_V0": 0.1795,
+    "tag": "Strong"
+  },
+  "ablation_comparison": {
+    "V0_ref": {
+      "ICIR": 0.8496,
+      "SR": 0.9268
+    },
+    "V2_LambdaRank": {
+      "ICIR": 1.0291,
+      "delta": 0.1795,
+      "decision": "KEEP"
+    },
+    "V3_HP": {
+      "ICIR": 1.0971,
+      "delta": 0.2475
+    }
+  },
+  "role_bias": "RoleBias_Diversifier",
+  "expected_role": "diversifier",
+  "why_now": "GPU 인프라 확인(Session 59) + LambdaRank 구조적 개선(loss function 변경)",
+  "alpha_lab_gate": {
+    "pass": true,
+    "threshold": 0.2,
+    "result": "V3: PASS"
+  },
+  "anchor_corr_note": "S2/S3에서 STR_1631(앵커) 대비 max_corr <= 0.40 확인 필요",
+  "s5_recommendation": {
+    "proceed": true,
+    "note": "V2/V3 score로 STR_1656 M05 구조 계승. 종목 overlap rate 측정 후 Path A/B 결정."
+  }
+}

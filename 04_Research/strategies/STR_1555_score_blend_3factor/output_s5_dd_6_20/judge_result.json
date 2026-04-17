@@ -1,0 +1,105 @@
+{
+  "strategy_id": "STR_1555",
+  "mutation_id": "dd_6_20_tightening",
+  "strategy_name": "STR_1555_DD6_20_RP (S5 Mutation)",
+  "judge_timestamp": "2026-03-29T01:30:00+09:00",
+  "hurdle_gate": {
+    "grade": "B",
+    "score": 64,
+    "score_v21": 56,
+    "pass": true,
+    "hard_fail": false,
+    "metrics": {
+      "SR": 1.095,
+      "CAGR_pct": 15.58,
+      "MDD_pct": 29.28,
+      "AnnVol_pct": 14.23,
+      "Sortino": 1.526,
+      "Calmar": 0.532,
+      "IR": 0.402,
+      "Turnover_Ann": 322.8,
+      "WinRate_pct": 61.4,
+      "WorstMonth_pct": -10.43,
+      "Rolling3Y_Pos_pct": 93.0,
+      "BM_Corr": 0.707
+    }
+  },
+  "gate_0_pit_audit": {
+    "status": "PASS",
+    "detect_lookahead": "CLEAN (154 lines, 0 violations)",
+    "c2_dd_lag": "PASS — dd_lag = c(0, dd_cur[-nf]) = t-1",
+    "c5_regime_lag": "PASS — cash_lag = c(0, cash_pct[-nf]) = t-1",
+    "c9_dd_vt_lag": "PASS — explicit t-1 lag on both DD and Regime",
+    "c13_z_score_aligned": "PASS — align_factor_direction() applied",
+    "c14_usable_date": "PASS — fdb_dates <= sig_d filter",
+    "c15_load_month_factors": "ADVISORY — direct open_dataset() instead of load_month_factors(), but PIT-equivalent logic applied",
+    "violations": 0,
+    "advisories": 1
+  },
+  "gate_1_implementation": {
+    "status": "PASS",
+    "n_holdings": 30,
+    "commission_bps": 15,
+    "liq_threshold": "2e8",
+    "turnover_ann": 322.8,
+    "turnover_hard_fail": false
+  },
+  "gate_2_robustness": {
+    "status": "PASS",
+    "oos_retention": 0.603,
+    "is_sr": 1.271,
+    "oos_sr": 0.767,
+    "rolling_3y_positive_pct": 93.0,
+    "stress_outperformance": "2/3",
+    "rolling_6m_hit": 62.6,
+    "rolling_12m_hit": 73.8,
+    "worst_6m_ret": -18.43,
+    "max_consec_neg_alpha": 6,
+    "alpha_trend_ratio": 1.255,
+    "recent_3y_sr": 1.374,
+    "alpha_decay": false
+  },
+  "gate_3_performance": {
+    "status": "MARGINAL_FAIL",
+    "sr": 1.095,
+    "cagr": 15.58,
+    "mdd": 29.28,
+    "cagr_target_16": false,
+    "mdd_target_25": false,
+    "note": "CAGR 15.58% < 16% target. MDD 29.28% > 25% target. Both worse than or equal to parent DD 8/22."
+  },
+  "gate_4_statistical": {
+    "status": "INHERITED_FROM_PARENT",
+    "note": "Parent STR_1555 has ICIR 0.593, FMB t=6.31 (Harvey-safe). Mutation only changes overlay params, not factor signal. Statistical properties inherited.",
+    "recent_3y_sr": 1.374,
+    "alpha_decay_warning": false
+  },
+  "gate_5_diversity": {
+    "status": "PASS",
+    "novelty_bonus": 8,
+    "max_corr": 0.3,
+    "independence_class": "partial"
+  },
+  "role_honesty_audit": {
+    "status": "MISMATCH",
+    "expected_role": "core_alpha",
+    "hurdle_detected_role": "diversifier",
+    "hurdle_detected_family": "defense",
+    "detail": "DD tightening (6/20) is a defense mechanism that sacrificed CAGR for marginal MDD reduction. Not core_alpha behavior. Parent DD 8/22 with higher CAGR is the actual core_alpha config.",
+    "severity": "informational"
+  },
+  "parent_comparison": {
+    "parent_config": "DD_START=8%, DD_FULL=22%",
+    "mutation_config": "DD_START=6%, DD_FULL=20%",
+    "delta_sr": 0.015,
+    "delta_cagr": -0.51,
+    "delta_mdd": -0.52,
+    "assessment": "Marginal trade-off: +0.015 SR, -0.51%p CAGR, -0.52%p MDD. Net negative — lost CAGR for negligible MDD improvement. MDD 25% target NOT achieved."
+  },
+  "final_verdict": {
+    "disposition": "Archive",
+    "validated_role": null,
+    "reason": "DD 6/20 tightening did not achieve MDD 25% target (29.28%). CAGR dropped below 16% (15.58%). Parent DD 8/22 (Grade A, SR=1.080, CAGR=16.09%, MDD=29.8%) remains the optimal configuration. This mutation demonstrates diminishing returns from DD parameter tightening — the marginal MDD reduction does not justify CAGR sacrifice.",
+    "recommendation": "Retain parent DD 8/22 as confirmed optimal. Further MDD reduction requires structural changes (defense sleeve, conditional allocation) rather than DD parameter tuning."
+  }
+}

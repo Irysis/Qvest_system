@@ -1,0 +1,79 @@
+{
+  "hypothesis_id": "H_1643",
+  "round_1": [
+    {
+      "role": "academic",
+      "score": 14,
+      "arguments": [
+        "Ang et al. (2006) downside beta mechanism is empirically validated in Korean crisis (stress_icir=0.393, crisis_premium=+0.0566), but the original paper is 20 years old with mixed decay evidence in post-publication testing.",
+        "CR05 Short_Pressure_Proxy achieves exceptional Korean crisis performance (stress_icir=0.770, highest ranked), but Diether et al. (2009) mechanism is operationalized as Amihud asymmetry proxy rather than original short-constraint methodology, introducing implementation risk.",
+        "V24 Residual_Income shows strong crisis IC (0.0743) but theoretical connection between Ohlson (1995) residual income valuation and crisis defense is inferred not derived from original paper; Sloan (1996) citation applies to accruals not residual income, creating logic gap."
+      ],
+      "concern": "Time decay + regime specificity: All cited papers are 18-30 years old. Korean stress test is strong but does NOT test mechanism stability across different crisis types (COVID vs financial vs tech downturn) or market structural changes (IFRS 2011, HFT post-2010s). Defense depends entirely on recurring crisis patterns; if crises evolve, framework fails.",
+      "conditions": [
+        "S1: V24-CR05 상관 검증 (claimed |r|<0.15 vs 실제). >0.30이면 팩터 1개 제거",
+        "S1: 위기 유형별 sub-period 분석 (2008 금융, 2020 COVID). stress_icir 편차 >0.40이면 fragile",
+        "박종원 et al. (2024) DOI/SSRN 확인. 미확인 시 core reference에서 제거",
+        "S2: 평상시 IC≈0이 미래에도 유지되는지 적응 효과 검증"
+      ]
+    },
+    {
+      "role": "codex_critic",
+      "score": 6,
+      "arguments": [
+        "위기 IC/ICIR 수치가 사후적 위기 구간 피팅일 가능성 높음. 6대 위기 구간에서만 측정한 성과는 표본 외 예측력을 보장하지 않으며, 실시간 위기 정의(expanding-window threshold)로 재검증 필수.",
+        "CR05 공매도 압력 프록시가 한국 공매도 규제 변경(2020 금지, 2021 재개)에 극도로 취약. 공매도 스퀴즈 시 defense sleeve가 오히려 역행할 위험. kill scenario: MDD +8~12%p 악화.",
+        "V24 잔여이익이 Quality 축으로 회귀할 위험(L-113). Ohlson(1995)의 earnings-based valuation이 한국 위기 시 accrual quality 붕괴와 동조화될 가능성."
+      ],
+      "concern": "전체 설계가 사후적 위기 에피소드 피팅에 의존. 실시간 위기 탐지 없이는 활성화 시점 지연 + 오작동으로 defense 역할 실패.",
+      "conditions": [
+        "실시간 위기 정의를 expanding-window 기반으로 사전 등록 후 재검증",
+        "market beta + downside beta 통제 후 잔여 defense alpha 확인",
+        "purged walk-forward로 미포함 위기 구간에서 안정성 검증",
+        "공매도 규제 변경 구간(2020-2021) 별도 분석"
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 15,
+      "arguments": [
+        "Family saturation 관점에서 H_1643은 defense family = 0%인 현재 포트폴리오에 새로운 economic family를 추가하는 유일한 경로이며, consensus 50% / ML 50%의 이분법적 구조를 삼각형으로 전환한다. 35% family concentration max 규칙도 준수하고, Explore 버킷에 해당하여 QEPM Section 1 탐색 다양성 원칙에 정합한다. 구조적 다양성 확보 측면에서 포트폴리오에 긍정적이다.",
+        "CR05_Short_Pressure_Proxy에 대해 심각한 역할 불일치 우려가 존재한다. Factor Registry에서 CR05의 regime_profile crisis=negative로 등록되어 있고, DFA v2(s0_record_DFA_v2_Q07_Q03_D29.json)에서도 '4r-CRISIS ICIR -0.10(음수, 위기에서 역 defense) + L-001 crowding 한국시장 구조적 실패 이력'을 근거로 CR05를 완전 제거했다. Defense 전략의 두 번째 비중(35%) 팩터가 위기에서 역방향으로 작동할 수 있다는 것은 role_match 관점에서 구조적 결함이다. 같은 프로젝트 내에서 이미 부정적으로 검증된 팩터를 defense 핵심 구성에 재투입하는 것은 L-code 교훈 위반에 가깝다.",
+        "Marginal contribution 측면에서 conditional_ic_matrix 실측치가 가설의 기대와 괴리한다. D25의 recent_3y_icir=0.088(S2 허들 0.20 미달), ic_bad=-0.001(위기 IC가 0에 근접), conditional_value=-0.026(음수). 가설에서 주장하는 'crisis premium +0.057'과 '평상시 IC approx 0이지만 위기시 alpha 수확'이라는 메커니즘이 최근 3년 데이터에서는 지지되지 않는다. 포트폴리오 SR 0.807 gap을 줄이려면 standalone SR이 낮더라도 Core 대비 상관이 극히 낮아야 하는데(< 0.20), 이 수준의 marginal contribution이 실현될지 S2 검증 전에는 불확실하다."
+      ],
+      "concern": "CR05가 Factor Registry에서 crisis=negative이고 DFA v2에서 이미 제거된 팩터인데, H_1643에서 35% 비중으로 defense 핵심 구성에 포함한 것은 내부 일관성 위반이다. Q07_Earnings_Stability(L-121에서 양쪽 위기 최강으로 확인)가 아닌 CR05를 선택한 근거가 포트폴리오 관점에서 설득력 부족하다.",
+      "conditions": [
+        "S2에서 CR05의 stress/crisis IC를 재검증하되, 4-regime CRISIS ICIR이 양수가 아니면 CR05를 Q07 또는 D29로 교체하는 대안 설계(H_1644 2-factor minimal 또는 DFA v2 팩터셋)를 S3 진입 전 제시해야 한다."
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 7,
+      "arguments": [
+        "CR05 stress ICIR FAIL (claimed 0.77 vs actual period-mean ICIR = -0.17): Factor DB IC history shows CR05_Short_Pressure_Proxy per-period crisis means of -0.060(GFC), -0.033(EU_Debt), +0.027(China), +0.007(COVID), +0.008(Ukraine), +0.017(TechSell) — only 4/6 wins and the two largest crises (GFC 2008, EU Debt 2011) are LOSSES. Net period-mean ICIR = -0.168, directly contradicting the 0.77 claim. Full-history IC monthly ICIR = +0.186, suggesting claimed 0.77 was computed over a highly selective subset.",
+        "V24 full-history ICIR = 0.0068 (near-zero signal): V24_Residual_Income shows Mean_IC = 0.00077 across 254 months, ICIR = 0.0068 — statistically indistinguishable from zero. Stress crisis wins: 2/6 (COVID +0.033, TechSell +0.033 vs GFC -0.032, EU_Debt -0.095, China -0.044, Ukraine -0.006). The claimed 'stress IC 0.074 / 5/6 wins' is not reproducible in the Factor DB. V24 appears to add near-zero standalone signal; the weight of 0.25 to this factor dilutes the composite without crisis benefit.",
+        "D25 data coverage gap 2005-2011 inflates crisis statistics: D25_Left_Tail_Beta has IC history from 2005-01-31 but only 188 months vs 436 months for other factors — missing 2008-2011 period in the stress analysis. When constrained to available windows, D25 shows GFC +0.012 and COVID -0.008 (LOSS), Ukraine +0.034, TechSell -0.024 — only 2/6 crisis wins. Full-history ICIR = 0.1185, below the S2 hurdle of 0.20. The crisis premium claim of +0.057 and COVID IC 0.185 cannot be reproduced."
+      ],
+      "concern": "The CR05 stress ICIR claim of 0.77 is the most serious discrepancy: actual Factor DB computation yields period-mean ICIR = -0.168, with GFC and EU_Debt (the two largest historical Korean market stress events) both showing NEGATIVE IC. This inverts the defense thesis. The hypothesis likely derived its claim from a stress_factor_ic_analysis.csv computed on a non-standard stress window definition or a different factor version than currently in the DB. A defense strategy anchored on a factor that underperforms during the two largest crises is structurally flawed.",
+      "conditions": [
+        "Scout must clarify the exact stress window definition and data version used to derive CR05 stress ICIR = 0.77 — the number is not reproducible from the current Factor DB IC monthly history using the standard 6-stress-period set (reference_stress_periods.md).",
+        "V24 must be replaced or substantially justified: ICIR = 0.0068 over 254 months is not a defense factor — it is statistical noise. The hypothesis notes V24 correlation with Q02_ROE = 0.739, which raises Quality-cluster contamination risk that is not mitigated by near-zero stress IC.",
+        "D25 pre-2012 data gap must be acknowledged in the S1 success criteria: with only 188 months of IC history starting 2005 (irregular), GFC 2008 and EU Debt 2011 stress coverage is structurally incomplete. S1 stress evaluation must clearly bound this."
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "score": 11,
+      "arguments": [
+        "D25_Left_Tail_Beta shows a critical data inconsistency that undermines the hypothesis: stress_factor_ic_analysis reports stress ICIR +0.393, but the conditional_ic_matrix shows ic_bad = -0.001 (effectively zero to negative in MRS bad regimes). This divergence -- flagged in L-116 as 'MRS bad regime vs stress 6-event definition mismatch' -- means D25's defense signal depends entirely on which crisis definition is used. With 40% weight on a factor whose bad-regime IC is negative, the composite signal may actively deteriorate during slow drawdowns (MRS-defined), while only activating during sharp crashes (6-event stress). For a defense sleeve that must protect across both crisis types (L-121 standard), this is a structural fragility. EVT perspective: D25's crisis_ratio of 30.7 (extreme stress/normal divergence) suggests a binary on/off factor, not a continuous risk reduction mechanism -- GPD shape xi would likely show regime-dependent instability.",
+        "V24_Residual_Income (25% weight) has a full-sample IC of -0.021 and ICIR of -0.282 per the factor scan -- meaning on average it selects losing stocks. Its stress ICIR of +0.846 is strong but based on only 40 months. The conditional_ic_matrix confirms ic_bad = -0.002 (negative). A factor with structurally negative full-period alpha will impose a persistent drag on portfolio returns during the 75-85% of months that are non-crisis. At the portfolio level, the expected return sacrifice from V24's negative normal-period contribution will dominate the occasional crisis benefit -- this is the classic defense trap where you pay insurance premium every month for a benefit that activates 15% of the time. CDaR analysis would likely show V24's recovery_ratio exceeding 0.70, meaning the strategy spends most of its time underwater recovering from normal-period underperformance.",
+        "From L-106 (market beta dominates long-only correlation) and L-115 (beta filtering insufficient), the fundamental risk is that all three factors -- despite low inter-factor correlation (|r| < 0.15 at factor score level) -- will produce portfolios whose RETURN correlation with the anchor (C19/VD+) is much higher than factor score correlation suggests. DCC-GARCH tail dependence coefficient (TDC) in crisis regimes typically surges to 0.4-0.6 for Korean long-only portfolios sharing the same universe. The claimed |r| < 0.28 vs C19 is a cross-sectional score correlation, NOT a return correlation -- L-106 demonstrated that STR_1636 had 3% stock overlap but 0.78 return correlation due to market beta = 0.85-0.93. Unless this composite achieves market beta below 0.50 (unlikely with EW 30 stocks in KOSPI), the defense benefit at portfolio level will be far smaller than factor-level metrics suggest."
+      ],
+      "concern": "The portfolio gap vector shows MDD is already ACHIEVED (-21.27% vs -25% target) and the binding constraint is SR gap (+0.807). Deploying a defense sleeve with two factors that have negative full-sample IC (D25 ic_all=0.013 weak, V24 ic_all=-0.021 negative) will reduce portfolio SR rather than increase it -- directly working against the primary gap. L-116 already concluded 'MDD defense target met, SR is the binding gap' for this exact hypothesis.",
+      "conditions": [
+        "MUST demonstrate return-level (not score-level) correlation with anchor below 0.40 using DCC-GARCH conditional correlation during stress periods; if crisis TDC exceeds 0.30, the defense claim is invalid per L-106/L-115 precedent.",
+        "V24_Residual_Income must be replaced or conditionally activated (crisis-only) -- a factor with full-sample ICIR -0.282 cannot be permanently weighted at 25% in a portfolio where the binding constraint is SR improvement, not MDD reduction."
+      ]
+    }
+  ]
+}

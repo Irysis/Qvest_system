@@ -1,0 +1,99 @@
+{
+  "hypothesis_id": "H_1637",
+  "stage": "S0",
+  "version": "1.0",
+  "timestamp": "2026-04-08T21:30:00",
+  "designer": "Scout",
+
+  "title": "Quality-Profitability Defense Sleeve: GPA + Gross Margin + MAX Exclusion",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "why_now": "PG0 MDD gap +9.9%p (34.9% -> 25%). 3전략 모두 Core Alpha (consensus/earnings), market beta 0.85~0.93 지배 (L-106). Defense sleeve 최우선 필요.",
+
+  "economic_family": "quality_profitability",
+  "factor_taxonomy_section": "Quality/Profitability (QEPM Section 9)",
+
+  "mechanism": {
+    "thesis": "Quality/Profitability 팩터(GPA, Gross Margin)는 위기 시(bad regime) IC가 0.044로 유지/강화되는 반면, 현재 Core 팩터(C19 bad IC 0.035, D01 bad IC 0.031)는 위기 시 IC가 하락한다. Novy-Marx (2013)에 따르면 GPA는 HML과 음의 상관으로 value trap을 회피하며, 고수익성 기업은 현금흐름 안정성으로 위기 시 주가 하락폭이 제한된다. Baker, Bradley & Wurgler (2011)이 제시한 benchmarks-as-limits-to-arbitrage 메커니즘과 결합하여, quality 종목 중 MAX(극단 양수 수익률) 상위 20%를 제거하면 lottery demand에 의한 과가격 종목을 배제하고 순수 quality premium만 추출할 수 있다.",
+    "why_defense": "Quality/profitability 팩터는 (1) 안정적 현금흐름 → 위기 시 덜 하락, (2) bad regime IC 강화 → 위기 시 종목 선별력 유지, (3) consensus/earnings momentum과 낮은 상관 → portfolio beta 축소 기여. 박종원 et al. (2024)의 한국시장 실증에서 GPA는 롱사이드에서 유의한 유일한 quality 팩터."
+  },
+
+  "core_reference": [
+    {
+      "ref_id": "A5.01",
+      "paper": "Novy-Marx (2013) 'The Other Side of Value: The Gross Profitability Premium', JFE",
+      "relevance": "GPA가 HML 통제 후에도 유의, 가치와 음의 상관으로 시너지. 한국시장 quality alpha의 학술 근거."
+    },
+    {
+      "ref_id": "KR-FACTOR-2",
+      "paper": "박종원·엄윤성·엄철준 (2024) '시장이상현상을 활용한 팩터 투자전략 성과 분석', 재무관리연구 41(1)",
+      "relevance": "한국시장 32년 실증: low-risk sorting 롱온리 불가, GPA 롱사이드만 유의. Defense는 quality 기반이어야 함."
+    },
+    {
+      "ref_id": "KR-FACTOR-1",
+      "paper": "Kim, Saejoon (2021) 'Enhanced Factor Investing in Korean Market', PBF 67",
+      "relevance": "한국시장 cross-exposure 통제 필수. 음(-) value/momentum 노출 종목 제거로 MDD 개선."
+    },
+    {
+      "ref_id": "A3.Quality",
+      "paper": "Asness, Frazzini & Pedersen (2019) 'Quality Minus Junk'",
+      "relevance": "QMJ 프리미엄의 안전(safety) 구성요소가 위기 시 flight-to-quality 효과 생성."
+    }
+  ],
+
+  "factors": {
+    "primary": [
+      {"name": "Q01_GPA", "weight": 0.50, "rationale": "Bad regime IC 0.044 (quality 최고), ICIR 0.081. 롱사이드 유의 (박종원 2024). Novy-Marx (2013) GP가 가장 강력한 cross-sectional predictor."},
+      {"name": "Q10_Gross_Margin", "weight": 0.50, "rationale": "Bad regime IC 0.044, ICIR 0.266 (GPA 대비 3x 안정적). Cakici et al.에 따르면 GP 관련 변형 중 가장 강건. 두 팩터 블렌드로 quality signal 안정화."}
+    ],
+    "exclusion_filter": {
+      "name": "MAX_top20pct_exclusion",
+      "rationale": "박종원 (2024): MAX 효과는 숏사이드. 고MAX 종목 = lottery demand + 과변동성. Exclusion으로 포트폴리오 변동성 축소. Kim (2021) cross-exposure 통제의 실무 구현."
+    }
+  },
+
+  "construction": {
+    "scoring": "EW blend of Z_Score_Aligned(Q01_GPA) + Z_Score_Aligned(Q10_Gross_Margin)",
+    "n_stocks": 30,
+    "sector_neutral": false,
+    "sector_neutral_rationale": "L-085: higher-moment/quality 팩터는 섹터 간 현상. 섹터중립화가 프리미엄을 제거할 수 있음. Cross-sector 표준화만 적용.",
+    "rebalancing": "monthly",
+    "commission_bps": 15,
+    "liquidity_filter": "20일 평균 거래대금 >= 2억원"
+  },
+
+  "expected_profile": {
+    "target_beta": "0.65~0.80 (Core 대비 beta 축소가 defense 메커니즘의 핵심)",
+    "target_correlation_with_core": "<0.60 (L-106: beta 직교 필요)",
+    "target_mdd_contribution": "portfolio MDD를 34.9% -> 28~30% 수준으로 축소",
+    "expected_sr": "0.50~0.80 (S1 순수 팩터, overlay 전)",
+    "expected_cagr": "8~14% (defense 역할 우선, alpha 차선)"
+  },
+
+  "lesson_check": [
+    {"code": "L-087", "summary": "한국시장 롱온리 low-risk sorting 무효. GPA 롱사이드만 유의 → quality 기반 defense 유일 경로."},
+    {"code": "L-088", "summary": "Cross-exposure 통제 필수 (Kim 2021). MAX exclusion으로 unintended high-vol exposure 제거."},
+    {"code": "L-106", "summary": "Market beta 0.85~0.93이 상관 지배. Defense sleeve는 beta 축소 구조 필수."},
+    {"code": "L-110", "summary": "Base SR < 1.0이면 overlay 무효. S1에서 순수 alpha 확인 후 S5 overlay 결정."},
+    {"code": "L-008", "summary": "ROIC+Skewness defense 실패 (MDD 59.7%). Quality 단독보다 Gross Margin 블렌드로 신호 안정화."},
+    {"code": "L-049", "summary": "D01+D02+Q07 defense 실패 (SR 0.399). Risk 팩터 sorting 대신 profitability 기반."},
+    {"code": "L-075", "summary": "Q10_Gross_Margin 단독 S1은 MDD 58.8% hard fail. 2팩터 블렌드로 개선 기대."}
+  ],
+
+  "risk_assessment": {
+    "risk_1": "Q01과 Q10의 상관이 높아 실질적 2팩터 효과가 제한될 수 있음. S1에서 두 팩터 간 상관 확인 필수.",
+    "risk_2": "Quality 프리미엄이 한국시장에서 최근 약화 추세일 수 있음 (Q01 ICIR 0.081 양수이나 약함).",
+    "risk_3": "Sector neutral 미적용 시 유틸리티/필수소비재 과집중 가능성 → 섹터 cap 30% 고려.",
+    "mitigation": "S1 결과에서 beta 0.80 초과 시 defense 역할 실패로 판정. S3에서 Core 대비 상관 0.60 초과 시 재설계."
+  },
+
+  "success_criteria": {
+    "s1_pass": "MDD < 55% AND SR > 0.40 AND beta < 0.80",
+    "s2_target": "ICIR >= 0.15 AND bad_regime_IC > 0.03",
+    "s3_target": "Core(STR_1550/1555/1631) 대비 수익률 상관 < 0.60",
+    "defense_validation": "위기 4구간 중 3건 이상 시장 대비 outperform"
+  },
+
+  "exploration_bucket": "Explore (defense family 미구축, QEPM Section 9 기준 우선 탐색)",
+  "path_type": "A (논문 -> 가설)"
+}

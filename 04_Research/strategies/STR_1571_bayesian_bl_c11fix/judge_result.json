@@ -1,0 +1,80 @@
+{
+  "strategy_id": "STR_1571",
+  "strategy_name": "BayesianBL_C11Fix",
+  "base_strategy": "STR_1029",
+  "timestamp": "2026-03-28T19:05:00+09:00",
+  "judge_version": "v2.2",
+  "grade": "A",
+  "grade_v21": "A",
+  "score": 53,
+  "score_v21": 73,
+  "metrics": {
+    "SR": 1.198,
+    "CAGR": 18.1,
+    "MDD": 31.81,
+    "Calmar": 0.569,
+    "IR": 0.422,
+    "AnnVol": 15.12,
+    "Turnover": 154,
+    "OOS_retention": 0.70
+  },
+  "before_after": {
+    "STR_1029_original": {
+      "SR": 1.286,
+      "CAGR": 19.5,
+      "MDD": 28.0,
+      "note": "C11 violation: MRS same-month access"
+    },
+    "STR_1571_c11fix": {
+      "SR": 1.198,
+      "CAGR": 18.1,
+      "MDD": 31.81,
+      "note": "C11 clean: MRS t-1 month"
+    },
+    "delta": {
+      "SR": -0.088,
+      "CAGR": -1.4,
+      "MDD": 3.81,
+      "interpretation": "C11 fix caused modest SR drop (-6.8%) and MDD increase (+3.8pp). MRS same-month was providing slight timing advantage via lookahead. BL core alpha preserved."
+    }
+  },
+  "pit_checklist": {
+    "C1_full_sample": "PASS — rolling/expanding only",
+    "C2_same_day_circular": "PASS — DD lagged 1 day",
+    "C3_same_period": "PASS",
+    "C4_financial_lag": "PASS — consensus data uses sig_d-7 window",
+    "C5_overlay_t1": "PASS — DD brake lagged, MRS uses t-1 month",
+    "C9_dd_vt_lag": "PASS — dd_exp_combined_lagged = c(1.0, head(dd_exp_combined, -1))",
+    "C11_data_time_axis": "PASS — MRS now uses prev_ym (t-1 month) in both run_all.R and consgate_pure_engine.R",
+    "C13_z_score_aligned": "PASS — no manual direction flip",
+    "C14_usable_date": "PASS"
+  },
+  "c11_fix_detail": {
+    "violation_locations": [
+      "run_all.R Phase 4: mrs_monthly[YM == daily_ym_f[i]] → mrs_monthly[YM == prev_ym_f[i]]",
+      "consgate_pure_engine.R: macro_regime_dt[YM == sig_ym] → macro_regime_dt[YM == prev_ym]"
+    ],
+    "fix_method": "Compute prev_ym = format(as.Date(paste0(current_ym, '-01')) - 1, '%Y-%m'). FRED monthly data published month-end, so same-month access is lookahead.",
+    "impact": "SR -0.088 (-6.8%), CAGR -1.4pp, MDD +3.8pp. Consistent with STR_1562 pattern where C11 fix had minimal performance impact."
+  },
+  "gate_results": {
+    "gate0_pit": "PASS",
+    "gate1_return": "PASS — CAGR 18.1% > 16%",
+    "gate2_risk": "WARN — MDD 31.81% > 25% target but < 45% hard fail",
+    "gate3_robustness": "PASS — 3Y rolling SR>0 87.2%, OOS retention 0.70",
+    "gate4_stress": "PASS — 3/3 stress outperformance",
+    "gate5_diversification": "PASS — BM_Corr 0.546"
+  },
+  "strengths": [
+    "BL optimization provides academically grounded stock weighting (He & Litterman 1999)",
+    "5-sleeve diversification across defense/indmom/consensus/consgate/tpgap",
+    "Strong stress outperformance (3/3)",
+    "IC improving trend (recent 3Y IC 2.5x full-sample)"
+  ],
+  "weaknesses": [
+    "MDD 31.81% exceeds 25% target",
+    "High saturation penalty (-20 pts) due to family overlap",
+    "SR below 2.0 target"
+  ],
+  "role_bias": "RoleBias_Diversifier"
+}

@@ -1,0 +1,85 @@
+=== Elastic Net Factor Selection: 309팩터 → Sparse Core ===
+PIT Rules: MC1~MC5 + C1~C15 완전 준수
+시작 시각: 2026-04-09 20:40:37.567693 
+
+[config.R] PROJECT_ROOT: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot
+[backtest_harness] weight_engine.cpp loaded (Rcpp).
+[backtest_harness] Loaded.
+[backtest_harness] sim_engine_nav.cpp loaded (Rcpp NAV 4x speedup).
+[1] RAWDATA 로드...
+[load_rawdata] Loading from Parquet cache...
+[load_rawdata] Cache loaded: 14172147 rows | 1990-01-04 ~ 2026-04-08
+    RAWDATA rows: 14172147 
+[2] 일간 Factor DB 월말 로드 (2003~2025)...
+    로드할 파일 수: 280 
+    유지 컬럼 수: 359 
+    ... 60 / 280 
+    ... 120 / 280 
+    ... 180 / 280 
+    ... 240 / 280 
+    FDB rows: 537466 | 팩터: 300 
+[3] 월간 초과수익률 계산...
+    유동성 필터 후 rows: 534126 
+    기간: 2003-01-30 2026-03-31 
+[4] FM-Style Elastic Net Selection...
+    Phase 1: 월별 cross-section LASSO ( 255 개월)...
+    [ 24 / 255 ]  2006-12-28  —  8 개
+    [ 48 / 255 ]  2008-12-30  —  68 개
+    [ 72 / 255 ]  2010-12-30  —  0 개
+    [ 96 / 255 ]  2012-12-28  —  11 개
+    [ 120 / 255 ]  2014-12-30  —  28 개
+    [ 144 / 255 ]  2016-12-29  —  89 개
+    [ 168 / 255 ]  2018-12-28  —  64 개
+    [ 192 / 255 ]  2020-12-30  —  56 개
+    [ 216 / 255 ]  2022-12-29  —  86 개
+    [ 240 / 255 ]  2024-12-30  —  76 개
+    Phase 1 완료.
+    Phase 2: Aggregate frequency from Phase 1...
+    유효 월: 255 
+[4] 선택 완료.
+[5] Factor 선택 빈도 분석...
+
+--- 선택 빈도 상위 30개 ---
+                           factor n_selected  freq  mean_coef
+                           <char>      <int> <num>      <num>
+ 1:                    M07_IndMom        114 0.447   0.011979
+ 2: V21_Composite_Equity_Issuance         93 0.365  -0.001670
+ 3:               L27_Price_Level         82 0.322  -0.004287
+ 4:              L37_Relative_Vol         82 0.322  -0.000608
+ 5:                L09_Amihud_20d         76 0.298 200.227269
+ 6:        RE02_Vol_Regime_Pctile         71 0.278   1.482028
+ 7:                  V16_Tobins_Q         71 0.278  -0.001040
+ 8:              L29_Illiq_Change         70 0.275  20.976891
+ 9:               M12_LR_Reversal         70 0.275   0.000498
+10:                S02_Float_Size         70 0.275  -0.000627
+11:                L26_Log_MktCap         69 0.271  -0.000706
+12:               D30_FM_Beta_21d         67 0.263   0.003034
+13:                      S01_Size         67 0.263  -0.000714
+14:              RE05_LowVol_Beta         63 0.247   0.191038
+15:                    M29_Mom_5d         60 0.235  -0.015647
+16:                       T13_Gap         60 0.235   0.060657
+17:               M11_ST_Reversal         59 0.231  -0.017104
+18:             Q26_RnD_Intensity         59 0.231   0.019667
+19:         AC17_Accrual_Reversal         58 0.227  -0.234802
+20:  CR08_Volume_Price_Divergence         58 0.227  -0.000950
+21:                    L01_Amihud         58 0.227 211.591187
+22:                      Q17_ROIC         58 0.227   0.034854
+23:                      V05_fPBR         58 0.227   0.000723
+24:                  M06_High_52w         54 0.212   0.004990
+25:           D29_Accounting_Beta         53 0.208  -0.000059
+26:                        V18_AM         53 0.208   0.000682
+27:                   M30_Mom_10d         52 0.204   0.011724
+28:       RE08_Down_Market_Excess         52 0.204  -0.014218
+29:     IN06_Investment_to_Assets         50 0.196   1.489013
+30:           L34_Vol_Spike_Ratio         50 0.196   0.000403
+                           factor n_selected  freq  mean_coef
+                           <char>      <int> <num>      <num>
+
+    15%+ 선택 Core 팩터: 87 개
+    Core: M07_IndMom, V21_Composite_Equity_Issuance, L27_Price_Level, L37_Relative_Vol, L09_Amihud_20d, RE02_Vol_Regime_Pctile, V16_Tobins_Q, L29_Illiq_Change, M12_LR_Reversal, S02_Float_Size, L26_Log_MktCap, D30_FM_Beta_21d, S01_Size, RE05_LowVol_Beta, M29_Mom_5d, T13_Gap, M11_ST_Reversal, Q26_RnD_Intensity, AC17_Accrual_Reversal, CR08_Volume_Price_Divergence 
+
+[6] Stability Selection (100 subsamples)...
+Error in .checkTypos(e, names_x) : 
+  Object 'signal_dates' not found amongst [Date, Ticker, C08_Coverage, C05_ESCR, C04_ESBR, C03_EPS_Chg_3m, C02_EPS_Chg_1m, C01_SUE, M01_Mom_12_1, M02_Mom_6_1, ...]
+Calls: source ... <Anonymous> -> .checkTypos -> stopf -> raise_condition -> signal
+Execution halted

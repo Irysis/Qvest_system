@@ -1,0 +1,22 @@
+{
+  "stage": "S0",
+  "verdict": "APPROVE_CONDITIONAL",
+  "hypothesis_id": "H_1636_v2_piotroski_ret_autocorr_diversifier",
+  "strategy_id": "STR_1636_piotroski_ret_autocorr_diversifier",
+  "timestamp": "2026-04-08T08:30:00",
+  "total_score": 64,
+  "revision_round": 1,
+  "revision_fix": "Q10_Gross_Margin (DIVERGED SR 0.089) → Q04_Piotroski_F (ICIR 0.276, FMB t=3.087)",
+  "conditions": [
+    "S1 pure factor SR > 0.4 (minimum viable)",
+    "S3에서 M11 대비 상관 < 0.3 검증",
+    "L22 raw값 사용 필수 (rolling z-score 금지, L-591)",
+    "L22 FMB t=2.48 Harvey 미달 — 다중검정 보정 후 재확인 (S6)",
+    "C4 재무제표 래깅 엄수 (Q04 Piotroski 연간→5월)"
+  ],
+  "expected_role": "diversifier",
+  "family": "quality_liquidity",
+  "factors": ["Q04_Piotroski_F", "L22_Ret_Autocorr"],
+  "reference_portfolio": "V7_M11_REF",
+  "next_stage": "S1"
+}

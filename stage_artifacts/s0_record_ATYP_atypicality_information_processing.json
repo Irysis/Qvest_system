@@ -1,0 +1,244 @@
+{
+  "factor_id": "ATYP_Atypicality_Information_Processing",
+  "strategy_id": "STR_1658_atypicality_diversifier",
+  "stage": "S0",
+  "version": "2.0",
+  "revision_from": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-10",
+  "revised_at": "2026-04-10",
+  "session": 57,
+
+  "revision_log": {
+    "REV-1_HIGH": {
+      "requirement": "CR11_Idiosyncratic_Return 제거 (ICIR -0.383, regime elevated/crisis 모두 negative)",
+      "action": "CR11 완전 제거. Composite를 ATYP_SCORE(0.6) + V10_FCF_Yield(0.4) 2-factor로 단순화. 음수 ICIR 팩터 포함에 의한 alpha 희석 위험 제거.",
+      "rationale": "L-119(정적 EW blend alpha 희석) 교훈 적용. CR11의 conditional_value 0.013은 통계적 노이즈 수준이며, regime_profile이 elevated/crisis 모두 negative로 방어 역할도 불가. 대안 팩터 교체보다 2-factor 단순화가 해석 가능성과 robustness 모두에서 우월."
+    },
+    "REV-2_MEDIUM": {
+      "requirement": "ATYP_SCORE 6팩터 선택 근거를 Weibels(2025) 87개 특성과 대조하여 체계화",
+      "action": "Weibels(2025)의 87개 특성을 6대 차원으로 범주화하고, Factor DB에서 각 차원의 대표성 + 상호 상관 최소화 기준으로 선택. 선택 기준을 3단계 프로토콜로 명문화.",
+      "rationale": "자의적 선택 비판에 대한 방어. 단, 핵심은 '어떤 6개를 고르느냐'가 아니라 '다차원 편차라는 구조'임을 S5 robustness test로 검증 예정."
+    },
+    "REV-3_MEDIUM": {
+      "requirement": "Linear deviation = autoencoder 1차 근사 주장 철회",
+      "action": "해당 주장 완전 철회. Linear deviation은 autoencoder ATYP의 하위 대체물(inferior proxy)로 명시. S5 upgrade 경로(PCA, Mahalanobis, expanding-window PCA)를 구체화.",
+      "rationale": "학술적 정직성. Hinton & Salakhutdinov(2006)는 'linear autoencoder = PCA'를 증명했으나, 본 가설의 sum-of-absolute-deviations는 PCA와도 구조적으로 다름(공분산 미반영). 동일시하는 것은 논리적 비약."
+    },
+    "REV-4_LOW": {
+      "requirement": "양방향 이탈 동일 처리의 경제적 근거 보강",
+      "action": "Barberis & Shleifer(2003) categorical thinking 이론에 기반한 방향 무관 논리 명시. 보완적 robustness check(부호 보존 variant)을 S5에서 검토하도록 경로 설정.",
+      "rationale": "비전형성의 핵심은 '업종 내 전형적 프로파일과의 거리'이지 '좋음/나쁨' 방향이 아님. Q09에서 업종 평균보다 현저히 높은 기업도, 현저히 낮은 기업도 둘 다 범주 밖에 위치하여 정보처리 마찰을 유발."
+    }
+  },
+
+  "hypothesis": "Atypicality-Based Information Processing Diversifier (Rev.2). Weibels (2025/2026, CFR Working Paper, SSRN 6048715)에 기반. 기업 특성의 결합 분포에서 비전형적인 기업은 투자자의 제한된 주의(limited attention) 하에서 정보가 느리게 반영되어 체계적으로 과소가격됨. 본 가설은 Weibels의 경제적 메커니즘을 채택하되, autoencoder 대신 Factor DB 기존 팩터의 '업종 내 다차원 편차(multi-factor deviation score)'로 비전형성을 측정한다. [REV-1] CR11 제거, ATYP(0.6)+V10(0.4) 2-factor 단순화. [REV-3] Linear deviation은 autoencoder의 하위 대체물(inferior proxy)이며, S5에서 PCA/Mahalanobis upgrade를 예정. complexity family 최초 전략화. EW 20종목, 격월, 15bps, 유동성 2억원. S1 순수 팩터 측정.",
+
+  "economic_mechanism": {
+    "core_theory": "Weibels (2025): 투자자는 제한된 주의(Kahneman 1973) 하에서 기업 특성을 범주적으로(categorically) 처리한다 (Barberis & Shleifer 2003, Peng & Xiong 2006). 기업 특성의 결합 분포에서 '비전형적'인 기업(atypical firms)은 기존 범주에 맞지 않아 처리 비용이 높다. 이 높은 처리 비용으로 인해 기업 고유 정보가 가격에 느리게 반영(gradual information diffusion, Hong & Stein 1999)되고, 한계 정보 수집자(marginal information seeker)가 적어져 과소가격이 체계적으로 발생한다. 핵심 실증: ATYP 효과는 (1) 투자자 주의가 낮을 때(애널리스트 커버리지 적음), (2) 차익거래 한계가 클 때(높은 거래비용, 낮은 기관 보유) 강화됨 -- mispricing 채널 확인.",
+
+    "why_not_autoencoder": "Weibels의 autoencoder ATYP는 매월 전체 cross-section 데이터로 비지도 학습 모델을 재학습하는 구조이다. 이는 C1(full-sample 통계 금지) 위반 리스크가 극히 높다. Expanding window autoencoder도 가능하지만, (1) 한국시장 ~2,000종목에서 매월 autoencoder 학습은 계산 비용 과다, (2) hyperparameter(latent dimension, epoch) 선택이 또 다른 data snooping 위험, (3) Factor DB 인프라와 호환 불가. 본 가설은 autoencoder 대신 이미 존재하는 Factor DB 팩터들의 cross-sectional rank deviation을 활용하여 비전형성을 측정한다.",
+
+    "linear_deviation_honest_assessment": "[REV-3 반영] Linear deviation(sum of absolute deviations)은 autoencoder ATYP의 하위 대체물(inferior proxy)이다. 구체적 차이: (1) Autoencoder는 팩터 간 비선형 상호작용을 포착하지만, linear deviation은 각 팩터를 독립적으로 취급한다. (2) Autoencoder는 데이터 manifold 상의 reconstruction error를 측정하지만, linear deviation은 업종 중앙값으로부터의 Manhattan distance를 측정한다. (3) 따라서 linear deviation은 autoencoder가 포착하는 비전형성의 '일부분'만 측정한다. 이 한계를 인정하되, (a) Weibels의 핵심 메커니즘(categorical thinking에 의한 정보처리 마찰)은 비선형 측정이 아닌 '범주 밖에 있다는 사실 자체'에서 발생하므로, linear proxy에서도 방향성은 유지될 것으로 기대하며, (b) S5 mutation에서 expanding-window PCA 기반 ATYP, Mahalanobis distance, robust covariance 기반 확장을 검토한다.",
+
+    "atypicality_score_construction": "비전형성 점수(ATYP_SCORE) 구축 방법: (1) 매월 각 종목에 대해 Factor DB의 6개 팩터(아래 factors 참조)의 cross-sectional z-score를 산출 (expanding window). (2) 동일 FICS(산업분류) 대분류 내에서 각 팩터의 z-score가 업종 중앙값에서 얼마나 벗어나는지 산출: dev_i,f = |z_i,f - median(z_sector,f)|. (3) Multi-factor deviation score: ATYP_SCORE_i = sum(dev_i,f) / N_factors. (4) ATYP_SCORE가 높을수록 비전형적.",
+
+    "absolute_deviation_rationale": "[REV-4 반영] 양방향 이탈을 동일하게 처리하는 경제적 근거: Barberis & Shleifer(2003)의 categorical thinking 이론에서 투자자의 정보처리 마찰은 '업종 내 전형적 프로파일과의 거리'에서 발생하며, 이탈의 방향(예: quality가 높은 방향 vs 낮은 방향)과 무관하다. 예를 들어, 전통 제조업 내에서 Q09(현금 수익성)가 업종 평균보다 현저히 높은 기업은 '이례적으로 수익성 좋은 제조업체'로, 현저히 낮은 기업은 '이례적으로 부진한 제조업체'로 모두 범주적 사고의 관성에서 벗어나 투자자 주의를 덜 받는다. 핵심은 '방향'이 아니라 '거리'이다. 단, 이 가정의 robustness를 검증하기 위해 S5 mutation에서 부호 보존 variant(signed deviation weighted by factor direction)를 비교 검토한다.",
+
+    "moderate_atyp_rationale": "Weibels의 Long low-ATYP / Short high-ATYP는 long-short 전략이다. 롱온리 제약에서는 Short high-ATYP가 불가능. 또한 low-ATYP(전형적 기업)만 Long하면 시장 beta가 높아진다(전형적 = 시장 추종적). 따라서 본 가설은 다른 접근을 취한다: (1) 중간-높은 비전형성 구간(ATYP_SCORE 40th-80th percentile)의 종목 중에서, (2) 가치 신호(V10_FCF_Yield)가 높은 종목을 선택. 논리: 매우 비전형적인 기업(상위 20%)은 fundamental risk가 높을 수 있으나, 중간-높은 비전형성 기업은 단순히 '범주 밖'이어서 주의가 부족할 뿐 fundamental은 건전할 수 있다. 여기에 가치 필터를 결합하면 '무시당하면서 저평가된' 종목을 포착한다.",
+
+    "orthogonality_to_consensus_and_accrual": "비전형성은 기업 특성의 '결합 분포'에서의 위치를 측정하며, 이는 개별 팩터(consensus, accrual, quality 등)와 구조적으로 직교한다. Weibels(2025): ATYP는 FF5, momentum, quality 등 기존 팩터에 의해 설명되지 않음(spanning test 통과)."
+  },
+
+  "factors": [
+    {
+      "name": "ATYP_SCORE (Composite, 신규 구축)",
+      "family": "complexity (신규)",
+      "role_in_strategy": "Primary (weight 0.6). 6개 팩터의 업종 내 절대 편차 합산으로 비전형성 측정.",
+      "component_factors": [
+        "Q09_CFOA (quality: cash profitability)",
+        "V10_FCF_Yield (value: FCF yield)",
+        "GR02_Earnings_Growth (growth: earnings growth)",
+        "AC07_Operating_Accruals (accrual: accrual level)",
+        "L01_Amihud (liquidity: illiquidity)",
+        "D01_IdioVol (defense: idiosyncratic volatility)"
+      ],
+      "component_selection_protocol": "[REV-2 반영] 3단계 선택 프로토콜. Stage 1(차원 매핑): Weibels(2025) Table 1의 87개 firm characteristics를 6대 차원으로 범주화 -- (i) Profitability (23개: ROE, ROA, CFOA, gross margins 등), (ii) Valuation (15개: BM, EP, CFP, FCF yield 등), (iii) Growth (12개: earnings growth, sales growth, asset growth 등), (iv) Earnings Quality (10개: accruals, earnings smoothness 등), (v) Liquidity/Trading (14개: Amihud, turnover, bid-ask spread 등), (vi) Risk (13개: idiosyncratic vol, beta, VaR 등). Stage 2(대표 팩터): 각 차원에서 Factor DB 내 ICIR 절대값이 가장 높고 데이터 커버리지가 충분한(누락률 < 10%) 팩터 1개 선택. Q09(profitability ICIR 양수, regime positive in crisis), V10(valuation ICIR 0.25, crisis_ratio 1.14), GR02(growth 대표), AC07(accrual 대표, 방향 lower_better), L01(liquidity 대표), D01(risk 대표, crisis positive). Stage 3(상관 검증): 6개 팩터 간 pairwise cross-sectional 상관이 0.40 미만인지 확인 -- 이는 S1 구현 시 실증적으로 검증. 0.40 이상 쌍이 존재하면 해당 차원에서 차순위 팩터로 교체.",
+      "construction": "dev_i = sum(|z_i,f - median(z_sector,f)|) / 6. Expanding window cross-sectional z-score. 업종별 median 기준.",
+      "literature": "Weibels (2025, SSRN 6048715): Autoencoder 기반 ATYP. 본 가설은 linear deviation proxy로 단순화. [REV-3] Linear deviation은 autoencoder의 하위 대체물이며, 비선형 상호작용과 데이터 manifold를 포착하지 못함. S5에서 PCA/Mahalanobis upgrade 예정."
+    },
+    {
+      "name": "V10_FCF_Yield",
+      "family": "value",
+      "role_in_strategy": "Secondary (weight 0.4). 가치 필터 역할. 비전형적이면서 저평가된 종목 선택.",
+      "ic_profile": {
+        "full_icir": 0.250,
+        "stress_icir": 0.643,
+        "stress_pct_pos": 0.75,
+        "crisis_ratio": 1.14
+      },
+      "literature": "Chib et al. (2025): FCF yield(fcf_me)는 unspanned channel 3 '가치 수준'의 핵심 변수. Fama & French (1992). Ball et al. (2016, JFE)."
+    }
+  ],
+
+  "factors_removed": [
+    {
+      "name": "CR11_Idiosyncratic_Return",
+      "family": "crowding",
+      "removed_in": "v2.0",
+      "reason": "[REV-1] ICIR -0.383 (전체기간 음수). Regime profile: elevated=negative, crisis=negative. Conditional_value 0.013은 통계적 노이즈. 포함 시 alpha 희석 + 위기 시 역방향 리스크. L-119(정적 EW blend alpha 희석) 교훈 적용. 대안 교체 대신 2-factor 단순화 선택 이유: (1) ATYP_SCORE 자체가 비전형성의 가격 차원도 간접 포착(D01_IdioVol이 ATYP 구성요소), (2) 2-factor는 해석 단순성 + overfitting 위험 최소화, (3) diversifier 역할은 ATYP_SCORE의 구조적 직교성에서 달성.",
+      "lesson_applied": "L-119, L-087"
+    }
+  ],
+
+  "construction": {
+    "step_1_liquidity": "20일 평균 거래대금 >= 2억원",
+    "step_2_atyp_score": "6개 구성 팩터의 업종 내 z-score 절대 편차 합산 (expanding window z-score, 업종별 median 기준). [REV-4] 절대값 사용 근거: Barberis & Shleifer(2003) categorical thinking -- 정보처리 마찰은 이탈의 '방향'이 아닌 '거리'에서 발생.",
+    "step_3_atyp_filter": "ATYP_SCORE 40th-80th percentile (중간-높은 비전형성 구간). 극단 비전형(>80th)은 fundamental risk로 제외.",
+    "step_4_value_filter": "V10_FCF_Yield Z_Score_Aligned 상위 50% (저평가 필터)",
+    "step_5_scoring": "[REV-1 반영] Z_Score_Aligned(ATYP_SCORE) * 0.6 + Z_Score_Aligned(V10_FCF_Yield) * 0.4. 2-factor composite. CR11 제거.",
+    "step_6_selection": "Top 20 by composite score",
+    "weighting": "Equal Weight",
+    "rebalance": "Bimonthly (격월)",
+    "transaction_cost": "15bps one-way",
+    "overlay": "NONE (S1 순수 팩터 측정)",
+    "max_stocks": 20,
+    "note_no_beta_filter": "Beta filter 미사용. ATYP 자체가 비전형적 종목을 선택하므로 market beta가 자연스럽게 분산됨. S2에서 portfolio beta 확인 후 필요시 beta constraint 추가."
+  },
+
+  "expected_role": "Diversifier",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "SR gap +0.757 (1.243 -> 2.0). 독립 diversifier 2-3개 필요.",
+    "new_alpha_dimension": "비전형성(atypicality)은 기존 모든 팩터 family(consensus, accrual, quality, value, growth, momentum)와 구조적으로 직교하는 '메타 특성'. Factor Taxonomy 9 기준 complexity family는 0% 구축(탐색 규칙: 미구축 family 우선). Weibels(2025)에서 학술적 근거 확보.",
+    "information_processing_channel": "기존 전략은 모두 '특정 팩터의 높낮이'에 기반. 비전형성은 '팩터 프로파일의 결합 비정상성'이라는 완전히 새로운 차원. Hong & Stein(1999) gradual diffusion + Barberis & Shleifer(2003) categorical thinking의 실증적 구현.",
+    "exploration_budget": "Explore 버킷(20%) 경로 B(직관 -> 논문) 예산 내. ATYP_SCORE는 신규 팩터 구축이 필요하므로 탐색적 성격이 강함. 경로 B 예산 30% 이내.",
+    "maximum_diversification": "비전형성 기반 종목 선택은 consensus/accrual/growth 기반 종목과 overlap이 구조적으로 낮음. portfolio-level 상관 0.30 미만 달성 가능성이 가장 높은 후보."
+  },
+
+  "core_reference": [
+    "Weibels (2025/2026, CFR Working Paper, SSRN 6048715) 'Hard to Process: Atypical Firms and the Cross-Section of Expected Stock Returns' -- Autoencoder 기반 ATYP. EW 1.47%/월, VW 0.82%/월. FF5/momentum/quality에 unspanned. Limited attention + mispricing channel. 87개 firm characteristics 사용.",
+    "Barberis & Shleifer (2003, JFE) 'Style Investing' -- 투자자의 범주적 사고(categorical thinking). 범주에 맞지 않는 기업이 무시됨. [REV-4] 양방향 이탈 동일 처리의 이론적 근거.",
+    "Peng & Xiong (2006, JFE) 'Investor Attention, Overconfidence and Category Learning' -- 제한된 주의 하에서 투자자는 sector-level 정보에 집중하고 firm-specific 정보를 무시.",
+    "Hong & Stein (1999, JF) 'A Unified Theory of Underreaction, Momentum, and Overreaction' -- 정보의 점진적 확산(gradual diffusion). 비전형적 기업에서 확산이 더 느림.",
+    "Gabaix (2014, QJE) 'A Sparsity-Based Model of Bounded Rationality' -- 투자자가 정보의 일부만 처리하는 sparse attention model.",
+    "Ball, Gerakos, Linnainmaa & Nikolaev (2016, JFE) -- V10_FCF_Yield의 cash-flow 기반 가치 측정 근거.",
+    "Chib, Xiao & Zhao (2025, SSRN 6494339) -- 153개 anomaly spanning test. 비전형성 관련 시장 행태 패턴이 제4채널(market behavior and patterns)로 확인."
+  ],
+
+  "lesson_check": [
+    "L-117: Factor DB 288개 중 60% 미사용 -- complexity family 0% 구축. 최초 진입.",
+    "L-118-ext: 단면 상관 낮아도 beta 지배로 포트폴리오 상관 높음 -- KILL-2 trigger(앵커 상관 > 0.50) 설정으로 방어.",
+    "L-113: QMJ 실패 -- 본 가설은 quality가 아닌 information processing 채널. QMJ와 근본적으로 다른 alpha source.",
+    "L-119: 정적 EW blend alpha 희석 -- [REV-1] CR11(ICIR -0.383) 제거. 음수 ICIR 팩터 포함은 희석 원인. standalone 전략으로 설계.",
+    "L-124: Tree > Linear in KR -- [REV-3] Linear deviation이 autoencoder 대비 열위임을 명시적으로 인정. S5 PCA/Mahalanobis upgrade 경로 설정.",
+    "L-087: Low-risk sorting 실패 -- [REV-1] CR11(idiosyncratic return)은 low-risk sorting 변형. 한국 롱온리에서 무효한 팩터 제거.",
+    "L-484: 30종목 제한 -- 20종목 설계.",
+    "L-122: Factor timing vs risk management -- ATYP는 timing이 아닌 structural diversification. Risk management 원칙과 양립."
+  ],
+
+  "risks": [
+    {
+      "risk": "Linear deviation score가 autoencoder ATYP의 비선형 패턴을 포착하지 못함",
+      "probability": "MEDIUM-HIGH",
+      "mitigation": "[REV-3 반영] Linear deviation은 autoencoder의 하위 대체물임을 인정. 그러나 핵심 메커니즘(비전형적 기업의 정보 지연)은 '범주 밖에 있다는 사실'에서 발생하며, 이는 linear 측정에서도 부분적으로 포착 가능. S5 mutation 경로: (1) expanding-window PCA 기반 reconstruction error, (2) Mahalanobis distance (robust covariance), (3) 구성 팩터 수 확장(6 -> 10-12개). Alpha 크기는 Weibels 대비 현저히 줄 수 있으나, 방향성 유지가 1차 목표.",
+      "reasoning": "Weibels(2025) Appendix: linear PCA autoencoder도 유의한 결과를 보고하되, nonlinear autoencoder 대비 alpha가 약 40% 감소. 본 가설의 sum-of-absolute-deviations는 PCA보다도 단순하므로 추가 감소 예상."
+    },
+    {
+      "risk": "업종 내 편차 기준이 업종 분류의 세밀도에 민감",
+      "probability": "MEDIUM",
+      "mitigation": "FICS 대분류(약 20개)에서 시작. 너무 세밀한 분류는 샘플 부족 문제 야기. S1에서 대분류/중분류 비교.",
+      "reasoning": "업종 분류가 너무 넓으면 ATYP_SCORE가 단순히 업종 간 차이를 측정. 너무 좁으면 통계적 불안정."
+    },
+    {
+      "risk": "한국시장 ~2,000종목에서 '비전형적' 기업 수가 충분하지 않음",
+      "probability": "LOW-MEDIUM",
+      "mitigation": "40th-80th percentile 필터가 약 400종목 중 ~200종목을 남기므로 선택 풀 충분. 유동성 필터 후에도 100+ 종목 기대.",
+      "reasoning": "한국시장의 재벌 구조, 코스닥 벤처, 전통 제조업 혼재로 비전형성 분포가 넓을 수 있음."
+    },
+    {
+      "risk": "ATYP_SCORE 구성 팩터 6개 선택이 자의적",
+      "probability": "MEDIUM",
+      "mitigation": "[REV-2 반영] 3단계 선택 프로토콜(차원 매핑 -> 대표 팩터 -> 상관 검증)으로 체계화. 핵심은 '어떤 6개를 고르느냐'가 아니라 '다차원 편차라는 구조'임을 S5 robustness test(팩터 구성 변경 mutation 3건+)로 검증.",
+      "reasoning": "Weibels(2025)은 87개 특성을 사용. 6개로 축약 시 차원 누락 불가피하나, 6대 범주의 대표성을 확보하면 방향성은 유지."
+    },
+    {
+      "risk": "2-factor composite가 지나치게 단순하여 V10이 alpha의 대부분을 지배",
+      "probability": "MEDIUM",
+      "mitigation": "[REV-1 후속] S2에서 ATYP_SCORE standalone IC와 V10 standalone IC를 분리 측정. ATYP_SCORE의 독립적 IC 기여가 0.02 미만이면 ATYP 자체의 alpha 부재를 의미 -- linear proxy 실패 판단. ATYP(0.6) 가중에도 불구하고 V10이 수익의 80%+ 설명하면 KILL-1 발동.",
+      "reasoning": "Critic의 지적('사실상 sector-relative value screen') 가능성에 대한 방어. S2 decomposition이 핵심 검증."
+    }
+  ],
+
+  "success_criteria": {
+    "S2_pass": "ICIR >= 0.20 (Alpha Lab Gate). ATYP_SCORE standalone IC > 0.02 (독립 기여 확인). V10 제외 시에도 ATYP_SCORE 단독 ICIR > 0.10.",
+    "S3_pass": "Anchor(STR_1631) return correlation < 0.30, Crisis correlation < 0.50, BCAC/GSCD/CBPQ와도 상관 < 0.40",
+    "standalone_SR": "> 0.6 minimum (PG0 Diversifier 요건)",
+    "orthogonality_test": "FF5+Momentum regression alpha t > 2.0 (비전형성이 기존 팩터로 설명되지 않음 확인)"
+  },
+
+  "s1_implementation_notes": {
+    "atyp_score_construction": "매 리밸런싱 시점에서 expanding window z-score 계산. 업종별 median은 동일 시점의 FICS 대분류 내 종목으로 산출. 6개 구성 팩터의 업종 내 절대 편차를 합산.",
+    "factor_db_access": "load_month_factors() 경유. Q09_CFOA, V10_FCF_Yield, GR02_Earnings_Growth, AC07_Operating_Accruals, L01_Amihud, D01_IdioVol 로드. [REV-1] CR11 로드 불필요.",
+    "pit_compliance": "C1: expanding window만 사용 (cross-sectional z-score는 해당 시점 데이터만 사용하므로 자동 충족). C4: fundamental 팩터는 45일 lag. C13: Z_Score_Aligned. C15: load_month_factors().",
+    "sector_classification": "RAWDATA의 FICS 대분류 사용. 업종별 종목 수 최소 10개 보장. 미달 시 인접 업종과 합산.",
+    "no_overlay": "S0/S1 overlay 금지 준수.",
+    "component_correlation_check": "[REV-2] S1 초기에 6개 구성 팩터의 pairwise cross-sectional 상관 매트릭스 산출. |rho| > 0.40인 쌍이 존재하면 해당 차원에서 차순위 팩터로 교체 후 재계산."
+  },
+
+  "s5_upgrade_roadmap": {
+    "note": "[REV-3 반영] S5 진입 시 아래 mutation을 우선 검토",
+    "mutation_candidates": [
+      {
+        "id": "MUT-A",
+        "description": "Expanding-window PCA 기반 reconstruction error. 6개 -> 12개 팩터로 확장 후, PC 2-3개로 reconstruction하여 잔차(=비전형성)를 측정.",
+        "category": "structural",
+        "priority": "HIGH"
+      },
+      {
+        "id": "MUT-B",
+        "description": "Mahalanobis distance. Expanding-window robust covariance matrix 기반. 팩터 간 상관을 반영한 다변량 거리.",
+        "category": "structural",
+        "priority": "HIGH"
+      },
+      {
+        "id": "MUT-C",
+        "description": "부호 보존 variant. [REV-4 robustness] |dev| 대신 signed deviation * factor_direction_weight를 사용하여 '좋은 방향 비전형 + 나쁜 방향 비전형'을 구분.",
+        "category": "structural",
+        "priority": "MEDIUM"
+      },
+      {
+        "id": "MUT-D",
+        "description": "구성 팩터 수 변경. 6개 -> 4개(축소) / 10개(확장) / 15개(대폭확장) 비교.",
+        "category": "factor_weight",
+        "priority": "MEDIUM"
+      },
+      {
+        "id": "MUT-E",
+        "description": "ATYP(0.7)+V10(0.3) / ATYP(0.5)+V10(0.5) 가중 변경.",
+        "category": "factor_weight",
+        "priority": "LOW"
+      }
+    ]
+  },
+
+  "debate_readiness": {
+    "strength_points": [
+      "완전히 새로운 alpha 차원 (complexity/information processing) -- 기존 모든 family와 구조적 직교",
+      "Weibels (2025)의 학술 근거 강력: EW 1.47%/월, FF5 unspanned, mispricing channel 확인",
+      "기존 전략(consensus, accrual, quality)과 종목 overlap 구조적으로 최소",
+      "Factor DB 기존 팩터만으로 구현 가능 (신규 데이터 불필요)",
+      "[REV-1] 음수 ICIR 팩터(CR11) 제거로 alpha 희석 위험 해소",
+      "[REV-2] 3단계 선택 프로토콜로 팩터 선택 자의성 감소",
+      "[REV-3] Linear 한계의 정직한 인정 + S5 upgrade 경로 명시"
+    ],
+    "weakness_points": [
+      "[REV-3 인정] Linear deviation은 autoencoder의 하위 대체물. Alpha 크기 현저히 축소 예상.",
+      "Weibels (2025)은 미국 데이터 기반. 한국 실증 전무.",
+      "경로 B(직관 -> 논문) 성격. 탐색적 가설.",
+      "2-factor composite 단순성으로 V10이 alpha 지배할 가능성 (S2 decomposition으로 검증).",
+      "Working paper 단계 -- peer-reviewed 미게재."
+    ]
+  }
+}

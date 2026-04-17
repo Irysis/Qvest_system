@@ -1,0 +1,38 @@
+{
+  "factor_id": "H_1643_REVISED_D25_Q07",
+  "strategy_id": "STR_1662",
+  "stage": "S1",
+  "version": "1.0",
+  "run_date": "2026-04-12",
+  "construction": {
+    "factors": ["D25_Left_Tail_Beta", "Q07_Earnings_Stability"],
+    "n_factors": 2,
+    "universe": "LIQ >= 2e8 (t-1 20d avg)",
+    "scoring": "Z_Score_Aligned weighted blend (C13, bulk preload C15)",
+    "variants": [
+      {"id": "STR_1662a", "label": "Q07_standalone", "weights": {"Q07": 1.0}},
+      {"id": "STR_1662b", "label": "D25_Q07_55_45", "weights": {"D25": 0.55, "Q07": 0.45}},
+      {"id": "STR_1662c", "label": "D25_Q07_30_70", "weights": {"D25": 0.30, "Q07": 0.70}}
+    ],
+    "n_holdings": 30,
+    "weight": "EW",
+    "rebalance": "Monthly",
+    "commission_bps": 15,
+    "overlay": "NONE (S1 순수 팩터)",
+    "expected_role": "defense"
+  },
+  "s0_conditions": {
+    "3way_comparison": "Q07 단독 vs 55:45 vs 30:70. Q07 단독 우세 시 D25 제거가 기본 경로.",
+    "stress_outperform": "6대 위기 중 4건+ 양수",
+    "core_corr": "C19 앵커 대비 < 0.45",
+    "d25_regime": "D25 regime-conditional 활성화 규칙 정의 필요"
+  },
+  "pit_checks": {
+    "C2_lag": "PASS: liq_lag = shift(liq_20d, 1L)",
+    "C9_overlay": "PASS: 오버레이 없음 (S1)",
+    "C10_liq_lag": "PASS: 20d avg * Close, t-1",
+    "C13_zscore": "PASS: Z_Score_Aligned only",
+    "C15_fdb": "PASS: load_month_factors() 1회 bulk"
+  },
+  "debate_reference": "S0_VERDICT_H_1643_REVISED.json (APPROVE_CONDITIONAL 64/100)"
+}

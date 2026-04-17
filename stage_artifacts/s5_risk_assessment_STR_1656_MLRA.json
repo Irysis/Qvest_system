@@ -1,0 +1,376 @@
+{
+  "strategy_id": "STR_1656_MLRA",
+  "stage": "S5",
+  "assessment_by": "RiskManager",
+  "created_at": "2026-04-10",
+  "session": 58,
+
+  "baseline_risk_profile": {
+    "source": "S2 EVT Profile (EW 30 stocks, no overlay)",
+    "gpd_shape_xi": -0.1044,
+    "gpd_scale_sigma": 0.0155,
+    "VaR_95": -0.0244,
+    "VaR_99": -0.0510,
+    "CVaR_95": -0.0412,
+    "CVaR_99": -0.0722,
+    "interpretation": "xi < 0 (thin tails) — S2 EW baseline. CVaR LP/CDaR weight 적용 시 xi 재측정 필수. Thin tails은 EW에서만 관측. Concentrated weight 시 tail 두꺼워질 가능성 높음.",
+    "rolling_beta_mean": 0.7516,
+    "rolling_beta_p95": 1.3014,
+    "rolling_anchor_corr_mean": 0.4861,
+    "rolling_anchor_corr_p95": 0.7678,
+    "standalone_mdd": -74.84,
+    "standalone_sr": 0.9268
+  },
+
+  "mutation_risk_assessment": {
+    "M01_CVaR_LP_Only": {
+      "risk_level": "MODERATE",
+      "solver_risk": {
+        "concern": "cccp LP solver convergence. N_var = 30 + T_obs + 1. T_obs=120일 기준 N_var=151. 변수 많지 않아 수렴 문제 낮음.",
+        "fallback": "cccp 실패 시 inverse-ES 폴백 존재 (advanced_weights.R L883-894). 폴백 비율 > 20% 시 경고.",
+        "max_w_constraint": "0.15 = 30종목 중 최대 4.5배 집중. 단일 tail-risk 종목 과집중 위험 존재."
+      },
+      "tail_risk_forecast": {
+        "xi_change": "EW에서 CVaR LP로 전환 시 tail 종목 감축 → xi 음수 유지 또는 0 근방 예상",
+        "mdd_forecast": "-74.8% → -50~55% 예상. CVaR LP의 MDD 감소 효과는 15-25%p 수준 (학술 평균)",
+        "beta_forecast": "0.75 → 0.60 예상 (CVaR LP natural low-vol tilt). 그러나 L-106: beta 감소가 corr 감소를 보장하지 않음."
+      },
+      "kill_conditions": ["MDD > -60%", "SR < 0.40", "solver fallback(EW) > 20%"],
+      "priority_check": ["EVT GPD xi 재측정", "solver convergence rate", "sector HHI (hidden bet 탐지)"]
+    },
+
+    "M02_CVaR_LP_SectorNeutral": {
+      "risk_level": "MODERATE-LOW",
+      "solver_risk": {
+        "concern": "섹터 제약(+/-5%p) 추가로 feasible region 축소. 특정 월 섹터 비중 제약 충돌 시 infeasible → EW 폴백 빈도 증가 가능.",
+        "constraint_interaction": "max_w 0.15 + sector_band 0.05 동시 적용 시, 소수 섹터 종목은 max_w 제약과 sector 제약이 동시에 bind → 해 불안정",
+        "expected_fallback_rate": "5~10% (전체 월수의). 2008-2009 섹터 극단 편중 구간에서 높아질 수 있음."
+      },
+      "tail_risk_forecast": {
+        "xi_change": "M01 대비 유의미한 변화 미예상. 섹터중립은 tail shape보다 concentration risk에 영향.",
+        "mdd_forecast": "-50~55% 예상. M01과 유사하되 섹터 편중 감소로 MDD 소폭 개선 가능.",
+        "corr_forecast": "핵심 지표. L-115 교훈: 섹터중립이 corr 감소에 기여하는지 검증. 0.486 → 0.35 예상은 낙관적."
+      },
+      "kill_conditions": ["MDD > -60%", "SR < 0.40", "anchor_corr > 0.50 (diversifier 실패)"],
+      "priority_check": ["anchor_corr rolling 60d", "sector HHI vs M01 비교"]
+    },
+
+    "M03_CVaR_LP_SN_LowBeta": {
+      "risk_level": "HIGH",
+      "critical_warnings": [
+        {
+          "code": "UNIVERSE_SHRINKAGE",
+          "detail": "Expanding beta bottom 50% = 유니버스 절반 제거. 유동성 필터(거래대금 2억+) 이후 종목수가 이미 제한적. CVaR LP top 30 선택 시 월별 가용 종목수 < 50일 수 있음.",
+          "historical_check": "2008-2009 구간: 고beta 종목이 50% 이상 → low-beta 유니버스가 극소화. 30종목 선정 불가 월 발생 가능."
+        },
+        {
+          "code": "L115_REPLICATION",
+          "detail": "L-115 핵심 교훈: beta 0.93→0.40 절반 감소에도 corr 0.575. Low-beta 종목이 동일 quality/accrual 스타일 공유. ML signal도 quality/earnings 기반이라 이 패턴 반복 가능성 높음.",
+          "l115_quote": "Beta 커팅은 필요조건이지 충분조건이 아님."
+        },
+        {
+          "code": "TRIPLE_CONSTRAINT_INFEASIBLE",
+          "detail": "CVaR LP + sector_neutral(+/-5%p) + beta_bottom_50% = 3중 제약. 유니버스 축소 + 섹터 비중 제약 + CVaR 최적화를 동시에 만족하는 해가 존재하지 않는 월 빈도가 높을 수 있음."
+        }
+      ],
+      "solver_risk": {
+        "infeasible_estimate": "전체 201개월 중 10~20% (20~40개월) infeasible 예상",
+        "consequence": "EW 폴백 빈도가 높으면 CVaR LP 효과 상실. 사실상 EW 전략이 됨."
+      },
+      "tail_risk_forecast": {
+        "mdd_forecast": "-40~50% 예상. 유니버스 제한으로 분산 감소 → tail 위험 증가 가능. L-115 재현 시 MDD 개선 미미.",
+        "corr_forecast": "0.25는 극히 낙관적. L-115 경험으로는 0.40~0.50 예상. 섹터중립과 동시 적용이 차이를 만들지 검증 핵심.",
+        "beta_forecast": "0.45 달성 가능하나, L-115에서 보았듯 beta 감소 ≠ corr 감소."
+      },
+      "kill_conditions": [
+        "anchor_corr > 0.50 → L-115 재확인, Layer 3(low-beta) 즉시 폐기",
+        "solver infeasible 비율 > 20%",
+        "available universe < 50 종목 (월 기준)",
+        "MDD > -55%"
+      ],
+      "l115_falsification_protocol": {
+        "test": "M02 vs M03 비교 — 섹터중립+low-beta 동시 적용에도 corr 감소 < 0.05이면 Layer 3 폐기",
+        "decision_rule": "corr(M03) - corr(M02) < -0.05 이면 low-beta 유효, 아니면 폐기"
+      },
+      "priority_check": ["monthly available universe count", "solver feasibility rate", "M02 vs M03 corr 차이"]
+    },
+
+    "M04_CDaR_SectorNeutral": {
+      "risk_level": "MODERATE-HIGH",
+      "solver_risk": {
+        "concern": "CDaR LP는 drawdown 경로 내생화 필요 → 순차 LP로 근사. FRAPO::PMinCDaR() 사용 시 수렴 안정적이나, FRAPO 미설치 시 inverse-drawdown 폴백.",
+        "frapo_dependency": "FRAPO 패키지 설치 여부 확인 필수. 미설치 시 drawdown 최적화 효과 대폭 감소.",
+        "sector_constraint": "CDaR + sector_neutral 동시 적용은 FRAPO에서 직접 미지원. 사후 normalization 필요."
+      },
+      "tail_risk_forecast": {
+        "mdd_forecast": "-45~55% 예상. CDaR가 CVaR 대비 MDD에 직접 작용하나, 10-15%p 추가 감소 기대는 학술 결과 기반이며 한국 소형주 유니버스에서 검증 부족.",
+        "sr_tradeoff": "CDaR 최적화는 MDD 감소에 SR을 희생. SR 0.05~0.15 하락 가능. SR < 0.50 시 overlay 조건(L-110) 미충족."
+      },
+      "kill_conditions": ["SR < 0.40", "MDD > -55%", "FRAPO 미설치 + 폴백 효과 미미"],
+      "priority_check": ["FRAPO 패키지 설치 여부", "CDaR vs CVaR MDD 차이", "SR 유지 여부"]
+    },
+
+    "M05_DD_Brake_Overlay": {
+      "risk_level": "MODERATE",
+      "dependency_risk": {
+        "condition": "M03 base SR > 0.6 필수 (L-110 Overlay Multiplier Principle). M03 SR < 0.6이면 skip.",
+        "note": "M03 SR은 유니버스 제한으로 0.5~0.7 범위 예상. 경계선."
+      },
+      "overlay_risk": {
+        "dd_params": "[10, 25] — DD 10% 시작, 25% 전액 현금화",
+        "cash_drag": "DD Brake 10/25는 상당히 공격적. 한국시장 평균 MDD -52% 고려 시 DD 10~25% 구간이 빈번. 과도한 현금화로 회복 구간 수익 포기 위험.",
+        "whipsaw": "DD 10% 경계에서 진입/이탈 반복 시 거래비용 급증. Turnover 600% hard fail 주의."
+      },
+      "tail_risk_forecast": {
+        "mdd_forecast": "M03 base MDD에서 30~40% 감소 예상. -40% → -25~28% 가능. 그러나 현금 구간이 길면 CAGR 대폭 하락.",
+        "turnover_concern": "DD Brake 활성/비활성 전환 시 월 1회 리밸런싱 + DD 전환 = effective turnover 증가. 600% 임계 확인 필수."
+      },
+      "kill_conditions": ["TO > 600%", "M03 base SR < 0.6 (overlay skip)", "현금화 비율 > 40% (기간 기준)"],
+      "priority_check": ["M03 base SR 확인 후 실행 결정", "cash ratio 통계", "effective turnover"]
+    },
+
+    "M06_VD_Overlay": {
+      "risk_level": "MODERATE",
+      "overlay_risk": {
+        "regime_threshold": 20,
+        "concern": "MRS 20 = Caution 이상에서 vol scaling. 현재 MRS 29.2(Caution). VD+ overlay가 anchor(STR_1631)와 동일 Regime Engine 사용 → 양쪽 동시 현금화 위험.",
+        "l115_echo": "L-115에서 Regime overlay가 양쪽 전략에 동일하게 작용하여 상관 유지. 동일 Regime 기준 사용 시 위기 상관 감소 효과 없음."
+      },
+      "kill_conditions": ["anchor_corr(crisis) > corr(normal) → overlay가 상관 증가시킴", "SR < M03 base - 0.10"],
+      "priority_check": ["regime-conditional corr: normal vs crisis vs stress 구간 비교"]
+    },
+
+    "M07_DD_VD_Double_Overlay": {
+      "risk_level": "HIGH",
+      "critical_warnings": [
+        {
+          "code": "OVER_HEDGING",
+          "detail": "DD Brake + VD+ 이중 적용. 위기 시 DD Brake가 현금화 시작 + VD+가 vol scaling 감축 → 이중 축소 효과. MDD 개선이지만 회복 수익 포기 극심.",
+          "example": "2020 COVID: DD 25% 도달 시 전액 현금 + VD+ 또한 100% 축소 → 2020-04~2020-12 V형 반등 100% 놓침."
+        },
+        {
+          "code": "COMPLEXITY_COST",
+          "detail": "3계층(CVaR LP + SN + LowBeta) + 2계층 overlay(DD + VD+) = 5중 레이어. Phase 7 complexity 검증 시 SR 감소 < 0.10 ablation 기준 위반 가능성."
+        }
+      ],
+      "tail_risk_forecast": {
+        "mdd_forecast": "-20~25% 가능하나, CAGR 8~12%로 급감 가능. MDD-CAGR tradeoff 과도.",
+        "calmar_ratio": "MDD 과도 축소 + CAGR 급감 → Calmar < 0.4 위험"
+      },
+      "kill_conditions": ["CAGR < 10%", "현금화 비율 > 50%", "ablation: M05 or M06 단독 대비 SR 개선 < 0.03"],
+      "priority_check": ["M05 vs M06 vs M07 3-way 비교", "현금 비율 시계열", "ablation SR delta"]
+    },
+
+    "M08_Score_Tilt": {
+      "risk_level": "MODERATE-LOW",
+      "advantage": "L-109에서 Score Tilt이 STR_1631 S5에서 최우수 확인. gamma=2.0은 중간 집중도.",
+      "tail_risk_forecast": {
+        "concern": "Score Tilt gamma=2.0은 상위 ML score 종목에 과집중. ML score가 위기 시 반전(고수익 종목 급락) 시 tail 위험 증가.",
+        "xi_change": "EW보다 concentrated → xi 양수 전환 가능. 두꺼운 꼬리 위험."
+      },
+      "kill_conditions": ["SR < 0.50", "MDD > -65% (현재 EW -74.8% 대비 개선 미미)"],
+      "priority_check": ["EVT xi 재측정", "Score Tilt vs CVaR LP performance gap"]
+    },
+
+    "M09_80_20_Blend": {
+      "risk_level": "MODERATE",
+      "portfolio_fit": {
+        "anchor_weight": 0.80,
+        "mlra_weight": 0.20,
+        "reference": "S4 80/20 MDD -30.6%, SR 1.069. Overlay 적용으로 MDD ~-28% 목표.",
+        "score_blend_compliance": "L-484: score_level 합산만 유효. 수익률 블렌드 금지. anchor 20주 + MLRA 10주 = 30주 유지 필수."
+      },
+      "tail_risk_forecast": {
+        "concern": "S4 80/20 MDD -30.6%는 이미 target -30% 경계. Overlay 적용 전 이 수준이면 성공적이나, M03 MDD가 EW보다 크게 개선되지 않으면 80/20에서도 MDD -35% 초과 가능.",
+        "tdc_concern": "Tail Dependence Coefficient: anchor와 MLRA의 위기 시 상관 급등. S4 corr_crisis=0.39 > corr_full=0.46이 아닌 corr_crisis < corr_full이라 양호하나, CVaR LP 적용 후 재측정 필수."
+      },
+      "kill_conditions": ["blend MDD > -35%", "blend SR < 0.90"],
+      "priority_check": ["DCC corr forecast (anchor vs MLRA)", "TDC clayton lower", "blend MDD contribution 분해"]
+    },
+
+    "M10_85_15_Blend": {
+      "risk_level": "LOW-MODERATE",
+      "portfolio_fit": {
+        "anchor_weight": 0.85,
+        "mlra_weight": 0.15,
+        "reference": "S4 90/10 MDD -23.7%, 80/20 MDD -30.6%. 85/15는 -27% 예상.",
+        "note": "MLRA 15% = 8종목. 소수 종목 집중으로 종목별 리스크 상승."
+      },
+      "tail_risk_forecast": {
+        "mdd_forecast": "-25~28% 예상. Anchor MDD -25.4% 수준 유지 가능.",
+        "sr_forecast": "SR 1.01~1.07 예상. Target SR 1.0 달성 가능성 높음."
+      },
+      "kill_conditions": ["blend MDD > -30%", "blend SR < 0.95"],
+      "priority_check": ["MDD < -30% 달성 확인", "MLRA 8종목 concentration risk"]
+    },
+
+    "M11_CDaR_Full_Universe": {
+      "risk_level": "N/A — M04와 동일 config. Slate에서 확인됨.",
+      "note": "M04 결과를 M11로 간주. 별도 실행 불필요."
+    },
+
+    "M12_MinVar_Benchmark": {
+      "risk_level": "LOW",
+      "purpose": "CVaR LP vs MinVar 벤치마크. MinVar는 tail 직접 제어 못하나 안정적.",
+      "tail_risk_forecast": {
+        "xi_change": "MinVar는 자연스런 low-vol tilt → xi 유지 또는 소폭 감소 예상.",
+        "mdd_forecast": "-50~55% 예상. CVaR LP와 유사하되 solver 안정성 우월."
+      },
+      "kill_conditions": ["해당 없음 (벤치마크)"],
+      "priority_check": ["CVaR LP 대비 SR/MDD gap 측정"]
+    }
+  },
+
+  "kill_scenarios": {
+    "hard_fail_thresholds": {
+      "mdd_abs": -0.45,
+      "turnover_pct": 600,
+      "note": "Hurdle v2.2 hard fail 기준. 모든 mutation에 적용."
+    },
+    "diversifier_fail": {
+      "anchor_corr_full": 0.50,
+      "anchor_corr_crisis": 0.55,
+      "condition": "anchor_corr > threshold → diversifier 역할 실패 → S5 전체 재설계",
+      "reference": "L-115, L-106, L-118-ext"
+    },
+    "solver_instability": {
+      "ew_fallback_ratio": 0.20,
+      "condition": "cccp/FRAPO solver fallback to EW > 20% of months → weight method 효과 상실"
+    },
+    "universe_depletion": {
+      "min_available_stocks": 50,
+      "condition": "beta_filter + liq_filter 후 월별 가용 종목 < 50 → 30종목 선정 다양성 부족"
+    },
+    "alpha_dilution": {
+      "sr_threshold": 0.40,
+      "condition": "SR < 0.40 → L-119 alpha 희석 패턴. Overlay 적용 무의미."
+    },
+    "over_protection": {
+      "cash_ratio_threshold": 0.40,
+      "condition": "DD Brake + VD+ 이중 overlay로 현금 비율 > 40% → 과도한 보호. CAGR 포기 과다."
+    },
+    "lookahead_futures": [
+      {
+        "scenario": "ML score 기반 CVaR LP에서 score가 미래 수익률과 상관 → 간접 lookahead",
+        "check": "ML model retrain 시 expanding window만 사용 확인 (C1). Train/predict 경계 검증.",
+        "severity": "CRITICAL — PIT 위반 시 전체 무효"
+      },
+      {
+        "scenario": "Beta filter expanding window에서 beta 계산 시 동일월 데이터 포함",
+        "check": "C2: beta는 t-1까지 데이터로 expanding 계산. 당월 beta 사용 금지.",
+        "severity": "HIGH"
+      },
+      {
+        "scenario": "Sector weight BM 비중 계산 시 리밸런싱 월 기준 정보 사용",
+        "check": "C4/C11: BM sector weight는 전월 말 기준만 사용.",
+        "severity": "MODERATE"
+      }
+    ]
+  },
+
+  "tail_risk_verification_checklist": {
+    "per_mutation": [
+      "1. EVT GPD shape xi 재측정 (compute_evt_var with mutation returns)",
+      "2. CF-VaR vs Normal-VaR ratio (cf_vs_normal > 1.5 → 경고)",
+      "3. CDaR 95% (compute_cdar with mutation NAV)",
+      "4. Regime-conditional CVaR: normal vs crisis period 분리 계산",
+      "5. solver convergence rate (optimal/total months)",
+      "6. rolling 60d beta 재계산",
+      "7. rolling 60d anchor_corr 재계산",
+      "8. sector HHI 계산 (hidden bet 탐지)"
+    ],
+    "blend_level": [
+      "1. DCC-GARCH 동적 상관 추정 (fit_dcc_garch)",
+      "2. Copula TDC (compute_copula_tdc, method='clayton')",
+      "3. Stress scenario ES (generate_stress_scenarios, n_sim=10000)",
+      "4. 3대 스트레스 구간 개별 분석: GFC(2008-03~2008-10), COVID(2020-02~2020-03), 금리인상(2022-01~2022-10)",
+      "5. Blend MDD contribution 분해: anchor MDD vs MLRA MDD vs diversification effect",
+      "6. Floor+ES LP 활성화 조건 설계 (protection_strategy.R)"
+    ],
+    "pit_compliance": [
+      "C1: ML retrain expanding window 확인",
+      "C2: beta/vol same-day circular 확인 → t-1 lag",
+      "C5: overlay(DD/VD+) t-1 signal 확인",
+      "C9: DD_brake lag 확인",
+      "C11: BM sector weight 시차 검증"
+    ]
+  },
+
+  "portfolio_fit_assessment": {
+    "anchor": {
+      "id": "STR_1631 VD+",
+      "sr": 1.243,
+      "mdd": -25.4,
+      "beta": 0.85
+    },
+    "s4_reference": {
+      "corr_full": 0.4587,
+      "corr_crisis": 0.3899,
+      "corr_bull": 0.1637,
+      "note": "Crisis corr < full corr는 양호 신호. 그러나 이는 EW baseline. CVaR LP 적용 후 재측정 필수."
+    },
+    "dcc_garch_plan": {
+      "action": "Phase 3 완료 후 top mutation returns + anchor returns로 fit_dcc_garch() 실행",
+      "output": "time_varying_cor array → crisis 구간 corr 급등 여부 확인",
+      "threshold": "crisis corr > 0.60 → MLRA 비중 하향 (20% → 15%)"
+    },
+    "tdc_plan": {
+      "action": "compute_copula_tdc(anchor_ret, mlra_ret, method='clayton')",
+      "threshold": "tdc_lower > 0.30 → 위기 시 동시 하락 위험 높음 → allocation 보수적",
+      "reference": "verify_tail_risk() thresholds.tdc_max = 0.30"
+    },
+    "floor_es_activation": {
+      "trigger": "blend MDD > -30% (S5 실패 시)",
+      "action": "run_floor_es_overlay() 활성화, floor_pct=0.75 (초기 NAV 75% 보존)",
+      "note": "Floor+ES LP는 최후 수단. S5 mutation으로 MDD < -30% 달성이 우선."
+    }
+  },
+
+  "risk_manager_recommendations": [
+    {
+      "priority": 1,
+      "to": "Forge",
+      "message": "M03(CVaR LP + SN + LowBeta) 실행 시 월별 가용 종목수를 로깅하세요. available_n < 50인 월이 20% 이상이면 beta_filter를 bottom_60pct로 완화하거나 폐기합니다."
+    },
+    {
+      "priority": 2,
+      "to": "Forge",
+      "message": "모든 CVaR LP mutation에서 solver status를 기록하세요. cccp::getstatus() 결과를 월별 저장. 'optimal' 아닌 비율이 20% 초과 시 즉시 보고."
+    },
+    {
+      "priority": 3,
+      "to": "Forge",
+      "message": "M07(DD+VD+ 이중 overlay)의 현금 비율 시계열을 계산하세요. cash_ratio = overlay 감축 후 effective exposure. 평균 cash_ratio > 0.30이면 over-hedging으로 판정합니다."
+    },
+    {
+      "priority": 4,
+      "to": "Scout",
+      "message": "M03의 L-115 반증 실험에서 corr(M03) - corr(M02) >= -0.05이면 Layer 3(low-beta)를 즉시 폐기하고 M02(섹터중립만)로 진행하세요. Beta 커팅은 한국시장에서 반복적으로 실패했습니다."
+    },
+    {
+      "priority": 5,
+      "to": "Forge",
+      "message": "Phase 1 완료 후, top mutation의 일간 수익률로 compute_tail_risk_suite() 실행 결과를 전달해 주세요. EVT xi, CDaR 95%, CF-VaR/Normal 비율이 핵심입니다."
+    }
+  ],
+
+  "stress_period_analysis_plan": {
+    "periods": [
+      {"name": "GFC", "start": "2008-09-01", "end": "2009-03-31", "anchor_mdd": -16.2},
+      {"name": "European_Debt", "start": "2011-07-01", "end": "2011-12-31"},
+      {"name": "China_Shock", "start": "2015-06-01", "end": "2016-02-28"},
+      {"name": "COVID", "start": "2020-02-01", "end": "2020-03-31", "anchor_mdd": -1.4},
+      {"name": "Rate_Hike", "start": "2022-01-01", "end": "2022-10-31"},
+      {"name": "SVB_Crisis", "start": "2023-03-01", "end": "2023-05-31"}
+    ],
+    "metrics_per_period": ["max_drawdown", "recovery_days", "beta_vs_normal", "corr_vs_normal", "VaR_breach_count"]
+  },
+
+  "overall_risk_rating": {
+    "slate_design": "ADEQUATE — 12건 mutation, 5개 카테고리(Stock_Weight, Universe, Overlay, Factor_Weight, Allocation). S5 v7 최소 요건(9건, 4카테고리) 충족.",
+    "highest_risk_mutations": ["M03 (L-115 반복 위험 + 유니버스 축소)", "M07 (이중 overlay over-hedging)"],
+    "most_promising": ["M02 (섹터중립만으로도 corr 개선 가능)", "M01 (CVaR LP baseline)"],
+    "critical_decision_point": "Phase 1 M02 vs M03 비교 → L-115 반증 여부가 전체 S5 경로 결정",
+    "portfolio_level_concern": "STR_1656 standalone MDD -74.8%는 극히 위험. S5 mutation으로 -45% 이하까지 감소 못하면 MLRA 비중 15% 이하로 제한 필수."
+  }
+}

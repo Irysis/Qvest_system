@@ -1,0 +1,60 @@
+{
+  "hypothesis_id": "H_1661",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 61,
+  "attempt": 1,
+  "max_attempts": 3,
+  "timestamp": "2026-04-11T15:00:00",
+  "debate_format": "5-person_v52_agent_tool",
+  "debaters": [
+    {
+      "agent_id": "codex_critic_20260411_150000",
+      "role": "codex_critic",
+      "score": 6,
+      "max": 20,
+      "findings": "Same tree-ML family. Uplift likely search-intensity fit. PIT/L-010 not concretely neutralized.",
+      "spawn_method": "bash_codex_companion"
+    },
+    {
+      "agent_id": "rm-1661_20260411_150001",
+      "role": "risk_manager",
+      "score": 13,
+      "max": 20,
+      "findings": "구조적 건전. HP 다중검정 DSR 악화 우려. V2만으로 충분 시 V3 미실행 권고. LambdaRank tail 분포 변화 미분석.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "gov-1661_20260411_150002",
+      "role": "governor",
+      "score": 16,
+      "max": 20,
+      "findings": "SR gap 5/5 정렬. In-place upgrade 효율적. ML family 50% 유지 (악화 없음). anchor_corr 상한 조건 필요.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "qt-1661_20260411_150003",
+      "role": "quant",
+      "score": 14,
+      "max": 20,
+      "findings": "GPU 4.1x 실측. rank:pairwise 작동 확인. label 변환 버그 발견 (ndcg@30 정수 필수). reticulate+optuna 미설치.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "ac-1661_20260411_150004",
+      "role": "academic",
+      "score": 12,
+      "max": 20,
+      "findings": "Lin et al.(2026) arXiv/SSRN 검색 불가. GKX는 regression 근거지 ranking 근거 아님. 메커니즘 자체는 견고(4/5).",
+      "spawn_method": "agent_tool"
+    }
+  ],
+  "conditions": [
+    "S1 전 필수: reticulate 설치 또는 system2() Python wrapper 구현",
+    "S1 전 필수: label 변환 (fwd_ret_21d → group 내 integer rank) 코드 추가",
+    "S1 전 필수: optuna 설치 또는 mlrMBO 대안 확정",
+    "Lin et al.(2026) 인용을 대체 논문(Li et al. 2024 TSPRank)으로 교체",
+    "V2 ICIR > V0 + 0.03이면 채택, < V0이면 폐기",
+    "V3 IS/OOS gap > 2.0이면 HP 탐색 폐기, V2 확정",
+    "S2에서 anchor_corr <= 0.40 확인"
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "hypothesis_id": "H_1670",
+  "round": 2,
+  "role": "governor",
+  "r1_score": 18,
+  "r2_score": 15,
+  "score_changed": true,
+  "score_change_reason": "Risk Manager가 제시한 L31 crisis_ratio -9.25 및 선행 3건 실패(STR_1609/1465/1508) 실증은 Governor로서 무시할 수 없는 포트폴리오 레벨 위험입니다. R1에서 Liquidity family 0% 상태의 구조적 gap과 C19 대비 직교성(0.004/0.010)을 근거로 18점을 부여했으나, 위기 시 L31이 포트폴리오 전체를 오염시킬 가능성(stress ICIR -0.308, pct_pos 40%)과 기존 STR_1631+STR_1656 블렌드(SR 1.193)의 안정성 훼손 위험을 재평가하여 3점 하향합니다. 다만 Liquidity family 탐색 자체의 구조적 필요성은 여전히 유효하므로 REJECT 수준(10점 이하)까지는 내리지 않습니다.",
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "L31 crisis_ratio -9.25는 포트폴리오 Governor 관점에서 가장 심각한 발견입니다. 현재 포트폴리오의 MDD gap은 -3.73%p(달성 완료)인 반면, L31을 50% 비중으로 편입하면 위기 시 stress ICIR -0.308이 STR_1631 앵커의 방어력을 역방향으로 잠식합니다. Diversifier는 정상 시 SR 기여가 아니라 위기 시 상관 분산으로 가치를 입증해야 한다는 Risk Manager의 원칙에 동의하며, 이는 AX-001(Defense 조건부 평가)과 정확히 일치합니다."
+    },
+    {
+      "with": "quant",
+      "point": "ICIR 주장치(0.990/0.826)가 최근 3Y 편향이라는 실증에 동의합니다. Governor로서 PG0 gap 분석에 투입되는 ICIR 기준은 전기간 연환산(L31=0.953, L40=1.275)이어야 하며, 3Y 구간 수치로 포트폴리오 기대 SR 개선 효과를 산출하면 과대추정됩니다. 또한 L31xL40 내부 상관 0.589는 2팩터 블렌드의 분산 기여가 단일 팩터 대비 제한적임을 의미하여, 포트폴리오 레벨 한계기여 산출 시 이중 카운팅 위험이 있습니다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "정적 50/50 블렌드가 L-119(STR_1650 Hard Fail) 구조를 반복한다는 경고는 포트폴리오 구성 관점에서 타당합니다. 약한 팩터(L31, 위기 시 역전)가 강한 팩터(L40, 전기간 ICIR 1.275)의 alpha를 희석하는 구조이며, Governor의 PG2 배분 설계에서 이런 정적 EW 블렌드는 이미 반복적으로 실패한 패턴입니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "risk_manager",
+      "point": "선행 3건 실패(STR_1609/1465/1508)를 근거로 Liquidity family 자체를 부정하는 논리에는 동의하지 않습니다. STR_1609는 L40 단독(overlay 미적용), STR_1465는 L40+overlay(VT/DD same-day 미래참조 시기), STR_1508은 L31 단독 S5 FAIL입니다. 3건 모두 단일 팩터 단독 또는 미래참조 오버레이 환경에서의 실패이며, 2팩터 블렌드 + PIT 준수 오버레이 조합은 아직 시도되지 않았습니다. 귀납적 일반화(3건 실패 -> Liquidity 불가)는 탐색 범위를 과도하게 좁히는 것이며, QEPM 제1조(이전 실패가 다른 맥락에서 성공할 수 있다)에 부합하지 않습니다. 다만 실패 원인의 구조적 해소 근거를 S1에서 명시해야 한다는 요구에는 동의합니다.",
+      "severity": "major"
+    },
+    {
+      "against": "risk_manager",
+      "point": "beta 지배 논거(L-106/L-115)는 long-only 전략 일반에 적용되는 구조적 한계이지, Liquidity family 특유의 문제가 아닙니다. STR_1636 사례(단면 상관 낮아도 포트폴리오 상관 0.78)는 모든 long-only 팩터 전략에 동일하게 적용되며, 이 논리를 Liquidity에만 적용하면 어떤 Diversifier도 편입 불가능합니다. Governor 관점에서 SR gap 0.807 해소에 필요한 것은 beta-orthogonal alpha가 아니라 잔차 상관이 기존 Core(STR_1631)보다 낮은 추가 alpha source이며, L31/L40의 C19 단면 상관 0.004/0.010은 이 최소 조건을 충족합니다. S3에서 포트폴리오 레벨 잔차 상관을 측정하면 충분합니다.",
+      "severity": "minor"
+    },
+    {
+      "against": "academic",
+      "point": "L40 VWAP Spread 정의 불일치 지적은 학술적으로 타당하나, Governor 관점에서 포트폴리오 편입 결정에 미치는 영향은 제한적입니다. 원 Goyenko 정의와 L40 구현이 수학적 동치가 아니더라도, Factor DB에서 S2 프로파일링을 거쳐 ICIR >= 0.20(전기간 연환산 1.275)을 확인하면 포트폴리오 한계기여 평가에는 충분합니다. 메커니즘 치환의 학술적 약점은 S0 condition으로 기록하되, PG0 gap 평가에서 blocking 사유로 취급할 수준은 아닙니다.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Risk Manager의 'L31 crisis_ratio -9.25 + stress ICIR -0.308'이 가장 강력한 반대 논거입니다. Governor로서 현재 포트폴리오(SR 1.193, MDD -21.27%)의 안정성을 훼손하는 편입은 SR gap 해소보다 위험합니다. Diversifier 슬리브가 위기 시 Core 앵커를 오염시키면 포트폴리오 전체의 MDD가 목표(25%) 밖으로 이탈할 수 있으며, 이는 gap 해소가 아니라 gap 확대입니다. 이 위험을 해소하려면 설계 단계에서 L31 비중을 30% 이하로 제한하거나, L40 단독 Diversifier + 위기 시 L31 zero-weight 전환의 regime-conditional 설계가 필수적입니다.",
+
+  "r2_position_summary": "Governor의 R2 입장은 '조건부 지지 유지, 비중 재설계 필수'입니다. Liquidity family 0% 상태에서의 구조적 탐색 필요성(QEPM 제9조)과 C19 직교성(0.004/0.010)은 R1과 동일하게 유효합니다. 그러나 L31의 위기 시 치명적 붕괴(crisis_ratio -9.25)와 선행 실패 패턴을 반영하여, 설계를 다음과 같이 수정할 것을 조건으로 제시합니다: (1) 정적 50/50 폐기 -> L40 중심(70%+) 또는 L40 단독, (2) L31은 정상/완화 국면에서만 편입하는 regime-conditional 설계, (3) S2에서 블렌드 stress ICIR이 음수이면 L31 완전 배제. 이 세 조건 충족 시 S1 진입 승인 가능하며, 미충족 시 L40 단독 Diversifier로 가설 축소를 권고합니다.",
+
+  "governor_portfolio_assessment": {
+    "current_gap_status": {
+      "sr_gap": 0.807,
+      "cagr_gap": "ACHIEVED",
+      "mdd_gap": "ACHIEVED"
+    },
+    "admission_risk": "L31 편입 시 위기 국면 MDD 악화 가능성이 SR gap 해소 효과를 상쇄할 위험. 현재 MDD -21.27%에서 목표 25% 이내 여유는 3.73%p에 불과하며, L31 stress ICIR -0.308의 drag이 이 여유를 소진할 수 있음.",
+    "family_concentration_after_admission": {
+      "consensus": 0.4,
+      "ML_complexity": 0.4,
+      "liquidity": 0.2
+    },
+    "recommendation": "L40 중심 Diversifier(regime-conditional L31 보조)로 가설 축소 후 S1 진입 허용"
+  }
+}

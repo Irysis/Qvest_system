@@ -1,0 +1,51 @@
+{
+  "strategy_id": "STR_1572",
+  "strategy_name": "C19_L22_DD1228",
+  "parent": "STR_1566",
+  "stage": "S5",
+  "mutation": "M-DD (DD Brake 12/28, wider per L-801)",
+  "judge_timestamp": "2026-03-28T18:45:00+09:00",
+  "grade": "B",
+  "score": 59.9,
+  "role": "diversifier",
+  "pit_status": "CLEAN",
+  "c9_compliant": true,
+  "metrics": {
+    "CAGR": 15.29,
+    "Sharpe": 0.867,
+    "MDD": 31.83,
+    "IR": 0.358,
+    "Calmar": 0.480,
+    "Turnover_Ann": 479.8,
+    "FMB_t": 4.92,
+    "ICIR": 0.368,
+    "IC": 0.0275
+  },
+  "gate_results": {
+    "gate0_pit": "PASS — C1~C15 clean, C9 dd_lag t-1 compliant",
+    "gate1_return": "MARGINAL — CAGR 15.29% (target 16%), SR 0.867",
+    "gate2_risk": "PASS — MDD 31.8% < 45%, no hard fail",
+    "gate3_robustness": "PASS — OOS retention 0.78, alpha trend 1.45 improving",
+    "gate4_impl": "PASS — Turnover 480%, liquidity adequate",
+    "gate5_diversification": "N/A — no Grade A composite cache"
+  },
+  "stress_tests": {
+    "GFC_2008": {"strategy": -26.1, "benchmark": -35.6, "alpha": 9.6},
+    "COVID_2020": {"strategy": -7.3, "benchmark": -4.6, "alpha": -2.7},
+    "Rate_2022": {"strategy": -25.1, "benchmark": -26.1, "alpha": 1.1}
+  },
+  "dd_overlay_analysis": {
+    "dd_short": 12,
+    "dd_long": 28,
+    "brake_active_pct": 32.7,
+    "fully_braked_days": 140,
+    "cagr_preserved_vs_parent": "15.3% vs 20.1% = -4.8pp (vs STR_1567 -7.2pp)",
+    "mdd_reduction": "47.6% -> 31.8% = -15.8pp"
+  },
+  "comparison": {
+    "STR_1566_no_dd": {"SR": 0.927, "CAGR": 20.1, "MDD": 47.6, "grade": "HARD_FAIL"},
+    "STR_1567_dd820": {"SR": 0.834, "CAGR": 12.9, "MDD": 32.0, "grade": "B"},
+    "STR_1572_dd1228": {"SR": 0.867, "CAGR": 15.3, "MDD": 31.8, "grade": "B"}
+  },
+  "verdict_summary": "DD 12/28 preserves 2.4pp more CAGR than DD 8/20 (+0.033 SR) with similar MDD compression. But CAGR still below 16% threshold. Wider DD is clearly superior to narrow DD, confirming L-801. Grade B due to sub-threshold CAGR."
+}

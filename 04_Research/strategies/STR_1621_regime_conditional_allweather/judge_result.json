@@ -1,0 +1,25 @@
+{
+  "strategy_id": "STR_1621",
+  "strategy_name": "Regime_Conditional_AllWeather",
+  "judge_date": "2026-03-30",
+  "grade": "C",
+  "score": 62,
+  "sharpe": 0.95,
+  "cagr": 20.34,
+  "mdd": 52.3,
+  "turnover": 286.7,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — C15 load_month_factors() 경유 (line 62). C13 Z_Score_Aligned 사용. Regime signal t-1 lag enforced (shift(Regime_Score, n=1L, type='lag'), line 38). Liquidity AvgTV20 t-1 lag (shift n=1L, line 53). Lookahead detector integrated (line 13). set.seed(1621) present.",
+    "G1_Implementation": "PASS — EW 30 stocks, 15bps commission, buffer zone 50/25. Regime는 alpha source로 사용 → S1 overlay 예외규칙 적용. 2-sleeve 구조(core C19+V14 / defense D01+D44)로 regime_score에 따라 동적 배분.",
+    "G2_Robustness": "STRONG — Rolling 3Y SR > 0: 100% (최상위). OOS retention 0.70 (IS SR 1.064 vs OOS 0.747 — 건전). IC stability ratio 1.21 (improving). Stress 2/3 outperformance. Worst 6M -41.73% (core sleeve 위기 노출).",
+    "G3_Performance": "HARD FAIL — MDD 52.3% > 45%. SR 0.95 (target 0.8 달성), CAGR 20.34% (target 16% 달성), IR 0.804 (우수). Calmar 0.389 (MDD 대비 열악). 성과 자체는 강하나 MDD가 치명적.",
+    "G4_Statistics": "Recent 3Y SR 1.199 (alpha decay 없음, 오히려 강화). MaxConsecNegAlpha 4개월 (양호). Harvey t>3.0 인식: SR 0.95는 단독으로는 유의하지 않을 수 있으나 다중검정 보정 전 수준.",
+    "G5_Diversity": "NA — Hard fail으로 diversity 평가 불적용."
+  },
+  "role_honesty": "Diversifier 주장이나 실제 BM_Corr 0.802로 시장과 높은 상관. 순수 diversifier보다 regime-conditional core_alpha에 가까움. Defense floor 0.2가 crisis MDD를 충분히 제어하지 못함. S5에서 defense floor 상향 + DD brake로 MDD 제어 시 Core Alpha 재분류 가능.",
+  "hard_fail": true,
+  "hard_fail_reason": "MDD 52.3% > 45%",
+  "verdict": "Archive_S5_Top_Candidate",
+  "reason": "STR_1621은 현 파이프라인 내 최고 Score(62) + SR(0.95) + CAGR(20.34%)를 보유. Rolling3Y 100% + OOS 0.70은 과적합이 아닌 실제 alpha를 시사. MDD 52.3%는 defense floor 0.2가 낮아 core sleeve 위기 노출이 원인. S5 mutation으로 DD brake + defense floor 상향 시 Grade A 전환 가능성 최고."
+}

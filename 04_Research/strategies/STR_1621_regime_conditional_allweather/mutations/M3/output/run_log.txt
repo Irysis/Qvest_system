@@ -1,0 +1,175 @@
+=== STR_1621_M3: Low Beta defense — D01+D44+D18_BAB_Rank ===
+[config.R] PROJECT_ROOT: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot
+[backtest_harness] Loaded.
+[factor_db_connector] Loaded. Functions: load_month_factors(), compute_rolling_ic_all(),
+  group_factors_by_family(), align_factor_direction()
+[regime_signal] Loading 3-Layer Cascade module...
+[regime_signal] Loaded (v1.1). Functions:
+  build_regime_signal_table()     — full cascade pipeline → parquet
+  load_regime_signal()            — load cascade cache
+  get_regime_at_date(date)        — single date lookup
+  merge_regime_signal(FACTORS)    — cascade rolling join
+  spot_check_stress_periods()     — GFC/COVID/Rate stress test
+  compute_bcs_daily()             — build BCS daily signal
+  load_bcs_signal()               — load BCS daily cache
+  get_bcs_cash_overlay(bcs_q)     — BCS Q → cash overlay
+  merge_regime_with_bcs(FACTORS)  — cascade + BCS combined
+[regime_signal] Loaded: 427 months | 1990-09-30 ~ 2026-03-31
+[load_rawdata] Loading from Parquet cache...
+[load_rawdata] Cache loaded: 14135344 rows | 1990-01-03 ~ 2026-03-19
+  FACTORS: 146,254 rows | 255 dates
+[simulation] Starting monthly simulation...
+  > 254 signal dates | 9348 trading days
+[simulation] Complete. Period: 2005-02-03 ~ 2026-03-19 | 254 rebalances
+  STR_1621_M3: CAGR=22.46% SR=0.963 MDD=60.5%
+[charts] Generated.
+[hurdle_gate] Loaded.
+[hurdle_gate] Result saved to /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/research_output/strategies/STR_1621_regime_conditional_allweather/mutations/M3/output/hurdle_result.json
+
+=== HURDLE GATE RESULT ===
+Strategy : STR_1621_M3_LowBeta
+Verdict  : FAIL
+Hard FAIL: MDD 60.5% > 45%
+Score    : 61.8 / 100  |  Grade: F (none)
+5-Axis   : Ret=52 | Risk=7 | Rob=77 | Impl=67 | Div=30
+CAGR=22.5% | Sharpe=0.963 | Sharpe_m=0.953 | MDD=60.5% | IR=0.914 | Calmar=0.371
+ES99_d=6.25% | ES99_m=21.76% | GradeA_Corr=N/A
+6M_Hit=73.7% | Worst6M=-45.84% | MaxConsecNeg=5M | 12M_Hit=76.4%
+AlphaTrend: recent 3Y SR 1.403 / full SR 0.963 = ratio 1.46 → improving ↑ (adj 9.1 pts)
+OOS Valid : IS SR 1.029 / OOS SR 0.842 = retention 0.82 → robust ↑ (adj 8.0 pts)
+IC Stab   : analysis_ic.csv not found (run strategy_analyzer first) (adj 0.0 pts)
+DSR       : DSR module not available
+Gate5 Div : No Grade A composite cache
+==========================
+
+[hurdle_gate] Auto-lessons generated: 1
+=== QEPM Hybrid Mode Loading ===
+{
+  "q_lead": {
+    "inbox_pending": 0,
+    "inbox_total": 3,
+    "outbox_total": 0
+  },
+  "scout": {
+    "inbox_pending": 0,
+    "inbox_total": 86,
+    "outbox_total": 10
+  },
+  "forge": {
+    "inbox_pending": 0,
+    "inbox_total": 68,
+    "outbox_total": 13
+  },
+  "judge": {
+    "inbox_pending": 0,
+    "inbox_total": 47,
+    "outbox_total": 42
+  },
+  "blender": {
+    "inbox_pending": 0,
+    "inbox_total": 0,
+    "outbox_total": 0
+  },
+  "watch": {
+    "inbox_pending": 0,
+    "inbox_total": 0,
+    "outbox_total": 0
+  }
+}{
+  "q_lead": {
+    "inbox_pending": 0,
+    "inbox_total": 3,
+    "outbox_total": 0
+  },
+  "scout": {
+    "inbox_pending": 0,
+    "inbox_total": 86,
+    "outbox_total": 10
+  },
+  "forge": {
+    "inbox_pending": 0,
+    "inbox_total": 68,
+    "outbox_total": 13
+  },
+  "judge": {
+    "inbox_pending": 0,
+    "inbox_total": 47,
+    "outbox_total": 42
+  },
+  "blender": {
+    "inbox_pending": 0,
+    "inbox_total": 0,
+    "outbox_total": 0
+  },
+  "watch": {
+    "inbox_pending": 0,
+    "inbox_total": 0,
+    "outbox_total": 0
+  }
+}{
+  "skill_count": 17,
+  "skills": ["backtest", "factor_model", "stat_defense", "hurdle", "optimize", "diversity", "regime", "allocation", "datalake", "memory", "registry", "idea_submit", "idea_compile", "briefing", "telegram", "lawbook", "research"],
+  "agents": ["q_lead", "scout", "forge", "judge", "blender", "watch"],
+  "mailbox": {
+    "q_lead": {
+      "inbox_pending": 0,
+      "inbox_total": 3,
+      "outbox_total": 0
+    },
+    "scout": {
+      "inbox_pending": 0,
+      "inbox_total": 86,
+      "outbox_total": 10
+    },
+    "forge": {
+      "inbox_pending": 0,
+      "inbox_total": 68,
+      "outbox_total": 13
+    },
+    "judge": {
+      "inbox_pending": 0,
+      "inbox_total": 47,
+      "outbox_total": 42
+    },
+    "blender": {
+      "inbox_pending": 0,
+      "inbox_total": 0,
+      "outbox_total": 0
+    },
+    "watch": {
+      "inbox_pending": 0,
+      "inbox_total": 0,
+      "outbox_total": 0
+    }
+  }
+}✔ [config] Loaded from '/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/inst/config/config.yaml'
+✔ [config] Loaded from '/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/inst/config/config.yaml'
+[config.R] PROJECT_ROOT: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot
+[telegram_notify] Loaded. Bot: @quant12323413245_bot | Channel: -1003850915447
+[telegram_notify] +tg_trigger_check(), +tg_regime_briefing()
+[OK] Telegram loaded
+
+=== QEPM Hybrid Mode Ready ===
+Available functions:
+  hybrid_commit(strategy, family, hurdle_result, ...)  # R0+R1+R2+R3+R4+Registry+Telegram
+  hybrid_batch_commit(results)                         # 다수 전략 일괄 등록
+  hybrid_status()                                      # 현황 조회 (R0~R6)
+  hybrid_queue(objective, family, ...)                  # 백로그 추가
+  hybrid_daily_digest()                                # 일일 요약 텔레그램
+  hybrid_tg(msg)                                       # 직접 텔레그램 발송
+  hybrid_store_policy(id, sleeves, metrics, loo)       # R5 포트폴리오 정책
+  hybrid_store_regime_payoff(fam, regime, const, m, n) # R4 레짐 payoff
+  hybrid_store_post_trade(strat, month, exp, act, ...) # R6 포스트 트레이드
+  hybrid_check_promotion(exp_id)                       # 승격 검증 R0→R6 + VER gates
+================================
+
+
+--- Memory Commit: STR_1621_M3_LowBeta -> EXP_2026-03-31_211457_3392 (family: regime_conditional_allweather ) ---
+✔ [r0_store] Stored 4 artifact(s) for EXP_2026-03-31_211457_3392
+ℹ [r1_distill] Digest saved to '/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/memory/episodes/EXP_2026-03-31_211457_3392.json'
+✔ [r1_distill_local] Digest created for EXP_2026-03-31_211457_3392 (STR_1621_M3_LowBeta, grade=F)
+ℹ [r1_verify] EXP_2026-03-31_211457_3392: PASS -> accept
+  R1 Verify: PASS -> accept 
+ℹ [registry] Family 'regime_conditional_allweather': trial=7, pass=0, fail_streak=7
+✔ [registry] Added EXP_2026-03-31_211457_3392 (STR_1621_M3_LowBeta, F)
+  Family ' regime_conditional_allweather ': trials= 7 , pass= 0 , fail_streak= 7 

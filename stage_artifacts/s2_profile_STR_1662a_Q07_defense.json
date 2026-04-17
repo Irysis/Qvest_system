@@ -1,0 +1,65 @@
+{
+  "strategy_id": "STR_1662a",
+  "hypothesis": "H_1643_REVISED",
+  "stage": "S2",
+  "factor": "Q07_Earnings_Stability",
+  "role": "defense",
+  "evaluation_mode": "AX-001 (조건부 — 전기간 SR 적용 금지)",
+
+  "s1_results": {
+    "cagr": 0.0259,
+    "sharpe": 0.597,
+    "mdd": -0.102,
+    "turnover_ann": 0.92,
+    "grade": "C",
+    "score": 9.4,
+    "note": "전기간 SR/CAGR로는 Grade C. AX-001 적용 시 위기 성과 기준 재평가."
+  },
+
+  "ax001_criteria": {
+    "crisis_alpha": {
+      "description": "위기 구간 alpha (stress IC/ICIR)",
+      "q07_stress_icir": 0.753,
+      "q07_4r_crisis_icir": 0.413,
+      "q07_stress_ic_mean": 0.057,
+      "pass": true,
+      "note": "288팩터 중 양쪽 위기 기준 최강"
+    },
+    "core_mdd_improvement": {
+      "description": "Core 대비 MDD 개선",
+      "core_mdd": -0.213,
+      "defense_mdd": -0.102,
+      "improvement": "+11.1%p",
+      "pass": true,
+      "note": "Core MDD -21.3% vs Defense MDD -10.2% → 50% 이상 축소"
+    },
+    "bad_normal_ic_ratio": {
+      "description": "bad/normal IC ratio (위기 시 상대 강도)",
+      "q07_ic_bad": 0.031,
+      "q07_ic_good": 0.042,
+      "ratio": 0.74,
+      "pass": true,
+      "note": "bad regime에서도 IC 양수 유지 (ratio 0.74 ≈ 전천후)"
+    }
+  },
+
+  "s2_icir_check": {
+    "full_period_icir": 0.382,
+    "hurdle": 0.20,
+    "pass": true
+  },
+
+  "c19_correlation": {
+    "factor_level": -0.092,
+    "threshold": 0.45,
+    "pass": true,
+    "note": "음수 상관 — 극도로 직교"
+  },
+
+  "s2_verdict": "PASS (AX-001)",
+  "s2_grade_override": "A_CONDITIONAL",
+  "override_reason": "전기간 Grade C이나 AX-001 3개 기준 모두 PASS. Defense role 특수 평가.",
+
+  "next_stage": "S3 (직교성 검증 — DCC-GARCH Core 대비 return 상관)",
+  "debate_reference": "S0_VERDICT_H_1643_REVISED.json"
+}

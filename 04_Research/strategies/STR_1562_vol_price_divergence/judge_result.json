@@ -1,0 +1,44 @@
+{
+  "strategy_id": "STR_1562",
+  "strategy_name": "STR_1562_vol_price_divergence",
+  "judge_version": "v6.0",
+  "verdict_date": "2026-03-28",
+  "sg_check_s6_entry": "CONDITIONAL_PASS",
+  "s6_entry_note": "S0 artifact present. S1~S4 artifacts missing. S1 pure factor test completed but formal S2/S3/S4 not filed. Proceeding as S6 can evaluate directly from backtest results, but stage skip is noted as deficiency.",
+  "gate_0_pit": {
+    "status": "PASS",
+    "c1_full_sample": "PASS - no full-sample statistics",
+    "c2_same_day_circular": "PASS - no same-day circular in factor engine",
+    "c5_overlay_t1": "PASS - no overlay (S1 pure factor)",
+    "c9_dd_vt_lag": "N/A - no DD/VT overlay",
+    "c10_liquidity": "PASS - uses backtest_harness internal liquidity filter",
+    "c11_data_time_axis": "N/A - no FRED/MRS data",
+    "c13_z_score_aligned": "PASS - Z_Score_Aligned only (factor_engine.R line 23)",
+    "c15_factor_db": "PASS - load_month_factors() used (factor_engine.R line 18-19)",
+    "lookahead_detector": "PASS - detect_lookahead() called at line 13 of run_all.R"
+  },
+  "gate_1_performance": {
+    "status": "HARD_FAIL",
+    "CAGR_pct": 8.46,
+    "Sharpe": 0.509,
+    "MDD_pct": 61.0,
+    "Annual_Turnover_pct": 997.6,
+    "hard_fail_reason": "MDD 61.0% > 45% AND Turnover 998% > 600%",
+    "hurdle_threshold_CAGR": 16.0,
+    "hurdle_threshold_SR": 0.8
+  },
+  "gate_2_robustness": "SKIPPED - hard fail at Gate 1",
+  "gate_3_factor_model": "SKIPPED - hard fail at Gate 1",
+  "gate_4_dsr": "SKIPPED - hard fail at Gate 1",
+  "gate_5_overfitting": "SKIPPED - hard fail at Gate 1",
+  "role_honesty_audit": {
+    "declared_role": "diversifier",
+    "actual_behavior": "No alpha generated. MDD 61% tracks market drawdown closely. Diversifier role not demonstrated.",
+    "role_honesty": "FAILED - no diversification benefit observed"
+  },
+  "grade": "F",
+  "score": 0,
+  "s7_verdict": "Discard",
+  "s7_reason": "Double hard fail: MDD 61.0% (>45%) and Turnover 998% (>600%). Despite high ICIR 0.917 in Factor DB, CR08_Volume_Price_Divergence standalone delivers CAGR 8.46% and SR 0.509 -- insufficient for any grade. High ICIR did not translate to portfolio-level alpha. Stage artifacts S2~S4 missing.",
+  "l_code_id": "L-743"
+}

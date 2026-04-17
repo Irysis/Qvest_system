@@ -1,0 +1,24 @@
+{
+  "strategy_id": "STR_1571",
+  "strategy_name": "C19_V14_D01_L22_DD_Regime",
+  "judge_date": "2026-03-28",
+  "grade": "B",
+  "score": 55.7,
+  "sharpe": 0.756,
+  "cagr": 11.24,
+  "mdd": 30.72,
+  "turnover": 358.2,
+  "n_stocks": 30,
+  "gates": {
+    "G0_PIT": "PASS — C1~C15 clean. dd_lag, cash_lag 정상. Z_Score_Aligned, load_month_factors()",
+    "G1_Implementation": "PASS — N=30, commission=15bps, LIQ>=2e8, buffer_zone(50/25)",
+    "G2_Robustness": "FAIL — OOS retention=0.52 (SR H1=1.069, H2=0.558). 심각한 후반기 열화",
+    "G3_Performance": "FAIL — CAGR 11.24% < 16%. SR 0.756 < 0.8",
+    "G4_Statistics": "PARTIAL — SR_3Y=1.237 (no alpha decay recently). FF5 미확인",
+    "G5_Diversity": "PASS — 4팩터 blend, L22 diversifier 추가"
+  },
+  "role_honesty": "PASS",
+  "hard_fail": false,
+  "verdict": "Archive",
+  "reason": "4팩터(C19+V14+D01+L22) 블렌드가 3팩터(STR_1555 M9) 대비 개선 없음. SR 0.756, CAGR 11.24% 모두 허들 미달. OOS retention 0.52로 과적합 우려. 4th factor 추가의 marginal 기여 부재 확인."
+}

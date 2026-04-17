@@ -1,0 +1,44 @@
+{
+  "hypothesis_id": "H_1674",
+  "round": 1,
+  "role": "quant",
+  "score": 10,
+  "score_breakdown": {
+    "icir_pass": 4,
+    "internal_corr": 1,
+    "c19_corr": 3,
+    "defense_ic": 2,
+    "data_avail": 0
+  },
+  "arguments": [
+    "ICIR 1.2613 (t=6.46)으로 Alpha Lab Gate(ICIR>=0.20, t>=3.0) 통과 — Q-Lead의 사전검증 ICIR 1.258을 독립 재현하였으며, 데이터 가용성(3,410종목, 2000~2026년, 315개월)과 PIT 준수(1달 lag) 조건 하에서도 신호가 통계적으로 유의함. 단, t-stat 6.46은 Harvey et al.(2016) 다중검정 기준 t>3.0을 충족하나, 전략 풀 내 다중검정 조정 시 유효 t 임계값 재검토 필요.",
+    "Quintile 분포가 비단조(non-monotone)이며 방향이 역전됨 — Q1(개인 순매도 최다) 월평균수익 0.18%, Q5(개인 순매수 최다) 0.62%로 Q1<Q5 패턴이 관찰되어 '역발상 수익' 가설과 모순됨. Q3이 3.55%로 최고를 기록한 것은 중간 포지션 종목이 수익을 주도함을 시사하며, 고IC에도 불구하고 선형 Rank-IC 집계와 실제 분위별 수익률 간 괴리가 심각함. 이는 ICIR이 실투 alpha를 과대평가할 가능성을 제기함.",
+    "연간 회전율 추정 2,082%는 Hard Fail 기준(600%)의 3.5배 — 매월 Top30 종목 유지율 13.3%, 교체율 86.7%는 월간 리밸런싱 구조에서 실질적 거래비용이 ICIR이 시사하는 수익 전부를 초과할 수 있음을 의미함. 15bps 편도 가정 시 연간 약 6.25%의 거래비용이 발생하며, 이는 순수익률을 구조적으로 압박함. IC 자기상관 AR(1)=-0.079로 음의 값을 보여 신호 persistence가 없고 매월 포지션 전환이 불가피한 구조임을 확인함."
+  ],
+  "concern": "Quintile 분포 역전(Q1 수익 < Q5 수익)과 연간 회전율 2,082%의 조합이 치명적임. ICIR이 높아도 실투 전략으로 전환 시 거래비용과 비모노토닉 분위 수익으로 인해 실질 alpha가 0에 수렴할 가능성이 높음. 신호의 경제적 해석('역발상')이 실제 분위 수익 구조와 불일치하며, 이는 신호가 노이즈 측정 방식의 artifact일 가능성을 배제하지 못함.",
+  "conditions": [
+    "Quintile 역전 원인 규명 필수 — IC가 양수인데 Q1<Q5 패턴이 나타나는 이유를 단면 분포 이상치, 동적 시기별 구조 변화, size-neutral 처리 방식 차이 등으로 분해하여 검증해야 함",
+    "회전율 축소 방안 사전 설계 필요 — 신호 스무딩(3개월 이동평균), 진입 임계값(상/하위 10% 한정), 또는 factor_momentum 결합을 통해 월간 교체율을 30% 이하(연간 회전율 ~720%)로 낮출 수 있는지 사전에 모형화해야 S5 단계 진행이 의미 있음",
+    "Q-Lead ICIR 0.939(top50% vol) vs 재현값 2.03 — 측정 방법 차이(Z-score 정의, 유동성 기준)를 명확히 정렬하여 동일 기준 하에 독립 검증을 재실시할 것"
+  ],
+  "quant_evidence": {
+    "icir_verified": true,
+    "icir_value": 1.2613,
+    "t_stat": 6.462,
+    "n_months": 315,
+    "icir_top50vol": 2.0309,
+    "quintile_spread_pct_monthly": -0.439,
+    "quintile_q1_ret_pct": 0.18,
+    "quintile_q3_ret_pct": 3.55,
+    "quintile_q5_ret_pct": 0.619,
+    "monotone_quintile": false,
+    "turnover_est_annual_pct": 2082,
+    "top30_monthly_overlap_pct": 13.3,
+    "ic_ar1": -0.079,
+    "ic_ar3": 0.087,
+    "stress_gfc_ic_mean": 0.0058,
+    "stress_covid_ic_mean": 0.0125,
+    "stress_it_crash_ic_mean": 0.0550,
+    "additional_findings": "Quintile 분위 수익률이 비단조(non-monotone): Q1=0.18%, Q2=1.82%, Q3=3.55%, Q4=2.98%, Q5=0.62%. Q3이 최고수익으로 '역발상' 가설과 모순. IC AR(1)=-0.079으로 신호 persistence 없음. 연간 회전율 2082%로 Hard Fail 기준(600%) 대폭 초과. 유동성 필터(2억원) 적용 후 전체 데이터의 75.2% 유지, 월평균 1,335종목 분석."
+  }
+}

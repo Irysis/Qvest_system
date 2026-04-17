@@ -1,0 +1,199 @@
+{
+  "debate_id": "S0_DEBATE_H1640_H1641_H1642",
+  "timestamp": "2026-04-08T00:00:00+09:00",
+  "judge_agent": "Forge",
+  "expected_role": "RoleBias_Diversifier",
+  "why_now": "SR gap +0.757 (PG0 진단 기준)",
+  "scoring_criteria": {
+    "icir_pass": "5pts — all factors recent_3y_icir >= 0.20 AND all-sample ICIR >= 0.20",
+    "internal_corr": "5pts — within-hypothesis factor family diversity, regime-IC sign divergence",
+    "c19_corr": "5pts — orthogonality vs C19_Composite_Earnings (existing core factor)",
+    "defense_ic": "5pts — ic_bad >= ic_good pattern (conditional_value >= 0, crisis regime stability)",
+    "data_avail": "5pts — n_months coverage, used=FALSE, no data gaps"
+  },
+  "hypotheses": {
+    "H_1640": {
+      "description": "AC17(Accrual Reversal) + beta-bottom 50%",
+      "factors": ["AC17_Accrual_Reversal"],
+      "universe_filter": "beta_bottom_50pct",
+      "factor_stats": {
+        "AC17": {
+          "icir_3y": 0.6736,
+          "icir_all": 0.3707,
+          "t_stat": 3.8161,
+          "n_months": 175,
+          "ic_bad": 0.0104,
+          "ic_good": 0.0391,
+          "conditional_value": -0.0287,
+          "icir_CALM": 0.780,
+          "icir_CAUTION": 0.084,
+          "icir_CRISIS": 0.442,
+          "icir_NORMAL": 0.394,
+          "category": "accrual"
+        }
+      },
+      "scores": {
+        "icir_pass": 5,
+        "internal_corr": 3,
+        "c19_corr": 4,
+        "defense_ic": 2,
+        "data_avail": 3
+      },
+      "total": 17,
+      "rationale": {
+        "icir_pass": "AC17 3y-ICIR=0.674, all-sample=0.371 모두 0.20 초과. Alpha Lab Gate 통과.",
+        "internal_corr": "단일 알파 팩터 구조 (beta filter는 유니버스 제약). 다각화 부재로 소폭 감점.",
+        "c19_corr": "AC17(단기 어크루얼 반전) vs C19(이익 트렌드/복합): 메커니즘 상이, 가족 다름. 저상관 예상(rho<0.3).",
+        "defense_ic": "CRITICAL: AC17 ic_bad=0.0104 < ic_good=0.0391 (cond_val=-0.0287). 시장 하락기에 신호 약화. CAUTION 국면 icir=0.084 극히 부진. 베타 필터가 방어성 보완하나 팩터 자체는 친경기적 패턴.",
+        "data_avail": "n_months=175 (약 2011년~). 전체 254개월 대비 79개월 부족. 1998~2010 데이터 없음."
+      },
+      "key_concern": "H_1640의 핵심 결함: AC17은 cond_val<0 — bad regime에서 IC가 오히려 하락. Diversifier 역할 주장의 IC 근거 부재. Beta 필터가 역할을 구제하나 팩터 레벨 지지 불충분."
+    },
+    "H_1641": {
+      "description": "L31(Vol Concentration) + CR08(Vol-Price Divergence) + beta-bottom 50%",
+      "factors": ["L31_Vol_Concentration", "CR08_Volume_Price_Divergence"],
+      "universe_filter": "beta_bottom_50pct",
+      "factor_stats": {
+        "L31": {
+          "icir_3y": 0.9898,
+          "icir_all": 0.4749,
+          "t_stat": 5.2019,
+          "n_months": 254,
+          "ic_bad": 0.0242,
+          "ic_good": 0.0367,
+          "conditional_value": -0.0124,
+          "icir_CALM": -0.006,
+          "icir_CAUTION": -0.069,
+          "icir_CRISIS": -0.201,
+          "icir_NORMAL": 0.026,
+          "category": "liquidity"
+        },
+        "CR08": {
+          "icir_3y": 0.9167,
+          "icir_all": 0.4977,
+          "t_stat": 5.4524,
+          "n_months": 254,
+          "ic_bad": 0.0134,
+          "ic_good": 0.0297,
+          "conditional_value": -0.0163,
+          "icir_CALM": 0.008,
+          "icir_CAUTION": -0.026,
+          "icir_CRISIS": -0.115,
+          "icir_NORMAL": 0.067,
+          "category": "crowding"
+        }
+      },
+      "scores": {
+        "icir_pass": 5,
+        "internal_corr": 2,
+        "c19_corr": 4,
+        "defense_ic": 1,
+        "data_avail": 5
+      },
+      "total": 17,
+      "rationale": {
+        "icir_pass": "L31 3y=0.990, CR08 3y=0.917 모두 최상위권. All-sample도 0.47~0.50. Alpha Lab Gate 완벽 통과.",
+        "internal_corr": "CRITICAL: L31(liquidity)+CR08(crowding) 모두 거래량/미시구조 기반 팩터. CRISIS 국면에서 두 팩터 동시 ICIR 음수(L31=-0.201, CR08=-0.115). 위기 시 동조화 극심 → 내부 다각화 실패.",
+        "c19_corr": "L31, CR08 모두 거래량 계열 vs C19(이익 복합): 경제적 메커니즘 완전 상이. 저상관 예상. 단, 두 팩터가 CRISIS에서 음(-)이므로 C19(+) 대비 역방향 → 실질적 C19 보완성 있음.",
+        "defense_ic": "CRITICAL FAIL: L31 icir_CRISIS=-0.201, CR08 icir_CRISIS=-0.115. 위기 국면에서 팩터 신호가 역전됨. 가장 방어가 필요한 시점에 알파 마이너스 전환. Diversifier 역할과 정면 배치.",
+        "data_avail": "L31, CR08 모두 n_months=254 (풀 샘플). used=FALSE. 완전한 데이터 커버리지."
+      },
+      "key_concern": "H_1641의 치명적 결함: 두 팩터 모두 위기 국면 ICIR 음수 (L31=-0.201, CR08=-0.115). 거래량 기반 팩터들이 급락장에서 신호 방향이 뒤집힌다는 증거. SR Diversifier 역할 불가."
+    },
+    "H_1642": {
+      "description": "AC17 + L22 + Q04 + beta-bottom 40%",
+      "factors": ["AC17_Accrual_Reversal", "L22_Ret_Autocorr", "Q04_Piotroski_F"],
+      "universe_filter": "beta_bottom_40pct",
+      "factor_stats": {
+        "AC17": {
+          "icir_3y": 0.6736,
+          "icir_all": 0.3707,
+          "t_stat": 3.8161,
+          "n_months": 175,
+          "ic_bad": 0.0104,
+          "ic_good": 0.0391,
+          "conditional_value": -0.0287,
+          "icir_CRISIS": 0.442,
+          "category": "accrual"
+        },
+        "L22": {
+          "icir_3y": 0.3673,
+          "icir_all": 0.2471,
+          "t_stat": 2.7065,
+          "n_months": 254,
+          "ic_bad": 0.0243,
+          "ic_good": 0.0062,
+          "conditional_value": 0.0181,
+          "icir_CALM": 0.202,
+          "icir_CAUTION": 0.160,
+          "icir_CRISIS": 0.289,
+          "icir_NORMAL": 0.096,
+          "category": "liquidity"
+        },
+        "Q04": {
+          "icir_3y": 0.5321,
+          "icir_all": 0.2763,
+          "t_stat": 3.0269,
+          "n_months": 254,
+          "ic_bad": 0.0266,
+          "ic_good": 0.0215,
+          "conditional_value": 0.0051,
+          "icir_CALM": 0.937,
+          "icir_CAUTION": 0.250,
+          "icir_CRISIS": 0.617,
+          "icir_NORMAL": 0.658,
+          "category": "quality"
+        }
+      },
+      "scores": {
+        "icir_pass": 4,
+        "internal_corr": 4,
+        "c19_corr": 3,
+        "defense_ic": 4,
+        "data_avail": 3
+      },
+      "total": 18,
+      "rationale": {
+        "icir_pass": "AC17=0.674/0.371, L22=0.367/0.247, Q04=0.532/0.276 모두 0.20 초과. 단, L22 all-sample=0.247은 Alpha Lab Gate 경계선. 소폭 감점.",
+        "internal_corr": "3가지 다른 경제 패밀리: accrual(AC17) + liquidity-microstructure(L22) + quality(Q04). CRISIS icir 패턴도 상이(AC17=0.442, L22=0.289, Q04=0.617). 진정한 멀티패밀리 블렌드.",
+        "c19_corr": "AC17: 어크루얼 반전 vs C19 이익 복합 → 저상관. L22: 자기상관 vs C19 → 저상관. Q04: Piotroski 품질 vs C19 이익 복합 → 부분 중복 우려(동일 광의 이익 패밀리). 추정 rho(Q04, C19)=0.3~0.5.",
+        "defense_ic": "L22: cond_val=+0.018 (ic_bad > ic_good) — 진정한 Diversifier 신호. L22 4국면 모두 ICIR 양수(0.096~0.289). Q04: cond_val=+0.005 — 소폭 방어성. Q04 CRISIS icir=0.617 — 위기 시 품질 선호 포착. AC17 약점을 L22+Q04가 보완. 복합 ic_bad = (0.0243+0.0266)/2 = 0.0255 > ic_good = (0.0062+0.0215)/2 = 0.0139.",
+        "data_avail": "L22, Q04: n_months=254 풀샘플. AC17: n_months=175 (병목). 3팩터 교집합 약 175개월. 2011년 이전 AC17 미구축."
+      },
+      "key_concern": "H_1642의 주요 리스크: (1) Q04-C19 부분 중복 → C19 포트폴리오와 상관 상승 가능. (2) AC17 데이터 단축(175mo) — 합성 시작점 제약. 그러나 L22의 cond_val>0 = 3건 중 유일한 팩터 레벨 Diversifier 근거."
+    }
+  },
+  "aggregate_scores": {
+    "H_1640": 17,
+    "H_1641": 17,
+    "H_1642": 18,
+    "mean": 17.3,
+    "max": 18,
+    "min": 17
+  },
+  "ranking": {
+    "1st": "H_1642 (18/25) — 유일한 팩터 레벨 Diversifier 근거(L22 cond_val>0, Q04 cond_val>0)",
+    "2nd_tie": "H_1640 (17/25) — AC17 단독. 단순하나 Diversifier IC 근거 미약",
+    "2nd_tie": "H_1641 (17/25) — 거래량 이중. CRISIS icir 음수는 치명적"
+  },
+  "forge_verdict": {
+    "H_1640": "CONDITIONAL_PROCEED — Diversifier 역할 IC 근거 보강 필요. Beta 필터 의존도 과대. 데이터 단축 주의.",
+    "H_1641": "REJECT_ROLE_MISMATCH — L31+CR08 모두 CRISIS icir 음수. 팩터 레벨에서 Diversifier 역할 불가. 가설 재설계 권고.",
+    "H_1642": "RECOMMENDED — 3건 중 최고점(18/25). L22 cond_val=+0.018로 유일한 팩터 레벨 Diversifier 확인. Q04 품질 플라이트 효과 보완. S1 진입 우선 대상."
+  },
+  "rolebias_tags": {
+    "H_1640": "RoleBias_Diversifier_WEAK",
+    "H_1641": "RoleBias_Diversifier_FAIL",
+    "H_1642": "RoleBias_Diversifier_CONFIRMED"
+  },
+  "s1_recommendation": {
+    "priority_1": "H_1642 (STR_164X) — L22+Q04+AC17+beta40%",
+    "priority_2": "H_1640 (STR_164Y) — AC17+beta50% (단순 기준선으로 유용)",
+    "hold": "H_1641 — 재설계 후 재심. CR08을 L22로 교체 고려 (L22 cond_val>0 vs CR08 cond_val<0)"
+  },
+  "pit_checks": {
+    "C13": "Z_Score_Aligned 사용 예정. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date 적용 필수.",
+    "C15": "load_month_factors() 경유 필수. parquet 직접 로드 금지."
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "factor_id": "ML_XGB_GPU_LR",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "stage": "S1",
+  "created_at": "2026-04-11 21:29:34.794826",
+  "parent": "STR_1656_MLRA",
+  "hypothesis": "H_1661",
+  "variants": ["V1", "V2", "V3"],
+  "implementation_profile": {
+    "model": "XGBoost GPU + LambdaRank 5-seed ensemble",
+    "gpu_device": "cuda (RTX 4080 Super 16GB)",
+    "objective_v2": "rank:pairwise (LambdaRank)",
+    "objective_v1": "reg:squarederror (GPU only)",
+    "seeds": [42, 123, 456, 789, 2024],
+    "mi_prefilter": "top 50 nonRE (S1-B 방식, 309→50)",
+    "window_type": "expanding walk-forward",
+    "purge_days": 21,
+    "n_holdings": 30,
+    "commission_bps": 15,
+    "liq_threshold": 200000000,
+    "signal_method": "EW 30종목 순수 팩터 신호",
+    "weight_method": "EW",
+    "hp_method": "Optuna 30 trials purged IS CV (V3), 고정 HP (V1/V2)",
+    "python_backend": "/tmp/xgb-env/bin/python3",
+    "label_transform": "fwd_ret_21d to group-wise integer rank (0~N-1)"
+  },
+  "ablation_summary": [
+    {
+      "variant": "V1",
+      "ICIR": 0.8723,
+      "IC": 0.0819,
+      "N": 198
+    },
+    {
+      "variant": "V2",
+      "ICIR": 1.0291,
+      "IC": 0.0922,
+      "N": 206
+    },
+    {
+      "variant": "V3",
+      "ICIR": 1.0971,
+      "IC": 0.1067,
+      "N": 205
+    }
+  ],
+  "v0_baseline": {
+    "ICIR": 0.8496,
+    "SR": 0.9268
+  },
+  "best_variant": "V3",
+  "best_icir": 1.0971,
+  "lambdarank_ok": true,
+  "alpha_lab_gate": {
+    "pass": true,
+    "threshold": 0.2
+  },
+  "turnover_risk": "중간",
+  "capacity_risk": "낮음",
+  "pit_compliance": {
+    "C1": "expanding + HP IS purged CV PASS",
+    "C2": "OOS > IS PASS",
+    "C13": "Z_Score_Aligned PASS",
+    "C14": "fwd t+1~t+21 PASS",
+    "C15": "Arrow open_dataset PASS",
+    "purge": "21d embargo PASS"
+  }
+}

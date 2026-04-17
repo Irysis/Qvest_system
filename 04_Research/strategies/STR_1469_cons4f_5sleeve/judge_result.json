@@ -1,0 +1,86 @@
+{
+  "strategy_id": "STR_1469",
+  "strategy_name": "Consensus 4F 5-Sleeve",
+  "judge_date": "2026-03-28",
+  "judge_version": "v6.0",
+  "grade": "B",
+  "score": 42.5,
+  "pass": false,
+  "validated_role": "Archive",
+  "provisional_role_claimed": "core_alpha",
+  "hurdle_metrics": {
+    "Sharpe": 1.021,
+    "CAGR": 16.67,
+    "MDD": 29.76,
+    "Turnover": 169.6,
+    "IR": 0.437,
+    "Calmar": 0.56,
+    "Sortino": 1.43,
+    "AnnVol": 16.33,
+    "WinRate": 58.9,
+    "WorstMonth": -14.49
+  },
+  "s6_entry_gate": {
+    "ok": false,
+    "reason": "4 artifact issues: S0(6 fields missing), S1(4 fields missing), S2(3 fields missing + type errors), S3(1 field missing)"
+  },
+  "gate_results": {
+    "G0_PIT": {
+      "result": "PASS",
+      "detail": "detect_lookahead CLEAN. DD brake lagged (line 497). MRS t-1 via regime_engine_daily. VT 60d lookback. Z_Score_Aligned via align_factor_direction(). C15 minor: Arrow bulk load instead of load_month_factors()."
+    },
+    "G1_Implementation": {
+      "result": "PASS",
+      "detail": "5 sleeves x 6 = 30 max (deduplicated). Commission 15bps. LIQ >= 2e8."
+    },
+    "G2_Robustness": {
+      "result": "PASS",
+      "detail": "OOS retention 0.77 (IS SR 1.148, OOS SR 0.883). Recent 3Y SR 1.259 improving."
+    },
+    "G3_Performance": {
+      "result": "WARN",
+      "detail": "SR 1.021 (>0.8 OK), CAGR 16.67% (>16% barely OK), MDD 29.76% (>25% target EXCEEDED, <45% hard fail OK)"
+    },
+    "G4_Statistics": {
+      "result": "PASS",
+      "detail": "DSR 1.0 significant (n_trials=465). Recent 3Y SR 1.259 > 0.3 (no alpha decay)."
+    },
+    "G5_Diversity": {
+      "result": "FAIL",
+      "detail": "max_abs_corr 0.899 vs C04_ESBR. independence_class='redundant'. novelty_score=0.1. No marginal diversification."
+    }
+  },
+  "role_honesty_audit": {
+    "result": "FAIL",
+    "claimed_role": "core_alpha",
+    "detection": "Core Alpha masquerade — corr 0.899 with existing C04_ESBR factor. Strategy directly includes C04_ESBR as 25% component. Repackaged existing value/earnings exposure, not independent alpha source.",
+    "max_abs_corr": 0.899,
+    "correlated_with": "C04_ESBR"
+  },
+  "oos_validation": {
+    "IS_Sharpe": 1.148,
+    "OOS_Sharpe": 0.883,
+    "retention": 0.77,
+    "verdict": "ROBUST"
+  },
+  "alpha_trend": {
+    "recent_3Y_SR": 1.259,
+    "full_SR": 1.021,
+    "ratio": 1.23,
+    "direction": "improving"
+  },
+  "final_verdict": "Archive — S6 Entry Gate FAIL (4 artifact issues) + G5 Diversity FAIL (corr 0.899 = redundant) + Role Honesty FAIL (core_alpha claim with 0.899 correlation to C04_ESBR). MDD 29.76% exceeds 25% target. OOS robust but no unique alpha contribution.",
+  "strengths": [
+    "OOS retention 0.77 (robust)",
+    "Recent 3Y SR 1.259 improving",
+    "PIT clean (all C1-C15 pass)",
+    "Consensus 4F via Factor DB (Z_Score_Aligned correct)"
+  ],
+  "weaknesses": [
+    "G5 FAIL: max_abs_corr 0.899 with C04_ESBR — redundant",
+    "Role Honesty FAIL: core_alpha claim but 0.899 corr",
+    "MDD 29.76% exceeds 25% project target",
+    "S6 Entry Gate FAIL: incomplete artifacts",
+    "Score 42.5 borderline, CAGR 16.67% barely above target"
+  ]
+}

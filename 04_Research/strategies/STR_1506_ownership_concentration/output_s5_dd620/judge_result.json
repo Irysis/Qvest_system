@@ -1,0 +1,75 @@
+{
+  "strategy_id": "STR_1506_ownership_concentration_DD620",
+  "factor_id": "CR04_Ownership_Concentration",
+  "stage": "S5_DD_overlay",
+  "parent_judge": "judge_result.json (F/38.6 Discard, S3 max_corr=1.000)",
+  "judge_date": "2026-03-26",
+  "judge_version": "v7",
+  "gates": {
+    "gate0_pit": {
+      "result": "PASS",
+      "detail": "DD brake uses t-1 lag (dd_lag <- c(0, dd_pct[-n_f])). C9 compliant. Parent factor_engine verified CLEAN."
+    },
+    "gate1_implementation": {
+      "result": "WARN",
+      "detail": "DD overlay 6/20. Parent: n=30, EW, 15bps. Turnover 404.6% — extremely high. Real-world slippage would erode returns significantly."
+    },
+    "gate2_robustness": {
+      "result": "GOOD",
+      "detail": "OOS retention 0.74 (IS 0.638 / OOS 0.472) — strong. Rolling 3Y>0: 78.3%. Alpha trend improving (1.14 ratio). 12M hit 61.9%. IC mean 0.039. FMB Score t=3.04 (SIGNIFICANT — strongest in batch)."
+    },
+    "gate3_performance": {
+      "result": "MARGINAL_PASS",
+      "detail": "MDD 31.88% (<45% — PASS, down from 53.3%). SR 0.580 (up from 0.531). CAGR 7.61% (down from 10.96%). IR -0.09 (negative but mild). Stress 3/3 outperform (GFC +14.0, COVID +0.44, Rate2022 +9.66). Crisis alpha strong."
+    },
+    "gate4_statistical": {
+      "result": "PASS",
+      "detail": "FF3 alpha t=0.033 (zero). Carhart t=0.005 (zero). FF5 alpha t=0.122 (zero). No alpha but no negative alpha. Risk-neutral."
+    },
+    "gate5_diversity": {
+      "result": "CRITICAL_FAIL",
+      "detail": "INHERITED FROM BASE: S3 max_corr = 1.000 with L02_Turnover. CR04 is a PERFECT DUPLICATE of an existing factor. DD overlay does NOT resolve factor identity issues. This strategy adds ZERO new alpha source to the portfolio. The S3 'DB BUG: CR04 = L02' note from Scout confirms this is a data pipeline error, not a genuine factor."
+    },
+    "role_honesty_audit": {
+      "result": "FAIL",
+      "detail": "Despite improved metrics (MDD 31.9%, stress 3/3, OOS 0.74), CR04 = L02_Turnover (r=1.000). Any role assigned would be fraudulent — this is an existing factor with a different label. Role honesty requires acknowledging the duplicate."
+    }
+  },
+  "provisional_role": "diversifier",
+  "validated_role": null,
+  "verdict": "REJECT",
+  "grade": "F",
+  "score": 42.5,
+  "override_reason": "S3 CRITICAL_FAIL: factor is perfect duplicate (CR04 = L02_Turnover, corr=1.000). Score 42.5 would be B-grade but Judge overrides to REJECT/F due to zero novelty. The hurdle system scored this B because it cannot detect factor identity issues.",
+  "metrics": {
+    "sharpe": 0.580,
+    "cagr": 0.0761,
+    "mdd": 0.3188,
+    "ff5_alpha_t": 0.122,
+    "ff3_alpha_t": 0.033,
+    "carhart_alpha_t": 0.005,
+    "ic_mean": 0.039,
+    "ir": -0.09,
+    "stress_outperform": "3/3",
+    "ann_vol": 0.1314,
+    "bm_corr": 0.668,
+    "turnover": 4.046,
+    "oos_retention": 0.74,
+    "fmb_score_t": 3.04,
+    "s3_max_corr": 1.000,
+    "alpha_trend_ratio": 1.14
+  },
+  "upgrade_from_base": {
+    "base_grade": "F",
+    "base_score": 38.6,
+    "base_verdict": "Discard",
+    "base_mdd": 0.533,
+    "dd620_mdd": 0.3188,
+    "mdd_reduction": "40.2%",
+    "sr_change": "0.531 -> 0.580 (+9.2%)",
+    "cagr_change": "10.96% -> 7.61% (-30.6%)",
+    "s3_issue_resolved": false
+  },
+  "judge_note": "DD 6/20 improved MDD (53.3%->31.9%) and stress (2/4->3/3). Performance metrics would warrant B grade. However, S3 CRITICAL_FAIL (max_corr=1.000, perfect duplicate of L02_Turnover) is an absolute disqualifier. Hurdle system scored 42.5/B but Judge overrides to REJECT. The compute_CR04.R module has a confirmed bug producing identical output to L02_Turnover. Fix the DB module before re-testing this factor concept.",
+  "reason": "REJECT (Judge override). Hurdle scored B/42.5 but S3 max_corr=1.000 — CR04 is perfect duplicate of L02_Turnover (DB bug). DD overlay cannot fix factor identity. No new alpha source. Discard."
+}

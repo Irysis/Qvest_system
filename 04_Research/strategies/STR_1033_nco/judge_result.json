@@ -1,0 +1,45 @@
+{
+  "strategy_id": "STR_1033",
+  "strategy_name": "5-Sleeve NCO Stock-Level",
+  "family": "5sleeve_nco",
+  "judge_date": "2026-03-23",
+  "grade": "A",
+  "score": 78.1,
+  "gates": {
+    "gate0_pit": {
+      "result": "PASS",
+      "lookahead_violations": 0,
+      "notes": "C11 detector flags verified as false positives — v7.1 macro_regime.parquet has apply_month lag built in. NCO uses 120d rolling data. DD brake t-1 lagged."
+    },
+    "gate1_implementability": {"result": "PASS", "holdings_max": 30, "turnover_annual_pct": 154, "notes": "5 sleeves x 6. HRP/NCO weights capped at 15%."},
+    "gate2_robustness": {
+      "result": "PASS",
+      "mdd_pct": 24.76,
+      "oos_retention": 0.886,
+      "notes": "MDD 24.76% < 25% target. OOS retention 88.6% excellent. 91% of 3Y rolling windows positive. 4/4 stress outperform."
+    },
+    "gate3_performance": {
+      "result": "PASS",
+      "cagr_pct": 17.81,
+      "sharpe": 1.358,
+      "sortino": 1.976,
+      "calmar": 0.719,
+      "notes": "CAGR 17.81% > 16%. Sharpe 1.358 > 1.0. All targets met."
+    },
+    "gate4_statistical": {
+      "result": "PASS",
+      "ff3_alpha_tstat": 2.55,
+      "ff5_alpha_tstat": 2.89,
+      "notes": "FF3 alpha 9.10% (t=2.55, p=0.012). FF5 alpha 11.32% (t=2.89, p=0.005). Below Harvey t>3.0 but strong."
+    },
+    "gate5_diversification": {"result": "N/A", "notes": "No composite cache available."}
+  },
+  "commentary": {
+    "strength": "Strongest Sharpe (1.358) among recent batch. OOS retention 88.6% — minimal overfitting. FF5 alpha significant at 1%. All 3 target metrics met (CAGR 17.81%, SR 1.358, MDD 24.76%).",
+    "weakness": "MDD 24.76% very close to 25% limit. Harvey t>3.0 not met. Code uses old MRS pattern (recommend regime_engine_daily.R migration).",
+    "verdict_reason": "Grade A: All targets met, strong OOS retention, significant FF alpha. NCO weighting innovation over HRP delivers measurable improvement over STR_1036.",
+    "improvement": "Migrate MRS code to regime_engine_daily.R for explicit PIT compliance. Tighten DD brake to push MDD below 24%.",
+    "comparison": "vs STR_1036 (SR 1.284): +0.074 SR improvement from NCO. vs STR_1071 (CAGR 21.49%): lower CAGR but better OOS retention. Production upgrade candidate over STR_1034 (SR 1.155).",
+    "evolution_path": ["Production upgrade candidate (replace STR_1034)", "Ensemble with STR_1071 for diversification", "MRS code migration to regime_engine_daily.R"]
+  }
+}

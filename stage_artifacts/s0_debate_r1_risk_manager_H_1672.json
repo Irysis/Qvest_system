@@ -1,0 +1,19 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1672",
+  "round": "R1",
+  "score": 7,
+  "arguments": [
+    "C07_TP_Mom의 전기간 IC/ICIR이 marginal_screening 기준 Mean_IC -0.0073, ICIR -0.0726, t_stat -0.795로 stage0_pass: false이다. 가설이 주장하는 Stress ICIR 2.20, Normal ICIR 2.69는 조건부 IC이며, 전기간 무조건부 IC가 음수인 팩터에 standalone 100% 비중은 tail risk 관점에서 치명적이다. 양수 IC 기간이 전체의 51.7%(Hit_Rate)에 불과하여, '높은 조건부 ICIR이 실현될 확률' 자체가 불안정하다. 조건부 IC가 아무리 높아도 전기간 IC < 0이면 포트폴리오 레벨 장기 성과 기대값은 음수에 수렴한다.",
+    "C07_TP_Mom의 factor_registry regime_profile이 crisis: negative로 기록되어 있다. 이는 Forge가 빌드 시점에 확인한 실증 결과이며, Diversifier 역할에 정면 모순이다. L-106(market beta 지배) 교훈에 따르면, long-only 팩터 전략에서 crisis 시 market beta 0.85~0.93이 지배하여 family 독립성과 무관하게 수익률 상관이 급등한다. C07은 growth_positive(macro_sensitivity)이므로 위기 시 beta 지배 + 팩터 자체 음수 성과의 이중 타격을 받는다. L-118-ext가 경고하듯 '단면 상관 0.107 = 포트폴리오 독립'이 아니다.",
+    "Consensus family 집중 위험이 양적으로 심각하다. 현재 포트폴리오 family_concentration에서 consensus가 이미 50%(STR_1631)이다. C07 편입 시 consensus 비중은 50% 이상으로 상승하며, 이는 Saturation Penalty 구간(family_A 6~20: -8점)에 해당한다. C19_Composite_Earnings = mean(z(SUE) + z(ESBR) + z(EPS_chg_1m) + z(TP_Gap))이고, C07_TP_Mom = (TP_now - TP_35d)/TP_35d로 동일 데이터 소스(애널리스트 목표가)의 1차/2차 파생이다. C06_TP_Gap이 이미 C19 구성요소이므로, C07 추가는 사실상 TP_Gap의 모멘텀(변화율)을 중복 로딩하는 것이다. 단일 데이터 소스(애널리스트 TP) 장애 시(커버리지 축소, 컨센서스 업데이트 지연) 포트폴리오 전체가 동시 타격을 받는 operational tail risk가 존재한다."
+  ],
+  "concern": "가설의 근본적 결함은 '조건부 IC가 높으면 standalone diversifier로 성공한다'는 논리 비약이다. C07의 전기간 IC가 음수(-0.0073)이고 factor_registry가 crisis: negative로 기록한 상태에서, Stress ICIR 2.20만으로 standalone 전략을 정당화할 수 없다. L-120(위기 IC 정의 차이)이 경고하듯 stress ICIR과 4-regime CRISIS ICIR의 괴리가 극심할 수 있으며, Crisis Ratio 0.80이라는 숫자만으로는 실제 위기 방어력을 보장할 수 없다. STR_1631 앵커와 동일 데이터 소스(TP) 의존은 diversifier의 본질적 요건인 '독립적 alpha source'를 위반한다. Kill scenario 두 가지: (1) 애널리스트 커버리지 구조적 축소(금융위기 시 증권사 구조조정으로 TP 발행 감소) -- C07과 C19_TP_Gap이 동시에 신호 소실, (2) 미래참조 경로: Stress ICIR 2.20이 특정 위기 구간의 사후적 IC 집계로, in-sample에서만 유효하고 다음 위기에서 전혀 다른 패턴을 보이는 regime shift(코로나 vs 금리 급등 vs 지정학 위기의 팩터 행태 차이).",
+  "conditions": [
+    "S2 profiling에서 전기간 무조건부 ICIR >= 0.20을 확인할 것 (현재 -0.073으로 Alpha Lab Gate 미통과). 조건부 ICIR만으로 S2 통과를 정당화하는 것은 금지.",
+    "Standalone 구조 대신 C19에 5번째 팩터로 편입하는 방식(score tilt 또는 IC-weighted inclusion)을 검토할 것. 이 경우 기존 STR_1631 SYN_05의 4팩터 대비 marginal contribution을 S4에서 정량 검증해야 한다.",
+    "S3 직교성 검증에서 C19_Composite_Earnings와의 포트폴리오 수준 수익률 상관을 반드시 측정할 것 (단면 상관 0.107이 아닌 time-series return correlation). L-106 기준 0.50 이상이면 diversifier 역할 기각.",
+    "Regime-conditional tail risk 분석 필수: regime_garch.R의 DCC-Copula로 C07 기반 포트폴리오와 STR_1631의 위기 시 Tail Dependence Coefficient 측정. TDC > 0.30이면 diversifier 자격 박탈.",
+    "SR gap 0.807 해소를 위한 diversifier라면, consensus family 외부의 alpha source(Accrual, Risk, Liquidity family)를 먼저 탐색해야 한다. L-117에 따르면 194개 미사용 팩터가 존재하며, 같은 family 내 중복 로딩은 exploration-rules의 '단일 economic_family 고착 금지'에 저촉된다."
+  ]
+}

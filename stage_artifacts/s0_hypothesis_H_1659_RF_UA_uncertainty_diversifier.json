@@ -1,0 +1,239 @@
+{
+  "hypothesis_id": "H_1659",
+  "name": "RF_Uncertainty_Aware_Diversifier",
+  "factor_id": "ML_RF_UA",
+  "created_at": "2026-04-10",
+  "created_by": "Scout",
+  "session": 58,
+  "stage": "S0",
+  "status": "REVISED",
+  "revision": 2,
+  "revised_at": "2026-04-11T02:15:00",
+
+  "hypothesis": "Random Forest의 구조적 특성(OOB prediction + tree-level variance)을 활용하여 예측 불확실성을 정량화하고, Uncertainty-Adjusted(UA) Sorting(kappa=1.0 고정)으로 포트폴리오를 구성하되, Family-Based Feature Space Split으로 RF는 저빈도 fundamental 팩터(V/Q/AC), XGBoost는 고빈도 momentum/risk 팩터(M/D/L/R)를 전담하여 feature overlap 0%로 종목 수렴을 원천 차단한다. 핵심 차별점은 '무엇을 예측하느냐(feature space)'와 '예측의 불확실성을 어떻게 활용하느냐(UA Sorting)'의 이중 분리에 있다.",
+
+  "economic_rationale": {
+    "mechanism": "Random Forest는 B개 bootstrap 복원추출 트리의 앙상블이다(Breiman 2001). 각 트리가 독립적 예측을 생성하므로 트리 간 예측 분산(inter-tree variance)이 자연적으로 발생한다. 이 분산은 Epistemic Uncertainty의 proxy이며, 예측이 불확실한 종목(high variance)을 배제하면 false positive를 감소시킬 수 있다(Liu et al. 2026). 또한 OOB(Out-of-Bag) 샘플은 각 트리의 학습에 사용되지 않은 약 37%의 데이터로서, 별도의 validation set 없이 cross-validation 효과를 제공한다(Breiman 2001). OOB 기반 prediction interval은 Conformal Prediction의 특수한 경우로 해석 가능하다(Bostr\u00f6m 2021).",
+    "alpha_source": "UA Sorting의 alpha source는 두 가지이다: (1) Noise Filtering -- 예측 불확실성이 높은 종목을 long portfolio에서 배제하여 signal-to-noise ratio를 개선한다. Liu et al.(2026)은 이것이 주로 변동성 감소 채널로 작동함을 보인다. (2) Ambiguity Premium Harvesting -- Ellsberg(1961) 이후 모호성 회피가 체계적으로 관찰되며, 불확실성이 낮은(예측이 확실한) 종목은 시장 참가자들이 선호하여 과대평가될 수 있으나, RF의 uncertainty 측정은 개별 투자자와 다른 정보집합(309개 팩터의 비선형 조합)에 기반하므로 상보적이다.",
+    "xgb_differentiation": "[v2 REV-1 반영] 이중 분리 설계: (1) Feature Space Split -- RF는 저빈도 fundamental 팩터 풀(V/Q/AC/GR/IN/S/XF_DU, ~96개)에서 MI top 50, XGBoost는 고빈도 momentum/risk 팩터 풀(M/D/L/R/RE/CR/TR/C/MA/SE/XF_EF+CF+MG/MK, ~231개)에서 MI top 50. Feature overlap = 0%. (2) Inductive Bias -- Bagging(RF) vs Boosting(XGBoost). RF-bagging은 안정적 fundamental signal에서 variance reduction이 자연스러움(Breiman 2001), XGB-boosting은 noisy high-frequency signal에서 bias reduction이 강점. 후자만이 'disagreement as uncertainty' 해석을 허용한다. Feature source와 모델 구조의 이중 독립성이 diversifier 역할을 구조적으로 보장.",
+    "portfolio_construction": "[v2 REV-2 반영] UA Sorting: E_hat[r_i] - kappa * sigma_hat[r_i]로 sorting. kappa=1.0 고정(Liu et al. 2026 기본값). kappa grid search는 S1에서 금지, expanding window kappa 학습은 S5 mutation에서만 허용. 이는 Garlappi, Uppal & Wang(2007)의 parametric uncertainty 프레임워크를 ML 예측에 확장한 것이며, parameter-free 설계로 C1(full-sample 통계 금지) 위반 경로를 원천 차단."
+  },
+
+  "academic_literature_review": {
+    "primary_references": [
+      {
+        "id": "LIU-2026",
+        "citation": "Liu, Luo, Wang & Zhang (2026) 'Uncertainty-Adjusted Sorting for Asset Pricing with Machine Learning' arXiv:2601.00593",
+        "relevance": "가설의 직접적 이론 근거. UA Sorting이 point-prediction sorting 대비 OOS 성과 개선. 변동성 감소 채널. Flexible ML 모델(RF 포함)일수록 효과 강함. Asset-level uncertainty가 핵심(시간 또는 aggregate가 아닌).",
+        "key_finding": "UA bounds로 sorting하면 long-short portfolio의 SR 개선. 이 개선은 partial 또는 misspecified uncertainty에서도 지속."
+      },
+      {
+        "id": "LIAO-2025",
+        "citation": "Liao, Ma, Neuhierl & Schilling (2025) 'The Uncertainty of ML Predictions in Asset Pricing' arXiv:2503.00549",
+        "relevance": "ML forecast confidence interval의 이론적 토대. NN 예측의 asymptotic distribution이 classic nonparametric methods와 동일함을 증명. Uncertainty-averse portfolio가 OOS Sharpe ratio 개선. Shrinkage의 경제적 근거.",
+        "key_finding": "Forecast confidence interval을 투자에 반영하면 'non-participation region'이 발생하여 불확실한 자산 배제. 이는 shrinkage와 동치."
+      },
+      {
+        "id": "GKX-2020",
+        "citation": "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via Machine Learning'",
+        "relevance": "ML-1. RF가 OOS에서 OLS 대비 우월하나 GBT/NN보다 약간 열위. 한국시장에서는 RF와 XGBoost가 거의 동등(L-124: 0.69 vs 0.70).",
+        "key_finding": "비선형 feature interaction이 alpha source. Walk-forward expanding window 필수."
+      },
+      {
+        "id": "TAHERI-2026",
+        "citation": "Taheri Hosseinkhani et al. (2026 SSRN 6412360) 'Transformer Uncertainty and the Cross-Section of Stock Returns'",
+        "relevance": "W_Trans(prediction interval width)가 그 자체로 cross-sectional alpha 신호임을 증명. 불확실성 자체가 pricing factor. RF의 tree variance가 유사한 역할 가능.",
+        "key_finding": "모델 불확실성(prediction interval width)이 cross-section에서 수익률을 예측하며, 불확실성이 낮은 종목이 높은 수익률 실현."
+      },
+      {
+        "id": "BREIMAN-2001",
+        "citation": "Breiman (2001) 'Random Forests' Machine Learning 45(1), 5-32",
+        "relevance": "RF 원논문. OOB error estimation, variable importance, tree-level variance의 이론적 기초.",
+        "key_finding": "OOB는 leave-one-out cross-validation의 근사. Tree 수 증가 시 generalization error upper bound 수렴."
+      },
+      {
+        "id": "GARLAPPI-2007",
+        "citation": "Garlappi, Uppal & Wang (2007 RFS) 'Portfolio Selection with Parameter and Model Uncertainty'",
+        "relevance": "Parametric uncertainty를 mean-variance에 통합한 원조 프레임워크. Liao et al.(2025)과 Liu et al.(2026)이 이를 ML로 확장.",
+        "key_finding": "Expected return의 confidence set을 고려하면 투자 비중이 shrink. Uncertainty가 크면 non-participation."
+      },
+      {
+        "id": "MEINSHAUSEN-2006",
+        "citation": "Meinshausen (2006) 'Quantile Regression Forests' Journal of ML Research 7, 983-999",
+        "relevance": "RF에서 조건부 분위수를 추정하는 Quantile Regression Forest(QRF). Prediction interval 구축의 표준 방법. 점 예측 대신 분포 추정 가능.",
+        "key_finding": "RF의 각 leaf에서 target variable의 분포를 보존하면 임의의 분위수를 추정 가능. 이를 통해 P(r > 0 | x)를 직접 추정할 수 있음."
+      },
+      {
+        "id": "CPPS-2025",
+        "citation": "Kato et al. (2025 arXiv:2410.16333) 'Conformal Predictive Portfolio Selection'",
+        "relevance": "Conformal prediction으로 포트폴리오 수익률의 prediction interval 구축 후 선택. RF의 OOB가 conformal prediction과 연결되는 이론적 경로.",
+        "key_finding": "Model-free prediction interval 기반 포트폴리오 선택이 simpler 전략 대비 우월한 수익률."
+      }
+    ],
+    "supporting_references": [
+      "Ellsberg (1961) — 모호성 회피. 불확실성 높은 종목의 할인율 상승 근거.",
+      "Leippold, Wang & Zhou (2022 JFE) — 한국과 유사한 아시아 시장에서 RF 실증. PLS>NN>RF>OLS.",
+      "Barroso & Santa-Clara (2015 JFE) — Factor risk management(timing이 아닌). Risk-managed momentum.",
+      "DeMiguel, Garlappi & Uppal (2009 RFS) — Naive diversification 우월성. Estimation error의 OOS 열화 경고.",
+      "Chen, Pelger & Zhu (2024 MS) — 경제적 구조 부여가 과적합 방지 핵심. No-arbitrage constraint."
+    ]
+  },
+
+  "rf_vs_xgb_structural_analysis": {
+    "inductive_bias": {
+      "rf": "Bagging: B개 bootstrap 트리를 병렬 학습 후 평균. Variance reduction이 핵심. 각 트리가 독립적이므로 'disagreement' 해석이 가능. mtry(각 split에서 무작위 선택하는 feature 수)가 decorrelation을 강화.",
+      "xgb": "Boosting: 이전 트리의 잔차를 순차적으로 학습. Bias reduction이 핵심. 각 트리가 이전에 의존하므로 'disagreement' 해석이 불가. Learning rate(eta)가 regularization."
+    },
+    "uncertainty_estimation": {
+      "rf": "자연적 제공: (1) Inter-tree variance = epistemic uncertainty proxy, (2) OOB prediction = free cross-validation, (3) Quantile Regression Forest(Meinshausen 2006) = 조건부 분위수. 추가 비용 없음.",
+      "xgb": "구조적 어려움: (1) 순차 학습이므로 tree 간 분산이 의미 없음, (2) Bootstrap 대신 row/column subsampling이지만 OOB 해석 불가, (3) 불확실성 추정에는 별도 framework 필요(conformal, SHAP-based 등). 추가 비용 발생."
+    },
+    "korean_market_empirical": {
+      "icir_comparison": "L-124: XGB ICIR 0.70, RF ICIR 0.69. 거의 동등.",
+      "ensemble_benefit": "L-124: XGB+RF rank average ICIR 0.71. 소폭 개선 = 서로 다른 종목을 포착한다는 간접 증거.",
+      "implication": "예측 성능이 동등하므로, RF의 구조적 차별점(uncertainty estimation)이 진정한 부가가치."
+    }
+  },
+
+  "methodology": {
+    "phase1_rf_training": {
+      "description": "기존 ML 파이프라인(walk-forward expanding, MI prefilter top 50, purged CV 21d)을 RF에 적용. ranger R package 사용.",
+      "hyperparameters": {
+        "num_trees": "500 (최소 300, OOB convergence 확인)",
+        "mtry": "sqrt(p) ≈ 7 (50개 feature 기준)",
+        "min_node_size": 5,
+        "max_depth": "NULL (unlimited, default)",
+        "sample_fraction": 1.0,
+        "replace": true,
+        "seed_ensemble": "5-seed (1234, 2345, 3456, 4567, 5678)"
+      },
+      "walk_forward": "[v2 REV-1] 5yr expanding window, 일간 Factor DB 중 fundamental family만(V/Q/AC/GR/IN/S/XF_DU, ~96팩터)에서 MI prefilter top 50",
+      "purged_cv": "21 trading days embargo between train and validation"
+    },
+    "phase2_uncertainty_quantification": {
+      "method_A_tree_variance": {
+        "description": "각 종목 i에 대해 B개 트리의 예측값 {f_b(x_i)}_{b=1}^B의 표준편차를 계산. sigma_i = sd({f_1(x_i), ..., f_B(x_i)}). 이것이 epistemic uncertainty.",
+        "advantage": "추가 계산 비용 거의 없음. ranger의 predict(type='se') 직접 사용 가능.",
+        "literature": "Breiman (2001), Wager, Hastie & Efron (2014 JMLR) 'Confidence Intervals for Random Forests'"
+      },
+      "method_B_oob_prediction_interval": {
+        "description": "OOB prediction의 잔차 분포를 이용한 prediction interval 구축. 각 종목의 OOB residual의 분위수(5th, 95th)로 90% PI 구축.",
+        "advantage": "Conformal prediction과 유사한 validity guarantee(marginal coverage). 분포 가정 불필요.",
+        "literature": "Zhang, Zimmerman, Nettleton & Nordman (2020 JMLR) 'Random Forest Prediction Intervals'"
+      },
+      "method_C_quantile_regression_forest": {
+        "description": "Meinshausen(2006)의 QRF. 각 leaf에서 target의 전체 분포를 보존. P(r_i > 0 | x_i)를 직접 추정 가능.",
+        "advantage": "가장 풍부한 정보. Conditional distribution 추정 = 비대칭 리스크 프로파일링.",
+        "literature": "Meinshausen (2006 JMLR), Athey, Tibshirani & Wager (2019 AoS) 'Generalized Random Forests'"
+      }
+    },
+    "phase3_ua_sorting": {
+      "description": "Liu et al.(2026)의 UA Sorting을 RF에 적용. Point prediction E_hat[r_i] 대신 lower bound E_hat[r_i] - kappa * sigma_hat[r_i]로 sorting.",
+      "kappa_selection": "[v2 REV-2] kappa=1.0 고정 (Liu et al. 2026 기본값). kappa=0이면 표준 point sorting, kappa→inf이면 최저 불확실성 종목만 선택. S1에서 kappa grid search 금지. Expanding window kappa 학습은 S5 슬롯 A에서만 허용. Parameter-free 설계로 C1 위반 경로 원천 차단.",
+      "sorting_rule": "UA_score_i = E_hat[r_i] - kappa * sigma_hat[r_i]. Top 30 종목을 EW로 포트폴리오 구성.",
+      "pit_compliance": "E_hat과 sigma_hat 모두 t-1 시점 정보만 사용. Walk-forward expanding window + purged CV. C1-C15 완전 준수."
+    }
+  },
+
+  "s1_variants_v2": {
+    "_REV-3_pre_registration": {
+      "primary": "S1-B",
+      "rule": "S1-B 결과가 ICIR >= 0.20 충족 여부의 판단 기준. S2 진입 결정은 S1-B 기준.",
+      "exception": "S1-B ICIR < 0.10이면서 S1-C 또는 S1-D ICIR >= 0.20인 경우에만, 사유 명시 후 primary 변경 가능.",
+      "prohibition": "모든 variant 실행 후 최고 SR/ICIR 선택 = 금지 (다중검정 문제)"
+    },
+    "variants": [
+      {
+        "id": "S1-A",
+        "name": "RF_Point_Prediction (baseline)",
+        "description": "RF 5-seed ensemble 평균 예측값으로 standard sorting. Fundamental-only feature pool(~96) 사용.",
+        "config": "RF_POOL MI top 50, 500 trees, EW 30, 15bps, LIQ 2e8",
+        "role": "supplementary (baseline comparison)",
+        "expected": "Fundamental-only이므로 L-124의 0.69보다 낮을 가능성. Feature split 효과 측정 기준."
+      },
+      {
+        "id": "S1-B",
+        "name": "RF_UA_TreeVariance (kappa=1.0 fixed)",
+        "description": "UA Score = E_hat - 1.0 * sigma_tree. Liu et al.(2026) 기본값. Parameter-free.",
+        "config": "위와 동일 + predict(type='se'). kappa=1.0 고정, grid search 금지.",
+        "role": "PRIMARY -- S2 진입 기준",
+        "expected": "S1-A 대비 ICIR 유지/소폭 개선 + MDD/Volatility 감소."
+      },
+      {
+        "id": "S1-C",
+        "name": "RF_UA_OOB_PI (lower bound 80% PI)",
+        "description": "OOB residual의 10th percentile로 lower bound. 80% prediction interval의 하한.",
+        "config": "위와 동일 + OOB residual distribution 계산",
+        "role": "supplementary",
+        "expected": "더 보수적 종목 선택. 변동성 감소 강화."
+      },
+      {
+        "id": "S1-D",
+        "name": "RF_QRF_Positive_Probability (P(r>0|x))",
+        "description": "QRF로 P(r > 0 | x) 추정. 양수 수익률 확률 기반 sorting.",
+        "config": "ranger(quantreg=TRUE), quantiles=c(0.1, 0.5, 0.9)",
+        "role": "supplementary",
+        "expected": "가장 보수적. Hit rate 극대화. Defense 역할 적합 가능."
+      }
+    ]
+  },
+
+  "expected_role": "diversifier",
+  "why_now": "SR gap +0.807 (1.193 -> 2.0). 100% consensus+ML_complexity family 집중(gap vector). STR_1656 XGBoost가 이미 PG3 편입되었으나 2024 alpha decay 94% 확인(IC 0.0655 -> 0.0057). RF는 XGBoost와 예측력 동등(ICIR 0.69 vs 0.70)하면서 구조적으로 다른 inductive bias(bagging vs boosting) + uncertainty estimation 능력을 보유. UA Sorting이라는 최신 학술 프레임워크(Liu 2026, Jan)를 적용하면 XGBoost point prediction 대비 noise filtering + volatility reduction이 가능. 앵커(STR_1631)와의 상관 감소는 uncertainty-based stock selection이 quality/earnings 기반 선택과 다른 종목을 포착하기 때문. family_concentration의 ML_complexity 0.5이지만 RF_UA는 'ML에 의한 uncertainty estimation'이라는 새로운 sub-family를 형성.",
+
+  "core_reference": "Liu, Luo, Wang & Zhang (2026 arXiv:2601.00593) 'Uncertainty-Adjusted Sorting for Asset Pricing with ML' -- UA Sorting의 직접적 근거; Liao, Ma, Neuhierl & Schilling (2025 arXiv:2503.00549) 'The Uncertainty of ML Predictions in Asset Pricing' -- ML FCI + UA portfolio 이론; Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via ML' -- RF 실증; Breiman (2001) 'Random Forests' ML 45(1) -- OOB + tree variance; Meinshausen (2006 JMLR) 'Quantile Regression Forests' -- 조건부 분위수; Garlappi, Uppal & Wang (2007 RFS) 'Portfolio Selection with Parameter and Model Uncertainty' -- UA 투자 프레임워크",
+
+  "lesson_check": {
+    "L-124": "Tree > Linear > Logistic. RF ICIR 0.69 vs XGB 0.70 -- 거의 동등. 본 가설은 이 동등성을 전제로 uncertainty 차별화를 추구.",
+    "L-123": "ML PIT 표준: walk-forward expanding + purged CV 21d + MI prefilter top50. 동일 파이프라인 적용.",
+    "L-010": "ICIR instability: adaptive ICIR weighting 실패. 본 가설은 ICIR ranking이 아닌 uncertainty-adjusted bounds로 sorting하므로 L-010의 함정 회피.",
+    "L-119": "정적 팩터 블렌드 = alpha 희석. 본 가설은 RF 단일 모델의 내부 uncertainty를 활용하므로 블렌드 아닌 구조적 접근.",
+    "L-106": "beta 지배. UA Sorting의 noise filtering이 high-beta noise stocks를 자연 배제할 수 있으나, 별도 beta 제어는 S5에서.",
+    "L-115": "low-beta 단독 실패(섹터 집중). S1에서는 순수 UA signal 측정. S5에서 섹터중립/CVaR 결합."
+  },
+
+  "factors": "[v2 REV-1] RF 5-seed ensemble from fundamental-only daily factors (~96: V/Q/AC/GR/IN/S/XF_DU), MI prefilter top 50. Feature overlap with XGBoost = 0% (family-based split). ranger R package. Uncertainty: inter-tree variance + OOB prediction interval + QRF.",
+
+  "overlay_plan": "S1: none (EW 30, 15bps, 유동성 2e8). S5: DD Brake + VD+ overlay. 별도 CVaR LP 가중은 UA Sorting과 중복 가능성 있으므로 S5에서 ablation으로 결정.",
+
+  "s5_research_slate": {
+    "A": "UA Sorting expanding window kappa (S1에서 고정한 kappa=1.0을 S5에서만 expanding 학습 허용)",
+    "B": "UA Sorting + DD Brake(10/25)",
+    "C": "UA Sorting + CVaR LP weighting (uncertainty-based stock selection + risk-based weighting)",
+    "D": "RF + XGBoost ensemble UA (두 모델의 disagreement를 추가 uncertainty로 활용)"
+  },
+
+  "risk_factors": [
+    "RF-XGBoost 상관: L-124에서 rank average ICIR 0.71(vs 개별 0.69-0.70)은 종목 overlap이 높음을 시사. UA Sorting이 충분한 차별화를 만들지 못하면 STR_1656과 상관 0.7+ 가능 → diversifier 실패. S2에서 종목 overlap 측정 필수.",
+    "Kappa 민감도: kappa가 너무 높으면 지나치게 보수적 → alpha 희석. 너무 낮으면 point sorting과 차이 없음. 과적합 위험. Expanding window에서 kappa를 고정해야 C1 준수.",
+    "Tree variance의 비일관성: Breiman(2001)의 variance 추정이 과소추정될 수 있음(Wager et al. 2014). Infinitesimal Jackknife 보정 필요할 수 있으나 계산 비용 증가.",
+    "한국시장 소규모 cross-section: ~2,000종목에서 RF 500 trees의 OOB이 충분한 커버리지를 제공하는지 검증 필요. 미국시장(~5,000)과 달리 표본 부족 가능.",
+    "Alpha decay 공유: RF와 XGBoost가 동일한 feature space(MI top 50)를 공유하므로 alpha decay 패턴도 유사할 수 있음. S1-B에서 RE* 제거 variant 테스트.",
+    "Computational cost: RF 500 trees x 5 seeds x walk-forward = 2,500 RF 모델 학습. XGBoost보다 학습 시간 2-3x 예상. 일간 데이터 1.3M+ rows에서 메모리 관리 필요."
+  ],
+
+  "success_criteria": {
+    "s1": "ICIR >= 0.20 (Alpha Lab Gate), 최소 1개 variant(S1-B 또는 S1-C)에서 XGBoost 대비 종목 overlap < 70%, 최근 3Y ICIR >= 0.30",
+    "s2": "XGBoost(STR_1656) 대비 return correlation < 0.60, FMB t > 2.0",
+    "s3": "앵커(STR_1631) 상관 < 0.50, STR_1656 상관 < 0.60 (UA Sorting 차별화 확인)",
+    "s5": "앵커 상관 < 0.35, standalone SR > 0.50, MDD < 45% (hard fail 회피)"
+  },
+
+  "implementation_notes": {
+    "r_package": "ranger (CRAN). randomForest 대비 10x 속도. C++ backend. quantile regression 지원.",
+    "key_functions": [
+      "ranger(formula, data, num.trees=500, mtry=7, min.node.size=5, replace=TRUE, keep.inbag=TRUE) -- keep.inbag=TRUE for OOB prediction",
+      "predict(rf_model, data, type='se') -- inter-tree standard error",
+      "predict(rf_model, data, type='quantiles', quantiles=c(0.1, 0.5, 0.9)) -- QRF"
+    ],
+    "memory_management": "ranger는 XGBoost 대비 메모리 사용 2-3x. num.trees=500에서 ~2GB 예상. RAM 80% 규칙 준수를 위해 한 번에 1개 seed만 학습.",
+    "pit_compliance": "C1(rolling/expanding only), C2(t-1 features), C14(Usable_Date), C15(load_month_factors via daily pipeline). 기존 ML 파이프라인과 동일."
+  },
+
+  "novelty_assessment": {
+    "vs_existing_strategies": "STR_1656(XGBoost)은 point prediction sorting. 본 가설은 uncertainty-adjusted sorting. 동일 feature space, 동일 파이프라인이지만 '불확실성 활용'이라는 구조적 차별점.",
+    "vs_literature": "Liu et al.(2026)이 UA Sorting을 제안했으나 미국시장 + NN/Linear 중심. RF의 자연적 uncertainty(OOB, tree variance)를 활용한 UA Sorting은 문헌에서 아직 탐구되지 않음. Liao et al.(2025)은 NN FCI에 집중. RF의 structural advantage를 UA 프레임워크에 결합하는 것이 본 가설의 학술적 기여.",
+    "expected_max_corr_with_existing": "STR_1656과 0.40-0.60 (feature overlap), STR_1631과 0.20-0.40 (다른 alpha source). Novelty Bonus 조건(max_corr < 0.5): 달성 가능성 높음.",
+    "role_bias_tag": "RoleBias_Diversifier"
+  }
+}

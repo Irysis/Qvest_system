@@ -1,0 +1,94 @@
+{
+  "judge_version": "v7",
+  "strategy": "STR_1333_value_earnings_synergy_B1_ICWeight",
+  "variant_of": "STR_1333",
+  "timestamp": "2026-03-26T00:00:00",
+  "final_verdict": "B / Keep",
+  "grade": "B",
+  "score": 32.5,
+  "role_declared": "diversifier",
+  "role_verified": true,
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "lookahead_detector": "CLEAN (run_all.R: 257 lines, s5_variants.R: 288 lines, 0 violations)",
+      "c1_full_sample": "CLEAN — variant name says ICWeight but implementation is ivol (inverse-volatility, 60d trailing window). No full-sample IC used anywhere.",
+      "c2_same_day_circular": "CLEAN — DD brake t-1 lagged (line 115-116 of s5_variants.R apply_overlay).",
+      "c3_same_period": "CLEAN — factor scores built from Z_Score_Aligned at sig_d, applied to next month.",
+      "c4_financial_lag": "CLEAN — BM(V01) and ESBR(C04) loaded via load_month_factors() which enforces Usable_Date lag.",
+      "c5_overlay_t1": "CLEAN — DD brake uses dd_exp_lagged = c(1.0, head(dd_exp, -1)); MRS uses daily_regime built by regime_engine_daily.R v7.1.",
+      "c6_survivorship": "CLEAN — RAWDATA includes delisted stocks.",
+      "c7_auto_detect": "CLEAN — lookahead_detector found 0 pattern violations.",
+      "c8_fm_same_day": "N/A — no factor momentum overlay.",
+      "c9_vt_dd_same_day": "CLEAN — vol_target uses vol_lookback=60 trailing; DD brake is t-1 lagged.",
+      "c10_liquidity": "CLEAN — AvgTV20 uses shift(n=1L, type='lag') (line 41-42 s5_variants.R).",
+      "c11_data_time_axis": "CLEAN — Factor DB uses Usable_Date; FRED data in regime engine uses expanding percentile.",
+      "c13_negate_factors": "CLEAN — Z_Score_Aligned only, no manual sign flip.",
+      "c14_ic_usable_date": "CLEAN — load_month_factors() enforces Usable_Date <= sig_date.",
+      "c15_factor_db_load": "CLEAN — uses load_month_factors() connector, not direct parquet read.",
+      "note": "Naming mismatch: variant labeled 'ICWeight' but actual weight_method='ivol' (inverse volatility). Not a PIT issue but a documentation inaccuracy."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "sharpe": 0.826,
+      "cagr_pct": 12.07,
+      "mdd_pct": 37.77,
+      "calmar": 0.319,
+      "ir": 0.245,
+      "assessment": "BELOW TARGET — SR 0.826 < 2.0, CAGR 12.07% < 16%, MDD 37.77% > 25%. All three primary targets missed. Calmar 0.319 is weak. Worse than base STR_1333 (SR 0.857, CAGR 13.43%, MDD 34.31%) on all metrics — ivol weighting degraded performance."
+    },
+    "gate2_artifacts": {
+      "pass": true,
+      "sim_result_rds": true,
+      "hurdle_result_json": true,
+      "equity_curve_png": true,
+      "annual_returns_png": true,
+      "performance_csv": true,
+      "note": "No separate analysis_*.csv files for variant (only in parent output)."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "declared_role": "diversifier",
+      "bm_corr": 0.65,
+      "assessment": "BM_Corr 0.65 is moderate — consistent with diversifier role. Not core_alpha (would need higher SR/CAGR), not pure defense (would need lower BM_Corr). Role declaration honest."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "oos_retention": 0.452,
+      "is_sharpe": 1.073,
+      "oos_sharpe": 0.485,
+      "alpha_decay_ratio": 0.939,
+      "rolling3y_pos": 0.866,
+      "assessment": "OOS retention 45.2% is marginal (IS SR 1.073 vs OOS SR 0.485). Alpha trend slightly decaying (recent/full = 0.94). IC stability not available for variant. Parent IC stability shows decay (full IC 0.0315 / recent 3Y IC 0.0162 = 0.52). DSR not computed."
+    },
+    "gate5_ff5": {
+      "pass": "CONDITIONAL",
+      "ff3_alpha_annual_pct": 4.31,
+      "ff3_alpha_tstat": 1.152,
+      "ff5_alpha_annual_pct": 5.70,
+      "ff5_alpha_tstat": 1.415,
+      "carhart4_alpha_annual_pct": 4.40,
+      "carhart4_alpha_tstat": 1.172,
+      "assessment": "Using parent STR_1333 FF5 results (variant shares same factor construction). FF5 alpha 5.7% annualized with t=1.415 — positive but not significant at 5% level. FF3 alpha t=1.15, Carhart4 t=1.17 — all below 1.96. FMB Score lambda t=2.05 is significant. Alpha exists but lacks statistical power for standalone significance.",
+      "note": "FF5 analysis from parent base strategy; variant-specific FF5 not available."
+    }
+  },
+  "strengths": [
+    "PIT fully clean — no lookahead violations across C1-C15",
+    "Solid academic foundation (BM + ESBR synergy, Asness/Novy-Marx/Piotroski)",
+    "Rolling 3Y positive ratio 86.6% — consistent alpha generation",
+    "Stress outperformance 2/3 — reasonable crisis resilience",
+    "FMB Score lambda significant (t=2.05)"
+  ],
+  "weaknesses": [
+    "MDD 37.77% far exceeds 25% target — worst among all metrics",
+    "CAGR 12.07% below 16% target",
+    "Sharpe 0.826 well below 2.0 target",
+    "OOS retention only 45.2% — significant IS/OOS gap",
+    "Worse than base STR_1333 on ALL metrics — ivol weighting did NOT help",
+    "FF5 alpha t-stats all below significance threshold (max 1.415)",
+    "IC decaying (parent shows 0.52 recent/full ratio)",
+    "Naming mismatch: labeled ICWeight but uses ivol"
+  ],
+  "recommendation": "KEEP as Grade B diversifier. Not promotion-worthy. The ivol weighting experiment failed to improve on the EW base — all metrics degraded. The alpha source (BM+ESBR synergy) is real but modest. For future S5 mutations: (1) fix variant naming (ivol != IC-weighted), (2) try true IC-weighted allocation if IC data available, (3) focus on MDD reduction which is the binding constraint."
+}

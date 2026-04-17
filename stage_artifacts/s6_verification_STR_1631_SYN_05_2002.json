@@ -1,0 +1,129 @@
+{
+  "stage": "S6_Verification",
+  "strategy_id": "STR_1631_SYN_05_2002",
+  "strategy_name": "STR_1631_SYN_05_2002_icwt_scoretilt_bimonthly",
+  "timestamp": "2026-04-08T21:00:00",
+  "judge": "Judge",
+  "version": "1.0.0",
+
+  "sg_check_s6_entry": {
+    "pass": true,
+    "s5_artifact": "s5_synthesis_slate_M11.json",
+    "mutations_attempted": 21,
+    "f_category_count": 4,
+    "synthesis_tested": true,
+    "s3_s4_note": "S3/S4 개별 산출물 미확인 -- SYN_05_2002는 SYN_05의 기간 확장 버전으로, SYN_05 자체가 S5 Phase 5에서 검증된 조합"
+  },
+
+  "gate_0_pit": {
+    "verdict": "CONDITIONAL_PASS",
+    "auto_detector": {
+      "clean": false,
+      "violations": 1,
+      "details": [
+        {
+          "code": "C10_LIQ",
+          "line": 155,
+          "severity": "LOW",
+          "description": "frollmean(TradVal, 20L) includes today volume. shift(lag=1) required.",
+          "fix": "RAWDATA[, LIQ_20d := shift(frollmean(TradVal, n=20L, align='right', na.rm=TRUE), n=1L, type='lag'), by=Ticker]"
+        }
+      ]
+    },
+    "manual_review": {
+      "C1_expanding_ic": "PASS -- Date < sd (t-1)",
+      "C2_score_lag": "PASS -- prev_score_map uses t-1 Score",
+      "C4_consensus_roll": "PASS -- roll=7L point-in-time join",
+      "C5_overlay_t1": "PASS -- regime_engine_daily already t-1",
+      "C9_mrs_lag": "PASS -- no additional shift (engine handles t-1)",
+      "C13_zscore_aligned": "PASS -- z_safe() cross-sectional, no manual flip"
+    }
+  },
+
+  "gate_1_hard_fail": {
+    "verdict": "PASS",
+    "mdd": {"value": 33.86, "threshold": 45, "pass": true},
+    "turnover": {"value": 301.2, "threshold": 600, "pass": true},
+    "backtest_years": {"value": 23, "threshold": 5, "pass": true}
+  },
+
+  "gate_2_ff5_fmb": {
+    "verdict": "INCOMPLETE",
+    "ff5_alpha": "NOT_RUN -- analysis_fmb_summary.csv absent",
+    "dsr": "NOT_RUN -- DSR module not available",
+    "ic_stability": "NOT_RUN -- analysis_ic.csv absent",
+    "action_required": "Run strategy_analyzer for FF5/FMB/IC stability analysis"
+  },
+
+  "gate_3_dsr": {
+    "verdict": "INCOMPLETE",
+    "dsr_value": null,
+    "harvey_t_awareness": "SR 1.248 over 23Y (~276M) implies raw t-stat ~5.98, but pre-multiple-testing-correction",
+    "action_required": "Calculate DSR with n_trials from strategy catalog"
+  },
+
+  "gate_4_stress": {
+    "verdict": "CONDITIONAL_PASS",
+    "period_analysis": {
+      "full_2002_2026": {"cagr": 20.9, "sr": 1.16, "mdd": -33.9},
+      "it_recovery_2002_2005": {"cagr": 30.5, "sr": 1.29, "mdd": -25.9},
+      "original_2005_2026": {"cagr": 19.4, "sr": 1.12, "mdd": -33.9},
+      "gfc_2007_2009": {"cagr": -6.8, "sr": -0.52, "mdd": -25.6},
+      "covid_2020": {"cagr": 21.5, "sr": 1.03, "mdd": -19.8},
+      "recent_2021_2026": {"cagr": 20.9, "sr": 1.05, "mdd": -25.5}
+    },
+    "rolling_3y_sr_positive": 97.5,
+    "stress_outperformance": "2/3",
+    "is_oos_analysis": {
+      "is_sr": 1.560,
+      "oos_sr": 0.743,
+      "retention": 0.476,
+      "warning": "52% SR decay from IS to OOS suggests moderate overfitting risk"
+    }
+  },
+
+  "gate_5_role_diversity": {
+    "verdict": "INCOMPLETE",
+    "declared_role": "core",
+    "detected_family": "defense_ensemble",
+    "role_honesty": "MINOR_MISMATCH -- core declaration with defense_ensemble family detection. Base alpha is Consensus(C19), so core_alpha classification appears more appropriate.",
+    "max_corr_grade_a": null,
+    "action_required": "Compute correlation against existing Grade A strategies"
+  },
+
+  "s7_verdict": {
+    "decision": "CONDITIONAL_APPROVE",
+    "conditions": [
+      "FIX: C10_LIQ line 155 -- add shift(lag=1) to LIQ_20d computation",
+      "RUN: strategy_analyzer for FF5/FMB/IC stability",
+      "RUN: DSR calculation",
+      "VERIFY: performance unchanged after C10 fix",
+      "RUN: Grade A correlation analysis"
+    ],
+    "rationale": "Core metrics meet Grade A criteria (Score 59.6, CAGR 22.5%, SR 1.248). PIT review shows only minor C10 violation (liquidity filter same-day volume inclusion). 3-axis synthesis (IC-weight x Score Tilt x Bimonthly) is structurally sound with academic backing. However, IS/OOS retention 0.48 and missing FF5/DSR analyses prevent full approval."
+  },
+
+  "hurdle_v22_metrics": {
+    "grade": "A",
+    "grade_v21": "A",
+    "score": 59.6,
+    "axes": {"Return": 58, "Risk": 42, "Robustness": 55, "Implementability": 66, "Diversification": 50},
+    "cagr": 22.53,
+    "sharpe": 1.248,
+    "mdd": 33.86,
+    "turnover": 301.2,
+    "calmar": 0.665,
+    "ir": 0.877,
+    "sortino": 1.774,
+    "rolling_3y_pos": 97.5,
+    "stress_outperform": "2/3"
+  },
+
+  "l_code": {
+    "id": "L-123",
+    "grade": "A",
+    "lesson_text": "STR_1631 SYN_05_2002 S6 검증: Consensus C19 IC-weighted blend + HRP-Score Tilt + 격월 리밸런싱 3축 합성 전략. 23년 백테스트(2003~2026) SR 1.248, CAGR 22.5%, MDD 33.9%, TO 301%. C10_LIQ 경미 위반(당일 거래량 포함) 발견 -- shift(lag=1) 수정 필요. IS/OOS retention 0.48(IS SR 1.56 vs OOS 0.74)로 과적합 경고 수준이나, 3Y rolling SR>0 비율 97.5%와 5개 구간 중 4개 양수 SR 확인. FF5/DSR 미실행 상태에서 조건부 승인. 기간 확장(2005->2002)이 성과를 유지한 점은 안정성 증거이나, 성과 향상은 아님.",
+    "core_reference": "Arnott et al.(2019) IC-based factor weighting + Novy-Marx & Velikov(2016) rebalancing frequency trade-off + Briere & Szafarz(2021) factor exposure-risk diversification hybrid",
+    "tags": ["S6", "synthesis", "IC_weighted", "HRP", "score_tilt", "bimonthly", "C10_fix_required", "OOS_retention_warning", "consensus", "C19"]
+  }
+}

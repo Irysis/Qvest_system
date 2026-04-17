@@ -1,0 +1,216 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T23:40:00",
+  "hypothesis_id": "H_1642_lowbeta_conditioned_scoring_diversifier",
+  "strategy_id": "pending_STR_assignment",
+  "parent": null,
+  "lineage": [],
+
+  "title": "Beta-Conditioned Multi-Factor Diversifier: Low-Beta bucket + AC17 Accrual Reversal + L22 Return Autocorrelation + Q04 Piotroski F-Score 3F blend",
+
+  "description": "시장 베타 하위 40% 유니버스에서 AC17_Accrual_Reversal + L22_Ret_Autocorr + Q04_Piotroski_F의 3F EW z-score blend로 scoring하는 diversifier 전략. H_1640(AC17 단독)과 H_1636_v2(Q04+L22)의 강점을 통합하되, 더 공격적인 beta 필터(하위 40%)로 포트폴리오 beta를 0.25~0.40으로 낮춘다. 3팩터 교차: AC17(회계 발생액 기계적 반전, Sloan 1996) + L22(가격 자기상관/미시구조 마찰, Lo & MacKinlay 1990) + Q04(재무건전성 9항목 종합, Piotroski 2000). 세 팩터는 accrual/microstructure/quality 3개 family에서 alpha를 추출하며, pairwise 상관이 극히 낮다(Q04-L22 0.018, Q04-C19 0.025, L22-C19 -0.007). AC17-C19 상관은 S2에서 측정하되, accrual과 consensus의 정보 원천 차이로 낮을 것으로 예상. Beta-conditioned 접근은 Governor 지시 4번(어떤 팩터든 low-beta bucket에서만 적용)의 직접 구현.",
+
+  "economic_mechanism": "4단계 메커니즘. (1) Beta-Conditioned Universe(Frazzini & Pedersen 2014 BAB + Fong 2016 Time Horizon): 하위 40% beta 유니버스를 H_1640보다 공격적으로 설정. Fong(2016)에 의하면 beta anomaly는 투자 시계(time horizon)와 관련되며, 장기 투자자가 선호하는 low-beta 영역에서 정보 반영 속도가 느려 accrual/microstructure alpha가 더 오래 지속. 하위 40%는 유니버스를 더 축소하지만, beta 직교성을 극대화하여 앵커(beta 0.854)와의 상관을 0.20~0.35로 낮출 수 있음. (2) AC17 Accrual Reversal(Allen, Larson & Sloan 2009): H_1640의 핵심 alpha. 4-regime 전구간 양수 IC. 기계적 반전 메커니즘. ICIR_CALM 0.78, ICIR_CRISIS 0.44. (3) L22 Return Autocorrelation(Lo & MacKinlay 1990): H_1636_v2에서 검증된 diversifier alpha. Bad regime IC ratio 2.03(conditional_ic_matrix 최고). 위기 시 시장 비효율성 확대와 함께 alpha 강화. Raw value 사용 필수(L-762). (4) Q04 Piotroski F-Score(Piotroski 2000): H_1636_v2에서 검증된 quality building block. FMB t=3.087(Harvey PASS). ICIR 0.276, recent_3y_icir 0.532. 9항목 종합 quality score로 위기 시 재무건전성 기반 방어. (5) 3F 교차의 시너지: accrual(회계적 평균회귀) + microstructure(거래 패턴) + quality(재무건전성)는 세 가지 독립적 정보 채널. Low-beta 유니버스에서 이 세 시그널이 동시에 높은 종목은 '재무적으로 건전하고(Q04), 발생액이 건강하며(AC17), 시장 미시구조가 alpha를 지지하는(L22)' 종목 = 정보 비대칭이 극대화된 영역.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "6가지 근거. (1) SR gap +0.757: 독립 수익원의 강도(standalone SR)와 직교성(상관)이 모두 중요. 3F blend는 2F보다 높은 standalone SR 가능성. (2) H_1636_v2의 검증 결과 활용: Q04+L22 조합은 이미 가설화 완료(scout_confidence 64점). 여기에 AC17(4-regime 전구간 양수, H_1640의 강점)을 추가하면 3개 family 교차로 팩터 다양성 극대화. (3) Beta 직교성 극대화: 하위 40%(H_1640의 50%보다 공격적)로 beta 0.25~0.40 달성. 앵커 대비 상관 0.20~0.35까지 낮출 수 있음. (4) 3개 미구축 family 동시 진입: accrual + liquidity/microstructure + quality. Factor Taxonomy 9조의 다양성 원칙 극대화. (5) 3F blend의 분산 효과: 3팩터 간 pairwise 상관이 극히 낮으므로(< 0.03), 개별 팩터의 IC 약점이 blend에서 상쇄. (6) Saturation Penalty 회피: 3개 family 분산으로 어느 한 family에도 집중하지 않음.",
+
+  "core_reference": [
+    {
+      "ref_id": "A3_Sloan1996",
+      "citation": "Sloan, R. (1996, The Accounting Review) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows?'",
+      "mechanism": "현금흐름 > 발생액 이익 지속성. 투자자 이익 고착. Accrual anomaly 원조.",
+      "diversifier_relevance": "AC17의 학술적 토대."
+    },
+    {
+      "ref_id": "A3_AllenLarsonSloan2009",
+      "citation": "Allen, E., Larson, C. & Sloan, R. (2009, Journal of Accounting and Economics) 'Accrual Reversals, Earnings and Stock Returns'",
+      "mechanism": "극단 발생액의 기계적 반전이 accrual anomaly를 완전 설명.",
+      "diversifier_relevance": "AC17(Accrual Reversal)의 직접적 메커니즘 근거."
+    },
+    {
+      "ref_id": "A3_Piotroski2000",
+      "citation": "Piotroski, J. (2000, Journal of Accounting Research) 'Value Investing: The Use of Historical Financial Statement Information'",
+      "mechanism": "F-Score 9항목 종합. High-F 기업의 장기 초과수익.",
+      "diversifier_relevance": "Q04의 학술적 근거. H_1636_v2에서 FMB t=3.087 확인."
+    },
+    {
+      "ref_id": "A3_LoMacKinlay1990",
+      "citation": "Lo, A. & MacKinlay, A.C. (1990, Review of Financial Studies) 'When Are Contrarian Profits Due to Stock Market Overreaction?'",
+      "mechanism": "수익률 양(+) 자기상관은 시장 과소반응(underreaction)의 증거.",
+      "diversifier_relevance": "L22의 학술적 근거. H_1636_v2에서 bad regime IC ratio 2.03 확인."
+    },
+    {
+      "ref_id": "A3_FrazziniPedersen2014",
+      "citation": "Frazzini, A. & Pedersen, L. (2014, Journal of Financial Economics) 'Betting Against Beta'",
+      "mechanism": "레버리지 제약 → SML 평탄화 → low-beta 과소가격.",
+      "diversifier_relevance": "Low-beta 유니버스 필터의 학술적 근거."
+    },
+    {
+      "ref_id": "A3_Fong2016",
+      "citation": "Fong, W.M. (2016) 'Time Horizon and the Beta Anomaly'",
+      "mechanism": "Beta anomaly는 투자 시계(time horizon)와 관련. 장기 투자자가 선호하는 low-beta 영역에서 정보 반영 속도가 느림.",
+      "diversifier_relevance": "Low-beta 유니버스에서 accrual/microstructure alpha가 더 오래 지속되는 이론적 근거."
+    },
+    {
+      "ref_id": "KR_FACTOR_2",
+      "citation": "박종원, 엄윤성, 엄철준 (2024, 재무관리연구 41(1))",
+      "mechanism": "한국시장 32년 팩터 실증. Low-risk sorting 단독 무효, accrual 조건부 유의, quality 롱사이드 유의.",
+      "diversifier_relevance": "Beta = filter(not alpha), accrual+quality = alpha source의 한국시장 근거."
+    }
+  ],
+
+  "factors": ["AC17_Accrual_Reversal", "L22_Ret_Autocorr", "Q04_Piotroski_F"],
+  "universe_filter": "D02_Beta rolling 252d, bottom 40%",
+  "family": "accrual_microstructure_quality_diversifier",
+  "economic_family_breakdown": {
+    "AC17": "accrual (33%)",
+    "L22": "liquidity/microstructure (33%)",
+    "Q04": "quality (33%)",
+    "D02_Beta": "risk (universe filter only, NOT scoring)"
+  },
+
+  "factor_profile": {
+    "AC17_Accrual_Reversal": {
+      "ic_all": 0.029,
+      "recent_3y_icir": 0.674,
+      "icir_CALM": 0.780,
+      "icir_CRISIS": 0.442,
+      "note": "4-regime 전구간 양수 IC. 본 가설의 핵심 차별화 팩터."
+    },
+    "L22_Ret_Autocorr": {
+      "ic_all": 0.013,
+      "recent_3y_icir": 0.367,
+      "bad_ratio": 2.03,
+      "FMB_t": 2.48,
+      "corr_C19": -0.007,
+      "note": "H_1636_v2에서 검증. Raw value 사용 필수(L-762)."
+    },
+    "Q04_Piotroski_F": {
+      "ic_all": 0.025,
+      "recent_3y_icir": 0.532,
+      "FMB_t": 3.087,
+      "ICIR_full": 0.276,
+      "corr_C19": 0.025,
+      "corr_L22": 0.018,
+      "note": "H_1636_v2에서 검증. Harvey PASS."
+    }
+  },
+
+  "pairwise_correlations": {
+    "Q04_L22": 0.018,
+    "Q04_C19": 0.025,
+    "L22_C19": -0.007,
+    "AC17_C19": "TBD (S2에서 측정. 예상: < 0.10, accrual vs consensus 정보 원천 차이)",
+    "AC17_Q04": "TBD (S2에서 측정. 예상: 0.05~0.15, accrual과 quality는 인접 family이나 다른 메커니즘)",
+    "AC17_L22": "TBD (S2에서 측정. 예상: < 0.05, 회계 데이터 vs 거래 패턴)"
+  },
+
+  "construction": {
+    "step1_universe": "전체 유동성 필터(20d ADV >= 2억원) 통과 종목에서 rolling 252d beta 하위 40% 선별.",
+    "step2_scoring": "AC17 Z_Score_Aligned + L22 raw z_safe() + Q04 Z_Score_Aligned 3F EW blend. Top 20 종목 선별.",
+    "step3_weighting": "EW (S1 순수 팩터 측정. S5에서 IC-weighted 등 대안 탐색).",
+    "step4_rebalance": "월간.",
+    "beta_lag": "t-1 beta 사용 (C2 준수).",
+    "accrual_lag": "C4 준수. 연간 5월, 분기 45일 lag.",
+    "l22_method": "raw value (rolling z-score 변환 금지, L-762)."
+  },
+
+  "expected_sr": 0.55,
+  "expected_cagr": 9.0,
+  "expected_mdd": 38.0,
+  "expected_turnover": 130,
+  "expected_portfolio_beta": 0.35,
+
+  "expected_metrics_detail": {
+    "sr_range": "0.40~0.70 (3F blend의 분산 효과로 2F보다 높은 SR 가능. Q04 FMB t=3.087, AC17 ICIR_CALM 0.78, L22 bad_ratio 2.03)",
+    "cagr_range": "6~12% (하위 40% beta 유니버스로 H_1640보다 더 보수적. Bull lagging 심화)",
+    "mdd_range": "30~45% (Q04의 quality 방어 + low-beta 필터. AC17 CRISIS IC 0.036 유지)",
+    "turnover": "90~170% (3F blend로 개별 팩터 TO보다 안정화. Accrual은 저회전)",
+    "portfolio_corr_with_anchor": "0.20~0.35 (하위 40% beta로 H_1640보다 상관 더 낮음)",
+    "portfolio_sr_contribution": "+0.15~0.30 (낮은 상관 + 합리적 standalone SR)"
+  },
+
+  "m11_complementarity": "4차원 보완. (1) Beta 직교: 앵커 beta 0.854 vs 본 전략 0.35. 시장 공통 노출 60% 절감. (2) 정보 원천 3중 직교: AC17(회계 발생액 반전) + L22(가격 미시구조) + Q04(재무건전성 종합) vs C19(분석가 이익 수정). 4개 독립 정보 채널. (3) 국면 보완: AC17 CRISIS ICIR 0.44 + L22 bad_ratio 2.03 → 위기 시 두 팩터가 alpha 유지/강화. (4) 다양성 극대화: 3개 family(accrual + microstructure + quality) 동시 진입으로 portfolio family concentration 0.50 → 0.33으로 개선.",
+
+  "lesson_check": [
+    {
+      "lcode": "L-087",
+      "summary": "한국시장 롱온리 low-risk sorting 무효.",
+      "application": "Beta = filter only. 하위 40%로 더 공격적이나 동일 원칙.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-118",
+      "summary": "Long-only beta 0.85~0.93이 상관 지배.",
+      "application": "하위 40% beta 필터로 상관 지배 구조 최대한 공략.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-769",
+      "summary": "Q04 standalone: FMB t=3.087, MDD 59.3%. Building block으로서 가치.",
+      "application": "Q04를 3F blend의 1/3 구성요소로 사용. Standalone 약점을 3F 분산으로 완화.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-762",
+      "summary": "L22 standalone: SR 0.397, raw value 필수. Rolling z-score 금지.",
+      "application": "L22 raw value 사용. 3F blend에서 L22의 diversifier 가치 활용.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-009",
+      "summary": "STR_1615 accrual 시도 교훈.",
+      "application": "AC17은 AC21/AC22와 다른 메커니즘(기계적 반전). 기존 accrual 실패와 차별화.",
+      "verdict": "참조 적용."
+    },
+    {
+      "lcode": "L-113",
+      "summary": "Quality defense 한국시장 구조적 실패. Core와 위기 상관 0.89.",
+      "application": "Q04를 defense가 아닌 diversifier building block으로 사용. Low-beta 유니버스 필터가 위기 상관을 구조적으로 낮추므로 L-113의 실패 패턴과 다른 맥락.",
+      "verdict": "주의 적용. S3에서 위기 상관 검증."
+    }
+  ],
+
+  "risk_factors": [
+    "유니버스 과도 축소: 하위 40% beta + 유동성 필터 → 실질 유니버스 80~120종목. 3F scoring에서 Top 20 선별 시 선택의 폭이 좁아 과적합 리스크.",
+    "3F blend 복잡성: 3팩터 조합은 2F보다 파라미터 공간이 넓어 S5 mutation에서 조합 폭발 리스크. S5에서 구조적 mutation 우선(L-code 원칙).",
+    "AC17-Q04 간 잠재적 상관: Accrual과 quality는 인접 family. AC17이 높은 기업이 Q04도 높을 수 있음(건전한 재무 → 낮은 발생액). S2에서 pairwise 상관 측정 필수.",
+    "Bull 시장 lagging 심화: 하위 40% beta는 강세장에서 H_1640(50%)보다 더 뒤처짐. 포트폴리오 전체 CAGR에 부정적 영향.",
+    "Rebalancing friction: 3F scoring + beta 유니버스 변동으로 높은 turnover. Transaction cost가 alpha 잠식.",
+    "H_1636_v2와의 중복: Q04+L22를 공유하므로, H_1636_v2가 실행될 경우 포트폴리오에서 중복 노출. 둘 중 하나만 선택해야 할 수 있음."
+  ],
+
+  "pit_compliance": {
+    "C1": "AC17은 재무제표 기반, L22는 rolling, Q04는 재무제표 기반. Full-sample 통계 미사용.",
+    "C2": "Beta 유니버스 확정 및 팩터 scoring 모두 t-1 lag.",
+    "C4": "AC17/Q04: 연간 5월, 분기 45일 lag.",
+    "C5": "Overlay 미적용(S1).",
+    "C13": "Z_Score_Aligned만 사용. L22는 raw z_safe().",
+    "C15": "load_month_factors() 경유."
+  },
+
+  "implementation_plan": {
+    "s1_action": "Beta 하위 40% 유니버스에서 AC17+L22(raw)+Q04 3F EW z-score blend Top 20, EW weight, 15bps, LIQ >= 2e8. 월간.",
+    "s1_expected": "SR 0.35~0.55, CAGR 6~10%, MDD 35~48%. Beta ~0.35.",
+    "s2_profiling": "ICIR >= 0.20, AC17-Q04/AC17-L22/AC17-C19 pairwise 상관 측정, sub-period 안정성.",
+    "s3_orthogonality": "앵커 대비 수익률 상관(목표 < 0.30), 종목 Jaccard, H_1636_v2와의 직교성(중복 체크).",
+    "s4_integration": "앵커 + H_1642 한계 SR 기여도. H_1636_v2 대비 우위 검증.",
+    "s5_mutation": "Beta threshold(30%/40%/50%), 3F 비중(EW vs AC17 overweight), N_HOLD, VT, DD Brake, IC-weighted.",
+    "s6_validation": "Judge Gate 0-5, C1-C15, H_1636_v2 대비 incremental value 검증."
+  },
+
+  "relationship_to_other_hypotheses": {
+    "H_1640": "AC17 단독 + beta 50%. H_1642는 AC17에 L22+Q04를 추가하고 beta를 40%로 강화. H_1640이 S2 PASS 시 H_1642의 실행 가치가 높아짐(AC17 유효성 확인).",
+    "H_1636_v2": "Q04+L22 2F (beta 필터 없음). H_1642는 여기에 AC17 추가 + beta 필터. H_1636_v2가 실행 완료 시 Q04+L22의 baseline 성능이 확인되므로, H_1642의 incremental value는 AC17 추가 + beta 필터의 한계 기여.",
+    "H_1641": "L31+CR08 미시구조 (4-regime 장기 약세). H_1642와 경쟁 관계. H_1641의 recent-only alpha 대비 H_1642의 장기 안정성(AC17 ICIR_CRISIS 0.44)이 우위."
+  },
+
+  "scout_confidence": {
+    "score": 62,
+    "rationale": "강점: (1) 3개 family 교차로 다양성 극대화(+8). (2) AC17 4-regime 전구간 양수 + Q04 FMB PASS + L22 bad_ratio 2.03 = 학술적 근거 최강(+10). (3) H_1636_v2(64점)의 검증된 Q04+L22에 AC17 추가(+5). (4) 하위 40% beta로 상관 0.20~0.35 달성 가능(+6). (5) Pairwise 상관 극히 낮은 3F(+3). 감점: (1) 유니버스 과도 축소(-6). (2) 3F 복잡성/조합 폭발(-4). (3) H_1636_v2와 2팩터 중복(-5). (4) Bull lagging 심화(-3). (5) AC17-Q04 잠재적 상관 미측정(-3). (6) AC17 한국시장 accrual 다중검정 불확실(-5). 총 62/100."
+  }
+}

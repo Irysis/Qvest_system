@@ -1,0 +1,111 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1422_flow_reversal_s5_m2",
+  "variant": "S5_M2_FlowRev_VT15_DD5_15",
+  "date": "2026-03-26",
+  "verdict": "REJECT",
+  "grade": "C",
+  "score": 28.3,
+  "pass": false,
+
+  "gate_0_pit": {
+    "pass": true,
+    "lookahead_detector": "CLEAN (all 3 scripts: run_s5_m2.R, factor_engine.R, run_all.R)",
+    "c1_fullsample": "PASS — VT uses expanding window (L52-56), no full-sample stats",
+    "c2_sameday_circular": "PASS — VT lagged via c(1.0, head(vt_scalar,-1)) L59; DD lagged via c(0, dd_pct[-n_f]) L67",
+    "c3_sameperiod": "PASS — cross-sectional Z-score by YearMonth in factor_engine.R is standard practice (not time-series)",
+    "c4_finstatement_lag": "N/A — no direct financial statement data",
+    "c5_overlay_t1": "PASS — VT and DD both use t-1 lagged signals",
+    "c6_survivorship": "PASS — uses RAWDATA including delisted",
+    "c7_auto_patterns": "PASS — lookahead_detector clean on all files",
+    "c8_fm_sameday": "N/A — no factor momentum overlay",
+    "c9_vtdd_sameday": "PASS — VT: vt_lagged L59, DD: dd_lag L67",
+    "c10_liquidity": "PASS — AvgTV20 uses shift(1L, lag) at L28",
+    "c11_data_timeaxis": "PASS — investor data uses rolling 20d, EOM extraction, no FRED time-shift issues"
+  },
+
+  "gate_1_performance": {
+    "pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Turnover 3205% >> 600% hard cap",
+      "CAGR 1.86% << 16% target",
+      "Sharpe 0.216 << 1.0 minimum",
+      "IR -0.567 — underperforms benchmark",
+      "Calmar 0.07 — negligible risk-adjusted return",
+      "MDD 26.71% > 25% target"
+    ],
+    "metrics": {
+      "CAGR": 1.86,
+      "AnnVol": 8.6,
+      "Sharpe": 0.216,
+      "IR": -0.567,
+      "MDD": 26.71,
+      "Calmar": 0.07,
+      "Turnover_Ann": 3204.7,
+      "BM_Corr": 0.811,
+      "OOS_retention": 0.258,
+      "WinRate": 52.7
+    }
+  },
+
+  "gate_2_artifacts": {
+    "pass": true,
+    "s0_record": true,
+    "s1_construction": true,
+    "s2_profile": true,
+    "s3_orthogonality": true,
+    "s4_integration": true,
+    "equity_curve_png": true,
+    "annual_returns_png": true,
+    "performance_csv": true,
+    "hurdle_result_json": true,
+    "sim_result_rds": true
+  },
+
+  "gate_3_role_honesty": {
+    "pass": true,
+    "declared_role": "diversifier",
+    "s4_role": "diversifier",
+    "role_consistent": true,
+    "notes": "S4 correctly identifies as diversifier (delta_sharpe=-0.029, kospi_beat=false). Orthogonality 0.79 is genuinely independent. Role assignment is honest."
+  },
+
+  "gate_4_statistical": {
+    "pass": false,
+    "reasons": [
+      "OOS retention 0.258 — severe IS/OOS degradation (IS SR 0.296 vs OOS SR 0.076)",
+      "Rolling 3Y Sharpe > 0 ratio only 50% — coin flip",
+      "Max consecutive negative alpha months: 11",
+      "DSR not computed (N/A)",
+      "IC stability: 0 (analysis not available)"
+    ],
+    "overfitting_flag": true,
+    "notes": "Alpha trend shows improvement (recent 3Y SR 0.574 vs full 0.216) but this is driven by very recent performance only. Full-period performance is catastrophically weak."
+  },
+
+  "gate_5_ff5": {
+    "pass": false,
+    "reason": "FF5 regression not available in output_s5_m2. Given CAGR=1.86% and SR=0.216, alpha is near-zero or negative. Benchmark (KOSPI200) returned 11.13% CAGR with SR=0.494 — strategy dramatically underperforms on all return metrics.",
+    "notes": "Strategy is dominated by the benchmark on every return metric. The only positive aspect is lower volatility (8.6% vs 22.5%) due to aggressive VT15%+DD5/15 overlays, but this comes at the cost of destroying all return."
+  },
+
+  "summary": {
+    "strengths": [
+      "PIT compliance verified — no lookahead violations (C1-C11 all clean)",
+      "Good orthogonality to existing Factor DB (max_abs_corr 0.21 with V06_fDY)",
+      "Stress outperformance 3/3 — defensive in crises",
+      "Stage gate artifacts complete (S0-S4)"
+    ],
+    "weaknesses": [
+      "FATAL: Turnover 3205% — 5x the 600% hard cap, strategy is untradeable",
+      "FATAL: CAGR 1.86% — barely above cash, massively underperforms KOSPI200 (11.13%)",
+      "Sharpe 0.216 — not investable",
+      "OOS degradation severe (retention 0.258) — IS overfitting suspected",
+      "VT15%+DD5/15 overlays are too aggressive — they crush returns to near-zero while MDD still exceeds 25%",
+      "The base flow reversal signal appears too weak to survive transaction costs at this turnover level"
+    ],
+    "root_cause": "The S5 M2 mutation applied VT target=15% and aggressive DD brake (5/15, min_exp=35%) to an already weak base signal. The flow reversal factor has marginal alpha (standalone SR ~0.4 in run_all.R output), and the overlays destroyed what little return existed. Turnover of 3205% suggests the signal generates excessive portfolio churn — the buffer zone (50/25) cannot contain it.",
+    "recommendation": "DISCARD this mutation. The flow reversal signal needs turnover reduction first (wider buffer zone, less frequent rebalancing, or stricter holding period constraints) before any VT/DD overlay can be productively applied. Consider: (1) quarterly rebalancing instead of monthly, (2) stronger buffer zone like 40/20 with n_holdings=20, (3) only apply flow signal when magnitude exceeds 2-sigma threshold."
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "hypothesis_id": "H_1660",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 60,
+  "attempt": 1,
+  "max_attempts": 3,
+  "timestamp": "2026-04-11T08:30:00",
+  "debate_format": "5-person_v52_agent_tool",
+  "debaters": [
+    {
+      "agent_id": "codex_critic_20260411_083000",
+      "role": "codex_critic",
+      "score": 7,
+      "max": 20,
+      "findings": "MI top50 PIT concern. Static equal-rank blend repeats L-119. ICIR 0.72-0.75 optimistic.",
+      "spawn_method": "bash_codex_companion"
+    },
+    {
+      "agent_id": "rm-h1660_20260411_083001",
+      "role": "risk_manager",
+      "score": 11,
+      "max": 20,
+      "findings": "Tail risk 미감소 (ES -7.22% ≈ XGB -7.23%). GFC ensemble -48.6% vs Ridge -6%. 위기 상관 0.89. Alpha decay 5모델 동시 발생.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "gov-h1660_20260411_083002",
+      "role": "governor",
+      "score": 11,
+      "max": 20,
+      "findings": "ML_complexity 50%→67% family 집중. STR_1656 대체 vs 추가 미명확. ICIR 한계 개선(0.01) SR gap 축소 제한적.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "qt-h1660_20260411_083003",
+      "role": "quant",
+      "score": 15,
+      "max": 20,
+      "findings": "5개 ICIR 실측 일치. IC_sd 감소 실증(diversity 효과). pls 설치 완료. 309→288 팩터 수 불일치. purged CV 기술 정정 필요.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "ac-h1660_20260411_083004",
+      "role": "academic",
+      "score": 16,
+      "max": 20,
+      "findings": "GKX(2020 RFS) 견고. 3축 inductive bias 정합. 한국 4모델 실증 강력. PLS 미실증. Timmermann(2006) 맥락 전이 주의.",
+      "spawn_method": "agent_tool"
+    }
+  ],
+  "conditions": [
+    "STR_1656 대체(upgrade) 용도로 명확화. 추가 sleeve 아닌 기존 ML slot 업그레이드.",
+    "309→288 팩터 수 정정. purged CV를 '1yr val gap' 또는 실제 21d purged K-fold로 정정.",
+    "S1 ablation 2M→3M→5M 순차. IC_sd 감소 + ES/CDaR 변화 동시 측정.",
+    "PLS ICIR < 0.30이면 4모델로 축소.",
+    "GFC 구간 종목 overlap 80% 이상이면 diversity 주장 기각.",
+    "S5 overlay 없이 포트폴리오 편입 절대 금지 (MDD -72%)."
+  ]
+}

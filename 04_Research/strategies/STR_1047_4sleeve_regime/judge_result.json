@@ -1,0 +1,27 @@
+{
+  "strategy_id": "STR_1047",
+  "strategy_name": "4-Sleeve Regime-Conditional Return Blend",
+  "family": "return_blend_ensemble",
+  "judge_date": "2026-03-23",
+  "grade": "FAIL_CONSTRAINT",
+  "score": null,
+  "gates": {
+    "gate0_pit": {"result": "PASS", "lookahead_violations": 0, "notes": "ALL CLEAN. Regime MRS uses apply_start roll join (t-1). DD Brake t-1 lagged."},
+    "gate1_implementability": {
+      "result": "FAIL",
+      "notes": "30-stock violation (L-484). Return-blend of 4 sleeves = ~52 unique stocks. N_stocks=30 hardcoded in PORTFOLIO_LOG — fabricated."
+    },
+    "gate2_robustness": {"result": "PASS", "mdd_pct": 18.89, "oos_retention": 0.71},
+    "gate3_performance": {"result": "PASS", "cagr_pct": 18.20, "sharpe": 1.532, "sortino": 2.191, "calmar": 0.964},
+    "gate4_statistical": {"result": "SKIPPED"},
+    "gate5_diversification": {"result": "SKIPPED"}
+  },
+  "commentary": {
+    "strength": "SR 1.532, MDD 18.89%, CAGR 18.20% — 표면 지표 우수. Regime-conditional 가중 로직 PIT clean. 4/4 stress outperform.",
+    "weakness": "Return-blend → ~52종목 동시 보유 필요. N_stocks=30 하드코딩 (실제 은폐). 30종목 위반 (L-484).",
+    "verdict_reason": "FAIL_CONSTRAINT: 수익률 블렌드 구조 → 30종목 규칙 위반. 실투 불가.",
+    "improvement": "종목레벨 score 합산으로 전환 (STR_1048 아키텍처). Regime-conditional weight를 score 가중에 적용.",
+    "comparison": "STR_1038~1043 동일 구조적 결함. 종목레벨 전환 시 유효한 아이디어.",
+    "evolution_path": ["종목레벨 score 합산 전환", "Regime-conditional score weight 적용"]
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "hypothesis_id": "H_1643",
+  "name": "Conditional Tail Defense (3-Factor)",
+  "verdict": "REJECT",
+  "total_score": 39,
+  "debate_protocol": "3-Round Structured Debate v52",
+  "timestamp": "2026-04-12T15:30:00",
+
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "label": "Opening",
+        "entries": [
+          {"role": "codex_critic", "score": 6, "key_argument": "사후적 위기 구간 피팅. 실시간 위기 정의 없이 defense 실패."},
+          {"role": "risk_manager", "score": 11, "key_argument": "D25 IC 정의 불일치. V24 ICIR -0.282 drag. MDD 달성됨, SR이 진짜 gap."},
+          {"role": "governor", "score": 15, "key_argument": "Defense family 0%는 구조적 필요. 그러나 CR05 crisis=negative, DFA v2에서 제거됨."},
+          {"role": "quant", "score": 7, "key_argument": "CR05 ICIR 0.77 재현 불가 (실측 -0.168). V24 ICIR 0.007 noise. D25 데이터 gap."},
+          {"role": "academic", "score": 14, "key_argument": "Ang(2006) 한국 검증 양호. 그러나 논문 18-30년 경과, CR05 proxy 구현 괴리."}
+        ],
+        "total": 53
+      },
+      {
+        "round": 2,
+        "label": "Rebuttal",
+        "entries": [
+          {"role": "codex_critic", "r1": 6, "r2": 4, "delta": -2, "key_rebuttal": "Quant/Governor 근거로 재현 불가+내부 일관성 위반 확정. family 다양성만으로 신호 유효성 대체 불가."},
+          {"role": "risk_manager", "r1": 11, "r2": 9, "delta": -2, "key_rebuttal": "CR05 per-crisis 분해가 결정적. Academic의 논문 연령 비판은 유효하지 않으나 CR05 기각 합의."},
+          {"role": "governor", "r1": 15, "r2": 12, "delta": -3, "key_rebuttal": "CR05 stress ICIR 불일치가 결정적. 3팩터 중 2팩터 부적합으로 D25 단일 의존."},
+          {"role": "quant", "r1": 7, "r2": 6, "delta": -1, "key_rebuttal": "CR05 취약성이 수치 불일치보다 더 구조적. H_1643은 사실상 D25 단일팩터로 축소."},
+          {"role": "academic", "r1": 14, "r2": 8, "delta": -6, "key_rebuttal": "Quant의 Factor DB 반증에 설득됨. R1에서 교차검증 미실시가 오류. V24 조건부 활성화 제안."}
+        ],
+        "total": 39
+      }
+    ]
+  },
+
+  "final_scores": {
+    "codex_critic": {"r1": 6, "final": 4, "delta": -2},
+    "risk_manager": {"r1": 11, "final": 9, "delta": -2},
+    "governor": {"r1": 15, "final": 12, "delta": -3},
+    "quant": {"r1": 7, "final": 6, "delta": -1},
+    "academic": {"r1": 14, "final": 8, "delta": -6}
+  },
+
+  "consensus_points": [
+    "CR05 (35% 비중)는 defense 역할에 부적합 — Factor DB stress ICIR -0.168, GFC/EU Debt 역작동, Registry crisis=negative",
+    "V24 (25% 비중)는 전기간 ICIR -0.282로 SR drag — 영구 배치 부적절",
+    "H_1643은 사실상 D25 단일팩터(40%)에만 의존하는 구조로 축소됨",
+    "Defense family 0%라는 포트폴리오 구조적 필요성 자체는 전원 인정"
+  ],
+
+  "unresolved_disputes": [
+    "D25 단독 defense 가설 재설계 가능성 — D25 + Q07(L-121 양쪽 위기 최강) 2팩터가 대안 (H_1644와 유사)",
+    "stress_factor_ic_analysis.csv와 Factor DB IC history 간 수치 불일치 원인 — 데이터 버전 or 위기 정의 차이",
+    "Defense family 탐색을 포기할 것인가 vs CR05/V24 교체 후 재시도할 것인가"
+  ],
+
+  "recommendation": "H_1644 (2-Factor Minimal: D07_Beta_Asymmetry + CR05 → Q07_Earnings_Stability 교체 검토) 또는 D25 + Q07 2팩터 defense 가설로 재설계 후 S0 재진입 권고.",
+
+  "debaters": [
+    {"agent_id": "codex_critic_20260412_151800", "role": "codex_critic", "score": 4, "findings": "재현 불가 + 내부 일관성 위반. family 다양성이 신호 유효성 대체 불가."},
+    {"agent_id": "risk_manager_sub_20260412_151801", "role": "risk_manager", "score": 9, "findings": "CR05 per-crisis 역작동 결정적. V24 영구 drag. MDD 달성됨, SR gap 역행."},
+    {"agent_id": "governor_sub_20260412_151802", "role": "governor", "score": 12, "findings": "구조적 다양성 필요 인정하나 3팩터 중 2팩터 부적합. D25 단일 의존 불충분."},
+    {"agent_id": "quant_sub_20260412_151803", "role": "quant", "score": 6, "findings": "CR05 0.77→-0.168. V24 0.007 noise. D25 2/6 crisis wins. 수치적 근거 붕괴."},
+    {"agent_id": "academic_sub_20260412_151804", "role": "academic", "score": 8, "findings": "R1 교차검증 미실시 반성. CR05 반증에 설득. V24 조건부 활성화 대안 제시."}
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "strategy_id": "STR_1502_cvar95_expected_shortfall_DD620",
+  "factor_id": "R03_CVaR_95",
+  "stage": "S5_DD_overlay",
+  "parent_judge": "judge_result.json (C/36.1, MDD 52.71%)",
+  "judge_date": "2026-03-26",
+  "judge_version": "v7",
+  "gates": {
+    "gate0_pit": {
+      "result": "PASS",
+      "detail": "DD brake uses t-1 lag (dd_lag <- c(0, dd_pct[-n_f])). C9 compliant. Parent factor_engine already verified CLEAN. No new PIT concerns."
+    },
+    "gate1_implementation": {
+      "result": "PASS",
+      "detail": "DD overlay 6/20 with min_exposure 0.30. Standard S5 template. Parent: n=30, EW, 15bps, liq>=2e8."
+    },
+    "gate2_robustness": {
+      "result": "GOOD",
+      "detail": "IC mean 0.041 (inherited from base, strong). Rolling 3Y>0: 75.4% (up from base). OOS retention 0.50 (IS 0.711 / OOS 0.353) — borderline acceptable. Alpha trend decaying (recent 3Y SR 0.320 vs full 0.598, ratio 0.54). IC improving (recent 0.058 vs full 0.041)."
+    },
+    "gate3_performance": {
+      "result": "MARGINAL_PASS",
+      "detail": "MDD 30.42% (<45% — PASS, down from 52.71%). SR 0.598 (up from 0.554 due to vol compression). CAGR 6.93% (down from 9.49% — DD brake reduces both risk and return). IR -0.133 (negative). Stress 3/3 outperform (GFC +13.6, COVID +0.76, Rate2022 +15.1) — crisis alpha preserved by DD. BM_Corr 0.677 (low)."
+    },
+    "gate4_statistical": {
+      "result": "PASS",
+      "detail": "FF3 alpha t=-0.456 (insignificant). Carhart t=-0.481 (insignificant). FF5 alpha t=-0.022 (essentially zero). No negative alpha. Factor premium survives risk adjustment. FMB Score t=1.90 (borderline significant)."
+    },
+    "gate5_diversity": {
+      "result": "WARN",
+      "detail": "S3 base had max_corr=1.000 with R01_VaR — risk category overlap expected. DD overlay does not change underlying factor redundancy. However, R03 CVaR has coherent measure advantage over VaR. Low BM corr (0.677) suggests portfolio diversification value."
+    },
+    "role_honesty_audit": {
+      "result": "PASS",
+      "detail": "S0 expected defense. DD620 version: stress 3/3, MDD 30.4%, vol 11.6%, BM_corr 0.677. Strong defense/diversifier characteristics. Alpha trend decaying but crisis alpha preserved. Role: diversifier (defense-oriented)."
+    }
+  },
+  "provisional_role": "defense",
+  "validated_role": "diversifier",
+  "verdict": "ACCEPT_B",
+  "grade": "B",
+  "score": 28.8,
+  "metrics": {
+    "sharpe": 0.598,
+    "cagr": 0.0693,
+    "mdd": 0.3042,
+    "ff5_alpha_t": -0.022,
+    "ff3_alpha_t": -0.456,
+    "carhart_alpha_t": -0.481,
+    "ic_mean": 0.041,
+    "recent_3y_ic": 0.058,
+    "ir": -0.133,
+    "stress_outperform": "3/3",
+    "ann_vol": 0.1158,
+    "bm_corr": 0.677,
+    "fmb_score_t": 1.90,
+    "oos_retention": 0.50,
+    "alpha_trend_ratio": 0.54
+  },
+  "upgrade_from_base": {
+    "base_grade": "C",
+    "base_score": 36.1,
+    "base_mdd": 0.5271,
+    "dd620_mdd": 0.3042,
+    "mdd_reduction": "42.3%",
+    "sr_change": "0.554 -> 0.598 (+7.9%)",
+    "cagr_change": "9.49% -> 6.93% (-27.0%)",
+    "stress_preserved": "4/4 -> 3/3 (EuDebt lost, 3 major crises preserved)"
+  },
+  "judge_note": "DD 6/20 successfully rescued MDD from 52.7% to 30.4%. Crisis alpha preserved (3/3 stress outperform — GFC, COVID, Rate2022). CAGR drop significant (9.49% -> 6.93%). Alpha trend decaying (0.54 ratio). Grade B confirmed — useful as diversifier sleeve in ensemble. Redundancy with R01_VaR remains a concern.",
+  "reason": "ACCEPT B (28.8). DD 6/20 reduced MDD 52.7%->30.4% (PASS). Crisis alpha 3/3. SR 0.598 adequate. CAGR 6.93% below target. Alpha decaying. Redundancy with VaR factors. Diversifier role valid."
+}

@@ -1,0 +1,266 @@
+{
+  "hypothesis_id": "H_1660",
+  "name": "ML5_Rank_Average_Ensemble_Diversifier",
+  "factor_id": "ML5_RANK_ENS",
+  "created_at": "2026-04-10",
+  "created_by": "Scout",
+  "session": 58,
+  "stage": "S0",
+  "status": "SUBMITTED",
+  "revision": 1,
+
+  "hypothesis": "XGBoost, Random Forest, Ridge, ElasticNet, PLS 5개 모델의 Rank-Average 앙상블로 cross-sectional 수익률 예측 신호를 구성한다. 각 모델이 서로 다른 inductive bias(비선형 Tree, L2 정규화, L1+L2 혼합, Latent Factor 추출)를 가지므로, 개별 모델의 model-specific error가 평균화를 통해 상쇄되어 단일 모델 대비 OOS 안정성이 구조적으로 개선된다. Rank 변환 후 평균하여 스케일 차이와 이상치 영향을 제거한다. 일간 309팩터에서 MI top 50을 feature로 사용하며, walk-forward expanding window + purged CV로 PIT를 완전 준수한다.",
+
+  "economic_rationale": {
+    "mechanism": "ML 앙상블의 alpha source는 cross-sectional 수익률의 비선형 + 선형 + latent factor 구조를 복합적으로 포착하는 데 있다. Gu, Kelly & Xiu (2020 RFS)는 비선형 모델(NN, GBT, RF)이 선형(OLS, Ridge, ENet) 대비 OOS에서 우월하지만, 시장 구조 변화에 따라 우위가 역전되는 시기가 존재함을 보였다. Timmermann (2006)의 Forecast Combination 이론에 의하면, 모델 가중치를 사전에 최적화하는 것보다 단순 평균이 OOS에서 더 robust하다(Combination Puzzle). 이는 가중치 추정 오차가 모델 선택 이득을 상회하기 때문이다.",
+    "five_model_rationale": {
+      "xgboost": "Boosting: 잔차의 순차 학습으로 bias 최소화. 비선형 feature interaction 포착에 강점. 한국시장 ICIR 0.70 (L-124).",
+      "random_forest": "Bagging: bootstrap 병렬 트리의 평균으로 variance 최소화. XGBoost와 비선형 구조를 공유하지만 inductive bias가 다름(boosting vs bagging). 한국시장 ICIR 0.69 (L-124).",
+      "ridge": "L2 정규화 선형회귀: 모든 feature를 유지하되 계수를 shrink. 다중공선성에 강건. 선형 alpha 성분 포착. 한국시장 ICIR 0.52 (L-124).",
+      "elasticnet": "L1+L2 혼합 정규화: 자동 feature selection(sparse) + shrinkage. Ridge보다 해석적이나 ICIR 약간 하위. 한국시장 ICIR 0.47 (L-124).",
+      "pls": "Partial Least Squares: feature와 target 모두의 공분산을 최대화하는 latent component 추출. 고차원 팩터 공간을 저차원 latent factor로 압축하여 noise를 제거하면서 예측력을 보존. Kelly, Pruitt & Su (2019 JPE) IPCA의 실용적 변형. Leippold, Wang & Zhou (2022 JFE)에서 아시아시장 최상위 OOS 성과."
+    },
+    "rank_average_justification": "Rank 변환의 3가지 이점: (1) 스케일 정규화 -- XGBoost의 절대 예측값과 PLS의 latent score가 동일 스케일로 변환. (2) 이상치 저항 -- 단일 모델의 극단적 예측이 순위로 변환되어 영향 축소. (3) 비선형 정보 보존 -- 연속값 평균과 달리 순위 평균은 각 모델의 상대적 종목 선호를 보존. Gu, Kelly & Xiu (2020 RFS) Table IA.12에서 rank combination이 value-weighted combination보다 robust함을 확인.",
+    "diversifier_mechanism": "5모델 앙상블은 consensus(earnings quality) 팩터와 근본적으로 다른 alpha source를 제공한다. (1) 309개 팩터의 비선형 상호작용에서 발생하는 alpha는 단일 팩터 Z-score sorting과 겹치지 않음. (2) 앵커(STR_1631)의 C19 composite earnings는 4개 팩터의 선형 결합이며, ML ensemble은 50개 팩터의 비선형 + 선형 + latent 결합 -- 종목 선택 로직이 구조적으로 다름. (3) L-124 실증에서 ensemble ICIR 0.71과 C19 ICIR 0.41의 선택 종목이 다른 기간에 다른 방향으로 움직임."
+  },
+
+  "model_combination_theory": {
+    "timmermann_2006": {
+      "citation": "Timmermann (2006) 'Forecast Combinations' in Handbook of Economic Forecasting, Vol. 1, Ch. 4",
+      "key_insight": "Combination Puzzle -- 정교한 가중 방식(BMA, IC-weighted 등)이 단순 평균을 OOS에서 거의 이기지 못함. 원인: 가중치 추정 오차 + 구조 변화에 대한 민감도. 따라서 본 가설은 equal-weight rank average를 사용.",
+      "implication_for_h1660": "5모델 동일 가중치 rank average가 최적 가중치 추정보다 robust. ICIR 가중 또는 최근 성과 가중은 S5 mutation에서만 검토."
+    },
+    "smith_wallis_1009": {
+      "citation": "Smith & Wallis (2009 JEF) 'A Simple Explanation of the Forecast Combination Puzzle'",
+      "key_insight": "Combination이 개별 best 모델을 능가하는 이유: 진정한 best 모델을 사전에 식별할 수 없고, 선택 오류의 비용이 combination의 소폭 성능 열화보다 크기 때문.",
+      "implication_for_h1660": "XGBoost가 RF보다 ICIR 0.01 높다고 XGBoost만 사용하면 '모델 선택 위험'에 노출. 5모델 combination이 이 위험을 구조적으로 제거."
+    },
+    "claeskens_2016": {
+      "citation": "Claeskens, Magnus, Vasnev & Wang (2016 IJF) 'The Forecast Combination Puzzle: A Simple Theoretical Explanation'",
+      "key_insight": "개별 모델의 예측 오차 상관이 낮을수록 combination 이득이 큼. Tree(비선형)와 Linear(선형)의 오차 구조가 다르므로 combination benefit 존재.",
+      "implication_for_h1660": "XGBoost-Ridge 오차 상관 < XGBoost-RF 오차 상관 (같은 Tree 계열). 5모델이 3 inductive bias를 포함하므로 오차 다양성 극대화."
+    }
+  },
+
+  "korean_market_empirical": {
+    "source": "Session 57 ML overnight research (L-124)",
+    "data": "일간 Factor DB 309팩터, MI top 50, 5yr expanding window, purged CV 21d, commission 15bps, LIQ 2e8",
+    "model_comparison": {
+      "xgb":      {"IC_mean": 0.0683, "IC_sd": 0.0975, "ICIR": 0.70, "SR": 0.48, "CAGR_pct": 9.89,  "MDD_pct": -76.15},
+      "rf":       {"IC_mean": 0.0676, "IC_sd": 0.0974, "ICIR": 0.69, "SR": 0.54, "CAGR_pct": 12.19, "MDD_pct": -79.94},
+      "ridge":    {"IC_mean": 0.0592, "IC_sd": 0.1127, "ICIR": 0.52, "SR": 0.30, "CAGR_pct": 4.36,  "MDD_pct": -73.16},
+      "enet":     {"IC_mean": 0.0500, "IC_sd": 0.1061, "ICIR": 0.47, "SR": 0.25, "CAGR_pct": 3.07,  "MDD_pct": -81.05},
+      "ensemble_xgb_rf": {"IC_mean": 0.0713, "IC_sd": 0.0999, "ICIR": 0.71, "SR": 0.79, "CAGR_pct": 20.06, "MDD_pct": -72.32}
+    },
+    "key_observations": [
+      "2모델 ensemble(XGB+RF) ICIR 0.71 > 개별 max 0.70. Rank average로 소폭이지만 일관된 개선.",
+      "Ensemble SR 0.79 > XGB 0.48 + RF 0.54. CAGR 20.06% > XGB 9.89%. 종목 선택 합의 효과로 승률 급증.",
+      "모든 모델 MDD > 70% -- S1 순수 신호로는 포트폴리오 불가. S5 overlay 필수 (L-124).",
+      "PLS는 한국시장 미실행 상태. Leippold et al.(2022)의 중국시장 PLS > RF > OLS 결과를 한국에서 검증 필요.",
+      "Ridge(ICIR 0.52)와 ENet(0.47)은 Tree 대비 열위이나, combination에서 오차 다양성 기여로 앙상블 개선 기대."
+    ],
+    "pls_expected_icir": "Leippold et al.(2022)에서 PLS가 RF보다 우월. 단, 한국시장에서는 미확인. 보수적 추정 ICIR 0.45-0.65 (Ridge-RF 사이).",
+    "five_model_ensemble_expected": "2모델 ICIR 0.71 → 5모델 추정 ICIR 0.72-0.75. 한계 개선이 작지만 OOS 안정성(IC 분산 감소) 기여가 핵심."
+  },
+
+  "pls_specific_design": {
+    "academic_basis": {
+      "kelly_pruitt_su_2019": "Kelly, Pruitt & Su (2019 JPE) 'Characteristics Are Covariances: A Unified Model of Risk and Return' -- IPCA framework. PLS는 IPCA의 실용적 변형으로, 팩터 characteristic과 수익률의 공분산을 최대화하는 latent component를 추출.",
+      "leippold_wang_zhou_2022": "Leippold, Wang & Zhou (2022 JFE) 'Machine Learning in Chinese Stock Market' -- 아시아시장에서 PLS가 최상위 OOS 성과. 개인투자자 비중 높고 공매도 제한된 시장 구조에서 PLS의 latent factor 추출이 noise filtering에 효과적.",
+      "light_maslov_2022": "Light, Maslov & Rytchkov (2017 RFS) 'Aggregation of Information About the Cross Section of Stock Returns' -- PLS가 large cross-section에서 signal extraction에 optimal. 정보 집약 효율성 이론."
+    },
+    "implementation": {
+      "r_package": "pls (CRAN) 또는 mixOmics. pls::plsr() 사용.",
+      "n_components": "expanding window에서 5-fold CV로 최적 component 수 선택 (max 10). Typical: 3-5 components.",
+      "feature_input": "MI top 50 features의 z-score 표준화 후 입력.",
+      "pit_compliance": "walk-forward expanding window 내에서만 PLS 적합. t-1 시점 feature로 t+1 수익률 예측. purged CV 21d."
+    },
+    "expected_contribution_to_ensemble": "PLS는 Tree/Linear와 다른 제3의 inductive bias(latent factor extraction)를 제공. 50개 feature를 3-5개 latent component로 압축하므로, 개별 feature의 noise에 덜 민감. Tree가 놓치는 선형 latent structure, Linear가 놓치는 비선형 component loading을 보완."
+  },
+
+  "rank_average_methodology": {
+    "procedure": [
+      "Step 1: 각 모델 m(m=1,...,5)이 시점 t에서 N개 종목의 수익률 예측값 f_m(x_i) 산출.",
+      "Step 2: 각 모델별로 N개 예측값을 순위(rank)로 변환. rank_m(i) = rank(f_m(x_i)), i=1,...,N.",
+      "Step 3: 5개 모델의 순위를 평균. avg_rank(i) = (1/5) * sum_{m=1}^{5} rank_m(i).",
+      "Step 4: avg_rank 기준 top 30 종목 선택. EW 포트폴리오 구성.",
+      "Step 5: 월간 리밸런싱. t-1 시점 예측 기반으로 t월 포트폴리오 구성."
+    ],
+    "pit_compliance": {
+      "C1": "모든 모델은 expanding window 내에서만 학습. Full-sample 통계 금지.",
+      "C2": "t-1 시점 feature로 예측, t월 포트폴리오 구성. Same-day circular 없음.",
+      "C14": "Factor DB Usable_Date 기준. load_month_factors() 경유 (C15).",
+      "C15": "일간 Factor DB load_daily_factors() 사용."
+    }
+  },
+
+  "expected_role": "diversifier",
+  "why_now": "SR gap +0.807 (현재 1.193 -> 목표 2.0). 100% consensus + ML_complexity family 집중(gap vector). 기존 2모델 앙상블(XGB+RF, ICIR 0.71)은 동일 계열(Tree) 편향. 5모델 확장(+Ridge+ENet+PLS)으로 3가지 inductive bias(비선형 Tree / 정규화 Linear / Latent Factor PLS) 결합 시 model risk 분산 + OOS IC 안정성 개선. Timmermann(2006)의 forecast combination 이론이 5모델 equal-weight rank average의 학술적 근거. PLS는 Leippold et al.(2022 JFE) 아시아시장 최상위 모델이나 한국 미실증 -- 검증 가치.",
+
+  "core_reference": "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via Machine Learning' -- 비선형 ML이 cross-sectional alpha에서 우월, model combination 암시; Timmermann (2006) 'Forecast Combinations' Handbook of Economic Forecasting -- Combination Puzzle, 단순 평균의 OOS robustness; Kelly, Pruitt & Su (2019 JPE) 'Characteristics Are Covariances' -- IPCA/PLS의 latent factor 추출 이론; Leippold, Wang & Zhou (2022 JFE) 'ML in Chinese Stock Market' -- 아시아시장 PLS 최상위, 한국과 유사 시장구조; Smith & Wallis (2009 JEF) 'A Simple Explanation of the Forecast Combination Puzzle' -- 모델 선택 위험 > combination 비용; Claeskens, Magnus, Vasnev & Wang (2016 IJF) 'The Forecast Combination Puzzle: A Simple Theoretical Explanation' -- 오차 상관 낮을수록 combination 이득",
+
+  "lesson_check": {
+    "L-124": "Tree > Linear > Logistic. XGB ICIR 0.70, RF 0.69, Ridge 0.52, ENet 0.47. XGB+RF rank avg 0.71. 본 가설은 5모델로 확장하여 0.72-0.75 추정. 핵심은 ICIR 소폭 개선이 아닌 OOS IC 분산 감소(안정성).",
+    "L-123": "ML PIT 표준: walk-forward expanding + purged CV 21d + MI prefilter top 50. 5모델 모두 동일 파이프라인 적용.",
+    "L-125": "Logistic 폐기. 5모델에 Logistic 포함하지 않음.",
+    "L-119": "정적 EW blend alpha 희석. 그러나 본 가설의 rank average는 팩터 블렌드(signal 합산)가 아닌 모델 combination(예측 합의). L-119는 약한 팩터가 강한 팩터를 희석하는 문제이고, 본 가설은 약한 모델(ENet ICIR 0.47)도 오차 다양성으로 기여. Timmermann(2006)이 이를 이론적으로 지지.",
+    "L-106": "beta 지배. S1은 EW 30으로 beta 미제어. S5에서 CVaR LP / 섹터중립 / DD Brake 적용.",
+    "L-115": "low-beta 단독 실패. S5에서 섹터중립 선행 필수.",
+    "L-118": "단면 독립 != 포트폴리오 독립. S2에서 앵커와 포트폴리오 수준 상관 측정 필수.",
+    "L-122": "Factor timing 아닌 risk management. 모델 가중치 동적 조정(factor timing)은 금지. Equal-weight 고정."
+  },
+
+  "factors": "5-model rank-average ensemble (XGBoost 5-seed + RF 5-seed + Ridge + ElasticNet + PLS), MI prefilter top 50 from 309 daily factors. 모든 모델 동일 feature set 사용.",
+
+  "overlay_plan": "S1: none (EW 30, 15bps, 유동성 2e8). S5 mutation에서 CVaR LP / 섹터중립 / DD Brake(10/25) / VD+(MRS20) 적용.",
+
+  "s1_design": {
+    "description": "5모델 각각 독립 학습 후 rank-average 앙상블 구성. S1은 순수 신호 측정으로 overlay 없음.",
+    "variants": [
+      {
+        "id": "S1-A",
+        "name": "ML5_Full_309F_MI50 (primary)",
+        "description": "일간 309팩터에서 MI top 50 feature 선택. 5모델(XGB+RF+Ridge+ENet+PLS) 각각 walk-forward expanding window + purged CV 21d로 학습. Rank-average로 앙상블. EW 30종목.",
+        "config": "MI top 50, 5yr expanding, purged 21d, EW 30, 15bps, LIQ 2e8",
+        "role": "PRIMARY -- S2 진입 기준",
+        "expected": "ICIR ~0.72-0.75, SR ~0.80-0.90, MDD > 70% (overlay 미적용)"
+      },
+      {
+        "id": "S1-B",
+        "name": "ML5_No_Regime_Features",
+        "description": "RE* (regime) feature 제거 후 MI top 50 재선택. Alpha decay 대응 (L-124 2024 alpha decay 문제).",
+        "config": "MI top 50 from non-RE features (~260개), 나머지 동일",
+        "role": "supplementary -- regime 의존도 진단",
+        "expected": "ICIR ~0.65-0.70, alpha 안정성 개선"
+      },
+      {
+        "id": "S1-C",
+        "name": "ML3_Tree_Only_Baseline",
+        "description": "XGB + RF + PLS만 사용 (Linear 제외). Tree + Latent Factor 조합의 순수 기여 측정.",
+        "config": "3모델 rank average, 나머지 동일",
+        "role": "supplementary -- Linear 모델 기여도 측정",
+        "expected": "ICIR ~0.71-0.73 (Linear 추가 기여 분리)"
+      }
+    ],
+    "pre_registration": {
+      "primary": "S1-A",
+      "rule": "S1-A 결과가 ICIR >= 0.20 충족 여부의 판단 기준. S2 진입 결정은 S1-A 기준.",
+      "exception": "S1-A ICIR < 0.10이면서 S1-B ICIR >= 0.20인 경우에만, 사유 명시 후 primary 변경 가능.",
+      "prohibition": "모든 variant 실행 후 최고 ICIR 선택 = 금지 (다중검정 문제)"
+    }
+  },
+
+  "model_hyperparameters": {
+    "xgboost": {
+      "nrounds": "expanding CV 기반 early stopping (max 500)",
+      "max_depth": 4,
+      "eta": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "seed_ensemble": "5-seed (1234, 2345, 3456, 4567, 5678)"
+    },
+    "random_forest": {
+      "num_trees": 500,
+      "mtry": "sqrt(p) ~ 7",
+      "min_node_size": 5,
+      "replace": true,
+      "seed_ensemble": "5-seed (1234, 2345, 3456, 4567, 5678)"
+    },
+    "ridge": {
+      "alpha": 0,
+      "lambda": "expanding CV로 선택 (glmnet)",
+      "standardize": true
+    },
+    "elasticnet": {
+      "alpha": "expanding CV로 선택 (0.1-0.9 grid, glmnet)",
+      "lambda": "expanding CV로 선택",
+      "standardize": true
+    },
+    "pls": {
+      "n_components": "expanding 5-fold CV (max 10, typical 3-5)",
+      "scale": true,
+      "r_package": "pls::plsr()"
+    }
+  },
+
+  "s5_research_slate": {
+    "A": "ML5 Rank-Average + CVaR LP weighting",
+    "B": "ML5 Rank-Average + CVaR LP + Sector-Neutral (BM +/-5%p)",
+    "C": "ML5 Rank-Average + DD Brake(10/25) + VD+(MRS20)",
+    "D": "Stacking variant: 5모델 예측값을 Ridge meta-learner로 결합 (Rank-Average 대비)"
+  },
+
+  "risk_factors": [
+    "PLS 한국시장 미검증: Leippold et al.(2022)은 중국시장. 한국시장 cross-section(~2,000종목)에서 PLS 성능이 Ridge 이하일 가능성. S1에서 개별 모델 ICIR 측정으로 확인.",
+    "Linear 모델의 한계 기여: Ridge(0.52) + ENet(0.47)이 2모델 앙상블(0.71) 대비 5모델에서 오히려 noise를 추가할 가능성. S1-C(3모델)와 S1-A(5모델) 비교로 진단.",
+    "Alpha decay 공유: 5모델 모두 동일 MI top 50 feature 사용 시 regime feature 의존으로 동시 alpha decay 가능. S1-B(RE 제거)로 진단.",
+    "MDD > 70%: L-124에서 모든 모델 MDD > 70%. S1 순수 신호로는 hard fail(45%) 불가. S5 overlay 필수.",
+    "Computational cost: 5모델 x walk-forward = XGB 5-seed + RF 5-seed + Ridge + ENet + PLS = ~12개 모델. 일간 데이터 1.3M+ rows. 메모리/시간 관리 필수 (RAM 80% rule).",
+    "Combination과 단순 SR 합산의 차이: 5모델 평균이 SR을 기계적으로 높이지 않음. IC 안정성(IC_sd 감소)이 핵심 가치이지 절대 성과 향상이 아님.",
+    "Timmermann(2006) 한계: combination puzzle은 거시예측에서 발견. Cross-sectional 수익률 예측에서도 동일하게 적용되는지 실증적 검증 필요."
+  ],
+
+  "success_criteria": {
+    "s1_primary": "S1-A ICIR >= 0.20 (Alpha Lab Gate). 5모델 ICIR > 2모델(0.71). IC_sd < 2모델(0.0999).",
+    "s1_supplementary": "S1-A ICIR > S1-C ICIR (Linear 모델 기여 확인). PLS 개별 ICIR >= 0.40.",
+    "s2": "FMB t > 2.0. 앵커(STR_1631) 대비 포트폴리오 상관 < 0.60. 최근 3Y ICIR >= 0.30.",
+    "s3": "기존 STR_1656(XGB) 대비 return correlation < 0.70 (다른 종목 선택 확인).",
+    "s5": "앵커 상관 < 0.35, standalone SR > 0.60, MDD < 45% (overlay 적용 후).",
+    "ablation": "5모델 IC_sd < 3모델 IC_sd < 2모델 IC_sd (model diversity → IC stability 증가 확인)"
+  },
+
+  "ablation_design": {
+    "purpose": "5모델 확장의 한계 기여를 분리 측정. 2모델(XGB+RF) → 3모델(+PLS) → 5모델(+Ridge+ENet) 순차 적층.",
+    "stages": [
+      {
+        "id": "AB_2M",
+        "config": "XGB + RF rank average (기존 L-124 baseline)",
+        "expected": "ICIR ~0.71, IC_sd ~0.0999",
+        "baseline": true
+      },
+      {
+        "id": "AB_3M",
+        "config": "XGB + RF + PLS rank average",
+        "measure": ["ICIR_delta", "IC_sd_delta", "overlap_with_2M"],
+        "expected": "ICIR ~0.72, IC_sd 감소. PLS의 latent factor 기여."
+      },
+      {
+        "id": "AB_5M",
+        "config": "XGB + RF + PLS + Ridge + ENet rank average (full)",
+        "measure": ["ICIR_delta", "IC_sd_delta", "overlap_with_3M"],
+        "expected": "ICIR ~0.73-0.75, IC_sd 추가 감소. Linear 모델의 오차 다양성 기여."
+      }
+    ],
+    "decision_rule": "AB_5M ICIR > AB_3M ICIR AND AB_5M IC_sd < AB_3M IC_sd이면 5모델 채택. AB_5M ICIR < AB_3M이면 Linear 모델 제외하고 3모델 진행. AB_3M ICIR < AB_2M이면 PLS 기여 없음 → 기존 2모델 유지."
+  },
+
+  "vs_existing_ml_strategies": {
+    "vs_MLRA_H_MLRA_001": "MLRA는 XGBoost 단일 + CVaR LP 3계층 Risk Architecture. 종목선택(ML) + 가중배분(Risk) + 섹터제약(Neutral)의 3계층. H_1660은 종목선택 자체의 model diversity에 집중. MLRA는 포트폴리오 구성 혁신, H_1660은 신호 생성 혁신.",
+    "vs_RF_UA_H_1659": "H_1659는 RF 단일 + Uncertainty-Adjusted Sorting. RF의 tree variance를 활용한 noise filtering이 핵심. H_1660은 5모델 rank average로 model-level diversity 확보. H_1659는 uncertainty 활용, H_1660은 prediction combination.",
+    "orthogonality": "H_1660, H_MLRA, H_1659는 각각 종목선택 계층이 다름: (1) H_1660: 5모델 합의 (model diversity), (2) MLRA: XGB 단일 + 가중배분 혁신, (3) H_1659: RF 단일 + uncertainty sorting. S3에서 3개 전략 간 포트폴리오 상관 측정 필수."
+  },
+
+  "infrastructure_dependencies": [
+    "04_Research/ml_research/ml_overnight_research.R -- 기존 ML pipeline (XGB, RF, Ridge, ENet). PLS 추가 필요.",
+    "02_Infrastructure/factor_db/ -- 일간 309팩터 DB. load_daily_factors() 사용.",
+    "02_Infrastructure/portfolio/advanced_weights.R -- CVaR LP (S5에서 사용).",
+    "02_Infrastructure/backtest_harness.R -- 백테스트 실행.",
+    "R packages 필수: xgboost, ranger, glmnet, pls"
+  ],
+
+  "novelty_assessment": {
+    "vs_existing_strategies": "기존 2모델(XGB+RF) 앙상블을 5모델로 확장. 구조적 차별점: 3 inductive bias(Tree/Linear/Latent)의 결합.",
+    "vs_literature": "Gu et al.(2020)은 개별 모델 비교에 집중. 체계적인 rank-average combination의 한국시장 실증은 문헌에 부재. Timmermann(2006)의 forecast combination 이론을 cross-sectional ML 예측에 적용하는 것이 학술적 기여.",
+    "expected_max_corr_with_existing": "STR_1656(XGB) 대비 0.60-0.80 (동일 feature set 공유), STR_1631(앵커) 대비 0.30-0.50. Novelty Bonus 조건(max_corr < 0.5): 앵커 대비 달성 가능, STR_1656 대비 어려움.",
+    "role_bias_tag": "RoleBias_Diversifier"
+  },
+
+  "stock_allocation": {
+    "anchor": 20,
+    "diversifier": 10,
+    "total": 30,
+    "rationale": "L-484 준수. 앵커 20종목(STR_1631 VD+) + ML5 10종목. 겹침 시 score 합산으로 가중 상향.",
+    "capital_split": "Anchor 70% / ML5 30% (initial). S5에서 상관 확인 후 조정.",
+    "rebalance": "월간"
+  }
+}

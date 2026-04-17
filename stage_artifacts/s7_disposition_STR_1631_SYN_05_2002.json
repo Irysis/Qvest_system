@@ -1,0 +1,122 @@
+{
+  "stage": "S7",
+  "strategy_id": "STR_1631_SYN_05_2002",
+  "strategy_name": "STR_1631_SYN_05_2002_icwt_scoretilt_bimonthly",
+  "timestamp": "2026-04-08T22:00:00",
+  "judge": "Judge",
+  "version": "1.0.0",
+
+  "sg_check_s6_entry": {
+    "pass": true,
+    "s6_artifact_exists": true,
+    "s6_artifact_path": "stage_artifacts/s6_verification_STR_1631_SYN_05_2002.json",
+    "s5_mutations_attempted": 21,
+    "s5_f_category_count": 4,
+    "s5_synthesis_tested": true
+  },
+
+  "s6_conditions_fulfilled": {
+    "c10_fix": {
+      "status": "DONE",
+      "evidence": "run_all.R line 160-162: shift(LIQ_20d_raw, n=1L, type='lag') applied",
+      "performance_impact": "Negligible -- CAGR 22.53%, SR 1.248 maintained"
+    },
+    "ff5_alpha": {
+      "status": "DONE",
+      "ff5_alpha_ann": 14.314,
+      "ff5_alpha_t": 3.0891,
+      "ff5_alpha_p": 0.0026,
+      "ff5_r2": 0.6435,
+      "ff5_n_months": 107,
+      "harvey_t_pass": true,
+      "note": "t=3.089 > Harvey 3.0 threshold. Genuine alpha confirmed."
+    },
+    "dsr": {
+      "status": "DONE",
+      "dsr_value": 0.9996,
+      "dsr_z": 3.3279,
+      "note": "DSR z=3.33 > 1.96. Sharpe not deflated by multiple testing."
+    },
+    "grade_a_correlation": {
+      "status": "INCOMPLETE",
+      "note": "GradeA_Corr=NA. No composite cache available. Does NOT block Grade A confirmation but blocks novelty bonus assessment.",
+      "impact_on_grade": "NONE -- novelty_bonus already 0, grade determination unaffected"
+    }
+  },
+
+  "hurdle_v22_verification": {
+    "hard_fail_check": {
+      "mdd": {"value": 33.86, "threshold": 45, "pass": true},
+      "turnover": {"value": 301.2, "threshold": 600, "pass": true}
+    },
+    "grade_a_criteria": {
+      "score_ge_40": {"value": 59.6, "pass": true},
+      "cagr_ge_16": {"value": 22.53, "pass": true},
+      "sr_ge_0_8": {"value": 1.248, "pass": true}
+    },
+    "grade": "A",
+    "grade_v21": "A",
+    "score": 59.6,
+    "backward_compat": true
+  },
+
+  "pit_final_check": {
+    "C1_expanding_ic": "PASS",
+    "C2_score_lag": "PASS",
+    "C4_consensus_roll": "PASS",
+    "C5_overlay_t1": "PASS",
+    "C9_mrs_lag": "PASS",
+    "C10_liq_filter": "PASS (t-1 lag confirmed in code)",
+    "C13_zscore_aligned": "PASS",
+    "overall": "CLEAN"
+  },
+
+  "statistical_defense": {
+    "ff5_alpha_t": 3.0891,
+    "harvey_t_threshold": 3.0,
+    "harvey_pass": true,
+    "dsr": 0.9996,
+    "dsr_z": 3.3279,
+    "dsr_significant": true,
+    "note": "Both Harvey and DSR thresholds passed. Alpha is statistically defensible."
+  },
+
+  "role_honesty_audit": {
+    "declared_role": "core_alpha",
+    "detected_family": "defense_ensemble",
+    "verdict": "ACCEPTABLE",
+    "rationale": "Base alpha source is Consensus C19 (earnings revisions), which is a core alpha factor. The 'defense_ensemble' family detection arises from Regime Engine overlay (DD brake + VT), which is applied at S5 level. Core alpha classification is appropriate for the underlying signal. Overlay does not change the alpha source classification."
+  },
+
+  "risk_flags": [
+    {
+      "flag": "IS_OOS_DECAY",
+      "severity": "MODERATE",
+      "detail": "IS SR 1.560 vs OOS SR 0.743. Retention 0.476 (48%). Moderate overfitting risk.",
+      "mitigation": "3Y rolling SR>0 ratio 97.5% and 23-year backtest length provide structural resilience. Recent 3Y SR 1.390 shows improving trend."
+    },
+    {
+      "flag": "MDD_ELEVATED",
+      "severity": "LOW",
+      "detail": "MDD 33.86% is below hard fail (45%) but above target (25%). Calmar 0.665.",
+      "mitigation": "Overlay already reduces base MDD from 51.99% to 33.86%. Further reduction requires defense sleeve at PG level."
+    }
+  ],
+
+  "disposition": {
+    "decision": "APPROVED",
+    "grade": "A",
+    "score": 59.6,
+    "role": "core_alpha",
+    "next_stage": "PG0",
+    "rationale": "All S6 conditions fulfilled except Grade A correlation (non-blocking). PIT CLEAN. FF5 alpha t=3.089 passes Harvey 3.0. DSR z=3.33 confirms statistical significance. 23-year backtest with CAGR 22.5%, SR 1.248 meets all Grade A criteria. IS/OOS decay is moderate but acceptable given 97.5% rolling 3Y positive SR and recent alpha improvement. Approved for PG0 gap diagnosis."
+  },
+
+  "l_code": {
+    "id": "L-111",
+    "grade": "A",
+    "lesson_text": "STR_1631 SYN_05_2002: Consensus C19(SUE/ESBR/EPS1M/TPGAP) IC-weighted blend + HRP-Score Tilt(0.6/0.4) + 격월 리밸런싱 3축 합성. 23년(2003~2026) SR 1.248, CAGR 22.5%, MDD 33.9%, TO 301%. FF5 alpha t=3.089(Harvey PASS), DSR z=3.33. C10 LIQ t-1 lag 수정 후 성과 유지 확인. IS/OOS retention 0.48로 과적합 경고 수준이나, rolling 3Y SR>0 97.5%, 최근 3Y SR 1.39로 알파 개선 추세. 기간 확장(2005->2002)시 SR 1.248->1.194로 소폭 하락, 구조적 안정성 확인. Core alpha 역할로 PG0 진입 승인.",
+    "core_reference": "Arnott et al.(2019) IC-based factor weighting; Novy-Marx & Velikov(2016) rebalancing frequency; Briere & Szafarz(2021) factor exposure-risk diversification; Harvey et al.(2016) multiple testing t>3.0",
+    "tags": ["S7", "approved", "core_alpha", "PG0", "IC_weighted", "HRP", "score_tilt", "bimonthly", "consensus", "C19", "harvey_pass", "dsr_pass"]
+  }
+}

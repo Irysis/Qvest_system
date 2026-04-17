@@ -1,0 +1,78 @@
+{
+  "strategy_id": "STR_1509_safe_forward_value_S5_ddC",
+  "parent_id": "STR_1509_safe_forward_value",
+  "mutation": "DD 15/35 (gentle), min_exp 30%",
+  "judge_version": "v7",
+  "judge_date": "2026-03-26",
+  "grade": "F",
+  "score": 14.3,
+  "verdict": "F — Gentle DD insufficient. MDD 40.3% (still <45% but barely). CAGR 10.2% slightly better than ddA/B but SR 0.546 is worst. FF5 alpha +3.39% weakest. Worst of three variants.",
+  "l_code": "L-717",
+  "gates": {
+    "gate0_pit": {
+      "result": "PASS",
+      "c1_full_sample": "PASS",
+      "c2_same_day_circular": "PASS",
+      "c3_same_period": "PASS",
+      "c4_financial_lag": "PASS",
+      "c5_overlay_t1": "PASS — same dd_lag mechanism",
+      "c6_survivorship": "PASS",
+      "c7_auto_detect": "PASS — CLEAN",
+      "c8_fm_same_day": "N/A",
+      "c9_vt_dd_same_day": "PASS — t-1 lag verified",
+      "c10_liquidity": "PASS",
+      "c11_data_time_axis": "PASS",
+      "lookahead_detector": "CLEAN",
+      "detail": "PIT identical to ddA/ddB. PASS."
+    },
+    "gate1_performance": {
+      "result": "FAIL",
+      "sharpe": 0.546,
+      "cagr_pct": 10.23,
+      "mdd_pct": 40.26,
+      "ir": 0.07,
+      "calmar": 0.254,
+      "ann_vol": 18.73,
+      "worst_month": -15.0,
+      "stress_outperform": "3/3",
+      "detail": "MDD 40.3% — barely under 45% gate, fragile. CAGR 10.2% slightly better than ddA/B (the gentle brake preserves more upside). But SR 0.546 is virtually identical to base (0.547) — the DD overlay adds no risk-adjusted value. Worst month -15% still bad.",
+      "mdd_improvement": "58.1% -> 40.3% (-17.8pp)",
+      "cagr_sacrifice": "13.3% -> 10.2% (-3.07pp, -23.1%)",
+      "sr_change": "0.547 -> 0.546 (-0.2%) — NO improvement"
+    },
+    "gate2_artifacts": {
+      "result": "PASS",
+      "files": "performance.csv, hurdle_result.json, sim_result.rds, equity_curve.png, annual_returns.png, analysis_multifactor.csv"
+    },
+    "gate3_role_honesty": {
+      "result": "FAIL",
+      "expected_role": "core_alpha",
+      "actual_role": "none (hurdle)",
+      "detail": "Grade F — no role assignment. The gentle DD does not fix the fundamental problem."
+    },
+    "gate4_statistical": {
+      "result": "WEAK",
+      "oos_ratio": 0.129,
+      "alpha_trend_slope": 0.227,
+      "rolling_sharpe_positive_rate": 0.783,
+      "detail": "OOS 0.129 is worst of three — most alpha leaks through gentle DD. Alpha trend 0.227 higher than ddA/B (less compression = more variance = more apparent trend). This is not genuine improvement."
+    },
+    "gate5_ff5": {
+      "result": "PASS_WEAK",
+      "ff3_alpha_annual_pct": 1.53,
+      "ff3_alpha_tstat": 0.359,
+      "carhart4_alpha_annual_pct": 1.51,
+      "carhart4_alpha_tstat": 0.352,
+      "ff5_alpha_annual_pct": 3.39,
+      "ff5_alpha_tstat": 0.736,
+      "ff5_adj_r2": 0.456,
+      "ff5_n_obs": 106,
+      "base_ff5_alpha_annual_pct": 6.61,
+      "alpha_survival_rate": 0.513,
+      "detail": "FF5 alpha +3.39%/yr (t=0.736). Survival rate only 51.3% — worst of three. Higher R^2 (0.456) means more of the variance is explained by factors = less unexplained alpha. Gentle DD paradoxically loses more alpha because it allows bigger drawdowns (higher systematic exposure during crashes = higher factor beta loading)."
+    }
+  },
+  "comparison_note": "Worst of three variants on every risk-adjusted metric. Gentle DD threshold is insufficient — it neither controls MDD well nor preserves alpha. The only advantage is slightly higher CAGR (10.2% vs 9.5%) but at cost of 40% MDD.",
+  "promotion_candidate": false,
+  "promotion_reason": "Grade F. SR unchanged from base. MDD barely under 45%. OOS worst of three."
+}

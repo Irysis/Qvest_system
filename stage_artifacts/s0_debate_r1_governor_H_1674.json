@@ -1,0 +1,23 @@
+{
+  "hypothesis_id": "H_1674",
+  "round": 1,
+  "role": "governor",
+  "score": 17,
+  "score_breakdown": {
+    "gap_alignment": 4,
+    "role_match": 3,
+    "family_saturation": 4,
+    "marginal_contribution": 3,
+    "implementation_feasibility": 3
+  },
+  "arguments": [
+    "SR gap 0.807이 현재 포트폴리오의 유일한 미달 지표이며, 기존 303팩터 전체와 상관 0.10 미만인 신규 alpha 축은 SR 직접 개선에 가장 효과적인 경로입니다. PG0 gap_vector에서 CAGR/MDD는 ACHIEVED 상태이므로, uncorrelated alpha 추가만이 SR을 끌어올릴 수 있고, H_1674의 max_corr 0.257(INV02 대비)은 novelty_bonus 적격(max_corr < 0.30)이면서 앵커 STR_1631(consensus family)과 사실상 직교합니다. investor_flow family 0% saturation + 기존 consensus 50% / ML_complexity 50% 편중 해소에 결정적입니다.",
+    "Family concentration이 consensus 50% / ML_complexity 50%로 2개 family에 완전 집중된 상태에서, investor_flow라는 완전히 새로운 economic family의 등장은 QEPM 1조 4-bucket 탐색 의무와 9조 family saturation penalty 회피 모두 충족합니다. 신규 family 편입 시 family_concentration이 3-way로 분산되어 단일 family max 35% 규칙 준수에도 유리해지며, saturation penalty 0점(신규)은 hurdle v2.2 점수 산정에서도 가산 효과를 줍니다.",
+    "다만 Core Alpha 역할 선언에 대해 주의가 필요합니다. Size-neutral ICIR 1.258은 역대 최고 수준이나, 유동성 필터 적용 시 0.939로 하락하고, rolling 3Y ICIR 최근치가 0.746으로 감소 추세입니다. Rate_2022 스트레스 IC 0.017은 금리 인상기 방어력 부재를 시사합니다. S1 백테스트에서 portfolio-level SR이 실제로 1.0 이상 나오는지, 그리고 기존 2-sleeve(STR_1631 80% + STR_1656 20%)에 3번째 sleeve로 편입 시 LOO delta-SR이 양수인지를 PG1 단계에서 반드시 확인해야 합니다."
+  ],
+  "concern": "Core Alpha로 선언했으나 rolling 3Y ICIR이 1.058에서 0.746으로 하락 중이고, 유동성 필터 적용 시 ICIR 25% 감소(1.258 -> 0.939)되며, Rate_2022 스트레스 IC 0.017로 특정 국면 취약성이 존재합니다. L-127 교훈(IC != SR)에 따라 ICIR 1.258이 portfolio SR로 전환되는 비율이 불확실하며, 현재 2-sleeve 구조에서 3번째 sleeve 편입 시 최적 비중과 LOO 검증이 S1/S4 통과 전까지는 한계기여를 확정할 수 없습니다.",
+  "conditions": [
+    "S1 백테스트에서 standalone SR >= 0.8 및 CAGR >= 12% 확인 (L-127 IC->SR 전환 검증)",
+    "S4 integration test에서 기존 2-sleeve 대비 LOO delta-SR > 0 및 3-sleeve 최적 비중 산출 후 MDD < 25% 유지 확인"
+  ]
+}

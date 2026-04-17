@@ -1,0 +1,58 @@
+{
+  "strategy_id": "STR_1425_adaptive_ic_rotation_s5_m1",
+  "judge_timestamp": "2026-03-26 15:22:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on both run_s5_m1.R (65 lines) and factor_engine.R (172 lines). C1: expanding-window ICIR only (line 120: ic_cutoff = sig_d - 2months). C2: DD brake uses t-1 lag (line 26-27: dd_lag = c(0, dd_pct[-n_f])). C10: AvgTV20 shift(lag=1) correct. C13: Z_Score_Aligned only. C14: IC uses 2-month lookback cutoff for PIT compliance. C11: no FRED/external data dependency. All C1-C11 PASS."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR 0.801 (target 2.0+, FAIL). CAGR 11.16% (target 16%+, FAIL). MDD 29.31% (target <25%, FAIL). Calmar 0.381. IR 0.141 (near zero excess vs BM). Score 38.2 Grade B. All three primary targets missed. DD 10/30 overlay reduced vol from base (AnnVol 15.96->13.92) and MDD (38.02->29.31) but at cost of CAGR (12.1->11.16). Risk-adjusted improvement marginal (SR 0.758->0.801)."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "Full pipeline: s0_record_FM01_AdaptiveIC.json (Scout hypothesis), s1_construction, s2_profile, s3_orthogonality (novelty 0.306, top corr 0.698 to STR_1033), s4_integration (delta_sharpe 0.331 vs KOSPI, role=core_alpha). All artifacts present and internally consistent."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "core_alpha (S4) / diversifier (S3, hurdle)",
+      "actual_behavior": "factor_harvester_no_alpha",
+      "detail": "ROLE CONFLICT: S4 claims core_alpha (delta_sharpe 0.331), but S3 hints diversifier and hurdle classifies as diversifier. Base judge (v4.0) found FF5 alpha t=0.059 (zero). The strategy harvests known factor premia (Quality/Earnings/Vol) without generating unique alpha. DD overlay reshapes risk profile but cannot create alpha. Lineage correlations >0.85 with STR_1393/1397/1398 confirm redundancy. Not core_alpha: no independent alpha source."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "OOS retention: 0.454 (IS SR 0.967, OOS SR 0.438) -- poor, suggesting in-sample overfitting of IC weights or DD parameters. DSR: not available. Rolling 3Y positive ratio: 87% (decent). Alpha trend ratio: 1.00 (stable but low). Max consecutive negative alpha months: 10 (concerning). Worst 6M return: -16.55%. BM correlation: 0.703 (high -- limited diversification value). Turnover 169.4% (moderate)."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "Base strategy FF5 alpha t-stat = 0.059 (effectively zero). Annual alpha = 0.18% (not economically meaningful). DD overlay cannot generate alpha -- it only reduces exposure during drawdowns. FMB Score t-stat 3.80 confirms factor loading (known premia) but no unique alpha. Strategy returns are fully explained by FF5 factors. FAIL."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 38.2,
+    "fail_reasons": [
+      "Gate 1: All three targets missed (SR 0.801<2.0, CAGR 11.16%<16%, MDD 29.31%>25%)",
+      "Gate 3: Role conflict -- S4 claims core_alpha but FF5 alpha is zero (t=0.06)",
+      "Gate 4: OOS retention 0.454 poor; 10 consecutive negative alpha months",
+      "Gate 5: FF5 alpha t=0.059, returns fully explained by known factor premia"
+    ],
+    "recommendation": "REJECT. M1 (DD-only 10/30) is the weakest of the three S5 mutations: M2 (SR 0.834, MDD 23.38%) and M3 (SR 0.846, MDD 24.76%) both outperform M1. The fundamental problem is not the overlay but the base signal -- ICIR-weighted rotation of correlated quality/earnings factors produces no unique alpha. Discard M1. If pursuing this family further, focus on M3's tighter DD bracket (5/15) which achieved best SR with acceptable MDD, but note that even M3 has zero FF5 alpha."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "core_alpha (S4) / diversifier (S3+hurdle)",
+    "verified": false,
+    "evidence": "S4 provisional_role=core_alpha based on KOSPI beat (delta_sharpe 0.331), but this is misleading. FF5 alpha t=0.059 means the strategy loads on known factors (SMB/HML/RMW/CMA) without generating independent alpha. BM correlation 0.703 and lineage correlation >0.85 to multiple existing strategies confirm redundancy. True role: factor harvester with defensive overlay, not core alpha generator."
+  },
+  "comparison_m1_m2_m3": {
+    "M1_DD_10_30": {"SR": 0.801, "CAGR": 11.16, "MDD": 29.31, "score": 38.2},
+    "M2_VT15_DD8_20": {"SR": 0.834, "CAGR": 9.47, "MDD": 23.38, "score": 44.2},
+    "M3_DD5_15": {"SR": 0.846, "CAGR": 10.09, "MDD": 24.76, "score": "est ~42"},
+    "base_S5": {"SR": 0.835, "CAGR": 10.91, "MDD": 25.76},
+    "base_raw": {"SR": 0.758, "CAGR": 12.1, "MDD": 38.02},
+    "note": "M1 has worst SR of all mutations despite loosest DD bracket. Tighter DD (M3: 5/15) paradoxically improves SR by cutting deeper drawdown tails."
+  }
+}

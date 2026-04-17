@@ -1,0 +1,55 @@
+{
+  "artifact_type": "s1_construction",
+  "strategy_id": "STR_1663",
+  "strategy_name": "V02_EP_diversifier",
+  "stage": "S1",
+  "created_at": "2026-04-12",
+  "agent": "Forge",
+  "hypothesis_ref": "H_1663_V02EP_standalone",
+  "debate_ref": "6가설 토론 결과 — 단일 강팩터 standalone 정책 확정",
+
+  "factor_universe": {
+    "factors": ["V02_EP"],
+    "blend_type": "standalone_100pct",
+    "rationale": "블렌드는 약팩터 희석 확인(STR_1650 L-119). Q07 단독 성공 패턴 적용. V02_EP 잔차 alpha 3위, ICIR 0.364, crisis_ratio 0.75."
+  },
+
+  "signal_construction": {
+    "score_formula": "Z_Score_Aligned(V02_EP) * 1.0",
+    "c13_compliance": "Z_Score_Aligned only, align_factor_direction() via factor_db_connector.R",
+    "c15_compliance": "load via factor_db_connector.R bulk parquet load (직접 parquet 금지)",
+    "direction": "higher_better (Earnings yield: 높을수록 저평가 매수)"
+  },
+
+  "portfolio_construction": {
+    "n_hold": 20,
+    "weighting": "EW",
+    "rebalance_freq": "monthly",
+    "commission_bps": 15,
+    "liq_threshold": 200000000,
+    "liq_lag": "shift(liq_20d, 1L) — C2 t-1 준수",
+    "overlay": "none (S1 순수 팩터 신호만)"
+  },
+
+  "pit_checklist": {
+    "C1": "PASS — full-sample 통계 없음. frollmean(n=20) rolling만 사용",
+    "C2": "PASS — liq_lag = shift(liq_20d, 1L), 당일 유동성 사용 금지",
+    "C3": "PASS — 집계→적용 동일 기간 없음",
+    "C4": "PASS — 재무제표 lag: factor_db_connector lag_rule 준수",
+    "C9": "PASS — overlay 없음 (S1). DD/VT 미사용",
+    "C13": "PASS — Z_Score_Aligned via align_factor_direction(). 수동 반전 금지",
+    "C14": "PASS — Usable_Date 기반 팩터 접근 (factor_db_connector)",
+    "C15": "PASS — load_month_factors() / bulk parquet 경유"
+  },
+
+  "expected_outcomes": {
+    "role_bias": "RoleBias_Diversifier",
+    "expected_icir": "0.364 (S2 프로파일 기준)",
+    "crisis_ratio": 0.75,
+    "target_sr": "0.8+",
+    "family": "value",
+    "economic_family_saturation": "moderate"
+  },
+
+  "validation_status": "PENDING_S1_BACKTEST"
+}

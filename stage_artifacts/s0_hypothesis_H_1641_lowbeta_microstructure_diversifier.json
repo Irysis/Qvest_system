@@ -1,0 +1,180 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-08T23:35:00",
+  "hypothesis_id": "H_1641_lowbeta_microstructure_diversifier",
+  "strategy_id": "pending_STR_assignment",
+  "parent": null,
+  "lineage": [],
+
+  "title": "Low-Beta Liquidity Microstructure Diversifier: Beta < 0.5 universe + L31 Vol Concentration + CR08 Vol-Price Divergence",
+
+  "description": "시장 베타 하위 50% 유니버스에서 L31_Vol_Concentration과 CR08_Volume_Price_Divergence의 2F EW z-score blend로 scoring하는 diversifier 전략. L31(recent_3y_icir 0.990)은 거래량 집중도를 측정하여 정보거래자의 존재를 포착하고, CR08(recent_3y_icir 0.917)은 거래량-가격 괴리를 통해 과밀 포지션의 반전 시그널을 감지한다. 두 팩터는 시장 미시구조(microstructure)와 과밀(crowding)이라는 서로 다른 메커니즘에서 alpha를 추출하며, 앵커의 consensus revision과 정보 원천이 근본적으로 다르다. Low-beta 유니버스 필터로 포트폴리오 beta를 0.3~0.5로 구조적으로 낮추어 L-118의 핵심 장벽을 공략한다.",
+
+  "economic_mechanism": "3단계 메커니즘. (1) Beta 유니버스 필터(Frazzini & Pedersen 2014): H_1640과 동일. Rolling 252d beta 하위 50% 선별로 포트폴리오 beta 구조적 절단. (2) L31 Vol Concentration(Kyle 1985, Kyle & Obizhaeva 2016): 거래량 집중도(volume concentration)는 정보거래자의 시장 참여 강도를 반영한다. Kyle(1985) 모형에서 정보거래자는 점진적으로 주문을 실행하되, 특정 시점에 거래가 집중되면 이는 사적 정보(private information)의 존재를 시사한다. 높은 거래량 집중도는 향후 가격 이동의 선행 지표로 작동. Kyle & Obizhaeva(2016)의 market microstructure invariance에 의하면 거래활동(달러거래량 x 변동성)의 패턴이 미시구조 예측에 핵심. L31의 ic_all 0.032, recent_3y_icir 0.990은 이 메커니즘이 한국시장에서 최근 3년간 극도로 안정적으로 작동함을 시사. (3) CR08 Volume-Price Divergence(Lou & Polk 2022 Crowding, Stein 2009 Crowded Trades): 거래량 증가에도 가격이 반응하지 않는 괴리(divergence)는 과밀 포지션이 형성되고 있으나 가격 충격이 아직 실현되지 않은 상태를 나타낸다. 이 괴리의 해소 과정에서 반전(reversal)이 발생. Stein(2009)에 의하면 crowded trade의 해소는 급격한 가격 조정을 동반하며, 이를 사전에 감지하는 것이 contrarian alpha의 원천. CR08 recent_3y_icir 0.917. (4) L31-CR08 교차: 거래량 집중도(정보거래 탐지)와 거래량-가격 괴리(과밀 반전 탐지)는 서로 다른 미시구조 현상을 포착. 전자는 '정보가 있는 곳', 후자는 '과밀이 해소되는 곳'을 가리킨다. 두 시그널의 교차는 '정보 우위 + 과밀 해소'라는 이중 alpha를 결합.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "5가지 근거. (1) SR gap +0.757: 독립 수익원 추가가 Markowitz 최적. (2) Beta 직교성: L-118 장벽 직접 공략. Low-beta 유니버스로 beta 0.3~0.5 달성. (3) Recent_3y_icir 최상위: L31(0.990)과 CR08(0.917)은 conditional_ic_matrix에서 전체 288팩터 중 최상위권. 최근 3년간 alpha가 강화되는 추세. (4) Family 다양성: liquidity_microstructure + crowding은 현재 포트폴리오에 없는 미구축 family. (5) Consensus와 근본적 직교: 미시구조(거래 패턴)와 과밀 반전은 분석가 이익 수정(C19)과 정보 생성 과정이 완전히 다름.",
+
+  "core_reference": [
+    {
+      "ref_id": "A3_Kyle1985",
+      "citation": "Kyle, A.S. (1985, Econometrica) 'Continuous Auctions and Insider Trading'",
+      "mechanism": "Kyle lambda = 시장조성자의 주문불균형 비례 가격충격. 정보거래자는 점진적 정보 반영으로 이익 극대화. 모든 시장미시구조의 기본 모형.",
+      "diversifier_relevance": "L31(Vol Concentration)의 이론적 토대. 거래량 집중은 정보거래자 참여의 proxy."
+    },
+    {
+      "ref_id": "A3_KyleObizhaeva2016",
+      "citation": "Kyle, A.S. & Obizhaeva, A. (2016, Review of Financial Studies) 'Market Microstructure Invariance'",
+      "mechanism": "비유동성 = (분산/거래량)^(1/3). 달러거래량 x 변동성(거래활동)으로 미시구조 예측 가능.",
+      "diversifier_relevance": "L31의 거래량 집중도 측정이 미시구조 정보 추출의 유효한 방법임을 지지."
+    },
+    {
+      "ref_id": "A3_LouPolk2022",
+      "citation": "Lou, D. & Polk, C. (2022, Review of Financial Studies) 'Comomentum: Inferring Arbitrage Activity from Return Correlations'",
+      "mechanism": "과밀 포지션(crowded trades)은 수익률 공변동(comomentum)으로 탐지 가능. 과밀 해소 시 급격한 반전 발생.",
+      "diversifier_relevance": "CR08(Volume-Price Divergence)의 crowding reversal 메커니즘 학술 근거."
+    },
+    {
+      "ref_id": "A3_Stein2009",
+      "citation": "Stein, J. (2009, Journal of Finance) 'Presidential Address: Sophisticated Investors and Market Efficiency'",
+      "mechanism": "과밀 거래(crowded trades)의 해소가 시장 비효율성의 주요 원인. 과밀 탐지가 contrarian alpha의 원천.",
+      "diversifier_relevance": "CR08이 과밀 포지션 형성-해소 과정에서 contrarian alpha를 추출하는 이론적 기반."
+    },
+    {
+      "ref_id": "A3_FrazziniPedersen2014",
+      "citation": "Frazzini, A. & Pedersen, L. (2014, Journal of Financial Economics) 'Betting Against Beta'",
+      "mechanism": "레버리지 제약 → SML 평탄화 → low-beta 과소가격.",
+      "diversifier_relevance": "Low-beta 유니버스 필터의 학술적 근거."
+    }
+  ],
+
+  "factors": ["L31_Vol_Concentration", "CR08_Volume_Price_Divergence"],
+  "universe_filter": "D02_Beta rolling 252d, bottom 50%",
+  "family": "liquidity_microstructure_crowding",
+  "economic_family_breakdown": {
+    "L31": "liquidity_microstructure (50%)",
+    "CR08": "crowding (50%)",
+    "D02_Beta": "risk (universe filter only, NOT scoring)"
+  },
+
+  "factor_profile": {
+    "L31_Vol_Concentration": {
+      "ic_all": 0.032,
+      "ic_bad": 0.024,
+      "conditional_value": -0.012,
+      "recent_3y_icir": 0.990,
+      "icir_CALM": -0.006,
+      "icir_CAUTION": -0.069,
+      "icir_CRISIS": -0.201,
+      "icir_NORMAL": 0.026,
+      "ic_CALM": -0.0005,
+      "ic_CRISIS": -0.019,
+      "KOSPI_icir": -0.075,
+      "KOSDAQ_icir": -0.033,
+      "note": "CRITICAL WARNING: 4-regime ICIR 전구간 음수/근사 0. Recent 3Y ICIR 0.990은 극도로 높으나 장기(전기간) 4-regime에서 alpha 부재. 최근 구조 변화(regime shift)로 인한 신호 가능성. 과적합 리스크 높음."
+    },
+    "CR08_Volume_Price_Divergence": {
+      "ic_all": 0.028,
+      "ic_bad": 0.013,
+      "conditional_value": -0.016,
+      "recent_3y_icir": 0.917,
+      "icir_CALM": 0.008,
+      "icir_CAUTION": -0.026,
+      "icir_CRISIS": -0.115,
+      "icir_NORMAL": 0.067,
+      "ic_CALM": 0.001,
+      "ic_CRISIS": -0.011,
+      "KOSPI_icir": -0.016,
+      "KOSDAQ_icir": 0.0004,
+      "note": "WARNING: 4-regime에서 CRISIS IC 음수(-0.011). 위기 시 역작용. 전기간 ICIR 음수~약양수. Recent 3Y만 강력."
+    }
+  },
+
+  "construction": {
+    "step1_universe": "전체 유동성 필터(20d ADV >= 2억원) 통과 종목에서 rolling 252d beta 하위 50% 선별.",
+    "step2_scoring": "L31 Z_Score_Aligned + CR08 Z_Score_Aligned EW blend. Top 20~30 종목 선별.",
+    "step3_weighting": "EW (S1 순수 팩터 측정).",
+    "step4_rebalance": "월간.",
+    "beta_lag": "t-1 beta 사용 (C2 준수).",
+    "factor_lag": "t-1 팩터 값 사용."
+  },
+
+  "expected_sr": 0.45,
+  "expected_cagr": 8.0,
+  "expected_mdd": 42.0,
+  "expected_turnover": 150,
+  "expected_portfolio_beta": 0.40,
+
+  "expected_metrics_detail": {
+    "sr_range": "0.30~0.60 (recent_3y_icir 최상위이나 장기 4-regime에서 약함. Recent outperformance의 지속성이 핵심 불확실성)",
+    "cagr_range": "5~11% (low-beta 유니버스 + 미시구조 alpha. Bull 시장 lagging)",
+    "mdd_range": "35~50% (L31/CR08 모두 CRISIS IC 음수. 위기 시 역작용 가능. Low-beta 필터가 일부 완화)",
+    "turnover": "100~200% (미시구조 팩터 특성상 높은 회전. 2F blend로 일부 안정화)",
+    "portfolio_corr_with_anchor": "0.25~0.45 (미시구조 alpha는 consensus와 매우 다른 정보 원천 + low-beta 필터)",
+    "portfolio_sr_contribution": "+0.08~0.20 (상관 낮으나 standalone SR 불확실)"
+  },
+
+  "m11_complementarity": "3차원 보완. (1) Beta 직교: 앵커 beta 0.854 vs 본 전략 0.40. (2) 정보 원천 직교: L31(거래량 집중도/미시구조) + CR08(거래량-가격 괴리/과밀 반전) vs C19(분석가 이익 수정). 완전히 다른 데이터 생성 과정. (3) 타이밍 보완: 미시구조 시그널은 일간/주간 빈도의 거래 패턴, consensus는 월간/분기 빈도의 이익 수정. 시간축 직교.",
+
+  "lesson_check": [
+    {
+      "lcode": "L-087",
+      "summary": "한국시장 롱온리 low-risk sorting 무효. Beta = filter, NOT alpha source.",
+      "application": "H_1640과 동일. Beta를 유니버스 필터로만 사용.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-118",
+      "summary": "Long-only beta 0.85~0.93이 상관 지배.",
+      "application": "Low-beta 유니버스 필터로 상관 지배 구조 직접 공략.",
+      "verdict": "직접 적용."
+    },
+    {
+      "lcode": "L-001",
+      "summary": "STR_1499 CR07_Momentum_Crowding 단독: IC -0.077, MDD 61.7%. 위기 시 손실 증폭. Discard.",
+      "application": "경고 교훈. CR07(Momentum Crowding)은 실패했으나 CR08(Volume-Price Divergence)은 다른 메커니즘(가격-거래량 괴리 vs 수익률 공변동). CR08 recent_3y_icir 0.917이나 장기 4-regime에서 CRISIS IC 음수 = CR07과 유사한 위기 역작용 패턴 가능. S2에서 엄격 검증 필수.",
+      "verdict": "강력 경고. CR08이 CR07과 같은 패턴을 보이는지 S2에서 확인."
+    },
+    {
+      "lcode": "L-018",
+      "summary": "STR_1422_crowding_defense 교훈. Crowding 기반 전략의 한국시장 한계.",
+      "application": "Crowding 팩터의 한국시장 defense 역할 실패 패턴 참조. CR08은 defense가 아닌 diversifier로 설계하나, CRISIS IC 음수는 동일한 구조적 문제 시사.",
+      "verdict": "경고 적용. Crowding 팩터의 한국시장 한계 인식."
+    }
+  ],
+
+  "risk_factors": [
+    "CRITICAL: L31/CR08 모두 4-regime 장기에서 CRISIS IC 음수. 위기 시 역작용 가능. Recent 3Y만 강력한 것은 과적합 또는 구조 변화(regime shift)일 수 있음. S2에서 sub-period 안정성 검증 필수.",
+    "L31 KOSPI/KOSDAQ 모두 장기 ICIR 음수: KOSPI -0.075, KOSDAQ -0.033. 전기간에서는 alpha가 존재하지 않았을 가능성. Recent 3Y에서만 작동하는 structural break인지 확인 필수.",
+    "CR08과 CR07의 유사성: L-001에서 CR07(Momentum Crowding) 대실패. CR08이 다른 메커니즘이라 주장하나, crowding family 자체의 한국시장 구조적 한계가 있을 수 있음.",
+    "2F blend의 양 팩터 모두 CRISIS 약세: L31 + CR08 어느 것도 위기 방어를 제공하지 못함. Low-beta 유니버스 필터가 유일한 위기 완충이나 충분하지 않을 수 있음.",
+    "Turnover 과다: 미시구조 팩터는 본질적으로 높은 회전. Beta 유니버스 변동까지 합치면 TO 200% 초과 가능."
+  ],
+
+  "pit_compliance": {
+    "C1": "L31/CR08 모두 거래 데이터 기반 rolling 계산. Full-sample 통계 미사용.",
+    "C2": "Beta 유니버스 확정 및 팩터 scoring 모두 t-1 lag.",
+    "C4": "해당 없음(거래 데이터 기반, 재무제표 lag 불필요).",
+    "C5": "Overlay 미적용(S1).",
+    "C13": "Z_Score_Aligned만 사용.",
+    "C15": "load_month_factors() 경유."
+  },
+
+  "implementation_plan": {
+    "s1_action": "Beta 하위 50% 유니버스에서 L31+CR08 EW z-score blend Top 20, EW weight, 15bps, LIQ >= 2e8. 월간.",
+    "s1_expected": "SR 0.25~0.45, CAGR 5~9%, MDD 35~50%. Beta ~0.40.",
+    "s2_profiling": "ICIR >= 0.20 확인, sub-period 안정성(전기 vs 후기), 4-regime IC 재확인.",
+    "s3_orthogonality": "앵커 대비 수익률 상관(목표 < 0.35), 종목 Jaccard.",
+    "s4_integration": "앵커 + H_1641 한계 SR 기여도.",
+    "s5_mutation": "Low-beta threshold, L31/CR08 비중, N_HOLD, VT, DD Brake.",
+    "s6_validation": "Judge Gate 0-5, C1-C15, sub-period stability 특별 검증."
+  },
+
+  "scout_confidence": {
+    "score": 42,
+    "rationale": "강점: (1) Recent 3Y ICIR L31 0.990 + CR08 0.917 = 최상위(+8). (2) Consensus와 정보 원천 완전 직교(+6). (3) Low-beta 유니버스로 L-118 공략(+5). (4) Kyle(1985)/Lou&Polk(2022) 강건한 학술 근거(+5). 감점: (1) CRITICAL: 4-regime 장기에서 L31/CR08 모두 CRISIS IC 음수(-12). (2) L31 KOSPI/KOSDAQ 장기 ICIR 음수(-8). (3) CR07 대실패와 crowding family 한계(-5). (4) Recent 3Y만 강력 = 과적합/regime shift 리스크(-5). (5) 2F 모두 위기 역작용(-3). 총 42/100. REVISE 영역. 장기 안정성 미검증 상태에서 높은 recent ICIR에 의존하는 것은 리스크가 높음. S2에서 sub-period 검증이 사실상 pass/kill 결정."
+  }
+}

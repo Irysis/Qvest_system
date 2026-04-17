@@ -1,0 +1,48 @@
+{
+  "strategy_id": "STR_1563",
+  "strategy_name": "STR_1563_oc_epschg_c9c11fix",
+  "judge_version": "v6.0",
+  "verdict_date": "2026-03-28",
+  "sg_check_s6_entry": "CONDITIONAL_PASS",
+  "s6_entry_note": "No S0~S5 stage artifacts found. Strategy is C9/C11 fix of STR_943. Pre-existing judge_result.json and l_code.json overwritten. Stage gate deficiency noted but proceeding as fix-iteration.",
+  "gate_0_pit": {
+    "status": "PASS_WITH_NOTE",
+    "c1_full_sample": "PASS - rolling/expanding window only (LOOKBACK=252, MIN_OBS=200)",
+    "c2_same_day_circular": "PASS - no same-day circular in factor construction",
+    "c4_financial_lag": "N/A - uses investor/consensus data, not annual financials",
+    "c5_overlay_t1": "PASS - DD brake uses t-1 lag (line 127), MRS uses t-1 month (line 44-46)",
+    "c9_dd_vt_lag": "PASS - dd_lag = c(0, dd_pct[-n]) at line 127. Vol target applied via backtest_harness.",
+    "c10_liquidity": "NOTE - avg_vol computed as mean(tail(Vol,20)) includes sig_d day. Minor C10 concern but vol_rank is floor filter (bottom 5% exclusion), not selection signal. Marginal impact.",
+    "c11_data_time_axis": "PASS - FRED MRS uses prev_MRS = shift(Macro_Risk_Score, 1, lag) per month. Lines 44-46.",
+    "c13_z_score_aligned": "N/A - custom factor construction, not Factor DB",
+    "c15_factor_db": "N/A - does not use Factor DB"
+  },
+  "gate_1_performance": {
+    "status": "HARD_FAIL",
+    "CAGR_pct": 13.11,
+    "Sharpe": 0.995,
+    "MDD_pct": 28.0,
+    "Annual_Turnover_pct": 615.1,
+    "hard_fail_reason": "Turnover 615% > 600% hard fail threshold",
+    "note": "CAGR and SR are promising. MDD 28% is acceptable. Turnover is marginally above 600% cutoff (615%). Buffer zone tuning (keep_n increase) or rebalancing frequency reduction could fix this.",
+    "hurdle_threshold_CAGR": 16.0,
+    "hurdle_threshold_SR": 0.8
+  },
+  "gate_2_robustness": "SKIPPED - hard fail at Gate 1 (turnover)",
+  "gate_3_factor_model": "SKIPPED - hard fail at Gate 1",
+  "gate_4_dsr": "SKIPPED - hard fail at Gate 1",
+  "gate_5_overfitting": {
+    "status": "NOTE",
+    "concern": "S1 pure factor has vol_target=0.18 and DD brake overlay -- this is S5-level overlay applied without S5 stage gate. regime_scale also applied. Multi-overlay in non-S5 context."
+  },
+  "role_honesty_audit": {
+    "declared_role": "N/A - no S0 role declaration",
+    "actual_behavior": "SR 0.995 with MDD 28% suggests core_alpha potential. OtherCorp + EPS Change is a fundamentals-based composite.",
+    "role_honesty": "N/A"
+  },
+  "grade": "F",
+  "score": 0,
+  "s7_verdict": "Archive",
+  "s7_reason": "Marginal hard fail: Turnover 615% barely exceeds 600% threshold. Core metrics are promising (SR 0.995, MDD 28%). C9/C11 fixes properly implemented. Recommend: (1) increase buffer_zone keep_n from current level or reduce n_holdings to 15-20, (2) file proper S0~S5 artifacts, (3) re-run. Archiving for potential resurrection.",
+  "l_code_id": "L-744"
+}

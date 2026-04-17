@@ -1,0 +1,50 @@
+{
+  "strategy_id": "STR_1425_adaptive_ic_rotation_s5_m3",
+  "judge_timestamp": "2026-03-26 15:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "C1-C11+C13+C14 ALL PASS. Expanding ICIR with 2-month IC lag (line 119). DD brake t-1 lagged (dd_lag = c(0, dd_pct[-n_f])). Liquidity filter shift(,1L,lag). Z_Score_Aligned only. Lookahead detector: CLEAN on both factor_engine.R and run_s5_m3.R. No full-sample stats, no same-day circular."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "SR=0.846, CAGR=10.09%, MDD=24.76%, Calmar=0.408. Hurdle Grade B, Score 43.9. CAGR below 16% target but MDD within 25% limit. Stress test 3/3 outperform. Rolling 3Y positive ratio 92.8%. Turnover 169.4% (acceptable). IR=0.067 (very low alpha over BM)."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All stage artifacts present: s0_record (Scout v4.0 hypothesis), s1_construction, s2_profile (Grade C, SR 0.812), s3_orthogonality (novelty 0.306, max GradeA corr 0.698 to STR_1033), s4_integration (delta_sharpe 0.331, KOSPI beat=TRUE). S3+S4 complete before S5/S6 entry."
+    },
+    "gate3_role_honesty": {
+      "pass": true,
+      "claimed_role": "diversifier",
+      "actual_behavior": "diversifier",
+      "detail": "Claimed diversifier. S3 shows max GradeA corr 0.698 (STR_1033), novelty 0.306. BM corr 0.671. SR 0.846 insufficient for core_alpha. Diversifier classification is honest -- moderate BM correlation with stress outperformance (3/3). S4 initially tagged core_alpha but hurdle reclassified to diversifier, which is accurate given low IR (0.067)."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR: NOT AVAILABLE (no DSR module). OOS retention: IS SR 0.977 / OOS SR 0.557 = 0.571 (below 0.7 threshold -- marginal). Rolling 3Y Sharpe positive 92.8% (strong). Alpha trend ratio 0.97 (stable). IC stability: not computed. CONCERN: OOS retention 57.1% suggests overfitting risk in IC weighting parameters. CAGR 10.09% far below 16% target."
+    },
+    "gate5_ff5": {
+      "pass": true,
+      "detail": "Base output FMB analysis: Score lambda t=3.757 (significant at 1%), intercept t=2.437 (significant). Alpha after controlling for Size+Momentum is positive and significant. Note: FF5 not directly available for S5_M3 mutation (DD overlay on base returns), but base factor alpha is confirmed. DD overlay is mechanical (no new factor exposure)."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 43.9,
+    "fail_reasons": [
+      "Gate 4: OOS retention 0.571 below 0.7 threshold -- overfitting risk",
+      "Gate 4: DSR not available for haircut",
+      "CAGR 10.09% substantially below 16% target",
+      "IR 0.067 -- negligible excess return over benchmark"
+    ],
+    "recommendation": "KEEP for diversifier pool but do NOT promote. OOS decay from 0.977 to 0.557 suggests ICIR weighting may be capturing noise. The aggressive DD 5/15 mutation (M3) reduced MDD from base ~35% to 24.76% but at cost of CAGR. Consider: (1) relaxing DD parameters to recover CAGR, (2) testing with fewer factors to reduce dimensionality, (3) increasing MIN_IC_MONTHS from 12 to 24 for more stable ICIR. PIT compliance is exemplary -- 2-month IC lag is conservative and correct."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": true,
+    "evidence": "BM corr 0.671, max GradeA corr 0.698, IR 0.067, stress 3/3 outperform. Low alpha generation but good defensive properties. Diversifier role confirmed."
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "factor_id": "STR_1659_RF_UA",
+  "stage": "S1",
+  "strategy_name": "RF Uncertainty-Aware Diversifier",
+  "timestamp": "2026-04-11 03:10:38.20578",
+  "hypothesis": "ranger 5-seed ensemble + UA Tree Variance Sorting (kappa=1.0). Feature pool: V/Q/AC/GR/IN/S family 일간 DB (XGB STR_1656과 0% overlap). Liu et al. (2026) UA Ranking + Breiman (2001) Random Forests. L-123 §4: 일간 DB 5700일 학습 (p>>n 해결).",
+  "primary_variant": "S1_B",
+  "kappa": 1,
+  "n_features_pool": 76,
+  "mi_top_n": 40,
+  "oos_years": {
+    "start": 2008,
+    "end": 2025
+  },
+  "purge_days": 21,
+  "seeds": [42, 123, 456, 789, 2024],
+  "ic_summary": {
+    "A": {
+      "IC": 0.0661,
+      "ICIR": 0.8059,
+      "N": 165
+    },
+    "B": {
+      "IC": 0.06,
+      "ICIR": 0.6976,
+      "N": 165
+    },
+    "C": {
+      "IC": 0.06,
+      "ICIR": 0.6976,
+      "N": 165
+    },
+    "D": {
+      "IC": 0.0739,
+      "ICIR": 0.8513,
+      "N": 165
+    }
+  },
+  "alpha_lab_gate_primary": true,
+  "backtest": {
+    "S1_A": {
+      "CAGR": 1.71,
+      "SR": 0.1925,
+      "Sortino": 0.2155,
+      "MDD": -75.26,
+      "Turnover": "NA"
+    },
+    "S1_B": {
+      "CAGR": 20.74,
+      "SR": 0.9595,
+      "Sortino": 1.1429,
+      "MDD": -65.35,
+      "Turnover": "NA"
+    },
+    "S1_C": {
+      "CAGR": 20.74,
+      "SR": 0.9595,
+      "Sortino": 1.1429,
+      "MDD": -65.35,
+      "Turnover": "NA"
+    },
+    "S1_D": {
+      "CAGR": 19.91,
+      "SR": 0.9253,
+      "Sortino": 1.0803,
+      "MDD": -66.88,
+      "Turnover": "NA"
+    }
+  },
+  "pit_compliance": {
+    "C1": "Walk-Forward Expanding only (oos_yr loop)",
+    "C2": "OOS > IS + purge 21d",
+    "C4": "일간 DB 재무 45일 lag 내재",
+    "C9": "오버레이 없음 (S1 순수 팩터)",
+    "C13": "일간 DB 원시값 → z-score DB (방향 반전 없음)",
+    "C14": "fwd_ret t+1~t+21",
+    "C15": "Arrow open_dataset (parquet 직접 반복 없음)"
+  },
+  "opt_compliance": {
+    "OPT-1": "Arrow open_dataset bulk collect (for loop 내 parquet 반복 없음)",
+    "OPT-2": "load_rawdata(use_cache=TRUE) 1회",
+    "OPT-4": "mclapply 병렬 백테스트",
+    "OPT-7/MC-P2": "factor_db_daily 참조 (L-123 §4: 일간 5700일 학습)",
+    "OPT-7/MC-P3": "Walk-forward expanding + oos_yr"
+  },
+  "overlap_check": {
+    "xgb_pool": "STR_1656: RE*/전체 309 일간팩터",
+    "rf_pool": "V/Q/AC/GR/IN/S fundamental family only",
+    "overlap_pct": 0
+  },
+  "output_files": {
+    "performance_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/performance.json",
+    "equity_curve_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/equity_curve.png",
+    "annual_returns_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/annual_returns.png",
+    "nav_primary_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/nav_S1_B.csv",
+    "variant_comparison": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/variant_comparison.csv",
+    "ic_detail_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1659_RF_UA/output/ic_detail_S1_B.csv"
+  }
+}

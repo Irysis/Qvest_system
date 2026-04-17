@@ -1,0 +1,178 @@
+{
+  "strategy_id": "STR_1558_ret_autocorr_diversifier",
+  "factor_id": "L22_Ret_Autocorr",
+  "judge_stage": "S6_full_verification",
+  "judge_version": "Judge_v6.0",
+  "timestamp": "2026-03-28T22:00:00+09:00",
+  "s6_entry_gate": {
+    "sg_check_s6_entry": "FAIL (Tracker not found -- no formal tracker file, but all S0-S5 artifacts exist)",
+    "artifacts_present": ["s0_record", "s1_construction", "s2_profile", "s3_orthogonality", "s4_integration", "s5_research_slate", "s5_mutation_design_1", "s5_synthesis_result"],
+    "s5_requirements": {
+      "mutations_attempted": 9,
+      "mutations_completed": 9,
+      "category_count": 5,
+      "categories_covered": ["multifactor_combination", "overlay", "signal_transform", "lookback_variation", "stock_weight"],
+      "synthesis_tested": true,
+      "min_9_mutations": "PASS",
+      "min_4_categories": "PASS (5 covered)"
+    }
+  },
+  "evaluated_version": "S5 Best Mutation M6 (L22+C19 Score Blend + DD 6/20 + Regime v7.1)",
+  "base_version": {
+    "label": "L22 standalone (S1/S2)",
+    "sharpe": 0.544,
+    "cagr": 12.13,
+    "mdd": 55.71,
+    "grade": "F",
+    "hard_fail_reasons": ["MDD 55.7% > 45%", "Turnover 648% > 600%"]
+  },
+  "best_mutation_profile": {
+    "mutation": "M6 (L22+C19+DD 6/20+Regime v7.1)",
+    "sharpe": 0.893,
+    "cagr": 14.15,
+    "mdd": 32.24,
+    "turnover": 492.5,
+    "grade": "B",
+    "score": 57.0,
+    "hard_fail": false
+  },
+  "runner_up_profile": {
+    "mutation": "M3 (L22+C19 Score Blend, no overlay)",
+    "sharpe": 0.873,
+    "cagr": 19.23,
+    "mdd": 49.67,
+    "grade": "B",
+    "score": 65.7,
+    "hard_fail": true,
+    "hard_fail_reason": "MDD 49.7% > 45%"
+  },
+  "all_mutations_summary": {
+    "M1_L22_CR07": {"SR": 0.449, "CAGR": 10.1, "MDD": 56.74, "grade": "F"},
+    "M2_L22_R01": {"SR": 0.493, "CAGR": 8.1, "MDD": 48.86, "grade": "F"},
+    "M3_L22_C19": {"SR": 0.873, "CAGR": 19.23, "MDD": 49.67, "grade": "B", "note": "BEST raw alpha but MDD hard fail"},
+    "M4_4F": {"SR": 0.721, "CAGR": 13.52, "MDD": 47.63, "grade": "B-", "note": "Signal dilution with 4F"},
+    "M5_Regime": {"SR": 0.884, "CAGR": 18.47, "MDD": 46.28, "grade": "B", "note": "Regime alone insufficient for MDD"},
+    "M6_DD_Regime": {"SR": 0.893, "CAGR": 14.15, "MDD": 32.24, "grade": "B", "note": "Best risk-adjusted, S6 submission"},
+    "M7_126d": {"SR": 0.111, "CAGR": 2.67, "MDD": 68.26, "grade": "F", "note": "Rolling z-score destroys signal"},
+    "M8_63d": {"SR": 0.327, "CAGR": 8.01, "MDD": 61.25, "grade": "F", "note": "Shorter lookback worse"},
+    "M9_IVol": {"SR": 0.495, "CAGR": 11.19, "MDD": 56.77, "grade": "F", "note": "IVol weight minimal improvement"}
+  },
+  "gate_0_pit": {
+    "verdict": "CONDITIONAL PASS (C15 procedural violation in S5 code)",
+    "c1_full_sample": "PASS -- no full-sample statistics. Factor engine uses monthly signal dates.",
+    "c2_same_day_circular": "PASS -- standard monthly rebalancing with t+1 execution.",
+    "c3_same_period": "PASS -- no same-period aggregate-then-apply.",
+    "c4_fiscal_lag": "PASS -- L22 is price-based (daily return autocorrelation), no fiscal data.",
+    "c5_overlay_lag": "PASS -- regime overlay uses t-1 lag: cl5 <- c(0, cp5[-nf5]) (line 169 run_s5_all.R).",
+    "c9_dd_vt_lag": "PASS -- DD brake uses t-1: dd_lag <- c(0, dd[-nf]) (line 83 run_s5_all.R).",
+    "c13_z_score_aligned": "PASS -- uses Z_Score_Aligned only. No manual sign flip. Factor_engine.R line 23: fdt$Z_Score_Aligned.",
+    "c14_usable_date": "PASS -- base factor_engine uses load_month_factors(sd). S5 uses fdb_dates[fdb_dates <= sig_d] (line 45-47).",
+    "c15_load_month_factors": "WARNING -- S5 run_s5_all.R lines 20-22 use open_dataset() direct parquet access instead of load_month_factors(). Procedural violation. However, date filtering (line 45-47) prevents actual lookahead. Base factor_engine.R (S1) correctly uses load_month_factors().",
+    "lookahead_detector": "CLEAN -- both run_all.R and factor_engine.R pass automated detection."
+  },
+  "gate_1_implementation": {
+    "verdict": "PASS",
+    "n_holdings": 30,
+    "commission": "15bps (0.0015)",
+    "liq_filter": "2e8 threshold applied (line 52 run_s5_all.R)",
+    "buffer_zone": "keep_n=50, entry_n=25",
+    "weight_method": "equal",
+    "set_seed": "PASS -- set.seed(1558) in run_s5_all.R line 4"
+  },
+  "gate_2_robustness": {
+    "verdict": "PASS (Strong)",
+    "oos_retention": 0.813,
+    "oos_threshold": 0.3,
+    "is_sharpe": 0.961,
+    "oos_sharpe": 0.781,
+    "rolling_3y_positive_ratio": 0.901,
+    "alpha_trend": "IMPROVING -- recent 3Y SR 1.255 / full SR 0.893 = ratio 1.41",
+    "ic_trend": "IMPROVING -- base L22 recent IC 0.0224 vs full 0.0131 (ratio 1.70)",
+    "stress_outperform": "2/3 periods",
+    "quarter_consistency": "4/4 quarters positive (verification_result.json)"
+  },
+  "gate_3_performance": {
+    "verdict": "PARTIAL FAIL",
+    "sharpe": {"value": 0.893, "target": 0.8, "status": "PASS"},
+    "cagr": {"value": 14.15, "target": 16.0, "status": "FAIL (miss by 1.85pp)"},
+    "mdd": {"value": 32.24, "target_soft": 25.0, "target_hard": 45.0, "status": "PASS hard, FAIL soft"},
+    "turnover": {"value": 492.5, "hard_limit": 600, "status": "PASS"},
+    "calmar": 0.439,
+    "ir": 0.297,
+    "grade_a_criteria": {
+      "hard_fail_check": "PASS (no hard fail)",
+      "score_ge_40": "PASS (57.0 >= 40)",
+      "cagr_ge_16": "FAIL (14.15% < 16%)",
+      "sr_ge_0.8": "PASS (0.893 >= 0.8)",
+      "grade_a_eligible": false,
+      "reason": "CAGR 14.15% misses Grade A threshold of 16%"
+    },
+    "grade_a_novel_criteria": {
+      "cagr_ge_12": "PASS (14.15% >= 12%)",
+      "sr_ge_0.6": "PASS (0.893 >= 0.6)",
+      "novelty_bonus_ge_10": "FAIL (novelty_bonus = 0, max_corr 0.511 > 0.5 threshold for +5~8 bonus)",
+      "grade_a_novel_eligible": false,
+      "reason": "Novelty bonus 0 (max_corr 0.511 with CR10 exceeds 0.5 cutoff for bonus)"
+    }
+  },
+  "gate_4_statistics": {
+    "verdict": "CONDITIONAL PASS",
+    "fmb_alpha": {
+      "lambda_mean": 0.001433,
+      "t_stat_nw": 2.484,
+      "significant": true,
+      "harvey_t3_note": "t=2.48 < 3.0 Harvey threshold. Multiple testing concern acknowledged. However, L22 is a pre-specified factor from Lo & MacKinlay (1990), reducing multiple testing adjustment."
+    },
+    "fmb_size": {"t_stat": -2.569, "significant": true, "note": "Size exposure present (small-cap tilt)"},
+    "fmb_momentum": {"t_stat": 1.535, "significant": false},
+    "dsr": "NA (DSR module unavailable)",
+    "recent_3y_sr": 1.255,
+    "alpha_decay_check": "NO DECAY -- recent 3Y SR 1.255 >> 0.3 threshold",
+    "max_consec_neg_alpha": 15,
+    "note": "15 consecutive negative alpha months is concerning but offset by strong recent performance"
+  },
+  "gate_5_diversity": {
+    "verdict": "CONDITIONAL PASS",
+    "s3_max_abs_corr": 0.511,
+    "most_correlated": "CR10_Convergence_Premium (corr = -0.511)",
+    "c19_corr": -0.108,
+    "independence_class": "partial",
+    "novelty_score": 0.49,
+    "liquidity_cluster_concern": "L08_Roll_Spread corr 0.500 -- same liquidity family, expected overlap",
+    "note": "max_corr 0.511 marginally above 0.5 threshold. However, correlation is with CR10 (crowding), not a core portfolio factor. C19 corr -0.108 confirms diversifier value."
+  },
+  "role_honesty_audit": {
+    "declared_role": "diversifier",
+    "audit_result": "HONEST",
+    "checks": {
+      "diversifier_corr_threshold": "s3 max_abs_corr = 0.511 slightly exceeds 0.5 suspicion threshold",
+      "diversifier_value": "C19 corr = -0.108 confirms genuine diversification from core alpha (STR_1555)",
+      "economic_mechanism": "Return autocorrelation (Lo & MacKinlay 1990) is genuinely distinct from earnings consensus (C19). Microstructure vs fundamentals = different information channels.",
+      "crisis_behavior": "M3 (L22+C19) stress outperformance 3/3 -- better than base C19. Defense contribution validated.",
+      "role_disguise_detected": false,
+      "conclusion": "L22 is a legitimate diversifier. max_corr 0.511 with CR10 is within tolerance for liquidity-adjacent factors. The -0.108 corr with C19 is the critical diversification property."
+    }
+  },
+  "s7_final_verdict": {
+    "decision": "ARCHIVE",
+    "grade": "B",
+    "score": 57.0,
+    "role_tag": "RoleBias_Diversifier",
+    "rationale": [
+      "Grade B confirmed: SR 0.893 passes 0.8 threshold, but CAGR 14.15% fails 16% Grade A threshold.",
+      "MDD 32.24% passes hard fail (<45%) but exceeds soft target (25%).",
+      "Strong robustness: OOS retention 0.813, improving alpha trend (recent 3Y SR 1.255).",
+      "FMB alpha t=2.48 significant but below Harvey t>3.0 (multiple testing concern).",
+      "C15 procedural violation in S5 code (direct parquet access) -- no actual lookahead, but procedure not followed.",
+      "15 consecutive negative alpha months is a structural weakness.",
+      "KEY VALUE: L22-C19 corr = -0.108 makes L22 the best diversifier for the current portfolio.",
+      "ARCHIVE rationale: Not Grade A standalone, but L22+C19 combination (M3: SR 0.873, CAGR 19.23%) shows strong raw alpha. The MDD issue can be addressed in a future dedicated STR with proper DD+Regime from the start. Archive preserves the finding for portfolio-level integration."
+    ],
+    "future_action": [
+      "L22+C19 2F blend is the most promising diversifier combination discovered. M3 raw alpha (SR 0.873, CAGR 19.23%) is strong but MDD 49.67% needs overlay work.",
+      "Consider creating a dedicated STR for L22+C19+DD+Regime with optimized parameters (current M6 uses generic DD 6/20).",
+      "L22 standalone is Grade F -- no value as independent strategy.",
+      "Rolling z-score transforms DESTROY L22 signal (M7: SR 0.11, M8: SR 0.33) -- L22 must use raw Z_Score_Aligned."
+    ]
+  }
+}

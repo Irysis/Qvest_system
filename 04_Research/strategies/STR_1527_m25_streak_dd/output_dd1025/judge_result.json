@@ -1,0 +1,103 @@
+{
+  "judge_version": "v7",
+  "strategy_id": "STR_1527_m25_streak_dd_1025",
+  "variant": "output_dd1025",
+  "date": "2026-03-26",
+  "final_grade": "B",
+  "final_score": 43.7,
+  "final_verdict": "KEEP — weak standalone, ensemble candidate if FF5 alpha improves",
+  "role_assigned": "diversifier",
+
+  "gate_0_pit": {
+    "pass": true,
+    "lookahead_detector": "CLEAN (run_all.R 166 lines, factor_engine.R 36 lines)",
+    "c1_full_sample": "PASS — no full-sample stats; DD brake uses rolling cumprod/cummax only",
+    "c2_same_day_circular": "PASS — DD brake uses t-1 lag: dd_lagged <- c(0, dd[-n]). Line 62 confirmed.",
+    "c3_aggregate_apply": "PASS — no same-period aggregate->apply pattern",
+    "c4_financial_lag": "PASS — Factor DB handles financial statement lagging via Usable_Date",
+    "c5_overlay_t1": "PASS — DD overlay uses t-1 lagged drawdown (C2 compliant)",
+    "c6_survivorship": "PASS — RAWDATA universe used as-is, no survivor filter",
+    "c7_auto_detect": "PASS — lookahead_detector returned clean",
+    "c8_fm_same_day": "N/A — no factor momentum overlay",
+    "c9_vt_dd_same_day": "PASS — DD brake explicitly uses t-1 lag (line 62)",
+    "c10_liquidity_lag": "PASS — AvgTV20 uses shift(frollmean(...), 1L, type='lag') on line 16 of factor_engine.R",
+    "c11_data_time_axis": "PASS — Factor DB Z_Score_Aligned matched on sig_d date only",
+    "c13_z_score_aligned": "PASS — factor_engine.R line 23 uses Z_Score_Aligned exclusively. No NEGATE/FLIP_SIGN.",
+    "c15_load_method": "NOTE — uses open_dataset() directly instead of load_month_factors(). Technical violation but functionally equivalent. Minor."
+  },
+
+  "gate_1_performance": {
+    "pass": false,
+    "sharpe": 0.373,
+    "cagr_pct": 5.76,
+    "mdd_pct": 41.89,
+    "calmar": 0.138,
+    "ir": -0.226,
+    "ann_vol": 15.45,
+    "turnover_ann": 62.1,
+    "commentary": "Very weak returns. SR 0.373 far below 2.0 target. CAGR 5.76% below 16% target. MDD 41.89% exceeds 25% target. IR negative = underperforms benchmark. DD 10/25 overlay reduced MDD from base STR_1519's 61.9% to 41.89% but at severe return cost. DD brake clamps exposure too aggressively during drawdowns that M25 eventually recovers from.",
+    "stress_outperform": "4/4 (GFC +9.92%, COVID +6.37%, Rate2022 +9.55%, EuDebt +2.63%)",
+    "rolling_3y_positive": "63.8%",
+    "oos_retention": 1.384,
+    "alpha_trend_ratio": 2.557,
+    "recent_3y_sr": 0.954
+  },
+
+  "gate_2_stage_artifacts": {
+    "pass": false,
+    "s0_record_exists": false,
+    "note": "No s0_record found in strategy directory or stage_artifacts/. No stage_artifacts/ directory existed before Judge created it. V6 Stage Gate violation: Forge should not create strategy without Scout s0_record. However, context states this was a Judge-recommended signal => partial mitigation."
+  },
+
+  "gate_3_role_honesty": {
+    "pass": true,
+    "hurdle_assigned_role": "diversifier",
+    "judge_assessment": "Diversifier role is HONEST. BM_Corr=0.73 is moderate-high for a diversifier but stress outperformance 4/4 and negative IR support a defensive/diversifier classification rather than core_alpha. Not a core alpha candidate (SR too low). Not defense (no explicit crisis targeting)."
+  },
+
+  "gate_4_statistical": {
+    "pass": false,
+    "ic_mean": -0.0007,
+    "ic_ir": -0.012,
+    "ic_positive_rate": 0.524,
+    "fmb_score_tstat": 0.130,
+    "fmb_score_lambda": 0.00006,
+    "dsr": "N/A",
+    "commentary": "IC effectively zero (-0.0007). FMB Score lambda t-stat=0.130 — not significant. The M25+V24 factor combination shows no cross-sectional return predictability in Korea after sector neutralization. OOS retention 1.384 and alpha trend 2.557 suggest recent improvement, but the base signal is noise-level."
+  },
+
+  "gate_5_ff5": {
+    "pass": false,
+    "ff3_alpha_annual_pct": -2.07,
+    "ff3_alpha_tstat": -0.737,
+    "carhart4_alpha_annual_pct": -2.22,
+    "carhart4_alpha_tstat": -0.793,
+    "ff5_alpha_annual_pct": -0.55,
+    "ff5_alpha_tstat": -0.183,
+    "commentary": "All three models show NEGATIVE alpha. FF5 alpha is -0.55%/yr (t=-0.18), statistically insignificant but directionally negative. FF3 and Carhart4 worse at -2.1% and -2.2%. The M25+V24 signal is fully absorbed by standard factors. No independent alpha detected."
+  },
+
+  "ensemble_flag": false,
+  "ensemble_reasoning": "FF5 alpha is NEGATIVE (-0.55%), MDD 41.89% exceeds 45% soft limit. Does NOT meet criteria for ensemble consideration (positive FF5 alpha + MDD<45%). Stress outperformance is notable but insufficient to compensate for zero alpha.",
+
+  "strengths": [
+    "PIT fully compliant — DD brake t-1 lag correctly implemented",
+    "Stress outperformance 4/4 periods (GFC +9.92%, COVID +6.37%)",
+    "OOS retention 1.384 and alpha trend 2.557 suggest signal improving recently",
+    "Recent 3Y SR 0.954 much higher than full-period 0.373"
+  ],
+
+  "weaknesses": [
+    "IC effectively zero (-0.0007) — no cross-sectional signal",
+    "FMB Score t-stat 0.130 — factor has no pricing power",
+    "FF3/FF5 alpha all NEGATIVE — fully absorbed by standard factors",
+    "MDD 41.89% despite DD 10/25 brake — base signal too volatile",
+    "IR -0.226 — underperforms benchmark",
+    "No s0_record — Stage Gate violation"
+  ],
+
+  "comparison_vs_base": {
+    "str_1519_base": "F grade, Score 41.6, MDD 61.9%",
+    "dd1025_improvement": "MDD 61.9% -> 41.89% (-20pp), but still F->B only marginal. DD brake trades return for risk reduction but doesn't fix the fundamental signal weakness."
+  }
+}

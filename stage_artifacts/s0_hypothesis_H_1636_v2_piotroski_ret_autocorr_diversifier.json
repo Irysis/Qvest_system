@@ -1,0 +1,202 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "revision": "REVISE_R1",
+  "timestamp": "2026-04-08T14:30:00",
+  "hypothesis_id": "H_1636_v2_piotroski_ret_autocorr_diversifier",
+  "strategy_id": "STR_1636_piotroski_ret_autocorr_diversifier",
+  "parent": "H_1636_gpa_ret_autocorr_diversifier",
+  "lineage": ["H_1636_gpa_ret_autocorr_diversifier"],
+  "revision_reason": "Q10_Gross_Margin DIVERGED (SR 0.503->0.089, MDD 51->74.3%, ICIR 0.052 -> S2 FAIL). Q04_Piotroski_F로 교체.",
+
+  "title": "Piotroski F-Score + Return Autocorrelation Diversifier: FMB-validated quality x microstructure 2F blend",
+
+  "description": "Q04_Piotroski_F(Piotroski 2000 JAR, F-Score) + L22_Ret_Autocorr(Lo & MacKinlay 1990 RFS, Variance Ratio) 2팩터 EW z-score blend를 diversifier sleeve로 설계한다. Q10(ICIR 0.052, S2 FAIL)을 Q04(ICIR 0.276, t=3.03, S2 PASS)로 교체한 REVISE R1 버전. Q04는 C19 상관 0.025(근사 독립), L22는 C19 상관 -0.007(약한 역상관)로, 두 팩터 모두 M11의 core alpha(C19)와 독립적인 정보 원천에서 alpha를 추출한다. Q04(재무건전성 9항목 종합 quality score)와 L22(가격 자기상관 microstructure friction)의 cross-family(quality x liquidity) 교차는 단일 family 집중을 회피하면서 diversifier 역할을 수행한다. Q04-L22 pairwise 상관 0.018로 두 팩터 간 정보 중복이 극히 낮다.",
+
+  "changes_from_v1": {
+    "Q10_replaced_by_Q04": {
+      "reason": "Q10 DIVERGED: ICIR 0.052 (S2 FAIL), SR 0.089 (v1 가정 0.503 대비 82% 붕괴), MDD 74.3% (catastrophic). Critic 지적 수용.",
+      "Q04_advantages": [
+        "ICIR 0.276 (S2 PASS, Q10 0.052 대비 5.3배)",
+        "t-stat 3.03 (Harvey 3.0 PASS, Q10 0.57 FAIL)",
+        "FMB t=3.087 (L-769, 횡단면 pricing power 검증됨)",
+        "4-Regime CRISIS IC 0.027 (Q10 0.008 대비 3.4배)",
+        "recent_3y_icir 0.532 (Q10 0.266 대비 2배)",
+        "KOSPI icir 0.601 (Q10 미측정, 강한 대형주 신호)",
+        "shortsell regime 안정 (BAN icir 0.758 vs ALLOW 0.552)"
+      ]
+    },
+    "L22_retained": {
+      "reason": "bad regime IC ratio 2.03 (최고), C19 상관 -0.007 (역상관), L-591 M6 SR 0.893 실증. FMB t=2.48은 약하나 diversifier 감안 시 조건부 유의.",
+      "adjustments": "raw value 사용 유지 (rolling z-score 변환 금지, L-591 교훈)"
+    },
+    "sleeve_needs_addressed": "Gov-proxy 지적 수용: PG0 sleeve_needs에 diversifier 미명시이나, SR gap 0.997 해소에 독립 수익원 추가가 필수. Markowitz(1952) 분산 효과로 기존 core_alpha(2건) + diversifier(1건) 구조가 포트폴리오 SR 개선에 기여. defense는 MDD gap 해소, diversifier는 SR gap 해소 역할 분담."
+  },
+
+  "economic_mechanism": "두 팩터의 diversifier 메커니즘은 M11(consensus)과 완전히 다른 정보 원천에서 작동한다. (1) Q04 Piotroski F-Score(Piotroski 2000, JAR): 9개 binary 시그널(수익성 4항목 + 레버리지/유동성 3항목 + 운영효율성 2항목)의 합산. 단일 재무비율이 아닌 재무건전성의 다차원 평가로, 세 가지 점에서 Q10(GP/A)보다 diversifier에 우월하다: (a) 다차원 구성: GP/A는 단일 비율이지만 F-Score는 9개 차원의 합산이므로, 정보 집합이 C19(earnings consensus)와 겹칠 확률이 더 낮다. 실제 Q04-C19 상관 0.025로 거의 독립. (b) FMB 검증: Q04 FMB t=3.087(Harvey PASS)로 한국시장 횡단면 pricing power가 통계적으로 유의하다(L-769). Q10은 FMB 미검증. (c) ICIR 안정성: full-period ICIR 0.276, recent 3Y ICIR 0.532로 시간에 따른 신호 강화 추세. Q10 ICIR 0.052는 신호 존재 자체가 의심. F-Score가 diversifier로 작동하는 이유: 높은 F-Score 기업은 재무적으로 건전하므로 위기 시 파산 리스크가 낮고, 이는 consensus(C19)가 위기 시 confusion 상태에 빠져도 유지되는 독립적 방어 특성이다. CRISIS IC 0.027은 전 구간 IC 0.025와 거의 동일하여, 국면 불문 안정적 신호 제공. (2) L22 Return Autocorrelation(Lo & MacKinlay 1990, RFS): v1과 동일. 수익률 자기상관은 시장 미시구조 마찰을 반영한다. 가격 발견 속도가 느린 종목의 predictable pattern. C19 상관 -0.007로 독립적. CRISIS IC 0.022는 전체 IC 0.013의 1.7배로, 위기 시 시장 비효율성 확대와 함께 alpha가 강화된다. Q04+L22 조합의 diversifier 핵심: Q04(재무건전성)와 L22(가격 미시구조)는 완전히 다른 데이터 원천(재무제표 vs 거래 패턴)에서 alpha를 추출하므로 pairwise 상관 0.018로 극히 낮은 정보 중복. M11(C19 consensus)과의 3중 직교(fundamental quality / microstructure / consensus)가 포트폴리오 SR 개선의 이론적 기반.",
+
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+
+  "why_now": "PG0 gap 기반 5가지 근거. (1) SR gap +0.997: 현재 2-strategy 포트폴리오 SR 1.003 vs 목표 2.0. 독립 수익원 추가로 Markowitz 분산 효과 활용. Q04-C19 상관 0.025, L22-C19 상관 -0.007이므로 M11과 거의 무상관 diversifier 편입 시 SR 기여 추정 +0.2~0.4. (2) family 다양성: 현재 consensus(1) + defense(1) 집중. Q04(quality) + L22(liquidity)는 미구축 family로 family concentration 완화. Factor Taxonomy 9조 기준 미구축 family 우선 탐색 원칙 충족. (3) Q04 FMB 검증: t=3.087(Harvey PASS)로 한국시장 횡단면 유효성이 Q10(미검증)보다 견고. L-769에서 standalone MDD는 59%로 hard fail이나 IC 0.024 안정적 + FMB significant → 멀티팩터 조합에서 가치 보존 확인. (4) L22 위기 alpha: bad regime IC ratio 2.03(conditional_ic_matrix 최고 수준). 위기 시 M11이 약해질 때 L22가 alpha를 보완하는 자연스러운 hedge 구조. (5) TO budget 적합: Q04 TO 추정 60~100% (quality factor 특성상 안정), L22 TO 추정 80~120%. 합산 TO < 200% budget 내 운용 가능.",
+
+  "core_reference": [
+    {
+      "ref_id": "A3_Piotroski2000",
+      "citation": "Piotroski, J. (2000, Journal of Accounting Research) 'Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers'",
+      "mechanism": "F-Score 9항목(ROA/deltaROA/CFO/Accrual + deltaLeverage/deltaLiquidity/Equity_Issuance + deltaMargin/deltaTurnover) 합산. 재무건전성 개선 기업이 장기 초과수익 달성. High-F(8-9)가 Low-F(0-1) 대비 연 7.5% 초과수익(미국시장).",
+      "diversifier_relevance": "F-Score는 9개 다차원 재무 시그널의 합산이므로 단일 consensus revision(C19)과 정보 원천이 근본적으로 다르다. 한국시장 FMB t=3.087(L-769)로 횡단면 유효성 검증됨."
+    },
+    {
+      "ref_id": "A3_LoMacKinlay1990",
+      "citation": "Lo, A. & MacKinlay, A.C. (1990, Review of Financial Studies) 'When Are Contrarian Profits Due to Stock Market Overreaction?'",
+      "mechanism": "주간/월간 수익률의 양(+) 자기상관은 시장 과소반응(underreaction)의 증거. Variance Ratio 검정으로 시장 효율성 이탈 정도 측정.",
+      "diversifier_relevance": "L22(Return Autocorrelation)는 시장 미시구조 현상. Consensus revision과 구조적으로 직교. C19 상관 -0.007. Bad regime IC ratio 2.03."
+    },
+    {
+      "ref_id": "A3_HouMoskowitz2005",
+      "citation": "Hou, K. & Moskowitz, T. (2005, Review of Financial Studies) 'Market Frictions, Price Delay, and the Cross-Section of Expected Returns'",
+      "mechanism": "Price delay(가격 반영 지연)이 높은 종목은 미래 수익률이 높다. 정보 비대칭과 시장 미시구조 마찰이 원인.",
+      "diversifier_relevance": "L22는 price delay의 proxy. Information friction 기반 alpha는 consensus 기반 alpha와 독립적 정보 채널."
+    },
+    {
+      "ref_id": "KR_FACTOR_2",
+      "citation": "박종원, 엄윤성, 엄철준 (2024, 재무관리연구) '시장이상현상을 활용한 팩터 투자전략 성과 분석'",
+      "mechanism": "한국시장 32년 실증. Quality/Profitability 기반 팩터의 롱사이드 유의성 확인.",
+      "diversifier_relevance": "Q04(F-Score)의 한국시장 롱사이드 유효성을 지지하는 독립적 실증."
+    },
+    {
+      "ref_id": "Revisiting_Quality",
+      "citation": "Revisiting Quality Investing (Literature collection, 1-3.Quality)",
+      "mechanism": "복합 quality score > 단일 quality 지표. F-Score는 가장 강력한 복합 quality measure 중 하나.",
+      "diversifier_relevance": "F-Score의 복합 구성이 단일 GP/A(Q10)보다 robust한 quality signal 제공."
+    }
+  ],
+
+  "factors": ["Q04_Piotroski_F", "L22_Ret_Autocorr"],
+  "family": "quality_liquidity_diversifier",
+  "economic_family_breakdown": {
+    "Q04": "quality (50%)",
+    "L22": "liquidity/microstructure (50%)"
+  },
+
+  "factor_profile": {
+    "Q04_Piotroski_F": {
+      "ICIR_full": 0.276,
+      "t_stat": 3.03,
+      "FMB_t": 3.087,
+      "ic_all": 0.025,
+      "ic_crisis": 0.027,
+      "bad_ratio": 0.93,
+      "recent_3y_icir": 0.532,
+      "corr_C19": 0.025,
+      "corr_L22": 0.018,
+      "KOSPI_icir": 0.601,
+      "S2_pass": true,
+      "Harvey_pass": true,
+      "standalone_grade": "F (MDD 59.3% hard fail, L-769)",
+      "multifactor_value": "FMB significant + IC stable = building block"
+    },
+    "L22_Ret_Autocorr": {
+      "ICIR_full": 0.247,
+      "t_stat": 2.71,
+      "FMB_t": 2.48,
+      "ic_all": 0.013,
+      "ic_crisis": 0.022,
+      "bad_ratio": 2.03,
+      "recent_3y_icir": 0.367,
+      "corr_C19": -0.007,
+      "corr_Q04": 0.018,
+      "S2_pass": true,
+      "Harvey_pass": false,
+      "standalone_grade": "B (SR 0.397, diversifier, L-762)",
+      "note": "FMB t=2.48 Harvey 미달이나 diversifier 역할 감안 조건부 유의. raw value 사용 필수(rolling z-score 금지)."
+    }
+  },
+
+  "pairwise_correlations": {
+    "Q04_L22": 0.018,
+    "Q04_C19": 0.025,
+    "L22_C19": -0.007,
+    "measurement": "60-month cross-sectional correlation mean (Factor DB Z_Score, 2021-2026)"
+  },
+
+  "expected_sr": 0.55,
+  "expected_cagr": 10.0,
+  "expected_mdd": 35.0,
+  "expected_turnover": 100,
+
+  "expected_metrics_detail": {
+    "sr_range": "0.45~0.65 (Q04 standalone SR implied ~0.35 from L-769 + L22 standalone SR 0.397, 2F blend 시 약간의 diversification benefit)",
+    "cagr_range": "8~12% (standalone alpha 약하나, M11과의 포트폴리오 레벨 SR 기여가 핵심)",
+    "mdd_range": "30~40% (두 팩터 모두 standalone MDD 59%+ hard fail, overlay 전)",
+    "turnover": "60~120% (Q04 quality factor 안정 + L22 microstructure 중간 회전)",
+    "portfolio_corr_with_m11": "-0.01 ~ 0.03 (Q04 0.025, L22 -0.007의 가중평균)",
+    "portfolio_sr_contribution": "+0.15~0.35 (M11과 거의 무상관 감안 Markowitz 분산 효과)"
+  },
+
+  "to_budget": "< 200%",
+
+  "m11_complementarity": "M11과의 보완성 4차원. (1) 정보 원천 직교: M11은 consensus revision(분석가 이익 수정), Q04는 재무건전성 9항목(재무제표 종합), L22는 가격 미시구조(거래 패턴). 세 정보 원천은 독립적 데이터 생성 과정. Q04-C19 상관 0.025, L22-C19 상관 -0.007로 실측 확인. (2) FMB 이중 검증: Q04 FMB t=3.087(독립 횡단면 pricing power), L22 FMB t=2.48(조건부 유의). 두 팩터 모두 FF5에 의해 fully subsumed되지 않는 독립 alpha 잠재력 보유. (3) 국면 안정성: Q04는 4-Regime IC가 CALM/CAUTION/CRISIS/NORMAL 전 구간에서 양수(0.012~0.037). L22는 CRISIS IC 0.022(최고)로 위기 시 강화. M11의 CRISIS 약화를 보완. (4) TO 보완: M11 TO 574.8% vs STR_1636v2 예상 TO 60~120%. 포트폴리오 총 TO 관리에 유리.",
+
+  "lesson_check": [
+    {
+      "lcode": "L-769",
+      "summary": "Q04 Piotroski F-Score standalone: FMB t=3.087 (Harvey PASS), IC 0.024 안정적, MDD 59.32% (hard fail). GR02와 상관 0.599. 멀티팩터 조합 입력으로서 가치 보존. Defense 역할 기각(GFC/Rate2022 언더퍼폼).",
+      "application": "Q04를 diversifier의 50% 구성요소로 사용. Standalone은 hard fail이나 FMB significant + IC stable이므로 building block으로 적합. Defense 역할은 기각되었으나 diversifier 역할은 별도 검증(C19 상관 0.025로 독립적).",
+      "verdict": "직접 적용. Q04의 FMB 검증 완료 상태를 활용."
+    },
+    {
+      "lcode": "L-762",
+      "summary": "L22_Ret_Autocorr standalone: SR 0.397, MDD 64%. C19 상관 -0.108(진정한 diversifier). M6(L22+C19+DD+Regime): SR 0.893, MDD 32.2%. Rolling z-score 변환은 신호 파괴. Microstructure 팩터는 원시 값 사용 최적.",
+      "application": "L22의 C19 역상관이 핵심 근거. raw value 사용 필수(rolling z-score 금지). M6에서 L22+C19 조합의 diversifier 가치 실증됨.",
+      "verdict": "직접 적용. L22 raw value, rolling z-score 변환 금지."
+    },
+    {
+      "lcode": "L-STR1618",
+      "summary": "M21_Seasonality + Q01_GPA: 두 약한 팩터의 EW 결합은 시너지 없음(MDD 60.2%, SR 0.316). standalone alpha 부재 시 결합 효과 없음.",
+      "application": "경고 교훈 유지. Q04(ICIR 0.276, FMB t=3.087)는 Q01(GPA)보다 한국시장 신호가 강력. L22(ICIR 0.247, bad_ratio 2.03)도 M21(ICIR 0.033)보다 한국시장 유효성 높음. v1의 Q10(ICIR 0.052) 교체로 이 리스크 대폭 완화.",
+      "verdict": "경고 적용이나 리스크 수준 하향. Q04+L22 합산 ICIR(0.276+0.247)가 Q10+L22(0.052+0.247)보다 현저히 높아 약한 팩터 조합 리스크 감소."
+    },
+    {
+      "lcode": "L-766",
+      "summary": "STR_1456 D01+C19+Q04 3카테고리 교차: PIT 완전 준수, OOS>IS(1.15), 스트레스 3/3, Recent 3Y SR 1.007. 그러나 MDD 52.12% hard fail, FF5 alpha t=0.524.",
+      "application": "Q04가 포함된 멀티팩터 조합에서 견고성(OOS 1.15, stress 3/3)이 확인됨. 단독이 아닌 조합에서 Q04의 안정성 기여 실증. 본 가설은 C19 대신 L22와 조합하여 M11과의 독립성 극대화.",
+      "verdict": "조건부 적용. Q04의 멀티팩터 견고성 참조."
+    }
+  ],
+
+  "risk_factors": [
+    "standalone alpha 약함: Q04 FMB t=3.087이나 portfolio SR ~0.35(L-769 추정), L22 SR 0.397. 2F blend도 SR 0.45~0.65 예상으로 standalone Grade A 미달 가능. Diversifier 역할에서는 포트폴리오 기여도가 핵심이나, VT overlay 시 alpha 소멸 리스크 존재.",
+    "Q04 standalone MDD 59.3%: Quality factor임에도 위기 시 방어 실패(GFC, Rate2022). L-769에서 defense 역할 기각. Diversifier 역할에서는 IC 안정성이 MDD보다 중요하나, standalone MDD가 시장(52.9%) 초과하는 점은 주의.",
+    "L22 FMB t=2.48 Harvey 미달: 단독 유의성 부족. Q04(FMB t=3.087)와의 조합에서 보완되나, L22 단독 기여도는 제한적일 수 있음.",
+    "Q04-GR02 상관 0.599: Q04가 earnings growth와 높은 상관. 만약 M11(C19)이 간접적으로 earnings growth를 반영한다면 Q04-M11 수익률 상관이 시그널 상관(0.025)보다 높을 수 있음.",
+    "PG0 sleeve_needs에 diversifier 미명시: SR gap 해소 목적으로 diversifier 편입을 정당화했으나, 명시적 gap 지정이 아닌 추론 기반. S4 한계기여도 검증에서 실제 SR 기여 확인 필수."
+  ],
+
+  "pit_compliance": {
+    "C1": "Q04는 연간/분기 재무제표 기반 9항목 합산. L22는 rolling window. Full-sample 통계 미사용.",
+    "C2": "팩터 신호 t-1 lag. Same-day circular 방지.",
+    "C4": "Q04: 연간 재무제표 5월 리밸런싱. 분기 45일 lag.",
+    "C5": "VT overlay: expanding window vol, t-1 lag.",
+    "C9": "VT same-day 금지. vol_lag <- c(vol[1], head(vol, -1)).",
+    "C11": "Regime Engine v7.1 FRED lag 처리.",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C15": "load_month_factors() 경유. L22는 raw value 사용(rolling z-score 변환 금지, L-762)."
+  },
+
+  "implementation_plan": {
+    "s1_action": "Q04+L22 2팩터 EW z_safe() blend, Top 20, EW weight, 15bps commission, LIQ >= 2e8. L22는 raw z_safe() 적용(rolling z-score 금지). S1은 순수 팩터 신호 측정.",
+    "s1_expected": "SR 0.40~0.55, CAGR 8~12%, MDD 55~65% (overlay 전). v1 대비 Q04의 강한 신호(ICIR 5.3x)로 SR 개선 기대.",
+    "s2_profiling": "ICIR 0.20 확인 (Q04 0.276 PASS 확인됨), 5Y IC 유의성, Q04-L22 pairwise 상관 확인 (0.018 이미 측정)",
+    "s3_orthogonality": "M11(C19+HRP) 대비 수익률 상관, 종목 Jaccard, STR_1635(가설 A) 대비 직교성",
+    "s4_integration": "M11+STR_1636v2 2전략 포트폴리오에서 한계 SR 기여도 검증",
+    "s5_mutation": "VT 12~15%, Regime 3-Layer, 가중 방식(EW vs IVol), buffer zone(50/25), N_HOLD(15 vs 20 vs 25), Q04/L22 비중(50/50 vs 60/40 vs 40/60)",
+    "s6_validation": "Judge Gate 0-5, C1-C15, Role Honesty Audit(diversifier -- M11 대비 cor < 0.10 필수)"
+  },
+
+  "scout_confidence": {
+    "score": 64,
+    "rationale": "v1(58점) 대비 +6점 개선. Q10->Q04 교체로 (1) ICIR 0.052->0.276 (S2 PASS, +8), (2) FMB t=3.087 (Harvey PASS, +5), (3) 4-Regime CRISIS IC 3.4배 강화 (+3), (4) Q04-L22 pairwise 상관 0.018 확인 (정보 중복 최소, +2). 감점 유지: standalone alpha 약함 (-10), L22 FMB t=2.48 Harvey 미달 (-4), PG0 sleeve_needs에 diversifier 미명시 (-3), standalone MDD 59%+ (-3). v1 대비 개선: Q10 DIVERGED 리스크 제거 (+8), Q04 FMB 검증으로 학술적 견고성 강화 (+5). 총 64/100."
+  }
+}

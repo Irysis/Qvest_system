@@ -1,0 +1,18 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1672",
+  "round": "R1",
+  "score": 5,
+  "arguments": [
+    "Family concentration 35% 상한 위반 및 Saturation Penalty 확정. 현재 포트폴리오 consensus 50% + ML_complexity 50%로 이미 35% 상한을 초과한 상태이다. C07 편입 시 consensus 비중이 더 확대되며, Hurdle v2.2 Saturation Penalty -8점(consensus Grade A 14건, 6~20 구간) 적용 대상이다. antipattern_detector.R의 .ap_family_saturation()이 PG1에서 자동 경고를 발동하고, exploration-rules의 '단일 economic_family 고착 금지'에 정면 저촉된다. 4-bucket backlog Explore 20% 예산은 미탐색 family 우선이며, 이미 포화된 consensus에 자원 투입은 비효율이다.",
+    "PG0 SR gap 0.807 해소 방향과 정면 불일치 + Role admission 자격 미달. SR 1.193에서 2.0으로의 도약은 Core(C19)와 독립적인 alpha source가 필수인데, C07은 C19 구성요소 C06_TP_Gap과 동일 데이터 소스(애널리스트 목표가)의 파생이며 factor_registry에서 같은 earnings_cluster 상관 그룹이다. L-106(beta 지배)과 L-118(단면 독립 != 포트폴리오 독립)이 반복 경고하듯 단면 상관 0.107은 무의미하다. 게다가 regime_profile이 crisis: negative, macro_sensitivity가 growth_positive이므로 위기 시 Core와 동반 하락하여 Diversifier 요건(독립 수익 + 위기 시 무상관)을 두 축 모두 불충족한다.",
+    "전기간 IC 음수 팩터의 standalone 편입은 포트폴리오 alpha를 훼손한다. C07 전기간 Mean IC -0.0073, ICIR -0.073으로 Alpha Lab Gate(ICIR >= 0.20)에 미달이다. Stress ICIR 2.20은 조건부이며, 4-regime CRISIS ICIR은 -0.048로 오히려 음수이다(L-120 위기 IC 정의 차이). 194개 미사용 팩터(accrual, risk, liquidity, microstructure 등) 중 전기간 양수 IC + consensus 외부 family에서 diversifier를 탐색하는 것이 PG0 gap 해소의 최적 경로이다."
+  ],
+  "concern": "가설의 핵심 결함은 '같은 consensus family 내 다른 팩터를 Diversifier라고 부르는 것'이다. C06_TP_Gap이 이미 C19의 구성요소이고, C07_TP_Mom은 같은 애널리스트 목표가의 변화율이다. 이는 Diversifier가 아니라 Core의 확장(marginal enhancement)에 불과하다. 포트폴리오 레벨에서 SR gap 0.807을 해소하려면 consensus 외부의 alpha source가 필수적이며, C07 편입은 consensus 고착을 심화시켜 향후 진정한 diversifier 편입 여력을 축소시키는 역효과만 낳는다. 현 시점에서 Governor는 consensus family 외부 탐색을 강력히 권고한다.",
+  "conditions": [
+    "Diversifier 역할로의 PG1 admission을 위해서는 Core(STR_1631)와 포트폴리오 수익률 상관 0.40 이하가 필수이며, 단면 팩터 상관(0.107)이 아닌 time-series return correlation으로 검증해야 한다.",
+    "Family concentration 35% 상한 준수를 위해, C07을 독립 Diversifier가 아닌 STR_1631의 C19 composite에 5번째 요소로 편입하는 대안을 먼저 검토할 것. 이 경우 S4 marginal contribution으로 IC-weighted inclusion의 실효성을 정량 확인해야 한다.",
+    "Standalone Diversifier로 진행할 경우, C07의 전기간 무조건부 ICIR이 Alpha Lab Gate(ICIR >= 0.20)를 통과해야 하며, 현재 ICIR -0.073으로 미달이므로 S2에서 FAIL 예상. 조건부 ICIR만으로 gate 통과를 주장하는 것은 허용하지 않는다.",
+    "Governor는 consensus family 대신 accrual, risk, liquidity, microstructure 등 미사용 194개 팩터 중에서 diversifier 후보를 탐색하는 방향을 권고한다. PG0 gap 해소의 최적 경로는 family 다각화이다."
+  ]
+}

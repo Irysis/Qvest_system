@@ -1,0 +1,106 @@
+{
+  "factor_id": "GSCD_Growth_Stability_Composite",
+  "strategy_id": "STR_1655_growth_stability_composite_diversifier",
+  "stage": "S1",
+  "version": "1.0",
+  "run_date": "2026-04-09",
+  "session": 56,
+
+  "construction": {
+    "factors": ["GR02_Earnings_Growth", "Q07_Earnings_Stability", "Q28_Cash_Conversion"],
+    "universe": "LIQ >= 2e8 (t-1) → Beta 하위 40% expanding (t-1) → AC21>-1.5, M01>-1.5",
+    "scoring": "Z_Score_Aligned 합산 (C13, Arrow bulk preload C15)",
+    "n_holdings": 20,
+    "weight": "EW",
+    "rebalance": "Bimonthly",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 35, "entry_n": 20},
+    "overlay": "NONE (S1 순수 팩터)",
+    "start_date": "2004-01-30",
+    "end_date": "2026-03-31",
+    "n_signal_dates": 134
+  },
+
+  "performance": {
+    "CAGR": 9.27,
+    "AnnVol": 24.6,
+    "Sharpe": 0.377,
+    "Sharpe_m": 0.465,
+    "Sortino": 0.507,
+    "MDD": 71.68,
+    "Calmar": 0.129,
+    "WinRate_monthly": 53.9,
+    "WorstMonth": -34.95,
+    "Worst3M": -49.35,
+    "ES99_daily": 7.10,
+    "ES99_monthly": 24.59
+  },
+
+  "benchmark": {
+    "CAGR": 9.03,
+    "Sharpe": 0.441,
+    "MDD": 54.54
+  },
+
+  "ic_analysis": {
+    "IC_full": 0.0770,
+    "ICIR_full": 1.040,
+    "pos_rate": 0.887,
+    "FMB_t": 3.91,
+    "note": "ICIR 1.040 > 0.20 기준 통과. FMB t=3.91 Harvey(2016) t>3.0 통과."
+  },
+
+  "stress_analysis": {
+    "GFC_2007_10": {"strat_total": -0.451, "bm_total": -0.380, "alpha": -0.071},
+    "EU_Debt_2011": {"strat_total": 0.100, "bm_total": -0.117, "alpha": 0.217},
+    "China_Shock_2015": {"strat_total": -0.166, "bm_total": -0.076, "alpha": -0.090},
+    "Trade_War_2018": {"strat_total": -0.182, "bm_total": -0.092, "alpha": -0.090},
+    "COVID_2020_01": {"strat_total": -0.131, "bm_total": -0.041, "alpha": -0.090},
+    "Rate_Hike_2022": {"strat_total": -0.239, "bm_total": -0.249, "alpha": 0.010},
+    "note": "GFC, COVID, 무역전쟁에서 BM 대비 열위. 유럽재정위기에서 +21.7% alpha 강점."
+  },
+
+  "hurdle": {
+    "grade": "F",
+    "score": 10.3,
+    "hard_fail": "MDD 71.7% > 45%",
+    "icir_pass": true,
+    "note": "MDD Hard FAIL. ICIR 1.040은 S2 기준 통과이나 포트폴리오 위험 구조 전면 재검토 필요"
+  },
+
+  "diagnosis": {
+    "primary_issue": "MDD 71.68% — Beta 하위 40% 필터가 위험 제어에 불충분. 저베타 유니버스임에도 MDD 과다.",
+    "secondary_issue": "GFC/COVID/무역전쟁에서 BM 대비 열위 — 위기 방어력 부재. S0 가설(crisis ratio 1.17)과 상충.",
+    "eu_debt_strength": "2011 유럽재정위기 +21.7% alpha — 이 구간에서만 diversifier 역할 확인.",
+    "beta_issue": "Phase 7 beta 계산 NA — RAWDATA Beta_Lag 컬럼 정리 후 sim에서 재계산 필요.",
+    "possible_cause": "Beta 하위 40% 유니버스가 mid-small cap에 편중 → 위기 시 유동성 리스크 증폭. GR02가 경기순환적(cyclical) 속성으로 위기 시 급락.",
+    "gr02_risk": "GR02 이익성장 팩터가 성장주(고베타) 편향 → beta filter가 이를 완전히 제거하지 못함"
+  },
+
+  "s2_recommendation": "ICIR 1.040 통과. 그러나 MDD Hard FAIL로 S2 진입 재검토 대상. S0 risk 항목 1번(GR02 정상장 ICIR)과 2번(quality 대형주 집중) 실현됨. GR02 단독 ICIR 측정 및 beta conditioning 강화(하위 30%) 또는 GR02 가중 축소 후 재실행 권장.",
+
+  "role_bias": "RoleBias_Diversifier",
+  "expected_role": "Diversifier",
+  "actual_role_assessment": "S1 기준 diversifier 역할 미확인 (MDD > BM, 대부분 위기서 열위). 유럽재정위기만 예외적 강점.",
+
+  "pit_compliance": {
+    "C2_beta_lag": "PASS — expanding window t-1 lag 적용",
+    "C4_financial_lag": "PASS — Factor DB Usable_Date 내부 처리",
+    "C10_liq_lag": "PASS — AvgTV20 t-1 lag",
+    "C13_zscore_aligned": "PASS — Z_Score_Aligned만 사용",
+    "C15_factor_db": "PASS — Arrow bulk preload (list.files + open_dataset)",
+    "OPT1": "PASS — lapply + rbindlist, load_month_factors 미사용",
+    "OPT3": "PASS — run_monthly_simulation() 사용"
+  },
+
+  "output_files": [
+    "04_Research/strategies/STR_1655_GSCD/output/performance.json",
+    "04_Research/strategies/STR_1655_GSCD/output/performance.csv",
+    "04_Research/strategies/STR_1655_GSCD/output/hurdle_result.json",
+    "04_Research/strategies/STR_1655_GSCD/output/equity_curve.png",
+    "04_Research/strategies/STR_1655_GSCD/output/annual_returns.png",
+    "04_Research/strategies/STR_1655_GSCD/output/stress_analysis.rds",
+    "04_Research/strategies/STR_1655_GSCD/output/prefeasibility_beta_universe.rds",
+    "04_Research/strategies/STR_1655_GSCD/output/sim_result.rds"
+  ]
+}

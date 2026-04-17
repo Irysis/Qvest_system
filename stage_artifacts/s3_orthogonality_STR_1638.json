@@ -1,0 +1,99 @@
+{
+  "stage": "S3",
+  "strategy_id": "STR_1638_enhanced_quality_defense",
+  "analysis_date": "2026-04-08",
+  "analyst": "Scout",
+  "role_bias": "RoleBias_Defense",
+  "core_alpha_ref": "STR_1631_SYN_05_2002 (proxy: STR_1631 overlay, SR 1.113)",
+
+  "common_period": {
+    "start": "2005-07-05",
+    "end": "2026-03-31",
+    "n_days": 5117
+  },
+
+  "return_correlation": {
+    "full_period_pearson": 0.6912,
+    "full_period_spearman": 0.6329,
+    "recent_1y": 0.7660,
+    "recent_3y": 0.7334,
+    "note": "전체 기간 상관 0.69로 defense 허용 기준(0.7) 이하이나, 최근 1년 0.77로 상관 상승 추세. Spearman 0.63은 비선형 관계 고려 시 다소 낮음."
+  },
+
+  "crisis_correlation": {
+    "2007_GFC_onset": {"cor": 0.6169, "n": 84, "ann_excess_pct": -56.54},
+    "2008_GFC_peak": {"cor": 0.8115, "n": 187, "ann_excess_pct": -48.22},
+    "2011_EuroDebt": {"cor": 0.8245, "n": 126, "ann_excess_pct": 34.53},
+    "2018_Q4Selloff": {"cor": 0.7991, "n": 62, "ann_excess_pct": -5.96},
+    "2020_COVID": {"cor": 0.8214, "n": 123, "ann_excess_pct": 43.01},
+    "2022_RateHike": {"cor": 0.8935, "n": 184, "ann_excess_pct": -18.81},
+    "mean": 0.7945,
+    "max": 0.8935,
+    "note": "6개 위기 구간 중 5개에서 상관 > 0.8. 위기 시 분산 효과 미미. 2011 유럽위기와 2020 COVID에서만 초과수익 양수."
+  },
+
+  "rolling_correlation_126d": {
+    "mean": 0.6808,
+    "median": 0.6992,
+    "min": 0.2076,
+    "max": 0.9152,
+    "q25": 0.6125,
+    "q75": 0.7808,
+    "pct_below_0.5": 9.7,
+    "pct_below_0.3": 2.5,
+    "note": "롤링 상관 중앙값 0.70. 0.5 미만 구간은 전체의 9.7%에 불과. 대부분 기간에서 높은 동조성."
+  },
+
+  "marginal_contribution": {
+    "core_standalone": {"SR": 1.113, "CAGR_pct": 19.9, "Vol_pct": 17.8, "MDD_pct": 33.5},
+    "defense_standalone": {"SR": 0.715, "CAGR_pct": 16.0, "Vol_pct": 22.4, "MDD_pct": 65.9},
+    "blend_70_30": {"SR": 1.068, "CAGR_pct": 19.0, "Vol_pct": 17.8, "MDD_pct": 38.3, "SR_delta": -0.045, "MDD_delta_ppt": 4.8},
+    "blend_80_20": {"SR": 1.094, "CAGR_pct": 19.3, "Vol_pct": 17.7, "MDD_pct": 34.5, "SR_delta": -0.019, "MDD_delta_ppt": 0.9},
+    "blend_90_10": {"SR": 1.109, "CAGR_pct": 19.6, "Vol_pct": 17.7, "MDD_pct": 33.9, "SR_delta": -0.004, "MDD_delta_ppt": 0.4},
+    "note": "모든 배합에서 SR 하락 + MDD 증가. Defense 추가가 포트폴리오를 악화시킴. Defense 본연의 MDD 감소 기능 부재."
+  },
+
+  "beta_asymmetry": {
+    "beta_full": 0.8687,
+    "beta_downside": 1.0899,
+    "beta_upside": 0.6789,
+    "asymmetry": 0.4110,
+    "tail_cor_bottom5pct": 0.6046,
+    "tail_n": 256,
+    "note": "하방 beta(1.09) > 상방 beta(0.68). Core 하락 시 Defense가 더 크게 하락하는 역 defense 구조. 이는 quality 팩터의 한국시장 구조적 한계(L-394, L-402)와 일치."
+  },
+
+  "s3_criteria": {
+    "criterion_1_full_correlation": {
+      "threshold": "< 0.7 (defense 허용)",
+      "value": 0.6912,
+      "pass": true,
+      "note": "경계선 통과 (0.69 < 0.70). 최근 추세 상승(1Y: 0.77)은 우려 요소."
+    },
+    "criterion_2_crisis_max_correlation": {
+      "threshold": "< 0.8",
+      "value": 0.8935,
+      "pass": false,
+      "note": "6개 위기 구간 중 5개에서 > 0.8. 위기 시 분산 효과 부재. FAIL."
+    },
+    "criterion_3_mdd_marginal": {
+      "threshold": "MDD delta < 0 (MDD 감소)",
+      "value_70_30": 4.8,
+      "pass": false,
+      "note": "70/30 배합 시 MDD 33.5% -> 38.3% (+4.8ppt). Defense가 MDD를 악화. FAIL."
+    }
+  },
+
+  "s3_verdict": "FAIL",
+  "fail_reasons": [
+    "위기 구간 상관 최대 0.8935 (기준 < 0.8 위반, 5/6 구간에서 > 0.8)",
+    "한계 기여 MDD +4.8ppt 악화 (Defense 본연의 기능 부재)",
+    "Beta 비대칭 +0.41 (하방 > 상방 = 역 defense 구조)"
+  ],
+  "structural_diagnosis": "STR_1638의 Quality 팩터 기반 defense는 한국시장에서 구조적으로 Core Alpha(STR_1631, Earnings Surprise 기반)와 높은 위기 동조성을 보임. L-394/L-402에서 확인된 QMJ standalone 한계와 일치. Quality 팩터가 위기 시 시장 beta에 지배되어 defense 역할 불가. 하방 beta 1.09로 Core보다 더 큰 하락 노출.",
+
+  "recommendation": "S3 FAIL -> S4 진입 불가. Defense 역할 재설계 필요. (1) 시장 beta를 직접 차단하는 low-beta/min-vol 접근, (2) 위기 선행 지표 기반 동적 헤지 오버레이, (3) 다른 economic_family에서 defense 후보 탐색 권고.",
+
+  "related_lcodes": ["L-394", "L-402", "L-403", "L-118"],
+  "next_action": "S0 재설계 또는 폐기 검토"
+}

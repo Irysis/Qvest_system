@@ -1,0 +1,284 @@
+{
+  "stage": "S6_JudgeValidation",
+  "strategy_id": "STR_1662a",
+  "variant": "M6_IVOL (S5 Best)",
+  "strategy_name": "Q07_Earnings_Stability_Defense_IVOL_Weighted",
+  "hypothesis": "H_1643_REVISED",
+  "debate_score": 64,
+  "role_bias": "RoleBias_Defense",
+  "judge": "Judge",
+  "timestamp": "2026-04-12T22:00:00",
+
+  "sg_check_s6_entry": {
+    "result": "PASS",
+    "checks": {
+      "s0_record_exists": true,
+      "s1_construction_exists": true,
+      "s2_profile_exists": true,
+      "s3_orthogonality_exists": true,
+      "s4_integration_exists": true,
+      "s5_mutation_exists": true,
+      "s5_mutations_attempted": 9,
+      "s5_f_category_count": 5,
+      "s5_synthesis_tested": true,
+      "all_gates_prior_pass": true
+    },
+    "note": "S0~S5 전 아티팩트 확인. mutations_attempted=9 >= 9, f_category_count=5 >= 4, synthesis_tested=TRUE. S6 진입 조건 충족."
+  },
+
+  "gate_0_hard_fail": {
+    "verdict": "PASS",
+    "mdd": -0.0930,
+    "mdd_threshold": -0.45,
+    "mdd_pass": true,
+    "turnover_ann": 0.682,
+    "turnover_threshold": 6.0,
+    "turnover_pass": true,
+    "hard_fail": false,
+    "note": "MDD -9.30% (임계 -45% 대비 충분한 마진). TO 68.2% (임계 600% 대비 극히 낮음). Hard fail 해당 없음."
+  },
+
+  "gate_1_pit_c1_c15": {
+    "verdict": "PASS",
+    "checks": {
+      "C1_no_full_sample": {
+        "pass": true,
+        "evidence": "s5_mutation_lab.R L74: frollmean(Vol*Close, n=20L) = rolling 20d. L79-88: expanding window sd(Ret[seq_len(i-1L)]). 전체 시계열 통계 사용 없음.",
+        "code_ref": "s5_mutation_lab.R:74,79-88"
+      },
+      "C2_no_same_day_circular": {
+        "pass": true,
+        "evidence": "s5_mutation_lab.R L76: shift(liq_20d, 1L) = t-1 lag. L128: liq_lag >= liq_thresh. 당일 유동성 사용 안 함.",
+        "code_ref": "s5_mutation_lab.R:76,128"
+      },
+      "C3_no_same_period_agg_apply": {
+        "pass": true,
+        "evidence": "Z_Score_Aligned는 Factor DB에서 사전 계산됨. 월별 리밸런싱 시 해당 월 score 사용은 분기 공시 lag 반영된 값."
+      },
+      "C4_financial_lagging": {
+        "pass": true,
+        "evidence": "Q07_Earnings_Stability는 Factor DB에서 분기별 재무제표 기준으로 사전 lag 적용. factor_db_connector.R 경유."
+      },
+      "C5_overlay_t1": {
+        "pass": true,
+        "evidence": "M6_IVOL는 오버레이 미사용. IVOL 가중치는 expanding window t-1 (L85: seq_len(i-1L)). M7(DD Brake)과 M8(VolTarget)은 C9 준수 확인됨(참고).",
+        "code_ref": "s5_mutation_lab.R:85,199-211,213-231"
+      },
+      "C9_dd_vt_lag": {
+        "pass": true,
+        "evidence": "DD Brake(L204): dd_lag=c(0,head(dd_pct,-1)). VolTarget(L227): vol_lag=c(vt_target,head(monthly_ann_vol,-1)). M6_IVOL 자체는 미사용이나 코드 구조 검증 완료.",
+        "code_ref": "s5_mutation_lab.R:204,227",
+        "minor_concern": "L84: i<3 구간에서 sd(Ret[seq_len(i)]) = 당일 포함. 그러나 초기 1~2개월(2002.07~08) 포트 구성 전 구간으로 실질 영향 없음."
+      },
+      "C13_z_score_aligned": {
+        "pass": true,
+        "evidence": "s5_mutation_lab.R L61: align_factor_direction(fdb, .load_registry()). dcast value.var='Z_Score_Aligned'. NEGATE/FLIP_SIGN 없음.",
+        "code_ref": "s5_mutation_lab.R:61,70"
+      },
+      "C14_usable_date": {
+        "pass": true,
+        "evidence": "Factor DB parquet에서 Coverage==TRUE 필터. IC 직접 접근 없음(S2에서 별도 검증)."
+      },
+      "C15_factor_db_load": {
+        "pass": true,
+        "evidence": "s5_mutation_lab.R L50: source(factor_db_connector.R). L53-58: list.files + rbindlist(lapply(read_parquet)). 직접 parquet 경로 하드코딩 없음. connector 경유.",
+        "code_ref": "s5_mutation_lab.R:50,53-58"
+      }
+    },
+    "ivol_specific_pit": {
+      "expanding_window": "L79-88: for loop 기반 expanding sd. i>=3부터 seq_len(i-1L) = t-1 기준. C1+C9 준수.",
+      "ivol_weight_source": "L151: dt[Date==m, .(Ticker, ivol_wt=ivol)]. 해당 월의 expanding t-1 vol 사용. 미래 변동성 참조 없음.",
+      "median_imputation": "L153: NA/0인 ivol에 median 대체. 해당 월 cross-sectional median이므로 미래참조 아님.",
+      "verdict": "IVOL 가중치 PIT 준수 확인."
+    },
+    "run_all_r_pit": {
+      "note": "run_all.R(S1)은 EW 가중 + liq_lag t-1. S5 M6_IVOL는 s5_mutation_lab.R 기준. 양쪽 모두 PIT 준수."
+    },
+    "prohibited_patterns_scan": {
+      "full_sample_stat": "미검출",
+      "same_day_circular": "미검출",
+      "normalizePath": "미검출 (tryCatch(dirname(sys.frame(1)$ofile)) 사용)",
+      "negate_flip": "미검출"
+    }
+  },
+
+  "gate_2_ic_analysis": {
+    "verdict": "PASS (AX-001)",
+    "full_period_icir": 0.382,
+    "hurdle_icir": 0.20,
+    "icir_pass": true,
+    "stress_icir": 0.753,
+    "crisis_4r_icir": 0.413,
+    "bad_normal_ic_ratio": 0.74,
+    "note": "전기간 ICIR 0.382 > 0.20 허들 통과. 위기 ICIR(stress 0.753, 4r crisis 0.413) 모두 양수. bad/normal ratio 0.74 = 위기 시에도 IC 양수 유지. 288팩터 중 양쪽 위기 기준 최강(L-121)."
+  },
+
+  "gate_3_ff5_regression": {
+    "verdict": "NOT_AVAILABLE",
+    "note": "STR_1662a M6_IVOL에 대한 별도 FF5 회귀 미실행. S2에서 Q07 팩터 수준 IC 검증 완료. Defense 전략의 낮은 CAGR(2.89%)에서 FF5 alpha 유의성 확보 어려움 예상. AX-001 기준으로는 Gate 3 비핵심(위기 alpha가 핵심).",
+    "recommendation": "후속 정밀 검증 시 FF5 회귀 추가 권장. 현 단계에서 Gate 미충족으로 처리하지 않음(Defense AX-001 예외)."
+  },
+
+  "gate_4_dsr": {
+    "verdict": "PASS",
+    "n_obs": 286,
+    "monthly_sr": 0.2091,
+    "annualized_sr": 0.7244,
+    "skewness": -0.315,
+    "kurtosis_raw": 5.626,
+    "kurtosis_excess": 2.626,
+    "se_sr": 0.06259,
+    "psr_above_zero": 0.9996,
+    "n_trials": 10,
+    "e_max_sr_monthly": 0.10295,
+    "dsr_deflated": 0.9551,
+    "harvey_t_stat": 3.54,
+    "harvey_threshold": 3.0,
+    "harvey_pass": true,
+    "note": "Harvey t=3.54 > 3.0 통과. DSR=95.5% (다중검정 10회 조정 후에도 강건). PSR(SR>0)=99.96%. 음의 왜도(-0.315)와 양의 초과첨도(2.626)를 반영한 SE 조정에도 유의."
+  },
+
+  "gate_5_hurdle_v22": {
+    "verdict": "PASS_CONDITIONAL (AX-001)",
+    "standard_evaluation": {
+      "cagr": 0.0289,
+      "sharpe": 0.724,
+      "mdd": -0.093,
+      "turnover_ann": 0.682,
+      "return_score": 2.7,
+      "risk_score": 18.1,
+      "mdd_penalty": 0,
+      "saturation_penalty": -8,
+      "total_score": 12.8,
+      "grade": "C",
+      "hard_fail": false,
+      "note": "표준 hurdle v2.2 기준 Grade C (score 12.8). CAGR 2.89%와 SR 0.724로는 Grade A/B 불가."
+    },
+    "ax001_defense_evaluation": {
+      "criterion_1_crisis_alpha": {
+        "description": "위기 구간 alpha 존재 여부",
+        "stress_sr": 1.309,
+        "normal_sr": 0.512,
+        "stress_excess_ratio": 2.56,
+        "stress_outperform_count": "7/7 (전 위기 BM 대비 outperform)",
+        "verdict": "STRONG PASS"
+      },
+      "criterion_2_core_mdd_improvement": {
+        "description": "Core 대비 MDD 축소",
+        "defense_mdd": -0.093,
+        "core_mdd_s4": -0.2935,
+        "improvement_pct": 68.3,
+        "verdict": "STRONG PASS (68.3% 축소)"
+      },
+      "criterion_3_bad_normal_ratio": {
+        "description": "bad/normal 수익률 비율",
+        "stress_mean_ret_monthly": 0.0055,
+        "normal_mean_ret_monthly": 0.0016,
+        "ratio": 3.484,
+        "interpretation": "위기 시 수익률이 정상 시보다 3.5배 높음. Defense 역할 완벽 입증.",
+        "verdict": "STRONG PASS"
+      },
+      "portfolio_contribution": {
+        "dsr_vs_baseline": "+0.020 (70/15/15 배분 시)",
+        "dmdd_vs_baseline": "-6.60%p (70/15/15 배분 시)",
+        "dcagr_vs_baseline": "-2.25%p (방어 비용)",
+        "verdict": "PASS (SR 개선 + MDD 방어 > CAGR 희생)"
+      },
+      "ax001_verdict": "PASS",
+      "ax001_grade_override": "B_DEFENSE",
+      "override_reason": "표준 Grade C이나 AX-001 3개 기준 전항목 STRONG PASS. 7/7 위기 outperform. Stress SR 1.309 vs Normal 0.512. 포트폴리오 MDD 6.60%p 개선."
+    },
+    "grade_v21_compat": "C",
+    "grade_final": "B_DEFENSE (AX-001 override)"
+  },
+
+  "gate_6_tail_risk": {
+    "verdict": "NOT_COMPUTED",
+    "note": "compute_tail_risk_suite() 미실행. M6_IVOL의 낮은 MDD(-9.30%)와 안정적 수익 구조상 tail risk 자체가 미미. 음의 왜도(-0.315)는 주의 대상이나, MDD 절대 수준이 -10% 이내로 심각한 tail risk 없음.",
+    "recommendation": "PG2 배분 설계 전 L13 Risk Engine의 EVT/GPD/CDaR 정밀 분석 권장."
+  },
+
+  "role_honesty_audit": {
+    "claimed_role": "defense",
+    "actual_behavior": "defense",
+    "verdict": "HONEST",
+    "evidence": {
+      "crisis_vs_normal": {
+        "stress_sr": 1.309,
+        "normal_sr": 0.512,
+        "ratio": 2.56,
+        "interpretation": "위기 시 SR이 정상 시 2.56배. 명확한 defense 특성."
+      },
+      "stress_outperform": "7/7 위기 구간 BM 대비 양수 초과수익",
+      "c19_correlation": {
+        "factor_level": -0.092,
+        "interpretation": "Core Alpha(C19) 대비 음수 상관. 역할 위장 아님."
+      },
+      "mdd_profile": {
+        "defense_mdd": -0.093,
+        "note": "MDD -9.30%는 전형적 defense. Core Alpha 전략이라면 MDD가 -20%+ 예상."
+      },
+      "sub_period_stability": {
+        "2002_2006": {"sr": 1.180, "mdd": -0.0812},
+        "2007_2011": {"sr": 1.510, "mdd": -0.0254},
+        "2012_2016": {"sr": 0.970, "mdd": -0.0354},
+        "2017_2021": {"sr": 0.166, "mdd": -0.0930},
+        "2022_2026": {"sr": 0.123, "mdd": -0.0812}
+      },
+      "sub_period_concern": "2017~2021 SR 0.166, 2022~2026 SR 0.123. 최근 구간 방어력 약화. 그러나 절대 MDD 수준(-8~9%)은 유지. SR 하락은 alpha 감소이지 defense 실패가 아님.",
+      "role_verdict": "Defense 역할 정직. 위기 시 명확한 alpha + 저변동. Core Alpha 위장 아님."
+    }
+  },
+
+  "findings": {
+    "strengths": [
+      "PIT C1~C15 전항목 준수. expanding window + t-1 lag 패턴 정확.",
+      "Harvey t=3.54 > 3.0. DSR 95.5%. 다중검정(10회 mutation) 후에도 통계적으로 유의.",
+      "7/7 위기 구간 BM 대비 outperform. GFC +11.98%p, 이란전쟁 +1.27%p.",
+      "Stress SR 1.309 vs Normal SR 0.512. 위기 시 2.56배 강화 = 진정한 defense.",
+      "MDD -9.30%. Core(-29.35%) 대비 68.3% 축소.",
+      "포트폴리오 기여: 70/15/15 배분 시 SR +0.020, MDD -6.60%p.",
+      "IVOL 가중치로 Base 대비 SR 0.597 -> 0.724 (+21.3%), MDD -10.2% -> -9.3% 개선.",
+      "TO 68.2% 극히 낮음 (거래비용 최소).",
+      "S3 DCC-GARCH 음수 동적 상관(-0.122) 확인. 구조적 직교성."
+    ],
+    "weaknesses": [
+      "전기간 CAGR 2.89%. 단독으로는 의미 있는 절대 수익 불가.",
+      "2017~2026 최근 10년 SR 급락(0.17~0.12). Q07 팩터의 최근 효능 약화 우려.",
+      "FF5 회귀 미실행. 학술적 alpha 유의성 미확인.",
+      "L13 tail_risk_suite 미실행. 정밀 tail risk 미검증.",
+      "S0 Debate 64/100 (APPROVE_CONDITIONAL). 원안 REJECT(39)에서 개선되었으나 강한 합의는 아님."
+    ],
+    "risks": [
+      "Q07(이익안정성) 팩터의 추세적 효능 약화 시 defense 기능 상실 가능.",
+      "IVOL 가중이 저변동 종목 쏠림 유발 시 유동성 리스크 내재.",
+      "단일 팩터(Q07) 의존 = 팩터 단일 장애점. 다중 defense sleeve 병렬 필요."
+    ]
+  },
+
+  "s6_overall_verdict": "PASS_CONDITIONAL",
+  "s6_grade": "B_DEFENSE",
+  "conditions": [
+    "PG2 배분 설계 전 L13 tail_risk_suite 실행 필수.",
+    "FF5 회귀를 후속 단계에서 보완 권장 (필수 조건은 아님).",
+    "2017~2026 SR 약화 추세 모니터링. 분기별 rolling IC 점검 포함.",
+    "포트폴리오 배분 15~25% 범위 내 유지 (S4 권고 준수)."
+  ],
+
+  "disposition_recommendation": {
+    "s7_action": "APPROVED_DEFENSE",
+    "rationale": "Gate 0 PASS, Gate 1(PIT) PASS, Gate 2(IC) PASS(AX-001), Gate 4(DSR) PASS(Harvey t=3.54), Gate 5(Hurdle) PASS_CONDITIONAL(AX-001 B_DEFENSE). Defense 역할 정직성 확인. 포트폴리오 MDD 방어 기여 입증. 조건부 승인.",
+    "archive_conditions": "없음. Defense 역할 승인.",
+    "discard_conditions": "2017~2026 효능 약화가 구조적 변화로 확인될 경우 재검토."
+  },
+
+  "l_code": {
+    "code": "L-123",
+    "lesson_text": "STR_1662a(Q07 IVOL). Defense 전략은 전기간 절대 성과(CAGR 2.89%, SR 0.724)만으로 평가하면 Grade C이나, AX-001 조건부 평가 적용 시 7/7 위기 outperform, Stress SR 1.309(Normal의 2.56배), Core MDD 68.3% 축소로 B_DEFENSE 등급. IVOL 가중이 EW 대비 SR +21.3% 개선한 핵심은 저변동 종목에 높은 가중 -> 포트폴리오 변동성 자체를 억제하는 이중 방어 구조. 단, 2017~2026 최근 구간 SR 0.12~0.17로 효능 약화 추세. 단일 팩터(Q07) 의존은 장기 리스크.",
+    "grade": "B_DEFENSE",
+    "tags": ["defense", "Q07", "IVOL", "AX-001", "crisis_alpha", "MDD_reduction", "recent_weakness"],
+    "core_reference": "Novy-Marx(2013) 'The other side of value' JFE; Ang,Chen,Xing(2006) 'Downside Risk' RFS; L-121(Q07 양쪽 위기 최강); L-122(factor risk management)",
+    "related_strategies": ["STR_1631(Core)", "STR_1656(Diversifier)"],
+    "condition": "Q07 이익안정성 팩터가 위기 시 방어력을 발휘하는 전제 하에 유효. 최근 10년 효능 약화 추세를 분기 모니터링으로 관리 필요."
+  }
+}

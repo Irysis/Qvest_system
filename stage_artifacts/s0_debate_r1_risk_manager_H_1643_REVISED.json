@@ -1,0 +1,36 @@
+{
+  "role": "risk_manager",
+  "hypothesis": "H_1643_REVISED",
+  "round": 1,
+  "score": 14,
+  "breakdown": {
+    "tail_risk_assessment": 3,
+    "kill_scenario": 3,
+    "beta_orthogonality": 3,
+    "mdd_contribution": 3,
+    "regime_vulnerability": 2
+  },
+  "arguments": [
+    "D25_Left_Tail_Beta의 stress ICIR 0.393과 Q07_Earnings_Stability의 stress ICIR 0.753은 실증적으로 가장 강건한 defense 조합이다. 특히 Q07은 4-regime CRISIS ICIR 0.413으로 양쪽 위기 정의(급락 + 느린 둔화) 모두 통과하는 288팩터 최강 방어 팩터이며(L-121), 원안 CR05(실측 ICIR -0.168)/V24(ICIR -0.282) 대비 수치적 근거가 확실히 개선되었다. D25(beta축)와 Q07(earnings축)의 직교 구조는 단일 economic family 집중 리스크를 회피한다.",
+    "D25_Left_Tail_Beta의 평상시 IC -0.002(사실상 zero)는 crisis_ratio 30.7x의 이면이다. 이 팩터는 위기 외 구간에서 약한 역풍(drag)을 발생시키며, 4-regime 분석에서 D25 CALM ICIR 0.078, CAUTION 0.201로 양호하나 CRISIS ICIR -0.174, NORMAL ICIR -0.245로 오히려 음수 전환된다. 이는 stress 6대 사건 기준과 MRS 4-regime 기준의 위기 정의 괴리(L-120)를 반영하며, MRS 기반 느린 둔화기에서 D25가 오히려 역방향으로 작동할 위험이 있다. Q07의 4r CRISIS ICIR +0.413 vs D25의 -0.174 차이는 blend 위기 IC 0.056 추정치가 stress 기준에 편향되었을 가능성을 시사한다.",
+    "현 포트폴리오(STR_1631 80% + STR_1656 20%)의 MDD -21.3%는 이미 목표(-25%) 달성 상태이고, PG0 gap은 SR 0.807이다. Defense sleeve 추가가 SR gap을 축소하는 메커니즘이 불명확하다. D25 평상시 IC -0.002 + Q07 평상시 IC 0.040의 가중 blend IC 0.025는 S2 프로파일 ICIR 0.20 관문(Alpha Lab Gate)을 통과할 수 있으나, Core(C19 기반 STR_1631)와의 포트폴리오 수준 상관이 L-106(market beta 지배) 패턴을 반복할 경우 분산 효과 없이 alpha만 희석되는 L-119 시나리오가 재현될 수 있다."
+  ],
+  "concern": "가장 큰 우려는 D25_Left_Tail_Beta의 이중적 성격이다. stress 6대 사건(GFC, COVID 등 급락) 기준 ICIR +0.393이지만, MRS 4-regime CRISIS 기준 ICIR -0.174로 완전히 반전된다. 현 포트폴리오의 MRS Caution 29.2 환경에서 D25는 오히려 drag을 유발하며, MRS가 Crisis로 상승해도 4-regime 정의의 느린 둔화기에서는 방어력이 사라진다. Q07은 양쪽 기준 모두 견고하지만, D25+Q07 55:45 블렌드의 위기 IC 0.056은 stress 기준에 과적합된 추정치일 가능성이 있다. 또한 L-115(beta 감소 =/= 상관 감소) 교훈에 따르면, D25 기반 low-tail-beta 종목 선택이 Core와의 포트폴리오 수준 상관을 실질적으로 낮추는지는 S3에서 DCC-GARCH 기반 위기 시 동적 상관 분석 없이는 사전 확인할 수 없다.",
+  "conditions": [
+    "S1 완료 후 반드시 compute_tail_risk_suite()로 EVT shape parameter(xi), CDaR 95%, ES 99%를 측정하고, xi > 0.5(heavy tail 경고)이면 D25 비중 하향 또는 Q07 단독 전환을 검토할 것",
+    "S3에서 fit_dcc_garch()로 Core(STR_1631) 대비 위기 시 동적 상관(Tail Dependence Coefficient)을 측정하고, TDC > 0.4이면 분산 효과 부재로 판단하여 defense sleeve 대신 overlay 강화(DD Brake 파라미터 조정) 대안으로 전환할 것",
+    "D25의 4-regime CRISIS ICIR -0.174 문제를 S2에서 명시적으로 검증할 것 -- regime_factor_ranking 기준 D25 conditional_value -0.027은 전체 기간 IC 기준으로도 음수이며, stress 6대 사건에서만 양수인 팩터를 상시 defense로 사용하는 것은 과적합 위험이 있다. 위기 구간 표본 수(stress n=40)의 통계적 유의성(Harvey t>3.0 미달 여부) 확인 필수"
+  ],
+  "kill_scenarios": [
+    {
+      "name": "MRS 느린 둔화기 D25 역풍 시나리오",
+      "description": "MRS가 30~50 Caution 구간에서 장기 체류 시, D25 ICIR -0.174(4r CRISIS)로 음수 alpha를 발생시키면서 Q07의 양수 IC 0.023(CRISIS)마저 상쇄. Blend IC가 0에 수렴하거나 음수 전환. 2018년형 소폭 하락 + 장기 횡보 구간이 전형적 사례. Defense가 아닌 drag이 되어 포트폴리오 SR을 오히려 하락시킴."
+    },
+    {
+      "name": "Beta 지배 상관 급등 시나리오 (L-106 재현, 미래참조 경로)",
+      "description": "D25 low-tail-beta 종목이 평상시 낮은 상관을 보이다가, 위기 시 market beta가 지배하며 Core(STR_1631)와 상관이 0.7+ 급등. L-106(STR_1636 사례: 종목 겹침 3%인데 수익률 상관 0.78)의 정확한 재현. 만약 DCC-GARCH TDC가 0.5 이상이면, defense sleeve 추가 시 MDD가 오히려 +3~5%p 악화(L-113 패턴: 70/30 배합 시 MDD +4.8%p). 미래를 보고 과거 stress 구간에서만 유효한 팩터를 선택한 것이 아닌지 -- stress n=40 (월단위)의 작은 표본에서의 D25 ICIR 0.393이 진정한 out-of-sample에서 유지될 보장이 없다."
+    }
+  ],
+  "timestamp": "2026-04-12T14:30:00",
+  "references": ["L-106", "L-113", "L-115", "L-120", "L-121", "L-122", "L-087", "L-119"]
+}

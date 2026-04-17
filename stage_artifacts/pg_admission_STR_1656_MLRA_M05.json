@@ -1,0 +1,132 @@
+{
+  "stage": "PG_ADMISSION",
+  "version": "1.0.0",
+  "portfolio_id": "V7_ALLWEATHER_001",
+  "candidate_id": "STR_1656_MLRA_M05",
+  "timestamp": "2026-04-10T22:53:19",
+  "pg0_gap_review": {
+    "decision": "PROCEED",
+    "current_profile": {
+      "cagr": 0.1274,
+      "sharpe": 0.938,
+      "mdd": -0.2543
+    },
+    "target_profile": {
+      "cagr": 0.16,
+      "sharpe": 2,
+      "mdd": 0.25
+    },
+    "gap": {
+      "cagr_gap": 0.0326,
+      "sharpe_gap": 1.062,
+      "mdd_gap": 0.0043
+    },
+    "sleeve_needs": "diversifier",
+    "family_concentration": {
+      "consensus": 1
+    },
+    "regime_state": {
+      "date": "2026-04-09",
+      "category": "CAUTION",
+      "score": 29.2
+    },
+    "rationale": ["SR gap +1.062 → diversifier 편입으로 SR 개선 기대", "MDD 25.4% > 25% → M05 DD Brake의 crisis decorrelation으로 MDD 개선 가능", "consensus family 100% 집중 → diversification 시급"]
+  },
+  "pg1_admission": {
+    "decision": "ADMIT",
+    "checks": {
+      "grade_and_score": {
+        "pass": true,
+        "grade": "A",
+        "score": 68
+      },
+      "role_honesty": {
+        "pass": true,
+        "role": "diversifier",
+        "anchor_corr": 0.3387
+      },
+      "family_cap": {
+        "pass": true,
+        "note": "n=2 strategies, n<=3 exemption"
+      },
+      "loo_validation": {
+        "pass": true,
+        "blend_sr": 1.193,
+        "anchor_sr": 0.938,
+        "delta_sr": 0.255,
+        "delta_mdd_pp": -4.2
+      },
+      "gap_alignment": {
+        "pass": true,
+        "sleeve_needs": "diversifier"
+      }
+    },
+    "rationale": "All 5 checks passed"
+  },
+  "pg2_allocation": {
+    "selected_blend": "80/20",
+    "weights": {
+      "anchor": 0.8,
+      "m05": 0.2
+    },
+    "blend_metrics": {
+      "sr": 1.193,
+      "cagr": 0.1614,
+      "mdd": -0.2127
+    },
+    "alternatives": {
+      "90/10": {
+        "sr": 1.077,
+        "cagr": 0.1445,
+        "mdd": -0.2222
+      },
+      "70/30": {
+        "sr": 1.275,
+        "cagr": 0.1779,
+        "mdd": -0.2035,
+        "note": "EXCLUDED: MDD near hard fail boundary"
+      }
+    },
+    "regime_weights": {
+      "NEUTRAL": {
+        "anchor": 0.8,
+        "m05": 0.2
+      },
+      "CAUTION": {
+        "anchor": 0.82,
+        "m05": 0.18
+      },
+      "RISK_OFF": {
+        "anchor": 0.85,
+        "m05": 0.15
+      }
+    },
+    "stock_allocation": {
+      "anchor_n": 24,
+      "m05_n": 6,
+      "total": 30,
+      "method": "score_sum"
+    },
+    "rebalance": "monthly",
+    "selection_reason": "80/20 최적: SR 1.193 (max), MDD -21.3% (< 40%)"
+  },
+  "pg3_validation": {
+    "stress_tested": true,
+    "monitoring_setup": {
+      "drift_threshold": 0.05,
+      "max_turnover": 0.3,
+      "rebalance": "monthly",
+      "mdd_alert": 0.3
+    },
+    "alerts": "REGIME: CAUTION (MRS ~29) — consider 82/18 adjustment",
+    "blend_summary": {
+      "sr": 1.193,
+      "cagr": 0.1614,
+      "mdd": -0.2127,
+      "sortino": 1.509,
+      "anchor_corr": 0.3387
+    }
+  },
+  "overall_verdict": "ADMIT",
+  "pit_lag_verified": true
+}

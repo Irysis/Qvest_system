@@ -1,0 +1,49 @@
+{
+  "strategy_id": "STR_1425_adaptive_ic_rotation_s5",
+  "judge_timestamp": "2026-03-26 15:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Automated detector CLEAN on run_s5_mutation.R (64 lines) and factor_engine.R (172 lines). Manual C1-C11 review: (C1) IC uses expanding window with 2-month lag, NOT full-sample — CLEAN. (C2) VT expanding vol uses [1:(i-1)] + 1-period lag; DD uses dd_lag = c(0, dd_pct[-n_f]) — CLEAN. (C8) No FM overlay. (C10) Liquidity shift(1L, lag) — CLEAN. (C11) No FRED data. (C13) Z_Score_Aligned only. (C14) ic_cutoff = sig_d - 2 months, strict PIT."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "SR=0.835, CAGR=10.91%, MDD=25.76%, IR=0.121, Calmar=0.423. Beats BM (SR 0.427, MDD 52.92%) on risk-adjusted basis. CAGR below 16% target. MDD marginally above 25% threshold (25.76%). Stress defense 3/3 outperform. Score 44.5 = Grade B. Hard fail not triggered."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required artifacts present: s0_record (Scout hypothesis), s1_construction, s2_profile (Grade C, FAIL on MDD+OOS), s3_orthogonality (novelty=0.306, top3 corr 0.688-0.698 to Grade A), s4_integration (delta_sharpe=0.331, role=core_alpha, admission=S6). S5 mutation script and output present."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "core_alpha",
+      "actual_behavior": "diversifier",
+      "detail": "S4 claims core_alpha (delta_sharpe=0.331, kospi_beat=TRUE). However, actual S5 metrics contradict: IR=0.121 (near zero alpha vs BM), CAGR 10.91% vs BM 9.03% (only +1.88% excess), BM_Corr=0.677 (high). Hurdle gate itself reclassified as 'diversifier'. The strategy tracks the benchmark too closely for core_alpha designation. S2 profile FF5 alpha t=-1.14 confirms no independent alpha. Role dishonesty: claimed core_alpha, actual diversifier."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "OOS retention = 0.552 (IS SR 0.973 / OOS SR 0.537). Below 0.7 threshold for robust strategies — indicates IS overfitting. S2 base had even worse OOS 0.13. S5 mutation improved OOS from 0.13 to 0.55 but still concerning. DSR not available. Rolling 3Y Sharpe >0 ratio 88.4% is acceptable. Alpha trend ratio 1.04 stable. Max consecutive negative alpha months = 6."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "S2 profile: FF5 alpha = -3.94% (t = -1.14). Negative alpha after controlling for Fama-French 5 factors. The strategy's returns are fully explained by standard factor exposures. No independent alpha generation confirmed. FMB t-stat 1.71 < 3.0 Harvey threshold."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 44.5,
+    "fail_reasons": [
+      "Gate 3 FAIL: Role dishonesty — claimed core_alpha, actual diversifier (IR=0.121, BM_Corr=0.677)",
+      "Gate 4 FAIL: OOS retention 0.552 below 0.7 threshold — IS overfitting detected",
+      "Gate 5 FAIL: FF5 alpha = -3.94% (t=-1.14) — no independent alpha, Harvey t<3.0"
+    ],
+    "recommendation": "REJECT for promotion. Strategy improved from S2 (Grade C, OOS 0.13) to S5 (Grade B, OOS 0.55) via VT+DD overlay, but fundamental problems remain: (1) No FF5 alpha — returns fully explained by factor loadings. (2) IC-based rotation converges to consensus factors (C19 dominant per S2 key_insight). (3) Alpha decay problem NOT solved — expanding ICIR weighting does not generate orthogonal alpha. Lineage shows high correlation to STR_1393/1397/1398 (>0.88) — redundant. Salvageable only as defensive diversifier sleeve, NOT core alpha."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "core_alpha",
+    "verified": false,
+    "evidence": "S4 artifact claims core_alpha with delta_sharpe=0.331. But S5 realized IR=0.121, BM_Corr=0.677, CAGR excess only +1.88% over BM. Hurdle gate reclassified to diversifier. FF5 alpha negative. The delta_sharpe in S4 was inflated by including the BM-correlated return component. True incremental alpha near zero."
+  }
+}

@@ -1,0 +1,337 @@
+{
+  "stage": "S5",
+  "version": "1.0.0",
+  "timestamp": "2026-04-08T11:00:00",
+  "reference": "STR_1631_v5_M11_hrp",
+  "designer": "Scout",
+  "parent_profile": {
+    "sr": 1.113,
+    "cagr": 19.86,
+    "mdd": 33.55,
+    "turnover": 574.8,
+    "base_sr_no_overlay": 1.009,
+    "base_cagr_no_overlay": 21.6,
+    "base_mdd_no_overlay": 49.12,
+    "factors": "C19 = SUE + ESBR + EPS_CHG_1M + TP_Gap (EW z-score)",
+    "weighting": "HRP + Gerber(threshold=0.5) + RMT Denoise (60d lookback, t-1 lag)",
+    "overlay": "3-Layer Regime (MRS>=60 & 5axes => crisis)",
+    "n_holdings": 20,
+    "buffer": "keep_n=35, entry_n=20",
+    "commission": "15bps"
+  },
+  "gap_analysis": {
+    "sr_gap": "+0.887 (1.113 -> 2.0)",
+    "mdd_gap": "+8.55%p (33.55% -> 25%)",
+    "cagr_surplus": "-3.86%p (19.86% >> 16%, buffer to trade)",
+    "to_margin": "25.2%p (574.8% vs 600% hard fail)"
+  },
+
+  "existing_mutations_map": {
+    "note": "v4 M01~M12 + v5 M01~M18까지 총 30건 변형 완료. 중복 회피를 위한 전수 매핑.",
+    "axis_factor": {
+      "tried": [
+        "v5_M05_quality: C19(70%) + GPA(30%) blend",
+        "v5_M06_momentum: C19(70%) + Mom(30%) blend",
+        "v5_M07_lowvol: C19 + IdioVol blend",
+        "v4_M06_quality_core: C19 + Quality core 추가",
+        "v4_M07_momentum_add: C19 + Momentum 추가"
+      ],
+      "NOT_tried": [
+        "C19 내부 TP_Gap 교체 (약한 팩터를 강한 팩터로 대체)",
+        "C19 5th factor 추가 (4F -> 5F 확장)",
+        "C19 가중 비균등화 (ICIR 비례 가중)",
+        "Cross-family quality 보강 (Q07/Q11 등 Earnings Stability/Net Margin)"
+      ]
+    },
+    "axis_weight": {
+      "tried": [
+        "v5_M01_scoreweight: EW -> Score-proportional weight",
+        "v5_M10_scorewt_mrs25: Score-weight + CAUTION MRS25 synthesis",
+        "v5_M14_copula: Clayton copula allocation",
+        "v5_M15_tcopula: t-copula allocation",
+        "v5_M16_nested_copula: Nested copula + sector grouping",
+        "v5_M17_bl: Black-Litterman weighting",
+        "v5_M17b_bl_buffer: BL + buffer strengthened",
+        "v5_M18_gerber_rmt_hrp: Gerber+RMT HRP (= M11의 원본)",
+        "v4_M08_weight_switch: Regime-conditional EW/InvVol/MinVar",
+        "v5_M11_hrp: HRP + Gerber + RMT (현재 전략)"
+      ],
+      "NOT_tried": [
+        "HRP lookback 변형 (60d -> 90d/120d)",
+        "Gerber threshold 변형 (0.5 -> 0.3/0.7)",
+        "HRP + Score tilt hybrid (HRP 기반 비중에 score 가중 합성)",
+        "Ledoit-Wolf nonlinear shrinkage 대체 (LW3, Ledoit & Wolf 2020)",
+        "HRP linkage method 변형 (single -> ward/complete)"
+      ]
+    },
+    "axis_overlay": {
+      "tried": [
+        "v5_M03_noVT: VT 완전 제거",
+        "v5_M04_inv30: Crisis layer inverse 30% (vs 20%)",
+        "v5_M09_caution25: CAUTION threshold 30->25",
+        "v5_M12_regime_tilt: Regime-conditional factor tilt (LowBeta blend)",
+        "v5_M13_dynamic_inv: Continuous MRS proportional inverse",
+        "v4_M09_dd_brake: DD brake 추가",
+        "v4_M11_synthesis_noVT_inv: VT 제거 + Inv30 합성",
+        "v4_M12_synthesis_full: VT 제거 + Inv30 + DD brake 합성"
+      ],
+      "NOT_tried": [
+        "DD brake 12/28 (M11 base SR=1.009>1.0이므로 L-728 조건 충족)",
+        "Slow-crisis 연장 (crisis_consec 3 -> 5)",
+        "CAUTION ramp 시작 기울기 변경 (1.0-(MRS-30)/60 -> 더 완만한 곡선)",
+        "Crisis recovery detection (위기 후 빠른 노출 회복 로직)"
+      ]
+    },
+    "axis_structural": {
+      "tried": [
+        "v5_M02_n30: N=20 -> N=30",
+        "v5_M08_buffer: buffer 50/15 (강화)",
+        "v5_M14_n30_inv30: N=30 + Inv30 합성",
+        "v4_M01_weekly_step: weekly rebalance step",
+        "v4_M02_buffer_widen: buffer 확대",
+        "v4_M03_noVT_weekly: noVT + weekly step",
+        "v4_M10_to_threshold: TO threshold 적용"
+      ],
+      "NOT_tried": [
+        "N=15 (더 집중, HRP 효과 극대화)",
+        "리밸런싱 격월 (TO 감소 기대)",
+        "Coverage filter 강화 (3 -> 5, 신호 품질 개선)",
+        "MAX21d exclusion 80% -> 90% (극단 종목 더 공격적 배제)"
+      ]
+    }
+  },
+
+  "slate": {
+    "A": [
+      {
+        "mutation_id": "M_A1",
+        "axis": "factor",
+        "category": "factor_composition_replacement",
+        "title": "C19 TP_Gap -> Revision_Breadth_3m 교체",
+        "description": "C19의 4번째 팩터인 TP_Gap(ic_all=0.021, 3y_icir=0.117)을 C13_Revision_Breadth_3m(ic_all=0.030, 3y_icir=0.438)으로 교체. TP_Gap은 4팩터 중 가장 약한 IC와 가장 낮은 ICIR을 보이며, 애널리스트 목표가 의존도가 높아 커버리지 제한으로 유니버스를 축소시킨다. C13은 동일 consensus family 내에서 3개월 추정치 수정 방향의 일관성(breadth)을 측정하며, conditional_value=+0.006(위기시 IC 개선)으로 방어적 성격도 보유. 학술 근거: Barber et al.(2001), Chan et al.(1996) EPS revision breadth anomaly.",
+        "structural_change": "C19 = (z_SUE + z_ESBR + z_EPS1M + z_RevBreadth3m) / 4. TP_Gap 팩터 제거, consensus/revision_breadth_3m.parquet 로드 추가.",
+        "expected_impact": "IC 개선으로 SR +0.05~0.10 기대. TP_Gap 의존도 제거로 유니버스 확대 + 커버리지 편향 감소. CAGR 미세 상승(19.86% -> 20%+). MDD 중립~소폭 개선.",
+        "risk": "Revision Breadth와 SUE/ESBR 간 상관이 높을 수 있음(동일 earnings revision 계열). 실질적 분산 효과 제한적일 가능성.",
+        "l_code_check": "L-785(C19 IC 안정, 구성 변경 시 안정성 유지 필요). 기존 M05/M06/M07은 5th factor 추가였으나, M_A1은 내부 교체이므로 미중복.",
+        "priority": 2,
+        "expected_sr": "1.15~1.20",
+        "expected_mdd": "32~34%"
+      },
+      {
+        "mutation_id": "M_A2",
+        "axis": "factor",
+        "category": "factor_composition_extension",
+        "title": "C19 5th factor: Q07_Earnings_Stability 추가",
+        "description": "C19 4팩터에 Q07_Earnings_Stability(ic_all=0.040, 3y_icir=0.929)를 5번째 팩터로 추가. Q07은 quality family에서 최고 3y_icir(0.929)을 보유하며, consensus family(C19)와 cross-family이므로 정보 중복이 낮다. Earnings Stability는 이익의 시계열 변동성의 역수로, 안정적 수익 기업을 선호한다. 학술 근거: Novy-Marx(2013) quality minus junk에서 earnings stability가 수익성 프리미엄의 핵심 구성요소임을 실증.",
+        "structural_change": "C19_ext = (z_SUE + z_ESBR + z_EPS1M + z_TPGap + z_EarnStab) / 5. Q07 팩터 추가 로드(Factor DB 또는 DART fundamental 계산).",
+        "expected_impact": "Cross-family 보강으로 IC 분산 감소, SR +0.10~0.15 기대. Quality 성격 추가로 위기 시 방어력 개선, MDD -2~3%p. CAGR 소폭 하락 가능(quality 팩터의 보수적 종목 선택).",
+        "risk": "5팩터 EW 가중이 각 팩터의 alpha를 희석할 수 있음. Q07의 annual-only 업데이트 빈도가 월간 리밸런싱과 불일치.",
+        "l_code_check": "L-813(4F dilution 경고: 같은 economic family 내 추가는 희석). 그러나 M_A2는 cross-family(consensus->quality)이므로 L-813과 다른 맥락.",
+        "priority": 1,
+        "expected_sr": "1.20~1.25",
+        "expected_mdd": "30~33%"
+      },
+      {
+        "mutation_id": "M_A3",
+        "axis": "factor",
+        "category": "factor_weight_rebalancing",
+        "title": "C19 ICIR 비례 가중 (EW -> ICIR-weighted)",
+        "description": "C19의 4팩터를 EW(25%씩)에서 최근 3년 ICIR 비례 가중으로 변경. 현재 ICIR: SUE=0.778, ESBR=0.547, EPS_CHG_1M=0.319, TP_Gap=0.117. 합계=1.761이므로 가중: SUE=44.1%, ESBR=31.1%, EPS1M=18.1%, TPGap=6.6%. 강한 팩터에 집중하면서 약한 팩터의 noise를 감소시킨다. 학술 근거: Arnott et al.(2019) factor weighting by information coefficient.",
+        "structural_change": "C19 = 0.441*z_SUE + 0.311*z_ESBR + 0.181*z_EPS1M + 0.066*z_TPGap. 가중값 hardcoded (rolling ICIR 기반 동적 가중은 별도 mutation).",
+        "expected_impact": "SUE/ESBR 집중으로 IC 개선, SR +0.03~0.08. TP_Gap 영향 최소화. CAGR 중립~소폭 상승. MDD 변화 미미.",
+        "risk": "과적합 위험: 3y ICIR 자체가 사후적 정보. 다만 hardcoded 고정가중이므로 rolling 과적합보다 안전.",
+        "l_code_check": "L-627(ic weighting 미테스트 언급). M_A3는 이를 구현하는 첫 시도.",
+        "priority": 3,
+        "expected_sr": "1.13~1.18",
+        "expected_mdd": "33~35%"
+      }
+    ],
+    "B": [
+      {
+        "mutation_id": "M_B1",
+        "axis": "stock_weight",
+        "category": "covariance_estimation",
+        "title": "HRP lookback 60d -> 120d (Gerber+RMT 유지)",
+        "description": "HRP의 공분산 추정 lookback을 60일에서 120일로 확대. 현재 N/T=20/60=0.33인데, N/T=20/120=0.17로 개선되어 RMT denoise의 Marcenko-Pastur 근사가 더 정확해진다. 120일은 약 6개월 거래일로, 단기 noise를 평활화하면서도 regime 전환에 충분히 반응하는 타협점. 학술 근거: Ledoit & Wolf(2004)의 T/N ratio와 covariance estimation 품질의 관계.",
+        "structural_change": "HRP_LOOKBACK <- 120L. compute_hrp_weights() 호출 시 lookback_dates <- tail(all_dates, 120). 나머지 동일.",
+        "expected_impact": "공분산 추정 안정화로 HRP 비중 변동 감소 -> TO -30~50%p 기대. SR 중립~소폭 개선(노이즈 비중 감소). MDD 변화 불확실(더 긴 lookback이 위기 반응 지연).",
+        "risk": "120일 lookback이 regime 전환 시 과거 정보에 과도하게 의존. 위기 시작 후 60일 지연 반응 위험.",
+        "l_code_check": "기존 M11 변형 중 lookback 변경 없음(전부 60d). 미중복 확인.",
+        "priority": 2,
+        "expected_sr": "1.10~1.15",
+        "expected_mdd": "33~35%",
+        "expected_to": "540~560%"
+      },
+      {
+        "mutation_id": "M_B2",
+        "axis": "stock_weight",
+        "category": "covariance_estimation",
+        "title": "Gerber threshold 0.5 -> 0.3 (민감도 증가)",
+        "description": "Gerber Statistic의 threshold를 0.5에서 0.3으로 낮춰 더 작은 가격 변동도 concordance 판정에 포함. 0.3 threshold는 median absolute return의 30%를 기준으로 하여, 0.5 대비 더 많은 관측치가 concordant/discordant로 분류된다. 이는 상관행렬의 정보량을 증가시키지만, noise sensitivity도 함께 증가. 학술 근거: Gerber et al.(2022) Table 3에서 threshold 0.3-0.5 범위의 robustness 확인.",
+        "structural_change": "gerber_cor(ret_matrix, threshold = 0.3). 나머지 동일.",
+        "expected_impact": "상관 구조가 Pearson에 더 가까워져 HRP 비중이 변화. 더 세밀한 종목 간 구분으로 집중도 증가 가능. SR 방향 불확실. TO 소폭 증가 가능.",
+        "risk": "noise sensitivity 증가로 HRP 비중 불안정. 0.3이 너무 낮아 Gerber의 robust 장점을 상실할 수 있음.",
+        "l_code_check": "Gerber threshold 변형은 기존 30건 mutation에서 시도되지 않음. 미중복.",
+        "priority": 4,
+        "expected_sr": "1.05~1.15",
+        "expected_mdd": "33~36%"
+      },
+      {
+        "mutation_id": "M_B3",
+        "axis": "stock_weight",
+        "category": "hybrid_weighting",
+        "title": "HRP-Score Tilt Hybrid (HRP 비중 x Score 비례 조정)",
+        "description": "순수 HRP 비중에 C19 Score 기반 tilt를 합성. w_final = 0.6 * w_HRP + 0.4 * w_score_proportional. w_score_proportional은 C19 점수를 양수화(min 빼기) 후 비례 배분. 이는 HRP의 리스크 분산 장점과 Score-weighted의 alpha 집중 장점을 결합. 학술 근거: Briere & Szafarz(2021) 'Factor Investing: The Rocky Road from Long-Only to Long-Short'에서 factor exposure와 risk diversification의 trade-off.",
+        "structural_change": "compute_hrp_weights() 결과에 score tilt 합성 로직 추가. FACTORS_hrp[Date==sd]에서 Score 컬럼 활용.",
+        "expected_impact": "Alpha 집중도 증가로 SR +0.05~0.15 기대. CAGR 상승(score 높은 종목 과비중). MDD 소폭 악화 가능(집중도 증가).",
+        "risk": "Score tilt가 HRP의 분산 효과를 부분적으로 상쇄. cor(기존 core alpha) 증가 가능 -> diversifier 가치 감소.",
+        "l_code_check": "v5_M01_scoreweight은 순수 score-weight(HRP 없음). M_B3는 HRP+Score hybrid이므로 미중복.",
+        "priority": 1,
+        "expected_sr": "1.15~1.25",
+        "expected_mdd": "33~36%"
+      }
+    ],
+    "C": [
+      {
+        "mutation_id": "M_C1",
+        "axis": "overlay",
+        "category": "drawdown_control",
+        "title": "DD Brake 12/28 추가 (M11 base SR=1.009 > 1.0 조건 충족)",
+        "description": "M11 base(no overlay) SR=1.009이므로 L-728의 'DD Brake는 base SR>1.0에서만 유효' 조건을 충족. DD start=12%, max_hedge=28%를 3-Layer Regime과 병행 적용. DD는 rolling NAV peak 대비 낙폭을 t-1 lag로 측정(C9 준수). DD 12%~28% 구간에서 linear cash ramp, 28% 이상에서 최대 헤지. 이 범위는 L-814에서 C19+L22 조합에서 최적 trade-off로 확인된 파라미터. 학술 근거: Ilmanen(2011) 'Expected Returns', drawdown control overlay의 regime-conditional 효과.",
+        "structural_change": "Step 5(Overlay) 이후에 DD brake 로직 추가. dd_pct = (peak_nav - nav) / peak_nav (t-1 lagged). DD 12~28% 구간 linear hedge.",
+        "expected_impact": "MDD -5~8%p (33.55% -> 25~28%). CAGR -2~4%p 감소(alpha 잠식). SR 변화 불확실(MDD 감소와 CAGR 감소의 trade-off). L-814 참고: DD 12/28이 CAGR 보존과 MDD 억제의 최적 균형.",
+        "risk": "L-779 경고: DD brake는 base SR<1.0에서 whipsaw 악화. M11 base SR=1.009로 경계값. SR이 1.0 미만으로 하락하면 역효과 가능. Regime overlay와 DD brake 이중 적용 시 과도한 exposure 감소.",
+        "l_code_check": "L-728(DD brake SR>1.0 조건), L-729(tight 5/15 < wide 10/30), L-779(SR<1.0 시 whipsaw), L-814(DD 12/28 최적). v4_M09_dd_brake는 다른 base(v4, VT 포함)에서 시도. v5 M11 HRP 기반에서는 미시도.",
+        "priority": 1,
+        "expected_sr": "1.05~1.15",
+        "expected_mdd": "25~29%"
+      },
+      {
+        "mutation_id": "M_C2",
+        "axis": "overlay",
+        "category": "regime_tuning",
+        "title": "Crisis recovery detection: 위기 후 빠른 노출 회복",
+        "description": "현재 3-Layer 구조는 위기 진입/퇴출이 대칭적(MRS 임계치 기반). 위기 후 MRS가 60 이하로 떨어져도 CAUTION 구간에서 오래 머물러 회복 랠리를 놓친다. Recovery detection을 추가: crisis_consec >= 3일 후 MRS가 40 이하로 5일 연속 하락하면 Layer 1(NORMAL)로 즉시 복귀. 학술 근거: Kritzman & Li(2010) 'Skulls, Financial Turbulence, and Risk Management'에서 turbulence decay의 비대칭성.",
+        "structural_change": "nav_dt에 recovery_flag 추가. recovery = (was_crisis_recent_10d & MRS < 40 for 5 consecutive days). recovery_flag == 1이면 Layer 1 강제 진입.",
+        "expected_impact": "CAGR +1~2%p(회복 랠리 포착). SR 소폭 개선. MDD 중립(위기 중이 아닌 회복 구간에서만 작동). TO 소폭 증가(빠른 노출 전환).",
+        "risk": "False recovery detection: MRS 일시적 하락 후 재상승 시 과도한 노출로 2차 낙폭 위험. 5일 연속 조건이 이를 방어하지만 불충분할 수 있음.",
+        "l_code_check": "Recovery detection은 기존 30건 mutation에서 시도되지 않은 완전히 새로운 structural mutation. L-630(MRS threshold tightening 실패)과는 다른 메커니즘(threshold 변경이 아닌 비대칭 진입/퇴출).",
+        "priority": 3,
+        "expected_sr": "1.12~1.18",
+        "expected_mdd": "33~35%"
+      }
+    ],
+    "D": [
+      {
+        "mutation_id": "M_D1",
+        "axis": "structural",
+        "category": "concentration",
+        "title": "N=15 집중 포트폴리오 (HRP 효과 극대화)",
+        "description": "N=20에서 N=15로 축소. Top-15 C19 종목만 선정. 집중도 증가로 alpha 포착력이 강화되고, HRP의 N=15 환경에서 N/T=15/60=0.25로 공분산 추정 품질이 향상. 15종목은 한국 시장에서 충분한 분산(KOSPI200 250종목 대비 6%)을 유지하면서 alpha 희석을 최소화하는 집중 수준. 학술 근거: Levy & Levy(2014) 'The Benefits of Differential Variance-Based Constraints in Portfolio Optimization'에서 concentrated alpha portfolio의 우위.",
+        "structural_change": "N_HOLD <- 15L. buffer_zone = list(keep_n=25L, entry_n=12L). 나머지 동일.",
+        "expected_impact": "CAGR +1~3%p(alpha 집중). SR +0.05~0.10. TO 소폭 감소(적은 종목 수). MDD 소폭 악화 가능(집중 리스크).",
+        "risk": "집중 리스크: 개별 종목 이벤트(실적 쇼크, 거래정지)가 포트폴리오에 미치는 영향 증대. HRP가 이를 일부 완화(리스크 기반 배분).",
+        "l_code_check": "v5_M02_n30(N=30 확대)는 시도됨. N=15 축소는 미시도. 미중복.",
+        "priority": 2,
+        "expected_sr": "1.15~1.25",
+        "expected_mdd": "34~37%"
+      },
+      {
+        "mutation_id": "M_D2",
+        "axis": "structural",
+        "category": "rebalancing_frequency",
+        "title": "격월 리밸런싱 (TO 감소 + signal persistence 활용)",
+        "description": "월간 리밸런싱을 격월(2개월)로 변경. C19 팩터의 IC 반감기가 693개월(L-785)로 극도로 안정적이므로, 격월 리밸런싱에서도 signal decay가 미미. TO를 약 50% 감소시켜 574.8% -> ~287%로 hard fail 리스크를 완전 해소. 학술 근거: Novy-Marx & Velikov(2016) 'A Taxonomy of Anomalies and Their Trading Costs'에서 리밸런싱 빈도와 net alpha의 trade-off.",
+        "structural_change": "SIG_DATES를 격월로 필터(홀수월 또는 짝수월만 사용). FACTORS 생성 루프에서 격월 sig_date만 처리.",
+        "expected_impact": "TO -40~50%(287~344% 예상). CAGR -1~2%p(signal 지연). SR 중립~소폭 하락. MDD 중립.",
+        "risk": "격월 리밸런싱 시 위기 발생 직후 반응 지연(최대 2개월). Regime overlay가 이를 보완하지만 factor-level exposure 조정은 지연.",
+        "l_code_check": "v4_M01_weekly_step은 주간 step. 격월 확대는 미시도. 미중복.",
+        "priority": 3,
+        "expected_sr": "1.05~1.12",
+        "expected_mdd": "33~36%",
+        "expected_to": "280~350%"
+      },
+      {
+        "mutation_id": "M_D3",
+        "axis": "structural",
+        "category": "universe_filter",
+        "title": "Coverage filter 3 -> 5 (신호 품질 + HRP 안정성 향상)",
+        "description": "애널리스트 커버리지 필터를 3명 이상에서 5명 이상으로 강화. Coverage가 높은 종목은 (1) C19 구성요소(SUE, ESBR, EPS_CHG_1M, TP_Gap)의 데이터 품질이 높고, (2) 유동성이 일반적으로 더 우수하며, (3) HRP 공분산 추정에 필요한 가격 데이터의 연속성이 좋다. 학술 근거: Hong et al.(2000) 'Security Analysts' Career Concerns and Herding of Earnings Forecasts'에서 높은 커버리지 종목의 정보 효율성.",
+        "structural_change": "sig <- sig[!is.na(coverage) & coverage >= 5L]. 나머지 동일.",
+        "expected_impact": "유니버스 축소(~20~30% 감소 예상). 잔존 종목의 signal quality 개선으로 IC 소폭 상승. SR 중립~소폭 개선. MDD 소폭 개선(안정적 기업 집중). TO 감소 가능(안정적 유니버스).",
+        "risk": "유니버스 과도 축소 시 Top-20 선정이 어려울 수 있음(특히 초기 기간). 소형주 bias 완화가 alpha 원천인 경우 역효과.",
+        "l_code_check": "Coverage filter 변형은 기존 30건에서 시도되지 않음. 미중복.",
+        "priority": 4,
+        "expected_sr": "1.10~1.15",
+        "expected_mdd": "32~34%"
+      }
+    ]
+  },
+
+  "synthesis_candidates": [
+    {
+      "synthesis_id": "SYN_1",
+      "title": "M_A2 + M_C1: 5F Quality 보강 + DD Brake 12/28",
+      "components": ["M_A2", "M_C1"],
+      "rationale": "Q07 Earnings Stability 추가로 base alpha를 강화(SR 1.20+)한 후, DD Brake 12/28로 MDD를 25~28%로 억제. 더 강한 base SR(>1.0 보장)이 DD Brake 효과를 극대화(L-728).",
+      "expected_impact": "SR 1.15~1.25, MDD 25~30%, CAGR 16~19%",
+      "phase": "Phase 5 (Phase 1~3 결과 확인 후)"
+    },
+    {
+      "synthesis_id": "SYN_2",
+      "title": "M_B3 + M_D1: Score-Tilt HRP + N=15 집중",
+      "components": ["M_B3", "M_D1"],
+      "rationale": "N=15로 alpha 집중 + HRP-Score tilt로 종목 비중에서도 alpha 집중. 이중 집중으로 CAGR 극대화. TO는 N 감소로 자연 하락.",
+      "expected_impact": "SR 1.20~1.30, MDD 34~38%, CAGR 21~24%",
+      "phase": "Phase 5"
+    },
+    {
+      "synthesis_id": "SYN_3",
+      "title": "M_A1 + M_B1 + M_C1: TP_Gap 교체 + 120d lookback + DD Brake",
+      "components": ["M_A1", "M_B1", "M_C1"],
+      "rationale": "3축 동시 개선: (1) 약한 팩터 교체로 IC 개선, (2) 긴 lookback으로 HRP 안정화, (3) DD brake로 MDD 억제. 종합적 SR/MDD 개선 기대.",
+      "expected_impact": "SR 1.15~1.25, MDD 26~30%, CAGR 17~20%",
+      "phase": "Phase 5"
+    }
+  ],
+
+  "execution_plan": {
+    "phase_1_parallel": {
+      "description": "A축 3건 병렬 실행 (factor composition 변형)",
+      "mutations": ["M_A1", "M_A2", "M_A3"],
+      "priority_rationale": "Factor 축이 SR 개선에 가장 직접적 영향. 멀티팩터 조합 3건+ 최우선 규칙 준수."
+    },
+    "phase_2_parallel": {
+      "description": "B축 3건 + C축 2건 + D축 3건 병렬 실행",
+      "mutations": ["M_B1", "M_B2", "M_B3", "M_C1", "M_C2", "M_D1", "M_D2", "M_D3"],
+      "priority_rationale": "Phase 1과 병렬 가능. Structural mutation before parameter tuning 원칙: M_C2(recovery detection), M_D1(N=15), M_D2(격월)이 structural. M_B2(Gerber 0.3)는 parameter tuning이므로 낮은 우선순위."
+    },
+    "phase_3_selection": {
+      "description": "Phase 1~2 결과에서 Top-3 선택",
+      "criteria": "SR 개선 폭 + MDD 감소 폭 우선. TO 600% 미만 필수."
+    },
+    "phase_4_synthesis": {
+      "description": "SYN_1 ~ SYN_3 실행 (Top mutation 조합)",
+      "mutations": ["SYN_1", "SYN_2", "SYN_3"],
+      "adjust": "Phase 3 결과에 따라 synthesis 구성 변경 가능"
+    },
+    "phase_5_final": {
+      "description": "최종 선택 + complexity check",
+      "action": "synthesis_tested = TRUE 확인. 최종 후보의 OOS retention, FF5 alpha, FMB t-stat 검증."
+    }
+  },
+
+  "total_mutations": 11,
+  "category_count": 4,
+  "categories": ["factor_composition (A: 3건)", "stock_weight (B: 3건)", "overlay (C: 2건)", "structural (D: 3건)"],
+
+  "s5_compliance": {
+    "min_9_mutations": true,
+    "min_4_categories": true,
+    "structural_before_parameter": true,
+    "multifactor_3plus": true,
+    "synthesis_tested_planned": true,
+    "no_existing_overlap": true,
+    "notes": "11건 mutation + 3건 synthesis 후보. 4 카테고리(factor/weight/overlay/structural). Parameter tuning(M_A3, M_B2)은 낮은 우선순위. Structural mutation(M_C2, M_D1, M_D2)이 우선."
+  }
+}

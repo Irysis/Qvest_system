@@ -1,0 +1,290 @@
+{
+  "factor_id": "H_1662_CDaR_DrawdownBeta_Defense",
+  "strategy_id": "STR_1662_cdar_drawdown_beta_defense",
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout",
+  "created_at": "2026-04-11",
+
+  "hypothesis": "Drawdown-path-conditioned defense factor selection for MDD reduction. 기존 defense 전략(DFA v1/v2)이 MRS(macro regime score)를 팩터 전환 신호로 사용한 반면, 본 가설은 포트폴리오 자체의 drawdown 경로를 defense 활성화 신호로 사용한다. 핵심 차이: MRS는 거시경제 상태 추정이므로 false positive(위기 아닌데 위기 신호)가 발생하면 불필요한 defense 팩터 노출로 alpha 희석(DFA v2 risk 항목). 반면 drawdown은 포트폴리오의 실현된 손실이므로 '방어가 필요한 시점'을 직접 관측한다. 메커니즘: (1) expanding window CDaR(Conditional Drawdown at Risk, Chekhlov et al. 2005)을 매월 계산 -- 현재 drawdown이 과거 drawdown 분포의 상위 quantile에 위치하면 defense 활성화. (2) defense 활성화 시 Drawdown Beta(Goldberg & Mahmoud 2017)가 낮은 팩터에 가중 이동. Drawdown beta = 시장 drawdown 대비 종목/팩터 drawdown의 민감도. (3) Factor DB의 D25_Left_Tail_Beta, D04_Downside_Beta, Q07_Earnings_Stability, D29_Accounting_Beta를 조합하되, drawdown beta 기준 동적 가중. 정상시(CDaR < 80th pctile): C19 100%. 경계(80~95th): C19 60% + defense 40%. 위기(>95th): C19 30% + defense 70%.",
+
+  "economic_mechanism": {
+    "paradigm": "Path-dependent risk management. DFA v2의 macro-regime-conditional과 구별. ECR Markowitz 논문(Ondiwa et al. 2025, ssrn-6261138)에서 CVaR-conditioned covariance가 regime-aware portfolio에서 SR 1.114, MDD -0.087 달성한 핵심 원리를 팩터 선택 레벨에 적용.",
+
+    "why_drawdown_path_not_macro_regime": {
+      "core_argument": "MRS(거시 국면)는 시장 전체의 상태를 추정하지만, 포트폴리오의 실현 drawdown은 '이 포트폴리오에 방어가 필요한 시점'을 직접 측정한다. Shu, Yu & Mulvey(2024, arXiv:2402.05272)에서 regime-switching signal의 jump penalty 최적화로 MDD 감소를 실증했으나, 국면 오판(false crisis) 시 수익 희생이 핵심 한계. Drawdown은 관측값이므로 오판이 없다 -- 현재 drawdown이 크면 방어가 필요하고, 작으면 불필요한 것이 자명. CDaR(Chekhlov et al. 2005)은 drawdown의 분포적 특성을 반영하여 '비정상적으로 큰 drawdown'을 통계적으로 정의.",
+      "dfa_v2_limitation": "DFA v2는 MRS threshold(20/50)로 국면을 분류. 그러나 (1) MRS가 Caution(20~50)인데 포트폴리오는 전혀 하락하지 않는 경우(false positive) -> Q07/Q03/D29 불필요 노출 -> alpha 희석, (2) MRS가 Normal(<20)인데 포트폴리오가 급락하는 경우(sector-specific shock) -> defense 미발동. Drawdown-based signal은 양쪽 문제를 동시에 해결.",
+      "ecr_connection": "ECR Markowitz(ssrn-6261138)는 CVaR을 objective에 포함하여 tail risk를 직접 관리. 본 가설은 같은 논리를 팩터 가중에 적용 -- drawdown이 tail에 진입하면 tail-risk-resistant 팩터로 전환."
+    },
+
+    "why_drawdown_beta": {
+      "goldberg_mahmoud_2017": "Goldberg & Mahmoud(2017, JFI) 'Drawdown: From Practice to Theory and Back Again'에서 drawdown beta를 정의: beta_DD = Cov(DD_i, DD_mkt) / Var(DD_mkt). 시장 drawdown에 대한 개별 자산의 drawdown 민감도. 일반 beta는 수익률 공분산이므로 상승장/하락장 구분 없이 측정하지만, drawdown beta는 하락 경로에만 집중. Defense 팩터 선택 시 drawdown beta가 낮은 팩터를 가중하면 포트폴리오 drawdown 자체를 직접 축소하는 메커니즘.",
+      "factor_db_mapping": "D04_Downside_Beta(하방 수익률 beta)와 D25_Left_Tail_Beta(5th percentile 이하 수익률 beta)가 drawdown beta의 근사치. D29_Accounting_Beta는 회계 기반으로 시장 가격 noise를 제거한 structural risk. Q07_Earnings_Stability는 이익 안정성이 drawdown 경로의 근본 원인(실적 쇼크)을 차단."
+    },
+
+    "why_cdar_not_fixed_threshold": {
+      "chekhlov_2005": "Chekhlov, Uryasev & Zabarankin(2005, QF) 'Drawdown Measure in Portfolio Optimization': CDaR(alpha) = E[DD | DD > DD_alpha]. DD의 조건부 기대값으로, VaR의 drawdown 버전. 고정 threshold(DD > 10%) 대신 CDaR을 사용하면 drawdown 분포의 시변성을 반영 -- 변동성이 높은 시기에는 10% DD가 '정상'이고, 낮은 시기에는 '비정상'.",
+      "expanding_percentile": "L-442(Regime Engine v7.1)의 expanding percentile threshold와 동일 철학. 미래참조 없이 '현재까지 관측된 drawdown 분포'에서 현재 DD의 상대적 위치를 판단. CDaR 80th/95th percentile은 사전 고정(pre-registered)하여 in-sample 최적화 회피."
+    },
+
+    "l113_risk_and_mitigation": {
+      "risk": "L-113: Quality 기반 Defense는 한국시장에서 역 defense(QMJ 위기 상관 0.89). Q07/Q03를 defense에 사용하면 같은 실패 가능.",
+      "mitigation": "본 가설의 핵심 차이 3가지: (1) drawdown-triggered activation -- 정상시에는 Q07/Q03 노출 0%이므로 alpha 희석 없음. DFA v2는 MRS Caution(16% 빈도)에서도 Q07 20% 노출. (2) D25_Left_Tail_Beta + D04_Downside_Beta가 주력 defense -- quality가 아닌 downside risk 팩터. (3) Q07/Q03는 보조 역할(위기 시 30%+20%=50% vs defense beta 50%). L-113의 교훈 = quality 단독 defense 실패. 본 가설 = downside beta 주력 + quality 보조.",
+      "s2_verification": "S2에서 반드시 검증: D25_Left_Tail_Beta와 D04_Downside_Beta의 Core(STR_1631) 위기 상관. 0.70 초과 시 defense 역할 부적합 -> D25/D04 대신 D29_Accounting_Beta로 대체 또는 가설 폐기."
+    }
+  },
+
+  "factors": [
+    {
+      "name": "C19_Composite_Earnings",
+      "family": "consensus",
+      "role_in_strategy": "Primary alpha source. 정상시(CDaR < 80th) 100%, 경계(80~95th) 60%, 위기(>95th) 30%.",
+      "ic_profile": {
+        "full_ic": 0.044, "icir": 0.543,
+        "note": "alpha source이므로 defense IC 평가 대상 아님"
+      },
+      "literature": "Hong & Stein (1999, JF), core_knowledge_base A1"
+    },
+    {
+      "name": "D25_Left_Tail_Beta",
+      "family": "defense_beta",
+      "role_in_strategy": "Primary defense factor. 5th percentile 이하 시장 수익률에서의 beta. Drawdown beta의 직접 근사치. 정상시 0%, 경계 15%, 위기 25%.",
+      "ic_profile": {
+        "stress_icir": "S2에서 계산 필요 (crisis_defense_factor_analysis에 미포함)",
+        "note": "D25는 drawdown 경로의 극단 하방 민감도를 직접 측정. Factor DB에서 compute_defense.R D25_Left_Tail_Beta로 구현 확인."
+      },
+      "literature": "Goldberg & Mahmoud (2017, JFI) drawdown beta, Ang, Chen & Xing (2006, RFS) downside risk premium"
+    },
+    {
+      "name": "D04_Downside_Beta",
+      "family": "defense_beta",
+      "role_in_strategy": "Secondary defense factor. 하방 수익률 구간에서의 CAPM beta. 정상시 0%, 경계 10%, 위기 15%.",
+      "ic_profile": {
+        "note": "D04는 BM_Ret < 0 구간만으로 회귀한 beta. compute_defense.R에서 확인."
+      },
+      "literature": "Ang, Chen & Xing (2006, RFS) 'The Cross-Section of Volatility and Expected Returns' -- downside beta premium"
+    },
+    {
+      "name": "Q07_Earnings_Stability",
+      "family": "quality_earnings",
+      "role_in_strategy": "Supplementary defense. 이익 안정성이 drawdown의 근본 원인(실적 쇼크)을 차단. 정상시 0%, 경계 10%, 위기 20%.",
+      "ic_profile": {
+        "full_ic": 0.040, "icir": 0.929,
+        "stress_icir": 0.753, "4r_crisis_icir": 0.413,
+        "corr_with_C19": -0.092, "crisis_ratio": 1.04
+      },
+      "literature": "Dichev & Tang (2009, TAR) earnings volatility, L-121 양쪽 위기 최강"
+    },
+    {
+      "name": "D29_Accounting_Beta",
+      "family": "defense_accounting",
+      "role_in_strategy": "Structural defense. 회계 기반 beta로 시장 noise 제거. 정상시 0%, 경계 5%, 위기 10%.",
+      "ic_profile": {
+        "full_ic": 0.007, "icir": 0.109,
+        "stress_icir": 0.737, "4r_crisis_icir": 0.315,
+        "corr_with_C19": -0.039, "crisis_ratio": 1.42
+      },
+      "literature": "Beaver, Kettler & Scholes (1970, TAR), Campbell et al. (2008, JF)"
+    }
+  ],
+
+  "allocation_rule": {
+    "signal_source": "Portfolio drawdown path (CDaR expanding percentile). NOT macro regime.",
+    "cdar_computation": {
+      "method": "매월 리밸런싱 시점에 포트폴리오의 expanding window drawdown 분포에서 현재 drawdown의 percentile 계산. DD_t = (NAV_peak - NAV_t) / NAV_peak. CDaR_alpha = E[DD | DD > Q_alpha(DD)]. Percentile rank = rank(DD_t) / length(DD_history).",
+      "pit_compliance": "expanding window만 사용 (C1 준수). t-1 NAV 기준 (C2/C9 준수). 최소 24개월 관측 후 활성화.",
+      "literature": "Chekhlov, Uryasev & Zabarankin (2005, QF), L-442 expanding percentile 동일 철학"
+    },
+    "thresholds_preregistered": {
+      "note": "CDaR percentile threshold는 사전 고정. In-sample 최적화 아님.",
+      "normal":  {"condition": "DD_percentile < 80th", "frequency_est": "~80%", "weights": {"C19": 1.0, "D25": 0.0, "D04": 0.0, "Q07": 0.0, "D29": 0.0}},
+      "caution": {"condition": "80th <= DD_percentile < 95th", "frequency_est": "~15%", "weights": {"C19": 0.60, "D25": 0.15, "D04": 0.10, "Q07": 0.10, "D29": 0.05}},
+      "crisis":  {"condition": "DD_percentile >= 95th", "frequency_est": "~5%", "weights": {"C19": 0.30, "D25": 0.25, "D04": 0.15, "Q07": 0.20, "D29": 0.10}}
+    },
+    "weight_discretization": "3단계 이산값(0%/중간/최대)으로 사전 정의. 연속 최적화 금지.",
+    "vdplus_overlay": {
+      "condition": "DD_percentile >= 95th에서만 VD+ overlay 적용(inverse 30% + cash 30%)",
+      "rationale": "Axis A(exposure 축소) + Axis B(factor selection) 2축 방어. L-114 동일 구조."
+    },
+    "implementation": "Final_Score = w_C19 * Z(C19) + w_D25 * Z(D25) + w_D04 * Z(D04) + w_Q07 * Z(Q07) + w_D29 * Z(D29). Z = Z_Score_Aligned from Factor DB (C13). Weights determined by t-1 DD_percentile. Top 30 EW, 15bps commission, LIQ >= 2e8."
+  },
+
+  "differentiation_from_dfa_v2": {
+    "signal_source": "DFA v2: MRS(macro regime). H_1662: Portfolio DD percentile(endogenous). MRS는 포트폴리오-agnostic하고 false positive 발생. DD percentile은 포트폴리오-specific하고 관측값 기반.",
+    "defense_factors": "DFA v2: Q07/Q03/D29 (quality 2 + accounting beta 1). H_1662: D25/D04/Q07/D29 (downside beta 2 + quality 1 + accounting beta 1). Downside beta가 주력이므로 L-113(quality 단독 역 defense) 위험 축소.",
+    "activation_frequency": "DFA v2: Caution+Crisis ~24%. H_1662: Caution+Crisis ~20%. DD percentile이 더 conservative하여 alpha 희석 최소화.",
+    "theoretical_basis": "DFA v2: Barroso & Santa-Clara(2015) factor risk management. H_1662: Chekhlov et al.(2005) CDaR + Goldberg & Mahmoud(2017) drawdown beta. 더 직접적인 drawdown 관리 프레임워크."
+  },
+
+  "expected_role": "Defense sleeve with path-dependent activation",
+  "expected_role_detail": "독립 defense sleeve로 포지셔닝. DFA v2(anchor upgrade)와 달리, 포트폴리오 MDD를 직접 관리하는 것이 목적. PG2에서 STR_1631 VD+(core) + STR_1656 MLRA(diversifier)와 함께 3-sleeve 구성 시, defense sleeve가 MDD 축소에 기여. AX-001 조건부 평가: 전기간 SR이 아닌 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+  "role_bias_tag": "RoleBias_Defense",
+
+  "why_now": {
+    "gap_vector": {
+      "sr_gap": "+0.807 (1.193 -> 2.0)",
+      "cagr_gap": "-0.0014 (16.14% >= 16%, ACHIEVED)",
+      "mdd_gap": "-0.0373 (21.27% < 25%, ACHIEVED but MDD buffer thin)"
+    },
+    "primary_rationale": "MDD 21.27%로 목표(25%) 달성했으나 buffer가 3.73%p에 불과. 향후 drawdown이 확대되면 hard fail(45%) 접근 위험. Defense sleeve가 MDD를 구조적으로 제한하면 SR gap 해소를 위한 더 공격적 alpha 탐색 가능. 또한 SR gap(+0.807) 해소에 defense sleeve의 drawdown 제어가 Sharpe ratio 분모(vol/MDD) 축소로 기여.",
+    "dfa_v2_status": "DFA v2(Q07/Q03/D29)는 REVISE 상태(S0 debate 미완). MRS 기반 접근의 학술적 한계(L-122)를 drawdown-path 기반으로 대체하여 더 robust한 defense 메커니즘 제공.",
+    "ecr_paper_insight": "ECR Markowitz(ssrn-6261138)에서 CVaR-conditioned 앙상블이 개별 모델(MLP/LSTM/GRU) 대비 SR 28% 개선 + MDD -0.087 달성. Tail risk를 objective에 직접 반영하는 것이 정적 최적화보다 우월. 본 가설은 이 원리를 팩터 가중 신호에 적용.",
+    "family_concentration": "현재 portfolio consensus 50% + ML_complexity 50%. Defense family(defense_beta) 추가로 3번째 family 확보 -> family 분산 개선.",
+    "exploration_bucket": "Explore(20%) 내 defense 탐색. 기존 defense 전략 전부 REVISE/F이므로 새로운 접근 필요."
+  },
+
+  "core_reference": {
+    "primary": [
+      "Chekhlov, Uryasev & Zabarankin (2005, Quantitative Finance Vol.5) 'Drawdown Measure in Portfolio Optimization' -- CDaR의 정의 및 포트폴리오 최적화 적용. Drawdown의 조건부 기대값으로 tail drawdown risk를 정량화. 본 가설의 defense 활성화 신호 기반.",
+      "Goldberg & Mahmoud (2017, Journal of Fixed Income Vol.26) 'Drawdown: From Practice to Theory and Back Again' -- Drawdown beta 정의. DD_beta = Cov(DD_i, DD_mkt)/Var(DD_mkt). 시장 drawdown에 대한 자산별 민감도를 측정. 본 가설의 defense 팩터 선택 기준.",
+      "Ondiwa, Etim & Ogedegbe (2025, SSRN 6261138) 'Smart Portfolio: Ensemble Conditional Risk (ECR) Markowitz' -- CVaR-conditioned ensemble이 정적 최적화 대비 SR 28% 개선 + MDD -0.087. Regime-aware portfolio의 tail risk 관리 실증. 한계: 글로벌 다자산, ML 기반. 본 가설은 한국 단일시장, non-ML, 팩터 레벨에 적용.",
+      "Ang, Chen & Xing (2006, RFS Vol.19) 'The Cross-Section of Volatility and Expected Returns' -- Downside beta premium. D04_Downside_Beta, D25_Left_Tail_Beta의 학술적 기반.",
+      "Shu, Yu & Mulvey (2024, arXiv:2402.05272) 'Downside Risk Reduction Using Regime-Switching Signals: A Statistical Jump Model Approach' -- Regime-switching으로 MDD/vol 감소 실증(US/Germany/Japan, 1990-2023). Jump penalty로 국면 전환 빈도 조절. 본 가설의 DD percentile이 regime signal을 대체."
+    ],
+    "supporting": [
+      "Dichev & Tang (2009, TAR) 'Earnings Volatility and Earnings Predictability' -- Q07의 이론적 기반.",
+      "Beaver, Kettler & Scholes (1970, TAR) -- D29의 이론적 기반.",
+      "Moreira & Muir (2017, JF) 'Volatility-Managed Portfolios' -- VD+ overlay(Axis A)의 학술 근거.",
+      "Guidolin & Timmermann (2007, JEE) -- 다중국면 하 동적 배분 SR 개선.",
+      "Barroso & Santa-Clara (2015, RFS) 'Momentum has its moments' -- Factor risk management 일반 원칙."
+    ]
+  },
+
+  "lesson_check": {
+    "L-001": {
+      "content": "CR05/CR07 Crowding 한국시장 실패. IC -0.077, MDD 61.7%.",
+      "applied": "Crowding 팩터 미사용. Defense를 downside beta(D25/D04) 기반으로 설계."
+    },
+    "L-113": {
+      "content": "Quality 기반 Defense는 한국시장에서 역 defense. QMJ 위기상관 0.89, 하방 beta 1.09.",
+      "applied": "Quality(Q07)는 보조 역할(위기 시 최대 20%). 주력은 downside beta(D25 25% + D04 15% = 40%). L-113의 핵심 = quality 단독 defense 실패. 본 가설 = downside beta 주력 + quality 보조. S2에서 D25/D04의 Core 위기 상관 반드시 검증."
+    },
+    "L-114": {
+      "content": "VD+ overlay(Enhanced Regime + DD Brake)로 MDD 33.9% -> 25.4% 달성.",
+      "applied": "위기(>95th pctile) 시 VD+ overlay 적용. Axis A(exposure 축소) 유지."
+    },
+    "L-119": {
+      "content": "정적 EW 팩터 블렌드 = alpha 희석. C19+AC21+CR05 EW -> SR 0.38.",
+      "applied": "정적 블렌드 아님. Drawdown-conditional 동적 전환. 정상시 C19 100%(희석 없음)."
+    },
+    "L-121": {
+      "content": "Q07_Earnings_Stability 양쪽 위기 최강. stress ICIR +0.753, 4r-CRISIS +0.413.",
+      "applied": "Q07을 보조 defense로 채택. 위기 시 20% 가중."
+    },
+    "L-122": {
+      "content": "Factor timing 학술적 취약. Factor risk management로 설계.",
+      "applied": "미래 수익 예측(timing)이 아닌, 실현된 drawdown에 대응하는 risk management. Drawdown이 크면 방어, 작으면 alpha 추구. 예측 불필요."
+    },
+    "AX-001": {
+      "content": "Defense는 조건부 성과로 평가. 전기간 SR 기준 적용 금지.",
+      "applied": "RoleBias_Defense. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가. 전기간 SR이 0.4~0.6이어도 defense 역할 충족 시 PASS."
+    },
+    "L-087": {
+      "content": "한국시장 롱온리 low-risk sorting 무효.",
+      "applied": "D25/D04는 단독 sorting이 아님. C19과의 가중합으로 사용. Defense 활성화는 drawdown 조건부이므로 상시 low-risk sorting이 아님."
+    },
+    "L-118_ref": {
+      "content": "Market beta가 long-only 상관을 지배.",
+      "applied": "D25(Left_Tail_Beta)와 D04(Downside_Beta)가 직접적으로 downside beta를 축소하는 메커니즘. Beta orthogonality 확보가 핵심. S2에서 검증."
+    },
+    "L-484": {
+      "content": "수익률 블렌드 앙상블 30종목 위반.",
+      "applied": "Z-score 가중합으로 단일 Top 30 포트폴리오. 수익률 블렌드 아님."
+    }
+  },
+
+  "pit_safeguards": {
+    "C1": "CDaR percentile은 expanding window만 사용. Full-sample 통계 금지. 최소 24개월 warm-up.",
+    "C2": "Factor weight는 t-1 DD_percentile 기준으로 결정. Same-day circular 원천 차단.",
+    "C4": "Q07/D29 재무제표 기반 -- 연간 5월, 분기 45일 lag. D25/D04는 가격 기반 252d rolling.",
+    "C5": "DD percentile은 t-1 NAV 기준 계산. Overlay도 t-1.",
+    "C9": "DD/VT overlay t-1 lag 사용.",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date.",
+    "C15": "Factor DB load_month_factors() 사용."
+  },
+
+  "walk_forward_preregistration": {
+    "in_sample": "2003-01 ~ 2015-12 (13년)",
+    "out_of_sample": "2016-01 ~ 2026-03 (10년)",
+    "fixed_parameters": {
+      "cdar_percentile_thresholds": [80, 95],
+      "factor_weights_normal": {"C19": 1.0, "D25": 0.0, "D04": 0.0, "Q07": 0.0, "D29": 0.0},
+      "factor_weights_caution": {"C19": 0.60, "D25": 0.15, "D04": 0.10, "Q07": 0.10, "D29": 0.05},
+      "factor_weights_crisis": {"C19": 0.30, "D25": 0.25, "D04": 0.15, "Q07": 0.20, "D29": 0.10},
+      "dd_brake": {"trigger_pct": 10, "recovery_pct": 25},
+      "n_stocks": 30,
+      "rebalance": "monthly",
+      "commission_bps": 15,
+      "liq_threshold": 200000000,
+      "warm_up_months": 24
+    },
+    "success_criterion": "OOS SR / IS SR >= 0.50. Defense evaluation: 8대 스트레스 6/8+ outperform vs KOSPI."
+  },
+
+  "stress_period_evaluation": {
+    "note": "AX-001 조건부 평가. 8대 스트레스 구간 기준.",
+    "periods": [
+      {"name": "9/11", "dates": "2001-09 ~ 2001-12"},
+      {"name": "GFC", "dates": "2008-01 ~ 2009-03"},
+      {"name": "EU Debt Crisis", "dates": "2011-07 ~ 2011-12"},
+      {"name": "China Shock", "dates": "2015-06 ~ 2016-02"},
+      {"name": "Trade War", "dates": "2018-01 ~ 2018-12"},
+      {"name": "COVID", "dates": "2020-01 ~ 2020-03"},
+      {"name": "Rate Hike", "dates": "2022-01 ~ 2022-12"},
+      {"name": "Iran War", "dates": "2024-04 ~ 2024-06"}
+    ],
+    "defense_evaluation_criteria": {
+      "primary": "8대 스트레스 구간 MDD가 KOSPI 대비 개선(relative MDD)",
+      "secondary": "위기 구간 SR > 0 (absolute defense)",
+      "tertiary": "Core(STR_1631) 대비 70/30 배합 시 MDD 개선"
+    }
+  },
+
+  "risks": {
+    "d25_d04_data_availability": "D25_Left_Tail_Beta는 5th percentile 이하 관측수가 충분해야 안정적 추정. 252일 중 ~13일. 소표본 문제로 추정 불안정 가능. S2에서 D25의 cross-sectional IC 안정성 확인 필수.",
+    "drawdown_path_dependency": "DD percentile이 포트폴리오 자체의 과거 수익에 의존하므로, 첫 번째 위기(warm-up 부족)에서는 defense가 지연 발동. 24개월 warm-up이 충분한지 IS에서 검증.",
+    "endogenous_signal_circularity": "포트폴리오 drawdown -> factor weight 변경 -> 포트폴리오 구성 변경 -> 다음 기간 drawdown에 영향. 순환성이 존재하나, t-1 lag(C2)으로 same-period circularity는 차단. Cross-period 영향은 모든 adaptive strategy에 내재.",
+    "l113_residual_risk": "Q07이 보조라 해도, defense 활성화 시 D25/D04가 실제로 quality와 다른 메커니즘인지 S2에서 검증 필요. D25/D04 vs Q07의 cross-sectional 상관이 높으면 사실상 quality 단독과 동일.",
+    "complexity_vs_marginal_benefit": "5팩터 + drawdown signal = DFA v2보다 복잡. Marginal benefit(MDD 추가 축소)이 complexity 비용을 정당화하는지 S6에서 확인. STR_1631 VD+(SR 1.243, MDD 25.4%)가 이미 강력하므로 명확한 개선이 필요.",
+    "backtest_overfitting_dd_signal": "DD percentile 자체가 포트폴리오에 내생적이므로, IS에서 잘 작동해도 OOS에서 DD pattern이 달라지면 defense 발동 패턴도 달라짐. IS/OOS retention 확인 필수."
+  },
+
+  "implementation_notes": {
+    "s1_scope": "S1에서는 CDaR 신호 + 5팩터 가중 전환만 측정. VD+ overlay는 S5에서 추가 (S0/S1 overlay 금지 원칙). 단, drawdown percentile 계산 자체는 허용 -- 이것은 alpha source가 아닌 risk management signal.",
+    "rebalance": "월간(monthly) -- drawdown 신호의 시의성을 위해 DFA v2(격월)보다 빈번. Turnover 모니터링.",
+    "stock_selection": "Z_final = w_C19*Z(C19) + w_D25*Z(D25) + w_D04*Z(D04) + w_Q07*Z(Q07) + w_D29*Z(D29). Top 30 EW. 15bps commission. LIQ >= 2e8.",
+    "factor_db_access": "load_month_factors(factors=c('C19_Composite_Earnings','D25_Left_Tail_Beta','D04_Downside_Beta','Q07_Earnings_Stability','D29_Accounting_Beta')). 5팩터만 필터 로드.",
+    "dd_percentile_code_sketch": "dd_history <- expanding_drawdown_series(nav_t1); pctile <- ecdf(dd_history)(current_dd); regime <- ifelse(pctile < 0.80, 'normal', ifelse(pctile < 0.95, 'caution', 'crisis'))"
+  },
+
+  "prior_art_gate": {
+    "C19": "PG2 (STR_1550/1555). Grade A confirmed.",
+    "D25": "D25_Left_Tail_Beta. Standalone S1 미실행. Factor DB에서 compute_defense.R로 구현 확인.",
+    "D04": "D04_Downside_Beta. Standalone S1 미실행. Factor DB에서 구현 확인.",
+    "Q07": "L-012에서 D41+Q07 조합 실패했으나 Q07 단독 profiling 미완. L-121에서 양쪽 위기 최강 확인.",
+    "D29": "D29_Accounting_Beta. Standalone S1 미실행. crisis_ratio 1.42 확인.",
+    "CDaR_defense_combination": "Novel. Drawdown-path-conditioned factor selection은 V7 파이프라인에서 미실행. PASS."
+  },
+
+  "success_criteria": {
+    "defense_evaluation_ax001": {
+      "primary": "8대 스트레스 구간 중 6/8+ 에서 KOSPI 대비 MDD 개선",
+      "secondary": "Core(STR_1631)와 70/30 배합 시 standalone 대비 MDD 감소",
+      "tertiary": "bad/normal IC ratio > 1.0 (위기 시 IC가 정상 시 이상)"
+    },
+    "minimum": "위기 구간 composite IC > 0. Core 위기상관 < 0.70.",
+    "target": "8/8 스트레스 구간 outperform. 70/30 배합 MDD < 20%.",
+    "stretch": "Defense 활성화 시 SR 0.8+. 전기간 SR > 0.6 (defense 치고 양호)."
+  },
+
+  "metadata": {
+    "hypothesis_family": "defense_drawdown_path",
+    "economic_family": "defense_beta",
+    "bucket": "Explore",
+    "novelty": "CDaR-based defense activation signal + drawdown beta factor selection. 기존 V7 파이프라인에서 미시도.",
+    "complexity": "Medium (5 factors + expanding DD percentile + 3-regime discrete weights)",
+    "s0_debate_required": true,
+    "next_step": "S0 Debate 5인 토론 -> PASS 시 S1(순수 팩터 신호) -> S2(프로파일링, D25/D04 stress IC 확인)"
+  }
+}

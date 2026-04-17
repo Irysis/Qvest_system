@@ -1,0 +1,221 @@
+{
+  "stage": "S3_Orthogonality",
+  "strategy_id": "STR_1662a",
+  "strategy_name": "Q07_Earnings_Stability_Defense",
+  "timestamp": "2026-04-12T00:00:00",
+  "analyst": "Forge",
+  "version": "1.1",
+
+  "anchors": {
+    "core": "STR_1631_SYN_05",
+    "diversifier": "STR_1656_MLRA"
+  },
+
+  "common_period": {
+    "start": "2008-02",
+    "end": "2026-04",
+    "n_months": 219,
+    "note": "STR_1656_MLRA(M05) 시작일 2008-02 기준. STR_1662a는 2000-11부터 존재."
+  },
+
+  "correlations": {
+    "vs_STR_1656_full_period": {
+      "value": -0.122,
+      "threshold": 0.5,
+      "pass": true,
+      "description": "STR_1662a vs STR_1656_MLRA(Diversifier) 219개월 Pearson 상관"
+    },
+    "vs_STR_1631_factor_level": {
+      "value": -0.092,
+      "threshold": 0.6,
+      "pass": true,
+      "source": "S2_profile + L-121",
+      "description": "C19(STR_1631 핵심팩터) vs Q07(STR_1662a) 팩터 수준 상관. 수익률 수준 재확인 권장 (STR_1631 daily NAV 미저장)."
+    }
+  },
+
+  "stress_analysis": {
+    "periods_tested": 8,
+    "results": [
+      {
+        "label": "9/11",
+        "start": "2001-09",
+        "end": "2001-12",
+        "n": 0,
+        "cor": null,
+        "reliable": false,
+        "note": "공통기간(2008-02~) 이전 — 데이터 없음"
+      },
+      {
+        "label": "GFC",
+        "start": "2007-10",
+        "end": "2009-03",
+        "n": 14,
+        "cor": 0.2458,
+        "reliable": true,
+        "ret_1656_ann": -1.5636,
+        "ret_1662a_ann": 0.1424,
+        "note": "신뢰 구간(n=14). GFC 시 STR_1656 연환산 -156%, STR_1662a +14%. 상관 0.25 < 0.70 통과."
+      },
+      {
+        "label": "EuDebt",
+        "start": "2011-07",
+        "end": "2011-12",
+        "n": 6,
+        "cor": -0.8755,
+        "reliable": false,
+        "small_sample_warning": true,
+        "note": "소표본(n=6) 수치 불안정. Q07 변동 ±0.5~1.2%/월 vs STR_1656 최대 +18%/-7%. 상관계수가 극단값으로 나타나는 수치적 현상. Q07 방어 작동(안정적 소폭 수익) 경제적 증거."
+      },
+      {
+        "label": "ChinaShock",
+        "start": "2015-06",
+        "end": "2016-02",
+        "n": 9,
+        "cor": -0.6454,
+        "reliable": false,
+        "small_sample_warning": true,
+        "note": "소표본(n=9). Q07 안정 수익 vs STR_1656 변동. 음의 상관은 defense 역할 증거."
+      },
+      {
+        "label": "TradeWar",
+        "start": "2018-03",
+        "end": "2018-12",
+        "n": 10,
+        "cor": -0.6345,
+        "reliable": false,
+        "small_sample_warning": true,
+        "note": "소표본(n=10). 동일 패턴 — defense 역할 증거."
+      },
+      {
+        "label": "COVID",
+        "start": "2020-01",
+        "end": "2020-06",
+        "n": 6,
+        "cor": 0.0814,
+        "reliable": false,
+        "small_sample_warning": true,
+        "note": "소표본(n=6). COVID 급락 시 상관 +0.08으로 거의 0. 공동 하락 없음."
+      },
+      {
+        "label": "RateHike",
+        "start": "2022-01",
+        "end": "2022-12",
+        "n": 12,
+        "cor": -0.1066,
+        "reliable": true,
+        "ret_1656_ann": -0.0976,
+        "ret_1662a_ann": 0.0603,
+        "note": "신뢰 구간(n=12). 금리인상 시 STR_1656 -9.8%, STR_1662a +6.0%. 상관 -0.11. 직교성 유지."
+      },
+      {
+        "label": "IranWar",
+        "start": "2026-02",
+        "end": "2026-04",
+        "n": 3,
+        "cor": 0.4935,
+        "reliable": false,
+        "small_sample_warning": true,
+        "note": "소표본(n=3) — 신뢰 불가."
+      }
+    ],
+    "max_stress_cor_reliable_n12plus": 0.2458,
+    "max_stress_cor_all_n3plus": 0.8755,
+    "threshold_stress": 0.7,
+    "pass_stress_reliable": true,
+    "reliable_periods": ["GFC (n=14, cor=0.246)", "RateHike (n=12, cor=-0.107)"],
+    "small_sample_note": "EuDebt(n=6), ChinaShock(n=9), TradeWar(n=10), COVID(n=6), IranWar(n=3)는 소표본으로 수치 불안정. S3 통과 기준은 신뢰 구간(n>=12) 기준 적용. 소표본의 높은 음의 상관(-0.64~-0.88)은 Q07의 방어적 안정성(낮은 변동성)의 경제적 증거.",
+    "stress_avg_cor_all": -0.2059
+  },
+
+  "rolling_correlation": {
+    "window_months": 36,
+    "vs_STR_1656": {
+      "mean": -0.1682,
+      "min": -0.4922,
+      "max": 0.0806,
+      "sd": 0.1486
+    },
+    "interpretation": "전 기간(36M rolling) 음의 상관 지속. 최대 +0.08. 구조적 직교성 확인."
+  },
+
+  "dcc_garch": {
+    "available": true,
+    "method": "DCC-GARCH(1,1)-std via rugarch+rmgarch (rcor 추출)",
+    "pair": "STR_1656_M05 vs STR_1662a",
+    "n_obs": 219,
+    "mean_dcc_cor": -0.1218,
+    "median_dcc_cor": -0.1228,
+    "min_dcc_cor": -0.3278,
+    "max_dcc_cor": 0.0532,
+    "last_dcc_cor": -0.0964,
+    "interpretation": "전 기간 DCC 동적 상관 음수 유지(-0.33~+0.05). 최종 2026-04 기준 -0.096. STR_1662a와 STR_1656은 시계열상 구조적 음의 동적 상관 — 직교성 강력 확인."
+  },
+
+  "blend_simulation": {
+    "note": "STR_1631 재실행 필요 — STR_1656 + STR_1662a 2-sleeve 시뮬 (공통기간 2008-02~2026-04)",
+    "individual_common_period": {
+      "STR_1656_M05": {"cagr": 28.27, "ann_vol": 27.79, "sharpe": 1.017, "mdd": -28.2},
+      "STR_1662a": {"cagr": 1.35, "ann_vol": 4.2, "sharpe": 0.321, "mdd": -10.2}
+    },
+    "blends": [
+      {
+        "label": "1656_50_1662a_50",
+        "cagr": 15.06,
+        "ann_vol": 13.8,
+        "sharpe": 1.091,
+        "mdd": -14.04,
+        "note": "MDD -28.2% → -14.0%로 50% 감소. CAGR 희석되나 risk-adj 개선."
+      },
+      {
+        "label": "1656_30_1662a_70",
+        "cagr": 9.62,
+        "ann_vol": 8.5,
+        "sharpe": 1.133,
+        "mdd": -8.08
+      },
+      {
+        "label": "1656_20_1662a_80",
+        "cagr": 6.88,
+        "ann_vol": 6.13,
+        "sharpe": 1.122,
+        "mdd": -7.08
+      }
+    ],
+    "pg0_note": "실제 PG0: STR_1631(80%) + STR_1656(15%) + STR_1662a(5%). 3-sleeve 시뮬은 STR_1631 재실행 후 수행."
+  },
+
+  "thresholds": {
+    "full_period": 0.5,
+    "stress_n12plus": 0.7,
+    "peer": 0.6
+  },
+
+  "gate_results": {
+    "pass_full_period_vs_1656": true,
+    "pass_stress_reliable_n12plus": true,
+    "pass_vs_1631_factor": true,
+    "overall_pass": true,
+    "gfc_cor": 0.2458,
+    "rateHike_cor": -0.1066,
+    "dcc_avg_cor": -0.1218,
+    "rolling_36m_avg_cor": -0.1682,
+    "small_sample_stress_caveat": "EuDebt 등 소표본 구간의 높은 음의 상관(-0.88)은 Q07의 낮은 변동성(방어 특성)에 의한 수치적 현상. 신뢰 구간(GFC, RateHike)에서 상관 모두 0.70 하회. 경제적 직교성 훼손 없음."
+  },
+
+  "s3_verdict": "PASS",
+  "s3_grade": "A",
+
+  "s3_interpretation": "STR_1662a(Q07 단독 Defense)는 STR_1656_MLRA(Diversifier)와 전기간 상관 -0.122, DCC-GARCH 평균 -0.122, Rolling 36M 평균 -0.168로 구조적 음의 상관 확인. 신뢰 구간 위기(GFC n=14 cor=0.246, RateHike n=12 cor=-0.107) 모두 0.70 기준 하회. STR_1631(Core) 대비 팩터 수준 상관 -0.092로 극직교. S3 통과 기준(전기간<0.50, 위기<0.70, 피어<0.60) 전항목 충족.",
+
+  "action_items": [
+    "STR_1631 run_all.R에 daily nav CSV 저장 추가 후 return-level 상관 계산 (강력 권장, 필수 조건 아님)",
+    "S4 한계기여(Marginal Contribution) 진입 가능",
+    "PG0 3-sleeve 시뮬레이션: STR_1631 재실행 후 수행"
+  ],
+
+  "next_action": {
+    "stage": "S4_MarginalContribution",
+    "note": "S3 PASS — S4 진행. STR_1631 return-level 상관은 권장사항."
+  }
+}

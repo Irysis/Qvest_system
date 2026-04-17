@@ -1,0 +1,67 @@
+{
+  "pg0_gap_review": {
+    "strategy_id": "STR_1654_beta_conditioned_sector_neutral_accrual",
+    "factor_id": "BCSNA_Sector_Neutral_Accrual",
+    "reviewer": "Governor",
+    "review_date": "2026-04-09",
+    "session": 56,
+    "expected_role": "Diversifier",
+    "total_score": 21,
+    "max_score": 25,
+    "verdict": "PASS"
+  },
+
+  "criteria": {
+    "role_match": {
+      "score": 5,
+      "max": 5,
+      "assessment": "sleeve_needs=['diversifier']와 완전 정합. Beta < 0.40 목표가 현실적인가: (1) 60일 rolling beta 하위 40% 유니버스 제한은 약 beta < 0.55~0.60 수준에서 커팅. (2) 여기에 sector-neutral 구조가 IT 대형주(high-beta) 편중을 방지. 두 메커니즘의 결합으로 portfolio beta 0.35~0.45 달성은 합리적 추정. BAB(Frazzini & Pedersen 2014) 실증에서도 low-beta quintile portfolio beta가 0.3~0.5 범위. 한국시장에서 low-beta bucket의 평균 beta는 약 0.4~0.6이나 sector-neutral이 이를 추가 축소. 목표 beta < 0.40은 도전적이나 구조적으로 가능하며, 0.45 이하는 높은 확률로 달성 가능.",
+      "evidence": "gap_vector.sleeve_needs=diversifier. beta_target<0.50. BCSNA target=0.40."
+    },
+
+    "family_diverse": {
+      "score": 5,
+      "max": 5,
+      "assessment": "앵커 family: consensus(100%). BCSNA family: accrual(100%). Conditional IC matrix 기준 AC21-C19 corr=0.038, AC22-C19=0.055, AC17-C19=-0.012. Accrual과 Consensus는 경제적 메커니즘이 완전히 분리된다: Consensus는 '애널리스트 기대 수정'(forward-looking expectation), Accrual은 '보고된 이익의 현금전환 질'(backward-looking realization quality). gap_vector에서 priority_families 1순위가 accrual. family_concentration 100% consensus → accrual 추가는 최대 다양성 기여. 35% family concentration 제한에도 전혀 문제없음.",
+      "evidence": "family_concentration.consensus=1.0. AC21-C19_corr=0.038. priority_families[0]=accrual."
+    },
+
+    "cond_value": {
+      "score": 4,
+      "max": 5,
+      "assessment": "Conditional IC 분석. AC21: ic_bad=0.016 vs ic_good=0.038 → cond_value=-0.023. AC22: ic_bad=0.014 vs ic_good=0.041 → cond_value=-0.027. AC17: ic_bad=0.010 vs ic_good=0.039 → cond_value=-0.029. 세 팩터 모두 ic_bad > 0 (하락장에서도 양의 IC 유지)이지만, ic_good이 ic_bad의 2~4배로 호황에서 더 강하다. 이는 diversifier로서 '위기에 독립적 + 호황에서 추가 alpha'라는 이상적 패턴. 단, cond_value가 모두 음수(호황>불황)인 점은 '위기 시 초과방어'가 아닌 '위기 시 약화'를 의미. Diversifier 역할이므로 문제없으나, defense 이중역할은 기대 불가. 3y_ICIR: AC21=0.706, AC22=0.708, AC17=0.674 — 세 팩터 모두 S2 허들(0.20) 대폭 상회. 1점 감점: 위기 방어력이 GSCD 대비 약한 편.",
+      "evidence": "AC21_3y_ICIR=0.706, AC22=0.708, AC17=0.674. All ic_bad>0."
+    },
+
+    "stock_limit": {
+      "score": 4,
+      "max": 5,
+      "assessment": "10업종 x 2종목 = 20종목으로 30종목 제한 내. 구조적으로 종목 수가 고정(최대 20). 문제는 유효 종목 부족 리스크: low-beta(40%) + liquidity(2억원) + cross-exposure filter 적용 후 일부 업종에서 2종목 미만 가능. S0 record에서도 이를 MEDIUM-HIGH 리스크로 식별. 완화책(업종별 1종목 허용, beta 50% 완화)은 합리적이나 실행 시 19→14종목으로 축소 가능성 존재. Diversifier 역할에서 종목 수 축소는 alpha 희석보다 분산 저하가 우려되나, 14종목이어도 30종목 제한 내. 1점 감점: 유효 종목 부족 시 scoring 의미 퇴색 우려.",
+      "evidence": "max_stocks=20. 30limit OK. sector coverage risk=MEDIUM-HIGH."
+    },
+
+    "mdd_contrib": {
+      "score": 3,
+      "max": 5,
+      "assessment": "SR 2.0 Markowitz 경로 기여도 평가. gap_vector.markowitz_path에 따르면 3-4개 독립 source(rho~0, SR~0.8-1.0)로 portfolio SR 2.0 달성. BCSNA의 standalone SR 목표 > 0.6, AC21-AC22-AC17 composite의 3y_ICIR 평균 0.696. Accrual 팩터의 전체기간 IC가 modest(AC21: 0.036, AC22: 0.031, AC17: 0.027)하여 standalone SR 0.6~0.8 범위 추정. 앵커 상관 < 0.30 달성 가능성: factor-level corr(C19 vs AC21/22/17) 0.04~0.06으로 매우 낮으나, portfolio-level return correlation은 market beta 공유로 더 높을 것. Sector-neutral이 beta를 축소하므로 BCAC 대비 유리하나, L-115 경험에서 beta 0.40에서도 Core 상관 0.575였음. Sector-neutral이 이를 0.30 이하로 낮출 수 있는지는 S2-S3 실증 필요. MDD 관점: accrual 팩터는 위기 시 약화(cond_value 음수)하므로 portfolio MDD 개선 기여 제한적. 2점 감점: (1) 앵커 상관 < 0.30 달성은 L-115 선례상 불확실, (2) MDD 개선 기여 미약.",
+      "evidence": "AC factor-level corr_C19 < 0.06. L-115: beta=0.40에서도 cor=0.575. cond_value all negative."
+    }
+  },
+
+  "strengths": [
+    "Accrual family 0% 활용 → family diversification 최대 기여",
+    "3y ICIR 0.67~0.71 — S2 허들(0.20) 3배 이상 상회",
+    "Sector-neutral 구조가 L-115 실패 원인(hidden sector bet)을 정면 해결하는 구조적 혁신",
+    "BCAC와의 병렬 비교가 가능하여 sector-neutral 효과의 인과 추론 가능",
+    "20종목 EW로 30종목 제한 내 충분한 마진"
+  ],
+
+  "weaknesses": [
+    "위기 시 accrual alpha 약화(cond_value 음수) → MDD 개선 기여 제한",
+    "유효 종목 부족 리스크 MEDIUM-HIGH (일부 업종에서 low-beta + liquidity 통과 < 2종목)",
+    "L-115 선례에서 beta 0.40에서도 Core 상관 0.575 → sector-neutral이 이를 해결하는지 실증 필요",
+    "Accrual 팩터의 전체기간 IC가 modest (0.027~0.036) — standalone alpha 크기 불확실"
+  ],
+
+  "governor_notes": "BCSNA는 gap_vector의 1순위 지시(accrual family)와 완벽 정합하며, sector-neutral 구조가 기존 50+ FAIL의 공통 원인인 sector bet → beta → 앵커 상관 경로를 구조적으로 차단하는 진정한 혁신이다. S1에서 BCAC와 병렬 실행하여 sector-neutral 효과를 인과적으로 검증해야 하며, 핵심 관문은 S3에서 앵커 상관 < 0.30 달성 여부이다. 위기 방어력은 기대하지 않는 것이 정직하다."
+}

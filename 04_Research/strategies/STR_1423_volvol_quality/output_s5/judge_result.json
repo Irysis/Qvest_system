@@ -1,0 +1,50 @@
+{
+  "strategy_id": "STR_1423_volvol_quality_s5",
+  "judge_timestamp": "2026-03-26 16:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Automated lookahead scan CLEAN on both run_s5_mutation.R (64 lines) and factor_engine.R (78 lines). Manual C1-C11: C1(expanding vol)=CLEAN, C2(same-day)=CLEAN(VT lagged line 28, DD lagged line 34), C5(overlay t-1)=CLEAN, C9(VT/DD same-day)=CLEAN, C10(liq filter lagged)=CLEAN, C11(time axis)=CLEAN, C13(Z_Score_Aligned)=CLEAN, C14(Usable_Date)=CLEAN. No violations detected."
+    },
+    "gate1_performance": {
+      "pass": false,
+      "detail": "SR=0.342 (target 2.0), CAGR=4.13% (target 16%), MDD=31.44% (target <25% FAIL), Calmar=0.131, IR=-0.287 (underperforms BM). BM SR=0.427 > Strategy SR=0.342. All primary performance hurdles missed. Score 44.4/100 (Grade B). VT 18% + DD 7/22 overlay reduced vol but crushed returns — strategy alpha too weak to survive overlay compression."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required artifacts present: s0_record (MF02_VolVolQuality), s1_construction, s2_profile, s3_orthogonality (D41+Q07), s4_integration (D41+Q07), s5_research_slate (D41+Q07). S3 verdict was STOP (SR 0.399, KOSPI beat=FALSE, redundancy=0.83) but S4 showed delta_sharpe=0.113 and kospi_beat=TRUE, which routed to S5 via role_admission=diversifier. Pipeline flow is traceable."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "failed_diversifier",
+      "detail": "Claimed diversifier, but BM_Corr=0.589 (moderate-high, not low), IR=-0.287 (negative — underperforms benchmark), MDD=31.44% > 25% target. Stress performance 3/3 outperform is genuine diversifier signal, but overall the strategy does not deliver independent returns from BM. S3 flagged redundancy=0.83 (highly redundant). The 'diversifier' claim is weakly supported."
+    },
+    "gate4_statistical": {
+      "pass": false,
+      "detail": "DSR=NA (not computed). OOS retention=0.795 (IS SR 0.367, OOS SR 0.292 — both sub-0.5). Rolling 3Y positive ratio=56.5% (barely above coin-flip). Alpha trend ratio=1.994 (recent 3Y SR 0.683 vs full 0.342 — suggests recent improvement but base is too low). 12M hit rate=58%. Max consecutive neg alpha months=8. Statistical robustness insufficient for promotion."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "FF5 alpha from base output (no FF5 in S5 overlay output): FF3 alpha=-2.09% (t=-0.70), FF5 alpha=-1.82% (t=-0.59), Carhart4 alpha=-2.17% (t=-0.72). All alphas NEGATIVE with insignificant t-stats. No independent alpha after controlling for standard risk factors. Strategy returns are fully explained (and then some) by FF factors."
+    }
+  },
+  "verdict": {
+    "pass": false,
+    "grade": "B",
+    "score": 44.4,
+    "fail_reasons": [
+      "Gate 1: SR 0.342 < 2.0, CAGR 4.13% < 16%, MDD 31.44% > 25%, IR negative",
+      "Gate 3: Claimed diversifier but BM_Corr=0.589, S3 redundancy=0.83",
+      "Gate 4: DSR unavailable, OOS SR 0.292 sub-threshold, rolling 3Y barely above 50%",
+      "Gate 5: FF5 alpha -1.82% (t=-0.59) — no independent alpha"
+    ],
+    "recommendation": "DISCARD as S5 base. The VT 18% + DD 7/22 overlay improved MDD modestly vs base but demolished already-weak returns (base SR 0.399 → S5 SR 0.342). The D41(VolVol)+Q07(EarningsStability) factor combination shows high redundancy (0.83) with existing strategies per S3. FF5 alpha is negative. S5 mutations M1/M2/M3 should be evaluated against this baseline — if none materially improve SR above 0.8+, the entire STR_1423 family should be archived. The 'uncertainty x stability mispricing' hypothesis (Baltussen 2018 + Dichev 2009) did not generate economically meaningful alpha in KR market."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr=0.589 (moderate, not low for diversifier), IR=-0.287 (negative), S3 factor_mean_max_corr=0.83 (highly redundant). Stress 3/3 outperform is the only genuine diversifier signal. Overall profile is a weak beta proxy, not an independent diversifier."
+  }
+}

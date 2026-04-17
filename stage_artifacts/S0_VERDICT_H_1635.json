@@ -1,0 +1,27 @@
+{
+  "stage": "S0",
+  "verdict": "APPROVE_CONDITIONAL",
+  "hypothesis_id": "H_1635_ev_accrual_quality_defense",
+  "strategy_id": "STR_1635_ev_accrual_quality_defense",
+  "timestamp": "2026-04-08T08:00:00",
+  "total_score": 64,
+  "breakdown": {
+    "quant": 17,
+    "academic": 20,
+    "govproxy": 14,
+    "critic": 13
+  },
+  "conditions": [
+    "S3에서 C10-C19 pairwise 상관 < 0.5 검증 필수",
+    "V15/AC21 bad regime IC 음수 패턴 → defense 역할 재라벨링 검토 (S2 profiling 후)",
+    "VT 12%/15% A-B 테스트로 alpha 잠식 확인 (S5 mutation)",
+    "AC21 n=188 데이터 충분성 검토 (S2)",
+    "C4 재무제표 래깅 엄수 (연간→5월, 분기→45일)"
+  ],
+  "expected_role": "defense",
+  "family": "value_quality_defense",
+  "factors": ["V15_NetDebt_Adj_EP", "AC21_CF_to_Accrual_Ratio", "C10_SUE_Persistence"],
+  "reference_portfolio": "V7_M11_REF",
+  "debate_round": 1,
+  "next_stage": "S1"
+}

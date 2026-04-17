@@ -1,0 +1,8 @@
+{
+  "l_code": "L-755",
+  "strategy_id": "STR_1456",
+  "variant": "output_s5_dd_vt",
+  "grade": "C",
+  "lesson_text": "sqrt(12) annualization bug in VT overlay: run_s5_dd_vt.R line 17 uses sd(daily_ret)*sqrt(12) instead of sqrt(252). This underestimates annualized vol by 4.58x, making VT exposure perpetually 1.0 (no scaling). The 'DD+VT dual overlay' label is false — only DD brake is active. All metrics reflect DD-only behavior. Any strategy in the sqrt(12) infected list must be re-run with sqrt(252). Additionally, even with DD-only, FF3/C4 alpha is negative (t<0.2), confirming the D01_IdioVol + C19_Consensus + Q04_Piotroski triple lacks standalone alpha after factor adjustment.",
+  "core_reference": "C9 (VT same-day / implementation error), L-566 (DD 6/20 repair), methodology_memory.md Section 5 (overlay rules)"
+}

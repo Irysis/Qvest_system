@@ -1,0 +1,91 @@
+{
+  "strategy_id": "STR_1417",
+  "strategy_name": "ESBR + HRP + TC + DD 6/20 Brake",
+  "references": ["Lopez de Prado (2016)", "Garleanu & Pedersen (2013)"],
+  "method": "ESBR_HRP_TC_DD620",
+  "factors": "C04_ESBR",
+  "blend_alpha": 0.5,
+  "n_holdings": 30,
+  "weight_method": "HRP_blended",
+  "hrp_params": {
+    "n_days": 60,
+    "max_w": 0.1,
+    "cluster": "ward.D2",
+    "alloc": "inv_var"
+  },
+  "overlays": {
+    "dd_start": 0.06,
+    "dd_full": 0.2,
+    "dd_floor": 0.2,
+    "vt": "NONE",
+    "regime": "NONE"
+  },
+  "commission": 0.0015,
+  "avg_turnover": 0.1468,
+  "max_holdings": 30,
+  "base_comparison": {
+    "str_1405": {
+      "SR": 1.111,
+      "CAGR": 18.9,
+      "MDD": 31.6,
+      "note": "ESBR Pure EW + DD 6/20"
+    },
+    "str_1417": {
+      "change": "HRP+TC applied to reduce MDD while preserving ESBR alpha"
+    }
+  },
+  "performance": {
+    "esbr_hrp_tc": {
+      "Label": "ESBR_HRP_TC_DD620",
+      "CAGR": 16.39,
+      "AnnVol": 15.02,
+      "Sharpe": 1.091,
+      "Sharpe_m": 0.994,
+      "Sortino": 1.501,
+      "MDD": 28.33,
+      "Calmar": 0.579,
+      "WinRate": 63,
+      "WorstMonth": -15.7,
+      "Worst3M": -13.17,
+      "ES99_d": 3.79,
+      "ES99_m": 12.12
+    },
+    "esbr_ew": {
+      "Label": "ESBR_EW_Baseline",
+      "CAGR": 24.88,
+      "AnnVol": 23.01,
+      "Sharpe": 1.081,
+      "Sharpe_m": 1.081,
+      "Sortino": 1.519,
+      "MDD": 55.19,
+      "Calmar": 0.451,
+      "WinRate": 65,
+      "WorstMonth": -30.51,
+      "Worst3M": -36.53,
+      "ES99_d": 6,
+      "ES99_m": 21.2
+    },
+    "bm": {
+      "Label": "Benchmark_K200",
+      "CAGR": 9.75,
+      "AnnVol": 21.02,
+      "Sharpe": 0.464,
+      "Sharpe_m": 0.543,
+      "Sortino": 0.653,
+      "MDD": 52.92,
+      "Calmar": 0.184,
+      "WinRate": 58.7,
+      "WorstMonth": -20.49,
+      "Worst3M": -26.77,
+      "ES99_d": 5.34,
+      "ES99_m": 16.76
+    }
+  },
+  "hurdle": {
+    "grade": "A",
+    "score": 42,
+    "pass": true
+  },
+  "generated": "2026-03-25 07:33:16.372896",
+  "pit_status": "CLEAN - C04_ESBR Z_Score_Aligned via load_month_factors() (C15). HRP uses 60d rolling returns only (C1 no full-sample). Turnover constraint uses only prev portfolio + current HRP target. Liquidity t-1 lagged (C10). DD Brake t-1 lagged (C9). NO VT overlay. NO regime overlay. No full-sample stats anywhere."
+}

@@ -1,0 +1,242 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-06T16:30:00",
+  "hypothesis_id": "STR_1631_v5_M14_gerber_lw3_hrp",
+  "parent": "STR_1631_v5_M11_hrp",
+  "lineage": ["STR_1631_v5_M11_hrp", "STR_1631_v5_M12_vt", "STR_1631_v5_M13_lw_vt15"],
+  "revision_trigger": "M12 VT overlay 추가 시 TO 728% hard fail. M13은 VT 유지 + LW 대체 설계. M14는 VT 완전 제외 + RMT를 LW3로 대체하여 hard fail 해소 + 공분산 추정 개선에 집중.",
+
+  "strategy_name": "STR_1631_v5_M14_gerber_lw3_hrp",
+  "description": "M11 base(SR 1.113, CAGR 19.86%, MDD 33.55%, TO 574.8%)에서 두 가지 구조적 변경: (1) RMT denoise를 Ledoit-Wolf 2020 analytical nonlinear shrinkage(LW3)로 대체하여 N=20 소표본에서의 공분산 추정 정확도 개선, (2) VT overlay 완전 제거(M12의 TO 728% hard fail 해소). MRS 30/60 3-Layer Regime overlay 유지. C19 4팩터(SUE+ESBR+EPS_Chg_1m+TP_Gap) 구성 유지(S5에서 C03 대체 A/B 비교).",
+
+  "expected_role": "RoleBias_Core",
+  "why_now": "3가지 근거. (1) TO hard fail 해소: M12에서 VT 추가 시 TO가 574.8%에서 728%로 폭증(hard fail >600%). VT의 일별 exposure 변동이 HRP의 buffer zone 메커니즘을 무력화하여 과도한 리밸런싱 유발. VT 제거가 필수. (2) 공분산 추정 개선: RMT denoise는 Marcenko-Pastur 분포를 가정하나, N=20/T=60(N/T=0.33)에서는 MP 분포의 수렴 조건(N,T→inf, N/T→gamma)이 약함. Ledoit-Wolf(2020) analytical nonlinear shrinkage는 유한 표본 보정(finite-sample correction)을 포함하여 N=20에서도 이론적 MSE 최소화 보장. (3) PG0 gap: 현재 포트폴리오 SR 1.003(gap +0.997), MDD 52.2%(gap -27.2%). STR_1631 v5 계열의 core alpha 강화가 SR 개선의 핵심 경로. family_concentration이 consensus 100%이므로 동일 family 내 가중 방식 혁신으로 alpha density 극대화.",
+
+  "hypothesis": "M11의 Gerber Statistic + HRP bisective 배분 체계에서 RMT denoise를 Ledoit-Wolf(2020) analytical nonlinear shrinkage(QuEST estimator)로 대체하면, (1) N=20 소표본에서 RMT의 과도한 noise eigenvalue clipping(정보 손실)이 해소되어 HRP 클러스터링의 거리 행렬 품질이 개선되고(Ledoit & Wolf 2020: 각 eigenvalue에 개별 최적 shrinkage intensity를 비모수 커널로 추정하여 signal-noise 분리 최적화), (2) 이로 인한 HRP 가중의 안정성 향상이 리밸런싱 간 가중 변동을 축소하여 TO를 소폭 감소(예상 -20~50%p)시키고, (3) SR은 1.1 이상 유지하면서 CAGR 19%+와 MDD 33% 이하를 동시 달성할 수 있다. VT overlay 제거로 TO는 600% hard fail 미만을 확실히 유지하며, MDD 방어는 MRS 30/60 3-Layer Regime overlay에 전담한다.",
+
+  "core_reference": [
+    "Ledoit, O. & Wolf, M. (2020, Journal of Financial Econometrics) 'Analytical nonlinear shrinkage of large-dimensional covariance matrices' -- QuEST(QUantized Eigenvalue Shrinkage Transformation) estimator. 비모수 커널로 population spectral density 추정 후, Hilbert transform을 통해 각 eigenvalue의 최적 shrinkage를 analytical하게 도출. 기존 numerical solver(2012) 대비 O(T*N^2) 계산 복잡도로 안정적. N=20, T=60에서도 적용 가능(finite-sample correction 내장). sample eigenvalue -> oracle eigenvalue mapping이 RMT의 binary clipping(noise vs signal) 대비 연속적이고 정밀.",
+    "Ledoit, O. & Wolf, M. (2004, Journal of Multivariate Analysis) 'A well-conditioned estimator for large-dimensional covariance matrices' -- linear shrinkage(identity target). LW3 fallback으로 사용. R 패키지: corpcor::cov.shrink().",
+    "Ledoit, O. & Wolf, M. (2012, Annals of Statistics) 'Nonlinear shrinkage estimation of large-dimensional covariance matrices' -- Oracle Approximating Shrinkage(OAS). 수치적 최적화 기반 비선형 shrinkage. LW3(2020)의 analytical version이 이를 대체.",
+    "Gerber, S., Markowitz, H., Ernst, P., Miao, Y., Javid, B., & Sargen, P. (2022, Journal of Portfolio Management) 'The Gerber Statistic: A Robust Co-Movement Measure for Portfolio Optimization' -- threshold-based concordance 상관행렬. 극단 수익률 co-movement만 포착하여 fat-tail 환경에서 Pearson 대비 robust. M11에서 검증 완료(HRP 실패 0회/250개월).",
+    "Lopez de Prado, M. (2016, Journal of Portfolio Management) 'Building Diversified Portfolios that Outperform Out of Sample' -- HRP recursive bisection. 공분산 역행렬 불필요. 추정 오류에 robust. M11에서 검증 완료.",
+    "Laloux, L., Cizeau, P., Bouchaud, J.-P., & Potters, M. (1999, Physical Review Letters) 'Noise Dressing of Financial Correlation Matrices' -- RMT denoise. Marcenko-Pastur 상한(lambda_plus) 이하 eigenvalue를 평균으로 shrink. **본 가설에서 LW3로 대체되는 방법**. 대체 이유: N=20에서 MP 수렴 조건 약함 + binary clipping의 정보 손실.",
+    "DeMiguel, V., Garlappi, L., & Uppal, R. (2009, Review of Financial Studies) 'Optimal Versus Naive Diversification' -- 1/N(EW)가 추정 오류 큰 소표본에서 최적화 대비 OOS 우위. HRP vs EW A/B 비교의 학술 근거.",
+    "L-743: STR_1555 S5 22건 — HRP 6종 고도화에도 CAGR 16% 미달(3F Score Blend 맥락). 그러나 M11(C19 단독)에서는 CAGR 19.86%로 16% 초과. C19 단독에서 HRP의 CAGR 제한은 덜 심각.",
+    "L-784: VT 12%가 C19 MDD 45% 미만 유일 경로. 그러나 M12에서 TO 728% hard fail → VT 경로 불가. MRS Regime overlay가 VT 없이 MDD 방어를 전담해야 함.",
+    "L-786: DD Brake는 한국 C19에서 alpha 90%+ 파괴. DD 배제 유지."
+  ],
+
+  "factors": {
+    "C19_Composite_Earnings": {
+      "components": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C06_TP_Gap"],
+      "weight_scheme": "EW z-score average (4팩터 균등)",
+      "n_stocks": 20,
+      "coverage_filter": ">=3 analysts",
+      "liquidity_filter": "20일 평균 거래대금 >= 2e8 KRW",
+      "max21d_exclusion": "상위 20% MAX21d 제외 (t-1 lag)",
+      "note": "M11 C19 구성 유지. C06_TP_Gap vs C03_EPS_Chg_3m 교체는 S5 mutation에서 A/B 비교."
+    }
+  },
+
+  "weighting": {
+    "method": "Gerber_LW3_HRP",
+    "description": "60일 수익률(t-1 lag) -> Gerber Statistic(상관행렬) -> LW3 nonlinear shrinkage(공분산행렬) -> HRP bisective 배분",
+    "pipeline_steps": [
+      "Step 1: 직전 60거래일 일별 수익률 행렬 추출 (Date < sig_date, tail 60일)",
+      "Step 2: Sample covariance 계산 — cov(ret_matrix, use='pairwise.complete.obs')",
+      "Step 3: Gerber Statistic으로 상관행렬 계산 — 극단 co-movement 기반 robust correlation",
+      "Step 4: LW3 nonlinear shrinkage 적용 — sample covariance의 eigenvalue를 개별 최적 shrinkage. nlshrink::linshrink_cov() fallback 포함",
+      "Step 5: Gerber 상관행렬 기반 거리 행렬 → hclust(single linkage) → HRP ordering",
+      "Step 6: LW3-shrunk 공분산행렬 기반 recursive bisection → 최종 가중"
+    ],
+    "gerber_threshold": {
+      "default": 0.5,
+      "note": "M11 검증값 유지. S5에서 expanding median(|ret|) 동적 threshold와 A/B 비교."
+    },
+    "covariance_estimator": {
+      "primary": "Ledoit-Wolf 2020 analytical nonlinear shrinkage (QuEST)",
+      "replaced": "RMT denoise (Laloux et al. 1999)",
+      "replacement_rationale": "RMT는 N→inf, T→inf, N/T→gamma 수렴 조건에서 도출됨. N=20/T=60(N/T=0.33)은 유한 표본이므로 MP 분포 근사가 정확하지 않음. RMT의 binary eigenvalue clipping(noise vs signal)은 경계선 eigenvalue에서 정보 손실 유발. LW3는 (1) 유한 표본 보정을 내장하고, (2) 각 eigenvalue에 연속적 shrinkage를 적용하여 signal-noise 경계의 정밀도가 우월. Academic 피드백: N>=50 rule of thumb은 nonlinear > linear 보장 조건이며, N=20에서도 LW3 적용 자체는 가능하나 linear(LW 2004) 대비 우위는 불확실. 따라서 S5 mutation으로 LW3 vs LW linear 비교 필수.",
+      "r_implementation": {
+        "primary": "nlshrink 패키지: nlshrink::linshrink_cov() 또는 직접 구현(QuEST Algorithm 1, Ledoit & Wolf 2020 Appendix). N=20이면 O(T*N^2) = O(60*400) = 무시 가능 수준.",
+        "fallback": "corpcor::cov.shrink(ret_matrix) — Ledoit-Wolf(2004) linear shrinkage. nlshrink 실패 시 자동 전환.",
+        "double_fallback": "sample cov() — 모든 shrinkage 실패 시 (M11 RMT 코드의 기존 fallback과 동일)"
+      },
+      "lookback": 60,
+      "lag": "t-1 (Date < sig_date)"
+    },
+    "hrp_method": {
+      "clustering": "single linkage on Gerber distance = sqrt(0.5 * (1 - gerber_cor))",
+      "allocation": "recursive bisection on LW3-shrunk covariance",
+      "note": "M11 구조 유지. 거리 행렬은 Gerber 상관에서 도출, 배분은 shrunk 공분산에서 도출. 두 행렬의 역할 분리."
+    },
+    "fallback": "EW (LW3 + HRP 모두 실패 시). M11에서 HRP fallback 0회/250개월이므로 실질적으로 미발동 예상.",
+    "n_holdings": 20,
+    "buffer_zone": {"keep_n": 35, "entry_n": 20}
+  },
+
+  "overlay": {
+    "vol_target": "EXCLUDED",
+    "vol_target_exclusion_rationale": "M12 실증: VT 12% 추가 시 TO가 574.8%에서 728%로 153.2%p 급증하여 hard fail(>600%) 촉발. VT의 일별 exposure 변동이 월별 리밸런싱의 buffer zone 메커니즘을 우회하여 실질적 포지션 변경 빈도를 극적으로 증가시킴. HRP 가중의 비균등 포지션에 VT가 곱해지면, 소규모 종목의 비중 변동이 증폭되어 threshold-based rebalancing 트리거가 빈번해짐. VT 없이 MDD 방어는 MRS 3-Layer Regime overlay에 전담.",
+    "dd_brake": "EXCLUDED (L-786: C19 alpha 파괴 실증. DD 5/15=SR -0.03, DD 10/25=SR 0.34. alpha 90%+ 소멸.)",
+    "regime_3layer": {
+      "layer1_normal": {
+        "condition": "MRS < 30",
+        "action": "100% factor portfolio exposure"
+      },
+      "layer2_caution": {
+        "condition": "MRS >= 30 AND NOT (crisis_consec >= 3 AND MRS >= 60 AND n_axes >= 5)",
+        "action": "equity_weight = max(0.5, 1.0 - (MRS - 30) / 60). 나머지 현금.",
+        "mechanism": "MRS 30~90 구간에서 선형 보간. MRS=30이면 100%, MRS=60이면 50%, MRS=90이면 max(0.5, 0.0)=50% (floor 적용)."
+      },
+      "layer3_crisis": {
+        "condition": "MRS >= 60 AND n_axes_firing >= 5 AND crisis_consec >= 3",
+        "action": "50% factor portfolio + 20% inverse ETF(KODEX Inverse 114800) + 30% cash"
+      },
+      "engine": "Regime Engine v7.1 (4-Layer Base + Expanding Percentile Threshold + Slow-Crisis Defense, L-442)",
+      "pit_compliance": "regime is t-1 lagged via build_daily_regime(). C5, C9 compliant. MRS 자체가 expanding percentile 기반이므로 고정 임계값(30, 60)은 MRS의 relative level에 대한 threshold.",
+      "note": "M11과 동일한 3-Layer 구조. VT 부재 시 Regime overlay가 MDD 방어의 유일한 메커니즘."
+    }
+  },
+
+  "lesson_check": [
+    {
+      "lcode": "L-743",
+      "summary": "STR_1555 S5 22건: HRP 6종 고도화에도 3F Score Blend 맥락에서 CAGR 16% 미달. RP > IVol > EW > HRP. 저변동 과비중의 구조적 CAGR 상한.",
+      "application": "C19 단독(M11)에서는 CAGR 19.86%로 16% 초과. 3F blend 희석 없는 concentrated alpha에서 HRP 제약이 덜함. 그러나 S5에서 HRP vs EW A/B 비교 필수."
+    },
+    {
+      "lcode": "L-784",
+      "summary": "VT 12%가 C19 전략에서 MDD 45% 미만 달성 유일 경로.",
+      "application": "VT 경로 불가(TO hard fail). MRS Regime overlay로 MDD 방어. M11의 MDD 33.55%는 VT 없이 달성된 수치이며, LW3 개선으로 33% 이하 기대."
+    },
+    {
+      "lcode": "L-786",
+      "summary": "DD Brake는 한국 C19에서 alpha 90%+ 파괴.",
+      "application": "DD 배제 유지. overlay는 Regime 3-Layer만."
+    },
+    {
+      "lcode": "L-785",
+      "summary": "C19 IC 반감기 693개월. SUE 핵심 alpha 원천. 국면 무관 안정적.",
+      "application": "C19 alpha의 구조적 안정성이 VT 없이도 장기 성과 유지를 지지."
+    },
+    {
+      "lcode": "L-725",
+      "summary": "ICIR 합산은 팩터 독립성 가정 위반 시 무의미. 상관 0.3+ 팩터 추가는 dilution.",
+      "application": "C06_TP_Gap→C03_EPS_Chg_3m 대체 시, C03과 C02(EPS_Chg_1m)의 intra-composite 상관 확인 필수. S5 mutation으로 검증."
+    },
+    {
+      "lcode": "STR_1421 result",
+      "summary": "nlshrink(linear shrinkage) + HRP: SR 1.408, CAGR 17.7%, MDD 25.56%. sample cov HRP(SR 1.014, MDD 44.8%) 대비 대폭 개선. shrinkage가 HRP에 유효함을 실증.",
+      "application": "STR_1421은 4팩터(Q01+V01+C04+D01) 30종목 + DD 6/20 + corpcor linear shrinkage. M14는 C19 4팩터 20종목 + LW3 nonlinear shrinkage + Regime. 다른 alpha source/overlay이나 shrinkage→HRP 파이프라인의 유효성 교훈은 직접 적용 가능."
+    }
+  ],
+
+  "risk_factors": [
+    "MDD 25% 목표 미달: M11의 MDD 33.55%는 VT 없이 Regime overlay만으로 달성. LW3가 공분산 추정을 개선하여 HRP 가중이 안정화되더라도 포트폴리오 전체 변동성 수준 자체를 제한하지는 못함. MDD 30% 이하는 가능하나 25%는 불확실. 25% 목표 달성은 defense sleeve와의 앙상블에서 추구.",
+    "LW3 vs LW linear 우위 불확실: Academic 피드백 — N>=50 rule of thumb은 nonlinear > linear 보장 조건. N=20에서는 linear(2004)이 nonlinear(2020)와 동등하거나 우월할 수 있음. S5 mutation으로 반드시 비교.",
+    "nlshrink R 패키지 의존: nlshrink 패키지가 CRAN에 있으나 WSL 환경 호환성 미확인. 실패 시 corpcor::cov.shrink() linear fallback.",
+    "Gerber threshold 0.5 고정의 ex-post 위험: M11에서 0.5로 설정되었으나 최적화 과정의 투명성 부족. S5에서 expanding median(|ret|) 동적 threshold와 비교 필수.",
+    "STR_1550/1555와의 높은 상관: C19 alpha source가 동일하므로 구조적 상관이 높을 수밖에 없음(0.78~0.84 예상). 가중 방식 차이(EW vs HRP)만으로 0.7 미만 달성은 어려움. Core Alpha 강화 목적으로 진행하되, diversification 기여는 제한적.",
+    "Regime overlay 단독 MDD 방어의 한계: VT 없이 Regime overlay만으로 MDD를 33.55%에서 추가 개선하는 마진이 작음. LW3의 가중 안정화가 위기 구간 집중도를 줄이는 간접적 MDD 개선에 기대."
+  ],
+
+  "expected_metrics": {
+    "sr": "1.10~1.20 (M11 1.113 대비 유지 또는 소폭 개선. LW3의 추정 개선 → HRP 가중 안정화 → rebalancing noise 감소)",
+    "cagr": "19~20% (M11 19.86% 대비 유사. VT 미적용으로 CAGR 희생 없음)",
+    "mdd": "30~34% (M11 33.55% 대비 유사 또는 소폭 개선. LW3의 위기 구간 상관 추정 개선이 HRP 분산 효과를 향상시킬 수 있음)",
+    "vol": "17~19% (M11 17.9% 대비 유사. VT 미적용으로 vol 제한 없음)",
+    "turnover": "550~580% (M11 574.8% 대비 소폭 변동. LW3 가중 안정화로 소폭 감소 기대)"
+  },
+
+  "s5_mandatory_mutations": {
+    "M14_A_hrp_vs_ew": {
+      "priority": 1,
+      "category": "stock_weight",
+      "description": "HRP(Gerber+LW3) vs EW(1/N) A/B 비교",
+      "A_arm": "Gerber+LW3 HRP (본 가설)",
+      "B_arm": "EW 5% 균등 (DeMiguel 2009 baseline)",
+      "success_criterion": "A arm이 OOS SR에서 B arm을 0.05+ 상회, 또는 MDD에서 2%p+ 우위. 미달 시 EW 채택.",
+      "academic_basis": "DeMiguel et al. (2009): 추정 오류가 큰 소표본(N=20)에서 1/N이 최적화 대비 OOS 우위. L-743: HRP 6종이 3F blend에서 EW 대비 CAGR 열위."
+    },
+    "M14_B_lw3_vs_lw_linear": {
+      "priority": 2,
+      "category": "stock_weight",
+      "description": "LW3(nonlinear 2020) vs LW linear(2004) A/B 비교",
+      "A_arm": "nlshrink nonlinear shrinkage (QuEST)",
+      "B_arm": "corpcor::cov.shrink() linear shrinkage",
+      "success_criterion": "A arm이 SR 또는 MDD에서 유의미한 우위(SR +0.03 또는 MDD -1%p). 미달 시 linear 채택(구현 단순성).",
+      "academic_basis": "Ledoit & Wolf (2020): nonlinear > linear는 N>=50에서 robust. N=20에서는 실증 비교 필요."
+    },
+    "M14_C_c19_composition": {
+      "priority": 3,
+      "category": "factor_weight",
+      "description": "C19(SUE+ESBR+EPS1m+TP_Gap) vs C19_modified(SUE+ESBR+EPS1m+EPS3m) A/B 비교",
+      "A_arm": "원본 C19 (TP_Gap, ICIR 0.117)",
+      "B_arm": "수정 C19 (EPS_Chg_3m, ICIR 0.400)",
+      "success_criterion": "수정 C19의 실현 ICIR >= 원본 ICIR, 또는 STR_1550/1555 대비 상관 0.05+ 감소",
+      "risk_note": "C02(EPS_Chg_1m)과 C03(EPS_Chg_3m) intra-composite 상관이 0.5+ 이면 dilution 위험(L-725). IC 개선 없으면 원본 유지."
+    },
+    "M14_D_gerber_threshold": {
+      "priority": 4,
+      "category": "stock_weight",
+      "description": "Gerber threshold 0.5 고정 vs expanding median(|ret|) 동적 도출",
+      "A_arm": "고정 0.5 (M11 검증값)",
+      "B_arm": "expanding median(|ret|) 동적 threshold",
+      "success_criterion": "동적 threshold가 SR 또는 TO에서 개선. PIT compliance 확인(expanding window + t-1 lag).",
+      "academic_basis": "Gerber et al. (2022)은 고정 threshold만 사용. 동적 도출은 자체 설계이므로 실증 검증 필수.",
+      "implementation": "각 종목 i에 대해 median(|r_i,1|, ..., |r_i,t-1|) 계산 -> 20종목의 stock-level median을 cross-sectional median으로 집약. 최소 120 거래일 warmup. warmup 전 고정 0.5."
+    }
+  },
+
+  "mutation_category": "structural",
+  "axis": "stock_weight (covariance estimator 대체)",
+  "complexity_delta": "0 (RMT denoise 제거 + LW3 추가. overlay 순감소(VT 제거). 순 복잡도 유사 또는 소폭 감소)",
+
+  "pit_compliance": {
+    "C1": "expanding window: LW3는 60일 rolling returns 사용(full-sample 아님). Gerber threshold도 expanding/고정.",
+    "C2": "same-day circular 금지: HRP 가중은 t-1 lag returns (Date < sig_date). 신호일 당일 수익률 미사용.",
+    "C5": "overlay t-1: Regime Engine v7.1은 t-1 lagged MRS 사용(build_daily_regime).",
+    "C9": "VT 미사용으로 C9 해당 없음. DD 미사용. Regime lag 준수.",
+    "C11": "FRED 시간축: Regime Engine v7.1 내부에서 expanding percentile + t-1 lag 처리(L-442). 외부 데이터 직접 접근 없음.",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date.",
+    "C15": "Consensus parquet(SUE, ESBR, EPS_Chg_1m, TP_Gap)은 기존 M11 경로 사용."
+  },
+
+  "implementation_plan": {
+    "s1_code_changes": [
+      "M11 run_all.R 복사 후 rmt_denoise_cov() 함수를 lw3_shrink_cov()로 교체",
+      "lw3_shrink_cov(): nlshrink 패키지 사용. 실패 시 corpcor::cov.shrink() fallback. 이중 실패 시 sample cov.",
+      "compute_hrp_weights() 내 use_rmt=TRUE를 use_lw3=TRUE로 변경. 함수 시그니처 조정.",
+      "VT overlay 코드 블록 완전 제거(Step 5에서 Regime overlay만 유지).",
+      "M12에서 추가되었던 VT 관련 변수(vol_expand, exposure_vt 등) 모두 제거."
+    ],
+    "s1_commission": "15bps (0.0015)",
+    "s1_benchmark": "KOSPI200",
+    "s1_buffer": "keep_n=35, entry_n=20 (M11과 동일)"
+  },
+
+  "success_criteria": {
+    "primary": {"SR": ">=1.10", "CAGR": ">=19%", "MDD": "<=34%", "TO": "<600%"},
+    "stretch": {"SR": ">=1.20", "MDD": "<=30%"},
+    "hard_fail": {"MDD": ">45%", "TO": ">600%"}
+  },
+
+  "differentiation_from_existing": {
+    "vs_M11_rmt": "RMT denoise → LW3 nonlinear shrinkage 대체. 공분산 추정 방법만 변경. VT 상태 동일(미적용).",
+    "vs_M12_vt": "VT overlay 완전 제거(TO hard fail 해소). RMT → LW3 추가 변경.",
+    "vs_M13_lw_vt15": "VT 15% 제거. C19 구성 유지(C03 대체는 S5로 이관). Gerber threshold 고정(동적은 S5). 더 보수적이고 focused한 단일 축 변경.",
+    "vs_STR_1550": "EW가중 + DD overlay vs HRP가중(LW3) + Regime overlay. 가중 메커니즘과 위험관리 완전히 상이.",
+    "vs_STR_1555": "3F Score Blend + RP + DD+Regime vs C19 단독 + HRP(LW3) + Regime. 팩터 구성, 가중, overlay 모두 상이."
+  },
+
+  "scout_confidence": {
+    "score": 75,
+    "rationale": "M11 대비 단일 축(공분산 추정) 변경으로 focused하고 검증 가능한 가설. VT 제거로 TO hard fail 확실히 해소. STR_1421 실증(shrinkage+HRP: SR 1.408)이 shrinkage의 유효성을 지지. 그러나 (1) N=20에서 LW3 vs linear 우위 불확실(-5점), (2) MDD 25% 목표 달성 불가능(VT 없이 33% 수준 유지 예상, -10점), (3) STR_1550/1555 대비 분산 효과 제한적(-10점). CAGR 19%+ 유지 가능성이 강점."
+  },
+
+  "role_bias_tag": "RoleBias_Core"
+}

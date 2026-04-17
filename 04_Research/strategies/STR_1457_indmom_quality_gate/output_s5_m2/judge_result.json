@@ -1,0 +1,72 @@
+{
+  "strategy_id": "STR_1457_s5_m2",
+  "variant": "S5_M2_DD5_15",
+  "judge_version": "V7.0",
+  "timestamp": "2026-03-26 15:30:00",
+  "gates": {
+    "gate0": {
+      "name": "PIT / Lookahead",
+      "pass": true,
+      "details": "detect_lookahead CLEAN on all 3 files. Manual C1-C11 verified. DD brake uses dd_lag (t-1 lagged, line 13). No full-sample stats (C1). No same-day circular (C2/C8/C9). AvgTV20 properly lagged (C10). No FRED data (C11 N/A). Z_Score_Aligned used (C13). Arrow dataset access (C15). Pure overlay on clean base signal."
+    },
+    "gate1": {
+      "name": "Implementation",
+      "pass": true,
+      "details": "N=30, commission=15bps, LIQ>=2e8 (via base run_all.R). Turnover=140.8% (<600%). DD overlay is deterministic linear ramp (DD_START=5%, DD_FULL=15%, DD_MIN_EXP=0.35). No additional parameters to overfit."
+    },
+    "gate2": {
+      "name": "Robustness",
+      "pass": false,
+      "details": "OOS retention 0.30 (IS SR 0.341 / OOS SR 0.101) -- severely degraded. Rolling3Y_Pos=52.2% (barely above coin flip). Stress=3/3 outperform (strong). MaxConsecNegAlpha=10 months (poor). Alpha trend improving (recent 3Y SR 0.487 vs full 0.279) but base is too weak."
+    },
+    "gate3": {
+      "name": "Performance",
+      "pass": false,
+      "details": "SR 0.279 (FAIL, target 0.8+). CAGR 2.77% (FAIL, target 16%). MDD 24.17% (PASS, <25%). IR -0.337 (FAIL, underperforms KOSPI200). Calmar 0.115. The aggressive DD brake successfully compressed MDD from 64.3% to 24.2% but destroyed returns entirely -- CAGR crushed from 8.45% to 2.77%."
+    },
+    "gate4": {
+      "name": "Statistical",
+      "pass": false,
+      "details": "FMB Score t-stat=1.352 (not significant, p>0.1). IC mean positive but low. DSR not available. FF5 alpha: base factor_engine Score FMB t=1.35 -- no statistical alpha. The underlying IndMom+QualityGate signal is too weak in KR market for DD overlay to salvage."
+    },
+    "gate5": {
+      "name": "Diversification / Role Honesty",
+      "pass": false,
+      "details": "Claimed role: diversifier. BM_Corr=0.476 (moderate). However, with SR 0.279 and negative IR, this adds no diversification value. A diversifier must still contribute positive expected return; M2 underperforms both KOSPI200 and risk-free. Role honesty: diversifier claim is not dishonest, but the strategy fails to deliver on any role."
+    }
+  },
+  "verdict": {
+    "grade": "C",
+    "pass": false,
+    "score": 29.1,
+    "reasons": [
+      "CAGR 2.77% -- far below 16% target and below risk-free",
+      "SR 0.279 -- below minimum threshold",
+      "Negative IR -0.337 -- underperforms KOSPI200",
+      "OOS retention 0.30 -- severe IS/OOS degradation",
+      "DD 5/15 overlay too aggressive -- destroyed return while achieving MDD target",
+      "FMB Score t-stat 1.35 -- no statistical alpha",
+      "10 consecutive negative alpha months"
+    ]
+  },
+  "comparison": {
+    "vs_base": "Base SR 0.324 / CAGR 8.45% / MDD 64.3%. M2 improved MDD dramatically (-40pp) but CAGR lost 67%. Net: worse risk-adjusted (SR 0.279 < 0.324).",
+    "vs_dd722": "DD722 variant SR 0.325 / CAGR 4.57% / MDD 37.4% dominates M2 on return with acceptable MDD.",
+    "vs_other_mutations": "M2 has best MDD (24.2%) but worst CAGR among all S5 variants. The Sharpe-MDD tradeoff is unfavorable -- too much return sacrificed for drawdown control.",
+    "mutation_verdict": "DD 5/15 is over-engineered for a weak base signal. The 35% minimum exposure floor means the strategy spends most of its time at reduced exposure, compounding the already low alpha."
+  },
+  "strengths": [
+    "MDD 24.17% -- only variant meeting <25% target",
+    "Stress 3/3 outperform in crisis periods",
+    "PIT fully clean, no lookahead violations",
+    "Recent 3Y improving (SR 0.487 vs 0.279 full)"
+  ],
+  "weaknesses": [
+    "CAGR 2.77% below risk-free -- negative real return",
+    "Negative IR: KOSPI200 outperforms on every horizon",
+    "OOS retention 0.30 -- overfitting concern in IS period",
+    "DD overlay destroys the little alpha that existed",
+    "FMB t-stat 1.35 -- no significant factor premium"
+  ],
+  "recommendation": "DISCARD. The underlying IndMom+QualityGate signal in KR market is too weak (FMB t=1.35) for any DD overlay to improve. M2's aggressive 5/15 DD achieves target MDD but at catastrophic return cost. If IndMom is to be pursued, it needs a fundamentally different construction (e.g., pure sector rotation without stock selection) rather than post-hoc drawdown management."
+}

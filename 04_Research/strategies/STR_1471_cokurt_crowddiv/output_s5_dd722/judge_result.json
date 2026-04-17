@@ -1,0 +1,91 @@
+{
+  "strategy_id": "STR_1471_s5_dd722",
+  "variant": "output_s5_dd722",
+  "judge_version": "V7.0",
+  "timestamp": "2026-03-26 10:15:00",
+  "parent_strategy": "STR_1471_cokurt_crowddiv (pure factor: SR 0.645, CAGR 12.6%, MDD 50.9%)",
+  "s6_entry": {
+    "ok": true,
+    "reason": "S3 orthogonality + S4 integration artifacts present in stage_artifacts/"
+  },
+  "gates": {
+    "gate0": {
+      "name": "PIT / Lookahead Detection",
+      "pass": true,
+      "details": "detect_lookahead PASS on all 3 files (run_s5_dd722.R, factor_engine.R, run_all.R). Manual C1-C11 verification: C1(no full-sample stats)=PASS, C2(DD brake uses dd_lag=c(0,dd_pct[-n_f]) 1-day lag)=PASS, C3(no same-period aggregate)=PASS, C4(no financial statement used)=PASS, C5(DD overlay t-1)=PASS, C6(survivorship handled by RAWDATA)=PASS, C7(patterns clean)=PASS, C8(no FM weight)=PASS, C9(DD brake lagged)=PASS, C10(AvgTV20 shift(1L) lagged)=PASS, C11(no FRED data)=PASS, C13(Z_Score_Aligned)=PASS, C15(Arrow bulk load)=PASS. Cokurtosis factor loaded from Factor DB via expanding-window computation — no higher-moment lookahead."
+    },
+    "gate1": {
+      "name": "Implementation",
+      "pass": true,
+      "details": "N=30, commission=15bps, LIQ>=2e8, buffer_zone(50/25). DD parameters fixed (7/22/0.30) — not data-mined. Turnover=281% (<600%). Pure factor EW baseline with post-hoc DD overlay."
+    },
+    "gate2": {
+      "name": "Robustness",
+      "pass": false,
+      "details": "OOS retention=0.834 (good). Rolling3Y_Pos=59.4% (marginal). Stress=3/3 outperform (excellent). BUT: DD 7/22 degraded SR from 0.645->0.272 (58% loss). Alpha trend ratio 1.38 (recent improving). The DD brake is excessively aggressive — cutting exposure too early (7% start) and too deep (min 30% exposure at 22% DD), destroying return while MDD only improved 50.9%->41.3%."
+    },
+    "gate3": {
+      "name": "Performance",
+      "pass": false,
+      "details": "SR 0.272 (FAIL, target 0.8+). CAGR 3.86% (FAIL, target 16%). MDD 41.32% (FAIL, target <25%). IR -0.378 (negative — BM underperform). Calmar 0.093. BM_Corr 0.769. The DD brake converted a mediocre-but-positive-alpha strategy into a near-cash position during drawdowns, killing compounding."
+    },
+    "gate4": {
+      "name": "Statistical",
+      "pass": false,
+      "details": "FMB Score lambda t=1.88 (not significant at 5%). DSR not available. Parent strategy FMB also marginal. No FF5 alpha test for S5 variant. Recent 3Y SR=0.374 shows weak recent performance."
+    },
+    "gate5": {
+      "name": "Diversification",
+      "pass": false,
+      "details": "No Grade A composite cache available for correlation check. BM_Corr=0.769 indicates moderate beta exposure remains. Strategy offers no meaningful alpha contribution at current performance level."
+    }
+  },
+  "verdict": {
+    "grade": "C",
+    "pass": false,
+    "score": 39.5,
+    "reasons": [
+      "DD 7/22 brake destroyed alpha: SR 0.645 -> 0.272 (58% degradation)",
+      "CAGR 3.86% — barely above risk-free, far below 16% target",
+      "MDD 41.3% still exceeds 25% target despite aggressive DD brake",
+      "Negative IR (-0.378): underperforming KOSPI benchmark",
+      "FMB Score t=1.88 not statistically significant",
+      "DD calibration (7/22) too aggressive — starts cutting at only 7% DD"
+    ]
+  },
+  "dd_calibration_analysis": {
+    "dd_start": 0.07,
+    "dd_full": 0.22,
+    "dd_min_exposure": 0.30,
+    "parent_sr": 0.645,
+    "variant_sr": 0.272,
+    "sr_degradation_pct": 57.8,
+    "parent_mdd": 50.92,
+    "variant_mdd": 41.32,
+    "mdd_improvement_pct": 18.8,
+    "diagnosis": "DD 7/22 trades 58% of SR for only 19% MDD reduction. Catastrophic risk-return tradeoff. DD_START=7% triggers far too early — normal market corrections activate the brake and destroy compounding. Wider parameters (e.g., DD 15/30) or abandoning DD overlay recommended."
+  },
+  "key_metrics": {
+    "sharpe": 0.272,
+    "cagr": 3.86,
+    "mdd": 41.32,
+    "ir": -0.378,
+    "oos_retention": 0.834,
+    "turnover": 281.0,
+    "bm_corr": 0.769,
+    "stress_outperform": "3/3"
+  },
+  "strengths": [
+    "PIT fully clean (C1-C15 all PASS)",
+    "OOS retention 0.834 (robust out-of-sample)",
+    "Stress outperformance 3/3 (DD brake helps in crises)",
+    "Alpha trend improving (recent/full ratio 1.38)"
+  ],
+  "weaknesses": [
+    "DD 7/22 too aggressive — 58% SR destruction for 19% MDD improvement",
+    "CAGR 3.86% near risk-free rate",
+    "Negative IR — loses to benchmark",
+    "Parent strategy (pure factor) already weak (SR 0.645, MDD 50.9%)",
+    "Cokurtosis + Crowd Diversity as gate-only lacks standalone alpha (FMB t=1.88)"
+  ]
+}

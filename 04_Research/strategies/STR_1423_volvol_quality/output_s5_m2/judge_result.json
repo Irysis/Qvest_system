@@ -1,0 +1,48 @@
+{
+  "strategy_id": "STR_1423_volvol_quality_s5_m2",
+  "judge_timestamp": "2026-03-26 09:42:00",
+  "judge_version": "v7.0",
+  "gates": {
+    "gate0_pit": {
+      "pass": true,
+      "detail": "Lookahead detector CLEAN on both run_s5_m2.R (40 lines) and factor_engine.R (78 lines). Manual C1-C11 all pass: DD brake properly lagged (dd_lag = c(0, dd_pct[-n_f])), liquidity filter AvgTV20 lagged via shift(1L), Z_Score_Aligned from Factor DB (no manual sign flip), no full-sample stats, no same-day circular references."
+    },
+    "gate1_performance": {
+      "pass": true,
+      "detail": "SR=0.340, CAGR=3.50%, MDD=26.48%, IR=-0.324, Calmar=0.132. No hard_fail. Score 45.7 (Grade B). Return axis extremely weak (1/100 pts): CAGR 3.5% far below 16% target, IR negative. However Risk (47), Robustness (69), Implementability (84), Diversification (71) axes are reasonable. Stress outperformance 3/3 is notable strength."
+    },
+    "gate2_stage_artifacts": {
+      "pass": true,
+      "detail": "All required artifacts present: s0_record (x2), s1_construction, s2_profile, s3_orthogonality (D41_Q07), s4_integration (D41+Q07), s5_research_slate. S3+S4 exist — S6 entry permitted."
+    },
+    "gate3_role_honesty": {
+      "pass": false,
+      "claimed_role": "diversifier",
+      "actual_behavior": "weak_diversifier_with_caveats",
+      "detail": "BM_Corr=0.601 is moderately high for a diversifier (ideally <0.4). Stress 3/3 outperformance is genuine diversifier behavior. However, CAGR 3.5% barely exceeds risk-free, and IR=-0.324 means it consistently underperforms BM. A true diversifier should provide uncorrelated returns, not just lower-beta BM tracking. The 0.601 correlation suggests this is more of a defensive low-vol strategy than a genuine diversifier. Role honesty: PARTIAL — stress behavior is diversifier-like, but correlation profile does not fully support the claim."
+    },
+    "gate4_statistical": {
+      "pass": true,
+      "detail": "DSR not available (module absent). OOS retention ratio 0.782 (IS SR 0.367, OOS SR 0.287) — robust, no severe overfitting. Rolling 3Y Sharpe positive ratio 59.4% — above 50% threshold. Alpha trend ratio 1.91 (recent 3Y SR 0.650 vs full 0.340) — improving pattern, though low absolute level. 6M hit rate 57.4%, 12M hit rate 57.6%."
+    },
+    "gate5_ff5": {
+      "pass": false,
+      "detail": "FF5 alpha results not available in output_s5_m2/. Not verified. Cannot confirm factor-model alpha independence."
+    }
+  },
+  "verdict": {
+    "pass": true,
+    "grade": "B",
+    "score": 45.7,
+    "fail_reasons": [
+      "Gate 3: BM_Corr 0.601 too high for 'diversifier' role claim — partial role honesty only",
+      "Gate 5: FF5 alpha not verified (no data)"
+    ],
+    "recommendation": "Keep as B-tier ensemble candidate. The DD 5/15 aggressive overlay on D01+Q07 base provides genuine crisis protection (stress 3/3) but sacrifices too much return (CAGR 3.5%, IR -0.324). For ensemble use: acceptable as a tail-hedge sleeve if combined with high-return core alphas. Recommend: (1) Run FF5 regression to confirm independence, (2) Reassess role label — 'defense' may be more accurate than 'diversifier' given BM_Corr 0.601, (3) Consider relaxing DD parameters (e.g., DD_START=0.07, DD_FULL=0.20) to recover some return."
+  },
+  "role_honesty_audit": {
+    "claimed_role": "diversifier",
+    "verified": false,
+    "evidence": "BM_Corr=0.601 exceeds diversifier threshold (~0.4). Stress 3/3 outperformance supports crisis-hedge utility, but the strategy tracks the benchmark too closely in normal markets (correlation 0.601) to qualify as a true diversifier. The negative IR (-0.324) means persistent BM underperformance — more consistent with a 'defense' role that trades return for downside protection, not a 'diversifier' that provides orthogonal alpha. Suggest reclassifying as 'defense'."
+  }
+}

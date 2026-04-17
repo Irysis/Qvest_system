@@ -1,0 +1,56 @@
+{
+  "role": "quant",
+  "factor_id": "H_1643_REVISED",
+  "debate_round": 1,
+  "verified_at": "2026-04-12",
+  "score": 13,
+  "score_breakdown": {
+    "icir_pass": 2,
+    "internal_corr": 2,
+    "c19_corr": 2,
+    "defense_ic": 4,
+    "data_avail": 3
+  },
+  "arguments": [
+    "Q07_Earnings_Stability 전기간 ICIR 0.382로 ICIR 허들(≥0.20) 통과, GFC 구간 ICIR 0.210·Rate_Hike 구간 ICIR 0.398로 복수 스트레스에서 일관된 방어력 확인. 단, 주장치(위기 ICIR 0.753)는 실측 재현 불가 — 전체 stress 합산 ICIR 0.228에 그침. COVID IC_mean +0.013으로 정방향 유지하나 표본 6건으로 통계적 유의성 불충분.",
+    "D25_Left_Tail_Beta 전기간 ICIR 0.119로 허들 미달(주장치 0.393 대비 실측 0.075~0.168 구간). EU_Debt 구간 ICIR -0.159, COVID 구간 ICIR -0.011로 일부 스트레스에서 음수 반전 발생. 데이터 시작 2005-01-31로 China_Shock(2015~2016) 이전 구간은 커버하나, 가장 극단적 하락 구간(GFC ICIR 0.065)에서도 방어력 미약.",
+    "D25 x Q07 IC 상관 0.430으로 분산 효과 제한적 — 상관 0.30 이하 기대에서 유의미하게 상회. Q07 x Q02_ROE IC 상관 0.407로 Quality family 오염 위험 존재. C19_Earnings_Momentum은 DB 내 해당 팩터명 부재(C19_Composite_Earnings와 Q07 상관은 0.184로 낮음). 두 팩터의 공통 관측 기간은 163개월(2010-11~2026-02)로 백테스트 길이는 충분하나 구조적 내부 상관이 포트폴리오 효율을 저해할 수 있음."
+  ],
+  "concern": "D25의 실측 ICIR(0.119)이 주장치(0.393)의 30% 수준에 불과하며, EU_Debt·COVID 구간에서 음수 전환됨. D25·Q07 IC 상관 0.430은 동일 방향 팩터로 작동할 가능성을 시사하므로, 55:45 배분이 실질적 분산 효과를 제공하는지 의문. Q07의 Quality family 오염(Q02_ROE 상관 0.407)으로 인해 Core Alpha 전략과의 중복 위험도 점검 필요.",
+  "conditions": [
+    "D25 ICIR이 0.20 이상인 하위 기간(특정 Regime)이 존재하는지 4-Regime × D25 IC 교차분석으로 진입 조건 정의할 것 — RISK_ON 구간 ICIR 0.147로 전 Regime에서 일관성 낮음",
+    "D25 x Q07 IC 상관이 스트레스 구간에서도 0.430 유지되는지 확인 — 위기 시 동반 강화 또는 동반 약화 패턴이면 분산 효과 없음. 스트레스 구간 한정 상관 추가 계산 필요",
+    "Q07의 GFC ICIR 0.210·Rate_Hike ICIR 0.398 기준 충족이지만 EU_Debt ICIR 0.016으로 유럽 재정위기 방어력 미흡 — 한국 특유의 외생 충격(EM 자본 유출) 구간에서도 방어력 검증 필요"
+  ],
+  "measured_values": {
+    "D25_icir_overall": 0.1185,
+    "Q07_icir_overall": 0.3817,
+    "D25_ic_mean": 0.0129,
+    "Q07_ic_mean": 0.0399,
+    "D25_Q07_ic_correlation": 0.4298,
+    "Q07_Q02_ROE_ic_correlation": 0.4069,
+    "Q07_C19_Composite_ic_correlation": 0.1844,
+    "D25_icir_GFC": 0.0654,
+    "D25_icir_EU_Debt": -0.1589,
+    "D25_icir_COVID": -0.0105,
+    "D25_icir_Rate_Hike": 0.1675,
+    "Q07_icir_GFC": 0.2102,
+    "Q07_icir_EU_Debt": 0.0156,
+    "Q07_icir_COVID": 0.3631,
+    "Q07_icir_Rate_Hike": 0.3978,
+    "Q07_icir_all_stress_combined": 0.2282,
+    "D25_data_start": "2005-01-31",
+    "D25_obs_months": 188,
+    "Q07_obs_months": 163,
+    "common_obs_months": 163
+  },
+  "claimed_vs_actual": {
+    "D25_claimed_stress_icir": 0.393,
+    "D25_actual_stress_icir_GFC": 0.065,
+    "D25_claim_gap": "실측 GFC ICIR이 주장치의 16.5% 수준",
+    "Q07_claimed_stress_icir": 0.753,
+    "Q07_actual_stress_icir_all_combined": 0.228,
+    "Q07_claim_gap": "실측 합산 ICIR이 주장치의 30.3% 수준"
+  },
+  "verdict_summary": "Q07은 허들 통과, D25는 실측 ICIR 0.119로 허들 미달 + 일부 스트레스 구간 음수. 두 팩터 간 IC 상관 0.430으로 분산 효과 제한적. 배분 비율 재검토 및 D25 진입 조건 명확화 필요."
+}

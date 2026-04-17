@@ -1,0 +1,67 @@
+{
+  "hypothesis_id": "H_1659",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 62.5,
+  "attempt": 2,
+  "max_attempts": 3,
+  "timestamp": "2026-04-11T03:00:00",
+  "debate_format": "5-person_v52",
+  "debaters": [
+    {
+      "agent_id": "codex_critic_20260411_023000",
+      "role": "codex_critic",
+      "score": 9,
+      "max": 20,
+      "findings": "Feature overlap 0% but beta/regime sharing unsolved. PIT concerns on feature family assignment being post-hoc. Kill: filing lag lookahead, high-beta rebound regime, IC decay persistence.",
+      "spawn_method": "bash_codex_companion"
+    },
+    {
+      "agent_id": "riskmgr-rf-v2_20260411_023001",
+      "role": "risk_manager",
+      "score": 11,
+      "max": 20,
+      "findings": "Fundamental-only RF의 96F→79F 실제 풀에서 ICIR 0.20 달성 가능성 불확실했으나 Quant OOS 실측으로 1.109 확인. MI 50/79 무력화 우려, L-106 beta 지배 미해결.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "governor-rf-v2_20260411_023002",
+      "role": "governor",
+      "score": 13,
+      "max": 20,
+      "findings": "Family split 설계 인정. SR gap 0.807 기여 가능. ML_complexity 66.7%이나 n<=3 면제. 앵커(C19)-RF(V/Q/AC) 종목 overlap 우려 미해소. 15% 이하 배분 권장.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "quant-rf-v2_20260411_023003",
+      "role": "quant",
+      "score": 17,
+      "max": 20,
+      "findings": "OOS 2023 실측: IC_UA ICIR=1.109, Harvey t=3.840. RF Pool 실제 79개(registry 96 vs daily 79). ranger type=se 작동 확인. Overlap=0 확인. daily 팩터 6개 혼입 → quarterly 필터 필요.",
+      "spawn_method": "agent_tool"
+    },
+    {
+      "agent_id": "academic-rf-v2_20260411_023004",
+      "role": "academic",
+      "score": 12.5,
+      "max": 20,
+      "findings": "Liu et al.(2026) preprint이나 저자 신뢰도 높음. REVISE 반영 품질 우수(kappa 고정, 사전등록). 한국 fundamental-only RF 실증 부재. Family split 자체의 학술 근거는 engineering judgment.",
+      "spawn_method": "agent_tool"
+    }
+  ],
+  "conditions": [
+    "S1-B(kappa=1.0) ICIR >= 0.20 필수. Quant OOS 예비 테스트 1.109 확인, 본번 500 trees/5 seeds 재확인.",
+    "RF Pool에서 update_freq='daily' 팩터 6개 제외 → quarterly/monthly만 사용.",
+    "MI top50 대신 top30~40 검토 (79개 풀에서 50개=63% → noise filtering 약화).",
+    "S2에서 RF-앵커(STR_1631) 종목 overlap < 50% + rolling beta 차이 > 0.05 확인.",
+    "S2에서 RF-XGB(STR_1656) 수익률 상관 < 0.50 확인.",
+    "3-sleeve PG2 배분 시 RF 비중 15% 이하로 시작."
+  ],
+  "quant_oos_evidence": {
+    "period": "2023-01 ~ 2023-12",
+    "ic_ua_mean": 0.0763,
+    "ic_ua_icir": 1.109,
+    "harvey_t": 3.840,
+    "ic_positive_pct": 83.3,
+    "config": "100 trees, 3 seeds, 79F fundamental pool, kappa=1.0"
+  }
+}

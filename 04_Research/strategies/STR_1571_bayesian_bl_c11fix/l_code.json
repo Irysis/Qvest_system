@@ -1,0 +1,11 @@
+{
+  "l_code": "L-810",
+  "strategy_id": "STR_1571",
+  "grade": "A",
+  "lesson_text": "STR_1029 Bayesian BL C11 fix: MRS same-month access in run_all.R Phase 4 and consgate_pure_engine.R regime check replaced with t-1 month (prev_ym). FRED monthly data published month-end so same-month = lookahead. Impact: SR 1.286→1.198 (-6.8%), CAGR 19.5→18.1%, MDD 28.0→31.81%. BL core (Ledoit-Wolf shrinkage cov + factor score views) is inherently PIT clean since it uses trailing 120d returns. The MRS overlay timing advantage from same-month access was ~7% of SR. Pattern consistent with STR_1562 where C11 fix had minimal impact. MDD increase from 28→32% suggests MRS same-month was providing slight crisis avoidance benefit via lookahead.",
+  "core_reference": "He & Litterman (1999) 'The Intuition Behind Black-Litterman Model Portfolios'; Ledoit & Wolf (2004) shrinkage estimator; QEPM §10 C11 data time-axis verification",
+  "tags": ["c11_fix", "mrs_lag", "bayesian_bl", "pit_enforcement", "fred_timing", "5sleeve", "ledoit_wolf"],
+  "timestamp": "2026-03-28T19:05:00+09:00",
+  "condition": "C11 MRS same-month FRED access causes ~7% SR overestimation in MRS overlay strategies. Always use t-1 month for FRED-derived regime signals.",
+  "related_lcodes": ["L-565", "L-441", "L-450"]
+}

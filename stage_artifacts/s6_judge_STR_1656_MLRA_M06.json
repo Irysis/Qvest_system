@@ -1,0 +1,262 @@
+{
+  "stage": "S6_Verification",
+  "strategy_id": "STR_1656_MLRA",
+  "mutation_id": "M06",
+  "mutation_label": "HRP_VD_MRS20",
+  "timestamp": "2026-04-10T23:30:00",
+  "judge": "Judge",
+  "version": "1.0.0",
+  "description": "XGBoost 5-seed ML ensemble (S1-B, RE* removed) + HRP weighting + VD+ MRS20 regime overlay (50% exposure when MRS>=20). Diversifier role.",
+
+  "sg_check_s6_entry": {
+    "pass": true,
+    "s0_record": "stage_artifacts/s0_record.json (H_MLRA_001, revision 3)",
+    "s1_construction": "s1_construction_STR_1656_MLRA.json",
+    "s2_profile": "s2_profile_STR_1656_MLRA.json",
+    "s4_marginal": "s4_marginal_STR_1656_MLRA.json (delta_SR +0.173, corr 0.459)",
+    "s5_research_slate": "s5_research_slate_STR_1656_MLRA.json",
+    "s5_risk_assessment": "s5_risk_assessment_STR_1656_MLRA.json",
+    "mutations_attempted": 11,
+    "f_category_count": 4,
+    "synthesis_tested": true,
+    "s5_phase4_selection": "s5_phase4_top_selection.json (top1)",
+    "note": "S5->S6 entry conditions all satisfied. M06 is Phase 4 top1 recommendation."
+  },
+
+  "gate_0_basic_qualification": {
+    "verdict": "PASS",
+    "ICIR": {"value": 0.8496, "threshold": 0.20, "pass": true},
+    "ICIR_5Y": {"value": 0.7382, "note": "2021-2025"},
+    "ICIR_3Y": {"value": 0.5414, "note": "2023-2025"},
+    "IC_mean": 0.0809,
+    "IC_tstat": {"value": 12.05, "threshold": 3.0, "pass": true},
+    "hard_fail_MDD": {"value": -42.23, "threshold": -45.0, "pass": true, "margin": 2.77, "WARNING": "ONLY 2.77%p margin to hard fail boundary. Any rebalancing noise or market shock could breach -45%."},
+    "hard_fail_TO": {"value": "est. ~150%", "threshold": 600, "pass": true},
+    "backtest_years": {"value": 17.8, "start": "2008-02-05", "end": "2026-04-07"}
+  },
+
+  "gate_1_pit_compliance": {
+    "verdict": "PASS",
+    "C1_expanding_window": {
+      "pass": true,
+      "evidence": "run_all.R L254-260: Expanding IS window confirmed."
+    },
+    "C2_same_day_circular": {
+      "pass": true,
+      "evidence": "Strict OOS > IS temporal separation. 2-year gap between IS end and OOS start."
+    },
+    "C4_financial_lag": {
+      "pass": true,
+      "note": "Daily factor DB Z_Score_Aligned with built-in publication lag."
+    },
+    "C5_overlay_t1": {
+      "pass": true,
+      "evidence": "sprint3_overlay.R L171: high_risk_lag := shift(high_risk, 1, fill=0). MRS signal from yesterday applied to today's exposure."
+    },
+    "C9_dd_vt_lag": {
+      "pass": true,
+      "note": "M06 uses MRS regime only (no DD component). MRS lag via shift(high_risk, 1) is sufficient. No DD/VT lag needed for M06."
+    },
+    "C13_zscore_aligned": {
+      "pass": true,
+      "evidence": "Daily DB Z_Score_Aligned. No manual flip."
+    },
+    "C14_fwd_ret": {
+      "pass": true,
+      "evidence": "fwd_ret_21d IS target only. Not used in OOS."
+    },
+    "C15_factor_db": {
+      "pass": true,
+      "note": "Arrow open_dataset on daily DB parquet. Validated pipeline."
+    },
+    "regime_signal_integrity": {
+      "pass": true,
+      "evidence": "sprint3_overlay.R L41-42: rolling join (LOCF) for regime signal. Uses same day or most recent past regime value. MRS is regime_daily_v2.parquet produced by regime_engine_daily.R with built-in t-1 lag.",
+      "note": "Regime Engine v7.1 confirmed PIT-compliant (L-442). MRS uses expanding percentile threshold + slow-crisis defense."
+    },
+    "pit_3_questions": {
+      "q1_data_available": "YES - MRS signal from regime_engine_daily.R uses t-1 lagged data. Threshold 20 is a design constant.",
+      "q2_future_influence": "NO - MRS threshold 20 selected from regime distribution analysis, not performance optimization.",
+      "q3_result_bias": "NO - VD+ overlay is a standard risk management technique (Moreira & Muir 2017). Not data-mined."
+    }
+  },
+
+  "gate_2_statistical_significance": {
+    "verdict": "PASS",
+    "sharpe_ratio": {"value": 1.2323, "annualized": true},
+    "t_stat_SR": {"value": 5.20, "threshold": 3.0, "pass": true},
+    "IC_t_stat": {"value": 12.05, "threshold": 3.0, "pass": true},
+    "DSR": {
+      "value": 0.6182,
+      "threshold": 0.95,
+      "pass": false,
+      "M_trials": 11,
+      "note": "DSR < 0.95 similar to M05. Extreme kurtosis (290) from VD+ 50% exposure days (25.9% of sample). IC t-stat 12.05 provides robust alpha confirmation. DSR failure is flagged but not disqualifying for diversifier role.",
+      "skewness": 8.7501,
+      "excess_kurtosis": 289.9723
+    }
+  },
+
+  "gate_3_risk_factor_alpha": {
+    "verdict": "CONDITIONAL_PASS",
+    "ff5_alpha": {
+      "status": "NOT_COMPUTED",
+      "substitute": "IC t-stat 12.05 confirms cross-sectional alpha."
+    }
+  },
+
+  "gate_4_hurdle_v22": {
+    "verdict": "PASS",
+    "score": {
+      "total": 63.8,
+      "CAGR_component": 30.0,
+      "SR_component": 20.5,
+      "MDD_component": 1.2,
+      "TO_component": 12.0,
+      "threshold": 40,
+      "note": "MDD component very low (1.2/20) because MDD -42.2% is close to 45% cutoff."
+    },
+    "performance": {
+      "CAGR_pct": 30.96,
+      "SR": 1.2323,
+      "MDD_pct": -42.23,
+      "Sortino": 1.9026,
+      "VaR95_daily": -0.0172,
+      "VaR99_daily": -0.0324,
+      "CVaR95_daily": -0.0285,
+      "CVaR99_daily": -0.0521
+    },
+    "grade_criteria": {
+      "hard_fail": false,
+      "score_ge_40": true,
+      "CAGR_ge_16": true,
+      "SR_ge_0.8": true,
+      "all_pass": true
+    },
+    "grade": "A",
+    "grade_v21": "A",
+    "saturation_penalty": {"applied": false},
+    "novelty_bonus": {"applied": false}
+  },
+
+  "gate_5_role_honesty_audit": {
+    "verdict": "FAIL",
+    "expected_role": "diversifier",
+    "actual_behavior": {
+      "anchor_corr_full": 0.4083,
+      "anchor_corr_crisis_gfc_covid": 0.7050,
+      "anchor_corr_normal": 0.3856,
+      "anchor_corr_gfc": 0.6779,
+      "anchor_corr_covid": 0.7631,
+      "anchor_corr_rate2022": 0.5522,
+      "full_beta": 0.4951
+    },
+    "diversifier_criteria": {
+      "corr_full_lt_0.50": {"value": 0.4083, "pass": true},
+      "delta_SR_positive": {"value": 0.2779, "pass": true},
+      "crisis_corr_not_rising": {
+        "pass": false,
+        "CRITICAL": "Crisis correlation 0.705 >> normal correlation 0.386. Diversification benefit COLLAPSES exactly when needed most. COVID corr 0.763 = near-perfect co-movement during crash."
+      }
+    },
+    "role_honesty_finding": "ROLE HONESTY VIOLATION: M06 claims diversifier role but exhibits CRISIS CORRELATION SURGE. Normal period corr 0.386 (acceptable) explodes to 0.705 during GFC+COVID. This is the opposite of diversifier behavior. The VD+ overlay (MRS>=20 -> 50% exposure) reduces exposure for BOTH anchor and M06 simultaneously via the same regime engine signal, creating synchronized risk-off behavior. During crisis, the remaining 50% exposure is highly correlated with anchor because both strategies hold quality/earnings stocks that co-move in stress.",
+    "mechanism_diagnosis": [
+      "VD+ uses the SAME MRS signal as anchor (STR_1631 VD+). When MRS triggers, BOTH strategies de-risk simultaneously.",
+      "L-115 echo: Regime overlay creates behavioral similarity, not decorrelation.",
+      "Residual 50% exposure during MRS>=20 is concentrated in common quality factors, driving crisis corr to 0.76.",
+      "S5 Risk Assessment warned: 'VD+ overlay가 anchor와 동일 Regime Engine 사용 -> 양쪽 동시 현금화 위험'."
+    ],
+    "blend_70_30": {
+      "SR": 1.2015,
+      "MDD_pct": -47.90,
+      "delta_SR": 0.2779,
+      "delta_MDD_pct": 2.73,
+      "WARNING": "70/30 blend MDD -47.9% BREACHES hard fail threshold (-45%). M06 at 30% allocation is NOT viable."
+    },
+    "conclusion": "M06 is NOT a genuine diversifier. It behaves as a quasi-correlated strategy that superficially decorrelates in normal times but re-correlates violently during crises. This is the worst possible diversifier profile - it promises protection but fails to deliver when most needed."
+  },
+
+  "gate_6_tail_risk": {
+    "verdict": "FAIL",
+    "evt_gpd_shape": {
+      "xi_mom": 0.5834,
+      "note": "Positive xi from VD+ bimodal distribution (full/half exposure)"
+    },
+    "cvar_profile": {
+      "CVaR_95": -0.0285,
+      "CVaR_99": -0.0521,
+      "assessment": "CVaR99 at -5.2% daily is elevated relative to M05 (-4.7%)."
+    },
+    "stress_periods": {
+      "GFC_2008": {
+        "cum_ret_pct": -8.1,
+        "max_dd_pct": -26.8,
+        "note": "VD+ reduced to 50% exposure but still suffered -26.8% drawdown. DD Brake (M05) achieved 0% loss in same period."
+      },
+      "COVID_2020": {
+        "cum_ret_pct": -8.8,
+        "max_dd_pct": -24.0,
+        "note": "50% exposure during COVID crash. Moderate but significant loss."
+      },
+      "Rate_Hike_2022": {
+        "cum_ret_pct": -9.1,
+        "max_dd_pct": -20.1,
+        "note": "MRS elevated throughout 2022. Sustained 50% exposure reduced absolute loss but also halved recovery potential."
+      }
+    },
+    "critical_finding": "M06 MDD -42.23% has only 2.77%p margin to -45% hard fail. Given crisis correlation surge to 0.705, blend-level MDD -47.9% already breaches hard fail. Tail risk is UNACCEPTABLE for diversifier deployment.",
+    "mdd_margin_analysis": {
+      "standalone_mdd": -42.23,
+      "hard_fail_threshold": -45.0,
+      "margin_pct": 2.77,
+      "risk": "EXTREME - any adverse revision to HRP weights, regime signal timing, or market microstructure could breach. 2.77%p is insufficient safety margin for production deployment."
+    },
+    "high_risk_exposure_ratio": {
+      "pct_days_50pct_exposure": 25.9,
+      "note": "M06 spends 25.9% of all trading days at 50% exposure. This is very high and suggests MRS>=20 threshold is too sensitive, reducing effective alpha accumulation."
+    }
+  },
+
+  "overall_verdict": {
+    "grade": "B",
+    "score": 63.8,
+    "downgrade_reason": "Gate 5 Role Honesty Audit FAIL (crisis corr 0.705) + Gate 6 Tail Risk FAIL (MDD margin 2.77%p, blend MDD -47.9% breaches hard fail)",
+    "gates_summary": {
+      "Gate_0_Basic": "PASS",
+      "Gate_1_PIT": "PASS",
+      "Gate_2_Stats": "PASS (DSR note)",
+      "Gate_3_Alpha": "CONDITIONAL_PASS",
+      "Gate_4_Hurdle": "PASS (Grade A metrics)",
+      "Gate_5_Role": "FAIL (crisis corr surge 0.705)",
+      "Gate_6_Tail": "FAIL (MDD margin 2.77%p)"
+    },
+    "strengths": [
+      "Highest standalone SR (1.232) and CAGR (31.0%) among all mutations",
+      "VD+ provides sustained risk reduction (25.9% time at 50% exposure)",
+      "Full-period corr 0.408 is within diversifier range",
+      "Sortino 1.903 indicates favorable downside ratio"
+    ],
+    "weaknesses": [
+      "CRITICAL: Crisis correlation 0.705 (COVID 0.763) - diversifier role violation",
+      "MDD -42.23% with only 2.77%p margin to hard fail",
+      "70/30 blend MDD -47.9% BREACHES hard fail",
+      "Same MRS signal as anchor creates synchronized de-risking",
+      "DSR 0.618 below 0.95 threshold",
+      "25.9% time at reduced exposure limits alpha accumulation"
+    ],
+    "recommendations": [
+      "S7: RECOMMEND ARCHIVE. M06 is NOT viable as diversifier due to crisis correlation surge.",
+      "Alternative: M06 could be considered as a STANDALONE strategy (not diversifier) but MDD -42.23% near hard fail makes this risky.",
+      "If M06 is reconsidered, regime signal must differ from anchor (different MRS threshold or different signal entirely) to avoid synchronized de-risking.",
+      "M05 (DD Brake) is the superior diversifier candidate from this S5 round."
+    ]
+  },
+
+  "l_code": {
+    "id": "L-126",
+    "grade": "B",
+    "lesson_text": "STR_1656_MLRA M06(HRP+VD+ MRS20)은 standalone SR 1.232로 최고 성과이지만, 위기 시 앵커 상관 0.705 급등으로 diversifier 역할 실패이다. 핵심 교훈: (1) 동일 regime signal(MRS)을 앵커와 diversifier가 공유하면 위기 시 동시 de-risk → 잔여 exposure의 상관이 급등한다. COVID 상관 0.763은 사실상 동일 전략 행동. (2) VD+ 50% exposure 축소는 MDD를 -67%에서 -42%로 완화했지만, hard fail 경계(-45%)에 2.77%p 여유밖에 없어 프로덕션 부적합. (3) 70/30 블렌드 MDD -47.9%는 hard fail 위반. 배분비 15% 이하에서도 위기 상관 급등으로 portfolio MDD 개선 제한적. 결론: diversifier의 regime overlay는 앵커와 독립적인 신호를 사용해야 하며, 동일 MRS 공유는 구조적으로 위기 상관을 높인다(L-115 재확인). DD Brake(M05)는 현금화 기반으로 이 문제를 회피.",
+    "core_reference": "Moreira & Muir (2017 JF); Regime Engine v7.1 (L-442); L-115 (beta cutting insufficient)",
+    "tags": ["ML", "VD_plus", "regime_overlay", "crisis_corr_surge", "diversifier_fail", "MRS_shared_signal", "MDD_margin"]
+  }
+}

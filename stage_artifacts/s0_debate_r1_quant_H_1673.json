@@ -1,0 +1,90 @@
+{
+  "debate_id": "H_1673",
+  "round": "R1",
+  "role": "quant",
+  "agent_id": "quant_r1_forge",
+  "score": 11,
+  "timestamp": "2026-04-12",
+
+  "factor_db_actuals": {
+    "source_note": "Factor DB parquet (2002~2026, 257개월) 직접 실측. Spearman rank IC, 1개월 forward return.",
+
+    "icir_fullsample": {
+      "V02_EP":              {"ic_mean": 0.0147, "ic_sd": 0.0404, "icir": 0.3641, "n_months": 257},
+      "Q28_Cash_Conversion": {"ic_mean": 0.0078, "ic_sd": 0.0428, "icir": 0.1825, "n_months": 257},
+      "GR02_Earnings_Growth":{"ic_mean": 0.0106, "ic_sd": 0.0319, "icir": 0.3313, "n_months": 257}
+    },
+
+    "reference_factors": {
+      "Q07_Earnings_Stability": {"ic_mean": 0.0197, "ic_sd": 0.0513, "icir": 0.3852, "n_months": 257},
+      "C19_Composite_Earnings": {"ic_mean": 0.0005, "ic_sd": 0.0404, "icir": 0.0114, "n_months": 257}
+    },
+
+    "ic_correlation_zscore": {
+      "note": "Z_Score 기반 198,867 종목-월 관측치",
+      "V02_x_Q28":  0.0574,
+      "V02_x_GR02": 0.0977,
+      "Q28_x_GR02": 0.0180,
+      "V02_x_C19":  -0.0204,
+      "Q28_x_C19":  -0.0008,
+      "GR02_x_C19": 0.0045,
+      "V02_x_Q07":  0.0432,
+      "Q28_x_Q07":  0.0333,
+      "GR02_x_Q07": 0.0326
+    },
+
+    "ic_timeseries_correlation": {
+      "note": "월별 IC 시계열 상관 (257개월)",
+      "V02_x_Q28":  0.5074,
+      "V02_x_GR02": 0.5276,
+      "Q28_x_GR02": 0.3372,
+      "V02_x_Q07":  0.5370,
+      "Q28_x_Q07":  0.4163,
+      "GR02_x_Q07": 0.3231,
+      "Q28_x_Q07_crisis_only": 0.7398,
+      "note2": "위기 한정(GFC+COVID, 21개월) Q28 x Q07 IC 상관 0.74 — 위기 시 동조화 심각"
+    },
+
+    "stress_period_ic": {
+      "V02_EP":   {"GFC": 0.0359, "EURO_CRISIS": 0.0115, "CHINA_CRASH": 0.0256, "OIL_CRASH": 0.0108, "COVID": 0.0422},
+      "Q28_Cash_Conversion": {"GFC": 0.0206, "EURO_CRISIS": 0.0023, "CHINA_CRASH": 0.0167, "OIL_CRASH": 0.0060, "COVID": 0.0150},
+      "GR02_Earnings_Growth":{"GFC": 0.0324, "EURO_CRISIS": 0.0141, "CHINA_CRASH": 0.0224, "OIL_CRASH": 0.0113, "COVID": 0.0049}
+    },
+
+    "crisis_ratio_actual": {
+      "note": "crisis_IC / normal_IC (통합 위기 기간 합집합 기준)",
+      "V02_EP":              1.53,
+      "Q28_Cash_Conversion": 1.27,
+      "GR02_Earnings_Growth":2.35
+    },
+
+    "regime_icir_actual": {
+      "note": "MRS quartile 기반 CALM/CRISIS/NORMAL 3-Regime (regime_v7.parquet)",
+      "V02_EP":   {"CALM": 0.7387, "CRISIS": 0.2855, "NORMAL": 0.3767},
+      "Q28_Cash_Conversion": {"CALM": 0.5856, "CRISIS": 0.0458, "NORMAL": 0.2473},
+      "GR02_Earnings_Growth":{"CALM": 0.5205, "CRISIS": 0.2878, "NORMAL": 0.3315}
+    },
+
+    "blend_simulation": {
+      "weights": {"V02_EP": 0.40, "Q28_Cash_Conversion": 0.35, "GR02_Earnings_Growth": 0.25},
+      "blended_icir": 0.3541,
+      "note": "단순 IC 가중합. V02 단독(0.3641)보다 낮음. Q28 ICIR(0.1825) 희석 효과 실측."
+    }
+  },
+
+  "arguments": [
+    "ICIR 실측 결과, Q28_Cash_Conversion의 전기간 ICIR은 0.1825로 허들 기준 0.20 미달이다. 주장치(crisis_ratio 1.37) 대비 실측 crisis_IC/normal_IC 비율은 1.27로 과대 주장되었으며, CRISIS 4-regime ICIR은 0.0458로 사실상 유의미하지 않다. 가설 검증 통과 요건 미충족.",
+    "IC 시계열 상관 실측: V02 x Q28 = 0.507, V02 x GR02 = 0.528 — 팩터 간 분산화 효과가 매우 제한됨을 의미한다. L-119 교훈(정적 팩터 블렌드 alpha 희석)대로, 블렌드 ICIR 0.3541이 V02 단독 ICIR 0.3641보다 낮아지는 희석이 실측으로 확인되었다. GR02의 COVID IC = 0.0049로 급락 위기 방어력이 없어 crisis_ratio 1.17 주장은 GFC 기간에 편중된 과대 추정이다.",
+    "Q28 x Q07 위기 한정 IC 시계열 상관이 0.7398 (전기간 0.4163)로 급증한다. 두 팩터 모두 Quality 계열이며, 위기 시 동조화가 강화된다. Z_Score 상관(0.033) 기준만 보는 착시로 Defense 중복 없다고 주장하지만, IC 변동 공분산 기준으로는 위기 방어 중복이 실질적이어서 포트폴리오 전체 tail 방어력이 저하될 위험이 있다."
+  ],
+
+  "concern": "Q28_Cash_Conversion ICIR 0.1825가 허들 0.20 미달이며, 블렌드 편입 시 V02 단독 대비 ICIR이 오히려 하락(0.3641→0.3541)하는 alpha 희석이 발생한다. 3팩터 중 Q28의 구조적 약점이 전체 가설의 정량적 기반을 약화시킨다.",
+
+  "conditions": [
+    "Q28 단독 ICIR이 0.20 이상으로 재실측되거나, ICIR < 0.20 팩터 편입에 대한 별도 논거(예: 블렌드 분산 감소 효과로 포트폴리오 ICIR이 상승)가 수치로 입증된 경우에만 편입 허용",
+    "V02 x Q28 IC 시계열 상관 0.507을 감안하면, 블렌드 weight 재설계(Q28 비중 축소 또는 제3팩터 대체)가 필요하며, 최소 블렌드 ICIR이 V02 단독보다 높아야 diversifier 역할 정당화 가능",
+    "Q28 x Q07 위기 한정 IC 상관 0.74를 근거로, Q28이 포트폴리오에 Q07과 동시 편입될 경우 위기 방어 중복 여부를 Defense 배분과 통합하여 LOO 검증 완료 후 확정"
+  ],
+
+  "verdict": "CONDITIONAL_PASS — V02(0.3641)·GR02(0.3313) 실측 ICIR은 허들 충족이나, Q28(0.1825) 미달 및 블렌드 희석 실측이 핵심 약점. 조건부 통과."
+}

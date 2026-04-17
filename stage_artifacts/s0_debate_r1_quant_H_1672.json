@@ -1,0 +1,60 @@
+{
+  "hypothesis_id": "H_1672",
+  "round": "R1",
+  "role": "quant",
+  "agent_id": "quant_forge_r1",
+  "timestamp": "2026-04-12T00:00:00",
+  "score": 14,
+  "score_breakdown": {
+    "icir_verification": 3,
+    "correlation_analysis": 4,
+    "regime_profile": 3,
+    "data_availability": 2,
+    "prior_strategy_check": 2
+  },
+  "arguments": [
+    "C07_TP_Mom 전기간 ICIR 실측: conditional_ic_matrix 기준 0.2707(n=254개월, ic_all=0.0117), recent_3y_icir=0.2198로 Alpha Lab Gate 0.20 충족. stress_factor_ic_analysis 기준 stress_icir=2.202(n=40, pct_pos=97.5%), normal_icir=2.685(n=53) — 가설의 수치 주장은 실측 확인. 단, ic_all=0.0117 수준으로 낮아 ICIR은 낮은 IC SD(0.0796) 덕분에 유지되는 구조이므로 신호 크기 자체는 과대 해석 금지. KOSPI ICIR=0.2588, KOSDAQ ICIR=0.1653으로 대형주 편향 내재. 데이터 가용성 254/436개월(58.3%), 애널리스트 목표주가 의존으로 소형주 사각지대 발생. PIT 준수 구조(compute_consensus.R 라인 130-151, sig_date-35d 이전 최신 TP)는 확인됨.",
+    "팩터간 상관 실측: C07 x C19(Core) — factor_correlation_analysis 전체 표본 0.1066, 최근 3개월 monthly cross-sectional 평균 0.016~0.022로 가설 주장 0.107과 일치, Core 독립성 확인. C07 x Q07(Defense) — 최근 60개월 월별 평균 0.006(SD=0.025), 최근 3개월 0.048~0.062으로 사실상 무상관, Defense 역할 중복 없음. STR_1656(MLRA) 직접 수익률 상관은 C07 standalone STR 미존재로 측정 불가이나 STR_1656의 XGBoost MI prefilter top-50에 C07 포함 가능성 있어 부분 overlap 위험 잠재. C07 이전 독립 전략 기록 0건(strategy_grades.json 검색)으로 본 가설이 최초 standalone 검증 시도임.",
+    "4-regime(MRS 기반) ICIR에서 핵심 모순 발견: CALM=0.7615(n=56), CAUTION=0.3261(n=64), CRISIS=-0.0477(n=65), NORMAL=0.2376(n=69). CRISIS 구간 ICIR 음수(-0.0477)는 Diversifier 역할에 치명적 약점. L-120 교훈 재현: 가설이 주장하는 stress_icir=2.202는 6대 급락사건(n=40) 기준이고, MRS 위기국면 전체(4r CRISIS, n=65)와 정의가 다름. C07은 단기 급락 이벤트에서는 강하지만 장기 위기국면(MRS 상위25%) 전반에서는 IC 음전환. 비교: Q07_Earnings_Stability는 stress_icir=0.753이면서 4r_CRISIS_icir=+0.413으로 양쪽 모두 양수 — C07과 구조적 차이 확인. crisis_defense_factor_analysis 34개 목록에 C07 미포함으로 방어 팩터 공식 분류 불가."
+  ],
+  "concern": "4-regime CRISIS ICIR = -0.0477 (음수)이 가장 중요한 정량 위험. 가설이 주장하는 'Stress ICIR 2.20'은 L-120 교훈의 stress/4r-regime 정의 혼용 문제임. 애널리스트 커버리지 편향으로 실투 시 소형주 투자 불가 구조. STR_1656(MLRA) 내 C07 feature 포함 여부 미확인으로 중복 위험 잠재. 이상의 이유로 Diversifier 역할 적합성은 실측 백테스트로만 최종 검증 가능.",
+  "conditions": [
+    "S1 실행 시 stress 기반 ICIR이 아닌 4-regime CRISIS ICIR 기준 regime_profile 별도 보고 필수",
+    "STR_1656(MLRA)와의 수익률 상관(corr_crisis) S3에서 0.45 미만 확인 필수 (현재 MLRA crisis_corr=0.3298)",
+    "KOSDAQ 유니버스 제외 + KOSPI 상위 종목 집중 시 유동성 필터 충족 여부 검증",
+    "C07 단독 S1 ICIR 0.40 이상 달성 시에만 Diversifier 역할 통과 권장 (현재 전기간 ICIR=0.2707은 최소 통과 수준)",
+    "recent_3y_icir=0.2198 편향 검토: CR05/L31/V23 교훈과 같이 최근 3년이 특수 기간인지 전체 기간 롤링 ICIR 분포 제출 필수"
+  ],
+  "data_sources_used": [
+    "conditional_ic_matrix.csv",
+    "conditional_ic_matrix_4regime.csv",
+    "stress_factor_ic_analysis.csv",
+    "crisis_defense_factor_analysis.csv",
+    "factor_correlation_analysis.csv",
+    "factor_ic_kospi_kosdaq_split.csv",
+    "factor_db 202604~202105 60개월 cross-sectional 직접 계산",
+    "stage_artifacts/s1_construction_STR_1656_MLRA.json",
+    "stage_artifacts/s2_profile_STR_1656_MLRA.json",
+    "stage_artifacts/s4_marginal_STR_1656_MLRA.json",
+    "methodology_memory.md L-120, L-255",
+    "02_Infrastructure/factor_db/compute_consensus.R (라인 130-151)"
+  ],
+  "key_numbers": {
+    "c07_icir_all": 0.2707,
+    "c07_recent_3y_icir": 0.2198,
+    "c07_stress_icir": 2.202,
+    "c07_normal_icir": 2.685,
+    "c07_4r_calm_icir": 0.7615,
+    "c07_4r_caution_icir": 0.3261,
+    "c07_4r_crisis_icir": -0.0477,
+    "c07_4r_normal_icir": 0.2376,
+    "corr_c07_c19_longform": 0.1066,
+    "corr_c07_c19_monthly_avg_recent": 0.019,
+    "corr_c07_q07_monthly_avg_60m": 0.006,
+    "c07_data_coverage_pct": 58.3,
+    "c07_kospi_icir": 0.2588,
+    "c07_kosdaq_icir": 0.1653,
+    "mlra_crisis_corr_anchor": 0.3298,
+    "prior_strategies_with_c07": 0
+  }
+}

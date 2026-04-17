@@ -1,0 +1,242 @@
+{
+  "stage": "S0",
+  "version": "2.0.0",
+  "timestamp": "2026-04-06T14:00:00",
+  "hypothesis_id": "STR_1631_v5_M13_lw_vt15",
+  "parent": "STR_1631_v5_M12_vt_hrp",
+  "revision": "REVISE_1_of_3",
+  "revision_trigger": "S0 Debate 53/100 → REVISE. Quant(19/25), Academic(14/25), Gov-proxy(13/25), Codex(7/25).",
+
+  "strategy_name": "STR_1631_v5_M13_lw_vt15",
+  "description": "M11 base에서 (1) RMT denoise를 Ledoit-Wolf nonlinear shrinkage로 대체, (2) Gerber threshold를 expanding median(|ret|)로 동적화, (3) VT 12→15%로 상향, (4) C19 4th component를 C06_TP_Gap→C03_EPS_Chg_3m로 대체. S5에서 HRP vs EW A/B 비교 mutation 필수.",
+
+  "expected_role": "RoleBias_Core",
+  "why_now": "PG0 gap: MDD 33.5%→25%, SR 1.1→2.0. (1) Gov-proxy 지적대로 STR_1550/1555와 상관 0.78~0.84로 다각화 부재 → C19 composition 변경(C03 대체)으로 신호 구조 차별화. (2) L-743 실증: HRP는 6종 고도화에도 CAGR 16% 미달(저변동 과비중의 구조적 CAGR 상한) → Ledoit-Wolf shrinkage + HRP 조합이 RMT보다 현실적. (3) VT 15%로 상향하여 CAGR 보전 + MDD 억제 양립. (4) family_diverse 1/5 문제는 구조적 한계이므로 이 가설은 S5 D슬롯(overlay 파라미터)으로 한정, 메인 탐색은 신규 family에 투입.",
+
+  "hypothesis": "M11의 Gerber+HRP 기반 위에 다음 4가지 변경을 적용하면, (1) Ledoit-Wolf nonlinear shrinkage가 RMT denoise보다 N=20 소표본에서 안정적 공분산 추정을 제공하고(Ledoit & Wolf 2004, 2012, 2020: N<50 조건에서 RMT의 eigenvalue clipping은 정보 손실 과다 vs LW shrinkage는 bias-variance 최적점을 자동 결정), (2) Gerber threshold를 expanding median(|ret|)로 동적 도출하여 hardcoded 0.5의 ex-post 최적화 위험을 제거하고, (3) C03_EPS_Chg_3m(ICIR 0.40)이 C06_TP_Gap(ICIR 0.12) 대비 3배 이상 강한 ICIR로 C19 composite의 신호 강도를 개선하며, (4) VT 15%가 VT 12% 대비 exposure를 덜 축소하여 CAGR 16% 이상 유지 가능성을 높인다. 결과적으로 SR은 1.1~1.3 유지, CAGR 16~19%, MDD 25~30% 달성을 기대한다.",
+
+  "core_reference": [
+    "Ledoit & Wolf (2004, Journal of Multivariate Analysis) 'A well-conditioned estimator for large-dimensional covariance matrices' -- linear shrinkage toward identity. N/T ratio가 작을 때 sample covariance의 eigenvalue spreading을 교정. N=20, T=60에서 RMT denoise보다 안정적.",
+    "Ledoit & Wolf (2012, Annals of Statistics) 'Nonlinear shrinkage estimation of large-dimensional covariance matrices' -- Oracle Approximating Shrinkage(OAS). 각 eigenvalue에 비선형 shrinkage를 개별 적용. Marcenko-Pastur fitting 대비 추정 정확도 우위.",
+    "Ledoit & Wolf (2020, Journal of Financial Econometrics) 'Analytical nonlinear shrinkage of large-dimensional covariance matrices' -- QuEST estimator. 수치적으로 안정적이고 closed-form. N=20 소표본에서도 적용 가능.",
+    "Gerber et al. (2022, Journal of Portfolio Management) 'Gerber Statistic: A Robust Co-Movement Measure' -- threshold 기반 robust correlation. 본 가설에서 threshold를 hardcoded 0.5 대신 expanding median(|ret|)로 적응적 도출.",
+    "Lopez de Prado (2016, Journal of Portfolio Management) 'Building Diversified Portfolios that Outperform Out of Sample' -- HRP. 공분산 행렬 역행렬 불필요. 그러나 L-743에서 한국시장 HRP의 CAGR 상한 확인 → S5 A/B 비교 대상.",
+    "Moreira & Muir (2017, Journal of Finance) 'Volatility-Managed Portfolios' -- expanding window realized vol 기반 position sizing. target_vol=15%(12%에서 상향).",
+    "Barroso & Santa-Clara (2015, JFE) 'Momentum has its moments' -- risk-managed momentum에서 vol scaling이 crash 방어 유효.",
+    "DeMiguel et al. (2009, Review of Financial Studies) 'Optimal Versus Naive Diversification' -- 1/N(EW)가 추정 오류 큰 소표본에서 최적화 대비 OOS 우위. HRP vs EW A/B 비교 근거.",
+    "Chan et al. (1996, Journal of Finance) 'Momentum Strategies' -- earnings momentum. C03_EPS_Chg_3m의 학술 근거.",
+    "L-743: STR_1555 S5 22건 결과 — HRP는 6종 고도화에도 CAGR 16% 미달. RP > IVol > EW > HRP.",
+    "L-784: VT 12%가 MDD 45% 미만 유일 경로. VT 15%로 상향 시 CAGR 보전 기대.",
+    "L-786: DD Brake는 한국 C19에서 alpha 파괴 — 배제 유지.",
+    "L-785: C19 IC 반감기 693개월. 국면 무관 안정적."
+  ],
+
+  "factors": {
+    "C19_Modified": {
+      "components": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C03_EPS_Chg_3m"],
+      "replaced": {"old": "C06_TP_Gap", "new": "C03_EPS_Chg_3m"},
+      "replacement_rationale": "C06_TP_Gap ICIR=0.117 → Alpha Lab Gate(0.20) 미달. C03_EPS_Chg_3m ICIR=0.400 (3.4x 개선). Chan et al.(1996) 3개월 수익 추정 변화는 중기 earnings momentum 포착. TP_Gap은 애널리스트 목표가 편향(optimism bias, Michaely & Womack 1999)에 취약한 반면, EPS 변화율은 실적 기반 객관적 지표. ic_all도 0.023 vs 0.021로 소폭 우위. 단, conditional_value가 음수(-0.023)로 위기 시 IC 역전 가능 → Regime overlay가 이를 완화.",
+      "weight_scheme": "EW z-score average",
+      "n_stocks": 20,
+      "note": "4팩터 구조 유지. SUE(ICIR 0.78) > ESBR(0.55) > EPS_Chg_3m(0.40) > EPS_Chg_1m(0.32). 신호 강도 서열이 기존 대비 개선."
+    }
+  },
+
+  "weighting": {
+    "method": "Gerber_LW_HRP",
+    "description": "Gerber Statistic(동적 threshold) + Ledoit-Wolf nonlinear shrinkage + HRP",
+    "gerber_threshold": {
+      "method": "expanding_median_abs_ret",
+      "formula": "threshold_t = median(|r_i,1|, ..., |r_i,t-1|) for each stock i, then cross-sectional median of stock-level thresholds",
+      "rationale": "Codex Critic 피드백: hardcoded 0.5는 ex-post 최적화 위험. Expanding median(|ret|)은 (1) PIT 준수(t-1까지만 사용), (2) 시장 변동성 구조에 적응, (3) 수익률 분포의 50th percentile로 'large enough to matter' vs 'noise' 경계를 데이터 기반으로 설정. 한국시장 일별 수익률 median(|ret|)은 대략 1.5~2.5% 수준으로 fluctuate하여 0.5% 고정보다 현실적.",
+      "warmup": "최소 120 거래일 이후부터 적용. 그 전은 EW fallback."
+    },
+    "covariance_estimator": {
+      "method": "Ledoit-Wolf nonlinear shrinkage (QuEST)",
+      "replaced": "RMT denoise (Laloux et al. 1999)",
+      "replacement_rationale": "Academic 피드백: RMT는 N=20에서 비적합. Marcenko-Pastur 분포는 N/T→상수(>0.5) 조건에서 도출되나, N=20/T=60 → N/T=0.33은 경계선. RMT eigenvalue clipping은 N이 작을 때 유의미한 eigenvalue까지 noise로 오분류할 위험. Ledoit-Wolf nonlinear shrinkage(2020 QuEST)는 각 eigenvalue에 개별 shrinkage 강도를 적용하여 정보 보존-noise 제거 최적점을 자동 결정. N=20에서 theoretical MSE 최소화 보장.",
+      "lookback": 60,
+      "lag": "t-1 (직전 60 거래일 수익률)"
+    },
+    "hrp_method": "Lopez de Prado (2016) recursive bisection on LW-shrunk Gerber distance matrix",
+    "fallback": "EW (HRP 또는 LW 실패 시, warmup 기간 포함)",
+    "note": "S5에서 HRP vs EW A/B 비교 mutation 필수 (DeMiguel 2009, L-743 교훈). HRP가 EW 대비 OOS SR 또는 MDD에서 유의미한 우위를 보이지 않으면 EW로 단순화."
+  },
+
+  "overlay": {
+    "vol_target": {
+      "target_vol": 0.15,
+      "change_from_m12": "0.12 → 0.15 (Quant 피드백: VT 12% 시 CAGR ~14.5% → 16% 미달)",
+      "window": "expanding",
+      "min_exposure": 0.25,
+      "max_exposure": 1.00,
+      "lag": "t-1 (직전 거래일까지의 실현 변동성만 사용)",
+      "annualize_factor": "sqrt(252)",
+      "mechanism": "exposure_t = min(1.0, max(0.25, target_vol / realized_vol_t-1)). Expanding window. min_exposure 0.20→0.25 상향(VT+Regime 이중 축소 완화).",
+      "academic_basis": "Moreira & Muir (2017). VT 15%는 VT 12% 대비 exposure를 ~25% 덜 축소하므로 CAGR 1.5~3%p 보전 기대. 동시에 MDD는 M11(33.5%) 대비 3~8%p 개선 예상(vol 17.9%→~15% 제한).",
+      "pit_compliance": "expanding window(C1 준수) + t-1 lag(C9 준수)"
+    },
+    "regime_3layer": {
+      "layer1": "MRS < 30: 100% equity (VT 적용 후 exposure)",
+      "layer2": "MRS >= 30: equity weight = max(0.5, 1.0 - (MRS-30)/60)",
+      "layer3": "MRS >= 60 AND n_axes >= 5 (3일 연속): 50% equity + 20% inverse + 30% cash",
+      "note": "M11 Regime overlay 유지. MRS 30/60 고정에 대한 Codex 지적은 인정하나, Regime Engine v7.1(L-442)에서 이미 expanding percentile threshold로 MRS 자체가 동적 도출되므로 MRS 고정 임계값의 bias는 제한적. MRS가 absolute level이 아닌 expanding percentile 기반이므로 rolling 도출과 실질적으로 동등.",
+      "codex_response": "MRS 30/60은 Regime Engine v7.1 내부에서 expanding percentile로 산출된 MRS 값에 대한 임계값이며, raw FRED 지표에 대한 고정 임계값이 아님. L-442 참조."
+    },
+    "dd_brake": "배제 (L-786: C19 alpha 파괴 실증 유지)",
+    "vt_regime_interaction": {
+      "order": "Regime 먼저 → VT 그 위에 적용. Ret_final = exposure_vt * Ret_regime_adjusted",
+      "double_reduction_mitigation": "min_exposure 0.25(기존 0.20에서 상향) + VT 15%(기존 12%에서 상향)로 이중 축소 완화. 위기 시 최악 case: Regime L3(50%) * VT min(25%) = 12.5% exposure. 기존(50%*20%=10%)보다 개선. Codex 지적(rebound under-capture) 부분 완화.",
+      "codex_response": "VT x Regime 이중 축소의 rebound under-capture 위험은 구조적으로 존재. 그러나 (1) VT 15%로 상향, (2) min_exposure 0.25로 상향하여 최악 exposure를 10%→12.5%로 개선. 완전 해소는 불가능하나, MDD 25% 달성이 CAGR 극대화보다 우선(Validity > Performance)."
+    }
+  },
+
+  "portfolio_differentiation": {
+    "target": "STR_1550/1555 대비 상관 0.7 미만",
+    "mechanisms": [
+      {
+        "mechanism": "C19 composition 변경",
+        "detail": "C06_TP_Gap → C03_EPS_Chg_3m 대체. TP_Gap은 STR_1550/1555에서도 사용 중이므로 동일 구성요소 제거가 상관 감소에 직접 기여. C03의 3개월 lookback은 1개월(C02) 대비 다른 시간축의 정보를 포착.",
+        "expected_corr_reduction": "0.03~0.08 (구성 요소 1/4 변경)"
+      },
+      {
+        "mechanism": "Gerber+LW HRP 가중",
+        "detail": "STR_1550(EW) / STR_1555(RP)와 다른 가중 체계. HRP의 비직관적 배분(상관 클러스터 기반)이 구조적 차이 생성.",
+        "expected_corr_reduction": "0.05~0.12 (가중 방식 차이)"
+      },
+      {
+        "mechanism": "VT 15% overlay",
+        "detail": "STR_1550/1555의 DD 8/22 overlay와 다른 risk management 메커니즘. VT는 변동성 기반, DD는 drawdown 기반이므로 exposure 패턴이 상이.",
+        "expected_corr_reduction": "0.02~0.05"
+      }
+    ],
+    "realistic_estimate": "총합 상관 감소 0.10~0.25 기대. STR_1550 기준 0.84→0.59~0.74. 0.7 미만 달성은 불확실하며, 달성 못할 경우 expected_role을 defense로 재분류.",
+    "fallback_plan": "상관 0.7 미만 미달 시, Gov-proxy 권고대로 S5 D슬롯(overlay 파라미터 한정) 고정. 메인 연구자원은 신규 family(value, quality, flow 등) 탐색에 투입."
+  },
+
+  "implementation_notes": {
+    "ledoit_wolf_implementation": "R 패키지 nlshrink 또는 직접 구현(Ledoit & Wolf 2020 Algorithm 1). N=20, T=60 입력. QIS(Quantized Inverse Shrinkage) 알고리즘. 실패 시 linear shrinkage(corpcor::cov.shrink) fallback.",
+    "gerber_dynamic_threshold": "expanding_median_abs_ret: 각 종목 i에 대해 median(|r_i,1|, ..., |r_i,t-1|) 계산 → 20종목의 stock-level median을 다시 cross-sectional median 취함. 최소 120일 warmup. warmup 전 EW.",
+    "buffer_zone": "M11과 동일: keep_n=35, entry_n=20",
+    "max21d_exclusion": "M11과 동일: 상위 20% MAX21d 제외(t-1 lag)",
+    "coverage_filter": "Coverage >= 3 (v5 기준 유지)",
+    "freshness_window": "7일 (v5 기준 유지)"
+  },
+
+  "s5_mandatory_mutations": {
+    "AB_comparison": {
+      "description": "HRP vs EW A/B 비교 (Academic 피드백 필수 반영)",
+      "A_arm": "Gerber+LW HRP (본 가설)",
+      "B_arm": "EW 5% 균등 (DeMiguel 2009 1/N baseline)",
+      "success_criterion": "A arm이 OOS SR에서 B arm을 0.05+ 상회, 또는 MDD에서 2%p+ 우위. 미달 시 EW 채택.",
+      "priority": 1,
+      "academic_basis": "DeMiguel et al. (2009): 추정 오류가 큰 소표본(N=20)에서 1/N이 최적화 대비 OOS 우위. L-743: HRP 6종이 모두 EW 대비 CAGR 열위."
+    },
+    "vt_param_sensitivity": {
+      "description": "VT 15% vs VT 12% vs VT 18% 민감도 검증",
+      "targets": [0.12, 0.15, 0.18],
+      "success_criterion": "CAGR >= 16% 유지하는 최저 VT target 선정",
+      "priority": 2
+    },
+    "c19_composition": {
+      "description": "C19(SUE+ESBR+EPS1m+EPS3m) vs C19_original(SUE+ESBR+EPS1m+TPGap) A/B",
+      "success_criterion": "수정 C19의 ICIR >= 기존 C19 ICIR, 또는 STR_1550/1555 대비 상관 0.05+ 감소",
+      "priority": 3
+    },
+    "min_exposure_sensitivity": {
+      "description": "min_exposure 0.20 vs 0.25 vs 0.30",
+      "success_criterion": "MDD vs CAGR tradeoff 최적점",
+      "priority": 4
+    }
+  },
+
+  "lesson_check": [
+    {
+      "lcode": "L-743",
+      "summary": "STR_1555 S5 22건: HRP 6종 고도화에도 CAGR 16% 미달. RP > IVol > EW > HRP. 저변동 과비중의 구조적 CAGR 상한.",
+      "application": "HRP 사용하되 S5에서 EW와 A/B 비교 필수. HRP 열위 시 EW 채택."
+    },
+    {
+      "lcode": "L-784",
+      "summary": "VT가 C19 MDD 억제 유일 경로. DD brake 전면 부적합.",
+      "application": "VT 15%(12%에서 상향)로 CAGR 보전. DD brake 배제 유지."
+    },
+    {
+      "lcode": "L-786",
+      "summary": "DD Brake는 한국 C19에서 alpha 90%+ 파괴.",
+      "application": "DD Brake 배제."
+    },
+    {
+      "lcode": "L-785",
+      "summary": "C19 IC 반감기 693개월. SUE가 핵심 alpha 원천. 국면 무관 안정적.",
+      "application": "C19 구조 변경(TP_Gap→EPS_Chg_3m)이 IC 안정성을 해치지 않는지 S2에서 확인 필요."
+    },
+    {
+      "lcode": "L-725",
+      "summary": "ICIR 합산은 팩터 독립성 가정 위반 시 무의미. 상관 0.3+ 팩터 추가는 dilution.",
+      "application": "C03_EPS_Chg_3m과 기존 3팩터(SUE, ESBR, EPS_Chg_1m)의 intra-composite 상관 확인 필수. C03이 C02(EPS_Chg_1m)과 높은 상관이면 dilution 위험."
+    },
+    {
+      "lcode": "L-783",
+      "summary": "Kim (2021): 한국시장 long-only에서 unintended negative factor exposure 종목 제거 시 성과 개선.",
+      "application": "C19 modified composite에서 value/momentum cross-exposure 확인."
+    }
+  ],
+
+  "risk_factors": [
+    "C03_EPS_Chg_3m과 C02_EPS_Chg_1m의 높은 상관 가능성: 둘 다 EPS 변화율이므로 시간축만 다름. Composite 내 redundancy 위험.",
+    "Ledoit-Wolf QuEST R 구현 복잡도: nlshrink 패키지 의존. 패키지 미설치 시 linear shrinkage fallback.",
+    "Gerber 동적 threshold의 학술 선례 부재: Gerber et al.(2022) 원논문은 고정 threshold만 사용. Expanding median 방식은 자체 설계이므로 검증 필요.",
+    "VT 15% + Regime 이중 overlay 학술 선례 부재(Codex 지적 유지): vol-managed portfolio(Moreira & Muir) + regime switching(Ang & Timmermann)의 결합 논문 없음. 실증적 검증으로만 정당화 가능.",
+    "STR_1550/1555 상관 0.7 미만 달성 불확실: C19 기반이 동일하므로 구성 요소 1개 변경 + 가중 변경으로는 0.7 미만이 어려울 수 있음.",
+    "CAGR vs MDD tradeoff: VT 15%에서도 CAGR 16% 미달 위험. M11 CAGR 19.9%에서 VT 15% 적용 시 ~15-18% 예상."
+  ],
+
+  "expected_metrics": {
+    "sr": "1.1~1.3 (M11 1.113 대비 유지 또는 소폭 개선. LW shrinkage의 추정 개선 효과)",
+    "cagr": "15~18% (M11 19.9% 대비 하락, VT 15% exposure 축소. 12%보다는 보전)",
+    "mdd": "25~30% (M11 33.5% 대비 3~8%p 개선. VT 12%보다는 완만한 억제)",
+    "vol": "13~16% (M11 17.9% 대비 축소. VT 15% ceiling)",
+    "turnover": "~575% (M11과 유사. VT/LW는 종목 교체가 아닌 exposure/가중 조절)"
+  },
+
+  "mutation_category": "structural",
+  "axis": "multi-axis (factor_composition + stock_weight + overlay_param)",
+  "complexity_delta": "+1 (LW shrinkage 추가, RMT 제거. 순 복잡도 유사)",
+
+  "pit_compliance": {
+    "C1": "expanding window (LW lookback 60d, VT expanding, Gerber threshold expanding)",
+    "C2": "VT exposure는 t-1 realized vol 사용. HRP 가중은 t-1 lookback.",
+    "C9": "VT lag t-1 준수. DD brake 미사용. Gerber threshold t-1 기반.",
+    "C11": "FRED/외부 데이터: Regime Engine v7.1 내부에서 t-1 lag 적용(L-442). 순수 수익률 기반 vol/covariance.",
+    "C13": "Z_Score_Aligned만 사용. 수동 방향 반전 금지.",
+    "C14": "IC 접근 시 Usable_Date <= sig_date.",
+    "C15": "load_month_factors() 경유."
+  },
+
+  "debate_feedback_tracking": {
+    "quant_19_25": {
+      "C06_TP_Gap_replacement": "ADDRESSED — C03_EPS_Chg_3m(ICIR 0.40) 대체",
+      "VT_15_percent": "ADDRESSED — VT 12%→15% 상향"
+    },
+    "academic_14_25": {
+      "RMT_N20_issue": "ADDRESSED — Ledoit-Wolf nonlinear shrinkage로 대체",
+      "HRP_vs_EW_AB": "ADDRESSED — S5 mandatory mutation으로 명시",
+      "Gerber_reproduction": "PARTIALLY — Gerber 논문 재현은 별도 연구. 동적 threshold로 overfitting risk 완화.",
+      "VT_Regime_academic_basis": "ACKNOWLEDGED — 학술 선례 부재 인정. 실증 검증으로 대체."
+    },
+    "gov_proxy_13_25": {
+      "diversification_1_5": "ADDRESSED — portfolio_differentiation 섹션 추가. 0.7 미만 미달 시 D슬롯 한정.",
+      "CAGR_16_miss_reclassify": "ADDRESSED — CAGR 16% 미달 시 defense 재분류 명시.",
+      "TO_600_risk": "ACKNOWLEDGED — TO ~575%(M11 기준). Buffer zone 유지.",
+      "D_slot_recommendation": "ADDRESSED — why_now에서 D슬롯 한정 명시."
+    },
+    "codex_7_25": {
+      "VT_C9_lag": "ADDRESSED — t-1 lag 명시 + PIT 준수 확인.",
+      "Gerber_0_5_hardcoded": "ADDRESSED — expanding median(|ret|) 동적 도출.",
+      "MRS_30_60_fixed": "ADDRESSED — Regime Engine v7.1 내부의 expanding percentile 기반 설명 추가.",
+      "VT_Regime_double_reduction": "PARTIALLY — min_exposure 0.25 상향 + VT 15% 상향으로 완화. 구조적 해소 불가 인정.",
+      "forbidden_expression": "ADDRESSED — 금지 표현 제거 확인."
+    }
+  }
+}

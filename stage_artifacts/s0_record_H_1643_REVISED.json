@@ -1,0 +1,66 @@
+{
+  "hypothesis_id": "H_1643_REVISED",
+  "str_id": "STR_1662",
+  "name": "Conditional Tail Defense 2F (D25+Q07)",
+  "expected_role": "defense",
+  "stage": "S0",
+  "status": "APPROVED_CONDITIONAL",
+  "debate_score": 64,
+  "timestamp": "2026-04-12T16:00:00",
+
+  "why_now": "PG0 defense family=0%. 원안 H_1643(CR05+V24+D25) REJECT 39/100 후 재설계. CR05 ICIR 실측 -0.168 기각, V24 ICIR -0.282 기각. Q07(L-121 양쪽 위기 최강)으로 교체.",
+
+  "factors": [
+    {
+      "name": "D25_Left_Tail_Beta",
+      "weight": 0.55,
+      "icir_full": 0.119,
+      "icir_stress": 0.393,
+      "icir_4r_crisis": -0.174,
+      "full_ic": 0.013,
+      "update_freq": "daily",
+      "note": "허들 미달(0.119<0.20). 4r CRISIS 반전. regime-conditional 활성화 필수."
+    },
+    {
+      "name": "Q07_Earnings_Stability",
+      "weight": 0.45,
+      "icir_full": 0.382,
+      "icir_stress": 0.753,
+      "icir_4r_crisis": 0.413,
+      "full_ic": 0.040,
+      "c19_corr": -0.092,
+      "update_freq": "quarterly",
+      "note": "288팩터 중 양쪽 위기 최강. L-121. Novy-Marx(2013) 학술 정합."
+    }
+  ],
+
+  "core_reference": [
+    {"ref_id": "A7.01", "paper": "Ang, Chen & Xing (2006) 'Downside Risk', RFS", "relevance": "D25 학술 근거"},
+    {"ref_id": "A7.05", "paper": "Novy-Marx (2013) 'The other side of value', JFE", "relevance": "Q07 학술 근거 — profitability-stability 분해"},
+    {"ref_id": "A7.06", "paper": "Asness et al. (2019) 'Quality Minus Junk', Review of Accounting Studies", "relevance": "Quality composite vs pure stability 차별화"}
+  ],
+
+  "lesson_check": [
+    {"code": "L-112", "summary": "Defense 조건부 평가 원칙 준수 (AX-001)"},
+    {"code": "L-113", "summary": "QMJ composite 실패 → Q07 순수 earnings stability로 메커니즘 분리"},
+    {"code": "L-121", "summary": "Q07 양쪽 위기 최강 (stress ICIR 0.753, 4r CRISIS 0.413)"},
+    {"code": "L-122", "summary": "Factor timing이 아닌 factor risk management 접근"}
+  ],
+
+  "success_criteria": {
+    "s1_stress_outperform": "6대 위기 중 4건+ 양수",
+    "s2_icir": ">= 0.20",
+    "s2_core_corr": "< 0.45 (C19 대비)",
+    "s1_mdd": "< 65%",
+    "s1_3way": "Q07 단독 vs 55:45 vs 30:70 비교. Q07 단독 우세 시 D25 제거."
+  },
+
+  "risk_factors": [
+    "D25 4r CRISIS ICIR -0.174 반전 (느린 둔화기 역작동)",
+    "Q07×Q02_ROE 상관 0.407 (Quality 오염 가능성 — S3 검증)",
+    "D25×Q07 IC 상관 0.430 (직교 가정 약화)",
+    "Q07 ICIR 주장 0.753 vs 실측 0.228~0.382 (위기 정의 차이)"
+  ],
+
+  "debate_reference": "stage_artifacts/S0_VERDICT_H_1643_REVISED.json"
+}

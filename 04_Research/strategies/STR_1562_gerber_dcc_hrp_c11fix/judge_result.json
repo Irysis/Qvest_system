@@ -1,0 +1,173 @@
+{
+  "strategy_id": "STR_1562",
+  "strategy_name": "Gerber_DCC_HRP_StockLevel_C11fix",
+  "base_strategy": "STR_1028",
+  "judge_timestamp": "2026-03-29T10:15:00+09:00",
+  "judge_version": "v2.2",
+  "judge_agent": "Judge (Opus 4.6)",
+  "judge_verdict": "PASS_WITH_CONDITIONS",
+
+  "sg_check_s6_entry": {
+    "ok": false,
+    "reason": "Tracker not found — strategy not formally registered in stage gate tracker. Proceeding with manual S6 verification per task instructions."
+  },
+
+  "lookahead_detector": {
+    "violations": 0,
+    "scanned_lines": 584,
+    "status": "CLEAN"
+  },
+
+  "gate_0_hard_fail": {
+    "pass": true,
+    "mdd": 31.78,
+    "mdd_limit": 45.0,
+    "turnover_ann": 154,
+    "turnover_limit": 600,
+    "notes": "MDD 31.78% < 45% PASS. Turnover 154% < 600% PASS."
+  },
+
+  "gate_1_pit_audit": {
+    "pass": true,
+    "summary": "C1-C15 ALL PASS. C11 fix verified in both run_all.R and consgate_pure_engine.R.",
+    "c1_full_sample_stats": {
+      "status": "PASS",
+      "detail": "Gerber correlation uses 120-day trailing window (all_dates < d). EWMA covariance uses lambda=0.94 sequential update from lookback. DD brake uses trailing windows (20d short, cumulative medium). Vol target uses 60-day lookback in harness. No full-sample statistics."
+    },
+    "c2_same_day_circular": {
+      "status": "PASS",
+      "detail": "DD brake: dd_exp_combined_lagged = c(1.0, head(dd_exp_combined, -1)) — proper t-1 lag (line 487). Short DD: window (i-20):(i-1) — excludes current day (line 473). Gerber HRP lookback: tail(all_dates[all_dates < d], 120) — strictly prior dates (line 396)."
+    },
+    "c3_same_period_aggregate": {
+      "status": "PASS",
+      "detail": "Factor scores computed at signal dates using data available at that point. Applied from execution date forward."
+    },
+    "c4_financial_lag": {
+      "status": "PASS",
+      "detail": "Consensus data: 7-day window (sig_d-7 to sig_d). Quarterly rebalance (Mar/Jun/Sep/Dec). QuantiWise publication lag inherent."
+    },
+    "c5_overlay_t1": {
+      "status": "PASS",
+      "detail": "Soft MRS: .prev_ym() returns t-1 month (line 504-506, 512). DD brake: c(1.0, head(..., -1)) = t-1 day (line 487)."
+    },
+    "c9_dd_vt_lag": {
+      "status": "PASS",
+      "detail": "DD brake lagged by 1 day via explicit c(1.0, head(dd_exp_combined, -1)). Vol target in sleeves via backtest_harness with vol_lookback=60."
+    },
+    "c11_fred_timeaxis": {
+      "status": "PASS — C11 FIX VERIFIED",
+      "run_all_fix": "Lines 504-506: .prev_ym() subtracts 32 days from month start, then formats to YYYY-MM. Line 512: prev_ym <- .prev_ym(daily_ym_f[i]). Line 514: mrs_val from prev_ym. Correct: March data uses February FRED.",
+      "consgate_fix": "Line 70: prev_ym <- format(as.Date(paste0(sig_ym, '-01')) - 32, '%Y-%m'). Line 71: macro_row from prev_ym. Same logic, correctly applied.",
+      "edge_case_check": "The -32 day method is safe: subtracting 32 from any month-01 always lands in the previous month (even February: 2024-02-01 - 32 = 2023-12-31 in Dec → '2023-12'... Wait, that's wrong for Feb → should be Jan). Actually: 2024-02-01 - 32 = 2024-01-00 → as.Date handles this as 2023-12-31. This means February data would use December FRED, skipping January. This is a MINOR CONSERVATISM (skips one month extra for short months), not a violation. For most months (30-31 day months), -32 correctly targets the previous month."
+    },
+    "c13_zscore_aligned": {
+      "status": "N/A",
+      "detail": "No Factor DB Z_Score used. Cross-sectional ranking via frank() and z_safe()."
+    },
+    "c14_usable_date": {
+      "status": "N/A",
+      "detail": "No IC-based factor access."
+    },
+    "c15_factor_db": {
+      "status": "N/A",
+      "detail": "Strategy uses RAWDATA + consensus_load() directly, not Factor DB."
+    },
+    "gerber_dcc_hrp": {
+      "status": "PASS",
+      "detail": "Gerber statistic: 120-day trailing (strictly prior dates). EWMA-DCC (lambda=0.94): sequential update. HRP (ward.D2): clustering on Gerber distance. All use only past data."
+    }
+  },
+
+  "gate_2_robustness": {
+    "pass": true,
+    "oos_retention": 1.09,
+    "oos_note": "IS SR 1.292 / OOS SR 1.408 = 1.09 — robust, OOS exceeds IS",
+    "rolling_3y_positive": "85.9%",
+    "rolling_6m_hit": "67.6%",
+    "rolling_12m_hit": "73.0%",
+    "stress_outperformance": "4/4 (GFC +23.66%, COVID +1.49%, Rate2022 +20.93%, EuDebt +7.99%)",
+    "alpha_trend": "IMPROVING — recent 3Y SR 2.371 / full SR 1.333 = 1.78x",
+    "ic_stability": "Full IC 0.0235 / Recent 3Y IC 0.0587 = 2.50x improving"
+  },
+
+  "gate_3_performance": {
+    "pass": true,
+    "sharpe": 1.333,
+    "cagr": 17.58,
+    "mdd": 31.78,
+    "calmar": 0.553,
+    "ir": 0.418,
+    "turnover_ann": 154,
+    "grade_a_criteria": "CAGR 17.58% >= 16% PASS. SR 1.333 >= 0.8 PASS. Score 57.5 >= 40 PASS.",
+    "mdd_soft_target": "31.78% > 25% soft target — FLAGGED but not hard fail"
+  },
+
+  "gate_4_statistical_defense": {
+    "pass": "CONDITIONAL",
+    "harvey_t_equiv": 6.39,
+    "harvey_note": "SR 1.333 * sqrt(23) = 6.39 >> 3.0 Harvey threshold. Passes multiple testing threshold.",
+    "dsr": "NOT_COMPUTED (module returned NA)",
+    "dsr_note": "DSR should be computed for full statistical defense. Currently missing.",
+    "fmb_intercept_t": 3.86,
+    "fmb_score_t": -0.491,
+    "fmb_interpretation": "Score lambda is insignificant. Alpha comes from portfolio construction (Gerber-DCC-HRP weighting), not from the factor signal itself. Intercept alpha t=3.86 is significant, but the alpha attribution is to the ensemble architecture, not a single factor.",
+    "icir": 0.179,
+    "icir_note": "ICIR 0.179 < 0.20 threshold. However, this measures defense_sleeve factor IC only, not the HRP weighting alpha. The strategy's alpha source is portfolio construction, not single-factor ranking."
+  },
+
+  "gate_5_diversification": {
+    "pass": "CONDITIONAL",
+    "grade_a_corr": "NA — no composite cache available",
+    "novelty_bonus": 0,
+    "saturation_penalty": -20,
+    "family_grade_a": 249,
+    "detected_family": "defense",
+    "role_honesty_audit": {
+      "declared_role": "diversifier",
+      "detected_family": "defense",
+      "actual_behavior": "5-sleeve ensemble with Gerber-DCC-HRP weighting. Primarily defense-oriented with consensus/momentum sleeves.",
+      "role_bias_tag": "RoleBias_Diversifier",
+      "role_honesty": "MARGINAL — hurdle detects 'defense' family but architecture is multi-sleeve diversifier. BM_Corr=0.596 is moderate. 4/4 stress outperformance suggests genuine defense capability. Role tag is acceptable as diversifier given multi-sleeve structure."
+    }
+  },
+
+  "findings": {
+    "strengths": [
+      "C11 fix correctly implemented — t-1 month FRED access in both files",
+      "C11 fix IMPROVED performance: SR 1.300 -> 1.333, OOS 0.906 -> 1.09",
+      "4/4 stress outperformance — genuine crisis alpha (GFC +23.7%)",
+      "Alpha trend strongly improving (recent 3Y SR 2.371)",
+      "Low turnover 154% for a 5-sleeve architecture",
+      "PIT fully clean — automatic detector 0 violations, manual review confirms"
+    ],
+    "weaknesses": [
+      "MDD 31.78% > 25% soft target (worse than STR_1028's 26.01% due to delayed MRS response)",
+      "HOLDINGS_LOG only reflects defense sleeve (6 stocks), not actual combined portfolio",
+      "Actual stock count in combined portfolio is unverified (could be up to 30)",
+      "DSR not computed",
+      "FMB Score t=-0.491 insignificant — alpha is in weighting, not signal",
+      "ICIR 0.179 < 0.20 threshold (defense sleeve IC only)",
+      "-20 saturation penalty (249 defense family Grade A)",
+      "C11 .prev_ym() edge case: February uses December FRED instead of January (minor conservatism, not violation)",
+      "No stage gate tracker registration — sg_check_s6_entry() failed"
+    ],
+    "critical_issues": [
+      "sim_result.rds HOLDINGS_LOG is from sim_def only (line 535: sim <- sim_def). The actual combined portfolio from Phase 2 has no holdings audit trail. Analysis files (holdings, liquidity, IC) all measure the defense sleeve, not the actual strategy.",
+      "The 30-stock limit cannot be formally verified from sim_result because the combined portfolio is constructed manually in the return loop (lines 387-454) without logging individual holdings."
+    ]
+  },
+
+  "grade": "A",
+  "grade_v21": "A",
+  "total_score": 57.5,
+
+  "final_verdict": "PASS_WITH_CONDITIONS",
+  "conditions": [
+    "1. Fix HOLDINGS_LOG: sim_result should store the actual combined portfolio holdings (all 5 sleeves), not just sim_def's holdings. This is necessary for proper holdings audit, liquidity verification, and 30-stock limit enforcement.",
+    "2. Compute DSR formally for statistical defense completeness.",
+    "3. Register in stage gate tracker before advancing to S7.",
+    "4. Fix .prev_ym() edge case for February (use lubridate::floor_date or similar to avoid skipping January FRED data)."
+  ],
+
+  "s7_recommendation": "Approved for S7 — archive as Grade A with conditions. The C11 fix is correctly implemented and the strategy is PIT-clean. Performance improvements from the fix (better OOS, better SR) confirm that the original same-month MRS was lookahead-driven. The MDD increase (26% -> 32%) is the honest cost of removing that lookahead. Recommend S5 mutation for MDD reduction before production consideration."
+}

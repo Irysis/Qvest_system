@@ -1,0 +1,117 @@
+{
+  "factor_id": "ATYP_Atypicality_Information_Processing",
+  "strategy_id": "STR_1658_atypicality_diversifier",
+  "stage": "S0",
+  "verdict": "REVISE",
+  "total_score": 62,
+  "session": 57,
+  "date": "2026-04-10",
+  "designer": "Scout",
+  "debate_version": "1.0",
+
+  "scores": {
+    "critic": {
+      "score": 15,
+      "max": 25,
+      "key_points": [
+        "Linear deviation은 autoencoder의 '근사'가 아님. PCA와도 구조적으로 다름. 팩터 간 상관을 무시하는 단순 합산은 Weibels의 비선형 manifold 측정과 별개의 변수(-3)",
+        "ATYP_SCORE 6개 팩터 선택 자의성. '5대 family에서 각 1개' 논거 불충분. data mining 위험(-3)",
+        "CR11 전체기간 ICIR -0.383, regime_profile elevated/crisis 모두 negative. 0.013 conditional_value는 노이즈 수준(-2)",
+        "Moderate ATYP + Value filter = 사실상 sector-relative value screen. V10이 주요 alpha driver 될 가능성(-2)",
+        "Complexity family 최초 진입의 탐색적 가치 인정(+4)",
+        "PIT-safe 설계 판단 인정(+1)"
+      ]
+    },
+    "quant": {
+      "score": 17,
+      "max": 25,
+      "key_points": [
+        "Factor DB 7개 팩터 전부 active, load_month_factors() 경유 가능. C13/C15 준수(+3)",
+        "ATYP_SCORE PIT 설계 견고: cross-sectional z-score = 해당 시점만 사용, expanding window, C4 lag(+4)",
+        "Direction 혼재: higher_better(Q09,V10,GR02) vs lower_better(AC07,L01,D01). 절대편차 사용 시 방향 정보 소실 문제(-2)",
+        "Mahalanobis distance 미고려: 팩터 간 공분산 미반영으로 특정 차원 과의존 위험(-2)",
+        "Composite 가중치(0.4/0.4/0.2) 합리적. CR11 20% 제한 적절(+2)",
+        "외부 데이터 불필요, 기존 인프라로 구현 가능(+2)"
+      ]
+    },
+    "academic": {
+      "score": 14,
+      "max": 25,
+      "key_points": [
+        "Weibels(2025)은 peer-reviewed 미게재 working paper. 학술적 견고성 불완전(-3)",
+        "Limited attention 이론 체계(Kahneman 1973 -> Barberis & Shleifer 2003 -> Hong & Stein 1999) 견고(+4)",
+        "Autoencoder -> linear deviation 변환은 원논문 핵심 방법론 포기. core_reference로서 인용 적절성 의문(-4)",
+        "한국/아시아 시장 실증 전무. 재벌 구조의 비전형성 왜곡 가능성(-3)",
+        "Moderate ATYP(40-80th) 전략 변형에 대한 학술 근거 불충분(-1)",
+        "Chib et al.(2025) 참조로 CR11 채널 간접 지지(+1)"
+      ]
+    },
+    "risk_manager": {
+      "score": 16,
+      "max": 25,
+      "key_points": [
+        "Complexity family 최초 전략: 기저 실패율 높음(-3)",
+        "경로 B Explore 버킷 내 가설. PG0 SR gap +0.757 상황에서 새 family 시도의 전략적 가치(+3)",
+        "Kill scenario 명확: (1) S2 ICIR<0.15 -> linear proxy 실패, (2) S3 anchor corr>0.50 -> diversifier 실패(-2)",
+        "앵커 상관 예상 0.20-0.40 (V10 value exposure로 상향 가능)(+2)",
+        "비전형적 기업 위기 시 유동성 고갈(flight to quality) 위험(-2)",
+        "비대칭 payoff: 실패 비용 낮음(기존 DB 가공만), 성공 편익 높음(새 alpha dimension)(+2)"
+      ]
+    }
+  },
+
+  "verdict_reasoning": "합산 62/100으로 REVISE 구간(50-69). 핵심 약점 4가지: (1) CR11 ICIR 음수 포함 위험, (2) ATYP_SCORE 팩터 선택 자의성, (3) linear deviation의 autoencoder 대체 한계 과소평가, (4) direction 처리 방법 미명시. 그러나 경제적 메커니즘(limited attention + gradual diffusion)은 견고하고, complexity family 최초 진입의 탐색적 가치가 높으며, PIT 설계가 안전합니다. 수정 4건 반영 후 재심의 권고.",
+
+  "revise_conditions": [
+    {
+      "id": "REV-1",
+      "requirement": "CR11 제거 또는 대체. ICIR -0.383 팩터 포함 철회. ATYP(0.6)+V10(0.4) 2-factor 단순화, 또는 crisis ratio 양수 대안 팩터(CR05 등)로 교체.",
+      "priority": "HIGH",
+      "rationale": "음수 ICIR 팩터의 20% 포함은 alpha 희석 + 위기 시 역방향 리스크. L-119(정적 EW blend alpha 희석) 교훈 적용."
+    },
+    {
+      "id": "REV-2",
+      "requirement": "ATYP_SCORE 6개 팩터 각각에 대해 Weibels(2025) 87개 특성 목록과 대조한 구체적 선택 근거. 대안으로 Factor DB 내 상관이 최소인 팩터 자동 선택 알고리즘 제시.",
+      "priority": "MEDIUM",
+      "rationale": "6개 선택의 자의성이 data mining 위험을 내포. 선택 기준의 체계화가 필요."
+    },
+    {
+      "id": "REV-3",
+      "requirement": "Linear deviation이 autoencoder의 1차 근사라는 주장 철회. '부분적 포착만 가능하며 S5에서 PCA-based/Mahalanobis upgrade'로 명시 수정.",
+      "priority": "MEDIUM",
+      "rationale": "학술적 정직성. Hinton & Salakhutdinov(2006) 정리의 오용 방지."
+    },
+    {
+      "id": "REV-4",
+      "requirement": "업종 내 편차 계산 시 양방향 이탈 동일 처리 vs 방향별 차등 처리의 경제적 논리 명시.",
+      "priority": "LOW",
+      "rationale": "Q09에서 업종 평균보다 높은 기업(우량)과 낮은 기업(불량)을 동일 '비전형'으로 분류하는 것의 경제적 정당성 필요."
+    }
+  ],
+
+  "kill_scenarios": [
+    {
+      "id": "KILL-1",
+      "trigger": "S2 ATYP_SCORE standalone ICIR < 0.15",
+      "action": "Linear proxy 실패 확정. S5 PCA/autoencoder mutation 없이 폐기.",
+      "rationale": "Alpha Lab Gate(ICIR >= 0.20) 기준으로부터 ATYP_SCORE가 0.15 미만이면 linear deviation이 비전형성을 의미있게 측정하지 못하는 것."
+    },
+    {
+      "id": "KILL-2",
+      "trigger": "S3 STR_1631(Core) 포트폴리오 상관 > 0.50",
+      "action": "Diversifier 역할 기각. Core Alpha로 재분류하거나 폐기.",
+      "rationale": "L-118-ext(단면 상관 낮아도 beta 지배로 포트폴리오 상관 높음) 위험. Diversifier는 앵커 상관 0.30 미만이 목표."
+    }
+  ],
+
+  "next_step": "Scout: REV-1~REV-4 반영하여 s0_record v1.1 작성 후 재심의. 재심의 통과 시 STR_1658 번호 확정 + Forge S1 배정.",
+
+  "lesson_check_applied": [
+    "L-117: complexity family 0% 구축 확인 -> 탐색 정당성 인정",
+    "L-118-ext: 단면 상관 낮아도 포트폴리오 상관 높을 수 있음 -> KILL-2 설정",
+    "L-119: 정적 EW blend alpha 희석 -> CR11 음수 ICIR 포함 위험 경고",
+    "L-124: Tree > Linear in KR -> linear proxy alpha 손실 경고",
+    "L-087: 롱온리 low-risk sorting 무효 -> CR11 idiosyncratic return premium 의문",
+    "L-113: QMJ defense 실패 -> quality 기반 defense와 ATYP는 구조적으로 다름 인정"
+  ]
+}

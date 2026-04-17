@@ -1,0 +1,155 @@
+{
+  "factor_id": "H_1675_Q07_D29_ConditionalDefense",
+  "strategy_id": null,
+  "stage": "S0",
+  "version": "1.0",
+  "designer": "Scout (S0 Debate 5-agent, Session 63)",
+  "created_at": "2026-04-16",
+  "revision_from": "STR_1662(D25+Q07, Grade C Score 9.4) + DFA_v2(Q07+Q03+D29, REVISE)",
+
+  "hypothesis": "Q07(이익안정성)을 앵커(>=65%)로 하고 D29(Accounting Beta)를 보조(<=35%)로 사용하며, D04(하방베타) 하위 10% 회피필터 + Q01(GPA) > 0 cross-exposure 필터를 적용하여, Regime v7.1 연동 조건부 활성화(정상 0%, 경계 10~15%, 위기 20~30%)로 운용하는 defense sleeve. 정적 defense(STR_1662 SR 0.19)의 alpha 희석을 조건부 배분으로 극복하고, M01(momentum crash CRISIS ICIR -0.132)을 제거하여 위기 시 역defense 위험을 차단.",
+
+  "economic_mechanism": {
+    "core_paradigm": "Factor Risk Management, NOT Factor Timing. Arnott(2016) factor timing 부정적 vs Barroso&Santa-Clara(2015) risk-managed 접근 robust (L-122). Defense 팩터를 '위기 예측'이 아닌 '위기 확인 시 방어력 강화'로 사용.",
+
+    "why_q07_anchor": "Dichev & Tang(2009, TAR): 이익 변동성 낮은 기업은 미래 이익 예측력이 높고, 위기 시 펀더멘털 훼손이 적어 할인율 상승 폭 제한. 프로젝트 실증: stress ICIR +0.753 (8대 급락 사건), 4r-CRISIS ICIR +0.413 (MRS 상위 25%), 전기간 ICIR 0.929. 288팩터 중 양쪽 위기 정의 모두 최강(L-121). C19 상관 -0.092(독립). QMJ(L-113 실패)와의 차이: QMJ = multi-dimension composite의 beta 오염. Q07 = 이익변동성 단일 차원으로 QMJ beta 오염 회피.",
+
+    "why_d29_secondary": "Beaver, Kettler & Scholes(1970): 회계 기반 beta는 시장 beta보다 안정적이고 미래 risk 예측력 높음. D29는 이익-시장수익률 회귀 기반 accounting beta로, noise가 적고 구조적 위험 포착. 실증: stress ICIR +0.737, 4r-CRISIS ICIR +0.315, crisis_ratio 1.42. Q07과 다른 경제적 채널(재무제표 vs 가격) — 직교적 설계. 전기간 ICIR 0.109로 평시 alpha 없음 → 정적 배분 부적합, 위기 시에만 활성화 필수(AX-001 조건부 평가).",
+
+    "why_not_d04": "S0 Debate Quant 발견: D04 All ICIR -0.170, CRISIS ICIR -0.260. 팩터 레벨에서 alpha 기여 미미. 박종원(2024): 한국 롱온리 beta sorting alpha 부재. Ang et al.(2006) 원논문은 미국시장이며 한국 이전 불확실. D04는 score가 아닌 회피 필터로 전환: 하위 10%(극단 하방 민감) 종목 제거하여 tail risk 차단.",
+
+    "why_not_m01": "S0 Debate Quant 핵심 발견: M01 CRISIS ICIR = -0.132. 위기 시 momentum crash로 defense와 모순. Defense 전략에 momentum 포함은 논리적 결함. 제거.",
+
+    "conditional_activation": "L-119(정적 EW 블렌드 = alpha 희석) 교훈 적용. STR_1662(정적 D25+Q07 55/45) SR 0.193 실패. H_1643_REVISED의 조건부 설계 계승: Regime v7.1 MRS 기준 3단계 활성화. 정상(MRS<20, ~76%): Core 100%, Defense 0%. 경계(20<=MRS<50, ~16%): Core 85~90%, Defense 10~15%. 위기(MRS>=50, ~8%): Core 70%, Defense 30%. Portfolio-level score blend(종목 레벨 합산, L-484 30종목 준수).",
+
+    "cross_exposure_control": "Kim Saejoon(2021, PBFJ): 한국시장 long-only에서 unintended negative factor exposure 제거 시 팩터 프리미엄 순수 실현. Q01(GPA) > 0 필터로 수익성 음의 노출 제거. M01 필터는 제거(momentum crash 위험). S0 Debate Governor 경고: Q01>0 필터가 C19과 종목 overlap 유발 가능 → S2에서 반드시 Core 대비 종목 overlap rate 사전 검증. Overlap > 50% 시 Q01 필터 완화 또는 sector neutrality 대체."
+  },
+
+  "factors": [
+    {
+      "name": "Q07_Earnings_Stability",
+      "family": "quality_earnings",
+      "role_in_strategy": "Primary defense anchor (>=65% weight in defense composite)",
+      "ic_profile": {
+        "full_icir": 0.929,
+        "stress_icir": 0.753,
+        "4r_crisis_icir": 0.413,
+        "corr_with_C19": -0.092,
+        "normal_icir": 0.776,
+        "crisis_ratio": 1.04
+      },
+      "literature": "Dichev & Tang (2009, TAR)"
+    },
+    {
+      "name": "D29_Accounting_Beta",
+      "family": "defense_accounting",
+      "role_in_strategy": "Secondary defense (<=35% weight in defense composite)",
+      "ic_profile": {
+        "full_icir": 0.109,
+        "stress_icir": 0.737,
+        "4r_crisis_icir": 0.315,
+        "crisis_ratio": 1.42,
+        "note": "전기간 ICIR 매우 낮음. 위기 시에만 방어력 발휘. AX-001 조건부 평가 적용."
+      },
+      "literature": "Beaver, Kettler & Scholes (1970), Campbell, Hilscher & Szilagyi (2008)"
+    },
+    {
+      "name": "D04_Downside_Beta",
+      "family": "defense_market",
+      "role_in_strategy": "Avoidance filter only (하위 10% 제거, score에 불포함)",
+      "ic_profile": {
+        "full_icir": -0.170,
+        "crisis_icir": -0.260,
+        "note": "Score 기여 없음. 극단 하방 민감 종목 사전 제거 역할만."
+      },
+      "literature": "Ang, Chen & Xing (2006, JF) — 한국 롱온리 유효성 제한(박종원 2024)"
+    },
+    {
+      "name": "Q01_GPA",
+      "family": "quality_profitability",
+      "role_in_strategy": "Cross-exposure filter (Z_Score > 0, score에 불포함)",
+      "ic_profile": {
+        "full_icir": 0.468,
+        "crisis_icir": 0.399,
+        "stress_icir": 0.642
+      },
+      "literature": "Kim Saejoon (2021, PBFJ), Novy-Marx (2013)"
+    }
+  ],
+
+  "implementation_sketch": {
+    "defense_composite": "Score_defense = 0.65 * Z(Q07) + 0.35 * Z(D29). Z = Z_Score_Aligned (C13 준수).",
+    "filters": [
+      "LIQ >= 2e8 (20일 평균 거래대금)",
+      "D04_Downside_Beta Z_Score_Aligned > percentile_10 (하위 10% 제거)",
+      "Q01_GPA Z_Score_Aligned > 0 (수익성 음의 노출 제거)"
+    ],
+    "universe": "Filter 통과 → Score_defense 상위 30종목, EW, 월간 리밸런싱",
+    "regime_activation": {
+      "normal":  {"condition": "MRS < 20 (t-1)", "defense_weight": 0.00, "core_weight": 1.00},
+      "caution": {"condition": "20 <= MRS < 50 (t-1)", "defense_weight": 0.15, "core_weight": 0.85},
+      "crisis":  {"condition": "MRS >= 50 (t-1)", "defense_weight": 0.30, "core_weight": 0.70}
+    },
+    "blend_method": "Portfolio-level score blend: Final_Score = w_core * Z(C19) + w_defense * Score_defense. Top 30 by Final_Score. L-484 30종목 제약 준수.",
+    "commission": "15bps",
+    "pit_compliance": {
+      "C1": "Z_Score_Aligned = expanding window 기반 standardization",
+      "C2": "MRS t-1 lag (C9 준수). Factor values: Factor_Date < sig_date",
+      "C4": "Q07: 재무제표 Usable_Date 경유. D29: 분기 재무 45일 lag",
+      "C5": "Regime activation: t-1 MRS 기준",
+      "C13": "Z_Score_Aligned only. 수동 방향 반전 금지",
+      "C15": "load_month_factors() 경유"
+    }
+  },
+
+  "expected_role": "defense",
+  "why_now": "PG0 gap: defense sleeve 부재. SR 1.193 → 2.0 달성을 위해 위기 시 MDD 추가 축소 필요. Q07이 288팩터 중 양쪽 위기 최강으로 검증(L-121)되었으나, 정적 배분(STR_1662 SR 0.19)으로는 실패. 조건부 활성화로 평시 drag 제거가 핵심.",
+
+  "core_reference": [
+    {"id": "A_Dichev_Tang_2009", "title": "Earnings Volatility and Earnings Predictability", "journal": "The Accounting Review", "status": "peer_reviewed"},
+    {"id": "B7_Kim_2021", "title": "Enhanced Factor Investing in Korean Stock Market", "journal": "Pacific-Basin Finance Journal", "status": "peer_reviewed"},
+    {"id": "B7_Park_2024", "title": "시장이상현상을 활용한 팩터 투자전략 성과 분석", "journal": "재무관리연구", "status": "peer_reviewed"},
+    {"id": "A_Beaver_1970", "title": "The Association Between Market-Determined and Accounting-Determined Risk Measures", "journal": "The Accounting Review", "status": "peer_reviewed"}
+  ],
+
+  "lesson_check": [
+    {"code": "L-121", "summary": "Q07 양쪽 위기 최강. stress ICIR +0.753, 4r CRISIS +0.413. C19 상관 -0.09."},
+    {"code": "L-122", "summary": "Factor timing 아닌 factor risk management. Barroso&SC(2015) robust."},
+    {"code": "L-119", "summary": "정적 EW 팩터 블렌드 = alpha 희석. 국면 조건부 동적 배분 필요."},
+    {"code": "L-113", "summary": "QMJ 기반 Quality defense 한국시장 실패. Q07은 단일 차원으로 QMJ 오염 회피."},
+    {"code": "L-100", "summary": "Q07 standalone SR 0.597, MDD 62.7% Hard Fail. 정적 단독 사용 불가."},
+    {"code": "L-129", "summary": "CDaR LP 단독 집중도 상승 → MDD 악화. 고급 가중법보다 EW + 조건부 배분이 robust."}
+  ],
+
+  "s0_debate_result": {
+    "total_score": 74,
+    "verdict": "REVISE → H_1675 수정안 작성",
+    "debaters": [
+      {"role": "codex_critic", "score": 15, "key_finding": "PIT 위험 최저. C4 래깅 확인 필수. daily/monthly Q07 정의 혼용 주의."},
+      {"role": "risk_manager", "score": 13, "key_finding": "Q07 stress t=6.21 유의. D04+Q07 동일 구간 작동 → 분산 제한. 4중 필터 = Quality-Momentum 클러스터 위험."},
+      {"role": "governor", "score": 13, "key_finding": "Defense 필요성 인정. STR_1662 Grade C 개선 근거 부족. 조건부 활성화 필수."},
+      {"role": "quant", "score": 16, "key_finding": "4팩터 DB 보유. 교차필터 후 114~186종목 충분. M01 CRISIS -0.132 제거 필수. D29 대체 추천."},
+      {"role": "academic", "score": 17, "key_finding": "3편 피어리뷰 확정. 한국 직접 2편. Quality crowding 한국시장 제한적."}
+    ],
+    "revise_conditions_applied": [
+      "M01 제거 → D29 대체 (CRISIS ICIR -0.132 → +0.315)",
+      "D04 score → 회피필터 전환 (All ICIR -0.170)",
+      "조건부 활성화 (Regime v7.1 MRS 3단계)",
+      "Q07 앵커 ≥ 65%",
+      "Cross-filter Core 상관 사전 검증 S2 조건부"
+    ]
+  },
+
+  "s1_prerequisites": [
+    "D04 vs D25 상관 확인 (0.8+ 시 동일 팩터 취급)",
+    "Q01>0 필터 후 C19 종목 overlap rate 측정 (50%+ 시 필터 완화)",
+    "Q07 monthly vs daily 정의 통일 (compute_quality.R line 787 vs phase8 line 170)",
+    "STR_1662 S5 M6(IVOL 가중 SR 0.724) 대비 개선 목표: defense composite SR > 0.75 OR Core+Defense MDD < 23%"
+  ],
+
+  "kill_conditions": [
+    "Q07+D29 defense composite의 Core(STR_1631) 위기 상관 > 0.70 → defense 역할 부적합",
+    "교차필터 후 유동성 통과 종목 < 20 → idiosyncratic risk 지배",
+    "조건부 활성화 후 portfolio SR < 1.15 (현재 1.193 대비 악화) → defense drag 과다"
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1670",
+  "hypothesis_name": "Liquidity Diversifier 2-Factor (L31_Vol_Concentration + L40_VWAP_Spread)",
+  "round": "R1",
+  "score": 18,
+  "scoring_detail": {
+    "gap_alignment": {
+      "score": 3,
+      "max": 4,
+      "rationale": "SR gap 0.807이 유일한 미달 축이며 Diversifier 추가가 정석 경로. 다만 L31/L40 모두 conditional_value 음수(bad regime IC < good regime IC)로 위기 시 분산 효과 약화 우려"
+    },
+    "role_match": {
+      "score": 4,
+      "max": 4,
+      "rationale": "gap_vector sleeve_needs=diversifier와 정확히 일치. C19 상관 0.004/0.010으로 Core Alpha와 구조적 독립. 역할 위장 가능성 극히 낮음"
+    },
+    "family_saturation": {
+      "score": 4,
+      "max": 4,
+      "rationale": "Liquidity family 현재 비중 0%. 44개 팩터 보유하나 포트폴리오 미활용. Family cap 35% 대비 신규 진입. Saturation penalty 없음. 다양성 극대화 최적"
+    },
+    "marginal_contribution": {
+      "score": 3,
+      "max": 4,
+      "rationale": "ICIR 0.990/0.826으로 S2 hurdle 대폭 초과. 그러나 두 팩터 모두 regime_profile crisis=negative, evidence_tier=B. 동일 liquidity_cluster 소속으로 2팩터 블렌드의 실질 분산이 제한적일 가능성"
+    },
+    "implementation_feasibility": {
+      "score": 4,
+      "max": 4,
+      "rationale": "data_source=rawdata, lag_rule=Date<=sig_d로 PIT 구현 단순. EW 30종목 15bps 표준 조건 하 구현 장벽 낮음. turnover_profile=high이나 S1/S2에서 검증 가능"
+    }
+  },
+  "arguments": [
+    "현재 포트폴리오의 유일한 미달 축인 SR gap 0.807 해소에 Liquidity family Diversifier가 구조적으로 적합합니다. Consensus 50% + ML 50% 구성에서 Liquidity 0%는 family 편중 상태이며, L31/L40의 C19 상관 0.004/0.010은 기존 Core Alpha와의 독립성을 실증적으로 보장합니다.",
+    "Family saturation 관점에서 327개 레지스트리 중 44개 Liquidity 팩터가 포트폴리오에서 전무한 상태는 탐색 우선순위가 가장 높은 미개척 영역입니다. QEPM 제9조 Factor Taxonomy 기준, 미구축 family 우선 탐색 원칙에 부합하며 family concentration cap 35%에 여유가 충분합니다.",
+    "ICIR 0.990(L31)과 0.826(L40)은 Alpha Lab Gate 기준(0.20)을 4~5배 초과하는 수치로, 신호 안정성이 매우 높습니다. 다만 conditional IC matrix에서 두 팩터 모두 bad regime IC가 good regime IC보다 낮고(conditional_value 음수), regime_profile crisis=negative이므로 위기 방어력은 Defense 슬리브(Q07)에 위임하는 역할 분리가 전제되어야 합니다."
+  ],
+  "concern": "두 팩터가 동일한 liquidity_cluster 상관 그룹에 속하고 regime_profile crisis=negative라는 점에서, 실질 분산 기여가 단일 팩터 대비 제한적일 수 있습니다. S3 직교성 검증에서 L31-L40 간 상관을 반드시 확인하고, 위기 국면 IC 하락 폭이 포트폴리오 MDD에 미치는 영향을 S4 한계기여 단계에서 정량 측정해야 합니다.",
+  "conditions": [
+    "S3 직교성 검증에서 L31-L40 팩터 간 상관계수가 0.6 이하임을 확인할 것. 초과 시 단일 팩터(ICIR 상위)로 전환 검토",
+    "S4 한계기여에서 위기 국면(MRS CAUTION/RISK_OFF) 포트폴리오 MDD 악화가 2%p 이내임을 확인할 것. Defense(Q07) 슬리브와의 역할 보완성 정량 검증 필수",
+    "S2 프로파일에서 turnover_profile=high 레이블에 대해 실제 연간 회전율이 600% hard fail 기준 이내이고, 거래비용 감안 후 net ICIR >= 0.20 유지를 확인할 것"
+  ],
+  "portfolio_context": {
+    "current_blend": "consensus 50% + ML 50%",
+    "family_concentration": {
+      "consensus": 0.5,
+      "ML_complexity": 0.5,
+      "liquidity": 0.0
+    },
+    "gap_vector": {
+      "sr_gap": 0.807,
+      "cagr_gap": -0.0014,
+      "mdd_gap": -0.0373
+    },
+    "regime_state": "CAUTION (29.2, 2026-04-09)",
+    "family_cap": 0.35
+  },
+  "timestamp": "2026-04-12T00:00:00",
+  "version": "governor_debate_r1_v1.0"
+}

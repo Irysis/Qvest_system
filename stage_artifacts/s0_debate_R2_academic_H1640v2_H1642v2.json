@@ -1,0 +1,106 @@
+{
+  "debate_id": "S0_DEBATE_R2_ACADEMIC_H1640v2_H1642v2",
+  "round": "R2",
+  "reviewer": "Scout_Academic",
+  "timestamp": "2026-04-09T01:00:00+09:00",
+  "parent_debate": "S0_DEBATE_H1640_H1641_H1642",
+  "expected_role": "RoleBias_Diversifier",
+  "why_now": "SR gap +0.757 (PG0)",
+
+  "scoring_criteria": {
+    "peer_review": "5pts -- tier-1 peer-reviewed 논문 근거, 교차 메커니즘 선행연구 유무",
+    "mechanism_align": "5pts -- 팩터간 정보 원천 독립성, low-beta 교차 논리 정합성",
+    "korea_evidence": "5pts -- 한국시장 실증(L-code, 박종원 2024, Factor DB 통계)",
+    "substantive_cite": "5pts -- 실질적 vs 형식적 인용 비율, 원 논문 메커니즘과의 정합도",
+    "time_decay": "5pts -- anomaly 시간 경과 감쇠 증거, recent vs full-period 비교"
+  },
+
+  "hypotheses": {
+    "H_1640_v2": {
+      "title": "AC17+L22 2F, expanding-percentile beta bottom 50%",
+      "new_references_v2": ["Hou & Moskowitz (2005, RFS) Price Delay"],
+      "scores": {
+        "peer_review": 4,
+        "mechanism_align": 4,
+        "korea_evidence": 3,
+        "substantive_cite": 3,
+        "time_decay": 3
+      },
+      "total": 17,
+      "rationale": {
+        "peer_review": "4/5. R1(3)+1. Hou-Moskowitz 추가로 low-beta x autocorrelation 교차의 이론적 근거 보강. price delay != autocorrelation이므로 간접적 근거. AC17 x low-beta 직접 선행연구 여전히 부재.",
+        "mechanism_align": "4/5. AC17(회계)+L22(미시구조) 2F 정보 원천 독립성 명확. Low-beta 필터로 정보 반영 느린 영역 제한은 합리적. Expanding-percentile C1 준수 구조적 개선.",
+        "korea_evidence": "3/5. L-550 accrual 사망 선언 vs AC17 recent_3y_icir 0.674 긴장. L22 standalone SR 0.397(L-067). 박종원(2024) accrual 조건부 유의.",
+        "substantive_cite": "3/5. 6건 중 4건 실질적, 2건 간접적(Hou-Moskowitz, Palmon). price delay와 autocorrelation의 개념적 차이.",
+        "time_decay": "3/5. AC17 175개월 제약+L-550. L22 254개월 전구간 양수 IC이나 최근 소폭 감쇠."
+      },
+      "key_improvement_from_R1": "Hou-Moskowitz로 교차 메커니즘 이론적 밀도 상승. Expanding-percentile C1 구조적 준수.",
+      "remaining_weakness": [
+        "AC17 한국시장 유효성(L-550 vs recent ICIR 긴장)",
+        "low-beta = 저커버리지 가정 한국시장 미검증",
+        "2F 복잡성 대비 1F(L22)+beta 필터와의 차별점 불명확"
+      ]
+    },
+    "H_1642_v2": {
+      "title": "AC17+L22+Q04 3F, expanding-percentile beta bottom 40%",
+      "new_references_v2": ["Asness, Frazzini & Pedersen (2015/2019) Quality Minus Junk", "Hou & Moskowitz (2005, RFS) Price Delay"],
+      "scores": {
+        "peer_review": 4,
+        "mechanism_align": 3,
+        "korea_evidence": 3,
+        "substantive_cite": 4,
+        "time_decay": 3
+      },
+      "total": 17,
+      "rationale": {
+        "peer_review": "4/5. R1(3)+1. Asness(2019) QMJ로 3F 교차의 이론적 프레임워크 확보. 원 논문은 quality+value 시너지이며, quality+accrual+microstructure 교차는 외삽.",
+        "mechanism_align": "3/5. R1(4)-1. Q04 추가가 메커니즘 정합성을 복잡하게 함. Q04-C19 부분 중복(L-113 quality defense 실패)이 diversifier 역할과 충돌 가능. 3팩터 교차 직접 선행연구 부재.",
+        "korea_evidence": "3/5. L-550(accrual 사망)+L-113(quality defense 실패) 이중 리스크. Q04 FMB t=3.087(Harvey PASS) 강점. L22 FMB t=2.48 Harvey 미달.",
+        "substantive_cite": "4/5. R1(3)+1. 8건 중 5건 실질적. Asness(2019)는 간접적 외삽이나 tier-1 논문의 합리적 확장.",
+        "time_decay": "3/5. AC17 175개월 제약+L-550. Q04 recent 강화 추세(0.532>0.276) 긍정적. 3F blend decay 분산 효과 인정."
+      },
+      "key_improvement_from_R1": "Asness(2019) QMJ로 3F 교차 이론적 프레임 확보. 인용 밀도 상승.",
+      "remaining_weakness": [
+        "3F 교차 직접 선행연구 부재(외삽만)",
+        "Q04-C19 중복 미해소",
+        "L-113 quality defense 실패와의 긴장",
+        "3F 복잡성 대비 2F(H_1640_v2) 대비 incremental benefit 불분명"
+      ]
+    }
+  },
+
+  "aggregate": {
+    "H_1640_v2": 17,
+    "H_1642_v2": 17,
+    "average": 17.0,
+    "R1_average": 16.0,
+    "R2_improvement": "+1.0"
+  },
+
+  "unresolved_concerns": [
+    {
+      "id": "UC1",
+      "concern": "L-550 vs AC17 recent ICIR 긴장",
+      "severity": "HIGH",
+      "resolution_path": "S2 sub-period IC 분석 (전반/후반/최근3년 분할). IFRS 전환(2011) 전후 비교 필수."
+    },
+    {
+      "id": "UC2",
+      "concern": "교차 메커니즘 직접 실증 부재 (low-beta x accrual x autocorrelation)",
+      "severity": "MEDIUM",
+      "resolution_path": "S1 prefeasibility에서 low-beta 유니버스 내 AC17/L22 IC를 전체 유니버스 대비 비교. 유의 차이 없으면 교차 시너지 기각."
+    },
+    {
+      "id": "UC3",
+      "concern": "H_1642_v2의 Q04-C19 중복 + L-113 위험",
+      "severity": "MEDIUM",
+      "resolution_path": "S3에서 H_1642_v2의 앵커 대비 위기 상관 직접 측정. 0.50 초과 시 Q04 제거(H_1640_v2로 회귀)."
+    }
+  ],
+
+  "academic_verdict": {
+    "H_1640_v2": "CONDITIONAL_PROCEED (S2 sub-period AC17 검증 조건)",
+    "H_1642_v2": "CONDITIONAL_PROCEED (S3 Q04-C19 위기 상관 검증 조건)",
+    "recommendation": "H_1640_v2(2F, 단순)와 H_1642_v2(3F, 다양) 병렬 S1 실행. H_1640_v2가 S2 통과 후 H_1642_v2의 Q04 incremental value 측정."
+  }
+}

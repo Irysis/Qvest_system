@@ -1,0 +1,45 @@
+{
+  "hypothesis_id": "H_1674",
+  "round": 1,
+  "role": "codex_critic",
+  "score": 10,
+  "score_breakdown": {
+    "l_code_check": 2,
+    "failure_avoidance": 2,
+    "banned_factor": 2,
+    "lesson_check": 2,
+    "structural_risk": 2
+  },
+  "arguments": [
+    "동일 flow-reversal 계열에서 STR_1422, STR_1332, FLOW_SmartMoney_60d 등 다수 실패 이력이 존재하며, ICIR 1.258 중심 주장만으로는 L-127(IC≠SR)과 L-131(SR 천장) 리스크를 구조적으로 해소하지 못한다.",
+    "개인 flow의 실시간 관측 가능 시점(벤더 수정, 공시 지연)이 정의되지 않아 PIT 위반 가능성이 elevated 수준이며, Z-score 추정 윈도우가 명시되지 않아 full-sample 통계 사용 가능성을 배제할 수 없다.",
+    "가장 약한 가정은 개인 월간 순매도가 구조적으로 비정보성이라는 전제이다. 실적 하향/신용경색 구간에서 개인 순매도가 정보거래로 전환되면 낙하칼 매수로 MDD 40%+ 붕괴 가능."
+  ],
+  "concern": "ICIR 중심 주���이 기존 flow 계열 5건 실패 패턴과 L-127 교훈을 충분히 반영하지 못하고, PIT 설계(Z-score 윈도우, 데이터 as-of timing)가 불명확하여 alpha 과대추정 가능성이 높다.",
+  "conditions": [
+    "개인 flow 데이터의 as-of timestamp와 반영 지연을 명시하고, T+1 체결로 PIT 재검증할 것",
+    "Z-score를 expanding/rolling window로만 계산하고 full-sample 사용 금지를 증빙할 것",
+    "OOS walk-forward SR/MDD/turnover/hit-rate를 제시할 것",
+    "KOSPI/KOSDAQ 분리 거래비용 스트레스 테스트를 제출할 것",
+    "TopN/리밸런싱 지연/유동성 필터 민감도 안정성을 입증할 것"
+  ],
+  "kill_scenarios": [
+    {
+      "scenario": "실적 하향+신용경색에서 개인 순매도가 정보거래로 전환 → 낙하칼 매수",
+      "probability": "high",
+      "expected_loss": "SR 0.8 악화, MDD 30-40%"
+    },
+    {
+      "scenario": "월말 집계값 즉시 반영 = 데이터 공표 지연/수정치 누락으로 lookahead",
+      "probability": "medium",
+      "expected_loss": "실거래 IC 40-60% 감소, MDD +15-20%p"
+    },
+    {
+      "scenario": "KOSDAQ 중소형주 집중 + 신호 crowding → 슬리피지/유동성 공백",
+      "probability": "medium",
+      "expected_loss": "SR 0.4-0.6 하락, MDD 45%+"
+    }
+  ],
+  "weakest_assumption": "개인 월간 순매도가 구조적으로 비정보성이라 다음 달 평균회귀한다는 가정. 위반 시 낙하칼 체계적 매수 → SR<0.2, MDD 40%+",
+  "design_pit_assessment": "PIT 리스크 elevated. Z-score 윈도��� 미명시, as-of timing ��정의."
+}

@@ -1,0 +1,65 @@
+{
+  "factor_id": "CBPQ_CashBased_Profitability_Quality",
+  "strategy_id": "STR_1657_CBPQ",
+  "stage": "S1",
+  "version": "1.0",
+  "run_date": "2026-04-10",
+  "session": 57,
+  "construction": {
+    "factors": ["Q35_CashBased_OpProf", "Q09_CFOA", "AC07_Operating_Accruals"],
+    "n_factors": 3,
+    "universe": "LIQ >= 2e8 (t-1) -> Beta 하위 40% expanding (t-1, C2/C9)",
+    "scoring": "Z_Score_Aligned 합산 (C13, Arrow bulk preload C15)",
+    "n_holdings": 20,
+    "weight": "EW",
+    "rebalance": "Bimonthly",
+    "commission_bps": 15,
+    "buffer_zone": {
+      "keep_n": 35,
+      "entry_n": 20
+    },
+    "overlay": "NONE (S1 순수 팩터)",
+    "start_date": "2004-01-30",
+    "end_date": "2026-03-31",
+    "n_signal_dates": 134
+  },
+  "s0_conditions": {
+    "COND_01": {
+      "requirement": "Q35-Q09 상관 > 0.7이면 하나 제거",
+      "result": 0.4644,
+      "pass": true
+    },
+    "COND_03": {
+      "requirement": "AC07 ICIR < 0.10이면 제거",
+      "result": "N/A",
+      "pass": true
+    }
+  },
+  "pit_checks": {
+    "C2_beta_lag": "PASS: Beta_Lag = shift(Beta_Raw, 1L)",
+    "C9_dd_vt_lag": "PASS: 오버레이 없음 (S1)",
+    "C10_liq_lag": "PASS: LIQ20 = shift(frollmean(TV,20), 1L)",
+    "C13_zscore": "PASS: Z_Score_Aligned only, 수동 반전 없음",
+    "C15_fdb": "PASS: Arrow bulk preload 1회"
+  },
+  "performance": {
+    "CAGR": -5.7,
+    "AnnVol": 24.6,
+    "Sharpe": -0.232,
+    "MDD": 93.98
+  },
+  "ic_profile": {
+    "ic_mean": "NA",
+    "icir": "NA",
+    "ic_tstat": "NA",
+    "ic_pos": "NA"
+  },
+  "alpha_lab_gate": false,
+  "hurdle": {
+    "grade": "F",
+    "score": 24.5
+  },
+  "hypothesis_ref": "S0_VERDICT_H_1657_CBPQ.json",
+  "paper_ref": "Ball et al. (2016 JFE) + Chib et al. (2025)",
+  "next_stage": "S2_PROFILING"
+}

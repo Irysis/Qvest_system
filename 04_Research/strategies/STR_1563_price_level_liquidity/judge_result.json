@@ -1,0 +1,30 @@
+{
+  "strategy_id": "STR_1563_price_level_liquidity",
+  "judge_timestamp": "2026-03-28T12:00:00+09:00",
+  "hurdle_grade": "F",
+  "hurdle_score": 0.0,
+  "hard_fail": true,
+  "fail_reasons": ["MDD 62.7% > 45% hard fail threshold"],
+  "gate_0_pit": {
+    "C1_full_sample": "PASS",
+    "C2_same_day": "PASS — no overlay",
+    "C9_dd_vt_lag": "N/A — S1 pure factor test",
+    "C10_liquidity": "PASS — t-1 lag liquidity filter (line 43-46: shift(frollmean(...), n=1L, type='lag'))",
+    "C13_z_score_aligned": "PASS — uses Z_Score_Aligned",
+    "C15_load_month_factors": "PASS — uses load_month_factors()"
+  },
+  "gate_1_performance": {
+    "SR": 0.505,
+    "CAGR_pct": 13.46,
+    "MDD_pct": 62.7,
+    "turnover_pct": 92.0,
+    "comment": "L27_Price_Level standalone is weak in Korea. SR 0.505 and MDD 62.7% indicate no meaningful single-factor alpha. Price level effect (Hwang & Lu 2007) does not translate to KOSPI."
+  },
+  "gate_2_robustness": {
+    "axes": {"Return": 15.0, "Risk": 3.0, "Robustness": 17.0, "Implementability": 84.0, "Diversification": 51.0},
+    "role": "none"
+  },
+  "gate_3_structural": "Factor has no structural alpha in Korea. Score 0.0 indicates complete failure across multiple dimensions.",
+  "gate_4_marginal": "No marginal contribution expected.",
+  "gate_5_verdict": "Grade F. L27_Price_Level is dead on arrival in Korea. No S5 value — even overlay cannot rescue SR 0.5 and MDD 62.7%. Archive and move on."
+}
