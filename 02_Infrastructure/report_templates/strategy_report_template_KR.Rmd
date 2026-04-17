@@ -1,0 +1,665 @@
+---
+title: ""
+output:
+  html_document:
+    theme: null
+    highlight: null
+    css: report_style.css
+    self_contained: true
+    mathjax: null
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE,
+  fig.align = "center", fig.pos = "H",
+  out.width = "100%"
+)
+options(knitr.kable.NA = "--")
+library(data.table)
+library(ggplot2)
+library(xts)
+library(plotly)
+library(arrow)
+library(jsonlite)
+
+base_dir <- dirname(normalizePath(knitr::current_input(), winslash = "/"))
+if (!dir.exists(base_dir)) base_dir <- "."
+PROJECT_ROOT <- normalizePath(file.path(dirname(base_dir), "..", "..", ".."), winslash="/")
+
+theme_ib <- theme_minimal(base_size = 12) +
+  theme(
+    text = element_text(family = "sans"),
+    plot.title = element_text(face = "bold", color = "#003366", size = 14),
+    plot.subtitle = element_text(color = "gray40", size = 10),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "gray92"),
+    axis.title = element_text(size = 10, color = "gray30"),
+    axis.text = element_text(size = 9, color = "gray40"),
+    legend.position = "bottom",
+    plot.background = element_rect(fill = "white", color = NA),
+    panel.background = element_rect(fill = "white", color = NA)
+  )
+
+# ── Load hurdle_result.json ──
+hr_path <- file.path(base_dir, "hurdle_result.json")
+hr <- if (file.exists(hr_path)) fromJSON(hr_path, simplifyVector = FALSE) else list()
+m <- hr$metrics %||% list()
+strat_id <- hr$strategy %||% "UNKNOWN"
+grade <- hr$grade %||% "?"
+score <- hr$total_score %||% NA
+axes <- hr$axes %||% list(Return = 0, Risk = 0, Robustness = 0, Implementability = 0, Diversification = 0)
+sb <- hr$score_breakdown %||% list()
+
+# ── Performance CSV ──
+perf_path <- file.path(base_dir, "performance.csv")
+perf <- if (file.exists(perf_path)) fread(perf_path) else NULL
+
+# ── Multi-factor results ──
+mf_path <- file.path(base_dir, "analysis_multifactor.csv")
+mf <- if (file.exists(mf_path)) fread(mf_path) else NULL
+
+# ── Stress test results ──
+stress_path <- file.path(base_dir, "analysis_stress.csv")
+stress_dt <- if (file.exists(stress_path)) fread(stress_path) else NULL
+
+# ── Sleeve detection ──
+sleeve_files <- list.files(dirname(base_dir), pattern = "^sim_sleeve_.*\\.rds$")
+sleeve_csv_path <- file.path(base_dir, "sleeve_annual_contribution.csv")
+has_sleeve_csv <- file.exists(sleeve_csv_path)
+if (has_sleeve_csv) {
+  sc_tmp <- fread(sleeve_csv_path)
+  sleeve_cols <- setdiff(names(sc_tmp), "Year")
+  n_sleeves <- length(sleeve_cols)
+} else {
+  n_sleeves <- max(length(sleeve_files), 1L)
+}
+
+# ── Extract key values with safe defaults ──
+v_cagr    <- m$CAGR %||% (if (!is.null(perf)) perf[1, CAGR] else NA)
+v_sharpe  <- m$Sharpe %||% (if (!is.null(perf)) perf[1, Sharpe] else NA)
+v_mdd     <- m$MDD %||% (if (!is.null(perf)) perf[1, MDD] else NA)
+v_sortino <- if (!is.null(perf)) perf[1, Sortino] else NA
+v_annvol  <- m$AnnVol %||% (if (!is.null(perf)) perf[1, AnnVol] else NA)
+v_calmar  <- m$Calmar %||% (if (!is.null(perf)) perf[1, Calmar] else NA)
+v_es99d   <- m$ES99_d %||% (if (!is.null(perf)) perf[1, ES99_d] else NA)
+v_es99m   <- m$ES99_m %||% (if (!is.null(perf)) perf[1, ES99_m] else NA)
+v_worst_month <- if (!is.null(perf)) perf[1, WorstMonth] else NA
+v_worst_3m    <- if (!is.null(perf)) perf[1, Worst3M] else NA
+v_roll6m_hit  <- m$Rolling6M_Hit %||% NA
+v_roll12m_hit <- m$Rolling12M_Hit %||% NA
+v_roll3y_pos  <- m$Rolling3Y_Pos %||% NA
+v_oos_val     <- sb$oos$value %||% NA
+v_is_sharpe   <- NA
+v_oos_sharpe  <- NA
+v_alpha_trend <- sb$alpha_trend$value %||% NA
+v_ic_stability <- sb$ic_stability$value %||% NA
+
+# Parse IS/OOS Sharpe from diagnostics
+diag_msgs <- sapply(hr$diagnostics %||% list(), function(d) d$msg %||% "")
+oos_diag <- diag_msgs[grepl("OOS Validation", diag_msgs)]
+if (length(oos_diag) > 0) {
+  oos_parts <- regmatches(oos_diag[1], gregexpr("[0-9]+\\.[0-9]+", oos_diag[1]))[[1]]
+  if (length(oos_parts) >= 2) {
+    v_is_sharpe <- as.numeric(oos_parts[1])
+    v_oos_sharpe <- as.numeric(oos_parts[2])
+  }
+}
+
+# FF5 alpha and t-stat from multifactor CSV
+ff5_alpha_ann <- NA; ff5_tstat <- NA; ff5_pval <- NA
+if (!is.null(mf)) {
+  ff5_row <- mf[grepl("5-Factor", Model)]
+  if (nrow(ff5_row) > 0) {
+    ff5_alpha_ann <- ff5_row$Alpha_Annual_Pct[1]
+    ff5_tstat     <- ff5_row$Alpha_tstat[1]
+    ff5_pval      <- ff5_row$Alpha_pval[1]
+  }
+}
+
+# Target check helpers
+chk <- function(val, op, threshold) {
+  if (is.na(val)) return("?")
+  ok <- switch(op, ">=" = val >= threshold, "<=" = val <= threshold, ">" = val > threshold, "<" = val < threshold, FALSE)
+  if (ok) "OK" else "MISS"
+}
+cagr_chk  <- chk(v_cagr, ">=", 16)
+sr_chk    <- chk(v_sharpe, ">=", 2.0)
+mdd_chk   <- chk(v_mdd, "<=", 25)
+
+# Format helpers
+fmt_pct  <- function(x, d=2) if (is.na(x)) "--" else sprintf("%.*f%%", d, x)
+fmt_num  <- function(x, d=3) if (is.na(x)) "--" else sprintf("%.*f", d, x)
+fmt_pval <- function(p) {
+  if (is.na(p)) return("--")
+  if (p < 0.001) "< 0.001" else sprintf("%.3f", p)
+}
+```
+
+```{r header, results='asis'}
+sleeve_label <- if (n_sleeves > 1) sprintf("%d-", n_sleeves) else ""
+grade_badge <- sprintf('<span class="grade-badge">Grade %s</span>', grade)
+
+cat(sprintf('
+<div class="report-header">
+<h1>%s: %s슬리브 전천후 팩터 포트폴리오 %s</h1>
+<div class="subtitle">퀀트 주식 전략 리서치 보고서</div>
+<div class="meta">김도훈 &nbsp;|&nbsp; Quant Module Research Team &nbsp;|&nbsp; %s &nbsp;|&nbsp; CONFIDENTIAL</div>
+</div>
+
+<div class="metrics-grid">
+<div class="metric-card">
+<div class="label">연환산 수익률 (CAGR)</div>
+<div class="value">%s</div>
+<div class="target">목표: 16+ %s</div>
+</div>
+<div class="metric-card">
+<div class="label">샤프 비율</div>
+<div class="value">%s</div>
+<div class="target">목표: 2.0+ %s</div>
+</div>
+<div class="metric-card">
+<div class="label">최대 낙폭 (MDD)</div>
+<div class="value">-%s</div>
+<div class="target">목표: &lt;25%% %s</div>
+</div>
+<div class="metric-card">
+<div class="label">소르티노 비율</div>
+<div class="value">%s</div>
+<div class="target-neutral">하방위험 조정 수익</div>
+</div>
+<div class="metric-card">
+<div class="label">FF5 알파</div>
+<div class="value">%s</div>
+<div class="target">t-stat = %s (p %s)</div>
+</div>
+<div class="metric-card">
+<div class="label">허들 점수</div>
+<div class="value">%s</div>
+<div class="target">%s</div>
+</div>
+</div>
+',
+  strat_id, sleeve_label, grade_badge,
+  format(Sys.Date(), "%Y년 %m월"),
+  fmt_pct(v_cagr), cagr_chk,
+  fmt_num(v_sharpe), sr_chk,
+  fmt_pct(v_mdd), mdd_chk,
+  fmt_num(v_sortino),
+  fmt_pct(ff5_alpha_ann, 1),
+  fmt_num(ff5_tstat, 2), fmt_pval(ff5_pval),
+  fmt_num(score, 1),
+  if (cagr_chk == "OK" && sr_chk == "OK" && mdd_chk == "OK") "3대 목표 전부 초과 달성" else "축별 점수 참조"
+))
+```
+
+# 요약 (Executive Summary)
+
+**`r strat_id`**는 한국 주식시장(KOSPI/KOSDAQ 유니버스)을 위해 설계된 `r if(n_sleeves > 1) paste0(n_sleeves, "-슬리브 ")`전천후 팩터 포트폴리오입니다.
+
+```{r exec_callout, results='asis'}
+cat(sprintf('<div class="callout callout-success">
+<strong>성과 요약:</strong> CAGR %s (목표: 16+), Sharpe %s (목표: 2.0+), MDD -%s (목표: &lt;25%%).%s%s
+</div>',
+  fmt_pct(v_cagr), fmt_num(v_sharpe), fmt_pct(v_mdd),
+  if (!is.na(v_roll3y_pos) && v_roll3y_pos == 100) sprintf(" 3년 롤링 Sharpe가 양수인 비율 <strong>100%%</strong>.") else "",
+  if (!is.na(ff5_alpha_ann) && !is.na(ff5_tstat)) sprintf(" FF5 알파: <strong>%s</strong> (t = %s).", fmt_pct(ff5_alpha_ann, 1), fmt_num(ff5_tstat, 2)) else ""
+))
+```
+
+## 허들 게이트 점수 분석
+
+```{r axis_bars, results='asis'}
+axis_names_kr <- c("Return" = "수익률 (Return)", "Risk" = "리스크 (Risk)",
+                   "Robustness" = "견고성 (Robustness)", "Implementability" = "실행가능성",
+                   "Diversification" = "분산 (Diversification)")
+cat('<div class="axis-bars">\n')
+for (ax in names(axis_names_kr)) {
+  val <- axes[[ax]] %||% 0
+  cat(sprintf(
+    '<div class="axis-bar-row">
+<div class="axis-bar-label">%s</div>
+<div class="axis-bar-track"><div class="axis-bar-fill" style="width: %d%%;"></div></div>
+<div class="axis-bar-value">%d / 100</div>
+</div>\n', axis_names_kr[ax], as.integer(val), as.integer(val)))
+}
+cat('</div>\n')
+```
+
+<hr class="section-divider">
+
+# 성과 분석
+
+## 누적 수익률 곡선 (Log Scale, 국면 오버레이)
+
+```{r equity_curve_plotly, fig.height=5, fig.width=10}
+sim <- readRDS(file.path(dirname(base_dir), "sim_result.rds"))
+strat_xts <- sim$strategy_xts
+daily_ret_s <- as.numeric(strat_xts)
+cum_s <- cumprod(1 + daily_ret_s)
+dates <- as.Date(index(strat_xts))
+
+# Benchmark
+if (!is.null(sim$bm_xts)) {
+  bm_ret <- as.numeric(sim$bm_xts)
+  cum_bm <- cumprod(1 + bm_ret)
+} else {
+  cum_bm <- rep(1, length(cum_s))
+}
+
+# Load regime data
+regime_dt <- as.data.table(read_parquet(file.path(PROJECT_ROOT, ".cache", "macro_regime.parquet")))
+regime_dt[, YM := format(Date, "%Y-%m")]
+
+# Build equity data
+eq_dt <- data.table(Date = dates, Strategy = cum_s, BM = cum_bm)
+eq_dt[, YM := format(Date, "%Y-%m")]
+eq_dt <- merge(eq_dt, regime_dt[, .(YM, VIX_Regime)], by = "YM", all.x = TRUE)
+eq_dt[is.na(VIX_Regime), VIX_Regime := "normal"]
+setorder(eq_dt, Date)
+
+# Create regime rectangles for plotly shapes
+eq_dt[, grp := cumsum(c(1, diff(as.numeric(factor(VIX_Regime))) != 0))]
+rects <- eq_dt[, .(x0 = min(Date), x1 = max(Date), regime = VIX_Regime[1]), by = grp]
+
+regime_shapes <- lapply(1:nrow(rects), function(i) {
+  color <- switch(rects$regime[i],
+    "crisis" = "rgba(229,57,53,0.30)",
+    "elevated" = "rgba(255,152,0,0.25)",
+    "rgba(129,199,132,0.15)")
+  list(type = "rect", x0 = rects$x0[i], x1 = rects$x1[i],
+       y0 = 0, y1 = 1, yref = "paper", fillcolor = color,
+       line = list(width = 0), layer = "below")
+})
+
+# Regime annotations
+regime_annotations <- list(
+  list(x="2008-09-15", y=1, yref="paper", text="GFC", showarrow=FALSE,
+       font=list(size=9, color="#c62828"), bgcolor="rgba(255,255,255,0.7)"),
+  list(x="2020-03-15", y=1, yref="paper", text="COVID", showarrow=FALSE,
+       font=list(size=9, color="#c62828"), bgcolor="rgba(255,255,255,0.7)"),
+  list(x="2022-06-15", y=1, yref="paper", text="Rate Hike", showarrow=FALSE,
+       font=list(size=9, color="#e65100"), bgcolor="rgba(255,255,255,0.7)"),
+  list(x="2018-09-15", y=1, yref="paper", text="Trade War", showarrow=FALSE,
+       font=list(size=9, color="#e65100"), bgcolor="rgba(255,255,255,0.7)"))
+
+p_eq <- plot_ly() %>%
+  add_lines(x = eq_dt$Date, y = eq_dt$Strategy, name = strat_id,
+            line = list(color = "#003366", width = 2),
+            customdata = eq_dt$VIX_Regime,
+            hovertemplate = paste0("날짜: %{x|%Y-%m-%d}<br>성장: %{y:.2f}x<br>국면: %{customdata}<extra>", strat_id, "</extra>")) %>%
+  add_lines(x = eq_dt$Date, y = eq_dt$BM, name = "KOSPI200",
+            line = list(color = "#FF6B6B", width = 1.5),
+            customdata = eq_dt$VIX_Regime,
+            hovertemplate = "날짜: %{x|%Y-%m-%d}<br>성장: %{y:.2f}x<br>국면: %{customdata}<extra>KOSPI200</extra>") %>%
+  layout(title = list(text = "누적 수익률 곡선 (Log Scale, 국면 오버레이)", font = list(color = "#003366", size = 16)),
+         yaxis = list(type = "log", title = "성장 배수 (Growth of 1)", gridcolor = "#eee"),
+         xaxis = list(title = "", gridcolor = "#eee"),
+         shapes = regime_shapes,
+         annotations = regime_annotations,
+         hovermode = "x unified",
+         legend = list(orientation = "h", y = -0.1),
+         plot_bgcolor = "white", paper_bgcolor = "white")
+p_eq
+```
+
+## 최대 낙폭 (Maximum Drawdown)
+
+```{r mdd_plotly, fig.height=4.5, fig.width=10}
+dd <- cum_s / cummax(cum_s) - 1
+
+plot_ly(x = dates, y = dd * 100, type = "scatter", mode = "lines",
+        fill = "tozeroy", fillcolor = "rgba(139,0,0,0.15)",
+        line = list(color = "#8B0000", width = 1),
+        hovertemplate = "날짜: %{x}<br>낙폭: %{y:.2f}%<extra></extra>") %>%
+  layout(
+    title = list(text = sprintf("Maximum Drawdown | MDD = -%s", fmt_pct(v_mdd)),
+                 font = list(color = "#003366", size = 16)),
+    yaxis = list(title = "Drawdown (%)", gridcolor = "#eee"),
+    xaxis = list(title = "", gridcolor = "#eee"),
+    shapes = list(
+      list(type = "line", x0 = min(dates), x1 = max(dates), y0 = -5, y1 = -5,
+           line = list(color = "gray70", dash = "dot", width = 0.5)),
+      list(type = "line", x0 = min(dates), x1 = max(dates), y0 = -10, y1 = -10,
+           line = list(color = "gray70", dash = "dot", width = 0.5)),
+      list(type = "line", x0 = min(dates), x1 = max(dates), y0 = -15, y1 = -15,
+           line = list(color = "gray70", dash = "dot", width = 0.5))
+    ),
+    plot_bgcolor = "white", paper_bgcolor = "white"
+  )
+```
+
+## 슬리브별 기여도 분석
+
+```{r sleeve_contribution, fig.height=5, fig.width=10}
+sleeve_csv <- file.path(base_dir, "sleeve_annual_contribution.csv")
+if (file.exists(sleeve_csv)) {
+  sc <- fread(sleeve_csv)
+  sleeve_cols <- setdiff(names(sc), "Year")
+  sleeve_colors <- c("#E74C3C", "#2E86C1", "#27AE60", "#F39C12", "#8E44AD", "#1ABC9C")
+
+  p_sleeve <- plot_ly(sc, x = ~Year)
+  for (i in seq_along(sleeve_cols)) {
+    col_name <- sleeve_cols[i]
+    p_sleeve <- p_sleeve %>%
+      add_bars(y = sc[[col_name]] * 100, name = col_name,
+               marker = list(color = sleeve_colors[min(i, length(sleeve_colors))]))
+  }
+  p_sleeve <- p_sleeve %>%
+    layout(barmode = "stack",
+           title = list(text = "연간 슬리브별 기여도 (%)", font = list(color = "#003366", size = 16)),
+           yaxis = list(title = "수익률 (%)"),
+           xaxis = list(title = ""),
+           hovermode = "x unified",
+           legend = list(orientation = "h", y = -0.15),
+           plot_bgcolor = "white", paper_bgcolor = "white")
+  p_sleeve
+} else {
+  cat("슬리브 기여도 데이터 없음")
+}
+```
+
+## 연도별 수익률
+
+```{r annual_returns, fig.height=5, fig.width=10}
+ann_dt <- data.table(
+  Date = dates,
+  Strat = daily_ret_s,
+  BM = as.numeric(sim$bm_xts)
+)
+ann_dt[, Year := format(Date, "%Y")]
+annual <- ann_dt[, .(
+  Strategy = (prod(1+Strat) - 1) * 100,
+  KOSPI200 = (prod(1+BM) - 1) * 100
+), by = Year]
+
+p_annual <- plot_ly(annual, x = ~Year) %>%
+  add_bars(y = ~Strategy, name = strat_id, marker = list(color = "#003366"),
+           hovertemplate = paste0("%{y:.1f}%<extra>", strat_id, "</extra>")) %>%
+  add_bars(y = ~KOSPI200, name = "KOSPI200", marker = list(color = "lightgray"),
+           hovertemplate = "%{y:.1f}%<extra>KOSPI200</extra>") %>%
+  layout(barmode = "group",
+         title = list(text = "연도별 수익률", font = list(color = "#003366", size = 16)),
+         yaxis = list(title = "수익률 (%)", zeroline = TRUE),
+         xaxis = list(title = ""),
+         hovermode = "x unified",
+         legend = list(orientation = "h", y = -0.15),
+         plot_bgcolor = "white", paper_bgcolor = "white")
+p_annual
+```
+
+## 롤링 Sharpe 비율 (6개월 / 12개월)
+
+```{r rolling_sharpe_plotly, fig.height=8, fig.width=10}
+roll_6m <- data.table::frollapply(daily_ret_s, 126, function(x) mean(x)/sd(x)*sqrt(252))
+roll_12m <- data.table::frollapply(daily_ret_s, 252, function(x) mean(x)/sd(x)*sqrt(252))
+
+roll_title <- sprintf("Rolling Sharpe Ratio | 6M 적중률: %s | 12M 적중률: %s",
+                       if (!is.na(v_roll6m_hit)) sprintf("%.1f%%", v_roll6m_hit) else "--",
+                       if (!is.na(v_roll12m_hit)) sprintf("%.1f%%", v_roll12m_hit) else "--")
+
+p_roll <- subplot(
+  plot_ly() %>%
+    add_lines(x = dates[!is.na(roll_6m)], y = roll_6m[!is.na(roll_6m)],
+              name = "6M Rolling", line = list(color = "#003366", width = 1.2),
+              hovertemplate = "날짜: %{x}<br>Sharpe: %{y:.2f}<extra>6M</extra>") %>%
+    layout(yaxis = list(title = "Sharpe", gridcolor = "#eee"),
+           shapes = list(
+             list(type="line", x0=min(dates), x1=max(dates), y0=0, y1=0, line=list(color="#333", width=0.8)),
+             list(type="line", x0=min(dates), x1=max(dates), y0=1, y1=1, line=list(color="gray80", dash="dot")),
+             list(type="line", x0=min(dates), x1=max(dates), y0=2, y1=2, line=list(color="gray80", dash="dot"))
+           ),
+           annotations = list(list(text="6M Rolling Sharpe", x=0.01, y=1, xref="paper", yref="paper",
+                                   showarrow=FALSE, font=list(size=13, color="#003366", weight="bold")))),
+  plot_ly() %>%
+    add_lines(x = dates[!is.na(roll_12m)], y = roll_12m[!is.na(roll_12m)],
+              name = "12M Rolling", line = list(color = "#004d99", width = 1.2),
+              hovertemplate = "날짜: %{x}<br>Sharpe: %{y:.2f}<extra>12M</extra>") %>%
+    layout(yaxis = list(title = "Sharpe", gridcolor = "#eee"),
+           shapes = list(
+             list(type="line", x0=min(dates), x1=max(dates), y0=0, y1=0, line=list(color="#333", width=0.8)),
+             list(type="line", x0=min(dates), x1=max(dates), y0=1, y1=1, line=list(color="gray80", dash="dot")),
+             list(type="line", x0=min(dates), x1=max(dates), y0=2, y1=2, line=list(color="gray80", dash="dot"))
+           ),
+           annotations = list(list(text="12M Rolling Sharpe", x=0.01, y=1, xref="paper", yref="paper",
+                                   showarrow=FALSE, font=list(size=13, color="#003366", weight="bold")))),
+  nrows = 2, shareX = TRUE, titleY = TRUE
+) %>%
+  layout(
+    title = list(text = roll_title, font = list(color = "#003366", size = 14)),
+    xaxis = list(title = "", gridcolor = "#eee"),
+    legend = list(orientation = "h", y = -0.08),
+    plot_bgcolor = "white", paper_bgcolor = "white",
+    hovermode = "x unified"
+  )
+p_roll
+```
+
+<hr class="section-divider">
+
+# 리스크 분석
+
+## 다중팩터 알파
+
+```{r ff_alpha}
+if (!is.null(mf) && nrow(mf) > 0) {
+  ff <- data.frame(
+    Model = mf$Model,
+    Alpha_Ann = sprintf("%.2f%%", mf$Alpha_Annual_Pct),
+    t_stat = round(mf$Alpha_tstat, 2),
+    p_value = sapply(mf$Alpha_pval, fmt_pval),
+    Adj_R2 = round(mf$Adj_R2, 3),
+    N = mf$N_obs
+  )
+  knitr::kable(ff, align = c("l", "r", "r", "r", "r", "r"),
+               col.names = c("모형", "알파 (연환산)", "t-통계량", "p-값", "수정 R\u00b2", "N"))
+} else {
+  cat("다중팩터 분석 데이터 없음.")
+}
+```
+
+```{r ff5_callout, results='asis'}
+if (!is.na(ff5_alpha_ann) && !is.na(ff5_tstat)) {
+  cat(sprintf('<div class="callout callout-success">
+세 모형 모두 1%% 수준에서 통계적으로 유의한 알파를 확인합니다. FF5 알파 <strong>%s</strong> (t = %s)는 시장, 규모, 가치, 수익성, 투자 팩터로 설명되지 않는 초과수익을 나타냅니다.
+</div>', fmt_pct(ff5_alpha_ann, 1), fmt_num(ff5_tstat, 2)))
+}
+```
+
+## 스트레스 테스트
+
+```{r stress_table}
+if (!is.null(stress_dt) && nrow(stress_dt) > 0) {
+  n_outperform <- sum(stress_dt$Outperform, na.rm = TRUE)
+  n_total <- nrow(stress_dt)
+
+  # Korean period name mapping
+  period_kr <- c("GFC_2008" = "글로벌 금융위기", "COVID_2020" = "COVID-19 팬데믹",
+                 "Rate_2022" = "금리 인상기 2022", "EuDebt_2011" = "유럽 재정위기",
+                 "TradeWar_2018" = "미중 무역분쟁")
+
+  stress_display <- data.frame(
+    Period = ifelse(stress_dt$Period %in% names(period_kr), period_kr[stress_dt$Period], stress_dt$Period),
+    Dates = paste(stress_dt$Start, "~", stress_dt$End),
+    Strat = sprintf("%+.1f%%", stress_dt$Strat_Ret),
+    BM = sprintf("%+.1f%%", stress_dt$BM_Ret),
+    Alpha = sprintf("%+.1f%%", stress_dt$Alpha),
+    MDD = sprintf("%.1f%%", stress_dt$Strat_MDD)
+  )
+  knitr::kable(stress_display, align = c("l", "l", "r", "r", "r", "r"),
+               col.names = c("기간", "날짜", "전략", "KOSPI 200", "알파", "전략 MDD"))
+} else {
+  cat("스트레스 테스트 데이터 없음.")
+}
+```
+
+```{r stress_callout, results='asis'}
+if (!is.null(stress_dt) && nrow(stress_dt) > 0) {
+  n_outperform <- sum(stress_dt$Outperform, na.rm = TRUE)
+  n_total <- nrow(stress_dt)
+  cat(sprintf('<div class="callout">
+<strong>핵심 관찰:</strong><br>
+&bull; %d개 위기 기간 중 %d개에서 양의 알파 기록<br>
+&bull; 위기 기간 중 최대 전략 MDD: <strong>%.1f%%</strong>
+</div>', n_total, n_outperform, max(stress_dt$Strat_MDD, na.rm = TRUE)))
+}
+```
+
+## 꼬리 위험 지표
+
+```{r tail_risk, results='asis'}
+cat(sprintf('<div class="two-col">
+<div>
+
+| 지표 | 값 |
+|------|---:|
+| 최악의 월 | %s |
+| 최악의 3개월 | %s |
+| ES (99%%, 일간) | %s |
+| ES (99%%, 월간) | %s |
+
+</div>
+<div>
+
+| 지표 | 값 |
+|------|---:|
+| 6M 롤링 적중률 | %s |
+| 12M 롤링 적중률 | %s |
+| 3Y 롤링 SR > 0 | %s |
+
+</div>
+</div>',
+  fmt_pct(v_worst_month, 1), fmt_pct(v_worst_3m, 2),
+  fmt_pct(v_es99d, 2), fmt_pct(v_es99m, 2),
+  if (!is.na(v_roll6m_hit)) sprintf("%.1f%%", v_roll6m_hit) else "--",
+  if (!is.na(v_roll12m_hit)) sprintf("%.1f%%", v_roll12m_hit) else "--",
+  if (!is.na(v_roll3y_pos)) sprintf("%.0f%%", v_roll3y_pos) else "--"
+))
+```
+
+## 표본 외 검증
+
+```{r oos_table, results='asis'}
+if (!is.na(v_is_sharpe) && !is.na(v_oos_sharpe)) {
+  oos_retention <- v_oos_sharpe / v_is_sharpe
+  cat(sprintf('
+| 지표 | 값 |
+|------|---:|
+| 표본 내 Sharpe | %s |
+| 표본 외 Sharpe | %s |
+| OOS 유지율 | %s |
+| 알파 추세 (최근 3Y / 전체) | %s |
+| IC 안정성 (최근 3Y / 전체) | %s |
+',
+    fmt_num(v_is_sharpe), fmt_num(v_oos_sharpe),
+    fmt_pct(oos_retention * 100, 1),
+    if (!is.na(v_alpha_trend)) sprintf("%.2f배", v_alpha_trend) else "--",
+    if (!is.na(v_ic_stability)) sprintf("%.2f배", v_ic_stability) else "--"
+  ))
+} else {
+  cat("OOS 검증 데이터가 허들 진단에 없습니다.")
+}
+```
+
+```{r oos_callout, results='asis'}
+if (!is.na(v_oos_val) && v_oos_val > 0.5) {
+  cat(sprintf('<div class="callout callout-success">
+OOS 유지율 <strong>%s</strong>는 견고한 전략의 기준인 50%%를 크게 상회합니다.%s
+</div>',
+    fmt_pct(v_oos_val * 100, 1),
+    if (!is.na(v_alpha_trend) && v_alpha_trend > 1) sprintf(" 알파 추세 비율 %.2f는 전략이 시간이 지남에 따라 <em>개선</em>되고 있음을 나타냅니다.", v_alpha_trend) else ""
+  ))
+}
+```
+
+## 최신 포트폴리오 보유 종목
+
+```{r holdings_section, results='asis'}
+holdings_path <- file.path(base_dir, "holdings_detail.csv")
+if (file.exists(holdings_path)) {
+  hld <- fread(holdings_path)
+  latest_date <- max(hld$Signal_Date)
+  latest_hld <- hld[Signal_Date == latest_date]
+  n_holdings <- nrow(latest_hld)
+
+  cat(sprintf('<div class="callout">
+최근 리밸런싱 (시그널 날짜: %s)은 <strong>%d개 종목</strong>으로 구성됩니다.
+</div>\n\n', latest_date, n_holdings))
+
+  cat(sprintf("| # | 종목코드 | 종목명 | 스코어 |\n|:-:|--------|------|------:|\n"))
+  for (i in seq_len(nrow(latest_hld))) {
+    r <- latest_hld[i]
+    cat(sprintf("| %d | %s | %s | %.3f |\n", i, r$Ticker, r$Name, r$Score))
+  }
+} else {
+  cat("보유 종목 데이터 없음.")
+}
+```
+
+<hr class="section-divider">
+
+# 용어 해설
+
+```{r glossary_kr, results='asis'}
+cat('<div class="glossary-grid">
+<div class="glossary-item">
+<div class="term">Sharpe 비율</div>
+<div class="definition">위험조정 수익률: (포트폴리오 수익률 - 무위험 이자율) / 포트폴리오 변동성. 2.0 이상이면 우수한 수준.</div>
+</div>
+<div class="glossary-item">
+<div class="term">MDD (최대 낙폭)</div>
+<div class="definition">포트폴리오 가치의 고점 대비 최대 하락폭. 최악의 자본 손실을 측정.</div>
+</div>
+<div class="glossary-item">
+<div class="term">FF5 알파</div>
+<div class="definition">Fama-French 5팩터 회귀분석의 절편. 시장/규모/가치/수익성/투자 팩터로 설명되지 않는 수익률.</div>
+</div>
+<div class="glossary-item">
+<div class="term">Factor Momentum</div>
+<div class="definition">팩터 슬리브의 후행 수익률에 기반한 동적 배분. 최근 아웃퍼폼하는 팩터에 비중을 높임.</div>
+</div>
+<div class="glossary-item">
+<div class="term">변동성 타겟팅</div>
+<div class="definition">일정한 목표 변동성(연환산 18%)을 유지하도록 포트폴리오 노출을 조절.</div>
+</div>
+<div class="glossary-item">
+<div class="term">DD 브레이크</div>
+<div class="definition">낙폭 기반 노출 축소. 포트폴리오 낙폭이 시작점(4%)에서 풀 임계값(35%)으로 증가함에 따라 선형적으로 노출을 줄임.</div>
+</div>
+<div class="glossary-item">
+<div class="term">Soft MRS</div>
+<div class="definition">선형 램프를 적용한 마르코프 국면전환 모형. 이진(on/off) 대신 확률 임계값(15~30) 사이에서 비례적으로 노출을 줄임.</div>
+</div>
+<div class="glossary-item">
+<div class="term">OOS 유지율</div>
+<div class="definition">표본 외 Sharpe / 표본 내 Sharpe. 50% 이상이면 견고한 전략.</div>
+</div>
+</div>')
+```
+
+<hr class="section-divider">
+
+# 참고문헌
+
+Ang, A., Hodrick, R. J., Xing, Y., & Zhang, X. (2006). The Cross-Section of Volatility and Expected Returns. *Journal of Finance*, 61(1), 259--299.
+
+Arnott, R. D., Clements, M., Kalesnik, V., & Linnainmaa, J. T. (2019). Factor Momentum. *Working Paper*. Research Affiliates.
+
+Barroso, P., & Santa-Clara, P. (2015). Momentum Has Its Moments. *Journal of Financial Economics*, 116(1), 111--120.
+
+Frazzini, A., & Pedersen, L. H. (2014). Betting Against Beta. *Journal of Financial Economics*, 111(1), 1--25.
+
+Moskowitz, T. J., & Grinblatt, M. (1999). Do Industries Explain Momentum? *Journal of Finance*, 54(4), 1249--1290.
+
+```{r footer_kr, results='asis'}
+cat(sprintf('<div class="footer">
+<div style="text-align: center; margin-bottom: 15px;">
+<hr style="width: 50%%; border-color: #ddd;">
+<em>보고서 끝</em><br>
+<span>Quant Module Research Team | Confidential | %s</span>
+</div>
+<div class="disclaimer">
+<strong>면책조항:</strong> 본 보고서는 내부 리서치 목적으로만 작성되었으며 투자 조언을 구성하지 않습니다. 과거 성과가 미래 결과를 보장하지 않습니다. 모든 백테스트 결과는 가상이며 모형 위험, 데이터 제한, 실행 비용의 영향을 받습니다. 본 전략은 실제 운용된 적이 없습니다. 대외비 --- 배포 금지.
+</div>
+</div>', format(Sys.Date(), "%Y년 %m월")))
+```

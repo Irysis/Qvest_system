@@ -1,0 +1,1 @@
+../ops/resolve_project.sh

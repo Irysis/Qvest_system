@@ -1,0 +1,1 @@
+/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory/core_knowledge_base.md

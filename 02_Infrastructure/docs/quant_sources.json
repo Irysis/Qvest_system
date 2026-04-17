@@ -1,0 +1,113 @@
+{
+  "description": "퀀트 리서치 텍스트 소스 — arxiv(논문), jina(블로그/칼럼), RSS(뉴스)",
+  "updated": "2026-03-14",
+
+  "arxiv_queries": {
+    "description": "arxiv MCP로 정기 검색할 주제 (논문 수집 메인)",
+    "queries": [
+      "idiosyncratic volatility anomaly low risk stock returns",
+      "earnings revision momentum analyst consensus factor",
+      "quantitative equity portfolio factor model emerging market",
+      "regime switching dynamic asset allocation macro factor",
+      "factor investing machine learning stock selection",
+      "post-earnings announcement drift SUE PEAD",
+      "sector momentum industry rotation timing",
+      "drawdown control risk parity portfolio construction",
+      "anomaly replication out-of-sample decay"
+    ],
+    "categories": ["q-fin.PM", "q-fin.ST", "q-fin.RM", "q-fin.GN"],
+    "max_results_per_query": 10,
+    "recency_days": 180
+  },
+
+  "blog_sources": {
+    "description": "jina로 수집할 퀀트/매크로 블로그·칼럼 (논문 외 실무 인사이트)",
+    "rss_feeds": {
+      "quant_meta": {
+        "url": "https://quantocracy.com/feed/",
+        "name": "Quantocracy",
+        "type": "aggregator",
+        "priority": "high",
+        "note": "수십 개 퀀트 블로그 메타 애그리게이터"
+      },
+      "quantstart": {
+        "url": "https://www.quantstart.com/articles/feed/",
+        "name": "QuantStart",
+        "type": "strategy",
+        "priority": "high"
+      },
+      "alpha_architect": {
+        "url": "https://alphaarchitect.com/feed/",
+        "name": "Alpha Architect",
+        "type": "factor_research",
+        "priority": "high",
+        "note": "팩터 투자 학술 논문 실무 적용"
+      },
+      "quantopian_archive": {
+        "url": "https://blog.quantopian.com/feed/",
+        "name": "Quantopian Blog (Archive)",
+        "type": "classic",
+        "priority": "medium"
+      },
+      "hussman": {
+        "url": "https://www.hussmanfunds.com/rsi/",
+        "name": "Hussman Funds",
+        "type": "macro",
+        "priority": "medium",
+        "note": "매크로 밸류에이션 분석"
+      },
+      "alpha_architect_sub": {
+        "url": "https://alphaarchitect.substack.com/feed",
+        "name": "Alpha Architect Substack",
+        "type": "factor_research",
+        "priority": "high"
+      },
+      "hanguk_quant": {
+        "url": "https://hangukquant.substack.com/feed",
+        "name": "Hanguk Quant",
+        "type": "korea_quant",
+        "priority": "high",
+        "note": "한국 퀀트 뉴스레터"
+      },
+      "quant_nomad": {
+        "url": "https://thequantnomad.substack.com/feed",
+        "name": "The Quant Nomad",
+        "type": "strategy",
+        "priority": "medium"
+      },
+      "bloomberg_markets": {
+        "url": "https://feeds.bloomberg.com/markets/news.rss",
+        "name": "Bloomberg Markets",
+        "type": "news",
+        "priority": "low"
+      },
+      "risk_net": {
+        "url": "https://www.risk.net/rss",
+        "name": "Risk.net",
+        "type": "risk_management",
+        "priority": "medium"
+      }
+    }
+  },
+
+  "collection_policy": {
+    "arxiv": {
+      "role": "primary",
+      "frequency": "weekly",
+      "action": "search → filter by relevance → download PDF → register in paper_registry.json",
+      "tools": ["arxiv MCP", "jina read_url (PDF fallback)"]
+    },
+    "blogs": {
+      "role": "secondary",
+      "frequency": "weekly",
+      "action": "fetch RSS → extract links → jina read_url → summarize → register in idea_registry.json",
+      "tools": ["jina search_web", "jina read_url", "WebFetch (RSS)"]
+    },
+    "news": {
+      "role": "monitoring",
+      "frequency": "daily",
+      "action": "scan headlines → flag regime-relevant events",
+      "tools": ["jina search_web"]
+    }
+  }
+}

@@ -1,0 +1,589 @@
+---
+title: ""
+output:
+  html_document:
+    theme: null
+    highlight: null
+    css: report_style.css
+    self_contained: true
+    mathjax: null
+params:
+  strategy_id: "STR_000"
+  strat_dir: "."
+  output_dir: "."
+  lang: "en"
+  viz_list: !r c("equity_curve")
+  narrative_json: "{}"
+  classification_json: "{}"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE, warning = FALSE, message = FALSE,
+  fig.align = "center", fig.pos = "H",
+  out.width = "100%"
+)
+options(knitr.kable.NA = "--")
+library(data.table)
+library(ggplot2)
+library(xts)
+library(plotly)
+library(arrow)
+library(jsonlite)
+
+`%||%` <- function(a, b) {
+  if (is.null(a) || length(a) == 0) return(b)
+  if (length(a) == 1 && is.na(a)) return(b)
+  a
+}
+
+base_dir <- params$output_dir
+strat_dir <- params$strat_dir
+strat_id <- params$strategy_id
+lang <- params$lang
+viz_list <- params$viz_list
+
+PROJECT_ROOT <- normalizePath(file.path(dirname(strat_dir), "..", ".."), winslash = "/")
+
+# Load narrative
+narrative <- tryCatch(fromJSON(params$narrative_json, simplifyVector = FALSE), error = function(e) list())
+
+# Load classification
+cls <- tryCatch(fromJSON(params$classification_json, simplifyVector = FALSE), error = function(e) list())
+
+# ── Load hurdle_result.json ──
+hr_path <- file.path(base_dir, "hurdle_result.json")
+cat(sprintf("DEBUG: hr_path = %s, exists = %s\n", hr_path, file.exists(hr_path)))
+if (!file.exists(hr_path)) {
+  # Try alternative paths
+  alt_paths <- c(
+    file.path(strat_dir, "hurdle_result.json"),
+    file.path(strat_dir, "output", "hurdle_result.json"),
+    file.path(strat_dir, "output", strat_id, "hurdle_result.json")
+  )
+  for (ap in alt_paths) {
+    if (file.exists(ap)) {
+      cat(sprintf("DEBUG: Found hurdle_result.json at alternative path: %s\n", ap))
+      hr_path <- ap
+      break
+    }
+  }
+}
+hr <- if (file.exists(hr_path)) {
+  tryCatch(fromJSON(hr_path, simplifyVector = FALSE), error = function(e) {
+    cat(sprintf("DEBUG: HR load error: %s\n", e$message))
+    list()
+  })
+} else list()
+m <- hr$metrics %||% list()
+grade <- hr$grade %||% "?"
+score <- hr$total_score %||% NA
+axes <- hr$axes %||% list(Return = 0, Risk = 0, Robustness = 0, Implementability = 0, Diversification = 0)
+sb <- hr$score_breakdown %||% list()
+
+# ── Performance CSV ──
+perf_path <- file.path(base_dir, "performance.csv")
+perf <- if (file.exists(perf_path)) fread(perf_path) else NULL
+
+# ── Multi-factor results ──
+mf_path <- file.path(base_dir, "analysis_multifactor.csv")
+mf <- if (file.exists(mf_path)) fread(mf_path) else NULL
+
+# ── Stress test results ──
+stress_path <- file.path(base_dir, "analysis_stress.csv")
+stress_dt <- if (file.exists(stress_path)) fread(stress_path) else NULL
+
+# ── Sleeve detection ──
+sleeve_csv_path <- file.path(base_dir, "sleeve_annual_contribution.csv")
+has_sleeve_csv <- file.exists(sleeve_csv_path)
+n_sleeves <- cls$n_sleeves %||% 1L
+
+# ── Extract key values ──
+v_cagr    <- m$CAGR %||% (if (!is.null(perf)) perf[1, CAGR] else NA)
+v_sharpe  <- m$Sharpe %||% (if (!is.null(perf)) perf[1, Sharpe] else NA)
+v_mdd     <- m$MDD %||% (if (!is.null(perf)) perf[1, MDD] else NA)
+v_sortino <- if (!is.null(perf)) perf[1, Sortino] else NA
+v_annvol  <- m$AnnVol %||% (if (!is.null(perf)) perf[1, AnnVol] else NA)
+v_calmar  <- m$Calmar %||% (if (!is.null(perf)) perf[1, Calmar] else NA)
+v_es99d   <- m$ES99_d %||% (if (!is.null(perf)) perf[1, ES99_d] else NA)
+v_es99m   <- m$ES99_m %||% (if (!is.null(perf)) perf[1, ES99_m] else NA)
+v_worst_month <- if (!is.null(perf)) perf[1, WorstMonth] else NA
+v_worst_3m    <- if (!is.null(perf)) perf[1, Worst3M] else NA
+v_roll6m_hit  <- m$Rolling6M_Hit %||% NA
+v_roll12m_hit <- m$Rolling12M_Hit %||% NA
+v_roll3y_pos  <- m$Rolling3Y_Pos %||% NA
+v_oos_val     <- sb$oos$value %||% NA
+v_is_sharpe   <- NA; v_oos_sharpe <- NA
+v_alpha_trend <- sb$alpha_trend$value %||% NA
+v_ic_stability <- sb$ic_stability$value %||% NA
+
+# Parse IS/OOS Sharpe from diagnostics
+diag_msgs <- sapply(hr$diagnostics %||% list(), function(d) d$msg %||% "")
+oos_diag <- diag_msgs[grepl("OOS Validation", diag_msgs)]
+if (length(oos_diag) > 0) {
+  oos_parts <- regmatches(oos_diag[1], gregexpr("[0-9]+\\.[0-9]+", oos_diag[1]))[[1]]
+  if (length(oos_parts) >= 2) {
+    v_is_sharpe <- as.numeric(oos_parts[1])
+    v_oos_sharpe <- as.numeric(oos_parts[2])
+  }
+}
+
+# FF5 alpha
+ff5_alpha_ann <- NA; ff5_tstat <- NA; ff5_pval <- NA
+if (!is.null(mf)) {
+  ff5_row <- mf[grepl("5-Factor", Model)]
+  if (nrow(ff5_row) > 0) {
+    ff5_alpha_ann <- ff5_row$Alpha_Annual_Pct[1]
+    ff5_tstat     <- ff5_row$Alpha_tstat[1]
+    ff5_pval      <- ff5_row$Alpha_pval[1]
+  }
+}
+
+# Target checks
+chk <- function(val, op, threshold) {
+  if (is.na(val)) return("?")
+  ok <- switch(op, ">=" = val >= threshold, "<=" = val <= threshold, FALSE)
+  if (ok) "OK" else "MISS"
+}
+cagr_chk  <- chk(v_cagr, ">=", 16)
+sr_chk    <- chk(v_sharpe, ">=", 2.0)
+mdd_chk   <- chk(v_mdd, "<=", 25)
+
+# Format helpers
+fmt_pct  <- function(x, d=2) if (is.na(x)) "--" else sprintf("%.*f%%", d, x)
+fmt_num  <- function(x, d=3) if (is.na(x)) "--" else sprintf("%.*f", d, x)
+fmt_pval <- function(p) { if (is.na(p)) return("--"); if (p < 0.001) "< 0.001" else sprintf("%.3f", p) }
+
+# Load chart library
+chart_lib <- file.path(PROJECT_ROOT, "02_Infrastructure", "report_charts.R")
+if (file.exists(chart_lib)) source(chart_lib)
+
+# Load sim result
+sim_path <- file.path(strat_dir, "sim_result.rds")
+sim <- if (file.exists(sim_path)) readRDS(sim_path) else NULL
+
+# Regime cache
+regime_cache <- file.path(PROJECT_ROOT, ".cache", "macro_regime.parquet")
+```
+
+```{r header, results='asis'}
+type_label <- narrative$exec_summary %||% strat_id
+sleeve_label <- if (n_sleeves > 1) sprintf("%d-Sleeve ", n_sleeves) else ""
+strategy_type_desc <- cls$type %||% "strategy"
+grade_badge <- sprintf('<span class="grade-badge">Grade %s</span>', grade)
+
+# Language-dependent labels
+if (lang == "kr") {
+  lbl_cagr <- "연환산수익률"
+  lbl_sharpe <- "샤프 비율"
+  lbl_mdd <- "최대낙폭"
+  lbl_sortino <- "소르티노 비율"
+  lbl_ff5 <- "FF5 알파"
+  lbl_score <- "허들 점수"
+  subtitle_text <- "퀀트 주식 전략 리서치 리포트"
+  lbl_downside <- "하방 리스크 조정"
+  lbl_target_prefix <- "목표:"
+  lbl_all_targets <- "3개 목표 초과 달성"
+  lbl_see_axis <- "축별 점수 참조"
+} else {
+  lbl_cagr <- "CAGR"
+  lbl_sharpe <- "Sharpe Ratio"
+  lbl_mdd <- "Max Drawdown"
+  lbl_sortino <- "Sortino Ratio"
+  lbl_ff5 <- "FF5 Alpha"
+  lbl_score <- "Hurdle Score"
+  subtitle_text <- "Quantitative Equity Strategy Research Report"
+  lbl_downside <- "Downside-adjusted"
+  lbl_target_prefix <- "Target:"
+  lbl_all_targets <- "All 3 targets exceeded"
+  lbl_see_axis <- "See axis breakdown"
+}
+
+cat(sprintf('
+<div class="report-header">
+<h1>%s: %sAll-Weather Factor Portfolio %s</h1>
+<div class="subtitle">%s</div>
+<div class="meta">Kim Dohoon &nbsp;|&nbsp; Quant Module Research Team &nbsp;|&nbsp; %s &nbsp;|&nbsp; CONFIDENTIAL</div>
+</div>
+
+<div class="metrics-grid">
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">%s</div>
+<div class="target">%s 16+ %s</div>
+</div>
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">%s</div>
+<div class="target">%s 2.0+ %s</div>
+</div>
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">-%s</div>
+<div class="target">%s &lt;25%% %s</div>
+</div>
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">%s</div>
+<div class="target-neutral">%s</div>
+</div>
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">%s</div>
+<div class="target">t-stat = %s (p %s)</div>
+</div>
+<div class="metric-card">
+<div class="label">%s</div>
+<div class="value">%s</div>
+<div class="target">%s</div>
+</div>
+</div>
+',
+  strat_id, sleeve_label, grade_badge,
+  subtitle_text,
+  format(Sys.Date(), "%B %Y"),
+  lbl_cagr, fmt_pct(v_cagr), lbl_target_prefix, cagr_chk,
+  lbl_sharpe, fmt_num(v_sharpe), lbl_target_prefix, sr_chk,
+  lbl_mdd, fmt_pct(v_mdd), lbl_target_prefix, mdd_chk,
+  lbl_sortino, fmt_num(v_sortino), lbl_downside,
+  lbl_ff5, fmt_pct(ff5_alpha_ann, 1),
+  fmt_num(ff5_tstat, 2), fmt_pval(ff5_pval),
+  lbl_score, fmt_num(score, 1),
+  if (cagr_chk == "OK" && sr_chk == "OK" && mdd_chk == "OK") lbl_all_targets else lbl_see_axis
+))
+```
+
+```{r section_exec_summary_title, results='asis'}
+cat(if (lang == "kr") "# 요약\n" else "# Executive Summary\n")
+```
+
+```{r exec_summary, results='asis'}
+exec_text <- narrative$exec_summary %||% sprintf("%s strategy for the Korean equity market.", strat_id)
+cat(sprintf('<div class="callout callout-success">%s</div>', exec_text))
+```
+
+```{r thesis, results='asis'}
+if (!is.null(narrative$thesis)) {
+  thesis_label <- if (lang == "kr") "투자 논리" else "Investment Thesis"
+  cat(sprintf('<div class="callout">\n<strong>%s:</strong> %s\n</div>', thesis_label, narrative$thesis))
+}
+```
+
+```{r risk_overlay_narrative, results='asis'}
+if (!is.null(narrative$risk_overlay)) {
+  overlay_label <- if (lang == "kr") "리스크 오버레이 구조" else "Risk Overlay Architecture"
+  cat(sprintf('<div class="callout">\n<strong>%s:</strong> %s\n</div>', overlay_label, narrative$risk_overlay))
+}
+```
+
+```{r section_hurdle_title, results='asis'}
+cat(if (lang == "kr") "## 허들 게이트 점수 분석\n" else "## Hurdle Gate Score Breakdown\n")
+```
+
+```{r axis_bars, results='asis'}
+axis_names <- c("Return", "Risk", "Robustness", "Implementability", "Diversification")
+cat('<div class="axis-bars">\n')
+for (ax in axis_names) {
+  val <- axes[[ax]] %||% 0
+  cat(sprintf(
+    '<div class="axis-bar-row">
+<div class="axis-bar-label">%s</div>
+<div class="axis-bar-track"><div class="axis-bar-fill" style="width: %d%%;"></div></div>
+<div class="axis-bar-value">%d / 100</div>
+</div>\n', ax, as.integer(val), as.integer(val)))
+}
+cat('</div>\n')
+```
+
+<hr class="section-divider">
+
+```{r section_perf_title, results='asis'}
+cat(if (lang == "kr") "# 성과 분석\n" else "# Performance Analysis\n")
+```
+
+```{r equity_curve_section, fig.height=5, fig.width=10, eval="equity_curve" %in% viz_list && !is.null(sim)}
+cat("## Cumulative Equity Curve (with Regime Overlay)\n\n")
+rc_equity_curve(sim, strat_id, regime_cache)
+```
+
+```{r drawdown_section, fig.height=4.5, fig.width=10, eval="drawdown_chart" %in% viz_list && !is.null(sim)}
+cat("## Maximum Drawdown\n\n")
+rc_drawdown(sim, v_mdd)
+```
+
+```{r sleeve_contribution_section, fig.height=5, fig.width=10, eval="sleeve_contribution" %in% viz_list && has_sleeve_csv}
+cat("## Sleeve Contribution Analysis\n\n")
+rc_sleeve_contribution(sleeve_csv_path)
+```
+
+```{r annual_returns_section, fig.height=5, fig.width=10, eval="annual_returns" %in% viz_list && !is.null(sim)}
+cat("## Annual Returns\n\n")
+rc_annual_returns(sim, strat_id)
+```
+
+```{r rolling_sharpe_section, fig.height=8, fig.width=10, eval="rolling_sharpe" %in% viz_list && !is.null(sim)}
+cat("## Rolling Sharpe Ratios (6M / 12M)\n\n")
+rc_rolling_sharpe(sim, hit6m = v_roll6m_hit, hit12m = v_roll12m_hit)
+```
+
+<hr class="section-divider">
+
+```{r section_risk_title, results='asis'}
+cat(if (lang == "kr") "# 리스크 분석\n" else "# Risk Analysis\n")
+```
+
+```{r section_mf_title, results='asis'}
+cat(if (lang == "kr") "## 다중 팩터 알파\n" else "## Multi-Factor Alpha\n")
+```
+
+```{r ff_alpha_table_section, eval="ff_alpha_table" %in% viz_list}
+if (!is.null(mf) && nrow(mf) > 0) {
+  ff <- data.frame(
+    Model = mf$Model,
+    Alpha_Ann = sprintf("%.2f%%", mf$Alpha_Annual_Pct),
+    t_stat = round(mf$Alpha_tstat, 2),
+    p_value = sapply(mf$Alpha_pval, fmt_pval),
+    Adj_R2 = round(mf$Adj_R2, 3),
+    N = mf$N_obs
+  )
+  knitr::kable(ff, align = c("l", "r", "r", "r", "r", "r"),
+               col.names = c("Model", "Alpha (ann.)", "t-stat", "p-value", "Adj. R2", "N"))
+} else {
+  cat("Multi-factor analysis data not available.")
+}
+```
+
+```{r ff5_callout, results='asis'}
+if (!is.na(ff5_alpha_ann) && !is.na(ff5_tstat)) {
+  sig_level <- if (!is.na(ff5_pval) && ff5_pval < 0.01) "1%" else if (!is.na(ff5_pval) && ff5_pval < 0.05) "5%" else "conventional"
+  cat(sprintf('<div class="callout callout-success">
+FF5 alpha of <strong>%s</strong> (t = %s) indicates the strategy captures returns beyond the five systematic factors at the %s significance level.
+</div>', fmt_pct(ff5_alpha_ann, 1), fmt_num(ff5_tstat, 2), sig_level))
+}
+```
+
+```{r section_stress_title, results='asis'}
+cat(if (lang == "kr") "## 스트레스 테스트 성과\n" else "## Stress Test Performance\n")
+```
+
+```{r stress_table_section, eval="stress_test_table" %in% viz_list}
+if (!is.null(stress_dt) && nrow(stress_dt) > 0) {
+  stress_display <- data.frame(
+    Period = stress_dt$Period,
+    Dates = paste(stress_dt$Start, "to", stress_dt$End),
+    Strat = sprintf("%+.1f%%", stress_dt$Strat_Ret),
+    BM = sprintf("%+.1f%%", stress_dt$BM_Ret),
+    Alpha = sprintf("%+.1f%%", stress_dt$Alpha),
+    MDD = sprintf("%.1f%%", stress_dt$Strat_MDD)
+  )
+  knitr::kable(stress_display, align = c("l", "l", "r", "r", "r", "r"),
+               col.names = c("Period", "Dates", "Strategy", "KOSPI 200", "Alpha", "Strat MDD"))
+} else {
+  cat("Stress test data not available.")
+}
+```
+
+```{r stress_callout, results='asis'}
+if (!is.null(stress_dt) && nrow(stress_dt) > 0) {
+  n_outperform <- sum(stress_dt$Outperform, na.rm = TRUE)
+  n_total <- nrow(stress_dt)
+  cat(sprintf('<div class="callout">
+<strong>Key observations:</strong><br>
+&bull; %d out of %d stress periods show positive alpha<br>
+&bull; Worst strategy MDD during any stress period: <strong>%.1f%%</strong>
+</div>', n_outperform, n_total, max(stress_dt$Strat_MDD, na.rm = TRUE)))
+}
+```
+
+```{r section_tail_title, results='asis'}
+cat(if (lang == "kr") "## 꼬리 리스크 지표\n" else "## Tail Risk Metrics\n")
+```
+
+```{r tail_risk, results='asis', eval="tail_risk_metrics" %in% viz_list}
+cat(sprintf('<div class="two-col">
+<div>
+
+| Metric | Value |
+|--------|------:|
+| Worst Month | %s |
+| Worst 3-Month | %s |
+| ES (99%%, daily) | %s |
+| ES (99%%, monthly) | %s |
+
+</div>
+<div>
+
+| Metric | Value |
+|--------|------:|
+| 6-Month Rolling Hit Rate | %s |
+| 12-Month Rolling Hit Rate | %s |
+| 3-Year Rolling SR > 0 | %s |
+
+</div>
+</div>',
+  fmt_pct(v_worst_month, 1), fmt_pct(v_worst_3m, 2),
+  fmt_pct(v_es99d, 2), fmt_pct(v_es99m, 2),
+  if (!is.na(v_roll6m_hit)) sprintf("%.1f%%", v_roll6m_hit) else "--",
+  if (!is.na(v_roll12m_hit)) sprintf("%.1f%%", v_roll12m_hit) else "--",
+  if (!is.na(v_roll3y_pos)) sprintf("%.0f%%", v_roll3y_pos) else "--"
+))
+```
+
+```{r section_oos_title, results='asis'}
+cat(if (lang == "kr") "## 표본외 검증\n" else "## Out-of-Sample Validation\n")
+```
+
+```{r oos_table, results='asis'}
+if (!is.na(v_is_sharpe) && !is.na(v_oos_sharpe)) {
+  oos_retention <- v_oos_sharpe / v_is_sharpe
+  cat(sprintf('
+| Metric | Value |
+|--------|------:|
+| In-Sample Sharpe | %s |
+| Out-of-Sample Sharpe | %s |
+| OOS Retention | %s |
+| Alpha Trend (Recent 3Y / Full) | %s |
+| IC Stability (Recent 3Y / Full) | %s |
+',
+    fmt_num(v_is_sharpe), fmt_num(v_oos_sharpe),
+    fmt_pct(oos_retention * 100, 1),
+    if (!is.na(v_alpha_trend)) sprintf("%.2fx", v_alpha_trend) else "--",
+    if (!is.na(v_ic_stability)) sprintf("%.2fx", v_ic_stability) else "--"
+  ))
+}
+```
+
+```{r oos_callout, results='asis'}
+if (!is.na(v_oos_val) && v_oos_val > 0.5) {
+  cat(sprintf('<div class="callout callout-success">
+OOS retention of <strong>%s</strong> is well above the 50%% threshold for robust strategies.%s
+</div>',
+    fmt_pct(v_oos_val * 100, 1),
+    if (!is.na(v_alpha_trend) && v_alpha_trend > 1) sprintf(" Alpha trend ratio of %.2f indicates the strategy is <em>improving</em> over time.", v_alpha_trend) else ""
+  ))
+}
+```
+
+```{r ic_section, fig.height=6, fig.width=10, eval="ic_timeseries" %in% viz_list}
+cat("## IC Time Series\n\n")
+ic_path <- file.path(base_dir, "analysis_ic.csv")
+p_ic <- rc_ic_timeseries(ic_path)
+if (!is.null(p_ic)) p_ic
+```
+
+```{r sector_section, fig.height=6, fig.width=10, eval="sector_exposure" %in% viz_list}
+cat("## Sector Exposure\n\n")
+hld_path <- file.path(base_dir, "holdings_detail.csv")
+p_sec <- rc_sector_exposure(hld_path)
+if (!is.null(p_sec)) p_sec
+```
+
+```{r section_holdings_title, results='asis'}
+cat(if (lang == "kr") "## 최신 포트폴리오 보유 종목\n" else "## Latest Portfolio Holdings\n")
+```
+
+```{r holdings_section, results='asis', eval="holdings_table" %in% viz_list}
+holdings_path <- file.path(base_dir, "holdings_detail.csv")
+if (file.exists(holdings_path)) {
+  hld <- fread(holdings_path)
+  latest_date <- max(hld$Signal_Date)
+  latest_hld <- hld[Signal_Date == latest_date]
+  n_holdings <- nrow(latest_hld)
+
+  cat(sprintf('<div class="callout">
+Latest rebalancing (Signal Date: %s) consists of <strong>%d positions</strong>.
+</div>\n\n', latest_date, n_holdings))
+
+  cat("| # | Ticker | Name | Score |\n|:-:|--------|------|------:|\n")
+  for (i in seq_len(nrow(latest_hld))) {
+    r <- latest_hld[i]
+    cat(sprintf("| %d | %s | %s | %.3f |\n", i, r$Ticker, r$Name, r$Score))
+  }
+} else {
+  cat("Holdings data not available.")
+}
+```
+
+```{r key_insights, results='asis'}
+if (!is.null(narrative$key_insights) && length(narrative$key_insights) > 0) {
+  cat('<hr class="section-divider">\n\n')
+  cat(if (lang == "kr") "# 핵심 인사이트\n\n" else "# Key Insights\n\n")
+  cat('<div class="callout">\n')
+  for (ins in narrative$key_insights) {
+    cat(sprintf("&bull; %s<br>\n", ins))
+  }
+  cat('</div>\n')
+}
+```
+
+<hr class="section-divider">
+
+```{r section_glossary_title, results='asis'}
+cat(if (lang == "kr") "# 용어 해설\n" else "# Glossary\n")
+```
+
+```{r glossary, results='asis'}
+cat('<div class="glossary-grid">
+<div class="glossary-item">
+<div class="term">Sharpe Ratio</div>
+<div class="definition">Risk-adjusted return: (Portfolio Return - Risk-Free Rate) / Portfolio Volatility. Values above 2.0 are considered excellent.</div>
+</div>
+<div class="glossary-item">
+<div class="term">MDD (Maximum Drawdown)</div>
+<div class="definition">Largest peak-to-trough decline in portfolio value. Measures worst-case capital loss.</div>
+</div>
+<div class="glossary-item">
+<div class="term">FF5 Alpha</div>
+<div class="definition">Intercept from Fama-French 5-Factor regression. Return not explained by Market, Size, Value, Profitability, and Investment factors.</div>
+</div>
+<div class="glossary-item">
+<div class="term">Factor Momentum</div>
+<div class="definition">Dynamic allocation to factor sleeves based on their trailing returns. Overweights recently outperforming factors.</div>
+</div>
+<div class="glossary-item">
+<div class="term">Volatility Targeting</div>
+<div class="definition">Scaling portfolio exposure to maintain a constant target volatility.</div>
+</div>
+<div class="glossary-item">
+<div class="term">DD Brake (Drawdown Brake)</div>
+<div class="definition">Drawdown-based exposure reduction. Linearly reduces exposure as portfolio drawdown increases from start to full threshold.</div>
+</div>
+<div class="glossary-item">
+<div class="term">Soft MRS</div>
+<div class="definition">Markov Regime Switching model with linear ramp. Reduces exposure proportionally between probability thresholds rather than binary on/off.</div>
+</div>
+<div class="glossary-item">
+<div class="term">OOS Retention</div>
+<div class="definition">Ratio of out-of-sample Sharpe to in-sample Sharpe. Values above 50% indicate robust strategies.</div>
+</div>
+</div>')
+```
+
+<hr class="section-divider">
+
+```{r section_references_title, results='asis'}
+cat(if (lang == "kr") "# 참고 문헌\n" else "# References\n")
+```
+
+Ang, A., Hodrick, R. J., Xing, Y., & Zhang, X. (2006). The Cross-Section of Volatility and Expected Returns. *Journal of Finance*, 61(1), 259--299.
+
+Arnott, R. D., Clements, M., Kalesnik, V., & Linnainmaa, J. T. (2019). Factor Momentum. *Working Paper*. Research Affiliates.
+
+Barroso, P., & Santa-Clara, P. (2015). Momentum Has Its Moments. *Journal of Financial Economics*, 116(1), 111--120.
+
+Frazzini, A., & Pedersen, L. H. (2014). Betting Against Beta. *Journal of Financial Economics*, 111(1), 1--25.
+
+Moskowitz, T. J., & Grinblatt, M. (1999). Do Industries Explain Momentum? *Journal of Finance*, 54(4), 1249--1290.
+
+```{r footer, results='asis'}
+cat(sprintf('<div class="footer">
+<div style="text-align: center; margin-bottom: 15px;">
+<hr style="width: 50%%; border-color: #ddd;">
+<em>End of Report</em><br>
+<span>Quant Module Research Team | Confidential | %s</span>
+</div>
+<div class="disclaimer">
+<strong>DISCLAIMER:</strong> This report is produced for internal research purposes only and does not constitute investment advice. Past performance does not guarantee future results. All backtested results are hypothetical and subject to model risk, data limitations, and implementation shortfall. The strategy has not been live-traded. Confidential --- do not distribute.
+</div>
+</div>', format(Sys.Date(), "%B %Y")))
+```
