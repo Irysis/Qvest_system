@@ -1,0 +1,15 @@
+{
+  "role": "risk_manager",
+  "score": 14,
+  "arguments": [
+    "C13_Revision_Breadth_3m의 stress ICIR 0.829(9개월, 77.8% positive)는 normal ICIR 0.671 대비 위기 시 오히려 alpha가 강화되는 구조로, crisis_ratio 1.75는 방어적 특성을 시사한다 — 이는 consensus family 내에서 C19(stress ICIR 0.200, crisis_ratio 0.367)보다 tail risk 내성이 현저히 우수하며, 위기 구간에서 analyst revision breadth가 정보 비대칭 확대로 alpha를 증폭시킨다는 Hirshleifer et al.(2009) 메커니즘과 정합적이다.",
+    "Size + IdioVol 잔차화 설계는 L-106(market beta 지배로 포트폴리오 상관 0.78) 교훈을 부분적으로만 해소한다 — log(MarketCap)과 R12_IdioVol 잔차화는 size/vol 공통요인을 제거하지만, 시장 beta(CAPM beta) 자체는 잔차화 대상에 포함되지 않아 Long-only 20종목 포트폴리오에서 market beta 0.8~1.0 노출이 잔존하며, STR_1679 앵커(beta ~0.9 추정)와의 portfolio-level 상관이 0.2를 초과할 구조적 위험이 있다.",
+    "단일 residual signal 전략의 MDD 기여는 양면적이다 — C13 원 팩터의 stress 구간 강점(ICIR 0.829)은 긍정적이나, 잔차화 후 signal-to-noise 감소(예상 ICIR 0.35~0.40)와 EW 20종목 집중 포트폴리오의 종목 특이 위험(idiosyncratic event risk)이 결합하면 개별 종목 급락 시 포트폴리오 MDD 5~10%p 기여 가능하며, STR_1679 앵커에 sleeve 추가 시 전체 포트폴리오 MDD 개선 효과는 상관 구조에 전적으로 의존한다."
+  ],
+  "concern": "L-106/L-115 교훈 핵심인 market beta 직교화가 설계에 명시적으로 포함되지 않았으며, Size/IdioVol 잔차화만으로는 Long-only 한국시장에서 portfolio-level 상관 0.2 미만 달성이 불확실하다 — S1 완료 후 반드시 CAPM beta 잔차화 추가 여부를 판단하고, S3에서 portfolio-level beta decomposition(market beta 기여 vs residual 기여)을 수행해야 한다.",
+  "conditions": [
+    "S1에서 포트폴리오 CAPM beta 측정 필수 — beta > 0.85이면 M01_CAPM_Beta를 3번째 잔차화 변수로 추가하는 variant를 S5 mutation slate에 사전 등록할 것",
+    "S3에서 STR_1679 대비 portfolio-level 수익률 상관을 total/market-beta/residual 3분해로 보고 — residual 상관 > 0.3이면 diversifier role 재검토",
+    "S1 baseline MDD > 45% 시 Hard Fail 즉시 적용 (L-112 단일팩터 MDD 패턴), MDD 35~45% 구간에서도 STR_1679 병합 시 portfolio MDD 개선 시뮬레이션 필수"
+  ]
+}

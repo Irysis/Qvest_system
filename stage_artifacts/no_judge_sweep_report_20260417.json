@@ -1,0 +1,65 @@
+{
+  "report_type": "NO_JUDGE_SWEEP_HURDLE_LEVEL",
+  "timestamp": "2026-04-17",
+  "auditor": "judge_teammate",
+  "basis": "hurdle_result.json (score/grade/pass/hard_fail/sharpe/mdd parsed); s6_judge artifact absent for all 34",
+  "summary": {
+    "total_catalog": 34,
+    "judge_pass_a_hurdle": 25,
+    "judge_pass_lower": 2,
+    "judge_reject": 2,
+    "no_hurdle": 5,
+    "no_dir": 0
+  },
+  "limitations": [
+    "Hurdle recheck ≠ full Judge Gate 0-6 (PIT C1-C15, FF5 alpha, DSR, Role Honesty, tail_risk 포함 안됨)",
+    "s6_judge_*.json artifact 전수 부재 — Forge 단계 미실시 또는 archive 누락",
+    "STR_1631_v5_M19~M23는 hurdle_result 자체 없음 → 백테스트 이후 hurdle 단계 진행 불가 상태",
+    "STR_1550 pass=false grade=C인데 카탈로그에 포함된 이유: catalog builder 기준과 hurdle pass 기준 불일치"
+  ],
+  "recommendations": [
+    "catalog schema v53_s2_16: hurdle_pass(boolean) + judge_pass(boolean) + judge_artifact_path 필드 분리",
+    "NO_HURDLE 5건 (STR_1631_v5_M19~M23): Forge에 backfill 요청 or catalog 제외",
+    "JUDGE_REJECT 2건 (STR_1417_esbr_hrp_tc_dd620, STR_1550): 카탈로그 제외 권고",
+    "25건 JUDGE_PASS_A는 hurdle-level만 검증됨 — 실투 전 full Gate 0-6 필수"
+  ],
+  "pass_list": [
+    "STR_1631_M30_icir_cvar",
+    "STR_1631_M28_xgb_cvar",
+    "STR_1631_M29_facvol",
+    "STR_1631_M27_invvol",
+    "STR_1652_DFA_on_VDplus",
+    "STR_1631_SYN_05_2002_icwt_scoretilt_bimonthly",
+    "STR_1631_SYN_04_ic_weighted",
+    "STR_1631_SYN_03_scoretilt_hrp120d_bimonthly",
+    "STR_1631_SYN_05_icwt_scoretilt_bimonthly",
+    "STR_1631_SYN_02_scoretilt_revbreadth",
+    "STR_1631_SYN_01_scoretilt_bimonthly",
+    "STR_944",
+    "STR_943",
+    "STR_1417_5sleeve_mrs3545",
+    "STR_1433_consgate_c11fix_dd722",
+    "STR_1435_5sleeve_dd620_repair",
+    "STR_1439",
+    "STR_1393_esbr_sue_adaptive",
+    "STR_1028",
+    "STR_1033_nco",
+    "STR_1060_brk02_no_short_dd",
+    "STR_1071_noShortDD_mrs1225",
+    "STR_1469",
+    "STR_1562",
+    "STR_686"
+  ],
+  "reject_list": [
+    "STR_1417_esbr_hrp_tc_dd620",
+    "STR_1550_consensus_core_alpha"
+  ],
+  "no_hurdle_list": [
+    "STR_1631_v5_M22_5factor_q07",
+    "STR_1631_v5_M23_score_tilt",
+    "STR_1631_v5_M21_revbreadth",
+    "STR_1631_v5_M20_hrp120d",
+    "STR_1631_v5_M19_bimonthly"
+  ],
+  "no_dir_list": []
+}

@@ -1,0 +1,15 @@
+{
+  "role": "quant",
+  "score": 15,
+  "arguments": [
+    "C13_Revision_Breadth_3m은 conditional_ic_matrix.csv 실측 기준 ic_all=0.0305, ic_bad=0.0343, recent_3y_icir=0.438로 확인되며, Factor DB monthly parquet에 정상 등록(254개월 n_months)되어 load_month_factors() 경유 접근이 즉시 가능하다. 잔차화(Size+IdioVol) 후 ICIR 0.35~0.40 예상은 원 팩터 ic_all 0.0305 기준 2-regressor OLS 잔차의 통상적 70~80% 분산 보존률과 일치하여 Alpha Lab Gate ICIR ≥ 0.20 통과 현실성이 높다.",
+    "R12_Idiosyncratic_Risk(icir 0.582, risk category)와 M01_Mom_12_1(icir 0.412, momentum category)이 모두 Factor DB에 등록되어 있어 매월 cross-sectional OLS(n≈1,200~1,500, 2 regressor)는 충분한 statistical power를 가진다. 단일 월 cross-section 잔차화는 same-period aggregation→application 금지(C3) 위반 없이 PIT 준수가 가능하며, 잔차 Z-score → Top 20 EW 구현은 기존 backtest_harness.R 표준 패턴으로 추가 인프라 없이 실행 가능하다.",
+    "C19_Composite_Earnings는 mean(z(SUE)+z(ESBR)+z(EPS_chg_1m)+z(TP_Gap)) 구조이고 C13은 ESBR의 3개월 이동평균이므로, raw 상관 0.30~0.50 예상은 타당하다. 단, R12_IdioVol 잔차화 후 C13_resid와 C19의 cross-sectional 상관은 수학적으로 0.15~0.25 수준으로 감소하며, 추가로 S3에서 portfolio-level 상관을 측정해야 ρ<0.2 독립 alpha 요건을 확정할 수 있다."
+  ],
+  "concern": "C13 잔차화 시 R12_Idiosyncratic_Risk(icir +0.582)가 자체적으로 강한 alpha 신호이므로, OLS 잔차에서 R12 성분을 제거하면 C13_resid의 IC 변동성이 R12 IC와 음(-)의 방향으로 편향될 가능성이 있어 — 잔차화 후 실제 S1 포트폴리오 SR이 예상치(0.4~0.7)를 하회할 수 있다.",
+  "conditions": [
+    "S1 구현 시 R12_Idiosyncratic_Risk를 잔차화 인자로 사용할 경우, R12 자체 alpha 방향(icir +0.582)이 C13_resid와 독립인지 S2 rolling IC 분석으로 확인 필수",
+    "잔차화 OLS에서 outlier 민감도 완화를 위해 C13 및 R12, log(MarketCap) 값에 winsorize 1~99% 적용 필수",
+    "C19 내부 구성요소 C04_ESBR(Earnings Sentiment Breadth Ratio)과 C13(C04의 3개월 이동평균) 간 partial correlation이 raw 상관보다 높을 수 있으므로, S3 직교성 검증 시 C19 composite 전체 뿐 아니라 C04 단독 상관도 측정"
+  ]
+}
