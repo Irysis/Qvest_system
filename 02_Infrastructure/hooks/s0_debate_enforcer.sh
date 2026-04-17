@@ -145,6 +145,57 @@ ${msg:3900}"
   ) &
 }
 
+# ─── 텔레그램 가독성 helper (B안+이모지) ───
+role_icon() {
+  case "$1" in
+    risk_manager) printf "🎯" ;;
+    governor)     printf "🏛️" ;;
+    quant)        printf "📐" ;;
+    academic)     printf "📖" ;;
+    codex_critic) printf "🤖" ;;
+    *)            printf "👤" ;;
+  esac
+}
+
+delta_icon() {
+  local d="$1"
+  if [ -z "$d" ] || ! [ "$d" -eq "$d" ] 2>/dev/null; then
+    printf "•"
+  elif [ "$d" -gt 0 ] 2>/dev/null; then
+    printf "⬆️"
+  elif [ "$d" -lt 0 ] 2>/dev/null; then
+    printf "⬇️"
+  else
+    printf "➡️"
+  fi
+}
+
+progress_bar() {
+  local n="$1"
+  local total=5
+  local bar=""
+  local i=1
+  while [ "$i" -le "$total" ]; do
+    if [ "$i" -le "$n" ]; then
+      bar="${bar}▰"
+    else
+      bar="${bar}░"
+    fi
+    i=$((i+1))
+  done
+  printf "%s" "$bar"
+}
+
+verdict_icon() {
+  case "$1" in
+    APPROVE)             printf "✅" ;;
+    APPROVE_CONDITIONAL) printf "🟡" ;;
+    REVISE)              printf "🔄" ;;
+    REJECT)              printf "❌" ;;
+    *)                   printf "⚖️" ;;
+  esac
+}
+
 # ─── R1 제출 처리 ───
 if [ "$DTYPE" = "R1" ]; then
   CUR_STATE=$(read_state)
@@ -197,8 +248,10 @@ except Exception as e:
 
   N_ROLES=$(add_role "r1" "$ROLE")
 
-  # 텔레그램 중계 — B안 한 줄 압축 (개별 제출은 점수 + 진행률만)
-  tg_notify "🎙 [S0 $HYP_ID] R1 $ROLE: $SCORE/20 [$N_ROLES/5]"
+  # 텔레그램 중계 — B안 + 이모지 (역할 아이콘 + 진행률 bar)
+  RICON=$(role_icon "$ROLE")
+  PBAR=$(progress_bar "$N_ROLES")
+  tg_notify "🎙 [S0 · $HYP_ID · R1]  ${RICON} ${ROLE}  ${SCORE}/20   ${PBAR} (${N_ROLES}/5)"
 
   echo "$(date +%H:%M:%S) ENFORCER R1: $ROLE ($SCORE/20) [$N_ROLES/5]" >> "$LOG"
 
@@ -213,25 +266,32 @@ with open('$STATE_FILE') as f: d = json.load(f)
 print(d.get('r1_total', '?'))
 " 2>/dev/null || echo "?")
 
-    # R1 전원 의견 요약 발송 — B안: 5인 각 한 줄 (점수 + concern 핵심 한 문장)
+    # R1 전원 의견 요약 발송 — B안 + 이모지 (5인 각 역할 아이콘 + concern)
     R1_SUMMARY=$(python3 -c "
 import json, glob, os
-def clip(s, n=100):
+def clip(s, n=110):
     s = str(s).strip().replace('\n',' ')
     return s if len(s)<=n else s[:n-3]+'...'
-lines = ['📋 [S0 Debate] $HYP_ID — R1 Complete']
+ICONS = {'risk_manager':'🎯','governor':'🏛️','quant':'📐','academic':'📖','codex_critic':'🤖'}
+lines = ['📋 [S0 Debate · $HYP_ID] R1 Opening Complete',
+         '━━━━━━━━━━━━━━━━━━━━━━━━']
 total = 0
 artifacts_dir = os.path.dirname('$FILE_PATH') or 'stage_artifacts'
 for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r1_*_${HYP_ID}.json'))):
     try:
         with open(f) as fh: d = json.load(fh)
         role = d.get('role', '?')
+        icon = ICONS.get(role, '👤')
         score = d.get('score', d.get('total', 0))
         total += score
         concern = d.get('concern', '')
-        lines.append(f'━ {role} {score}/20 — {clip(concern)}')
+        lines.append(f'{icon} {role}  {score}/20')
+        if concern:
+            lines.append(f'   💭 {clip(concern)}')
     except: pass
-lines.append(f'합계: {total}/100 → R2 Rebuttal 시작')
+lines.append('━━━━━━━━━━━━━━━━━━━━━━━━')
+lines.append(f'💯 합계: {total}/100')
+lines.append('💬 R2 Rebuttal 시작...')
 print('\n'.join(lines))
 " 2>/dev/null || echo "📋 R1 Complete [$HYP_ID]")
     tg_notify "$R1_SUMMARY"
@@ -365,9 +425,12 @@ except Exception as e:
 
   N_ROLES=$(add_role "r2" "$ROLE")
 
-  # 텔레그램 중계 — B안 한 줄 압축 (개별 제출은 점수 변동 + 진행률만)
+  # 텔레그램 중계 — B안 + 이모지 (역할 아이콘 + 변동 화살표 + 진행률)
   DS_SIGN=$([ "$DELTA" -gt 0 ] 2>/dev/null && echo "+$DELTA" || echo "$DELTA")
-  tg_notify "🔥 [S0 $HYP_ID] R2 $ROLE: $R1_SC→$R2_SC ($DS_SIGN) [$N_ROLES/5]"
+  DI=$(delta_icon "$DELTA")
+  RICON=$(role_icon "$ROLE")
+  PBAR=$(progress_bar "$N_ROLES")
+  tg_notify "🔥 [S0 · $HYP_ID · R2]  ${RICON} ${ROLE}  ${R1_SC}→${R2_SC}  ${DI}(${DS_SIGN})   ${PBAR} (${N_ROLES}/5)"
 
   echo "$(date +%H:%M:%S) ENFORCER R2: $ROLE ($R1_SC→$R2_SC) [$N_ROLES/5]" >> "$LOG"
 
@@ -392,13 +455,17 @@ print(','.join(r3_needed) if r3_needed else 'NONE')
     if [ "$R3_CHECK" = "NONE" ]; then
       write_state "VERDICT_READY"
 
-      # R2 전원 의견 변동 요약 발송 — B안: 5인 각 한 줄 (점수 변동 + 핵심 rebut 요약)
+      # R2 전원 의견 변동 요약 발송 — B안 + 이모지 (역할 아이콘 + 변동 화살표 + rebuttal)
       R2_SUMMARY=$(python3 -c "
 import json, glob, os
-def clip(s, n=90):
+def clip(s, n=100):
     s = str(s).strip().replace('\n',' ')
     return s if len(s)<=n else s[:n-3]+'...'
-lines = ['📊 [S0 Debate] $HYP_ID — R2 Complete']
+def di(d):
+    return '⬆️' if d>0 else ('⬇️' if d<0 else '➡️')
+ICONS = {'risk_manager':'🎯','governor':'🏛️','quant':'📐','academic':'📖','codex_critic':'🤖'}
+lines = ['📊 [S0 Debate · $HYP_ID] R2 Rebuttal Complete',
+         '━━━━━━━━━━━━━━━━━━━━━━━━']
 artifacts_dir = os.path.dirname('$FILE_PATH') or 'stage_artifacts'
 r1_total = 0
 r2_total = 0
@@ -406,6 +473,7 @@ for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r2_*_${HYP_ID}.
     try:
         with open(f) as fh: d = json.load(fh)
         role = d.get('role', '?')
+        icon = ICONS.get(role, '👤')
         r1 = d.get('r1_score', 0)
         r2 = d.get('r2_score', 0)
         r1_total += r1
@@ -416,11 +484,15 @@ for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r2_*_${HYP_ID}.
         reb_txt = ''
         if rebs and isinstance(rebs[0], dict):
             reb_txt = clip(rebs[0].get('point',''))
-        lines.append(f'━ {role} {r1}→{r2} ({ds}) — {reb_txt}')
+        lines.append(f'{icon} {role}  {r1} → {r2}  {di(delta)}({ds})')
+        if reb_txt:
+            lines.append(f'   ↩️ {reb_txt}')
     except: pass
 dt = r2_total - r1_total
 ds = f'+{dt}' if dt > 0 else str(dt)
-lines.append(f'합계: {r1_total} → {r2_total} ({ds}) ⚖️ VERDICT 작성 가능')
+lines.append('━━━━━━━━━━━━━━━━━━━━━━━━')
+lines.append(f'💯 합계: {r1_total} → {r2_total}  {di(dt)}({ds})')
+lines.append('⚖️ VERDICT 작성 가능')
 print('\n'.join(lines))
 " 2>/dev/null || echo "📊 R2 Complete [$HYP_ID]")
       tg_notify "$R2_SUMMARY"
@@ -622,9 +694,18 @@ except Exception as e:
 
   write_state "DONE"
 
-  # 텔레그램 최종 판정
-  tg_notify "$(printf '⚖️ [S0 Debate] %s — VERDICT\n\n%s (%s/100)\nR1 %s → Final %s\n\n✅ 합의: %s\n❓ 미해결: %s' \
-    "$HYP_ID" "$VERDICT" "$FINAL_TOTAL" "$R1_TOTAL" "$FINAL_TOTAL" "$CONSENSUS" "$DISPUTES")"
+  # 텔레그램 최종 판정 — B안 + 이모지 (verdict 아이콘 + 섹션 구분)
+  VICON=$(verdict_icon "$VERDICT")
+  # R1/Final delta 계산 (bash arithmetic)
+  if [ -n "$FINAL_TOTAL" ] && [ -n "$R1_TOTAL" ] && [ "$FINAL_TOTAL" -eq "$FINAL_TOTAL" ] 2>/dev/null; then
+    FDELTA=$((FINAL_TOTAL - R1_TOTAL))
+    FDI=$(delta_icon "$FDELTA")
+    FDS=$([ "$FDELTA" -gt 0 ] 2>/dev/null && echo "+$FDELTA" || echo "$FDELTA")
+  else
+    FDI="•"; FDS="-"
+  fi
+  tg_notify "$(printf '⚖️ [S0 Debate · %s] VERDICT\n━━━━━━━━━━━━━━━━━━━━━━━━\n%s %s (%s/100)\n📈 R1 %s → Final %s  %s(%s)\n\n✅ 합의점\n%s\n\n❓ 미해결\n%s\n━━━━━━━━━━━━━━━━━━━━━━━━' \
+    "$HYP_ID" "$VICON" "$VERDICT" "$FINAL_TOTAL" "$R1_TOTAL" "$FINAL_TOTAL" "$FDI" "$FDS" "$CONSENSUS" "$DISPUTES")"
 
   echo "$(date +%H:%M:%S) ENFORCER VERDICT: $HYP_ID $VERDICT ($FINAL_TOTAL/100)" >> "$LOG"
 
