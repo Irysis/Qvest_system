@@ -1,0 +1,266 @@
+{
+  "factor_id": "H_1682_Distress_Calmar_Defense",
+  "parent_hypothesis": "H_1682",
+  "parent_s0_verdict": "stage_artifacts/S0_VERDICT_H_1682.json (APPROVE_CONDITIONAL 71/100)",
+  "parent_s0_record": "stage_artifacts/s0_record_H_1682_distress_calmar_defense.json (v2)",
+  "parent_slate_v1": "stage_artifacts/s5_research_slate_H_1682_distress_calmar.json",
+  "stage": "S5_SLATE_PREREG",
+  "version": "v2_extended",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "status": "PRE_S1",
+  "note": "Team-lead task #5 지시: 최소 3건+ 멀티팩터 조합 (s5-synthesis-rules §3축 병렬). v1 A~D (R16-only/Q25-only/50-50/overlay)는 주로 ablation + overlay. v2 멀티팩터 cross-family 조합 slot E/F/G 신규 추가. 총 7슬롯. Defense role 특성 고려 — AX-001 조건부 성과 평가 철저 준수.",
+
+  "slate_design_rationale": {
+    "synthesis_v7_requirement": "mutations_attempted >= 9, f_category_count >= 2, synthesis_tested = TRUE, 멀티팩터 조합 3건+ 최우선, 파라미터 튜닝 최소",
+    "v1_limitation": "v1 slate A(R16-only)/B(Q25-only)/C(50-50)는 ablation/parameter tuning 성격. D(overlay)만 structural. 멀티팩터 cross-family 조합 부재.",
+    "three_axis_coverage": {
+      "axis_1_factor_weight": "slot E (3-factor distress composite) + F (regime-adaptive weight)",
+      "axis_2_stock_weight": "slot G (CDaR LP 배제하고 ERC/Min-Var)",
+      "axis_3_overlay": "slot D (tail overlay DD/VT)"
+    },
+    "category_diversity": "single_factor_ablation / parameter_alternative / overlay / multi_factor_composite / regime_adaptive_weight / risk_parity_weight — 6 categories",
+    "param_vs_structural": "v2 E/F/G 3건 모두 structural. 파라미터 튜닝 없음.",
+    "defense_role_specificity": "AX-001 조건부 성과 평가 — 모든 slot은 COND_12 defense 4 sub-gate (stress IC > 0.03, MDD 8%p 축소, bad/good IC ratio > 1.2, CAGR > 5%) 동시 충족 목표."
+  },
+
+  "activation_criteria": {
+    "gate_pass": "S1 gate 전수 (ICIR>=0.20, C1-C15, MDD<40%, |beta|<0.85, CAGR>3%+stress alpha>0, Defense 4 sub-gate)",
+    "gate_fail_branch": "Hard Fail 시 E/F/G cross-family 우선 활성화 (60/40 composite 실패 시 다양화 rescue)",
+    "synthesis_phase": "Phase 5 Cross-Combination 의무 — XC_1~XC_4",
+    "conditional_activation": "S1 결과 기반 slot 선택 활성화"
+  },
+
+  "mutations": [
+    {
+      "slot": "A",
+      "mutation_id": "H_1682_M1_R16_only",
+      "mutation_type": "single_factor_baseline",
+      "category": "single_factor_ablation",
+      "description": "R16_Calmar 단독 100%",
+      "rationale": "VERDICT conditions_for_s1[9] Codex. R16 stress_pct_pos 1.00 tautology 여부 판별 baseline.",
+      "params": {"composite_formula": "score = z_R16_Calmar", "N_HOLD": 20, "weight_method": "equal"},
+      "expected_impact": "R16 단독 SR 0.4~0.7",
+      "priority_if_composite_pass": "low",
+      "priority_if_composite_fail": "HIGH",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "B",
+      "mutation_id": "H_1682_M2_Q25_only",
+      "mutation_type": "single_factor_baseline",
+      "category": "single_factor_ablation",
+      "description": "Q25_Ohlson_O 단독 100%",
+      "rationale": "VERDICT conditions_for_s1[9]. Q25 standalone (ICIR 0.633, stress 0.659) 성과.",
+      "params": {"composite_formula": "score = z_Q25_Ohlson_O", "N_HOLD": 20, "weight_method": "equal"},
+      "expected_impact": "Q25 단독 SR 0.5~0.8",
+      "priority_if_composite_pass": "low",
+      "priority_if_composite_fail": "HIGH",
+      "axiom_check": "PASS — Q25 distress, AX-004 profitability 무관"
+    },
+    {
+      "slot": "C",
+      "mutation_id": "H_1682_M3_50_50_baseline",
+      "mutation_type": "parameter_alternative",
+      "category": "parameter_alternative",
+      "description": "50/50 equal weight composite",
+      "rationale": "VERDICT conditions_for_s1[9]. 60/40 vs 50/50 robustness 비교.",
+      "params": {"composite_formula": "score = 0.5·z_Q25 + 0.5·z_R16", "N_HOLD": 20, "weight_method": "equal"},
+      "expected_impact": "50/50이 robust 여부 판별",
+      "priority_if_60_40_fail": "HIGH",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "D",
+      "mutation_id": "H_1682_M4_tail_overlay",
+      "mutation_type": "overlay",
+      "category": "overlay",
+      "description": "DD 6/20 또는 VT 15% overlay (Barroso&Santa-Clara 2015)",
+      "rationale": "VERDICT conditions_for_s1[9] Governor. L-013 전례.",
+      "params": {
+        "overlay_type": "DD 6/20 with t-1 lag",
+        "DD_START": 0.06,
+        "DD_FULL": 0.20,
+        "alternative_overlay": "VT 15% annualized target",
+        "lag": "t-1 (C9)"
+      },
+      "expected_impact": "MDD -20~30% 축소",
+      "priority_if_mdd_fail": "HIGHEST",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "E",
+      "mutation_id": "H_1682_M5_Triple_Defense_Composite",
+      "mutation_type": "multi_factor_composite",
+      "category": "multi_factor_composite",
+      "description": "Q25 + R16 + Q07_Earnings_Stability 3-factor cross-family defense composite. Distress probability + drawdown ratio + earnings stability. z-score 정적 40/30/30. L-121 Q07 stress_icir +0.753 활용.",
+      "rationale": "멀티팩터 cross-family 조합 필수 (synthesis §3). Q25(distress) + R16(risk family) + Q07(quality_stability) 3 family 조합. Q07은 L-121 최강 defense (stress 0.753, 4r CRISIS 0.413). 단 L-140 Q07_D25 실패 교훈: Q07 standalone 금지 / Q07 composite로만 사용 (AX-005 v2 multi-sleeve exempt).",
+      "params": {
+        "signals": [
+          {"factor": "Q25_Ohlson_O", "weight": 0.40, "family": "distress"},
+          {"factor": "R16_Calmar", "weight": 0.30, "family": "risk"},
+          {"factor": "Q07_Earnings_Stability", "weight": 0.30, "family": "quality_stability"}
+        ],
+        "composite_method": "z-score 합산 (각 signal Z_Score_Aligned)",
+        "N_HOLD": 20,
+        "weight_method": "equal",
+        "cross_family_independence_check": "Q25-R16 상관 0.053 (Quant 실측), Q07 vs Q25 상관 <0.3 예상 (S3에서 DCC 실측)"
+      },
+      "expected_impact": "Composite ICIR 0.45~0.60 예상 (단일 Q25 0.633 대비 stability 확보). Stress IC 평균 0.12~0.18 (Q25 0.659 + R16 2.655 + Q07 0.753 → composite 0.40~0.50은 synergy + dilution 중간). CAGR > 5% 가능성 (Q07 defense drag 경계, L-143).",
+      "risk": "L-140/L-143 Q07 standalone 실패 — composite 내 30%만 사용으로 risk 완화. L-119 정적 블렌드 dilution 경계 — cross-family라 correlated 아님.",
+      "priority_if_gate_pass": "HIGH (cross-family diversified defense)",
+      "priority_if_composite_60_40_fail": "HIGHEST (Q07 추가로 rescue)",
+      "axiom_check": "PASS — AX-005 v2 scope: multi-sleeve exempt 또는 composite 내 소수 비중(30%)으로 standalone 아님. AX-004 v3: Q07은 earnings_stability이고 composite scope 밖. 단 AX-005 v2 원문 확인: 'multi-sleeve portfolio 내 defense sleeve는 scope 밖' — 3-factor composite는 single-sleeve이지만 multi-family이므로 gray area. Judge 최종 판정 필요. Scout 판단: AX-005 '~low-beta standalone 또는 Q07+D25 single-sleeve combo'와 달리 Q07+Q25+R16은 cross-family 3요소 → scope 밖 해석.",
+      "lesson_ref": "L-121 (Q07 양쪽 위기 최강), L-140 (Q07+D25 실패, scope 밖), L-143 (defense drag gate), L-119 (정적 블렌드 경계)"
+    },
+    {
+      "slot": "F",
+      "mutation_id": "H_1682_M6_Regime_Adaptive_Weight",
+      "mutation_type": "regime_adaptive_weight",
+      "category": "regime_adaptive_weight",
+      "description": "Q25/R16 composite의 MRS regime별 동적 가중. CAUTION/CRISIS regime에서 R16 비중 상향. Regime Engine v7.1 (L-442) 기반. L-122 factor timing 경계 — risk management framework로 해석.",
+      "rationale": "멀티팩터 조합 + dynamic weight. Q25는 distress probability (선행), R16은 realized Calmar (후행). Regime 전환 시 signal 상보성 활용. STR_1631 VD+ regime+DD (L-114) 전례.",
+      "params": {
+        "base_signals": ["Q25_Ohlson_O", "R16_Calmar"],
+        "regime_weights": {
+          "NORMAL (MRS<30)": {"Q25": 0.70, "R16": 0.30},
+          "CAUTION (MRS 30-60)": {"Q25": 0.60, "R16": 0.40},
+          "CRISIS (MRS>60)": {"Q25": 0.40, "R16": 0.60}
+        },
+        "regime_source": "MRS v7.1 (L-442, PIT 준수)",
+        "lag": "t-1 regime signal (C5 준수)"
+      },
+      "expected_impact": "정적 60/40 대비 CRISIS 구간 MDD -5~10% 추가 축소. 평시 R16 weakness (IC 0.22) 완화.",
+      "risk": "L-122 Arnott 2016 factor timing 부정적. Regime Engine v7.1 PIT 준수 확인 필수. L-441 구 MRS 미래참조 전례 경계.",
+      "priority_if_gate_pass": "HIGH",
+      "priority_if_stress_alpha_weak": "HIGHEST (regime conditional로 stress alpha 강화)",
+      "axiom_check": "PASS — regime weight는 risk management (Barroso 범주)",
+      "lesson_ref": "L-114 (STR_1631 VD+ regime+DD 25.4% MDD), L-122 (Barroso framework), L-441 (MRS 미래참조 경계), L-442 (Regime Engine v7.1 PIT clean)"
+    },
+    {
+      "slot": "G",
+      "mutation_id": "H_1682_M7_Inverse_Variance_Weight",
+      "mutation_type": "risk_parity_weight",
+      "category": "risk_parity_weight",
+      "description": "Top 20 종목 확정 후 stock-level weight를 Inverse Variance (IV) 또는 Minimum Variance (MV with shrinkage)로 설정. L-129 CDaR LP 단독 가중치 실패 회피 — IV/MV는 검증된 conservative weight.",
+      "rationale": "Stock-level weight axis. Defense role 특성상 stock-level risk parity가 concentration 방지. STR_1656 MLRA_M05 IV weight 전례 (PG2 admitted). CDaR LP는 L-129 회피.",
+      "params": {
+        "base_signal": "slot E or F output (Top 20)",
+        "weight_method": "inverse_variance (IV) 또는 minimum_variance (MV with Ledoit-Wolf shrinkage)",
+        "lookback_cov": "60m rolling (C1 preserved)",
+        "lag": "t-1",
+        "weight_clamp": "[0.02, 0.10]",
+        "rebalance": "monthly"
+      },
+      "expected_impact": "MDD -3~8% 축소 (STR_1656 전례). SR 유사 또는 소폭 저하 (EW 대비).",
+      "risk": "L-129 CDaR LP 실패 회피 (IV/MV 선택). 소수 종목 weight 제한으로 EW 근접 가능.",
+      "priority_if_gate_pass": "medium (추가 MDD 개선)",
+      "priority_if_mdd_fail": "HIGH (EW 대체)",
+      "axiom_check": "PASS — stock weight는 factor family 변경 없음",
+      "lesson_ref": "L-129 (CDaR LP 단독 가중 한국 MDD 악화), STR_1656 MLRA_M05 IV weight PG2 전례"
+    }
+  ],
+
+  "synthesis_phase_5_cross_combinations": {
+    "requirement": "synthesis §3 Phase 5 Cross-Combination 의무. 3축 중 2축 이상 조합 3건+.",
+    "proposed_combinations": [
+      {
+        "combo_id": "XC_1",
+        "slots": ["E", "D"],
+        "description": "Triple Defense composite + DD 6/20 overlay",
+        "priority": "HIGH",
+        "rationale": "Factor axis + overlay axis. Q25+R16+Q07 3-family + MDD 제어."
+      },
+      {
+        "combo_id": "XC_2",
+        "slots": ["F", "G"],
+        "description": "Regime-adaptive weight + IV stock weight",
+        "priority": "HIGH",
+        "rationale": "Factor weight axis + stock weight axis. Dynamic + conservative. STR_1631 VD+ 패턴 확장."
+      },
+      {
+        "combo_id": "XC_3",
+        "slots": ["E", "F", "G"],
+        "description": "Triple composite + regime adaptive + IV weight",
+        "priority": "HIGHEST",
+        "rationale": "3축 모두 결합. Q25+R16+Q07 composite을 regime별 동적 가중 + IV stock weight. Defense role 완전체. 단 복잡도 높음 — Phase 7 check."
+      },
+      {
+        "combo_id": "XC_4",
+        "slots": ["STR_1679v3_def_replacement", "E"],
+        "description": "STR_1679v3 Def sleeve 교체 mutation + Triple composite",
+        "priority": "HIGH",
+        "rationale": "linked_mutation (TODO_S1에 명시). STR_1679v2 Def sleeve 5종목을 H_1682 E slot signal로 교체. Core+Def blend 구조."
+      }
+    ],
+    "complexity_check": "synthesis §7 Phase 7 complexity: XC_3 (3-combo) vs XC_2 (2-combo) SR 차이 <0.05 시 XC_3 drop.",
+    "defense_gate_check": "모든 cross combo는 COND_12 Defense 4 sub-gate 동시 충족 필수 (stress IC>0.03, MDD 8%p 축소, bad/good ratio>1.2, CAGR>5%)"
+  },
+
+  "activation_flowchart_v2": {
+    "step_1": "H_1682 S1 실행 → 4 variants (Primary/A/B/C) 병행 + D 별도",
+    "step_2a_all_pass": "E 우선 활성화 → Phase 5 XC_1, XC_2, XC_3 synthesis",
+    "step_2b_mdd_fail": "Slot D + XC_1 즉시 활성화",
+    "step_2c_cagr_fail": "L-143 defense drag — Slot E 활성화 (Q07 추가로 평시 개선), XC_4 검토",
+    "step_2d_stress_alpha_weak": "Slot F (regime adaptive) 활성화 + XC_2",
+    "step_2e_composite_60_40_fail": "Slot A/B 단독이 composite보다 우월 → E(Triple)가 rescue 시도",
+    "step_3_synthesis": "Phase 5 XC_3 (3축 결합) 최종 테스트. SR gain >0.05 시 승격, 아니면 XC_2로 확정",
+    "step_4_STR_1679v3_link": "H_1682 E slot Grade A/B 확정 시 XC_4 활성화 (STR_1679v2 Def sleeve 교체)"
+  },
+
+  "multi_factor_mutation_count": {
+    "slot_A_D_baseline": 4,
+    "slot_E_F_G_new_multifactor": 3,
+    "cross_combinations": 4,
+    "total_mutations_designed": "7 primary + 4 synthesis = 11",
+    "synthesis_rules_compliance": "mutations_attempted >= 9 ✓, f_category_count >= 2 (6 categories) ✓, synthesis_tested = TRUE (Phase 5 preregistered 4 XC) ✓, 멀티팩터 조합 3건+ (E/F/G + XC_1/2/3/4) ✓"
+  },
+
+  "axiom_compliance_detailed": {
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_v3_quality_profitability_fail": {
+      "status": "PASS (scope 밖 판정)",
+      "reasoning": "AX-004 v3 EXCLUSION: 'Quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)은 scope 밖'. Slot E는 Q25(Ohlson O distress) + Q07(earnings stability) + R16(risk) 조합이므로 multi-axis quality composite 해석 가능. Judge 최종 재확인 필요."
+    },
+    "AX_005_v2_defense_fail": {
+      "status": "CONDITIONAL PASS (cross-family scope 밖)",
+      "reasoning": "AX-005 v2 원문: 'low-beta (BAB Frazzini-Pedersen 2014) 또는 Q07+D25 single-sleeve combo는 구조적 실패. EXCLUSION: multi-sleeve portfolio 내 defense sleeve는 scope 밖'. H_1682는 low-beta 아니고, Q07+D25 combo 아니며(Q07만 사용), Q25+R16+Q07 3-family composite. Scope 밖 해석.",
+      "scout_caveat": "Judge 최종 판정 필요. 경계 케이스이므로 H_1682 S1 결과가 CAGR>5% + stress alpha>0 + MDD 8%p 축소 엄격 통과 필수."
+    }
+  },
+
+  "l_code_compliance": {
+    "L_104": "AWARE — STR_1624 혼탁 회피, slot E는 Q25+R16+Q07 명확 cross-family",
+    "L_112_Defense_conditional": "DIRECT_FIX — AX-001 defense 조건부 평가 COND_12 4 sub-gate 준수",
+    "L_113_Quality_defense_fail": "AWARE — Q07은 quality이나 stability axis (profitability 아님). AX-004 v3 scope 밖",
+    "L_118_ext_beta_dominance": "AWARE — S3에서 cross-sectional correlation + portfolio beta 이원 측정 (COND_08)",
+    "L_119_static_blend_dilution": "AWARE — slot E 정적 40/30/30은 dilution 위험. F/G로 완화",
+    "L_121_Q07_earnings_stability": "CORE_REFERENCE — slot E Q07 30% 편입 근거 (stress 0.753, 4r CRISIS 0.413)",
+    "L_122_factor_timing_vs_risk_mgmt": "DIRECT_FIX — slot F regime weight는 Barroso risk management (timing 아님)",
+    "L_129_CDaR_LP_fail": "DIRECT_FIX — slot G는 IV/MV (CDaR 아님)",
+    "L_140_Q07_D25_fail": "AWARE — Q07+D25 combo는 실패. slot E는 Q07+Q25+R16 (D25 미포함)",
+    "L_143_defense_drag_gate": "DIRECT_FIX — CAGR>5% gate 전 slot 활성화 전제",
+    "L_144_Q24_stress_reverse": "AWARE — Q24 미사용. Q25 Ohlson O만 사용 (L-144와 구분)",
+    "L_145_AX005_evidence": "AWARE — AX-005 v2 scope 재확인",
+    "L_146_overlay_driven_MDD": "AWARE — slot D overlay 적용 시 MDD 축소가 role honesty 문제되지 않도록 Core alpha vs overlay 분해 보고",
+    "L_148_Grade_A_not_PIT_clean": "AWARE — PIT C1-C15 전수 독립 검증 의무"
+  },
+
+  "prior_art_gate_check": {
+    "H_1682_Q25_R16_60_40": "factor_registry 등록 예정 (S1 PASS 시)",
+    "slot_E_Q25_R16_Q07": "factor_registry 검색 필요 — 3-family distress+risk+stability composite 전례 미확인",
+    "slot_F_regime_adaptive_Q25_R16": "L-114 STR_1631 VD+ pattern 확장 (다른 signal)",
+    "slot_G_IV_weight": "STR_1656 MLRA_M05 IV weight 확장",
+    "XC_4_STR_1679v3_def_replacement": "s5_mutation_design_STR_1679v3_def_replacement.md 연계"
+  },
+
+  "scout_notes": [
+    "v1 slate 4슬롯 (R16-only / Q25-only / 50-50 / overlay)은 주로 ablation + overlay 성격. 멀티팩터 cross-family 조합 부재.",
+    "v2 E/F/G 3건은 synthesis §3 요건 직접 충족. 특히 E(Q25+R16+Q07)는 distress+risk+stability 3-family cross로 H_1682의 defense 역할 강화 + L-121 최강 defense (Q07) 흡수.",
+    "AX-004 v3 + AX-005 v2 경계 케이스 — Judge 최종 판정 필요. Scout 판단: composite scope 밖이나 H_1682 S1 결과의 엄격 defense gate 통과가 AX 회피 근거.",
+    "F slot (regime adaptive)은 STR_1631 VD+ (L-114) Grade A 전례 확장. 단 L-441/L-122 경계 — PIT 엄수 + risk management framework 해석.",
+    "G slot (IV weight)은 L-129 CDaR LP 실패 회피 + STR_1656 IV weight PG2 admitted 전례.",
+    "XC_4 (STR_1679v3_def_replacement)는 TODO_S1 linked_mutation 직접 연계. Scout draft 이미 존재 (s5_mutation_design_STR_1679v3_def_replacement.md).",
+    "Defense role 특성상 모든 slot은 COND_12 Defense 4 sub-gate 동시 충족 필수. Slot E가 stress alpha 확보(Q07+Q25+R16 3중)에 가장 유리."
+  ]
+}

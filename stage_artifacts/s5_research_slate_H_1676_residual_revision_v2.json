@@ -1,0 +1,242 @@
+{
+  "factor_id": "H_1676_Residual_Consensus_Revision",
+  "parent_hypothesis": "H_1676",
+  "parent_s0_verdict": "stage_artifacts/S0_VERDICT_H_1676.json (APPROVE_CONDITIONAL 61/100)",
+  "parent_s0_record": "stage_artifacts/s0_record_H_1676_residual_revision.json",
+  "parent_slate_v1": "stage_artifacts/s5_research_slate_H_1676_residual_revision.json",
+  "stage": "S5_SLATE_PREREG",
+  "version": "v2_extended",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "status": "PRE_S1",
+  "note": "Team-lead task #5 지시: 최소 3건+ 멀티팩터 조합 (s5-synthesis-rules §3축 병렬 = Factor Weight × Stock Weight × Overlay). v1 slate A~D (overlay/weight/construction/sleeve) 유지 + 멀티팩터 조합 slot E/F/G 신규 추가. 총 7슬롯.",
+
+  "slate_design_rationale": {
+    "synthesis_v7_requirement": "mutations_attempted >= 9, f_category_count >= 2, synthesis_tested = TRUE, 멀티팩터 조합 3건+ 최우선, 파라미터 튜닝 최소",
+    "three_axis_coverage": {
+      "axis_1_factor_weight": "slot B (factor risk management) + E (composite 3-factor) + F (IC-weighted)",
+      "axis_2_stock_weight": "slot D (physical sleeve sizing) + G (HRP)",
+      "axis_3_overlay": "slot A (DD 8/22) + F variant"
+    },
+    "category_diversity": "overlay / weight_scaling / factor_construction / portfolio_construction / multi_factor_composite / ic_weighted / clustering_weight — 7 categories, 4+ 요구 충족",
+    "param_vs_structural": "v1 slate 4건 중 C/D는 structural. v2 추가 E/F/G 3건 중 E/F는 structural (새 signal 결합), G는 weighting structural. 파라미터 튜닝 없음."
+  },
+
+  "activation_criteria": {
+    "gate_pass": "S1 gate criteria 7건 통과 (ICIR >= 0.20, MDD<45%, |beta|<0.15, r12 stability<30% drift, liquidity, PIT, S3 rho prospective)",
+    "gate_fail_branch": "Hard Fail 시 E/F/G slot 우선 활성화 (멀티팩터 조합이 standalone보다 robust할 가능성)",
+    "synthesis_phase": "Phase 5 Cross-Combination에서 A+E, A+F, B+G, D+E 등 cross 조합 테스트 의무",
+    "conditional_activation": "S1 결과에 따라 slot 선택 활성화"
+  },
+
+  "mutations": [
+    {
+      "slot": "A",
+      "mutation_id": "H_1676_M1_DD_Overlay",
+      "mutation_type": "overlay",
+      "category": "overlay",
+      "description": "DD 8/22 overlay 재도입 (L-013 전례: R03_CVaR standalone SR 0.554 → DD 6/20 SR 0.598 + MDD 30.4%)",
+      "rationale": "S0 conditions_for_s1 [6] slate (a) 명시. residual signal MDD 제어. L-013 crisis alpha 3/3 보존 전례.",
+      "params": {
+        "DD_START": 0.08,
+        "DD_FULL": 0.22,
+        "lag": "t-1 (C9 준수)",
+        "vol_targeting": false
+      },
+      "expected_impact": "MDD -15~25% 축소",
+      "priority_if_gate_pass": "low",
+      "priority_if_mdd_fail": "HIGH",
+      "axiom_check": "PASS — overlay는 position sizing"
+    },
+    {
+      "slot": "B",
+      "mutation_id": "H_1676_M2_FactorRiskManagement",
+      "mutation_type": "weight_scaling",
+      "category": "weight_scaling",
+      "description": "Factor Risk Management (Barroso & Santa-Clara 2015 JFE) — rolling vol 기반 exposure scaling.",
+      "rationale": "S0 conditions_for_s1 [6] slate (b). Factor timing 아닌 risk management (L-122).",
+      "params": {
+        "vol_lookback": "12m rolling",
+        "target_vol": "15% annualized",
+        "lag": "t-1 (C9)",
+        "method": "scale = target_vol / rolling_vol, clamp [0.5, 1.5]"
+      },
+      "expected_impact": "Sharpe 개선",
+      "priority_if_gate_pass": "medium",
+      "priority_if_sr_below_target": "HIGH",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "C",
+      "mutation_id": "H_1676_M3_MarketBeta_Ortho",
+      "mutation_type": "factor_construction",
+      "category": "factor_construction",
+      "description": "CAPM market beta 추가 regressor 투입. Size+IdioVol+M01 3-factor 잔차화.",
+      "rationale": "S0 R1 RM+Codex 공통 지적. S1 |β|>=0.15 시 필수.",
+      "params": {
+        "regressors": ["log(MarketCap)", "R12_Idiosyncratic_Risk", "M01_CAPM_Beta_rolling_24m"],
+        "winsorization": "1~99%",
+        "method": "single-month cross-section OLS"
+      },
+      "expected_impact": "portfolio |β| 감소 → S3 rho<0.2 확률 상승",
+      "priority_if_beta_gate_fail": "HIGHEST",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "D",
+      "mutation_id": "H_1676_M4_STR_1679_Sleeve",
+      "mutation_type": "portfolio_construction",
+      "category": "portfolio_construction",
+      "description": "STR_1679 Core 15 + H_1676 Diversifier 5 = 20종목 물리 sleeve 분리.",
+      "rationale": "L-484/L-557 물리 분리. Portfolio sleeve 편입.",
+      "params": {
+        "N_CORE_STR_1679": 15,
+        "N_DIVERSIFIER_H_1676": 5,
+        "weighting": "Core 80% + H_1676 20%",
+        "sleeve_separation": "physical"
+      },
+      "expected_impact": "Blended SR 1.193 → 1.30~1.50",
+      "priority_if_s3_rho_pass": "HIGH",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "E",
+      "mutation_id": "H_1676_M5_MultiConsensus_Composite",
+      "mutation_type": "multi_factor_composite",
+      "category": "multi_factor_composite",
+      "description": "잔차 C13 + C04_ESBR + C10_SUE_Persistence 3-factor cross-family consensus composite. 각 signal의 Size+IdioVol 잔차화 후 equal weight 합성, 최종 Top 20.",
+      "rationale": "멀티팩터 조합 필수 (synthesis §3). 'residual breadth(C13)' + 'earnings surprise bounded revision(C04 ESBR ICIR 0.547)' + 'SUE persistence(C10 ICIR 0.480)' 3 signal은 모두 consensus family이나 시간 차원 상이: C13=3m revision / C04=earnings surprise ESBR / C10=SUE persistence. 시간분산(time-diversified) consensus composite. 잔차화로 beta 노출 동시 제거.",
+      "params": {
+        "signals": [
+          {"factor": "C13_Revision_Breadth_3m", "weight": 0.40, "residualize": ["log_MC", "R12"]},
+          {"factor": "C04_ESBR", "weight": 0.30, "residualize": ["log_MC", "R12"]},
+          {"factor": "C10_SUE_Persistence", "weight": 0.30, "residualize": ["log_MC", "R12"]}
+        ],
+        "composite_method": "각 잔차 → Z-score → weight 합산 → final Z-score",
+        "winsorization": "1~99%",
+        "N_HOLD": 20,
+        "weight_method": "equal"
+      },
+      "expected_impact": "ICIR 0.45~0.55 예상 (단일 C13 0.438 대비 상승). 시간분산 효과로 turnover 분산.",
+      "risk": "L-119 (정적 EW 블렌드 alpha 희석) 재발 위험 — 잔차화 + 3 signal 모두 strong ICIR 전제로 회피",
+      "priority_if_gate_pass": "HIGH (멀티팩터 diversifier 핵심)",
+      "priority_if_gate_fail": "HIGHEST (단일 잔차 C13 실패 시 composite이 rescue)",
+      "axiom_check": "PASS — consensus family 내 구성, AX-003/004/005 모두 무관",
+      "lesson_ref": "L-119 (정적 EW 희석 경계), C04 ESBR ICIR 0.547 실측, C10 SUE 0.480 실측",
+      "lesson_contrast": "L-119는 'family 다른 V16+M25+V22 정적 EW'의 문제. E slot은 consensus family 내 time-dimension 분산으로 dilution 회피."
+    },
+    {
+      "slot": "F",
+      "mutation_id": "H_1676_M6_IC_Weighted_Consensus",
+      "mutation_type": "ic_weighted",
+      "category": "ic_weighted",
+      "description": "Slot E 3-signal 조합을 rolling 24M ICIR 기반 동적 가중. L-111 IC-Weighted Score Tilt (STR_1631 SYN_05 Grade A 전례) 적용.",
+      "rationale": "멀티팩터 조합 + dynamic weight. L-111 전례 (IC-Weighted Score Tilt + 격월 리밸런싱 → Grade A 77점). 정적 40/30/30 대비 regime adaptive. Arnott 2016 factor timing 부정적 우려 — 단 ICIR은 realized IC의 rolling estimate (Barroso 2015 risk management 범주, L-122 준수).",
+      "params": {
+        "base_signals": ["C13_Residual", "C04_ESBR_Residual", "C10_SUE_Residual"],
+        "weight_scheme": "rolling 24M ICIR proportional",
+        "floor_weight": 0.15,
+        "cap_weight": 0.55,
+        "rebalance": "monthly (격월 옵션 variant 추가 가능)",
+        "lag": "t-1 ICIR 사용 (C2 lookback only, same-period 금지)"
+      },
+      "expected_impact": "정적 E 대비 SR +0.1~0.2 (STR_1631 SYN_05 전례). MDD 유사.",
+      "risk": "L-107 ICIR fixed weight C1 violation 경계 — rolling window + t-1 lag 필수. L-122 factor timing 경계 — risk management 해석으로 처리",
+      "priority_if_e_pass": "HIGH (E standalone이 통과하면 dynamic 추가)",
+      "priority_if_e_mediocre": "HIGHEST (정적 30/40 대비 dynamic이 rescue 가능성)",
+      "axiom_check": "PASS",
+      "lesson_ref": "L-111 (IC-Weighted Score Tilt Grade A), L-107 (ICIR C1 violation 회피 프로토콜), L-122 (Barroso risk management framework)"
+    },
+    {
+      "slot": "G",
+      "mutation_id": "H_1676_M7_HRP_StockWeight",
+      "mutation_type": "clustering_weight",
+      "category": "clustering_weight",
+      "description": "Slot E/F signal Top 20 종목 확정 후, stock-level weight를 HRP (Hierarchical Risk Parity, Lopez de Prado 2016) 적용. EW 대체.",
+      "rationale": "Stock-level weight축 (3축 병렬 §3 axis 2). STR_1679v2 HRP Grade A 77.1 전례. Residual signal 기반 portfolio에 HRP 적용 시 stock-level diversification + MDD 제어 동시 효과.",
+      "params": {
+        "base_signal": "slot E or F output (Top 20)",
+        "weight_method": "HRP (correlation distance → quasi-diagonalization → recursive bisection)",
+        "lookback_cov": "60m rolling covariance (C1 preserved)",
+        "lag": "t-1",
+        "weight_clamp": "[0.02, 0.10] (concentration 방지)"
+      },
+      "expected_impact": "MDD -5~10% 축소 (STR_1679v2 전례). SR 유지 또는 소폭 개선.",
+      "risk": "20종목에서 HRP 효과 제한적 (Lopez de Prado 50+ 추천). 소규모 clamping으로 EW 수준 근접 가능.",
+      "priority_if_mdd_fail": "HIGH (EW 대체)",
+      "priority_if_gate_pass": "medium (추가 개선)",
+      "axiom_check": "PASS — stock-level weight는 factor family 변경 없음",
+      "lesson_ref": "STR_1679v2 HRP+DD Grade A 77.1 전례 (Session 65)"
+    }
+  ],
+
+  "synthesis_phase_5_cross_combinations": {
+    "requirement": "synthesis §3 Phase 5 Cross-Combination 의무. 3축 병렬 중 2축 이상 조합 테스트 3건+.",
+    "proposed_combinations": [
+      {
+        "combo_id": "XC_1",
+        "slots": ["E", "A"],
+        "description": "멀티팩터 composite + DD 8/22 overlay",
+        "priority": "HIGH",
+        "rationale": "Factor 조합 axis + overlay axis 동시. residual composite의 MDD 제어."
+      },
+      {
+        "combo_id": "XC_2",
+        "slots": ["F", "G"],
+        "description": "IC-weighted composite + HRP stock weight",
+        "priority": "HIGH",
+        "rationale": "Factor weight axis + stock weight axis 동시. STR_1631 SYN_05 + STR_1679v2 전례 결합. 가장 유망."
+      },
+      {
+        "combo_id": "XC_3",
+        "slots": ["D", "E"],
+        "description": "STR_1679 sleeve 분리 + 멀티팩터 diversifier composite",
+        "priority": "HIGHEST",
+        "rationale": "Core 15 (STR_1679 Q07+D29) + Diversifier 5 (H_1676 residual composite). 물리 sleeve + cross-family 시간분산. L-484/L-557 준수 + synthesis 요건 충족."
+      },
+      {
+        "combo_id": "XC_4",
+        "slots": ["F", "G", "A"],
+        "description": "IC-weighted composite + HRP + DD overlay",
+        "priority": "medium",
+        "rationale": "3축 모두 결합. 복잡도 상승 주의 (synthesis §7 complexity check)."
+      }
+    ],
+    "complexity_check": "synthesis §7: 복잡도 상승 시 incremental SR gain 검증. 3-combo(XC_4)가 1-combo(XC_2) 대비 SR 개선 <0.05 시 drop."
+  },
+
+  "activation_flowchart_v2": {
+    "step_1": "S1 실행 → hurdle + |β| + r12_stability 측정",
+    "step_2a_all_pass": "E/F 단독 활성화 우선 → Phase 5에서 XC_2, XC_3 synthesis",
+    "step_2b_mdd_fail": "Slot A 활성화 + XC_1",
+    "step_2c_beta_fail": "Slot C 활성화 + E 재측정 (잔차화 ↑)",
+    "step_2d_sr_low": "Slot F (IC-weighted) 활성화 → 정적 E 대체",
+    "step_2e_multiple_fail": "XC_3 (STR_1679 sleeve blend) 직행 — H_1676 standalone 성과 의존도 축소"
+  },
+
+  "multi_factor_mutation_count": {
+    "slot_A_D_baseline": 4,
+    "slot_E_F_G_new_multifactor": 3,
+    "cross_combinations": 4,
+    "total_mutations_designed": "7 primary + 4 synthesis = 11",
+    "synthesis_rules_compliance": "mutations_attempted >= 9 ✓, f_category_count >= 2 (7 categories) ✓, synthesis_tested = TRUE (Phase 5 preregistered) ✓, 멀티팩터 조합 3건+ (E/F/G + XC_2/3) ✓"
+  },
+
+  "prior_art_gate_check": {
+    "H_1676_residual_C13_only": "factor_registry 미등록 (원 가설)",
+    "slot_E_composite_C13_C04_C10": "factor_registry 검색 필요 — C13+C04+C10 시간분산 composite 전례 미확인",
+    "slot_F_IC_weighted_C13_family": "L-111 STR_1631 SYN_05 pattern 확장",
+    "slot_G_HRP_residual": "STR_1679v2 HRP 전례 + residual signal은 신규",
+    "XC_3_sleeve_residual_diversifier": "STR_1679 D안 patterns 확장 — Q07/D29 defense 기반 Core vs H_1676 residual diversifier 구조는 최초"
+  },
+
+  "scout_notes": [
+    "v1 slate는 S0 conditions_for_s1 [6] 3건 mutation 충족 (DD/Barroso/sleeve). v2는 synthesis §3 멀티팩터 조합 3건+ 요건을 E/F/G로 추가 반영.",
+    "E slot (C13+C04+C10 composite)은 family 동일 + 시간차원 분산. L-119 정적 EW 블렌드 dilution 문제의 정면 대응 설계 (family 동일 → correlated factors가 아닌 time-diversified signals라는 해석).",
+    "F slot (IC-weighted)은 L-111 STR_1631 SYN_05 Grade A 전례 직접 확장. 단 C1 violation (L-107) 위험 존재 — t-1 lag + rolling 24M 엄수.",
+    "G slot (HRP)은 stock-level weight axis를 활성화하는 최소 mutation. STR_1679v2 전례. HRP는 20종목에서 제한적이나 EW 대안으로 preregistered.",
+    "XC_3 (sleeve blend)이 최우선 — Scout 판단: H_1676 standalone이 Grade A 달성 여부와 무관하게, STR_1679 Core + H_1676 Diversifier 물리 sleeve로 편입 시 Portfolio SR 1.193 → 1.35 달성 가능성 최대.",
+    "AX 전수 clear: consensus family만 사용, value/quality_profitability/defense 실패 범주 모두 회피.",
+    "Phase 7 complexity check 계획: XC_2 (F+G 2축) vs XC_4 (F+G+A 3축) SR 차이가 0.05 이하면 XC_4 drop, XC_2 승격."
+  ]
+}

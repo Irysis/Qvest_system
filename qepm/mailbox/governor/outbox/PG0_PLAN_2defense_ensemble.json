@@ -1,0 +1,273 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_DRAFT",
+  "stage": "PG0_PreAdmission_Simulation",
+  "timestamp": "2026-04-17T17:30:00+09:00",
+  "session": 65,
+  "task_ref": "TaskCreate#8 — 2-defense ensemble 시뮬레이션 설계",
+  "status": "DRAFT (H_1682 S1~S6 미완료 기반 가상 시뮬레이션. 실측치 도착 시 재계산 필수)",
+
+  "scope": {
+    "defense_candidates": ["STR_1662a (Q07 IVOL)", "H_1682 (Q25+R16 distress_calmar, pre-S1)"],
+    "ax005_v2_exempt_structure": "multi-sleeve (Core + Diversifier + 2-Defense)",
+    "objective": "Defense sleeve 공석 해소 + Q07 single-factor 장애 방지 + family_concentration 유지"
+  },
+
+  "component_profiles": {
+    "STR_1662a_M6_IVOL": {
+      "source": "stage_artifacts/s6_judge_STR_1662a.json (Judge B_DEFENSE AX-001 override)",
+      "sharpe": 0.724,
+      "cagr": 0.0289,
+      "mdd": -0.0930,
+      "turnover_ann": 0.682,
+      "stress_sr": 1.309,
+      "normal_sr": 0.512,
+      "stress_outperform": "7/7 crisis months",
+      "core_mdd_reduction_68pct": "STR_1631 Core MDD -29.35% → -9.30% with Q07 defense",
+      "c19_correlation": -0.092,
+      "role_honesty": "HONEST (Judge evidence) / declared_role schema error (audit 파일)",
+      "factor_family": "quality_stability (Q07)",
+      "ic_stats": "ICIR 0.382, stress_ICIR 0.753",
+      "decay_risk": "2017~2026 SR 0.12~0.17 efficacy weakening (L-123 노트)"
+    },
+    "H_1682_M3_60_40_expected": {
+      "source": "stage_artifacts/s0_record_H_1682_distress_calmar_defense.json (S0 pre_screening 기반 가정)",
+      "status": "PRE_S1 (실측 없음, S0 pre_screening expectations)",
+      "sharpe_expected": "0.50~0.80 (pure composite)",
+      "crisis_alpha_annual_expected": "+2~4%/y",
+      "mdd_expected": "25~35% (pure) / 15~22% (S5 DD overlay)",
+      "stress_icir_composite_expected": "1.0~1.5 (Q25 0.659 + R16 2.655)",
+      "c19_correlation_expected": "< 0.1 (defense vs momentum core)",
+      "factor_family": "distress_path_dependent_defense (Q25 accounting + R16 price-based)",
+      "ax_clearance": "AX-003/004/005 전수 clear (Scout 증빙)",
+      "q07_independence": "Q07 완전 배제 → STR_1662a와 factor-family orthogonal"
+    }
+  },
+
+  "inter_component_correlation_assumptions": {
+    "STR_1662a_vs_H_1682_factor_correlation": {
+      "assumed": "rho ~ 0.10~0.25",
+      "reasoning": "Q07 earnings stability (10-year σ(EPS)) vs Q25 Ohlson O-Score (distress probability) + R16 Calmar (price drawdown ratio). 회계/가격 기반 이질 정보 채널. 상관 0.10~0.25 추정.",
+      "verification_required_S3": "S3 orthogonality 실측으로 STR_1679v2 / STR_1631 / STR_1656 대비 H_1682 conditional correlation 검증 필수"
+    },
+    "STR_1662a_vs_Core_STR_1631_correlation": "-0.092 (Judge 실측)",
+    "H_1682_vs_Core_STR_1631_expected": "< 0.1 (Scout)",
+    "STR_1662a_vs_Diversifier_STR_1656_correlation": "미측정 (PG2 편입 후 산출 필요)",
+    "H_1682_vs_Diversifier_STR_1656_expected": "< 0.3 (defense vs ML-RA diversifier)"
+  },
+
+  "allocation_candidates": {
+    "candidate_1_EW_5050": {
+      "description": "2-defense 내부 EW 50/50 (STR_1662a 50% + H_1682 50%)",
+      "portfolio_weights": {
+        "STR_1631_Core": 0.70,
+        "STR_1656_Diversifier": 0.15,
+        "STR_1662a_Defense": 0.075,
+        "H_1682_Defense": 0.075
+      },
+      "defense_sleeve_internal": "50/50",
+      "total_defense_weight": 0.15,
+      "rationale": "단순 EW. 두 defense 신호 대등 대우. H_1682 S1 미완료 시 시가 보수적 출발점.",
+      "pros": ["구현 단순", "H_1682 실측 부재 위험 분산", "ex-post tuning 없음"],
+      "cons": ["H_1682 실증 우위 시 suboptimal", "STR_1662a Q07 decay risk 동등 가중"]
+    },
+    "candidate_2_RP_riskparity": {
+      "description": "Risk Parity (vol-inverse within defense sleeve)",
+      "estimated_weights_if_defense_total_15pct": {
+        "STR_1662a": "0.095 (vol lower → higher weight, MDD 9.3% 기준)",
+        "H_1682": "0.055 (vol higher → lower weight, MDD 25~35% 기준)"
+      },
+      "portfolio_weights": {
+        "STR_1631_Core": 0.70,
+        "STR_1656_Diversifier": 0.15,
+        "STR_1662a_Defense": 0.095,
+        "H_1682_Defense": 0.055
+      },
+      "defense_sleeve_internal": "63/37 (vol-inverse)",
+      "rationale": "STR_1662a MDD 9.3% << H_1682 예상 25~35% → RP는 STR_1662a 가중 상향. 포트폴리오 변동성 균등 기여.",
+      "pros": ["전체 벡터 MDD 안정", "H_1682 불확실성 자동 할인"],
+      "cons": ["H_1682 crisis alpha 2~4%/y 잠재력 과소 반영", "Q07 single-factor decay 의존도 증가 (AX-005 v2 scope 위험 재등장)"]
+    },
+    "candidate_3_IC_weighted": {
+      "description": "Stress ICIR 가중 (Q07 0.753 vs composite 1.0~1.5 mid-point 1.25)",
+      "estimated_weights_if_defense_total_15pct": {
+        "STR_1662a": "0.057 (0.753 / (0.753+1.25) = 37.6%)",
+        "H_1682": "0.093 (1.25 / (0.753+1.25) = 62.4%)"
+      },
+      "portfolio_weights": {
+        "STR_1631_Core": 0.70,
+        "STR_1656_Diversifier": 0.15,
+        "STR_1662a_Defense": 0.057,
+        "H_1682_Defense": 0.093
+      },
+      "defense_sleeve_internal": "38/62 (IC 가중)",
+      "rationale": "Stress 시 defense 기여도 = stress ICIR 비례. H_1682 composite stress 예상 더 강력 → 가중 상향. L-122 factor risk management 관점.",
+      "pros": ["stress alpha 극대화", "Q07 decay risk 할인", "AX-005 v2 scope 희석"],
+      "cons": ["H_1682 stress ICIR 실측 전 ex-ante 가중", "ex-post tuning 유사 리스크 (Codex R1 경고와 동일)"]
+    }
+  },
+
+  "simulation_expected_profiles": {
+    "assumptions": {
+      "STR_1631_Core_profile": {"sharpe": 1.243, "cagr": 0.191, "mdd": -0.254, "source": "RESULT_S6_STR_1631_VDplus.json"},
+      "STR_1656_Div_profile": {"sharpe": 1.2122, "cagr": 0.2910, "mdd": -0.3189, "source": "JUDGE_VERDICT_STR_1656_MLRA M05"},
+      "current_80_20": {"sharpe": 1.193, "cagr": 0.1614, "mdd": -0.2127, "source": "gap_vector v1.0.3"},
+      "STR_1662a_profile": {"sharpe": 0.724, "cagr": 0.0289, "mdd": -0.0930},
+      "H_1682_profile_central_estimate": {"sharpe": 0.65, "cagr": 0.08, "mdd": -0.30},
+      "inter_corr_matrix_approx": "Core vs Div 0.35 / Core vs Def 0.00~0.10 / Div vs Def 0.15 / Def1 vs Def2 0.20"
+    },
+    "candidate_1_EW_5050_blended": {
+      "sharpe_expected": "1.25~1.35 (defense sleeve SR drag 보완 + corr 0 효과)",
+      "cagr_expected": "0.155~0.170 (Core 70% + Div 15% + Def 15% 가중평균)",
+      "mdd_expected": "-0.18~-0.21 (Defense 15% MDD 저감 효과)",
+      "gap_sharpe_resolution": "1.193 → 1.27 estimate, gap 0.73 (from 0.807). 개선 8.5%."
+    },
+    "candidate_2_RP_blended": {
+      "sharpe_expected": "1.27~1.38",
+      "cagr_expected": "0.148~0.162 (STR_1662a 가중 증가 → CAGR drag)",
+      "mdd_expected": "-0.17~-0.20 (더 낮은 MDD)",
+      "gap_sharpe_resolution": "1.193 → 1.30 estimate, gap 0.70. 개선 13%."
+    },
+    "candidate_3_IC_blended": {
+      "sharpe_expected": "1.30~1.45 (H_1682 stress alpha 가중 시)",
+      "cagr_expected": "0.158~0.175",
+      "mdd_expected": "-0.19~-0.23 (H_1682 MDD 우세)",
+      "gap_sharpe_resolution": "1.193 → 1.35 estimate, gap 0.65. 개선 20%. H_1682 실측 우위 전제 조건부.",
+      "caveat": "H_1682 stress ICIR 실측 < 1.0 시 suboptimal. RP로 폴백 권장."
+    }
+  },
+
+  "family_concentration_trajectory": {
+    "before_2defense_admission": {
+      "consensus": 0.5,
+      "ML_complexity": 0.5,
+      "note": "current gap_vector v1.0.3"
+    },
+    "after_candidate_1_EW": {
+      "consensus": 0.385,
+      "ML_complexity": 0.385,
+      "quality_stability_Q07": 0.075,
+      "distress_path": 0.075,
+      "max_family": 0.385,
+      "compliance_max_35pct": "FAIL (consensus 38.5% > 35% 한도)",
+      "remediation": "Core 70% → 65% 하향 + Defense 20% 상향 또는 Div 15% → 20% 상향"
+    },
+    "after_candidate_2_RP": {
+      "consensus": 0.385,
+      "ML_complexity": 0.385,
+      "quality_stability_Q07": 0.095,
+      "distress_path": 0.055,
+      "max_family": 0.385,
+      "compliance_max_35pct": "FAIL (consensus 38.5%)",
+      "remediation": "동일. Core 하향 필요."
+    },
+    "after_candidate_3_IC": {
+      "consensus": 0.385,
+      "ML_complexity": 0.385,
+      "quality_stability_Q07": 0.057,
+      "distress_path": 0.093,
+      "max_family": 0.385,
+      "compliance_max_35pct": "FAIL",
+      "remediation": "Core 70→65%, Div 15%→20%, Defense 15%→15% 재배분"
+    },
+    "remediated_allocation_proposal": {
+      "STR_1631_Core": 0.60,
+      "STR_1656_Diversifier": 0.20,
+      "Defense_sleeve_total": 0.20,
+      "family_concentration": {
+        "consensus": 0.30,
+        "ML_complexity": 0.40,
+        "defense_Q07": "6~10%",
+        "defense_distress": "10~14%"
+      },
+      "max_family": 0.40,
+      "compliance_max_35pct": "FAIL (ML_complexity 40%)",
+      "final_remediation": "STR_1631 55% / STR_1656 20% / Defense 25% OR Defense 다양화 통해 ML_complexity 35% 이하 유지",
+      "note": "family_concentration max 35% 준수하려면 **Defense sleeve 20~25% 확대 필수**. Defense 긴급도 낮더라도 family balance 측면에서 필요."
+    }
+  },
+
+  "ax005_v2_multisleeve_exemption_analysis": {
+    "ax005_v2_definition": "KR defense standalone long-only low-beta OR Q07+D25 single-sleeve combo = 구조적 실패. Multi-sleeve portfolio 내 defense sleeve는 scope 밖.",
+    "str_1662a_single_component_scope": "Q07 standalone IVOL, D25 미사용. Q07+D25 combo 아님. 그러나 single-factor defense 범주 근접.",
+    "h_1682_single_component_scope": "Q25+R16 cross-family. distress + path_dependent. Q07/D25/low-beta/BAB 전부 무관. AX 전수 clear.",
+    "ensemble_structure": "Core STR_1631 + Diversifier STR_1656 + Defense (STR_1662a + H_1682) → 4-sleeve multi-sleeve portfolio. AX-005 v2 exempt 구조 확정.",
+    "exemption_verification": "PASS — multi-sleeve 구조 + 2개 독립 defense family (Q07 stability + Q25/R16 distress/path) + Q07+D25 combo 아님."
+  },
+
+  "sequencing_plan": {
+    "phase_0_current": "2026-04-17 현재. STR_1662a PG1 DEFER, H_1682 Forge S1 대기 (TODO_S1_H_1682_draft.json).",
+    "phase_1_forge_s1_h1682": {
+      "trigger": "Forge 가용성 회복",
+      "duration_estimate": "S1~S4 2일 / S5~S6 1~2일 (총 3~4일)",
+      "concurrent_tasks": [
+        "STR_1662a L13 tail_risk_suite 실행",
+        "STR_1662a role_honesty declared_role='defense' 재실행",
+        "STR_1662a 2017~2026 Q07 rolling IC 분기 모니터링 설계 문서"
+      ]
+    },
+    "phase_2_h1682_judge_s6": {
+      "trigger": "Forge S1~S5 완료 → Judge S6",
+      "expected_outcome": "S6 PASS 시 STR_1683(또는 Forge 할당) Role=defense admitted",
+      "conditional_branches": [
+        "BRANCH_A: H_1682 S6 PASS → 2-defense ensemble candidate 3 중 선택 (IC 가중 우세 예상)",
+        "BRANCH_B: H_1682 S6 REJECT → STR_1662a 단독 편입 재검토 (조건부, AX-005 v2 scope 재평가)",
+        "BRANCH_C: H_1682 S6 CONDITIONAL → S5 mutation M4_tail_overlay 추가 후 재심사"
+      ]
+    },
+    "phase_3_pg0_gap_rerun": {
+      "trigger": "Phase 2 BRANCH_A 성립",
+      "action": "pg0_gap_review() 재실행 → gap_vector v1.0.4 생성 → family_concentration 재계산",
+      "expected_new_gap": "sleeve_needs 재평가. Defense 2건 편입 후 sleeve_needs='diversifier_additional' 가능성."
+    },
+    "phase_4_pg2_allocation": {
+      "trigger": "Phase 3 gap_vector v1.0.4 확정",
+      "action": "pm_run_multisleeve() 호출. candidate 1/2/3 중 선택 (IC 가중 우선, 미달 시 RP 폴백)",
+      "allocation_method_sequence": "equal_weight → risk_parity (governor_init.md §PG2)"
+    }
+  },
+
+  "risk_register": [
+    {
+      "risk": "H_1682 S1 CAGR < 3% 또는 stress alpha ≤ 0 시 Gate 7(Governor 신규 5조건) 미충족 → S0 REVISE 회귀",
+      "probability": "medium (R16 stress_pct_pos 1.00 tautology 우려 Codex/RM/Academic 공통 지적)",
+      "mitigation": "Forge S1에서 sub-period 분해 측정 (R16 snapshot 전후 IC 분리). Scout S5 slate M1(R16-only) / M2(Q25-only) / M3(50/50) baseline 사전 등록 활용."
+    },
+    {
+      "risk": "STR_1662a 2017~2026 Q07 IC decay가 구조적 → ensemble 내 weight 점진 감소 필요",
+      "probability": "medium-high (L-123 기록)",
+      "mitigation": "PG3 모니터링에서 분기별 Q07 rolling IC 점검. IC < 0.15 2분기 연속 시 weight 30% 축소 트리거 사전등록."
+    },
+    {
+      "risk": "family_concentration max 35% 한도 초과 (ML_complexity + consensus 모두 근접)",
+      "probability": "high (현재 50/50 → 2-defense 편입 후에도 38.5% 예상)",
+      "mitigation": "Core 70%→55~60% 하향 + Defense 20~25% 확대. gap_vector target 재조정."
+    },
+    {
+      "risk": "STR_1662a + H_1682 inter-correlation > 0.3 (cross-defense 독립성 실패)",
+      "probability": "low (이질 factor family)",
+      "mitigation": "S3 실측 필수. ρ > 0.3 시 IC 가중 후 한쪽 weight 50% 감축 또는 단일 defense만 편입."
+    }
+  ],
+
+  "governor_recommendation": {
+    "primary_path": "candidate_3_IC_weighted + remediated Core 60% / Div 20% / Def 20% allocation",
+    "rationale_primary": "H_1682 stress alpha 잠재력 극대화 + STR_1662a Q07 decay 할인 + family_concentration 35% 한도 준수. sleeve_needs=diversifier 우선은 STR_1656 유지로 해결.",
+    "fallback_path": "candidate_2_RP_riskparity (H_1682 실측 약세 시)",
+    "final_decision_timing": "H_1682 Judge S6 PASS 확정 직후. 그 전까지 simulation-only status 유지."
+  },
+
+  "open_questions_for_q_lead": [
+    "Q1: Core STR_1631 weight 70%→55~60% 하향 수용 가능? (family_concentration 35% 준수 필수 조건)",
+    "Q2: H_1682 S1 실측 후 PG0 재실행 시 gap_vector target SR 2.0 유지 또는 1.8 완화? (Defense 확대 → CAGR 희석 trade-off)",
+    "Q3: STR_1662a L13 tail_risk_suite 실행을 H_1682 Forge S1과 병렬 진행? (Forge 가용성 회복 시 2건 동시)"
+  ],
+
+  "next_steps_on_approval": [
+    "1. Q-Lead approval → Forge inbox TODO_TAIL_RISK_STR_1662a 생성 (병렬 실행 지시)",
+    "2. Forge H_1682 S1 시작 대기 중 (이미 TODO_S1_H_1682_draft.json 존재)",
+    "3. Governor: H_1682 Judge S6 verdict 수신 시 즉시 pg0_gap_review() 재실행 + PG1_VERDICT_STR_1683 생성",
+    "4. Q-Lead 승인 시 PG2_ALLOCATION_FINAL 산출"
+  ]
+}

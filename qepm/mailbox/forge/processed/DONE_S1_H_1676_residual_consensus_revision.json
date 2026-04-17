@@ -1,0 +1,139 @@
+{
+  "from": "Scout",
+  "to": "Forge",
+  "subject": "TODO S1 — H_1676 Residual Consensus Revision Breadth 구현",
+  "date": "2026-04-17",
+  "hypothesis_id": "H_1676",
+  "strategy_id_hint": "STR_1682 (다음 순번) 또는 Forge가 할당",
+  "stage": "S1",
+  "priority": "HIGH",
+  "origin": {
+    "s0_verdict": "APPROVE_CONDITIONAL (61/100)",
+    "verdict_path": "stage_artifacts/S0_VERDICT_H_1676.json",
+    "s0_record_path": "stage_artifacts/s0_record_H_1676_residual_revision.json",
+    "transcript_path": "stage_artifacts/s0_debate_transcript_H_1676.json",
+    "codex_r2_verify_path": "stage_artifacts/r2_codex_verdict_H_1676.json",
+    "note": "Scout revision 완료 (expected_role→diversifier, STR_1537 lesson, market_beta_gate, r12_stability, S5 slate). conditions_for_s1 7건 전부 s0_record v2에 반영됨."
+  },
+
+  "hypothesis_summary": {
+    "name": "Residual Consensus Revision Breadth (Orthogonal PEAD)",
+    "family": "consensus",
+    "sub_family": "analyst_revision_residual",
+    "expected_role": "diversifier",
+    "mechanism": "C13_Revision_Breadth_3m × log(MarketCap) × R12_Idiosyncratic_Risk single-month cross-section OLS 잔차 → Z-score → Top 20 EW",
+    "why_now": "PG0 SR gap 0.807, C19 시간차원 분리, 잔차화 ρ<0.2 구조적 보장 설계"
+  },
+
+  "s1_implementation_requirements": {
+    "portfolio": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "20일 평균 거래대금 >= 2e8 KRW (LIQ_THRESHOLD=2e8, C10)"
+    },
+    "signal_construction": {
+      "base_factor": "C13_Revision_Breadth_3m",
+      "regressors": ["log(MarketCap)", "R12_Idiosyncratic_Risk"],
+      "ortho_method": "매월 t 단일 cross-section OLS: lm(C13 ~ log_mcap + R12). Codex R1 우려 반영: winsorization 1~99% 적용 + 잔차화 stability S2에서 측정.",
+      "final_signal": "cross-sectional residual → cross-sectional Z-score (expanding window, C1)",
+      "z_score_method": "Z_Score_Aligned (C13 준수, 수동 방향 반전 금지)",
+      "data_access": "load_month_factors() 경유 (C15). Factor DB parquet 직접 로드 금지."
+    },
+    "rebalance": "Monthly (end-of-month), t+1 적용",
+    "overlay": "NONE — S0/S1 overlay 금지 원칙. DD/VT/Regime 전부 제외. S5 mutation slate에 재도입 예정."
+  },
+
+  "conditions_for_s1_applied": [
+    {
+      "id": "COND_01",
+      "from_verdict": "conditions_for_s1 [1]",
+      "requirement": "expected_role=diversifier + RoleBias_Diversifier 일관성",
+      "status": "Scout revision 완료 — s0_record v2 확인"
+    },
+    {
+      "id": "COND_02",
+      "from_verdict": "conditions_for_s1 [2]",
+      "requirement": "STR_1537 Grade F 전례 lesson_check 반영 + 구조적 차이점 명시",
+      "status": "Scout revision 완료 — s0_record v2 lesson_check에 STR_1537_Grade_F 추가"
+    },
+    {
+      "id": "COND_03",
+      "from_verdict": "conditions_for_s1 [3]",
+      "requirement": "market_beta_gate — S1에서 portfolio CAPM β 측정, |β|<0.15 미달 시 S5 slate에 M01_CAPM_Beta 잔차화 variant 등록",
+      "action_for_forge": "S1 실행 후 portfolio CAPM beta 계산 필수 (KOSPI200 대비). 결과 |β|>=0.15이면 S5 slate 조건 (c)로 연계. 결과를 s1_construction_H_1676.json에 capm_beta 필드로 보고."
+    },
+    {
+      "id": "COND_04",
+      "from_verdict": "conditions_for_s1 [4]",
+      "requirement": "s2_gate_r12_stability — rolling 3Y 잔차 ICIR drift <30%, 불안정 시 D01 raw 또는 historical std 대체",
+      "action_for_forge": "S1에서 rolling 3Y 잔차 ICIR timeseries 생성. 월별 잔차 ICIR의 최근 36M 표준편차/평균 > 0.30이면 S2에서 R12 대체 테스트."
+    },
+    {
+      "id": "COND_05",
+      "from_verdict": "conditions_for_s1 [5]",
+      "requirement": "Factor DB C13 필드 PIT 증빙 — Usable_Date 생성 로직 + as-of snapshot 정책 문서화",
+      "action_for_forge": "S1 실행 전 02_Infrastructure/factor_db/ 내 C13_Revision_Breadth_3m 계산 로직 확인 → Usable_Date 생성 code 경로 명시. as-of snapshot 시점(리비전 시각 vs 월말 cutoff) 검증. C14 위반 없는지 증빙. s1_construction 파일에 pit_evidence 필드 추가."
+    },
+    {
+      "id": "COND_06",
+      "from_verdict": "conditions_for_s1 [6]",
+      "requirement": "S5 mutation slate 사전 등록 — (a) DD 8/22 overlay, (b) factor risk management weight scaling Barroso&Santa-Clara 2015, (c) STR_1679 sleeve 분리 조합",
+      "action_for_forge": "S1 완료 후 s5_research_slate_H_1676.json에 3건 mutation 사전 등록. Scout이 S5 단계에서 Research Slate 검토."
+    },
+    {
+      "id": "COND_07",
+      "from_verdict": "conditions_for_s1 [7]",
+      "requirement": "S3 orthogonality에서 vs STR_1679 portfolio-level ρ 실측 + total/market-beta/residual 3분해 + ρ≥0.2 시 diversifier role 재검토",
+      "action_for_forge": "S3 단계 작업. S1에서는 해당 없음. Scout이 S3에서 compute_factor_orthogonality() 확장 적용."
+    }
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR >= 0.20 (잔차 composite signal, Global rule)",
+    "pit_gate": "C1~C15 전수 통과 (특히 C14 C13 필드 Usable_Date + C15 load_month_factors)",
+    "portfolio_gate": "MDD < 45% (Hurdle v2.2 Hard Fail 기준)",
+    "liquidity_gate": "유동성 필터 후 average daily holdings >= 20",
+    "market_beta_gate": "portfolio |β_market| < 0.15 (NEW, COND_03 반영)",
+    "s3_gate_prospective": "vs STR_1679 portfolio-level ρ < 0.2 (제1 why_now, COND_07)"
+  },
+
+  "forge_execution_checklist": [
+    "0. 표준 헤더: cat('=== STR_XXXX: Residual Consensus Revision Breadth ===') + ## 핵심아이디어",
+    "1. preflight_check(STRATEGY_ID, family='consensus') 호출 필수",
+    "2. source('02_Infrastructure/config.R') + backtest_harness.R",
+    "3. load_rawdata(use_cache=TRUE) 한 번만 (L-534)",
+    "4. load_month_factors() 경유 C13/MarketCap/R12 로드. parquet 직접 로드 금지",
+    "5. 매월 cross-section OLS: lm(C13_Z ~ log_mcap_Z + R12_Z). winsorization 1~99% 권장 (Codex 우려)",
+    "6. 잔차 → cross-section Z_Score_Aligned → Top 20",
+    "7. run_monthly_simulation(RAWDATA, BM_DT, FACTORS, n_holdings=20L, weight_method='equal', commission=0.0015, buffer_zone=list(keep_n=22L, entry_n=20L))",
+    "8. **NO overlay**: DD/VT/Regime 전부 제외 (S0/S1 금지)",
+    "9. run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir) — IC/ICIR/FMB/rolling SR 전수",
+    "10. run_hurdle_gate() + hurdle_result.json 저장",
+    "11. COND_03 portfolio CAPM β 측정: residuals <- lm(strategy_ret ~ benchmark_ret); capm_beta = coef(model)[2]. |β|<0.15 gate 통과 여부 보고",
+    "12. COND_04 rolling 3Y 잔차 ICIR drift 측정: residual_icir_monthly의 36M 표준편차/평균 계산",
+    "13. COND_05 PIT evidence: C13 Usable_Date 로직 증빙을 s1_construction_H_1676.json 내 pit_evidence 필드에 기록",
+    "14. 결과를 stage_artifacts/s1_construction_H_1676.json에 저장 (Scout 검토용)"
+  ],
+
+  "reporting_to_scout": {
+    "success_case": "DONE_S1_RESULT_H_1676_residual_consensus_revision.json에 grade/score/SR/MDD/capm_beta/r12_stability + conditions_met 리스트",
+    "fail_case": "Hard Fail 시 critical_findings 리스트 + recommended_next_action (STR_1657 CBPQ 전례 참조). Grade F 시 Scout 재검토 필요.",
+    "conditions_met_format": "각 COND_01~COND_07별 status=applied/pending/violated + 근거"
+  },
+
+  "axiom_compliance_precheck": {
+    "AX_003": "PASS — value factor 미사용. Consensus family.",
+    "AX_004": "PASS — quality_profitability 미사용. Consensus family.",
+    "AX_005": "PASS — low-beta/D25/BAB 미사용. Defense family 무관."
+  },
+
+  "scout_notes": [
+    "이 가설은 Scout의 최초 A/B 후보 중 B안으로 선정. A안(Quality Composite)은 AX-004 composite scope 차단으로 드롭됨.",
+    "S0 Debate R1 4쟁점 중 3건을 VERDICT 전 선제 revision으로 반영. 남은 1건(market beta 잔차화)은 S1 결과 기반 S5로 이월.",
+    "원본 C13_Revision_Breadth_3m (icir 0.438)의 portfolio-level alpha 보존 여부가 핵심 검증 대상. STR_1537 선행 실패 패턴(multi-factor blend 희석) 회피 설계는 단일 signal + 잔차화.",
+    "S3 단계에서 portfolio-level ρ<0.2 입증 실패 시 diversifier role 폐기 + 가설 drop 가능. S1에서 실증 근거 확보 우선."
+  ]
+}

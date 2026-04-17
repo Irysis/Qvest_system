@@ -1,0 +1,34 @@
+{
+  "task_type": "PATCH_C10_LIQ_FAMILY",
+  "priority": "P3",
+  "parent_task": "judge_sweep_v3_Pass_1_3",
+  "session": 66,
+  "created_by": "Judge",
+  "created_at": "2026-04-17",
+  "family": "STR_1631",
+  "strategies": [
+    "STR_1631_M27_invvol",
+    "STR_1631_M28_xgb_cvar",
+    "STR_1631_M29_facvol",
+    "STR_1631_M30_icir_cvar",
+    "STR_1631_SYN_01_scoretilt_bimonthly",
+    "STR_1631_SYN_02_scoretilt_revbreadth",
+    "STR_1631_SYN_03_scoretilt_hrp120d_bimonthly",
+    "STR_1631_SYN_04_ic_weighted",
+    "STR_1631_SYN_05_icwt_scoretilt_bimonthly"
+  ],
+  "strategy_count": 9,
+  "violation": "C10_LIQ",
+  "violation_detail": "20일 평균 거래대금 계산 시 당일 거래량 포함. shift(lag=1) 누락. same-day liquidity = 미래참조 lookahead.",
+  "reference_patch_pattern": "adv20 <- shift(frollmean(Value_Traded, n=20), n=1, type='lag') — t-1 기준으로 전환",
+  "additional_issue": "STR_1631_M27~M30/SYN_04/SYN_05는 C1b도 위반 (full-column quantile/ecdf). rolling quantile로 전환 필수.",
+  "success_criteria": [
+    "detect_lookahead() 0 violation",
+    "C10_LIQ, C1b 패턴 zero",
+    "패치 후 백테스트 재실행 → performance.json 재생성",
+    "hurdle v2.2 재실행 → hurdle_result.json 신규 생성"
+  ],
+  "expected_impact": "SR 차이 >= 0.2 감소 시 'pre-patch가 미래참조 의존' 확정 — Judge가 재검증 시 archive로 전환 고려",
+  "note": "Forge 현재 H_1676/H_1682 S1 진행 중. 본 TODO는 우선순위 P3 — S1 완료 후 처리. 순차 패치 허용 (병렬 필수 아님).",
+  "judge_followup": "패치 완료 후 Judge inbox로 DONE_PATCH_* 발송. Judge가 Pass 3 재스윕에서 동적 재검증 실행."
+}
