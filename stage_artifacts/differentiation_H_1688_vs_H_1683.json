@@ -1,0 +1,141 @@
+{
+  "analysis_id": "DIFF_H_1688_vs_H_1683",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T18:52:00+09:00",
+  "verdict": "INDEPENDENT — 병렬 진행 가능 (momentum family 중복 아님)",
+  "empirical_evidence_measured": true,
+
+  "executive_summary": "H_1683(M21 same-month seasonality) vs H_1688(raw/residual 12-1 momentum) 두 가설은 factor taxonomy상 momentum family에 속하지만 mechanism/signal 완전 독립. 12개월 rolling cross-section 상관 -0.004(M01 vs M21) ~ -0.135(M08 vs M21)로 구조적 독립성 실증. 중복 아니며 H_1688 debate 우선 진행 후 H_1683 병렬 진행 권장.",
+
+  "mechanism_differentiation": {
+    "H_1683_Seasonality": {
+      "signal_nature": "Time-series property (calendar cycle)",
+      "signal_content": "각 종목의 past 20Y same-calendar-month average return (예: 4월 리밸런싱 시 과거 4월들의 mean)",
+      "economic_driver": "투자자 attention cycle + 배당/이익공시 캘린더 + 기관 재조정 패턴",
+      "factor_db_base": "M21_Seasonality (기구축, ICIR 0.179)",
+      "alpha_horizon": "12개월 주기 반복",
+      "path_type": "A (Heston-Sadka 2008 JFE foundational)",
+      "academic_anchor": "Keloharju-Linnainmaa-Nyberg 2016 JF (40개국 중 37개국 유효)"
+    },
+    "H_1688_Residual_Momentum": {
+      "signal_nature": "Cross-section + time-series hybrid (price trend with factor exposure removed)",
+      "signal_content": "M01_Mom_12_1 (past 12M skip 1M return) → monthly OLS residual on beta(24M) + log(Size) + R12_IdioVol → Z_Score_Aligned",
+      "economic_driver": "Momentum anomaly (underreaction) with beta/size/idiovol implicit bets 제거 → pure 'time-series strength'",
+      "factor_db_base": "M01_Mom_12_1 (raw) + M08_Residual_Mom (existing residual, 기구축!) + M01_CAPM_Beta/S01/R12 regressors",
+      "alpha_horizon": "연속 (1~12개월)",
+      "path_type": "A (Carhart 1997 JF foundational + Blitz 2011 direct residualization)",
+      "academic_anchor": "Blitz-Huij-Martens 2011 JEF + Barroso-Santa-Clara 2015 JFE + 이진철-김동철 2015"
+    }
+  },
+
+  "empirical_correlation_measured": {
+    "measurement_period": "2023-07 ~ 2024-06 (12 months)",
+    "method": "cross-section correlation per month, then rolling mean/median",
+    "results": {
+      "M01_Mom_12_1_vs_M21_Seasonality": {
+        "mean": -0.004,
+        "median": -0.002,
+        "min": -0.088,
+        "max": 0.105,
+        "interpretation": "완전 독립. raw 12-1 momentum과 calendar seasonality signal은 orthogonal."
+      },
+      "M08_Residual_Mom_vs_M21_Seasonality": {
+        "mean": -0.135,
+        "median": -0.140,
+        "min": -0.208,
+        "max": -0.031,
+        "interpretation": "사실상 독립. 잔차 momentum과 seasonality는 약한 음의 상관(residualization으로 약간 seasonality 정보 제거)."
+      },
+      "M01_Mom_12_1_vs_M08_Residual_Mom": {
+        "mean": 0.755,
+        "median": 0.757,
+        "interpretation": "높은 상관. raw momentum과 잔차 momentum은 같은 core signal 공유 — 이는 기대대로."
+      }
+    },
+    "2024_06_30_snapshot_cross_section_corr": {
+      "M01_vs_M21": 0.003,
+      "M08_vs_M21": -0.146,
+      "M01_vs_M08": 0.754
+    }
+  },
+
+  "factor_db_discovery_critical": {
+    "finding": "Factor DB 실제 이름 불일치 발견",
+    "H_1688_s0_record_uses": "M04_Mom_12_1 (s0_record 기록)",
+    "factor_db_actual_name": "M01_Mom_12_1 (실제). M04는 M04_Mom_1 (1-month momentum, 단기 reversal factor).",
+    "additional_finding": "M08_Residual_Mom이 이미 Factor DB에 기구축되어 있음 (Blitz 2011 직접 구현 가능)",
+    "implication_for_H_1688_scout_action": [
+      "s0_record_H_1688 factor_id 정정 필요: M04 → M01",
+      "M08_Residual_Mom 기구축 활용 검토 — custom OLS 재구현 불필요할 수 있음",
+      "단 M08_Residual_Mom의 내부 구성(beta+size+BM vs beta+size+IdioVol)에 따라 custom residualization 여전히 필요할 수 있음. Forge S1 실행 전 M08 구성 검증 필요"
+    ],
+    "handoff_to_quant_debate_r1": "Quant debater R1에서 M08_Residual_Mom 내부 구성 확인 + H_1688의 custom residualization이 M08 대비 incremental value 있는지 팩트체크 필수"
+  },
+
+  "taxonomic_classification": {
+    "H_1683_family_formal": "seasonality (Heston-Sadka 2008 taxonomy)",
+    "H_1688_family_formal": "momentum_residual (Blitz 2011 taxonomy)",
+    "parent_meta_family": "return-based anomaly",
+    "overlap_concern": "Factor taxonomy §9상 둘 다 M-prefix(momentum category in Factor DB naming convention)이나 academic 분류상 seasonality와 residual momentum은 별도 anomaly. Keloharju 2016 JF도 seasonality를 momentum과 분리된 독립 anomaly로 명시."
+  },
+
+  "target_role_differentiation": {
+    "H_1683": {
+      "role": "diversifier",
+      "sr_target": "0.30~0.60 standalone",
+      "blended_sr_contribution": "+0.05~0.15",
+      "rationale": "seasonality alpha는 일반적으로 weak, cross-family 독립성으로 portfolio value 발생"
+    },
+    "H_1688": {
+      "role": "diversifier (with Core-level SR target)",
+      "sr_target": "0.80~1.30 standalone",
+      "blended_sr_contribution": "+0.15~0.30",
+      "rationale": "Governor v1.1: Core급 독립 alpha 1건 필수. Blitz 2011 global Sharpe 1.0 benchmark + 한국 이진철 2015 t>3 실증"
+    },
+    "conclusion": "두 가설은 target SR level/blended contribution이 3~4배 차이. Core-level target vs pure diversifier target. 역할 중복 아님."
+  },
+
+  "orthogonality_target_differentiation": {
+    "H_1683_S3_gate": {
+      "vs_STR_1631": "rho < 0.3",
+      "vs_STR_1656": "rho < 0.3",
+      "vs_STR_1679v2": "rho < 0.3",
+      "expected_difficulty": "쉬움 (seasonality는 cross-family 독립)"
+    },
+    "H_1688_S3_gate": {
+      "vs_STR_1631_Critical": "rho < 0.25 (Governor Critical Gate)",
+      "vs_STR_1656_Critical": "rho < 0.25 (Governor Critical Gate)",
+      "vs_H_1676_S1": "rho < 0.3",
+      "vs_H_1682_S1": "rho < 0.3",
+      "vs_H_1687_S1": "rho < 0.5 (momentum family 공유)",
+      "vs_H_1683_S1": "rho < 0.4 (예상, 실측 -0.135 → feasible)",
+      "expected_difficulty": "중간 (momentum family 공유로 H_1687과 gate 가장 엄격)"
+    }
+  },
+
+  "parallel_progression_plan": {
+    "recommendation": "PARALLEL — 중복 없음. H_1688 우선 debate + H_1683 debate 후속 가능",
+    "sequencing_logic": [
+      "Priority 1: H_1688 debate 먼저 (SR 2.0 직결 Core-level target)",
+      "Priority 5~6: H_1683 debate 나중 (diversifier, 보조 기여)",
+      "Priority 3: H_1687 (distress × momentum) debate는 H_1688 결과 참고 후 진행 권장 — H_1688 Grade A 확정 시 H_1687 signal 공유 우려 완화",
+      "H_1683 debate는 H_1688과 시차 두고 진행 (H_1683 implementation은 M21_Seasonality + 20Y lookback → min 120M observation 종목 universe 축소 이슈 별도 검증 필요)"
+    ],
+    "risk_mitigation_conditions": [
+      "H_1688 debate에서 Codex/Quant에게 'M04 → M01 factor_id 정정' + 'M08 기구축 대비 incremental value 입증' 조건 부여",
+      "H_1688 approve 시 S1 실행 시 M08_Residual_Mom baseline과 H_1688 custom residual 4 variants parallel (Blitz beta+size+BM vs H_1688 beta+size+IdioVol)",
+      "H_1683 progression 시 M21_Seasonality 기존 ICIR 0.179가 SR 기준 0.30~0.60 어려움 — REVISE 가능성 인식"
+    ]
+  },
+
+  "conclusion_for_teamlead": {
+    "duplicate_or_independent": "INDEPENDENT (실측 corr -0.004 ~ -0.135)",
+    "can_progress_parallel": true,
+    "recommended_action": "H_1688 debate 즉시 개시. H_1683는 우선순위 5~6순위로 후속 debate. 중복 우려 해소됨.",
+    "critical_scout_corrections_needed": [
+      "s0_record_H_1688 factor_id: M04_Mom_12_1 → M01_Mom_12_1 정정",
+      "s0_record_H_1688에 M08_Residual_Mom 기구축 언급 추가 + baseline comparison plan 명시",
+      "s0_record_H_1683 M21_Seasonality Factor DB ICIR 0.179 현실 반영 — SR 0.30~0.60 forecast가 낙관적일 가능성 점검"
+    ]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1688",
+  "round": "R1",
+  "score": 13,
+  "arguments": [
+    "Tail Risk 평가 -- M01_Mom_12_1의 stress ICIR 2.293(pct_pos 100%)과 M08_Residual_Mom의 stress ICIR 2.290(pct_pos 97.5%)은 6대 스트레스 구간에서 IC가 양수임을 보여주나, 이는 12-1 momentum의 'skip-1-month' 구조로 인한 사후적 회복 alpha를 포착한 것이지 위기 동시점(drawdown 진행 중) 방어력과 다르다. 4-regime 분석에서 M01의 CRISIS IC는 -0.005, M08은 -0.014로 사실상 0에 수렴하며, SLOWDOWN 국면에서도 M01 -0.021, M08 -0.003으로 약화된다. 핵심 우려: stress ICIR이 높은 것은 GFC 2009-Q1 recovery reversal(패자 매수 승자 매도)이 12-1 look-back에 이미 포함되기 때문이며, COVID 2020-03 V자 반등도 동일 메커니즘이다. EVT/GPD 분석은 S1 실행 후 일별 수익률로 compute_evt_var()를 적용해야 하나, 사전적으로 raw momentum(12-1)의 GPD shape parameter xi는 한국시장에서 0.15~0.25 범위(fat-tail)로 추정되며, 잔차화가 xi를 유의미하게 낮추는지는 Blitz 2011에서도 미검증이다. Barroso-Santa-Clara 2015의 동적 스케일링 없이는 ES 99%가 월간 -15% 이상 발생할 가능성을 배제할 수 없다.",
+    "Kill Scenario 2건 -- (1) Bear-Recovery Whipsaw (미래참조 경로): 2008-10~2009-03 GFC 저점 전후 구간에서 12-1 momentum은 2007-10 이전 12개월 상승 종목을 보유하나, 이 종목들이 가장 극심한 하락을 경험. 잔차화가 beta exposure를 제거하더라도, GFC에서 beta-neutral 포트폴리오의 실제 drawdown은 L-106(market beta 지배) 교훈에 따라 단면 잔차화만으로 완화되지 않는다. L-115 교훈: beta 감소가 곧 상관 감소가 아니다. 24M rolling beta의 look-back은 2008-10 시점에서 2006-10~2008-10 데이터를 사용하여 구조 변화(regime shift) 이전의 안정적 beta를 추정하므로, 위기 시 실제 beta가 급등하는 conditional beta asymmetry를 포착하지 못한다. D07_Beta_Asymmetry(stress ICIR +0.372)가 잔차화 회귀 변수에 포함되지 않은 상태에서 conditional tail dependence 누출이 우려된다. (2) 장기 횡보 + 잦은 반전 구간 (2015-06~2016-02 China Shock): KOSPI가 -20% 하락 후 횡보하면서 momentum 신호가 잦은 false signal을 생성. 이 구간 M01 conditional IC는 SLOWDOWN -0.021로 음수 전환하며, 월간 리밸런싱의 높은 turnover가 15bps 수수료와 결합하여 alpha 잠식. Blitz 2011의 'residual momentum이 raw보다 stable'이라는 주장은 미국/유럽 표본이며, 한국 소형주 중심 유동성 환경에서 거래비용 후 순 alpha 유지가 핵심 검증 사항이다.",
+    "Regime Vulnerability + MDD Contribution -- 4-regime 분석 결과 M08_Residual_Mom의 regime 프로파일은 EXPANSION +0.039 > NORMAL +0.028 > SLOWDOWN -0.003 > CRISIS -0.014로, 전형적인 pro-cyclical momentum 구조를 보인다. PG2 baseline(STR_1631 consensus + STR_1656 ML)이 이미 pro-cyclical 편향이 강한 상태에서, H_1688 추가는 CRISIS/SLOWDOWN 국면에서 portfolio 전체의 conditional drawdown을 악화시킬 위험이 있다. L-106 교훈에 따르면 long-only 전략들의 market beta 0.85~0.93이 상관을 지배하므로, H_1688의 잔차화된 beta가 실제 위기 시 0.6 이하로 유지되는지 DCC-GARCH conditional correlation으로 검증이 필수적이다. MDD 기여 예측: standalone MDD 28~40% 예상치(Scout) 중 상단(35~40%)이 현실적이며, 이는 Barroso 2015 scaling 없는 raw residual momentum의 한국 실증 부재에 기인한다. PG2 portfolio에 편입 시 blended MDD 기여는 잔차 상관에 의존하지만, MRS 63.1 CRISIS 현 시점에서 momentum이 pro-cyclical 구조를 가진다면 편입 타이밍 자체가 최악(CRISIS 국면 진입 직후 momentum 약화)이다. CDaR 95% 기준으로 S1 결과 검증 시 25% 이하 달성 여부가 PG2 편입의 최소 조건이 되어야 한다."
+  ],
+  "concern": "핵심 우려: 잔차화(beta+size+IdioVol OLS)가 cross-section 단면에서 beta exposure를 제거하더라도, L-106/L-115/L-118-ext 교훈에 따르면 long-only 포트폴리오의 위기 시 실현 상관은 market beta가 지배한다. 24M rolling beta는 구조 변화(regime shift)에 느리게 반응하여 conditional tail dependence를 과소추정하며, 결과적으로 H_1688이 PG2 기존 전략과 위기 시 상관 급등(rho 0.25 정상 -> 0.60+ 위기)을 경험할 가능성이 높다. 이것이 잔차화의 가장 근본적인 한계이며, Blitz 2011도 이 문제를 명시적으로 다루지 않았다.",
+  "conditions": [
+    "S1에서 compute_tail_risk_suite() 적용: EVT shape xi < 0.25, CDaR 95% < 25%, ES 99% < -12%(월간) 검증. Barroso scaling 없는 vanilla 결과 기준.",
+    "S3에서 DCC-GARCH conditional correlation 측정: H_1688 vs STR_1631/STR_1656의 CRISIS regime conditional rho. 정상 시 rho < 0.25뿐 아니라, 8대 스트레스 구간 각각에서의 conditional rho < 0.50 충족 여부 검증.",
+    "S5에서 Barroso-Santa-Clara 2015 dynamic volatility scaling을 최우선 mutation으로 설계: S1 vanilla MDD가 35% 초과 시 Barroso scaling 없이는 PG2 편입 불가 조건 사전 설정."
+  ],
+  "rubric_detail": {
+    "tail_risk": {
+      "score": 3,
+      "note": "stress ICIR 양수이나 이는 recovery alpha. 4-regime CRISIS IC 음수. EVT 사전 분석 불가(S1 미실행). xi 0.15~0.25 fat-tail 추정. Barroso scaling 부재로 ES 99% 우려."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "note": "2건 제시: (1) GFC bear-recovery whipsaw + conditional beta asymmetry 누출(미래참조 경로), (2) China Shock 장기 횡보 false signal + 거래비용 잠식. 두 시나리오 모두 구체적 메커니즘 제시."
+    },
+    "beta_orthogonality": {
+      "score": 2,
+      "note": "L-106/L-115/L-118-ext 3건 교훈이 모두 직접 적용. 단면 잔차화가 포트폴리오 레벨 beta 지배를 해결하지 못할 가능성. 24M rolling beta의 regime-shift lag. conditional tail dependence 미포착 위험."
+    },
+    "mdd_contribution": {
+      "score": 3,
+      "note": "standalone MDD 35~40% 현실적 추정. PG2 blended MDD 기여는 conditional rho에 의존. CDaR 95% < 25% 조건 설계."
+    },
+    "regime_vulnerability": {
+      "score": 2,
+      "note": "4-regime 프로파일이 pro-cyclical. CRISIS -0.014, SLOWDOWN -0.003. MRS 63.1 현 시점에서 편입 타이밍 최악. PG2 기존 전략과 동일 방향 취약."
+    }
+  },
+  "data_sources_used": [
+    "stress_factor_ic_analysis.csv (M01_Mom_12_1 stress_icir 2.293, M08_Residual_Mom 2.290)",
+    "conditional_ic_matrix_4regime.csv (M01 CRISIS -0.005, M08 CRISIS -0.014)",
+    "conditional_ic_matrix.csv (M01 fullsample 0.014, M08 0.005)",
+    "factor_ic_shortsell_regime.csv (M01 short regime delta -0.047)",
+    "L-106, L-115, L-118-ext, L-122 (methodology_memory.md)"
+  ],
+  "timestamp": "2026-04-17T19:05:00+09:00"
+}

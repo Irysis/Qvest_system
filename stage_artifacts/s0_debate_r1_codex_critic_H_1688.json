@@ -1,0 +1,34 @@
+{
+  "role": "codex_critic",
+  "score": 8,
+  "arguments": [
+    "H_1688은 본질적으로 momentum family이며 과거 STR_1038~1043(구 30종목 momentum blend) 구조와 유사하다. 단순 잔차화(residualization) + overlay framing은 새로운 alpha source가 아닌 구현 방식 변경에 불과하며, L-118(beta dominance), L-119(static blend dilution), L-146(overlay-driven MDD) 리스크 경로가 재개될 가능성이 높다.",
+    "strict PIT 프로토콜이 명세에 부재하다. point-in-time universe, lagged fundamentals, T+1 executable signals, same-day close circularity 회피가 구체적으로 증명되지 않았다. 특히 residualization, volatility scaling, universe snapshot의 real-time-only 구성이 불명확하다. (Q2 PIT Assessment: Not proven)",
+    "DD/vol/regime cutoffs가 full-sample-derived일 수 있다는 강한 우려. pre-registered + expanding-window 명시가 없으면 overlay-driven alpha가 실측 alpha로 오인될 수 있다. Barroso 2015 scaling이 한국 small-cap rebound 구간(2009-03 등)에서 오히려 underperform하는 구조적 리스크 존재."
+  ],
+  "concern": "beta residualization이 true momentum edge를 보존한다는 가정이 틀릴 경우, 잔차 신호가 noise-dominated하여 불안정해지고 turnover/cost가 폭증하면서 overlay가 뒤늦게 de-risk한다. 종단 상태: SR ~0.2 이하, MDD +12~20% 확대.",
+  "conditions": [
+    "Provide strict PIT protocol: point-in-time universe, lagged fundamentals, T+1 executable signals, no same-day close circularity.",
+    "Compute beta residuals and volatility scaling with expanding windows only; prohibit full-sample normalization/thresholding.",
+    "Show L-107 fixed-weight C1 pass and L-140 Q07/D25 pass on core residual momentum signal before overlays.",
+    "Run ablation proving alpha survives after removing regime/vol overlays (L-146 역할 위장 방지).",
+    "Demonstrate mechanism-level separation from STR_1038~1043 beyond parameter changes (signal source, exposure map, turnover/cost profile)."
+  ],
+  "_meta": {
+    "source_file": "/tmp/codex_critic_result.json",
+    "breakdown": {
+      "l_code_check": 2,
+      "failure_avoidance": 1,
+      "banned_factor": 2,
+      "lesson_check": 1,
+      "structural_risk": 2
+    },
+    "weakest_assumption": "If 'beta residualization preserves true momentum edge' is wrong -> residual signal becomes noise-dominated and unstable -> turnover/costs spike while overlays de-risk late -> terminal state: SR falls below ~0.2 and MDD expands by roughly 12-20%.",
+    "design_pit_assessment_raw": "Q1: Concerned (yes). Selecting residual momentum after prior momentum-family failures appears ex-post motivated. Q2: Not proven; real-time-only construction for residualization, scaling, and universe snapshots is unspecified. Q3: Concerned (yes) if combination/overlay logic was tuned to known weak periods and drawdowns. Q4: High concern; DD/vol/regime cutoffs may be full-sample-derived unless explicitly pre-registered and expanding-window.",
+    "kill_scenarios_summary": "3 scenarios: (1) PIT leakage from month-end close + finalized constituents — SR -0.6~-0.9, MDD +8~12%, blind_spot=true. (2) Barroso scaling misses Korean small-cap rebounds — SR -0.3~-0.5, MDD +4~7%. (3) Crowded residual names face foreign-flow reversal unwinds — MDD 15~22%, SR -0.4.",
+    "timestamp": "2026-04-17T19:00:00+09:00",
+    "compiled_by": "Q-Lead (manual schema conversion)",
+    "original_codex_role": "critic",
+    "original_codex_findings": "Reject for now"
+  }
+}

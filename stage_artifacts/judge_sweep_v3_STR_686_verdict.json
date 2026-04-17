@@ -1,0 +1,58 @@
+{
+  "strategy_id": "STR_686",
+  "strategy_dir": "STR_686_ms_d70m30_vt",
+  "tier": 3,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "ARCHIVE_LEGACY",
+  "v3_verdict": "ARCHIVE_LEGACY_SUPERSEDED",
+  "prev_judge_verdict": "v4.0 LEGACY_BATCH pass=FALSE. 'Legacy strategy. Superseded by Factor DB + v7.1 regime engine era.'",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": "UNKNOWN_FULL",
+      "detect_lookahead_run_all": "not run — legacy flag triggers fast-archive",
+      "note": "Legacy designation predates full C1~C15 framework. Would require fresh Gate 0 audit."
+    },
+    "gate_1_impl": {
+      "pass": "LEGACY_ARCHITECTURE",
+      "note": "Own defense_sleeve.R + momentum_sleeve.R (no BASE_DIR dependency). Re-runnable in principle but predates v53 N<=20 rule — 70/30 blend of 2 sleeves."
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "stress_outperform": "4/4 TRUE",
+      "oos_retention": "1.05 (reported 0.974 hurdle)"
+    },
+    "gate_3_perf": {
+      "pass": "BORDERLINE",
+      "sharpe": 1.116,
+      "cagr": 16.76,
+      "mdd": -36.50,
+      "mdd_v53_fail": "36.50% vs 25% target — fail",
+      "calmar": 0.459,
+      "score_hurdle_total": 80.1
+    },
+    "gate_4_stat": {
+      "pass": "UNKNOWN",
+      "dsr": "Not in judge v4.0 output",
+      "ff5_alpha_t": "Not computed in legacy judge"
+    },
+    "gate_5_diversity": {
+      "pass": "UNKNOWN",
+      "role_claim": "diversifier"
+    },
+    "gate_6_role_honesty": {
+      "pass": "NOT_CHECKED",
+      "legacy_verdict": "pass=FALSE (v4.0)",
+      "note": "Legacy judge already marked superseded. Tier 3 fail-fast confirms archive status."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "Legacy v4.0 judge: pass=FALSE 'superseded by Factor DB + v7.1 regime engine era'",
+    "MDD 36.5% exceeds v53 25% target significantly",
+    "DSR + FF5 alpha t not computed — would need full v53 re-judge cycle"
+  ],
+  "recommendation": "ARCHIVE_LEGACY_SUPERSEDED. Tier 3 fail-fast confirms. No further verification cost. Do NOT include in sweep v3 active set.",
+  "notes": "STR_686 predates v7.1 regime engine + Factor DB era. Successor strategies (STR_1028/1035/1070/1085) carry the 5-sleeve pattern forward — all found to be clones (see STR_1060 verdict). STR_686 as parent of this lineage is the cleanest root design but does not meet v53 bar."
+}

@@ -494,25 +494,22 @@ after_dd <- combined_ret * dd_exp_combined_lagged
 cat("[Phase 4] Soft MRS overlay...\n")
 MRS_LOW <- 15; MRS_HIGH <- 30; MRS_MIN_EXP <- 0.30
 
-macro_regime_dt <- as.data.table(read_parquet(FRED_REGIME_CACHE))
-macro_regime_dt[, YM := substr(Date, 1, 7)]
-setkey(macro_regime_dt, YM)
-mrs_monthly <- macro_regime_dt[, .(YM, Macro_Risk_Score)]
-mrs_monthly <- mrs_monthly[!duplicated(YM)]
+# C11/C5: MRS t-1 lag 적용 (L-441 구 MRS 미래참조 수정). LIQ_THRESHOLD=2e8 Step1 적용완료.
+mrs_raw <- as.data.table(arrow::read_parquet(FRED_REGIME_CACHE))
+mrs_raw[, YM := substr(Date, 1, 7)]
+setorder(mrs_raw, YM)
+mrs_monthly <- mrs_raw[!duplicated(YM), .(YM, Macro_Risk_Score)]
+mrs_monthly[, Macro_Risk_Score := shift(Macro_Risk_Score, n = 1L, type = "lag")]
+mrs_monthly[is.na(Macro_Risk_Score), Macro_Risk_Score := 0]
+setkey(mrs_monthly, YM)
+rm(mrs_raw)
 
-daily_ym_f <- format(common_idx, "%Y-%m")
-soft_mrs_exp <- numeric(n_f)
-for (i in seq_len(n_f)) {
-  mrs_val <- mrs_monthly[YM == daily_ym_f[i], Macro_Risk_Score]
-  if (length(mrs_val) == 0) mrs_val <- 0
-  if (mrs_val < MRS_LOW) {
-    soft_mrs_exp[i] <- 1.0
-  } else if (mrs_val >= MRS_HIGH) {
-    soft_mrs_exp[i] <- MRS_MIN_EXP
-  } else {
-    soft_mrs_exp[i] <- 1.0 - (mrs_val - MRS_LOW) / (MRS_HIGH - MRS_LOW) * (1.0 - MRS_MIN_EXP)
-  }
-}
+daily_ym_f   <- format(common_idx, "%Y-%m")
+mrs_vals     <- mrs_monthly[.(daily_ym_f), on = "YM", Macro_Risk_Score]
+mrs_vals[is.na(mrs_vals)] <- 0
+soft_mrs_exp <- fifelse(mrs_vals < MRS_LOW, 1.0,
+                 fifelse(mrs_vals >= MRS_HIGH, MRS_MIN_EXP,
+                   1.0 - (mrs_vals - MRS_LOW) / (MRS_HIGH - MRS_LOW) * (1.0 - MRS_MIN_EXP)))
 
 final_ret <- after_dd * soft_mrs_exp
 

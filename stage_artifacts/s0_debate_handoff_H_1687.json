@@ -1,0 +1,139 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit. H_1688 debate 이후 3순위 (distress × momentum interaction).",
+  "hypothesis_id": "H_1687",
+  "hypothesis_name": "Distress-Momentum Interaction Diversifier",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T18:58:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1687_distress_momentum_interaction.json",
+  "ready_for_r1_spawn": true,
+  "queue_priority": 3,
+  "dependency_on_H_1688": "H_1688 VERDICT 결과 확인 후 debate 권장. H_1688 APPROVE 시 H_1687은 momentum family 보완 + distress interaction 차별화 경로. H_1688 REJECT 시 H_1687은 momentum family 단독 진입 전환 가능성.",
+
+  "one_line_summary": "z_(-Q25_Ohlson_O) 0.5 + z_M01_Mom_12_1 0.5 linear composite (또는 double-sort gated). Avramov 2013 JFE 한국 역방향 적용 (low-distress × high-momentum = clean momentum). 이일균 2019 + Hwang 2020 한국 실증. H_1682 Q25 공유 → S3 rho<0.6 gate.",
+
+  "critical_factor_db_corrections_from_task12": [
+    "M04_Mom_12_1 → 실제 M01_Mom_12_1 (s0_record 작성 시 Scout 오류 주의)",
+    "Q25_Ohlson_O Factor DB 존재 확인 (H_1682 사용과 동일)",
+    "signed_distress_low_ohlson factor 신규 등록 필요 (compute_factor + C13 준수)"
+  ],
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "script": "02_Infrastructure/hooks/run_codex_critic.sh",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1687 Distress-Momentum Interaction. z_(-Q25_Ohlson_O)·0.5 + z_M01_Mom_12_1·0.5 linear composite. Top 20 EW monthly. Avramov 2013 JFE foundational + 이일균-김동철 2019 + Hwang 2020 KAFA WP. H_1682 Q25 공유로 S3 rho<0.6 gate. Alternative: gated double-sort (Q25 p30 ∩ M04 p70).",
+        "L_CODE_FINDINGS": "L-104 (STR_1624 혼탁 DIRECT_FIX), L-107 (ICIR fixed weight DIRECT_FIX), L-119 (static blend dilution AWARE — 50/50), L-121 (Q07 구분 AWARE), L-122 (risk mgmt PASS), L-140 (AX-005 scope 밖 AWARE), L-144 (Q24 stress 역방향 AWARE — Q25 Ohlson만 사용), L-148 (PIT DIRECT_FIX)",
+        "FAILED_STRATEGIES": "STR_1624 Q24+V05+L04 혼탁 (L-104). Distress×momentum interaction 전례 없음.",
+        "HYP_ID": "H_1687"
+      },
+      "output_path": "stage_artifacts/s0_debate_r1_codex_critic_H_1687.json",
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "Avramov 2013 원논문 결과 역방향 (high-distress에서 momentum strong) → H_1687은 반대 방향 적용, 학술 근거 weak 우려",
+        "이일균 2019 sample 2000-2017 → post-publication 8년 OOS 부재",
+        "Q25 Ohlson O 정의 재확인 필요 (distress probability 높을수록 위험 → signed_distress_low 필요)",
+        "H_1682과 Q25 공유 — S3 rho 측정 전 admission 불가",
+        "50/50 정적 가중 ex-post 조정 우려"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1687 Distress-Momentum Interaction. L13 관점 — (1) Q25 low-distress filter의 stress 구간 tail dependence, (2) momentum crash 2020/2022 위험, (3) H_1682 Q25 공유로 tail exposure 누적, (4) 2008 리먼 type stress 역방향 위험.",
+      "output_path": "stage_artifacts/s0_debate_r1_risk_manager_H_1687.json",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "Momentum crash 2020-03 리스크 (Barroso scaling 없음)",
+        "Low-distress filter가 stress 구간 underperform (Flight-to-Quality 반전)",
+        "H_1682 Q25 low-buy + H_1687 Q25 low-filter 중첩 → portfolio Q25 exposure 집중",
+        "Credit cycle 전환기 distress definition instability"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1687 Distress-Momentum. PG0 gap 0.807 잔여. Scenario D (H_1676+H_1682+H_1688 admit)에서 H_1687 추가 가치 평가. factor_interaction family admission. H_1682 Q25 공유 role-admission 판단.",
+      "output_path": "stage_artifacts/s0_debate_r1_governor_H_1687.json",
+      "rubric_focus": "gap_alignment(4) + role_match(4) + family_saturation(4) + marginal_contribution(4) + implementation_feasibility(4) = 20",
+      "expected_assessment_vectors": [
+        "H_1688 residual momentum 대비 H_1687 distress×momentum interaction incremental value 불확실",
+        "H_1682 Q25 공유 → PG2 편입 시 Q25 allocation 누적",
+        "Diversifier SR 0.6~1.0 standalone은 Blender 활성화 기준 (independent alpha 4+) 충족 판단",
+        "factor_interaction family 신규 진입 — family diversification 긍정 평가"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1687. Q25 Ohlson O + M01_Mom_12_1 (Task #12 정정) Factor DB 가용성. signed_distress_low_ohlson 신규 factor 등록 feasibility. C19/STR_1631 상관, H_1682 Q25 공유 상관 예상 측정.",
+      "output_path": "stage_artifacts/s0_debate_r1_quant_H_1687.json",
+      "rubric_focus": "icir_pass(4) + internal_corr(4) + c19_corr(4) + defense_ic(4) + data_avail(4) = 20",
+      "expected_fact_check_vectors": [
+        "Q25 ICIR 0.633 + M01 momentum ICIR 측정값 확인",
+        "signed_distress_low_ohlson = -z_Q25 구현 pattern 검증 (C13 수동 반전 금지 엄수)",
+        "Q25 × M01 cross-section 상관 사전 측정 (독립성 확인)",
+        "H_1682 Q25 sleeve와 portfolio overlap 추정",
+        "STR_1631 C19 consensus와 interaction signal 상관 측정 (diversifier 정합성)"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1687. Avramov-Chordia-Jostova-Philipov 2013 JFE 'Anomalies and Financial Distress' + Campbell-Hilscher-Szilagyi 2008 JF + Ohlson 1980 JAR + Jegadeesh-Titman 1993 JF + 이일균-김동철 2019 + Hwang 2020 KAFA WP. peer-review, mechanism alignment (역방향 적용 학술 타당성), 한국 실증, time decay.",
+      "output_path": "stage_artifacts/s0_debate_r1_academic_H_1687.json",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Avramov 2013 JFE foundational (top-tier)",
+        "Campbell 2008 JF = distress premium 음 실증",
+        "이일균-김동철 2019 한국재무학회지 = 한국 distress premium 음 실증"
+      ],
+      "expected_concern_vectors": [
+        "Avramov 2013 원논문 결과와 반대 방향 적용 — mechanism alignment 약함",
+        "Hwang 2020 KAFA working paper 미공식 논문 — substantive_cite 감점",
+        "이일균 2019 sample 8년 OOS 부재",
+        "Long-only 적용 시 Avramov 2013 long-short framework 왜곡"
+      ]
+    }
+  ],
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "Avramov 2013 JFE top-tier foundational",
+      "Campbell 2008 + 이일균 2019 distress premium 음 confirmation",
+      "Quality-momentum composite은 실무적으로 robust (Asness 2013 framework 연장)",
+      "H_1682 다음 후속 distress family 확장"
+    ],
+    "bear_case": [
+      "Avramov 2013 원방향 역적용 (long-only 한국 adaptation) — mechanism alignment risk",
+      "H_1682 Q25 공유로 S3 rho<0.6 gate 통과 불확실",
+      "Hwang 2020 working paper 공식 논문 아님 (substantive_cite weak)",
+      "50/50 정적 가중 ex-post 우려"
+    ],
+    "scout_expected_score_range": {
+      "codex_critic": "9-12 (역방향 + static weight + Q25 overlap discount)",
+      "risk_manager": "12-15 (momentum crash + Flight-to-Quality 반전 + Q25 중첩)",
+      "governor": "13-16 (family diversification bull but H_1682 overlap)",
+      "quant": "13-16 (Factor DB 완비 but interaction incremental 입증 필요)",
+      "academic": "13-16 (Avramov top-tier but 역방향 + Hwang WP 비공식)"
+    },
+    "scout_total_forecast": "60-75 → APPROVE_CONDITIONAL 가능성. H_1688 VERDICT 결과 반영 조건 추가 예상."
+  },
+
+  "strategic_chain": {
+    "if_H_1688_approved_and_H_1687_approved": "S1 실행 순서 — H_1688 우선, H_1687은 H_1688 S1 결과(실제 SR/MDD) 확인 후 incremental value 평가",
+    "if_H_1688_approved_and_H_1687_revise": "Scout 재설계 — H_1687 gated double-sort 버전 전환 또는 size-neutral extension",
+    "if_H_1688_rejected": "H_1687이 momentum family 유일 후보가 될 수 있음 — weight 재조정 필요"
+  },
+
+  "h_1688_interaction_analysis": {
+    "signal_sharing": "H_1688은 M01 momentum residual (beta+size+IdioVol 잔차화). H_1687은 M01 momentum + Q25 interaction (raw momentum). → 둘 다 M01 raw momentum 공유이나 처리 방식 상이.",
+    "expected_rho_H_1688_vs_H_1687": "0.4~0.6 예상 (momentum raw signal 공유이나 residualization vs interaction 차이)",
+    "s3_gate": "rho < 0.6 vs H_1688 권장 (momentum family 공유 인정)"
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "report_type": "JUDGE_SWEEP_V3_PASS2_DYNAMIC",
+  "tier": 1,
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "judge_teammate_run": true,
+  "total": 3,
+  "tier_1_pass": 0,
+  "tier_1_reject": 3,
+  "validated_core": [],
+  "validated_diversifier": [],
+  "validated_defense": [],
+  "rejected": [
+    {"strategy_id": "STR_1439", "grade_v3": "B_ARCHIVE", "primary_reason": "L-484 return-blend 80-stock + re-runnability FAIL"},
+    {"strategy_id": "STR_1435", "grade_v3": "REJECT", "primary_reason": "Gate 0 PIT FAIL (defense+consgate FRED) + Gate 1 re-runnability + N>20 + Role Mismatch"},
+    {"strategy_id": "STR_1060", "grade_v3": "REJECT_CLONE_FAMILY", "primary_reason": "Triplicate clone with STR_1070/STR_1085 + Gate 1 re-runnability + N>20"}
+  ],
+  "pit_clean_rate": 0.333,
+  "pit_clean_count": 1,
+  "pit_clean_detail": "Only STR_1439 top-level PIT clean. STR_1435/STR_1060 inherit FRED no-lag from defense_sleeve + consgate_pure_engine.",
+  "role_honesty_pass_rate": 0.0,
+  "role_honesty_pass_count": 0,
+  "dsr_0_5_rate": 1.000,
+  "dsr_0_5_count": 3,
+  "ff5_t_3_rate": 0.0,
+  "ff5_t_3_count": 0,
+  "ff5_t_2_rate": 0.667,
+  "ff5_t_2_count": 2,
+  "re_runnability_pass_rate": 0.0,
+  "re_runnability_pass_count": 0,
+  "re_runnability_detail": "3/3 FAIL. Parents missing from disk: STR_770_phase2_cross (STR_1435/1060), STR_1037/STR_898/STR_1035 (STR_1439).",
+  "n20_compliance_rate": 0.0,
+  "n20_compliance_detail": "STR_1439 up to 80 holdings (return-blend), STR_1435/1060 up to 30 (5-sleeve union)",
+  "sharpe_gap_contribution": {
+    "estimated_sr_boost": 0.0,
+    "post_blend_sr": 1.266,
+    "remaining_gap_to_2_0": 0.734,
+    "note": "Tier 1 contributes ZERO to SR 2.0 goal. All 3 rejected. Hope moves to Tier 2 + H_1676/H_1682 S1 completion."
+  },
+  "cross_cutting_findings": [
+    {
+      "finding": "Catalog Grade A != PIT clean (L-148 reinforcement)",
+      "detail": "All 3 Tier 1 carry v2 Grade A but fail v3 Full Gate under PIT + architecture + re-runnability criteria."
+    },
+    {
+      "finding": "Parent strategy loss cascades",
+      "detail": "STR_1037/898/1035 (STR_1439 parents) + STR_770_phase2_cross (STR_1435/1060 parent) all missing. Return-blend + sleeve-based architectures are brittle to filesystem pruning."
+    },
+    {
+      "finding": "Clone triplicate detection matters",
+      "detail": "STR_1060 = STR_1070 = STR_1085 by byte-identical performance. If any one admitted to PG2, effective weight is 3x what was intended. Governor must dedupe before admission."
+    },
+    {
+      "finding": "L-484 return-blend violation is persistent",
+      "detail": "STR_1439 (return-blend) was already downgraded 2026-03-28 but still carried v2 Grade A in catalog. Cache/catalog divergence."
+    },
+    {
+      "finding": "FF5 t-stat < 3.0 pattern across multi-sleeve composites",
+      "detail": "STR_1435 t=2.77, STR_1060 t=2.61, STR_1439 t=2.95. Multi-sleeve weighting dilutes single-factor alpha. Composites fail Harvey 2016 threshold."
+    }
+  ],
+  "governor_actions_required": [
+    "Do NOT admit any Tier 1 strategy to PG pool.",
+    "Verify STR_1070 / STR_1085 (clones of STR_1060) status in PG candidate list — recommend exclusion.",
+    "Queue Tier 2 batch (STR_1417_5sleeve_mrs3545, STR_1562_gerber_dcc_hrp_c11fix, STR_1433_consgate_c11fix_dd722, STR_1071_noShortDD_mrs1225) but with forensic check on same BASE_DIR dependency.",
+    "Notify Scout to revisit novelty budget: STR_1439 novelty_bonus=10 is genuine alpha signal that may warrant score-blend redesign as new S0 hypothesis."
+  ],
+  "next_steps": [
+    "Judge Task #4 (H_1676/H_1682 S6 after Forge S1 completion) has higher priority than sweep v3 Tier 2/3.",
+    "After Task #4, Tier 2 batch needs BASE_DIR reconstruction decision (restore STR_770_phase2_cross from git history vs forensic rebuild).",
+    "Tier 3 fail-fast can proceed without Tier 2 (STR_1631_SYN_05 already PG2, others SR<1.2)."
+  ]
+}

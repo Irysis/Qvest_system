@@ -1,0 +1,73 @@
+{
+  "strategy_id": "STR_1469",
+  "strategy_dir": "STR_1469_cons4f_5sleeve",
+  "tier": 3,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "B_REJECT",
+  "v3_verdict": "REJECT_ROLE_MASQUERADE",
+  "prev_judge_verdict": "Grade B. Role Honesty FAIL — Core Alpha masquerade, corr 0.899 with existing C04_ESBR factor.",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "run_all.R top-level PIT clean (581 lines, 0 violations). But inherits BASE_DIR STR_770_phase2_cross dependency (MISSING)."
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "fail_reason": "BASE_DIR = STR_770_phase2_cross MISSING. Re-runnability FAIL.",
+      "architecture": "5-sleeve (consgate 4-factor)",
+      "n_holdings_effective": "up to 30 (5-sleeve union)",
+      "n_limit_v53": 20,
+      "violates_n20": true
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr_delta": 0.068,
+      "stress_outperform": "4/4 (from analysis_stress.csv)",
+      "rolling_3y_sr_mean": 0.909,
+      "rolling_3y_sr_min": -0.614,
+      "rolling_3y_sr_last": 1.218
+    },
+    "gate_3_perf": {
+      "pass": "BORDERLINE",
+      "sharpe_monthly": 1.021,
+      "sharpe_daily": 1.027,
+      "cagr": 16.67,
+      "mdd": -29.76,
+      "mdd_v53_fail": true,
+      "score_hurdle_total": "negative_adj (D083 -20 for turnover)"
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 1.000,
+      "capm_alpha_t": 4.03,
+      "capm_alpha_annual_pct": 12.02,
+      "note": "FF5 t not in available artifacts. CAPM t passes Harvey but may differ on FF5 controls."
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "max_abs_corr": 0.899,
+      "correlated_with": "C04_ESBR",
+      "note": "25% component literally includes C04_ESBR factor. Not independent alpha source."
+    },
+    "gate_6_role_honesty": {
+      "pass": false,
+      "claimed_role": "core_alpha",
+      "audit_result": "FAIL (Core Alpha masquerade)",
+      "detail": "Repackaged existing value/earnings exposure via C04_ESBR. 'Novel' 5-sleeve wrapper does not change underlying alpha source."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "Gate 1 BASE_DIR STR_770_phase2_cross MISSING",
+    "Gate 1 N>20 (5x6 union)",
+    "Gate 5 corr 0.899 with C04_ESBR",
+    "Gate 6 Role Honesty FAIL — Core Alpha masquerade",
+    "MDD 29.76% exceeds v53 target",
+    "Turnover penalty D083 -20"
+  ],
+  "recommendation": "REJECT_ROLE_MASQUERADE. Confirms existing v4.0 Grade B. Do NOT admit to PG pool. Score-blend with already-admitted C04_ESBR would double-count same factor exposure.",
+  "notes": "Previous Judge correctly downgraded. Pass 2 confirms. Useful as negative example — role masquerade pattern (new wrapper + existing factor = same bet)."
+}

@@ -231,26 +231,39 @@ cat(sprintf("[Step 2] Consensus 최초 가용일: %s → 실질 시그널 시작
 # ===================================================================
 # 2b. Factor DB Bulk Preload — Q07/Q03/D29 (OPT-1 준수)
 # arrow open_dataset으로 1회 bulk 로드 → 메모리 내 필터 (루프 내 I/O 전면 금지)
-# C13: Q07/Q03/D29 모두 higher_better → ic_sign=+1 → Z_Score = Z_Score_Aligned
+# C13: Z_Score_Aligned 사용 (align_factor_direction() 경유). C15: factor_db_connector 경유.
+# LIQ_THRESHOLD=2e8 C10 lag 적용은 Step 1 SIG_SNAP에서 완료됨.
 # ===================================================================
-cat("\n[Step 2b] Factor DB Bulk Preload (Q07/Q03/D29)...\n")
-suppressPackageStartupMessages(library(dplyr))
+cat("\n[Step 2b] Factor DB Bulk Preload (Q07/Q03/D29) — C15 rbindlist pattern (LIQ_THRESHOLD=2e8 적용 완료)...\n")
 DFA_FACTOR_NAMES <- c("Q07_Earnings_Stability", "Q03_ROA", "D29_Accounting_Beta")
-fdb_dir_path <- file.path(CACHE_DIR, "factor_db")
-fdb_files_all <- list.files(fdb_dir_path, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
-fdb_files_use <- fdb_files_all[basename(fdb_files_all) >= "factor_db_200101.parquet"]
+source(file.path(FACTOR_DB_DIR, "factor_db_connector.R"))
+fdb_dir  <- file.path(CACHE_DIR, "factor_db")
+fdb_files <- list.files(fdb_dir, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
+fdb_files <- fdb_files[basename(fdb_files) >= "factor_db_200101.parquet"]
 
-# open_dataset: parquet 문자열 없이 bulk 로드
+FDB_RAW <- rbindlist(lapply(fdb_files, function(fp) {
+  ym        <- gsub(".*factor_db_(\\d{6})\\.parquet$", "\\1", basename(fp))
+  sig_match <- ALL_SIG_DATES[format(ALL_SIG_DATES, "%Y%m") == ym]
+  if (length(sig_match) == 0) return(NULL)
+  dt <- tryCatch(as.data.table(arrow::read_parquet(fp,
+    col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage"))), error = function(e) NULL)
+  if (is.null(dt)) return(NULL)
+  dt <- dt[Factor_Name %in% DFA_FACTOR_NAMES & Coverage == TRUE, .(Ticker, Factor_Name, Z_Score)]
+  if (nrow(dt) == 0) return(NULL)
+  dt[, Date := sig_match[1]]; dt
+}), use.names = TRUE, fill = TRUE)
+
+# C13: align_factor_direction으로 Z_Score_Aligned 생성 후 사용
+FDB_RAW <- align_factor_direction(FDB_RAW, .load_registry())
+if ("Z_Score_Aligned" %in% names(FDB_RAW)) {
+  FDB_RAW[, Z_Score := Z_Score_Aligned]; FDB_RAW[, Z_Score_Aligned := NULL]
+}
+setkey(FDB_RAW, Date, Ticker)
+
 DFA_DB_WIDE <- tryCatch({
-  raw <- arrow::open_dataset(fdb_files_use, format = "parquet") |>
-    dplyr::filter(Factor_Name %in% DFA_FACTOR_NAMES, Coverage == TRUE) |>
-    dplyr::select(Date, Ticker, Factor_Name, Z_Score) |>
-    dplyr::collect() |>
-    as.data.table()
-  raw[, Date := as.Date(Date)]
-  wide <- dcast(raw, Date + Ticker ~ Factor_Name, value.var = "Z_Score", fill = NA_real_)
+  wide <- dcast(FDB_RAW, Date + Ticker ~ Factor_Name, value.var = "Z_Score", fill = NA_real_)
   setkey(wide, Date, Ticker)
-  rm(raw); gc(verbose = FALSE)
+  rm(FDB_RAW); gc(verbose = FALSE)
   cat(sprintf("[Step 2b] DFA_DB_WIDE: %d rows | %s ~ %s\n",
               nrow(wide), min(wide$Date), max(wide$Date)))
   wide

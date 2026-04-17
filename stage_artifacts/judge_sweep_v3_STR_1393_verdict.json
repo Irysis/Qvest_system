@@ -1,0 +1,71 @@
+{
+  "strategy_id": "STR_1393",
+  "strategy_dir": "STR_1393_esbr_sue_adaptive",
+  "tier": 3,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "REJECT",
+  "v3_verdict": "REJECT_HARVEY_FAIL",
+  "prev_judge_verdict": "v4.0 Grade A diversifier pass=TRUE score=68.8. Legacy judge did not enforce Harvey t>3.0 strict gate.",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "186 lines, 0 violations. Independent factor_engine.R — no BASE_DIR issue."
+    },
+    "gate_1_impl": {
+      "pass": "LIKELY",
+      "architecture": "ESBR SUE adaptive (single-engine)",
+      "re_runnability": "PASS (no BASE_DIR dependency, sim_result.rds present)",
+      "note": "N verification would require holdings_detail parse. Skipped for fail-fast."
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr_delta": 0.071,
+      "stress_outperform": "3/4 (COVID_2020 FALSE)",
+      "rolling_3y_sr_mean": 0.717,
+      "rolling_3y_sr_last": 1.768,
+      "oos_retention": 1.115,
+      "note": "Stress 3/4 only — COVID_2020 underperformance"
+    },
+    "gate_3_perf": {
+      "pass": "BORDERLINE",
+      "sharpe_monthly": 0.942,
+      "sharpe_daily": 0.960,
+      "cagr": 16.37,
+      "mdd": -35.69,
+      "mdd_v53_fail": "35.69% > 25%",
+      "score_hurdle_total": 65.8
+    },
+    "gate_4_stat": {
+      "pass": false,
+      "dsr": 1.000,
+      "capm_alpha_t": 4.00,
+      "ff5_alpha_t": 1.81,
+      "harvey_t3_pass": false,
+      "harvey_t25_pass": false,
+      "fail_reason": "FF5 alpha t=1.81 < 2.5 (below any reasonable threshold). CAPM t=4.00 overstated due to missing size/value controls.",
+      "fmb_score_t": 6.46
+    },
+    "gate_5_diversity": {
+      "pass": "UNKNOWN",
+      "max_abs_corr": "not recorded"
+    },
+    "gate_6_role_honesty": {
+      "pass": "SUSPECT",
+      "declared_role": "diversifier",
+      "audit_concern": "Name contains 'esbr_sue_adaptive'. ESBR (C04) already admitted. SUE overlay may be the diversifier component, but combined factor exposure overlaps with existing admission."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "FF5 alpha t=1.81 — well below Harvey 3.0 threshold, even below B-grade 2.5 threshold",
+    "MDD 35.69% significantly exceeds v53 25% target",
+    "SR 0.942 below Tier 1/2 threshold (>1.2)",
+    "Stress 3/4 only (COVID_2020 negative alpha)",
+    "Role overlap concern with existing C04_ESBR admission"
+  ],
+  "recommendation": "REJECT_HARVEY_FAIL. Pass 2 escalates existing v4.0 Grade A to REJECT. Legacy judge did not enforce Harvey gate — v53 strict mode fails this clearly. Do NOT include in sweep v3 active set.",
+  "notes": "Archetypal case: v4.0 Grade A survives into catalog but fails Harvey 2016 threshold under v53. Reinforces L-148 (catalog Grade A != PIT/statistical clean)."
+}

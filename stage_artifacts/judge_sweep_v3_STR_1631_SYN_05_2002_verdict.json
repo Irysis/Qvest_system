@@ -1,0 +1,75 @@
+{
+  "strategy_id": "STR_1631_SYN_05_2002",
+  "strategy_dir": "STR_1631_SYN_05_2002",
+  "tier": 3,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "A_PG2_ACTIVE",
+  "v3_verdict": "CONFIRMED_PG2",
+  "prev_judge_status": "PG2 active (STR_1679v2 보조), 80% allocation",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "parent_STR_1631_SYN_05_status": "parent has C1b quantile full-column violation (line 202). This 2002 bimonthly variant is PIT clean in its own run_all.R (710 lines, 0 violations).",
+      "note": "2002 bimonthly variant explicitly rebuilt to fix C1b. Confirmed clean at top-level."
+    },
+    "gate_1_impl": {
+      "pass": "PARTIAL",
+      "note_sim_missing": "sim_result.rds MISSING in this directory. Relies on performance.json + s6_artifact.json existing artifacts. Re-runnability cannot be verified from judge side in this fail-fast pass.",
+      "n_holdings_effective": "not verifiable — PG2 admission record expected holdings <=20",
+      "turnover_ann_s6": 301.2
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "source": "s6_artifact.json",
+      "oos_retention": 0.476,
+      "is_sr": 1.56,
+      "stress_outperform": "unavailable here, but PG2 admission criteria required 4/4"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe": 1.194,
+      "cagr": 21.65,
+      "mdd": -33.86,
+      "mdd_target_v53": "FAIL (>25%)",
+      "score_hurdle": 59
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 0.9996,
+      "dsr_z": 3.3279,
+      "ff5_alpha_annual_pct": 14.314,
+      "ff5_alpha_t": 3.0891,
+      "harvey_t3_pass": true,
+      "ff5_p": 0.0026,
+      "note": "Only Tier 3 strategy to PASS Harvey t>3.0"
+    },
+    "gate_5_diversity": {
+      "pass": "UNKNOWN",
+      "note": "PG2 admission implies diversity confirmed, but max_abs_corr unrecorded in available artifacts."
+    },
+    "gate_6_role_honesty": {
+      "pass": true,
+      "declared_role": "core_alpha",
+      "audit_result": "MATCH (PG2 admission as core_alpha 80%)",
+      "note": "Only Tier 3 strategy with confirmed role honesty."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "ACTIVE_PG2",
+  "pg_status": "STR_1631_SYN_05_2002 already 80% of PG2 portfolio. Pass 2 role is CONFIRM not RE-ADMIT.",
+  "confirmed_flags": [
+    "Only Tier 3 strategy with FF5 t>3.0 (3.0891)",
+    "Only Tier 3 strategy with role_honesty PASS",
+    "C1b parent violation patched in 2002 bimonthly variant"
+  ],
+  "warnings": [
+    "MDD 33.86% exceeds v53 production target 25%",
+    "Turnover 301% high — monitor slippage",
+    "OOS retention 0.476 borderline (PG2 threshold 0.3+)",
+    "sim_result.rds missing — re-runnability cannot be verified from judge side"
+  ],
+  "recommendation": "CONFIRMED_PG2. No action required. Continue current 80% allocation. Monitor MDD drift and re-run sim_result.rds build when BASE_DIR reconstruction happens (for Tier 2 side benefit).",
+  "notes": "PG2 active strategy. Pass 2 confirms statistical + role honesty integrity. Performance is below SR 2.0 goal alone — relies on blend with other admitted strategies."
+}

@@ -1,0 +1,49 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1688",
+  "hypothesis_name": "Residual Momentum Core-Level Alpha (Core_Secondary)",
+  "round": "R1_Opening",
+  "timestamp": "2026-04-17T19:00:00+09:00",
+  "agent_id": "governor_H_1688_R1_independent_debate_instance",
+  "instance_note": "본 debate instance는 research-v7 teammate Governor와 별개의 독립 평가자로 participation.",
+  "score": 17,
+  "score_breakdown": {
+    "gap_alignment": 4.0,
+    "role_match": 3.5,
+    "family_saturation": 3.5,
+    "marginal_contribution": 3.0,
+    "implementation_feasibility": 3.0,
+    "total": 17.0,
+    "rubric_note": "세부 각 축 0~4점. 총 20점 만점 중 17점. Strong Support tier."
+  },
+  "arguments": [
+    "gap_alignment 최상위 평가 - 현재 PG2 baseline Sharpe 1.193에서 목표 2.0까지 gap 0.807 중 H_1688 Core_Secondary 편입이 유일한 realistic 경로입니다. Hybrid Z3 + H_1688 dual-core 시나리오(STR_1631 18% + H_1688 15% + Z3 reactivation 3건 + Div 1656 + Def 2건)가 ρ=0.2 설계 가정 아래 blend SR 2.06을 달성하여 SR 2.0을 초과합니다. 비교 시나리오인 Z3 단독(1.82) 및 Hybrid Z3 + H_1683 Seasonality(1.72)는 모두 SR 2.0에 미달하므로, Governor v1.1 결론 'Core 수준 독립 alpha 1건 추가 필수'의 직접 대응 후보는 H_1688이 유일합니다. 또한 portfolio_gap_vector v1.0.3의 cagr_gap -0.0014, mdd_gap -0.0373 은 모두 ACHIEVED 근접 상태이므로 오직 sharpe_gap 0.807만이 병목이며, H_1688이 이 단일 병목을 직접 해소합니다.",
+    "role_match + family_saturation 이중 우위 - Core_Secondary 분류는 SR 0.80~1.30 standalone 예상값이 현재 Core STR_1631_SYN_05 SR 1.243에 근접한다는 정량 근거에 부합합니다. 이를 단순 diversifier로 분류할 경우 Role Honesty Audit 관점(L-146 overlay-driven MDD 교훈 연장)에서 역할 위장 위험이 있으므로, Core_Secondary 공식 분류가 정직한 처리입니다. family_saturation 관점에서는 momentum_residual 신규 family가 consensus 50% / ML 50% 이분화 상태를 3-family(consensus 40% + ML 13% + momentum_residual 15% + 기타)로 재편하여 Herfindahl index를 0.5에서 0.27로 대폭 감소시킵니다. consensus_taxonomy_proposal v1.0의 parent_family 45% cap 승인을 전제로, Hybrid Z3+H_1688 구성의 consensus_total 40%가 45% cap 하에서 PASS합니다.",
+    "marginal_contribution 와 implementation_feasibility 조건부 긍정 - 15% 편입 시 weighted mean SR 기여 1.05 × 0.15 = 0.158 + √diversification factor 1.84 조합으로 blend SR 기여 약 +0.25(ρ=0.2 기준) 가 추정됩니다. 이는 H_1683 Seasonality 기대 기여 +0.10 대비 2.5배 우위입니다. 다만 ρ=0.2 설계 가정은 S3 orthogonality 측정에서 실측 확인 전 상태이므로, Critical Gate 통과 여부가 marginal_contribution 의 전제입니다. implementation_feasibility 측면에서 Factor DB 4 input(M04_Mom_12_1 또는 M01_Mom_12_1 correction 필요, M01 CAPM beta, S01 Size, R12 IdioVol)은 모두 기구축 상태이며 load_month_factors 경유 가능합니다. 24M rolling beta pre-compute 캐시 전략은 H_1676 잔차화 패턴 재활용으로 구현 risk 중간 수준입니다."
+  ],
+  "concern": "H_1688 의 Core_Secondary 편입은 Core STR_1631 weight 를 현재 active 80% 수준에서 18% 로 62%p 극한 하향하는 조정을 동반합니다. 이 조정의 실행 속도 문제가 가장 큰 portfolio 운용 위험입니다. 단기 1회 하향 시 기존 Core alpha 변동성 급증 + 신규 H_1688 S1~S6 개발 3~4주 리드타임 동안 portfolio 구조 변동 overlap 우려. 또한 ρ=0.2 설계 가정은 beta+size+IdioVol 3-factor 잔차화로 portfolio-level rho 축소를 엔지니어링한 결과이나, 실측 시 ρ 0.3~0.4 로 상승하면 blend SR 1.84(ρ=0.3) 또는 1.50(ρ=0.5) 로 급락하여 SR 2.0 경로 자체가 붕괴됩니다. 또 Scout note 의 factor_id correction(M04 vs M01) 미해소 상태에서 debate 진행 중이므로 정확한 factor 구성 Judge R2 Quant 재확인 의무적입니다.",
+  "conditions": [
+    "S3 Orthogonality Critical Gate: H_1688 vs STR_1631_SYN_05 pairwise monthly return correlation ρ < 0.25 실측 PASS 필수. ρ ≥ 0.25 시 Core_Secondary 분류 취소 및 Diversifier 강등 또는 가설 REVISE. 이는 Governor Critical Gate 로 비협상.",
+    "S2 Profiling Gate: ICIR ≥ 0.35 + residual stability 3Y rolling drift < 30%. 단 SR standalone 0.70 미만 측정 시 Core_Secondary 자격 박탈, Diversifier 재분류 후 fallback Hybrid Z3 + H_1683 Seasonality 경로 전환.",
+    "PG1 Admission 전제 3건: (1) consensus_taxonomy_proposal v1.0 Q-Lead 승인 완료 (parent 45% cap + sub-family 0.25/0.15/0.10/0.10/0.10/0.05 세분화), (2) Core STR_1631 80%에서 18% 하향 이행 계획 확정(한번에 vs 3~6개월 점진), (3) Scout correction 반영(Factor DB M04 vs M01 factor_id 정정 + M08_Residual_Mom 기구축 factor S1 baseline 병행 측정).",
+    "S5 Mutation 사전 등록 의무: Barroso-Santa-Clara 2015 dynamic scaling variant 를 Research Slate A슬롯으로 사전 등록. momentum crash tail risk(2020-03, 2022-09 포함) 대응 없이 raw residualization 단독 Grade A 승격 시 L-146/L-148 재발 위험. DD 8/22 overlay 와 multi-horizon(6-1+12-1+18-1) variant 도 B/C 슬롯에 등록."
+  ],
+  "references": [
+    ".cache/portfolio_gap_vector.json (v1.0.3 baseline, sharpe_gap 0.807)",
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev2.json (rev2 Hybrid Z3+H_1683 sub-path)",
+    "qepm/mailbox/governor/outbox/consensus_taxonomy_proposal.json (v1.0 proposal, 45% parent cap)",
+    "qepm/mailbox/governor/outbox/h1683_vs_h1688_differentiation_analysis.json (Governor direct H_1688 preferred_realistic_v3 결론)",
+    "stage_artifacts/s0_record_H_1688_residual_momentum_core_alpha.json (Scout S0 DRAFT)",
+    "stage_artifacts/s0_debate_handoff_H_1688.json (handoff kit)",
+    "Carhart 1997 JF 'On Persistence in Mutual Fund Performance'",
+    "Blitz-Huij-Martens 2011 JEF 'Residual Momentum' (direct primary)",
+    "Barroso-Santa-Clara 2015 JFE 'Momentum Has Its Moments'",
+    "이진철·김동철 2015 한국재무학회지 '한국주식시장의 잔차 모멘텀'"
+  ],
+  "axioms_checked": {
+    "AX_000_no_limit": "PASS",
+    "AX_001_defense_conditional": "N/A (Core_Secondary role)",
+    "AX_002_rule_abiding": "PASS - PIT C1~C15 전수 사전 설계 포함"
+  },
+  "governor_verdict_preview": "APPROVE_CONDITIONAL (3/4 scoring tier). 4 conditions 모두 충족 시 PG1 Admission 권고. Hybrid Z3+H_1688 을 PG0_PLAN rev3 preferred_realistic_v3 tier 로 공식 등재 권고."
+}

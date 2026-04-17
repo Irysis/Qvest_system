@@ -1,0 +1,342 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV3",
+  "stage": "PG0_Sequencing_Update",
+  "timestamp": "2026-04-17T19:10:00+09:00",
+  "session": 66,
+  "version": "v3.0_draft",
+  "status": "PENDING_H_1688_S0_VERDICT (Core_Secondary 편입 전제조건)",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev2.json (primary_path_v2 Hybrid Z3+H_1683 교체)",
+
+  "trigger": "Q-Lead Q11~Q15 답변 + P1~P6 자체 판단 승인 수용. primary_path_v3 = Hybrid Z3 + H_1688 Dual-Core architecture로 전환. SR 2.06 @ ρ=0.2 projected.",
+
+  "q_lead_decisions_applied_2026_04_17_evening": {
+    "Q11_h_1688_role": "Core_Secondary (residual_momentum) — diversifier 분류 금지. L-146 정신 준수.",
+    "Q12_core_weight_plan": "단기 25% 엄수, 장기 18% aspirational. 이행 plan: 80% → 55% (2개월) → 35% (4개월) → 25% (6개월)",
+    "Q13_rev3_approval": "ACCEPTED — Hybrid Z3 + H_1688 primary_path_v3",
+    "Q14_h_1683_scope": "FALLBACK_ONLY — H_1688 실패 시 활성화. H_1685/1687/1689 순차 확장.",
+    "Q15_h_1688_s0_debate": "CONFIRMED — Scout Handoff Kit 완료 (s0_debate_handoff_H_1688.json). Q-Lead가 Codex R1 + 4-agent 병렬 스폰 착수."
+  },
+
+  "governor_self_answers_p1_p6": {
+    "P1_45pct_parent_cap": "APPROVED (Governor 판단 권한 수용) — consensus family 45% cap 즉시 적용. 중기 35% 환원 plan 유지.",
+    "P2_sub_family_caps": "APPROVED — 0.25 (C19_core) / 0.15 (multifactor) / 0.10 (5sleeve_dd/mrs/gate) / 0.05 (esbr_sue_adaptive). 즉시 적용.",
+    "P3_rho_merge_rule": "APPROVED — Forge orthogonality 실측 rho ≥ 0.5 시 sub_family 자동 합병 처리. Task #5 결과 도착 시 판정.",
+    "P4_core_transition_speed": "Q-Lead Q12 답변으로 확정 — 단기 25% (6개월 이내), 장기 18% aspirational.",
+    "P5_momentum_residual_family": "APPROVED — H_1688 'momentum_residual' 신규 parent family 독립 분류. consensus 밖.",
+    "P6_other_family_45pct_extension": "REJECTED per Q-Lead guidance — ML_complexity 20% cap 유지. 이유: STR_1656 단일 전략이므로 45% 확장 부적절. momentum_residual은 초기 Core_Secondary 역할로 20~25% 별도 cap 제안.",
+    "application_effective_date": "2026-04-17 즉시. portfolio_governor.R family_saturation_rule 함수 업데이트 Task #8 기술부채 패치에 포함."
+  },
+
+  "primary_path_v3_hybrid_z3_h_1688_dual_core": {
+    "tier": "preferred_realistic_v3",
+    "description": "Dual-Core architecture. STR_1631 (consensus_C19_core) + H_1688 (momentum_residual Core-level) + Z3 reactivation 3건 + H_1676 Diversifier + H_1682 Defense + STR_1656 ML + STR_1662a Defense.",
+    "target_sr": 2.06,
+    "target_cagr": 0.135,
+    "target_mdd": -0.17,
+
+    "portfolio_composition": {
+      "Core_consensus_C19_STR_1631": {
+        "weight_long_term_18pct": 0.18,
+        "weight_short_term_25pct": 0.25,
+        "sub_family": "consensus_C19_core",
+        "role": "Core_Primary",
+        "cap_applied": 0.25,
+        "transition_plan": "현 80% → 55% (2개월) → 35% (4개월) → 25% (6개월) → 18% (장기 aspirational)"
+      },
+      "Core_residual_momentum_H_1688": {
+        "weight_long_term": 0.15,
+        "weight_short_term": 0.15,
+        "family": "momentum_residual",
+        "role": "Core_Secondary",
+        "cap_applied": 0.25,
+        "prerequisite": "H_1688 S0 APPROVE → S1~S6 all PASS → S2 ICIR ≥ 0.35 → S3 ρ < 0.25 vs STR_1631 (Critical Gate)"
+      },
+      "Div_multifactor_STR_1439": {
+        "weight": 0.12,
+        "sub_family": "consensus_multifactor",
+        "role": "Diversifier (Z3 reactivation)",
+        "cap_applied": 0.15,
+        "prerequisite": "Judge sweep v3 Pass 2 PASS + Forge ρ < 0.4 vs STR_1631"
+      },
+      "Div_5sleeve_dd_STR_1435": {
+        "weight": 0.10,
+        "sub_family": "consensus_5sleeve_dd",
+        "role": "Diversifier (Z3 reactivation)",
+        "cap_applied": 0.10,
+        "prerequisite": "Judge Pass 2 PASS + Forge ρ < 0.4"
+      },
+      "Div_breakout_STR_1060": {
+        "weight": 0.10,
+        "family": "breakout_DD_overlay",
+        "role": "Diversifier (Z3 reactivation, non-consensus)",
+        "cap_applied": "breakout family 15% cap proposed",
+        "prerequisite": "Judge Pass 2 PASS + Forge ρ < 0.4"
+      },
+      "Div_ML_STR_1656": {
+        "weight": 0.13,
+        "family": "ML_complexity",
+        "role": "Diversifier (existing PG2)",
+        "cap_applied": 0.20,
+        "current_status": "ACTIVE PG2"
+      },
+      "Def_distress_H_1682": {
+        "weight": 0.12,
+        "family": "distress_path_dependent",
+        "sub_family": "ohlson_calmar_cross_family",
+        "role": "Defense",
+        "prerequisite": "Forge S1 + Judge S6 + tail_risk"
+      },
+      "Def_quality_STR_1662a": {
+        "weight": 0.10,
+        "family": "quality_stability_Q07",
+        "role": "Defense",
+        "prerequisite": "tail_risk 완료 + role_honesty + H_1682 S6"
+      }
+    },
+
+    "family_concentration_analysis": {
+      "consensus_total": 0.40,
+      "consensus_cap_45pct": "PASS",
+      "consensus_breakdown": {
+        "consensus_C19_core": 0.18,
+        "consensus_multifactor": 0.12,
+        "consensus_5sleeve_dd": 0.10
+      },
+      "momentum_residual": 0.15,
+      "breakout_DD_overlay": 0.10,
+      "ML_complexity": 0.13,
+      "distress_path_dependent": 0.12,
+      "quality_stability_Q07": 0.10,
+      "max_family": 0.40,
+      "n_independent_families": 6,
+      "compliance": "PASS (consensus 40%, max 40%, 6 orthogonal families)"
+    },
+
+    "projected_sr_by_rho_sensitivity": {
+      "individual_SR_assumption": {
+        "Core_1631_C19": 1.243,
+        "Core_1688_ResMom": 1.05,
+        "Div_1439": 1.532,
+        "Div_1435": 1.378,
+        "Div_1060": 1.333,
+        "Div_1656": 1.212,
+        "Def_H_1682": 0.65,
+        "Def_1662a": 0.724
+      },
+      "rho_0_2_design_target": {
+        "weighted_mean_SR": 1.118,
+        "variance_reduction_factor": 1.843,
+        "projected_SR": 2.06,
+        "gap_vs_2_0": "+0.06 (SR 2.0 초과)",
+        "mdd_projected": -0.17,
+        "cagr_projected": 0.135
+      },
+      "rho_0_3_moderate": {
+        "projected_SR": 1.84,
+        "gap_vs_2_0": "-0.16"
+      },
+      "rho_0_5_saturation_risk": {
+        "projected_SR": 1.50,
+        "gap_vs_2_0": "-0.50"
+      },
+      "key_finding": "ρ 관리 (0.2 design target)가 SR 2.0 달성의 결정 요인. Scout 잔차화 설계 + Forge 실측 검증 필수."
+    },
+
+    "cvar_cdar_constraint_check": {
+      "cvar_95_projected_annualized": "추정 -12% ~ -15% (Core_Secondary 15% 도입 시 downside 분산)",
+      "cdar_95_projected": "추정 -17% (MDD 근접)",
+      "constraint_satisfaction": "**PENDING_RISK_MANAGER_VERIFICATION**",
+      "action_required": "Q-Lead가 Risk Manager agent 온디맨드 스폰하여 CVaR_95/CDaR_95 정식 검증 요청. Governor는 L13 Risk Engine 단독 실행 불가.",
+      "thresholds_proposed": {
+        "cvar_95_annual_max": -0.15,
+        "cdar_95_max": -0.22,
+        "tail_dependence_limit": 0.4
+      }
+    }
+  },
+
+  "execution_sequencing_v3": {
+    "week_1": [
+      {
+        "priority": 1,
+        "action": "Judge sweep v3 Pass 2 — STR_1439/1435/1060 Gate 0~6 + DSR + Role Honesty + FF5",
+        "owner": "Judge",
+        "task_ref": "Task #1 in_progress",
+        "governor_standby": "Pass 2 결과 도착 시 30분 내 STR_1439 Z1 PG1 초안 발행 (Task #14)"
+      },
+      {
+        "priority": 2,
+        "action": "H_1688 S0 Debate 5인 (Codex + 4 agents 병렬)",
+        "owner": "Q-Lead (Scout Handoff Kit 완료)",
+        "task_ref": "s0_debate_handoff_H_1688.json",
+        "governor_standby": "APPROVE 또는 APPROVE_CONDITIONAL 결과 시 Forge S1 지시 대기"
+      },
+      {
+        "priority": 3,
+        "action": "Forge Orthogonality 측정 — STR_1439/1435/1060 vs STR_1631 ρ",
+        "owner": "Forge",
+        "task_ref": "Task #5 pending",
+        "governor_standby": "ρ 결과로 consensus sub_family 합병/독립 판정 (P3 rule)"
+      },
+      {
+        "priority": 4,
+        "action": "Forge STR_1679v2 재실행 4건 (Role Honesty 재심사)",
+        "owner": "Forge",
+        "task_ref": "Task #2 in_progress",
+        "governor_standby": "Def contrib < 2pp 시 core_alpha_with_overlay_dependency 재분류 + L-146 axiom 승격 검토"
+      }
+    ],
+    "week_2": [
+      {
+        "priority": 5,
+        "action": "H_1676 Forge S1 + H_1682 Forge S1 병렬",
+        "owner": "Forge",
+        "task_ref": "Task #3/#4 in_progress"
+      },
+      {
+        "priority": 6,
+        "action": "H_1688 Forge S1 착수 (S0 APPROVE 조건부)",
+        "owner": "Forge",
+        "prerequisite": "H_1688 S0 APPROVE confirmed"
+      },
+      {
+        "priority": 7,
+        "action": "Governor STR_1439 Z1 PG1 Admission 확정 (Pass 2 PASS + ρ < 0.4)",
+        "owner": "Governor"
+      }
+    ],
+    "week_3": [
+      {
+        "priority": 8,
+        "action": "H_1688 S2 profiling — ICIR ≥ 0.35 Core Gate",
+        "critical_gate": "SR ≥ 1.0 standalone 확인 → Core_Secondary 자격"
+      },
+      {
+        "priority": 9,
+        "action": "H_1688 S3 orthogonality — ρ < 0.25 vs STR_1631 (Critical Gate)",
+        "critical_gate": "Forge 실측 ρ < 0.25 → Core_Secondary 정식 자격"
+      },
+      {
+        "priority": 10,
+        "action": "STR_1435 + STR_1060 PG1 Admission (Z3 완성)",
+        "owner": "Governor"
+      }
+    ],
+    "week_4": [
+      {
+        "priority": 11,
+        "action": "H_1676 Judge S6 + H_1682 Judge S6",
+        "owner": "Judge"
+      },
+      {
+        "priority": 12,
+        "action": "H_1688 S4 Integration Test + S5 Mutation (Barroso scaling variant)",
+        "owner": "Forge"
+      }
+    ],
+    "week_5": [
+      {
+        "priority": 13,
+        "action": "H_1676/H_1682/H_1688 Judge S6 → Governor PG1 Admission 일괄",
+        "owner": "Governor"
+      },
+      {
+        "priority": 14,
+        "action": "Governor PG2 Allocation — Hybrid Z3 + H_1688 Dual-Core 배분 확정",
+        "owner": "Governor",
+        "cvar_cdar_check": "Risk Manager agent 온디맨드 호출 필수"
+      }
+    ],
+    "week_6": [
+      {
+        "priority": 15,
+        "action": "Hybrid Z3 + H_1688 정식 launch — PG2 Dual-Core active",
+        "target_sr": 2.06,
+        "monitoring": "PG3 daily_nav_report() + drift alert + regime monitor"
+      }
+    ]
+  },
+
+  "fallback_plans": {
+    "if_h_1688_s0_reject": {
+      "trigger": "H_1688 S0 Debate REJECT or REVISE",
+      "response": "H_1683 Factor Seasonality fallback 활성화 + H_1685 Foreign-Individual Flow 가속",
+      "alternative_path": "Hybrid Z3 + H_1683 (SR 1.72 projected) + H_1685 추가 (SR +0.10 보강)"
+    },
+    "if_h_1688_s2_sr_under_0_7": {
+      "trigger": "H_1688 실측 SR < 0.7 (Core_Secondary 자격 실패)",
+      "response": "H_1688 Diversifier로 재분류 + Barroso 2015 risk-managed variant S5 강화 + H_1687 Distress-Momentum Interaction 병렬 착수",
+      "alternative_path": "Hybrid Z3 + H_1688_diversifier + H_1687 composite"
+    },
+    "if_h_1688_s3_rho_over_0_4": {
+      "trigger": "H_1688 vs STR_1631 ρ > 0.4 (orthogonality 실패)",
+      "response": "잔차화 extension (+BM regressor) OR 대체 H_1688_v2 (Barroso dynamic scaling + multi-horizon 6-1/12-1/18-1)",
+      "alternative_path": "H_1688_v2 재설계 또는 momentum_residual family 폐기"
+    },
+    "if_str_1439_pass_2_reject": {
+      "trigger": "Judge sweep v3 Pass 2 STR_1439 REJECT (DSR 미통과 / Role Honesty FAIL / FF5 α 음수)",
+      "response": "Z1/Z2/Z3 시나리오 전면 폐기 + Scenario_Y 가속 (H_1676 + H_1682 + H_1688 + H_1685 4건 신규 경로)",
+      "alternative_path": "Core 55% + Div×3 (H_1676/H_1685/H_1688) + Def×2 (H_1682/1662a) — 신규 전환 6~8주"
+    },
+    "if_str_1679v2_role_misalignment_persistent": {
+      "trigger": "STR_1679v2 재실행 4건 모두 Def sleeve contrib < 2pp (L-146)",
+      "response": "core_alpha_with_overlay_dependency 재분류 + PG0_PLAN rev4 발행 + L-146 axiom 승격 검토",
+      "impact": "STR_1679v2 편입 검토 제외 (overlay-driven MDD 인식)"
+    }
+  },
+
+  "risk_controls_applied": {
+    "dual_core_concentration_risk": {
+      "concern": "Core_Primary + Core_Secondary 33% 합산. 만약 두 Core 상관 0.3+ 상승 시 variance 급증.",
+      "mitigation": "Forge S3 critical gate ρ < 0.25 absolute 엄수. S3 실패 시 편입 보류.",
+      "monitoring": "PG3 quarterly rho drift check"
+    },
+    "consensus_family_40pct": {
+      "concern": "consensus 총합 40% (45% cap 대비 5%p 여유).",
+      "mitigation": "중기 (6개월) 추가 diversifier 2건 편입 시 consensus 35%로 자동 축소.",
+      "monitoring": "monthly family_concentration audit"
+    },
+    "momentum_crash_risk": {
+      "concern": "H_1688 residual momentum은 momentum crash (2009 recovery 등) 취약.",
+      "mitigation": "S5 Barroso 2015 dynamic scaling variant 필수 구축. rolling vol target overlay 적용.",
+      "fallback": "crash 실측 시 H_1688 weight 15% → 10% 자동 축소"
+    },
+    "transition_period_risk": {
+      "concern": "Core 80% → 25% 6개월 이행 중 allocation drift.",
+      "mitigation": "월별 점진 리밸런싱 (월 10%p씩 축소). PG3 drift alert ±5% trigger.",
+      "monitoring": "monthly allocation audit"
+    }
+  },
+
+  "artifacts_updated_rev3": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev3.json (현 파일)",
+    ".cache/portfolio_gap_vector v1.3 projection 작성 예정 (H_1688 편입 후)"
+  ],
+
+  "supersedes_rev2_sections": [
+    "primary_path: Hybrid Z3+H_1683 → Hybrid Z3+H_1688",
+    "sequencing: STR_1439 → H_1688 S0 → Forge S1 → Z3 편입 → H_1676/1682 S6 → PG1 일괄 → PG2 Dual-Core",
+    "consensus family cap: 35% → 45% parent cap + 6 sub_family caps",
+    "Core weight: 단기 25%, 장기 18% aspirational (rev2 55% → 25% 추가 조정)"
+  ],
+
+  "pending_monitoring_triggers": {
+    "h_1688_s0_verdict": "REQUIRED — rev3 활성화 전제",
+    "judge_pass_2": "Task #1 결과 → Task #14 PG1 초안 30분 내",
+    "forge_orthogonality_task_5": "Task #5 결과 → consensus sub_family 실증",
+    "forge_str_1679v2_role_honesty": "Task #2 결과 → core_alpha_with_overlay_dependency 재분류 판정",
+    "h_1676_h_1682_forge_s1": "Task #3/#4 결과 → Judge S6 라우팅",
+    "risk_manager_cvar_cdar": "Q-Lead 온디맨드 스폰 요청 대기 (PG2 allocation 전)"
+  },
+
+  "governor_next_actions_monitoring_phase": [
+    "Judge Pass 2 도착 → Task #14 STR_1439 Z1 PG1 초안 30분 내",
+    "H_1688 S0 verdict 도착 → rev3 PENDING 해제 + primary_path_v3 활성화",
+    "Forge Task #5 ρ 결과 → sub_family 최종 확정",
+    "Forge Task #2 결과 → STR_1679v2 role 재분류 + rev4 발행 여부",
+    "H_1676/1682 Forge S1 완료 → Judge S6 라우팅",
+    "Risk Manager 호출 타이밍: H_1688 S6 완료 직전 (Week 4 말)"
+  ]
+}
