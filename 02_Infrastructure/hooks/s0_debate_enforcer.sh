@@ -110,14 +110,22 @@ print(len(d[key]))
 }
 
 # ─── 텔레그램 발송 (백그라운드, non-blocking, 4096자 분할) ───
+# .env에서 토큰/chat_id 로드 (hardcoded 금지 — 2026-04-17 rotation 이후)
+if [ -f "$DIR/.env" ]; then
+  set -a; source "$DIR/.env" 2>/dev/null; set +a
+fi
+: "${TG_BOT_TOKEN:=}"
+: "${TG_CHAT_ID:=}"
+
 tg_notify() {
   local msg="$1"
+  [ -z "$TG_BOT_TOKEN" ] || [ -z "$TG_CHAT_ID" ] && return 0
   (
     # 4096자 제한: 길면 분할
     local len=${#msg}
     if [ "$len" -le 4000 ]; then
-      curl -s "https://api.telegram.org/botREDACTED_TELEGRAM_TOKEN_ROTATED_20260417/sendMessage" \
-        -d "chat_id=-1003850915447" \
+      curl -s "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+        -d "chat_id=${TG_CHAT_ID}" \
         -d "parse_mode=" \
         --data-urlencode "text=$msg" > /dev/null 2>&1
     else
@@ -126,12 +134,12 @@ tg_notify() {
 ...(계속)"
       local part2="(이어서)
 ${msg:3900}"
-      curl -s "https://api.telegram.org/botREDACTED_TELEGRAM_TOKEN_ROTATED_20260417/sendMessage" \
-        -d "chat_id=-1003850915447" -d "parse_mode=" \
+      curl -s "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+        -d "chat_id=${TG_CHAT_ID}" -d "parse_mode=" \
         --data-urlencode "text=$part1" > /dev/null 2>&1
       sleep 1
-      curl -s "https://api.telegram.org/botREDACTED_TELEGRAM_TOKEN_ROTATED_20260417/sendMessage" \
-        -d "chat_id=-1003850915447" -d "parse_mode=" \
+      curl -s "https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage" \
+        -d "chat_id=${TG_CHAT_ID}" -d "parse_mode=" \
         --data-urlencode "text=$part2" > /dev/null 2>&1
     fi
   ) &

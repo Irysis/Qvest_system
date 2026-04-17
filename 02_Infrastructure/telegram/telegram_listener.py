@@ -23,11 +23,26 @@ Quant Module Moltbot — Telegram Remote Control Listener
 import os, json, subprocess, time, re, signal, sys
 from datetime import datetime
 
-# ── Credentials ──────────────────────────────────────────────────────────────
-BOT_TOKEN   = "REDACTED_TELEGRAM_TOKEN_ROTATED_20260417"
-CHAT_ID     = "1355291682"          # 개인 DM (명령 수신용)
-CHANNEL_ID  = "-1003850915447"      # 비공개 채널 (브로드캐스트)
+# ── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ─────────────
 BASE        = "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+
+def _load_env():
+    env_path = f"{BASE}/.env"
+    if os.path.exists(env_path):
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
+
+_load_env()
+BOT_TOKEN   = os.environ.get("TG_BOT_TOKEN", "")
+CHAT_ID     = os.environ.get("TG_PERSONAL_CHAT_ID", "1355291682")
+CHANNEL_ID  = os.environ.get("TG_CHAT_ID", "")
+if not BOT_TOKEN or not CHANNEL_ID:
+    raise SystemExit("[telegram_listener] TG_BOT_TOKEN / TG_CHAT_ID 미설정. .env 확인.")
 STRAT_DIR   = f"{BASE}/04_Research/strategies"
 REGISTRY    = f"{BASE}/06_Registry/strategy_registry.json"
 POLL_SECS   = 3

@@ -20,10 +20,37 @@
 suppressPackageStartupMessages(library(httr))
 suppressPackageStartupMessages(library(jsonlite))
 
-# ─── Credentials ─────────────────────────────────────────────────────────────
-.TG_TOKEN      <- "REDACTED_TELEGRAM_TOKEN_ROTATED_20260417"
-.TG_CHAT_ID    <- "-1003850915447"  # 비공개 채널 (전략 브리핑 채널)
-.TG_PERSONAL   <- "1355291682"      # 개인 DM (긴급 알림용 fallback)
+# ─── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ───────────
+.tg_load_env <- function() {
+  candidates <- c(
+    "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot/.env",
+    Sys.getenv("QVEST_PROJECT_DIR", ""),
+    getwd()
+  )
+  for (p in candidates) {
+    env_path <- if (file.exists(p)) p else file.path(p, ".env")
+    if (file.exists(env_path)) {
+      lines <- readLines(env_path, warn = FALSE)
+      for (ln in lines) {
+        ln <- trimws(ln)
+        if (!nzchar(ln) || startsWith(ln, "#") || !grepl("=", ln, fixed = TRUE)) next
+        kv <- strsplit(ln, "=", fixed = TRUE)[[1]]
+        if (length(kv) >= 2 && !nzchar(Sys.getenv(kv[1]))) {
+          do.call(Sys.setenv, setNames(list(paste(kv[-1], collapse = "=")), kv[1]))
+        }
+      }
+      break
+    }
+  }
+}
+.tg_load_env()
+
+.TG_TOKEN      <- Sys.getenv("TG_BOT_TOKEN", "")
+.TG_CHAT_ID    <- Sys.getenv("TG_CHAT_ID", "")  # 비공개 채널 (전략 브리핑 채널)
+.TG_PERSONAL   <- Sys.getenv("TG_PERSONAL_CHAT_ID", "1355291682")   # 개인 DM fallback
+if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
+  warning("[telegram_notify] TG_BOT_TOKEN / TG_CHAT_ID 미설정. .env 확인.")
+}
 .TG_BASE       <- sprintf("https://api.telegram.org/bot%s", .TG_TOKEN)
 .TG_API        <- paste0(.TG_BASE, "/sendMessage")
 
