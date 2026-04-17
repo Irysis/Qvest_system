@@ -1,0 +1,111 @@
+{
+  "hypothesis_id": "H_1676",
+  "hypothesis_name": "Residual Consensus Revision Breadth (Orthogonal PEAD)",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 61,
+  "threshold_rule": "60 이상 75 미만 APPROVE_CONDITIONAL. RM/Quant 각 13점으로 특수 REJECT 규칙(≤4) 미적용.",
+  "verdict_timestamp": "2026-04-17T16:10:00",
+  "designer": "Scout",
+  "transcript_source": "stage_artifacts/s0_debate_transcript_H_1676.json",
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "entries": [
+          {"role": "risk_manager", "score": 14, "summary": "C13 stress ICIR 0.829 defensive 긍정 vs market beta 직교화 누락"},
+          {"role": "governor", "score": 14, "summary": "role 라벨 모순 core_alpha vs Diversifier + family saturation + marginal SR 0.2 gap 25%만 해소"},
+          {"role": "quant", "score": 15, "summary": "Factor DB 접근+OLS PIT 준수 실현성 있음 vs R12 자체 alpha 잔차화 편향"},
+          {"role": "academic", "score": 13, "summary": "인용 5편 top-tier PEAD 정합 vs STR_1537 Grade F 전례 lesson_check 미반영"},
+          {"role": "codex_critic", "score": 11, "summary": "single-month OLS orthogonality 보장 미검증 + analyst snapshot PIT 명세 없음 + KOSDAQ drought 위험"}
+        ]
+      },
+      {
+        "round": 2,
+        "entries": [
+          {"role": "risk_manager", "r1": 14, "final": 13, "delta": -1, "reason": "Academic STR_1537 + Codex OLS 불안정성이 R1 beta 직교화 concern 강화"},
+          {"role": "governor", "r1": 14, "final": 13, "delta": -1, "reason": "RM market beta + Academic STR_1537 누적 악재 → marginal 추가 하향"},
+          {"role": "quant", "r1": 15, "final": 13, "delta": -2, "reason": "Codex PIT snapshot 미입증이 결정적 — statistical power 논거는 PIT 무결성 증명 아님"},
+          {"role": "academic", "r1": 13, "final": 12, "delta": -1, "reason": "Quant R12 편향이 본인 time-decay concern과 residual 품질 훼손 루트 공유"},
+          {"role": "codex_critic", "r1": 11, "final": 10, "delta": -1, "reason": "Academic/RM/Governor 3인 논점이 R1 low score 강화"}
+        ]
+      }
+    ]
+  },
+  "final_scores": {
+    "codex_critic": {"r1": 11, "final": 10, "delta": -1},
+    "risk_manager": {"r1": 14, "final": 13, "delta": -1},
+    "governor": {"r1": 14, "final": 13, "delta": -1},
+    "quant": {"r1": 15, "final": 13, "delta": -2},
+    "academic": {"r1": 13, "final": 12, "delta": -1}
+  },
+  "consensus_points": [
+    "STR_1537 Grade F (SR 0.590, MDD 59.1%) 전례가 동일 C13 base에서 portfolio-level alpha 전환 실패의 직접 증거이며 lesson_check 반영 필수 (Academic/RM/Governor/Codex 4인 동의, Quant는 multi-factor 희석 원인 가능성 반박 후 lesson_check 보완만 수용)",
+    "expected_role을 core_alpha에서 diversifier로 정정 필요 (Governor 제기, RM/Codex 동의) — 설계 목적이 잔차화로 앵커와 rho 0.2 미만 달성이므로 RoleBias와 일관성 확보",
+    "Size/IdioVol 잔차화만으로는 Long-only 20종목 portfolio의 CAPM market beta 노출 해소 불가 (RM/Codex 동의, Quant 일부 수용하며 S5 mutation 처리 권고) — S1에서 portfolio beta 측정 + S5 mutation slate에 M01_CAPM_Beta 잔차화 variant 사전 등록 필요",
+    "R12_IdioVol이 자체 alpha 신호(icir 0.582)이므로 잔차화 인자로 사용 시 C13_resid IC 편향 가능 (Quant 제기, Academic 동의) — S2 rolling IC 분석으로 R12 alpha 방향 독립성 확인 필수",
+    "Vendor analyst revision/consensus 필드의 as-of snapshot과 release-time lag 명세 없이 C13 signal을 사용하면 PIT C14 위반 가능 (Codex 제기, Quant major 수용) — S1 실행 전 Factor DB C13 필드 PIT 증빙 선행 요구"
+  ],
+  "unresolved_disputes": [
+    "Single-month OLS를 유지할지 robust (Huber/WLS + winsorization) 으로 교체할지 (Codex 교체 주장 vs Quant OLS statistical power 충분 주장) — S1 구현 시 양쪽 test 후 잔차 안정성 비교로 판정",
+    "C13 stress ICIR 0.829 crisis_ratio 1.75가 구조적 defensive 증거인지 9개월 short window episode-specific 효과인지 (RM 긍정 vs Codex 회의) — S2 long rolling IC로 regime stability 검증",
+    "잔차화가 alpha-carrying regressor (R12) 사용으로 학술적 원죄인지 Fama-MacBeth residual (Lewellen 2015) 표준 practice인지 (Academic 우려 vs Governor 표준 옹호) — S3에서 portfolio-level 독립성 실측으로 효용 판정"
+  ],
+  "conditions_for_s1": [
+    "s0_record revision 완료 (Scout가 이미 반영): expected_role을 diversifier로 정정, RoleBias_Diversifier와 일관성 확보",
+    "s0_record lesson_check에 STR_1537_revision_breadth_tp_mom Grade F 전례 추가 + H_1676의 구조적 차이점(단일 signal+잔차화 vs multi-factor+TP_Mom blend) 명시 해명",
+    "s1_gate_criteria에 market_beta_gate 신설: S1에서 portfolio CAPM beta 측정, |β|<0.15 미달 시 S5 mutation slate에 M01_CAPM_Beta 잔차화 variant 사전 등록",
+    "s1_gate_criteria에 s2_gate_r12_stability 신설: rolling 3Y 잔차 ICIR drift 30% 미만, 불안정 시 D01 raw 또는 historical std로 대체",
+    "S1 구현 전 Factor DB C13 필드의 PIT 증빙 (Usable_Date 생성 로직 + as-of snapshot 정책) 문서화 — data engineering 확인 선행",
+    "S5 mutation slate 사전 등록: (a) DD 8/22 overlay 재도입, (b) factor risk management weight scaling (Barroso Santa-Clara 2015), (c) STR_1679 sleeve 분리 조합",
+    "S3 orthogonality에서 vs STR_1679 portfolio-level rho 실측 + total/market-beta/residual 3분해 보고 + rho 0.2 이상 시 diversifier role 재검토"
+  ],
+  "debaters": [
+    {
+      "agent_id": "codex_critic_r2_h1676",
+      "role": "codex_critic",
+      "score": 10,
+      "findings": "Single-month OLS로 durable orthogonality 보장의 핵심 가정이 미검증이며 PIT snapshot 명세와 CAPM beta 중립화가 동시 필요. Academic/RM/Governor 3인 논점이 R1 low score를 강화."
+    },
+    {
+      "agent_id": "rm_r2_h1676@research-v7",
+      "role": "risk_manager",
+      "score": 13,
+      "findings": "C13 stress ICIR 0.829 defensive 구조는 긍정적이나 market beta 직교화 미설계로 STR_1679 상관 0.2 이상 구조적 위험. Academic STR_1537 전례와 Codex OLS 불안정성이 R1 concern 강화."
+    },
+    {
+      "agent_id": "gov_r2_h1676@research-v7",
+      "role": "governor",
+      "score": 13,
+      "findings": "Role 라벨 모순 정정 필요 + family saturation + marginal SR 0.2 수준 gap 25%만 해소. role admission 관점에서 market beta 누락과 STR_1537 전례 누적 악재로 추가 하향."
+    },
+    {
+      "agent_id": "quant_r2_h1676@research-v7",
+      "role": "quant",
+      "score": 13,
+      "findings": "Factor DB 접근과 OLS 구현 가능성 강하나 R12 자체 alpha 편향 우려 + Codex analyst snapshot PIT 미입증으로 IC 추정 자체 오염 가능. PIT 무결성이 statistical power 문제보다 결정적."
+    },
+    {
+      "agent_id": "acad_r2_h1676@research-v7",
+      "role": "academic",
+      "score": 12,
+      "findings": "인용 5편 top-tier PEAD 정합 강하나 STR_1537 Grade F 선행 실패 lesson_check 미반영이 Korea evidence 축 결정적 약점. Quant R12 편향이 time-decay concern과 residual 품질 훼손 루트 공유."
+    }
+  ],
+  "routing": {
+    "next_stage": "S1",
+    "owner": "Forge",
+    "inbox_path": "qepm/mailbox/forge/inbox/TODO_S1_H_1676_residual_consensus_revision.json",
+    "conditions_applied": "위 conditions_for_s1 7건 반영 필수 — Scout revision 완료된 s0_record v2 기준 구현. Judge가 S6 진입 시 해당 조건 수행 검증.",
+    "strategy_id_hint": "STR_1682 (다음 순번) 또는 Forge가 할당"
+  },
+  "meta": {
+    "r1_complete_at": "2026-04-17T15:59:00",
+    "r2_complete_at": "2026-04-17T16:07:47",
+    "verdict_at": "2026-04-17T16:10:00",
+    "r3_skipped": true,
+    "r3_skip_reason": "전원 |R2 delta| <= 4 (최대 Quant -2) → R3_NEEDED 조건 미충족 → VERDICT_READY 전이",
+    "codex_r2_verify_path": "stage_artifacts/r2_codex_verdict_H_1676.json",
+    "scout_revision_ready": true,
+    "scout_revision_path": "stage_artifacts/s0_record_H_1676_residual_revision.json (revision_note 포함, R1 4쟁점 3건 선제 반영)"
+  }
+}
