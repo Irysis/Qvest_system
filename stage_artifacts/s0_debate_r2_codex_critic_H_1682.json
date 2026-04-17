@@ -1,0 +1,31 @@
+{
+  "role": "codex_critic",
+  "r1_score": 10,
+  "r2_score": 10,
+  "score_changed": false,
+  "score_change_reason": "",
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "R16_Calmar의 월간(since-inception MDD) vs 일간(252d rolling MDD) 이중 정의는 구현-정의 불일치로 백테스트/라이브 괴리를 만들 수 있는 kill-level 리스크라는 지적에 동의한다."
+    },
+    {
+      "with": "quant",
+      "point": "R16 crisis_ratio 0.98로 '위기 특화 방어축' 정체성이 약하다는 지적에 동의한다. 이는 내 role-robustness 우려와 일치한다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Q24 배제와 0.6/0.4 고정을 'empirical-first 정합'으로 긍정한 평가는 과도하다. stress_icir/stress_pct_pos 같은 full-sample 진단치 기반 의사결정은 사전등록·walk-forward 증빙 없으면 ex-post 튜닝 위험이 남는다.",
+      "severity": "major"
+    },
+    {
+      "against": "quant",
+      "point": "Q25-R16의 평균 상관 0.08만으로 분산효과를 확정할 수 없다. 스트레스 구간의 tail dependence와 상태전이 베타 동조가 핵심이며, 평균 상관치는 그 붕괴 위험을 가리지 못한다.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "quant의 'load_month_factors 경유 데이터 가용성(NA 0.0)과 sig_date 기반 Usable_Date 필터 내장 확인'은 내 PIT/실행가능성 우려를 가장 직접적으로 약화시키는 반론이다.",
+  "kill_scenarios_update": "신규: R16 정의 불일치(월간 since-inception MDD vs 일간 252d rolling MDD)로 연구-실행 괴리 및 survivorship-length bias가 발생해 라이브 성과가 구조적으로 붕괴할 수 있음; stress_pct_pos 1.00은 Z-score 정렬/기계적 아티팩트 여부 검증 전 신뢰 불가."
+}

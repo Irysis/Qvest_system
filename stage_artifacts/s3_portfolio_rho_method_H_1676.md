@@ -1,11 +1,26 @@
 # H_1676 S3 Portfolio-Level ρ 측정 방법 — Scout 사전 설계
 
+**버전**: v2 (2026-04-17, STR_1679v2 Primary 기준점 반영)
+
 ## 배경
 
 H_1676 VERDICT conditions_for_s1[7]:
 > S3 orthogonality에서 vs STR_1679 portfolio-level rho 실측 + total/market-beta/residual 3분해 보고 + rho 0.2 이상 시 diversifier role 재검토
 
 기존 `compute_factor_orthogonality()` (factor_research_pipeline.R:48) = **factor-level** Spearman 상관. Portfolio-level ρ는 별도 측정.
+
+## Reference Strategy 확정 (v2 업데이트)
+
+**기준점: STR_1679v2 Primary (HRP + DD overlay) — Grade A 77.1**
+- sim_result.rds 경로: `04_Research/strategies/STR_1679_score_blend/sim_result.rds`
+- performance.json의 `primary_overlay` 섹션 데이터
+- SR 1.266, CAGR 24.71%, MDD -29.06%, Sortino 1.82, Calmar 0.85
+- Role: diversifier (Judge Gate 0-6 audit in progress, Task #14)
+- S5 mutation record: `stage_artifacts/s5_mutation_record_STR_1679v2.json`
+
+Base HRP (no overlay) / EW base는 Grade C Hard Fail (baseline 참조용만, S3 기준점 아님).
+
+**중요 Known Issue**: run_all.R이 3 variant 동시 측정. `sim_result.rds` 저장 시 primary variant daily returns가 저장되었는지 Forge 확인 필요. 현재 run_log에서 tail_risk [WARN] 'daily_returns/NAV 필드 없음' 경고 상태. S3 실행 전 Forge에 sim 객체에 DAILY_NAV_DT 또는 daily NAV 포함 여부 확인 요청 필수.
 
 ## 포트폴리오 레벨 ρ 측정 3분해 방법
 
@@ -17,7 +32,7 @@ sim_h1676 <- readRDS("04_Research/strategies/STR_1682_H_1676_residual/sim_result
 ret_h1676 <- as.numeric(sim_h1676$strategy_xts)
 dates_h1676 <- as.Date(index(sim_h1676$strategy_xts))
 
-# STR_1679 (D안 재설계 후) sim_result.rds
+# STR_1679v2 Primary (HRP+DD overlay, Grade A 77.1) sim_result.rds
 sim_1679 <- readRDS("04_Research/strategies/STR_1679_score_blend/sim_result.rds")
 ret_1679 <- as.numeric(sim_1679$strategy_xts)
 dates_1679 <- as.Date(index(sim_1679$strategy_xts))
