@@ -31,6 +31,8 @@ REQUIRED_HOOKS=(
   "task_complete_guard.sh"
   "axiom_enforcement_hook.sh"
   "harness_health.sh"
+  "auto_commit_on_stop.sh"
+  "milestone_commit.sh"
 )
 
 for HOOK in "${REQUIRED_HOOKS[@]}"; do
