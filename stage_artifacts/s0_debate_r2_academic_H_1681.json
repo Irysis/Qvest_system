@@ -1,0 +1,34 @@
+{
+  "role": "academic",
+  "hypothesis_id": "H_1681",
+  "round": 2,
+  "r1_score": 14,
+  "r2_score": 12,
+  "score_changed": true,
+  "score_change_reason": "R1 제기한 두 핵심 학술 우려 — (1) cross-family 독립성 주장의 논리적 공백(tail-risk·Q07 모두 distress proxy 가능성), (2) Q07 60% 가중의 학술적 미정당화 — 가 R1 내 다른 agent들의 정량 실측으로 강하게 뒷받침되면서 오히려 가중되었다. Quant의 D47-D48 0.925 / D47-D45 0.933 실측은 '3-factor tail-risk composite' 설계 자체가 Acerbi·Tasche·Rockafellar 다측면 tail measure 이론과 한국 데이터에서 정합하지 않음을 보여주며(사실상 1-factor redundancy), Risk Manager의 crisis_ratio 실측(D47 0.958, D48 0.911, D45 0.916, Q07 1.04)은 price-based tail이 위기 시 약화되고 accounting-based Q07만 유지됨을 시사해 'distress risk 공통 채널' 우려가 경험적으로 관측된다. 학술적으로 'mechanism independence'가 empirical co-movement로 부정되는 전형. 인용 형식·Dichev-Tang·Kelly-Jiang·Acerbi-Tasche 실질 기여 3점은 유지, mechanism_align·korea_evidence 감점 심화로 14→12.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "R1의 'Bollerslev aggregate VRP vs cross-section 방향성 불일치' + 'Bali MAX lottery vs D45 좌측 하방 방향성 불일치' 학술 비판이 Quant의 D47-D48-D45 실측 상관 0.87~0.93과 결합되면 치명적이다. 'tail-risk는 다면적이라 CVaR/VaR/Downside_Dev 3측면이 보완적'이라는 Acerbi-Tasche 2002, Rockafellar-Uryasev 2000 이론은 성립 가능하지만, 한국시장 실측에서 세 측정치가 사실상 동일 잠재변수의 선형변환임이 확인된 이상 'tail-risk 3F composite'는 학술 근거와 데이터 모두에서 지지되지 않는다. Quant 권고대로 D47 단독 또는 D47+D45 2F로 축소 시 'Q07 60/tail 40'의 40% bucket이 D47 단일 factor 40%가 되어 L-013(CVaR standalone MDD 52.7% Hard Fail) 재현 위험이 직접 복원된다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "Risk Manager crisis_ratio 실측(D47 0.958, D48 0.911, D45 0.916 vs Q07 1.04)은 R1에서 제기한 '두 측정치가 공통 distress risk proxy일 수 있다'는 우려를 정량적으로 뒷받침한다. 학술 해석: Campbell-Hilscher-Szilagyi 2008 JF distress risk anomaly, Vassalou-Xing 2004 JF default risk 문헌에서 fundamental distress 신호(재무)와 price-based distress 신호(수익률 변동성/tail)는 '상관은 있으나 위기 구간에서 회계 기반이 가격 기반보다 안정적'이라고 보고된다. D47/D48/D45 crisis_ratio < 1.0은 price-based tail이 위기 시 noise로 변질(flight-to-quality 과정에서 대형우량주도 급락)되는 전형 패턴이며, Q07 1.04는 회계 기반 distress signal의 상대 안정성을 보여준다. 'tail 40%'는 '독립 채널 보완'이 아니라 '동일 채널 저신뢰 버전 다중 투입'이다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "Codex의 '40/60 walk-forward 미검증' + 'Q07 60% concentration + L-112 재활용 메커니즘 미입증'은 본인 R1의 'Q07 60% 가중 학술적 미정당화(Dichev-Tang 가중 처방 없음)' + 'Bollerslev 시계열 논문의 cross-section 방향성 불일치'와 결을 같이 한다. 학술적으로 composite weight는 (1) 이론 기반(Sharpe max, max diversification), (2) 실증 기반(IC-weighted, risk-parity), (3) 선험 균등(equal-weight) 중 하나로 정당화되어야 하는데 H_1681 60/40은 세 경로 모두 제시하지 않았다. Q07 ICIR 0.929 > tail 평균 0.435이므로 IC-weighted라면 Q07 68/tail 32, risk-parity라면 Q07 variance 낮아 Q07 비중 더 상승 — 60/40은 어느 원칙도 만족하지 않는 임의값. Scout가 S1 parallel에서 50/50, 68/32 IC-weighted, Q07-standalone 3 baseline 측정 없으면 60/40이 full-sample 관측 튜닝이라는 Codex 의심을 학술적으로 반박 불가."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Governor score 15(role_match 3.5, marginal_contribution 3)는 학술 기준에서 과대평가다. role_match 3.5/4는 'expected_role=defense 선언 + AX-001 3조건 명시'에 부여되었으나, R1의 '한국시장 tail-risk + earnings stability composite 실증 논문 0건'과 Risk Manager의 'tail 3F crisis_ratio 모두 1.0 미만'을 결합하면 '설계상 defense 선언'과 '경험적 defense 기능' 사이에 큰 gap이 있다. 학술적으로 role honesty는 사전 선언이 아니라 위기 구간 IC 증폭(crisis_ratio > 1.0)으로 검증되어야 하며(Asness-Frazzini-Pedersen 2019 QMJ, Frazzini-Pedersen 2014 BAB), tail 3F가 이 기준 미충족 상태에서 role_match 3.5 부여는 '선언된 역할'과 '검증된 역할'을 혼동하는 오류다. Governor 4 conditions는 필요하나 불충분 — 다섯 번째 조건 'S1 pre-gate: tail 3F composite crisis_ratio > 1.0 입증 실패 시 H_1681 구조 폐기'를 추가해야 mechanism-first 원칙에 부합."
+    },
+    {
+      "against": "governor",
+      "point": "Governor bucket_alignment 3.5/4의 'Defense sleeve 공석 = 최우선 gap' 전제는 portfolio 진단상 타당하나, 학술적으로 '공석을 채우는 것'과 '검증된 defense factor로 채우는 것'은 다르다. tail 3F + Q07 composite가 L-013(CVaR Hard Fail) + L-112(Q07 standalone Hard Fail) + L-103(R01+Q01 alpha decay)의 재현이면 '공석 최초 채움'이 아니라 '실패 defense 후보 4번째 추가'다. Governor는 Scout의 'AX-005 완전 회피 + novelty'에 가점 주었으나(gap_alignment 3.5), 학술 기준에서 axiom 회피는 필요조건이지 충분조건이 아니며 novelty는 그 자체로 검증 대체물이 될 수 없다(Harvey-Liu-Zhu 2016 'and the cross-section of expected returns' 다중검정 경고). gap_alignment는 3.5가 아니라 2.5~3.0이 적절, S1 실증 전까지는 '후보 중 하나'로만 판단해야."
+    }
+  ],
+  "strongest_opposing_argument": "H_1681의 가장 치명적 학술 결함은 'cross-family orthogonality' 주장이 R1 3건의 정량 실측으로 경험적으로 부정되었다는 점이다: (1) Quant D47-D48 0.925 / D47-D45 0.933 — tail 3F 내부 redundancy 극단적, Acerbi-Tasche-Rockafellar '다측면 tail measure' 이론이 한국 데이터에서 소멸, (2) RM crisis_ratio D47 0.958 / D48 0.911 / D45 0.916 vs Q07 1.04 — price-based tail은 위기 시 noise로 변질, accounting Q07만 유지, (3) D47-Q07 0.069 '낮은 팩터 상관'은 L-118-ext(단면 3%인데 포트폴리오 0.78) 전례상 beta 지배로 portfolio-level에서 재현 개연성 강함. 종합하면 H_1681은 학술적으로 'two independent channels'가 아니라 'one high-reliability accounting signal(Q07) + one low-reliability noisy replica of the same underlying distress risk(tail 3F → D47 1F)'이며 Campbell-Hilscher-Szilagyi 2008 distress risk anomaly 한국 재현에 불과하다. Cross-family composite로 AX-005 회피 + Defense 공석 채움이라는 핵심 주장은 공리 회피에는 성공하나 경제적 실체에서는 Q07 standalone + noise 40%에 수렴하며 L-112(MDD 62.7%) + L-103(decay) 재현 확률이 Governor/RM 추정보다 높다. Repair 경로 2가지: (A) Q07 60/tail 40 폐기, Q07 + 진짜 독립 채널(liquidity, information asymmetry) 재설계, (B) tail 3F → D47 단독 + Q07 2-factor 단순화 + S1 pre-gate(crisis_ratio, FMB t>2, sub-period ICIR) 경험 검증. 현 형태 유지는 Q07 standalone Hard Fail을 'cross-family' 레토릭으로 포장한 구조로 해석될 위험."
+}

@@ -1,0 +1,84 @@
+{
+  "hypothesis_id": "H_1681",
+  "hypothesis_name": "Tail-Risk Defense Anchor (Q07 cross-family)",
+  "verdict": "REVISE",
+  "total_score": 55,
+  "threshold_rule": "40 이상 60 미만 REVISE. Codex 7/Quant 11 모두 4 초과로 특수 REJECT 규칙 미적용. 전원 |Δ|≤4로 R3 생략.",
+  "verdict_timestamp": "2026-04-17T16:30:00",
+  "designer": "Scout",
+  "transcript_source": "stage_artifacts/s0_debate_transcript_H_1681.json",
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "entries": [
+          {"role": "academic", "score": 14, "summary": "cross-family 주장 공백 — tail+stability 모두 distress proxy"},
+          {"role": "codex_critic", "score": 8, "summary": "Q07 60% concentration + L-013 재활용, PIT/walk-forward 미검증"},
+          {"role": "governor", "score": 15, "summary": "Defense 공석 해소 방향 정합하나 Q07 4건 중복 critical"},
+          {"role": "quant", "score": 13, "summary": "D47/D48/D45 실측 상관 0.87~0.93 — 3F가 1F 수준 redundancy"},
+          {"role": "risk_manager", "score": 14, "summary": "tail 3F crisis_ratio 0.91~0.96 — 실질 Q07 의존"}
+        ]
+      },
+      {
+        "round": 2,
+        "entries": [
+          {"role": "academic", "r1": 14, "final": 12, "delta": -2, "reason": "Quant 실측이 cross-family 공백을 empirical로 입증, distress proxy 중복 확인"},
+          {"role": "codex_critic", "r1": 8, "final": 7, "delta": -1, "reason": "R2에서 downside evidence 강화 — tail 3F redundancy + crisis_ratio + Q07 saturation 삼중 입증"},
+          {"role": "governor", "r1": 15, "final": 13, "delta": -2, "reason": "Quant/Codex 실측으로 본인의 Q07 concentration 경고 empirical 입증, marginal contribution 재평가"},
+          {"role": "quant", "r1": 13, "final": 11, "delta": -2, "reason": "본인 실측 상관이 다른 4인 concern의 뼈대가 되었음에도 score 잔류 정합성 위해 하향"},
+          {"role": "risk_manager", "r1": 14, "final": 12, "delta": -2, "reason": "Codex의 L-013 재활용 + Quant 실측 redundancy로 defense anchor 역할 회의 강화"}
+        ]
+      }
+    ]
+  },
+  "final_scores": {
+    "codex_critic": {"r1": 8, "final": 7, "delta": -1},
+    "risk_manager": {"r1": 14, "final": 12, "delta": -2},
+    "governor": {"r1": 15, "final": 13, "delta": -2},
+    "quant": {"r1": 13, "final": 11, "delta": -2},
+    "academic": {"r1": 14, "final": 12, "delta": -2}
+  },
+  "consensus_points": [
+    "Tail-risk 3-factor (D47/D48/D45) 내부 상관이 실측 0.87~0.93으로 3F composite가 사실상 1F redundancy라는 점이 Quant 실측으로 입증되었고 Academic/RM/Codex 3인이 이를 근거로 cross-family 주장의 공백을 확인했습니다",
+    "Q07 concentration이 H_1675 65% + STR_1679 D안 80% + H_1681 60% 및 H_1677 간접 의존까지 4건 파이프라인에 누적되어 portfolio-level Q07 의존성이 structural risk로 확정되었습니다",
+    "D47/D48/D45 crisis_ratio가 전부 1.0 미만(0.91~0.96)으로 위기 구간에서 tail factor IC가 오히려 약화되어 AX-001 defense 조건부 평가 기준(위기 alpha + Core 대비 MDD)을 충족하지 못합니다",
+    "Cross-family(tail-price + quality-accounting) 주장이 학술적으로 공백이며 두 측정치 모두 fundamental distress risk의 proxy로 수렴한다는 Academic 지적이 empirical 상관 구조로 뒷받침됩니다",
+    "40/60 고정 가중치가 walk-forward expanding window 또는 sub-period stability 제약 없이 full-sample 튜닝 위험을 내포하고 있어 PIT 무결성 검증이 부족합니다"
+  ],
+  "unresolved_disputes": [
+    "3F를 D47 단독 또는 D47+D45 2F로 축소하면 잔여 alpha가 보존되는지 S1 실측 전 판정 불가",
+    "Q07 비중을 35% 이하로 낮추면 Defense role 자체가 성립하는지 아니면 diversifier로 재분류해야 하는지"
+  ],
+  "revision_requirements": [
+    "Tail factor 축소: 3F(D47/D48/D45) → D47 단독 또는 D47+D45 2F로 simplify. 3F가 1F 수준 redundancy라는 실측 반영. 또는 완전히 다른 tail proxy (D11_CoVaR, D16_Max_Drawdown_Beta) 탐색",
+    "Q07 비중 하향: 60% → 35% 이하로 축소. Codex의 concentration cap 권고 수용. 35% 이하에서 Defense role 성립 가능 여부 재검토 필요",
+    "Walk-forward gating: 고정 40/60을 walk-forward expanding window 가중치 추정으로 교체. sub-period stability 제약 포함",
+    "PIT evidence: Q07의 publication timestamp + restatement 처리 + T+1 execution alignment 명세 추가",
+    "KOSPI vs KOSDAQ 성과 분리 진단: coverage-bias 중립성 증명 (Codex 조건)",
+    "Baseline 비교 사전 등록: Q07-only와 tail-only(D47 단독) 대비 turnover/cost 후 incremental 성과 입증 요구",
+    "Defense 역할 근본 재고: Q07 중심 defense 3건 중복(H_1675/STR_1679 D안/H_1681)이 structural risk이므로 Scout이 Governor 후보 B/C/D (Regime-conditional VRP/Absorption activation / Distress avoidance Ohlson-Altman / Active overlay framework) 재탐색 권장"
+  ],
+  "debaters": [
+    {"agent_id": "academic_r2_h1681@research-v7", "role": "academic", "score": 12, "findings": "Cross-family 주장이 Quant 실측 tail 3F 상관 0.9+로 empirical 공백 입증, distress proxy 중복 확인"},
+    {"agent_id": "codex_critic_r2_h1681", "role": "codex_critic", "score": 7, "findings": "R2 downside 강화 — tail 3F redundancy + crisis_ratio + Q07 saturation 삼중 입증, PIT/walk-forward 미검증 유지"},
+    {"agent_id": "gov_r2_h1681@research-v7", "role": "governor", "score": 13, "findings": "Q07 concentration empirical 입증 수용, 본인 4 conditions 중 Q07 축소 조건만으로는 부족"},
+    {"agent_id": "quant_r2_h1681@research-v7", "role": "quant", "score": 11, "findings": "본인 상관 실측이 설계 기반을 흔듦 — tail 3F composite는 1F 수준이므로 재구성 필수"},
+    {"agent_id": "rm_r2_h1681@research-v7", "role": "risk_manager", "score": 12, "findings": "L-013 재활용 + Quant redundancy로 defense anchor 역할 불충분, S5 대안 필요"}
+  ],
+  "routing": {
+    "next_stage": "S0_REVISE",
+    "owner": "Scout",
+    "action": "s0_record 재설계 — revision_requirements 7건 중 최소 핵심 3건(tail factor 축소 + Q07 하향 + walk-forward) 반영 후 재debate 또는 Governor 후보 B/C/D 재탐색",
+    "retry_budget": "REVISE 최대 3회 (CLAUDE.md 규칙)",
+    "alternative_path": "H_1677 STR_1439 v53 repair debate 선행 진행 (Defense 공석 해소 타겟 분산)"
+  },
+  "meta": {
+    "r1_complete_at": "2026-04-17T16:24:00",
+    "r2_complete_at": "2026-04-17T16:28:00",
+    "verdict_at": "2026-04-17T16:30:00",
+    "r3_skipped": true,
+    "r3_skip_reason": "전원 |R2 delta|=2 ≤ 4 → VERDICT_READY 전이",
+    "codex_r2_verify_path": "stage_artifacts/r2_codex_verdict_H_1681.json",
+    "empirical_warning_from_scout_audit": "H_1675 감사에서 STR_1675_Q07_D29_defense Grade C CAGR 2.93% 확인됨. AX-005 supporting L-140 CAGR 2.59%와 0.34%p 차이로 Q07+D29 empirical 실패 패턴 재현 신호. STR_1679 D안 Defense sleeve 영향 주시 필요."
+  }
+}

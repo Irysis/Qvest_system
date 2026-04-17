@@ -1,0 +1,76 @@
+{
+  "l_code": "L-143",
+  "strategy_id": "STR_1675_Q07_D29_defense",
+  "title": "Q07+D29 Defense standalone KR CAGR 3% 미만 empirical 실패",
+  "grade": "C",
+  "core_reference": "Dichev & Tang (2009, TAR) Earnings Volatility and Earnings Predictability + Beaver, Kettler & Scholes (1970, TAR) Accounting-Determined Risk Measures + Frazzini & Pedersen (2014, JFE) Betting Against Beta (AX-005 supporting 원전)",
+  "lesson_text": "Q07_Earnings_Stability(65% anchor) + D29_Accounting_Beta(35% secondary) composite 30종목 long-only standalone defense는 한국시장에서 Grade C empirical failure. SR 0.655, CAGR 2.93%, MDD -11.94%. 방어력 측면 MDD 11.94%는 양호하나 CAGR 2.93%로 인플레이션(3%)+무위험(2%)=5% 최소 기회비용도 미달. AX-005 supporting L-140 (STR_1662 Q07+D25 CAGR 2.59%)와 CAGR 차이 0.34%p로 통계적 구별 불가 — D29와 D25가 기술적으로 다른 construction type이나 empirical 결과는 동일 패턴. H_1675 s0_record S0 Debate 74점 REVISE 후 Q07+D29로 설계 개선했음에도 CAGR 문제 미해결. Defense 역할을 Q07+Accounting Beta 계열(D25/D29 포함)로 설계 시 기회비용 과대 위험 구조적. 향후 Defense 설계 시 (1) Q07 + 비-Accounting Beta 계열 (예: tail-risk D47_CVaR, D48_VaR) cross-family composite 또는 (2) regime-conditional activation (정상 시 defense weight 최소화, 위기 시만 강화)로 drag 해소 필수.",
+  "empirical_evidence": {
+    "strategy_id": "STR_1675_Q07_D29_defense",
+    "grade": "C",
+    "hard_fail": false,
+    "sharpe": 0.655,
+    "cagr": 0.0293,
+    "mdd": -0.1194,
+    "source": "04_Research/strategies/STR_1675_Q07_D29_defense/output/hurdle_result.json",
+    "audit_date": "2026-04-17"
+  },
+  "comparison_with_AX005_supporting": {
+    "AX005_supporting_L_140": {
+      "strategy_id": "STR_1662_defense_D25_Q07",
+      "cagr": 0.0259,
+      "mdd": -0.102,
+      "note": "AX-005 supporting L-code, Q07+D25 combo 명시 scope IN"
+    },
+    "AX005_supporting_L_136": {
+      "strategy_id": "STR_1642_lowbeta_3f",
+      "construction": "BAB (Frazzini-Pedersen 2014)",
+      "note": "AX-005 supporting L-code"
+    },
+    "L143_new_evidence": {
+      "strategy_id": "STR_1675_Q07_D29_defense",
+      "cagr": 0.0293,
+      "mdd": -0.1194,
+      "note": "D29 used (D25 not used, technically AX-005 scope OUT). Empirical pattern matches L-140 (CAGR 0.34%p difference)."
+    },
+    "effect_direction_consistency": 1,
+    "interpretation": "Technical scope 상 D29는 AX-005 scope OUT (D25 명시). Empirical pattern은 L-140과 동일 실패 — defense drag CAGR 인플레이션 미달. AX-005 quarterly review (next_review 2026-07-16) 시 scope 확장 검토 후보."
+  },
+  "mechanism_diagnosis": {
+    "why_fail": [
+      "Q07 정상구간 alpha low (normal regime ICIR 0.776, 4r CRISIS 0.413 gap이 평시 drag)",
+      "D29 전기간 ICIR 0.109로 평시 alpha 거의 없음 — 위기에만 활성화 되는 factor를 정적 35% 할당",
+      "Q07+D29 정적 blend 구조가 L-119 패턴 재현 (정적 EW 팩터 블렌드 alpha 희석)",
+      "H_1675 revise_conditions_applied에 조건부 활성화 명시되었으나 STR_1675_Q07_D29_defense variant는 standalone 정적 구조로 구현 — conditional activation 미적용"
+    ],
+    "why_AX005_scope_technical_out": [
+      "AX-005 scope construction_types에 Q07_D25_combo 명시, D29는 포함 안 됨",
+      "D25 = full Accounting Beta (Frazzini-Pedersen 2014 BAB 원형 근접)",
+      "D29 = Accounting Beta subset 또는 stability-adjusted variant",
+      "기술적으로 다른 construction type이므로 AX-005 scope OUT 판정 정합"
+    ]
+  },
+  "tags": [
+    "DEFENSE_LOW_CAGR",
+    "Q07_D29_COMBO",
+    "POTENTIAL_AX005_EXTENSION",
+    "OPPORTUNITY_COST_EXCESSIVE",
+    "STATIC_BLEND_DILUTION",
+    "EMPIRICAL_PATTERN_MATCH_L140"
+  ],
+  "future_axiom_review": {
+    "target_axiom": "AX-005",
+    "next_review_date": "2026-07-16",
+    "proposed_scope_extension": "construction_types에 Q07_AccountingBeta_combo 추가 (D25/D29 모두 포함) 또는 Defense_StaticBlend_CAGR_below_inflation 정책 신설",
+    "supporting_l_codes_if_promoted": ["L-136", "L-140", "L-143"]
+  },
+  "recommendations": [
+    "향후 Defense 설계 시 Q07 + tail-risk (D47/D48/D45) cross-family composite 우선 (H_1681 패턴)",
+    "Q07 + Accounting Beta 계열 (D25/D29) combo는 standalone long-only 정적 구조 회피",
+    "Q07 anchor 사용 필수 시 regime-conditional activation 필수 (H_1675 원안 조건부 활성화 재실험 권고)",
+    "Defense CAGR 최소 5% 이상 (인플레이션+무위험) 기준 gate 도입 고려"
+  ],
+  "created_at": "2026-04-17",
+  "created_by": "Scout",
+  "q_lead_directive": "STR_1679 D안 실측 결과 + H_1675 audit 결과를 empirical evidence로 인수 (teammate team-lead 2026-04-17 지시)"
+}

@@ -1,0 +1,75 @@
+{
+  "role": "quant",
+  "agent_id": "quant",
+  "hypothesis_id": "H_1681",
+  "round": "R2",
+  "timestamp": "2026-04-17T17:00:00",
+  "r1_score": 13,
+  "r2_score": 11,
+  "score_changed": true,
+  "score_change_reason": "RM의 crisis_ratio 0.91~0.96 실측이 내 R1 상관 과중복 우려를 구조적으로 더 깊이 확증함. tail 3F는 단순 중복 이상으로 위기 시 IC 약화 구조이며, 이는 Q07 anchor 단독 의존을 사실상 강제함. 즉 설계 라벨과 실제 동작이 다름. Codex의 8점은 다소 가혹하지만 방향은 타당. Academic의 distress proxy 공통성 지적은 내 상관 분석과 함께 cross-family 독립성 주장의 근본 약점을 노출시킴. 단, PIT 및 데이터 구조 자체가 심각한 결함은 아니고 R1 조건부 패스 항목들은 유지되므로 -2점으로 제한.",
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "D47/D48/D45 crisis_ratio 0.91~0.96 전수 미만 — Q07 단독 의존 구조 확증",
+      "quant_view": "RM의 crisis_ratio 수치는 내 R1 우려를 정확히 뒷받침하는 독립 실측이다. 내가 R1에서 'Z_tail 3F = 1.1~1.3 유효팩터'로 표현한 정보 중복을, RM은 '위기 시 IC 약화' 각도에서 재확인했다. 두 방향을 합치면 Z_tail composite는 (a) 정보 내용이 D47 1개 수준이고 (b) 그 D47조차 위기 구간에서 방어력이 평시 대비 약화된다는 결론이 된다. 가설의 핵심 설계 전제 — tail 3F가 Q07의 위기 방어력을 보완한다 — 는 사전 데이터로 이미 기각에 가깝다. RM과 나의 실증이 합류한 가장 강력한 agreement다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "40/60 고정 가중치 walk-forward 미검증",
+      "quant_view": "s0_record이 '4-factor composite 예상 ICIR 0.5~0.7 (factor 간 상관 낮다고 가정)'이라고 명시했는데, D47-D48 실측 0.925는 그 가정 자체가 성립하지 않음을 보여준다. 상관 낮다 가정→composite ICIR 향상→60/40 가중 합리화 논리가 첫 전제에서 붕괴된다. Codex가 '40/60 walk-forward 미검증'을 지적한 것은, 단순히 미검증이 아니라 이미 반증된 가정 위에 세워진 가중치라는 점에서 더 심각하다."
+    },
+    {
+      "with": "academic",
+      "point": "D47/D48/D45와 Q07이 공통으로 distress proxy일 가능성 (Campbell·Hilscher·Szilagyi 2008 계열)",
+      "quant_view": "Q07-tail 평균 상관 0.065(내 R1 실측)는 표면적으로 독립적이나, Academic이 지적한 distress proxy 공통성 문제는 상관계수가 아닌 공통 exposure의 문제다. 두 채널이 factor level에서 서로 낮은 선형 상관이어도 distress 이벤트(도산, 금융위기)에 공통 노출이 있다면 tail event 동시 발동 가능성은 선형 상관보다 훨씬 높다. copula dependency 관점에서 tail dependence coefficient(λ_U, λ_L)가 선형 상관보다 적절한 측정이며, 내 R1에서 이를 측정하지 않은 점은 약점이다. Academic의 우려를 '정량화 가능한 반증 가설'로 전환: S1에서 D47-Q07의 tail dependence 측정이 필요하다."
+    },
+    {
+      "with": "governor",
+      "point": "Q07 중복 4건 동시 admission 시 portfolio Herfindahl 급등 위험",
+      "quant_view": "Governor의 portfolio-level concentration 우려는 팩터 수준 분석과 완전히 독립적인 차원의 리스크다. 내가 'D47-Q07 상관 0.069'를 제시해도, 포트폴리오 레벨에서 Q07 중복 노출이 있다면 factor 수준 독립성이 의미 없어진다(L-118-ext 교훈). Governor 지적의 핵심은 H_1681 단독 분석이 아닌 portfolio context이며, quant 관점에서도 동의한다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "극저 점수(8/20) — 'L-013 CVaR family 재활용, 단순 파라미터 라벨링'",
+      "rebuttal": "Codex의 핵심 비판은 'D47/D48/D45가 L-013 CVaR Hard Fail MDD 52.7% family를 재활용한다'이다. 이는 사실 관계를 오해한 것이다. L-013은 R03_CVaR95 standalone (R_* risk family) 실패다. H_1681의 D47/D48/D45는 D_* defense family — 팩터 DB에서 별도 category로 분류됨. R03(risk family, 월간 CVaR z-score 집계) vs D47(defense family, 일간 return distribution tail percentile)는 구성 방식이 다르다. 단, 'CVaR-like 메커니즘이라는 점에서 유사한 경제적 실패 경로를 가질 수 있다'는 방향은 타당하며, 이 부분에는 동의(agreements에 포함). 점수 8이 '재활용 라벨링'이라는 전제에서 도출되었다면, 전제가 부분 수정되어야 한다. 다만 walk-forward 미검증 및 concentration 비판은 유효하므로 8점이 '정당화 불가'하지는 않다. Codex의 점수는 가혹하지만 방향은 올바르다는 평가를 유지한다.",
+      "verdict": "부분 반박. '재활용' 표현은 과장이나 동작 리스크 유사성 우려는 유효."
+    },
+    {
+      "against": "academic",
+      "point": "KR 실증 논문 0건 및 post-2020 time decay 미검증을 이유로 'S1 FMB t > 3.0 불확실'",
+      "rebuttal": "KR 실증 희소성은 사실이나 novelty penalty가 아니라 novelty bonus 가능성이기도 하다(Hurdle v2.2 novelty_bonus 체계). KR 선행연구 부재는 '글로벌 factor가 KR에서도 작동할 경우 최초 실증 = 강한 contribution'임을 의미한다. Academic이 제안한 Bae·Kim·Kim(2012) Korean downside risk 논문은 S0 lesson_check에 추가할 수 있는 보강 근거이다. 단, Harvey(2016) t > 3.0 기준에서 '검증되지 않은 조합'이 되는 위험은 Academic이 옳다. 방어: Q07의 stress ICIR +0.753(L-121 실증)은 KR 시장 내 실측 근거가 이미 있으며, D47 ICIR 0.447도 KR Factor DB 실증 기반이다. '논문 미인용 = 실증 없음'은 성립하지 않는다. S1이 Harvey 기준 통과 여부를 실증적으로 판단할 가장 정직한 방법이다.",
+      "verdict": "부분 반박. KR novelty = 취약성이 아닌 unknown, S1 실증으로만 해결 가능."
+    },
+    {
+      "against": "risk_manager",
+      "point": "'Q07 단독에 의존하면 L-112 MDD 62.7% standalone 실패에 수렴'",
+      "rebuttal": "RM의 결론 방향에 동의하지만 수렴 메커니즘에는 반박이 필요하다. L-112 Q07 standalone MDD 62.7%는 종목 선정이 순수하게 Q07만으로 이루어진 경우의 결과다. H_1681에서 Q07은 60% 가중이지만 tail-risk 40%와 결합된다. D47의 ic_all 0.0537은 Q07 ic_all 0.0399보다 높고, tail-risk tilt는 Q07과 다른 종목군을 선택한다(D47-Q07 상관 0.069). 즉 portfolio overlap은 100%가 아니며, 60/40 혼합 포트폴리오의 MDD가 L-112와 동일하게 나오려면 tail-risk 40% 성분이 Q07과 동일한 하락 경로를 가져야 한다. 이 전제는 검증되지 않았다. 단, D47-D48-D45 crisis_ratio 0.91~0.96이 '위기 시 추가 방어력 없음'을 의미한다는 RM의 관찰과 결합하면, tail-risk 40%가 MDD를 실질적으로 줄이지 못할 가능성은 인정한다. 결론: L-112 수렴은 과장이나 MDD 45~55% 가능성은 현실적이며 S1 실증으로 판단해야 한다.",
+      "verdict": "부분 반박. 수렴 과장이나 위기 방어력 약화 우려는 정당."
+    },
+    {
+      "against": "governor",
+      "point": "Q07 중복 4건이 '동시 REVISE + pending 상태'라는 이유만으로 PG1 최우선 차단",
+      "rebuttal": "Governor의 포트폴리오 concentration 우려는 정당하나, H_1681 단독 진행의 경우 Q07 중복은 PG1에서 one-of-four 정책으로 관리 가능하다. H_1675 REVISE가 완료되지 않은 상태에서 H_1681이 admission되어도, 두 전략이 포트폴리오에 동시 편입되지 않는 한 portfolio Herfindahl 문제는 발생하지 않는다. 문제는 'H_1681 가설 자체의 결함'이 아닌 'Governor의 admission 타이밍 관리'의 문제다. 따라서 H_1681의 REVISE/REJECT 판단 기준으로 Q07 중복을 사용하는 것은 기준 오설정이다.",
+      "verdict": "부분 반박. 가설 자체 결함이 아닌 admission 관리 문제로 구분 필요."
+    }
+  ],
+
+  "strongest_opposing_argument": "RM의 crisis_ratio 0.91~0.96 실측과 나의 tail 3F 상관 0.87~0.93 실측이 합류하는 핵심 구조 문제: tail 3F composite는 정보량 1.1~1.3 유효팩터 수준이고, 그 1개 유효팩터(D47)조차 위기 시 IC가 평시보다 감소하는 구조다(crisis_ratio < 1.0). 즉 H_1681의 설계 논리 — 'tail 3F가 Q07의 위기 방어력을 독립 채널로 보완' — 는 두 실증에 의해 사전 기각에 가깝다. 실질적으로 H_1681은 Q07 60% anchor에 noise 40%가 더해진 구조이며, 이는 L-112 Q07 standalone 실패를 60/40 희석 버전으로 재현할 가능성이 높다. Codex의 'correlated overlay' 표현이 이를 가장 정확하게 포착한다. 이 반론에 대한 가장 강력한 방어는 S1에서 실측하는 것뿐이며, 선험적 반박 논리가 없다.",
+
+  "design_revision_recommendation": {
+    "priority": "REVISE_BEFORE_S1",
+    "recommendation": "tail 3F composite를 D47 단독으로 축소하거나 D47+D45 2F로 제한. Defense_score = 0.6·Z_Q07 + 0.4·Z_D47 (2-factor). S0 설계 수정 후 S1 진행. tail 3F 3F→1F 구조 변경 이유: (1) D47-D48 상관 0.925로 D48은 D47의 noise 버전, (2) D47 crisis_ratio 0.958로 위기 방어력 약함이지만 3F 평균보다 약간 우월, (3) D45_Downside_Dev는 D47과 상관 0.933 — 독립 정보 없음.",
+    "condition_for_pass": "2-factor 구조로 수정 후 S1 실측 ICIR >= 0.40(composite), SR >= 0.65, MDD < 55%. ic_bad(Defense_score) > 0.025."
+  },
+
+  "z_score_aligned_followup": {
+    "status": "R1 미해결 이슈 — CRITICAL",
+    "detail": "R1에서 제기한 Z_Score_Aligned 컬럼 부재 문제는 R2에서도 미검증. s0_record 'Z_Score_Aligned 보유 확인 완료' 주장과 factor_db_connector.R 실제 반환 컬럼 불일치. Forge 진입 전 반드시 확인 요구 사항으로 유지. C13 위반 방지를 위한 가장 중요한 구현 전 확인 항목.",
+    "action": "Scout 또는 Forge가 factor_db_connector.R load_month_factors() 반환 컬럼 리스트 확인 후 Z_Score vs Z_Score_Aligned 매핑 로직 명시"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1681",
+  "round": "R2",
+  "r1_score": 14,
+  "r2_score": 12,
+  "score_changed": true,
+  "score_change_reason": "Quant의 D47-D48 0.925, D47-D45 0.933 실측이 내 R1 예상(0.8+)을 크게 상회하여 '3F composite = 사실상 1.1F' 확정. 이는 내 R1 핵심 우려(Q07 단독 의존 구조)를 정량적으로 강화한다. Codex의 Q07 60% concentration + L-013 재활용 지적과 결합하면, H_1681은 'Q07 standalone에 noise 장식을 얹은 구조'로 수렴할 위험이 R1 판단보다 높다. 14 → 12로 2점 하향.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "D47-D48 0.925, D47-D45 0.933, D48-D45 0.871 실측은 내 R1의 crisis_ratio < 1.0 논점과 정확히 합류한다. 3F composite가 1.1F 수준이라면, tail-risk sleeve 40%의 실질 기여는 D47 단독 16%(= 40% x 1/2.5 유효팩터 보정) 수준이며, 나머지 84%가 Q07에 의존하는 구조다. 이 수치적 근거가 내 R1의 'composite 전체가 Q07 standalone에 수렴' 우려를 확정적으로 뒷받침한다. Quant의 'D47 단독 또는 D47+D45 2F 축소' 권고에 전적으로 동의하며, 이를 S1 진입 전 Scout 설계 수정 조건으로 격상해야 한다."
+    },
+    {
+      "with": "academic",
+      "point": "Campbell-Hilscher-Szilagyi(2008) distress risk proxy 지적에 동의한다. 내 R1에서 L-106(market beta 지배) 관점으로 제기한 '위기 시 동반 하락' 우려와 Academic의 'tail-risk + earnings stability 모두 distress anomaly의 다른 얼굴' 주장은 같은 현상의 다른 레이어다. 만약 두 채널이 공통 distress factor에 로딩된다면, cross-family orthogonality는 평시에만 유효하고 위기 시(distress가 pricing factor로 부상하는 구간) 상관이 급등하여 defense 역할이 무력화된다. 이는 DCC-Copula로 S3에서 regime-conditional 상관을 측정해야 하는 추가 gate 조건이다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Governor가 gap_alignment 3.5/4로 높게 평가한 근거('Defense sleeve 공석 최우선 gap')는 포트폴리오 필요성과 가설 품질을 혼동하고 있다. Defense 공석이 시급한 것은 사실이나, 그 시급성이 H_1681의 구조적 결함(Q07 84% 실질 의존 + crisis_ratio < 1.0)을 면제하지 않는다. 위험 관점에서 '나쁜 Defense가 Defense 없음보다 위험할 수 있다' — L-113(quality defense 역 defense)에서 defense로 편입된 전략이 위기 시 Core와 0.78 상관으로 MDD를 오히려 악화시킨 전례가 있다. Governor의 one-of-four Q07 정책은 필요조건이지 충분조건이 아니며, H_1681 자체의 defense 유효성(Core 대비 상관 < 0.5, AX-001 3조건 통과)이 S1/S3에서 입증되지 않으면 gap 충족이 아니라 gap 위장이다.",
+      "severity": "major"
+    },
+    {
+      "against": "codex_critic",
+      "point": "Codex의 '40/60 고정 가중치가 full-sample 관측 기반 튜닝' 지적은 방향은 옳으나 severity 판단이 과도하다. 60/40은 Scout의 설계 의도(Q07 anchor dominant + tail 보완)를 반영한 사전 구조이며, factor IC를 보고 사후 조정한 것이 아니다. 이는 PIT 위반(C1 full-sample)이 아니라 structural prior다. 다만, 60/40이 최적이라는 근거가 없는 것은 사실이므로 S5 mutation에서 50/50, 70/30 등 sensitivity test를 등록하는 것이 적절한 대응이다. Codex의 MDD 50-57% + SR 0.3-0.5 시나리오는 L-013(CVaR standalone 52.7%) + L-112(Q07 standalone 62.7%)의 중간값으로 합리적 범위이나, cross-family composite effect를 zero로 가정한 worst case이며 이를 base case로 취급하는 것은 과도하다.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Quant 실측 기반 + 내 R1 crisis_ratio 분석의 결합이 가장 강력한 반대 논점이다: D47-D48 0.925 / D47-D45 0.933 상관에 의해 3F tail composite는 사실상 D47 1F이며, 그 D47의 crisis_ratio는 0.958(위기 시 IC 약화)이다. 따라서 H_1681의 defense 메커니즘은 '40% x 1F(위기 시 약화) + 60% Q07(위기 시 유지)'인데, Q07 standalone이 MDD 62.7% Hard Fail(L-112)이었다는 것은 Q07의 crisis IC 유지(ratio 1.04)가 MDD 방어로 전환되지 않음을 의미한다. IC가 양수여도 포트폴리오가 시장과 동반 하락할 수 있다(L-106 beta 지배). 결론: H_1681은 IC 수준에서는 defense이나 portfolio drawdown 수준에서는 defense가 아닐 가능성이 높으며, 이 괴리가 해소되지 않으면 S1 pure signal에서 L-112를 재현할 것이다.",
+
+  "risk_manager_r2_synthesis": {
+    "core_verdict": "R1 대비 리스크 평가 악화. Quant 실측이 3F redundancy를 확정하면서 H_1681의 실질 구조가 'Q07 84% + D47 16%'임이 드러남. Q07 standalone 실패(L-112)로부터의 탈출이 D47 16% 기여만으로는 불충분할 가능성이 높다.",
+    "conditional_pass_requirements": [
+      "S1 진입 전 필수: 3F → D47 단독(또는 D47+D45 2F max)으로 설계 수정. Scout에 반환.",
+      "S1 gate 추가: portfolio beta_market 실측 + STR_1679 Core 대비 DCC conditional correlation (위기 구간). 상관 > 0.55 시 defense 역할 판정 보류.",
+      "S3 gate 추가: Campbell-Hilscher-Szilagyi distress factor loading 분해. Q07 + D47이 공통 distress에 로딩되면 cross-family 주장 무효화.",
+      "S5 mutation 필수 등록: Q07/D47 가중 sensitivity (50/50, 70/30, 80/20) + DD 6/20 overlay."
+    ],
+    "compute_tail_risk_suite_plan": "S1 백테스트 완료 즉시 compute_tail_risk_suite() 실행. EVT shape parameter > 0.3 (heavy tail 확인), CDaR 95% < 40% (S5 overlay 전), ES 99% < 15% monthly. 이 중 하나라도 위반 시 S5 진입 차단 권고."
+  }
+}
