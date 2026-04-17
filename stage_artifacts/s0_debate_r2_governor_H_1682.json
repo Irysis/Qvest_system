@@ -1,0 +1,133 @@
+{
+  "role": "governor",
+  "hypothesis_id": "H_1682",
+  "debate_round": "R2",
+  "agent_id": "governor_r2_h1682",
+  "timestamp": "2026-04-17T11:30:00",
+  "r1_score": 17,
+  "r2_score": 15,
+  "score_changed": true,
+  "score_change_reason": "R1 17점 대비 2점 하향. Codex(10)/Quant(14)/RM(14) 3인 공동으로 제기한 'R16_Calmar 정의 이중성(since-inception vs 252d rolling)' + 'stress_pct_pos 1.00 data-snooping 의심' + 'Q25 crisis_ratio 0.98로 Defense role 정당성 약함'은 governance 관점에서 PG1 admission 선결조건 강화를 요구합니다. 특히 R16 Factor DB 구현 이중 정의(compute_risk.R since-inception vs phase6 252d rolling)는 R1에서 Governor가 포착하지 못한 implementation risk로, gap_alignment/role_match 4/4 유지하되 family_saturation 3.5→3.0 + implementation_feasibility 2.5→2.0으로 재평가합니다. 단 Codex 10점은 'ex-post parameter selection' 비판이 empirical-first 설계 철학과 정면 충돌하므로 governance 입장에서 수용 부분(PIT 명세 강화) + 반박 부분(Factor DB 실측 vs 파라미터 튜닝 구분)으로 분리 대응. 본인 R1 17점은 과도 낙관이며 R2에서 4인 균형을 받아 15점이 적정합니다.",
+
+  "agreements": [
+    {
+      "from_agent": "risk_manager",
+      "point": "R16_Calmar Factor DB 구현 이중 정의 (월간 compute_risk.R since-inception MDD vs 일간 phase6 252d rolling MDD)",
+      "governance_impact": "CRITICAL. Governor R1에서 포착 누락한 implementation risk. since-inception Calmar는 상장 30년 종목의 IMF/GFC MDD를 영구 반영 → IPO bias + survivorship-length bias 내재. 두 정의가 근본적으로 다른 signal → S1 백테스트 결과 해석 불가. PG1 admission 선결 조건 #2를 'R16 정의 확정'에서 'R16 정의 이중성 해소 + Factor DB 기본값 확정 + PIT 명세 공표'로 강화합니다.",
+      "why_agreed": "L-126 Q35 Factor DB 버그 선례가 있고, Q25 Ohlson 구현 품질 (위험 1)과 동급 implementation risk. Risk Manager의 코드 레벨 검증(compute_risk.R vs phase6 대조)이 governance 관점 factor 신뢰도 산정에 직접 영향."
+    },
+    {
+      "from_agent": "quant",
+      "point": "R16 crisis_ratio 0.98 — Defense role 정당성 약함, 'drawdown-quality filter (risk management)'로 재정의 권고",
+      "governance_impact": "HIGH. R1에서 Governor는 R16 stress_icir 2.655를 'Defense anchor empirical 확정'으로 수용했으나, crisis_ratio 0.98은 R16이 '위기 방어 전문'이 아닌 '전기간 강한 risk-adjusted factor'임을 시사. S6 Judge Role Honesty Audit에서 'Calmar = alpha factor, not defense' 지적 가능성. Governance 입장에서 H_1682 역할 re-label을 'Defense anchor'에서 'Risk-Managed Defense (Q25 defense primary + R16 risk-managed filter)'로 명확화 권고. RoleBias_Defense 태그는 유지하되 Q25 crisis_ratio 1.55를 Defense character 주축으로 설계 재표현.",
+      "why_agreed": "Quant의 crisis_ratio 정량 분석은 기존 Scout 설계의 role honesty 결함을 정확히 짚음. AX-001 'Defense 조건부 성과 평가' 기준에서 R16 단독은 'stress alpha + normal strong'의 both-side factor이며, Q25가 true defense anchor. S6 Role Honesty Audit 통과 경로 강화."
+    },
+    {
+      "from_agent": "codex_critic",
+      "point": "Q25_Ohlson_O 입력의 PIT 무결성 (공시 지연 T+60~90일, 수정재무 비소급 snapshot) 명세 부재",
+      "governance_impact": "HIGH. Governor R1에서 C4 Q25 재무제표 Usable_Date를 조건 #2에 포함했으나, 공시 지연 구간 + 수정재무 처리 명세가 불충분. 특히 KOSDAQ 지연공시 구간은 라이브 진입 타이밍 붕괴 risk. PG1 admission 선결 조건 #2를 확장: (a) Q25 Ohlson 9변수 각각의 공시 지연 T+45/60/90일 분류, (b) restated financials 처리 정책 (point-in-time snapshot 적용 증빙), (c) quarterly 공시 지연 45일 룰 준수 확인.",
+      "why_agreed": "Codex의 PIT 지적은 C4 구체 명세를 강화하며, governance PG1 admission 게이트의 미래참조 방어선 강화. 특히 L-126 Q35 선례 + H_1681 VERDICT 선례에서 Factor DB 공시 지연 명세 부재가 반복적 약점으로 지적됨."
+    },
+    {
+      "from_agent": "academic",
+      "point": "한국 distress risk 실증 논문 (Kho-Kim 2007, Eom-Park 2014) 인용 부재 + 한국 distress puzzle 논쟁(positive vs negative premium) 입장 표명 없음",
+      "governance_impact": "MEDIUM. Governor 관점에서는 empirical-first 설계 (Q25 stress_icir 0.659 실측)가 학술 gap을 부분 보완하나, PG1 admission 시 'Korea-specific transferability 검증' 조건 추가 권고. 한국은 정부 Chaebol bailout 정책으로 high-distress 종목 잔존 패턴이 US와 다름 → Ohlson O의 한국 적합성은 sub-period breakdown (pre-2008 / 2008-2015 / post-2015)로 empirical 검증 필요.",
+      "why_agreed": "Academic의 Korea transferability 지적은 Factor DB 실측만으로 구조 검증 부족을 보완. Governor PG1 조건 #1에 'Q25 sub-period robustness + 한국 empirical 논문 2건 추가' 병합."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "to_agent": "codex_critic",
+      "target_point": "R16 채택 및 0.6/0.4 비중이 ex-post parameter selection (full-sample 정보 누수) 가능성",
+      "my_counter": "Governance 관점에서 Codex의 'ex-post parameter' 비판은 empirical-first 설계 철학과 구분해야 합니다. (1) R16 채택 근거는 Factor DB 사전 등록된 stress_factor_ic_analysis.csv 실측(40 stress months, pct_pos 1.00)이며 이는 가설 설계 전에 이미 Factor DB에 구축된 진단치입니다. 파라미터 '선택'이 아닌 'Factor DB 실측 조회 후 empirical-strong factor 식별'로 설계 방법론이 다릅니다. (2) 0.6/0.4 비중은 Q25 crisis_ratio 1.55 (Defense character) > R16 crisis_ratio 0.98 (both-side)에 근거한 role-weighted 설계로, full-sample 튜닝이 아닌 role importance weighting입니다. (3) Codex 조건 #2 '0.6/0.4 사전등록하고 재튜닝 없이 walk-forward 결과만으로 통과 여부 판단'은 수용합니다. 단 S5 mutation에서 regime-conditional weight 변경은 L-119 대응 합법적 mutation이며 파라미터 튜닝과 구분. (4) Codex 조건 #3 'stress IC bad-good ratio ex-post 라벨 사용 금지, 실시간 규칙 기반 정의'는 MRS expanding percentile threshold (L-441, Regime Engine v7.1)로 이미 충족.",
+      "strength": "HIGH",
+      "partial_acceptance": "Codex의 weakest_assumption 'R16 stress_pct_pos 1.00이 미래 스트레스에서 재현' 가정의 취약성은 수용. PG1 admission 조건 #2에 'R16 stress 40개월 bootstrap CI + sub-period breakdown' 추가."
+    },
+    {
+      "to_agent": "codex_critic",
+      "target_point": "kill_scenario 3건 중 '국내 신용스트레스 국면에서 distress와 drawdown 상관 급등 → 60/40 분산 효과 붕괴' (probability: medium, MDD 14~20% Core 대비 축소 6-10%p 미달)",
+      "my_counter": "거버넌스 관점에서 Codex의 'cross-family 상관 급등 시 방어축 derating' kill scenario는 실증적으로 STR_1631 VD+와 STR_1679v2 portfolio level에서 H_1682 추가 시 실측 필요 사항입니다. 단 Codex가 간과한 비대칭 구조 2가지: (1) Q25 Ohlson은 회계 logit 9변수 (liability ratio, working capital 등) 기반으로 '느린 distress 악화' 포착, R16 Calmar는 가격 path-dependent로 '급락 회복력' 포착 → 위기 발생 메커니즘이 다르므로 동일 위기에서도 반응 시점/강도 분리 예상. (2) H_1682 Defense 역할은 STR_1679 Core alpha와 blend되는 portfolio sleeve로, H_1682 단독 MDD 25~35%가 Core MDD 축소 기여 6-10%p는 충분히 달성 가능. 단 조건 #2를 추가: 'S3에서 H_1682 portfolio-level 상관 ρ<0.3 + STR_1679v2와 DCC tail dependence 측정' 필수.",
+      "strength": "MEDIUM",
+      "partial_acceptance": "kill_scenario 가능성 수용. PG1 admission에 'stress 국면 flight-to-quality crowding 시 H_1682 + STR_1679v2 DCC tail dependence < 0.6' 조건 추가."
+    },
+    {
+      "to_agent": "risk_manager",
+      "target_point": "H_1682 pure composite MDD 25~35% 예상은 Defense role 치고 높다 (STR_1631 VD+ 21% 대비)",
+      "my_counter": "Governance 관점에서 Risk Manager의 MDD 비교는 scope 구분이 필요합니다. (1) STR_1631 VD+의 MDD 21%는 DD 6/20 overlay + VT 18% 포함 full-pipeline 결과이며, H_1682 pure signal (S1 단계, no overlay) MDD 25~35%와 직접 비교 불가. 공정 비교는 S5 mutation 후 H_1682 + DD 6/20 overlay 결과 vs STR_1631 VD+ final. Scout 설계에서 S5 DD overlay 후 15~22% 목표 명시. (2) Risk Manager 스스로 detail_scores.mdd_contribution 2.5/4에서 조건부 통과 평가 — 'overlay 적용 후 15~22% 도달' 조건을 붙여 판단한 것. 이는 H_1682 pure 단계가 S1 alpha 확인 목적이고 S5에서 defense overlay 추가로 MDD 축소 설계임을 Scout이 이미 명시. (3) Governance PG1 admission 관점: H_1682 단독 editorial MDD보다 중요한 것은 blended portfolio MDD 개선 기여. STR_1679v2 Primary + STR_1631 VD+ + H_1682 blend 시 portfolio MDD 축소가 PG1 핵심 판단 기준.",
+      "strength": "MEDIUM",
+      "partial_acceptance": "Risk Manager 조건 #1 'R16 정의 확정' + 조건 #3 'DCC tail dependence 측정'은 수용. PG1 조건 통합."
+    },
+    {
+      "to_agent": "quant",
+      "target_point": "R16 Calmar lookback 1년 고정(compute_risk.R)이 monthly factor 집계에 미치는 C3 영향 — 동일 252d 윈도우 수익률이 분자와 IC 계산에 동시 참여",
+      "my_counter": "Governance 관점에서 Quant의 C3 경계 지적은 기술적으로 정밀한 우려이나 구조적 분리로 해소 가능합니다. (1) R16 Calmar 252d lookback은 '과거 252d historical return/MDD' 계산 — 이는 t-252~t-1 구간 데이터로 t 시점 factor 값 생성. IC 계산은 t 시점 factor → t+1~t+21 forward return 상관. 시간축이 구조적으로 분리되므로 C3 'same period aggregate→apply' 위반 아님. (2) 단 Quant 조건 #2 'R16 Calmar lookback 1년 고정이 monthly factor 집계에 미치는 C3 영향 점검' 수용 — S1 Forge 실행 시 compute_risk.R 코드에서 sig_d - 365 lookback과 monthly factor usable_date 정합성 명시적 검증 필요. (3) Quant R16 역할 재정의 권고 ('crisis factor → drawdown-quality filter')는 수용 (agreements 참조).",
+      "strength": "MEDIUM",
+      "partial_acceptance": "R16 C3 점검은 S1 Forge 선결조건으로 수용. Quant 조건 전부 PG1 admission에 병합."
+    },
+    {
+      "to_agent": "academic",
+      "target_point": "R16_Calmar의 stress_icir 2.655 순수 data-snooping 의심 + Calmar academic venue 논문 빈약",
+      "my_counter": "Governance 관점에서 Academic의 학술 robustness 지적은 유효하나 운영 결정은 empirical + structural 둘 다 고려해야 합니다. (1) Calmar peer-review 논문 빈약 — Young 1991 Futures magazine editorial은 peer-review 부재 맞음. 단 Chekhlov-Uryasev-Zabarankin 2005 IJTAF CDaR는 drawdown risk theory peer-review (A-grade). R16 Calmar를 'CDaR family 간이 버전'으로 학술 포지셔닝 재정의 가능. (2) stress_icir 2.655 data-snooping 의심은 PG1 admission 조건 #2에 'sub-period breakdown (pre-2008 / 2008-2015 / post-2015) + bootstrap CI' 추가로 대응 (Risk Manager 조건 #2와 통합). (3) 한국 distress puzzle — Ohlson O의 한국 전이 가능성 — 은 empirical-first 설계에서 Q25 stress_icir 0.659 + recent_3y_icir 0.633 실측이 '한국에서 distress premium positive' 시사. 단 Academic 조건 #1 '한국 distress 실증 논문 2건 추가'는 S1 실행 전 core_reference 보강으로 수용.",
+      "strength": "MEDIUM",
+      "partial_acceptance": "Academic 조건 4건 전부 S1 실행 전 Scout handoff 보강 조건으로 통합."
+    }
+  ],
+
+  "strongest_opposing_argument": "Risk Manager의 'R16_Calmar Factor DB 이중 정의 (월간 compute_risk.R since-inception MDD vs 일간 phase6 252d rolling MDD)'가 R1 전체에서 가장 강력한 반대 논거입니다. 이유: (1) governance 관점에서 Governor R1이 17점을 준 근거는 Q25 stress_icir 0.659 + R16 stress_icir 2.655 empirical 확정을 포트폴리오 편입 정당성 근거로 사용했으나, R16 signal 정의 자체가 Factor DB에서 이중화되어 있다면 2.655 수치의 의미가 불명확. since-inception MDD 기반이면 상장 30년 종목의 IMF/GFC MDD 영구 반영 + IPO bias, 252d rolling이면 최근 drawdown 회복력만 포착 — 근본적으로 다른 signal. (2) S1 백테스트에서 어느 정의를 사용하는지에 따라 H_1682의 Defense character가 근본적으로 달라지며, PG1 admission 판정 자체가 불가능. (3) Risk Manager가 코드 레벨 검증(compute_risk.R line-level analysis)으로 이중 정의를 발견한 것은 governance가 stress_factor_ic_analysis.csv 수치만 조회한 것보다 증거 강도가 높음. (4) 이 논거가 치명적인 이유는 Governor가 family_saturation 3.5 + implementation_feasibility 2.5 평가의 전제 (R16 signal 정의 명확성)을 붕괴시키기 때문 — 정의 불명확 상태에서는 edge of concentration 평가 불가, implementation feasibility 판단 불가. 이 반대 논거를 수용하여 R2 점수를 17→15로 하향 조정합니다.",
+
+  "r2_detail_scores": {
+    "gap_alignment": {"score": 4, "max": 4, "change_from_r1": "유지", "rationale": "PG0 v1.0.3 SR gap 0.807 + Defense sleeve 공석 + AX-001 defense 3조건 명시는 R2에서도 완벽 정합."},
+    "role_match": {"score": 4, "max": 4, "change_from_r1": "유지", "rationale": "H_1681 R2 Requirement 7 'Defense 근본 재고 + Q07 의존 탈피' 직접 수용 + Governor 후보 C (Distress avoidance) 충족. Quant의 R16 role 재정의 권고는 name/description 조정으로 대응 가능 (본질은 defense). RoleBias_Defense 유지."},
+    "family_saturation": {"score": 3.0, "max": 4, "change_from_r1": "3.5 → 3.0 (-0.5)", "rationale": "R16 Factor DB 이중 정의 (Risk Manager 발견) → family_saturation 평가의 전제 (factor signal clarity)가 흔들림. Q07 4건 중복 해소 + distress+drawdown sub-family 최초 신설은 유지되나, R16 signal 정의 불명확 상태에서 family taxonomy 위치 확정 불가. 추가 0.5점 감점."},
+    "marginal_contribution": {"score": 3, "max": 4, "change_from_r1": "유지", "rationale": "STR_1679v2 Primary + STR_1631 VD+ anchor에 H_1682 추가 시 portfolio MDD 개선 0.05~0.10 기여 예상 유지. 4-scenario 매트릭스 B/A 경로 모두 합리적. R16 정의 불명확성은 marginal contribution 계산에 영향 없으나 확정은 S1 실행 후로 유보."},
+    "implementation_feasibility": {"score": 2.0, "max": 4, "change_from_r1": "2.5 → 2.0 (-0.5)", "rationale": "R1 감점 2개 (위험 1 Q25 compute_quality + 위험 2 R16 lookback) 유지 + Risk Manager 추가 발견 'R16 이중 정의 (since-inception vs 252d rolling)' + Codex 'Q25 공시 지연 T+60~90일 명세 부재' + Academic '한국 empirical 논문 부재' = 총 4건 선결조건으로 S1 진입 지연. Feasibility 추가 0.5점 감점."},
+    "total": {"score": 15, "max": 20, "r1_score": 17, "change": -2}
+  },
+
+  "5_conditions_q_non_q_composite_verification": {
+    "condition_1_q25_r16_correlation": {
+      "requirement": "Q + Non-Q composite 상관 <0.2 (Governor R1 조건 1)",
+      "r2_status": "PARTIAL_CONFIRMED",
+      "evidence": "Quant R1 axis 'internal_corr' 4/4 PASS — Q25-R16 cross-sectional 상관 실측 mean=0.0803, median=0.0526, SD=0.1065, range=[-0.1321, +0.2747], 35개 분기 샘플. 가설 예상 '<0.2' 대비 median 0.05로 우월. 단 range 최대 0.2747은 stress 기간 일시 상승 가능성 시사.",
+      "remaining_gap": "S3 portfolio-level DCC tail dependence 측정 필수 (Risk Manager 조건 #3)"
+    },
+    "condition_2_r16_pit_compliance": {
+      "requirement": "R16 PIT 명세 확정 (Governor R1 조건 1.(3))",
+      "r2_status": "NOT_CONFIRMED",
+      "evidence": "Risk Manager 발견: 월간 compute_risk.R since-inception MDD vs 일간 phase6 252d rolling MDD 이중 정의. S1 실행 전 Factor DB 기본값 확정 필수.",
+      "remaining_gap": "R16 정의 이중성 해소 + 선택된 정의의 PIT 명세 공표 (Governor R2 PG1 조건 #2 강화)"
+    },
+    "condition_3_q25_korea_citation": {
+      "requirement": "Q25 한국 실증 인용 (Governor R1 조건 1.(1))",
+      "r2_status": "NOT_CONFIRMED",
+      "evidence": "Academic R1 breakdown.korea_evidence 2/4 — core_reference 5건 중 한국 실증 논문 0건. Kho-Kim 2007, Eom-Park 2014 등 후보 인용 부재.",
+      "remaining_gap": "S1 실행 전 한국 distress 실증 논문 2건 이상 core_reference 추가 (Academic 조건 #1)"
+    },
+    "condition_4_turnover": {
+      "requirement": "turnover 측정 및 Hurdle 600% 상한 준수 (Governor R1 조건 3 간접 관련)",
+      "r2_status": "PENDING_S1",
+      "evidence": "R1 전체에서 turnover 직접 측정 실측 없음. 가설 설계상 monthly rebalance + buffer 22/20 → 예상 200~350% (Defense role 범위).",
+      "remaining_gap": "S1 Forge 실행 시 turnover 측정 + Hurdle v2.2 Gate 1 통과 확인"
+    },
+    "condition_5_pass_cagr_stress_alpha": {
+      "requirement": "Pass CAGR >= 3% + stress alpha > 0 (AX-001 defense 3조건 중 2건)",
+      "r2_status": "EMPIRICAL_STRONG_BUT_UNVERIFIED_AT_PORTFOLIO",
+      "evidence": "Factor 개별 stress_icir Q25 +0.659 + R16 +2.655 확인. 단 portfolio composite 수준 stress alpha 실측 S1 필요. Defense role 허용 CAGR 3~8% 범위.",
+      "remaining_gap": "S1 실행 후 composite stress_ic_mean > 0.03 + bad/good regime IC ratio > 1.2 확인 (AX-001 3조건)"
+    },
+    "overall_verdict": "5 conditions 중 condition 1 partial_confirmed (Quant 실측), condition 2-5 pending verification. R2 점수 15점은 'empirical potential strong but 선결조건 4건 + verification 4건 pending' 상태의 적정 평가."
+  },
+
+  "pg1_admission_revised_conditions": [
+    "선결 1 (강화): Judge AX-004 scope 해석 확정 — Q25 Ohlson = distress family (liability/working capital logit), profitability family (ROE/GP/ROA) 아님 — 구조적 분리 Judge 공식 승인. AX-004 supporting L-133/L-134/L-139 모두 profitability 계열 확인.",
+    "선결 2 (강화): Factor DB implementation 확정 — (a) Q25 Ohlson_O Raw_Value 분포 + compute_quality.R 구현 품질 (9변수 logit 공식 구현 확인), (b) R16_Calmar 정의 이중성 해소 (월간 since-inception vs 일간 252d rolling) + 선택된 정의의 PIT 명세 공표, (c) Q25 공시 지연 T+45/60/90일 분류 + restated financials 처리 정책 point-in-time snapshot 적용 증빙 (Codex 조건).",
+    "선결 3 (강화): Empirical robustness 보강 — (a) R16 stress 40개월 bootstrap CI + sub-period breakdown (pre-2008 / 2008-2015 / post-2015), (b) Q25 recent_5y sub-period ICIR breakdown (CHS 2008 이후 US distress anomaly weakening 대응), (c) 한국 distress 실증 논문 2건 (Kho-Kim 2007, Eom-Park 2014) core_reference 추가.",
+    "S3 직교성 게이트 확장: (a) portfolio CAPM |β_market|<0.85 (Defense role 허용, L-118-ext 대응), (b) STR_1679v2 Primary portfolio-level ρ<0.3 (Defense 보완 역할), (c) STR_1631 VD+ anchor portfolio-level ρ<0.35, (d) Q25-R16 cross-sectional ρ<0.2 실측 (Quant 0.08 실측 확인, 단 stress 기간 상승 확인), (e) DCC tail dependence H_1682 + STR_1679v2 < 0.6 (Risk Manager 조건, Codex kill scenario 대응).",
+    "S5 mutation slate 사전 등록 3건 (S5 Scout 설계) + regime-conditional weight (MRS>50 시 Q25 weight 60% → 70% 상향) Blender 협의 결정. 정적 60/40은 L-119 경계이나 Codex 조건 #2 '0.6/0.4 고정 walk-forward' 수용. pure composite SR<0.50 시 weight ratio 재탐색 트리거 사전 등록.",
+    "S6 Role Honesty Audit 대응: R16 역할을 'Defense crisis factor'에서 'Drawdown-quality risk filter (defense supporting)'로 명세 조정 (Quant 권고 수용). Q25 crisis_ratio 1.55가 Defense anchor 주축. H_1682 전체 RoleBias_Defense 유지 (Q25 주도).",
+    "PG1 admission 경로: S1~S7 + AX-001 defense 3조건 + 6 선결/게이트 전수 통과 후 진입. 4-scenario 매트릭스 최종 선택: (A) STR_1679v2 유지 + H_1682 신설 Defense anchor 독립 편입, (B) STR_1679 D안 Defense sleeve Q07+D29 → Q25+R16 교체, (C) H_1682 단독 Defense, (D) 보류. S7 disposition 결과 기반 Governor 최종 선택. Family_concentration 35% 한도 내 B 경로 우선 권장."
+  ],
+
+  "concern_updated": "R2 결론: H_1682은 H_1681 R2 consensus Requirement 7 'Defense 역할 근본 재고 + Q07 의존 탈피'를 직접 수용한 fundamental shift로 Governor 후보 C (Distress avoidance) + 'Q + Non-Q composite' 조건을 empirical-first로 충족하는 정합 설계입니다. R1 17점에서 R2 15점으로 2점 하향한 이유: Risk Manager가 코드 레벨로 발견한 'R16 Factor DB 이중 정의' (CRITICAL) + Codex 'Q25 공시 지연 명세 부재' (HIGH) + Quant 'R16 crisis_ratio 0.98 Defense role 정당성 약함' (HIGH) + Academic '한국 empirical 논문 부재' (MEDIUM)는 PG1 admission 선결조건 4건 + S3/S5/S6 게이트 확장 2건을 추가 요구하며, governance 관점에서 R1의 과도 낙관(17점)을 균형 조정합니다. 단 Codex의 'ex-post parameter selection' 비판은 empirical-first 설계 철학(Factor DB 실측 조회)과 구분하여 부분 수용(PIT 명세 강화)하고 전면 반박합니다. 최종 PG1 admission 판정은 S1~S7 전수 통과 + 6 선결/게이트 통과 후 S7 disposition 기반. 4-scenario 매트릭스 B 경로 우선 권장 유지."
+}

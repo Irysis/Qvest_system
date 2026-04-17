@@ -9,18 +9,89 @@ H_1676 VERDICT conditions_for_s1[7]:
 
 기존 `compute_factor_orthogonality()` (factor_research_pipeline.R:48) = **factor-level** Spearman 상관. Portfolio-level ρ는 별도 측정.
 
-## Reference Strategy 확정 (v2 업데이트)
+## Reference Strategy 확정 (v3 업데이트 — Judge Role Misalignment 반영)
 
-**기준점: STR_1679v2 Primary (HRP + DD overlay) — Grade A 77.1**
+**기준점: STR_1679v2 Primary (HRP + DD + Layer 3 overlay) — Grade A conditional**
 - sim_result.rds 경로: `04_Research/strategies/STR_1679_score_blend/sim_result.rds`
 - performance.json의 `primary_overlay` 섹션 데이터
 - SR 1.266, CAGR 24.71%, MDD -29.06%, Sortino 1.82, Calmar 0.85
-- Role: diversifier (Judge Gate 0-6 audit in progress, Task #14)
+- **honest_role = core_alpha_with_overlay_dependency** (Judge Full Audit 2026-04-17)
+- **ROLE_MISALIGNMENT 확정**: Def sleeve 실질 기여 **0.3pp만** (Def avg weight 10.9% × Def CAGR 2.93%). MDD 축소 22.54pp는 전적으로 **Layer 3 overlay (inverse ETF + cash)** 기여.
 - S5 mutation record: `stage_artifacts/s5_mutation_record_STR_1679v2.json`
+- Judge L-146: Overlay-driven MDD improvement는 Core alpha로 계상 금지 (role honesty rule)
 
 Base HRP (no overlay) / EW base는 Grade C Hard Fail (baseline 참조용만, S3 기준점 아님).
 
+## Dual Reference Rho 측정 (v3 추가 — Judge 결과 반영)
+
+S3 ρ 측정 시 **2개 기준점 병행**:
+
+1. **vs STR_1679v2 Primary (overlay 포함)**: 실전 포트폴리오 기준 diversification 효과
+2. **vs STR_1679v2 Base HRP (overlay 제거)**: 순수 Core alpha 기준 diversification
+
+이 2개 값의 차이 = **overlay 의존성 크기**. H_1676이 overlay-independent diversification 제공하는지 판정.
+
+```r
+# Dual reference comparison
+# 전제: Forge가 daily_returns.csv export 완료 + Primary/Base 분리 저장
+sim_primary <- readRDS("04_Research/strategies/STR_1679_score_blend/output/sim_primary.rds")
+sim_base <- readRDS("04_Research/strategies/STR_1679_score_blend/output/sim_base_hrp.rds")
+
+rho_vs_primary <- cor(r_h1676, as.numeric(sim_primary$strategy_xts), method = "pearson")
+rho_vs_base <- cor(r_h1676, as.numeric(sim_base$strategy_xts), method = "pearson")
+
+overlay_dependency_gap <- abs(rho_vs_primary - rho_vs_base)
+
+# 해석
+# overlay_dependency_gap < 0.10: H_1676 diversification이 overlay 영향 낮음 (good)
+# overlay_dependency_gap >= 0.20: H_1676 diversification이 overlay 의존 (경고)
+```
+
 **중요 Known Issue**: run_all.R이 3 variant 동시 측정. `sim_result.rds` 저장 시 primary variant daily returns가 저장되었는지 Forge 확인 필요. 현재 run_log에서 tail_risk [WARN] 'daily_returns/NAV 필드 없음' 경고 상태. S3 실행 전 Forge에 sim 객체에 DAILY_NAV_DT 또는 daily NAV 포함 여부 확인 요청 필수.
+
+## Rolling 36M Rho 추가 측정 (v2 추가 — Q-Lead 지시)
+
+정적 전기간 rho 외에 **rolling 36M portfolio-level rho** 필수 측정 (H_1676 Codex R1 conditions 반영):
+
+```r
+# Rolling 36M rho (monthly returns, 36-month window)
+library(zoo)
+# Align monthly returns
+r_h_m <- apply.monthly(sim_h1676$strategy_xts, sum)  # approximate monthly
+r_1_m <- apply.monthly(sim_1679v2$strategy_xts, sum)
+common_m <- intersect(index(r_h_m), index(r_1_m))
+r_h_m <- as.numeric(r_h_m[common_m])
+r_1_m <- as.numeric(r_1_m[common_m])
+
+rolling_rho <- rollapply(
+  data = cbind(r_h_m, r_1_m),
+  width = 36,
+  FUN = function(x) cor(x[,1], x[,2], method = "pearson"),
+  by.column = FALSE,
+  align = "right"
+)
+
+# Stability check
+rolling_rho_sd <- sd(rolling_rho, na.rm = TRUE)
+rolling_rho_max <- max(rolling_rho, na.rm = TRUE)
+rolling_rho_min <- min(rolling_rho, na.rm = TRUE)
+```
+
+### Rolling Rho Stability Gate
+
+```
+IF rolling_rho_max < 0.3 AND rolling_rho_sd < 0.15:
+  → stable diversifier, strong PASS
+ELSE IF rolling_rho_max < 0.4 AND rolling_rho_sd < 0.20:
+  → moderate stability, conditional PASS
+ELSE:
+  → unstable correlation, role 재검토 필요
+```
+
+### 해석 주의
+- Rolling rho 상승 추세 (최근 기간 증가) → regime shift 위험
+- Rolling rho 하락 추세 (최근 감소) → diversifier 강화, 긍정
+- H_1676 일간 NAV 기반 측정이 이상적이나 S1 baseline이 monthly rebalance이므로 monthly returns 사용. 일간 NAV 필요 시 Forge에 별도 요청.
 
 ## 포트폴리오 레벨 ρ 측정 3분해 방법
 

@@ -4,9 +4,27 @@
   "portfolio_id": "V7_ALLWEATHER_001",
   "candidate_id": "STR_1679v2_sleeve_ew_primary",
   "timestamp": "2026-04-17T07:30:00",
-  "status": "PRELIMINARY (Judge Gate 통과 전, 확정 불가)",
-  "authority": "Governor session 65 사전 작성 (Q-Lead 요청 C)",
-  "note": "Judge Gate 0~6 + tail_risk PASS 확인 후 공식 PG0 재진단 실행 예정. 본 문서는 기획용 preliminary.",
+  "status": "DEFERRED_JUDGE_CONDITIONAL",
+  "authority": "Governor session 65 사전 작성 (Q-Lead 요청 C) + Judge retry 보류 결정 수용",
+  "note": "Judge S6 retry 결과 CONDITIONAL_PASS_WITH_STRUCTURAL_CONCERNS. Gate 0 FAIL (stage gate 미등록) + Gate 6 FAIL (tail_risk 미생성). Def sleeve CAGR 기여 0.3pp + overlay 의존 core_alpha_with_overlay_dependency 판정. PG0 공식 실행 보류. Forge 후속 수리 (tail_risk + DSR + 3 variant 독립 백테 + sg_init) 완료 후 재심사.",
+  "deferred_reason_document": "stage_artifacts/s6_judge_STR_1679v2.json",
+  "judge_retry_findings": {
+    "grade_final": "A_conditional",
+    "gate_0_pit": "FAIL",
+    "gate_0_detail": "sg_init 미호출, s0_record/s3_orthogonality/s4_integration 부재",
+    "gate_6_tail_risk": "FAIL",
+    "gate_6_detail": "tail_risk_result.json 미생성 (sim 스키마 오류)",
+    "honest_role": "core_alpha_with_overlay_dependency",
+    "def_sleeve_avg_weight_pct": 10.9,
+    "def_sleeve_contribution_cagr_pp": 0.3,
+    "mdd_reduction_source": "Layer 3 DD overlay (22.54pp)",
+    "base_variants_hard_fail": true
+  },
+  "governor_reservations_validated": [
+    "Reservation #1 (MDD 29.06% standalone 불충분) — Judge 확인",
+    "Reservation #2 (Def sleeve 기여 측정 필요) — Judge 0.3pp 확인",
+    "Reservation #3 (overlay 의존 + S5 mutation) — Judge base variant Hard Fail 확인"
+  ],
 
   "source_document": ".cache/portfolio_gap_vector.json v1.0.3 (2026-04-10T22:53:19)",
   "prior_state": {
@@ -69,7 +87,7 @@
         "cagr_change": "+8.57%p (16.14% → 24.71%)",
         "mdd_change": "-7.79%p (악화, 21.27% → 29.06%)"
       },
-      "assessment": "SR/CAGR 개선, MDD 단독 악화. 단독 anchor 교체 비권장."
+      "assessment": "REJECTED — Judge retry 반영. overlay 의존 + Def sleeve CAGR 기여 0.3pp 장식 확인. core_alpha 단독 admission 불가. Role Misalignment 공식화 — core_alpha_with_overlay_dependency 재분류 요구. MDD 29.06% 중 22.54pp는 Layer 3 DD overlay 독자 기여."
     },
     "scenario_2_blend_with_existing": {
       "description": "STR_1679v2 Primary + STR_1631_SYN_05 + STR_1656_MLRA 3-way blend (비중 시뮬)",
@@ -83,11 +101,11 @@
         "sharpe_gap": 0.65,
         "note": "상관 <0.5 가정 시 근사"
       },
-      "assessment": "SR 상승 + MDD 회복 가능성. 실측 필요."
+      "assessment": "REPOSITIONED — STR_1679v2 역할을 core_alpha_with_overlay_dependency로 재분류 후 blend. 기존 앵커 대비 SR 1.35 예상 가능. 단 Gate 0/6 수리 PASS 선결."
     },
     "scenario_3_blend_with_h1682_defense": {
-      "description": "STR_1679v2 Primary + H_1682 (Q25+R16 Defense) blend",
-      "assumptions": "STR_1679v2 70% + H_1682 30% (defense tilt 조건)",
+      "description": "STR_1679v2 Core_with_overlay + H_1682 (Q25+R16 Defense) 역할 분업",
+      "assumptions": "STR_1679v2 70% (Core+overlay) + H_1682 30% (진짜 Defense). Def sleeve 교체 권고 — STR_1679v2 내부 Q07+D29 Def sleeve는 장식, H_1682로 교체 또는 제거 후 Core 20종목 순수화.",
       "projected_profile_optimistic": {
         "cagr": 0.21,
         "sharpe": 1.50,
@@ -97,14 +115,16 @@
         "sharpe_gap": 0.50,
         "note": "H_1682 stress_pct_pos 1.00이 MDD 복원 기대. 실측 필수."
       },
-      "assessment": "가장 유망한 시나리오. 단 H_1682 S1~S6 PASS 선결."
+      "assessment": "가장 유망 시나리오. v2 Core overlay 의존 + H_1682 Defense 역할 명확 분업. 단 H_1682 S1~S6 PASS + v2 Gate 0/6 수리 선결.",
+      "def_sleeve_replacement_note": "Judge L-146 기반 — Q07+D29 Def sleeve CAGR 기여 0.3pp. H_1682 PASS 시 Scout이 v2 S5 mutation으로 Def sleeve 교체 설계 권고. STR_1679v2 구조: Core 15(score-blend) + H_1682 Def 5종목 (Q25+R16 기반)."
     }
   },
 
   "sleeve_needs_updated": {
     "before": "diversifier",
-    "after": "defense (primary)",
-    "rationale": "STR_1679v2 Primary가 core_alpha 역할 + 기존 MLRA diversifier 존재. 신규 부족은 독립 Defense anchor. H_1682가 이 gap 정확히 충족 목표."
+    "after": "defense (primary + critical)",
+    "rationale": "STR_1679v2 Primary는 core_alpha_with_overlay_dependency (Judge 공식 판정). 내부 Q07+D29 Def sleeve CAGR 기여 0.3pp 장식. 기존 MLRA diversifier 존재. 신규 부족은 **진짜 독립 Defense anchor** — H_1682가 이 gap 정확히 충족 목표.",
+    "urgency": "CRITICAL — STR_1679v2 overlay 의존 구조는 regime 변화 시 overlay 효과 실패 가능성 내재. 독립 Defense sleeve 확보가 portfolio 안정성 핵심."
   },
 
   "regime_state": {
