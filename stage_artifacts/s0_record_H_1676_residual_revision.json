@@ -1,0 +1,175 @@
+{
+  "hypothesis_id": "H_1676",
+  "name": "Residual Consensus Revision Breadth (Orthogonal PEAD)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "timestamp": "2026-04-17T07:00:00",
+  "designer": "Scout",
+  "pathway": "A",
+
+  "hypothesis_text": "한국시장에서 애널리스트 추정치 revision의 breadth(상향 조정 빈도/강도)는 SUE(실현 earnings surprise) 및 size·vol 공통요인과 직교화된 잔차 형태로 포트폴리오 단위 독립 alpha를 생성한다. C19 Core(SUE 중심)와 시간차원(forward revision vs realized)·정보채널(analyst update vs earnings release)이 분리되어 있으며, size/idiosyncratic-vol 잔차화를 통해 기존 앵커 STR_1679(C19 + Q07 defense)와 ρ<0.2를 구조적으로 보장한다.",
+
+  "economic_family": "consensus",
+  "sub_family": "analyst_revision_residual",
+
+  "mechanism": {
+    "core": "애널리스트 추정치 revision breadth는 post-earnings announcement drift(PEAD)와 구분되는 독립 정보채널이다. Bernard & Thomas (1989, 1990)의 PEAD는 실현 earnings surprise 후 drift(SUE 기반, C19의 핵심)이나, revision breadth는 earnings release 이전·이후 애널리스트가 추정치를 집단적으로 갱신하는 forward-looking 신호. Da, Gurun & Warachka (2014 JFE) 'Frog in the Pan'은 정보가 점진적으로 확산될 때(continuous small revisions) 시장의 과소반응이 극대화됨을 실증.",
+    "why_works": "(1) Analyst underreaction: Stickel (1991 AR)는 애널리스트의 추정치 revision이 자체적으로 underreact함을 증명 — revision이 점진적으로 누적되며 drift 생성. (2) Attention constraint: Hirshleifer, Lim & Teoh (2009 JF)는 투자자 주의 제약 하에서 애널리스트 consensus 변화가 불완전하게 반영됨을 보임. (3) 한국시장 특수성: 개인 60% 비중 → analyst revision을 적시에 반영하는 기관/외국인 비중이 상대적으로 적어 drift 지속성 증폭.",
+    "information_channel": "Consensus_Revision_Breadth(3m) = (상향 조정 횟수 − 하향 조정 횟수) / 전체 커버리지. SUE와 상관은 중간(same earnings 이벤트 영향)이나, breadth는 (a) 복수 애널리스트 합의 강도 (b) forward-looking EPS 1y/2y (c) pre-earnings period의 정보 축적까지 포착하여 SUE 단일 snapshot과 다른 축.",
+    "why_different_from_existing": "C19 Composite(L-line 475 'SUE가 핵심 alpha, TP_Gap 무의미')는 SUE 중심. C13_Revision_Breadth_3m(icir 0.438, icb +0.0343)은 Factor DB에 있으나 단독·잔차화 미시도. STR_1631 계열 전략들은 C19(SUE+ESBR+EPS_Chg1m+TP_Gap) 합성을 사용하며 Revision_Breadth를 독립 차원으로 분리하지 않음. 또한 잔차화(residualize against log(MarketCap) + R12_Idiosyncratic_Risk)를 통해 Size·Vol 공통요인 제거로 구조적 independence 보장."
+  },
+
+  "signal_construction": {
+    "data_source": "Factor DB monthly — C13_Revision_Breadth_3m (Z_Score_Aligned). 보조: C04_ESBR(base revision), C03_EPS_Chg_3m(비교 대조용), R12_Idiosyncratic_Risk(잔차화 인자), M01_LogSize 또는 raw MarketCap (잔차화 인자)",
+    "signal": "(1) C13_Revision_Breadth_3m raw cross-sectional value 취득 (load_month_factors 경유, C15). (2) 매월 cross-sectional OLS residualize: resid_t = C13_t − β1 * log(MarketCap)_t − β2 * R12_IdioVol_t. (3) resid_t의 cross-sectional Z-score가 최종 신호. (4) 계수 β1, β2는 당월 cross-section 내에서 추정 (expanding window 아님 — single-month orthogonalization이 C1/C3 준수).",
+    "normalization": "Cross-sectional residualize → Z-score. full-sample 통계 금지 (C1).",
+    "rebalance": "Monthly (end-of-month). Factor DB Usable_Date ≤ sig_date (C14).",
+    "universe": "KOSPI + KOSDAQ, 유동성 필터 LIQ_THRESHOLD = 2e8 (20일 평균 거래대금 ≥ 2억원, C10).",
+    "portfolio": "S1 baseline: EW Top 20 (v53 20종목 규칙), commission 15bps, buffer_zone = list(keep_n = 22, entry_n = 20).",
+    "overlay": "none (S0/S1 pure factor signal, DD/VT/Regime 금지 — CLAUDE.md S0/S1 오버레이 금지 규정).",
+    "pit_compliance": "C1: Single-month cross-section OLS → full-sample 통계 없음. C2: 신호 = 월말 t, 적용 = t+1 (1개월 lag). C3: 재무제표 외 analyst consensus → Factor DB Usable_Date 준수. C13: Z_Score_Aligned 사용. C14: load_month_factors()의 Usable_Date ≤ sig_date. C15: Factor DB parquet 직접 로드 금지."
+  },
+
+  "pre_screening": {
+    "base_factor_ic": {
+      "factor": "C13_Revision_Breadth_3m",
+      "ic_all": 0.0305,
+      "ic_bad": 0.0343,
+      "ic_good": null,
+      "conditional_value": 0.0061,
+      "recent_3y_icir": 0.438,
+      "used_in_existing_strategies": false,
+      "source": ".cache/conditional_ic_matrix.csv"
+    },
+    "expected_residual_ic": {
+      "rationale": "원 C13 ic_all 0.0305에서 size·vol 성분 제거 후 잔차 ic는 0.02~0.025 예상 (Hirshleifer et al. 2009 residual 2/3 보존 추정). ICIR 0.35~0.40 유지 예상.",
+      "verification_required": "S1 완료 후 측정 필수. ICIR < 0.20 시 Alpha Lab Gate 미통과 → 재검토."
+    },
+    "factor_correlations_pre_s3": {
+      "vs_C19_raw_correlation_cs": "측정 필요 (C13 raw vs C19 component weights — 예상 0.30~0.50 same-earnings-event overlap)",
+      "vs_C19_residualized_correlation_cs": "측정 필요 (Size/Vol 잔차화 후 예상 0.15~0.25)",
+      "vs_Q07_correlation": "측정 필요 (예상 <0.10, Q07은 earnings stability이지 revision 아님)",
+      "vs_STR_1679_portfolio_return": "S3 단계에서 필수 측정. 목표: ρ<0.2 (독립 alpha 요건)"
+    },
+    "liquidity_check": {
+      "universe_after_filter": "약 1,200~1,500종목 (KOSPI+KOSDAQ, 거래대금 ≥ 2억)",
+      "caveat": "소형주 편향 확인 필수 (C13 원 팩터는 analyst coverage 있는 종목만 → 대형주 쏠림 구조적. 잔차화로 완화)"
+    }
+  },
+
+  "expected_role": "core_alpha",
+  "RoleBias": "RoleBias_Diversifier",
+
+  "why_now": {
+    "pg0_gap": "portfolio_gap_vector.json v1.0.3: SR gap 0.807 (현재 1.193 → 목표 2.0). CAGR 16.14% ACHIEVED, MDD -21.27% ACHIEVED. sleeve_needs = 'diversifier'. cold_start_phase=2.",
+    "family_concentration": "현재 admitted 2건 모두 consensus(C19)+ML_complexity 분포. consensus 0.5 saturation — 그러나 SUE 중심이지 revision breadth는 미탐색 차원. family saturation penalty 회피 설계 (sub_family='analyst_revision_residual'로 차별화).",
+    "data_availability": "Factor DB monthly 288개 팩터에 C13_Revision_Breadth_3m, C04_ESBR, R12_IdioVol, M01_LogSize 모두 등록. load_month_factors() 경유 가능. 신규 데이터 수집 불필요.",
+    "uncorrelated_alpha": "핵심 why_now — 잔차화 설계로 STR_1679 앵커(C19 Core + Q07 Defense)와 포트폴리오 레벨 ρ<0.2 구조적 보장. A안 Quality Composite은 Q07 portfolio-level redundancy 위험으로 드롭됨 (L-118-ext: 단면 상관 낮아도 beta 지배로 포트폴리오 상관 0.78). 잔차화는 이 위험을 수학적으로 제거.",
+    "bucket_alignment": "backlog_buckets.json 현재 explore 86.7% 과잉. 본 가설은 explore 1건 추가이나, Task #3 '독립 alpha 1건 발굴'의 최우선 목표(PG0 gap 메움)가 bucket 정렬보다 상위. 4-bucket 해소는 Task #1 stabilize 3건(STR_1439/STR_1679_D/STR_1631_VD+ 일간) 병행으로 별도 해결."
+  },
+
+  "core_reference": [
+    {
+      "id": "Bernard_Thomas_1989",
+      "title": "Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?",
+      "journal": "Journal of Accounting Research, 27, 1-36",
+      "relevance": "PEAD 원전 — earnings surprise 후 drift. C19(SUE)의 학술 기반. 본 가설은 이와 분리된 analyst revision 차원을 포착.",
+      "part_A_section": "A3 Consensus"
+    },
+    {
+      "id": "Bernard_Thomas_1990",
+      "title": "Evidence that Stock Prices Do Not Fully Reflect the Implications of Current Earnings for Future Earnings",
+      "journal": "Journal of Accounting and Economics, 13(4), 305-340",
+      "relevance": "Earnings 정보의 미래 분기 구성요소에 대한 시장 과소반응. Revision breadth는 애널리스트 미래 추정 갱신 → 본 논문의 'future earnings implication' 채널과 직결.",
+      "part_A_section": "A3 Consensus"
+    },
+    {
+      "id": "Da_Gurun_Warachka_2014",
+      "title": "Frog in the Pan: Continuous Information and Momentum",
+      "journal": "Journal of Financial Economics, 114(2), 275-293",
+      "relevance": "연속적·점진적 정보(continuous small revisions)에서 시장 과소반응이 극대화. Revision breadth는 정확히 이 'frog in pan' 구조. 한국 개인 60% 비중 환경에서 증폭 예상.",
+      "part_A_section": "A3 Consensus"
+    },
+    {
+      "id": "Stickel_1991",
+      "title": "Common Stock Returns Surrounding Earnings Forecast Revisions: More Puzzling Evidence",
+      "journal": "Accounting Review, 66(2), 402-416",
+      "relevance": "애널리스트 추정치 revision 전후 수익률 패턴. Revision의 자체 underreaction 실증 — alpha 근거.",
+      "part_A_section": "A3 Consensus"
+    },
+    {
+      "id": "Hirshleifer_Lim_Teoh_2009",
+      "title": "Driven to Distraction: Extraneous Events and Underreaction to Earnings News",
+      "journal": "Journal of Finance, 64(5), 2289-2325",
+      "relevance": "투자자 주의 제약 하에서 earnings news 과소반응. Revision breadth가 주의 제약 속에서 drift 생성하는 메커니즘 근거.",
+      "part_A_section": "A1 행동편향 / A3 Consensus 교차"
+    }
+  ],
+
+  "lesson_check": [
+    {
+      "lcode": "L-047",
+      "summary": "IndMom과 Consensus는 같은 momentum anomaly 다른 data source. Diversifier는 근본적으로 다른 메커니즘(Value, Quality, Flow)에서 찾아야.",
+      "compliance": "CONDITIONAL_PASS — C13 Revision Breadth는 C19(SUE)와 같은 consensus family이나, (a) realized vs forward-looking 차원 분리 (b) 잔차화로 Size/Vol 공통요인 제거 (c) S3에서 C19와 ρ<0.2 입증 필수. 입증 실패 시 drop."
+    },
+    {
+      "lcode": "L-112",
+      "summary": "Q07 단독 MDD 62.7% Hard Fail. single-factor standalone 실패 패턴.",
+      "compliance": "AWARE — 본 가설도 단일 residual signal이나 C19와 달리 잔차화로 Size 노출 제거. S1 baseline에서 MDD 확인 필수. Hard Fail 시 S5 overlay 고려는 차후."
+    },
+    {
+      "lcode": "L-118-ext",
+      "summary": "단면 상관 낮아도 beta 지배로 포트폴리오 상관 0.78 전례. Beta orthogonality > family orthogonality.",
+      "compliance": "PASS(설계) — R12_IdioVol 잔차화는 residual vol 제거로 beta 노출 완화. 단, 시장 beta(M01) 자체 잔차화는 포함 안 됨 — S3에서 portfolio-level beta 노출 측정 후 필요 시 M01 잔차화 추가."
+    },
+    {
+      "lcode": "L-119",
+      "summary": "정적 EW 팩터 블렌드 alpha 희석. C19+AC21+CR05 1/3씩 SR 0.38.",
+      "compliance": "PASS — 본 가설은 단일 factor(C13 residual). 블렌드 아님. STR_1679와 병합 시 score-blend 대신 sleeve 물리 분리로 설계 (L-484 해소)."
+    },
+    {
+      "lcode": "L-127",
+      "summary": "LambdaRank ICIR 1.03 → SR 0.90. IC ≠ SR. Metric gaming 경계.",
+      "compliance": "AWARE — 예상 residual ICIR 0.35~0.40은 metric gaming 수준 아님. 단, S1 포트폴리오 SR 반드시 확인."
+    },
+    {
+      "lcode": "L-130",
+      "summary": "Individual Contrarian Flow ICIR 1.258 → 포트폴리오 alpha ≈ 0. 유동성 필터 후 alpha 소멸. Flow family 구조적 한계.",
+      "compliance": "PASS — 본 가설은 consensus family(analyst revision)이지 flow family 아님. 유동성 필터 2e8 KRW는 analyst coverage 대형주에는 binding하지 않음 (C13은 coverage 있는 종목만 → 유동성 필터 적용 후 universe 축소 비율 <10% 예상)."
+    },
+    {
+      "lcode": "AX-003",
+      "summary": "[실증 실패] family=value, tags=VALUE_FAIL, EP_STANDALONE, LOW_TURNOVER. KR value family standalone 금지.",
+      "compliance": "PASS — 본 가설 family=consensus. value family 무관."
+    },
+    {
+      "lcode": "L-041",
+      "summary": "Q17+Q23 ICIR 1.27 → 포트폴리오 SR 0.296, FF3/5 alpha 음수. ICIR 강하지만 portfolio alpha 없음. Size exposure 흡수.",
+      "compliance": "PASS(설계) — 본 가설은 Size 잔차화 명시적으로 수행. L-041 재현 방지 설계."
+    }
+  ],
+
+  "risks": [
+    "위험 1 — Family redundancy (L-047 조건부): C13 원 팩터가 C19 구성요소(SUE+ESBR+EPS_Chg)와 same earnings event 기반이므로 raw cross-sectional 상관 0.30~0.50 예상. 잔차화 후 0.15~0.25로 예상되나, 포트폴리오 레벨 ρ<0.2 달성은 S3 실측 의존. 미달 시 drop 또는 S5 변형 필요.",
+    "위험 2 — Coverage bias: C13은 analyst coverage 있는 종목만 계산됨 → 중·대형주 쏠림 구조적. 잔차화로 완화되나 universe 편향 잔존. Small-cap alpha 포기.",
+    "위험 3 — ICIR 현저성 부족 (0.438 base → 0.35~0.40 residual 예상): Alpha Lab Gate ICIR ≥ 0.20 통과는 여유 있으나, SR 2.0 기여에는 제한적. 본 가설 단독으로 SR gap 0.807 전부 해소는 불가 — 스테이지별 incremental 기여 설계.",
+    "위험 4 — L-127 (IC ≠ SR): 잔차 IC가 portfolio SR로 전환되지 않을 가능성. Barber·Odean·Hirshleifer 전통상 revision alpha는 실재하나, 한국시장 유동성·거래비용 고려 시 감쇠 예상.",
+    "위험 5 — Rolling 3Y ICIR decay: recent_3y_icir 0.438은 전체 기간 대비 낮을 수 있음. alpha decay trend 확인 필요 (S2 rolling IC analysis).",
+    "위험 6 — C19 합성 내부 구조상 ESBR(Earnings Surprise Base Revision) 자체가 revision 정보 포함 → C19 residual → C13_resid 상관이 예상보다 높을 수 있음. S3에서 partial correlation 측정 필수.",
+    "위험 7 — Single-month cross-section OLS 잔차화의 statistical power: 1,200~1,500 종목 n에 2개 regressor은 충분하나, outlier 민감. winsorization 1~99% 권고."
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR ≥ 0.20 (Global rule)",
+    "pit_gate": "C1~C15 전수 통과",
+    "portfolio_gate": "MDD < 45% (Hurdle v2.2 Hard Fail 기준 내)",
+    "liquidity_gate": "유동성 필터 후 average daily holdings ≥ 20",
+    "s3_gate_prospective": "vs STR_1679 portfolio-level ρ < 0.2 (독립 alpha 요건, 본 가설 제1 why_now)"
+  },
+
+  "forge_handoff_plan": {
+    "s1_implementation_notes": "S0 debate APPROVE 시 factor_engine.R 초안을 Forge에 전달. 주요 구현 포인트: (1) load_month_factors()로 C13, M01_LogSize(or MarketCap), R12_IdioVol 로드. (2) 매월 lm(C13 ~ log_mcap + R12, data=monthly_df)로 OLS 잔차 추출 — 단일 월 cross-section. (3) resid → cross-sectional Z-score → Top 20 EW. (4) v53 20종목 규칙 준수. (5) DD/VT/Regime overlay 금지 (S1 pure factor).",
+    "estimated_alpha": "SR 0.4~0.7 범위 예상 (잔차 ICIR 0.35~0.40 × portfolio conversion ratio 0.3~0.5, historical 한국시장 consensus single-factor 전례). STR_1679와 50/50 blend 또는 sleeve 분리 시 포트폴리오 레벨 SR +0.1~0.2 기여 예상.",
+    "synthesis_candidate": "S5 mutation에서 STR_1679 anchor에 diversifier sleeve로 통합 가능. Core 15(C19) + Def 5(Q07+D29) + Div 5(C13_resid) = N_HOLD 25 → v53 20종목 규칙 위반 → Core 12 + Def 4 + Div 4 = 20 로 재설계 필요."
+  }
+}
