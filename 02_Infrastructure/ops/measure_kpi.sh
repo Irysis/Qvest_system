@@ -3,7 +3,7 @@
 # v53 Sprint 1: KPI 측정 스크립트
 # - Pipeline 중복 실행률 (동일 strategy TRIGGER 2회 이상)
 # - DONE_S5 → DONE_S6 전환 p95 latency
-# - qlead_supervisor 자동 깨움 빈도 vs 수동 재진입 수
+# - legacy qlead_supervisor 로그 샘플링 (v50/v52 사용 시에만 존재)
 #==============================================================================
 
 set -u
@@ -85,12 +85,10 @@ else
 fi
 echo
 
-# 3. qlead_supervisor 자동 깨움 빈도
+# 3. legacy qlead_supervisor (v50/v52) — v53에서는 비활성, 파일 있을 때만 표시
 if [ -f "$SV_LOG" ]; then
   auto=$(grep -c "\[sv\] pane .* woke" "$SV_LOG" 2>/dev/null || echo 0)
-  echo "👻 supervisor 자동 깨움 (30초마다 check): ${auto}회"
-else
-  echo "👻 supervisor log 없음"
+  echo "👻 legacy supervisor log 감지 (${auto}회 깨움) — v53은 TeamCreate로 대체됨"
 fi
 
 echo

@@ -48,7 +48,7 @@ model: sonnet
 
 - **Grade A 미만 전략 포함 금지**
 - 상관 0.5+ 전략 2개 이상 동시 포함 금지 (다양성 위반)
-- 종목수 30개 제약 (CLAUDE.md L-484) 앙상블 시에도 유지 — score-level만 허용
+- 종목수 20개 제약 (v53 신규, CLAUDE.md L-484) 앙상블 시에도 유지 — score-level만 허용
 - PIT 위반 strategy는 즉시 reject
 
 ## 입력 경로

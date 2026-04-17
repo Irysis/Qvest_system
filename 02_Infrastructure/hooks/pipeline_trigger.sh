@@ -180,6 +180,8 @@ with open('$f', 'w') as fp: json.dump(d, fp, indent=2)
     local codex_target="$MAILBOX/codex/inbox/TODO_S6_${strategy}.json"
     mkdir -p "$MAILBOX/codex/inbox" 2>/dev/null
     if [ ! -f "$judge_target" ]; then
+      # v53 S2.7: Mutation Tracker 갱신 (S5 완료 시 점수 집계)
+      QVEST_PROJECT_DIR="$PROJECT_ROOT" python3 "$PROJECT_ROOT/02_Infrastructure/validation/mutation_tracker.py" >> "$LOG" 2>&1 || true
       cp "$f" "$judge_target"
       cp "$f" "$codex_target"
       echo "$(date +%H:%M:%S) TRIGGER: Forge DONE_S5 → Judge+Codex TODO_S6 ($strategy)" >> "$LOG"

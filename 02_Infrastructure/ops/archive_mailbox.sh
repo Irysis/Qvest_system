@@ -44,7 +44,7 @@ echo "총 이동: $TOTAL 건"
 CACHE_LOGS="$PROJECT_ROOT/.cache/logs_archive/$YM"
 mkdir -p "$CACHE_LOGS" 2>/dev/null
 log_moved=0
-for log_file in /tmp/pipeline_trigger.log /tmp/artifact_validation.log /tmp/qlead_supervisor.log; do
+for log_file in /tmp/pipeline_trigger.log /tmp/artifact_validation.log /tmp/qlead_supervisor.log /tmp/axiom_weekly.log /tmp/axiom_quarterly.log; do
   if [ -f "$log_file" ]; then
     age=$(( ($(date +%s) - $(stat -c %Y "$log_file")) / 86400 ))
     if [ "$age" -gt 90 ]; then

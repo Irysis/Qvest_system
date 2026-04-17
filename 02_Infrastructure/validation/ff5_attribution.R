@@ -1,10 +1,12 @@
-# v53 Sprint 2 S2.10: FF5a Attribution — Fama-French 5-factor alpha 검증
+# v53 Sprint 2 S2.10/S2.9: FF5a Attribution — Fama-French 5-factor alpha 검증
 # 한국 시장 FF5 팩터 회귀 + Newey-West 보정 + alpha t-stat.
-# Grade A gate 후보는 |t_alpha| > 3.0 (Harvey, Liu & Zhu 2016) 권장.
+# Grade A gate 후보는 |t_alpha| > 3.0 (Harvey, Liu & Zhu 2016) 강제.
 #
-# 현재 구현:
-#   - v1 soft penalty (hurdle_gate.R D073로 연결, -10~0점)
-#   - Grade A hard gate는 S2.9 통합 시점에 `strict_mode=TRUE` opt-in
+# 현재 구현 (v53 S2.9 통합 — 2026-04-17):
+#   - v1 soft penalty (hurdle_gate.R D074로 연결, -10~0점)
+#   - Grade A hard gate: strict_mode 기본 TRUE — run_hurdle_gate(ff5_result=...) 주입 시
+#     |t_alpha| < 3.0 이면 Grade A → B 강등 (hurdle_gate.R D074 블록)
+#   - QVEST_STRICT_MODE=FALSE 환경변수로 opt-out 가능
 #
 # Usage:
 #   source("02_Infrastructure/validation/ff5_attribution.R")

@@ -1,0 +1,68 @@
+{
+  "axiom_id": "AX-003",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement": "[실증 실패 규칙 초안] family=value, tags=VALUE_FAIL,EP_STANDALONE,LOW_TURNOVER, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-132",
+    "L-135"
+  ],
+  "scope": {
+    "market": "KR",
+    "factor_family": "value",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence": {
+    "independent_l_codes": 2,
+    "independent_strategies": 2,
+    "strategies": [
+      "STR_1654_BCSNA",
+      "STR_1663"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정"
+  },
+  "falsification": {
+    "attempts": [
+      {
+        "description": "STR_1663 EP 단독",
+        "result": "reproduced_failure",
+        "effect_retained": 0.9
+      },
+      {
+        "description": "STR_1654 BCSNA 섹터중립 accrual",
+        "result": "reproduced_failure",
+        "effect_retained": 0.8
+      }
+    ],
+    "note": "supporting_l_codes 자체가 반증 시도 — 둘 다 실패로 negative polarity 확증"
+  },
+  "mechanism": {
+    "economic_explanation": "한국시장 value factor(EP, accrual 등) standalone long-only는 (1) 최근 10년 value premium 약화, (2) 단독 구현 시 quality/growth mix 부재, (3) 섹터중립은 오히려 alpha 희석 → 지속적 Grade F. Fama-French(1993) value premium이 KR에서는 quality-overlay 또는 factor blending 없이 재현 불가 (박종원 2018; Asness 2019 QMJ).",
+    "mechanism_type": "market_structural",
+    "causal_plausibility": "moderate_to_high"
+  },
+  "oos_validation": {
+    "oos_months": 12,
+    "oos_effect_vs_is": 0.12,
+    "note": "STR_1654 OOS retention 0.12 → IS 대비 88% 열화, 실패 재현 강함"
+  },
+  "promotion": {
+    "source_candidate": "CAND_20260417_value_negative_L-132_L-135",
+    "weighted_score": 0.823,
+    "threshold": 0.8,
+    "axis_scores": {
+      "independence": 0.85,
+      "rigor": 1,
+      "falsification": 0.8,
+      "external": 0.5,
+      "mechanism": 1
+    },
+    "promoted_at": "2026-04-17",
+    "next_review": "2026-07-16"
+  },
+  "enforcement": "",
+  "status": "active",
+  "version": 1
+}

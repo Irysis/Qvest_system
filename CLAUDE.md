@@ -48,9 +48,9 @@ When ending a productive session (strategies run, infra changed, or significant 
   3. **Governor** (agent): 포트폴리오 적합 — PG0 gap, family saturation, role admission, MDD 기여
   4. **Quant** (agent): 정량 팩트체크 — ICIR, 상관, data 가용성, R 구현
   5. **Academic** (agent): 학술 검증 — 논문 타당성, 메커니즘, 한국 실증, 인용 실질성
-- **Hook 강제 (우회 불가)**:
+- **Hook 강제 (우회 불가, v53)**:
   1. `s0_debate_guard.sh` (PreToolUse[Agent]): 단일 Agent에 2개+ 역할 주입 시 스폰 차단
-  2. `s0_verdict_validator.sh` (PostToolUse[Write]): S0_VERDICT에 debaters 배열 없으면 Write 차단
+  2. `s0_debate_enforcer.sh` (PostToolUse[Write]): R1/R2/R3/VERDICT 상태 머신 + transcript/final_scores/debaters 스키마 검증 + Codex R2 자동 트리거(S2.13)
   3. `s0_verdict_router.sh` (FileChanged): debaters agent_id 중복/역할 누락 시 라우팅 차단
 - **S0_VERDICT 필수 스키마**: `debaters: [{agent_id(고유), role, score, findings}]` x 5건
 - **필수 역할**: codex_critic, risk_manager, governor, quant, academic
@@ -86,7 +86,7 @@ When ending a productive session (strategies run, infra changed, or significant 
 
 ## S0/S1 오버레이 금지 + V6 Gap-Directed 가설 (Level 0)
 - **S0(가설)/S1(구현)에서 DD/VT/Regime 오버레이 적용 금지.**
-- S1은 순수 팩터 신호 측정. EW 30종목 + 15bps + 유동성만.
+- S1은 순수 팩터 신호 측정. EW 20종목 + 15bps + 유동성만.
 - **예외**: 전략 자체가 국면을 alpha source로 사용하는 경우만 Regime 허용.
 - **오버레이는 S5 Mutation에서만.** Alpha 확인 후 DD(6~8/20~25) 추가 가능.
 - **S5 역할 분리**: Scout이 Research Slate(4슬롯)에서 mutation 선택 + 설계, Forge가 실행만.
@@ -147,7 +147,7 @@ When ending a productive session (strategies run, infra changed, or significant 
   - C5: overlay 시그널 t-1 기준 | C6: survivorship | C7: 자동 검출 패턴
   - C8: FM weight same-day 금지 | C9: VT/DD same-day 금지
   - C10: 유동성 필터 당일 거래량 금지 | **C11: 데이터 시간축 검증 (FRED 시차 등)**
-- **종목수 최대 30개**: 슬리브 조합 시에도 최종 포트폴리오는 반드시 30종목 이하. 예: 2-sleeve → N_def + N_ind = 30 (FM-weighted allocation)
+- **종목수 최대 20개 (v53 신규)**: 슬리브 조합 시에도 최종 포트폴리오는 반드시 20종목 이하. 예: 2-sleeve → N_def + N_ind = 20 (FM-weighted allocation). 과거 30종목 전략(STR_1038~1043 등)은 참고용만 유지.
 - **유동성 필터 필수 (실투용)**: 20일 평균 거래대금 ≥ 2억원 (LIQ_THRESHOLD = 2e8)
 
 ## Key Paths
@@ -160,31 +160,34 @@ When ending a productive session (strategies run, infra changed, or significant 
 - Always use `source('run_all.R')` pattern (NOT `--file=` due to Korean path encoding)
 - Always `cd` to strategy directory first, then `Rscript -e 'source("run_all.R")'`
 
-## Multi-Agent Team System v52 (Hybrid: tmux + Agent Tool + TeamCreate + qepm)
-전략 연구에 **하이브리드 멀티에이전트** 아키텍처를 사용한다.
-- **tmux research (상시)**: 4 독립 Claude Code 인스턴스 — Scout(pane 0), Forge(pane 1), Judge(pane 2), Governor(pane 3). 항상 대기.
-- **Agent tool (온디맨드)**: Q-Lead가 필요 시 스폰. Risk Manager, Architect, Codex Critic. SubagentStop hook 자동 발동.
-- **TeamCreate (teammate)**: 논의와 협업이 필요한 작업 (**S0 Debate 5인**, S5 Iteration, PG2 Design). TeammateIdle/TaskCompleted hook.
-  - S0 Debate: TeamCreate 5인팀 (Codex Critic은 Bash 직접 호출, 4 Claude teammate + Q-Lead 집계)
-  - 토론자 간 반박/보완 가능 (SendMessage). 최종 채점은 독립.
+## Multi-Agent Team System v53 (TeamCreate + Hook 단일 세션 모델)
+전략 연구는 **Q-Lead 단일 Claude 세션** 안에서 TeamCreate + Agent tool + Hook으로 운영된다.
+- **TeamCreate (상시 팀)**: 연구 사이클 동안 Scout / Forge / Judge / Governor teammate 4인을 Q-Lead 세션에서 spawn. 모든 Hook (SubagentStop, FileChanged, TeammateIdle, TaskCompleted)이 Q-Lead 세션 내에서 자동 발동.
+- **Agent tool (온디맨드)**: 추가 역할은 필요 시 Agent 도구로 스폰. Risk Manager, Architect, Codex Critic, Blender 등.
+- **S0 Debate**: `/s0-debate` 스킬이 5인 teammate (codex_critic 포함) + Q-Lead 집계 방식으로 실행. 토론자 간 SendMessage로 반박/보완.
+
+### v50/v52 레거시 (deprecated)
+- tmux research 4-pane (독립 Claude 4개 — pane 0 scout / 1 forge / 2 judge / 3 governor)
+- tmux supervisor (qlead_supervisor.sh R 상주)
+- 부팅 시 자동 종료 (bootstrap.sh). `QVEST_KEEP_LEGACY_TMUX=1`로 유지 가능하지만 v53 Hook과 충돌 위험.
 
 ### 인프라
-- **프롬프트**: `02_Infrastructure/prompts/` — scout_init.md, forge_init.md, judge_init.md, governor_init.md, risk_manager_init.md, codex_critic_prompt.md, codex_s5_review_prompt.md, qlead_init.md
-- **에이전트 정의**: `.claude/agents/` — risk-manager.md, architect.md
-- **슬래시 커맨드**: `.claude/commands/` — /scout, /forge, /judge, /governor, /launch-team, /qvest
-- **Skills**: 27개 — Skill-scoped hooks + 동적 주입(`!` 문법) 지원
-- **Hooks**: 17개 4-Tier (command L2~L3 / L4 구조 강제 / LLM agent+prompt / bootstrap L1)
-- **qepm 패키지**: `qepm/` — 메모리 파이프라인(R0~R6), 오케스트레이션, 레지스트리
-- **tmux 세션**: main(Q-Lead), research(4pane), supervisor(R stage_gate 상주), ttyd(웹터미널)
+- **프롬프트**: `02_Infrastructure/prompts/` — scout_init.md, forge_init.md, judge_init.md, governor_init.md, risk_manager_init.md, codex_critic_prompt.md, codex_s5_review_prompt.md, qlead_init.md (모두 `<!-- AXIOM_INJECT -->` 마크업 포함)
+- **에이전트 정의**: `.claude/agents/` — risk-manager.md, architect.md, blender.md, forge.md
+- **슬래시 커맨드**: `.claude/commands/` — /qvest, /scout, /forge, /judge, /governor, /qlead, /launch-team
+- **Skills**: 27개 — Skill-scoped hooks + 동적 주입(`!`) 지원
+- **Hooks**: 17개 4-Tier (Pre L3 hard block / Post L2 soft gate + L4 구조 강제 / FileChanged + Teammate)
+- **qepm 패키지**: `qepm/` — 메모리 파이프라인(R0~R6), 오케스트레이션, 레지스트리, R7 Axiom Store
+- **상시 tmux**: `rc` (persistent_remote_control — 텔레그램 listener 등 데몬) 1개만
 
-### 에이전트 역할 (5 상시 + 3 온디맨드 + 4 미구현)
+### 에이전트 역할 (4 teammate + 3 온디맨드 + 4 미구현)
 | Agent | 배치 | 역할 |
 |-------|------|------|
-| **Q-Lead** | tmux main (상시) | 오케스트레이션, ResearchOps, 자원 관리, qepm memory commit, 텔레그램 보고 |
-| **Scout** | tmux research:0 (상시) | 문헌 조사, 가설 설계, factor_engine.R 초안, Soft Prior 정량화, 실패 패턴 회피 |
-| **Forge** | tmux research:1 (상시) | 전략 코드 완성, 백테스트 실행(최대 3개 동시), 표준 헤더 필수, preflight_check 호출 |
-| **Judge** | tmux research:2 (상시) | Gate 0~6 순차 심사, C1~C15 미래참조 검증, FF5/DSR, tail_risk Gate 6, Role Audit |
-| **Governor** | tmux research:3 (상시) | PG0~PG3 포트폴리오 편입 판정, gap 진단, role admission, 배분 설계 |
+| **Q-Lead** | 메인 Claude 세션 (유일) | 오케스트레이션, 팀 스폰, Task 할당, qepm memory commit, 텔레그램 보고 |
+| **Scout** | TeamCreate teammate | 문헌 조사, 가설 설계, factor_engine.R 초안, Soft Prior 정량화, 실패 패턴 회피 |
+| **Forge** | TeamCreate teammate | 전략 코드 완성, 백테스트 실행(최대 3개 동시), 표준 헤더 필수, preflight_check 호출 |
+| **Judge** | TeamCreate teammate | Gate 0~6 순차 심사, C1~C15 미래참조 검증, FF5/DSR, tail_risk Gate 6, Role Audit |
+| **Governor** | TeamCreate teammate | PG0~PG3 포트폴리오 편입 판정, gap 진단, role admission, 배분 설계 |
 | **Risk Manager** | Agent tool (온디맨드) | L13 Risk Engine. tail_risk, CVaR/CDaR 검증, regime stress. S0 Debate/S5/PG2 teammate |
 | **Architect** | Agent tool (온디맨드) | Hook/Pipeline/Layer 구조 설계·진단·개선. 인프라 아키텍처 결정 |
 | **Codex Critic** | Bash GPT-5.4 (온디맨드) | S0 Debate cross-model 다양성, 설계 PIT, weakest assumption |
@@ -285,3 +288,9 @@ regime-classification, axiom-io, telegram-protocol, risk-modeling-advanced
 - **AX-002**: 규칙 안에서 찾아낸 성과가 진짜 성과. 프로세스 우회 = 판단의 미래참조 = C1 위반 동급.
 
 계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변)
+
+### AX-003 [실증] [실패]: [실증 실패 규칙 초안] family=value, tags=VALUE_FAIL,EP_STANDALONE,LOW_TURNOVER, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)
+- 범위: market=KR, family=value, 
+- 근거: L-132, L-135 (L-code 2건)
+- 5축 점수: 0.82 (I=0.85 R=1.00 F=0.80 E=0.50 M=1.00)
+- 승격: 2026-04-17 | 다음 검토: 2026-07-16

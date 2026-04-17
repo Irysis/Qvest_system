@@ -47,7 +47,7 @@ for (i in seq_along(candidates)) {
 ## 제약 (엄수)
 
 - **Grade A 미만 포함 금지** (CLAUDE.md)
-- **종목수 30 제약**: score-level blend만 허용 (return blend는 L-484 위반)
+- **종목수 20 제약 (v53)**: score-level blend만 허용 (return blend는 L-484 위반)
 - **PIT 필수**: 각 후보 전략의 s6_validation.pit_audit.clean 확인
 - 상관 0.5+ 2쌍 이상 → 자동 reject
 

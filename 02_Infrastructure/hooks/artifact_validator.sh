@@ -55,18 +55,40 @@ if d.get('schema_version') == 'v53':
 
   # 산출물 JSON 스키마 검증 (s6_validation은 ;;& 로 이미 처리 후 여기로 폴스루)
   *stage_artifacts/*.json)
-    python3 -c "
+    P2B_RESULT=$(python3 -c "
 import json, sys
 try:
     with open('$FILE') as f:
-        d = json.load(f)
+        raw = f.read()
+        d = json.loads(raw)
     required = ['strategy_id', 'factor_id']
     missing = [r for r in required if r not in d]
     if missing:
-        print(f'$(date +%H:%M:%S) SCHEMA_WARN: $FILE missing {missing}', file=sys.stderr)
+        print(f'SCHEMA_WARN|$FILE missing {missing}', file=sys.stderr)
+
+    # v53 Sprint 3 P2-B: 금지 합리화 표현 전 stage_artifacts 스캔
+    BANNED = [
+        '영향 미미', '관행적 허용', '보수적이면 괜찮다',
+        '대부분 결과 동일', '이미 반영되어 있었을 것',
+        '백테스트 기간이 충분히 길어서 상쇄',
+        '실무적으로 유의미', '이 정도면 괜찮다',
+        '대체로 동일', '무시할 수 있는', '무시 가능한 수준',
+    ]
+    hits = [phr for phr in BANNED if phr in raw]
+    if hits:
+        print('RATIONALIZATION|' + '; '.join(hits))
 except Exception as e:
-    print(f'$(date +%H:%M:%S) PARSE_ERROR: $FILE — {e}', file=sys.stderr)
-" 2>> "$LOG"
+    print(f'PARSE_ERROR|$FILE — {e}', file=sys.stderr)
+" 2>> "$LOG")
+
+    # 금지 표현 탐지 시 파일을 .p2b_violation 접미사로 격리 + block
+    if echo "$P2B_RESULT" | grep -q "^RATIONALIZATION|"; then
+      PHRASES=$(echo "$P2B_RESULT" | grep "^RATIONALIZATION|" | cut -d'|' -f2)
+      mv "$FILE" "${FILE}.p2b_violation" 2>/dev/null
+      echo "$(date +%H:%M:%S) P2-B_BLOCK: $FILE — $PHRASES" >> "$LOG"
+      printf '{"decision":"block","reason":"[P2-B Rationalization Guard] 금지 합리화 표현 탐지: [%s]. qepm rules의 PIT-합리화 표현 위반. 파일을 %s.p2b_violation 으로 격리했습니다. 증거 기반으로 재작성 후 재저장하세요."}' "$PHRASES" "$FILE"
+      exit 0
+    fi
     ;;
 
   # PIT 금지 표현 탐지
@@ -108,5 +130,70 @@ except Exception as e:
     mkdir -p "$PROJECT_ROOT/stage_artifacts" 2>/dev/null
     echo "$strategy" > "$PROJECT_ROOT/stage_artifacts/_judge_next_strategy.txt"
     echo "$(date +%H:%M:%S) JUDGE_POINTER: $strategy" >> "$LOG"
+    ;;&
+
+  # v53 S2.7: S5 mutation/slate artifact 작성 시 mutation_tracker.json 자동 갱신
+  *stage_artifacts/s5_mutation_*.json|*stage_artifacts/s5_research_slate_*.json|*stage_artifacts/s5_synthesis_slate_*.json)
+    QVEST_PROJECT_DIR="$PROJECT_ROOT" python3 "$PROJECT_ROOT/02_Infrastructure/validation/mutation_tracker.py" >> "$LOG" 2>&1 || true
+    ;;&
+
+  # v53 S2.11: s6_judge 작성 시 Role Honesty Audit 자동 호출 (background)
+  *stage_artifacts/s6_judge_*.json|*stage_artifacts/s6_validation_*.json)
+    # 이미 audit artifact 있으면 skip (중복 방지)
+    _sid=$(basename "$FILE" | grep -oP 'STR_[0-9A-Za-z_]+' | head -1)
+    if [ -n "$_sid" ] && [ ! -f "$PROJECT_ROOT/stage_artifacts/role_honesty_${_sid}.json" ]; then
+      (
+        QVEST_PROJECT_DIR="$PROJECT_ROOT" \
+        Rscript "$PROJECT_ROOT/02_Infrastructure/validation/role_honesty_runner.R" "$FILE" \
+          >> "$LOG" 2>&1
+      ) &
+    fi
+    ;;&
+
+  # v53 S2.15: hurdle_result.json 또는 s6_judge 작성 시 grade_a_catalog 자동 갱신
+  */hurdle_result.json|*stage_artifacts/s6_judge_*.json|*stage_artifacts/s6_validation_*.json)
+    (
+      QVEST_PROJECT_DIR="$PROJECT_ROOT" \
+      python3 "$PROJECT_ROOT/02_Infrastructure/validation/grade_a_catalog_builder.py" \
+        >> "$LOG" 2>&1
+    ) &
+    ;;&
+
+  # v53 Sprint 4 AX-P0: l_code_*.json 작성 시 harvester + cluster_extractor 자동 실행
+  *stage_artifacts/l_code_*.json)
+    (
+      QVEST_PROJECT_DIR="$PROJECT_ROOT" \
+      python3 "$PROJECT_ROOT/02_Infrastructure/axiom/lcode_harvester.py" \
+        >> "$LOG" 2>&1 && \
+      QVEST_PROJECT_DIR="$PROJECT_ROOT" \
+      python3 "$PROJECT_ROOT/02_Infrastructure/axiom/cluster_extractor.py" \
+        >> "$LOG" 2>&1
+    ) &
+    ;;&
+
+  # v53 Sprint 3 P3-B: s0_record 작성 시 backlog bucket 모니터 갱신 (경고만, block X)
+  *stage_artifacts/s0_record_*.json)
+    (
+      QVEST_PROJECT_DIR="$PROJECT_ROOT" \
+      python3 "$PROJECT_ROOT/02_Infrastructure/validation/backlog_bucket_monitor.py" \
+        >> "$LOG" 2>&1
+    ) &
+    # 기존 backlog_buckets.json 경고 존재 시 additionalContext로 주입 (sync 버전 재실행 방지)
+    BL_CACHE="$PROJECT_ROOT/.cache/backlog_buckets.json"
+    if [ -f "$BL_CACHE" ]; then
+      BL_WARN=$(python3 -c "
+import json
+try:
+    d = json.load(open('$BL_CACHE'))
+    w = d.get('imbalance_warnings', [])
+    if w: print(' / '.join(w))
+except: pass
+" 2>/dev/null)
+      if [ -n "$BL_WARN" ]; then
+        CTX_ESC=$(printf '%s' "[P3-B Backlog] 4-bucket 분포 편향 (경고): $BL_WARN. qepm §1 Exploit 50%/Stabilize 20%/Explore 20%/Diagnose 10% 기준." | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+        echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$CTX_ESC}}"
+        exit 0
+      fi
+    fi
     ;;
 esac

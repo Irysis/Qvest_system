@@ -24,25 +24,42 @@ suppressPackageStartupMessages({
 }
 
 # ── 활성화 조건: Grade A 독립 alpha 4+ ───────────────────────────────
+# S2.15 cleanup: grade_a_catalog.json을 builder가 재생성하는 v53 스키마 사용
+#   {schema_version, last_updated, n_strategies, grade_counts, strategies:[...]}
 blender_check_activation <- function(min_n = 4L, max_corr = 0.3) {
   root <- .blender_root()
   catalog <- file.path(root, "04_Research/grade_a_catalog.json")
   if (!file.exists(catalog)) {
     return(list(activated = FALSE,
-                reason = "grade_a_catalog.json missing (S2.15 cleanup 필요)"))
+                reason = "grade_a_catalog.json 미생성. python3 02_Infrastructure/validation/grade_a_catalog_builder.py 실행 필요."))
   }
-  grade_a <- tryCatch(jsonlite::fromJSON(catalog, simplifyVector = FALSE),
+  cat_obj <- tryCatch(jsonlite::fromJSON(catalog, simplifyVector = FALSE),
                       error = function(e) NULL)
-  if (is.null(grade_a) || length(grade_a) < min_n) {
+  if (is.null(cat_obj)) {
     return(list(activated = FALSE,
-                reason = sprintf("Grade A %d건 < %d 필요",
-                                 length(grade_a %||% list()), min_n)))
+                reason = "grade_a_catalog.json 파싱 실패"))
   }
-  # 상관 행렬 (실제 return 접근 필요 — 여기선 메타만)
-  list(activated = TRUE,
-       n_candidates = length(grade_a),
-       candidates = names(grade_a) %||% character(0),
-       note = sprintf("조건 충족: Grade A %d건", length(grade_a)))
+  strategies <- cat_obj$strategies %||% list()
+  n <- length(strategies)
+  if (n < min_n) {
+    return(list(activated = FALSE,
+                n_candidates = n, min_n = min_n,
+                reason = sprintf("Grade A %d건 < %d 필요 (max_corr=%.2f 조건 검증은 returns 로드 필요)",
+                                 n, min_n, max_corr)))
+  }
+  # 상관 행렬은 실제 returns 로드 시 blender_correlation_matrix() 경유
+  list(
+    activated = TRUE,
+    n_candidates = n,
+    max_corr_threshold = max_corr,
+    candidates = vapply(strategies,
+                        function(s) as.character(s$strategy_id %||% "?"),
+                        character(1)),
+    last_updated = cat_obj$last_updated %||% "unknown",
+    grade_counts = cat_obj$grade_counts %||% list(),
+    note = sprintf("조건 충족: Grade A %d건 (스키마 v53 %s)",
+                    n, cat_obj$schema_version %||% "?")
+  )
 }
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a

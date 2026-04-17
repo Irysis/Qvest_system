@@ -5,9 +5,9 @@
 # 역할:
 #   - hurdle_result.json 생성 + 60초 경과 시 대응 s6_validation 존재 확인
 #   - 없으면 Judge mailbox에 TODO_S6_REVIEW 생성 (중복 방지)
-#   - qlead_supervisor.sh가 이 TODO를 감지하여 Judge pane /judge 자동 주입
+#   - pipeline_trigger.sh가 해당 TODO를 감지하여 Judge teammate에 라우팅
 #
-# Monitoring mode — 실제 Judge agent 강제 스폰 X (supervisor 위임).
+# Monitoring mode — 실제 Judge agent 강제 스폰 X (Q-Lead가 TeamCreate로 위임).
 # backward-compat: Judge가 hurdle 직후 바로 s6_validation 작성하는 기존 워크플로 존중.
 #==============================================================================
 
