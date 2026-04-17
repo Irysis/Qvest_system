@@ -1,0 +1,143 @@
+{
+  "hypothesis_id": "H_1683",
+  "factor_id": "H_1683_Factor_Seasonality_Diversifier",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Team-lead Task #6 지시 — Explore 버킷 신규 diversifier 후보 2건+ 사전 탐색. 표준 standalone s0_record 초안 (5인 debate 없음). H_1676/H_1682 이후 후속 hypothesis.",
+  "path_type": "A (논문→가설)",
+  "bucket": "explore",
+
+  "hypothesis_summary": {
+    "name": "Factor Seasonality Diversifier (Same-Calendar-Month Momentum)",
+    "family": "seasonality",
+    "sub_family": "same_month_historical_return",
+    "expected_role": "diversifier",
+    "mechanism": "각 종목의 과거 20년 same-calendar-month 평균 초과수익률 계산 (예: 4월 리밸런싱 시 과거 4월들의 평균 수익률). Top 20 EW. 이 signal은 consensus/value/quality family와 직교 → diversifier. 한국 실증: Kim-Lee 2020 (해당 논문 확인 필요).",
+    "why_now": "PG0 SR gap 0.807 해소 필수 + H_1676(consensus) 이후 cross-family diversifier 필요. Seasonality family는 factor taxonomy §9 미구축. Factor DB M21_Seasonality 존재하나 standalone 가설 없음 (conditional_ic_matrix 확인). ic_bad +0.028 → bad regime diversifier 가능성.",
+    "expected_role_reason": "Seasonality signal은 fundamentals/consensus/risk family와 원천적으로 독립 (time-series property only). STR_1631/STR_1656 기존 diversifier와 low correlation 예상."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Heston, Steven L. and Ronnie Sadka, 2008, 'Seasonality in the Cross-Section of Stock Returns', Journal of Financial Economics 87, 418-445.",
+    "core_reference": "Part A 참조번호 TBD + Heston & Sadka 2008 JFE (same-month return anomaly 최초 체계화)",
+    "secondary_references": [
+      "Keloharju, Matti, Juhani T. Linnainmaa, and Peter Nyberg, 2016, 'Return Seasonalities', Journal of Finance 71, 1557-1590. (글로벌 확장, 40개국 실증)",
+      "Heston, Steven L., Ronnie Sadka, 2010, 'Seasonality in the Cross-Section of Stock Returns: The International Evidence', Journal of Financial and Quantitative Analysis 45, 1133-1170.",
+      "Kim, D. and K. Lee (2020), '한국 주식시장의 계절성 효과', 한국재무관리학회 (직접 확인 필요 — placeholder)"
+    ],
+    "mechanism_academic": "투자자 attention cycle, 기관 재조정 패턴, 배당/이익공시 캘린더 집중 → 같은 calendar month에 반복되는 수익률 패턴. Heston-Sadka 2008 원 결과: 과거 20년 same-month 평균 수익률 high → 향후 same-month high 수익률 (t-stat 3.5+). Keloharju 2016: 40개국 중 37개국 유효.",
+    "korean_specific": "한국 calendar cycle: 3월 주총/이익공시, 5월 배당락, 10~11월 연말 결산 선반영 → seasonality 강도 예상. Kim-Lee 2020 (cite 확인 필요)."
+  },
+
+  "core_reference": "Heston & Sadka 2008 JFE 'Seasonality in the Cross-Section of Stock Returns' + Keloharju-Linnainmaa-Nyberg 2016 JF 'Return Seasonalities' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Same_Calendar_Month_Return_20Y",
+      "formula": "For stock i at month t (e.g., 2024-04), compute average of stock i's returns in all previous Aprils over last 20Y (2004-04 to 2023-04, max 20 observations). Min 10 observations required.",
+      "lookback": "240 months (20Y) expanding to minimum 120 months",
+      "data_source": "RAWDATA monthly returns (load_rawdata()) — C15 compliant",
+      "pit_note": "t월 리밸런싱 시 t-1 이전 data only 사용. Same-calendar-month 계산에 현재 t 포함 금지 (C1/C2 준수)."
+    },
+    "winsorization": "1~99% cross-section",
+    "z_score_method": "Z_Score_Aligned per month (C13 준수)",
+    "ortho_method": "raw same-month return Z-score 사용. (H_1676과 대비) size/IdioVol regressors 없음 — seasonality는 time-series property이므로 cross-section residualization 의미 약함. 단 S2에서 size-neutrality 검증 권장.",
+    "final_signal": "z_same_calendar_month_return → Top 20 EW, monthly rebalance"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE (S0/S1 overlay 금지)"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.20~0.40 (Factor DB M21_Seasonality ICIR 0.179 기준 + same-month 구성 상향 기대)",
+    "sr_forecast": "0.30~0.60 standalone (diversifier 성격, standalone SR 높지 않음)",
+    "cagr_forecast": "6~12%",
+    "mdd_forecast": "30~45%",
+    "diversifier_fit": "Portfolio 편입 시 blended SR 기여 +0.05~0.15 (cross-family 독립성 전제)",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.20 + size-neutrality check",
+      "S3": "vs STR_1631 rho < 0.3, vs STR_1656 rho < 0.3, vs STR_1679v2 rho < 0.3",
+      "S6_defense_alpha": "해당 없음 (diversifier role)"
+    }
+  },
+
+  "lesson_check": {
+    "L_119_static_blend_dilution": "AWARE — standalone signal 사용, EW blend 아님. Dilution 위험 없음.",
+    "L_122_factor_timing_vs_risk_mgmt": "AWARE — Seasonality는 factor timing이나 Heston-Sadka framework는 empirical anomaly로 Arnott 2016 비판 대상과 구분 (parameter selection이 아닌 calendar structure).",
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX — ICIR 기반 동적 가중 미사용, 정적 same-month return. C1 violation 가능성 없음.",
+    "L_441_MRS_future_reference": "AWARE — Seasonality는 MRS 사용 안함.",
+    "L_148_Grade_A_not_PIT_clean": "AWARE — C1~C15 전수 수동 검증 예정",
+    "L_148_details": "Same-calendar-month return은 PIT 자명 (과거 data only). 단 t월 기준 '과거 20년 같은 calendar month'에 current year의 같은 month 포함 절대 금지"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "M21_Seasonality Factor DB 존재하나 standalone 가설 미등록 (backlog_buckets.json 15 entries 전수 확인)",
+    "s0_record_duplicate_check": "ATYP/BCAC/BCSNA/CBPQ/DFA/GSCD/MLRA/RF_UA 등 기존 diversifier 가설 있으나 seasonality family 아님. 중복 없음.",
+    "H_1676_H_1682_overlap": "H_1676 consensus family, H_1682 distress+risk. Seasonality는 완전 orthogonal family.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_quality_profitability_fail": "PASS — quality_profitability 미사용",
+    "AX_005_defense_fail": "PASS — low-beta/Q07+D25/BAB 미사용",
+    "AX_000_001_002": "PASS — 학술 메커니즘 출발 (Heston-Sadka 2008), 프로세스 준수"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — rolling/expanding 20Y",
+    "C2_same_day_circular": "PASS — t월 리밸런싱 시 t-1 이전 data only",
+    "C3_same_period_agg_apply": "PASS — same-calendar-month 과거 data only",
+    "C4_fs_lag": "N/A — 재무제표 사용 안함",
+    "C5_overlay_t_1": "N/A — overlay 없음",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS — LIQ_THRESHOLD=2e8",
+    "C11_data_time_axis": "PASS — monthly return 시간축 단순",
+    "C13_z_score_aligned": "PASS — Z_Score_Aligned 사용",
+    "C14_usable_date": "N/A — IC 사용 안함 (factor signal만)",
+    "C15_factor_db_access": "PASS — load_rawdata() 사용 (M21 Factor DB 직접 로드 아닌 자체 계산)"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "Rcpp 최적화 권장 (20년 lookup 반복 계산)",
+    "cache_strategy": "종목별 historical calendar return table을 parquet 캐싱 (월별 업데이트 증분)",
+    "edge_cases": [
+      "Min 10 observations rule — 신규 상장 종목 자동 배제",
+      "Universe exit 종목 처리: historical return available but delisted — 포트폴리오 제외",
+      "Ties (동일 rank) 처리: market cap tiebreaker"
+    ]
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary", "H_1676_S1_result"],
+    "orthogonality_gate": "portfolio-level monthly return correlation < 0.3 vs each benchmark",
+    "novelty_score_expected": "0.7~0.9 (seasonality is structurally independent family)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Seasonality + Momentum composite (M04 + seasonality, time-diversified)",
+      "Regime-conditional seasonality (NORMAL regime weighted, CRISIS regime excluded)",
+      "Seasonality + Size neutralization (log_mcap 잔차화)"
+    ],
+    "note": "S5 slate는 S1 결과 후 정식 작성. 여기는 S0 단계 사전 방향만."
+  },
+
+  "scout_notes": [
+    "Explore 버킷 Path A (논문→가설) — Heston-Sadka 2008 JFE는 factor seasonality의 foundational 논문. Keloharju 2016 JF 글로벌 확장 근거.",
+    "한국 학술 cite (Kim-Lee 2020)은 placeholder — S1 전 Scout/Academic 에이전트가 정식 cite 확인 필요.",
+    "Factor DB M21_Seasonality는 '12개월 평균 return'으로 단순. H_1683은 'same-calendar-month 20Y history'로 다른 설계.",
+    "Diversifier role이나 cross-family SR gain은 portfolio-level에서 확인. Standalone SR 0.3~0.6은 수용 가능 범위 (gap 0.807 메우려면 blended 기여 +0.1+ 필요).",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요."
+  ]
+}

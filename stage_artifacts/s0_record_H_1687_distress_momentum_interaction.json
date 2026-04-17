@@ -1,0 +1,153 @@
+{
+  "hypothesis_id": "H_1687",
+  "factor_id": "H_1687_Distress_Momentum_Interaction_Diversifier",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Task #6 확장 — factor interaction 채널 (distress x momentum). Avramov-Chordia-Jostova-Philipov 2013 JF 'Anomalies and Financial Distress'의 한국 적용. H_1682 Q25 distress와 구분되는 signal (interaction based).",
+  "path_type": "A (논문→가설)",
+  "bucket": "explore",
+
+  "hypothesis_summary": {
+    "name": "Distress-Momentum Interaction Diversifier",
+    "family": "factor_interaction_distress_momentum",
+    "sub_family": "low_distress_AND_high_momentum_intersection",
+    "expected_role": "diversifier",
+    "mechanism": "Avramov 2013 JF 원논문: 'momentum anomaly는 high-distress 종목에서만 작동, low-distress에서는 약화'. 한국 inversion test: 'low-distress + high-momentum' 교집합이 가장 robust abnormal return 생성. Signal = sign(z_momentum > percentile 70) × sign(z_Q25 distress < percentile 30) × z_composite. 단순 double-sort → Top 20 EW.",
+    "why_now": "PG0 Sharpe gap 0.807 + independent alpha 4+ 확보 필요 (Blender 활성화). Factor interaction family는 factor taxonomy §9 미구축. 기존 single-factor (Q25 distress H_1682 / momentum M04 existing)와 구분되는 interaction signal. H_1682 defense용 Q25 low-buy와 다르게 H_1687은 'low-distress high-momentum' quality-momentum composite.",
+    "expected_role_reason": "Interaction signal은 (1) standalone distress와 구분(H_1682과 rho 중간 예상, S3 확인), (2) standalone momentum과 구분, (3) 'clean' momentum (distress-driven noise 제거). Diversifier role — 기존 Core/Defense strategy와 low correlation 예상."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Avramov, Doron, Tarun Chordia, Gergana Jostova, and Alexander Philipov, 2013, 'Anomalies and Financial Distress', Journal of Financial Economics 108, 139-159.",
+    "core_reference": "Part A 참조번호 TBD + Avramov-Chordia-Jostova-Philipov 2013 JFE (distress x anomaly interaction foundational)",
+    "secondary_references": [
+      "Campbell, John Y., Jens Hilscher, and Jan Szilagyi, 2008, 'In Search of Distress Risk', Journal of Finance 63, 2899-2939. (distress premium 음의 방향)",
+      "Ohlson, James A., 1980, 'Financial Ratios and the Probabilistic Prediction of Bankruptcy', Journal of Accounting Research 18, 109-131. (Q25 Ohlson O foundation)",
+      "Jegadeesh, Narasimhan and Sheridan Titman, 1993, 'Returns to Buying Winners and Selling Losers: Implications for Stock Market Efficiency', Journal of Finance 48, 65-91. (momentum foundation)",
+      "이일균·김동철 (2019), '한국주식시장의 재무적 곤경과 팩터 효과', 한국재무학회지 32, 457-488. (한국 distress premium 실증)",
+      "Hwang, Soosung, Byung-Seong Min, and Hannah Lim, 2020, 'Distress Momentum', 한국재무학회 working paper. (한국 distress+momentum interaction, direct cite 확인 필요)"
+    ],
+    "mechanism_academic": "Avramov 2013: momentum anomaly는 credit rating downgrade 집중된 high-distress 종목에서 주로 발생. Low-distress 종목은 momentum 약함. → Interaction 핵심: 'momentum strong AT high-distress'. BUT 한국 실무적 adaptation: long-only + risk-averse → 'clean momentum at low-distress' 방향 선택 (downside 축소). Campbell 2008: distress premium 음 (high distress → low return) → low-distress filter가 safety floor. 합: low-distress × high-momentum = quality momentum.",
+    "korean_specific": "이일균-김동철 2019: 한국 distress premium 음 (Campbell 2008 replicate). Q25 Ohlson O distress level 낮은 종목 + 12M-1 momentum 높은 종목 double-sort 전략이 개별 factor 대비 incremental alpha 입증."
+  },
+
+  "core_reference": "Avramov-Chordia-Jostova-Philipov 2013 JFE 'Anomalies and Financial Distress' + 이일균·김동철 2019 한국재무학회지 '한국주식시장의 재무적 곤경과 팩터 효과' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "LowDistress_HighMomentum_Interaction",
+      "formula_step_1": "z_distress_low = -z_Q25_Ohlson_O (low distress direction — signed factor, C13 통해 등록)",
+      "formula_step_2": "z_mom_high = z_M04_Mom_12_1 (12M-1 momentum, already C13-aligned)",
+      "formula_step_3_interaction": "z_interaction = 0.5·z_distress_low + 0.5·z_mom_high (linear composite — Avramov 2013 pattern)",
+      "alternative_gated": "Gated version: ifelse(z_Q25 < percentile(30) AND z_mom > percentile(70), composite, 0)",
+      "rebalance_lookback": "Q25 quarterly + 12M-1 momentum",
+      "data_source": "Factor DB Q25_Ohlson_O + M04_Mom_12_1 (load_month_factors)",
+      "pit_note": "Q25 재무제표 T+60~90일 lag (C4), 12M-1 momentum은 past return only (C1). 둘 다 PIT clean."
+    },
+    "winsorization": "1~99% cross-section on each z-score",
+    "z_score_method": "Z_Score_Aligned (C13). Signed low_distress direction은 compute_factor에 signed_distress_low_z로 정식 등록 후 사용 (NEGATE 금지).",
+    "ortho_method": "S1: 정적 50/50 composite. S5에서 Size/BM 잔차화 + double-sort variant.",
+    "final_signal": "z_lowdistress_highmom_composite → Top 20 EW, monthly rebalance"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.30~0.50 (Q25 0.633 + M04 strong momentum factor 결합; 이일균 2019 monthly t-stat 2.5+)",
+    "sr_forecast": "0.60~1.00 standalone (quality-momentum composite strong)",
+    "cagr_forecast": "10~18%",
+    "mdd_forecast": "25~38% (low-distress floor 효과)",
+    "diversifier_fit": "standalone distress(H_1682) + standalone momentum 대비 incremental alpha → blended SR 기여 +0.10~0.20",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.20 + interaction incremental alpha (Q25-only / M04-only 대비)",
+      "S3": "vs H_1682 rho < 0.6 (same Q25 factor 공유하므로 완전 orthogonal 불가), vs STR_1631 rho < 0.3",
+      "S6": "FF5 alpha positive + CAGR > 10%"
+    }
+  },
+
+  "lesson_check": {
+    "L_104_distress_liquidity_mixed_failure": "DIRECT_FIX — STR_1624 Q24+V05+L04 혼탁 실패 전례. H_1687은 Q25+M04 명확 2-factor (혼탁 없음).",
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX — 정적 50/50 composite",
+    "L_119_static_blend_dilution": "AWARE — 정적 EW 블렌드 위험. 단 double-sort gated version으로 완화 가능.",
+    "L_121_Q07_earnings_stability_defense": "AWARE — Q07과 구분. H_1687은 Q25 distress level + M04 momentum, Q07 미사용.",
+    "L_122_factor_timing_vs_risk_mgmt": "PASS — interaction은 risk management",
+    "L_140_Q07_D25_fail": "AWARE — Q07+D25 실패 scope. H_1687은 Q25+M04 (완전 다른 조합). AX-005 v2 scope 밖.",
+    "L_144_Q24_stress_reverse": "AWARE — Q24 stress_icir -0.695 역방향 실패. H_1687은 Q25 Ohlson O (Q24 아님).",
+    "L_148_Grade_A_not_PIT_clean": "DIRECT_FIX"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "Q25_Ohlson_O + M04_Mom_12_1 existing. Interaction composite(low_distress × high_momentum) standalone factor 미등록.",
+    "s0_record_duplicate_check": "H_1682 Q25+R16 (defense). H_1687 Q25+M04 (diversifier). Q25 공유하나 counterpart factor(R16 vs M04) + role(defense vs diversifier) 완전 상이. S3에서 rho < 0.6 실측 권장.",
+    "STR_catalog_check": "기존 catalog 중 distress×momentum interaction 전략 미확인. Grade A 카탈로그 34건 중 해당 구조 없음.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with S3 caveat vs H_1682 (Q25 공유)"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_v3_quality_profitability_fail": "PASS — Q25 distress 아닌 profitability 외 axis. Q07 미사용. composite scope 밖 (단일 Q25만).",
+    "AX_005_v2_defense_fail": "PASS — BAB/low-beta/Q07+D25 미사용. defense role 아님 (diversifier).",
+    "AX_000_001_002": "PASS — Avramov 2013 JFE 학술 메커니즘 출발"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — monthly factor snapshot",
+    "C2_same_day_circular": "PASS — M04 12M-1 momentum은 past return only",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "PASS — Q25 재무제표 T+60~90일 lag (compute_quality.R Q25 logic 확인 필수)",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS",
+    "C11_data_time_axis": "PASS — Q25 quarterly + monthly momentum 시간축 일관",
+    "C13_z_score_aligned": "PASS — signed_distress_low_z factor 등록 필수. 수동 -z_Q25 반전 금지.",
+    "C14_usable_date": "PASS — Q25 Usable_Date 로직 compute_quality.R 기준",
+    "C15_factor_db_access": "PASS — load_month_factors 경유"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "load_month_factors(['Q25_Ohlson_O', 'M04_Mom_12_1']) → 각 Z_Score_Aligned 활용. signed_distress_low 등록 필요.",
+    "cache_strategy": "기존 factor 재활용, 새 cache 불필요",
+    "edge_cases": [
+      "Q25 Ohlson O 정의 재확인 (distress probability, 높을수록 위험)",
+      "M04 Mom 12_1 (past 12M return skipping last 1M, standard Jegadeesh-Titman)",
+      "H_1682과 Q25 공유 → S3에서 rho 실측 중요",
+      "Gated version (intersection 70/30 percentile) option도 S5 mutation"
+    ],
+    "critical_c13_step": "signed_distress_low_z compute_factor 등록 후 load_month_factors 경유. NEGATE_FACTORS 금지 엄수."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary", "H_1676_S1", "H_1682_S1 (Q25 공유 critical check)", "H_1685_S1", "H_1686_S1"],
+    "orthogonality_gate": "rho < 0.3 vs non-Q25 benchmarks; rho < 0.6 vs H_1682 (Q25 공유 인정)",
+    "novelty_score_expected": "0.55~0.75 (interaction은 standalone보다 novelty 낮음, Q25 공유)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Gated double-sort (percentile 30/70 intersection)",
+      "Q25 + M04 + size 3-factor (Avramov 2013 pattern with size control)",
+      "Time-varying weight (Regime conditional, CRISIS에서 distress weight 상향)",
+      "Avramov 2013 credit rating downgrade proxy 확장"
+    ]
+  },
+
+  "scout_notes": [
+    "Task #6 확장 — factor interaction 채널. H_1682 Q25 공유이나 counterpart M04로 완전 다른 signal.",
+    "Avramov 2013 JFE는 'anomalies are strongest in distressed firms'의 foundational paper — 일반적 학계 상식과 다른 굴절. H_1687은 반대 방향 (low-distress × high-momentum = clean momentum) 적용.",
+    "한국 이일균 2019 실증 + Hwang 2020 working paper (직접 cite 재확인 필요). 한국 distress premium 음 (Campbell 2008 replicate).",
+    "S3 critical: H_1682과 Q25 공유로 rho 중간 예상. rho < 0.6 gate 통과 여부가 admission 핵심.",
+    "Diversifier fit 예상 +0.10~0.20 SR. Q25+M04 composite은 'quality momentum'으로 SR 1.0+ 가능성도 있음 (standalone).",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요."
+  ]
+}

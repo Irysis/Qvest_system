@@ -1,0 +1,170 @@
+{
+  "hypothesis_id": "H_1684",
+  "factor_id": "H_1684_VolOfVol_Avoidance_Diversifier",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Team-lead Task #6 지시 — Explore 버킷 diversifier 후보 2건+. Path B 1건 허용 (explore 20% 내). 표준 standalone s0_record 초안.",
+  "path_type": "B (직관→논문)",
+  "bucket": "explore",
+  "path_b_budget_check": "Explore 버킷 20% 내 Path B 최대 1건 규칙 준수. 본 가설은 H_1683(Path A) + H_1684(Path B) 조합 중 Path B 단 1건.",
+
+  "hypothesis_summary": {
+    "name": "Volatility-of-Volatility Avoidance Diversifier",
+    "family": "vol_of_vol",
+    "sub_family": "second_moment_risk_aversion",
+    "expected_role": "diversifier",
+    "mechanism": "각 종목의 rolling 6M daily return vol 시계열 자체의 standard deviation(=vol-of-vol) 계산. 높은 vol-of-vol = unpredictable risk regime. Negative direction Z-score (low VoV 선호) → Top 20 EW. Baltussen-Van Bekkum-Van der Grient 2018 RFS의 cross-section anomaly.",
+    "why_now": "PG0 SR gap 0.807 해소 + H_1676(consensus) + H_1683(seasonality) 이후 3번째 orthogonal diversifier. Vol-of-vol family는 factor taxonomy §9 미구축. Factor DB L23_Vol_Autocorr + L13_Vol_Variance_Ratio 존재하나 standalone 가설 없음. 직관: 'unknown unknowns' 회피가 한국시장 높은 불확실성 환경에 적합 (MRS 63.1 CRISIS).",
+    "expected_role_reason": "VoV signal은 (1) 수익률 1차 momentum과 독립, (2) 수익률 vol과 구분되는 2차 moment, (3) cross-section에서 'predictability-of-risk'라는 새 차원. STR_1631(quality anchor)/STR_1656(ML risk)/STR_1679v2(Q07+D29)와 모두 직교 가능성."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Baltussen, Guido, Sjoerd van Bekkum, and Bart van der Grient, 2018, 'Unknown Unknowns: Vol-of-Vol and the Cross Section of Stock Returns', Journal of Financial and Quantitative Analysis 53, 1615-1651. (NOTE: 실제 저널은 JFQA, 본 hypothesis의 primary reference)",
+    "core_reference": "Part A 참조번호 TBD + Baltussen-Van Bekkum-Van der Grient 2018 JFQA (vol-of-vol cross-section anomaly 최초 체계화)",
+    "secondary_references": [
+      "Cremers, Martijn, Michael Halling, and David Weinbaum, 2015, 'Aggregate Jump and Volatility Risk in the Cross-Section of Stock Returns', Journal of Finance 70, 577-614. (variance risk 가격화)",
+      "Bali, Turan G., Nusret Cakici, and Robert F. Whitelaw, 2011, 'Maxing out: Stocks as lotteries and the cross-section of expected returns', Journal of Financial Economics 99, 427-446. (관련 lottery 반대)",
+      "Ang, Hodrick, Xing, Zhang, 2006, JF — IVOL puzzle (vol-level level anomaly, VoV와 구분)"
+    ],
+    "mechanism_academic": "Baltussen 2018: 높은 vol-of-vol 종목은 average return 낮음 (t-stat -3+). 설명: knightian uncertainty + limits to arbitrage. VoV 높은 종목은 hedging 어려움 → risk-averse 투자자 회피 → mispricing. NOT resolved by fundamentals/size/BM/MOM.",
+    "korean_specific_intuition": "한국 개인 비중 55%+ / 해외 비중 31%+ / 헤지펀드 약함 → limits to arbitrage 강함. VoV puzzle 강도 큰 후보. 한국 실증 cite은 S1 전 확인 필요 (placeholder: Lee 2021 한국재무학회 또는 없음).",
+    "path_b_rationale": "직관: '불확실성의 불확실성'이 한국시장 개인투자자 sentiment 변동성과 결합. Baltussen 2018 primary reference로 학술 foundation 확보. 즉 intuition → paper confirmed."
+  },
+
+  "core_reference": "Baltussen-Van Bekkum-Van der Grient 2018 JFQA 'Unknown Unknowns: Vol-of-Vol and the Cross Section' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Vol_of_Vol_Composite",
+      "components": [
+        {
+          "name": "VoV_6M_monthly",
+          "formula": "각 종목 t월: 과거 6개월 각 월의 daily vol(20d realized) → 6개 value의 standard deviation",
+          "lookback": "6개월 (126 trading days)"
+        },
+        {
+          "name": "Vol_Autocorr_L23",
+          "source": "Factor DB L23_Vol_Autocorr",
+          "formula": "Factor DB 원 정의 유지 (rolling vol lag-1 autocorrelation)"
+        },
+        {
+          "name": "Vol_Variance_Ratio_L13",
+          "source": "Factor DB L13_Vol_Variance_Ratio",
+          "formula": "Factor DB 원 정의 유지 (short vol / long vol ratio)"
+        }
+      ],
+      "composite_formula": "final_signal = -z_VoV_6M_monthly (avoidance direction). 첫 S1에서는 VoV_6M만 단일 signal. Composite (3 sub-signals EW) 옵션은 S5 mutation slate.",
+      "direction": "negative (low VoV = preferred = Top 20)",
+      "data_source": "RAWDATA daily returns (load_rawdata()) + L23/L13 via load_month_factors() (C15)",
+      "pit_note": "t월 리밸런싱 시 t-1 이전 6개월 data only. Current month 포함 금지. C13 Z_Score_Aligned."
+    },
+    "winsorization": "1~99% cross-section",
+    "z_score_method": "Z_Score_Aligned (C13 준수, 수동 방향 반전 금지 — 단, Baltussen 2018 원논문이 'low VoV outperform'이므로 signal = -z_VoV는 signed signal definition의 일부 — L-558/C13 규정 재확인 필요)",
+    "ortho_method": "S1 단계: raw -z_VoV 단일 signal. S5 단계: Size + 1M return + R12 IdioVol 잔차화 variant (Baltussen 2018 Table 4 pattern).",
+    "final_signal": "-z_VoV_6M_monthly → Top 20 EW, monthly rebalance"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE (S0/S1 overlay 금지)"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.25~0.45 (L23 Factor DB ICIR -0.523이 VoV proxy — negative direction flip하면 +0.523. 단 VoV_6M_monthly 자체 계산 필요)",
+    "sr_forecast": "0.40~0.70 standalone",
+    "cagr_forecast": "7~14%",
+    "mdd_forecast": "28~42%",
+    "diversifier_fit": "Portfolio 편입 시 blended SR 기여 +0.05~0.15. Vol-of-vol signal은 risk-off regime에서 강함 → CRISIS 구간 defense-like 효과",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.20 + size-neutrality check + Baltussen 2018 fundamental 잔차화 robustness",
+      "S3": "vs STR_1631/1656/1679v2 rho < 0.3 + vs R12 IdioVol rho < 0.5 (overlap 경계)",
+      "S6": "CAGR > 7% + MDD < 35%"
+    }
+  },
+
+  "lesson_check": {
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX — 정적 signal 사용, 동적 ICIR weight 미사용",
+    "L_119_static_blend_dilution": "AWARE — S1 단계 단일 signal. S5에서 3-component composite 검토 시 dilution 경계",
+    "L_122_factor_timing_vs_risk_mgmt": "PASS — VoV signal은 risk management 범주 (unknown unknowns 회피)",
+    "L_441_MRS_future_reference": "PASS — MRS 사용 안함",
+    "L_558_signed_signal_vs_negate": "CRITICAL_CHECK — Baltussen 2018 direction은 'low VoV = preferred', signal = -z_VoV은 'signed signal definition'인가 'NEGATE_FACTORS 금지 위반'인가? C13 원칙: Z_Score_Aligned만 사용, 수동 방향 반전 금지. Scout 판단: VoV의 'expected sign'이 학술적으로 negative이므로 direction 자체가 signal 정의의 일부. 단 compute_factor DB 설계 시 signed_vov_6m으로 align된 factor 등록이 정식 경로.",
+    "L_148_Grade_A_not_PIT_clean": "AWARE — C1~C15 전수 수동 검증"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "L23_Vol_Autocorr, L13_Vol_Variance_Ratio, D40_YangZhang_Vol Factor DB 존재. 단 composite standalone 가설 미등록. MLRA_ml_risk_architecture가 일부 언급하나 ML 아키텍처 내 feature, standalone VoV 가설 아님.",
+    "s0_record_duplicate_check": "ATYP/BCAC/BCSNA/CBPQ/DFA/GSCD/MLRA/RF_UA 등 기존 diversifier 중 VoV family 없음. H_1676 consensus, H_1683 seasonality와도 orthogonal.",
+    "H_1681_tail_risk_overlap": "H_1681 REVISE drop 55/100 (tail-risk 3F redundancy). H_1684 VoV는 tail risk와 구분 (VoV = second moment uncertainty, tail = fat-tail extreme event). 단 S3에서 cor <0.5 실측 권장.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with S3 caveat"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_quality_profitability_fail": "PASS — quality_profitability 미사용",
+    "AX_005_defense_fail": "PASS — low-beta/Q07+D25/BAB 미사용",
+    "AX_000_001_002": "PASS — 학술 메커니즘 출발 (Baltussen 2018 JFQA)"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — rolling 6M expanding",
+    "C2_same_day_circular": "PASS — t월 리밸런싱 시 t-1 이전 data only",
+    "C3_same_period_agg_apply": "PASS — 6개월 historical daily vol",
+    "C4_fs_lag": "N/A",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS — LIQ_THRESHOLD=2e8",
+    "C11_data_time_axis": "PASS — daily → monthly VoV 계산 시간축 일관",
+    "C13_z_score_aligned": "CRITICAL — signed_vov_6m factor를 compute_factor로 정식 등록 후 Z_Score_Aligned 사용. 수동 -z 반전 금지.",
+    "C14_usable_date": "N/A (signal 자체 계산)",
+    "C15_factor_db_access": "PASS — load_rawdata + L23/L13 load_month_factors"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "Rcpp 권장 (rolling 6M vol-of-vol 계산 vectorize)",
+    "cache_strategy": "종목별 monthly daily-vol table → 6-month rolling vol-of-vol parquet 캐싱",
+    "edge_cases": [
+      "Min 4 observations rule (6개월 중 최소 4개월 valid) — 신규 상장 배제",
+      "Universe exit 처리",
+      "Dividend/split 조정: adjusted daily return 사용"
+    ],
+    "critical_c13_step": "Forge는 'signed_vov_6m' factor를 compute_factor로 등록 후 load_month_factors 경유 사용. 수동 -z_VoV 금지."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary", "H_1676_S1_result", "H_1683_S1_result (if exists)"],
+    "orthogonality_gate": "portfolio-level rho < 0.3 vs each benchmark; <0.5 vs R12_IdioVol-based strategies",
+    "novelty_score_expected": "0.6~0.8 (vol-of-vol은 structurally novel, 단 vol family와 경계 존재)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "VoV Composite (6M + L23 + L13 EW, cross-family)",
+      "VoV + Size regressor 잔차화 (Baltussen 2018 Table 4 pattern)",
+      "VoV + regime-conditional weight (CRISIS에서 VoV 강도 확대)"
+    ],
+    "note": "S5 slate는 S1 결과 후 정식 작성"
+  },
+
+  "path_b_rationale_detailed": {
+    "intuition_origin": "Q-Lead가 '한국시장 개인 55%+ 해외 31%+ 비중에서 knightian uncertainty가 factor로 작동할 가능성' 제시 → Scout이 Baltussen 2018 JFQA 논문 연결.",
+    "academic_confirmation": "Baltussen 2018 JFQA는 미국 NYSE/NASDAQ 대상. Cremers 2015 JF는 aggregate variance risk. 한국 direct 실증은 placeholder — S1 전 Academic 에이전트 cite 확인 필수.",
+    "risk_acknowledgment": "Path B는 explore 20% 내 1건 규칙. 본 가설이 ​​그 1건. H_1683(Path A)이 primary seasonality + H_1684(Path B)가 secondary VoV로 Path A/B 균형 유지."
+  },
+
+  "scout_notes": [
+    "Explore 버킷 Path B — 직관 출발이나 Baltussen 2018 JFQA로 학술 foundation 확보. Path B 예산 20% 내 1건 규칙 준수.",
+    "한국 학술 cite (Lee 2021?) placeholder — S1 전 확인 필요. 없을 경우 Path B → Path A 전환 (primary Baltussen 2018 연결만으로 Path A 승격 가능).",
+    "C13 signed signal 처리가 critical — compute_factor 등록 우회 시 NEGATE_FACTORS 위반. Forge 구현 시 반드시 Factor DB 등록 후 load_month_factors 경유.",
+    "H_1681 tail_risk와 구분 명확히 — VoV는 second-moment uncertainty, tail은 extreme event. S3에서 rho 실측 권장.",
+    "Diversifier fit: CRISIS regime (MRS 63.1 현재) 에서 특히 강할 것으로 예상 — defense-like 효과 포함. 단 expected_role은 diversifier.",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요."
+  ]
+}

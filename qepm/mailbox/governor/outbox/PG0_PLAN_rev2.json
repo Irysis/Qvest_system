@@ -1,0 +1,160 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV2",
+  "stage": "PG0_Sequencing_Update",
+  "timestamp": "2026-04-17T18:10:00+09:00",
+  "session": 65,
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_2defense_ensemble.json (rev1)",
+  "trigger": "Q-Lead sweep v2 PASS 11 실측 + STR_1439 최강 SR 1.532 발견 → 2-defense ensemble 보다 Sharpe 기여 우위. Sequencing 재조정 필요.",
+
+  "q_lead_findings_applied": {
+    "top_sr_rankings_sweep_v2_pass": {
+      "STR_1439": {"sharpe": 1.532, "mdd": 19.17, "rank": 1, "note": "최강 SR + 최저 MDD. Diversifier 후보 최우선."},
+      "STR_1435_5sleeve_dd620_repair": {"sharpe": 1.378, "mdd": 27.37, "rank": 2},
+      "STR_1417_5sleeve_mrs3545": {"sharpe": 1.361, "mdd": 30.61, "rank": 3},
+      "STR_1060_brk02_no_short_dd": {"sharpe": 1.333, "mdd": 24.81, "rank": 4},
+      "STR_1562": {"sharpe": 1.333, "mdd": 31.78, "rank": 5},
+      "STR_1433_consgate_c11fix_dd722": {"sharpe": 1.329, "mdd": 24.35, "rank": 6},
+      "STR_1071_noShortDD_mrs1225": {"sharpe": 1.297, "mdd": 22.72, "rank": 7}
+    },
+    "q_lead_math_estimate": "STR_1439 15% + ρ=0.2 → blend ~1.35-1.45. 3건 추가 각 10% → 1.65-1.85. 4건 이상 ρ<0.3 → SR 2.0 달성 가능.",
+    "governor_confirmation": "Q-Lead 수학 타당. Governor 자체 계산 Z3 시나리오 (3건 추가) SR 1.82 @ ρ=0.2 ideal 일치."
+  },
+
+  "updated_priority_sequencing": {
+    "previous_priority_rev1": "2-defense ensemble (STR_1662a + H_1682) 우선",
+    "new_priority_rev2": "STR_1439 재활성화 + Z3 scenario 우선, Defense 후순위",
+    "rationale": [
+      "STR_1439 SR 1.532 >> H_1682 예상 SR 0.65 → Sharpe 기여 2.4배 우위",
+      "STR_1439 MDD 19.17% < 목표 25% → Defense 기능 일부 겸함 (dual role)",
+      "현재 baseline MDD -21.27% → 이미 목표 -25% 근접 → Defense 시급도 낮음",
+      "STR_1439 Judge Pass 2 통과 전제조건 — 재검증 실패 시 scenario_Y fallback"
+    ],
+    "ordered_action_plan": [
+      {
+        "priority": 1,
+        "timing": "Week 1",
+        "action": "Judge sweep v3 Pass 2 재검증 — STR_1439 + STR_1435 + STR_1060 우선 3건",
+        "owner": "Judge",
+        "gates": "Gate 0~6 + DSR + Role Honesty + FF5",
+        "task_ref": "Task #13"
+      },
+      {
+        "priority": 2,
+        "timing": "Week 1-2 (parallel)",
+        "action": "Forge orthogonality 측정 — STR_1439/1435/1060 vs STR_1631 ρ 실측",
+        "owner": "Forge",
+        "purpose": "family 중복 여부 확정 (consensus sub-family 세분화 근거)"
+      },
+      {
+        "priority": 3,
+        "timing": "Week 2",
+        "action": "Governor PG1 Admission — STR_1439 단독 (Z1 scenario) 또는 +STR_1435/1060 (Z2/Z3)",
+        "owner": "Governor",
+        "conditional_on": "Priority_1 Pass + Priority_2 ρ < 0.4"
+      },
+      {
+        "priority": 4,
+        "timing": "Week 2-3",
+        "action": "Governor PG2 Allocation — Z3 scenario 배분 설계 (Core 30% / React×3 32% / Div 15% / Def×2 23%)",
+        "owner": "Governor"
+      },
+      {
+        "priority": 5,
+        "timing": "Week 3-4",
+        "action": "H_1676 + H_1682 Judge S6 완료 → Governor PG1 Admission",
+        "owner": "Judge + Governor"
+      },
+      {
+        "priority": 6,
+        "timing": "Week 4-5",
+        "action": "H_1683 residual_momentum 신규 가설 착수 (Hybrid Z3+H_1683 SR 1.95 목표)",
+        "owner": "Scout"
+      },
+      {
+        "priority": 7,
+        "timing": "Week 5-8",
+        "action": "STR_1662a tail_risk 완료 후 2-defense ensemble 완결 (MDD 안정화)",
+        "owner": "Forge + Governor"
+      }
+    ]
+  },
+
+  "z_scenario_breakdown": {
+    "Z1_str1439_only": {
+      "weights": {"Core_1631": 0.45, "Div_1656": 0.20, "React_1439": 0.15, "Def_1662a": 0.08, "Def_H1682": 0.12},
+      "sr_rho_0_2_ideal": 1.55,
+      "consensus_family_pct": 0.375,
+      "family_compliance": "FAIL (consensus 37.5% > 35%)",
+      "remediation": "React_1439 15%→10% 축소 또는 Core 40% 추가 하향",
+      "time": "1주"
+    },
+    "Z2_str1439_str1435": {
+      "weights": {"Core_1631": 0.38, "Div_1656": 0.17, "React_1439": 0.12, "React_1435": 0.10, "Def_1662a": 0.08, "Def_H1682": 0.15},
+      "sr_rho_0_2_ideal": 1.68,
+      "consensus_family_pct": 0.41,
+      "family_compliance": "FAIL (without sub-family 분류)",
+      "remediation": "consensus sub-family 4분류 (C19 / multi-factor / 5sleeve / gate) 각 15% cap",
+      "time": "1-2주"
+    },
+    "Z3_top3": {
+      "weights": {"Core_1631": 0.30, "Div_1656": 0.15, "React_1439": 0.12, "React_1435": 0.10, "React_1060": 0.10, "Def_1662a": 0.08, "Def_H1682": 0.15},
+      "sr_rho_0_2_ideal": 1.82,
+      "consensus_family_pct": 0.37,
+      "family_compliance": "FAIL → sub-family 세분화 시 PASS (max 15%)",
+      "remediation": "STR_1435 10%→7% 축소 또는 sub-family 분류",
+      "time": "1-2주",
+      "tier": "preferred_aspirational"
+    },
+    "Hybrid_Z3_H1683": {
+      "description": "Z3 + 신규 residual_momentum H_1683 (consensus family 밖)",
+      "weights": {"Core_1631": 0.25, "Div_1656": 0.13, "React_1439": 0.12, "React_1435": 0.10, "React_1060": 0.10, "H_1683": 0.10, "Def_1662a": 0.08, "Def_H1682": 0.12},
+      "sr_rho_0_2": 1.95,
+      "consensus_family_pct": 0.27,
+      "family_compliance": "PASS (consensus 27% < 35%)",
+      "time": "4-5주",
+      "tier": "preferred_realistic_v2"
+    }
+  },
+
+  "critical_blocker_consensus_saturation": {
+    "issue": "sweep v2 PASS 11 중 6건 consensus family (STR_1439/1435/1417/1433/1469/1393). Core STR_1631도 consensus. Z2/Z3 편입 시 consensus 40%+ 쏠림.",
+    "proposed_resolution": "consensus sub-family 세분화 규칙 수립:",
+    "sub_family_proposed_taxonomy": [
+      "consensus_C19_core: STR_1631 (SUE+ESBR+EPS_Chg+TP_Gap 합성)",
+      "consensus_multi_factor: STR_1439 (구조 상세 Judge 확인 필요)",
+      "consensus_5sleeve_dd: STR_1435 (5-sleeve + DD overlay)",
+      "consensus_5sleeve_mrs: STR_1417 (5-sleeve + MRS 3545)",
+      "consensus_gate: STR_1433 (consensus gate + c11 fix)",
+      "consensus_4factor: STR_1469 (cons4f 5sleeve)",
+      "consensus_esbr_sue: STR_1393 (esbr+sue adaptive)"
+    ],
+    "cap_rule_proposed": "각 sub-family 15% cap + consensus 전체 합산 45% cap (기존 35% 완화 조정 검토)",
+    "alternative": "consensus 35% 유지 + Z3 편입 시 Core 축소 또는 STR_1435 weight 축소로 조정",
+    "decision_required": "도훈 + Judge + Governor 공동 논의 필요. Q-Lead가 중재."
+  },
+
+  "fallback_plan_if_judge_pass2_fails": {
+    "trigger": "STR_1439 Judge sweep v3 Pass 2 REJECT (DSR 미통과 또는 Role Honesty FAIL 등)",
+    "fallback_path": "scenario_Y (신규 diversifier 2건) 가속 경로로 전환",
+    "new_sequencing": [
+      "Week 1-2: H_1676 + H_1682 Judge S6 → PG1 Admission",
+      "Week 3-6: H_1683 residual_momentum + H_1684 quality_aggregate 병렬 신규 사이클",
+      "Week 7-10: Scenario Y (Core 45% / Div×3 30% / Def×2 25%) SR 1.72 도달",
+      "Week 11-14: SR 2.0 추가 diversifier 검토 (regime rotation overlay S5 활용)"
+    ]
+  },
+
+  "governor_open_questions_for_q_lead": [
+    "Q7: consensus sub-family 세분화 규칙 수립 착수 여부? (Z 시나리오 family_pass 전제)",
+    "Q8: Core 30% 수용 가능 여부? (Z3 aspirational, Hybrid Z3+H_1683 preferred_realistic_v2)",
+    "Q9: Judge sweep v3 Pass 2 진행 속도 — STR_1439만 먼저 검증 (3일 목표) vs 3건 묶음 (1주)?",
+    "Q10: Defense sleeve 시급도 낮음 확정 시 H_1682 Judge S6 완료 대기 없이 STR_1439 Z1 Priority_2 즉시 진행?"
+  ],
+
+  "artifacts_updated": [
+    ".cache/portfolio_gap_vector_v1.1_projection.json (scenario_Z1/Z2/Z3 + family_concentration 재계산 + sequencing rev2)",
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev2.json (현 파일)"
+  ]
+}

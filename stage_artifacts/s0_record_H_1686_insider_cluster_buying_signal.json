@@ -1,0 +1,151 @@
+{
+  "hypothesis_id": "H_1686",
+  "factor_id": "H_1686_Insider_Cluster_Buying_Signal_Diversifier",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Task #6 확장 — DART 이벤트 channel 활용. .cache/dart/insider_trades.parquet 인프라 존재. Insider cluster buying high-conviction signal.",
+  "path_type": "A (논문→가설)",
+  "bucket": "explore",
+
+  "hypothesis_summary": {
+    "name": "Insider Cluster Buying Signal Diversifier",
+    "family": "insider_dart_event",
+    "sub_family": "multi_insider_buy_cluster",
+    "expected_role": "diversifier",
+    "mechanism": "각 종목 t월: 지난 90일간 DART 공시 임원/주요주주(10% 이상) 매수 거래 건수 N_insiders, 다수 insider 동시 매수 → cluster signal. Signal = N_insiders_buying_distinct_persons / N_insiders_total_distinct_persons (지난 90일 기준 순매수자 비율). High cluster = smart money conviction. Top 20 EW.",
+    "why_now": "PG0 Sharpe gap 0.807 잔여. DART insider event는 factor taxonomy §9 미구축 family. .cache/dart/insider_trades.parquet 이미 구축되어 있으나 standalone 가설 없음 (backlog_buckets.json 전수 확인). Fundamental/consensus와 독립된 event-driven channel 확보.",
+    "expected_role_reason": "Insider event signal은 (1) 재무제표(quality/value)와 독립, (2) 애널리스트 consensus와 독립, (3) 거래주체 flow(H_1685)와 구분 (specific named insiders vs aggregate flow). Cross-channel diversification 극대화."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Cohen, Lauren, Christopher Malloy, and Lukasz Pomorski, 2012, 'Decoding Inside Information', Journal of Finance 67, 1009-1043.",
+    "core_reference": "Part A 참조번호 TBD + Cohen-Malloy-Pomorski 2012 JF (insider trading routine vs opportunistic 구분, cluster signal foundational)",
+    "secondary_references": [
+      "Lakonishok, Josef and Inmoo Lee, 2001, 'Are Insider Trades Informative?', Review of Financial Studies 14, 79-111. (classic insider trade informativeness)",
+      "Jeng, Leslie A., Andrew Metrick, and Richard Zeckhauser, 2003, 'Estimating the Returns to Insider Trading: A Performance-Evaluation Perspective', Review of Economics and Statistics 85, 453-471.",
+      "Iqbal, Zahid and Shekar Shetty, 2002, 'An Investigation of Causality between Insider Transactions and Stock Returns', Quarterly Review of Economics and Finance 42, 41-57.",
+      "김지현·최종범 (2016), '국내 임원 주식거래의 정보효과', 한국증권학회지 45, 293-327. (한국 실증, direct cite)"
+    ],
+    "mechanism_academic": "Cohen-Malloy-Pomorski 2012: 'opportunistic' insider trades (routine 제외)가 향후 5.6% annualized outperformance 예측. Cluster(다수 insider 동시 매수)는 noisy routine 필터 효과. Lakonishok-Lee 2001: insider purchases 특히 predictive. 김지현-최종범 2016: 한국 10% 이상 주요주주 매수 공시 3~6개월 abnormal return.",
+    "korean_specific": "한국 DART 공시 체계: 임원/주요주주 거래 T+5일 이내 전자공시 의무 (자본시장법 §147). Short-lag + mandatory disclosure → real-time signal. 개인 주주 비중 높고 정보비대칭 상당 → insider edge 강도 예상 큼."
+  },
+
+  "core_reference": "Cohen-Malloy-Pomorski 2012 JF 'Decoding Inside Information' + 김지현·최종범 2016 한국증권학회지 '국내 임원 주식거래의 정보효과' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Insider_Cluster_Buy_90d",
+      "formula": "각 종목 t월: signal = distinct_insiders_net_buy_90d / max(1, distinct_insiders_any_trade_90d). 분자: 지난 90일간 purchase 실행한 고유 insider 수 (Cohen 2012 opportunistic 필터 적용: routine trader 제외 if identifiable). 분모: 지난 90일간 거래(매수/매도 무관) 실행한 고유 insider 수.",
+      "alternative_signal": "Simpler version: dollar_sum_insider_net_buy_90d / market_cap (intensity normalized)",
+      "rebalance_lookback": "90 trading days (약 3개월)",
+      "data_source": ".cache/dart/insider_trades.parquet",
+      "pit_note": "t월 말 리밸런싱 시 t월 마지막 영업일의 t-90 to t-1 (공시일 기준) data. 공시 지연(최대 T+5) 반영 → 실무상 t-1 기준 available data만 사용. C11 critical."
+    },
+    "winsorization": "1~99% (outlier insider 대규모 거래 wins)",
+    "z_score_method": "Z_Score_Aligned. compute_event_insider.R 신규 개발 또는 custom factor 등록.",
+    "ortho_method": "S1 raw. S5에서 Size/BM 잔차화 (Lakonishok-Lee 2001 pattern: insider trades are correlated with firm characteristics)",
+    "final_signal": "z_insider_cluster_buy_90d → Top 20 EW, monthly rebalance. 신호 없는 종목(거래 0건)은 하위 랭크 처리."
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.25~0.50 (Cohen 2012 opportunistic t-stat 4+, 한국 김지현 2016 monthly alpha ~0.6%)",
+    "sr_forecast": "0.45~0.85 standalone",
+    "cagr_forecast": "7~15%",
+    "mdd_forecast": "28~42%",
+    "diversifier_fit": "event-driven + 독립 channel → blended SR 기여 +0.10~0.25",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.20 + sparsity check (signal coverage >= 40% of universe)",
+      "S3": "vs fundamental/consensus/flow benchmarks rho < 0.3",
+      "S6": "FF5 alpha positive + CAGR > 7%"
+    },
+    "coverage_concern": "insider 거래 없는 종목 다수 → 유효 signal coverage 확인 필수. 한국 주요주주 거래 공시 제도 강제이나 활발도 종목별 상이."
+  },
+
+  "lesson_check": {
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX",
+    "L_119_static_blend_dilution": "PASS — 단일 signal",
+    "L_122_factor_timing_vs_risk_mgmt": "PASS — event-driven",
+    "L_148_Grade_A_not_PIT_clean": "DIRECT_FIX — C1~C15 수동",
+    "L_457_investor_flow_pit": "AWARE — DART 공시 시점(T+5) lag 반영 필수",
+    "L_527_event_coverage_check": "AWARE — event-driven signal은 coverage sparsity S2 필수 검증",
+    "sparse_signal_caveat": "일부 종목은 signal 없음 → 포트폴리오 구성 시 'coverage = 0' 처리 방식 사전 정의 필요 (하위 랭크 or exclude)"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "insider event 관련 factor 미등록 (compute_investor.R에도 insider 별도 처리 없음)",
+    "s0_record_duplicate_check": "모든 기존 explore entries와 channel 상이. H_1674(aggregate flow)/H_1685(foreign-individual divergence)와 구분: H_1686은 named insider events.",
+    "data_availability": ".cache/dart/insider_trades.parquet 존재 (2026-04-17 확인). 단 schema/coverage 사전 검증 필수.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with coverage S2 gate"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS",
+    "AX_004_quality_profitability_fail": "PASS",
+    "AX_005_defense_fail": "PASS",
+    "AX_000_001_002": "PASS — Cohen-Malloy-Pomorski 2012 JF 학술 출발"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — 90d rolling",
+    "C2_same_day_circular": "PASS — t-1 기준 available",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "N/A",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS",
+    "C11_data_time_axis": "CRITICAL — DART 공시 T+5 lag 반영. insider_trades.parquet의 공시일(disclosure_date) vs 거래일(trade_date) 구분 필수. 의사결정 시점에는 disclosure_date 기준만 사용 가능.",
+    "C13_z_score_aligned": "PASS — custom factor 등록 후 사용",
+    "C14_usable_date": "CRITICAL — insider_trades.parquet Usable_Date 컬럼 존재 여부 검증. 없으면 disclosure_date + 1 lag 수동 적용.",
+    "C15_factor_db_access": "PASS (custom compute via compute_custom.R 확장 or compute_event_insider.R 신규)"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "compute_custom.R 또는 신규 compute_event_insider.R. insider_trades.parquet 로드 → 종목/월별 aggregation.",
+    "cache_strategy": "monthly aggregated insider metrics parquet 생성 후 factor 등록",
+    "edge_cases": [
+      "Insider 거래 없는 종목 다수 — coverage sparsity",
+      "Cohen 2012 routine 식별: 동일 insider 반복 거래 pattern 제거 (S2 mutation)",
+      "Large-shareholder vs officer 구분 (optional)",
+      "거래 방향 (매수/매도) 구분 필수"
+    ],
+    "critical_c11_c14_step": "공시일 vs 거래일 구분 + Usable_Date 검증. 가용 data 검증 실패 시 S1 blocked."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary", "H_1676_S1_result", "H_1685_S1_result (if available)"],
+    "orthogonality_gate": "rho < 0.3 vs all (insider events는 구조적 독립)",
+    "novelty_score_expected": "0.75~0.90 (new family + new data channel)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Cohen 2012 opportunistic 필터 (routine removal)",
+      "Officer vs 10% shareholder 분리",
+      "Cluster timing (매수 밀집 기간 식별)",
+      "Insider buy + consensus revision 결합 (cross-family composite)"
+    ],
+    "note": "S5 slate는 S1 결과 후 정식 작성"
+  },
+
+  "scout_notes": [
+    "Task #6 확장 — DART insider event channel. .cache/dart/insider_trades.parquet 인프라 활용.",
+    "Cohen-Malloy-Pomorski 2012 JF 'Decoding Inside Information'은 insider trade 구분(routine vs opportunistic)의 foundational paper. 김지현-최종범 2016 한국 실증 direct cite.",
+    "Coverage sparsity가 핵심 risk — 일부 종목 signal 없음. S2에서 coverage 확인 필수 (>= 40% universe).",
+    "PIT critical: 공시일 T+5 lag 반영. insider_trades.parquet schema 검증 (disclosure_date vs trade_date 구분) Forge S1 전제.",
+    "Diversifier fit 예상 +0.10~0.25 SR. 완전 novel channel이므로 cross-correlation 극히 낮을 것 예상.",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요."
+  ]
+}

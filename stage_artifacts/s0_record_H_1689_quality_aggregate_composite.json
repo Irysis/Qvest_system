@@ -1,0 +1,168 @@
+{
+  "hypothesis_id": "H_1689",
+  "factor_id": "H_1689_Quality_Aggregate_Composite_Diversifier",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Task #6 확장 — Governor 방향 2 (Quality aggregate composite). AX-004 v3 EXCLUSION 직접 활용: 'composite scope 밖 — Quality Defensive Composite(A안)은 scope 밖' 명문 근거. GP + Piotroski + Ohlson + Altman 4-axis quality composite.",
+  "path_type": "A (논문→가설)",
+  "bucket": "explore",
+
+  "hypothesis_summary": {
+    "name": "Quality Aggregate 4-Axis Composite Diversifier",
+    "family": "quality_multi_axis_composite",
+    "sub_family": "gp_piotroski_ohlson_altman_aggregate",
+    "expected_role": "diversifier",
+    "mechanism": "4-axis quality composite: (1) Q01_GPA (Novy-Marx 2013 Gross Profitability), (2) Q04_Piotroski_F (Piotroski 2000 F-Score), (3) signed -z Q25_Ohlson_O (distress probability, lower = higher quality), (4) signed -z Q24_Altman_Z equivalent (distress, lower Z = worse, so higher Z = higher quality). Equal-weight composite (25/25/25/25) → cross-section Z-score → Top 20 EW. Asness-Frazzini-Pedersen 2019 JF 'Quality Minus Junk' framework의 multi-axis quality 구현.",
+    "why_now": "Governor v1.1 SR 2.0 경로 + AX-004 v3 EXCLUSION 명문 활용. AX-004 v3 원문: '전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)는 scope 밖 — Scout의 Quality Defensive Composite(A안)은 scope 밖'. H_1689는 4-axis composite로 scope 밖 직접 대응. Quality family는 diversifier 관점에서 Grade A 카탈로그 34건 중 단순 blend 없음.",
+    "expected_role_reason": "Multi-axis quality는 (1) Value(PBR/EP) family와 구분, (2) Consensus/revision과 구분, (3) Risk/defense와 구분. 기존 Q01-only/Q04-only standalone 실패(AX-004 v1 deprecated scope)와 달리 4-axis diversified composite은 single-axis dilution 회피. Asness-Frazzini-Pedersen 2019 학술 근거."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Asness, Clifford S., Andrea Frazzini, and Lasse Heje Pedersen, 2019, 'Quality Minus Junk', Review of Accounting Studies 24, 34-112.",
+    "core_reference": "Part A 참조번호 TBD + Asness-Frazzini-Pedersen 2019 RAS 'Quality Minus Junk' (multi-axis quality composite foundational)",
+    "secondary_references": [
+      "Novy-Marx, Robert, 2013, 'The Other Side of Value: The Gross Profitability Premium', Journal of Financial Economics 108, 1-28. (Q01 GPA foundation)",
+      "Piotroski, Joseph D., 2000, 'Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers Among High Book-to-Market Stocks', Journal of Accounting Research 38, 1-41. (Q04 F-Score)",
+      "Ohlson, James A., 1980, 'Financial Ratios and the Probabilistic Prediction of Bankruptcy', Journal of Accounting Research 18, 109-131. (Q25 Ohlson O)",
+      "Altman, Edward I., 1968, 'Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy', Journal of Finance 23, 589-609. (Q24 Altman Z)",
+      "Frazzini, Andrea, Israel, Ronen, and Tobias J. Moskowitz, 2013, 'Trading Costs of Asset Pricing Anomalies', Fama-Miller Working Paper. (quality anomaly 실무 실현 가능성)",
+      "김재익·이준 (2020), '한국시장의 Quality-Minus-Junk 팩터', 한국재무학회지. (한국 QMJ composite 실증, direct cite 확인 필요)"
+    ],
+    "mechanism_academic": "Asness-Frazzini-Pedersen 2019: quality는 4 dimension(profitability / growth / safety / payout). 각 axis에서 지표 합산 → 'quality' score. High-quality long + low-quality short. 글로벌 24개국 확인. 실무적으로 composite이 single-factor보다 robust (각 axis signal이 unreliable하나 합산 시 noise cancellation).",
+    "korean_specific": "한국 quality 실증: Q01 GPA standalone은 L-139 OOS 소멸, Q04 Piotroski standalone은 L-133 실패, Q25 Ohlson 단독도 BCAC/GSCD cite bucket 1건 제외 standalone 미등록. 단 4-axis composite은 Asness 2019 framework 적용 — 한국 실증 drop-in. Factor DB 4개 factor 모두 기구축.",
+    "ax_004_v3_exemption_justification": "AX-004 v3 EXCLUSION 명문: '전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)은 scope 밖'. H_1689는 정확히 GP(Q01) + F-Score(Q04) + Ohlson(Q25) + Altman(Q24) 4-axis 결합. 단 Q07 미사용 (L-143 Q07 empirical fail 회피). AX-004 v3 직접 해당 exemption."
+  },
+
+  "core_reference": "Asness-Frazzini-Pedersen 2019 RAS 'Quality Minus Junk' + Novy-Marx 2013 JFE 'Gross Profitability' + Piotroski 2000 JAR 'Value Investing F-Score' + Ohlson 1980 JAR 'Bankruptcy Prediction' + Altman 1968 JF 'Financial Ratios Bankruptcy' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Quality_Aggregate_4Axis",
+      "components": [
+        {"axis": "profitability_GP", "factor": "Q01_GPA", "weight": 0.25, "direction": "positive"},
+        {"axis": "accounting_F_score", "factor": "Q04_Piotroski_F", "weight": 0.25, "direction": "positive"},
+        {"axis": "distress_Ohlson", "factor": "signed_distress_low_ohlson = -z_Q25_Ohlson_O", "weight": 0.25, "direction": "signed (low distress = high quality)"},
+        {"axis": "distress_Altman", "factor": "signed_altman_high = z_Q24_Altman_Z or equivalent", "weight": 0.25, "direction": "positive (high Z = safer, higher quality)"}
+      ],
+      "composite_formula": "final_signal = 0.25·z_Q01 + 0.25·z_Q04 + 0.25·z_signed_distress_low_ohlson + 0.25·z_Q24",
+      "alternative": "Asness 2019 original: 4 sub-composites (profitability/growth/safety/payout) each 4+ signals. 한국 simplified version으로 4 headline factor만 사용.",
+      "winsorization": "1~99% per factor before composite",
+      "z_score_method": "Z_Score_Aligned per factor (C13). signed direction은 compute_factor 등록 후 사용. 수동 반전 금지.",
+      "ortho_method": "S1 정적 25/25/25/25 EW. S5 mutation에서 Asness 2019 sub-composite (profitability / growth / safety / payout) 확장.",
+      "data_source": "load_month_factors(['Q01_GPA', 'Q04_Piotroski_F', 'Q25_Ohlson_O', 'Q24_Altman_Z'])",
+      "pit_note": "Q-factors 재무제표 기반 — T+60~90일 lag (C4) 준수. Usable_Date 기반 filter (C14)."
+    },
+    "rebalance": "Monthly (재무제표 공시 반영 지연 고려 — annual T+5월, quarterly T+45일)",
+    "final_signal": "z_quality_aggregate_4axis → Top 20 EW"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE (S0/S1 금지)"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.30~0.50 (Asness 2019 global QMJ ICIR 0.25+, 각 sub-factor Q01 0.081 / Q04 0.532 / Q25 0.633 / Q24 -0.043 — 단 Q24는 한국 weak, composite가 rescue)",
+    "sr_forecast": "0.70~1.20 standalone (Asness 2019 global QMJ SR 0.8-1.0)",
+    "cagr_forecast": "10~17%",
+    "mdd_forecast": "28~40%",
+    "diversifier_fit": "quality 자체가 value/momentum/consensus와 구분 family → blended SR 기여 +0.10~0.25",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.20 + each sub-factor component contribution 분해 (L-119 dilution 경계)",
+      "S3": "vs STR_1631 rho < 0.3, vs STR_1656 rho < 0.3, vs H_1676/H_1682/H_1687 rho < 0.4",
+      "S6": "FF5 alpha positive + each sub-axis marginal contribution + AX-004 v3 Judge 최종 exemption 확인",
+      "sub_factor_check": "Q24 Altman Z 한국 weak signal (icir -0.043) — 단독 25% 비중이 dilution 유발하는지 S2 확인. 필요 시 weight 재조정 (예: Q01 0.30 / Q04 0.30 / Q25 0.25 / Q24 0.15)"
+    }
+  },
+
+  "lesson_check": {
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX — 정적 25%/25%/25%/25% composite. 동적 ICIR weight는 S5 mutation variant.",
+    "L_113_quality_defense_fail": "AWARE — single-axis quality(Q04 F-Score)는 한국 역방향 defense 실패. H_1689는 4-axis composite 형태로 single-axis 한계 극복 의도. L-113 scope는 single defense, composite는 diversifier.",
+    "L_119_static_blend_dilution": "CRITICAL — L-119 정확히 해당 리스크 (정적 EW 블렌드). 단 AX-004 v3 EXCLUSION 원문 'Scout의 Quality Defensive Composite(A안)은 scope 밖'은 이 구조 인정. Asness 2019 framework 실증 근거. 단 sub-factor Q24 weak signal이 dilution 유발 여부는 S2 엄격 검증.",
+    "L_122_factor_timing_vs_risk_mgmt": "PASS — 정적 composite, timing 아님",
+    "L_133_Q04_F_standalone_fail": "AWARE — Q04 standalone 실패 scope. H_1689는 4-axis 1/4 비중으로 완화.",
+    "L_139_Q01_GP_standalone_fail": "AWARE — Q01 standalone 실패. 같은 완화 방식.",
+    "L_144_Q24_Altman_stress_reverse": "CRITICAL — Q24 stress_icir -0.695 역방향. 단독 사용 시 stress 구간 악화. Composite 내 25% 비중이 rescue하는지 S2 검증 필수. Stress 구간 Q24 기여 분해 요구.",
+    "L_140_Q07_D25_fail": "PASS — Q07 미사용, D25 미사용",
+    "L_148_Grade_A_not_PIT_clean": "DIRECT_FIX"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "Q01/Q04/Q25/Q24 individual existing. Quality_Aggregate_4Axis composite factor 미등록.",
+    "s0_record_duplicate_check": "GSCD (Growth Stability Composite) / CBPQ (Cash-Based Profitability Quality) 기존 explore 존재. H_1689는 (a) 4-axis 전체 quality (growth 아님), (b) 단순 aggregate (cash-based 아님). 명확 구분.",
+    "STR_1679v2_Q07_defense_distinction": "STR_1679v2는 Q07 earnings stability (defense sleeve). H_1689는 Q07 미사용 + profitability/F-score/distress 4-axis (diversifier role). 완전 구분.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with AX-004 v3 EXCLUSION direct citation"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS",
+    "AX_004_v3_quality_profitability_fail": {
+      "status": "PASS (scope 밖 명문 exemption)",
+      "direct_citation": "AX-004 v3 EXCLUSION 원문: '전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)은 scope 밖 — Scout의 Quality Defensive Composite(A안)은 scope 밖'",
+      "direct_match": "H_1689 = GP(Q01) + F-Score(Q04) + Ohlson(Q25) + Altman(Q24) 4-axis. AX-004 v3 EXCLUSION 정확한 해당.",
+      "caveat": "Q07 미사용 — AX-004 v3 exemption 명문에 'Q07 등'이 있으나 Q07 사용이 필수 아님. 4-axis 전체 quality composite이면 충분. 단 Judge 최종 판정 필요."
+    },
+    "AX_005_defense_fail": "PASS — diversifier role, defense/low-beta 미사용",
+    "AX_000_001_002": "PASS — Asness-Frazzini-Pedersen 2019 RAS 학술 출발"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — monthly factor snapshot",
+    "C2_same_day_circular": "PASS — t-1 기준 재무제표",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "CRITICAL — Q01/Q04/Q25/Q24 모두 재무제표 기반. Annual T+5월, Quarterly T+45일 lag 준수. compute_quality.R + factor_db Usable_Date 로직 검증 필수.",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS",
+    "C11_data_time_axis": "PASS — 월별 재무제표 snapshot",
+    "C13_z_score_aligned": "CRITICAL — signed_distress_low_ohlson factor 등록 필수. 수동 -z_Q25 금지.",
+    "C14_usable_date": "CRITICAL — 4 factors 전수 Usable_Date 준수",
+    "C15_factor_db_access": "PASS — load_month_factors 경유"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "load_month_factors 4 factors → per-factor Z-score → weighted sum",
+    "cache_strategy": "기존 factor 재활용. signed_distress_low_ohlson 신규 factor 등록만 필요.",
+    "edge_cases": [
+      "Q24 Altman Z 한국 weak signal — S2에서 sub-factor contribution 분해 필수",
+      "Missing data (특정 factor 결측) 처리 방침 사전 정의 (예: partial composite allowed with 3/4 factors?)",
+      "재무제표 lag 준수 — annual vs quarterly 혼재 Usable_Date 통일 처리"
+    ],
+    "critical_c13_c14_step": "signed_distress_low_ohlson 등록 + 4 factors Usable_Date filter 이중 검증. Forge S1 preflight에서 확인."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary (Q07 공유 가능 check)", "H_1676_S1", "H_1682_S1 (Q25 공유)", "H_1687_S1 (Q25 공유)", "H_1688_S1"],
+    "orthogonality_gate": "**vs STR_1679v2 rho < 0.4** (Q25 defense sleeve 공유 주의), vs 기타 rho < 0.3",
+    "novelty_score_expected": "0.45~0.65 (Q25 공유 + composite은 novelty 제한)",
+    "candidate_role_hint": "Diversifier (SR 0.70~1.20)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Asness 2019 full 4-sub-composite (profitability/growth/safety/payout 각 4+ signals)",
+      "Q24 weight 축소 (0.15) + 나머지 재조정",
+      "IC-weighted dynamic weight (L-111 STR_1631 SYN_05 패턴)",
+      "Quality + Value composite (Asness 2015 framework)",
+      "Regime-conditional (CAUTION/CRISIS에서 distress axis 강화)"
+    ]
+  },
+
+  "scout_notes": [
+    "Governor 방향 2 (Quality aggregate composite) 선택. AX-004 v3 EXCLUSION 명문 직접 활용 — 'Scout의 Quality Defensive Composite(A안)은 scope 밖' 조항.",
+    "Asness-Frazzini-Pedersen 2019 RAS는 QMJ composite의 gold standard. 4-axis 구조 유지로 academic fidelity 확보.",
+    "L-119 정적 블렌드 dilution 핵심 리스크 — Q24 한국 weak signal 25% 비중이 다른 sub-factor alpha 희석 위험. S2에서 sub-factor contribution 분해 필수.",
+    "L-144 Q24 Altman stress_icir -0.695 역방향 — 정상구간에서는 기여하나 stress 구간 악화. 6대 stress 구간별 sub-factor IC 분해 권장.",
+    "Diversifier fit 예상 +0.10~0.25 SR. Core-level은 아니나 (SR 0.70~1.20) alpha 다양화 관점 유의.",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요. AX-004 v3 exemption 경계 케이스로 Judge 최종 판정 중요.",
+    "H_1687 Q25 공유, H_1682 Q25 공유 — S3에서 portfolio-level rho 중간 예상. 단 4-axis composite이므로 Q25 단일 노출은 25%."
+  ]
+}

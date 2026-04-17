@@ -1,0 +1,162 @@
+{
+  "hypothesis_id": "H_1688",
+  "factor_id": "H_1688_Residual_Momentum_Core_Alpha",
+  "stage": "S0_DRAFT",
+  "status": "STANDALONE_RESEARCH (no debate)",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "note": "Task #6 확장 — Governor 방향 1 (Residual momentum). SR 2.0 경로의 critical piece (Governor v1.1 결론: Core 수준 독립 alpha 1건 추가 필수). 12-1 momentum을 beta+size+IdioVol 잔차화 → clean residual momentum.",
+  "path_type": "A (논문→가설)",
+  "bucket": "explore",
+
+  "hypothesis_summary": {
+    "name": "Residual Momentum Diversifier (Core-Level Alpha Target)",
+    "family": "momentum_residual",
+    "sub_family": "beta_size_idiovol_orthogonalized_momentum",
+    "expected_role": "diversifier (with Core-level SR target)",
+    "mechanism": "각 종목 t월: M04_Mom_12_1 (past 12M return skipping last 1M)을 매월 cross-section OLS로 beta(24M rolling CAPM) + log(Size) + R12_IdioVol 3-factor 잔차화. 잔차를 Z_Score_Aligned. Top 20 EW. Barroso-Santa-Clara 2015 RFS 'Risk-Managed Momentum' framework 준수. Momentum의 beta-exposure와 size-exposure 제거 → 'clean residual momentum' signal.",
+    "why_now": "Governor v1.1 결론 — Scenario C/D (H_1676+H_1682 admit) SR 1.65~1.78, **Core 수준 독립 alpha 1건 추가가 SR 2.0 도달 필수조건**. Residual momentum family는 Carhart 1997 JF foundational anomaly. 한국 Factor DB M04_Mom_12_1 존재하나 잔차화 standalone 가설 없음. Barroso framework (L-122 factor risk management)의 momentum 적용 전례는 국내 미구축.",
+    "expected_role_reason": "H_1676 consensus(diversifier), H_1682 distress+risk(defense)와 orthogonal family. Momentum family 자체는 기존 STR_1631/STR_1656/STR_1679v2와 구분 (consensus/ML/Q07-D29 중심). 잔차화로 beta+size exposure 제거 → portfolio rho < 0.25 설계 가능. **Governor 목표**: SR >= 1.0 standalone + rho < 0.25 vs existing PG2.",
+    "distinctive_from_H_1687": "H_1687은 Q25 distress × M04 momentum interaction (composite). H_1688은 M04 momentum 자체의 beta+size+idiovol 잔차화. Mechanism 완전 상이 — H_1687은 double-factor composite, H_1688은 single-factor residualization."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Carhart, Mark M., 1997, 'On Persistence in Mutual Fund Performance', Journal of Finance 52, 57-82.",
+    "core_reference": "Part A 참조번호 TBD + Carhart 1997 JF (UMD momentum factor foundational) + Barroso-Santa-Clara 2015 JFE (residualized momentum risk management)",
+    "secondary_references": [
+      "Jegadeesh, Narasimhan and Sheridan Titman, 1993, 'Returns to Buying Winners and Selling Losers', Journal of Finance 48, 65-91. (classic momentum)",
+      "Barroso, Pedro and Pedro Santa-Clara, 2015, 'Momentum Has Its Moments', Journal of Financial Economics 116, 111-120. (residualized + risk-managed momentum)",
+      "Blitz, David, Joop Huij, and Martin Martens, 2011, 'Residual Momentum', Journal of Empirical Finance 18, 506-521. (beta/size/BM 잔차화 momentum, direct primary reference)",
+      "Grundy, Bruce D. and J. Spencer Martin, 2001, 'Understanding the Nature of the Risks and the Source of the Rewards to Momentum Investing', Review of Financial Studies 14, 29-78. (momentum이 implicit factor bets)",
+      "이진철·김동철 (2015), '한국주식시장의 잔차 모멘텀', 한국재무학회지 28, 211-249. (한국 residual momentum 직접 실증)",
+      "Kim, Byoung-Kyu and Steve Park, 2019, 'Robust Momentum Strategies in Korean Stock Markets', Asia-Pacific Journal of Financial Studies. (한국 risk-managed momentum)"
+    ],
+    "mechanism_academic": "Blitz-Huij-Martens 2011: raw momentum은 beta/size/BM에 대한 implicit bet을 내포. 잔차 momentum은 이러한 bet 제거 후 pure 'time-series strength' 포착. 결과: (1) Sharpe 0.5 → 1.0+ 개선, (2) momentum crash 완화, (3) 타 strategy와 low correlation. Barroso 2015: dynamic scaling + residualization으로 SR 2배. 한국 이진철 2015: 한국에서도 잔차 momentum 유효 (monthly t-stat 3+).",
+    "korean_specific": "한국 momentum anomaly 기존 실증: 1~3M reversal, 6~12M momentum, 48M reversal 패턴. 단 raw momentum은 beta/size 편향 큼 (대형주 momentum strong). 잔차화 후에도 alpha 유효 (이진철 2015, Kim-Park 2019). Factor DB M04_Mom_12_1 + M01_CAPM_Beta + S01_Size + R12_IdioVol 모두 기구축."
+  },
+
+  "core_reference": "Carhart 1997 JF 'On Persistence in Mutual Fund Performance' + Blitz-Huij-Martens 2011 JEF 'Residual Momentum' + Barroso-Santa-Clara 2015 JFE 'Momentum Has Its Moments' + 이진철·김동철 2015 한국재무학회지 '한국주식시장의 잔차 모멘텀' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Residual_Momentum_12_1",
+      "step_1": "M04_Mom_12_1 cross-section Z-score per month",
+      "step_2": "매월 t cross-section OLS: lm(M04_z ~ beta_24m + log_mcap + R12_idiovol)",
+      "step_3": "residual (model $resid) 추출",
+      "step_4": "residual → cross-section Z_Score_Aligned per month",
+      "step_5": "Top 20 EW",
+      "regressors": ["M01_CAPM_Beta (24M rolling)", "log(MarketCap) from S01_Size", "R12_Idiosyncratic_Risk"],
+      "winsorization": "1~99% cross-section on M04 (Codex pattern H_1676)",
+      "ortho_method": "Blitz 2011 표준: beta+size+BM 대신 beta+size+IdioVol 선택 (L-118 beta dominance 차단 + L-140 BM 회피)",
+      "data_source": "load_month_factors(['M04_Mom_12_1', 'M01_CAPM_Beta', 'S01_Size', 'R12_Idiosyncratic_Risk'])",
+      "pit_note": "M04는 past 12M skipping last 1M — 완전 past only (C1). 24M rolling beta는 expanding with 24M window. 모두 PIT clean."
+    },
+    "z_score_method": "Z_Score_Aligned. compute_factor에 'residual_momentum_12_1' 등록 후 load_month_factors 경유. 수동 -z 반전 금지.",
+    "rebalance": "Monthly, t+1 적용",
+    "final_signal": "z_residual_momentum_12_1 → Top 20 EW"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE (S0/S1 금지. S5 slate에서 Barroso scaling + DD 추가 후보)"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.35~0.55 (이진철 2015 한국 잔차 momentum monthly t-stat 3+, Blitz 2011 global Sharpe 1.0)",
+    "sr_forecast": "**0.80~1.30 standalone** (Governor 요구 SR >= 1.0 달성 가능 tier)",
+    "cagr_forecast": "12~20%",
+    "mdd_forecast": "28~40% (momentum crash 위험 — S5에서 Barroso scaling 대응)",
+    "diversifier_fit": "beta+size 잔차화로 PG2 기존 전략과 **rho < 0.25 설계** (Governor 요구). portfolio blended SR 기여 +0.15~0.30 예상. Core-level 후보.",
+    "key_validation_gates": {
+      "S2": "ICIR >= 0.25 + residual stability 3Y rolling drift < 30%",
+      "S3": "**rho < 0.25 vs STR_1631_SYN_05** (Governor Critical Gate), rho < 0.25 vs STR_1656_MLRA_M05, rho < 0.3 vs H_1676_S1/H_1682_S1",
+      "S6": "FF5 alpha positive + Momentum factor exposure 잔차화 후 감소 검증, Barroso 2015 risk-managed version 비교"
+    }
+  },
+
+  "lesson_check": {
+    "L_107_ICIR_fixed_weight_C1_violation": "DIRECT_FIX",
+    "L_118_beta_dominance": "DIRECT_FIX — beta 잔차화로 portfolio beta 축소",
+    "L_118_ext_cross_section_vs_portfolio": "DIRECT_FIX — 단면 correlation 낮아도 portfolio rho 높을 위험 경계. beta 잔차화로 portfolio-level rho 동시 축소.",
+    "L_119_static_blend_dilution": "PASS — 단일 잔차 momentum signal",
+    "L_122_factor_timing_vs_risk_mgmt": "DIRECT_FIX — Barroso 2015 risk management framework 준수. S5에서 dynamic scaling 추가.",
+    "L_140_Q07_D25_fail": "PASS — Q07/D25 미사용",
+    "L_148_Grade_A_not_PIT_clean": "DIRECT_FIX — C1~C15 수동 전수 검증",
+    "L_441_MRS_future_reference": "PASS — MRS 미사용"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "M04_Mom_12_1 existing. Residual momentum composite factor 미등록 (factor_registry 검색).",
+    "s0_record_duplicate_check": "기존 explore entries 전수 확인 — momentum residualization 가설 없음. H_1687 Q25×M04 interaction과 구분.",
+    "H_1687_distinction": "H_1687 (distress × momentum interaction, composite 50/50). H_1688 (momentum 잔차화, single-factor). Mechanism 완전 상이. S3 rho < 0.5 예상 (momentum factor 공유이나 잔차화 vs composite 처리 상이).",
+    "existing_momentum_strategies": "Grade A catalog 중 momentum 기반 전략 (STR_1038~1043 등)은 30종목 과거 전략 + 잔차화 없음. H_1688은 20종목 v53 compliant + 잔차화 first.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED — Core-level 후보"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS",
+    "AX_004_quality_profitability_fail": "PASS",
+    "AX_005_defense_fail": "PASS — diversifier role",
+    "AX_000_001_002": "PASS — Carhart 1997 JF + Blitz 2011 JEF 학술 메커니즘 출발"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — M04 past 12M only, beta 24M rolling, size/idiovol monthly snapshot",
+    "C2_same_day_circular": "PASS — M04 skip last 1M (standard Jegadeesh-Titman)",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "N/A",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS",
+    "C11_data_time_axis": "PASS — monthly return / beta / size 시간축 일관",
+    "C13_z_score_aligned": "PASS — residual_momentum_12_1 factor 등록 후 사용",
+    "C14_usable_date": "N/A (signal 자체 계산)",
+    "C15_factor_db_access": "PASS — load_month_factors 경유"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "H_1676 residual 패턴 재활용. matrix OLS monthly.",
+    "cache_strategy": "M01 rolling beta (24M) pre-compute → monthly residual snapshot",
+    "edge_cases": [
+      "신규 상장 종목: min 24M beta history 요구",
+      "beta shrinkage (Vasicek)를 S5에서 추가 variant",
+      "Winsorization 1~99% 후 OLS (Codex pattern)",
+      "Universe exit 처리"
+    ],
+    "critical_c13_step": "residual_momentum_12_1 factor 등록 후 Z_Score_Aligned 경유. 수동 -z 금지."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": ["STR_1631_SYN_05", "STR_1656_MLRA_M05", "STR_1679v2_Primary", "H_1676_S1", "H_1682_S1", "H_1687_S1 (momentum 공유 check)"],
+    "orthogonality_gate": "**rho < 0.25 vs STR_1631 and STR_1656 (Governor Critical Gate)**, rho < 0.3 vs H_1676/H_1682, rho < 0.5 vs H_1687 (momentum 공유)",
+    "novelty_score_expected": "0.65~0.85 (잔차 momentum은 structural novelty)",
+    "candidate_role_hint": "Core-level alpha (SR >= 1.0 expected, rho < 0.25 설계)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Barroso 2015 dynamic scaling (rolling vol target)",
+      "DD 8/22 overlay (L-013 전례)",
+      "잔차 momentum + Size 잔차 composite (Blitz 2011 extended)",
+      "Regime-conditional momentum (STR_1631 VD+ 패턴)",
+      "Multi-horizon: 6-1 + 12-1 + 18-1 composite"
+    ],
+    "note": "S1 Core-level alpha 확인 시 S5 Research Slate 정식 작성 (7슬롯 A~G 구조, H_1676/H_1682 v2 slate 패턴 확장)"
+  },
+
+  "scout_notes": [
+    "Governor 4방향 중 **방향 1 (Residual momentum)** 선택. Governor v1.1 결론 'SR 2.0 달성엔 Core 수준 독립 alpha 1건 추가 필수'의 직접 대응 후보.",
+    "Carhart 1997 JF + Blitz 2011 JEF + Barroso 2015 JFE는 momentum family의 foundational trilogy. 한국 이진철 2015 + Kim-Park 2019 실증.",
+    "Core-level target (SR 0.80~1.30 standalone) — Governor 요구 SR >= 1.0 달성 가능.",
+    "beta+size+IdioVol 잔차화 설계로 **PG2 기존 전략과 rho < 0.25 가능성** (Governor Critical Gate). 이게 H_1688의 핵심 strategic value.",
+    "S5에서 Barroso 2015 risk-managed variant 추가 → momentum crash 완화 + SR 1.0+ 안정화.",
+    "이 초안은 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요. Core-level 후보이므로 debate 우선순위 상위 권장.",
+    "H_1687 (distress×momentum interaction)과 완전 구분. H_1687은 double-factor composite, H_1688은 single-factor residualization."
+  ]
+}
