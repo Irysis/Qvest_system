@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_IIII1_MAX_SR_FACTOR",
+  "title": "Max Sharpe 팩터 포트폴리오 — 7팩터 Tangency Portfolio 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:29:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "MF_IIII1", "family": "multifactor_mv", "n_holdings": 30},
+  "design": {
+    "concept": "UU1(MinVar)과 반대: SR 극대화(Tangency Portfolio). 7팩터의 μ/Σ로 최적 가중. 7차원이므로 추정 안정적.",
+    "logic": [
+      "1. μ_i = trailing 6m 팩터 평균 수익률 (t-1)",
+      "2. Σ = trailing 6m 팩터 공분산 + Ledoit-Wolf shrinkage",
+      "3. QP: max w'μ / sqrt(w'Σw) s.t. sum(w)=1, w>=0.05, w<=0.40",
+      "4. composite = sum(w_tangency × z_factor) → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "μ, Σ = trailing 6m, t-1 lag. Expanding min 24m.", "C12": "Full-sample μ/Σ 금지."},
+  "overfitting_guard": "Ledoit-Wolf shrinkage 필수. 7차원 최적화 = 안정적. OOS retention >= 0.5.",
+  "academic_basis": "Markowitz (1952); Ledoit & Wolf (2004)"
+}

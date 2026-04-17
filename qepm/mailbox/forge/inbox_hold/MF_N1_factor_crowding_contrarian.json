@@ -1,0 +1,34 @@
+{
+  "exp_id": "MF_N1_ANTI_CROWDING",
+  "title": "Anti-Crowding 팩터 — 혼잡도 낮은 팩터에 역방향 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:06:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {
+    "strategy_id": "MF_N1",
+    "family": "multifactor_contrarian",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "최근 성과가 좋은 팩터는 투자자 몰림(crowding) → 미래 수익 감소. 반대로 최근 성과 부진한 팩터는 저평가 → 미래 수익 증가 (팩터 mean-reversion). FM의 역방향.",
+    "logic": [
+      "1. 각 팩터의 trailing 12m SR 계산 (t-1)",
+      "2. SR 하위 팩터에 높은 가중 → contrarian tilt",
+      "3. weight_i = (1/rank_i) / sum(1/rank), rank = SR 순위 (1=best)",
+      "4. 즉 최근 부진 팩터에 가중, 최근 강세 팩터에 저가중",
+      "5. composite score → Top 30 → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "rationale": "Arnott et al. (2016) 'How Can Smart Beta Go Horribly Wrong': factor crowding → future underperformance. 12m lookback = momentum의 역전 타이밍."
+  },
+  "pit_rules": {
+    "C1": "trailing 12m SR = rolling window, t-1 lag",
+    "C12": "가중은 자동 결정 (inverse rank). Full-sample 최적화 금지."
+  },
+  "overfitting_guard": "Contrarian은 FM 대비 열위 가능성 높음 (한국시장 momentum 유효). MF_B1(FM)과 직접 비교 필수. OOS retention >= 0.5.",
+  "l_codes_referenced": ["L-429 (FM rank)", "L-482 (국면배분 ≈ FM)"],
+  "academic_basis": "Arnott, Beck & Kalesnik (2016) 'How Can Smart Beta Go Horribly Wrong'; Lou & Polk (2022) 'Comomentum'"
+}

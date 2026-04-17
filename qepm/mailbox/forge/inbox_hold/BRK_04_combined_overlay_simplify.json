@@ -1,0 +1,31 @@
+{
+  "exp_id": "BRK_04",
+  "title": "STR_1036 오버레이 극단 단순화: DD_med(8%) + MRS Binary ONLY",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.92,
+  "diagnosis": {
+    "target": "STR_1036 — BRK_01~03 최적 조합",
+    "root_cause": "BRK_01(DD완화) + BRK_02(short DD 제거) + BRK_03(MRS binary) 최적 조합을 한번에 테스트. 현재 3중 오버레이(DD_med tight + DD_short + MRS_soft)에서 2중(DD_med relaxed + MRS binary)으로 극단 단순화. L-449: 이중 제거가 SR 개선. 과보호 = CAGR 손실 > MDD 보호"
+  },
+  "hypothesis": "DD_med(8% start) + MRS binary(>=30 → 30%exp) 2중만 유지. Short DD 제거, MRS soft ramp 제거. 극단 단순화로 정상 시장 100% 투자 시간 극대화 → CAGR +2~4%p, SR +0.10~0.20. MDD 25% 이내 유지가 관건",
+  "implementation": {
+    "base": "STR_1036 run_all.R 복사",
+    "changes": [
+      "Phase 3: DD_med threshold 0.04→0.08, Short DD 전체 제거",
+      "Phase 4: MRS binary (>=30 → 0.30, <30 → 1.0)",
+      "Line 494: dd_exp_med <= 0.08 ...",
+      "Line 498~512: 삭제",
+      "Line 514: dd_exp_combined <- dd_exp_med",
+      "Line 527~538: binary switch"
+    ]
+  },
+  "pit_checklist": ["DD t-1 lag 유지", "MRS t-1 lag 내장"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "MDD < 25% 필수 확인"],
+  "metrics_target": {"cagr": ">22%", "sharpe": ">1.40", "mdd": "<25%"},
+  "l_codes": ["L-443", "L-449", "L-325", "L-477", "L-06"],
+  "risk_notes": "가장 공격적인 변형. MDD가 25% 초과 시 DD_med 6%로 다시 조여야 함. 2008/2020/2022 구간별 stress test 필수"
+}

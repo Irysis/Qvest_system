@@ -1,0 +1,15 @@
+{
+  "exp_id": "SF_56_disagreement",
+  "title": "Analyst Disagreement — EPS 전망치 분산 낮은 종목 선호",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:20:00+09:00",
+  "bucket": "explore", "priority_score": 0.73,
+  "scope": {"strategy_id": "SF_56", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "Diether et al.(2002): 애널리스트 의견 불일치 높은 종목 = 미래 수익 낮음. 낮은 disagreement 선호.",
+    "signal": "z(-EPS_forecast_std / abs(EPS_forecast_mean)), sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "consensus data t-1 lag"},
+  "academic_basis": "Diether, Malloy & Scherbina (2002 JF)"
+}

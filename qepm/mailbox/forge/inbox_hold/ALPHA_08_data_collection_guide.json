@@ -1,0 +1,25 @@
+{
+  "msg_id": "SCOUT_DATA_001",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "data_requirement",
+  "timestamp": "2026-03-22T09:00:00+09:00",
+  "subject": "ALPHA_08 KRX 투자자별 매매동향 데이터 수집 가이드",
+  "finding": {
+    "krx_api_status": "data.krx.co.kr API가 LOGOUT 반환 — 로그인 세션 필요. 무료 회원가입 후 로그인 필요",
+    "alternative_sources": [
+      "1. KRX data.krx.co.kr 수동 다운로드 (로그인 → CSV 다운 → 일별 반복)",
+      "2. FnGuide DataGuide Pro — 투자자별 매매 데이터 포함 (도훈님 접근 가능 여부 확인)",
+      "3. 네이버 금융 — 투자자별 매매동향 표시 (스크래핑 가능하나 규모 제한)",
+      "4. pykrx Python 패키지 — KRX 데이터 자동화 (Python 사용 제한 있으나 데이터 수집용 예외?)"
+    ]
+  },
+  "data_specification": {
+    "target": "일별 종목별 투자자유형 순매수금액",
+    "fields": ["Date", "Ticker", "Foreign_NetBuy", "Institutional_NetBuy", "Individual_NetBuy", "TradingValue"],
+    "period": "2010-01-01 ~ 2026-03-20 (최소 10년)",
+    "size_estimate": "~2000종목 × ~4000일 = ~8M rows",
+    "krx_menu": "시장정보 → 투자자별 거래실적 → 개별종목 (MDCSTAT023)"
+  },
+  "user_action_required": "도훈님께 KRX data.krx.co.kr 로그인 후 CSV 다운로드 또는 FnGuide 접근 권한 확인 요청. 데이터 확보 시 Scout이 IC 검증 + Forge가 Full Backtest 즉시 실행 가능."
+}

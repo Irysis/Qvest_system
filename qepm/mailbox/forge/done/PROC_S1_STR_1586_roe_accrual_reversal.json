@@ -1,0 +1,21 @@
+{
+  "task": "S1_BACKTEST",
+  "strategy_id": "STR_1586",
+  "strategy_name": "STR_1586_roe_accrual_reversal",
+  "factors": ["Q02_ROE", "AC17_Accrual_Reversal"],
+  "factor_weights": "EW (50/50)",
+  "construction": {
+    "method": "2-factor EW RankCombo",
+    "sector_neutral": true,
+    "n_stocks": 30,
+    "rebalance": "monthly",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "commission": 15
+  },
+  "overlay": "none",
+  "expected_role": "core_alpha",
+  "s0_record_path": "04_Research/strategies/STR_1586_roe_accrual_reversal/stage_artifacts/s0_record.json",
+  "instructions_for_forge": "S1 순수 팩터 테스트. DD/VT/Regime 오버레이 금지. EW 30종목 + 15bps. load_month_factors()로 Q02, AC17 로드 후 Z_Score_Aligned 합산 RankCombo. 섹터중립. BZ 50/25. preflight_check() 필수.",
+  "created_at": "2026-03-28",
+  "created_by": "Scout"
+}

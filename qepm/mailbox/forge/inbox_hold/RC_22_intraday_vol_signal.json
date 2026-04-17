@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_22_intraday_vol",
+  "title": "장중 변동성 시그널 — Open-Close vs High-Low 비율로 시장 불안 감지",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:21:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {"strategy_id": "RC_22", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "Parkinson(1980) High-Low vol estimator. 장중 High-Low 범위가 넓고 Close가 Open 근처 → 방향성 없는 불안. 시장 전체 intraday range로 위기 선행.",
+    "signal": "z(mean(KOSPI200 (High-Low)/Open, 5d), expanding 252d, t-1)",
+    "allocation": {
+      "high_intraday": {"trigger": "z > 1.0", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "data": "RAWDATA BM High/Low/Open/Close",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "intraday range = t-1 lag (전일 데이터)"},
+  "academic_basis": "Parkinson (1980) 'The Extreme Value Method for Estimating the Variance of the Rate of Return' JB"
+}

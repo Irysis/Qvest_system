@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_32_dual_mrs_kmrs",
+  "title": "Dual Regime — MRS(글로벌) AND KMRS(한국) 동시 위기일 때만 방어",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:01:00+09:00",
+  "bucket": "exploit", "priority_score": 0.81,
+  "scope": {"strategy_id": "RC_32", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "글로벌(MRS) OR 한국(KMRS) 하나만 위기 → false alarm 가능. 둘 다 위기일 때만 방어 → precision 극대화.",
+    "logic": [
+      "MRS >= 20 AND KMRS >= 1.0 → Defense 45% + Quality 25% + Cash 30%",
+      "MRS >= 20 XOR KMRS >= 1.0 → Defense 30% + Others 70%",
+      "Both normal → MF_A1 Core"
+    ],
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS + KMRS 모두 t-1 lag"}
+}

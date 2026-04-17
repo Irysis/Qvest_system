@@ -1,0 +1,14 @@
+{
+  "exp_id": "EN_63_conviction",
+  "title": "Conviction Ensemble — 5전략 모두 Top 30%인 종목만 선정",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:32:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "EN_63", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "W1(Conviction Count)의 앙상블 버전. 5전략 모두에서 상위 30%인 종목 = 완전 합의.",
+    "logic": "5전략 각각 Top 30% 교집합. 30 미만이면 threshold 완화(35%, 40%).",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

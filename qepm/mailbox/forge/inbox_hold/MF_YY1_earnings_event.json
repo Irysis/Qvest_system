@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_YY1_EARNINGS_EVENT",
+  "title": "실적 이벤트 팩터 — 실적 발표 전후 윈도우에서만 팩터 활성화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:22:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {"strategy_id": "MF_YY1", "family": "multifactor_event", "n_holdings": 30},
+  "design": {
+    "concept": "팩터 유효성이 실적 시즌에 집중. SUE/FPER revision은 실적 발표 ±2주에 가장 강함. Earnings window 동안 Consensus 가중 증가, 비시즌에는 Defense/Momentum 강화.",
+    "logic": [
+      "1. DART 공시 캘린더로 실적 발표 시즌 판단 (1/4/7/10월 ±2주)",
+      "2. 실적 시즌: Consensus 40% + Quality 20% + Defense 20% + Others 20%",
+      "3. 비실적 시즌: Defense 30% + Momentum 25% + IndMom 20% + Others 25%",
+      "4. composite → Top 30, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "실적 시즌 판단은 캘린더 기반(사전 알 수 있음). PIT-safe."},
+  "overfitting_guard": "실적 시즌 정의는 캘린더 기반(1/4/7/10월). Data-driven 아님.",
+  "academic_basis": "Ball & Brown (1968); Bernard & Thomas (1990) Post-Earnings Announcement Drift"
+}

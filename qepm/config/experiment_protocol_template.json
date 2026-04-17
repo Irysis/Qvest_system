@@ -1,0 +1,46 @@
+{
+  "exp_id": "EXP_YYYY-MM-DD_###",
+  "parent_exp_id": null,
+  "task_family": "",
+  "strategy_fingerprint": "sha256:...",
+  "hypothesis": {
+    "statement": "",
+    "mechanism": "",
+    "falsification": "",
+    "null_design": ""
+  },
+  "data": {
+    "snapshot_id": "DS_YYYYMMDD_EOM",
+    "pit_verified": true,
+    "survivorship_handled": true,
+    "qc_passed": true
+  },
+  "implementation": {
+    "universe": "KR_ALL_LISTED",
+    "signal": "",
+    "rebalance": "monthly",
+    "n_holdings": 30,
+    "weighting": "equal",
+    "neutralization": "sector",
+    "buffer_zone": { "entry": 25, "exit": 50 },
+    "cooldown": 2,
+    "cost_model": "cost_v2.1",
+    "constraints": { "max_weight": 0.05, "max_turnover_ann": 6.0 }
+  },
+  "execution_plan": {
+    "preflight": { "period": "2020-2022", "check": ["data_ok", "to_calc", "cost_bind"] },
+    "full_run": {
+      "is_period": "2015-2020",
+      "oos_period": "2020-2024",
+      "stress_windows": ["covid_2020", "rate_hike_2022"]
+    }
+  },
+  "evaluation_metrics": {
+    "primary": ["net_cagr", "sharpe0_m_ann", "mdd", "es99_m", "turnover_ann"],
+    "secondary": ["sharpe0_d_ann", "es99_d", "hit_rate", "ic", "icir", "oos_retention"],
+    "stat_defense": { "required": true, "methods": ["dsr"], "family_trial_count": 0 }
+  },
+  "lessons_referenced": [],
+  "lessons_application": "",
+  "search_mode": "EXPLOIT"
+}

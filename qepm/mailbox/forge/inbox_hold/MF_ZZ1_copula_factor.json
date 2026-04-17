@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_ZZ1_COPULA_TAIL",
+  "title": "Copula 기반 팩터 결합 — 꼬리 의존성 반영 비선형 결합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:23:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.66,
+  "scope": {"strategy_id": "MF_ZZ1", "family": "multifactor_copula", "n_holdings": 30},
+  "design": {
+    "concept": "팩터 간 상관은 정상 시 낮지만 위기 시 급등(tail dependence). Copula로 비선형 의존 구조 모델링 → 위기 시 효과적인 팩터 결합.",
+    "logic": [
+      "1. 7 팩터 수익률의 Clayton copula 적합 (하방 꼬리 의존성 포착)",
+      "2. Copula에서 conditional probability: P(factor_i 상위 | 다른 팩터들 상태)",
+      "3. 조건부 확률 높은 종목 = 다수 팩터가 동시 양호 → 우선 선정",
+      "4. Top 30, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Copula 적합 = expanding window (t-1)"},
+  "overfitting_guard": "⚠️ Copula 추정은 소표본에서 불안정. Clayton 단일 파라미터(θ)로 복잡도 최소화. OOS retention >= 0.5.",
+  "r_packages": ["copula"],
+  "academic_basis": "Patton (2006 JE) 'Modelling Asymmetric Exchange Rate Dependence'; Joe (2015) 'Dependence Modeling with Copulas'"
+}

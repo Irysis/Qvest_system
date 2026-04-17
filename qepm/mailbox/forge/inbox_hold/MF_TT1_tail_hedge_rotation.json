@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_TT1_TAIL_HEDGE",
+  "title": "Tail Hedge 로테이션 — 위기 선행 시 Defense→Quality 전환으로 비대칭 수익",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:11:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {
+    "strategy_id": "MF_TT1",
+    "family": "multifactor_tail",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "위기 선행 지표(L-444~446: VRP+AbsorptionRatio+SoftCUSUM)가 경고 발령 시, Defense에서 Quality+Value로 선제 전환. 위기 시 Quality/Value가 Defense보다 강한 반등(L-517: PiotroskiF COVID +13%). MDD 방어 + 반등 수혜 동시 추구.",
+    "logic": [
+      "1. regime_engine_daily.R MRS + VRP 체크 (t-1)",
+      "2. 정상(MRS<15, VRP<1σ): MF_A1 Core weight",
+      "3. 경고(15<=MRS<25 OR VRP>1σ): Defense 25% → Quality 30%, Value 20%, Def 15%, Cons 15%",
+      "4. 위기(MRS>=25 AND VRP>2σ): Quality 35%, Defense 30%, Value 20%, 현금 15%",
+      "5. composite → Top 30 (현금 비중 시 Top 25로 축소)"
+    ],
+    "overlay": "regime_engine_daily.R (MRS) + VT 0.25. DD Brake는 위기 전환이 대체.",
+    "asymmetry": "위기 진입 전 Quality/Value 전환 → 위기 MDD 방어 + 반등 시 Quality premium 수혜"
+  },
+  "pit_rules": {"C1": "MRS + VRP 모두 t-1 lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "Threshold(15/25, 1σ/2σ)는 경제적 직관 + L-code 기반.",
+  "l_codes_referenced": ["L-444 (VRP 위기 선행)", "L-445 (Absorption Ratio)", "L-517 (PiotroskiF COVID 방어)"]
+}

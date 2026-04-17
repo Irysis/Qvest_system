@@ -1,0 +1,20 @@
+{
+  "exp_id": "EN_50_final_prod_ens",
+  "title": "Final Production Ensemble — EV_60 단독 vs 앙상블 비교 후 최종 확정",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:23:00+09:00",
+  "bucket": "production", "priority_score": 0.98,
+  "scope": {"strategy_id": "EN_50", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EV_60(단독 최적 전략) vs EN_49 최적 앙상블. 단독이 앙상블보다 OOS 우수하면 단독 채택, 아니면 앙상블 채택.",
+    "logic": [
+      "1. EV_60 OOS SR/MDD 확인",
+      "2. EN_49 최적 앙상블 OOS SR/MDD 확인",
+      "3. OOS SR 높은 쪽 = 프로덕션",
+      "4. 동률 시 MDD 낮은 쪽"
+    ],
+    "dependency": "EV_60 + EN_49 완료 후",
+    "deadline": "2026-03-31"
+  },
+  "pit_rules": {"C12": "walk-forward OOS 비교"}
+}

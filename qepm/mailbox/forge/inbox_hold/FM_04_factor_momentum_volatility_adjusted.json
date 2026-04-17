@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_04_vol_adj_fm",
+  "title": "Vol-Adjusted FM — 팩터별 SR(=vol-adjusted return)로 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:44:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "FM_04", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1(trailing 6m SR)의 정밀화: SR = return/vol이므로 이미 vol-adjusted. 하지만 B1은 팩터 포트폴리오 SR. FM_04는 팩터 IC의 t-stat(= IC/std(IC))로 가중. IC t-stat = vol-adjusted 예측력.",
+    "logic": [
+      "1. 각 팩터의 trailing 12m IC 시계열 (t-1)",
+      "2. IC_tstat = mean(IC) / (std(IC) / sqrt(12)) = IC의 t-stat",
+      "3. w_i = max(0, IC_tstat_i) / sum(max(0, IC_tstat)), cap 0.40",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC t-stat = trailing 12m expanding, t-1 lag"},
+  "overfitting_guard": "IC t-stat = IC의 통계적 유의성. 유의미한 팩터만 활성화."
+}

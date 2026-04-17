@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_CCC1_FACTOR_QUALITY",
+  "title": "팩터 품질 필터 — IC/ICIR/Turnover 3축으로 팩터 자체의 품질 관리",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:31:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "MF_CCC1", "family": "multifactor_quality_ctrl", "n_holdings": 30},
+  "design": {
+    "concept": "팩터를 '사용할지 말지' 판단하는 메타 기준. IC 유의성 + ICIR 안정성 + Turnover 비용 3축으로 팩터 품질 점수 계산. 품질 낮은 팩터 자동 제외.",
+    "factor_quality_score": {
+      "ic_score": "trailing 12m 평균 IC > 0.01 → 1점, > 0.02 → 2점, > 0.03 → 3점",
+      "icir_score": "trailing 12m ICIR > 0.10 → 1점, > 0.15 → 2점, > 0.20 → 3점",
+      "turnover_score": "implied turnover < 200% → 3점, < 400% → 2점, < 600% → 1점, >= 600% → 0점"
+    },
+    "threshold": "total quality score >= 4 (out of 9) → 활성화. < 4 → 비활성화.",
+    "active_factors_ew": "활성 팩터 EW composite → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC/ICIR/TO = trailing 12m expanding (t-1)"},
+  "overfitting_guard": "품질 점수 기준은 학술 관행(IC>0.02 유의미). Data-driven 아님."
+}

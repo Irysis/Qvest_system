@@ -1,0 +1,24 @@
+{
+  "exp_id": "SF_04_insider_cons_blend",
+  "title": "Insider + Consensus 블렌드 — DART 내부자 + 애널리스트 결합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:54:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "SF_04", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "STR_1072(insider SR 3.322) 수치가 의심스러우나 DART insider 데이터 자체는 유효. Insider(내부자 정보) + Consensus(외부 애널리스트) = 정보 비대칭 양축 결합.",
+    "signal": "z(net_insider_buy_3m) + z(SUE) + z(EPS_chg), EW, sector neutral",
+    "dependency": "ALPHA_01_insider 데이터 수집 완료 후 실행",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "insider = DART rcept_dt + 1 영업일 lag", "C4": "공시일 기준"},
+  "l_codes_referenced": ["L-415 (Consensus 독립 alpha)", "ALPHA_01 (insider 계약)"],
+  "academic_basis": "Seyhun (1986); Lakonishok & Lee (2001)"
+}

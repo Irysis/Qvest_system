@@ -1,0 +1,18 @@
+{
+  "exp_id": "FM_34_fm_with_gate",
+  "title": "FM + Quality Gate — FM 가중 + PiotroskiF<3 제거 결합",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:03:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "FM_34", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. Quality gate: PiotroskiF < 3 제거",
+      "2. B1 FM 가중 (trailing 6m SR, t-1)",
+      "3. FM composite score, sector neutral → Top 30 from gated universe"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "comparison": "B1(FM no gate) vs FM_34(FM + gate) → Quality gate의 FM에서의 효과"
+  },
+  "pit_rules": {"C1": "FM + gate 모두 t-1 lag", "C4": "DART 45일 lag"}
+}

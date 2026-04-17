@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_DDD1_REGIME_N",
+  "title": "국면별 종목수 — 위기 시 N=15 집중, 정상 시 N=30 분산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:32:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "MF_DDD1", "family": "multifactor_regime_n", "n_holdings": "15~30"},
+  "design": {
+    "concept": "J1(IC 기반 N 조절)과 다름: 국면으로 N 결정. 위기 시 확신 높은 소수 방어주에 집중(N=15), 정상 시 넓게 분산(N=30).",
+    "logic": [
+      "1. MRS[t-1] → 국면 판단",
+      "2. risk_on (MRS<15): N=30, MF_A1 Core weight",
+      "3. elevated (15<=MRS<25): N=20, Defense Heavy (A3) weight",
+      "4. crisis (MRS>=25): N=15, Defense 50% + Quality 30% + Consensus 20%",
+      "5. 국면 전환 시 즉시 N 변경 (grace period 없음)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS[t-1] lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "N=15/20/30은 경제적 직관(위기→집중). MRS threshold는 v7.1 표준.",
+  "l_codes_referenced": ["L-286 (defense 비중 유지)", "L-443 (정상시 헤지안함)"]
+}

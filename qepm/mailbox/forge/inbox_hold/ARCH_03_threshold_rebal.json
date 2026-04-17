@@ -1,0 +1,35 @@
+{
+  "exp_id": "ARCH_03_THRESHOLD_REBAL",
+  "title": "Threshold-Based Rebalancing: Score 변동 임계치 초과 시에만 교체",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:55:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.68,
+  "scope": {
+    "strategy_id": "STR_1122",
+    "name": "threshold_rebal",
+    "base": "STR_1060 (5-sleeve, Turnover 154%/yr)",
+    "family": "architecture_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly (conditional)"
+  },
+  "hypothesis": {
+    "statement": "STR_1060의 월간 리밸런싱을 score 변동 임계치 기반 조건부 리밸런싱으로 전환하면, 불필요한 turnover 감소 → 거래비용 절감 → net SR 개선. 구체적으로: 기존 종목의 score rank가 상위 50% 유지 시 교체하지 않음.",
+    "mechanism": "buffer_zone(keep_n=12, entry_n=6)이 이미 turnover 억제하지만, 매월 무조건 scoring을 실행하여 전체 교체 여부를 판단. Threshold-based는 '기존 종목 유지 우선'으로 불필요한 교체 추가 억제. Novy-Marx & Velikov (2016 RFS): transaction costs eat momentum profits → turnover 최소화가 net alpha 극대화.",
+    "falsification": "Turnover 감소 < 20% → 효과 미미 → 기각. Gross SR 감소 > 0.05 → alpha 훼손 → 기각"
+  },
+  "implementation": {
+    "rule": "기존 종목이 scoring 시 상위 50 percentile 이내면 교체 안함. entry는 현재 비보유 중 Top score만 허용.",
+    "buffer_zone": {"keep_n": 60, "entry_n": 30},
+    "rebal_skip_condition": "abs(portfolio_score_rank_change) < 10 percentile → 리밸런싱 skip",
+    "overlay": "STR_1060과 동일"
+  },
+  "l_codes_referenced": [
+    "L-515 (Residual Reversal Turnover 933% → standalone 실패)",
+    "L-508 (Short DD 제거)"
+  ],
+  "academic_basis": "Novy-Marx & Velikov (2016 RFS) 'A Taxonomy of Anomalies and Their Trading Costs'; DeMiguel et al. (2019) 'Transaction Costs and the Performance of Portfolio Optimization'",
+  "risk_notes": "Score stale 위험 — 기존 종목이 급락해도 score가 서서히 변하면 교체 지연. Crisis 시 buffer 확대가 오히려 위험. STR_1060의 기존 BZ(12/6)과 성과 비교 필수."
+}

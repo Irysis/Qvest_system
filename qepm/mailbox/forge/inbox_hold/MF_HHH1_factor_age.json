@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_HHH1_FACTOR_AGE",
+  "title": "팩터 노화 모델 — 출간 후 alpha decay 추적 (post-publication decay)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:41:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.70,
+  "scope": {"strategy_id": "MF_HHH1", "family": "multifactor_decay", "n_holdings": 30},
+  "design": {
+    "concept": "McLean & Pontiff (2016 JF): 팩터 출간 후 alpha 35~58% 감소. 한국시장에서 각 팩터의 최근 5년 vs 과거 5년 IC 비교 → alpha decay 측정. Decay 적은 팩터에 가중.",
+    "logic": [
+      "1. 각 팩터의 full-period IC를 2등분: 전반 vs 후반",
+      "2. decay_ratio = IC_recent / IC_early",
+      "3. decay_ratio > 0.8 → '영속적' (가중 증가)",
+      "4. decay_ratio < 0.5 → '쇠퇴' (가중 감소 또는 제외)",
+      "5. 가중 = decay_ratio 비례 → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC 비교는 expanding. 단, IC 기간 분할은 전체 기간의 중간점 기준."},
+  "overfitting_guard": "⚠️ IC 비교가 full-sample 의존. Expanding 구현 시 '현재까지 데이터의 전반/후반'으로 분리해야 PIT 준수.",
+  "academic_basis": "McLean & Pontiff (2016 JF) 'Does Academic Research Destroy Stock Return Predictability?'"
+}

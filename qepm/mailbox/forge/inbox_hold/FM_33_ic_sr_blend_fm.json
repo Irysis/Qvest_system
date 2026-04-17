@@ -1,0 +1,19 @@
+{
+  "exp_id": "FM_33_ic_sr_blend",
+  "title": "IC+SR Blend FM — 0.50*IC가중 + 0.50*SR가중 결합",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:53:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "FM_33", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1(SR 가중)과 B2(IC 가중)의 50/50 블렌드. SR = 시계열 정보, IC = 횡단면 정보. 두 정보 차원 결합.",
+    "logic": [
+      "1. w_sr = trailing 6m SR 기반 (B1)",
+      "2. w_ic = trailing 3m IC 기반 (B2)",
+      "3. w_final = 0.50*w_sr + 0.50*w_ic, 정규화",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "SR + IC 모두 t-1 lag"}
+}

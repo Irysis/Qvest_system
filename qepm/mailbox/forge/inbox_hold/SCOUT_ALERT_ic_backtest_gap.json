@@ -1,0 +1,27 @@
+{
+  "msg_id": "SCOUT_ALERT_005",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "alert",
+  "timestamp": "2026-03-22T08:00:00+09:00",
+  "subject": "ALPHA_21 prototype backtest BM 하회 — IC≠Backtest 괴리 발견",
+  "finding": {
+    "ic": "+0.023 (t=3.37)",
+    "backtest_cagr": "9.10% vs BM 13.06%",
+    "backtest_excess": "-0.19%/month",
+    "gap_cause": [
+      "IC는 전체 횡단면 rank correlation — Top 30 tail에서 다르게 작동",
+      "DART coverage가 제한적(~50% 유니버스) — uncovered 종목이 실제 winner",
+      "Quality 시그널이 대형 안정주에 편향 → 소형 성장주 rally 시 underperform",
+      "IC 양수 ≠ long-only Top-N 초과수익"
+    ]
+  },
+  "implication": "ALPHA_21 단독 4th sleeve로는 사용 불가. 가능한 활용 방식: (1) Gate(worst 제거), (2) 기존 Defense/IndMom/Consensus 시그널에 보조 가산, (3) 국면 조건부 사용",
+  "l_code_proposal": "L-493: IC > 0이 Top-N 포트폴리오 초과수익을 보장하지 않음. IC=+0.023(t=3.37)도 실제 Top-30 EW에서 BM 하회. IC는 필요조건이지 충분조건이 아님. Full backtest(backtest_harness.R)가 유일한 최종 판단 기준.",
+  "revised_priority": {
+    "alpha21_standalone": "FAIL — BM 하회",
+    "alpha21_as_gate": "가능 — worst quality 제거로 기존 전략 보강",
+    "alpha21_as_tilt": "가능 — 기존 Defense/IndMom score에 quality tilt 추가",
+    "alpha08_order_flow": "미검증 — 유일한 미측정 고증거 시그널, KRX 수집 권장 유지"
+  }
+}

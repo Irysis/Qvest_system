@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_17_max_sr",
+  "title": "Max SR Ensemble — 전략 공분산으로 SR 극대화 전략 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:42:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "EN_17", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "IIII1(Max Sharpe 팩터)의 전략 레벨 버전. 5전략의 μ/Σ로 Tangency portfolio 가중 → 전략 앙상블 SR 극대화.",
+    "logic": [
+      "1. 5전략 trailing 12m 월별 수익률 → μ_strategy, Σ_strategy",
+      "2. Ledoit-Wolf shrinkage on Σ_strategy (5×5)",
+      "3. QP: max SR s.t. sum(w)=1, w>=0.10, w<=0.40",
+      "4. score_final = sum(w_tangency × strategy_score) → Top 30"
+    ],
+    "candidates": ["MF_A1", "MF_NNNN1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "μ, Σ = trailing 12m, t-1 lag"},
+  "overfitting_guard": "5×5 MV = 저차원 안정적. Ledoit-Wolf shrinkage."
+}

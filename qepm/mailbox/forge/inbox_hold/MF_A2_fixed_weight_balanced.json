@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_A2_FIXED_BALANCED",
+  "title": "고정 가중 멀티팩터 — 7-Factor Equal Weight (각 ~14%)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:31:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {
+    "strategy_id": "MF_A2",
+    "family": "multifactor_fixed",
+    "n_holdings": 30
+  },
+  "design": {
+    "factors": {
+      "defense": {"weight": 0.143, "signal": "z(-IdioVol) + z(-Beta)"},
+      "consensus": {"weight": 0.143, "signal": "z(SUE) + z(FPER_revision)"},
+      "indmom": {"weight": 0.143, "signal": "z(IndMom_12m_1m)"},
+      "quality": {"weight": 0.143, "signal": "z(GPA) + z(PiotroskiF)"},
+      "value": {"weight": 0.143, "signal": "z(OCF/MarketCap)"},
+      "momentum": {"weight": 0.143, "signal": "z(TrendedMom) + z(52wkHigh)"},
+      "tp_gap": {"weight": 0.143, "signal": "z(TPGap) + z(TPMom)"}
+    },
+    "scoring": "7F EW composite, sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "overfitting_guard": "EW = 최소 과적합 위험. DeMiguel (2009) 1/N 우월성.",
+  "academic_basis": "DeMiguel et al. (2009) JFE — 1/N portfolio"
+}

@@ -1,0 +1,25 @@
+{
+  "exp_id": "EN_20_time_weighted",
+  "title": "시간 가중 앙상블 — 최근 OOS 우수 전략에 높은 가중 (EWMA 전략 가중)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:12:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "EN_20", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_15(Shrinkage) + 시간 가중: 전략별 EWMA SR(λ=0.9)로 가중. 최근 성과 좋은 전략에 자동 가중 증가. Shrinkage도 적용.",
+    "logic": [
+      "1. 각 전략의 EWMA SR 계산: SR_ewma[t] = 0.9*SR_ewma[t-1] + 0.1*SR_monthly[t-1]",
+      "2. w_prior = 1/5 (EW)",
+      "3. w_sr = SR_ewma / sum(SR_ewma_positive)",
+      "4. λ = 0.4 (shrinkage toward EW)",
+      "5. w_final = 0.4*w_prior + 0.6*w_sr",
+      "6. score blend → Top 30"
+    ],
+    "candidates": ["MF_A1", "MF_NNNN1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "EWMA SR = t-1까지. λ EWMA = 자동."}
+}

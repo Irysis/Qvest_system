@@ -1,0 +1,32 @@
+{
+  "exp_id": "RC_21_composite_macro",
+  "title": "Composite 매크로 시그널 — 6개 한국 매크로 변수 통합 z-score",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:11:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_21", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(9축 글로벌) 대신 한국 전용 매크로 composite. ECOS 6변수의 z-score 합산 = Korean Macro Risk Score(KMRS).",
+    "variables": [
+      "KRW/USD 20d 변화율",
+      "회사채AA-국고채3Y 스프레드",
+      "국고채10Y-3Y 스프레드 (역수)",
+      "KOSPI 외국인 순매수 20d 합계 (역수)",
+      "산업생산지수 전월대비",
+      "소비자심리지수 전월대비"
+    ],
+    "kmrs": "KMRS = mean(z(6 variables)), z = expanding 252d, t-1 lag",
+    "allocation": {
+      "kmrs_high": {"trigger": "KMRS > 1.0 (위기)", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "kmrs_low": {"trigger": "KMRS < -0.5 (호황)", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + VT 0.25 (KMRS가 MRS 대체)",
+    "data": "ECOS API (.cache/ 수집 완료)"
+  },
+  "pit_rules": {"C1": "6변수 모두 expanding z-score, t-1 lag"},
+  "l_codes_referenced": ["L-454 (한국 내부 > 글로벌 FRED)"]
+}

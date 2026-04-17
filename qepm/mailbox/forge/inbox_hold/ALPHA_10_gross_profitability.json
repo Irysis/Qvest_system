@@ -1,0 +1,51 @@
+{
+  "exp_id": "ALPHA_10",
+  "title": "Gross Profitability (GP/Assets) — 한국시장 SDF 유의, QMJ composite와 별개의 단일 시그널",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T21:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.82,
+  "scope": {
+    "family": "gross_profitability",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Gross Profitability(GP/Assets = 매출총이익/총자산)가 한국시장에서 독립적 횡단면 alpha를 제공한다. QMJ composite(L-394 실패)와 달리, GP 단독은 한국시장에서 유의한 pricing factor로 확인됨(ScienceDirect 한국실증). Defense(가격기반)/Consensus(애널리스트기반)와 정보 차원이 상이(재무제표 수익성).",
+    "mechanism": "Novy-Marx (2013 JFE): Gross profitability(GP/Assets)가 BM과 동등한 횡단면 수익률 예측력. GP는 '가장 깨끗한 수익성 지표' — income statement 위쪽일수록 경영 재량이 적어 진정한 경제적 수익성 반영. QMJ(L-394) 실패 원인 분석: QMJ = profitability + growth + safety + payout 4개 합성 → 한국에서 growth/payout 성분이 noise 주입. GP 단독은 단일 순수 시그널. 한국시장 직접 실증(ScienceDirect, 'Potential pricing factors in the Korean market'): GP factor가 유의한 SDF loading 보유, 횡단면 설명력 확인",
+    "falsification": "Alpha Lab IC < 0.01 → 기각. GP와 Consensus(SUE/ESBR) 상관 > 0.6 → 독립성 부족 기각. GP와 BM 상관 > 0.7 → Value와 중복 기각. DART 매출총이익 coverage < 60% → 기각",
+    "academic_basis": "Novy-Marx (2013) 'The Other Side of Value: The Gross Profitability Premium' JFE — 원논문. 한국시장 실증: 'Potential pricing factors in the Korean market' ScienceDirect — GP factor 유의한 SDF loading. Fama & French (2015) — RMW(profitability) factor in FF5. Ball et al. (2015) 'Deflating Profitability' JFE — operating profitability > gross profitability in some specs"
+  },
+  "data_requirements": {
+    "source": "DART 또는 Fundamental.xlsx — 손익계산서",
+    "fields": ["매출총이익(Gross Profit)", "총자산(Total Assets)"],
+    "pit_safety": "C4: 45d lag after fiscal report filing",
+    "computation": {
+      "gp_ratio": "GP/Assets = Gross_Profit / Total_Assets",
+      "signal": "z(GP/Assets) — high GP = high quality = buy",
+      "alternative": "Operating Profit / Assets (OP/Assets)도 병렬 테스트"
+    }
+  },
+  "implementation": {
+    "step1": "DART/Fundamental.xlsx에서 매출총이익, 총자산 추출 + coverage 확인",
+    "step2": "종목별 TTM GP/Assets 계산",
+    "step3": "Alpha Lab Stage 0: (a) GP/Assets IC/ICIR, (b) Defense/Consensus/BM 상관, (c) OP/Assets 비교",
+    "step4_if_pass": "Full backtest: quarterly rebal (45d lag), N=30",
+    "step5_dual": "GP/Assets + Accruals(ALPHA_06) dual quality scoring 테스트",
+    "step6_if_pass": "4th sleeve 또는 Quality gate로 편입"
+  },
+  "pit_checklist": ["C1: TTM rolling", "C4: 45d lag", "C11: DART 공시 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.02",
+    "icir": ">0.12",
+    "corr_with_defense": "<0.3",
+    "corr_with_consensus": "<0.4",
+    "corr_with_bm": "<0.5"
+  },
+  "l_codes": ["L-394 (QMJ standalone 실패)", "L-402 (QMJ FF5α 음수)", "L-428 (4th alpha)"],
+  "risk_notes": "L-394/402: QMJ composite 실패 ≠ GP 단독 실패. QMJ는 4개 성분 합성이 한국에 부적합했을 뿐. GP는 가장 단순하고 깨끗한 수익성 지표. 한국시장 ScienceDirect 실증이 있어 근거 강건. 리스크: DART 매출총이익 데이터가 일부 금융업종에서 정의 불명확(은행은 이자수익?). 비금융 유니버스로 제한할 수도. ALPHA_06(Accruals)과 결합 시 'Quality' sleeve 구성 가능"
+}

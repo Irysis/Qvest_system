@@ -1,0 +1,16 @@
+{
+  "exp_id": "SF_28_value_only_brk",
+  "title": "Value Only + BRK — OCF/MCap 단일 + Quality Gate + BRK overlay",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:24:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "SF_28", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "z(OCF_TTM / MarketCap), sector neutral",
+    "gate": "PiotroskiF < 3 제거 (value trap 방지)",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 15/30 + VT 0.25",
+    "comparison": "SF_15(Defense only) vs EV_20(Consensus only) vs SF_28(Value only) → 3대 alpha source 독립 비교"
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-516 (IC 0.045)", "L-481 (Value standalone F → overlay 필수)"]
+}

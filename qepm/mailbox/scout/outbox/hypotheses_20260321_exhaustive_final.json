@@ -1,0 +1,64 @@
+{
+  "meta": {
+    "generated_by": "Scout",
+    "timestamp": "2026-03-22T00:15:00+09:00",
+    "status": "EXHAUSTIVE_COMPLETE",
+    "total_contracts": 20,
+    "alpha_contracts": 18,
+    "regime_contracts": 1,
+    "arch_contracts": 1,
+    "papers_scanned": "75+",
+    "data_columns_audited": 191,
+    "information_dimensions_covered": 15,
+    "information_dimensions_rejected": 9
+  },
+  "dimension_coverage_matrix": {
+    "existing_core": {
+      "D1_price_volatility": {"alpha": "Defense (IdioVol+Beta)", "status": "CORE", "data": "RAWDATA"},
+      "D2_industry_momentum": {"alpha": "IndMom", "status": "CORE", "data": "RAWDATA"},
+      "D3_analyst_consensus": {"alpha": "Consensus (SUE/ESBR/FPER)", "status": "CORE", "data": "FnGuide"}
+    },
+    "new_from_rawdata": {
+      "D4_trend_quality": {"alpha": "ALPHA_04 Trended Momentum", "priority": 0.92, "immediate": true},
+      "D5_tail_risk": {"alpha": "ALPHA_05 Tail Quantile Risk", "priority": 0.88, "immediate": true},
+      "D6_price_anchor": {"alpha": "ALPHA_12 52-Week High", "priority": 0.80, "immediate": true},
+      "D7_microstructure": {"alpha": "ALPHA_18 Illiquidity/Reversal/Volume", "priority": 0.77, "immediate": true}
+    },
+    "new_from_dart_cache": {
+      "D8_cashflow_value": {"alpha": "ALPHA_13 Cash Flow Yield (Ocp)", "priority": 0.87, "immediate": true},
+      "D9_efficiency": {"alpha": "ALPHA_16 Inventory/Asset Turnover", "priority": 0.84, "immediate": true},
+      "D10_financial_health": {"alpha": "ALPHA_14 Piotroski F-Score", "priority": 0.83, "immediate": true},
+      "D11_profitability": {"alpha": "ALPHA_10 Gross Profitability", "priority": 0.75, "immediate": true},
+      "D12_earnings_quality": {"alpha": "ALPHA_06 Accruals", "priority": 0.72, "immediate": true},
+      "D13_fundamental_momentum": {"alpha": "ALPHA_15 Delta_* signals", "priority": 0.76, "immediate": true},
+      "D14_shareholder_return": {"alpha": "ALPHA_17 Shareholder Yield", "priority": 0.73, "immediate": true},
+      "D15_investment": {"alpha": "ALPHA_11 Asset Growth", "priority": 0.50, "immediate": true}
+    },
+    "new_requires_data_fetch": {
+      "D16_market_participant": {"alpha": "ALPHA_08 Order Flow", "priority": 0.95, "data": "KRX API"},
+      "D17_analyst_network": {"alpha": "ALPHA_07 Co-Coverage Momentum", "priority": 0.72, "data": "FnGuide"},
+      "D18_intrinsic_value": {"alpha": "ALPHA_09 RIM V/P", "priority": 0.70, "data": "FnGuide"},
+      "D19_insider_info": {"alpha": "ALPHA_01 Insider Trading", "priority": 0.85, "data": "DART API"},
+      "D20_option_market": {"alpha": "ALPHA_02 Option IV", "priority": 0.80, "data": "KRX Options"},
+      "D21_text_info": {"alpha": "ALPHA_03 NLP Sentiment", "priority": 0.75, "data": "DART+LLM"}
+    },
+    "rejected_with_evidence": {
+      "BAB": "한국 CAPM-adjusted 비유의, IdioVol에 흡수",
+      "MAX": "L-190 실패",
+      "IdioSkew": "L-190 실패",
+      "QMJ_composite": "L-394/402 실패 (GP 단독은 유의)",
+      "Overnight_Gap_Momentum": "L-352 완전 실패",
+      "R&D_standalone": "Investment 카테고리 한국 24% 복제",
+      "Earnings_Calls_NLP": "한국 데이터 미가용",
+      "Retail_Horizon": "StockTwits 한국 미가용",
+      "Supply_Chain": "공급망 데이터 체계적 수집 불가"
+    }
+  },
+  "immediate_executable": {
+    "count": 12,
+    "from_rawdata": ["ALPHA_04", "ALPHA_05", "ALPHA_12", "ALPHA_18"],
+    "from_dart_cache": ["ALPHA_06", "ALPHA_10", "ALPHA_11", "ALPHA_13", "ALPHA_14", "ALPHA_15", "ALPHA_16", "ALPHA_17"],
+    "parallel_alpha_lab_recommendation": "Forge에 12건 병렬 Alpha Lab 요청. 각 30분, 총 30분(병렬). IC/ICIR + 상관 분석 후 Top 3~5 선별 → Full Backtest → Sleeve 편입"
+  },
+  "scout_conclusion": "21개 정보 차원 중 15개를 신규 제안(ALPHA_04~18), 9개를 근거 기반 기각. 즉시 실행 가능 12건은 추가 데이터 수집 없이 기존 RAWDATA + DART cache로 Alpha Lab 가능. 문헌 탐색은 완전 포화(75편+ 논문, 148-anomaly 한국 복제, LASSO 한국 pricing, DART 178컬럼 감사). 추가 논문 검색의 한계수익은 0에 수렴. Forge 병렬 실행으로 전환을 강력 권고."
+}

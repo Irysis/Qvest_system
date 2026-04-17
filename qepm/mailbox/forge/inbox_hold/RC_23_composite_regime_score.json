@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_23_composite_regime",
+  "title": "Composite Regime Score — MRS+KMRS+Dispersion+Vol 4축 통합 국면 점수",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:32:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "RC_23", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_11(5축 투표)의 연속 변수 버전. 4축의 z-score 합산 = Composite Regime Score(CRS). CRS로 연속적 팩터 가중 조절.",
+    "crs": "CRS = 0.30*z(MRS) + 0.25*z(KMRS) + 0.25*z(Dispersion) + 0.20*z(Vol), t-1",
+    "allocation": "w_defense = 0.15 + 0.20*pmin(1, pmax(0, CRS/2)). 나머지 팩터는 잔여 EW.",
+    "overlay": "VT 0.25 (CRS가 DD/MRS 대체)"
+  },
+  "pit_rules": {"C1": "4축 모두 t-1 lag, expanding z-score"}
+}

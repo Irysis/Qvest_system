@@ -1,0 +1,14 @@
+{
+  "exp_id": "FM_47_rel_ic_mom",
+  "title": "Relative IC Momentum — 각 팩터 IC의 BM IC 대비 초과 IC로 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:04:00+09:00",
+  "bucket": "explore", "priority_score": 0.71,
+  "scope": {"strategy_id": "FM_47", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_17(relative strength)의 IC 버전. 시장 전체 IC 대비 초과 IC = 팩터 고유 예측력.",
+    "logic": "excess_IC = factor_IC - mean(all_factor_IC) → w = max(0, excess_IC) / sum",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC t-1 lag"}
+}

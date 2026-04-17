@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_07_twin_regime",
+  "title": "Twin Regime — MRS(외부) × DD(내부) 이중 국면으로 4-state 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:51:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "RC_07", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "NNN1(DD 팩터전환)과 C2(MRS 국면)의 결합. 외부(MRS)와 내부(포트폴리오 DD) 두 축으로 4-state 매트릭스.",
+    "states": {
+      "normal_normal": {"trigger": "MRS<15 AND DD<5%", "tilt": "MF_A1 Core (공격)"},
+      "normal_stressed": {"trigger": "MRS<15 AND DD>=5%", "tilt": "Defense 35% + Consensus 25% + Others 40% (내부 약세)"},
+      "crisis_normal": {"trigger": "MRS>=20 AND DD<5%", "tilt": "Defense 30% + Quality 25% + Others 45% (외부 위기 초기)"},
+      "crisis_stressed": {"trigger": "MRS>=20 AND DD>=5%", "tilt": "Defense 50% + Quality 30% + Cash 20% (풀 방어)"}
+    },
+    "overlay": "VT 0.25 (DD Brake는 state가 대체)"
+  },
+  "pit_rules": {"C1": "MRS[t-1], DD[t-1] 모두 lag"},
+  "overfitting_guard": "4-state는 2×2 매트릭스 = 최소 복잡도. Threshold는 경제적 직관."
+}

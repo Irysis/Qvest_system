@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_QQQQ1_TAIL_RISK_BUDGET",
+  "title": "Tail Risk Budget — CVaR 기여도 균등화 가중 (꼬리 위험 관리)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:42:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "MF_QQQQ1", "family": "multifactor_tail_budget", "n_holdings": 30},
+  "design": {
+    "concept": "R1(RP)은 변동성 균등화. QQQQ1은 CVaR(꼬리 위험) 균등화. 극단 손실 기여가 동등하도록 가중 → MDD 극소화.",
+    "logic": [
+      "1. MF_A1 composite → Top 30 선정",
+      "2. 각 종목의 trailing 252d 일별 수익률에서 5th percentile = CVaR proxy",
+      "3. CVaR 높은(위험) 종목 가중 축소, 낮은(안전) 종목 가중 확대",
+      "4. w_i = (1/CVaR_i) / sum(1/CVaR_j), cap 10%",
+      "5. monthly rebal"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25 (DD Brake 대신 CVaR budget이 tail 관리)"
+  },
+  "pit_rules": {"C1": "CVaR = trailing 252d, t-1 lag"},
+  "overfitting_guard": "CVaR budget은 사전 규칙(역CVaR 가중). 최적화 없음.",
+  "academic_basis": "Rockafellar & Uryasev (2002 JBANKFIN) 'Conditional Value-at-Risk for General Loss Distributions'"
+}

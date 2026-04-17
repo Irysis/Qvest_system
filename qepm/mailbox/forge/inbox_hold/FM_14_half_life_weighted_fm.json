@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_14_half_life_fm",
+  "title": "Half-Life FM — 팩터 수익률의 반감기로 FM 신뢰도 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:14:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_14", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_09(IC decay)와 다름: 팩터 수익률 자체의 자기상관 반감기 측정. 반감기 긴 팩터 = 추세 지속 → FM 신뢰 높음. 반감기 짧은 팩터 = 빠른 역전 → FM 가중 축소.",
+    "logic": [
+      "1. 각 팩터의 월별 수익률 자기상관 ACF(1) 계산 (expanding, t-1)",
+      "2. half_life = -1 / log(ACF1) (ACF1 > 0일 때)",
+      "3. ACF1 <= 0 → 반감기 0 → FM 비활성화 (mean-revert 팩터)",
+      "4. FM 가중 = half_life × trailing_SR. 반감기 길고 + SR 양수 → 높은 가중",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "ACF = expanding, t-1 lag"},
+  "academic_basis": "Lo (2002 Econometrica) 'The Statistics of Sharpe Ratios' — 자기상관이 SR에 미치는 영향"
+}

@@ -1,0 +1,18 @@
+{
+  "exp_id": "FM_30_pure_ic",
+  "title": "Pure IC FM — trailing 12m 평균 IC(절대값)로 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:13:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_30", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. 각 팩터 trailing 12m 평균 IC (t-1)",
+      "2. w_i = max(0, IC_i) / sum(max(0, IC))",
+      "3. composite → Top 30"
+    ],
+    "difference": "FM_02(expanding IC) vs FM_30(trailing 12m IC) → expanding vs rolling IC 비교",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC = trailing 12m, t-1 lag"}
+}

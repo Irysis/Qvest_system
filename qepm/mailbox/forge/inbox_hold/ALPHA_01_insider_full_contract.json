@@ -1,0 +1,160 @@
+{
+  "exp_id": "ALPHA_01_FULL",
+  "title": "DART 내부자 거래 공시 기반 Net Insider Buying Alpha",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T15:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.88,
+
+  "1_scope": {
+    "family": "insider_flow",
+    "strategy_id": "STR_1059",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30,
+    "backtest_period": "2015-01 ~ 2025-12 (DART 공시 품질 안정 구간)"
+  },
+
+  "2_hypothesis": {
+    "statement": "DART 지분공시(임원/대주주 주식 변동)에서 net insider buying(매수건수 - 매도건수)을 3개월 rolling 집계, z-score → 상위 30종목 매수. Defense/Consensus/IndMom과 독립적인 4th alpha source로 작동하여 standalone ICIR >= 0.15 달성",
+    "mechanism": "내부자(임원/대주주)는 기업 내부 정보를 보유. 매수 집중 = 양의 사적 정보 신호. Seyhun(1986): insider purchases predict 6-12개월 양의 초과수익. Lakonishok & Lee(2001): insider buying이 contrarian 대비 우월한 예측력. 한국 특수성: (1) 2024.3 대규모 내부자 거래 사전공시 의무화로 데이터 품질 개선, (2) DART 전자공시로 실시간 수집 가능, (3) 재벌 구조에서 오너의 지분 변동은 경영 방향의 강력한 시그널",
+    "falsification": [
+      "Alpha Lab IC < 0.02 → 기각",
+      "ICIR < 0.15 → 기각",
+      "Defense(IdioVol) 상관 > 0.5 → 독립성 부족 기각",
+      "DART 지분공시 데이터 coverage < 월 50건 → 시그널 밀도 부족 기각",
+      "매수/매도 비대칭(매도만 보고, 매수 누락) 시 시그널 편향 → 기각"
+    ],
+    "academic_basis": [
+      "Seyhun (1986) 'Insiders profits, costs of trading, and market efficiency' JFE",
+      "Lakonishok & Lee (2001) 'Are insider trades informative?' RFS",
+      "Jeng, Metrick & Zeckhauser (2003) 'Estimating the Returns to Insider Trading' RES",
+      "Park (2020) 'Is Informed Trading Different Across Investor Types?' AJFS (Korean data)",
+      "한국자본시장법 시행령 개정(2024.3): 50억원+ 내부자 거래 사전공시 의무화"
+    ]
+  },
+
+  "3_data_and_pit": {
+    "data_source": "DART OpenAPI — 지분공시 종합정보 (DS004)",
+    "endpoints": {
+      "primary": "https://opendart.fss.or.kr/api/elestock.json — 임원 주요주주 특정증권 소유상황",
+      "secondary": "https://opendart.fss.or.kr/api/hyslrChgSttus.json — 최대주주 변동현황",
+      "list": "https://opendart.fss.or.kr/api/list.json — 공시목록 (pblntf_ty=E 지분공시)"
+    },
+    "fields_needed": [
+      "rcept_dt (접수일 = 공시일)",
+      "corp_code (기업코드 → Ticker 매핑)",
+      "change_on (변동사유: 장내매수/장내매도/장외취득/증여 등)",
+      "bftr_cg_qty (변동수량)",
+      "bftr_cg_ratio (변동비율)",
+      "trmend_posesn_stock_co (변동후 소유주식수)"
+    ],
+    "pit_checklist": [
+      "C1: rolling 3M 집계 (expanding 아님 — 최근 3개월 건수만 사용)",
+      "C4: rcept_dt(접수일) + 1 영업일 lag. 공시는 거래 후 5영업일 이내 보고 → 접수일 자체가 이미 lagged",
+      "C11: DART 공시 시차 확인 — 접수일 기준이므로 PIT-safe. 단, 장외거래/증여는 보고 지연 가능",
+      "C2: 시그널 계산은 t-1까지의 공시만 사용"
+    ],
+    "existing_infrastructure": {
+      "dart_api_key": "DART_API_KEY in .env (확인 완료: 19d6f...)",
+      "corp_code_mapping": "02_Infrastructure/data_collector_dart.R → dart_update_corpcode()",
+      "pattern_to_follow": "data_collector_dart.R의 .dart_fetch_single() 패턴 재사용"
+    }
+  },
+
+  "4_implementation": {
+    "phase": "3단계",
+
+    "phase1_data_collection": {
+      "description": "DART 지분공시 수집기 구현",
+      "file": "02_Infrastructure/data_collector_dart_insider.R",
+      "steps": [
+        "1. list.json으로 pblntf_ty=E(지분공시) 목록 수집 (2015~2025, 월별)",
+        "2. elestock.json으로 각 공시의 상세 내용 수집 (변동사유, 변동수량)",
+        "3. corp_code → Ticker 매핑 (기존 corpcode_map.parquet 사용)",
+        "4. Parquet 캐시 저장: cache/dart/insider_trades.parquet",
+        "5. 컬럼: Date(rcept_dt), Ticker, trade_type(buy/sell/gift), qty, ratio"
+      ],
+      "api_rate": "일 10,000건 / 분당 ~100건. 10년 x 12개월 x ~200건/월 = ~24,000건 → 3일 분산 수집",
+      "estimated_time": "수집기 구현 30분, 데이터 수집 2~3시간 (rate limit)"
+    },
+
+    "phase2_alpha_lab": {
+      "description": "Alpha Lab Stage 0: IC/ICIR 검증",
+      "file": "04_Research/strategies/STR_1059_insider_alpha/factor_engine.R",
+      "steps": [
+        "1. insider_trades.parquet 로드",
+        "2. 월별 시그널 집계: net_buy_count = count(buy) - count(sell) per Ticker per trailing 3M",
+        "3. 추가 시그널: net_buy_ratio = sum(buy_ratio) - sum(sell_ratio) per trailing 3M",
+        "4. 유니버스 필터: LIQ >= 2e8",
+        "5. Sector-neutral z-score 변환",
+        "6. IC/ICIR 계산 (factor_engine.R → FACTORS 생성)",
+        "7. |ICIR| >= 0.15 AND |t-stat| >= 1.5 → PASS → Phase 3"
+      ],
+      "signal_variants": [
+        {"name": "net_buy_count_3m", "desc": "3개월 순매수 건수", "rationale": "빈도 기반 — 다수 임원 동시 매수 = 강한 신호"},
+        {"name": "net_buy_ratio_3m", "desc": "3개월 순매수 비율 합", "rationale": "규모 기반 — 대량 매수 1건 > 소량 매수 5건"},
+        {"name": "buyer_count_3m", "desc": "3개월 내 매수한 임원 수", "rationale": "Insider clustering — 복수 임원 매수 = consensus signal (Park 2020)"}
+      ],
+      "estimated_time": "1시간"
+    },
+
+    "phase3_backtest": {
+      "description": "Full backtest + Hurdle Gate",
+      "file": "04_Research/strategies/STR_1059_insider_alpha/run_all.R",
+      "steps": [
+        "1. ICIR PASS 시그널로 standalone 백테스트",
+        "2. 구조: Monthly rebal, EW, BZ(50/25), sector-neutral, N=30",
+        "3. Overlays: regime_engine_daily.R v7.1 + VT/DD t-1 lag",
+        "4. Hurdle Gate 실행",
+        "5. Grade B+ 시: Defense/Consensus와 상관 분석 → sleeve 편입 가능성 평가"
+      ],
+      "parameters": {
+        "n_holdings": 30,
+        "rebal": "monthly",
+        "weight_method": "equal",
+        "buffer_zone": {"keep_n": 50, "entry_n": 25},
+        "sector_neutral": true,
+        "vol_target": 0.20,
+        "vol_lookback": 60
+      },
+      "estimated_time": "30분"
+    }
+  },
+
+  "5_metrics_targets": {
+    "alpha_lab": {"ic": ">0.02", "icir": ">0.15", "t_stat": ">1.5"},
+    "standalone": {"cagr": ">10%", "sharpe": ">0.6", "mdd": "<40%"},
+    "independence": {"corr_defense": "<0.3", "corr_consensus": "<0.3", "corr_indmom": "<0.4"},
+    "sleeve_contribution": "기존 3-sleeve에 4th sleeve 추가 시 portfolio SR +5%+ 개선"
+  },
+
+  "6_statistical_validation": {
+    "ff3": "alpha t-stat > 1.96",
+    "carhart4": "alpha remains significant after momentum control",
+    "ff5": "alpha t-stat > 1.5 (aspirational)",
+    "fama_macbeth": "slope t-stat > 2.0"
+  },
+
+  "7_decision_criteria": {
+    "grade_a": "ICIR >= 0.20, SR >= 1.0, FF5a significant, corr < 0.3",
+    "grade_b": "ICIR >= 0.15, SR >= 0.6, sleeve 편입 후보",
+    "fail": "ICIR < 0.15 OR corr > 0.5 → 교훈 기록 후 종료"
+  },
+
+  "8_execution_notes": {
+    "forge_priority": "Phase 1 데이터 수집 먼저. API rate limit 때문에 수집 시작 → 대기 → Phase 2/3 순차",
+    "dependency": "data_collector_dart.R의 corpcode_map.parquet + DART_API_KEY 의존",
+    "risk_mitigation": [
+      "API rate limit: 0.7초 간격, 일 10,000건 제한 준수",
+      "데이터 품질: 2015년 이전은 전자공시 미비 → 2015~ 사용",
+      "매도 편향: 스톡옵션 행사 후 매도는 정보 무관 → change_on 필터링 필요",
+      "증여/상속: 정보 무관 거래 → trade_type 필터 (장내매수/장내매도만)"
+    ],
+    "l_codes_referenced": ["L-428 (4th alpha 4연패)", "L-415 (3rd alpha 확정)", "L-285 (DART gate 유효)", "L-434 (DART TTM 끊김 주의 — 이건 재무제표이므로 무관)"],
+    "failure_patterns_avoided": ["L-352 (overnight gap — 가격 기반 실패)", "L-422 (foreign flow — 수급 실패)", "L-425 (price delay — 효율성 실패)"],
+    "why_this_is_different": "기존 4th alpha 시도는 모두 가격/수급 기반. 내부자 거래는 정보 기반(information asymmetry) — 완전히 다른 alpha 차원"
+  }
+}

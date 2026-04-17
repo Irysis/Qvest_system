@@ -1,0 +1,27 @@
+{
+  "exp_id": "ARCH_01",
+  "title": "Bounded Multi-Factor Tilt Architecture — EW baseline + 팩터 tilt 제한으로 robust 포트폴리오",
+  "from": "scout",
+  "to": "blender",
+  "cmd": "research",
+  "timestamp": "2026-03-21T19:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.75,
+  "scope": {
+    "family": "architecture_improvement",
+    "target": "backtest_harness.R 또는 sleeve allocation 개선"
+  },
+  "hypothesis": {
+    "statement": "EW baseline에 cross-sectional ranking 기반 bounded tilt를 적용하면, 공분산 추정 없이도 turnover/concentration 제어 + factor exposure 유지가 가능. 현행 EW scoring 대비 SR +5~10% 개선 with lower turnover.",
+    "mechanism": "Garrone (2026, arXiv 2601.05428): Dynamic Inclusion + Bounded Multi-Factor Tilts. (1) 자산 적격성을 시장상태(유동성, 변동성, 횡단면 breadth)에 따라 동적으로 조정. (2) EW baseline에 팩터 ranking으로 tilt를 주되, tilt 크기에 hard bound 적용 → concentration 방지. (3) 공분산/기대수익률 추정 불필요 → estimation error에 robust. 우리 현행: z-score ranking → Top N → EW. 이 논문 방식: 전체 유니버스 EW에서 시작 → 팩터 score로 tilt(±δ) → bound로 단일종목 비중 제한. Breadth가 넓으면 tilt 강하게, 좁으면 보수적으로",
+    "falsification": "Bounded tilt가 단순 Top N EW 대비 SR 개선 없으면 기각. Turnover가 오히려 증가하면 기각",
+    "academic_basis": "Garrone (2026) 'Dynamic Inclusion and Bounded Multi-Factor Tilts for Robust Portfolio Construction' arXiv 2601.05428. DeMiguel et al. (2009) '1/N vs Optimal Diversification' JFE — EW의 robust 우위. Kolm, Tutuncu & Fabozzi (2014) 'Parametric Portfolio Policies' — direct weight function"
+  },
+  "implementation_notes": {
+    "core_idea": "기존 Top N 선별 + EW 대신: (1) 유니버스 전체에 w_i = 1/N_eligible + δ × rank_score_i, (2) |δ × rank_score| <= max_tilt (예: 2/N), (3) N_eligible = 시장 breadth에 따라 동적",
+    "benefit": "NCO/HRP보다 단순. 공분산 추정 없음. Turnover 자연 억제(tilt bound). 시장 breadth 축소 시 자동으로 보수적",
+    "target": "Blender가 앙상블 배분 방식으로 검토. STR_1036 기반으로 A/B 테스트"
+  },
+  "l_codes": ["L-14 (EW > IVOL)", "L-34 (HRP/MinVar/RP 열위)", "L-479 (가중방법 최적화 v7.1 강건)"],
+  "risk_notes": "EW가 이미 최적이라는 L-14 교훈과 상충할 수 있으나, bounded tilt는 EW의 확장(deviation 제한)이지 최적화가 아님. 순수 Top N EW보다 종목수가 늘어날 수 있음 → 30종목 제약과 호환성 확인 필요"
+}

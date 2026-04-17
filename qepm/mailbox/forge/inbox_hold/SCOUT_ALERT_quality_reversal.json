@@ -1,0 +1,44 @@
+{
+  "msg_id": "SCOUT_ALERT_001",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "alert",
+  "timestamp": "2026-03-22T01:00:00+09:00",
+  "subject": "CRITICAL: 한국시장 Quality/Profitability IC 전부 음수 — 가설 방향 수정 필요",
+  "finding": {
+    "summary": "DART 17개 fundamental 시그널 preliminary IC 스크리닝 결과, 유의한 모든 시그널(OCF_ROA, PiotroskiF, FCFToAssets, GPA, Accrual, QualityScore, AltmanZ, Delta_ROE, Delta_GPA)의 IC가 음수. 즉 '좋은 기업'이 미래에 하락하는 패턴. 이는 148-anomaly 한국 복제(Profitability 5% 복제)와 일치.",
+    "top3_signals": [
+      {"signal": "PiotroskiF", "ic": -0.0248, "icir": -0.376, "t": -4.13},
+      {"signal": "OCF_ROA", "ic": -0.0325, "icir": -0.379, "t": -3.93},
+      {"signal": "FCFToAssets", "ic": -0.0287, "icir": -0.335, "t": -3.48}
+    ],
+    "ineffective_signals": ["InventoryTurnover", "AssetTurnover", "CCC", "DividendToAssets", "AssetGrowth", "PayoutRatio", "RandDIntensity"],
+    "validated_from_rawdata": {"ALPHA_05_tail_risk": {"ic": 0.079, "icir": 0.437, "t": 7.44, "direction": "positive_as_expected"}}
+  },
+  "implications": {
+    "ALPHA_06_accruals": "IC=-0.014(t=-2.79). 방향: z(+Accrual) = high accruals buy. Sloan(1996) 예측과 반대. 한국에서는 high accruals가 오히려 양의 수익 → gate(극단 제거)로만 사용 권장",
+    "ALPHA_10_gpa": "IC=-0.018(t=-2.14). 방향: z(-GPA) = low profitability buy. 한국 SDF LASSO에서 유의했으나 방향이 positive SDF loading ≠ positive IC (다른 컨트롤 하에서 해석 상이). 단독 alpha로는 역방향",
+    "ALPHA_13_ocp": "OCF_ROA IC=-0.033(t=-3.93). 148-anomaly에서 Ocp t=4.843은 value-weighted 기준. 여기서 IC 음수는 cross-sectional rank correlation 기준. 가중 방식에 따라 결과 달라질 수 있음. Forge에서 VW vs EW 비교 필수",
+    "ALPHA_14_piotroski": "IC=-0.025(t=-4.13). 가장 강한 음의 시그널. 한국에서 F-Score가 높은 종목 = 이미 고평가 = mean reversion. Gate(F<3 제거)로 전환 권장",
+    "ALPHA_16_efficiency": "InventoryTurnover, AssetTurnover, CCC 모두 비유의. LASSO 88% 선택률은 'pricing factor로서의 중요성'이지 직접 alpha가 아니었음. 계약 하향 조정"
+  },
+  "revised_recommendations": {
+    "tier1_confirmed_positive_ic": [
+      "ALPHA_05 Tail Risk (IC=+0.079, t=7.44) — 가장 유망, 방향 정확",
+      "ALPHA_04 Trended Momentum — IC 미측정(R² 계산 복잡), Forge에서 정밀 구현",
+      "ALPHA_08 Order Flow — 외부 데이터 필요, 한국 직접 실증 t=16.35"
+    ],
+    "tier2_use_as_gate_only": [
+      "ALPHA_14 PiotroskiF — F<3 제거 gate (scoring 역방향)",
+      "ALPHA_06 Accruals — 극단 accruals 제거 gate",
+      "ALPHA_10 GPA — low GP 제거 gate",
+      "AltmanZ — distressed(Z<1.8) 제거 gate"
+    ],
+    "tier3_deprioritize": [
+      "ALPHA_16 Efficiency — IC 비유의, 폐기 권장",
+      "ALPHA_11 AssetGrowth — IC 비유의(-0.007, t=-0.82), 폐기 권장",
+      "ALPHA_17 ShareholderYield — IC 비유의, 폐기 권장"
+    ]
+  },
+  "new_l_code_proposal": "L-487: 한국시장 Quality/Profitability IC 전부 음수. 148-anomaly 5% 복제 확인. 원인: 성장주 프리미엄 + 소형 저수익 종목의 idiosyncratic premium. DART quality 시그널은 gate(worst 제거)로만 유효. Scoring에 투입하면 방향 역전으로 성과 악화 (L-285/286 교훈 재확인)"
+}

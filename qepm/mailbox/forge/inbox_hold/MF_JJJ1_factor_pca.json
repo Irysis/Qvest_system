@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_JJJ1_FACTOR_PCA",
+  "title": "PCA 팩터 — 7팩터의 주성분 1~3으로 차원 축소 후 scoring",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:43:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {"strategy_id": "MF_JJJ1", "family": "multifactor_pca", "n_holdings": 30},
+  "design": {
+    "concept": "7팩터는 상호 상관 → 유효 차원은 3~4개. PCA로 주성분 추출 → 노이즈 제거된 합성 팩터로 scoring.",
+    "logic": [
+      "1. 매월 7 팩터 z-score 행렬 (종목 × 7팩터)",
+      "2. PCA 적용 (expanding, t-1까지 데이터로 로딩 추정)",
+      "3. PC1~PC3 (설명력 70%+ 예상) 추출",
+      "4. composite_score = PC1 + 0.5*PC2 + 0.25*PC3 (설명력 비례)",
+      "5. Top 30 → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "PCA 로딩 = expanding window (t-1). Full-sample PCA 금지."},
+  "overfitting_guard": "PC 가중(1/0.5/0.25)은 설명력 비례 사전 정의. PCA 로딩 불안정 시 shrinkage 적용.",
+  "academic_basis": "Connor & Korajczyk (1988 JFQA) 'Risk and Return in an Equilibrium APT'"
+}

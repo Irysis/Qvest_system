@@ -1,0 +1,32 @@
+{
+  "exp_id": "MF_RR1_REGIME_MOM_BLEND",
+  "title": "국면-모멘텀 블렌드 — MRS 연속변수 × FM 가중 곱 (부드러운 동적 배분)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {
+    "strategy_id": "MF_RR1",
+    "family": "multifactor_regime_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "C1(국면FM)과 HH1(매크로상호작용)의 중간: MRS를 연속변수로 사용하되 FM 가중과 곱하여 '국면 적합 + 최근 유효' 팩터에 이중 가중.",
+    "logic": [
+      "1. FM 가중 계산: w_fm_i = trailing 6m SR 기반 (MF_B1)",
+      "2. MRS 선호도 계산: 각 팩터의 MRS-conditional 기대수익률",
+      "   pref_defense = 0.5 + 0.5 * (MRS/50)  — MRS 높을수록 선호",
+      "   pref_momentum = 1.0 - 0.5 * (MRS/50) — MRS 높을수록 비선호",
+      "   pref_consensus = 0.8 (고정 — 국면 불문)",
+      "3. blend_weight_i = w_fm_i × pref_i — 곱은 가중 레벨이지 score 레벨 아님(L-398 준수)",
+      "4. 정규화: w_final_i = blend_weight_i / sum(blend_weight)",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "note": "L-398 multiplicative scoring 금지 = z-score 레벨 곱 금지. 여기서 곱은 가중 레벨이므로 해당 없음."
+  },
+  "pit_rules": {"C1": "FM + MRS 모두 t-1 lag"},
+  "overfitting_guard": "MRS 선호도 계수(0.5 등)는 경제적 직관 기반 사전 정의."
+}

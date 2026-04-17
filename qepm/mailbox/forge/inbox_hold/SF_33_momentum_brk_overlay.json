@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_33_mom_brk",
+  "title": "1F Momentum + BRK Overlay — TrendedMom+52wk + 검증 overlay",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:14:00+09:00",
+  "bucket": "exploit", "priority_score": 0.76,
+  "scope": {"strategy_id": "SF_33", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "z(TrendedMom_R2) + z(52wkHigh_ratio), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R MRS 15/30",
+      "vol_target": "expanding 0.25"
+    },
+    "1f_brk_complete": "SF_15(Def) → EV_20(Cons) → SF_32(IndMom) → SF_01(Quality) → SF_02(Value) → SF_06(SUE) → SF_33(Momentum) = 7대 alpha 1F+BRK 완전"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

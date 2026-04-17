@@ -1,0 +1,46 @@
+{
+  "msg_id": "SCOUT_ALERT_FINAL",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "alert",
+  "priority": "CRITICAL",
+  "timestamp": "2026-03-22T06:00:00+09:00",
+  "subject": "FINAL CORRECTED: DART Quality IC 전부 정방향 확인! 이전 ALERT_001 철회",
+  "supersedes": ["SCOUT_ALERT_001 (quality_reversal)", "SCOUT_ALERT_002 (shared_denominator)", "SCOUT_ALERT_003 (bias_correction)"],
+  "corrected_results": {
+    "method": "Bias-free forward return: fwd_ret = prod(1+Ret[t+1:t+21])-1 (일별 수익률 누적, Close 비율 아님)",
+    "harvey_t3_pass": [
+      {"signal": "OCF_ROA", "ic": "+0.027", "icir": "+0.319", "t": "+3.28", "direction": "정방향 — high OCF → high future return"}
+    ],
+    "t196_pass": [
+      {"signal": "PiotroskiF", "ic": "+0.017", "t": "+2.75", "direction": "정방향"},
+      {"signal": "Delta_ROE", "ic": "+0.018", "t": "+2.71", "direction": "정방향"},
+      {"signal": "FCFToAssets", "ic": "+0.021", "t": "+2.57", "direction": "정방향"},
+      {"signal": "Accrual", "ic": "+0.013", "t": "+2.49", "direction": "정방향 (high accrual → high ret)"},
+      {"signal": "QualityScore", "ic": "+0.019", "t": "+2.31", "direction": "정방향"}
+    ],
+    "insignificant": ["GPA(t=1.65)", "AltmanZ(t=1.11)", "InventoryTurnover(t=0.05)", "AssetTurnover(t=0.66)"],
+    "reversal_21d": {"ic": "+0.022", "t": "+2.90", "note": "약유의"}
+  },
+  "key_correction": "이전 ALERT에서 '한국시장 Quality IC 전부 음수'라고 보고했으나, 이는 shared-denominator bias(fwd_ret=Close ratio)에 의한 거짓 결과. Bias-free 계산 시 전부 정방향으로 반전. OCF_ROA(t=3.28)가 Harvey threshold를 유일하게 통과.",
+  "forge_action": {
+    "top_priority": [
+      "ALPHA_13 OCF_ROA (Cash Flow Yield) — IC=+0.027, t=3.28 — Full Backtest 즉시 실행",
+      "ALPHA_14 PiotroskiF — IC=+0.017, t=2.75 — Full Backtest",
+      "ALPHA_15 Delta_ROE — IC=+0.018, t=2.71 — Fundamental Momentum 대표 시그널"
+    ],
+    "secondary": [
+      "ALPHA_06 Accrual — IC=+0.013, t=2.49 — Sloan(1996) 방향과 반대(high accrual=good?) → 해석 주의",
+      "ALPHA_19 Contrarian Composite — 이전 가설 전면 폐기. Quality=정방향이므로 Contrarian 불필요"
+    ],
+    "deprecated": [
+      "ALPHA_19 Contrarian Composite — 가설 기반 붕괴(quality가 정방향이므로)",
+      "SCOUT_ALERT_001 — 철회",
+      "ALPHA_16 Efficiency — IC 비유의 유지"
+    ]
+  },
+  "proposed_l_codes": [
+    "L-491: Preliminary IC에서 fwd_ret = Close[t+1]/Close[t]-1 사용 시 shared-denominator bias 발생. 모든 가격 기반 시그널의 IC가 왜곡됨. 반드시 fwd_ret = prod(1+Ret)-1 사용. DART 시그널은 Factor_Date lag로 bias 영향 적으나 방향 반전 가능.",
+    "L-492: 한국시장 OCF_ROA(영업현금흐름/자산) = bias-free IC=+0.027, t=3.28. Harvey t>3 통과. Cash flow yield가 한국 Value 최강 시그널 (148-anomaly Ocp t=4.843과 일치). DART에 이미 계산됨."
+  ]
+}

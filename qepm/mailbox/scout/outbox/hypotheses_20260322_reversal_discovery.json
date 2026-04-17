@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "generated_by": "Scout",
+    "timestamp": "2026-03-22T03:00:00+09:00",
+    "status": "MAJOR_DISCOVERY",
+    "title": "한국시장 Reversal-Dominant 구조 실증 확인 + 가설 체계 수정"
+  },
+  "discovery": {
+    "summary": "Scout preliminary IC 스크리닝 + Kang, Ryu & Webb (2025, Investment Analysts Journal) 학술 확인으로 한국시장의 핵심 구조적 특성을 발견: 개별종목 모멘텀은 reversal, 산업 모멘텀은 neutral, quality/profitability는 역방향. 이는 기존 4th alpha 탐색 실패(L-428)의 근본 원인.",
+    "academic_confirmation": "Kang, Ryu & Webb (2025) 'Momentum and reversal effects in the Korean stock market' Investment Analysts Journal 54(4):611-627. 1983-2023 한국시장 장기 분석. 개별종목 reversal 지배적, 산업모멘텀 통제해도 지속, 리스크 팩터 통제 후에도 존재.",
+    "empirical_confirmation": {
+      "ALPHA_05_tail_risk": {"ic": "+0.079", "t": "7.44", "verdict": "PASS — 유일한 정방향 신규 alpha"},
+      "reversal_126d": {"ic": "+0.354", "t": "38.4", "verdict": "극강 시그널이나 shared-denominator bias 가능성 → Forge 재검증 필수"},
+      "quality_signals_all_negative": "OCF_ROA(-3.93), PiotroskiF(-4.13), FCFToAssets(-3.48), GPA(-2.14), Accrual(-2.79) 전부 IC 음수",
+      "efficiency_signals_insignificant": "InventoryTurnover, AssetTurnover, CCC, DividendToAssets 전부 비유의"
+    }
+  },
+  "revised_alpha_framework": {
+    "principle": "한국시장에서 작동하는 alpha = (1) 위험 보상(Tail Risk), (2) 과잉반응 해소(Reversal), (3) 정보 비대칭(Order Flow). 전통적 quality/value/momentum은 역방향 또는 비유의.",
+    "actionable_alphas": [
+      {
+        "id": "ALPHA_05", "name": "Tail Risk (-Pct5)", "ic": "+0.079", "t": 7.44,
+        "mechanism": "하방 꼬리 위험 보상 프리미엄", "status": "IC 확인, Full Backtest 준비"
+      },
+      {
+        "id": "ALPHA_19", "name": "Contrarian Composite (역모멘텀 + 역quality)",
+        "mechanism": "개인투자자 과잉반응 → mean reversion", "status": "IC 확인(방향), shared-denominator 재검증 필요",
+        "note": "Kang et al. (2025) 학술 확인 — 개별종목 reversal 지배적"
+      },
+      {
+        "id": "ALPHA_08", "name": "Order Flow (투자자 매매흐름)",
+        "mechanism": "외국인/기관 사적 정보", "status": "논문 실증 t=16.35, KRX 데이터 수집 필요"
+      }
+    ],
+    "gate_only_signals": [
+      "PiotroskiF < 3 제거 (IC 역방향이지만 극단 제거는 유효)",
+      "AltmanZ < 1.8 제거 (IsDistressed)",
+      "IsZombie == TRUE 제거"
+    ],
+    "deprecated_contracts": [
+      "ALPHA_11 AssetGrowth — IC 비유의, 한국 Investment 24% 복제",
+      "ALPHA_16 Efficiency — IC 비유의, LASSO 선택률 ≠ alpha",
+      "ALPHA_17 ShareholderYield — IC 비유의"
+    ]
+  },
+  "proposed_l_codes": [
+    {
+      "code": "L-487",
+      "content": "한국시장 Quality/Profitability IC 전부 음수 (OCF_ROA t=-3.93, PiotroskiF t=-4.13, GPA t=-2.14). 148-anomaly Profitability 5% 복제 확인. 원인: 개인투자자 quality 추격매수 → 고평가 → mean reversion. DART quality 시그널은 gate(worst 제거)로만 유효. Scoring은 역방향."
+    },
+    {
+      "code": "L-488",
+      "content": "한국시장 개별종목 모멘텀 = reversal 지배 (Kang, Ryu & Webb 2025). 1983-2023 장기 확인. 산업모멘텀 통제해도 지속. 리스크 팩터 통제 후에도 존재. Contrarian(역모멘텀) = 유효 alpha. 단, shared-denominator bias 검증 필수."
+    },
+    {
+      "code": "L-489",
+      "content": "한국 RAWDATA/DART에서 유일하게 정방향 IC 확인된 신규 alpha = Tail Risk (-Pct5, IC=+0.079, t=7.44, ICIR=0.437). Defense(IdioVol)과 상관 검증 필요하나 다른 정보 차원(분포 전체 vs 꼬리)."
+    }
+  ],
+  "forge_final_request": {
+    "immediate": ["ALPHA_05 Full Backtest (RAWDATA only)", "ALPHA_19 Contrarian (shared-denominator fix 후)"],
+    "data_fetch": ["ALPHA_08 KRX Order Flow"],
+    "gate_implementation": ["PiotroskiF gate", "AltmanZ gate", "IsZombie gate"]
+  }
+}

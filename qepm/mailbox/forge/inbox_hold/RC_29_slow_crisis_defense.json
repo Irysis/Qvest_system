@@ -1,0 +1,22 @@
+{
+  "exp_id": "RC_29_slow_crisis",
+  "title": "Slow Crisis Defense — L-442 원리: 평상시 헤지 안함 + 위기 확인 후에만 강력 방어",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:31:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "RC_29", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "L-443 핵심 원칙의 극한 구현. MRS < 25: 7F A1 Core 100% invest (헤지 없음, DD brake 없음, VT 없음). MRS >= 25: Defense 60% + Cash 40%. 이진 스위치.",
+    "logic": [
+      "1. MRS[t-1] < 25: MF_A1 Core, no overlay, full invest",
+      "2. MRS[t-1] >= 25: Defense 60% + Cash 40%",
+      "3. 국면 전환 시 즉시 전환 (grace period 없음)"
+    ],
+    "expected": "정상 시 CAGR 극대화(overlay drag 없음). 위기 시 극방어. 평균적으로 overlay 있는 전략 대비 어떤지 비교."
+  },
+  "pit_rules": {"C1": "MRS[t-1] lag"},
+  "l_codes_referenced": ["L-443 (정상시 헤지안함 원칙)", "L-477 (regime-only MDD 32.6%)"]
+}

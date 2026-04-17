@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "generated_by": "Scout",
+    "timestamp": "2026-03-21T22:30:00+09:00",
+    "trigger": "148-anomaly 한국 복제 연구 반영 → 우선순위 재배열",
+    "total_contracts_in_forge_inbox": 12,
+    "evidence_base": "01_Literature 45편 + arXiv/SSRN 외부 30편+ + 한국 148-anomaly 복제(Emerald JDQS) + LASSO 한국 pricing factors(ScienceDirect)"
+  },
+  "priority_rerank": {
+    "rationale": "한국 148-anomaly 복제 연구에서 카테고리별 복제율이 크게 다름. Value(69%) >> Momentum(67%) >> Trading Friction(48%) >> Investment(24%) >> Profitability(5%). 이를 반영하여 우선순위 재조정",
+    "tier1_highest_evidence": [
+      {
+        "rank": 1, "id": "ALPHA_08", "name": "Order Flow (투자자 매매흐름)", "priority": 0.95,
+        "evidence": "한국 직접 실증 t=16.35(외국인), t=9.65(기관). arXiv 2512.18648",
+        "data_need": "KRX API 수집", "dimension": "시장참가자행동",
+        "immediate": false
+      },
+      {
+        "rank": 2, "id": "ALPHA_13", "name": "Cash Flow Yield (Ocp)", "priority": 0.87,
+        "evidence": "한국 148-anomaly 최강 Value t=4.843. LASSO cfp 선택률 86%",
+        "data_need": "DART CFO", "dimension": "현금흐름가치",
+        "immediate": false, "note": "Value 카테고리 한국 69% 복제 — 가장 강건"
+      }
+    ],
+    "tier2_strong_evidence_immediate": [
+      {
+        "rank": 3, "id": "ALPHA_04", "name": "Trended Momentum (R² 추세명확도)", "priority": 0.92,
+        "evidence": "SSRN 4740445, 12.68% ann. Momentum 66.67% 한국 복제",
+        "data_need": "✅ RAWDATA만", "dimension": "가격추세품질",
+        "immediate": true
+      },
+      {
+        "rank": 4, "id": "ALPHA_05", "name": "Tail Quantile Risk", "priority": 0.88,
+        "evidence": "arXiv 2208.14267, 7-8%/yr premium. IdioVol 한국 유의(t=4.059)",
+        "data_need": "✅ RAWDATA만", "dimension": "극단위험",
+        "immediate": true
+      },
+      {
+        "rank": 5, "id": "ALPHA_12", "name": "52주 신고가 근접도", "priority": 0.80,
+        "evidence": "George & Hwang 2004, 10개국 국제 실증, 한국 복제 유의",
+        "data_need": "✅ RAWDATA만", "dimension": "가격앵커",
+        "immediate": true
+      }
+    ],
+    "tier3_moderate_evidence": [
+      {
+        "rank": 6, "id": "ALPHA_10", "name": "Gross Profitability (GP/Assets)", "priority": 0.75,
+        "evidence": "한국 SDF LASSO 유의. 단, Profitability 전체 5% 복제 — GP만 예외",
+        "data_need": "DART 매출총이익", "dimension": "재무수익성",
+        "note": "⚠️ Profitability 카테고리 한국 복제 극히 약함. GP가 유일 예외인지 확인 필수",
+        "priority_adjusted": "0.82 → 0.75 (복제율 감안 하향)"
+      },
+      {
+        "rank": 7, "id": "ALPHA_06", "name": "Accruals Quality", "priority": 0.72,
+        "evidence": "Sloan 1996. LASSO 한국: percent accruals 유의. 148-anomaly에서도 포함",
+        "data_need": "DART CFO", "dimension": "이익품질",
+        "note": "ALPHA_13과 DART CFO 데이터 공유 — 동시 수집 가능"
+      },
+      {
+        "rank": 8, "id": "ALPHA_07", "name": "Analyst Co-Coverage Momentum", "priority": 0.72,
+        "data_need": "FnGuide 커버리지", "dimension": "정보네트워크"
+      },
+      {
+        "rank": 9, "id": "ALPHA_09", "name": "RIM V/P Ratio", "priority": 0.70,
+        "data_need": "FnGuide ROE consensus", "dimension": "내재가치"
+      }
+    ],
+    "tier4_deprioritized": [
+      {
+        "rank": 10, "id": "ALPHA_11", "name": "Asset Growth", "priority": 0.50,
+        "evidence": "Investment 카테고리 한국 24% 복제(t>1.96), 10%(t>2.78). 약함",
+        "priority_adjusted": "0.68 → 0.50 (한국 복제 실패 감안 대폭 하향)",
+        "note": "연간 업데이트 + 한국 Investment 효과 약 → 마지막 순위"
+      }
+    ],
+    "regime_and_arch": [
+      {"id": "REGIME_01", "name": "SJM Factor Regime", "target": "Regime Scout"},
+      {"id": "ARCH_01", "name": "Bounded Factor Tilt", "target": "Blender"}
+    ]
+  },
+  "forge_execution_recommendation": {
+    "phase1_today": {
+      "description": "RAWDATA만으로 즉시 Alpha Lab 3건 병렬 실행",
+      "contracts": ["ALPHA_04 (Trended Momentum)", "ALPHA_05 (Tail Risk)", "ALPHA_12 (52w High)"],
+      "estimated_time": "각 30분, 병렬 시 총 30분"
+    },
+    "phase2_data_fetch": {
+      "description": "KRX + DART 데이터 수집 후 Alpha Lab",
+      "contracts": ["ALPHA_08 (KRX 투자자 매매흐름)", "ALPHA_13 (DART CFO → Cash Flow Yield)", "ALPHA_06 (DART CFO → Accruals)"],
+      "data_fetch": "KRX API + DART API, 추정 2-4시간"
+    },
+    "phase3_secondary": {
+      "contracts": ["ALPHA_10 (GP)", "ALPHA_09 (RIM V/P)", "ALPHA_07 (Analyst Network)"]
+    },
+    "deprioritized": ["ALPHA_11 (Asset Growth — 한국 복제 실패)"]
+  },
+  "key_academic_discovery": "한국 148-anomaly 복제 연구(JDQS 2020)에 따르면 한국시장에서 (1) Value 카테고리가 압도적으로 강건(69%), (2) Profitability는 거의 전멸(5%), (3) Investment도 약함(24%). 따라서 GP/Accruals보다 Cash Flow Yield(Ocp, t=4.843)가 한국에서 가장 유망한 새 alpha. STR_1036 기반 포트폴리오에 Cash Flow Yield sleeve를 추가하면 가치 차원의 독립 alpha를 확보할 수 있음"
+}

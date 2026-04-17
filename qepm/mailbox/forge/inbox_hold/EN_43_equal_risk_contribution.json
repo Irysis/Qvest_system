@@ -1,0 +1,19 @@
+{
+  "exp_id": "EN_43_erc",
+  "title": "Equal Risk Contribution 전략 앙상블 — 전략별 위험 기여 균등화",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:02:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_43", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_13(RP)의 정밀화: 단순 역변동성이 아닌 marginal risk contribution 균등화. 상관 반영.",
+    "logic": [
+      "1. 5전략 trailing 60d 공분산 Σ (t-1)",
+      "2. ERC: w_i * (Σw)_i / (w'Σw) = 1/5 for all i",
+      "3. 수치 최적화(optim)로 w 결정",
+      "4. score × w 합산 → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Σ = trailing 60d, t-1 lag"}
+}

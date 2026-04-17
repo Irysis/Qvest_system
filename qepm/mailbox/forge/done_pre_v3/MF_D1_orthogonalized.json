@@ -1,0 +1,34 @@
+{
+  "exp_id": "MF_D1_ORTHOGONALIZED",
+  "title": "팩터 직교화 — Defense+Consensus 잔차에서 추가 alpha 추출",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:37:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {
+    "strategy_id": "MF_D1",
+    "family": "multifactor_ortho",
+    "n_holdings": 30
+  },
+  "design": {
+    "method": [
+      "1. 핵심 팩터: Defense(z_def) + Consensus(z_cons) → composite base score",
+      "2. 보조 팩터: Quality, Value, Momentum, IndMom, TPGap",
+      "3. 직교화: 각 보조 팩터를 Defense+Consensus에 대해 횡단면 회귀 → 잔차 추출",
+      "   ortho_quality = quality - β₁*defense - β₂*consensus",
+      "   (매월 t-1까지 expanding window로 β 추정)",
+      "4. final_score = 0.50*(z_def + z_cons) + 0.50*mean(ortho_factors)",
+      "5. Top 30 → monthly rebal"
+    ],
+    "rationale": "L-475: Ortho-SUE가 SR +50% 개선. Defense/Consensus와 상관된 부분 제거 → 순수 추가 alpha만 추출. L-382: score-level < FM-weighted이지만 직교화는 방향이 다름.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "직교화 β 추정은 expanding window (t-1까지). Full-sample regression 금지.",
+    "C2": "β 추정에 t월 데이터 사용 금지."
+  },
+  "overfitting_guard": "직교화 β가 불안정할 수 있음 (소표본). Minimum 24개월 warm-up. OOS retention < 0.5 시 폐기.",
+  "l_codes_referenced": ["L-475 (Ortho-SUE +50% SR)", "L-382 (score-level < FM-weighted)"]
+}

@@ -1,0 +1,31 @@
+{
+  "exp_id": "MF_W1_CONVICTION",
+  "title": "Conviction Scoring — 다수 팩터 상위에 동시 등장하는 종목에 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:30:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {
+    "strategy_id": "MF_W1",
+    "family": "multifactor_conviction",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "z-score 합산이 아닌 '몇 개 팩터에서 상위권인가'를 카운트. 7팩터 중 5개 이상에서 Top 30%면 high-conviction. 다수 팩터 동의 = 과적합 위험 최소, 구조적 alpha 확률 최대.",
+    "logic": [
+      "1. 각 팩터별 종목 순위 계산 (sector neutral z-score → percentile rank)",
+      "2. 각 종목에 대해: conviction_count = sum(rank >= 70th percentile across 7 factors)",
+      "3. conviction_score = conviction_count + 0.1 * mean(z_scores) (동점 해소용)",
+      "4. Top 30 by conviction_score → EW, monthly rebal"
+    ],
+    "factors": ["defense", "consensus", "indmom", "quality", "value", "momentum", "tp_gap"],
+    "threshold": "70th percentile (top 30%)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "advantage": "z-score 합산은 단일 팩터 극단값이 지배할 수 있음. Conviction count는 '폭넓은 동의' 요구 → 더 안정적. 극단값에 강건."
+  },
+  "pit_rules": {"C1": "모든 팩터 t-1 lag", "C2": "percentile rank = 당월 횡단면 기준"},
+  "overfitting_guard": "Threshold 70%는 Top 30% = 경제적 직관. 최적화 없음.",
+  "academic_basis": "Haugen & Baker (1996) 'Commonality in the Determinants of Expected Stock Returns'; Clarke, de Silva & Thorley (2016) 'Fundamentals of Efficient Factor Investing'"
+}

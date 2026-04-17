@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_LL1_VIX_SWITCH",
+  "title": "VIX 레짐 스위치 — VIX z-score 기반 단순 2-state 팩터 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:53:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {
+    "strategy_id": "MF_LL1",
+    "family": "multifactor_vix",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "MRS 9축보다 단순: VIX 단일 변수로 2-state 전환. VIX z > 1 → Defense Heavy, VIX z <= 1 → Balanced. 단순할수록 과적합 위험 낮음.",
+    "states": {
+      "high_vix": {
+        "trigger": "VIX 252d z-score > 1.0 (t-1)",
+        "allocation": "Defense 40% + Quality 25% + Consensus 20% + Others 15%"
+      },
+      "normal_vix": {
+        "trigger": "VIX z <= 1.0",
+        "allocation": "MF_A1 Core weight (Def30+Cons30+Mom15+Qual15+Val10)"
+      }
+    },
+    "vix_source": "yfinance ^VIX 일별 (이미 .cache/ 수집 완료)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "VIX z = expanding 252d window, t-1 lag", "C11": "VIX = 전일 종가 (KRX 시차 자동 반영)"},
+  "overfitting_guard": "2-state + VIX 단일 변수 = 최소 복잡도. Threshold 1.0은 1σ = 표준.",
+  "academic_basis": "Whaley (2000) 'The Investor Fear Gauge' JD; Banerjee, Doran & Peterson (2007)"
+}

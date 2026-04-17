@@ -1,0 +1,17 @@
+{
+  "exp_id": "RC_37_n20_crisis",
+  "title": "N=20 Crisis — 위기 시 종목수 20으로 축소 + Defense Heavy",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:51:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "RC_37", "family": "regime_conditional", "n_holdings": "20~30"},
+  "design": {
+    "logic": [
+      "MRS < 15: N=30, MF_A1 Core",
+      "15 <= MRS < 25: N=25, Defense 35% + Others",
+      "MRS >= 25: N=20, Defense 50% + Quality 30% + Others 20%"
+    ],
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS t-1 lag"}
+}

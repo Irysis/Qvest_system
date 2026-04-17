@@ -1,0 +1,38 @@
+{
+  "exp_id": "NCO_C11_FIX",
+  "title": "STR_1033/1107/1108/1109 Phase 4 regime_engine_daily.R 교체 (C11 필수 수정)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.96,
+  "scope": {
+    "strategy_ids": ["STR_1110", "STR_1111", "STR_1112", "STR_1113"],
+    "base": "STR_1033 NCO (Score 77.9) + variants STR_1107/1108/1109",
+    "problem": "Phase 4 Soft MRS가 macro_regime_dt[YM == daily_ym_f[i]] (same-month lookup) 사용. Judge C11 FAIL. v7.1 데이터가 1-month lag를 내장하여 결과는 PIT-compliant하나, 코드 레벨 수정 필수 (Judge 권고)",
+    "target": "regime_engine_daily.R 교체로 코드 레벨 PIT compliance 확보"
+  },
+  "hypothesis": {
+    "statement": "STR_1033의 Phase 4 Soft MRS를 regime_engine_daily.R (build_daily_regime)로 교체하면 C11 해소 + 일별 세밀 국면 판단으로 Score 유지 또는 개선",
+    "mechanism": "regime_engine_daily.R은 9축 일별 MRS를 t-1 lag로 계산 (미래참조 ZERO 보장). 기존 월별 MRS 대비 일별 세밀성으로 crisis 진입/퇴출 타이밍 개선 가능. STR_1036/1060이 동일 구조로 Score 80.9/87.1 달성.",
+    "falsification": "교체 후 SR < 1.20 또는 Score < 70 → 기각"
+  },
+  "implementation": {
+    "changes": [
+      "Phase 4 전체 교체: macro_regime_dt + Soft MRS loop → source(regime_engine_daily.R) + build_daily_regime(common_idx)",
+      "regime$MRS로 soft ramp 계산 (MRS_LOW=15, MRS_HIGH=30 유지)",
+      "regime$exposure 직접 사용 OR MRS 기반 soft ramp 유지 (둘 다 테스트)"
+    ],
+    "variants": [
+      {"id": "STR_1110", "name": "nco_regime_daily", "change": "STR_1033 base + regime_engine_daily.R 교체만"},
+      {"id": "STR_1111", "name": "nco_rd_no_short_dd", "change": "STR_1107 (no short DD) + regime_engine_daily.R"},
+      {"id": "STR_1112", "name": "nco_rd_dd8_no_short", "change": "STR_1108 (DD8 + no short) + regime_engine_daily.R"},
+      {"id": "STR_1113", "name": "nco_rd_dd8_mrs12", "change": "STR_1109 (DD8 + MRS 12/25) + regime_engine_daily.R"}
+    ],
+    "code_template": "Phase 4를 다음으로 교체:\n  source(file.path(INFRA_DIR, 'regime_engine_daily.R'))\n  regime <- build_daily_regime(common_idx)\n  soft_mrs_exp <- regime$exposure  # 또는 regime$MRS 기반 soft ramp"
+  },
+  "l_codes_referenced": ["L-442 (v7.1 확정)", "L-488 (NCO regime_engine_daily.R 교체 우선순위 높음)", "L-450 (C11 데이터 시간축)", "L-443 (정상시 헤지안함 원칙)"],
+  "academic_basis": "Lopez de Prado (2016) NCO + Regime Engine v7.1 (4-Layer + Expanding Percentile + Slow-Crisis Defense)",
+  "risk_notes": "regime_engine_daily.R은 STR_1036/1060에서 검증 완료. NCO 가중과의 상호작용은 미검증이나 overlay는 가중 독립. 4개 variant 순차 실행 권장."
+}

@@ -1,0 +1,21 @@
+{
+  "msg_id": "SCOUT_NOTE_001",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "note",
+  "timestamp": "2026-03-22T14:00:00+09:00",
+  "subject": "연구 메모: Pastor-Stambaugh 유동성 리스크가 모멘텀 수익의 50%를 설명 — IndMom sleeve 시사점",
+  "source": "01_Literature/QEPM/Factor_Return_Articles/Liquidity_Factors/ (23편 스캔)",
+  "finding": {
+    "paper": "Pastor & Stambaugh (2003, JPE) + 20 Years Later (2019, NBER WP 25774)",
+    "key_result": "시장 전체 유동성 리스크 팩터가 미국 모멘텀 전략 수익의 50%를 설명. 20년 후 업데이트에서도 유동성 리스크 프리미엄이 더 커짐.",
+    "mechanism": "모멘텀 승자 포트폴리오가 유동성 리스크에 높은 노출 → 유동성 위기 시 승자 종목 급락 → 모멘텀 크래시의 원인",
+    "implication_for_us": "우리 IndMom sleeve의 alpha 일부가 유동성 리스크 프리미엄일 수 있음. 이는 (1) alpha가 아닌 risk premium이므로 위기 시 급락 가능, (2) 유동성 리스크 hedge 시 순수 alpha 추출 가능"
+  },
+  "actionable": {
+    "research_question": "한국 IndMom의 alpha가 유동성 리스크 노출에서 오는가?",
+    "test": "IndMom sleeve 수익률을 유동성 변동(시장 전체 Amihud 변화)에 회귀 → 유동성 beta 추정. 유동성 beta가 유의하면 IndMom alpha의 일부는 유동성 리스크 보상",
+    "data": ".cache/investor/investor_market.parquet의 거래량 변동 또는 RAWDATA의 시장 전체 Amihud 계산으로 가능",
+    "priority": "low — 현재 alpha 발견보다 기존 alpha 분해에 가까움. Regime Scout 또는 Judge 영역"
+  }
+}

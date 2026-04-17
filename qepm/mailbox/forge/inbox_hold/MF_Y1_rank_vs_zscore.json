@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_Y1_RANK_SCORING",
+  "title": "Rank Scoring — z-score 대신 percentile rank 합산 (극단값 강건)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:32:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.78,
+  "scope": {
+    "strategy_id": "MF_Y1",
+    "family": "multifactor_rank",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "z-score는 극단값에 민감 (outlier 1종목이 전체 scoring 지배). Percentile rank(0~1)로 변환하면 극단값 영향 제거. Asness et al. (2013): rank-based scoring이 z-score 대비 OOS 안정적.",
+    "logic": [
+      "1. 각 팩터 시그널을 횡단면 percentile rank (0~1)로 변환",
+      "2. composite_rank = mean(rank_defense, rank_consensus, ..., rank_tp_gap)",
+      "3. sector neutral: sector 내에서 rank 재계산",
+      "4. Top 30 by composite_rank → EW, monthly rebal"
+    ],
+    "comparison": "MF_A2(EW 7F z-score)와 동일 가중이지만 scoring 방법만 다름. 차이 = z-score vs rank.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "rank = 당월 횡단면 기준 (미래참조 아님)", "C2": "팩터 시그널 t-1 lag"},
+  "overfitting_guard": "Rank 변환은 비모수적 → z-score 대비 과적합 위험 낮음.",
+  "academic_basis": "Asness, Moskowitz & Pedersen (2013 JF) 'Value and Momentum Everywhere'"
+}

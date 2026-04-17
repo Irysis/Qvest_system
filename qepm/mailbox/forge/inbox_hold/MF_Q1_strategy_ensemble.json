@@ -1,0 +1,45 @@
+{
+  "exp_id": "MF_Q1_STRATEGY_ENSEMBLE",
+  "title": "Grade A 전략 앙상블 — 종목레벨 Score 합산 (30종목 규칙 준수)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:12:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {
+    "strategy_id": "MF_Q1",
+    "family": "strategy_ensemble",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "기존 Grade A 전략들의 종목별 score를 합산하여 '모든 전략이 동의하는 종목' 선정. L-484: 수익률 블렌드는 30종목 위반 → score 합산만 유효.",
+    "strategies_to_blend": [
+      "STR_1036 (daily_regime, Score 80.9) → z_score_1036",
+      "STR_943 (oc_eps_chg, Score 72.2) → z_score_943",
+      "STR_971 (oc_tp_upside_revmom, Score 71.2) → z_score_971",
+      "STR_899 (897_n15fix, Score 55.3) → z_score_899"
+    ],
+    "blending": {
+      "method": "각 전략의 FACTORS(Date, Ticker, Score)를 합산. z_ensemble = mean(z_1036, z_943, z_971, z_899)",
+      "weighting": {
+        "option_A": "Equal weight (각 25%)",
+        "option_B": "Score weight (Strategy Score 비중)"
+      },
+      "30_stock_rule": "score 합산 후 Top 30 선정 → 30종목 규칙 완벽 준수(L-484)"
+    },
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp",
+      "vol_target": "expanding 0.25"
+    },
+    "expected": "다양한 alpha source(Defense+Regime+Consensus+Overlay)가 동의하는 종목 = conviction 최고 → SR 개선"
+  },
+  "pit_rules": {
+    "C1": "각 전략의 Score는 이미 PIT-compliant",
+    "C12": "전략 간 가중은 사전 정의(EW 또는 Score weight). Full-sample blend 최적화 금지."
+  },
+  "overfitting_guard": "개별 전략이 이미 Judge 검증 완료. 앙상블은 단순 합산. OOS retention >= 0.5.",
+  "l_codes_referenced": ["L-484 (수익률 블렌드 30종목 위반 → score 합산만 유효)", "L-382 (score-level < FM-weighted)"],
+  "risk_notes": "C2 DD fix가 필요한 전략(STR_943, STR_898)은 fix 후 포함. STR_1036만 Judge 검증 완료."
+}

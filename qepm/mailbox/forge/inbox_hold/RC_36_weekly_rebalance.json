@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_36_weekly_rebal",
+  "title": "주간 리밸런싱 — 위기 국면에서만 주간 리밸런싱 (정상 시 월간)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:42:00+09:00",
+  "bucket": "explore", "priority_score": 0.73,
+  "scope": {"strategy_id": "RC_36", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "정상 시 월간 리밸런싱(turnover 최소). 위기(MRS>=20) 시 주간 리밸런싱(빠른 방어 전환). 국면별 리밸런싱 빈도 차별화.",
+    "logic": [
+      "MRS[t-1] < 20 → 월간 리밸런싱 (기존과 동일)",
+      "MRS[t-1] >= 20 → 주간 리밸런싱 (매주 금요일 scoring 재실행)"
+    ],
+    "scoring": "MF_A1 7F composite",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "주간 리밸런싱 시에도 모든 시그널 t-1 lag"}
+}

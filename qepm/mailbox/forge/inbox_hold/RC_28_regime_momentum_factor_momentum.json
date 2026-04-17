@@ -1,0 +1,22 @@
+{
+  "exp_id": "RC_28_regime_x_fm",
+  "title": "Regime × FM 교차 — MRS 방향 × FM 방향 4-state",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:22:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_28", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_18(매크로 모멘텀)과 FM(팩터 모멘텀)의 교차. MRS 방향(개선/악화) × FM 방향(추세/역전) = 4 상태.",
+    "states": {
+      "mrs_improving_fm_positive": "MRS↓ AND FM top팩터 SR>0 → 공격 전체 + FM 가중",
+      "mrs_improving_fm_negative": "MRS↓ AND FM top팩터 SR<0 → 공격 전체 + EW",
+      "mrs_deteriorating_fm_positive": "MRS↑ AND FM top팩터 SR>0 → Defense Heavy + FM 가중",
+      "mrs_deteriorating_fm_negative": "MRS↑ AND FM top팩터 SR<0 → Defense Heavy + EW"
+    },
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS trend + FM 모두 t-1 lag"}
+}

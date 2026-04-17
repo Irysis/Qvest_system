@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_33_ff5_filtered",
+  "title": "FF5 Alpha Filtered Ensemble — FF5 alpha t>2.0 전략만 앙상블",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:22:00+09:00",
+  "bucket": "exploit", "priority_score": 0.84,
+  "scope": {"strategy_id": "EN_33", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_26(OOS 필터)의 FF5 버전. FF5 alpha t-stat > 2.0인 전략만 앙상블 → 진정한 alpha 전략만 합산.",
+    "logic": [
+      "1. 각 전략의 FF5 alpha t-stat 확인",
+      "2. t > 2.0인 전략만 후보 (STR_1033 t=2.889 등)",
+      "3. EW score 합산 → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FF5 alpha = expanding regression"}
+}

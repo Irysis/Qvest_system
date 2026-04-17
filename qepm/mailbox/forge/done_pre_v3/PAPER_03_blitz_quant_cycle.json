@@ -1,0 +1,35 @@
+{
+  "exp_id": "PAPER_03_BLITZ",
+  "title": "Blitz (2022) — 논문 원본 Quant Cycle 정의로 한국시장 복제",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "execute",
+  "priority_score": 0.97,
+  "scope": {
+    "strategy_id": "STR_1302",
+    "family": "paper_replication_quant_cycle",
+    "n_holdings": 30,
+    "frequency": "monthly"
+  },
+  "design": {
+    "paper": "Blitz (2022) The Quant Cycle, Robeco/Journal of Portfolio Management",
+    "IMPORTANT": "논문 원본 정의. 매크로 타이밍 한계 인정 → 팩터 자체 시그널 기반.",
+    "paper_factor_definitions": {
+      "Value": "Composite: BM + Earnings Yield (E/P) + CF Yield (CF/P). 3개 평균 z-score.",
+      "Momentum": "12-1m past return.",
+      "Quality": "Composite: ROE + Debt/Equity(-) + Earnings Stability. 3개 평균 z-score.",
+      "Low Risk": "-Beta (CAPM beta 음수). 낮을수록 방어적."
+    },
+    "paper_quant_cycle_signals": {
+      "factor_valuation": "각 팩터의 value spread = top quintile 평균 BM - bottom quintile 평균 BM. spread 넓으면 cheap → overweight. expanding window로 z-score 변환.",
+      "factor_momentum": "각 팩터의 trailing 12m long-short return. 양이면 → overweight.",
+      "combined_signal": "factor_valuation_z + factor_momentum_z. 둘 다 양이면 strong overweight.",
+      "allocation": "signal 비례 가중. min 10%, max 40%. signal 전부 음수면 EW."
+    },
+    "pit_rules": {
+      "value_spread": "expanding window. t-1까지.",
+      "factor_momentum": "t-1까지 12m return.",
+      "BM_for_spread": "Factor_Date <= sig_d"
+    }
+  }
+}

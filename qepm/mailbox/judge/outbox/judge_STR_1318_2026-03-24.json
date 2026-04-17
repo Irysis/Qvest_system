@@ -1,0 +1,53 @@
+{
+  "judge": "Judge Agent",
+  "strategy_id": "STR_1318",
+  "strategy_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1318_sign_flip_contrarian",
+  "timestamp": "2026-03-24 09:56:51",
+  "gate0_pass": false,
+  "gate0_violations": ["C13: Manual sign flipping (NEGATE_LIST) — must use Z_Score_Aligned only", "C15: Direct parquet loading — must use load_month_factors()"],
+  "overall_verdict": "FAIL_GATE0",
+  "grade": "F",
+  "score": 12.4,
+  "hurdle_grade": "F",
+  "hurdle_score": 12.4,
+  "metrics": {
+    "CAGR": 10.77,
+    "AnnVol": 13.32,
+    "Sharpe": 0.808,
+    "Sharpe_m": 0.717,
+    "IR": 0.061,
+    "MDD": 34.33,
+    "Calmar": 0.314,
+    "Turnover_Ann": 530,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 67.6,
+    "BM_Corr": 0.447,
+    "ES99_d": 3.68,
+    "ES99_m": 11.2,
+    "GradeA_Corr": "NA",
+    "Rolling6M_Hit": 63,
+    "Worst6M_Ret": -21.68,
+    "MaxConsecNegAlpha": 12,
+    "Rolling12M_Hit": 62.4
+  },
+  "gate_results": {
+    "Gate0_Validity": {
+      "pass": false,
+      "violations": ["C13: Manual sign flipping (NEGATE_LIST) — must use Z_Score_Aligned only", "C15: Direct parquet loading — must use load_month_factors()"],
+      "note": "Gate 0 FAIL — subsequent gates not evaluated"
+    },
+    "Gate1_Implementability": "NOT EVALUATED (Gate 0 FAIL)",
+    "Gate2_Robustness": "NOT EVALUATED (Gate 0 FAIL)",
+    "Gate3_Performance": "NOT EVALUATED (Gate 0 FAIL)",
+    "Gate4_Statistical": "NOT EVALUATED (Gate 0 FAIL)",
+    "Gate5_Diversification": "NOT EVALUATED (Gate 0 FAIL)"
+  },
+  "commentary": {
+    "strength": "Interesting factor selection concept (hurdle score: 12.4)",
+    "weakness": "Critical C-rule violations: C13: Manual sign flipping (NEGATE_LIST) — must use Z_Score_Aligned only; C15: Direct parquet loading — must use load_month_factors()",
+    "verdict_reason": "Gate 0 FAIL due to Factor DB access rule violations (C13/C15). These are mandatory compliance rules, not performance-based.",
+    "improvement": "Replace direct parquet loading with load_month_factors() from factor_db_connector.R. Use Z_Score_Aligned instead of manual sign flipping via NEGATE_LIST. IC data access should also go through connector functions.",
+    "comparison": "All Factor DB strategies in STR_1304~1326 batch share the same C13/C15 violation pattern — systemic Forge issue",
+    "evolution_path": ["Fix C15: replace read_parquet() with load_month_factors() + compute_rolling_ic_all()", "Fix C13: remove NEGATE_LIST, use Z_Score_Aligned column directly", "After fixes, re-run backtest and resubmit for Judge review"]
+  }
+}

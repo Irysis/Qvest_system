@@ -1,0 +1,40 @@
+{
+  "exp_id": "MF_R1_FACTOR_RP",
+  "title": "팩터 리스크 패리티 — 각 팩터 기여 변동성을 균등화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:20:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {
+    "strategy_id": "MF_R1",
+    "family": "multifactor_rp",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "팩터 가중을 SR이나 IC가 아닌 리스크 기여도 균등화로 결정. 변동성 높은 팩터(Momentum)는 가중 축소, 낮은 팩터(Defense)는 가중 확대. 리스크 패리티의 팩터 버전.",
+    "logic": [
+      "1. 7 팩터 각각의 standalone long portfolio 일별 수익률 시계열 구축",
+      "2. 매월 말: trailing 60d 변동성 σ_i 계산 (t-1까지, expanding min 120d)",
+      "3. 팩터 가중 w_i = (1/σ_i) / sum(1/σ_j) — 역변동성 가중",
+      "4. composite_score = sum(w_i × z_factor_i), sector neutral",
+      "5. Top 30 → EW, monthly rebal"
+    ],
+    "factors": ["defense", "consensus", "indmom", "quality", "value", "momentum", "tp_gap"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "expected_weights": {
+      "defense": "~20-25% (낮은 변동성 → 가중 확대)",
+      "momentum": "~8-12% (높은 변동성 → 가중 축소)",
+      "consensus": "~15-18%",
+      "rationale": "Risk Parity = 각 팩터가 포트폴리오 변동성에 동등 기여 → 단일 팩터 risk dominance 방지"
+    }
+  },
+  "pit_rules": {
+    "C1": "σ 계산 = expanding window (t-1까지)",
+    "C2": "t-1까지 변동성만"
+  },
+  "overfitting_guard": "Risk Parity는 사전 정의 규칙(변동성 역수). 최적화 없음. L-34: stock-level RP > EW 교훈 재확인 필요.",
+  "l_codes_referenced": ["L-34 (HRP/MinVar/RP EW 대비 열위 — stock level이므로 factor level은 다를 수 있음)", "L-429 (FM rank)"],
+  "academic_basis": "Maillard, Roncalli & Teïletche (2010) 'On the Properties of Equally Weighted Risk Contribution Portfolios'; Roncalli (2014)"
+}

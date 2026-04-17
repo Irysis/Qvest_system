@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_31_ff5_alpha_w",
+  "title": "FF5 Alpha 가중 앙상블 — 전략별 FF5 alpha t-stat 비례 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:02:00+09:00",
+  "bucket": "exploit", "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_31", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "SR이 아닌 FF5 alpha t-stat으로 전략 가중. Harvey t>3.0 근접 전략에 높은 가중 → 진정한 alpha 있는 전략 우선.",
+    "logic": [
+      "1. 각 전략의 FF5 alpha t-stat 확인 (hurdle_result.json)",
+      "2. w_i = max(0, ff5_tstat_i) / sum(max(0, ff5_tstat))",
+      "3. score × w 합산 → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FF5 alpha = expanding regression (t-1)"}
+}

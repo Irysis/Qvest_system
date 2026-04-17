@@ -1,0 +1,20 @@
+{
+  "exp_id": "FM_18_shrinkage_fm",
+  "title": "Shrinkage FM — FM 가중을 EW prior로 수축 (II1의 FM 특화)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:03:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "FM_18", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. FM 가중: trailing 6m SR 기반 (B1)",
+      "2. Shrinkage: w = λ*EW + (1-λ)*FM, λ = 1/(1+T/60)",
+      "3. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25"
+  },
+  "pit_rules": {"C1": "FM + λ 모두 t-1 lag, expanding"}
+}

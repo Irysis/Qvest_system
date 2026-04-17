@@ -1,0 +1,28 @@
+{
+  "exp_id": "ML_02_catboost",
+  "title": "CatBoost 팩터 배분 — Ordered Boosting으로 시계열 overfitting 방지",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:34:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "ML_02", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "CatBoost의 Ordered Boosting = 시계열 데이터에서 target leakage 방지. XGBoost/LightGBM 대비 시계열 과적합에 강건.",
+    "model_params": {
+      "iterations": 500,
+      "learning_rate": 0.05,
+      "depth": 4,
+      "has_time": true,
+      "boosting_type": "Ordered"
+    },
+    "training": "expanding walk-forward (E1과 동일)",
+    "features": "E1과 동일",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "has_time=true → CatBoost 내부적으로 시계열 순서 유지", "C12": "Full-sample 금지"},
+  "overfitting_guard": "Ordered Boosting = CatBoost 고유 과적합 방지. OOS retention >= 0.5.",
+  "r_packages": ["catboost"],
+  "fallback": "catboost 미설치 시 E1(xgboost)으로 대체"
+}

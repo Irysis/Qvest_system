@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_FFFF1_R4_PAYOFF_TILT",
+  "title": "R4 Regime Payoff 기반 팩터 틸트 — 1025건 R4 데이터 직접 활용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:26:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "MF_FFFF1", "family": "multifactor_r4", "n_holdings": 30},
+  "design": {
+    "concept": "R4 regime_payoff 1025건에서 각 팩터의 국면별 실증 SR을 직접 추출 → 현재 국면에 맞는 팩터에 가중. Scout 분석 결과: risk_on에서 Consensus SR 1.429 최강, full_sample에서 Momentum SR 1.829 최강.",
+    "r4_derived_weights": {
+      "risk_on": {"defense": 0.15, "consensus": 0.30, "indmom": 0.15, "quality": 0.15, "value": 0.15, "momentum": 0.10},
+      "elevated": {"defense": 0.30, "consensus": 0.20, "indmom": 0.10, "quality": 0.20, "value": 0.10, "momentum": 0.10},
+      "crisis": {"defense": 0.45, "consensus": 0.15, "indmom": 0.05, "quality": 0.25, "value": 0.05, "momentum": 0.05}
+    },
+    "derivation": "R4 SR 기반: risk_on에서 Cons(1.429)>Quality(1.218)>Value(1.179)>Defense(1.168). Crisis 데이터 부족(3건) → 경제적 직관 보완.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "R4 데이터는 과거 백테스트 결과(full-sample 포함). ⚠️ R4 기반 가중 = C1 위반 가능성. 대안: R4를 '사전 지식'으로 취급하고 가중은 고정."},
+  "overfitting_guard": "⚠️ R4 데이터는 full-sample 결과 포함 → 가중을 '고정 preset'으로 사용하고 walk-forward에서는 변경하지 않음. 즉 R4는 가설 설계 근거일 뿐, 실시간 최적화에 사용 금지.",
+  "l_codes_referenced": ["R4 regime_payoff 분석 결과 (Scout Session 41)"]
+}

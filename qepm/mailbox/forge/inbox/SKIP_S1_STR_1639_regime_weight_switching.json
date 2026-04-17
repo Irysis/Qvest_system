@@ -1,0 +1,38 @@
+{
+  "task": "S1",
+  "strategy_id": "STR_1639",
+  "strategy_name": "regime_weight_switching",
+  "created_by": "Scout",
+  "created_at": "2026-03-31",
+  "priority": "HIGH",
+
+  "description": "STR_1631 base + Regime-Conditional Weight Switching: NORMAL=EW, CAUTION=HRP, CRISIS=MinVar(OAS). S0 record and plan at stage_artifacts/.",
+
+  "instructions": [
+    "1. Copy STR_1631 structure to STR_1639 directory",
+    "2. factor_engine.R: identical to STR_1631 (C19 + MAX exclusion + N=20)",
+    "3. regime_allocator.R: identical to STR_1631 (3-layer asset allocation)",
+    "4. NEW: regime_weight_switcher.R — implements regime-conditional weight switching",
+    "   - NORMAL (MRS < 30): EW (rep(1/N, N))",
+    "   - CAUTION (30 <= MRS < 60): HRP with OAS expanding covariance",
+    "   - CRISIS (MRS >= 60 confirmed): MinVar with OAS expanding covariance",
+    "5. run_all.R: Phase 4 uses regime_weight_switcher instead of fixed weight_method='equal'",
+    "6. PIT CRITICAL: covariance estimation = expanding window (start ~ t-1 ONLY). No rebalancing-day returns.",
+    "7. Weight bounds: lb=0.02, ub=0.15 for HRP and MinVar",
+    "8. OAS shrinkage: use corpcor::cov.shrink() or manual OAS implementation",
+    "9. HRP implementation: hierarchical clustering (hclust) + recursive bisection (from STR_1028 code)",
+    "10. MinVar: quadprog::solve.QP or manual closed-form with constraints (from STR_1035 code)",
+    "11. Run backtest, generate charts, hurdle gate"
+  ],
+
+  "s0_record_path": "stage_artifacts/s0_record_STR_1639_regime_weight_switching.json",
+  "s0_plan_path": "stage_artifacts/s0_plan_regime_weight_switching.md",
+  "base_strategy_path": "04_Research/strategies/STR_1631_regime_dynamic_defense_inverse/",
+  "reference_strategies": [
+    "04_Research/strategies/STR_1028_gerber_dcc_hrp/ (HRP implementation)",
+    "04_Research/strategies/STR_1035_oas_minvar/ (MinVar OAS implementation)"
+  ],
+
+  "expected_role": "core_alpha",
+  "economic_family": "regime_tactical"
+}

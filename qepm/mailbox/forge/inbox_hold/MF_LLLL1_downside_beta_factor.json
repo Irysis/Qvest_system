@@ -1,0 +1,21 @@
+{
+  "exp_id": "MF_LLLL1_DOWNSIDE_BETA",
+  "title": "하방 베타 팩터 — 시장 하락일만의 베타로 방어 종목 선별",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:37:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "MF_LLLL1", "family": "multifactor_downside", "n_holdings": 30},
+  "design": {
+    "concept": "Ang, Chen & Xing(2006): 하방 베타(downside beta)가 일반 베타보다 위험을 잘 측정. 시장 하락일만의 공분산으로 계산한 베타가 낮은 종목 선호. DnCorr(L-232)과 유사하나 베타 차원.",
+    "signal": "z(-downside_beta) where downside_beta = cov(r_i, r_m | r_m < 0) / var(r_m | r_m < 0), trailing 120d, t-1 lag",
+    "integration": "MF_A1의 Defense 팩터를 IdioVol+Beta → IdioVol+DownsideBeta로 교체",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "downside_beta = trailing 120d, t-1 lag. 시장 하락일 = BM_Ret < 0."},
+  "overfitting_guard": "하방 베타는 학술 확립. 교체 테스트이므로 A1과 직접 비교.",
+  "l_codes_referenced": ["L-232 (DnCorr gate 최강)", "L-192 (IdioVol40+Beta60 확정)"],
+  "academic_basis": "Ang, Chen & Xing (2006 RFS) 'Downside Risk'"
+}

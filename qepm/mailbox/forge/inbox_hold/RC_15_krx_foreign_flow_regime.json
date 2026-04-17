@@ -1,0 +1,24 @@
+{
+  "exp_id": "RC_15_foreign_flow_regime",
+  "title": "외국인 순매수 국면 — 외국인 대규모 매도 시 방어 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:11:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_15", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "외국인 순매수 = 한국시장 자금 흐름의 핵심. 외국인 대규모 순매도(z<-1.5) → 시장 하락 선행 → 방어 팩터. 순매수(z>1.0) → 추세 팩터.",
+    "signal": "z(KOSPI 외국인 순매수 20d 합계, expanding 252d, t-1)",
+    "allocation": {
+      "heavy_selling": {"trigger": "z < -1.5", "tilt": "Defense 45% + Quality 25% + Cash 30%"},
+      "heavy_buying": {"trigger": "z > 1.0", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "data": "RAWDATA 또는 KRX 외국인 순매수 데이터 (가용 여부 확인)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "외국인 순매수 = t-1 lag (전일 마감 후 공개)"},
+  "l_codes_referenced": ["L-422 (ForeignFlow standalone 실패 — 여기서는 국면 시그널로만 사용)"]
+}

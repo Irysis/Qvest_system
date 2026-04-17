@@ -1,0 +1,9 @@
+{
+  "task": "S1_construction",
+  "strategy_id": "STR_1622_ic_weighted_statistical_blend",
+  "factor_id": ["C19_FY1_Revision_1m", "V14_EBIT_EV", "Q01_GPA", "D01_Low_Vol", "M25_Earnings_Mom_Streak"],
+  "expected_role": "core_alpha",
+  "instructions": "5-factor IC-weighted 통계적 블렌드. 매 리밸런싱 시점 t에서 expanding 12M rolling IC (rank_corr(Z, FwdRet)) 계산 (t-1까지 데이터만). IC_norm = IC / sum(abs(IC)). Shrinkage: w_i = 0.5 * IC_norm_i + 0.5 * (1/5). Floor 5%, cap 40%. Final score = sum(w_i * Z_Score_Aligned_i). EW Top 30, 15bps, 유동성 2e8. IC 계산 시 C1(full-sample 금지) + C14(Usable_Date 기준) 엄격 준수. pit_filter() 경유. Arnott et al. 2019 + DeMiguel et al. 2009.",
+  "s0_record_path": "04_Research/strategies/STR_1622_ic_weighted_statistical_blend/stage_artifacts/s0_record.json",
+  "created": "2026-03-29"
+}

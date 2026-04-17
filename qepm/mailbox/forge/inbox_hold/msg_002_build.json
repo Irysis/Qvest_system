@@ -1,0 +1,28 @@
+{
+  "msg_id": "QLEAD_004",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "build_and_run",
+  "timestamp": "2026-03-21T10:15:00+09:00",
+  "hypothesis": {
+    "strategy_id": "STR_1041",
+    "strategy_type": "weight_optimization",
+    "family": "weight_opt",
+    "objective": "Detoned-NCO 가중 앙상블",
+    "description": "3-sleeve 수익률에 RMT denoise + market eigenvalue 제거(detoning) + NCO 클러스터링 적용. STR_1033(NCO Score 78.1)의 방법론을 앙상블 레벨에 적용.",
+    "paper_reference": "Marcos López de Prado (2020) - Machine Learning for Asset Managers, Ch.4-5",
+    "params": {
+      "sleeves": ["STR_1037_clean_regime_v2", "STR_943_oc_eps_chg", "STR_898_regime_factor_alloc"],
+      "weight_method": "nco_detoned",
+      "dd_brake": {"start": 0.05, "full": 0.35, "min_exp": 0.30},
+      "rebalance": "monthly",
+      "expanding_window": true
+    },
+    "contract": {
+      "hypothesis": "NCO detoned 가중이 EW 대비 SR +0.15 이상 개선",
+      "falsification": "EW 대비 SR 하락이면 기각",
+      "metrics": ["net_cagr", "sharpe0_m_ann", "mdd", "turnover_ann"]
+    }
+  },
+  "instructions": "STR_1038 베이스로, 3-sleeve 월간 수익률 공분산을 expanding window Gerber MAD + RMT denoise + detoning으로 추정. NCO 클러스터링으로 최적 가중 도출. r4_regime_payoff.R로 R4 저장 필수."
+}

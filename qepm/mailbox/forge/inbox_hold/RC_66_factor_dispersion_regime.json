@@ -1,0 +1,13 @@
+{
+  "exp_id": "RC_66_factor_disp",
+  "title": "Factor Return Dispersion Regime — 팩터 수익률 차이 클 때 FM, 작을 때 EW",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:02:00+09:00",
+  "bucket": "exploit", "priority_score": 0.76,
+  "scope": {"strategy_id": "RC_66", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "SSS1(팩터 분산도 타이밍)의 정밀화. 팩터 간 수익률 분산도 z > 0.5 → FM 활성화, <= 0.5 → EW.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "팩터 분산도 trailing 3m, t-1 lag"}
+}

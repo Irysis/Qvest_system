@@ -1,0 +1,14 @@
+{
+  "exp_id": "FM_50_def_mom",
+  "title": "Defense Momentum — Defense 팩터 자체의 모멘텀으로 Defense 가중 조절",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:33:00+09:00",
+  "bucket": "exploit", "priority_score": 0.73,
+  "scope": {"strategy_id": "FM_50", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "Defense 팩터가 최근 강세(SR>0) → Defense 가중 증가. 약세 → 축소. Defense 내부 FM.",
+    "logic": "base = MF_A1 Core. Defense SR_6m > 0 → Defense 40%(+10%). SR <= 0 → Defense 20%(-10%).",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

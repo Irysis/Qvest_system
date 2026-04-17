@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_OOOO1_REGIME_NCO",
+  "title": "Regime-Aware NCO 멀티팩터 — 7팩터 composite + NCO 가중 + 국면 FM",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.86,
+  "scope": {"strategy_id": "MF_OOOO1", "family": "multifactor_nco_regime", "n_holdings": 30},
+  "design": {
+    "concept": "STR_1033(NCO Score 77.9, FF5 t=2.889) + MF_C1(국면FM) + MF_A1(7팩터 composite) 통합. 7팩터 composite로 종목 선정 → NCO로 가중 최적화 → 국면FM으로 팩터 비중 동적 조절. 3대 혁신의 결합.",
+    "logic": [
+      "1. 국면FM(C1)으로 팩터 가중 결정 → w_fm",
+      "2. composite_score = sum(w_fm × z_factor), sector neutral → Top 30",
+      "3. Top 30 종목의 Gerber 상관 + EWMA 공분산 계산 (trailing 120d, t-1)",
+      "4. NCO 가중: Ward.D2 클러스터링 → intra MinVar → inter InverseVar",
+      "5. 최종 가중 = NCO weights, monthly rebal"
+    ],
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R (이미 팩터 FM에 반영)",
+      "vol_target": "expanding 0.25"
+    },
+    "expected": "종목 선정(7F composite) × 가중(NCO) × 국면(FM) = 3축 최적화. STR_1060(87.1) 초과 가능성."
+  },
+  "pit_rules": {"C1": "모든 요소 expanding/trailing, t-1 lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "3축 결합이지만 각각 독립 규칙(FM=자동, NCO=자동, composite=사전가중). 상호 최적화 없음.",
+  "l_codes_referenced": ["L-488 (NCO 아키텍처 유망)", "L-479 (가중최적화 최강)", "L-200 (CondWeight IR 0.524)"]
+}

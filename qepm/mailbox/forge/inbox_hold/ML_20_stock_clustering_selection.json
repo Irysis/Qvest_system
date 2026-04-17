@@ -1,0 +1,14 @@
+{
+  "exp_id": "ML_20_stock_cluster",
+  "title": "Stock Clustering Selection — K-means로 종목 클러스터링 후 클러스터별 Top 선정",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:14:00+09:00",
+  "bucket": "explore", "priority_score": 0.69,
+  "scope": {"strategy_id": "ML_20", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "종목을 7팩터 z-score 기반 k-means 클러스터링(k=6) → 각 클러스터에서 composite score Top 5 = 총 30. 클러스터 다양성 확보.",
+    "training": "매월 클러스터 재계산 (t-1 데이터)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "클러스터링 t-1 데이터만"}
+}

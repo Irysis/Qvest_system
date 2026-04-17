@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_UU1_MV_FACTOR",
+  "title": "Mean-Variance 팩터 최적화 — 팩터 기대수익률/공분산으로 최적 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:12:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {
+    "strategy_id": "MF_UU1",
+    "family": "multifactor_mv",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Markowitz MV 최적화를 종목이 아닌 팩터 수익률에 적용. 7팩터의 기대수익률(trailing 6m mean) + 공분산(trailing 6m)으로 최적 팩터 가중 결정. 종목 레벨 MV는 추정 오류 크지만 팩터 레벨(7차원)에서는 안정적.",
+    "logic": [
+      "1. 7 팩터 monthly return 시계열 (t-1까지)",
+      "2. μ = trailing 6m 평균 수익률, Σ = trailing 6m 공분산",
+      "3. Ledoit-Wolf shrinkage on Σ",
+      "4. QP: max SR s.t. sum(w)=1, w>=0.05, w<=0.40",
+      "5. composite_score = sum(w_mv × z_factor), sector neutral → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "advantage": "7×7 공분산 추정은 30×30 대비 압도적으로 안정적. 팩터 간 상관 반영 → 분산 극대화."
+  },
+  "pit_rules": {"C1": "μ, Σ = trailing 6m (t-1까지). Expanding min 24m warm-up.", "C12": "Full-sample μ,Σ 금지."},
+  "overfitting_guard": "Ledoit-Wolf shrinkage 필수. 7×7 = 저차원 → 추정 오류 낮음. OOS retention >= 0.5.",
+  "academic_basis": "Markowitz (1952); Ledoit & Wolf (2004)"
+}

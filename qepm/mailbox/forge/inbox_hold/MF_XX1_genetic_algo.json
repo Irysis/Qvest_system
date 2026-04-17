@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_XX1_GENETIC_ALGO",
+  "title": "유전 알고리즘 팩터 가중 — Expanding OOS fitness로 진화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:21:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.68,
+  "scope": {"strategy_id": "MF_XX1", "family": "multifactor_ml", "n_holdings": 30},
+  "design": {
+    "concept": "유전 알고리즘으로 팩터 가중 벡터를 진화. 유전자 = 7개 가중(sum=1). Fitness = expanding OOS SR. 세대마다 OOS 성과 좋은 가중 벡터 생존.",
+    "ga_params": {
+      "population": 50,
+      "generations": 100,
+      "crossover_rate": 0.7,
+      "mutation_rate": 0.1,
+      "selection": "tournament (size=5)",
+      "fitness": "OOS SR (train: 1~t-24m, validation: t-24~t-12, test: t-12~t)"
+    },
+    "reoptimization": "연간 (매년 1월 GA 재실행)",
+    "constraints": "w_i >= 0.05, w_i <= 0.40, sum(w) = 1",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "GA fitness = OOS SR. Train/Val/Test 엄격 분리.", "C12": "Full-sample GA 금지."},
+  "overfitting_guard": "⚠️ GA는 과적합 고위험. OOS retention < 0.5 시 즉시 폐기. Population 50 + Generations 100 = 충분히 낮은 복잡도.",
+  "r_packages": ["GA"],
+  "academic_basis": "Holland (1975) Genetic Algorithms; Beasley, Bull & Martin (1993)"
+}

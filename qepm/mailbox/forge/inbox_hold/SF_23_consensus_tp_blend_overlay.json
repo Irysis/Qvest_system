@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_23_cons_tp_overlay",
+  "title": "Consensus + TP Only — 애널리스트 정보 2축 + BRK overlay",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:24:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "SF_23", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "Defense 없이 순수 애널리스트 정보만: Consensus(SUE+EPS_chg+FPER) + TPGap. 정보 기반 alpha의 순수 측정.",
+    "signal": "0.60*z(consensus) + 0.40*z(TPGap+TPMom), sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 15/30 + VT 0.25",
+    "comparison": "EV_20(Cons only) vs SF_23(Cons+TP) → TP 추가의 marginal 효과. SF_15(Def only) vs SF_23(Info only) → 방어 vs 정보 alpha 비교."
+  },
+  "pit_rules": {"C1": "consensus + TP t-1 lag (7d window)"}
+}

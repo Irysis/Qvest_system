@@ -1,0 +1,32 @@
+{
+  "exp_id": "MF_DD1_SEASONAL",
+  "title": "계절성 팩터 로테이션 — 1월 효과/실적 시즌/세금 매도 활용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:41:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.69,
+  "scope": {
+    "strategy_id": "MF_DD1",
+    "family": "multifactor_seasonal",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "팩터 프리미엄의 계절성: 1월 소형주 효과(Size), 실적 시즌 SUE 강화(4~5월/7~8월/10~11월), 12월 세금 매도 후 1월 반등(Reversal). 월별 고정 팩터 틸트.",
+    "monthly_preset": {
+      "jan": {"tilt": "momentum 30% + reversal 25%", "rationale": "January effect + tax-loss recovery"},
+      "feb_mar": {"tilt": "defense 30% + consensus 25%", "rationale": "연간 실적 발표 대기"},
+      "apr_may": {"tilt": "consensus 35% + quality 20%", "rationale": "연간 실적 반영 + 배당 시즌"},
+      "jun": {"tilt": "baseline MF_A1", "rationale": "중간 기간"},
+      "jul_aug": {"tilt": "consensus 35% + momentum 20%", "rationale": "반기 실적 시즌"},
+      "sep": {"tilt": "defense 35% + quality 20%", "rationale": "역사적 약세월"},
+      "oct_nov": {"tilt": "consensus 30% + momentum 20%", "rationale": "3분기 실적 시즌"},
+      "dec": {"tilt": "value 25% + reversal 20%", "rationale": "세금 매도 + 연말 리밸런싱"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "월별 preset은 사전 정의. 데이터 기반 최적화 아님."},
+  "overfitting_guard": "⚠️ 계절성 preset은 경험적 관찰 기반 → 한국시장 실증 필요. Full-sample 계절성 분석으로 preset 도출하면 C1 위반. 글로벌 문헌 기반으로만.",
+  "academic_basis": "Rozeff & Kinney (1976) January effect; Heston & Sadka (2008) 'Seasonality in the Cross-Section of Stock Returns'"
+}

@@ -1,0 +1,28 @@
+{
+  "exp_id": "RC_27_cross_asset_mom",
+  "title": "Cross-Asset Momentum — S&P500/원유/금 추세로 한국 팩터 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:11:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "RC_27", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "글로벌 자산 추세가 한국 팩터 유효성에 영향. S&P500 상승 → 글로벌 risk-on → 한국 Momentum. 금 상승 → risk-off → Defense.",
+    "signals": {
+      "sp500_mom": "z(SPY trailing 3m return, expanding, t-1)",
+      "gold_mom": "z(GLD trailing 3m return, expanding, t-1)",
+      "oil_mom": "z(WTI trailing 3m return, expanding, t-1)"
+    },
+    "composite": "risk_appetite = sp500_mom + oil_mom - gold_mom",
+    "allocation": {
+      "risk_on": {"trigger": "risk_appetite > 1.0", "tilt": "Momentum 25% + Consensus 25% + Others 50%"},
+      "risk_off": {"trigger": "risk_appetite < -1.0", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "data": "yfinance (.cache/ 수집 완료)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "글로벌 자산 = 전일 종가, t-1 lag"}
+}

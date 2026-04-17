@@ -1,0 +1,14 @@
+{
+  "exp_id": "EN_57_ml_vote",
+  "title": "ML Model Vote — XGB+RF+NN 3모델 종목 선정 투표",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:32:00+09:00",
+  "bucket": "exploit", "priority_score": 0.76,
+  "scope": {"strategy_id": "EN_57", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "SF_47(XGB) + SF_48(RF) + SF_49(NN) 3모델의 Top 30 투표. 다수 모델 동의 종목 = high conviction.",
+    "logic": "3모델 각 Top 30 → vote_count per stock → Top 30 by vote → EW",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "3모델 모두 expanding walk-forward (t-1)"}
+}

@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_28_opt_size",
+  "title": "[진단] 최적 앙상블 크기 — 1~10 전략 순차 추가 시 SR 변화 곡선",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:32:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_28", "family": "ensemble"},
+  "design": {
+    "concept": "EV_23(최적 팩터수)의 앙상블 버전. 전략 1개 → 2개 → ... → 10개 순차 추가. SR 한계 효용이 0이 되는 지점 = 최적 앙상블 크기.",
+    "logic": [
+      "1. 전략을 SR 순으로 정렬",
+      "2. 1개부터 시작, 하나씩 추가",
+      "3. 각 크기에서 EW score 합산 → Top 30 → SR/MDD 측정",
+      "4. NStrategy vs SR 곡선, NStrategy vs MDD 곡선 도출"
+    ],
+    "candidates_ordered": ["EV_07", "EV_06", "MF_NNNN1", "MF_A1", "EV_05", "SF_01", "SF_17", "EV_22", "EV_26", "SF_09"]
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag"},
+  "dependency": "후보 전략들 백테스트 완료 후"
+}

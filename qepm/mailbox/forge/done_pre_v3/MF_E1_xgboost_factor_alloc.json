@@ -1,0 +1,65 @@
+{
+  "exp_id": "MF_E1_XGBOOST",
+  "title": "ML 기반 팩터 배분 — XGBoost로 국면+팩터 특성 → 최적 가중 예측",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:38:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.78,
+  "scope": {
+    "strategy_id": "MF_E1",
+    "family": "multifactor_ml",
+    "n_holdings": 30
+  },
+  "design": {
+    "model": "XGBoost (xgboost R package)",
+    "target": "다음 달 각 팩터의 초과수익률 (factor return - BM return)",
+    "features": [
+      "MRS (regime_engine_daily.R, t-1)",
+      "VRP (VIX level, t-1)",
+      "각 팩터의 trailing 1m/3m/6m SR (t-1)",
+      "각 팩터 쌍의 trailing 60d 상관 변화율 (t-1)",
+      "시장 수익률 trailing 1m/3m (t-1)",
+      "횡단면 분산도 (cross-sectional std, t-1)",
+      "거래대금 집중도 (top10 volume share, t-1)"
+    ],
+    "training": {
+      "method": "expanding window walk-forward",
+      "initial_train": "최소 60개월",
+      "step": "1개월씩 확장",
+      "validation": "마지막 12개월을 validation set으로 — hyperparameter tuning",
+      "test": "다음 1개월 = OOS prediction",
+      "k_fold": "금지 (시계열). TimeSeriesSplit만 허용."
+    },
+    "prediction_to_weight": {
+      "method": "예측 수익률 > 0인 팩터만 활성화. 가중 = softmax(predicted_return / temperature)",
+      "temperature": 1.0,
+      "min_weight": 0.05,
+      "max_weight": 0.40
+    },
+    "hyperparameters": {
+      "nrounds": "early_stopping (patience 20)",
+      "max_depth": 3,
+      "eta": 0.05,
+      "subsample": 0.8,
+      "colsample_bytree": 0.8,
+      "min_child_weight": 5,
+      "note": "시계열 CV로만 tuning. Full-sample grid search 금지."
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "학습 데이터 = 1~(t-1)월만. t월 이후 절대 불가.",
+    "C2": "피처 계산 시 t-1까지 데이터만.",
+    "C12": "Hyperparameter = 시계열 CV로만. full-sample grid search 금지."
+  },
+  "overfitting_guard": {
+    "rule1": "OOS retention (IS SR / OOS SR) >= 0.5 필수. 미달 시 자동 폐기.",
+    "rule2": "IS-OOS gap > 50% 시 자동 폐기.",
+    "rule3": "feature importance 분석 → 과도하게 특정 feature 의존 시 경고.",
+    "rule4": "Walk-forward 20+ steps로 통계적 유의성 확인."
+  },
+  "r_packages": ["xgboost"],
+  "academic_basis": "Gu, Kelly & Xiu (2020 RFS) 'Empirical Asset Pricing via Machine Learning'; Panda et al. (2024 arXiv:2404.18017) 'Deep Learning for Factor Timing'"
+}

@@ -1,0 +1,22 @@
+{
+  "exp_id": "SF_09_3f_def_cons_val",
+  "title": "3팩터 Core — Defense + Consensus + Value (최소 다양성 확보)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:53:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "SF_09", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "NNNN1(2F)과 A1(7F) 중간: 검증된 3팩터만 사용. Defense(방어) + Consensus(정보) + Value(가치) = 3축 독립 alpha. Quality/Momentum은 IC 불안정하므로 제외.",
+    "signal": "0.40 * z(defense) + 0.35 * z(consensus) + 0.25 * z(value), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "모든 시그널 t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-286 (defense 유지)", "L-415 (consensus 독립)", "L-516 (Value IC 0.045)"]
+}

@@ -1,0 +1,13 @@
+{
+  "exp_id": "FM_49_sector_fm",
+  "title": "Sector-Level Factor Momentum — 섹터별로 다른 팩터 FM 적용",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:23:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "FM_49", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_29(섹터별 lookback)의 확장: 섹터별로 어떤 팩터가 최근 유효한지 FM으로 판단 → 섹터별 다른 팩터 가중.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "섹터별 FM t-1 lag"}
+}

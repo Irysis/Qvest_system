@@ -1,0 +1,48 @@
+{
+  "exp_id": "MF_P1_KOREAN_MACRO",
+  "title": "한국 매크로 팩터 — ECOS 금리/환율 시그널 직접 팩터화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:11:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {
+    "strategy_id": "MF_P1",
+    "family": "multifactor_macro",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "L-454: 한국 내부 데이터(cor=-0.460) > 글로벌 FRED(cor=-0.137). ECOS 일별 데이터(KRW/USD, 국고채/회사채)를 종목 레벨 팩터로 변환.",
+    "macro_factors": {
+      "fx_beta": {
+        "signal": "각 종목의 trailing 60d KRW/USD 수익률 대비 베타",
+        "interpretation": "높은 fx_beta = 환율 상승 시 주가 상승 (수출주). 낮은 fx_beta = 내수주.",
+        "usage": "z(-fx_beta) when KRW weakening, z(fx_beta) when KRW strengthening"
+      },
+      "credit_sensitivity": {
+        "signal": "각 종목의 trailing 60d 회사채-국고채 스프레드 변화 대비 베타",
+        "interpretation": "높은 credit_beta = 신용 스트레스에 취약. 낮은 = 방어적.",
+        "usage": "z(-credit_beta) 항상 적용 (낮은 신용 민감도 = 안정적)"
+      },
+      "term_structure_tilt": {
+        "signal": "국고채 10Y-3Y 스프레드 변화에 대한 종목 베타",
+        "interpretation": "장단기 금리차 확대 시 성장주 유리, 축소 시 가치주 유리",
+        "usage": "조건부: 스프레드 확대 → z(term_beta), 축소 → z(-term_beta)"
+      }
+    },
+    "integration": "macro_factor를 기존 MF_A1에 추가 (기존 5팩터 + macro 3팩터 = 8팩터)",
+    "macro_weight": 0.15,
+    "existing_weight": 0.85,
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "data_source": "ECOS API (이미 수집 완료 — .cache/ 내 일별 KRW/USD, 국고채, 회사채)"
+  },
+  "pit_rules": {
+    "C1": "macro beta = trailing 60d rolling regression, expanding minimum 120d",
+    "C2": "t-1까지 macro 데이터만",
+    "C11": "ECOS 데이터 시차: 일별 데이터는 당일 발표이나 t-1 lag 적용"
+  },
+  "overfitting_guard": "Macro factor 3종은 경제적 직관에 기반. Data-driven 선택 아님. OOS retention >= 0.5.",
+  "l_codes_referenced": ["L-454 (한국 내부 > 글로벌 FRED)", "L-450 (C11 데이터 시간축)"],
+  "academic_basis": "Lustig, Roussanov & Verdelhan (2011) 'Common Risk Factors in Currency Markets'; Bai & Green (2020)"
+}

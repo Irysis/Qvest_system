@@ -1,0 +1,14 @@
+{
+  "exp_id": "RC_40_5axis_continuous",
+  "title": "5축 연속 국면 — MRS+Disp+Vol+DD+Breadth 연속 z-score 합산",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:23:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_40", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "crs5": "CRS5 = 0.25*z(MRS) + 0.20*z(Dispersion) + 0.20*z(Vol) + 0.20*z(portfolio_dd) + 0.15*z(-Breadth), all t-1",
+    "allocation": "w_defense = 0.15 + 0.30*sigmoid(CRS5). sigmoid(CRS5) = 부드러운 S-curve 전환.",
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "5축 모두 t-1 lag, expanding z-score"}
+}

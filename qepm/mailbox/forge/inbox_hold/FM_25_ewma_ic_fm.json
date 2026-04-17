@@ -1,0 +1,18 @@
+{
+  "exp_id": "FM_25_ewma_ic",
+  "title": "EWMA IC FM — IC의 EWMA(λ=0.9)로 최근 IC에 높은 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:23:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_25", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. 각 팩터의 월별 IC 시계열 (t-1)",
+      "2. IC_ewma = 0.9*IC_ewma[t-1] + 0.1*IC[t-1]",
+      "3. w_i = max(0, IC_ewma_i) / sum(max(0, IC_ewma))",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC EWMA = t-1까지 업데이트"}
+}

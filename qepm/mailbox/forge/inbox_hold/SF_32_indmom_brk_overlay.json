@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_32_indmom_brk",
+  "title": "1F IndMom + BRK Overlay — 업종모멘텀 단일 + 검증 overlay",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:04:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "SF_32", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "z(IndMom_12m_1m), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R MRS 15/30",
+      "vol_target": "expanding 0.25"
+    },
+    "1f_overlay_complete": "SF_15(Def) → EV_20(Cons) → SF_32(IndMom) → SF_01(Quality) → SF_02(Value) → SF_06(SUE) = 6대 alpha 1F + BRK overlay"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

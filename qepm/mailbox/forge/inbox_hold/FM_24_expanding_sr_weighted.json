@@ -1,0 +1,18 @@
+{
+  "exp_id": "FM_24_expanding_sr",
+  "title": "Expanding SR FM — 전체 기간 누적 SR로 가중 (FM_02의 SR 버전)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:13:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "FM_24", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_02(expanding IC)의 SR 버전. 전체 기간 누적 SR로 가중 → 장기 검증된 팩터에 안정 가중.",
+    "logic": [
+      "1. 각 팩터의 expanding SR (2001~t-1 전체)",
+      "2. w_i = max(0, SR_i) / sum(max(0, SR))",
+      "3. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding SR = 1~(t-1) 전체"}
+}

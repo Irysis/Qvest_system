@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_09_rank_fusion",
+  "title": "Score-Rank Fusion — z-score 앙상블 + rank 앙상블 결합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:22:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "EN_09", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "z-score 합산은 극단값 민감, rank 합산은 강건. 둘을 50/50 결합 → 극단값 강건성 + z-score 정밀도 양쪽 이점.",
+    "logic": [
+      "1. 7F z-score composite → z_composite per stock",
+      "2. 7F rank composite → rank_composite per stock (Y1 방식)",
+      "3. fusion_score = 0.50 * z(z_composite) + 0.50 * z(rank_composite)",
+      "4. Top 30 by fusion_score → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "z-score + rank 모두 t-1 lag 횡단면 기준"},
+  "overfitting_guard": "50/50 fusion = 사전 정의. 최적화 없음."
+}

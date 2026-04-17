@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_K1_SECTOR_FACTOR",
+  "title": "섹터-팩터 로테이션 — 섹터별 최적 팩터로 종목 선정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:03:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {
+    "strategy_id": "MF_K1",
+    "family": "multifactor_sector",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "팩터 유효성은 섹터마다 다름. IT/반도체에서는 Momentum이, 금융에서는 Value가, 의료에서는 Quality가 유효할 수 있음. 각 섹터에서 해당 섹터 최적 팩터로 종목 선정.",
+    "logic": [
+      "1. 각 섹터별 × 각 팩터별 trailing 12m IC 계산 (expanding, t-1)",
+      "2. 섹터별 IC 최강 팩터 2개 선정",
+      "3. 해당 섹터 내에서 선정된 2 팩터의 z-score composite로 종목 순위",
+      "4. 각 섹터에서 proportional N 선정 (시총 비중 기준, 총 30종목)",
+      "5. 유동성 필터 후 최종 포트폴리오"
+    ],
+    "fallback": "섹터 내 IC 유의미한 팩터 없으면 → Defense(IdioVol+Beta) 기본 적용",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "섹터별 IC = expanding window (t-1). 섹터별 full-sample IC로 팩터 선정 금지.",
+    "C2": "t-1까지 IC로 이번 달 섹터별 팩터 결정"
+  },
+  "overfitting_guard": "섹터 × 팩터 조합 수가 많아 과적합 위험 높음. Minimum IC threshold(0.02) 미달 섹터는 fallback 적용. OOS retention >= 0.5.",
+  "risk_notes": "섹터별 팩터 선정이 빈번히 변하면 turnover 증가. 안정성을 위해 12m lookback 사용."
+}

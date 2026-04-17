@@ -1,0 +1,56 @@
+{
+  "judge_session": "2026-03-21",
+  "batch": 4,
+
+  "results": [
+    {
+      "strategy": "STR_1048_stock_level_ensemble",
+      "verdict": "PASS",
+      "grade": "B",
+      "score": 43.2,
+      "gate0": "PASS (prev_month MRS lag, CLEAN)",
+      "gate1": "PASS (n=30, score blend)",
+      "key": "v2 대비 열위. 통합 권장."
+    },
+    {
+      "strategy": "STR_1047_4sleeve_regime",
+      "verdict": "FAIL",
+      "grade": "F",
+      "score": 76.0,
+      "gate0": "FAIL (STR_1035 C11 오염 전파)",
+      "gate1": "FAIL (종목~52, TO 3702%, N_stocks=30 하드코딩)",
+      "key": "FF5 t=3.004 유망이나 3중 결격. 오염 정리 후 재구현 가치."
+    },
+    {
+      "strategy": "STR_1040_gerber_rp_ensemble",
+      "verdict": "FAIL",
+      "grade": "F",
+      "score": 71.5,
+      "gate0": "FAIL (STR_898/943 DD Brake same-day C2/C9)",
+      "gate1": "FAIL (수익률 블렌드 종목~50-70)",
+      "key": "Gerber RP 가중은 건전. 슬리브 DD fix + 30종목 전환 필요."
+    }
+  ],
+
+  "critical_discovery": {
+    "issue": "STR_898, STR_943 DD Brake에 t-1 lag 없음",
+    "impact": "이 두 전략을 슬리브로 사용하는 모든 앙상블 오염: STR_1039, STR_1040, STR_1042, STR_1043, STR_1047",
+    "estimated_sr_inflation": "25-50% (L-441, Session 37-38 발견과 동일 패턴)",
+    "action_required": [
+      "STR_898 Gate 0 검증 (DD Brake C2 확인)",
+      "STR_943 Gate 0 검증 (DD Brake C2 확인)",
+      "두 전략 DD Brake t-1 lag fix 후 sim_result.rds 재생성",
+      "의존 앙상블 전략 전부 재실행"
+    ]
+  },
+
+  "session_cumulative": {
+    "total_validated": 14,
+    "pass": 4,
+    "fail": 7,
+    "flag": 3,
+    "pass_list": ["STR_1036(A)", "STR_1034(B)", "STR_1048_v1(B)", "STR_1048_v2(B)"],
+    "fail_list": ["STR_1030(C11)", "STR_1033(C11)", "STR_1035(C11)", "STR_1037(중복)", "STR_1042(C11+종목)", "STR_1047(C11+종목+TO)", "STR_1040(C2+종목)"],
+    "flag_list": ["STR_1039(종목)", "STR_1043(종목)", "STR_1031(C11 flag)", "STR_1032(C11 flag)"]
+  }
+}

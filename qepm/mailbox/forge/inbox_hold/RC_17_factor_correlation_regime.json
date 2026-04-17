@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_17_factor_corr_regime",
+  "title": "팩터 상관 국면 — 팩터 간 상관 급등 시 분산 효과 소멸 → 집중 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:31:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_17", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "위기 시 팩터 간 상관 급등 → 분산 효과 소멸. 팩터 상관 자체를 국면 시그널로 사용. 상관 높으면 최강 1~2팩터에 집중, 낮으면 다팩터 분산.",
+    "signal": "avg_factor_corr = mean(|pairwise corr(7 factor returns)|, trailing 60d, t-1)",
+    "allocation": {
+      "high_corr": {"trigger": "z(avg_corr) > 1.0", "tilt": "Defense 50% + Consensus 30% + Others 20% (2팩터 집중)"},
+      "normal_corr": {"trigger": "z in [-0.5, 1.0]", "tilt": "MF_A1 Core (7팩터 분산)"},
+      "low_corr": {"trigger": "z < -0.5", "tilt": "7F EW (A2) — 분산 효과 최대"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "factor corr = trailing 60d, z = expanding 252d, t-1 lag"},
+  "academic_basis": "Kritzman et al. (2011) Absorption Ratio; Roncalli (2014) correlation regime"
+}

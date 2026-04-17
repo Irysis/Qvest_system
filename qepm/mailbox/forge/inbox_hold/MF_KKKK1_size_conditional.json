@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_KKKK1_SIZE_COND",
+  "title": "시총 조건부 팩터 — 대형주/중소형주에서 다른 팩터 적용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:36:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "MF_KKKK1", "family": "multifactor_size_cond", "n_holdings": 30},
+  "design": {
+    "concept": "팩터 유효성은 시총 구간에 따라 다름. 대형주에서는 Consensus/Momentum이 우세(정보 효율성↑), 중소형주에서는 Defense/Value가 우세(비효율성↑).",
+    "logic": [
+      "1. 유니버스를 시총 기준 2분할: 상위 50%(대형) vs 하위 50%(중소형)",
+      "2. 대형주 풀: z(Consensus) + z(Momentum) + z(TPGap) composite → Top 15",
+      "3. 중소형주 풀: z(Defense) + z(Quality) + z(Value) composite → Top 15",
+      "4. 합산 30종목, EW, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "시총 기준 = t-1 Close × 발행주식수. 팩터 t-1 lag."},
+  "overfitting_guard": "대형/중소형 분할은 50% = 중앙값. 팩터 할당은 경제적 직관.",
+  "l_codes_referenced": ["L-111 (Size Neutralization CAGR -4.2%p — 여기서는 Size 제거가 아닌 조건부 적용)"]
+}

@@ -1,0 +1,51 @@
+{
+  "exp_id": "ALPHA_04",
+  "title": "Trended Momentum: R² 추세명확도 기반 개별종목 모멘텀 (Industry Momentum과 완전 독립)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T18:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.92,
+  "scope": {
+    "family": "trended_momentum",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "개별종목 가격의 6개월 선형회귀 R²(추세 명확도, Trend Clarity)로 필터링한 모멘텀이 기존 Industry Momentum과 독립적 alpha를 제공하며, standalone ICIR >= 0.15를 달성한다. 추세가 명확한(R² 상위) 종목의 과거 수익률이 미래를 더 잘 예측한다.",
+    "mechanism": "Cai, Li & Keasey (2024, SSRN 4740445): 가격 추세의 R²(linearity)가 높은 종목에서 모멘텀 수익이 집중. 12.68% annualized (최고 TC 그룹) vs 표준 모멘텀. 메커니즘: 명확한 추세는 정보의 점진적 반영(gradual information diffusion)을 반영 → underreaction이 체계적. 노이즈가 많은(R² 낮은) 종목은 모멘텀이 반전(reversal) 경향. 기존 Industry Momentum은 섹터 레벨 → 개별종목 추세와 정보 차원이 다름. 한국시장 개인투자자 비중 높아 정보 반영 지연 → trended momentum 강화 가능",
+    "falsification": "Alpha Lab IC < 0.02 → 기각. IndMom과 상관 > 0.6 → 독립성 부족 기각. R² 필터 없는 raw momentum 대비 개선 없으면 기각",
+    "academic_basis": "Cai, Li & Keasey (2024) 'Trended Momentum' SSRN 4740445. Moskowitz & Grinblatt (1999) 'Do Industries Explain Momentum?' JF — industry vs individual stock momentum. Jegadeesh & Titman (1993) original momentum. Da, Gurun & Warachka (2014) 'Frog in the Pan' — gradual vs sudden information"
+  },
+  "data_requirements": {
+    "source": "RAWDATA — Close 가격",
+    "fields": ["Ticker", "Date", "Close", "Ret"],
+    "pit_safety": "t-1 시점 가격만 사용. 당일 Close 사용 불가(C2). 시그널 = lag(1) 적용",
+    "computation": {
+      "trend_clarity": "6개월(126일) 일별 종가의 log에 대해 lm(log(Close) ~ Day_index) 적합 → R² 추출",
+      "momentum_signal": "과거 12개월 수익률(skip 1 month) = 표준 12-1 momentum",
+      "combined": "Trended Momentum = momentum_signal × I(R² > median) 또는 z(momentum) + z(R²) 결합",
+      "rolling": "expanding median으로 R² threshold 결정 (full-sample median 사용 금지 = C1)"
+    }
+  },
+  "implementation": {
+    "step1": "RAWDATA에서 종목별 rolling 126d 선형회귀 R² 계산 (trend_clarity)",
+    "step2": "종목별 12-1 momentum 계산",
+    "step3": "Alpha Lab Stage 0: (a) trend_clarity 단독 IC/ICIR, (b) trended_momentum (momentum × high_R²) IC/ICIR, (c) IndMom과 상관",
+    "step4_if_pass": "Full backtest: z(trended_mom) scoring, sector-neutral, N=30, monthly, BZ 50/25",
+    "step5_if_pass": "Sleeve 편입 테스트: Defense + IndMom + Consensus + TrendedMom 4-sleeve"
+  },
+  "pit_checklist": ["C1: expanding median for R² threshold, rolling 126d for R²", "C2: t-1 lag on signal", "C5: overlay t-1", "C11: Close 가격 당일 사용 가능 확인 (O → 다음날부터)"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15 필수", "Long-only"],
+  "metrics_target": {
+    "ic": ">0.03",
+    "icir": ">0.15",
+    "corr_with_indmom": "<0.5",
+    "corr_with_defense": "<0.3",
+    "standalone_sharpe": ">0.6"
+  },
+  "l_codes": ["L-428 (4th alpha 4연패)", "L-395 (가격 전통팩터 3rd alpha 한계)", "L-415 (3rd alpha 확정)"],
+  "risk_notes": "한국시장에서 개별종목 momentum은 역사적으로 약세(reversal 우세). 그러나 R² 필터가 reversal noise를 제거하는 것이 이 가설의 핵심. L-395의 '가격 전통팩터 한계'와 다른 접근: 모멘텀 자체가 아닌 모멘텀의 질(추세 명확도)을 사용. 한국 특수성: 테마주/급등주(R² 낮음)를 자동 배제하는 부수적 효과 기대. 실패해도 R² 지표 자체가 defense gate로 활용 가능"
+}

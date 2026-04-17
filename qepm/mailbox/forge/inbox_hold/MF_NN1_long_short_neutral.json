@@ -1,0 +1,28 @@
+{
+  "exp_id": "MF_NN1_SECTOR_NEUTRAL_STRICT",
+  "title": "엄격 섹터중립 멀티팩터 — 각 섹터 내에서 Top/Bottom 선별",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {
+    "strategy_id": "MF_NN1",
+    "family": "multifactor_construction",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "기존 sector neutral은 z-score에서 섹터 평균 차감. NN1은 더 엄격: 각 섹터에서 정확히 비중 비례 종목수 선정. IT 30%, 금융 15%면 IT 9종목, 금융 5종목.",
+    "logic": [
+      "1. KOSPI200 섹터 비중 계산 (t-1, 시총 기준)",
+      "2. 30종목 × 섹터비중 = 섹터별 종목수 할당",
+      "3. 각 섹터 내에서 MF_A1 composite score Top N 선정",
+      "4. EW within sector, 월간 리밸런싱"
+    ],
+    "advantage": "섹터 쏠림 완전 제거 → beta 중립에 가까움 → IR(초과수익/추적오차) 극대화",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "섹터비중 = t-1 시총 기준"},
+  "overfitting_guard": "섹터 할당은 BM 비중 기반. 최적화 없음."
+}

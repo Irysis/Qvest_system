@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_III1_MIXED_FREQ",
+  "title": "혼합 빈도 리밸런싱 — Defense 분기 + Momentum 2주 + Others 월간",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:42:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "MF_III1", "family": "multifactor_mixed_freq", "n_holdings": 30},
+  "design": {
+    "concept": "O1(Factor Decay)의 실전 버전. 각 팩터의 signal decay에 맞는 리밸런싱 빈도 적용. 빠른 팩터는 자주, 느린 팩터는 드물게 → turnover 최적화.",
+    "sleeves": {
+      "fast": {"factors": "momentum + reversal", "rebal": "2주", "n": 10, "rationale": "단기 시그널 decay 빠름"},
+      "medium": {"factors": "consensus + tp_gap + indmom", "rebal": "월간", "n": 10, "rationale": "중기 시그널"},
+      "slow": {"factors": "defense + quality + value", "rebal": "분기", "n": 10, "rationale": "장기 안정 시그널"}
+    },
+    "total_n": 30,
+    "scoring": "각 sleeve 독립 scoring → Top N per sleeve",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "각 sleeve 리밸런싱 시점에서 t-1 lag"},
+  "overfitting_guard": "Sleeve 분류는 경제적 직관(시그널 속도). 빈도는 사전 정의."
+}

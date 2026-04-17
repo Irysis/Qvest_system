@@ -1,0 +1,35 @@
+# 에이전트 간 통신 포맷 표준
+
+deliverable_formats:
+  concise:
+    description: "~30% 토큰, 에이전트 간 기본 통신용"
+    fields: [task_id, agent, verdict, grade, key_metrics, fail_reasons, next_action, artifact_paths]
+
+  detailed:
+    description: "~100% 토큰, 최종 브리핑/사람 검토용"
+    fields: "전체 stress test, gate별 상세, 민감도 분석 포함"
+
+  stats_only:
+    description: "~15% 토큰, Memory 승격용"
+    fields: [sharpe0_m_ann, mdd, es99_m, ff3_alpha, ff3_t, verdict, grade]
+
+pipeline_communication:
+  - { from: strategist, to: auditor, format: detailed, reason: "전체 심사 필요" }
+  - { from: auditor, to: blender, format: concise, reason: "판정 + 핵심 수치" }
+  - { from: auditor, to: manager, format: concise, reason: "보고용" }
+  - { from: auditor, to: memory, format: stats_only, reason: "승격용 수치" }
+  - { from: blender, to: auditor, format: detailed, reason: "후보 검증 근거" }
+  - { from: tower, to: manager, format: concise, reason: "경보/상태 보고" }
+
+response_standard:
+  file: "artifacts/{task_id}/response.json"
+  required_fields:
+    - task_id
+    - agent
+    - timestamp (ISO8601+KST)
+    - state (done/failed/rejected)
+    - result_summary (verdict, grade, key_metrics, fail_reasons)
+    - deliverables (파일명, path, hash, format)
+    - memory_promotion_candidates
+    - next_actions (type, description, target_family, expected_gain_axis)
+    - fail_guidance (gate_failed, specific_issue, actionable_fix, estimated_difficulty)

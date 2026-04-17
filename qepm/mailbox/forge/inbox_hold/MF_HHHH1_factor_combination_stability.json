@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_HHHH1_STABILITY_WEIGHTED",
+  "title": "안정성 가중 — IC 안정성(ICIR)이 높은 팩터에 가중 확대",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:28:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "MF_HHHH1", "family": "multifactor_stability", "n_holdings": 30},
+  "design": {
+    "concept": "IC 절대값이 크더라도 월별 변동이 크면 불안정. ICIR(IC/std(IC)) = IC의 안정성. 높은 ICIR 팩터에 가중 → 안정적 alpha 수확.",
+    "logic": [
+      "1. 각 팩터의 trailing 24m ICIR 계산 (t-1까지, expanding min 24m)",
+      "2. ICIR > 0인 팩터만 활성화",
+      "3. w_i = ICIR_i / sum(ICIR_positive)",
+      "4. composite → Top 30, EW, monthly rebal"
+    ],
+    "expected_ranking": "Defense ICIR ~0.15 (안정), Consensus ICIR ~0.20 (높음), Momentum ICIR ~0.08 (불안정)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "ICIR = expanding 24m (t-1)"},
+  "overfitting_guard": "ICIR 가중은 자동 계산. 최적화 없음. 안정성 기반 = 과적합 방지."
+}

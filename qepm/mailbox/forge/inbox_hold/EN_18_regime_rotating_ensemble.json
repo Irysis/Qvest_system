@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_18_regime_rotating",
+  "title": "국면 회전 앙상블 — 국면별 최적 전략 1개씩 자동 선택+회전",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_18", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_02(국면별 앙상블)의 정밀화: 각 국면에서 OOS SR 최강 전략 1개만 선택. 국면 전환 시 전략도 전환.",
+    "logic": [
+      "1. 후보 전략 pool 5~7개",
+      "2. 각 국면(risk_on/elevated/crisis) 기간의 OOS SR 계산",
+      "3. 각 국면 최강 1개 전략 선정 (연간 재선정)",
+      "4. 현재 국면 → 해당 국면 최강 전략의 Top 30 채택"
+    ],
+    "overlay": "선택된 전략의 overlay 그대로 사용"
+  },
+  "pit_rules": {"C1": "국면별 OOS SR = expanding. 선정 = 연간."},
+  "overfitting_guard": "국면별 1개 선택 = selection bias. Walk-forward 연간 재선정."
+}

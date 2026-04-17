@@ -1,0 +1,79 @@
+{
+  "exp_id": "MF_02",
+  "category": "MF",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T10:30:00+09:00",
+  "bucket": "Explore",
+  "priority": 2,
+  "trigger": "families.json: q_factor_profitability 0 attempts. Investment family completely untouched.",
+
+  "scope": {
+    "family": "q_factor_profitability",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "rebalance": "monthly + BZ 50/25",
+    "n_stocks": 30,
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "Hou-Xue-Zhang(2015) q-factor 모델의 핵심 2팩터(수익성+투자)를 한국시장에 적용하면, 수익성 높고 투자 보수적인 종목이 유의미한 alpha를 생성한다.",
+    "mechanism": "Investment CAPM: 기업의 기대수익률은 수익성(ROE)에 비례하고 투자율(I/A)에 반비례. 수익성 높은 기업 = 할인율 높아야 유지 → 고수익. 투자 보수적 기업 = 현재 프로젝트 NPV 높아 추가 투자 불필요 → 현금흐름 풍부. FF5의 RMW+CMA와 개념 유사하나 q-factor가 anomaly 설명력 우월 (Hou et al. 2015, 2020).",
+    "academic_basis": [
+      "Hou, Xue, Zhang (2015, RFS 28:650-705) — q-factor model: investment + profitability = cross-section 핵심",
+      "Hou, Mo, Xue, Zhang (2021, RoF 25:1-41) — q5 augmented model: expected growth factor 추가",
+      "Novy-Marx (2013, JFE 108:1-28) — gross profitability predicts cross-section. Q02_ROE 근거",
+      "L-541: 268팩터 독립축 10-15개. Investment/Profitability가 독립축일 가능성 높음",
+      "L-532: ICIR ranking ≠ portfolio alpha. 이 실험으로 투자팩터 marginal value 확인"
+    ],
+    "falsification": "IF 2F composite(Q02+IN06) SR < 0.3 AND OOS retention < 0.5 THEN q-factor 한국시장 무효. IF FF5a alpha 음수 THEN 기존 팩터로 설명 가능, 독립 alpha 아님."
+  },
+
+  "factors": {
+    "primary": ["Q02_ROE", "IN06_Investment_to_Assets"],
+    "blend_method": "EW_composite_z_score_aligned",
+    "direction_note": "Z_Score_Aligned 자동 방향 결정 (C13). Q02=higher_better(수익성↑), IN06=lower_better(보수적 투자) 예상. IC 부호로 최종 결정.",
+    "stage_0_required": true,
+    "stage_0_threshold": "|ICIR| >= 0.15 AND |t-stat| >= 1.5"
+  },
+
+  "construction": {
+    "method": "2F_EW_composite",
+    "scoring": "(Z_Score_Aligned(Q02) + Z_Score_Aligned(IN06)) / 2",
+    "n_stocks": 30,
+    "sector_neutral": true,
+    "size_neutral": false,
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "overlay": "none (baseline first, overlay는 Grade B+ 시 추가)"
+  },
+
+  "pit_checklist": {
+    "C1_no_full_sample": "expanding/rolling only",
+    "C2_no_same_day": "t-1 overlay if added later",
+    "C4_fundamental_lag": "quarterly 45d lag (Q02: ROE quarterly, IN06: Investment quarterly)",
+    "C13_z_score_aligned": "Z_Score_Aligned only, no manual NEGATE",
+    "C14_usable_date": "IC computed with Usable_Date <= sig_date",
+    "C15_load_month_factors": "load_month_factors() API only"
+  },
+
+  "execution": {
+    "preflight_check": true,
+    "run_all_pattern": true,
+    "estimated_time": "2-3h (Stage 0 IC screening + full backtest)",
+    "stage_0_first": true
+  },
+
+  "risk_notes": [
+    "L-549: EW 2F composite OOS 붕괴 가능 → OOS retention 필수 체크",
+    "L-402: Quality standalone(GPA) FF5a 음수 → ROE도 유사할 수 있음. 하지만 Investment와 결합 시 다를 수 있음",
+    "한국시장 특성: 재벌 과잉투자 vs 보수적 기업 = 투자팩터 유효할 수 있는 구조적 근거"
+  ],
+
+  "l_codes_referenced": ["L-531", "L-532", "L-541", "L-549", "L-402"],
+
+  "decision": {
+    "grade": null,
+    "verdict": null,
+    "next_actions": null
+  }
+}

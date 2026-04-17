@@ -1,0 +1,39 @@
+{
+  "exp_id": "MF_S1_FM_CRASH_PROTECT",
+  "title": "팩터모멘텀 크래시 방어 — FM 급반전 감지 시 EW fallback",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:21:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {
+    "strategy_id": "MF_S1",
+    "family": "multifactor_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "FM(MF_B1)은 추세 추종이므로 momentum crash에 취약. Daniel & Moskowitz(2016): momentum 전략은 bear market 이후 급반등 시 crush. 방어 메커니즘: FM 신호 급반전 감지 시 EW로 fallback.",
+    "base": "MF_B1 (6m trailing SR 가중)",
+    "crash_detection": {
+      "method": "trailing 1m 팩터 수익률의 rank 변화 감지",
+      "trigger": "지난 달 Top 2 팩터가 이번 달 Bottom 2로 추락 → FM crash signal",
+      "alternative_trigger": "MRS >= 25 (crisis 국면) → FM 비활성화",
+      "action_on_trigger": "모든 팩터 EW(1/7)로 전환. Crisis 해제 후 2개월 grace period 후 FM 재활성화."
+    },
+    "implementation": [
+      "1. MF_B1과 동일한 FM 가중 계산",
+      "2. crash_signal 체크: rank_change >= 4 (top2→bottom2) OR MRS >= 25",
+      "3. crash_signal=TRUE → w_i = 1/7 (EW fallback)",
+      "4. crash_signal=FALSE + grace_period 종료 → FM 가중 적용",
+      "5. grace_period = crash 해제 후 2개월"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "FM 계산 + crash detection 모두 t-1 lag",
+    "C2": "rank 변화 = t-1 vs t-2 비교"
+  },
+  "overfitting_guard": "Crash trigger(rank 4+ 변화)는 경제적 직관. Grace period 2개월은 momentum crash 회복 기간 문헌 기반.",
+  "academic_basis": "Daniel & Moskowitz (2016 JFE) 'Momentum Crashes'; Barroso & Santa-Clara (2015 JFE) 'Momentum has its moments'"
+}

@@ -1,0 +1,35 @@
+{
+  "exp_id": "EVO_1036_943_score_blend",
+  "title": "Evolution: STR_1036 + STR_943 스코어 블렌드 → 독립 alpha 조합",
+  "from": "judge",
+  "to": "forge",
+  "cmd": "run_evolution",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "EXPLOIT",
+  "priority_score": 5,
+  "parent_strategy": "STR_1036",
+  "parent_grade": "A",
+  "parent_score": 80.9,
+  "parent_metrics": {
+    "cagr": 20.22, "sharpe": 1.284, "mdd": 23.82
+  },
+  "evolution_type": "ensemble_score_blend",
+  "scope": {
+    "change_description": "STR_1036의 5-sleeve 팩터 스코어 + STR_943의 EPS Change 스코어를 종목 레벨에서 합산. 6th sleeve로 EPS Change 추가. Gerber HRP 가중 유지. n=30.",
+    "expected_effect": "상관 0.638인 독립 alpha 조합 → SR 1.3→1.5, MDD 유지 또는 개선. L-499 근거.",
+    "files_to_modify": ["run_all.R: Phase 1에 6th sleeve(EPS Change) 추가, Phase 2 Gerber HRP에 6개 sleeve 투입"],
+    "base_code": "STR_1036_daily_regime/run_all.R 복사 + STR_943_oc_eps_chg/factor_engine.R의 EPS 로직 통합"
+  },
+  "hypothesis": "STR_1036과 STR_943의 상관 0.638(L-498). 독립 alpha 조합 시 vol 감소 효과로 SR 개선. 수익률 블렌드(L-484 위반) 아닌 스코어 블렌드(L-486)로 30종목 준수.",
+  "constraints": {
+    "n_holdings_max": 30,
+    "pit_required": true,
+    "must_beat_parent": "SR > 1.35 (두 parent 중 높은 쪽 이상)"
+  },
+  "metrics_target": {
+    "primary": "Sharpe > 1.4",
+    "secondary": "CAGR > 18%, MDD < 22%"
+  },
+  "l_codes": ["L-484 (수익률 블렌드 금지)", "L-486 (스코어 블렌드 권장)", "L-497 (1036 vol 병목)", "L-499 (1036+943 앙상블 경로)"],
+  "risk_notes": "6 sleeve × 5 stocks = 30주. 슬리브 수 증가 시 개별 슬리브당 종목 축소 필요. EPS Change 슬리브가 Defense와 겹치면 분산 효과 소멸(L-153~156)."
+}

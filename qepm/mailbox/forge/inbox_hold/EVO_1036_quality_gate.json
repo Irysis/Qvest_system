@@ -1,0 +1,38 @@
+{
+  "exp_id": "EVO_1036_QUALITY_GATE",
+  "title": "STR_1036 + DART Quality Gate (PiotroskiF<3 / IsZombie 제거) — 각 sleeve 선별 전 적용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T11:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.75,
+  "scope": {
+    "family": "str1036_evolution",
+    "base": "STR_1036 (5-sleeve, Score 80.9)"
+  },
+  "hypothesis": {
+    "statement": "STR_1036의 5개 sleeve 각각에서 종목 선별 전 DART quality gate(PiotroskiF<3 제거 + IsZombie 제거)를 적용하면, 극단적 저질 종목 배제로 MDD 개선 또는 Sharpe 소폭 개선.",
+    "mechanism": "L-285: 'gate(worst 제거)는 유효, scoring에 투입하면 신호 희석'. Scout IC 분석에서 PiotroskiF IC=+0.017(t=2.75) 확인 — 방향 유효하나 Top-N scoring으로는 BM 하회. Gate(bottom 제거)는 다른 메커니즘: 파산 위험 종목 제거 → tail risk 감소 → MDD 개선."
+  },
+  "implementation": {
+    "modification": "run_all.R의 각 Phase 1a~1e에서 snap 필터링 직후 DART gate 추가",
+    "code_insertion_point": "각 sleeve의 snap <- snap[!is.na(AvgTV20) & AvgTV20 >= LIQ_THRESHOLD] 다음 줄",
+    "gate_code": [
+      "# DART Quality Gate",
+      "fd <- arrow::read_parquet('.cache/fundamental_dart.parquet')",
+      "fd <- as.data.table(fd)[, .(Ticker, fdate=as.Date(Factor_Date), PiotroskiF, IsZombie)]",
+      "setkey(fd, Ticker, fdate)",
+      "snap_gated <- fd[snap, roll=TRUE, on=.(Ticker, fdate=Date)]",
+      "snap_gated <- snap_gated[is.na(IsZombie) | IsZombie == FALSE]",
+      "snap_gated <- snap_gated[is.na(PiotroskiF) | PiotroskiF >= 3]",
+      "snap <- snap_gated[, names(snap), with=FALSE]"
+    ],
+    "note": "DART 데이터가 없는 종목은 gate 통과(is.na 허용) — coverage 부족 시 유니버스 축소 방지"
+  },
+  "metrics_target": {
+    "sharpe_improvement": ">= 0 (최소 악화 없음)",
+    "mdd_improvement": "< STR_1036 MDD (23.82%)"
+  },
+  "risk_notes": "Scout 단순 gate 테스트(Defense-only)에서 -0.67%p CAGR 악화 관측. 그러나 그것은 1-sleeve 단순 테스트. 5-sleeve 구조에서는 각 sleeve 유니버스가 다르므로 효과가 다를 수 있음. DART coverage가 2015+ 이므로 초기 백테스트 구간에서는 gate 미작동."
+}

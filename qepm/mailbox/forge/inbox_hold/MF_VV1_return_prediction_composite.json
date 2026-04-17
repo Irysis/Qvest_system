@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_VV1_RETURN_PRED",
+  "title": "수익률 예측 Composite — 각 팩터의 예측 수익률로 종목 직접 순위",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:13:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {
+    "strategy_id": "MF_VV1",
+    "family": "multifactor_prediction",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "z-score 합산이 아닌, 각 팩터에서 기대 수익률을 직접 예측 → 합산. Fama-MacBeth 횡단면 회귀 계수로 팩터→수익률 매핑.",
+    "logic": [
+      "1. 매월 횡단면 회귀: Ret[t] = α + β₁*z_defense[t-1] + β₂*z_cons[t-1] + ... + ε",
+      "2. β 계수 = expanding window FMB (t-1까지 데이터만)",
+      "3. 예측: E[Ret[t+1]] = α̂ + Σ(β̂_i × z_i[t])",
+      "4. E[Ret] 상위 30종목 선정 → EW, monthly rebal"
+    ],
+    "difference_from_z_sum": "z-score 합산은 모든 팩터에 동일 가중. FMB β는 실제 수익률 설명력 반영 → 유효 팩터에 자동 가중.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FMB β = expanding window (t-1까지). Full-sample regression 금지.", "C2": "z_i[t] → E[Ret[t+1]] 예측."},
+  "overfitting_guard": "FMB β가 불안정할 수 있음. Minimum 60개월 warm-up. β shrinkage (toward mean β) 적용.",
+  "academic_basis": "Fama & MacBeth (1973); Gu et al. (2020 RFS)"
+}

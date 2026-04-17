@@ -1,0 +1,29 @@
+{
+  "exp_id": "EVO_1033_MDD_REDUCTION",
+  "title": "STR_1033 NCO MDD 24.8% → <22% 감소: Short DD 제거 + DD Brake 완화 적용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T21:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {
+    "base": "STR_1033 NCO (Score 77.9, SR 1.358, CAGR 17.8%, MDD 24.8%)",
+    "target": "MDD < 22% while SR >= 1.30"
+  },
+  "hypothesis": {
+    "statement": "STR_1060(Score 87.1, MDD 24.8%)에서 확인된 DD Brake 최적화 교훈(L-507/508)을 STR_1033 NCO에 적용하면 MDD 감소 + Score 개선. 구체적으로: (1) Short DD Brake 제거(L-508), (2) DD start 8% 완화(L-507), (3) MRS binary 12/25(L-506).",
+    "mechanism": "L-507: DD Brake 공격적 완화가 CAGR/Score에 극적 효과. L-508: Short DD 제거 = Score 86→87.1. STR_1033은 NCO 가중이라 기존 EW 기반 STR_1060과 overlay 반응이 다를 수 있으나, DD/MRS overlay는 가중 독립. NCO의 우수한 횡단면 분산(FF5 t=2.89) + DD/MRS 최적화 = 상승 여지.",
+    "falsification": "적용 후 SR < 1.30 → 기각. MDD > 24.8%(기존) → 기각"
+  },
+  "implementation": {
+    "variants": [
+      {"id": "A", "change": "Short DD 제거만", "expected": "Score +2~5"},
+      {"id": "B", "change": "Short DD 제거 + DD start 8%", "expected": "Score +5~10"},
+      {"id": "C", "change": "Short DD 제거 + DD 8% + MRS 12/25", "expected": "Score +5~12"}
+    ],
+    "base_code": "STR_1033 run_all.R의 DD/MRS 파라미터만 변경. NCO 가중 로직 유지"
+  },
+  "l_codes_referenced": ["L-505 (DD 6% 최적)", "L-506 (MRS 12/25)", "L-507 (DD 8% Score 86)", "L-508 (Short DD 제거 Score 87.1)", "L-501 (NCO FF5 t=2.89)"],
+  "risk_notes": "NCO 가중은 공분산 추정에 의존 → DD/MRS overlay 변경 시 가중 행동과 상호작용 가능. 3개 variant 병렬 실행 권장"
+}

@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_KK1_FACTOR_PAIR",
+  "title": "팩터 페어 전략 — 상관 낮은 2팩터 쌍 최적 조합 탐색",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {
+    "strategy_id": "MF_KK1",
+    "family": "multifactor_pair",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "7팩터 전부가 아닌, 상관 최저 2~3팩터 쌍만으로 포트폴리오 구성. 팩터 수 줄이면 noise 감소 + 상관 최저 쌍은 분산 극대화.",
+    "logic": [
+      "1. 7C2 = 21개 팩터 쌍 각각의 trailing 120d 상관 계산 (t-1)",
+      "2. 상관 최저 3개 쌍 선정",
+      "3. 각 쌍의 2팩터 EW composite → Top 30",
+      "4. 3개 포트폴리오의 score 합산(종목레벨) → 최종 Top 30",
+      "5. 월간 리밸런싱"
+    ],
+    "expected_pairs": [
+      "Defense × Momentum (방어 vs 공격)",
+      "Consensus × Value (성장 vs 가치)",
+      "IndMom × Quality (추세 vs 건전성)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "상관 = trailing 120d, t-1 lag. 팩터 쌍 선정은 자동(최저 상관)."},
+  "overfitting_guard": "팩터 쌍 선정은 상관 기반 자동. Full-sample 최적 쌍 선택 금지."
+}

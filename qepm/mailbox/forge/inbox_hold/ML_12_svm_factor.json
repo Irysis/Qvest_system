@@ -1,0 +1,15 @@
+{
+  "exp_id": "ML_12_svm",
+  "title": "SVM Regression — Support Vector Machine 팩터 수익률 예측",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:03:00+09:00",
+  "bucket": "explore", "priority_score": 0.67,
+  "scope": {"strategy_id": "ML_12", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "SVR은 margin 내 데이터 무시 → noise-robust. RBF kernel.",
+    "training": "expanding walk-forward",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding (t-1)"},
+  "r_packages": ["e1071"]
+}

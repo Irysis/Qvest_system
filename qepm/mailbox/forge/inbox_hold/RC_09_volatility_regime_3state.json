@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_09_vol_regime_3state",
+  "title": "변동성 국면 3-state — Realized Vol z-score로 Low/Mid/High 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_09", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(매크로) 대신 시장 자체 Realized Vol로 3-state 국면. Vol은 관측 즉시 사용 가능(FRED 시차 없음). 저변동→Momentum/IndMom, 고변동→Defense/Quality.",
+    "signal": "z(KOSPI200 trailing 20d realized vol, expanding 252d, t-1)",
+    "states": {
+      "low_vol": {"trigger": "z < -0.5", "tilt": "Momentum 30% + IndMom 25% + Consensus 20% + Others 25%"},
+      "mid_vol": {"trigger": "z in [-0.5, 1.0]", "tilt": "MF_A1 Core"},
+      "high_vol": {"trigger": "z > 1.0", "tilt": "Defense 40% + Quality 25% + Consensus 20% + Others 15%"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "RV = trailing 20d, z = expanding 252d, t-1 lag"},
+  "academic_basis": "Moreira & Muir (2017 JF)"
+}

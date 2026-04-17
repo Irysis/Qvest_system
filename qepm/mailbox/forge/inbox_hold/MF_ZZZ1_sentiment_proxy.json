@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_ZZZ1_SENTIMENT_PROXY",
+  "title": "센티먼트 프록시 — 거래량 서프라이즈 + 신용거래 비율로 과열/공포 측정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:20:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "MF_ZZZ1", "family": "multifactor_sentiment", "n_holdings": 30},
+  "design": {
+    "concept": "Baker & Wurgler(2006): 투자자 심리가 팩터 프리미엄에 영향. NLP 센티먼트 대신 시장 데이터 프록시(거래량 서프라이즈, 신용거래 비율)로 심리 측정. 과열 시 Defense 강화, 공포 시 Momentum 강화.",
+    "sentiment_proxies": {
+      "volume_surprise": "z(시장 전체 거래대금 / 20d MA) — 비정상 거래량 = 과열/공포",
+      "margin_ratio": "신용거래 잔고 / 시총 (KRX 데이터, 가용 시)",
+      "ipo_volume": "최근 3m IPO 건수 (과열 시 IPO 급증)"
+    },
+    "composite_sentiment": "z(volume_surprise) + z(margin_ratio) + z(ipo_count), z-scored",
+    "allocation": {
+      "euphoria": {"trigger": "sentiment > 1.0", "tilt": "Defense 40% + Quality 25% + Value 20% + Others 15%"},
+      "fear": {"trigger": "sentiment < -1.0", "tilt": "Momentum 30% + Consensus 25% + IndMom 20% + Others 25%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 프록시 t-1 lag. Volume = RAWDATA Vol 컬럼."},
+  "overfitting_guard": "센티먼트 프록시는 Baker&Wurgler(2006) 기반. Threshold ±1σ는 표준.",
+  "academic_basis": "Baker & Wurgler (2006 JF) 'Investor Sentiment and the Cross-Section of Stock Returns'; Stambaugh, Yu & Yuan (2012 JFE)"
+}

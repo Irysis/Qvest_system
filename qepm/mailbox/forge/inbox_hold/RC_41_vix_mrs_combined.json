@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_41_vix_mrs",
+  "title": "VIX × MRS 교차 — 글로벌 공포 × 매크로 위험 2축",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:32:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_41", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "states": {
+      "both_high": "VIX z>1 AND MRS>=20 → Defense 50% + Cash 30% + Quality 20%",
+      "vix_high_only": "VIX z>1 AND MRS<20 → Defense 35% + Others 65%",
+      "mrs_high_only": "VIX z<=1 AND MRS>=20 → Defense 30% + Others 70%",
+      "both_low": "MF_A1 Core"
+    },
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "VIX + MRS 모두 t-1 lag"}
+}

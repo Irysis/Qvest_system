@@ -1,0 +1,15 @@
+{
+  "exp_id": "RC_58_mrs_thresh_sweep",
+  "title": "[진단] MRS Threshold Sweep — Low(10/12/15/18) × High(22/25/28/30) = 16조합",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:53:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.83,
+  "scope": {"strategy_id": "RC_58", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS soft ramp의 Low/High threshold 최적화. 4×4=16 조합.",
+    "grid": {"mrs_low": [10, 12, 15, 18], "mrs_high": [22, 25, 28, 30]},
+    "base": "7F NCO QGate DD_med VT 0.25",
+    "output": "16건 SR/MDD → Pareto frontier"
+  },
+  "pit_rules": {"C1": "t-1 lag", "C12": "최적 threshold → walk-forward 검증 필수"}
+}

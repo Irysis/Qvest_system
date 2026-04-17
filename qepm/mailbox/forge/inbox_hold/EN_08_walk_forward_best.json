@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_08_wf_best",
+  "title": "Walk-Forward Best — 매년 직전 12m OOS 최강 전략 선택",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:13:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_08", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "U1(토너먼트)의 정밀화. 매년 1월: 직전 12m OOS SR 최강 전략 1개를 선택하여 해당 연도 포트폴리오로 사용. 연간 전략 교체.",
+    "candidates": ["MF_A1", "MF_NNNN1", "EV_03", "EV_05", "EV_06", "SF_01", "SF_03"],
+    "selection": {
+      "method": "직전 12m OOS SR 최강",
+      "frequency": "연간 (매년 1월)",
+      "tie": "SR 차이 < 0.05면 Calmar 높은 전략 선택"
+    },
+    "overlay": "선택된 전략의 overlay 그대로 사용",
+    "dependency": "후보 전략들 백테스트 완료 후"
+  },
+  "pit_rules": {"C1": "OOS = 직전 12m. 선택은 연간.", "C12": "Full-sample best 선택 금지."},
+  "overfitting_guard": "7 후보 중 1개 선택 = selection bias 위험. 연간 재선정으로 제한."
+}

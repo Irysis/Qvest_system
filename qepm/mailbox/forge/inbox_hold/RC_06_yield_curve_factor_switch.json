@@ -1,0 +1,24 @@
+{
+  "exp_id": "RC_06_yield_curve_switch",
+  "title": "수익률 곡선 기반 팩터 전환 — 장단기 금리차로 경기 국면 판단",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:41:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "RC_06", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "국고채 10Y-3Y 스프레드 = 경기 선행 지표. 스프레드 양수(정상) → 성장 팩터, 역전(음수) → 방어 팩터. MRS와 독립적인 경기 사이클 시그널.",
+    "signal": "term_spread = 국고채10Y - 국고채3Y (ECOS, t-1)",
+    "allocation": {
+      "normal_curve": {"trigger": "term_spread > 0.3%", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "flat_curve": {"trigger": "|term_spread| <= 0.3%", "tilt": "MF_A1 Core"},
+      "inverted_curve": {"trigger": "term_spread < -0.1%", "tilt": "Defense 40% + Quality 25% + Value 15% + Others 20%"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "term_spread = ECOS 당일 발표, t-1 lag", "C11": "ECOS 시차 확인"},
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)"],
+  "academic_basis": "Estrella & Mishkin (1998) 'Predicting US Recessions: Financial Variables as Leading Indicators'"
+}

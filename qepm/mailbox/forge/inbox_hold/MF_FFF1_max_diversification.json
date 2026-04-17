@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_FFF1_MAX_DIV",
+  "title": "Maximum Diversification 멀티팩터 — 팩터 score + 최대분산 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:34:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "MF_FFF1", "family": "multifactor_construction", "n_holdings": 30},
+  "design": {
+    "concept": "Choueifaty & Coignard (2008) Most Diversified Portfolio(MDP). MF_A1 Top 30 종목에 대해 diversification ratio 최대화 가중. w'σ / sqrt(w'Σw) 최대화.",
+    "logic": [
+      "1. MF_A1 composite → Top 30 선정",
+      "2. trailing 120d Gerber 상관행렬 + EWMA 공분산 계산 (t-1)",
+      "3. QP: max w'σ / sqrt(w'Σw) s.t. sum(w)=1, w>=0, w<=0.10",
+      "4. 최적 가중 = MDP 가중 → 종목별 적용"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "expected": "EW 대비 분산 효과 극대화. 상관 낮은 종목에 자동 과배분."
+  },
+  "pit_rules": {"C1": "상관/공분산 = trailing 120d (t-1)"},
+  "overfitting_guard": "MDP는 공분산 기반 사전 정의 알고리즘. 최적화는 있으나 목적함수가 고정(분산비율).",
+  "r_packages": ["quadprog"],
+  "academic_basis": "Choueifaty & Coignard (2008) 'Toward Maximum Diversification' JPM"
+}

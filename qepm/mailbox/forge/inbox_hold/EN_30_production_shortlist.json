@@ -1,0 +1,22 @@
+{
+  "exp_id": "EN_30_prod_shortlist",
+  "title": "Production Shortlist — 전체 결과에서 MDD<25% + OOS>0.6 + SR>1.2 필터",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:52:00+09:00",
+  "bucket": "production",
+  "priority_score": 0.95,
+  "scope": {"strategy_id": "EN_30", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "전체 백테스트 결과에서 3축 필터: MDD<25%, OOS retention>0.6, SR>1.2. 통과 전략들의 EW score 합산. 최종 프로덕션 포트폴리오.",
+    "filters": {
+      "mdd": "< 25% (프로젝트 목표)",
+      "oos_retention": "> 0.6 (과적합 배제)",
+      "sr": "> 1.2 (최소 성과 기준)"
+    },
+    "blend": "필터 통과 전략들 EW score 합산 → Top 30",
+    "dependency": "모든 전략 백테스트 완료 후"
+  },
+  "pit_rules": {"C1": "OOS = walk-forward 기반"}
+}

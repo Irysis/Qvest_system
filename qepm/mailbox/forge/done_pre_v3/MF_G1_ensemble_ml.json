@@ -1,0 +1,35 @@
+{
+  "exp_id": "MF_G1_ENSEMBLE_ML",
+  "title": "Ensemble ML — XGBoost + RF + Linear 앙상블 → 예측 분산 감소",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:41:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {
+    "strategy_id": "MF_G1",
+    "family": "multifactor_ml",
+    "n_holdings": 30
+  },
+  "design": {
+    "ensemble": {
+      "model1": "XGBoost (MF_E1과 동일 설정)",
+      "model2": "Random Forest (MF_E2와 동일 설정)",
+      "model3": "Elastic Net (glmnet R package, alpha=0.5)",
+      "aggregation": "simple average of predicted factor returns (각 1/3 가중)"
+    },
+    "rationale": "개별 ML 모델은 과적합 위험. 3-model 앙상블은 예측 분산 감소 (Breiman 1996 bagging 원리). Linear model이 기준선 역할 → ML 모델이 과적합 시 linear가 앵커.",
+    "training": "expanding window walk-forward (각 모델 독립 학습, 예측만 앙상블)",
+    "prediction_to_weight": "앙상블 예측 수익률 → softmax weight",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": "MF_E1과 동일",
+  "overfitting_guard": {
+    "rule1": "앙상블 예측 SR vs 개별 모델 SR 비교 — 앙상블이 열위면 overfitting signal.",
+    "rule2": "Linear model이 ML 모델 대비 OOS 우위면 → ML 과적합 확정 → 폐기.",
+    "rule3": "OOS retention >= 0.5 필수."
+  },
+  "r_packages": ["xgboost", "randomForest", "glmnet"],
+  "academic_basis": "Breiman (1996) 'Bagging Predictors'; Gu et al. (2020 RFS)"
+}

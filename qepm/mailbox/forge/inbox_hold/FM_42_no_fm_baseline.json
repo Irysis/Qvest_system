@@ -1,0 +1,15 @@
+{
+  "exp_id": "FM_42_no_fm",
+  "title": "[진단] No FM Baseline — 7F EW 고정가중 (FM 없음, MF_A1 = 대조군)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:04:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.79,
+  "scope": {"strategy_id": "FM_42", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM 없이 7F EW 고정가중. 모든 FM 전략의 대조군. MF_A1과 동일하되 MRS12/25 통일.",
+    "signal": "MF_A1 7F EW composite",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "comparison": "FM_42(no FM) vs 모든 FM 전략 → FM의 순수 기여분"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

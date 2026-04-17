@@ -1,0 +1,14 @@
+{
+  "exp_id": "ML_21_rfe",
+  "title": "Recursive Feature Elimination — 자동 팩터 선택 후 XGBoost",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:34:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "ML_21", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "RFE로 11개 피처 중 중요도 하위 순차 제거 → 최적 피처 부분집합 결정 → XGBoost 재학습.",
+    "training": "expanding walk-forward, 연간 RFE 재실행",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "RFE = expanding OOS 기반", "C12": "full-sample RFE 금지"}
+}

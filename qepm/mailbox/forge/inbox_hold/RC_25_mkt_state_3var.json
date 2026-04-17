@@ -1,0 +1,27 @@
+{
+  "exp_id": "RC_25_mkt_state_3var",
+  "title": "시장 상태 3변수 — Return+Vol+Breadth 동시 참조 팩터 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:51:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_25", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(매크로) 대신 시장 자체 3변수: (1) BM trailing 3m return, (2) 20d RV, (3) Market breadth. 순수 내생 시그널.",
+    "signal": {
+      "mkt_return": "z(BM 3m trailing return, expanding, t-1)",
+      "mkt_vol": "z(BM 20d RV, expanding, t-1)",
+      "breadth": "z(20d MA 위 종목비율, expanding, t-1)"
+    },
+    "composite_state": "state = mkt_return - mkt_vol + breadth",
+    "allocation": {
+      "bullish": {"trigger": "state > 1.0", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "bearish": {"trigger": "state < -1.0", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "3변수 모두 t-1 lag, expanding z-score"}
+}

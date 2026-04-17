@@ -1,0 +1,40 @@
+{
+  "exp_id": "ALPHA_02",
+  "title": "Option-Implied Vol Skew (VKOSPI) → 종목별 위험 프리미엄 Alpha",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.80,
+  "scope": {
+    "family": "option_implied",
+    "universe": "KOSPI200 개별주식 옵션 보유 종목 (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "KOSPI200 개별주식옵션의 implied volatility - realized volatility 차이(VRP)가 양의 종목은 위험프리미엄 수취 가능 → 횡단면 alpha. 기존 Defense/Consensus/IndMom과 완전 독립적 정보(옵션 시장 참가자 기대)",
+    "mechanism": "Bollerslev et al. (2009): VRP(IV - RV)가 equity risk premium 예측. Bali & Hovakimian (2009): 개별 주식의 call-put implied vol spread가 수익률 예측. 한국은 KOSPI200 개별주식옵션 시장이 존재 → 종목별 IV skew/VRP 계산 가능. Cao & Han (2013): IV skew가 횡단면 수익률 예측 — 옵션 시장의 정보우위",
+    "falsification": "KOSPI200 옵션 데이터 보유 종목이 < 50개이면 유니버스 부족 → 기각. Alpha Lab IC < 0.02 → 기각. VRP 시그널과 IdioVol 상관 > 0.6이면 독립성 부족 → 기각",
+    "academic_basis": "Bollerslev, Tauchen & Zhou (2009) 'Expected Stock Returns and Variance Risk Premia' RFS. Bali & Hovakimian (2009) 'Volatility Spreads and Expected Stock Returns' MS. Cao & Han (2013) 'Cross Section of Option Returns and Individual Stock Volatility' JF"
+  },
+  "data_requirements": {
+    "source": "KRX 개별주식옵션 데이터 또는 yfinance(한국 옵션 미지원 가능)",
+    "fields": ["종목코드", "만기일", "행사가", "IV(implied vol)", "옵션유형(call/put)"],
+    "alternative": "VKOSPI 일별 데이터(yfinance ^KV11) → 시장 레벨 VRP만 가능. 종목별 IV는 KRX 직접 수집 필요",
+    "availability_check": "KRX 개별주식옵션 IV 데이터 접근 가능 여부 먼저 확인"
+  },
+  "implementation": {
+    "step1": "데이터 가용성 확인: KRX 개별주식옵션 IV 수집 가능 여부",
+    "step2_if_available": "종목별 VRP = ATM IV - 60d RV. IV skew = OTM put IV - ATM IV",
+    "step2_if_unavailable": "VKOSPI 시장레벨 VRP → regime overlay로 전용 (종목별 alpha 불가)",
+    "step3": "Alpha Lab Stage 0: IC/ICIR 검증",
+    "step4": "PASS 시 standalone + sleeve 편입"
+  },
+  "pit_checklist": ["C1: rolling IV/RV", "C2: t-1 lag", "C11: 옵션 결제일/만기일 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15 필수"],
+  "metrics_target": {"ic": ">0.02", "icir": ">0.15"},
+  "l_codes": ["L-343 (VRP overlay = zero impact — VKOSPI 데이터 갭)", "L-444 (VRP Layer 1 기여 +10점)"],
+  "risk_notes": "L-343: VRP regime은 VKOSPI 데이터 갭으로 실패. 종목별 옵션 IV는 다른 차원이나 데이터 접근이 최대 장벽. KRX 개별주식옵션 종목수가 제한적(~50개?)이면 유니버스 축소 심각. 데이터 확인 먼저"
+}

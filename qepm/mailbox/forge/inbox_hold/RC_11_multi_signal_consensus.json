@@ -1,0 +1,30 @@
+{
+  "exp_id": "RC_11_multi_signal_cons",
+  "title": "다중 시그널 국면 합의 — MRS+VRP+AR+CUSUM+Vol 5축 투표",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:31:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "RC_11", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_02(3축)의 확장: 5개 독립 국면 시그널의 다수결 투표. 3/5 이상 위기 신호 시만 방어 모드. 더 보수적 = 더 적은 false alarm.",
+    "axes": {
+      "mrs": "MRS[t-1] >= 20",
+      "vrp": "z(VRP)[t-1] > 1.5",
+      "ar": "z(Absorption Ratio)[t-1] > 1.5",
+      "cusum": "CUSUM[t-1] > 15",
+      "vol": "z(RV 20d)[t-1] > 1.0"
+    },
+    "decision": {
+      "0_1_signal": "MF_A1 Core",
+      "2_signals": "Defense 30% + MF_A1 Core 70%",
+      "3_signals": "Defense 40% + Quality 25% + Others 35%",
+      "4_5_signals": "Defense 50% + Quality 30% + Cash 20%"
+    },
+    "overlay": "VT 0.25 (DD Brake 불필요 — 5축이 관리)"
+  },
+  "pit_rules": {"C1": "5축 모두 t-1 lag"},
+  "l_codes_referenced": ["L-444 (VRP)", "L-445 (AR)", "L-446 (CUSUM)"]
+}

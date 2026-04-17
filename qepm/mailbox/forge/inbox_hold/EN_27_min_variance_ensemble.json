@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_27_minvar_ensemble",
+  "title": "MinVar 전략 앙상블 — 전략 공분산 최소화 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:23:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "EN_27", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_17(Max SR)의 반대: 전략 앙상블의 변동성 최소화. 안정성 극대화.",
+    "logic": [
+      "1. 5전략 trailing 12m 공분산 Σ (Ledoit-Wolf shrinkage)",
+      "2. QP: min w'Σw s.t. sum(w)=1, w>=0.10",
+      "3. score × w_minvar 합산 → Top 30"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Σ = trailing 12m, t-1 lag"},
+  "r_packages": ["quadprog"]
+}

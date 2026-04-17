@@ -1,0 +1,14 @@
+{
+  "exp_id": "EN_58_trad_ml_blend",
+  "title": "Traditional + ML 블렌드 — MF_A1(전통) 50% + SF_47(ML) 50% score 합산",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:42:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "EN_58", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "전통적 팩터 scoring(MF_A1)과 ML 종목 선정(SF_47) 50/50 블렌드. 두 패러다임의 합의.",
+    "blend": "0.50 * z(MF_A1_score) + 0.50 * z(SF_47_predicted_return) → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모두 t-1 lag"}
+}

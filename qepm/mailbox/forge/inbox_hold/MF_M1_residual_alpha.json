@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_M1_RESIDUAL_ALPHA",
+  "title": "잔차 Alpha 추출 — FF5 잔차에서 팩터 프리미엄 제거 후 순수 종목 alpha",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:05:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.77,
+  "scope": {
+    "strategy_id": "MF_M1",
+    "family": "multifactor_residual",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "FF5 팩터 모델로 각 종목의 수익률을 설명한 후, 잔차(residual alpha)가 양수인 종목 = 팩터로 설명 안 되는 순수 alpha. 이 잔차를 시그널로 사용.",
+    "logic": [
+      "1. 매월 말: 각 종목의 trailing 12m 일별 수익률을 FF5(Mkt, SMB, HML, RMW, CMA)에 회귀 (expanding, t-1까지)",
+      "2. 잔차 평균 = residual alpha estimate",
+      "3. residual alpha 상위 종목 = 팩터로 설명 안 되는 진정한 alpha 보유",
+      "4. composite: z(residual_alpha) + z(-IdioVol) (defense gate)",
+      "5. Top 30 → EW, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "rationale": "Spears et al. (2023, arXiv:2309.02205): conditional factor model에서 잔차 기반 mean-reversion이 29년간 유효. 팩터 프리미엄 수확이 아닌 순수 종목선별 alpha."
+  },
+  "pit_rules": {
+    "C1": "FF5 회귀는 expanding window (t-1까지). Full-sample regression 금지.",
+    "C2": "t-1까지 잔차만 사용. t월 수익률 미포함."
+  },
+  "overfitting_guard": "잔차 alpha는 mean-reverting 특성 → 지속성 검증 필요. OOS retention >= 0.5.",
+  "academic_basis": "Spears, Zohren & Roberts (2023) arXiv:2309.02205; Fama & French (2015) FF5"
+}

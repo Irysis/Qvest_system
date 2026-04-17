@@ -1,0 +1,28 @@
+{
+  "exp_id": "SF_05_mom_def_barbell",
+  "title": "Momentum-Defense 바벨 — 극방어 15종목 + 극추세 15종목 (L1 정밀화)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "SF_05", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "MF_L1(바벨)의 정밀 버전. Defense sleeve: z(-IdioVol)+z(-Beta)+z(PiotroskiF). Momentum sleeve: z(IndMom_12m)+z(52wkHigh)+z(TrendedMom). 각 15종목, 겹침 없음.",
+    "defense_half": {
+      "n": 15,
+      "signal": "z(-IdioVol) + z(-Beta) + z(PiotroskiF)",
+      "role": "MDD 방어"
+    },
+    "momentum_half": {
+      "n": 15,
+      "signal": "z(IndMom_12m_1m) + z(52wkHigh_ratio) + z(TrendedMom_R2)",
+      "role": "CAGR 극대화"
+    },
+    "no_overlap": "defense Top 15와 momentum Top 15 중복 시 momentum에서 다음 순위 종목 대체",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 시그널 t-1 lag"},
+  "l_codes_referenced": ["L-286 (defense 유지)", "L-509 (TrendedMom standalone F이지만 결합 가치)"]
+}

@@ -1,0 +1,20 @@
+{
+  "exp_id": "REGIME_02",
+  "title": "기관 순매수 20d → 시장 타이밍 Regime Overlay (cor=+0.166, 데이터 이미 보유)",
+  "from": "scout",
+  "to": "regime_scout",
+  "cmd": "research",
+  "timestamp": "2026-03-22T10:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.70,
+  "scope": {
+    "family": "regime_enhancement",
+    "target": "regime_engine_daily.R Layer 추가 또는 보조 시그널"
+  },
+  "hypothesis": {
+    "statement": "기관 순매수 20일 합계가 미래 21일 시장수익률과 양의 상관(+0.166)을 보이며, regime_engine_daily.R의 추가 Layer로 활용 시 위기 감지 정확도를 개선한다.",
+    "mechanism": ".cache/investor/investor_market.parquet에 2020-01~2026-03 일별 시장 레벨 투자자별 순매수 존재. 기관 순매수 감소 → 시장 하락 선행. L-454 교훈('한국 내부 데이터 > 글로벌 FRED')과 일치.",
+    "data": ".cache/investor/investor_market.parquet — 이미 보유, 추가 수집 불필요",
+    "limitation": "2020-01부터만 데이터 존재(6년) → regime engine의 긴 백테스트에는 부적합. 보조 시그널로만 사용 권장"
+  }
+}

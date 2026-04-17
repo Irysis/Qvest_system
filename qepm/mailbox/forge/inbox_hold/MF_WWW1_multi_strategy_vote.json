@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_WWW1_MULTI_VOTE",
+  "title": "다전략 투표 — 10개 MF 전략이 선정한 종목의 출현 빈도로 scoring",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:12:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "MF_WWW1", "family": "multifactor_meta", "n_holdings": 30},
+  "design": {
+    "concept": "10개 MF 전략(A1,A3,B1,C1,D1,H1,L1,EEE1,OO1,RR1)을 각각 Top 30 산출 → 종목별 출현 빈도 카운트. 가장 많이 선정된 종목 30개 = '메타 합의'.",
+    "logic": [
+      "1. 10개 MF 전략 각각 Top 30 종목 리스트 생성 (동일 데이터, 다른 가중/구성법)",
+      "2. vote_count_i = 10개 중 종목 i가 등장한 횟수 (0~10)",
+      "3. tie-breaker: MF_A1 composite score",
+      "4. Top 30 by vote_count → EW",
+      "5. 월간 리밸런싱"
+    ],
+    "candidate_strategies": ["A1","A3","B1","C1","D1","H1","L1","EEE1","OO1","RR1"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "expected": "10개 전략 합의 = 다양한 관점에서 확인된 종목 → conviction 최고 → OOS 강건"
+  },
+  "pit_rules": {"C1": "10개 전략 모두 t-1 lag 시그널"},
+  "overfitting_guard": "메타 투표는 개별 전략의 과적합을 상쇄. 단순 빈도 카운트 = 최적화 없음."
+}

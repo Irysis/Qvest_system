@@ -1,0 +1,24 @@
+{
+  "exp_id": "RC_13_ecos_leading",
+  "title": "ECOS 선행지수 기반 팩터 전환 — 경기선행지수 순환변동치 활용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:51:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "RC_13", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "ECOS 경기선행지수 순환변동치(CLI) = 6~9개월 후 경기 방향 예측. CLI 상승 → 성장 팩터, 하락 → 방어 팩터.",
+    "signal": "z(CLI 전월대비 변화, expanding 60m, t-1)",
+    "allocation": {
+      "cli_rising": {"trigger": "delta_CLI > 0 연속 3개월", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "cli_falling": {"trigger": "delta_CLI < 0 연속 3개월", "tilt": "Defense 35% + Quality 25% + Value 15% + Others 25%"},
+      "transition": {"tilt": "MF_A1 Core"}
+    },
+    "data": "ECOS 경기선행지수(코드 확인 필요)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "CLI = 월별 발표, 1~2개월 지연. t-1 lag + 발표 지연 = PIT-safe."},
+  "academic_basis": "Stock & Watson (1989) 'New Indexes of Coincident and Leading Economic Indicators'"
+}

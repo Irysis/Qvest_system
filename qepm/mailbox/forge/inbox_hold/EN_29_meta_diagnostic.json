@@ -1,0 +1,22 @@
+{
+  "exp_id": "EN_29_meta_diag",
+  "title": "[진단] Meta Diagnostic — 전체 앙상블 전략 간 상관/분산/기여 분석",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:42:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_29", "family": "ensemble"},
+  "design": {
+    "concept": "앙상블에 포함할 전략 선택의 근거를 데이터로 구축. 전략 간 상관 행렬 + 각 전략의 marginal SR 기여 + 제거 시 SR 변화 분석.",
+    "analysis": [
+      "1. 모든 백테스트 완료 전략의 일별 수익률 상관 행렬",
+      "2. 전략 클러스터링 (Ward.D2) → 중복 전략 그룹 식별",
+      "3. 각 전략의 Marginal SR Contribution = SR(with) - SR(without)",
+      "4. 최적 앙상블 = marginal contribution 양수 전략만 포함"
+    ],
+    "output": "전략 상관 히트맵 + 클러스터 덴드로그램 + marginal SR 기여표",
+    "dependency": "다수 전략 백테스트 완료 후"
+  }
+}

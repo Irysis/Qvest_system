@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_JJJJ1_PENALIZED_REG",
+  "title": "Penalized Regression 팩터 가중 — LASSO/Ridge/ElasticNet 비교",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:35:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "MF_JJJJ1", "family": "multifactor_penalized", "n_holdings": 30},
+  "design": {
+    "concept": "VV1(FMB)은 비정규화 회귀 → 불안정. Penalized regression으로 β 추정을 정규화하면 OOS 안정성 개선. LASSO는 자동 팩터 선택, Ridge는 수축, ElasticNet은 둘 다.",
+    "variants": [
+      {"id": "A", "method": "LASSO (α=1.0)", "advantage": "불필요 팩터 자동 제거 (β=0)"},
+      {"id": "B", "method": "Ridge (α=0.0)", "advantage": "모든 팩터 유지, β 수축"},
+      {"id": "C", "method": "ElasticNet (α=0.5)", "advantage": "LASSO+Ridge 장점 결합"}
+    ],
+    "logic": [
+      "1. 매월 횡단면 회귀: Ret[t] = Σ(β_i × z_i[t-1]) + ε",
+      "2. λ = CV(시계열 순서 유지, expanding)로 선택",
+      "3. E[Ret] = Σ(β̂_penalized × z[t]) → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding window. λ = 시계열 CV.", "C12": "Full-sample CV 금지."},
+  "overfitting_guard": "Penalization = 과적합 방지가 목적. λ 선택도 시계열 CV로 제한.",
+  "r_packages": ["glmnet"],
+  "academic_basis": "Tibshirani (1996) LASSO; Gu et al. (2020 RFS)"
+}

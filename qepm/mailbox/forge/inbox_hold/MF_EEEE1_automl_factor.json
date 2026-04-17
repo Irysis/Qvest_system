@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_EEEE1_AUTOML",
+  "title": "AutoML 팩터 배분 — H2O AutoML로 최적 모델 자동 탐색",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:25:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.68,
+  "scope": {"strategy_id": "MF_EEEE1", "family": "multifactor_automl", "n_holdings": 30},
+  "design": {
+    "concept": "E1(XGBoost), E2(RF), F1(LSTM) 등 수동 모델 선택 대신 AutoML이 GBM/RF/DNN/Stacked Ensemble 중 최적 모델 자동 탐색. Walk-forward expanding window.",
+    "logic": [
+      "1. Features: 7 팩터 trailing SR/IC + MRS + Dispersion + VRP (E1과 동일)",
+      "2. Target: 다음 달 7 팩터 수익률",
+      "3. H2O AutoML: max_models=20, max_runtime_secs=300",
+      "4. Walk-forward: 연간 재학습, OOS 예측",
+      "5. 예측 수익률 → softmax weight → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월. K-fold 금지.", "C12": "AutoML 내부 CV도 시계열 순서 유지."},
+  "overfitting_guard": "AutoML은 과적합 고위험. OOS retention >= 0.5 필수. 단순 선형모델 대비 OOS 열위면 폐기.",
+  "r_packages": ["h2o"],
+  "fallback": "h2o 미설치 시 E1(XGBoost)으로 대체"
+}

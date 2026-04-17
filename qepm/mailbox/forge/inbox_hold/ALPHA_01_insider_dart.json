@@ -1,0 +1,40 @@
+{
+  "exp_id": "ALPHA_01",
+  "title": "DART 내부자 거래 공시 기반 Contrarian Alpha (한국 고유 데이터)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.85,
+  "scope": {
+    "family": "insider_flow",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "DART 임원/대주주 주식 거래 공시에서 net insider buying(매수-매도)을 추출, 3개월 rolling 집계 → 매수 집중 종목 상위 30개 = 정보우위 alpha. Defense/Consensus와 완전히 독립된 4th alpha source",
+    "mechanism": "Insider trading은 경영진의 사적 정보 반영. Seyhun(1986): insider purchases predict positive abnormal returns, 6-12개월 선행. 한국 특수성: 2024년 3월부터 대규모 내부자 거래 사전공시 의무화(5B KRW+) → 공시 품질 대폭 개선. DART에서 주요주주특정증권등소유상황보고서 수집 가능. Park(2020 AJFS): 한국시장 내부자 거래의 informed trading 확인",
+    "falsification": "Alpha Lab IC < 0.02 → 기각. Defense(IdioVol) 상관 > 0.5 → 독립성 부족 기각. DART 데이터 coverage < 30% 유니버스 → 기각",
+    "academic_basis": "Seyhun (1986) 'Insiders' profits, costs of trading, and market efficiency' JFE. Lakonishok & Lee (2001) 'Are insider trades informative?' RFS. Park (2020) 'Is Informed Trading Different Across Investor Types?' AJFS (Korean data). 한국 자본시장법 시행령 개정(2024.3): 대규모 내부자 거래 사전공시"
+  },
+  "data_requirements": {
+    "source": "DART API — 주요주주특정증권등소유상황보고서",
+    "fields": ["공시일자", "보고자(임원/대주주)", "변동사유(매수/매도/증여)", "변동수량", "변동후 소유비율"],
+    "pit_safety": "공시일 기준 사용 (공시일 = 거래 후 5영업일 이내 보고). 공시일 + 1d lag로 PIT-safe",
+    "aggregation": "net_insider_buy = sum(매수수량) - sum(매도수량) per ticker per 3 months rolling",
+    "availability_check": "DART API disclosure type '주요주주특정증권등소유상황보고서' 조회 가능 여부 먼저 확인"
+  },
+  "implementation": {
+    "step1": "DART API로 내부자 거래 공시 수집 (R: httr + jsonlite)",
+    "step2": "net_insider_buy 3개월 rolling 집계 → 종목별 z-score",
+    "step3": "Alpha Lab Stage 0: IC/ICIR 검증",
+    "step4": "PASS 시 full backtest → sleeve 편입 테스트"
+  },
+  "pit_checklist": ["C4: 공시일 + 1d lag", "C1: rolling 3M aggregation", "C11: DART 공시 시차 확인"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15 필수"],
+  "metrics_target": {"ic": ">0.02", "icir": ">0.15", "corr_with_defense": "<0.3"},
+  "l_codes": ["L-428 (4th alpha 4연패 — 미탐색 차원)", "L-415 (3rd alpha 확정 — 4th 필요)"],
+  "risk_notes": "한국 내부자 거래가 미국만큼 informative하지 않을 수 있음(재벌 구조, 경영권 거래 vs 정보 거래 구분). DART API rate limit 확인 필요. 데이터 수집 먼저 진행 후 Alpha Lab"
+}

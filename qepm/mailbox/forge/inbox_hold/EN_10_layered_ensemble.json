@@ -1,0 +1,26 @@
+{
+  "exp_id": "EN_10_layered",
+  "title": "계층 앙상블 — 1차 SF/MF 앙상블 → 2차 EV 앙상블 → 최종",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:32:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_10", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "2단계 앙상블: (1) SF/MF 전략들의 score 합산 → 중간 앙상블 → (2) EV 전략들의 score와 중간 앙상블 score 결합 → 최종 Top 30.",
+    "layer1": {
+      "strategies": ["MF_A1", "MF_NNNN1", "SF_01", "SF_03"],
+      "blend": "EW score 합산 → layer1_score"
+    },
+    "layer2": {
+      "strategies": ["layer1_score", "EV_03", "EV_05"],
+      "blend": "EW score 합산 → final_score"
+    },
+    "selection": "Top 30 by final_score → EW",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag"},
+  "overfitting_guard": "2단계 EW = 과적합 최소. 각 layer 독립."
+}

@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_MMM1_INVERSE_CORR",
+  "title": "역상관 가중 — 기존 포트폴리오와 상관 낮은 팩터에 가중 확대",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:51:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "MF_MMM1", "family": "multifactor_corr", "n_holdings": 30},
+  "design": {
+    "concept": "포트폴리오 수익률과 각 팩터 수익률의 상관 측정 → 상관 낮은 팩터에 가중 확대. 포트폴리오 분산 극대화하는 방향으로 팩터 가중 자동 조절.",
+    "logic": [
+      "1. trailing 60d 포트폴리오 수익률 시계열 (t-1)",
+      "2. 각 팩터 수익률과의 상관 ρ_i 계산",
+      "3. w_i = (1 - ρ_i) / sum(1 - ρ_j) — 상관 낮을수록 가중 ↑",
+      "4. composite → Top 30, monthly rebal",
+      "5. 초기 12개월은 EW (상관 데이터 부족)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "상관 = trailing 60d, t-1 lag. Expanding min 60d."},
+  "overfitting_guard": "역상관 가중은 자동 규칙. 최적화 없음."
+}

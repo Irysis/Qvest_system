@@ -1,0 +1,138 @@
+{
+  "type": "hypothesis",
+  "track": "C",
+  "strategy_id": "STR_1329",
+  "name": "lasso_sparse_factor_core",
+  "timestamp": "2026-03-24T12:00:00Z",
+  "scout_session": "Session 42 Scout",
+  "category": "ML",
+
+  "hypothesis": "Double-selection LASSO (Feng-Giglio-Xiu 2020) applied to 268 Factor DB factors identifies 10-20 genuinely priced factors in the Korean cross-section, reducing redundancy (e.g., 13 defense vol variants → 2-3 core) and enabling a sparse multi-factor portfolio that outperforms the 4-family heuristic allocation.",
+
+  "background": {
+    "factor_db_size": 268,
+    "ic_monthly_factors": 269,
+    "ic_history_range": "2005-01 ~ 2026-02 (255 months)",
+    "has_usable_date": true,
+    "redundancy_problem": "Top 20 ICIR: 13 defense vol variants (D01~D58), many correlated >0.9. Current heuristic uses 4 families (Defense/IndMom/Consensus/QualRev) — suboptimal if cross-family interactions exist.",
+    "prior_failure_L531": "Composite z-score of all 268 factors = signal dilution. Stock-level composite structural limit.",
+    "prior_failure_L532": "ICIR ranking != portfolio alpha. High IC factors may not contribute in portfolio context.",
+    "key_insight": "LASSO does NOT select by IC magnitude alone — it selects by INCREMENTAL contribution controlling for other factors. This directly solves the L-531/L-532 failures by identifying factors with genuinely independent information.",
+    "method_papers": [
+      "Feng, Giglio, Xiu (2020) 'Taming the Factor Zoo' JF 75(3) — Double-selection LASSO with valid post-selection t-stats",
+      "Bryzgalova, Pelger, Zhu (2025) 'Forest Through the Trees' JF 80(5) — AP-trees for conditional sort hierarchy",
+      "Gu, Kelly, Xiu (2020) 'Empirical Asset Pricing via ML' RFS 33(5) — LASSO/Ridge/ElasticNet comparison on 94 characteristics"
+    ]
+  },
+
+  "factor_definitions": {
+    "step1_data_prep": {
+      "description": "Load factor cross-section monthly via load_month_factors(). Pivot to wide: Ticker x Factor_Name. Use Z_Score_Aligned only (C13).",
+      "pit_rule": "Only months where Usable_Date <= sig_date (C14). Expanding window training set.",
+      "target": "Forward 1-month excess return (Ret - BM_Ret) from RAWDATA. Computed at t, return realized at t+1.",
+      "universe_filter": "Liq filter: 20d avg Vol >= 2e8. Coverage >= 50% of factors."
+    },
+
+    "step2_double_selection_lasso": {
+      "description": "Fama-MacBeth regression with LASSO selection. Each month t: (1) LASSO on cross-section Y[t+1] ~ X[t], (2) Record selected factors. Across all months: keep factors selected in >50% of months.",
+      "implementation": "R package: glmnet. alpha=1 (pure LASSO). lambda chosen by expanding-window CV (5-fold within training set). NOT full-sample CV (C1 violation).",
+      "output": "Sparse factor set S = {f1, ..., fK} where K ~ 10-20",
+      "validation": "For each factor in S, compute OLS t-stat in Fama-MacBeth controlling for all other S factors. Keep only |t| > 2.0 (conservative). Harvey et al. (2016) suggests t>3.0 for new factors, but within-model selection already controls multiplicity."
+    },
+
+    "step3_sparse_portfolio": {
+      "description": "Build multi-factor score from sparse set S. Score = equal-weighted sum of Z_Score_Aligned for selected factors. Top 30 stocks by score.",
+      "construction": "EW within top 30. Monthly rebalancing + BZ 50/25.",
+      "overlays": "VT + DD from STR_1071 architecture (v7.1 regime engine). No new overlay parameters.",
+      "benchmark": "Compare vs STR_1071 (4-family heuristic) and STR_1036 (5-sleeve Gerber HRP)."
+    },
+
+    "step4_robustness": {
+      "elastic_net": "Repeat with alpha=0.5 (elastic net) to check sensitivity to collinearity handling.",
+      "stability_selection": "Meinshausen & Buhlmann (2010): subsample LASSO 100x, keep factors selected in >60% of subsamples. More stable than single LASSO.",
+      "rolling_vs_expanding": "Compare expanding-window selection vs 120-month rolling. Expanding preferred (more data), rolling checks regime-dependence."
+    }
+  },
+
+  "data_source": [
+    "Factor DB via load_month_factors() — 268 factors x Z_Score_Aligned (C13/C15)",
+    "factor_ic_monthly.parquet — Usable_Date for PIT IC (C14)",
+    "RAWDATA.parquet — returns, market cap, volume for universe/target",
+    "02_Infrastructure/factor_db_connector.R — load_month_factors(), compute_rolling_ic_all()"
+  ],
+
+  "pit_compliance": {
+    "C1": "Expanding-window LASSO training. No full-sample lambda or factor selection.",
+    "C2": "Factor scores at t, returns at t+1. No same-day circular.",
+    "C3": "Selection set determined by months [1..t-1], applied at t.",
+    "C4": "Fundamental factors in DB already have C4 lag built in.",
+    "C5": "VT/DD overlays use t-1 (from STR_1071 architecture).",
+    "C11": "FRED-based factors in DB already have expanding percentile (v7.1).",
+    "C12": "Lambda chosen by expanding-window CV, NOT full-sample. Factor set updated monthly.",
+    "C13": "Z_Score_Aligned only. No manual direction flipping.",
+    "C14": "IC used for align_factor_direction() uses Usable_Date. LASSO training uses Usable_Date <= sig_date.",
+    "C15": "All factor access via load_month_factors(). No direct parquet reads."
+  },
+
+  "expected_outcomes": {
+    "sparse_set_size": "10-20 factors (from 268)",
+    "expected_composition": "2-3 defense (from 56), 1-2 consensus, 1-2 value, 1 momentum, 1-2 quality, 1-2 accrual, possibly 1-2 cross-family interaction",
+    "expected_sharpe": "1.0-1.5 (comparable or better than heuristic 4-family)",
+    "key_value": "Interpretable sparse model. Eliminates redundant factors. Discovers cross-family synergies missed by heuristic allocation.",
+    "alpha_lab_gate": "|ICIR| >= 0.15 AND |t-stat| >= 1.5 on Fama-MacBeth lambda for surviving factors"
+  },
+
+  "no_negate": true,
+
+  "implementation_notes": [
+    "PHASE 1: Data matrix construction (1-2 hours)",
+    "  - For each month m in [2010-01 .. 2026-02]: load_month_factors(m)",
+    "  - Pivot wide: Ticker x Factor (Z_Score_Aligned). Join with Ret[m+1] from RAWDATA",
+    "  - Handle missing: drop stocks with <50% factor coverage per month",
+    "  - Result: panel ~200 months x ~800 stocks x 268 factors",
+    "",
+    "PHASE 2: Expanding-window LASSO selection (2-3 hours)",
+    "  - For each signal month t (t >= 2015-01, min 60 months training):",
+    "    a. Training set: months [2010-01 .. t-1]",
+    "    b. Pool cross-sections (Fama-MacBeth style): stack all training months",
+    "    c. glmnet(y = excess_ret, x = factor_matrix, alpha = 1)",
+    "    d. lambda = cv.glmnet expanding-window (5-fold within training)",
+    "    e. Record selected factors (nonzero coefficients)",
+    "  - Aggregate: factor frequency across all t. Keep >50% frequency factors.",
+    "",
+    "PHASE 3: Sparse portfolio backtest (1 hour)",
+    "  - Score = sum(Z_Score_Aligned[selected factors]) per stock per month",
+    "  - Top 30 stocks, EW, BZ 50/25, monthly rebal",
+    "  - Apply VT + DD overlays (v7.1 regime engine)",
+    "  - Compute: CAGR, SR, MDD, TO, FF5 alpha, Fama-MacBeth lambda",
+    "",
+    "PHASE 4: Robustness + comparison (1 hour)",
+    "  - Elastic net (alpha=0.5) variant",
+    "  - Stability selection (100 subsamples)",
+    "  - Compare vs STR_1071/1036 baselines",
+    "  - Factor importance ranking → methodology_memory.md update",
+    "",
+    "TOTAL ESTIMATED: 5-6 hours execution"
+  ],
+
+  "risk_factors": [
+    "LASSO may select different factors each expanding window → unstable TO. Stability selection mitigates this.",
+    "268 factors with ~800 stocks = p > n/3 per month. Regularization essential but may over-shrink weak signals.",
+    "Korean market structural breaks (2008 GFC, 2020 COVID) may cause regime-dependent factor selection.",
+    "glmnet requires complete cases — missing factor coverage could bias toward large-cap (more coverage).",
+    "L-531 warning: even LASSO-selected composite may dilute if selected set is too large (>25 factors)."
+  ],
+
+  "r_packages_required": ["glmnet", "data.table", "arrow", "jsonlite"],
+
+  "references": [
+    "Feng, Giglio & Xiu (2020) 'Taming the Factor Zoo: A Test of New Factors' JF 75(3), 1327-1370 — Double-selection LASSO methodology",
+    "Gu, Kelly & Xiu (2020) 'Empirical Asset Pricing via Machine Learning' RFS 33(5), 2223-2273 — ML comparison benchmark",
+    "Meinshausen & Buhlmann (2010) 'Stability Selection' JRSS-B 72(4), 417-473 — Stability selection for robust LASSO",
+    "Harvey, Liu & Zhu (2016) '...and the Cross-Section of Expected Returns' RFS 29(1), 5-68 — Multiple testing threshold t>3.0",
+    "Bryzgalova, Pelger & Zhu (2025) 'Forest Through the Trees' JF 80(5) — AP-trees conditional hierarchy",
+    "L-531: Composite z-score 268 factors = signal dilution. LASSO solves by selecting sparse set.",
+    "L-532: ICIR ranking != portfolio alpha. LASSO selects by incremental contribution.",
+    "L-533: Factor DB correct usage = sleeve weighting optimization + new alpha search."
+  ]
+}

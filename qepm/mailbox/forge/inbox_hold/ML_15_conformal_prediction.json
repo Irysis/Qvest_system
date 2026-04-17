@@ -1,0 +1,17 @@
+{
+  "exp_id": "ML_15_conformal",
+  "title": "Conformal Prediction — 예측 구간으로 확신도 기반 팩터 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:11:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "ML_15", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "Conformal prediction으로 팩터 수익률 예측 구간 산출. 구간 좁은(확신 높은) 팩터에 높은 가중, 넓은(불확실) 팩터에 낮은 가중.",
+    "base_model": "XGBoost (E1)",
+    "logic": "w_i = 1/prediction_interval_width_i, 정규화",
+    "training": "expanding walk-forward + calibration set",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding (t-1)"},
+  "academic_basis": "Vovk et al. (2005) 'Algorithmic Learning in a Random World'"
+}

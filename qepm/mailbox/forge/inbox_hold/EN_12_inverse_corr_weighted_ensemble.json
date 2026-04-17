@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_12_inv_corr_ensemble",
+  "title": "역상관 가중 전략 앙상블 — 전략 간 상관 역수로 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "EN_12", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_04(다양성 선정)의 가중 버전. 전략 쌍별 상관을 측정하여 상관 낮은 전략에 높은 가중 → 포트폴리오 수준 분산 극대화.",
+    "logic": [
+      "1. 후보 전략들의 trailing 120d 수익률 상관 행렬 (t-1)",
+      "2. 각 전략의 평균 상관: avg_corr_i = mean(|corr(i, j)|) for all j≠i",
+      "3. w_strategy_i = (1 - avg_corr_i) / sum(1 - avg_corr)",
+      "4. 전략별 score × w_strategy 가중 합산 → Top 30"
+    ],
+    "candidates": ["MF_A1", "MF_NNNN1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "상관 = trailing 120d, t-1 lag"},
+  "overfitting_guard": "역상관 가중 = 자동 규칙. 연간 상관 재계산."
+}

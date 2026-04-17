@@ -1,0 +1,77 @@
+{
+  "judge_session": "2026-03-21",
+  "mode": "self_initiated",
+  "trigger": "inbox empty — self-scan for missing judge_result.json",
+  "total_strategies_found": 8,
+  "total_validated": 8,
+
+  "summary_table": [
+    {"strategy": "STR_1036", "score": 80.9, "verdict": "PASS", "grade": "A", "gate0": "CLEAN", "key_issue": "STR_1037 중복, Harvey t<3.0"},
+    {"strategy": "STR_1037", "score": 80.9, "verdict": "PASS (DUPLICATE)", "grade": "A→제거", "gate0": "CLEAN", "key_issue": "STR_1036과 100% 동일 → 카탈로그 제거"},
+    {"strategy": "STR_1033", "score": 78.1, "verdict": "FAIL", "grade": "F", "gate0": "C11 FAIL", "key_issue": "same-month MRS + consgate 이중 위반. NCO 아키텍처 유망"},
+    {"strategy": "STR_1030", "score": 76.6, "verdict": "FAIL", "grade": "F", "gate0": "C11 FAIL", "key_issue": "same-month FRED MRS. Gerber+BL 아키텍처"},
+    {"strategy": "STR_1035", "score": 73.5, "verdict": "FAIL", "grade": "F", "gate0": "C11 FAIL", "key_issue": "same-month MRS. OAS MinVar, OOS 0.845 최고. 재실행 1순위"},
+    {"strategy": "STR_1034", "score": 65.7, "verdict": "PASS", "grade": "B", "gate0": "CLEAN", "key_issue": "CAGR 15.79% < 16% Grade A 미달"},
+    {"strategy": "STR_1031", "score": 62.2, "verdict": "FLAG", "grade": "B", "gate0": "C11 FLAG", "key_issue": "FM+HRP, FF5 t=1.28 무의미"},
+    {"strategy": "STR_1032", "score": 59.0, "verdict": "FLAG", "grade": "B", "gate0": "C11 FLAG", "key_issue": "FM+MinVar, FF5 t=1.27 무의미"}
+  ],
+
+  "pit_clean_count": 2,
+  "pit_fail_count": 3,
+  "pit_flag_count": 2,
+  "duplicate_count": 1,
+
+  "grade_a_impact": {
+    "before_judge": "25 (MEMORY.md 기준)",
+    "adjustments": [
+      "STR_1037: 중복 제거 → -1",
+      "STR_1033: C11 FAIL → -1 (hurdle Grade A였으나 Gate 0 탈락)",
+      "STR_1030: C11 FAIL → -1 (hurdle Grade A였으나 Gate 0 탈락)",
+      "STR_1035: C11 FAIL → -1 (hurdle Grade A였으나 Gate 0 탈락)"
+    ],
+    "net_change": -4,
+    "after_judge": "21 (정정 필요 — Q-Lead 확인 후)"
+  },
+
+  "rerun_priority": [
+    {
+      "rank": 1,
+      "strategy": "STR_1035_oas_minvar",
+      "reason": "OOS retention 0.845 최고. OAS MinVar 가중 자체 PIT clean. Phase 4만 regime_engine_daily.R로 교체",
+      "expected_effort": "Phase 4 교체 + 재실행 (30분)"
+    },
+    {
+      "rank": 2,
+      "strategy": "STR_1033_nco",
+      "reason": "FF5 t=2.889 (거의 3.0). NCO 아키텍처 독창적. Phase 4 + consgate regime 교체",
+      "expected_effort": "Phase 4 + consgate_pure_engine regime 교체 + 재실행 (30분)"
+    },
+    {
+      "rank": 3,
+      "strategy": "STR_1030_gerber_bl_hybrid",
+      "reason": "Gerber+BL 조합 고유. Phase 4 교체",
+      "expected_effort": "Phase 4 교체 + 재실행 (30분)"
+    }
+  ],
+
+  "systemic_issues": [
+    {
+      "issue": "구 Soft MRS 패턴 잔존",
+      "description": "STR_1030/1033/1035가 macro_regime.parquet를 YM==sig_ym으로 same-month 적용. regime_engine_daily.R(v2) 또는 regime_engine_option2.R(apply_month) 미사용.",
+      "scope": "이 배치(1030~1037) 중 3/8. 기존 전략에도 동일 패턴 잔존 가능.",
+      "fix": "모든 전략의 Phase 4를 regime_engine_daily.R로 통일하는 일괄 마이그레이션 권장"
+    },
+    {
+      "issue": "DSR 모듈 미구현",
+      "description": "1000+ 전략 환경에서 Deflated Sharpe Ratio 필수. 현재 hurdle_gate.R에 DSR 코드 없음.",
+      "scope": "전 전략",
+      "fix": "hurdle_gate.R에 DSR 모듈 추가 — Harvey & Liu (2015) 기반"
+    },
+    {
+      "issue": "Harvey t>3.0 미달",
+      "description": "검증된 전략 중 최고 t-stat = 2.889 (STR_1033). 어떤 전략도 3.0 초과 못함.",
+      "scope": "전 전략",
+      "fix": "구조적 한계 인식. 한국 시장 소형주+단기 데이터 특성. DSR로 보정 후 family-level 평가"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "exp_id": "ALPHA_06",
+  "title": "Accruals Anomaly (이익의 질) — QMJ composite와 다른 순수 발생액 시그널",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T18:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.78,
+  "scope": {
+    "family": "accruals_quality",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Sloan(1996) Accruals = (Net Income - Operating Cash Flow) / Total Assets의 z(-accruals) 시그널이 한국시장에서 독립적 alpha를 제공한다. 기존 QMJ(L-394, L-402 실패)는 composite 가중이 한국에 부적합했으나, 순수 accruals 단독은 경제적 메커니즘이 명확(현금흐름 > 발생이익 신호)하여 standalone 유효할 수 있다.",
+    "mechanism": "Sloan (1996 TAR): 투자자가 accruals 지속성을 과대평가. 높은 accruals → 이익의 질 낮음 → 미래 수익률 하락. Lepetit et al. (2021, 'Revisiting Quality Investing'): Quality를 4-pillar로 분해 시 'Earnings Quality'(accruals 기반)가 독립적 설명력 보유. QMJ 실패(L-394)는 composite(profitability+growth+safety+payout) 때문. 한국 DART에 영업이익, 영업활동현금흐름 존재 → accruals 직접 계산 가능. Defense(IdioVol)와 완전 독립 차원(재무제표 vs 가격).",
+    "falsification": "Alpha Lab IC < 0.01 → 기각. DART 현금흐름표 데이터 coverage < 60% → 기각. Consensus(SUE/ESBR)와 상관 > 0.5 → 독립성 부족 기각",
+    "academic_basis": "Sloan (1996) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?' TAR. Richardson, Sloan, Soliman & Tuna (2005) 'Accrual Reliability, Earnings Persistence and Stock Prices' JAE. Lepetit et al. (2021) 'Revisiting Quality Investing' — 4-pillar quality decomposition. Hsu, Kalesnik & Kose (2019) 'What Is Quality?' FAJ — earnings stability as quality component"
+  },
+  "data_requirements": {
+    "source": "DART API 또는 Fundamental.xlsx — 손익계산서 + 현금흐름표",
+    "fields": ["순이익(Net Income)", "영업활동현금흐름(CFO)", "총자산(Total Assets)"],
+    "pit_safety": "C4: 연간보고서 45d lag(5월 리밸런싱), 분기보고서 45d lag",
+    "computation": {
+      "accruals": "Accruals = (Net_Income - CFO) / Total_Assets",
+      "signal": "z(-Accruals) — low accruals = 현금흐름 기반 이익 = high quality",
+      "alternative": "Accruals = ΔWorkingCapital - Depreciation / Total_Assets (BS-based, if CFO 미가용)"
+    }
+  },
+  "implementation": {
+    "step1": "DART 또는 Fundamental.xlsx에서 Net Income, CFO, Total Assets 추출 + 가용성 확인",
+    "step2": "종목별 TTM Accruals 계산 (rolling 4분기 합산)",
+    "step3": "Alpha Lab Stage 0: (a) z(-Accruals) IC/ICIR, (b) Defense/Consensus 상관, (c) 시장 국면별 IC 안정성",
+    "step4_if_pass": "Full backtest: quarterly rebal (45d lag), N=30, BZ 50/25",
+    "step5_if_pass": "Gate 활용 테스트: high-accruals 종목 제거 gate (L-285: gate는 유효)",
+    "step6_if_pass": "Sleeve 편입: Defense + IndMom + Consensus + Accruals 4-sleeve"
+  },
+  "pit_checklist": ["C1: TTM rolling aggregation only", "C4: 45d lag after fiscal report filing", "C11: DART 공시 시차 검증"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15 필수", "Long-only", "분기 리밸런싱"],
+  "metrics_target": {
+    "ic": ">0.02",
+    "icir": ">0.12",
+    "corr_with_defense": "<0.3",
+    "corr_with_consensus": "<0.4"
+  },
+  "l_codes": ["L-394 (QMJ standalone 실패)", "L-402 (QMJ FF5α 음수)", "L-285 (DART gate 유효)", "L-428 (4th alpha 탐색)"],
+  "risk_notes": "L-394/402: QMJ composite가 한국에서 실패. 그러나 accruals는 QMJ의 4개 성분 중 하나일 뿐이며, 가장 강건한 학술 근거(Sloan 1996, 2만회 인용). QMJ 실패 = composite 실패이지 accruals 단독 실패가 아님. DART 현금흐름표 데이터 품질/coverage 확인 필수(L-434 DART 끊김 주의). Accruals 업데이트 빈도 = 분기 → 월간 리밸에서 stale signal 위험 → 분기 리밸 권장"
+}

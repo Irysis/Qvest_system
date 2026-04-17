@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_02_expanding_ic",
+  "title": "Expanding IC 가중 — 전체 기간 누적 IC로 팩터 가중 (장기 안정)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:13:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "FM_02", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1/B2의 trailing IC는 최근 편향. FM_02는 expanding(전체 기간) IC 평균으로 가중 → 장기 유효성이 검증된 팩터에 안정적 가중. Bayesian prior = expanding IC.",
+    "logic": [
+      "1. 각 팩터의 expanding IC (2001~t-1 전체 평균)",
+      "2. w_i = IC_i / sum(IC_positive) (IC > 0인 팩터만)",
+      "3. composite → Top 30, monthly rebal"
+    ],
+    "difference_from_B2": "B2는 trailing 3m IC(단기 반응), FM_02는 expanding IC(장기 안정). 둘의 차이 = short-term noise vs long-term signal.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding IC = 1~(t-1) 전체. PIT-safe."},
+  "overfitting_guard": "Expanding IC = 데이터 최대 활용. 최적화 아님."
+}

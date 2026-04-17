@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_46_monthly_snapshot",
+  "title": "Monthly MRS Snapshot — 월말 MRS 한 번만 확인 (일별 대신 월별 국면)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:22:00+09:00",
+  "bucket": "explore", "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_46", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "regime_engine_daily.R은 일별 MRS. RC_46은 월말 1회 snapshot만으로 다음 달 전체 팩터 배분 결정. 일별 변동 무시 → 안정적 + 실투 단순.",
+    "logic": [
+      "1. 월말 MRS[t-1] 1회 확인",
+      "2. MRS < 15 → MF_A1 Core, MRS 15~25 → Defense Heavy, MRS >= 25 → 풀 방어",
+      "3. 다음 달 전체 동일 배분 유지 (일중 변동 무시)"
+    ],
+    "overlay": "DD_med only + VT 0.25 (MRS는 월 1회만)"
+  },
+  "pit_rules": {"C1": "MRS = 전월 말 snapshot, t-1 lag"}
+}

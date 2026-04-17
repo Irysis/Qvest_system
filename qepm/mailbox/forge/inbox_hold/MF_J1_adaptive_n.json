@@ -1,0 +1,34 @@
+{
+  "exp_id": "MF_J1_ADAPTIVE_N",
+  "title": "적응형 종목수 — 시그널 강도에 따라 N=15~30 동적 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:02:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {
+    "strategy_id": "MF_J1",
+    "family": "multifactor_adaptive",
+    "n_holdings": "15~30 (dynamic)"
+  },
+  "design": {
+    "concept": "팩터 시그널이 강할 때(IC 높을 때) 더 많은 종목에 투자하고, 약할 때 소수에 집중. 시그널 강도 = trailing 3m IC의 절대값.",
+    "logic": [
+      "1. MF_A1 composite score 계산",
+      "2. trailing 3m IC 계산 (t-1까지)",
+      "3. IC >= 0.04 → N=30 (시그널 강함, 넓게)",
+      "4. 0.02 <= IC < 0.04 → N=20 (중간)",
+      "5. IC < 0.02 → N=15 (시그널 약함, 확신 있는 종목만)",
+      "6. N에 맞춰 Top N 선정 → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "rationale": "시그널이 약할 때 N=30으로 넓게 투자하면 noise 종목 포함 → alpha 희석. N 축소로 high-conviction 종목만 보유."
+  },
+  "pit_rules": {
+    "C1": "IC = expanding window (t-1까지). N 결정에 t월 데이터 사용 금지.",
+    "note": "종목수 제한 30 이내 항상 충족"
+  },
+  "overfitting_guard": "IC threshold (0.02/0.04)는 경제적 직관. OOS retention >= 0.5.",
+  "risk_notes": "N=15 시 개별종목 리스크 증가. 하지만 L-286(defense 비중 유지)와 상충 없음(비중이 아닌 종목수 조절)."
+}

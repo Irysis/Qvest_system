@@ -1,0 +1,34 @@
+{
+  "exp_id": "MF_HH1_MACRO_INTERACT",
+  "title": "매크로-팩터 상호작용 — MRS 레벨별 팩터 효과 크기 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:45:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {
+    "strategy_id": "MF_HH1",
+    "family": "multifactor_macro_interact",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "MRS를 단순 on/off가 아닌 연속 변수로 팩터 가중에 반영. MRS가 높을수록 Defense 가중 증가(선형), Momentum 가중 감소(선형). 국면 이진 분류(C2)보다 부드러운 전환.",
+    "logic": [
+      "1. MRS[t-1] (0~100 스케일) → 정규화 mrs_norm = MRS / 50 (0~2 범위)",
+      "2. 팩터 가중 함수:",
+      "   w_defense = 0.15 + 0.15 * mrs_norm (MRS 높을수록 증가: 15~45%)",
+      "   w_momentum = 0.20 - 0.10 * mrs_norm (MRS 높을수록 감소: 20~0%)",
+      "   w_consensus = 0.25 (고정 — 국면 불문 안정)",
+      "   w_quality = 0.10 + 0.05 * mrs_norm (MRS 높을수록 약간 증가)",
+      "   w_others = 나머지 균등 배분",
+      "3. 가중 합 = 1.0 보장 (정규화)",
+      "4. composite → Top 30, EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "advantage": "C2(3-state preset)보다 부드러운 전환 → turnover 감소. C1(국면FM)보다 단순 → 과적합 위험 낮음."
+  },
+  "pit_rules": {"C1": "MRS[t-1] 사용. 가중 함수는 사전 정의(선형).", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "가중 함수 계수(0.15, 0.10 등)는 경제적 직관. Full-sample 최적화 금지.",
+  "l_codes_referenced": ["L-200 (CondWeight IR 0.524)", "L-443 (정상시 헤지안함)", "L-454 (한국 내부 > FRED)"]
+}

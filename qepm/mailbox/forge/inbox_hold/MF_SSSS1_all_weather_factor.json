@@ -1,0 +1,27 @@
+{
+  "exp_id": "MF_SSSS1_ALL_WEATHER",
+  "title": "전천후 멀티팩터 — 모든 국면에서 양의 alpha 목표 (Bridgewater 원리)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:44:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {"strategy_id": "MF_SSSS1", "family": "multifactor_all_weather", "n_holdings": 30},
+  "design": {
+    "concept": "Bridgewater All Weather의 팩터 버전. 4가지 경제 환경(성장↑/↓ × 인플레↑/↓)에서 각각 잘 작동하는 팩터를 균등 배분.",
+    "environment_mapping": {
+      "growth_up_inflation_down": {"factors": "Momentum + Consensus", "weight": 0.25, "when": "MRS<10 AND 국고채수익률↓"},
+      "growth_up_inflation_up": {"factors": "Value + IndMom", "weight": 0.25, "when": "MRS<10 AND 국고채수익률↑"},
+      "growth_down_inflation_down": {"factors": "Defense + Quality", "weight": 0.25, "when": "MRS>=15 AND 국고채수익률↓"},
+      "growth_down_inflation_up": {"factors": "Defense + Quality + Value", "weight": 0.25, "when": "MRS>=15 AND 국고채수익률↑"}
+    },
+    "implementation": "4 환경 각각의 팩터 가중을 항상 25%씩 유지 (국면 판단 불요). 어떤 환경이 와도 25%는 해당 환경에 최적.",
+    "alternative": "국면 판단 사용 시: 현재 환경에 해당하는 팩터 가중 50% + 나머지 3환경 각 17%",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "국고채수익률 = ECOS t-1 lag. MRS = regime_daily t-1."},
+  "overfitting_guard": "환경 매핑은 경제 이론(Bridgewater). 가중 25% 균등 = 최소 과적합.",
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)", "L-443 (정상시 헤지안함)"],
+  "academic_basis": "Dalio (2011) 'Bridgewater All Weather Strategy'; Ilmanen (2011) 'Expected Returns'"
+}

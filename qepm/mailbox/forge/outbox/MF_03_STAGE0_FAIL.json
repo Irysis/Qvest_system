@@ -1,0 +1,83 @@
+{
+  "exp_id": "MF_03",
+  "category": "MF",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T10:35:00+09:00",
+  "bucket": "Exploit",
+  "priority": 1,
+  "trigger": "Top ICIR: D43_Skewness(0.615), Q07_Earnings_Stability(0.577). 교차 카테고리 결합으로 독립 alpha 탐색.",
+
+  "scope": {
+    "family": "crash_risk_quality",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "rebalance": "monthly + BZ 50/25",
+    "n_stocks": 30,
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "Crash risk(R13_NCSKEW) 낮고 수익 안정성(Q07_Earnings_Stability) 높은 종목은 위험 프리미엄 + 품질 프리미엄의 독립적 교차를 통해 안정적 alpha를 생성한다.",
+    "mechanism": "Chen, Hong, Stein(2001): NCSKEW는 숨겨진 나쁜 뉴스 축적의 프록시. 낮은 NCSKEW = 경영진 정보 은닉 적음 → 급락 위험 낮음 → 과소평가 해소 시 수익. Q07_Earnings_Stability(ICIR 0.577): 이익 변동성 낮은 기업 = 예측 가능성 높음 → 할인율 낮아야 하나 시장이 과소반영. R13(risk 카테고리) × Q07(quality 카테고리) = 서로 다른 정보 차원. D01+D02(defense)와의 상관이 핵심 검증 포인트.",
+    "academic_basis": [
+      "Chen, Hong, Stein (2001, JFE 61:345-381) — Forecasting crashes: negative skewness predicts returns",
+      "Amaya, Christoffersen, Jacobs, Vasquez (2015, JFE 118:135-167) — Realized skewness predicts cross-section",
+      "Kim & Byun (2011) — Korean market: strong negative IdioVol-return relation",
+      "D43_Skewness ICIR 0.615 (Session 40 분석, DB 최고 ICIR)",
+      "Q07_Earnings_Stability ICIR 0.577 (Normal 국면, Session 40)",
+      "L-190~192: IdioSkew/MAX/Illiquidity 열위이나 NCSKEW(R13)는 다른 측정. R13 = 3차 모멘트 비대칭(수익률 분포), IdioSkew = 잔차 비대칭. 별개 팩터."
+    ],
+    "falsification": "IF R13+Q07 composite SR < 0.4 THEN crash risk premium 한국시장 무효. IF D01+D02와 상관 > 0.85 THEN defense lineage 중복 → 독립 alpha 아님. IF OOS retention < 0.5 THEN in-sample artifact."
+  },
+
+  "factors": {
+    "primary": ["R13_NCSKEW", "Q07_Earnings_Stability"],
+    "blend_method": "EW_composite_z_score_aligned",
+    "direction_note": "Z_Score_Aligned (C13). R13_NCSKEW: low crash risk = better (IC 부호로 자동). Q07: higher stability = better.",
+    "independence_check": "D01+D02 기존 defense 슬리브와 상관 분석 필수. 상관 < 0.7이면 5th independent alpha 후보.",
+    "stage_0_required": true,
+    "stage_0_threshold": "|ICIR| >= 0.15 AND |t-stat| >= 1.5"
+  },
+
+  "construction": {
+    "method": "2F_EW_composite",
+    "scoring": "(Z_Score_Aligned(R13_NCSKEW) + Z_Score_Aligned(Q07_Earnings_Stability)) / 2",
+    "n_stocks": 30,
+    "sector_neutral": true,
+    "size_neutral": false,
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "overlay": "none (baseline first)"
+  },
+
+  "pit_checklist": {
+    "C1_no_full_sample": "expanding/rolling only. NCSKEW = 최근 252d 수익률 기반 rolling 가능",
+    "C2_no_same_day": "t-1 if overlay",
+    "C4_fundamental_lag": "Q07: quarterly 45d lag. R13: price-based = 전일까지 사용 가능",
+    "C10_liquidity_lagged": "20d avg volume lagged",
+    "C13_z_score_aligned": "Z_Score_Aligned only",
+    "C14_usable_date": "IC with Usable_Date <= sig_date",
+    "C15_load_month_factors": "load_month_factors() only"
+  },
+
+  "execution": {
+    "preflight_check": true,
+    "run_all_pattern": true,
+    "estimated_time": "2-3h (Stage 0 + full backtest + S3 orthogonality)",
+    "stage_0_first": true
+  },
+
+  "risk_notes": [
+    "L-549: EW 2F composite OOS 붕괴 가능. OOS retention 필수",
+    "L-190~192: IdioSkew standalone 열위 판정. 그러나 R13_NCSKEW는 다른 측정(전체 분포 비대칭 vs 잔차 비대칭)",
+    "D01+D02 상관 검증 필수: 상관 > 0.85이면 defense 중복, < 0.7이면 5th alpha 후보",
+    "한국시장 2026 급락(US-Iran) 이후 crash risk premium 강화 가능성 — 최근 국면 효과 확인"
+  ],
+
+  "l_codes_referenced": ["L-190", "L-191", "L-192", "L-541", "L-549", "L-532"],
+
+  "decision": {
+    "grade": null,
+    "verdict": null,
+    "next_actions": null
+  }
+}

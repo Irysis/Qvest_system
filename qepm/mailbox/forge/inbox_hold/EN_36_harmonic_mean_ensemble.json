@@ -1,0 +1,19 @@
+{
+  "exp_id": "EN_36_harmonic",
+  "title": "Harmonic Mean Ensemble — 조화평균으로 score 합산 (저score 패널티)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:52:00+09:00",
+  "bucket": "explore", "priority_score": 0.74,
+  "scope": {"strategy_id": "EN_36", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "산술평균은 고score 종목 선호. 조화평균은 모든 전략에서 균일하게 높은 종목 선호 → W1(Conviction)과 유사 효과.",
+    "logic": [
+      "1. 5전략 per-stock score (양수로 변환: score_adj = score - min + 1)",
+      "2. harmonic_mean = N / sum(1/score_adj_i)",
+      "3. Top 30 by harmonic_mean → EW"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

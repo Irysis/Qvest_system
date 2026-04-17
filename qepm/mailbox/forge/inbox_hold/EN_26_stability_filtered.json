@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_26_stability_filter",
+  "title": "Stability-Filtered Ensemble — OOS retention 0.7+ 전략만 앙상블",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:12:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "EN_26", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_05(MDD 필터)의 OOS 버전. OOS retention >= 0.7인 전략만 앙상블 → 과적합 전략 배제.",
+    "logic": [
+      "1. 모든 전략의 OOS retention (IS SR / OOS SR) 확인",
+      "2. retention >= 0.7인 전략만 후보",
+      "3. EW score 합산 → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "dependency": "다수 전략 백테스트 완료 후"
+  },
+  "pit_rules": {"C1": "OOS retention = walk-forward 기반"},
+  "overfitting_guard": "OOS retention 0.7 = 엄격 기준. 과적합 전략 자동 배제."
+}

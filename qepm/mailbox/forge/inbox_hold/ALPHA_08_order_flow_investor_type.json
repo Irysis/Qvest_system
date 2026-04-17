@@ -1,0 +1,58 @@
+{
+  "exp_id": "ALPHA_08",
+  "title": "투자자 유형별 매매흐름 시그널 — 한국시장 실증 t=16.35 (외국인) / t=9.65 (기관)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T20:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.95,
+  "scope": {
+    "family": "order_flow_alpha",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "외국인/기관 투자자의 종목별 순매수 흐름을 적절히 정규화한 시그널이 횡단면 수익률을 예측하며, Defense/IndMom/Consensus와 독립적인 4th alpha source를 제공한다. 한국시장 직접 실증에서 t-stat 9.65~16.35의 극강 예측력이 확인된 시그널이다.",
+    "mechanism": "Kang (2025/2026, arXiv 2512.18648): 한국시장 270만 stock-day 데이터(2020-2024)에서 (1) 외국인 매매흐름을 거래대금(Trading Value)으로 정규화한 S^TV가 다음날 수익률 예측(t=16.35), (2) 기관 매매흐름을 시가총액으로 정규화한 S^MC가 예측(t=9.65). 핵심 발견: '정보를 가진 집행자(Informed Executor)' 가설 — 외국인은 사적 정보를 보유하되 VWAP/TWAP으로 은밀히 집행. 시그널이 장기간 reversal 없이 지속(durable private information). 우리 전략의 기존 alpha(방어팩터/산업모멘텀/컨센서스)와 완전히 다른 차원: 매매흐름 = 실시간 시장 참가자 행동.",
+    "falsification": "KRX 투자자별 순매수 데이터 미가용 → 기각. Alpha Lab IC < 0.02 → 기각. 일간 시그널 → 월간 집계 시 예측력 소멸 → 기각. Defense(IdioVol) 상관 > 0.5 → 기각",
+    "academic_basis": "Kang (2026) 'Optimal Signal Extraction from Order Flow: A Matched Filter Perspective' arXiv 2512.18648 — 한국시장 직접 실증, t=16.35(외국인), t=9.65(기관). Sias (2004) 'Institutional Herding' RFS. Froot, O'Connell & Seasholes (2001) 'The Portfolio Flows of International Investors' JFE. Brennan & Cao (1997) 'International Portfolio Investment Flows' JF"
+  },
+  "data_requirements": {
+    "source": "KRX 투자자별 매매동향 데이터 (일별 종목별)",
+    "fields": ["종목코드", "일자", "외국인_순매수금액", "기관_순매수금액", "개인_순매수금액", "거래대금", "시가총액"],
+    "availability": {
+      "krx_direct": "KRX 정보데이터시스템(data.krx.co.kr) — 일별 투자자별 거래실적(종목별). 무료 다운로드 가능",
+      "fnguide": "FnGuide DataGuide에서도 투자자별 매매 조회 가능",
+      "pykrx": "pykrx(Python) 또는 R httr로 KRX API 호출"
+    },
+    "pit_safety": "당일 마감 후 공개 데이터. T+0 마감 후 발표 → T+1에 사용 = PIT-safe. t-1 lag 적용",
+    "computation": {
+      "method_foreign": "S_TV[i,t] = ForeignNetBuy[i,t] / TradingValue[i,t] — 거래대금 정규화 (논문 최적)",
+      "method_institutional": "S_MC[i,t] = InstitNetBuy[i,t] / MarketCap[i,t] — 시가총액 정규화 (논문 최적)",
+      "aggregation": "rolling 20d 평균 (noise reduction) → z-score → 월간 리밸런싱 시그널",
+      "combined": "z(S_TV_foreign) + z(S_MC_instit) 결합 또는 개별 테스트"
+    }
+  },
+  "implementation": {
+    "step1": "KRX 투자자별 매매동향 데이터 수집: R httr로 data.krx.co.kr API 호출 (또는 기존 수집 데이터 확인)",
+    "step2": "외국인 S_TV, 기관 S_MC 계산 → rolling 20d 평균",
+    "step3": "Alpha Lab Stage 0: (a) 외국인 S_TV IC/ICIR, (b) 기관 S_MC IC/ICIR, (c) Defense/IndMom/Consensus 상관",
+    "step4_if_pass": "Full backtest: z(S_TV_foreign) scoring → sector-neutral, N=30, monthly, BZ 50/25",
+    "step5_if_pass": "4-sleeve 편입: Defense + IndMom + Consensus + OrderFlow",
+    "step6_regime": "위기 국면에서 외국인 매도 집중 시그널 → regime overlay 연동 가능"
+  },
+  "pit_checklist": ["C1: rolling 20d aggregation only", "C2: t-1 lag (전일 마감 데이터만)", "C5: overlay t-1", "C10: 당일 거래량 사용 금지 — 전일까지만", "C11: KRX 데이터 발표 시차 확인 (당일 마감 후 → T+1 사용)"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15 필수", "Long-only"],
+  "metrics_target": {
+    "ic": ">0.04 (논문 t=16.35 감안 시 높은 기대)",
+    "icir": ">0.20",
+    "corr_with_defense": "<0.3",
+    "corr_with_consensus": "<0.3",
+    "corr_with_indmom": "<0.4",
+    "standalone_sharpe": ">0.8"
+  },
+  "l_codes": ["L-428 (4th alpha 4연패)", "L-415 (3rd alpha 확정)", "L-454 (한국 내부 데이터 > 글로벌 FRED)"],
+  "risk_notes": "논문은 일간 예측력(next-day)을 보고. 월간 리밸런싱으로 집계 시 alpha 감쇄 가능 — 그러나 논문에서 'durable private information, no reversal at longer horizons' 확인. 데이터 수집이 선행 필요(KRX API). 2020-2024 실증이므로 2000-2019 OOS는 없음 — 긴 백테스트가 아닌 최근 5년 데이터만으로 검증. 외국인 매매는 한국시장 고유 alpha(L-454: 한국 내부 데이터 > 글로벌 FRED 확인). 수집 R 코드: httr + jsonlite로 KRX REST API 호출. 가장 유망한 4th alpha 후보."
+}

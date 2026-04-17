@@ -1,0 +1,23 @@
+{
+  "type": "TODO_S1",
+  "strategy_id": "STR_1623",
+  "strategy_name": "tailrisk_profitability_defense",
+  "expected_role": "defense",
+  "s0_record": "stage_artifacts/s0_record_STR_1623_tailrisk_profitability_defense.json",
+  "factors": [
+    {
+      "factor_id": "R01_VaR_95",
+      "weight": 0.6,
+      "role": "primary_defense_signal"
+    },
+    {
+      "factor_id": "Q01_GPA",
+      "weight": 0.4,
+      "role": "quality_floor"
+    }
+  ],
+  "combination": "Score = 0.60 * Z_Score_Aligned(R01_VaR_95) + 0.40 * Z_Score_Aligned(Q01_GPA)",
+  "constraints": "EW Top 30, sector neutral, 15bps commission, LIQ >= 2e8",
+  "created_at": "2026-03-30 07:31:52",
+  "created_by": "Q-Lead"
+}

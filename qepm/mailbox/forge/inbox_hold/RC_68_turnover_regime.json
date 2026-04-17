@@ -1,0 +1,14 @@
+{
+  "exp_id": "RC_68_turnover_regime",
+  "title": "Turnover Regime — 시장 전체 거래회전율로 과열/침체 감지",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:21:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "RC_68", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "시장 전체 거래회전율(total volume/market cap) 급등 = 과열 → Defense. 급감 = 무관심 → Momentum.",
+    "signal": "z(market_turnover_20d, expanding, t-1)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

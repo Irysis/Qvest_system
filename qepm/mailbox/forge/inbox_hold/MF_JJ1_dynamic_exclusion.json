@@ -1,0 +1,28 @@
+{
+  "exp_id": "MF_JJ1_DYNAMIC_EXCLUDE",
+  "title": "동적 팩터 제외 — 연속 3m 음의 IC 팩터 자동 비활성화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:51:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {
+    "strategy_id": "MF_JJ1",
+    "family": "multifactor_adaptive",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "모든 팩터가 항상 유효하지 않음. 연속 3개월 음의 IC → 해당 팩터 비활성화. 양의 IC 복귀 시 재활성화. AA1(연간 재선정)보다 빠른 반응.",
+    "logic": [
+      "1. 매월 각 팩터 IC 계산 (t-1까지)",
+      "2. 연속 3개월 IC < 0 → 비활성화 (가중 0)",
+      "3. 비활성 상태에서 IC > 0 → 즉시 재활성화",
+      "4. 활성 팩터 EW → composite → Top 30",
+      "5. 활성 팩터 < 2 → Defense + Consensus 고정"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC = t-1까지 횡단면 rank correlation"},
+  "overfitting_guard": "'연속 3m 음의 IC'는 보수적 threshold. 단일 음의 IC로 제외하면 whipsaw."
+}

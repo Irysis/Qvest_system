@@ -1,0 +1,39 @@
+{
+  "exp_id": "MF_L1_BARBELL",
+  "title": "바벨 전략 — Defense 50% + 공격형 멀티팩터 50% (극단 양극화)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {
+    "strategy_id": "MF_L1",
+    "family": "multifactor_barbell",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Taleb의 바벨 전략을 팩터에 적용. 포트폴리오를 극방어(Defense) 50% + 극공격(Momentum+Consensus) 50%로 양극화. 중간 위험 팩터 배제.",
+    "defensive_half": {
+      "n": 15,
+      "signal": "z(-IdioVol) + z(-Beta) + z(PiotroskiF)",
+      "weight": "EW",
+      "role": "MDD 방어. 위기 시 포트폴리오 보호."
+    },
+    "aggressive_half": {
+      "n": 15,
+      "signal": "z(IndMom_12m_1m) + z(SUE) + z(EPS_chg) + z(52wkHigh)",
+      "weight": "EW",
+      "role": "CAGR 극대화. 호황 시 alpha 수확."
+    },
+    "rebalancing": "두 반쪽 각각 월간 리밸런싱. 종목수 고정 15+15=30.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "rationale": "L-286: defense 비중 하락 → 열위. 바벨 구조는 defense 비중 50% 확보하면서 공격도 최대화. 중간 팩터(Value, Quality standalone)는 한국시장에서 standalone alpha 부족(L-481, L-511) → 배제하여 noise 감소."
+  },
+  "pit_rules": {
+    "C1": "모든 시그널 t-1 lag",
+    "C4": "DART 재무제표 45일 lag"
+  },
+  "overfitting_guard": "구조는 사전 정의(50/50). 팩터 선택은 L-code 기반 경제적 논리.",
+  "l_codes_referenced": ["L-286 (defense 비중 하락→열위)", "L-415 (consensus 독립 alpha)", "L-481 (value standalone 전멸)", "L-517 (PiotroskiF 방어력)"]
+}

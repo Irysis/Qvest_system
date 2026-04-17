@@ -1,0 +1,22 @@
+{
+  "exp_id": "FM_22_ic_momentum",
+  "title": "IC Momentum — IC 자체의 추세(IC가 증가 중인 팩터) 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:53:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_22", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_03(가속도)와 다름: 팩터 수익률이 아닌 IC의 추세를 추적. IC가 상승 중인 팩터 = 예측력 강화 중 → 가중 증가.",
+    "logic": [
+      "1. 각 팩터의 trailing 6m 평균 IC vs trailing 12m 평균 IC (t-1)",
+      "2. ic_momentum = IC_6m - IC_12m (최근이 과거보다 높으면 양수)",
+      "3. w_i = base_w × (1 + z(ic_momentum)), 정규화",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC = t-1까지 expanding"}
+}

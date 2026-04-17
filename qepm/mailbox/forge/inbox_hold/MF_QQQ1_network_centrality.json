@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_QQQ1_NETWORK",
+  "title": "네트워크 중심성 팩터 — 수익률 상관 네트워크에서 주변부 종목 선호",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:01:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.69,
+  "scope": {"strategy_id": "MF_QQQ1", "family": "multifactor_network", "n_holdings": 30},
+  "design": {
+    "concept": "Peralta & Zareei (2016): 수익률 상관 네트워크에서 중심 종목(모든 종목과 높은 상관)은 체계적 위험에 노출. 주변부 종목(낮은 상관)은 고유 alpha 보유 가능.",
+    "logic": [
+      "1. trailing 120d Gerber 상관행렬 (t-1)",
+      "2. 각 종목의 degree centrality = mean(|correlation with all others|)",
+      "3. z(-centrality) = 주변부 종목 선호 (= 낮은 체계적 위험)",
+      "4. MF_A1에 8번째 팩터로 추가 (가중 10%)",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "상관행렬 = trailing 120d, t-1 lag"},
+  "overfitting_guard": "Centrality는 네트워크 이론 기반 자동 계산. 최적화 없음.",
+  "academic_basis": "Peralta & Zareei (2016) 'A Network Approach to Portfolio Selection' JBANKFIN; Diebold & Yilmaz (2014)"
+}

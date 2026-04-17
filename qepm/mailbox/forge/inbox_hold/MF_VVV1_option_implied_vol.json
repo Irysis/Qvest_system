@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_VVV1_IMPLIED_VOL",
+  "title": "옵션 내재변동성 시그널 — IV-RV 스프레드로 과대평가 종목 회피",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:11:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.67,
+  "scope": {"strategy_id": "MF_VVV1", "family": "multifactor_options", "n_holdings": 30},
+  "design": {
+    "concept": "KOSPI200 옵션의 IV-RV 스프레드(VRP) = 시장 전체 위험 프리미엄 추정. 높은 VRP → 위험회피 증가 → Defense 강화. 종목 레벨 옵션은 한국에서 제한적이므로 시장 레벨 VRP만 사용.",
+    "vrp_signal": "VRP = IV(VKOSPI) - RV(KOSPI200 trailing 20d realized vol), z-scored, t-1 lag",
+    "allocation": {
+      "high_vrp": {"trigger": "z(VRP) > 1.0", "tilt": "Defense 40% + Quality 25% + Others 35%", "rationale": "공포 과다 → 방어 강화"},
+      "low_vrp": {"trigger": "z(VRP) < -0.5", "tilt": "Momentum 30% + Consensus 25% + Others 45%", "rationale": "낙관 → 공격 강화"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "data": "VKOSPI from yfinance or ECOS. KOSPI200 RV from RAWDATA BM.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "VRP = t-1 lag. VKOSPI = 전일 종가.", "C11": "L-444: VRP 위기 선행 지표 검증 완료"},
+  "overfitting_guard": "VRP threshold(1.0/-0.5σ)는 표준. L-444 검증 기반.",
+  "l_codes_referenced": ["L-444 (VRP 위기 선행)", "L-445 (Absorption Ratio)"],
+  "academic_basis": "Bollerslev, Tauchen & Zhou (2009 RFS) 'Expected Stock Returns and Variance Risk Premia'"
+}

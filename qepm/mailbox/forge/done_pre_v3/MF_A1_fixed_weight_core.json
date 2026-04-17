@@ -1,0 +1,42 @@
+{
+  "exp_id": "MF_A1_FIXED_CORE",
+  "title": "고정 가중 멀티팩터 — Defense 30% + Consensus 30% + Momentum 15% + Quality 15% + Value 10%",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:30:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.90,
+  "scope": {
+    "strategy_id": "MF_A1",
+    "family": "multifactor_fixed",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "design": {
+    "factors": {
+      "defense": {"weight": 0.30, "signal": "z(-IdioVol) + z(-Beta)", "rationale": "핵심 방어 alpha, SR 1.303"},
+      "consensus": {"weight": 0.30, "signal": "z(EPS_chg) + z(SUE) + z(FPER_revision)", "rationale": "3rd alpha 확정 (L-415), SR 1.340+"},
+      "momentum": {"weight": 0.15, "signal": "z(TrendedMom_R2) + z(52wkHigh_ratio)", "rationale": "추세 포착, 52wk SR 0.602"},
+      "quality": {"weight": 0.15, "signal": "z(GPA) + z(PiotroskiF) + z(-Accruals)", "rationale": "방어 역할, GP IC 0.208 (L-512)"},
+      "value": {"weight": 0.10, "signal": "z(OCF/MarketCap)", "rationale": "IC 0.045 배치 최강 (L-516)"}
+    },
+    "scoring": "composite_score = sum(factor_weight × z_score), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    },
+    "weight_method": "equal (Top 30 종목)",
+    "buffer_zone": {"keep_n": 45, "entry_n": 30}
+  },
+  "pit_rules": {
+    "C1": "가중은 사전 정의 (full-sample 최적화 금지)",
+    "C2": "모든 시그널 t-1 lag",
+    "C4": "DART 재무제표 45일 lag",
+    "C11": "regime_engine_daily.R (미래참조 ZERO)"
+  },
+  "overfitting_guard": "가중은 경제적 논리로 사전 정의. OOS retention < 0.5 시 자동 폐기.",
+  "academic_basis": "Asness et al. (2015) 'Fact, Fiction, and Momentum Investing'; Novy-Marx (2013) GP; Piotroski (2000) F-Score; Ball & Brown (1968) SUE"
+}

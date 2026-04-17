@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_47_ml_stock",
+  "title": "ML 종목 선정 — XGBoost로 직접 종목별 다음 달 수익률 예측",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:23:00+09:00",
+  "bucket": "explore", "priority_score": 0.75,
+  "scope": {"strategy_id": "SF_47", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "팩터 레벨이 아닌 종목 레벨에서 직접 ML 예측. Gu et al.(2020 RFS)의 한국 복제.",
+    "features": "7팩터 z-score + trailing vol + trailing MDD + Size + BM per stock",
+    "target": "next_month_return per stock",
+    "model": "XGBoost (expanding walk-forward)",
+    "selection": "예측 수익률 Top 30 → EW",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "features t-1, target t+1", "C12": "시계열 CV"},
+  "academic_basis": "Gu, Kelly & Xiu (2020 RFS)"
+}

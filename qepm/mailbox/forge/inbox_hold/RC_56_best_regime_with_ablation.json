@@ -1,0 +1,14 @@
+{
+  "exp_id": "RC_56_regime_ablation",
+  "title": "[진단] 국면 시그널 Ablation — 9축 중 1축씩 제거 시 합산 국면 성과 변화",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:23:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_56", "family": "regime_conditional"},
+  "design": {
+    "concept": "RC_11(5축 투표)에서 1축씩 제거 → 어떤 축이 가장 큰 기여하는지 ablation으로 측정.",
+    "experiments": "9축 중 1축 제거 × 9 = 9건 leave-one-out",
+    "output": "제거 시 SR 감소 가장 큰 축 = 가장 중요한 국면 시그널"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

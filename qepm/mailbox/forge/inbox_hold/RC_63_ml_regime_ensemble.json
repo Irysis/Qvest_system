@@ -1,0 +1,16 @@
+{
+  "exp_id": "RC_63_ml_regime_ens",
+  "title": "ML Regime Ensemble — XGB+RF+Logistic 3모델 위기 확률 평균",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:33:00+09:00",
+  "bucket": "exploit", "priority_score": 0.73,
+  "scope": {"strategy_id": "RC_63", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_61(XGB crisis prob)의 앙상블: 3모델 위기 확률 평균 → 팩터 전환.",
+    "models": ["XGBoost", "Random Forest", "Logistic Regression"],
+    "P_crisis": "mean(P_xgb, P_rf, P_logistic)",
+    "allocation": "w_defense = 0.15 + 0.35 * P_crisis",
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "3모델 모두 expanding (t-1)"}
+}

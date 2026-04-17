@@ -1,0 +1,43 @@
+{
+  "exp_id": "EN_05",
+  "category": "EN",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T03:00:00+09:00",
+  "bucket": "Exploit",
+  "priority": 1,
+  "trigger": "R3: 5-sleeve 변형",
+
+  "scope": {
+    "family": "5sleeve_consensus_bayes_core",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "rebalance": "monthly + BZ 50/25",
+    "n_stocks": 30,
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "5-Sleeve 앙상블에서 Consensus 슬리브를 BayesShrinkage C01+C04+C13(Session 44 Grade A 패턴)으로 교체하고 Gerber HRP 가중을 적용하면, STR_1375(Score 76.6)을 초과하는 최강 앙상블을 구축한다.",
+    "mechanism": "STR_1375(5Sleeve, Score 76.6)이 현 세션 최고. 그 구성에서 Consensus 슬리브를 Session 44 발견(C01+C04+C13 BayesShrinkage = Grade A)으로 업그레이드. Gerber HRP 가중(STR_1036 lineage)으로 슬리브 간 배분. 5 sleeves: (1)Defense D01+D02, (2)IndMom 12-1m, (3)ConsensusBayes C01+C04+C13, (4)QualRev Q04+V15(MF_16 성공 시), (5)Flow/AntiLottery. N=6/sleeve, total=30.",
+    "academic_basis": [
+      "STR_1375(76.6) = current session best. 슬리브 업그레이드로 초과 목표",
+      "Session 44: C01+C04+C13 BayesShrinkage = Grade A. 이를 sleeve로 편입",
+      "L-480: 5-sleeve x N=6 = 30 최적",
+      "NCO/Gerber HRP: L-501, L-519 — 슬리브 가중 최적화"
+    ],
+    "falsification": "IF 업그레이드 5sleeve SR < STR_1375 SR THEN Consensus Bayes sleeve가 raw Consensus보다 앙상블에서 열위"
+  },
+
+  "factors": {
+    "sleeve_1_defense": ["D01_IdioVol", "D02_Beta"],
+    "sleeve_2_indmom": "IndMom 12-1m",
+    "sleeve_3_consensus_bayes": ["C01_SUE", "C04_ESBR", "C13_Revision_Breadth_3m"],
+    "sleeve_3_method": "BayesShrinkage 3F",
+    "sleeve_4_qualrev": ["Q04_Piotroski_F", "V15_NetDebt_Adj_EP"],
+    "sleeve_5_flow": "foreign contrarian gate + D05_MaxRet(anti-lottery)",
+    "ensemble_weight": "Gerber HRP or score-level blend"
+  },
+
+  "execution": { "estimated_time": "5-6h" },
+  "decision": { "grade": null, "verdict": null, "next_actions": null }
+}

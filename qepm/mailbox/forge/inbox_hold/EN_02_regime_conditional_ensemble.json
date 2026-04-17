@@ -1,0 +1,32 @@
+{
+  "exp_id": "EN_02_regime_ensemble",
+  "title": "국면별 전략 앙상블 — 국면마다 다른 전략 조합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:12:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_02", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "국면별로 최적 전략 조합이 다름. risk_on에서는 공격 전략, crisis에서는 방어 전략 앙상블.",
+    "regime_ensembles": {
+      "risk_on": {
+        "strategies": ["MF_A1(Core)", "EV_01(7F+NCO)", "FM_01(IC Momentum)"],
+        "blend": "EW score 합산 → Top 30"
+      },
+      "elevated": {
+        "strategies": ["MF_NNNN1(2F 단순)", "SF_01(Quality)", "MF_A3(DefHeavy)"],
+        "blend": "EW score 합산 → Top 30"
+      },
+      "crisis": {
+        "strategies": ["MF_A3(DefHeavy)", "SF_01(Quality)"],
+        "blend": "EW score 합산 → Top 20 + Cash 33%"
+      }
+    },
+    "overlay": "regime_engine_daily.R (국면 판단) + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS[t-1] → 국면 판단. 각 전략 score t-1 lag."},
+  "overfitting_guard": "국면별 전략 조합은 경제적 직관으로 사전 정의. Walk-forward 최적화 아님.",
+  "dependency": "MF_A1, MF_NNNN1, SF_01, EV_01, FM_01 백테스트 완료 후 실행"
+}

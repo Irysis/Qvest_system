@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_04_diversity_max",
+  "title": "Diversity-Maximized Ensemble — 상관 최저 3전략 score 합산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_04", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_01(top 전략 blend)은 성과 기준 선정. EN_04는 다양성 기준: 상관이 가장 낮은 3개 전략을 앙상블 → 분산 극대화.",
+    "logic": [
+      "1. 전체 백테스트 완료 전략의 일별 수익률 상관 행렬 계산",
+      "2. 상관 최저 3개 전략 쌍 선정 (greedy: 첫째 = best SR, 둘째 = 첫째와 상관 최저, 셋째 = 1+2와 평균 상관 최저)",
+      "3. 3전략 score EW 합산 → Top 30",
+      "4. monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "dependency": "다수 전략 백테스트 완료 후 실행"
+  },
+  "pit_rules": {"C1": "상관 = expanding (t-1). 전략 선정 = 연간 재계산."},
+  "overfitting_guard": "상관 기반 자동 선정. Walk-forward 연간 재선정 필수."
+}

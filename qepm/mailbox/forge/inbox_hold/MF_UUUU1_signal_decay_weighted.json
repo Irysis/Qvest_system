@@ -1,0 +1,23 @@
+{
+  "exp_id": "MF_UUUU1_SIGNAL_DECAY_W",
+  "title": "시그널 감쇠 가중 — 팩터 half-life에 반비례하여 리밸런싱 빈도 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:51:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "MF_UUUU1", "family": "multifactor_signal_decay", "n_holdings": 30},
+  "design": {
+    "concept": "O1(Factor Decay 진단)의 결과를 직접 가중에 반영. Half-life 짧은 팩터(Momentum, Reversal)의 최신 시그널에 높은 가중, 긴 팩터(Defense, Quality)는 과거 시그널도 유효 → 시간 가중 평균.",
+    "logic": [
+      "1. 각 팩터 half-life 측정 (O1 결과 활용 또는 사전 설정)",
+      "   defense: 6m, consensus: 3m, indmom: 2m, quality: 6m, value: 6m, momentum: 1m, tp_gap: 2m",
+      "2. 팩터 시그널의 시간 가중: z_weighted = Σ(exp(-t/half_life) × z[t-k]) for k=0..2",
+      "3. composite = mean(z_weighted) → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "half-life는 사전 정의 (O1 진단 결과 사용 시 expanding OOS IC decay 기반)"},
+  "overfitting_guard": "Half-life는 경제적 직관 또는 O1 진단 기반. 시그널 가중은 자동 계산."
+}

@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_44_krw_vol",
+  "title": "KRW 변동성 국면 — 원달러 환율 변동성으로 EM 스트레스 감지",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:01:00+09:00",
+  "bucket": "explore", "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_44", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "signal": "z(KRW/USD 20d realized vol, expanding 252d, t-1)",
+    "allocation": {
+      "high_fx_vol": {"trigger": "z > 1.0", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "data": "ECOS KRW/USD",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

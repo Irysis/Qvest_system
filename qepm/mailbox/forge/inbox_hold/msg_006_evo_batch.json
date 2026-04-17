@@ -1,0 +1,38 @@
+{
+  "msg_id": "QLEAD_013",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "build_and_run_batch",
+  "priority": "high",
+  "timestamp": "2026-03-21T12:15:00+09:00",
+  "batch": [
+    {
+      "strategy_id": "STR_1049",
+      "parent": "STR_1036",
+      "description": "STR_1036에 vol_target=0.13 overlay 추가. 현재 ann_vol 15.75%를 13%로 억제. SR 1.284→1.5 기대.",
+      "type": "종목레벨 (STR_1036 run_all.R 복사 후 vol_target만 수정)",
+      "change": "run_all.R Phase 2의 vol_target = 0.18 → 0.13으로 변경. 나머지 동일.",
+      "evolution_type": "improvement",
+      "expected_impact": "SR +0.2, CAGR 소폭 하락"
+    },
+    {
+      "strategy_id": "STR_1050",
+      "parent": "STR_1036",
+      "description": "STR_1036 + 6th sleeve로 STR_943 EPS Change 추가. 종목레벨 스코어 블렌드 N=30 유지.",
+      "type": "종목레벨 (factor_engine에 consensus score 추가)",
+      "change": "factor_engine.R에 EPS change score를 6번째 sleeve로 추가. composite score에 10% 가중. N=30 유지.",
+      "evolution_type": "extension",
+      "expected_impact": "SR +0.1 (독립 alpha cor 0.638)"
+    },
+    {
+      "strategy_id": "STR_1051",
+      "parent": "STR_1048",
+      "description": "STR_1048 + Margin Gate. fwd_margin < 0 종목 제거 후 Top 30.",
+      "type": "종목레벨 (factor_engine에 margin gate 추가)",
+      "change": "factor_engine.R에서 consensus_load()로 op_profit_fy1, revenue_fy1 로드. fwd_margin = op_profit/revenue < 0이면 제거. STR_893 참조.",
+      "evolution_type": "improvement",
+      "expected_impact": "MDD -2%p"
+    }
+  ],
+  "instructions": "3개를 순차 실행하라. 각각:\n1. parent 전략 코드 복사 후 수정\n2. PIT 사전검증\n3. 백테스트\n4. hurdle_gate\n5. r4_regime_payoff\n6. hybrid_commit + evo_realize(parent, child, metrics)\n7. 텔레그램 브리핑\n8. methodology_memory 교훈\n\nmacro_regime.parquet가 v7.1(MRS 38.1)인지 먼저 확인."
+}

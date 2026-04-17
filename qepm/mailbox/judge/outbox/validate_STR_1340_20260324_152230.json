@@ -1,0 +1,36 @@
+{
+  "from": "forge",
+  "action": "validate",
+  "strategy_id": "STR_1340",
+  "strategy_name": "Sleeve_IC_Weight",
+  "parent": "STR_1071",
+  "family": "sleeve_ic_weight",
+  "timestamp": "2026-03-24T15:21:00+09:00",
+  "change_description": "EW factor weights → Factor DB ICIR-proportional weights within Defense and TP Gap sleeves",
+  "hurdle_result": {
+    "verdict": "PASS",
+    "grade": "A",
+    "score": 57.3,
+    "CAGR": 16.42,
+    "Sharpe": 0.955,
+    "MDD": 37.0,
+    "FF5_alpha_pct": 7.10,
+    "FF5_alpha_t": 1.46
+  },
+  "delta_vs_parent": {
+    "delta_sharpe": -0.85,
+    "delta_mdd": 14.3,
+    "delta_score": -29.8,
+    "verdict": "DOWNGRADE — IC-weight hurt performance due to Factor DB name mismatch"
+  },
+  "ic_weight_analysis": {
+    "defense_mean_w_iv": 0.281,
+    "defense_mean_w_b": 0.719,
+    "tp_mean_w_gap": 0.931,
+    "tp_mean_w_mom": 0.069,
+    "root_cause": "Factor DB factor names don't match sleeve custom factors. IdioVol ICIR<0 in most periods. TPMom has no Factor DB match (ICIR=0). Result: single-factor concentration instead of diversified weighting."
+  },
+  "lesson": "L-547: Sleeve IC-Weight with Factor DB name-matching fails when custom factors have no exact DB counterpart. ICIR<0 exclusion turns multi-factor into single-factor. Need direct IC computation on sleeve's own factor scores, not Factor DB proxy.",
+  "output_dir": "04_Research/strategies/STR_1340_sleeve_ic_weight/output",
+  "files": ["hurdle_result.json", "performance.csv", "ic_weight_defense_log.csv", "ic_weight_tp_log.csv"]
+}

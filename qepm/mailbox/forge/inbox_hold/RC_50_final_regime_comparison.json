@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_50_regime_compare",
+  "title": "[진단] 국면 시그널 전수 비교 — MRS/KMRS/VIX/Disp/Vol/DD/Breadth/AR/CUSUM 9종",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:11:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.83,
+  "scope": {"strategy_id": "RC_50", "family": "regime_conditional"},
+  "design": {
+    "concept": "동일 7F composite + 동일 overlay 구조에서 국면 시그널만 9종 교체 비교. 최적 국면 시그널 확정.",
+    "experiments": [
+      "MRS (regime_daily)", "KMRS (한국 전용)", "VIX z-score",
+      "Dispersion", "Realized Vol", "Portfolio DD",
+      "Market Breadth", "Absorption Ratio", "Soft CUSUM"
+    ],
+    "output": "9종 국면 시그널의 SR/MDD/OOS 비교표 → 최적 국면 시그널 확정"
+  },
+  "pit_rules": {"C1": "모든 시그널 t-1 lag"}
+}

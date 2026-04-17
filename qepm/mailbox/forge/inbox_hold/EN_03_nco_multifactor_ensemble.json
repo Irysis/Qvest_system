@@ -1,0 +1,25 @@
+{
+  "exp_id": "EN_03_nco_mf_ensemble",
+  "title": "NCO × 멀티팩터 앙상블 — NCO 가중 + FM 가중 + EW의 3-method 평균",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:22:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {"strategy_id": "EN_03", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "AAA1(구성법 앙상블)의 신규 네이밍 버전 + 팩터 가중 차원 추가. 종목 선정(7F composite 고정) + 3가지 가중법 앙상블.",
+    "methods": {
+      "m1_ew": "Top 30 Equal Weight",
+      "m2_nco": "Top 30 NCO Weight (Gerber + Ward.D2)",
+      "m3_fm": "Top 30 FM-adjusted Weight (trailing 6m SR 반영)"
+    },
+    "ensemble": "w_final = mean(w_EW, w_NCO, w_FM) per stock",
+    "scoring": "7F composite (MF_A1) → Top 30 고정. 가중만 앙상블.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "NCO, FM 모두 t-1 lag"},
+  "overfitting_guard": "3-method 단순 평균. 추정 오류 감소.",
+  "l_codes_referenced": ["L-14 (EW)", "L-488 (NCO)", "L-429 (FM)"]
+}

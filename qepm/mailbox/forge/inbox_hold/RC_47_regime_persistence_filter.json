@@ -1,0 +1,18 @@
+{
+  "exp_id": "RC_47_persistence_filter",
+  "title": "국면 지속성 필터 — MRS 위기 2개월 연속 확인 후에만 방어 전환",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:42:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_47", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "GGG1(risk-on only)의 2개월 확인과 유사하나 방어 진입에도 적용. 단발 MRS spike → 무시. 2개월 연속 MRS >= 20 → 방어 전환.",
+    "logic": [
+      "MRS[t-1] >= 20 AND MRS[t-2] >= 20 → 방어 확정",
+      "MRS[t-1] >= 20 AND MRS[t-2] < 20 → 아직 정상 유지",
+      "MRS[t-1] < 15 연속 2개월 → 정상 복귀"
+    ],
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS[t-1], MRS[t-2] 모두 lag"}
+}

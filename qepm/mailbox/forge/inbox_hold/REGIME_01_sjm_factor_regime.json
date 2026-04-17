@@ -1,0 +1,29 @@
+{
+  "exp_id": "REGIME_01",
+  "title": "Statistical Jump Model (SJM) 기반 팩터별 독립 국면 감지 → 동적 팩터 배분",
+  "from": "scout",
+  "to": "regime_scout",
+  "cmd": "research",
+  "timestamp": "2026-03-21T19:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.85,
+  "scope": {
+    "family": "regime_enhancement",
+    "target": "regime_engine_daily.R 대안/보완"
+  },
+  "hypothesis": {
+    "statement": "Statistical Jump Model(SJM)이 현행 regime_engine_v7.1(expanding percentile threshold)보다 팩터별 국면 전환을 더 정확히 감지하여, 팩터 배분 최적화 시 IR +0.1~0.2 개선을 달성한다. SJM의 jump penalty가 regime 지속성을 강화하여 false signal 감소.",
+    "mechanism": "Shu & Mulvey (2024, arXiv 2410.14841): SJM은 HMM 대비 regime 전환에 penalty를 부과 → 너무 빈번한 전환 억제 → 거래비용 감소 + 신호 안정성. 7개 팩터(value/size/momentum/quality/lowvol/growth) 각각에 독립 bull/bear regime 감지 → Black-Litterman에 view로 통합. 우리 v7.1은 시장 전체 국면(4 Layer)만 감지 → 팩터별 국면은 미감지. 예: momentum bear + value bull 동시 발생 시 v7.1은 시장 전체 상태만 반영하나 SJM은 팩터 rotation을 포착. Shu & Mulvey (2024, arXiv 2402.05272): US/Germany/Japan 실증에서 SJM이 HMM보다 일관되게 MDD 감소 + SR 개선",
+    "falsification": "SJM regime 전환 빈도가 v7.1보다 높으면 → 개선 없음 기각. 한국시장 팩터 수익률 시계열이 너무 짧으면(2000~2024) → 과적합 위험. SJM 구현 복잡도 대비 IR 개선 <0.05이면 비용 대비 효과 부족 기각",
+    "academic_basis": "Shu & Mulvey (2024) 'Dynamic Factor Allocation Leveraging Regime-Switching Signals' arXiv 2410.14841. Shu & Mulvey (2024) 'Downside Risk Reduction Using Regime-Switching Signals: A Statistical Jump Model Approach' arXiv 2402.05272. Nystrup, Hansen, Madsen & Lindstrom (2017) 'Regime-Based vs Static Factor Allocation' — original SJM"
+  },
+  "implementation_notes": {
+    "step1": "SJM 알고리즘 R 구현 (R depmixS4 패키지 또는 직접 구현). Jump penalty λ 포함",
+    "step2": "한국시장 팩터 수익률 시계열 구성 (Defense/IndMom/Consensus 각각의 active return)",
+    "step3": "팩터별 bull/bear regime 감지 → v7.1 시장 regime과 비교",
+    "step4": "BL 또는 단순 tilt 방식으로 팩터 배분 → 기존 EW sleeve 배분 대비 비교",
+    "constraint": "팩터별 regime은 v7.1 시장 regime과 독립적으로 작동 가능. 단, PIT 준수 (C1: rolling/expanding only)"
+  },
+  "l_codes": ["L-442 (regime engine v7.1 확정)", "L-443 (정상 시 헤지 안함 원칙)", "L-448 (k-means jump model 실패)"],
+  "risk_notes": "L-448: k-means Jump Model은 재현 불가, MDD 요동으로 실패. 그러나 SJM은 k-means가 아닌 penalized likelihood 기반으로 다른 알고리즘. λ(jump penalty) 선택이 핵심 — time-series CV 필요. 한국시장 팩터 시계열이 미국보다 짧고 노이즈 심할 수 있음. Regime Scout 영역 — 최종 엔진 선택은 Q-Lead"
+}

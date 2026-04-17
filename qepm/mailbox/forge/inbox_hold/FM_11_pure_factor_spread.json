@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_11_factor_spread",
+  "title": "Factor Spread FM — Top-Bottom 스프레드 수익률로 FM 계산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_11", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1의 FM은 long-only portfolio SR. FM_11은 Top 30% - Bottom 30% 스프레드 수익률의 SR. 스프레드 = 순수 팩터 프리미엄. 시장 방향 제거.",
+    "logic": [
+      "1. 각 팩터: Top 30% EW return - Bottom 30% EW return = factor_spread",
+      "2. FM = trailing 6m spread SR per factor (t-1)",
+      "3. w_i = max(0, FM_spread_i) / sum(max(0, FM_spread))",
+      "4. composite → Top 30 (long only)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "factor_spread = t-1 lag. Top/Bottom = 당월 횡단면 기준."},
+  "overfitting_guard": "Spread SR = 시장 beta 제거된 순수 팩터 측정."
+}

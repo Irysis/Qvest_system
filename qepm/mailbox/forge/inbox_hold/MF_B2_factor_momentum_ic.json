@@ -1,0 +1,31 @@
+{
+  "exp_id": "MF_B2_FM_IC",
+  "title": "팩터모멘텀 IC가중 — trailing 3m IC rank로 팩터 비중 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:34:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.80,
+  "scope": {
+    "strategy_id": "MF_B2",
+    "family": "multifactor_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "factors": ["defense", "consensus", "indmom", "quality", "value", "momentum", "tp_gap"],
+    "fm_method": {
+      "description": "각 팩터의 trailing 3m IC(rank correlation with next-month return)를 t-1 lag로 계산. IC 기반 가중 = IC_i / sum(IC_positive).",
+      "lookback": "3 months (trailing IC 평균)",
+      "lag": "t-1",
+      "window": "expanding minimum 12m warm-up",
+      "rationale": "IC는 SR보다 noise-robust (횡단면 정보). 단기 IC 변동이 팩터 유효성 변화를 빠르게 포착."
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "IC 계산 시 t월 수익률 사용 — 이는 PIT 위반 아님 (IC = z_score[t-1] vs Ret[t]). 단, t+1월 수익률 사용 금지.",
+    "C2": "가중 결정에 사용하는 IC는 t-1까지의 IC만."
+  },
+  "overfitting_guard": "IC 기반 가중은 횡단면 정보. OOS retention < 0.5 시 폐기."
+}

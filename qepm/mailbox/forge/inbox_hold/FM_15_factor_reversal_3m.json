@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_15_factor_rev_3m",
+  "title": "3m Factor Reversal — 최근 3m 최악 팩터 매수 (단기 팩터 역전)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:23:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {"strategy_id": "FM_15", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "PPPP1(FM+역FM 블렌드)에서 역FM만 단독. 단기(3m) 최악 팩터가 다음 3m 반등 가능성. Arnott(2016) factor mean-reversion의 순수 테스트.",
+    "logic": [
+      "1. 7 팩터 trailing 3m SR 순위 (t-1)",
+      "2. 최하위 3개 팩터에 가중 (각 33%)",
+      "3. 나머지 4개 팩터 가중 0",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "comparison": "B1(FM) vs FM_15(Factor Reversal) → 한국시장에서 팩터 추세 vs 역전 어느 쪽이 유효한지 결론"
+  },
+  "pit_rules": {"C1": "trailing 3m SR, t-1 lag"}
+}

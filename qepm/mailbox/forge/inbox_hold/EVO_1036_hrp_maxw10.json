@@ -1,0 +1,35 @@
+{
+  "exp_id": "EVO_1036_hrp_maxw10",
+  "title": "Evolution: STR_1036 + HRP max_weight 15%→10% → 집중도 완화",
+  "from": "judge",
+  "to": "forge",
+  "cmd": "run_evolution",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "EXPLOIT",
+  "priority_score": 3,
+  "parent_strategy": "STR_1036",
+  "parent_grade": "A",
+  "parent_score": 80.9,
+  "parent_metrics": {
+    "cagr": 20.22, "sharpe": 1.284, "mdd": 23.82, "ann_vol": 15.75
+  },
+  "evolution_type": "single_change",
+  "scope": {
+    "change_description": "calc_gerber_mad_detoned_hrp_weights()의 max_w=0.15 → 0.10 변경. 개별 종목 최대 비중을 10%로 제한하여 집중도 완화.",
+    "expected_effect": "downside vol 감소, upside/downside ratio 개선. SR 소폭 개선 기대. MDD 23.8% → ~20% 가능.",
+    "files_to_modify": ["run_all.R 내 calc_gerber_mad_detoned_hrp_weights 함수의 max_w 파라미터"],
+    "base_code": "STR_1036_daily_regime/run_all.R 복사 후 max_w=0.15 → max_w=0.10"
+  },
+  "hypothesis": "30종목 HRP에서 max_w=15%는 상위 6~7종목에 집중. 10%로 제한 시 분산 강화 → tail risk 감소 → Calmar/Sortino 개선.",
+  "constraints": {
+    "n_holdings_max": 30,
+    "pit_required": true,
+    "must_beat_parent": "MDD < 23.82% OR Sharpe > 1.284"
+  },
+  "metrics_target": {
+    "primary": "MDD < 22%",
+    "secondary": "Sharpe >= 1.28 (유지 또는 개선)"
+  },
+  "l_codes": ["L-497 (1036 vol 과다)", "L-14 (EW > IVOL 단일팩터에서)"],
+  "risk_notes": "max_w 10% → 사실상 EW에 가까워질 수 있음. HRP의 risk-based allocation 효과가 약화될 수 있음."
+}

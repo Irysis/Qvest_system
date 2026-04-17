@@ -1,0 +1,15 @@
+{
+  "exp_id": "RC_55_no_regime",
+  "title": "[진단] No Regime Baseline — MRS 없이 DD+VT만 (국면 시그널 기여분 측정)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:02:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_55", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "7F composite + DD_med + VT 0.25, MRS 없음. RC_50 비교 대조군.",
+    "signal": "MF_A1 7F composite",
+    "overlay": "DD_med only + VT 0.25 (NO regime signal)",
+    "comparison": "RC_55(no regime) vs 모든 RC 전략 → 국면 시그널의 순수 기여분"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

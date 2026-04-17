@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_FF1_DUAL_MOMENTUM",
+  "title": "듀얼 모멘텀 멀티팩터 — 절대+상대 모멘텀 동시 적용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:43:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {
+    "strategy_id": "MF_FF1",
+    "family": "multifactor_dual_mom",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Antonacci(2014) Dual Momentum을 팩터 레벨에 적용. 절대 FM(팩터 SR > 0?) + 상대 FM(팩터 간 순위) 동시 적용. 절대 FM = time-series signal, 상대 FM = cross-sectional signal.",
+    "logic": [
+      "1. 절대 모멘텀: 각 팩터의 trailing 6m SR > 0 확인 (Z1과 유사)",
+      "2. 상대 모멘텀: SR > 0인 팩터 중 순위로 가중 (B1과 유사)",
+      "3. 결합: w_i = (SR_i > 0) × rank_weight_i",
+      "4. 모든 팩터 SR <= 0이면 Defense only (안전 자산)",
+      "5. composite_score → Top 30, EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "difference": "Z1은 절대만, B1은 상대만. FF1은 둘 다 → '추세 확인 + 상대 우위' 이중 필터"
+  },
+  "pit_rules": {"C1": "trailing 6m SR = rolling 126d, t-1 lag"},
+  "overfitting_guard": "Dual momentum은 사전 정의 규칙(Antonacci 2014). 파라미터 최적화 없음.",
+  "academic_basis": "Antonacci (2014) 'Dual Momentum Investing'; Moskowitz et al. (2012 JFE)"
+}

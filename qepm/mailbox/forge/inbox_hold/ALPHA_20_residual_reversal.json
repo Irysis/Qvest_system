@@ -1,0 +1,50 @@
+{
+  "exp_id": "ALPHA_20",
+  "title": "Residual Reversal — FF3 잔차 기반 순수 과잉반응 포착 (Reversal의 'clean' 버전)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T04:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {
+    "family": "residual_reversal",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "FF3 회귀 잔차(idiosyncratic return)의 1개월 reversal이 raw return reversal보다 깨끗한 alpha를 제공한다. 잔차 reversal은 시장/사이즈/가치 팩터 효과를 제거하여 순수한 종목별 과잉반응만 포착. 한국시장의 reversal-dominant 구조(Kang et al. 2025)에서 가장 효율적 구현.",
+    "mechanism": "Da, Liu & Schaumburg (2014 RFS): Residual reversal = 과거 1개월 FF3 잔차를 뒤집은 시그널. Raw reversal 대비 장점: (1) 시장 전체 하락기에 모든 종목 reversal되는 'mechanical' 효과 제거, (2) 팩터 노출 없이 순수 alpha, (3) 턴오버 낮음. SSRN(2026.3) 'Systematic Reversal and Industry Momentum': 개별종목 reversal + 산업 momentum 동시 존재 확인. 148-anomaly 한국 복제: ε_6_6(잔차 모멘텀 6m) 유의 — 이를 1개월로 축소하면 residual reversal. Tail Risk(ALPHA_05)과 독립 차원: Tail Risk=분포 형태, Residual Reversal=최근 1개월 과잉반응.",
+    "falsification": "Residual reversal IC < raw reversal IC → 잔차 분해 무의미 기각. ICIR < 0.15 → 기각. Tail Risk와 상관 > 0.5 → 독립성 부족 기각",
+    "academic_basis": "Da, Liu & Schaumburg (2014) 'A Closer Look at the Short-Term Return Reversal' RFS. Blitz, Huij & Martens (2011) 'Residual Momentum' JFE — residual momentum의 대칭 개념. SSRN (2026.3) 'Systematic Reversal and Industry Momentum'. Kang, Ryu & Webb (2025) 'Momentum and Reversal in the Korean Stock Market' IAJ. 한국 148-anomaly 복제: residual momentum 유의"
+  },
+  "data_requirements": {
+    "source": "✅ RAWDATA (Ret, Close) + .cache/kr_factor_returns.parquet (FF3 팩터)",
+    "computation": {
+      "step1": "rolling 252d FF3 회귀: Ret[i,t] = α + β1×MKT + β2×SMB + β3×HML + ε[i,t]",
+      "step2": "잔차 ε[i,t] 추출",
+      "step3": "past_1m_residual = sum(ε[i, t-21:t-1])",
+      "step4": "signal = -past_1m_residual (residual reversal)"
+    }
+  },
+  "implementation": {
+    "step1": "kr_factor_returns.parquet에서 MKT/SMB/HML 일별 팩터 수익률 확인",
+    "step2": "종목별 rolling 252d FF3 회귀 → 잔차 추출",
+    "step3": "past_1m_residual 계산 → z(-past_1m_residual) 시그널",
+    "step4": "Alpha Lab: IC/ICIR + raw reversal 대비 비교 + Tail Risk 상관",
+    "step5_if_pass": "Full backtest: monthly, sector-neutral, N=30, BZ 50/25",
+    "step6": "Defense(Tail Risk) + Residual Reversal dual alpha 테스트"
+  },
+  "pit_checklist": ["C1: rolling 252d regression", "C2: t-1 lag on signal", "C8: FF3 factor는 당일 사용 가능(시장 공개 데이터)"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.03",
+    "icir": ">0.20",
+    "improvement_over_raw_reversal": "ICIR +20%",
+    "corr_with_tail_risk": "<0.3",
+    "ff3_alpha_significant": true
+  },
+  "l_codes": ["L-488 (한국 reversal dominant)", "L-489 (Tail Risk 유일 정방향)", "L-428 (4th alpha)"],
+  "risk_notes": "Residual reversal은 높은 turnover를 유발할 수 있음(매월 전체 교체). BZ(50/25)로 완화. FF3 regression의 rolling window가 너무 짧으면 beta 추정 불안정 → 252d 사용. kr_factor_returns.parquet에 MKT/SMB/HML이 존재하는지 확인 필수. Raw reversal 대비 개선이 없으면 단순 reversal만 사용해도 됨"
+}

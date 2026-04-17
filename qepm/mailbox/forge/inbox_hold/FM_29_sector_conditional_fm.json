@@ -1,0 +1,21 @@
+{
+  "exp_id": "FM_29_sector_fm",
+  "title": "Sector-Conditional FM — 섹터별로 다른 FM lookback 적용",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:03:00+09:00",
+  "bucket": "explore", "priority_score": 0.72,
+  "scope": {"strategy_id": "FM_29", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "IT/반도체는 빠른 추세(3m FM), 금융/유틸리티는 느린 추세(12m FM). 섹터별 최적 FM lookback 차별화.",
+    "sector_lookback": {
+      "IT_semiconductor": "3m",
+      "healthcare": "6m",
+      "financials_utilities": "12m",
+      "others": "6m (default)"
+    },
+    "logic": "각 종목이 속한 섹터의 lookback으로 FM 가중 결정 → composite → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "섹터별 FM t-1 lag"},
+  "overfitting_guard": "섹터별 lookback은 경제적 직관(IT 빠름, 금융 느림). 최적화 아님."
+}

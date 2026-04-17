@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_16_regime_fm_blend",
+  "title": "Regime-Aware FM Blend — 정상: long-term FM + 위기: short-term FM",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:43:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "FM_16", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "정상 시 안정적 장기 FM(12m), 위기 시 빠른 반응 단기 FM(3m). MRS로 FM lookback 자동 선택.",
+    "logic": [
+      "1. MRS[t-1] → 국면",
+      "2. risk_on (MRS<15): FM_12m 가중 (안정 추세)",
+      "3. elevated (15<=MRS<25): blend = 0.50*FM_12m + 0.50*FM_3m",
+      "4. crisis (MRS>=25): FM_3m 가중 (빠른 반응)",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FM + MRS 모두 t-1 lag"}
+}

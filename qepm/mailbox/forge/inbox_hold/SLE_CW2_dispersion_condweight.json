@@ -1,0 +1,34 @@
+{
+  "exp_id": "SLE_CW2",
+  "title": "Dispersion CondWeight (내생 시그널 기반 비중 전환)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {
+    "family": "stock_level_ensemble_condweight",
+    "strategy_id": "STR_1056",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "Cross-sectional return dispersion(내생 시그널)에 따라 score 비중 동적 전환. L-200: Dispersion CondWeight = IR 0.524(역대 최고), FF5a t=2.03. 분산도 높을 때 → 종목선택(Defense IdioVol) 강화(55/25/20), 분산도 낮을 때 → 시장(Beta+alpha) 강화(35/35/30). L-201: 내생 > 외생(FRED). 단일 defense에서 검증된 메커니즘을 멀티팩터로 확장",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R + dispersion 계산",
+    "dispersion_signal": "cross_sectional_sd(Ret, 20d rolling)[t-1]. z-score 변환. z > 0.5 = high_disp, z < -0.5 = low_disp, else = neutral",
+    "composite_score_high_disp": "0.55 * z_defense + 0.25 * z_consensus + 0.20 * z_indmom",
+    "composite_score_neutral": "0.45 * z_defense + 0.30 * z_consensus + 0.25 * z_indmom",
+    "composite_score_low_disp": "0.35 * z_defense + 0.35 * z_consensus + 0.30 * z_indmom",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: rolling 20d dispersion (t-1까지)", "C2: t-1 lag"],
+  "constraints": ["N <= 30", "dispersion[t-1] only", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">13%", "sharpe": ">1.15", "mdd": "<25%"},
+  "l_codes": ["L-200", "L-201", "L-206", "L-210"],
+  "risk_notes": "L-202: IV+Disp 결합 시 과잉전환 73개월. Dispersion 단독 사용. threshold 0.5/-0.5 초기값, robustness check 0.75/-0.25도 시도(L-206)"
+}

@@ -1,0 +1,119 @@
+project:
+  name: "QEPM MoltBot"
+  version: "1.4.2"
+  market: "KR"
+  language: "R"
+  rebalance_freq: "monthly"
+  benchmark: "KOSPI200_TR"
+  project_root: "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+
+# ── Primary Agent Model: 6-Role Claude Code Teams (API-Free) ──
+# OpenClaw 15-agent model is reference-only; operational model is below.
+# Communication: file-based mailbox IPC (qepm/artifacts/mailbox/)
+# Execution: tmux pane per agent, skill_dispatch.R auto-routing
+agents:
+  operational_model: "claude_code_teams"  # NOT openclaw_sessions_send
+  roles:
+    q_lead:
+      description: "오케스트레이션 + 메모리 커밋 + 텔레그램"
+      skills: [memory, registry, briefing]
+    scout:
+      description: "문헌 조사 + 가설 설계 + 데이터 수집"
+      skills: [lawbook, research, datalake, idea_submit, idea_compile]
+    forge:
+      description: "백테스트 실행 (최대 3개 병렬)"
+      skills: [backtest]
+    judge:
+      description: "허들 검증 + 통계 방어 + 팩터 모델"
+      skills: [hurdle, stat_defense, factor_model]
+    blender:
+      description: "앙상블 구성 + 다양성 검증 + 배분 최적화"
+      skills: [optimize, diversity, allocation]
+    watch:
+      description: "국면 모니터링 + 브리핑 발송"
+      skills: [regime, briefing, telegram]
+
+  # Legacy reference (openclaw workspace model — NOT operational)
+  openclaw_reference:
+    note: "15-agent workspace model. Requires API. Reference only."
+    agents: [manager, strategist, auditor, regime, blender, researchops,
+             catalyst, researcher, compiler, steward, tower, valuation,
+             features, portfolio, alphalab, monitor]
+
+memory:
+  base_dir: "./memory"
+  promotion:
+    r2_min_experiments: 3
+    r4_min_regime_months: 24
+    r4_low_confidence: 0.3
+    r4_med_confidence: 0.5
+  retrieval_priority:
+    rebalance: [schema, stat_evidence, regime_payoff, portfolio_policy, digests, working]
+    research: [family_memory, lessons, stat_evidence, backlog, working]
+
+research:
+  budget_split:
+    exploit: 0.50
+    orthogonal: 0.30
+    counterfactual: 0.20
+  family_concentration_cap: 0.40
+  cooldown_after_fails: 3
+  max_wip: 3
+
+kpi:
+  primary_sharpe: "sharpe0_m_ann"
+  primary_tail: "es99_m"
+  target_cagr: 0.16
+  target_sharpe: 2.0
+  target_mdd: -0.25
+
+briefing:
+  triggers:
+    sharpe_improvement: 0.10
+    es99_improvement: 0.003
+    mdd_improvement: 0.02
+  dedup_hours: 24
+  daily_max: 12
+  channel_hashtags:
+    strategy: "#전략브리핑"
+    rebalance: "#월간리밸"
+    regime: "#국면전환"
+    monitoring: "#모니터링"
+    memory: "#기억승격"
+    idea: "#아이디어"
+
+hurdle:
+  objective_hierarchy: [validity, implementability, robustness, performance, novelty]
+
+hard_laws:
+  - "PIT: available_date <= rebal_date"
+  - "재현성: 동일 입력 동일 결과"
+  - "비용 반영 필수"
+  - "허들 임의 변경 금지"
+  - "fingerprint 동일 = 동일 전략"
+  - "테스트 구간 봉인"
+  - "산출물 없는 진척 금지"
+
+orchestration:
+  mode: "file_ipc_mailbox"  # API-free: mailbox + skill_dispatch
+  mode_default: "research"
+  loop_default: "on"
+  max_wip: 3
+  daily_chunk_limit: 20
+  states: ["BOOT", "MEMORY_LOAD", "BACKLOG_REFRESH", "DISPATCH",
+           "RUN_CHUNK", "EVALUATE", "MEMORY_COMMIT", "BRIEF_IF_NEEDED"]
+  pipeline: >
+    state_machine.R (orch_run_cycle)
+    → skill_dispatch.R (dispatch_to_skill → execute_skill)
+    → agent_mailbox.R (mailbox_send/receive/reply)
+    → hybrid_mode.R (hybrid_commit → R0-R6)
+    → telegram_notify.R (tg_send → DM only)
+
+telegram:
+  # 수신: telegram_listener.py (Python) — 유일한 수신 경로
+  # 발신: tg_send() (R, telegram_notify.R) — 유일한 발신 경로
+  # DM 우선, 채널은 Grade A/B + briefing만
+  listener: "telegram_listener.py"
+  sender: "tg_send() in telegram_notify.R"
+  dm_default: true
+  channel_for: ["grade_a_b", "daily_briefing"]

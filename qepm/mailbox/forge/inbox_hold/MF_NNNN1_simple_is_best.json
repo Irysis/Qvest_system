@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_NNNN1_SIMPLE_BEST",
+  "title": "극도 단순 — Defense + Consensus 2팩터 EW + BRK overlay (최소 복잡도)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:39:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.87,
+  "scope": {"strategy_id": "MF_NNNN1", "family": "multifactor_simple", "n_holdings": 30},
+  "design": {
+    "concept": "92유형 중 가장 단순한 전략. 검증된 2팩터(Defense + Consensus)만 EW 결합. 오버레이도 최소(DD_med + regime_daily). DeMiguel(2009): 단순 모델이 복잡 모델을 OOS에서 이김.",
+    "logic": [
+      "1. z_defense = z(-IdioVol) + z(-Beta)",
+      "2. z_consensus = z(SUE) + z(EPS_chg) + z(FPER_revision)",
+      "3. composite = 0.50 × z_defense + 0.50 × z_consensus, sector neutral",
+      "4. Top 30 → EW, monthly rebal, BZ(45/30)"
+    ],
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    },
+    "rationale": "L-286(defense 비중 유지) + L-415(consensus 독립 alpha) = 검증된 2축. 추가 팩터의 한계 기여보다 단순성의 OOS 이점이 클 수 있음. 모든 92유형의 baseline."
+  },
+  "pit_rules": {"C1": "모든 시그널 t-1 lag", "C4": "DART 45일 lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "2팩터 EW = 최소 과적합 위험. 이 전략의 OOS SR이 복잡 전략 대비 우위면 → 복잡 전략 과적합 증거.",
+  "l_codes_referenced": ["L-14 (EW 우월)", "L-286 (defense 비중 유지)", "L-415 (consensus 독립 alpha)"],
+  "academic_basis": "DeMiguel et al. (2009 JFE) '1/N portfolio'; Occam's Razor"
+}

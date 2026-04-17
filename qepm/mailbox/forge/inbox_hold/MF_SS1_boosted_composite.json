@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_SS1_BOOSTED",
+  "title": "Boosted Composite — 약한 팩터를 순차적으로 잔차에 적합 (AdaBoost 원리)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:10:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {
+    "strategy_id": "MF_SS1",
+    "family": "multifactor_boosted",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "AdaBoost 원리를 팩터 결합에 적용. (1) Defense로 1차 scoring → 잔차 계산 → (2) Consensus로 잔차 fitting → 새 잔차 → (3) Momentum으로 잔차 fitting. 약한 팩터들이 순차적으로 설명력 추가.",
+    "logic": [
+      "1. Stage 1: z_defense로 Top 60 후보 선정. 월간 수익률 기록. 잔차 = 실제수익 - z_defense 예측",
+      "2. Stage 2: z_consensus로 잔차 설명. 새잔차 = 잔차 - z_consensus 기여분",
+      "3. Stage 3: z_momentum으로 새잔차 설명",
+      "4. 최종 score = z_defense + α₂*z_consensus + α₃*z_momentum (α = expanding OLS 계수)",
+      "5. Top 30 from final score"
+    ],
+    "factor_order": "Defense → Consensus → IndMom → Quality → Value → Momentum → TPGap",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "α 계수 = expanding window OLS (t-1까지). 순서는 사전 정의.", "C12": "Full-sample OLS 금지."},
+  "overfitting_guard": "팩터 순서는 경제적 논리(L-286 defense 우선)로 사전 정의. α 계수는 expanding window.",
+  "academic_basis": "Freund & Schapire (1997) AdaBoost; Gu et al. (2020 RFS) — ML에서 boosting 우수성"
+}

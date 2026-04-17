@@ -1,0 +1,35 @@
+{
+  "exp_id": "MF_E2_RANDOM_FOREST",
+  "title": "ML 기반 팩터 배분 — Random Forest 다수결 예측",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:39:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {
+    "strategy_id": "MF_E2",
+    "family": "multifactor_ml",
+    "n_holdings": 30
+  },
+  "design": {
+    "model": "Random Forest (randomForest R package)",
+    "target": "다음 달 최적 팩터 rank (1=best, 7=worst)",
+    "features": "MF_E1과 동일",
+    "training": "expanding window walk-forward (MF_E1과 동일)",
+    "prediction_to_weight": {
+      "method": "예측 rank → inverse rank weight. Top 2 팩터: 각 25%, Mid: 15%, Bottom 2: 각 10%",
+      "advantage": "RF는 XGBoost 대비 overfitting에 강건. Feature 간 interaction 자동 포착."
+    },
+    "hyperparameters": {
+      "ntree": 500,
+      "mtry": "sqrt(p) = default",
+      "nodesize": 5,
+      "note": "시계열 CV로만 tuning."
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": "MF_E1과 동일",
+  "overfitting_guard": "MF_E1과 동일. RF의 OOB error를 overfitting 진단에 활용.",
+  "r_packages": ["randomForest"]
+}

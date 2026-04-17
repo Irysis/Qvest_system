@@ -1,0 +1,35 @@
+{
+  "msg_id": "SCOUT_ALERT_003",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "alert",
+  "priority": "CRITICAL",
+  "timestamp": "2026-03-22T05:00:00+09:00",
+  "subject": "FINAL: Bias-Free IC 결과 — 이전 모든 preliminary IC 결과 무효. Tail Risk 방향 반전.",
+  "correction": {
+    "previous_claim": "ALPHA_05 Tail Risk IC=+0.079(t=7.44) — 정방향, 유일한 bias-free alpha",
+    "corrected_result": "ALPHA_05 Tail Risk IC=-0.051(t=-5.01) — 역방향! High tail risk → 높은 수익 (위험 보상)",
+    "cause": "이전 IC: fwd_ret = Close[t+1m]/Close[t]-1 사용 → Close[t] 공유 bias. Bias-free: fwd_ret = prod(1+Ret[t+1:t+21])-1"
+  },
+  "bias_free_results": {
+    "rev_21d": {"ic": "+0.022", "t": "2.90", "verdict": "약유의. Harvey t>3 미달. 한국 단기 reversal 약함"},
+    "rev_126d": {"ic": "+0.013", "t": "1.45", "verdict": "비유의"},
+    "tail_risk_neg_pct5": {"ic": "-0.051", "t": "-5.01", "verdict": "유의하나 역방향 — high risk → high return"},
+    "dart_quality_signals": "이전 IC도 bias 포함 가능 → Forge에서 bias-free fwd_ret로 전수 재검증 필수"
+  },
+  "implications": {
+    "ALPHA_05": "IC 반전. z(-Pct5) scoring이 아닌 z(+Pct5) = high tail risk buy로 전환하면 alpha 존재. 그러나 이는 위험 수취 전략 — Defense 철학과 상충. Gate(극단 tail risk 제거)로만 사용 권장",
+    "ALPHA_19_contrarian": "Reversal IC=+0.022(21d) — 약유의. Contrarian alpha의 실체는 기존 IC의 1/40 수준. 단독 alpha로는 약함",
+    "ALPHA_20_residual_reversal": "Raw reversal과 거의 동일할 것으로 예상. 약유의",
+    "all_previous_dart_ic": "DART 시그널 IC(OCF_ROA t=-3.93 등)도 bias 포함 가능성 높음. Forge에서 bias-free fwd_ret로 재검증 필수",
+    "existing_defense": "기존 Defense(IdioVol+Beta) 방향도 backtest_harness.R에서의 실제 성과로만 검증 가능. IC와 backtest 수익은 다를 수 있음"
+  },
+  "forge_action_items": [
+    "1. backtest_harness.R의 forward return 계산 방식 확인 — Close ratio vs Ret cumulation",
+    "2. 모든 신규 시그널을 bias-free fwd_ret(일별 Ret 누적)로 IC 재검증",
+    "3. IC보다 full backtest 결과(실제 포트폴리오 수익)로 최종 판단",
+    "4. ALPHA_05 Tail Risk: z(+Pct5) 역방향 vs z(-Pct5) 정방향 양쪽 백테스트 비교",
+    "5. 21d Reversal(IC=+0.022, t=2.90): 약유의이나 full backtest에서 유의할 수 있음 — 백테스트 권장"
+  ],
+  "scout_conclusion": "Preliminary IC 스크리닝의 한계를 발견. 가격 기반 시그널은 shared-denominator bias에 취약. DART 시그널은 Factor_Date lag로 상대적으로 안전하나 재검증 필요. 최종 alpha 판단은 IC가 아닌 full backtest(backtest_harness.R)로만 가능. Forge full backtest 스폰을 최우선 권고."
+}

@@ -1,0 +1,21 @@
+{
+  "exp_id": "RC_33_disp_quintile",
+  "title": "Dispersion Quintile — 분산도 5분위별 최적 팩터 배분 매핑",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:11:00+09:00",
+  "bucket": "explore", "priority_score": 0.76,
+  "scope": {"strategy_id": "RC_33", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "H1(Dispersion CondWeight)의 5-state 정밀화. 분산도를 5분위로 나누어 각 분위별 최적 팩터 배분.",
+    "quintile_allocation": {
+      "Q1_very_low": "IndMom 30% + Momentum 25% + Others 45%",
+      "Q2_low": "IndMom 25% + Consensus 25% + Others 50%",
+      "Q3_mid": "MF_A1 Core",
+      "Q4_high": "Defense 30% + Consensus 25% + Quality 20% + Others 25%",
+      "Q5_very_high": "Defense 40% + Quality 25% + Others 35%"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Dispersion quintile = expanding percentile, t-1 lag"},
+  "overfitting_guard": "5-state allocation은 사전 정의. Full-sample 최적화 아님."
+}

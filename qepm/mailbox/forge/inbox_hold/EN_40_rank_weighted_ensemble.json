@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_40_rank_w",
+  "title": "Rank-Weighted Ensemble — 전략 SR 순위 역수로 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:33:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "EN_40", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. 5전략 trailing 12m SR 순위 (t-1)",
+      "2. w_i = (1/rank_i) / sum(1/rank) — 1등 50%, 2등 25%, ...",
+      "3. score × w 합산 → Top 30"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "SR 순위 = t-1 lag"}
+}

@@ -1,0 +1,21 @@
+{
+  "exp_id": "EN_39_complete_avg",
+  "title": "[진단] 앙상블 평균법 비교 — 산술/기하/조화/중앙값/Trimmed/Winsorized 6종",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:24:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_39", "family": "ensemble"},
+  "design": {
+    "concept": "동일 5전략 score에 대해 6가지 평균법 비교. 어떤 평균법이 OOS 최강인지 확인.",
+    "experiments": [
+      {"method": "산술평균", "ref": "EN_01 원리"},
+      {"method": "기하평균", "ref": "EN_37"},
+      {"method": "조화평균", "ref": "EN_36"},
+      {"method": "중앙값", "ref": "EN_35"},
+      {"method": "Trimmed Mean", "ref": "EN_34"},
+      {"method": "Winsorized Mean", "ref": "EN_38"}
+    ],
+    "output": "6가지 평균법의 SR/MDD/OOS 비교표"
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag"}
+}

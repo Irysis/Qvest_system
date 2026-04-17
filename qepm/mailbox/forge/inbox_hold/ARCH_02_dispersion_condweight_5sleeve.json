@@ -1,0 +1,46 @@
+{
+  "exp_id": "ARCH_02_DISP_CONDWEIGHT",
+  "title": "5-Sleeve Dispersion CondWeight: 분산도 기반 슬리브 배분 동적 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:50:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {
+    "strategy_id": "STR_1121",
+    "name": "disp_condweight_5sleeve",
+    "base": "STR_1060 (5-sleeve EW, Score 87.1)",
+    "family": "architecture_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "STR_1060의 5-sleeve 배분을 EW(각 20%) 대신 횡단면 수익률 분산도(Dispersion) 기반 CondWeight로 동적 조절하면, 국면 적응성 증가로 SR 개선. 고분산 시 → 종목선별형 sleeve(Defense, Consensus) 강화. 저분산 시 → 추세형 sleeve(IndMom, TPGap) 강화.",
+    "mechanism": "L-200: Dispersion CondWeight = IR 0.524(역대 최고), FF5α t=2.03. 높은 분산도 = 종목 간 수익률 차이 확대 → 종목선별(IdioVol scoring, SUE scoring) 우위. 낮은 분산도 = 시장 통합 모드 → 추세추종(industry momentum, TP gap) 우위. 이 원리를 개별 팩터가 아닌 sleeve 배분에 확장. L-201: 내생(Dispersion) > 외생(FRED) for CondWeight.",
+    "falsification": "SR < STR_1060 SR (1.333) → 기각. Turnover > STR_1060 × 1.5 → 기각"
+  },
+  "implementation": {
+    "dispersion_calc": "monthly cross-sectional std of daily returns (expanding 60d window, t-1 lagged)",
+    "allocation_rule": {
+      "high_disp": "z(disp) > 0.5 → Def 30%, Cons 25%, ConsGate 20%, IndMom 15%, TP 10%",
+      "normal": "z(disp) in [-0.5, 0.5] → EW 20% each (baseline)",
+      "low_disp": "z(disp) < -0.5 → Def 15%, Cons 15%, ConsGate 15%, IndMom 30%, TP 25%"
+    },
+    "application": "월별 리밸런싱 시 각 sleeve의 N을 조절. 총 30종목 유지. 예: high_disp → Def 9, Cons 8, Gate 6, Ind 4, TP 3",
+    "overlay": "STR_1060과 동일 (DD_med only + regime_engine_daily.R)",
+    "variants": [
+      {"id": "A", "name": "n_allocation", "change": "sleeve N 동적 조절 (종목수 배분)"},
+      {"id": "B", "name": "ret_weight", "change": "sleeve 수익률 가중 (N=6 고정, sleeve weight 변경)"}
+    ]
+  },
+  "l_codes_referenced": [
+    "L-200 (Dispersion CondWeight IR 0.524, 역대 최고)",
+    "L-201 (내생 > 외생 for CondWeight)",
+    "L-202 (Combined CondWeight 과잉전환 주의 — 단일 신호 우월)",
+    "L-203 (Disp CW + VT 독립 메커니즘 결합 유효)",
+    "L-508 (Short DD 제거)"
+  ],
+  "academic_basis": "Stivers & Sun (2010) 'Cross-Sectional Return Dispersion and Time Variation in Value and Momentum Premiums' JFM; Connolly & Stivers (2003) 'Momentum and Reversals in Equity-Index Returns During Periods of Abnormal Turnover and Return Dispersion' JF",
+  "risk_notes": "Variant B(수익률 가중)는 30종목 위반 위험 없음(N=6 고정). Variant A(종목수 배분)는 sleeve별 N 변동으로 소수 종목 sleeve 성과 불안정. CondWeight threshold는 old regime에서 최적화된 값 — v7.1에서 재검증 필요."
+}

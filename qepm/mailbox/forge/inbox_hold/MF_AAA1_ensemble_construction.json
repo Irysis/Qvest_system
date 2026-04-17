@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_AAA1_ENSEMBLE_CONST",
+  "title": "구성법 앙상블 — EW+ScoreW+NCO+RP 4가지 구성법 평균",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:24:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "MF_AAA1", "family": "multifactor_ensemble_const", "n_holdings": 30},
+  "design": {
+    "concept": "동일 팩터 composite score에서 4가지 다른 구성법(가중 방식)을 앙상블. 구성법 불확실성 감소.",
+    "methods": [
+      {"id": "EW", "description": "Top 30 Equal Weight"},
+      {"id": "ScoreW", "description": "Score 비례 가중 (CC1)"},
+      {"id": "NCO", "description": "NCO 가중 (STR_1033 방식)"},
+      {"id": "RP", "description": "Risk Parity 가중 (역변동성)"}
+    ],
+    "ensemble": "4가지 가중 벡터의 단순 평균. w_final = mean(w_EW, w_ScoreW, w_NCO, w_RP)",
+    "base_score": "MF_A1 composite score → 종목 선정은 동일. 가중만 앙상블.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 가중 방식에서 t-1 데이터만"},
+  "overfitting_guard": "4-method 단순 평균. 최적화 없음. DeMiguel(2009): averaging reduces estimation error.",
+  "l_codes_referenced": ["L-14 (EW>IVOL)", "L-429 (RP>EW at 6 stocks)", "L-479 (NCO/가중최적화 최강)"]
+}

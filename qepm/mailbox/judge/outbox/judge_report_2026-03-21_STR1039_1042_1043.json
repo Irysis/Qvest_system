@@ -1,0 +1,82 @@
+{
+  "judge_session": "2026-03-21",
+  "batch": 2,
+  "trigger": "Q-Lead 지시 (STR_1039 검증 + STR_1042/1043 종목수 위반 확인)",
+
+  "summary_table": [
+    {
+      "strategy": "STR_1039",
+      "score": 61.3,
+      "verdict": "FLAG",
+      "grade": "B",
+      "gate0": "PASS (regime_engine_option2.R PIT clean)",
+      "gate1": "FLAG (30종목 위반: ~70주)",
+      "key_issue": "수익률 블렌드 3슬리브 합산 ~70종목. SR 1.391/MDD 16.7% 방어력 최고급이나 30종목 위반."
+    },
+    {
+      "strategy": "STR_1042",
+      "score": 73.1,
+      "verdict": "FAIL",
+      "grade": "F",
+      "gate0": "FAIL (STR_1035 C11 오염 전파, 25% 비중)",
+      "gate1": "FAIL (30종목 위반: ~100주, N_stocks=30 하드코딩 은폐)",
+      "key_issue": "이중 결격: C11 오염 슬리브 + 30종목 3배 초과 + 종목수 위장. FF5 t=2.80 유망하나 무효."
+    },
+    {
+      "strategy": "STR_1043",
+      "score": 73.1,
+      "verdict": "FLAG",
+      "grade": "A_CONDITIONAL",
+      "gate0": "PASS (보고용 sd() 오탐 8건, 계산 미사용)",
+      "gate1": "FAIL (30종목 위반: ~70주)",
+      "key_issue": "SR 1.492/CAGR 18.53%/FF5 t=2.74 전체 최고급이나 30종목 위반으로 실투 불가."
+    }
+  ],
+
+  "cross_cutting_findings": {
+    "return_blend_holdings_problem": {
+      "description": "수익률 블렌드(return blending) 전략은 독립 슬리브의 일별 수익률을 가중평균. 실투 시 모든 슬리브의 종목을 동시 보유해야 하므로 합산 종목수 = sum(sleeve_n_holdings). 이는 30종목 제한을 구조적으로 위반.",
+      "affected": ["STR_1039", "STR_1042", "STR_1043"],
+      "sleeve_holdings": {
+        "STR_1037": "5 sleeves × 6 = 30주",
+        "STR_943": "20주",
+        "STR_898": "20주",
+        "STR_1035": "5 sleeves × 6 = 30주"
+      },
+      "totals": {
+        "STR_1039 (3-sleeve)": "30+20+20 = ~70주 (중복 제외)",
+        "STR_1042 (4-sleeve)": "30+20+20+30 = ~100주 (중복 제외)",
+        "STR_1043 (3-sleeve)": "30+20+20 = ~70주 (중복 제외)"
+      },
+      "fix_options": [
+        "Option A: 통합 포트폴리오 전환 — 슬리브 스코어를 통합하여 상위 30종목만 선택 + Gerber/HRP 가중",
+        "Option B: 슬리브별 종목수 축소 — 3-sleeve면 각 10종목, 4-sleeve면 각 7-8종목",
+        "Option C: 수익률 블렌드가 아닌 스코어 블렌드로 전환 — STR_1036 방식 (5 sleeve × 6 = 30)"
+      ]
+    },
+    "STR_1042_nstocks_falsification": {
+      "description": "STR_1042 line 101: PORTFOLIO_LOG에 N_stocks = 30L 하드코딩. 실제 종목수 ~100주를 30주로 위장. hurdle_gate가 이 값을 참조하면 Gate 1 판단 오류 발생.",
+      "severity": "CRITICAL",
+      "recommendation": "hurdle_gate.R에 수익률 블렌드 전략의 실제 종목수 검증 로직 추가 필요."
+    },
+    "constituent_sleeve_dependency": {
+      "description": "앙상블 전략은 구성 슬리브의 PIT 상태에 의존. STR_1042는 C11 FAIL된 STR_1035를 포함하여 전체 오염. STR_1039/1043은 STR_943/898이 미검증 상태.",
+      "action": "STR_943, STR_898 Judge 검증 필요 — 다음 배치 우선."
+    }
+  },
+
+  "potential_if_30stock_fixed": {
+    "STR_1043_concept": {
+      "sr": 1.492,
+      "cagr": 18.53,
+      "mdd": 18.3,
+      "ff5_t": 2.74,
+      "note": "FM tilt 아이디어 자체는 유효. STR_1036(30종목 통합) 위에 sleeve-level FM tilt 적용 가능. 재설계 가치 매우 높음."
+    },
+    "STR_1039_concept": {
+      "sr": 1.391,
+      "mdd": 16.7,
+      "note": "국면 조건부 동적 배분 아이디어 유효. 방어력 최고. 30종목 통합 구조에서 국면별 sleeve weight tilt 가능."
+    }
+  }
+}

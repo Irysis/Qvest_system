@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_06_calmar_weighted",
+  "title": "Calmar 가중 앙상블 — Calmar ratio 비례 전략 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "EN_06", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "SR 대신 Calmar(=CAGR/MDD)로 전략 가중. Calmar는 MDD를 직접 반영 → MDD 목표(25%) 달성에 최적화된 앙상블.",
+    "logic": [
+      "1. MDD<25% 달성 Grade A 전략들의 trailing Calmar 계산 (t-1, expanding)",
+      "2. w_strategy = Calmar_i / sum(Calmar)",
+      "3. 전략별 score × w_strategy 가중 합산 → Top 30"
+    ],
+    "eligible": "STR_1060(Calmar 0.913), STR_1071(0.946), STR_1063(0.852)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Calmar = expanding (t-1)"},
+  "overfitting_guard": "Calmar 가중은 자동 규칙."
+}

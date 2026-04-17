@@ -1,0 +1,46 @@
+{
+  "exp_id": "PIOTROSKI_OVERLAY_GRADEA",
+  "title": "Piotroski F-Score(STR_1099 Grade B 50.6) + BRK overlay → Grade A 확정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:45:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.86,
+  "scope": {
+    "strategy_id": "STR_1120",
+    "name": "piotroski_overlay",
+    "base": "STR_1099 (PiotroskiF standalone, Grade B 50.6, OOS retention 2.64, MDD 41.8%)",
+    "family": "fundamental_quality",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "STR_1099(PiotroskiF, OOS SR 0.727 >> IS SR 0.275, MDD 41.8%)에 BRK overlay를 적용하면 MDD 41.8% → <30%, Grade A 확정. L-517에서 'Hard FAIL은 set.seed()만 → 수정 즉시 Grade A 가능' 확인.",
+    "mechanism": "Piotroski(2000): 9-dimensional quality score = 수익성(3) + 레버리지(3) + 효율성(3). OOS retention 2.64 = 배치 최강 강건성. COVID +13.0% alpha = 위기 방어력. 위기 시 quality premium 작동 → overlay(DD brake)와 시너지 극대. MDD 41.8%는 overlay 미적용 상태이며, DD_med + regime daily 적용 시 30% 이하 달성 거의 확실.",
+    "falsification": "MDD > 35% → 기각. OOS retention < 1.5 (overlay가 OOS 강건성 훼손) → 기각"
+  },
+  "implementation": {
+    "step1": "STR_1099 run_all.R 복사",
+    "step2": "set.seed(1120) 추가 (L-517: Hard FAIL 원인 해소)",
+    "step3": "DD Brake 추가: DD_med only, start 4%, 1-day lagged, NO short DD",
+    "step4": "regime_engine_daily.R 추가: soft ramp MRS 15→30",
+    "step5": "vol_target 0.25 expanding window 추가",
+    "signal": "z(PiotroskiF), sector neutral, N=30, EW",
+    "data_source": ".cache/fundamental_dart.parquet (PiotroskiF 이미 계산)"
+  },
+  "expected_outcome": {
+    "sr": "0.60~0.90 (standalone 0.427 + overlay)",
+    "mdd": "25~32% (standalone 41.8% → 30% 감소)",
+    "grade": "A (Score 55~70 예상)",
+    "key_value": "독립 quality alpha. Defense(변동성)와 다른 차원(재무건전성). 앙상블 핵심 후보."
+  },
+  "l_codes_referenced": [
+    "L-517 (PiotroskiF Grade B 50.6, OOS retention 2.64, set.seed만 fix 필요)",
+    "L-512 (GP IC 0.016 < FScore IC 0.023 — 다차원 quality가 단일차원 대비 우수)",
+    "L-508 (Short DD 제거)",
+    "L-442 (regime engine v7.1)"
+  ],
+  "academic_basis": "Piotroski (2000 JAR) 'Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers'. 9-dimensional score (ROA, DeltaROA, CFO, Accrual, DeltaLeverage, DeltaLiquidity, Equity_Issue, DeltaMargin, DeltaTurnover)",
+  "risk_notes": "FScore scoring은 DART 데이터 의존 → 2015년 이전 데이터 부족 가능(L-434). CAGR 9.6%(standalone)이 낮아 overlay 후에도 CAGR 16% 미달 가능 → 앙상블 sleeve로의 가치에 집중."
+}

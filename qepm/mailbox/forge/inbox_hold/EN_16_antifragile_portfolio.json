@@ -1,0 +1,25 @@
+{
+  "exp_id": "EN_16_antifragile",
+  "title": "Anti-Fragile 포트폴리오 — 위기 시 오히려 강해지는 전략 조합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:32:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "EN_16", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "Taleb의 Anti-fragility: 스트레스에서 이익을 얻는 구조. 위기(MDD>10%) 기간에 양의 alpha를 보인 전략만 앙상블.",
+    "logic": [
+      "1. 각 전략의 스트레스 기간(BM MDD > 10%) 초과수익 계산",
+      "2. 스트레스 기간 alpha > 0인 전략만 후보",
+      "3. 후보 전략들의 score EW 합산 → Top 30",
+      "4. 후보가 2개 미만이면 SF_03(Defense+Quality Gate) fallback"
+    ],
+    "stress_periods": "GFC(2008), European Debt(2011), COVID(2020), Rate Hike(2022)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "dependency": "다수 전략 백테스트 완료 후 스트레스 alpha 계산"
+  },
+  "pit_rules": {"C1": "스트레스 기간 alpha = historical (expanding). 미래 스트레스 예측 아님."},
+  "overfitting_guard": "스트레스 기간 = 사전 정의(BM MDD>10%). 전략 선정은 스트레스 alpha 기준 자동."
+}

@@ -1,0 +1,22 @@
+{
+  "exp_id": "FM_21_dynamic_fm_ens",
+  "title": "Dynamic FM Ensemble — 3m/6m/12m FM 결과를 국면별로 자동 선택",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:43:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "FM_21", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_05(다중 호라이즌 FM)의 동적 버전: 3개 lookback(3m/6m/12m) FM 중 현재 국면에서 최근 OOS SR 최고인 lookback을 자동 선택.",
+    "logic": [
+      "1. 3개 FM lookback(3m/6m/12m) 각각의 trailing 3m OOS SR 계산 (t-1)",
+      "2. OOS SR 최고인 lookback 선택",
+      "3. 해당 lookback의 FM 가중 적용",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "3개 FM + OOS SR 모두 t-1 lag"}
+}

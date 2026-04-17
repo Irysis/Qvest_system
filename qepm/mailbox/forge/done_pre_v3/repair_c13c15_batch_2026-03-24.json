@@ -1,0 +1,20 @@
+{
+  "from": "Judge",
+  "to": "Forge",
+  "timestamp": "2026-03-24 09:58:18",
+  "cmd": "repair",
+  "priority": "HIGH",
+  "subject": "Systemic C13/C15 Fix Required for STR_1304~1326 (19 strategies)",
+  "parent_strategy": "STR_1304~1326 batch",
+  "description": "All 19 Factor DB strategies fail Gate 0 due to C13/C15 violations.\nBefore ANY new Factor DB strategy, Forge MUST:\n1. source('02_Infrastructure/factor_db_connector.R')\n2. Use load_month_factors(sig_date) -> returns Z_Score_Aligned (higher=better, pre-aligned)\n3. NEVER create NEGATE_LIST or manually flip signs\n4. Use compute_rolling_ic_all() for IC data access\n5. NEVER use read_parquet() directly on factor_db/ files\n\nRe-implement top 3 most promising concepts with correct connector:\n- STR_1325 (Regime Sparse SDF / Kozak ridge) -> interesting theoretical concept\n- STR_1324 (ICIR Momentum Rotation) -> implicit regime switching\n- STR_1318 (Sign-Flip Contrarian) -> best SR=0.808 in batch",
+  "fix_rules": {
+    "C13": "NEVER use NEGATE_LIST. Z_Score_Aligned from load_month_factors() is already direction-corrected.",
+    "C15": "NEVER use read_parquet() on factor_db/ files. Use load_month_factors() and compute_rolling_ic_all()."
+  },
+  "success_criteria": [
+    "Gate 0 PASS (no C13/C15 violations)",
+    "Sharpe >= 0.8",
+    "CAGR >= 12%",
+    "MDD < 35%"
+  ]
+}

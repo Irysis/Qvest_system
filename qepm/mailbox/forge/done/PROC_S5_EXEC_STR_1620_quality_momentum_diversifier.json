@@ -1,0 +1,21 @@
+{
+  "task_type": "S5_mutation_execution",
+  "strategy_id": "STR_1620_quality_momentum_diversifier",
+  "factor_id": "Q01_GPA+M25_Earnings_Mom_Streak+TR02_Trend_Consistency",
+  "role": "diversifier",
+  "design_artifact": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1620_quality_momentum_diversifier/stage_artifacts/s5_mutation_design_1.json",
+  "base_factor_engine": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1620_quality_momentum_diversifier/factor_engine.R",
+  "execution_priority": "M1 > M3 > M4 > M8 > M9 > M2 > M5 > M6 > M7",
+  "hard_fail_issue": "MDD 56.1% > 45% Hard Fail. SR=0.586 < 0.8. 목표: MDD < 45%, SR > 0.8",
+  "critical_rules": [
+    "C9 필수: dd_lag <- c(0, dd_pct[-n]). same-day DD 금지",
+    "C13: Z_Score_Aligned만 사용. 방향 반전 금지",
+    "C15: load_month_factors() 경유",
+    "종목수 <= 30"
+  ],
+  "synthesis_requirement": "M9 실행 시 synthesis_tested=TRUE 플래그 설정 필수",
+  "n_mutations_required": 9,
+  "f_categories_required": 4,
+  "from": "Forge_QueueManager",
+  "created_at": "2026-03-29"
+}

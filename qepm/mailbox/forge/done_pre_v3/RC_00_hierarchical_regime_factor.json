@@ -1,0 +1,86 @@
+{
+  "exp_id": "RC_00_HIERARCHICAL",
+  "title": "계층적 국면-팩터군-개별팩터 선정 포트폴리오",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "execute",
+  "priority_score": 0.99,
+  "timestamp": "2026-03-23T09:40:00+09:00",
+  "bucket": "exploit",
+  "scope": {
+    "strategy_id": "STR_1250",
+    "family": "hierarchical_regime_factor",
+    "n_holdings": 30,
+    "frequency": "monthly"
+  },
+  "design": {
+    "concept": "3단계 계층적 선정: 국면→팩터군→개별팩터→종목",
+    "step1_regime": {
+      "description": "v7.1 MRS[t-1]로 국면 판단 (risk_on/elevated/crisis)",
+      "engine": "regime_engine_daily.R (t-1 이중 lag)"
+    },
+    "step2_factor_group": {
+      "description": "해당 국면에서 기대수익률 높은 팩터군 순으로 나열 + 노출도 조정",
+      "groups": {
+        "defense": [
+          "IdioVol",
+          "Beta"
+        ],
+        "momentum": [
+          "TrendedMom",
+          "52wkHigh",
+          "IndMom"
+        ],
+        "consensus": [
+          "SUE",
+          "EPS_chg",
+          "ESBR",
+          "fPER_revision"
+        ],
+        "quality": [
+          "GPA",
+          "Piotroski",
+          "Accruals"
+        ],
+        "value": [
+          "fPBR",
+          "OCF_yield",
+          "ResidualIncome"
+        ]
+      },
+      "method": "국면별 팩터군 비중 최적화 (과적합 방지):\n1. 해당 국면 expanding window에서 각 팩터군 trailing SR 계산 (t-1)\n2. SR 기반 Inverse Volatility 가중:\n   w_i = (SR_i / vol_i) / Σ(SR_j / vol_j)\n   → SR 높고 vol 낮은 팩터군에 자연스럽게 집중\n3. 제약조건:\n   - 최소 비중 5% (어떤 팩터군도 완전 제거 안 함)\n   - 최대 비중 50% (과집중 방지)\n   - SR 음수 팩터군: 최소 비중(5%)으로 고정\n4. expanding window만 사용 (C1). 이번 달 데이터 제외 (C2).\n5. 국면 데이터 60개월 미만: Risk Parity fallback (1/vol 비례)"
+    },
+    "step3_individual_factor": {
+      "description": "선정된 팩터군 내에서 기대수익률 높은 개별팩터 선정",
+      "method": "팩터군 내 개별팩터 비중도 데이터 기반:\n1. 해당 국면 expanding window에서 개별팩터 trailing ICIR 계산 (t-1)\n2. ICIR 비례 가중: w = max(ICIR, 0) / Σ max(ICIR_j, 0)\n   → ICIR 음수는 0으로 클리핑 (음의 기여 팩터 제외)\n3. 제약: 팩터군 내 최소 1개는 유지 (전부 음수면 EW fallback)",
+      "example_crisis": "defense군 40% 배분 → IdioVol IC=0.05 (80%), Beta IC=0.02 (20%)",
+      "example_riskon": "momentum군 40% 배분 → TrendedMom IC=0.04 (50%), 52wkHigh IC=0.03 (30%), IndMom IC=0.02 (20%)"
+    },
+    "step4_portfolio": {
+      "description": "최종 composite score = Σ(팩터군가중 × 개별팩터가중 × 개별팩터z-score)",
+      "n_holdings": 30,
+      "sector_neutral": true,
+      "weight_method": "equal",
+      "overlay": "DD Brake (t-1 lag) + MRS soft ramp"
+    },
+    "pit_rules": {
+      "C1": "팩터군 SR = expanding window only",
+      "C2": "국면 판단 = MRS[t-1]",
+      "C5": "개별팩터 IC = t-1까지 데이터만",
+      "C12": "비중은 expanding SR/ICIR 기반 자동 결정. 고정 구간(40/25/20/10/5) 아닌 연속 최적화. full-sample 금지."
+    }
+  },
+  "references": {
+    "academic": "Asness (2019) factor timing, Arnott (2020) regime-conditional, Gupta & Kelly (2019) FM",
+    "l_codes": [
+      "L-527 국면별 팩터 성과",
+      "L-525 score 합산 희석 문제",
+      "L-505 오버레이 최적화"
+    ]
+  },
+  "contract": {
+    "hypothesis": "3단계 계층적 선정이 단순 score 합산(SR 0.76) 대비 SR 개선",
+    "falsification": "SR이 STR_1033(1.358) 미만이면 구조적 한계 확정",
+    "success": "SR > 1.4 + MDD < 25%"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_07_regime_icir",
+  "title": "국면별 ICIR 가중 — 현재 국면에서의 ICIR로 팩터 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:24:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "FM_07", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "HHHH1(ICIR 가중)과 C1(국면FM)의 결합: 현재 국면(risk_on/elevated/crisis) 기간의 ICIR로 팩터 가중. 국면별로 '안정적으로 유효한 팩터'에 가중.",
+    "logic": [
+      "1. MRS[t-1] → 국면 판단",
+      "2. 현재 국면 기간의 각 팩터 ICIR 계산 (국면 내 expanding IC mean/std)",
+      "3. w_i = max(0, ICIR_regime_i) / sum(max(0, ICIR_regime))",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "ICIR = 국면 내 expanding (t-1). MRS = t-1."},
+  "overfitting_guard": "국면 내 데이터 부족(특히 crisis) → minimum 6개월 축적 후 ICIR 활성화. 미달 시 EW."
+}

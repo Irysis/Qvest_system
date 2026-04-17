@@ -1,0 +1,23 @@
+{
+  "exp_id": "FM_05_multi_horizon_fm",
+  "title": "다중 호라이즌 FM — 1m/3m/6m/12m trailing SR 앙상블 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:02:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "FM_05", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1은 6m 단일 lookback. FM_05는 4개 lookback(1m/3m/6m/12m)의 SR을 앙상블 → lookback 불확실성 감소.",
+    "logic": [
+      "1. 각 팩터의 trailing SR을 4개 윈도우로 계산 (t-1)",
+      "2. ensemble_SR_i = 0.10*SR_1m + 0.25*SR_3m + 0.35*SR_6m + 0.30*SR_12m",
+      "3. w_i = max(0, ensemble_SR_i) / sum(max(0, ensemble_SR))",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "4개 trailing SR 모두 t-1 lag"},
+  "overfitting_guard": "앙상블 가중(10/25/35/30)은 사전 정의. 장기(6m/12m)에 더 높은 가중 = 안정성 우선."
+}

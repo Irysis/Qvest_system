@@ -1,0 +1,41 @@
+{
+  "exp_id": "BRK_01",
+  "title": "STR_1036 DD Brake 완화: DD_med 4%→8%, DD_short 2%→5%",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.95,
+  "diagnosis": {
+    "target": "STR_1036 (SR 1.284, CAGR 20.2%, MDD 23.8%)",
+    "root_cause": "DD Brake가 너무 보수적. DD_med 4% threshold는 정상 pullback에서도 헤지 시작 → CAGR 손실. DD_short 2%는 20일 내 2% 하락(= 시장 noise)에도 50% 캐시아웃. L-449: 이중 VT 제거 시 SR 오히려 +0.043 개선. 과도한 현금 비중이 SR을 깎는 주범",
+    "evidence": [
+      "Phase 3 코드: DD_med starts at 0.04(4%), full hedge at 0.35(35%)",
+      "Phase 3 코드: DD_short starts at 0.02(2%), full hedge at 0.08(8%) — 20d window",
+      "dd_exp_combined = pmin(DD_med, DD_short) → 둘 중 더 보수적인 값 적용",
+      "L-449: 이중VT 제거 SR 1.990→2.033. 과도한 현금 = CAGR 손실 > MDD 개선",
+      "L-325: VT tight → Sharpe↑ + MDD↓ but CAGR↓ 삼각 트레이드오프",
+      "L-331: Ultra-tight VT(18/10/5) MDD 26.6% but CAGR 13.8%. 현재 STR_1036도 동일 패턴"
+    ]
+  },
+  "hypothesis": "DD_med threshold를 4%→8%, DD_short를 2%→5%로 완화하면, 정상 pullback에서 불필요한 캐시아웃 제거 → CAGR +1~2%p, SR +0.05~0.10. MDD는 +1~2%p 악화 가능하나 25% 이내 유지 예상 (현재 23.8%이므로 여유분 있음)",
+  "implementation": {
+    "base": "STR_1036 run_all.R 복사",
+    "changes": [
+      "Phase 3 Line 494: dd_med threshold 0.04 → 0.08",
+      "Phase 3 Line 498: SHORT_DD_START 0.02 → 0.05",
+      "Phase 3 Line 498: SHORT_DD_FULL 0.08 → 0.15",
+      "나머지 동일 (Phase 1~2, Phase 4 변경 없음)"
+    ],
+    "code_diff": {
+      "line_494": "dd_exp_med <- ifelse(dd_med <= 0.08, 1.0, ifelse(dd_med >= 0.35, 0.30, pmax(0.30, 1.0 - (dd_med - 0.08) / 0.27 * 0.70)))",
+      "line_498": "SHORT_DD_START <- 0.05; SHORT_DD_FULL <- 0.15; SHORT_DD_MIN <- 0.50"
+    }
+  },
+  "pit_checklist": ["DD brake uses t-1 lag (line 515: dd_exp_combined_lagged)", "No change to PIT compliance"],
+  "constraints": ["N <= 30 (5 sleeve x 6)", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">21%", "sharpe": ">1.35", "mdd": "<26%"},
+  "l_codes": ["L-449", "L-325", "L-331", "L-447", "L-448"],
+  "risk_notes": "MDD가 25%를 초과하면 목표 위반. 그때는 DD_med 6%/DD_short 3% 중간값 시도"
+}

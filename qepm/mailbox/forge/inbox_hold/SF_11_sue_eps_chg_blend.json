@@ -1,0 +1,21 @@
+{
+  "exp_id": "SF_11_sue_epschg",
+  "title": "SUE + EPS Change 블렌드 — 2대 Consensus 시그널 결합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:13:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "SF_11", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "0.50 * z(SUE) + 0.30 * z(EPS_chg_1m) + 0.20 * z(FPER_revision), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "consensus signals t-1 lag (7d window)"},
+  "l_codes_referenced": ["L-415 (Consensus 독립 alpha)", "L-416 (SUE+fPER)"]
+}

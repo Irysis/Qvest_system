@@ -1,0 +1,25 @@
+{
+  "exp_id": "RC_05_kr_credit_cycle",
+  "title": "한국 신용 사이클 — 회사채 스프레드 변화율로 팩터 로테이션",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:30:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_05", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "ECOS 회사채-국고채 스프레드 변화율 = 한국 신용 사이클 프록시. 스프레드 확대(신용 긴축) → Defense+Quality, 축소(신용 완화) → Momentum+Value+Consensus.",
+    "signal": "delta_spread = z(회사채AA 3Y - 국고채 3Y, 20d 변화율, expanding 252d, t-1)",
+    "allocation": {
+      "tightening": {"trigger": "delta_spread > 0.5", "tilt": "Defense 35% + Quality 25% + Consensus 20% + Others 20%"},
+      "easing": {"trigger": "delta_spread < -0.5", "tilt": "Momentum 25% + Value 20% + Consensus 25% + IndMom 20% + Others 10%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "data": "ECOS API (.cache/ 일별 수집 완료)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "스프레드 = ECOS 당일 발표, t-1 lag적용", "C11": "ECOS 시차 확인"},
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)"],
+  "academic_basis": "Gilchrist & Zakrajšek (2012 AER) 'Credit Spreads and Business Cycle Fluctuations'"
+}

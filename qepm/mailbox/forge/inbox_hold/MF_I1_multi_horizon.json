@@ -1,0 +1,48 @@
+{
+  "exp_id": "MF_I1_MULTI_HORIZON",
+  "title": "멀티호라이즌 팩터 결합 — 단기(Rev21d) + 중기(Mom6m) + 장기(Value/Quality)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:01:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.80,
+  "scope": {
+    "strategy_id": "MF_I1",
+    "family": "multifactor_horizon",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "다른 시간 호라이즌의 팩터를 결합하면 정보 차원이 다양해져 SR 개선. 단기 reversal(1m) + 중기 momentum(6m) + 장기 fundamentals(annual)는 서로 다른 시장 메커니즘 포착.",
+    "horizons": {
+      "short_term": {
+        "horizon": "1개월",
+        "weight": 0.25,
+        "factors": "z(-Rev21d) + z(-Rev5d_residual)",
+        "mechanism": "과잉반응 역전 (Jegadeesh 1990). L-515: IC 0.028 유의미하나 standalone 실패 → 결합 시 가치"
+      },
+      "medium_term": {
+        "horizon": "3~6개월",
+        "weight": 0.35,
+        "factors": "z(IndMom_6m) + z(Consensus_revision_3m) + z(TPGap)",
+        "mechanism": "추세 지속 + 애널리스트 리비전 (Jegadeesh & Titman 1993). L-415: Consensus 독립 alpha"
+      },
+      "long_term": {
+        "horizon": "12개월+",
+        "weight": 0.40,
+        "factors": "z(-IdioVol) + z(-Beta) + z(GPA) + z(OCF/MarketCap)",
+        "mechanism": "구조적 alpha — 저변동 프리미엄 + quality + value mean-reversion. 장기 안정성 최고"
+      }
+    },
+    "scoring": "composite = 0.25*short + 0.35*medium + 0.40*long, sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "buffer_zone": {"keep_n": 45, "entry_n": 30}
+  },
+  "pit_rules": {
+    "C1": "각 호라이즌 시그널 모두 t-1까지 데이터만",
+    "C2": "Rev21d = t-1일 기준 21d rolling return"
+  },
+  "overfitting_guard": "호라이즌 가중(25/35/40)은 경제적 직관(장기 안정 > 중기 추세 > 단기 노이즈). Data-driven 아님.",
+  "l_codes_referenced": ["L-515 (reversal IC 0.028, composite 25%로만)", "L-415 (consensus 독립 alpha)", "L-516 (OCF IC 0.045)"],
+  "academic_basis": "Jegadeesh & Titman (1993) momentum; Jegadeesh (1990) reversal; Novy-Marx (2013) profitability; Bali, Cakici & Whitelaw (2011) MAX"
+}

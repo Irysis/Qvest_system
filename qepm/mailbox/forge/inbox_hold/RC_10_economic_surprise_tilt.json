@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_10_econ_surprise",
+  "title": "경제 서프라이즈 틸트 — 실제 매크로 vs 예상 차이로 팩터 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:20:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_10", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "경제 서프라이즈 = 실제 지표 - 시장 기대. 양의 서프라이즈(예상보다 좋음) → Momentum/Consensus. 음의 서프라이즈(예상보다 나쁨) → Defense/Quality. ECOS 산업생산/고용 데이터 활용.",
+    "signal": "z(ECOS 산업생산지수 전월대비, expanding 60m, t-1) as econ_surprise_proxy",
+    "allocation": {
+      "positive_surprise": {"trigger": "z > 0.5", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "negative_surprise": {"trigger": "z < -0.5", "tilt": "Defense 35% + Quality 25% + Value 15% + Others 25%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "산업생산 = 월별 발표, 1~2개월 지연. t-1 lag + 발표 지연 = PIT-safe."},
+  "academic_basis": "Citigroup Economic Surprise Index methodology"
+}

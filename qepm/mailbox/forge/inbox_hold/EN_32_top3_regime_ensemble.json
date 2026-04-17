@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_32_top3_regime",
+  "title": "Top 3 Regime Ensemble — 각 국면에서 OOS Top 3 전략 앙상블",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:12:00+09:00",
+  "bucket": "exploit", "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_32", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_18(국면 회전 1개)의 확장: 각 국면에서 OOS Top 3 전략 앙상블. 1개 대비 분산 효과.",
+    "logic": [
+      "1. 각 국면 기간의 OOS SR로 전략 순위 (expanding, 연간 재선정)",
+      "2. 각 국면 Top 3 전략의 EW score 합산 → Top 30",
+      "3. 현재 국면 → 해당 국면 Top 3 앙상블 채택"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "국면별 OOS SR = expanding. 선정 = 연간."}
+}

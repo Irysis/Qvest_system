@@ -1,0 +1,22 @@
+{
+  "exp_id": "SF_02_cfyield_overlay",
+  "title": "Cash Flow Yield + BRK overlay — IC 0.045 최강 Value 시그널 실투 버전",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:20:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "SF_02", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "L-516: OCF/MarketCap IC 0.045 = 전체 배치 최강, FMB t=4.16. Standalone MDD 60.1% → BRK overlay로 실투 가능 형태 변환.",
+    "signal": "z(OCF_TTM / MarketCap), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "OCF_TTM = trailing 4Q, DART 45일 lag", "C4": "분기→45일 lag"},
+  "l_codes_referenced": ["L-516 (IC 0.045, FMB t=4.16)", "L-481 (한국 Value standalone 전멸 → overlay 필수)"]
+}

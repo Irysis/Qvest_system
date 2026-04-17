@@ -1,0 +1,43 @@
+{
+  "exp_id": "ALPHA_14",
+  "title": "Piotroski F-Score — 9개 재무건전성 바이너리 시그널 합산 (DART에 이미 계산됨)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T23:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {
+    "family": "fundamental_quality",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Piotroski F-Score(0~9, DART에 PiotroskiF로 이미 계산됨)가 한국시장 횡단면 수익률을 예측한다. F-Score 상위 종목(8-9)이 하위(0-2) 대비 초과수익 달성. GP(ALPHA_10) 단일 수익성 지표와 달리 9개 다차원(수익성+레버리지+효율성) 시그널을 종합하여 robustness 강화.",
+    "mechanism": "Piotroski (2000 JAR): 9개 바이너리 시그널(ROA+, ΔROA+, CFO+, Accrual<0, ΔDebt-, ΔCR+, ΔGM+, ΔAT+, 신주발행X) 합산. High F-Score(8-9) vs Low(0-2) = 미국시장 연간 23% 수익 차이. 한국 DART에 PiotroskiF 이미 계산 + 9개 개별 성분(F_ROA_pos, F_OCF_pos, F_ROA_up, F_Accrual, F_LTDebt_down, F_CR_up, F_GM_up, F_AT_up)도 존재. Value trap 회피에 탁월 — BM 높은(저평가) 종목 중 F-Score 높은 것만 선별. Defense(가격)/Consensus(애널리스트)와 완전히 독립적 차원(재무제표 건전성)",
+    "falsification": "Alpha Lab IC < 0.01 → 기각. GP(ALPHA_10) 상관 > 0.7 → 독립 정보 부족 기각. F-Score 분포가 8-9에 극소수(< 10%) → 시그널 활용 어려움 기각",
+    "academic_basis": "Piotroski (2000) 'Value Investing: The Use of Historical Financial Statement Information to Separate Winners from Losers' JAR — F-Score 원논문. 한국 148-anomaly 복제(JDQS 2020)에서 F-Score 포함. Mohanram (2005) G-Score(성장주 버전). Beneish (1999) M-Score(이익조작 감지)"
+  },
+  "data_requirements": {
+    "source": "✅ .cache/fundamental_dart.parquet — PiotroskiF 이미 계산됨!",
+    "fields": ["PiotroskiF", "F_ROA_pos", "F_OCF_pos", "F_ROA_up", "F_Accrual", "F_LTDebt_down", "F_CR_up", "F_GM_up", "F_AT_up"],
+    "pit_safety": "C4: fundamental_dart는 Factor_Date(45d lag 적용) 포함",
+    "computation": {
+      "signal": "z(PiotroskiF) 또는 PiotroskiF >= 7 (binary gate)",
+      "alternative": "F-Score 개별 성분 중 가장 유효한 것 선별 (decomposition)"
+    }
+  },
+  "implementation": {
+    "step1": "fundamental_dart.parquet에서 PiotroskiF 추출 + RAWDATA merge",
+    "step2": "Alpha Lab Stage 0: (a) PiotroskiF IC/ICIR, (b) GP/Accrual/Defense/Consensus 상관",
+    "step3_if_pass": "Full backtest: quarterly rebal (45d lag), N=30",
+    "step4": "Gate 활용 테스트: F-Score < 3 종목 제거 gate",
+    "step5": "Value enhanced: z(Ocp) + z(PiotroskiF) dual scoring = Piotroski(2000) 원래 의도"
+  },
+  "pit_checklist": ["C4: Factor_Date 사용 (45d lag 내장)"],
+  "constraints": ["N <= 30", "LIQ >= 2e8"],
+  "metrics_target": {"ic": ">0.02", "icir": ">0.12"},
+  "l_codes": ["L-285 (DART gate 유효)", "L-428 (4th alpha)"],
+  "risk_notes": "F-Score는 value stock 중에서 가장 잘 작동(Piotroski 2000). Low BM(성장주)에서는 효과 약화 가능. 한국 148-anomaly에서 Profitability 5% 복제이나 F-Score는 profitability 외 다른 차원도 포함. PiotroskiF 컬럼이 이미 존재하므로 구현 시간 최소(30분). Gate(제거)와 Scoring(선별) 두 가지 방식으로 테스트"
+}

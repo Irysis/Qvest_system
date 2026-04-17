@@ -1,0 +1,15 @@
+{
+  "exp_id": "RC_61_ml_regime",
+  "title": "ML 국면 감지 — XGBoost로 다음 달 위기 확률 예측 → 팩터 전환",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:13:00+09:00",
+  "bucket": "explore", "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_61", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_45(logistic 전환확률)의 ML 확장. XGBoost로 crisis probability 예측. 피처 = MRS+VRP+AR+Vol+Disp+KRW+Breadth.",
+    "target": "binary: MRS>=25 next month",
+    "training": "expanding walk-forward",
+    "allocation": "P(crisis) 비례로 Defense 가중 조절"
+  },
+  "pit_rules": {"C1": "expanding (t-1)", "C12": "시계열 CV"}
+}

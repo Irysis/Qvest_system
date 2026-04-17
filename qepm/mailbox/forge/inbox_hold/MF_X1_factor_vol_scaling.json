@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_X1_VOL_SCALING",
+  "title": "팩터 변동성 스케일링 — Barroso-style 각 팩터를 역변동성으로 정규화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:31:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {
+    "strategy_id": "MF_X1",
+    "family": "multifactor_volscale",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Barroso & Santa-Clara (2015): 팩터 수익률을 최근 변동성으로 나누면 SR 대폭 개선. 변동성 높을 때 노출 축소, 낮을 때 확대. 이를 멀티팩터 scoring에 적용.",
+    "logic": [
+      "1. 각 팩터의 trailing 60d realized vol σ_i 계산 (t-1)",
+      "2. z_score를 vol-adjusted: z_adj_i = z_i / (σ_i / σ_median)",
+      "3. 즉 변동성 높은 팩터의 z-score를 축소, 낮은 팩터의 z-score를 확대",
+      "4. composite = mean(z_adj_i), sector neutral",
+      "5. Top 30 → EW, monthly rebal"
+    ],
+    "difference_from_R1": "R1(Risk Parity)은 팩터 가중(w_i)을 조절. X1은 z-score 자체를 vol-adjust. 결과가 다름: R1은 방어팩터 과배분, X1은 모든 팩터 동등 기여.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "σ_i = expanding (min 120d, t-1)", "C2": "t-1까지 변동성만"},
+  "overfitting_guard": "Vol scaling은 사전 정의 규칙. 최적화 없음.",
+  "academic_basis": "Barroso & Santa-Clara (2015 JFE) 'Momentum has its moments'; Moreira & Muir (2017 JF) 'Volatility-Managed Portfolios'"
+}

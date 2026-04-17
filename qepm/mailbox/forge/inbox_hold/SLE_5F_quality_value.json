@@ -1,0 +1,53 @@
+{
+  "exp_id": "SLE_5F_QUALITY_VALUE",
+  "title": "SLE 5-Factor: Defense + IndMom + Consensus + QualityRev + CashFlowYield",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {
+    "strategy_id": "STR_1119",
+    "name": "sle_5f_quality_value",
+    "base": "STR_1105 (SLE 4F, SR 0.905, MDD 29.1%, IC 0.065)",
+    "family": "stock_level_ensemble",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "SLE 4F(Defense+IndMom+Consensus+TPUpside)에 Quality+Reversal(L-513 IC 0.034)과 CashFlowYield(L-516 IC 0.045)를 5~6th factor로 추가하면 IC 0.065 → 0.08+ 개선, SR 1.0+ 달성",
+    "mechanism": "SLE는 종목레벨 score 합산 방식(L-484 30종목 규칙 준수). 현재 4F의 IC 0.065(배치 최강). Quality+Rev(IC 0.034)는 재무건전성+과잉반응 차원, CashFlowYield(IC 0.045)는 가치 차원 — 기존 4F(변동성+추세+애널리스트+목표가)와 정보 독립. 5F 합산 시 IC 상승 + 분산 감소 기대.",
+    "falsification": "5F IC < 4F IC (0.065) → 기각. SR < 0.80 → 기각. MDD > 35% → 기각"
+  },
+  "implementation": {
+    "scoring": "z_defense + z_indmom + z_consensus + z_tp_upside + z_quality_rev + z_cashflow_yield",
+    "factor_weights": {
+      "option_A_equal": "6F × 1/6 = 16.7% each",
+      "option_B_ic_weighted": "IC 기반 가중: def(0.14) + ind(0.15) + cons(0.18) + tp(0.15) + qualrev(0.18) + ocf(0.20)",
+      "option_C_5f_no_ocf": "5F: 4F + QualityRev만 (CashFlowYield 제외)"
+    },
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp",
+      "vol_target": "expanding 0.25"
+    },
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "data_dependencies": [
+      ".cache/fundamental_dart.parquet (OCF_ROA, PiotroskiF, DeltaROE)",
+      "consensus_parser.R (SUE, FPER, target_price)",
+      "defense_sleeve.R (IdioVol, Beta)",
+      "indmom_sleeve.R (industry momentum)"
+    ]
+  },
+  "l_codes_referenced": [
+    "L-513 (Quality+Rev IC 0.034, OOS>IS, 4th alpha 확정)",
+    "L-516 (CashFlowYield IC 0.045, FMB t=4.16, 한국 Value 최강)",
+    "L-518 (SLE 4F IC 0.065, SR 0.905, MDD 29.1%)",
+    "L-484 (수익률블렌드 30종목위반 → score 합산만 유효)",
+    "L-508 (Short DD 제거)"
+  ],
+  "academic_basis": "Novy-Marx (2013) Profitability; Piotroski (2000) F-Score; Lakonishok et al. (1994) Value; Jegadeesh (1990) Reversal; Ball & Brown (1968) Earnings; Brav & Lehavy (2003) TP",
+  "risk_notes": "6F score 합산 시 개별 factor의 극단 종목 선별력 약화 가능 (averaging effect). IC-weighted가 EW 대비 유리할 수 있으나 IC 자체가 lookback 의존. 3개 variant 병렬 실행 권장."
+}

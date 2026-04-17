@@ -1,0 +1,51 @@
+{
+  "exp_id": "ALPHA_07",
+  "title": "애널리스트 공동커버리지 리드-래그 모멘텀 (Graph ML 없이 단순 구현)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T18:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {
+    "family": "analyst_network_momentum",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8, analyst coverage >= 3)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "동일 애널리스트가 공동 커버하는 종목 간 수익률 스필오버가 존재한다. 종목 i의 '네트워크 모멘텀' = 공동커버리지 종목들의 가중평균 과거수익률. 이 시그널이 기존 IndMom/Consensus와 독립적 alpha를 제공한다.",
+    "mechanism": "Kong et al. (2024, arXiv 2410.20597): 애널리스트 커버리지 네트워크 기반 모멘텀 전략이 SR 4.06 달성(Graph Attention Network 사용). 핵심 메커니즘: 애널리스트가 복수 종목을 커버 → 정보가 한 종목에서 다른 종목으로 확산 → 선행종목의 수익률이 후행종목을 예측. Ali & Hirshleifer (2020): analyst shared coverage → cross-firm return predictability. Graph ML 없이도 단순 공동커버리지 가중평균으로 시그널 구성 가능. Industry Momentum은 같은 섹터 기준, 이것은 같은 애널리스트 기준 → 정보 차원 상이",
+    "falsification": "FnGuide 애널리스트 커버리지 데이터 미가용 → 기각. IC < 0.01 → 기각. IndMom과 상관 > 0.7 → 산업 효과에 지배됨 기각",
+    "academic_basis": "Kong et al. (2024) 'Extracting Alpha from Financial Analyst Networks' arXiv 2410.20597. Ali & Hirshleifer (2020) 'Shared Analyst Coverage: Unifying Momentum Spillover Effects' JFE. Cohen & Frazzini (2008) 'Economic Links and Predictable Returns' JF — supply chain lead-lag"
+  },
+  "data_requirements": {
+    "source": "FnGuide 컨센서스 데이터 — 애널리스트별 커버리지 종목 리스트",
+    "fields": ["애널리스트ID", "커버리지 종목코드", "리포트 발행일"],
+    "pit_safety": "리포트 발행일 기준 커버리지 매핑. C4 lag 불필요(공개 리포트)",
+    "availability_check": "FnGuide API에서 애널리스트별 커버리지 종목 추출 가능 여부 확인 필수",
+    "computation": {
+      "coverage_matrix": "각 기간 t에서 analyst a가 종목 i를 커버하면 Coverage[a,i] = 1",
+      "co_coverage_weight": "W[i,j] = sum(Coverage[a,i] × Coverage[a,j]) / sqrt(sum_i × sum_j) — 공동커버리지 가중치",
+      "network_momentum": "NetMom[i,t] = sum(W[i,j] × Ret[j, t-6:t-1]) — 공동커버리지 종목의 가중 모멘텀",
+      "signal": "z(NetMom) — high = 네트워크 이웃 종목이 올랐음 → 본 종목도 오를 것"
+    }
+  },
+  "implementation": {
+    "step1": "FnGuide 애널리스트 커버리지 데이터 가용성 확인",
+    "step2_if_available": "공동커버리지 매트릭스 구성 → 네트워크 모멘텀 시그널 계산",
+    "step3": "Alpha Lab Stage 0: (a) NetMom IC/ICIR, (b) IndMom/Consensus 상관",
+    "step4_if_pass": "Full backtest → sleeve 편입",
+    "alternative_if_no_data": "DART 애널리스트 보고서 발행 데이터에서 커버리지 추출 시도"
+  },
+  "pit_checklist": ["C1: rolling 커버리지 매트릭스 (최근 6개월 리포트 기준)", "C2: t-1 lag on returns", "C11: 리포트 발행 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "analyst coverage >= 3", "Alpha Lab ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.02",
+    "icir": ">0.15",
+    "corr_with_indmom": "<0.5",
+    "corr_with_consensus": "<0.5"
+  },
+  "l_codes": ["L-428 (4th alpha)", "L-415 (consensus = 3rd alpha, 이것은 다른 차원)"],
+  "risk_notes": "데이터 가용성이 최대 리스크. FnGuide에서 애널리스트별 커버리지를 종목 단위로 추출할 수 있는지 확인 필요. 가용 불가 시 ALPHA_07은 보류. 한국 애널리스트 시장의 특수성: 대형 증권사 소속 → 커버리지 편향 가능. KOSPI200 종목에 커버리지 집중 → 소형주 정보 부족 가능"
+}

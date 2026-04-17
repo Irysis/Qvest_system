@@ -1,0 +1,44 @@
+{
+  "exp_id": "MF_H1_CONDITIONAL",
+  "title": "조건부 팩터 — Dispersion 기반 Defense/Momentum 스위칭 + Quality Gate",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.86,
+  "scope": {
+    "strategy_id": "MF_H1",
+    "family": "multifactor_conditional",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "팩터 가중을 시장 상태(횡단면 분산도)에 조건부로 전환. L-200: Dispersion CondWeight IR 0.524(역대 최고). 이를 7-factor 멀티팩터에 확장.",
+    "conditions": {
+      "high_dispersion": {
+        "trigger": "z(cross-sectional return std, 20d) > 0.5 (t-1)",
+        "factor_tilt": "Defense 35% + Quality 25% + Consensus 20% + Value 10% + Others 10%",
+        "rationale": "고분산 = 종목 차별화 확대 → 종목선별형 팩터(Defense, Quality) 우위"
+      },
+      "low_dispersion": {
+        "trigger": "z(dispersion) < -0.5",
+        "factor_tilt": "Momentum 30% + IndMom 25% + Consensus 20% + TPGap 15% + Others 10%",
+        "rationale": "저분산 = 시장 통합 모드 → 추세추종형 팩터(Momentum, IndMom) 우위"
+      },
+      "normal": {
+        "trigger": "z(dispersion) in [-0.5, 0.5]",
+        "factor_tilt": "MF_A1 Core weight (기본값)"
+      }
+    },
+    "quality_gate": "PiotroskiF < 3인 종목 제거 (전체 유니버스 gate). L-517: COVID +13% alpha.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "warning": "L-398: multiplicative scoring 금지. 모든 팩터 결합은 additive(가중합)로만."
+  },
+  "pit_rules": {
+    "C1": "Dispersion z-score = expanding window (t-1까지)",
+    "C2": "t-1 시점 분산도로 이번 달 가중 결정"
+  },
+  "overfitting_guard": "Threshold (±0.5)는 경제적 직관 기반 사전 정의. Data-driven 아님. OOS retention >= 0.5.",
+  "l_codes_referenced": ["L-200 (Dispersion CW IR 0.524)", "L-201 (내생>외생)", "L-237 (CW 유효 조건)", "L-398 (곱 스코어링 금지)"],
+  "academic_basis": "Stivers & Sun (2010); Connolly & Stivers (2003)"
+}

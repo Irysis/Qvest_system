@@ -1,0 +1,24 @@
+{
+  "exp_id": "RC_08_krw_usd_tilt",
+  "title": "원달러 환율 기반 팩터 틸트 — KRW 약세시 수출주 팩터 강화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:01:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "RC_08", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "KRW/USD 변화율 = 한국 수출기업 실적 선행. 원 약세 → 수출주 실적 개선 → Consensus(EPS revision↑) + IndMom 강화. 원 강세 → 내수주 + Defense.",
+    "signal": "z(KRW/USD 20d 변화율, expanding 252d, t-1)",
+    "allocation": {
+      "krw_weak": {"trigger": "z > 0.5 (원 약세)", "tilt": "Consensus 30% + IndMom 25% + Momentum 20% + Others 25%"},
+      "krw_strong": {"trigger": "z < -0.5 (원 강세)", "tilt": "Defense 35% + Quality 25% + Value 20% + Others 20%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "data": "ECOS KRW/USD 일별 (.cache/ 수집 완료)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "KRW/USD = ECOS 당일 발표, t-1 lag"},
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)"]
+}

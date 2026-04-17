@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_16_quality_value",
+  "title": "Quality + Value 블렌드 — GP+PiotroskiF + OCF/MCap (한국 QV)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "SF_16", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "Asness(2019 QMJ)의 한국 버전: Quality(GP IC 0.208 + PiotroskiF OOS 2.64) + Value(OCF IC 0.045) 결합. 두 축 모두 standalone F이지만 결합 시 분산 효과.",
+    "signal": "0.50 * z(GPA + PiotroskiF) + 0.50 * z(OCF/MarketCap), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15/30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-512 (GP IC 0.208)", "L-517 (PiotroskiF OOS 2.64)", "L-516 (OCF IC 0.045)"],
+  "academic_basis": "Asness et al. (2019 JFE) 'Quality Minus Junk'; Novy-Marx (2013)"
+}

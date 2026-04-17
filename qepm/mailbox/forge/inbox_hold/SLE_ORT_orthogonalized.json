@@ -1,0 +1,34 @@
+{
+  "exp_id": "SLE_ORT",
+  "title": "Orthogonalized Multi-Factor Score (직교화 3팩터)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:10:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.83,
+  "scope": {
+    "family": "stock_level_ensemble_ortho",
+    "strategy_id": "STR_1058",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "Consensus/IndMom을 Defense에 대해 직교화(residualize) 후 결합. L-475: OrthoSUE에서 Def 0.805 + OrthoSUE 0.781 → blended 1.210(+50%). 단순 z-합산의 multicollinearity 제거 → 각 팩터의 순수 독립 alpha만 합산. Fama-MacBeth(1973) 직교화의 종목선택 적용",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R 수정",
+    "orthogonalization": "매월 리밸 시점에서 expanding window OLS: (1) z_cons_ortho = resid(lm(z_cons ~ z_def)), (2) z_ind_ortho = resid(lm(z_ind ~ z_def + z_cons_ortho)). Defense를 first anchor로 고정",
+    "composite_score": "0.40 * z_defense + 0.35 * z_cons_ortho + 0.25 * z_ind_ortho",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag",
+    "burn_in": "최소 60개월 (expanding OLS 안정화)"
+  },
+  "pit_checklist": ["C1: expanding window OLS (full-sample 금지)", "C2: t-1 lag", "C3: 직교화 회귀는 t-1까지 데이터만"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "expanding OLS only", "PIT enforcement"],
+  "metrics_target": {"cagr": ">13%", "sharpe": ">1.15", "mdd": "<27%"},
+  "l_codes": ["L-475", "L-382", "L-420"],
+  "academic": "Fama & MacBeth (1973). Asness, Moskowitz & Pedersen (2013) 'Value and Momentum Everywhere'. L-475: Ortho-SUE +50% SR",
+  "risk_notes": "직교화 순서 영향: Defense first 고정. Cons↔IndMom 순서 변형 robustness check. Expanding window 초기 구간 노이즈 주의. IC(ortho_cons), IC(ortho_ind) 최소 0.01 확인"
+}

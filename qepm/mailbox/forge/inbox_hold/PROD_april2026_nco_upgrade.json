@@ -1,0 +1,34 @@
+{
+  "exp_id": "PROD_APRIL_NCO",
+  "title": "4월 투자 전략 업그레이드: STR_1060 vs NCO C11 fix 비교 후 최선택",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:20:00+09:00",
+  "bucket": "production",
+  "priority_score": 0.93,
+  "scope": {
+    "objective": "2026년 4월 1일(화) 실투자용 30종목 포트폴리오 생성",
+    "deadline": "2026-03-31 (월) 장 마감 후",
+    "constraints": "30종목, LIQ >= 2e8, commission 30bps"
+  },
+  "decision_tree": {
+    "step1": "NCO_C11_FIX (STR_1110~1113) 실행 → Score/SR 확인",
+    "step2_if_nco_wins": "STR_1110~1113 중 최고 Score 전략으로 4월 매매안 생성. NCO 가중 적용.",
+    "step2_if_1060_wins": "기존 PROD_april2026_simple_portfolio.json 실행. STR_1060 기반 EW.",
+    "step3": "최종 30종목 리스트 + pm_run() + 텔레그램 발송",
+    "fallback": "3/31까지 NCO fix 미완료 시 → STR_1060 기반 확정 (검증된 안전 경로)"
+  },
+  "comparison_criteria": {
+    "primary": "Score (hurdle gate total_score)",
+    "secondary": ["SR >= 1.25", "MDD < 25%", "OOS >= 0.85", "FF5 alpha t >= 2.5"],
+    "tiebreaker": "NCO의 FF5 alpha 우위 (t=2.889 vs STR_1060 추정 ~2.3) 반영"
+  },
+  "nco_advantage": "NCO는 종목 간 상관 구조를 반영한 최적 가중 → 동일 종목이라도 risk-adjusted return 개선. STR_1033 FF5 t=2.889 (Harvey 기준 근접)은 EW 대비 NCO 고유 alpha의 증거.",
+  "risk_management": {
+    "mdd_limit": "-15% 도달 시 50% 현금화",
+    "regime_check": "3/31 regime_engine_daily.R MRS 확인 → MRS >= 25이면 현금 30~70%",
+    "concentration": "NCO cap 15% (단일종목), EW면 3.3%"
+  },
+  "l_codes_referenced": ["L-488 (NCO 아키텍처 유망)", "L-479 (가중최적화 최강)", "L-508 (Short DD 제거)"]
+}

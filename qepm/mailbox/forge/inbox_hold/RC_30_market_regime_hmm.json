@@ -1,0 +1,27 @@
+{
+  "exp_id": "RC_30_hmm_regime",
+  "title": "HMM 시장 국면 — Hidden Markov Model로 2-state 국면 자동 판별",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:41:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_30", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(규칙 기반) 대신 HMM으로 Bull/Bear 국면 자동 판별. KOSPI200 수익률+변동성을 관측 변수로 2-state HMM 적합.",
+    "logic": [
+      "1. KOSPI200 월별 수익률 + 월별 변동성 → 2-state Gaussian HMM",
+      "2. expanding window 적합 (t-1까지), Viterbi 경로 추정",
+      "3. State 1(Bull) → MF_A1 Core",
+      "4. State 2(Bear) → Defense 40% + Quality 25% + Others 35%",
+      "5. composite → Top 30"
+    ],
+    "overlay": "VT 0.25 (HMM이 MRS/DD 대체)",
+    "note": "L-448: k-means Jump Model 재현 불가 → HMM은 다른 모델. 성과 비교 필요."
+  },
+  "pit_rules": {"C1": "HMM = expanding window (t-1). Full-sample HMM 금지."},
+  "overfitting_guard": "2-state = 최소 복잡도. 3+ state는 과적합 위험.",
+  "r_packages": ["depmixS4"],
+  "l_codes_referenced": ["L-448 (k-means Jump Model 실패 — HMM은 별개)"]
+}

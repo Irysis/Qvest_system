@@ -1,0 +1,19 @@
+{
+  "exp_id": "EN_35_median",
+  "title": "Median Ensemble — 종목별 score의 중앙값 사용 (평균 대신)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:43:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "EN_35", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EW 평균 대신 중앙값(median)으로 score 합산. 극단 전략 1개의 영향 완전 제거. EN_34(trimmed mean)보다 강건.",
+    "logic": [
+      "1. 5전략 각각의 per-stock z-score",
+      "2. 각 종목: median(5 scores) = median_score",
+      "3. Top 30 by median_score → EW"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

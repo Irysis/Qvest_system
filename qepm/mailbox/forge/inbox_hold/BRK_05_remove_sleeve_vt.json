@@ -1,0 +1,39 @@
+{
+  "exp_id": "BRK_05",
+  "title": "STR_1036 Sleeve-Level VT 완전 제거 (4중→2중 오버레이)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T16:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.94,
+  "diagnosis": {
+    "target": "STR_1036 Phase 1 — 5개 sleeve 각각에 vol_target 적용",
+    "discovery": "STR_1036는 3중이 아닌 4중 오버레이: (1) Sleeve VT(Def 0.25, Ind 0.15, Cons 0.18, Gate 0.18, TP 0.18) + (2) DD_med + (3) DD_short + (4) MRS_soft. L-443: '이중 VT 구조 문제' 지적. L-449: 이중VT 제거 시 SR +0.043. 4중이면 과보호가 3중보다 더 심각",
+    "mechanism": "Sleeve-level VT는 각 sleeve의 수익률을 개별적으로 축소. 그 후 Portfolio-level DD/MRS가 또 축소. 곱셈 구조: sleeve_ret * sleeve_vt * dd_exp * mrs_exp. 정상 시장에서도 sleeve VT가 exposure를 0.6~0.8로 줄이고, DD/MRS가 또 0.7~0.9로 줄이면 → 실질 exposure 0.42~0.72. CAGR 대비 MDD 보호 효율이 극히 낮음",
+    "evidence": [
+      "Phase 1a: vol_target = 0.25 (Defense)",
+      "Phase 1b: vol_target = 0.15 (IndMom — 가장 tight!)",
+      "Phase 1c-e: vol_target = 0.18 (Consensus/ConsGate/TP)",
+      "L-449: 이중VT 제거 SR +0.043",
+      "L-443: 이중 VT = Sharpe 과대추정 구조 문제"
+    ]
+  },
+  "hypothesis": "5개 sleeve의 vol_target을 모두 제거(vol_target = NULL 또는 1.0)하고, Portfolio-level DD_med + MRS_soft만 유지. Sleeve는 100% exposure로 alpha 극대화, MDD 제어는 portfolio level에서만. SR +0.10~0.20 기대",
+  "implementation": {
+    "base": "STR_1036 run_all.R 복사",
+    "changes": [
+      "Phase 1a line 60: vol_target = 1.0 (사실상 제거)",
+      "Phase 1b line 75: vol_target = 1.0",
+      "Phase 1c line 91: vol_target = 1.0",
+      "Phase 1d line 108: vol_target = 1.0",
+      "Phase 1e line 205: vol_target = 1.0",
+      "Phase 3~4: DD_med + MRS_soft 동일 유지 (portfolio level 보호)"
+    ]
+  },
+  "pit_checklist": ["Sleeve VT 제거는 PIT 무관. DD/MRS t-1 lag 유지"],
+  "constraints": ["N <= 30 (5x6)", "LIQ >= 2e8"],
+  "metrics_target": {"cagr": ">22%", "sharpe": ">1.40", "mdd": "<27%"},
+  "l_codes": ["L-443 (이중VT 구조 문제)", "L-449 (이중VT 제거→SR개선)", "L-325 (VT tight→CAGR↓)", "L-331 (ultra-tight VT)"],
+  "risk_notes": "Sleeve VT 제거 시 IndMom sleeve의 변동성이 급증할 수 있음(기존 VT 0.15 = 매우 tight). MDD 악화 시 IndMom만 VT 0.25로 완화 변형. BRK_04(극단 단순화)와 결합하면 sleeve VT 제거 + DD완화 + MRS binary = 최소 오버레이"
+}

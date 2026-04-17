@@ -1,0 +1,15 @@
+{
+  "exp_id": "RC_38_int_ext_combined",
+  "title": "Internal+External 결합 국면 — MRS(외부) + DD(내부) + Dispersion(내생) 3축 가중합",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:01:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_38", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_07(Twin MRS×DD)의 3축 확장. 외부(MRS) + 내부(포트폴리오 DD) + 내생(Dispersion) 3축 연속 z-score 합산 = Composite Risk Score.",
+    "crs": "CRS = 0.40*z(MRS) + 0.30*z(portfolio_dd) + 0.30*z(dispersion), all t-1",
+    "allocation": "w_defense = 0.15 + 0.25*pmin(1, pmax(0, CRS/2)). 나머지 EW.",
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "3축 모두 t-1 lag"}
+}

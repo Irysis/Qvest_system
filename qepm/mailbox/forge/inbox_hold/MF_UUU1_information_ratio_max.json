@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_UUU1_IR_MAX",
+  "title": "IR 극대화 — KOSPI200 추적오차 최소화하면서 alpha 추출",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "MF_UUU1", "family": "multifactor_ir", "n_holdings": 30},
+  "design": {
+    "concept": "SR 대신 IR(Information Ratio = alpha/TE) 극대화 목표. 벤치마크(KOSPI200) 대비 추적오차를 관리하면서 alpha 추출. 기관 운용에 적합.",
+    "logic": [
+      "1. MF_A1 composite score → Top 60 후보",
+      "2. 60개 중 KOSPI200과의 추적오차가 최소인 30개 선택 (score + TE penalty)",
+      "3. selection_score = composite_score - λ × TE_contribution",
+      "4. λ = 0.5 (TE penalty 강도)",
+      "5. Top 30 by selection_score → EW"
+    ],
+    "te_calculation": "TE_contribution_i = |w_i - w_bm_i| × σ_i (BM 대비 active weight × 변동성)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "TE 계산 = t-1 BM 비중 + t-1 변동성"},
+  "overfitting_guard": "λ=0.5는 경험적. TE penalty 없으면 순수 alpha 추구, 있으면 IR 추구."
+}

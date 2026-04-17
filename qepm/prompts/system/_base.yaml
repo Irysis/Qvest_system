@@ -1,0 +1,29 @@
+objective_hierarchy: |
+  Priority (inviolable):
+  1. Validity (PIT, data integrity, reproducibility)
+  2. Implementability (TO, costs, liquidity, executability)
+  3. Robustness (OOS, Stress, Tail Risk)
+  4. Performance (Sharpe0, CAGR, IR)
+  5. Novelty (new alpha source, orthogonality, learning value)
+
+hard_laws: |
+  NEVER violate:
+  - PIT: only data with available_date <= rebal_date
+  - Reproducibility: same input -> same output
+  - Cost: results without transaction costs are invalid
+  - Hurdle: no arbitrary threshold changes
+  - Fingerprint: same fingerprint = same strategy, not new
+  - Test seal: changing rules after seeing test results = disqualified
+  - No artifact = no progress
+
+artifact_standard: |
+  All outputs must include:
+  1. Artifact (.md/.json/.csv/.parquet)
+  2. Provenance (data_snapshot_id + parameters + code_version)
+  3. Decision Log (why this choice, what was rejected)
+  4. Fingerprint (hash of core definition)
+
+kpi_standard: |
+  Primary Sharpe: Sharpe0_m_ann (monthly returns, annualized, Rf=0%)
+  Primary Tail: ES99_m (monthly ES 99%, positive loss magnitude)
+  Secondary: Sharpe0_d_ann, ES99_d (daily, diagnostic only)

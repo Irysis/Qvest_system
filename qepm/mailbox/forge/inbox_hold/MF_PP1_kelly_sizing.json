@@ -1,0 +1,31 @@
+{
+  "exp_id": "MF_PP1_KELLY",
+  "title": "Kelly 기준 포지션 사이징 — 팩터 신뢰도에 비례한 전체 노출 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:02:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {
+    "strategy_id": "MF_PP1",
+    "family": "multifactor_sizing",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Kelly criterion: f* = μ/σ². 포트폴리오 전체 노출을 trailing SR의 함수로 조절. SR 높을 때 full invest, 낮을 때 현금 비중 확대. Half-Kelly로 보수적 적용.",
+    "logic": [
+      "1. MF_A1 composite → Top 30 선정",
+      "2. 포트폴리오 trailing 6m SR 계산 (t-1)",
+      "3. Kelly fraction: f = 0.5 × SR × (1/σ) — Half-Kelly",
+      "4. f = min(1.0, max(0.3, f)) — 30~100% 노출 범위",
+      "5. 나머지 = 현금 (무위험 수익률 적용)",
+      "6. 종목 가중: f × (1/30) per stock"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25 (DD Brake는 Kelly가 대체)",
+    "expected": "SR 높은 시기(정상) → full invest. SR 낮은 시기(위기) → 현금 확대 → MDD 감소."
+  },
+  "pit_rules": {"C1": "trailing 6m SR = t-1 lag. Expanding min 12m warm-up."},
+  "overfitting_guard": "Half-Kelly는 보수적 규칙. f 범위 [0.3, 1.0]은 최소 30% 투자 보장.",
+  "academic_basis": "Kelly (1956); Thorp (2008) 'The Kelly Criterion in Blackjack, Sports Betting, and the Stock Market'"
+}

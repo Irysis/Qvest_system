@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_10_regime_switch_lb",
+  "title": "국면 전환 시 FM Lookback 리셋 — 새 국면 시작부터 FM 재계산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:14:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "FM_10", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_01(국면 내 IC)의 변형: 국면 전환 시 FM lookback을 리셋. 이전 국면의 팩터 성과가 새 국면의 가중 결정을 오염시키지 않음.",
+    "logic": [
+      "1. MRS[t-1] → 국면 판단. 국면 전환 감지 (이전 국면 ≠ 현재 국면)",
+      "2. 국면 전환 시: FM lookback 시작점 = 전환일. 이전 데이터 무시.",
+      "3. 새 국면 시작 후 3개월 미만: EW fallback (FM 데이터 부족)",
+      "4. 3개월 이상 축적: 국면 시작일~현재의 trailing SR로 FM 가중",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FM = 국면 시작일~t-1. MRS = t-1."},
+  "overfitting_guard": "국면 리셋은 경제적 직관(국면 간 팩터 유효성 불연속)."
+}

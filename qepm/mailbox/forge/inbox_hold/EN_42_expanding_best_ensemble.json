@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_42_expanding_best",
+  "title": "Expanding Best Ensemble — 전체 기간 누적 SR로 전략 가중 (장기 안정)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:52:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_42", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. 각 전략의 expanding SR (전체 기간, t-1)",
+      "2. w_i = max(0, expanding_SR_i) / sum",
+      "3. score × w 합산 → Top 30"
+    ],
+    "comparison": "EN_20(EWMA SR) vs EN_42(expanding SR) → 최근 vs 장기 어느 쪽이 OOS 우수",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding SR = 1~(t-1) 전체"}
+}

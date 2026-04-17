@@ -1,0 +1,35 @@
+{
+  "exp_id": "EVO_1036_vol_target",
+  "title": "Evolution: STR_1036 + vol_target overlay → SR 1.25→1.5",
+  "from": "judge",
+  "to": "forge",
+  "cmd": "run_evolution",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "EXPLOIT",
+  "priority_score": 5,
+  "parent_strategy": "STR_1036",
+  "parent_grade": "A",
+  "parent_score": 80.9,
+  "parent_metrics": {
+    "cagr": 20.22, "sharpe": 1.284, "mdd": 23.82, "ann_vol": 15.75
+  },
+  "evolution_type": "single_change",
+  "scope": {
+    "change_description": "Phase 2 (Gerber HRP) 이후, Phase 3 (DD Brake) 이전에 vol_target overlay 추가. target_vol=0.13 (STR_943 수준), vol_lookback=60d expanding, t-1 lagged.",
+    "expected_effect": "ann_vol 15.75% → ~13%, SR 1.25 → ~1.5 (수익 소폭 감소하나 vol 억제가 더 큰 효과). L-497 분석 근거.",
+    "files_to_modify": ["run_all.R Phase 2와 Phase 3 사이에 vol_target overlay 삽입"],
+    "base_code": "STR_1036_daily_regime/run_all.R 복사 후 vol_target 블록 추가"
+  },
+  "hypothesis": "5-sleeve Gerber HRP의 vol(15.75%)이 SR 병목(L-497). vol_target으로 13%대 억제 시 SR 1.5 접근 가능. STR_943(vol 12.76%, SR 1.35)이 증거.",
+  "constraints": {
+    "n_holdings_max": 30,
+    "pit_required": true,
+    "must_beat_parent": "SR > 1.284 (parent SR)"
+  },
+  "metrics_target": {
+    "primary": "Sharpe > 1.4",
+    "secondary": "CAGR > 18% (parent 20.22%에서 소폭 하락 허용), MDD < 25%"
+  },
+  "l_codes": ["L-383 (expanding vol eq만 허용)", "L-497 (1036 vol 과다가 SR 병목)", "L-498 (943은 58% 연도 SR 우위)"],
+  "risk_notes": "vol_target이 DD Brake와 이중 적용되면 L-494 패턴(80% 시간 방어 작동)에 빠질 수 있음. vol_target은 DD Brake 전에 적용하되, 두 overlay의 합산 active 비율 모니터링 필수."
+}

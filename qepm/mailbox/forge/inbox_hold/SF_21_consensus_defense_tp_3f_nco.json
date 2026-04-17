@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_21_3f_nco_v2",
+  "title": "3F v2 + NCO — Def+Cons+TP + NCO (SF_14의 NCO 버전)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "SF_21", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "0.40*z(defense) + 0.35*z(consensus) + 0.25*z(TPGap+TPMom), sector neutral",
+    "weighting": "NCO (Gerber 120d + Ward.D2)",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "comparison": "EV_26(3F Def+Cons+Value NCO) vs SF_21(3F Def+Cons+TP NCO) → Value vs TP 3번째 팩터 효과 비교"
+  },
+  "pit_rules": {"C1": "t-1 lag", "C11": "regime_engine_daily.R"}
+}

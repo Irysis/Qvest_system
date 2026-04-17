@@ -1,0 +1,24 @@
+{
+  "exp_id": "EVO_1036_CONSGATE_REPLACE",
+  "title": "STR_1036 ConsGate sleeve를 OCF_ROA gate로 대체 — bias-free t=3.28 활용",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T20:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {
+    "base": "STR_1036 5-sleeve",
+    "modification": "Phase 1d ConsGate Pure sleeve → OCF_ROA + PiotroskiF gate sleeve로 대체"
+  },
+  "hypothesis": {
+    "statement": "STR_1036의 ConsGate sleeve(consensus + defense gate)를 OCF_ROA scoring + PiotroskiF<3 gate로 대체하면, Value 차원 추가로 SR 개선. OCF_ROA는 bias-free t=3.28(Harvey 통과), Defense(cor=0.23)와 독립적.",
+    "mechanism": "ConsGate는 consensus 기반 — 이미 Consensus sleeve(Phase 1c)와 유사. OCF_ROA로 대체하면 정보 차원 다양화: Defense(변동성) + IndMom(추세) + Consensus(애널리스트) + Value(현금흐름) + TPGap(목표가). L-285: gate 유효 교훈 → PiotroskiF gate 적용.",
+    "falsification": "대체 후 SR < STR_1036 SR → 기각"
+  },
+  "implementation": {
+    "modification": "consgate_pure_engine.R를 ocf_roa_engine.R로 대체",
+    "signal": "z(OCF_ROA) scoring, PiotroskiF < 3 제거 gate",
+    "data": ".cache/fundamental_dart.parquet (OCF_ROA, PiotroskiF 이미 계산)"
+  }
+}

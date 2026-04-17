@@ -1,0 +1,32 @@
+{
+  "exp_id": "SLE_N20",
+  "title": "Concentrated N=20 (50/30/20)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:10:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.75,
+  "scope": {
+    "family": "stock_level_ensemble",
+    "strategy_id": "STR_1057",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 20
+  },
+  "hypothesis": "N=30 → N=20으로 집중. composite score 상위 20종목만 선택하면 alpha 밀도 향상 → CAGR +1~2%p. 단, L-470(STR_280): 단일팩터에서 25→30이 CAGR+0.6%p, MDD-2.4%p로 분산효과 있었음. 멀티팩터 composite에서는 30 → 20 축소가 어떤 영향인지 미검증. BZ는 keep40/entry20으로 조정",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R 복사",
+    "composite_score": "0.50 * z_defense + 0.30 * z_consensus + 0.20 * z_indmom",
+    "weighting": "EW",
+    "n_holdings": 20,
+    "buffer_zone": {"keep_n": 40, "entry_n": 20},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: expanding z-score", "C2: t-1 lag overlays"],
+  "constraints": ["N <= 20 (30 이하 준수)", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">13%", "sharpe": ">1.1", "mdd": "<28%"},
+  "l_codes": ["L-470 (STR_280: 집중도 증가 = 악화)", "L-480 (5-sleeve N=6 최적)"],
+  "risk_notes": "L-470: 단일팩터에서 집중도 증가 = MDD 악화. 멀티팩터에서도 동일 패턴이면 N=20 기각. N=30 baseline과 직접 비교 필수"
+}

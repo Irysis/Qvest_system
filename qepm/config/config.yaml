@@ -1,0 +1,114 @@
+project:
+  name: "QEPM Multi-Agent System"
+  version: "1.4.2"
+  market: "KR"
+  language: "R"
+  rebalance_freq: "monthly"
+  benchmark: "KOSPI200_TR"
+
+paths:
+  project_root_env: "QM_ROOT"
+  project_root_default: "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  cache_dir: ".cache"
+  rawdata_cache: ".cache/RAWDATA.parquet"
+  dart_cache: ".cache/fundamental_dart.parquet"
+  fred_macro_cache: ".cache/macro_fred.parquet"
+  fred_regime_cache: ".cache/macro_regime.parquet"
+  regime_signal_cache: ".cache/unified_regime_signal.parquet"
+  infrastructure: "02_Infrastructure"
+  research_output: "research_output"
+  research_registry: "research_registry"
+  strategies: "research_output/strategies"
+
+llm:
+  provider: "anthropic"
+  models:
+    distill_light: "claude-haiku-4-5-20251001"
+    distill_medium: "claude-sonnet-4-6"
+    distill_heavy: "claude-opus-4-6"
+    verify: "claude-haiku-4-5-20251001"
+    orchestrate: "claude-sonnet-4-6"
+  api_key_env: "ANTHROPIC_API_KEY"
+  max_tokens_default: 4096
+  temperature_default: 0
+  max_retries: 3
+  retry_delay_sec: 2
+  prompt_caching: true
+
+memory:
+  token_budget:
+    total: 8000
+    schema: 500
+    stat_evidence: 1500
+    regime_payoff: 1500
+    portfolio_policy: 1500
+    recent_digests: 2000
+    working: 1000
+  promotion:
+    r1_auto: true
+    r2_min_experiments: 3
+    r4_min_regime_months: 24
+    r4_low_confidence_threshold: 0.3
+    r4_med_confidence_threshold: 0.5
+  verification:
+    r0r1_model: "verify"
+    r1r2_model: "distill_medium"
+    r1r3_model: "verify"
+    r4_model: "distill_medium"
+    r5_model: "distill_medium"
+    r6_model: "verify"
+    max_retries: 2
+
+orchestration:
+  max_wip: 3
+  daily_chunk_limit: 20
+  loop_default: "on"
+  mode_default: "research"
+  production_window_days: [1, 2, 3]
+  states:
+    - "BOOT"
+    - "MEMORY_LOAD"
+    - "BACKLOG_REFRESH"
+    - "DISPATCH"
+    - "RUN_CHUNK"
+    - "EVALUATE"
+    - "MEMORY_COMMIT"
+    - "BRIEF_IF_NEEDED"
+
+research:
+  budget_split:
+    exploit: 0.50
+    orthogonal: 0.30
+    counterfactual: 0.20
+  family_concentration_cap: 0.40
+  cooldown_after_fails: 3
+
+kpi:
+  sharpe_primary: "sharpe0_m_ann"
+  tail_primary: "es99_m"
+  target_cagr: 0.16
+  target_sharpe: 2.0
+  target_mdd: -0.25
+
+simulation:
+  initial_capital: 100000000
+  commission: 0.0015
+  max_holdings: 20
+  min_weight: 0.02
+  benchmark_code: "IKS200"
+
+briefing:
+  triggers:
+    sharpe_improvement: 0.10
+    es99_improvement: 0.003
+    mdd_improvement: 0.02
+    turnover_improvement: 1.0
+  dedup_window_hours: 24
+  daily_max: 12
+
+objective_hierarchy:
+  - "Validity"
+  - "Implementability"
+  - "Robustness"
+  - "Performance"
+  - "Novelty"

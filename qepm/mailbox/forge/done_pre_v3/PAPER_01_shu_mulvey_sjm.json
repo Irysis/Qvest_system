@@ -1,0 +1,38 @@
+{
+  "exp_id": "PAPER_01_SJM",
+  "title": "Shu & Mulvey (2024) — 논문 원본 팩터 정의로 한국시장 복제",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "execute",
+  "priority_score": 0.99,
+  "scope": {
+    "strategy_id": "STR_1300",
+    "family": "paper_replication_sjm",
+    "n_holdings": 30,
+    "frequency": "monthly"
+  },
+  "design": {
+    "paper": "Shu & Mulvey (2024) Dynamic Factor Allocation via Regime-Switching, Princeton",
+    "IMPORTANT": "논문 원본 팩터 정의 그대로 사용. 우리식 확장팩터 쓰지 마라.",
+    "paper_factor_definitions": {
+      "Value": "Book-to-Market ratio (BM = Book Equity / Market Equity). RAWDATA의 Size + fundamental의 TotalEquity로 계산. 높을수록 value.",
+      "Momentum": "Past 12-month return, skipping most recent month (12-1m). prod(1+Ret[t-252:t-21])-1",
+      "Size": "Market capitalization의 음수 (-log(MarketCap)). 작을수록 높은 score (small cap premium).",
+      "Quality": "Gross Profitability = (Revenue - COGS) / Total Assets. fundamental에서 GPA 직접 사용.",
+      "Low Volatility": "Realized volatility 음수. -sd(Ret, 252d). 낮을수록 높은 score."
+    },
+    "paper_methodology": {
+      "step1": "5개 팩터 각각의 long-short 월간 수익률 시계열 구축 (top quintile - bottom quintile)",
+      "step2": "팩터별 독립 2-state HMM (bull/bear) fitting. expanding window만 (t-1까지). depmixS4 패키지 사용.",
+      "step3": "현재 state probabilities → BL view 생성: P(bull)>0.6이면 positive view, P(bear)>0.6이면 negative view",
+      "step4": "BL posterior expected return → MVO with constraints (min 5%, max 40%)",
+      "step5": "팩터 가중 결정 → 종목별 composite score → Top 30 선정",
+      "step6": "Persistence: regime 전환 감지 후 최소 2개월 유지 (whipsaw 방지)"
+    },
+    "pit_rules": {
+      "HMM": "expanding window only. t-1까지 데이터로 fit. 매월 refit.",
+      "factor_returns": "t-1까지 수익률만. 당월 제외.",
+      "BL": "posterior 계산에 미래 데이터 절대 불가."
+    }
+  }
+}

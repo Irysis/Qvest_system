@@ -1,0 +1,64 @@
+{
+  "exp_id": "EV_73",
+  "category": "EV",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T07:51:00+09:00",
+  "bucket": "Stabilize",
+  "priority": 1,
+  "trigger": "Forge: gradeA_param_tune 요청. L-130(alpha=construction). STR_1071(Score 87.1) 미세조정.",
+
+  "scope": {
+    "family": "5sleeve_optimal_tune",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "현 프로덕션 후보 STR_1071(Score 87.1, SR 1.30, MDD 22.7%)의 construction 파라미터(VT level, BZ, MRS threshold)를 체계적으로 탐색하면 Score 88+ 달성이 가능하다.",
+    "mechanism": "L-130: Alpha = construction. 기존 최고 전략의 construction 파라미터 미세조정이 새 팩터 탐색보다 효율적. STR_1071 = NoShortDD + MRS 12/25. 미탐색 축: (1) VT level 18~22% 범위 (2) BZ 45/22 vs 55/28 (3) MRS threshold 30/45 vs 35/50. Evolution tracker Path #28(STR_1071 → DD_med 6% + NoShortDD + MRS 12/25 결합)도 병행.",
+    "academic_basis": [
+      "Section 9: STR_1071 = 현 최고 MDD 22.7%, Calmar 0.946",
+      "L-130: Alpha = construction(VT+DD+HRP+regime)",
+      "Evolution Path #28: DD_med 6% + NoShortDD + MRS 12/25 결합 → Score 87+ 예상",
+      "L-247~248: VT 15~25% optimal. VT12=SR극대화, VT25=CAGR극대화",
+      "L-266~267: BZ 50/25 최적. 40/20 Score -11.3p"
+    ],
+    "falsification": "IF 모든 변형 Score <= 87.1 THEN STR_1071이 이미 파라미터 최적. IF MDD > 25% THEN 파라미터 완화 과도."
+  },
+
+  "param_grid": {
+    "base": "STR_1071 (NoShortDD, MRS 12/25)",
+    "vt_levels": [18, 20, 22],
+    "bz_configs": [
+      {"keep_n": 45, "entry_n": 22},
+      {"keep_n": 50, "entry_n": 25},
+      {"keep_n": 55, "entry_n": 28}
+    ],
+    "mrs_configs": [
+      {"low": 30, "high": 45},
+      {"low": 35, "high": 50}
+    ],
+    "dd_med": [5, 6, 7],
+    "note": "3×3×2×3 = 54 조합. 너무 많으면 VT×DD_med(3×3=9)만 우선 실행.",
+    "priority_grid": "VT × DD_med 먼저 (9건). BZ와 MRS는 최적 VT/DD 확정 후 2차 실행."
+  },
+
+  "construction": {
+    "method": "param_sweep on STR_1071 base",
+    "n_stocks": 30,
+    "sector_neutral": true,
+    "5sleeve_structure": "Defense(D01+D02) + IndMom + Consensus + QualRev + 5th",
+    "overlay": "VT + DD(NoShortDD) + MRS v7.1"
+  },
+
+  "execution": {
+    "preflight_check": true,
+    "run_all_pattern": true,
+    "estimated_time": "4-6h (9건 priority grid + 최적 조합 2차)",
+    "note": "STR_1071 run_all.R 복사 후 파라미터만 변경. 코드 구조 수정 없음."
+  },
+
+  "l_codes_referenced": ["L-130", "L-247", "L-248", "L-266", "L-267"],
+  "decision": { "grade": null, "verdict": null, "next_actions": null }
+}

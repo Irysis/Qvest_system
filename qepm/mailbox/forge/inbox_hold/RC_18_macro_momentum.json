@@ -1,0 +1,22 @@
+{
+  "exp_id": "RC_18_macro_momentum",
+  "title": "매크로 모멘텀 — MRS 변화 방향이 팩터 선택보다 중요",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:41:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_18", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS 수준이 아닌 변화 방향(개선/악화)이 팩터 선택에 더 중요. MRS 하락 추세(개선) → 공격, MRS 상승 추세(악화) → 방어. XXX1(변화율)과 유사하나 추세(3m MA 방향) 기반.",
+    "signal": "mrs_trend = sign(MRS_3m_MA[t-1] - MRS_3m_MA[t-4]) — 3개월 추세 방향",
+    "allocation": {
+      "improving": {"trigger": "mrs_trend < 0 (MRS 하락 = 개선)", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "deteriorating": {"trigger": "mrs_trend > 0 (MRS 상승 = 악화)", "tilt": "Defense 35% + Quality 25% + Others 40%"},
+      "flat": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS 3m MA = t-1 lag"}
+}

@@ -1,0 +1,14 @@
+{
+  "exp_id": "EN_55_ens_ablation",
+  "title": "[진단] 앙상블 Ablation — 5전략 중 1전략씩 제거 시 앙상블 SR 변화",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:24:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_55", "family": "ensemble"},
+  "design": {
+    "concept": "EN_47(5전략 EW)에서 1전략씩 제거 → marginal contribution. EN_14(Jackknife)과 유사하나 SR 기여분 정량화에 집중.",
+    "experiments": "5 leave-one-out: {-NNNN1, -A1, -EV_05, -EV_06, -SF_01}",
+    "output": "제거 시 SR 감소 가장 큰 전략 = 앙상블 핵심. 제거 시 SR 증가 = 불필요 전략."
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

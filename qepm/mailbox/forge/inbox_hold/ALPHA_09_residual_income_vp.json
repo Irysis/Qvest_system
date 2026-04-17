@@ -1,0 +1,50 @@
+{
+  "exp_id": "ALPHA_09",
+  "title": "잔여이익 모형(RIM) V/P Ratio — BM 가치팩터 대체, FF5α 설명 불가 영역 포착",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T20:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {
+    "family": "rim_value",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8, analyst coverage >= 1)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "잔여이익 모형(Residual Income Model)으로 추정한 내재가치(V)와 시가(P)의 비율(V/P)이 BM(Book-to-Market)보다 우월한 가치 시그널을 제공하며, FF5 alpha를 설명하지 못하는 mispricing 영역을 포착한다.",
+    "mechanism": "Haboub, Kartsaklas & Sarafidis (2025, arXiv 2506.00206): 미국시장에서 V/P 기반 포트폴리오가 1~3년 horizon에서 초과수익 달성. V/P가 높은 종목(내재가치 > 시가)은 장기간 저평가 유지. FF5로 설명 불가능한 alpha 존재 — 특히 high V/P 종목에서. RIM: V = BV + Σ(ROE - r) × BV / (1+r)^t. 한국시장에서 FnGuide 컨센서스 ROE 예측치 + 현재 BPS로 V 계산 가능. 기존 BM은 과거 재무제표만 반영, V/P는 미래 수익성 전망 내포 → 더 풍부한 정보",
+    "falsification": "컨센서스 ROE 예측치 coverage < 50% → 기각. V/P와 BM 상관 > 0.8 → BM 대비 추가 정보 없음 기각. Alpha Lab IC < 0.01 → 기각",
+    "academic_basis": "Haboub et al. (2025) 'Residual Income Valuation and Stock Returns' arXiv 2506.00206. Ohlson (1995) 'Earnings, Book Values, and Dividends in Equity Valuation' CAR — RIM 원논문. Frankel & Lee (1998) 'Accounting Valuation, Market Expectation, and Cross-Sectional Stock Returns' JAE — V/P 실증. Lee, Myers & Swaminathan (1999) 'What is the Intrinsic Value of the Dow?' JF"
+  },
+  "data_requirements": {
+    "source": "FnGuide 컨센서스(ROE 예측치) + RAWDATA(BPS, Close)",
+    "fields": ["Ticker", "Date", "BPS", "Close", "FnGuide_Consensus_ROE_FY1", "FnGuide_Consensus_ROE_FY2"],
+    "pit_safety": "컨센서스 ROE = 발표 시점 기준. BPS = 최근 확정 재무제표(45d lag). C4 준수",
+    "computation": {
+      "rim_value": "V = BPS + (ROE_FY1 - r) × BPS / (1+r) + (ROE_FY2 - r) × BPS / (1+r)^2 + TV",
+      "terminal_value": "TV = (ROE_FY2 - r) × BPS / ((r - g) × (1+r)^2), g=0 보수적",
+      "discount_rate": "r = risk-free + equity risk premium (국고채 + 5~6%, 또는 expanding CAPM)",
+      "signal": "V/P = V / Close → z(V/P), high = undervalued"
+    }
+  },
+  "implementation": {
+    "step1": "FnGuide 컨센서스 ROE FY1/FY2 데이터 가용성 확인",
+    "step2": "RIM V 계산 → V/P ratio",
+    "step3": "Alpha Lab Stage 0: (a) V/P IC/ICIR, (b) BM과 상관, (c) Consensus(SUE/ESBR)와 상관",
+    "step4_if_pass": "Full backtest: quarterly rebal, 45d lag, N=30",
+    "step5_if_pass": "4th sleeve 또는 Value sleeve로 편입"
+  },
+  "pit_checklist": ["C1: 컨센서스 발표 시점 기준", "C4: BPS 45d lag", "C11: FnGuide 컨센서스 발표 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "analyst coverage >= 1", "Alpha Lab ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.02",
+    "icir": ">0.12",
+    "corr_with_bm": "<0.6 (BM 대비 추가 정보 확인)",
+    "corr_with_consensus": "<0.5"
+  },
+  "l_codes": ["L-428 (4th alpha)", "L-285 (DART fundamental gate)"],
+  "risk_notes": "RIM은 할인율(r)과 성장률(g) 가정에 민감. 보수적 가정(g=0, r=국고채+6%)으로 시작. FnGuide 컨센서스 ROE coverage가 대형주에 편중될 수 있음 → 유니버스 축소 가능. BM과 상관이 높으면 추가 alpha 없음. SSRN 3396505(DCF Terminal Value)와 유사한 접근이나 RIM이 더 간결"
+}

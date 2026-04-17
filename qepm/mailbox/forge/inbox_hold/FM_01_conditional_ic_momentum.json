@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_01_conditional_ic_mom",
+  "title": "조건부 IC 모멘텀 — 국면 내에서의 IC 추세로 팩터 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "FM_01", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B2(IC 가중)와 C1(국면FM)의 정밀 결합: 현재 국면(risk_on/elevated/crisis) 내에서의 trailing IC 추세를 측정. 국면 전환 시 IC 히스토리 리셋 → 이전 국면 IC가 오염시키지 않음.",
+    "logic": [
+      "1. MRS[t-1] → 국면 판단",
+      "2. 현재 국면 기간의 IC만 추출 (국면 시작일~현재)",
+      "3. 국면 내 IC 추세: delta_IC = IC[t-1] - IC[t-4] (3m 변화)",
+      "4. IC가 높고 + 상승 추세인 팩터에 가중 = IC × (1 + delta_IC)",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC = t-1까지 횡단면. 국면 판단 = MRS[t-1]."},
+  "overfitting_guard": "IC 추세는 자동 계산. 국면 내 데이터만 사용 → 국면 전환 시 편향 방지."
+}

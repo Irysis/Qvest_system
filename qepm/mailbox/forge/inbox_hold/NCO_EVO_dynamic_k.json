@@ -1,0 +1,43 @@
+{
+  "exp_id": "NCO_EVO_DYNAMIC_K",
+  "title": "NCO Dynamic Cluster Count: 위기 시 집중(k=2-3), 정상 시 분산(k=5-8)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:05:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {
+    "strategy_id": "STR_1114",
+    "name": "nco_dynamic_k",
+    "base": "STR_1110 (NCO + regime_engine_daily.R, C11 fix 완료 후)",
+    "family": "nco_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "NCO 클러스터 수 k를 국면에 따라 동적으로 조절하면 (위기: k=2-3 집중, 정상: k=5-8 분산) 정적 sqrt(p) 대비 MDD 감소 + Calmar 개선",
+    "mechanism": "위기 시 자산 간 상관 급등 → 클러스터 구조 단순화 → 소수 클러스터에 집중 배분이 효율적 (Roncalli 2014 inter-cluster diversification 감소 반영). 정상 시 상관 분산 → 다수 클러스터로 세밀한 분산 효과. Judge evolution_path 직접 인용: 'Dynamic k: fewer clusters in crisis (concentration), more in normal (diversification)'",
+    "falsification": "Calmar < 0.719 (STR_1033 base) → 기각. MDD > 26% → 기각"
+  },
+  "implementation": {
+    "changes": [
+      "calc_nco_weights() 내 k 결정 로직 수정:",
+      "  regime <- build_daily_regime(as.Date(d))  # 현 시점 국면",
+      "  mrs_now <- regime[Date == d, MRS]",
+      "  if (mrs_now >= 25) k <- max(2, min(3, round(sqrt(p)/2)))",
+      "  else if (mrs_now >= 15) k <- max(3, min(5, round(sqrt(p)*0.75)))",
+      "  else k <- max(4, min(8, round(sqrt(p))))",
+      "기존 static k = max(2, min(8, round(sqrt(p)))) 대체"
+    ],
+    "parameters": {
+      "k_crisis": "2-3 (MRS >= 25)",
+      "k_elevated": "3-5 (15 <= MRS < 25)",
+      "k_normal": "4-8 (MRS < 15)"
+    },
+    "dependencies": ["NCO_C11_FIX (STR_1110) 완료 후 실행"]
+  },
+  "l_codes_referenced": ["L-479 (가중방법 최적화 v7.1 최강)", "L-488 (NCO FF5 t=2.89)", "L-436 (NCO vs HRP 30종목 소표본)"],
+  "academic_basis": "Lopez de Prado (2016) NCO; Roncalli (2014) 'Introduction to Risk Parity and Budgeting' — crisis correlation regime effect on clustering; Judge evolution_path 직접 인용",
+  "risk_notes": "k 변경이 rebalancing 시점에만 발생하므로 turnover 증가 미미. 다만 crisis 진입/퇴출 경계에서 k 급변 → weight jump 가능. Smoothing 검토."
+}

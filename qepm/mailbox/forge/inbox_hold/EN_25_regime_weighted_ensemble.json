@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_25_regime_weighted",
+  "title": "Regime-Weighted Ensemble — 현재 국면에서의 trailing SR로 전략 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:02:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_25", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_20(EWMA SR 가중)과 FM_07(국면 ICIR)의 전략 레벨 결합: 현재 국면 기간의 trailing SR로 전략 가중.",
+    "logic": [
+      "1. MRS[t-1] → 국면",
+      "2. 현재 국면 시작일~t-1 기간의 각 전략 SR 계산",
+      "3. w_i = max(0, regime_SR_i) / sum(max(0, regime_SR))",
+      "4. score × w 합산 → Top 30"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "regime SR = 국면 내 expanding, t-1 lag"}
+}

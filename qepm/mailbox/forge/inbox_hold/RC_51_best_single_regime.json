@@ -1,0 +1,14 @@
+{
+  "exp_id": "RC_51_best_single",
+  "title": "[진단] 단일 국면 시그널 최강 확정 후 해당 시그널로 전 전략 재실행",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:22:00+09:00",
+  "bucket": "production", "priority_score": 0.88,
+  "scope": {"strategy_id": "RC_51", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_50(9종 비교) 결과에서 OOS SR 최강 단일 국면 시그널 확정 → EV_54 최적 NF 전략에 해당 시그널 적용.",
+    "dependency": "RC_50 + EV_54 완료 후",
+    "logic": "RC_50 최강 시그널 × EV_54 최적 NF × NCO × QGate = 최종 프로덕션 후보"
+  },
+  "pit_rules": {"C12": "walk-forward 검증 필수"}
+}

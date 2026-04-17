@@ -1,0 +1,26 @@
+{
+  "exp_id": "RC_31_kr_internals_only",
+  "title": "한국 내부 시그널 Only — ECOS+KRX 데이터만으로 국면 판단 (FRED 제외)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:51:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_31", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "L-454: 한국 내부(cor=-0.460) > 글로벌 FRED(-0.137). regime_engine_daily.R의 FRED 축 제거, ECOS/KRX 4축만으로 국면 판단.",
+    "axes": [
+      "KRW/USD 20d 변화율 (ECOS)",
+      "회사채AA-국고채3Y 스프레드 (ECOS)",
+      "KOSPI200 외국인 순매수 20d (KRX)",
+      "횡단면 분산도 (RAWDATA)"
+    ],
+    "kr_mrs": "KMRS = mean(z(4 axes), expanding, t-1)",
+    "allocation": "KMRS 기반 soft ramp (KMRS 15→25 → exposure 100%→30%)",
+    "scoring": "MF_A1 7F composite",
+    "overlay": "DD_med only + VT 0.25 (KMRS가 MRS 대체)"
+  },
+  "pit_rules": {"C1": "4축 모두 t-1 lag"},
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)"]
+}

@@ -1,0 +1,44 @@
+{
+  "exp_id": "PAPER_04_CENTURY",
+  "title": "Swade et al. (2024) — 논문 원본 매크로팩터+BL 정의로 한국시장 복제",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "execute",
+  "priority_score": 0.96,
+  "scope": {
+    "strategy_id": "STR_1303",
+    "family": "paper_replication_century",
+    "n_holdings": 30,
+    "frequency": "monthly"
+  },
+  "design": {
+    "paper": "Swade et al. (2024) A Century of Macro Factor Investing, Robeco/JPM",
+    "IMPORTANT": "논문 원본 매크로팩터 분류 + RP + BL 그대로.",
+    "paper_macro_factor_groups": {
+      "Growth": {
+        "factors": ["Momentum (12-1m)", "Size (-MarketCap)"],
+        "rationale": "경기 확장기에 수혜"
+      },
+      "Defensive": {
+        "factors": ["Low Volatility (-Realized Vol 252d)", "Quality (ROE + low leverage)"],
+        "rationale": "경기 수축기에 방어"
+      },
+      "Inflation": {
+        "factors": ["Value (BM + E/P)", "Commodity exposure proxy (에너지/소재 섹터 틸트)"],
+        "rationale": "인플레이션기에 수혜"
+      }
+    },
+    "paper_methodology": {
+      "step1": "3 macro group의 long-short 팩터 수익률 구축",
+      "step2": "Base allocation: Risk Parity (equal risk contribution across 3 groups). expanding covariance.",
+      "step3": "BL overlay views: (a) 매크로 view = v7.1 MRS 기반 (crisis→Defensive overweight, risk_on→Growth overweight), (b) 팩터모멘텀 view = trailing 12m 팩터 수익률",
+      "step4": "BL posterior → constrained MVO (min 15%, max 50% per group)",
+      "step5": "Group 내 종목 선정: 해당 group 팩터 composite score Top N → 전체 Top 30"
+    },
+    "pit_rules": {
+      "RP_covariance": "expanding window only.",
+      "BL_views": "MRS t-1 + FM t-1.",
+      "fundamentals": "Factor_Date <= sig_d"
+    }
+  }
+}

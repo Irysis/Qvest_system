@@ -1,0 +1,17 @@
+{
+  "exp_id": "FM_38_regime_fm_metric",
+  "title": "국면별 최적 FM 메트릭 — risk_on: SR, crisis: ICIR 사용",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:03:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_38", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_37(SR vs IC 비교) 결과 예상: risk_on에서는 SR이, crisis에서는 ICIR이 유효. 국면별 FM 메트릭 자동 전환.",
+    "logic": [
+      "MRS < 15 → FM = trailing 6m SR 기반 가중",
+      "MRS >= 15 → FM = trailing 24m ICIR 기반 가중"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "SR/ICIR + MRS 모두 t-1 lag"}
+}

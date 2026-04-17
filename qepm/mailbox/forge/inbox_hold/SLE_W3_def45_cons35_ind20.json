@@ -1,0 +1,31 @@
+{
+  "exp_id": "SLE_W3",
+  "title": "Balanced Alpha 45/35/20",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.86,
+  "scope": {
+    "family": "stock_level_ensemble",
+    "strategy_id": "STR_1051",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "IndMom 비중 20%로 소폭 상향, Defense 45%로 소폭 상향. STR_1048(40/35/25) 대비 IndMom 축소+Defense 강화의 균형점. L-415: Consensus가 가장 강건한 3rd alpha → 35% 유지",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R 복사 후 수정",
+    "composite_score": "0.45 * z_defense + 0.35 * z_consensus + 0.20 * z_indmom",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: expanding z-score", "C2: t-1 lag overlays"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">12%", "sharpe": ">1.05", "mdd": "<27%"},
+  "l_codes": ["L-415", "L-317"],
+  "academic": "L-415: Consensus = 3rd independent alpha 확정"
+}

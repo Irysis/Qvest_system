@@ -1,0 +1,93 @@
+# QEPM Dynamic Allocation Configuration
+# Phase 5: 국면 기반 동적 팩터 배분 엔진
+
+targets:
+  cagr: 0.16         # 16%+
+  sharpe: 2.0        # Sharpe 2.0+
+  mdd: 0.25          # MDD < 25%
+
+# 확정 슬리브 (독립 alpha source)
+sleeves:
+  defense:
+    family: "Defense"
+    reference: "STR_654"
+    base_weight: 0.40
+    correlation_with_pool: 1.000
+    description: "IdioVol + Beta (Golden Formula)"
+
+  industry_momentum:
+    family: "IndMom"
+    reference: "STR_694"
+    base_weight: 0.30
+    correlation_with_pool: 0.687
+    description: "산업 모멘텀"
+
+  flow:
+    family: "Flow"
+    reference: "STR_701"
+    base_weight: 0.15
+    correlation_with_pool: 0.744
+    description: "수급 프록시"
+
+  reversal:
+    family: "Rev5d"
+    reference: "STR_706"
+    base_weight: 0.15
+    correlation_with_pool: 0.760
+    description: "5일 역전"
+
+# 국면별 동적 가중 맵
+regime_weight_map:
+  RISK_ON:
+    defense: 0.35
+    industry_momentum: 0.35
+    flow: 0.15
+    reversal: 0.15
+  CAUTION:
+    defense: 0.50
+    industry_momentum: 0.20
+    flow: 0.20
+    reversal: 0.10
+  RISK_OFF:
+    defense: 0.70
+    industry_momentum: 0.10
+    flow: 0.15
+    reversal: 0.05
+
+# 전환 스무딩
+transition:
+  method: "exponential"  # exponential | linear | step
+  half_life_months: 1    # 가중 전환 반감기
+  max_turnover_per_rebal: 0.30  # 1회 리밸런싱 최대 회전율
+
+# 역할 균형 (Lawbook 12장)
+role_balance:
+  growth_sleeves: ["industry_momentum", "reversal"]
+  defense_sleeves: ["defense", "flow"]
+  min_defense_weight: 0.30   # 방어 슬리브 최소 비중
+  max_concentration: 0.60     # 단일 슬리브 최대 비중
+
+# 오버레이 스택
+overlay:
+  vol_target:
+    enabled: true
+    target: 0.18          # 18% 연율 변동성 타겟
+    lookback_days: 60
+    min_exposure: 0.20    # 최소 20% 시장 노출
+    max_exposure: 1.50    # 최대 150% (레버리지 허용 시)
+
+  drawdown_control:
+    enabled: true
+    max_dd_trigger: 0.15  # 15% DD 시 포지션 축소 시작
+    full_exit_dd: 0.25    # 25% DD 시 전면 현금 전환
+    recovery_speed: "slow"  # slow | medium | fast
+
+# 실행 파라미터
+execution:
+  rebalance_freq: "monthly"
+  buffer_zone:
+    keep_n: 50
+    entry_n: 25
+  commission: 0.003
+  n_holdings: 30
+  weight_method: "ew"       # EW가 항상 최적 (L-14, L-34, L-87)

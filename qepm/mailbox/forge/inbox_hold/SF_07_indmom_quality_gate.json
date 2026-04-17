@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_07_indmom_qgate",
+  "title": "IndMom + Quality Gate — 업종모멘텀 scoring + 재무건전성 필터",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "SF_07", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "IndMom(12m-1m 업종 모멘텀) 단일 scoring + Quality gate(PiotroskiF<3 제거). 모멘텀 종목 중 재무 불건전 종목 필터링.",
+    "signal": "z(IndMom_12m_1m), sector neutral",
+    "gate": "PiotroskiF < 3 제거 + IdioVol > 90pct 제거",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "IndMom = t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-285 (gate 유효)", "L-517 (PiotroskiF gate)"]
+}

@@ -1,0 +1,22 @@
+{
+  "exp_id": "RC_12_mom_crash_regime",
+  "title": "모멘텀 크래시 국면 — 급락 후 반등 시 모멘텀 해제 + 역전 팩터",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:41:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "RC_12", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "Daniel&Moskowitz(2016): 모멘텀 크래시 = 약세장 후 급반등 시. 이 시점에서 momentum 팩터 비활성화 + reversal/value 활성화.",
+    "crash_detection": "KOSPI200 trailing 12m return < -20% AND 최근 1m return > +10% = momentum crash zone",
+    "allocation": {
+      "crash_zone": "Value 30% + Reversal 20% + Defense 30% + Others 20% (momentum 0%)",
+      "normal": "MF_A1 Core (momentum 포함)"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "BM return = t-1 lag"},
+  "academic_basis": "Daniel & Moskowitz (2016 JFE) 'Momentum Crashes'"
+}

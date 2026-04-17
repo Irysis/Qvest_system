@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_NNN1_DD_SWITCH",
+  "title": "Drawdown 기반 팩터 전환 — 포트폴리오 DD 심화 시 방어 모드",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "MF_NNN1", "family": "multifactor_dd_switch", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(외부 국면)이 아닌 포트폴리오 자체의 DD(내부 상태)로 팩터 전환. DD가 깊어지면 자동으로 Defense 모드 전환. DD brake와 다름: DD brake는 노출 축소, NNN1은 팩터 구성 변경.",
+    "logic": [
+      "1. 포트폴리오 trailing DD 계산 (t-1)",
+      "2. DD < 5%: MF_A1 Core weight (공격 모드)",
+      "3. 5% <= DD < 15%: Defense 35% + Quality 25% + Consensus 20% + Others 20%",
+      "4. DD >= 15%: Defense 50% + Quality 30% + Consensus 20% (풀 방어 모드)",
+      "5. DD 회복(< 5%) 시 2개월 grace period 후 Core 복귀"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25 (DD Brake 대신 팩터 전환이 방어)",
+    "advantage": "DD brake(노출 축소)는 CAGR 손실. NNN1(팩터 전환)은 100% invested 유지하면서 방어."
+  },
+  "pit_rules": {"C1": "포트폴리오 DD = t-1 NAV 기준"},
+  "overfitting_guard": "DD threshold(5/15%)는 경제적 직관.",
+  "l_codes_referenced": ["L-447 (same-day DD 과대추정 → t-1 lag 필수)", "L-508 (short DD 제거)"]
+}

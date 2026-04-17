@@ -1,0 +1,19 @@
+{
+  "exp_id": "RC_42_realized_skew",
+  "title": "Realized Skewness 국면 — 시장 수익률 비대칭도로 꼬리 위험 감지",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:41:00+09:00",
+  "bucket": "explore", "priority_score": 0.72,
+  "scope": {"strategy_id": "RC_42", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "KOSPI200 trailing 60d realized skewness. 음의 skew 확대 → 좌측 꼬리 위험 증가 → 방어.",
+    "signal": "z(realized_skew_60d, expanding 252d, t-1)",
+    "allocation": {
+      "negative_skew": {"trigger": "z < -1.0 (음의 비대칭 극단)", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "positive_skew": {"trigger": "z > 1.0 (양의 비대칭)", "tilt": "Momentum 25% + Consensus 25% + Others 50%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "skew = trailing 60d, z = expanding 252d, t-1 lag"}
+}

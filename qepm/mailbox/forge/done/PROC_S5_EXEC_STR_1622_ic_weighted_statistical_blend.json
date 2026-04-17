@@ -1,0 +1,26 @@
+{
+  "task_type": "S5_mutation_execution",
+  "strategy_id": "STR_1622_ic_weighted_statistical_blend",
+  "factor_id": "C19+V14+Q01+D01+M25_IC_Weighted",
+  "role": "core_alpha",
+  "design_artifact": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1622_ic_weighted_statistical_blend/stage_artifacts/s5_mutation_design_1.json",
+  "base_factor_engine": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1622_ic_weighted_statistical_blend/factor_engine.R",
+  "execution_priority": "M9 → M8 → M1 → M4 → M7 → M5 → M2 → M3 → M6",
+  "hard_fail_issue": "MDD 50.46% > 45% + Score 24.5 < 40. 이중 목표",
+  "critical_rules": [
+    "C9 필수: dd_lag <- c(0, dd_pct[-n]). same-day DD 금지",
+    "C1: past_dates < sig_d 필터 유지 (IC rolling, full-sample 금지)",
+    "C14: Usable_Date <= sig_d 필터",
+    "C13: Z_Score_Aligned. 방향 반전 금지",
+    "C15: load_month_factors()",
+    "종목수 <= 30"
+  ],
+  "m1_note": "M1(3F): NEEDED_FACTORS = c('C19_Composite_Earnings', 'V14_EBIT_EV', 'Q01_GPA'). N_FACTORS=3. N_FACTORS_EW=1/3. Floor=0.10, Cap=0.50.",
+  "m4_note": "M4: ic_abs <- pmax(ic_mean, 0) 로 교체 (C13 위반 없음 — 방향 반전 아님, weight=0만).",
+  "synthesis_requirement": "M9 실행 시 synthesis_tested=TRUE 플래그 설정 필수",
+  "n_mutations_required": 9,
+  "f_categories_required": 4,
+  "fallback_note": "M9도 MDD > 45% 초과 시 Scout에 diversifier role 재검토 요청",
+  "from": "Scout",
+  "created_at": "2026-03-29"
+}

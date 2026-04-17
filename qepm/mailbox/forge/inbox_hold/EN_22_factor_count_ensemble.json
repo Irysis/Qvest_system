@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_22_nf_ensemble",
+  "title": "팩터 수 앙상블 — 2F/4F/7F 세 전략의 score 합산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_22", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EV_23(팩터 수 비교)의 앙상블 버전. 2F(단순) + 4F(중간) + 7F(풍부)를 동시 사용 → 복잡도 불확실성 감소.",
+    "strategies": [
+      "MF_NNNN1 (2F: Def+Cons)",
+      "SF_17 (4F: Def+Cons+IndMom+Qual)",
+      "MF_A1 (7F: all)"
+    ],
+    "blend": "EW score 합산 → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25"
+  },
+  "pit_rules": {"C1": "각 전략 score t-1 lag"},
+  "overfitting_guard": "3-NF 앙상블 = 복잡도 불확실성 감소. DeMiguel(2009) averaging 원리."
+}

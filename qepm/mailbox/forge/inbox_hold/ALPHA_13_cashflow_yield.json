@@ -1,0 +1,51 @@
+{
+  "exp_id": "ALPHA_13",
+  "title": "Cash Flow Yield (Ocp = 영업현금흐름/시가총액) — 한국 Value 최강 시그널 (t=4.843)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T22:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.87,
+  "scope": {
+    "family": "cashflow_value",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "영업현금흐름/시가총액(Ocp, Cash Flow Yield)이 한국시장에서 가장 강건한 Value 시그널이다(148-anomaly 복제 연구: t=4.843, FF3α t=3.242). BM보다 우월하며, Defense/IndMom/Consensus와 완전히 독립적인 '가치' 차원의 alpha를 제공한다.",
+    "mechanism": "Lakonishok, Shleifer & Vishny (1994 JF): cash flow yield이 BM보다 강건한 value 시그널. 한국 148-anomaly 복제 연구(JDQS 2020): Ocp(영업현금흐름/시가)가 t=4.843으로 Value 카테고리 최강. FF3 alpha도 t=3.242로 유의. 이론: 현금흐름은 회계 재량에 덜 오염되어 '진정한 가치'를 더 잘 반영. BM은 장부가(자산 구성에 따라 왜곡 가능)를, Ocp는 현금 창출 능력을 직접 측정. 한국시장에서 Value 카테고리 전체 69.23% 복제 — 가장 강건한 anomaly 그룹",
+    "falsification": "Alpha Lab IC < 0.02 → 기각. BM과 상관 > 0.7 → BM 대비 추가 정보 없음 기각. Consensus(SUE) 상관 > 0.5 → 기각. DART CFO 데이터 coverage < 60% → 기각",
+    "academic_basis": "한국 148-anomaly 복제(Emerald, JDQS 2020): Ocp t=4.843, FF3α t=3.242 — 한국 Value 최강. Lakonishok, Shleifer & Vishny (1994) 'Contrarian Investment, Extrapolation, and Risk' JF. Ball et al. (2016) 'Accruals, Cash Flows, and Operating Profitability in the Cross Section of Stock Returns' JFE. LASSO 한국 연구(ScienceDirect): cfp(cash flow to price) 선택률 86% — 상위 2위 control factor"
+  },
+  "data_requirements": {
+    "source": "DART 또는 Fundamental.xlsx — 현금흐름표 + RAWDATA 시가총액",
+    "fields": ["영업활동현금흐름(CFO)", "시가총액(또는 Close × 발행주식수)"],
+    "pit_safety": "C4: CFO = 최근 확정 재무제표 기준, 45d lag",
+    "computation": {
+      "ocp": "Ocp = TTM_CFO / MarketCap",
+      "signal": "z(Ocp) — high cash flow yield = undervalued = buy",
+      "alternative": "CFP = CFO / Price per share (동일 개념)"
+    }
+  },
+  "implementation": {
+    "step1": "DART/Fundamental.xlsx에서 영업활동현금흐름(CFO) 추출 + coverage 확인",
+    "step2": "TTM CFO / MarketCap 계산",
+    "step3": "Alpha Lab Stage 0: (a) Ocp IC/ICIR, (b) BM 상관, (c) Defense/Consensus 상관, (d) GP(ALPHA_10) 상관",
+    "step4_if_pass": "Full backtest: quarterly rebal (45d lag), N=30",
+    "step5_dual": "Ocp + GP dual '가치+수익성' scoring 테스트 — Novy-Marx(2013)의 'value is enhanced by profitability' 검증",
+    "step6_if_pass": "Value sleeve로 편입 또는 4th alpha로 독립 운용"
+  },
+  "pit_checklist": ["C1: TTM rolling CFO", "C4: 45d lag after fiscal report", "C11: DART 공시 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.03 (t=4.843 감안 시 높은 기대)",
+    "icir": ">0.20",
+    "corr_with_defense": "<0.3",
+    "corr_with_consensus": "<0.4",
+    "corr_with_bm": "<0.6 (부분 상관 허용)"
+  },
+  "l_codes": ["L-428 (4th alpha)", "L-285 (DART gate 유효 — scoring도 시도)"],
+  "risk_notes": "Value 카테고리 전체가 한국에서 가장 강건(69.23%). Ocp가 t=4.843으로 가장 높으나, FF3 모델에 value factor 포함 시 alpha가 감소(t=3.242로 하락하나 여전히 유의). 즉, BM과 일부 겹치지만 추가 정보 존재. DART CFO 데이터가 ALPHA_06(Accruals)과 동일 소스 — 수집 1회로 두 계약 동시 진행 가능. GP(ALPHA_10) + Ocp 결합이 'profitability enhanced value'(Novy-Marx 2013)의 한국 버전이 될 수 있음 — 매우 유망한 조합"
+}

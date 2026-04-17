@@ -1,0 +1,21 @@
+{
+  "exp_id": "FM_27_mom_qual_interact",
+  "title": "Momentum×Quality Interaction FM — 두 팩터 동시 강세 시에만 FM 활성화",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:44:00+09:00",
+  "bucket": "explore", "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_27", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "Momentum FM이 양수이고 Quality FM도 양수일 때만 Momentum에 가중. Quality가 약세이면 Momentum도 비활성 → momentum crash 방어.",
+    "logic": [
+      "1. 각 팩터 trailing 6m SR (t-1)",
+      "2. Momentum 가중 활성: SR_momentum > 0 AND SR_quality > 0",
+      "3. Momentum 비활성: SR_momentum > 0 BUT SR_quality <= 0 → 가중 0",
+      "4. 나머지 팩터는 SR 기반 FM 가중",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"},
+  "academic_basis": "Asness et al. (2019) Quality+Momentum interaction"
+}

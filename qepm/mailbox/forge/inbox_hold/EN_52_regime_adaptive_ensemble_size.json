@@ -1,0 +1,17 @@
+{
+  "exp_id": "EN_52_regime_ens_size",
+  "title": "국면별 앙상블 크기 — risk_on: 5전략, crisis: 2전략 (집중)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:43:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_52", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "MRS < 15 → 5전략 EW 앙상블 (분산 극대화)",
+      "15 <= MRS < 25 → 3전략 앙상블 (Defense 계열 우선)",
+      "MRS >= 25 → 2전략 앙상블 (Defense only + Quality only)"
+    ],
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

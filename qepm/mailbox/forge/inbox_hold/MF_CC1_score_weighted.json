@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_CC1_SCORE_WEIGHTED",
+  "title": "Score-Weighted 포트폴리오 — EW 대신 composite score 비례 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {
+    "strategy_id": "MF_CC1",
+    "family": "multifactor_construction",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "EW(1/30)는 모든 종목에 동일 확신. Score-weighted는 composite score 높은 종목에 더 많이 투자. 확신도 반영 → alpha 극대화. L-14 EW>IVOL 교훈은 단일팩터 기준 — 멀티팩터 composite에서는 score-weighted가 우위일 수 있음.",
+    "logic": [
+      "1. MF_A1 composite score 계산 → Top 30 선정",
+      "2. 가중 w_i = score_i / sum(score_top30), max_w = 10%",
+      "3. 월간 리밸런싱 + BZ(45/30)"
+    ],
+    "variants": [
+      {"id": "A", "method": "linear score weight (score / sum)", "max_w": 0.10},
+      {"id": "B", "method": "softmax weight (exp(score/T) / sum)", "T": 1.0, "max_w": 0.10},
+      {"id": "C", "method": "rank weight (inverse rank / sum)", "max_w": 0.10}
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "comparison": "MF_A1(EW)과 동일 종목, 가중만 다름 → 순수 가중 효과 측정"
+  },
+  "pit_rules": {"C1": "score = t-1 lag 시그널 기반"},
+  "overfitting_guard": "Score weight는 사전 규칙. 최적화 없음. Max 10% cap으로 집중 위험 제한.",
+  "l_codes_referenced": ["L-14 (EW > IVOL — 단일팩터 기준)", "L-429 (RP > EW — 공분산 반영 시)"]
+}

@@ -1,0 +1,64 @@
+{
+  "exp_id": "SF_06",
+  "category": "SF",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T07:26:00+09:00",
+  "bucket": "Exploit",
+  "priority": 2,
+  "trigger": "Forge generate: D58 실험. ICIR -0.594 (#2 전체). D58×D01=0.747 높음 → D01 대체 가능성 검증.",
+
+  "scope": {
+    "family": "vol_asymmetry_premium",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "rebalance": "monthly + BZ 50/25",
+    "n_stocks": 30,
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "D58_Vol_Asymmetry(상승일 변동성 vs 하락일 변동성 비율) 낮은 종목은 하방 위험이 제한적이어서 D01_IdioVol보다 정제된 low-risk alpha를 제공한다.",
+    "mechanism": "Ang, Hodrick, Xing, Zhang(2006): 변동성 비대칭 = 하방 위험의 직접 측정. D58 = Up_Vol/Down_Vol → 낮을수록 하방>상방 변동성 비대칭이 작음 → 안전. D01(총 변동성)보다 '위험의 질'을 측정. ICIR -0.594 → Z_Score_Aligned가 반전(낮은 비대칭 = 높은 Z). D58×D01=0.747(높음)이나, 잔여 25% 독립 분산에서 추가 정보 존재 여부 검증.",
+    "academic_basis": [
+      "Ang, Hodrick, Xing, Zhang (2006, JF) — Cross-Section of Volatility and Expected Returns",
+      "D58 ICIR -0.594 (t=-6.48), Hit Rate 26.1% (반전 후 73.9%), N=119",
+      "R14_DUVOL(cor 0.891)과 유사 — Chen, Hong, Stein crash risk 측정의 변형"
+    ],
+    "falsification": "IF D58 standalone SR < D01 standalone SR THEN D01이 상위. IF D58+D01 합산 SR < D01 단독 SR THEN 추가 정보 없음. IF 종목 Jaccard(D58 vs D01) > 0.8 THEN 실질 중복."
+  },
+
+  "factors": {
+    "primary": ["D58_Vol_Asymmetry"],
+    "blend_method": "single_factor_z_score_aligned",
+    "direction_note": "Z_Score_Aligned (C13). Mean_IC -0.064 → lower asymmetry = better → 자동 반전.",
+    "stage_0_prevalidated": true,
+    "stage_0_icir": 0.594,
+    "comparison_target": "D01_IdioVol (ICIR 0.512) — standalone 대결로 우열 확인"
+  },
+
+  "construction": {
+    "method": "single_factor_top_N",
+    "scoring": "Z_Score_Aligned(D58_Vol_Asymmetry)",
+    "n_stocks": 30,
+    "sector_neutral": true,
+    "size_neutral": false,
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "overlay": "none"
+  },
+
+  "independence_check": {
+    "D58_x_D01": 0.747,
+    "D58_x_D43": 0.768,
+    "note": "D01과 높은 상관. 이 실험의 목적은 '대체' 가능성 검증이지 '추가' alpha가 아님. D58 > D01이면 defense sleeve 업그레이드."
+  },
+
+  "execution": {
+    "preflight_check": true,
+    "run_all_pattern": true,
+    "estimated_time": "1-2h",
+    "stage_0_first": false
+  },
+
+  "l_codes_referenced": ["L-275", "L-20"],
+  "decision": { "grade": null, "verdict": null, "next_actions": null }
+}

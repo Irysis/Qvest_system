@@ -1,0 +1,94 @@
+{
+  "judge_session": "2026-03-21",
+  "trigger": "msg_004_axiom_scan.json (Q-Lead)",
+  "review_type": "axiom_review",
+  "candidate_file": "CAND_regime_factor_alloc_20260320.json",
+  "family": "regime_factor_alloc",
+  "candidate_statement_inferred": "regime_factor_alloc family는 risk_on 국면에서 FF5 alpha 양(+)이다. 2개 독립 construction(multi_sleeve_4plus, single_factor), weakest t=2.198, OOS 12개월 유의.",
+
+  "five_axis_review": {
+    "axis1_independence": {
+      "verdict": "PASS (marginal)",
+      "independent_constructions": 2,
+      "direction_consistency": 1.0,
+      "strategies": ["STR_1009 (multi_sleeve_4plus)", "STR_898 (single_factor)"],
+      "critical_note": "2개는 최소 기준. 두 전략 모두 동일 RAWDATA, 동일 시기 사용. IdioVol이 두 전략의 공통 핵심 팩터일 가능성 — 이 경우 '독립 construction'이라는 판단이 과대. STR_898은 Judge 미검증 상태이므로 PIT 상태 불확실."
+    },
+    "axis2_rigor": {
+      "verdict": "PASS (weak)",
+      "weakest_t": 2.198,
+      "meta_ratio": 26.1,
+      "tier_distribution": {"strong": 0, "moderate": 1, "weak": 1},
+      "critical_note": "weakest t=2.198은 r7_axiom_design 기준(≥1.96)은 통과하나, 본 프로젝트 1000+ 실험 환경에서 Harvey t>3.0에 크게 미달. 'strong' tier 0개 — 모든 증거가 moderate 이하. 2개 실험만으로 meta analysis의 통계력도 약함."
+    },
+    "axis3_falsification": {
+      "verdict": "FAIL",
+      "total_attempts": 0,
+      "falsified": 0,
+      "survived": 0,
+      "critical_note": "반증 시도 0회 — 치명적 결격. 어떤 조건에서도 반박을 시도하지 않았으므로, 이 패턴이 진짜인지 data mining artifact인지 판단 불가. r7_axiom_design 기준 '최소 1회 적극적 반증 시도' 미충족."
+    },
+    "axis4_external": {
+      "verdict": "PASS",
+      "oos_months": 12,
+      "oos_significant": true,
+      "oos_vs_is": 0.719,
+      "critical_note": "OOS 12개월 유의, IS 대비 71.9% 유지 — 양호. 다만 OOS 정의(어떤 기간이 IS이고 어떤 기간이 OOS인지)가 명확하지 않음."
+    },
+    "axis5_mechanism": {
+      "verdict": "PASS (vague)",
+      "mechanism_type": "structural",
+      "causal_plausibility": "moderate_to_high",
+      "critical_note": "'Market microstructure or structural anomaly (independent of FF5)' — 지나치게 모호. 구체적으로 어떤 구조적 비효율인지 미명시. regime_factor_alloc이 국면별 팩터 배분이라면, 메커니즘은 '국면 전환 시 시장의 반응 지연'인지, '구조적 수급 불균형'인지, '투자자 행동 편향'인지 특정해야 함."
+    }
+  },
+
+  "passing_axes": 4,
+  "failing_axes": ["falsification"],
+  "overall_verdict": "DENY — 4/5 통과하나 Falsification 0회는 치명적 결격",
+
+  "critical_scenarios_where_wrong": [
+    {
+      "scenario": "Defense(IdioVol) 위장 가능성",
+      "description": "STR_898/1009 모두 IdioVol을 핵심 팩터로 포함. regime_factor_alloc의 alpha가 사실상 IdioVol의 alpha라면, 이 family는 독립적 발견이 아니라 기존 AX-001(deprecated)의 반복. 'regime_factor_alloc'이라는 family 라벨이 IdioVol을 포장하는 것일 수 있음.",
+      "test": "STR_898에서 IdioVol 컴포넌트 제거 후 alpha 생존 여부 확인"
+    },
+    {
+      "scenario": "risk_on 전용 편향",
+      "description": "현재 risk_on 국면에서만 검증됨. 전체 기간의 ~70%가 risk_on이므로, 단순히 '대부분의 시간에서 양의 수익'일 뿐 국면 조건부 alpha가 아닐 수 있음. crisis/elevated 국면에서의 성과가 검증되지 않았으므로, '국면 조건부'라는 전략 핵심이 실은 미검증.",
+      "test": "crisis/elevated 국면에서 STR_898/1009 성과 분리 분석"
+    },
+    {
+      "scenario": "소형주 편향(SMB) 위장",
+      "description": "한국시장 팩터 전략 대다수가 소형주 노출을 통해 alpha를 얻음. FF5 alpha가 양이라도 SMB beta가 높으면 실투 시 유동성 제약으로 alpha 소실. STR_1048의 SMB beta 0.57 사례 참조.",
+      "test": "시가총액 상위 50% 제한 후 alpha 재검증"
+    }
+  ],
+
+  "required_experiments_for_promotion": [
+    {
+      "priority": 1,
+      "experiment": "Falsification 1: IdioVol 제거 테스트",
+      "design": "STR_898에서 IdioVol 점수를 0으로 설정, 나머지 팩터만으로 재실행. alpha가 50% 이상 보존되면 regime_factor_alloc이 IdioVol과 독립적임을 확인.",
+      "success_criteria": "FF5 alpha t ≥ 1.5 AND effect retained ≥ 0.5"
+    },
+    {
+      "priority": 2,
+      "experiment": "Falsification 2: Crisis 국면 성과 분리",
+      "design": "STR_898/1009의 일별 수익률을 MRS 30+ 기간과 그 이하로 분리. Crisis 기간에서도 BM 대비 outperform 여부 확인.",
+      "success_criteria": "Crisis 기간 alpha > 0 (annualized)"
+    },
+    {
+      "priority": 3,
+      "experiment": "Falsification 3: 거래비용 2배 적용",
+      "design": "commission 0.30% (기존 0.15%의 2배)로 재실행. alpha 보존 여부 확인.",
+      "success_criteria": "effect retained ≥ 0.5"
+    }
+  ],
+
+  "additional_concerns": {
+    "STR_898_judge_status": "미검증. PIT 상태 불확실. Judge 검증 없이 axiom 증거로 사용하는 것은 위험. 우선 STR_898 Gate 0 검증 필요.",
+    "auto_r7_quality": "3개 후보 모두 auto_r7 자동 생성. 인간(또는 Judge) 검토 없이 기계적으로 축 판정. 본 심사가 최초의 비판적 검토.",
+    "duplicate_candidates": "20260319와 20260320 후보가 evidence/oos 수치 동일 — 중복. 20260317은 이전 버전. 정리 필요."
+  }
+}

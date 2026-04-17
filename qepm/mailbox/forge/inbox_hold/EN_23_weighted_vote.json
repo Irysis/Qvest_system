@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_23_weighted_vote",
+  "title": "가중 투표 앙상블 — 전략별 SR 비례로 투표 가중치 부여",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:42:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_23", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "WWW1(다전략 투표)의 가중 버전. 종목별 출현 횟수에 전략 SR로 가중. 좋은 전략이 선택한 종목에 더 높은 점수.",
+    "logic": [
+      "1. 7전략 각각 Top 30 산출",
+      "2. 각 전략의 trailing 12m SR (t-1) = vote_weight",
+      "3. 종목별 weighted_vote = sum(vote_weight for strategies selecting this stock)",
+      "4. Top 30 by weighted_vote → EW"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "SF_17", "EV_05", "EV_06", "SF_01", "EV_03"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "SR = trailing 12m, t-1 lag"}
+}

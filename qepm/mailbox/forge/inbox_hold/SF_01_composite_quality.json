@@ -1,0 +1,26 @@
+{
+  "exp_id": "SF_01_composite_quality",
+  "title": "Composite Quality — GP+PiotroskiF+DeltaROE+(-Accruals) + BRK overlay",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:06:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "SF_01", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "L-512(GP IC 0.208) + L-517(PiotroskiF OOS 2.64) + L-511(Accruals gate) 결합. 단일 Quality composite 팩터 + STR_1060 검증 overlay. STR_1099(PiotroskiF Grade B)의 업그레이드.",
+    "signal": "z(GPA) + z(PiotroskiF) + z(DeltaROE) + z(-Accruals_TTM), EW, sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    },
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "buffer_zone": {"keep_n": 45, "entry_n": 30}
+  },
+  "pit_rules": {"C1": "DART 45일 lag", "C4": "연간→5월, 분기→45일", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "4-signal composite 가중 EW = 최소 과적합. L-513과 유사하나 Rev21d 제외(turnover 감소).",
+  "l_codes_referenced": ["L-512 (GP IC 0.208)", "L-517 (PiotroskiF OOS 2.64)", "L-511 (Accruals IC -0.006 → gate only)", "L-513 (Quality+Rev IC 0.034)"]
+}

@@ -1,0 +1,26 @@
+{
+  "exp_id": "EN_11_progressive",
+  "title": "Progressive Ensemble — 단순→복잡 순서로 전략 추가, marginal SR 양수만 유지",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:42:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_11", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "단순 전략(NNNN1)부터 시작, 하나씩 전략 추가. 추가 시 앙상블 SR이 개선되면 유지, 악화면 제거. 최소 복잡도에서 최대 SR.",
+    "logic": [
+      "1. Base: MF_NNNN1 (2F, 가장 단순)",
+      "2. +MF_A1 → SR 개선? → YES → 유지. NO → 제거.",
+      "3. +SF_01 → SR 개선? → YES → 유지. NO → 제거.",
+      "4. ... 후보 전략 순차 추가/제거",
+      "5. 최종 앙상블 = marginal SR 양수인 전략만 포함"
+    ],
+    "candidate_order": ["NNNN1", "A1", "SF_01", "EV_05", "EV_06", "SF_03", "EV_03"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "evaluation": "walk-forward: 매년 1월 순차 추가/제거 재평가"
+  },
+  "pit_rules": {"C1": "marginal SR = 직전 12m OOS 기준", "C12": "Full-sample 순차 추가 금지"},
+  "overfitting_guard": "Walk-forward 연간 재평가. 최소 복잡도 원칙."
+}

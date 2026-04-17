@@ -1,0 +1,41 @@
+{
+  "exp_id": "MF_C2_REGIME_PRESET",
+  "title": "국면별 사전정의 팩터 배분 — Crisis:방어, RiskOn:공격",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:36:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {
+    "strategy_id": "MF_C2",
+    "family": "multifactor_regime_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "regime_presets": {
+      "risk_on": {
+        "defense": 0.15, "consensus": 0.25, "indmom": 0.20,
+        "quality": 0.10, "value": 0.10, "momentum": 0.15, "tp_gap": 0.05,
+        "rationale": "호황 시 추세+컨센서스 alpha 극대화"
+      },
+      "elevated": {
+        "defense": 0.30, "consensus": 0.25, "indmom": 0.10,
+        "quality": 0.15, "value": 0.10, "momentum": 0.05, "tp_gap": 0.05,
+        "rationale": "위기 증가 시 방어+quality 강화"
+      },
+      "crisis": {
+        "defense": 0.45, "consensus": 0.15, "indmom": 0.05,
+        "quality": 0.20, "value": 0.05, "momentum": 0.00, "tp_gap": 0.10,
+        "rationale": "위기 시 Defense+Quality 집중 (L-286, L-517 COVID 방어력)"
+      }
+    },
+    "transition": "국면 전환 시 가중 linear ramp (1개월 이동). 급변 방지.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "가중은 사전 정의 (경제적 논리 기반). full-sample 최적화 금지.",
+    "C11": "regime_engine_daily.R"
+  },
+  "overfitting_guard": "Preset 가중은 경제적 직관에 기반. 데이터 최적화 없음. OOS retention < 0.5 시 폐기."
+}

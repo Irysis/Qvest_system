@@ -1,0 +1,56 @@
+{
+  "exp_id": "MF_F1_LSTM",
+  "title": "DL 기반 — LSTM으로 팩터 시계열 → 다음 달 팩터 성과 예측",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:40:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {
+    "strategy_id": "MF_F1",
+    "family": "multifactor_dl",
+    "n_holdings": 30
+  },
+  "design": {
+    "model": "LSTM (keras R package or torch)",
+    "architecture": {
+      "input": "7 팩터 × 12개월 시계열 (월별 수익률) + 12개월 MRS + 12개월 VRP = (7+2) × 12 = 108 input",
+      "layers": [
+        "LSTM(32, return_sequences=TRUE)",
+        "Dropout(0.2)",
+        "LSTM(16, return_sequences=FALSE)",
+        "Dense(7, activation='linear')"
+      ],
+      "output": "7 팩터의 다음 달 예측 수익률",
+      "loss": "MSE",
+      "optimizer": "Adam (lr=0.001, decay 적용)",
+      "batch_size": 32,
+      "epochs": "early_stopping (patience 10)"
+    },
+    "training": {
+      "method": "walk-forward validation",
+      "initial_train": "60개월 (2001~2005)",
+      "step": "12개월씩 확장 (연간 재학습)",
+      "validation": "학습 데이터의 마지막 12개월",
+      "prediction": "다음 12개월 (monthly rolling prediction)"
+    },
+    "prediction_to_weight": "softmax(predicted_return / temperature)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "학습 데이터 = 1~(t-1)월만. Look-ahead 방지를 위해 시계열 순서 엄격 유지.",
+    "C2": "예측 시 t-1까지 시퀀스만 입력.",
+    "C12": "Hyperparameter = validation set(학습 마지막 12개월)으로만 tuning."
+  },
+  "overfitting_guard": {
+    "rule1": "LSTM은 과적합 고위험. Dropout 0.2 필수.",
+    "rule2": "OOS retention >= 0.5 필수. IS-OOS gap > 50% 시 폐기.",
+    "rule3": "Walk-forward 10+ steps (10년+) 필수.",
+    "rule4": "LSTM prediction vs simple FM(B1) 비교 → LSTM 우위 없으면 복잡성 대비 가치 없음 → 폐기.",
+    "rule5": "시계열 데이터 ~240개월 = small sample for DL. 과적합 가능성 매우 높음 인지."
+  },
+  "r_packages": ["keras (또는 torch)", "tensorflow"],
+  "fallback": "keras/torch 미설치 시 → 단순 RNN (순수 R 구현) 또는 MF_E1(XGBoost)으로 대체",
+  "academic_basis": "Gu, Kelly & Xiu (2020 RFS); Ke, Kelly & Xiu (2020 JFE) 'Predicting Returns with Text Data'; Panda et al. (2024)"
+}

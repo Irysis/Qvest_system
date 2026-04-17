@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_GGGG1_FACTOR_TREND",
+  "title": "팩터 추세추종 — 팩터 수익률의 이동평균 돌파로 on/off",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:27:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "MF_GGGG1", "family": "multifactor_trend", "n_holdings": 30},
+  "design": {
+    "concept": "Hurst, Ooi & Pedersen(2017): 추세추종은 100년간 유효. 팩터 수익률에 12m/1m 이동평균 교차(golden cross/death cross) 적용. MA12 > MA1 → 팩터 활성화.",
+    "logic": [
+      "1. 각 팩터의 누적 수익률 시계열 (t-1까지)",
+      "2. MA_12m = 12개월 이동평균, MA_1m = 1개월 이동평균",
+      "3. MA_1m > MA_12m → 팩터 활성화 (상승 추세)",
+      "4. MA_1m <= MA_12m → 팩터 비활성화 (하락 추세)",
+      "5. 활성 팩터 EW composite → Top 30",
+      "6. 활성 팩터 < 2 → Defense + Consensus 고정"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "MA = trailing 누적 수익률 기반, t-1 lag"},
+  "overfitting_guard": "12m/1m MA 교차는 학술 표준. 파라미터 최적화 없음.",
+  "academic_basis": "Hurst, Ooi & Pedersen (2017) 'A Century of Evidence on Trend-Following Investing'; Moskowitz et al. (2012 JFE)"
+}

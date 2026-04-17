@@ -1,0 +1,48 @@
+{
+  "exp_id": "ALPHA_12",
+  "title": "52주 신고가 근접도 (Price-to-52wk-High) — 앵커 기반 모멘텀, IndMom과 독립",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T22:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.80,
+  "scope": {
+    "family": "52wk_high_momentum",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "종목 현재가의 52주 최고가 대비 비율(PTH = Close / max(Close, 252d))이 횡단면 수익률을 예측한다. PTH가 높은(신고가 근접) 종목이 향후 수익률 우월. 한국 148-anomaly 복제 연구에서 52w momentum이 유의하며, 모멘텀 카테고리 66.67% 복제율의 일부. IndMom(섹터)과 다른 차원(개별종목 가격 앵커).",
+    "mechanism": "George & Hwang (2004 JF): 52주 최고가가 투자자의 심리적 앵커로 작용. 신고가 근접 종목에 대한 underreaction → 돌파 시 추가 상승. 10개국 국제 실증(Liu et al. 2011 JIF): 52w high strategy 월 0.60~0.94% 수익, 미국(0.45%)보다 우월. 한국 복제 연구: 52w_1(1개월 보유), 52w_6, 52w_12 모두 테스트 → 유의. Trended Momentum(ALPHA_04)과 다른 메커니즘: R²는 추세의 '질'을 측정, PTH는 가격 '수준'에 대한 앵커 효과를 측정",
+    "falsification": "Alpha Lab IC < 0.02 → 기각. ALPHA_04(Trended Mom)와 상관 > 0.7 → 독립성 부족 기각. IndMom과 상관 > 0.6 → 기각",
+    "academic_basis": "George & Hwang (2004) 'The 52-Week High and Momentum Investing' JF. Liu, Liu & Ma (2011) 'The 52-week high momentum strategy in international stock markets' JIF. 한국 148-anomaly 복제 연구(Emerald, JDQS 2020): 52w momentum 한국 유의"
+  },
+  "data_requirements": {
+    "source": "RAWDATA — Close",
+    "fields": ["Ticker", "Date", "Close"],
+    "pit_safety": "t-1 시점 가격만 사용 (C2)",
+    "computation": {
+      "pth": "PTH[i,t] = Close[i,t-1] / max(Close[i, t-252:t-1]) — 전일 종가 / 과거 252일 최고가",
+      "signal": "z(PTH) — high PTH = 신고가 근접 = buy"
+    }
+  },
+  "implementation": {
+    "step1": "RAWDATA에서 종목별 rolling 252d max(Close) 계산",
+    "step2": "PTH = Close[t-1] / max_252d 계산",
+    "step3": "Alpha Lab Stage 0: (a) PTH IC/ICIR, (b) IndMom/ALPHA_04 상관, (c) Defense 상관",
+    "step4_if_pass": "Full backtest: z(PTH) scoring, sector-neutral, N=30, monthly",
+    "step5": "ALPHA_04(Trended Mom) + ALPHA_12(52w High) dual momentum scoring 테스트"
+  },
+  "pit_checklist": ["C1: rolling 252d", "C2: t-1 lag"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Alpha Lab ICIR >= 0.15"],
+  "metrics_target": {
+    "ic": ">0.03",
+    "icir": ">0.15",
+    "corr_with_indmom": "<0.5",
+    "corr_with_alpha04": "<0.6"
+  },
+  "l_codes": ["L-428 (4th alpha)", "L-395 (가격 전통팩터 한계)"],
+  "risk_notes": "모멘텀 카테고리 66.67% 복제율이나 다중검정 시 26.27%로 하락. 52w high가 다중검정을 통과하는지 개별 확인 필요. 한국시장에서 상한가/하한가 제도(±30%)가 52w high 도달 패턴에 영향 가능. RAWDATA만으로 즉시 구현 가능 — ALPHA_04와 함께 Phase 1으로 진행 권장"
+}

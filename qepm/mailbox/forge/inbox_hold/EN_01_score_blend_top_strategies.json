@@ -1,0 +1,25 @@
+{
+  "exp_id": "EN_01_score_blend_top",
+  "title": "Top 전략 Score Blend — STR_1060 + MF_A1 + MF_NNNN1 종목 score 합산",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:02:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.86,
+  "scope": {"strategy_id": "EN_01", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "Q1(Grade A 전략 앙상블)의 구체화: 기존 최강 STR_1060(5-sleeve) + 신규 MF_A1(7-factor) + MF_NNNN1(극도단순 2F)의 score 합산. 3가지 관점의 합의.",
+    "logic": [
+      "1. STR_1060 5-sleeve scoring → z_1060(Date, Ticker, Score)",
+      "2. MF_A1 7-factor composite → z_a1(Date, Ticker, Score)",
+      "3. MF_NNNN1 2-factor composite → z_nnnn1(Date, Ticker, Score)",
+      "4. ensemble_score = mean(z_1060, z_a1, z_nnnn1)",
+      "5. Top 30 by ensemble_score → EW, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "dependency": "MF_A1 + MF_NNNN1 백테스트 완료 후 실행"
+  },
+  "pit_rules": {"C1": "각 전략 score t-1 lag", "C12": "앙상블 가중 EW = 사전 정의"},
+  "overfitting_guard": "3전략 EW 합산 = 최소 과적합. 30종목 규칙 준수(L-484)."
+}

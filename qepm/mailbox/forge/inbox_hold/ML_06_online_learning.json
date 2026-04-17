@@ -1,0 +1,24 @@
+{
+  "exp_id": "ML_06_online_learning",
+  "title": "Online Learning — 매월 1-step 업데이트로 모델 점진 학습",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:20:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "ML_06", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "E1(XGBoost walk-forward)은 연간 전체 재학습. ML_06은 매월 새 데이터 1건만 추가하여 점진 업데이트. 최근 데이터에 빠르게 적응 + 계산 비용 최소.",
+    "model": "SGD Linear Regression (glmnet with warm start)",
+    "logic": [
+      "1. 초기 학습: 60개월 데이터로 ElasticNet 적합",
+      "2. 매월: 새 데이터 1건 추가 → 기존 β에서 1 gradient step",
+      "3. learning_rate = 0.01, momentum = 0.9",
+      "4. 예측 → softmax weight → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "매월 t-1까지 데이터만. Online update에 t월 데이터 절대 불가."},
+  "overfitting_guard": "1-step SGD = 최소 업데이트 → concept drift에 적응하면서 overfitting 최소."
+}

@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_18_5f_eq_mrs1225",
+  "title": "5F EW + MRS12/25 — 5팩터 EW + STR_1071 MDD 최적 overlay",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:24:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "SF_18", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "EV_22(5F+NCO)의 EW 버전. 5F EW + MRS 12/25. NCO 복잡도 없이 MDD 최적 overlay만.",
+    "signal": "0.30*z(defense) + 0.25*z(consensus) + 0.15*z(indmom) + 0.15*z(quality) + 0.15*z(value), sector neutral",
+    "weighting": "EW",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R MRS 12/25",
+      "vol_target": "expanding 0.25"
+    },
+    "comparison": "EV_22(5F NCO) vs SF_18(5F EW) → NCO vs EW 순수 효과. EV_05(7F EW) vs SF_18(5F EW) → 5F vs 7F 순수 효과."
+  },
+  "pit_rules": {"C1": "t-1 lag", "C11": "regime_engine_daily.R"}
+}

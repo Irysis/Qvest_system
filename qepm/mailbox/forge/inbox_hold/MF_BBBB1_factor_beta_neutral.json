@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_BBBB1_BETA_NEUTRAL",
+  "title": "Beta-Neutral 멀티팩터 — 포트폴리오 beta를 1.0으로 강제 조정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:22:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {"strategy_id": "MF_BBBB1", "family": "multifactor_beta_neutral", "n_holdings": 30},
+  "design": {
+    "concept": "Defense 팩터(low beta 선호)는 포트폴리오 beta를 0.5~0.7으로 낮춤 → 상승장에서 underperform. Beta-neutral로 조정하면 시장 방향 중립 + 순수 alpha 추출.",
+    "logic": [
+      "1. MF_A1 composite → Top 30 선정, EW 가중",
+      "2. 포트폴리오 beta 계산: β_p = sum(w_i × β_i) where β_i = trailing 252d beta (t-1)",
+      "3. beta_adj = 1.0 / β_p (leverage ratio)",
+      "4. 최종 노출 = beta_adj × portfolio return (capped at 1.5)",
+      "5. beta_adj > 1.0 = leverage, < 1.0 = deleverage"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25 (DD Brake는 beta 조정 후 적용)",
+    "expected": "순수 alpha 추출. IR 극대화. 시장 방향 무관 성과."
+  },
+  "pit_rules": {"C1": "β_i = trailing 252d, t-1 lag"},
+  "overfitting_guard": "Beta target 1.0 = BM 추적. Leverage cap 1.5 = 보수적.",
+  "academic_basis": "Frazzini & Pedersen (2014 JFE) 'Betting Against Beta'"
+}

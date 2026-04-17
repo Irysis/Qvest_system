@@ -1,0 +1,53 @@
+{
+  "exp_id": "ALPHA_19",
+  "title": "Contrarian Composite — 한국시장 역방향 시그널 결합 (IC 실증 기반)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T02:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.90,
+  "scope": {
+    "family": "contrarian_alpha",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Scout IC 스크리닝에서 확인된 역방향 시그널(R²×Mom, OCF_ROA, PiotroskiF, FCFToAssets)의 부호를 뒤집어 결합한 Contrarian Composite가 독립적 alpha를 제공한다. 한국시장의 mean-reversion dominant 특성을 체계적으로 포착.",
+    "mechanism": "한국시장 preliminary IC 실증(Scout 2026-03-22): (1) R²×Mom IC=-0.045(t=-5.23) — 추세 명확 고모멘텀 종목 반전. (2) OCF_ROA IC=-0.033(t=-3.93) — 고수익성 종목 하락. (3) PiotroskiF IC=-0.025(t=-4.13) — 고건전성 종목 하락. (4) FCFToAssets IC=-0.029(t=-3.48) — 고FCF 종목 하락. 공통 메커니즘: 한국시장은 개인투자자 비중 높고, '좋은 기업' 추격매수 → 고평가 → mean reversion. 역방향 시그널 = 과대평가 해소 포착. Defense(IdioVol)과 독립: Tail Risk(IC=+0.079)와 상관 분석 필요.",
+    "falsification": "Contrarian Composite IC < 0.03 → 개별 시그널 대비 개선 없음 기각. Defense와 상관 > 0.5 → 기각. OOS(2020+) IC 소멸 → 기각. 위기 국면에서 catastrophic loss → 기각",
+    "academic_basis": "DeBondt & Thaler (1985) 'Does the Stock Market Overreact?' JF — original contrarian. Lakonishok, Shleifer & Vishny (1994) 'Contrarian Investment, Extrapolation, and Risk' JF. 한국 148-anomaly 복제: Profitability 5% 복제(역방향 일관). Scout preliminary IC: 5개 시그널 t > |3.0| 모두 음의 IC"
+  },
+  "data_requirements": {
+    "source": "✅ RAWDATA + .cache/fundamental_dart.parquet — 모두 이미 보유",
+    "signals_and_directions": {
+      "z_neg_trended_mom": "z(-(R²×Mom)) — 추세 명확 모멘텀 종목 회피 (RAWDATA)",
+      "z_neg_ocf_roa": "z(-OCF_ROA) — 고현금흐름 수익성 회피 (DART)",
+      "z_neg_piotroski": "z(-PiotroskiF) — 고건전성 회피 (DART)",
+      "z_neg_fcf": "z(-FCFToAssets) — 고FCF 회피 (DART)"
+    },
+    "composite": "Contrarian = equal-weight z-score 합산. 또는 IC-weight 합산"
+  },
+  "implementation": {
+    "step1": "4개 역방향 시그널 계산 (이미 IC 검증 완료)",
+    "step2": "Contrarian Composite = mean(z_neg_trended_mom, z_neg_ocf_roa, z_neg_piotroski, z_neg_fcf)",
+    "step3": "Alpha Lab: Composite IC/ICIR + Defense(-Pct5)/IndMom/Consensus 상관",
+    "step4": "Full backtest: monthly, sector-neutral, N=30, BZ 50/25",
+    "step5": "OOS split: 2001-2019 IS / 2020-2025 OOS",
+    "step6": "Regime-conditional 분석: 위기 시 contrarian이 작동하는지 (Flight-to-quality reversal)",
+    "step7_if_pass": "Defense + IndMom + Consensus + Contrarian 4-sleeve 구성"
+  },
+  "pit_checklist": ["C1: rolling/expanding only", "C2: t-1 lag on price signals", "C4: 45d lag on DART", "C11: 시차 확인"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Composite ICIR >= 0.20"],
+  "metrics_target": {
+    "composite_ic": ">0.03",
+    "composite_icir": ">0.20",
+    "composite_t": ">3.0",
+    "corr_with_defense": "<0.4",
+    "corr_with_tail_risk": "<0.5",
+    "oos_ic_retention": ">0.5"
+  },
+  "l_codes": ["L-394 (QMJ 실패 원인 = 한국 quality reversal)", "L-428 (4th alpha)", "L-395 (가격팩터 한계 = reversal dominant)"],
+  "risk_notes": "역방향 시그널 = '나쁜 기업을 사라'. 이는 리스크 프리미엄(distressed 종목 보상)일 수 있으나 tail risk도 수반. ALPHA_05(Tail Risk)와 결합하면 '꼬리 위험 작으면서 quality가 낮은(=과소평가된)' 종목 선별 → 보다 안전한 contrarian. 위기 국면에서는 quality premium이 양전환(flight-to-quality)할 수 있음 → regime-conditional 필수. 가장 중요: 이것이 '4th alpha'가 아니라 reversal premium의 체계화일 수 있음 → FF3/FF5 alpha 검증 필수"
+}

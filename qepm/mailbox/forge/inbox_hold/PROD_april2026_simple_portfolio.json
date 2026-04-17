@@ -1,0 +1,48 @@
+{
+  "exp_id": "PROD_APRIL_2026",
+  "title": "4월 실투 전략: STR_1060 기반, Daily Regime 없이, 월간 30종목 EW",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T21:30:00+09:00",
+  "bucket": "production",
+  "priority_score": 0.95,
+  "scope": {
+    "objective": "2026년 4월 실투자 가능한 최적 포트폴리오 생성",
+    "constraints": "30종목, 월간 리밸런싱, LIQ >= 2e8, commission 30bps"
+  },
+  "design": {
+    "base": "STR_1060 (ALL-TIME HIGH Score 87.1, CAGR 22.66%, SR 1.333, MDD 24.8%)",
+    "simplification": {
+      "rationale": "Daily Regime 없이 = 실시간 국면 감지 불필요 → 월간 리밸런싱만으로 실행 가능. regime_engine_daily.R 대신 월말 MRS 상태만 참조",
+      "regime_handling": "월말 기준 MRS 상태(macro_regime.parquet 최신값) 확인. Crisis면 현금비중 확대(30~70%), Normal이면 full invest",
+      "overlay": "DD Brake 없음(L-508: Short DD 제거가 최적), VT 0.25 유지"
+    },
+    "sleeve_structure": {
+      "defense": {"n": 6, "signal": "-IdioVol - Beta (z-score EW)", "weight": "EW"},
+      "indmom": {"n": 6, "signal": "Industry momentum 6m", "weight": "EW"},
+      "consensus": {"n": 6, "signal": "SUE pure", "weight": "EW"},
+      "consgate": {"n": 6, "signal": "Consensus + Defense gate", "weight": "EW"},
+      "tpgap": {"n": 6, "signal": "TP Gap + TP Momentum", "weight": "EW"},
+      "total": 30
+    },
+    "enhancement_options": [
+      "Option A: ConsGate를 OCF_ROA sleeve로 대체 (ALPHA_13 활용)",
+      "Option B: PiotroskiF < 3 gate 전체 유니버스에 적용",
+      "Option C: 기존 STR_1060 그대로 (검증된 안전 경로)"
+    ],
+    "recommended": "Option C (기존 STR_1060 그대로). 이유: Score 87.1로 검증 완료. 새 시그널 추가는 backtest 필요하며 4월 실투에는 시간 부족. 검증된 전략이 최선."
+  },
+  "execution_plan": {
+    "step1": "2026-03-31 기준 RAWDATA 최신 데이터로 5-sleeve scoring 실행",
+    "step2": "월말 MRS 상태 확인 → 현금비중 결정",
+    "step3": "30종목 리스트 + 매수 금액 산출",
+    "step4": "pm_run() → 매매안 텔레그램 발송",
+    "step5": "4월 1일(화) 시초가 매매"
+  },
+  "risk_management": {
+    "mdd_limit": "포트폴리오 -15% 도달 시 50% 현금화",
+    "concentration": "단일종목 최대 비중 ~3.3% (1/30)",
+    "liquidity": "전 종목 20일 평균 거래대금 >= 2억원"
+  }
+}

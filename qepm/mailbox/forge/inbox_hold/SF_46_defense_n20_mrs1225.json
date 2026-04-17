@@ -1,0 +1,14 @@
+{
+  "exp_id": "SF_46_def_n20_mrs1225",
+  "title": "1F Defense N=20 + MRS12/25",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T13:01:00+09:00",
+  "bucket": "explore", "priority_score": 0.76,
+  "scope": {"strategy_id": "SF_46", "family": "single_factor", "n_holdings": 20},
+  "design": {
+    "signal": "z(-IdioVol) + z(-Beta), sector neutral, N=20",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "n_sweep_defense": "SF_45(N=15) → SF_46(N=20) → SF_37(N=30) = Defense × 종목수 비교"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

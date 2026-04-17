@@ -1,0 +1,17 @@
+{
+  "exp_id": "SF_19_6f_no_mom",
+  "title": "6F No Momentum — 7F에서 Momentum 제거 (추세 노이즈 배제)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "SF_19", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "defense(25%) + consensus(25%) + indmom(20%) + quality(15%) + value(10%) + tp_gap(5%), sector neutral",
+    "note": "A1(7F)에서 TrendedMom+52wkHigh 제거. L-509: TrendedMom standalone F. 추세 팩터의 noise 제거 효과 검증.",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

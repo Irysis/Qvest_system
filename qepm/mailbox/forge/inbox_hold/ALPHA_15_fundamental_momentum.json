@@ -1,0 +1,44 @@
+{
+  "exp_id": "ALPHA_15",
+  "title": "Fundamental Momentum (Delta_* 시그널) — 재무지표 변화율 기반 모멘텀 (DART 이미 계산)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T23:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {
+    "family": "fundamental_momentum",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "DART의 Delta_* 시그널(Delta_GPA, Delta_ROE, Delta_OPM, Delta_Accrual 등 20+개)이 재무지표의 '모멘텀'을 포착하여 횡단면 수익률을 예측한다. 가격 모멘텀(IndMom/TrendedMom)과 달리 재무 펀더멘탈의 개선/악화를 직접 측정. 'Earnings acceleration'과 유사한 메커니즘.",
+    "mechanism": "Novy-Marx (2015) 'Fundamentals and Momentum' — fundamental changes predict returns. Balakrishnan, Bartov & Faurel (2010): Post-earnings drift는 earnings level뿐 아니라 change에도 반응. DART에 이미 Delta_GPA, Delta_ROE, Delta_ROA, Delta_OPM, Delta_GrossMargin, Delta_Accrual, Delta_ICR, Delta_DebtRatio 등 20개+ 변화율 시그널 계산 완료. 이 중 가장 유효한 시그널(들)을 Alpha Lab에서 선별 → 'fundamental momentum' 시그널 구성. 가격 모멘텀과 독립적인 정보 차원(재무제표 변화 vs 주가 변화).",
+    "falsification": "모든 Delta_* 시그널 IC < 0.01 → 기각. Consensus(SUE)와 상관 > 0.6 → earnings surprise에 흡수됨 기각. IndMom 상관 > 0.5 → 가격 모멘텀과 중복 기각",
+    "academic_basis": "Novy-Marx (2015) 'Fundamentals and Momentum'. Balakrishnan, Bartov & Faurel (2010) 'Post Loss/Profit Announcement Drift' JAE. Asness, Moskowitz & Pedersen (2013) 'Value and Momentum Everywhere' JF. Alpha Architect (2026) 'Quality, Factor Momentum, and the Cross-Section of Returns' — quality acceleration"
+  },
+  "data_requirements": {
+    "source": "✅ .cache/fundamental_dart.parquet — Delta_* 20개+ 이미 계산됨!",
+    "fields": ["Delta_GPA", "Delta_ROE", "Delta_ROA", "Delta_OPM", "Delta_GrossMargin", "Delta_NetMargin", "Delta_Accrual", "Delta_ICR", "Delta_DebtRatio", "Delta_CurrentRatio", "Delta_CashToAssets", "Delta_AssetTurnover", "Delta_EquityMultiplier", "Delta_OCFToRevenue", "Delta_SGAEfficiency", "Delta_RandDIntensity", "Delta_TangibleAssetRatio", "Delta_DebtToAssets", "Delta_PayoutRatio"],
+    "pit_safety": "C4: Factor_Date 사용 (45d lag 내장)"
+  },
+  "implementation": {
+    "step1": "fundamental_dart.parquet에서 Delta_* 20개 추출",
+    "step2": "Alpha Lab Stage 0 배치: 20개 Delta 각각의 IC/ICIR 스크리닝",
+    "step3": "Top 3~5 유의 Delta 선별 → z-score 합산 = Fundamental Momentum composite",
+    "step4_if_pass": "Full backtest: quarterly rebal, N=30",
+    "step5": "Consensus(SUE)/IndMom 상관 분석 → 독립적이면 sleeve 편입"
+  },
+  "pit_checklist": ["C4: Factor_Date 사용"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "개별 Delta ICIR >= 0.10"],
+  "metrics_target": {
+    "ic": ">0.02 (composite)",
+    "icir": ">0.15 (composite)",
+    "corr_with_consensus": "<0.5",
+    "corr_with_indmom": "<0.4"
+  },
+  "l_codes": ["L-415 (consensus 3rd alpha)", "L-428 (4th alpha)"],
+  "risk_notes": "분기 업데이트 → stale signal 위험. Delta가 noise가 많을 수 있음(소형주 재무 변동성). 20개 Delta 중 유의한 것이 많으면 다중검정 문제 → Harvey t>3.0 적용. Consensus(SUE)와 겹칠 수 있음(둘 다 earnings 변화 측정). 완전히 새로운 차원이 아닐 수 있으나, DART에 이미 계산되어 있어 구현 비용 거의 0"
+}

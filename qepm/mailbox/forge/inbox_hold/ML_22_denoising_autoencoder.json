@@ -1,0 +1,15 @@
+{
+  "exp_id": "ML_22_dae",
+  "title": "Denoising Autoencoder — 팩터 데이터 노이즈 제거 후 scoring",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:54:00+09:00",
+  "bucket": "explore", "priority_score": 0.67,
+  "scope": {"strategy_id": "ML_22", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "7팩터 z-score에 noise 추가 → DAE가 원본 복원 학습 → 복원된 clean z-score로 scoring. 팩터 노이즈 제거.",
+    "training": "expanding walk-forward",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding (t-1)"},
+  "r_packages": ["torch"]
+}

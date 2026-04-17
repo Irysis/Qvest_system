@@ -1,0 +1,32 @@
+{
+  "exp_id": "MF_RRR1_CROSS_MARKET",
+  "title": "크로스마켓 시그널 — 미국/중국 팩터 수익률로 한국 팩터 예측",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:02:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {"strategy_id": "MF_RRR1", "family": "multifactor_crossmkt", "n_holdings": 30},
+  "design": {
+    "concept": "글로벌 팩터 모멘텀: 미국 Value가 상승하면 한국 Value도 1~2개월 후 상승 (lead-lag). yfinance에서 미국 팩터 ETF 수익률을 수집하여 한국 팩터 가중 예측.",
+    "cross_market_signals": {
+      "us_value": "VLUE (iShares MSCI USA Value Factor ETF) trailing 1m return",
+      "us_momentum": "MTUM (iShares MSCI USA Momentum Factor ETF) trailing 1m return",
+      "us_quality": "QUAL (iShares MSCI USA Quality Factor ETF) trailing 1m return",
+      "us_lowvol": "USMV (iShares MSCI USA Min Vol ETF) trailing 1m return"
+    },
+    "logic": [
+      "1. 미국 팩터 ETF 월간 수익률 수집 (yfinance, t-1)",
+      "2. 미국 팩터 수익률 > 0 → 해당 한국 팩터 가중 증가",
+      "3. adjustment = 0.10 × sign(us_factor_return) per factor",
+      "4. w_i = base_w + adjustment_i, 정규화",
+      "5. composite → Top 30"
+    ],
+    "data_source": "yfinance (이미 .cache/ 크로스마켓 수집 인프라 존재)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "미국 ETF 수익률 = t-1 (미국 전일 종가). 한국 시장 선행.", "C11": "미국-한국 시차 1일 자동 반영."},
+  "overfitting_guard": "Adjustment 0.10은 작은 틸트. 미국→한국 lead-lag 실증 불확실 → 소극적 적용.",
+  "academic_basis": "Asness et al. (2013 JF) 'Value and Momentum Everywhere' — 글로벌 팩터 공행성"
+}

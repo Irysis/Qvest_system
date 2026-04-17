@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_26_earnings_season",
+  "title": "실적 시즌 국면 — DART 공시 밀도로 Consensus 팩터 가중 자동 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:01:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "RC_26", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "DD1(계절성)의 데이터 기반 버전. 실적 공시 건수를 실시간 추적 → 공시 밀도 높으면 Consensus 가중 증가, 낮으면 Defense/Momentum 증가.",
+    "signal": "z(DART 실적공시 건수 trailing 20d, expanding 252d, t-1)",
+    "allocation": {
+      "dense_earnings": {"trigger": "z > 0.5 (실적 시즌)", "tilt": "Consensus 35% + Quality 20% + Others 45%"},
+      "sparse_earnings": {"trigger": "z < -0.5 (비시즌)", "tilt": "Defense 30% + Momentum 20% + IndMom 20% + Others 30%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "data": "DART list.json pblntf_ty=A(정기공시) 건수",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "DART 공시 건수 = t-1 lag (전일까지 공시만 카운트)"}
+}

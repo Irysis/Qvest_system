@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_GGG1_RISK_ON_ONLY",
+  "title": "Risk-On Only — 정상 국면에서만 투자, 위기 시 100% 현금",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "MF_GGG1", "family": "multifactor_risk_management", "n_holdings": "0~30"},
+  "design": {
+    "concept": "L-443 '정상 시 헤지 안함 + 위기 확인 시에만 헤지' 원칙의 극단: 위기 시 완전 현금화. MDD 극소화 목표.",
+    "logic": [
+      "1. MRS[t-1] 확인",
+      "2. MRS < 20: MF_A1 Core 포트폴리오 (N=30, full invest)",
+      "3. MRS >= 20: 전량 현금 (무위험 수익률 적용)",
+      "4. 재진입: MRS가 15 이하로 2개월 연속 → full invest 복귀"
+    ],
+    "hysteresis": "진입 threshold 20, 퇴출 threshold 15 (2개월 확인) = hystheresis로 whipsaw 방지",
+    "overlay": "VT 0.25만 적용 (DD Brake 불필요 — 현금화가 대체)"
+  },
+  "pit_rules": {"C1": "MRS[t-1] lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "Threshold 15/20은 v7.1 표준. 2개월 확인은 보수적 규칙.",
+  "l_codes_referenced": ["L-443 (정상시 헤지안함 원칙)", "L-477 (regime-only MDD 32.6%)"]
+}

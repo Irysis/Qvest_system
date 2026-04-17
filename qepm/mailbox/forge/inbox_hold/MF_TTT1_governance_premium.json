@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_TTT1_GOVERNANCE",
+  "title": "지배구조 프리미엄 — 한국 특수: 오너 리스크 회피 + 거버넌스 개선 수혜",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:04:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "MF_TTT1", "family": "multifactor_governance", "n_holdings": 30},
+  "design": {
+    "concept": "한국 시장 특수: 코리아 디스카운트 = 지배구조 리스크. DART 데이터에서 거버넌스 시그널 추출. 좋은 거버넌스 종목 선호.",
+    "governance_signals": {
+      "board_independence": "사외이사 비율 (DART 임원현황). 높을수록 양호.",
+      "audit_opinion": "감사의견 적정 여부 (DART 감사보고서). 비적정 = 제거.",
+      "related_party_ratio": "특수관계자 거래 비율 (DART 관련당사자). 낮을수록 양호.",
+      "treasury_stock": "자사주 보유 비율. 높을수록 주주환원 의지."
+    },
+    "implementation": {
+      "data_check": "DART 공시에서 추출 가능한 거버넌스 지표 확인 필요",
+      "integration": "MF_A1에 보조 시그널로 추가 (가중 10~15%)",
+      "fallback": "DART 거버넌스 데이터 불충분 시 → PiotroskiF gate로 대체"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "거버넌스 데이터 = DART 공시 기준, 45일 lag", "C4": "연간 보고서 → 5월 이후 사용"},
+  "overfitting_guard": "거버넌스 시그널은 한국 특수 요인. 학술 근거 있으나 데이터 품질 확인 필요.",
+  "academic_basis": "Gompers, Ishii & Metrick (2003 QJE) 'Corporate Governance and Equity Prices'; Black, Jang & Kim (2006) 'Does Corporate Governance Predict Firms' Market Values? Evidence from Korea'"
+}

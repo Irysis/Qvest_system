@@ -1,0 +1,36 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead",
+  "timestamp": "2026-04-10T23:30:00",
+  "session": 58,
+  "type": "S6_SUMMARY",
+  "strategy_id": "STR_1656_MLRA",
+  "strategy_name": "ML Risk Architecture Diversifier",
+
+  "executive_summary": "STR_1656_MLRA S6 검증 완료. M05(DD Brake) Grade A APPROVE, M06(VD+ MRS20) Grade B ARCHIVE. ML alpha(ICIR 0.85)는 robust하나, overlay 유형에 따라 diversifier 적합성이 극명히 갈림.",
+
+  "m05_verdict": {
+    "grade": "A",
+    "action": "APPROVE -> S7",
+    "one_liner": "DD Brake 기계적 현금화로 위기 decorrelation 달성. GFC 0% 손실. 배분비 20-25% 권장.",
+    "risk_note": "느린 하락장(Rate2022) corr 0.600. Alpha decay 3Y ICIR 0.54 모니터링 필요."
+  },
+
+  "m06_verdict": {
+    "grade": "B",
+    "action": "ARCHIVE",
+    "one_liner": "Standalone SR 최고(1.232)이나 위기 상관 0.705로 diversifier 실격. 앵커와 MRS 공유가 원인.",
+    "lesson": "동일 regime signal 공유 -> 위기 시 동시 de-risk -> 잔여 exposure 고상관. L-126 적립."
+  },
+
+  "l_codes": {
+    "L-125": "M05 DD Brake diversifier: cash-based crisis decorrelation. 급락 방어 최강, 완만 하락 약함.",
+    "L-126": "M06 VD+ diversifier fail: MRS 공유 -> crisis corr 0.705. 독립 regime signal 필수."
+  },
+
+  "portfolio_implication": {
+    "recommended_blend": "80% anchor (STR_1631 VD+) + 20% M05 (STR_1656 DD Brake)",
+    "expected_blend": "SR ~1.19, MDD ~-21% (M09 sprint4 결과 참조)",
+    "next_diversifier_needed": "MRS-independent regime signal 또는 factor-orthogonal diversifier"
+  }
+}

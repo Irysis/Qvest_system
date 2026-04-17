@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_49_ensemble_compare",
+  "title": "[진단] 앙상블 방법 전수 비교 — EW/SR/Calmar/Median/RP/MaxSR/FF5/Jackknife 8종",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:12:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.82,
+  "scope": {"strategy_id": "EN_49", "family": "ensemble"},
+  "design": {
+    "concept": "동일 5전략 pool에서 앙상블 가중법만 8종 교체 비교. 최적 앙상블 가중법 확정.",
+    "experiments": [
+      "EW (EN_47)", "SR weighted (EN_20)", "Calmar weighted (EN_06)",
+      "Median (EN_35)", "RP (EN_13)", "MaxSR (EN_17)",
+      "FF5 alpha weighted (EN_31)", "Jackknife (EN_14)"
+    ],
+    "output": "8종 가중법의 SR/MDD/OOS 비교표"
+  },
+  "pit_rules": {"C1": "모두 t-1 lag"}
+}

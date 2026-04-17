@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_XXX1_REGIME_SPEED",
+  "title": "국면 전환 속도 팩터 — MRS 변화율로 전환 강도 반영",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:13:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "MF_XXX1", "family": "multifactor_regime_speed", "n_holdings": 30},
+  "design": {
+    "concept": "MRS 수준뿐 아니라 변화율(ΔMRS)도 정보. MRS 급상승(ΔMRS > 5/일) = 위기 급진입 → Defense 즉시 강화. MRS 서서히 상승 = 점진적 전환.",
+    "logic": [
+      "1. MRS[t-1], ΔMRS = MRS[t-1] - MRS[t-6] (5일 변화)",
+      "2. ΔMRS > 5: 급속 위기 진입 → Defense 50% + Quality 30% + 현금 20%",
+      "3. ΔMRS < -5: 급속 위기 탈출 → Momentum 30% + Consensus 30% + Others 40%",
+      "4. |ΔMRS| <= 5: MRS 수준 기반 C2 preset 적용",
+      "5. composite → Top 30"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS[t-1], ΔMRS[t-1] 모두 lag"},
+  "overfitting_guard": "ΔMRS threshold 5는 경험적(MRS 0~100 스케일에서 5% 변화)."
+}

@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_15_defense_only_brk",
+  "title": "Defense Only + BRK — 최소 팩터(IdioVol+Beta만) + 최적 overlay",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:54:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "SF_15", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "NNNN1(2F)보다 더 단순: Defense 1팩터만. Consensus 제거. 순수 저변동 프리미엄 + BRK overlay. Occam's razor 극한 테스트.",
+    "signal": "z(-IdioVol) + z(-Beta), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 12/25",
+      "vol_target": "expanding 0.25"
+    },
+    "comparison": "NNNN1(Def+Cons) vs SF_15(Def only) → Consensus의 marginal 기여 정량화"
+  },
+  "pit_rules": {"C1": "t-1 lag"},
+  "l_codes_referenced": ["L-192 (IdioVol40+Beta60)", "L-286 (defense 핵심)"]
+}

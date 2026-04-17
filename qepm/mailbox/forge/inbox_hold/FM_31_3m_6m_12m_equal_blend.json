@@ -1,0 +1,18 @@
+{
+  "exp_id": "FM_31_3_6_12_eq",
+  "title": "3m/6m/12m FM Equal Blend — 3개 lookback EW (FM_05의 EW 버전)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:34:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_31", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. FM_3m, FM_6m, FM_12m 각각의 SR 기반 가중 계산 (t-1)",
+      "2. w_final = mean(w_3m, w_6m, w_12m) per factor",
+      "3. composite → Top 30"
+    ],
+    "difference": "FM_05는 가중평균(10/25/35/30). FM_31은 EW(33/33/33) → lookback 불확실성 최소화.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "3 lookback 모두 t-1 lag"}
+}

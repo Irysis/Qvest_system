@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_37_geometric",
+  "title": "Geometric Mean Ensemble — 기하평균으로 score 합산",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:02:00+09:00",
+  "bucket": "explore", "priority_score": 0.73,
+  "scope": {"strategy_id": "EN_37", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "산술(EN EW)/조화(EN_36)/중앙값(EN_35) 외 기하평균. 곱의 N제곱근 = 모든 전략에서 0이면 0 → 한 전략이라도 극히 부정적이면 패널티.",
+    "logic": [
+      "1. 5전략 per-stock score (양수 변환: score_adj = score - min + 1)",
+      "2. geometric_mean = (prod(score_adj))^(1/5)",
+      "3. Top 30 by geometric_mean → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

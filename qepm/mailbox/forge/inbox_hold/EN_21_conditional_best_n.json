@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_21_cond_best_n",
+  "title": "조건부 최적 N 앙상블 — 앙상블 전략 수(3~7)를 IC로 자동 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:22:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "EN_21", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "앙상블에 몇 개 전략을 포함할지 자동 결정. 전략 추가 시 IC 개선되면 유지, 악화면 중단. EN_11(Progressive)과 유사하나 IC 기준.",
+    "logic": [
+      "1. 후보 전략을 IC 순으로 정렬 (trailing 12m, t-1)",
+      "2. 1개부터 시작 → 추가 시 앙상블 IC 변화 측정",
+      "3. IC 개선 → 유지. IC 악화 → 해당 전략 제외 + 중단.",
+      "4. 최종 N개 전략 EW score 합산 → Top 30"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01", "SF_03", "EV_03"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC = trailing 12m expanding, t-1 lag. 연간 재선정."}
+}

@@ -1,0 +1,25 @@
+{
+  "exp_id": "FM_06_contrarian_timing",
+  "title": "Contrarian Factor Timing — 12m 최악 팩터에 가중 (장기 역전)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:12:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.70,
+  "scope": {"strategy_id": "FM_06", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "N1(AntiCrowd)의 신규 네이밍 정밀화. 12m trailing SR 최하위 2개 팩터에 추가 가중. 팩터 mean-reversion 포착. FM과 반대 방향이므로 FM 대비 성과 비교 필수.",
+    "logic": [
+      "1. 7 팩터 trailing 12m SR 순위 (t-1)",
+      "2. 최하위 2개 팩터: 각 25% 가중",
+      "3. 나머지 5개 팩터: 각 10% 가중",
+      "4. composite → Top 30"
+    ],
+    "comparison": "B1(FM)과 동일 기간 비교 → FM vs Contrarian 결론",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "trailing 12m SR, t-1 lag"},
+  "overfitting_guard": "한국시장에서 팩터 mean-reversion 유효성 미검증. FM 대비 열위 가능.",
+  "academic_basis": "Arnott et al. (2016)"
+}

@@ -1,0 +1,24 @@
+{
+  "exp_id": "MF_PPP1_LIQUIDITY_TIMING",
+  "title": "유동성 타이밍 — 시장 유동성 상태에 따른 팩터 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "MF_PPP1", "family": "multifactor_liquidity", "n_holdings": 30},
+  "design": {
+    "concept": "Amihud (2002): 비유동성 프리미엄은 유동성 경색 시 급증. 시장 전체 유동성(평균 거래대금 변화율)이 감소하면 Defense 강화, 증가하면 Momentum/Value 강화.",
+    "liquidity_signal": "mkt_liq = z(mean(AvgTV20 across universe), 252d expanding, t-1)",
+    "allocation": {
+      "high_liquidity": {"trigger": "mkt_liq > 0.5", "tilt": "Momentum 25% + Value 20% + Consensus 25% + Others 30%"},
+      "low_liquidity": {"trigger": "mkt_liq < -0.5", "tilt": "Defense 40% + Quality 25% + Consensus 20% + Others 15%"},
+      "normal": {"trigger": "[-0.5, 0.5]", "tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "mkt_liq = expanding 252d, t-1 lag. AvgTV20은 shift(1) 이미 적용."},
+  "overfitting_guard": "Threshold ±0.5σ는 표준. Amihud(2002) 이론 기반.",
+  "academic_basis": "Amihud (2002 JFM) 'Illiquidity and Stock Returns'; Pastor & Stambaugh (2003 JPE) 'Liquidity Risk and Expected Stock Returns'"
+}

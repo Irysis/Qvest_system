@@ -1,0 +1,34 @@
+{
+  "exp_id": "MF_QQ1_FACTOR_CLUSTER",
+  "title": "팩터 클러스터 틸트 — 유사 팩터 그룹화 후 그룹별 대표 선정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:03:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {
+    "strategy_id": "MF_QQ1",
+    "family": "multifactor_cluster",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "7팩터 중 일부는 상관 높음(Consensus≈TPGap, Defense≈Quality). 유사 팩터를 클러스터링 → 클러스터당 대표 1개만 사용 → 중복 제거, 독립 alpha 극대화.",
+    "logic": [
+      "1. 7 팩터의 trailing 120d IC 상관행렬 계산 (t-1)",
+      "2. Ward.D2 클러스터링 → k=3~4 클러스터",
+      "3. 각 클러스터 내 trailing IC 최고 팩터 = 대표",
+      "4. 대표 팩터만으로 composite score (EW) → Top 30",
+      "5. 연간 클러스터 재계산"
+    ],
+    "expected_clusters": [
+      "Cluster 1 (방어): Defense, Quality, TailRisk → 대표: Defense",
+      "Cluster 2 (추세): Momentum, IndMom → 대표: IndMom",
+      "Cluster 3 (정보): Consensus, TPGap → 대표: Consensus",
+      "Cluster 4 (가치): Value → 대표: Value"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC 상관행렬 = expanding window (t-1). 클러스터링 = 연간."},
+  "overfitting_guard": "클러스터링은 자동(Ward.D2). 대표 선정도 자동(IC 최고). 최적화 없음."
+}

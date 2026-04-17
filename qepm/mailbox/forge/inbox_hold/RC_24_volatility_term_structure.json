@@ -1,0 +1,22 @@
+{
+  "exp_id": "RC_24_vol_term",
+  "title": "변동성 기간구조 — 단기Vol vs 장기Vol 비율로 변동성 국면 판단",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:41:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "RC_24", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "VIX term structure 원리를 KOSPI200 RV에 적용. 단기(5d) RV > 장기(60d) RV → 변동성 역전(contango→backwardation) → 위기 신호.",
+    "signal": "vol_ratio = RV_5d / RV_60d (t-1). z(vol_ratio, expanding 252d)",
+    "allocation": {
+      "backwardation": {"trigger": "z(vol_ratio) > 1.0 (단기>>장기)", "tilt": "Defense 40% + Quality 25% + Others 35%"},
+      "contango": {"trigger": "z(vol_ratio) < -0.5 (단기<<장기)", "tilt": "Momentum 25% + Consensus 25% + Others 50%"},
+      "normal": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "RV_5d, RV_60d = t-1 lag"}
+}

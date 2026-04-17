@@ -1,0 +1,46 @@
+{
+  "exp_id": "NCO_EVO_SPECTRAL_RMT",
+  "title": "NCO Spectral Clustering + RMT Covariance (Garcia-Medina 2023)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:15:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {
+    "strategy_id": "STR_1116",
+    "name": "nco_spectral_rmt",
+    "base": "STR_1110 (NCO + regime_engine_daily.R)",
+    "family": "nco_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "NCO의 Ward.D2 + Gerber 상관 클러스터링을 Spectral Clustering + RMT denoised 공분산으로 교체하면 노이즈에 대한 강건성 증가로 OOS 개선",
+    "mechanism": "Garcia-Medina & Rodriguez-Camejo (2023, arXiv:2306.05667): RMT 공분산 추정자가 고차원 노이즈를 제거하여 NCO 배분 안정화. Spectral clustering이 Ward.D2 대비 비선형 구조 포착에 우수. Zhou (2024, arXiv:2406.00610): Gerber MAD + K-means NCO가 drawdown 감소 확인. 두 논문 모두 NCO의 클러스터링 + 공분산 개선이 핵심.",
+    "falsification": "SR < 1.25 (STR_1033 SR 1.358 대비 유의미한 악화) → 기각. R 구현 불가(spectral clustering 패키지 부재) → 대안 검토"
+  },
+  "implementation": {
+    "changes": [
+      "Step 1: RMT 공분산 denoising",
+      "  - Marchenko-Pastur 분포로 노이즈 고유값 식별",
+      "  - 노이즈 고유값을 평균으로 교체 (Laloux et al. 1999)",
+      "  - denoised_cov = V %*% diag(lambda_clean) %*% t(V)",
+      "",
+      "Step 2: Spectral Clustering",
+      "  - Gerber 상관 행렬 → Laplacian L = D - W",
+      "  - 하위 k개 고유벡터 추출 → k-means (또는 Ward.D2)",
+      "  - k 결정: eigengap heuristic (고유값 갭 최대 지점)",
+      "",
+      "Step 3: NCO 할당",
+      "  - Within-cluster: MinVar with denoised covariance (Ledoit-Wolf 대체)",
+      "  - Between-cluster: inverse cluster variance (기존과 동일)"
+    ],
+    "r_packages_needed": ["kernlab (spectral clustering)", "RMTstat (Marchenko-Pastur)"],
+    "fallback": "kernlab 미설치 시 → Laplacian 직접 구현 (3x3 이하 행렬이므로 가능)",
+    "dependencies": ["NCO_C11_FIX (STR_1110) 완료 후 실행"]
+  },
+  "l_codes_referenced": ["L-436 (NCO < HRP 소표본 문제)", "L-479 (가중최적화 최강)", "L-488 (NCO 아키텍처 유망)"],
+  "academic_basis": "Garcia-Medina & Rodriguez-Camejo (2023) arXiv:2306.05667 — RMT + spectral clustering NCO; Zhou (2024) arXiv:2406.00610 — Gerber MAD + NCO + CVaR; Laloux et al. (1999) PRL — RMT noise cleaning; Lopez de Prado (2016) original NCO",
+  "risk_notes": "Spectral clustering은 Ward.D2 대비 계산량 증가 미미 (30종목). RMT denoising은 p/n ratio가 작을 때 (30종목/120일) 효과 제한적일 수 있으나, 노이즈 고유값 교체 자체는 항상 유익. R 패키지 설치 필요 여부 확인."
+}

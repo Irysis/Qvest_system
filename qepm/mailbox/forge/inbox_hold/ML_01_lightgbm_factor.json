@@ -1,0 +1,29 @@
+{
+  "exp_id": "ML_01_lightgbm",
+  "title": "LightGBM 팩터 배분 — XGBoost 대비 속도 우위, leaf-wise 학습",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:05:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "ML_01", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "E1(XGBoost)와 동일 구조이나 LightGBM으로 교체. Leaf-wise 학습으로 더 깊은 패턴 포착. 학습 속도 3~5배 빠름 → walk-forward 연산 부담 감소.",
+    "model_params": {
+      "num_leaves": 15,
+      "learning_rate": 0.05,
+      "feature_fraction": 0.8,
+      "bagging_fraction": 0.8,
+      "min_child_samples": 10,
+      "early_stopping_rounds": 20
+    },
+    "training": "expanding walk-forward (E1과 동일)",
+    "features": "E1과 동일 (7팩터 trailing SR/IC + MRS + Dispersion + VRP)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월. 시계열 CV.", "C12": "Full-sample 금지."},
+  "overfitting_guard": "E1과 동일. OOS retention >= 0.5. num_leaves=15로 복잡도 제한.",
+  "r_packages": ["lightgbm"],
+  "fallback": "lightgbm 미설치 시 E1(xgboost)으로 대체"
+}

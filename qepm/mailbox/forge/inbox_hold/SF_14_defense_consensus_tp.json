@@ -1,0 +1,22 @@
+{
+  "exp_id": "SF_14_def_cons_tp",
+  "title": "3F Core v2 — Defense + Consensus + TPGap (검증된 3축 독립 alpha)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:43:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "SF_14", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "SF_09(Def+Cons+Value)과 다른 3F: Defense + Consensus + TPGap. L-427: TPGap IC 0.038(t=4.76). Value(OCF) 대신 TP(목표가) = 애널리스트 정보 차원.",
+    "signal": "0.40 * z(defense) + 0.35 * z(consensus) + 0.25 * z(TPGap+TPMom), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "t-1 lag"},
+  "l_codes_referenced": ["L-427 (TPGap IC 0.038)", "L-286 (defense)", "L-415 (consensus)"]
+}

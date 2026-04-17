@@ -1,0 +1,40 @@
+{
+  "exp_id": "MF_V1_IC_PREDICTION",
+  "title": "IC 예측 모델 — 다음 달 IC 최고 팩터 예측 → 가중 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:24:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {
+    "strategy_id": "MF_V1",
+    "family": "multifactor_ic_pred",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "각 팩터의 IC(횡단면 예측력)는 시간에 따라 변동. IC 자체를 예측하여 '다음 달 IC가 높을 팩터'에 가중.",
+    "logic": [
+      "1. 매월 7 팩터의 IC 시계열 구축 (expanding, t-1까지)",
+      "2. IC 예측 모델: AR(1) + MRS + Dispersion → next_month_IC",
+      "   IC_hat[t] = α + β₁*IC[t-1] + β₂*MRS[t-1] + β₃*Disp[t-1]",
+      "3. IC_hat > 0인 팩터만 활성화",
+      "4. 가중 = IC_hat / sum(IC_hat_positive)",
+      "5. composite_score → Top 30"
+    ],
+    "model": "Linear regression (AR(1) + macro features). Expanding window 학습.",
+    "features_per_factor": [
+      "IC[t-1] (자기회귀항)",
+      "IC[t-1] - IC[t-2] (IC 변화율)",
+      "MRS[t-1] (국면)",
+      "Dispersion[t-1] (횡단면 분산도)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "IC 예측 모델 = expanding window 학습. Full-sample regression 금지.",
+    "C2": "IC[t-1]까지만 사용. IC[t] 미포함."
+  },
+  "overfitting_guard": "AR(1) + 2 features = 저차원 모델 → 과적합 위험 낮음. R² < 0.05면 IC 예측 불가능 → EW fallback. OOS retention >= 0.5.",
+  "academic_basis": "Blin, Lee & Teiletche (2020) 'Factor Timing Revisited'; Asness (2016) 'The Siren Song of Factor Timing'"
+}

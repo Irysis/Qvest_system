@@ -1,0 +1,26 @@
+{
+  "exp_id": "MF_MMMM1_VALUATION_SPREAD",
+  "title": "팩터 밸류에이션 스프레드 — 팩터 long/short 밸류에이션 차이로 crowding 측정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:38:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {"strategy_id": "MF_MMMM1", "family": "multifactor_valuation", "n_holdings": 30},
+  "design": {
+    "concept": "Arnott et al.(2016): 팩터의 long leg과 short leg의 밸류에이션(PBR) 차이가 역사적 평균 대비 극단적이면 crowded → 미래 수익 감소. 밸류에이션 스프레드가 넓은(=저평가된) 팩터에 가중.",
+    "logic": [
+      "1. 각 팩터의 Top 30%(long) vs Bottom 30%(short) 종목의 평균 PBR 계산",
+      "2. valuation_spread = PBR_long / PBR_short",
+      "3. z(valuation_spread, expanding 60m) = 팩터 밸류에이션 수준",
+      "4. z_spread 높음(비쌈) → 가중 감소, z_spread 낮음(쌈) → 가중 증가",
+      "5. w_i = base_w × (1 - 0.3 × z_spread_i), 정규화",
+      "6. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "PBR, valuation_spread = t-1 lag. z = expanding 60m."},
+  "overfitting_guard": "Valuation spread 방향은 경제적 직관(비싼 팩터 회피). 반응 계수 0.3은 사전 정의.",
+  "academic_basis": "Arnott, Beck, Kalesnik & West (2016) 'How Can Smart Beta Go Horribly Wrong'"
+}

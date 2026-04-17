@@ -1,0 +1,44 @@
+{
+  "exp_id": "PAPER_02_CLI",
+  "title": "Kristiansen & Storgaard (2022) — 논문 원본 팩터+국면 정의로 한국시장 복제",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "execute",
+  "priority_score": 0.98,
+  "scope": {
+    "strategy_id": "STR_1301",
+    "family": "paper_replication_cli",
+    "n_holdings": 30,
+    "frequency": "monthly"
+  },
+  "design": {
+    "paper": "Kristiansen & Storgaard (2022) Regime-Based Factor Allocation, CBS, US 1998-2021",
+    "IMPORTANT": "논문 원본 팩터+국면 정의 그대로. 한국 CLI 또는 동등 지표로 국면 판단.",
+    "paper_regime_definition": {
+      "indicator": "OECD CLI (Composite Leading Indicator). 한국 대체: ECOS 경기선행지수 또는 FRED OECD Korea CLI",
+      "4_regimes": {
+        "Recovery": "CLI 상승 + CLI < 100 (저점에서 반등)",
+        "Expansion": "CLI 상승 + CLI >= 100 (고점 향해 상승)",
+        "Slowdown": "CLI 하락 + CLI >= 100 (고점에서 하락)",
+        "Contraction": "CLI 하락 + CLI < 100 (저점 향해 하락)"
+      }
+    },
+    "paper_factor_definitions": {
+      "Value": "Book-to-Market (BM). 높을수록 value.",
+      "Size": "-MarketCap. 작을수록 small cap premium.",
+      "Momentum": "12-1m past return.",
+      "Quality": "Return on Equity (ROE). fundamental에서 직접.",
+      "Defensive/MinVol": "-Realized Volatility (252d). 낮을수록 방어적."
+    },
+    "paper_allocation_rules": {
+      "Recovery": "Size 40% + Value 40% + Quality 20%",
+      "Expansion": "Momentum 50% + Quality 25% + Size 25%",
+      "Slowdown": "Momentum 30% + Defensive 40% + Quality 30%",
+      "Contraction": "Quality 40% + Defensive 40% + Value 20%"
+    },
+    "pit_rules": {
+      "CLI": "ECOS/FRED 발표 lag 반영. 전월 발표값 사용 (t-1).",
+      "factors": "BM = 가장 최근 재무(Factor_Date <= sig_d) / sig_d Close"
+    }
+  }
+}

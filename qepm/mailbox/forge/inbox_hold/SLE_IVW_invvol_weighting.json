@@ -1,0 +1,32 @@
+{
+  "exp_id": "SLE_IVW",
+  "title": "InverseVol Weighting (50/30/20)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {
+    "family": "stock_level_ensemble",
+    "strategy_id": "STR_1054",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "EW 대신 InverseVol 가중을 종목 레벨에 적용. L-14: 단일팩터에서 EW > IVOL이었으나, 멀티팩터 composite score에서는 고vol 종목이 높은 score를 받을 때 과다 배분 방지 효과. L-453: Gerber MAD + HRP가 SR +5.7%. InverseVol은 가장 단순한 risk-aware 가중",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R 복사",
+    "composite_score": "0.50 * z_defense + 0.30 * z_consensus + 0.20 * z_indmom",
+    "weighting": "InverseVol — w_i = (1/sigma_i) / sum(1/sigma_j). sigma = 60d rolling vol. expanding window vol도 비교",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: rolling 60d vol (t-1까지)", "C2: t-1 lag overlays"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">12%", "sharpe": ">1.1", "mdd": "<26%"},
+  "l_codes": ["L-14", "L-34", "L-453"],
+  "academic": "Kirby & Ostdiek (2012) 'It's All in the Timing'. L-14: EW > IVOL 단일팩터, 멀티팩터에서 재검증",
+  "risk_notes": "L-14: 단일팩터에서 EW가 우월했음. 멀티팩터에서도 동일 결과 시 IVOL 기각 확정"
+}

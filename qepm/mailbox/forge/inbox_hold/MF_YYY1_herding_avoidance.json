@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_YYY1_ANTI_HERDING",
+  "title": "Anti-Herding — 기관/외국인 과매수 종목 회피 + 소외 종목 선호",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:14:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {"strategy_id": "MF_YYY1", "family": "multifactor_herding", "n_holdings": 30},
+  "design": {
+    "concept": "기관/외국인 순매수가 극단적인 종목은 crowded → 미래 수익 감소. 순매수 중립~약매도 종목에서 팩터 alpha가 더 큰 경향.",
+    "herding_signal": "z(-abs(foreign_net_buy_20d)) + z(-abs(inst_net_buy_20d)) = 순매수 '중립' 종목 선호",
+    "integration": {
+      "method": "gate + tilt",
+      "gate": "극단 순매수(상위 10%) 종목 제거",
+      "tilt": "나머지 유니버스에서 MF_A1 composite → Top 30"
+    },
+    "data": "RAWDATA에서 foreign/institutional 순매수 데이터 확인 필요",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "순매수 = trailing 20d, t-1 lag"},
+  "overfitting_guard": "Anti-herding은 문헌 기반. 극단 제거(10%)는 보수적.",
+  "academic_basis": "Sias (2004 RFS) 'Institutional Herding'; Lakonishok, Shleifer & Vishny (1992 JPE)"
+}

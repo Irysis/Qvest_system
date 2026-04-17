@@ -1,0 +1,16 @@
+{
+  "exp_id": "SF_44_2f_eq_mrs1225_qg",
+  "title": "2F EW + MRS12/25 + Quality Gate — NNNN1의 MRS+Gate 업그레이드",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:04:00+09:00",
+  "bucket": "exploit", "priority_score": 0.85,
+  "scope": {"strategy_id": "SF_44", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "0.50*z(defense) + 0.50*z(consensus), sector neutral",
+    "gate": "PiotroskiF < 3 제거",
+    "weighting": "EW",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "comparison": "NNNN1(MRS15/30 no gate) vs SF_44(MRS12/25 + gate) → MRS+Gate 결합 효과"
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"}
+}

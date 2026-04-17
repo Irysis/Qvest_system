@@ -1,0 +1,61 @@
+{
+  "exp_id": "ALPHA_21",
+  "title": "Quality+Reversal Composite — Bias-Free IC=+0.023, t=3.37 (Harvey 통과, 4th Alpha 확정 후보)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T07:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.95,
+  "scope": {
+    "family": "quality_reversal_composite",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "OCF_ROA + PiotroskiF + Delta_ROE + 21d Reversal 4-signal composite가 한국시장에서 Harvey t>3.0을 통과하는 독립 alpha를 제공한다(bias-free IC=+0.023, t=3.37). DART quality 3종은 상호 상관 0.15~0.49로 보완적, Rev21d는 상관 ~0으로 완전 독립. Defense/IndMom/Consensus와 다른 '재무건전성+과잉반응' 차원.",
+    "mechanism": "OCF_ROA: 현금흐름 수익성 → 진정한 가치(Novy-Marx 2013). PiotroskiF: 9-바이너리 종합 건전성(Piotroski 2000). Delta_ROE: ROE 개선 모멘텀(fundamental acceleration). Rev21d: 단기 과잉반응 해소(Jegadeesh 1990, Kang et al. 2025 한국 reversal). 4 시그널이 서로 다른 정보 차원 포착 → 결합 시 noise 감소, IC 안정화.",
+    "ic_evidence": {
+      "combo4": {"ic": "+0.023", "icir": "+0.195", "t": "+3.37", "months": 299},
+      "combo3_no_rev": {"ic": "+0.021", "icir": "+0.279", "t": "+3.04", "months": 119},
+      "individual": {
+        "OCF_ROA": {"ic": "+0.027", "t": "+3.28"},
+        "PiotroskiF": {"ic": "+0.017", "t": "+2.75"},
+        "Delta_ROE": {"ic": "+0.018", "t": "+2.71"},
+        "Rev21d": {"ic": "+0.022", "t": "+2.90"}
+      }
+    },
+    "correlations": {
+      "OCF_vs_Pio": 0.49, "OCF_vs_DROE": 0.15, "Pio_vs_DROE": 0.41,
+      "Rev_vs_OCF": -0.01, "Rev_vs_Pio": -0.02, "Rev_vs_DROE": -0.01
+    },
+    "falsification": "Full backtest Sharpe < 0.5 → 기각. FF5 alpha 비유의 → 기존 팩터에 흡수됨 기각. OOS IC retention < 0.3 → 기각"
+  },
+  "implementation": {
+    "data": {
+      "OCF_ROA": ".cache/fundamental_dart.parquet (이미 계산됨)",
+      "PiotroskiF": ".cache/fundamental_dart.parquet (이미 계산됨)",
+      "Delta_ROE": ".cache/fundamental_dart.parquet (이미 계산됨)",
+      "Rev21d": "RAWDATA Ret (rolling 21d sum, negate)"
+    },
+    "step1": "4개 시그널 추출 + PIT-safe merge (DART: Factor_Date roll join, Rev: t-1 lag)",
+    "step2": "월별 z-score 변환 → equal-weight 합산 = Composite",
+    "step3": "Full backtest: monthly rebal, sector-neutral, N=30, EW, BZ 50/25, commission 30bps",
+    "step4": "FF3/FF5 alpha 검증",
+    "step5": "OOS split: 2001-2018 IS / 2019-2025 OOS",
+    "step6": "Defense + IndMom + Consensus + QualityRevComposite 4-sleeve 테스트",
+    "step7": "Regime-conditional: 위기 시 quality 프리미엄 강화 여부"
+  },
+  "pit_checklist": ["C1: rolling/expanding only", "C2: Rev21d t-1 lag", "C4: DART Factor_Date 45d lag", "C11: 시차 확인"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Harvey t > 3.0"],
+  "metrics_target": {
+    "sharpe": ">0.6 standalone",
+    "cagr": ">10%",
+    "mdd": "<40%",
+    "ff5_alpha_t": ">2.0",
+    "oos_ic_retention": ">0.5"
+  },
+  "l_codes": ["L-492 (OCF_ROA t=3.28)", "L-491 (bias-free IC 필수)", "L-428 (4th alpha)"],
+  "risk_notes": "OCF_ROA와 FCFToAssets 상관 0.52 → 둘 중 하나만 사용. Composite에 OCF_ROA 선택(t 더 높음). PiotroskiF와 OCF_ROA 상관 0.49 → 중복 있으나 PiotroskiF는 다차원(레버리지+효율성 포함)이라 추가 정보 제공. Rev21d는 높은 turnover 유발 가능 → BZ로 완화. Accrual IC 방향이 Sloan(1996) 예측과 반대(high accrual=good) → 해석 주의, composite에 미포함"
+}

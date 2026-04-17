@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_35_multi_tf_regime",
+  "title": "Multi-Timeframe Regime — 1m/3m/12m MRS 추세 3축 동시 참조",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:31:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "RC_35", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS 수준(현재)뿐 아니라 1m/3m/12m 추세 방향을 동시 참조. 3축 모두 악화 → 강력 방어. 혼재 → 중립.",
+    "signals": {
+      "mrs_1m_trend": "sign(MRS[t-1] - MRS[t-22])",
+      "mrs_3m_trend": "sign(MRS[t-1] - MRS[t-63])",
+      "mrs_12m_trend": "sign(MRS[t-1] - MRS[t-252])"
+    },
+    "decision": {
+      "all_deteriorating": "3축 모두 양수(악화) → Defense 50% + Cash 30% + Quality 20%",
+      "all_improving": "3축 모두 음수(개선) → Momentum 25% + Consensus 25% + IndMom 20% + Others 30%",
+      "mixed": "MF_A1 Core"
+    },
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS 모든 시점 t-1 lag"}
+}

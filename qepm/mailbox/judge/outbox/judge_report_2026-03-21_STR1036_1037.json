@@ -1,0 +1,54 @@
+{
+  "judge_session": "2026-03-21",
+  "mode": "self_initiated",
+  "trigger": "inbox empty — self-scan for missing judge_result.json",
+  "strategies_found": 8,
+  "strategies_validated": [
+    "STR_1030_gerber_bl_hybrid",
+    "STR_1031_fm_hrp_stock2",
+    "STR_1032_fm_minvar_stock",
+    "STR_1033_nco",
+    "STR_1034_gerber_mad_detoned",
+    "STR_1035_oas_minvar",
+    "STR_1036_daily_regime",
+    "STR_1037_clean_regime_v2"
+  ],
+
+  "completed_by_judge_directly": {
+    "STR_1036": {
+      "verdict": "PASS",
+      "grade": "A",
+      "score": 80.9,
+      "pit_check": "CLEAN (C1~C12 all PASS)",
+      "key_flags": ["STR_1037 중복", "Harvey t<3.0", "MaxConsecNegAlpha=18mo"],
+      "recommendation": "INCLUDE — 카탈로그 유지, STR_1037 중복 제거"
+    },
+    "STR_1037": {
+      "verdict": "PASS (DUPLICATE)",
+      "grade": "A",
+      "score": 80.9,
+      "pit_check": "CLEAN (STR_1036과 동일 코드)",
+      "key_flags": ["STR_1036 완전 중복 — 제거 권장"],
+      "recommendation": "REMOVE — STR_1036과 100% 동일. 카탈로그에서 제거"
+    }
+  },
+
+  "delegated_to_agents": {
+    "STR_1033": "judge-1033 (background)",
+    "STR_1030_STR_1034_STR_1035": "judge-1030-34-35 (background)",
+    "STR_1031_STR_1032": "judge-1031-32 (background)"
+  },
+
+  "critical_findings": [
+    {
+      "finding": "STR_1036 = STR_1037 중복",
+      "impact": "Grade A 수 1개 과대계상. STR_1037 제거 시 Grade A 24개로 수정 필요.",
+      "action": "Q-Lead에 보고 → strategy_catalog.md 업데이트 → MEMORY.md Grade A count 수정"
+    },
+    {
+      "finding": "전 전략 Harvey t<3.0",
+      "impact": "1000+ 실험 환경에서 다중검정 보정 시 통계적 유의성 약화. DSR 계산 필요.",
+      "action": "DSR 모듈 구현 우선순위 상향 권장"
+    }
+  ]
+}

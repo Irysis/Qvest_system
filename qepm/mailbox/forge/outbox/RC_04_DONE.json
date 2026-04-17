@@ -1,0 +1,74 @@
+{
+  "exp_id": "RC_04",
+  "category": "RC",
+  "created_by": "Scout",
+  "created_at": "2026-03-25T07:50:00+09:00",
+  "bucket": "Exploit",
+  "priority": 1,
+  "trigger": "Forge: C01_SUE_overlay 요청. L-130(alpha=construction). Section 1.3: Consensus = 14 Grade A 배출.",
+
+  "scope": {
+    "family": "consensus_overlay",
+    "universe": "KOSPI+KOSDAQ (liquidity >= 2e8)",
+    "frequency": "monthly",
+    "rebalance": "monthly + BZ 50/25",
+    "n_stocks": 30,
+    "strategy_id": "STR_NEXT"
+  },
+
+  "hypothesis": {
+    "statement": "C01_SUE(ICIR 0.524, Consensus 최강 팩터) standalone에 VT+DD+MRS 풀 오버레이를 적용하면, 충분한 base CAGR(12%+)과 construction alpha의 조합으로 Grade A를 달성한다.",
+    "mechanism": "L-130: 한국시장 alpha = construction. 팩터 선택보다 오버레이+가중+리밸 설계가 결정적. C01_SUE는 Section 1.3에서 검증된 3rd independent alpha(Consensus family = 14 Grade A 최다). SUE standalone은 기존에 테스트되었으나(Grade B급), full overlay(VT+DD+MRS)를 체계적으로 적용한 적은 없음. L-131: overlay가 효과적이려면 base CAGR 12%+. SUE standalone CAGR이 관건.",
+    "academic_basis": [
+      "Section 1.3: Consensus = 3rd independent alpha. 14 Grade A — 가장 많은 A 배출 패밀리",
+      "L-130: Alpha = construction(VT+DD+HRP+regime). Factor selection 단독으론 부족",
+      "L-131: Overlay는 base CAGR 12%+ 필요. SUE standalone CAGR 확인 후 overlay 적용",
+      "L-336: DD=MDD 제어, VT=Sharpe 제어. 역할 분리",
+      "L-442~443: Regime Engine v7.1 확정. 정상 시 헤지 안함 + 위기만 헤지"
+    ],
+    "falsification": "IF C01_SUE standalone CAGR < 12% THEN overlay 적용 불가(L-131) → base 강화 필요(C01+C04 composite?). IF full overlay 적용 후 SR < 0.8 THEN construction으로도 구제 불가."
+  },
+
+  "factors": {
+    "primary": ["C01_SUE"],
+    "blend_method": "single_factor_z_score_aligned",
+    "stage_0_prevalidated": true,
+    "stage_0_icir": 0.524
+  },
+
+  "construction": {
+    "method": "single_factor_top_N + full_overlay",
+    "scoring": "Z_Score_Aligned(C01_SUE)",
+    "n_stocks": 30,
+    "sector_neutral": true,
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "overlay_stack": {
+      "vol_target": 20,
+      "vol_target_note": "VT 15~25 범위. 20% = CAGR/MDD 균형점",
+      "dd_brake": {"start": 15, "full": 35, "min_exposure": 30},
+      "regime": "v7.1 (regime_engine_daily.R)",
+      "mrs_low": 35,
+      "mrs_high": 45,
+      "mrs_note": "L-548: MRS_LOW >= 35 권장. Defense 아니므로 MRS 유효"
+    },
+    "two_phase": "Phase 1: C01 standalone (overlay 없음) → base CAGR 확인. Phase 2: overlay 추가."
+  },
+
+  "pit_checklist": {
+    "C1": "expanding/rolling only",
+    "C2": "VT/DD/MRS = t-1 필수",
+    "C4": "SUE = quarterly 45d lag",
+    "C11": "regime engine v7.1 PIT verified",
+    "C13": "Z_Score_Aligned only"
+  },
+
+  "execution": {
+    "preflight_check": true,
+    "run_all_pattern": true,
+    "estimated_time": "3-4h (Phase 1 + Phase 2)",
+    "note": "Phase 1 base CAGR < 12%이면 Phase 2 skip → C01+C04 composite로 base 강화 변형 설계"
+  },
+
+  "l_codes_referenced": ["L-130", "L-131", "L-336", "L-442", "L-443", "L-548"],
+  "decision": { "grade": null, "verdict": null, "next_actions": null }
+}

@@ -1,0 +1,19 @@
+{
+  "exp_id": "EN_44_regime_avg",
+  "title": "국면별 최적 평균법 — risk_on: 산술, crisis: 중앙값 (EN_39 결과 적용)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:14:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "EN_44", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_39(6종 평균법 비교) 결과 예상: risk_on에서는 산술평균 우수(극단값 = alpha), crisis에서는 중앙값 우수(극단값 = noise). 국면별 평균법 전환.",
+    "logic": [
+      "MRS < 15: 산술평균 score 합산",
+      "MRS >= 15: 중앙값 score 합산",
+      "Top 30 → EW"
+    ],
+    "dependency": "EN_39 비교 결과 후 확정. 사전에 산술/중앙값으로 가정.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS + score 모두 t-1 lag"}
+}

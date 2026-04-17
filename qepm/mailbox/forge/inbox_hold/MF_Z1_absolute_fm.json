@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_Z1_ABSOLUTE_FM",
+  "title": "절대 팩터 모멘텀 — 팩터 trailing SR > 0일 때만 활성화 (time-series FM)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {
+    "strategy_id": "MF_Z1",
+    "family": "multifactor_abs_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "MF_B1(상대FM)은 모든 팩터 중 상대적으로 좋은 팩터에 가중. MF_Z1(절대FM)은 trailing SR > 0인 팩터만 활성화, SR <= 0이면 제외. 시장 전체 팩터 부진기에는 종목수 축소 or 현금 비중 확대.",
+    "logic": [
+      "1. 7 팩터 각각의 trailing 6m SR 계산 (t-1)",
+      "2. SR > 0인 팩터만 활성화. 가중 = SR_i / sum(SR_positive)",
+      "3. 활성 팩터 수 < 3이면: composite = defense only (safe haven)",
+      "4. 활성 팩터 수 = 0이면: 현금 100% (모든 팩터 부진 = 시장 위기)",
+      "5. composite_score → Top 30, monthly rebal"
+    ],
+    "difference_from_B1": "B1은 SR <= 0 팩터도 가중 0으로만 설정. Z1은 active factor count로 시장 전체 위험 감지 + 현금화 가능.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "trailing SR = rolling 126d, t-1 lag", "C2": "t-1까지 성과만"},
+  "overfitting_guard": "SR > 0 threshold는 경제적 직관(양의 alpha 없으면 투자 이유 없음).",
+  "academic_basis": "Moskowitz, Ooi & Pedersen (2012 JFE) 'Time Series Momentum'; Hurst, Ooi & Pedersen (2017) 'A Century of Evidence on Trend-Following Investing'"
+}

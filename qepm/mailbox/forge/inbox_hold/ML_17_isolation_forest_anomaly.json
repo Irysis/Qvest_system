@@ -1,0 +1,17 @@
+{
+  "exp_id": "ML_17_iforest",
+  "title": "Isolation Forest — 이상 종목 감지 후 제거 (anomaly gate)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:20:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "ML_17", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "Isolation Forest로 팩터 특성이 비정상인 종목 감지 → 유니버스에서 제거 후 MF_A1 scoring. Quality gate의 ML 버전.",
+    "features": "7팩터 z-score + trailing vol + trailing MDD per stock",
+    "anomaly_threshold": "상위 5% anomaly score → 제거",
+    "training": "expanding (t-1)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding (t-1)"},
+  "r_packages": ["isotree"]
+}

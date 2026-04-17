@@ -1,0 +1,19 @@
+{
+  "exp_id": "FM_37_pure_sr",
+  "title": "[진단] Pure SR FM vs Pure IC FM — SR vs IC 어느 쪽이 FM에 우수",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:53:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.76,
+  "scope": {"strategy_id": "FM_37", "family": "factor_momentum"},
+  "design": {
+    "experiments": [
+      {"id": "sr_6m", "method": "B1: trailing 6m SR 가중"},
+      {"id": "ic_3m", "method": "B2: trailing 3m IC 가중"},
+      {"id": "ic_12m", "method": "FM_30: trailing 12m IC 가중"},
+      {"id": "icir_24m", "method": "HHHH1: trailing 24m ICIR 가중"}
+    ],
+    "unified_overlay": "DD_med only + MRS 12/25 + VT 0.25",
+    "output": "4가지 FM 메트릭 비교 → SR vs IC vs ICIR 최적 FM 메트릭 확정"
+  },
+  "pit_rules": {"C1": "모두 t-1 lag"}
+}

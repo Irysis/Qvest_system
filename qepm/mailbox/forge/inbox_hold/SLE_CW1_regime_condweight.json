@@ -1,0 +1,33 @@
+{
+  "exp_id": "SLE_CW1",
+  "title": "Regime CondWeight Binary (Crisis 70/20/10 vs Normal 40/35/25)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.87,
+  "scope": {
+    "family": "stock_level_ensemble_condweight",
+    "strategy_id": "STR_1055",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "Regime Engine v7.1 crisis_flag[t-1]에 따라 score 비중 동적 전환. Crisis → Defense 70%로 MDD 보호 극대화. Normal → alpha 팩터 확대로 CAGR 극대화. L-200: Dispersion CondWeight IR 0.524. L-237: CondWeight는 CA+VT 환경에서 유효. 정적 비중의 양면 문제(정상 시 defense 과다, 위기 시 defense 부족) 해결",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R + regime_engine_daily.R",
+    "regime_signal": "crisis_flag[t-1] from regime_engine_daily.R v7.1",
+    "composite_score_crisis": "0.70 * z_defense + 0.20 * z_consensus + 0.10 * z_indmom",
+    "composite_score_normal": "0.40 * z_defense + 0.35 * z_consensus + 0.25 * z_indmom",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: expanding z-score", "C2: crisis_flag[t-1] (same-day 금지)", "C11: regime 시차"],
+  "constraints": ["N <= 30", "crisis_flag t-1 lag 필수", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">13%", "sharpe": ">1.15", "mdd": "<24%"},
+  "l_codes": ["L-200", "L-201", "L-237", "L-442"],
+  "risk_notes": "L-202: Combined CondWeight → 과잉전환. 단일 국면 시그널만 사용. 전환 빈도 <30% 월 확인"
+}

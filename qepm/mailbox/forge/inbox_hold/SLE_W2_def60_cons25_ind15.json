@@ -1,0 +1,31 @@
+{
+  "exp_id": "SLE_W2",
+  "title": "Defense-Heavy 60/25/15",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {
+    "family": "stock_level_ensemble",
+    "strategy_id": "STR_1050",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "Defense 60%로 극단 상향. L-286: defense 비중 하락 시 성과 열위. 60%가 MDD 최적점인지 확인. alpha 팩터 40%로 CAGR 유지 가능한지 테스트",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R 복사 후 수정",
+    "composite_score": "0.60 * z_defense + 0.25 * z_consensus + 0.15 * z_indmom",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: expanding z-score", "C2: t-1 lag overlays"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "PIT enforcement"],
+  "metrics_target": {"cagr": ">12%", "sharpe": ">1.1", "mdd": "<25%"},
+  "l_codes": ["L-286", "L-317"],
+  "academic": "L-192: IdioVol 40% + Beta 60% defense 확정"
+}

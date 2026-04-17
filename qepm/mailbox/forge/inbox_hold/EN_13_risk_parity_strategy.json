@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_13_rp_strategy",
+  "title": "전략 리스크 패리티 — 전략 간 변동성 균등 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:02:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_13", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "R1(팩터 RP)의 전략 레벨 버전. 5개 전략의 리스크 기여도 균등화 → 고변동 전략 가중 축소, 저변동 전략 가중 확대.",
+    "logic": [
+      "1. 5 전략의 trailing 60d 수익률 변동성 σ_i (t-1)",
+      "2. w_strategy_i = (1/σ_i) / sum(1/σ_j)",
+      "3. 전략별 score × w_strategy 가중 합산 → Top 30"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "SF_01", "EV_06"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "σ = trailing 60d, t-1 lag"},
+  "overfitting_guard": "RP = 사전 정의 규칙. 최적화 없음."
+}

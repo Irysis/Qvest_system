@@ -1,0 +1,25 @@
+{
+  "exp_id": "FM_08_adaptive_lookback",
+  "title": "적응형 FM Lookback — 변동성에 따라 FM lookback 자동 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:34:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "FM_08", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "고변동 시 짧은 lookback(3m) = 빠른 반응. 저변동 시 긴 lookback(12m) = 안정적 추세. 변동성에 따라 FM lookback을 3~12m 자동 조절.",
+    "logic": [
+      "1. mkt_vol = z(KOSPI200 trailing 20d RV, expanding 252d, t-1)",
+      "2. lookback_months = round(12 - 6 * pmin(1, pmax(0, (mkt_vol + 1) / 2)))",
+      "   → 저변동(z=-1): 12m, 고변동(z=1): 6m, 극고변동(z=2): 3m",
+      "3. FM_i = trailing lookback_months SR per factor",
+      "4. w_i = max(0, FM_i) / sum(max(0, FM))",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "mkt_vol + FM 모두 t-1 lag"},
+  "overfitting_guard": "lookback 매핑 함수는 사전 정의(선형). 파라미터 최적화 없음."
+}

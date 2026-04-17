@@ -1,0 +1,29 @@
+{
+  "exp_id": "RC_02_multi_layer_regime",
+  "title": "다층 국면 — MRS(글로벌) × Dispersion(내생) × VRP(옵션) 3축 국면",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:01:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "RC_02", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "단일 MRS 대신 3축 국면 판단. L-454: 한국 내부 > 글로벌. L-200: Dispersion 최강. L-444: VRP 위기 선행. 3축 독립 판단 → 2/3 이상 위기 신호 시만 방어 모드.",
+    "axes": {
+      "global": "MRS[t-1] >= 20 → 위기 신호",
+      "endogenous": "z(Dispersion)[t-1] > 1.0 → 위기 신호",
+      "options": "z(VRP)[t-1] > 1.5 → 위기 신호"
+    },
+    "decision": {
+      "0_signals": "MF_A1 Core (full invest)",
+      "1_signal": "Defense Heavy (A3) weight",
+      "2_signals": "Defense 45% + Quality 25% + Consensus 20% + Cash 10%",
+      "3_signals": "Defense 40% + Quality 30% + Cash 30%"
+    },
+    "overlay": "VT 0.25 (DD Brake 불필요 — 3축이 위기 관리)"
+  },
+  "pit_rules": {"C1": "3축 모두 t-1 lag", "C11": "regime_engine_daily.R + Dispersion + VRP"},
+  "overfitting_guard": "3축 threshold는 각각 경제적 직관. 2/3 majority rule = 보수적.",
+  "l_codes_referenced": ["L-454 (한국 내부 > FRED)", "L-200 (Dispersion IR 0.524)", "L-444 (VRP 선행)"]
+}

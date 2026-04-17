@@ -1,0 +1,14 @@
+{
+  "exp_id": "FM_48_cons_mom",
+  "title": "Consensus Momentum — SUE/EPS/FPER 각각의 trailing IC로 Consensus 내 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:13:00+09:00",
+  "bucket": "exploit", "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_48", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "Consensus 내부 시그널(SUE/EPS_chg/FPER_revision) 간 FM. 어떤 Consensus 시그널이 최근 가장 유효한지 자동 가중.",
+    "logic": "trailing 6m IC per sub-signal → w = IC / sum(IC_pos) within consensus",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "IC t-1 lag"}
+}

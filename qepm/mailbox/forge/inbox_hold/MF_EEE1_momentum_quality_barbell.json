@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_EEE1_MOM_QUAL_BARBELL",
+  "title": "Momentum×Quality 바벨 — 고모멘텀+고품질 교집합 종목 선정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "MF_EEE1", "family": "multifactor_intersection", "n_holdings": 30},
+  "design": {
+    "concept": "Asness et al. (2019): Quality+Momentum 교집합이 단독 대비 우수. 고모멘텀(상위 30%) AND 고품질(상위 30%) 교집합 종목만 선정. 조건 충족 종목이 30 미만이면 기준 완화.",
+    "logic": [
+      "1. z_momentum = z(IndMom_12m) + z(52wkHigh) + z(TrendedMom)",
+      "2. z_quality = z(GPA) + z(PiotroskiF) + z(-Accruals) + z(-IdioVol)",
+      "3. Top 30% momentum AND Top 30% quality = intersection",
+      "4. intersection에서 z_momentum + z_quality composite로 순위 → Top 30",
+      "5. 교집합 < 30이면 threshold 35%, 40% 순차 완화"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "z-score t-1 lag. Percentile = 당월 횡단면 기준."},
+  "overfitting_guard": "30% threshold는 상위 3분위 = 경제적 직관.",
+  "academic_basis": "Asness, Frazzini & Pedersen (2019 JFE) 'Quality Minus Junk'; Novy-Marx (2013) 'The Other Side of Value'"
+}

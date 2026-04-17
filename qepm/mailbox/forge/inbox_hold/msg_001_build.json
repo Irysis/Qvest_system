@@ -1,0 +1,29 @@
+{
+  "msg_id": "QLEAD_002",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "build_and_run",
+  "timestamp": "2026-03-21T10:00:00+09:00",
+  "hypothesis": {
+    "strategy_id": "STR_1039",
+    "strategy_type": "regime_conditional",
+    "family": "regime_alloc",
+    "objective": "국면 조건부 슬리브 배분",
+    "description": "v7.1 MRS에 따라 3-sleeve(STR_1037+STR_943+STR_898) 가중을 동적으로 조절. RISK_ON: Consensus heavy(50%), CRISIS: Defense heavy(60%)",
+    "paper_reference": "Guidolin & Timmermann (2007) - Regime-Conditional Allocation",
+    "params": {
+      "sleeves": ["STR_1037_clean_regime_v2", "STR_943_oc_eps_chg", "STR_898_regime_factor_alloc"],
+      "risk_on_weights": [0.20, 0.50, 0.30],
+      "elevated_weights": [0.33, 0.34, 0.33],
+      "crisis_weights": [0.60, 0.15, 0.25],
+      "dd_brake": {"start": 0.05, "full": 0.35, "min_exp": 0.30},
+      "rebalance": "monthly"
+    },
+    "contract": {
+      "hypothesis": "국면에 따라 슬리브 가중을 동적 조절하면 EW 대비 SR +0.2 이상 개선",
+      "falsification": "3개 국면 모두에서 EW 대비 열위이면 기각",
+      "metrics": ["net_cagr", "sharpe0_m_ann", "mdd", "cvar99_m", "turnover_ann"]
+    }
+  },
+  "instructions": "STR_1038(EW 3-sleeve)를 베이스로, MRS 기반 동적 가중으로 수정하라. regime_engine_option2.R에서 MRS를 읽어 국면별 가중 적용. VT/DD t-1 lag 필수. 완료 후 r4_regime_payoff.R로 R4 저장."
+}

@@ -1,0 +1,41 @@
+{
+  "exp_id": "MF_O1_FACTOR_DECAY",
+  "title": "[진단+전략] 팩터 Decay 분석 → 팩터별 최적 리밸런싱 주기 멀티팩터",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:10:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.76,
+  "scope": {
+    "strategy_id": "MF_O1",
+    "family": "multifactor_decay",
+    "n_holdings": 30
+  },
+  "design": {
+    "phase1_diagnose": {
+      "description": "각 팩터의 IC를 holding period별(1w, 2w, 1m, 2m, 3m, 6m)로 측정하여 시그널 decay curve 구축",
+      "factors": ["defense", "consensus", "indmom", "quality", "value", "momentum", "tp_gap"],
+      "output": "각 팩터의 half-life (IC가 50%로 감소하는 기간)",
+      "expected": {
+        "fast_decay": "momentum, reversal (1~2개월)",
+        "medium_decay": "consensus, tp_gap (2~4개월)",
+        "slow_decay": "defense, quality, value (6~12개월)"
+      }
+    },
+    "phase2_strategy": {
+      "description": "fast-decay 팩터는 2주/월간 리밸런싱, slow-decay 팩터는 분기 리밸런싱 → 가중 결합",
+      "fast_sleeve": {"factors": "momentum + reversal", "rebal": "2주", "weight": 0.30},
+      "medium_sleeve": {"factors": "consensus + tp_gap + indmom", "rebal": "월간", "weight": 0.35},
+      "slow_sleeve": {"factors": "defense + quality + value", "rebal": "분기", "weight": 0.35},
+      "scoring": "각 sleeve 독립 scoring → 종목레벨 score 합산 → Top 30"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "IC decay 측정은 expanding window",
+    "C2": "각 팩터 시그널 t-1 lag"
+  },
+  "overfitting_guard": "Decay curve는 진단 결과. 리밸런싱 주기는 decay에서 자동 결정 — 최적화 아님.",
+  "academic_basis": "Novy-Marx & Velikov (2016 RFS) transaction costs; Alpha Architect 'Factor Decay' research"
+}

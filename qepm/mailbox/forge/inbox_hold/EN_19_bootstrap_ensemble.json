@@ -1,0 +1,25 @@
+{
+  "exp_id": "EN_19_bootstrap",
+  "title": "Bootstrap Ensemble — 5전략 랜덤 3개 선택 × 100회 → 평균",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:02:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "EN_19", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "EN_14(Jackknife)의 Bootstrap 버전. 5전략에서 랜덤 3개 선택 × 100회 반복 → 100개 앙상블 score 평균. 추정 분산 극소화.",
+    "logic": [
+      "1. 5전략에서 replacement와 함께 3개 랜덤 선택 × 100회",
+      "2. 각 시행: 3전략 EW score 합산 → per-stock score",
+      "3. 100개 score의 평균 → final_score",
+      "4. Top 30 by final_score → EW"
+    ],
+    "candidates": ["MF_A1", "MF_NNNN1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "set_seed": "set.seed(매월 YM 기반) for reproducibility"
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag. Bootstrap sampling은 종목 선정에만 사용(시계열 아님)."},
+  "overfitting_guard": "Bootstrap = 추정 분산 감소 표준 기법."
+}

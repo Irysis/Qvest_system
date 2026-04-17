@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_AAAA1_ROBUST",
+  "title": "Robust Composite — Winsorized z-score + Median Polish + Sector-Industry 이중 중립",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:21:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "MF_AAAA1", "family": "multifactor_robust", "n_holdings": 30},
+  "design": {
+    "concept": "기존 z-score는 극단값, 섹터 편향에 취약. 3중 강건화: (1) Winsorize ±3σ, (2) Sector+Industry 이중 중립, (3) Median Polish(Tukey 1977)로 행/열 효과 제거.",
+    "logic": [
+      "1. 각 팩터 시그널 Winsorize (±3σ에서 clip)",
+      "2. 섹터 내 z-score → 산업(sub-sector) 내 재중립화",
+      "3. 7팩터 × 종목 행렬에 Median Polish 적용 → 행(종목)/열(팩터) 체계적 효과 제거",
+      "4. 잔차 = 순수 종목별 초과 스코어 → Top 30",
+      "5. EW, monthly rebal"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 처리 t-1 시점 횡단면 기준"},
+  "overfitting_guard": "Winsorize + Median Polish = 비모수 강건화. 최적화 없음.",
+  "academic_basis": "Tukey (1977) 'Exploratory Data Analysis'; Clarke et al. (2016) 'Fundamentals of Efficient Factor Investing'"
+}

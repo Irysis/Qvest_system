@@ -1,0 +1,23 @@
+{
+  "exp_id": "EN_24_score_w_top",
+  "title": "Score-Weighted 전략 앙상블 — Hurdle Score 비례 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:52:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {"strategy_id": "EN_24", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "전략 가중을 trailing SR이 아닌 Hurdle Gate total_score 비례로. Score = SR+MDD+OOS+FF5 등 다축 평가 반영 → SR만보다 균형적.",
+    "logic": [
+      "1. 후보 전략들의 hurdle total_score 확인",
+      "2. w_strategy = score_i / sum(score)",
+      "3. 전략별 종목 score × w_strategy 합산 → Top 30"
+    ],
+    "candidates": "MDD < 25% 달성 Grade A 전략들",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Hurdle score = full-sample 결과 → walk-forward 재검증 필수"},
+  "overfitting_guard": "Score 가중은 full-sample 의존 → ⚠️ C12 주의. 연간 재평가 시 직전 연도 score 사용."
+}

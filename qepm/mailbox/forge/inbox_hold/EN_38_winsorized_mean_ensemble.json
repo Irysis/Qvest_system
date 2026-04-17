@@ -1,0 +1,18 @@
+{
+  "exp_id": "EN_38_winsorized",
+  "title": "Winsorized Mean Ensemble — 극단 score ±2σ clip 후 평균",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:12:00+09:00",
+  "bucket": "exploit", "priority_score": 0.78,
+  "scope": {"strategy_id": "EN_38", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "logic": [
+      "1. 5전략 per-stock score",
+      "2. 각 종목: score를 ±2σ에서 clip (winsorize)",
+      "3. winsorized mean → Top 30 → EW"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "t-1 lag"}
+}

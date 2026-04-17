@@ -1,0 +1,19 @@
+{
+  "exp_id": "ML_16_rl",
+  "title": "Reinforcement Learning — 팩터 배분을 행동(action)으로 학습",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:12:00+09:00",
+  "bucket": "explore", "priority_score": 0.65,
+  "scope": {"strategy_id": "ML_16", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "State = (MRS, Dispersion, Vol, 7팩터 trailing SR). Action = 7팩터 가중. Reward = 다음 달 portfolio SR. DQN 또는 Policy Gradient.",
+    "state": "15차원 (MRS + Disp + Vol + 7 factor SR + 5 macro)",
+    "action": "7차원 가중 (softmax output)",
+    "reward": "next_month_portfolio_return / portfolio_vol",
+    "training": "expanding walk-forward, 연간 재학습",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "state/reward = t-1까지만"},
+  "overfitting_guard": "⚠️ RL은 과적합 극고위험. 240개월 = 극소 에피소드. OOS retention >= 0.5 필수.",
+  "r_packages": ["ReinforcementLearning 또는 torch"]
+}

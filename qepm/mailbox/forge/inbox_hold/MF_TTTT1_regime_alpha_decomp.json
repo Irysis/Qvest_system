@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_TTTT1_ALPHA_DECOMP",
+  "title": "Alpha 분해 전략 — 팩터별 alpha를 국면별로 분해하여 최적 배분",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:50:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "MF_TTTT1", "family": "multifactor_alpha_decomp", "n_holdings": 30},
+  "design": {
+    "concept": "각 팩터의 alpha를 국면별(risk_on/elevated/crisis)로 분해하여 '이 국면에서 alpha가 양수인 팩터만' 사용. 국면별 alpha가 음수인 팩터는 해당 국면에서 제외.",
+    "logic": [
+      "1. 각 팩터의 국면별 평균 수익률 계산 (expanding, t-1)",
+      "   alpha_risk_on[i] = mean(factor_i return when MRS < 15)",
+      "   alpha_crisis[i] = mean(factor_i return when MRS >= 25)",
+      "2. 현재 국면에서 alpha > 0인 팩터만 활성화",
+      "3. 활성 팩터의 가중 = alpha 비례",
+      "4. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "국면별 alpha = expanding window (t-1). 현재 국면 판단 = MRS[t-1]."},
+  "overfitting_guard": "국면별 alpha 추정은 데이터 의존 → 위기 데이터 부족 문제. Minimum 12개월 해당 국면 데이터 필요. 미달 시 EW fallback."
+}

@@ -1,0 +1,16 @@
+{
+  "exp_id": "FM_45_ml_fret_pred",
+  "title": "ML Factor Return Prediction — 종목이 아닌 팩터 수익률 직접 예측 앙상블",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:43:00+09:00",
+  "bucket": "exploit", "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_45", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "E1(XGBoost 팩터배분)과 SF_47(종목선정)의 중간: 7팩터 각각의 다음 달 수익률을 XGB+RF 앙상블로 예측 → 가중.",
+    "models": ["XGBoost", "Random Forest"],
+    "target": "next_month factor_return per factor (7개)",
+    "weight": "mean(pred_xgb, pred_rf) → softmax → composite → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "expanding (t-1)"}
+}

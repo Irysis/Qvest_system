@@ -1,0 +1,37 @@
+{
+  "exp_id": "MF_OO1_TIERED",
+  "title": "2단계 스크리닝 — Quality Gate + Alpha Scoring (Gate→Score 분리)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:01:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {
+    "strategy_id": "MF_OO1",
+    "family": "multifactor_tiered",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "L-285: DART 지표는 gate(제거)로 유효하나 scoring에 투입하면 희석. 2단계로 분리: (1) Quality+Risk gate로 유니버스 축소 → (2) Alpha scoring으로 종목 선정.",
+    "stage1_gate": {
+      "remove": [
+        "PiotroskiF < 3 (재무 불건전)",
+        "Accruals > 75th percentile (높은 발생주의)",
+        "DaysInventory > 90th percentile (재고 효율 최악)",
+        "IdioVol > 90th percentile (극단 변동성)"
+      ],
+      "expected_removal": "전체의 ~30% 제거 → 유니버스 ~200종목 → ~140종목"
+    },
+    "stage2_score": {
+      "factors": "z(SUE) + z(EPS_chg) + z(IndMom_12m) + z(TPGap) + z(OCF/MCap)",
+      "weight": "EW 5팩터",
+      "selection": "Top 30 from gate-passed universe"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "advantage": "Gate = 절대 기준(worst 제거). Score = 상대 기준(best 선정). L-285 교훈 정확 구현."
+  },
+  "pit_rules": {"C1": "Gate 시그널 t-1 lag. DART 45일 lag.", "C4": "재무제표 lag"},
+  "overfitting_guard": "Gate threshold는 percentile 기반(75th, 90th) = 경제적 직관.",
+  "l_codes_referenced": ["L-285 (DART gate 유효, scoring 유해)", "L-306 (CCC+DeltaAccrual Grade A)", "L-403 (quality=gate only)", "L-517 (PiotroskiF<3 gate)"]
+}

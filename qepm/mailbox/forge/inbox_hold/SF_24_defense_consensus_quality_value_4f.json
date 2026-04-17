@@ -1,0 +1,18 @@
+{
+  "exp_id": "SF_24_dcqv_4f",
+  "title": "4F v2: Def+Cons+Quality+Value — IndMom 제외 4F",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:34:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "SF_24", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "SF_17(4F: Def+Cons+IndMom+Qual)과 다른 4F 조합: IndMom 대신 Value. 추세(IndMom) vs 가치(Value) 4번째 팩터 비교.",
+    "signal": "0.30*z(defense) + 0.30*z(consensus) + 0.20*z(quality) + 0.20*z(value), sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "comparison": "SF_17(Def+Cons+IndMom+Qual) vs SF_24(Def+Cons+Qual+Value) → IndMom vs Value 4번째 팩터 효과"
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"}
+}

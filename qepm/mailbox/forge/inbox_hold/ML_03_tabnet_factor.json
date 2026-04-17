@@ -1,0 +1,23 @@
+{
+  "exp_id": "ML_03_tabnet",
+  "title": "TabNet 팩터 배분 — Attention 기반 테이블 데이터 DL",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:53:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.67,
+  "scope": {"strategy_id": "ML_03", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "Arik & Pfister(2021): TabNet = 테이블 데이터에 최적화된 attention DL. Feature selection이 내장되어 어떤 팩터 특성이 중요한지 자동 식별. XGBoost와 경쟁.",
+    "model": "TabNet (torch 기반)",
+    "features": "E1과 동일 (7팩터 trailing SR/IC + MRS + Dispersion + VRP)",
+    "training": "expanding walk-forward, 연간 재학습",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월", "C12": "시계열 CV로만"},
+  "overfitting_guard": "TabNet은 sparsity regularization 내장. OOS retention >= 0.5.",
+  "r_packages": ["torch", "tabnet"],
+  "fallback": "torch 미설치 시 E1(xgboost)으로 대체",
+  "academic_basis": "Arik & Pfister (2021 AAAI) 'TabNet: Attentive Interpretable Tabular Learning'"
+}

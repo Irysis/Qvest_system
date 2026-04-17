@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_12_momentum_duration",
+  "title": "FM Duration — 팩터 모멘텀의 지속 기간으로 가중 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:53:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_12", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM이 3개월+ 지속된 팩터 = 구조적 추세 → 높은 가중. 1개월만 양수 = noise → 낮은 가중. 모멘텀 '지속 기간'을 가중에 반영.",
+    "logic": [
+      "1. 각 팩터의 월별 수익률 부호 (양/음) 시계열 (t-1)",
+      "2. duration = 현재까지 연속 양수 월 수 (0~12+)",
+      "3. w_i = max(0, duration_i) / sum(max(0, duration))",
+      "4. duration 0인 팩터 (최근 음수) = 가중 0",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "duration = t-1까지 월별 수익률 부호"},
+  "overfitting_guard": "Duration = 자동 카운트. 최적화 없음."
+}

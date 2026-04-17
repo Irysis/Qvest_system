@@ -1,0 +1,29 @@
+{
+  "exp_id": "MF_DDDD1_SMART_REBAL",
+  "title": "Smart Rebalance — 시그널 변화+비용 분석 후 교체 여부 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:24:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "MF_DDDD1", "family": "multifactor_smart_rebal", "n_holdings": 30},
+  "design": {
+    "concept": "BB1(turnover cap)의 진화: 종목 교체의 기대 alpha 개선 > 거래비용일 때만 교체. Net benefit 양수인 교체만 실행.",
+    "logic": [
+      "1. MF_A1 이상적 Top 30 vs 기존 포트폴리오 비교",
+      "2. 각 교체 후보에 대해:",
+      "   expected_alpha_gain = (new_score - old_score) × trailing_IC × holding_period",
+      "   transaction_cost = 2 × commission (매도+매수)",
+      "3. net_benefit = expected_alpha_gain - transaction_cost",
+      "4. net_benefit > 0인 교체만 실행. 나머지 보유 유지.",
+      "5. 결과: 자동 turnover 최적화"
+    ],
+    "commission": "30bps (편도)",
+    "holding_period_assumption": "21 trading days (1 month)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "trailing_IC = expanding (t-1). new/old score = t-1 시그널."},
+  "overfitting_guard": "Net benefit 계산은 사전 정의 공식. IC 추정에 expanding window.",
+  "academic_basis": "Garleanu & Pedersen (2013 RFS) 'Dynamic Trading with Predictable Returns and Transaction Costs'"
+}

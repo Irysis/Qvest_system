@@ -1,0 +1,19 @@
+{
+  "exp_id": "RC_49_trend_strength",
+  "title": "추세 강도 국면 — ADX(Average Directional Index)로 추세/횡보 구분",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T12:01:00+09:00",
+  "bucket": "explore", "priority_score": 0.72,
+  "scope": {"strategy_id": "RC_49", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "KOSPI200 ADX(14d)로 추세/횡보 구분. 추세 강(ADX>25) → Momentum/IndMom. 횡보(ADX<15) → Defense/Reversal.",
+    "signal": "ADX_14d of KOSPI200 (t-1)",
+    "allocation": {
+      "strong_trend": {"trigger": "ADX > 25", "tilt": "Momentum 25% + IndMom 25% + Consensus 20% + Others 30%"},
+      "sideways": {"trigger": "ADX < 15", "tilt": "Defense 30% + Reversal 20% + Quality 20% + Others 30%"},
+      "moderate": {"tilt": "MF_A1 Core"}
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "ADX = t-1 lag"}
+}

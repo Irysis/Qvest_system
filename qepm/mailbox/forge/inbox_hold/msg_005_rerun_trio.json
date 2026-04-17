@@ -1,0 +1,26 @@
+{
+  "msg_id": "QLEAD_012",
+  "from": "qlead",
+  "to": "forge",
+  "cmd": "rerun",
+  "priority": "highest",
+  "timestamp": "2026-03-21T11:25:00+09:00",
+  "strategies": [
+    {
+      "strategy_id": "STR_1035",
+      "dir": "04_Research/strategies/STR_1035_oas_minvar",
+      "reason": "macro_regime.parquet가 cron에 의해 구MRS로 복원됐었음. v7.1 재교체 완료. 재실행 필요."
+    },
+    {
+      "strategy_id": "STR_1033",
+      "dir": "04_Research/strategies/STR_1033_nco",
+      "reason": "동일 원인. NCO 아키텍처 유망, FF5 t=2.889."
+    },
+    {
+      "strategy_id": "STR_1030",
+      "dir": "04_Research/strategies/STR_1030_gerber_bl_hybrid",
+      "reason": "동일 원인. Gerber+BL 고유 조합."
+    }
+  ],
+  "instructions": "3개 전략을 순차 재실행하라. 각 전략 디렉토리의 output/ 삭제 후 cd 해서 Rscript -e 'source(\"run_all.R\")' 실행. macro_regime.parquet가 v7.1(2026-03 MRS=38.1)인지 먼저 확인하라. 각 완료 시 텔레그램 브리핑 + methodology_memory 교훈 업데이트."
+}

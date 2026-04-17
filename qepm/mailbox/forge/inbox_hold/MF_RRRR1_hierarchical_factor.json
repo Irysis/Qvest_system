@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_RRRR1_HIERARCHICAL",
+  "title": "계층적 팩터 — 1차 필터(Quality Gate) → 2차 정렬(FM Composite) → 3차 가중(NCO)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:43:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "MF_RRRR1", "family": "multifactor_hierarchical", "n_holdings": 30},
+  "design": {
+    "concept": "OO1(2단계)의 확장: 3단계 계층 구조. Gate → Score → Weight 각 단계에서 다른 정보 차원 사용. 중복 최소화, 각 단계 독립 기능.",
+    "stages": {
+      "stage1_gate": {
+        "method": "Quality+Risk gate (OO1과 동일)",
+        "removes": "PiotroskiF<3, Accruals>75pct, IdioVol>90pct",
+        "expected": "~30% 제거 → ~140종목 통과"
+      },
+      "stage2_score": {
+        "method": "국면FM(C1) 기반 composite score",
+        "selects": "Top 40 from gate-passed universe"
+      },
+      "stage3_weight": {
+        "method": "NCO 가중 (Top 40 → NCO → Top 30 by weight contribution)",
+        "output": "30종목 + NCO 최적 가중"
+      }
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "각 단계 모두 t-1 lag"},
+  "overfitting_guard": "3단계 각각 독립 규칙. 단계 간 최적화 없음.",
+  "l_codes_referenced": ["L-285 (gate≠score)", "L-488 (NCO)", "L-200 (CondWeight)"]
+}

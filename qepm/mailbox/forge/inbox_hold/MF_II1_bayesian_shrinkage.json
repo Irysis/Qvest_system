@@ -1,0 +1,30 @@
+{
+  "exp_id": "MF_II1_BAYESIAN_SHRINK",
+  "title": "베이지안 수축 가중 — 팩터 가중을 EW prior로 수축",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:50:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.77,
+  "scope": {
+    "strategy_id": "MF_II1",
+    "family": "multifactor_bayesian",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "FM 가중(B1)은 데이터 기반이지만 noise에 민감. Bayesian shrinkage로 FM 가중을 EW(1/7) prior 쪽으로 수축 → 추정 오류 감소. Ledoit-Wolf의 팩터 가중 버전.",
+    "logic": [
+      "1. FM 가중 w_fm = trailing 6m SR 기반 (MF_B1)",
+      "2. Prior w_prior = 1/7 (EW)",
+      "3. Shrinkage: w_final = λ × w_prior + (1-λ) × w_fm",
+      "4. λ = 1 / (1 + T/60), T = 사용 가능 월수. 데이터 많을수록 FM 신뢰 ↑",
+      "5. composite_score → Top 30"
+    ],
+    "lambda_schedule": "초기(60m): λ=0.5(EW 50%). 120m: λ=0.33. 240m: λ=0.20. 데이터 축적에 따라 FM 가중 증가.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "λ는 사용 가능 월수(T)에서 자동 결정. Expanding."},
+  "overfitting_guard": "Shrinkage = 과적합 방지의 핵심. λ가 자동으로 보수성 조절.",
+  "academic_basis": "Ledoit & Wolf (2004) 'A well-conditioned estimator for large-dimensional covariance matrices'; DeMiguel et al. (2009) JFE"
+}

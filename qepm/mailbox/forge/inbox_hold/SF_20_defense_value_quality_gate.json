@@ -1,0 +1,19 @@
+{
+  "exp_id": "SF_20_dvq_gate",
+  "title": "Defense + Value + Quality Gate — 방어+가치 2축 + 재무 필터",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:54:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.81,
+  "scope": {"strategy_id": "SF_20", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "0.55*z(defense) + 0.45*z(value), sector neutral",
+    "gate": "PiotroskiF < 3 제거 + Accruals > 90pct 제거",
+    "overlay": "DD_med only + regime_engine_daily.R MRS 12/25 + VT 0.25",
+    "rationale": "Consensus 제외 → Defense+Value의 순수 mean-reversion alpha. Quality gate로 value trap 방지."
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-516 (Value IC 0.045)", "L-285 (gate 유효)", "L-481 (Value standalone F → gate 필수)"]
+}

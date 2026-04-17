@@ -1,0 +1,20 @@
+{
+  "exp_id": "RC_45_transition_prob",
+  "title": "국면 전환 확률 — MRS 변화율로 위기 진입 확률 추정 → 연속 배분",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:13:00+09:00",
+  "bucket": "explore", "priority_score": 0.75,
+  "scope": {"strategy_id": "RC_45", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS 수준이 아닌 '다음 달 위기 진입 확률'로 배분. P(crisis) = logistic(β₀ + β₁*MRS + β₂*ΔMRS + β₃*VRP), expanding fit.",
+    "logic": [
+      "1. Logistic regression: crisis(MRS>=25 next month) ~ MRS + ΔMRS + VRP (expanding, t-1)",
+      "2. P_crisis = predicted probability",
+      "3. w_defense = 0.15 + 0.35 * P_crisis",
+      "4. composite → Top 30"
+    ],
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "logistic = expanding (t-1). 예측 = t+1월 위기 여부."},
+  "overfitting_guard": "3 feature logistic = 저차원. Expanding window."
+}

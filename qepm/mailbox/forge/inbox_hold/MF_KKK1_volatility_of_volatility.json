@@ -1,0 +1,20 @@
+{
+  "exp_id": "MF_KKK1_VOL_OF_VOL",
+  "title": "Vol-of-Vol 시그널 — 변동성의 변동성이 높은 종목 회피",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:44:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {"strategy_id": "MF_KKK1", "family": "multifactor_vol", "n_holdings": 30},
+  "design": {
+    "concept": "Baltussen et al. (2018): Vol-of-Vol이 높은 종목은 미래 수익 낮음. 변동성이 '안정적으로 낮은' 종목 vs '불안정하게 낮은' 종목 구별. 기존 Defense(IdioVol)에 Vol-of-Vol 차원 추가.",
+    "signal": "z(-vol_of_vol) where vol_of_vol = std(rolling 20d vol, trailing 120d)",
+    "integration": "MF_A1에 8번째 팩터로 추가 (가중 10%)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "vol_of_vol = trailing 120d, 20d rolling vol의 std. Expanding min 120d, t-1 lag."},
+  "overfitting_guard": "Vol-of-Vol은 학술적으로 확립된 위험 요인.",
+  "academic_basis": "Baltussen, Van Bekkum & Grientjes (2018 JFE) 'Unknown Unknowns: Uncertainty About Risk and Stock Returns'"
+}

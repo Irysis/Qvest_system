@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_17_4f_core",
+  "title": "4F Core — Defense + Consensus + IndMom + Quality (핵심 4축)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:13:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {"strategy_id": "SF_17", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "NNNN1(2F)과 A1(7F) 사이의 sweet spot 탐색. 4F = Defense + Consensus + IndMom + Quality. Value/Momentum/TP는 제외(IC 불안정 또는 standalone 실패).",
+    "signal": "0.30*z(defense) + 0.30*z(consensus) + 0.20*z(indmom) + 0.20*z(quality), sector neutral",
+    "quality_def": "z(GPA) + z(PiotroskiF)",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15/30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "t-1 lag", "C4": "DART 45일 lag"},
+  "comparison": "2F(NNNN1) vs 3F(SF_09) vs 4F(SF_17) vs 5F(A1에서 축소) vs 7F(A1) → 최적 팩터 수 탐색"
+}

@@ -1,0 +1,30 @@
+{
+  "exp_id": "BRK_03",
+  "title": "STR_1036 MRS Binary 전환: Soft Ramp → Crisis-Only Hard Switch",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.90,
+  "diagnosis": {
+    "target": "STR_1036 Phase 4",
+    "root_cause": "MRS Soft Ramp(15→30→exposure 100%→30%)가 MRS 15부터 exposure 감소 시작. MRS 15~30 구간(=경계/주의 국면)에서 불필요한 CAGR 손실. L-443: '정상 시 헤지 안함 + 위기 확인 시에만 헤지'가 핵심 원칙인데, 현재 soft ramp은 정상~경계에서도 점진적 헤지 → 원칙 위반. L-06: elevated 캐시아웃 27%는 과도. crisis만 HARD cash-out"
+  },
+  "hypothesis": "MRS soft ramp(15→30→100%→30%)을 binary switch(MRS>=30 → exposure 30%, MRS<30 → 100%)로 교체하면, 경계 구간의 불필요 캐시아웃 제거 → CAGR +1~3%p. 위기(MRS>=30)에서의 방어력은 동일(30% exposure 유지)",
+  "implementation": {
+    "base": "STR_1036 run_all.R 복사",
+    "changes": [
+      "Phase 4 Line 527~538: Soft ramp → Binary switch",
+      "if (mrs_val >= 30) exp <- 0.30 else exp <- 1.0"
+    ],
+    "code_diff": {
+      "phase4_replace": "soft_mrs_exp[i] <- ifelse(mrs_val >= 30, 0.30, 1.0)"
+    }
+  },
+  "pit_checklist": ["MRS t-1 lag 내장 (build_daily_regime)", "No PIT change"],
+  "constraints": ["N <= 30", "LIQ >= 2e8"],
+  "metrics_target": {"cagr": ">22%", "sharpe": ">1.35", "mdd": "<27%"},
+  "l_codes": ["L-443", "L-06", "L-322", "L-477"],
+  "risk_notes": "Binary switch는 MRS 29→30 전환점에서 whipsaw 위험. L-323: weight shift 전환점에서 whipsaw 유발 확인. 쿨다운 2개월 추가 고려(L-329). 또한 MRS>=25 threshold도 변형 시도"
+}

@@ -1,0 +1,25 @@
+{
+  "exp_id": "ML_07_feat_pruned",
+  "title": "Feature-Pruned XGBoost — 중요도 하위 50% 피처 제거 후 재학습",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:44:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {"strategy_id": "ML_07", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "E1(XGBoost)의 과적합 방지 강화. Feature importance 하위 50% 피처를 제거하고 재학습 → 노이즈 피처 제거 = OOS 개선.",
+    "logic": [
+      "1. E1과 동일 XGBoost 학습 (expanding walk-forward)",
+      "2. Feature importance 계산 (gain 기준)",
+      "3. 하위 50% 피처 제거",
+      "4. 남은 피처로 재학습 → 예측 → weight → Top 30"
+    ],
+    "pruning_frequency": "연간 (매년 1월 피처 재선정)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "피처 선정 = walk-forward OOS importance 기반", "C12": "Full-sample importance 금지"},
+  "overfitting_guard": "피처 감소 = 모델 복잡도 감소 = 과적합 감소.",
+  "r_packages": ["xgboost"]
+}

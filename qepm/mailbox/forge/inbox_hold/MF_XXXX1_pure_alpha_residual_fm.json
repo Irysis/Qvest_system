@@ -1,0 +1,22 @@
+{
+  "exp_id": "MF_XXXX1_PURE_ALPHA_FM",
+  "title": "Pure Alpha FM — FF5 잔차 alpha에 FM 적용 (이중 정제)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:54:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "MF_XXXX1", "family": "multifactor_pure_alpha", "n_holdings": 30},
+  "design": {
+    "concept": "M1(FF5 잔차) + B1(FM) 결합. 1단계: FF5 잔차로 팩터 프리미엄 제거 → 순수 alpha. 2단계: 순수 alpha에 FM 적용 → '최근 잘 작동하는 순수 alpha 소스'에 가중.",
+    "logic": [
+      "1. 각 팩터별 FF5 잔차 alpha 시계열 구축 (M1 방식, expanding)",
+      "2. 잔차 alpha에 FM 적용: trailing 6m 잔차 SR 기반 가중",
+      "3. composite = sum(w_fm_residual × z_factor) → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "FF5 잔차 + FM 모두 expanding/trailing, t-1 lag"},
+  "overfitting_guard": "이중 정제(FF5→FM)는 각각 사전 규칙. 연쇄 최적화 아님."
+}

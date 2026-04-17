@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "S0 Verdict",
+  "description": "S0 가설 토론 판정 결과 (4인 합산 점수제)",
+  "type": "object",
+  "required": ["factor_id", "hypothesis_name", "round", "timestamp", "scores", "total_score", "verdict"],
+  "properties": {
+    "factor_id": { "type": "string", "pattern": "^MF_\\d+_" },
+    "hypothesis_name": { "type": "string" },
+    "round": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "scores": {
+      "type": "object",
+      "required": ["critic", "quant", "academic", "govproxy"],
+      "properties": {
+        "critic":   { "$ref": "#/$defs/agent_score" },
+        "quant":    { "$ref": "#/$defs/agent_score" },
+        "academic": { "$ref": "#/$defs/agent_score" },
+        "govproxy": { "$ref": "#/$defs/agent_score" }
+      }
+    },
+    "total_score": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "verdict": { "type": "string", "enum": ["APPROVE", "APPROVE_CONDITIONAL", "REVISE", "REJECT"] },
+    "conditions": { "type": "array", "items": { "type": "string" } },
+    "key_findings": {
+      "type": "object",
+      "properties": {
+        "critic":   { "type": "string" },
+        "quant":    { "type": "string" },
+        "academic": { "type": "string" },
+        "govproxy": { "type": "string" }
+      }
+    },
+    "scout_feedback": { "type": ["string", "null"] }
+  },
+  "$defs": {
+    "agent_score": {
+      "type": "object",
+      "required": ["total", "breakdown"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0, "maximum": 25 },
+        "breakdown": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 5 }
+        }
+      }
+    }
+  }
+}

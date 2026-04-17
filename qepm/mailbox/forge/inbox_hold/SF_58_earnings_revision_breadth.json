@@ -1,0 +1,14 @@
+{
+  "exp_id": "SF_58_rev_breadth",
+  "title": "Earnings Revision Breadth — 상향 애널리스트 비율로 scoring",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:30:00+09:00",
+  "bucket": "exploit", "priority_score": 0.74,
+  "scope": {"strategy_id": "SF_58", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "EPS revision 방향뿐 아니라 '몇 명이 상향했는가' = breadth. 다수 동의 상향 = 강한 신호.",
+    "signal": "z(n_upward / n_total analysts), sector neutral",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "consensus data t-1 lag"}
+}

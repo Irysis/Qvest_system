@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_13_cross_factor_mom",
+  "title": "Cross-Factor Momentum — 팩터 A 강세 → 상관 높은 팩터 B도 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:03:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "FM_13", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "Ehsani & Linnainmaa(2022): 팩터 모멘텀은 팩터 간 전이(spillover). Defense 강세 → Quality(상관 높음)도 다음 달 강세 가능. 교차 모멘텀 활용.",
+    "logic": [
+      "1. 7×7 팩터 상관 행렬 (trailing 120d, t-1)",
+      "2. 각 팩터의 trailing 3m SR (t-1)",
+      "3. cross_fm_i = sum(corr(i,j) × SR_j) for all j≠i",
+      "4. combined_fm_i = 0.50 * SR_i + 0.50 * cross_fm_i",
+      "5. w_i = max(0, combined_fm_i) / sum → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "상관 + SR 모두 t-1 lag"},
+  "academic_basis": "Ehsani & Linnainmaa (2022 JFE) 'Factor Momentum and the Momentum Factor'"
+}

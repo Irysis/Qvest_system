@@ -1,0 +1,27 @@
+{
+  "exp_id": "ML_05_qrf",
+  "title": "Quantile Regression Forest — 수익률 분포 예측 → CVaR 최소화 종목 선정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:44:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {"strategy_id": "ML_05", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "RF가 평균 수익률만 예측하는 것과 달리, QRF는 수익률 분포 전체 예측. 5th percentile(=CVaR proxy) 높은(=좌측 꼬리 작은) 종목 선정 → MDD 직접 최소화.",
+    "logic": [
+      "1. Features: 7팩터 z-score + trailing vol + trailing MDD per stock",
+      "2. Target: next month return",
+      "3. QRF 학습 (expanding walk-forward)",
+      "4. 예측 분포의 5th percentile(Q5) 추출",
+      "5. selection_score = 0.5 * E[return] + 0.5 * (-Q5_loss)",
+      "6. Top 30 by selection_score → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월", "C12": "시계열 walk-forward"},
+  "overfitting_guard": "QRF = RF의 자연스러운 확장. OOS retention >= 0.5.",
+  "r_packages": ["quantregForest"],
+  "academic_basis": "Meinshausen (2006) 'Quantile Regression Forests' JMLR"
+}

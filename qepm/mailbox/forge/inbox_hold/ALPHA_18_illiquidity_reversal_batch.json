@@ -1,0 +1,49 @@
+{
+  "exp_id": "ALPHA_18",
+  "title": "Trading Friction 배치 — Amihud Illiquidity + Short-Term Reversal + Abnormal Volume (한국 유의 확인)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T00:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.77,
+  "scope": {
+    "family": "trading_friction",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Trading friction 시그널 3종(Amihud illiquidity, short-term reversal, abnormal volume)이 한국시장에서 유의한 횡단면 alpha를 제공한다. 148-anomaly 한국 복제: Trading Friction 카테고리 48% 복제(3위), Amihud t=3.248, Reversal t=3.054, Turnover t=-3.432. 모두 RAWDATA(Ret, Vol, Close)만으로 즉시 계산 가능.",
+    "mechanism": "(1) Amihud(2002): 비유동성 프리미엄 — 유동성 필터(LIQ >= 2e8) 통과 종목 중에서도 상대적 비유동성이 높으면 프리미엄 존재. (2) Jegadeesh(1990): 1개월 short-term reversal — 전월 하락 종목이 반등. Long-only에서는 전월 낙폭 종목 선호. (3) Gervais, Kaniel & Mingelgrin(2001): Abnormal volume — 비정상적 거래량 증가 후 수익률 예측. 세 시그널 모두 Defense(IdioVol)/IndMom/Consensus와 다른 '시장 미시구조' 차원.",
+    "falsification": "Alpha Lab 3종 모두 IC < 0.01 → 기각. Defense(IdioVol)와 상관 > 0.7 → 기각. Long-only에서 reversal이 무효하면 해당 시그널만 제외",
+    "academic_basis": "Amihud (2002) 'Illiquidity and Stock Returns: Cross-Section and Time-Series Effects' JFMA. Jegadeesh (1990) 'Evidence of Predictable Behavior of Security Returns' JF — short-term reversal. Gervais, Kaniel & Mingelgrin (2001) 'The High-Volume Return Premium' JF. 한국 148-anomaly 복제(JDQS 2020): Ami t=3.248, Srev t=3.054, Tur t=-3.432"
+  },
+  "data_requirements": {
+    "source": "✅ RAWDATA — Ret, Vol, Close",
+    "fields": ["Ret", "Vol", "Close"],
+    "computation": {
+      "amihud": "ILLIQ[i,t] = mean(|Ret[i,d]| / (Vol[i,d] * Close[i,d]), d in t-20:t-1) — 20일 Amihud",
+      "reversal": "REV[i,t] = -Ret[i, t-1 month] — 전월 수익률 반전",
+      "abnormal_volume": "AVOL[i,t] = mean(Vol[i, t-5:t-1]) / mean(Vol[i, t-252:t-1]) — 5일/252일 거래량 비율",
+      "signals": "z(ILLIQ), z(REV), z(AVOL) 각각 독립 Alpha Lab 후 유의한 것만 결합"
+    }
+  },
+  "implementation": {
+    "step1": "RAWDATA에서 3개 시그널 계산",
+    "step2": "Alpha Lab Stage 0 배치: 3종 각각 IC/ICIR + 상호 상관 + Defense/IndMom/Consensus 상관",
+    "step3": "유의한 시그널만 선별 → Trading Friction composite 또는 개별 사용",
+    "step4_if_pass": "Full backtest: monthly, N=30",
+    "step5": "Gate 활용: ILLIQ 상위 10% gate(극비유동 제거) vs alpha(비유동 프리미엄 수취)"
+  },
+  "pit_checklist": ["C1: rolling window only", "C2: t-1 lag", "C10: 당일 거래량 금지 — 전일까지만"],
+  "constraints": ["N <= 30", "LIQ >= 2e8 (필터 통과 후에도 상대적 비유동성 차이 존재)", "Alpha Lab ICIR >= 0.10"],
+  "metrics_target": {
+    "ic_amihud": ">0.02",
+    "ic_reversal": ">0.02",
+    "ic_avol": ">0.015",
+    "corr_with_idiovol": "<0.6"
+  },
+  "l_codes": ["L-190 (3rd defense factor — Illiquidity 실패 기록 있음)", "L-428 (4th alpha)"],
+  "risk_notes": "L-190: Illiquidity를 3rd defense factor로 시도 시 실패. 그러나 그때는 defense scoring 성분으로 테스트, 지금은 독립 alpha 또는 gate로 테스트 — 다른 접근. Short-term reversal은 long-only에서 '전월 낙폭과대 종목 매수'로 구현 가능하나 턴오버 높을 수 있음 → BZ로 제어. LIQ >= 2e8 필터 통과 종목 간에도 Amihud 차이가 유의한지 확인 필수"
+}

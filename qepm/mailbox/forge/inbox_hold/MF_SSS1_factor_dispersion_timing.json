@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_SSS1_FACTOR_DISP_TIMING",
+  "title": "팩터 수익률 분산도 타이밍 — 팩터 간 수익률 차이 클 때만 FM 활성화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:03:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.77,
+  "scope": {"strategy_id": "MF_SSS1", "family": "multifactor_disp_timing", "n_holdings": 30},
+  "design": {
+    "concept": "팩터 모멘텀(FM)은 팩터 간 수익률 차이가 클 때 효과적. 팩터 수익률 분산도(cross-factor dispersion)가 높으면 FM 활성화, 낮으면 EW fallback.",
+    "logic": [
+      "1. 7 팩터의 trailing 3m 수익률 계산 (t-1)",
+      "2. cross_factor_disp = std(7 factor returns) (t-1)",
+      "3. z(disp) > 0.5: FM 가중 적용 (MF_B1)",
+      "4. z(disp) <= 0.5: EW 7F (MF_A2) — 팩터 간 차이 작아 FM 무의미",
+      "5. composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "disp = trailing 3m factor returns, t-1 lag"},
+  "overfitting_guard": "Threshold 0.5σ는 표준. FM vs EW 전환 규칙은 경제적 직관.",
+  "academic_basis": "Ehsani & Linnainmaa (2022 JFE) 'Factor Momentum and the Momentum Factor'"
+}

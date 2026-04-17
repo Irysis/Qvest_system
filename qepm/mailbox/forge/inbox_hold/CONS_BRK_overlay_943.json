@@ -1,0 +1,42 @@
+{
+  "exp_id": "CONS_BRK_OVERLAY_943",
+  "title": "Consensus 최강 STR_943(EPS Change) + BRK overlay + DD t-1 fix → Score 80+ 시도",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:35:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.85,
+  "scope": {
+    "strategy_id": "STR_1118",
+    "name": "cons_eps_brk_overlay",
+    "base": "STR_943 (oc_eps_chg, Grade A 72.2, Consensus 최강)",
+    "family": "consensus_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "STR_943(EPS Change, Score 72.2)의 C2 DD Brake t-1 fix + BRK overlay 패턴(short DD 제거 + regime_engine_daily.R)을 적용하면 Score 80+ 달성 가능",
+    "mechanism": "STR_943은 Session 40 Judge에서 C2 DD(same-day) 오염 지적. DD t-1 fix만으로 SR 정정 + BRK overlay 최적화(L-507/508 패턴)로 Score 72.2 → 80+ 기대. Consensus(L-415) alpha는 독립적이고 v7.1에서도 견고 → overlay 최적화가 Score ceiling 돌파의 열쇠. STR_1060(5-sleeve EW, Score 87.1)과 구조적으로 다른 단일 sleeve consensus → 앙상블 후보.",
+    "falsification": "DD t-1 fix 후 SR < 0.90 → Consensus alpha 자체 약화. Score < 65 → 기각"
+  },
+  "implementation": {
+    "step1": "STR_943 run_all.R 복사",
+    "step2": "DD Brake: same-day → t-1 lagged (dd_exp_combined_lagged = c(1.0, head(dd_exp_combined, -1)))",
+    "step3": "Short DD Brake 제거 (STR_1060 패턴, L-508)",
+    "step4": "Phase 4 MRS: macro_regime_dt → regime_engine_daily.R 교체 (C11 fix)",
+    "step5": "DD start 파라미터: 4% (base) + 8% variant",
+    "variants": [
+      {"id": "A", "name": "dd_fix_only", "change": "DD t-1 fix + short DD 제거"},
+      {"id": "B", "name": "dd8_regime_daily", "change": "A + DD start 8% + regime_engine_daily.R"}
+    ]
+  },
+  "l_codes_referenced": [
+    "L-415 (Consensus = 3rd independent alpha 확정)",
+    "L-447 (same-day DD SR 25~49% 과대추정)",
+    "L-508 (Short DD 제거 Score 개선)",
+    "L-507 (DD 8% 완화 Score +5)"
+  ],
+  "academic_basis": "Ball & Brown (1968) earnings surprise; Foster et al. (1977) SUE; Givoly & Lakonishok (1979) analyst revision",
+  "risk_notes": "STR_943의 C2 fix는 SR 하락 가능 (same-day DD inflated SR). 하지만 BRK overlay 최적화로 보상 가능. Score 80 미달 시 앙상블 sleeve로 편입 가치는 여전히 존재."
+}

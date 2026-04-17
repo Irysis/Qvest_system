@@ -1,0 +1,43 @@
+{
+  "exp_id": "MF_B1_FM_6M",
+  "title": "팩터모멘텀 동적가중 — 6m trailing SR 기반 팩터 비중 조절",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:33:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.87,
+  "scope": {
+    "strategy_id": "MF_B1",
+    "family": "multifactor_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "factors": ["defense", "consensus", "indmom", "quality", "value", "momentum", "tp_gap"],
+    "fm_method": {
+      "description": "각 팩터의 trailing 6m SR을 t-1 lag로 계산. SR > 0인 팩터만 활성화. 가중 = SR_i / sum(SR_positive). SR <= 0인 팩터는 가중 0.",
+      "lookback": "126 trading days (6 months)",
+      "lag": "t-1 (전월 말까지 데이터만 사용)",
+      "window": "expanding minimum 252d warm-up",
+      "min_weight": 0.05,
+      "max_weight": 0.40,
+      "rebalance": "monthly"
+    },
+    "fm_implementation": [
+      "1. 각 팩터의 standalone long portfolio (Top 30 EW) 일별 수익률 시계열 구축",
+      "2. 매월 말: trailing 126d SR 계산 (t-1까지)",
+      "3. SR > 0인 팩터 가중 = SR_i / sum(SR_pos), capped at 0.40, floored at 0.05",
+      "4. composite_score = sum(w_i × z_factor_i), sector neutral",
+      "5. Top 30 → monthly rebal with BZ(45/30)"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "FM lookback = trailing 126d. expanding 아님 — rolling window. Full-sample 최적화 금지.",
+    "C2": "FM SR 계산 시 t-1까지만 사용. 이번 달 성과 미포함.",
+    "C12": "FM 가중은 매월 재계산. Full-sample SR로 가중 결정 금지."
+  },
+  "overfitting_guard": "FM 가중은 trailing SR에서 자동 결정 — 사전 최적화 없음. OOS retention < 0.5 시 폐기. IS-OOS gap > 50% 시 폐기.",
+  "l_codes_referenced": ["L-429 (FM rank STR_895)", "L-482 (국면배분 ≈ FM)", "L-344 (FM 63d)"],
+  "academic_basis": "Asness et al. (2017) 'Momentum Turns, Momentum Crashes'; Gupta & Kelly (2019) 'Factor Momentum Everywhere'"
+}

@@ -1,0 +1,19 @@
+{
+  "exp_id": "FM_26_roll_vs_expand",
+  "title": "[진단] Rolling vs Expanding FM — 6m rolling FM vs expanding FM 비교",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:33:00+09:00",
+  "bucket": "diagnose", "priority_score": 0.75,
+  "scope": {"strategy_id": "FM_26", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "B1(6m rolling FM) vs FM_02(expanding IC) vs FM_24(expanding SR) 직접 비교. Rolling = 최근 반응. Expanding = 안정성. 어느 쪽이 OOS 우수?",
+    "experiments": [
+      {"id": "rolling_6m", "method": "B1: trailing 6m SR"},
+      {"id": "expanding_ic", "method": "FM_02: expanding IC"},
+      {"id": "expanding_sr", "method": "FM_24: expanding SR"}
+    ],
+    "unified_overlay": "DD_med only + MRS 12/25 + VT 0.25",
+    "output": "3가지 FM의 SR/MDD/OOS/Turnover 비교표"
+  },
+  "pit_rules": {"C1": "모두 t-1 lag"}
+}

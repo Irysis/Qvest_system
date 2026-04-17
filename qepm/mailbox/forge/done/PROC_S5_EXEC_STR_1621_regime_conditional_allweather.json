@@ -1,0 +1,22 @@
+{
+  "task_type": "S5_mutation_execution",
+  "strategy_id": "STR_1621_regime_conditional_allweather",
+  "factor_id": "C19_FY1_Revision_1m+V14_EBIT_EV+D01_Low_Vol+D44_Kurtosis",
+  "role": "core_alpha",
+  "design_artifact": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1621_regime_conditional_allweather/stage_artifacts/s5_mutation_design_1.json",
+  "base_factor_engine": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1621_regime_conditional_allweather/factor_engine.R",
+  "execution_priority": "M9 → M8 → M4 → M3 → M7 → M5 → M2 → M1 → M6",
+  "hard_fail_issue": "MDD 52.3% > 45% 한계선. 목표: MDD < 45%",
+  "critical_rules": [
+    "C9 필수: dd_lag <- c(0, dd_pct[-n]). same-day DD 금지",
+    "Regime: Regime_Score_Lag (t-1 lag) 사용. same-day rsc 금지",
+    "C13: Z_Score_Aligned만 사용. 방향 반전 금지",
+    "C15: load_month_factors() 경유",
+    "종목수 <= 30 (2-sleeve 합산)"
+  ],
+  "synthesis_requirement": "M9 실행 시 synthesis_tested=TRUE 플래그 설정 필수",
+  "n_mutations_required": 9,
+  "f_categories_required": 4,
+  "from": "Scout",
+  "created_at": "2026-03-29"
+}

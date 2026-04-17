@@ -1,0 +1,40 @@
+{
+  "exp_id": "NCO_EVO_MULTI_LOOKBACK",
+  "title": "NCO Multi-Lookback Ensemble: 60/120/252일 윈도우 가중 평균",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T23:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.78,
+  "scope": {
+    "strategy_id": "STR_1115",
+    "name": "nco_multi_lookback",
+    "base": "STR_1110 (NCO + regime_engine_daily.R)",
+    "family": "nco_evolution",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "monthly"
+  },
+  "hypothesis": {
+    "statement": "NCO 가중을 단일 lookback(120d) 대신 3개 윈도우(60/120/252d)의 가중 평균으로 계산하면 추정 오류 감소로 OOS 안정성 개선",
+    "mechanism": "단일 lookback은 해당 윈도우의 시장 구조에 과적합 위험. 60d(단기 구조), 120d(중기), 252d(장기 안정)를 앙상블하면 추정 오류의 분산이 감소 (Bagging 원리). Lopez de Prado (2016) 'weights tend to be unstable when based on a single covariance estimate'. Judge evolution_path: 'NCO ensemble: average NCO weights across multiple lookback windows (60/120/252d)'",
+    "falsification": "OOS retention < 0.85 (STR_1033 base 0.919 대비 악화) → 기각. 계산 시간 3배 초과로 실투 불가 → 기각"
+  },
+  "implementation": {
+    "changes": [
+      "calc_nco_weights() 3회 호출 (60d, 120d, 252d)",
+      "w_final = 0.25 * w_60 + 0.50 * w_120 + 0.25 * w_252",
+      "각 lookback에서 데이터 부족 시 해당 윈도우 skip + 나머지 재가중",
+      "최소 warm-up: 252d 이후부터 3-window 앙상블 가능"
+    ],
+    "parameters": {
+      "lookback_windows": [60, 120, 252],
+      "ensemble_weights": [0.25, 0.50, 0.25],
+      "min_obs_per_window": 30
+    },
+    "dependencies": ["NCO_C11_FIX (STR_1110) 완료 후 실행"]
+  },
+  "l_codes_referenced": ["L-479 (가중최적화 v7.1 최강)", "L-488 (NCO 아키텍처 유망)", "L-14 (DeMiguel 2009 1/N 우월성 — 추정 오류 감소가 핵심)"],
+  "academic_basis": "Lopez de Prado (2016) NCO weight instability; DeMiguel et al. (2009) JFE estimation error dominance; Bagging/ensemble principle for covariance estimation (Ledoit & Wolf 2004)",
+  "risk_notes": "계산량 3배. 30종목 × 3 lookback × QP = ~0.3초/rebal. 실투 가능 범위. 60d lookback은 소표본 문제 가능 → Ledoit-Wolf shrinkage 필수."
+}

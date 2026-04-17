@@ -1,0 +1,25 @@
+{
+  "exp_id": "MF_WWWW1_META_TOP5",
+  "title": "Meta Ensemble Top 5 — 102유형 중 OOS 상위 5개 전략 앙상블",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T03:53:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.88,
+  "scope": {"strategy_id": "MF_WWWW1", "family": "multifactor_meta_ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "102유형 MF 전략을 모두 백테스트한 후, OOS SR 상위 5개 전략의 종목 score를 앙상블. '최종 보스' 전략. Forge 전체 결과가 나온 후에만 실행 가능.",
+    "logic": [
+      "1. 102유형 백테스트 완료 후 각 전략의 OOS SR 확인",
+      "2. OOS SR 상위 5개 전략 선정 (OOS retention >= 0.5 조건)",
+      "3. 5개 전략의 FACTORS(Date, Ticker, Score) 합산 (score 평균)",
+      "4. 합산 score Top 30 → EW, monthly rebal",
+      "5. overlay: DD_med + regime_daily + VT 0.25"
+    ],
+    "dependency": "모든 MF 전략 백테스트 완료 후 실행",
+    "expected": "5개 독립 관점의 합의 = 과적합 최소, OOS SR 최고"
+  },
+  "pit_rules": {"C1": "⚠️ 5개 전략 선정 = full-sample OOS 기반. Walk-forward 구현 필수: 매년 직전 연도 OOS 기준 top 5 재선정."},
+  "overfitting_guard": "⚠️ 고위험: 102유형에서 top 5 선정 = selection bias. Walk-forward로 매년 재선정 필수. Full-sample top 5 선정은 C12 위반."
+}

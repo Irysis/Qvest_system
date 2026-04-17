@@ -1,0 +1,23 @@
+{
+  "exp_id": "SF_03_def_quality_gate",
+  "title": "Defense + Quality Gate — IdioVol+Beta scoring + PiotroskiF<3 제거",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:40:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.85,
+  "scope": {"strategy_id": "SF_03", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "concept": "STR_1085(quality_gate Score 87.1 = STR_1060과 동일)에서 확인: Quality gate는 성과에 중립 또는 약간 양. 여기서는 Defense 단일팩터 + Quality gate만으로 최소 구조 테스트.",
+    "signal": "z(-IdioVol) + z(-Beta), sector neutral",
+    "gate": "PiotroskiF < 3 제거 + Accruals > 90pct 제거",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lagged, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "모든 시그널 t-1 lag", "C4": "DART 45일 lag"},
+  "l_codes_referenced": ["L-285 (gate 유효, scoring 유해)", "L-517 (PiotroskiF gate)", "L-192 (IdioVol40+Beta60)"]
+}

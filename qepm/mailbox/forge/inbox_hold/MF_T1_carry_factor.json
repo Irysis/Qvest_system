@@ -1,0 +1,41 @@
+{
+  "exp_id": "MF_T1_CARRY",
+  "title": "Carry 팩터 — 배당수익률 + 이익수익률 결합 (한국 Carry Premium)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:22:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {
+    "strategy_id": "MF_T1",
+    "family": "multifactor_carry",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Koijen et al. (2018): Carry = 미래 가격 변동 없이 보유만으로 발생하는 기대수익. 주식에서는 배당수익률 + 이익수익률. 한국시장 배당수익률 프리미엄 검증.",
+    "factors": {
+      "dividend_yield": {
+        "signal": "z(TTM_DPS / Close)",
+        "data": "RAWDATA Close + DART 배당 데이터 (DPS_TTM)",
+        "weight": 0.50
+      },
+      "earnings_yield": {
+        "signal": "z(EPS_TTM / Close) — fPER의 역수",
+        "data": "DART EPS_TTM",
+        "weight": 0.50
+      }
+    },
+    "integration": "MF_A1에 8번째 팩터로 추가 (가중 10%, 기존 7팩터 90%로 축소)",
+    "standalone_test_first": "Carry 단독 성과부터 확인 (IC/ICIR/SR). Alpha Lab Stage 0.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "DPS_TTM, EPS_TTM = trailing 4Q 합산. DART Factor_Date 45일 lag.",
+    "C4": "연간 배당→5월 리밸런싱, 분기→45일 lag"
+  },
+  "overfitting_guard": "Carry는 학술적으로 확립된 프리미엄. 한국시장 유효성만 검증.",
+  "l_codes_referenced": ["L-481 (한국 value standalone 전멸 — carry도 value 계열이므로 주의)", "L-516 (OCF IC 0.045 = carry와 유사한 차원)"],
+  "academic_basis": "Koijen, Moskowitz, Pedersen & Vrugt (2018 RFS) 'Carry'; Frazzini & Pedersen (2014) 'Betting Against Beta'",
+  "risk_notes": "L-481: 한국시장 Value standalone 전멸. Carry도 Value 계열이므로 standalone 실패 가능. 결합 가치에 집중."
+}

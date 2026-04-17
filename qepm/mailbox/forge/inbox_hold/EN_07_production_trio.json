@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_07_production_trio",
+  "title": "Production Trio — EV_03 + EV_05 + EV_06 score 합산 (프로덕션 앙상블)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:03:00+09:00",
+  "bucket": "production",
+  "priority_score": 0.91,
+  "scope": {"strategy_id": "EN_07", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "프로덕션 후보 3종(EV_03, EV_05, EV_06)의 score 합산. 각각 다른 가중법(EW, EW, NCO)이므로 분산 효과.",
+    "strategies": {
+      "EV_03": "7F + NCO + BRK overlay + Quality gate (Priority 0.95)",
+      "EV_05": "STR_1071 MDD overlay + 7F EW (Priority 0.87)",
+      "EV_06": "STR_1071 MDD overlay + 7F + NCO (Priority 0.88)"
+    },
+    "blend": "3전략 EW score 합산 → Top 30",
+    "overlay": "DD_med only + regime_engine_daily.R (MRS 12/25) + VT 0.25",
+    "dependency": "EV_03, EV_05, EV_06 백테스트 완료 후"
+  },
+  "pit_rules": {"C1": "각 전략 score t-1 lag"},
+  "overfitting_guard": "3전략 EW = 최소 과적합. 각 전략이 독립 검증."
+}

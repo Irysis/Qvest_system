@@ -1,0 +1,19 @@
+{
+  "exp_id": "FM_28_regime_carry",
+  "title": "Regime-Conditional Factor Carry — 국면별 IC×Vol 가중",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:53:00+09:00",
+  "bucket": "exploit", "priority_score": 0.77,
+  "scope": {"strategy_id": "FM_28", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_23(factor carry = IC×Vol)을 국면별로 분리. 현재 국면 내 IC와 Vol만으로 carry 계산.",
+    "logic": [
+      "1. MRS → 국면",
+      "2. 현재 국면 기간 내 IC, Vol 추출",
+      "3. regime_carry = regime_IC × regime_Vol",
+      "4. w_i = max(0, carry_i) / sum → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "국면 내 IC/Vol = expanding, t-1 lag"}
+}

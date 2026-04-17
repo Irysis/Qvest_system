@@ -1,0 +1,24 @@
+{
+  "exp_id": "ML_04_stacking",
+  "title": "Stacking Meta-Learner — XGB+RF+EN 예측을 2차 모델로 결합",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:14:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.72,
+  "scope": {"strategy_id": "ML_04", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "concept": "G1(앙상블ML)의 정밀화. 1차 모델(XGBoost, RF, ElasticNet) 예측을 피처로 → 2차 모델(Ridge)이 최적 결합 학습. Stacking = 단순 평균보다 우수.",
+    "logic": [
+      "1. Level-1: XGBoost, RF, ElasticNet 각각 walk-forward 예측 (t-1까지 학습)",
+      "2. Level-2 features: pred_xgb, pred_rf, pred_en + MRS + Dispersion",
+      "3. Level-2 model: Ridge regression (α=1.0, 시계열 CV)",
+      "4. Level-2 output: 최적 결합 예측 → softmax weight → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "Level-1,2 모두 expanding walk-forward. Level-2 학습에 Level-1 OOS 예측만 사용.", "C12": "Full-sample stacking 금지."},
+  "overfitting_guard": "Level-2 Ridge = 저복잡도. OOS retention >= 0.5.",
+  "r_packages": ["xgboost", "randomForest", "glmnet"]
+}

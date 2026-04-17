@@ -1,0 +1,21 @@
+{
+  "exp_id": "SF_10_def_indmom",
+  "title": "Defense + IndMom 블렌드 — 방어 + 업종추세 2축",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:04:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "SF_10", "family": "single_factor", "n_holdings": 30},
+  "design": {
+    "signal": "0.50 * z(-IdioVol + -Beta) + 0.50 * z(IndMom_12m_1m), sector neutral",
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, t-1 lag, no short DD)",
+      "regime": "regime_engine_daily.R soft ramp MRS 15→30",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {"C1": "t-1 lag"},
+  "l_codes_referenced": ["L-286 (defense)", "L-415 (indmom 독립)"]
+}

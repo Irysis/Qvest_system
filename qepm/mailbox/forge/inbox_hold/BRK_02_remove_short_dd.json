@@ -1,0 +1,32 @@
+{
+  "exp_id": "BRK_02",
+  "title": "STR_1036 Short DD Brake 완전 제거 (이중 헤지 해소)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T14:00:00+09:00",
+  "bucket": "stabilize",
+  "priority_score": 0.93,
+  "diagnosis": {
+    "target": "STR_1036",
+    "root_cause": "L-449: 이중VT 제거 시 SR +0.043. STR_1036는 DD_med + DD_short + MRS_soft = 3중 오버레이. DD_short(20d window, 2% start)가 가장 noise-sensitive → 정상 변동에서 불필요 캐시아웃 유발. L-443: 이중 VT 구조 문제 확인. 3중이면 더 심각"
+  },
+  "hypothesis": "DD_short를 완전 제거하고 DD_med + MRS_soft 2중만 유지하면, noise 캐시아웃 제거 → SR +0.05~0.15. L-449의 이중VT 제거 성공 패턴 재현 기대",
+  "implementation": {
+    "base": "STR_1036 run_all.R 복사",
+    "changes": [
+      "Phase 3: Short DD Brake 코드 전체 제거 (line 498~512)",
+      "Line 514: dd_exp_combined = dd_exp_med (dd_short 제거, pmin 불필요)",
+      "나머지 동일"
+    ],
+    "code_diff": {
+      "line_514": "dd_exp_combined <- dd_exp_med",
+      "remove": "SHORT_DD_START, SHORT_DD_FULL, SHORT_DD_MIN, dd_short_exp 관련 코드 전체"
+    }
+  },
+  "pit_checklist": ["DD brake t-1 lag 유지", "No PIT change"],
+  "constraints": ["N <= 30", "LIQ >= 2e8"],
+  "metrics_target": {"cagr": ">21%", "sharpe": ">1.35", "mdd": "<26%"},
+  "l_codes": ["L-449", "L-443", "L-447"],
+  "risk_notes": "Short DD 제거 시 2020 COVID 같은 급락에서 MDD 악화 가능. DD_med(4%→35%→30%exp) + MRS_soft가 충분히 방어하는지 확인"
+}

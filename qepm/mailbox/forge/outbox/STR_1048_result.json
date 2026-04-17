@@ -1,0 +1,95 @@
+{
+  "strategy_id": "STR_1048",
+  "strategy_name": "StockLevel_3Factor_v3",
+  "family": "stock_ensemble",
+  "approach": "stock-level score blend (NOT return blend)",
+  "factors": {
+    "F1_Defense": {
+      "weight": 0.4,
+      "sub": "rank(low_IdioVol) 50% + rank(low_Beta) 50%",
+      "ref": "STR_654"
+    },
+    "F2_Consensus": {
+      "weight": 0.35,
+      "sub": "rank(eps_chg_1m) 40% + rank(sue) 30% + rank(eps_chg_3m) 30%",
+      "ref": "STR_943"
+    },
+    "F3_IndMom": {
+      "weight": 0.25,
+      "sub": "sector 12m-1m -> top 50% -> individual mom rank",
+      "ref": "STR_694"
+    }
+  },
+  "n_holdings": 30,
+  "max_30_compliant": true,
+  "overlay": {
+    "dd_brake": {
+      "start": 0.05,
+      "full": 0.35,
+      "min_exp": 0.3,
+      "lag": "t-1"
+    },
+    "soft_mrs": {
+      "engine": "regime_engine_option2 v7.1",
+      "low": 15,
+      "high": 30,
+      "min_exp": 0.3,
+      "lag": "t-1"
+    }
+  },
+  "verdict": "PASS",
+  "score": 55.9,
+  "grade": "B",
+  "metrics": {
+    "cagr": 11.29,
+    "sharpe": 0.873,
+    "sharpe_m": 0.816,
+    "mdd": 29.35,
+    "calmar": 0.384,
+    "sortino": 1.214,
+    "ic": 0.035,
+    "icir": 0.289,
+    "fmb_t": 2.31
+  },
+  "ff5_alpha": 2.37,
+  "ff5_alpha_t": 0.72,
+  "stress": {
+    "gfc_2008": {
+      "strat": -12.4,
+      "bm": -35.6,
+      "alpha": 23.2
+    },
+    "covid_2020": {
+      "strat": -4.3,
+      "bm": -4.6,
+      "alpha": 0.3
+    },
+    "rate_2022": {
+      "strat": -17.0,
+      "bm": -26.1,
+      "alpha": 9.2
+    }
+  },
+  "regime_payoff": {
+    "normal": {
+      "ann_ret": 16.24,
+      "ann_vol": 14.73,
+      "n_days": 4076
+    },
+    "elevated": {
+      "ann_ret": 1.57,
+      "ann_vol": 9.53,
+      "n_days": 1035
+    },
+    "crisis": {
+      "ann_ret": 0.75,
+      "ann_vol": 3.88,
+      "n_days": 825
+    }
+  },
+  "alpha_trend": 1.39,
+  "oos_retention": 0.53,
+  "ic_trend": 1.87,
+  "falsification_check": "SR 0.873 < STR_943 best SR ~1.3 -> hypothesis NOT confirmed. Ensemble SR lower than best individual factor.",
+  "completed_at": "2026-03-21T11:10:07.995810"
+}

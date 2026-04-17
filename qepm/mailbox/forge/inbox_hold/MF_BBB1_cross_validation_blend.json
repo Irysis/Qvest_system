@@ -1,0 +1,22 @@
+{
+  "exp_id": "MF_BBB1_CV_BLEND",
+  "title": "Walk-Forward CV 블렌드 — 3개 train window 예측 평균으로 가중 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T02:30:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {"strategy_id": "MF_BBB1", "family": "multifactor_cv", "n_holdings": 30},
+  "design": {
+    "concept": "단일 lookback window 대신 3개 window(36m/60m/120m)에서 FMB 계수 추정 → 3개 예측 평균. Lookback 불확실성 감소.",
+    "logic": [
+      "1. FMB regression × 3 windows (36m, 60m, 120m) → β_36, β_60, β_120",
+      "2. E[Ret]_i = mean(β_36, β_60, β_120) × z_factors",
+      "3. Top 30 by E[Ret] → EW"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "3 window 모두 t-1까지. K-fold 금지(시계열)."},
+  "overfitting_guard": "3-window 평균 = bagging 원리. 단일 window 대비 추정 오류 감소."
+}

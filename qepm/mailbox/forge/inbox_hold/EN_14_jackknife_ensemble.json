@@ -1,0 +1,24 @@
+{
+  "exp_id": "EN_14_jackknife",
+  "title": "Jackknife Ensemble — N개 전략 중 1개씩 제거한 (N-1) 앙상블 평균",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T06:12:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {"strategy_id": "EN_14", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "5전략에서 1개씩 제거한 5개의 (4전략) 앙상블 생성. 5개 앙상블의 평균 score → 최종. Jackknife = 이상치 전략의 영향 감소.",
+    "logic": [
+      "1. 5전략: A1, NNNN1, EV_05, SF_01, EV_06",
+      "2. 5개 leave-one-out 앙상블: {A1,NNNN1,EV_05,SF_01}, {A1,NNNN1,EV_05,EV_06}, ...",
+      "3. 각 앙상블의 EW score 합산 → Top 30 per 앙상블",
+      "4. 최종: 5개 앙상블 score의 평균 → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag"},
+  "overfitting_guard": "Jackknife = 추정 분산 감소의 표준 기법.",
+  "academic_basis": "Quenouille (1956); Tukey (1958) Jackknife"
+}

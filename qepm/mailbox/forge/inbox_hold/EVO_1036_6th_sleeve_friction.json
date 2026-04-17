@@ -1,0 +1,32 @@
+{
+  "exp_id": "EVO_1036_6TH_FRICTION",
+  "title": "STR_1036 + 6th Sleeve: Trading Friction (STR_1079 SR 0.657) — 5→6 sleeve 확장",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-22T20:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {
+    "base": "STR_1036 (5-sleeve, SR 1.249, CAGR 20.2%, MDD 23.8%)",
+    "modification": "6th sleeve: Trading Friction (Amihud illiquidity + short-term reversal)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "STR_1079(Trading Friction, standalone SR 0.657)를 STR_1036의 6th sleeve로 추가하면, 5개→6개 sleeve로 분산 효과 증가. 각 sleeve N=5(총 30종목 유지). STR_1079와 STR_1036 일별 수익률 상관 0.601로 높으나, N=5 소규모 sleeve에서는 종목 레벨 차별화 가능.",
+    "mechanism": "Trading Friction = 비유동성 프리미엄 + 단기 reversal. 148-anomaly 한국 복제 48%. 기존 5 sleeve(Def+IndMom+Cons+ConsGate+TPGap)과 다른 '시장 미시구조' 차원. 단독 SR 0.657은 Grade C이나 분산 편입 시 한계 기여 가능.",
+    "falsification": "6-sleeve SR < 5-sleeve SR → 기각. MDD 악화 → 기각"
+  },
+  "implementation": {
+    "modification": "run_all.R에 Phase 1f 추가: Trading Friction sleeve N=5",
+    "sleeve_allocation": "6 sleeves × N=5 = 30종목",
+    "signal": "z(Amihud_20d) + z(-Ret_21d) equal-weight",
+    "vol_target": 0.20,
+    "buffer_zone": {"keep_n": 10, "entry_n": 5}
+  },
+  "metrics_target": {
+    "sr": "> 1.249 (STR_1036 baseline)",
+    "mdd": "< 23.8%"
+  },
+  "risk_notes": "상관 0.601로 높아 분산효과 제한적. N=5는 매우 집중적 — 개별종목 리스크 높음. 기존 5-sleeve에서 N=6→N=5로 축소하면 각 sleeve 성과 변동. 실패 가능성 높으나 시도 가치 있음"
+}

@@ -1,0 +1,69 @@
+{
+  "exp_id": "MF_C1_REGIME_FM",
+  "title": "국면조건부 팩터모멘텀 — v7.1 MRS 국면 판단 → 국면 내 FM 가중",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:35:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.92,
+  "scope": {
+    "strategy_id": "MF_C1",
+    "family": "multifactor_regime_fm",
+    "n_holdings": 30
+  },
+  "design": {
+    "logic_flow": [
+      "1. regime_engine_daily.R → MRS[t-1] 확인",
+      "2. 국면 분류: risk_on (MRS < 15), elevated (15 <= MRS < 25), crisis (MRS >= 25)",
+      "3. 해당 국면 기간의 trailing 팩터 성과 측정 (국면 조건부 FM)",
+      "4. FM 높은 팩터에 가중 증가, 낮은 팩터에 가중 감소",
+      "5. 조정된 가중으로 composite score 계산 → Top 30"
+    ],
+    "factors": {
+      "defense": "z(-IdioVol) + z(-Beta)",
+      "consensus": "z(SUE) + z(EPS_chg) + z(FPER_revision)",
+      "indmom": "z(IndMom_12m_1m)",
+      "quality": "z(GPA) + z(PiotroskiF)",
+      "value": "z(OCF/MarketCap)",
+      "momentum": "z(TrendedMom) + z(52wkHigh)",
+      "tp_gap": "z(TPGap) + z(TPMom)"
+    },
+    "regime_conditional_fm": {
+      "description": "각 국면(risk_on/elevated/crisis)에서의 trailing 팩터 SR을 별도 추적. 현재 국면 진입 시 해당 국면의 FM 시계열에서 가중 결정.",
+      "implementation": [
+        "regime_dates <- daily_regime[MRS < 15, Date]  # risk_on dates",
+        "각 팩터의 risk_on 기간 수익률만 추출 → trailing SR 계산",
+        "현재 국면이 risk_on이면 risk_on FM 가중 적용",
+        "국면 전환 시 새 국면의 FM으로 즉시 전환"
+      ],
+      "warm_up": "각 국면 최소 60일 축적 후 FM 가중 활성화. 미달 시 EW fallback.",
+      "lag": "t-1 (전월 MRS + 전월까지 FM)"
+    },
+    "weight_allocation": {
+      "top2_factors": "각 30% (FM 상위 2개)",
+      "mid_factors": "각 15% (FM 중간)",
+      "bottom_factor": "5~10% (FM 최하위, 완전 제거 아님)",
+      "total": "100%"
+    },
+    "overlay": {
+      "dd_brake": "DD_med only (start 4%, 1-day lagged, no short DD)",
+      "regime": "regime_engine_daily.R (MRS → exposure, 이미 overlay에 반영)",
+      "vol_target": "expanding 0.25"
+    }
+  },
+  "pit_rules": {
+    "C1": "국면 조건부 FM = expanding window. 해당 국면 누적 데이터만 사용.",
+    "C2": "MRS[t-1], FM[t-1]까지만. 동일월 데이터 금지.",
+    "C11": "regime_engine_daily.R 사용 (미래참조 ZERO)",
+    "C12": "가중 최적화 없음. FM에서 자동 결정."
+  },
+  "overfitting_guard": "국면별 FM은 데이터 기반 → 과적합 위험 있음. 국면 전환 빈번 시 whipsaw 위험. OOS retention < 0.5 시 폐기. IS-OOS gap > 50% 시 폐기.",
+  "l_codes_referenced": [
+    "L-429 (FM rank)",
+    "L-482 (국면배분 ≈ FM)",
+    "L-200 (Dispersion CondWeight IR 0.524)",
+    "L-443 (정상시 헤지안함 원칙)"
+  ],
+  "academic_basis": "Gupta & Kelly (2019) 'Factor Momentum Everywhere'; Arnott et al. (2020) 'Factor Timing'; Stivers & Sun (2010) 'Cross-Sectional Return Dispersion'"
+}

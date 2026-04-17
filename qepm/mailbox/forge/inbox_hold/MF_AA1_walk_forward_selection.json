@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_AA1_WALKFWD_SELECT",
+  "title": "Walk-Forward 팩터 선택 — 12m OOS에서 IC 유의미한 팩터만 유지",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:34:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.76,
+  "scope": {
+    "strategy_id": "MF_AA1",
+    "family": "multifactor_adaptive",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "7팩터 중 '현재 유효한' 팩터만 자동 선택. 12m walk-forward OOS에서 IC t-stat > 1.5인 팩터만 활성화. 유효하지 않은 팩터는 자동 탈락.",
+    "logic": [
+      "1. 매년 1월: 과거 전체 데이터를 train, 최근 12m을 OOS validation",
+      "2. 각 팩터의 OOS IC t-stat 계산",
+      "3. t-stat > 1.5인 팩터만 활성화. 나머지 가중 0",
+      "4. 활성 팩터 EW로 composite → Top 30",
+      "5. 연간 갱신 (매년 1월 팩터풀 재선정)"
+    ],
+    "reselection_frequency": "연간 (과도한 재선정 = 과적합)",
+    "fallback": "활성 팩터 < 2이면 Defense + Consensus 고정 (안전 경로)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "OOS = 최근 12m. Train = 나머지 과거 전체. Expanding window.",
+    "C12": "팩터 선택은 walk-forward OOS 기반. Full-sample selection 금지."
+  },
+  "overfitting_guard": "연간 재선정 = low frequency → whipsaw 최소. t-stat > 1.5 threshold는 학술 관행. OOS retention >= 0.5."
+}

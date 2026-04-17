@@ -1,0 +1,45 @@
+{
+  "exp_id": "ALPHA_16",
+  "title": "효율성 시그널 배치 (InventoryTurnover/AssetTurnover/CCC) — 한국 LASSO 88% 선택률",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T23:30:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.84,
+  "scope": {
+    "family": "efficiency_alpha",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "InventoryTurnover(재고회전율), AssetTurnover(자산회전율), CCC(현금전환주기)가 한국시장 횡단면 수익률의 핵심 pricing factor이다. 한국 LASSO 연구에서 saleinv(매출/재고)가 88%로 최고 선택률 기록 — 모든 control factor 중 1위. 이 시그널이 Defense/Consensus/IndMom과 독립적 alpha 제공.",
+    "mechanism": "한국 LASSO 연구(ScienceDirect, Bang et al. 2024): saleinv(매출/재고 = InventoryTurnover 유사)가 28개 factor 중 최고 88% 선택률 → 한국시장 횡단면에서 가장 중요한 control factor. 경제적 메커니즘: 높은 재고회전율 = 효율적 운영 = 재고 리스크 낮음 → 시장이 과소평가. Haugen & Baker (1996): capital turnover가 수익률 예측. CCC(Cash Conversion Cycle) = DaysInventory + DaysReceivable - DaysPayable → 짧을수록 효율적. DART에 InventoryTurnover, AssetTurnover, CCC 모두 이미 계산됨.",
+    "falsification": "Alpha Lab 모든 효율성 시그널 IC < 0.01 → 기각. GP(ALPHA_10) 상관 > 0.6 → profitability에 흡수됨 기각",
+    "academic_basis": "Bang, Kang & Ryu (2024) 'Potential pricing factors in the Korean market' ScienceDirect — saleinv 88% LASSO 선택률 1위. Haugen & Baker (1996) 'Commonality in the Determinants of Expected Stock Returns' JFE — capital turnover. Soliman (2008) 'The Use of DuPont Analysis by Market Participants' TAR — asset turnover decomposition"
+  },
+  "data_requirements": {
+    "source": "✅ .cache/fundamental_dart.parquet — 이미 계산됨!",
+    "fields": ["InventoryTurnover", "AssetTurnover", "CCC", "DaysInventory", "DaysReceivable", "DaysPayable", "WCTurnover", "FixedAssetTurnover", "Delta_AssetTurnover"],
+    "pit_safety": "C4: Factor_Date 사용 (45d lag 내장)"
+  },
+  "implementation": {
+    "step1": "fundamental_dart.parquet에서 효율성 시그널 9개 추출",
+    "step2": "Alpha Lab Stage 0 배치: 9개 각각 IC/ICIR 스크리닝",
+    "step3": "Top 2~3 유의 시그널 선별 → Efficiency composite 구성",
+    "step4_if_pass": "Full backtest: quarterly rebal, N=30",
+    "step5": "Ocp(ALPHA_13) + Efficiency dual scoring = '가치+효율' 조합",
+    "step6": "Gate 활용: CCC 하위 20% 제거 gate"
+  },
+  "pit_checklist": ["C4: Factor_Date 사용"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "비금융 유니버스 권장 (금융업 재고 미해당)"],
+  "metrics_target": {
+    "ic": ">0.02",
+    "icir": ">0.15",
+    "corr_with_gp": "<0.5",
+    "corr_with_defense": "<0.3"
+  },
+  "l_codes": ["L-285 (DART gate 유효)", "L-428 (4th alpha)", "L-286 (scoring vs gate 구분)"],
+  "risk_notes": "금융업종은 재고 개념이 없음 → 비금융으로 유니버스 제한 필요. 소매/제조업에서 가장 유효할 가능성. saleinv 88% 선택률은 'control factor'로서의 중요성이지 직접 alpha가 아닐 수 있음 → Alpha Lab에서 방향과 크기 확인 필수. DART에 이미 계산되어 구현 비용 거의 0"
+}

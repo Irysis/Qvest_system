@@ -1,0 +1,33 @@
+{
+  "exp_id": "MF_GG1_EXP_DECAY",
+  "title": "지수 감쇠 시그널 — 최근 시그널에 높은 가중 (EWMA scoring)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:44:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.75,
+  "scope": {
+    "strategy_id": "MF_GG1",
+    "family": "multifactor_decay",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "대부분 팩터 시그널은 '이번 달 값'만 사용. 하지만 시그널의 과거 3개월 추세도 정보. EWMA로 과거 시그널을 지수 감쇠 평균 → 시그널 안정성 + 추세 반영.",
+    "logic": [
+      "1. 각 팩터 시그널의 최근 3개월 값 수집: S[t-1], S[t-2], S[t-3]",
+      "2. EWMA: S_ewma = 0.50*S[t-1] + 0.30*S[t-2] + 0.20*S[t-3]",
+      "3. z(S_ewma) → composite → Top 30",
+      "4. 월간 리밸런싱"
+    ],
+    "lambda_variants": [
+      {"id": "A", "weights": [0.50, 0.30, 0.20], "name": "fast_decay"},
+      {"id": "B", "weights": [0.33, 0.33, 0.34], "name": "equal_3m (비교용)"},
+      {"id": "C", "weights": [0.70, 0.20, 0.10], "name": "very_fast_decay"}
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "S[t-1], S[t-2], S[t-3] 모두 과거 데이터. PIT-safe.", "C2": "t-1까지만"},
+  "overfitting_guard": "EWMA 가중은 사전 정의 (0.50/0.30/0.20). Lambda 최적화 금지. 3 variants 비교.",
+  "academic_basis": "Garleanu & Pedersen (2013 RFS) 'Dynamic Trading with Predictable Returns and Transaction Costs'"
+}

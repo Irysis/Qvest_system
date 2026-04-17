@@ -1,0 +1,24 @@
+{
+  "exp_id": "FM_19_mean_rev_speed",
+  "title": "Factor Mean-Reversion Speed — OU 프로세스 속도로 FM vs 역FM 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T08:13:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.71,
+  "scope": {"strategy_id": "FM_19", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "각 팩터 수익률을 Ornstein-Uhlenbeck 프로세스로 적합 → mean-reversion 속도(θ) 추정. θ 높은(빠른 역전) 팩터 → 역FM. θ 낮은(느린 추세) 팩터 → FM.",
+    "logic": [
+      "1. 각 팩터 월별 수익률에 OU 적합: dX = θ(μ-X)dt + σdW",
+      "2. θ 추정 (expanding OLS, t-1)",
+      "3. θ > median → 역FM 가중 (최근 부진 팩터 선호)",
+      "4. θ < median → FM 가중 (최근 강세 팩터 추종)",
+      "5. combined → composite → Top 30"
+    ],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "OU θ = expanding OLS, t-1 lag"},
+  "academic_basis": "Uhlenbeck & Ornstein (1930); Lo & MacKinlay (1990) 'When Are Contrarian Profits Due to Stock Market Overreaction?'"
+}

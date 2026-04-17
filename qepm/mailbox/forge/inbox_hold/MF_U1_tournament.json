@@ -1,0 +1,38 @@
+{
+  "exp_id": "MF_U1_TOURNAMENT",
+  "title": "토너먼트 선택 — 5개 멀티팩터 전략 병렬 → 최근 1등 포트폴리오 추종",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:23:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {
+    "strategy_id": "MF_U1",
+    "family": "multifactor_tournament",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "5개 멀티팩터 전략(A1, A3, B1, C1, L1)을 매월 병렬 scoring. 최근 3m trailing SR이 가장 높은 전략의 포트폴리오를 채택. '전략의 전략'.",
+    "candidates": [
+      "MF_A1 (Core 고정가중)",
+      "MF_A3 (Defense Heavy)",
+      "MF_B1 (6m FM)",
+      "MF_C1 (국면FM)",
+      "MF_L1 (바벨)"
+    ],
+    "selection": {
+      "method": "각 전략의 simulated trailing 3m SR 계산 (t-1까지)",
+      "winner": "SR 최고 전략의 이번 달 Top 30 종목 채택",
+      "tie": "SR 차이 < 0.1이면 EW blend of top 2 전략 scores",
+      "lag": "t-1 (전월까지 성과로 이번 달 전략 선택)"
+    },
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {
+    "C1": "trailing 3m SR = rolling window, t-1 lag",
+    "C12": "전략 선택은 자동(trailing SR). Full-sample 최적 전략 선택 금지."
+  },
+  "overfitting_guard": "토너먼트 = 메타 전략. 5개 후보 전략이 이미 과적합 아닌지 개별 검증 필수. 전략 전환 빈도 > 70% 시 whipsaw 경고. OOS retention >= 0.5.",
+  "risk_notes": "전략 전환 시 turnover 급증 가능. 동일 종목 유지율이 50% 미만이면 거래비용으로 alpha 소멸."
+}

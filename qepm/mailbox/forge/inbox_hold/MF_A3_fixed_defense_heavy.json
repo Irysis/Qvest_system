@@ -1,0 +1,28 @@
+{
+  "exp_id": "MF_A3_DEFENSE_HEAVY",
+  "title": "고정 가중 멀티팩터 — Defense Heavy (40% Defense + 25% Consensus + 15% Quality + 10% IndMom + 10% Value)",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T00:32:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.83,
+  "scope": {
+    "strategy_id": "MF_A3",
+    "family": "multifactor_fixed",
+    "n_holdings": 30
+  },
+  "design": {
+    "factors": {
+      "defense": {"weight": 0.40, "signal": "z(-IdioVol) + z(-Beta)", "rationale": "L-286: defense 비중 하락→열위. 40% = MDD 최소화"},
+      "consensus": {"weight": 0.25, "signal": "z(SUE) + z(EPS_chg)"},
+      "quality": {"weight": 0.15, "signal": "z(GPA) + z(PiotroskiF) + z(-Accruals)"},
+      "indmom": {"weight": 0.10, "signal": "z(IndMom_12m_1m)"},
+      "value": {"weight": 0.10, "signal": "z(OCF/MarketCap)"}
+    },
+    "scoring": "MDD < 22% 목표. Defense heavy = 위기 방어 극대화",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "overfitting_guard": "Defense 과배분 = L-286 교훈. 사전 정의 가중.",
+  "l_codes_referenced": ["L-286 (defense 비중 하락→열위)", "L-192 (IdioVol40+Beta60)"]
+}

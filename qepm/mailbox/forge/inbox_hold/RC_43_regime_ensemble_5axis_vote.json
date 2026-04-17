@@ -1,0 +1,19 @@
+{
+  "exp_id": "RC_43_5axis_strict",
+  "title": "5축 Strict Vote — 4/5 이상 위기 신호일 때만 방어 (RC_11보다 엄격)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T10:51:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_43", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "RC_11(3/5 다수결)보다 엄격: 4/5 이상 위기 신호일 때만 방어. False alarm 극소화 → CAGR 보존.",
+    "axes": "RC_11과 동일 5축 (MRS/VRP/AR/CUSUM/Vol)",
+    "decision": {
+      "0_3_signals": "MF_A1 Core (정상 유지)",
+      "4_signals": "Defense 40% + Quality 25% + Others 35%",
+      "5_signals": "Defense 50% + Quality 30% + Cash 20%"
+    },
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "5축 모두 t-1 lag"}
+}

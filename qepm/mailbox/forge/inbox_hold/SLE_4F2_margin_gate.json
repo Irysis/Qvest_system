@@ -1,0 +1,33 @@
+{
+  "exp_id": "SLE_4F2",
+  "title": "Margin Gate (OPM bottom 10% 제거) + Score 50/30/20",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T12:00:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.78,
+  "scope": {
+    "family": "stock_level_ensemble_gated",
+    "strategy_id": "STR_1053",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8, margin gate pass)",
+    "frequency": "monthly",
+    "n_holdings": 30
+  },
+  "hypothesis": "영업이익률(OPM) 하위 10% 종목 사전 제거 후 score 앙상블 적용. L-403: quality는 gate(worst 제거)로만 유효, scoring 투입 시 defense 희석. L-306: CCC+DeltaAccrual dual gate Grade A 달성. 마진 gate는 수익성 악화 종목 제거 → 재무건전성 필터",
+  "implementation": {
+    "base": "STR_1048 factor_engine.R + DART OPM gate",
+    "gate": "DART OPM(영업이익률) 하위 10% 종목 제거. expanding window median 기준. DART lag 45d (C4)",
+    "composite_score": "0.50 * z_defense + 0.30 * z_consensus + 0.20 * z_indmom (gate 통과 유니버스에서)",
+    "weighting": "EW",
+    "buffer_zone": {"keep_n": 50, "entry_n": 25},
+    "sector_neutral": true,
+    "overlays": "regime_engine_daily.R v7.1 + VT/DD t-1 lag"
+  },
+  "pit_checklist": ["C1: expanding z-score", "C4: DART 45d lag", "C11: DART 공시 시차"],
+  "constraints": ["N <= 30", "LIQ >= 2e8", "Gate only — OPM scoring 금지(L-403)", "PIT enforcement"],
+  "metrics_target": {"cagr": ">12%", "sharpe": ">1.05", "mdd": "<26%"},
+  "l_codes": ["L-403", "L-306", "L-285", "L-431"],
+  "academic": "Novy-Marx (2013) 'The Other Side of Value: Gross Profitability Premium'. L-403: quality = gate only",
+  "risk_notes": "L-431: 25% 제거 시 alpha 훼손. 10%로 제한. DART OPM 데이터 가용성 확인 필수(L-434: 2015 끊김 이슈). 제거 비율 10%/15% 비교도 가능"
+}

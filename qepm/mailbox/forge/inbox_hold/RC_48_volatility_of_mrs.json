@@ -1,0 +1,19 @@
+{
+  "exp_id": "RC_48_vol_of_mrs",
+  "title": "MRS의 변동성 — MRS 자체가 불안정할 때 추가 방어",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T11:51:00+09:00",
+  "bucket": "explore", "priority_score": 0.73,
+  "scope": {"strategy_id": "RC_48", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS 수준뿐 아니라 MRS의 변동성(20d std)도 위험 시그널. MRS가 안정적 15 vs 요동치는 15는 다른 상황.",
+    "signal": "mrs_vol = std(MRS, trailing 20d, t-1)",
+    "logic": [
+      "MRS < 15 AND mrs_vol < 3 → 안정 정상 → Core",
+      "MRS < 15 AND mrs_vol >= 3 → 불안 정상 → Defense 30% + Others 70%",
+      "MRS >= 15 → 기존 MRS 기반 방어"
+    ],
+    "overlay": "DD_med only + VT 0.25"
+  },
+  "pit_rules": {"C1": "MRS + mrs_vol 모두 t-1 lag"}
+}

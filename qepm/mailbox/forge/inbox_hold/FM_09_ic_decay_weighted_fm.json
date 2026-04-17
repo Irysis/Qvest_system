@@ -1,0 +1,27 @@
+{
+  "exp_id": "FM_09_ic_decay_fm",
+  "title": "IC Decay-Weighted FM — 팩터별 IC half-life 반영 FM lookback 차별화",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T05:54:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.74,
+  "scope": {"strategy_id": "FM_09", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "FM_08(적응형 lookback)과 다름: 시장 변동성이 아닌 각 팩터의 고유 IC decay 속도에 맞춰 lookback 차별화. 빠른 팩터(momentum)는 3m FM, 느린 팩터(defense)는 12m FM.",
+    "per_factor_lookback": {
+      "defense": "12m (slow decay)",
+      "consensus": "6m (medium)",
+      "indmom": "3m (fast)",
+      "quality": "12m (slow)",
+      "value": "12m (slow)",
+      "momentum": "3m (fast)",
+      "tp_gap": "3m (fast)"
+    },
+    "logic": "각 팩터의 FM = 해당 팩터 맞춤 lookback SR. w_i = max(0, FM_i) / sum.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "각 lookback trailing, t-1 lag"},
+  "overfitting_guard": "lookback은 경제적 직관(시그널 속도)으로 사전 정의."
+}

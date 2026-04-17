@@ -1,0 +1,26 @@
+{
+  "exp_id": "RC_03_absorption_tilt",
+  "title": "Absorption Ratio 국면 틸트 — 시장 취약성 지표로 방어 전환",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:10:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_03", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "L-445: Absorption Ratio(AR) = PCA 상위 고유값 비율. AR 높으면 시장 상관 급등 → 체계적 위험 집중 → crash 임박. MRS와 독립적인 위기 선행 지표.",
+    "logic": [
+      "1. AR = sum(top 5 eigenvalues) / sum(all eigenvalues) from trailing 120d 상관행렬 (t-1)",
+      "2. z(AR, expanding 252d)",
+      "3. z(AR) > 1.5 → Defense 45% + Quality 25% + Cash 30%",
+      "4. z(AR) > 0.5 → Defense 35% + MF_A1 나머지 65%",
+      "5. z(AR) <= 0.5 → MF_A1 Core"
+    ],
+    "overlay": "regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "AR = trailing 120d 상관행렬, expanding z-score, t-1 lag"},
+  "overfitting_guard": "AR threshold(0.5/1.5σ)는 Kritzman et al.(2011) 기반.",
+  "l_codes_referenced": ["L-445 (Absorption Ratio 위기 선행)"],
+  "academic_basis": "Kritzman, Li, Page & Rigobon (2011 JPM) 'Principal Components as a Measure of Systemic Risk'"
+}

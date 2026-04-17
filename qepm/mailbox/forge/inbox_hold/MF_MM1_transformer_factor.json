@@ -1,0 +1,37 @@
+{
+  "exp_id": "MF_MM1_TRANSFORMER",
+  "title": "Transformer 기반 팩터 배분 — Self-attention으로 팩터 간 관계 학습",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:54:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.65,
+  "scope": {
+    "strategy_id": "MF_MM1",
+    "family": "multifactor_dl",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Saidd(2026 arXiv:2603.16886): PatchTST/ModernTCN이 LSTM 대비 우수. Self-attention이 팩터 간 시간적 의존성 + 교차 의존성을 동시 학습.",
+    "architecture": {
+      "input": "7 팩터 × 12개월 월별 수익률 + MRS + Dispersion = 9 × 12 = 108",
+      "model": "PatchTST (patch_len=3, stride=1, d_model=32, nhead=4, nlayers=2)",
+      "output": "7 팩터 다음 달 예측 수익률",
+      "loss": "MSE + L2 regularization (λ=0.01)"
+    },
+    "training": "expanding walk-forward (F1과 동일). 연간 재학습.",
+    "prediction_to_weight": "softmax(predicted_return / temperature)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월만", "C12": "hyperparameter = 시계열 CV로만"},
+  "overfitting_guard": {
+    "rule1": "Transformer는 LSTM보다 과적합 위험 높음. L2 필수.",
+    "rule2": "240개월 데이터는 Transformer에 매우 적음. 모델 복잡도 최소화(d_model=32).",
+    "rule3": "F1(LSTM) 대비 OOS 우위 없으면 복잡성 대비 가치 없음 → 폐기.",
+    "rule4": "OOS retention >= 0.5 필수. IS-OOS gap > 50% 시 폐기."
+  },
+  "r_packages": ["torch (R torch package)"],
+  "fallback": "torch 미설치 시 F1(LSTM) 또는 E1(XGBoost)으로 대체",
+  "academic_basis": "Saidd (2026 arXiv:2603.16886) — PatchTST rank 2, ModernTCN rank 1; Nie et al. (2023) 'A Time Series is Worth 64 Words: Long-term Forecasting with Transformers'"
+}

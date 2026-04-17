@@ -1,0 +1,20 @@
+{
+  "exp_id": "EN_34_trimmed_mean",
+  "title": "Trimmed Mean Ensemble — 종목별 score에서 최고/최저 전략 제거 후 평균",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:32:00+09:00",
+  "bucket": "exploit", "priority_score": 0.80,
+  "scope": {"strategy_id": "EN_34", "family": "ensemble", "n_holdings": 30},
+  "design": {
+    "concept": "5전략 앙상블에서 각 종목에 대해 최고 score와 최저 score를 부여한 전략 1개씩 제거 → 중간 3개 평균. 극단 전략의 영향 감소.",
+    "logic": [
+      "1. 5전략 각각의 per-stock z-score 계산",
+      "2. 각 종목에 대해: max score 전략 1개 + min score 전략 1개 제거",
+      "3. 남은 3개 전략 score 평균 = trimmed_mean_score",
+      "4. Top 30 by trimmed_mean → EW"
+    ],
+    "candidates": ["MF_NNNN1", "MF_A1", "EV_05", "EV_06", "SF_01"],
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "모든 score t-1 lag"}
+}

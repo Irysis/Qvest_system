@@ -1,0 +1,13 @@
+{
+  "exp_id": "FM_51_cross_asset",
+  "title": "Cross-Asset Factor Lead — 미국 팩터 ETF 수익률로 한국 팩터 FM",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T04:43:00+09:00",
+  "bucket": "explore", "priority_score": 0.70,
+  "scope": {"strategy_id": "FM_51", "family": "factor_momentum", "n_holdings": 30},
+  "design": {
+    "concept": "RRR1(cross-market)의 FM 버전. 미국 VLUE/MTUM/QUAL/USMV ETF trailing 1m → 한국 팩터 가중.",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "US ETF t-1 lag (미국 전일 종가)"}
+}

@@ -1,0 +1,16 @@
+{
+  "exp_id": "ML_09_gru",
+  "title": "GRU 팩터 배분 — LSTM 대비 경량 RNN",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-24T03:00:00+09:00",
+  "bucket": "explore", "priority_score": 0.69,
+  "scope": {"strategy_id": "ML_09", "family": "machine_learning", "n_holdings": 30},
+  "design": {
+    "model": "GRU (torch)",
+    "architecture": "Input(9×12) → GRU(32) → Dense(7)",
+    "training": "expanding walk-forward, 연간 재학습",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "학습 1~(t-1)월", "C12": "시계열 CV"},
+  "overfitting_guard": "GRU = LSTM 대비 파라미터 33% 감소. OOS retention >= 0.5."
+}

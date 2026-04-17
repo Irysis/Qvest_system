@@ -1,0 +1,9 @@
+{
+  "task": "S1_construction",
+  "strategy_id": "STR_1621_regime_conditional_allweather",
+  "factor_id": ["C19_FY1_Revision_1m", "V14_EBIT_EV", "D01_Low_Vol", "D44_Kurtosis"],
+  "expected_role": "core_alpha",
+  "instructions": "국면 조건부 동적 배분 전략. regime_signal.R → regime_score (t-1 lag, expanding window). 2-sleeve: Core(C19+V14), Defense(D01+D44). core_w = max(0.2, 1 - regime_score/100). def_w = 1 - core_w. Final score = core_w * mean(Z_C19, Z_V14) + def_w * mean(Z_D01, Z_D44). EW Top 30, 15bps, 유동성 2e8. Monthly rebalance. 전략 자체가 국면을 alpha source로 사용 → Regime 허용 예외. Ang & Timmermann 2012.",
+  "s0_record_path": "04_Research/strategies/STR_1621_regime_conditional_allweather/stage_artifacts/s0_record.json",
+  "created": "2026-03-29"
+}

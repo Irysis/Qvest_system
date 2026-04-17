@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_20_bond_equity_ratio",
+  "title": "채권-주식 비율 팩터 전환 — 국고채 수익률 vs KOSPI 배당수익률",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T07:01:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {"strategy_id": "RC_20", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "Fed Model 한국 버전: 국고채 10Y 수익률 vs KOSPI 이익수익률(E/P). 채권 우위 → Value+Quality, 주식 우위 → Momentum+Consensus.",
+    "signal": "yield_gap = 국고채10Y - KOSPI_EP (t-1)",
+    "allocation": {
+      "bond_attractive": {"trigger": "yield_gap > 2%p", "tilt": "Defense 30% + Value 25% + Quality 20% + Others 25%"},
+      "equity_attractive": {"trigger": "yield_gap < 0%p", "tilt": "Momentum 25% + Consensus 25% + IndMom 20% + Others 30%"},
+      "neutral": {"tilt": "MF_A1 Core"}
+    },
+    "data": "ECOS 국고채 + KOSPI PER 역수",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "yield_gap = t-1 lag"}
+}

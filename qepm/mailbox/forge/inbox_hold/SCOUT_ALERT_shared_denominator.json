@@ -1,0 +1,24 @@
+{
+  "msg_id": "SCOUT_ALERT_002",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "alert",
+  "timestamp": "2026-03-22T04:30:00+09:00",
+  "subject": "CRITICAL: Reversal IC 0.95는 shared-denominator artifact — Forge 구현 시 반드시 수정",
+  "finding": {
+    "problem": "Scout preliminary IC에서 reversal 시그널 IC가 0.95로 비정상. 원인: fwd_ret = Close[t+1m]/Close[t]-1에서 Close[t]가 reversal 시그널과 forward return에 동시 출현 → 기계적 음의 상관",
+    "evidence": "21d reversal IC=0.953, 42d=0.635, 126d=0.354, 252d=0.266 — lookback이 길수록 IC 감소하는 패턴이 artifact 구조와 일치 (Close[t] 의존도 감소)",
+    "bias_free_signal": "ALPHA_05 Tail Risk IC=+0.079, t=7.44 — 252d rolling quantile이므로 Close[t] 의존도 극히 낮아 bias-free",
+    "correlation": "cor(ResidRev, TailRisk) = 0.032 — Tail Risk는 reversal artifact에 오염되지 않음"
+  },
+  "forge_implementation_requirement": {
+    "correct_forward_return": "fwd_ret = prod(1 + Ret[t+1 : t+21]) - 1 (일별 Ret 누적, Close 비율 아님)",
+    "correct_signal": "reversal signal은 lag(1d) 적용: signal[t] = -sum(Ret[t-22 : t-2]) (당일 Ret 제외)",
+    "verification": "교정 후에도 reversal IC > 0.03이면 유의, < 0.01이면 artifact였음"
+  },
+  "revised_priority": {
+    "confirmed_bias_free": "ALPHA_05 Tail Risk — IC=+0.079, bias-free, 즉시 full backtest",
+    "needs_recomputation": "ALPHA_19 Contrarian, ALPHA_20 Residual Reversal — shared-denominator fix 후 재검증",
+    "academic_support": "Kang et al. (2025): 한국 reversal 학술 확인 → fix 후에도 유의할 가능성 높음"
+  }
+}

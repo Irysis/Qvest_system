@@ -1,0 +1,42 @@
+{
+  "exp_id": "DIAGNOSE_SLEEVE_CORR",
+  "title": "[진단] 5-Sleeve 시간변동 상관 분석 — 슬리브 중복/독립성 진단",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "diagnose",
+  "timestamp": "2026-03-23T00:00:00+09:00",
+  "bucket": "diagnose",
+  "priority_score": 0.75,
+  "scope": {
+    "strategies": ["STR_1060"],
+    "analysis": "5 sleeve (Def/IndMom/Cons/ConsGate/TP) 일별 수익률 시계열의 rolling correlation matrix + regime-conditional correlation"
+  },
+  "objective": {
+    "question1": "ConsGate와 Consensus sleeve 상관이 너무 높은가? (같은 컨센서스 데이터 기반)",
+    "question2": "위기/정상 국면별로 sleeve 간 상관이 어떻게 변하는가?",
+    "question3": "어느 sleeve가 가장 독립적인 alpha를 제공하는가?",
+    "question4": "6th sleeve(Quality+Rev, CashFlowYield) 추가 시 분산 효과 예측"
+  },
+  "implementation": {
+    "data": "STR_1060 sim_result.rds → 5개 sleeve 개별 sim_def/sim_ind/sim_cons/sim_gate/sim_tp의 strategy_xts",
+    "analysis": [
+      "1. 5×5 full-sample 상관 행렬",
+      "2. 252d rolling 상관 (모든 10 쌍)",
+      "3. regime_engine_daily.R MRS 기반: 정상(MRS<15) vs 위기(MRS>=25) 상관 비교",
+      "4. 상관 최고 쌍 → sleeve 대체 후보 식별",
+      "5. 상관 최저 쌍 → 앙상블 핵심 축 식별"
+    ],
+    "output": "04_Research/diagnostics/sleeve_correlation_report.csv + 시각화"
+  },
+  "expected_insights": {
+    "cons_consgate_overlap": "Consensus와 ConsGate는 both consensus 기반 → 상관 0.5+ 예상 → ConsGate를 Quality/Value sleeve로 대체 시 분산 효과 증가",
+    "crisis_correlation_surge": "위기 시 모든 sleeve 상관 0.7+ 예상 → overlay가 분산 효과 대체",
+    "defense_independence": "Defense sleeve가 가장 독립적(상관 최저) 예상 → EW보다 Defense 과배분이 유리할 수 있음"
+  },
+  "l_codes_referenced": [
+    "L-317 (약한 sleeve 과다배분 → defense 희석)",
+    "L-286 (defense 비중 하락 → 열위)",
+    "L-200 (Dispersion CondWeight)"
+  ],
+  "next_action": "진단 결과 → ARCH_02_DISP_CONDWEIGHT의 allocation_rule 정밀화. ConsGate-Cons 상관 0.6+ 확인 시 → EVO_1036_consgate_replace 우선순위 상향."
+}

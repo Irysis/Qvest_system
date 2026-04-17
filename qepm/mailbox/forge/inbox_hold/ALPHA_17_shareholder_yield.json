@@ -1,0 +1,38 @@
+{
+  "exp_id": "ALPHA_17",
+  "title": "Shareholder Yield (배당+자사주매입) — Korea Value-Up 수혜주 포착",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-21T23:45:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {
+    "family": "shareholder_return",
+    "universe": "KOSPI+KOSDAQ (LIQ >= 2e8)",
+    "frequency": "quarterly (45d lag) + BZ(50/25)",
+    "n_holdings": 30
+  },
+  "hypothesis": {
+    "statement": "Shareholder Yield(배당수익률 + 자사주매입수익률)가 한국시장에서 Value-Up 프로그램(2024~) 수혜주를 체계적으로 포착하여 alpha를 제공한다. DART에 Dividends, PayoutRatio, DividendToAssets 존재. 2024-2025 자사주매입 7배 증가(ISS 보고) → 구조적 변화 시작.",
+    "mechanism": "Boudoukh et al. (2007): Shareholder yield(배당+순매입) > 배당수익률 단독. Korea Value-Up(2024.2~): 기업가치 제고 자발적 공시 + 세제 혜택 → 배당/자사주매입 대폭 증가. ISS(2025.9): 2024년 자사주매입 = 순이익의 7.6%(7년 최고, 2021 대비 4배). 이 구조적 변화가 횡단면 수익률에 반영되기 시작. DividendToAssets + PayoutRatio 변화(Delta_PayoutRatio) = shareholder return 개선 종목 포착.",
+    "falsification": "DividendToAssets IC < 0.01 → 기각. Value-Up 전 기간(2000-2023)에서도 유의하면 → Value-Up 효과가 아닌 일반적 배당 프리미엄. 단, 두 경우 모두 alpha는 존재",
+    "academic_basis": "Boudoukh, Michaely, Richardson & Roberts (2007) 'On the Importance of Measuring Payout Yield' JF. SSRN 5374843 'Korea's 2025 Governance Revolution: Unlocking Shareholder Value'. Morgan Stanley (2025) 'Korea Value-Up 2.0'. ISS Governance Insights (2025) Korea proxy season review"
+  },
+  "data_requirements": {
+    "source": "✅ .cache/fundamental_dart.parquet — Dividends, PayoutRatio, DividendToAssets, Delta_PayoutRatio 이미 존재",
+    "fields": ["Dividends", "PayoutRatio", "DividendToAssets", "Delta_PayoutRatio"],
+    "additional": "DART 자사주매입 공시 데이터(선택적 — ALPHA_01과 유사 데이터 소스)"
+  },
+  "implementation": {
+    "step1": "fundamental_dart에서 DividendToAssets, PayoutRatio 추출",
+    "step2": "Alpha Lab: (a) DividendToAssets IC/ICIR, (b) Delta_PayoutRatio IC/ICIR, (c) Defense/Consensus 상관",
+    "step3_if_pass": "Full backtest + Value-Up 전후 서브샘플 비교",
+    "step4": "Ocp(ALPHA_13) + DividendToAssets = 'Total Shareholder Return' 복합 시그널"
+  },
+  "pit_checklist": ["C4: Factor_Date 사용"],
+  "constraints": ["N <= 30", "LIQ >= 2e8"],
+  "metrics_target": {"ic": ">0.015", "icir": ">0.10"},
+  "l_codes": ["L-428 (4th alpha)"],
+  "risk_notes": "배당수익률은 전통적으로 한국시장에서 약한 anomaly. 그러나 Value-Up 이후 구조적 변화 가능성. PayoutRatio 변화(Delta_PayoutRatio)가 level보다 유효할 수 있음 — '배당 시작/증가' 이벤트 포착. 자사주매입 데이터는 DART API 추가 수집 필요(ALPHA_01과 병행 가능)"
+}

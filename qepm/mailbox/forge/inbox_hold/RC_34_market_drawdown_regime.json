@@ -1,0 +1,19 @@
+{
+  "exp_id": "RC_34_mkt_dd_regime",
+  "title": "Market DD 국면 — KOSPI200 자체 DD로 3-state (내생 위기 감지)",
+  "from": "scout", "to": "forge", "cmd": "execute",
+  "timestamp": "2026-03-23T09:21:00+09:00",
+  "bucket": "exploit", "priority_score": 0.79,
+  "scope": {"strategy_id": "RC_34", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "MRS(매크로) 대신 KOSPI200 DD 자체로 국면. DD=0(신고가) → 공격, DD>15% → 방어. 가장 직관적인 내생 국면.",
+    "signal": "bm_dd = 1 - KOSPI200_NAV / cummax(KOSPI200_NAV) (t-1)",
+    "states": {
+      "new_high": {"trigger": "bm_dd < 3%", "tilt": "Momentum 25% + Consensus 25% + Others 50%"},
+      "correction": {"trigger": "3% <= bm_dd < 15%", "tilt": "MF_A1 Core"},
+      "bear": {"trigger": "bm_dd >= 15%", "tilt": "Defense 45% + Quality 25% + Cash 30%"}
+    },
+    "overlay": "VT 0.25"
+  },
+  "pit_rules": {"C1": "bm_dd = t-1 lag"}
+}

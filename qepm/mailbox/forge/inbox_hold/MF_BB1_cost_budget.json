@@ -1,0 +1,32 @@
+{
+  "exp_id": "MF_BB1_COST_BUDGET",
+  "title": "거래비용 예산 제약 — Net SR 극대화를 위한 turnover cap",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T01:35:00+09:00",
+  "bucket": "explore",
+  "priority_score": 0.73,
+  "scope": {
+    "strategy_id": "MF_BB1",
+    "family": "multifactor_cost",
+    "n_holdings": 30
+  },
+  "design": {
+    "concept": "Novy-Marx & Velikov (2016): 거래비용이 alpha를 잠식. MF_A1 composite에 turnover cap 적용 → 교체 종목수 제한 → net SR 극대화.",
+    "logic": [
+      "1. MF_A1 composite score 계산 → 이상적 Top 30 도출",
+      "2. 기존 포트폴리오와 비교: 교체 후보 = (이상적 Top 30) - (기존 보유)",
+      "3. turnover_cap: 월간 최대 교체 5종목 (전체의 ~17%)",
+      "4. 교체 후보 중 score 개선 상위 5개만 교체. 나머지 유지.",
+      "5. 결과: gross alpha 약간 감소하지만 net alpha(거래비용 차감 후) 증가"
+    ],
+    "turnover_cap": 5,
+    "commission": "30bps (편도)",
+    "overlay": "DD_med only + regime_engine_daily.R + VT 0.25",
+    "expected": "Turnover 50%+ 감소 → 연간 거래비용 2~3%p 절감 → net SR +0.1~0.2"
+  },
+  "pit_rules": {"C1": "composite score t-1 lag"},
+  "overfitting_guard": "Turnover cap 5는 경험적 규칙 (30종목의 ~17%). 최적화 아님.",
+  "academic_basis": "Novy-Marx & Velikov (2016 RFS); DeMiguel, Martín-Utrera & Nogales (2015) 'Parameter Uncertainty in Multiperiod Portfolio Optimization'"
+}

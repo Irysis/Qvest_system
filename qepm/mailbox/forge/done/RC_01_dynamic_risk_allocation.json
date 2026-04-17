@@ -1,0 +1,23 @@
+{
+  "exp_id": "RC_01_dynamic_risk_alloc",
+  "title": "국면별 동적 리스크 배분 — MRS 연속값으로 equity/cash 비율 결정",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:00:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.82,
+  "scope": {"strategy_id": "RC_01", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "GGG1(100%현금)과 HH1(선형 상호작용)의 중간: MRS를 equity allocation 비율에 직접 매핑. equity_pct = max(30%, 100% - MRS%). MRS=0이면 100% invest, MRS=70이면 30% invest.",
+    "logic": [
+      "1. MRS[t-1] from regime_engine_daily.R",
+      "2. equity_pct = max(0.30, 1.0 - MRS[t-1]/100)",
+      "3. MF_A1 composite → Top 30, EW × equity_pct",
+      "4. 나머지 = 현금 (무위험수익률)"
+    ],
+    "overlay": "VT 0.25 (DD Brake는 equity_pct가 대체)"
+  },
+  "pit_rules": {"C1": "MRS[t-1] lag", "C11": "regime_engine_daily.R"},
+  "overfitting_guard": "선형 매핑 = 최소 복잡도. 파라미터 없음(MRS/100)."
+}

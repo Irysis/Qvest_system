@@ -1,0 +1,26 @@
+{
+  "exp_id": "RC_04_cusum_warning",
+  "title": "Soft CUSUM 조기 경보 — MRS 변화 누적합으로 국면 전환 조기 감지",
+  "from": "scout",
+  "to": "forge",
+  "cmd": "execute",
+  "timestamp": "2026-03-23T04:21:00+09:00",
+  "bucket": "exploit",
+  "priority_score": 0.80,
+  "scope": {"strategy_id": "RC_04", "family": "regime_conditional", "n_holdings": 30},
+  "design": {
+    "concept": "L-446: Soft CUSUM = MRS 변화의 누적합. MRS가 서서히 상승하면 CUSUM이 먼저 경고. MRS threshold 도달 전 방어 전환 가능 = 조기 경보.",
+    "logic": [
+      "1. ΔMRS = MRS[t-1] - MRS[t-2] (일별 변화)",
+      "2. CUSUM[t] = max(0, CUSUM[t-1] + ΔMRS - k), k = drift parameter (2.0)",
+      "3. CUSUM > h (threshold 15) → 조기 경보 → Defense Heavy",
+      "4. CUSUM = 0 (리셋) → 경보 해제 → MF_A1 Core",
+      "5. composite → Top 30"
+    ],
+    "advantage": "MRS=12(정상)이지만 연속 상승 시 CUSUM이 먼저 경고 → MRS 15 도달 전 방어 시작",
+    "overlay": "regime_engine_daily.R + VT 0.25"
+  },
+  "pit_rules": {"C1": "CUSUM = t-1까지 누적. k, h는 사전 정의."},
+  "l_codes_referenced": ["L-446 (Soft CUSUM 위기 선행)"],
+  "academic_basis": "Page (1954) CUSUM; Shiryaev (2007) 'Optimal Stopping and Free-Boundary Problems'"
+}
