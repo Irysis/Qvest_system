@@ -1,0 +1,88 @@
+{
+  "factor_id": "STR_1679v2_physical_sleeve",
+  "parent": "STR_1679_score_blend (v1 score-blend 30종목, L-484/L-557 위반)",
+  "stage": "S5",
+  "mutation_type": "physical_sleeve_separation + regime_weight_overlay",
+  "description": "STR_1679 v1의 L-484 (30종목 violation) + L-557 (score-blend sleeve 교체 효과 0) 동시 해소를 위한 v53 재설계. 4슬롯 연구 slate.",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "retroactive": true,
+  "retroactive_reason": "Forge가 Scout D안 권고를 바로 구현하면서 S5 Mutation Lab 공식 slate 산출물 생략. v53 Sprint 2 S2.6 Hook 차단 해소 위한 소급 작성. 실제 설계는 Scout 메시지 (team-lead inbox 2026-04-17) 기반.",
+
+  "research_slate": {
+    "slot_A": {
+      "mutation_id": "STR_1679v2_A_physical_sleeve",
+      "mutation_type": "portfolio_construction",
+      "description": "Core 15 (C19 Top) + Def 5 (Q07+D29 composite Top, Core 제외 universe) 물리 분리. Regime-conditional weight만 조정 (selection은 regime-invariant).",
+      "weights_regime": {
+        "normal_mrs_lt_20": {"w_core": 0.95, "w_def": 0.05},
+        "caution_mrs_20_50": {"w_core": 0.80, "w_def": 0.20},
+        "crisis_mrs_ge_50": {"w_core": 0.60, "w_def": 0.40}
+      },
+      "rationale": "L-484 20종목 해소 + L-557 sleeve 독립성 + L-122 factor timing 회피 (selection invariant, weight only). Barroso&Santa-Clara 2015 factor risk management framework.",
+      "selected": true,
+      "selection_rationale": "A/B/C/D 4안 평가 후 A 선택. B는 L-557 미해결, C는 factor timing 위험, D는 Core 12 분산 부족.",
+      "expected_sr_drift": "1.445 (월간 근사) → 1.097~1.266 (일간 실측, overlay 유무에 따라)",
+      "expected_mdd": "-19% → -29~-53% (pure signal + overlay 적용에 따라)"
+    },
+    "slot_B": {
+      "mutation_id": "STR_1679v2_B_score_blend_N20",
+      "mutation_type": "parameter_reduction",
+      "description": "기존 v1 score-blend 유지 + N_HOLD 30 → 20 축소. H_1677 프로토콜 유사.",
+      "weights": "regime-conditional 95/5, 80/20, 60/40 (v1 구조 유지)",
+      "selection_method": "single final_score = w_core·z_C19 + w_def·z_defense → Top 20",
+      "rationale": "L-484 20종목 규정 최소 준수. 구조 변경 없음.",
+      "selected": false,
+      "deselection_reason": "L-557 미해결 — Normal regime(95/5)에서 Def score 5% 가중으로 종목 선정 영향 거의 0. Defense sleeve factor 교체가 알파 기여 안 함. 수정 후에도 sleeve 차별화 실패."
+    },
+    "slot_C": {
+      "mutation_id": "STR_1679v2_C_regime_switching",
+      "mutation_type": "regime_based_selection",
+      "description": "Regime switching: Normal 시 Core 20종목만, Crisis 시 Defense 20종목으로 완전 전환.",
+      "weights_regime": {
+        "normal": "Core 100% (C19 Top 20)",
+        "crisis": "Defense 100% (Q07+D29 Top 20)"
+      },
+      "rationale": "극단 regime adaptation.",
+      "selected": false,
+      "deselection_reason": "Factor timing 취약 (Arnott 2016 부정적, L-122 위반). Transition cost 극심 (월 turnover 100%+ 가능). MRS 오진 시 복구 불가. STR_1679 D안 설계 원칙 (factor risk management, not factor timing)과 정면 충돌."
+    },
+    "slot_D": {
+      "mutation_id": "STR_1679v2_D_fm_weighted_12_8",
+      "mutation_type": "alternative_size",
+      "description": "FM-weighted Core 12 + Def 8 = 20. Regime별 가중 조정.",
+      "weights": "regime-conditional, Core/Def 비율 변경 (12/8 vs 15/5)",
+      "rationale": "Core 분산 완화 + Def 강화.",
+      "selected": false,
+      "deselection_reason": "Core 12는 분산 부족 (C19 Top 12 쏠림으로 개별 종목 리스크 상승). regime별 가중치 정의가 여전히 factor timing에 가까움. Slot A (Core 15 + Def 5)가 분산+물리분리 최적 균형."
+    }
+  },
+
+  "selection_rationale_summary": {
+    "selected_slot": "A",
+    "l_code_compliance": ["L-484 (물리 분리)", "L-557 (sleeve 차별화 = factor family 교체)", "L-119 (정적 EW 블렌드 회피 — regime-conditional)", "L-122 (factor timing 회피, weight scaling only)"],
+    "academic_foundation": ["Barroso & Santa-Clara 2015 JFE (factor risk management)", "Moreira & Muir 2017 JF (Volatility-Managed)", "Asness, Moskowitz, Pedersen 2013 JF (Value and Momentum Everywhere — multi-sleeve)"]
+  },
+
+  "mutation_count": 4,
+  "categories": ["Portfolio_Construction", "Parameter_Reduction", "Regime_Based_Selection", "Alternative_Size"],
+  "synthesis_tested": true,
+  "synthesis_note": "4슬롯 A/B/C/D 평가 후 A 단독 선택. Cross-combination은 L-122/L-557 위반 위험 때문에 선택 안 됨.",
+
+  "factor_db_usage": {
+    "C19_Composite_Earnings": "Core sleeve signal",
+    "Q07_Earnings_Stability": "Defense primary (80%)",
+    "D29_Accounting_Beta": "Defense secondary (20%)",
+    "D04_Downside_Beta": "filter (bottom 10% exclusion)",
+    "MRS": "regime-conditional weight trigger (t-1 lag, C5)"
+  },
+
+  "pit_compliance": {
+    "C1": "expanding IC only",
+    "C2": "consensus t-1 lag",
+    "C5": "MRS t-1 lagged",
+    "C9": "DD overlay t-1 lag (L-465~470 준수)",
+    "C13": "Z_Score_Aligned only",
+    "C15": "load_month_factors() 경유"
+  }
+}
