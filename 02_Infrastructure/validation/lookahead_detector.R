@@ -1,0 +1,343 @@
+#==============================================================================
+# Lookahead Detector — 미래참조 자동 검출 (C1~C9)
+# run_all.R 실행 전 자동 스캔. 위반 시 실행 차단.
+#
+# Usage:
+#   source("02_Infrastructure/lookahead_detector.R")
+#   result <- detect_lookahead("path/to/run_all.R")
+#   if (!result$clean) stop("Lookahead detected!")
+#==============================================================================
+
+detect_lookahead <- function(run_all_path, verbose = TRUE) {
+  if (!file.exists(run_all_path)) {
+    if (verbose) cat("[lookahead] File not found:", run_all_path, "\n")
+    return(list(clean = TRUE, violations = list(), file = run_all_path))
+  }
+
+  lines <- readLines(run_all_path, warn = FALSE)
+  n_lines <- length(lines)
+  violations <- list()
+
+  # Helper: get context window (surrounding lines as single string)
+  get_context <- function(i, window = 5) {
+    start <- max(1L, i - window)
+    end   <- min(n_lines, i + window)
+    paste(lines[start:end], collapse = " ")
+  }
+
+  # Helper: add violation
+  add_violation <- function(check, line_num, code, msg) {
+    violations[[length(violations) + 1L]] <<- list(
+      check = check,
+      line  = line_num,
+      code  = trimws(code),
+      msg   = msg
+    )
+  }
+
+  for (i in seq_along(lines)) {
+    line <- lines[i]
+    line_trimmed <- trimws(line)
+
+    # Skip comments and empty lines
+    if (grepl("^\\s*#", line) || nchar(line_trimmed) == 0) next
+
+    # =========================================================================
+    # C1: Full-sample statistics — sd/mean/var on full vector without rolling
+    # =========================================================================
+    # Pattern: sd(vector_name) * sqrt(252) without [1:i] or rollapply context
+    # Targets time-series vol calculation on full sample
+    if (grepl("\\bsd\\([a-zA-Z_]+\\)\\s*\\*\\s*sqrt", line)) {
+      # Check CURRENT LINE only for expanding window markers
+      has_expanding <- grepl("\\[1\\s*:\\s*[ij]\\]", line)
+      has_rolling   <- grepl("rollapply|frollapply|frollmean|slider::", line)
+      # Check current line for cross-sectional markers
+      has_by <- grepl("by\\s*=|,\\s*by\\s*=|tapply|sapply.*Sector", line)
+      if (!has_expanding && !has_rolling && !has_by) {
+        add_violation("C1", i, line_trimmed,
+          "sd() on full vector * sqrt() without rolling/expanding window — possible full-sample vol")
+      }
+    }
+
+    # C1b: Full-sample quantile/ecdf used in signal construction
+    if (grepl("\\b(quantile|ecdf)\\(\\w+\\$", line)) {
+      ctx <- get_context(i)
+      if (!grepl("\\[1\\s*:\\s*[ij]\\]|rollapply|expanding|by\\s*=", ctx) &&
+          grepl("Score|signal|weight|z_|rank", ctx, ignore.case = TRUE)) {
+        add_violation("C1b", i, line_trimmed,
+          "quantile/ecdf on full column — verify not used for signal construction")
+      }
+    }
+
+    # =========================================================================
+    # C2/C5: VT scale applied without 1-day lag
+    # =========================================================================
+    # Pattern: after_vt <- X * vt_scale (missing "lagged" or shift)
+    if (grepl("after_vt\\s*<-.*\\*\\s*vt_scale\\b", line) &&
+        !grepl("lagged|lag|shift|\\[.*-\\s*1\\]", line)) {
+      add_violation("C5_VT", i, line_trimmed,
+        "VT scale applied without 1-day lag. Use vt_scale_lagged or shift().")
+    }
+
+    # =========================================================================
+    # C2/C5: DD exposure applied without 1-day lag
+    # =========================================================================
+    # Pattern: after_dd <- X * dd_exp (not lagged)
+    if (grepl("(after_dd|combined_ret)\\s*<-.*\\*\\s*dd_exp", line) &&
+        !grepl("lagged|lag|shift", line)) {
+      add_violation("C5_DD", i, line_trimmed,
+        "DD exposure without 1-day lag. Use dd_exp_*_lagged or shift().")
+    }
+
+    # =========================================================================
+    # C5: DD short window includes current day i
+    # =========================================================================
+    # Pattern: window_ret <- X[(i-19):i] or X[(i-20):i] (should be (i-1) end)
+    if (grepl("\\(i\\s*-\\s*\\d+\\)\\s*:\\s*i\\s*\\]", line) &&
+        grepl("window|dd|drawdown", line, ignore.case = TRUE)) {
+      # Check it's not (i-20):(i-1) which is correct
+      if (!grepl(":\\s*\\(\\s*i\\s*-\\s*1\\s*\\)", line)) {
+        add_violation("C5_DDshort", i, line_trimmed,
+          "DD/window calculation includes day i. Use (i-N):(i-1) to exclude current day.")
+      }
+    }
+
+    # =========================================================================
+    # C8: Factor Momentum weight uses same-day trailing return
+    # =========================================================================
+    # Pattern: rets <- c(cum_xxx[i], ...) without [i-1]
+    # FM weight at day i must use trailing return as of day i-1
+    if (grepl("rets\\s*<-\\s*c\\(cum_", line)) {
+      # Count [i] vs [i-1] or [i - 1]
+      n_same_day <- length(gregexpr("\\[i\\]", line)[[1]])
+      n_lagged   <- length(gregexpr("\\[i\\s*-\\s*1\\]", line)[[1]])
+      # If [i] references exist and no [i-1], it's same-day FM
+      if (n_same_day > 0 && grepl("\\[i\\]", line) && !grepl("\\[i\\s*-\\s*1\\]", line)) {
+        add_violation("C8_FM", i, line_trimmed,
+          "FM weight uses day-i trailing return (same-day circular). Use [i-1] for 1-day lag.")
+      }
+    }
+
+    # =========================================================================
+    # C3: Same-month aggregate applied to same month (non-macro)
+    # =========================================================================
+    if (grepl("YM\\s*==\\s*(daily_ym|ym_i|current_ym)", line, ignore.case = TRUE)) {
+      ctx <- get_context(i)
+      # Macro/regime lookups are OK (MRS, FRED, regime are monthly published)
+      if (!grepl("mrs|macro|regime|fred|Macro_Risk", ctx, ignore.case = TRUE)) {
+        add_violation("C3", i, line_trimmed,
+          "Same-month lookup for non-macro data. Verify PIT compliance (use previous month).")
+      }
+    }
+
+    # =========================================================================
+    # C4: Financial statement without proper lag
+    # =========================================================================
+    # Pattern: merge on Date == financial_date without lag
+    if (grepl("(annual|quarterly|fiscal|재무)", line, ignore.case = TRUE) &&
+        grepl("merge|join|\\[.*==", line, ignore.case = TRUE)) {
+      ctx <- get_context(i, 8)
+      if (!grepl("lag|shift|\\-\\s*(45|60|90|120|150)\\b|5월|리밸런싱", ctx, ignore.case = TRUE)) {
+        add_violation("C4", i, line_trimmed,
+          "Financial statement merge without visible lag. Annual->May rebal, Quarterly->45d+ lag required.")
+      }
+    }
+
+    # =========================================================================
+    # C6: Survivorship bias — using current universe for past dates
+    # =========================================================================
+    if (grepl("universe\\s*<-.*current|today|Sys\\.Date", line, ignore.case = TRUE) &&
+        grepl("backtest|simulation|historical", get_context(i), ignore.case = TRUE)) {
+      add_violation("C6", i, line_trimmed,
+        "Possible survivorship bias: using current universe for historical backtest.")
+    }
+
+    # =========================================================================
+    # C7: Automatic pattern detection — common lookahead anti-patterns
+    # =========================================================================
+    # 7a: scale/normalize using full-sample stats then apply to signal
+    if (grepl("scale\\(\\w+\\)", line) && !grepl("by\\s*=|tapply|group", get_context(i))) {
+      ctx <- get_context(i)
+      if (grepl("Score|signal|weight|factor", ctx, ignore.case = TRUE)) {
+        add_violation("C7a", i, line_trimmed,
+          "scale() on full sample — uses global mean/sd. Use rolling z-score or cross-sectional z.")
+      }
+    }
+
+    # 7b: Sort/rank on future returns
+    if (grepl("(fwd_ret|future_ret|next_ret|ret_fwd)", line, ignore.case = TRUE) &&
+        grepl("(rank|order|sort|ntile|cut)", line, ignore.case = TRUE)) {
+      add_violation("C7b", i, line_trimmed,
+        "Ranking on forward/future returns detected. This is a direct lookahead.")
+    }
+
+    # =========================================================================
+    # C10: Liquidity filter includes today's volume (Session 38b)
+    # =========================================================================
+    # Pattern: frollmean(TradingValue or Close*Vol) without shift(lag)
+    if (grepl("frollmean\\(.*[Tt]rad|frollmean\\(.*[Cc]lose.*[Vv]ol", line)) {
+      ctx <- get_context(i, 3)
+      if (!grepl("shift|lag", ctx, ignore.case = TRUE)) {
+        add_violation("C10_LIQ", i, line_trimmed,
+          "Liquidity filter (AvgTV) includes today volume. Use shift(frollmean(...), lag=1) to exclude today.")
+      }
+    }
+
+    # =========================================================================
+    # C11: Data timeline — FRED/외부 데이터 시차 미반영 (Session 38b)
+    # =========================================================================
+    # Pattern: read_parquet.*fred or FRED without shift/lag nearby
+    if (grepl("read_parquet.*fred|FRED_MACRO_CACHE|FRED_REGIME_CACHE|macro_fred", line, ignore.case = TRUE)) {
+      ctx <- get_context(i, 10)
+      if (!grepl("shift|lag|1일|1d|lagged|regime_engine_v[34]", ctx, ignore.case = TRUE)) {
+        add_violation("C11_FRED", i, line_trimmed,
+          "FRED data loaded without visible lag. US data needs 1-day lag for KST timezone. Use shift(lag=1) or regime_engine_v4.")
+      }
+    }
+
+    # C11b: Monthly regime applied to same month (MRS lookahead)
+    if (grepl("YM\\s*==\\s*daily_ym|YM.*==.*format.*Date", line)) {
+      ctx <- get_context(i, 8)
+      if (grepl("Macro_Risk_Score|MRS|mrs_monthly|regime", ctx, ignore.case = TRUE) &&
+          !grepl("lagged|shift|apply_month|전월|prev_month", ctx, ignore.case = TRUE)) {
+        add_violation("C11_MRS", i, line_trimmed,
+          "Monthly regime data applied to same month. Must use previous month's data or regime_engine_v4 with apply_month.")
+      }
+    }
+
+    # =========================================================================
+    # C9: Vol equalization on full sample (critical — STR_759~765 failure)
+    # =========================================================================
+    # Pattern: sd(ret_xxx) without [1:i] — full sample vol eq
+    if (grepl("\\bsd\\(ret_\\w+\\)", line) && grepl("scale|vol_eq|normalize", get_context(i), ignore.case = TRUE)) {
+      if (!grepl("\\[1\\s*:\\s*[ij]\\]", line)) {
+        add_violation("C9", i, line_trimmed,
+          "Vol equalization using full-sample sd(ret_xxx). Must use expanding window [1:i].")
+      }
+    }
+
+    # C12: Full-sample parameter optimization (blend ratio, weight grid search)
+    # Selecting best parameters by comparing full-sample Sharpe/CAGR = lookahead
+    c12_patterns <- c("best_sharpe", "best_blend", "best_score.*<-",
+                       "quick_sharpe.*blended", "grid.*sharpe",
+                       "if.*sr.*>.*best", "if.*sharpe.*>.*best")
+    for (pat in c12_patterns) {
+      if (grepl(pat, line_trimmed, ignore.case = TRUE)) {
+        add_violation("C12_FULLSAMPLE_OPT", i, line_trimmed,
+          "Full-sample parameter optimization detected. Use expanding-window or pre-commit ratio.")
+      }
+    }
+
+    # C13: Manual direction negation (should use Z_Score_Aligned from connector)
+    c13_patterns <- c("NEGATE_FACTORS", "FLIP_SIGN", "Z_Score\\s*:=\\s*-Z_Score",
+                       "Z_Score\\s*\\*\\s*-1", "sign_adj.*-1")
+    for (pat in c13_patterns) {
+      if (grepl(pat, line_trimmed, ignore.case = FALSE)) {
+        add_violation("C13_MANUAL_DIRECTION", i, line_trimmed,
+          "Manual direction negation detected. Use Z_Score_Aligned from factor_db_connector instead.")
+      }
+    }
+
+    # C14: IC access with <= (should use Usable_Date or strict < for Date)
+    if (grepl("IC.*Date.*<=.*sig|ic_hist\\[Date\\s*<=", line_trimmed, ignore.case = TRUE)) {
+      if (!grepl("Usable_Date", line_trimmed)) {
+        add_violation("C14_IC_TIMING", i, line_trimmed,
+          "IC access with <= on Date (not Usable_Date). IC[t] uses future return t->t+1. Use Usable_Date <= sig_d or Date < sig_d.")
+      }
+    }
+
+    # C15: Direct parquet load bypassing connector
+    if (grepl("read_parquet.*factor_db.*parquet|factor_db_\\d{6}", line_trimmed)) {
+      if (!grepl("function|#|compute_all", line_trimmed)) {
+        add_violation("C15_DIRECT_PARQUET", i, line_trimmed,
+          "Direct Factor DB parquet load detected. Use load_month_factors() from factor_db_connector.R.")
+      }
+    }
+
+    # C16 (v53 S2.8): Combinatorial hiding — grid search + winner selection without set.seed
+    # expand.grid / crossing / combn + which.max / arrange(desc(sharpe)) / best_ 변수
+    # 파일 전체에 set.seed 없으면 재현성 없는 은밀한 조합 탐색 의심.
+    c16_patterns <- c(
+      "expand\\.grid.*which\\.max",
+      "crossing.*which\\.max",
+      "expand\\.grid.*arrange.*desc",
+      "combn.*sharpe.*>",
+      "best_combination\\s*<-",
+      "best_blend_id\\s*<-",
+      "best_weight_grid\\s*<-"
+    )
+    for (pat in c16_patterns) {
+      if (grepl(pat, line_trimmed, ignore.case = TRUE)) {
+        # 파일 전체에 set.seed 존재 여부
+        has_seed <- any(grepl("\\bset\\.seed\\s*\\(", lines))
+        if (!has_seed) {
+          add_violation("C16_COMBINATORIAL", i, line_trimmed,
+            "Grid/combinatorial search + winner selection without set.seed — possible hidden exhaustive optimization. Use set.seed + grid_runner::run_grid().")
+        }
+      }
+    }
+
+  }  # end of line loop
+
+  # =========================================================================
+  # Report
+  # =========================================================================
+  clean <- length(violations) == 0
+
+  if (verbose) {
+    if (!clean) {
+      cat(sprintf("\n[LOOKAHEAD] %d violation(s) in %s\n",
+                  length(violations), basename(run_all_path)))
+      for (v in violations) {
+        cat(sprintf("  [%s] Line %d: %s\n    Code: %s\n",
+                    v$check, v$line, v$msg, v$code))
+      }
+      cat("[LOOKAHEAD] FIX ALL VIOLATIONS BEFORE RUNNING.\n\n")
+    } else {
+      cat(sprintf("[LOOKAHEAD] CLEAN: %s (%d lines scanned)\n",
+                  basename(run_all_path), n_lines))
+    }
+  }
+
+  list(clean = clean, violations = violations, file = run_all_path,
+       n_lines = n_lines, n_violations = length(violations))
+}
+
+# Convenience: scan all R files in a strategy directory
+detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
+  r_files <- list.files(strategy_dir, pattern = "\\.R$", full.names = TRUE,
+                        recursive = FALSE)
+  all_violations <- list()
+  total <- 0L
+
+  for (f in r_files) {
+    result <- detect_lookahead(f, verbose = FALSE)
+    if (!result$clean) {
+      total <- total + result$n_violations
+      all_violations <- c(all_violations, result$violations)
+      if (verbose) {
+        cat(sprintf("[LOOKAHEAD] %d violation(s) in %s\n",
+                    result$n_violations, basename(f)))
+        for (v in result$violations) {
+          cat(sprintf("  [%s] Line %d: %s\n", v$check, v$line, v$msg))
+        }
+      }
+    }
+  }
+
+  clean <- total == 0L
+  if (verbose) {
+    if (clean) {
+      cat(sprintf("[LOOKAHEAD] ALL CLEAN: %d files scanned in %s\n",
+                  length(r_files), basename(strategy_dir)))
+    } else {
+      cat(sprintf("[LOOKAHEAD] TOTAL: %d violations across %s\n",
+                  total, basename(strategy_dir)))
+    }
+  }
+
+  list(clean = clean, violations = all_violations, n_violations = total,
+       n_files = length(r_files))
+}
+
+cat("[lookahead_detector] Loaded. Functions: detect_lookahead(), detect_lookahead_dir()\n")

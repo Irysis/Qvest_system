@@ -40,6 +40,50 @@ When ending a productive session (strategies run, infra changed, or significant 
   - S5 진입 시 `sg_generate_research_slate()` 자동 생성 (4슬롯 A/B/C/D)
 - **위반 시**: Judge가 REJECT, Q-Lead가 위반 로그 기록.
 
+## S0 Debate 5인 독립 토론 강제 (Level 0 -- 3중 Hook 강제)
+- **S0 가설 생성 시 반드시 /s0-debate 스킬 사용**. Scout 1인 다역할 시뮬레이션 금지.
+- **5인 독립 에이전트 (5×20=100점)**:
+  1. **Codex Critic** (Bash 직접 호출, GPT-5.4): cross-model 다양성, 설계 PIT, weakest assumption
+  2. **Risk Manager** (agent): 통계적 리스크 — Harvey t>3.0, EVT/GPD, DCC, tail dependence
+  3. **Governor** (agent): 포트폴리오 적합 — PG0 gap, family saturation, role admission, MDD 기여
+  4. **Quant** (agent): 정량 팩트체크 — ICIR, 상관, data 가용성, R 구현
+  5. **Academic** (agent): 학술 검증 — 논문 타당성, 메커니즘, 한국 실증, 인용 실질성
+- **Hook 강제 (우회 불가)**:
+  1. `s0_debate_guard.sh` (PreToolUse[Agent]): 단일 Agent에 2개+ 역할 주입 시 스폰 차단
+  2. `s0_verdict_validator.sh` (PostToolUse[Write]): S0_VERDICT에 debaters 배열 없으면 Write 차단
+  3. `s0_verdict_router.sh` (FileChanged): debaters agent_id 중복/역할 누락 시 라우팅 차단
+- **S0_VERDICT 필수 스키마**: `debaters: [{agent_id(고유), role, score, findings}]` x 5건
+- **필수 역할**: codex_critic, risk_manager, governor, quant, academic
+- Q-Lead가 debaters에 포함되면 REJECT. Q-Lead는 집계만 수행.
+
+## Harness Engineering v52 (Level 0 — 기계적 강제)
+모든 프로세스 규칙은 프롬프트가 아닌 Hook으로 강제한다. "엄밀함은 사라지지 않고 이동한다."
+
+| # | Hook | 이벤트 | 강제 대상 | Tier |
+|---|------|--------|-----------|------|
+| 1 | axiom_enforcement_hook.sh | PreToolUse[W/E] | AX-code 공리 위반 검출 | L3 |
+| 2 | safety_guard.sh | PreToolUse[W/E/B] | 05_Production/01_Literature 보호 | L3 |
+| 3 | forge_code_guard.sh | PreToolUse[W/E/B] | OPT-1~8 코드 최적화 + S1 overlay 금지 | L3 |
+| 4 | unified_agent_guard.sh | PreToolUse[Agent] | Stage 순서 + S5 RiskMgr 선행 | L3 |
+| 5 | s0_debate_guard.sh | PreToolUse[Agent] | 1인 다역할 스폰 차단 | L4 |
+| 6 | artifact_validator.sh | PostToolUse[Write] | artifact 스키마 + PIT 패턴 | L2 |
+| 7 | pipeline_trigger.sh | PostToolUse[W/B] | DONE→TODO 자동 라우팅 | L3 |
+| 8 | circuit_breaker.sh | PostToolUse[Bash] | 3회 연속 실패 자동 차단 | L3 |
+| 9 | risk_gate.sh | PostToolUse[Bash] | tail_risk 검증 | L2 |
+| 10 | (LLM agent) tail_risk check | PostToolUse[Bash(Rscript)] | 백테스트 후 tail_risk_result.json 존재 확인 | L4 |
+| 11 | (LLM prompt) s0_record QA | PostToolUse[Write(s0_record_*)] | S0 필수 필드 + ML 추가 필드 검증 | L4 |
+| 12 | **s0_debate_enforcer.sh** | PostToolUse[Write] | **3-Round 상태 머신** — R1/R2/R3/VERDICT 전이 강제 + 텔레그램 중계 | L4 |
+| 13 | s0_verdict_router.sh | FileChanged[S0_VERDICT_*] | APPROVE/REVISE/REJECT 라우팅 | L3 |
+| 14 | teammate_idle_guard.sh | TeammateIdle[*] | idle teammate 감지 → 작업 재할당 | L3 |
+| 15 | task_complete_guard.sh | TaskCompleted[*] | 태스크 완료 시 파이프라인 다음 단계 트리거 | L3 |
+| 16 | harness_health.sh | 부트스트랩 | 전체 Hook 건강 체크 (settings.json 밖) | L1 |
+
+- **L1 bootstrap**: 세션 시작 시 1회 실행
+- **L2 soft gate**: 검증 실패 시 경고 + 로그
+- **L3 hard block**: 위반 시 도구 실행 자체를 물리적 차단
+- **L4 구조 강제**: JSON 스키마 + agent_id 추적 + LLM 판정으로 우회 불가
+- **ERR trap 필수**: 모든 command Hook에 `trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR`
+
 ## S0/S1 오버레이 금지 + V6 Gap-Directed 가설 (Level 0)
 - **S0(가설)/S1(구현)에서 DD/VT/Regime 오버레이 적용 금지.**
 - S1은 순수 팩터 신호 측정. EW 30종목 + 15bps + 유동성만.
@@ -116,27 +160,38 @@ When ending a productive session (strategies run, infra changed, or significant 
 - Always use `source('run_all.R')` pattern (NOT `--file=` due to Korean path encoding)
 - Always `cd` to strategy directory first, then `Rscript -e 'source("run_all.R")'`
 
-## Multi-Agent Team System (Agent Teams + qepm)
-전략 연구/인프라 구축/모니터링에 Claude Code Agent Teams + qepm 메모리 인프라를 사용한다.
-API 호출 없이, Claude Code 팀원이 독립 pane에서 실행되고 qepm이 결과를 메모리에 축적한다.
+## Multi-Agent Team System v52 (Hybrid: tmux + Agent Tool + TeamCreate + qepm)
+전략 연구에 **하이브리드 멀티에이전트** 아키텍처를 사용한다.
+- **tmux research (상시)**: 4 독립 Claude Code 인스턴스 — Scout(pane 0), Forge(pane 1), Judge(pane 2), Governor(pane 3). 항상 대기.
+- **Agent tool (온디맨드)**: Q-Lead가 필요 시 스폰. Risk Manager, Architect, Codex Critic. SubagentStop hook 자동 발동.
+- **TeamCreate (teammate)**: 논의와 협업이 필요한 작업 (**S0 Debate 5인**, S5 Iteration, PG2 Design). TeammateIdle/TaskCompleted hook.
+  - S0 Debate: TeamCreate 5인팀 (Codex Critic은 Bash 직접 호출, 4 Claude teammate + Q-Lead 집계)
+  - 토론자 간 반박/보완 가능 (SendMessage). 최종 채점은 독립.
 
-- **프롬프트**: `02_Infrastructure/prompts/` — scout_init.md, forge_init.md, judge_init.md, governor_init.md
-- **슬래시 커맨드**: `.claude/commands/` — /scout, /forge, /judge, /governor, /launch-team
-- **Supervisor**: `02_Infrastructure/agents/qlead_supervisor.sh` — 30초 폴링, idle→/slash 재주입, # removed
-- **tmux 백엔드**: tmux `research` 세션 4 pane (Scout/Forge/Judge/Governor)
+### 인프라
+- **프롬프트**: `02_Infrastructure/prompts/` — scout_init.md, forge_init.md, judge_init.md, governor_init.md, risk_manager_init.md, codex_critic_prompt.md, codex_s5_review_prompt.md, qlead_init.md
+- **에이전트 정의**: `.claude/agents/` — risk-manager.md, architect.md
+- **슬래시 커맨드**: `.claude/commands/` — /scout, /forge, /judge, /governor, /launch-team, /qvest
+- **Skills**: 27개 — Skill-scoped hooks + 동적 주입(`!` 문법) 지원
+- **Hooks**: 17개 4-Tier (command L2~L3 / L4 구조 강제 / LLM agent+prompt / bootstrap L1)
 - **qepm 패키지**: `qepm/` — 메모리 파이프라인(R0~R6), 오케스트레이션, 레지스트리
+- **tmux 세션**: main(Q-Lead), research(4pane), supervisor(R stage_gate 상주), ttyd(웹터미널)
 
-### 에이전트 역할 (6 상시 + 2 온디맨드)
-| Agent | 유형 | 역할 |
+### 에이전트 역할 (5 상시 + 3 온디맨드 + 4 미구현)
+| Agent | 배치 | 역할 |
 |-------|------|------|
-| **Q-Lead** | 상시 | 오케스트레이션, ResearchOps, 자원 관리(가용 80%까지 에이전트 스폰), VoE 우선순위, qepm memory commit, 텔레그램 보고 |
-| **Scout** | 상시 | 문헌 조사, 가설 설계, factor_engine.R 초안, Soft Prior 정량화(families.json 자동 조회), 실패 패턴 회피 |
-| **Forge** | 상시 | 전략 코드 완성, 백테스트 실행(최대 3개 동시), 실험 계약서 생성, 표준 헤더 필수, preflight_check 호출 |
-| **Judge** | 상시 | Gate 0~5 순차 심사, C1~C7 미래참조 검증, FF5/DSR, 상관 분석, overfitting 플래깅 |
-| **Reporter** | 상시 | 프로덕션 승격 시 IB 스타일 레포트(EN+KR), LLM 기반 서술, report_agent_llm.R 연동 |
-| **Briefing** | 상시 | 텔레그램 브리핑 9종: 모닝/세션종료/마일스톤/실패경고/데이터완료/프로덕션점검/리서치진행률/주간요약/온디맨드 + 기억 건강 체크 |
-| **Regime Scout** | 온디맨드 | 국면엔진 모델 R&D(MRS/HMM/overlay 파라미터), 국면 트리 구조 설계. 최종 엔진 선택은 Q-Lead |
-| **Blender** | 온디맨드 | 국면별 슬리브 배분 매트릭스 설계, LOO 검증, 역할 균형. 독립 alpha 4개+ 확보 시 활성화 |
+| **Q-Lead** | tmux main (상시) | 오케스트레이션, ResearchOps, 자원 관리, qepm memory commit, 텔레그램 보고 |
+| **Scout** | tmux research:0 (상시) | 문헌 조사, 가설 설계, factor_engine.R 초안, Soft Prior 정량화, 실패 패턴 회피 |
+| **Forge** | tmux research:1 (상시) | 전략 코드 완성, 백테스트 실행(최대 3개 동시), 표준 헤더 필수, preflight_check 호출 |
+| **Judge** | tmux research:2 (상시) | Gate 0~6 순차 심사, C1~C15 미래참조 검증, FF5/DSR, tail_risk Gate 6, Role Audit |
+| **Governor** | tmux research:3 (상시) | PG0~PG3 포트폴리오 편입 판정, gap 진단, role admission, 배분 설계 |
+| **Risk Manager** | Agent tool (온디맨드) | L13 Risk Engine. tail_risk, CVaR/CDaR 검증, regime stress. S0 Debate/S5/PG2 teammate |
+| **Architect** | Agent tool (온디맨드) | Hook/Pipeline/Layer 구조 설계·진단·개선. 인프라 아키텍처 결정 |
+| **Codex Critic** | Bash GPT-5.4 (온디맨드) | S0 Debate cross-model 다양성, 설계 PIT, weakest assumption |
+| Reporter | **미구현** | 프로덕션 승격 시 IB 스타일 레포트(EN+KR), report_agent_llm.R 연동 |
+| Briefing | **미구현** | 텔레그램 브리핑 9종 + 기억 건강 체크 |
+| Regime Scout | **미구현** | 국면엔진 모델 R&D(MRS/HMM/overlay 파라미터), 국면 트리 설계 |
+| Blender | **미구현** | 국면별 슬리브 배분 매트릭스, LOO 검증. 독립 alpha 4개+ 확보 시 활성화 |
 
 ### 팀 워크플로우
 
@@ -191,10 +246,13 @@ cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm" && Rscri
 1. **Scout**: 1편+ 피어리뷰 논문 근거 필수. methodology_memory.md 중복 회피. families.json Soft Prior 자동 조회
 2. **Forge**: `source('run_all.R')` 패턴만. 05_Production/ 수정 금지. 표준 헤더(cat("=== STR_XXX: 설명 ===") + ## 핵심아이디어) 필수. preflight_check() 호출 필수. QEPM_AUTO_COMMIT <- TRUE
 3. **Judge**: 허들 기준 하향 금지. Harvey t>3.0 인식. Gate 0~5 순차 보고. C1~C7 미래참조 체크리스트 전수 검증
-4. **Reporter**: report_agent_llm.R 연동. prepare_report_bundle() → 서술 JSON(EN+KR) → render_report(). 기존 레포트 cleanup 후 생성
-5. **Briefing**: 텔레그램 tg_send() 사용. 수치 + 1~2줄 해석. 기억 건강 체크(memory_health_check.R) 모닝 브리핑에 포함
-6. **Regime Scout**: 국면엔진 코드(regime_signal.R, regime_engine.R)만 탐색. 팩터/전략 코드 수정 금지. 실험 결과는 Q-Lead에 보고
-7. **Blender**: Gate 미통과 전략 포함 금지. 단순→복잡 순서(EW→RP→최적화). 최종 결정은 Q-Lead
+4. **Risk Manager**: L13 Risk Engine 전담. tail_risk 측정 → CVaR/CDaR 검증 → regime stress test. S0 Debate/S5/PG2에서 teammate로 참여
+5. **Architect**: Hook/Pipeline/Layer 구조 설계. 인프라 진단·개선. 에이전트 통신 구조 결정. Q-Lead와 토론하여 아키텍처 확정
+6. **Codex Critic**: S0 Debate에서 GPT-5.4 기반 cross-model 비평. 설계 PIT, weakest assumption 공격
+7. *(미구현)* **Reporter**: report_agent_llm.R 연동. prepare_report_bundle() → 서술 JSON(EN+KR) → render_report()
+8. *(미구현)* **Briefing**: 텔레그램 tg_send(). 수치 + 1~2줄 해석. 기억 건강 체크(memory_health_check.R)
+9. *(미구현)* **Regime Scout**: 국면엔진 코드(regime_signal.R, regime_engine.R)만 탐색. 실험 결과는 Q-Lead에 보고
+10. *(미구현)* **Blender**: Gate 미통과 전략 포함 금지. 단순→복잡 순서(EW→RP→최적화). 최종 결정은 Q-Lead
 8. **Q-Lead**: 자원 여유 시 가용 RAM 80%까지 에이전트 연속 스폰. hybrid_commit()으로 실험 결과 축적. Telegram 보고 책임. 교훈(L-code) 적립 책임
 9. **공유 자원**: agent_team_config.md의 접근 권한 매트릭스 준수
 
@@ -205,7 +263,7 @@ cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm" && Rscri
 | `/forge` | Forge 에이전트 가동 (inbox TODO 순서대로 백테스트) |
 | `/judge` | Judge 에이전트 가동 (S6/S7 검증 + L-code) |
 | `/qlead` | Q-Lead 세션 시작 (dashboard + monitoring + briefing) |
-| `/launch-team` | tmux 3-pane 연구팀 + supervisor 일괄 가동 |
+| `/launch-team` | TeamCreate 4인 연구팀 일괄 가동 (Hook 세션 내 자동) |
 
 ### Skills (.claude/skills/) — 20개 도메인별
 모든 skill이 도메인별로 분리. description 기반 soft-filter. 매 세션 자동 로드.
@@ -215,8 +273,15 @@ s3-orthogonality, s4-integration-test, s5-mutation-lab, s6-validation, s7-dispos
 pg0-gap-diagnosis, pg1-admission, pg2-allocation, pg3-validation
 
 **Cross-cutting (7+1):** pit-validation, factor-db-access, data-refresh, artifact-schemas,
-regime-classification, axiom-io, telegram-protocol, supervisor
+regime-classification, axiom-io, telegram-protocol, risk-modeling-advanced
 
 **에이전트 프롬프트 (Layer 2):** `02_Infrastructure/prompts/*_init.md` — on-demand 로드
 
-## Axioms (auto-injected -- agent premises)
+## Axioms (auto-injected -- agent premises, Level 0)
+모든 에이전트는 아래 공리를 전제로 작동한다. AX-code 위반 = 즉시 중단.
+
+- **AX-000**: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
+- **AX-001**: Defense는 조건부 성과로 평가한다. 전기간 SR 기준 적용 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.
+- **AX-002**: 규칙 안에서 찾아낸 성과가 진짜 성과. 프로세스 우회 = 판단의 미래참조 = C1 위반 동급.
+
+계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변)
