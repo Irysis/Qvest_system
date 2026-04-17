@@ -1,0 +1,114 @@
+{
+  "factor_id": "H_1676_Residual_Consensus_Revision",
+  "parent_hypothesis": "H_1676",
+  "parent_s0_verdict": "stage_artifacts/S0_VERDICT_H_1676.json (APPROVE_CONDITIONAL 61/100)",
+  "parent_s0_record": "stage_artifacts/s0_record_H_1676_residual_revision.json",
+  "stage": "S5_SLATE_PREREG",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "status": "PRE_S1",
+  "note": "S0 VERDICT conditions_for_s1 [6] 수용. Forge S1 완료 전 Scout 주도 사전 등록. S1 결과에 따라 mutation slate 활성화 여부 결정.",
+
+  "activation_criteria": {
+    "gate_pass": "S1 gate criteria 7건 통과 (ICIR >= 0.20, MDD<45%, |beta|<0.15, r12 stability<30% drift, liquidity, PIT, S3 rho prospective)",
+    "gate_fail_branch": "Hard Fail 시 mutation slate 무효. S0 revise로 회귀.",
+    "conditional_activation": "gate 일부 통과 + 일부 미달 시 해당 gate 메우는 mutation 선택 활성화 (예: beta_gate 미달 → Mutation C 활성화)"
+  },
+
+  "mutations": [
+    {
+      "slot": "A",
+      "mutation_id": "H_1676_M1_DD_Overlay",
+      "mutation_type": "overlay",
+      "description": "DD 8/22 overlay 재도입 (L-013 전례: R03_CVaR standalone SR 0.554 → DD 6/20 SR 0.598 + MDD 30.4%)",
+      "rationale": "S0 conditions_for_s1 [6] slate (a) 명시. H_1676 residual signal의 MDD 제어 목적. L-013 crisis alpha 3/3 보존 전례 적용.",
+      "params": {
+        "DD_START": 0.08,
+        "DD_FULL": 0.22,
+        "lag": "t-1 (C9 준수)",
+        "vol_targeting": false
+      },
+      "expected_impact": "MDD -15~25% 축소 (L-013 전례 42% 축소)",
+      "alpha_preservation": "잔차 IC 기반 signal은 overlay 후 유지 예상. FF5 alpha decay 모니터링 필요.",
+      "lesson_ref": "L-013 (DD overlay 성공), L-442 (Regime Engine v7.1), L-465~470 (overlay t-1 lag)",
+      "axiom_check": "PASS — overlay는 position sizing, factor family 변경 없음",
+      "priority_if_gate_pass": "low (gate 통과 시 overlay 없어도 OK)",
+      "priority_if_mdd_fail": "HIGH (MDD Hard Fail 시 1순위 활성화)"
+    },
+    {
+      "slot": "B",
+      "mutation_id": "H_1676_M2_FactorRiskManagement",
+      "mutation_type": "weight_scaling",
+      "description": "Factor Risk Management (Barroso & Santa-Clara 2015 JFE) — momentum/residual alpha scale을 역변동성으로 조정. High vol regime에서 exposure 축소.",
+      "rationale": "S0 conditions_for_s1 [6] slate (b) 명시. Factor timing이 아닌 risk management 접근 (L-122). H_1676 residual signal의 rolling vol 기반 scale.",
+      "params": {
+        "vol_lookback": "12m rolling",
+        "target_vol": "15% annualized",
+        "lag": "t-1 (C9 준수)",
+        "method": "scale = target_vol / rolling_vol, clamp [0.5, 1.5]"
+      },
+      "expected_impact": "Sharpe 개선 (Barroso 2015 원논문 효과). MDD 제어는 부차적.",
+      "alpha_preservation": "signal direction 유지, scale만 변경. Pure alpha 보존.",
+      "lesson_ref": "L-122 (Barroso & Santa-Clara 2015), L-442 (Regime Engine)",
+      "axiom_check": "PASS — weight scaling은 position sizing",
+      "priority_if_gate_pass": "medium (SR 추가 개선 목적)",
+      "priority_if_sr_below_target": "HIGH (SR < 0.6 시 1순위)"
+    },
+    {
+      "slot": "C",
+      "mutation_id": "H_1676_M3_MarketBeta_Ortho",
+      "mutation_type": "factor_construction",
+      "description": "CAPM market beta 추가 regressor 투입. Size + IdioVol + M01_CAPM_Beta 3-factor 잔차화. COND_03 market_beta_gate 미달 시 필수 활성화.",
+      "rationale": "S0 R1 Risk Manager + Codex Critic 공통 지적: Size+IdioVol 잔차화만으론 portfolio-level CAPM beta 노출 미흡. S1에서 |β|>=0.15 측정 시 필수 적용.",
+      "params": {
+        "regressors": ["log(MarketCap)", "R12_Idiosyncratic_Risk", "M01_CAPM_Beta_rolling_24m"],
+        "winsorization": "1~99% (Codex 우려 반영)",
+        "method": "single-month cross-section OLS"
+      },
+      "expected_impact": "portfolio |β| 감소 → STR_1679 상관 ρ 축소 (S3 rho<0.2 gate 확률 상승)",
+      "alpha_preservation": "잔차 IC 소폭 감소 예상 (추가 regressor). S1 대비 잔차 ICIR 0.30~0.35 예상 (원 0.35~0.40 대비)",
+      "lesson_ref": "L-118-ext (beta dominance), VERDICT conditions_for_s1 [3] market_beta_gate",
+      "axiom_check": "PASS — 잔차화 자체가 factor family 변경 없음",
+      "priority_if_gate_pass": "low",
+      "priority_if_beta_gate_fail": "HIGHEST (|β|>=0.15 시 즉시 활성화, COND_03 직접 대응)"
+    },
+    {
+      "slot": "D",
+      "mutation_id": "H_1676_M4_STR_1679_Sleeve",
+      "mutation_type": "portfolio_construction",
+      "description": "STR_1679 anchor와 H_1676 signal을 물리 sleeve 분리. STR_1679 Core 15 + H_1676 Diversifier 5 = 20종목 (STR_1679 D안 구조 확장).",
+      "rationale": "S0 conditions_for_s1 [6] slate (c) 명시. H_1676 standalone이 아닌 portfolio sleeve로 편입. L-484/L-557 준수 (물리 분리).",
+      "params": {
+        "N_CORE_STR_1679": 15,
+        "N_DIVERSIFIER_H_1676": 5,
+        "weighting": "Core 80% + H_1676 20%",
+        "sleeve_separation": "physical (intersection = empty)",
+        "regime_conditional": "optional (STR_1679 D안 구조 준수 시 regime weight 가능)"
+      },
+      "expected_impact": "Blended portfolio SR 1.193 → 1.30~1.50 예상 (H_1676 diversifier 기여 +0.1~0.3)",
+      "alpha_preservation": "H_1676 signal은 5종목 집중으로 volatility 상승. 단 sleeve 분산 효과로 portfolio sharpe 개선.",
+      "lesson_ref": "L-484 (물리 분리), L-557 (sleeve 차별화 = family 교체), STR_1679 D안",
+      "axiom_check": "PASS — Q07/D29 조합은 STR_1679 Core/Def 처리, H_1676은 별도 sleeve",
+      "priority_if_s3_rho_pass": "HIGH (ρ<0.2 확인 시 즉시 PG admission 경로)",
+      "priority_if_s3_rho_fail": "REVISE (ρ>=0.2 시 H_1676 diversifier role 재검토 필요)"
+    }
+  ],
+
+  "activation_flowchart": {
+    "step_1": "S1 실행 → hurdle_result + market_beta + r12_stability 측정",
+    "step_2a_all_pass": "모든 gate 통과 → Mutation D (STR_1679 sleeve) 활성화 → S3 orthogonality",
+    "step_2b_mdd_fail": "MDD >= 45% → Mutation A (DD overlay) 활성화 → 재측정",
+    "step_2c_beta_fail": "|β| >= 0.15 → Mutation C (market beta ortho) 활성화 → 재측정",
+    "step_2d_sr_low": "SR < 0.6 → Mutation B (factor risk management) 활성화 → 재측정",
+    "step_2e_multiple_fail": "2건 이상 미달 → S0 revise (design flaw)",
+    "step_3_post_s3": "S3 ρ<0.2 통과 시 PG admission 경로. ρ>=0.2 시 Mutation D는 role 재검토 후 재적용."
+  },
+
+  "scout_notes": [
+    "이 slate는 S1 실행 전 사전 등록이므로 실제 실증 결과 없이 설계. S1 결과에 따라 mutations 재조정 가능.",
+    "Mutation C (market beta ortho)는 R1 debate에서 가장 확실한 우려 사항 대응. S1 |β| 측정 후 강제 활성화 가능성 높음.",
+    "Mutation A (DD overlay)와 D (STR_1679 sleeve)는 서로 보완적. A는 standalone 개선, D는 portfolio 편입. 최종적으로 두 mutation 모두 적용된 'H_1676 + DD + STR_1679 Diversifier sleeve' 구조가 가장 robust.",
+    "S5 Phase 5 Cross-Combination에서 A+B+C+D 모두 조합된 variant 테스트 권고 (synthesis rules v7 적용).",
+    "AX 전수 회피: 모든 mutation이 AX-003/004/005 scope 밖 (overlay/weight/factor construction/portfolio construction = factor family 변경 없음)."
+  ]
+}

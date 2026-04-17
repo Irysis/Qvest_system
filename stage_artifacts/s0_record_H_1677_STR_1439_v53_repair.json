@@ -176,7 +176,10 @@
     "위험 4 — Score 변환의 경제적 의미 손실: D (OAS minvar weight)는 weight signal이라 score 변환이 자연스럽지 않음. 'rank of minvar weights' 정의 후 실효성 S1에서 검증 필수. 실패 시 D sub drop (3-sleeve로 축소).",
     "위험 5 — MRS regime 임계값 (<15/15-30/≥30) 자의성: 원본 STR_1439가 사용한 임계값이지만 v53 regime_engine_daily.R 최적화 상태 확인 필요. 단, 임계값 최적화는 factor timing 함정 위험 → 원본 유지 권고.",
     "위험 6 — Defense anchor 정의 모호성: 'Defense anchor' 라벨이 AX-001 조건부 평가 기준과 일치하는지 Governor 검증 필요. 단순 '낮은 MDD'가 defense가 아님 (Q07+D25 STR_1662 MDD 10.2% 였으나 CAGR 2.59%로 AX-005 편입).",
-    "위험 7 — PG1 admission 경쟁: STR_1679 D안도 Defense sleeve 구성 중. H_1677과 역할 중복 시 Governor가 하나만 admission. STR_1679 D안이 anchor + H_1677이 2nd defense diversifier 구도 가능성 검토."
+    "위험 7 — PG1 admission 경쟁: STR_1679 D안도 Defense sleeve 구성 중. H_1677과 역할 중복 시 Governor가 하나만 admission. STR_1679 D안이 anchor + H_1677이 2nd defense diversifier 구도 가능성 검토.",
+    "위험 8 — Portfolio CAPM beta 노출 (H_1676 VERDICT 선례 preventive): H_1676 R1 debate에서 Risk Manager + Codex Critic이 공통 지적한 market beta 직교화 미흡 issue가 H_1677에도 적용될 수 있음. STR_1037/898 (regime factor allocation) sub는 market beta ≈ 1 근접 가능. 4 sub composite 시 portfolio β 제어 명시 필요. S1 실측 후 |β| 측정하여 defense role 정합성(<0.85) 확인.",
+    "위험 9 — 4 sub-signal PIT 증빙 (H_1676 VERDICT 선례 preventive): H_1676 Codex R1 'analyst snapshot PIT 미명세' 지적과 동일 유형 위험. 4 sub (STR_1037/943/898/1035) 각각의 factor 원본 signal 복원 시 Usable_Date + as-of snapshot 엄수 필수. STR_943은 L-025 C11/C9 오염 이미 기록됨 → v53 재구현에서 fix 증빙 필수.",
+    "위험 10 — STR_1037/898 regime allocation 중복 (H_1676 VERDICT 선례 preventive): 두 sub 모두 'regime factor allocation' 유형. Academic/Quant가 debate에서 'A↔C 상관 매우 높음' 지적 예상. S3 PCA 축약 대비 slot D (OAS minvar) 3-sub composite 변형도 사전 고려."
   ],
 
   "s1_gate_criteria": {
@@ -186,7 +189,9 @@
     "portfolio_gate": "MDD < 45% (Hurdle v2.2 Hard Fail)",
     "liquidity_gate": "유동성 필터 후 average daily holdings ≥ 20",
     "sr_gate": "SR ≥ 1.00 (원본 1.532 대비 하락 허용 한도)",
-    "s3_gate_prospective": "Sub-signal A↔C 상관 < 0.7 (PCA 축약 여부 판단)"
+    "s3_gate_prospective": "Sub-signal A↔C 상관 < 0.7 (PCA 축약 여부 판단)",
+    "market_beta_gate_preregister": "S1 후 portfolio CAPM |β| 측정 필수. H_1676 VERDICT 선례상 debate에서 반드시 제기됨. |β|<0.85 defense role 정합 + |β|<0.15 diversifier 정합 (role에 따라 기준 다름, H_1677은 defense anchor이므로 0.85)",
+    "pit_evidence_preregister": "4 sub-signal (STR_1037 regime, STR_943 consensus, STR_898 alloc, STR_1035 weight) 각각의 factor 원본 데이터 PIT 증빙 필수. 특히 STR_943 계열 C11/C9 fix 엄수 (L-025 전례)."
   },
 
   "forge_handoff_plan": {

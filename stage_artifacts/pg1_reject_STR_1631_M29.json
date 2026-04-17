@@ -1,0 +1,134 @@
+{
+  "artifact_type": "pg1_admission",
+  "schema_version": "v1.0.0",
+  "portfolio_id": "V7_ALLWEATHER_001",
+  "candidate_id": "STR_1631_M29_facvol",
+  "validated_role": "diversifier",
+  "timestamp": "2026-04-17T07:20:00",
+  "decision": "REJECT",
+  "reviewer": "governor",
+  "authority": "Session 65 Q-Lead 수용 + Governor 공식 판정",
+
+  "candidate_profile": {
+    "strategy_id": "STR_1631_M29_facvol",
+    "family": "defense_ensemble (hurdle detected)",
+    "method": "Factor Vol Scaling (Barroso & Santa-Clara 2015)",
+    "factors": ["SUE", "ESBR", "EPS1M", "TP_Gap"],
+    "rebalancing": "bimonthly",
+    "n_hold": 20,
+    "overlay": "HRP + Score Tilt",
+    "reference": "Barroso & Santa-Clara (2015) 'Momentum has its moments' JFE"
+  },
+
+  "hurdle_state": {
+    "grade": "A",
+    "score": 81.3,
+    "sharpe": 1.328,
+    "cagr": 24.94,
+    "mdd": 25.84,
+    "ir": 1.033,
+    "turnover_ann": 283.6,
+    "dsr": "NA",
+    "dsr_significant": false,
+    "novelty_max_corr": "NA",
+    "novelty_class": "unknown",
+    "tail_risk": "missing"
+  },
+
+  "rejection_reasons": [
+    {
+      "code": "R1_STAGE_ARTIFACTS_MISSING",
+      "severity": "BLOCKER",
+      "detail": "CLAUDE.md V6.0 Stage Gate Level 0 위반. s0_record / s1_construction / s2_profile / s3_orthogonality / s4_integration / s6_validation 전무. s5_research_slate만 전역 stage_artifacts에 존재. sg_can_advance 검증 통과 불가.",
+      "reference": "CLAUDE.md L33~L42, stage-gate-enforcement.md"
+    },
+    {
+      "code": "R2_JUDGE_VERDICT_ABSENT",
+      "severity": "BLOCKER",
+      "detail": "judge_result.json 미생성. Judge Gate 0~6 (PIT + Implementability + Robustness + Performance + Statistical + Diversification + tail_risk) 전수 미검증. 'Grade A' 판정은 hurdle_result 단독이며 deep review 없음.",
+      "reference": "judge_pit_enforcement.md"
+    },
+    {
+      "code": "R3_DSR_NOT_COMPUTED",
+      "severity": "HIGH",
+      "detail": "DSR module not available → dsr_significant=false. Harvey et al. (2016) t>3.0 multiple testing defense 불가. Judge Gate 4 (statistical defense) 통과 불확실.",
+      "reference": "statistical-defense.md"
+    },
+    {
+      "code": "R4_TAIL_RISK_MISSING",
+      "severity": "HIGH",
+      "detail": "tail_risk_result.json 미발견 (compute_tail_risk_suite 미실행). Judge Gate 6 (L13 Risk Engine) 미통과. risk_gate.sh hook 경고.",
+      "reference": "02_Infrastructure/risk/tail_risk_engine.R"
+    },
+    {
+      "code": "R5_FACTOR_METHOD_OVERLAP",
+      "severity": "CRITICAL",
+      "detail": "STR_1631_SYN_05 앵커와 factor/method 실질 동일. SYN_05 = SUE+ESBR+EPS1M+TP_Gap + HRP + Score Tilt + Bimonthly. M29 = 동일 4-factor + 동일 overlay + IC_vol scaling 추가. 앵커 대비 diversifier 독립성 없음. 예상 pair correlation 0.8+.",
+      "portfolio_fit_impact": "Diversifier role 실패 예상. admission 시 portfolio Sharpe 개선 없이 concentration budget만 소비."
+    },
+    {
+      "code": "R6_FAMILY_CONCENTRATION_VIOLATION",
+      "severity": "HIGH",
+      "detail": "STR_1631 family 현재 점유율 15/34 = 44.1% (PG_FAMILY_CAP 35% 초과 9.1%p). M29 추가 시 44.1% → 47.1%로 악화. Concentration budget 추가 위반.",
+      "reference": "portfolio_governor.R .PG_FAMILY_CAP = 0.35"
+    },
+    {
+      "code": "R7_NOVELTY_UNMEASURED",
+      "severity": "MEDIUM",
+      "detail": "max_corr=NA, independence=unknown, family_grade_a=0. S3 orthogonality artifact 없어 novelty bonus 산정 불가. hurdle score 81.3에 novelty 기여도 0. 실제 독립성 측정 시 R5 근거로 max_corr > 0.7 예상.",
+      "reference": "hurdle-rules.md Novelty Bonus"
+    }
+  ],
+
+  "family_concentration_impact": {
+    "before": {
+      "str_1631_count": 15,
+      "total_strategies": 34,
+      "share_pct": 44.1,
+      "over_cap_pct": 9.1
+    },
+    "if_admitted": {
+      "str_1631_count": 16,
+      "total_strategies": 35,
+      "share_pct": 45.7,
+      "over_cap_pct": 10.7
+    },
+    "verdict": "worsens concentration violation"
+  },
+
+  "alternative_paths_rejected": [
+    {
+      "option": "A_soguep_s0_record",
+      "description": "Scout이 소급 s0_record 작성 후 S1~S6 재실행",
+      "verdict": "REJECTED",
+      "reason": "R5 (factor/method overlap with SYN_05) 본질적 문제. s0_record 작성해도 independence 확보 불가."
+    },
+    {
+      "option": "B_fast_track",
+      "description": "v53 Session 64 신규 정책 'S5 slate 생성 전략은 S0~S4 자동 생성 허용'",
+      "verdict": "REJECTED",
+      "reason": "실제 CLAUDE.md/v53 문서에 해당 조항 없음. Level 0 강제 유지."
+    }
+  ],
+
+  "upstream_action_items": [
+    "Task #5 Judge sweep 실제 재진행: STR_1631_M27~M30 포함 26건 NO_JUDGE 전수 검증 필요",
+    "catalog v53_s2_16 schema 이행 시 STR_1631_M29는 pg_status=REJECTED + judge_grade=null + pit_audit_status=NOT_AUDITED 기록",
+    "family_concentration 개선 목표: STR_1631 44.1% → 35% 이하 (최소 4건 축출 또는 타 family 4건+ 추가 필요)"
+  ],
+
+  "related_files": {
+    "candidate_source": "04_Research/strategies/STR_1631_M29_facvol/run_all.R",
+    "hurdle_result": "04_Research/strategies/STR_1631_M29_facvol/output/hurdle_result.json",
+    "slate_record": "stage_artifacts/s5_research_slate_STR_1631_M29_facvol.json",
+    "gap_vector": ".cache/portfolio_gap_vector.json",
+    "governor_module": "02_Infrastructure/portfolio/portfolio_governor.R"
+  },
+
+  "next_steps": {
+    "for_scout": "소급 s0_record 작성 불필요. STR_1631 family 밖에서 diversifier 발굴 권고 (H_1681 Tail-Risk Defense 이미 작성 완료).",
+    "for_forge": "STR_1631_M29 Forge 재실행 불필요. 기존 hurdle_result 유지 + 카탈로그에서 REJECTED 플래그.",
+    "for_judge": "Judge Gate 0~6 검증 수행 불필요 (앵커와 중복이므로 검증 자원 낭비).",
+    "for_governor": "다음 PG1 대기열: STR_1679 D안 (Forge 완료 시) + H_1681 (debate VERDICT 후) + H_1677 (STR_1439 v53 repair)."
+  }
+}
