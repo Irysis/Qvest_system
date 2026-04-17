@@ -1,0 +1,53 @@
+{
+  "role": "academic",
+  "agent_id": "academic_r2_H_1682",
+  "round": 2,
+  "r1_score": 16,
+  "r2_score": 16,
+  "score_changed": false,
+  "score_change_reason": "R1 breakdown(peer_review 4 + mechanism_align 4 + korea_evidence 2 + substantive_cite 3 + time_decay 3 = 16) 각 축이 R1 이후 추가 정보 없이 유지됨. Scout의 empirical-first 방어(stress_icir 0.659/2.655)는 정량 축(Quant/RM)에서는 점수 지지 근거이나, 학술 축에서는 '실증이 학술 transferability를 대체하지 못함' — 한국 distress puzzle 논쟁 및 Calmar peer-review 빈약 문제는 R1 조건(core_reference 2건 추가, sub-sample breakdown) 미이행 상태로 감점 요인 그대로 잔존. 상향 요인(mechanism_align의 Q25 AX-004 구조 분리 명확성, Dichev 1998 결론과 Ohlson-low-tilt 방향 정합)은 R1에서 이미 4/4 만점이라 추가 상향 여지 없음. 하향 요인(R16 data-snooping 심화)은 Codex/RM과 합류하여 concern 강화로 반영하되, substantive_cite/time_decay는 R1에서 이미 3/4로 절반 이상 감점 처리됨 — 이중 감점 방지.",
+  "breakdown_r2": {
+    "peer_review": 4,
+    "mechanism_align": 4,
+    "korea_evidence": 2,
+    "substantive_cite": 3,
+    "time_decay": 3
+  },
+  "agreements": [
+    {
+      "with": "codex_critic",
+      "point": "R16 채택(stress_pct_pos 1.00) + Q24 배제(stress_icir -0.695) + 0.6/0.4 가중 모두 ex-post 8대 급락 샘플 성과에 의존한 parameter selection bias",
+      "academic_perspective": "Harvey-Liu-Zhu(2016) 'Editor's Challenge' 다중검정 관점 + Lopez de Prado(2018) 'Advances in Financial ML' backtest overfitting 프레임에서 보면, stress 8구간·40개월 샘플은 pre-filter(factor 선택 기준) + post-filter(weight 결정 기준) 이중 노출. Chordia-Goyal-Saretto(2020 RFS) 'Anomalies and False Discoveries' 결과상 factor universe 300+ 중 stress_pct_pos 1.00 factor가 우연 발견 확률 비무시. 본 가설은 R16 단독 ex-post 선택이 아닌 Q25 primary + R16 secondary + Q24 배제 multiple selection이므로 Bonferroni 보정 t-stat 요구 수준 최소 3.5 이상. Calmar peer-review 기반 이론이 빈약한 상태에서 empirical-only 정당화는 학술적으로 약함."
+    },
+    {
+      "with": "risk_manager",
+      "point": "R16_Calmar Factor DB 이중 정의(월간 since-inception MDD vs 일간 phase6 252d rolling MDD) 및 stress_pct_pos 1.00의 survivorship-length bias 가능성",
+      "academic_perspective": "Young(1991) 원 정의는 '36-month cumulative return / MaxDD during same 36 months'이며, since-inception 정의는 Young 원전에서 벗어남. Burghardt-Duncan-Liu(2003 Zhang 재판) Calmar 변종 분석에서 since-inception Calmar는 기업 age에 monotonic 편향 — 상장 20년 기업은 2008/2020 포함, 상장 5년 기업은 2020만 포함하여 분모 MaxDD 크기가 structural 차이. 이는 학술적으로 Kothari-Shanken-Sloan(1995 JFE) survivorship bias와 lookback window consistency 요구를 위반. S1 Forge 호출 전 월간 compute_risk.R의 MDD lookback 재정의(12m 또는 36m rolling) 필수 — 그렇지 않으면 empirical stress_icir 2.655가 기업 age effect를 포함한 artifact일 가능성."
+    },
+    {
+      "with": "quant",
+      "point": "R16 crisis_ratio 0.98(평시 normal_icir 1.473 ≈ stress_icir 2.655)는 R16이 '위기 전문 방어'가 아니라 '전기간 강한 risk-adjusted factor'",
+      "academic_perspective": "Barroso-Santa-Clara(2015 JFE) 'Momentum has its moments' 및 Daniel-Moskowitz(2016 JFE) 'Momentum crashes' 관점에서 Defense factor의 엄밀 정의는 'crisis 구간 conditional alpha가 평시 대비 유의하게 상승 + crisis β 음수 or 중립'. R16은 crisis_ratio ≈ 1이므로 이 두 조건 중 첫째 미충족. 학술 layer에서 R16을 Defense anchor로 positioning하는 것은 Cohen-Diether-Malloy(2007) 'Supply and demand shifts' 같은 factor role redefinition 논리 필요. 본 가설의 'information_channel: Z_drawdown = z(R16_Calmar)'는 Quant 권고대로 'drawdown-quality filter(risk management)'로 재명명 시 Chekhlov 2005 CDaR 이론 정합성 오히려 강화."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "governor_claim": "Q25 AX-004 scope 밖 구조적 분리(distress ≠ profitability)는 0.5점 감점 사유의 주요 원인이 아니며 'empirical-first로 수용 가능'",
+      "academic_counter": "Governor 판단은 factor taxonomy 측면에서는 맞으나 학술 layer에서 추가 검증 필수. Ohlson(1980) O-score 원 9개 변수 중 NetIncome/TotalAssets(프록시 ROA)와 Funds from Operations/TotalLiabilities(프록시 수익성 대비 부채)가 포함되어 있음 — 즉 Ohlson O 내부에 profitability component가 mechanical하게 embedded. Shumway(2001 JOB) 'Forecasting bankruptcy more accurately' hazard model도 NetIncome/TotalAssets를 distress 예측력 핵심으로 보고. 따라서 'Ohlson = distress, not profitability'는 top-level label에서 맞지만 내부 구성요소 수준에서는 profitability와 correlated sub-component 포함. AX-004 scope 해석에서 Judge가 'profitability input 포함 여부'를 criterion으로 잡으면 Q25는 borderline. 학술 방어는 '(Ohlson O의 probabilistic output이 profitability와는 비선형 logit transformation으로 분리된다)' 입장을 mechanism 본문에 명시해야 견고. Governor의 '구조적 분리'는 학술 증명 부족 상태에서는 Soft PASS이지 Hard PASS 아님."
+    },
+    {
+      "against": "governor",
+      "governor_claim": "Q25 stress 0.66 + R16 stress 2.66 strong individual로 정적 60/40 drag 희석 효과 최소 (L-119 경계 완화)",
+      "academic_counter": "Individual strong ≠ composite strong 주장은 학술적으로 불충분. Fama-French(2015 RMW) + Asness-Frazzini-Pedersen(2019 FAJ) 'Quality minus Junk' 실증에서 individual IC 0.05+ factor들의 정적 composite가 IC 0.04~0.06 평탄화되는 mean-reversion toward center 현상 보고. Q25 ic_all 0.0316 + R16 ic_all 0.0014 전기간 평균은 R16이 평시 거의 noise(ic 0.0014 ≈ 0). 정적 60/40에서 R16 40% weight가 평시 40% 구간을 noise로 희석 → composite 평시 ICIR 예상 0.35~0.45(Q25 0.63 × 0.6 + R16 0.22 × 0.4 = 0.466 이론치 그대로가 아닌 공분산 조정 후 더 낮을 수 있음). Scout의 '희석 최소' 주장은 stress 구간 한정이며 평시 희석 리스크는 L-119 경계 그대로 적용 — Governor의 '희석 효과 최소' 판단은 stress-only view라 학술 표준 전기간 SR 정적 분석과 불일치."
+    },
+    {
+      "against": "codex_critic",
+      "codex_claim": "kill scenario 복합 발생 시 Core 대비 MDD 축소 목표 6-10%p 미달",
+      "academic_counter": "Kill scenario 분석은 valid하나 상한치 '미달'은 과소추정 가능성. Longstaff(2004 RFS) 'Flight-to-quality' 및 Vayanos(2004 JFM) 'Flight to quality' 이론상 crisis 시 safe-asset crowding은 Q25 low-distress 종목(대형 안정주)과 R16 high-Calmar 종목(drawdown 회복력 높음)에 동시 bid pressure. 이는 단기 premium 상승이나 crisis exit 국면(2009 Q2, 2020 Q3)에서 crowded de-risk로 sharp drawdown 반전. Campbell-Hilscher-Szilagyi(2008 JF) Table 6 'Distress factor during/post crisis' 데이터상 crisis peak 대비 post-crisis 6개월 distress long-short return 반전 폭 평균 -8%. 따라서 H_1682의 crisis alpha 2~4%/y가 post-crisis 반전에서 동일 폭 반납 시 net 효과는 평시 drag(R16 평시 noise) 제거 후에만 의미. Codex의 '미달' 상한은 학술 실증상 '미달 + post-crisis 반전 drag'로 확장 필요 — 구체적으로 MDD 축소 2~4%p(축소 폭 절반)만 달성 가능성."
+    }
+  ],
+  "strongest_opposing_argument": "R16_Calmar의 stress_pct_pos 1.00 (40/40 months all positive IC)은 학술적으로 data-snooping 우려를 피할 수 없는 극단 수치이며, Scout가 이를 근거로 R16을 Defense anchor secondary로 채택한 결정은 (1) Young 1991 futures magazine editorial 기반 peer-review 빈약, (2) Calmar 정의 자체가 path-dependent(분모 MaxDD)로 8대 급락 구간에서 기계적으로 높은 IC 발생 구조(급락 후 MaxDD 급확대 → 분모 상승 → Calmar 높은 '회복 종목' 선택적 bias), (3) Factor DB 월간 compute_risk.R의 since-inception MDD 정의가 기업 age effect를 포함하여 survivorship-length bias 내재, (4) 한국 시장 Calmar 종목선택 실증 논문 0건의 복합적 한계를 가진다. Campbell-Hilscher-Szilagyi(2008 JF)조차 distress anomaly의 robust 검증을 위해 Shumway(2001) hazard model + Fama-French 3-factor control + SUE 통제의 three-layer robustness check를 수행했는데, 본 가설은 단일 stress_icir empirical 근거로 Defense anchor 채택을 정당화한다. 학술 표준에서는 R16 단독 robustness가 아닌 (1) 한국 distress risk 실증 논문 2건+ 인용 (Kho-Kim 2007, Eom-Park 2014, Bae-Kang-Wang 2015 중 선택), (2) 8대 급락을 pre-2008/2008-2015/post-2015 sub-sample로 분해한 stress_icir breakdown으로 temporal stability 증명, (3) Shumway 2001 hazard 또는 Campbell-Hilscher-Szilagyi 2008 mimicking portfolio를 한국 데이터로 재현한 factor-adjusted alpha 잔존 확인 — 이 세 조건 중 최소 2건 선결이 필요하다. 본 R2 시점에서 Scout는 R1 조건(core_reference 2건 추가, sub-sample breakdown, Dichev 명시 정합, Q25 recent_5y breakdown) 중 어느 것도 이행하지 않은 상태이므로, 학술 5축 종합 16점은 상향 불가 — R16을 Defense secondary가 아닌 'drawdown-quality supplementary filter'로 역할 재정의(Quant 권고 수용) + Q25 primary weight 0.6 → 0.75 상향 + 한국 실증 layer 추가가 이루어지지 않으면, H_1682은 H_1681 대비 fundamental shift를 달성했음에도 학술 transferability 증명이 불충분하여 PG1 admission에서 재차 REVISE 가능성이 높다.",
+  "concern_r2": "R1 대비 concern 강화. Codex/Quant/RM과 합류 지점은 (a) R16 data-snooping(Codex+RM)과 (b) R16 Defense 역할 애매성(Quant)이며, 학술 축에서 이 둘은 '한국 실증 부재 + Calmar peer-review 빈약'이라는 structural root cause에서 파생. Governor의 empirical-first 수용 논리는 정량 축에서는 방어 가능하나 학술 축에서는 불충분. Scout의 R1 조건 4건(한국 논문 2건 추가, sub-sample breakdown, Dichev 명시 정합, Q25 recent_5y breakdown) 미이행 상태에서 score 16 유지. VERDICT에서 R1 조건 4건을 PG1 필수 선결(Hard condition)로 escalate 권고.",
+  "timestamp": "2026-04-17T17:15:00"
+}

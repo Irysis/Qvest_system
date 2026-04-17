@@ -1,0 +1,58 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1682",
+  "round": "R2",
+  "r1_score": 14,
+  "r2_score": 15,
+  "score_changed": true,
+  "score_change_reason": "Quant R1 실측 Q25-R16 cross-sectional 상관 median 0.053 (SD 0.106)이 본인 R1 'cross-family 독립성 가정에 DCC-Copula 없이 신뢰 불가' 우려를 부분 해소. 또한 Quant의 Z_Score_Aligned 존재 확인 (Q25 2523행, R16 2397행, NA=0.0)이 H_1681 데이터 부재 선례와 차별화. 단 R16 stress_pct_pos 1.00 data-snooping 우려는 Codex R1과 본인 R1 모두 미해소 상태이므로 +1점만 상향. Kill scenario 2건(R16 이중 정의 + survivorship-length bias)은 여전히 유효.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "R16 crisis_ratio 0.98 — Defense 역할 재정의 필요",
+      "detail": "Quant R1의 'R16은 위기 전문 방어가 아닌 전기간 강한 risk-adjusted factor' 진단에 전적 동의. 본인 R1에서 R16 crisis_premium -0.0036 음수를 지적한 것과 정확히 같은 결론. normal_icir 1.473 vs stress_icir 2.655에서 crisis_ratio 0.98은 '위기 전환 시 추가 alpha 폭발이 아닌 안정적 유지 프로파일'임을 의미. Quant의 'drawdown-quality filter로 재정의' 권고는 risk management 관점에서도 정확. S6 Role Honesty Audit에서 R16을 'defense crisis specialist'로 주장하면 기각 위험. R16은 risk-managed quality filter, Q25가 진짜 defense character (crisis_ratio 1.55)."
+    },
+    {
+      "with": "codex_critic",
+      "point": "0.6/0.4 가중의 ex-post tuning 의심",
+      "detail": "Codex R1의 '0.6/0.4 비중이 알려진 구간 결과에 맞춘 튜닝' 지적은 L-119 (정적 EW 블렌드 alpha 희석) 교훈의 연장선에서 유효. Q25 stress_icir 0.659 vs R16 stress_icir 2.655 성과를 본 뒤 'Q25 primary, R16 secondary'로 60/40 설정한 것은 form은 다르지만 본질적으로 stress IC 순위 기반 가중 = ex-post information leakage. S1에서 50/50 EW baseline과 60/40 간 성과 차이가 유의한지 비교 필수. 차이 미미하면 50/50 채택이 PIT 방어에 유리."
+    },
+    {
+      "with": "academic",
+      "point": "한국 distress risk puzzle 논쟁에 대한 입장 부재",
+      "detail": "Academic R1의 '한국 실증 논문 0건 인용 + 한국 distress premium sign 불확실' 지적은 risk 관점에서 중요. Campbell-Hilscher-Szilagyi 2008 US 실증의 한국 transferability가 검증되지 않은 상태에서, Q25 stress_icir 0.659 empirical만으로 메커니즘 이전을 정당화하는 것은 'empirical-first이되 mechanism-blind' 위험. 단 본인은 Academic과 달리 Q25 한국 실증 자체(stress ICIR 0.659, recent_3y 0.633)가 충분히 강력하므로 논문 부재가 S1 진입을 막을 이유는 아니라고 판단. 논문은 S3/S6에서 보완 가능."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "Governor 17점은 gap alignment 가중이 과도 — 실현 가능성 discount 부족",
+      "detail": "Governor R1 17/20은 gap_alignment 4/4 + role_match 4/4로 구조적 적합성에 만점을 부여. 그러나 '빈자리가 있다'와 '이 후보가 빈자리를 채울 수 있다'는 별개 문제. Governor의 marginal_contribution 3/4 + implementation_feasibility 2.5/4에서 이미 R16 평시 drag (ICIR 0.22) + Q25 compute_quality.R 구현 품질 미확인 + R16 lookback 미확정을 감점 사유로 인정했음에도 총점 17점은 낙관 편향. 비교: 본인 R1 14점, Codex R1 10점. 핵심 차이는 'gap 존재 = 높은 점수' vs 'gap 충족 확률 = 점수'. Defense sleeve 공석이 절박할수록 후보를 관대하게 평가하는 confirmation bias 경계 필요. PG0 gap은 객관적이나, H_1682이 그 gap을 실제로 해소할 확률은 S1 실증 전 50~65% 수준으로 추정. 이유: (1) R16 이중 정의 미해결, (2) pure MDD 25~35% 예상으로 Defense 본질적 가치 미확정, (3) 60/40 ex-post tuning 의심. 17점보다 13~15점이 현실적."
+    },
+    {
+      "against": "academic",
+      "point": "R16 stress_pct_pos 1.00 data-snooping 우려의 방향성 명확화 — mechanical artifact 가능성이 순수 snooping보다 위험",
+      "detail": "Academic R1은 '학술적으로 이 수준의 robust signal은 data-snooping 의심을 피하기 어려움'이라 했고, Codex도 'ex-post data-snooping' 우려를 제기. 본인 R1에서도 'p(binomial) < 0.001' 극단성을 지적. 그러나 R2에서 명확히 해야 할 것은 data-snooping의 정확한 경로. (a) 순수 data-snooping (288개 factor 중 stress에서 잘 나온 것만 선택) — 이것은 Scout이 stress_factor_ic_analysis.csv에서 R16을 찾아낸 것이므로 부분적으로 해당. 그러나 Calmar ratio가 '위기 시 덜 빠진 종목 = 높은 Calmar' tautology를 내장하므로 '선택 snooping'이 아닌 '정의 tautology'. (b) Mechanical artifact — Calmar = Return/MaxDD이므로, 위기 구간에서 MaxDD가 작은 종목의 Calmar가 높고, 이 종목들이 cross-sectional IC 양수를 기계적으로 생성. 이는 snooping이 아닌 factor 정의의 구조적 self-fulfillment. Risk 관점에서 (b)가 더 위험한 이유: tautological defense는 '위기 시 방어'가 아닌 '위기를 정의에 반영한 factor를 위기에서 측정'하는 circular 패턴. Academic이 지적한 'MaxDD가 분모에 있어 급락 구간 이후 reversal 민감'이 이 경로의 핵심. S1에서 R16 IC를 stress 구간 내 sub-period (급락 중 vs 급락 직후 회복)로 분해하여 tautology 정도를 측정해야 함."
+    },
+    {
+      "against": "codex_critic",
+      "point": "Kill scenario 3건 복합 확률은 정당하나 각 시나리오 독립성 과대평가",
+      "detail": "Codex R1 kill scenario: (1) R16 평시 ICIR 0.22 drag, (2) 금리/유동성 전환 시 고베타 반등장 underperformance, (3) 신용스트레스 시 distress-drawdown 상관 급등으로 60/40 분산 효과 붕괴. '복합적으로 겹칠 경우' Core 대비 MDD 미달이라는 결론은 동의하나, 시나리오 (2)와 (3)은 동시 발생이 어려움 — 금리 인상 + 유동성 긴축(고베타 반등장)과 신용스트레스(distress 급등)는 경기 사이클 반대편. 동시 발생 시나리오는 2013 Taper Tantrum 유형인데 한국에서는 해당 기간 distress spread 확대가 제한적이었음. Kill scenario로서 각각은 유효하나 '3건 동시' 확률은 5% 미만. Codex 10점은 복합 시나리오 가중이 과도. 다만 Codex의 'Q25 PIT 무결성(공시 지연 T+60~90일)' 우려는 매우 정당하며 본인 R1에서 누락한 관점 — Q25 Ohlson O는 재무제표 기반이므로 C4 (연간→5월, 분기→45일 lag) 준수 여부가 Factor DB compute_quality.R 내부에서 확인 필요."
+    }
+  ],
+
+  "strongest_opposing_argument": "Codex R1 + 본인 R1 합류: R16_Calmar stress_pct_pos 1.00의 구조적 tautology 위험. Calmar = Return/MaxDD 정의 자체가 '위기 시 덜 빠진 종목 = 높은 Calmar → 높은 IC'를 기계적으로 생성하며, 이는 data-snooping이 아닌 factor 정의의 self-fulfilling prophecy. Academic R1이 지적한 'MaxDD 분모 민감성'과 결합하면, R16의 '40개월 전부 양수 IC'는 signal이 아닌 tautology의 증거일 수 있다. 이 tautology가 무해한지(실투에서도 유효) 유해한지(backtest 전용 artifact)는 S1에서 R16 IC의 stress 내 sub-period 분해(급락 중 vs 회복기)로만 판별 가능. 이 검증 없이 R16을 Defense anchor의 40% 비중에 배치하는 것은 '방어력 있는 것처럼 보이는' factor를 방어력이 있다고 착각하는 위험.",
+
+  "updated_conditions": [
+    "R1 조건 유지: S1 전 R16 월간(since-inception) vs 일간(252d rolling) 정의 확정",
+    "R1 조건 유지: R16 stress 40개월 종목별 IC decomposition + bootstrap CI",
+    "R1 조건 유지: S3에서 portfolio-level DCC tail dependence 측정 (L-106)",
+    "R2 추가: S1에서 50/50 EW baseline vs 60/40 비교 — 차이 미미 시 50/50 채택 (ex-post tuning 방어)",
+    "R2 추가: R16 IC stress 내 sub-period 분해 (급락 중 vs 급락 직후 회복) — tautology 정도 정량화",
+    "R2 추가: Q25 C4 PIT 준수 확인 — compute_quality.R 내 Usable_Date 처리 + 공시 지연 반영 검증 (Codex 수용)"
+  ],
+
+  "r1_r2_evolution": "R1에서 R16 stress_pct_pos 1.00의 '통계적 극단성'을 지적했으나 원인을 data-snooping vs mechanical artifact로 분리하지 않았음. R2에서 Academic + Codex 논점을 종합하여 'factor 정의 tautology'가 핵심 위험 경로임을 명확화. 동시에 Quant 실측(상관 0.053, Z_Score_Aligned 완비)이 R1 우려 일부를 해소하여 +1점 상향. Governor 17점에 대해서는 gap alignment 과가중을 명시적으로 반박 — Defense 공석의 절박함이 후보 평가 관대화로 이어지는 confirmation bias 경계."
+}

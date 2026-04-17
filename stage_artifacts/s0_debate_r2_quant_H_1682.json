@@ -1,0 +1,91 @@
+{
+  "hypothesis_id": "H_1682",
+  "debate_round": "R2",
+  "role": "quant",
+  "agent_id": "quant_r2_h1682",
+  "r1_score": 14,
+  "r2_score": 15,
+  "score_changed": true,
+  "score_change_reason": "RM의 'since-inception vs 252d 이중 정의' kill scenario가 compute_risk.R 코드 레벨 검증으로 사실 오류 확인 (R06 MDD = lookback_start 기준 252d rolling only). 이 위협 해소로 kill scenario 위험도 하향. 단 Codex의 0.6/0.4 비중 ex-post 지적과 R16 stress_pct_pos 1.00 data-snooping (RM/Academic 동시 제기) 구조적 합류는 충분히 유효 — 총점 +1점 조정.",
+
+  "agreements": [
+    {
+      "counterpart": "risk_manager",
+      "point": "stress_pct_pos 1.00 data-snooping 의심",
+      "detail": "R16 Calmar 40/40 stress months 전부 양수 IC는 통계적으로 p(binomial) < 0.001로 random chance는 아니나, RM이 지적한 'Z_Score_Aligned higher_better 방향과 위기 시 안전 종목 생존의 mechanical overlap'은 실질적 우려다. compute_risk.R 코드 확인 결과 R16 = (mean_r * 252) / abs(R06_MDD) — 급락 구간에서 MaxDD 분모가 크게 확장되는 시점에 Calmar가 낮은 종목이 선택 제외되는 구조이므로, 위기 직전/중 고 Calmar 종목 선택은 사후적으로 '살아남은 종목'과 겹칠 가능성이 있다. S1 실행 전 R16 Raw_Value 분포 + stress 구간 종목별 IC decomposition 검증이 필수라는 RM 조건에 완전 동의."
+    },
+    {
+      "counterpart": "academic",
+      "point": "한국 distress risk 실증 논문 부재",
+      "detail": "Academic의 지적대로 core_reference 5건 중 한국 실증 0건이다. 특히 한국 시장 고유 구조 — Chaebol bailout 정책 개입, 2008/2020 위기 정책 유동성, 은행차입 중심 부채 구조 — 때문에 US distress anomaly(Dichev 1998, CHS 2008)의 직접 이전 가능성에 의문이 있다. Kho-Kim(2007), Eom-Park(2014) 한국 distress 실증 인용 누락은 S0 record 보완 필요 사항으로 동의. 다만 이는 S0 record 업데이트 조건이지 S1 진입 차단 사유는 아니다 — pre_screening Q25 stress_icir 0.659가 한국 시장에서의 실증을 이미 제공하기 때문이다."
+    },
+    {
+      "counterpart": "codex_critic",
+      "point": "Q25 Ohlson O 공시 지연 T+60~90일 PIT 명세 필요",
+      "detail": "Codex가 지적한 Q25_Ohlson_O 입력의 공시 지연 PIT 검증은 적절하다. Ohlson O 계산에는 재무제표 9개 항목이 필요하며 (TotalLiab/TotalAssets, WorkingCapital/TotalAssets 등 연간·분기 재무 데이터), C4 연간→5월/분기→45일 lag 규칙이 적용되어야 한다. s0_record에 'C4: Q25 재무제표 Usable_Date 경유 (annual/quarterly)'가 명시되어 있으나, KOSDAQ 지연공시 구간에서 실질 T+90일 이상 지연 가능성에 대한 시뮬레이션 검증은 S1에서 factor_db_connector sig_date 기반 C14 확인으로 수행해야 한다. 이 조건 동의."
+    },
+    {
+      "counterpart": "risk_manager",
+      "point": "portfolio CAPM beta 조건부 측정 필요",
+      "detail": "RM의 'flight-to-quality crowding 시 위기 beta 일시 상승' 지적은 Defense 역할 검증에서 핵심이다. L-118-ext + L-115 교훈상, 평시 cross-sectional 상관 0.053이 portfolio return-level 상관을 보장하지 않는다. 위기 구간 조건부 beta (β_crisis vs β_normal) 분리 측정을 S3 gate에 추가한다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "counterpart": "risk_manager",
+      "point": "R16 Calmar since-inception vs 252d rolling 이중 정의 kill scenario",
+      "verdict": "REFUTED",
+      "evidence": "compute_risk.R 코드 직접 검증 완료 (lines 29~33, 88~91, 142~144). 월간 Factor DB compute_risk.R은 명확히 252d rolling 정의만 사용한다: (1) line 32: 'lookback_start <- sig_d - 365 # ~252 trading days', (2) line 33: 'rd <- rd[Date <= sig_d & Date >= lookback_start]' — sig_d 이전 365일로 데이터를 필터링, (3) line 89~91: R06 MDD는 cumprod()를 이 필터된 252d 데이터에만 적용, (4) line 143~144: R16 = (mean_r * 252) / abs(r06) — 동일 252d 데이터 참조. RM이 우려한 'since-inception cumulative MDD를 사용하는 월간 compute_risk.R'은 존재하지 않는다. 일간 phase6의 252d rolling과 월간 compute_risk.R 모두 sig_d - 365 기준 동일 정의를 사용한다. 이 kill scenario는 소멸한다.",
+      "impact": "kill scenario 1 소멸. S1 실행 전 선결 조건에서 'lookback 정의 확정' 제거 가능. 단 252d lookback이 유일 정의임이 확정되었으므로 12m/36m/since-inception 민감도 테스트는 S5 mutation에서만 다룬다."
+    },
+    {
+      "counterpart": "codex_critic",
+      "point": "0.6/0.4 비중이 알려진 기간 성과 기반 ex-post 튜닝",
+      "verdict": "PARTIAL_REFUTED",
+      "evidence": "0.6/0.4 비중은 full-sample 최적화가 아닌 사전 경제 논리 기반 prior-driven 설계다: (1) Q25 Ohlson은 stress_icir 0.659 + crisis_ratio 1.55로 '위기 방어 character 명확' → primary 60%. (2) R16 Calmar는 stress_icir 2.655이나 crisis_ratio 0.98 (평시와 위기 모두 강한 '전기간 alpha factor') → secondary 40%. 이 60/40은 'primary Defense + secondary Alpha' 역할 분담에 기반한 이론적 prior이며, 수치 최적화를 통해 도출된 것이 아니다. 비교: Ang-Chen-Xing(2006 JFE)의 downside beta pricing에서 downside-specific factor에 높은 가중을 주는 것은 표준 관행. 단 Codex의 지적 일부는 수용: 0.6/0.4를 사전 등록하여 S1 이후 재튜닝 없이 walk-forward 결과로만 pass/fail을 판단해야 한다. 수치 최적화가 아닌 prior-driven임을 S0 record에 명시 강화 조건을 수용한다.",
+      "impact": "0.6/0.4 자체는 유지 가능하나 'prior-driven 근거 명시 + 재튜닝 금지' 조건 추가"
+    },
+    {
+      "counterpart": "codex_critic",
+      "point": "R16 채택/Q24 배제가 ex-post 성과 지표에 의존한 파라미터 선택",
+      "verdict": "PARTIAL_REFUTED",
+      "evidence": "Q24 배제 결정은 '최적화 탐색 후 성과 좋은 조합 선택'이 아닌 독립된 사전 분석(pre_screening stress_factor_ic_analysis)에서 Q24 stress_icir = -0.695 역방향 확인 후 배제한 단일 결정이다. 이것은 파라미터 튜닝이 아니라 '위기에서 역방향 작동하는 factor 배제'라는 구조적 필터링이다. L-104 STR_1624 Q24+V05+L04 Hard Fail 선례와도 일관한다. 다만 Codex의 핵심 우려 — 'stress_pct_pos 1.00이라는 극단적 수치를 근거로 R16을 채택한 것이 사후 확인' — 는 Academic과 RM의 동일 우려와 합류하여 구조적 지적이 된다. 이 축의 방어선은 '사전 등록된 factor 분류 체계에서 R16 Calmar가 Defense role 적합이라는 이론 근거 (Chekhlov 2005 CDaR)를 먼저 제시하고 실증이 이를 확인했다'는 순서를 명확히 하는 것이다."
+    },
+    {
+      "counterpart": "risk_manager",
+      "point": "R16 crisis_premium -0.0036 음수 → 위기 전용 방어 아닌 전기간 alpha factor",
+      "verdict": "AGREEMENT_WITH_REFRAMING",
+      "evidence": "R1에서 본인이 이미 같은 우려를 제기했다 (crisis_ratio=0.98, 평시 normal_icir=1.473 ≈ stress_icir=2.655). RM도 같은 결론. 이 우려는 유효하다. 단 Defense role에서 R16의 역할을 'crisis-only amplifier'가 아닌 'downside path protection filter'로 재정의하면 논리적 일관성이 유지된다: R16 Calmar high 종목은 '과거 MDD 대비 높은 CAGR을 달성한 종목'으로, 이는 downside drawdown risk에 대한 경험적 회복력 지표다. 위기에서 강하지 않은 것이 아니라, 평시에도 drawdown-efficient한 종목 선별 효과가 있다. 이것은 Defense 역할로 여전히 타당하다. R1 조건 수용: R16 역할을 'defense crisis factor'에서 'drawdown quality / path-dependent risk filter'로 역할 명세 조정."
+    }
+  ],
+
+  "r1_self_review": {
+    "c3_concern_update": "R1에서 제기한 C3 우려 (R16 Calmar 252d lookback 수익률이 IC 계산에 중복 사용 가능성)는 compute_risk.R 확인 결과 구조적으로 분리된다: IC 계산은 factor score (R16 Calmar = sig_d 기준 과거 252d 수익/MDD) vs 다음 월 forward return으로 수행된다. 분자(CAGR proxy)와 IC forward return은 시간 축이 분리되어 있어 C3 위반이 아니다. 단 252d lookback 기준 시점(sig_d)과 factor 집계 시점이 동일 월이면 last trading day 기준인지 확인이 필요 — 이 부분은 S1에서 factor_db_connector 시간 기준 확인으로 해결한다. C3 우려 수위를 'kill' → 'condition'으로 하향.",
+    "q25_r16_corr_defense": "본인 R1 실측 Q25-R16 상관 median=0.053은 Governor(17점)와 합류하여 cross-family 독립성의 가장 강한 정량 근거다. RM의 'flight-to-quality crowding' 우려에도 불구하고, 평시 단면 상관 0.053은 정보 채널 독립성을 지지한다. 위기 시 일시 상관 상승(최대 0.27)은 인정하되 portfolio beta 지배 위험은 S3에서 조건부 beta 측정으로 대응한다."
+  },
+
+  "strongest_opposing_argument": "Academic과 Risk Manager, Codex가 공통으로 제기한 'R16 stress_pct_pos 1.00의 data-snooping 가능성 + 위기 시 고 Calmar 종목이 사후적으로 살아남은 종목과 mechanical overlap'이 가장 강한 반대 논거다. 구체적으로: (a) 8대 급락 40개월 중 단 한 달도 음수 IC가 없다는 것은 통계적으로 p(binomial) < 0.001로 random chance는 배제되나, Z_Score_Aligned higher_better 방향 설정 + 위기 구간 생존 종목 편향이 mechanically 결합하면 stress IC가 과대추정될 수 있다. (b) Calmar = CAGR / MaxDD 구조에서 MaxDD가 이미 확정된 급락 구간 이후 측정 시점의 factor 값이 '회복한 종목'을 기계적으로 선택하는 survivorship conditioning과 겹칠 수 있다. 이 반박을 완전히 해소하려면 S1에서 급락 구간 시작 1개월 전 기준 R16 factor snapshot vs 급락 구간 중 IC를 비교하여 선행 방어(사전 예측)인지 동행/후행(기계적 생존 선택)인지를 구분해야 한다. 이것이 해소되지 않으면 R16의 Defense anchor 역할 정당성이 약해진다.",
+
+  "quantitative_verification_conducted": {
+    "compute_risk_r16_lookup": {
+      "file": "02_Infrastructure/factor_db/compute_risk.R",
+      "lines_checked": "29-33, 88-91, 142-144",
+      "finding": "R16_Calmar = (mean_r * 252) / abs(R06_MDD). R06 MDD는 lookback_start = sig_d - 365 필터된 252d 데이터에서만 계산. since-inception 사용 없음. RM kill scenario 'idubl definition' 소멸.",
+      "impact": "kill scenario 1건 소멸. S1 선결 조건에서 'lookback 확정' 제거."
+    },
+    "q25_r16_cross_corr": {
+      "already_in_r1": "R1 실측: median=0.053, mean=0.083, max=0.275. cross-family 독립성 정량 확인.",
+      "r2_implication": "Governor 17점 + RM 3.0/4 beta_orthogonality 근거 지지. Codex/RM의 '분산 효과 붕괴 kill' 시나리오는 평시 구조적 독립성은 intact."
+    }
+  },
+
+  "updated_conditions": [
+    "S1 실행 전 R16 stress_pct_pos 1.00 검증: 8대 급락 '시작 1개월 전' 기준 factor snapshot vs 급락 구간 IC 분해 — 선행(사전 예측) vs 동행/후행(기계적 생존) 구분 필수",
+    "0.6/0.4 비중 사전 등록 + S1 이후 재튜닝 금지 명시 (walk-forward 결과로만 pass/fail)",
+    "Q25 Ohlson O S1 코드에서 sig_date 기반 C14 Usable_Date 필터링 factor_db_connector 확인 (KOSDAQ 지연공시 T+90 대응)",
+    "S3 gate 확장: portfolio 조건부 beta (β_crisis vs β_normal) 분리 측정 추가 (RM 지적, L-115 대응)",
+    "S0 record 보완: Kho-Kim(2007) 또는 Eom-Park(2014) 한국 distress 실증 최소 1건 core_reference 추가 (Academic 조건 부분 수용)",
+    "R16 역할 명세 조정: 'defense crisis factor' → 'drawdown quality / path-dependent risk filter' (AX-001 defense 평가는 Q25 crisis_ratio=1.55가 주 담당)"
+  ]
+}
