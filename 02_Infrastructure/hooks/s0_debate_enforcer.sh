@@ -197,40 +197,8 @@ except Exception as e:
 
   N_ROLES=$(add_role "r1" "$ROLE")
 
-  # 텔레그램 중계 — 요약 메시지 (핵심만 전달, 줄바꿈 가독성)
-  TG_MSG=$(printf '%s' "$CONTENT" | python3 -c "
-import sys, json
-
-def summarize(txt, max_len=60):
-    s = str(txt).strip()
-    if len(s) <= max_len: return s
-    # 첫 문장만 추출
-    for sep in ['. ', '。', '; ', ' — ', ' - ']:
-        idx = s.find(sep)
-        if 0 < idx <= max_len:
-            return s[:idx+1]
-    return s[:max_len-3] + '...'
-
-d = json.load(sys.stdin)
-role = d.get('role', '?')
-score = d.get('score', d.get('total', 0))
-args = d.get('arguments', d.get('key_arguments', []))
-concern = d.get('concern', d.get('strongest_concern', ''))
-
-lines = []
-lines.append(f'🎙 [S0] \$HYP_ID R1 — {role}: {score}/20')
-lines.append('')
-for i, a in enumerate(args[:3], 1):
-    lines.append(f'  {i}. {summarize(a, 70)}')
-lines.append('')
-if concern:
-    lines.append(f'  ⚠️ {summarize(concern, 80)}')
-    lines.append('')
-lines.append(f'[\$N_ROLES/5]')
-print('\n'.join(lines))
-" 2>/dev/null || echo "🎙 R1 $ROLE: $SCORE/20 [$N_ROLES/5]")
-
-  tg_notify "$TG_MSG"
+  # 텔레그램 중계 — B안 한 줄 압축 (개별 제출은 점수 + 진행률만)
+  tg_notify "🎙 [S0 $HYP_ID] R1 $ROLE: $SCORE/20 [$N_ROLES/5]"
 
   echo "$(date +%H:%M:%S) ENFORCER R1: $ROLE ($SCORE/20) [$N_ROLES/5]" >> "$LOG"
 
@@ -245,12 +213,13 @@ with open('$STATE_FILE') as f: d = json.load(f)
 print(d.get('r1_total', '?'))
 " 2>/dev/null || echo "?")
 
-    # R1 전원 의견 요약 발송
+    # R1 전원 의견 요약 발송 — B안: 5인 각 한 줄 (점수 + concern 핵심 한 문장)
     R1_SUMMARY=$(python3 -c "
 import json, glob, os
-lines = []
-lines.append('📋 [S0 Debate] $HYP_ID — R1 Complete')
-lines.append('')
+def clip(s, n=100):
+    s = str(s).strip().replace('\n',' ')
+    return s if len(s)<=n else s[:n-3]+'...'
+lines = ['📋 [S0 Debate] $HYP_ID — R1 Complete']
 total = 0
 artifacts_dir = os.path.dirname('$FILE_PATH') or 'stage_artifacts'
 for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r1_*_${HYP_ID}.json'))):
@@ -259,18 +228,10 @@ for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r1_*_${HYP_ID}.
         role = d.get('role', '?')
         score = d.get('score', d.get('total', 0))
         total += score
-        args = d.get('arguments', [])
         concern = d.get('concern', '')
-        lines.append(f'━ {role}: {score}/20')
-        for i, a in enumerate(args[:3], 1):
-            lines.append(f'  {i}. {str(a)}')
-        if concern:
-            lines.append(f'  ⚠️ {str(concern)}')
-        lines.append('')
+        lines.append(f'━ {role} {score}/20 — {clip(concern)}')
     except: pass
-lines.append(f'합계: {total}/100')
-lines.append('')
-lines.append('💬 R2 Rebuttal 시작...')
+lines.append(f'합계: {total}/100 → R2 Rebuttal 시작')
 print('\n'.join(lines))
 " 2>/dev/null || echo "📋 R1 Complete [$HYP_ID]")
     tg_notify "$R1_SUMMARY"
@@ -404,49 +365,9 @@ except Exception as e:
 
   N_ROLES=$(add_role "r2" "$ROLE")
 
-  # 텔레그램 중계 — 요약 (핵심 반박/동의 1줄씩)
-  TG_MSG=$(printf '%s' "$CONTENT" | python3 -c "
-import sys, json
-
-def summarize(txt, max_len=70):
-    s = str(txt).strip()
-    if len(s) <= max_len: return s
-    for sep in ['. ', '。', '; ', ' — ']:
-        idx = s.find(sep)
-        if 0 < idx <= max_len:
-            return s[:idx+1]
-    return s[:max_len-3] + '...'
-
-d = json.load(sys.stdin)
-role = d.get('role', '?')
-r1 = d.get('r1_score', 0)
-r2 = d.get('r2_score', d.get('score', 0))
-delta = r2 - r1
-ds = f'+{delta}' if delta > 0 else str(delta)
-reason = d.get('score_change_reason', '') if d.get('score_changed') else ''
-
-rebs = d.get('rebuttals', [])
-agrs = d.get('agreements', [])
-
-lines = []
-lines.append(f'🔥 [S0] \$HYP_ID R2 — {role}: {r1}→{r2} ({ds})')
-lines.append('')
-if reason:
-    lines.append(f'  이유: {summarize(reason, 80)}')
-    lines.append('')
-for rb in rebs[:2]:
-    if isinstance(rb, dict):
-        lines.append(f'  ↩️ vs {rb.get(\"against\",\"?\")}: {summarize(rb.get(\"point\",\"\"), 70)}')
-lines.append('')
-for ag in agrs[:1]:
-    if isinstance(ag, dict):
-        lines.append(f'  ✅ vs {ag.get(\"with\",\"?\")}: {summarize(ag.get(\"point\",\"\"), 70)}')
-lines.append('')
-lines.append(f'[\$N_ROLES/5]')
-print('\n'.join(lines))
-" 2>/dev/null || echo "🔥 R2 $ROLE: $R1_SC→$R2_SC ($DELTA) [$N_ROLES/5]")
-
-  tg_notify "$TG_MSG"
+  # 텔레그램 중계 — B안 한 줄 압축 (개별 제출은 점수 변동 + 진행률만)
+  DS_SIGN=$([ "$DELTA" -gt 0 ] 2>/dev/null && echo "+$DELTA" || echo "$DELTA")
+  tg_notify "🔥 [S0 $HYP_ID] R2 $ROLE: $R1_SC→$R2_SC ($DS_SIGN) [$N_ROLES/5]"
 
   echo "$(date +%H:%M:%S) ENFORCER R2: $ROLE ($R1_SC→$R2_SC) [$N_ROLES/5]" >> "$LOG"
 
@@ -471,12 +392,13 @@ print(','.join(r3_needed) if r3_needed else 'NONE')
     if [ "$R3_CHECK" = "NONE" ]; then
       write_state "VERDICT_READY"
 
-      # R2 전원 의견 변동 요약 발송
+      # R2 전원 의견 변동 요약 발송 — B안: 5인 각 한 줄 (점수 변동 + 핵심 rebut 요약)
       R2_SUMMARY=$(python3 -c "
 import json, glob, os
-lines = []
-lines.append('📊 [S0 Debate] $HYP_ID — R2 Complete')
-lines.append('')
+def clip(s, n=90):
+    s = str(s).strip().replace('\n',' ')
+    return s if len(s)<=n else s[:n-3]+'...'
+lines = ['📊 [S0 Debate] $HYP_ID — R2 Complete']
 artifacts_dir = os.path.dirname('$FILE_PATH') or 'stage_artifacts'
 r1_total = 0
 r2_total = 0
@@ -490,27 +412,15 @@ for f in sorted(glob.glob(os.path.join(artifacts_dir, 's0_debate_r2_*_${HYP_ID}.
         r2_total += r2
         delta = r2 - r1
         ds = f'+{delta}' if delta > 0 else str(delta)
-        reason = d.get('score_change_reason', '') if d.get('score_changed') else '변동 없음'
         rebs = d.get('rebuttals', [])
-        agrs = d.get('agreements', [])
-
-        lines.append(f'━ {role}: {r1} → {r2} ({ds})')
-        if reason and reason != '변동 없음':
-            lines.append(f'  이유: {str(reason)}')
-        for rb in rebs[:1]:
-            if isinstance(rb, dict):
-                lines.append(f'  ↩️ vs {rb.get(\"against\",\"?\")}: {str(rb.get(\"point\",\"\"))}')
-        for ag in agrs[:1]:
-            if isinstance(ag, dict):
-                lines.append(f'  ✅ vs {ag.get(\"with\",\"?\")}: {str(ag.get(\"point\",\"\"))}')
-        lines.append('')
+        reb_txt = ''
+        if rebs and isinstance(rebs[0], dict):
+            reb_txt = clip(rebs[0].get('point',''))
+        lines.append(f'━ {role} {r1}→{r2} ({ds}) — {reb_txt}')
     except: pass
 dt = r2_total - r1_total
 ds = f'+{dt}' if dt > 0 else str(dt)
-lines.append(f'합계: {r1_total} → {r2_total} ({ds})')
-lines.append('')
-lines.append('R3 대상: 없음 (전원 |delta| <= 4)')
-lines.append('⚖️ VERDICT 작성 가능')
+lines.append(f'합계: {r1_total} → {r2_total} ({ds}) ⚖️ VERDICT 작성 가능')
 print('\n'.join(lines))
 " 2>/dev/null || echo "📊 R2 Complete [$HYP_ID]")
       tg_notify "$R2_SUMMARY"
