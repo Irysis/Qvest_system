@@ -122,4 +122,16 @@ source("02_Infrastructure/axiom_memory_interface.R"); sg_sync_methodology_memory
 - 근거: L-132, L-135 (L-code 2건)
 - 5축 점수: 0.82 (I=0.85 R=1.00 F=0.80 E=0.50 M=1.00)
 - 승격: 2026-04-17 | 다음 검토: 2026-07-16
+
+### AX-004 [방법론] [실패]: [방법론 실패 규칙 초안] family=quality_profitability, tags=HARD_FAIL_MDD,QUALITY_FAIL,CASH_PROFITABILITY, supporting=3건 L-code. 한국시장 quality_profitability standalone long-only의 구조적 실패.
+- 범위: market=KR, family=quality_profitability, 
+- 근거: L-133, L-134, L-139 (L-code 3건)
+- 5축 점수: 0.89 (I=0.78 R=1.00 F=1.00 E=0.50 M=1.00)
+- 승격: 2026-04-17 | 다음 검토: 2026-07-16
+
+### AX-005 [방법론] [실패]: [방법론 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL, supporting=2건 L-code. 한국시장 low-beta/Q07+D25 defense standalone의 구조적 실패.
+- 범위: market=KR, family=defense, 
+- 근거: L-136, L-140 (L-code 2건)
+- 5축 점수: 0.89 (I=0.75 R=1.00 F=1.00 E=0.50 M=1.00)
+- 승격: 2026-04-17 | 다음 검토: 2026-07-16
 <!-- AXIOM_INJECT_END -->
