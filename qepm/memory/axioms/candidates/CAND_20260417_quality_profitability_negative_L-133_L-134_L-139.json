@@ -3,65 +3,59 @@
   "candidate_id": "CAND_20260417_quality_profitability_negative_L-133_L-134_L-139",
   "type": "methodological",
   "polarity": "negative",
-  "statement_draft": "[방법론 실패 규칙 초안] family=quality_profitability, tags=HARD_FAIL_MDD,QUALITY_FAIL,CASH_PROFITABILITY, supporting=3건 L-code. 한국시장 quality_profitability standalone long-only의 구조적 실패.",
-  "supporting_l_codes": [
-    "L-133",
-    "L-134",
-    "L-139"
-  ],
+  "statement_draft": "[방법론 실패 규칙] KR quality_profitability standalone long-only는 구조적 실패. (1) GP standalone(Novy-Marx 2013), (2) Cash-based profitability(Ball 2016) DART 현금흐름 의존, (3) Growth stability composite IS-only은 모두 OOS 소멸. EXCLUSION: Quality가 overlay로 작동하는 멀티팩터 블렌드(QMJ+MOM, quality+value 등)는 scope 밖 — Q07 Earnings Stability는 STR_1679 defense sleeve에서 유효.",
+  "supporting_l_codes": ["L-133", "L-134", "L-139"],
   "scope_draft": {
     "market": "KR",
     "factor_family": "quality_profitability",
     "regime": null,
-    "construction_types": ["standalone_long_only", "composite", "cash_based", "gross_profitability"]
+    "mode": "standalone_long_only",
+    "construction_types": ["GP_standalone", "cash_based_DART_dependent", "growth_stability_composite_IS_only"],
+    "exclusion": "quality as overlay in multi-factor blend (QMJ+MOM, quality+value, defense sleeve within multi-sleeve portfolio) — Q07 Earnings Stability in STR_1679 is valid use"
   },
   "evidence_draft": {
     "independent_l_codes": 3,
     "independent_strategies": 3,
-    "strategies": [
-      "STR_1655_GSCD",
-      "STR_1657_CBPQ",
-      "STR_1626_profitability_fortress_defense"
-    ],
+    "strategies": ["STR_1655_GSCD", "STR_1657_CBPQ", "STR_1626_profitability_fortress_defense"],
     "effect_direction_consistency": 1.0,
-    "note": "3건 모두 Grade F/C, MDD 54~94% hard fail. 직접적 reproduced_failure."
+    "note": "3건 모두 Grade F/C, MDD 54~94% hard fail, standalone mode. 방향 일치."
   },
   "falsification_draft": {
     "attempts": [
-      {
-        "description": "STR_1655 Growth Stability Composite Diversifier — IS SR 0.60 → OOS SR 0.00",
-        "result": "reproduced_failure",
-        "effect_retained": 1.0,
-        "mdd": 0.717
-      },
-      {
-        "description": "STR_1657 Cash-Based Profitability Quality(Ball 2016) — DART 현금흐름 데이터 품질 이슈로 시그널 역방향 작용",
-        "result": "reproduced_failure",
-        "effect_retained": 1.0,
-        "mdd": 0.94
-      },
-      {
-        "description": "STR_1626 Profitability Fortress(Novy-Marx 2013) — IS SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135 alpha decay",
-        "result": "reproduced_failure",
-        "effect_retained": 0.76,
-        "mdd": 0.541
-      }
+      {"description": "STR_1655 Growth Stability Composite Diversifier standalone — IS SR 0.60 → OOS SR 0.00", "result": "reproduced_failure", "effect_retained": 1.0, "mdd": 0.717},
+      {"description": "STR_1657 Cash-Based Profitability Quality(Ball 2016) standalone — DART 현금흐름 데이터 품질 이슈로 시그널 역방향 작용", "result": "reproduced_failure", "effect_retained": 1.0, "mdd": 0.94},
+      {"description": "STR_1626 Profitability Fortress(Novy-Marx 2013) standalone — IS SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135 alpha decay", "result": "reproduced_failure", "effect_retained": 0.76, "mdd": 0.541}
     ],
-    "note": "Supporting L-code 3건 자체가 독립적 반증 시도 (composite/cash-based/gross profitability 3개 construction type 모두 실패)"
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "Quality as overlay(QMJ+MOM 등) 성공 예시는 본 scope 밖이므로 counter에 포함하지 않음. STR_1679 Q07 defense sleeve는 exclusion에 의해 scope 밖."
+    },
+    "note": "Supporting L-code 3건 = 3개 independent construction (GP/cash/composite) standalone mode에서 일관된 실패"
   },
   "mechanism_draft": {
-    "economic_explanation": "한국시장 quality_profitability standalone long-only는 세 가지 구조적 이유로 실패한다. (1) 2020년대 이후 성장주 우위로 profitability premium 급격히 약화되어 recent 3Y SR 심각한 decay(STR_1626 0.135). (2) Cash-based profitability(Ball et al. 2016)는 미국에서 accrual-free quality proxy로 유효하나 한국 DART 재무 현금흐름 항목의 가용성·일관성 문제로 시그널 품질 저하(STR_1657 MDD 94%). (3) Growth Stability composite는 IS overfit으로 OOS 완전 소멸(STR_1655 retention -0.001). Novy-Marx(2013) Gross Profitability, Fama-French(2015) RMW 모두 KR에서 standalone 재현 불가 — quality 팩터는 value/momentum overlay 또는 factor blending 없이는 지속적 alpha 산출 불가.",
+    "economic_explanation": "KR quality_profitability standalone long-only의 구조적 실패 3요인: (1) Novy-Marx(2013) GP premium은 2020년대 성장주 랠리로 recent 3Y SR 급격히 약화(STR_1626 0.135). (2) Ball et al.(2016) Cash-Based Profitability는 DART 재무 현금흐름 항목의 가용성·일관성 문제로 시그널 품질 저하(STR_1657 MDD 94%). (3) Growth Stability composite는 IS overfit, OOS 완전 소멸(STR_1655 retention -0.001). 공통 원인: 한국시장에서 quality premium은 standalone long-only로 재현 불가 — value/momentum overlay 또는 멀티팩터 blending 필수 (Asness 2019 QMJ는 value와 결합 시 유효).",
     "mechanism_type": "market_structural",
     "causal_plausibility": "high"
   },
   "oos_validation_draft": {
     "oos_months": 12,
     "oos_effect_vs_is": 0.08,
-    "note": "3건 평균 OOS retention ≈ 0.08 (STR_1626=0.24, STR_1655=0.00, STR_1657=-0.001). IS 대비 92% 열화. 실패 재현성 매우 강함."
+    "calculation_method": "simple mean of OOS retention ratios: (0.24 + 0.00 + -0.001) / 3 = 0.08",
+    "note": "STR_1626 retention 0.24, STR_1655 retention 0.00, STR_1657 retention -0.001. IS 대비 92% 열화."
+  },
+  "range": {
+    "applicability": "KR (한국시장) only",
+    "timeframe": "post-2020 (성장주 우위 전환점 이후)",
+    "portfolio_size": "standalone long-only (single factor, no overlay)"
+  },
+  "expiry": {
+    "next_review": "2026-07-17",
+    "trigger_review_if": "(a) 한국 quality premium 반등 증거 3건+ OOS, (b) DART 현금흐름 데이터 품질 개선, (c) 성장주 랠리 종료 징후"
   },
   "cluster_members_count": 3,
   "status": "pending_5axis",
   "created_at": "2026-04-17T05:27:45+00:00",
-  "enriched_at": "2026-04-17T14:00:00+00:00",
-  "enriched_by": "judge_auto_after_idle_5x"
+  "enriched_at": "2026-04-17T16:00:00+00:00",
+  "enriched_by": "judge_scope_restricted_v2",
+  "revision_note": "AX-004 v1 (scope too broad) deprecated 2026-04-17. Re-enrich with scope limited to standalone_long_only mode + explicit exclusion."
 }

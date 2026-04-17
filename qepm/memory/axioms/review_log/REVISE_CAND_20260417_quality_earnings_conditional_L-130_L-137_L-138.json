@@ -1,0 +1,23 @@
+{
+  "candidate_id": "CAND_20260417_quality_earnings_conditional_L-130_L-137_L-138",
+  "decision": "REVISE_HOLD",
+  "decided_at": "2026-04-17T16:10:00+00:00",
+  "decided_by": "judge_after_qlead_approval",
+  "reason": "pending_falsification_evidence",
+  "detail": "conditional polarity (not negative)는 falsification 점수에 negative bonus +0.5 자동 부여 없음. rh_survived 증거(role_honesty_*.json) 필요하나 supporting strategies(STR_1652_DFA_on_VDplus, STR_1635_ev_accrual_quality_defense, STR_1636_piotroski_ret_autocorr_diversifier) 모두 role_honesty artifact 부재. 예상 점수 0.76 (임계값 0.80 미달). 재시도 조건: Forge가 해당 3전략 role_honesty 생성 후 재클러스터 또는 evidence_summary 축적.",
+  "axes_predicted": {
+    "independence": 0.7833,
+    "rigor": 0.8,
+    "falsification": 0.5,
+    "external": 0.9,
+    "mechanism": 1.0,
+    "weighted": 0.762
+  },
+  "trigger_retry_if": [
+    "role_honesty_STR_1652_*.json 생성",
+    "role_honesty_STR_1635_*.json 생성",
+    "role_honesty_STR_1636_*.json 생성",
+    "또는 새 supporting L-code 추가로 재클러스터"
+  ],
+  "next_review": "2026-05-17"
+}

@@ -1,0 +1,85 @@
+{
+  "record_type": "factor_evaluation_rule_candidate",
+  "rule_id": "FER_stress_icir_positive_required",
+  "logged_at": "2026-04-17T18:00:00+00:00",
+  "logged_by": "judge_teammate",
+  "source_l_code": "L-144",
+  "judge_decision": "Option C — 추가 factor-level evidence 축적 후 2026-07-16 quarterly review 시 AX-006 승격 검토",
+  "rule_draft": {
+    "name": "Defense Factor stress_icir Gate",
+    "statement": "Defense role 팩터 선정 시 stress_icir > 0 + stress_pct_pos >= 0.5 필수 요건",
+    "applicability": "KR market, Defense role factors only (Core/Diversifier role은 별도 기준)",
+    "threshold": {
+      "stress_icir_min": 0.0,
+      "stress_pct_pos_min": 0.5
+    },
+    "rationale": "L-144 Q24 Altman stress_icir -0.695, pct_pos 0.25는 defense 역할에서 역방향 작용 확정. L-120 교훈(stress vs 4-regime 정의 차이)과 결합하여 stress 기준이 defense 평가에 우선."
+  },
+  "supporting_evidence": {
+    "l_144": {
+      "factor": "Q24_Altman_Z",
+      "stress_icir": -0.695,
+      "stress_pct_pos": 0.25,
+      "crisis_ratio": -2.89,
+      "verdict": "FAIL (defense disqualified)"
+    },
+    "positive_reference": {
+      "factor_Q25_Ohlson": {
+        "stress_icir": 0.659,
+        "stress_pct_pos": 0.80,
+        "note": "H_1682 채택 근거"
+      },
+      "factor_R16_Calmar": {
+        "stress_icir": 2.655,
+        "stress_pct_pos": 1.00,
+        "note": "H_1682 Q25 + R16 blend의 R16"
+      },
+      "factor_Q07_Earnings_Stability": {
+        "stress_icir": 0.753,
+        "note": "L-121 defense 기본 reference"
+      }
+    }
+  },
+  "implementation_paths": {
+    "path_1_s2_profile_gate": {
+      "description": "S2 Profile 단계에서 Defense role 선언 전략에 자동 체크",
+      "target_file": "02_Infrastructure/stage_gate_engine.R 또는 s2_profiling.R",
+      "enforcement_level": "L2 soft gate (warning + recommend REVISE)",
+      "priority": "P1 (Architect 또는 Forge 담당)"
+    },
+    "path_2_axiom_AX006_promotion": {
+      "description": "추가 factor-level evidence 2~3건 축적 후 AX-006 승격",
+      "required_evidence_gap": "현재 L-144 1건 → 최소 3건 supporting 필요",
+      "candidate_additional_evidence": [
+        "V05_Value standalone stress 분석 (AX-003과 연결 가능성)",
+        "타 distress metric (Q22 Merton, Q23 Shumway 등) stress_icir 측정",
+        "Growth stability 계열 factor stress 측정 (AX-004 v3 연결 가능성)"
+      ],
+      "next_review": "2026-07-16"
+    },
+    "path_3_s6_judge_audit_reference": {
+      "description": "Judge S6 full audit 시 Defense 역할 전략에 FER rule 참조",
+      "enforcement_level": "Judge discretion (L-144 참조 + Role Honesty Audit 연결)",
+      "immediate_applicability": true
+    }
+  },
+  "relationship_to_active_axioms": {
+    "AX-001 (Defense conditional evaluation)": "FER rule은 AX-001의 'Defense는 조건부 성과로 평가' 원칙과 정합. FER는 stress 조건에서 양의 기여 필수라는 구체화.",
+    "AX-005 v2 (defense standalone CAGR below inflation)": "독립 mechanism. AX-005는 CAGR 기회비용, FER는 stress IC 역방향. 중첩 없음.",
+    "L-143 (Q07+D29 CAGR 2.93%)": "AX-005 궤도. FER와 직접 관계 없음."
+  },
+  "h_1682_debate_relevance": {
+    "note": "Judge는 debater 아니므로 직접 개입 불가. 그러나 H_1682 S6 Gate 진입 시 L-144 참조로 Q24 배제 선택의 empirical 정당성 감사 반영.",
+    "scout_design_alignment": "Q25 60% + R16 40% 유지는 FER rule 완전 준수 (Q25 stress_icir +0.659, R16 stress_icir +2.655)"
+  },
+  "ax006_promotion_pathway": {
+    "current_supporting_count": 1,
+    "required_supporting_count": 3,
+    "gap": 2,
+    "next_review_target": "2026-07-16",
+    "trigger_earlier_review_if": [
+      "factor-level empirical evidence 2건+ 추가 (stress IC 역방향 확인)",
+      "또는 Q-Lead/Scout/Governor가 긴급 승격 request"
+    ]
+  }
+}

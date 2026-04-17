@@ -1,0 +1,75 @@
+{
+  "axiom_id": "AX-005",
+  "record_type": "pending_evidence_for_quarterly_review",
+  "logged_at": "2026-04-17T17:30:00+00:00",
+  "logged_by": "judge_teammate",
+  "next_review_target": "2026-07-16",
+  "judge_decision": "Option C (현 scope 유지, quarterly review 시 재판정)",
+  "decision_rationale": [
+    "AX v2 승격 패턴: Session 65 초 v1 scope too broad 지적 → v2 재승격 교훈. 긴급 scope 확장은 동일 오류 재발 위험",
+    "empirical pattern 일치도 강하나 정식 quarterly review 절차 경유 필수",
+    "Scout 미래 가설 보호: Q07 + tail-risk cross-family 설계가 회색지대 진입 방지"
+  ],
+  "pending_evidence": {
+    "l_code": "L-143",
+    "strategy_id": "STR_1675_Q07_D29_defense",
+    "strategy_metrics": {
+      "grade": "C",
+      "hard_fail": false,
+      "sharpe": 0.655,
+      "cagr": 0.0293,
+      "mdd": -0.1194
+    },
+    "pattern": "Q07 + Accounting Beta variant (D29) combo standalone long-only defense",
+    "similarity_to_AX005_supporting_L140": {
+      "L140_strategy": "STR_1662_defense_D25_Q07",
+      "L140_cagr": 0.0259,
+      "cagr_difference": "0.34%p",
+      "statistical_distinguishability": "indistinguishable (within noise)"
+    },
+    "current_scope_decision": "technical OUT — D29 not in AX-005 construction_types (only D25 listed). Scope preserved as-is.",
+    "source_file": "stage_artifacts/l_code_L143_Q07_D29_defense_empirical_fail.json"
+  },
+  "scope_extension_options": {
+    "option_A": {
+      "description": "construction_types 확장 — Q07_D25_single_sleeve_combo → Q07_AccountingBeta_combo (D25/D29/기타 variant 포함)",
+      "supporting_l_codes_if_extended": ["L-136", "L-140", "L-143"],
+      "risk": "Scout A안/B안 미래 가설 회색지대 진입 위험"
+    },
+    "option_B": {
+      "description": "AX-006 신규 승격 (defense_static_blend_CAGR_below_inflation)",
+      "risk": "과도한 axiom 추가, supporting L-code 3건 모두 defense drag 공통 원인 (독립성 부족)"
+    },
+    "option_C": {
+      "description": "현 scope 유지, L-143은 quarterly review 대기 evidence로만 기록",
+      "rationale": "정식 절차 경유 + 향후 재심사 근거 축적 허용",
+      "selected": true
+    }
+  },
+  "related_strategies_affected": [
+    {
+      "strategy_id": "STR_1679_D안 (Defense sleeve Q07 80% + D29 20%)",
+      "ax005_verdict": "technical PASS (multi-sleeve exclusion)",
+      "l143_warning": "Defense CAGR 경고 해당",
+      "judge_recommendation": "Forge 완료 후 3 variant 실측에서 Def sleeve 기여 <2pp 시 Defense drag 확정 공식화"
+    },
+    {
+      "strategy_id": "H_1675_original_REVISE_variant",
+      "status": "conditional activation 미적용 시 L-143 패턴 재현 위험"
+    },
+    {
+      "strategy_id": "H_1681_Tail-Risk_Defense",
+      "status": "AX-005 + L-143 우려 회피 설계 (Q07 + tail-risk cross-family)"
+    }
+  ],
+  "trigger_earlier_review_if": [
+    "L-143와 동일 패턴의 empirical failure 2건 추가 (Q07 + Accounting Beta variant combo CAGR < 5%)",
+    "또는 Scout/Governor가 긴급 scope 확장 request (Q-Lead 승인 필요)"
+  ],
+  "ax005_current_state_preserved": {
+    "construction_types": ["BAB_standalone", "Q07_D25_single_sleeve_combo"],
+    "exclusion": "multi-sleeve portfolio (STR_1679 Core+Def, STR_905 3-sleeve) + STR_1439 multi-factor defensive",
+    "version": 2,
+    "weighted_score": 0.887
+  }
+}

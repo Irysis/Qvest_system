@@ -1,0 +1,115 @@
+{
+  "factor_id": "H_1682_Distress_Calmar_Defense",
+  "parent_hypothesis": "H_1682",
+  "parent_s0_verdict": "stage_artifacts/S0_VERDICT_H_1682.json (APPROVE_CONDITIONAL 71/100)",
+  "parent_s0_record": "stage_artifacts/s0_record_H_1682_distress_calmar_defense.json (v2)",
+  "stage": "S5_SLATE_PREREG",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "status": "PRE_S1",
+  "note": "VERDICT conditions_for_s1[9] 수용 — 'S5 mutation slate 사전 등록: R16-only + Q25-only + 50/50 + tail overlay'. Forge S1 완료 전 Scout 주도 사전 등록.",
+
+  "activation_criteria": {
+    "gate_pass": "S1 gate criteria 전수 통과 (ICIR >= 0.20 / C1-C15 / MDD<40% / |beta|<0.85 / CAGR>3% + stress alpha>0 / Defense 4 sub-gate)",
+    "gate_fail_branch": "Hard Fail 시 mutation slate 무효, H_1682 REVISE",
+    "conditional_activation": "S1 결과에 따라 slot 선택적 활성화"
+  },
+
+  "mutations": [
+    {
+      "slot": "A",
+      "mutation_id": "H_1682_M1_R16_only",
+      "mutation_type": "single_factor_baseline",
+      "description": "R16_Calmar 단독 100% (Q25 완전 제거)",
+      "rationale": "VERDICT conditions_for_s1[9] Codex 조건. composite incremental 성과 입증 (COND_06) baseline. R16 stress_pct_pos 1.00 tautology 여부 판별에도 기여.",
+      "params": {
+        "composite_formula": "score = z_R16_Calmar",
+        "N_HOLD": 20,
+        "weight_method": "equal"
+      },
+      "expected_impact": "R16 단독 SR 예상 0.4~0.7 (stress 시 strong, 평시 IC 0.22 weak). composite 0.6/0.4 대비 성과 비교 기준",
+      "alpha_preservation": "R16 signal 그대로",
+      "priority_if_composite_pass": "low (비교 baseline)",
+      "priority_if_composite_fail": "HIGH (R16 단독이 composite보다 robust한지 판별)",
+      "axiom_check": "PASS — AX 전수 무관"
+    },
+    {
+      "slot": "B",
+      "mutation_id": "H_1682_M2_Q25_only",
+      "mutation_type": "single_factor_baseline",
+      "description": "Q25_Ohlson_O 단독 100% (R16 완전 제거)",
+      "rationale": "VERDICT conditions_for_s1[9] Codex 조건. Q25 standalone distress anchor 성과. L-112 Q07 standalone 실패와 비교 (Q25 vs Q07 distress-vs-stability 차이).",
+      "params": {
+        "composite_formula": "score = z_Q25_Ohlson_O",
+        "N_HOLD": 20,
+        "weight_method": "equal"
+      },
+      "expected_impact": "Q25 단독 SR 예상 0.5~0.8 (ICIR 0.633, stress 0.659). composite 0.6/0.4 대비 Q25 기여 분해",
+      "alpha_preservation": "Q25 signal 그대로",
+      "priority_if_composite_pass": "low",
+      "priority_if_composite_fail": "HIGH (Q25 단독 tilt가 cross-family composite보다 안정적일 가능성)",
+      "axiom_check": "PASS — Q25는 distress, AX-004 무관 (profitability 아님)"
+    },
+    {
+      "slot": "C",
+      "mutation_id": "H_1682_M3_50_50_baseline",
+      "mutation_type": "parameter_alternative",
+      "description": "50/50 equal weight composite (Q25 50% + R16 50%)",
+      "rationale": "VERDICT conditions_for_s1[9] Codex 조건. 60/40 vs 50/50 robust 비교. Codex ex-post tuning 우려 대응 — 60/40이 ex-post selection인지 parametric robust한지 판별.",
+      "params": {
+        "composite_formula": "score = 0.5·z_Q25 + 0.5·z_R16",
+        "N_HOLD": 20,
+        "weight_method": "equal"
+      },
+      "expected_impact": "50/50이 60/40보다 balanced이나 Q25 ICIR strong(0.633) vs R16 weak(0.22)이므로 이론상 60/40이 우위. 실측 확인.",
+      "alpha_preservation": "composite signal 유지, 비중만 변경",
+      "priority_if_60_40_pass": "low (confirmation)",
+      "priority_if_60_40_fail": "HIGH (50/50이 robust하면 60/40 ex-post 확정)",
+      "axiom_check": "PASS"
+    },
+    {
+      "slot": "D",
+      "mutation_id": "H_1682_M4_tail_overlay",
+      "mutation_type": "overlay",
+      "description": "DD 6/20 또는 VT 15% overlay 추가 (Barroso&Santa-Clara 2015 factor risk management)",
+      "rationale": "VERDICT conditions_for_s1[9] Governor 조건. L-013 전례 (CVaR standalone MDD 52.7% → DD 6/20 overlay MDD 30.4%) 성공 패턴. H_1682 Defense 정적 composite의 MDD 제어 mutation.",
+      "params": {
+        "overlay_type": "DD 6/20 with t-1 lag (L-465~470 준수)",
+        "DD_START": 0.06,
+        "DD_FULL": 0.20,
+        "alternative_overlay": "VT 15% annualized target",
+        "lag": "t-1 (C9 준수)"
+      },
+      "expected_impact": "MDD -20~30% 축소. SR 소폭 개선 또는 유지 (L-013 전례). CAGR 거의 유지.",
+      "alpha_preservation": "signal 유지, position sizing만 조정",
+      "priority_if_mdd_fail": "HIGHEST (pure MDD > 40% 시 즉시 활성화)",
+      "priority_if_mdd_pass": "medium (추가 MDD 개선 목적)",
+      "axiom_check": "PASS — overlay는 position sizing, factor family 변경 없음"
+    }
+  ],
+
+  "activation_flowchart": {
+    "step_1": "H_1682 S1 실행 → hurdle_result (primary 60/40) + 3 baselines (Slot A/B/C) 병행 측정 (COND_03)",
+    "step_2_all_pass": "모든 gate 통과 → Slot D (tail overlay) 선택적 활성화로 MDD 추가 개선 확인",
+    "step_2_mdd_fail": "Primary MDD >= 40% → Slot D (tail overlay) 필수 활성화",
+    "step_2_composite_fail": "Composite 60/40이 Q25/R16 standalone보다 열위 → Slot B 또는 A 단독 전환 검토",
+    "step_2_sr_low": "SR < 0.5 → Slot C (50/50) 비교, robust 시 전환",
+    "step_3_synthesis": "S5 Phase 5 Cross-Combination: Slot D tail overlay + 60/40 composite가 APPROVE_CONDITIONAL 유지하면서 MDD <35% 달성 시 최적. PG1 admission 경로.",
+    "step_4_failure_branch": "모든 slot 시도 후 CAGR > 3% + stress alpha > 0 미달 시 → H_1682 REVISE 2차 (last round)"
+  },
+
+  "cond_09_compliance": {
+    "verdict_requirement": "conditions_for_s1[9]: 'S5 mutation slate 사전 등록: R16-only 단독 + Q25-only 단독 + 50/50 baseline + tail overlay'",
+    "scout_implementation": "4 slots 정확히 매핑: A=R16-only, B=Q25-only, C=50/50, D=tail overlay. 전수 preregistered.",
+    "status": "✅ COND_09 PRE-REGISTERED"
+  },
+
+  "scout_notes": [
+    "이 slate는 H_1682 S1 실행 전 사전 등록. VERDICT conditions_for_s1[9] 직접 수용.",
+    "Slot A/B/C는 S1 단계에서 Forge가 parallel 측정 (COND_03). Slot D는 S5 mutation 단계 별도 실행.",
+    "S1 결과에 따라 flowchart step_2~3 조건부 활성화. Scout/Forge가 판단.",
+    "AX-003/004/005 전수 회피 + L-143/L-144 empirical 회피 + L-145 evidence 수용 모든 slot 준수.",
+    "Barroso & Santa-Clara 2015 framework 기반 (Slot D) → L-122 factor timing 회피, weight/scale management 원칙.",
+    "STR_1679v3 Def sleeve 교체 mutation (stage_artifacts/s5_mutation_design_STR_1679v3_def_replacement.md)와 독립 — H_1682 자체 Defense anchor 경로 + STR_1679v3 경로 이중 설계."
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "axiom_id": "AX-004",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement": "[방법론 실패 규칙] KR quality_profitability single-signal long-only는 구조적 실패. (1) GP as single-factor(Novy-Marx 2013, Piotroski/Ohlson 결합 없음), (2) Cash-based profitability(Ball 2016) DART 현금흐름 의존 단독, (3) L-134 GSCD 유형 IS-only growth stability composite는 모두 OOS 소멸. EXCLUSION: (a) Quality가 overlay로 작동하는 멀티팩터 블렌드(QMJ+MOM, quality+value 등), (b) 전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)는 scope 밖 — Scout의 Quality Defensive Composite(A안)은 scope 밖. STR_1679 Q07 defense sleeve는 scope 밖.",
+  "supporting_l_codes": [
+    "L-133",
+    "L-134",
+    "L-139"
+  ],
+  "scope": {
+    "market": "KR",
+    "factor_family": "quality_profitability",
+    "regime": null,
+    "mode": "single_signal_standalone_long_only",
+    "construction_types": [
+      "GP_as_single_factor_without_Piotroski_Ohlson_combination",
+      "cash_based_profitability_DART_dependent_single_signal",
+      "growth_stability_composite_L134_GSCD_IS_only_type"
+    ],
+    "exclusion": "(a) quality as overlay in multi-factor blend (QMJ+MOM, quality+value, defense sleeve within multi-sleeve portfolio); (b) traditional quality composite combining Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 Earnings Stability or 3+ quality axes (this is the Scout A안 'Quality Defensive Composite' family); (c) Q07 Earnings Stability in STR_1679 defense sleeve. 회색지대 해소: L-133 CBPQ(cash-based only), L-134 GSCD(growth-stability composite IS-only overfit), L-139 Profitability Fortress(GP single-signal)의 3개 특정 construction variant만 차단; Scout A안 Novy-Marx GP + Piotroski F + Ohlson O + Q07 4축 통합 composite은 본 axiom과 구성·목적 이질적으로 scope 밖."
+  },
+  "evidence": {
+    "independent_l_codes": 3,
+    "independent_strategies": 3,
+    "strategies": [
+      "STR_1655_GSCD",
+      "STR_1657_CBPQ",
+      "STR_1626_profitability_fortress_defense"
+    ],
+    "effect_direction_consistency": 1,
+    "note": "3건 모두 Grade F/C, MDD 54~94% hard fail, standalone mode. 방향 일치."
+  },
+  "falsification": {
+    "attempts": [
+      {
+        "description": "STR_1655 Growth Stability Composite Diversifier standalone — IS SR 0.60 → OOS SR 0.00",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.717
+      },
+      {
+        "description": "STR_1657 Cash-Based Profitability Quality(Ball 2016) standalone — DART 현금흐름 데이터 품질 이슈로 시그널 역방향 작용",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.94
+      },
+      {
+        "description": "STR_1626 Profitability Fortress(Novy-Marx 2013) standalone — IS SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135 alpha decay",
+        "result": "reproduced_failure",
+        "effect_retained": 0.76,
+        "mdd": 0.541
+      }
+    ],
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "Quality as overlay(QMJ+MOM 등) 성공 예시는 본 scope 밖이므로 counter에 포함하지 않음. STR_1679 Q07 defense sleeve는 exclusion에 의해 scope 밖."
+    },
+    "note": "Supporting L-code 3건 = 3개 independent construction (GP/cash/composite) standalone mode에서 일관된 실패"
+  },
+  "mechanism": {
+    "economic_explanation": "KR quality_profitability standalone long-only의 구조적 실패 3요인: (1) Novy-Marx(2013) GP premium은 2020년대 성장주 랠리로 recent 3Y SR 급격히 약화(STR_1626 0.135). (2) Ball et al.(2016) Cash-Based Profitability는 DART 재무 현금흐름 항목의 가용성·일관성 문제로 시그널 품질 저하(STR_1657 MDD 94%). (3) Growth Stability composite는 IS overfit, OOS 완전 소멸(STR_1655 retention -0.001). 공통 원인: 한국시장에서 quality premium은 standalone long-only로 재현 불가 — value/momentum overlay 또는 멀티팩터 blending 필수 (Asness 2019 QMJ는 value와 결합 시 유효).",
+    "mechanism_type": "market_structural",
+    "causal_plausibility": "high"
+  },
+  "oos_validation": {
+    "oos_months": 12,
+    "oos_effect_vs_is": 0.08,
+    "calculation_method": "simple mean of OOS retention ratios: (0.24 + 0.00 + -0.001) / 3 = 0.08",
+    "note": "STR_1626 retention 0.24, STR_1655 retention 0.00, STR_1657 retention -0.001. IS 대비 92% 열화."
+  },
+  "promotion": {
+    "source_candidate": "CAND_20260417_quality_profitability_negative_L-133_L-134_L-139",
+    "weighted_score": 0.892,
+    "threshold": 0.8,
+    "axis_scores": {
+      "independence": 0.7833,
+      "rigor": 1,
+      "falsification": 1,
+      "external": 0.5,
+      "mechanism": 1
+    },
+    "promoted_at": "2026-04-17",
+    "next_review": "2026-07-16"
+  },
+  "enforcement": "",
+  "status": "active",
+  "version": 3,
+  "version_history": [
+    {"v1": "2026-04-17T15:47 scope too broad deprecated", "weighted": 0.892},
+    {"v2": "2026-04-17T16:00 scope-restricted re-promoted", "weighted": 0.892},
+    {"v3": "2026-04-17T16:20 hotfix — statement/scope clarified after Q-Lead critical feedback: Scout A안 'Quality Defensive Composite' (Novy-Marx GP + Piotroski F + Ohlson O + Q07) 명시적 scope 밖 선언. construction_types renamed to be more specific, exclusion expanded."}
+  ]
+}

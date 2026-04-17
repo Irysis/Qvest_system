@@ -1,7 +1,8 @@
-# STR_1679v3 Def Sleeve 교체 Mutation 설계 — Scout 초안
+# STR_1679v3 Def Sleeve 교체 Mutation 설계 — Scout **FINAL**
 
-**버전**: draft v1 (2026-04-17)  
-**의존**: H_1682 R2 VERDICT 확정 후 최종 설계 완성
+**버전**: **revision_final v1.0 (2026-04-17)** — H_1682 VERDICT APPROVE_CONDITIONAL 71 확정 후 공식 승격  
+**상태**: **OFFICIAL** (draft 단계 종료)  
+**승격 조건 충족**: H_1682 APPROVE_CONDITIONAL 71/100 확정. 1순위 "Q25+R16 cross-family" 확정 가능.
 
 ## 배경
 
@@ -23,9 +24,13 @@ STR_1679v3 = STR_1679v2 구조 + Def sleeve 교체:
 
 ## Def Sleeve 교체 후보 매트릭스
 
-### 후보 1 (최우선, H_1682 PASS 조건부): Q25+R16 cross-family
+### 후보 1 (✅ **확정 - 1순위 SELECTED**): Q25+R16 cross-family
 
-**조건**: H_1682 R2 VERDICT = APPROVE 또는 APPROVE_CONDITIONAL + S1 실증 SR/MDD gate 통과
+**조건 충족 확인**: 
+- H_1682 VERDICT = **APPROVE_CONDITIONAL (71/100)** ✅
+- S1 실증 SR/MDD gate 통과 여부: H_1682 S1 실행 후 확인 (TODO Forge 전달 완료)
+- Q25/R16 Z_Score_Aligned 컬럼 EXIST 확인 (Quant R1 실측)
+- Q25-R16 상관 median 0.053 (Quant R1 실측 — cross-family 독립성 입증)
 
 **설계**:
 - Def composite = 0.6·z(Q25_Ohlson_O) + 0.4·z(R16_Calmar)
@@ -121,18 +126,38 @@ for (sd in rebal_dates) {
 3. **H_1682 S1 PASS 시**: STR_1679v3 설계 확정 + Scout → Forge TODO
 4. **H_1682 FAIL 시**: 후보 2/3 선택 후 재설계
 
-## 현재 blocker
+## 현재 blocker (Final 버전 2026-04-17 업데이트)
 
-- H_1682 R2 VERDICT 미확정 (R2 4 Claude 대기 중)
-- Forge STR_1679v2 재실행 4건 (tail_risk + daily_returns + hurdle split + Core/Def 독립 백테스트) — 결과 기다림
+**해소된 항목**:
+- ✅ H_1682 R2 VERDICT 확정 (APPROVE_CONDITIONAL 71/100)
+- ✅ Scout STR_1679v3 draft → revision_final 승격
 
-## Scout 다음 action
+**남은 대기**:
+- H_1682 Forge S1 실행 (TODO Forge inbox 전달 완료)
+- Forge STR_1679v2 재실행 4건 (tail_risk + daily_returns + hurdle split + Core/Def 독립 백테스트)
+- H_1682 S1 Hurdle Grade A/B 확정 → STR_1679v3 Forge 구현 activation
 
-- H_1682 VERDICT 도착 → 이 문서 최종화
-- Forge 재실행 결과 → Core/Def 독립 성과 확인 후 Def 교체 정당성 확정
-- Q-Lead 지시 대기
+## 승격 후 다음 Scout action
+
+1. **H_1682 S1 완료 대기** (Forge)
+2. **H_1682 S1 COND_11/12 통과 시** → STR_1679v3 Forge TODO 작성 (이 문서 기반)
+3. **STR_1679v3 구현 파라미터** (Forge 전달):
+   - `N_CORE=15` (C19 ICIR Top, 유지)
+   - `N_DEFENSE=5` (H_1682 Q25+R16 composite Top-5, Core 제외 universe)
+   - Def composite = 0.6·z(Q25_Ohlson_O) + 0.4·z(R16_Calmar)
+   - Regime weight 95/5 → 80/20 → 60/40 (유지)
+   - Layer 3 overlay 유지
+4. **H_1682 S1 FAIL 시** → 후보 2 또는 3 재검토
+
+## Scout 최종 상태
+
+- 이 문서: **OFFICIAL revision_final**
+- H_1682 s0_record: **v2 (12 conditions 반영)** 업데이트 완료
+- TODO_S1_H_1682: **Forge inbox 전달 완료**
+- L-145: **AX-005 evidence synthesis 완료**
+- Strategic context: **Governor 4-scenario A (STR_1679v2 + H_1682 둘 다 PASS) 경로 활성화**
 
 ---
 
 작성: Scout, 2026-04-17  
-용도: STR_1679v3 Def sleeve 교체 mutation 사전 설계. H_1682 VERDICT 후 최종화.
+용도: STR_1679v3 Def sleeve 교체 mutation 공식 설계. H_1682 VERDICT APPROVE_CONDITIONAL 71 후 revision_final.

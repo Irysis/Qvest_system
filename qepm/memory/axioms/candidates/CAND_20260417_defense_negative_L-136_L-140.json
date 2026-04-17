@@ -3,65 +3,59 @@
   "candidate_id": "CAND_20260417_defense_negative_L-136_L-140",
   "type": "methodological",
   "polarity": "negative",
-  "statement_draft": "[방법론 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL, supporting=2건 L-code. 한국시장 low-beta/Q07+D25 defense standalone의 구조적 실패.",
-  "supporting_l_codes": [
-    "L-136",
-    "L-140"
-  ],
+  "statement_draft": "[방법론 실패 규칙] KR defense standalone long-only low-beta (BAB Frazzini-Pedersen 2014) 또는 Q07+D25 single-sleeve combo는 구조적 실패. (1) BAB 2020년대 이후 ETF 유입으로 약화, (2) D25+Q07 CAGR 2.59% 정상구간 기회비용 과대. EXCLUSION: multi-sleeve portfolio 내 defense sleeve(STR_1679 Core+Def, STR_905 3-sleeve 등)는 AX-001에 따라 조건부 성과로 평가, scope 밖. Governor STR_1439(SR 1.532, MDD 19.17%, novelty 10)도 scope 밖.",
+  "supporting_l_codes": ["L-136", "L-140"],
   "scope_draft": {
     "market": "KR",
     "factor_family": "defense",
     "regime": null,
-    "construction_types": ["low_beta_standalone", "Q07_D25_combo", "BAB"]
+    "mode": "standalone_long_only_low_beta_or_low_CAGR",
+    "construction_types": ["BAB_standalone", "Q07_D25_single_sleeve_combo"],
+    "exclusion": "defense sleeve within multi-sleeve portfolio (STR_1679 Core+Def, STR_905 3-sleeve). AX-001: Defense는 조건부 성과로 평가. STR_1439(SR 1.532, novelty 10, defensive but multi-factor structure)는 scope 밖."
   },
   "evidence_draft": {
     "independent_l_codes": 2,
     "independent_strategies": 2,
-    "strategies": [
-      "STR_1662_defense_D25_Q07",
-      "STR_1642_lowbeta_3f"
-    ],
+    "strategies": ["STR_1662_defense_D25_Q07", "STR_1642_lowbeta_3f"],
     "effect_direction_consistency": 1.0,
-    "note": "2건 모두 Grade C/F. defense 역할 부적합(CAGR 미달) 또는 alpha decay 확인."
+    "note": "2건 모두 standalone mode. BAB 및 D25+Q07 combo 방어 부적합 확인."
   },
   "falsification_draft": {
     "attempts": [
-      {
-        "description": "STR_1662 D25(Accounting Beta)+Q07(Earnings Stability) defense — MDD 10.2%는 방어 부합하나 CAGR 2.59%로 실질수익률 거의 없음(기회비용 과대)",
-        "result": "reproduced_failure",
-        "effect_retained": 0.65,
-        "mdd": 0.102,
-        "cagr": 0.0259,
-        "note": "Low return dominates — defense sleeve 편입 시 포트폴리오 전체 CAGR 과도 희석"
-      },
-      {
-        "description": "STR_1642 LowBeta 3F(Frazzini&Pedersen 2014 BAB) — OOS retention -0.35/-0.02, recent 3Y SR 0.28/-0.035로 alpha decay 심각",
-        "result": "reproduced_failure",
-        "effect_retained": 0.35,
-        "note": "BAB 효과 한국시장에서 2020년대 구조적 약화"
-      },
-      {
-        "description": "role_honesty_STR_1662a: honest=false (declared core_alpha but 0/0/0 score) — 역할 위장 탐지",
-        "result": "role_dishonesty_confirmed",
-        "effect_retained": 0.8,
-        "source": "stage_artifacts/role_honesty_STR_1662a.json"
-      }
+      {"description": "STR_1662 D25(Accounting Beta)+Q07(Earnings Stability) standalone combo — MDD 10.2% 방어 달성하나 CAGR 2.59% LOW_CAGR_BAR(<5%) 미달", "result": "reproduced_failure", "effect_retained": 0.65, "mdd": 0.102, "cagr": 0.0259, "note": "정상구간 기회비용 과대, defense sleeve CAGR 최소 5% 미달"},
+      {"description": "STR_1642 LowBeta 3F standalone (Frazzini&Pedersen 2014 BAB) — OOS retention -0.35/-0.02, recent 3Y SR 0.28/-0.035 alpha decay", "result": "reproduced_failure", "effect_retained": 0.35, "note": "BAB KR 2020년대 구조적 약화"},
+      {"description": "role_honesty_STR_1662a: honest=false (declared core_alpha but 0/0/0 score, ambiguous=true)", "result": "role_dishonesty_confirmed", "effect_retained": 0.8, "source": "stage_artifacts/role_honesty_STR_1662a.json"}
     ],
-    "note": "Supporting L-code 2건 + role_honesty 1건 = 3건 독립 반증. D25/Q07 조합 및 BAB 단독 모두 defense 역할로 부적합."
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "STR_1679 defense sleeve는 multi-sleeve 구조이므로 exclusion scope 밖. Governor STR_1439도 multi-factor + defensive 구조로 scope 밖."
+    },
+    "note": "Supporting L-code 2건 + role_honesty 1건 = 3건 독립 반증. Standalone/single-sleeve combo 방어 부적합 확인."
   },
   "mechanism_draft": {
-    "economic_explanation": "한국시장 defense 역할로 low-beta/Q07+D25 combo standalone은 두 가지 구조적 이유로 실패한다. (1) Frazzini-Pedersen(2014) BAB 효과가 2020년대 이후 ETF/인덱스 자금 유입으로 고베타 대형주 프리미엄이 강화되어 구조적 약화(STR_1642 OOS retention -0.35). 저베타 종목의 언더퍼폼이 2021~2023 성장주 랠리로 가속화. (2) D25(Accounting Beta)+Q07(Earnings Stability) 조합은 MDD 10.2% 방어 목적 달성하나 CAGR 2.59%로 정상구간 기회비용이 과대 — defense CAGR이 최소 인플레이션(3%)+무위험(2%)=5% 이상이어야 실투용 방어 sleeve로 유효. Q07 단독 crisis ICIR +0.75이지만 D25와 결합 시 방어력-수익성 trade-off가 극단으로 쏠림. 교훈: 팩터 레벨 방어보다 포지션 축소(overlay) + 팩터 블렌드 하이브리드 구조 필요.",
+    "economic_explanation": "KR defense standalone 실패 2요인: (1) Frazzini-Pedersen(2014) BAB 효과가 2020년대 ETF/인덱스 자금 유입으로 고베타 대형주 프리미엄 강화되어 구조적 약화(STR_1642 OOS retention -0.35). 2021~2023 성장주 랠리로 저베타 종목 언더퍼폼 가속화. (2) D25(Accounting Beta)+Q07(Earnings Stability) single-sleeve combo는 MDD 10.2% 방어 달성하나 CAGR 2.59% 정상구간 기회비용 과대 — defense CAGR 최소 인플레이션(3%)+무위험(2%)=5% 이상이어야 실투용 방어 sleeve로 유효. Q07 단독은 crisis ICIR +0.75 방어력 있으나 D25와 single-sleeve 결합 시 방어력-수익성 trade-off 극단. 교훈: standalone defense보다 multi-sleeve(Core+Def) 구조 내 Q07/D25 활용이 올바른 설계.",
     "mechanism_type": "market_structural",
     "causal_plausibility": "moderate_to_high"
   },
   "oos_validation_draft": {
     "oos_months": 12,
     "oos_effect_vs_is": 0.15,
-    "note": "STR_1642 OOS retention -0.35 (완전 소멸), STR_1662 OOS 데이터상 CAGR 2.59% 유지되지만 defense 기능 미달. 보수적 0.15 적용."
+    "calculation_method": "weighted mean: STR_1642 OOS retention -0.35 (floor 0) × weight 0.5 + STR_1662 CAGR-based 0.65 × weight 0.5 ≈ 0.325 → 보수적 adjust 0.15 (LOW_CAGR_BAR 미달 반영)",
+    "note": "STR_1642 OOS retention -0.35 (alpha 완전 소멸), STR_1662 OOS CAGR 2.59% (LOW_CAGR_BAR 미달)."
+  },
+  "range": {
+    "applicability": "KR (한국시장) only",
+    "timeframe": "post-2020 (ETF 유입 가속화 + 성장주 랠리 이후)",
+    "portfolio_size": "standalone long-only low-beta or single-sleeve Q07+D25 combo only"
+  },
+  "expiry": {
+    "next_review": "2026-07-17",
+    "trigger_review_if": "(a) 한국 BAB 프리미엄 반등 증거 3건+ OOS, (b) 저베타 종목 상대 퍼포먼스 개선, (c) ETF 자금 흐름 반전"
   },
   "cluster_members_count": 2,
   "status": "pending_5axis",
   "created_at": "2026-04-17T05:27:45+00:00",
-  "enriched_at": "2026-04-17T14:00:00+00:00",
-  "enriched_by": "judge_auto_after_idle_5x"
+  "enriched_at": "2026-04-17T16:00:00+00:00",
+  "enriched_by": "judge_scope_restricted_v2",
+  "revision_note": "AX-005 v1 (scope too broad) deprecated 2026-04-17. Re-enrich with scope limited to standalone/single-sleeve modes + explicit exclusion for multi-sleeve portfolios (STR_1679, STR_1439, STR_905)."
 }

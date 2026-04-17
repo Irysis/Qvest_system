@@ -1,0 +1,71 @@
+{
+  "candidate_id": "AX-CAND_quality_earnings_conditional_L-130_L-137_L-138",
+  "original_candidate_path": "qepm/memory/axioms/candidates/CAND_20260417_quality_earnings_conditional_L-130_L-137_L-138.json",
+  "status": "REVISE_BOUNDED",
+  "status_changed_at": "2026-04-17T17:00:00+00:00",
+  "status_changed_by": "judge_teammate_after_qlead_directive",
+  "type": "methodological",
+  "polarity": "conditional",
+  "supporting_l_codes": ["L-130", "L-137", "L-138"],
+  "supporting_strategies": [
+    "STR_1652_DFA_on_VDplus",
+    "STR_1635_ev_accrual_quality_defense",
+    "STR_1636_piotroski_ret_autocorr_diversifier"
+  ],
+  "revise_reason": "pending_falsification_evidence",
+  "detail": "conditional polarity에서 rh_survived 증거 없음. promote.R 5축 중 falsification은 negative polarity 자동 bonus(+0.5)를 받지 않아 attempts 3건을 채워도 F=0.5에 머무름. 실질 evidence (role_honesty_*.json에서 rh_survived counter)가 필요. 현재 supporting 3전략 모두 role_honesty artifact 부재.",
+  "axes_current": {
+    "independence": 0.7833,
+    "rigor": 0.8,
+    "falsification": 0.5,
+    "external": 0.9,
+    "mechanism": 1.0
+  },
+  "current_weighted": 0.762,
+  "required_weighted": 0.80,
+  "gap_axis": "falsification",
+  "gap_magnitude": "+0.04 (weighted contribution)",
+  "missing_axes": ["falsification"],
+  "required_evidence": [
+    "role_honesty artifact for STR_1652_DFA_on_VDplus",
+    "role_honesty artifact for STR_1635_ev_accrual_quality_defense",
+    "role_honesty artifact for STR_1636_piotroski_ret_autocorr_diversifier",
+    "or: conditional polarity academic reference (Arnott et al. 2019 'Factor Timing is Hard'; Asness 2019 QMJ; Markowitz 1991 portfolio theory conditional returns)",
+    "or: new L-code accumulation triggering axiom_weekly.sh re-cluster"
+  ],
+  "retry_conditions": [
+    {
+      "condition": "Forge가 STR_1652/1635/1636 중 2건 이상 role_honesty_runner.R 실행 → honest/dishonest 결과 artifact 생성",
+      "expected_effect": "falsification axis rh_survived counter 증가 → F 0.5 → 0.8+ (if 2/3 survived) → weighted 0.76 → 0.85+"
+    },
+    {
+      "condition": "Judge 또는 Scout이 conditional polarity 학술 근거 추가 (예: Arnott-Markowitz conditional expected return framework, Asness et al. QMJ multi-factor 조건부 구조)",
+      "expected_effect": "mechanism axis 이미 1.0이므로 추가 증가 제한적, falsification은 별도"
+    },
+    {
+      "condition": "L-130/137/138과 관련된 새 L-code 1~2건 추가 → axiom_weekly.sh auto re-cluster",
+      "expected_effect": "cluster_members_count 증가로 independence 0.78 → 0.90+ 가능"
+    }
+  ],
+  "next_review": "2026-07-17 quarterly axiom review",
+  "trigger_earlier_review_if": [
+    "Forge가 해당 3전략 중 1건 이상 role_honesty artifact 생성",
+    "또는 Scout이 L-148(신규) 또는 L-145 경로로 관련 evidence L-code 추가",
+    "또는 conditional polarity 개념을 다루는 Harvey et al. 2016 multiple testing, Arnott-Markowitz 2019 Factor Timing 학술 근거 추가"
+  ],
+  "scope_draft_preserved": {
+    "market": "KR",
+    "factor_family": "quality_earnings",
+    "tags_from_L_codes": ["DFA_OVERLAY", "ANCHOR_INFERIOR", "FACTOR_TIMING_VS_RISK_MGMT"],
+    "note": "conditional polarity이므로 '~에서만 유효' 또는 '~조건부 실패'의 양면적 의미 — Scout A안 Quality Defensive Composite과 scope 교집합 없음 (Scout A안은 positive conditional: Novy-Marx GP + Piotroski + Ohlson + Q07 4축 통합)"
+  },
+  "relationship_to_active_axioms": {
+    "AX-003": "value family standalone fail — 독립 scope (quality ≠ value)",
+    "AX-004_v2": "quality_profitability standalone single-signal fail — partial overlap with quality_earnings family, but single-signal vs conditional 구조 상이",
+    "AX-005_v2": "defense standalone/single-sleeve fail — 독립 scope",
+    "implication": "AX-CAND #1 승격 시 AX-006 'quality_earnings conditional factor timing fail' 생성. AX-001(conditional 평가)과 mechanism 연결 가능"
+  },
+  "judge_recommendation": "즉시 재승격 불가. Forge에 STR_1652/1635/1636 중 최소 2건 role_honesty_runner.R 실행 요청 권장. 2026-07-17 quarterly review에서 축적된 evidence 기반 재심사.",
+  "schema_version": "v53_ax_revise_v1",
+  "logged_at": "2026-04-17T17:00:00+00:00"
+}

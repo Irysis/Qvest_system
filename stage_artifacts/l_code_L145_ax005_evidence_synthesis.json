@@ -1,0 +1,102 @@
+{
+  "l_code": "L-145",
+  "strategy_id": "AX005_EVIDENCE_SYNTHESIS_DISCOVERY",
+  "title": "AX-005 supporting evidence 4건 집성 — scope 확장 또는 AX-006 신규 승격 후보",
+  "grade": "N/A (axiom-level discovery synthesis)",
+  "core_reference": "Frazzini & Pedersen (2014 JFE) BAB + Dichev & Tang (2009 TAR) Earnings Volatility + Beaver, Kettler & Scholes (1970 TAR) Accounting Beta + Altman (1968 JoF) Z-Score + Campbell, Hilscher & Szilagyi (2008 JF) Distress Risk",
+  "lesson_text": "한국시장 Defense family 실패 패턴 4건 L-code 집성 discovery. AX-005 기존 supporting(L-136 BAB + L-140 STR_1662 Q07+D25) 외 Scout 발견 2건(L-143 Q07+D29 CAGR 2.93% + L-144 Q24 stress 역방향) 추가. Scope/Supporting 관점에서 axiom 재평가 필요. 현재 AX-005는 construction_types=[low_beta_standalone, Q07_D25_combo, BAB] 명시. Scope 확장 Option A(Q07+D29 포함)로는 L-143 추가 supporting 정합. Option B(Defense factor stress_icir ≤ 0 금지 신규 규칙)로는 L-144 + AX-006 신규 승격 가능. Scout 권고: **Option C 현재 유지 + 2026-07-16 quarterly review에서 4건 통합 평가**. 이유: (a) 4건 중 3건(L-136/140/143)은 같은 'Defense drag' 패턴, L-144는 'Altman 역방향'으로 이질적 패턴. 한 axiom에 통합하면 scope 모호해짐. (b) AX-006 신규 승격은 standard 3+건 supporting 요건에서 L-144 단독 또는 L-143+144 2건으로 부족. (c) 축적 후 추가 empirical evidence (Defense factor standalone 실패 3건+ 또는 stress 역방향 factor 3건+) 확보 시 축(axis)별 분리 승격 권고.",
+
+  "supporting_l_codes_synthesis": {
+    "L_136": {
+      "strategy": "STR_1642_lowbeta_3f",
+      "construction": "BAB (Frazzini-Pedersen 2014)",
+      "failure_pattern": "OOS retention -0.35, recent 3Y SR 0.28/-0.035 alpha decay",
+      "status": "AX-005 supporting (기존)"
+    },
+    "L_140": {
+      "strategy": "STR_1662_defense_D25_Q07",
+      "construction": "Q07+D25 combo",
+      "failure_pattern": "MDD 10.2% 달성 but CAGR 2.59%로 기회비용 과대",
+      "status": "AX-005 supporting (기존)"
+    },
+    "L_143": {
+      "strategy": "STR_1675_Q07_D29_defense",
+      "construction": "Q07+D29 combo (기술적 AX-005 scope OUT)",
+      "failure_pattern": "Grade C, SR 0.655, CAGR 2.93%, MDD -11.94% — L-140 패턴 0.34%p 차이로 동일",
+      "status": "Scout 발견 (2026-04-17) — AX-005 scope 확장 후보 (Option A)"
+    },
+    "L_144": {
+      "strategy": "Q24_Altman_Z factor-level",
+      "construction": "Altman Z-score standalone defense",
+      "failure_pattern": "stress_icir -0.695, stress_pct_pos 0.25, crisis_ratio -2.89 (stress 구간 역방향)",
+      "status": "Scout 발견 (2026-04-17) — AX-006 신규 후보 또는 AX-005 확장 규칙 (Option B)"
+    }
+  },
+
+  "pattern_analysis": {
+    "shared_pattern_L136_L140_L143": "Defense drag — CAGR 인플레이션(3%) 미달로 기회비용 과대. STR_1642 alpha decay, STR_1662 CAGR 2.59%, STR_1675_Q07_D29 CAGR 2.93%. Defense sleeve가 portfolio CAGR 희석.",
+    "distinct_pattern_L144": "Factor stress 역방향 — 급락 구간에서 Defense 의도와 반대 방향 작용. Altman Z 높은(안전) 종목이 오히려 underperform. 'Defense 자격 미달 factor' 판정 기준 후보.",
+    "common_root_cause_hypothesis": "한국시장 distress/low-beta 프리미엄의 구조적 변화 — 2020년대 성장주 우위 + 대형 안정주 과매수 → 정통 Defense factor 효과 약화 또는 역전."
+  },
+
+  "promotion_options": {
+    "option_A_AX005_scope_extension": {
+      "description": "AX-005 construction_types에 Q07_D29_combo 추가 (L-143 수용)",
+      "new_scope": ["low_beta_standalone", "Q07_D25_combo", "Q07_D29_combo", "BAB"],
+      "supporting_count": 3,
+      "pros": "L-143 직접 수용, Defense drag 패턴 확장",
+      "cons": "L-144 (stress 역방향)과 이질적 패턴 혼합. Scope 모호"
+    },
+    "option_B_AX006_new_axiom": {
+      "description": "신규 AX-006: Defense factor stress_icir > 0 + stress_pct_pos ≥ 0.5 필수 요건",
+      "family": "defense_factor_qualification_rule",
+      "supporting": ["L-144 (Q24 역방향)"],
+      "supporting_count": 1,
+      "pros": "L-144 직접 수용, Defense factor 선정 rule 명확화",
+      "cons": "Supporting 1건 (standard 3+건 미달). Early promotion."
+    },
+    "option_C_current_maintain_plus_quarterly_review": {
+      "description": "현재 AX-005 scope 유지 + 2026-07-16 quarterly review 시 종합 평가",
+      "action": "L-143/L-144는 stage_artifacts + methodology_memory에 축적. 추가 empirical evidence 확보 후 축별 분리 승격.",
+      "pros": "Premature promotion 회피. 충분한 evidence 축적",
+      "cons": "Scope 확장 지연 → H_1662 CDaR 같은 AX-005 grey area 재발 위험",
+      "status": "Scout 권고"
+    }
+  },
+
+  "immediate_practical_implications": {
+    "H_1662_CDaR_Defense_rejection": "REJECTED_AX005_violation 확정. D25+Q07 직접 사용 + Q07+D29 포함 → 3중 위반 (AX-005 original + L-143 + L-144 proxy).",
+    "STR_1679_D안_Defense_sleeve_review": "Q07+D29 사용. Technical AX-005 PASS이나 L-143 empirical warning 직격. Judge Role Honesty 결과에서 0.3pp 실질 기여 공식 확인됨 → STR_1679v3 Def 교체 mutation 필요 (Scout draft 완료).",
+    "H_1682_Distress_Calmar_validity": "Q25+R16 cross-family = L-143/L-144 완전 회피 + AX-005 완전 회피. 실증 우월 (stress IC 양수).",
+    "future_Defense_design_rule_proposed": "(1) Q07+Accounting Beta 계열(D25/D29/기타) 조합 회피, (2) Defense factor 선정 시 stress_icir > 0 + stress_pct_pos ≥ 0.5 필수, (3) Defense sleeve 실질 기여 ≥ 2pp (Role honesty)"
+  },
+
+  "related_judge_l_codes": {
+    "L_146": "Overlay-driven MDD improvement은 Core alpha로 계상 금지 (Judge Role Honesty)",
+    "L_147": "S5 소급 tracker 기록만으로는 유효 process 아님 (Judge Process Integrity)",
+    "note": "L-146/L-147은 Judge 발견 L-code. L-145는 Scout 발견 L-code. Scope 다름 (Judge는 process/honesty, Scout은 factor-level evidence)."
+  },
+
+  "tags": [
+    "AX005_SCOPE_ANALYSIS",
+    "DEFENSE_FAMILY_EMPIRICAL_SYNTHESIS",
+    "AXIOM_PROMOTION_CANDIDATE",
+    "QUARTERLY_REVIEW_INPUT",
+    "L136_L140_L143_L144_SYNTHESIS"
+  ],
+
+  "future_axiom_review": {
+    "review_date": "2026-07-16 (AX-005 quarterly review)",
+    "scout_recommendation": "Option C (current maintain + quarterly review)",
+    "decision_criteria": [
+      "AX-005 Option A: L-143 + 1건 추가 Q07+Accounting Beta 계열 supporting 확보 시 scope 확장",
+      "AX-006 Option B: L-144 + 추가 2건 stress 역방향 factor 확보 시 신규 승격",
+      "Option C: 축적 6개월 후 추가 evidence 없으면 Option A 우선 추진"
+    ],
+    "judge_coordination": "Judge에 L-143/L-144/L-145 공유 완료 (Scout SendMessage 2건). Judge quarterly review 주도 기대."
+  },
+
+  "created_at": "2026-04-17",
+  "created_by": "Scout",
+  "q_lead_directive": "L-145 신규 작성 권고 (H_1662 CDaR REJECT 메시지, 2026-04-17)"
+}

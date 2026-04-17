@@ -1,0 +1,9 @@
+{
+  "strategy_id": "NOJUDGE_SWEEP_V2_20260417",
+  "grade": "A",
+  "core_reference": "hurdle_gate v2.3 + lookahead_detector C1-C15 + role_honesty_audit + statistical_defense DSR + catalog schema v53_s2_16",
+  "lesson_text": "NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MINOR 12 / AMBIGUOUS_PIT_MAJOR 2 / FAIL 7. 주요 발견: (1) STR_943/944 C11_FRED+C5_DD+C11_MRS 3중 오염 (Governor 경고와 일치) — 즉시 카탈로그 축출. (2) STR_1631 family 10건 중 PIT clean은 SYN_05_2002 단 1건뿐. M27/M28/M29/M30 및 SYN_04/SYN_05는 C10_LIQ(거래대금 당일포함) + C1b(full-column quantile) 2중 위반 — Forge 리팩토링 필요. (3) STR_1652_DFA_on_VDplus C15_DIRECT_PARQUET 위반 (load_month_factors() 경유 필요). (4) STR_1631_v5_M19~M23 5건은 hurdle_result.json 자체 없음 (FAIL_NO_HURDLE). (5) PASS 11건만 실질 Grade A 확정: STR_1060, STR_1071, STR_1393, STR_1417_5sleeve_mrs3545, STR_1433_consgate, STR_1435, STR_1439, STR_1469, STR_1562, STR_1631_SYN_05_2002, STR_686. (6) 카탈로그 'Grade A 34건'의 실제 판정 통과율 11/34 = 32%에 불과. (7) C10_LIQ 위반이 가장 광범위 — liquidity filter에 shift(frollmean, lag=1) 누락은 전사적 패턴. (8) catalog schema v53_s2_16에 judge_grade 3분류 + pit_violations 배열 필드 필수.",
+  "tags": ["NOJUDGE_SWEEP_V2", "PIT_C1_C15", "STR_1631_CONCENTRATION", "STR_943_944_HARD_EXPEL", "C10_LIQ_SYSTEMIC", "CATALOG_INTEGRITY", "V53_S2_16"],
+  "created_at": "2026-04-17",
+  "l_code": "L-148"
+}

@@ -1,0 +1,93 @@
+{
+  "hypothesis_id": "H_1682",
+  "hypothesis_name": "Distress + Calmar Defense Anchor (Q25_Ohlson_O + R16_Calmar cross-family)",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 71,
+  "threshold_rule": "60 이상 75 미만 APPROVE_CONDITIONAL. Codex 10 / Quant 15 모두 4 초과 → 특수 REJECT 규칙 미적용. 전원 |R2 delta| ≤ 4 → R3 생략 VERDICT_READY.",
+  "verdict_timestamp": "2026-04-17T16:55:00",
+  "designer": "Scout",
+  "transcript_source": "stage_artifacts/s0_debate_transcript_H_1682.json",
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "entries": [
+          {"role": "academic", "score": 16, "summary": "학술 5편 top-tier peer-reviewed + cross-family 정합 / 한국 직접 실증 부재 + R16 data-snooping"},
+          {"role": "codex_critic", "score": 10, "summary": "R16 stress_pct_pos 1.00 + Q24 배제 ex-post 선택 + 60/40 고정 walk-forward 미검증"},
+          {"role": "governor", "score": 17, "summary": "Defense 공석 해소 최초 사례 + Q07 의존 탈피 + Q+Non-Q composite 조건 충족"},
+          {"role": "quant", "score": 14, "summary": "Q25/R16 Z_Score_Aligned EXIST + 상관 median 0.053 / R16 crisis_ratio 0.98 애매"},
+          {"role": "risk_manager", "score": 14, "summary": "tail_risk strong Q25+R16 / R16 Calmar 월간 vs 일간 정의 차이 + Q07 concentration 누적"}
+        ]
+      },
+      {
+        "round": 2,
+        "entries": [
+          {"role": "academic", "r1": 16, "final": 16, "delta": 0, "reason": "학술 peer_review+mechanism_align 유지, Scout empirical-first 타당성 인정"},
+          {"role": "codex_critic", "r1": 10, "final": 10, "delta": 0, "reason": "ex-post tuning 우려 유지 — 조건 명시 수용되면 debate 이상으로 해소 불가"},
+          {"role": "governor", "r1": 17, "final": 15, "delta": -2, "reason": "pre-analysis(15~16) 반영 + Codex/Quant ex-post 지적 수용하여 confidence 조정"},
+          {"role": "quant", "r1": 14, "final": 15, "delta": 1, "reason": "RM의 R16 이중 정의 kill scenario 반박 (compute_risk.R 직접 검증 — since-inception 정의 부재 확인) + 본인 상관 0.053 독립성 입증 가중"},
+          {"role": "risk_manager", "r1": 14, "final": 15, "delta": 1, "reason": "Quant 실측 Q25-R16 상관 0.053이 R1 DCC 독립성 concern 일부 해소 + Z_Score_Aligned 완비 확인"}
+        ]
+      }
+    ]
+  },
+  "final_scores": {
+    "codex_critic": {"r1": 10, "final": 10, "delta": 0},
+    "risk_manager": {"r1": 14, "final": 15, "delta": 1},
+    "governor": {"r1": 17, "final": 15, "delta": -2},
+    "quant": {"r1": 14, "final": 15, "delta": 1},
+    "academic": {"r1": 16, "final": 16, "delta": 0}
+  },
+  "consensus_points": [
+    "Q25_Ohlson_O + R16_Calmar cross-family 설계가 Q07 의존 탈피 최초 Defense anchor이며 AX-003/004/005 전수 clear + L-143 empirical warning 회피 (Scout의 empirical-first pivot이 Q24 stress_icir -0.695 발견으로 정당화, R16 stress_pct_pos 1.00은 Governor가 강력 지지)",
+    "Quant 실측 Q25-R16 상관 median 0.053이 cross-family 구조적 독립성을 입증하여 R1 우려 (DCC 없이 독립성 신뢰 불가)를 empirical 수준에서 해소 — 60/40 설계의 정당성 상승",
+    "Q25/R16 Factor DB Z_Score_Aligned 컬럼 EXIST 확인 (H_1681 미존재 선례와 차별화) + ICIR 둘 다 Alpha Lab Gate 통과 + stress IC strong — S1 구현 feasibility 높음",
+    "R16 stress_pct_pos 1.00은 Calmar = Return/MaxDD 정의의 tautology 가능성 (Codex + RM + Academic 공통 지적) — S1 sub-period 분해 (급락 중 vs 회복기 vs snapshot 전후)로만 판별 가능",
+    "R16 crisis_ratio 0.98 + normal ICIR 1.473로 평시 drag 우려 — Defense 역할이 아닌 drawdown-quality filter로 재정의 권고 (Quant 제안, RM 동의)",
+    "0.6/0.4 고정 가중치는 stress IC 순위 기반 prior-driven 설계이나 ex-post tuning 우려 완전 해소 불가 — walk-forward expanding window 사전등록 조건부 허용"
+  ],
+  "unresolved_disputes": [
+    "R16 Calmar stress_pct_pos 1.00이 mechanical survivorship overlap인지 진짜 alpha인지 — S1 sub-period 분해 전까지 판별 불가 (RM+Academic+Codex 공통 최강 반대)",
+    "Core 대비 MDD 축소 8%p + bad/good IC ratio > 1.2 gate의 현실성 — L-143 Q07+D29 empirical 실패 고려 시 Defense role 성립 여부",
+    "60/40 vs 50/50 baseline 비교 (Codex 권고) — 어떤 조합이 robust한지 S1 양쪽 측정 후 결정"
+  ],
+  "conditions_for_s1": [
+    "walk-forward expanding window 사전등록: 60/40 비중 재튜닝 없이 walk-forward 결과만으로 통과 판단 (Codex 조건)",
+    "R16 sub-period 분해: 급락 구간 내 시작 1개월 전 snapshot vs 구간 중 IC 분리 측정 (RM 조건, Quant 수용)",
+    "50/50 baseline 병행 측정 (Codex 조건)",
+    "Q25 C4 compute_quality.R Usable_Date + publication timestamp T+60~90일 + restatement 비소급 PIT snapshot 증빙 (Codex + Quant 조건)",
+    "KOSPI vs KOSDAQ 분리 성과 진단으로 coverage-bias 중립성 증명 (Codex 조건)",
+    "Q25-only + R16-only baseline vs composite 대비 turnover/cost 후 incremental 성과 입증 (Codex 조건)",
+    "S3 DCC conditional correlation gate (RM 조건)",
+    "S3 beta_crisis vs beta_normal 분리 측정 (RM + Quant 조건)",
+    "S5 mutation slate 사전 등록: R16-only 단독 + Q25-only 단독 + 50/50 baseline + tail overlay (Codex + Governor 조건)",
+    "한국 distress 학술 인용 보강: Kho-Kim 2007 또는 Eom-Park 2014 (Academic + Quant 조건)",
+    "Pass 조건 (Governor 신규 5조건): S1 pure CAGR > 3% + stress alpha > 0 동시 충족 필수",
+    "Defense 역할 평가 기준: stress 6구간 IC > 0.03 + Core 대비 MDD 최소 8%p 축소 + bad/good IC ratio > 1.2 + CAGR > 5% (L-143 gate)"
+  ],
+  "debaters": [
+    {"agent_id": "academic_r2_h1682@research-v7", "role": "academic", "score": 16, "findings": "학술 5편 top-tier + cross-family 정합 + Scout empirical-first 타당. 한국 직접 실증 인용 보강 필요 + R16 data-snooping 경고 유지"},
+    {"agent_id": "codex_critic_r2_h1682", "role": "codex_critic", "score": 10, "findings": "AX-003/004/005 전수 clear + Q07 배제 긍정 평가. ex-post parameter selection 우려 잔존 (R16 stress_pct_pos 1.00 + 60/40 고정)"},
+    {"agent_id": "gov_r2_h1682@research-v7", "role": "governor", "score": 15, "findings": "Defense 공석 해소 최초 사례 + Q07 의존 탈피 + Q+Non-Q composite 조건 충족. pre-analysis 경고 반영하여 confidence 하향"},
+    {"agent_id": "quant_r2_h1682@research-v7", "role": "quant", "score": 15, "findings": "Q25-R16 상관 0.053 + Z_Score_Aligned 완비 + compute_risk.R 직접 검증으로 RM kill scenario 반박. R16 drawdown-quality filter 재정의 권고"},
+    {"agent_id": "rm_r2_h1682@research-v7", "role": "risk_manager", "score": 15, "findings": "Q25+R16 stress alpha 강력. R16 Calmar tautology 경고 유지 + R16 정의 차이 Quant 반박 수용. 조건부 상향"}
+  ],
+  "routing": {
+    "next_stage": "S1",
+    "owner": "Forge",
+    "action": "s0_record를 revision_v2 (12 conditions 반영)로 업데이트 후 Forge inbox에 TODO_S1_H_1682 전달. Scout revision 권한.",
+    "priority": "P0 — Defense 공석 시급성 + STR_1679v3 Def sleeve 교체 후보 확정 의존",
+    "strategy_id_hint": "STR_1683 또는 Forge 할당",
+    "linked_mutation": "STR_1679v3 Def sleeve 교체 — H_1682 APPROVE_CONDITIONAL → Scout STR_1679v3 draft 최종화 가능"
+  },
+  "meta": {
+    "r1_complete_at": "2026-04-17T16:43:00",
+    "r2_complete_at": "2026-04-17T16:53:00",
+    "verdict_at": "2026-04-17T16:55:00",
+    "r3_skipped": true,
+    "r3_skip_reason": "전원 |R2 delta| ≤ 2 ≤ 4 → VERDICT_READY 전이",
+    "codex_r2_verify_path": "stage_artifacts/r2_codex_verdict_H_1682.json",
+    "state_recovery_note": "state 파일 수동 복구 완료 (.cache/s0_debate_state_H_1682.json). R1 codex arguments 4건 스키마 + Quant R1 미등록으로 counter 저지 발생했으나 R1/R2 파일 10건 모두 디스크 존재 확인 후 VERDICT 진행.",
+    "strategic_context": "H_1681 REVISE 55 → H_1682 APPROVE_CONDITIONAL 71 = +16점 개선. Defense 공석 해소 최초 사례. Governor 4-scenario A (STR_1679v2 + H_1682 둘 다 PASS) 가장 유력 경로 확정."
+  }
+}

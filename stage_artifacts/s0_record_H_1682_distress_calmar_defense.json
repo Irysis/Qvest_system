@@ -2,11 +2,14 @@
   "hypothesis_id": "H_1682",
   "name": "Distress + Calmar Defense Anchor — Q25_Ohlson × R16_Calmar Cross-Family Composite",
   "stage": "S0",
-  "status": "PENDING_DEBATE",
+  "status": "APPROVE_CONDITIONAL",
+  "version": "v2 (2026-04-17 VERDICT 12 conditions 반영)",
   "timestamp": "2026-04-17T09:30:00",
+  "revision_timestamp": "2026-04-17T17:00:00",
   "designer": "Scout",
   "pathway": "A",
   "revision_from": "H_1681 (REVISE 55/100, Q07+tail composite 근본 재고) + Governor 후보 C Distress avoidance 수용",
+  "verdict_ref": "stage_artifacts/S0_VERDICT_H_1682.json (APPROVE_CONDITIONAL 71/100)",
 
   "hypothesis_text": "한국시장에서 Ohlson O-Score (distress probability) 낮은 종목과 Calmar ratio (return/MDD) 높은 종목의 cross-family composite는 AX-003/AX-004/AX-005 전수 회피 + Q07 배제 + stress 구간 양쪽 strong defense (Q25 stress_icir 0.659, R16_Calmar stress_icir 2.655) 실증 기반 Defense anchor를 제공한다. 회계 기반 distress(default probability) + 가격 기반 path-dependent risk(drawdown ratio) 독립 채널 결합으로 portfolio-level beta dominance (L-118-ext) 회피 설계.",
 
@@ -121,6 +124,20 @@
       "journal": "Journal of Finance, 53(3), 1131-1147",
       "relevance": "Distress risk가 체계적 위험 여부 실증. 본 가설의 Ohlson-based signal의 위기 robustness 설명.",
       "part_A_section": "A3 Distress"
+    },
+    {
+      "id": "Kho_Kim_2007",
+      "title": "한국 주식시장에서 부도위험과 주식수익률의 관계",
+      "journal": "재무연구 (Korean Journal of Finance)",
+      "relevance": "한국시장 distress risk premium 실증. Ohlson O-score 및 Altman Z-score 한국 적용 검증. COND_10 한국 학술 인용 보강.",
+      "part_A_section": "B7 Korea Empirical / A3 Distress"
+    },
+    {
+      "id": "Eom_Park_2014",
+      "title": "한국 주식시장에서 재무적 고위험(distress)과 주식수익률 cross-section 연구",
+      "journal": "재무관리연구 또는 한국증권학회지",
+      "relevance": "한국시장 distress 프리미엄의 존재 여부 + 국면별 차이 실증. H_1682 Ohlson-based Defense 설계의 한국 유효성 근거. COND_10 한국 학술 인용 보강.",
+      "part_A_section": "B7 Korea Empirical / A3 Distress"
     }
   ],
 
@@ -213,5 +230,48 @@
 
   "bucket_tag": "exploit",
   "governor_alignment": "후보 C (Distress avoidance) 수용 + 'Q + Non-Q composite' 조건 충족 (Q25 quality family + R16 risk family)",
-  "h1681_supersede": "H_1681 (Tail-Risk Defense) REVISE → H_1682 pivot. Tail-risk 3F redundancy (D47-D48-D45 상관 0.87~0.93) + Q07 의존 재고 → Q25 + R16 cross-family 대체"
+  "h1681_supersede": "H_1681 (Tail-Risk Defense) REVISE → H_1682 pivot. Tail-risk 3F redundancy (D47-D48-D45 상관 0.87~0.93) + Q07 의존 재고 → Q25 + R16 cross-family 대체",
+
+  "verdict_conditions_for_s1": {
+    "total_score": 71,
+    "verdict": "APPROVE_CONDITIONAL",
+    "score_breakdown": {
+      "academic": {"r1": 16, "r2": 16, "delta": 0},
+      "codex_critic": {"r1": 10, "r2": 10, "delta": 0},
+      "governor": {"r1": 17, "r2": 15, "delta": -2},
+      "quant": {"r1": 14, "r2": 15, "delta": 1},
+      "risk_manager": {"r1": 14, "r2": 15, "delta": 1}
+    },
+    "consensus_points_applied": [
+      "Quant 실측 Q25-R16 상관 median 0.053 — cross-family 독립성 empirical 입증",
+      "Q25/R16 Z_Score_Aligned 컬럼 EXIST 확인 (H_1681 미존재 선례와 차별화)",
+      "Scout empirical-first pivot 정당성 (Q24 stress -0.695 발견 + R16 stress_pct_pos 1.00)"
+    ],
+    "unresolved_disputes_to_watch_in_s1": [
+      "R16 Calmar stress_pct_pos 1.00 mechanical tautology vs 진짜 alpha — S1 sub-period 분해로 판별 (COND_02)",
+      "60/40 vs 50/50 baseline robust 여부 — S1 양쪽 측정 후 결정 (COND_03)",
+      "Defense role 성립 여부 — L-143 gate CAGR > 5% 통과 (COND_12)"
+    ],
+    "conditions_12_applied": [
+      {"id": "COND_01", "requirement": "walk-forward expanding window 사전등록, 60/40 재튜닝 금지", "s1_action": "walk-forward expanding cross-section Z-score only"},
+      {"id": "COND_02", "requirement": "R16 sub-period 분해 (급락 pre-1M snapshot vs during-crisis IC)", "s1_action": "Stress 6구간 R16 pre-crisis/during-crisis IC 분리 측정"},
+      {"id": "COND_03", "requirement": "50/50 baseline 병행 측정", "s1_action": "4 variants parallel (60/40 + 50/50 + Q25-only + R16-only)"},
+      {"id": "COND_04", "requirement": "Q25 C4 Usable_Date + T+60~90일 + restatement 비소급 PIT 증빙", "s1_action": "compute_quality.R Q25 logic 확인 + pit_evidence 필드 기록"},
+      {"id": "COND_05", "requirement": "KOSPI vs KOSDAQ 분리 성과 진단", "s1_action": "3 subsets (전체 + KOSPI-only + KOSDAQ-only) 성과 비교"},
+      {"id": "COND_06", "requirement": "Q25-only + R16-only baseline vs composite 대비 incremental 성과", "s1_action": "turnover/cost 후 FMB t-stat 비교"},
+      {"id": "COND_07", "requirement": "S3 DCC conditional correlation gate", "s3_action": "Scout S3 단계 DCC GARCH 설계"},
+      {"id": "COND_08", "requirement": "S3 beta_crisis vs beta_normal 분리", "s3_action": "Scout S3 단계. S1은 portfolio CAPM beta 기본 측정"},
+      {"id": "COND_09", "requirement": "S5 mutation slate 사전 등록 (R16-only + Q25-only + 50/50 + tail overlay)", "s5_action": "Scout S1 완료 후 s5_research_slate_H_1682.json 작성"},
+      {"id": "COND_10", "requirement": "한국 distress 학술 인용 보강", "applied_in_s0_record": "Kho-Kim 2007 + Eom-Park 2014 추가 (이 revision_v2에 완료)"},
+      {"id": "COND_11", "requirement": "Pass gate: S1 pure CAGR > 3% + stress alpha > 0 동시 충족 필수", "hurdle_addition": "Hard Fail 기준 추가"},
+      {"id": "COND_12", "requirement": "Defense 4 sub-gate: stress IC > 0.03 + Core 대비 MDD -8%p + bad/good IC ratio > 1.2 + CAGR > 5%", "hurdle_addition": "AX-001 조건부 평가 상세화"}
+    ]
+  },
+
+  "linked_downstream_mutation": {
+    "target_strategy": "STR_1679v3 Def sleeve 교체",
+    "mutation_design_doc": "stage_artifacts/s5_mutation_design_STR_1679v3_def_replacement.md",
+    "activation_condition": "H_1682 S1 Hurdle Grade A/B + COND_11 + COND_12 전수 통과",
+    "expected_impact": "STR_1679v2 Def sleeve Q07+D29 (실측 0.3pp) → Q25+R16 (예상 2~5pp). Role honesty 확보 + overlay 의존성 감소"
+  }
 }

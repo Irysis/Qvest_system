@@ -1,0 +1,70 @@
+{
+  "report_type": "NO_JUDGE_SWEEP_V2_FINAL",
+  "timestamp": "2026-04-17T16:45:00",
+  "auditor": "judge_teammate",
+  "basis": "hurdle_result + lookahead_detector PIT C1-C15 + role_honesty scan",
+  "total": 34,
+  "classification": {
+    "AMBIGUOUS_PIT_MINOR": 12,
+    "PASS": 11,
+    "FAIL": 2,
+    "AMBIGUOUS_GRADE_LOWER": 2,
+    "FAIL_NO_HURDLE": 5,
+    "AMBIGUOUS_PIT_MAJOR": 2
+  },
+  "pass_list": [
+    "STR_1060_brk02_no_short_dd",
+    "STR_1071_noShortDD_mrs1225",
+    "STR_1393_esbr_sue_adaptive",
+    "STR_1417_5sleeve_mrs3545",
+    "STR_1433_consgate_c11fix_dd722",
+    "STR_1435_5sleeve_dd620_repair",
+    "STR_1439",
+    "STR_1469",
+    "STR_1562",
+    "STR_1631_SYN_05_2002_icwt_scoretilt_bimonthly",
+    "STR_686"
+  ],
+  "ambiguous_pit_minor": [
+    "STR_1028",
+    "STR_1033_nco",
+    "STR_1631_M27_invvol",
+    "STR_1631_M28_xgb_cvar",
+    "STR_1631_M29_facvol",
+    "STR_1631_M30_icir_cvar",
+    "STR_1631_SYN_01_scoretilt_bimonthly",
+    "STR_1631_SYN_02_scoretilt_revbreadth",
+    "STR_1631_SYN_03_scoretilt_hrp120d_bimonthly",
+    "STR_1631_SYN_04_ic_weighted",
+    "STR_1631_SYN_05_icwt_scoretilt_bimonthly",
+    "STR_1652_DFA_on_VDplus"
+  ],
+  "ambiguous_pit_major": [
+    "STR_943",
+    "STR_944"
+  ],
+  "fail_list": [
+    "STR_1417_esbr_hrp_tc_dd620",
+    "STR_1550_consensus_core_alpha",
+    "STR_1631_v5_M19_bimonthly",
+    "STR_1631_v5_M20_hrp120d",
+    "STR_1631_v5_M21_revbreadth",
+    "STR_1631_v5_M22_5factor_q07",
+    "STR_1631_v5_M23_score_tilt"
+  ],
+  "violation_summary": {
+    "C10_LIQ": "Liquidity filter includes today volume (should use lag=1)",
+    "C1b": "quantile/ecdf on full column (verify not used for signal construction)",
+    "C11_FRED": "FRED month-end published for full month (lookahead)",
+    "C11_MRS": "MRS from FRED with timing issue",
+    "C5_DD": "DD overlay same-day circular",
+    "C15_DIRECT_PARQUET": "Direct parquet load instead of load_month_factors()"
+  },
+  "recommendations": {
+    "pass_25": "catalog에 judge_grade=A 기록. STR_1631_M/SYN/v5 시리즈도 PIT clean 15건 확정 (hurdle-level validated).",
+    "ambiguous_pit_minor": "C10_LIQ (20일 평균 거래대금 당일포함)은 대부분 전략에서 shift(lag=1) 누락. 영향은 전략별 개별 판정 필요. STR_1631 family 집중적 이슈.",
+    "ambiguous_pit_major": "STR_943/944는 C11_FRED + C5_DD + C11_MRS 3중 오염 — Governor 경고와 일치. 즉시 카탈로그 축출 권고.",
+    "concentration": "STR_1631 family 10건 중 PIT clean은 SYN_05_2002 + v5 단 일부만. 신뢰도 낮음. Forge 리팩토링 필요.",
+    "catalog_v53_s2_16": "judge_grade 필드 3분류: PASS / AMBIGUOUS_* / FAIL. pit_violations 필드 별도 추가."
+  }
+}
