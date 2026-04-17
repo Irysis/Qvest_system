@@ -583,6 +583,12 @@ sim_ov_primary <- list(
 )
 hr_primary <- run_hurdle_gate(sim_ov_primary, FACTORS,
   strategy_name = "STR_1679v2_sleeve_hrp_overlay", output_dir = OUT_DIR)
+# hurdle_result_primary_overlay.json 별도 저장 (ew_base 덮어쓰기 방지)
+tryCatch(
+  file.copy(file.path(OUT_DIR, "hurdle_result.json"),
+            file.path(OUT_DIR, "hurdle_result_primary_overlay.json"), overwrite = TRUE),
+  error = function(e) cat(sprintf("[WARN] hurdle copy: %s\n", e$message))
+)
 hr_base    <- run_hurdle_gate(sim_primary, FACTORS,
   strategy_name = "STR_1679v2_sleeve_hrp_base", output_dir = OUT_DIR)
 hr_ew      <- run_hurdle_gate(sim_ew, FACTORS,
@@ -593,14 +599,72 @@ cat(sprintf("  PRIMARY: pass=%s, score=%s, grade=%s\n",
 cat(sprintf("  HRP base: pass=%s, score=%s\n", hr_base$pass, hr_base$score))
 cat(sprintf("  EW base:  pass=%s, score=%s\n", hr_ew$pass,   hr_ew$score))
 
+# Core15/Def5 분리 variant — LIQ_THRESHOLD(=2e8) 통과 종목만 포함된 FACTORS_ALL 사용 (C10)
+stopifnot(exists("LIQ_THRESHOLD") && LIQ_THRESHOLD == 2e8)
+cat(sprintf("\n[Step 10b] Core15-only variant (LIQ_THRESHOLD=%g, C10 적용 완료)...\n", LIQ_THRESHOLD))
+FACTORS_CORE_ONLY <- FACTORS_ALL[Sleeve == "Core",    .(Date, Ticker, Score)]
+FACTORS_DEF_ONLY  <- FACTORS_ALL[Sleeve == "Defense", .(Date, Ticker, Score)]
+setkey(FACTORS_CORE_ONLY, Date, Ticker); setkey(FACTORS_DEF_ONLY, Date, Ticker)
+
+sim_core15 <- tryCatch(run_monthly_simulation(
+  RAWDATA, BM_DT, FACTORS_CORE_ONLY,
+  n_holdings = N_CORE, weight_method = "equal", commission = COMMISSION,
+  buffer_zone = list(keep_n = N_CORE + 2L, entry_n = N_CORE)
+), error = function(e) { cat(sprintf("[WARN] core15 sim: %s\n", e$message)); NULL })
+
+perf_core15 <- NULL; perf_def5 <- NULL; sim_def5 <- NULL
+if (!is.null(sim_core15)) {
+  perf_core15 <- summarise_perf(sim_core15$strategy_xts, "STR_1679v2_core15_only")
+  cat("--- Core15-only: ---\n"); print(perf_core15)
+}
+
+n_def_dates <- FACTORS_DEF_ONLY[, .N, by = Date][N >= N_DEFENSE, .N]
+if (n_def_dates >= 12L) {
+  cat(sprintf("[Step 10c] Def5-only variant (LIQ_THRESHOLD=%g)...\n", LIQ_THRESHOLD))
+  sim_def5 <- tryCatch(run_monthly_simulation(
+    RAWDATA, BM_DT, FACTORS_DEF_ONLY,
+    n_holdings = N_DEFENSE, weight_method = "equal", commission = COMMISSION,
+    buffer_zone = list(keep_n = N_DEFENSE + 2L, entry_n = N_DEFENSE)
+  ), error = function(e) { cat(sprintf("[WARN] def5 sim: %s\n", e$message)); NULL })
+  if (!is.null(sim_def5)) {
+    perf_def5 <- summarise_perf(sim_def5$strategy_xts, "STR_1679v2_def5_only")
+    cat("--- Def5-only: ---\n"); print(perf_def5)
+    if (!is.null(perf_core15)) {
+      mdd_combined <- as.numeric(ov_primary$perf_ov[["MDD"]])
+      mdd_core15   <- as.numeric(perf_core15[["MDD"]])
+      def_mdd_pp   <- mdd_combined - mdd_core15
+      cat(sprintf("[Defense Contribution] Combined MDD=%.2f%% | Core15 MDD=%.2f%% | Def contrib=%.2f pp\n",
+                  mdd_combined, mdd_core15, def_mdd_pp))
+      if (abs(def_mdd_pp) < 2.0)
+        cat("[L-146 WARNING] Defense sleeve MDD 기여 <2pp — Role Misalignment 우려.\n")
+    }
+  }
+}
+
 # ===================================================================
-# 11. Tail Risk (Gate 6)
+# 11. Tail Risk (Gate 6) — daily_returns 명시 전달
 # ===================================================================
 cat("\n[Step 11] Tail Risk...\n")
 source(file.path(FUNC_PATH, "portfolio/tail_risk_engine.R"))
-tr_result <- tryCatch(compute_tail_risk_suite(sim_ov_primary, output_dir = OUT_DIR),
-  error = function(e) { cat(sprintf("[WARN] tail_risk: %s\n", e$message)); NULL })
-if (!is.null(tr_result)) cat("[Step 11] tail_risk_result.json saved.\n")
+
+# daily_returns 필드 명시 주입 (tail_risk_engine은 daily_returns 우선 탐색)
+daily_ret_primary <- as.numeric(ov_primary$ov_xts)
+sim_ov_primary$daily_returns <- daily_ret_primary
+
+# daily_returns_primary.csv export (FF3/FF5/Carhart4/DSR 검증용)
+dr_dt <- data.table(Date = index(ov_primary$ov_xts), Strategy_Ret = daily_ret_primary)
+fwrite(dr_dt, file.path(OUT_DIR, "daily_returns_primary.csv"))
+cat(sprintf("[Step 11] daily_returns_primary.csv: %d rows saved.\n", nrow(dr_dt)))
+
+tr_result <- tryCatch(
+  compute_tail_risk_suite(sim_ov_primary, output_dir = OUT_DIR, strategy_id = "STR_1679v2"),
+  error = function(e) { cat(sprintf("[WARN] tail_risk: %s\n", e$message)); NULL }
+)
+if (!is.null(tr_result)) {
+  cat("[Step 11] tail_risk_result.json saved.\n")
+  cat(sprintf("  EVT-VaR 99%%: %.4f | CF-VaR 99%%: %.4f | CDaR 95%%: %.4f\n",
+    tr_result$summary$evt_var_99, tr_result$summary$cf_var_99, tr_result$summary$cdar_95))
+}
 
 # ===================================================================
 # 12. Charts
@@ -697,10 +761,12 @@ write_json(list(
   )
 ), file.path(ART_DIR, "s2_profile_STR_1679v2.json"), pretty = TRUE, auto_unbox = TRUE)
 
+# LIQ_THRESHOLD=2e8 (C10) 유동성 필터는 Step 1 SIG_SNAP에서 적용됨
 write_json(list(
   strategy = "STR_1679v2_physical_sleeve",
   version  = "D-plan: Core15+Def5=20 physical separation",
   n_hold = N_HOLD, n_core = N_CORE, n_defense = N_DEFENSE,
+  liq_threshold = LIQ_THRESHOLD,
   primary_overlay = list(
     perf = as.list(ov_primary$perf_ov), hurdle_pass = hr_primary$pass,
     hurdle_score = hr_primary$score,
@@ -708,6 +774,14 @@ write_json(list(
   ),
   hrp_base = list(perf = as.list(perf_primary), turnover = to_primary, hurdle_pass = hr_base$pass),
   ew_base  = list(perf = as.list(perf_ew),      turnover = to_ew,      hurdle_pass = hr_ew$pass),
+  core15_only = if (!is.null(perf_core15)) as.list(perf_core15) else list(note = "sim failed"),
+  def5_only   = if (!is.null(perf_def5))  as.list(perf_def5)   else list(note = "insufficient dates"),
+  defense_contribution = if (!is.null(perf_core15) && !is.null(perf_def5)) list(
+    mdd_combined_pct = as.numeric(ov_primary$perf_ov[["MDD"]]),
+    mdd_core15_pct   = as.numeric(perf_core15[["MDD"]]),
+    def_contrib_pp   = as.numeric(ov_primary$perf_ov[["MDD"]]) - as.numeric(perf_core15[["MDD"]]),
+    l146_role_honesty_pass = abs(as.numeric(ov_primary$perf_ov[["MDD"]]) - as.numeric(perf_core15[["MDD"]])) >= 2.0
+  ) else list(note = "variants not available"),
   regime_alloc = list(
     normal = sum(BLEND_COMP$regime == "NORMAL"), caution = sum(BLEND_COMP$regime == "CAUTION"),
     crisis = sum(BLEND_COMP$regime == "CRISIS")

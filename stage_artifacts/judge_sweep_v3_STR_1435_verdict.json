@@ -1,0 +1,104 @@
+{
+  "strategy_id": "STR_1435",
+  "strategy_dir": "STR_1435_5sleeve_dd620_repair",
+  "tier": 1,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "REJECT",
+  "v3_verdict": "REJECT",
+  "prev_judge_verdict": "REJECT — Gate 0 PIT FAIL in 2/5 sleeves (defense + consensus). Role Honesty MISMATCH (core_alpha vs declared diversifier).",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": false,
+      "detect_lookahead_run_all_violations": [],
+      "sub_engine_violations": {
+        "defense_sleeve": "STR_686 defense_sleeve.R — C3 FRED fred_monthly WITHOUT lag (previous Judge v4.0 false positive reversed 2026-03-28)",
+        "consgate_pure_engine": "C11 FRED same-month flag"
+      },
+      "c5_overlay_lag": "CLEAN at top-level (DD brake dd_pct_lagged)",
+      "c9_dd_same_day": "CLEAN — dd_exp_combined_lagged",
+      "c10_liquidity": "CLEAN — AvgTV20 shift(n=1) lag (line 128)",
+      "c11_data_time_axis": "FLAG — FRED same-month in consgate_pure_engine.R + defense_sleeve"
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "fail_reason_1": "Re-runnability FAIL: BASE_DIR = STR_770_phase2_cross does NOT exist on disk. defense_sleeve.R / indmom_sleeve.R / consensus engines cannot be sourced. run_all.R errors on Phase 1a.",
+      "fail_reason_2": "N>20 violation (borderline): 5 sleeves x 6 = up to 30 union tickers. HRP dedup by Ticker keeps union size in 6..30 range. Violates v53 N<=20 max rule.",
+      "n_holdings_logged": 6,
+      "n_holdings_effective": "up to 30 (5-sleeve union after max-Score dedup)",
+      "n_limit_v53": 20,
+      "violates_n20": true,
+      "commission": 0.0015,
+      "turnover_ann": 154
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.391,
+      "loo_2020_sr": 1.345,
+      "loo_2011_sr": 1.349,
+      "loo_2018_sr": 1.366,
+      "full_sr_daily": 1.323,
+      "rolling_3y_sr_mean": 1.094,
+      "rolling_3y_sr_min": -0.755,
+      "rolling_3y_sr_last": 1.643,
+      "stress_outperform": "4/4 (GFC +29.79%, COVID +4.22%, Rate22 +8.81%, EuDebt11 +21.01%)",
+      "oos_retention": 0.824
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.378,
+      "sharpe_daily": 1.323,
+      "cagr": 24.07,
+      "mdd": -27.37,
+      "mdd_v53_target": "FAIL — exceeds 25% production target",
+      "calmar": 0.88,
+      "score_hurdle": 66,
+      "novelty_bonus": 0
+    },
+    "gate_4_stat": {
+      "pass": "BORDERLINE",
+      "dsr": 1.000,
+      "dsr_n_trials": 400,
+      "dsr_significant": true,
+      "ff3_alpha_t": 2.55,
+      "ff5_alpha_annual_pct": 13.53,
+      "ff5_alpha_t": 2.77,
+      "harvey_t3_pass": false,
+      "capm_alpha_t_spot_check": 5.73,
+      "recent_3y_sr": 1.79,
+      "alpha_decay": false,
+      "icir_full": 0.179,
+      "alpha_lab_gate_pass": false
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "s3_max_return_corr_vs_STR_1417": 0.994,
+      "s4_max_grade_a_corr_vs_STR_1411": 0.734,
+      "note": "Essentially a parameter tweak of STR_1417 (parent). Not a novel diversifier."
+    },
+    "gate_6_role_honesty": {
+      "pass": false,
+      "declared_role": "diversifier",
+      "s3_candidate_hint": "core_alpha",
+      "s4_provisional_role": "core_alpha",
+      "detected_family": "defense",
+      "audit_result": "ROLE_MISMATCH",
+      "corrected_role": "core_alpha",
+      "detail": "Three conflicting role labels across artifacts. 5-sleeve composite with def+indmom+SUE+consgate+TP = core_alpha structure. Not a diversifier (corr 0.734 with Grade A pool)."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "Gate 0 PIT FAIL in 2/5 sleeves (defense + consgate FRED no-lag)",
+    "Gate 1 re-runnability FAIL: BASE_DIR STR_770_phase2_cross missing",
+    "Gate 1 N>20 violation: up to 30 union tickers",
+    "Gate 5 diversity FAIL: 0.994 corr with parent STR_1417, 0.734 with STR_1411",
+    "Gate 6 Role Honesty FAIL: ROLE_MISMATCH declared diversifier but core_alpha structure",
+    "Harvey t>3 FAIL: FF5 alpha t=2.77",
+    "ICIR 0.179 < 0.20 Alpha Lab Gate",
+    "MDD 27.37% exceeds 25% v53 production target"
+  ],
+  "recommendation": "REJECT. Do NOT include in sweep v3 active set. Requires: (1) restore missing BASE_DIR parents, (2) fix defense + consgate FRED lag, (3) reduce N to <=20, (4) re-evaluate role as core_alpha (not diversifier).",
+  "notes": "Previous Judge (2026-03-28) already rejected. Pass 2 confirms REJECT. 8 hard-fail reasons."
+}

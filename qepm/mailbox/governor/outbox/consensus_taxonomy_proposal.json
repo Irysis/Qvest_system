@@ -1,0 +1,205 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "CONSENSUS_SUB_FAMILY_TAXONOMY_PROPOSAL",
+  "stage": "PG1_Pre_Admission_Rule_Definition",
+  "timestamp": "2026-04-17T18:35:00+09:00",
+  "session": 66,
+  "version": "v1.0_proposal",
+  "trigger": "Q-Lead Q7 directive — Judge Pass 2 결과 대기 전 consensus sub-family 세분화 규칙 선제 수립. PG1 admission 판정 즉시 실행 가능하도록 정비.",
+  "purpose": "sweep v2 PASS 11건 중 consensus family 7건(STR_1631/1439/1435/1417/1433/1469/1393) 편입 시 family saturation 35% 한도 위반 우려 해소. Z1/Z2/Z3 scenario admission 전제조건.",
+
+  "current_baseline_problem_statement": {
+    "issue": "현재 PG2 baseline STR_1631 80% 단독으로도 consensus family가 이미 상한 초과 (80% >> 35%). portfolio_gap_vector_v1.0.3에 consensus 0.5 기록은 Core 80%를 0.5로 합산한 오인.",
+    "root_cause": "consensus family가 'economic_family' 단일 카테고리로 인식되어 sub-structure(설계 원리/signal 구조/overlay 방식 등) 차이가 묵시됨. 실제로는 C19 core vs 5-sleeve DD vs consensus gate vs esbr-sue 등 서로 structurally 구분 가능한 substrategies.",
+    "impact_if_unfixed": "Z1 scenario (STR_1631 45% + STR_1439 15% = consensus 60%) 자동 REJECT. Z3 (consensus 37%) 자동 REJECT. sweep v2 PASS 11건 중 최대 6건 편입 불가 → SR 2.0 경로 차단.",
+    "necessity": "consensus family 내부 sub-family 공식 분류 + 각 sub-family 15% cap + 전체 합산 45% cap (기존 35% → 45% 완화 요청) 구조 수립 필수."
+  },
+
+  "proposed_taxonomy": {
+    "parent_family": "consensus",
+    "sub_families": [
+      {
+        "sub_family_id": "consensus_C19_core",
+        "definition": "C19_Cons2y 기반 SUE+ESBR+EPS_Chg+TP_Gap 합성 core alpha. 단일 composite factor 구조.",
+        "current_members": ["STR_1631_SYN_05_VDplus (Core, 80% active)", "STR_1631_SYN_05_2002 (sweep v2 rank 8, 1.194)"],
+        "structural_signature": {
+          "signal_type": "composite_C19_multi_factor",
+          "overlay_type": "VD+ (VT + DD)",
+          "rebalance": "monthly",
+          "signal_decay": "single composite"
+        },
+        "cap_proposed": 0.25,
+        "rationale": "Core anchor sub-family. baseline weight 최대 허용 상한."
+      },
+      {
+        "sub_family_id": "consensus_multifactor",
+        "definition": "consensus family + 추가 orthogonal factors (QMJ/MOM 등)를 multi-signal 구조로 결합한 하이브리드. 단일 C19 composite과 structurally 구분.",
+        "current_members": ["STR_1439 (sweep v2 rank 1, 1.532, MDD 19.17%)", "STR_1469_cons4f_5sleeve (rank 10, 1.021)"],
+        "structural_signature": {
+          "signal_type": "multi_factor_blend (consensus + N other factors)",
+          "overlay_type": "varies",
+          "rebalance": "monthly",
+          "signal_decay": "additive"
+        },
+        "cap_proposed": 0.15,
+        "rationale": "C19 single composite 대비 multi-signal → structurally 독립. 최대 15%."
+      },
+      {
+        "sub_family_id": "consensus_5sleeve_dd",
+        "definition": "consensus signal + 5-sleeve multi-sleeve 구조 + DD overlay. sleeve 병렬화로 개별 signal risk 분산.",
+        "current_members": ["STR_1435_5sleeve_dd620_repair (rank 2, 1.378, MDD 27.37%)"],
+        "structural_signature": {
+          "signal_type": "consensus + 5-sleeve parallelization",
+          "overlay_type": "DD 6/20",
+          "rebalance": "monthly, sleeve-independent",
+          "signal_decay": "5 parallel paths"
+        },
+        "cap_proposed": 0.10,
+        "rationale": "5-sleeve 구조가 signal risk 분산. 그러나 signal 기반이 여전히 consensus → 10% cap."
+      },
+      {
+        "sub_family_id": "consensus_5sleeve_mrs",
+        "definition": "consensus + 5-sleeve + MRS 3545 regime conditional 변형. DD와 MRS overlay 교차.",
+        "current_members": ["STR_1417_5sleeve_mrs3545 (rank 3, 1.361, MDD 30.61%)", "STR_1417_esbr_hrp_tc_dd620 (HARD EXPEL Session 65)"],
+        "structural_signature": {
+          "signal_type": "consensus + 5-sleeve + MRS regime gate",
+          "overlay_type": "DD + MRS conditional",
+          "rebalance": "monthly with regime gating",
+          "signal_decay": "5 parallel + regime filter"
+        },
+        "cap_proposed": 0.10,
+        "rationale": "MRS 독립 overlay + DD → 추가 regime diversification. 10%."
+      },
+      {
+        "sub_family_id": "consensus_gate",
+        "definition": "consensus signal + 독립 gate 조건(c11 fix / DD 722 등) structured entry/exit. signal 자체는 consensus이나 gate 구조가 differentiation.",
+        "current_members": ["STR_1433_consgate_c11fix_dd722 (rank 6, 1.329, MDD 24.35%)"],
+        "structural_signature": {
+          "signal_type": "consensus + structured gate entry/exit",
+          "overlay_type": "DD 7/22 + c11 fix",
+          "rebalance": "monthly",
+          "signal_decay": "gate-conditional"
+        },
+        "cap_proposed": 0.10,
+        "rationale": "gate 구조가 signal 타이밍 변경. 10%."
+      },
+      {
+        "sub_family_id": "consensus_esbr_sue_adaptive",
+        "definition": "ESBR + SUE + adaptive weight 변형. C19와 signal 유사하나 adaptive weight 구조로 signal 처리 구분.",
+        "current_members": ["STR_1393_esbr_sue_adaptive (rank 11, 0.942, MDD 35.69%)"],
+        "structural_signature": {
+          "signal_type": "ESBR + SUE + adaptive weighting",
+          "overlay_type": "varies",
+          "rebalance": "monthly",
+          "signal_decay": "adaptive"
+        },
+        "cap_proposed": 0.05,
+        "rationale": "SR < 1.0 + MDD 35%+ → weight 제한. 단 편입 시 5% cap."
+      }
+    ],
+    "parent_family_total_cap": 0.45,
+    "rationale_for_45pct_total_cap": [
+      "현재 Core STR_1631 단독 80% 상태 → 단기 이행 목표: 45% 총 consensus cap",
+      "consensus family는 한국시장에서 실증적으로 가장 strong alpha 구간 제공 (sweep v2 PASS 11 중 6건)",
+      "35% 엄격 적용 시 Z3/Hybrid Z3+H_1688 scenario 모두 infeasible → SR 2.0 경로 차단",
+      "기존 factor-DB based family 분류의 한계: 설계 원리(signal 처리/overlay/sleeve 등) 세분화 없으면 diversity 인식 불가",
+      "중기 (6~12개월) 목표: 추가 diversifier (H_1688 Residual Momentum, H_1683 Seasonality) PG2 편입 후 consensus 총합 35%로 점진 감소"
+    ]
+  },
+
+  "structural_independence_criteria": {
+    "criterion_1_signal_type": {
+      "description": "raw signal 구조 (composite vs multi-factor vs gate-triggered 등). 동일 signal이어도 처리 방식이 다르면 partial independence.",
+      "measurement": "factor_id + preprocessing pipeline 비교. OLS coefficient 구조 비교."
+    },
+    "criterion_2_overlay_type": {
+      "description": "risk overlay (DD / VT / MRS / HRP 등) 종류 및 parameter 분리.",
+      "measurement": "overlay_config_fingerprint (L-code 기반)"
+    },
+    "criterion_3_sleeve_structure": {
+      "description": "단일 vs N-sleeve multi-sleeve 구조.",
+      "measurement": "N_sleeve + sleeve_independence_ratio"
+    },
+    "criterion_4_empirical_correlation": {
+      "description": "실측 monthly return correlation. sub-family 간 rho < 0.5 요구.",
+      "measurement": "Forge orthogonality Task #5 측정. rho < 0.5 불충족 시 sub-family 합병 처리.",
+      "note": "**Forge Task #5 결과가 taxonomy 확정 전제조건**"
+    }
+  },
+
+  "application_to_z_scenarios": {
+    "Z1_str1439_only": {
+      "admitted_allocation": {"STR_1631_consensus_C19_core": 0.45, "STR_1439_consensus_multifactor": 0.15},
+      "consensus_total": 0.60,
+      "compliance_check_original_35pct": "FAIL",
+      "compliance_check_proposed_45pct": "FAIL (60% > 45%)",
+      "remediation_needed": "STR_1631 45%→25% 추가 하향 or STR_1439 15%→10% 축소",
+      "revised_proposal": {"STR_1631_C19": 0.25, "STR_1439_multifactor": 0.15, "consensus_total": 0.40, "status": "PASS"}
+    },
+    "Z2_str1439_1435": {
+      "admitted_allocation": {"STR_1631_C19": 0.38, "STR_1439_multifactor": 0.12, "STR_1435_5sleeve_dd": 0.10},
+      "consensus_total": 0.60,
+      "compliance_check_proposed_45pct": "FAIL",
+      "revised_proposal": {"STR_1631_C19": 0.22, "STR_1439_multifactor": 0.12, "STR_1435_5sleeve_dd": 0.10, "consensus_total": 0.44, "status": "PASS"}
+    },
+    "Z3_str1439_1435_1060": {
+      "admitted_allocation": {"STR_1631_C19": 0.30, "STR_1439_multifactor": 0.12, "STR_1435_5sleeve_dd": 0.10, "STR_1060_breakout_non_consensus": 0.10},
+      "consensus_total": 0.52,
+      "compliance_check_proposed_45pct": "FAIL",
+      "revised_proposal": {"STR_1631_C19": 0.22, "STR_1439_multifactor": 0.12, "STR_1435_5sleeve_dd": 0.10, "STR_1060": 0.10, "consensus_total": 0.44, "status": "PASS"}
+    },
+    "Hybrid_Z3_plus_H_1688_core_level": {
+      "admitted_allocation": {"STR_1631_C19": 0.18, "STR_1439_multifactor": 0.12, "STR_1435_5sleeve_dd": 0.10, "STR_1060_breakout": 0.10, "H_1688_residual_momentum_core": 0.15, "Div_1656_ML": 0.13, "Def_H_1682": 0.12, "Def_1662a_Q07": 0.10},
+      "consensus_total": 0.40,
+      "compliance_check_proposed_45pct": "PASS",
+      "family_diversification": {"consensus": 0.40, "ML_complexity": 0.13, "breakout": 0.10, "momentum_residual": 0.15, "distress_path": 0.12, "quality_stability": 0.10},
+      "max_family": 0.40,
+      "status": "PASS (consensus 40% < 45% cap, max family 40%)"
+    }
+  },
+
+  "decision_tree_for_admission": {
+    "step_1_identify_sub_family": "신규 admission 후보 전략 → 위 6개 sub_family_id 중 분류. 없으면 Governor+Judge 공동 신규 sub_family 정의.",
+    "step_2_check_sub_family_cap": "sub_family 내 기존 편입 전략 합산 + 신규 weight ≤ cap. 위반 시 weight 축소 or REJECT.",
+    "step_3_check_parent_family_cap": "consensus 전체 총합 ≤ 45%. 위반 시 Core 하향 or 추가 weight 축소.",
+    "step_4_check_structural_criteria": "criterion_1~4 모두 PASS. criterion_4 correlation 0.5 이상이면 sub_family 합병 처리.",
+    "step_5_approve": "4단계 모두 PASS → PG1 ADMIT. 실패 시 DEFER/REJECT."
+  },
+
+  "implementation_checklist_for_pg1_admission": [
+    "Judge Pass 2 결과 확정 (Task #1): STR_1439/1435/1060 Gate 0~6 + DSR + Role Honesty",
+    "Forge Orthogonality 측정 (Task #5): pairwise ρ < 0.4 vs STR_1631, ρ < 0.5 inter-sweep-pass",
+    "taxonomy v1.0 Q-Lead 승인 (이 proposal)",
+    "sub_family_id별 factor_signature 정량 기준 확정 (criterion_1~4 합성)",
+    "CVaR_95 / CDaR_95 제약 Risk Manager 검증 (onDemand spawn 요청 예정)",
+    "Z1 / Z2 / Z3 / Hybrid 중 approval 시나리오 확정",
+    "PG1 admission 판정 초안 작성 (Judge 결과 도착 후 30분 내 Q-Lead 지시)"
+  ],
+
+  "open_questions_for_q_lead": [
+    "P1: 45% parent cap 수용 여부? (35%→45%, 중기 목표 35% 환원 plan)",
+    "P2: sub_family cap 0.25/0.15/0.10/0.10/0.10/0.05 세분화 수용?",
+    "P3: Forge orthogonality Task #5 결과 ρ ≥ 0.5 시 sub_family 합병 처리 동의?",
+    "P4: STR_1631 Core 80% → 단기 25% 급하향 (55%p 축소)의 이행 속도? (한번에 vs 3~6개월 점진)",
+    "P5: H_1688 core-level alpha를 하나의 신규 family 'momentum_residual'로 별도 분류 확인? (consensus 밖)",
+    "P6: consensus 총합 45% cap이 다른 family (quality/momentum/distress)에도 확장 적용? (모든 parent family 45% cap 통일)"
+  ],
+
+  "follow_up_actions_after_approval": [
+    "portfolio_governor.R family_saturation_rule 함수 업데이트 (consensus subfamily 분기)",
+    "pg1_admission 로직에 taxonomy lookup 추가",
+    ".cache/portfolio_gap_vector 스키마 v1.3 업데이트 (family_concentration sub_family breakdown)",
+    "CLAUDE.md + governor_init.md axiom 주입 업데이트 (consensus taxonomy 명시)",
+    "Judge/Forge 알림 — sweep v3 Pass 2 결과 도착 시 taxonomy 적용 판정 절차 준수"
+  ],
+
+  "reference_artifacts": [
+    ".cache/portfolio_gap_vector.json (v1.0.3 baseline)",
+    ".cache/portfolio_gap_vector_v1.2_projection.json (rev2 시나리오)",
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev2.json (rev2 plan)",
+    "Judge sweep v2 PASS 11 catalog (Session 65 정적 감사 결과)",
+    "stage_artifacts/s0_record_H_1688_residual_momentum_core_alpha.json",
+    "stage_artifacts/s0_record_H_1683_factor_seasonality_diversifier.json"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "strategy_id": "STR_1439",
+  "strategy_dir": "STR_1439_1047_to_fix",
+  "tier": 1,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "B_ARCHIVE",
+  "v3_verdict": "ARCHIVE_WITH_EVOLUTION",
+  "prev_judge_verdict": "DOWNGRADE B — L-484 return-blend 30-stock violation",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_violations": [],
+      "c5_overlay_lag": "CLEAN — dd_pct_lagged = c(0, dd_pct[-n]) at line 105",
+      "c9_dd_same_day": "CLEAN — DD brake uses lagged dd_pct_lagged (1-step)",
+      "c10_liquidity": "N/A — uses parent sub-sim holdings (no direct liquidity filter)",
+      "c11_data_time_axis": "CLEAN — regime_engine_daily v7.1 called (MRS lagged internally)"
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "fail_reason_1": "L-484 violation: return-level blend of 4 sub-sims (sim_A=STR_1037, sim_B=STR_943, sim_C=STR_898, sim_D=STR_1035). Actual live holdings = up to 80 stocks (4 x 20).",
+      "fail_reason_2": "Re-runnability FAIL: 3 of 4 parent strategies MISSING from disk (STR_1037_clean_regime_v2, STR_898_regime_factor_alloc, STR_1035_oas_minvar). run_all.R cannot be re-executed to reproduce results.",
+      "n_holdings_logged": 6,
+      "n_holdings_effective": "up to 80 (return-blend of 4 sub-sims, each up to 20)",
+      "n_limit_v53": 20,
+      "violates_n20": true,
+      "commission": 0.0015,
+      "turnover_ann": 154
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.566,
+      "loo_2020_sr": 1.484,
+      "loo_2011_sr": 1.487,
+      "loo_2018_sr": 1.538,
+      "full_sr_daily": 1.468,
+      "rolling_3y_sr_mean": 1.278,
+      "rolling_3y_sr_min": -0.179,
+      "rolling_3y_sr_last": 1.621,
+      "stress_outperform": "4/4 (GFC +28.16%, COVID +6.18%, Rate22 +16.14%, EuDebt11 +16.67%)"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.532,
+      "sharpe_daily": 1.468,
+      "cagr": 17.89,
+      "mdd": -19.17,
+      "calmar": 0.933,
+      "score_hurdle": 77,
+      "novelty_bonus": 10
+    },
+    "gate_4_stat": {
+      "pass": "BORDERLINE",
+      "dsr": 1.000,
+      "dsr_n_trials": 400,
+      "dsr_significant": true,
+      "ff5_alpha_annual_pct": 8.77,
+      "ff5_alpha_t": 2.953,
+      "harvey_t3_pass": false,
+      "capm_alpha_t_spot_check": 6.85,
+      "recent_3y_sr": 1.81,
+      "alpha_decay": false
+    },
+    "gate_5_diversity": {
+      "pass": "UNKNOWN_DYNAMIC",
+      "note": "s3_orthogonality artifact empty. Static corr vs PG2 strategies not measurable without reproducible sim."
+    },
+    "gate_6_role_honesty": {
+      "pass": false,
+      "declared_role": "ev_1047_to_fix",
+      "role_bias": "RoleBias_Core",
+      "audit_result": "RETURN_BLEND_INFLATION",
+      "detail": "Return-level blend of 4 sub-sim return streams creates synthetic Sharpe that is not replicable by a single portfolio. True implementable form requires score-blend (union ticker set). Alpha is genuine but architecture inflates apparent diversification benefit."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "pit_violations_detail": {},
+  "hard_fail_reasons": [
+    "L-484: return-blend with up to 80-stock effective holdings (violates v53 N<=20 rule)",
+    "Gate 1 re-runnability FAIL: 3/4 parent strategies missing from disk",
+    "Harvey t>3 FAIL: FF5 alpha t=2.953 < 3.0"
+  ],
+  "recommendation": "ARCHIVE_WITH_EVOLUTION. Alpha signals genuine (4 component strategies each individually valid). Architecture non-compliant. Seed for score-blend redesign (union tickers, capped at 20) only after missing parent strategies are restored.",
+  "notes": "Previous Judge (2026-03-28) already made identical downgrade decision. Pass 2 re-validation confirms: Grade remains B / ARCHIVE. Not suitable for PG candidate pool. Do NOT include in sweep v3 active set."
+}

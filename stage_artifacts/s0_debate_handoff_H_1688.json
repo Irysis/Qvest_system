@@ -1,0 +1,158 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit for 5-person R1 parallel spawn. Agent 도구는 Q-Lead 권한이므로 Scout이 debate 자료를 준비하고 Q-Lead가 5 agent를 병렬 스폰한다.",
+  "hypothesis_id": "H_1688",
+  "hypothesis_name": "Residual Momentum Diversifier (Core-Level Alpha Target)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T18:42:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1688_residual_momentum_core_alpha.json",
+  "ready_for_r1_spawn": true,
+
+  "one_line_summary": "M04_Mom_12_1을 beta(24M)+log(Size)+R12_IdioVol 3-factor 잔차화. Z_Score_Aligned Top 20 EW. Carhart 1997 + Blitz 2011 + Barroso 2015 + 이진철 2015. Core-level SR 1.0+ target, rho < 0.25 vs STR_1631/1656.",
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "script": "02_Infrastructure/hooks/run_codex_critic.sh",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1688 Residual Momentum. M04_Mom_12_1 cross-section OLS residualization on beta(24M CAPM) + log(MarketCap) + R12_IdioVol. Z_Score_Aligned Top 20 EW monthly. Carhart 1997 + Blitz-Huij-Martens 2011 + Barroso-Santa-Clara 2015 + 이진철-김동철 2015. Target SR 1.0+ standalone, rho<0.25 vs STR_1631/STR_1656.",
+        "L_CODE_FINDINGS": "L-107 (ICIR fixed weight C1), L-118 (beta dominance DIRECT_FIX), L-118_ext (cross-section vs portfolio rho), L-119 (static blend dilution — single signal PASS), L-122 (factor timing vs risk mgmt — Barroso framework), L-140 (Q07/D25 fail PASS), L-148 (Grade A not PIT clean), L-441 (MRS future ref PASS)",
+        "FAILED_STRATEGIES": "STR_1038~1043 (구 30종목 momentum, v53 incompatible). Grade A 기존 momentum standalone 없음.",
+        "HYP_ID": "H_1688"
+      },
+      "output_path": "stage_artifacts/s0_debate_r1_codex_critic_H_1688.json",
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "Blitz 2011 global Sharpe 1.0 decay 가능성 — 2011 이후 post-publication",
+        "Barroso 2015 scaling 없이 S1 standalone momentum crash 노출",
+        "24M rolling beta min history 종목 exclude — survivorship 우려",
+        "H_1687과 momentum family 공유 — S3 rho 미리 측정 불가"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. 가설: H_1688 Residual Momentum Core Alpha. L13 Risk Engine 관점. momentum crash tail dependence + regime vulnerability + portfolio beta 축소 실효성 + H_1687과 DCC conditional correlation 검증 설계.",
+      "output_path": "stage_artifacts/s0_debate_r1_risk_manager_H_1688.json",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "momentum crash 2020-03 + 2022-09 tail 노출 (Barroso scaling 없음)",
+        "잔차 momentum이 idiovol 잔차와 합성되어 R12 interaction risk",
+        "bear-recovery 전환기 (2009-03) long-momentum reversal 위험",
+        "24M rolling beta의 look-back 편향"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. 가설: H_1688 Residual Momentum Core-Level Alpha. PG0 gap alignment, role admission, family saturation 평가. SR 2.0 경로에서 Core급 alpha 1건 필수 (Governor v1.1 결론). 현재 family: consensus 0.5 + ML 0.5 → momentum family 신규 진입.",
+      "output_path": "stage_artifacts/s0_debate_r1_governor_H_1688.json",
+      "rubric_focus": "gap_alignment(4) + role_match(4) + family_saturation(4) + marginal_contribution(4) + implementation_feasibility(4) = 20",
+      "expected_support_vectors": [
+        "SR 2.0 gap 0.807 해소의 직접 경로 — Core급 alpha",
+        "momentum family 미구축 (PG2 consensus+ML only) → family diversification",
+        "H_1676+H_1682+H_1688 3-sleeve Scenario D 1.78+ 도달 예상",
+        "Blitz 2011 global Sharpe 1.0 benchmark + 이진철 2015 한국 t>3"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. 가설: H_1688. Quant 팩트체크 — ICIR 예상, 내부 상관, Factor DB 가용성, C19 상관, 월간 residual 계산 feasibility. M04/M01/S01/R12 모두 load_month_factors 경유 가능. 24M rolling beta pre-compute 캐시 전략.",
+      "output_path": "stage_artifacts/s0_debate_r1_quant_H_1688.json",
+      "rubric_focus": "icir_pass(4) + internal_corr(4) + c19_corr(4) + defense_ic(4) + data_avail(4) = 20",
+      "expected_fact_check_vectors": [
+        "M04_Mom_12_1 ICIR 기존 측정값 + residualization 후 ICIR 개선 실증 (Blitz 2011 factor model R² 30~40%)",
+        "M01 24M rolling beta history: 1990-01 기준 1992-01부터 사용 가능 → 관측치 충분",
+        "R12 IdioVol monthly Factor DB 존재 확인",
+        "vs STR_1631 C19 consensus 상관 low 예상 (momentum vs consensus 독립)"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. 가설: H_1688 Residual Momentum. Academic 검증 — Carhart 1997 JF / Blitz 2011 JEF / Barroso 2015 JFE / Jegadeesh-Titman 1993 JF / Grundy-Martin 2001 RFS / 이진철-김동철 2015 한국재무학회지 / Kim-Park 2019 APJFS. peer-review 등급, mechanism alignment, 한국 실증, substantive citation, time decay 평가.",
+      "output_path": "stage_artifacts/s0_debate_r1_academic_H_1688.json",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Carhart 1997 JF + Jegadeesh-Titman 1993 JF = foundational (top-tier peer-review)",
+        "Blitz-Huij-Martens 2011 JEF = direct primary reference (잔차화 설계 원본)",
+        "Barroso-Santa-Clara 2015 JFE = risk-managed 확장 근거",
+        "이진철-김동철 2015 한국재무학회지 = 한국 직접 실증 (monthly t>3)",
+        "Kim-Park 2019 APJFS = 한국 robust momentum strategies"
+      ],
+      "expected_concern_vectors": [
+        "Blitz 2011 post-publication decay (2011 이후 14년)",
+        "이진철 2015 sample period 1990-2013 → 2014 이후 OOS 부재",
+        "한국 momentum 48M reversal 패턴 — 장기 horizon 리스크"
+      ]
+    }
+  ],
+
+  "transcript_compile_plan": {
+    "path": "stage_artifacts/s0_debate_transcript_H_1688.json",
+    "schema": "round_1: [{role, score, arguments[3], concern, conditions[]} x 5]",
+    "compiled_by": "Q-Lead",
+    "trigger": "R1 5/5 Write 감지 → enforcer가 R1_COMPLETE 전이 → Q-Lead 컴파일"
+  },
+
+  "codex_r2_verify_config": {
+    "auto_trigger": "enforcer R1_COMPLETE 시점 자동",
+    "script": "02_Infrastructure/hooks/run_codex_critic_r2.sh",
+    "env_vars_required": ["R1_TRANSCRIPT", "CODEX_R1_RESULT", "HYP_ID=H_1688"],
+    "output_path": "stage_artifacts/r2_codex_verdict_H_1688.json",
+    "verdict_block_if_missing": true,
+    "emergency_bypass": "QVEST_SKIP_CODEX_R2=1 (긴급시만)"
+  },
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "Governor 직접 지원 (SR 2.0 경로 필수조건)",
+      "AX 전수 PASS",
+      "Factor DB 4 input 모두 기구축",
+      "core_reference 학술 trilogy + 한국 2편 실증",
+      "PG2 family diversification (momentum 신규 진입)"
+    ],
+    "bear_case": [
+      "Blitz 2011 post-publication 14년 decay 우려",
+      "momentum crash 2020/2022 tail 노출",
+      "H_1687 momentum family 공유 — S3 rho<0.5 gate 필요",
+      "SR 1.0 standalone target이 'Core level' claim과 매치하는지 증명 필요 (Core 정의: SR>=1.5 또는 standalone rank top 3)",
+      "24M rolling beta survivorship"
+    ],
+    "scout_expected_score_range": {
+      "codex_critic": "11-14 (structural bull, Barroso scaling 부재 discount)",
+      "risk_manager": "13-16 (momentum crash discount, 잔차화 bull)",
+      "governor": "17-19 (SR 2.0 직접 경로, Strong support)",
+      "quant": "15-17 (Factor DB 완비 bull, ICIR 측정 전)",
+      "academic": "16-18 (trilogy + 한국 2편 강력)"
+    },
+    "scout_total_forecast": "72-84 → APPROVE 또는 APPROVE_CONDITIONAL 가능성 높음"
+  },
+
+  "strategic_chain": {
+    "if_approve": "STR_1689 할당 → Forge S1 실행 (H_1682 S1 이후 다음 대기열)",
+    "if_approve_conditional": "Barroso scaling S5 slate 사전 등록 + H_1687 S3 rho<0.5 측정 조건",
+    "if_revise": "Scout 재설계 (path B inversion 또는 signal 추가 orthogonalization)",
+    "if_reject": "Blitz 2011 direct inversion test 또는 H_1688 전면 폐기"
+  },
+
+  "next_action_for_qlead": [
+    "1. 이 handoff JSON 확인",
+    "2. Task #9 metadata.current_hypothesis = 'H_1688' 태깅",
+    "3. R1 5인 병렬 스폰 (run_in_background: true 전부)",
+    "4. enforcer R1_COMPLETE 감지 시 transcript 컴파일",
+    "5. Codex R2 Verify 자동 트리거 대기",
+    "6. R2 5인 병렬 스폰 (transcript 주입)",
+    "7. R3 조건부 또는 VERDICT"
+  ],
+
+  "scout_parallel_work": [
+    "Q-Lead R1 스폰 중 Scout은 H_1685 handoff kit 병행 준비 (우선순위 2)",
+    "또는 Task #6 H_1677/78/79 handoff kit 3건 일괄 준비"
+  ]
+}

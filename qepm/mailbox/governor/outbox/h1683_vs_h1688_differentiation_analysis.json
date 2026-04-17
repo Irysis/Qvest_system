@@ -1,0 +1,226 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "H_1683_H_1688_DIFFERENTIATION_ANALYSIS",
+  "stage": "PG0_Hypothesis_Prioritization_Advisory",
+  "timestamp": "2026-04-17T18:45:00+09:00",
+  "session": 66,
+  "trigger": "Q-Lead 추가 지시 — Hybrid Z3 + H_1688 경로 분석 요청. H_1683 residual_momentum_diversifier와 H_1688 residual_momentum_core_alpha 차별화 분석 → H_1688이 Core alpha로 더 적합한지 판정.",
+  "important_correction": {
+    "q_lead_message_note": "Q-Lead 메시지에 'H_1683 residual_momentum_diversifier'로 기재되었으나 실제 s0_record_H_1683은 **Factor Seasonality Diversifier** (Heston-Sadka 2008). residual momentum은 **H_1688** (Carhart 1997 + Blitz 2011) 단일 hypothesis.",
+    "impact": "H_1683 vs H_1688 비교는 'Seasonality diversifier' vs 'Residual Momentum core-level' 비교로 진행. rev2 plan에서 H_1683을 'residual_momentum'으로 재명명한 것은 오기재로 판단 — rev3에서 수정 권고.",
+    "taxonomy_implication": "'residual momentum' family는 H_1688 단일 가설만 존재. 'seasonality' family는 H_1683 단일 가설."
+  },
+
+  "h_1683_seasonality_summary": {
+    "hypothesis_id": "H_1683",
+    "name": "Factor Seasonality Diversifier (Same-Calendar-Month Momentum)",
+    "family": "seasonality",
+    "expected_role": "diversifier",
+    "academic_foundation": "Heston & Sadka 2008 JFE + Keloharju-Linnainmaa-Nyberg 2016 JF",
+    "mechanism": "각 종목 20년 same-calendar-month 평균 초과수익률. Top 20 EW.",
+    "pit_class": "PIT trivially clean (과거 same-month only)",
+    "expected_profile": {
+      "icir_forecast": "0.20~0.40",
+      "sr_forecast": "0.30~0.60 standalone",
+      "cagr_forecast": "6~12%",
+      "mdd_forecast": "30~45%",
+      "diversifier_contribution_estimate": "+0.05~0.15 blended SR"
+    },
+    "orthogonality_target": "rho < 0.3 vs STR_1631/1656/1679v2",
+    "role_classification": "diversifier (standalone SR 낮음, cross-family 독립성만 유의)",
+    "implementation_risk": "낮음 (M04 아닌 raw return history 단순 계산, Rcpp 최적화 권장)",
+    "development_time": "S1~S6 3~4주"
+  },
+
+  "h_1688_residual_momentum_summary": {
+    "hypothesis_id": "H_1688",
+    "name": "Residual Momentum Diversifier (Core-Level Alpha Target)",
+    "family": "momentum_residual",
+    "expected_role": "diversifier with Core-level SR target (SR >= 1.0)",
+    "academic_foundation": "Carhart 1997 JF + Blitz-Huij-Martens 2011 JEF + Barroso-Santa-Clara 2015 JFE + 이진철·김동철 2015 한국재무학회지",
+    "mechanism": "M04_Mom_12_1을 매월 cross-section OLS로 beta(24M rolling) + log(Size) + R12_IdioVol 3-factor 잔차화. 잔차를 Z_Score_Aligned. Top 20 EW.",
+    "pit_class": "PIT clean (M04 past 12M skip 1M, 24M rolling beta, monthly snapshot all)",
+    "expected_profile": {
+      "icir_forecast": "0.35~0.55",
+      "sr_forecast": "**0.80~1.30 standalone**",
+      "cagr_forecast": "12~20%",
+      "mdd_forecast": "28~40% (momentum crash 위험, S5 Barroso scaling 대응)",
+      "diversifier_contribution_estimate": "+0.15~0.30 blended SR"
+    },
+    "orthogonality_target": "rho < 0.25 vs STR_1631/1656 (Governor Critical Gate), rho < 0.3 vs H_1676/H_1682",
+    "role_classification": "**diversifier with Core-level alpha target** — 기능적으로는 diversifier 역할이나 SR가 Core 수준에 근접하므로 portfolio blend 시 SR 2.0 경로의 critical piece",
+    "implementation_risk": "중간 (cross-section OLS monthly + beta shrinkage Vasicek variant S5 고려)",
+    "development_time": "S1~S6 3~4주"
+  },
+
+  "critical_differentiation_table": {
+    "sr_expected": {
+      "H_1683": "0.30~0.60",
+      "H_1688": "0.80~1.30",
+      "winner": "H_1688 (SR 2x)"
+    },
+    "blended_sr_contribution": {
+      "H_1683": "+0.05~0.15",
+      "H_1688": "+0.15~0.30",
+      "winner": "H_1688 (2x contribution)"
+    },
+    "family_novelty": {
+      "H_1683": "seasonality family 신규 진입 (factor taxonomy §9 미구축)",
+      "H_1688": "momentum family 잔차화 신규 sub-family 진입 (Carhart foundational)",
+      "winner": "H_1683 약간 (seasonality는 더 exotic)"
+    },
+    "academic_robustness": {
+      "H_1683": "Heston-Sadka 2008 + Keloharju 2016 + 한국 cite placeholder (미확정)",
+      "H_1688": "Carhart 1997 + Blitz 2011 + Barroso 2015 + 이진철 2015 + Kim-Park 2019 (한국 직접 실증 확정)",
+      "winner": "H_1688 (한국 실증 확정)"
+    },
+    "mdd_profile": {
+      "H_1683": "30~45% (diversifier 특성)",
+      "H_1688": "28~40% (momentum crash 위험)",
+      "winner": "draw (H_1688 Barroso scaling 대응 가능)"
+    },
+    "orthogonality_design": {
+      "H_1683": "raw same-month return (structurally independent)",
+      "H_1688": "beta+size+IdioVol 잔차화 (structurally engineered independence)",
+      "winner": "H_1688 (적극적 ρ 축소 설계)"
+    },
+    "factor_db_compatibility": {
+      "H_1683": "RAWDATA 기반 자체 계산 (M21_Seasonality ≠ same-month)",
+      "H_1688": "M04_Mom_12_1 + M01_CAPM_Beta + S01_Size + R12_IdioVol 기구축",
+      "winner": "H_1688 (Factor DB 완벽 호환)"
+    },
+    "s5_mutation_path": {
+      "H_1683": "Seasonality + Momentum composite, Regime-conditional seasonality, Size 잔차화",
+      "H_1688": "Barroso dynamic scaling, DD 8/22 overlay, Multi-horizon 6-1+12-1+18-1, Regime-conditional momentum",
+      "winner": "H_1688 (S5 확장성 5+ variant)"
+    },
+    "governor_requirement_match": {
+      "H_1683": "SR >= 1.0 요구 미충족 (0.30~0.60)",
+      "H_1688": "SR >= 1.0 요구 충족 가능 (0.80~1.30, 중앙값 1.05)",
+      "winner": "H_1688 (정량 요구 충족)"
+    }
+  },
+
+  "governor_judgment_h1688_as_core_alpha_candidate": {
+    "verdict": "H_1688 is **Core-level alpha candidate** — NOT pure diversifier",
+    "reasoning": [
+      "SR 0.80~1.30 standalone은 현재 PG2 Core STR_1631 SR 1.243에 근접. Diversifier 기존 카테고리(SR 0.3~0.9)와 차원이 다름.",
+      "Blitz 2011 JEF 원 결과 Global SR 1.0+ 수준 실증. 한국 이진철 2015에서도 monthly t-stat 3+ 확인.",
+      "beta+size+IdioVol 잔차화로 portfolio-level rho < 0.25 설계 → Core와 blend 시 variance 감소 효과 우위.",
+      "Governor v1.1 결론 'SR 2.0 달성엔 Core 수준 독립 alpha 1건 이상 추가 필수'의 직접 충족 후보.",
+      "family_concentration 관점: momentum_residual family 자체가 신규. 기존 consensus/ML/distress와 완전 orthogonal.",
+      "Role admission 관점: 단순 diversifier로 분류 시 역할 위장 위험 (SR 1.0+는 Core 급). Role Honesty Audit 관점에서는 'Core Alpha (residual momentum family)'로 명시 편입이 정직."
+    ],
+    "comparison_with_current_core": {
+      "STR_1631_SYN_05_consensus_C19": {"SR": 1.243, "family": "consensus_C19_core", "role": "Core"},
+      "H_1688_residual_momentum": {"SR_est": 1.05, "family": "momentum_residual", "role_proposed": "Core_Secondary (residual momentum sub-family)"},
+      "synergy": "두 Core가 서로 다른 family → portfolio-level rho < 0.25 설계 시 blended SR 1.6~1.8 도달 가능 (Barroso-managed H_1688 variant 시 상향).",
+      "risk": "Core 2-way concentration 우려. 단 family 완전 orthogonal로 dual-core 정당화 가능."
+    }
+  },
+
+  "proposed_admission_architecture_hybrid_z3_h1688": {
+    "scenario_name": "Hybrid Z3 + H_1688 (Dual-Core Residual Momentum + Z3 reactivations)",
+    "portfolio_composition": {
+      "Core_consensus_C19_STR_1631": {"weight": 0.18, "sub_family": "consensus_C19_core", "role": "Core_Primary"},
+      "Core_residual_momentum_H_1688": {"weight": 0.15, "sub_family": "momentum_residual_core", "role": "Core_Secondary"},
+      "Div_multifactor_STR_1439": {"weight": 0.12, "sub_family": "consensus_multifactor", "role": "Diversifier (reactivation Z3)"},
+      "Div_5sleeve_STR_1435": {"weight": 0.10, "sub_family": "consensus_5sleeve_dd", "role": "Diversifier (reactivation Z3)"},
+      "Div_breakout_STR_1060": {"weight": 0.10, "sub_family": "breakout_DD_overlay", "role": "Diversifier (reactivation Z3)"},
+      "Div_ML_STR_1656": {"weight": 0.13, "sub_family": "ML_complexity", "role": "Diversifier (existing PG2)"},
+      "Def_distress_H_1682": {"weight": 0.12, "sub_family": "distress_path_dependent", "role": "Defense"},
+      "Def_quality_STR_1662a": {"weight": 0.10, "sub_family": "quality_stability_Q07", "role": "Defense (tail_risk 완료 후)"}
+    },
+    "family_concentration_check": {
+      "consensus_total": 0.40,
+      "consensus_cap_45pct_proposal": "PASS",
+      "max_sub_family": 0.18,
+      "sub_family_cap_25pct": "PASS",
+      "momentum_residual": 0.15,
+      "breakout_DD": 0.10,
+      "ML_complexity": 0.13,
+      "distress_path": 0.12,
+      "quality_stability": 0.10,
+      "max_family": 0.40,
+      "status": "PASS (consensus 40%, nothing > 40%)"
+    },
+    "projected_sr_by_rho": {
+      "rho_0_2_design_target": {
+        "individual_SR": {"Core_1631": 1.24, "Core_1688": 1.05, "Div_1439": 1.53, "Div_1435": 1.38, "Div_1060": 1.33, "Div_1656": 1.21, "Def_H1682": 0.65, "Def_1662a": 0.72},
+        "weighted_mean_SR": 1.12,
+        "sqrt_diversification_factor": 1.84,
+        "**projected_blend_SR**": 2.06,
+        "gap_vs_target_2_0": "+0.06 (SR 2.0 초과)",
+        "mdd_projected": "-0.16 ~ -0.19",
+        "cagr_projected": 0.135
+      },
+      "rho_0_3_moderate": {
+        "projected_blend_SR": 1.84,
+        "gap_vs_target_2_0": "-0.16"
+      },
+      "rho_0_5_saturation": {
+        "projected_blend_SR": 1.50,
+        "gap_vs_target_2_0": "-0.50"
+      }
+    },
+    "critical_success_factors": [
+      "H_1688 standalone SR >= 1.0 실측 확인 (S2 profiling ICIR >= 0.35)",
+      "H_1688 vs STR_1631 rho < 0.25 (S3 orthogonality gate)",
+      "H_1688 vs H_1676/H_1682 rho < 0.3",
+      "STR_1439 Judge Pass 2 PASS (Z3 reactivation 전제)",
+      "consensus_taxonomy_proposal Q-Lead 승인 (45% parent cap)",
+      "Core STR_1631 18% 극한 하향 수용 (현재 80%에서 62%p 축소)"
+    ],
+    "time_estimate": "5~6주 (H_1688 S1~S6 3~4주 + Judge Pass 2 1주 + PG1/PG2 1~2주)",
+    "recommendation_tier": "**preferred_realistic_v3** (rev2의 Hybrid Z3+H_1683을 H_1688으로 교체)"
+  },
+
+  "comparison_hybrid_z3_h1683_vs_h1688": {
+    "hybrid_z3_h1683_seasonality": {
+      "projected_blend_SR_rho_0_2": 1.72,
+      "rationale": "H_1683 SR contribution +0.10 (diversifier 수준)",
+      "pros": ["seasonality family 완전 신규", "PIT 단순", "구현 risk 낮음"],
+      "cons": ["SR 1.72 → SR 2.0 미달 (gap 0.28)", "한국 cite placeholder 미확정", "SR 기여도 낮음"]
+    },
+    "hybrid_z3_h1688_residual_momentum": {
+      "projected_blend_SR_rho_0_2": 2.06,
+      "rationale": "H_1688 SR contribution +0.25 (Core-level)",
+      "pros": ["**SR 2.0 초과 달성**", "한국 실증 확정 (이진철 2015)", "Factor DB 완벽 호환", "S5 확장성 5+ variant"],
+      "cons": ["H_1688 S1~S6 성공률 미실측 (가정 SR 1.05)", "Core 18%로 극한 하향 필요", "momentum crash 위험 (Barroso scaling 필수)"]
+    },
+    "governor_recommendation": "**Hybrid Z3 + H_1688** 채택. SR 2.0 도달 경로로 realistic tier에서 유일하게 명시적 만족."
+  },
+
+  "action_plan_h1688_priority": {
+    "priority_1_immediate": "H_1688 S0 Debate 5인 (Scout 최우선 개시 준비 중 — Q-Lead 언급)",
+    "priority_2_week_1": "Judge sweep v3 Pass 2 (Task #1, Tier 1 STR_1439/1435/1060) 완료",
+    "priority_3_week_1_2": "Forge Orthogonality Task #5 완료 → consensus sub-family taxonomy 실측 검증",
+    "priority_4_week_2": "H_1688 S0 APPROVE 시 Forge S1 착수 (M04 cross-section OLS residualization)",
+    "priority_5_week_3_4": "H_1688 S2/S3 profiling — SR 1.0+ 확인 + ρ < 0.25 vs STR_1631 Critical Gate",
+    "priority_6_week_4_5": "H_1688 S6 Judge verdict + Governor PG0 gap 재진단 (v1.3 projection)",
+    "priority_7_week_5_6": "Hybrid Z3+H_1688 PG1 Admission (Z3 reactivation 3건 + H_1688 Core_Secondary)",
+    "priority_8_week_6": "PG2 Allocation (dual-core 18/15 + diversifier 35 + defense 22 + existing ML 13)",
+    "fallback_trigger_if_h1688_s2_fail_sr_under_0_7": "H_1683 Seasonality로 폴백 + scenario_Y 추가 diversifier 2건 복합 경로"
+  },
+
+  "governor_open_questions_for_q_lead": [
+    "Q11: H_1688을 Core_Secondary (Core-level) vs Diversifier (with high SR) 중 어느 role로 공식 분류? Role Honesty Audit 관점 일관성 확인 필요.",
+    "Q12: Core STR_1631 18% 극한 하향 수용 여부? (현재 80% → 62%p 축소, 단기 이행)",
+    "Q13: rev2의 Hybrid Z3+H_1683을 **Hybrid Z3+H_1688로 교체**하고 PG0_PLAN rev3 발행? (rev3 작성 Governor 대기)",
+    "Q14: H_1683 Seasonality는 fallback 경로로만 유지, 병렬 개발하지 않음? 또는 Scout bandwidth 허용 시 H_1688 + H_1683 모두 진행?",
+    "Q15: H_1688 S0 Debate 5인 즉시 착수 지시? (Scout 최우선으로 언급)"
+  ],
+
+  "artifacts_updated": [
+    "qepm/mailbox/governor/outbox/h1683_vs_h1688_differentiation_analysis.json (현 파일)",
+    "consensus_taxonomy_proposal.json에서 H_1688 momentum_residual family 추가 분류 반영"
+  ],
+
+  "reference": [
+    "stage_artifacts/s0_record_H_1688_residual_momentum_core_alpha.json",
+    "stage_artifacts/s0_record_H_1683_factor_seasonality_diversifier.json",
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev2.json (rev2 primary_path_v2 Hybrid Z3+H_1683)",
+    "qepm/mailbox/governor/outbox/consensus_taxonomy_proposal.json (v1.0 proposal)"
+  ]
+}

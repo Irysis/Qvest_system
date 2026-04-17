@@ -1,0 +1,96 @@
+{
+  "strategy_id": "STR_1060",
+  "strategy_dir": "STR_1060_brk02_no_short_dd",
+  "tier": 1,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "v2_grade": "A",
+  "v3_grade": "REJECT",
+  "v3_verdict": "REJECT_CLONE_FAMILY",
+  "prev_judge_verdict": "PIT C11 flagged + WARN_CLONE (identical performance to STR_1070/STR_1085).",
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": false,
+      "detect_lookahead_run_all_violations": [],
+      "c5_overlay_lag": "CLEAN — dd_exp_combined_lagged = c(1.0, head(dd_exp_med,-1))",
+      "c9_dd_same_day": "CLEAN — DD brake uses 1-step lag",
+      "c10_liquidity": "CLEAN — AvgTV20 with shift(n=1) lag (line 128)",
+      "c11_data_time_axis": "FLAG — FRED same-month in consgate_pure_engine.R (inherited via 5-sleeve)",
+      "inherited_c3_c11_violations": "defense_sleeve FRED no-lag, consgate_pure FRED no-lag"
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "fail_reason_1": "Re-runnability FAIL: BASE_DIR = STR_770_phase2_cross does NOT exist on disk. defense_sleeve.R / indmom_sleeve.R cannot be sourced.",
+      "fail_reason_2": "N>20 violation (borderline): 5 sleeves x 6 = up to 30 union tickers.",
+      "n_holdings_logged": 6,
+      "n_holdings_effective": "up to 30 (5-sleeve union after max-Score dedup)",
+      "n_limit_v53": 20,
+      "violates_n20": true,
+      "commission": 0.0015,
+      "turnover_ann": 154
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.358,
+      "loo_2020_sr": 1.302,
+      "loo_2011_sr": 1.291,
+      "loo_2018_sr": 1.351,
+      "full_sr_daily": 1.287,
+      "rolling_3y_sr_mean": 1.004,
+      "rolling_3y_sr_min": -0.884,
+      "rolling_3y_sr_last": 1.653,
+      "stress_outperform": "4/4 (GFC +29.79%, COVID +5.20%, Rate22 +9.67%, EuDebt11 +23.20%)",
+      "oos_retention": 0.757
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.333,
+      "sharpe_daily": 1.287,
+      "cagr": 22.66,
+      "mdd": -24.81,
+      "calmar": 0.913,
+      "score_hurdle": 67.1,
+      "novelty_bonus": 0
+    },
+    "gate_4_stat": {
+      "pass": "BORDERLINE",
+      "dsr": 1.000,
+      "dsr_n_trials": 465,
+      "dsr_significant": true,
+      "ff3_alpha_annual_pct": 9.56,
+      "ff3_alpha_t": 2.30,
+      "carhart4_alpha_t": 2.25,
+      "ff5_alpha_annual_pct": 11.86,
+      "ff5_alpha_t": 2.61,
+      "harvey_t3_pass": false,
+      "capm_alpha_t_spot_check": 5.47,
+      "recent_3y_sr": 1.93,
+      "alpha_decay": false
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "warn_clone": true,
+      "cloned_strategies": ["STR_1070", "STR_1085"],
+      "clone_evidence": "SR 1.333, CAGR 22.66%, MDD 24.81% — all digits match STR_1070 and STR_1085. STR_1070 claimed Risk Parity weighting, STR_1085 claimed Quality Gate, yet outputs identical to STR_1060.",
+      "note": "WARN_CLONE triple-duplicate family. Pure redundancy."
+    },
+    "gate_6_role_honesty": {
+      "pass": false,
+      "declared_role": "5sleeve_brk",
+      "audit_result": "CLONE_FAMILY_TRIPLICATE",
+      "detail": "STR_1060 = STR_1070 = STR_1085 in performance. Three strategies that claim different design philosophies produce byte-identical returns. Either (a) WARN_CLONE bug in measurement, or (b) underlying design convergence. Cannot admit a triplicate as unique strategy."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "Gate 0 PIT C11 FRED violation (consgate_pure_engine) + inherited C3 defense_sleeve",
+    "Gate 1 re-runnability FAIL: BASE_DIR STR_770_phase2_cross missing",
+    "Gate 1 N>20 violation: up to 30 union tickers",
+    "Gate 5 CLONE: identical to STR_1070 and STR_1085",
+    "Gate 6 CLONE_FAMILY_TRIPLICATE",
+    "Harvey t>3 FAIL: FF5 alpha t=2.61",
+    "FF3 alpha t=2.30 even lower"
+  ],
+  "recommendation": "REJECT_CLONE_FAMILY. STR_1060/1070/1085 represent the same underlying strategy under different labels. Do NOT include any of the three in sweep v3 active set. Requires forensic audit of factor_engine.R in all three directories to identify the labeling bug.",
+  "notes": "Previous Judge flagged WARN_CLONE but did not downgrade. Pass 2 escalates: triplicate clone is a Gate 6 FAIL (role/structure integrity). PG admission of any one of the three would be equivalent to a 3x-weighted single-strategy bet."
+}

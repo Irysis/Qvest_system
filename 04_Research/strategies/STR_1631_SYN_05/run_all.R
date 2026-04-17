@@ -139,7 +139,8 @@ cat(sprintf("[Step 1] Monthly dates: %d | Bimonthly SIG_DATES: %d\n",
 
 setorder(RAWDATA, Ticker, Date)
 RAWDATA[, TradVal := Close * Vol]
-RAWDATA[, LIQ_20d := frollmean(TradVal, n = 20L, align = "right", na.rm = TRUE), by = Ticker]
+RAWDATA[, LIQ_20d := shift(frollmean(TradVal, n = 20L, align = "right", na.rm = TRUE),
+                            n = 1L, type = "lag"), by = Ticker]  # C10: t-1 lag (LIQ_THRESHOLD=2e8)
 RAWDATA[, TradVal := NULL]
 RAWDATA[, Ret_abs := abs(Ret)]
 RAWDATA[, MAX21d_raw := {

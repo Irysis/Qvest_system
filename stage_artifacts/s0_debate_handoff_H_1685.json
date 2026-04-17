@@ -1,0 +1,117 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit. H_1688 이후 2순위 debate 대기.",
+  "hypothesis_id": "H_1685",
+  "hypothesis_name": "Foreign-Individual Flow Divergence Diversifier",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T18:44:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1685_foreign_individual_flow_divergence.json",
+  "ready_for_r1_spawn": true,
+  "queue_priority": 2,
+
+  "one_line_summary": "외국인-개인 flow divergence (21d net buy intensity). investor_flow family cross-channel diversifier. Choe-Kho-Stulz 2005 RFS + 고영훈 2018. compute_investor.R pipeline 기구축. H_1674 개인 contrarian과 2-party interaction 구분.",
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "script": "02_Infrastructure/hooks/run_codex_critic.sh",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1685 Foreign-Individual Flow Divergence. z_foreign_netbuy_21d - z_individual_netbuy_21d cross-section. Top 20 EW monthly. compute_investor.R + investor_{foreign,individual}.parquet. Choe-Kho-Stulz 2005 RFS foundational. H_1674 개인 contrarian과 2-party divergence 구분.",
+        "L_CODE_FINDINGS": "L-148 (Grade A not PIT clean DIRECT_FIX), L-119 (static blend — single signal PASS). investor_flow family L-code 신규 (H_1674 선례만).",
+        "FAILED_STRATEGIES": "None — investor_flow diversifier 전례 없음. H_1674_individual_contrarian은 core_alpha 설계 (debate 대기중).",
+        "HYP_ID": "H_1685"
+      },
+      "output_path": "stage_artifacts/s0_debate_r1_codex_critic_H_1685.json",
+      "expected_attack_vectors": [
+        "21d intensity가 monthly rebalance와 기간 불일치 — 신호 decay 우려",
+        "거래주체 data publication lag (QuantiWise T+1) PIT 검증 필요",
+        "H_1674와 signal 공유 — 개인 flow 공통 요소 → rho<0.3 gate 사전 측정 필요",
+        "Choe-Kho-Stulz 2005 = 20년 전 논문, post-publication decay"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1685 Flow Divergence. tail dependence vs crisis (2020-03 foreign exodus 구간), flow reversal risk, 개인 매도 + 외국인 매수 divergence의 structural persistence 검증.",
+      "output_path": "stage_artifacts/s0_debate_r1_risk_manager_H_1685.json",
+      "expected_attack_vectors": [
+        "Crisis 구간 foreign exodus (2020-03) signal reversal 가능성",
+        "외국인 기관투자자 correlated flow → single-entity concentration risk",
+        "개인 55% 비중 → noise 증폭 구조",
+        "monthly rebalance vs 21d lookback 기간 불일치 MDD 증폭"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1685. PG0 gap alignment (SR 0.807 잔여), investor_flow family admission, H_1674 core_alpha와 role 분리 타당성, marginal contribution.",
+      "output_path": "stage_artifacts/s0_debate_r1_governor_H_1685.json",
+      "expected_support_vectors": [
+        "한국 특유 alpha source (외국인 31% + 개인 55% 구조)",
+        "cross-channel 독립성 높음 (fundamental/consensus/risk와 독립)",
+        "family diversification (consensus+ML+investor_flow 3축)",
+        "H_1674 core_alpha + H_1685 diversifier 내부 complement"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1685. compute_investor.R + investor_{foreign,individual}.parquet 가용성, 21d intensity 계산 feasibility, C19 상관, H_1674와 internal corr 예상.",
+      "output_path": "stage_artifacts/s0_debate_r1_quant_H_1685.json",
+      "expected_fact_check_vectors": [
+        ".cache/investor/investor_foreign.parquet + investor_individual.parquet 존재 확인 필요",
+        "QuantiWise 거래주체 data start date + publication lag 확인",
+        "21d intensity 계산식 normalization 일관성",
+        "vs H_1674 상관 사전 측정 가능 여부"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1685. Choe-Kho-Stulz 2005 RFS + Grinblatt-Keloharju 2000 JFE + Froot-Ramadorai 2001 NBER + Dahlquist-Robertsson 2001 JFE + 고영훈 2018. peer-review, mechanism, korea evidence, time decay.",
+      "output_path": "stage_artifacts/s0_debate_r1_academic_H_1685.json",
+      "expected_support_vectors": [
+        "Choe-Kho-Stulz 2005 RFS = 한국 foundational (top-tier)",
+        "고영훈 2018 한국재무학회지 = 한국 직접 실증",
+        "Grinblatt-Keloharju 2000 Finland = 거래주체별 성과 방법론",
+        "Dahlquist-Robertsson 2001 = 외국인 보유 특성 cross-country"
+      ],
+      "expected_concern_vectors": [
+        "Choe-Kho-Stulz 2005 sample period 1996-1998 → 20년+ 경과",
+        "고영훈 2018 sample 2004-2016 → 2017+ OOS 부재",
+        "외국인 정보우위 가설은 2020년대 passive indexing 증가로 약화 가능성"
+      ]
+    }
+  ],
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "한국 특유 alpha (외국인 31% + 개인 55% 구조)",
+      "cross-channel 독립성 높음",
+      "Choe-Kho-Stulz 2005 RFS top-tier foundational"
+    ],
+    "bear_case": [
+      ".cache/investor parquet 실제 존재 확인 필요 (Quant R1 필수)",
+      "H_1674 (개인 contrarian core_alpha)와 signal 공유 위험",
+      "21d intensity vs monthly rebalance 기간 불일치",
+      "20년 논문 + 8년 한국 sample → post-publication decay"
+    ],
+    "scout_expected_score_range": {
+      "codex_critic": "10-13 (data availability 의존)",
+      "risk_manager": "12-15 (flow reversal + crisis exodus)",
+      "governor": "15-17 (family diversification strong)",
+      "quant": "13-16 (data 가용성 확인 조건부)",
+      "academic": "15-17 (Choe-Kho-Stulz top-tier)"
+    },
+    "scout_total_forecast": "65-78 → APPROVE_CONDITIONAL 가능성 높음"
+  },
+
+  "strategic_chain": {
+    "if_approve": "STR 할당 → Forge S1 (H_1674 debate 결과 의존)",
+    "dependency": "H_1674 개인 contrarian flow core_alpha 결과와 rho<0.3 사전 측정 필요"
+  }
+}
