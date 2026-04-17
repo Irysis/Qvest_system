@@ -183,8 +183,9 @@ raw_scores_list <- lapply(seq_along(ALL_SIG_DATES), function(i) {
   sd   <- ALL_SIG_DATES[i]
   univ <- SIG_SNAP[Date == sd & !is.na(LIQ_20d)][LIQ_20d >= LIQ_THRESHOLD]
   if (nrow(univ) < 30L) return(NULL)
-  mq   <- quantile(univ$MAX21d, MAX21D_EXCL, na.rm = TRUE)
-  univ <- univ[is.na(MAX21d) | MAX21d <= mq]; if (nrow(univ) < 30L) return(NULL)
+  # MAX21d is t-1 lagged (shift in Step 1) — cross-sectional percentile only
+  vol_p80 <- quantile(univ[["MAX21d"]], MAX21D_EXCL, na.rm = TRUE)
+  univ <- univ[is.na(MAX21d) | MAX21d <= vol_p80]; if (nrow(univ) < 30L) return(NULL)
   probe   <- data.table(Ticker = univ$Ticker, Date = sd); setkey(probe, Ticker, Date)
   sue_j   <- SUE_DT[probe,   roll = 7L, nomatch = NA][, .(Ticker, sue)]
   esbr_j  <- ESBR_DT[probe,  roll = 7L, nomatch = NA][, .(Ticker, esbr)]

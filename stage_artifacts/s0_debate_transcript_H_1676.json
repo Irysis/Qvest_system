@@ -1,0 +1,102 @@
+{
+  "hypothesis_id": "H_1676",
+  "hypothesis_name": "Residual Consensus Revision Breadth (Orthogonal PEAD)",
+  "compiled_at": "2026-04-17T16:00:00",
+  "rounds": [
+    {
+      "round": 1,
+      "entries": [
+        {
+          "role": "risk_manager",
+          "score": 14,
+          "arguments": [
+            "C13_Revision_Breadth_3m의 stress ICIR 0.829(9개월, 77.8% positive)는 normal ICIR 0.671 대비 위기 시 alpha 강화 구조로, crisis_ratio 1.75는 방어적 특성 — consensus family 내에서 C19(stress ICIR 0.200, crisis_ratio 0.367)보다 tail risk 내성 우수하며 Hirshleifer et al.(2009) 메커니즘과 정합.",
+            "Size + IdioVol 잔차화 설계는 L-106(market beta 지배로 포트폴리오 상관 0.78) 교훈을 부분적으로만 해소 — log(MarketCap)과 R12_IdioVol 잔차화는 size/vol 공통요인 제거하지만, 시장 beta(CAPM beta) 자체는 잔차화 대상 미포함 → Long-only 20종목 포트폴리오에서 market beta 0.8~1.0 노출 잔존, STR_1679 앵커와의 portfolio-level 상관 0.2 초과 구조적 위험.",
+            "단일 residual signal 전략 MDD 기여 양면적 — C13 stress 강점(ICIR 0.829) 긍정이나 잔차화 후 SNR 감소(예상 ICIR 0.35~0.40) + EW 20종목 집중 포트폴리오 종목 특이 위험 결합 시 개별 종목 급락 → MDD 5~10%p 기여 가능."
+          ],
+          "concern": "L-106/L-115 교훈 핵심인 market beta 직교화가 설계에 명시적 미포함, Size/IdioVol 잔차화만으로는 Long-only 한국시장에서 portfolio-level 상관 0.2 미만 달성 불확실.",
+          "conditions": [
+            "S1에서 CAPM beta 측정 필수 — beta > 0.85이면 M01_CAPM_Beta를 3번째 잔차화 변수로 S5 mutation slate 사전 등록",
+            "S3에서 STR_1679 대비 수익률 상관을 total/market-beta/residual 3분해 보고 — residual 상관 > 0.3이면 diversifier role 재검토",
+            "S1 baseline MDD > 45% Hard Fail, MDD 35~45%에서도 STR_1679 병합 시 포트폴리오 MDD 개선 시뮬 필수"
+          ]
+        },
+        {
+          "role": "governor",
+          "score": 14,
+          "arguments": [
+            "PG0 gap 정합성 부분적 — sleeve_needs='diversifier'이고 SR gap 0.807 유일 미달이나, 본 가설은 expected_role='core_alpha'와 RoleBias='RoleBias_Diversifier'를 동시 표기하여 라벨 충돌. 잔차화로 앵커와 rho<0.2 노린 설계는 명백히 diversifier 트랙 → Role Honesty Audit(L-122)에서 지적 예상. expected_role을 'diversifier'로 정정해야 gap_alignment 4/4 달성.",
+            "Family saturation 회피 설계 형식적 — admitted 2건 중 STR_1631_SYN_05가 consensus(C19) 기반, family_concentration consensus=0.5 이미 절반 점유. sub_family='analyst_revision_residual' 차별화는 hurdle v2.2 saturation penalty(family_A 6~20건 -8) 산식이 sub_family 단위 미인식 → penalty 회피 무력. rho<0.2 입증되어도 family count +1 → PG1 admission 감점 위험 잔존.",
+            "Marginal contribution SR 2.0 도달 경로로 부족 — forge_handoff 자체 추정 단독 SR 0.4~0.7 / blend 기여 +0.1~0.2, 현재 1.193에서 +0.2 적용해도 1.4 수준 → gap 0.807의 25%만 해소. 본 가설 단독 cold_start_phase 2 졸업 어려움, 두 번째 독립 alpha 동시 필요."
+          ],
+          "concern": "잔차화 설계 수학적 정교하나 expected_role 라벨 모순 + 단독 marginal 한계로 PG0 gap 0.807 1건으로 해소 부족, role을 'diversifier'로 정정 + 두 번째 독립 alpha 가설 패키지로 연구 슬레이트 구성해야 PG1 경로 열림.",
+          "conditions": [
+            "expected_role을 'core_alpha'에서 'diversifier'로 정정 (RoleBias_Diversifier와 일관성)",
+            "S3 산출물에 vs STR_1679 portfolio-level rho 실측치 명시 (목표 rho<0.2, 미달 시 drop)",
+            "S3에서 family saturation penalty 시뮬 결과 첨부 (sub_family 차별화 v2.2 산식 효과 없음 확인)",
+            "S5 'Core 12+Def 4+Div 4=20' 재설계안 forge_handoff 정식 포함 (v53 20종목 준수)",
+            "SR 2.0 경로 위해 두 번째 독립 alpha 가설(Quality/Flow/Macro 잔차) 동시 발의 권고"
+          ]
+        },
+        {
+          "role": "quant",
+          "score": 15,
+          "arguments": [
+            "C13_Revision_Breadth_3m은 conditional_ic_matrix.csv 실측 ic_all=0.0305, ic_bad=0.0343, recent_3y_icir=0.438, Factor DB monthly parquet 정상 등록(254개월) → load_month_factors() 접근 즉시 가능. 잔차화(Size+IdioVol) 후 ICIR 0.35~0.40 예상은 원 팩터 ic_all 0.0305 기준 2-regressor OLS 잔차 통상 70~80% 분산 보존률 일치 → Alpha Lab Gate ICIR >= 0.20 통과 현실성 높음.",
+            "R12_Idiosyncratic_Risk(icir 0.582), M01_Mom_12_1(icir 0.412) Factor DB 등록, 매월 cross-sectional OLS(n≈1,200~1,500, 2 regressor) 충분한 statistical power. 단일 월 cross-section 잔차화는 same-period aggregation→application 금지(C3) 위반 없이 PIT 준수 가능, 잔차 Z-score → Top 20 EW는 기존 backtest_harness.R 표준 패턴.",
+            "C19_Composite_Earnings는 mean(z(SUE)+z(ESBR)+z(EPS_chg_1m)+z(TP_Gap)) 구조, C13은 ESBR의 3개월 이동평균 → raw 상관 0.30~0.50 예상 타당. R12_IdioVol 잔차화 후 C13_resid와 C19의 cross-sectional 상관은 수학적으로 0.15~0.25 수준 감소, S3에서 portfolio-level 상관 측정해야 rho<0.2 독립 alpha 요건 확정."
+          ],
+          "concern": "C13 잔차화 시 R12_Idiosyncratic_Risk(icir +0.582)가 자체 강한 alpha 신호 → OLS 잔차에서 R12 성분 제거하면 C13_resid IC 변동성이 R12 IC와 음(-) 편향 가능성, 잔차화 후 실제 S1 포트폴리오 SR이 예상치(0.4~0.7) 하회 가능.",
+          "conditions": [
+            "R12_IdioVol 잔차화 인자 사용 시 R12 자체 alpha 방향(icir +0.582)이 C13_resid와 독립인지 S2 rolling IC 분석으로 확인 필수",
+            "잔차화 OLS outlier 민감도 완화 위해 C13/R12/log(MarketCap) 값 winsorize 1~99% 적용 필수",
+            "C19 내부 구성 C04_ESBR(Earnings Sentiment Breadth Ratio)과 C13(C04의 3개월 이동평균) partial correlation이 raw 상관보다 높을 수 있음, S3에서 C04 단독 상관도 측정"
+          ]
+        },
+        {
+          "role": "academic",
+          "score": 13,
+          "arguments": [
+            "인용 5편 모두 top-tier peer-reviewed, PEAD-revision 분리 논거에 학술 정합성. Bernard&Thomas 1990의 'future earnings implication'은 forward-looking analyst revision과 정확히 결합, Stickel 1991은 revision underreaction 실증으로 alpha source 직접 근거. 단 Hirshleifer/Lim/Teoh 2009는 본래 'distraction by extraneous events'가 핵심이며 revision breadth보다 상위 attention 채널에 대한 보조 인용 → substantive_cite 축 다소 약함.",
+            "한국시장 실증에서 동일 economic_family·동일 base factor 직접 선행 결과: STR_1537_revision_breadth_tp_mom Grade F (Score 42.3, SR 0.590, CAGR 13.6%, MDD 59.1%), S5 mutation도 Grade B 수렴(SR 0.59~0.61) → 한국시장 revision breadth standalone alpha가 portfolio-level Grade A 전환 실패 증거. 본 가설은 잔차화 차별화 설계이나 lesson_check 8건 중 이 전례 명시 인용·반박 lesson 없음 — Korea evidence 축 결정적 약점.",
+            "Time-decay 측면 base factor recent_3y_icir 0.438은 한국 매도리포트 커버리지 확대 + analyst 추정치 자동집계 보급(2018+)으로 alpha 감쇠 추세 가능성 높고, Da/Gurun/Warachka 2014 'frog in pan'은 정보 점진성 의존 → 모바일·실시간 컨센서스 노출 환경(2020+) 약화 가능. risk #5에서 decay 인지하나 학술적 decay 모델(McLean&Pontiff 2016, Chordia et al 2014) 미인용 → 시간감쇠 정량 근거 부족."
+          ],
+          "concern": "Da/Gurun/Warachka 2014와 Stickel 1991 메커니즘은 견고하나 한국시장 동일 차원 STR_1537 Grade F 선행 실패가 lesson_check 미반영 + 잔차화 단독으로 portfolio-level alpha 회복 근거가 학술적 미입증 → 최대 학술 검증 리스크.",
+          "conditions": [
+            "lesson_check에 STR_1537_revision_breadth_tp_mom Grade F 전례 추가 인용 + 본 가설의 잔차화 설계가 그 실패와 구조적으로 어떻게 다른지 명시 해명 (필수)",
+            "S2 rolling 3Y/5Y/10Y ICIR로 alpha decay trend 수치 검증 + McLean&Pontiff 2016 attenuation framework 또는 동등 학술 인용 추가 핸드오프 노트",
+            "Hirshleifer/Lim/Teoh 2009를 attention constraint 보조 인용으로 명시 또는 Da et al 2014/Bernard&Thomas 1990로 substantive cite 압축 정리",
+            "한국시장 analyst revision 실증 추가 검색(KISDI/한국증권학회/Asia-Pacific Journal of Financial Studies) 결과 PG0 단계 전 보강"
+          ]
+        },
+        {
+          "role": "codex_critic",
+          "score": 11,
+          "arguments": [
+            "Single-month OLS 잔차화(Size+IdioVol)로 STR_1679 앵커 대비 rho 0.2 미만을 구조적으로 보장한다는 핵심 가정은 미검증 — 잔차가 estimation noise와 transient exposures 지배 가능, 변동성 급등 구간에서 idiosyncratic-vol과 revision-dispersion 공동이동 → OLS 계수 불안정 → residual signal이 앵커 유사 위험에 재노출, 상관 0.4+ 급증 가능.",
+            "설계의 PIT 무결성 미입증 — vendor analyst revision/consensus 필드의 as-of 스냅샷과 released-time lag 명세 없음 → month-end ingest 시 애널리스트 노트 backfill/timestamp correction 포함 가능, 연구용 SR 0.3-0.5 인플레이션 + 실투 SR 0 또는 음수 추락 + MDD 12-18%p 추가.",
+            "KOSDAQ small-cap leadership 국면에서 analyst coverage breadth 구조적 약화 → 신호가 대형주/커버리지 프록시 퇴화 + 시장 수익 중심 놓침 → 12-24개월 alpha drought + ICIR 0.10 미만 하락 + MDD 15-25%p 증가."
+          ],
+          "concern": "Single-month OLS 잔차화가 true revision alpha 보존 + STR_1679 durable orthogonality 보장의 핵심 가정이 틀리면 live IC 감쇠 + 스트레스에서 앵커 상관 상승 → SR 0.4+ 하락 + MDD 45% 돌파, L-047 family redundancy/coverage bias/IC→SR 전환 리스크 단일 잔차화로 해소 불가.",
+          "conditions": [
+            "분석가 스냅샷 strict PIT 재구성 (as-of timestamp + publication timestamp + T+1 execution lag) 후 전 테스트 재실행",
+            "Single-month OLS를 winsorization + Huber/WLS robust residualization으로 교체 + 월별 잔차 안정성 보고",
+            "S3에서 사전 설정 rho 컷오프 없이 STR_1679 대비 36개월 rolling OOS rho 0.2 미만 유지 입증",
+            "KOSPI vs KOSDAQ 분리 성과/회전율/capacity 진단으로 coverage-bias 중립성 증명"
+          ]
+        }
+      ]
+    }
+  ],
+  "r1_summary": {
+    "total_score": 67,
+    "verdict_projection": "APPROVE_CONDITIONAL (60-75 구간)",
+    "consensus_risk_themes": [
+      "market beta / CAPM beta 직교화 누락 (RM + Codex)",
+      "STR_1537 revision_breadth Grade F 전례 lesson_check 미반영 (Academic + Codex)",
+      "role 라벨 모순 core_alpha vs Diversifier (Governor)",
+      "R12_IdioVol 자체 alpha 잔차화 편향 (Quant)",
+      "single-month OLS의 orthogonality 구조 보장 미검증 (Codex)"
+    ]
+  }
+}

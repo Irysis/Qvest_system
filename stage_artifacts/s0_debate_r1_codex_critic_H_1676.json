@@ -1,0 +1,45 @@
+{
+  "role": "codex_critic",
+  "score": 11,
+  "breakdown": {
+    "l_code_check": 2,
+    "failure_avoidance": 2,
+    "banned_factor": 2,
+    "lesson_check": 3,
+    "structural_risk": 2
+  },
+  "arguments": [
+    "Single-month OLS 잔차화(Size+IdioVol)로 STR_1679 앵커 대비 rho 0.2 미만을 구조적으로 보장한다는 설계의 핵심 가정은 검증되지 않았다 — 잔차가 estimation noise와 transient exposures에 지배될 수 있고, 변동성 급등 구간에서 idiosyncratic-vol과 revision-dispersion이 공동이동하면 OLS 계수가 불안정해져 residual signal이 앵커와 유사한 위험에 재노출되어 상관이 0.4 이상으로 급증할 수 있다.",
+    "설계의 PIT 무결성이 미입증이다 — vendor analyst revision/consensus 필드의 as-of 스냅샷과 released-time lag 명세가 없어 month-end ingest 시 애널리스트 노트 backfill/timestamp correction이 포함될 가능성이 있으며, 이 경우 연구용 SR이 0.3-0.5 인플레이션 되고 실투 SR은 0 혹은 음수로 추락하며 MDD가 12-18%p 추가될 수 있다.",
+    "KOSDAQ small-cap leadership 국면에서 analyst coverage breadth 신호가 구조적으로 약화되어 신호가 대형주/커버리지 프록시로 퇴화하고 시장 수익 중심을 놓칠 수 있다 — 12-24개월 alpha drought 동안 ICIR가 0.10 미만으로 떨어지고 MDD가 15-25%p 증가하는 regime vulnerability가 coverage bias와 결합된다."
+  ],
+  "concern": "Single-month OLS 잔차화가 true revision alpha를 보존하면서 STR_1679와의 durable orthogonality를 보장한다는 핵심 가정이 틀리면 live IC는 감쇠하고 스트레스에서 앵커 상관은 상승하여 SR가 0.4 이상 하락하고 MDD가 45%를 돌파할 수 있다 — L-047 family redundancy, coverage bias, IC to SR 전환 리스크 모두 단일 잔차화 설계로 일거에 해소되지 않는다.",
+  "conditions": [
+    "분석가 스냅샷을 strict PIT로 재구성 (as-of timestamp + publication timestamp + T+1 execution lag) 후 전 테스트 재실행",
+    "Single-month OLS를 winsorization + Huber/WLS 기반 robust cross-sectional residualization으로 교체하고 월별 잔차 안정성 보고",
+    "S3에서 사전 설정 rho 컷오프 없이 STR_1679 대비 36개월 rolling OOS rho가 0.2 미만 유지됨을 입증",
+    "KOSPI 대 KOSDAQ 분리 성과/회전율/capacity 진단으로 coverage-bias 중립성 증명"
+  ],
+  "kill_scenarios": [
+    {
+      "scenario": "Backtest uses vendor-updated consensus/revision fields at month-end, but those fields contain late analyst note backfills and timestamp corrections unavailable at trade time. The factor appears stronger because it silently ingests future updates.",
+      "probability": "medium",
+      "expected_loss": "SR inflation of 0.3-0.5 in research; live SR falls to ~0 or negative, with +12-18% additional MDD.",
+      "blind_spot": true
+    },
+    {
+      "scenario": "A KOSDAQ small-cap leadership regime emerges with weak analyst coverage breadth. The signal degrades into a large-cap/coverage proxy and misses the return center of the market.",
+      "probability": "high",
+      "expected_loss": "12-24 month alpha drought; ICIR drops below 0.10 and MDD increases by 15-25%.",
+      "blind_spot": false
+    },
+    {
+      "scenario": "In volatility spikes, idiosyncratic-vol and revision-dispersion co-move; single-month OLS coefficients become unstable. Residual signal re-loads onto STR_1679-like risk and correlation jumps above 0.4.",
+      "probability": "medium",
+      "expected_loss": "Diversifier failure: combined-book SR degrades by 0.3-0.5 and MDD worsens by 10-15%.",
+      "blind_spot": true
+    }
+  ],
+  "weakest_assumption": "Single-month OLS residualization on log(MarketCap)+R12_IdioVol can preserve true revision alpha while guaranteeing durable orthogonality to STR_1679. If this assumption is wrong, residual is dominated by estimation noise and transient exposures, live IC decays while correlation to anchor rises in stress, terminal SR drops over 0.4 and MDD can breach 45%.",
+  "design_pit_assessment": "Q1: Concern — why_now PG0 SR gap 0.807 프레이밍이 ex-post 기간 선택 과적합 가능. Q2: Not demonstrated — analyst revision PIT 구성 미명세, as-of snapshot과 release-time lag 없이 실시간 관측성 미보장. Q3: Concern — rho 0.2 미만 구조적 보장이 STR_1679와의 과거 공동움직임을 선지식으로 전제. Q4: Likely concern — ICIR 0.20/MDD 45%/rho 컷오프가 ex-ante 고정되지 않으면 full-sample parameter leakage 위험."
+}
