@@ -1,0 +1,30 @@
+{
+  "role": "codex_critic",
+  "score": 10,
+  "breakdown": {
+    "l_code_check": 2,
+    "failure_avoidance": 2,
+    "banned_factor": 2,
+    "lesson_check": 3,
+    "structural_risk": 1
+  },
+  "arguments": [
+    "R16 채택(40개월 stress_pct_pos 1.00)과 Q24 배제(stress_icir -0.695) 결정이 ex-post 성과 지표에 의존한 것이라 파라미터 선택에 full-sample 정보 누수가 의심되며 0.6/0.4 비중도 알려진 구간 결과에 맞춘 튜닝일 가능성이 높습니다.",
+    "Q25 Ohlson_O 입력의 PIT 무결성(공시 지연 T+60~90일 + 수정재무 비소급 snapshot)이 명세되지 않아 실투 시 라이브 신호 약화와 KOSDAQ 지연공시 구간 진입 타이밍 붕괴 리스크가 있습니다.",
+    "R16 평시 ICIR 0.22 drag + 금리/유동성 전환 시 고베타 반등장 underperformance + 신용스트레스 시 distress와 drawdown 상관 급등으로 60/40 분산 효과 붕괴 kill scenario 3건이 복합적으로 겹칠 경우 Core 대비 MDD 축소 목표 6-10%p 미달 가능합니다."
+  ],
+  "concern": "가장 약한 가정은 R16의 과거 stress_pct_pos 1.00이 미래 스트레스에서도 재현된다는 것이며, 이것이 틀리면 방어축이 스트레스에서 양 기여를 못하고 60/40 결합이 저베타 drag만 남아 하방완충이 상실되어 최종적으로 Core 대비 MDD +6~12%p 악화 + SR 0.3~0.5 하락으로 귀결됩니다.",
+  "conditions": [
+    "Q25_Ohlson_O 입력에 공시 지연 T+60~90일과 수정재무 비소급 PIT snapshot 적용 증빙 필수",
+    "0.6/0.4 고정 비중을 사전등록하고 재튜닝 없이 expanding-window walk-forward 결과만으로 통과 여부 판단",
+    "stress IC/bad-good ratio 산출에 ex-post 위기 라벨 사용 금지, 실시간 관측 가능한 규칙 기반 스트레스 정의 고정",
+    "H_1681 대비 중복성(rolling partial correlation, marginal IC) 제출하고 기준 초과 시 2F 구조 재설계"
+  ],
+  "kill_scenarios": [
+    {"scenario": "Q25_Ohlson_O가 수정재무 반영 데이터 또는 부족한 공시시차로 백테스트되면 라이브 신호 약화, 특히 KOSDAQ 지연공시 구간 진입 타이밍 붕괴", "probability": "medium", "expected_loss": "MDD +8~15%p 악화 또는 SR -0.4~-0.7", "blind_spot": true},
+    {"scenario": "금리/유동성 전환 후 고베타 반등장에서 R16 Calmar 방어축 지속 언더캐치 + Q25 대형주/저변동 편향 겹침", "probability": "high", "expected_loss": "상대 CAGR -4~7%p, SR -0.3~-0.5", "blind_spot": false},
+    {"scenario": "국내 신용스트레스 국면에서 distress와 drawdown 상관 급등 → 60/40 분산 효과 붕괴 → 두 축 동시 derating", "probability": "medium", "expected_loss": "포트폴리오 MDD 14~20%, Core 대비 축소 6~10%p 미달", "blind_spot": false}
+  ],
+  "weakest_assumption": "R16의 과거 stress_pct_pos 1.00이 미래 스트레스에서도 재현된다는 가정. 틀리면 방어축 양 기여 상실 → 60/40 저베타 drag + 하방완충 상실 → MDD +6~12%p 악화 + SR 0.3~0.5 하락.",
+  "design_pit_assessment": "1) 알파 소스 ex-post 식별 우려 큼 (40개월 전부 양수로 R16 채택). 2) stress IC bad/good ratio가 ex-post 라벨 의존 가능. 3) Q24 배제 + 60/40 고정이 특정 기간 성과 전제. 4) stress_icir/crisis_ratio/stress_pct_pos 등 full-sample 진단치가 파라미터 선택에 사용된 정황. PIT 준수 미검증."
+}

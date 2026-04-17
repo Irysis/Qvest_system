@@ -1,0 +1,54 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1682",
+  "round": "R1",
+  "score": 14,
+  "arguments": [
+    "Q25 stress_icir 0.659 + R16 stress_icir 2.655 cross-family 조합은 개별 factor 수준에서 stress alpha가 실증적으로 확인되며, 특히 R16의 stress 40개월 전부 양수 IC(pct_pos 1.00)는 Defense anchor로서 높은 신뢰도를 부여한다. 다만 R16 crisis_premium이 -0.0036으로 음수인 점은 stress alpha가 normal 대비 초과가 아닌 '양쪽 모두 강한' 패턴임을 시사하며, 위기 전환 시 추가 alpha 폭발보다는 안정적 유지에 가까운 프로파일이다.",
+    "R16_Calmar의 Factor DB 구현을 코드 레벨에서 검증한 결과, 월간 compute_risk.R은 since-inception cumulative MDD를 사용하고 일간 phase6는 252일 rolling MDD를 사용하는 이중 정의가 존재한다. 월간 since-inception MDD는 종목 상장 기간이 길수록 MDD가 누적되어 Calmar가 하락하는 survivorship-length bias를 내재하며, S1 백테스트 시 어느 정의를 사용하는지에 따라 signal 특성이 근본적으로 달라진다. 이는 kill scenario 수준의 구현 리스크이다.",
+    "Q25(회계 distress logit) + R16(가격 drawdown ratio)의 cross-family 설계는 L-118-ext 'beta orthogonality > family orthogonality' 원칙에 부합하나, 양쪽 모두 '안전 종목 long' 방향이므로 portfolio CAPM beta 0.7~0.9 예상은 현실적이다. 문제는 위기 시 안전 종목 간 상관이 급등하는 flight-to-quality crowding이며, DCC-Copula tail dependence 측정 없이 cross-family 독립성을 가정하면 L-106 market beta 지배 교훈을 반복할 수 있다."
+  ],
+  "concern": "R16_Calmar stress_pct_pos 1.00 (40/40 months)은 통계적으로 극단적 수치이다. 8대 급락 구간 40개월 중 단 한 달도 음수 IC가 없다는 것은 data-snooping 가능성 또는 Factor DB Z_Score_Aligned 방향 설정의 mechanical artifact를 배제할 수 없다. Calmar ratio 'higher_better' 방향은 직관적이나, 위기 시 고 Calmar 종목이 선택적으로 살아남는 survivorship conditioning과 겹칠 수 있다. S1 실행 전 R16 Raw_Value 분포와 stress 구간 종목별 IC 분해가 필수이며, 이 검증 없이 stress_pct_pos 1.00을 액면 수용하는 것은 위험하다.",
+  "conditions": [
+    "S1 실행 전 R16_Calmar의 월간(since-inception) vs 일간(252d rolling) 정의 차이를 명확히 하고, 백테스트에 사용할 정의를 확정할 것",
+    "R16 stress_pct_pos 1.00의 robustness 검증: stress 40개월 각각의 종목별 IC decomposition + bootstrap confidence interval 제시",
+    "S3에서 Q25-R16 cross-sectional 상관뿐 아니라 portfolio-level DCC tail dependence 측정 필수 (L-106 교훈)"
+  ],
+
+  "detail_scores": {
+    "tail_risk": {
+      "score": 3.5,
+      "max": 4,
+      "rationale": "Q25 stress_icir 0.659 (80% pct_pos) + R16 stress_icir 2.655 (100% pct_pos)는 개별 factor 수준 tail 내성 최상위. EVT 관점에서 composite stress ICIR 1.0~1.5 예상은 합리적. 다만 R16 crisis_premium -0.0036 (normal에서도 강함)이므로 위기 전환 시 추가 alpha jump는 미미. CDaR 관점에서 Calmar factor 자체가 drawdown-adjusted metric이므로 tautological defense 성격이 있어 0.5 감점."
+    },
+    "kill_scenario": {
+      "score": 2.5,
+      "max": 4,
+      "rationale": "Kill 1: R16_Calmar since-inception vs 252d rolling 이중 정의 — 월간 Factor DB에서 since-inception MDD 사용 시 상장 30년 종목은 IMF/GFC MDD가 영구 반영되어 Calmar가 구조적으로 낮음. 신규 상장 종목은 MDD가 작아 Calmar 과대 → IPO bias. Kill 2 (미래참조 경로): R16 계산에 사용되는 R06_MDD가 해당 월까지의 cumprod인데, 월간 compute_risk.R에서 'by=Ticker'로 전체 기간 한 번에 계산 → t시점 factor가 t+1~T 수익률 정보를 포함하지는 않지만, since-inception 기간 자체가 종목마다 다른 lookback bias를 유발. Kill 3: stress_pct_pos 1.00의 data-snooping — 40 stress months에서 100% 양수는 p(binomial) < 0.001이므로 random chance 배제되나, 'Z_Score_Aligned higher_better' 방향과 위기 시 안전 종목 생존의 mechanical overlap 가능성 미검증."
+    },
+    "beta_orthogonality": {
+      "score": 3.0,
+      "max": 4,
+      "rationale": "Q25(회계 logit 9변수) + R16(가격 return/MDD ratio)는 정보 채널이 genuinely 독립적이며, cross-family 설계로 L-118-ext 원칙 충족. 예상 cross-sectional 상관 <0.2는 합리적. 다만 양쪽 모두 '재무 건전 + 가격 안정' 종목을 선호하므로 portfolio beta 0.7~0.9은 불가피. Defense role 허용 |beta|<0.85 gate를 사전 설정한 점은 긍정적이나, 위기 시 flight-to-quality로 beta가 일시적으로 상승(안전주 → 시장 대표주 수렴)할 수 있어 조건부 beta 측정 없이는 확정 불가."
+    },
+    "mdd_contribution": {
+      "score": 2.5,
+      "max": 4,
+      "rationale": "Core 대비 MDD 8%p 축소 gate 설정은 AX-001 준수. R16 stress_pct_pos 1.00이 사실이라면 위기 구간에서 강한 방어력 기대. 그러나 순수 2-factor EW Top 20 기준 MDD 25~35% 예상은 Defense role 치고 높다. 비교: STR_1631 VD+ MDD 약 21%. H_1682 pure가 30%이면 Core 대비 MDD 축소 효과가 미미하거나 오히려 악화. S5 DD overlay 적용 후 15~22% 도달해야 하는데, overlay 없는 pure signal 단계에서 MDD 30%+이면 Defense로서의 본질적 가치가 의문. 2.5점으로 조건부 통과."
+    },
+    "regime_vulnerability": {
+      "score": 2.5,
+      "max": 4,
+      "rationale": "R16 평시 conditional ICIR 0.22는 Alpha Lab Gate 최소선(0.20) 간신히 충족. Q25 conditional ICIR 0.633은 양호. Composite 평시 ICIR 0.4~0.6 예상이나 R16의 평시 drag가 composite를 끌어내릴 수 있다. 4-regime 분석에서 R16 ic_bad 0.0056 vs ic_all 0.0014 → bad regime에서 약간 개선되지만 절대 수준이 매우 낮다. MRS CRISIS 국면(현재 63.1)에서 R16이 즉시 방어력을 발휘하는지, 아니면 stress 사건 발생 후에야 IC가 올라오는지(선행 vs 후행 방어) 구분이 없다. Regime transition 시점의 IC lag 분석이 S2에서 필수."
+    }
+  },
+
+  "cross_references": {
+    "L-106": "market beta 지배 — H_1682 양 factor 모두 '안전주 long' 방향이므로 beta 지배 위험 내재. S3 CAPM beta 측정 필수.",
+    "L-115": "beta 감소 ≠ 상관 감소 — cross-family 상관 낮아도 portfolio return 상관은 beta channel로 높을 수 있음.",
+    "L-118-ext": "beta orthogonality > family orthogonality — 설계 원칙 부합하나 실증 확인 필요.",
+    "L-119": "정적 EW blend alpha 희석 — 60/40 정적 가중이 L-119 패턴 반복 가능. S5 regime-conditional weight 필수.",
+    "L-143": "Q07+D29 CAGR 2.93% — Q07 배제로 직접 회피. Q25+R16 조합이 같은 패턴(저조한 CAGR + 높은 방어)을 반복하지 않는지 S1에서 확인.",
+    "AX-001": "Defense 조건부 평가 — stress alpha + Core MDD 비교 + bad/normal IC ratio. H_1682 설계 의도와 정합."
+  }
+}

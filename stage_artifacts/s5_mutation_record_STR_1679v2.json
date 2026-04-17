@@ -1,0 +1,153 @@
+{
+  "mutation_id": "STR_1679v2_physical_sleeve_regime_weight_overlay",
+  "strategy_id": "STR_1679v2",
+  "parent_strategy": "STR_1679_score_blend",
+  "mutation_type": "physical_sleeve_separation + regime_weight_overlay",
+  "stage": "S5",
+  "timestamp": "2026-04-17",
+  "created_by": "Scout (retroactive)",
+  "retroactive": true,
+  "retroactive_reason": "Forge가 Scout D안 권고를 즉시 구현하면서 공식 s5_mutation_record 산출물 생략. S2.6 Fast-Track Guard Hook이 S6 진입 차단. 실제 실행 결과 기반 소급 공식화.",
+  "slate_source": "stage_artifacts/s5_research_slate_STR_1679v2.json",
+
+  "mutation_description": {
+    "summary": "STR_1679 v1 (score-blend 30종목, L-484/L-557 위반)를 Core 15 + Def 5 물리 분리 + regime-conditional weight + HRP+DD overlay로 재설계. v53 20종목 규정 준수 + factor risk management framework.",
+    "key_changes": [
+      "N_HOLD: 30 → 20 (Core 15 + Def 5)",
+      "Selection: 단일 final_score → sleeve별 독립 Top-N (물리 분리)",
+      "Weight: score-level blend → regime-conditional sleeve weight",
+      "Overlay: DD 재도입 (Multi-Timeframe DD Brake with t-1 lag)",
+      "HRP: Core 15 내에서만 계산, Def 5는 EW"
+    ],
+    "structural_intent": "L-557 sleeve 독립성 확보 (Defense factor 교체가 실제 5종목 구성 변경), L-484 물리 20종목 준수, L-122 factor timing 회피 (selection regime-invariant, weight만 조정)"
+  },
+
+  "parent_child_comparison": {
+    "STR_1679_v1": {
+      "structure": "score-blend 30종목 단일 선정",
+      "N_HOLD": 30,
+      "l484_violation": true,
+      "l557_violation": true,
+      "defense_alpha_contribution_normal": "≈ 0 (Def 5% 가중이 종목 rank 영향 없음)"
+    },
+    "STR_1679v2": {
+      "structure": "Core 15 + Def 5 물리 분리",
+      "N_HOLD": 20,
+      "l484_compliance": true,
+      "l557_compliance": true,
+      "defense_alpha_contribution": "Normal 5%, Caution 20%, Crisis 40% (weight-based)"
+    }
+  },
+
+  "baseline_comparison": {
+    "note": "run_all.R이 3개 variant 동시 실행. 실측 데이터 (output/performance.json 기반).",
+    "primary_HRP_DD_overlay": {
+      "label": "Sleeve_HRP_OV (Primary)",
+      "weight_method": "HRP (Core 15) + EW (Def 5)",
+      "overlay": "Multi-Timeframe DD Brake with t-1 lag",
+      "CAGR": 24.71,
+      "Sharpe": 1.266,
+      "MDD": -29.06,
+      "Sortino": 1.82,
+      "Calmar": 0.85,
+      "WinRate": 63.8,
+      "WorstMonth": -13.52,
+      "ES99_d": 4.61,
+      "hurdle_pass": true,
+      "hurdle_score": 77.1,
+      "grade": "A",
+      "role": "diversifier"
+    },
+    "hrp_base_no_overlay": {
+      "label": "STR_1679v2_sleeve (HRP base)",
+      "weight_method": "HRP (Core 15) + EW (Def 5)",
+      "overlay": "none",
+      "CAGR": 25.34,
+      "Sharpe": 1.152,
+      "MDD": -51.6,
+      "Calmar": 0.491,
+      "hurdle_pass": false,
+      "hurdle_score": 76.4,
+      "grade": "C"
+    },
+    "ew_base_no_overlay": {
+      "label": "STR_1679v2_sleeve_ew_base",
+      "weight_method": "EW (Core 15) + EW (Def 5)",
+      "overlay": "none",
+      "CAGR": 24.32,
+      "Sharpe": 1.097,
+      "MDD": -53.54,
+      "IR": 1.163,
+      "hurdle_pass": false,
+      "hurdle_score": 74.5,
+      "grade": "C"
+    }
+  },
+
+  "best_variant": "primary_HRP_DD_overlay",
+  "best_variant_rationale": "HRP+DD overlay 적용 시 Grade A 77.1점, MDD 29.06% (Hurdle 45% 기준 내), SR 1.266 확보. HRP 단독 또는 overlay 단독은 MDD Hard Fail.",
+
+  "mutation_novelty": {
+    "l484_resolution": "30→20 물리 분리로 원천 해결. sleeve 중복 종목 0%.",
+    "l557_resolution": "Defense factor 교체가 실제 5종목 구성 변경하는 구조. Normal regime에서도 Def sleeve alpha 기여 측정 가능.",
+    "l119_mitigation": "정적 EW 블렌드 아닌 regime-conditional weight (95/5 → 80/20 → 60/40). L-119 'Crisis 시 defense 100%' 극단 안 감 (L-122 factor timing 회피).",
+    "l122_compliance": "selection은 regime-invariant (Core 15 + Def 5 항상 고정). Weight만 regime 따라 조정. Factor timing이 아닌 factor risk management (Barroso&Santa-Clara 2015, Moreira&Muir 2017).",
+    "dd_overlay_novelty": "DD brake t-1 lag 적용 (L-465~470 준수). L-013 전례 (CVaR DD 6/20 적용 MDD 52.7%→30.4%) 성공 패턴 재현. Weight-level position sizing이지 selection 변경 아님."
+  },
+
+  "lesson_compliance": {
+    "L-484": "PASS — 물리 20종목, sleeve intersection 0%",
+    "L-557": "PASS — Core/Def 독립 Top-N 선정, factor family 교체가 실제 구성 변경",
+    "L-119": "PARTIAL_PASS — regime-conditional (정적 아님), Defense 가중 5%→40% 동적",
+    "L-122": "PASS — selection regime-invariant, weight-only scaling (factor risk management)",
+    "L-121": "LEVERAGE — Q07 C19 상관 -0.092 활용 (Defense sleeve 구성)",
+    "L-013": "LEVERAGE — DD overlay 성공 패턴 재현 (CVaR 전례 적용)",
+    "L-465_to_L470": "PASS — DD t-1 lag 적용",
+    "L-442": "PASS — Regime Engine v7.1 MRS 사용",
+    "AX-001": "PASS — Defense 조건부 평가 (stress 구간 alpha + Core 대비 MDD 축소)",
+    "AX-003": "PASS — value factor 미사용",
+    "AX-004": "PASS — Q07은 earnings stability, profitability 아님",
+    "AX-005": "TECHNICAL_PASS — Q07+D29 (D25 아님). L-143 empirical warning 별도 기록."
+  },
+
+  "mutation_count_categories": {
+    "slots_total": 4,
+    "slots_evaluated": 4,
+    "slots_selected": 1,
+    "categories_covered": ["Portfolio_Construction", "Parameter_Reduction", "Regime_Based_Selection", "Alternative_Size"],
+    "synthesis_tested": true,
+    "synthesis_note": "Cross-combination은 L-122 factor timing 위험 때문에 기각. 단독 A 선택."
+  },
+
+  "s6_judge_handoff": {
+    "ready_for_judge": true,
+    "judge_inputs": {
+      "primary_variant": "Sleeve_HRP_OV (Grade A 77.1)",
+      "baseline_variants": ["hrp_base (Grade C 76.4)", "ew_base (Grade C 74.5)"],
+      "source_files": [
+        "04_Research/strategies/STR_1679_score_blend/output/performance.json",
+        "04_Research/strategies/STR_1679_score_blend/output/hurdle_result.json (EW base, primary는 performance.json의 primary_overlay 섹션)",
+        "04_Research/strategies/STR_1679_score_blend/run_all.R"
+      ]
+    },
+    "gate_focus": [
+      "Gate 0 Validity: L-484/L-557/L-122 전수 준수 확인",
+      "Gate 1 Implementability: 20종목 규정, 유동성 필터",
+      "Gate 2 Robustness: HRP vs EW base 비교 (HRP 우월), overlay 유무 영향",
+      "Gate 3 Performance: Grade A 77.1, SR 1.266, MDD 29.06%",
+      "Gate 4 Novelty: regime-conditional weight + 물리 sleeve 분리 (STR_1631 family 외 diversifier)",
+      "Gate 5 PIT: C5 MRS t-1, C9 DD t-1, C13 Z_Score_Aligned, C15 load_month_factors",
+      "Gate 6 Tail_Risk: tail_risk 측정은 run_log에서 WARN (daily_returns 필드 누락) — Forge 재실행 필요할 수 있음"
+    ],
+    "known_issues": [
+      "run_log tail_risk [WARN]: sim_result에 daily_returns 또는 nav/NAV 필드가 없습니다. Gate 6 tail_risk 재계산 필요.",
+      "L-143 empirical warning: Q07+D29 CAGR 2.93% (STR_1675_Q07_D29_defense 30종목 standalone) — STR_1679v2 Def sleeve 5종목은 Core C19 alpha 보완이므로 같은 risk 재현 여부 Judge 검토"
+    ]
+  },
+
+  "next_steps": {
+    "immediate": "mutation_tracker.json 업데이트 (STR_1679_score_blend 엔트리 확장 또는 STR_1679v2 신규 엔트리)",
+    "judge_gate_0_6": "Q-Lead가 Judge Gate 0~6 재스폰. S2.6 Hook 차단 해소.",
+    "contingent_s5_further": "Judge PASS 후 Gate 6 tail_risk 재계산 필요. [WARN] 해소 후 Governor PG1 admission 심사."
+  }
+}
