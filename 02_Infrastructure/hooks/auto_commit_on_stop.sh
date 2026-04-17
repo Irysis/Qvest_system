@@ -45,11 +45,13 @@ fi
 
 # ─── Secret 스캔 ─────────────────────────────────────────────────────
 # 1. Telegram bot token 패턴 (현재 저장된 것과 달라도 삼중 방어)
-TOKEN_HITS=$(git diff --no-color HEAD 2>/dev/null | \
-  grep -cE 'bot[0-9]{9,11}:A[A-Za-z0-9_-]{34,}' || echo 0)
+TOKEN_HITS=$( (git diff --no-color HEAD 2>/dev/null \
+  | grep -cE 'bot[0-9]{9,11}:A[A-Za-z0-9_-]{34,}') 2>/dev/null || echo 0)
+TOKEN_HITS=${TOKEN_HITS//[^0-9]/}; TOKEN_HITS=${TOKEN_HITS:-0}
 # 2. 일반 API key / password hardcoded
-GENERIC_HITS=$(git diff --no-color HEAD 2>/dev/null | \
-  grep -ciE '^\+.*(api_?key|api_?secret|password|access_?token|private_?key)\s*[=:]\s*[\"'"'"'][A-Za-z0-9_+/=-]{24,}' || echo 0)
+GENERIC_HITS=$( (git diff --no-color HEAD 2>/dev/null \
+  | grep -ciE '^\+.*(api_?key|api_?secret|password|access_?token|private_?key)[[:space:]]*[=:][[:space:]]*["'"'"'][A-Za-z0-9_+/=-]{24,}') 2>/dev/null || echo 0)
+GENERIC_HITS=${GENERIC_HITS//[^0-9]/}; GENERIC_HITS=${GENERIC_HITS:-0}
 # 3. .env 실수 포함 여부
 ENV_INCLUDED=0
 git status --porcelain 2>/dev/null | awk '{print $2}' | grep -q '^\.env$' && ENV_INCLUDED=1
