@@ -1,6 +1,6 @@
 {
-  "role": "critic",
-  "total": 8,
+  "role": "codex_critic",
+  "score": 8,
   "breakdown": {
     "l_code_check": 1,
     "failure_avoidance": 1,
@@ -8,34 +8,39 @@
     "lesson_check": 2,
     "structural_risk": 1
   },
-  "findings": "Reject for now. Fact: the design keeps Q07 at 60% despite concentration warning and L-112 single-signal failure, and reuses CVaR-family logic after L-013 hard fail. Inference: the 40/60 blend looks like parameter relabeling of prior defense failures, not true mechanism novelty. Speculation: perceived stability may be sample-period dependent and fragile in Korean risk-on regime shifts.",
+  "arguments": [
+    "H_1681 설계가 Q07 60% concentration을 경고에도 유지하고 L-112 Q07 단독 실패를 회피하는 메커니즘 근거가 불충분하며 tail 3F (D47/D48/D45)가 L-013 CVaR Hard Fail MDD 52.7% family를 재활용하는 구조라 단순 파라미터 라벨링으로 보입니다.",
+    "40/60 고정 가중치는 walk-forward expanding window 또는 sub-period stability 검증이 없어 full-sample 관측 기반으로 튜닝된 가능성이 높고, 한국 risk-on 국면 전환에서 샘플 의존적 불안정성을 드러낼 위험이 있습니다.",
+    "글로벌 금리 충격 시 D47/D48/D45가 market beta에 가깝게 공동이동하고 Q07이 유사 방어주 쌍으로 crowd되면 tail sleeve가 진짜 hedge가 아니라 correlated overlay로 전락해 MDD 50-57% + SR 0.3-0.5 하락 시나리오가 발생할 수 있습니다."
+  ],
+  "concern": "Q07 60%가 concentration 경고와 L-112 standalone 실패에도 유지되면 concentration이 portfolio 거동을 지배하여 tail sleeve가 독립 hedge가 아닌 correlated overlay로 변질되고 최종적으로 MDD 45% 이상(50%+ 가능)과 SR 0 또는 음수 수렴의 경로가 열립니다.",
   "conditions": [
-    "Reduce Q07 to <=35% and impose explicit concentration/correlation caps across D45/D47/D48 and Q07.",
-    "Define strict PIT data protocol: filing publication timestamps, restatement handling, and T+1 execution alignment for all inputs.",
-    "Replace fixed 40/60 with walk-forward expanding-window weight estimation and stability constraints across subperiods.",
-    "Require incremental performance over Q07-only and tail-only baselines after turnover/costs.",
-    "Pass pre-registered stress gates across distinct Korean regimes, not only aggregate full-period metrics."
+    "Q07 비중을 35% 이하로 낮추고 D45/D47/D48 + Q07 전반에 명시적 concentration·correlation cap 설정",
+    "strict PIT data protocol 정의: filing publication timestamp, restatement 처리, T+1 execution alignment",
+    "고정 40/60 대신 walk-forward expanding window 가중치 추정 + sub-period stability 제약 적용",
+    "Q07-only와 tail-only baseline 대비 turnover/cost 후 incremental 성과 입증 요구",
+    "전체 구간 종합 지표가 아닌 서로 다른 한국 regime별 pre-registered stress gate 통과"
   ],
   "kill_scenarios": [
     {
-      "scenario": "A global rates shock hits KOSPI; D47/D48/D45 become highly collinear and act like market beta. The tail sleeve and Q07 crowd into similar defensive names and draw down together instead of diversifying.",
+      "scenario": "글로벌 금리 충격이 KOSPI 타격 → D47/D48/D45 매우 collinear해져 market beta 유사 거동, tail sleeve와 Q07이 유사 방어주 쌍으로 crowd, 분산이 아닌 동시 drawdown",
       "probability": "high",
-      "expected_loss": "MDD expands to roughly 50-57% and SR deteriorates by about 0.3-0.5.",
+      "expected_loss": "MDD 50-57%, SR 0.3-0.5 악화",
       "blind_spot": false
     },
     {
-      "scenario": "Q07 is computed with revised financials or incorrect report-availability dates, creating hidden lookahead. Backtest quality appears strong, but live signals use stale/pre-restatement data, especially among late-reporting KOSDAQ firms.",
+      "scenario": "Q07이 restated financial 또는 부정확한 report-availability date로 hidden lookahead 생성 — 특히 late-reporting KOSDAQ 기업에서 backtest 강해 보이나 live signal은 stale/pre-restatement data 사용",
       "probability": "medium",
-      "expected_loss": "Live IC turns negative for multiple quarters; SR drops 0.25-0.4 with additional 8-12%p drawdown.",
+      "expected_loss": "Live IC 수분기 음수, SR 0.25-0.4 하락, 추가 MDD 8-12%p",
       "blind_spot": true
     },
     {
-      "scenario": "A prolonged KOSDAQ-led risk-on recovery penalizes defensive tilts. Frequent VaR/CVaR re-ranking adds transition cost while missing high-beta rebounds, causing cumulative relative decay.",
+      "scenario": "KOSDAQ 주도 장기 risk-on 회복이 defensive tilt 처벌 — 잦은 VaR/CVaR 재랭킹 transition cost 증가 + high-beta rebound 놓침 → 누적 상대 성과 저하",
       "probability": "medium",
-      "expected_loss": "Annual alpha declines by 4-7%, IR falls by about 0.2-0.35, and relative MDD widens by 10-15%p.",
+      "expected_loss": "연 alpha 4-7% 감소, IR 0.2-0.35 하락, 상대 MDD 10-15%p 확대",
       "blind_spot": false
     }
   ],
-  "weakest_assumption": "If Q07 earnings stability can safely remain the 60% core despite known concentration and prior standalone failure, then concentration dominates portfolio behavior -> the tail sleeve becomes a correlated overlay rather than a true hedge -> terminal state is MDD breaching 45% (potentially 50%+) with SR collapsing toward zero or negative.",
-  "design_pit_assessment": "Q1: Concerned; factor choice appears ex-post conditioned on known crisis behavior and prior failures. Q2: Possibly, but only with strict real-time publication-lag controls and expanding windows, which are not specified. Q3: Concerned; the 40/60 combination appears outcome-conditioned rather than mechanism-first. Q4: Concerned; ICIR>=0.20 and MDD<45% gates may be full-sample tuned unless pre-registered out of sample. Overall PIT risk is material and unresolved."
+  "weakest_assumption": "Q07 earnings stability가 알려진 concentration과 prior standalone 실패에도 불구하고 60% core로 남을 수 있다는 가정. 이것이 틀리면 concentration이 portfolio 거동을 지배 → tail sleeve가 correlated overlay로 변질 → MDD 45%+ (50%+ 가능) + SR 0 혹은 음수 수렴.",
+  "design_pit_assessment": "Q1: Concern — 팩터 선택이 과거 crisis 거동과 prior failure를 ex-post 조건으로 삼은 것으로 보임. Q2: 가능하나 엄격한 real-time publication lag 제어와 expanding window가 명시되지 않음. Q3: Concern — 40/60 조합이 메커니즘 우선이 아닌 outcome-conditioned로 보임. Q4: Concern — ICIR 0.20 및 MDD 45% 미만 gate가 pre-registered OOS 없으면 full-sample tuned일 수 있음. 전반적 PIT 리스크는 material하며 미해결."
 }

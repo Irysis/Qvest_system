@@ -1,0 +1,71 @@
+{
+  "hypothesis_id": "H_1681",
+  "hypothesis_name": "Tail-Risk Defense Anchor (Q07 cross-family)",
+  "compiled_at": "2026-04-17T16:25:00",
+  "rounds": [
+    {
+      "round": 1,
+      "entries": [
+        {
+          "role": "academic",
+          "score": 14,
+          "arguments": [
+            "인용 5편은 모두 top-tier peer-reviewed(RFS 2편, TAR, JFE, JBF)로 형식 요건을 충족하며 Kelly·Jiang(2014)과 Acerbi·Tasche(2002)는 각각 tail-risk cross-section premium과 CVaR coherent measure 근거로 H_1681 구성에 실질 기여한다. 다만 Bollerslev·Tauchen·Zhou(2009 RFS)는 aggregate Variance Risk Premium과 market return 시계열 관계 논문이지 cross-sectional low-tail-risk long 직접 근거가 아니며, Bali·Cakici·Whitelaw(2011) MAX는 '극단 상방(lottery) 수익률' premium이라 D45_Downside_Dev(좌측 하방) 메커니즘과 방향성이 엄밀하게 대응되지 않아 두 건은 mechanism_align이 느슨하다.",
+            "Cross-family(가격 기반 tail-risk + 회계 기반 earnings stability) 설계 자체의 학술적 정당화가 약하다. Dichev·Tang(2009 TAR)은 earnings volatility와 미래 이익 예측력(persistence) 관계 논문으로 '위기 구간 defense'를 직접 주장하지 않으며, earnings stability → defensive posture 연결은 L-121 내부 실증(Q07 stress ICIR +0.753)에만 의존한다. 한국시장 tail-risk + earnings stability composite 실증 논문 인용이 0건이며(Part A도 글로벌 reference 위주) — Bae·Kim·Kim(2012) Korean downside risk, Eom·Kang·Park 계열 KR idiosyncratic risk 등 KR 선행연구 참조 부재가 korea_evidence를 약화시킨다.",
+            "Time-decay 방어가 취약하다. Kelly·Jiang(2014) 표본은 1963–2010이며 post-2020 replication/decay 검토가 인용에 없다. 최근 실증(예: Atilgan·Bali·Demirtas·Gunaydin 2020 JFE 확장, Chabi-Yo·Ruenzi·Weigert 2018 tail dependence)은 tail premium이 liquidity/flight-to-safety regime에 조건부로 나타난다고 보고한다. 가설은 L-103(R01+Q01 recent 3Y SR 0.013) alpha decay 전례를 인지하나 tail-risk premium 자체의 post-2020 글로벌 decay 가능성을 정량적으로 다루지 않았으며, Dichev·Tang earnings volatility premium도 2010년대 이후 약화 보고(Francis et al., 최근 accounting quality 문헌)가 있어 두 채널 모두 time-decay 리스크를 S1에서 rolling ICIR 이상의 명시적 sub-period test(예: 2000-2010 vs 2015-2025)로 검증할 필요가 있다."
+          ],
+          "concern": "가장 큰 학술적 우려는 'cross-family' 주장의 논리적 공백이다. 가설은 tail-risk(가격)와 earnings stability(회계)를 '독립 채널'이라고 선언하지만, 두 측정치 모두 fundamental distress risk의 proxy일 수 있다는 학계 주장(Campbell·Hilscher·Szilagyi 2008, Vassalou·Xing 2004 distress risk)과의 관계가 논의되지 않았다. 만약 D47/D48/D45와 Q07이 공통으로 distress anomaly의 다른 얼굴이라면, 'cross-family orthogonality'는 표면적일 뿐 경제적 information overlap이 존재한다. 또한 한국시장 tail-risk cross-section 실증의 희소성(korea_evidence)과 post-2020 time decay 검증 부재(time_decay)가 결합되어, S1 FMB t-stat이 Harvey 3.0을 넘지 못할 경우 '한국 실증 novelty'가 아니라 '검증되지 않은 조합'으로 해석될 위험이 있다. Q07 60% anchor 가중이 학술적으로 정당화되지 않은 임의 수치라는 점도 덧붙인다(Dichev·Tang은 가중 처방 제공하지 않음)."
+        },
+        {
+          "role": "codex_critic",
+          "score": 8,
+          "arguments": [
+            "H_1681 설계가 Q07 60% concentration을 경고에도 유지하고 L-112 Q07 단독 실패를 회피하는 메커니즘 근거가 불충분하며 tail 3F (D47/D48/D45)가 L-013 CVaR Hard Fail MDD 52.7% family를 재활용하는 구조라 단순 파라미터 라벨링으로 보입니다.",
+            "40/60 고정 가중치는 walk-forward expanding window 또는 sub-period stability 검증이 없어 full-sample 관측 기반으로 튜닝된 가능성이 높고, 한국 risk-on 국면 전환에서 샘플 의존적 불안정성을 드러낼 위험이 있습니다.",
+            "글로벌 금리 충격 시 D47/D48/D45가 market beta에 가깝게 공동이동하고 Q07이 유사 방어주 쌍으로 crowd되면 tail sleeve가 진짜 hedge가 아니라 correlated overlay로 전락해 MDD 50-57% + SR 0.3-0.5 하락 시나리오가 발생할 수 있습니다."
+          ],
+          "concern": "Q07 60%가 concentration 경고와 L-112 standalone 실패에도 유지되면 concentration이 portfolio 거동을 지배하여 tail sleeve가 독립 hedge가 아닌 correlated overlay로 변질되고 최종적으로 MDD 45% 이상(50%+ 가능)과 SR 0 또는 음수 수렴의 경로가 열립니다."
+        },
+        {
+          "role": "governor",
+          "score": 15,
+          "arguments": [
+            "gap_alignment 3.5/4 — Defense sleeve 공석(Judge-verified defensive Grade A 0건) 최우선 gap이며 SR gap 0.807 해소 경로 중 Defense anchor 신설이 PG0 진단과 정확히 일치. bucket=exploit 태그도 'Defense family 활성화' 목적에 정합하나, explore 86.7% 과잉 완화 기여는 제한적이라 0.5점 감점.",
+            "role_match 3.5/4 — expected_role=defense 선언 + 가격채널(D47/D48/D45) × 회계채널(Q07) cross-family 구조로 role honesty 확보. AX-001 defense 평가 3조건(stress IC, Core MDD 축소, bad/good IC ratio) 명시적 등록. 단 Q07 anchor 60% 가중은 L-112 standalone MDD 62.7% 전례로 'defense 위장 Core' 경계선 — S6 Role Audit에서 portfolio β_market < 0.85 검증 필수.",
+            "marginal_contribution 3/4 — Defense anchor 최초 신설 시 portfolio 다양성 기여 크나, STR_1679 D안(Q07+D29)과 synthesis_candidate 명시된 교체 시나리오에서 Q07 anchor 중복 해소 효과는 있어도 tail-risk family 독립 alpha 증거는 S1 실측 전 미확정. L-013 CVaR standalone FF5 alpha 음수 전례 + L-103 alpha decay 재현 위험 존재. 예상 blend SR 개선 기여는 0.1~0.2 수준으로 보수적 추정."
+          ],
+          "concern": "Q07 family_concentration critical 경고 — Q07이 H_1675(REVISE), STR_1679 D안, H_1677(STR_1439 repair 후보), H_1681 4건에 anchor/구성요소로 중복 배치되어 portfolio-level Herfindahl 급등 위험. Governor 이전 단계 Q07 집중 우려(60/65/80%) 그대로 재현. 현 구조로 PG1 admission 시 single-factor anchor dependency가 family_saturation 35% 한도를 초과할 가능성 높음. 추가로 family_saturation 4축: H_1681 단독 편입 시 tail_risk_defense family 5~8% → 허용. 단 Q07 중복 4건이 동시 admission 시 earnings_stability factor exposure 40%+ → 절대 차단 필요. Scout 제시 conditions 4건 중 (1) Q07 중복 조정이 PG1 admission 최우선 선결 조건이며, 최소 H_1675 REVISE 완료 후 one-of-four 정책(Q07 anchor 동시 1건만 admission) 적용 필요."
+        },
+        {
+          "role": "quant",
+          "score": 13,
+          "arguments": [
+            "ICIR 현실성 PASS (4/4): conditional_ic_matrix.csv 실측값 — D47 ICIR 0.447, D48 0.417, D45 0.443, Q07 0.929. Alpha Lab Gate (ICIR ≥ 0.20) 4개 팩터 모두 단독 통과. 60%Q07+40%tail composite 예상 ICIR 0.5~0.7은 단순 평균(0.56) 대비 합리적 추정이며 composite effect(내부 상관 낮을 때 ICIR 향상) 감안 시 0.6+ 달성 가능성 높음. Q07의 ICIR 0.929는 전체 288팩터 중 최상위권으로 anchor 역할에 충분.",
+            "C19 Core 상관 구조 PASS (4/4): Factor DB 3년 실측 기준 D47-Q07 상관 0.069, D48-Q07 0.053, D45-Q07 0.074 — tail-risk 3F와 Q07 간 cross-family 독립성 확인됨. STR_1679 core anchor(C19 계열)와의 직접 상관은 S3에서 측정 필요하나, Q07의 C19(가격기반 모멘텀) 상관 L-121 실측 -0.092로 낮음. 두 채널 독립성은 가설의 핵심 설계 전제이며 팩터 수준에서 지지됨.",
+            "DATA 가용성 부분 통과 (1/4): D47/D48/D45/Q07 모두 Factor DB 202604 parquet에 존재 확인 (D47/D48/D45: 2,543행, Q07: 2,410행). load_month_factors() 경유 접근 구조 확인(factor_db_connector.R). 단, Factor DB 컬럼이 Z_Score 이고 Z_Score_Aligned 컬럼은 부재 — s0_record signal_construction이 'Z_Score_Aligned 사용(C13)'을 명시하나 실제 DB에는 해당 컬럼 없음. Forge 구현 전 connector의 Z_Score_Aligned alias/매핑 로직 확인 필수."
+          ],
+          "concern": "내부 상관 과중중복 심각 (1/4): D47-D48 실측 상관 0.925, D47-D45 0.933, D48-D45 0.871 — s0_record 예상치(D47-D48 '0.8+', D47-D45 '0.6~0.8')보다 현저히 높음. 3-factor tail composite는 사실상 1.1~1.3 유효팩터 수준. Z_tail = mean(z_D47, z_D48, z_D45) 구성 시 D48과 D45는 D47 대비 잉여 정보가 거의 없어 composite ICIR 향상에 기여하지 못하고 오히려 noise 추가 가능성. ic_bad(방어 구간 IC) 역시 D47 0.0189, D48 0.0206, D45 0.0199로 stress 구간 방어력 낮음 — Q07 ic_bad 0.0306만이 의미있는 방어 신호. 결론: Z_tail 3F composite 불합리 — D47 단독 또는 D47+D45 2F로 축소 권고. S1 전에 Scout 설계 수정 필요."
+        },
+        {
+          "role": "risk_manager",
+          "score": 14,
+          "arguments": [
+            "Q07 anchor 60%가 cross-family composite의 tail 내성을 실질적으로 보강한다. Q07의 stress ICIR +0.753과 4-regime CRISIS ICIR +0.413은 288팩터 중 양쪽 위기 기준 최강(L-121)이며, D47/D48/D45 tail-risk 3F(stress ICIR 0.56~0.64)와 회계-가격 이중 채널이 위기 시 동시 붕괴 확률을 낮춘다. 단, D47/D48 상관 0.8+ 예상으로 실질 정보는 2-factor 수준이며, crisis_ratio(stress IC / normal IC)가 D47 0.958, D48 0.911, D45 0.916으로 모두 1.0 미만 — 즉 tail-risk 3F는 위기 시 방어력이 평시보다 오히려 약화되는 구조적 한계가 있다. Q07(crisis_ratio 1.04)만이 위기 시 IC를 유지한다.",
+            "L-013 CVaR standalone MDD 52.7% Hard Fail 전례가 H_1681에도 그대로 적용될 위험이 높다. D47 stress IC 0.100은 normal IC 0.105와 거의 동일(crisis premium -0.004)하여 위기 시 추가 방어력이 없다. Q07 40% 보완으로도 S1 pure signal MDD 45~58% 예상(Scout 자체 추정)은 Hurdle Hard Fail 45% 경계선에 걸린다. L-103(R01+Q01 defense) MDD 49.8% + alpha decay(recent 3Y SR 0.013) 패턴과 구조적 유사성이 있으며, 'Q07 + 가격 기반 risk composite'가 'Q01 + VaR composite'보다 나을 근거가 S1 실측 전까지 불확실하다.",
+            "L-106(market beta 지배) + L-115(beta 감소 =/= 상관 감소) 교훈에 의하면, D47/D48/D45 tail-risk 팩터로 선별된 종목이 시장 하락 시 beta 1.0에 수렴할 가능성이 높다. Tail-risk 팩터는 '과거 left-tail이 작았던 종목'을 선호하지만, 한국시장 급락(COVID, GFC)에서는 저꼬리위험 종목도 시장과 동반 하락한다(L-106: 종목 겹침 3%인데 수익률 상관 0.78). STR_1679 Core와 H_1681 Defense의 portfolio-level 상관이 0.6+ 나올 경우 MDD 기여가 음수(악화)가 되며, 이는 L-113(quality defense 역 defense 구조)의 tail-risk 버전 재현이다."
+          ],
+          "concern": "D47/D48/D45 tail-risk 3F의 crisis_ratio가 전부 1.0 미만(0.91~0.96)으로 위기 시 IC가 평시보다 약화되며, Q07 단독(crisis_ratio 1.04)에 실질적으로 의존하는 구조이므로 composite 전체가 Q07 standalone 실패(L-112 MDD 62.7%)에 수렴할 위험이 있다."
+        }
+      ]
+    }
+  ],
+  "r1_total": 64,
+  "r1_key_themes": [
+    "Q07 60% concentration 4건 중복 경고 (Governor + Codex 공통)",
+    "Tail 3F 내부 상관 0.87~0.93 (Quant 실측, 3F = 1F 수준 redundancy)",
+    "D47/D48/D45 crisis_ratio 0.91~0.96 미만 — 위기 시 tail IC 약화, Q07 의존 구조 (RM)",
+    "Cross-family 주장 공백: tail(가격)+stability(회계) 모두 distress proxy (Academic)",
+    "40/60 고정 가중치 walk-forward 미검증 (Codex)",
+    "L-013 CVaR Hard Fail 재활용 + L-112 Q07 단독 실패 회피 메커니즘 미입증"
+  ]
+}

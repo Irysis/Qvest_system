@@ -1,0 +1,45 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1681",
+  "round": "R1",
+  "score": 14,
+  "arguments": [
+    "Q07 anchor 60%가 cross-family composite의 tail 내성을 실질적으로 보강한다. Q07의 stress ICIR +0.753과 4-regime CRISIS ICIR +0.413은 288팩터 중 양쪽 위기 기준 최강(L-121)이며, D47/D48/D45 tail-risk 3F(stress ICIR 0.56~0.64)와 회계-가격 이중 채널이 위기 시 동시 붕괴 확률을 낮춘다. 단, D47/D48 상관 0.8+ 예상으로 실질 정보는 2-factor 수준이며, crisis_ratio(stress IC / normal IC)가 D47 0.958, D48 0.911, D45 0.916으로 모두 1.0 미만 — 즉 tail-risk 3F는 위기 시 방어력이 평시보다 오히려 약화되는 구조적 한계가 있다. Q07(crisis_ratio 1.04)만이 위기 시 IC를 유지한다.",
+    "L-013 CVaR standalone MDD 52.7% Hard Fail 전례가 H_1681에도 그대로 적용될 위험이 높다. D47 stress IC 0.100은 normal IC 0.105와 거의 동일(crisis premium -0.004)하여 위기 시 추가 방어력이 없다. Q07 40% 보완으로도 S1 pure signal MDD 45~58% 예상(Scout 자체 추정)은 Hurdle Hard Fail 45% 경계선에 걸린다. L-103(R01+Q01 defense) MDD 49.8% + alpha decay(recent 3Y SR 0.013) 패턴과 구조적 유사성이 있으며, 'Q07 + 가격 기반 risk composite'가 'Q01 + VaR composite'보다 나을 근거가 S1 실측 전까지 불확실하다.",
+    "L-106(market beta 지배) + L-115(beta 감소 =/= 상관 감소) 교훈에 의하면, D47/D48/D45 tail-risk 팩터로 선별된 종목이 시장 하락 시 beta 1.0에 수렴할 가능성이 높다. Tail-risk 팩터는 '과거 left-tail이 작았던 종목'을 선호하지만, 한국시장 급락(COVID, GFC)에서는 저꼬리위험 종목도 시장과 동반 하락한다(L-106: 종목 겹침 3%인데 수익률 상관 0.78). STR_1679 Core와 H_1681 Defense의 portfolio-level 상관이 0.6+ 나올 경우 MDD 기여가 음수(악화)가 되며, 이는 L-113(quality defense 역 defense 구조)의 tail-risk 버전 재현이다."
+  ],
+  "concern": "D47/D48/D45 tail-risk 3F의 crisis_ratio가 전부 1.0 미만(0.91~0.96)으로 위기 시 IC가 평시보다 약화되며, Q07 단독(crisis_ratio 1.04)에 실질적으로 의존하는 구조이므로 composite 전체가 Q07 standalone 실패(L-112 MDD 62.7%)에 수렴할 위험이 있다.",
+  "conditions": [
+    "S1에서 D47/D48 redundancy 실측 후 3F를 2F(D47+D45) 또는 1F(D47 단독)로 축소 검토 필수",
+    "S1 MDD > 55% 시 S5 진입 전 Q07 anchor 비중을 70%로 상향하는 mutation을 최우선 등록",
+    "S3에서 STR_1679 Core 대비 portfolio-level 상관 분해(market beta 기여 vs residual) 실시 — 상관 > 0.65 시 defense 역할 재판정"
+  ],
+
+  "detail_assessment": {
+    "tail_risk": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Q07 anchor의 양쪽 위기 ICIR은 최강 수준(L-121). 그러나 D47/D48/D45 tail-risk 3F의 crisis_ratio < 1.0은 구조적 약점. Composite가 실질적으로 Q07 60% 단일 의존 구조. EVT/GPD 관점에서 left-tail avoidance 팩터는 '과거 tail이 작았던 종목'을 고르는 것이지 '미래 tail을 줄이는' 메커니즘이 아님 — tail persistence가 한국시장에서 검증 필요."
+    },
+    "kill_scenario": {
+      "score": 2,
+      "max": 4,
+      "rationale": "Kill 1 (미래참조 경로): D47/D48/D45가 과거 252일 수익률 분포의 5% percentile을 기반으로 계산된다면, expanding window 내 extreme event(COVID 2020.03)가 이후 전 기간 Z-score를 영구 왜곡. 특정 종목이 2020.03 극단값 하나로 20년간 tail-risk 팩터에서 배제 — Z_Score_Aligned의 expanding window에서 극단값 robustness 미검증. Kill 2 (alpha decay): L-103 패턴. R01+Q01 defense의 recent 3Y SR 0.013 소멸이 D47+Q07에서도 재현될 가능성. Tail-risk premium은 Kelly&Jiang(2014) 미국 실증이며 한국시장 횡단면에서 시간 안정성 미확인."
+    },
+    "beta_orthogonality": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Q07(quality family)과 D47/D48/D45(defense family)의 cross-family 설계는 단면 상관을 낮출 것. 그러나 L-106이 핵심 경고: 단면 상관 낮아도 portfolio beta 0.85~0.93이 상관 0.78을 만든다. H_1681의 low tail-risk tilt는 자연적으로 대형주/저변동주로 쏠리며, 이는 STR_1631 anchor와 beta 프로파일이 겹칠 가능성. s0_record에서 beta_gate |beta| < 0.85 설정은 적절하나 달성 가능성 의문."
+    },
+    "mdd_contribution": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Scout 자체 추정 S1 MDD 45~58%는 현실적. L-013 CVaR standalone 52.7%, L-112 Q07 standalone 62.7%의 중간값. S5 DD 6/20 overlay 사전 등록은 L-013 성공 전례(52.7%→30.4%)에 기반하여 합리적. 그러나 포트폴리오 레벨(STR_1679 80% + H_1681 20%)에서 MDD 기여가 양수(축소)가 되려면 Core 대비 상관 < 0.5가 필수 — L-106/L-115 전례상 낙관적."
+    },
+    "regime_vulnerability": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Q07의 4-regime CRISIS ICIR +0.413은 288팩터 중 최상위. Normal regime에서도 IC 0.040(양수 유지)으로 drag이 제한적. COVID-like rapid crash에서 Q07은 stress IC +0.057(양수 유지)로 방어. 그러나 D47/D48/D45는 stress IC와 normal IC가 거의 동일(crisis premium 음수)하여 regime-conditional 방어력 미약. Normal regime에서의 opportunity cost(CAGR 8~12% 예상 vs Core 19%)가 포트폴리오 drag으로 전이."
+    }
+  }
+}

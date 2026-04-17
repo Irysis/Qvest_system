@@ -1,0 +1,32 @@
+{
+  "role": "quant",
+  "agent_id": "quant",
+  "hypothesis_id": "H_1681",
+  "round": "R1",
+  "timestamp": "2026-04-17T09:00:00",
+  "score": 13,
+  "score_breakdown": {
+    "icir_pass": 4,
+    "internal_corr": 1,
+    "c19_corr": 4,
+    "defense_ic": 3,
+    "data_avail": 1
+  },
+  "arguments": [
+    "ICIR 현실성 PASS (4/4): conditional_ic_matrix.csv 실측값 — D47 ICIR 0.447, D48 0.417, D45 0.443, Q07 0.929. Alpha Lab Gate (ICIR ≥ 0.20) 4개 팩터 모두 단독 통과. 60%Q07+40%tail composite 예상 ICIR 0.5~0.7은 단순 평균(0.56) 대비 합리적 추정이며 composite effect(내부 상관 낮을 때 ICIR 향상) 감안 시 0.6+ 달성 가능성 높음. Q07의 ICIR 0.929는 전체 288팩터 중 최상위권으로 anchor 역할에 충분.",
+    "C19 Core 상관 구조 PASS (4/4): Factor DB 3년 실측 기준 D47-Q07 상관 0.069, D48-Q07 0.053, D45-Q07 0.074 — tail-risk 3F와 Q07 간 cross-family 독립성 확인됨. STR_1679 core anchor(C19 계열)와의 직접 상관은 S3에서 측정 필요하나, Q07의 C19(가격기반 모멘텀) 상관 L-121 실측 -0.092로 낮음. 두 채널 독립성은 가설의 핵심 설계 전제이며 팩터 수준에서 지지됨.",
+    "DATA 가용성 부분 통과 (1/4): D47/D48/D45/Q07 모두 Factor DB 202604 parquet에 존재 확인 (D47/D48/D45: 2,543행, Q07: 2,410행). load_month_factors() 경유 접근 구조 확인(factor_db_connector.R). 단, Factor DB 컬럼이 Z_Score 이고 Z_Score_Aligned 컬럼은 부재 — s0_record signal_construction이 'Z_Score_Aligned 사용(C13)'을 명시하나 실제 DB에는 해당 컬럼 없음. Forge 구현 전 connector의 Z_Score_Aligned alias/매핑 로직 확인 필수."
+  ],
+  "concern": "내부 상관 과중중복 심각 (1/4): D47-D48 실측 상관 0.925, D47-D45 0.933, D48-D45 0.871 — s0_record 예상치(D47-D48 '0.8+', D47-D45 '0.6~0.8')보다 현저히 높음. 3-factor tail composite는 사실상 1.1~1.3 유효팩터 수준. Z_tail = mean(z_D47, z_D48, z_D45) 구성 시 D48과 D45는 D47 대비 잉여 정보가 거의 없어 composite ICIR 향상에 기여하지 못하고 오히려 noise 추가 가능성. ic_bad(방어 구간 IC) 역시 D47 0.0189, D48 0.0206, D45 0.0199로 stress 구간 방어력 낮음 — Q07 ic_bad 0.0306만이 의미있는 방어 신호. 결론: Z_tail 3F composite 불합리 — D47 단독 또는 D47+D45 2F로 축소 권고. S1 전에 Scout 설계 수정 필요.",
+  "conditions": [
+    "Z_Score_Aligned 컬럼 부재 확인 필수: Forge는 factor_db_connector.R의 load_month_factors() 반환 컬럼(Z_Score vs Z_Score_Aligned) 정확히 확인 후 C13 준수 여부 판단. connector가 내부적으로 Z_Score_Aligned를 계산하는지 확인.",
+    "tail-risk 3F → 1F~2F 축소 권고: D47-D48(0.925), D47-D45(0.933) 과중중복. S1 baseline에서 D47 단독 ICIR과 3F composite ICIR 비교 측정. 차이 < 5% 시 D47 단독 채택. Scout 설계 수정 대안: Defense_score = 0.6·Z_Q07 + 0.4·Z_D47 (단순 2팩터).",
+    "ic_bad 방어 구간 신호 약함 주의: D47/D48/D45 ic_bad 모두 0.019~0.021 수준으로 전체 ic_all(0.051~0.055) 대비 낮음. tail-risk 팩터가 하락장에서 추가 방어력을 제공하는지 S1에서 stress 구간 IC 별도 집계 필수 (AX-001 Defense 조건부 성과 기준)."
+  ],
+  "data_sources_verified": {
+    "conditional_ic_matrix": ".cache/conditional_ic_matrix.csv — Q07 ICIR 0.929, D47 0.447, D48 0.417, D45 0.443",
+    "factor_db_parquet": ".cache/factor_db/factor_db_202604.parquet — 4팩터 전수 존재 확인",
+    "factor_registry": "02_Infrastructure/factor_db/factor_registry.json — 327팩터 등록, D47/D48/D45 category:defense, Q07 category:quality",
+    "correlation_computed": "최근 36개월 실측: D47-D48=0.925, D47-D45=0.933, D48-D45=0.871, Q07-tail평균=0.065"
+  }
+}

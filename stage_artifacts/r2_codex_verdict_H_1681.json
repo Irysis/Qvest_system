@@ -1,0 +1,35 @@
+{
+  "role": "codex_critic",
+  "r1_score": 8,
+  "r2_score": 9,
+  "score_changed": true,
+  "score_change_reason": "Quant의 실측치(최근 36개월 Q07-tail 상관 0.05~0.07, Q07 ICIR 0.929)는 내가 제시한 '상시 correlated overlay'의 확실성을 일부 낮춘다. 다만 Q07 concentration, tail 3F redundancy, PIT/OOS 미검증 리스크가 여전히 커서 소폭(+1)만 상향했다.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "D47/D48/D45 상관 0.871~0.933은 tail 3F가 실질적으로 1~2개 유효팩터라는 내 구조적 우려를 강하게 지지한다."
+    },
+    {
+      "with": "governor",
+      "point": "Q07이 여러 전략에 중복 anchor로 배치되면 portfolio-level Herfindahl 급등 위험이 커지며, 이는 내 concentration 지적과 정합적이다."
+    },
+    {
+      "with": "academic",
+      "point": "고정 40/60 가중치와 cross-family 독립성 주장에는 sub-period/time-decay 및 distress-overlap 검증이 필수라는 점에 동의한다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "quant",
+      "point": "composite ICIR 0.6+ '달성 가능성 높음' 주장은 full-sample 관측과 단순 평균 기반 추정에 가깝다. walk-forward OOS, 비용/턴오버 반영, regime split이 없으면 신뢰하기 어렵다.",
+      "severity": "major"
+    },
+    {
+      "against": "risk_manager",
+      "point": "S1 MDD >55% 시 Q07 비중을 70%로 상향하자는 조건은 L-112 standalone 실패 이력과 concentration 리스크를 오히려 확대할 수 있어 방어적 처방으로 부적절하다.",
+      "severity": "major"
+    }
+  ],
+  "strongest_opposing_argument": "quant의 'Q07-tail factor 간 실측 상관이 매우 낮고(Q07 vs D47/D48/D45 약 0.05~0.07), Q07 ICIR이 0.929로 매우 높다'는 점이 내 correlated-overlay/anchor 취약성 주장을 가장 강하게 반박한다.",
+  "kill_scenarios_update": "신규 1) Z_Score_Aligned 컬럼 부재/매핑 오류로 신호가 의도와 다르게 구현되는 implementation kill risk. 신규 2) expanding-window tail metric이 COVID급 극단값에 오염되어 장기간 왜곡되는 persistence kill risk. 신규 3) Q07 다중전략 중복 편입 시 portfolio-level factor saturation으로 동시 drawdown 확대."
+}
