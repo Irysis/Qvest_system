@@ -1,0 +1,282 @@
+{
+  "artifact_type": "s5_research_slate",
+  "schema_version": "v7.0_formal_slate",
+  "parent_strategy": "STR_1679v2_physical_sleeve",
+  "slate_id": "STR_1679v3_formal_slate",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "status": "OFFICIAL (Task #13, not retroactive)",
+  "retroactive": false,
+  "non_retroactive_proof": "Task #13 L-147 compliance — Judge 검증 이전에 Scout formal S5 Research Slate 작성. Forge 실행 전 사전 등록.",
+
+  "trigger_evidence": {
+    "judge_verdict_str_1679v2": "CONDITIONAL_PASS_WITH_STRUCTURAL_CONCERNS (Role Misalignment 공식 확정)",
+    "def_sleeve_contribution_cagr_pp": 0.3,
+    "def_sleeve_avg_weight_pct": 10.9,
+    "mdd_reduction_source": "Layer 3 DD overlay (22.54pp), Def sleeve 기여 미미",
+    "honest_role": "core_alpha_with_overlay_dependency",
+    "base_variants_hard_fail": true,
+    "task_condition_met": "Def contrib < 2pp 확정 조건 충족 (0.3pp)",
+    "source_document": "stage_artifacts/pg0_diagnosis_STR_1679v2_preliminary.json"
+  },
+
+  "portfolio_gap_context": {
+    "current_pg2": "STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%",
+    "sharpe_gap": 0.807,
+    "str_1679v2_current_sharpe": 1.266,
+    "overlay_dependency_risk": "overlay 제거 시 base HRP Hard Fail. Role Misalignment + L-146 Core alpha 계상 금지 violation 발생 위험",
+    "strategic_goal": "STR_1679v3 = Def sleeve 진짜 기여 확보 + overlay 의존 감소 + Role honesty 달성"
+  },
+
+  "research_slate_4slot": {
+    "slot_A": {
+      "mutation_id": "STR_1679v3_A_def_replace_Q25R16",
+      "priority_rank": 1,
+      "mutation_category": "def_sleeve_factor_replacement",
+      "description": "Def 5 sleeve를 Q07+D29 → H_1682 Q25+R16 cross-family composite으로 교체",
+      "design_reference": "stage_artifacts/s5_mutation_design_STR_1679v3_def_replacement.md (후보 1, revision_final v1.0)",
+      "preconditions": [
+        "H_1682 VERDICT = APPROVE_CONDITIONAL 71 (이미 확정)",
+        "H_1682 S1 Hurdle Grade A/B 확정 (Forge 대기 중)",
+        "H_1682 COND_11 CAGR > 3% 통과",
+        "H_1682 COND_12 Defense 4-gate 통과 (stress IC 0.03 / MDD 8%p 축소 / bad-good IC ratio 1.2 / CAGR 5%)"
+      ],
+      "core_sleeve_spec": {
+        "n": 15,
+        "signal": "C19_Composite_Earnings Top-15 (score-blend consensus)",
+        "method": "unchanged from v2"
+      },
+      "def_sleeve_spec": {
+        "n": 5,
+        "universe": "Core 15 제외 remaining",
+        "composite_formula": "Def_Score = 0.6·z(Q25_Ohlson_O) + 0.4·z(R16_Calmar)",
+        "z_score_method": "Z_Score_Aligned (C13)",
+        "data_access": "load_month_factors() 경유 (C15)",
+        "l484_check": "Core 15 ∩ Def 5 = ∅ (물리 분리, remaining universe 제약)"
+      },
+      "regime_weight_spec": {
+        "normal_mrs_lt_20": {"w_core": 0.95, "w_def": 0.05},
+        "caution_mrs_20_50": {"w_core": 0.80, "w_def": 0.20},
+        "crisis_mrs_ge_50": {"w_core": 0.60, "w_def": 0.40},
+        "rationale": "v2 유지, selection invariant"
+      },
+      "overlay_spec": "유지 (Layer 3 inverse ETF + cash). 단 SLOT_D 비교를 위한 baseline.",
+      "expected_effect": {
+        "def_sleeve_contribution_cagr_pp": "0.3pp → 2~5pp (L-143 재현 회피 목표)",
+        "overlay_dependency_gap": "0.225 → 0.15 이하 (Role honesty 확보)",
+        "primary_grade": "A_conditional → A (Role Misalignment 해소)",
+        "base_hrp_grade": "Hard Fail → B 이상 (순수 signal 강화)"
+      },
+      "gate_criteria": {
+        "s5_success_gate": [
+          "Core 15 ∩ Def 5 = 0 (L-484 준수)",
+          "Def sleeve CAGR 기여 ≥ 2pp (L-143 target)",
+          "overlay_dependency_gap < 0.15",
+          "primary Grade ≥ A",
+          "base HRP no-overlay Grade ≥ B"
+        ]
+      },
+      "axiom_compliance": {
+        "AX_001_defense": "H_1682 COND_12 4-gate 충족 시 PASS",
+        "AX_003_value_fail": "PASS — value factor 미사용",
+        "AX_004_v3": "PASS — Q25 distress 단독, profitability 외 axis",
+        "AX_005_v2": "PASS — multi-sleeve exemption scope (STR_1679v3 defense sleeve)"
+      },
+      "l_code_compliance": [
+        "L-143 DIRECT_FIX (Q07+D29 → Q25+R16 교체)",
+        "L-146 DIRECT_FIX (Def sleeve 진짜 기여 ≥ 2pp 목표)",
+        "L-147 DIRECT_FIX (formal S5 slate, 소급 아님)",
+        "L-484 DIRECT_FIX (Core 15 ∩ Def 5 = 0 물리 분리)",
+        "L-557 DIRECT_FIX (sleeve 독립성 확보)"
+      ]
+    },
+
+    "slot_B": {
+      "mutation_id": "STR_1679v3_B_def_replace_foreign_flow",
+      "priority_rank": 2,
+      "mutation_category": "def_sleeve_factor_replacement_alternative",
+      "description": "Def 5 sleeve를 Q07+D29 → H_1685 Foreign-Individual Flow Divergence로 교체. investor_flow family 신규 진입.",
+      "design_rationale": "H_1682 Q25 기반 Slot A와 cross-family 대안. Q25 concentration risk 회피 (H_1682/H_1687/H_1689 Q25 중첩 경고 반영).",
+      "preconditions": [
+        "H_1685 Forge S0 debate APPROVE (debate 대기 중)",
+        "H_1685 S1 Hurdle Grade B 이상",
+        "investor flow parquet 가용성 확인 (Quant debate 필수)",
+        "Slot A 실패 또는 Q25 cap 초과 시 활성화"
+      ],
+      "core_sleeve_spec": {
+        "n": 15,
+        "signal": "C19_Composite_Earnings Top-15 (unchanged)",
+        "method": "unchanged from v2"
+      },
+      "def_sleeve_spec": {
+        "n": 5,
+        "universe": "Core 15 제외 remaining",
+        "composite_formula": "Def_Score = z(foreign_netbuy_intensity_21d) - z(individual_netbuy_intensity_21d)",
+        "z_score_method": "Z_Score_Aligned via compute_investor.R + flow_divergence_21d factor 등록",
+        "data_access": ".cache/investor/investor_{foreign,individual}.parquet",
+        "l484_check": "Core 15 ∩ Def 5 = ∅"
+      },
+      "regime_weight_spec": {
+        "normal_mrs_lt_20": {"w_core": 0.95, "w_def": 0.05},
+        "caution_mrs_20_50": {"w_core": 0.80, "w_def": 0.20},
+        "crisis_mrs_ge_50": {"w_core": 0.60, "w_def": 0.40}
+      },
+      "overlay_spec": "Layer 3 유지 (Slot A baseline 동일)",
+      "expected_effect": {
+        "def_sleeve_contribution_cagr_pp": "2~4pp (flow divergence strong signal)",
+        "cross_channel_diversification": "consensus(C19) + investor_flow 2축 — family 다양화",
+        "stress_regime_vulnerability": "crisis 구간 foreign exodus reversal 리스크 존재 (H_1685 handoff kit에 명시)"
+      },
+      "gate_criteria": {
+        "s5_success_gate": [
+          "Core 15 ∩ Def 5 = 0",
+          "Def sleeve CAGR 기여 ≥ 2pp",
+          "crisis 구간 flow divergence reversal check (2020-03 stress 구간)",
+          "portfolio Q25 exposure 0 (Slot A 대비 concentration 완화)"
+        ]
+      },
+      "axiom_compliance": {
+        "AX_001_defense": "H_1685 stress IC 측정 후 확인",
+        "AX_003_value_fail": "PASS",
+        "AX_004_v3": "PASS",
+        "AX_005_v2": "PASS — multi-sleeve exemption"
+      },
+      "l_code_compliance": ["L-143 FIX", "L-484 FIX", "L-557 FIX", "L-147 FIX"]
+    },
+
+    "slot_C": {
+      "mutation_id": "STR_1679v3_C_core_reoptimization",
+      "priority_rank": 3,
+      "mutation_category": "core_sleeve_reoptimization",
+      "description": "Def sleeve 구조 유지(Slot A Q25+R16) + Core 15 signal 재최적화. C19 단독 → C19 + 추가 signal 또는 IC-weighted dynamic blend.",
+      "design_rationale": "Judge base HRP no-overlay Hard Fail 원인 — Core signal alpha strength 부족 가능성. Core signal 강화로 overlay 의존 완화.",
+      "preconditions": [
+        "Slot A가 Def 기여 2pp 달성하나 primary Grade A 미달 시 활성화",
+        "C19 + M08_Residual_Mom 또는 C19 + H_1676 residual consensus blend 검토"
+      ],
+      "core_sleeve_spec": {
+        "n": 15,
+        "signal_variants": [
+          "variant C1: C19 + M08_Residual_Mom 50/50 blend (Top 15)",
+          "variant C2: C19 + H_1676 residual_consensus 60/40 blend (H_1676 S1 PASS 조건부)",
+          "variant C3: C19 + SE02_Consensus_Revision IC-weighted dynamic (L-111 STR_1631 SYN_05 패턴)"
+        ],
+        "l119_caution": "정적 EW 블렌드 dilution 경계. C2는 H_1676 S1 결과 대기."
+      },
+      "def_sleeve_spec": {
+        "n": 5,
+        "composite_formula": "Slot A 동일 (Q25+R16 0.6/0.4)"
+      },
+      "regime_weight_spec": "v2 유지",
+      "overlay_spec": "Layer 3 유지",
+      "expected_effect": {
+        "core_alpha_enhancement": "C19 단독 ICIR 대비 blended ICIR 향상",
+        "base_hrp_grade": "Hard Fail → B+ (Core signal 강화로 overlay 의존 완화)",
+        "primary_grade": "A 안정화"
+      },
+      "gate_criteria": {
+        "s5_success_gate": [
+          "Core blended ICIR > C19 단독 ICIR (incremental alpha 입증)",
+          "L-119 dilution 없음 확인 (sub-factor contribution 분해)",
+          "Core 15 ∩ Def 5 = 0",
+          "base HRP no-overlay Grade B 이상"
+        ]
+      },
+      "axiom_compliance": {
+        "AX_003_value_fail": "PASS",
+        "AX_004_v3": "PASS",
+        "AX_005_v2": "PASS"
+      },
+      "l_code_compliance": ["L-119 AWARE", "L-111 AWARE", "L-484 FIX", "L-148 FIX"]
+    },
+
+    "slot_D": {
+      "mutation_id": "STR_1679v3_D_overlay_reduction",
+      "priority_rank": 4,
+      "mutation_category": "overlay_dependency_reduction",
+      "description": "Def sleeve Slot A 유지 + Layer 3 overlay 강도 축소. overlay 없이도 Grade 유지 가능한지 검증.",
+      "design_rationale": "Judge 판정: MDD 축소 22.54pp가 전적으로 overlay 기여. STR_1679v2 Role Misalignment의 핵심. overlay 축소로 Core+Def 순수 signal의 진짜 MDD 성능 측정.",
+      "preconditions": [
+        "Slot A Def sleeve 교체 성공 (Q25+R16 CAGR 기여 ≥ 2pp 확정) 후 활성화",
+        "base HRP no-overlay Grade 측정 후 판정"
+      ],
+      "core_sleeve_spec": {
+        "n": 15,
+        "signal": "C19_Composite_Earnings Top-15 (Slot A와 동일)"
+      },
+      "def_sleeve_spec": {
+        "n": 5,
+        "composite_formula": "Q25+R16 0.6/0.4 (Slot A와 동일)"
+      },
+      "regime_weight_spec": "v2 유지 (95/5 → 80/20 → 60/40)",
+      "overlay_variants": [
+        "variant D1: overlay 완전 제거 (pure signal)",
+        "variant D2: Layer 3 완화 (inverse ETF hedge ratio 50%)",
+        "variant D3: Barroso 2015 dynamic volatility scaling만 (inverse ETF 제거, vol target 15%)"
+      ],
+      "expected_effect": {
+        "overlay_dependency_gap": "0.225 → 0.05 이하 (D1 기준)",
+        "mdd_shift": "-29.06% → -35~-45% (overlay 제거 시 예상)",
+        "primary_grade": "A → B (MDD 악화 가능성)",
+        "role_honesty": "Complete — Def sleeve + Core의 순수 기여만 반영"
+      },
+      "gate_criteria": {
+        "s5_success_gate": [
+          "variant D1 Grade ≥ B (순수 signal base)",
+          "overlay_dependency_gap < 0.05 (D1)",
+          "variant D2/D3 primary Grade ≥ A 유지 (부분 overlay)",
+          "Role honesty: Judge 재심사 CONDITIONAL_PASS 이상"
+        ]
+      },
+      "axiom_compliance": {
+        "AX_003_value_fail": "PASS",
+        "AX_004_v3": "PASS",
+        "AX_005_v2": "PASS"
+      },
+      "l_code_compliance": ["L-146 DIRECT_FIX (overlay-driven MDD Core alpha 계상 금지)", "L-148 FIX"]
+    }
+  },
+
+  "slot_execution_strategy": {
+    "phase_1_parallel": ["Slot A (primary)", "Slot C variant C1 (C19+M08)"],
+    "phase_2_conditional": [
+      "Slot B (Slot A failure or Q25 concentration cap 도달 시)",
+      "Slot C variant C2 (H_1676 S1 PASS 후)",
+      "Slot D (Slot A success 후 overlay 독립성 검증)"
+    ],
+    "synthesis_phase": "Phase 5 Cross-Combination — Slot A + Slot D variant D2 (overlay 축소 + Q25+R16) 조합이 최적 예상",
+    "total_mutations_target": "9건+ (Phase 1~3 병렬 + Phase 5 synthesis 포함)",
+    "s5_to_s6_transition_gate": "mutations_attempted >= 9 + f_category_count >= 2 + synthesis_tested = TRUE"
+  },
+
+  "q25_concentration_risk_mitigation": {
+    "portfolio_q25_exposure_tracking": [
+      "STR_1679v3 Slot A: Def 5 × 0.6 Q25 weight = 3 stocks × Q25 60% = 1.8 effective Q25 exposure",
+      "H_1682 standalone admit 시: +7 stocks × Q25 60%",
+      "H_1687 admit 시: +10 stocks × Q25 50%",
+      "H_1689 admit 시: +5 stocks × Q25 25%"
+    ],
+    "governor_cap_recommendation": "PG1 admission 시 Q25 total exposure cap 설정 권고. Scout Slot B (foreign_flow) 대안이 Q25 concentration 회피 경로."
+  },
+
+  "reporting_to_forge_if_activated": {
+    "trigger": "H_1682 S1 PASS + Q-Lead Slot A activation 승인",
+    "todo_path": "qepm/mailbox/forge/inbox/TODO_S5_MUTATION_STR_1679v3_slot_A.json (Scout 작성 예정)",
+    "instructions": [
+      "Slot A 단독 실행 우선 (Slot C variant C1 병렬 선택적)",
+      "4 variants: Slot A / Slot A + D2 (overlay 50%) / Slot A + D3 (Barroso scaling only) / baseline v2",
+      "각 variant hurdle_result.json + FF5 alpha + tail_risk_result.json + Role audit"
+    ],
+    "scout_next_artifact": "stage_artifacts/s5_mutation_record_STR_1679v3.json (Forge 실행 후 산출물 추적)"
+  },
+
+  "scout_notes": [
+    "Task #13 공식 S5 Research Slate — L-147 compliance (소급 아닌 사전 등록)",
+    "Slot A Priority 1: H_1682 APPROVE_CONDITIONAL 확정 후 최우선 경로",
+    "Slot B Priority 2: H_1685 debate 이후 Q25 concentration 대안",
+    "Slot C Priority 3: Core signal 강화 (overlay 의존 완화 간접 경로)",
+    "Slot D Priority 4: Role honesty 최종 완성 (overlay 독립 순수 signal 검증)",
+    "Synthesis: Slot A + D variant D2 가 overlay 50% 축소 + Def 진짜 기여 동시 달성 최적",
+    "Judge L-146/L-147 준수: Def 기여 2pp 목표 + formal slate 사전 등록 + 소급 tracker 아님"
+  ]
+}

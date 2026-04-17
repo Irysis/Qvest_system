@@ -1,0 +1,38 @@
+{
+  "debate_id": "S0_DEBATE_H_1688",
+  "role": "quant",
+  "round": "R1",
+  "score": 13,
+  "rubric_breakdown": {
+    "icir_pass": 4,
+    "internal_corr": 3,
+    "c19_corr": 2,
+    "defense_ic": 1,
+    "data_avail": 3
+  },
+  "score_rationale": "ICIR 예상치와 Factor DB 가용성은 견고하나, C19 상관 실측치 부재 및 bear regime IC 구조적 취약성이 점수를 제한함. R12 방향 이슈는 S1 구현 위험 요소.",
+  "arguments": [
+    "ICIR 예상치 0.35~0.55 (Alpha Lab Gate 통과 가능): 이진철·김동철(2015) 한국재무학회지 실증에서 잔차 momentum monthly IC t-stat 3.0+ 확인 (표준 ICIR 환산 약 0.40). Blitz-Huij-Martens(2011) 글로벌 표본에서 잔차 momentum Sharpe 1.0+로 raw momentum 대비 2배 개선 보고. Factor DB에서 M08_Residual_Mom(CAPM 단일팩터 time-series 잔차)이 이미 구축돼 있으며, H_1688은 이것보다 더 강한 3factor cross-section 잔차화를 적용하므로 M08보다 높은 ICIR이 기대됨. Alpha Lab Gate 기준 ICIR >= 0.20 통과 가능성: 높음(예상 0.40 기준 여유 100%).",
+    "Factor DB 4개 팩터 가용성 확인 — 단 ID 정정 및 R12 방향 이슈 주의 필수: compute_momentum.R 코드 직접 확인 결과, s0_record에 표기된 'M04_Mom_12_1'은 오류이며 실제 12-1 momentum의 Factor DB ID는 M01_Mom_12_1임(M04는 1-month no-skip reversal). s0_record NOTE에 이미 정정 기록되어 있어 Forge S1 시 혼동 위험은 낮음. S01_Size(-log MarketCap), R12_Idiosyncratic_Risk(-sd(CAPM_residuals) 1yr rolling)도 Factor DB 등록 확인. 단 R12 방향 이슈 발생: R12는 음수 방향(낮은 idiovol = 높은 R12)이므로 cross-section OLS 리그레서로 직접 투입 시 idiovol 방향이 반전됨. S1 구현에서 '-R12' 또는 raw 잔차표준편차(+부호) 직접 계산 필요. M08_Residual_Mom은 baseline 병행 측정 대상으로 이미 가용. 24M rolling CAPM beta는 별도 Factor DB 팩터로 미등록이나 compute_momentum.R M08 계산 과정에서 time-series CAPM fit이 수행되므로 cross-section beta proxy 추출 가능.",
+    "C19_Consensus와의 예상 상관 — 실측 부재, 구조적 독립성 근거: STR_1631_SYN_05는 C19 계열 팩터(consensus revision 기반) 중심 전략(SR 1.248, family=defense_ensemble). Momentum은 past 12-1M price return 기반으로 analyst consensus와 기본 mechanism이 상이함. Blitz(2011)에서 잔차 momentum과 analyst revision signal의 상관 낮음 보고(R^2 < 0.10 수준). 한국 Factor DB에서 M01(price momentum)과 C19(composite earnings)의 family 구분이 완전히 다른 compute 함수에서 생성됨. 잔차화로 size exposure까지 제거하면 대형주 consensus 편향도 감소. 예상 상관: 0.10~0.20 범위 추정. 단 이는 추정치이며 S3에서 실측 필수 — Governor Critical Gate rho < 0.25 충족 여부는 실측 전 확정 불가."
+  ],
+  "concern": "가장 큰 구현 위험은 24M rolling CAPM beta의 cross-section 배열 구성 문제임. Factor DB에 'beta_24m' 팩터가 독립적으로 등록되어 있지 않아 S1 구현 시 매월 전 종목의 24M rolling beta를 별도 계산해야 함. compute_momentum.R M08 코드를 보면 CAPM fit은 per-ticker time-series 방식으로 수행되므로 monthly beta 스냅샷 추출 로직을 신규 작성해야 함. 이 과정에서 PIT 위반 위험(same-month beta 사용, C2/C5) 발생 가능. 또한 신규 상장 종목의 24M 미만 beta history 처리(Vasicek shrinkage 또는 market beta=1 대입) 기준 미설정 상태. 두 번째 우려는 bear regime IC: momentum 계열은 구조적으로 momentum crash(2009, 2020) 발생 시 IC가 강하게 음전(L-122 참조), 잔차화 이후에도 this property가 완전히 제거되지 않음 — Barroso(2015)도 dynamic scaling이 필수임을 인정. 순수 EW S1 단계에서 SR은 0.50~0.80 수준으로 낮게 나올 가능성 있으며 Governor 요구 SR >= 1.0은 S5 Barroso scaling 이후 달성 가능 tier임.",
+  "conditions": [
+    "S1 구현 전 beta_24m 계산 방식 명시 필수: per-ticker 24M rolling OLS(CAPM) 매월 수행 후 beta 스냅샷 추출 — 신규상장 24M 미만 종목 처리 기준(Vasicek shrinkage 권장) 코드에 명시. C2 위반 방지를 위해 beta 계산 윈도우는 t-1 월말까지만 사용.",
+    "S2에서 M08_Residual_Mom 대비 ICIR 개선 여부 실측 필수: Factor DB 기구축 M08 단순 CAPM 잔차 누적합과 H_1688 3factor cross-section 잔차의 ICIR 직접 비교 제출. H_1688이 M08보다 ICIR 높지 않으면 기구축 팩터 대비 incremental value 없으므로 설계 재검토 필요.",
+    "S3에서 STR_1631_SYN_05 수익률 상관 실측 필수(Governor Critical Gate): Governor 요구 rho < 0.25 충족 여부는 추정이 아닌 실측으로만 확인 가능. momentum family 특성상 2009/2020 momentum crash 구간에서 STR_1631 대비 동방향 drawdown 발생 시 rho가 예상보다 높아질 수 있음 — regime-conditional 상관 분해 포함 제출."
+  ],
+  "fact_checks_performed": {
+    "M01_vs_M04_id_correction": "CONFIRMED — M01_Mom_12_1이 12-1 momentum. M04_Mom_1은 1개월 reversal. s0_record note에 정정 기록됨.",
+    "M08_Residual_Mom_exists": "CONFIRMED — compute_momentum.R 기구축, CAPM 단일팩터 time-series 잔차 누적합",
+    "S01_Size_exists": "CONFIRMED — compute_size.R S01_Size = -log(MarketCap)",
+    "R12_IdioVol_exists": "CONFIRMED — compute_risk.R R12 = -sd(CAPM_residuals), 방향 주의",
+    "beta_24m_standalone_factor": "NOT FOUND — Factor DB 독립 팩터 미등록. S1에서 별도 계산 필요",
+    "C19_correlation_measured": "NOT AVAILABLE — 실측 없음. 구조적 독립성으로 rho 0.10~0.20 추정",
+    "cross_section_OLS_computation": "LOW BURDEN — 월 1회 OLS(2000 obs × 4 coef), .lm.fit 기준 ~41ms 총계",
+    "STR_1631_SYN_05_ICIR": "PROXY ONLY — S2 artifact에 IC_IR 수치 없음. SR 1.248, Grade A 59.6점 확인",
+    "STR_1656_MLRA_ICIR": "CONFIRMED — ICIR 0.844 (S1-A), 0.8496 (S1-B)"
+  },
+  "created": "2026-04-17",
+  "created_by": "forge_debate_quant_instance_H_1688"
+}

@@ -1,0 +1,122 @@
+{
+  "debate_id": "S0_DEBATE_H_1688",
+  "hypothesis_id": "H_1688",
+  "hypothesis_name": "Residual Momentum Core-Level Alpha",
+  "compiled_at": "2026-04-17",
+  "compiled_by": "forge_debate_compiler",
+  "state": "R1_COMPLETE_AWAITING_R2",
+
+  "r1_scores": {
+    "codex_critic": 8,
+    "risk_manager": 13,
+    "governor": 17,
+    "quant": 13,
+    "academic": 16,
+    "total_r1": 67,
+    "max_possible": 100
+  },
+
+  "debaters": [
+    {
+      "agent_id": "codex_critic_H_1688_R1",
+      "role": "codex_critic",
+      "score": 8,
+      "findings": [
+        "잔차화는 alpha source 신규 추가가 아닌 구현 방식 변경이므로 L-118/L-119/L-146 리스크 경로 재개 가능성 있음",
+        "PIT 구체 프로토콜(real-time universe, T+1 executable, same-day circularity 회피) 미증명 — Q2 PIT Not proven",
+        "DD/vol/regime cutoffs의 full-sample 도출 가능성 우려 — pre-registered + expanding-window 명시 부재",
+        "weakest assumption: beta residualization이 true momentum edge 보존 실패 시 noise-dominated signal, SR <0.2, MDD +12~20%",
+        "STR_1038~1043 대비 mechanism-level 분리 증명 요구 — parameter 변경 수준 아닌 signal source 차별화 필요"
+      ]
+    },
+    {
+      "agent_id": "risk_manager_H_1688_R1",
+      "role": "risk_manager",
+      "score": 13,
+      "findings": [
+        "M01 stress ICIR 2.293은 위기 동시점 방어가 아닌 recovery alpha 포착(skip-1m 구조)이므로 방어력 오해 위험",
+        "4-regime CRISIS IC = -0.005(M01), -0.014(M08): 사실상 0, SLOWDOWN도 음수 — pro-cyclical 구조 확인",
+        "24M rolling beta의 regime-shift lag → conditional beta asymmetry 누출, GFC bear-recovery whipsaw kill scenario",
+        "DCC-GARCH conditional rho: 정상 <0.25 ≠ CRISIS <0.50, L-106/L-115/L-118-ext 3건 교훈 직접 적용",
+        "MRS 63.1 CRISIS 현 편입 타이밍 최악 경고, CDaR 95% <25% S1 gate 조건 설계"
+      ]
+    },
+    {
+      "agent_id": "governor_H_1688_R1",
+      "role": "governor",
+      "score": 17,
+      "findings": [
+        "Hybrid Z3+H_1688 시나리오에서 ρ=0.2 가정 시 blend SR 2.06으로 SR 2.0 목표 초과 달성 — SR 2.0 경로 유일 후보",
+        "momentum_residual 신규 family 편입으로 Herfindahl 0.50→0.27 개선, consensus 45% cap 하에 PASS",
+        "Core_Secondary 15% 편입 시 블렌드 SR 기여 +0.25(ρ=0.2) — H_1683 Seasonality 기여 +0.10 대비 2.5배 우위",
+        "Critical Gate: rho < 0.25 vs STR_1631_SYN_05 실측 PASS 비협상 조건, 위반 시 Core_Secondary → Diversifier 강등",
+        "Core STR_1631 80%→18% 62%p 하향 실행 속도 및 3~4주 개발 리드타임 동안 portfolio 구조 변동 overlap 위험"
+      ]
+    },
+    {
+      "agent_id": "quant_H_1688_R1",
+      "role": "quant",
+      "score": 13,
+      "findings": [
+        "M01_Mom_12_1(12-1 momentum) 가용, M04 표기 오류 정정 확인 — s0_record note에 이미 기록, Forge 혼동 위험 낮음",
+        "M08_Residual_Mom 기구축(CAPM 단일팩터 time-series) vs H_1688(3factor cross-section): S2에서 ICIR 개선 실측 비교 필수",
+        "R12_Idiosyncratic_Risk = -sd(CAPM_residuals): 음수 방향이므로 OLS 리그레서 직접 투입 시 부호 반전 위험 — S1 구현 주의",
+        "beta_24m 독립 Factor DB 미등록 — S1에서 per-ticker 24M rolling CAPM beta 별도 계산 필요, PIT C2 위반 방지 필수",
+        "cross-section OLS 연산량: 월 1회 × 411개월 = .lm.fit 기준 ~41ms 총계, 연산 부담 무시 가능"
+      ]
+    },
+    {
+      "agent_id": "academic_H_1688_R1",
+      "role": "academic",
+      "score": 16,
+      "findings": [
+        "Carhart 1997/JT 1993/Blitz 2011/Barroso 2015/Grundy-Martin 2001 5편 top-tier, peer_review 4/4 충족",
+        "Grundy-Martin 2001 핵심통찰 'raw momentum은 beta/size implicit bet' 정확히 반영, mechanism alignment 4/4",
+        "BM 대신 IdioVol 교체는 L-140(한국 value family 회피) 교훈 기반 합리적 adaptation",
+        "이진철 2015 sample 1990~2013 종료 → 2014~2025 11년 OOS 부재, McLean-Pontiff 2016 post-pub decay 58% 우려",
+        "time_decay 1/4 감점: Blitz 2011 발표 후 14년 경과, global momentum alpha 약화 추세 명백"
+      ]
+    }
+  ],
+
+  "r1_consensus_map": {
+    "strong_support": ["governor"],
+    "conditional_support": ["academic", "quant", "risk_manager"],
+    "skeptical": ["codex_critic"],
+    "convergence_points": [
+      "Factor DB 4개 팩터 가용성 확인 (M01/S01/R12/M08 기구축)",
+      "Barroso 2015 dynamic scaling이 S5 최우선 mutation 필수 — 전원 언급",
+      "S3 rho < 0.25 vs STR_1631 실측 gate가 모든 긍정 조건의 전제",
+      "M08_Residual_Mom 대비 ICIR 개선 실측 비교 필요 (Quant + Academic 공통)"
+    ],
+    "divergence_points": [
+      "alpha novelty 평가: Governor/Academic은 mechanism-level novelty 인정 vs Codex는 구현 방식 변경 수준 회의",
+      "편입 타이밍: Governor는 SR 2.0 경로 유일 후보 강조 vs Risk Manager는 MRS 63.1 CRISIS 최악 타이밍 경고",
+      "beta residualization efficacy: Quant/Academic은 효과 예상 vs Risk Manager는 L-106 long-only beta dominance로 한계 지적"
+    ],
+    "key_kill_scenario": "beta residualization이 noise-dominated 결과 생성(Codex) + conditional tail dependence 누출(Risk Manager) 동시 발생 시 SR <0.2, MDD +20%"
+  },
+
+  "r1_open_questions_for_r2": [
+    "Q1 [Quant→Codex]: M08_Residual_Mom이 Factor DB에 이미 기구축되어 있고 CAPM 단일팩터 잔차임을 확인. H_1688의 3factor cross-section 잔차화가 STR_1038~1043 대비 mechanism-level로 다른 signal source임을 인정하는가?",
+    "Q2 [Academic→Risk Manager]: 이진철 2015 한국 실증(monthly t-stat 3+)이 Blitz 2011 글로벌 표본과 일치하는 evidence임에도, 한국 4-regime CRISIS IC가 -0.014로 측정된 배경이 '위기 이후 recovery'가 포함된 sample 기간 효과인지 아니면 구조적 pro-cyclical 특성인지 — 어느 해석이 우선인가?",
+    "Q3 [Governor→Risk Manager]: MRS 63.1 CRISIS 편입 타이밍 위험을 인정하면서도, 편입을 지연할 경우 SR 2.0 경로 자체가 없어지는 trade-off — Risk Manager는 편입 타이밍보다 signal quality를 우선할 의향이 있는가?",
+    "Q4 [Risk Manager→Codex]: Codex가 요구하는 'mechanism-level separation from STR_1038~1043'에서 cross-section OLS residualization이 time-series momentum blend와 다른 exposure map을 생성하는지 — Quant의 R12 방향 이슈 발견이 PIT 미증명 우려를 부분 해소하는가?",
+    "Q5 [전원]: R12를 OLS 리그레서로 투입 시 방향 반전 이슈(Quant 발견) — S1 구현에서 '-R12' 또는 raw sd(CAPM_residuals) 직접 사용 중 어느 것이 C13 Z_Score_Aligned 원칙에 더 부합하는가?"
+  ],
+
+  "r2_instructions": {
+    "required": [
+      "동의 1건+ 명시 (다른 debater 주장 중 수용하는 것)",
+      "반박 1건+ 명시 (다른 debater 주장 중 거부하는 것)",
+      "R1 점수 수정 시 이유 명시",
+      "최강 반론 지목 (5인 중 자신 의견에 가장 강한 반론 지목)"
+    ],
+    "context": "R1 transcript 전문 위 참조. Q5 R12 방향 이슈 및 M08 baseline 비교는 전원 R2에서 다룰 것."
+  },
+
+  "codex_r2_verify_path": "stage_artifacts/r2_codex_verdict_H_1688.json",
+  "codex_r2_status": "AWAITING (background 실행 중)",
+
+  "next_state": "R2_REBUTTAL"
+}

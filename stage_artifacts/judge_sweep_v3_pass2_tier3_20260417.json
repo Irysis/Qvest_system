@@ -1,0 +1,69 @@
+{
+  "report_type": "JUDGE_SWEEP_V3_PASS2_TIER3_FAIL_FAST",
+  "tier": 3,
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "judge_teammate_run": true,
+  "total": 4,
+  "confirmed_pg2": 1,
+  "archive_legacy": 1,
+  "reject": 2,
+  "strategies": [
+    {"strategy_id": "STR_1631_SYN_05_2002", "grade_v3": "A_PG2_ACTIVE", "primary_status": "PG2 active 80%, Harvey t>3 PASS confirmed"},
+    {"strategy_id": "STR_686", "grade_v3": "ARCHIVE_LEGACY", "primary_reason": "v4.0 superseded + MDD 36.5%"},
+    {"strategy_id": "STR_1469", "grade_v3": "B_REJECT", "primary_reason": "Role masquerade corr 0.899 with C04_ESBR + BASE_DIR missing"},
+    {"strategy_id": "STR_1393", "grade_v3": "REJECT", "primary_reason": "FF5 t=1.81 Harvey FAIL + MDD 35.69% + stress 3/4"}
+  ],
+  "pit_clean_rate": 1.000,
+  "pit_clean_count": 4,
+  "pit_clean_detail": "4/4 top-level run_all.R clean. STR_1631_SYN_05 parent had C1b violation (patched in 2002 variant).",
+  "role_honesty_pass_rate": 0.25,
+  "role_honesty_pass_count": 1,
+  "role_honesty_only_passed": "STR_1631_SYN_05_2002",
+  "dsr_0_5_rate": 1.000,
+  "dsr_0_5_count": 4,
+  "harvey_t3_rate": 0.25,
+  "harvey_t3_count": 1,
+  "harvey_t3_only_passed": "STR_1631_SYN_05_2002 (FF5 t=3.0891)",
+  "re_runnability_pass_rate": 0.50,
+  "re_runnability_pass_count": 2,
+  "re_runnability_detail": "STR_686 + STR_1393 independent engines. STR_1469 BASE_DIR missing. STR_1631_SYN_05_2002 sim_result missing locally.",
+  "n20_compliance_rate": 0.75,
+  "n20_compliance_detail": "STR_1393 single-engine ok. STR_686 2-sleeve (acceptable). STR_1631 PG2 admission presumed <=20. STR_1469 fails (5-sleeve union)."
+  ,
+  "sharpe_gap_contribution": {
+    "estimated_sr_boost": 0.0,
+    "post_blend_sr": 1.266,
+    "remaining_gap_to_2_0": 0.734,
+    "note": "Tier 3 contributes ZERO new SR. STR_1631 already PG2. Other 3 rejected."
+  },
+  "cross_cutting_findings": [
+    {
+      "finding": "v4.0 Judge did NOT enforce Harvey t>3.0 strict gate",
+      "detail": "STR_1393 passed v4.0 Grade A with FF5 t=1.81. v53 strict mode escalation to REJECT. Suggests ~50% of v4.0 Grade A catalog may fail Harvey under re-judge."
+    },
+    {
+      "finding": "Role masquerade pattern (STR_1469)",
+      "detail": "'Novel' wrapper + existing factor as component = still same bet. 25% inclusion of C04_ESBR in a 'new' 4-factor blend. Governor must check max_abs_corr before admission."
+    },
+    {
+      "finding": "Only 1/11 sweep v3 strategies passes Harvey t>3.0",
+      "detail": "STR_1631_SYN_05_2002 is the single strategy meeting Harvey 2016 multi-testing threshold. Tier 1/2/3 combined Harvey pass rate < 10%. SR 2.0 path very narrow."
+    },
+    {
+      "finding": "PIT quantile C1b violation in STR_1631_SYN_05 parent",
+      "detail": "Parent still carries the violation. 2002 bimonthly variant is the patched version that's actually admitted. Parent should be flagged archived."
+    }
+  ],
+  "governor_actions_required": [
+    "STR_1631_SYN_05_2002 PG2 status confirmed — continue 80% allocation.",
+    "STR_1631_SYN_05 (parent) flag archived; do NOT re-admit if it reappears in sweep.",
+    "STR_686 / STR_1469 / STR_1393 exclude from all PG pools.",
+    "No new PG admission from Tier 3."
+  ],
+  "next_steps": [
+    "Tier 2 batch path decision (from prior Judge message) required before further Pass 2 work.",
+    "H_1676/H_1682 S6 (Task #3/#4) primary Judge priority when Forge S1 completes.",
+    "Consider sweep v3 Pass 3: re-scan full 34-strategy catalog with Harvey t>3 strict gate. Expected 3~5 survivors."
+  ]
+}
