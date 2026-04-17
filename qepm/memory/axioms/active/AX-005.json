@@ -1,30 +1,33 @@
 {
-  "schema_version": "v53_ax_p0",
-  "candidate_id": "CAND_20260417_defense_negative_L-136_L-140",
+  "axiom_id": "AX-005",
   "type": "methodological",
   "polarity": "negative",
-  "statement_draft": "[방법론 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL, supporting=2건 L-code. 한국시장 low-beta/Q07+D25 defense standalone의 구조적 실패.",
+  "statement": "[방법론 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL, supporting=2건 L-code. 한국시장 low-beta/Q07+D25 defense standalone의 구조적 실패.",
   "supporting_l_codes": [
     "L-136",
     "L-140"
   ],
-  "scope_draft": {
+  "scope": {
     "market": "KR",
     "factor_family": "defense",
     "regime": null,
-    "construction_types": ["low_beta_standalone", "Q07_D25_combo", "BAB"]
+    "construction_types": [
+      "low_beta_standalone",
+      "Q07_D25_combo",
+      "BAB"
+    ]
   },
-  "evidence_draft": {
+  "evidence": {
     "independent_l_codes": 2,
     "independent_strategies": 2,
     "strategies": [
       "STR_1662_defense_D25_Q07",
       "STR_1642_lowbeta_3f"
     ],
-    "effect_direction_consistency": 1.0,
+    "effect_direction_consistency": 1,
     "note": "2건 모두 Grade C/F. defense 역할 부적합(CAGR 미달) 또는 alpha decay 확인."
   },
-  "falsification_draft": {
+  "falsification": {
     "attempts": [
       {
         "description": "STR_1662 D25(Accounting Beta)+Q07(Earnings Stability) defense — MDD 10.2%는 방어 부합하나 CAGR 2.59%로 실질수익률 거의 없음(기회비용 과대)",
@@ -49,19 +52,31 @@
     ],
     "note": "Supporting L-code 2건 + role_honesty 1건 = 3건 독립 반증. D25/Q07 조합 및 BAB 단독 모두 defense 역할로 부적합."
   },
-  "mechanism_draft": {
+  "mechanism": {
     "economic_explanation": "한국시장 defense 역할로 low-beta/Q07+D25 combo standalone은 두 가지 구조적 이유로 실패한다. (1) Frazzini-Pedersen(2014) BAB 효과가 2020년대 이후 ETF/인덱스 자금 유입으로 고베타 대형주 프리미엄이 강화되어 구조적 약화(STR_1642 OOS retention -0.35). 저베타 종목의 언더퍼폼이 2021~2023 성장주 랠리로 가속화. (2) D25(Accounting Beta)+Q07(Earnings Stability) 조합은 MDD 10.2% 방어 목적 달성하나 CAGR 2.59%로 정상구간 기회비용이 과대 — defense CAGR이 최소 인플레이션(3%)+무위험(2%)=5% 이상이어야 실투용 방어 sleeve로 유효. Q07 단독 crisis ICIR +0.75이지만 D25와 결합 시 방어력-수익성 trade-off가 극단으로 쏠림. 교훈: 팩터 레벨 방어보다 포지션 축소(overlay) + 팩터 블렌드 하이브리드 구조 필요.",
     "mechanism_type": "market_structural",
     "causal_plausibility": "moderate_to_high"
   },
-  "oos_validation_draft": {
+  "oos_validation": {
     "oos_months": 12,
     "oos_effect_vs_is": 0.15,
     "note": "STR_1642 OOS retention -0.35 (완전 소멸), STR_1662 OOS 데이터상 CAGR 2.59% 유지되지만 defense 기능 미달. 보수적 0.15 적용."
   },
-  "cluster_members_count": 2,
-  "status": "pending_5axis",
-  "created_at": "2026-04-17T05:27:45+00:00",
-  "enriched_at": "2026-04-17T14:00:00+00:00",
-  "enriched_by": "judge_auto_after_idle_5x"
+  "promotion": {
+    "source_candidate": "CAND_20260417_defense_negative_L-136_L-140",
+    "weighted_score": 0.887,
+    "threshold": 0.8,
+    "axis_scores": {
+      "independence": 0.75,
+      "rigor": 1,
+      "falsification": 1,
+      "external": 0.5,
+      "mechanism": 1
+    },
+    "promoted_at": "2026-04-17",
+    "next_review": "2026-07-16"
+  },
+  "enforcement": "",
+  "status": "active",
+  "version": 1
 }
