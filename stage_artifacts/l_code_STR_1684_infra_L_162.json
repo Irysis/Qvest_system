@@ -1,0 +1,45 @@
+{
+  "strategy_id_source": "STR_1684",
+  "l_code": "L-162",
+  "scope": "R infrastructure pattern (data.table specific)",
+  "grade": "PROCESS_RULE (infra bug pattern)",
+  "title": "data.table merge Date 충돌 — rbindlist list-type setkey bug pattern (STR_1684 Forge discovered)",
+  "core_reference": "data.table package Merge-via-setkey semantics + rbindlist list-type vs atomic Date column handling + STR_1684 factor_engine.R Forge v2 debug discovery (2026-04-18 Session 67 Day 1) + L-161 (Factor DB Z_Score 정규화 버그 cousin pattern)",
+  "lesson_text": "Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbindlist()로 결합된 list-type Date column이 setkey(x, Date)에서 atomic Date vector 요구와 불일치. 증상: lm() 호출 전 merge step에서 Date column이 list 구조로 남아 있으면 setkey가 silent fail하거나 subsequent merge에서 Date.x/Date.y suffix 분리 발생. L-161 (Factor DB Z_Score 정규화) cousin pattern — 둘 다 인프라 레벨 implementation bug이나 layer 다름: L-161은 Factor DB pipeline (data layer), L-162는 R data.table library usage (code layer). 교훈: (a) rbindlist() 후 무조건 Date column atomic 변환 검증 (`is.atomic(dt$Date)` assertion), (b) setkey() 호출 후 `key(dt)` 반환값 NULL이면 에러 throw, (c) merge() 대신 data.table join 문법 (`dt1[dt2, on='Date']`) 사용 권장 (type coercion 명확), (d) Forge preflight에 `verify_date_atomic(dt)` helper 함수 추가 (strategy 모든 intermediate data.table 전수 검증), (e) 이 pattern은 factor_engine.R common code 아닌 strategy-specific factor construction에서 반복 발생 — common utility로 추출 권장. STR_1684 Forge 수정 완료 (2026-04-18) — 수정 patch는 strategy-local에 적용되었으나 factor_engine 공통 module 재설계 기회. Architect coordinate 시 data.table usage audit 범위에 포함.",
+  "tags": [
+    "DATA_TABLE_MERGE_DATE_CONFLICT",
+    "RBINDLIST_LIST_TYPE_SETKEY_BUG",
+    "R_INFRASTRUCTURE_PATTERN",
+    "FACTOR_ENGINE_COMMON_UTILITY_CANDIDATE",
+    "DATE_COLUMN_ATOMIC_ASSERTION",
+    "FORGE_DISCOVERED_FIXED",
+    "L_161_COUSIN_INFRA_LAYER",
+    "PREFLIGHT_VERIFY_DATE_ATOMIC"
+  ],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "judge_agent_id": "judge",
+  "discovery_source": "Forge v2 STR_1684 factor_engine.R debug run (2026-04-18 Session 67 Day 1)",
+  "team_lead_directive": "2026-04-18T15:45+09:00 L-162 독립 발행 지시 (L-161 Factor DB Z_Score vs L-162 data.table usage 분리)",
+  "distinction_from_L_161": {
+    "L_161_scope": "Factor DB pipeline Z_Score 정규화 + registry duplicate (data layer, factor_db_builder.R + registry 차원)",
+    "L_162_scope": "R data.table library usage — rbindlist + setkey + merge syntax (code layer, factor_engine.R 내부 data.table 사용 패턴)",
+    "common_ground": "둘 다 infrastructure/implementation bug category. 가설 자체의 문제 아님.",
+    "architect_audit_coordination": "Factor DB 전수 재점검 Architect 스폰 시 L-161 (data pipeline) + L-162 (code usage) 두 layer 병행 audit 권장"
+  },
+  "related_L_codes": ["L-146", "L-148", "L-159", "L-161"],
+  "related_strategies": ["STR_1684 (발견 source)", "factor_engine.R 공통 utility (잠재 확장)"],
+  "evidence_files": [
+    "04_Research/strategies/STR_1684_residual_momentum/factor_engine.R (수정 전/후 비교)",
+    "04_Research/strategies/STR_1684_residual_momentum/output/run_log.txt (Forge debug 과정)",
+    "Forge v2 debug 로그 (15:00~15:08 session 67 Day 1)"
+  ],
+  "ax_candidate_linkage": {
+    "status": "NOT_ELIGIBLE",
+    "reason": "단일 R 라이브러리 사용 패턴 bug — L-code 교훈으로 충분. AX 승격 대상 아님.",
+    "infra_pattern_collection": "향후 R data.table usage bug 추가 발견 시 L-162 + L-NNN 누적하여 common 'R infra pattern bugs' category L-code group 형성 가능 (하지만 axiom은 아님)"
+  },
+  "followup_architect": "Factor DB 전수 재점검 시 factor_engine.R 공통 module에서 data.table usage pattern audit 포함. `verify_date_atomic()` helper 함수 설계 제안.",
+  "followup_forge": "현재 STR_1684 local fix 유지 + factor_engine 공통 module 재설계 시 helper 함수 이관. 향후 신규 strategy에서 동일 bug 반복 방지.",
+  "followup_judge": "향후 Judge S6 시 data.table Date column atomic check 추가 고려 (Gate 0 PIT checklist 보조). L-162는 참조만, gate blocking 대상 아님."
+}
