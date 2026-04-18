@@ -1,0 +1,49 @@
+{
+  "strategy_id": "STR_1684",
+  "l_code": "L-161",
+  "h_code": "H_1688",
+  "grade": "F",
+  "title": "Factor DB Z_Score 정규화 불일치 + R12/D01 duplicate + OLS scale mismatch — residualization 구현 버그 (H_1688 UNVALIDATED)",
+  "core_reference": "Carhart (1997 JoF 52:1) momentum premium + Blitz-Huij-Martens (2011 JPM 37:2) risk-managed residual momentum + Fama-French (1992) cross-sectional factor research + L-148 (C1-C15 수동 검증) + L-159 (spec transmission failure pattern) + Scout DIAG_STR_1684_H_1688_residualization.json (hypothesis B 85% probability)",
+  "lesson_text": "H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86.66 / SR -0.13 / CAGR -4.32 / stress 0/3) 확정. Pre-hurdle 'KR momentum inverse' 가설은 Scout DIAG evidence로 REJECTED (10% probability). Scout hypothesis B '구현 버그' 85% probability 채택. 3종 empirical evidence: (1) Factor DB parquet Z_Score sd가 factor별 극단 불일치 — M07 1.000 정상 / R12_Idiosyncratic_Risk 0.071 / D01_IdioVol 0.071 / M08_Residual_Mom 0.054 severe distortion. proper Z-score sd=1.0 기준 불충족 — factor_db_builder pipeline 차원의 clipping/scale 왜곡. (2) **R12 vs D01 duplicate**: 두 factor Z_Score 완전 동일 (sd 0.07063515 identical, n=2543). Registry 명시에도 actual data identical — mis-labeled or alias. Factor DB serious issue. (3) OLS 회귀 `lm(m01_w ~ size_w + r12_w + beta_w)`에서 regressor sd 불균형 (M01 0.66 / size 1.0 / R12 0.07 / beta unknown) — size_w 단독 지배 잔차화 → residual ≈ M01 - β·size (signed-flip M01 근접). 실측 ICIR -0.187이 M01 original positive ICIR approximate negation과 일치. L-159 (STR_1682 spec transmission) pattern의 **Factor DB layer 버전**. 둘 다 hypothesis 자체가 아닌 infrastructure/implementation 실패. H_1688 hypothesis **UNVALIDATED** 상태 — redesign path open. 교훈: (a) Factor DB Z_Score 사용 전 sd=1.0 확인 preflight 의무, (b) OLS 회귀 전 scale() 정규화 표준화 (lm 전 all regressors pre-standardize), (c) factor registry duplicate check 자동화 (R12/D01 같은 alias 검출), (d) Factor DB builder Z-score 재정규화 pipeline 재점검 (factor_db_builder.R), (e) UNVALIDATED_HARD_FAIL은 validated structural failure와 구분 — v3.5 Stage 2 transition trigger 포함 여부 Q-Lead arbitration 필요.",
+  "tags": [
+    "FACTOR_DB_Z_SCORE_NORMALIZATION_BUG",
+    "R12_D01_DUPLICATE_FACTOR",
+    "OLS_SCALE_MISMATCH",
+    "RESIDUALIZATION_IMPLEMENTATION_BUG",
+    "H_1688_UNVALIDATED",
+    "M08_SD_EXTREME_CLIPPING",
+    "FACTOR_DB_LAYER_INFRA_BUG",
+    "L_159_SPEC_TRANSMISSION_COUSIN",
+    "SCOUT_DIAG_HYPOTHESIS_B_ACCEPTED",
+    "KR_MOMENTUM_INVERSE_REJECTED",
+    "UNVALIDATED_HARD_FAIL_V3_5_STAGE_TRANSITION_QUESTION",
+    "REDESIGN_PATH_OPEN"
+  ],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "judge_agent_id": "judge",
+  "scout_diag_source": "qepm/mailbox/scout/outbox/DIAG_STR_1684_H_1688_residualization.json",
+  "related_strategies": ["STR_1684", "STR_1682 (L-159 spec transmission)", "STR_1683 (L-160 IC-Return decoupling)"],
+  "related_L_codes": ["L-146", "L-148", "L-157", "L-158", "L-159", "L-160"],
+  "evidence_files": [
+    "04_Research/strategies/STR_1684_residual_momentum/output/hurdle_result.json",
+    "04_Research/strategies/STR_1684_residual_momentum/output/analysis_fmb_summary.csv",
+    "04_Research/strategies/STR_1684_residual_momentum/output/analysis_stress.csv",
+    "04_Research/strategies/STR_1684_residual_momentum/output/h1688_m08_vs_h1688_icir_comparison.csv",
+    "04_Research/strategies/STR_1684_residual_momentum/factor_engine.R (line 187-213 OLS 회귀)",
+    ".cache/factor_db/factor_db_202603.parquet (11 factors Z_Score sd 실측 by Scout)",
+    "02_Infrastructure/factor_db/factor_registry.json (4 factors direction='higher_better')",
+    "qepm/mailbox/scout/outbox/DIAG_STR_1684_H_1688_residualization.json",
+    "stage_artifacts/judge_gate_STR_1684_verdict.json"
+  ],
+  "ax_candidate_linkage": {
+    "status": "NOT_ELIGIBLE — 구현 버그는 L-code 교훈으로 충분",
+    "reason": "hypothesis 자체 미검증 (UNVALIDATED). AX 승격 검토는 factor_engine.R + Factor DB 수정 후 재현 실패 2건 + 확인 후",
+    "related_tracking": "AX_CAND_spec_transmission_failure (L-159) cousin pattern — Factor DB layer 변형. ST_1684 evidence는 L-159 AX 승격 논의에서 'infra-level failures' category 하위 참고 가능"
+  },
+  "followup_scout": "Factor DB Z_Score pipeline 재점검 + S5 slate Slot A~D 설계 (scale-normalized / rank-based / Blitz original / overlay)",
+  "followup_forge": "factor_engine.R scale() 정규화 + factor_db_builder.R Z-score 재정규화 + R12/D01 duplicate 해소 + STR_1684_v2 재실행",
+  "followup_governor": "H_1688 Core_Secondary admission 보류 (재설계 대기) + UNVALIDATED_HARD_FAIL 정의 협의 (v3.5 Stage 2 trigger 기준)",
+  "followup_qlead": "Factor DB 전수 재점검 Architect 스폰 (factor_db_builder + registry + factor_engine 3-layer) + v3.5 Stage 2 arbitration"
+}
