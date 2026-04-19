@@ -1,0 +1,139 @@
+{
+  "hypothesis_id": "H_STR_1661_ML",
+  "hypothesis_name": "XGBoost_GPU_Residual_Momentum_ML_Predictive",
+  "factor_id": "STR_1661_XGB_GPU_V2",
+  "strategy_id": "STR_1661",
+  "schema_version": "v55",
+  "consensus_mode": true,
+  "verdict_timestamp": "2026-04-19T12:05:00Z",
+  "designer": "E2E_Run_C_STR_1661_ml_empirical_first",
+  "trail": "ml_empirical_first",
+  "expected_role": "ml_predictive",
+  "notes": "V55 Run C: ml_empirical_first trail 검증. Codex '논문 없음' flag 제외 확인. S0 학술 허들 완화, S1 empirical 검증 강화(SR_OOS/SR_IS>0.70, feature concentration<0.4, holdout 12M+).",
+  "debaters": [
+    {
+      "agent_id": "academic_20260419_str1661",
+      "role": "academic",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "XGBoost 기반 residual momentum은 전통 학술 문헌(Jegadeesh & Titman 1993) 대비 새 방법론. 학술 선행 부족"
+      ],
+      "supporting_arguments": [
+        "trail=ml_empirical_first이므로 학술 허들 완화 (v55 Scout rule) 적용",
+        "Gu, Kelly, Xiu (2020) 'Empirical Asset Pricing via Machine Learning' 등 ML 근거 축적",
+        "Residual momentum 자체는 Blitz-Huij-Martens (2011) 기반 — 메커니즘 확실"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": []
+    },
+    {
+      "agent_id": "risk_manager_20260419_str1661",
+      "role": "risk_manager",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "ML 모델의 regime shift 시 extrapolation risk",
+        "Feature concentration risk (몇 개 feature 지배 가능성)"
+      ],
+      "supporting_arguments": [
+        "기존 Judge S1 PASS_WITH_NOTES / ICIR 1.029 실측치",
+        "Walk-forward expanding window 구조로 lookahead 회피",
+        "EVT/GPD tail risk 측정 가능 (ml_overfitting_monitor)"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": [
+        "SR_OOS_IS_ratio_check_min_0.70",
+        "feature_concentration_max_0.4",
+        "holdout_12M_strict_split"
+      ]
+    },
+    {
+      "agent_id": "quant_20260419_str1661",
+      "role": "quant",
+      "stance": "APPROVE",
+      "critical_concerns": [],
+      "supporting_arguments": [
+        "ICIR 1.029 (기존 Judge S1 PASS_WITH_NOTES 검증)",
+        "L-123 ML Guard 준수 (MI prefilter 50 + daily chunk + walk-forward)",
+        "Factor DB load_month_factors() 경유 (C15 준수)",
+        "PIT 설계 견고 — expanding window"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": ["FDR_multiple_testing_correction"]
+    },
+    {
+      "agent_id": "governor_20260419_str1661",
+      "role": "governor",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "ml_predictive role은 PG2 5-sleeve 중 5번째 (신규 role). 독립 alpha 검증 필요"
+      ],
+      "supporting_arguments": [
+        "expected_role=ml_predictive 명시 (v55 신규 role)",
+        "trail=ml_empirical_first 정합",
+        "SR 0.807 gap 중 SR 축 직접 대응 (ICIR 1.029 예상)",
+        "기존 STR_1656_MLRA_M05 (diversifier)와 독립 — 다른 ML 기법(XGBoost vs MLRA)"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": [
+        "pairwise_TDC_vs_STR_1656_MLRA",
+        "pairwise_TDC_vs_STR_1631_SYN_05"
+      ]
+    },
+    {
+      "agent_id": "codex_critic_20260419_str1661",
+      "role": "codex_critic",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "ML 모델 해석성 부족 (black-box residual momentum)",
+        "Post-publication decay risk (ML alpha 발표 후 소멸 이력)"
+      ],
+      "supporting_arguments": [
+        "v55 ml_empirical_first trail: 논문 부재 flag 제외 (Codex 논문 없음 flag 제거 확인)",
+        "Cross-model 관점: GPT-5.4는 XGBoost gradient boosting의 overfitting tendency 인정",
+        "Kill scenario: feature decay over 36M monitoring 필요"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": [
+        "walk_forward_36M_stability",
+        "feature_importance_decay_monitoring",
+        "post_pub_alpha_decay_test",
+        "beta_t_stability_across_regimes"
+      ]
+    }
+  ],
+  "consensus_points": [
+    "ml_empirical_first trail 학술 허들 완화 적용",
+    "Codex '논문 없음' flag 제외 작동 (v55 규칙)",
+    "기존 Judge S1 PASS_WITH_NOTES / ICIR 1.029 실측치 지지",
+    "L-123 ML Guard 준수 (MI prefilter + daily chunk + walk-forward)",
+    "PIT 설계 견고 (expanding window + t-1 lag)"
+  ],
+  "unresolved_disputes": [
+    "SR_OOS_IS_ratio_check_min_0.70 (S1 gate)",
+    "feature_concentration_max_0.4 (S1 gate)",
+    "holdout_12M_strict_split (S1 gate)",
+    "FDR_multiple_testing_correction (S1)",
+    "pairwise_TDC_vs_STR_1656_MLRA (S1)",
+    "pairwise_TDC_vs_STR_1631_SYN_05 (S1)",
+    "walk_forward_36M_stability (S1)",
+    "feature_importance_decay_monitoring (S1/S2 ongoing)",
+    "post_pub_alpha_decay_test (S6)",
+    "beta_t_stability_across_regimes (S1)"
+  ],
+  "aggregated_stances": {
+    "APPROVE": 1,
+    "APPROVE_CONDITIONAL": 4,
+    "REVISE": 0,
+    "REJECT": 0,
+    "veto_count_effective": 0,
+    "expected_verdict_by_router": "APPROVE_CONDITIONAL"
+  },
+  "v55_ml_trail_validation": {
+    "trail": "ml_empirical_first",
+    "academic_hurdle_relaxed": true,
+    "codex_paper_absence_flag_excluded": true,
+    "s1_empirical_gate_strengthened": true,
+    "s1_gate_items_count": 10,
+    "codex_stance": "APPROVE_CONDITIONAL (not REVISE despite limited academic precedent)"
+  }
+}

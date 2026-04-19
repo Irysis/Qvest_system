@@ -1,9 +1,13 @@
 ---
 name: s0-debate
-description: "S0 3-Round Structured Debate. R1 Opening → R2 Rebuttal → R3 Closing. 5인×20점=100. Hook 상태 머신 강제. 텔레그램 실시간 중계."
+description: "S0 3-Round Structured Debate. R1 Opening → R2 Rebuttal → R3 Closing. v55 Consensus 기반(stance/veto/unresolved). Hook 상태 머신 강제. 텔레그램 실시간 중계."
 ---
 
-## S0 3-Round Structured Debate Protocol (v52)
+## S0 3-Round Structured Debate Protocol (v55 Consensus)
+
+> **v55 변경사항** (2026-04-19): 점수제(20×5=100) → Consensus(stance/veto) 전환.
+> **필수 읽기**: `00_Lawbook/v55_consensus_addendum.md`
+> **핵심**: R1/R2 출력은 `score` 대신 `stance` + `critical_concerns` + `supporting_arguments` + `veto_flag`. Codex는 `s1_gate_items`로 empirical gate 이동. R3는 router가 자동 집계.
 
 Q-Lead가 이 skill을 호출하면 Scout 가설 설계 → 5인 3라운드 토론 → 판정 체인이 실행됩니다.
 **모든 라운드 전이는 `s0_debate_enforcer.sh` Hook이 기계적으로 강제합니다.**
@@ -63,7 +67,11 @@ Claude Agent × 4 (병렬):
 3. Quant (forge 타입):
    "S0 Debate R1. 가설: [Scout plan 내용].
     역할: quant. ICIR/상관/데이터 가용성 팩트체크. R 코드 실행 가능.
-    출력: stage_artifacts/s0_debate_r1_quant_{H_ID}.json"
+    v54 추가: kr_empirical_check 필수 — methodology_memory.md에서 가설 family의
+    VALIDATED_HARD_FAIL L-code 검색 + conditional_ic_matrix.csv에서 KR IC sign/hit rate 확인.
+    hard_fail_match 발견 시 kr_empirical_check='hard_fail_match' 태깅 (total -10 penalty 트리거).
+    출력: stage_artifacts/s0_debate_r1_quant_{H_ID}.json
+    출력 스키마에 kr_empirical_check 필드 추가: 'hard_fail_match'|'partial'|'confirmed'|'no_data'"
 
 4. Academic (scout 타입):
    "S0 Debate R1. 가설: [Scout plan 내용].
@@ -77,21 +85,42 @@ Codex Critic × 1 (Bash 직접 호출):
   → stage_artifacts/s0_debate_r1_codex_critic_{H_ID}.json으로 저장
 ```
 
-### R1 출력 스키마 (enforcer가 강제)
+### R1 출력 스키마 (v55 Consensus)
 
 ```json
 {
   "role": "risk_manager",
-  "score": 14,
-  "arguments": [
+  "stance": "APPROVE_CONDITIONAL",
+  "critical_concerns": [
+    "장기 횡보장(2014-2016)에서 방어 팩터 기회비용이 연 2-3%p"
+  ],
+  "supporting_arguments": [
     "D25 tail beta가 6대 위기 구간에서 IC 0.185로 방어력 실증",
     "CR05와 상관 0.15 이하 — 독립 신호원 확보",
     "평상시 IC ≈ 0 → drag 최소화 구조"
   ],
-  "concern": "장기 횡보장(2014-2016)에서 방어 팩터 기회비용이 연 2-3%p",
-  "conditions": ["S1에서 beta < 0.85 확인 필수"]
+  "veto_flag": null,
+  "s1_gate_items": ["S1에서 beta < 0.85 확인 필수"]
 }
 ```
+
+**필드 정의** (v55):
+- `stance`: `APPROVE` | `APPROVE_CONDITIONAL` | `REVISE` | `REJECT`
+- `critical_concerns`: 재설계 필요한 핵심 문제 (빈 배열 가능)
+- `supporting_arguments`: 지지 근거 (빈 배열 가능)
+- `veto_flag`: null 또는 도메인별 (아래 매트릭스 참조)
+- `s1_gate_items`: S1에서 실측 필요한 empirical 항목 (Codex는 empirical을 **반드시** 여기로)
+
+**Veto 도메인 매트릭스**:
+| Debater | veto_flag 가능 값 |
+|---------|------------------|
+| Risk Manager | `tail_risk` |
+| Academic | `mechanism` |
+| Quant | `PIT` / `kr_empirical_hard_fail` |
+| Governor | `admission_rule` / `gap_misaligned` |
+| Codex | **없음** (flag만 제시, veto 집계 제외) |
+
+**하위호환 (일시 허용)**: 구형 `score(0-20)` + `arguments[]` + `concern` 필드도 artifact_validator가 허용하되 v55 경고 로그 발생. 신규 작성은 v55 스키마 필수.
 
 **enforcer 강제 사항:**
 - `arguments` 정확히 3건 (!=3 → block)
@@ -223,12 +252,25 @@ Q-Lead가 최종 합산 + 토론 기록 보존.
 ```
 total = sum of final scores (5×20 = 100)
 
+# ─── v54 KR-Inverse Penalty (S0 칼리브레이션) ───
+# 가설 family가 VALIDATED_HARD_FAIL L-code(L-160/L-161/L-154 등)와
+# 동일 family + 동일 방향이면 total -= 10 (절대 적용, 점수 보정 후 판정)
+# 예: momentum family 가설인데 L-161 KR momentum inverse VALIDATED_HARD_FAIL → -10
+# 적용 조건: debaters 중 quant role의 kr_empirical_check == "hard_fail_match"
+
 if (risk_manager.final <= 4 || quant.final <= 4) → REJECT (특수 규칙)
 else if (total >= 75) → APPROVE
-else if (total >= 60) → APPROVE_CONDITIONAL (조건 명시)
+else if (total >= 70) → APPROVE_CONDITIONAL (조건 명시)  # v54: 60→70 상향
+else if (total >= 60) → BORDERLINE_REVISE (v54 신설: 60-69 borderline, 재설계 + 보강 요구)
 else if (total >= 40) → REVISE (Scout에 피드백 → Phase 1 복귀)
 else → REJECT (가설 폐기)
 ```
+
+**v54 BORDERLINE_REVISE (60-69점):**
+- APPROVE_CONDITIONAL과 REVISE 사이 신설 구간
+- Scout에게 구체적 피드백 전달: 어떤 role이 감점했고 무엇을 보강해야 하는지
+- 동일 가설 BORDERLINE 2회 연속 시 REJECT 전환 권고
+- `s0_verdict_router.sh`가 이 범위를 탐지하여 라우팅
 
 ### S0_VERDICT 스키마 (enforcer가 강제)
 
@@ -282,8 +324,31 @@ REJECT → 폐기 로그 + 새 가설 탐색
 **Risk Manager:** tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4)
 **Governor:** gap_alignment(4) + role_match(4) + family_saturation(4) + marginal_contribution(4) + implementation_feasibility(4)
 **Codex Critic:** l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4)
-**Quant:** icir_pass(4) + internal_corr(4) + c19_corr(4) + defense_ic(4) + data_avail(4)
+**Quant (v54 확장):** icir_pass(3) + internal_corr(3) + c19_corr(3) + defense_ic(3) + data_avail(4) + **kr_empirical_check(4)** = ceiling 20
 **Academic:** peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4)
+
+### v54 Quant kr_empirical_check 채점 기준 (4점 만점)
+
+| 점수 | 조건 |
+|------|------|
+| **-10 (penalty)** | 가설 메커니즘이 VALIDATED_HARD_FAIL L-code(L-160/L-161/L-154 등)와 **동일 family + 동일 방향**으로 직접 상충. KR-Inverse Penalty Rule 적용. `kr_empirical_check: "hard_fail_match"` 태깅 → total에서 -10 절대 차감 |
+| **0** | 가설 family가 VALIDATED_HARD_FAIL과 동일하나 방향은 다름 (예: momentum inverse L-code가 있는데 reversal 가설). 충돌 가능성 있으나 penalty 미적용 |
+| **+2** | KR 10년+ IC sign이 가설 방향과 일치하나 Hit Rate < 55%. 또는 부분적 실증만 존재 |
+| **+4** | KR 10년+ IC sign 일치 + Hit Rate >= 55%. 한국시장 실증 완전 확인 |
+
+**채점 절차:**
+1. `methodology_memory.md`에서 가설 family 관련 VALIDATED_HARD_FAIL L-code 검색
+2. 해당 L-code의 tags에 family명 포함 여부 확인
+3. `.cache/conditional_ic_matrix.csv`에서 가설 factor의 KR IC sign + hit rate 조회
+4. **hard_fail_match 판정 시**: Quant score에 4점 정상 채점 후, **total 합산 단계에서 -10 별도 차감** (Quant 개인 score는 0-20 범위 유지)
+
+**VALIDATED_HARD_FAIL L-code 참조 목록 (v54 기준):**
+- L-160: Defense IC-Return decoupling (family: defense)
+- L-161: KR momentum inverse (family: momentum)
+- L-154: Low-beta BAB standalone fail (family: defense)
+- L-132/L-135: Value EP standalone fail (family: value, AX-003)
+- L-133/L-134/L-139: Quality profitability standalone fail (family: quality_profitability, AX-004)
+- L-136/L-140: Defense low-beta/Q07+D25 fail (family: defense, AX-005)
 
 ---
 

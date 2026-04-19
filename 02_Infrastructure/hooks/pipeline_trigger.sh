@@ -148,13 +148,47 @@ scan_and_trigger() {
     if [ "$role" = "defense" ]; then
       # Defense: 항상 S5 mutation (방어 구조 강화 우선)
       target="$MAILBOX/forge/inbox/TODO_S5_EXEC_${strategy}.json"
-      # role_label을 DONE_S4 파일에 주입
       python3 -c "
 import json
 with open('$f') as fp: d = json.load(fp)
 d['role_label'] = 'defense'
 with open('$f', 'w') as fp: json.dump(d, fp, indent=2)
 " 2>/dev/null
+    elif [ "$role" = "cash_allocation" ]; then
+      # v55 Cash sleeve: S5 skip, PG2 allocation 직행 (팩터 아님, 배분 결정)
+      target="$MAILBOX/governor/inbox/TODO_PG2_CASH_SLEEVE_${strategy}.json"
+      python3 -c "
+import json
+with open('$f') as fp: d = json.load(fp)
+d['role_label'] = 'cash_allocation'
+d['v55_trail'] = 'standard'
+d['admission_rule'] = 'v3.5.2 §1.4'
+with open('$f', 'w') as fp: json.dump(d, fp, indent=2)
+" 2>/dev/null
+      echo "$(date +%H:%M:%S) TRIGGER v55: $strategy cash_allocation → TODO_PG2_CASH_SLEEVE (S5 skip)" >> "$LOG"
+    elif [ "$role" = "regime_adaptive" ]; then
+      # v55 Regime Adaptive: S5 mutation 필요 (switching_alpha + transition_cost 검증)
+      target="$MAILBOX/forge/inbox/TODO_S5_EXEC_${strategy}.json"
+      python3 -c "
+import json
+with open('$f') as fp: d = json.load(fp)
+d['role_label'] = 'regime_adaptive'
+d['v55_gate_items'] = ['switching_alpha>0.10', 'transition_cost<50bps', 'stability_36M>=0.60']
+with open('$f', 'w') as fp: json.dump(d, fp, indent=2)
+" 2>/dev/null
+      echo "$(date +%H:%M:%S) TRIGGER v55: $strategy regime_adaptive → TODO_S5_EXEC" >> "$LOG"
+    elif [ "$role" = "ml_predictive" ]; then
+      # v55 ML Predictive: empirical-first gate 강화 (SR_OOS/IS + feature concentration + holdout)
+      target="$MAILBOX/forge/inbox/TODO_S5_EXEC_${strategy}.json"
+      python3 -c "
+import json
+with open('$f') as fp: d = json.load(fp)
+d['role_label'] = 'ml_predictive'
+d['v55_trail'] = 'ml_empirical_first'
+d['v55_gate_items'] = ['SR_OOS_IS>=0.70', 'feature_concentration<0.4', 'holdout_12M_strict']
+with open('$f', 'w') as fp: json.dump(d, fp, indent=2)
+" 2>/dev/null
+      echo "$(date +%H:%M:%S) TRIGGER v55: $strategy ml_predictive → TODO_S5_EXEC (empirical-first)" >> "$LOG"
     elif [ "$kospi_beat" = "True" ]; then
       # Core/Diversifier이고 KOSPI beat → S6 직행
       target="$MAILBOX/judge/inbox/TODO_S6_${strategy}.json"

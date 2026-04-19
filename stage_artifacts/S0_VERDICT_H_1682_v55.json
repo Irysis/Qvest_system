@@ -1,0 +1,120 @@
+{
+  "hypothesis_id": "H_1682",
+  "hypothesis_name": "Distress_Calmar_Cross_Family_Defense",
+  "factor_id": "Q25_Ohlson_plus_R16_Calmar",
+  "strategy_id": "H_1682_pending",
+  "schema_version": "v55",
+  "consensus_mode": true,
+  "verdict_timestamp": "2026-04-19T12:00:00Z",
+  "designer": "E2E_Run_B_H_1682_reevaluation",
+  "notes": "V54 APPROVE_CONDITIONAL 71/100 → V55 Consensus 재평가. stance 기반 판정. Codex empirical gate는 unresolved_disputes로 이동.",
+  "debaters": [
+    {
+      "agent_id": "academic_20260419_h1682",
+      "role": "academic",
+      "stance": "APPROVE",
+      "critical_concerns": [],
+      "supporting_arguments": [
+        "Ohlson (1980) O-score 기반 distress 팩터는 수익률 측면에서 견고한 학술 근거 보유",
+        "Chekhlov et al. (2005) CDaR / Calmar 조합은 drawdown 관리에 이론적 뒷받침",
+        "Campbell-Hilscher-Szilagyi (2008) distress anomaly — KR 실증에서도 stress regime에서 alpha 0.659"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": []
+    },
+    {
+      "agent_id": "risk_manager_20260419_h1682",
+      "role": "risk_manager",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "Q25 + R16 cross-family 조합의 tail correlation 실측 필요 (STR_1071 대비 TDC 예상 0.39)"
+      ],
+      "supporting_arguments": [
+        "Stress IC: Q25 0.659 + R16 2.655 (양측 강력한 방어력)",
+        "Core alpha 대비 independence — PG2 admission에서 diversification 기여",
+        "EVT/GPD 기반 tail risk 검증 가능"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": ["tail_dependence_pairwise_TDC_vs_core", "EVT_GPD_tail_fit"]
+    },
+    {
+      "agent_id": "quant_20260419_h1682",
+      "role": "quant",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "ICIR 하락폭 예측 필요 (STR_1679v2 vs STR_1682 비교)",
+        "FM weight 산정 시 same-day circular 방지 (C8 준수 확인)"
+      ],
+      "supporting_arguments": [
+        "Z_Score_Aligned 정합성 확인 (C13 준수)",
+        "Factor DB load_month_factors() 경로 사용 (C15 준수)",
+        "PIT 설계 견고 — expanding window + t-1 lag 명시"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": ["ICIR_recent_3y_vs_full_sample", "FM_weight_lag_verification"]
+    },
+    {
+      "agent_id": "governor_20260419_h1682",
+      "role": "governor",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "Defense sleeve 공석 상태에서 STR_1679v2 DROP 이후 유일한 Defense 후보 — 편입 후 포트폴리오 role balance 재점검 필요"
+      ],
+      "supporting_arguments": [
+        "expected_role=defense 명시. SR 0.807 gap 4축 중 MDD_regime/SR 직접 대응",
+        "AX-005 구조적 실패 패턴 회피 (cross-family Q25+R16, standalone BAB 아님)",
+        "AX-001 v2 적합: crisis_alpha 기대치 positive, bad/normal IC ratio 추정 0.75+"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": ["pairwise_TDC_vs_STR_1631_STR_1656"]
+    },
+    {
+      "agent_id": "codex_critic_20260419_h1682",
+      "role": "codex_critic",
+      "stance": "APPROVE_CONDITIONAL",
+      "critical_concerns": [
+        "Cross-family factor blending 시 동적 가중의 regime transition cost 고려 필요"
+      ],
+      "supporting_arguments": [
+        "학술 근거 6편 — Ohlson 1980, Campbell 2008, Chekhlov 2005 등 견고",
+        "Cross-model PIT 검토: expanding window + t-1 lag 설계 OK",
+        "Kill scenario 회피: BAB 2020년대 ETF 유입 약화 문제 우회 (Q25+R16는 다른 메커니즘)"
+      ],
+      "veto_flag": null,
+      "s1_gate_items": [
+        "walk_forward_stability_over_36M",
+        "IC_to_Return_coupling_empirical_test",
+        "beta_t_stability_over_regimes",
+        "FDR_multiple_testing_correction"
+      ]
+    }
+  ],
+  "consensus_points": [
+    "학술 근거 견고 (Ohlson 1980, Campbell 2008, Chekhlov 2005)",
+    "Cross-family 설계로 AX-005 standalone 실패 회피",
+    "PIT 설계 견고 (expanding window + t-1 lag)",
+    "Defense gap 직접 대응 (SR 0.807 gap 중 MDD_regime 축)"
+  ],
+  "unresolved_disputes": [
+    "pairwise_TDC_vs_core (S1 실측 필요)",
+    "walk_forward_stability_over_36M (S1 empirical gate)",
+    "IC_to_Return_coupling_empirical_test (S1 실측)",
+    "beta_t_stability_over_regimes (S1 실측)",
+    "FDR_multiple_testing_correction (S1)",
+    "EVT_GPD_tail_fit (S2 risk profiling)",
+    "FM_weight_lag_verification (S1 PIT 확인)"
+  ],
+  "aggregated_stances": {
+    "APPROVE": 1,
+    "APPROVE_CONDITIONAL": 4,
+    "REVISE": 0,
+    "REJECT": 0,
+    "veto_count_effective": 0,
+    "expected_verdict_by_router": "APPROVE_CONDITIONAL"
+  },
+  "v54_legacy_comparison": {
+    "v54_verdict": "APPROVE_CONDITIONAL",
+    "v54_total_score": 71,
+    "v55_consistency": "PASS (동일 판정 + unresolved_disputes 승격)"
+  }
+}

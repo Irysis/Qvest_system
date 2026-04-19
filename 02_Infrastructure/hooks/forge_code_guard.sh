@@ -56,6 +56,16 @@ if [ "$TOOL_NAME" = "Write" ] || [ "$TOOL_NAME" = "Edit" ]; then
     *run_all.R|*factor_engine.R) IS_STRATEGY_FILE="yes" ;;
   esac
 
+  # v55 Tier 2.2: cash_allocation / regime_adaptive role 전략은 종목 선택 아님 → OPT-1~6/10 전체 면제
+  # 감지 패턴: STR_CASH_* / STR_REGIME_ADAPT / role=cash_allocation / role=regime_adaptive
+  if echo "$FILE_PATH" | grep -qE '/(STR_CASH_|STR_REGIME_ADAPT|cash_allocation_|regime_adaptive_)'; then
+    IS_STRATEGY_FILE=""  # OPT-1~6 스킵
+    echo "$(date +%H:%M:%S) V55_ALLOC_EXEMPT: $FILE_PATH (OPT-1~6/10 skip)" >> "$LOG"
+  elif echo "$CONTENT" | grep -qE '(^|\s)(role|expected_role|STR_CASH_V1_ROLE)\s*(<-|=|:)\s*["'"'"']?(cash_allocation|regime_adaptive)'; then
+    IS_STRATEGY_FILE=""
+    echo "$(date +%H:%M:%S) V55_ALLOC_EXEMPT (content): $FILE_PATH" >> "$LOG"
+  fi
+
   # R 파일이 아니면 skip
   [ -z "$IS_R_FILE" ] && { echo '{}'; exit 0; }
 
@@ -170,9 +180,28 @@ if [ "$TOOL_NAME" = "Write" ] || [ "$TOOL_NAME" = "Edit" ]; then
     fi
   fi
   # 유동성 필터 완전 누락 (run_all.R/factor_engine.R만)
-  if [ -n "$IS_STRATEGY_FILE" ] \
+  # Architect 2026-04-17 진단 L-157: Edit tool은 new_string만 CONTENT에 담기므로,
+  # 기존 파일에 LIQ_THRESHOLD가 있으면 오탐 방지 (factor_engine.R Edit 차단 루프 해소)
+  #
+  # v55 Tier 2.2 trail 분기: cash_allocation/regime_adaptive role 전략은 종목 선택 아님 → 유동성 필터 면제
+  # 감지 패턴: STR_CASH_* / STR_REGIME_* / role=cash_allocation / role=regime_adaptive
+  V55_ALLOCATION_EXEMPT=0
+  if echo "$FILE_PATH" | grep -qE '/(STR_CASH_|STR_REGIME_ADAPT|cash_allocation|regime_adaptive)'; then
+    V55_ALLOCATION_EXEMPT=1
+  fi
+  if echo "$CONTENT" | grep -qE '(role|expected_role)\s*(<-|=|:)\s*["'"'"']?(cash_allocation|regime_adaptive)'; then
+    V55_ALLOCATION_EXEMPT=1
+  fi
+
+  if [ -n "$IS_STRATEGY_FILE" ] && [ "$V55_ALLOCATION_EXEMPT" = "0" ] \
      && ! echo "$CONTENT" | grep -qE 'LIQ_THRESHOLD|liq_threshold|LIQ_20d|liquidity_filter|TradVal.*frollmean'; then
-    VIOLATIONS="${VIOLATIONS}OPT-10: 유동성 필터 코드 미발견 (LIQ_THRESHOLD 또는 frollmean(TradVal) 필수).\n"
+    # Edit fallback: 실제 파일 전체 확인하여 유동성 필터 존재 시 pass
+    if [ -n "$FILE_PATH" ] && [ -f "$FILE_PATH" ] \
+       && grep -qE 'LIQ_THRESHOLD|liq_threshold|LIQ_20d|liquidity_filter|TradVal.*frollmean' "$FILE_PATH" 2>/dev/null; then
+      : # 기존 파일에 유동성 필터 존재 → pass (Edit 오탐 방지)
+    else
+      VIOLATIONS="${VIOLATIONS}OPT-10: 유동성 필터 코드 미발견 (LIQ_THRESHOLD 또는 frollmean(TradVal) 필수).\n"
+    fi
   fi
 
   # OPT-11: VT/DD/FM t-1 lag 검증 (C9 강화)

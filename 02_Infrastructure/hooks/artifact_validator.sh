@@ -171,8 +171,92 @@ except Exception as e:
     ) &
     ;;&
 
-  # v53 Sprint 3 P3-B: s0_record 작성 시 backlog bucket 모니터 갱신 (경고만, block X)
+  # v55 s0_record 신규 스키마 검증 (expected_role 6종 / trail 3종 / gap_targeting_axes / cash_component)
   *stage_artifacts/s0_record_*.json)
+    V55_CHECK=$(python3 <<PYEOF
+import json, sys
+
+VALID_ROLES = {'core_alpha','diversifier','defense','cash_allocation','regime_adaptive','ml_predictive'}
+VALID_TRAILS = {'standard','ml_empirical_first','kr_statistical'}
+VALID_GAP_AXES = {'SR','MDD_regime','KR_structural','cash_efficiency'}
+
+try:
+    with open('$FILE') as f:
+        d = json.load(f)
+except Exception as e:
+    print(f'PARSE_ERROR|{e}')
+    sys.exit(0)
+
+errors = []
+warnings = []
+
+# expected_role 6종 검증 (필수)
+role = d.get('expected_role', '')
+if not role:
+    errors.append('expected_role 누락 (6종 필수: ' + ', '.join(sorted(VALID_ROLES)) + ')')
+elif role not in VALID_ROLES:
+    errors.append(f"expected_role='{role}' 무효 (허용: {', '.join(sorted(VALID_ROLES))})")
+
+# trail 3종 검증 (필수)
+trail = d.get('trail', '')
+if not trail:
+    warnings.append('trail 누락 — 기본값 standard 적용 권장 (ml_empirical_first/kr_statistical 명시 권장)')
+elif trail not in VALID_TRAILS:
+    errors.append(f"trail='{trail}' 무효 (허용: {', '.join(sorted(VALID_TRAILS))})")
+
+# gap_targeting_axes 배열 검증 (필수)
+gap_axes = d.get('gap_targeting_axes', [])
+if not gap_axes:
+    errors.append('gap_targeting_axes 누락 (배열 1+ 필수: ' + ', '.join(sorted(VALID_GAP_AXES)) + ')')
+elif not isinstance(gap_axes, list):
+    errors.append('gap_targeting_axes는 배열이어야 함')
+else:
+    invalid_axes = [a for a in gap_axes if a not in VALID_GAP_AXES]
+    if invalid_axes:
+        errors.append(f'gap_targeting_axes 무효 값: {invalid_axes}')
+
+# expected_role_rationale 검증 (50자+, 권장)
+rationale = d.get('expected_role_rationale', '')
+if len(rationale) < 50:
+    warnings.append(f'expected_role_rationale 짧음 ({len(rationale)}자 < 50자 권장)')
+
+# cash_component 검증 (cash_allocation role이면 필수, 아니면 optional)
+if role == 'cash_allocation':
+    cc = d.get('cash_component', {})
+    if not cc:
+        errors.append('role=cash_allocation인데 cash_component 누락 (uses_cash, max_cash_weight 필수)')
+    elif not isinstance(cc, dict):
+        errors.append('cash_component는 object')
+    elif 'max_cash_weight' not in cc:
+        errors.append('cash_component.max_cash_weight 누락')
+
+# 결과 출력
+if errors:
+    print('BLOCK|' + '; '.join(errors))
+elif warnings:
+    print('WARN|' + '; '.join(warnings))
+else:
+    print('PASS|' + f"role={role} trail={trail or 'standard'} axes={len(gap_axes)}")
+PYEOF
+)
+    V55_STATUS=$(echo "$V55_CHECK" | cut -d'|' -f1)
+    V55_MSG=$(echo "$V55_CHECK" | cut -d'|' -f2-)
+
+    if [ "$V55_STATUS" = "BLOCK" ]; then
+      mv "$FILE" "${FILE}.missing_v55_fields" 2>/dev/null
+      echo "$(date +%H:%M:%S) V55_BLOCK: $FILE — $V55_MSG" >> "$LOG"
+      CTX_ESC=$(printf '%s' "[v55 s0_record 스키마 위반] ${V55_MSG}. 파일을 ${FILE}.missing_v55_fields로 격리. 재작성 필수 필드: expected_role(6종), trail(3종), gap_targeting_axes(4축 배열), expected_role_rationale(50자+). role=cash_allocation이면 cash_component.max_cash_weight 필수." | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+      echo "{\"decision\":\"block\",\"reason\":${CTX_ESC}}"
+      exit 0
+    fi
+
+    if [ "$V55_STATUS" = "WARN" ]; then
+      echo "$(date +%H:%M:%S) V55_WARN: $FILE — $V55_MSG" >> "$LOG"
+    fi
+
+    echo "$(date +%H:%M:%S) V55_PASS: $FILE — $V55_MSG" >> "$LOG"
+
+    # v53 Sprint 3 P3-B: s0_record 작성 시 backlog bucket 모니터 갱신 (경고만, block X)
     (
       QVEST_PROJECT_DIR="$PROJECT_ROOT" \
       python3 "$PROJECT_ROOT/02_Infrastructure/validation/backlog_bucket_monitor.py" \

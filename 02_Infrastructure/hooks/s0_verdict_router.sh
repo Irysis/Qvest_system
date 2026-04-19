@@ -2,10 +2,19 @@
 #==============================================================================
 # s0_verdict_router.sh — FileChanged Hook for S0_VERDICT_*.json
 #
-# 토론 판정 결과(S0_VERDICT)가 생성되면 자동 라우팅:
-#   APPROVE → Q-Lead에 실행 승인 지시
-#   REVISE  → Scout에 피드백 전달 지시
-#   REJECT  → 폐기 로그 + 새 가설 탐색 지시
+# v55 Consensus 기반 판정 (점수제 폐지):
+#   debaters[].stance (APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) 집계
+#   veto_flag 2+ 동의 → REVISE/REJECT 강제
+#   unresolved_disputes → S1 gate 승격 (APPROVE_CONDITIONAL)
+#
+# 집계 규칙:
+#   4+ APPROVE       → APPROVE (S1 즉시 dispatch)
+#   3+ REJECT        → REJECT (아카이브)
+#   veto 2+ 동의     → REVISE (도메인별 REJECT 가능)
+#   3+ APPROVE/COND && REJECT<=1 → APPROVE_CONDITIONAL
+#   그 외            → REVISE
+#
+# 하위호환: stance 필드 없으면 score 기반 레거시 판정 (경고 로그)
 #==============================================================================
 
 INPUT=$(cat)
@@ -18,7 +27,7 @@ if [ -z "$CHANGED_FILE" ] || [ ! -f "$CHANGED_FILE" ]; then
   exit 0
 fi
 
-# ─── 방어선 3: debaters 무결성 사후 검증 (verdict_router가 라우팅 전 최종 검증) ───
+# ─── 방어선 3: debaters 무결성 사후 검증 ───
 DEBATER_CHECK=$(python3 -c "
 import json, sys
 from collections import Counter
@@ -26,10 +35,8 @@ try:
     with open('$CHANGED_FILE') as f:
         d = json.load(f)
 
-    # debaters 필드 존재 확인
     debaters = d.get('debaters', [])
     if not debaters:
-        # 호환성: score_breakdown이 있으면 debaters 미전환 경고
         if d.get('score_breakdown') or d.get('scores'):
             print('WARN|debaters 배열 없음 (구 형식). 라우팅 진행하되, 향후 debaters 형식 필수.')
         else:
@@ -38,7 +45,6 @@ try:
 
     errors = []
 
-    # agent_id 중복 검사
     agent_ids = [db.get('agent_id', '') for db in debaters]
     unique_ids = set(aid for aid in agent_ids if aid)
 
@@ -49,7 +55,6 @@ try:
     if dupes:
         errors.append(f'agent_id 중복: {dupes}')
 
-    # 필수 역할
     roles = set(db.get('role', '').lower() for db in debaters)
     required = {'codex_critic', 'risk_manager', 'governor', 'quant', 'academic'}
     normalized = set()
@@ -80,7 +85,7 @@ if [ "$DEBATER_STATUS" = "FAIL" ]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "FileChanged",
-    "additionalContext": "[S0 Verdict Router BLOCKED] debaters 검증 실패: ${DEBATER_MSG}\n\nS0_VERDICT가 생성되었으나 5인 독립 토론 증거가 부족합니다.\n1. /s0-debate 스킬을 사용하여 5개 독립 에이전트 스폰 (codex_critic, risk_manager, governor, quant, academic)\n2. 각 에이전트의 agent_id가 고유해야 합니다\n3. debaters 배열에 5건의 {agent_id, role, score, findings} 필수\n4. S0_VERDICT를 재작성하세요: ${CHANGED_FILE}"
+    "additionalContext": "[S0 Verdict Router BLOCKED] debaters 검증 실패: ${DEBATER_MSG}\n\nS0_VERDICT가 생성되었으나 5인 독립 토론 증거가 부족합니다.\n1. /s0-debate 스킬을 사용하여 5개 독립 에이전트 스폰 (codex_critic, risk_manager, governor, quant, academic)\n2. 각 에이전트의 agent_id가 고유해야 합니다\n3. debaters 배열에 5건의 {agent_id, role, stance, veto_flag, critical_concerns, supporting_arguments} 필수 (v55 Consensus)\n4. S0_VERDICT를 재작성하세요: ${CHANGED_FILE}"
   }
 }
 EOF
@@ -91,44 +96,192 @@ if [ "$DEBATER_STATUS" = "WARN" ]; then
   echo "$(date +%H:%M:%S) VERDICT_ROUTER WARN: $CHANGED_FILE — $DEBATER_MSG" >> /tmp/s0_verdict.log
 fi
 
-# S0_VERDICT JSON에서 판정 추출
-VERDICT=$(python3 -c "
-import json, sys
-try:
-    with open('$CHANGED_FILE') as f:
-        d = json.load(f)
-    print(d.get('verdict', 'UNKNOWN'))
-except:
-    print('UNKNOWN')
-" 2>/dev/null)
+# ─── v55 Consensus-based Verdict Aggregation ───
+CONSENSUS_RESULT=$(python3 <<'PYEOF'
+import json, sys, os
+from collections import Counter
 
-TOTAL_SCORE=$(python3 -c "
-import json
 try:
-    with open('$CHANGED_FILE') as f:
+    with open(os.environ['CHANGED_FILE']) as f:
         d = json.load(f)
-    print(d.get('total_score', 0))
-except:
-    print(0)
-" 2>/dev/null)
+except Exception as e:
+    print(f'ERROR|parse_failed|{e}|0|0|0|0|0|0|')
+    sys.exit(0)
 
-FACTOR_ID=$(python3 -c "
-import json
+debaters = d.get('debaters', [])
+factor_id = d.get('factor_id', 'unknown')
+strategy_id = d.get('strategy_id', '')
+
+# 신 체계 감지: stance 필드 존재 여부
+has_stance = any(db.get('stance') for db in debaters)
+
+if has_stance:
+    # Consensus mode
+    stances = [str(db.get('stance', '')).upper() for db in debaters]
+    veto_flags = [db.get('veto_flag') for db in debaters if db.get('veto_flag') and str(db.get('veto_flag')).lower() not in ('null', 'none', '')]
+    unresolved = d.get('unresolved_disputes', [])
+    consensus_pts = d.get('consensus_points', [])
+
+    approve_cnt = sum(1 for s in stances if s == 'APPROVE')
+    cond_cnt = sum(1 for s in stances if s in ('APPROVE_CONDITIONAL', 'CONDITIONAL'))
+    revise_cnt = sum(1 for s in stances if s == 'REVISE')
+    reject_cnt = sum(1 for s in stances if s == 'REJECT')
+    veto_cnt = len(veto_flags)
+    unresolved_cnt = len(unresolved)
+
+    # Codex는 veto 권한 없음 (flag만). Codex veto 필터링
+    codex_vetoes = [vf for vf, db in zip(veto_flags, [db for db in debaters if db.get('veto_flag')]) if 'codex' in str(db.get('role', '')).lower()]
+    effective_veto_cnt = veto_cnt - len(codex_vetoes)
+
+    # 집계 규칙
+    if reject_cnt >= 3:
+        verdict = 'REJECT'
+    elif approve_cnt >= 4:
+        verdict = 'APPROVE'
+    elif effective_veto_cnt >= 2:
+        # Codex 제외 2+ veto 동의 → REVISE
+        verdict = 'REVISE'
+    elif (approve_cnt + cond_cnt) >= 3 and reject_cnt <= 1:
+        verdict = 'APPROVE_CONDITIONAL'
+    else:
+        verdict = 'REVISE'
+
+    # Consensus tag
+    if approve_cnt == 5 or reject_cnt == 5:
+        ctag = 'UNANIMOUS'
+    elif approve_cnt >= 4 or reject_cnt >= 4:
+        ctag = 'MAJORITY'
+    elif approve_cnt == 0 and reject_cnt == 0:
+        ctag = 'DEADLOCK'
+    else:
+        ctag = 'MINORITY'
+
+    print(f'CONSENSUS|{verdict}|{approve_cnt}|{cond_cnt}|{revise_cnt}|{reject_cnt}|{effective_veto_cnt}|{unresolved_cnt}|{ctag}|{factor_id}|{strategy_id}')
+else:
+    # Legacy score-based (하위호환)
+    verdict_field = str(d.get('verdict', 'UNKNOWN')).upper()
+    total_score = d.get('total_score', 0) or sum(db.get('score', 0) for db in debaters)
+
+    # v55에서는 구 체계 파일도 Consensus-like 매핑
+    if verdict_field == 'APPROVE':
+        verdict = 'APPROVE'
+    elif verdict_field in ('APPROVE_CONDITIONAL', 'CONDITIONAL'):
+        # Plan v55: 구 APPROVE_CONDITIONAL도 S1로 보냄 (BORDERLINE 폐지)
+        verdict = 'APPROVE_CONDITIONAL'
+    elif verdict_field == 'REJECT':
+        verdict = 'REJECT'
+    else:
+        verdict = 'REVISE'
+
+    print(f'LEGACY|{verdict}|0|0|0|0|0|0|LEGACY_SCORE_{total_score}|{factor_id}|{strategy_id}')
+
+PYEOF
+)
+
+# 환경변수로 파일 경로 전달
+export CHANGED_FILE
+CONSENSUS_RESULT=$(CHANGED_FILE="$CHANGED_FILE" python3 <<'PYEOF'
+import json, sys, os
+from collections import Counter
+
 try:
-    with open('$CHANGED_FILE') as f:
+    with open(os.environ['CHANGED_FILE']) as f:
         d = json.load(f)
-    print(d.get('factor_id', 'unknown'))
-except:
-    print('unknown')
-" 2>/dev/null)
+except Exception as e:
+    print(f'ERROR|parse_failed|{e}|0|0|0|0|0|0|unknown|')
+    sys.exit(0)
 
+debaters = d.get('debaters', [])
+factor_id = d.get('factor_id', 'unknown')
+strategy_id = d.get('strategy_id', '')
+
+has_stance = any(db.get('stance') for db in debaters)
+
+if has_stance:
+    stances = [str(db.get('stance', '')).upper() for db in debaters]
+    veto_list = [(db.get('veto_flag'), str(db.get('role','')).lower()) for db in debaters if db.get('veto_flag') and str(db.get('veto_flag')).lower() not in ('null','none','')]
+    unresolved = d.get('unresolved_disputes', [])
+
+    approve_cnt = sum(1 for s in stances if s == 'APPROVE')
+    cond_cnt = sum(1 for s in stances if s in ('APPROVE_CONDITIONAL','CONDITIONAL'))
+    revise_cnt = sum(1 for s in stances if s == 'REVISE')
+    reject_cnt = sum(1 for s in stances if s == 'REJECT')
+
+    # Codex veto 권한 없음 (flag만) - 제외
+    effective_vetoes = [vf for vf, role in veto_list if 'codex' not in role]
+    veto_cnt = len(effective_vetoes)
+    unresolved_cnt = len(unresolved)
+
+    if reject_cnt >= 3:
+        verdict = 'REJECT'
+    elif approve_cnt >= 4:
+        verdict = 'APPROVE'
+    elif veto_cnt >= 2:
+        verdict = 'REVISE'
+    elif (approve_cnt + cond_cnt) >= 3 and reject_cnt <= 1:
+        verdict = 'APPROVE_CONDITIONAL'
+    else:
+        verdict = 'REVISE'
+
+    if approve_cnt == 5 or reject_cnt == 5:
+        ctag = 'UNANIMOUS'
+    elif approve_cnt >= 4 or reject_cnt >= 4:
+        ctag = 'MAJORITY'
+    elif approve_cnt == 0 and reject_cnt == 0:
+        ctag = 'DEADLOCK'
+    else:
+        ctag = 'MINORITY'
+
+    print(f'CONSENSUS|{verdict}|{approve_cnt}|{cond_cnt}|{revise_cnt}|{reject_cnt}|{veto_cnt}|{unresolved_cnt}|{ctag}|{factor_id}|{strategy_id}')
+else:
+    verdict_field = str(d.get('verdict', 'UNKNOWN')).upper()
+    total_score = d.get('total_score', 0) or sum(db.get('score', 0) for db in debaters)
+
+    if verdict_field == 'APPROVE':
+        verdict = 'APPROVE'
+    elif verdict_field in ('APPROVE_CONDITIONAL','CONDITIONAL'):
+        verdict = 'APPROVE_CONDITIONAL'
+    elif verdict_field == 'REJECT':
+        verdict = 'REJECT'
+    else:
+        verdict = 'REVISE'
+
+    print(f'LEGACY|{verdict}|0|0|0|0|0|0|LEGACY_SCORE_{total_score}|{factor_id}|{strategy_id}')
+PYEOF
+)
+
+MODE=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f1)
+VERDICT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f2)
+APPROVE_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f3)
+COND_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f4)
+REVISE_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f5)
+REJECT_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f6)
+VETO_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f7)
+UNRESOLVED_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f8)
+CTAG=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f9)
+FACTOR_ID=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f10)
+STRATEGY_ID=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f11)
+
+echo "$(date +%H:%M:%S) VERDICT_ROUTER v55 [$MODE]: $FACTOR_ID → $VERDICT (A=$APPROVE_CNT, C=$COND_CNT, REV=$REVISE_CNT, REJ=$REJECT_CNT, veto=$VETO_CNT, unresolved=$UNRESOLVED_CNT, tag=$CTAG)" >> /tmp/s0_verdict.log
+
+# ─── 라우팅 ───
 case "$VERDICT" in
-  APPROVE|APPROVE_CONDITIONAL)
+  APPROVE)
     cat <<EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "FileChanged",
-    "additionalContext": "[S0 Verdict: ${VERDICT}] ${FACTOR_ID} (${TOTAL_SCORE}/100점)\n\nScout plan을 승인하고 다음을 실행하세요:\n1. allocate_str() → STR 번호 할당\n2. sg_init() → stage tracker\n3. s0_record.json 작성\n4. Forge inbox에 TODO_S1 생성\n5. 텔레그램 발송\n\n판정 상세: ${CHANGED_FILE}"
+    "additionalContext": "[S0 Verdict: APPROVE] ${FACTOR_ID} — Consensus ${CTAG} (A=${APPROVE_CNT}, COND=${COND_CNT}, REJECT=${REJECT_CNT}, veto=${VETO_CNT})\n\nScout plan을 승인하고 다음을 실행하세요:\n1. allocate_str() → STR 번호 할당\n2. sg_init() → stage tracker\n3. s0_record.json 작성 (expected_role 6종 / trail 3종 / gap_targeting_axes 필수)\n4. Forge inbox에 TODO_S1 생성\n5. 텔레그램 발송\n\n판정 상세: ${CHANGED_FILE}"
+  }
+}
+EOF
+    ;;
+  APPROVE_CONDITIONAL)
+    cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "FileChanged",
+    "additionalContext": "[S0 Verdict: APPROVE_CONDITIONAL] ${FACTOR_ID} — Consensus ${CTAG} (A=${APPROVE_CNT}, COND=${COND_CNT}, REJECT=${REJECT_CNT}, veto=${VETO_CNT}, unresolved=${UNRESOLVED_CNT})\n\nScout plan 조건부 승인. unresolved_disputes는 S1 gate에서 실측 의무화:\n1. allocate_str() → STR 번호 할당\n2. sg_init() → stage tracker\n3. s0_record.json 작성 (expected_role 6종 / trail 3종 / gap_targeting_axes / cash_component 필수)\n4. Forge inbox에 TODO_S1 생성 (unresolved_disputes를 s1_gate_items로 전달)\n5. 텔레그램 발송\n\n판정 상세: ${CHANGED_FILE}"
   }
 }
 EOF
@@ -138,7 +291,7 @@ EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "FileChanged",
-    "additionalContext": "[S0 Verdict: REVISE] ${FACTOR_ID} (${TOTAL_SCORE}/100점)\n\n점수 미달로 재설계 필요합니다:\n1. ${CHANGED_FILE} 읽고 피드백 확인\n2. Scout을 plan mode로 재스폰 (name: scout-s0)\n3. 피드백 내용을 Scout 프롬프트에 주입\n4. 재설계 후 다시 토론팀 스폰 (자동 체인)"
+    "additionalContext": "[S0 Verdict: REVISE] ${FACTOR_ID} — Consensus ${CTAG} (REVISE=${REVISE_CNT}, veto=${VETO_CNT})\n\n재설계 필요. veto 2+ 동의 또는 과반 REVISE:\n1. ${CHANGED_FILE} 읽고 unresolved_disputes + critical_concerns 확인\n2. Scout을 plan mode로 재스폰 (name: scout-s0)\n3. critical_concerns를 모두 addressing하는 revised hypothesis 설계\n4. 재설계 후 다시 토론팀 스폰\n\n주의: 동일 가설 재설계 2회 이상 REVISE 시 가설 근본 재고."
   }
 }
 EOF
@@ -148,7 +301,7 @@ EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "FileChanged",
-    "additionalContext": "[S0 Verdict: REJECT] ${FACTOR_ID} (${TOTAL_SCORE}/100점)\n\n가설이 폐기되었습니다:\n1. 폐기 사유는 ${CHANGED_FILE} 참조\n2. 새로운 가설 방향 탐색이 필요합니다\n3. conditional_ic_matrix에서 다른 팩터 조합을 검토하세요"
+    "additionalContext": "[S0 Verdict: REJECT] ${FACTOR_ID} — Consensus ${CTAG} (REJECT=${REJECT_CNT})\n\n가설 폐기 (3+ debater REJECT):\n1. 폐기 사유는 ${CHANGED_FILE} 참조\n2. 새로운 가설 방향 탐색 필요\n3. conditional_ic_matrix + gap_targeting_axes 우선순위에서 다른 factor 조합 검토\n4. GAP-directed: 현재 포트폴리오 부족 role(defense/diversifier/cash) 우선"
   }
 }
 EOF
