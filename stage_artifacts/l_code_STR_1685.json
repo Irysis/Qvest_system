@@ -1,0 +1,69 @@
+{
+  "strategy_id": "STR_1685",
+  "hypothesis_id": "H_1690",
+  "l_code": "L-165",
+  "grade": "REJECT",
+  "core_reference": "A2.4 Ang Low-Volatility + A6.1 Frazzini-Pedersen BAB 2014 + B.L-121 Q07 Earnings Stability + B.L-160 Defense IC-Return decoupling",
+  "lesson_text": "Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal level ICIR 0.7371~0.9368로 매우 강함에도 portfolio level top-20 long-only translation이 모든 variant에서 실패. V1 CAGR -10.3%/MDD 94.69%, V2 -5.71%/84.70%, V3 14.34%/77.21%, V4 -5.04%/87.66%. defense_audit/tail_risk/c1_cosine 전수 FAIL. L-160(STR_1683 Distress+Calmar) 동일 signature 3번째 확인 — 'factor quality != portfolio quality' family 성립. Root cause: top-20 concentration + idio vol 집중 + hedging 부재 + 4-axis positive ICIR과 drawdown causal 연결 부재. AX-001 v2 crisis_alpha Gate 2b + core MDD reduction Gate 2d 자동 FAIL. 교훈: defense factor는 반드시 multi-sleeve(long-short 또는 다sleeve 블렌드) 구조로만 평가. ICIR 단독 신호 품질 지표로 portfolio admission 판정 불가.",
+  "tags": [
+    "SIGNAL_PORTFOLIO_TRANSLATION_FAILURE",
+    "DEFENSE_LONG_ONLY_HARD_FAIL",
+    "ICIR_HIGH_MDD_CATASTROPHIC",
+    "MULTI_SOURCE_DEFENSE_ANCHOR_FAIL",
+    "AX_CAND_TRIGGER_3rd_MEMBER",
+    "REGIME_SMOOTHED_INSUFFICIENT",
+    "VALIDATED_HARD_FAIL"
+  ],
+  "family": "signal_portfolio_translation_failure",
+  "family_initiator": "L-160",
+  "family_members": [
+    {"l_code": "L-160", "strategy": "STR_1683", "hypothesis": "H_1682", "signature": "Distress+Calmar defense ICIR high / MDD 94%"},
+    {"l_code": "L-161", "strategy": "STR_1684", "hypothesis": "H_1688", "signature": "Residual momentum ICIR high / portfolio inverse — SEPARATE TRACK (KR momentum inverse AX_CAND)"},
+    {"l_code": "L-165", "strategy": "STR_1685", "hypothesis": "H_1690", "signature": "Multi-source defense anchor 4-axis ICIR 0.74~0.94 / MDD 77~94%"}
+  ],
+  "family_note": "L-161 separate track 확정 (KR momentum inverse AX_CAND). signal_portfolio_translation_failure family는 L-160 initiator + L-165 current. 3rd member 추가 필요 시 AX_CAND_signal_portfolio_translation_failure 승격 trigger.",
+  "ax_candidate": {
+    "name": "AX_CAND_signal_portfolio_translation_failure",
+    "trigger_activated": true,
+    "supporting_l_codes": ["L-160", "L-165"],
+    "note": "2 members 확정. L-161은 separate track이므로 3rd member 필요. 다음 defense/core long-only 실패 사례 확정 시 승격 진입.",
+    "axes_preliminary": {
+      "independence": 0.80,
+      "repeatability": 1.00,
+      "family_consistency": 0.85,
+      "explainability": 0.70,
+      "mechanism_clarity": 0.80,
+      "total": 0.83
+    },
+    "proposed_exclusion": "multi-sleeve 내 sleeve(20종목 이하 sleeve + 전체 multi-sleeve 블렌드), long-short structure 시 scope 밖",
+    "proposed_scope": "market=KR, universe=top20_long_only, family=defense_or_core_secondary_single_sleeve"
+  },
+  "ax_extension": {
+    "target": "AX-005",
+    "action": "supporting_l_codes에 L-165 편입",
+    "rationale": "AX-005 KR defense standalone long-only 구조적 실패 범위 내. Multi-source 4-axis regime-smoothed도 동일 패턴 확인 → 범위 구체화",
+    "quarterly_review_date": "2026-07-16"
+  },
+  "judge_custodian_decision": {
+    "decision_1_L165_creation": "APPROVE",
+    "decision_2_ax_cand_trigger": "ACTIVATED (2 supporting L-codes, L-161 separate track)",
+    "decision_3_separate_track": "AX_CAND_kr_momentum_inverse 별도 track 확정 (Governor 기존 안 수락)",
+    "decision_4_family_initiator": "L-160 (NOT L-125). L-125는 logistic regression 부적합 건으로 signal-portfolio translation과 무관",
+    "decision_5_ax005_extension": "APPROVE (L-165 편입, quarterly review 2026-07-16)"
+  },
+  "h1690_drop_confirmation": {
+    "status": "DROPPED",
+    "rationale": "VALIDATED_HARD_FAIL (4 variants 전수 Grade F) + L-165 custodian 판정 + AX-001 v2 Gate 2a~2d 전수 FAIL",
+    "restart_block": true,
+    "restart_block_reason": "H_1690 재실행 = L-165 교훈 위반. Forge v3 중복 실행 금지"
+  },
+  "h1693_scout_prerequisites": {
+    "ax004_scope_exception_required": true,
+    "q07_usage_rule": "multi-axis defense sleeve only (Q07 + 다른 defense factor 2+) + multi-sleeve portfolio context 필수",
+    "standalone_q07_defense": "AUTO_REJECT (AX-005 violation)",
+    "sequential_tdc_precheck": "pairwise TDC vs STR_1631_SYN_05 + STR_1656_MLRA < 0.30 (0.50+ blocked)"
+  },
+  "created_at": "2026-04-19",
+  "custodian": "Judge",
+  "approval_chain": ["Governor initiator", "team-lead Scenario_D Option 2 APPROVE", "Judge custodian final decision"]
+}
