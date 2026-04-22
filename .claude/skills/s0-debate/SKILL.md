@@ -3,12 +3,12 @@ name: s0-debate
 description: "S0 3-Round Structured Debate. R1 Opening → R2 Rebuttal → R3 Closing. v55 Consensus 기반(stance/veto/unresolved). Hook 상태 머신 강제. 텔레그램 실시간 중계."
 ---
 
-## S0 3-Round Structured Debate Protocol (v55 Consensus + v6 Compact Mode)
+## S0 3-Round Structured Debate Protocol (v55 Consensus, Compact + Full)
 
-> **v55 변경사항** (2026-04-19): 점수제(20×5=100) → Consensus(stance/veto) 전환.
-> **v6 Compact Mode** (2026-04-19 APPROVED): 5인 → 3인 토론 허용 (`QVEST_DEBATE_MODE=compact`). Academic·Quant는 자동 fact-check Hook 대체.
-> **필수 읽기**: `00_Lawbook/v55_consensus_addendum.md` §1.6 Compact Mode + `00_Lawbook/v6_amendment_debate_compact.md`
-> **핵심**: R1/R2 출력은 `score` 대신 `stance` + `critical_concerns` + `supporting_arguments` + `veto_flag`.
+**v55 Consensus**: stance(APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) + veto_flag + critical_concerns/supporting_arguments 기반. 점수제 폐지.
+**Compact 3인 (기본)** or **Full 5인** (`QVEST_DEBATE_MODE=full` 강제 시). Compact에서 Academic/Quant는 자동 fact-check Hook로 대체.
+**필수 읽기**: `00_Lawbook/v55_consensus_addendum.md` §1.6.
+**Hook 강제**: 모든 라운드 전이는 `s0_debate_enforcer.sh`가 기계적으로 검증.
 
 Q-Lead가 이 skill을 호출하면 Scout 가설 설계 → 3인 또는 5인 라운드 토론 → 판정 체인이 실행됩니다.
 **모든 라운드 전이는 `s0_debate_enforcer.sh` Hook이 기계적으로 강제합니다.**
@@ -17,8 +17,8 @@ Q-Lead가 이 skill을 호출하면 Scout 가설 설계 → 3인 또는 5인 라
 
 | 모드 | Debater | 사용 시점 |
 |------|---------|----------|
-| **Compact 3인** (기본 — 토큰 절감) | Codex Critic + Risk Manager + (Judge 또는 Governor) | `QVEST_DEBATE_MODE=compact` 또는 default. Shadow mode 5회 통과 후 권장. |
-| **Full 5인** (기존) | Codex + Risk + Governor + Quant + Academic | Shadow 기간 + escalate_to_5p fallback 시. `QVEST_DEBATE_MODE=full` 강제 가능 |
+| **Compact 3인** (기본) | Codex Critic + Risk Manager + (Judge 또는 Governor) | 기본값 |
+| **Full 5인** | Codex + Risk + Governor + Quant + Academic | `QVEST_DEBATE_MODE=full` 또는 escalate_to_5p fallback |
 
 **Judge vs Governor 선택 규칙 (Compact Mode 3번째 자리)**:
 - **Judge (Opus)**: 가설이 **신규 factor/mutation** 도입 또는 **PIT 경계 판단** 필요
@@ -165,7 +165,7 @@ Codex Critic × 1 (Bash 직접 호출):
 | Governor | `admission_rule` / `gap_misaligned` |
 | Codex | **없음** (flag만 제시, veto 집계 제외) |
 
-**v55 strict (2026-04-19~)**: `score` 필드는 폐지. 구형 `score(0-20)` 단독 입력은 enforcer가 block. 점진 마이그레이션 시 stance + score 병기는 허용 (score는 무시).
+**v55 strict**: `score` 필드 폐지. stance + critical_concerns + supporting_arguments + veto_flag 기반.
 
 **enforcer 강제 사항 (v55):**
 - `stance` 필드 필수 (APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT 중 하나)
@@ -271,8 +271,6 @@ Codex Critic R2:
 - `unresolved` 1건+ 필수 (없으면 block — "토론 없는 R2 = 반복")
 - `stance_change != UNCHANGED` → `stance_change_reason` 50자+ 필수
 - R2는 R1_COMPLETE 또는 R2_IN_PROGRESS 상태에서만 Write 허용
-
-**점진 호환 (deprecated, 곧 제거)**: `r1_score`/`r2_score`/`agreements`/`rebuttals` 추가 필드는 무시되며 v55 경고. 신규 작성은 v55 스키마 필수.
 
 **텔레그램 중계:** 각 R2 제출 시 stance_change 화살표 + new_stance + veto + 진행률 발송
 
