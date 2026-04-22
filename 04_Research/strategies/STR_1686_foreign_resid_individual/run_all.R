@@ -132,22 +132,22 @@ if (!is.null(sim$error)) {
 cat(sprintf("[Step 5] V1 done: %d trading days\n", length(sim$strategy_xts)))
 
 # ===================================================================
-# 6. Analysis (V1 primary) — timeout guard: 90s limit
+# 6. Analysis — skipped (strategy_analyzer IC loop too slow on WSL, Session 69 Day 1)
 # ===================================================================
-cat("\n[Step 6] Analysis (V1 primary)...\n")
+cat("\n[Step 6] Analysis skipped (WSL perf). Saving basic performance metrics...\n")
 tryCatch({
-  source(file.path(FUNC_PATH, "strategy_analyzer.R"))
-  setTimeLimit(elapsed = 90, transient = TRUE)
-  run_analysis(sim, FACTORS, RAWDATA, BM_DT, OUT_DIR, strategy_name = STRATEGY_ID)
-  setTimeLimit(elapsed = Inf)
-}, error = function(e) {
-  setTimeLimit(elapsed = Inf)
-  cat("[Step 6 WARN]", conditionMessage(e), "\n")
-  tryCatch({
-    perf <- summarise_perf(sim$strategy_xts, STRATEGY_ID)
-    fwrite(as.data.table(t(unlist(perf))), file.path(OUT_DIR, "performance.csv"))
-  }, error = function(e2) NULL)
-})
+  x <- sim$strategy_xts
+  perf_basic <- data.table(
+    strategy  = STRATEGY_ID,
+    cagr      = round(as.numeric(Return.annualized(x, scale=252)) * 100, 2),
+    sharpe    = round(as.numeric(SharpeRatio.annualized(x, Rf=0, scale=252)), 3),
+    mdd       = round(as.numeric(maxDrawdown(x)) * 100, 2),
+    ann_vol   = round(as.numeric(StdDev.annualized(x, scale=252)) * 100, 2)
+  )
+  fwrite(perf_basic, file.path(OUT_DIR, "performance.csv"))
+  cat(sprintf("[Step 6] CAGR=%.1f%% SR=%.3f MDD=%.1f%%\n",
+              perf_basic$cagr, perf_basic$sharpe, perf_basic$mdd))
+}, error = function(e) cat("[Step 6 WARN]", conditionMessage(e), "\n"))
 
 # ===================================================================
 # 7. Hurdle gate (V1)
