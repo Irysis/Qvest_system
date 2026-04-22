@@ -65,9 +65,12 @@ Defense 전략은 multi-sleeve 내에서만 평가:
   - `02_Infrastructure/validation/lookahead_detector.R` — detect_lookahead()
   - `02_Infrastructure/hurdle_gate.R` — run_hurdle_gate(), calculate_hurdle()
   - `02_Infrastructure/validation/statistical_defense.R` — compute_dsr()
-  - `02_Infrastructure/role_honesty_audit.R` — Role Audit 6종 (audit_defense_v2)
+  - `02_Infrastructure/validation/role_honesty_audit.R` — Role Audit 6종 standalone wrapper
+  - `02_Infrastructure/pipeline/v55_stage_gate_extensions.R` — **audit_defense_v2() / audit_cash_allocation() / sg_determine_role_v55** (AX-001 v2 핵심 함수 실제 위치, path 정정 2026-04-23 v3.8.1)
   - `02_Infrastructure/strategy_analyzer.R` — analyze_strategy()
-  - `02_Infrastructure/validation/signal_portfolio_translation_audit.R` — AX-007 Gate14
+  - `02_Infrastructure/validation/signal_portfolio_translation_audit.R` — **Gate 16** (v3.8.1, ex-Gate 13). gate_id 상수 정정 pending Forge dispatch
+  - `02_Infrastructure/validation/poison_pill_ic_return_audit.R` — **Gate 17** (v3.8.1 ACTIVE, L-163 Option α threshold 4종). Defense composite 전용 (STR_1631/STR_1656 Non-applicable)
+  - `02_Infrastructure/validation/ax_cand_3rd_member_screening.R` — **Gate 18** (v3.8.1, ex-Gate 14)
   </r_infra>
   <loo>Leave-one-crisis-out (2008/2020 빼고도 작동?), Leave-one-regime-out</loo>
 </tools>
