@@ -128,13 +128,16 @@ if (!is.null(sim$error)) {
 cat(sprintf("[Step 5] V1 done: %d trading days\n", length(sim$strategy_xts)))
 
 # ===================================================================
-# 6. Analysis (V1 primary)
+# 6. Analysis (V1 primary) — timeout guard: 90s limit
 # ===================================================================
 cat("\n[Step 6] Analysis (V1 primary)...\n")
 tryCatch({
   source(file.path(FUNC_PATH, "strategy_analyzer.R"))
+  setTimeLimit(elapsed = 90, transient = TRUE)
   run_analysis(sim, FACTORS, RAWDATA, BM_DT, OUT_DIR, strategy_name = STRATEGY_ID)
+  setTimeLimit(elapsed = Inf)
 }, error = function(e) {
+  setTimeLimit(elapsed = Inf)
   cat("[Step 6 WARN]", conditionMessage(e), "\n")
   tryCatch({
     perf <- summarise_perf(sim$strategy_xts, STRATEGY_ID)
