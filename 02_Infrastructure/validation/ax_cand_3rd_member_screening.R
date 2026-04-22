@@ -86,11 +86,11 @@ suppressPackageStartupMessages({
     hits <- c(hits, sprintf("role aligned: %s in family '%s'", provisional_role, fam))
   }
 
-  # Direct verdict signal (Gate 13 hard_fail = strong evidence for translation family)
+  # Direct verdict signal (Gate 16 hard_fail = strong evidence for translation family)
   is_translation_family <- any(grepl("TRANSLATION_FAILURE",
                                      toupper(cand$scope_tags %||% character(0))))
   if (is_translation_family && identical(gate_13_verdict, "HARD_FAIL")) {
-    hits <- c(hits, "Gate 13 HARD_FAIL aligns with translation failure family")
+    hits <- c(hits, "Gate 16 HARD_FAIL aligns with translation failure family")
   }
 
   # Exclusion clause check
@@ -158,7 +158,7 @@ screen_ax_cand_3rd_member <- function(strategy_id,
 
   result <- list(
     schema_version       = "v1.0",
-    gate_id              = "Gate 14 (AX_CAND 2/3 → 3rd Member Screening)",
+    gate_id              = "Gate 18 (AX_CAND 2/3 → 3rd Member Screening)",
     audited_at           = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     incoming_strategy    = strategy_id,
     incoming_l_code      = provisional_l,
@@ -188,7 +188,7 @@ screen_ax_cand_3rd_member <- function(strategy_id,
 
 # ─── Helper: print summary ───────────────────────────────────────────────────
 print_ax_cand_screening <- function(r) {
-  cat("=== Gate 14 — AX_CAND 3rd Member Screening ===\n")
+  cat("=== Gate 18 — AX_CAND 3rd Member Screening ===\n")
   cat(sprintf("Incoming: %s (%s)\n", r$incoming_strategy, r$incoming_l_code))
   cat(sprintf("Pending candidates scanned: %d\n", r$n_pending_candidates))
   cat(sprintf("Overall verdict: %s\n", r$overall_verdict))

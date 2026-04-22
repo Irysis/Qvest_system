@@ -189,7 +189,7 @@ audit_signal_portfolio_translation <- function(strategy_id,
 
   result <- list(
     schema_version            = "v1.0",
-    gate_id                   = "Gate 13 (Signal-Portfolio Translation Failure)",
+    gate_id                   = "Gate 16 (Signal-Portfolio Translation Failure)",
     strategy_id               = strategy_id,
     audited_at                = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     overall_verdict           = overall,

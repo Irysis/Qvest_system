@@ -231,15 +231,16 @@ audit_poison_pill_ic_return <- function(strategy_id,
 
   result <- list(
     schema_version  = "v1.0",
-    gate_id         = "Gate 12 (Poison Pill IC-Return)",
+    gate_id         = "Gate 17 (Poison Pill IC-Return)",
     strategy_id     = strategy_id,
     audited_at      = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     overall_verdict = overall,
     weight_sum      = round(total_w, 4),
+    # gate_id renumbered Gate 12 → Gate 17 per Judge v3.8.1 patch 부록 A.7
     sub_gates = list(
-      `12a_per_factor_pill_check`     = a,
-      `12b_composite_pill_count`      = b,
-      `12c_regime_amplification_flag` = c_
+      `17a_per_factor_pill_check`     = a,
+      `17b_composite_pill_count`      = b,
+      `17c_regime_amplification_flag` = c_
     ),
     recommended_actions = recommended_actions,
     rule_reference  = "L-163 ACTIVE — stress_icir × weight >= -0.05 (Defense composite)",
