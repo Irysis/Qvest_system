@@ -182,6 +182,7 @@ cat(sprintf("[CAPM beta] beta=%.4f | |beta|<0.30: %s\n",
 # 9. Rolling ICIR + 3-period breakdown
 # ===================================================================
 cat("\n[Step 9] Rolling ICIR + 3-period breakdown...\n")
+setTimeLimit(elapsed = 120, transient = TRUE)
 icir_result <- tryCatch({
   sig_dates <- sort(unique(FACTORS$Date))
   ic_monthly <- rbindlist(lapply(seq_along(sig_dates), function(i) {
@@ -218,6 +219,7 @@ icir_result <- tryCatch({
   cat("[WARN ICIR]", conditionMessage(e), "\n")
   list(overall_icir = NA, ic_monthly = data.table())
 })
+setTimeLimit(elapsed = Inf)
 
 alpha_lab_pass <- !is.na(icir_result$overall_icir) && icir_result$overall_icir >= 0.20
 cat(sprintf("[Alpha Lab] ICIR=%.3f | 2005-14=%.3f | 2015-19=%.3f | 2020-26=%.3f | >=0.20: %s\n",
