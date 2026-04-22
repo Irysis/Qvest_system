@@ -395,12 +395,12 @@ print('\n'.join(lines))
       S0_RECORD=$(ls "$ARTIFACTS_DIR"/s0_record_*${HYP_ID}*.json 2>/dev/null | head -1)
       if [ -n "$S0_RECORD" ] && [ -f "$S0_RECORD" ]; then
         (
-          HYP_ID="$HYP_ID" nohup bash "$DIR/02_Infrastructure/hooks/academic_factcheck.sh" \
+          HYP_ID="$HYP_ID" nohup bash "$DIR/02_Infrastructure/tools/debate_helpers/academic_factcheck.sh" \
             "$S0_RECORD" > /dev/null 2>>/tmp/academic_factcheck_${HYP_ID}.log
         ) &
         (
           HYP_ID="$HYP_ID" FC_CONTENT="$(cat "$S0_RECORD")" \
-            nohup bash "$DIR/02_Infrastructure/hooks/quant_factcheck.sh" \
+            nohup bash "$DIR/02_Infrastructure/tools/debate_helpers/quant_factcheck.sh" \
             "$S0_RECORD" > /dev/null 2>>/tmp/quant_factcheck_${HYP_ID}.log
         ) &
         echo "$(date +%H:%M:%S) ENFORCER: Compact factcheck hooks triggered for $HYP_ID" >> "$LOG"
@@ -437,7 +437,7 @@ print(json.dumps(out, ensure_ascii=False))
         R1_TRANSCRIPT="$TRANSCRIPT_JSON" \
         CODEX_R1_RESULT="$CODEX_R1_JSON" \
         HYP_ID="$HYP_ID" \
-        bash "$DIR/02_Infrastructure/hooks/run_codex_critic_r2.sh" \
+        bash "$DIR/02_Infrastructure/tools/debate_helpers/run_codex_critic_r2.sh" \
           > "$CODEX_R2_OUT.tmp" 2>>"$LOG"
         if [ -s "$CODEX_R2_OUT.tmp" ]; then
           mv "$CODEX_R2_OUT.tmp" "$CODEX_R2_OUT"

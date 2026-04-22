@@ -85,7 +85,7 @@ Claude Agent × 2 (병렬):
 
 Codex Critic × 1 (Bash):
   SCOUT_PLAN="..." L_CODE_FINDINGS="..." FAILED_STRATEGIES="..." \
-  bash 02_Infrastructure/hooks/run_codex_critic.sh
+  bash 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh
   → stage_artifacts/s0_debate_r1_codex_critic_{H_ID}.json
 
 (Academic·Quant LLM 스폰 금지 — fact-check Hook이 자동 대체)
@@ -125,7 +125,7 @@ Claude Agent × 4 (병렬, v55 Consensus 스키마):
 
 Codex Critic × 1 (Bash 직접 호출):
   SCOUT_PLAN="가설 요약" L_CODE_FINDINGS="관련 L-code" FAILED_STRATEGIES="실패 목록" \
-  bash 02_Infrastructure/hooks/run_codex_critic.sh
+  bash 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh
   → /tmp/codex_critic_result.json 파싱
   → stage_artifacts/s0_debate_r1_codex_critic_{H_ID}.json으로 저장
 ```
@@ -233,7 +233,7 @@ Claude Agent × 4 (병렬, 각자 R1과 동일 model):
 
 Codex Critic R2:
   R1_TRANSCRIPT="$(cat transcript)" CODEX_R1_RESULT="$(cat r1_result)" HYP_ID="H_1643" \
-  bash 02_Infrastructure/hooks/run_codex_critic_r2.sh
+  bash 02_Infrastructure/tools/debate_helpers/run_codex_critic_r2.sh
   → stage_artifacts/s0_debate_r2_codex_critic_{H_ID}.json으로 저장
 ```
 

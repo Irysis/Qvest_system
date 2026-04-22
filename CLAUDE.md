@@ -58,27 +58,36 @@ When ending a productive session (strategies run, infra changed, or significant 
 - **필수 역할**: codex_critic, risk_manager, (governor 또는 judge), quant*, academic* (* compact mode에서는 factcheck Hook으로 대체 가능)
 - Q-Lead가 debaters에 포함되면 REJECT. Q-Lead는 집계만 수행.
 
-## Harness Engineering v52 (Level 0 — 기계적 강제)
+## Harness Engineering v52 (Level 0 — 기계적 강제, Resurrection Phase A 정합화)
 모든 프로세스 규칙은 프롬프트가 아닌 Hook으로 강제한다. "엄밀함은 사라지지 않고 이동한다."
 
 | # | Hook | 이벤트 | 강제 대상 | Tier |
 |---|------|--------|-----------|------|
-| 1 | axiom_enforcement_hook.sh | PreToolUse[W/E] | AX-code 공리 위반 검출 | L3 |
+| 1 | axiom_enforcement_hook.sh | PreToolUse[W/E] | AX-code 공리 위반 (AX-001/002 warn+context, 나머지 block) | L3 |
 | 2 | safety_guard.sh | PreToolUse[W/E/B] | 05_Production/01_Literature 보호 | L3 |
-| 3 | forge_code_guard.sh | PreToolUse[W/E/B] | OPT-1~8 코드 최적화 + S1 overlay 금지 | L3 |
-| 4 | unified_agent_guard.sh | PreToolUse[Agent] | Stage 순서 + S5 RiskMgr 선행 | L3 |
+| 3 | forge_code_guard.sh | PreToolUse[W/E/B] | OPT-1~11 + S1 overlay 금지 (Rscript→pit_v3_daemon 분리 예정, Phase C1) | L3 |
+| 4 | unified_agent_guard.sh | PreToolUse[Agent] | Stage 순서 + S5 RiskMgr 선행 + s5_spawn_order 통합 | L3 |
 | 5 | s0_debate_guard.sh | PreToolUse[Agent] | 1인 다역할 스폰 차단 | L4 |
-| 6 | artifact_validator.sh | PostToolUse[Write] | artifact 스키마(v55 s0_record: expected_role 6종/trail 3종/gap_targeting_axes) + PIT 패턴 | L2 |
-| 7 | pipeline_trigger.sh | PostToolUse[W/B] | DONE→TODO 자동 라우팅 | L3 |
-| 8 | circuit_breaker.sh | PostToolUse[Bash] | 3회 연속 실패 자동 차단 | L3 |
-| 9 | risk_gate.sh | PostToolUse[Bash] | tail_risk 검증 | L2 |
-| 10 | (LLM agent) tail_risk check | PostToolUse[Bash(Rscript)] | 백테스트 후 tail_risk_result.json 존재 확인 | L4 |
-| 11 | (LLM prompt) s0_record QA | PostToolUse[Write(s0_record_*)] | S0 필수 필드 + ML 추가 필드 검증 | L4 |
-| 12 | **s0_debate_enforcer.sh** | PostToolUse[Write] | **3-Round 상태 머신 (v55 strict)** — R1 stance/veto + R2 stance_change/unresolved + VERDICT final_stances/consensus_tally/consensus_tier 강제 + 텔레그램 중계 | L4 |
-| 13 | s0_verdict_router.sh | FileChanged[S0_VERDICT_*] | APPROVE/REVISE/REJECT 라우팅 | L3 |
-| 14 | teammate_idle_guard.sh | TeammateIdle[*] | idle teammate 감지 → 작업 재할당 | L3 |
-| 15 | task_complete_guard.sh | TaskCompleted[*] | 태스크 완료 시 파이프라인 다음 단계 트리거 | L3 |
-| 16 | harness_health.sh | 부트스트랩 | 전체 Hook 건강 체크 (settings.json 밖) | L1 |
+| 6 | role_taxonomy_admission_gate.sh | PreToolUse[Agent] | 6-role 분류 admission | L2 |
+| 7 | artifact_validator.sh | PostToolUse[W] | artifact 스키마 + PIT 패턴 + hurdle_result S6 grace 흡수 | L2 |
+| 8 | cash_sleeve_validator.sh | PostToolUse[W] | cash_allocation role 검증 | L2 |
+| 9 | trail_consistency_checker.sh | PostToolUse[W] | 3-trail 일관성 | L2 |
+| 10 | pipeline_trigger.sh | PostToolUse[W/B] | DONE→TODO 라우팅 (Phase C2: py dispatcher + SQLite dedup) | L3 |
+| 11 | circuit_breaker.sh | PostToolUse[B] | 3회 연속 실패 warn | L2 |
+| 12 | risk_gate.sh | PostToolUse[B] | tail_risk 검증 | L2 |
+| 13 | s0_debate_enforcer.sh | PostToolUse[W] | 3-Round 상태 머신 (v55 strict; Phase C3: 4-file split 예정) | L4 |
+| 14 | milestone_commit.sh | PostToolUse[W] | 마일스톤 auto-commit + secret scan | L3 |
+| 15 | auto_commit_on_stop.sh | Stop | 세션 종료 auto-commit | L3 |
+| 16 | s0_verdict_router.sh | FileChanged[S0_VERDICT_*] | APPROVE/REVISE/REJECT 라우팅 | L3 |
+| 17 | teammate_idle_guard.sh | TeammateIdle | idle teammate 재할당 | L3 |
+| 18 | task_complete_guard.sh | TaskCompleted | 파이프라인 다음 단계 트리거 | L3 |
+| B1 | harness_health.sh | 부트스트랩 | Hook 건강 체크 + `--profile` latency 측정 (settings.json 밖) | L1 |
+
+### Helper scripts (hook 아님 — nohup으로 enforcer가 호출)
+`02_Infrastructure/tools/debate_helpers/` — run_codex_critic, run_codex_critic_r2, academic_factcheck, quant_factcheck, run_pit_intent_scan.
+
+### Archived (4.6 legacy, 2026-04-22 Phase A 이동)
+`02_Infrastructure/hooks/_archive_4_6/` — judge_autospawn.sh (artifact_validator 흡수), s5_spawn_order.sh (unified_agent_guard 통합).
 
 - **L1 bootstrap**: 세션 시작 시 1회 실행
 - **L2 soft gate**: 검증 실패 시 경고 + 로그
@@ -315,48 +324,17 @@ Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버
 
 ---
 
-## Axioms (auto-injected -- agent premises, Level 0)
+## Axioms (Level 0 공리 — 요약; 상세는 `_shared_prefix.md` SOT)
 모든 에이전트는 아래 공리를 전제로 작동한다. AX-code 위반 = 즉시 중단.
 
-- **AX-000**: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
-- **AX-001**: Defense는 조건부 성과로 평가한다. 전기간 SR 기준 적용 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.
-- **AX-002**: 규칙 안에서 찾아낸 성과가 진짜 성과. 프로세스 우회 = 판단의 미래참조 = C1 위반 동급.
+- **AX-000** [IMMUTABLE]: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
+- **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지.
+- **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조 = C1 위반 동급.
+- **AX-003** [empirical]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135.
+- **AX-004** [methodological]: market=KR, family=quality_profitability, single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite + multi-sleeve 내 Q07. L-133/134/139.
+- **AX-005 v1.2** [methodological]: market=KR, family=defense, universe=top20_long_only, low-beta/Q07+D25/4-axis composite 실패. EXCLUSION은 necessary not sufficient (Gate13 PASS 동시). L-136/140/165/166.
+- **AX-007** [methodological]: roles=[defense, core_secondary], structure=single_sleeve_long_only_top20, signal-portfolio translation 메커니즘 단절. 예외 4종(multi-sleeve / long-short / 50+ 분산 / ML sizing). L-160/165/166.
+- **AX-008** [process]: Verification Triangulation — Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수. L-159/167/168.
 
-계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변)
-
-### AX-003 [실증] [실패]: [실증 실패 규칙 초안] family=value, tags=VALUE_FAIL,EP_STANDALONE,LOW_TURNOVER, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)
-- 범위: market=KR, family=value, 
-- 근거: L-132, L-135 (L-code 2건)
-- 5축 점수: 0.82 (I=0.85 R=1.00 F=0.80 E=0.50 M=1.00)
-- 승격: 2026-04-17 | 다음 검토: 2026-07-16
-
-### AX-004 [방법론] [실패]: [방법론 실패 규칙 초안] family=quality_profitability, tags=HARD_FAIL_MDD,QUALITY_FAIL,CASH_PROFITABILITY, supporting=3건 L-code. 한국시장 quality_profitability standalone long-only의 구조적 실패.
-- 범위: market=KR, family=quality_profitability, 
-- 근거: L-133, L-134, L-139 (L-code 3건)
-- 5축 점수: 0.89 (I=0.78 R=1.00 F=1.00 E=0.50 M=1.00)
-- 승격: 2026-04-17 | 다음 검토: 2026-07-16
-
-### AX-005 [방법론] [실패]: [방법론 실패 규칙 확장 v1.2] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL,MULTI_SOURCE_DEFENSE_ANCHOR_FAIL,SIGNAL_PORTFOLIO_TRANSLATION_FAILURE, supporting=4건 L-code. 한국시장 defense standalone long-only 구조적 실패 — (1) low-beta, (2) Q07+D25 combo, (3) multi-source 4-axis regime-smoothed composite(M08+C19+Q07+R16)도 동일 패턴. ICIR 0.74~0.94 강한 signal에도 MDD 77~94% catastrophic translation failure. L-166: EXCLUSION clause(sector-neutralized + multi-sleeve 2/4) 만족에도 standalone fail → EXCLUSION은 necessary not sufficient condition 실증.
-- 범위: market=KR, family=defense, universe=top20_long_only
-- 근거: L-136, L-140, L-165, L-166 (L-code 4건)
-- 5축 점수: 0.94 (I=0.82 R=1.00 F=1.00 E=0.70 M=1.00)
-- EXCLUSION 주의: necessary not sufficient. EXCLUSION 1건 만족 + Gate13 signal-portfolio translation PASS 동시 충족 시에만 scope 밖 확정.
-- 승격: 2026-04-17 | 범위 확장: 2026-04-19 (L-165+L-166 편입, v1.1→v1.2) | 다음 검토: 2026-07-16
-
-### AX-007 [방법론] [실패]: Signal-Portfolio Translation Failure — Defense/Core_Secondary 단일 슬리브 top-20 long-only 구조적 실패. ICIR 강도에 무관하게 포트폴리오 레벨 MDD 파국 발생. 해결 경로: multi-sleeve 조건부 비중 (AX-001 v2 프레임).
-- 범위: market=KR, roles=[defense, core_secondary], structure=single_sleeve_long_only_top20
-- 근거: L-160 (STR_1683) + L-165 (STR_1685) + L-166 (STR_1687) — 3건 실증
-- 5축 점수: 0.86 (I=0.82 R=1.00 F=0.90 E=0.75 M=0.85)
-- 예외 4종 (Gate14 auto-reject 면제): (1) multi-sleeve portfolio 내 sleeve, (2) long-short structure, (3) diversified 50+ 분산, (4) ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha≥4/6 3-gate 입증
-- AX-005 관계: AX-005=전기간 standalone 실패, AX-007=signal→portfolio translation 메커니즘 단절 (보완적)
-- axiom 등록: .cache/axiom_core.json (단일 원본)
-- 승격: 2026-04-19 (Judge signoff PROMOTE_APPROVED, 5축 0.86) | 다음 검토: 2026-07-19
-
-### AX-008 [방법론] [프로세스]: Verification Process Triangulation Mandate — Forge self-check 단독 검증으로는 PIT/mandate/infra 위반 탐지 불충분. 3-source 검증 의무화 (Forge + Codex + Architect). 최소 2-source PASS 필수.
-- 범위: KR quant 전략 전반 (Layer B: verification process failure)
-- 근거: L-159 (spec transmission) + L-167 (Forge self-check 미탐지) + L-168 (factor_db_connector infra PIT) — 3건 실증
-- 5축 점수: 0.846 (I=0.78 R=1.00 F=0.85 E=0.72 M=0.88)
-- 2-layer 분류: Layer A(infrastructure: L-161/162/164/168 primary) vs Layer B(verification: L-159/167 primary, L-168 cross-evidence) — L-168은 Layer A primary / Layer B cross-evidence (5축 계산 시 1회만 산입)
-- 집행: Gate0 확장 — Codex cross-model rescue 필수. 2-source PASS 미달 → CONDITIONAL_HOLD
-- axiom 등록: .cache/axiom_core.json (단일 원본)
-- 승격: 2026-04-19 (Judge custodian APPROVED, 5축 0.846) | 다음 검토: 2026-07-19
+계층: AX-code(Lv0) > PIT C1-C15(Lv1) > L-code(Lv2) > Signals(Lv3).
+상세 본문·범위·승격 메타: `02_Infrastructure/prompts/_shared_prefix.md` 또는 `.cache/axiom_core.json` 참조.

@@ -87,12 +87,12 @@ for h in safety_guard.sh axiom_enforcement_hook.sh unified_agent_guard.sh forge_
   fi
 done
 # Codex 결과 jq 축약 확인
-if grep -q "jq -c" 02_Infrastructure/hooks/run_codex_critic.sh; then
+if grep -q "jq -c" 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh; then
   pass "run_codex_critic.sh jq 요약 적용"
 else
   fail "run_codex_critic.sh jq 요약 미적용"
 fi
-if grep -q "jq -c" 02_Infrastructure/hooks/run_codex_critic_r2.sh; then
+if grep -q "jq -c" 02_Infrastructure/tools/debate_helpers/run_codex_critic_r2.sh; then
   pass "run_codex_critic_r2.sh jq 요약 적용"
 else
   fail "run_codex_critic_r2.sh jq 요약 미적용"
@@ -110,7 +110,7 @@ else
   fail "pipeline_trigger.sh nohup 미적용"
 fi
 # Codex 캐시 디렉토리 확인
-if grep -q "codex_verdicts" 02_Infrastructure/hooks/run_codex_critic.sh; then
+if grep -q "codex_verdicts" 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh; then
   pass "run_codex_critic.sh verdict 캐시 로직 적용 (Block F)"
 else
   fail "run_codex_critic.sh 캐시 로직 미적용"
@@ -155,8 +155,8 @@ fi
 # ─── Block H: Compact Mode Hook 구현 ────────────────────────────────────
 echo "" | tee -a "$LOG"
 echo "[Block H] Compact Mode Hook 구현 검증" | tee -a "$LOG"
-[ -f "02_Infrastructure/hooks/academic_factcheck.sh" ] && pass "academic_factcheck.sh 신설됨" || fail "academic_factcheck.sh 없음"
-[ -f "02_Infrastructure/hooks/quant_factcheck.sh" ] && pass "quant_factcheck.sh 신설됨" || fail "quant_factcheck.sh 없음"
+[ -f "02_Infrastructure/tools/debate_helpers/academic_factcheck.sh" ] && pass "academic_factcheck.sh 신설됨" || fail "academic_factcheck.sh 없음"
+[ -f "02_Infrastructure/tools/debate_helpers/quant_factcheck.sh" ] && pass "quant_factcheck.sh 신설됨" || fail "quant_factcheck.sh 없음"
 if grep -q "QVEST_DEBATE_MODE" 02_Infrastructure/hooks/s0_debate_guard.sh; then
   pass "s0_debate_guard.sh Compact/Full 모드 분기"
 else
