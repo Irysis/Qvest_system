@@ -1,10 +1,11 @@
 # Admission Rule v3.8.1 — Gate 17 ACTIVE 승격 + Gate ID 정합 Patch
 
-**발효 일자 (PATCH DRAFT)**: 2026-04-23 (Session 69)
+**발효 일자 (FINAL)**: 2026-04-23 (Session 69)
 **이전 버전**: v3.8 draft (`admission_rule_v38_draft.md`, 2026-04-19 Session 68 Day 2)
 **변경 성격**: **Patch (minor) — Gate 17 ACTIVE 승격 + R 코드 gate_id 상수 정정 사양서**
 **작성자**: Judge (Session 69 Task, Q-Lead Option 1 승인)
-**Governor review 요청**: SendMessage 후 기록 예정
+**Governor review**: APPROVE_WITH_CONDITIONS (2026-04-23) — 수정사항 2건 반영 완료 (§1.2 `ax_cand_3rd_member_screening.R` 추가 정정 3줄 + `poison_pill_ic_return_audit.R` sub_gates key 주석 정책)
+**Governor sign-off 추가**: STR_1631 Gate 17 Non-applicable APPROVE / STR_1656 Gate 17 Non-applicable APPROVE_CONDITIONAL (retroactive audit 사유 명시 요구) / AX_CAND JSON gate_ref 업데이트 NOT REQUIRED (하드코딩 없음) / gap_vector v1.0.9+ 갱신 예약 (현 v1.0.8 blocker 없음)
 
 ---
 
