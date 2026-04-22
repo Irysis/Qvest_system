@@ -22,7 +22,7 @@ exec 9>"$LOCKFILE" || exit 0
 flock -n 9 || { echo "$(date +%H:%M:%S) SKIP: another trigger running" >> /tmp/pipeline_trigger.log; exit 0; }
 
 # Stale axiom lockfile cleanup (24h+) — 기존 정책 유지
-find /tmp -name "axiom_distill_trigger_*" -mmin +1440 -delete 2>/dev/null
+find /tmp -name "axiom_distill_trigger_*" -mmin +1440 -delete 2>/dev/null || true
 
 # 변경 파일 추출 (Write/Edit). Bash event는 fallback (full scan).
 CHANGED=""
