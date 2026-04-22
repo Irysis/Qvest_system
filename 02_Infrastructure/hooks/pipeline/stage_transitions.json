@@ -1,0 +1,80 @@
+{
+  "_doc": "Pipeline stage transitions — 선언적 매핑. stage_dispatch.py가 참조.",
+  "_doc_pattern": "src_glob: <agent>/inbox/DONE_<stage>_<strategy>.json → dst: <agent>/inbox/TODO_<stage>_<strategy>.json",
+  "_doc_handlers": "special_handler 지정 시 stage_dispatch.py가 해당 모듈 호출 (S4 role routing, S6 codex gating, PG2/PG3 distill)",
+  "transitions": [
+    {
+      "name": "S0_to_S1",
+      "src_glob": "scout/inbox/DONE_S0_*.json",
+      "dst_template": "forge/inbox/TODO_S1_{strategy}.json",
+      "method": "copy"
+    },
+    {
+      "name": "S1_to_S2",
+      "src_glob": "forge/inbox/DONE_S1_*.json",
+      "dst_template": "forge/inbox/TODO_S2_{strategy}.json",
+      "method": "copy"
+    },
+    {
+      "name": "S2_to_S3",
+      "src_glob": "forge/inbox/DONE_S2_*.json",
+      "dst_template": "scout/inbox/TODO_S3_{strategy}.json",
+      "method": "copy"
+    },
+    {
+      "name": "S3_to_S4",
+      "src_glob": "scout/inbox/DONE_S3_*.json",
+      "dst_template": "forge/inbox/TODO_S4_{strategy}.json",
+      "method": "copy"
+    },
+    {
+      "name": "S4_role_routing",
+      "src_glob": "forge/inbox/DONE_S4_*.json",
+      "dst_template": null,
+      "method": "special",
+      "special_handler": "role_router.route_s4"
+    },
+    {
+      "name": "S5_to_S6_judge_codex",
+      "src_glob": "forge/inbox/DONE_S5_*.json",
+      "dst_template": null,
+      "method": "special",
+      "special_handler": "stage_dispatch.s5_to_s6_split"
+    },
+    {
+      "name": "S6_to_S7",
+      "src_glob": "judge/inbox/DONE_S6_*.json",
+      "dst_template": "judge/inbox/TODO_S7_{strategy}.json",
+      "method": "special",
+      "special_handler": "stage_dispatch.s6_codex_gate"
+    },
+    {
+      "name": "S7_to_PG0",
+      "src_glob": "judge/inbox/DONE_S7_*.json",
+      "dst_template": "q_lead/inbox/TODO_PG0_{strategy}.json",
+      "method": "special",
+      "special_handler": "stage_dispatch.s7_grade_gate"
+    },
+    {
+      "name": "PG2_distill",
+      "src_glob": "q_lead/inbox/DONE_PG2_*.json",
+      "dst_template": null,
+      "method": "special",
+      "special_handler": "stage_dispatch.pg2_distill_async"
+    },
+    {
+      "name": "PG3_full_distill",
+      "src_glob": "q_lead/inbox/DONE_PG3_*.json",
+      "dst_template": null,
+      "method": "special",
+      "special_handler": "stage_dispatch.pg3_full_distill_async"
+    },
+    {
+      "name": "ARCHIVE_full_distill",
+      "src_glob": "*/inbox/DONE_ARCHIVE_*.json",
+      "dst_template": null,
+      "method": "special",
+      "special_handler": "stage_dispatch.pg3_full_distill_async"
+    }
+  ]
+}
