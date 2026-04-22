@@ -140,11 +140,19 @@
       "evidence_for_non_applicability": [
         "trail = ml_empirical_first (v55 3 trail 중 별도 verification 체계)",
         "role = ml_predictive (AX-001 v2 audit_defense_v2 적용 대상 아님)",
-        "309 factor ensemble이며 단일 poison pill factor 비중 > 10% 불가능 (MI top50 prefilter)"
+        "309 factor ensemble이며 단일 poison pill factor 비중 > 10% 불가능 (MI top50 prefilter)",
+        "**(Governor 2026-04-23 요구)** feature_level != factor_level: Gate 17 L-163 main rule은 factor-level `stress_icir × weight` product 측정. XGBoost feature importance는 tree split gain 기반 비가산 score이므로 factor-level weight와 수학적 정의 다름 (L-162 infra audit 선례 참조: linear composite dominance 측정도 linear/tree 분리 처리)"
       ],
       "alternative_ml_specific_check": "Feature-level SHAP importance 기준 분석. Top 1 feature SHAP 점유 ≥ 40% 시 dominance risk. 이는 Gate 17이 아닌 ML trail 검증 (Gate 19 candidate, v3.9 design).",
+      "future_ml_gate_17_placeholder_proposal": {
+        "proposed_measure": "feature_importance(f) × rolling_loss_rate(f, t-12m ~ t) product",
+        "interpretation": "SHAP 상위 feature가 최근 12개월 loss contribution이 크면 ML 포트폴리오에 negative signal 누적. 단일 scalar threshold 미확정.",
+        "status": "NOT_IMPLEMENTED (v3.8.1 placeholder). 구현 조건: (a) XGBoost SHAP export 표준화 (Forge), (b) loss_rate 월별 tracking 표준화 (Forge + Governor allocation 메모리), (c) threshold calibration (Scout + Judge Harvey t>3.0 기준 필요).",
+        "v3_9_target": "ML trail 전용 Gate 19 (ML feature concentration + rolling loss product) 설계 시 본 placeholder를 seed로 채택.",
+        "governor_requirement_met": "YES — Governor 2026-04-23 APPROVE_CONDITIONAL 조건 (b) 방향 제시 충족"
+      },
       "scout_collaboration_needed": "YES — Scout handoff kit v1.x가 feature-level SHAP 포함 여부 확인 필요. 미포함 시 Forge에 SHAP export 요청 + Scout이 feature concentration 기준 제안.",
-      "governor_confirmation_required": "Governor Q2 회신 대기"
+      "governor_confirmation_status": "APPROVE_CONDITIONAL (2026-04-23) — 조건 2건 반영 완료: (a) feature_level != factor_level 근거 명시, (b) 향후 ML Gate 17 대안 측정법 placeholder 제시"
     },
 
     "overall_action": [
@@ -158,12 +166,13 @@
     "STR_1631_gate_17": {
       "decision": "NON_APPLICABLE",
       "reason": "core_secondary role, not Defense composite, analyst consensus forward-looking",
-      "confirmation": "Governor Q2 + Q-Lead sign-off"
+      "confirmation": "Governor 2026-04-23 APPROVE + Q-Lead sign-off 대기"
     },
     "STR_1656_gate_17": {
-      "decision": "NON_APPLICABLE_RECOMMENDED",
-      "reason": "ml_predictive role, trail=ml_empirical_first, non-linear decomposition 불가",
-      "confirmation": "Governor Q2 + Scout SHAP 합의 + Q-Lead sign-off"
+      "decision": "NON_APPLICABLE",
+      "reason": "ml_predictive role, trail=ml_empirical_first, feature_level != factor_level (Governor 요구 근거 명시 완료 + v3.9 Gate 19 placeholder 제안 포함)",
+      "confirmation": "Governor 2026-04-23 APPROVE_CONDITIONAL (조건 2건 반영 완료) + Q-Lead sign-off 대기",
+      "status_upgrade": "NON_APPLICABLE_RECOMMENDED → NON_APPLICABLE (Governor 조건 충족 후)"
     },
     "escalation_if_governor_disagrees": "Gate 17을 Defense composite 넘어 Core/ML에도 적용 시 stress_icir 분해 방법론 재정의 필요 (v3.9 design)"
   },
@@ -272,12 +281,13 @@
   "sign_off": {
     "drafted_by": "Judge (Session 69, 2026-04-23)",
     "approval_chain_proposed": [
-      "Judge custodian (본 설계서)",
-      "Governor review (Q1/Q2/Q3 회신)",
-      "team-lead (Q-Lead) 최종 승인",
-      "Forge measurement dispatch",
-      "Judge final verdict artifact 발행"
+      "Judge custodian (본 설계서) — DONE",
+      "Governor review (Q1/Q2/Q3 회신) — DONE 2026-04-23 APPROVE / APPROVE_CONDITIONAL / NOT_REQUIRED",
+      "Judge Governor 조건 반영 (feature_level 근거 + v3.9 placeholder) — DONE 2026-04-23",
+      "team-lead (Q-Lead) 최종 승인 — PENDING",
+      "Forge measurement dispatch (monthly_returns_gross.csv 재계산) — PENDING (STR_1686/STR_1689 S1 완료 후)",
+      "Judge final verdict artifact 발행 — PENDING"
     ],
-    "completion_status": "DESIGN_DRAFT — Governor review 대기"
+    "completion_status": "DESIGN_FINAL (Governor APPROVE_WITH_CONDITIONS 수정사항 반영 완료) — Q-Lead 최종 sign-off 대기"
   }
 }
