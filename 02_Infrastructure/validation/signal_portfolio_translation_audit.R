@@ -1,5 +1,5 @@
 #==============================================================================
-# V7 Research Engine — Signal-Portfolio Translation Failure Audit (Gate 13)
+# V7 Research Engine — Signal-Portfolio Translation Failure Audit (Gate 16, historical Gate 13)
 # signal_portfolio_translation_audit.R
 #
 # Detects L-160/L-165 family pattern: strong signal-level metrics
@@ -24,7 +24,7 @@
 # Reference:
 #   stage_artifacts/gate_14_signal_portfolio_translation_failure_design.json
 #   methodology_memory.md L-160 / L-165
-#   Q-Lead Day 2 Task #6 — team-lead 명명 Gate 13 채택
+#   Q-Lead Day 2 Task #6 — team-lead 명명 Gate 16 채택 (v3.8.1, historical Gate 13)
 #
 # Usage:
 #   source("02_Infrastructure/validation/signal_portfolio_translation_audit.R")

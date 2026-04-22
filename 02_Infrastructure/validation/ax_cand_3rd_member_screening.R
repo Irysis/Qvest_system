@@ -1,5 +1,5 @@
 #==============================================================================
-# V7 Research Engine — AX_CAND 2/3 → 3rd Member Screening (Gate 14)
+# V7 Research Engine — AX_CAND 2/3 → 3rd Member Screening (Gate 18, historical Gate 14)
 # ax_cand_3rd_member_screening.R
 #
 # Scans qepm/memory/axioms/candidates/*.json for AX_CAND entries currently

@@ -1,5 +1,5 @@
 #==============================================================================
-# V7 Research Engine — Poison Pill IC-Return Audit (Gate 12)
+# V7 Research Engine — Poison Pill IC-Return Audit (Gate 17, historical Gate 12)
 # poison_pill_ic_return_audit.R
 #
 # Detects L-163 family pattern: composite Defense factors containing
@@ -236,7 +236,8 @@ audit_poison_pill_ic_return <- function(strategy_id,
     audited_at      = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     overall_verdict = overall,
     weight_sum      = round(total_w, 4),
-    # gate_id renumbered Gate 12 → Gate 17 per Judge v3.8.1 patch 부록 A.7
+    # sub_gates key naming: historical (v3.4 Gate 12 era). Gate ID = Gate 17 as of v3.8.1.
+    # downstream callers: do NOT match on sub_gate key prefix "12" for Gate ID routing.
     sub_gates = list(
       `17a_per_factor_pill_check`     = a,
       `17b_composite_pill_count`      = b,
