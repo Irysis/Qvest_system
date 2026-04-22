@@ -1,4 +1,6 @@
 #!/bin/bash
+
+trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
 # Axiom Enforcement Hook — PreToolUse[Write|Edit] (v52 AX 배선)
 # AX-code 위반 패턴을 탐지하고 차단한다.

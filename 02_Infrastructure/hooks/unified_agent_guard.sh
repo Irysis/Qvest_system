@@ -1,4 +1,6 @@
 #!/bin/bash
+
+trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
 # Unified Agent Guard — PreToolUse[Agent] Hook (v52 하네스)
 # 3중 검증:

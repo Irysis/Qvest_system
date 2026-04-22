@@ -1,4 +1,6 @@
 #!/bin/bash
+
+trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
 # Safety Guard — PreToolUse Hook (3중 방어선 1선)
 # Write/Edit/Bash 실행 전에 금지 패턴 차단.

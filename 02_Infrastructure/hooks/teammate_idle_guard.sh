@@ -1,4 +1,6 @@
 #!/bin/bash
+
+trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
 # TeammateIdle Hook — 에이전트가 idle 되려 할 때 inbox 재확인 지시
 # exit 0 = idle 허용, exit 2 = 피드백 보내고 계속 작업

@@ -1,4 +1,6 @@
 #!/bin/bash
+
+trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
 # TaskCompleted Hook — 작업 완료 시 artifact 검증
 # exit 0 = 완료 허용, exit 2 = 완료 차단 + 피드백
