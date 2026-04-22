@@ -144,13 +144,19 @@ v3.8 draft §2 "Gate 17 (Poison Pill IC-Return Decoupling)" 항목은 "PENDING t
 
 ---
 
-## 3. 실행 순서 (Q-Lead 최종 sign-off 후)
+## 3. 실행 순서 (Q-Lead 2026-04-23 확정)
 
-1. **Governor review** — 본 patch 수신 후 portfolio_gap_vector v1.0.7 명명 동기 확인. 불일치 시 Judge-Governor 협의.
-2. **Forge/Architect 코드 수정** — §1.2 사양서 기준 3 파일 `gate_id` 상수 정정. sub-gate hash key 정책 결정 (Option X 보수 권고).
-3. **Hook validator 갱신** — `artifact_validator.sh`의 Gate 16/17/18 regex 활성화.
-4. **기존 artifact 재생성 또는 annotation** — 기존 `poison_pill_ic_return_audit.json`에 `schema_version: "v1.0-pre-v3.8.1"` annotation 추가 (Option A) 또는 재실행으로 갱신 (Option B).
-5. **v3.8 draft 본문 직접 업데이트** vs **v3.8.1 독립 유지** — Q-Lead 결정. 추천: v3.8 final 승격 시 본 patch 내용을 본문에 병합하여 v3.8 final로 정규화 (v3.8.1 patch는 히스토리로 archive).
+**Status**: Governor APPROVE_WITH_CONDITIONS + Q-Lead 최종 sign-off APPROVED. Patch chain 독립 유지 결정.
+
+1. **Governor review** — ✅ **완료** (2026-04-23 APPROVE_WITH_CONDITIONS). 수정사항 2건 반영 완료.
+2. **Q-Lead sign-off** — ✅ **완료** (2026-04-23 APPROVED).
+3. **Forge/Architect R 코드 정정** — 🔄 **DISPATCHED** (Q-Lead 2026-04-23). §1.2 사양서 6 항목 + 주석 블록 (Governor 수정 반영). sub-gate hash key = Option X 보수 유지.
+4. **Hook validator 갱신** — 🔜 Forge 담당. `artifact_validator.sh`의 Gate 16/17/18 regex 활성화. R 코드 정정과 동시 배포.
+5. **기존 artifact annotation 또는 재생성** — Judge 권고: schema_version annotation 추가 (Option A, 최소 변경). 재실행(Option B)은 Retroactive monthly_returns_gross.csv 재계산과 동시 진행.
+6. **Retroactive measurement** — 🔜 Forge STR_1686/STR_1689 S1 완료 후. monthly_returns_gross.csv 재계산 + audit_from_strategy_dir() (STR_1631 + STR_1656).
+7. **Judge final verdict** — 🔜 `retroactive_audit_final_v3_8_1.json` 발행 (ESTIMATED → PRECISE).
+8. **Governor portfolio_gap_vector v1.0.9 갱신** — 🔜 `admission_rule_version: "v3.8.1 (18 gates)"` 명시.
+9. **본문 병합** — ⏸ **보류** (Q-Lead 2026-04-23 결정). major version bump (v3.9 또는 v4.0) 시점에 일괄 처리. Patch chain 독립 유지 (Governor revX pattern과 동일).
 
 ---
 
@@ -178,9 +184,22 @@ v3.8 §6 Retroactive Audit 대상(STR_1631_SYN_05, STR_1656_MLRA_M05)은 Gate 16
 ## 6. Sign-off
 
 - **Drafted by**: Judge (Session 69, 2026-04-23)
-- **Approved by**: team-lead (Q-Lead) — "v3.8.1 patch Option 1 승인"
-- **Pending**: Governor review + Forge/Architect R 코드 정정 + Q-Lead 최종 sign-off
-- **Next**: Governor SendMessage review 요청 (본 patch + R 코드 명명 정정 사양서 전달) + Retroactive Audit 설계서 초안
+- **Approved by (Option 1)**: team-lead (Q-Lead) — "v3.8.1 patch Option 1 승인"
+- **Governor review**: APPROVE_WITH_CONDITIONS (2026-04-23) — 수정사항 2건 전부 반영 완료
+- **Q-Lead 최종 sign-off**: **APPROVED** (2026-04-23) — "8/8 조건 충족 + 3 artifact 검증 완료"
+- **Versioning policy** (Q-Lead 2026-04-23 결정): **Patch chain 독립 유지** (본문 병합 보류)
+  - v3.8 lawbook 본문은 건드리지 않음. v3.8.1/v3.8.2/... patch chain으로 순차 적용.
+  - Hook validator + R 코드는 항상 latest patch까지 적용. `artifact_validator.sh` 갱신 시 "v3.8 + patches through v3.8.1" 기준.
+  - 본문 통합은 major version bump (v3.9 또는 v4.0) 시점에 일괄 처리.
+  - Governor revX pattern과 동일 (rev6/rev7/rev8 독립 유지).
+- **Execution order confirmed** (Q-Lead 2026-04-23):
+  1. Forge R 코드 정정 dispatch — **DISPATCHED** (Q-Lead)
+  2. Hook validator Gate 16/17/18 regex 갱신 — Forge
+  3. STR_1686/STR_1689 S1 완료 후 Retroactive monthly_returns_gross.csv 재계산 — Forge
+  4. Judge `retroactive_audit_final_v3_8_1.json` 발행 (ESTIMATED → PRECISE)
+  5. Governor `portfolio_gap_vector v1.0.9` 갱신 (`admission_rule_version: v3.8.1 (18 gates)`)
+  6. 본문 병합은 v3.9/v4.0 major bump 시점 (현재 보류)
+- **Next**: Forge R 코드 정정 결과 수신 시 Judge가 `artifact_validator.sh` regex와 정합 검증 + S6 cascade 진입 (Forge STR_1686/STR_1689 DONE → TODO_S6)
 
 ---
 
