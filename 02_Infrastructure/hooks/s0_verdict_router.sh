@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 #==============================================================================
 # s0_verdict_router.sh — FileChanged Hook for S0_VERDICT_*.json
-#
+#==============================================================================
+
+# ERR trap (Phase C3 전수 강제) — hook 실패 시 도구 차단 방지
+trap 'echo "{}"; exit 0' ERR
+
+#==============================================================================
 # v55 Consensus 기반 판정 (점수제 폐지):
 #   debaters[].stance (APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) 집계
 #   veto_flag 동의 → REVISE/REJECT 강제

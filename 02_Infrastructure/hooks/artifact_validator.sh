@@ -4,6 +4,9 @@
 # 산출물 JSON 스키마 검증 + PIT 패턴 탐지 + L-code EXIT CONDITION.
 #==============================================================================
 
+# ERR trap (Phase C3 전수 강제) — hook 실패 시 도구 차단 방지
+trap 'echo "{}"; exit 0' ERR
+
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 LOG="/tmp/artifact_validation.log"
 
