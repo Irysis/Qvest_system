@@ -321,6 +321,16 @@ tryCatch({
 }, error = function(e) cat("[Step 12 WARN]", conditionMessage(e), "\n"))
 
 # ===================================================================
+# 12b. daily_returns.csv (Scout S3 TDC 측정용)
+# ===================================================================
+tryCatch({
+  dr <- data.table(Date = index(sim$strategy_xts),
+                   ret  = as.numeric(sim$strategy_xts))
+  fwrite(dr, file.path(OUT_DIR, "daily_returns.csv"))
+  cat("[Step 12b] daily_returns.csv saved.\n")
+}, error = function(e) cat("[Step 12b WARN]", conditionMessage(e), "\n"))
+
+# ===================================================================
 # 13. Summary
 # ===================================================================
 elapsed <- round(difftime(Sys.time(), t0, units = "mins"), 1)
