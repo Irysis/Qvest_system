@@ -5,16 +5,17 @@
   "str_name": "STR_1695_h_smoke_v55_l22",
   "factor": "L22_Ret_Autocorr",
   "created": "2026-04-19",
+  "updated": "2026-04-23",
   "created_by": "Forge",
-  "icir": "NA",
+  "icir": 0.241,
   "ic_mean": 0.0143,
-  "ic_t": "NA",
-  "cagr": "NA",
-  "sr": "NA",
-  "mdd": "NA",
-  "turnover": "NA",
+  "ic_t": null,
+  "cagr": 0.1332,
+  "sr": 0.571,
+  "mdd": 0.63,
+  "turnover": 11.201,
   "hurdle_grade": "F",
-  "hard_fail": false,
+  "hard_fail": true,
   "PIT_check": {
     "C1": "rolling autocorr via Factor DB 252d window",
     "C2": "month-end signal t+1 execution",
@@ -27,5 +28,22 @@
     "COND3_pit_c13c14c15": true,
     "COND6_turnover_lt600": false
   },
-  "notes": "v55 smoke run. hurdle=파이프라인 동작 증거. recent_3y_icir 현재 시점 선택 한계(UD-2) 인식."
+  "fail_reasons": [
+    "COND-1 MDD 63.0% > 45% VIOLATED",
+    "COND-6 Turnover 1120% > 600% VIOLATED"
+  ],
+  "metrics": {
+    "CAGR_pct": 13.32,
+    "AnnVol_pct": 23.33,
+    "Sharpe": 0.571,
+    "IR": 0.241,
+    "MDD_pct": 63.0,
+    "Calmar": 0.211,
+    "Turnover_Ann_pct": 1120.1,
+    "Rolling3Y_Pos_pct": 78.7,
+    "BM_Corr": 0.677
+  },
+  "s5_mutation_required": true,
+  "s5_notes": "L22_Ret_Autocorr 단독 구조적 실패(과다 턴오버+MDD). S5 mutation 필요: (1) 섹터 중립화 또는 score_diff 필터로 TO 억제, (2) DD Brake 오버레이(S5 전용), (3) 멀티팩터 블렌드로 변동성 완화.",
+  "notes": "v55 smoke run 완료(2026-04-19 실행, 2026-04-23 갱신). 파이프라인 동작 확인됨. L22 단독 EW20 구조적 한계 실증."
 }
