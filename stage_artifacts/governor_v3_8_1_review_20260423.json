@@ -1,0 +1,94 @@
+{
+  "artifact_type": "governor_admission_rule_review",
+  "rule_id": "admission_rule_v3.8.1",
+  "verdict": "APPROVE_WITH_CONDITIONS",
+  "issued_by": "Governor",
+  "issued_at": "2026-04-23",
+  "session": 69,
+  "judge_patch_ref": "00_Lawbook/admission_rule_v381_patch.md",
+
+  "q1_gap_vector_naming": {
+    "question": "portfolio_gap_vector v1.0.7 Gate 16/17 명명 동기화 확인",
+    "finding": "gap_vector 현 버전은 v1.0.8 (v1.0.7 아님). 본문에 'admission_rule_version: v3.5.1 (12 gates + Gate 13 L-164 extension = 13 gates total)' + 'Gate 13' mention 1건 존재. Gate 16/17/18 명명 없음.",
+    "governor_answer": "BLOCKER_NONE. gap_vector는 PG0~PG3 운영 문서이며 Gate ID 참조는 부수적 주석. PG1 gate_ledger(pg1_gate_ledger_v353p1_effective_20260419.json)가 18-gate 목록의 authoritative source. v1.0.8 즉시 갱신 불필요.",
+    "deferred_action": "v1.0.9+ 갱신 시 admission_rule_version 필드를 'v3.8.1 (18 gates)'로 업데이트 예약 등록."
+  },
+
+  "q2_retroactive_audit": {
+    "question": "STR_1631_SYN_05 / STR_1656_MLRA_M05 Gate 17 Non-applicable 동의 여부",
+    "str_1631": {
+      "governor_answer": "AGREE — Non-applicable. audit_poison_pill_ic_return()은 Defense composite의 stress_icir × weight product 측정 gate. STR_1631은 Core Primary 역할이며 factor_weight × stress_icir decomposition 구조 아님. 호출 생략 타당."
+    },
+    "str_1656_mlra_m05": {
+      "governor_answer": "AGREE_CONDITIONAL — Non-applicable 분류 동의. ML trail의 feature importance는 factor-level stress_icir 분해와 다른 축.",
+      "condition": "retroactive audit 설계서(Judge 별도 작성 예정)에 Non-applicable 사유 2가지 반드시 명시 요청: (a) feature_level != factor_level 근거 — L-162 infra audit 선례 참조. (b) 향후 ML 전략 Gate 17 대안 측정법 placeholder 기재 (예: feature_importance × rolling_loss_rate product). 현재 구현 없음, 방향 제시만으로 충분."
+    }
+  },
+
+  "q3_ax_cand_gate_ref": {
+    "question": "AX_CAND candidate JSON gate_ref 'Gate 13/14' 하드코딩 여부",
+    "file_checked": "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json",
+    "finding": "gate_ref / gate_id 하드코딩 없음 확인. supporting_l_codes 기반 동작.",
+    "governor_answer": "BLOCKER_NONE. 별도 업데이트 불필요."
+  },
+
+  "modification_required_2_items": {
+    "_summary": "Judge 사양서(admission_rule_v381_patch.md §1.2)에서 누락된 항목 2건. Forge/Architect 실행 전 사양서에 반드시 추가 필요.",
+
+    "modification_1_mandatory": {
+      "title": "ax_cand_3rd_member_screening.R 내부 문자열 정정 누락",
+      "description": "Judge 사양서 §1.2 표에 :161 정정만 포함. :89/:93/:191 3곳 누락.",
+      "required_additions_to_spec": [
+        {
+          "file": "02_Infrastructure/validation/ax_cand_3rd_member_screening.R",
+          "line": 89,
+          "type": "comment",
+          "current": "Gate 13 hard_fail = strong evidence for translation family",
+          "corrected": "Gate 16 hard_fail = strong evidence for translation family"
+        },
+        {
+          "file": "02_Infrastructure/validation/ax_cand_3rd_member_screening.R",
+          "line": 93,
+          "type": "hits_string",
+          "current": "Gate 13 HARD_FAIL aligns with translation failure family",
+          "corrected": "Gate 16 HARD_FAIL aligns with translation failure family"
+        },
+        {
+          "file": "02_Infrastructure/validation/ax_cand_3rd_member_screening.R",
+          "line": 191,
+          "type": "cat_output",
+          "current": "=== Gate 14 — AX_CAND 3rd Member Screening ===",
+          "corrected": "=== Gate 18 — AX_CAND 3rd Member Screening ==="
+        }
+      ]
+    },
+
+    "modification_2_required": {
+      "title": "poison_pill_ic_return_audit.R sub_gate key historical naming 주석 추가",
+      "description": "Option X(보수) 채택 시 downstream caller가 sub_gate key prefix '12'를 Gate ID로 오인할 경우 artifact_validator.sh 오탐 가능. 명시적 주석으로 차단 필요.",
+      "file": "02_Infrastructure/validation/poison_pill_ic_return_audit.R",
+      "lines": "239-243",
+      "required_comment_to_add": "# sub_gates key naming: historical (v3.4 Gate 12 era). Gate ID = Gate 17 as of v3.8.1.\n# downstream callers: do NOT match on sub_gate key prefix '12' for Gate ID routing.",
+      "placement": "directly above the sub_gates = list(...) block"
+    }
+  },
+
+  "final_gate_table": {
+    "gate_16": { "name": "Signal-Portfolio Translation Failure", "status": "ACTIVE", "r_code": "signal_portfolio_translation_audit.R", "gate_id_current": "Gate 13", "gate_id_corrected": "Gate 16" },
+    "gate_17": { "name": "Poison Pill IC-Return Decoupling", "status": "ACTIVE (v3.8.1 승격)", "r_code": "poison_pill_ic_return_audit.R", "threshold_hard_fail": -0.05, "gate_id_current": "Gate 12", "gate_id_corrected": "Gate 17" },
+    "gate_18": { "name": "AX_CAND 2/3 → 3rd Member Screening", "status": "ACTIVE", "r_code": "ax_cand_3rd_member_screening.R", "gate_id_current": "Gate 14", "gate_id_corrected": "Gate 18" }
+  },
+
+  "execution_sequence_confirmed": [
+    "1. Judge: 사양서 수정 2건 반영 (modification_1 + modification_2) + Q-Lead 최종 sign-off",
+    "2. Forge/Architect: R 코드 6곳 정정 (사양서 §1.2 원본 3곳 + modification_1 추가 3곳)",
+    "3. Forge/Architect: poison_pill_ic_return_audit.R:239 주석 추가",
+    "4. artifact_validator.sh Gate 16/17/18 regex 활성화",
+    "5. 기존 artifact annotation (Option A: schema_version v1.0-pre-v3.8.1 추가)",
+    "6. gap_vector v1.0.9+ 갱신 시 admission_rule_version 동기화 (DEFERRED)"
+  ],
+
+  "backward_compat_confirmed": true,
+  "blocker_count": 0,
+  "modification_required_count": 2
+}

@@ -82,23 +82,38 @@ v3.8 draft §2 "Gate 17 (Poison Pill IC-Return Decoupling)" 항목은 "PENDING t
 
 **배경**: v3.7 Gate 14(Algebraic Identity)/Gate 15(Linear Composite)과 v3.8 신설 Gate 16/17/18이 R 코드에서 Gate 12/13/14로 명명되어 **번호 중복**. 특히 "Gate 14 Algebraic Identity"(v3.7) vs "Gate 14 AX_CAND 3rd Member Screening"(R 코드)가 충돌.
 
-**정정 사양서**:
+**정정 사양서 (Governor 2026-04-23 review 반영 — §1.2 확장: 3 → 6 항목)**:
 
-| 파일 | 현재 `gate_id` 상수 | v3.8.1 정정 값 |
-|------|-----|---------------|
-| `02_Infrastructure/validation/signal_portfolio_translation_audit.R:192` | `"Gate 13 (Signal-Portfolio Translation Failure)"` | `"Gate 16 (Signal-Portfolio Translation Failure)"` |
-| `02_Infrastructure/validation/poison_pill_ic_return_audit.R:234` | `"Gate 12 (Poison Pill IC-Return)"` | `"Gate 17 (Poison Pill IC-Return Decoupling)"` |
-| `02_Infrastructure/validation/ax_cand_3rd_member_screening.R:161` | `"Gate 14 (AX_CAND 2/3 → 3rd Member Screening)"` | `"Gate 18 (AX_CAND 2/3 → 3rd Member Screening)"` |
+| # | 파일 | 위치 | 현재 값 | v3.8.1 정정 값 | 유형 |
+|---|------|------|---------|--------------|------|
+| 1 | `signal_portfolio_translation_audit.R` | `:192` | `gate_id = "Gate 13 (Signal-Portfolio Translation Failure)"` | `"Gate 16 (Signal-Portfolio Translation Failure)"` | gate_id 상수 |
+| 2 | `poison_pill_ic_return_audit.R` | `:234` | `gate_id = "Gate 12 (Poison Pill IC-Return)"` | `"Gate 17 (Poison Pill IC-Return Decoupling)"` | gate_id 상수 |
+| 3 | `ax_cand_3rd_member_screening.R` | `:161` | `gate_id = "Gate 14 (AX_CAND 2/3 → 3rd Member Screening)"` | `"Gate 18 (AX_CAND 2/3 → 3rd Member Screening)"` | gate_id 상수 |
+| 4 **(Governor 추가)** | `ax_cand_3rd_member_screening.R` | `:89` | `# Direct verdict signal (Gate 13 hard_fail = strong evidence for translation family)` | `# Direct verdict signal (Gate 16 hard_fail = strong evidence for translation family)` | 주석 |
+| 5 **(Governor 추가)** | `ax_cand_3rd_member_screening.R` | `:93` | `hits <- c(hits, "Gate 13 HARD_FAIL aligns with translation failure family")` | `hits <- c(hits, "Gate 16 HARD_FAIL aligns with translation failure family")` | hits 문자열 |
+| 6 **(Governor 추가)** | `ax_cand_3rd_member_screening.R` | `:191` | `cat("=== Gate 14 — AX_CAND 3rd Member Screening ===\n")` | `cat("=== Gate 18 — AX_CAND 3rd Member Screening ===\n")` | print_summary() 출력 |
 
 **정정 방법** (Judge 권고, Forge/Architect 실행):
-1. 단순 문자열 치환. Sub-gate 내부 명명("12a/12b/12c")은 hash key로 사용되는 경우 v3.8.1 내부 naming policy에 따라 유지 또는 `17a/17b/17c` 재명명 결정 필요 (`poison_pill_ic_return_audit.R:239~243` `sub_gates` list key 4곳).
-2. artifact JSON의 `sub_gates` 하위 key가 downstream에서 hash lookup되는 경우 변경 전후 호환성 체크 필요. Judge 권고 **Option X** (보수): 상위 `gate_id`만 변경, sub-gate key는 "12a/12b/12c" 유지하되 docstring에 "historical, v3.4 내부 명명" 주석 추가.
-3. 변경 후 `artifact_validator.sh`의 Gate ID regex 검증 (v3.8 draft §7 hook integration)이 "Gate 16" / "Gate 17" / "Gate 18" 명명을 기대하므로 호환 확인.
+1. 6곳 모두 단순 문자열 치환. 항목 #4/#5는 `gate_13_verdict` 함수 인자명을 `gate_16_verdict`로 rename 시 function signature 변경 범위 점검 필요 (호출자 영향). Judge 권고: 인자명 `gate_13_verdict`는 그대로 두고 **주석/문자열만** 변경하여 downstream API 호환성 유지.
+2. Sub-gate 내부 명명("12a/12b/12c") — **Option X (보수 유지)** Governor 동의. 상위 `gate_id`만 변경, sub-gate key는 "12a/12b/12c" 유지.
+3. **Governor 요구 주석 (필수)** — `poison_pill_ic_return_audit.R:239~243` 인근에 다음 주석 블록 추가:
+   ```r
+   # sub_gates key naming: historical (v3.4 Gate 12 era). Gate ID = Gate 17 as of v3.8.1.
+   # downstream callers: do NOT match on sub_gate key prefix "12" for Gate ID routing.
+   sub_gates = list(
+     `12a_per_factor_pill_check`     = a,
+     `12b_composite_pill_count`      = b,
+     `12c_regime_amplification_flag` = c_
+   ),
+   ```
+   이유: `artifact_validator.sh`가 sub_gate key를 Gate ID로 오인할 경우 오탐 가능성 차단 (Governor APPROVE_WITH_CONDITIONS 필수 조건 2).
+4. 변경 후 `artifact_validator.sh`의 Gate ID regex 검증 (v3.8 draft §7 hook integration)이 "Gate 16" / "Gate 17" / "Gate 18" 명명을 기대하므로 호환 확인.
 
 **영향**:
 - v3.8 draft §7 "hook integration" 조항 (Gate 13/14 거부 로직)과 정합
 - Gate ID 충돌(v3.7 Gate 14 vs R 코드 Gate 14) 해소
-- 기존 테스트 fixture가 `gate_id = "Gate 12"`를 기대한다면 fixture 갱신 필요
+- 기존 테스트 fixture가 `gate_id = "Gate 12"` 또는 `cat("=== Gate 14 ...")` 출력을 기대한다면 fixture 갱신 필요
+- `ax_cand_3rd_member_screening.R` 단독 실행 시 console 출력이 "Gate 18"로 표시됨 (CI/테스트 log 파싱 regex 갱신 필요할 수 있음)
 
 ### 1.3 v3.8 draft §9 참조 섹션 업데이트
 
@@ -169,40 +184,61 @@ v3.8 §6 Retroactive Audit 대상(STR_1631_SYN_05, STR_1656_MLRA_M05)은 Gate 16
 
 ---
 
-## 부록 A — R 코드 정정 diff 미리보기
+## 부록 A — R 코드 정정 diff 미리보기 (Governor 2026-04-23 review 반영, 6 항목)
 
-### signal_portfolio_translation_audit.R:192
+### A.1 `signal_portfolio_translation_audit.R:192` — gate_id 상수
 ```diff
 -    gate_id                   = "Gate 13 (Signal-Portfolio Translation Failure)",
 +    gate_id                   = "Gate 16 (Signal-Portfolio Translation Failure)",
 ```
 
-### poison_pill_ic_return_audit.R:234
+### A.2 `poison_pill_ic_return_audit.R:234` — gate_id 상수
 ```diff
 -    gate_id         = "Gate 12 (Poison Pill IC-Return)",
 +    gate_id         = "Gate 17 (Poison Pill IC-Return Decoupling)",
 ```
 
-### ax_cand_3rd_member_screening.R:161
+### A.3 `ax_cand_3rd_member_screening.R:161` — gate_id 상수
 ```diff
 -    gate_id              = "Gate 14 (AX_CAND 2/3 → 3rd Member Screening)",
 +    gate_id              = "Gate 18 (AX_CAND 2/3 → 3rd Member Screening)",
 ```
 
-### poison_pill_ic_return_audit.R sub_gates (line 239~243, Option X 보수 권고)
+### A.4 `ax_cand_3rd_member_screening.R:89` — 주석 (Governor 추가)
+```diff
+-  # Direct verdict signal (Gate 13 hard_fail = strong evidence for translation family)
++  # Direct verdict signal (Gate 16 hard_fail = strong evidence for translation family)
+```
+
+### A.5 `ax_cand_3rd_member_screening.R:93` — hits 문자열 (Governor 추가)
+```diff
+-    hits <- c(hits, "Gate 13 HARD_FAIL aligns with translation failure family")
++    hits <- c(hits, "Gate 16 HARD_FAIL aligns with translation failure family")
+```
+
+### A.6 `ax_cand_3rd_member_screening.R:191` — print_ax_cand_screening() 헤더 (Governor 추가)
+```diff
+-  cat("=== Gate 14 — AX_CAND 3rd Member Screening ===\n")
++  cat("=== Gate 18 — AX_CAND 3rd Member Screening ===\n")
+```
+
+### A.7 `poison_pill_ic_return_audit.R:239~243` — sub_gates Option X + 주석 (Governor 필수 요구)
 ```r
-# Option X (보수, 권고): 유지하되 주석 추가
+# 정정 후 (v3.8.1 final):
+# sub_gates key naming: historical (v3.4 Gate 12 era). Gate ID = Gate 17 as of v3.8.1.
+# downstream callers: do NOT match on sub_gate key prefix "12" for Gate ID routing.
 sub_gates = list(
-  `12a_per_factor_pill_check`     = a,   # historical naming, v3.4 Gate 12 기준
+  `12a_per_factor_pill_check`     = a,
   `12b_composite_pill_count`      = b,
   `12c_regime_amplification_flag` = c_
-)
-
-# Option Y (적극): 재명명
-sub_gates = list(
-  `17a_per_factor_pill_check`     = a,
-  `17b_composite_pill_count`      = b,
-  `17c_regime_amplification_flag` = c_
-)
+),
 ```
-Judge 권고: **Option X** (downstream hash lookup 호환 우선, v3.8.1 단계에서는 외부 API 변경 최소화).
+Judge 권고 + Governor 동의: **Option X** (downstream hash lookup 호환 우선, v3.8.1 단계에서는 외부 API 변경 최소화 + artifact_validator.sh 오탐 차단 주석 필수).
+
+### A.8 (Reference only, 미변경) — `ax_cand_3rd_member_screening.R` function 인자 `gate_13_verdict`
+```r
+# v3.8.1 미변경 (호환성 유지)
+# 함수 인자명 gate_13_verdict는 historical naming으로 유지.
+# 호출자 API 변경 최소화를 위함. 향후 v3.9에서 `gate_16_verdict`로 rename 검토 가능.
+```
+영향: 호출자 4곳(추정 `pipeline_trigger.sh` / `governor.R` / `ax_promotion_script.R` / test fixture) API 변경 없음.
