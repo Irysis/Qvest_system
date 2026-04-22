@@ -1,0 +1,108 @@
+{
+  "strategy_id": "STR_1689",
+  "hypothesis_id": "H_1689_v3",
+  "stage": "S1",
+  "date": "2026-04-23",
+  "family": "quality_composite",
+  "expected_role": "defense",
+  "role_bias": "RoleBias_Defense",
+  "performance": {
+    "cagr": 12.66,
+    "sharpe": 0.508,
+    "mdd": 66.48,
+    "grade": "F",
+    "score": 9.4
+  },
+  "portfolio": {
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "buffer_zone": {
+      "keep_n": 22,
+      "entry_n": 20
+    },
+    "liq_threshold": 200000000
+  },
+  "pit_evidence": {
+    "factor": "HYB02_QualAgg_v3 (3-axis + 4-axis Q07 variants)",
+    "data_source": "load_month_factors() C15+L-164",
+    "c4": "quarterly 45-day lag via Factor DB Usable_Date",
+    "c10": "LIQ_THRESHOLD=2e8, shift(frollmean,1L)",
+    "c13": "Z_Score_Aligned; Q25 lower_better auto-flipped by registry",
+    "c15": "load_month_factors() per sig_date only",
+    "l163_check": "V1: Q01+0.033 Q04+0.050 Q25+0.224 PASS | V2: +Q07+0.188 PASS",
+    "q24_excluded": "Q24_Altman_Z: -0.695×0.25=-0.174 EXCLUDED"
+  },
+  "alpha_lab_gate": {
+    "icir_threshold": 0.2,
+    "overall_icir": 0.829,
+    "pass": true
+  },
+  "three_period_icir": {
+    "p1_2005_2014": 1.108,
+    "p2_2015_2019": 0.441,
+    "p3_2020_2026": 0.772
+  },
+  "ax001_v2_defense_gates": {
+    "gate_2a_multi_sleeve_only": true,
+    "gate_2b_crisis_alpha_4of6": true,
+    "gate_2c_bad_normal_ic_ratio": true,
+    "gate_2d_mdd_lt_35pct": false,
+    "all_pass": false
+  },
+  "gate_4_bad_normal_ic": {
+    "stress_ic": 0.082,
+    "calm_ic": 0.058,
+    "ratio": 1.398,
+    "pass": true
+  },
+  "gate_5_crisis_alpha": {
+    "windows_checked": 6,
+    "windows_positive": 4,
+    "pass": true,
+    "detail": [
+      {
+        "period": "1997-07-01~1998-09-30",
+        "ic_positive": false
+      },
+      {
+        "period": "2000-01-01~2001-12-31",
+        "ic_positive": false
+      },
+      {
+        "period": "2008-01-01~2009-06-30",
+        "ic_positive": true
+      },
+      {
+        "period": "2011-06-01~2012-03-31",
+        "ic_positive": true
+      },
+      {
+        "period": "2020-01-15~2020-06-30",
+        "ic_positive": true
+      },
+      {
+        "period": "2022-01-01~2022-12-31",
+        "ic_positive": true
+      }
+    ]
+  },
+  "gate_6_stress_icir": {
+    "v1_stress_icir": 1.004,
+    "v2_stress_icir": 0.977
+  },
+  "ablation_variants": [
+    {
+      "variant": "V1_3axis",
+      "cagr": 12.66,
+      "sr": 0.508,
+      "mdd": 66.48
+    },
+    {
+      "variant": "V2_4axis_Q07",
+      "cagr": 11.37,
+      "sr": 0.508,
+      "mdd": 51.02
+    }
+  ]
+}
