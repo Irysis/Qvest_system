@@ -1,0 +1,28 @@
+{
+  "role": "risk_manager",
+  "score": 12,
+  "arguments": [
+    "M07_IndMom의 stress ICIR 0.804 / normal ICIR 0.466 (crisis_ratio 1.159)로 위기 시 상대적 안정성이 있으나, portfolio beta 0.95~1.10 예상은 L-106(market beta 지배) 교훈에 정면 노출됩니다. Core_Secondary 10% sleeve가 STR_1631(anchor) beta 0.85~0.93 위에 더해지면 포트폴리오 전체 beta가 상방 이동하여 MDD 기여가 양(+)의 방향으로 작용합니다. 특히 MRS CRISIS 구간(현 63.1)에서 beta 1.0+ industry momentum은 시장 하방과 동조하여 tail risk 완충이 없습니다. H_1688 CAPM beta 1.0007 사례가 보여준 것처럼 beta-accepting Core_Secondary라 해도 위기 시 tail co-movement는 별도 검증이 필수적입니다.",
+    "Kill Scenario 2건 제시합니다. (1) Post-publication momentum crash 시나리오: Grinblatt-Moskowitz 1999 이후 27년 + KR 2020 momentum crash + 2024 AI/반도체 급반전 사례에서 industry momentum이 섹터 과밀 후 급락 시 MDD 50%+ 잠재적 가능성. M07 기반 Top 20 EW는 섹터 집중 risk가 본질적으로 내재되어 있고, RSI residualization이 이를 완화한다는 메커니즘적 보장이 없습니다. (2) 미래참조 경로 Kill: L-161 VALIDATED_HARD_FAIL에서 OLS scale invariance로 Fix 1이 무효했듯이, H_1692의 expanding OLS beta_t가 burn-in 36개월 이후 pooled estimate에서 structural break(2020 COVID, 2022 금리 충격)를 반영하지 못하면 beta_t가 과거 평균에 고착되어 사실상 constant residualization = M07 standalone과 동일 전략 퇴화(위험 2 scout 자인). 이 경우 'residualization uplift 10~30%' 전제가 붕괴됩니다.",
+    "TDC(Tail Dependence Coefficient) 예상치 vs STR_1661_V2 0.45~0.65 / vs STR_1631 0.35~0.55는 L-156 Gate 8 TDC <= 0.4 기준에서 양 방향 모두 경계~위반 영역입니다. L-115(beta 감소 != 상관 감소) 교훈에 따르면 industry momentum은 구조적으로 market factor loading이 높아 위기 시 tail dependence가 정상 상관보다 급등하는 경향이 있습니다. STR_1679v2가 TDC 0.621로 FAIL한 전례를 감안하면, H_1692 vs STR_1661_V2 상한 0.65는 동일 패턴의 반복 위험이 있습니다. S3 실측 전까지 TDC PASS를 전제한 편입 계획은 위험 과소평가에 해당합니다."
+  ],
+  "concern": "M07_IndMom의 portfolio beta 0.95~1.10은 Core_Secondary 역할 경계에 있으면서 위기 시 tail co-movement를 구조적으로 억제하지 못합니다. stress_factor_ic에서 M07 crisis_premium은 +0.009에 불과하고 M18_RSI는 crisis_ratio 0.855로 위기 시 오히려 약화됩니다. Residualization regressor(RSI)가 위기 시 약화되면 잔차 = M07 원본으로 수렴하여, 포트폴리오 전체의 tail risk는 M07 standalone MDD (35~50% scout 자체 예상)를 Core_Secondary 10% weight로 분담하는 수준에 그칩니다. 이는 STR_1631 anchor 대비 MDD 기여 +1~3%p 악화 가능성을 의미하며, 현재 PG2 MDD -21.27% (목표 <25%) 여유분 3.73%p 중 상당 부분을 소진할 수 있습니다. L-106(market beta 지배)과 L-115(beta 감소 != 분산 효과)의 교훈이 H_1692에 직접 적용됩니다.",
+  "conditions": [
+    "S1 완료 후 compute_tail_risk_suite() 실행하여 EVT shape parameter(xi), CDaR 95%, ES 99%를 STR_1631 standalone 대비 보고해야 하며, portfolio-level MDD 기여가 +2%p 이내임을 수치로 증명해야 합니다",
+    "S3에서 STR_1631 및 STR_1661_V2 대비 실측 TDC를 t-copula MLE로 측정하되 L-156 Gate 8 TDC <= 0.4 기준을 PASS해야 하며, 위기 conditional TDC(MRS >= 50 구간)도 별도 보고 필수입니다",
+    "expanding OLS beta_t의 time-series 안정성을 검증하여 structural break 전후(2020 COVID, 2022 금리 충격) beta_t 변화가 0.05 이상인지 확인하고, beta_t가 사실상 상수로 수렴하여 M07 standalone과 rank correlation 0.95+ 동일 전략 퇴화 여부를 측정해야 합니다",
+    "M07_IndMom 기반 Top 20의 섹터 집중도(HHI)를 월별 측정하여 HHI > 0.25 (4섹터 이하 집중) 비율이 30% 이상이면 sectoral tail risk 경고로 보고해야 합니다"
+  ],
+  "_risk_manager_notes": {
+    "session": "Session 68 Day 1",
+    "debate_round": "R1",
+    "stress_ic_data_used": {
+      "M07_IndMom": {"stress_icir": 0.804, "normal_icir": 0.466, "crisis_premium": 0.009, "crisis_ratio": 1.159, "stress_pct_pos": 0.75},
+      "M18_RSI": {"stress_icir": 0.130, "normal_icir": 0.081, "crisis_premium": -0.002, "crisis_ratio": 0.855, "stress_pct_pos": 0.55}
+    },
+    "l_code_citations": ["L-106 (market beta dominance)", "L-115 (beta reduction != correlation reduction)", "L-156 (TDC Gate 8 <= 0.4)", "L-161 (VALIDATED_HARD_FAIL OLS scale invariance)"],
+    "portfolio_gap_context": {"current_mdd": -0.2127, "target_mdd": -0.25, "mdd_buffer": 0.0373},
+    "kill_scenarios_count": 2,
+    "kill_scenario_future_ref_path": "expanding OLS beta_t constant convergence = M07 standalone degeneration"
+  }
+}

@@ -1,0 +1,244 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-168 CRITICAL_L0 infra PIT fix 검증. Q-Lead FREEZE_OVERRIDE 연속 유효.",
+
+  "artifact_type": "JUDGE_INFRA_FIX_VERIFICATION_SIGNOFF",
+  "target_artifacts_audited": [
+    "02_Infrastructure/factor_db/factor_db_connector.R (v2.0 align_factor_direction patch)",
+    "stage_artifacts/architect_l168_infra_fix_design.json",
+    "stage_artifacts/m3_1_retroactive_audit_protocol.json"
+  ],
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "verification_trigger": "Q-Lead Architect L-168 fix 완료 알림",
+
+  "part_a_code_fix_verification": {
+    "file": "02_Infrastructure/factor_db/factor_db_connector.R",
+    "line_range_audited": "1-258 (전체)",
+    "verdict": "APPROVE",
+
+    "pit_safety_verification": {
+      "C01_full_sample_lookahead_fix": {
+        "status": "RESOLVED",
+        "evidence_line": "line 196-205 expanding mean(IC) with min_ic_months=36 burn-in",
+        "mechanism": "ic_avail[, { n <- .N; if (n >= min_ic_months) mean(IC) else NA } , by=Factor_Name] — 과거 36개월+ IC만 사용, 미래 IC 차단",
+        "matches_compute_rolling_ic_all_pattern": true
+      },
+      "C07_automated_lookahead_fix": {
+        "status": "RESOLVED",
+        "mechanism": "expanding window + fallback 3-tier으로 자동화 lookahead 구조 제거. sig_date 없이 호출 시 registry-only 안전 모드"
+      },
+      "C14_usable_date_filter_fix": {
+        "status": "RESOLVED",
+        "evidence_line": "line 186-188 if ('Usable_Date' %in% names(ic_hist)) ic_avail <- ic_hist[Usable_Date <= sig_d]",
+        "mechanism": "compute_rolling_ic_all line 220-230과 동일 PIT 패턴 채택 — single-file 내 일관성 확보",
+        "legacy_fallback": "Usable_Date 없을 시 Date < sig_d fallback + WARN 로그 (1-month safety margin)"
+      }
+    },
+
+    "backward_compatibility_verification": {
+      "signature_preservation": {
+        "old": "align_factor_direction(factor_dt, registry)",
+        "new": "align_factor_direction(factor_dt, registry, sig_date = NULL, min_ic_months = 36L)",
+        "verdict": "BACKWARD_COMPATIBLE — sig_date=NULL default로 기존 호출부 변경 없이 작동"
+      },
+      "sig_date_null_behavior": {
+        "evidence_line": "line 214-217 else branch",
+        "behavior": "Registry-only direction, no IC 참조, PIT-safe by construction",
+        "logging": "line 216 cat('[align_factor_direction] No sig_date provided — registry-only direction (PIT-safe default)')",
+        "verdict": "SAFE_DEFAULT"
+      },
+      "load_month_factors_auto_upgrade": {
+        "evidence_line": "line 123 align_factor_direction(dt, registry, sig_date = sig_d)",
+        "impact": "load_month_factors 경유 모든 전략 자동 PIT-safe 적용. 100+ 전략 paradigm shift 없이 patch 적용",
+        "verdict": "ELEGANT_PATCH_DESIGN"
+      }
+    },
+
+    "3_tier_fallback_evaluation": {
+      "tier_1_ic_inferred": "expanding IC mean >= min_ic_months → ic_sign = fifelse(Mean_IC >= 0, 1L, -1L)",
+      "tier_2_registry_direction": "IC insufficient 또는 sig_date=NULL → registry.direction (higher_better/lower_better)",
+      "tier_3_default_higher_better": "registry 없거나 factor 미등록 → ic_sign = 1L",
+      "evaluation": "안전 설계. IC 신뢰 불가 케이스 우아하게 degrade. 단 tier_3 default=1L(higher_better)은 registry 미등록 factor가 'lower_better' 성격일 때 잘못 적용 위험. 현재 factor_registry.json 288개 factor 전수 등록 확인됨으로 실무 risk 낮음",
+      "verdict": "APPROVE + minor advisory"
+    },
+
+    "additional_findings_from_audit": {
+      "rc1_restandardize_preserved": "line 252-255 RC1 re-standardize 유지. factor-wise cross-sectional sd normalization — PIT-safe (signal date 내부)",
+      "load_ic_history_type_coercion_fix": "line 80-83 Usable_Date as.Date() coercion 추가. Arrow parquet read 후 type consistency 확보 — defensive fix",
+      "logging_enhancement": "line 210-211 IC-inferred/fallback count 로그로 auditability 확보"
+    },
+
+    "minor_concerns_advisory": [
+      {
+        "concern_id": "A1_REGISTRY_ONLY_SEMANTIC_CHANGE",
+        "severity": "ADVISORY",
+        "description": "align_factor_direction(dt, registry) 직접 호출 30+ 파일(load_month_factors 미경유)은 v2.0 적용 시 registry-only 모드로 전환 — 기존 full-sample IC 기반 direction과 결과 상이 가능. conservative PIT-safe이나 재현 결과 변동 가능",
+        "impact": "factor_engine.R 기반 기존 전략 직접 재실행 시 direction 차이로 SR 변동 가능",
+        "judge_recommendation": "M3.1 Protocol Phase 3 catalog 방식으로 정리. category_A active pipeline은 load_month_factors 전환 권고, category_B archived는 주석 추가만",
+        "blocking": false
+      },
+      {
+        "concern_id": "A2_TIER_3_DEFAULT_HIGHER_BETTER",
+        "severity": "ADVISORY",
+        "description": "line 233/239/241 tier_3 default ic_sign=1L은 registry 미등록 factor에 higher_better 가정. factor_registry.json 288개 전수 등록으로 실무 risk 낮으나 향후 신규 factor 추가 시 안전장치 필요",
+        "judge_recommendation": "신규 factor 추가 시 registry 등록 의무화 (factor_engine.R → factor_db_builder.R → factor_registry.json 3-step). factor_db_builder validation hook에 'unregistered factor 탐지 시 WARN'",
+        "blocking": false
+      }
+    ]
+  },
+
+  "part_b_architect_design_doc_audit": {
+    "target": "stage_artifacts/architect_l168_infra_fix_design.json",
+    "verdict": "APPROVE",
+
+    "design_decision_c_hybrid_evaluation": {
+      "alternative_a_expanding_ic_only_rejection": "ACCEPTED — 50+ direct callers breaking change 회피 필요",
+      "alternative_b_registry_only_rejection": "ACCEPTED — IC learning 상실 + factor registry stale/missing 직전 위험",
+      "alternative_c_hybrid_chosen": "SUPPORTED — Judge 원 요청(IC-safe + backward compat)과 100% 정합. 엘레강트 설계",
+      "judge_evaluation": "Architect가 Alternative 3종 명시적으로 평가 후 C_Hybrid 선택. Trade-off 투명. design discipline 양호"
+    },
+
+    "full_audit_6_functions_completeness": {
+      ".load_registry": "CLEAN verdict 타당 (정적 JSON)",
+      ".load_ic_history": "N/A_HELPER verdict 타당 (caller filter 책임)",
+      "load_month_factors": "FIXED_v2.0 verdict 타당",
+      "align_factor_direction": "FIXED_v2.0 verdict 타당",
+      "compute_rolling_ic_all": "CLEAN verdict 타당 (기존 PIT-compliant)",
+      "group_factors_by_family": "CLEAN verdict 타당 (정적 분류)",
+      "additional_finding_usable_date_type_coercion": "FIXED evidence 확인",
+      "no_additional_violations_claim": "REASONABLE — 6개 함수 외 file-level 위험 pattern 추가 발견 없음"
+    },
+
+    "impact_analysis_completeness": {
+      "direct_callers_via_load_month_factors_analysis": "ACCURATE — 자동 PIT-safe 적용, SR delta 0-15% 예상 범위 합리적",
+      "direct_callers_via_align_factor_direction_analysis": "ACCURATE — 30+ file registry-only 전환 명시, migration 권고 포함",
+      "strategies_affected_estimate_100_plus": "PLAUSIBLE — load_month_factors 호출 전략 수 (Grep 50+ head_limit hit 기반) 하한 추정"
+    }
+  },
+
+  "part_c_m3_1_protocol_audit": {
+    "target": "stage_artifacts/m3_1_retroactive_audit_protocol.json",
+    "verdict": "APPROVE",
+
+    "5_phase_design_evaluation": {
+      "phase_1_infra_fix_verification": {
+        "duration_0_5_day": "REASONABLE",
+        "steps_1_1_to_1_3_completeness": "PASS — Codex rescue + unit test + backward compat test 3-step 정합",
+        "judge_add_note": "Phase 1.1 Codex rescue 결과는 이미 Task #15 completed 확인됨. Architect/Q-Lead 승인 보고"
+      },
+      "phase_2_pg2_remeasurement": {
+        "duration_1_day": "REASONABLE",
+        "critical_threshold_sr_lt_1_00": "APPROVE — STR_1631 SR <1.00 시 Governor rev9 trigger 정합",
+        "sr_delta_tier_protocol": "APPROVE — lt_5pct/5-15pct/gt_15pct 3-tier 처리 합리적",
+        "gap_vector_update_discipline": "APPROVE — .cache/portfolio_gap_vector.json 실시간 동기화 명시",
+        "str_1656_c10_simultaneous_fix": "APPROVE — C10 + infra C01 동시 fix 효율적. 단 SR delta 귀속 분해 어려움 — C10 fix만 적용 vs C10+infra 적용 2-step 비교 실행 권고 (Forge 작업량 증가하나 attribution 정확)"
+      },
+      "phase_3_full_scan_align_factor_direction_callers": {
+        "duration_0_5_day": "REASONABLE",
+        "category_a_b_c_3_tier_classification": "APPROVE — active pipeline vs archived Grade A vs Hard Fail 3 category 분리 타당",
+        "migration_priority_assignment": "APPROVE"
+      },
+      "phase_4_judge_gate_13_integration": {
+        "duration_1_day": "REASONABLE",
+        "gate_13_1_new_checks": "APPROVE — INFRA_PIT_CONNECTOR + INFRA_PIT_IC_HISTORY 2-check 명확",
+        "c16_lookahead_detector_extension": "APPROVE — regex pattern 'align_factor_direction(.*) without sig_date in time-series loop' auto-detection 타당",
+        "judge_custodian_action_needed": "본 Phase 4는 Judge가 gate 정의 + 구현 spec 작성 역할. Forge가 lookahead_detector.R 패치 실행. 협업 interface 명확화"
+      },
+      "phase_5_direction_stability_analysis": {
+        "duration_0_5_day": "REASONABLE",
+        "analysis_design_expanding_ic_sign_flips": "APPROVE — direction_stability_report.csv 형식 정합",
+        "significance_unstable_factors_flagging": "APPROVE — registry direction 우선권 부여 근거 empirical 측정"
+      }
+    },
+
+    "rollback_plan_evaluation": {
+      "git_revert_strategy": "APPROVE",
+      "registry_only_safe_mode_fallback": "APPROVE — sig_date=NULL 호출 패턴이 즉시 rollback",
+      "data_preservation_note": "APPROVE — factor_ic_monthly.parquet 불변 보장"
+    },
+
+    "success_criteria_review": {
+      "phase_1": "Codex PASS 확인 가능",
+      "phase_2": "STR_1631 SR delta 측정 + gap_vector 업데이트 측정 가능",
+      "phase_3": "active pipeline 전수 load_month_factors 또는 sig_date 전달 측정 가능",
+      "phase_4": "Gate 13.1 operational 측정 가능",
+      "phase_5": "direction_stability_report 생성 측정 가능",
+      "overall_pg2_soft_freeze_lifted": "measurable and testable criterion"
+    }
+  },
+
+  "v3_5_4_amendment_judge_design_draft": {
+    "purpose": "Admission Rule v3.5.4 amendment — infra_pit_scan Gate 추가 + L-code 산술 교훈 편입",
+    "new_gate_additions": [
+      {
+        "gate_id": "Gate15",
+        "name": "INFRA_PIT_SCAN",
+        "mandatory": true,
+        "description": "Admission 전 strategy factor_engine.R + run_all.R에서 align_factor_direction 호출 패턴 scan",
+        "checks": [
+          "align_factor_direction(dt, registry) without sig_date → REJECT (v2.0 이후 sig_date 의무)",
+          ".load_ic_history() direct call without Usable_Date filter → REJECT",
+          "load_month_factors() 경유 or align_factor_direction(dt, registry, sig_date=sig_d) 형식 → PASS"
+        ],
+        "implementation": "lookahead_detector.R C16 pattern + Judge manual review"
+      },
+      {
+        "gate_id": "Gate16",
+        "name": "WEIGHT_SUM_ARITHMETIC_ASSERT",
+        "mandatory": true,
+        "description": "Governor rev/patch 발행 시 weight_sum programmatic assert 의무화",
+        "checks": [
+          "scenario_d_composition.slots 배열 실측 sum 계산",
+          "abs(sum - 1.00) < 1e-9 assert",
+          "weight_sum_verified: true 필드 + sum 수치 기재 의무"
+        ],
+        "basis": "v4→v4.1→v4.2 3-round 재산술 오류 실증",
+        "judge_authority": "Judge signoff 시 자동 weight_sum 실측 후 claim과 대조"
+      }
+    ],
+    "l_169_candidate_arithmetic_assert_lesson": {
+      "l_code_id_pending": "L-169",
+      "title": "Governor portfolio weight aggregation programmatic assert mandatory",
+      "lesson_text_draft": "v4→v4.1→v4.2 3-round 반복 발행 과정에서 scenario_d_composition slots 가중치 합계 산술 오류 2회 재발. v4 +0.10, v4.1 +0.06 overweight. 원인: Delta vs 절대값 혼용 + claim/actual 불일치. 교훈: Governor rev/patch 발행 시 반드시 programmatic `sum(slots) == 1.00` assert + `weight_sum_verified: true` 필드 기재 의무. Judge signoff 시 독립 재산술 수행. v3.5.4 Gate 16에 규범화. Admission Rule v3.5.3-patch1 3-round churn cost 1일 소요 — programmatic assert로 1초 이내 해결 가능했음.",
+      "tags": ["GOVERNOR_PATCH_DISCIPLINE", "WEIGHT_SUM_ASSERT_MANDATORY", "ADMISSION_RULE_V3_5_4_GATE_16", "V4_V41_V42_3_ROUND_CHURN", "PROGRAMMATIC_VALIDATION"],
+      "issuance_timing": "L-168 fix 검증 완료 + M3.1 Phase 1 완료 후 정식 발행"
+    }
+  },
+
+  "final_judge_verification_decisions": [
+    {"decision_id": "D1_CODE_FIX_APPROVE", "content": "factor_db_connector.R v2.0 patch 전수 PASS. C01/C07/C14 resolved. Backward compat 확보. 3-tier fallback 안전"},
+    {"decision_id": "D2_ARCHITECT_DESIGN_DOC_APPROVE", "content": "Alternative C_Hybrid 설계 합리성 + 6-function full audit 완성도 + impact analysis 정확도 전수 타당"},
+    {"decision_id": "D3_M3_1_PROTOCOL_APPROVE", "content": "5-Phase protocol + rollback plan + success criteria 전수 타당. Phase 2 sr_delta tier protocol 권장"},
+    {"decision_id": "D4_CODEX_RESCUE_TASK_15_COMPLETED_ACKNOWLEDGED", "content": "Codex rescue 재검증 Task #15 completed 확인. Phase 1.1 자동 만족"},
+    {"decision_id": "D5_V3_5_4_AMENDMENT_DRAFT_ISSUED", "content": "Gate15 INFRA_PIT_SCAN + Gate16 WEIGHT_SUM_ARITHMETIC_ASSERT 2-gate 추가 draft. Architect 공동 설계 협업 권고"},
+    {"decision_id": "D6_L_169_CANDIDATE_PREPARED", "content": "L-169 arithmetic assert lesson draft 준비. 정식 발행은 Phase 1 검증 완료 후"},
+    {"decision_id": "D7_PHASE_2_AUTHORIZATION_GRANTED", "content": "Forge Phase 2 STR_1631 + STR_1656 재백테스트 권한 부여. C10 + infra C01 동시 fix 실행 + SR delta 측정. Judge Gate 0-5 재검증 준비"}
+  ],
+
+  "pg1_live_transition_gate_status_updated_after_infra_fix": {
+    "gate_1_rev_v4_2_admission_rule_v3_5_3_patch1": "EFFECTIVE",
+    "gate_2_l_168_infrastructure_pit_fix": "APPROVED (본 signoff)",
+    "gate_3_retroactive_pit_audit_v2_phase_2_pg2_remeasurement": "AUTHORIZED → Forge 실행 대기",
+    "gate_4_admission_rule_v3_5_4_infra_pit_scan_gate_addition": "DRAFT PREPARED (Gate15 + Gate16)",
+    "gate_5_forge_s1_done_4_strategies": "PENDING (Task #2/3/4/11)",
+    "overall_live_status": "UNFROZEN_CONDITIONAL — Phase 2 STR_1631 재검증 결과에 따라 SR 확정 후 LIVE 가능",
+    "estimated_timeline": "Phase 2 (1일) + Phase 3-5 (2일) = Day 4~6 Session 68"
+  },
+
+  "minor_advisories_non_blocking": [
+    {"advisory_id": "A1", "content": "factor_engine.R 직접 호출 30+ 파일 registry-only 모드 전환 시 재현 결과 변동 가능. M3.1 Phase 3 catalog 처리 권고"},
+    {"advisory_id": "A2", "content": "tier_3 default higher_better는 신규 factor 미등록 시 잘못 적용 위험. factor_registry.json 등록 의무화 hook 권고"},
+    {"advisory_id": "A3", "content": "Phase 2 STR_1656 C10 + infra C01 동시 fix는 SR delta 귀속 분해 어려움. 2-step 비교(C10 only vs C10+infra) 권고 (Forge 작업량 증가하나 attribution 정확)"}
+  ],
+
+  "followup_actions": [
+    {"actor": "Forge", "action": "M3.1 Phase 2 STR_1631_SYN_05 재백테스트 (v2.0 infra로)", "priority": "URGENT"},
+    {"actor": "Forge", "action": "M3.1 Phase 2 STR_1656_MLRA C10 fix + infra C01 동시 재백테스트 (가능하면 2-step 분해)", "priority": "URGENT"},
+    {"actor": "Judge (본인)", "action": "Phase 2 결과 도착 시 Gate 0-5 재검증 + SR delta tier protocol 적용", "priority": "STANDBY"},
+    {"actor": "Judge (본인)", "action": "Phase 2 완료 후 L-169 정식 발행 + v3.5.4 amendment Gate15/16 Architect와 공동 설계", "priority": "AFTER_PHASE_2"},
+    {"actor": "Forge", "action": "M3.1 Phase 3 align_factor_direction 직접 호출 30+ scan 실행", "priority": "MEDIUM"},
+    {"actor": "Architect", "action": "lookahead_detector.R C16 pattern 추가 patch (Judge와 공동)", "priority": "MEDIUM"},
+    {"actor": "Q-Lead", "action": "Governor rev9 trigger 조건 (STR_1631 SR <1.00) 대비 contingency plan 준비", "priority": "CONDITIONAL"}
+  ]
+}

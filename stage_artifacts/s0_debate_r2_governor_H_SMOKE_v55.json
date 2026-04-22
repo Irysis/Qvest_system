@@ -1,0 +1,85 @@
+{
+  "role": "governor",
+  "agent_id": "governor_smoke_r2",
+  "r1_stance": "APPROVE_CONDITIONAL",
+  "r1_veto_flag": null,
+  "stance_change": "UNCHANGED",
+  "new_stance": "APPROVE_CONDITIONAL",
+  "stance_change_reason": "",
+  "veto_flag": null,
+
+  "r2_deliberation": {
+    "쟁점1_academic_veto_mechanism": {
+      "issue": "Academic이 'Lo & MacKinlay(1988)은 -|AC1| → 양의 횡단면 alpha를 함의하지 않는다'는 mechanism-sign mismatch를 conditional veto로 제기. Amihud & Mendelson(1986)도 오히려 반대 방향(비유동성 프리미엄) 예측.",
+      "governor_assessment": "PG0 admission 관점에서 메커니즘 약점은 S1 진입을 차단할 hard veto 사유가 아니다. 근거: (1) Academic 본인이 'REJECT보다 REVISE' 처방 — veto 강도가 conditional이며 Roll(1984) 추가로 해소 가능. (2) v55 KR-original trail 허용 조항 적용 가능한 상황. (3) Governor 소관은 'gap 정합 + family saturation + role honesty'이며 문헌 메커니즘의 적합성 판단은 Academic/Judge가 주관. Academic REVISE 조건(Roll 1984 추가 + mechanism 재정의)은 S1 진입 전 체크리스트로 s0_record에 반영하면 admission 조건부 통과 가능. (4) mechanism 약점이 확인되더라도 S1 실증(ICIR, IC_orthogonal vs Amihud ILLIQ) 결과로 대체 근거 확보 경로 존재. Governor 관점: Academic veto는 PG0 거부 사유가 아닌 S1 진입 조건 강화 사유로 흡수.",
+      "governor_action": "CONDITIONAL에 'Roll(1984) 기반 mechanism 재정의 또는 S1에서 Amihud ILLIQ 통제 후 독립 IC 확인' 항목 추가."
+    },
+    "쟁점2_selection_pit_admission_rule": {
+      "issue": "Codex와 Judge 모두 recent_3y_icir(0.367)가 현재 시점(2026-04) 기준 산출값이므로, 이를 토대로 H_SMOKE_v55를 선택한 것이 selection PIT 위반에 해당하는지 문제 제기.",
+      "governor_assessment": "admission_rule v3.5.1 관점 검토: (1) selection PIT는 'factor construction 내부의 미래참조(C14)'를 금지하는 규칙이며, 'S0 후보 선정 시 현재 IC 통계를 참고하는 것'과는 레이어가 다르다. IC 확인 → 가설 선택은 연구자의 사전 탐색 과정으로, factor의 in-sample alpha를 이미 알고 backtest를 설계하는 것(C1/C3 위반)과 구별된다. (2) 단, Judge가 지적한 대로 'smoke run 결과를 ex-ante alpha 신뢰지표로 격상 금지'는 governance 차원에서 타당한 기록 요건이다. (3) admission_rule 위반 판정 기준: admission_rule v3.5.2 Gate 5(PIT compliance)는 factor construction PIT를 심사하며, 후보 선정 방법론은 admission rule 심사 범위 밖이다. 따라서 selection PIT는 admission_rule 위반 veto 사유가 아니다. 다만 s0_record에 'recent_3y_icir 현재 시점 기준 한계 + smoke 결과 파이프라인 증거 한정' 명시 조건 추가.",
+      "governor_action": "veto_flag=admission_rule 미발동. s0_record 기재 조건 추가."
+    },
+    "쟁점3_l137_family_saturation": {
+      "issue": "L-137 RetAutocorr 계보(STR_1636 MDD 61.9% hard fail)가 있는 family. hard fail 선례 family라면 Exploration 우선순위 하향 또는 family saturation 다르게 평가해야 하는가.",
+      "governor_assessment": "Exploration Rules §9 및 family_saturation 로직 재검토: (1) family saturation penalty는 '현재 PG2에 편입된 전략 수'를 기준으로 한다. liquidity family는 현재 PG2 편입 0건 → saturation penalty 없음. (2) L-137은 'Piotroski+L22 조합 + overlay 부재'의 실패로, L22 단독이 아닌 조합 설계 실패다. Quant R1이 정확히 분석: '단독 smoke가 ambiguity 해소를 위한 올바른 접근'. (3) hard fail 선례가 있는 family라는 이유로 Exploration 우선순위를 하향하는 것은 Exploration Rules §9 위반 소지가 있다. '이전 실패가 다른 맥락에서 성공할 수 있다 → 탐색 범위 좁히지 않음' 원칙 적용. (4) Governor 결론: L-137 선례는 S1 MDD 모니터링 강화 조건이지, family 탐색 차단 사유가 아니다.",
+      "governor_action": "family saturation R1 판정 유지(PASS). S1 MDD ≤ 45% hard limit 조건 재확인."
+    },
+    "쟁점4_s3_tdc_미확정": {
+      "issue": "R1에서 'S3 TDC vs STR_1631 미확정'을 unresolved로 남긴 상태. R2까지 새 정보 없음.",
+      "governor_assessment": "R2에서도 TDC 실측값 없음. Quant R1 데이터: L22 vs C19 corr -0.0008(사실상 0), L22 vs M08 corr 0.0546. 상관 구조상 TDC ≤ 0.4 달성 가능성 높으나, S3 공식 측정 전까지 이를 확정할 수 없다. admission_rule v3.5.1 Gate 3는 S3 실측을 요구하므로 PENDING 유지가 맞다.",
+      "governor_action": "unresolved 유지."
+    }
+  },
+
+  "addressed_concerns": [
+    {
+      "by": "academic",
+      "concern": "mechanism-sign mismatch (Lo&MacKinlay 방향 함의 불일치)",
+      "governor_response": "PG0 admission 차단 사유가 아닌 S1 진입 조건 강화 사유로 흡수. Roll(1984) 기반 mechanism 재정의 또는 S1 IC_orthogonal 확인을 conditional 항목으로 추가. Academic REVISE 처방과 Governor APPROVE_CONDITIONAL은 양립 가능 — Academic은 문헌 보강, Governor는 gap/family/role 정합성 평가 소관."
+    },
+    {
+      "by": "codex",
+      "concern": "selection PIT (recent_3y_icir 현재 시점 기준 선택) + mechanism underidentification",
+      "governor_response": "selection PIT는 admission_rule Gate 5(factor construction PIT) 범위 밖. s0_record에 한계 명시 조건으로 흡수. mechanism underidentification은 S1 IC_orthogonal 검증으로 해소 경로 확보."
+    },
+    {
+      "by": "judge",
+      "concern": "selection PIT 경계 + smoke 결과를 alpha 신뢰지표로 격상 금지",
+      "governor_response": "동의. s0_record 기재 요건 conditional 항목에 반영. hurdle 결과 = 파이프라인 동작 증거 한정."
+    }
+  ],
+
+  "unresolved": [
+    {
+      "id": "U1",
+      "point": "S3 TDC vs STR_1631 미확정: R2까지 실측값 없음. L22 vs C19 corr -0.0008으로 TDC ≤ 0.4 가능성 높으나, S3 공식 측정 전 PG1 admission Gate 3 충족 여부 미확정. S3 완료 후 최종 판정 필요."
+    },
+    {
+      "id": "U2",
+      "point": "Academic REVISE vs Governor APPROVE_CONDITIONAL 불일치: Academic이 Roll(1984) 추가를 S1 진입 선행 조건으로 요구하는 반면, Governor는 S1 IC_orthogonal 결과로 대체 가능하다고 판단. 최종 R3에서 Q-Lead 집계 시 이 불일치의 처리 방향 결정 필요."
+    },
+    {
+      "id": "U3",
+      "point": "L-137 MDD 패턴: STR_1636 hard fail이 조합 설계 실패인지 L22 signal 자체 문제인지 S1 결과 전까지 미확정. S1 MDD ≥ 45% 시 즉시 STOP 및 AX-007 검토 여부."
+    }
+  ],
+
+  "pg0_admission_conditions_r2": [
+    "COND-1 [R1 유지]: S1 MDD ≤ 45% 확인 — L-137 hard fail 경계. 45% 초과 시 smoke run 예외 무효, S5 DD/VT overlay 검토 트리거.",
+    "COND-2 [R1 유지]: S3 TDC vs STR_1631 ≤ 0.4 확인 — admission_rule v3.5.1 Gate 3 충족 필수.",
+    "COND-3 [R1 유지]: C13/C15/C14 준수 확인 — S1 run_all.R Z_Score_Aligned + load_month_factors() 검증.",
+    "COND-4 [R2 신규]: Roll(1984) 기반 mechanism 재정의 OR S1에서 Amihud ILLIQ / 거래회전율 통제 후 독립 IC(IC_orthogonal) 확인 — Academic REVISE 조건 흡수.",
+    "COND-5 [R2 신규]: s0_record에 'v55 정규 사이클 smoke run + recent_3y_icir 현재 시점 기준 한계 + hurdle 결과 파이프라인 동작 증거 한정' 명시 필수.",
+    "COND-6 [R2 신규]: S2 profiling 시 ic_bad/ic_good ratio 3.93 및 diversifier 역할 적합성 재검토 보고 — AX-001 v2 defense 조건부 평가와의 경계 명확화."
+  ],
+
+  "gap_alignment_recheck": {
+    "r2_change": "없음 — R2 논의에서 gap 정합 관련 새 정보 없음",
+    "sr_gap": "0.807 유지 (portfolio_gap_vector v1.0.8 기준)",
+    "diversifier_slot": "STR_1656_MLRA_M05 20% 현 점유. liquidity family 0% 비포화 확인.",
+    "family_saturation": "PASS 유지",
+    "overall_gap_alignment": "ALIGNED 유지"
+  },
+
+  "governor_final_note": "R2 검토 결과, PG0 admission 관점 3축(gap 정합·family 비포화·role honesty) 모두 R1 대비 변화 없음. Academic veto(mechanism)와 Codex REVISE는 Governor 소관 외 쟁점이거나 S1 진입 조건 강화로 흡수 가능. veto_flag 발동 사유(admission_rule 위반·gap misaligned) 모두 미충족. R1 APPROVE_CONDITIONAL 유지. 핵심 미결 사항은 S3 TDC 실측(U1)이며, Academic-Governor 불일치(U2)는 R3 Q-Lead 집계에서 최종 처리 필요."
+}

@@ -1,0 +1,188 @@
+{
+  "audit_id": "gate_13_violation_audit_scout_read_only_scan",
+  "audit_date": "2026-04-18",
+  "auditor": "Scout (autonomous read-only scan)",
+  "purpose": "L-164 ACTIVE + Gate 13 Factor DB Access Compliance enforcement 직후 factor_engine.R 전수 audit. Q-Lead STR_1631/STR_1656 verify (Task #83) 병행 지원.",
+  "methodology": "grep read_parquet → fdb_dir/list.files.*factor_db/factor_db_\\d+\\.parquet pattern 판정 + load_month_factors 경유 여부 대조",
+  "source": "04_Research/strategies/**/factor_engine.R (11 files with read_parquet)",
+
+  "audit_results_11_files": {
+    "gate_13_VIOLATION_direct_factor_db_access_5_files": [
+      {
+        "strategy": "STR_1685_multi_source_defense_anchor",
+        "hypothesis": "H_1690",
+        "pattern": "fdb_dir + list.files + read_parquet 3 occurrences",
+        "load_month_factors_usage": 0,
+        "verdict": "CRITICAL_VIOLATION — Gate 13 hard_block",
+        "current_status": "실행 중 (PID 2299540, 16:45 team-lead 확인) — pre-Gate 13 baseline",
+        "re_execution_required_post_gate_13": true,
+        "priority": "P0 — 가장 최근 실행 전략, Pre/Post 비교 evidence 최우선"
+      },
+      {
+        "strategy": "STR_1684_residual_momentum",
+        "hypothesis": "H_1688",
+        "pattern": "fdb_dir + list.files + read_parquet 3 occurrences + inline Fix 1 line 73 추가",
+        "load_month_factors_usage": 1,
+        "verdict": "VIOLATION_MIXED — inline Fix 1 있으나 factor_db bulk load는 direct. L-161 VALIDATED_HARD_FAIL 확정으로 재실행 금지.",
+        "current_status": "DROPPED (Scenario B 확정)",
+        "re_execution_required_post_gate_13": false,
+        "priority": "N/A (H_1688 DROP 확정)"
+      },
+      {
+        "strategy": "STR_1683_distress_calmar_defense",
+        "hypothesis": "H_1682",
+        "pattern": "fdb_dir + list.files + read_parquet 3 occurrences",
+        "load_month_factors_usage": 2,
+        "verdict": "VIOLATION_MIXED — 일부 load_month_factors 사용하나 factor_db bulk load는 direct. L-160 VALIDATED_HARD_FAIL 확정.",
+        "current_status": "DROPPED (L-160 direction audit failure)",
+        "re_execution_required_post_gate_13": false,
+        "priority": "N/A (H_1682 DROP 확정)"
+      },
+      {
+        "strategy": "STR_1682_residual_consensus",
+        "hypothesis": "H_1676",
+        "pattern": "fdb_dir + list.files + read_parquet 3 occurrences",
+        "load_month_factors_usage": 2,
+        "verdict": "VIOLATION_MIXED — L-159 spec transmission failure 확정 + Grade F",
+        "current_status": "DROPPED (H_1676 DROP 확정)",
+        "re_execution_required_post_gate_13": false,
+        "priority": "N/A (DROPPED)"
+      },
+      {
+        "strategy": "STR_1626_profitability_fortress_defense",
+        "hypothesis": "legacy (Session 66 이전)",
+        "pattern": "fdb_direct 4 occurrences (가장 많음)",
+        "load_month_factors_usage": 0,
+        "verdict": "VIOLATION — legacy 전략, Gate 13 enforcement 필요 여부 재검토",
+        "current_status": "unknown (catalog 상태 확인 필요)",
+        "re_execution_required_post_gate_13": "conditional (active 상태일 경우)",
+        "priority": "P2 — Governor family_concentration check 대상"
+      },
+      {
+        "strategy": "STR_1570_sue_netdebt_dd1225",
+        "hypothesis": "legacy",
+        "pattern": "fdb_direct 1 occurrence",
+        "load_month_factors_usage": 0,
+        "verdict": "VIOLATION_MINOR — 단일 direct access",
+        "current_status": "unknown",
+        "re_execution_required_post_gate_13": "conditional",
+        "priority": "P3"
+      }
+    ],
+    "gate_13_PASS_non_factor_db_5_files": [
+      {
+        "strategy": "STR_1674_individual_contrarian_flow",
+        "hypothesis": "H_1674",
+        "pattern": "read_parquet but not factor_db (investor_flow data)",
+        "verdict": "OK — investor_wide.parquet 사용, Gate 13 scope 외",
+        "note": "Gate 13은 factor_db/ 디렉토리 한정 — investor_flow는 별도 data source"
+      },
+      {
+        "strategy": "STR_1657_CBPQ",
+        "pattern": "read_parquet + load_month_factors 1회",
+        "verdict": "OK — load_month_factors 경유 주요 사용",
+        "note": "Gate 13 compliant"
+      },
+      {
+        "strategy": "STR_887_foreign_flow_alpha",
+        "pattern": "read_parquet but not factor_db",
+        "verdict": "OK — foreign flow investor data",
+        "note": "Gate 13 scope 외"
+      },
+      {
+        "strategy": "STR_824_rev_breadth_ivol",
+        "pattern": "read_parquet but not factor_db",
+        "verdict": "OK — 다른 data source",
+        "note": "Gate 13 scope 외"
+      },
+      {
+        "strategy": "STR_1422_flow_reversal",
+        "pattern": "read_parquet but not factor_db",
+        "verdict": "OK — flow data",
+        "note": "Gate 13 scope 외"
+      }
+    ]
+  },
+
+  "summary_by_priority": {
+    "P0_critical_active_violations": {
+      "count": 1,
+      "strategies": ["STR_1685_multi_source_defense_anchor (H_1690)"],
+      "action_required": "Gate 13 enforcement 후 factor_engine.R 수정 → load_month_factors 경유 전환 → 재실행 (pre/post 비교 evidence)"
+    },
+    "P0_dropped_violations_no_action": {
+      "count": 3,
+      "strategies": ["STR_1684 (H_1688 DROP)", "STR_1683 (H_1682 DROP)", "STR_1682 (H_1676 DROP)"],
+      "action_required": "재실행 불필요 — 모두 DROPPED"
+    },
+    "P2_legacy_violations": {
+      "count": 2,
+      "strategies": ["STR_1626_profitability_fortress_defense", "STR_1570_sue_netdebt_dd1225"],
+      "action_required": "catalog 상태 확인 후 active 상태일 경우 Gate 13 enforcement"
+    },
+    "gate_13_compliant": {
+      "count": 5,
+      "strategies": ["STR_1674", "STR_1657", "STR_887", "STR_824", "STR_1422"],
+      "action_required": "None"
+    }
+  },
+
+  "q_lead_task_83_support_scout_findings": {
+    "str_1631_verify_pending": {
+      "status": "Q-Lead direct verify 중 (본 audit scope 외 — factor_engine.R 내 패턴)",
+      "scout_recommendation": "STR_1631_SYN_05 factor_engine.R 경로 Q-Lead grep 시 fdb_dir / read_parquet.*factor_db pattern 확인"
+    },
+    "str_1656_verify_pending": {
+      "status": "Q-Lead direct verify 중",
+      "scout_recommendation": "STR_1656_MLRA_M05 ML Risk Architecture는 ML raw features 사용 (team-lead 메시지 'LOW advisory 수준' 인지) — Gate 13 compliant 가능성 높음"
+    },
+    "pending_hypotheses_at_risk": {
+      "H_1692_industry_momentum_RSI": {
+        "status": "factor_engine.R 미작성 (Forge 재스폰 대기)",
+        "gate_13_mandate": "factor_engine 작성 시 load_month_factors() 경유 강제 — Scout handoff kit v1.1 이미 반영",
+        "preflight_requirement": "Forge preflight_check에 Gate 13 pattern 추가 필수"
+      },
+      "H_1689_v3_Q24_exclude": {
+        "status": "factor_engine.R 미작성",
+        "gate_13_mandate": "load_month_factors() 경유",
+        "preflight_requirement": "동일"
+      },
+      "H_1686_foreign_resid_individual (H_1685_v2)": {
+        "status": "factor_engine.R 미작성",
+        "gate_13_mandate": "load_month_factors() + INV13 registry 경유"
+      }
+    }
+  },
+
+  "scout_recommendations": [
+    "STR_1685 실행 완료 후 **즉시 Gate 13 violation evidence 기록** — pre/post 비교용 baseline",
+    "STR_1685 factor_engine.R line 81-92 (fdb_dir + read_parquet) 수정 → load_month_factors() 경유 (Forge 작업)",
+    "STR_1626 + STR_1570 catalog 상태 확인 (active 상태면 Gate 13 enforcement 대상, inactive면 archive 유지)",
+    "Q-Lead STR_1631/STR_1656 grep verify 결과 families.json v1.5+ 반영 준비 (Scout update 대기)",
+    "H_1692/H_1689/H_1686 Forge factor_engine.R 작성 시 Gate 13 preflight 템플릿 제공 (Scout이 TODO_S1 발행 시 명시 가능)"
+  ],
+
+  "gate_13_preflight_template_for_forge": {
+    "_note": "Forge factor_engine.R 작성 전 preflight_check에 삽입할 R 코드",
+    "r_code": "# Gate 13 Factor DB Access Compliance preflight\nfactor_engine_path <- \"factor_engine.R\"\nif (file.exists(factor_engine_path)) {\n  fe_content <- readLines(factor_engine_path)\n  violation_lines <- grep(\"read_parquet.*factor_db|list\\\\.files.*factor_db|fdb_dir\", fe_content, value = FALSE)\n  if (length(violation_lines) > 0) {\n    stop(sprintf(\"[Gate 13 VIOLATION] factor_engine.R lines %s use direct factor_db access. Use load_month_factors() instead (L-164 ACTIVE).\", paste(violation_lines, collapse=\",\")))\n  }\n}"
+  },
+
+  "session_67_connected_actions_scout_audit_contribution": {
+    "preceding": [
+      "R16 실측 발견 (Scout v1.3)",
+      "12-factor matrix (Scout v1.4)",
+      "L-164 ACTIVE + Gate 13 신설 (Judge/Q-Lead 승인)"
+    ],
+    "current": "Gate 13 violation audit (Scout Option C autonomous)",
+    "next_enable": "Forge Gate 13 preflight 적용 + STR_1685 재실행 (post-fix baseline) + H_1692/H_1689/H_1686 factor_engine 작성 시 선제 준수"
+  },
+
+  "scout_notes": [
+    "total factor_engine.R scanned: 11 files (grep 'read_parquet' positive)",
+    "gate_13 VIOLATION: 6 files (1 active P0 + 3 dropped + 2 legacy)",
+    "gate_13 COMPLIANT or scope-외: 5 files (investor_flow/별도 data source)",
+    "STR_1685 PID 2299540 현재 실행 중 — 완료 후 pre-Gate 13 baseline 기록",
+    "H_1692/H_1689/H_1686 factor_engine 작성 시 선제 Gate 13 준수 필요 (Forge preflight template 제공)",
+    "STR_1626/STR_1570 legacy 2건 catalog verify 필요 (Governor family_concentration check 영역)"
+  ]
+}

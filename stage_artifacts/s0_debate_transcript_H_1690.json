@@ -1,0 +1,104 @@
+{
+  "debate_id": "S0_DEBATE_H_1690",
+  "hypothesis_id": "H_1690",
+  "hypothesis_name": "STR_1439 Score-Blend Redesign — Multi-Source Defense Anchor (v53)",
+  "compiled_by": "Forge (Q-Lead 위임)",
+  "compiled_at": "2026-04-17",
+  "status": "R1_COMPLETE_R2_PENDING",
+
+  "r1_scores": {
+    "codex_critic":  7,
+    "risk_manager":  14,
+    "governor":      16,
+    "quant":         14,
+    "academic":      16,
+    "r1_total":      67
+  },
+
+  "r1_score_rationale_summary": {
+    "codex_critic":  "failure_chain + ex-post regime weight + composite linearity 문제 지적 → 7/20 (Codex 구조적 REJECT 입장)",
+    "risk_manager":  "M08/Q07/R16 stress IC 강점 확인 + KS-1 regime lag / KS-2 ex-post weight 2건 kill scenario → 14/20 (조건부 지지)",
+    "governor":      "rev7_v3 Def_3 공석 직접 해소 + AX-001 조건부 framework 적합 + Factor DB 완비 → 16/20 (강력 지지, gradual admission)",
+    "quant":         "Gate 14 algebraic PASS + defense IC 실측 근거 직접 확인 + composite ICIR 전망 양호 → 14/20 (조건부 지지, R16 월별 volatility 우려)",
+    "academic":      "peer_review 4/4 + substantive_cite 4/4 + mechanism_align 양호 → 16/20 (지지, korea_evidence M08/R16 보강 필요)"
+  },
+
+  "transcript": {
+    "round": "R1",
+    "debaters": [
+      {
+        "agent_id": "codex_critic_r1_H_1690",
+        "role": "codex_critic",
+        "score": 7,
+        "findings": [
+          "H_1690은 STR_1439→H_1677→H_1685→H_1687 failure chain 직계 후속으로 L-code 다수가 여전히 active",
+          "regime weight 3-state 선택이 ex-post full-sample calibration 의혹 — expanding-window 사전 등록 없음",
+          "composite effective linearity 미검증 — H_1687 M01 0.716 dominance 재발 가능성 + KOSDAQ PIT leakage blind spot"
+        ]
+      },
+      {
+        "agent_id": "risk_manager_r1_H_1690",
+        "role": "risk_manager",
+        "score": 14,
+        "findings": [
+          "M08 stress_icir 2.290 / Q07 0.753 / R16 2.655로 3개 sub factor defense IC 실증 확인",
+          "KS-1: COVID 2020-03형 급락 시 10%p/month smoothing으로 CRISIS tilt 전환 3개월 지연 — 초기 MDD 증폭 위험",
+          "KS-2: regime weight가 STR_1439 원본 return-blend implicit weight와 cosine similarity 0.8+ 유사 시 미래참조(C3) 위반"
+        ]
+      },
+      {
+        "agent_id": "governor_r1_H_1690",
+        "role": "governor",
+        "score": 16,
+        "findings": [
+          "rev7_v3 Def_3 primary 10% 공석 보완 직접 경로 — H_1687 drop 이후 구조적 유일 대안",
+          "Factor DB standalone 완전 자립 + parent MISSING 해소 + L-157 v3 Gate 14/15 pre-check 전수 PASS",
+          "pairwise TDC 3중 borderline(vs H_1682 0.50~0.65 / vs H_1688 0.40~0.55 / vs STR_1631 0.35~0.50) — S3 실측 REJECT 위험"
+        ]
+      },
+      {
+        "agent_id": "quant_r1_H_1690",
+        "role": "quant",
+        "score": 14,
+        "findings": [
+          "compute_*.R 직접 확인: Q07 Raw_Value=-sd_roe / R16=mean_r*252/abs(MDD) 모두 C13 수동반전 없이 직접 사용 가능",
+          "Gate 14 algebraic PASS / Gate 15 linear dominance PASS (ELEVATED C19 분산기여 6.7%)",
+          "R16 Calmar 월별 raw value 변동성이 타 sub factor 대비 과대할 위험 — composite turnover 통제 필요"
+        ]
+      },
+      {
+        "agent_id": "academic_r1_H_1690",
+        "role": "academic",
+        "score": 16,
+        "findings": [
+          "peer_review 4/4 + substantive_cite 4/4: Blitz 2011 / Bernard-Thomas 1989 / Dichev-Tang 2009 / Barroso 2015 설계 요소 실질 지탱",
+          "mechanism_align 3/4: 3-state regime 경계값이 이론 근거보다 data-driven에 가까워 -1축",
+          "korea_evidence 2/4: M08 / R16 한국 직접 실증 논문 누락 — 2편 보강 필요"
+        ]
+      }
+    ],
+    "r1_key_convergence": [
+      "Gate 14 algebraic identity PASS — 5인 공통 인정",
+      "Q07+R16 defense IC 강점(stress_icir 0.753 / 2.655) — codex 제외 4인 공통 인정",
+      "regime weight ex-post tuning 의혹 — codex/risk_mgr/governor 3인 공통 지적"
+    ],
+    "r1_key_divergence": [
+      "Codex: REJECT 입장 (failure chain + composite linearity risk) vs Governor/Academic: 16점 지지",
+      "Risk Mgr: regime transition lag 3개월 KS-1 kill scenario (kill-level) vs Quant: R16 월별 변동성(조건부 우려)",
+      "Academic: korea_evidence 보강 요청(reasonable) vs Codex: expanding-window 사전 등록 없이 approve 불가"
+    ]
+  },
+
+  "r2_prompt_context": {
+    "instruction": "R2 Rebuttal — 타 debater R1 argument 읽고 (1) 동의 1건+ (2) 반박 1건+ (3) 점수 재조정(이유 포함) (4) 최강 반론 지목. Q-Lead가 각 역할별로 독립 spawn.",
+    "key_crossfire_targets": {
+      "codex_v_others": "Codex score 7 vs 나머지 14~16 — R2에서 Codex는 Kill scenario를 구체화하고 나머지 4인은 failure chain/linearity 논거에 반박 또는 수용해야 함",
+      "risk_mgr_KS1": "KS-1 regime lag whipsaw — Governor/Quant가 R2에서 동의/반박 필수",
+      "governor_tdc_borderline": "vs H_1682 TDC 0.50~0.65 borderline — Risk Mgr/Quant가 R2에서 확인/반박",
+      "academic_korea_evidence": "M08/R16 한국 실증 누락 — Quant/Risk Mgr이 대안 근거 제시 또는 보강 요청 동의"
+    }
+  },
+
+  "r2_pending_debaters": ["codex_critic", "risk_manager", "governor", "quant", "academic"],
+  "codex_r2_status": "background_running (S2.13 자동 트리거 확인 대기 — r2_codex_verdict_H_1690.json)"
+}

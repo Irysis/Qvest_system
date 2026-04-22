@@ -1,0 +1,77 @@
+{
+  "draft_for": "02_Infrastructure/validation/lookahead_detector.R",
+  "target_factor": "INV13_Foreign_Resid_Individual_21d",
+  "hypothesis_id": "H_1685",
+  "version": "v2",
+  "created": "2026-04-18",
+  "created_by": "Scout (Phase 1 handoff draft)",
+  "status": "DRAFT_PENDING_FORGE_REGISTRATION",
+  "purpose": "H_1685 v2 (residualized foreign flow) 구현 시 미래참조 자동 검출 패턴. Forge S1 implementation 완료 전 lookahead_detector.R에 정식 등록 필요.",
+
+  "patterns": [
+    {
+      "id": "INV13_C1_expanding_window_strict_lag",
+      "category": "C1",
+      "severity": "HARD_BLOCK",
+      "description": "INV13 β_t는 expanding-window OLS로 t-1 월까지의 pooled data만 사용해야 함. shift(, 1L) 또는 dplyr::lag()로 1-month lag 강제. 직접 cum_SxY/cum_Sxx 사용 시 당월 cross-sectional 정보 포함 → 동일 월 내 look-ahead.",
+      "detect_regex_primary": "beta_t\\s*(?:<-|:=)\\s*cum_SxY\\s*/\\s*cum_Sxx(?!.*shift)(?!.*lag)",
+      "detect_regex_secondary": "cum_SxY\\s*/\\s*cum_Sxx(?![\\s\\S]{0,50}?(shift|lag))",
+      "expected_pattern_ok": "beta_t <- shift(cum_SxY / cum_Sxx, 1L)",
+      "expected_pattern_bad": "beta_t <- cum_SxY / cum_Sxx  # C1 violation: current-month pooled"
+    },
+    {
+      "id": "INV13_C2_date_strict_less_than",
+      "category": "C2",
+      "severity": "HARD_BLOCK",
+      "description": "compute_investor.R INV01~INV12 기존 패턴인 `inv <- inv[Date < sig_d]` 승계 필수. `<=` 사용 시 sig_date 당일 거래주체 데이터 포함 → same-day circular.",
+      "detect_regex_primary": "inv\\s*\\[\\s*Date\\s*<=\\s*sig_d",
+      "detect_regex_secondary": "investor.*\\[\\s*Date\\s*<=\\s*(sig|signal|rebal|as\\.Date)",
+      "expected_pattern_ok": "inv <- inv[Date < sig_d]",
+      "expected_pattern_bad": "inv <- inv[Date <= sig_d]"
+    },
+    {
+      "id": "INV13_C11_quantiwise_T_plus_1_publication_timing",
+      "category": "C11",
+      "severity": "HARD_BLOCK",
+      "description": "거래주체 데이터는 장마감 후 T+1 공시. compute_investor.R가 'trading_date' 기준이면 sig_date와 1일 offset 없이 그대로 사용해도 되나, 'publication_date' 기준이면 이중 lag 발생 가능. Forge는 investor_wide.parquet의 Date 컬럼이 어느 쪽인지 명시적 주석 + Usable_Date 로직 재확인 필수.",
+      "detect_regex_primary": "investor_wide.*Date(?![\\s\\S]{0,200}?(trading_date|Usable_Date|publication_date))",
+      "detect_regex_secondary": "compute_investor.*sig_date(?![\\s\\S]{0,400}?(C11|T\\+1|Usable_Date|publication))",
+      "manual_check_required": true,
+      "forge_action": "compute_investor.R 상단 주석에 Date 컬럼 기준(trading_date/publication_date) 명시 + Usable_Date 매핑 로직 주석 추가"
+    },
+    {
+      "id": "INV13_C1_burn_in_enforcement_60_months",
+      "category": "C1",
+      "severity": "HARD_BLOCK",
+      "description": "expanding-window OLS β_t는 burn-in 60개월 미만에서는 불안정. burn-in 미만 월의 residual 반환 금지. is.na(beta_t) 체크로 NA 반환하거나 skip.",
+      "detect_regex_primary": "residual\\s*(?:<-|:=)\\s*z_F\\s*-\\s*beta_t\\s*\\*\\s*z_I(?![\\s\\S]{0,100}?is\\.na\\(beta_t\\))",
+      "detect_regex_secondary": "INV13.*z_F.*-.*beta.*z_I(?![\\s\\S]{0,200}?(burn_in|BURN_IN|n_months.*>=.*60))",
+      "expected_pattern_ok": "residual <- fifelse(!is.na(beta_t) & months_elapsed >= 60, z_F - beta_t * z_I, NA_real_)",
+      "expected_pattern_bad": "residual <- z_F - beta_t * z_I  # no burn-in check"
+    },
+    {
+      "id": "INV13_C13_z_score_aligned_no_manual_flip",
+      "category": "C13",
+      "severity": "HARD_BLOCK",
+      "description": "residual 자체가 Fama-MacBeth orthogonalized signal. 수동 부호 반전(NEGATE_FACTORS, FLIP_SIGN, -1*residual 등) 금지. Z_Score_Aligned는 residual 해석(positive = 외국인 매수 잔차 = outperform 예상)이 이미 일관되므로 사전 반전 불필요.",
+      "detect_regex_primary": "(NEGATE_FACTORS|FLIP_SIGN)\\s*\\[\\s*['\"]INV13",
+      "detect_regex_secondary": "-1\\s*\\*\\s*(INV13|residual_foreign)",
+      "expected_pattern_ok": "factor returned as residual directly, Z_Score_Aligned handles scaling",
+      "expected_pattern_bad": "signal <- -1 * INV13_Foreign_Resid_Individual_21d"
+    }
+  ],
+
+  "registration_procedure_for_forge": [
+    "Step 1: 02_Infrastructure/validation/lookahead_detector.R 열기 → patterns 리스트 하단에 위 5종 추가",
+    "Step 2: compute_investor.R INV13 logic 추가 (약 60~80줄)",
+    "Step 3: Rscript -e 'source(\"02_Infrastructure/validation/lookahead_detector.R\"); detect_lookahead(\"02_Infrastructure/factor_db/compute_investor.R\", patterns=c(\"INV13_C1_expanding_window_strict_lag\", \"INV13_C2_date_strict_less_than\", \"INV13_C11_quantiwise_T_plus_1_publication_timing\", \"INV13_C1_burn_in_enforcement_60_months\", \"INV13_C13_z_score_aligned_no_manual_flip\"))'",
+    "Step 4: 전체 PASS 확인 후 factor_db_builder.R에 INV13 entry 등록",
+    "Step 5: Judge PIT scan 요청"
+  ],
+
+  "supporting_evidence": {
+    "empirical_precheck": "stage_artifacts/h1685_v2_residual_validation_result.json",
+    "s0_record_v2": "stage_artifacts/s0_record_H_1685_v2.json",
+    "v1_verdict": "stage_artifacts/S0_VERDICT_H_1685.json (REVISE 55)"
+  }
+}

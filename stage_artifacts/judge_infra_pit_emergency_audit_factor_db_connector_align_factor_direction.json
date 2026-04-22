@@ -1,0 +1,210 @@
+{
+  "artifact_type": "JUDGE_INFRA_PIT_EMERGENCY_AUDIT",
+  "severity": "CRITICAL_L0 (AX-002 위반 — 판단의 미래참조)",
+  "infrastructure_file": "02_Infrastructure/factor_db/factor_db_connector.R",
+  "violation_function": "align_factor_direction()",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "trigger": "Codex STR_1692 rescue FAIL 4건 중 3건 infra-level — team-lead 긴급 요청",
+
+  "violation_evidence_verified": {
+    "C01_full_sample_lookahead": {
+      "status": "CONFIRMED",
+      "file_path": "02_Infrastructure/factor_db/factor_db_connector.R",
+      "line_range": "152-157",
+      "code_verbatim": "ic_hist <- tryCatch(.load_ic_history(), error = function(e) NULL); if (!is.null(ic_hist) && nrow(ic_hist) > 0) { ic_dir <- ic_hist[, .(Mean_IC = mean(IC, na.rm = TRUE), N = .N), by = Factor_Name]; ic_dir[, ic_sign := fifelse(Mean_IC >= 0, 1L, -1L)] ... }",
+      "violation_logic": "ic_hist = .load_ic_history() returns full-sample factor_ic_monthly.parquet. Mean IC aggregates all periods including future vs sig_date. ic_sign (direction) 결정에 미래 IC 포함 → 과거 t-시점 Z_Score_Aligned 생성에 미래 정보 주입.",
+      "impact": "모든 load_month_factors() 호출 전략의 Z_Score_Aligned 컬럼 오염. factor별 positive/negative direction 판정이 post-hoc 정보 반영. 특히 direction flip 경계 factor일수록 영향 큼."
+    },
+    "C07_automated_lookahead": {
+      "status": "CONFIRMED",
+      "line_range": "152-157",
+      "violation_logic": "자동화된 direction inference 패턴 자체가 lookahead 구조. 미래 IC sign을 '평균 IC sign'으로 압축해 과거 decision에 주입.",
+      "secondary_violation": "RC1 fix (line 195-200) re-standardize도 factor-wise cross-sectional sd 기준 — 각 signal date 내 sd는 PIT-safe이나 Z_Score 자체가 factor_db_builder에서 이미 full-sample normalization일 수 있음 (별도 확인 필요)."
+    },
+    "C14_usable_date_filter_missing": {
+      "status": "CONFIRMED",
+      "line_range": "151-157",
+      "violation_logic": "align_factor_direction() 함수가 .load_ic_history()를 호출하되 Usable_Date <= sig_date 필터 전혀 적용하지 않음. factor_db_builder.R:1163-1165 Usable_Date 컬럼 정의만 있고 connector에서 사용 안 함.",
+      "inconsistency_evidence": "동일 파일 factor_db_connector.R line 220-230의 compute_rolling_ic_all()은 Usable_Date 필터 정확히 적용(line 223 if ('Usable_Date' %in% names(ic_hist)) { ic_avail <- ic_hist[Usable_Date <= sig_d] }). 즉 두 함수가 Usable_Date 처리에서 inconsistent — align_factor_direction만 PIT 위반."
+    }
+  },
+
+  "affected_strategies_audit": {
+    "audit_method": "Grep pattern 'align_factor_direction|load_month_factors|Z_Score_Aligned' across 04_Research/strategies/",
+    "total_matches_head_limited": "50+ files (head_limit 50 hit — 전수는 더 많음)",
+    "pg2_active_2_critical": [
+      {
+        "strategy": "STR_1631_SYN_05",
+        "weight": "80% (Phase_1 target 18%)",
+        "file": "04_Research/strategies/STR_1631_SYN_05/run_all.R",
+        "call_confirmed": "load_month_factors() 호출 확인. Z_Score_Aligned 사용.",
+        "m3_audit_result_prior": "SR 1.193 PIT-clean 확정 (2026-04-19 retroactive_pit_audit_active_strategies_20260419.json)",
+        "m3_gap": "M3 audit은 strategy-level code pattern scan. Infrastructure align_factor_direction 내부 PIT 위반 감사 범위 밖 — 누락 확인",
+        "reverification_required": "CRITICAL — SR 1.193 재검증 필요. 기대 SR delta 범위 0~15% (Mean_IC direction flip 경계 factor 수에 비례)",
+        "risk_level": "HIGH"
+      },
+      {
+        "strategy": "STR_1656_MLRA",
+        "weight": "20% (Phase_1 target 14%)",
+        "file": "04_Research/strategies/STR_1656_MLRA/run_all.R + s5_phase1_3.R",
+        "call_confirmed": "align_factor_direction 및 Z_Score_Aligned 경로 사용 확인",
+        "additional_violation": "기존 C10 major (Size→AvgTV20, Task #8) + 본 infra-level C01/C07/C14 → 이중 violation",
+        "m3_audit_result_prior": "C10 major LOW 영향 (0-5%) 기록. Infra C01 추가 영향은 미평가",
+        "reverification_required": "CRITICAL — STR_1656 C10 fix + infra C01 fix 동시 완료 후 재백테스트. SR delta 예상 범위 5~20%"
+      }
+    ],
+    "pg1_conditional_hold_impacted": [
+      {"strategy": "STR_1682_residual_consensus", "status": "이미 Hard Fail. infra violation이 실패 원인에 기여 여부 재해석 필요"},
+      {"strategy": "STR_1683_distress_calmar_defense", "status": "이미 Hard Fail + L-160 family initiator. direction 판정이 ICIR 1.879 signal generation에 영향 가능성"},
+      {"strategy": "STR_1684_residual_momentum", "status": "이미 Hard Fail + L-161 Factor DB Z_Score normalization 별건 — infra C01/C07/C14과 이중 Factor DB infra issue"},
+      {"strategy": "STR_1685_multi_source_defense_anchor", "status": "이미 Hard Fail + L-165 2nd member. multi-source 4-axis composite의 각 axis direction이 align_factor_direction 결과에 의존 → ICIR 0.74~0.94 신뢰성 재검증 필요"},
+      {"strategy": "STR_1687_q07_sector_neutral_defense", "status": "이미 Hard Fail + L-166 ANTI-PATTERN. 결과에 infra violation 기여 여부는 판정 변경 없음(hard_fail 재현 확실)"}
+    ],
+    "scope_estimate": "align_factor_direction 호출 전략 전체 오염 가능성. 단 오염 정도는 factor별 Mean_IC direction flip 경계 여부에 따라 factor-specific. 전수 PIT 재감사 불가피."
+  },
+
+  "m3_retroactive_audit_reconciliation": {
+    "m3_finding_SR_1_193_PIT_clean": "strategy-level code pattern 감사 — align_factor_direction 내부 로직까지 도달하지 못함. infrastructure 경로는 감사 범위 밖",
+    "reconciliation_requirement": "M3 audit 범위 확장 — infrastructure functions (factor_db_connector.R, factor_db_builder.R, load_ic_history 등) PIT 전수 재감사 추가. 이를 'M3.1 Infrastructure PIT Extension' 명명 권고",
+    "sr_1_193_status_interim": "PENDING_REVERIFICATION — infra fix 완료 후 STR_1631 재백테스트 후 재평가. 현 SR 1.193 수치는 infrastructure lookahead 오염 가능성 있는 상태로 보류",
+    "pg2_active_live_status": "SOFT_FREEZE — 실투 전환 금지. 현재 paper-trading 수준에서만 유지. LIVE 진입은 infra fix + retroactive audit v2 완료 후"
+  },
+
+  "l_168_new_issuance": {
+    "l_code_id": "L-168",
+    "title": "Infrastructure-level PIT violation — align_factor_direction() full-sample Mean_IC 기반 direction inference",
+    "grade": "CRITICAL_INFRASTRUCTURE_VIOLATION",
+    "core_reference": "AX-002 (process 우회 = 판단의 미래참조) + C01/C07/C14 definitions + L-161 (STR_1684 Factor DB Z_Score normalization sibling) + L-167 Layer B (Forge self-check insufficient) + factor_db_connector.R 실측 line 152-157 code + compute_rolling_ic_all() line 220-230 PIT-compliant control",
+    "lesson_text": "factor_db_connector.R align_factor_direction() 함수가 factor direction 결정 시 factor_ic_monthly.parquet full-sample Mean_IC를 사용하여 과거 t-시점 Z_Score_Aligned 생성에 미래 IC 정보 주입. 동일 파일 compute_rolling_ic_all()은 Usable_Date <= sig_date 필터 정확 적용하는데 align_factor_direction만 필터 누락 — inconsistent PIT treatment가 근본 결함. 영향: (a) load_month_factors() 호출 전략 모두 Z_Score_Aligned 오염, (b) STR_1631 SR 1.193 + STR_1656 PG2 active 2건 PIT-clean status 보류, (c) M3 retroactive audit 2026-04-19 결과 범위 제한 — strategy-level pattern scan만 수행하고 infrastructure 내부 함수 PIT 경로 감사 누락. 교훈: (1) M3.1 Infrastructure PIT Extension 필수 — 모든 인프라 함수 PIT 전수 감사, (2) align_factor_direction 긴급 fix — Usable_Date 필터 적용 + rolling expanding window Mean_IC 사용, (3) 또는 direction은 registry.direction만 사용하고 IC-based inference 제거 (단순 권고), (4) factor_db_builder Z_Score 정규화 step도 동일 PIT 감사 대상, (5) C14 감사 pattern 강화 — 함수 내 .load_ic_history() 또는 factor_ic_monthly.parquet load 후 Usable_Date 필터 부재 자동 탐지. L-161 (STR_1684 Factor DB Z_Score sd 이상)과 sibling infrastructure layer violation. AX_CAND_forge_self_check_insufficient Layer B 3rd member 공식 확정 trigger — Forge self-check + Architect M3 + Codex rescue 3 source 모두 align_factor_direction 내부 PIT 위반 1년+ 미탐지.",
+    "tags": [
+      "INFRA_PIT_VIOLATION_C01_C07_C14",
+      "ALIGN_FACTOR_DIRECTION_FULL_SAMPLE_MEAN_IC",
+      "USABLE_DATE_FILTER_MISSING",
+      "INCONSISTENT_PIT_TREATMENT_SAME_FILE",
+      "STR_1631_SR_1_193_PENDING_REVERIFICATION",
+      "STR_1656_MLRA_DOUBLE_VIOLATION_C10_PLUS_C01",
+      "M3_RETROACTIVE_AUDIT_SCOPE_LIMITATION",
+      "AX_CAND_LAYER_B_3RD_MEMBER_CONFIRMED",
+      "AX_002_VIOLATION_PROCESS_CIRCUMVENTION",
+      "FACTOR_DB_CONNECTOR_EMERGENCY_FIX_REQUIRED",
+      "PG2_ACTIVE_SOFT_FREEZE",
+      "VALIDATED_INFRA_VIOLATION"
+    ],
+    "created_at": "2026-04-19",
+    "session": 68,
+    "judge_agent_id": "judge",
+    "evidence_files": [
+      "02_Infrastructure/factor_db/factor_db_connector.R line 150-203 (align_factor_direction)",
+      "02_Infrastructure/factor_db/factor_db_connector.R line 218-258 (compute_rolling_ic_all PIT-compliant control)",
+      "02_Infrastructure/factor_db/factor_db_builder.R line 1163-1165 (Usable_Date definition)",
+      "stage_artifacts/retroactive_pit_audit_active_strategies_20260419.json (M3 scope limitation)",
+      "Codex STR_1692 rescue result (trigger)"
+    ],
+    "related_l_codes": ["L-159 (spec transmission)", "L-161 (Factor DB Z_Score sd normalization)", "L-162 (linear composite dominance)", "L-164 v1.1 (carve-out)", "L-167 (Forge self-check insufficient)"],
+    "followup_architect": "M3.1 Infrastructure PIT Extension — factor_db_connector.R + factor_db_builder.R + .load_ic_history + 모든 관련 infra function PIT 전수 감사. align_factor_direction Usable_Date 필터 적용 patch 또는 IC-based inference 제거하고 registry.direction만 사용하는 단순화 설계 제안",
+    "followup_forge": "restart_block — align_factor_direction 의존 전략 신규 실행 금지까지 infra fix 완료",
+    "followup_governor": "rev8-A-revised-v4 Scenario_D STR_1631/STR_1656 pending 상태 유지. PG1 admission 차단 — infra fix 완료 후 재평가",
+    "followup_qlead": "Architect 온디맨드 스폰 승인 + factor_db_connector.R fix planning. retroactive_pit_audit v2 발행 스케줄 결정"
+  },
+
+  "ax_cand_layer_b_promotion_trigger": {
+    "candidate_id": "AX_CAND_forge_self_check_insufficient",
+    "layer": "B (verification process layer)",
+    "supporting_count_before": 2,
+    "supporting_count_after": 3,
+    "status_now": "PROMOTION_READY (3/3 supporting MET)",
+    "supporting_l_codes_layer_b": [
+      {
+        "l_code": "L-159",
+        "strategy": "STR_1682",
+        "signature": "Spec transmission failure — Scout handoff spec → Forge implementation 변환 drift. Forge self-check PASS 보고, Architect M3 + Codex rescue FAIL 발견",
+        "file": "stage_artifacts/l_code_STR_1682.json"
+      },
+      {
+        "l_code": "L-167",
+        "strategy": "STR_1686/STR_1687/STR_1656/STR_1631 multi-strategy",
+        "signature": "Forge self-check PASS 보고, Codex cross-model rescue FAIL 4건 (PIT/mandate violation). Layer B verification process insufficient 일반화",
+        "file": "stage_artifacts/l_code_L_167_forge_self_check_insufficient.json 또는 methodology_active.md L-167 section"
+      },
+      {
+        "l_code": "L-168",
+        "strategy": "STR_1692 trigger (+ 전수 align_factor_direction 호출 전략)",
+        "signature": "Infrastructure-level PIT violation in align_factor_direction. Forge self-check + Architect M3 + Codex rescue 3-source verification에도 불구 1년+ 미탐지 (infra layer blind spot). Layer B 3rd member 확정 trigger",
+        "file": "본 artifact + stage_artifacts/l_code_STR_1692_infra_L_168.json 또는 본 Judge signoff",
+        "role": "LAYER_B_3RD_MEMBER"
+      }
+    ],
+    "five_axis_final_score": {
+      "independence": {"score": 0.78, "rationale": "L-159 spec transmission / L-167 Forge self-check / L-168 infra verification 3건 서로 다른 layer에서 발현. L-161 (STR_1684 Factor DB Z_Score)은 Layer A로 별도 tracked"},
+      "repeatability": {"score": 1.00, "rationale": "3건 모두 Forge self-check PASS + cross-model/Architect/Codex rescue FAIL 동일 signature 재현"},
+      "family_consistency": {"score": 0.85, "rationale": "verification process insufficient 패턴 일관성. 3 layer(spec / strategy self-check / infra) 모두 동일 근본 원인"},
+      "explainability": {"score": 0.72, "rationale": "single-source verification의 구조적 한계 + cross-model validation 부재 원인 명확. OOS 증명은 process-level이라 어려움"},
+      "mechanism_clarity": {"score": 0.88, "rationale": "Layer A (infrastructure_failures) vs Layer B (verification process) 구분 명확. 3-source verification requirement 수식화 가능"},
+      "total": 0.846,
+      "threshold": 0.80,
+      "margin": 0.046
+    },
+    "promotion_decision": "PROMOTE_APPROVED as AX-008 (다음 순번)",
+    "scope_statement": "KR quant 연구에서 Forge self-check 단독 verification은 PIT/mandate/infra violation 탐지에 insufficient. 3-source verification(Forge self-check + Codex cross-model rescue + Architect infra audit) 의무화해야 구조적 신뢰 확보. Layer B(strategy self-check) vs Layer A(infrastructure) 이중 체계 유지. 3-source 중 최소 2-source PASS + Layer A/B cross-check 시에만 admission.",
+    "policy_implications": [
+      "forge_code_guard.sh v2.1: advisory → MANDATORY Codex rescue + Architect audit 연동 (L-167 기반에서 확장)",
+      "Judge S6 Gate 0 PIT 검증에 infra_pit_scan 추가 — align_factor_direction 호출 전략 전수 자동 infra PIT audit",
+      "retroactive_pit_audit protocol v2 — strategy-level + infrastructure-level 이중 scan 의무화",
+      "AX-002 판단의 미래참조 금지 규칙 강화 — infrastructure layer 포함 명시"
+    ],
+    "approval_chain": {
+      "step_1_judge_custodian": "APPROVED (본 artifact)",
+      "step_2_qlead_review": "PENDING (본 통지 후)",
+      "step_3_governor_admission_rule_integration": "PENDING",
+      "step_4_architect_fix_planning": "PENDING (온디맨드 스폰 권고)",
+      "step_5_methodology_active_registration": "PENDING"
+    }
+  },
+
+  "architect_spawn_recommendation": {
+    "decision": "STRONGLY_RECOMMENDED",
+    "scope": "factor_db_connector.R align_factor_direction fix + factor_db_builder PIT audit + M3.1 Infrastructure Extension",
+    "urgency": "CRITICAL (PG1 admission 차단 + PG2 LIVE 동결 상태)",
+    "justification": [
+      "factor_db_connector.R 자체 수정은 Judge/Forge 범위 초과 — 인프라 변경 blast radius 큼",
+      "Usable_Date 필터 적용 방법 설계 필요 (simple filter vs expanding rolling window vs registry-only fallback 3-way 중 선택)",
+      "Z_Score_Aligned 재계산 pipeline 설계 필요 — factor_ic_monthly.parquet 재생성 cascade 영향 검토",
+      "M3.1 Infrastructure PIT Extension protocol 설계 필요 — 반복 가능한 체계",
+      "L-167 + L-168 + AX-008 reflect한 forge_code_guard v2.1 hook 패치 필요"
+    ],
+    "architect_deliverables_expected": [
+      "factor_db_connector.R patch (align_factor_direction PIT-safe 버전)",
+      "M3.1 Infrastructure PIT Extension protocol document",
+      "retroactive_pit_audit v2 실행 + STR_1631 SR 1.193 재검증 결과",
+      "forge_code_guard v2.1 + infra_pit_scan hook 설계"
+    ]
+  },
+
+  "immediate_actions_required": [
+    {"actor": "Q-Lead", "action": "Architect 온디맨드 스폰 승인 + factor_db_connector fix TaskCreate", "priority": "URGENT"},
+    {"actor": "Governor", "action": "PG1 admission 완전 동결 통지 (rev-v4.1 patch와 별건). STR_1631/1656 SOFT_FREEZE 반영", "priority": "URGENT"},
+    {"actor": "Forge", "action": "align_factor_direction 호출 전략 신규 실행 금지 — infra fix 완료까지. STR_1686/1689/1692 재실행 대기 상태 연장", "priority": "URGENT"},
+    {"actor": "Scout", "action": "신규 S0 가설 설계 시 factor DB Z_Score_Aligned 직접 사용 지양 — infra fix 완료 후 재개", "priority": "HIGH"},
+    {"actor": "Judge (본인)", "action": "methodology_active.md L-168 정식 등재 + AX-008 promotion packet 발행 + M3.1 retroactive audit 재개 시 supervising custodian 역할", "priority": "HIGH"}
+  ],
+
+  "soft_freeze_scope": {
+    "pg2_active_paper_trading_only": ["STR_1631_SYN_05 (80% → Phase_1 18%)", "STR_1656_MLRA (20% → Phase_1 14%)"],
+    "pg1_admission_blocked_until_fix": ["STR_1686", "H_1689 v3 variant_1", "H_1692 v2", "STR_1679v3"],
+    "live_transition_blocked": "infrastructure fix + retroactive audit v2 + STR_1631 재백테스트 PASS 3-gate 모두 완료 시에만 해제",
+    "estimated_unfreeze_timeline": "Architect fix 2-3 days + retroactive audit v2 1 day + STR_1631 재실행 0.5 day = Day 4~6 (Session 68)"
+  },
+
+  "final_judge_custodian_decisions": {
+    "decision_1_l_168_issuance": "APPROVED — L-168 정식 발행, methodology_active.md 등재",
+    "decision_2_ax_cand_layer_b_3rd_member": "APPROVED — L-168이 AX_CAND_forge_self_check_insufficient Layer B 3rd member 공식 확정",
+    "decision_3_ax_008_promotion": "APPROVED — 5축 0.846 (threshold 0.80 +0.046 margin). AX-008 'Verification Process Triangulation Mandate' 정식 승격 권고",
+    "decision_4_pg2_soft_freeze": "APPROVED — STR_1631 + STR_1656 LIVE 전환 중단, paper-trading 유지",
+    "decision_5_architect_spawn": "STRONGLY_RECOMMENDED (Q-Lead 최종 승인 필요)",
+    "decision_6_m3_audit_v2": "MANDATORY — M3.1 Infrastructure PIT Extension 발행 후 v2 audit 실행",
+    "decision_7_admission_rule_v3_5_4_deferred": "v3.5.3 발효 자체 BLOCKED — v3.5.4에서 infra_pit_scan Gate 추가하는 amendment 필요"
+  }
+}

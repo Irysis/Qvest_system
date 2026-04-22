@@ -4,14 +4,23 @@
 #
 # v55 Consensus 기반 판정 (점수제 폐지):
 #   debaters[].stance (APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) 집계
-#   veto_flag 2+ 동의 → REVISE/REJECT 강제
+#   veto_flag 동의 → REVISE/REJECT 강제
 #   unresolved_disputes → S1 gate 승격 (APPROVE_CONDITIONAL)
 #
-# 집계 규칙:
-#   4+ APPROVE       → APPROVE (S1 즉시 dispatch)
-#   3+ REJECT        → REJECT (아카이브)
-#   veto 2+ 동의     → REVISE (도메인별 REJECT 가능)
+# V6 Amendment (2026-04-19): debaters 수에 따라 자동 분기
+#
+# 5인 Full 집계 규칙 (기존):
+#   4+ APPROVE       → APPROVE
+#   3+ REJECT        → REJECT
+#   veto 2+ 동의     → REVISE
 #   3+ APPROVE/COND && REJECT<=1 → APPROVE_CONDITIONAL
+#   그 외            → REVISE
+#
+# 3인 Compact 집계 규칙 (V6 신규):
+#   3/3 APPROVE      → APPROVE
+#   2+ REJECT        → REJECT
+#   veto 1+ (Risk or Judge) → REVISE (veto 도메인)
+#   2+ APPROVE/COND && 0 REJECT → APPROVE_CONDITIONAL
 #   그 외            → REVISE
 #
 # 하위호환: stance 필드 없으면 score 기반 레거시 판정 (경고 로그)
@@ -27,9 +36,9 @@ if [ -z "$CHANGED_FILE" ] || [ ! -f "$CHANGED_FILE" ]; then
   exit 0
 fi
 
-# ─── 방어선 3: debaters 무결성 사후 검증 ───
+# ─── 방어선 3: debaters 무결성 사후 검증 (3인 Compact / 5인 Full 동적) ───
 DEBATER_CHECK=$(python3 -c "
-import json, sys
+import json, sys, os
 from collections import Counter
 try:
     with open('$CHANGED_FILE') as f:
@@ -43,35 +52,54 @@ try:
             print('FAIL|debaters 배열 완전 누락. S0 Debate 미실행 의심.')
         sys.exit(0)
 
+    n_debaters = len(debaters)
+    # 3인 Compact vs 5인 Full 자동 감지 (debaters 수 기반)
+    is_compact = (n_debaters == 3)
+    min_debaters = 3
+
     errors = []
 
     agent_ids = [db.get('agent_id', '') for db in debaters]
     unique_ids = set(aid for aid in agent_ids if aid)
 
-    if len(unique_ids) < 5:
-        errors.append(f'독립 agent_id {len(unique_ids)}개 (최소 5개 필요)')
+    if len(unique_ids) < min_debaters:
+        errors.append(f'독립 agent_id {len(unique_ids)}개 (최소 {min_debaters}개 필요)')
 
     dupes = {k: v for k, v in Counter(agent_ids).items() if v > 1 and k}
     if dupes:
         errors.append(f'agent_id 중복: {dupes}')
 
     roles = set(db.get('role', '').lower() for db in debaters)
-    required = {'codex_critic', 'risk_manager', 'governor', 'quant', 'academic'}
     normalized = set()
     for r in roles:
         if 'critic' in r: normalized.add('codex_critic')
         elif 'risk' in r: normalized.add('risk_manager')
         elif 'gov' in r: normalized.add('governor')
+        elif 'judge' in r: normalized.add('judge')
         elif 'quant' in r: normalized.add('quant')
         elif 'academic' in r: normalized.add('academic')
-    missing = required - normalized
-    if missing:
-        errors.append(f'역할 누락: {missing}')
+
+    if is_compact:
+        # Compact: codex_critic + risk_manager + (judge OR governor)
+        compact_core = {'codex_critic', 'risk_manager'}
+        compact_flex = {'judge', 'governor'}
+        missing_core = compact_core - normalized
+        if missing_core:
+            errors.append(f'Compact 필수 역할 누락: {missing_core}')
+        if not normalized.intersection(compact_flex):
+            errors.append('Compact: judge 또는 governor 중 하나 필수')
+    else:
+        # Full 5인
+        required = {'codex_critic', 'risk_manager', 'governor', 'quant', 'academic'}
+        missing = required - normalized
+        if missing:
+            errors.append(f'역할 누락: {missing}')
 
     if errors:
         print('FAIL|' + '; '.join(errors))
     else:
-        print('PASS|OK')
+        mode_tag = 'compact' if is_compact else 'full'
+        print(f'PASS|OK|{mode_tag}')
 except Exception as e:
     print(f'ERROR|{e}')
 " 2>/dev/null)
@@ -85,7 +113,7 @@ if [ "$DEBATER_STATUS" = "FAIL" ]; then
 {
   "hookSpecificOutput": {
     "hookEventName": "FileChanged",
-    "additionalContext": "[S0 Verdict Router BLOCKED] debaters 검증 실패: ${DEBATER_MSG}\n\nS0_VERDICT가 생성되었으나 5인 독립 토론 증거가 부족합니다.\n1. /s0-debate 스킬을 사용하여 5개 독립 에이전트 스폰 (codex_critic, risk_manager, governor, quant, academic)\n2. 각 에이전트의 agent_id가 고유해야 합니다\n3. debaters 배열에 5건의 {agent_id, role, stance, veto_flag, critical_concerns, supporting_arguments} 필수 (v55 Consensus)\n4. S0_VERDICT를 재작성하세요: ${CHANGED_FILE}"
+    "additionalContext": "[S0 Verdict Router BLOCKED] debaters 검증 실패: ${DEBATER_MSG}\n\nS0_VERDICT가 생성되었으나 독립 토론 증거가 부족합니다.\n[Compact 3인] codex_critic + risk_manager + (judge OR governor)\n[Full 5인] codex_critic + risk_manager + governor + quant + academic\n\n1. /s0-debate 스킬을 사용하여 독립 에이전트 스폰\n2. 각 에이전트의 agent_id가 고유해야 합니다\n3. debaters 배열에 {agent_id, role, stance, veto_flag, critical_concerns, supporting_arguments} 필수 (v55 Consensus)\n4. S0_VERDICT를 재작성하세요: ${CHANGED_FILE}"
   }
 }
 EOF
@@ -96,88 +124,7 @@ if [ "$DEBATER_STATUS" = "WARN" ]; then
   echo "$(date +%H:%M:%S) VERDICT_ROUTER WARN: $CHANGED_FILE — $DEBATER_MSG" >> /tmp/s0_verdict.log
 fi
 
-# ─── v55 Consensus-based Verdict Aggregation ───
-CONSENSUS_RESULT=$(python3 <<'PYEOF'
-import json, sys, os
-from collections import Counter
-
-try:
-    with open(os.environ['CHANGED_FILE']) as f:
-        d = json.load(f)
-except Exception as e:
-    print(f'ERROR|parse_failed|{e}|0|0|0|0|0|0|')
-    sys.exit(0)
-
-debaters = d.get('debaters', [])
-factor_id = d.get('factor_id', 'unknown')
-strategy_id = d.get('strategy_id', '')
-
-# 신 체계 감지: stance 필드 존재 여부
-has_stance = any(db.get('stance') for db in debaters)
-
-if has_stance:
-    # Consensus mode
-    stances = [str(db.get('stance', '')).upper() for db in debaters]
-    veto_flags = [db.get('veto_flag') for db in debaters if db.get('veto_flag') and str(db.get('veto_flag')).lower() not in ('null', 'none', '')]
-    unresolved = d.get('unresolved_disputes', [])
-    consensus_pts = d.get('consensus_points', [])
-
-    approve_cnt = sum(1 for s in stances if s == 'APPROVE')
-    cond_cnt = sum(1 for s in stances if s in ('APPROVE_CONDITIONAL', 'CONDITIONAL'))
-    revise_cnt = sum(1 for s in stances if s == 'REVISE')
-    reject_cnt = sum(1 for s in stances if s == 'REJECT')
-    veto_cnt = len(veto_flags)
-    unresolved_cnt = len(unresolved)
-
-    # Codex는 veto 권한 없음 (flag만). Codex veto 필터링
-    codex_vetoes = [vf for vf, db in zip(veto_flags, [db for db in debaters if db.get('veto_flag')]) if 'codex' in str(db.get('role', '')).lower()]
-    effective_veto_cnt = veto_cnt - len(codex_vetoes)
-
-    # 집계 규칙
-    if reject_cnt >= 3:
-        verdict = 'REJECT'
-    elif approve_cnt >= 4:
-        verdict = 'APPROVE'
-    elif effective_veto_cnt >= 2:
-        # Codex 제외 2+ veto 동의 → REVISE
-        verdict = 'REVISE'
-    elif (approve_cnt + cond_cnt) >= 3 and reject_cnt <= 1:
-        verdict = 'APPROVE_CONDITIONAL'
-    else:
-        verdict = 'REVISE'
-
-    # Consensus tag
-    if approve_cnt == 5 or reject_cnt == 5:
-        ctag = 'UNANIMOUS'
-    elif approve_cnt >= 4 or reject_cnt >= 4:
-        ctag = 'MAJORITY'
-    elif approve_cnt == 0 and reject_cnt == 0:
-        ctag = 'DEADLOCK'
-    else:
-        ctag = 'MINORITY'
-
-    print(f'CONSENSUS|{verdict}|{approve_cnt}|{cond_cnt}|{revise_cnt}|{reject_cnt}|{effective_veto_cnt}|{unresolved_cnt}|{ctag}|{factor_id}|{strategy_id}')
-else:
-    # Legacy score-based (하위호환)
-    verdict_field = str(d.get('verdict', 'UNKNOWN')).upper()
-    total_score = d.get('total_score', 0) or sum(db.get('score', 0) for db in debaters)
-
-    # v55에서는 구 체계 파일도 Consensus-like 매핑
-    if verdict_field == 'APPROVE':
-        verdict = 'APPROVE'
-    elif verdict_field in ('APPROVE_CONDITIONAL', 'CONDITIONAL'):
-        # Plan v55: 구 APPROVE_CONDITIONAL도 S1로 보냄 (BORDERLINE 폐지)
-        verdict = 'APPROVE_CONDITIONAL'
-    elif verdict_field == 'REJECT':
-        verdict = 'REJECT'
-    else:
-        verdict = 'REVISE'
-
-    print(f'LEGACY|{verdict}|0|0|0|0|0|0|LEGACY_SCORE_{total_score}|{factor_id}|{strategy_id}')
-
-PYEOF
-)
-
+# ─── v55/V6 Consensus-based Verdict Aggregation (3인 Compact / 5인 Full) ───
 # 환경변수로 파일 경로 전달
 export CHANGED_FILE
 CONSENSUS_RESULT=$(CHANGED_FILE="$CHANGED_FILE" python3 <<'PYEOF'
@@ -192,6 +139,8 @@ except Exception as e:
     sys.exit(0)
 
 debaters = d.get('debaters', [])
+n_debaters = len(debaters)
+is_compact = (n_debaters <= 3)
 factor_id = d.get('factor_id', 'unknown')
 strategy_id = d.get('strategy_id', '')
 
@@ -212,27 +161,45 @@ if has_stance:
     veto_cnt = len(effective_vetoes)
     unresolved_cnt = len(unresolved)
 
-    if reject_cnt >= 3:
-        verdict = 'REJECT'
-    elif approve_cnt >= 4:
-        verdict = 'APPROVE'
-    elif veto_cnt >= 2:
-        verdict = 'REVISE'
-    elif (approve_cnt + cond_cnt) >= 3 and reject_cnt <= 1:
-        verdict = 'APPROVE_CONDITIONAL'
+    if is_compact:
+        # ─── 3인 Compact 집계 규칙 (V6 Amendment §S0.1) ───
+        if approve_cnt == 3:
+            verdict = 'APPROVE'
+        elif reject_cnt >= 2:
+            verdict = 'REJECT'
+        elif veto_cnt >= 1:
+            # Risk or Judge veto 1+ → REVISE
+            verdict = 'REVISE'
+        elif (approve_cnt + cond_cnt) >= 2 and reject_cnt == 0:
+            verdict = 'APPROVE_CONDITIONAL'
+        else:
+            verdict = 'REVISE'
     else:
-        verdict = 'REVISE'
+        # ─── 5인 Full 집계 규칙 (기존 유지) ───
+        if reject_cnt >= 3:
+            verdict = 'REJECT'
+        elif approve_cnt >= 4:
+            verdict = 'APPROVE'
+        elif veto_cnt >= 2:
+            verdict = 'REVISE'
+        elif (approve_cnt + cond_cnt) >= 3 and reject_cnt <= 1:
+            verdict = 'APPROVE_CONDITIONAL'
+        else:
+            verdict = 'REVISE'
 
-    if approve_cnt == 5 or reject_cnt == 5:
+    # Consensus tag
+    total = n_debaters
+    if approve_cnt == total or reject_cnt == total:
         ctag = 'UNANIMOUS'
-    elif approve_cnt >= 4 or reject_cnt >= 4:
+    elif approve_cnt >= (total - 1) or reject_cnt >= (total - 1):
         ctag = 'MAJORITY'
     elif approve_cnt == 0 and reject_cnt == 0:
         ctag = 'DEADLOCK'
     else:
         ctag = 'MINORITY'
 
-    print(f'CONSENSUS|{verdict}|{approve_cnt}|{cond_cnt}|{revise_cnt}|{reject_cnt}|{veto_cnt}|{unresolved_cnt}|{ctag}|{factor_id}|{strategy_id}')
+    mode_tag = 'compact' if is_compact else 'full'
+    print(f'CONSENSUS|{verdict}|{approve_cnt}|{cond_cnt}|{revise_cnt}|{reject_cnt}|{veto_cnt}|{unresolved_cnt}|{ctag}|{factor_id}|{strategy_id}|{mode_tag}')
 else:
     verdict_field = str(d.get('verdict', 'UNKNOWN')).upper()
     total_score = d.get('total_score', 0) or sum(db.get('score', 0) for db in debaters)
@@ -246,7 +213,7 @@ else:
     else:
         verdict = 'REVISE'
 
-    print(f'LEGACY|{verdict}|0|0|0|0|0|0|LEGACY_SCORE_{total_score}|{factor_id}|{strategy_id}')
+    print(f'LEGACY|{verdict}|0|0|0|0|0|0|LEGACY_SCORE_{total_score}|{factor_id}|{strategy_id}|legacy')
 PYEOF
 )
 
@@ -261,8 +228,9 @@ UNRESOLVED_CNT=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f8)
 CTAG=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f9)
 FACTOR_ID=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f10)
 STRATEGY_ID=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f11)
+DEBATE_SIZE=$(echo "$CONSENSUS_RESULT" | cut -d'|' -f12)
 
-echo "$(date +%H:%M:%S) VERDICT_ROUTER v55 [$MODE]: $FACTOR_ID → $VERDICT (A=$APPROVE_CNT, C=$COND_CNT, REV=$REVISE_CNT, REJ=$REJECT_CNT, veto=$VETO_CNT, unresolved=$UNRESOLVED_CNT, tag=$CTAG)" >> /tmp/s0_verdict.log
+echo "$(date +%H:%M:%S) VERDICT_ROUTER v55/V6 [$MODE/$DEBATE_SIZE]: $FACTOR_ID → $VERDICT (A=$APPROVE_CNT, C=$COND_CNT, REV=$REVISE_CNT, REJ=$REJECT_CNT, veto=$VETO_CNT, unresolved=$UNRESOLVED_CNT, tag=$CTAG)" >> /tmp/s0_verdict.log
 
 # ─── 라우팅 ───
 case "$VERDICT" in

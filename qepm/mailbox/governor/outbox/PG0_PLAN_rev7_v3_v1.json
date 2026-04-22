@@ -1,0 +1,338 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV7_V3_V1",
+  "stage": "PG0_H_1690_APPROVE_CONDITIONAL_64_weight_adjustment",
+  "timestamp": "2026-04-17T23:45:00+09:00",
+  "session": 66,
+  "version": "v7.3.1_h_1690_64_conservative",
+  "status": "ACTIVE 🎯 — Session 67 Day 1 first SUCCESS",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3.json (v7.3)",
+
+  "trigger": "H_1690 S0 VERDICT APPROVE_CONDITIONAL 64/100 확정. Quant R2 권고 + Governor admission threshold 검토 결과 Phase_1 10% → 8% 보수 조정. conditions 10건 Forge S1/Judge S6 관문 반영.",
+
+  "h_1690_debate_success_analysis": {
+    "final_score_r2": {
+      "codex": 8,
+      "risk_mgr": 13,
+      "governor": 15,
+      "quant": 13,
+      "academic": 15,
+      "total": 64,
+      "threshold_approve_conditional": 60,
+      "threshold_approve": 75,
+      "verdict": "APPROVE_CONDITIONAL",
+      "band_position": "lower (60~74 band, 64/74 → 상위 27%)"
+    },
+    "r1_to_r2_delta": {
+      "codex": "+1",
+      "risk_mgr": "-1",
+      "governor": "-1",
+      "quant": "-1",
+      "academic": "-1",
+      "total": "-3",
+      "interpretation": "4인 소폭 하향 + Codex upgrade. R2 rebuttal 효과 중립."
+    },
+    "scout_l_157_v3_calibration_validation": {
+      "predicted_range": "[59, 75]",
+      "actual_score": 64,
+      "within_range": true,
+      "first_successful_prediction": "H_1688(-5)/H_1685(-5)/H_1687(-8) overestimate 후 최초 적중"
+    },
+    "structural_significance": "H_1690이 Factor Construction 3대 limitation (L-159 residualization dilution + L-160 algebraic identity + L-162 linear composite variance imbalance) 모두 회피한 최초 가설"
+  },
+
+  "governor_admission_threshold_logic": {
+    "primary_10pct_threshold": "score ≥ 65 (APPROVE_CONDITIONAL 상단)",
+    "secondary_5pct_threshold": "60 ≤ score < 65 (APPROVE_CONDITIONAL 하단)",
+    "h_1690_score_64_decision": "**8% (between primary 10% and secondary 5%)**",
+    "rationale": [
+      "64점 APPROVE_CONDITIONAL 하단이나 60 초과로 secondary 5%보다 높음",
+      "Quant R2 권고 '점진 승격' 수용",
+      "Phase_2 조건부 10% 승격 가능 (10 conditions 만족 시)"
+    ]
+  },
+
+  "rev7_v3_v1_phase_3_composition_adjusted": {
+    "description": "H_1690 weight 10% → 8% 조정 + buffer 2% 추가 (Phase_2 승격 대비)",
+    "strategies": {
+      "Core_Primary_STR_1631": {"weight": 0.18, "role": "Core_Primary", "family": "consensus_C19_core"},
+      "Core_Secondary_H_1688": {"weight": 0.10, "role": "Core_Secondary", "family": "momentum_residual", "barroso_mandatory": true},
+      "RESERVED_FOR_H_1678_REFIT": {
+        "weight": 0.06,
+        "role": "Reserved (H_1678 STR_1555 Core refit Phase_2+)",
+        "prerequisite": "H_1678 S0 debate APPROVE + Forge S1 + Judge S6"
+      },
+      "Div_ML_STR_1656": {"weight": 0.14, "role": "Diversifier (Phase_2 STR_1661 V2 교체)", "family": "ML_complexity"},
+      "Div_3_STR_1679v3": {"weight": 0.10, "role": "Diversifier with embedded Q25+R16", "family": "momentum_overlay_embedded_q25"},
+      "Def_1_H_1682_effective": {"weight": 0.12, "role": "Defense", "family": "distress_path_dependent", "q25_share": 0.60, "status_warning": "Forge v2 STR_1683 Primary 60/40 결과 대기"},
+      "Def_2_H_1689_boosted": {"weight": 0.20, "role": "Defense further boosted", "family": "quality_aggregate", "q25_share": 0.25},
+      "Def_3_H_1690_conservative_8pct": {
+        "weight": 0.08,
+        "previous_plan_rev7_v3": 0.10,
+        "adjustment_reason": "Quant R2 score 64 → 점진 승격 권고",
+        "role": "Defense (conservative initial)",
+        "family": "multi_source_defense_anchor",
+        "composite_sources": ["M08 SKEW", "C19 consensus", "Q07 earnings_stability", "R16 Calmar"],
+        "q25_share": 0.25,
+        "phase_2_promotion_target": 0.10,
+        "promotion_trigger": "Forge S1 PASS + 10 conditions 만족 + Judge S6 PASS"
+      },
+      "Buffer_Phase_2_H_1690_promotion": {
+        "weight": 0.02,
+        "role": "Buffer for H_1690 8% → 10% promotion or other contingency"
+      },
+      "H_1687_DROPPED_rev7_v3": 0.00,
+      "H_1685_DROPPED_rev7_v2": 0.00,
+      "H_1676_DROPPED_rev7": 0.00,
+      "STR_1679v2_DROPPED_rev6": 0.00
+    },
+    "total_allocated": 0.92,
+    "reserve_h_1678": 0.06,
+    "buffer_h_1690_promotion": 0.02,
+    "effective_total": 1.00,
+    "n_strategies_active": 7,
+    "n_strategies_with_reserve_buffer": 8,
+    "family_concentration_check": {
+      "consensus_tier_1_str_1631": 0.18,
+      "consensus_total": 0.18,
+      "rule_3_45pct_cap": "PASS",
+      "momentum_residual": 0.10,
+      "momentum_overlay_embedded_q25": 0.10,
+      "ML_complexity": 0.14,
+      "distress_path": 0.12,
+      "quality_aggregate": 0.20,
+      "multi_source_defense": 0.08,
+      "reserve_future": 0.06,
+      "buffer": 0.02,
+      "max_family": 0.20,
+      "compliance": "PASS"
+    },
+    "defense_cluster_40pct_audit": {
+      "h_1682_12pct": 0.12,
+      "h_1689_20pct": 0.20,
+      "h_1690_8pct": 0.08,
+      "total_defense": 0.40,
+      "change_from_rev7_v3_42pct": "-2pp (H_1690 10→8% 조정)",
+      "ax_001_conditional_evaluation": "Defense Conditional Audit Framework v1.0 적용 유지"
+    },
+    "q25_r16_total_exposure_audit_rev7_v3_v1": {
+      "h_1682_effective_12pct_q25_share_0_60": 0.072,
+      "str_1679v3_def_embedded_8pct_q25_share_0_90": 0.072,
+      "h_1689_20pct_q25_share_0_25": 0.050,
+      "h_1690_8pct_q25_share_0_25_composite": 0.020,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_weighted_q25": 0.221,
+      "cap_35_compliance": "PASS (22.1%, rev7_v3 22.6% 대비 -0.5pp 소폭 완화)",
+      "soft_threshold_30_compliance": "PASS (substantial headroom 7.9pp)"
+    }
+  },
+
+  "projected_sr_rev7_v3_v1_recalculated": {
+    "individual_SR_assumptions_unchanged": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "STR_1656_Div_ML": 1.212,
+      "STR_1679v3": 1.00,
+      "H_1682_Def": 0.65,
+      "H_1689_Def_boosted": 0.80,
+      "H_1690_Def_multi_source": 0.72
+    },
+    "weighted_mean_SR_phase_3_v7_3_v1": 0.898,
+    "change_from_rev7_v3": {
+      "h_1690_10pct_to_8pct_reduction": "-0.0072 (2% × 0.72 - variance_reduction_contribution)",
+      "buffer_2pct_unused_currently": "0",
+      "net_effect": "-0.01 SR (H_1690 축소 소폭 영향)"
+    },
+    "rho_0_3_conservative_primary": {
+      "variance_reduction_factor": 1.83,
+      "**projected_SR**": 1.75,
+      "gap_vs_1_80_realistic_target": -0.05,
+      "gap_vs_rev7_v3_1_76": -0.01,
+      "status": "1.75 (H_1690 8% 보수 조정으로 rev7_v3 1.76 대비 소폭 하향)"
+    },
+    "phase_2_h_1690_promotion_scenario_projected_sr": {
+      "h_1690_8pct_to_10pct_promoted": 1.77,
+      "improvement": "+0.02 vs rev7_v3_v1 base",
+      "phase_2_target_sr": 1.77
+    },
+    "rho_0_2_optimistic_reference": {
+      "projected_SR": 1.83
+    },
+    "rho_0_5_saturation": {
+      "projected_SR": 1.38
+    },
+    "boost_roadmap_rev7_v3_v1": {
+      "boost_1_h_1678_admission": "+0.05~0.08 (Phase_2~3)",
+      "boost_2_str_1661_v2_accelerated": "+0.05~0.08 (Phase_2)",
+      "boost_3_blend_optimization": "+0.03~0.05 (Phase_3 말)",
+      "boost_4_h_1688_barroso": "+0.05 (S5)",
+      "boost_5_h_1687_redesign_session_68": "+0.05 (Phase_4+)",
+      "boost_6_h_1690_phase_2_promotion": "+0.02 (10% 승격)",
+      "total_boost_sum": "+0.25~0.33",
+      "**projected_final_SR_with_all_boosts**": {
+        "conservative_rho_0_3": "1.75 + 0.25 = **2.00**",
+        "optimistic_rho_0_2": "1.83 + 0.27 = 2.10",
+        "status": "SR 2.0 도달 가능 (boost 6건 성공 전제, Phase_4+ 확장 포함)"
+      }
+    }
+  },
+
+  "h_1690_10_conditions_integrated_into_governor_admission_gate": {
+    "conditions_list_quant_r2_accepted": [
+      {
+        "id": "C1",
+        "description": "cosine similarity < 0.75 (regime weight 사전 등록, ex-post tuning 방지)",
+        "forge_s1_check": true
+      },
+      {
+        "id": "C2",
+        "description": "R16 변동성 측정 (stress_icir 2.655 검증)",
+        "forge_s1_check": true
+      },
+      {
+        "id": "C3",
+        "description": "MRS 경계값 출처 명시 (15/30 thresholds Ang-Bekaert 2002 / Hamilton 1989)",
+        "academic_documentation": true
+      },
+      {
+        "id": "C4",
+        "description": "R16 regime3 안전장치 (elevated risk IC -0.031 alpha 역전)",
+        "forge_s1_check": true
+      },
+      {
+        "id": "C5",
+        "description": "S3 conditional TDC 실측 vs H_1682 (0.50~0.65 borderline)",
+        "judge_s3_check": true
+      },
+      {
+        "id": "C6",
+        "description": "2020-03 lag 측정 (regime transition smoothing 10%p/month)",
+        "forge_s1_check": true
+      },
+      {
+        "id": "C7",
+        "description": "Gate 15 rolling OOS (variance_ratio pre-registered)",
+        "governor_gate_15_check": true
+      },
+      {
+        "id": "C8",
+        "description": "korea_evidence 2편 추가 (Academic conditions, M08/R16 한국 실증)",
+        "academic_documentation": true
+      },
+      {
+        "id": "C9",
+        "description": "KOSDAQ 결산월 정렬 확인 (Codex PIT 우려)",
+        "forge_s1_check": true,
+        "pit_violation_risk": true
+      },
+      {
+        "id": "C10",
+        "description": "AX-001 3축 측정 (Defense Conditional Audit Framework v1.0 적용)",
+        "governor_framework_check": true,
+        "reference_artifact": "qepm/mailbox/governor/outbox/defense_conditional_audit_framework_v1_0.json"
+      }
+    ],
+    "governor_admission_requirement": "10 conditions 모두 PASS 확인 후 Phase_1 8% 편입 + Phase_2 10% 승격 조건부"
+  },
+
+  "h_1690_forge_s1_baseline_4_variants": {
+    "description": "Quant R2 제안 — baseline variants 병행으로 regime weight 효과 및 signal structure 실증",
+    "variants": [
+      {"id": "V1_primary", "name": "regime-smoothed 4-axis (원본 H_1690)", "purpose": "baseline"},
+      {"id": "V2_b1", "name": "EW 25/25/25/25", "purpose": "regime weight 효과 실증"},
+      {"id": "V3_b2", "name": "2-axis C19+Q07 only", "purpose": "sub signal 필요성"},
+      {"id": "V4_b3", "name": "3-axis excluding R16", "purpose": "H_1682 공유 최소화"}
+    ],
+    "admission_logic": {
+      "v1_passes_alone": "Primary 편입",
+      "v1_fails_but_v3_v4_pass": "대체 variant 편입 (H_1682 공유 최소화 우선)",
+      "v1_and_all_variants_fail": "H_1690 전체 DROP 재검토"
+    }
+  },
+
+  "phase_1_trigger_status_updated_rev7_v3_v1": {
+    "trigger_1_judge_v3_7_tdc": {"status": "COMPLETED_DAY_1", "date": "2026-04-17"},
+    "trigger_2_h_1690_s0_approve_conditional": {"status": "COMPLETED_DAY_1", "score": 64},
+    "trigger_3_forge_str_1683_primary": {"status": "IN_PROGRESS", "contingency": "A/B/C ready"},
+    "trigger_4_forge_str_1684_h_1688": {"status": "QUEUE"},
+    "trigger_5_forge_h_1690_s1": {"status": "PENDING", "scout_todo_request_needed": true},
+    "trigger_6_risk_mgr_3rd_round": {"status": "WAIT", "based_on": "rev7_v3_v1 + H_1690 S1 후"}
+  },
+
+  "governor_next_actions_day_2_3": [
+    "1. H_1682 Primary 결과 수신 → Contingency A/B/C 판정 (30분 내)",
+    "2. H_1690 Forge S1 TODO 작성 지시 (Scout 또는 Q-Lead)",
+    "3. Defense Conditional Audit Framework v1.0 Forge Task #8 구현 감독",
+    "4. H_1678 handoff kit 완성 모니터링 (Day 3~4 debate)",
+    "5. Phase_1 PG1 Admission 초안 준비 (Task #23, Day 5~6 목표)"
+  ],
+
+  "process_violation_tracking": {
+    "quant_agent_self_run_r1_r2_verdict_3_cases": [
+      "H_1685 (Day 1 case 1)",
+      "H_1687 (Day 1 case 2)",
+      "H_1690 (Day 1 case 3)"
+    ],
+    "judge_l_161_recognition": "Codex Infra + protocol violation 통합",
+    "session_68_mitigation": "s0_debate_guard.sh hook 강화 (forge subagent_type이 R2/VERDICT 파일 Write 시 block)",
+    "governor_recommendation": "Session 68 시작 시 hook 강화 Priority 1"
+  },
+
+  "session_67_day_1_summary_reversal": {
+    "failures_3_consecutive": [
+      "H_1676 Option A S1 ERR (MDD 70.9%)",
+      "H_1685 REVISE 55 (H_1674 cor 0.897)",
+      "H_1687 REVISE 50 (corr M01 0.716)"
+    ],
+    "success_1_first": "H_1690 APPROVE_CONDITIONAL 64 (multi-source composite)",
+    "scout_l_157_v3_calibration_validated": "H_1690 예측 [59,75] 실제 64 within-range",
+    "h_1690_structural_achievement": "Factor Construction 3대 limitation 모두 회피",
+    "infrastructure_maturity": "L-158~162 + Gate 11~15 + Family Exhaustion + Variance Ratio + Defense Conditional Audit Framework"
+  },
+
+  "session_66_governor_final_contribution_17_artifacts": {
+    "chain": "rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1_emergency → rev6 → rev6_v1 → rev7 → rev7_v2 → rev7_v3 → **rev7_v3_v1**",
+    "non_rev_artifacts": ["consensus_taxonomy_proposal", "h1683_vs_h1688_differentiation", "defense_conditional_audit_framework_v1_0"],
+    "total_artifacts": 17,
+    "rules_institutionalized_11_stable": [
+      "consensus_taxonomy v1.0 + v2.0",
+      "Q25 Cap Rule v1.0 + monitoring thresholds v2",
+      "PG1 Admission Rule v2.0/v3.0~v3.7 (15 gates)",
+      "Sequential Admission Rule",
+      "Retroactive TDC Audit",
+      "Structural Diagnosis",
+      "Embedded Overlap Recognition",
+      "Spec Strengthening Fallback (Gate 11)",
+      "Family Exhaustion Pattern Detection (Gate 12)",
+      "Variance Ratio Audit (Gate 13→15)",
+      "Defense Conditional Audit Framework (4-axis)"
+    ]
+  },
+
+  "artifacts_rev7_v3_v1": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json (현 파일)",
+    "supersedes: PG0_PLAN_rev7_v3.json",
+    "chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1 → rev6 → rev6_v1 → rev7 → rev7_v2 → rev7_v3 → **rev7_v3_v1**"
+  ],
+
+  "executive_summary_v7_3_v1": {
+    "h_1690_approve_conditional_64": "Session 67 Day 1 first success — Factor Construction 3대 limitation 회피",
+    "phase_1_weight_adjustment": "10% → 8% 보수 조정 (Quant R2 권고 수용)",
+    "buffer_2pct_added": "Phase_2 H_1690 10% 승격 또는 contingency 대비",
+    "phase_3_composition": "STR_1631 18 / H_1688 10 / STR_1656 14 / STR_1679v3 10 / H_1682 12 / H_1689 20 / H_1690 8 + H_1678 reserve 6 + buffer 2",
+    "projected_sr_primary_rho_0_3": 1.75,
+    "phase_2_h_1690_10pct_promotion_sr": 1.77,
+    "boost_6_completion_final_sr": 2.00,
+    "defense_40pct_audit_framework_applied": "Defense Conditional Audit v1.0 + C10 in admission requirements",
+    "q25_exposure": "22.1% (rev7_v3 22.6% 소폭 완화)",
+    "h_1690_10_conditions_admission_gate": "All must PASS for Phase_1 8% + Phase_2 10% promotion",
+    "forge_s1_4_variants": "V1 Primary + V2/V3/V4 baselines 병행 실증",
+    "next_steps": [
+      "1. H_1682 Primary 결과 → Contingency A/B/C 판정",
+      "2. H_1690 Forge S1 TODO 작성 (Day 2~3)",
+      "3. H_1678 handoff kit + debate (Day 3~4)",
+      "4. Phase_1 PG1 Admission 초안 (Day 5~6)"
+    ]
+  }
+}

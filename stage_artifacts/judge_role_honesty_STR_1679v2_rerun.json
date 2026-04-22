@@ -1,0 +1,88 @@
+{
+  "strategy_id": "STR_1679v2",
+  "strategy_dir": "STR_1679_score_blend",
+  "reassessment_timestamp": "2026-04-17",
+  "reassessment_type": "ROLE_HONESTY_REVIEW_AFTER_FORGE_RERUN",
+  "session": 66,
+  "prev_status": "CONDITIONAL_PASS — Role Misalignment (Def sleeve 0.3pp contribution, overlay-driven MDD)",
+  "v3_grade": "A_CONDITIONAL",
+  "v3_verdict": "VALIDATED_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY",
+  "forge_rerun_deliverables_confirmed": {
+    "tail_risk_result_json": "GENERATED — EVT VaR99=3.96% CF VaR99=4.64% CDaR95=21.8% shape xi=0.602 (heavy tail)",
+    "primary_overlay_hurdle_json": "GENERATED — Grade A 77.1 / SR 1.27 / CAGR 24.7 / MDD 29.1",
+    "sleeve_decomposition": "GENERATED — core15_only + def5_only + defense_contribution",
+    "daily_returns_primary_csv": "GENERATED — 5721 rows for DSR/CAPM computation"
+  },
+  "sleeve_decomposition_hard_evidence": {
+    "primary_combined": {"sr": 1.27, "cagr": 24.7, "mdd": 29.1},
+    "hrp_base_no_overlay": {"sr": 1.15, "cagr": 25.3, "mdd": 51.6, "hurdle_pass": false, "hard_fail_mdd": true},
+    "ew_base_no_overlay": {"sr": 1.10, "cagr": 24.3, "mdd": 53.5, "hurdle_pass": false, "hard_fail_mdd": true},
+    "core15_standalone": {"sr": 1.29, "cagr": 30.8, "mdd": 51.6},
+    "def5_standalone": {"sr": 0.21, "cagr": 5.11, "mdd": 65.3},
+    "overlay_mdd_contribution_pp": 22.6,
+    "defense_sleeve_mdd_contribution_pp": "NEGLIGIBLE"
+  },
+  "role_honesty_audit_v2": {
+    "declared_role_forge": "diversifier",
+    "claimed_structure_scout": "Core Alpha + Defense sleeve (physical hedge)",
+    "actual_alpha_source": "Core15 (C19 Top-15) + Regime Inverse Overlay",
+    "defense_sleeve_verdict": "COSMETIC — standalone SR 0.21 / MDD 65.3 / CAGR 5.11%. Provides near-zero MDD reduction when added to Core15.",
+    "overlay_verdict": "PRIMARY_MDD_LEVER — Layer 3 Inverse ETF + Cash overlay responsible for full 22.6pp MDD reduction. Without overlay, base variants hard_fail (>45% MDD).",
+    "l146_compliance": "PASS (Forge set l146_role_honesty_pass: TRUE, acknowledging overlay-driven MDD)",
+    "role_determination": "DIVERSIFIER with OVERLAY_DEPENDENCY",
+    "key_evidence": [
+      "Core15 alone SR 1.29 >= Primary SR 1.27 — adding Def5 does NOT improve Sharpe",
+      "Core15 alone MDD 51.6 (hard_fail) — Def5 contribution negligible — Overlay makes all the difference",
+      "Def5 alone SR 0.21 — does not stand as independent alpha",
+      "CAPM beta 0.002 (daily) vs BM_Corr 0.733 (hurdle monthly) — discrepancy needs Governor investigation"
+    ]
+  },
+  "gate_results": {
+    "gate_0_pit": {"pass": "UNKNOWN_FROM_PRIOR", "note": "Prior S6 Judge flagged GATE0_FAIL (s0/s3/s4 artifacts missing). Scout backfilled retroactively."},
+    "gate_1_impl": {"pass": true, "n_hold": 20, "turnover_ann": 251, "commission": 0.0015, "liq_threshold": 2e8, "v53_n20_compliance": true},
+    "gate_2_risk": {"pass": "PRIMARY_ONLY", "primary_mdd": 29.1, "hrp_base_mdd": 51.6, "ew_base_mdd": 53.5, "note": "Only Primary (with overlay) passes. Base variants hard_fail."},
+    "gate_3_robustness": {"pass": true, "rolling3y_pos_pct": 98.7, "stress_outperform": "3/3", "oos_retention": 0.704, "rolling_3y_sr_last": 1.273},
+    "gate_4_stat": {
+      "pass": "BORDERLINE",
+      "dsr": 1.000,
+      "dsr_significant": true,
+      "dsr_n_trials": 400,
+      "capm_alpha_t": 4.50,
+      "capm_alpha_annual_pct": 21.51,
+      "capm_beta": 0.002,
+      "bm_corr_daily": 0.002,
+      "bm_corr_monthly_hurdle": 0.733,
+      "bm_corr_discrepancy_concern": "daily 0.002 vs monthly 0.733 — requires investigation. Monthly corr relevant for diversification in blend.",
+      "ff5_alpha_t": "NOT_COMPUTED — FF5 KR factors not available in repo",
+      "harvey_t3_pass_capm": true,
+      "harvey_t3_pass_ff5": "UNKNOWN"
+    },
+    "gate_5_diversification": {"pass": "PARTIAL", "bm_corr": 0.733, "top10_conc": 50, "grade_a_corr": "NA (grade_a_composite_cache missing)"},
+    "gate_6_tail_risk": {
+      "pass": true,
+      "evt_var_99_pct": 3.96,
+      "cf_var_99_pct": 4.64,
+      "cdar_95_pct": 21.8,
+      "max_dd_pct": 29.1,
+      "tail_shape_xi": 0.602,
+      "heavy_tail_warning": "xi=0.602 > 0.5 indicates heavy tail risk — monitor in production"
+    }
+  },
+  "conditional_pass_conditions": [
+    "Role label finalized as DIVERSIFIER (not core_alpha) — Forge's diversifier label is correct",
+    "Defense sleeve kept in design BUT not counted toward alpha contribution (L-146 compliance)",
+    "Overlay dependency explicitly documented — strategy's MDD improvement is NOT portable without Regime Inverse Overlay",
+    "BM_Corr discrepancy investigated (daily 0.002 vs monthly 0.733)",
+    "FF5 alpha t computation when KR factor data available"
+  ],
+  "recommendation": {
+    "immediate": "VALIDATED_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY. Retain PG admission status with explicit note that defense sleeve is cosmetic and overlay is the MDD lever.",
+    "short_term": "STR_1679v3 Def sleeve replacement (Task #7) should use H_1682 Distress+Calmar (when Forge S1 + Judge S6 complete) to convert cosmetic defense into substantive defense",
+    "long_term": "Overlay-less variant unviable (Core15 alone MDD 51.6 hard_fail) — strategy is fundamentally an overlay-dependent diversifier, which is fine as long as role label matches"
+  },
+  "governor_notes": [
+    "Role correction: core_alpha → diversifier (Forge already applied)",
+    "Keep 'overlay_dependency' flag on this strategy in PG tracking",
+    "Do NOT use Core15+Def5 physical sleeve framing in production docs — use 'Overlay-dependent diversifier' instead"
+  ]
+}

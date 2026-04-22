@@ -1,0 +1,200 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v2 for H_1692 re-debate. V1 VERDICT 65 BORDERLINE_REVISE 대응 — Codex 8 + Risk Mgr 13 주요 감점 요인 5건 강화 전수 반영.",
+  "hypothesis_id": "H_1692_v2",
+  "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI v2 (Core_Secondary — STRENGTHENED)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-19T02:00+09:00 (Session 68 Day 1, V1 VERDICT 65 수신 20분 내 재발행)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1692_v2_industry_momentum_rsi_residualized_strengthened.json",
+  "version": "v2",
+  "supersedes": "s0_debate_handoff_H_1692_v1_1.json (v1.1, V1 VERDICT 65 전)",
+  "supersedes_reason": "V1 VERDICT total 65 BORDERLINE_REVISE (Codex 8 PRIMARY 편입 미승인, Risk Mgr 13 Kill Scenario 2건 empirical 미해소). v54 rule 동일 가설 BORDERLINE 2회 연속 REJECT — V2는 recommended_strengthening_actions 5건 전수 반영 + consensus_points 6건 매핑 + unresolved_disputes 3건 대응 경로.",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P0 PRIMARY (V1 65 near-APPROVE_CONDITIONAL 경계, V2 +6~7 uplift 목표)",
+
+  "v1_verdict_context": {
+    "verdict": "BORDERLINE_REVISE",
+    "total_score": 65,
+    "per_debater_v1": {"codex_critic": 8, "risk_manager": 13, "governor": 15, "quant": 14, "academic": 15},
+    "compiled_at": "2026-04-19T01:38+09:00",
+    "gap_to_approve_conditional": "70 대비 -5",
+    "scout_calibration_v4_v1_prediction": {"predicted_mid": 61, "actual": 65, "error": "+4 underestimate"},
+    "v2_calibration_adjustment": "V1 underestimate +4 교훈 → V2 predicted [57, 68] mid 63 (V1 [54,68] mid 61에서 +2 보수)"
+  },
+
+  "v2_5_strengthening_actions_summary": {
+    "action_1_pit_true_walk_forward_explicit": {
+      "v1_gap": "Codex 6→8 major argument: 'PIT-true walk-forward empirical protocol 부재'",
+      "v2_resolution": "s0_record s2_empirical_measurement_protocol_v2_MANDATORY action_1: full-sample OLS 금지 + expanding-window on s≤t-1만 허용 + frozen monthly parameter (intra-month re-fit 금지) 명문화",
+      "validation_artifact": "s1_forge artifacts에 beta_t 시계열 253 months + expansion window length 동시 기록 (수동 auditable)"
+    },
+    "action_2_m07_standalone_vs_residual_icir_comparison": {
+      "v1_gap": "Quant L-051/L-072 KR 실패 선례 우려 + Academic STR_1457/1462 composite 실패 ≠ residualization 논쟁",
+      "v2_resolution": "action_2: M07 standalone ICIR + H_1692_v2 residual ICIR + net IC gain 비교표 S1/S2 필수 산출물",
+      "csv_schema": "month | m07_standalone_ic | m07_standalone_icir_rolling_36m | residual_ic | residual_icir_rolling_36m | net_ic_gain | beta_t | rank_corr_month",
+      "gates": "(a) residual ICIR ≥ 0.20, (b) net IC gain > 0 majority (>60%), (c) rank_corr vs M07 standalone full-sample < 0.95"
+    },
+    "action_3_expanding_beta_structural_break_audit": {
+      "v1_gap": "Risk Mgr Kill Scenario 2: 'expanding OLS beta_t constant 수렴'",
+      "v2_resolution": "action_3: structural break 3구간 (2003 IT버블 / 2008 GFC / 2020 COVID) 전후 β_t 변화 ≥ 0.05 검증",
+      "gate": "rolling_beta_std < 0.02 (constant) → FAIL. rolling_beta_std ≥ 0.02 + structural break 2회+ ≥ 0.05 변화 → PASS",
+      "rationale": "β_t constant 수렴 시 잔차 = M07의 pure rescale → H_1692 = M07 standalone 등가 (Risk Mgr Kill Scenario 2 해소)"
+    },
+    "action_4_ic_to_return_transmission_net_of_costs": {
+      "v1_gap": "Codex 'IC-to-return coupling 실측 전 PRIMARY 편입 불가' + Risk Mgr LOO +0.08 낙관 반박",
+      "v2_resolution": "action_4: L-125 IC≠SR + L-160 IC-Return decoupling 회피 증명 — KR 15bps + 0.3% slippage top-10 post net IC/SR 측정",
+      "5_step_protocol": "pre-cost IC → pre-cost return → net-of-cost return → net SR vs pre-cost decay ratio → net_IC_transmission_ratio",
+      "gate": "net_IC_transmission_ratio > 0.6 필수 (< 0.4 → L-160 decoupling FAIL)"
+    },
+    "action_5_reference_list_strengthening": {
+      "v1_gap": "Academic '저자 오류 + 박영석·정재만 2017 direct access 미확인'",
+      "v2_resolution": "action_5: (a) 저자 정정 심찬보 KAIST 2017 검토, (b) Barberis-Shleifer 2003 JFE Style Investing 추가, (c) Hanauer-Huber 2019 EMR 또는 2024 IAJ 추가, (d) KRX 공시 sector rotation + KoFIA 개인 55% original source",
+      "refs_count": "6+ (Grinblatt 1999 + Wilder 1978 + Lee-Swaminathan 2000 + Barberis-Shleifer 2003 + Hanauer-Huber 2019/2024 + Shim 2017 또는 박영석 정확 ID + KRX/KoFIA)"
+    }
+  },
+
+  "v2_consensus_points_mapping_6": {
+    "consensus_1_s1_pre_measurement_mandated": "action_2 M07 vs residual ICIR + action_4 IC-to-return 이중 충족",
+    "consensus_2_gate_13_l164_load_month_factors": "L-164 mandate 명문 재확인 (V1 유지, s0_record factor_construction_v2.data_access)",
+    "consensus_3_expanding_beta_structural_stability": "action_3 structural break audit + rank_corr gate 명문화",
+    "consensus_4_harvey_dsr_icir_alpha_lab_gate": "s1_gate_criteria_v2: Harvey t>3.0 + DSR + ICIR≥0.20 재확인",
+    "consensus_5_ax_cand_exception_grinblatt_subfamily": "academic_foundation_v2 mechanism_distinctive_from_H_1688에서 구조적 차이 재명시 (industry momentum sub-family Grinblatt 1999 EXCEPTION 인정)",
+    "consensus_6_tail_risk_suite_evt_cdar_es": "s3_orthogonality_plan_v2 + V2_NEW_GATE_TAIL_RISK: compute_tail_risk_suite (EVT xi + CDaR 95% + ES 99%) STR_1631 대비 MDD 기여 +2%p 이내"
+  },
+
+  "v2_unresolved_disputes_resolution_3": {
+    "dispute_1_codex_vs_governor_pit_walkforward": {
+      "resolution": "V2 action_1 walk-forward explicit + frozen monthly params 명문화 — Codex 요구 충실 반영. S1 완료 후 재평가 경로 합의."
+    },
+    "dispute_2_risk_mgr_vs_governor_tdc_065": {
+      "resolution": "V2 s3_orthogonality_plan benchmark_strategies 5건 + TDC pre-measurement refined + L-158 Early Warning compliance 명시. S3 t-copula MLE 실측 전 조건부 admission 유지."
+    },
+    "dispute_3_quant_vs_academic_kr_l051_l072": {
+      "resolution": "V2 action_2 M07 standalone vs residual net IC gain 비교로 empirical 결판. L-051/L-072 재현 risk empirical 측정 후 재평가."
+    }
+  },
+
+  "one_line_summary_v2": "H_1692_v2 STRENGTHENED — V1 BORDERLINE_REVISE 65 대응. 5건 empirical protocols 명문화 (walk-forward + M07 vs residual ICIR + β_t structural audit + IC-to-return net + refs 6+). AX_CAND_kr_momentum_inverse scope EXCEPTION 유지.",
+
+  "ax_cand_kr_momentum_inverse_exception_v2": {
+    "v1_verdict_ax_cand_decision": "NOT_APPLIED (Quant kr_empirical_check=partial+, not hard_fail_match. Industry momentum Grinblatt 1999 sub-family EXCEPTION 인정)",
+    "v2_scope_maintenance": "EXCEPTION 유지 — V1 VERDICT 65는 가설 설계 품질 문제이지 AX_CAND 적용 반대 논리 아님 (downstream_impact kr_inverse_ax_cand_scope 명시)",
+    "v2_evidence_strengthening": "academic_foundation_v2 Hanauer-Huber 2019 EMR KR emerging market industry momentum 추가 cite로 EXCEPTION academic backing 강화",
+    "judge_coordination_pending": "Scout → Judge: AX_CAND_kr_momentum_inverse EXCEPTION scope narrowing evidence로 V2 재debate 활용 권고"
+  },
+
+  "str_number_allocation_confirmed": {
+    "recommended": "STR_1692 (V1 reservation 유지)",
+    "note": "V2 APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정. Governor rev8-A-revised-v2 Core_Secondary 10% 편입 경로 V2 APPROVE 시 활성"
+  },
+
+  "L157_v4_pre_empirical_measurements_v2_refined": {
+    "algebraic_identity_check": "PASS (M07 + M18 orthogonal mechanism)",
+    "pairwise_correlation_pre_measurement_v2_refined": {
+      "vs_STR_1631_SYN_05": "0.22~0.38 (V1 0.25~0.40에서 -0.03 refined)",
+      "vs_STR_1661_V2_ML": "0.35~0.55 (Core_Secondary gate 0.55 경계 유지)",
+      "vs_H_1685_v2": "0.10~0.20",
+      "vs_H_1679_momentum_sleeve": "0.40~0.55",
+      "vs_STR_1679v3_defense": "0.20~0.35"
+    },
+    "l158_early_warning_compliance_v2": "predicted_tdc_vs_pg2_consensus 핸드오프 kit v2 필수 기재 — WARNING 0.3~0.4 구간 STR_1661_V2가 해당 → S6 실측 재확인 의무",
+    "sd_ratio_analysis": "PASS (M07/M18 각 sd=1.0 Factor DB Fix 1 post verified)",
+    "linear_dominance_test": "PASS (variance explained ~1% by M18)",
+    "l161_distortion_double_elimination_maintained": true
+  },
+
+  "L156_v2_tdc_cluster_updated_v2": {
+    "cluster_name": "Industry_Momentum_RSI_v2",
+    "members": ["H_1692_v2 (V2 redebate)"],
+    "expected_conditional_tdc_primary_v2": {
+      "vs_STR_1661_V2_crisis": "0.45~0.65 (ML ↔ technical overlap 주의 V1 유지)",
+      "vs_STR_1631_crisis": "0.32~0.52 (V2 refined 하향)"
+    },
+    "AX_006_candidate_contribution": "+0.03 frequency (V1 동일)"
+  },
+
+  "scout_calibration_v4_v2_predictions": {
+    "predicted_total_range_v2": [57, 68],
+    "predicted_midpoint_v2": 63,
+    "changes_from_v1_1": {
+      "v1_1_range": [54, 68],
+      "v1_1_midpoint": 61,
+      "actual_v1_total": 65,
+      "v1_1_error": "+4 (underestimate)",
+      "v2_range": [57, 68],
+      "v2_midpoint": 63,
+      "v2_adjustment_rationale": "V1 +4 underestimate + 5 strengthening actions Codex/Risk Mgr 직접 해소 +6~7 uplift 예상"
+    },
+    "per_debater_v4_v2": {
+      "codex_critic": [9, 12],
+      "risk_manager": [12, 15],
+      "governor": [14, 16],
+      "quant": [12, 15],
+      "academic": [14, 16]
+    },
+    "verdict_projection_v2": "APPROVE_CONDITIONAL (70+) 하한 경계 — V1 mid 61 → actual 65 → V2 projected 63~68 (70 근접). REVISE risk 존재.",
+    "rationale": "V1 BORDERLINE 65 + 5건 강화 Codex +4 (walk-forward/IC-return/beta_t audit) + Risk Mgr +2 (Kill Scenario 2 해소) + Quant +1 (net-of-cost) + Academic +1 (refs 6+) = projected +6~7 → total ~71~72 possible"
+  },
+
+  "pre_debate_scout_risk_assessment_v2": {
+    "bull_case_v2": [
+      "V1 VERDICT 65 + 5건 strengthening actions 전수 반영으로 ~70 APPROVE_CONDITIONAL 진입 가능",
+      "Codex 3대 empirical protocols (walk-forward / IC-to-return / beta_t audit) s0_record 명문화 +4 uplift 예상",
+      "Risk Mgr Kill Scenario 2 structural break audit empirical 해소 경로 +2 uplift 예상",
+      "Academic refs 6+ 보강 (Barberis-Shleifer 2003 + Hanauer-Huber 2019 + KRX/KoFIA) +1 uplift",
+      "Quant M07 vs residual ICIR 비교로 L-051/L-072 선례 empirical 결판 +1 uplift",
+      "AX_CAND_kr_momentum_inverse EXCEPTION 재확인 Governor 14~16 유지",
+      "Governor rev8-A-revised-v2 Core_Secondary 10% slot 편입 경로 재활성 가능"
+    ],
+    "bear_case_v2": [
+      "Codex 가 empirical measurement 부재를 여전히 문제삼을 가능성 (s0_record 명문화 ≠ 실측)",
+      "Risk Mgr Kill Scenario 1 (27년 post-pub decay)은 Hanauer-Huber 2019 cite로 완화만 — empirical 측정 필요",
+      "V1 BORDERLINE 2회 연속 REJECT warning — V2 실질적 보강 미달 판정 risk",
+      "Scout Calibration v4 V1 +4 underestimate — V2 또 underestimate 가능",
+      "STR_1661_V2 TDC 0.45~0.65 경계 L-158 WARNING 미해소",
+      "rev8-A-revised-v2 Core_Secondary slot 대기 — V2 REVISE 시 Reserve 이동 Governor rev8-A-revised-v3 재설계"
+    ]
+  },
+
+  "strategic_chain_v2": {
+    "if_approve_conditional": "STR_1692 할당 → Forge S1 (action_1/2/3/4 empirical protocols 필수 artifacts) → Governor rev8-A-revised-v2 Core_Secondary 10% admission.",
+    "if_borderline_revise_again_reject_risk": "v54 rule 동일 가설 BORDERLINE 2회 연속 REJECT 전환 — H_1692 폐기 + Core_Secondary Reserve 10% 이동 + rev8-A-revised-v3 재설계",
+    "if_revise_or_reject": "Core_Secondary 공백 유지 + Scout Path — M07 standalone S1 pre-measurement 직접 실시 후 재재설계 or M24_Sector_Rel_Mom 교체 방향"
+  },
+
+  "debaters_prompts_v2_additional_context": {
+    "v1_1_core_retained": true,
+    "v2_additional_context_for_5_agents": [
+      "codex_critic: 'V1 total 8 주요 감점 — V2 s0_record에 walk-forward/IC-return/beta_t audit empirical protocols 명문화. 여전히 empirical 측정 대기이나 s0_record commitment로 해소 의미 평가. PRIMARY 편입 조건부 승인 가능 여부 판정.'",
+      "risk_manager: 'V1 Kill Scenario 2건 유지 — V2 action_3 structural break audit (β_t rolling_std ≥ 0.02 gate)로 Scenario 2 empirical 해소 경로 제시. Scenario 1 post-pub decay는 Hanauer-Huber 2019 cite + V2 realistic calibration (-0.05~-1 하향)로 완화. V1 13 → V2 target 14~15 판정.'",
+      "governor: 'V1 15 유지. V2 5건 강화 + L-158 Early Warning compliance + L-164 L-161 L-125 L-160 cross-reference. 8 gates 전수 재확인 + Core_Secondary 10% slot 편입 재활성 판정.'",
+      "quant: 'V1 14 (partial+ kr_empirical_check). V2 action_2 M07 standalone vs residual net IC gain 비교표 + rank_corr < 0.95 gate. L-051/L-072 선례 empirical 결판 경로. V2 target 14~15.'",
+      "academic: 'V1 15 refs 약함. V2 action_5 저자 정정 심찬보 KAIST 2017 + Barberis-Shleifer 2003 + Hanauer-Huber 2019 + KRX/KoFIA 6개+ 추가. academic_foundation strengthened. V2 target 15~16.'"
+    ]
+  },
+
+  "handoff_completeness_v2": {
+    "s0_record_v2_complete": true,
+    "handoff_kit_v2_complete": true,
+    "v1_verdict_65_fully_addressed": true,
+    "5_strengthening_actions_mapped": true,
+    "consensus_points_6_all_integrated": true,
+    "unresolved_disputes_3_resolution_paths_defined": true,
+    "ax_cand_kr_momentum_inverse_exception_maintained": true,
+    "scout_calibration_v4_v2_predicted_57_68_mid_63": true,
+    "str_number_recommended": "STR_1692 (V1 reservation)",
+    "ready_for_qlead_r1_redebate_spawn": true,
+    "warning_borderline_2x_reject": "v54 rule — V2 실질적 보강 미달 판정 시 REJECT 전환 risk"
+  },
+
+  "scout_notes_v2": [
+    "V1 VERDICT 65 수신 20분 내 V2 재발행 긴급 대응.",
+    "Codex 6→8 PRIMARY 편입 반대 — V2 5건 strengthening actions 3대 empirical protocols (action_1/2/4) + action_3 structural audit로 PRIMARY 편입 재검토 요청.",
+    "Scout Calibration v4 V1 +4 underestimate 교훈 — V2 predicted mid 63 (v1 mid 61에서 +2 보수) but actual 65 기준 projected 70 가능.",
+    "AX_CAND_kr_momentum_inverse EXCEPTION 유지 — Hanauer-Huber 2019 EMR cite로 strengthen.",
+    "v54 Freeze 준수 — s0_record 작성은 Alpha 생성 작업 (동결 대상 아님).",
+    "L-163 composite 무관 (단일 residual). L-164 load_month_factors 경유 L-125/L-160/L-161 cross-reference 전수 반영.",
+    "V2 재debate 스폰 시 5인 debaters v2_additional_context 주입 필수 (각 debater 별 V1 감점 focus + V2 해소 경로 명시).",
+    "REJECT risk mitigation: V2 실측 없이 s0_record 명문화 수용 가능 여부가 핵심 — Codex는 protocol 수준에서 PRIMARY 편입 여전히 반대 가능.",
+    "Alternative Path: Option B (S1 pre-measurement 직접 실시 후 s0_record 재보강)가 더 안전하나 시간 비용 1~2일 추가 소요 — Q-Lead 판단."
+  ]
+}

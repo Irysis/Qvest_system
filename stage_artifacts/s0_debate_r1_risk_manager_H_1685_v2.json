@@ -1,0 +1,98 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1685",
+  "version": "v2",
+  "round": "R1",
+  "agent_id": "risk_manager_H1685_v2_r1",
+  "timestamp": "2026-04-18T00:00:00",
+  "prior_verdict_reference": "S0_VERDICT_H_1685.json v1 REVISE 55/100 (risk_manager R1=12, R2=10)",
+  "score": 14,
+  "arguments": [
+    "Kill Scenario 1 (CRISIS regime 외국인 exodus 시 잔차 붕괴 비대칭): v2 residualization은 평균 |corr(resid, -z_I)| = 0.194로 H_1674 독립성을 확보했으나, p95 |corr| = 0.4469는 약 13건 극단 월이 존재함을 드러낸다. stress_factor_ic_analysis.csv 실증에서 INV02_Foreign_NetBuy_60d crisis_ratio = 0.364 (위기 시 63% 붕괴), INV01_20d crisis_ratio = 1.093 (소폭 개선)으로 lookback에 따라 위기 행태가 극적으로 달라진다. 핵심 위험: expanding OLS beta_t는 전체 기간 평균적 관계를 학습하므로, 2008 GFC/2020 COVID처럼 외국인-개인 관계가 구조적으로 전환 (regime break)되는 구간에서 beta_t가 과거 정상기 패턴에 고착되어 잔차에 위기 시 외국인 exodus 신호가 그대로 잔존하게 된다. 구체적으로 2020-03 외국인 11조원 순매도 구간에서 z_F가 극단 음수, z_I가 극단 양수로 반전하면 residual = z_F - beta_t * z_I는 이중 음수 (외국인 매도 + beta_t*개인 매수 제거 = 더 큰 음수)가 되어, 잔차 Top 20은 사실상 외국인 가장 덜 매도한 종목을 선택하게 된다. 이 구간 Choe-Kho-Stulz 2005 Table 6 '외국인 정보 우위'는 완전히 역전된다.",
+    "Kill Scenario 2 (미래참조 경로 - expanding beta_t 조기 수렴 및 C1 검증 한계): expanding-window pooled OLS beta_t는 burn-in 60개월 이후 매월 수십만 관측치가 누적되므로, 실질적으로 t=120 이후 beta_t 변동폭이 극히 작아진다 (law of large numbers). 이는 장점(안정성)이자 치명적 약점이다. 2000-2010 전반기 외국인-개인 관계 구조가 2020년대 한국시장 구조 변화 (passive ETF 급증, 동학개미, 외국인 KOSDAQ 확대)를 전혀 반영하지 못한다. beta_t가 사실상 상수로 수렴하면 residual = z_F - c * z_I (c=상수)가 되어, 시간에 따른 관계 변화를 포착 못하는 구조적 한계가 발생한다. 이것이 backtest에서는 안정적으로 보이지만 실시간 운용에서는 structural break 누적 위험이다. Rolling 3Y OLS beta와 expanding beta의 비교 검증이 S2에서 필수이며, 두 방법론 간 beta 괴리가 0.1 이상이면 expanding 방식의 적시성 부족을 의미한다.",
+    "L-106/L-156 v2 교차 적용 - p95 tail 0.447과 TDC cluster 위험: L-106은 시장 beta 0.85~0.93이 portfolio-level 상관을 지배함을 실증했고, L-156 v2는 pairwise TDC > 0.4이면 위기 시 sleeve 간 동조 drawdown이 구조적임을 확인했다. v2 residualization이 H_1674와의 평균 상관을 0.194로 줄였지만, p95 |corr| = 0.4469는 L-156 v2 TDC gate 0.4 기준을 초과하는 극단 월이 존재함을 의미한다. 이 극단 월이 CRISIS regime과 시간적으로 겹치면 (예: 2008-09~2009-03, 2020-02~2020-04), 바로 그 diversification이 가장 필요한 시점에서 H_1685와 H_1674의 tail dependence가 급등하는 역설이 발생한다. compute_copula_tdc() regime-conditional 측정에서 CRISIS 구간 TDC > 0.4 확인 시 diversifier 자격은 조건부로 제한되어야 한다. 현재 PG2 anchor STR_1631과의 TDC도 별도 측정 필수 — investor_flow family가 consensus family와 beta channel을 공유하면 L-106 패턴 재현이 불가피하다."
+  ],
+  "concern": "expanding OLS beta_t의 비대칭 적응 실패: beta_t는 정상기 수십만 관측에 의해 지배되므로, 위기 시 외국인-개인 관계의 구조적 전환 (foreign exodus + retail surge)을 반영하는 데 수개월~수년이 소요된다. 이로 인해 CRISIS regime 진입 직후 1~6개월간 residual은 사실상 '과거 정상기 관계에 기반한 잔차'로서, 위기 시 외국인 행태 변화를 포착하지 못하고 오히려 역방향 포지션을 유도할 수 있다. MRS 63.1 CRISIS 현재 시점에서 이 신호 기반 전략의 즉시 투입은 바로 이 비대칭 적응 실패 구간에 해당할 가능성이 높다.",
+  "conditions": [
+    "S2에서 expanding beta_t vs rolling 36m beta 시계열 비교 보고: 2008 GFC, 2011 EuDebt, 2020 COVID 전후 6개월간 beta 괴리 측정. 괴리 > 0.1이면 rolling 3Y 또는 decay-weighted expanding (lambda=0.99) 대안 검토 필수.",
+    "S3에서 regime-conditional TDC 측정 의무: compute_copula_tdc(method='empirical')로 CRISIS 구간 (reference_stress_periods.md 8대 구간) H_1685 vs H_1674, H_1685 vs STR_1631 pairwise TDC 개별 산출. CRISIS TDC > 0.4이면 diversifier 자격 조건부 제한 (regime overlay 필수).",
+    "S2에서 6대 스트레스 구간 stress ICIR >= 0.10 확인 (v1 R2 조건 0.15에서 0.10으로 완화 — residualized signal의 구조적 alpha 소거 반영). 특히 2020-03 COVID 월 residual Top 20 종목의 외국인 순매수 방향을 명시 보고하여, exodus 시 역방향 포지션 여부를 실증 확인.",
+    "S1에서 expanding OLS burn-in 60개월 이후 beta_t 시계열을 factor_engine.R 코드 내 로그로 출력하여, t=120 이후 beta_t 수렴 패턴과 CRISIS 구간 beta_t 변화폭을 검증. beta_t 변동 계수 (CV) < 0.05이면 사실상 상수화 경고 발령."
+  ],
+  "rubric_breakdown": {
+    "tail_risk": {
+      "score": 3,
+      "max": 4,
+      "rationale": "v2 residualization이 H_1674와의 평균 상관을 0.897에서 0.194로 78.4% 감축한 것은 tail risk 분산에 구조적 개선이다. 그러나 p95 |corr| = 0.4469로 극단 월 13건이 L-156 v2 TDC gate 0.4 기준을 초과하며, 이 극단 월이 CRISIS regime과 겹칠 가능성이 높다. INV01_20d crisis_ratio 1.093은 외국인 단독 signal 위기 내성을 시사하나, residualized signal의 위기 행태는 미검증. v1 대비 +1점 (구조적 개선 인정)."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "max": 4,
+      "rationale": "2건 제시. KS1: CRISIS regime expanding beta_t 비대칭 적응 실패 — 구조적이나 decay-weighted expanding으로 완화 가능. KS2: C1 경로의 beta_t 조기 수렴 — structural break 검증으로 사전 탐지 가능. v1 대비 kill scenario 강도 유지. 1건 미래참조 경로(expanding beta C1 compliance) 포함."
+    },
+    "beta_orthogonality": {
+      "score": 3,
+      "max": 4,
+      "rationale": "v2 핵심 개선: mean |corr(resid, -z_I)| = 0.194로 H_1674와의 signal-level 독립 확보. channel preservation corr 0.895로 외국인 정보 축 유지. 그러나 L-106 교훈 — signal 독립이 portfolio-level 수익률 독립을 보장하지 않음. Market beta 0.85~1.05 범위의 Top 20 EW 선정이므로 PG2 anchor와 beta channel 공유 불가피. 잔차(market-adjusted) 상관 미검증. v1 대비 +1점 (signal-level 독립 확보)."
+    },
+    "mdd_contribution": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Standalone MDD 25~40% 예상. v2 residualization이 H_1674 동조 위험을 감소시켜 portfolio blend 시 동시 drawdown 확률 축소. 다만 CRISIS regime에서 p95 상관 0.447로 동조 가능성 잔존. diversifier 10~15% 배분 시 portfolio MDD 기여는 제한적이나, 위기 시 marginal MDD 기여가 역방향일 수 있음. v1 유지."
+    },
+    "regime_vulnerability": {
+      "score": 2,
+      "max": 4,
+      "rationale": "현재 MRS 63.1 CRISIS. expanding beta_t가 과거 정상기 관계에 고착된 상태에서 CRISIS 진입 시 잔차가 위기 구조 변화를 반영 못하는 비대칭 적응 실패 위험이 가장 큰 우려. INV02_60d crisis_ratio 0.364 (63% 붕괴)는 외국인 flow signal 전반의 위기 취약성을 시사. v2 residualization이 이 구조적 문제를 해결하지 못함 — residualization은 H_1674와의 중복을 제거하지만, 외국인 flow 자체의 위기 반전은 residual에도 전달된다. v1 유지."
+    }
+  },
+  "v1_to_v2_delta_assessment": {
+    "improvements": [
+      "H_1674 signal-level orthogonality: corr 0.897 → 0.194 (-78.4%) — R1 KS 최대 우려였던 diversifier 무효화 문제 해소",
+      "Channel preservation corr 0.895 — Choe-Kho-Stulz 2005 외국인 정보 우위 채널 유지 확인",
+      "PIT pre-registration: lookahead_detector INV13 C1/C2/C11/burn-in 4종 패턴 사전 등록 — v1에서 미등록이었던 체계적 취약점 해소"
+    ],
+    "persistent_risks": [
+      "외국인 flow 자체의 CRISIS 반전 (INV02_60d crisis_ratio 0.364) — residualization으로 해결 불가",
+      "Market beta channel 공유 (L-106) — EW Top 20 선정 구조상 beta 0.85~1.05 불가피",
+      "p95 |corr| = 0.4469 극단 월이 CRISIS regime과 시간적 동조 가능성"
+    ],
+    "score_change_rationale": "v1 R1=12 → v2 R1=14 (+2). tail_risk +1 (구조적 개선), beta_orthogonality +1 (signal-level 독립 확보). kill_scenario/mdd_contribution/regime_vulnerability 유지 — 외국인 flow의 위기 구조적 한계는 residualization으로 해결 범위 밖."
+  },
+  "data_evidence": {
+    "INV01_Foreign_NetBuy_20d": {
+      "stress_icir": 0.703,
+      "normal_icir": 0.621,
+      "crisis_ratio": 1.093,
+      "interpretation": "외국인 단독 20d는 위기 시 소폭 개선. H_1685 v2 residual도 21d 기반이므로 유사한 위기 내성 기대 가능하나, residualization이 위기 IC를 감소시킬 수 있음."
+    },
+    "INV02_Foreign_NetBuy_60d": {
+      "stress_icir": 0.446,
+      "normal_icir": 0.711,
+      "crisis_ratio": 0.364,
+      "interpretation": "장기 외국인 signal 위기 시 63% 붕괴. residual signal의 위기 행태 proxy로 사용 가능하나 직접 비교 불가."
+    },
+    "INV07_Retail_Contrarian": {
+      "stress_icir": 1.121,
+      "normal_icir": 1.236,
+      "crisis_ratio": 0.963,
+      "interpretation": "개인 contrarian signal 위기 시 안정 (3.7% 약화만). H_1685 v2가 이 축을 잔차화로 제거했으므로, residual의 위기 행태는 INV01과 INV07의 차이에 의존."
+    },
+    "v2_precheck_empirical": {
+      "mean_abs_corr_vs_H1674": 0.1938,
+      "median_abs_corr_vs_H1674": 0.1678,
+      "p95_abs_corr_vs_H1674": 0.4469,
+      "channel_preservation": 0.8948,
+      "analyzed_months": 255,
+      "burn_in_months": 60,
+      "interpretation": "평균/중앙값 gate PASS. p95 극단 월 warning — CRISIS conditional TDC 추가 검증 필수."
+    }
+  },
+  "lesson_references": {
+    "L-106": "Market beta 0.85~0.93 지배. 종목 겹침 3%에도 수익률 상관 0.78. Signal 독립이 portfolio-level 독립을 보장하지 않음. S3에서 잔차 상관 필수.",
+    "L-115": "Beta 감소 != 상관 감소. Beta 0.93→0.40 절반 감소에도 Core 상관 0.575.",
+    "L-122": "Factor timing 취약. Barroso & Santa-Clara (2015) risk-managed 접근이 robust. H_1685 v2는 timing 아닌 flow information이므로 직접 적용 아니나, expanding beta_t 수렴 문제는 유사한 시간축 적응 한계.",
+    "L-156_v2": "TDC gate 0.4. p95 극단 월 0.447이 CRISIS 동조 시 gate breach. Regime-conditional TDC 필수.",
+    "L-027": "STR_887 Foreign Flow Alpha — FMB t=6.682 최강 횡단면 신호. 외국인 flow 자체의 alpha 유효성은 실증. 다만 STR_887도 C10/C11 잔존 PIT 이슈 존재."
+  }
+}

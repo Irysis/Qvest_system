@@ -1,0 +1,25 @@
+{
+  "hypothesis_id": "H_1694",
+  "agent_id": "risk_manager_h1694_r1",
+  "role": "risk_manager",
+  "round": 1,
+  "submitted_at": "2026-04-19",
+  "score": 13,
+  "stance": "APPROVE_CONDITIONAL",
+  "veto": null,
+  "concern": "Harvey t-stat 미달 가능성 + TDC 0.30 threshold + DCC crisis spike 3중 위험 — S1/S3 실측 전 보장 없음",
+
+  "arguments": [
+    "Harvey t-stat 미달 위험(HIGH): M25 ic_all=0.017, Q04 ic_all=0.029 기준 composite ic_all 0.020~0.025 예상 → full-period t~1.1~1.3. Harvey et al.(2016) 다중검정 허들 t>3.0 미달. recent_3y_icir(M25=0.326, Q04=0.532)는 subsample 한정이며 DSR(Deflated Sharpe Ratio) S1 mandatory 계산 필요. Gate 4 Harvey t>3.3 충족 경로 불확실.",
+    "TDC tail 위험(HIGH): Gate 11 Sequential Admission 기준 lower tail TDC(lambda_L) < 0.30 vs STR_1631 필수. Earnings momentum과 가격 momentum 하방 공동이동 위험 — Barroso&Santa-Clara(2015, L-122) momentum crash 국면에서 M25 streak long 포지션 일제 청산 가능. copula 측정 없이 사전 보장 불가. TDC 0.30 미달 시 diversifier 역할 무효.",
+    "DCC crisis spike 위험(HIGH): M25 earnings momentum은 위기 시 가격 momentum 수렴 위험. 평상시 STR_1631 DCC 0.3~0.5에서 crisis MRS>=70 구간 0.7+ 급등 가능성. EVT/GPD tail 분석: earnings reversal shock 구간 M25 streak long 포지션 집중 청산 시 CDaR_95 > 20% 가능. S3 DCC crisis 구간 spike + S6 CDaR_95/CVaR_99 측정 의무."
+  ],
+
+  "veto_conditions": [
+    "Harvey t < 2.0 AND DSR < 0 동시 — fundamental alpha 부재",
+    "S3 lower tail TDC > 0.50 vs STR_1631 — diversifier 역할 무효화",
+    "2008 GFC 구간 composite IC < -0.10 — PEAD mechanism KR 실패"
+  ],
+
+  "findings": "3중 HIGH 위험(Harvey t, TDC, DCC crisis). S1 composite IC full-period t-stat + DSR + 8대 스트레스 sub-period IC 측정 의무. S3 pairwise lower tail TDC < 0.30 확인 전 Gate 11 통과 미보장. PEAD 메커니즘 KR 실증 및 Q04 F-score 하방 보호 효과 긍정적이나 Harvey 허들 및 TDC 동시 충족 S3 전 불확실."
+}

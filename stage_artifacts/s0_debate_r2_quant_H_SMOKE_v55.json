@@ -1,0 +1,46 @@
+{
+  "role": "quant",
+  "agent_id": "quant_smoke_r2",
+  "r1_stance": "APPROVE_CONDITIONAL",
+  "r1_veto_flag": null,
+  "stance_change": "UNCHANGED",
+  "new_stance": "APPROVE_CONDITIONAL",
+  "stance_change_reason": "",
+  "veto_flag": null,
+  "addressed_concerns": [
+    {
+      "concern_source": "자체 R1: direction sign 명확화",
+      "resolution": "Judge R1이 compute_liquidity.R:432-454에서 sig_date 기반 -|ac1| 변환 후 Z_Score_Aligned 사용을 코드 레벨로 확인. 수동 flip 흔적 없음 확인됨. C13 준수 정합. 자체 R1의 sign 불확실성은 해소된 것으로 판단.",
+      "status": "RESOLVED"
+    },
+    {
+      "concern_source": "자체 R1 + Codex R2: liquidity/reversal 패밀리 통제 후 독립성",
+      "resolution": "내가 측정한 L22 vs C19(-0.0008), M01(0.1017), M08(0.0546) 상관은 momentum/core 대비 독립성을 지지한다. 그러나 Codex R2가 지적한 대로 Amihud ILLIQ, 거래회전율, short-term reversal 팩터와의 직교성은 S1 단계에서 IC_orthogonal 계산으로 실측이 필요하다. 현재 Factor DB 내 유동성·반전 계열과의 corr 미측정 상태이므로 완전 해소 불가.",
+      "status": "PARTIALLY_RESOLVED — S1 IC_orthogonal 측정으로 확인 필요"
+    }
+  ],
+  "unresolved": [
+    {
+      "with": "academic",
+      "point": "Lo & MacKinlay(1988)가 횡단면 alpha 방향(-|AC1| → 양의 수익률)을 직접 함의하지 않는다는 academic의 비판은 정량 데이터로 반박 불가. quant 관점에서도 ic_all 0.0120은 미약하며, 이것이 메커니즘 부재를 반영하는지 노이즈인지 S1 이전에 구분 어렵다. Roll(1984) 등 bid-ask bounce 직결 문헌 보강이 이루어지지 않는 한 mechanism 불확실성은 잔존한다."
+    },
+    {
+      "with": "codex",
+      "point": "Amihud ILLIQ, 거래회전율, 단기반전 팩터를 통제한 후에도 L22가 독립적 IC를 보유하는지 미검증. '낮은 |AC1| = 낮은 bid-ask bounce = 안정적 alpha'가 아닌 '단순 대형주/저변동성 descriptor'일 가능성 배제 불가. S1 결과에서 규모·변동성 통제 후 IC 보고 필수."
+    },
+    {
+      "with": "academic + codex",
+      "point": "Amihud & Mendelson(1986) 프레임워크에서 낮은 |AC1|(=고유동성)은 오히려 낮은 기대수익률을 예측한다. 이 방향 역전 문제는 Roll(1984)/Chordia et al.(2000) 인용으로 재구성하지 않는 한 메커니즘 충돌이 지속된다. REVISE 요구 2인(academic+codex)이 공통으로 제기한 핵심 쟁점으로 S1 후에도 mechanism 재정의 없이는 S3 이후 승격 어려움."
+    },
+    {
+      "with": "자체",
+      "point": "ic_bad/ic_good ratio 3.93은 위기 구간 상대적 IC 우위를 보여주나, ic_bad 절대값 0.0243 자체가 낮다. AX-001 v2 기준 defense 역할이 아닌 diversifier이므로 crisis_alpha 요건은 직접 적용 대상 아니나, bad regime에서 단순 IC 수치만으로 실질적 포트폴리오 방어 기여를 주장하기에는 근거 부족. S1 bad regime 구간 실현 초과수익 측정 필요."
+    }
+  ],
+  "quant_position_summary": {
+    "on_mechanism_veto": "academic의 mechanism veto는 학술적으로 타당하며 quant 관점에서도 수용한다. 그러나 veto 수준은 'REVISE 조건부'이며 REJECT 수준 아님. Factor DB 실측 데이터(ic_all 0.0120, recent_3y_icir 0.367, C19 corr -0.0008)는 약하지만 유효한 신호 존재를 시사한다. mechanism 불확실성이 있더라도 순수 signal 측정 목적의 smoke S1 진입을 막을 PIT 위반이나 kr_empirical_hard_fail 근거는 없다.",
+    "on_left_tail_risk": "L-137 MDD 61.9% 선례는 RetAutocorr+Piotroski+overlay 부재 조합에서 발생했다. 단독 L22 smoke에서 동일 MDD가 재현된다는 보장은 없으나, MDD > 45% hard fail 가능성을 배제할 수 없다. S1 결과에서 MDD 수치가 가장 중요한 정량 gate item이며, 45% 초과 즉시 STOP + S5 DD/VT overlay mutation 트리거가 사전 합의 조건이어야 한다.",
+    "on_internal_corr": "C19(-0.0008), M01(0.1017), M08(0.0546)의 낮은 상관은 기존 Core/Momentum 슬리브 대비 독립성을 지지한다. Codex R2가 지적한 liquidity/reversal 패밀리와의 상관은 미측정이나, 구조적으로 다른 alpha 경로임은 유지된다. redundancy 우려는 약하다는 R1 포지션 유지.",
+    "on_selection_pit": "Judge R1이 제기한 selection PIT 경계(recent_3y_icir가 현재 시점 기준)는 smoke run 목적 파이프라인 검증으로 한정하면 alpha 신뢰지표 격상 금지 조건으로 관리 가능. s0_record에 'v55 정규 사이클 smoke run, hurdle 결과는 파이프라인 동작 증거로 한정' 명시를 S1 gate item으로 요구."
+  }
+}

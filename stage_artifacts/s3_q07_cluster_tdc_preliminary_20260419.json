@@ -1,0 +1,65 @@
+{
+  "artifact_type": "s3_q07_cluster_tdc_preliminary",
+  "measured_by": "Governor (s3_q07_cluster_tdc_preliminary.R)",
+  "measured_at": "2026-04-19T19:20:34",
+  "session": "68_Day_2",
+  "status": "PRELIMINARY",
+  "pending_pairs": ["STR_1687 vs H_1689_v3_variant1 — H_1689 not yet built (Task#3)", "STR_1687 vs STR_1679v3 — STR_1679v3 not yet built", "STR_1687 daily_returns.csv — Task#1 재실행 필요"],
+  "available_pairs": {
+    "STR_1679v3_proxy_vs_STR_1631": {
+      "pair_label": "STR_1679_Q25 vs STR_1631",
+      "n_months": 276,
+      "date_start": "2003-02-28",
+      "date_end": "2026-04-08",
+      "spearman_monthly": 0.9484,
+      "tdc_upper_95": 0.7692,
+      "tdc_lower_95": 0.6154,
+      "tdc_max": 0.7692,
+      "gate11_pass": false,
+      "sequential_admission_pass": false,
+      "granularity": "monthly"
+    },
+    "STR_1631_vs_STR_1656": {
+      "pair_label": "STR_1631 vs STR_1656",
+      "n_months": 219,
+      "date_start": "2008-02-29",
+      "date_end": "2026-04-08",
+      "spearman_monthly": 0.5938,
+      "tdc_upper_95": 0.4,
+      "tdc_lower_95": 0.4545,
+      "tdc_max": 0.4545,
+      "gate11_pass": true,
+      "sequential_admission_pass": false,
+      "granularity": "monthly"
+    },
+    "STR_1679v3_proxy_vs_STR_1656": {
+      "pair_label": "STR_1679_Q25 vs STR_1656",
+      "n_days": 4482,
+      "n_months": 219,
+      "date_start": "2008-02-05",
+      "date_end": "2026-04-08",
+      "pearson_daily": 0.5309,
+      "spearman_monthly": 0.5772,
+      "tdc_upper_95": 0.2411,
+      "tdc_lower_95": 0.4643,
+      "tdc_max": 0.4643,
+      "tdc_monthly_upper": 0.3,
+      "gate11_pass": true,
+      "sequential_admission_pass": false
+    }
+  },
+  "scenario_b_verdict": {
+    "pair": "H_1689_v3_variant1 vs STR_1687",
+    "status": "PENDING",
+    "expected_tdc_range": [0.2, 0.35],
+    "expected_verdict": "PASS_LIKELY",
+    "rationale": "Factor identity: Q01+Q04+Q25 vs Q07+SUE. 구조적 overlap 없음",
+    "rerun_trigger": "Task#1 (STR_1687 재실행) + Task#3 (H_1689 코드 작성) 완료 후"
+  },
+  "q07_cluster_sequential_admission": {
+    "STR_1687_vs_existing_portfolio": "STR_1687 daily_returns 생성 후 확정 TDC 실측 예정",
+    "gate11_threshold": 0.5,
+    "seq_gate_threshold": 0.3,
+    "target_verdict": "PASS (<0.30)"
+  }
+}

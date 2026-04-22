@@ -1,0 +1,177 @@
+{
+  "hypothesis_id": "H_1685_v2",
+  "hypothesis_name": "Foreign Flow Residualized on Individual Flow (Diversifier)",
+  "factor_id": "H_1685_Foreign_Resid_Individual_Diversifier",
+  "verdict": "APPROVE_CONDITIONAL",
+  "verdict_icon": "✅",
+  "total_score": 61,
+  "max_score": 100,
+  "created_at": "2026-04-18T14:46:00",
+  "supersedes": "S0_VERDICT_H_1685.json (v1 REVISE 55)",
+  "verdict_rationale": "R2 합산 61/100 (APPROVE_CONDITIONAL threshold 60 초과, 1점 여유). Option A 잔차화 재설계로 v1 corr 0.897 구조 결함은 수식·실증 (mean |corr| 0.194, -78.4%) 해소됨. Academic 정통 계보 인정 (DGTW 1997 + Brennan-Chordia 1998 + Hou-Xue-Zhang 2015 q-factor preservation). 단 Quant R1 β_t=-0.36 음수 구조 + 2020-2026 mean|corr| 0.2437 FAIL + Risk_mgr p95 tail 0.447 3중 경고 조건부 편입. Codex REJECT 유지 (rebuttals 수용 -1 상향). risk_manager 13 + quant 13 모두 ≥ 4 (REJECT 특수규칙 미적용). v1 → v2 structural improvement 확인. 직접 Phase_1 편입 금지, 3-step gradual 5 선결조건 필수.",
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "total": 65,
+        "status": "COMPLETE"
+      },
+      {
+        "round": 2,
+        "total": 61,
+        "status": "COMPLETE",
+        "delta": -4
+      }
+    ]
+  },
+  "final_scores": {
+    "codex_critic": {
+      "r1": 7,
+      "final": 8,
+      "delta": 1
+    },
+    "risk_manager": {
+      "r1": 14,
+      "final": 13,
+      "delta": -1
+    },
+    "governor": {
+      "r1": 15,
+      "final": 12,
+      "delta": -3
+    },
+    "quant": {
+      "r1": 13,
+      "final": 13,
+      "delta": 0
+    },
+    "academic": {
+      "r1": 16,
+      "final": 15,
+      "delta": -1
+    },
+    "r1_total": 65,
+    "r2_total": 61,
+    "final_total": 61
+  },
+  "consensus_points": [
+    "v2 residualization이 v1 corr 0.897 구조 결함을 수식·실증 해소 (mean |corr| 0.194, -78.4%) — 전원 인정",
+    "channel preservation 0.895로 외국인 정보 우위 채널 본체 유지 (Choe-Kho-Stulz 2005 RFS + Hou-Xue-Zhang 2015 q-factor 85~95% range 일치) — Academic/Governor/Codex 공통",
+    "Quant β_t = -0.36 음수 발견 — residual = z_F + 0.36*z_I 가중합 구조 (직교 아님). OLS 수학적 정당성은 유지하나 R2에서 Risk/Governor/Academic 모두 수용 (-1/-3/-1 감점)",
+    "2020-2026 sub-period mean |corr| = 0.2437 (gate <0.20 FAIL) — 현 MRS 63.1 CRISIS regime 일치로 즉시 투입 위험. 전원 수용",
+    "p95 |corr| = 0.4469 극단 월 13건 tail dependence — L-156 v2 TDC gate 0.4 breach. Risk_mgr/Governor 공통 경고",
+    "INV13 신규 factor_registry 등록 + lookahead_detector 5종 패턴 사전 등록 + C11 T+1 precheck 5건 선결조건 — Forge S1 전 완료 필수. Codex/Governor/Quant 공통",
+    "21d lookback 회전율 Hard Fail >80% 확률 — 63d/126d lookback 전환 또는 병렬 sensitivity 필수. Quant/Academic 공통",
+    "Scout Calibration v3 5/5 hit — predicted range [46,62] 실제 61, 상단 근접. L-157 v4 확정"
+  ],
+  "unresolved_disputes": [
+    {
+      "issue": "β_t 음수 구조의 해석",
+      "quant_position": "수식상 가중합 — IC(resid) = IC(z_F) + 0.36*IC(z_I) — orthogonality가 아닌 double negative z_I 잔존",
+      "academic_position": "OLS residual의 수학적 정의상 regressor와 직교 (mean signed corr 0.03 확증) — Fama-MacBeth 정통",
+      "resolution_needed": "S2에서 IC 성분 분해표 (IC_z_F / IC_z_I / IC_residual / ICIR) 의무 + β_t 시계열 plot"
+    },
+    {
+      "issue": "CRISIS regime 즉시 편입 가능 여부",
+      "risk_position": "MRS 63.1 현재 + 2020-2026 corr 0.2437 FAIL → 즉시 편입 금지",
+      "governor_position": "Phase_1 보류 → Phase_2 정상 regime 진입 후 3% 시작",
+      "codex_position": "regime-conditional TDC 사전 검증 필수, 조건부로도 CRISIS 편입 비추천",
+      "resolution_needed": "Scout + Governor가 Phase admission 5-step 재설계 (normal regime 확인 후 진입)"
+    },
+    {
+      "issue": "21d vs 63d lookback 선택",
+      "academic_position": "고영훈 2018 3~6개월 정합 → 63d/126d로 전환 권고",
+      "quant_position": "21d 회전율 Hard Fail >80% 확률 → 63d 전환 필수",
+      "governor_position": "S2에서 21/63/126 3종 sensitivity 병렬 보고 → S1 착수 전 결정",
+      "resolution_needed": "Scout S2 profiling 시 63d baseline 전환 + 21d/126d sensitivity 3종 병렬"
+    },
+    {
+      "issue": "Codex REJECT vs 다수 APPROVE_CONDITIONAL 괴리",
+      "codex_position": "crisis tail dependence + PIT governance + implementation fragility 3중 미해결 → REJECT 8점 유지",
+      "majority_position": "v2 structural improvement 인정 + conditions로 해소 가능 → APPROVE_CONDITIONAL",
+      "resolution_needed": "S1 이전 Codex 5 conditions (Gate-15 variance_ratio / PIT timestamp / regime ex-ante / crash-period robustness) 모두 PASS"
+    },
+    {
+      "issue": "Forge v2 critical path 과부하",
+      "governor_position": "STR_1682/1683/1684 + H_1690 4-variants 병행 중 INV13 신규 구현 + H_1685 v2 실행은 Phase_2 이후 현실적",
+      "resolution_needed": "Q-Lead가 H_1685 v2 S1 실행 타이밍 결정 (H_1688/H_1690 PG1 admission 후 순차)"
+    }
+  ],
+  "codex_cross_check": {
+    "r1_score": 7,
+    "r2_score": 8,
+    "r2_agreements": [
+      "risk_manager (expanding beta adapts too slowly under regime breaks)",
+      "quant (2020-2026 orthogonality deterioration + 21d turnover hard-fail)"
+    ],
+    "r2_rebuttals": [
+      "governor (diversifier axis not validated, p95 0.447)",
+      "academic (PIT not closed by shift(1L)+burn-in alone)"
+    ],
+    "strongest_opposing": "v2 is no longer algebraically duplicate of H_1674 (mean|corr| 0.194 over 255 months with high foreign-channel preservation)"
+  },
+  "debaters": [
+    {
+      "agent_id": "codex_critic_H1685v2_r2",
+      "role": "codex_critic",
+      "score": 8,
+      "findings": "REJECT pending redesign 유지. v2 de-duplication progress 인정 (+1). crisis-regime TDC + PIT timestamp governance + implementation fragility 3중 미해결."
+    },
+    {
+      "agent_id": "risk_manager_H1685v2_r2",
+      "role": "risk_manager",
+      "score": 13,
+      "findings": "Quant β_t 음수 발견이 KS-1 CRISIS 비대칭 적응을 '적응 지연'에서 '구조적 전파'로 격상. 2020-2026 corr 0.2437 FAIL이 tail을 body 분포 문제로 현실화."
+    },
+    {
+      "agent_id": "governor_H1685v2_r2",
+      "role": "governor",
+      "score": 12,
+      "findings": "Quant β_t 음수 + 2020-2026 FAIL 쌍증거로 role_match 4→3, family_saturation 3→2. Phase_1 3% 보류 → Phase_2 후 재진입."
+    },
+    {
+      "agent_id": "quant_H1685v2_r2",
+      "role": "quant",
+      "score": 13,
+      "findings": "자신의 R1 발견 (β_t=-0.36 + 2020-2026 FAIL + 21d 회전율) Risk/Governor/Academic 모두 수용으로 교차확인. 점수 유지."
+    },
+    {
+      "agent_id": "academic_H1685v2_r2",
+      "role": "academic",
+      "score": 15,
+      "findings": "DGTW 1997 orthogonalization 계보 유효. 2020-2026 sub-period FAIL + Risk asymmetric correlations로 time_decay 2→1 감점. substantive_cite 유지."
+    }
+  ],
+  "conditions_for_s1": [
+    "C1: INV13 factor_registry 신규 등록 (compute_investor.R expanding β accumulator + burn-in 60m) + load_month_factors 경유",
+    "C2: lookahead_detector.R INV13 C1/C2/C11/burn-in/C13 5종 패턴 사전 등록",
+    "C3: C11 거래주체 T+1 timing precheck (compute_investor.R Usable_Date 로직 검증)",
+    "C4: 21d baseline → 63d/126d 3종 sensitivity 병렬 보고 (Academic + Quant 공통 요구)",
+    "C5: S2에서 IC 성분 분해표 (IC_z_F / IC_z_I / IC_residual / ICIR) + β_t 시계열 plot 의무",
+    "C6: S2 three-period ICIR 분할 (2005-2014 / 2015-2019 / 2020-2026), post-2020 ICIR >= 0.15 + |ΔICIR| <= 0.20 PASS",
+    "C7: S3 regime-conditional TDC 이중 관문 (전체 <= 0.40 + CRISIS <= 0.55) — L-156 v2 cluster 등록",
+    "C8: S3 crisis period 별도 pairwise TDC matrix vs H_1674 + vs STR_1631 (PG2 anchor)",
+    "C9: S1 FMB 회귀 외국인 residual t-stat > Harvey 3.0 (개인 + 기관 + M01_Rev1M 통제)",
+    "C10: S6 PIT 전수 검증 (Codex Gate-15 variance_ratio + 전체 input disclosure timestamp + lag policy 증명)",
+    "C11: Phase admission 5-step gradual: Phase_1 보류 → Phase_2 normal regime 확인 후 3% → Phase_3 5% → Phase_4 8% + Herfindahl > 0.12 시 5% 자동 rollback",
+    "C12: S5 expanding vs rolling 3Y β_t 괴리 검증, 두 방법론 β 차이 > 0.1 시 expanding 적시성 부족"
+  ],
+  "routing": {
+    "action": "APPROVE_CONDITIONAL",
+    "next_stage": "S1 (Forge — but Phase 편입은 Phase_2 후)",
+    "priority": "P1 (rev7_v3_v1/rev8 직접 편입 안 함, H_1688/H_1690 PG1 admission 완료 후)",
+    "forge_action": "TODO_S1_H_1685_v2 작성 대기 — Forge v2 critical path 여유 확인 후 Q-Lead 발행",
+    "str_number_allocation": "STR_1686 예정 (v1 기반 STR 번호 미할당)"
+  },
+  "calibration_hit": {
+    "scout_predicted_range": [
+      46,
+      62
+    ],
+    "scout_predicted_median": 54,
+    "actual_score": 61,
+    "hit": "TOP_END",
+    "calibration_version": "v3 (L-157, -6 누적 adjustment)",
+    "consecutive_hits": "5/5 (Codex/Risk/Gov/Quant/Academic 모두 range 내)"
+  }
+}

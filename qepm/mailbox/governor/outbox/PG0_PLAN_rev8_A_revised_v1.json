@@ -1,0 +1,188 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV8_A_REVISED_H_1689_Q24_EXCLUDE",
+  "stage": "PG0_ACTIVE_CONDITIONAL_VALIDATED_rev8_A_revised_post_risk_mgr_verdict",
+  "timestamp": "2026-04-18T Session67_Day1 post_Risk_Mgr_CONDITIONAL_APPROVE",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_A_revised_H_1689_Q24_exclude_draft",
+  "status": "DRAFT REVISED — Risk Mgr V2 WARNING 반영. H_1689 Q24 Altman_Z poison pill 대응 필수. Q24-exclude 3-axis variant or Q07 대체 요구.",
+  "supersedes": "PG0_PLAN_rev8_A_base.json composition H_1689 4-axis original",
+  "reference_verdict": "Risk Mgr 3rd round CONDITIONAL_APPROVE (5분 완료)",
+
+  "v3_5_status_corrections_per_judge_arbitration_2026_04_18": {
+    "correction_1_v3_5_status": {
+      "invalid_prior_governor_statement": "v3.5 ACTIVE_NORMATIVE 최종 수렴 (15:35 team-lead 메시지 오해)",
+      "correct_status": "v3.5 CONDITIONAL_ACTIVE Stage 1 (team-lead 15:45 revised + 16:05 Q-Lead clarification final)",
+      "enforcement": "Gate 11/12 모두 advisory_warning — Stage 2 전환 trigger 미충족"
+    },
+    "correction_2_hard_fail_taxonomy": {
+      "invalid_prior_governor_statement": "STR_1683 + STR_1684 2건 Hard Fail 축적 → Stage 2 transition 자동 전환",
+      "correct_status": "VALIDATED_HARD_FAIL 1건 (STR_1683 L-160) + UNVALIDATED_HARD_FAIL 1건 (STR_1684 Scout hypothesis B 85% + Architect RC1/RC2/RC3 구현 버그 확증)",
+      "stage_2_transition": "BLOCKED (VALIDATED 2건 필요, 현재 1/2)",
+      "gate_12_enforcement": "advisory_warning 유지 (hard_block 자동 전환 조건 미충족)",
+      "ax_002_compliance": "구현 버그로 hypothesis 미검증 상태를 Hard Fail로 count하는 것은 '판단의 미래참조' AX-002 위반. Judge arbitration 수락."
+    },
+    "correction_3_h_1688_status": {
+      "invalid_prior_governor_statement": "H_1688 완전 DROP + Core_Secondary slot 공백",
+      "correct_status": "H_1688 PENDING_FIX_1_VALIDATION (not DROP)",
+      "decision_logic_per_str_1684_v2b_scenarios": {
+        "scenario_A_ICIR_gte_0_20": "H_1688 hypothesis valid 평가 완료 → 재편입 검토 가능",
+        "scenario_B_ICIR_still_negative": "UNVALIDATED → VALIDATED_HARD_FAIL 재분류 + H_1688 공식 DROP + Stage 2 auto trigger",
+        "scenario_C_partial_positive_0_to_0_20": "CONDITIONAL_FAIL + H_1688 DROP",
+        "scenario_D_fix1_not_transmitted": "재실행 unusable + L-163 발행 + 추가 진단"
+      }
+    }
+  },
+
+  "l_161_l_162_judge_official_issuance_acknowledged": {
+    "L_161_issued": "Judge 16:10 methodology_memory.md line 1115~1141 — 'Factor DB Z_Score 정규화 불일치 + OLS scale 충돌 residualization 왜곡 pattern'",
+    "L_161_governor_symptom_convergence": "Governor 제안 symptom (CAPM beta 1.0007) = Judge 본문 RC3 귀결로 포함됨 — 두 관점 수렴",
+    "L_162_issued": "Judge 15:50 stage_artifacts/l_code_STR_1684_infra_L_162.json + methodology_memory.md line ~1153 — 'data.table merge Date 충돌 — rbindlist list-type setkey bug pattern'",
+    "governor_acknowledgment": "L-161/L-162 Judge 최종본 수용. rev8-A-revised_v1에 공식 cross-reference."
+  },
+
+  "gate_12_enforcement_correction": {
+    "prior_invalid": "Gate 12 hard_block 자동 전환 발효",
+    "correct": "Gate 12 advisory_warning 유지 (Stage 1, VALIDATED 1건만)",
+    "transition_trigger_waiting": "STR_1684_v2b Scenario B 확정 or 추가 VALIDATED Hard Fail 축적"
+  },
+
+  "risk_mgr_verdict_summary": {
+    "overall": "CONDITIONAL_APPROVE",
+    "blocking_conditions": {
+      "V2_H_1689_WARNING": {
+        "poison_pill_factor": "Q24_Altman_Z",
+        "stress_icir": -0.695,
+        "severity": "CRITICAL (L-144 재확인)",
+        "mechanism": "weight 25% × stress_icir_delta -0.513 → Q01/Q25 기여 완전 상쇄"
+      },
+      "V1_TDC_WARNING": {
+        "max_tdc": 0.52,
+        "pair": "STR_1631 ↔ STR_1679v3",
+        "l_156_threshold": 0.40,
+        "violation": "0.12pp breach"
+      },
+      "V5_Crisis_SR": 1.22,
+      "improvement_vs_current_pg2": "미미 (1.193 → 1.22)"
+    },
+    "kill_scenarios_2": {
+      "scenario_1": "Q24 Crisis Amplification (H_1689 Defense 실패)",
+      "scenario_2": "C19 Consensus Quality Collapse (STR_1631+STR_1679v3 28% 동시 소멸)"
+    }
+  },
+
+  "h_1689_remediation_options": {
+    "option_1_Q24_exclude_3_axis": {
+      "description": "H_1689 Quality 4-axis → 3-axis (Q24 제거) — Q01_GPA + Q25_Piotroski_F + Ohlson_O",
+      "weight_unchanged": 0.23,
+      "stress_icir_projected": "positive (Q24 -0.695 제거 효과)",
+      "implementation_effort": "LOW (factor 1개 제거, run_all.R 수정)",
+      "governor_preference": "PRIMARY option (Risk Mgr 권고 수락)"
+    },
+    "option_2_Q07_substitution": {
+      "description": "H_1689 Quality 4-axis → Q24 대신 Q07_Earnings_Stability (stress_icir +0.753, L-121 양쪽 위기 최강)",
+      "composition": "Q01 + Q07 + Q25 + Ohlson_O",
+      "weight_unchanged": 0.23,
+      "stress_icir_projected": "strong positive (Q07 stress leader)",
+      "implementation_effort": "MEDIUM (factor 교체 + S0 재debate 가능성)",
+      "governor_preference": "SECONDARY option (Q07 검증된 factor 활용)",
+      "note": "Q07이 이미 H_1690 multi_source_defense_anchor에 포함되므로 H_1689-H_1690 Q07 overlap 주의"
+    },
+    "option_3_weight_reduction": {
+      "description": "H_1689 23% → 15% 감축 + Q24 유지 (exposure 축소)",
+      "weight_revised": 0.15,
+      "freed_weight_8pp": "미배분 확대 or H_1690 Phase_2 12%로 조기 승격",
+      "governor_preference": "TERTIARY option (structural fix 회피, 보조적 수단)"
+    }
+  },
+
+  "governor_recommendation": {
+    "primary": "Option 1 Q24-exclude 3-axis (H_1689 23% 유지)",
+    "rationale": [
+      "1. Risk Mgr V2 WARNING 직접 대응",
+      "2. Q01/Q25/Ohlson_O는 L-144와 무관한 quality axis",
+      "3. Implementation LOW (factor 제거만)",
+      "4. Q07 overlap 회피 (Option 2 대비)",
+      "5. weight 유지로 Defense 33% composition 안정"
+    ],
+    "fallback": "Option 2 Q07 substitution (Scout debate 필요 시)",
+    "reject_option_3": "구조적 문제를 weight reduction으로 해결하는 것은 근본 치유 아님"
+  },
+
+  "rev8_a_revised_phase_3_composition": {
+    "description": "H_1689 Q24-exclude 3-axis 변경. 타 슬롯 유지.",
+    "composition_final": {
+      "STR_1631_Core_Primary": {"weight": 0.18, "unchanged": true},
+      "H_1688_PENDING_INFRA_FIX": {"weight_conditional": 0.10, "status": "STR_1684_v2b 결과 대기"},
+      "STR_1656_Div_ML": {"weight": 0.14, "unchanged": true},
+      "STR_1679v3_Div_1": {"weight": 0.10, "unchanged": true, "note": "V1 TDC 0.52 WARNING — Gate 6 TDC retroactive 재측정 필요"},
+      "H_1689_Def_2_Q24_exclude_3_axis": {
+        "weight": 0.23,
+        "axes": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+        "q24_excluded": "poison pill (stress_icir -0.695) 제거",
+        "risk_mgr_v2_response": "Q24-exclude variant 반영"
+      },
+      "H_1690_Def_3": {"weight": 0.10, "unchanged": true},
+      "Reserve": {"weight": 0.09},
+      "Unallocated": {"weight": 0.06, "contingent_on_H_1688": "H_1688 복원 시 6pp / DROP 시 16pp"}
+    },
+    "defense_cluster": "H_1689 Q24-exclude 23 + H_1690 10 = 33% (변동 없음)",
+    "q25_r16_exposure_update": {
+      "str_1679v3_embedded_10pct_q25_share_0_90": 0.090,
+      "h_1689_Q24_exclude_23pct_q25_share_reduced": "0.0575 → 재계산 필요 (Q24 제거로 Q25_Piotroski_F 비중 상승 예상)",
+      "h_1690_10pct_q25_share_0_25": 0.025,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_estimate": "17.95% 유지 ± 1~2pp"
+    }
+  },
+
+  "v1_tdc_warning_response": {
+    "issue": "STR_1631 ↔ STR_1679v3 TDC 0.52 (L-156 threshold 0.40 위반)",
+    "action_required": "Gate 6 TDC pairwise retroactive 재측정 + Sequential Admission Rule 적용",
+    "governor_options": [
+      "Option a: STR_1679v3 weight 10% → 8% 감축 (Gate 6 CONDITIONAL PASS)",
+      "Option b: STR_1679v3 Q25 overlay 강도 조정 (signal correlation 완화)",
+      "Option c: STR_1679v3 DROP + H_1685v2 Phase_2 조기 승격 (3%→10%)"
+    ],
+    "governor_preference": "Option a (8%) — 최소 변경, Diversifier slot 유지. 감축 2pp는 미배분으로 이관"
+  },
+
+  "kill_scenario_mitigation": {
+    "scenario_1_Q24_crisis": "Option 1 Q24-exclude로 근본 제거",
+    "scenario_2_C19_collapse": {
+      "concern": "STR_1631 consensus_C19 + STR_1679v3 embedded Q25 공통 risk",
+      "mitigation": "V1 TDC 0.52 response 반영 (STR_1679v3 8%로 감축) + Phase_2 H_1685v2 투자자 flow 다각화 가속"
+    }
+  },
+
+  "phase_1_v1_2_update_for_H_1689_revised": {
+    "slot_5_H_1689_revised": {
+      "admission_status": "PENDING_FORGE_S1_Q24_EXCLUDE_VARIANT",
+      "weight_target": 0.23,
+      "axes_revised": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+      "gate_11_variant_comparison": "Q24-exclude vs 4-axis original 비교 mandatory — Risk Mgr blocking condition 충족",
+      "gate_12_coupling_ratio": "재실행 후 재측정"
+    }
+  },
+
+  "next_actions_post_revision": [
+    "1. Scout에 H_1689 handoff kit v3 요청 (Q24 exclude + Q07 대체 variant)",
+    "2. Forge Day 2 재스폰 후 H_1689 Q24-exclude S1 실행",
+    "3. STR_1684_v2b 결과 수신 (20분) → H_1688 복원 판정",
+    "4. Judge S6 재판정 대비 (H_1689 variant comparison Gate 11 준비)",
+    "5. V1 TDC WARNING 대응 (STR_1679v3 10→8% or alternative)",
+    "6. rev8-A-revised 공식 발행 (Forge S1 결과 수신 후)"
+  ],
+
+  "executive_summary_rev8_a_revised": {
+    "trigger": "Risk Mgr 3rd round CONDITIONAL_APPROVE V2 H_1689 Q24 poison pill WARNING",
+    "core_change": "H_1689 Quality 4-axis → 3-axis (Q24 exclude)",
+    "composition_defense_33pct": "H_1689 Q24-exclude 23 + H_1690 10 유지",
+    "additional_V1_mitigation": "STR_1679v3 10→8% 감축 검토 (TDC 0.52 해소)",
+    "pending_branches": "H_1688 복원 (STR_1684_v2b) + H_1685v2 Phase_2 (normal regime + 12 conditions)",
+    "status_enforcement": "v3.5 CONDITIONAL_ACTIVE Stage 1 — Gate 11/12 advisory_warning",
+    "activation_timeline": "Day 2 Forge S1 재실행 → Day 3 Judge S6 → Day 4~7 Phase_1 PG1 admission"
+  }
+}

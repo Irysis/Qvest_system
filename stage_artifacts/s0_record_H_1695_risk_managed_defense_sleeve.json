@@ -1,0 +1,105 @@
+{
+  "hypothesis_id": "H_1695",
+  "strategy_id_reserved": "STR_1695_risk_managed_defense_sleeve",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Risk-Managed Earnings Stability Defense Sleeve (Q07 + Volatility Scaling + Regime-Conditional Sizing)",
+
+  "mechanism": "Barroso & Santa-Clara(2015 JFE) 'Momentum Crashes': realized variance로 position size를 역비례 조정하면 momentum crash를 방어. 이 위험관리(risk-managed) 접근을 Q07_Earnings_Stability defense signal에 적용 — 고변동성 구간에서 포지션 축소, 저변동성 구간에서 확대. 핵심: AX-007이 식별한 'signal-portfolio translation failure'의 구조적 원인은 (1) top-20 concentration + (2) hedging 부재 + (3) 고변동성 구간 drawdown 누적. Barroso&SC 방식은 (3)을 직접 해결. Daniel&Moskowitz(2016) 조건부 정보 기반 사전 crash 회피와 결합: MRS_score > 60(Deep Crisis) 구간에서 포지션 50% 이하로 축소 (regime-conditional sizing). 이 두 레이어가 AX-007 EXCLUSION clause의 'ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha ≥4/6' 조건을 충족.",
+
+  "economic_rationale": "Barroso & Santa-Clara(2015 JFE): past 6-month realized variance로 normalize → momentum Sharpe 0.53 → 1.16. 변동성 역비례 sizing이 tail risk를 structural하게 제거. Q07_Earnings_Stability에 동일 원리 적용: (1) Q07 L-121 실증: stress ICIR +0.753, crisis ic_mean +0.413 — 신호 자체는 위기 시 더 강함. (2) AX-007 failure 원인: 신호 강도와 MDD 인과관계 단절 — 고변동성 구간 concentration drawdown. (3) Risk-managed sizing: vol_target = sigma_target / realized_vol_Q07_portfolio → 고변동성 구간 자동 축소. Daniel & Moskowitz(2016 JF) 'Momentum Crashes': 조건부 정보(regime)로 사전 crash 회피 — CRISIS 구간 sizing 50% 이하 적용. AX-001 v2 defense 평가: crisis_alpha(risk-managed 후 MDD 완화), bad/normal IC ratio(Q07 3.3×), Core 대비 MDD 기여. AX-007 EXCLUSION: ML-based sizing(vol-inverse = adaptive)+ regime-conditional(MRS gate) + AX-001 v2 3-gate → exclusion clause 만족.",
+
+  "trail": "standard",
+
+  "expected_role": "defense",
+  "expected_role_rationale": "portfolio_gap_vector v1.0.8 sleeve_needs Defense cluster 23% (목표 33% -10pp 갭). H_1689 v3 variant_1 Primary Defense 단독으로는 목표 미달. H_1695는 Secondary Defense — risk-managed sizing layer로 AX-007 translation failure를 구조적으로 회피. AX-007 EXCLUSION clause 적용: multi-sleeve context(H_1689 v3 Primary + H_1695 Secondary) + regime-conditional sizing(MRS gate) + AX-001 v2 crisis_alpha ≥4/6 3-gate. AX-005 scope 회피: standalone defense 아님 — 2-strategy defense cluster + vol-scaling overlay로 구조 차별화. AX-001 v2 필수 검증: (1) crisis_alpha(stress 구간 Q07 outperform 실증), (2) bad/normal IC ratio ≥ 2.0, (3) Core(STR_1631) 대비 MDD 완화 기여.",
+
+  "gap_targeting_axes": ["mdd_regime_gap", "defense_cluster_deficit"],
+
+  "why_now": "portfolio_gap_vector v1.0.8 Defense -10pp 갭 + AX-007 신규 공리 제정(Session 68 Day 2) → defense 설계 공간이 AX-007 EXCLUSION path로 제한. Barroso&SC 접근이 이 제한 내에서 가장 학술적으로 견고한 경로. Q07 ic_bad=0.0306 (stress 실증 L-121) + Daniel&Moskowitz(2016) regime-conditional 조합은 기존 시도와 다른 mechanism: 신호 강도 × 위험 관리 × 국면 조건부. MRS score > 60 구간에서 자동 축소 → top-20 concentration drawdown의 structural 해결.",
+
+  "overlay": "regime_vol_scaling",
+  "overlay_note": "S1에서는 순수 팩터 신호(Q07 pure EW 20종목)만 측정. Overlay(vol scaling + MRS gate)는 S5 Mutation에서 적용. S0 설계 단계에서 mechanism 전체를 설명하되 S1은 pure signal 측정 원칙(CLAUDE.md S0/S1 오버레이 금지 규칙 준수).",
+
+  "factor_set": {
+    "primary": "Q07_Earnings_Stability",
+    "secondary_mechanism": "realized_vol_inverse_sizing (Barroso&SC 2015)",
+    "regime_gate": "MRS_score > 60 → position_size * 0.5 (Daniel&Moskowitz 2016)",
+    "weight_scheme_s1": "pure Q07 EW 20종목 (S1 overlay 없음 — pure signal 측정)",
+    "weight_scheme_s5": "Q07 signal rank + vol_target / realized_vol_12m (targeting 연간 변동성 15%). MRS>60: max_pos_size = 0.5 × base",
+    "q07_direction_note": "Q07_Earnings_Stability: higher_better = TRUE. load_month_factors() Z_Score_Aligned 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "Q07_Earnings_Stability": {
+      "conditional_value": -0.0111,
+      "ic_bad": 0.0306,
+      "ic_good": 0.0417,
+      "pass_conditional_ic": false,
+      "pass_defense_criterion": true,
+      "note": "L-120/L-121: 4-regime crisis 기준 conditional_value 음수이나 stress period(MRS>=30) ic_bad=0.0306 >> 정상 구간. AX-001 v2 defense 조건부 평가 기준: bad/normal IC ratio 0.0306/0.0175 ≈ 1.75 (위기 시 signal 강화). Gate 0.5는 diversifier용 — defense는 AX-001 v2 별도 기준."
+    },
+    "coverage_ratio": "AX-001 v2 defense 기준: Q07 stress 실증 L-121 PASS"
+  },
+
+  "core_reference": "A4.11 Barroso & Santa-Clara(2015 JFE) 'Momentum Crashes'. risk-managed momentum: realized variance inverse sizing → SR 0.53→1.16. translation failure 구조적 해결의 학술 근거. Daniel & Moskowitz(2016 JF) 'Momentum Crashes': conditional information-based crash avoidance — regime-conditional sizing 근거. A3.19 L-121 Q07 Earnings Stability stress ICIR +0.753 KR 실증.",
+
+  "lesson_check": "L-121(Q07 stress 최강): 신호 자체 방어력 실증 — translation failure와 분리 가능. L-136(Q07+D25 CAGR 낮음): D25 조합 대신 vol-scaling으로 해결. L-165(multi-source defense MDD 77~94%): AX-007 패턴 반복 위험 — vol-scaling + regime gate로 구조적 차단. AX-007 scope: exclusion clause ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha ≥4/6 필수. L-122(factor timing ≠ risk management): Barroso&SC는 factor timing이 아닌 risk management — L-122 scope 밖.",
+
+  "pit_compliance_checklist": {
+    "C1": "Q07 rolling earnings stability: expanding window 필수. realized_vol: 12개월 rolling 수익률 std — expanding window",
+    "C4": "Q07 재무제표 기반: 연간 5월 리밸 lag",
+    "C5": "S5에서 overlay 적용 시: MRS_score t-1 기준 (당월 MRS 사용 금지 — C5 준수)",
+    "C9": "vol_target sizing에서 realized_vol lag: vol_lag <- c(vol[1], head(vol,-1)) (C9 준수)",
+    "C10": "유동성 필터 2억원 lag=1",
+    "C13_Q07": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('Q07_Earnings_Stability')) 경유 필수",
+    "overlay_s1": "S1은 pure Q07 EW 20종목 측정만 (overlay 금지)"
+  },
+
+  "risk_flags": [
+    "AX-007 EXCLUSION 충족 조건 3가지 중 S1에서는 검증 불가 (overlay는 S5) — Judge S6에서 EXCLUSION 적용 공식 판정 필요",
+    "Q07 단독 S1 결과가 IC-Return coupling 기준(SR/ICIR ≥ 0.30) 미달 시 vol-scaling 적용 의미 없음",
+    "MRS regime gate: S5 구현 시 C5(t-1 lag) + C9(vol lag) 동시 준수 필수",
+    "D16_Coskewness 추가 axis 검토 가능: Q07 단독 coverage 부족 시 S5 mutation 후보",
+    "AX-001 v2 crisis_alpha ≥4/6: S1 stress 구간(MRS>=30) 별도 outperform 검증 필수"
+  ],
+
+  "expected_performance_range": {
+    "s1_icir_target": "0.25~0.50 (Q07 pure signal, L-121 근거)",
+    "s5_sr_target": "0.8~1.3 (vol-scaling + regime gate 후 — Barroso&SC SR 2× 개선 선례)",
+    "mdd_target": "< 35% (vol-scaling으로 AX-007 패턴 회피 시)",
+    "crisis_alpha_requirement": "AX-001 v2: stress 구간 ≥ 4/6 기간 outperform",
+    "role": "defense"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["mdd_regime_gap", "defense_cluster_deficit"],
+    "expected_role": "defense",
+    "cash_component": null
+  },
+
+  "ax007_exclusion_path": {
+    "clause_1_multi_sleeve": true,
+    "clause_2_long_short": false,
+    "clause_3_50_plus": false,
+    "clause_4_ml_sizing_regime": true,
+    "ax001_v2_crisis_alpha_gate": "≥4/6 stress periods outperform (S5 검증 필수)",
+    "note": "clause 1(multi-sleeve) + clause 4(ML/regime sizing) 조합. 2/4 EXCLUSION PATH 주장. Judge S6에서 공식 EXCLUSION 인정 여부 판정 필요."
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Task #16 P0_defense 재설계 (Q-Lead 방향 재정렬)",
+    "AX-007 EXCLUSION PATH: multi-sleeve + vol-inverse sizing(Barroso&SC) + MRS regime gate",
+    "S1은 pure Q07 EW측정만 — vol-scaling은 S5 Mutation",
+    "기존 H_1695(L22 liquidity) 파일과 병존 — s0_record ID H_1695를 defense로 재할당",
+    "Q-Lead 지시: H_1695 = Defense #2, H_1696 = Diversifier #2"
+  ]
+}

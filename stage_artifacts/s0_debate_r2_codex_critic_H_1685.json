@@ -1,0 +1,42 @@
+{
+  "hypothesis_id": "H_1685",
+  "round": 2,
+  "role": "codex_critic",
+  "agent_id": "codex_critic_H1685_r2",
+  "timestamp": "2026-04-17T00:00:00",
+  "r1_score": 8,
+  "r2_score": 9,
+  "score_change_reason": "quant의 H_1674 상관 0.897 실측이 R1의 '실전 0 alpha' 우려를 독립적으로 확인해주었습니다. 구조적 문제가 수치로 실증됐으므로 failure_avoidance 축 1점 상향 — '우려'에서 '확인된 결함'으로 격상. 그러나 구현 경로가 여전히 명세 미비이므로 총점은 소폭 상향에 그칩니다.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "H_1685 divergence와 H_1674 contrarian 간 평균 상관 0.897 측정을 전적으로 수용합니다. R1에서 '실전 0 alpha, 백테스트 전용 alpha' 위험을 지적했는데, 신호 수준에서 이미 H_1674와 동일하다는 사실은 설령 PIT가 완벽해도 alpha가 존재하지 않을 구조적 이유를 추가합니다. L-119(정적 팩터 블렌드 = alpha 희석)가 직접 적용됩니다."
+    },
+    {
+      "with": "academic",
+      "point": "21d lookback의 학술 미지지 및 63d 전환 권고에 동의합니다. 더 중요하게는, lookback 변경이 expanding-window normalization(C1 준수) 문제와 연동됩니다. 63d로 전환하더라도 normalization window가 full-sample이면 C1 위반이 됩니다. expanding-window z-score + 63d rollsum 조합이 구현 명세에 명시적으로 포함되어야 합니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "governor의 'compute_investor.R C2 구현 확인으로 PIT 기술적 실현 가능성은 확보됨' 주장에 이의를 제기합니다. compute_investor.R이 Date < sig_d 필터를 적용하는 것은 C2(same-day circular) 준수이지만, INV13 신규 팩터의 normalization 단계에서 cross-sectional z-score를 어떤 window로 계산하느냐는 별개 문제입니다. 현재 코드에 INV13이 미구현 상태이므로, 'C2 준수가 확인됐다'는 주장은 기존 INV01~INV12에 해당하는 것이고 신규 INV13에 대한 PIT 검증은 미완입니다. lookahead_detector.R에 INV13 패턴이 등록되지 않은 상태에서 'PIT 확보'는 선언에 불과합니다."
+    },
+    {
+      "against": "risk_manager",
+      "point": "risk_manager의 'lookback-rebalance mismatch MDD 과소추정(최대 30일 지연)' Kill Scenario가 C3 위반으로 프레이밍됐는데, 이는 C3보다는 C11(데이터 시간축 검증) 문제에 더 가깝습니다. C3은 '같은 기간 집계-적용 금지'이고, 21d window와 monthly rebalance 간 mismatch는 monthly decision에 21d 이상 신선도 있는 signal을 사용하는 구조 문제입니다. 프레이밍 차이이지 실질은 동일하므로, Forge S1에서 C11 검증을 C3과 별도로 명시해야 합니다."
+    }
+  ],
+
+  "strongest_opposing_argument": "quant의 H_1674 상관 0.897이 R1 전체에서 가장 치명적입니다. R1에서 제기한 '실전 0 alpha' 우려는 PIT/normalization 설계 실패 가능성이었는데, 신호 설계 자체가 이미 H_1674의 복사본이라면 PIT가 완벽해도 incremental alpha가 존재하지 않습니다. 따라서 재설계 없이는 어떤 PIT 개선도 진정한 alpha를 생성할 수 없습니다.",
+
+  "r2_updated_position": "REVISE 지지 — R1의 실질적 반대 입장에서 조건부 REVISE로 완화. 재설계 경로가 명확하다면(외국인 flow INV07 잔차화 + expanding-window z-score + 63d lookback) PIT와 신호 독립성 문제를 동시 해결할 수 있습니다. 다만 재설계 후 반드시 (1) INV13 lookahead_detector.R 패턴 등록, (2) one-bar delay sensitivity test, (3) net-of-cost ablation(raw vs overlay) 3종을 S1에서 완료해야 합니다.",
+
+  "updated_conditions": [
+    "INV13 factor 구현 전 lookahead_detector.R에 C1(full-sample normalization), C2(same-day circular), C11(시간축 mismatch) 3개 패턴을 신규 등록하고, PIT Engine v3 blocking_gate의 auto-scan 대상에 INV13을 포함시킬 것. 미등록 상태에서 Forge S1 착수 시 Judge S6에서 REJECT.",
+    "재설계된 INV13 신호에 대해 one-bar delay sensitivity test를 실시하여, signal 적용 시점을 1일 추가 지연(t-2)했을 때 ICIR 변화폭이 10% 이내임을 확인할 것. 변화폭 10% 초과 시 C11 위반 의심으로 재검토.",
+    "net-of-cost ablation을 KOSPI/KOSDAQ 별도로 실시하여 15bps 거래비용 가정 하 net ICIR > 0.10을 S1에서 확인할 것. KOSDAQ에서 net ICIR이 음수이면 KOSPI only 필터링 적용."
+  ]
+}

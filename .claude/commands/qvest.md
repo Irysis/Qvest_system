@@ -15,6 +15,29 @@ user-invocable: true
 bash 02_Infrastructure/ops/bootstrap.sh
 ```
 
+1.5. **[Session 68 Day 2 설정] Block A~H 토큰 절감 검증 자동 실행**
+
+다음 조건 시 자동으로 검증 스크립트 실행:
+```bash
+if [ -f .cache/token_reduction_test_pending.flag ]; then
+  bash 02_Infrastructure/ops/test_token_reduction.sh
+fi
+```
+
+**동작**:
+- 플래그 존재 시 `02_Infrastructure/ops/test_token_reduction.sh` 실행
+- Block A(모델 라우팅) / B(컨텍스트 분할) / C(Hook+Codex) / D(Caching) / E(R1→R2 요약) / F(Codex 캐시) / G(Lawbook) / H(Compact Mode Hook) 전수 검증
+- 완료 시 플래그를 `.cache/token_reduction_test_done_{TS}.log`로 rename (1회만 자동 실행)
+- **결과 보고**: PASS/FAIL/WARN 카운트 + 실패 항목 상세 보고
+- FAIL 있을 시 Q-Lead가 텔레그램으로 알림
+- 모두 PASS면 바로 리서치 사이클 진행
+
+**수동 재실행**: `touch .cache/token_reduction_test_pending.flag` 후 /qvest
+
+**Shadow Mode 테스트 (Compact Debate 검증)**:
+자동 검증 PASS 후, 사용자가 `export QVEST_DEBATE_MODE=compact` 설정 시 다음 S0 Debate부터 3인 모드로 실행됩니다. 기본(미설정)은 5인 Full 모드 유지.
+
+
 2. **플러그인 리로드**
 ```
 /reload-plugins

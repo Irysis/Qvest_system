@@ -1,0 +1,115 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_FINAL",
+  "timestamp": "2026-04-18T Session67_Day1_rev8_A_ACTIVE",
+  "session": 67,
+  "day": 1,
+  "status": "FINAL — rev8-A ACTIVE 직후 즉시 Q-Lead 전달",
+  "supersedes": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_PRE_DRAFT.json",
+
+  "spawn_directive": {
+    "method": "Agent tool — subagent_type: risk-manager",
+    "initial_message_reference": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json + 본 파일 V1 bullet 최종본",
+    "context_brief": "rev8-A ACTIVE 2026-04-18. H_1682 + H_1688 DROP 확정 (Hard Fail 2건). Defense 33% (H_1689 23 + H_1690 10). 미배분 16pp. v3.5 ACTIVE_NORMATIVE Gate 11/12 mandatory for Defense.",
+    "time_budget": "1~1.5일 (50% 단축, 2nd round 2~3일 대비)"
+  },
+
+  "verification_scope_5_items_finalized": [
+    {
+      "id": "V1",
+      "title": "Defense cluster 33% tail_risk (rev7_v3_v1 40% 대비 -7pp)",
+      "composition": "H_1689 23% + H_1690 10% = 33%",
+      "concerns": [
+        "현 MRS 63.1 CRISIS 상태에서 Defense 축소 timing risk",
+        "H_1689 단독 23% single-factor concentration",
+        "H_1690 Phase_2 조기 10% 승격 (원 8%)"
+      ],
+      "governor_position": "miss를 감수하고 기회비용 회피 — Defense Conditional Audit Framework v1.0 재적용 요청",
+      "risk_mgr_deliverable": "CVaR 5% / CDaR 10% estimate for Defense 33% configuration"
+    },
+    {
+      "id": "V2",
+      "title": "H_1689 23% over-concentration + AX-005 exclusion 재확인",
+      "questions": [
+        "Quality_aggregate family cap 35% 내 23%로 12pp headroom이나 single-factor concentration risk",
+        "AX-005 'defense standalone 구조적 실패' scope 밖인지 재확인 (H_1689은 multi-sleeve 내 defense sleeve)",
+        "H_1689 bad/normal IC ratio >= 1.5 확인 필수 (Defense Conditional Audit)"
+      ],
+      "risk_mgr_deliverable": "H_1689 stress_icir + 2008/2018/2020/2022 drawdown contribution"
+    },
+    {
+      "id": "V3",
+      "title": "H_1690 Phase_2 10% 조기 승격 + 10 conditions Forge S1 PASS 의존성",
+      "questions": [
+        "Forge STR_1685 (H_1690) S1 실행 시 4 variants (V1 primary + V2 EW + V3 2-axis + V4 excl R16)",
+        "10 conditions 중 Forge S1 check 6건 (C1/C2/C4/C6/C9/C10) PASS 예측 확률",
+        "Gate 11 variant comparison mandatory (Defense) + Gate 12 coupling_ratio PASS 기대"
+      ],
+      "risk_mgr_deliverable": "H_1690 S1 결과 대기 후 권고 분기 (PASS 시 10% 활성, FAIL 시 8% 유지 or 미배분 이관)"
+    },
+    {
+      "id": "V4",
+      "title": "Q25 exposure 현황 (H_1682 DROP 후 완화)",
+      "current_state": {
+        "str_1679v3_embedded_10pct_q25_0_90": 0.090,
+        "h_1689_23pct_q25_0_25": 0.0575,
+        "h_1690_10pct_q25_0_25": 0.025,
+        "str_1656_14pct_q25_0_05": 0.007,
+        "total_weighted_q25": 0.1795,
+        "cap_35_compliance": "PASS (17.95%, 20.1pp headroom)"
+      },
+      "risk_mgr_deliverable": "Q25 17.95% exposure validation + soft threshold 30% 대비 여유도 평가"
+    },
+    {
+      "id": "V5",
+      "title": "projected SR 1.72 + boost 6건 robustness + H_1688/H_1682 DROP 후속 영향",
+      "boost_list": [
+        "H_1678 Phase_2+ admission (+0.05~0.08)",
+        "STR_1661 V2 accelerated (+0.05~0.08)",
+        "Blend optimization (+0.03~0.05)",
+        "Scout D1 Q07 sector-neutralization new Defense (+0.05~0.10)",
+        "H_1687 redesign Session 68 (+0.05)",
+        "Phase_2 H_1685v2 3% → 5% → 8%/10% (+0.03~0.08)"
+      ],
+      "revised_core_secondary_gap": "H_1688 DROP으로 Core_Secondary slot 공백 → Week 2~3 Scout 신규 가설 탐색 필요",
+      "risk_mgr_deliverable": "boost correlation 가정 + Core_Secondary gap 메꾸는 candidate 추천"
+    }
+  ],
+
+  "h_1682_direction_audit_addendum_resolved": {
+    "status": "AUDIT COMPLETE — direction bug 없음 확정",
+    "resolution": "STR_1683 4-variants 전량 Hard Fail은 direction bug가 아닌 구조적 실패 (L-160). re-run 가치 없음.",
+    "risk_mgr_scope_change": "A1~A5 audit 제거. Defense 33% configuration tail_risk 중심 검증."
+  },
+
+  "out_of_scope_explicit_final": [
+    "STR_1679v2 DROP (이미 확정)",
+    "STR_1683 variants (Hard Fail 확정)",
+    "STR_1684 H_1688 (Grade F 확정, DROP)",
+    "STR_1631 PG2 active (Harvey t=3.09 승인)",
+    "v3.5 Admission Rule (ACTIVE_NORMATIVE)",
+    "Admission Rule v3.4 consolidate (Judge 영역)"
+  ],
+
+  "deliverable_format": {
+    "output_path": "qepm/mailbox/risk_manager/outbox/RISK_MGR_3RD_ROUND_VERDICT.json",
+    "schema": {
+      "verdict_per_item_V1_V5": "PASS / CONDITIONAL / FAIL + rationale 3줄",
+      "rev8_A_recommendation": "APPROVE / APPROVE_WITH_REVISIONS / REJECT + 재설계 제안",
+      "tail_risk_summary": "CVaR 5% / CDaR 10% estimate + Defense 33% 적절성",
+      "core_secondary_gap_recommendations": "H_1688 DROP 후속 Core_Secondary 대체 candidate 추천",
+      "concerns_raised": "신규 structural risk 발견 시 기록",
+      "boost_roadmap_robustness": "6 boosts correlation 가정 타당성 + projected SR 2.00 aspiration 현실성"
+    },
+    "deadline": "1~1.5일 (Session 67 Day 2~3)"
+  },
+
+  "post_verdict_governor_actions": [
+    "1. Risk Mgr VERDICT 수신 → rev8-A 조정 (필요 시)",
+    "2. rev8-A 최종본 Portfolio Policy 갱신",
+    "3. Phase_1 PG1 Admission 초안 착수 (Day 5~6 목표)",
+    "4. Judge L-161 공식 발행 확인",
+    "5. Scout 신규 Core_Secondary 가설 탐색 요청"
+  ]
+}

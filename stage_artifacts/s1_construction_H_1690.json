@@ -1,0 +1,151 @@
+{
+  "strategy_id": "STR_1685",
+  "hypothesis_id": "H_1690",
+  "stage": "S1",
+  "date": "2026-04-19",
+  "status": "complete",
+  "family": "multi_source_score_blend_defense",
+  "expected_role": "defense_anchor",
+  "role_bias": "RoleBias_Defense",
+  "performance": {
+    "cagr": -0.103,
+    "sharpe": -0.2947,
+    "mdd": 0.9469,
+    "icir": 0.7371,
+    "grade": "F",
+    "score": 15.9
+  },
+  "portfolio": {
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "buffer_zone": {
+      "keep_n": 22,
+      "entry_n": 20
+    },
+    "liq_threshold": 200000000
+  },
+  "pit_evidence": {
+    "factors": ["M08_Residual_Mom", "C19_Composite_Earnings", "Q07_Earnings_Stability", "R16_Calmar"],
+    "data_access": "bulk rbindlist parquet lapply + align_factor_direction (OPT-1, C15 pattern)",
+    "mrs_lag": "t-1 month (C5) — Regime_Score of latest month strictly < sig_date",
+    "z_score_method": "Z_Score_Aligned via align_factor_direction (C13). No manual sign flip.",
+    "c2_compliant": true,
+    "c5_compliant": true,
+    "c10_compliant": true,
+    "c13_compliant": true,
+    "c14_compliant": true,
+    "c15_compliant": true
+  },
+  "capm_beta": 0.8207,
+  "capm_beta_gate": {
+    "threshold": 0.85,
+    "pass": true
+  },
+  "alpha_lab_gate": {
+    "icir_gate": true,
+    "icir": 0.7371
+  },
+  "defense_audit": {
+    "strategy_id": "STR_1685",
+    "hypothesis_id": "H_1690",
+    "date": "2026-04-19",
+    "axis_a": {
+      "name": "stress_IC_avg>0.03",
+      "value": 0.0886,
+      "pass": true
+    },
+    "axis_b": {
+      "name": "MDD_delta>=8pp",
+      "v1_mdd": 0.9469,
+      "str1631_mdd": 0.2127,
+      "delta": -0.7342,
+      "pass": false
+    },
+    "axis_c": {
+      "name": "bad_good_IC_ratio>1.2",
+      "ic_crisis": 0.0952,
+      "ic_risk_on": 0.0787,
+      "ratio": 1.2099,
+      "pass": true
+    },
+    "overall_pass": false
+  },
+  "tail_risk_gate": {
+    "pass": false,
+    "cdar_95": 0.9469,
+    "es_99": -0.0652
+  },
+  "c1_cosine_pass": false,
+  "variants": [
+    {
+      "variant": "V1",
+      "cagr": -0.103,
+      "sr": -0.2947,
+      "mdd": 0.9469,
+      "icir": 0.7371,
+      "grade": "F",
+      "score": 15.9
+    },
+    {
+      "variant": "V2",
+      "cagr": -0.0571,
+      "sr": -0.1712,
+      "mdd": 0.847,
+      "icir": 0.9368,
+      "grade": "F",
+      "score": 20.6
+    },
+    {
+      "variant": "V3",
+      "cagr": 0.1434,
+      "sr": 0.5158,
+      "mdd": 0.7721,
+      "icir": 0.7778,
+      "grade": "F",
+      "score": 48.7
+    },
+    {
+      "variant": "V4",
+      "cagr": -0.0504,
+      "sr": -0.1403,
+      "mdd": 0.8766,
+      "icir": -0.6049,
+      "grade": "F",
+      "score": 5.3
+    }
+  ],
+  "conditions_met": {
+    "C1_cosine": {
+      "status": "applied",
+      "all_pass": false
+    },
+    "C2_stress_IC": {
+      "status": "applied",
+      "mean_ic": 0.0886
+    },
+    "C3_mrs_thresh": {
+      "status": "applied",
+      "note": "10/25 15/30 20/35 compared"
+    },
+    "C5_mrs_lag": "applied — MRS t-1 roll join",
+    "C6_covid_lag": {
+      "status": "applied"
+    },
+    "C7_var_ratio": {
+      "status": "applied"
+    },
+    "C9_kospi_kosdaq": {
+      "status": "applied"
+    },
+    "C10_defense_audit": {
+      "status": "applied",
+      "overall": false
+    },
+    "C11_algebraic": "applied — 4-family distinct PASS",
+    "C12_decomp": {
+      "status": "applied",
+      "sr_incremental": -0.1235
+    }
+  }
+}

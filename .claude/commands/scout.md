@@ -3,6 +3,7 @@ name: scout
 description: "Scout teammate init — S0 가설(plan mode), S3 직교성, S5 mutation 설계"
 disable-model-invocation: true
 user-invocable: true
+model: sonnet
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/scout_init.md`.
 

@@ -1,0 +1,254 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v2 for H_1689 debate. L-157 v4 draft + Factor DB pre-check + AX-004 v3 EXCLUSION 정당성 명문 재확인.",
+  "_SUPERSEDED_BY": "s0_debate_handoff_H_1689_v3.json (Risk Mgr 3rd round V2 WARNING Q24 poison pill stress_icir -0.695 대응). v3 Variant 1 Q24-exclude 3-axis PRIMARY + Variant 2 Q07 substitute 4-axis SECONDARY. 본 v2 파일은 historical reference only — 실제 Forge S1 실행 및 Debate는 v3 기준.",
+  "_deprecation_date": "2026-04-18 (Governor v3 supersede 권고 수용)",
+  "hypothesis_id": "H_1689",
+  "hypothesis_name": "Quality Aggregate 4-Axis Composite Diversifier",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1689_quality_aggregate_composite.json",
+  "version": "v2",
+  "supersedes_reason": "(1) L-157 v4 draft 2건 연속 hit 적용, (2) Factor DB 4-axis 전수 availability PASS 실증, (3) H_1685 v2 APPROVE 61 precedent 반영, (4) L-156 v2 Quality_4axis cluster pre-registration, (5) AX-004 v3 EXCLUSION critical boundary 재확인",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P1 (H_1678/H_1679 debate 이후 3번째, explore bucket)",
+  "L157_v4_pre_checks_completed": true,
+
+  "one_line_summary": "4-axis quality EW composite: 0.25·z_Q01_GPA + 0.25·z_Q04_Piotroski + 0.25·z_signed_distress_low_Q25 + 0.25·z_Q24_Altman. Top 20 EW monthly. Asness-Frazzini-Pedersen 2019 RAS QMJ framework. AX-004 v3 EXCLUSION '복수 quality axis 결합 scope 밖' 명문 직접 활용.",
+
+  "str_number_allocation": {
+    "recommended": "STR_1689 (다음 순번, Forge 최종 할당 가능)",
+    "note": "APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정"
+  },
+
+  "L159_spec_transmission_pre_empirical_check": {
+    "verification_date": "2026-04-18",
+    "verification_source": ".cache/factor_db/factor_db_202603.parquet",
+    "required_factors": ["Q01_GPA", "Q04_Piotroski_F", "Q25_Ohlson_O", "Q24_Altman_Z"],
+    "availability_result": {
+      "Q01_GPA": true,
+      "Q04_Piotroski_F": true,
+      "Q25_Ohlson_O": true,
+      "Q24_Altman_Z": true,
+      "all_pass": true
+    },
+    "verdict": "PASS — 4-axis 전수 AVAILABLE. L-159 spec transmission failure 재현 risk ELIMINATED.",
+    "coverage_note": "Q-factors 재무제표 기반 — T+60~90일 publication lag (C4) 준수 필수. Usable_Date 기반 filter (C14).",
+    "signed_convention_critical": "Q25_Ohlson_O: distress probability (높을수록 risky) → signed_distress_low = -z_Q25_Ohlson_O (lower distress = higher quality). C13 Z_Score_Aligned 준수 + 수동 반전 금지 → align_factor_direction() registry entry 확인 필수."
+  },
+
+  "ax_004_v3_exemption_critical_retained_from_v1": {
+    "verbatim_citation": "AX-004 v3 EXCLUSION 원문: '전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)은 scope 밖 — Scout의 Quality Defensive Composite(A안)은 scope 밖'",
+    "H_1689_match_analysis": "H_1689 = Q01 GP + Q04 F-Score + Q25 Ohlson + Q24 Altman 4-axis. Q07 미사용이나 exemption 명문에 'Q07 등'이므로 Q07 필수 아님. Asness 2019 QMJ 4-dimension framework와 일치.",
+    "debate_critical_check": "Debate 5인 전원이 AX-004 v3 exemption 적용 정당성 평가 필수. Codex + Academic이 'single-axis dilution' + 'mechanism alignment' 관점 검증.",
+    "axiom_review_risk": "AX-004 2026-07-16 quarterly review 도래 — H_1689 approve/reject 결과가 v3 EXCLUSION 경계 수정 근거로 사용될 수 있음"
+  },
+
+  "L157_v4_pre_empirical_measurements": {
+    "algebraic_identity_check": {
+      "formula": "score = 0.25·z_Q01 + 0.25·z_Q04 + 0.25·(-z_Q25) + 0.25·z_Q24",
+      "shared_term": "NONE — Q01 profitability / Q04 F-Score accounting / Q25 distress / Q24 distress (Z-score) 4 개 다른 메커니즘",
+      "potential_internal_cancellation": "Q24 Altman Z (high = safer) vs Q25 Ohlson O (high = distressed) — inverse construct. Q24와 -Q25는 mean corr 0.50~0.70 예상 (둘 다 distress 축). 내부 상관 warning",
+      "verdict": "PASS_WITH_WARNING (Q24 vs -Q25 부분 중복)"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_portfolio_rho": "0.10~0.25 (quality family vs consensus, 독립)",
+        "verdict": "PASS"
+      },
+      "vs_STR_1679v2_Core_Def": {
+        "predicted_rho": "0.20~0.35 (Q07 defense sleeve 공유 없으나 quality/defense 인접)",
+        "verdict": "PASS"
+      },
+      "vs_H_1678_C19_D01_2F": {
+        "predicted_rho": "0.15~0.30 (D01 defense vs Quality, 독립)",
+        "verdict": "PASS"
+      },
+      "vs_H_1682_Q25_R16_defense": {
+        "predicted_rho": "**0.45~0.60** (Q25 공유 — H_1682는 DROP되었으나 S3 cluster 등록 필요)",
+        "v2_status": "H_1682 DROP 확정 (Session 67 L-160). pairwise 비교 대상 외.",
+        "impact": "Q25 공유 cluster 단독 H_1689만 남음"
+      },
+      "vs_H_1687_distress_momentum": {
+        "predicted_rho": "0.40~0.55 (distress family 내 공유 — Q25 유사 family)",
+        "note": "H_1687 debate 대기 중"
+      },
+      "vs_H_1685_v2_foreign_resid": {
+        "predicted_rho": "0.05~0.15 (investor_flow vs quality, 완전 독립)",
+        "verdict": "PASS"
+      }
+    },
+    "sd_ratio_analysis": {
+      "Q01_sd": "~1.0 (Z_Score_Aligned 정규화)",
+      "Q04_sd": "~1.0 (F-Score ordinal 0-9)",
+      "Q25_sd": "~1.0",
+      "Q24_sd": "~1.0",
+      "ratio": "1:1:1:1 (balanced)",
+      "verdict": "PASS"
+    },
+    "linear_dominance_test": {
+      "max_axis_variance": "25% (EW 설계)",
+      "verdict": "PASS (25% << 70% threshold)"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "Q01_standalone_ICIR": "weak (L-139 Novy-Marx KR OOS 소멸)",
+      "Q04_standalone_ICIR": "weak (L-133 Piotroski KR standalone 실패)",
+      "Q25_standalone_ICIR": "moderate (distress family L-121 stress ICIR 양수)",
+      "Q24_standalone_ICIR": "**CRITICAL warning** — L-144: Q24 stress_icir -0.695 (역방향)",
+      "composite_ICIR_estimate": "0.20~0.35 (4축 합산 noise cancellation, Asness 2019 framework pattern)",
+      "verdict": "CONDITIONAL_PASS_WITH_Q24_WARNING",
+      "q24_mitigation": "S5에서 Q24 25% → Q24 weight reduce (예: 10%) 또는 Q24 제거 3축 composite mutation 사전 등록"
+    }
+  },
+
+  "L156_v2_tdc_cluster_pre_registration": {
+    "cluster_name": "Quality_Multi_Axis",
+    "members": ["H_1689 (신규)", "H_1687 (distress-momentum, pending debate)"],
+    "expected_conditional_tdc": {
+      "normal_regime": "0.35~0.50",
+      "crisis_regime": "0.50~0.70 (distress family crisis 시 공통 underperform)"
+    },
+    "AX_006_candidate_contribution": "+0.05 frequency (5번째 cluster)"
+  },
+
+  "scout_calibration_v4_adjusted_predictions": {
+    "predicted_total_range_v4": [48, 65],
+    "predicted_midpoint_v4": 57,
+    "per_debater_v4": {
+      "codex_critic": [6, 9],
+      "risk_manager": [9, 12],
+      "governor": [11, 14],
+      "quant": [10, 13],
+      "academic": [12, 15]
+    },
+    "v4_rules_applied": {
+      "rule_1_R2_auto_delta_-3": "R1 51-68 → final 48-65",
+      "rule_2_codex_rebound": "Codex R1 6 → final 7 default (AX-004 boundary 우려로 낮음)",
+      "rule_3_governor_variance": "lower [12→11] AX-004 boundary + L-144 Q24 역방향 concerns",
+      "rule_5_tail_warning_penalty": "warnings: (1) AX-004 v3 EXCLUSION boundary case, (2) L-144 Q24 stress -0.695 역방향 CRITICAL, (3) L-119 dilution 4-axis concern, (4) single-axis standalone 3축 실패 이력(Q01/Q04) → -3~-5 penalty"
+    },
+    "verdict_projection_v4": "REVISE (40-59) 유력 or APPROVE_CONDITIONAL (60-74) 하한. Midpoint 57 = REVISE boundary.",
+    "most_uncertain_debater": "Codex — AX-004 v3 EXCLUSION 해석 엄격 적용 시 REJECT 위험, Academic QMJ framework 지지와 대립"
+  },
+
+  "pre_debate_scout_risk_assessment_v2": {
+    "bull_case_v2": [
+      "AX-004 v3 EXCLUSION 명문 (원문 발췌 확인)",
+      "Factor DB 4-axis 전수 기구축 (L-159 risk ELIMINATED)",
+      "Asness-Frazzini-Pedersen 2019 RAS foundational framework",
+      "composite noise cancellation 이론 (4축 dilution → Asness 2019)",
+      "Quality family Grade A catalog 부재 → diversifier novelty 가능성",
+      "Scout L-157 v4 calibration (2건 연속 5/5 hit 기반)"
+    ],
+    "bear_case_v2": [
+      "**L-144 Q24 Altman stress_icir -0.695 CRITICAL** — crisis 시 역효과 25% dilution",
+      "L-133/L-139 Q01/Q04 standalone 실패 precedent — 4-axis composite으로 rescue 가능성 unproven",
+      "AX-004 v3 EXCLUSION boundary case — Q07 미포함이 exemption 문리해석 분쟁",
+      "Q24 vs -Q25 부분 중복 (둘 다 distress, mean corr 0.50~0.70 예상)",
+      "정적 EW 25/25/25/25 weight ex-post tuning 우려 (대안: IC-weighted dynamic S5)",
+      "한국 QMJ direct cite 약함 (김재익·이준 2020 미확인)"
+    ]
+  },
+
+  "strategic_chain_v2": {
+    "if_approve_or_approve_conditional": "**STR_1689** 할당. Forge S1 → Governor PG1 admission. Quality diversifier slot 신규.",
+    "if_revise": "Scout Path — (a) Q24 25% → 10% weight reduce (L-144 역방향 완화), (b) 3-axis composite (Q24 제거), (c) Asness 2019 full 4-dimension (profitability+growth+safety+payout 각 4+ signals) 확장",
+    "if_reject": "Quality aggregate composite archive. AX-004 v3 EXCLUSION 경계 케이스 reject 시 v3 revision 재검토 trigger."
+  },
+
+  "consensus_tier_classification_L158_v2": {
+    "tier": "Tier 3 Quality family (신규 — Grade A catalog 부재)",
+    "gate_10_warning": "Quality family 선행 A-pass 부재 → novelty 높으나 proven track record 부재",
+    "admission_policy": "Phase_2 3~5% 신규 diversifier 슬롯 (H_1689 approve 시)"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1689 Quality 4-Axis Composite. 0.25·z_Q01 + 0.25·z_Q04 + 0.25·(-z_Q25) + 0.25·z_Q24. Top 20 EW monthly. Asness 2019 QMJ framework. AX-004 v3 EXCLUSION 명문 직접 활용. L-144 Q24 stress 역방향 -0.695 critical.",
+        "L_CODE_FINDINGS": "L-107 DIRECT_FIX 정적 weight 경고, L-113 single-axis quality fail AWARE, L-119 CRITICAL 정적 EW 블렌드, L-133/L-139 Q04/Q01 standalone 실패 AWARE, L-140 PASS Q07 미사용, L-144 CRITICAL Q24 stress 역방향 -0.695, L-148 DIRECT_FIX, L-156 v2 cluster registered, L-157 v4 calibration, L-159 spec transmission PASS",
+        "FAILED_STRATEGIES": "AX-004 v1 deprecated scope. L-133 Q04 F standalone. L-139 Q01 GP standalone. GSCD Growth Stability Composite. STR_1682 L-159.",
+        "HYP_ID": "H_1689"
+      },
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "AX-004 v3 EXCLUSION 해석 경계 — 'Q07 등' 명문 → Q07 포함 필수? 해석 분쟁",
+        "**L-144 Q24 stress_icir -0.695 25% 비중 = stress 구간 drag 0.175 (REJECT 가능성)**",
+        "Q25 stress +0.659 정방향 vs Q24 -0.695 역방향 = net stress effect 불확실",
+        "L-119 dilution CRITICAL — Q24 weak signal 25% 비중",
+        "정적 25%/25%/25%/25% weight ex-post tuning"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1689. L13 — Q24 stress 역방향 25% dilution, Q25 stress 정방향과의 상쇄, 재무제표 공시 집중 tail dependence, quality family crisis 벤치마크.",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "Q24 Altman stress_icir -0.695 역방향 25% = stress drag 0.175",
+        "Q25+Q24 내부 상쇄 net effect 불확실",
+        "4 Q-factors 재무제표 공시 집중 → publication lag tail dependence 취약",
+        "Q01/Q04 standalone weak, 합성으로만 alpha 생성 — crisis에서 합성 효과 붕괴 위험"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1689. PG0 gap + Quality family 부재 + AX-004 v3 EXCLUSION direct use. diversifier role admission.",
+      "rubric_focus": "role_match(4) + family_saturation(4) + axiom_compliance(4) + mdd_contribution(4) + kill_diversification(4) = 20",
+      "expected_assessment_vectors": [
+        "Quality family diversifier slot 신규 (Grade A catalog 부재) — novelty 가능성 있음",
+        "AX-004 v3 EXCLUSION 직접 활용 긍정",
+        "L-144 Q24 25% 비중 axiom level concern 상승",
+        "family saturation 낮음 (Quality family 선행 A-pass 0건)"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1689. Factor DB 4-axis 전수 확인 (2026-04-18 Scout 실측). signed_convention Q25 확인 필수. 3축 standalone weak + Q24 역방향 concern. composite ICIR 0.20~0.35 예상.",
+      "rubric_focus": "icir(4) + correlation_sanity(4) + data_availability(4) + implementability(4) + statistical_power(4) = 20",
+      "expected_fact_check_vectors": [
+        "4-axis 전수 Factor DB 기구축 확인",
+        "Q25 signed convention: -z_Q25 사용 (C13 align_factor_direction registry)",
+        "Q24 stress_icir -0.695 L-144 경고",
+        "composite ICIR 예상 0.20~0.35 (Asness 2019 pattern)",
+        "Harvey t > 3.0 gate borderline"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1689. Asness-Frazzini-Pedersen 2019 RAS + Novy-Marx 2013 JFE + Piotroski 2000 JAR + Ohlson 1980 JAR + Altman 1968 JF + 김재익-이준 2020 한국QMJ (미확인). peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Asness 2019 QMJ foundational framework 인정",
+        "Novy-Marx/Piotroski/Ohlson/Altman 4축 각 foundational paper 충분",
+        "composite noise cancellation 이론 학술 근거 (Asness 2019 Table 7)"
+      ],
+      "expected_concern_vectors": [
+        "김재익-이준 2020 direct cite 미확인 → 한국 evidence 약함",
+        "Novy-Marx 2013 → 2025 12년 time_decay",
+        "단순 EW composite은 Asness 2019 original (4-dim sub-composite) 대비 simplified → academic precedent 약함"
+      ]
+    }
+  ],
+
+  "handoff_completeness_v2": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": true,
+    "handoff_kit_v2_complete": true,
+    "empirical_precheck_complete": true,
+    "factor_db_availability_verified": true,
+    "L157_v4_draft_applied": true,
+    "L156_v2_TDC_cluster_registered": true,
+    "AX_004_v3_boundary_check_pre_analyzed": true,
+    "str_number_recommended": "STR_1689",
+    "ready_for_qlead_r1_debate_spawn": true
+  }
+}

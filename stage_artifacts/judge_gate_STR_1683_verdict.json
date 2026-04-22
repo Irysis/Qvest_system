@@ -1,0 +1,148 @@
+{
+  "strategy_id": "STR_1683",
+  "h_code": "H_1682",
+  "strategy_dir": "STR_1683_distress_calmar_defense",
+  "description": "Distress (Q25) + Calmar (R16) 60/40 composite Defense Anchor + 3 sub-variants (50/50 / Q25-only / R16-only)",
+  "judge_timestamp": "2026-04-18 Session67_Day1",
+  "session": 67,
+  "judge_version": "v6.0_v3_4_rules",
+  "overall_verdict": "REJECT_ARCHIVE_ALL_VARIANTS",
+  "grade_final": "F (all 4 variants Hard Fail)",
+  "s7_decision": "ARCHIVE_WITH_DEFENSE_STRUCTURAL_LESSON",
+  "s7_rationale": "Factor quality (IC 0.2207 / ICIR 1.879 / FM t=16.887) 극강에도 portfolio quality 전량 붕괴 (60/40 MDD 94.66 / 50/50 95.63 / Q25-only 67.27 / R16-only 91.62, stress outperform 0/3). IC-Return decoupling 구조적 실패. Governor rev8-A (완전 DROP) 방향 승인. rev8-B (재실행 conditional)는 sector-neutral + binary Z-flip + risk-parity 중 2개+ 채택 시에만.",
+
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "note": "run_log line 26 LOOKAHEAD CLEAN. factor_engine.R 162 lines scanned."
+    },
+    "gate_1_impl": {
+      "pass": true,
+      "note": "종목 20 + 15bps + 유동성 충족. factor 로드 정상 (Q25 + R16)."
+    },
+    "gate_2_robustness": {
+      "pass": false,
+      "stress_outperform": "0/3",
+      "note": "8대 stress 전량 underperform. 4-variant 전량 MDD > 67%."
+    },
+    "gate_3_perf": {
+      "pass": false,
+      "hard_fail": true,
+      "variant_comparison": {
+        "60_40_composite_primary": {"cagr": -7.42, "sharpe": -0.242, "mdd": 94.66},
+        "50_50": {"cagr": -8.77, "sharpe": -0.291, "mdd": 95.63},
+        "Q25_only": {"cagr": 0.23, "sharpe": 0.009, "mdd": 67.27},
+        "R16_only": {"cagr": -6.30, "sharpe": -0.206, "mdd": 91.62}
+      },
+      "hard_fail_reason": "All 4 variants MDD > 45% (hurdle v2.2 hard gate)",
+      "note": "Primary 60/40 composite가 sub-variant Q25-only(0.009)보다도 열세 → composite offset 확증 (L-160 원인 3)."
+    },
+    "gate_4_stat": {
+      "pass": "NA_HARD_FAIL",
+      "factor_ic": 0.2207,
+      "factor_icir": 1.879,
+      "fm_t": 16.887,
+      "note": "Factor-level 통계는 극강이나 portfolio-level Hard Fail로 의미 무효. IC-Return decoupling 증거."
+    },
+    "gate_5_diversity": {
+      "pass": "NA_HARD_FAIL",
+      "note": "admission 후보 자격 상실."
+    },
+    "gate_6_tail_risk": {
+      "pass": "NA_HARD_FAIL"
+    },
+    "gate_7_v3_1_role_honesty": {
+      "pass": false,
+      "provisional_role": "Defense",
+      "crisis_beta_improvement": false,
+      "note": "stress 0/3 + MDD 94.66 → Defense 역할 위장 (실효 Defense 아닌 단순 저수익 + 고MDD). AX-001 조건부 평가 미충족."
+    },
+    "gate_8_v3_2_tdc": {
+      "pass": "NA_PRE_HARD_FAIL"
+    },
+    "gate_9_v3_3_structural_diagnosis": {
+      "pass": false,
+      "trigger_status": "1st FAIL (2회 연속은 H_1682 재실행 시 발동). STR_1683 단일 sweep으로 4 variants 전량 FAIL은 이미 structural signal.",
+      "recommendation": "H_1682 Governor rev8-A 완전 DROP 승인 방향."
+    },
+    "gate_10_v3_4_consensus_tier": "NA_HARD_FAIL"
+  },
+
+  "ic_return_decoupling_analysis": {
+    "factor_quality": {
+      "ic_mean": 0.2207,
+      "icir": 1.879,
+      "fm_t": 16.887,
+      "interpretation": "factor-level 통계 '극강' 수준"
+    },
+    "portfolio_quality": {
+      "best_variant": "Q25-only SR 0.009",
+      "worst_variant": "50/50 SR -0.291 MDD 95.63",
+      "primary_variant": "60/40 SR -0.242 MDD 94.66",
+      "interpretation": "portfolio-level 전량 붕괴"
+    },
+    "decoupling_mechanisms_4": {
+      "1_q25_direction_ambiguous": "Q25 Distress signal '회피 vs 베팅' 양방향 가능. Q25-only MDD 67.27로 false direction 의심.",
+      "2_r16_publication_decay": "R16 Calmar past 24M 기반 → 향후 crash. R16-only MDD 91.62 확증.",
+      "3_composite_offset": "Q25(부실) + R16(과거 고수익+저낙폭) = '위험한 저평가 edge case' 방향 중복. Primary 60/40 SR -0.242 < Q25-only 0.009 (composite inferior to single).",
+      "4_sector_bias_transfer": "top-decile 20종목 Defense family 내 동종 섹터 집중 → crash-correlation 급등."
+    }
+  },
+
+  "l_code_issued": {
+    "l_code_id": "L-160",
+    "file_path": "stage_artifacts/l_code_L_160_STR_1683.json",
+    "methodology_memory_location": "methodology_memory.md line 1082",
+    "title": "고ICIR Defense composite long-only 20종목 IC-Return decoupling — factor quality ≠ portfolio quality",
+    "governor_draft_origin": "qepm/mailbox/governor/outbox/L_159_candidate_ic_return_decoupling_draft.json (Governor 초안 L-159 → Judge 확정 L-160)",
+    "number_reassignment_rationale": "L-159 = spec_transmission_failure (Judge 기발행, STR_1682) 독립 pattern. Governor IC-Return decoupling 초안은 별개 pattern → L-160 재배정."
+  },
+
+  "ax_candidate_issued": {
+    "ax_candidate_id": "AX_CAND_defense_ic_return_decoupling",
+    "estimated_5_axis_score": 0.50,
+    "review_date": "2026-07-17 (2026Q3)",
+    "independence_from": ["AX-006 pairwise TDC", "AX_CAND_spec_transmission_failure"],
+    "supporting_l_codes": ["L-131~140", "L-160", "향후 2건+ 축적 후 promote"]
+  },
+
+  "gate_extension_proposals_for_v3_5": {
+    "gate_11_variant_comparison": {
+      "description": "minimum 3 variants + primary >= all alternatives",
+      "rationale": "STR_1683 4-variant Hard Fail + primary inferior to sub-variant 감지",
+      "blocking_severity": "conditional_block"
+    },
+    "gate_12_ic_return_coupling": {
+      "description": "SR / ICIR >= 0.3 (STR_1683 -0.129 실측 → FAIL)",
+      "rationale": "factor quality ≠ portfolio quality 구조적 실패 조기 탐지",
+      "blocking_severity": "conditional_block"
+    },
+    "deferred_to_session_67_day_2_or_later": "Judge + Q-Lead + Architect triple sign-off 후 v3.5 reg 발행 검토"
+  },
+
+  "followup_actions_for_scout": [
+    "Defense 가설 IC/ICIR만으로 Validity 판정 금지 rule 반영",
+    "signal direction (음/양) explicit 명시 + long-only 20종목 수익화 사전 시뮬레이션 (Risk Mgr 검증)",
+    "Option B 재설계 시 sector-neutralization or risk-parity sub-weighting 필수",
+    "AX_CAND_defense_ic_return_decoupling frequency evidence 축적 (Task #14/16/17 등 defense 신가설에서 변량 sweep 의무화)"
+  ],
+
+  "followup_actions_for_forge": [
+    "Primary variant 단독 금지. 최소 3 variants 병행 (signal direction / weighting / transformation)",
+    "Top-decile 20종목 sector HHI 사전 확인 hook (>0.15 시 sector cap)",
+    "Z_Score_Aligned 명확 사용 (C13)",
+    "stress outperform < 2/3 시 rerun 금지"
+  ],
+
+  "followup_actions_for_governor": [
+    "rev8-A (H_1682 완전 DROP) 판정 지지",
+    "rev8-B (재실행 conditional) 채택 시 sector-neutral + binary Z-flip + risk-parity 중 2개+ 필수 조건 명시",
+    "Defense cluster family cap 35% 유지 + Defense Conditional Audit Framework v1.0 적용"
+  ],
+
+  "judge_signoff": {
+    "agent_id": "judge",
+    "timestamp": "2026-04-18 Session 67 Day 1",
+    "signoff_note": "STR_1683 4-variant REJECT_ARCHIVE_ALL_VARIANTS 공식 판정 완료. Governor 초안 L-159 → L-160 재배정 확정. L-159(spec_transmission) + L-160(Defense IC-Return decoupling) 두 pattern 독립 공존 확립."
+  }
+}

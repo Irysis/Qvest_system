@@ -1,0 +1,103 @@
+{
+  "role": "governor",
+  "agent_id": "governor_smoke_001",
+  "hypothesis_id": "H_SMOKE_v55",
+  "round": "R1",
+  "timestamp": "2026-04-19",
+  "stance": "APPROVE_CONDITIONAL",
+  "veto_flag": null,
+
+  "gap_alignment_assessment": {
+    "sr_gap": {
+      "current": 1.193,
+      "target": 2.0,
+      "gap": 0.807,
+      "alignment": "POSITIVE",
+      "rationale": "portfolio_gap_vector v1.0.8 기준 SR gap 0.807이 최우선 과제. sleeve_needs에 diversifier 명시적 포함. H_SMOKE_v55가 diversifier 역할을 표방하므로 gap_targeting_axes=[SR] 정합성 확인됨."
+    },
+    "diversifier_slot": {
+      "current_occupant": "STR_1656_MLRA_M05 (20%)",
+      "family": "ML_complexity",
+      "h_smoke_family": "liquidity",
+      "overlap_risk": "낮음 — liquidity family는 ML_complexity와 구조적 경로 상이. family_concentration_current_active에 liquidity 0% — 비포화 확인."
+    },
+    "overall_gap_alignment": "ALIGNED"
+  },
+
+  "family_saturation_check": {
+    "liquidity_family_in_pg2": false,
+    "liquidity_family_concentration": "0% (미편입)",
+    "max_concentration_limit": "35%",
+    "saturation_penalty_applicable": false,
+    "rationale": "Exploration Rules §9 기준 Factor Taxonomy 미구축 family. liquidity는 현재 PG2에 편입된 전략 없음 — 탐색 우선순위 최상위 대상. family saturation 패널티 없음.",
+    "verdict": "PASS"
+  },
+
+  "role_admission_assessment": {
+    "claimed_role": "diversifier",
+    "supporting_evidence": [
+      "L22_Ret_Autocorr는 수익률 자기상관 기반 유동성 미시구조 팩터 — momentum/consensus/defense와 구조적 경로 상이",
+      "conditional_ic_matrix.csv: ic_bad(0.0243) > ic_good(0.0062) — 위기 구간 상대적 IC 우위 (diversifier 조건 부합)",
+      "recent_3y_icir 0.367 — 미사용 후보 중 최상위 (conditional_ic_matrix 기준)",
+      "STR_1631 Core(SYN_05, consensus+ML family)와 family·construction 모두 무관 → TDC ≤ 0.4 가능성 높음 (S3 실측 필요)"
+    ],
+    "defense_role_exclusion": {
+      "applicable": false,
+      "rationale": "AX-005/AX-007 defense restriction은 diversifier 경로에 무관. ic_bad(0.0243) 절대값 자체가 낮아 defense 주장 불가 — diversifier 역할 선언 적절."
+    },
+    "admission_rule_v352_check": {
+      "gate_1_novel_family": "PASS — liquidity family PG2 미편입",
+      "gate_2_role_honesty": "PASS — diversifier 역할 주장 근거 충분 (ic_bad>ic_good, 구조 비상관)",
+      "gate_3_tdc_prereq": "PENDING — S3 직교성 측정 전 TDC 수치 미확정. STR_1631과 TDC ≤ 0.4 목표치 달성 가능성 높으나 S3 실측 필요",
+      "gate_4_aximum_violation": "PASS — AX-003/004/005/007 모두 무관 (liquidity, diversifier 경로)",
+      "gate_5_pit_compliance": "PENDING — S1 코드 PIT 검증 필요. C13 Z_Score_Aligned 사용 지시, C15 load_month_factors() 경유 지시. Factor DB 기존 구축 팩터이므로 구조적 위반 가능성 낮음.",
+      "overall": "CONDITIONAL_PASS — S3 TDC + S1 PIT 확인 후 최종 판정"
+    },
+    "verdict": "APPROVE_CONDITIONAL"
+  },
+
+  "marginal_contribution_estimate": {
+    "sr_contribution_estimate": "낮음~보통 (단일 팩터 smoke run 구조)",
+    "rationale": [
+      "단일 팩터 EW 20종목 구조 — 멀티팩터 합성 대비 SR 기여 낮을 것으로 예상",
+      "L-137 선례: Piotroski+RetAutocorr 조합 MDD 61.9% hard fail — 단독 RetAutocorr MDD 리스크 존재",
+      "smoke run 목적 파이프라인 검증이 우선이므로 낮은 기여도 자체는 허들 실패 사유 아님",
+      "S5 mutation 단계에서 DD/VT overlay 추가 시 MDD 완화 가능 — AX-001 v2 프레임 적용 가능"
+    ],
+    "mdd_risk_flag": "주의 — L-137 선례로 단일 RetAutocorr MDD가 hard fail 구간(>45%) 가능성 있음. S1 MDD 수치 45% 이하 확인 필수.",
+    "liquidity_filter_alpha_decay_risk": "L-130 유동성 필터 후 alpha 소멸 선례 존재. 단, L22는 flow 의존적 alpha가 아닌 종목 레벨 미시구조 특성 — 구조 다름. S1에서 유동성 필터 적용 전후 ICIR 비교 필요."
+  },
+
+  "implementation_feasibility": {
+    "factor_db_status": "기존 구축 완료 (L22_Ret_Autocorr Factor DB 편입 확인)",
+    "universe": "KOSPI 200 top EW 20 15bps 유동성 2억원+ — 표준 smoke 설정",
+    "complexity": "낮음 — 단일 팩터, load_month_factors() 경유, Z_Score_Aligned 방향",
+    "estimated_backtest_time": "5분 이내",
+    "verdict": "FEASIBLE"
+  },
+
+  "supporting_arguments": [
+    "liquidity family PG2 미편입 → Exploration Rules §9 탐색 우선순위 대상. family saturation 패널티 없음.",
+    "gap_targeting_axes=[SR] + sleeve_needs=[diversifier] 정합. portfolio_gap_vector v1.0.8 명시적 diversifier 수요 확인.",
+    "ic_bad(0.0243) > ic_good(0.0062) 구조 — 위기 구간 상대적 IC 우위, diversifier 역할 구조 지지.",
+    "AX-003/004/005/007 모두 무관 — 리스크 공리 위반 없음.",
+    "Factor DB 기존 구축 팩터 + EW 20 단순 구조 → smoke run 목적 달성에 최적 (구현 복잡도 최소)."
+  ],
+
+  "critical_concerns": [
+    "L-137 MDD 위험: RetAutocorr 단독 전략 MDD 고위험 선례. S1 결과 MDD 45% 초과 시 hard fail — S1 판정 전 PG0 최종 승인 유보.",
+    "S3 TDC 미확정: STR_1631 Core와의 TDC 실측 전까지 Sequential Admission 요건 미충족. TDC > 0.6이면 admission_rule_v3.5.2 Gate 3 위반 가능.",
+    "L-130 주의: 유동성 필터 적용 후 ICIR 안정성 S1에서 반드시 확인. ic_all 0.012 낮은 수준 — 필터 후 추가 하락 가능성."
+  ],
+
+  "s1_gate_items": [
+    "MDD ≤ 45% 확인 (hard fail 경계)",
+    "유동성 필터(2억원) 적용 전후 ICIR 비교 — L-130 alpha 소멸 위험 점검",
+    "C13 Z_Score_Aligned 방향 준수 확인 (flip 없이 낮은 자기상관 = 높은 순위)",
+    "C15 load_month_factors() 경유 확인",
+    "S2에서 ICIR ≥ 0.20 달성 여부 — Alpha Lab Gate 기준",
+    "S3 TDC vs STR_1631: TDC ≤ 0.4 목표 (Sequential Admission 조건)"
+  ],
+
+  "governor_notes": "H_SMOKE_v55는 v55 정규 사이클 smoke run 목적 가설로 PG0 gap 정합성(SR gap, diversifier sleeve), family 비포화(liquidity 0%), role 정합(ic_bad>ic_good) 세 축 모두 CONDITIONAL_PASS. veto 사유 없음. S1 MDD + S3 TDC 두 조건 충족 시 PG1 Admission 진입 가능. smoke run 구조상 낮은 절대 성과는 허들 실패 사유가 아니며, 파이프라인 검증 완주가 주 목적임을 확인함."
+}

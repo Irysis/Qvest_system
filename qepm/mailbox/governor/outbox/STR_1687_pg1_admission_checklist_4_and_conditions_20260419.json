@@ -1,0 +1,196 @@
+{
+  "_v54_freeze_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_override_timestamp": "2026-04-19T12:45+09:00",
+  "_v54_override_rationale": "Scenario_D Option 2 scope 내 Governor PG1 admission preparation. 기존 Scenario_D 공식 범위 내 preparation artifact.",
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Forge",
+  "type": "STR_1687_PG1_ADMISSION_CHECKLIST_4_AND_CONDITIONS",
+  "timestamp": "2026-04-19T16:15+09:00",
+  "session": 68,
+  "day": 1,
+  "task_id": "29",
+  "status": "**PREPARATION_READY** — Forge S1 + Judge S6 + TDC 실측 대기 중 preparation checklist 사전 발행. 4 AND 조건 확정 + fallback scenario 명시.",
+
+  "context": {
+    "team_lead_directive": "STR_1687 Grade A + TDC 충족 시 Defense 10% slot 편입 (H_1690 대체)",
+    "h_1690_drop_confirmed": "Forge v3 restart_block=true (Judge official L-165)",
+    "slack_available": "10%p (H_1690 DROP 확정)",
+    "scenario_d_option_2_allocation": "Defense cluster 33% (H_1689 v3 variant_1 23% + STR_1687 10%)"
+  },
+
+  "str_1687_hypothesis_summary": {
+    "hypothesis_id": "H_1693",
+    "strategy_id": "STR_1687",
+    "name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+    "formula": "composite = 0.7·z_sector_Q07 + 0.3·z_C01_SUE",
+    "expected_role": "defense (AX-001 v2 multi_sleeve_only=TRUE)",
+    "family": "quality_earnings_stability_sector_neutral",
+    "s0_verdict": "APPROVE_CONDITIONAL 77/100 (MAJORITY APPROVE_CONDITIONAL 4/5)",
+    "s0_verdict_artifact": "stage_artifacts/S0_VERDICT_H_1693.json",
+    "weight_target": 0.10
+  },
+
+  "pg1_admission_4_and_conditions": {
+    "_logic": "AND (모두 PASS 필요)",
+    "condition_1_forge_s1_grade_a": {
+      "requirement": "Forge STR_1687 S1 백테스트 Grade A 달성",
+      "threshold_criteria": {
+        "SR": ">= 0.75 (Defense hurdle)",
+        "CAGR": "> 5% (Defense CAGR 최소 기준, L-136 2.59% 회피)",
+        "MDD": "< 35% (Defense target)",
+        "Grade": "A"
+      },
+      "current_status": "PENDING (STR_1687 S1 실행 중, output/ 아직 비어있음)",
+      "measurement_source": "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/hurdle_result.json",
+      "forge_task_ref": "Task #24 in_progress"
+    },
+    "condition_2_judge_s6_gate_13_signal_portfolio_translation_3_gate": {
+      "requirement": "Judge S6 Gate 13 Signal-Portfolio Translation 3-gate 통과 (L-160/L-165 family signature 자동 탐지 PASS)",
+      "sub_gates": [
+        "net_IC_transmission_ratio > 0.6 (S1 conditions S1-C3)",
+        "portfolio stress 2+ window positive",
+        "Z_Sector vs raw Z empirical 효과 증명"
+      ],
+      "family_membership_risk": "**Judge 2-path layer 적용** — Grade A/B 성공 시 non-failure L-code 별도 기록 / Hard Fail 시 L-165 scope 차이 검토 후 family 편입 여부 Judge custodian 신중 판정",
+      "current_status": "PENDING (Judge S6 cascade 대기, Task #8 in_progress)",
+      "judge_verdict_artifact": "TBD (S6 완료 시 발행)"
+    },
+    "condition_3_pair_0_crisis_tdc_measured_below_0_30": {
+      "requirement": "Scout S3 orthogonality pair_0 (variant_1 vs H_1693/STR_1687) crisis regime TDC < 0.30 실측 PASS",
+      "governor_prediction_range": "0.20~0.35 PASS_LIKELY (Q07 미공유 + variant_1 3-axis Q01+Q04+Q25 vs STR_1687 Q07+SUE, 공유 factor 없음)",
+      "sub_measurements": [
+        "vs STR_1679v3: TDC 0.25~0.40 CAUTION (L-158 Early Warning 0.30~0.40 구간)",
+        "vs STR_1631_SYN_05: TDC < 0.30 expected",
+        "vs STR_1656_MLRA_M05: TDC < 0.30 expected"
+      ],
+      "current_status": "PENDING (Forge H_1689 v3 variant_1 S1 완료 후 Scout S3 실측 가능, Task #27 in_progress)",
+      "measurement_artifact": "stage_artifacts/s3_orthogonality_H_1693_crisis_tdc_measured.json"
+    },
+    "condition_4_ax_001_v2_audit_defense_v2_4_gate": {
+      "requirement": "AX-001 v2 audit_defense_v2() 4-gate 전수 통과",
+      "sub_gates": [
+        "multi_sleeve_only=TRUE (standalone admission 금지 설계 확인)",
+        "crisis_alpha > 0 (6대 위기 구간 alpha)",
+        "bad_normal_ic_ratio > 0.6 (IC(Bad+Crisis) / IC(Good+Normal))",
+        "core_mdd_reduction >= 0.05 (편입 시 portfolio MDD 5% 이상 완화 STR_1631 -21.27% × 0.95 = -20.21% target)"
+      ],
+      "l_121_q07_evidence_backing": "stress ICIR +0.753 + 4r CRISIS +0.413 (bad/normal IC ratio ~2.7 expected)",
+      "current_status": "PENDING (Judge S6 Gate 6/7 AX-001 v2 audit 실행 대기)",
+      "judge_verdict_artifact": "TBD (S6 완료 시 발행)"
+    }
+  },
+
+  "admission_decision_matrix": {
+    "_logic": "ALL 4 conditions PASS → ADMIT 10% / 1+ FAIL → Reserve 이동 or weight 축소",
+    "scenario_all_4_pass": {
+      "decision": "ADMIT STR_1687 at weight 0.10 (Defense 10% slot)",
+      "composition_final": {
+        "STR_1631": 0.18,
+        "H_1692_v2": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.08,
+        "H_1689_v3_variant_1": 0.23,
+        "STR_1687": 0.10,
+        "Reserve": 0.09,
+        "misc": 0.08
+      },
+      "defense_cluster": "33% (H_1689 v3 variant_1 23% + STR_1687 10%)",
+      "next_action": "Day 6~7 pg2_allocation_5sleeve.json 발행"
+    },
+    "scenario_condition_1_fail": {
+      "trigger": "Forge S1 Grade B/C/F",
+      "decision": "STR_1687 REJECT + scenario_D fallback activation",
+      "fallback_options": [
+        "Scenario_D Option 3 simplified (Defense 23% only, H_1693/STR_1687 미편입)",
+        "Scenario_D Option 1 (STR_1679v3 14% 상향)",
+        "Scout 재설계 요청 (H_XXXX new defense)"
+      ],
+      "ax_cand_3rd_member_trigger": "H_1693 Hard Fail 시 Judge 2-path layer 적용 → family 편입 여부 신중 판정"
+    },
+    "scenario_condition_2_fail": {
+      "trigger": "Judge S6 Gate 13 Signal-Portfolio Translation Failure 탐지",
+      "decision": "STR_1687 REJECT + AX_CAND 3rd member 축적 + Judge custodian decision 대기",
+      "family_scope_check": "L-165 scope (multi-source composite long-only 20종목 single-sleeve) vs STR_1687 design (sector-neutral + dual-axis + multi-sleeve context) 비교",
+      "preliminary_scope_assessment": "STR_1687 L-165 scope 밖 가능성 높음 → Signal-Portfolio Translation Failure 별도 family 신설 가능성"
+    },
+    "scenario_condition_3_fail": {
+      "trigger": "pair_0 crisis TDC >= 0.30 (예측 초과)",
+      "decision_variant_a_tdc_0_30_to_0_50": "CAUTION — weight 축소 (10% → 5~8%) + Sequential Admission 재평가",
+      "decision_variant_b_tdc_over_0_50": "admission_BLOCKED (Admission Rule v3.5.2 Gate 11 강제 차단) → Reserve 이동",
+      "recovery_path": "Scout S5 mutation으로 orthogonality 개선 (e.g., Q07 factor 대체 또는 sector neutralization 강화)"
+    },
+    "scenario_condition_4_fail": {
+      "trigger_4a_multi_sleeve_only_violation": "설계상 standalone 구조 발견 시 REJECT (AX-001 v2 immutable)",
+      "trigger_4b_crisis_alpha_zero_or_negative": "6대 위기 구간 alpha 확인 실패 → L-165 pattern 재현 가능 → family 3rd member 검토",
+      "trigger_4c_bad_normal_ic_ratio_below_0_6": "defense 역할 미달 → REJECT",
+      "trigger_4d_core_mdd_reduction_below_0_05": "portfolio 기여도 미달 → weight 축소 또는 REJECT"
+    }
+  },
+
+  "governor_admission_sequence_confirmed": {
+    "_source": "h_1689_v3_variant_1_primary_scenario_B_CONFIRMED_20260419.json (Task #28)",
+    "sequence": [
+      {
+        "step": 1,
+        "strategy": "H_1689 v3 variant_1",
+        "weight": 0.23,
+        "tdc_pre_admission_check": "vs STR_1679v3 (0.15~0.25) + vs STR_1631 + vs STR_1656 < 0.30",
+        "admission_priority": "primary (saturation-safe, Q07 미공유)"
+      },
+      {
+        "step": 2,
+        "strategy": "STR_1687",
+        "weight": 0.10,
+        "tdc_pre_admission_check": "vs H_1689 v3 variant_1 (0.20~0.35) + vs STR_1679v3 (0.25~0.40 CAUTION)",
+        "admission_priority": "secondary (Q07 cluster sequential)"
+      },
+      {
+        "step": 3,
+        "strategy": "STR_1679v3",
+        "weight": 0.08,
+        "tdc_pre_admission_check": "vs STR_1631 (0.25~0.35) + vs STR_1687 (0.25~0.40 empirical 확인)",
+        "admission_priority": "tertiary (cluster sequential completion)"
+      }
+    ]
+  },
+
+  "h_1690_slack_allocation_confirmed": {
+    "h_1690_dropped": {
+      "previous_weight": 0.10,
+      "drop_confirmed": "L-165 VALIDATED_HARD_FAIL (Judge official) + restart_block=true"
+    },
+    "slack_allocation": {
+      "primary_path": "STR_1687 (H_1693) 10% 편입 (본 task 대상)",
+      "fallback_path_1": "Reserve 9% → 19% (STR_1687 REJECT 시)",
+      "fallback_path_2": "Scout 재설계 + 신규 Defense 10% (Scenario_D Option 2 기본)"
+    }
+  },
+
+  "dependencies_blocking": [
+    "Forge S1 STR_1687 결과 수신 (Task #24 in_progress, output/ 아직 비어있음)",
+    "Forge S1 H_1689 v3 variant_1 결과 수신 (Task #7 blocked, TODO_S1 대기)",
+    "Judge S6 cascade verdict 수신 (Task #8 in_progress, Gate 0~13)",
+    "Scout S3 orthogonality pair_0 실측 (Task #27, TDC crisis regime)"
+  ],
+
+  "v54_freeze_compliance": {
+    "new_rule_or_amendment": false,
+    "preparation_checklist_only": true,
+    "freeze_override_basis": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true (Scenario_D Option 2 scope 내)",
+    "verdict": "PASS"
+  },
+
+  "next_actions_governor": {
+    "immediate": "본 파일(STR_1687 PG1 admission checklist) 발행 + Task #29 in_progress 유지",
+    "on_forge_s1_done": "condition_1 Grade A 판정 + Task #27 trigger (variant_1 TDC 실측 가능)",
+    "on_judge_s6_done": "condition_2 + condition_4 Judge verdict 수신",
+    "on_tdc_measured": "condition_3 실측 PASS/FAIL 판정",
+    "all_4_pass": "ADMIT 최종 판정 + pg2_allocation_5sleeve.json 발행 Day 6~7",
+    "any_fail": "fallback scenario activation + Reserve/weight-축소 조치"
+  },
+
+  "telegram_notification": {
+    "channel": "[Governor] 한글 + 이모지",
+    "message": "📋 [Governor] STR_1687 PG1 admission checklist 사전 발행 — 4 AND 조건 (Forge S1 Grade A + Judge S6 Gate 13 + TDC<0.30 + AX-001 v2 4-gate). All PASS 시 Defense 10% slot 편입 (H_1690 대체). Forge S1 + Judge S6 + TDC 실측 대기 중."
+  }
+}

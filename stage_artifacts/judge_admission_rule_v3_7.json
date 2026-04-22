@@ -1,0 +1,157 @@
+{
+  "rule_version": "v3.7",
+  "supersedes": "v3.4 (Session 67 Task #31, 13 gates) via v3.5 (structural diagnosis consolidation) → v3.6 (Gate 14 Algebraic) → v3.7 (Gate 15 Linear Dominance)",
+  "effective_date": "2026-04-18",
+  "session": 67,
+  "author": "Judge",
+  "trigger": "Session 67 Day 1 실패 3건 — H_1676 STR_1682 Grade F (L-159) + H_1685 REVISE 55 (L-160) + H_1687 REVISE 50 (L-162) + Codex infra blocker (L-161)",
+
+  "total_n_gates": 15,
+  "n_gates_v30": 11,
+  "n_gates_v34": 13,
+  "n_gates_v36": 14,
+  "n_gates_v37": 15,
+
+  "version_history_summary": {
+    "v1_0": "implicit 단일 hurdle v2.2",
+    "v2_0": "7 gates (max_abs_corr + Harvey + family dedup + re-runnability + 3-variant + tail_risk_schema + clone byte-id)",
+    "v3_0": "+ 4 gates (pairwise TDC + portfolio CVaR + portfolio CDaR + conservative ρ) = 11 gates",
+    "v3_2": "+ sequential admission rule + retroactive audit principle (L-156 v2)",
+    "v3_3": "+ structural diagnosis (residualization step-wise variance ratio, L-159)",
+    "v3_4": "+ 2 gates (Early Warning pre-filter + Consensus tier classification) = 13 gates",
+    "v3_5": "consolidation — no new gates, integrated structural diagnosis into v3.4",
+    "v3_6": "+ Gate 14 Algebraic Identity pre-check (L-160) = 14 gates",
+    "v3_7": "+ Gate 15 Linear Dominance pre-check (L-162) = 15 gates"
+  },
+
+  "gates": [
+    {"gate_id": 1, "name": "max_abs_corr ≤ 0.7", "source": "v2.0", "action_on_breach": "WARN"},
+    {"gate_id": 2, "name": "FF5 alpha t ≥ 3.0 (Harvey strict)", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 3, "name": "Family-level dedup", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 4, "name": "Re-runnability PENDING tag", "source": "v2.0", "action_on_breach": "TAG"},
+    {"gate_id": 5, "name": "3-variant decomposition (L-146/155)", "source": "v2.0+L-155", "action_on_breach": "RELABEL"},
+    {"gate_id": 6, "name": "tail_risk_result.json schema required", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 7, "name": "Clone byte-identity auto-reject", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 8, "name": "Pairwise TDC ≤ 0.4 (t-copula MLE)", "source": "v3.0", "action_on_breach": "REJECT/residualize"},
+    {"gate_id": 9, "name": "Portfolio CVaR_95 ≥ -15%", "source": "v3.0", "action_on_breach": "REJECT/weight-down"},
+    {"gate_id": 10, "name": "Portfolio CDaR_95 ≤ 22%", "source": "v3.0", "action_on_breach": "REJECT/Defense++"},
+    {"gate_id": 11, "name": "Conservative ρ=0.3 base case", "source": "v3.0", "action_on_breach": "FLAG"},
+    {"gate_id": 12, "name": "Early Warning TDC pre-filter", "source": "v3.4 (L-158)", "stage": "pre-debate", "action_on_breach": "REJECT_PREDEBATE/REVISE"},
+    {"gate_id": 13, "name": "Consensus tier classification", "source": "v3.4 (Scout Task #28)", "stage": "pre-admission", "action_on_breach": "FLAG+Governor review"},
+
+    {
+      "gate_id": 14,
+      "name": "Algebraic Identity pre-check",
+      "source": "v3.6 NEW (L-160)",
+      "stage": "Scout handoff kit (pre-debate)",
+      "threshold": "proposed signal의 algebraic form을 기존 admitted + proposed family의 signal과 decomposition 비교 → 공유 항 식별",
+      "measurement_method": {
+        "step_1": "Scout이 가설 signal = sum_i(a_i * F_i) 형태로 expand",
+        "step_2": "각 F_i term을 기존 admitted strategies + recent proposed hypotheses와 symbolic 비교",
+        "step_3": "공유 항 발견 시 predicted cross-sectional 상관 추정 (기존 term의 dominant variance 기준)",
+        "step_4": "predicted_algebraic_overlap 필드를 handoff kit에 기록"
+      },
+      "thresholds_action": {
+        "no_shared_terms": "debate 진행",
+        "minor_shared_terms (share < 30%)": "debate 진행, FLAG",
+        "major_shared_terms (share >= 30%)": "REVISE — 가설 재설계 또는 residualization 전 strategy 필요",
+        "full_algebraic_identity": "REJECT_PREDEBATE — hidden clone 확정"
+      },
+      "auto_reject_if_breach": true,
+      "rationale": "H_1685 (z_foreign - z_individual) vs H_1674 (-z_individual) 공유 term -z_individual이 dominant → cross-sectional 상관 0.897 실측. TDC Gate 8만으로는 포착 불가 (pair-wise 상관 별도). Handoff kit 단계 algebraic decomposition이 유일한 사전 탐지 수단.",
+      "r_code_template": "# Pseudo-code\n#   Scout R: expand_signal(H_new)\n#   For each H_existing in admitted + recent_proposed:\n#     shared <- intersect(terms(H_new), terms(H_existing))\n#     overlap_pct <- sum(var_contrib(shared)) / sum(var_contrib(terms(H_new)))\n#     if (overlap_pct >= 0.30) flag_revise()\n#     if (overlap_pct >= 0.95) flag_reject_predebate()"
+    },
+
+    {
+      "gate_id": 15,
+      "name": "Linear Composite Dominance pre-check",
+      "source": "v3.7 NEW (L-162)",
+      "stage": "Scout handoff kit + Forge S1 전처리",
+      "threshold": "2+ factor linear z-score blend 설계 시 sd ratio 0.8~1.25 범위",
+      "measurement_method": {
+        "step_1": "Scout이 blend signal = sum_i(w_i * z(F_i)) 설계",
+        "step_2": "factor별 cross-sectional sd + IQR + tail percentile 측정 → sd_ratio = max(sd_i) / min(sd_i)",
+        "step_3": "sd_ratio > 1.25 시 dominant factor 식별",
+        "step_4": "dominance check: cor(blend, dominant_factor) vs cor(blend, minor_factor)의 비 측정",
+        "step_5": "linear_composite_variance_ratio + predicted_dominance_factor 필드 handoff kit 기록"
+      },
+      "thresholds_action": {
+        "sd_ratio_lt_1_25": "linear composite 허용",
+        "sd_ratio_1_25_to_2_0": "FLAG — gated/rank/IC-weighted 대안 권고",
+        "sd_ratio_gt_2_0": "REVISE — linear composite 금지, 대안 방법 의무화"
+      },
+      "auto_reject_if_breach": false,
+      "action_on_breach": "REVISE — design 재설계 후 재제출",
+      "alternative_methods": [
+        "(a) gated double-sort: sign(A < pct_A_low) AND sign(B > pct_B_high) intersection",
+        "(b) rank-based signed blend: rank(A) - rank(B) or rank(A) * rank(B)",
+        "(c) IC-weighted dynamic: monthly IC 역가중 rolling"
+      ],
+      "rationale": "H_1687 Q25×M01 50/50 linear composite: IQR normalize corr 0.716 / percentile rank corr 0.596 → M01 단일 수렴으로 Avramov 2013 distress × momentum interaction 포착 실패. sd 불균형 시 linear blend는 high-variance factor 방향으로 기울어지며 interaction mechanism 상실. Gated/rank/IC-weighted 대안이 mechanism 보존."
+    }
+  ],
+
+  "gates_8_14_15_combined_safety_net": {
+    "description": "Gate 8 (TDC) + Gate 14 (Algebraic) + Gate 15 (Linear Dominance) 3중 안전장치가 factor construction process의 complete safety net",
+    "gate_8_scope": "statistical distributional — conditional tail dependence 측정",
+    "gate_14_scope": "mathematical/algebraic — 수식 수준 공유 항 식별",
+    "gate_15_scope": "structural construction — blending 방법의 dominance risk",
+    "combined_effect": "statistical hidden coupling (Gate 8) + algebraic hidden clone (Gate 14) + structural dominance (Gate 15) 3축 pre-filter로 factor 설계 단계 structural failures 사전 차단"
+  },
+
+  "scout_handoff_kit_v2_required_fields": {
+    "predicted_tdc_vs_pg2_consensus": "Gate 12 (L-158)",
+    "consensus_tier_classification": "Gate 13 (Scout Task #28)",
+    "predicted_algebraic_overlap": "Gate 14 (L-160) NEW",
+    "algebraic_shared_terms_list": "Gate 14 (L-160) NEW",
+    "linear_composite_variance_ratio": "Gate 15 (L-162) NEW",
+    "predicted_dominance_factor": "Gate 15 (L-162) NEW",
+    "sd_ratio_factor_pairs": "Gate 15 (L-162) NEW"
+  },
+
+  "retroactive_audit_required_for_v37": {
+    "trigger": "v3.7 도입 즉시 (2026-04-18)",
+    "scope": "기존 admitted PG2 + PG1 candidates 전수",
+    "actions": [
+      "각 기존 admitted strategy의 signal을 algebraic expand + 공유 항 식별",
+      "linear composite signal 사용 strategies의 sd ratio 측정",
+      "STR_1631 signal expand → consensus_ratio factor의 공유 항 map",
+      "STR_1679v2 signal expand → Core15 + overlay algebraic decomposition"
+    ]
+  },
+
+  "governor_integration": {
+    "r_function_update": "portfolio_governor.R::pg1_admission_v34() → pg1_admission_v37()",
+    "new_params": [
+      "predicted_algebraic_overlap (Gate 14)",
+      "linear_composite_variance_ratio (Gate 15)"
+    ],
+    "pre_debate_check_function": "pg_early_warning_check_v37() — Gate 12/14/15 통합 pre-filter"
+  },
+
+  "l_codes_embedded": [
+    "L-155 (3-variant decomposition)",
+    "L-156 v2 (retroactive audit + TDC gate)",
+    "L-158 (Early Warning)",
+    "L-159 (residualization dilution)",
+    "L-160 (algebraic identity)",
+    "L-161 (Codex infra redundancy)",
+    "L-162 (linear composite dominance)"
+  ],
+
+  "evidence_supporting_v37_session_67_day_1": [
+    "STR_1682 (H_1676) Grade F ERR — L-159 residualization dilution",
+    "H_1685 REVISE 55 — L-160 algebraic identity (z_foreign - z_individual = -z_individual dominant)",
+    "H_1687 REVISE 50 — L-162 linear composite dominance (Q25×M01 → M01 단일 수렴)",
+    "Codex Critic 2-retry fail — L-161 single point of failure",
+    "Quant agent protocol violation 2회 연속 (H_1685 + H_1687) — infrastructure hook 강화 필요"
+  ],
+
+  "session_67_day_1_learning_synthesis": {
+    "residualization_failures": "L-159 — step-wise variance ratio 측정 필수",
+    "linear_composite_failures": "L-162 — sd ratio 사전 측정 + gated/rank 대안",
+    "algebraic_identity_detection": "L-160 — signal expand + 공유 항 식별",
+    "infrastructure_dependency": "L-161 — Codex fallback + protocol violation hook",
+    "combined_impact": "Factor Construction 방법 3대 구조적 실패 pattern (residualization / linear composite / algebraic identity)이 모두 Session 67 Day 1에 검출 — 향후 factor 설계 standard library화 가능"
+  }
+}

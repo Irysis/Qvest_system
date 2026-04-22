@@ -206,6 +206,39 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
     }
 
     # =========================================================================
+    # INV13: Foreign_Resid_Individual — 5종 PIT 패턴 (H_1685_v2 선결 조건)
+    # =========================================================================
+    # INV13_C1: beta_t must use shift(cum_SxY/cum_Sxx, 1L) — strict lag
+    if (grepl("INV13|Foreign_Resid_Individual", line, ignore.case = TRUE)) {
+      ctx <- get_context(i, 15)
+      # Pattern 1: expanding beta without lag
+      if (grepl("SxY\\s*/\\s*Sxx|cum_SxY.*Sxx|beta_t\\s*<-", ctx) &&
+          !grepl("shift.*1L|shift.*1\\b|n_months.*>=.*60|burn.?in", ctx, ignore.case = TRUE)) {
+        add_violation("INV13_C1_EXPANDING_LAG", i, line_trimmed,
+          "INV13 beta_t must use shift(cum_SxY/cum_Sxx, 1L) with burn-in >= 60 months (C1 strict lag).")
+      }
+      # Pattern 2: date filter not strict less-than
+      if (grepl("inv\\[Date\\s*(<=|==)", ctx)) {
+        add_violation("INV13_C2_DATE_STRICT", i, line_trimmed,
+          "INV13 investor data must use Date < sig_d (strict less-than, C2). Found <= or ==.")
+      }
+      # Pattern 3: manual sign flip on residual
+      if (grepl("residual\\s*\\*\\s*-1|z_F\\s*\\*\\s*-1|-1\\s*\\*\\s*z_F", ctx)) {
+        add_violation("INV13_C13_ZSCORE_ALIGNED", i, line_trimmed,
+          "INV13 residual manual sign flip detected. Use Z_Score_Aligned pattern, no manual negation (C13).")
+      }
+    }
+    # INV13_C11: Usable_Date check for investor flow data
+    if (grepl("INV13|inv13|Foreign_Resid", line, ignore.case = TRUE)) {
+      ctx <- get_context(i, 10)
+      if (grepl("Usable_Date.*>|Date.*>.*sig|Date.*>=.*sig", ctx) &&
+          !grepl("Usable_Date\\s*<=|Date\\s*<\\s*sig", ctx)) {
+        add_violation("INV13_C11_TIMING", i, line_trimmed,
+          "INV13 Usable_Date check may be reversed. Must use Usable_Date <= sig_date or Date < sig_d (C11).")
+      }
+    }
+
+    # =========================================================================
     # C9: Vol equalization on full sample (critical — STR_759~765 failure)
     # =========================================================================
     # Pattern: sd(ret_xxx) without [1:i] — full sample vol eq
@@ -251,6 +284,39 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
       if (!grepl("function|#|compute_all", line_trimmed)) {
         add_violation("C15_DIRECT_PARQUET", i, line_trimmed,
           "Direct Factor DB parquet load detected. Use load_month_factors() from factor_db_connector.R.")
+      }
+    }
+
+    # =========================================================================
+    # C17: Infrastructure PIT — align_factor_direction without sig_date
+    # (Gate15_C1 in v3.5.4 Admission Rule)
+    # Pattern: align_factor_direction( called directly without sig_date arg
+    # Exception: load_month_factors internal call (line 123) passes sig_date automatically
+    # =========================================================================
+    if (grepl("align_factor_direction\\s*\\(", line_trimmed)) {
+      is_internal_def <- grepl("^align_factor_direction\\s*<-\\s*function|^function.*sig_date", line_trimmed)
+      is_load_month   <- any(grepl("load_month_factors", lines[max(1, i-10):i]))
+      is_commented    <- grepl("^#", line_trimmed)
+      if (!is_internal_def && !is_load_month && !is_commented) {
+        has_sig_date <- grepl("sig_date\\s*=|sig_date\\s*,|,\\s*sig_date", line_trimmed)
+        # context window 검사 폐기 — 주석으로 우회 가능한 false negative 방지 (v3.5.4 patch)
+        if (!has_sig_date) {
+          add_violation("C17_INFRA_PIT_DIRECTION", i, line_trimmed,
+            "align_factor_direction() called without sig_date — uses full-sample Mean_IC (L-168 violation). Pass sig_date = current_rebalance_date or use load_month_factors().")
+        }
+      }
+    }
+
+    # =========================================================================
+    # C18: Infrastructure PIT — factor_ic_monthly direct read + mean(IC)
+    # (Gate15_C3 in v3.5.4 Admission Rule)
+    # Pattern: read_parquet on factor_ic_monthly then mean(IC) — bypasses PIT-safe connector
+    # =========================================================================
+    if (grepl("read_parquet.*factor_ic_monthly|factor_ic_monthly.*read_parquet", line_trimmed)) {
+      ctx_window <- get_context(i, window = 10)
+      if (grepl("\\bmean\\s*\\(\\s*IC\\b|\\bmean\\s*\\(.*IC.*\\)", ctx_window)) {
+        add_violation("C18_INFRA_PIT_IC_PARQUET", i, line_trimmed,
+          "factor_ic_monthly.parquet direct read + mean(IC) detected — full-sample IC direction bias (L-168). Use load_month_factors(sig_date=...) instead.")
       }
     }
 
@@ -340,4 +406,51 @@ detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
        n_files = length(r_files))
 }
 
-cat("[lookahead_detector] Loaded. Functions: detect_lookahead(), detect_lookahead_dir()\n")
+# =============================================================================
+# Gate15 INFRA_PIT_SCAN — v3.5.4 Admission Rule (2026-04-19)
+# Scans strategy directory for C17/C18 infra PIT violations.
+# Returns list: clean, gate15_violations, files_scanned
+# =============================================================================
+detect_gate15_infra_pit <- function(strategy_dir, verbose = TRUE) {
+  r_files <- list.files(strategy_dir, pattern = "\\.R$", full.names = TRUE,
+                        recursive = TRUE)
+  # Exclude the connector itself (exempt: internal definition)
+  r_files <- r_files[!grepl("factor_db_connector\\.R$", r_files)]
+
+  gate15_violations <- list()
+  total <- 0L
+
+  for (f in r_files) {
+    result <- detect_lookahead(f, verbose = FALSE)
+    infra_v <- Filter(function(v) grepl("^C17|^C18", v$check), result$violations)
+    if (length(infra_v) > 0) {
+      total <- total + length(infra_v)
+      gate15_violations <- c(gate15_violations, infra_v)
+      if (verbose) {
+        cat(sprintf("[Gate15] %d infra PIT violation(s) in %s\n",
+                    length(infra_v), basename(f)))
+        for (v in infra_v) {
+          cat(sprintf("  [%s] Line %d: %s\n    Code: %s\n",
+                      v$check, v$line, v$msg, v$code))
+        }
+      }
+    }
+  }
+
+  clean <- total == 0L
+  if (verbose) {
+    if (clean) {
+      cat(sprintf("[Gate15] INFRA_PIT_SCAN PASS: %d files, 0 C17/C18 violations.\n",
+                  length(r_files)))
+    } else {
+      cat(sprintf("[Gate15] INFRA_PIT_SCAN FAIL: %d C17/C18 violation(s) in %d files.\n",
+                  total, length(r_files)))
+      cat("[Gate15] REJECT — Fix align_factor_direction sig_date / load_month_factors usage.\n")
+    }
+  }
+
+  list(clean = clean, gate15_violations = gate15_violations,
+       n_violations = total, files_scanned = length(r_files))
+}
+
+cat("[lookahead_detector] Loaded. Functions: detect_lookahead(), detect_lookahead_dir(), detect_gate15_infra_pit()\n")

@@ -1,0 +1,330 @@
+{
+  "_v54_freeze_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_override_timestamp": "2026-04-19T12:45+09:00",
+  "_v54_override_rationale": "team-lead M1 Sharpe Gap Decomposition 지시 (Scenario_D Option 2 scope 내 performance path 분석).",
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Scout + Risk Mgr",
+  "type": "SHARPE_GAP_DECOMPOSITION_ANALYSIS",
+  "timestamp": "2026-04-19T17:45+09:00",
+  "session": 68,
+  "day": 1,
+  "task_id": "M1 / Task #32",
+  "status": "ANALYSIS_PUBLISHED + M5 REFLECTED (18:05) — SR 1.193 → 2.0 gap 0.807 marginal contribution 분해 + top gap killers 식별 + realistic/aspirational target 확정 + Judge M5 Post-Hoc AX-005 EXCLUSION Audit 반영",
+
+  "m5_judge_post_hoc_audit_reflection_20260419_18_05": {
+    "source": "Judge M5 Post-Hoc AX-005 EXCLUSION Audit (2026-04-19 17:55 team-lead relay)",
+    "active_2_strategies_impact": "ZERO (STR_1631 core_alpha + STR_1656 ml_predictive 모두 AX-005 scope 밖) → M1 weight 재조정 불필요 확정",
+    "str_1679v3_verification_result": "Q25 vs D25 factor identity 재검증 완료 (Governor q25_d25_factor_identity_verification_20260419.json 18:00) → **Q25 ≠ D25 확정** → STR_1679v3 AX-005 scope OUT → **CONDITIONAL 태그 REMOVE** → 기여도 +0.02~0.05 unconditional 유지",
+    "str_1687_l_166_candidate_tag": "Grade A/B 성공 + Codex rescue PASS + AX-001 v2 4-gate 전수 PASS 시 **L-166 non-failure 교훈** 발행 + Defense sleeve **primary** 확정",
+    "str_1689_v3_variant_1_gate_enforcement": "sector cap 강화 요구 (Gate 추가 조건 사전 설정, Judge S6 단계 검증)",
+    "ax_005_adjustment_term_removal": "active 2건 impact ZERO로 AX-005 조정 term 제거",
+    "net_impact_on_projected_sr": "**NO CHANGE** (aspirational 1.78 유지)"
+  },
+
+  "baseline": {
+    "current_pg2_sr": 1.193,
+    "current_pg2_cagr": 0.1614,
+    "current_pg2_mdd": -0.2127,
+    "current_composition": {
+      "STR_1631_SYN_05": 0.80,
+      "STR_1656_MLRA_M05": 0.20
+    },
+    "target_sr": 2.00,
+    "gap": 0.807,
+    "gap_rationale": "team-lead 프로젝트 제2목표 (SR 2.0+) 달성 경로 분해"
+  },
+
+  "phase_1_pg1_admission_target_composition": {
+    "_source": "rev8-A-revised-v3 Scenario_D Option 2 APPROVED (team-lead 2026-04-19 12:45)",
+    "composition": {
+      "STR_1631": 0.18,
+      "H_1692_v2": 0.10,
+      "STR_1656": 0.14,
+      "STR_1679v3": 0.08,
+      "H_1689_v3_variant_1": 0.23,
+      "STR_1687": 0.10,
+      "Reserve": 0.09,
+      "misc": 0.08
+    },
+    "active_total": 0.83,
+    "reserve_misc": 0.17,
+    "n_active": 6
+  },
+
+  "marginal_sr_contribution_model": {
+    "_formula": "marginal_SR_i = w_i × SR_i × (1 - ρ_i_portfolio)^0.5 × role_adjustment_factor",
+    "_assumptions": [
+      "Independent SR estimates per strategy (S0 verdict + Grade A catalog + Scout prediction)",
+      "Pairwise correlation estimates (Scout S3 pre-measurement + Governor prediction matrix)",
+      "Role adjustment: Core 1.0 / Diversifier 1.1 (diversification bonus) / Defense 0.8 (crisis-conditional evaluation AX-001 v2) / ML 0.95 (overfitting discount) / Cash 0.9 (regime-conditional)"
+    ]
+  },
+
+  "marginal_contributions_per_strategy": [
+    {
+      "strategy": "STR_1631_SYN_05",
+      "role": "core_alpha",
+      "weight_transition": "0.80 → 0.18 (-0.62)",
+      "strategy_sr": 1.193,
+      "rho_portfolio_estimated": 0.85,
+      "role_adjustment": 1.0,
+      "marginal_contribution_delta_weight": "w 감소 (-0.62) × SR 1.193 × (1-0.85^2)^0.5 = -0.62 × 1.193 × 0.527 = -0.389 baseline Core dilution",
+      "interpretation": "STR_1631 weight 감소로 baseline Core contribution 감소하나 concentration risk 완화 효과 상쇄",
+      "net_effect": "-0.10 ~ -0.15 SR (concentration risk 완화 benefit 고려)"
+    },
+    {
+      "strategy": "H_1692_v2",
+      "role": "core_secondary",
+      "weight": 0.10,
+      "strategy_sr_expected": "0.80~1.10 (S0 APPROVE_CONDITIONAL 77, BORDERLINE R1 61)",
+      "rho_portfolio_estimated": 0.60,
+      "role_adjustment": 1.0,
+      "marginal_contribution": "0.10 × 0.95 × (1-0.60^2)^0.5 × 1.0 = 0.10 × 0.95 × 0.80 × 1.0 = +0.076",
+      "sr_uplift_estimated": "+0.08 ~ +0.13",
+      "rationale": "Core_Secondary KR industry momentum residualized, STR_1631 supplement, moderate correlation"
+    },
+    {
+      "strategy": "H_1689_v3_variant_1",
+      "role": "defense",
+      "weight": 0.23,
+      "strategy_sr_expected": "0.55~0.75 (Scout prediction, Defense low SR but crisis alpha)",
+      "rho_portfolio_estimated": 0.25,
+      "role_adjustment": 0.8,
+      "marginal_contribution": "0.23 × 0.65 × (1-0.25^2)^0.5 × 0.8 = 0.23 × 0.65 × 0.968 × 0.8 = +0.116",
+      "mdd_reduction_contribution": "Core MDD -21.27% → -19.14% 완화 (AX-001 v2 core_mdd_reduction ≥ 0.05 PASS) → Core risk budget release → Core SR indirect uplift +0.05~0.10",
+      "total_sr_uplift_estimated": "+0.15 ~ +0.25",
+      "rationale": "Defense primary (scenario_B), Q01+Q04+Q25 3-axis no Q07, MDD 완화 + crisis alpha, 가장 큰 contribution"
+    },
+    {
+      "strategy": "STR_1687 (H_1693)",
+      "role": "defense",
+      "weight": 0.10,
+      "strategy_sr_expected": "0.75~1.05 (S0 APPROVE_CONDITIONAL 77, 4 AND 조건 checklist)",
+      "rho_portfolio_estimated": 0.30,
+      "role_adjustment": 0.8,
+      "marginal_contribution": "0.10 × 0.90 × (1-0.30^2)^0.5 × 0.8 = 0.10 × 0.90 × 0.954 × 0.8 = +0.069",
+      "additional_sector_neutralization_benefit": "+0.02 ~ +0.03 (robustness bonus)",
+      "sr_uplift_estimated": "+0.05 ~ +0.10",
+      "rationale": "Defense secondary (Q07 sector-neutral + SUE), sector-neutralization robustness, moderate uplift"
+    },
+    {
+      "strategy": "STR_1656_MLRA_M05",
+      "role": "ml_predictive",
+      "weight_transition": "0.20 → 0.14 (-0.06)",
+      "strategy_sr": "ML gradient-boosted (Grade A)",
+      "rho_portfolio_estimated": 0.35,
+      "role_adjustment": 0.95,
+      "marginal_contribution": "-0.06 × SR × (1-0.35^2)^0.5 × 0.95 = minimal change",
+      "net_effect": "-0.01 ~ +0.01 (weight 감소 effect cancel out by diversification retention)"
+    },
+    {
+      "strategy": "STR_1679v3",
+      "role": "diversifier_embedded_q25",
+      "weight": 0.08,
+      "strategy_sr_expected": "Grade A (Option B proxy coupling_ratio 3.391, Judge signoff 2026-04-18 19:25)",
+      "rho_portfolio_estimated": 0.40,
+      "role_adjustment": 1.1,
+      "marginal_contribution": "0.08 × 1.0 × (1-0.40^2)^0.5 × 1.1 = 0.08 × 1.0 × 0.917 × 1.1 = +0.081",
+      "sr_uplift_estimated": "+0.02 ~ +0.05",
+      "rationale": "Diversifier embedded_q25, Q25 Earnings Yield + Q07 overlay, low weight but diversification bonus"
+    },
+    {
+      "strategy": "STR_1686 (H_1685 v2)",
+      "role": "diversifier",
+      "weight_phase_2_plus": "0.03 → 0.05 → 0.10 swap",
+      "strategy_sr_expected": "Grade A/B conditional (INV13 Foreign Resid Individual)",
+      "rho_portfolio_estimated": 0.25,
+      "role_adjustment": 1.1,
+      "marginal_contribution_phase_1": "미편입 (Phase_2+ gradual)",
+      "phase_2_potential_contribution": "+0.02 ~ +0.04",
+      "sr_uplift_phase_1": "+0.01 ~ +0.03 (phase_2+ gradual, Phase_1 미편입 효과 작음)"
+    },
+    {
+      "strategy": "STR_CASH_v1",
+      "role": "cash_allocation",
+      "weight_range": "0 ~ 0.30 (regime-conditional, avg 0.10~0.15)",
+      "strategy_sr": 0.893,
+      "rho_portfolio_estimated": 0.05,
+      "role_adjustment": 0.9,
+      "marginal_contribution_avg": "0.125 × 0.893 × (1-0.05^2)^0.5 × 0.9 = 0.125 × 0.893 × 0.999 × 0.9 = +0.100",
+      "regime_conditional_mdd_reduction": "Crisis regime cash 30%로 MDD 완화 대폭",
+      "sr_uplift_estimated": "+0.05 ~ +0.08"
+    },
+    {
+      "strategy": "STR_1661_V2_XGB_GPU",
+      "role": "ml_predictive",
+      "weight_phase_2_plus": "미정 (S2 profiling 후)",
+      "strategy_icir": 1.029,
+      "phase_1_contribution": "미편입",
+      "phase_2_potential": "+0.03 ~ +0.05"
+    },
+    {
+      "strategy": "Blender_5_Sleeve_Regime_Rotation",
+      "role": "overlay_benefit",
+      "mechanism": "regime-conditional weight adjustment (Good/Normal/Bad/Crisis)",
+      "marginal_contribution": "+0.05 ~ +0.10 (regime timing + sleeve rotation)",
+      "rationale": "static weight 대비 regime-adaptive allocation"
+    },
+    {
+      "strategy": "Diversification_Benefit_Full_5_Sleeve",
+      "role": "structural_benefit",
+      "mechanism": "sqrt(1-ρ²) reduction across 5 uncorrelated sleeves",
+      "marginal_contribution": "+0.05 ~ +0.15",
+      "rationale": "2-sleeve (현 PG2) → 5-sleeve 확장으로 unsystematic risk 감소"
+    }
+  ],
+
+  "gap_decomposition_summary": {
+    "sum_of_positive_contributions_aspirational": {
+      "H_1689_v3_variant_1": "+0.20 (mid)",
+      "H_1692_v2": "+0.105 (mid)",
+      "STR_1687": "+0.075 (mid)",
+      "STR_1679v3": "+0.035 (mid)",
+      "STR_1686_phase_2": "+0.02 (phase_1 limited)",
+      "STR_CASH_v1": "+0.065 (mid, regime avg)",
+      "STR_1661_V2_phase_2": "+0.04 (phase_2 potential)",
+      "Blender_regime_rotation": "+0.075 (mid)",
+      "Diversification_5_sleeve_benefit": "+0.10 (mid)",
+      "sum_positive": "+0.715"
+    },
+    "negative_contributions": {
+      "STR_1631_weight_reduction": "-0.125 (mid)",
+      "STR_1656_weight_reduction": "0.00 (cancel)",
+      "sum_negative": "-0.125"
+    },
+    "net_total_estimated": "+0.715 - 0.125 = +0.590",
+    "current_pg2_sr_baseline": 1.193,
+    "projected_sr_aspirational": "1.193 + 0.590 = **1.78**",
+    "gap_vs_target_2_0": "2.00 - 1.78 = -0.22 residual",
+    "interpretation": "Aspirational full-5-sleeve 경로로 SR 1.78 도달 가능. 추가 0.22 gap은 보통 Barroso-like risk management + factor timing + unconstrained optimization으로 확보 필요."
+  },
+
+  "top_gap_killers_ranked": [
+    {
+      "rank": 1,
+      "strategy": "H_1689_v3_variant_1",
+      "role": "defense",
+      "estimated_sr_contribution": "+0.20 (+0.15 direct + 0.05 indirect Core MDD 완화)",
+      "percent_of_gap": "25% (+0.20 / 0.807)",
+      "rationale": "Defense cluster 23% primary, MDD 완화 + crisis alpha, largest marginal contribution. variant_1 scenario_B 확정으로 Q07 cluster 회피 추가 bonus.",
+      "critical_dependencies": ["Forge S1 Grade A", "Judge S6 Gate 0~14 + AX-001 v2 audit_defense_v2 PASS", "Sequential TDC < 0.30 vs 기존 전략"]
+    },
+    {
+      "rank": 2,
+      "strategy": "H_1692_v2",
+      "role": "core_secondary",
+      "estimated_sr_contribution": "+0.105",
+      "percent_of_gap": "13% (+0.105 / 0.807)",
+      "rationale": "Core_Secondary supplement, moderate correlation with STR_1631, second-largest direct contribution.",
+      "critical_dependencies": ["Forge S1 Grade A", "Judge S6 Gate 12 coupling_ratio ≥ 0.30", "AX_CAND_kr_momentum_inverse scope EXCEPTION (INFRASTRUCTURE 재분류 수용)"]
+    },
+    {
+      "rank": 3,
+      "strategy": "Diversification_5_sleeve_benefit",
+      "role": "structural",
+      "estimated_sr_contribution": "+0.10",
+      "percent_of_gap": "12%",
+      "rationale": "5-sleeve 확장 구조적 benefit (unsystematic risk 감소). Blender activation 기반.",
+      "critical_dependencies": ["blender_5sleeve_weights() 실행 + Day 6~7 pg2_allocation 정식 발행"]
+    },
+    {
+      "rank": 4,
+      "strategy": "STR_1687 (H_1693)",
+      "role": "defense",
+      "estimated_sr_contribution": "+0.075",
+      "percent_of_gap": "9%",
+      "rationale": "Defense secondary (sector-neutral), moderate contribution, AX-005 EXCLUSION 성공 시 L-166 non-failure 교훈 path",
+      "critical_dependencies": ["4 AND 조건 checklist PASS (Forge S1 Grade A + Gate 13 + pair_0 TDC + AX-001 v2 4-gate + Codex rescue PASS)"]
+    },
+    {
+      "rank": 5,
+      "strategy": "Blender_regime_rotation",
+      "role": "overlay",
+      "estimated_sr_contribution": "+0.075",
+      "percent_of_gap": "9%",
+      "rationale": "regime-conditional weight adjustment, static weight 대비 timing benefit",
+      "critical_dependencies": ["5-sleeve activation (PASS 확정) + regime matrix calibration"]
+    }
+  ],
+
+  "gap_residual_analysis": {
+    "aspirational_projected_sr": 1.78,
+    "aspirational_gap_closure": "+0.590 (73% of 0.807)",
+    "residual_gap": 0.22,
+    "residual_gap_sources_hypothesized": [
+      {
+        "source": "Barroso-Santa-Clara 2015 risk-managed momentum (L-122)",
+        "potential_uplift": "+0.05 ~ +0.10",
+        "path": "volatility targeting overlay + drawdown control"
+      },
+      {
+        "source": "Factor timing (regime-conditional factor selection)",
+        "potential_uplift": "+0.03 ~ +0.08",
+        "path": "conditional_ic_matrix 기반 regime-adaptive factor weight"
+      },
+      {
+        "source": "Unconstrained optimization (shrinkage + bounds + TO penalty)",
+        "potential_uplift": "+0.02 ~ +0.05",
+        "path": "entropy pooling, opinion pooling (L13 Risk Engine)"
+      },
+      {
+        "source": "Additional Grade A strategies Phase_2+",
+        "potential_uplift": "+0.05 ~ +0.15",
+        "path": "Scout 신규 가설 + Forge 재실행 + STR_1661 V2 S2 profiling 확정"
+      }
+    ],
+    "residual_gap_closure_probability": {
+      "0_22_closure_to_2_0": "MEDIUM (0.40~0.55)",
+      "reach_1_95_1_98_likely": "HIGH (0.75~0.85)",
+      "exceed_2_0_realistic": "MEDIUM-LOW (0.30~0.40)"
+    }
+  },
+
+  "realistic_target_vs_aspirational_target": {
+    "realistic_target": {
+      "sr": "1.75 ~ 1.80",
+      "rationale": "rev6 Phase_3 conservative path + Scenario_D Option 2 Full 5-sleeve + Defense cluster 33%",
+      "probability": "HIGH (0.65~0.80)",
+      "achievement_timeline": "Phase_1 LIVE Day 8 + 3~6개월 steady state"
+    },
+    "aspirational_target": {
+      "sr": "2.00 ~ 2.03",
+      "rationale": "rev6 + boost 4건 (H_1687 + STR_1661 V2 + Blend + H_1688 Barroso)",
+      "current_status_post_h_1688_drop": "H_1688 DROP 확정 + STR_1687 partial replacement (mid range 0.075 vs Barroso boost 0.10 expected 미만)",
+      "probability_post_h_1688_drop": "MEDIUM-LOW (0.25~0.40)",
+      "recovery_path": "Session 68+ 추가 Grade A 가설 (Diversifier/ML) + Barroso-like overlay"
+    },
+    "governor_recommendation": "**realistic target 1.78 default**, aspirational 2.0 upside maintain. Phase_1 LIVE 후 3~6개월 tracking."
+  },
+
+  "dependencies_summary": [
+    "Forge S1 4건 Grade A (H_1692 v2 + H_1689 v3 variant_1 + H_1692 v2 + STR_1687)",
+    "Judge S6 cascade Gate 0~14 PASS",
+    "Scout S3 pair_0 crisis TDC < 0.30 실측 PASS (scenario_B variant_1 primary 확정)",
+    "AX-001 v2 audit_defense_v2 4-gate PASS (H_1689 v3 variant_1 + STR_1687)",
+    "Codex rescue cross-model verification PASS (STR_1687 condition_1 enhanced)",
+    "Day 6~7 Blender pg2_allocation_5sleeve.json 정식 발행"
+  ],
+
+  "v54_freeze_compliance": {
+    "new_rule_or_amendment": false,
+    "analysis_artifact_only": true,
+    "team_lead_m1_task_scope": "team-lead 17:00 브로드캐스트 M1 지시 scope 내",
+    "freeze_override_basis": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+    "verdict": "PASS"
+  },
+
+  "next_actions": {
+    "governor_immediate": [
+      "본 파일(sharpe_gap_decomposition) 발행",
+      "M2 pg2_allocation_5sleeve_preview 병렬 발행 완료",
+      "Q-Lead + team-lead 보고 SendMessage"
+    ],
+    "validation_pending": [
+      "Forge S1 실제 Grade + ICIR/SR 실측 수신 시 contribution 재계산",
+      "Scout S3 actual TDC 실측 수신 시 ρ estimate 갱신",
+      "Judge S6 verdicts 수신 시 family scope judgment 반영",
+      "Day 6~7 pg2_allocation 정식 발행 시 최종 composition 확정"
+    ]
+  }
+}

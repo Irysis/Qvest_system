@@ -134,8 +134,7 @@ tryCatch({
 cat("\n[Step 7] Hurdle gate...\n")
 source(file.path(FUNC_PATH, "hurdle_gate.R"))
 hurdle <- tryCatch(
-  run_hurdle_gate(sim, strategy_id = STRATEGY_ID, family = STRATEGY_FAMILY,
-                  output_dir = OUT_DIR),
+  run_hurdle_gate(sim, strategy_name = STRATEGY_ID, output_dir = OUT_DIR),
   error = function(e) { cat("[WARN hurdle]", conditionMessage(e), "\n"); list(grade="ERR", score=0) }
 )
 cat(sprintf("[Step 7] Grade: %s | Score: %.1f\n",

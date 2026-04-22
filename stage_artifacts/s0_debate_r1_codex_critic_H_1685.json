@@ -1,0 +1,31 @@
+{
+  "role": "codex_critic",
+  "score": 8,
+  "arguments": [
+    "H_1685 spec에 구체적 construction protocol (investor_flow fields, exchange timestamp, revision policy, executable lag mapping)이 없음. Scout handoff kit은 L-code 인용 + H_1676 후속 긴급성만 제공. concrete parameter/timing 명세 부재.",
+    "PIT leakage 재발 우려: L-148 (Grade A != PIT clean) 위험 경로 재개 가능. QuantiWise 거래주체 T+1 publication lag가 decision time에서 어떻게 처리되는지 불명확. revised value 사용 시 실현 불가 alpha 발생.",
+    "static single-signal (L-119) vs over-residualized dilution (H_1676 Option A replay) 양쪽 극단 회피 증명 없음. combination logic이 static pass-through인지 dynamic인지 모호. 명시적 증명 필요."
+  ],
+  "concern": "apparent edge는 calibration-driven일 가능성 — real-time data lag handling + expanding-window parameter locks 명시 없으면 backtest-only alpha + 실전 0. H_1676 실패의 재발 위험 구조적.",
+  "conditions": [
+    "Specify exact investor_flow fields, exchange timestamps, revision policy, executable lag mapping; prohibit any revised value use at decision time.",
+    "Freeze all thresholds/cutoffs/normalizations with expanding-window walk-forward only; no full-sample statistics at any step.",
+    "Provide explicit combination logic proving it is neither static single-signal pass-through (L-119) nor over-residualized dilution (H_1676 replay).",
+    "Run PIT audit with timestamp-level checks and one-bar delay sensitivity test; approval only if edge survives.",
+    "Show net-of-cost ablation (raw, overlay, combined) on KOSPI/KOSDAQ separately, including liquidity/impact stress."
+  ],
+  "_meta": {
+    "source_file": "/tmp/codex_critic_result.json",
+    "breakdown": {
+      "l_code_check": 2,
+      "failure_avoidance": 2,
+      "banned_factor": 1,
+      "lesson_check": 1,
+      "structural_risk": 2
+    },
+    "original_codex_findings": "Verdict: reject pending redesign",
+    "timestamp": "2026-04-18T11:01:00+09:00",
+    "compiled_by": "Q-Lead (manual schema conversion)",
+    "context": "H_1676 Option A S1 Grade ERR 직후 Fallback A 발동 가속 debate. Codex가 urgency 자체를 의심."
+  }
+}

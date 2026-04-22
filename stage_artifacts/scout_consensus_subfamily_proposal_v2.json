@@ -1,0 +1,150 @@
+{
+  "artifact_type": "scout_consensus_subfamily_proposal",
+  "version": "v2_draft",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T20:30:00+09:00",
+  "target_session": "Session 67 initial taxonomy extension",
+  "status": "DRAFT_FOR_Q_LEAD_REVIEW",
+  "trigger_findings_session_66": {
+    "risk_mgr_tdc_h_1676_breach": "H_1676 residual consensus vs STR_1631 TDC 0.735 breach (Risk Mgr 4축 검증)",
+    "judge_str_1679v2_tdc_breach": "STR_1679v2 vs STR_1631 TDC 0.621 (L-156, 기존 PG2 blend Gate 8 FAIL)",
+    "shared_root_cause": "consensus family 내부 sub-structure 미세분화 — C19_core vs analyst_revision_residual vs consensus_breadth 등 모두 'consensus'로 묶여 조기 탐지 불가. Gate 8 사전 탐지는 sub-family 분류 정밀도에 의존."
+  },
+
+  "current_state_session_66": {
+    "consensus_family_members_listed": [
+      "STR_1631 family (C19_core, SYN_05/02/04 variants + SYN_05_VDplus + v5_M19~M23)",
+      "STR_1679v2 (Core 15 = C19 Top-15)",
+      "STR_1550 (Consensus-based, HARD EXPEL)",
+      "STR_1555 (score blend with C19 60% + V14 + D01)",
+      "STR_1393 (C04_ESBR corr 0.899 role masquerade)",
+      "STR_1469 (cons4f 5-sleeve)",
+      "H_1676 (residual consensus revision)",
+      "H_1678 (STR_1555 v53 refit)"
+    ],
+    "pg2_current": "STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%",
+    "family_concentration_herfindahl": 0.213,
+    "issue": "consensus 카테고리로 통합 분류되나 실제 signal mechanism은 4-tier로 분화"
+  },
+
+  "proposed_4_tier_subfamily_taxonomy_v2": {
+    "tier_1_c19_core": {
+      "description": "C19_Composite_Earnings 직접 사용 (raw consensus momentum). PEAD mechanism. Bernard-Thomas 1989 foundational.",
+      "member_strategies": [
+        "STR_1631 family (10건: SYN_05, SYN_02, SYN_05_VDplus, SYN_05_2002, M27~M30, v5_M19~M23)",
+        "STR_1679v2 Core 15 (C19 Top-15)",
+        "STR_1555 (C19 60%)",
+        "STR_1469 (5-sleeve 중 1개 sleeve)"
+      ],
+      "factor_db_ids": ["C19_Composite_Earnings"],
+      "sub_components": ["SUE", "ESBR", "EPS_Chg", "TP_Gap"],
+      "typical_tdc_vs_c19_core_sibling": "0.6~0.9 (high coupling)",
+      "tdc_gate_8_implication": "C19_core 내부 2건 동시 PG2 admission 시 TDC > 0.4 breach 예상. 1건만 PG2 진입 권고 (현재 STR_1631 단독).",
+      "l156_gate_8_expected_breach": "STR_1631 SYN_05 + STR_1679v2 Core 15 동시 편입 시 C19 공유로 monthly ρ 0.9+ (실측 확인됨)",
+      "admission_policy_proposal": "Tier 1 내 1건 cap (현재 STR_1631 SYN_05). 추가 Tier 1 admission 시 기존 교체."
+    },
+    "tier_2_analyst_revision_residual": {
+      "description": "Consensus signal (C13_Revision_Breadth, SE02_Consensus_Revision)을 beta/size 잔차화한 residual. Original consensus와 orthogonal 목표.",
+      "member_strategies": [
+        "H_1676 residual_consensus_revision (APPROVE_CONDITIONAL 61)",
+        "H_1690 Slot C variant C2 (C19 + H_1676 60/40 blend, 조건부)"
+      ],
+      "factor_db_ids": ["C13_Revision_Breadth (pre-residualization)", "SE02_Consensus_Revision (pre-residualization)"],
+      "residualization_method": "cross-section OLS on beta_24m + log(Size)",
+      "typical_tdc_vs_tier_1": "0.3~0.5 (잔차화에도 consensus family 공통성 잔존)",
+      "risk_mgr_finding_h1676_tdc_0_735": "H_1676 Risk Mgr 실측 TDC 0.735 — Tier 2 도입에도 잔차화 불충분. 학술 전제(Blitz 2011 residualization으로 Sharpe 91% 개선)와 한국 실증 괴리.",
+      "admission_policy_proposal": "Tier 1 admission 상태에서 Tier 2 추가 admission 시 TDC 실측 ≤ 0.4 조건부 PASS. H_1676 0.735는 이 규칙 FAIL (현 시점 Tier 2 편입 불가)."
+    },
+    "tier_3_consensus_breadth_raw": {
+      "description": "C13_Revision_Breadth 원본 (잔차화 없음). 애널리스트 revision 확산도. 상대적으로 slow signal.",
+      "member_strategies": [
+        "이전 research에서 C13 direct standalone 전략 전례 없음 (대부분 composite 내 component로만 사용)",
+        "future candidate for standalone"
+      ],
+      "factor_db_ids": ["C13_Revision_Breadth"],
+      "typical_tdc_vs_tier_1": "0.4~0.6 (component level, raw consensus와 partial coupling)",
+      "admission_policy_proposal": "Tier 1 + Tier 2 admission 후 marginal alpha 실증 시 조건부 PASS."
+    },
+    "tier_4_other_consensus_channels": {
+      "description": "Earnings Momentum(M25_Earnings_Mom_Streak), Analyst Coverage(C08), Forecast Dispersion(C12), Target Price(C07_TP_Mom) 등 C19/C13/SE02 외 consensus 파생 factor.",
+      "member_strategies": [
+        "M25 기반 전략 몇 건 (L-029 STR_1527 등)",
+        "C07_TP_Mom 기반 TP_Gap family (STR_1060 Phase 1e 등)"
+      ],
+      "factor_db_ids": ["M25_Earnings_Mom_Streak", "C08_Coverage", "C09_Earnings_Surprise_Sq", "C12_Estimate_Dispersion_Proxy", "C07_TP_Mom", "SE03~SE10"],
+      "typical_tdc_vs_tier_1_2": "0.2~0.4 (하위 consensus channel, base consensus와 moderate coupling)",
+      "admission_policy_proposal": "Tier 1 admission 후 Tier 4 additional admission 시 TDC 실측 ≤ 0.4 조건부. Tier 4 내부 multiple admission 시 pairwise TDC 측정 필수 (L-156 pairwise gate)."
+    }
+  },
+
+  "tdc_matrix_hypothetical_full_consensus_family": {
+    "_note": "Scout 예측 — S3 단계에서 실측 필요",
+    "str_1631_vs_str_1679v2": 0.621,
+    "str_1631_vs_H_1676": 0.735,
+    "str_1631_vs_H_1678": "predicted 0.50~0.65 (C19 + D01 + V14 중 C19 공유)",
+    "str_1631_vs_H_1690_slot_C2": "predicted 0.35~0.45 (Core 재최적화로 C19 weight 감소)",
+    "str_1679v2_vs_H_1676": "predicted 0.55~0.70 (둘 다 C19 core 포함, 잔차화 효과 일부)",
+    "str_1679v2_vs_H_1678": "predicted 0.70~0.85 (C19 60% 공유 강함)",
+    "h_1676_vs_h_1678": "predicted 0.40~0.55 (residual vs direct consensus, partial)"
+  },
+
+  "sub_family_admission_rules_v2": {
+    "rule_1_tier_1_cap": "C19_core Tier 1: 1건만 PG2 admission (currently STR_1631). 추가 admission 시 기존 교체.",
+    "rule_2_pairwise_tdc_cross_tier": "Tier 1 + Tier 2 동시 admission 시 pairwise TDC ≤ 0.4 (L-156 v3.0 gate). 현재 H_1676 0.735는 FAIL.",
+    "rule_3_residualization_verification": "Tier 2 잔차화 효과 S3에서 empirical TDC로 검증. 0.4 초과 시 Tier 2 classification 박탈 → Tier 1 재분류.",
+    "rule_4_tier_4_diversity": "Tier 4 Other consensus channels는 Tier 1/2/3과 모두 TDC ≤ 0.4 조건부 + 내부 pairwise TDC ≤ 0.5",
+    "rule_5_family_concentration_cap": "Total consensus family (Tier 1+2+3+4) ≤ 45% PG2 weight (현재 Q-Lead rev5 승인 기준)",
+    "rule_6_c19_exposure_tracking": "모든 consensus tier의 C19 effective exposure (raw + composite weight) 합산 추적. ≤ 25% PG2 weight 권고 (Scout 제안)."
+  },
+
+  "pg2_transition_implications_with_subfamily_v2": {
+    "current_pg2_breakdown": {
+      "STR_1631_SYN_05 (Tier 1 C19_core)": "80%",
+      "STR_1656_MLRA_M05 (ML family, 非consensus)": "20%",
+      "total_consensus": "80% (rule 5 violation: 45% cap 초과)",
+      "verdict_rule_5": "FAIL — consensus 집중도 80% > 45% cap"
+    },
+    "post_h1682_h1688_h1690_admission_prediction": {
+      "STR_1631": "55~70% (Tier 1 유지)",
+      "STR_1679v3_primary (Tier 1 Core + Tier 4 R16 + Q25)": "15~20%",
+      "H_1682_standalone (新 Defense Tier 4 distress+R16)": "5~10%",
+      "H_1688 (Core_Secondary, momentum family, 非consensus)": "5~10%",
+      "STR_1656 (ML, 非consensus)": "5~10%",
+      "effective_consensus_total": "STR_1631 + STR_1679v3 C19 부분 + H_1676 residual (미편입 현재) = 60~80%",
+      "verdict_rule_5": "STILL FAIL (45% cap 초과 지속) — consensus family 재분할 필수"
+    },
+    "solution_path": "Tier 1 C19_core weight 축소 + Tier 2~4 포함 확대 (H_1676 Tier 2 FAIL이면 H_1690 Slot C variant C2로 Tier 2 대체). Tier 4 (Earnings Momentum, TP_Mom 등) admission 검토."
+  },
+
+  "gate_8_sub_family_early_warning_system": {
+    "purpose": "Scout S0 handoff kit 작성 시 새 가설의 consensus sub-family 분류 + 예상 TDC 사전 추정",
+    "scout_handoff_kit_required_field_addition": {
+      "field_name": "consensus_subfamily_classification",
+      "values": ["tier_1_c19_core", "tier_2_analyst_revision_residual", "tier_3_consensus_breadth_raw", "tier_4_other_consensus_channels", "non_consensus"],
+      "field_name_2": "predicted_tdc_vs_pg2_consensus",
+      "values_2": "0.0 ~ 1.0 estimate with 95% CI",
+      "usage": "Q-Lead + Governor가 debate 개시 전 Gate 8 pre-assessment. 예측 TDC > 0.4이면 debate 불필요 (사전 REVISE 또는 design 수정 요구)."
+    },
+    "example_application": {
+      "H_1676": "Tier 2 classification + predicted TDC 0.4~0.5 (잔차화 효과 불확실) → 실측 0.735 FAIL → S1 실행 조건부 진행, PG2 admission 단계 block",
+      "H_1690_slot_C_variant_C2": "Tier 2 classification + predicted TDC 0.35~0.45 → 실측 필요",
+      "H_1688_residual_momentum": "non_consensus (momentum_residual family) → TDC gate 별도 적용"
+    }
+  },
+
+  "scout_recommendations_for_q_lead": [
+    "Session 67 초반 Governor rev5_v2 또는 rev6에 consensus sub-family taxonomy v2 반영 권고",
+    "현 PG2 consensus 집중도 80%는 rule 5 (45% cap) violation — STR_1631 weight 축소 roadmap 수립",
+    "H_1676 Tier 2 잔차화 효과 TDC 0.735 FAIL 조건부로 H_1676 설계 redo 또는 Tier 2 재분류",
+    "Scout S0 handoff kit 다음 turn부터 consensus_subfamily_classification + predicted_tdc 필드 포함",
+    "Gate 8 early warning system 도입: debate 개시 전 Q-Lead가 handoff kit 기반 pre-filter"
+  ],
+
+  "session_67_initial_todo_items": [
+    "Governor + Q-Lead consensus_subfamily_taxonomy_v2.json 공식 발행",
+    "기존 s0_record + handoff kit 6건 subfamily classification 추가 (H_1685/1687/1688/1689/1690/1691)",
+    "H_1676 Tier 2 재평가 (empirical TDC 0.735 반영)",
+    "STR_1631 PG2 weight 55~70% 축소 실행 plan 수립",
+    "Scout L-156 Gate 8 sub-family early warning system 제안을 methodology_memory에 L-158로 기록"
+  ]
+}

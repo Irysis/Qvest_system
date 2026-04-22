@@ -1,8 +1,8 @@
 ---
 name: supervisor
-description: "Q-Lead Supervisor — S0 토론 자동 체인(합산 점수제), Scout plan 승인, 에이전트 관리"
+description: "Q-Lead Supervisor — S0 토론 자동 체인(v55 Consensus), Scout plan 승인, 에이전트 관리"
 ---
-## Q-Lead Supervisor Protocol
+## Q-Lead Supervisor Protocol (v55 Consensus)
 
 ### Q-Lead의 역할
 Q-Lead(메인 세션)는 에이전트를 감독하고, **S0 토론 자동 체인으로 가설 품질을 검증**한 뒤 PG0 관점으로 승인한다.
@@ -10,68 +10,53 @@ Q-Lead(메인 세션)는 에이전트를 감독하고, **S0 토론 자동 체인
 
 ---
 
-### S0 가설 토론: 자동 체인 + 합산 점수제
+### S0 가설 토론: v55 Consensus 자동 체인
 
-**Skill**: `/s0-debate` (`.claude/skills/s0-debate/SKILL.md`)
-**Hook 체인 (v53)**: PostToolUse[Write s0_debate_*.json] → s0_debate_enforcer.sh (상태머신) → FileChanged[S0_VERDICT_*.json] → s0_verdict_router.sh
+**Skill (정본)**: `/s0-debate` (`.claude/skills/s0-debate/SKILL.md`) — R1/R2/R3/VERDICT 스키마, Compact 3인/Full 5인 모드, 채점 폐지 후 stance/veto consensus 규칙 모두 정의.
+**Lawbook**: `00_Lawbook/v55_consensus_addendum.md` §1 + §1.6
+**Hook 체인**: PostToolUse[Write s0_debate_*.json] → s0_debate_enforcer.sh (상태머신, stance/veto strict) → FileChanged[S0_VERDICT_*.json] → s0_verdict_router.sh (consensus 집계)
 
 ```
 [Phase 1] Scout 가설 설계
   Q-Lead가 Scout 스폰 (name="scout-s0", mode="plan")
-  → gap_vector + conditional_ic + L-code 참조 → 가설 설계
+  → gap_vector + conditional_ic + L-code + axiom_signals 참조 → 가설 설계 (expected_role 6종 / trail 3종 / gap_targeting_axes 필수)
   → ExitPlanMode
 
-[Phase 2] 4인 토론팀 자동 스폰
-  Hook(PostToolUse[Write], matcher="s0_debate_r1_*.json")
-  → s0_debate_enforcer.sh가 R1 상태 전이 + additionalContext 주입
-  → Q-Lead가 4명 병렬 Agent 스폰:
+[Phase 2] R1 토론팀 병렬 스폰 (Full 5인 또는 Compact 3인)
+  Q-Lead가 debater 병렬 Agent 스폰. 각자 stance + veto_flag + critical_concerns + supporting_arguments + s1_gate_items 출력.
 
-  Critic (judge 타입):    L-code 교훈 반론 + 과거 실패 유사성
-  Quant (forge 타입):     conditional_ic_matrix ICIR/상관 수치 팩트체크
-  Academic (scout 타입):  core_knowledge_base + arXiv/SSRN 논문 검증
-  Gov-proxy (governor 타입): gap_vector 정합성 + 슬리브 + MDD 기여
+  Full 5인:
+    Codex Critic (Bash GPT-5.4):     cross-model + design PIT + kill scenario (veto 없음, flag만)
+    Risk Manager (risk-manager):      L13 Risk Engine, EVT/GPD (veto: tail_risk)
+    Governor (governor):              gap 정합 + admission + family saturation (veto: admission_rule, gap_misaligned)
+    Quant (forge):                    ICIR/상관/data + KR empirical (veto: PIT, kr_empirical_hard_fail)
+    Academic (scout):                 peer review + mechanism + KR 실증 (veto: mechanism)
 
-[Phase 3] 합산 점수 판정
-  4명 완료 → Q-Lead가 점수 집계 (각 0~25점, 총 100점):
+  Compact 3인 (QVEST_DEBATE_MODE=compact):
+    Codex Critic + Risk Manager + (Judge or Governor)
+    Academic + Quant는 academic_factcheck.sh + quant_factcheck.sh hook으로 자동 대체
 
-  | 점수 | 판정 | 조치 |
-  |------|------|------|
-  | 75~100 | APPROVE | 즉시 S1 진행 |
-  | 60~74 | APPROVE_CONDITIONAL | 조건 명시 후 S1 |
-  | 40~59 | REVISE | 피드백 → Scout 재설계 (최대 3회) |
-  | 0~39 | REJECT | 가설 폐기 |
+[Phase 3] R2 Rebuttal (R1 transcript 요약본 주입)
+  enforcer가 R1 N/N 완료 시 transcript 요약본을 /tmp/s0_debate_r1_summary_{HYP_ID}.md로 생성 + Codex R2 자동 트리거.
+  Q-Lead가 R2 debater 병렬 스폰 → stance_change/new_stance/addressed_concerns/unresolved/veto_flag 출력.
 
-  특수 규칙:
-  - Gov-proxy ≤ 5점 → 무조건 REJECT
-  - Quant ≤ 5점 → 무조건 REJECT
+[Phase 4] R3 Closing (조건부)
+  R2 모두 stance UNCHANGED + veto 변동 0 → SKIP_R3, VERDICT_READY 직진.
+  stance_change != UNCHANGED 또는 veto 변동 발생 → R3_NEEDED, 해당 role만 재소환.
 
-  → S0_VERDICT_{factor_id}.json 저장
+[Phase 5] VERDICT 작성 (Q-Lead 책임, 점수 합산 금지)
+  qlead_init.md "S0 Debate VERDICT 작성 가이드" 참조.
+  enforcer가 final_stances + consensus_tally + consensus_tier + debaters[stance/veto_flag] + consensus_points + unresolved_disputes 검증.
 
-[Phase 4] 자동 라우팅
-  Hook(FileChanged, matcher="S0_VERDICT_*.json")
-  → s0_verdict_router.sh → Q-Lead에 다음 단계 주입:
+[Phase 6] 자동 라우팅 (s0_verdict_router.sh)
   - APPROVE: allocate_str + s0_record + Forge TODO_S1
-  - REVISE: Scout 재스폰(scout-s0) + 피드백 주입 → Phase 1 복귀
-  - REJECT: 폐기 로그 + 새 가설 탐색 지시
+  - APPROVE_CONDITIONAL: 동일 + s1_gate_items 전달
+  - REVISE: Scout 재스폰(scout-s0) + critical_concerns 피드백
+  - REJECT: 폐기 로그 + 새 가설 탐색
 ```
 
-### 채점 Rubric (각 에이전트 25점)
-
-**Critic**: l_code_check(5) + failure_avoidance(5) + banned_factor(5) + lesson_check(5) + structural_risk(5)
-**Quant**: icir_pass(5) + internal_corr(5) + c19_corr(5) + defense_ic(5) + data_avail(5)
-**Academic**: peer_review(5) + mechanism_align(5) + korea_evidence(5) + substantive_cite(5) + time_decay(5)
-**Gov-proxy**: role_match(5) + family_diverse(5) + cond_value(5) + stock_limit(5) + mdd_contrib(5)
-
-### 토론 에이전트 산출물 형식 (JSON 필수)
-```json
-{
-  "role": "critic|quant|academic|govproxy",
-  "total": 0-25,
-  "breakdown": { "항목1": 0-5, "항목2": 0-5, ... },
-  "findings": "핵심 판정 근거 500자 이내",
-  "conditions": ["조건1", ...] 또는 []
-}
-```
+### Stance 결정 기준 (각 도메인)
+점수 합산 폐기. 각 debater는 자기 도메인 체크리스트로 stance 1개 + (필요 시) veto 1개. 자세한 기준은 `.claude/skills/s0-debate/SKILL.md` "Stance 결정 기준" 섹션.
 
 ---
 

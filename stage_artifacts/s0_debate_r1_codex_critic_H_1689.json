@@ -1,0 +1,55 @@
+{
+  "role": "codex_critic",
+  "score": 6,
+  "arguments": [
+    "KR quality_profitability 검증 실패 패턴 재현 위험 — L-133/L-134/L-139 (AX-004 EXCLUSION scope) + L-125 IC-SR decoupling + L-160 defense IC-Return decoupling (STR_1683 H_1682 IC 0.22 but MDD 94% VALIDATED_HARD_FAIL). Q24 제거만 validated lesson (L-144) 반영이고 나머지 core construction (defense-family top-20 EW quality long)은 prior failed mechanisms의 relabel/tweak 수준",
+    "PIT failure 경로 명확 — Q04/Q07/Q25 재무제표 factor는 disclosure lag 프로토콜 미명시. Monthly loading mandate(L-164)에도 불구하고 실시간 constructability 증명 부재. backtest alpha가 inadvertent lookahead로 부풀려질 가능성 MEDIUM probability. Kill Scenario 2: Live SR drop 0.5-0.9 vs backtest, hidden MDD +15-25pp",
+    "설계 PIT 4/4 우려 (design_pit_assessment): (Q1) Factor set과 slot choice가 prior family outcomes 관찰 후 선택 = ex-post pattern selection risk HIGH. (Q2) disclosure-lag protocol 미명시. (Q3) Q24 제거는 stress_icir evidence 직접 참조로 **period-outcome-informed combination logic** 의심. (Q4) Scenario C 23% slot + weight schema 사전 등록 증거 없음 → full-sample tuning 가능성"
+  ],
+  "concern": "Q24 제거 + Q01/Q04/(Q07)/-Q25 averaging만으로 validated IC-to-return decoupling을 해소한다는 가정이 틀릴 시 → signal이 여전히 crowded quality proxy → top-20 집중이 regime reversal 증폭 → terminal state: IC 여전히 soft positive이나 realized SR ≤ 0 + MDD 70-90% extreme territory 재진입 가능",
+  "conditions": [
+    "strict point-in-time rebuild + filing-date lag mapping per factor (Q01/Q04/Q07/Q25) + post-disclosure rebalance delays 강제",
+    "STR_1683/H_1682 baseline 대비 ablation test — SR 및 MDD 통계적 유의 개선 증명 (단순 IC change 불충분)",
+    "monetization guardrails (SR/MDD-aware gate) 명시적 추가 — L-125/L-160 IC-return decoupling 대응 pre-approval 조건",
+    "exposure controls (size, liquidity, sector concentration) + KOSDAQ stress window robustness 증명",
+    "pre-registered acceptance thresholds + weights/slot rules 사전 freeze — outcome-driven tuning 방지"
+  ],
+  "codex_metadata": {
+    "total": 6,
+    "breakdown": {
+      "l_code_check": 1,
+      "failure_avoidance": 1,
+      "banned_factor": 2,
+      "lesson_check": 1,
+      "structural_risk": 1
+    },
+    "kill_scenarios": [
+      {
+        "scenario": "Korean quality crowding unwind — rate/inflation shock 시 high-profitability names 동시 derating. concentrated top-20 long book diversify 불가, drawdown 가속",
+        "probability": "high",
+        "expected_loss": "MDD 35-55%, SR degradation -0.6 to -1.0",
+        "blind_spot": false
+      },
+      {
+        "scenario": "PIT failure — monthly factor pipeline이 Q04/Q07/Q25를 disclosure 전 statement로 적용. Backtest alpha inadvertent lookahead 증폭, live performance collapse",
+        "probability": "medium",
+        "expected_loss": "Live SR drop 0.5-0.9 vs backtest, hidden MDD +15-25pp",
+        "blind_spot": true
+      },
+      {
+        "scenario": "Distress leg instability — -z_Q25 KR 회계 revisions/restatements + missing-data treatment 불일치. Downturn 직전 leveraged cyclicals로 exposure rotation",
+        "probability": "medium",
+        "expected_loss": "MDD 25-40%, SR degradation -0.4 to -0.7",
+        "blind_spot": false
+      }
+    ],
+    "weakest_assumption": "Q24 제거 + Q01/Q04/(Q07)/-Q25 averaging이 validated IC-to-return decoupling 해소에 충분하다는 가정",
+    "design_pit_assessment": {
+      "q1_ex_post_selection": "HIGH",
+      "q2_disclosure_lag": "HIGH",
+      "q3_outcome_conditioned": "HIGH (Q24 제거는 stress_icir 관찰 후 결정)",
+      "q4_pre_registration": "HIGH (Scenario C 23% slot full-sample tuning 가능)"
+    },
+    "verdict_recommendation": "Reject for now"
+  }
+}

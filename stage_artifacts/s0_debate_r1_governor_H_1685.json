@@ -1,0 +1,56 @@
+{
+  "role": "governor",
+  "debate_id": "H_1685_R1_governor",
+  "hypothesis_id": "H_1685",
+  "round": "R1_OPENING",
+  "timestamp": "2026-04-17T22:35:00+09:00",
+  "score": 16,
+  "score_breakdown": {
+    "gap_alignment": {
+      "value": 4,
+      "max": 4,
+      "rationale": "PG0 gap vector v1.0.3 Sharpe gap 0.807 (1.193 -> 2.0) 잔존. rev7 Fallback A가 H_1685 Phase_1 10% / Phase_3 20%로 가속 편입 확정, projected SR rho_0_3 1.80 도달 경로의 핵심 축. cold-start Phase 2 diversifier sleeve_needs 명시적 충족. MDD achieved, CAGR achieved 상태에서 유일 남은 gap이 Sharpe이고 H_1685 기여 +0.07 (20% x 0.75)로 H_1676 8% x 0.85 손실을 초과. 완전 정렬."
+    },
+    "role_match": {
+      "value": 4,
+      "max": 4,
+      "rationale": "diversifier 선언 + mechanism이 fundamental/consensus/risk와 원천 독립(거래행동 차원). 기존 Core(STR_1631 consensus) / Div(STR_1656 ML) / Def(H_1682 distress, H_1689 quality) 축과 겹치지 않는 4번째 axis. H_1674 core_alpha(개인 contrarian only)와 sub-family distinct(2-party divergence). Role Honesty Audit 관점에서 위장 가능성 낮음(Choe-Kho-Stulz smart money mechanism이 return predictability 원천이며, overlay-driven MDD 계상 문제 L-146과도 무관)."
+    },
+    "family_saturation": {
+      "value": 3,
+      "max": 4,
+      "rationale": "investor_flow family 신규 편입 precedent 부재는 우려이지만 오히려 family concentration 분산 측면에서 positive. rev7 Phase_3 family distribution: investor_flow 0.20(max) / quality_aggregate 0.15 / ML 0.14 / distress 0.12 / momentum_residual 0.10 / momentum_overlay 0.10 / consensus 0.18. Herfindahl 0.091(Session 65 sweep 후)에서 H_1685 20% 편입해도 35% family cap 대비 여유 15pp. 다만 20%는 Phase_3에서 max family가 되므로 1점 감점 — single-family 가속 가정이 실증으로 검증되기 전까지는 marginal concern 존재."
+    },
+    "marginal_contribution": {
+      "value": 3,
+      "max": 4,
+      "rationale": "cross-channel 독립성(예상 TDC vs STR_1631 < 0.15)이 실현될 경우 rho_0_3 블렌드에서 variance reduction factor 1.88 유지 + SR +0.02 net 기여. scout_consensus_subfamily_proposal_v2와도 non_consensus로 분류되어 Gate 8 사전 경고 대상 아님. 다만 ICIR forecast 0.30~0.55 범위의 상단만 실현되어야 SR 0.75 달성 가능 — S2 ICIR 실측이 0.20대이면 SR 0.50~0.60으로 하락하여 +0.02 net이 0에 근접. 실현 변동성 고려 1점 감점."
+    },
+    "implementation_feasibility": {
+      "value": 2,
+      "max": 4,
+      "rationale": "compute_investor.R + .cache/investor/investor_{foreign,individual}.parquet 인프라 기존 존재 — 구현 자체는 용이(+2). 다만 C11 데이터 시간축 검증이 critical: 거래주체 공시 T+1 timing이 compute_investor.R Usable_Date 로직에 반영되어 있는지 Forge S1 진입 전 사전 검증 필수. INV13_flow_divergence_21d 신규 factor 등록 필요 + C13 Z_Score_Aligned 준수 확인. rev7 Phase_1 5% -> 10% 가속 schedule(Day 4~5 vs 6~7)과 H_1685 S0 debate 시점(R31 open)이 연동되어 Phase_1 편입 timing risk 존재. 2점 감점."
+    }
+  },
+  "arguments": [
+    "PG0 gap alignment 완전 정렬: Sharpe gap 0.807 해소의 핵심 slot이며, rev7 projected SR 1.80 realistic target 도달 경로에서 H_1676 drop 보전 + 0.02 SR 가산 역할을 독점적으로 담당합니다. portfolio_gap_vector.json v1.0.3의 sleeve_needs='diversifier'에 cross-channel 독립 family로 정확히 대응하며, cold-start Phase 2에서 4번째 alpha axis를 확보하는 유일한 대안입니다.",
+    "Role admission 관점에서 diversifier 위장 위험이 낮습니다: Choe-Kho-Stulz 2005 RFS foundational paper + 고영훈-안일찬 2018 한국 실증이 smart money detection mechanism을 return predictability 원천으로 명시하여 Judge Role Honesty Audit(L-146 overlay-driven MDD 계상 금지 규칙)와 무관한 구조적 독립성을 보유합니다. H_1674(개인 contrarian only, core_alpha)와 sub-family 명시적 분리(2-party foreign-individual divergence interaction)로 precedent 충돌도 회피됩니다.",
+    "Family saturation + marginal contribution 관점에서 조건부 APPROVE가 타당합니다: Phase_3 20% 편입 시 investor_flow가 max family(0.20)가 되어 35% cap까지 15pp 여유가 있으나, 동시에 single-family가속 가정이 S2 ICIR 실측(0.20 초과) + S3 TDC 실측(vs STR_1631 < 0.15, vs H_1674 < 0.4) 2개 관문 통과에 의존합니다. C11 거래주체 공시 T+1 timing(compute_investor.R Usable_Date 사전 검증) + INV13_flow_divergence_21d 신규 registry 등록 + Phase_1 5% -> 10% 가속 schedule(R31 open)이 Forge S1 Grade PASS 실증과 동기화되어야 합니다."
+  ],
+  "concern": "implementation_feasibility 2점 감점의 근원은 C11 데이터 시간축 검증 미확인입니다. 거래주체 일별 데이터의 거래일 vs 공시일 구분은 한국 거래소 실무상 장마감 후 T+1 공시 체계인데, compute_investor.R INV-series pipeline에 Usable_Date lag 로직이 구현되어 있는지 Forge S1 진입 전 사전 점검이 필수입니다. L-457 investor_flow PIT 교훈이 AWARE 표기로만 반영되어 DIRECT_FIX가 아닌 점, L-148(카탈로그 Grade A != PIT clean) DIRECT_FIX 표기가 있으나 C1~C15 전수 수동 검증이 lesson_check 수준에서만 선언된 점이 우려입니다. Phase_3 20% 확대 시 investor_flow max family 상태에서 S2 ICIR 실측이 0.20 하단(forecast 0.30~0.55의 하한)에 머물면 SR 0.50~0.60 가설이 되어 SR net 기여가 +0.02에서 -0.01~0으로 축소될 리스크가 있으며, 이 경우 rev7 projected SR 1.80 도달 가정이 흔들립니다.",
+  "conditions": [
+    "Forge S1 진입 전 C11 PIT pre-check 필수: compute_investor.R Usable_Date 로직이 거래주체 공시 T+1 timing을 정확히 반영하는지 Judge가 lookahead_detector.R C11 패턴으로 사전 스캔하고 결과를 stage_artifacts/h_1685_c11_precheck.json에 기록. FAIL 시 Phase_1 편입 일시 중단 + compute_investor.R 패치 선행.",
+    "S2 ICIR hurdle + S3 TDC 이중 관문 조건부 admission: S2에서 ICIR 실측 >= 0.25(Alpha Lab Gate §8 0.20보다 강화, forecast 0.30~0.55의 보수 하한) AND S3에서 pairwise TDC vs STR_1631 < 0.15, vs STR_1656 < 0.30, vs H_1674(registry 존재 시) < 0.40 전수 PASS. 2개 중 1개라도 FAIL이면 Phase_1 5% cap로 제한하고 Phase_3 20% 승격 보류.",
+    "Phase 단계적 boost 명시 + rollback trigger: Phase_1 5% -> 10% boost는 Forge S1 Grade A or PASS_WITH_NOTES + Risk Mgr 3rd round TDC 재측정 결과가 rev7 risk_manager_3rd_round_validation scope 4축 기준 충족 후에만 승인. Phase_3 20% 승격은 S6 FF5 alpha positive + CAGR > 8% + MDD < 45% 3조건 동시 충족 조건부. 중간에 family concentration Herfindahl > 0.12 악화 시 investor_flow 15%로 자동 하향."
+  ],
+  "verdict_preliminary": "APPROVE_CONDITIONAL",
+  "verdict_rationale": "5축 합산 16/20 (gap 4 + role 4 + family 3 + marginal 3 + implementation 2). PG0 gap alignment + role admission은 완전 정렬이나 C11 PIT precheck + S2 ICIR + S3 TDC 3개 조건부 관문 통과 전까지 Phase_3 20% full admission은 보류 권고. Phase_1 5% 시범 편입은 debate APPROVE 즉시 가능하나 10%/20% 가속은 실증 검증 순차 의존. rev7 Fallback A 가속 가정이 깨지지 않도록 조건부 gate 3개가 parallel execution되어야 함.",
+  "references": {
+    "portfolio_gap_vector": ".cache/portfolio_gap_vector.json (v1.0.3, sharpe_gap 0.807)",
+    "pg0_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7.json (Fallback A 확정)",
+    "s0_record": "stage_artifacts/s0_record_H_1685_foreign_individual_flow_divergence.json",
+    "subfamily_taxonomy": "stage_artifacts/scout_consensus_subfamily_proposal_v2.json (non_consensus 분류)",
+    "related_l_codes": ["L-146 overlay-driven MDD Core alpha 계상 금지", "L-148 Grade A != PIT clean", "L-457 investor_flow PIT awareness"],
+    "axiom_compliance": "AX-000/001/002/003/004v3/005v2 PASS (value/quality_profitability/defense family 미저촉)"
+  }
+}

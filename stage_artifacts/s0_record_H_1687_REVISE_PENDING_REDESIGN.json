@@ -1,0 +1,86 @@
+{
+  "artifact_type": "s0_record_revise_pending",
+  "hypothesis_id": "H_1687",
+  "original_s0_record": "stage_artifacts/s0_record_H_1687_distress_momentum_interaction.json",
+  "original_handoff_kit": "stage_artifacts/s0_debate_handoff_H_1687.json",
+  "status": "REVISE_PENDING_REDESIGN (Session 68+ carry)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T21:00:00+09:00",
+
+  "debate_result": {
+    "verdict": "REVISE",
+    "total_score": 50,
+    "threshold_revise": "40-59 range",
+    "r2_total": 50,
+    "scout_predicted_L157_v2": [58, 73],
+    "actual_miss_from_lower": -8,
+    "record": "3rd consecutive Scout overestimate (H_1688 -5, H_1685 -5, H_1687 -8)"
+  },
+
+  "root_cause_linear_dominance": {
+    "scout_preempirical_measurement_2026_04_17": {
+      "H_1687_vs_H_1682_correlation": {
+        "mean": 0.869,
+        "median": 0.869,
+        "interpretation": "Q25 공유 dominance — H_1687 0.5·(-Q25) + 0.5·M01의 -Q25 항이 H_1682 0.6·(-Q25) + 0.4·R16와 Q25 강공유."
+      },
+      "H_1687_vs_H_1688_correlation": {
+        "mean": 0.782,
+        "median": 0.782,
+        "interpretation": "M01 Momentum 공유 — H_1687의 0.5·M01 항이 H_1688 residual momentum (M08 근사)과 78% 동일 ranking."
+      },
+      "H_1688_vs_H_1682_correlation": {
+        "mean": 0.614,
+        "interpretation": "공통 factor 없음에도 한국시장 대형주 집중으로 0.6 baseline."
+      }
+    },
+    "structural_diagnosis": "H_1687 (Q25+M01 50/50 linear) vs H_1682 + H_1688과 각각 87%, 78% cross-section overlap. Interaction 가설이지만 linear composite은 component factor dominance에서 탈출 못함.",
+    "gate_8_prediction": "H_1687 vs STR_1631 portfolio-level TDC 예상 0.4~0.6 (L-156 v3.0 FAIL risk). vs H_1682 0.65+ 예상. 동시 PG2 편입 불가."
+  },
+
+  "q_lead_verdict_option_b": {
+    "decision": "Option B — H_1687 재설계 Session 68+ carry",
+    "carry_to_session_68": true
+  },
+
+  "option_a_future_redesign_draft": {
+    "new_signal_name": "LowDistress_HighMomentum_GatedIntersection",
+    "mechanism_revised": "Gated double-sort: (z_Q25 < percentile 30) AND (z_M01 > percentile 70) 교집합 → Top 20 EW. Linear composite 대신 discrete intersection으로 component dominance 완화.",
+    "advantages": [
+      "Linear 50/50 dominance 회피 (binary gate)",
+      "Interaction 진정한 의미 구현 (두 조건 동시 만족)",
+      "Avramov 2013 원 논문 framework (double-sort) 더 충실",
+      "Scout L-157 v3 linear dominance test 통과 가능성"
+    ],
+    "disadvantages": [
+      "Universe size 축소 (intersection 약 5~8%) → 20종목 curation 어려움 가능",
+      "MRS CAUTION (< 50) 복귀 후 S1 타이밍 필요 (현재 CRISIS 63.1)"
+    ],
+    "korean_citations_to_add": ["Kho-Kim 2007", "Eom-Park 2014", "Bae-Kang-Wang 2015"],
+    "barroso_2015_integration": "S5 Mutation Lab에서 Barroso 2015 vol scaling overlay 추가",
+    "scout_predicted_L157_v3": [55, 70],
+    "redesign_trigger_conditions": [
+      "Session 68+ Scout bandwidth 확보",
+      "MRS regime < 50 복귀",
+      "Scout calibration v4.0 재평가 완료 후",
+      "Q-Lead 승인"
+    ]
+  },
+
+  "scout_notes": [
+    "L-157 v3 3rd miss recorded. Scout calibration 누적 정확도 33%.",
+    "Scout pre-empirical 2026-04-17 측정 H_1687 vs H_1682 상관 0.869 → debate 개시 전 Q-Lead에 제시했어야 함 (handoff kit Session 66 작성 시 누락).",
+    "L-157 v3 (e) linear dominance test가 H_1687 사례 핵심 교훈 — 50/50 linear은 sub-factor dominance 회피 못함.",
+    "Option B Session 68+ carry 결정 수용. H_1687 관련 작업 보류."
+  ],
+
+  "carry_to_session_68_tracking": {
+    "estimated_redesign_effort": "4~6시간",
+    "precondition_confirmations_needed": [
+      "Kho-Kim 2007 + Eom-Park 2014 + Bae-Kang-Wang 2015 한국 실증 verify",
+      "MRS regime < 50 복귀",
+      "STR_1679v3 Slot A + Slot C1 PG2 admission 완료 후",
+      "H_1690 debate 결과 (Defense 공석 해소 여부)"
+    ]
+  }
+}

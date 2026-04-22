@@ -7,35 +7,8 @@
 # 참조: optimized-backtest 스킬, ml-factor-model 스킬, CLAUDE.md
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
-
 INPUT=$(cat)
-
-# 각 필드를 개별 python3 호출로 추출 (content에 줄바꿈이 있어도 안전)
-TOOL_NAME=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-print(d.get('tool_name', ''))
-" 2>/dev/null || echo "")
-
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-print(d.get('tool_input', {}).get('file_path', ''))
-" 2>/dev/null || echo "")
-
-COMMAND=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-print(d.get('tool_input', {}).get('command', ''))
-" 2>/dev/null || echo "")
-
-CONTENT=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-ti = d.get('tool_input', {})
-print(ti.get('content', '') + ti.get('new_string', ''))
-" 2>/dev/null || echo "")
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 LOG="/tmp/forge_code_guard.log"
 
@@ -394,17 +367,9 @@ if [ "$TOOL_NAME" = "Bash" ]; then
         if [ "$QVEST_SKIP_PIT_V3" != "1" ] && [ -n "$CONTENT_HASH" ] && [ ! -f "$PIT_CACHE" ]; then
           # 오래된 cache 정리 (같은 전략 이전 해시)
           find /tmp -maxdepth 1 -name "pit_v3_clean_${STRAT_NAME}_*.flag" -mmin +10080 -delete 2>/dev/null
-          PIT_OUT=$(cd "$PROJ" && timeout 45 Rscript -e "
-options(warn = -1)
-suppressPackageStartupMessages(source('02_Infrastructure/validation/pit_engine_v3.R'))
-r <- pit_engine_v3\$blocking_gate('$STRAT_DIR', levels = c('static', 'ast'), verbose = FALSE)
-cat(sprintf('PIT_RESULT|%s|%s|%d\n', if (isTRUE(r\$clean)) 'CLEAN' else 'FAIL', r\$severity, length(r\$violations)))
-if (!isTRUE(r\$clean)) {
-  for (v in r\$violations[1:min(5, length(r\$violations))]) {
-    cat(sprintf('  - %s (line %s): %s\n',
-      v\$code %||% 'PIT', v\$line %||% '?', substr(v\$match %||% v\$pattern %||% '?', 1, 80)))
-  }
-}
+          PIT_OUT=$(cd "$PROJ" && timeout 45 Rscript --no-save -e "
+suppressMessages(source('02_Infrastructure/R/hook_batch_runner.R'))
+hook_pit_gate('$STRAT_DIR')
 " 2>&1)
           PIT_STATUS=$(echo "$PIT_OUT" | grep '^PIT_RESULT|' | head -1 | cut -d'|' -f2)
           PIT_SEV=$(echo "$PIT_OUT" | grep '^PIT_RESULT|' | head -1 | cut -d'|' -f3)

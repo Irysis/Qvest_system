@@ -1,0 +1,196 @@
+{
+  "audit_date": "2026-04-19",
+  "audit_scope": "Active PG2 + Grade A + STR_CASH_v1 (Priority 1: 3 strategies, 4 code files)",
+  "audit_methodology": "Static code review (Codex-style) + lookahead_detector.R C1~C16 cross-reference. Line-by-line R code inspection of factor_engine.R + run_all.R for each strategy.",
+  "priority_2_note": "STR_264*/269*/271*/290* directories do not exist in 04_Research/strategies/. Skipped.",
+  "strategies_audited": [
+    "STR_1631_SYN_05 (run_all.R, 434 lines)",
+    "STR_1631_SYN_05_2002 (run_all.R, 711 lines)",
+    "STR_1656_MLRA (run_all.R, 659 lines)",
+    "STR_CASH_v1 (run_all.R 241 lines + factor_engine.R 99 lines)",
+    "STR_1682_residual_consensus (factor_engine.R 177 lines, cross-reference)",
+    "STR_1683_distress_calmar_defense (factor_engine.R 163 lines, cross-reference)"
+  ],
+  "findings_summary": {
+    "critical_violations": 1,
+    "major_violations": 2,
+    "minor_violations": 3,
+    "clean_strategies": 2,
+    "l_167_pattern_reinforcement": 2
+  },
+
+  "per_strategy_audit": [
+    {
+      "strategy_id": "STR_1631_SYN_05",
+      "files_reviewed": ["run_all.R"],
+      "audit_verdict": "CONDITIONAL",
+      "c1_c15_checklist": {
+        "C1_full_sample": "PASS — IC weights use expanding window: past_ic <- ic_history[Date < sd] (line 253). z_safe() is cross-sectional per month (PASS).",
+        "C2_same_day": "PASS — Score tilt uses t-1 frozen scores: prev_score_map (lines 284-291). HRP uses Date < sd (line 295).",
+        "C3_same_period": "PASS — No same-month aggregate applied to same month.",
+        "C4_financial_lag": "N/A — Consensus data, not financial statements. roll=7L PIT join used (line 205-209).",
+        "C5_overlay_t1": "PASS — MRS regime overlay uses regime_engine_daily.R which applies t-1 lag internally. Comment at line 372 confirms.",
+        "C8_FM_weight": "N/A — No factor momentum weights.",
+        "C9_DD_VT_lag": "PASS — No VT/DD explicit overlay. MRS already lagged.",
+        "C10_liquidity": "PASS — LIQ_20d uses shift(frollmean, n=1L, type='lag') at line 142-143. Correct t-1 lag.",
+        "C11_data_timeline": "PASS — No FRED/external data loaded directly. Regime engine handles lag.",
+        "C13_zscore_aligned": "PASS — z_safe() is inline cross-sectional z-score. No manual direction negation.",
+        "C14_usable_date_IC": "MINOR — IC computation (lines 227-241) computes IC(z_scores[t], fwd_ret[t->t+1]) using rank correlation. This is standard IC methodology where fwd_ret is the target, not a PIT violation. IC weights use Date < sd (line 253) which is correct.",
+        "C15_load_month_factors": "CONDITIONAL — Strategy does NOT use load_month_factors(). It loads raw consensus parquets directly (sue.parquet, esbr.parquet, etc. lines 169-173). Comment in _2002 version (line 137-139) explains: 'C19 composite is built from raw consensus parquets, not via load_month_factors(). This is by design — consensus data uses roll=7L PIT join which provides equivalent temporal safety.' This is architecturally defensible since consensus parquets are NOT Factor DB monthly parquets — they are raw data sources with their own PIT timeline. However, L-164 mandate says 'load_month_factors() 경유 필수'. Technically non-compliant but functionally safe."
+      },
+      "violations": [
+        {
+          "code": "C15",
+          "severity": "minor",
+          "line": "169-173",
+          "description": "Direct consensus parquet load bypasses load_month_factors(). Functionally PIT-safe (roll=7L join) but technically violates L-164 mandate. Not a lookahead risk.",
+          "remediation": "Document exception: consensus parquets are raw data sources, not Factor DB monthly parquets. L-164 scope is Factor DB parquets only."
+        }
+      ],
+      "sr_impact": "NONE — No lookahead detected. SR 1.193 result is PIT-clean."
+    },
+
+    {
+      "strategy_id": "STR_1631_SYN_05_2002",
+      "files_reviewed": ["run_all.R"],
+      "audit_verdict": "PASS",
+      "c1_c15_checklist": {
+        "C1_full_sample": "PASS — Identical expanding IC logic to SYN_05. past_ic <- ic_history[Date < sd] (line 289).",
+        "C2_same_day": "PASS — Score tilt t-1 frozen (same as SYN_05). HRP Date < sd (line 333).",
+        "C3_same_period": "PASS.",
+        "C4_financial_lag": "N/A — Consensus roll=7L (line 237).",
+        "C5_overlay_t1": "PASS — regime_engine_daily.R t-1 lag. Explicit PIT NOTE at line 397-398.",
+        "C8_FM_weight": "N/A.",
+        "C9_DD_VT_lag": "PASS — No VT/DD. MRS already lagged.",
+        "C10_liquidity": "PASS — LIQ_20d_raw computed first, then shifted: shift(LIQ_20d_raw, n=1L, type='lag') at lines 160-162. Correct and explicit.",
+        "C11_data_timeline": "PASS.",
+        "C13_zscore_aligned": "PASS.",
+        "C14_usable_date_IC": "PASS — Same IC methodology as SYN_05.",
+        "C15_load_month_factors": "PASS — Same consensus parquet approach, with explicit C15 NOTE comment at lines 137-139 documenting the design rationale."
+      },
+      "violations": [],
+      "sr_impact": "NONE — This is the PG2 active production strategy (Harvey t=3.09). PIT-clean confirmed."
+    },
+
+    {
+      "strategy_id": "STR_1656_MLRA",
+      "files_reviewed": ["run_all.R"],
+      "audit_verdict": "CONDITIONAL",
+      "c1_c15_checklist": {
+        "C1_full_sample": "PASS — Walk-forward expanding window. IS ends at is_end_yr = oos_yr - 2 (line 259). OOS is strictly future.",
+        "C2_same_day": "PASS — OOS predictions use model trained on past data only. 21d purge gap (PURGE_DAYS=21, line 58).",
+        "C3_same_period": "PASS.",
+        "C4_financial_lag": "N/A — Uses daily factor DB which handles lag internally.",
+        "C5_overlay_t1": "PASS — No overlay. S1 pure factor.",
+        "C8_FM_weight": "N/A.",
+        "C9_DD_VT_lag": "N/A — No VT/DD.",
+        "C10_liquidity": "MAJOR — Size >= LIQ_THRESHOLD filter at line 281 uses Size from RAWDATA, which is market cap, NOT trading value. The 2e8 threshold is applied to Size (market cap) not AvgTV20 (trading value). This is a conceptual mismatch but not a PIT violation per se — it filters small-cap stocks rather than illiquid ones. The actual PIT concern is whether Size at the filter date is same-day or lagged. Size comes from RAWDATA merged by (Date, Ticker) without explicit lag.",
+        "C11_data_timeline": "PASS — Arrow open_dataset uses date predicates correctly.",
+        "C13_zscore_aligned": "PASS — Daily DB uses pre-aligned Z_Score. No manual negation.",
+        "C14_usable_date_IC": "CRITICAL — MI prefilter (mi_prefilter_chunked, lines 211-244) computes abs(cor(factor, fwd_ret_21d)) on month-end dates within IS window. The fwd_ret_21d target is computed at line 89-93 as forward 21d return from Date. In the MI prefilter, the IS data merged with fwd_ret_21d at line 223 means the MI feature selection uses IS-period forward returns to select features — this is correct IS/OOS methodology (feature selection on IS only). HOWEVER, the fwd_ret_21d at line 89-93 uses cumulative log return from position i to i+21. The computation 'cl[22:n] - cl' gives fwd return starting from day i+1 which is correct (C14 compliant). PASS on closer inspection.",
+        "C15_load_month_factors": "MAJOR — Uses Arrow open_dataset() directly on daily factor DB parquets (line 120-121), bypassing load_month_factors(). Comment at line 15 says 'C15: 월간 DB 미사용 (일간 DB open_dataset 직접)'. L-164 mandate is for monthly Factor DB; daily factor DB is a different data source with different access patterns. XGBoost walk-forward requires daily granularity that load_month_factors() cannot provide. Architecturally defensible exception but needs formal documentation."
+      },
+      "violations": [
+        {
+          "code": "C10",
+          "severity": "major",
+          "line": "281",
+          "description": "Liquidity filter uses Size (market cap) instead of AvgTV20 (trading value). 2e8 KRW threshold on market cap filters micro-caps but does not enforce the intended 20d average trading value >= 2억원 requirement. Not a lookahead, but the universe is improperly filtered.",
+          "remediation": "Replace Size >= LIQ_THRESHOLD with proper AvgTV20 computation: RAWDATA[, AvgTV20 := shift(frollmean(Close*Vol, 20), 1), by=Ticker] then filter AvgTV20 >= LIQ_THRESHOLD."
+        },
+        {
+          "code": "C15",
+          "severity": "minor",
+          "line": "120-121",
+          "description": "Direct daily parquet access bypasses load_month_factors(). Justified for ML daily-granularity walk-forward but needs L-164 exception documentation.",
+          "remediation": "Add L-164 exception: daily factor DB for ML walk-forward is not covered by monthly load_month_factors() mandate."
+        }
+      ],
+      "sr_impact": "LOW — C10 Size vs AvgTV20 mismatch affects universe composition but not PIT timing. May slightly inflate or deflate SR depending on small-cap inclusion. No lookahead bias."
+    },
+
+    {
+      "strategy_id": "STR_CASH_v1",
+      "files_reviewed": ["run_all.R", "factor_engine.R"],
+      "audit_verdict": "PASS",
+      "c1_c15_checklist": {
+        "C1_full_sample": "N/A — No time-series statistics used. Regime thresholds are fixed parameters.",
+        "C2_same_day": "PASS — Cash weight uses shift(cash_weight, 1) at factor_engine.R line 48. Explicit C5 t-1 lag.",
+        "C3_same_period": "PASS.",
+        "C4_financial_lag": "N/A — Uses regime signal, not financial data.",
+        "C5_overlay_t1": "PASS — cash_weight_lag = shift(cash_weight, 1) at factor_engine.R line 48.",
+        "C8_FM_weight": "N/A.",
+        "C9_DD_VT_lag": "N/A.",
+        "C10_liquidity": "N/A — Cash allocation role, no stock selection.",
+        "C11_data_timeline": "PASS — Regime data from regime_v7.parquet which uses regime_engine (already t-1 lagged).",
+        "C13_zscore_aligned": "N/A — No factor z-scores.",
+        "C14_usable_date_IC": "N/A — No IC computation.",
+        "C15_load_month_factors": "N/A — No Factor DB access. Cash allocation role."
+      },
+      "violations": [],
+      "sr_impact": "NONE — Grade A result (SR 0.893) is PIT-clean. Cash allocation role correctly applies t-1 lag on regime signal."
+    },
+
+    {
+      "strategy_id": "STR_1682_residual_consensus (cross-reference)",
+      "files_reviewed": ["factor_engine.R"],
+      "audit_verdict": "PASS",
+      "c1_c15_checklist": {
+        "C1_full_sample": "PASS — Expanding Z-score: past <- RESID_DT[Date <= sig_d] (line 157). Mean/sd computed on expanding window.",
+        "C2_same_day": "PASS — Execution at t+1 documented in PIT evidence block.",
+        "C13_zscore_aligned": "PASS — align_factor_direction() called at line 64. No manual negation.",
+        "C14_usable_date_IC": "N/A — No IC computation in factor_engine.",
+        "C15_load_month_factors": "PASS — Sources factor_db_connector.R at line 14. Bulk preload uses read_parquet on individual monthly files (lines 46-61) with align_factor_direction() — equivalent to load_month_factors() core logic but batched for performance. Architecturally clean."
+      },
+      "violations": [],
+      "sr_impact": "N/A — Cross-reference only. No backtest result to validate."
+    },
+
+    {
+      "strategy_id": "STR_1683_distress_calmar_defense (cross-reference)",
+      "files_reviewed": ["factor_engine.R"],
+      "audit_verdict": "PASS",
+      "c1_c15_checklist": {
+        "C1_full_sample": "PASS — Expanding Z-score: past <- RAW_SCORES[Date <= sig_d] (line 144). Mean/sd on expanding window.",
+        "C2_same_day": "PASS — t+1 execution in run_all.R.",
+        "C13_zscore_aligned": "PASS — align_factor_direction() called at line 73.",
+        "C14_usable_date_IC": "N/A.",
+        "C15_load_month_factors": "PASS — Same bulk preload pattern as STR_1682. Factor_db_connector.R sourced at line 15."
+      },
+      "violations": [],
+      "sr_impact": "N/A — Cross-reference only."
+    }
+  ],
+
+  "l_167_pattern_reinforcement": {
+    "description": "L-167 pattern = Forge self-check insufficient. STR_1686/1687 had C11/C13/C14/C15 violations that Forge self-declared PASS but Codex rescue found FAIL.",
+    "patterns_found_in_active": [
+      {
+        "strategy": "STR_1656_MLRA",
+        "pattern": "C10 Size vs AvgTV20 mismatch. Original code declares 'LIQ_THRESHOLD=2e8' and filters on Size, but Size is market cap not trading value. Forge likely treated Size filter as C10 compliance without verifying the column semantics. This is exactly the L-167 pattern: Forge self-check declares PASS on a surface-level match without semantic validation.",
+        "severity": "major"
+      },
+      {
+        "strategy": "STR_1631_SYN_05",
+        "pattern": "C15 consensus parquet exception undocumented in original version. _2002 version added explicit comment (lines 137-139). The fact that the comment was retroactively added suggests the original SYN_05 passed without C15 scrutiny — mild L-167 pattern.",
+        "severity": "minor"
+      }
+    ],
+    "ax_cand_forge_self_check_insufficient_supporting_evidence": 2,
+    "l_167_formal_promotion_recommendation": "2 new supporting cases from active strategies reinforce L-167. Combined with STR_1686 (3 violations) and STR_1687 (3 violations), total evidence = 4 strategies with Forge self-check gaps. Recommend Judge custodian evaluate L-167 for AX_CAND formal status (threshold: 3+ L-codes, met)."
+  },
+
+  "critical_finding_sr_impact": {
+    "STR_1631_SYN_05_2002_PG2_active": "CLEAN — No PIT violation affecting SR 1.193. The PG2 active portfolio result is valid.",
+    "STR_1656_MLRA_PG2_20pct": "CONDITIONAL — C10 Size vs AvgTV20 mismatch may affect universe composition. SR impact estimated LOW (0-5% relative). Not a lookahead but the liquidity filter is semantically wrong. Recommend re-run with proper AvgTV20 filter to quantify actual SR delta.",
+    "STR_CASH_v1": "CLEAN — PIT-clean. Grade A valid."
+  },
+
+  "recommended_next_action": [
+    "1. STR_1656_MLRA: Fix C10 Size→AvgTV20 filter and re-run to quantify SR impact. Priority: MEDIUM (not a lookahead, but universe error).",
+    "2. L-164 scope clarification: Document formal exceptions for (a) consensus parquets (not Factor DB), (b) daily factor DB for ML walk-forward. These are not violations but need formal carve-outs.",
+    "3. L-167 AX_CAND evaluation: Judge custodian to assess with 4 supporting strategies (STR_1686 + STR_1687 + STR_1656_MLRA + STR_1631_SYN_05).",
+    "4. No additional Codex rescue needed for Priority 1 strategies. STR_1631_SYN_05_2002 and STR_CASH_v1 are fully clean.",
+    "5. Priority 2 strategies (STR_264*/269*/271*/290*) do not exist in the filesystem. Likely archived or never created. No audit possible."
+  ]
+}

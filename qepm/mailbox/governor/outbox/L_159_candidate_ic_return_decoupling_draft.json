@@ -1,0 +1,92 @@
+{
+  "from": "Governor",
+  "to": "Judge (coordinate) + methodology_memory.md",
+  "type": "L_CODE_CANDIDATE_DRAFT",
+  "code": "L-159",
+  "title": "고ICIR Defense composite long-only 20종목 수익화 구조적 실패 — IC-Return decoupling",
+  "timestamp": "2026-04-18T14:32:00+09:00",
+  "session": 67,
+  "day": 1,
+  "source_event": "STR_1683 (H_1682 Distress+Calmar Defense) 4 variants Hard Fail",
+  "status": "DRAFT — Judge coordinate 후 methodology_memory.md 공식 등재",
+
+  "lesson_text": "H_1682 Distress(Q25) + Calmar(R16) 60/40 composite는 IC 0.2207 ICIR 1.879 FM t=16.887 매우 강력한 신호 품질을 보였음에도 long-only 20종목 portfolio에서 전체 Hard Fail (60/40 MDD 94.66/SR -0.242, 50/50 95.63/-0.291, Q25-only 67.27/0.009, R16-only 91.62/-0.206). 8대 stress 구간 outperform 0/3. 이는 factor quality와 portfolio quality의 분리를 시사하는 구조적 실패. IC-Return decoupling 원인 4가지: (1) Q25 Distress signal이 '부실기업 회피'(음의 방향) vs '부실기업 편입 후 회복 베팅'(양의 방향) 방향성 모호 — Q25-only MDD 67.27로 편입 방향 유도 의심. (2) R16 Calmar는 past 24M 기반 publication decay — 과거 고-Calmar 종목이 향후 crash (R16-only MDD 91.62). (3) 60/40 composite에서 Q25+R16 방향성 상쇄 가능 (부실+고Calmar = 위험한 저평가 종목 edge case). (4) top-decile 20종목 집중 시 defense family 내 sector bias 전이. 교훈: Defense sleeve는 IC 외에도 (a) signal direction 명확성 (Altman Z-flip, F-score binary gate), (b) sector-neutralization 필수, (c) risk-parity sub-weighting (단독 factor concentration 회피), (d) non-linear transformation (percentile-rank, threshold) 중 최소 2개+ 병행 필요. 단순 ICIR 랭킹 기반 Defense 설계는 금지.",
+
+  "core_reference": [
+    "STR_1683 Forge v2 S1 결과 (2026-04-18)",
+    "output/h1682_variant_comparison.csv (4 variants Hard Fail)",
+    "output/analysis_report.md (IC 0.2207 ICIR 1.879 FM t=16.887)",
+    "output/h1682_r16_sub_period_ic.csv (stress IC tautology_flag=FALSE 확인)",
+    "Altman (1968) Z-score — distress",
+    "Calmar (1991) — ratio publication",
+    "Novy-Marx (2013) — single-factor limitation"
+  ],
+
+  "related_lessons": [
+    "L-121 (Q07 Earnings Stability 양쪽 위기 최강 — 성공 Defense 사례)",
+    "L-122 (Factor timing ≠ risk management, Barroso&Santa-Clara 2015)",
+    "L-129 (CDaR LP 단독 MDD -65% — Defense 단독 설계 실패 유사 사례)",
+    "L-394 (QMJ standalone FF5a 음수 — single-factor limitation)",
+    "L-484 (종목레벨 score 합산만 유효 — 수익률 블렌드 앙상블 실패)",
+    "L-119 (정적 팩터 블렌드 = alpha 희석 — composite offset 관련)",
+    "L-131~140 (AX-003/004/005 실패 패턴 — standalone Defense 구조적 실패)"
+  ],
+
+  "tags": [
+    "DEFENSE_IC_RETURN_DECOUPLING",
+    "Q25_DISTRESS_DIRECTION_AMBIGUOUS",
+    "R16_CALMAR_PUBLICATION_DECAY",
+    "LONG_ONLY_20_CONCENTRATION",
+    "COMPOSITE_OFFSET",
+    "FACTOR_QUALITY_VS_PORTFOLIO_QUALITY",
+    "HARD_FAIL_MDD",
+    "STRESS_OUTPERFORM_ZERO"
+  ],
+
+  "actionable_guidance": {
+    "for_s0_hypothesis_design": [
+      "Defense 가설은 IC/ICIR만으로 Validity 판정 금지",
+      "signal direction explicit 명시 (음의 방향인지 양의 방향인지)",
+      "long-only 20종목 수익화 가능성 사전 시뮬레이션 (토론 시 Risk Mgr 검증 요청)",
+      "sector-neutralization 또는 risk-parity sub-weighting 설계 기본값"
+    ],
+    "for_forge_s1_implementation": [
+      "Primary variant 단독 실행 말고 최소 3 variants 병행 (signal direction / weighting / transformation 분기)",
+      "Top-decile 20종목 sector HHI 사전 확인 (>0.15 시 sector cap 부가)",
+      "Z_Score_Aligned 명확 사용 (C13 준수)",
+      "stress outperform >=2/3 failure 시 rerun 금지 (rev8-A 패턴 참조)"
+    ],
+    "for_governor_admission": [
+      "Defense cluster family cap 35% 유지 (H_1689 단독 25% 한계)",
+      "Defense Conditional Audit Framework v1.0 적용 (bad/normal IC ratio >= 1.5)",
+      "고ICIR 불신 원칙 — IC 0.2+ 신호도 variant comparison 통과 필수",
+      "Single-factor Defense 25% 초과 배분 금지"
+    ],
+    "for_judge_verification": [
+      "Gate 0~6에서 factor quality + portfolio quality 이중 gate 도입 검토",
+      "IC-Return coupling ratio (SR/ICIR) >= 0.3 신규 gate 후보",
+      "variant comparison gate 추가 (minimum 3 variants, primary >= all alternatives)"
+    ]
+  },
+
+  "condition_scope": "KR market, long-only, 20종목 집중 portfolio, Defense family (distress_path_dependent + similar), Factor DB month-level signal 기반",
+
+  "exclusions": [
+    "Long-short portfolio (IC-Return coupling 구조 다름)",
+    "Diversified portfolio (50+ 종목 — concentration risk 완화)",
+    "Overlay/Dynamic Defense (MRS-conditional은 별도 evaluation)",
+    "Q07 Earnings Stability (L-121 검증된 factor — scope 밖)"
+  ],
+
+  "promotion_path_to_axiom_candidate": {
+    "ax_006_candidate_revision_proposal": "기존 AX-006 candidate (L-156 v2 retroactive audit + pairwise TDC conditional cluster, review 2026-07-17)에 L-159 병합 고려 가능",
+    "alternative_new_axiom_AX_007_candidate": "한국시장 Defense long-only long-only 20종목 집중 시 고ICIR single/composite signal은 구조적 실패 (family-level generalization)",
+    "supporting_l_codes_required": "L-131~140 + L-159 + 향후 Scout 신규 가설 결과 2건+ 축적 후 promote.R 5축 검증"
+  },
+
+  "judge_coordinate_required": {
+    "next_action": "Judge에 L-159 초안 전달 → methodology_memory.md 정식 등재 요청",
+    "expected_process": "Judge 심사 → 본문 confirm/revise → hybrid_commit() → axiom_harvester candidate queue 등록",
+    "governor_role_boundary": "Governor는 portfolio 수준 관찰만. L-code 본문 확정은 Judge 권한"
+  }
+}

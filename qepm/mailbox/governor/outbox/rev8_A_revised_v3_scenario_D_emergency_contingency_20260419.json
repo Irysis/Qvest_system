@@ -1,0 +1,273 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Scout + Forge",
+  "type": "REV8_A_REVISED_V3_SCENARIO_D_EMERGENCY_CONTINGENCY",
+  "timestamp": "2026-04-19T12:25+09:00",
+  "session": 68,
+  "day": 1,
+  "status": "**EMERGENCY_CONTINGENCY_DRAFT** — H_1690 STR_1685 VALIDATED_HARD_FAIL 수신 후 Defense cluster 공백 대응 plan. Judge S6 공식 판정 전 preliminary draft. v54 Freeze compliant (new rule 없음, 기존 composition 재조합만).",
+
+  "trigger_event": {
+    "type": "Forge S1 DONE — VALIDATED_HARD_FAIL",
+    "strategy_id": "STR_1685",
+    "hypothesis": "H_1690 Multi-Source Defense Anchor",
+    "timestamp_forge_result": "2026-04-19T01:02+09:00",
+    "governor_reception": "2026-04-19T12:25+09:00",
+    "grade_all_4_variants": "F",
+    "critical_metrics": {
+      "cagr_range": "[-0.103, +0.1434]",
+      "sr_range": "[-0.2947, +0.5158]",
+      "mdd_range": "[0.7721, 0.9469] — 모든 variant MDD > 45% admission rule hard_fail",
+      "icir_range": "[-0.6049, +0.9368] — signal quality 상이"
+    },
+    "gates_failed": {
+      "admission_rule_hard_fail_1": "MDD > 45% → REJECT 조건 (V1 94.69%, V2 84.70%, V3 77.21%, V4 87.66%)",
+      "defense_audit_axis_b": "MDD delta -73.4% vs STR_1631 (0.2127) — MDD 완화 기여 역방향",
+      "tail_risk_gate": "FAIL (CDaR 95% 0.9469 vs threshold)",
+      "c1_cosine": "FAIL (complementarity 부재)"
+    }
+  },
+
+  "l_125_extension_family_3rd_member_candidate_assessment": {
+    "judge_coordination_pending": true,
+    "governor_preliminary_diagnosis": {
+      "pattern_match_signature": "L-125/L-160 Signal-Portfolio Translation Failure family와 동일 pattern",
+      "evidence": {
+        "ic_quality_strong": "V1 ICIR 0.7371, V2 ICIR 0.9368, V3 ICIR 0.7778 — 3/4 variants positive ICIR >0.7",
+        "portfolio_translation_failure": "V1/V2/V4 CAGR negative + MDD 84~94%",
+        "defense_audit_axis_b_catastrophic": "MDD 0.9469 vs STR_1631 0.2127 = delta -73.4% (reversed expected direction)"
+      },
+      "mechanism_hypothesis": "Q25 Distress + R16 Calmar + Q07 Earnings Stability + C19 Composite Earnings 4-axis composite가 individual signal 강도 양호함에도 top-20 long-only 구조에서 부실/고변동 종목 반영 후 동반 crash",
+      "similarity_to_L_160_str_1683": "STR_1683 (H_1682 Distress+Calmar) IC 0.22 + ICIR 1.88 + portfolio 4-variant Hard Fail과 매우 유사. Q25 동일 사용 + defense family long-only 구조적 실패"
+    },
+    "judge_custodian_decision_required": {
+      "3rd_member_admission_question": "L-125 extension family (Signal-Portfolio Translation Failure) 3번째 멤버로 L-165 신설 + STR_1685 등재 여부",
+      "ax_cand_promotion_trigger": "3 members 누적 시 AX_CAND_signal_portfolio_translation_failure 공식 승격 후보 trigger",
+      "governor_recommendation": "L-165 신설 APPROVE 권고 — mechanism pattern match 확실, Defense family long-only 구조적 한계 정립 필요"
+    }
+  },
+
+  "composition_impact_analysis_scenario_c_vs_scenario_d": {
+    "scenario_c_current_active": {
+      "status": "ACTIVE_VALIDATED_COMPLETE (2026-04-18 19:00 signoff)",
+      "composition": {
+        "STR_1631_Core_Primary": 0.18,
+        "H_1692_Core_Secondary": 0.10,
+        "STR_1656_Div_ML": 0.14,
+        "STR_1679v3_Div_1_embedded_q25": 0.08,
+        "H_1689_v3_Defense_q24_exclude": 0.23,
+        "H_1690_Defense_multi_source": 0.10,
+        "Reserve": 0.09,
+        "misc_allocation": 0.08
+      },
+      "defense_cluster": "33% (H_1689 23% + H_1690 10%)",
+      "active_total": "83%",
+      "n_active": 6
+    },
+    "scenario_d_emergency_draft_option_1_str_1679v3_restore": {
+      "name": "Scenario_D_Option_1_STR_1679v3_Defense_Complement",
+      "composition": {
+        "STR_1631_Core_Primary": 0.18,
+        "H_1692_Core_Secondary": 0.10,
+        "STR_1656_Div_ML": 0.14,
+        "STR_1679v3_Div_1_embedded_q25": 0.14,
+        "H_1689_v3_Defense_q24_exclude": 0.23,
+        "H_1690_DROPPED": 0.00,
+        "Reserve": 0.13,
+        "misc_allocation": 0.08
+      },
+      "defense_cluster": "23% (H_1689 only)",
+      "diversifier_cluster": "28% (STR_1656 14% + STR_1679v3 14%, +6%p from Scenario C)",
+      "active_total": "79%",
+      "n_active": 5,
+      "rationale": "STR_1679v3 Q25 defense overlay embed 역할 복원 (v2 대비 L-156 TDC 해소로 overlay dependency 최소화). STR_1679v3 weight 8% → 14%로 상향 시 Defense 기여 간접화",
+      "pros": [
+        "즉시 실행 가능 (새 Forge S1 불필요)",
+        "v54 freeze 준수 (기존 strategy 재조합만)",
+        "STR_1679v3 Q25 embed의 Defense 역할 완화 간접 복원",
+        "H_1690 10% → STR_1679v3 +6% + Reserve +4% 분산"
+      ],
+      "cons": [
+        "Defense cluster 23%로 35% cap 대비 12%p 공백 → portfolio MDD 목표 대응 약화",
+        "STR_1679v3 single concentration 14% 위험",
+        "H_1689 23% + STR_1679v3 14% = 조합 시 TDC pairwise check 필수 (L-156 v2)"
+      ]
+    },
+    "scenario_d_emergency_draft_option_2_scout_redesign_request": {
+      "name": "Scenario_D_Option_2_Scout_Defense_Redesign_H_1693_or_H_1694",
+      "composition_post_redesign_target": {
+        "STR_1631_Core_Primary": 0.18,
+        "H_1692_Core_Secondary": 0.10,
+        "STR_1656_Div_ML": 0.14,
+        "STR_1679v3_Div_1_embedded_q25": 0.08,
+        "H_1689_v3_Defense_q24_exclude": 0.23,
+        "H_XXXX_NEW_Defense_redesign": 0.10,
+        "Reserve": 0.09,
+        "misc_allocation": 0.08
+      },
+      "defense_cluster_target": "33% (H_1689 23% + H_XXXX_NEW 10%) — Scenario C equivalent",
+      "active_total_target": "83%",
+      "n_active_target": 6,
+      "scout_deliverable_required": {
+        "handoff_kit_v1_2_location": "stage_artifacts/s0_record_H_XXXX_new_defense_post_h_1690.json",
+        "rationale_lesson_avoidance": [
+          "L-125/L-160/L-165 Signal-Portfolio Translation Failure family 회피 필수",
+          "long-only 20종목 defense 구조적 한계 극복 mechanism 제시",
+          "sector-neutralization mandatory",
+          "AX-001 v2 multi-sleeve conditional evaluation",
+          "bad/normal IC ratio > 0.6 + crisis_alpha > 0 필수",
+          "TDC vs STR_1679v3 + STR_1631 + H_1689 v3 < 0.30 예상"
+        ],
+        "suggested_directions_from_TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682": [
+          "D1 Sector-neutralized Q07 Earnings Stability enhancement (estimated LOW difficulty, 기존 검증 활용)",
+          "D3 MRS-conditional Dynamic Defense (estimated MEDIUM, AX-001 v2 부합도 최고)",
+          "D2 Risk-parity Defense sub-sleeve 3-factor (estimated MEDIUM, concentration risk 분산)"
+        ]
+      },
+      "timeline_adjustment": {
+        "scout_s0_record_delivery": "Session 68 Day 2 목표 (24~48h)",
+        "s0_debate_5_agent": "Session 68 Day 3",
+        "forge_s1": "Session 68 Day 4",
+        "judge_s6": "Session 68 Day 5",
+        "governor_pg1_admission": "Session 68 Day 6~7",
+        "phase_1_live_transition": "Session 68 Day 8 (원계획 Day 6~7 대비 +1일 slip)"
+      },
+      "pros": [
+        "Defense cluster 33% Scenario C equivalent 유지",
+        "H_1690 교훈 반영 재설계로 L-125 extension family 회피",
+        "Admission rule v3.5.1 Gate 11/12/13 triple hard_block + AX-001 v2 충족 가능"
+      ],
+      "cons": [
+        "Phase_1 Live transition +1일 slip",
+        "Scout + Forge + Judge 3-stage 재순환 비용",
+        "Defense family 4th attempt (H_1682, H_1689, H_1690 실패 후) → 구조적 한계 심화 우려"
+      ]
+    },
+    "scenario_d_emergency_draft_option_3_phase_1_defense_minimization": {
+      "name": "Scenario_D_Option_3_Defense_23_percent_only_Phase_1_simplified",
+      "composition": {
+        "STR_1631_Core_Primary": 0.18,
+        "H_1692_Core_Secondary": 0.10,
+        "STR_1656_Div_ML": 0.14,
+        "STR_1679v3_Div_1_embedded_q25": 0.08,
+        "H_1689_v3_Defense_q24_exclude": 0.23,
+        "H_1690_DROPPED": 0.00,
+        "Reserve": 0.19,
+        "misc_allocation": 0.08
+      },
+      "defense_cluster": "23% (H_1689 only)",
+      "active_total": "73%",
+      "n_active": 5,
+      "rationale": "Phase_1 simplified: Defense는 H_1689 23%만 편입. H_1690 공백은 Reserve로 임시 이동 (9% → 19%). Phase_2 이후 정식 Defense 추가 편입 시도.",
+      "pros": [
+        "즉시 실행 가능 (새 Forge S1 불필요)",
+        "v54 freeze 준수",
+        "Scenario D 실행 복잡도 최소화",
+        "Phase_1 LIVE 전환 +0일 slip (원계획 유지 가능)"
+      ],
+      "cons": [
+        "Defense cluster 23%로 target 35% 대비 12%p 공백 지속",
+        "Reserve 19%로 미사용 자본 과다 (기회비용)",
+        "portfolio MDD 목표 대응 약화 지속"
+      ]
+    }
+  },
+
+  "governor_preliminary_recommendation": {
+    "recommended_option": "Scenario_D_Option_2_Scout_Redesign_H_XXXX_NEW",
+    "rationale": [
+      "Defense cluster 33% Scenario C equivalent 회복 (portfolio MDD 목표 대응 견고)",
+      "H_1690 실패 교훈 반영으로 구조적 개선 가능 (sector-neutralization + AX-001 v2 조건부 평가)",
+      "Scout handoff_kit_v1.2가 이미 TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682 형태로 Scout inbox에 존재 → 즉시 활성화 가능",
+      "Phase_1 LIVE +1일 slip은 portfolio quality 개선 가치 대비 수용 가능",
+      "L-165 신설 + AX_CAND_signal_portfolio_translation_failure 승격 trigger 활용 학습"
+    ],
+    "backup_option": "Scenario_D_Option_3_Defense_23_percent_simplified (Scout redesign 실패 또는 delay 시)",
+    "reject_option_1_rationale": "Scenario_D_Option_1 (STR_1679v3 14%) — diversifier single concentration 14%는 portfolio risk 과집중, pairwise TDC 위험"
+  },
+
+  "v54_freeze_compliance_assessment": {
+    "new_rule_created": false,
+    "new_amendment_created": false,
+    "existing_rule_leveraged": "Admission Rule v3.5.1 (12 gates + Gate 13 L-164) + AX-001 v2 + L-125 extension family custodian protocol",
+    "nature_of_action": "composition 재조합 + Scout redesign 요청 (v54 freeze rule compliant)",
+    "hard_blocker_status": "H_1690 DROP 확정 + Defense cluster 공백 → portfolio MDD 대응 약화 (hard blocker equivalent)",
+    "q_lead_override_required": false,
+    "v54_freeze_compliance_verdict": "PASS"
+  },
+
+  "dependencies_and_approvals_required": {
+    "judge_s6_verdict_h_1690_str_1685": {
+      "required": true,
+      "governor_expectation": "VALIDATED_HARD_FAIL + L-165 신설 + L-125 extension family 3rd member admission"
+    },
+    "scout_handoff_kit_v1_2": {
+      "required": true,
+      "activation_trigger": "본 파일 발행 + Judge S6 H_1690 VALIDATED_HARD_FAIL 확정",
+      "existing_TODO_artifact": "qepm/mailbox/scout/inbox/TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json (14:29 2026-04-18 발행)"
+    },
+    "team_lead_approval": {
+      "required_scope": "Scenario_D Option 2 선택 + Phase_1 LIVE +1일 slip 허용",
+      "governor_autonomy_scope": "composition 재조합 (rev8-A-revised_v3 Scenario_D_Option_1/2/3 3안 비교 draft) + Scout redesign 요청",
+      "q_lead_scope": "Phase_1 LIVE timeline adjustment + Scenario_D 최종 확정 권한"
+    }
+  },
+
+  "risk_manager_coordination_request": {
+    "required": true,
+    "scope": [
+      "Scenario_D Option 2 (H_XXXX_NEW Defense 10%) composition Risk Mgr 4th round review",
+      "pairwise TDC vs STR_1679v3 + STR_1631 + H_1689 v3 + STR_1656 pre-admission 체크",
+      "L-156 v2 Sequential Admission TDC <0.30 mandatory",
+      "Gate 11 MANDATORY + Gate 12 hard_block + Gate 13 hard_block 전수 검증"
+    ],
+    "trigger_condition": "Scout handoff_kit_v1.2 delivery 완료 + S0 debate R3 VERDICT 수신 후"
+  },
+
+  "blender_activation_5th_grade_a_tracking": {
+    "current_grade_a_count": 4,
+    "str_cash_v1_status": "5번째 Grade A 도달 — blender_check_activation_v55(min_n=5, min_distinct_sleeves=3) 조건 근접",
+    "distinct_roles_current": "core_alpha (STR_1631), diversifier_ML (STR_1656), diversifier (STR_1679v3), defense (H_1689 v3 PG1 candidate), cash_allocation (STR_CASH_v1)",
+    "distinct_roles_count": 5,
+    "activation_condition_met": "min_n=5 PASS + min_distinct_sleeves=3 PASS (실제 5 distinct roles)",
+    "5_sleeve_blender_activation_verdict": "ACTIVATION_READY",
+    "pg2_allocation_5sleeve_json_preparation": "Session 68 Day 2 목표 (H_1689 v3 PG1 admission 완료 후)"
+  },
+
+  "gap_vector_update_trigger": {
+    "current_gap_vector_json": ".cache/portfolio_gap_vector.json (v1.0.3, 2026-04-10)",
+    "update_required": true,
+    "update_timing": "Judge S6 H_1690 verdict 수신 + Scenario_D 확정 후",
+    "expected_updates": {
+      "n_strategies": "2 → 5~6 (PG1 admission 후)",
+      "cold_start_phase": "2 → 3 (정상 multi-sleeve)",
+      "current_profile_cagr_sharpe_mdd": "Scenario_D composition 기반 재계산",
+      "sleeve_needs": "'defense' (H_1690 DROP 후 cluster 23% 공백) 또는 '재설계_defense'"
+    }
+  },
+
+  "telegram_notification_queue": {
+    "channel": "[Governor] 한글 + 이모지",
+    "messages": [
+      "⚠️ [Governor] H_1690 STR_1685 VALIDATED_HARD_FAIL — 4 variants 전체 Grade F, MDD 77~94%",
+      "📊 [Governor] Defense cluster 33% → 23% 공백, Scenario_D emergency contingency 3안 draft 발행",
+      "🎯 [Governor] 권고안: Option 2 Scout redesign (Defense 재설계 + Phase_1 LIVE +1일 slip)",
+      "🔍 [Governor] L-125 extension family 3rd member candidate 판정 Judge custodian 결정 대기"
+    ]
+  },
+
+  "next_actions": {
+    "governor_immediate": [
+      "본 파일(rev8-A-revised_v3_Scenario_D_emergency_contingency) 발행",
+      "Judge S6 H_1690 verdict 수신 대기",
+      "Scout handoff_kit_v1.2 activation 대기 (team-lead Option 2 승인 후)",
+      "Risk Mgr 4th round coordination (Scout redesign 완료 후)"
+    ],
+    "pending_inputs": [
+      "Judge S6 H_1690 STR_1685 VALIDATED_HARD_FAIL 공식 판정",
+      "Judge L-125 extension family 3rd member (L-165) 신설 결정",
+      "team-lead Scenario_D Option 1/2/3 선택",
+      "Forge S1 H_1692/H_1689 v3/H_1685 v2 완료"
+    ]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "hypothesis_id": "H_1697",
+  "strategy_id_reserved": "STR_1697_distress_reversal_lottery_diversifier",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Distress Anomaly Reversal — Low Distress Outperformance Filter (Q24_Altman_Z + CR11_Idiosyncratic + M21_Seasonality)",
+
+  "mechanism": "Campbell, Hilscher & Szilagyi(2008 JF) 'In Search of Distress Risk': 재무적 고통(financial distress) 기업이 오히려 lower expected return — 이른바 distress puzzle/anomaly. 메커니즘: 고통 기업에 집중된 개인투자자의 lottery preference(Kumar 2009 RFS) → 과대평가. 결과: 저distress(재무 건전) 기업이 장기 outperform. Q24_Altman_Z(높을수록 재무 건전)를 primary signal로, CR11_Idiosyncratic_Return(개별 변동성 높을수록 lottery 특성 강함)의 역수를 필터로 결합 — lottery 프리미엄 과대평가 종목 차단. M21_Seasonality를 타이밍 보조로 — 특정 구간 distress puzzle 강화 효과. 핵심: 이 전략은 Bali, Cakici & Whitelaw(2011 JFE) MAX anomaly(최고 단일일 수익률 높은 종목의 역전)와도 연결 — 고변동성·lottery 종목의 구조적 과대평가.",
+
+  "economic_rationale": "Campbell et al.(2008 JF): 부도 예측 모델 상위 distress 기업의 realized return이 오히려 낮음 — CAPM/FF3으로 설명 불가. 원인: (1) 개인투자자 lottery 수요(Kumar 2009) → 고distress 주식 과매수 → 과대평가, (2) 기관투자자의 distressed stock 회피 → 가격 발견 지연. 결과: 저distress(Q24 높은) 기업이 risk-adjusted outperform. KR 적용: 개인투자자 비중 30%+인 KR 시장에서 lottery preference 강함(L-130/L-131 개인 행동 패턴 근거). CR11_Idiosyncratic_Return(cv=0.0132): 고idio 변동성 종목 = lottery 특성 → 역수(낮은 idio = 건전 기업 신호). Q24 cv=0.0335, icir=-0.043(전체 기간 약하나 특정 구간 강). M21_Seasonality cv=0.0312 — 어닝 시즌 distress puzzle 강화 시점 타이밍. Factor Taxonomy §9 기준 distress_anomaly family 미구축(133/327 = 40% 활용 — 미탐색 60% 영역).",
+
+  "trail": "explore",
+  "trail_note": "Explore 버킷(20%) 내 미구축 family 탐색. Factor Taxonomy §9 distress_anomaly/lottery_preference family 최초 구현 시도.",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "portfolio_gap_vector v1.0.8 P1_diversifier 슬롯. Campbell et al.(2008) distress puzzle은 earnings momentum(STR_1631)과 완전히 다른 alpha source — 재무적 고통 기업의 개인투자자 과대평가 행동 역전. AX-004 scope: quality_profitability standalone KR 실패 → 본 전략은 quality가 아닌 distress anomaly reversal(behavioral finance 메커니즘). Q24는 quality 지표이나 여기서는 lottery 과대평가 차단 역할(스크린). AX-005 scope: defense가 아닌 diversifier → AX-005 해당 없음. Explore-A bucket: distress family 미탐색 영역, KR 개인투자자 lottery 행동 패턴 실증(L-130/131 근거).",
+
+  "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot", "explore_new_family"],
+
+  "why_now": "Factor Taxonomy §9 distress_anomaly + lottery_preference family 미구축(0%). KR 시장 개인투자자 비중 30%+ → lottery 과대평가 구조적 존재 가능성. Q24 cv=0.0335 Gate 0.5 PASS. CR11 cv=0.0132 PASS. M21 cv=0.0312 PASS. 기존 전략(STR_1631 earnings quality, STR_1656 ML/RA)과 alpha source 완전 독립 → TDC 낮을 것으로 예상. L-130/131 개인 행동 패턴 실패 교훈: 개인 flow 직접 신호는 실패 → distress puzzle(기업 재무 특성 기반 behavioral anomaly)은 다른 접근.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "Q24_Altman_Z",
+    "filter_1": "CR11_Idiosyncratic_Return",
+    "filter_2": "M21_Seasonality",
+    "weight_scheme": "composite: 0.55 * z_Q24 + 0.30 * z_CR11_inv + 0.15 * z_M21",
+    "rationale": "Q24(저distress 선택)가 primary. CR11_Idiosyncratic_Return은 반전(inv): 고idio = lottery 종목 → z_CR11_inv = -1.0 * Z_Score_Aligned(CR11)으로 lottery 종목 차단. M21 보조(0.15) — seasonality 타이밍.",
+    "q24_direction_note": "Q24_Altman_Z: higher_better=TRUE. load_month_factors() 자동 처리.",
+    "cr11_direction_note": "CR11_Idiosyncratic_Return: higher_better=FALSE(높을수록 lottery = 나쁨) → z_CR11_inv = -1.0 * Z_Score_Aligned(CR11). C13 준수: NEGATE_FACTORS 금지, 명시적 -1.0 곱셈만 허용.",
+    "m21_direction_note": "M21_Seasonality: higher_better=TRUE. load_month_factors() 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "Q24_Altman_Z": {"conditional_value": 0.0335, "pass": true},
+    "CR11_Idiosyncratic_Return": {"conditional_value": 0.0132, "pass": true, "note": "반전 적용: cv 양수(위기 시 idio return 강화 = lottery 효과 더 강 → 역포지션 유리)"},
+    "M21_Seasonality": {"conditional_value": 0.0312, "pass": true},
+    "coverage_ratio": "3/3 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A4.9 Campbell, Hilscher & Szilagyi(2008 JF) 'In Search of Distress Risk'. 부도예측 상위 기업의 realized return 역설 — distress puzzle. KR 개인투자자 lottery behavior 연결. Kumar(2009 RFS) 'Who Gambles in the Stock Market?' — lottery-like stocks 과대평가 개인투자자 행동. Bali, Cakici & Whitelaw(2011 JFE) 'Maxing Out: Stocks as Lotteries and the Cross-Section of Expected Returns' — MAX anomaly: 고단일일수익률 종목의 역전. KR 실증 근거: L-130/131 개인투자자 행동 패턴.",
+
+  "lesson_check": "L-130/131(개인 flow 직접 신호 KR 실패): flow 직접 신호 아닌 '행동의 결과(과대평가)' 역전 신호 — 다른 접근. AX-004 scope 검토: distress anomaly는 quality_profitability standalone 아님 — behavioral 메커니즘 기반 reversal. L-120(ic_bad 정의 주의): Q24 crisis 정의에 따라 conditional_value 해석 차이. C13 준수: CR11 반전 시 z_CR11_inv = -1.0 * Z_Score_Aligned(CR11) — NEGATE_FACTORS 절대 금지.",
+
+  "pit_compliance_checklist": {
+    "C1": "Q24 Altman Z: 재무비율 기반 → expanding window. CR11: 수익률 기반 idio volatility → rolling window",
+    "C4": "Q24: 연간 재무제표 → 5월 리밸 lag",
+    "C10": "유동성 필터 2억원 lag=1",
+    "C13_Q24": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_CR11_inv": "CR11 반전: z_CR11_inv = -1.0 * Z_Score_Aligned(CR11). NEGATE_FACTORS 금지.",
+    "C13_M21": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('Q24_Altman_Z','CR11_Idiosyncratic_Return','M21_Seasonality')) 경유 필수",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "AX-004 경계: distress 기업 회피 = quality_profitability 신호와 유사할 수 있음 → S1에서 Q03_ROA/Q02_ROE와 상관 측정 필수",
+    "Q24 icir=-0.043 전체 기간 약함 — 특정 구간 집중 효과 가능성. S1 rolling ICIR 확인",
+    "CR11 반전 논리: KR 시장에서 lottery preference 강도 검증 필요. Explore trail — 실패 시 L-code 교훈으로 축적",
+    "M21 seasonality + Q24 distress 조합의 직관적 연결이 약함 — 타이밍 보조 역할로 제한",
+    "Campbell et al.(2008) 미국 결과 → KR 이전 시 lottery preference 강도 차이 가능성"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.15~0.30 (Explore trail — 미탐색 family, 불확실성 높음)",
+    "sr_target": "0.5~1.0",
+    "mdd_target": "< 50% (Explore trail 허용 범위)",
+    "role": "diversifier",
+    "tdc_target": "< 0.30 vs STR_1631 (behavioral reversal vs earnings momentum — 완전히 다른 alpha source)",
+    "explore_note": "실패 시 distress_anomaly family의 KR 이전 가능성 L-code 축적 — AX-003/004 범위 확장 근거 될 수 있음"
+  },
+
+  "v55_fields": {
+    "trail": "explore",
+    "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot", "explore_new_family"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Q-Lead H_1697 Explore-A 설계: 미구축 distress_anomaly + lottery_preference family",
+    "Campbell et al.(2008) distress puzzle + Kumar(2009) lottery preference — KR 개인투자자 비중 30%+ 적합성",
+    "CR11 반전(lottery 차단) + Q24(저distress 선택) 조합: L-130/131과 반대 접근(flow 직접 아닌 기업 특성 기반)",
+    "Explore trail: 실패 가능성 인지 — AX-003/004 실패 패턴 축적 또는 신규 family 발굴",
+    "Factor Taxonomy §9 distress_anomaly family 최초 탐색"
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "hypothesis_id": "H_1685",
+  "round": 2,
+  "role": "quant",
+  "agent_id": "quant_H1685_r2",
+  "timestamp": "2026-04-17T00:00:00",
+  "r1_score": 11,
+  "r2_score": 10,
+  "score_change_reason": "internal_corr 축 추가 1점 감점. R2에서 H_1674 상관 0.897이 lookback 변경만으로는 해소되지 않음을 재확인했습니다. 개인 z-score 항이 divergence에 포함되는 한 algebraic 구조적 상관은 유지됩니다.",
+
+  "agreements": [
+    {
+      "with": "academic",
+      "point": "sub-period 검증(2000-2009/2010-2019/2020-2026) 및 lookback 민감도 분석(21d/63d/126d) 병렬 산출 조건에 전적으로 동의합니다. 21d가 H_1674 사례에서 연간 회전율 2,082%를 기록한 사실이 실증됐으므로, 63d lookback이 학술(고영훈 2018의 3~6개월 predictability)과 실투(회전율 억제) 양 측면 모두에서 더 적합합니다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "L-106 준수 — market beta 지배(0.85~1.05 예상) 하에서 flow channel 독립성이 수익률 직교를 보장하지 못한다는 주장을 지지합니다. S3에서 잔차 상관(beta 제거) < 0.25를 별도 게이트로 설정해야 한다는 주장도 수용합니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "governor의 '예상 TDC vs STR_1631 < 0.15'는 STR_1631과의 독립성 주장이며, H_1674와의 상관 0.897은 별개 문제입니다. governor가 H_1685-H_1674 rho < 0.40을 조건으로 제시하면서 이 조건이 '기대치'로만 설정됐는데, 실측 결과 0.897로 이미 사전에 수치로 붕괴됐습니다. 신호 구조 재설계(외국인 z-score를 INV07 잔차화) 없이는 rho < 0.40이 수학적으로 불가능합니다. Governor가 Phase_1 5% 즉시 편입을 유지하려면 이 구조적 문제에 대한 구체적 해법을 제시해야 합니다."
+    }
+  ],
+
+  "strongest_opposing_argument": "codex_critic의 R1 주장 — 'apparent edge = calibration-driven, expanding-window 파라미터 동결 증명 없음, 실전 0 alpha 구조' — 이 가장 치명적입니다. 단순한 우려가 아니라, compute_investor.R 현재 코드에서 cross-sectional z-score normalization window가 가변 파라미터일 경우 C1 위반이 발생합니다. PIT Engine v3 auto blocking이 신규 INV13 팩터를 아직 검출 패턴에 등록하지 않은 상태여서, S1 구현 전 lookahead_detector.R 패턴 추가가 선결 과제입니다.",
+
+  "r2_updated_position": "H_1685는 diversifier 역할 성립 조건(H_1674 상관 < 0.40)을 현재 설계 기준으로 충족할 수 없습니다. APPROVE가 아닌 REVISE가 타당합니다. 재설계 경로: z_foreign_21d - z_individual_21d 대신 'INV07 잔차화된 외국인 flow'(market-beta-neutral + sector-neutral residual) 신호로 전환하면 H_1674와의 구조적 분리가 가능합니다. 다만 이 재설계는 expanding-window residualization(C1 준수)을 적용해야 하며, 회전율 검증 후 63d lookback 기반으로 실행해야 합니다.",
+
+  "updated_conditions": [
+    "S1 착수 전 INV13 신호를 '외국인 z-score를 INV07 잔차화한 신호'로 재정의하고, 재정의된 신호와 H_1674(-z_individual_21d) 간 expected cross-section 상관이 수식으로 < 0.40임을 검증한 후 compute_investor.R 구현을 시작할 것.",
+    "INV13_Flow_Divergence 팩터를 factor_registry에 신규 등록하고 lookahead_detector.R에 C1/C2 검출 패턴을 추가하는 작업을 Forge S1 착수 전 완료할 것.",
+    "S1에서 21d/63d/126d 3종 lookback을 병렬 산출하여 (a) ICIR, (b) 연간 회전율, (c) H_1674 cross-section 상관 3축 비교표를 S2 artifact에 포함시킬 것. 모든 lookback에서 회전율이 600% 초과 시 가설 폐기 재검토."
+  ]
+}

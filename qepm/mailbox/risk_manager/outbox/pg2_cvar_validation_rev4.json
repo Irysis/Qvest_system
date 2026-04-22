@@ -1,0 +1,215 @@
+{
+  "from": "Risk_Manager",
+  "to": "Q-Lead",
+  "type": "PG2_CVAR_VALIDATION",
+  "stage": "PG2_rev4_supplement_4axis_validation",
+  "timestamp": "2026-04-17T19:21:28+0900",
+  "session": 66,
+  "portfolio_composition": {
+    "STR_1631": {
+      "name": "Core_Primary STR_1631_SYN_05 consensus_C19",
+      "weight": 0.22,
+      "role": "Core_Primary",
+      "family": "consensus"
+    },
+    "STR_1679v2": {
+      "name": "Core_MSCD STR_1679v2",
+      "weight": 0.12,
+      "role": "Core_MSCD",
+      "family": "multi_sleeve_active_defense"
+    },
+    "H_1688": {
+      "name": "Core_Secondary H_1688 residual_momentum",
+      "weight": 0.14,
+      "role": "Core_Secondary",
+      "family": "momentum_residual"
+    },
+    "H_1676": {
+      "name": "Div_1 H_1676 consensus_residual",
+      "weight": 0.13,
+      "role": "Diversifier_1",
+      "family": "consensus_residual"
+    },
+    "H_1685": {
+      "name": "Div_2 H_1685 investor_flow",
+      "weight": 0.09,
+      "role": "Diversifier_2",
+      "family": "investor_flow"
+    },
+    "STR_1656": {
+      "name": "Div_ML STR_1656_MLRA_M05",
+      "weight": 0.12,
+      "role": "Diversifier_ML",
+      "family": "ML_complexity"
+    },
+    "H_1682": {
+      "name": "Def_1 H_1682 distress_calmar",
+      "weight": 0.1,
+      "role": "Defense_1",
+      "family": "distress_path"
+    },
+    "H_1689": {
+      "name": "Def_2 H_1689 quality_4axis",
+      "weight": 0.08,
+      "role": "Defense_2",
+      "family": "quality_multi_axis"
+    }
+  },
+  "validation_4axis": {
+    "cvar_95_annual": {
+      "value": -0.267,
+      "threshold": -0.15,
+      "pass": false,
+      "note": "CVaR_95 annual = -26.70% at rho=0.3 (conservative)"
+    },
+    "cdar_95": {
+      "value": 0.2363,
+      "threshold": -0.22,
+      "pass": false,
+      "note": "CDaR_95 = 23.63% at rho=0.3 with crisis correlation 2x"
+    },
+    "tail_dependence_max": {
+      "value": 0.7349,
+      "threshold": 0.4,
+      "pass": false,
+      "note": "Max pairwise TDC = 0.7349 (STR_1631 <-> H_1676)"
+    },
+    "q25_weighted_exposure": {
+      "value": 0.086,
+      "threshold": 0.35,
+      "pass": true,
+      "note": "Portfolio Q25 exposure = 8.60% (H_1682 60% + H_1689 25% + STR_1656 5%)"
+    }
+  },
+  "pass_count": "1/4",
+  "rho_sensitivity": {
+    "rho_02": {
+      "cvar_95": -0.2159,
+      "port_vol": 0.1111,
+      "cdar_95": 0.2036
+    },
+    "rho_03": {
+      "cvar_95": -0.267,
+      "port_vol": 0.1258,
+      "cdar_95": 0.2363
+    },
+    "rho_05": {
+      "cvar_95": -0.3544,
+      "port_vol": 0.1508,
+      "cdar_95": 0.2846
+    }
+  },
+  "stress_test_scenarios": [
+    {
+      "scenario": "9/11 + Iraq War",
+      "period": "2001-09-11 ~ 2003-03-20",
+      "portfolio_dd": 0.2158,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "GFC 2008-2009",
+      "period": "2008-09-15 ~ 2009-03-09",
+      "portfolio_dd": 0.265,
+      "verdict": "CAUTION"
+    },
+    {
+      "scenario": "European Debt Crisis",
+      "period": "2011-07-01 ~ 2011-11-30",
+      "portfolio_dd": 0.1471,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "China Shock 2015-2016",
+      "period": "2015-06-12 ~ 2016-02-11",
+      "portfolio_dd": 0.1537,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "Korea Political Crisis 2016",
+      "period": "2016-10-01 ~ 2016-12-09",
+      "portfolio_dd": 0.0714,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "US-China Trade War",
+      "period": "2018-10-01 ~ 2018-12-24",
+      "portfolio_dd": 0.1309,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "COVID-19 Crash",
+      "period": "2020-02-20 ~ 2020-03-19",
+      "portfolio_dd": 0.2141,
+      "verdict": "ACCEPTABLE"
+    },
+    {
+      "scenario": "Fed Tightening 2022",
+      "period": "2022-01-03 ~ 2022-10-13",
+      "portfolio_dd": 0.1896,
+      "verdict": "ACCEPTABLE"
+    }
+  ],
+  "tail_dependence_matrix": {
+    "top_5_pairs": [
+      {
+        "pair": "STR_1631 <-> H_1676",
+        "tdc": 0.7349
+      },
+      {
+        "pair": "STR_1631 <-> STR_1679v2",
+        "tdc": 0.6298
+      },
+      {
+        "pair": "H_1682 <-> H_1689",
+        "tdc": 0.4896
+      },
+      {
+        "pair": "STR_1631 <-> H_1688",
+        "tdc": 0.3907
+      },
+      {
+        "pair": "STR_1679v2 <-> H_1688",
+        "tdc": 0.3144
+      }
+    ],
+    "nu_df_estimate": 4,
+    "crisis_rho_multiplier": 2
+  },
+  "q25_exposure_detail": {
+    "H_1682": {
+      "weight": 0.1,
+      "q25_share": 0.6,
+      "contribution": 0.06
+    },
+    "H_1689": {
+      "weight": 0.08,
+      "q25_share": 0.25,
+      "contribution": 0.02
+    },
+    "STR_1656": {
+      "weight": 0.12,
+      "q25_share": 0.05,
+      "contribution": 0.006
+    },
+    "total_portfolio_q25": 0.086
+  },
+  "str_1679v2_family_opinion": "STR_1679v2 is structurally a 'multi_sleeve_core_with_active_defense' (MSCD). The Def5 sleeve provides 22.55pp MDD reduction (51.61% -> 29.06%). Core15 alone SR=1.293 > Combined SR=1.266, meaning Def5 acts as volatility dampener, not alpha source. Risk Manager assessment: STR_1679v2 SHOULD NOT be classified as pure Core. It is an overlay-dependent structure where the DD overlay contributes ~22.6pp of MDD reduction. Without overlay, Core15 MDD=51.61% (HARD FAIL). L-146 applicability: the MDD improvement is from BOTH the Def sleeve AND the DD overlay acting together. Recommendation: classify as 'diversifier_with_structural_defense'. In portfolio context at 12% weight, this is acceptable. Key risk: if market regime shifts to sustained drawdown (not V-recovery), the Q07-based Def5 sleeve may underperform (L-143 empirical warning). Governor should consider H_1682 as replacement for Def5 sub-sleeve in STR_1679v3.",
+  "recommendations": [
+    "CVaR BREACH: Reduce Core exposure. STR_1631 from 22% to 18% + H_1688 from 14% to 10%.",
+    "CDaR BREACH: Increase Defense allocation. H_1682 from 10% to 14% for MDD dampening.",
+    "TAIL DEP BREACH: Pair STR_1631 <-> H_1676 exceeds 0.4. Consider reducing weight of the more volatile strategy in the pair.",
+    "H_1688 momentum crash exposure in GFC-type scenario is the primary tail risk. Barroso 2015 scaling MANDATORY in S5.",
+    "STR_1631-H_1676 consensus family concentration at 35% (22%+13%). If crisis hits consensus signal, both fail simultaneously.",
+    "STR_1679v2 overlay dependency: without DD overlay, Core15 MDD=51.61%. DD overlay calibration drift is a hidden risk.",
+    "rho=0.2 assumption is OPTIMISTIC. Portfolio was projected at SR 2.01 under rho=0.2, but at rho=0.3, SR drops to ~1.82.",
+    "MRS currently at CRISIS (63.1). Phase_1 implementation timing coincides with elevated regime risk."
+  ],
+  "methodology_notes": {
+    "cvar_method": "Cornish-Fisher CVaR with portfolio-level moment approximation",
+    "cdar_method": "CDaR/MDD ratio calibrated from STR_1679v2 (0.751) and STR_1656 realized data",
+    "tail_dep_method": "Bivariate t-copula (nu=4) with Longin-Solnik 2001 crisis correlation escalation (2x)",
+    "stress_method": "Severity-role-family adjusted MDD estimation with crisis correlation matrix",
+    "conservative_base": "rho=0.3 used as conservative base (NOT optimistic rho=0.2)",
+    "references": ["Pfaff (2016) Ch.6-7 (Cornish-Fisher, EVT/GPD)", "Chekhlov et al. (2005) CDaR", "Longin & Solnik (2001) 'Extreme Correlation of International Equity Markets'", "Demarta & McNeil (2005) 'The t Copula and Related Copulas'", "L-115 (beta reduction != correlation reduction)", "L-106 (market beta dominates)"]
+  }
+}

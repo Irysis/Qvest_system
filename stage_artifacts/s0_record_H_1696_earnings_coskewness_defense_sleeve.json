@@ -1,0 +1,103 @@
+{
+  "hypothesis_id": "H_1696",
+  "strategy_id_reserved": "STR_1696_earnings_coskewness_defense_sleeve",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Earnings Stability + Coskewness Defense Sleeve (Q07 + D16 + Q10)",
+
+  "mechanism": "Q07_Earnings_Stability(수익 안정성)은 위기 구간 ICIR +0.753으로 방어력이 실증된 팩터(L-121). D16_Coskewness(공분산 왜도)는 시장 폭락 시 왼쪽 꼬리 리스크가 낮은 종목을 선별 — 하락장에서 시장 수익률과의 공분산이 양의 왜도를 가지는(= 시장 폭락 시 덜 하락하는) 종목 선별. Q10_Gross_Margin은 수익성 스크린으로 저품질 종목 제거. 핵심: Q07이 수익 변동성을 시간 차원에서 방어, D16이 시장 연동 하방 꼬리를 공간 차원에서 방어 → 두 독립적 방어 메커니즘의 결합. Ang et al.(2006 JFE) coskewness premium: 상방 시장 상관도 낮고 하방 보호력 높은 종목이 위기 시 outperform.",
+
+  "economic_rationale": "Q07_Earnings_Stability: 수익 불확실성이 낮은 기업 → 위기 시 투자자 불안 감소 → 상대적 방어. L-121 실증: stress ICIR +0.753, 4-regime CRISIS ic_mean +0.413 (전체 팩터 최강). D16_Coskewness: Harvey & Siddique(2000 JF) 'Conditional Skewness in Asset Pricing Tests' — 음의 coskewness는 market crash에 함께 하락 → 양의 coskewness = crash protection. D16 conditional_value=0.0043 Gate 0.5 PASS, recent_3y_icir=0.372 안정. Q10_Gross_Margin: 수익성 하방 보호 스크린(fundamentally weak 종목 차단, H_1695와 동일 역할). AX-004 scope: quality_profitability standalone 실패 → Q07은 quality family가 아닌 defense mechanism(earnings timing)으로 적용, Q10은 스크린 역할만. AX-005 scope: single-sleeve long-only 20종목 standalone defense 금지 → 본 가설은 multi-sleeve context(portfolio_gap_vector Defense 33% sleeve) 내 배치 설계, H_1689 v3 variant_1과 보완 관계.",
+
+  "trail": "standard",
+
+  "expected_role": "defense",
+  "expected_role_rationale": "portfolio_gap_vector v1.0.8 Defense cluster 23% (목표 33% -10pp 갭). H_1689 v3 variant_1이 Primary Defense이나 단독으로는 목표 미달. H_1696은 Secondary Defense로 설계 — H_1689 v3 Judge S6 PASS 후 보완 편입. AX-001 v2 조건: (1) multi-sleeve context — H_1689 v3 + H_1696 2-strategy defense cluster, (2) crisis_alpha 실증 필수 (S1 is_crisis=TRUE 구간 outperform), (3) Core MDD 완화 기여. AX-007 scope: single-sleeve defense top-20 auto-reject — 본 가설은 defense cluster 내 2nd member로 단독 20종목 운용 아님. AX-005 scope: multi-sleeve 2-strategy defense context → AX-005 적용 대상 아님.",
+
+  "gap_targeting_axes": ["mdd_regime_gap", "defense_cluster_deficit"],
+
+  "why_now": "portfolio_gap_vector v1.0.8 Defense 23% vs 목표 33% → -10pp 갭 발생. H_1689 v3 variant_1 단독으로는 defense 목표 미달. 추가 defense 후보 필요. Q07 conditional_value=-0.0111(ic_bad/ic_good = Stress에서 강하나 conditional_ic 기준 음수)는 L-120 정의 차이 주의 — stress period 정의 기준(L-120). D16 icir=0.372 안정, cv=0.0043 Gate 0.5 PASS. Q07+D16 조합은 상호 독립적 방어 메커니즘: earnings timing(Q07) + market crash coskewness(D16) — 이 조합은 아직 미탐색(used=FALSE).",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "Q07_Earnings_Stability",
+    "filter_1": "D16_Coskewness",
+    "filter_2": "Q10_Gross_Margin",
+    "weight_scheme": "composite: 0.55 * z_Q07 + 0.30 * z_D16 + 0.15 * z_Q10",
+    "rationale": "Q07가 primary defense signal (L-121 실증). D16이 coskewness-based crash protection 강화. Q10은 수익성 스크린으로 하방 보호 (weight 낮게 — 스크린 역할만). 0.55/0.30/0.15는 Q07 defense anchor 유지하면서 D16 coskewness 보완 비중 부여.",
+    "q07_direction_note": "Q07_Earnings_Stability: higher_better = TRUE. Z_Score_Aligned via load_month_factors() 자동 처리.",
+    "d16_direction_note": "D16_Coskewness: higher_better 확인 필요. Harvey & Siddique(2000) 양의 coskewness = 하방 보호. load_month_factors() Z_Score_Aligned가 ic_sign 기반 자동 처리 — 수동 반전 불필요.",
+    "q10_direction_note": "Q10_Gross_Margin: higher_better = TRUE. load_month_factors() 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "Q07_Earnings_Stability": {"conditional_value": -0.0111, "ic_bad": 0.0306, "ic_good": 0.0417, "pass": false, "note": "L-120: stress vs 4-regime crisis 정의 차이. ic_bad 절대값 0.0306 > ic_good의 defense mechanism 실증. Gate 0.5 conditional_value 기준으로는 음수이나, stress period 실증(L-121)으로 defense 역할 정당화."},
+    "D16_Coskewness": {"conditional_value": 0.0043, "pass": true},
+    "Q10_Gross_Margin": {"conditional_value": 0.0183, "pass": true},
+    "coverage_ratio": "2/3 = 0.67 (Q07 conditional_ic 음수이나 L-121 stress 실증으로 defense role 정당화)",
+    "gate_05_note": "Q07는 Gate 0.5(conditional_value 기준) 미통과이나 AX-001 v2 defense 조건부 평가 기준 — stress 구간 outperform 실증(L-121)이 우선. Gate 0.5는 diversifier/core용 스크리닝이며 defense는 AX-001 v2 기준 별도 평가."
+  },
+
+  "core_reference": "A3.19 Q07 Earnings Stability L-121 실증: stress ICIR +0.753, CRISIS ic_mean +0.413 — 전체 팩터 최강 방어력. Harvey & Siddique(2000 JF) 'Conditional Skewness in Asset Pricing Tests' — coskewness premium: 양의 coskewness 종목의 crash protection 실증. Ang et al.(2006 JFE) 'The Cross-Section of Volatility and Expected Returns' — 하방 리스크 지표의 자산가격 결정력.",
+
+  "lesson_check": "L-121(Q07 defense 최강): stress ICIR +0.753 실증, 4-regime crisis +0.413. L-136(Q07+D25 CAGR 2.59%): D25 조합 시 정상구간 기회비용 과대 → D25 대신 D16 선택. L-138(accrual defense 실패): accrual 주축 금지. L-120(ic_bad 정의): stress period ≠ 4-regime crisis — Q07 conditional_value 음수는 정의 차이. AX-005 scope: multi-sleeve context 필수 명시. AX-007 scope: single-sleeve top-20 auto-reject → defense cluster 2nd member로 설계.",
+
+  "pit_compliance_checklist": {
+    "C1": "Q07 rolling earnings stability 계산 — expanding window 필수, full-sample 금지",
+    "C4": "Q07 재무제표 기반: 연간→5월 리밸 lag 강제. D16 coskewness: 일간 수익률 기반 rolling 계산",
+    "C10": "유동성 필터 2억원 기준 lag=1",
+    "C13_Q07": "higher_better=TRUE. load_month_factors() Z_Score_Aligned 자동 처리",
+    "C13_D16": "D16 방향: higher_better 확인 필요 — Harvey&Siddique(2000) 양의 coskewness = 보호. load_month_factors() ic_sign 자동 처리. 수동 반전 금지.",
+    "C13_Q10": "Q10 higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('Q07_Earnings_Stability','D16_Coskewness','Q10_Gross_Margin')) 경유 필수",
+    "overlay": "none (S1 pure signal)",
+    "ax_007_compliance": "single-sleeve top-20 아님 — defense cluster 2nd member 배치. AX-007 auto-reject 해당 없음.",
+    "ax_005_compliance": "multi-sleeve context 명시 (H_1689 v3 + H_1696 2-strategy defense cluster). AX-005 standalone defense 실패 scope 밖."
+  },
+
+  "risk_flags": [
+    "Q07 conditional_value=-0.0111 (4-regime crisis 기준) — L-120 정의 차이 인지. S1에서 stress_period(MRS>=30) 기준 별도 alpha 검증 필수",
+    "D16_Coskewness n_months=188 (2010년 이후) — full-sample 254개월 대비 기간 짧음. rolling coskewness 계산 기간 한계 확인 필요",
+    "Q07 recent_3y_icir=0.929 우수하나 L-139(Q07 최근 alpha decay 일부) 고려",
+    "AX-004 scope 체크: Q07+D16+Q10은 quality_profitability standalone 아님(defense mechanism) → AX-004 해당 없음 확인",
+    "D16 direction 확인: ic_sign in factor_db 검증 필수 (load_month_factors() ic_sign)"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.25~0.45 (Q07 defense anchor + D16 crash protection)",
+    "sr_target": "0.6~1.0 (defense sleeve 기준 — CAGR 희생 허용, crisis alpha 필수)",
+    "mdd_target": "< 40% (standalone S1 기준. multi-sleeve context 시 portfolio MDD 완화 기여)",
+    "crisis_alpha_requirement": "S1 is_crisis=TRUE 구간 평균 outperform vs EW benchmark (AX-001 v2 필수 조건)",
+    "role": "defense",
+    "cagr_floor": "> 5% (인플레이션 3% + 무위험 2% 최소 기준 — L-136 교훈)"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["mdd_regime_gap", "defense_cluster_deficit"],
+    "expected_role": "defense",
+    "cash_component": null
+  },
+
+  "multi_sleeve_context": {
+    "sleeve_pair": "H_1689 v3 variant_1 (Primary Defense) + H_1696 (Secondary Defense)",
+    "activation_condition": "H_1689 v3 Judge S6 PASS 확인 후 H_1696 S1 착수",
+    "combined_target_weight": "defense cluster 33% (H_1689 v3: 23% + H_1696: 10% 예상)",
+    "tdc_requirement": "pairwise TDC vs STR_1631 + STR_1656 < 0.50 (Gate 11). Crisis TDC < 0.30 (Sequential Admission)"
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Task #16 P0_defense 탐색",
+    "Q07+D16+Q10 조합: 수익 안정성(시간 차원) + coskewness 방어(공간 차원) 독립적 메커니즘",
+    "AX-005/007 완전 회피: multi-sleeve 2nd member 설계",
+    "D16 n_months=188 — 구현 시 Factor DB 가용 기간 확인 필수",
+    "H_1689 v3 S1 결과 수신 후 H_1696 debate 진행 권장 (Primary Defense 성과 확인 후 보완 설계)"
+  ]
+}

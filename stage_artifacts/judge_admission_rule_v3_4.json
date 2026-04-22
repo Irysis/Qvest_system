@@ -1,0 +1,118 @@
+{
+  "rule_version": "v3.4",
+  "supersedes": "v3.0 (Session 66 Task #24) + v3.2 (Sequential + Retroactive Audit) + v3.3 (Structural Diagnosis)",
+  "effective_date": "2026-04-18",
+  "session": 67,
+  "author": "Judge",
+  "trigger": "Scout Task #28 consensus taxonomy v2 + L-158 Gate 8 Early Warning + STR_1682 Grade F ERR (L-159)",
+
+  "total_n_gates": 13,
+  "n_gates_v30": 11,
+  "n_gates_new_in_v34": 2,
+  "version_history_summary": {
+    "v1_0": "implicit 단일 hurdle v2.2",
+    "v2_0": "7 gates (max_abs_corr + Harvey + family dedup + re-runnability + 3-variant + tail_risk_schema + clone byte-id)",
+    "v3_0": "+ pairwise TDC + portfolio CVaR + portfolio CDaR + conservative ρ (4 gates) = 11 gates",
+    "v3_2": "+ sequential admission rule + retroactive audit principle (L-156 v2)",
+    "v3_3": "+ structural diagnosis (residualization step-wise variance ratio, L-159)",
+    "v3_4": "+ early warning pre-filter + consensus tier classification (2 gates) = 13 gates"
+  },
+
+  "gates": [
+    {"gate_id": 1, "name": "max_abs_corr ≤ 0.7", "source": "v2.0", "action_on_breach": "WARN"},
+    {"gate_id": 2, "name": "FF5 alpha t ≥ 3.0 (Harvey strict)", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 3, "name": "Family-level dedup", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 4, "name": "Re-runnability PENDING tag", "source": "v2.0", "action_on_breach": "TAG"},
+    {"gate_id": 5, "name": "3-variant decomposition (L-146/155)", "source": "v2.0+L-155", "action_on_breach": "RELABEL"},
+    {"gate_id": 6, "name": "tail_risk_result.json schema required", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 7, "name": "Clone byte-identity auto-reject", "source": "v2.0", "action_on_breach": "REJECT"},
+    {"gate_id": 8, "name": "Pairwise TDC ≤ 0.4 (t-copula MLE)", "source": "v3.0", "action_on_breach": "REJECT/residualize"},
+    {"gate_id": 9, "name": "Portfolio CVaR_95 ≥ -15%", "source": "v3.0", "action_on_breach": "REJECT/weight-down"},
+    {"gate_id": 10, "name": "Portfolio CDaR_95 ≤ 22%", "source": "v3.0", "action_on_breach": "REJECT/Defense++"},
+    {"gate_id": 11, "name": "Conservative ρ=0.3 base case", "source": "v3.0", "action_on_breach": "FLAG"},
+    {
+      "gate_id": 12,
+      "name": "Early Warning TDC pre-filter (Scout handoff kit)",
+      "source": "v3.4 NEW (L-158)",
+      "stage": "pre-debate (Scout S0 handoff)",
+      "threshold": "predicted_tdc_vs_pg2_consensus ≤ 0.4 (debate 진행), > 0.6 REJECT_PREDEBATE, 0.4~0.6 REVISE",
+      "measurement": "Scout이 factor correlation database + consensus taxonomy tier 조합으로 예상 TDC 산정. 필드 'predicted_tdc_vs_pg2_consensus' required in s0_debate_handoff_H_*.json schema.",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT_PREDEBATE OR REVISE — debate 개시 차단으로 cycle 비용 절감",
+      "rationale": "v3.0 Gate 8은 Forge S1 + Judge S6에서만 측정 가능. 가설 제출~검증까지 수 시간 소요. pre-filter로 명백한 cluster hypothesis 차단."
+    },
+    {
+      "gate_id": 13,
+      "name": "Consensus tier classification (taxonomy v2)",
+      "source": "v3.4 NEW (Scout Task #28)",
+      "stage": "pre-admission (Scout S0/Forge S1)",
+      "threshold": "tier 자동 분류 + PG pool balance check",
+      "measurement": "Scout 가설 기반 4-tier 분류: consensus_ratio / tp_gap / tp_mom / indirect. 각 tier별 PG pool 편입 한도 적용.",
+      "auto_reject_if_breach": false,
+      "action_on_breach": "FLAG + Governor review — 특정 tier 편입 한도 초과 시",
+      "rationale": "현재 PG2 STR_1631 (consensus_ratio tier) 80% 비중 = Rule 5 violation 공식 확인 (taxonomy v2). 단일 tier 집중 방지."
+    }
+  ],
+
+  "tier_classification_taxonomy_v2": {
+    "tier_1_consensus_ratio": {
+      "description": "애널리스트 consensus ratio 기반 (STR_1631 family)",
+      "expected_tdc_vs_pg2": "0.5~0.8",
+      "pg_pool_max_weight": 0.4,
+      "current_occupants": ["STR_1631_SYN_05_2002 (80% PG2)"]
+    },
+    "tier_2_tp_gap": {
+      "description": "애널리스트 target price gap 기반",
+      "expected_tdc_vs_pg2": "0.3~0.6",
+      "pg_pool_max_weight": 0.2
+    },
+    "tier_3_tp_mom": {
+      "description": "target price momentum 기반",
+      "expected_tdc_vs_pg2": "0.25~0.5",
+      "pg_pool_max_weight": 0.2
+    },
+    "tier_4_indirect_consensus": {
+      "description": "indirect consensus signal (residual, overlay 등)",
+      "expected_tdc_vs_pg2": "0.05~0.25",
+      "pg_pool_max_weight": 0.3
+    },
+    "non_consensus_family": {
+      "description": "distress/calmar/residual_momentum/investor_flow 등 consensus와 무관한 family",
+      "expected_tdc_vs_pg2": "0.0~0.15",
+      "pg_pool_max_weight": 0.5
+    }
+  },
+
+  "early_warning_workflow": {
+    "step_1_scout_s0_prep": "Scout이 가설 설계 시 taxonomy v2 tier 자동 식별",
+    "step_2_scout_predicted_tdc": "Scout이 factor correlation database에서 predicted_tdc_vs_pg2_consensus 산정 → handoff kit에 기입",
+    "step_3_qlead_pre_filter": "Q-Lead debate 스폰 전 handoff kit 필드 체크. predicted TDC > 0.6 → REJECT_PREDEBATE. 0.4~0.6 → REVISE 요청. ≤ 0.4 → debate 진행.",
+    "step_4_debate_run": "정상 debate 실행",
+    "step_5_forge_s1_judge_s6": "실측 TDC 측정 → Gate 8 최종 검증 (v3.0 기존 과정)",
+    "step_6_retroactive_audit": "L-156 v2: 기존 admitted pool에 새 gate 적용 (v3.4 Gate 12/13 도입 시 24h 내 retroactive 재검증 필요)"
+  },
+
+  "retroactive_audit_required_for_v34": {
+    "trigger": "v3.4 도입 즉시 (2026-04-18)",
+    "scope": "기존 admitted PG2 (STR_1631_SYN_05_2002, STR_1679v2) + PG1 candidates (STR_1071, STR_1562)",
+    "actions": [
+      "각 기존 admitted strategy의 tier 분류 → taxonomy v2 적용",
+      "STR_1631 tier 1 (consensus_ratio) 80% 비중 → Rule 5 violation 확인 (이미 Scout Task #28에서 발견)",
+      "Governor rev6 발행 시 tier classification 반영"
+    ]
+  },
+
+  "governor_integration": {
+    "r_function_update": "portfolio_governor.R::pg1_admission_v3() → pg1_admission_v34()",
+    "new_params": ["predicted_tdc_vs_pg2_consensus", "tier_classification"],
+    "pre_debate_check_function": "pg_early_warning_check(hypothesis_handoff_kit) → PASS/REVISE/REJECT_PREDEBATE"
+  },
+
+  "l_codes_embedded": ["L-156 v2 (retroactive)", "L-158 (early warning)", "L-159 (residualization dilution)", "L-155 (3-variant)"],
+
+  "evidence_supporting_v34": [
+    "STR_1682 Grade F ERR (H_1676 Option A) — L-158 early warning 있었으면 4-regressor 과도 지양 가능",
+    "STR_1631↔STR_1679v2 TDC 0.621 (L-156 v2) — retroactive audit 없었으면 무한 은폐",
+    "Scout Task #28 consensus taxonomy v2 — PG2 80% consensus_ratio tier = Rule 5 violation 공식 확인"
+  ]
+}

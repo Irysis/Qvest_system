@@ -1,0 +1,128 @@
+{
+  "artifact_type": "PG1_ADMISSION_PREP",
+  "revision_label": "Scenario_D v4 준비 (rev8-A-revised-v4 대기)",
+  "issued_by": "Governor",
+  "issued_at": "2026-04-19T (Session 68 Day 2)",
+  "freeze_note": "rev8-A-revised-v4 JSON 발행은 Q-Lead Freeze Override 승인 대기. 본 artifact는 PG1 admission checklist 겸 준비 문서",
+  "FREEZE_OVERRIDE_APPROVED_BY_QLEAD": false,
+
+  "immediate_decisions": {
+    "STR_1687_hard_drop": {
+      "decision": "DROP",
+      "basis": "Judge HARD_REJECT (L-166 ANTI-PATTERN). MDD 58.67% Gate3 hard_fail. Gate7 IC-Return coupling poison_pill. Gate12/13 Signal-Portfolio Translation FAIL.",
+      "weight_freed": 0.10,
+      "effective": "즉시",
+      "ax_cand_note": "AX_CAND_signal_portfolio_translation_failure 3rd member 판정 — Judge custodian decision 요청 중 (GOV-REQ-003)"
+    },
+    "weight_redistribution": {
+      "Reserve": {"prev": 0.09, "new": 0.14, "delta": "+0.05"},
+      "STR_1679v3_contingency": {"prev": 0.08, "new": 0.10, "delta": "+0.02", "condition": "Judge S6 PASS + TDC_vs_STR_1631 < 0.50"},
+      "misc_reallocation": {"prev": 0.08, "new": 0.11, "delta": "+0.03", "note": "H_1689/H_1692 Judge S6 결과 후 정밀 조정"}
+    }
+  },
+
+  "candidates_admission_checklist": [
+    {
+      "rank": 1,
+      "id": "H_1689_v3_variant_1",
+      "role": "Defense_Primary",
+      "weight": 0.23,
+      "blocker": "Task#3 (코드 미작성)",
+      "gates_required": ["Gate0_PIT", "Gate3_hurdle", "Gate7_IC_Return", "Gate8_AX001v2", "Gate11_TDC_Sequential", "Gate12_L163", "Gate13_SignalPortfolio", "Gate14_AXCand"],
+      "special_checks": [
+        "AX-007 scope: Core Alpha claim이면 scope 밖, Gate13 별도 의무",
+        "23% concentration: Risk Mgr 4th round CVaR/CDaR 필수 (GOV-REQ-002)",
+        "Codex mandatory (L-167)",
+        "Harvey t > 3.3 (5-candidate Bonferroni correction)"
+      ],
+      "tdc_target": "vs STR_1631 < 0.30, vs STR_1656 < 0.30",
+      "admission_trigger": "Judge S6 전체 PASS"
+    },
+    {
+      "rank": 2,
+      "id": "H_1692_v2",
+      "role": "Core_Secondary",
+      "weight": 0.10,
+      "blocker": "Task#4 (코드 미작성)",
+      "gates_required": ["Gate0_PIT", "Gate3_hurdle", "Gate7_IC_Return", "Gate11_TDC_Sequential", "Gate13_SignalPortfolio", "Gate14_AXCand_AX007"],
+      "special_checks": [
+        "AX-007 scope DIRECT HIT: defense_or_core_secondary_single_sleeve — multi-sleeve embedding 또는 long-short 입증 필요",
+        "4 variants: Harvey t > 3.3 (multiple testing) + DSR",
+        "Codex mandatory (L-167)"
+      ],
+      "tdc_target": "vs STR_1631 < 0.30, vs STR_1656 < 0.30",
+      "admission_trigger": "Judge S6 best variant 선정 + AX-007 scope CLEAR"
+    },
+    {
+      "rank": 3,
+      "id": "STR_1686",
+      "role": "Diversifier_Foreign",
+      "weight": 0.14,
+      "blocker": "Task#2 (S1 재실행 미완료)",
+      "gates_required": ["Gate0_PIT_C2_strict", "Gate8_role_honesty_diversifier", "Gate11_TDC_Sequential", "Gate13_SignalPortfolio"],
+      "special_checks": [
+        "L-160 Algebraic Identity Risk: H_1674 수식 overlap 확인 (hidden clone 가능성)",
+        "Role Honesty: STR_1679v2 overlay_dependency 패턴 재현 여부 Gate8 audit_diversifier",
+        "C2 strict less-than PIT 수정 확인"
+      ],
+      "tdc_target": "vs STR_1631 < 0.30, vs STR_1656 < 0.30",
+      "admission_trigger": "Forge S1 DONE + Judge Gate 0/8/11/13 PASS"
+    },
+    {
+      "rank": 4,
+      "id": "STR_1679v3",
+      "role": "Diversifier_Q25",
+      "weight": 0.10,
+      "blocker": "구현 미완 — Q-Lead Forge task 발행 필요 (GOV-REQ-001)",
+      "gates_required": ["Gate0_PIT", "Gate3_hurdle", "Gate8_AX005_exclusion", "Gate11_TDC_Sequential"],
+      "special_checks": [
+        "Q25 ≠ D25 AX-005 PASS 확정 (2026-04-19 완전 독립 증명)",
+        "proxy TDC 0.769 (전신 STR_1679_score_blend vs STR_1631) WARN — v3 실측 필수",
+        "AX-007 exclusion clause 2/4 (multi-sleeve) 적용 여부 Gate8 확인"
+      ],
+      "tdc_target": "vs STR_1631 < 0.50 (Gate11 최소), < 0.30 목표 (SeqAdm)",
+      "admission_trigger": "Forge 신규 구현 완료 → 전체 파이프라인"
+    },
+    {
+      "rank": 5,
+      "id": "STR_1687",
+      "role": "Defense_Secondary",
+      "weight": 0.00,
+      "status": "HARD_REJECT — 심사 제외",
+      "drop_reason": "L-166 ANTI-PATTERN. AX_CAND_signal_portfolio_translation_failure 3rd member 후보"
+    }
+  ],
+
+  "s3_tdc_preliminary_summary": {
+    "source": "stage_artifacts/s3_q07_cluster_tdc_preliminary_20260419.json",
+    "key_pairs": [
+      {"pair": "STR_1679_Q25(proxy) vs STR_1631", "tdc_max": 0.769, "gate11": "FAIL", "note": "WARN — v3 실측 필수"},
+      {"pair": "STR_1631 vs STR_1656", "tdc_max": 0.455, "gate11": "PASS"},
+      {"pair": "STR_1679_Q25(proxy) vs STR_1656", "tdc_max": 0.464, "gate11": "PASS"}
+    ],
+    "pending": "STR_1687 daily_returns (Task#1), H_1689 v3 (Task#3) — 확정 TDC 대기"
+  },
+
+  "governance_requests_pending": [
+    {"id": "GOV-REQ-001", "to": "Q-Lead", "action": "STR_1679v3 신규 Forge task 발행", "priority": "HIGH"},
+    {"id": "GOV-REQ-002", "to": "Risk Manager", "action": "H_1689 v3 23% concentration CVaR/CDaR 4th round", "priority": "HIGH"},
+    {"id": "GOV-REQ-003", "to": "Judge", "action": "STR_1687 AX_CAND_signal_portfolio_translation_failure 3rd member 판정", "priority": "MEDIUM"},
+    {"id": "GOV-REQ-004", "to": "Q-Lead", "action": "rev8-A-revised-v4 Freeze Override 승인", "priority": "HIGH", "status": "PENDING"}
+  ],
+
+  "projected_sr_v4": {
+    "base": 1.78,
+    "str_1687_drop_delta": -0.03,
+    "reserve_increase_delta": -0.02,
+    "str_cash_v1_offset": 0.01,
+    "net_projected": "1.72~1.76 (H_1689 v3 Judge PASS 전 보수적 추정)",
+    "upside_if_h1689_pass": 1.78,
+    "note": "Defense cluster 23% (목표 33% -10pp) → MDD 완화 여력 감소"
+  },
+
+  "admission_ready_count": 0,
+  "hard_rejected": 1,
+  "conditional_hold": 3,
+  "implementation_missing": 1,
+  "estimated_ready_date": "Day 4~5 (Forge S1 4건 + Judge S6 cascade 완료 조건)"
+}

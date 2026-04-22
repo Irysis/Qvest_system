@@ -1,0 +1,173 @@
+{
+  "artifact_type": "scout_prediction_calibration_log",
+  "purpose": "Scout debate 점수 예측 정확도 tracking. handoff kit별 predicted vs actual 5인 score 비교. L-code 스타일 축적.",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "trigger_task": "Task #9 calibration 공식화 (Q-Lead 요청)",
+
+  "calibration_schema": {
+    "per_hypothesis_fields": [
+      "hypothesis_id",
+      "handoff_kit_path",
+      "scout_predicted_total_range",
+      "scout_predicted_per_debater": {
+        "codex_critic": [min, max],
+        "risk_manager": [min, max],
+        "governor": [min, max],
+        "quant": [min, max],
+        "academic": [min, max]
+      },
+      "actual_r2_total": null,
+      "actual_r2_per_debater": {},
+      "prediction_error_abs": null,
+      "prediction_error_per_debater": {},
+      "lessons_learned": []
+    ]
+  },
+
+  "entries": [
+    {
+      "hypothesis_id": "H_1688",
+      "hypothesis_name": "Residual Momentum Core-Level Alpha",
+      "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1688.json",
+      "debate_start": "2026-04-17",
+      "scout_predicted_total_range": [72, 84],
+      "scout_predicted_per_debater": {
+        "codex_critic": [11, 14],
+        "risk_manager": [13, 16],
+        "governor": [17, 19],
+        "quant": [15, 17],
+        "academic": [16, 18]
+      },
+      "scout_reasoning": "Governor strong support (SR 2.0 직접 경로), Academic trilogy + 한국 2편, Codex Barroso scaling 부재 discount, RM momentum crash discount",
+      "actual_r1_per_debater": {"codex_critic": 8, "risk_manager": 13, "governor": 17, "quant": 13, "academic": 16},
+      "actual_r1_total": 67,
+      "actual_r2_partial": {"codex_critic": 9, "governor": 16, "quant": 13, "academic": 16},
+      "actual_r2_partial_total_4of5": 54,
+      "actual_r2_projection_total": "66-68 (Risk Mgr R2 대기)",
+      "actual_r2_verdict_projection": "APPROVE_CONDITIONAL (60-75 range)",
+      "prediction_error_r1": {
+        "codex_critic": "actual 8 vs predicted [11,14] → 3 below lower bound (Scout UNDERESTIMATE, Codex 더 엄격)",
+        "risk_manager": "actual 13 vs predicted [13,16] → 0 lower bound match",
+        "governor": "actual 17 vs predicted [17,19] → 0 lower bound match",
+        "quant": "actual 13 vs predicted [15,17] → 2 below lower bound (Scout OVERESTIMATE)",
+        "academic": "actual 16 vs predicted [16,18] → 0 lower bound match",
+        "total_actual_r1": 67,
+        "total_predicted_range": [72, 84],
+        "total_error": "5 below lower bound (Scout 전반 OVERESTIMATE, Codex+Quant 누적)"
+      },
+      "meta_learning_validation": {
+        "h1_scout_overestimate_governor": "REJECTED — Governor 17 lower bound match",
+        "h2_scout_underestimate_codex": "CONFIRMED — Codex 8 < predicted 하한 11",
+        "h3_academic_overestimate_kr_cite": "REJECTED — Academic 16 lower bound match",
+        "h4_quant_data_availability_conditional": "PARTIALLY_CONFIRMED — Factor DB correction 반영 후 Quant 2점 더 보수"
+      },
+      "calibration_lessons": [
+        "Codex Critic 예측 하한을 3점 더 낮춰야 함 (11→8 권장)",
+        "Quant 예측 하한을 2점 더 낮춰야 함 (15→13 권장)",
+        "Governor/Academic 예측은 정확 — 현재 상한/하한 유지",
+        "전체 predicted range 하한을 5점 낮춰야 함 (72→67)"
+      ]
+    },
+    {
+      "hypothesis_id": "H_1685",
+      "hypothesis_name": "Foreign-Individual Flow Divergence",
+      "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1685.json",
+      "debate_start": null,
+      "scout_predicted_total_range": [65, 78],
+      "scout_predicted_per_debater": {
+        "codex_critic": [10, 13],
+        "risk_manager": [12, 15],
+        "governor": [15, 17],
+        "quant": [13, 16],
+        "academic": [15, 17]
+      },
+      "scout_reasoning": "Choe-Kho-Stulz 2005 top-tier, investor_flow data 가용성 조건부, 21d vs monthly 불일치, H_1674 signal 공유 risk",
+      "actual_r2_total": null,
+      "prediction_error_abs": null
+    },
+    {
+      "hypothesis_id": "H_1687",
+      "hypothesis_name": "Distress-Momentum Interaction",
+      "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1687.json",
+      "debate_start": null,
+      "scout_predicted_total_range": [60, 75],
+      "scout_predicted_per_debater": {
+        "codex_critic": [9, 12],
+        "risk_manager": [12, 15],
+        "governor": [13, 16],
+        "quant": [13, 16],
+        "academic": [13, 16]
+      },
+      "scout_reasoning": "Avramov 2013 역방향 적용 mechanism risk, H_1682 Q25 공유 S3 gate 우려, Hwang 2020 WP 비공식, 50/50 static weight",
+      "actual_r2_total": null,
+      "prediction_error_abs": null
+    },
+    {
+      "hypothesis_id": "H_1689",
+      "hypothesis_name": "Quality 4-Axis Composite",
+      "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1689.json",
+      "debate_start": null,
+      "scout_predicted_total_range": [56, 71],
+      "scout_predicted_per_debater": {
+        "codex_critic": [8, 11],
+        "risk_manager": [10, 13],
+        "governor": [13, 16],
+        "quant": [11, 14],
+        "academic": [14, 17]
+      },
+      "scout_reasoning": "AX-004 v3 EXCLUSION 명문이나 L-119 dilution + L-144 Q24 stress 역방향 CRITICAL. Q24 weak signal 25% 비중이 Q01/Q04/Q25 희석. Asness 2019 simplified fidelity 차이. Q25 concentration 누적",
+      "L156_calibration_adjusted_range": [51, 66],
+      "actual_r2_total": null,
+      "prediction_error_abs": null
+    },
+    {
+      "hypothesis_id": "H_1690",
+      "hypothesis_name": "STR_1439 Score-Blend Redesign (4-axis Defense Anchor)",
+      "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1690.json",
+      "s0_record_path": "stage_artifacts/s0_record_H_1690_str_1439_score_blend_redesign.json",
+      "debate_start": null,
+      "scout_predicted_total_range_L156_adjusted": [67, 83],
+      "scout_predicted_per_debater": {
+        "codex_critic": [8, 12],
+        "risk_manager": [13, 16],
+        "governor": [17, 19],
+        "quant": [13, 16],
+        "academic": [16, 18]
+      },
+      "scout_reasoning": "L-156 calibration rule 반영. Judge 권고 수용 + STR_1439 novelty 10 FF5a t=2.953 계승 + 4 factor 기구축 + AX PASS + Defense 공석 해소. Bear: regime weight ex-post + complexity + C19/R16/M08 중첩.",
+      "actual_r2_total": null
+    },
+    {
+      "hypothesis_id": "H_1691",
+      "hypothesis_name": "STR_1060 DD Brake Removal Novelty (2-factor diversifier)",
+      "s0_record_path": "stage_artifacts/s0_record_H_1691_str_1060_clone_novelty_extraction.json",
+      "debate_start": null,
+      "scout_predicted_total_range_L156_adjusted": [55, 70],
+      "scout_predicted_per_debater": {
+        "codex_critic": [7, 10],
+        "risk_manager": [12, 15],
+        "governor": [11, 14],
+        "quant": [12, 15],
+        "academic": [13, 16]
+      },
+      "scout_reasoning": "L-156 반영 + novelty salvage 보수. Clone residue 리스크 (Codex), diversifier SR 0.7~1.1 (Governor low marginal), Academic 한국 drawdown cite 약함. Bull: parent-free + AX clean.",
+      "actual_r2_total": null
+    }
+  ],
+
+  "meta_learning_hypotheses_for_calibration": [
+    "Scout가 Governor 점수를 overestimate 경향 — family diversification positive를 과대평가 가능",
+    "Scout가 Codex를 underestimate 경향 — L-code violation 탐지가 prediction range 하한보다 더 강할 수 있음",
+    "Academic 점수는 sample size 감안 + 한국 실증 cite 존재 시 overestimate 가능",
+    "Quant 점수는 Factor DB 가용성 조건부 — data availability 실측 후에만 확정 가능"
+  ],
+
+  "update_protocol": [
+    "각 hypothesis debate R2 VERDICT 도착 시 entry.actual_r2_* 필드 채우기",
+    "prediction_error_abs = abs(actual_total - mean(predicted_range))",
+    "per_debater error = abs(actual - mean(predicted)) each",
+    "3건 누적 시 meta_learning_hypotheses 검증 + bias correction 제안",
+    "5건 누적 시 Scout calibration L-code 공식 기록 (L-152 또는 다음 번호)"
+  ]
+}

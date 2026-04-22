@@ -1,0 +1,108 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-166 ANTI-PATTERN 하드 블로커 연속 조치. v4.1 산술 오류(weight_sum 1.06) Judge 재검증 수정. 동일 사유 연속 발효.",
+
+  "artifact_type": "governor_revision_patch",
+  "revision_id": "rev8-A-revised-v4.2",
+  "base": "rev8-A-revised-v4.1",
+  "patch_type": "B1_weight_arithmetic_fix",
+  "issued_by": "governor",
+  "issued_at": "2026-04-19T21:10:00Z",
+  "v54_freeze_compliant": true,
+
+  "v41_error_analysis": {
+    "v4_original_sum": 1.10,
+    "v41_option_a_delta": -0.04,
+    "v41_actual_sum": 1.06,
+    "v41_claimed_sum": 1.00,
+    "discrepancy": 0.06,
+    "root_cause": "Judge option_a (-0.04) 자체가 v4 overweight +0.10 해소에 불충분. Governor가 claim 1.00으로 기재했으나 실측 1.06. Judge 재검증으로 발견.",
+    "additional_reduction_needed": -0.06
+  },
+
+  "b1_fix_v4_2": {
+    "method": "Judge Final option — H_1689_v3_variant_1 weight 감산",
+    "change": {"slot": "S5_H_1689_v3_variant_1", "old": 0.23, "new": 0.17, "delta": -0.06},
+    "rationale_4_points": [
+      "weight_sum 1.00 정확 복원 (산술 blocker 완전 해소)",
+      "B2 advisory defense concentration 23% single-slot 위험 동시 완화",
+      "projected SR conservative 1.74 → 1.71 (-0.03 loss 수용)",
+      "defense cluster single-slot 위험 분산 — Phase_2 Blender SLV4 regime-conditional로 보완"
+    ],
+    "weight_sum_verification": {
+      "slots_computed": [0.18, 0.10, 0.14, 0.14, 0.17, 0.00, 0.12, 0.09, 0.06],
+      "sum": 1.00,
+      "assert": "abs(1.00 - 1.00) < 1e-9 PASS"
+    }
+  },
+
+  "scenario_d_v4_2_composition": {
+    "portfolio_id": "V7_ALLWEATHER_001",
+    "revision": "v4.2",
+    "weight_sum": 1.00,
+    "weight_sum_verified": true,
+    "slots": [
+      {"id": "S1", "strategy": "STR_1631_SYN_05_2002",      "role": "Core_Primary",       "weight": 0.18, "status": "ACTIVE_CONFIRMED"},
+      {"id": "S2", "strategy": "H_1692_v2",                  "role": "Core_Secondary",     "weight": 0.10, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge Gate0~14 PASS + AX-007 scope CLEAR + Harvey t>3.3"},
+      {"id": "S3", "strategy": "STR_1656_MLRA_M05",          "role": "Diversifier_ML",     "weight": 0.14, "status": "ACTIVE_CONFIRMED",
+        "pit_note": "C10 fix APPLIED 2026-04-19 (AvgTV20). 재실행 PENDING Forge.", "tdc_vs_str1631": 0.455},
+      {"id": "S4", "strategy": "STR_1686",                   "role": "Diversifier_Foreign","weight": 0.14, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 재실행 DONE + Judge Gate0/8/11/13 PASS + TDC_vs_STR_1631 < 0.30"},
+      {"id": "S5", "strategy": "H_1689_v3_variant_1",        "role": "Defense_Primary",    "weight": 0.17, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge Gate0~14 PASS + AX-007 scope check + Harvey t>3.3",
+        "weight_note": "v4.1 0.23 → v4.2 0.17 (-0.06, B1 산술 fix). Phase_2 Blender SLV4 regime-conditional로 crisis 시 40% 보강.",
+        "concentration_note": "Risk Mgr 4th round CVaR/CDaR 필수 (GOV-REQ-002)"},
+      {"id": "S6", "strategy": "STR_1687",                   "role": "Defense_Secondary",  "weight": 0.00, "status": "HARD_DROP",
+        "drop_reason": "L-166 + AX-007 Gate14 + Gate3/7/12/13 FAIL"},
+      {"id": "S7", "strategy": "STR_1679v3_embedded_q25",    "role": "Diversifier_Q25",    "weight": 0.12, "status": "IMPLEMENTATION_MISSING",
+        "condition": "신규 구현 → S1/S2 → Judge S6 → TDC_vs_STR_1631 실측 < 0.50",
+        "tdc_warning": "proxy TDC_lower=0.619 WARN — v3 실측 MANDATORY"},
+      {"id": "S8", "strategy": "Reserve_Cash",               "role": "Reserve",            "weight": 0.09, "status": "ACTIVE"},
+      {"id": "S9", "strategy": "misc_unallocated",           "role": "Misc",               "weight": 0.06, "status": "PENDING_REALLOCATION",
+        "note": "H_1689/H_1692 Judge S6 결과 후 재분배"}
+    ],
+    "confirmed_active_weight": 0.41,
+    "conditional_hold_weight": 0.41,
+    "hard_drop_weight": 0.10,
+    "misc_reserve_weight": 0.15,
+    "defense_cluster_current": 0.17,
+    "defense_cluster_target": 0.33,
+    "defense_gap_note": "H_1689 Judge PASS 후 0.17 단독. Phase_2 Blender SLV4 regime-conditional (normal 5% / crisis 40%)로 effective defense 보강. B2 advisory 부분 해소."
+  },
+
+  "admission_rule_v3_5_3_final": {
+    "version": "v3.5.3",
+    "status": "READY_FOR_JUDGE_SIGNOFF",
+    "gates_14_total": [
+      "Gate0: PIT C1~C15 + lookahead_detector + Codex",
+      "Gate1~3: 허들 + Grade (hard_fail → REJECT)",
+      "Gate4: Harvey t > 3.3 (Bonferroni 5-test) + DSR MANDATORY",
+      "Gate5: FF5/Carhart alpha",
+      "Gate6: tail_risk CDaR/CVaR",
+      "Gate7: IC-Return SR/ICIR >= 0.30 MANDATORY",
+      "Gate8: Role Honesty (AX-001 v2 / AX-005 exclusion)",
+      "Gate9: Alpha Lab ICIR >= 0.20 + 5Y IC 유의성",
+      "Gate10: Anti-pattern 13종",
+      "Gate11: Sequential TDC < 0.30 MANDATORY",
+      "Gate12: L-163 poison_pill MANDATORY hard_block",
+      "Gate13: Signal-Portfolio Translation MANDATORY hard_block",
+      "Gate14: AX-007 auto-reject (single-sleeve defense/core_secondary top-20)"
+    ],
+    "c3_exception_2_ml_sizing_3gate": "SR_OOS/SR_IS > 0.70 + feature_concentration < 0.40 + holdout >= 12M (trail ml_empirical_first 기준)"
+  },
+
+  "projected_sr": {
+    "current": 1.193,
+    "conservative": 1.71,
+    "upside_if_h1689_passes": 1.75,
+    "note": "H_1689 weight 0.23→0.17 반영. v4.1 대비 conservative -0.03."
+  },
+
+  "governor_next_actions": [
+    "Judge rev-v4.2 재확인 → Admission Rule v3.5.3 공식 발효 대기",
+    "Forge S1 4건 완료 신호 대기 → TDC 실측 트리거",
+    "H_1689 Judge PASS 후 Risk Mgr 4th round (GOV-REQ-002)",
+    "AX-005 v1.2 extension packet Judge 발행 후 axiom_core.json + CLAUDE.md 업데이트"
+  ]
+}

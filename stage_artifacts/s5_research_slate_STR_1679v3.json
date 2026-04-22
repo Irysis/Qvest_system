@@ -4,28 +4,46 @@
   "parent_strategy": "STR_1679v2_physical_sleeve",
   "slate_id": "STR_1679v3_formal_slate",
   "created": "2026-04-17",
+  "version": "v2",
+  "v2_update_timestamp": "2026-04-17T19:45:00",
+  "v2_update_reason": "Forge 재실행 4건 완료 (Task #2) + Judge Role Honesty 재심사 (judge_role_honesty_STR_1679v2_rerun.json) 결과 반영. Def5 여전히 COSMETIC (SR 0.21, MDD 65.3, 기여 NEGLIGIBLE). 22.6pp는 overlay 기여로 귀속 확정 (L-153).",
   "created_by": "Scout",
-  "status": "OFFICIAL (Task #13, not retroactive)",
+  "status": "OFFICIAL v2 (Task #13 revision, not retroactive)",
   "retroactive": false,
   "non_retroactive_proof": "Task #13 L-147 compliance — Judge 검증 이전에 Scout formal S5 Research Slate 작성. Forge 실행 전 사전 등록.",
 
-  "trigger_evidence": {
-    "judge_verdict_str_1679v2": "CONDITIONAL_PASS_WITH_STRUCTURAL_CONCERNS (Role Misalignment 공식 확정)",
-    "def_sleeve_contribution_cagr_pp": 0.3,
-    "def_sleeve_avg_weight_pct": 10.9,
-    "mdd_reduction_source": "Layer 3 DD overlay (22.54pp), Def sleeve 기여 미미",
-    "honest_role": "core_alpha_with_overlay_dependency",
-    "base_variants_hard_fail": true,
-    "task_condition_met": "Def contrib < 2pp 확정 조건 충족 (0.3pp)",
-    "source_document": "stage_artifacts/pg0_diagnosis_STR_1679v2_preliminary.json"
+  "trigger_evidence_v2": {
+    "source_document": "stage_artifacts/judge_role_honesty_STR_1679v2_rerun.json + l_code_STR_1679v2_role_honesty.json (L-153)",
+    "judge_verdict_str_1679v2": "VALIDATED_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY (A_CONDITIONAL)",
+    "sleeve_decomposition_hard_evidence": {
+      "primary_combined": {"sr": 1.27, "cagr": 24.7, "mdd": 29.1},
+      "hrp_base_no_overlay": {"sr": 1.15, "cagr": 25.3, "mdd": 51.6, "hard_fail": true},
+      "ew_base_no_overlay": {"sr": 1.10, "cagr": 24.3, "mdd": 53.5, "hard_fail": true},
+      "core15_standalone": {"sr": 1.29, "cagr": 30.8, "mdd": 51.6},
+      "def5_standalone": {"sr": 0.21, "cagr": 5.11, "mdd": 65.3}
+    },
+    "overlay_mdd_contribution_pp": 22.6,
+    "defense_sleeve_mdd_contribution_pp": "NEGLIGIBLE",
+    "defense_sleeve_verdict": "COSMETIC",
+    "actual_alpha_source": "Core15 (C19 Top-15) + Regime Inverse Overlay",
+    "critical_observation": "Core15 SR 1.29 >= Primary SR 1.27 — Def5 추가로 Sharpe 개선 없음 (negligible)",
+    "task_condition_met": "Def contrib verdict = COSMETIC / NEGLIGIBLE (< 2pp 조건 충족 확정, 0.3pp 기록은 preliminary, Forge 재실행 후 NEGLIGIBLE로 격상)",
+    "judge_short_term_recommendation": "STR_1679v3 Def sleeve replacement (Task #7) should use H_1682 Distress+Calmar to convert cosmetic defense into substantive defense"
+  },
+
+  "v2_clarification_team_lead_misinterpretation": {
+    "team_lead_claim": "Forge 재실행 결과 Def sleeve 기여 0.3pp → 22.55pp 뒤집힘",
+    "actual_judge_finding": "22.6pp는 **overlay 기여**(overlay_mdd_contribution_pp). Def sleeve 기여는 여전히 NEGLIGIBLE/COSMETIC (SR 0.21, CAGR 5.11%). team-lead가 overlay 기여를 defense sleeve 기여로 잘못 귀속.",
+    "implication_for_slate": "Slot A (Def 교체 Q25+R16) 최우선 유지. Slot D (overlay 축소)의 Role honesty 가치도 유지. Def 강화 방향(team-lead 제안)이 아닌 Def 교체 방향이 정답.",
+    "evidence_file": "stage_artifacts/judge_role_honesty_STR_1679v2_rerun.json Line 22-23 (overlay_mdd_contribution_pp: 22.6, defense_sleeve_mdd_contribution_pp: NEGLIGIBLE)"
   },
 
   "portfolio_gap_context": {
     "current_pg2": "STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%",
     "sharpe_gap": 0.807,
     "str_1679v2_current_sharpe": 1.266,
-    "overlay_dependency_risk": "overlay 제거 시 base HRP Hard Fail. Role Misalignment + L-146 Core alpha 계상 금지 violation 발생 위험",
-    "strategic_goal": "STR_1679v3 = Def sleeve 진짜 기여 확보 + overlay 의존 감소 + Role honesty 달성"
+    "overlay_dependency_risk": "overlay 제거 시 base HRP Hard Fail (MDD 51.6%). Role Misalignment + L-146 Core alpha 계상 금지 violation 지속 risk",
+    "strategic_goal_v2": "STR_1679v3 = Def sleeve Q25+R16 교체로 cosmetic defense → substantive defense 전환 (Slot A 최우선) + overlay 의존 장기 축소 경로 탐색 (Slot D)"
   },
 
   "research_slate_4slot": {

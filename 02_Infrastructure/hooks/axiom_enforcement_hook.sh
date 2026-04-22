@@ -5,40 +5,14 @@
 # Level 0: AX-code > PIT C1-C15 > L-code > Signals
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
-
 INPUT=$(cat)
-
-TOOL_NAME=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('tool_name', ''))
-except: print('')
-" 2>/dev/null || echo "")
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 # Write/Edit만 검사
 if [ "$TOOL_NAME" != "Write" ] && [ "$TOOL_NAME" != "Edit" ]; then
   echo '{}'
   exit 0
 fi
-
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('tool_input', {}).get('file_path', ''))
-except: print('')
-" 2>/dev/null || echo "")
-
-CONTENT=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    ti = d.get('tool_input', {})
-    print(ti.get('content', ti.get('new_string', ''))[:3000])
-except: print('')
-" 2>/dev/null || echo "")
 
 DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 LOG="/tmp/axiom_enforcement.log"

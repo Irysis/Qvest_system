@@ -1,0 +1,113 @@
+{
+  "strategy_id": "STR_1684",
+  "hypothesis_id": "H_1688",
+  "stage": "S1",
+  "date": "2026-04-18",
+  "status": "complete",
+  "family": "momentum_residual",
+  "expected_role": "Core_Secondary",
+  "role_bias": "RoleBias_Core",
+  "performance": {
+    "cagr": -4.32,
+    "sharpe": -0.13,
+    "mdd": 86.66,
+    "icir": -0.1874,
+    "grade": "F",
+    "score": 22.9
+  },
+  "portfolio": {
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "buffer_zone": {
+      "keep_n": 22,
+      "entry_n": 20
+    },
+    "liq_threshold": 200000000
+  },
+  "pit_evidence": {
+    "factor": "M01_Mom_12_1",
+    "factor_id_note": "M01 = 12-1 momentum (NOT M04=1M reversal). COND_03 correction.",
+    "liq_filter": "frollmean(TradingValue,20)>=200000000 (C10, lagged)",
+    "beta_window": "24M rolling CAPM OLS: window [t-504 trading days, t-1]. Day t excluded (C2).",
+    "r12_sign_note": "R12_Idiosyncratic_Risk: Z_Score_Aligned from Factor DB used as-is (C13).",
+    "c2_compliant": true,
+    "c10_compliant": true,
+    "c13_compliant": true,
+    "c14_compliant": true,
+    "c15_compliant": true,
+    "c1_compliant": true
+  },
+  "capm_beta": 1.0007,
+  "capm_beta_gate": {
+    "threshold": 0.85,
+    "pass": false
+  },
+  "cond_01": {
+    "status": "applied",
+    "h1688_icir": -0.1874,
+    "m08_icir": -0.9742,
+    "kill_gate_pass": true
+  },
+  "cond_02": {
+    "status": "applied",
+    "beta_window_days": 504,
+    "vasicek_shrinkage": true,
+    "c2_strict": true,
+    "beta_months": 268
+  },
+  "cond_03": "applied — M01 (not M04) + R12 Z_Score_Aligned no flip (C13)",
+  "cond_04": {
+    "status": "applied",
+    "pit_evidence": {
+      "factor": "M01_Mom_12_1",
+      "factor_id_note": "M01 = 12-1 momentum (NOT M04=1M reversal). COND_03 correction.",
+      "liq_filter": "frollmean(TradingValue,20)>=200000000 (C10, lagged)",
+      "beta_window": "24M rolling CAPM OLS: window [t-504 trading days, t-1]. Day t excluded (C2).",
+      "r12_sign_note": "R12_Idiosyncratic_Risk: Z_Score_Aligned from Factor DB used as-is (C13).",
+      "c2_compliant": true,
+      "c10_compliant": true,
+      "c13_compliant": true,
+      "c14_compliant": true,
+      "c15_compliant": true,
+      "c1_compliant": true
+    }
+  },
+  "cond_05": {
+    "status": "applied",
+    "cdar_95": 0.8666,
+    "es_99": -0.0617,
+    "overall_pass": false
+  },
+  "cond_10": {
+    "status": "applied",
+    "icir": -0.1874,
+    "sr": -0.13,
+    "cagr": -4.32,
+    "core_secondary_pass": false
+  },
+  "s5_slate_note": "Barroso vol-scaling / multi-horizon composite / DD-brake variants -> S5 only",
+  "conditions_met": {
+    "COND_01": {
+      "status": "applied",
+      "kill_gate_pass": true
+    },
+    "COND_02": "applied — 24M rolling beta Vasicek, C2 strict",
+    "COND_03": "applied — Factor ID corrected M01, R12 sign C13",
+    "COND_04": "applied — PIT CHECKLIST 4건 명시",
+    "COND_05": {
+      "status": "applied",
+      "overall_pass": false
+    },
+    "COND_06": "pending — S3 DCC (Scout)",
+    "COND_07": "pending — S5 slate (Scout, COND_10 PASS 후)",
+    "COND_08": "pending — S2 rolling ICIR drift (Scout)",
+    "COND_09": "applied — COND_03 Factor DB correction",
+    "COND_10": {
+      "status": "applied",
+      "pass": false
+    },
+    "COND_11": "pending — S3 H_1687 orthogonality (Scout)",
+    "COND_12": "pending — S6 FF5 UMD (Judge)"
+  }
+}

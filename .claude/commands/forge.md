@@ -3,6 +3,7 @@ name: forge
 description: "Forge teammate init — inbox TODO 백테스트 실행. Sonnet 모델. 병렬 상한 10."
 disable-model-invocation: true
 user-invocable: true
+model: sonnet
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/forge_init.md`.
 

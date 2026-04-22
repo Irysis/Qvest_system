@@ -1,0 +1,189 @@
+{
+  "artifact_type": "blender_phase2_prep",
+  "artifact_id": "BLENDER_5SLEEVE_PHASE2_20260419",
+  "issued_by": "governor",
+  "issued_at": "2026-04-19T20:15:00Z",
+  "base_revision": "rev8-A-revised-v4",
+  "scenario": "Scenario_D_v4",
+  "portfolio_id": "V7_ALLWEATHER_001",
+  "phase": "Phase_2_preparation",
+
+  "phase2_entry_conditions": {
+    "required_before_blender_active": [
+      "STR_1686 Forge S1 DONE + Judge Gate0/8/11/13 PASS",
+      "H_1689_v3 Forge S1 DONE + Judge Gate0~14 PASS",
+      "H_1692_v2 Forge S1 DONE + Judge Gate0~14 PASS",
+      "STR_1679v3 Forge S1 DONE + Judge Gate0~14 PASS + TDC_vs_STR_1631 실측 < 0.50",
+      "STR_1656 C10 fix DONE + 재실행 + Judge C10 CLEAR"
+    ],
+    "currently_met": [
+      "STR_1631 ACTIVE_CONFIRMED (SR 1.241, MDD -40.44)"
+    ],
+    "blocking_items": [
+      "STR_1656 C10 위반 PENDING FIX (Task#8)",
+      "4건 Forge in_progress (Tasks #2/#3/#4/#11)"
+    ]
+  },
+
+  "five_sleeve_design": {
+    "description": "v55 5-sleeve regime-conditional blender. 단순→복잡 순서: EW→RP→최적화 (Blender lawbook §0)",
+
+    "sleeve_1": {
+      "id": "SLV1_CORE_PRIMARY",
+      "role": "Core_Primary",
+      "strategies": ["STR_1631_SYN_05_2002"],
+      "target_weight_normal": 0.30,
+      "target_weight_crisis": 0.20,
+      "target_weight_caution": 0.25,
+      "rationale": "앵커 전략. ICIR 기반 팩터볼 스케일링. M29 factor. SR 1.241 / MDD -40.44. 위기 시 비중 축소 → Defense 확대.",
+      "status": "ACTIVE_CONFIRMED"
+    },
+
+    "sleeve_2": {
+      "id": "SLV2_CORE_SECONDARY",
+      "role": "Core_Secondary",
+      "strategies": ["H_1692_v2"],
+      "target_weight_normal": 0.15,
+      "target_weight_crisis": 0.10,
+      "target_weight_caution": 0.12,
+      "rationale": "잔차 모멘텀 (Carhart 1997 + Blitz 2011). Fama-MacBeth cross-sectional. Core_Primary 독립성 핵심 — TDC < 0.30 필수.",
+      "admission_gate": "Harvey t > 3.3 (5-candidate simultaneous) + Gate7 FMB MANDATORY + AX-007 scope CLEAR",
+      "status": "CONDITIONAL_HOLD"
+    },
+
+    "sleeve_3": {
+      "id": "SLV3_DIVERSIFIER",
+      "role": "Diversifier_cluster",
+      "strategies": {
+        "STR_1656_MLRA_M05": {
+          "sub_weight": 0.35,
+          "role": "Diversifier_ML",
+          "note": "C10 fix 완료 후 재측정 필요. 현재 TDC_vs_STR_1631=0.455 PASS."
+        },
+        "STR_1686": {
+          "sub_weight": 0.35,
+          "role": "Diversifier_Foreign",
+          "note": "외국인 잔차 개별종목. L-160 Algebraic Identity Risk. TDC_vs_STR_1631 < 0.30 필수."
+        },
+        "STR_1679v3_embedded_q25": {
+          "sub_weight": 0.30,
+          "role": "Diversifier_Q25",
+          "note": "Q25 내재화. proxy TDC_lower=0.619 WARN → 실측 필수. AX-005 PASS."
+        }
+      },
+      "target_weight_normal": 0.38,
+      "target_weight_crisis": 0.15,
+      "target_weight_caution": 0.28,
+      "intra_sleeve_weighting": "EW (1단계). RP (2단계, 인트라 변동성 역비례).",
+      "status": "PARTIAL — STR_1656 C10 fix + STR_1686/STR_1679v3 Judge PASS 대기"
+    },
+
+    "sleeve_4": {
+      "id": "SLV4_DEFENSE",
+      "role": "Defense_Primary",
+      "strategies": ["H_1689_v3_variant_1"],
+      "target_weight_normal": 0.05,
+      "target_weight_crisis": 0.40,
+      "target_weight_caution": 0.20,
+      "rationale": "Q07 기반 다중소스 defense. AX-001 v2 조건부 평가 (crisis_alpha ≥4/6, bad/normal IC > 0.6). AX-007 multi-sleeve 예외.",
+      "concentration_risk": "단독 defense 23% → Risk Mgr 4th round CVaR/CDaR 필수 (GOV-REQ-002)",
+      "status": "CONDITIONAL_HOLD"
+    },
+
+    "sleeve_5": {
+      "id": "SLV5_RESERVE_CASH",
+      "role": "Reserve_Cash",
+      "strategies": ["cash_allocation"],
+      "target_weight_normal": 0.12,
+      "target_weight_crisis": 0.15,
+      "target_weight_caution": 0.15,
+      "rationale": "AX-005 우회 경로 — cash는 팩터 아닌 allocation 결정. STR_CASH_v1 Grade A 검증 완료 (Session 67 Day 2). 위기 시 소폭 확대.",
+      "status": "ACTIVE"
+    }
+  },
+
+  "regime_allocation_matrix": {
+    "description": "4-regime conditional (MRS 기반). v1 단순 버전 — Forge S1 완료 후 고도화",
+    "normal": {
+      "SLV1_CORE_PRIMARY": 0.30,
+      "SLV2_CORE_SECONDARY": 0.15,
+      "SLV3_DIVERSIFIER": 0.38,
+      "SLV4_DEFENSE": 0.05,
+      "SLV5_RESERVE_CASH": 0.12,
+      "sum": 1.00
+    },
+    "caution": {
+      "SLV1_CORE_PRIMARY": 0.25,
+      "SLV2_CORE_SECONDARY": 0.12,
+      "SLV3_DIVERSIFIER": 0.28,
+      "SLV4_DEFENSE": 0.20,
+      "SLV5_RESERVE_CASH": 0.15,
+      "sum": 1.00
+    },
+    "crisis": {
+      "SLV1_CORE_PRIMARY": 0.20,
+      "SLV2_CORE_SECONDARY": 0.10,
+      "SLV3_DIVERSIFIER": 0.15,
+      "SLV4_DEFENSE": 0.40,
+      "SLV5_RESERVE_CASH": 0.15,
+      "sum": 1.00
+    },
+    "recovery": {
+      "SLV1_CORE_PRIMARY": 0.35,
+      "SLV2_CORE_SECONDARY": 0.18,
+      "SLV3_DIVERSIFIER": 0.38,
+      "SLV4_DEFENSE": 0.02,
+      "SLV5_RESERVE_CASH": 0.07,
+      "sum": 1.00
+    },
+    "current_regime": "CRISIS (MRS 63.1, 2026-04)",
+    "current_allocation": "caution/crisis 혼합 → Defense 확대 대기 (H_1689 Judge PASS 조건)"
+  },
+
+  "str_1656_c10_fix": {
+    "violation_confirmed": true,
+    "violation_type": "C10",
+    "description": "유동성 필터에 당일 거래대금(Size) 직접 사용. 20일 rolling mean 미적용.",
+    "affected_lines": [
+      "run_all.R:99 — SIZE_DT <- RAWDATA[, .(Date, Ticker, Size)]",
+      "run_all.R:281 — is_dt[!is.na(Size) & Size >= LIQ_THRESHOLD]",
+      "run_all.R:312 — oos_me[!is.na(Size) & Size >= LIQ_THRESHOLD]"
+    ],
+    "fix_spec": {
+      "step_1": "SIZE_DT 생성 직후 AvgTV20 컬럼 추가: setkey(SIZE_DT, Ticker, Date); SIZE_DT[, AvgTV20 := frollmean(Size, 20, align='right', na.rm=TRUE), by=Ticker]",
+      "step_2": "필터 조건 교체: Size >= LIQ_THRESHOLD → AvgTV20 >= LIQ_THRESHOLD",
+      "step_3": "merge 시 AvgTV20 포함 또는 SIZE_DT에서 AvgTV20 join",
+      "pit_note": "frollmean align='right' = t-19~t 20일 평균. 당일 포함이므로 PIT CLEAN (t+1 예측에 t까지 데이터 사용 = 정상).",
+      "c10_compliance": "당일 단일 거래대금 → 20일 rolling mean으로 교체. 유동성 측면 미래참조 없음."
+    },
+    "expected_sr_impact": "SR 소폭 하락 예상 (일부 저유동성 종목 추가 필터링). 정확한 재측정 필요.",
+    "fix_owner": "Forge (Task#8 수행)",
+    "fix_status": "SPEC_READY — Forge 위임 필요"
+  },
+
+  "tdc_status_summary": {
+    "STR_1631_vs_STR_1656": {"tdc_max": 0.455, "status": "PASS", "source": "preliminary_monthly"},
+    "STR_1631_vs_STR_1679_proxy": {"tdc_max": 0.769, "status": "FAIL_proxy", "note": "v3 실측 필수 — proxy만 측정됨"},
+    "STR_1631_vs_STR_1679v3": {"tdc_max": "PENDING", "status": "NOT_MEASURED", "note": "STR_1679v3 S1 완료 후 s3_h1693_orthogonality_measure.R 실행"},
+    "STR_1631_vs_STR_1686": {"tdc_max": "PENDING", "status": "NOT_MEASURED", "note": "STR_1686 재실행 완료 후 측정"},
+    "STR_1631_vs_H_1689": {"tdc_max": "PENDING", "status": "NOT_MEASURED", "note": "H_1689 v3 S1 완료 후 측정"},
+    "sequential_gate_status": "STR_1631 기반 순차 편입 — 4건 PENDING 측정 완료 전 PG1 Final 불가"
+  },
+
+  "phase2_projected_sr": {
+    "current_sr": 1.193,
+    "scenario_d_v4_conservative": 1.74,
+    "scenario_d_v4_upside": 1.78,
+    "full_5sleeve_target": 1.85,
+    "sr_gap_to_target": 0.807,
+    "critical_path": "H_1689 v3 Judge PASS (Defense +0.20 예상) → STR_1686 TDC PASS → H_1692 PASS → Blender regime matrix 고도화"
+  },
+
+  "governor_next_actions": [
+    "Forge에 STR_1656 C10 fix spec 전달 (AvgTV20 교체)",
+    "Forge S1 DONE 4건 수신 대기 → TDC 실측 트리거",
+    "Judge S6 cascade 완료 → PG1 Admission Gate G1-0~G1-10 진입",
+    "H_1689 Judge PASS 후 Risk Mgr 4th round 스폰 (GOV-REQ-002)",
+    "Blender regime_allocation_matrix v2 — Forge S1 완료 후 empirical 기반 고도화"
+  ]
+}

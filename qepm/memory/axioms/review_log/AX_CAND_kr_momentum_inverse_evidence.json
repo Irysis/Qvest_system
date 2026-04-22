@@ -1,0 +1,269 @@
+{
+  "axiom_id_candidate": "AX_CAND_kr_momentum_inverse",
+  "axiom_name_draft": "KR Cross-sectional Traditional Momentum Inverse Pattern",
+  "status": "CANDIDATE_PROPOSAL_SCOUT_INITIATED",
+  "source_agent": "Scout (initiator) + Judge (approver - pending)",
+  "created_at": "2026-04-18",
+  "session": "Session 67 Day 3 late",
+  "q_lead_authorization": "2026-04-18 Scenario B 확정 + Scout Hypothesis A 재평가 공식 task 할당",
+  "quarterly_review_scheduled": "2026-07-17 (2026Q3)",
+
+  "executive_summary": {
+    "purpose": "STR_1684_v2b Scenario B 확정 (ICIR -0.1874 Fix 1 후에도 동일) → Hypothesis A (KR traditional momentum inverse) 재평가. M01_Mom_12_1 등 traditional cross-sectional momentum이 한국시장에서 구조적 inverse 패턴 축적.",
+    "scout_initial_underestimate_acknowledgment": "Scout H_1688 진단 시 Hypothesis A 확률 10%로 과소 추정. Fix 1 효과 부재로 실제 A 우세 확인",
+    "critical_distinction": "M07_IndMom (industry momentum, proper sd=1.0) + STR_1661 V2 ML은 positive — **traditional cross-sectional raw momentum (M01/M02/M05 등)** 이 한국 구조적 inverse"
+  },
+
+  "statement_draft": "market=KR, scope=cross_sectional_traditional_momentum. M01_Mom_12_1 + 유사 traditional cross-sectional momentum factors (M02_Mom_6_1, M05_Trended_Mom 등)의 long-only portfolio는 한국시장에서 ICIR 구조적 negative 또는 weak. Industry momentum (M07, Grinblatt 1999) + ML composite momentum feature + event-driven momentum (earnings)은 예외. 최소 3건 재현 시 AX 승격.",
+
+  "hypothesis_a_upgrade_rationale": {
+    "pre_scenario_b_probability": 0.10,
+    "post_scenario_b_probability": 0.65,
+    "shift_reason": [
+      "Fix 1 inline 적용 → ICIR 변동 없음 → infrastructure issue가 결과 원인 아님 확정",
+      "Hypothesis B (infrastructure) → ICIR 개선 기여 없음 재확인",
+      "Hypothesis D (winsorize 정보 손실) 추가 가능성 5%",
+      "나머지 30%는 다른 미식별 mechanism"
+    ],
+    "hypothesis_distribution_updated": {
+      "A_kr_momentum_inverse": 0.65,
+      "B_infrastructure_bug": 0.00,
+      "C_direction_error": 0.00,
+      "D_winsorize_loss": 0.05,
+      "E_other_unexplored": 0.30
+    }
+  },
+
+  "kr_momentum_literature_evidence": {
+    "supporting_inverse_or_weak": [
+      {
+        "paper": "Rouwenhorst, K. Geert, 1999, 'Local Return Factors and Turnover in Emerging Stock Markets', Journal of Finance 54(4), 1439-1464",
+        "key_finding": "Emerging markets (한국 포함) momentum weak — 선진국 대비 momentum premium 소멸",
+        "scope": "cross-sectional traditional 3~12M momentum",
+        "relevance_H_1688": "STRONG — H_1688 M01_Mom_12_1 traditional cross-sectional momentum 직접 해당"
+      },
+      {
+        "paper": "Asness, Moskowitz, Pedersen, 2013, 'Value and Momentum Everywhere', Journal of Finance 68(3), 929-985",
+        "key_finding": "한국 momentum premium global 평균보다 낮음 (일부 period reversal)",
+        "scope": "global comparative",
+        "relevance_H_1688": "STRONG — Asness table 4 기준 한국 momentum weakest"
+      },
+      {
+        "paper": "Chui, Titman, Wei, 2010, 'Individualism and Momentum around the World', Journal of Finance 65(1), 361-392",
+        "key_finding": "Low-individualism cultures (한국 Hofstede individualism 지수 낮음)에서 momentum weak — behavioral underreaction 약함",
+        "scope": "cultural factors",
+        "relevance_H_1688": "MEDIUM — 한국 specifically cultural momentum weakness 구조적 설명"
+      },
+      {
+        "paper": "엄철준 2018 한국증권학회지 'KOSPI 모멘텀 효과 재검증'",
+        "key_finding": "post-2008 KOSPI momentum premium 약화 + crisis 구간 inverse",
+        "scope": "한국 direct empirical",
+        "relevance_H_1688": "STRONG — 한국 direct 실증",
+        "direct_cite_status": "미확인 (Scout access pending)"
+      }
+    ],
+    "supporting_positive_exceptions": [
+      {
+        "paper": "Grinblatt-Moskowitz, 1999, 'Do Industries Explain Momentum?' JF 54, 1249-1290",
+        "exception_type": "industry momentum",
+        "kr_validity": "M07_IndMom Factor DB sd 1.000 proper — industry momentum은 positive",
+        "relevance_H_1692": "DIRECT — H_1692 M07 residualized Core_Secondary 가설 근거"
+      },
+      {
+        "paper": "Lee-Swaminathan, 2000, 'Price Momentum and Trading Volume' JF 55",
+        "exception_type": "volume-conditional momentum",
+        "kr_validity": "event-driven + volume filter momentum positive 가능",
+        "relevance_future": "H_1688 재설계 시 volume filter 추가 고려"
+      },
+      {
+        "paper": "Chan-Jegadeesh-Lakonishok, 1996, 'Momentum Strategies' JF 51",
+        "exception_type": "earnings momentum",
+        "kr_validity": "C19_Composite_Earnings (PEAD) STR_1631 SR 1.243 positive 실증",
+        "relevance_STR_1631": "DIRECT — earnings momentum은 separate alpha source"
+      }
+    ]
+  },
+
+  "kr_momentum_empirical_evidence_accumulated": {
+    "supporting_l_codes_inverse": [
+      {
+        "l_code": "L-090 (Scout 이전 추정)",
+        "claim": "M01 IC 반감기 693M stable",
+        "revision_needed": "Scout L-090 IC 반감기 estimate는 H_1688 ICIR -0.187 부정합 → L-090 본문 재측정 필요. stable 해석 과도 낙관 가능성",
+        "judge_coordination_required": "L-090 재평가 Judge + Scout 공동"
+      },
+      {
+        "l_code": "L-161 v2 (H_1688 원인 확정 후 재작성)",
+        "claim_v1": "Infrastructure distortion primary",
+        "claim_v2_post_scenario_b": "Infrastructure partial + KR momentum inverse primary",
+        "evidence_strength": "STRONG (STR_1684_v2b empirical confirmation)"
+      },
+      {
+        "l_code": "H_1688 STR_1684 + STR_1684_v2b 2회 consecutive ICIR -0.187",
+        "evidence_strength": "STRONG direct",
+        "interpretation": "Fix 1 전/후 identical ICIR → infrastructure 영향 zero → KR momentum structural inverse primary"
+      }
+    ],
+    "frequency_count_current": {
+      "direct_validated_failures": 2,
+      "notes": "STR_1684 (v1) + STR_1684_v2b (Fix 1 적용 후)는 같은 전략 consecutive test → frequency 1건 (같은 hypothesis)",
+      "additional_supporting": [
+        "L-090 reference (M01 stable claim 재평가 시 partial evidence)",
+        "Rouwenhorst 1999 global cross-section evidence",
+        "Asness 2013 KR momentum weak table 4 (한국 weakest)"
+      ],
+      "frequency_score_estimate": 0.30
+    }
+  },
+
+  "5_axis_promotion_criteria_estimate": {
+    "I_impact": {
+      "score": 0.60,
+      "evidence": "H_1688 DROP 확정 + momentum family residualization 재설계 필요. Governor H_1688 Core_Secondary 공백 + H_1692 편성 전환. M01/M02/M05 기반 추가 가설 설계 제한."
+    },
+    "R_robustness": {
+      "score": 0.75,
+      "evidence": "STR_1684_v2b Scenario B 확정 + Fix 1 효과 없음 수학적 설명 명확. Rouwenhorst/Asness/Chui 학술 literature 뒷받침. 재현 조건 (M01 cross-sectional long-only) 명확."
+    },
+    "F_frequency": {
+      "score": 0.30,
+      "evidence": "현재 H_1688 1건 direct + 학술 literature 3건 supporting. AX 승격 3건 direct 기준 미달. STR_1684_v2 추가 variant (Slot B rank-based, Slot C Blitz original) 실험 시 frequency 증가 가능."
+    },
+    "E_economic_mechanism": {
+      "score": 0.55,
+      "evidence": "Behavioral underreaction (Hong-Stein 1999) + 한국 low-individualism (Chui 2010) + emerging market weak momentum (Rouwenhorst 1999) 3-layer 학술 근거. strong academic backing."
+    },
+    "M_measurability": {
+      "score": 0.85,
+      "evidence": "Cross-sectional momentum factor ICIR 측정 자동화. M01/M02/M05/M09 등 traditional momentum factors 전수 ICIR check 가능. Scout S2 extended profile pattern 적용."
+    },
+    "total_estimated": {
+      "conservative": 0.51,
+      "optimistic": 0.58,
+      "threshold_for_promotion": 0.70,
+      "verdict_current": "EXTEND 2026Q3 review 예상"
+    }
+  },
+
+  "promotion_path_forward": {
+    "2026q3_likely_outcome": "EXTEND",
+    "accelerators": [
+      "F_frequency 0.30→0.60: STR_1684_v2 Slot B (rank-based) + Slot C (Blitz original) 재실험 결과 ICIR 여전히 negative 시 frequency 증가",
+      "F_frequency 0.60→0.85: M02_Mom_6_1 / M05_Trended_Mom 유사 hypothesis 추가 실험 시",
+      "E_economic_mechanism 0.55→0.75: 엄철준 2018 한국 direct empirical cite access + 추가 한국 momentum literature 수집",
+      "I_impact 0.60→0.80: H_1692 (Industry momentum residualized) 성공 시 대비 effect 명확화"
+    ],
+    "timeline": {
+      "2026q3": "current evidence 기준 EXTEND",
+      "2026q4": "Slot B/C 추가 실험 + 엄철준 2018 cite 확보 시 PROMOTE candidate",
+      "2027q1": "최종 승격 or 폐기 결정"
+    }
+  },
+
+  "relation_to_existing_axioms": {
+    "ax_cand_infrastructure_failures": {
+      "relation": "**sibling but orthogonal**",
+      "interaction": "두 계열 분리: infrastructure (system) vs KR momentum (economic mechanism)",
+      "scope_clarification": "H_1688 Scenario B 확정으로 AX_CAND_kr_momentum_inverse가 primary explanation, infrastructure는 secondary partial contribution"
+    },
+    "ax_006_pairwise_tdc_conditional_cluster": {
+      "relation": "**independent** — portfolio-level vs factor-level",
+      "interaction": "AX_CAND_kr_momentum_inverse는 factor-level ICIR pattern, AX-006은 portfolio TDC dynamics"
+    },
+    "existing_positive_momentum_evidence_preserved": {
+      "M07_IndMom_Grinblatt": "AX_CAND scope 밖 (industry momentum exception)",
+      "STR_1661_V2_ML_composite": "AX_CAND scope 밖 (ML composite momentum exception)",
+      "STR_1631_C19_earnings_PEAD": "AX_CAND scope 밖 (earnings momentum exception)"
+    }
+  },
+
+  "scout_l_090_revision_request_to_judge": {
+    "status": "REJECTED_FACTOR_MISMATCH (2026-04-18 Q-Lead 철회 지시)",
+    "scout_mistake_acknowledgment": "Scout가 L-090을 M01 Mom_12_1 scope로 잘못 기억. 실제 L-090 원본은 methodology_memory.md line 472 'Korea_Research_C19_Immortal' — C19_Composite_Earnings (consensus family) scope. L-090 여전히 valid, STR_1684 Scenario B 영향 없음.",
+    "root_cause": "L-code number만으로 scope 추정, 원본 확인 없이 revision proposal 작성",
+    "corrective_action_taken": "본 revision proposal 철회. Judge L-161 extension에 Scout tags (KR_MOMENTUM_IMPLEMENTATION_LIMIT + IC_SR_DECOUPLING_EVIDENCE) 편입으로 대체 (Option A, Judge 작업).",
+    "process_integrity_lesson": "L-code cross-reference protocol 신규 — methodology_memory.md 원본 1줄 필수 확인 후 revision 제안. AX-002 evidence 추가 (Scout 2번째 self-revision pattern).",
+    "_original_proposal_archived_WRONG": {
+      "_note": "factor mismatch로 무효화된 proposal. 참고용만.",
+      "l_090_assumed_claim_WRONG": "M01 IC 반감기 693M stable",
+      "l_090_actual_claim": "C19 IC persistent 사실상 불멸 (Korea_Research_C19_Immortal)",
+      "l_090_actual_scope": "consensus family (C19_Composite_Earnings) — STR_1684 Scenario B 영향 없음"
+    }
+  },
+
+  "h_1692_strategic_interaction": {
+    "h_1692_industry_momentum_residualized_RSI": {
+      "relation": "**AX_CAND scope 밖** — M07 industry momentum exception 활용",
+      "validation_opportunity": "H_1692 PASS 시 industry momentum exception 강화 (Grinblatt 1999 KR 실증)",
+      "interaction_for_ax": "H_1692 ICIR positive + Scout Calibration v4 HIT 시 AX_CAND_kr_momentum_inverse scope '**traditional cross-sectional raw momentum**'으로 narrowing 명확화 evidence"
+    },
+    "scenario_c_priority_rationale": "H_1688 DROP + H_1692 Core_Secondary 편성 적합성 재확인. H_1692 RSI residualization이 AX_CAND scope 회피 구조"
+  },
+
+  "evidence_tracking_tasks": [
+    {
+      "task_id": "ET-301",
+      "description": "STR_1684_v2 Slot B (rank-based) 실행 시 ICIR 결과 수신 — rank-based도 negative 시 frequency 가중",
+      "owner": "Forge (Day 2 재스폰 시) + Scout monitor",
+      "target": "Session 67 Day 2~3"
+    },
+    {
+      "task_id": "ET-302",
+      "description": "엄철준 2018 direct access — korean_evidence 0.55→0.75 upgrade",
+      "owner": "Scout research",
+      "target": "Session 68"
+    },
+    {
+      "task_id": "ET-303",
+      "description": "M02_Mom_6_1 / M05_Trended_Mom 유사 hypothesis 추가 실험 (frequency 증가)",
+      "owner": "Scout design + Forge execute",
+      "target": "Session 69~70 (low priority, Core_Secondary 공백 해소 후)"
+    },
+    {
+      "task_id": "ET-304",
+      "description": "L-090 본문 revision Scout 초안 → Judge approve",
+      "owner": "Scout + Judge coordinate",
+      "target": "Session 67 Day 2"
+    },
+    {
+      "task_id": "ET-305",
+      "description": "H_1692 ICIR PASS 시 AX_CAND_kr_momentum_inverse scope narrowing evidence 수집",
+      "owner": "Scout + Judge",
+      "target": "H_1692 S1 완료 후"
+    }
+  ],
+
+  "judge_coordination_required": {
+    "_note": "Scout initiator + Judge approver 이중 승인",
+    "judge_review_items": [
+      "AX_CAND_kr_momentum_inverse 공식 axiom registry 등록",
+      "L-161 본문 재작성 (hypothesis A primary + B partial)",
+      "L-090 본문 revision (stable claim → implementation limit 재해석)",
+      "Hypothesis D (winsorize 정보 손실) 별도 L-code 발행 여부 검토",
+      "5축 점수 공식 재계산 (Scout 추정 0.51~0.58 확정)",
+      "H_1688 AX_CAND_kr_momentum_inverse scope 명시 + M07/ML/earnings momentum exception 범위 공식화"
+    ],
+    "expected_judge_timeline": "L-161 본문 재작성 (즉시) + AX_CAND 공식 등록 (Session 67 Day 2)"
+  },
+
+  "scout_notes": [
+    "Scenario B 확정으로 Scout H_1688 Hypothesis 재평가 완료 — A probability 10% → 65% 대폭 상향.",
+    "Hypothesis B (infrastructure distortion) 완전 zero 평가 불가 — AX_CAND_infrastructure_failures R_robustness 0.80 유지 (runtime fix 효과 없음은 ICIR 영향 축이 아닌 다른 영향 축 검증)",
+    "L-161 본문 v2 Judge 재작성 권고: 'Factor DB distortion (partial contribution) + KR momentum structural inverse (primary)' 이중 원인 구조",
+    "L-090 revision은 Judge authority — Scout은 초안 제공",
+    "AX_CAND_kr_momentum_inverse vs AX_CAND_infrastructure_failures 계층 관계: orthogonal (economic vs infrastructure).",
+    "M07/ML/earnings momentum exception 범위 명문화가 AX_CAND 정확한 scope 핵심.",
+    "2026Q3 review: conservative 0.51 / optimistic 0.58 → EXTEND 1 quarter 예상",
+    "엄철준 2018 direct access + Slot B/C 추가 실험이 F_frequency 가속 enabler"
+  ],
+
+  "artifacts_generated": [
+    "qepm/memory/axioms/review_log/AX_CAND_kr_momentum_inverse_evidence.json (본 파일)",
+    "related: DIAG_STR_1684_H_1688_residualization.json (Hypothesis A/B/C/D 진단)",
+    "related: AX_CAND_infrastructure_failures_proposal.json (sibling AX_CAND)",
+    "related: s0_debate_handoff_H_1692.json (M07 industry momentum exception 활용)"
+  ],
+
+  "proposal_status_for_judge_approval": "PENDING_JUDGE_REVIEW",
+  "next_action_expected": "Judge L-161 본문 재작성 + AX_CAND_kr_momentum_inverse 공식 등록 + L-090 revision"
+}

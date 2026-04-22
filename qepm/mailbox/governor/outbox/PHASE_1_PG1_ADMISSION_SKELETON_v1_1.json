@@ -1,0 +1,315 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON_v1_1",
+  "stage": "PG1_pre_draft_enhanced",
+  "timestamp": "2026-04-18T14:58:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v1.1_team_lead_enhancements",
+  "supersedes": "PHASE_1_PG1_ADMISSION_SKELETON.json (v1.0)",
+  "status": "SKELETON v1.1 — team-lead 요청 4개 추가 반영. rev8-A ACTIVATE + Forge S1 + Judge S6 완료 후 values 채워 ACTIVE",
+  "target_completion_date": "Session 67 Day 5~6",
+
+  "team_lead_enhancements_applied": [
+    "1. STR_1631 80→18% weight migration path 명시",
+    "2. Gate 11/12 추가 검증 의무 (v3.5 편입 조건부)",
+    "3. Risk Mgr 3rd round 재검증 의존 단계 표시",
+    "4. activation_flow 6단계 구조화 (activate 시점 통합)"
+  ],
+
+  "admission_rule_v3_4_base_10_gates_plus_v3_5_candidates": {
+    "v3_4_current_normative_10_gates": [
+      {"gate": 1, "name": "Scorecard Grade", "criterion": "Grade A or A_NOVEL"},
+      {"gate": 2, "name": "Anti-pattern 13종", "criterion": "antipattern_detector.R PASS"},
+      {"gate": 3, "name": "LOO 4종", "criterion": "loo_validator.R PASS"},
+      {"gate": 4, "name": "Role Honesty", "criterion": "role_honesty_audit.R PASS"},
+      {"gate": 5, "name": "Family cap 35%", "criterion": "rev8-A family_concentration PASS"},
+      {"gate": 6, "name": "TDC pairwise", "criterion": "기존 전략과 TDC < 0.5 (Sequential)"},
+      {"gate": 7, "name": "CVaR budget", "criterion": "portfolio CVaR 5% < -3.5%"},
+      {"gate": 8, "name": "CDaR Early Warning", "criterion": "L-158 CDaR 10% < -15% 조건부"},
+      {"gate": 9, "name": "Retroactive TDC", "criterion": "편입 후 PG2 재측정"},
+      {"gate": 10, "name": "Consensus_tier", "criterion": "consensus taxonomy v2.0 sub-family"}
+    ],
+    "v3_5_candidates_2_gates_pending_triple_signoff": [
+      {
+        "gate": 11,
+        "name": "Variant comparison",
+        "criterion": "Forge S1 min 3 variants + primary >= alternatives",
+        "status": "Governor CONDITIONAL APPROVE + Judge 제안 + Q-Lead signoff 필요 + Architect signoff 필요 + Hard Fail 2건 축적",
+        "current_application": "Phase_1 Forge S1 결과 (H_1688/H_1690)에 권장 적용, mandatory는 v3.5 발행 후"
+      },
+      {
+        "gate": 12,
+        "name": "IC-Return coupling ratio",
+        "criterion": "SR / ICIR >= 0.3",
+        "status": "v3.5 동시 검토",
+        "current_application": "L-160 Defense family 발견 — Defense family admission에 특히 mandatory 권장"
+      }
+    ]
+  },
+
+  "str_1631_weight_migration_path_80_to_18_detailed": {
+    "current_state_rev7_v3_v1_baseline": {
+      "STR_1631_SYN_05": 0.80,
+      "STR_1656_MLRA_M05": 0.20,
+      "other_strategies": 0.00,
+      "n_active": 2,
+      "profile": {"sharpe": 1.193, "cagr": 0.1614, "mdd": -0.2127},
+      "reference": ".cache/portfolio_gap_vector.json v1.0.3"
+    },
+    "target_state_rev8_a_phase_1": {
+      "STR_1631": 0.18,
+      "H_1688": 0.10,
+      "STR_1656": 0.14,
+      "STR_1679v3": 0.10,
+      "H_1689": 0.23,
+      "H_1690": 0.10,
+      "Reserve": 0.09,
+      "Unallocated": 0.06,
+      "n_active": 6
+    },
+    "migration_steps_day_1_to_day_7": {
+      "day_1_morning_pre_migration_check": {
+        "action": "현 PG2 80/20 NAV 스냅샷 + 거래비용 buffer 확인 (20bps 기준 + Turnover 한도)",
+        "deliverable": "pre_migration_nav.csv + transaction_cost_estimate.csv"
+      },
+      "day_1_afternoon_step_1_STR_1631_80_to_60": {
+        "STR_1631_delta": "-20pp (80→60%)",
+        "STR_1656_delta": "0pp (20% 유지)",
+        "other_strategies_delta": "+20pp 분산 ingress: H_1688 +5, H_1689 +10, Reserve +5",
+        "actual_composition": {"STR_1631": 0.60, "STR_1656": 0.20, "H_1688": 0.05, "H_1689": 0.10, "Reserve": 0.05, "Unallocated": 0.00},
+        "n_active": 4,
+        "liquidity_check": "20종목 × 2억원 × (20% 유지 보정) — 재확인"
+      },
+      "day_2_step_2_mid_migration": {
+        "STR_1631_delta": "-20pp (60→40%)",
+        "STR_1656_delta": "-4pp (20→16%)",
+        "ingress": "H_1688 +3, STR_1679v3 +7, H_1689 +8, H_1690 +3, Reserve +3",
+        "actual_composition": {"STR_1631": 0.40, "STR_1656": 0.16, "H_1688": 0.08, "STR_1679v3": 0.07, "H_1689": 0.18, "H_1690": 0.03, "Reserve": 0.08},
+        "n_active": 7,
+        "role_verify": "Core 48 / Div 23 / Def 21 / Reserve 8 — role balance 진입"
+      },
+      "day_3_step_3_approach_target": {
+        "STR_1631_delta": "-15pp (40→25%)",
+        "STR_1656_delta": "-2pp (16→14%)",
+        "ingress": "H_1688 +2 (10), STR_1679v3 +3 (10), H_1689 +5 (23), H_1690 +7 (10)",
+        "actual_composition": {"STR_1631": 0.25, "STR_1656": 0.14, "H_1688": 0.10, "STR_1679v3": 0.10, "H_1689": 0.23, "H_1690": 0.10, "Reserve": 0.08, "Unallocated": 0.00},
+        "n_active": 7,
+        "note": "Reserve 9% 미달 — Day 4에서 complete"
+      },
+      "day_4_step_4_final_convergence": {
+        "STR_1631_delta": "-7pp (25→18%)",
+        "ingress": "Reserve +1 (9), Unallocated +6",
+        "actual_composition_final": {
+          "STR_1631": 0.18,
+          "STR_1656": 0.14,
+          "H_1688": 0.10,
+          "STR_1679v3": 0.10,
+          "H_1689": 0.23,
+          "H_1690": 0.10,
+          "Reserve": 0.09,
+          "Unallocated": 0.06
+        },
+        "n_active": 6,
+        "effective_total": 1.00,
+        "rev8_a_phase_1_achieved": true
+      },
+      "day_5_6_pg1_admission_finalize": {
+        "action": "PG1 10 gates + Gate 11/12 (v3.5 조건부) 전수 검증 문서화",
+        "deliverable": "PG1_admission_verdict_per_candidate.json × 6건"
+      },
+      "day_7_go_live": {
+        "action": "LIVE 운영 시작, PG3 monitoring 활성",
+        "daily_nav_report": "활성화"
+      }
+    },
+    "transition_risk_controls": {
+      "turnover_cap_per_day": "단일 ticker 기준 20pp/day 상한 (liquidity 보호)",
+      "transaction_cost_budget": "15~20bps × 4 migration steps ≈ 60~80bps 일시 비용",
+      "crisis_regime_adjustment": "MRS 63.1 CRISIS 중 migration — defensive sleeve (H_1689) 우선 ingress",
+      "rollback_trigger": "step 완료 후 portfolio SR 1주일 moving average < 0.8 지속 시 prev step으로 rollback"
+    }
+  },
+
+  "admission_candidates_per_rev8_a_enhanced": {
+    "slot_1_STR_1631_Core_Primary": {
+      "admission_status": "ALREADY_PG2_ACTIVE_weight_adjustment",
+      "current_weight": 0.80,
+      "target_weight": 0.18,
+      "migration_days": "Day 1~4",
+      "gates_re_verification": "partial — Gate 6 TDC with new entrants (H_1688/H_1689/H_1690/STR_1679v3)"
+    },
+    "slot_2_H_1688_Core_Secondary": {
+      "admission_status": "PENDING_FORGE_S1_COMPLETION",
+      "current_weight": 0.00,
+      "target_weight": 0.10,
+      "migration_days": "Day 1~3 gradual ingress (5→8→10)",
+      "gates_to_verify": "ALL_10_v3_4_plus_Gate_11_12_recommended",
+      "blocker": "STR_1684 output 비어있음, Forge v2 실행 대기",
+      "s0_debate_score": 67,
+      "risk_mgr_3rd_round_dependency": "V3 H_1688 Barroso boost 타당성 검증 + pairwise TDC H_1688-H_1689"
+    },
+    "slot_3_STR_1656_Div_ML": {
+      "admission_status": "ALREADY_PG2_ACTIVE_weight_adjustment",
+      "current_weight": 0.20,
+      "target_weight": 0.14,
+      "migration_days": "Day 2~3 (20→16→14)",
+      "gates_re_verification": "Gate 6 TDC with new entrants, Gate 9 Retroactive Audit"
+    },
+    "slot_4_STR_1679v3_Div_3": {
+      "admission_status": "PRE_APPROVED_NEW_ENTRY",
+      "current_weight": 0.00,
+      "target_weight": 0.10,
+      "migration_days": "Day 2~3 gradual (0→7→10)",
+      "gates_to_verify": "Gate 6, Gate 9 (retroactive TDC with STR_1631)",
+      "gate_9_reference": "L-156 v2 retroactive audit 후속 — STR_1631↔STR_1679v3 TDC < 0.5 재확인 필수",
+      "risk_mgr_3rd_round_dependency": "V2 STR_1679v3 embedded Q25 overlap 재검증"
+    },
+    "slot_5_H_1689_Def_2": {
+      "admission_status": "PENDING_FORGE_S1_AND_JUDGE_S6",
+      "current_weight": 0.00,
+      "target_weight": 0.23,
+      "migration_days": "Day 1~4 gradual (0→10→18→23)",
+      "gates_to_verify": "ALL_10_v3_4_plus_Gate_11_12_Defense_mandatory_per_L_160",
+      "additional_checks": [
+        "AX-005 exclusion 재확인 (quality standalone 구조적 실패 scope 밖)",
+        "H_1689 단독 23% concentration over-concentration (Risk Mgr V2)",
+        "L-160 IC-Return coupling ratio >= 0.3 mandatory (Gate 12 Defense)",
+        "variant comparison min 3 (Gate 11)"
+      ],
+      "risk_mgr_3rd_round_dependency": "V1 Defense cluster 33% + V2 H_1689 23% concentration (핵심 검증 대상)"
+    },
+    "slot_6_H_1690_Def_3": {
+      "admission_status": "PENDING_10_CONDITIONS_PASS",
+      "current_weight": 0.00,
+      "target_weight": 0.10,
+      "migration_days": "Day 2~3 gradual (0→3→10)",
+      "gates_to_verify": "ALL_10_v3_4_plus_10_conditions_h_1690_specific_plus_Gate_11_12",
+      "10_conditions_forge_s1_check_6": ["C1 cosine", "C2 R16 variance", "C4 R16 regime3 safety", "C6 2020-03 lag", "C9 KOSDAQ alignment", "C10 AX-001 3-axis"],
+      "phase_2_promotion_condition": "10 conditions + Forge S1 + Judge S6 PASS 시 10%→12% 승격 검토",
+      "risk_mgr_3rd_round_dependency": "V3 H_1690 10% activation + V4 Q25 17.95% headroom 효과"
+    },
+    "slot_7_reserve_9pct": {
+      "admission_status": "RESERVED_NO_ADMISSION",
+      "target_weight": 0.09,
+      "composition": "H_1678 refit 6 + H_1690 promotion buffer 2 + contingency 1",
+      "gates_not_applicable": "편입 아님, Reserve 명시"
+    },
+    "slot_8_unallocated_6pct": {
+      "admission_status": "UNALLOCATED_FOR_PHASE_2_ENTRY",
+      "target_weight": 0.06,
+      "reserved_for": "H_1685 v2 Phase_2 3% + Phase_3 추가 2% + contingency 1%",
+      "gates_not_applicable": "편입 아님, 미배분 명시"
+    }
+  },
+
+  "gate_11_12_additional_verification_obligation": {
+    "gate_11_variant_comparison_applicability": {
+      "mandatory_for_Defense_family": ["H_1689", "H_1690"],
+      "rationale": "L-160 Defense IC-Return decoupling 재발 방지",
+      "recommended_for_Core_Diversifier": ["H_1688", "STR_1679v3"],
+      "not_applicable": ["STR_1631 기존 PG2", "STR_1656 기존 PG2"]
+    },
+    "gate_12_ic_return_coupling_ratio_applicability": {
+      "mandatory_for_Defense_family": ["H_1689", "H_1690"],
+      "computation": "Forge hurdle_result.json의 Sharpe / ICIR",
+      "threshold": 0.3,
+      "interpretation": "0.3 미만 → L-160 IC-Return decoupling 의심 → DEFER",
+      "exception": "Diversifier/Core는 signal 특성 다양 → 선택적 적용"
+    },
+    "v3_5_formal_adoption_pending": "3 조건 (Hard Fail 2건 + triple signoff + Scout handoff kit v2) 완료 시 mandatory로 승격. 현재는 권장 수준."
+  },
+
+  "risk_mgr_3rd_round_dependency_mapping": {
+    "admission_dependency_per_slot": {
+      "STR_1631": "NONE (기존 PG2)",
+      "H_1688": "V3 Barroso boost 검증 + V5 SR boost",
+      "STR_1656": "NONE (기존 PG2)",
+      "STR_1679v3": "V2 embedded Q25 overlap 재검증 + V4 Q25 exposure",
+      "H_1689": "V1 Defense 33% + V2 H_1689 23% (핵심)",
+      "H_1690": "V3 10% activation + V4 Q25 headroom"
+    },
+    "risk_mgr_verdict_impact": {
+      "PASS_ALL": "Phase_1 admission 전진 가능",
+      "CONDITIONAL_with_revisions": "rev8-A 마이너 조정 + 재협의",
+      "FAIL_any": "해당 slot DEFER 또는 REJECT, Phase_1 재설계"
+    },
+    "timing": "Risk Mgr VERDICT 수신 → Governor PG1 admission 최종판정 (1~2일 소요)"
+  },
+
+  "activation_flow_6_steps_integrated_with_audit_dependency": {
+    "description": "audit 결과 수신 시 통합 activation flow",
+    "step_1_q_lead_audit_delivery": {
+      "owner": "Q-Lead",
+      "duration": "즉시",
+      "deliverable": "audit 결과 메시지 (no bug / minor bug / fundamental bug)"
+    },
+    "step_2_governor_placeholder_fill": {
+      "owner": "Governor",
+      "duration": "5분",
+      "deliverable": [
+        "PENDING_AUDIT_DIAGNOSIS 채우기",
+        "PENDING_AUDIT_BUG_LIST 채우기",
+        "PENDING_AUDIT_DIRECTION_EVIDENCE 채우기",
+        "FINAL_SKELETON.json → PG0_PLAN_rev8_A.json rename"
+      ]
+    },
+    "step_3_risk_mgr_prompt_finalize_and_instruction": {
+      "owner": "Governor",
+      "duration": "2분",
+      "deliverable": [
+        "RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json V1 bullet rev8-A 확정",
+        "RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION.json Q-Lead 전달"
+      ]
+    },
+    "step_4_q_lead_risk_mgr_spawn": {
+      "owner": "Q-Lead",
+      "duration": "즉시",
+      "deliverable": "Risk Mgr agent 스폰 + 1~1.5일 VERDICT 수신 대기"
+    },
+    "step_5_governor_judge_scout_notification": {
+      "owner": "Governor",
+      "duration": "2분",
+      "deliverable": [
+        "Judge에 rev8-A ACTIVATE + L-160 reference 적용 통보",
+        "Scout에 TODO_NEW_DEFENSE_HYPOTHESIS activate 통보"
+      ]
+    },
+    "step_6_telegram_report": {
+      "owner": "Governor",
+      "duration": "1분",
+      "deliverable": "🚨 rev8-A ACTIVATE + Risk Mgr 3rd round 스폰 텔레그램 보고 (template rev8-A 적용)"
+    },
+    "total_elapsed_time": "약 10분 (audit 수신부터 텔레그램 보고까지)"
+  },
+
+  "post_activation_next_72_hours": {
+    "day_2_post_activate": [
+      "Forge STR_1684 + STR_1690 S1 실행 감독",
+      "Judge S6 preparation",
+      "Day 1 migration step 1 (STR_1631 80→60%)"
+    ],
+    "day_3": [
+      "Risk Mgr VERDICT 수신 → rev8-A 조정 (필요 시)",
+      "Forge S1 hurdle_result 도착 → Gate 1 Scorecard",
+      "Migration step 2 (STR_1631 60→40)"
+    ],
+    "day_4": [
+      "Judge S6 15 gates on H_1688/H_1689/H_1690",
+      "Migration step 3 → Day 4 step 4 (target 달성)",
+      "Scout D1 Q07 sector-neutralization handoff + S0 debate 시작"
+    ]
+  },
+
+  "dependencies_updated": [
+    "rev8-A ACTIVATE (P0, audit 대기)",
+    "Forge STR_1684 (H_1688) S1 hurdle_result (P0)",
+    "Forge STR_1690 (H_1690) S1 hurdle_result (P0)",
+    "Judge S6 15 gates on H_1688, H_1689, H_1690 (P0)",
+    "Risk Mgr 3rd round VERDICT (P1, Day 3 도착 목표)",
+    "H_1685 v2 Forge S1 + Phase_2 진입 (P2, Phase_2+ dependency)",
+    "TDC pairwise matrix measurement 10 pairs (P0)",
+    "Gate 11/12 v3.5 triple signoff 진행 (P2, 3 조건 병행)"
+  ]
+}

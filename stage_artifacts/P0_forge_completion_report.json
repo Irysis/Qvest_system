@@ -1,0 +1,70 @@
+{
+  "report_version": "v1",
+  "created_at": "2026-04-18T23:13:00",
+  "sprint": "v54 Track A / P0 Infrastructure Debt Sprint",
+  "agent": "forge-v4 (direct spawn, 3x teammate no-response bypass)",
+
+  "task_1_connector_fix1": {
+    "status": "PRE_APPLIED",
+    "note": "align_factor_direction() re-standardize already present at lines 184-189 (RC1 fix label). Verified via Read — no duplicate insertion needed.",
+    "file": "02_Infrastructure/factor_db/factor_db_connector.R",
+    "lines": "184-189",
+    "code_label": "RC1 fix — re-standardize after winsorize to guarantee sd=1",
+    "pit_compliance": "PASS — by=Factor_Name within single cross-section, no temporal contamination"
+  },
+
+  "task_2_builder_persistent": {
+    "status": "PRE_APPLIED + REBUILD_IN_PROGRESS",
+    "note": ".standardize_factors() already has Option A fix at lines 370-379 (Z_Score AND Z_Sector both re-standardized). Rebuild started with correct date format.",
+    "file": "02_Infrastructure/factor_db/factor_db_builder.R",
+    "standardize_lines": "370-379",
+    "rebuild_pid": 2749730,
+    "rebuild_cmd": "build_factor_db_monthly(start_date='2005-01-01', end_date='2026-04-30', force=TRUE)",
+    "rebuild_log": "/tmp/factor_db_rebuild_v54.log",
+    "est_completion": "3-5 hours from 2026-04-18 23:13 KST",
+    "months_to_rebuild": 316
+  },
+
+  "task_3_impact_audit": {
+    "status": "DONE",
+    "output": "stage_artifacts/factor_db_fix_impact_audit_v1.json",
+    "key_findings": {
+      "distortion_pattern": "Step-function break, not gradual — M08 normal until 202501, crashed 202512; R12 normal until 202512, crashed 202603",
+      "root_cause_hypothesis": "compute module changes (not just winsorize) caused raw value scale changes — re-standardize fix corrects downstream effect",
+      "critical_factors_3": ["M08_Residual_Mom (sd=0.054, +1761%)", "R12_Idiosyncratic_Risk (sd=0.071, +1316%)", "R16_Calmar (sd=0.149, +529%)"],
+      "high_factors_5": ["Q07_Earnings_Stability (sd=0.328, +205%)", "C19_Composite_Earnings (sd=0.354, +177%)", "V01_BM (sd=0.361, +176%)", "Q25_Ohlson_O (sd=0.530, +89%)", "M01_Mom_12_1 (sd=0.622, +52%)"],
+      "most_affected_strategy": "STR_1631 — uses all 3 CRITICAL factors (M08+R12+R16) + Q07+M01",
+      "also_affected": ["STR_1682 (M08+C19)", "STR_1683 (R12+R16+Q25)", "STR_1684 (M08+M01)", "STR_1656 (R12+C19)", "STR_1679v3 (R16)"]
+    },
+    "icir_current_state": {
+      "note": "ICIR from factor_ic_monthly.parquet reflects pre-rebuild values",
+      "pending_action": "Rerun compute_all_factor_ic_monthly() after rebuild completes to get post-fix ICIR"
+    }
+  },
+
+  "task_4_build_hash": {
+    "status": "DONE",
+    "hash_path": ".cache/factor_db/build_hash.txt",
+    "connector_change": "load_month_factors() now attaches attr(result, 'factor_db_build_hash') from build_hash.txt",
+    "builder_change_1": ".write_build_hash() function added (timestamp_gitrev format)",
+    "builder_change_2": "build_factor_db() calls .write_build_hash() after each save",
+    "builder_change_3": "build_factor_db_monthly() calls .write_build_hash() after batch completion",
+    "files_modified": [
+      "02_Infrastructure/factor_db/factor_db_connector.R",
+      "02_Infrastructure/factor_db/factor_db_builder.R"
+    ]
+  },
+
+  "additional_finding": {
+    "type": "ROOT_CAUSE_CLARIFICATION",
+    "message": "sd distortion is NOT uniform across time — step-function pattern suggests compute module code changes introduced raw value scaling issues. M08 broke ~2025-12, R12 broke ~2026-03. re-standardize fix in .standardize_factors() and align_factor_direction() is the correct remediation regardless of root cause.",
+    "recommendation": "After rebuild completes: (1) rerun compute_all_factor_ic_monthly() (2) re-run S2 profiling for STR_1631/STR_1656/STR_1679v3 (3) Judge re-verification for PG2 active strategies"
+  },
+
+  "next_actions": [
+    "Monitor rebuild: tail -f /tmp/factor_db_rebuild_v54.log",
+    "After rebuild: Rscript -e 'source(\"02_Infrastructure/config.R\"); source(\"02_Infrastructure/factor_db/factor_db_builder.R\"); compute_all_factor_ic_monthly()'",
+    "After IC recompute: Rscript -e 'source(\"04_Research/factor_db_fix_impact_audit.R\")' for post-fix ICIR delta",
+    "Judge: verify STR_1631/STR_1656/STR_1679v3 S2 profiles under corrected factor scores"
+  ]
+}

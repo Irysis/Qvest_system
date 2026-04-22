@@ -1,0 +1,174 @@
+{
+  "l_code": "L-166",
+  "title": "STR_1687 (H_1693) AX-005 EXCLUSION clause 첫 실증 적용 실패 — sector-neutral + multi-sleeve도 KR Defense long-only 20-stock 구조적 실패 회피 불가",
+  "status": "ISSUED (Scout 발의, Judge custodian 승인 대기)",
+  "type": "ANTI-PATTERN",
+  "previous_status": "RESERVED (2026-04-19 13:02 Judge custodian, non-failure exemplar 예약)",
+  "transition_trigger": "STR_1687 hurdle_result.json (2026-04-19 13:59:23) Grade F / hard_fail / MDD 58.67% > 45%",
+  "issued_at": "2026-04-19T20:00:00+09:00",
+  "issued_by": "Scout (Task #18 P1)",
+  "custodian": "Judge",
+  "approval_chain": ["Scout initiator", "Judge custodian (pending)", "team-lead approver (pending)"],
+  "approval_type": "ANTI_PATTERN_REPLACE_RESERVED (L_CODE_INITIATION_TYPE_11)",
+
+  "strategy_evidence": {
+    "strategy_id": "STR_1687",
+    "hypothesis_id": "H_1693",
+    "design": "Q07 Earnings_Stability Sector-Neutralized + C01 SUE Quality Boost Defense, multi-sleeve context",
+    "formula": "composite = 0.7 * z_sector_Q07 + 0.3 * z_C01_SUE",
+    "intended_role": "defense (sector-neutral multi-axis)",
+    "ax005_exclusion_satisfied": ["sector-neutralization", "multi-sleeve context", "multi-axis composite (Q07 + SUE)"],
+    "hurdle_result": {
+      "grade": "F",
+      "hard_fail": true,
+      "fail_reasons": "MDD 58.7% > 45%",
+      "metrics": {
+        "CAGR": 12.81,
+        "AnnVol": 22.68,
+        "Sharpe": 0.565,
+        "IR": 0.273,
+        "MDD": 58.67,
+        "Calmar": 0.218,
+        "Turnover_Ann": 416.5,
+        "Rolling3Y_Pos": 84,
+        "BM_Corr": 0.80
+      }
+    },
+    "stress_evidence": {
+      "GFC_2008":      {"alpha_pp":  2.26, "mdd_pct": 56.11, "outperform": true},
+      "COVID_2020":    {"alpha_pp":  2.45, "mdd_pct": 40.21, "outperform": true},
+      "Rate_2022":     {"alpha_pp": -3.19, "mdd_pct": 35.46, "outperform": false},
+      "EuDebt_2011":   {"alpha_pp":  5.54, "mdd_pct": 31.58, "outperform": true},
+      "summary": "3/4 outperform이나 GFC MDD 56.11% + Rate2022 underperform = portfolio-level catastrophic"
+    },
+    "signal_evidence": {
+      "icir_overall": 0.4615,
+      "icir_2005_2014": 0.473,
+      "icir_2015_2019": 0.495,
+      "icir_2020_2026": 0.419,
+      "stability": "3-period 안정 (signal-level 강함)"
+    },
+    "sector_neutralization_evidence": {
+      "hhi_range": "0.075~0.12",
+      "n_sectors": "11~16",
+      "verdict": "정상 작동 (sector concentration 원인 아님)"
+    }
+  },
+
+  "core_lesson": "Signal ICIR strong + sector-neutralization + multi-sleeve + multi-axis 4중 만족에도 portfolio MDD 58.67% catastrophic translation failure. AX-005 EXCLUSION clause 만족이 portfolio-level survival을 보장하지 않음을 첫 실증.",
+
+  "anti_pattern_principles": [
+    {
+      "id": 1,
+      "principle": "AX-005 EXCLUSION clause는 portfolio-level survival을 보장하지 않는다",
+      "evidence": "sector-neutralization + multi-sleeve + multi-axis 3개 만족, portfolio MDD 58.67% hard_fail",
+      "implication": "EXCLUSION 만족 = AX-005 scope 밖 판정만, 성공 보장 ≠ EXCLUSION 만족"
+    },
+    {
+      "id": 2,
+      "principle": "Sector-neutralization은 MDD 방어에 무력하다",
+      "evidence": "HHI 0.075~0.12 정상 분산, GFC MDD 56.11% 발생",
+      "implication": "sector concentration 외 idiosyncratic vol / market beta tail이 dominant risk"
+    },
+    {
+      "id": 3,
+      "principle": "Q07 Earnings_Stability stress_icir +0.753 강함도 portfolio translation 보장 불가",
+      "evidence": "Q07 단독 ICIR overall 0.46 안정, portfolio MDD 58.67%",
+      "implication": "Signal quality ≠ portfolio quality (L-160 family 명제 재확인)"
+    },
+    {
+      "id": 4,
+      "principle": "2-axis composite (Q07 + SUE)는 multi-axis로 충분하지 않다",
+      "evidence": "L-165 4-axis (M08+C19+Q07+R16)도 동일 패턴 → axis 수 증가만으로 회피 불가",
+      "implication": "Defense composite는 axis 수 증가가 아닌 risk source diversification 필요"
+    },
+    {
+      "id": 5,
+      "principle": "Multi-sleeve context 명시는 admission 보장이 아니다",
+      "evidence": "STR_1687 standalone backtest hard_fail, multi-sleeve embedding 단계 진입 불가",
+      "implication": "AX-001 v2 audit_defense_v2 4-gate (multi-sleeve embedding 후 평가)는 standalone hard_fail 전략에 적용 불가"
+    }
+  ],
+
+  "ax_005_v1_1_reconsideration_plans": {
+    "plan_a_strengthen_exclusion": {
+      "description": "EXCLUSION clause에 'standalone backtest MDD < 45% precondition' 의무 추가",
+      "pros": "EXCLUSION 유지하면서 portfolio survival 보장",
+      "cons": "운영 복잡도 증가, EXCLUSION 본래 의도(다양성 허용)와 충돌"
+    },
+    "plan_b_remove_exclusion": {
+      "description": "AX-005 EXCLUSION clause 제거. Defense family 전체 long-only 20-stock 금지",
+      "pros": "보수적, family 구조 자체 재설계 강제",
+      "cons": "long-short 또는 50+ 분산 구조만 허용 → 가설 공간 대폭 축소",
+      "scout_recommendation": "Plan B (가장 보수적) 권고 — 단 Judge + team-lead 승인 필수"
+    },
+    "plan_c_axis_recalibration": {
+      "description": "AX-005 confidence axis 0.90 → 0.95 상향. supporting_l_codes 4건 (L-136 + L-140 + L-165 + L-166) 편입",
+      "pros": "기존 EXCLUSION 유지, evidence 강화",
+      "cons": "구조 변경 없음, 동일 실패 재발 가능"
+    }
+  },
+
+  "ax_cand_signal_portfolio_translation_3rd_member_decision_pending": {
+    "scout_position": "L-160 family signature 명백 재현 (signal ICIR strong + portfolio MDD catastrophic + multi-axis composite). 3rd member 편입 권고.",
+    "judge_custodian_decision_required": true,
+    "options": {
+      "option_a_include": {
+        "description": "STR_1687 = AX_CAND 3rd member 편입",
+        "effect": "TRIGGER FULFILLED 2/3 → 3/3 → promote.R UNSUSPENDED → 5축 0.80+ 가능 시 정식 axiom 승격",
+        "rationale": "L-160 + L-165 + L-166 family pattern 동일 (ICIR strong + MDD catastrophic)"
+      },
+      "option_b_separate_family": {
+        "description": "AX_CAND_sector_neutral_defense_failure 신규 candidate 신설 (1/3, L-166 initiator)",
+        "effect": "L-165 scope (multi-source long-only single-sleeve) 보존, sector-neutral 별도 family로 추적",
+        "rationale": "M5 audit 'L-165 scope 4-attribute 중 sector-neutralized + multi-sleeve이면 scope 밖 가능성 높음' 평가 반영"
+      }
+    }
+  },
+
+  "action_items": [
+    {
+      "owner": "Scout",
+      "action": "S0 가설 설계 시 AX-005 EXCLUSION 만족만으로 Defense Long-Only 20-stock 가설 생성 금지. standalone MDD < 45% precondition 검증 가능한 학술 메커니즘 + 한국 실증 evidence 필수"
+    },
+    {
+      "owner": "Judge",
+      "action": "S6 Gate 13 (Signal-Portfolio Translation) — EXCLUSION 만족 case도 동일 audit 적용 (logical bypass 금지)"
+    },
+    {
+      "owner": "Governor",
+      "action": "PG1 Admission — Defense role 가설은 EXCLUSION 만족 여부와 무관하게 standalone hurdle PASS + multi-sleeve embedding 후 AX-001 v2 4-gate PASS 두 단계 모두 강제"
+    },
+    {
+      "owner": "Forge",
+      "action": "Defense composite 가설 + sector-neutralization + multi-sleeve 명시 case도 standalone backtest 실행 mandatory (skip 금지)"
+    }
+  ],
+
+  "related_l_codes": ["L-121", "L-160", "L-165", "L-167"],
+  "related_axioms": ["AX-005 v1.1", "AX-001 v2", "AX_CAND_signal_portfolio_translation_failure"],
+  "quarterly_review": "2026-07-16 (AX-005 정기 review 통합)",
+
+  "tags": [
+    "L_166_ANTI_PATTERN_ISSUED",
+    "AX_005_EXCLUSION_CLAUSE_LIMIT_REVEALED",
+    "SECTOR_NEUTRAL_DEFENSE_FAILURE",
+    "MULTI_SLEEVE_INSUFFICIENT",
+    "STR_1687_HARD_FAIL_MDD_58_67",
+    "Q07_SUE_2AXIS_FAILED",
+    "L_160_FAMILY_3RD_MEMBER_CANDIDATE",
+    "AX_CAND_SP_TRANSLATION_3OF3_PENDING_JUDGE",
+    "AX_005_V1_1_RECONSIDERATION_REQUIRED",
+    "SCOUT_INITIATOR_JUDGE_CUSTODIAN_PENDING",
+    "PORTFOLIO_LEVEL_TRANSLATION_FAILURE_GENERALIZED"
+  ],
+
+  "evidence_files": [
+    "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/hurdle_result.json",
+    "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/analysis_stress.csv",
+    "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/s2_h1693_three_period_icir.csv",
+    "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/analysis_sector.csv",
+    "stage_artifacts/post_hoc_ax005_exclusion_audit_20260419.json",
+    "stage_artifacts/S0_VERDICT_H_1693.json"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "role": "codex_critic",
+  "score": 7,
+  "arguments": [
+    "KOSDAQ fundamentals are aligned by fiscal period instead of actual disclosure timestamp, so the regime/alpha stack indirectly uses not-yet-public data during backtest ranking.",
+    "The composite remains effectively linear-dominant (M01-like). During a Korea small/mid-cap factor unwind, the dominant sleeve drives synchronized losses and overwhelms diversification claims.",
+    "The weakest assumption is that regime adaptation can reduce drawdown without diluting core alpha. If this assumption is wrong -> overlay noise suppresses valid signals -> trading becomes procyclical (sell lows, buy rebounds late) -> terminal state: SR compresses below 0.3 and MDD drifts toward prior deep-drawdown failure territory."
+  ],
+  "concern": "REJECT pending redesign. Gate-15 variance_ratio and linear-dominance checks required but not shown as passed, so L-code conflicts remain active. Regime adaptation has only conditional L-119 relief, leaving dilution and PIT leakage risk unresolved.",
+  "conditions": [
+    "Pass Gate-15 variance_ratio audit with pre-registered thresholds and rolling OOS evidence that no single axis dominates composite contribution.",
+    "Provide formal non-equivalence proof versus H_1674/H_1687 family (not just parameter reweighting), including algebraic-distance and mechanism-level ablation.",
+    "Document strict PIT data timing (filing/publication timestamps, lag policy, execution clock) for every input used in alpha and regime overlay.",
+    "Show all regime/DD/VT cutoffs are expanding-window or fixed ex-ante; ban full-sample calibration and re-fit leakage.",
+    "Demonstrate crash-period robustness in KOSPI/KOSDAQ with liquidity-aware implementation and no return-blend rule violations."
+  ],
+  "codex_raw": {
+    "role": "critic",
+    "total": 7,
+    "breakdown": {
+      "l_code_check": 1,
+      "failure_avoidance": 1,
+      "banned_factor": 2,
+      "lesson_check": 2,
+      "structural_risk": 1
+    },
+    "kill_scenarios": [
+      {"scenario": "KOSDAQ fundamentals period alignment PIT risk", "probability": "medium", "expected_loss": "SR -0.7 to -1.0; live MDD +10-15pp", "blind_spot": true},
+      {"scenario": "Linear-dominance under small/mid-cap unwind", "probability": "medium", "expected_loss": "MDD 25-35%; SR to 0 or negative", "blind_spot": false},
+      {"scenario": "Regime thresholds misclassify policy/liquidity shock", "probability": "high", "expected_loss": "MDD +15-25pp; SR -0.4 to -0.7", "blind_spot": false}
+    ],
+    "weakest_assumption": "Regime adaptation can reduce drawdown without diluting core alpha. If wrong, overlay noise suppresses signals, procyclical whipsaw, SR < 0.3."
+  }
+}

@@ -1,0 +1,234 @@
+{
+  "narrative_id": "session_67_scout_day_1_to_3",
+  "audience": "도훈 (Q) — 사용자 executive summary",
+  "author": "Scout",
+  "created_at": "2026-04-18",
+  "session_scope": "Session 67 Day 1~3 (2026-04-17 ~ 2026-04-18)",
+  "purpose": "Scout autonomous 활동 8건 + 통합 narrative. Q-Lead briefing + next_session_task 기초 자료.",
+
+  "executive_summary": {
+    "headline": "Session 67 Day 1~3 Scout 10건 산출물 — Core_Secondary 실패 진단 + 신규 가설 + 4건 handoff kit + calibration v4 + AX-006 +0.86",
+    "key_outcomes": [
+      "STR_1682 (H_1676) Grade F 진단 완료 — L-159 spec transmission 근본 원인 식별",
+      "STR_1684 (H_1688) 구조적 실패 진단 — L-161 Factor DB Z-score distortion + R12/D01 duplicate (CRITICAL)",
+      "H_1685 v2 APPROVE_CONDITIONAL 61 (STR_1686) — Scout Calibration v3 5/5 HIT",
+      "H_1692 신규 Core_Secondary 가설 — H_1688 실패 교훈 3종 반영 clean residualization",
+      "Handoff kit 4건 batch (H_1678/H_1679/H_1689/H_1691) + v4 calibration draft",
+      "ET-101 STR_1537 evidence hunt — AX_CAND frequency 0.45→0.28 (ARCHIVE 근접)",
+      "AX-006 누적 evidence +0.86 (8 cluster registered, 2026Q3 EXTEND 예상)",
+      "STR_1661 V2 S2 extended profile — CRISIS counter-cyclical 1.26x"
+    ],
+    "scout_productivity_metric": "autonomous 작업 10건 완료 (Day 1: 3건 + Day 2~3: 7건)",
+    "critical_infrastructure_finding": "Factor DB Z-score 정규화 불일치 + R12=D01 duplicate — Architect 긴급 pipeline 진단 필요"
+  },
+
+  "day_by_day_narrative": {
+    "day_1_2026_04_17_to_18_early_morning": {
+      "focus": "STR_1682/1683 FAIL 진단 + H_1690 debate 지원 + H_1685 v2 발행",
+      "scout_contributions": [
+        {
+          "task": "STR_1682 (H_1676 Option A) FAIL 진단",
+          "finding": "Factor DB Size 미로드 + SUE/beta_24m spec 미반영 baseline fallback 실행",
+          "impact": "L-159 spec transmission failure pattern 1호",
+          "artifact": "team-lead 보고 (직접 진단 메시지)"
+        },
+        {
+          "task": "STR_1683 factor direction audit 진단 의견",
+          "finding": "IC 0.22 ICIR 1.88 vs CAGR -7.42% 모순 → align_factor_direction Q25/R16 sign convention 의심",
+          "impact": "Q-Lead 직접 진단 후 확정 (Scout 일부 기여)"
+        },
+        {
+          "task": "H_1690 Multi-Source Defense Anchor Debate",
+          "finding": "R1 67 → Final 64 APPROVE_CONDITIONAL",
+          "calibration_hit": "Scout v3 [59, 75] mid 67 vs 실제 64 — **5/5 HIT (범위 내)**",
+          "artifact": "calibration_v1_hit_log_H_1690.json"
+        },
+        {
+          "task": "ET-101 STR_1537 evidence hunt (AX_CAND frequency 개선)",
+          "finding": "STR_1537 = L-119 dilution (L-146 overlay 부재). STR_1682 = L-159 spec transmission. **다른 패턴**. frequency 0.45→0.28 하락 권고",
+          "impact": "AX_CAND_spec_transmission_failure 5축 0.55→0.48 ARCHIVE 근접",
+          "artifact": "AX-CAND_STR_1537_evidence_collection.json"
+        }
+      ]
+    },
+
+    "day_2_3_2026_04_18": {
+      "focus": "H_1685 v2 + handoff kit batch + STR_1661 V2 S2 + H_1688 진단 + AX-006 통합 + H_1692",
+      "scout_contributions": [
+        {
+          "task": "H_1685 v2 APPROVE_CONDITIONAL 61 (STR_1686)",
+          "finding": "Option A Rscript 실측 (255개월 mean|corr| 0.194) → debate R1 65 → Final 61",
+          "calibration_hit": "Scout v3 [46, 62] vs 실제 61 — **5/5 HIT TOP_END**",
+          "impact": "2건 연속 5/5 HIT (H_1690 + H_1685v2) → v4 draft 확정",
+          "artifact": "calibration_v4_draft_L157.json"
+        },
+        {
+          "task": "TODO_S1_H_1685_v2 Forge inbox 발행",
+          "finding": "12 conditions_for_s1 전수 반영 (INV13 registry + 5종 lookahead pattern + 3-variant 21/63/126d)",
+          "artifact": "qepm/mailbox/forge/inbox/TODO_S1_H_1685_v2_foreign_resid_individual.json"
+        },
+        {
+          "task": "Handoff kit batch 4건 v2 (H_1678/H_1679/H_1689/H_1691)",
+          "finding": "Factor DB pre-check 실측 + v4 calibration + L-156 v2 TDC cluster + L-159 pre-empt",
+          "corrections_applied": ["H_1679 C06_TP_Gap factor_id 정정 (v1 Z18 오표기)"],
+          "artifacts": [
+            "s0_debate_handoff_H_1678_v2.json",
+            "s0_debate_handoff_H_1679_v2.json",
+            "s0_debate_handoff_H_1689_v2.json",
+            "s0_debate_handoff_H_1691_v2.json"
+          ]
+        },
+        {
+          "task": "STR_1661 V2 S2 extended profile (Session 66 carry)",
+          "finding": "Three-period CONDITIONAL_PASS, rolling drift UNSTABLE (ML adaptive), stress 7/8 positive, CRISIS conditional ICIR 1.194 (counter-cyclical 1.26x)",
+          "artifact": "s2_profile_STR_1661_V2_extended.json"
+        },
+        {
+          "task": "STR_1684 (H_1688) 구조적 실패 진단 (CRITICAL)",
+          "finding": "3 hypothesis 검증 → Hypothesis B (구현 버그) 85% 확률",
+          "critical_infrastructure_findings": [
+            "Factor DB Z-score sd 불일치 (M01 0.66 / R12 0.07 / M08 0.054 vs M07 1.00 proper)",
+            "R12_Idiosyncratic_Risk vs D01_IdioVol **완전 동일값** (sd 0.07063515 identical) — DUPLICATE BUG",
+            "OLS scale mismatch (size sd 1.0 vs M01 sd 0.66) → residual = M01 signed-flip 근접 → ICIR -0.162"
+          ],
+          "L_161_proposed": "Factor DB Z-score 정규화 불일치 + OLS scale 충돌 residualization 왜곡 pattern",
+          "artifact": "qepm/mailbox/scout/outbox/DIAG_STR_1684_H_1688_residualization.json"
+        },
+        {
+          "task": "AX-006 누적 evidence 통합 문서",
+          "finding": "7 cluster registered, Scout 누적 기여 +0.83 (I+R+F+E+M 합)",
+          "bidirectional_statement_proposed": "AX-006 기존 단방향 (cluster formation) → 양방향 (formation + decoupling) 확장 권고",
+          "reverse_patterns_identified": [
+            "H_1691 Drawdown filter differentiation (crisis TDC 감소)",
+            "STR_1661 V2 counter-cyclical (crisis IC 증가)"
+          ],
+          "projection_2026q3": "conservative 0.45 / optimistic 0.64 → EXTEND 1 quarter",
+          "artifact": "AX-006_cumulative_evidence_compilation.json"
+        },
+        {
+          "task": "H_1692 Core_Secondary 신규 가설 (Governor rev8-A 대응)",
+          "finding": "H_1688 실패 교훈 3종 반영 — L-161 distortion 회피 + CAPM 1.0 함정 회피 + Carhart 관습 회피",
+          "design": "M07_IndMom (sd=1.0 proper) residualized on M18_RSI (sd=1.0 proper). KR 섹터 rotation + 개인 55% RSI 효과",
+          "calibration_v4_predicted": "[52, 66] midpoint 59",
+          "soft_prior_recommendations": "Governor 파일 업데이트 3건 (avoid/approved/candidate)",
+          "artifact": "s0_record_H_1692_industry_momentum_rsi_residualized.json"
+        }
+      ]
+    }
+  },
+
+  "session_67_scout_achievements_by_category": {
+    "new_hypothesis_design": [
+      "H_1685 v2 (STR_1686) — Foreign Flow Residualized Diversifier (APPROVE_COND 61)",
+      "H_1692 (STR_1692 pending) — Industry Momentum RSI Residualized Core_Secondary"
+    ],
+    "handoff_kit_batch": [
+      "H_1678 / H_1679 / H_1689 / H_1691 — 4건 v2 (debate spawn 대기)"
+    ],
+    "stage_progression": [
+      "STR_1661 V2 S2 extended profile (CONDITIONAL_PASS) — S3 Forge 대기"
+    ],
+    "diagnostic_reports": [
+      "STR_1682 H_1676 Option A FAIL 진단",
+      "STR_1684 H_1688 residualization 진단 (CRITICAL infrastructure finding)"
+    ],
+    "axiom_engine_contributions": [
+      "ET-101 AX_CAND_spec_transmission_failure frequency 하락 권고 (ARCHIVE 근접)",
+      "AX-006 누적 evidence +0.83 통합 + bidirectional refinement 제안",
+      "L-161 Factor DB Z-score distortion pattern 초안"
+    ],
+    "calibration_evolution": [
+      "L-157 v4 draft (2건 연속 5/5 HIT 기반)",
+      "5개 rules 제안 (R2 auto-delta / Codex rebound / Governor variance / Top-end boost / Tail warning penalty)"
+    ]
+  },
+
+  "critical_infrastructure_findings_for_architect": {
+    "_note": "Architect Factor DB 진단 요청 사항",
+    "finding_1_z_score_normalization": {
+      "severity": "CRITICAL",
+      "description": "Factor DB parquet Z_Score가 proper cross-section Z-score 아님",
+      "evidence_sample_2026_03": {
+        "M07_IndMom_sd": 1.000,
+        "M01_Mom_12_1_sd": 0.660,
+        "R12_sd": 0.071,
+        "M08_sd": 0.054
+      },
+      "implication": "288 factor 전수 재검증 필요. proper-normalized만 residualization base로 사용 가능.",
+      "architect_action_required": "factor_db_builder Z-score 계산 pipeline 재점검 + rescale 단계 추가 검토"
+    },
+    "finding_2_r12_d01_duplicate": {
+      "severity": "CRITICAL",
+      "description": "R12_Idiosyncratic_Risk와 D01_IdioVol 완전 동일값 (sd 0.07063515 identical, n=2543 same)",
+      "implication": "두 factor registry 별도 등록이나 실제 값 동일 — mis-labeled 또는 compute 함수 공유",
+      "architect_action_required": "compute_risk.R 내 R12/D01 함수 식별 + 1건 deprecate 또는 registry entry 수정"
+    },
+    "finding_3_ols_scale_mismatch_pattern": {
+      "severity": "HIGH",
+      "description": "STR_1682/STR_1684 동일 패턴: OLS residualization 시 regressor sd 불균형으로 residual = base_factor signed-flip 근접",
+      "mitigation": "factor_engine.R에 scale() 정규화 또는 cross-section rank 기반 residualization 전환",
+      "codebase_scope": "모든 residual_momentum / residual_consensus family 전략 영향"
+    }
+  },
+
+  "blocking_dependencies_for_next_session": {
+    "forge_critical_path": [
+      "STR_1684 Factor DB fix + 재실행 (H_1688 재검증)",
+      "STR_1685 (H_1690) S1 4 variants 실행",
+      "STR_1686 (H_1685 v2) S1 실행 (Phase_2 대기)"
+    ],
+    "architect_critical_path": [
+      "Factor DB Z-score 정규화 pipeline 진단 + 288 factor 전수 검증",
+      "R12/D01 duplicate 해결",
+      "factor_db_builder rescale 단계 추가"
+    ],
+    "judge_critical_path": [
+      "STR_1684 S6 FAIL 판정 (Scout L-161 초안 검토)",
+      "Admission Rule v3.5 CONDITIONAL_ACTIVE → ACTIVE_NORMATIVE 전환 (Architect signoff 후)"
+    ],
+    "scout_blocking_state": [
+      "STR_1661 V2 S3 TDC matrix (Forge daily_returns 의존)",
+      "H_1687 handoff kit (H_1688 fix 후 재평가)",
+      "L-157 v4 final (debate 3건+ 실행 후)"
+    ]
+  },
+
+  "next_session_scout_priorities_draft": {
+    "_note": "Q-Lead next_session_task.md 작성 시 참고용 Scout 자체 draft",
+    "p0_immediate": [
+      "H_1692 handoff kit v1 작성 (debaters 5인 prompt + pre-check + attack vectors)",
+      "D1 Q07 sector-neutralization Defense 가설 설계 (기존 TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682 P1)"
+    ],
+    "p1_forge_dependent": [
+      "STR_1661 V2 S3 TDC matrix (Forge daily_returns 생성 후)",
+      "H_1685 v2 STR_1686 S2 profiling (Forge S1 완료 후)",
+      "H_1692 FMB + baseline measurement (Forge STR_1692 S1 완료 후)"
+    ],
+    "p2_judge_dependent": [
+      "L-157 v4 final 확정 (H_1678/H_1679/H_1689/H_1691 3건+ debate 완료 후)",
+      "AX-006 base score Judge 확정 수신 후 2026Q3 review 준비"
+    ],
+    "p3_architect_dependent": [
+      "Factor DB Z-score pipeline fix 후 전수 factor sd 재검증",
+      "R12/D01 duplicate 해결 후 residualization 재설계 가설 재평가"
+    ]
+  },
+
+  "scout_reflection_notes": [
+    "Scout Calibration v3 2건 연속 5/5 HIT은 큰 성취 — debate score 예측 정확도 실증. v4 draft 3건+ 추가 관찰 시 final 확정 가능.",
+    "H_1688 진단에서 발견한 Factor DB infrastructure bug 2건 (Z-score normalization + R12/D01 duplicate)는 Session 67 가장 중요한 발견. 모든 residualization family 전략에 영향.",
+    "AX-006 bidirectional refinement은 cluster dynamics 이해의 본질적 확장. H_1691/STR_1661 V2 같은 reverse cluster 발견이 AX 정의 자체를 정제.",
+    "ET-101 STR_1537 증거 수집 실패로 frequency 축 0.45→0.28 하락 — axiom 생명주기에서 **보수적 검증 원칙** 중요성 재확인.",
+    "H_1692 설계는 H_1688 실패 교훈 3종 전면 반영한 대표 사례. AX-003/004/005처럼 failed precedent이 design improvement로 전환되는 건강한 learning cycle.",
+    "handoff kit v2 batch (4건)는 debate queue 연속 spawn 가능하게 함 — Forge 정상화 후 Q-Lead 수 시간 절약 구조."
+  ],
+
+  "user_facing_highlights_for_briefing": [
+    "**Session 67 Day 1~3 가장 중요한 발견**: Factor DB Z-score 정규화 불일치 + R12=D01 duplicate — 이 bug 해결이 STR_1684/STR_1682 류 전략 성공의 전제",
+    "**Scout Calibration v3 5/5 HIT × 2건 연속** — debate score 예측 정확도 확립. 향후 hypothesis prioritization 효율화",
+    "**AX-006 양방향 refinement** (cluster formation + decoupling) — AX engine 개념적 성숙",
+    "**H_1692 신규 가설** — H_1688 실패 교훈 3종 반영한 clean design 사례 (L-161 distortion 회피 + CAPM 1.0 함정 회피 + Carhart 관습 탈피)",
+    "**ET-101 ARCHIVE 근접 + AX-006 PROMOTE candidate** — axiom 생명주기 운영 실례",
+    "**Scout 10건 autonomous 산출 + 4건 blocking** — Forge/Architect 정상화가 Session 68 전제"
+  ]
+}

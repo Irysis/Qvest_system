@@ -1,0 +1,48 @@
+{
+  "role": "codex_critic",
+  "agent_id": "codex_critic_gpt54_smoke_001",
+  "stance": "REVISE",
+  "critical_concerns": [
+    "Mechanism-sign mismatch: cited liquidity papers explain why illiquidity can earn premia, not why low |AC1| should deliver positive alpha.",
+    "|AC1| is an impure proxy that mixes stale pricing, reversal, volatility bursts, auction effects, and true liquidity, so the economic meaning is underidentified.",
+    "RetAutocorr already sits in a hard-fail lineage; removing Piotroski does not explain why the same crash path or left-tail exposure disappears.",
+    "Why now leans on recent 3y ICIR rank, which is ex-post hypothesis selection and weak PIT discipline for factor choice."
+  ],
+  "supporting_arguments": [
+    "Single-factor smoke design is clean: it isolates the RetAutocorr sleeve before more complex mutations hide the source of failure or merit.",
+    "Microstructure/liquidity is an uncovered taxonomy bucket, so probing it with an existing DB factor has genuine research value.",
+    "No overlay and no combo keep the test falsifiable and avoid known S0/S1 violations such as timing-as-risk-management or stock-count issues."
+  ],
+  "veto_flag": null,
+  "s1_gate_items": [
+    "Measure post-cost walk-forward IC/IR after KOSPI200-top and 2억원 filters; confirm edge survives 15bps turnover drag.",
+    "Decompose exposures vs size, turnover, Amihud illiquidity, beta, vol, and short-term reversal; reject if L22 is redundant.",
+    "Test left-tail concentration and crisis behavior versus STR_1636 lineage; quantify crash clustering in liquidity stress.",
+    "Audit factor timestamping: AC1 window must end before rebalance decision and exclude same-day close or future month returns.",
+    "Check sensitivity to AC1 lookback/window definition and rebalance date; reject if signal is month-end or auction artifact.",
+    "Verify effect persistence after stricter liquidity screens; prior flow-family alpha vanished when liquidity filters tightened."
+  ],
+  "kill_scenarios": [
+    {
+      "scenario": "In Korean risk-on rotations led by cyclicals, low |AC1| mostly selects liquid mega-cap defensives. The sleeve then adds little diversification and materially lags the opportunity set.",
+      "probability": "medium",
+      "expected_loss": "SR down 0.4-0.7; relative MDD worse by 8-12pp",
+      "blind_spot": false
+    },
+    {
+      "scenario": "The monthly factor file computes AC1 with daily returns from the rebalance month or the rebalance close itself. Backtest alpha looks clean, but live implementation cannot reproduce the signal.",
+      "probability": "medium",
+      "expected_loss": "SR collapses toward 0; live MDD 5-10pp worse",
+      "blind_spot": true
+    },
+    {
+      "scenario": "If |AC1| is mainly an illiquidity/noise proxy, the chosen negative sign buys the wrong side of the liquidity premium. After 15bps costs on an EW 20 book, any weak edge is reversed.",
+      "probability": "high",
+      "expected_loss": "Net SR <0.2 or negative; MDD similar to or worse than benchmark by 6-10pp",
+      "blind_spot": false
+    }
+  ],
+  "weakest_assumption": "Assumption: lower |AC1| is a positive tradable signal, not just a descriptor of liquid low-vol names. If wrong -> the sleeve becomes a crowded liquidity/mega-cap proxy -> expected alpha is absorbed by crowding and costs -> SR disappoints and drawdowns still appear in liquidity shocks.",
+  "design_pit_assessment": "Alpha source does not inherently require ex-post knowledge, and there is no overlay or combo logic with full-sample thresholds. The PIT concern is twofold: factor selection is partly justified by recent 3y ICIR ranking, which is ex-post hypothesis picking, and AC1 timestamping is underspecified. A monthly factor built from daily returns must be explicitly lagged so the rebalance decision never uses same-day close data or returns from the forward month.",
+  "findings": "REVISE. Fact: the design is simple, single-factor, and testable. Inference: the economic sign is weakly justified because the cited liquidity literature does not clearly imply that lower |AC1| should earn positive cross-sectional alpha. Speculation risk is high because |AC1| is a noisy composite proxy, and the same RetAutocorr lineage already showed catastrophic drawdown. Tighten the mechanism and PIT spec before advancing this beyond exploratory smoke status."
+}

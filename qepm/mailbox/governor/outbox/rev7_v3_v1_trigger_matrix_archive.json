@@ -1,0 +1,100 @@
+{
+  "from": "Governor",
+  "type": "REV7_V3_V1_TRIGGER_MATRIX_ARCHIVE",
+  "purpose": "rev7_v3_v1 Active → rev8 supersede 시점 archive 자료. Day 2 trigger matrix 상태 스냅샷.",
+  "timestamp": "2026-04-18T14:30:00+09:00",
+  "session": 67,
+  "day": 1,
+  "archive_context": "rev7_v3_v1 Active 유지 중 STR_1683 4 variants Hard Fail 발견 → rev8-A/B DRAFT 작성 → audit 결과 대기. 본 매트릭스는 rev8 최종 발행 시점의 rev7_v3_v1 status 기록.",
+
+  "phase_1_trigger_6_items_status_day_1_end": {
+    "trigger_1_judge_v3_7_tdc": {
+      "status": "COMPLETED",
+      "date": "2026-04-17",
+      "evidence": "Judge L-156 v2 retroactive audit + 15 gates consolidated v3.4 (MEMORY.md L-158 본문 완료 기록)"
+    },
+    "trigger_2_h_1690_s0_approve_conditional": {
+      "status": "COMPLETED",
+      "score": 64,
+      "date": "2026-04-17",
+      "evidence": "Scout Calibration v1.0 예측 [59,75] 실제 64 within-range (first successful prediction)"
+    },
+    "trigger_3_forge_str_1683_primary": {
+      "status": "FAILED",
+      "result": "4 variants Hard Fail",
+      "date": "2026-04-18",
+      "evidence": "output/h1682_variant_comparison.csv — 60/40 MDD 94.66, 50/50 95.63, Q25-only 67.27, R16-only 91.62",
+      "contingency_triggered": "rev8-A DRAFT (H_1682 DROP) + rev8-B DRAFT (conditional retention)"
+    },
+    "trigger_4_forge_str_1684_h_1688": {
+      "status": "QUEUE",
+      "last_update": "2026-04-18",
+      "evidence": "output/ 비어있음, Forge 실행 지시 완료 (team-lead 확인)",
+      "blocker": "Forge v2 parallel 처리 대기"
+    },
+    "trigger_5_forge_h_1690_s1": {
+      "status": "PENDING",
+      "scout_todo_request_needed": true,
+      "owner_confirmation": "Scout 유지 (team-lead 확정)"
+    },
+    "trigger_6_risk_mgr_3rd_round": {
+      "status": "PROMPT_DRAFT_READY",
+      "based_on": "rev8 ACTIVATE 후 최종본 확정",
+      "artifact": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json"
+    }
+  },
+
+  "rev7_v3_v1_composition_snapshot_pre_rev8": {
+    "strategies_7_active": {
+      "STR_1631_Core_Primary": {"weight": 0.18, "family": "consensus_C19_core"},
+      "H_1688_Core_Secondary": {"weight": 0.10, "family": "momentum_residual"},
+      "STR_1656_Div_ML": {"weight": 0.14, "family": "ML_complexity"},
+      "STR_1679v3_Div": {"weight": 0.10, "family": "momentum_overlay_embedded_q25"},
+      "H_1682_Def": {"weight": 0.12, "family": "distress_path_dependent", "invalidated_by": "STR_1683 Hard Fail"},
+      "H_1689_Def": {"weight": 0.20, "family": "quality_aggregate"},
+      "H_1690_Def": {"weight": 0.08, "family": "multi_source_defense_anchor"}
+    },
+    "reserve_h_1678": 0.06,
+    "buffer_h_1690_promotion": 0.02,
+    "total_effective": 1.00,
+    "defense_cluster_40pct": "H_1682 12 + H_1689 20 + H_1690 8 = 40%",
+    "q25_exposure_22_1pct": "STR_1679v3 + H_1682 + H_1689 + H_1690 + STR_1656",
+    "projected_sr_rho_0_3": 1.75,
+    "projected_sr_with_boost_6": 2.00
+  },
+
+  "rev7_v3_v1_session_66_67_achievements": {
+    "process_integrity_innovations": [
+      "Admission Rule v1 → v3.4 (10 gates consolidated)",
+      "Sequential Admission Rule",
+      "Retroactive TDC Audit",
+      "Structural Diagnosis",
+      "Embedded Overlap Recognition",
+      "Spec Strengthening Fallback (Gate 11)",
+      "Family Exhaustion Pattern Detection (Gate 12)",
+      "Variance Ratio Audit (Gate 13→15)",
+      "Defense Conditional Audit Framework v1.0",
+      "L-158 Gate 8 Early Warning"
+    ],
+    "governor_artifacts_17": "rev2~rev7_v3_v1 + consensus_taxonomy + h1683_vs_h1688_differentiation + defense_conditional_audit_framework_v1_0",
+    "l_code_158_total": "L-001~L-158 연속 기록 (v4.7)",
+    "forge_blocker_resolved": "Architect 진단 + forge_code_guard.sh OPT-10 수정 → Forge v2 재스폰"
+  },
+
+  "supersede_trigger_to_rev8": {
+    "trigger_event": "STR_1683 4 variants Hard Fail (2026-04-18 Forge v2 S1 실행 결과)",
+    "validation_process": "team-lead 승인 + Governor rev8-A/B 병행 초안 + audit 대기",
+    "final_decision_flowchart": [
+      "1. audit 버그 없음/fundamental → rev8-A ACTIVATE",
+      "2. audit minor bug → Forge fix+rerun → G1~G10 PASS → rev8-B ACTIVATE",
+      "3. audit fail/rerun fail → rev8-A 전환"
+    ]
+  },
+
+  "lessons_from_rev7_v3_v1_cycle": {
+    "L_candidate_1": "Forge S1 전체 FAIL 대응은 rev rev 연쇄보다 병행 DRAFT가 효율적 (rev8-A/B 병행)",
+    "L_candidate_2": "DRAFT 상태 유지로 audit 결과에 따른 즉시 ACTIVATE 가능",
+    "L_candidate_3": "Defense 가설 3중 실패 (H_1676 + H_1685 + H_1682) 패턴은 signal direction + concentration + composite offset 3요인 공통 문제 시사 → L-159 후보",
+    "L_candidate_4": "고ICIR + FM t>3 + IC>0 96% 강력 신호도 long-only 20종목 집중 시 수익화 실패 가능 → factor quality ≠ portfolio quality 분리 필요"
+  }
+}

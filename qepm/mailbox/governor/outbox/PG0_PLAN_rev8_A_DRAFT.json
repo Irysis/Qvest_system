@@ -1,0 +1,246 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV8_A_DRAFT",
+  "stage": "PG0_H_1682_FULL_DROP_defense_reallocation",
+  "timestamp": "2026-04-18T14:20:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_A_DRAFT",
+  "status": "DRAFT 🚨 — STR_1683 direction audit 버그 없음 확정 시 ACTIVATE",
+  "supersedes_on_activation": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json (v7.3.1)",
+  "supersedes_chain": "rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1 → rev6 → rev6_v1 → rev7 → rev7_v2 → rev7_v3 → rev7_v3_v1 → **rev8_A**",
+
+  "trigger": "STR_1683 (H_1682 Distress+Calmar Defense) 4 variants 전체 Hard Fail 확정. 60/40 MDD 94.66 / 50/50 95.63 / Q25-only 67.27 / R16-only 91.62. stress outperform 0/3. IC 0.2207 ICIR 1.879 강력에도 long-only 20종목 수익화 완전 실패. rev7_v3_v1 Phase_3 H_1682 Def 12% 배치 무효화.",
+
+  "activation_condition": {
+    "description": "STR_1683 direction audit 결과에 따라 활성 여부 결정",
+    "audit_results": {
+      "no_bug_found": "rev8-A ACTIVATE (본 파일)",
+      "bug_found_fix_rerun": "rev8-B ACTIVATE (재실행 PASS 시 H_1682 유지)",
+      "audit_inconclusive": "rev8-C (Reserve 12% wait-and-see)"
+    },
+    "audit_owner": "Scout + Forge (Q-Lead 재승인)",
+    "audit_deadline": "30분 (team-lead 지시)"
+  },
+
+  "rev8_a_phase_3_composition": {
+    "description": "H_1682 12% 완전 제거. Defense 재배치 + Reserve 확대. Scout 권고 기반 H_1689 25%→23% 보수화.",
+    "strategies": {
+      "Core_Primary_STR_1631": {
+        "weight": 0.18,
+        "unchanged": true,
+        "role": "Core_Primary",
+        "family": "consensus_C19_core"
+      },
+      "Core_Secondary_H_1688": {
+        "weight": 0.10,
+        "unchanged": true,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "barroso_mandatory": true
+      },
+      "RESERVED_FOR_H_1678_REFIT": {
+        "weight": 0.06,
+        "unchanged": true,
+        "role": "Reserved (H_1678 STR_1555 Core refit Phase_2+)"
+      },
+      "Div_ML_STR_1656": {
+        "weight": 0.14,
+        "unchanged": true,
+        "role": "Diversifier (Phase_2 STR_1661 V2 교체)",
+        "family": "ML_complexity"
+      },
+      "Div_3_STR_1679v3": {
+        "weight": 0.10,
+        "unchanged": true,
+        "role": "Diversifier with embedded Q25+R16",
+        "family": "momentum_overlay_embedded_q25"
+      },
+      "Def_1_H_1682_DROPPED": {
+        "weight": 0.00,
+        "previous_weight_rev7_v3_v1": 0.12,
+        "change": "-12pp",
+        "rationale": "STR_1683 4 variants Hard Fail 전수 — long-only 수익화 구조적 불가"
+      },
+      "Def_2_H_1689_conservative_23pct": {
+        "weight": 0.23,
+        "previous_weight_rev7_v3_v1": 0.20,
+        "change": "+3pp",
+        "rationale_1": "team-lead 확정 — 25% 대비 보수화 (AX-005 neutralization 부담 완화)",
+        "rationale_2": "quality_aggregate family cap 35% 대비 23%, 12pp headroom",
+        "rationale_3": "2nd round Risk Mgr structural 25% 한계 회피",
+        "role": "Defense primary (post H_1682 DROP)",
+        "family": "quality_aggregate",
+        "q25_share": 0.25
+      },
+      "Def_3_H_1690_promoted_10pct": {
+        "weight": 0.10,
+        "previous_weight_rev7_v3_v1": 0.08,
+        "change": "+2pp (Phase_2 조기 promotion)",
+        "promotion_condition": "10 conditions 모두 Forge S1 PASS 시 활성",
+        "fallback_if_conditions_fail": "8% 유지 (rev7_v3_v1 수준), 2pp는 Reserve로 이월",
+        "role": "Defense (multi-source composite)",
+        "family": "multi_source_defense_anchor",
+        "q25_share": 0.25
+      },
+      "Reserve_expanded_9pct": {
+        "weight": 0.09,
+        "previous_weight_rev7_v3_v1": 0.08,
+        "change": "+1pp (H_1678 6 + buffer 2 + H_1682 DROP 재원 1)",
+        "composition": {
+          "H_1678_refit": 0.06,
+          "H_1690_promotion_buffer": 0.02,
+          "contingency_additional": 0.01
+        }
+      }
+    },
+    "total_allocated": 0.85,
+    "reserve_total": 0.09,
+    "total_sum_check": 0.94,
+    "effective_total_with_rebalance": 1.00,
+    "rebalance_note": "Reserve 9% + 미배분 6%는 H_1678/H_1690 Phase_2 승격 시점에 재편성. Phase_3 시 100% 확정.",
+    "n_strategies_active": 6,
+
+    "defense_cluster_audit": {
+      "h_1689_23pct": 0.23,
+      "h_1690_10pct": 0.10,
+      "total_defense": 0.33,
+      "change_from_rev7_v3_v1_40pct": "-7pp",
+      "ax_001_conditional_evaluation": "Defense Conditional Audit Framework v1.0 재적용 필수 — Defense 33%로 축소 시 위기구간 alpha 충분성 재검증",
+      "concerns": [
+        "Defense 33%는 rev7_v3_v1 40% 대비 방어력 -17.5% 감소",
+        "현 MRS 63.1 CRISIS 상태에서 Defense 축소 timing risk",
+        "H_1689 단독 23% concentration — family cap 35% 대비 safe하나 single-factor risk"
+      ]
+    },
+
+    "family_concentration_check": {
+      "consensus_C19_core": 0.18,
+      "momentum_residual": 0.10,
+      "momentum_overlay_embedded_q25": 0.10,
+      "ML_complexity": 0.14,
+      "quality_aggregate": 0.23,
+      "multi_source_defense": 0.10,
+      "reserve": 0.09,
+      "max_family": 0.23,
+      "rule_3_45pct_cap": "PASS (quality_aggregate 23% < 35% cap 12pp headroom)",
+      "compliance": "PASS"
+    },
+
+    "q25_r16_exposure_audit_rev8_a": {
+      "str_1679v3_embedded_10pct_q25_share_0_90": 0.090,
+      "h_1689_23pct_q25_share_0_25": 0.0575,
+      "h_1690_10pct_q25_share_0_25": 0.025,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_weighted_q25": 0.1795,
+      "cap_35_compliance": "PASS (17.95%, rev7_v3_v1 22.1% 대비 -4.15pp 완화)",
+      "soft_threshold_30_compliance": "PASS (substantial headroom 12.05pp)"
+    }
+  },
+
+  "projected_sr_rev8_a": {
+    "individual_SR_assumptions": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "STR_1656_Div_ML": 1.212,
+      "STR_1679v3": 1.00,
+      "H_1689_Def_boosted": 0.80,
+      "H_1690_Def_multi_source": 0.72
+    },
+    "weighted_mean_SR_phase_3_rev8_a": 0.895,
+    "change_from_rev7_v3_v1": {
+      "h_1682_removal_12pct_SR_0_65": "+0.015 (Hard Fail 제거 긍정적)",
+      "h_1689_expansion_20_to_23": "+0.008",
+      "h_1690_promotion_8_to_10": "+0.005",
+      "net_effect": "+0.028 weighted mean",
+      "variance_reduction": "Defense cluster 축소로 correlation 감소 효과 미약"
+    },
+    "rho_0_3_conservative": {
+      "variance_reduction_factor": 1.73,
+      "projected_SR": 1.72,
+      "gap_vs_rev7_v3_v1_1_75": "-0.03",
+      "gap_vs_1_80_realistic_target": -0.08,
+      "status": "Defense 축소로 rev7_v3_v1 대비 SR 소폭 하향 불가피"
+    },
+    "rho_0_2_optimistic": {"projected_SR": 1.80},
+    "rho_0_5_saturation": {"projected_SR": 1.36},
+
+    "boost_roadmap_rev8_a": {
+      "boost_1_h_1678_admission": "+0.05~0.08 (Phase_2~3)",
+      "boost_2_str_1661_v2_accelerated": "+0.05~0.08 (Phase_2)",
+      "boost_3_blend_optimization": "+0.03~0.05 (Phase_3 말)",
+      "boost_4_h_1688_barroso": "+0.05 (S5)",
+      "boost_5_h_1687_redesign_session_68": "+0.05 (Phase_4+)",
+      "boost_6_replace_h_1682_new_defense": "+0.05~0.10 (Scout 신규 가설 — 추가 boost)",
+      "total_boost_sum_rev8_a": "+0.28~0.41",
+      "projected_final_SR_with_all_boosts": {
+        "conservative_rho_0_3": "1.72 + 0.28 = **2.00**",
+        "optimistic_rho_0_2": "1.80 + 0.30 = 2.10",
+        "status": "SR 2.0 도달 가능 (Scout 신규 Defense 가설 boost 6 추가로 rev7_v3_v1 대비 +0.03~0.08 우위)"
+      }
+    }
+  },
+
+  "risk_manager_3rd_round_integration": {
+    "prompt_draft_reference": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json",
+    "spawn_condition": "rev8-A ACTIVATE 확정 시",
+    "key_verifications": [
+      "V1: Defense 33% vs rev7_v3_v1 40% tail_risk 비교",
+      "V2: H_1689 23% over-concentration (AX-005 exclusion 재확인)",
+      "V3: H_1690 Phase_2 10% 조기 승격 + 10 conditions PASS 의존성",
+      "V4: Q25 exposure 17.95% headroom 12.05pp 확대 효과",
+      "V5: projected SR 1.72 + boost 6건 +0.28~0.41 → 2.00 robustness"
+    ]
+  },
+
+  "l_code_candidate_lx_ic_return_decoupling": {
+    "code": "L-159_candidate",
+    "title": "고ICIR Defense composite long-only 20종목 수익화 구조적 실패",
+    "body_draft": "H_1682 Distress(Q25)+Calmar(R16) 60/40 composite: IC 0.2207 ICIR 1.879 FM t=16.887 매우 강력한 신호에도 long-only 20종목 portfolio는 MDD 94.66 / SR -0.242 / stress outperform 0/3. IC→Return decoupling 원인: (1) Distress signal은 부실기업 회피 vs 편입 방향성 모호, (2) Calmar은 past performance-based로 publication decay, (3) top-decile 집중 시 single-factor concentration으로 sector bias 전이, (4) Q25+R16 composite 방향성 상쇄. 교훈: Defense sleeve는 IC 외에도 (a) signal direction 명확성, (b) sector-neutralization, (c) risk-parity sub-weighting, (d) non-linear transformation 중 2개+ 병행 필요.",
+    "tags": ["DEFENSE_IC_RETURN_DECOUPLING", "Q25_DISTRESS_DIRECTION_AMBIGUOUS", "R16_CALMAR_DECAY", "LONG_ONLY_20_CONCENTRATION"],
+    "related_lessons": ["L-122 (Factor timing ≠ risk management)", "L-484 (수익률 블렌드 ≠ score 합산)", "L-129 (CDaR LP 단독 MDD -65%)"],
+    "status": "draft — Judge coordinate 필요"
+  },
+
+  "scout_request_new_defense_hypothesis": {
+    "reference": "qepm/mailbox/scout/inbox/TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json (작성 예정)",
+    "scope": "H_1682 실패 교훈 반영 신규 Defense 가설 설계",
+    "suggested_directions": [
+      "D1. Sector-neutralized Q07 Earnings Stability (기존 Q07 활용, neutralization 추가)",
+      "D2. Risk-parity sub-sleeve Defense (Q07 + Low-vol + Defensive sector 3-factor risk-weighted)",
+      "D3. Non-linear Distress transformation (Altman Z-score quantile flip)",
+      "D4. MRS-conditional Dynamic Defense (CRISIS regime에서만 활성, 정상국면 cash)",
+      "D5. Tail-dependence optimized Defense (CVaR target)"
+    ],
+    "evaluation_criteria": "Defense sleeve 요건: (a) bad/normal IC ratio > 1.5, (b) stress outperform 2/3+, (c) full-period MDD < 35%, (d) sector HHI < 0.15"
+  },
+
+  "governor_next_actions_post_rev8_a": [
+    "1. STR_1683 direction audit 결과 수신 → rev8-A 활성 확정",
+    "2. Risk Mgr 3rd round prompt 최종본 확정 + 스폰 지시",
+    "3. Scout에 신규 Defense 가설 요청 (TODO_NEW_DEFENSE_HYPOTHESIS)",
+    "4. STR_1684 (H_1688) S1 결과 대기 → Phase_1 admission 준비",
+    "5. H_1690 Forge S1 TODO 작성 (Scout)",
+    "6. H_1678 handoff kit 완성 모니터링 (Day 3~4 debate)"
+  ],
+
+  "executive_summary_rev8_a": {
+    "trigger": "STR_1683 4 variants Hard Fail → H_1682 전체 DROP",
+    "composition": "STR_1631 18 / H_1688 10 / STR_1656 14 / STR_1679v3 10 / H_1689 23 / H_1690 10 + Reserve 9 + 미배분 6 = 100",
+    "defense_cluster": "40% → 33% (-7pp)",
+    "q25_exposure": "22.1% → 17.95% (-4.15pp)",
+    "projected_sr_primary": 1.72,
+    "projected_sr_with_boosts_6": 2.00,
+    "key_risks": [
+      "Defense 축소로 현 CRISIS 국면 방어력 17.5% 감소",
+      "H_1689 단독 23% single-factor concentration risk",
+      "Scout 신규 Defense 가설 성공 가능성 불확실"
+    ],
+    "mitigations": [
+      "Risk Mgr 3rd round V1~V5 + H_1682 direction audit addendum",
+      "Defense Conditional Audit Framework v1.0 재적용",
+      "H_1690 10 conditions + Phase_2 조건부 승격"
+    ]
+  }
+}

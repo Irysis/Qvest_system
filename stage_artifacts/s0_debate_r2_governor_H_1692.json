@@ -1,0 +1,32 @@
+{
+  "role": "governor",
+  "r1_score": 15,
+  "r2_score": 15,
+  "score_changed": false,
+  "score_change_reason": null,
+  "agreements": [
+    {
+      "with": "academic",
+      "point": "Grinblatt-Moskowitz 1999 JF 54(4) industry momentum sub-family + KAIST Shim 2017 + 2024 IAJ 'momentum largely sector-specific in Korea' 증거가 AX_CAND_kr_momentum_inverse scope EXCEPTION을 academic하게 지지한다는 점에 전적으로 동의합니다. Asness-Moskowitz-Pedersen 2013 Korea exception은 individual cross-sectional 한정이며 industry level은 Shim evidence로 working alpha로 확보됩니다. 이는 Governor의 R1 argument #2 (industry_momentum_residual_kr_rsi 미구축 sub-family + Explore bucket 부합)와 정합하며, Codex의 L-161 family 동일 주장을 근본적으로 무력화하는 학술적 근거입니다. 또한 reference_list 저자 표기 오류(박영석·정재만 2017 → 심찬보 KAIST 2017 가능성)는 Scout handoff kit v1.2에서 수정되어야 하며, 이는 Scout 책임 영역이므로 S0_VERDICT APPROVE_CONDITIONAL 조건에 명시 편성되어야 합니다."
+    },
+    {
+      "with": "quant",
+      "point": "OLS residualization beta_t 낮을 위험 (M07 vs M18 상관 낮을 시 β_t 0.05~0.10 수렴 → 잔차 ≈ M07 원본)이 marginal contribution을 무력화할 수 있다는 점에 동의합니다. 이는 Governor R1 concern section에서 명시한 '핵심 우려'와 정확히 일치하며, STR_1679v3 momentum sleeve TDC 0.40~0.55가 Core_Secondary gate 0.55 경계에 근접하는 구조적 위험과 연결됩니다. 따라서 Quant의 S1 pre-measurement 의무화 (M07 standalone ICIR + M07 vs M18 cross-section 월별 상관 distribution + M07 vs H_1692 residual ICIR 비교표) 조건을 Governor의 S0_VERDICT APPROVE_CONDITIONAL 조건 목록에 추가 편성을 지지합니다. 또한 L-164 load_month_factors 경유 확인은 Governor R1 condition #1 (Gate 13 Factor DB Access Compliance PASS)과 redundant하여 중복 강화되는 안전장치입니다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "expanding OLS beta_t 안정성 (structural break 전후 변화 ≥ 0.05) + rank corr vs M07 standalone < 0.95 조건은 Quant의 β_t 퇴화 우려와 동일한 구조적 위험을 측정 가능한 임계값으로 전환한 실무적 조건이므로 S3 단계 t-copula MLE 실측과 함께 편성되어야 함에 동의합니다. Gate 8 ≤ 0.4 PASS + 위기 conditional TDC 별도 측정은 Governor의 Sequential Admission (STR_1661 V2 Phase_2+ 진입 시 H_1692 재평가) 프레임과 complementary하며, L-156 v2 pairwise TDC conditional cluster (AX-006 candidate)와 정합하는 리스크 관리 강화입니다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex 6점 Reject as PRIMARY는 L-161 scope를 overreach한 판단이므로 major rebuttal입니다. L-161 KR momentum inverse VALIDATED_HARD_FAIL은 STR_1684 M01 cross-sectional (sd=0.66 distorted + Z-score scale invariance 위반 집중) 범위에 한정된 실증 실패로, M07 industry momentum (sd=1.000 proper + Grinblatt-Moskowitz 1999 JF industry sub-family + Shim 2017 + 2024 IAJ 한국 sector-specific evidence)과는 (1) normalization 구조, (2) alpha source 이론, (3) empirical KR footprint 세 축에서 구조적으로 다른 sub-family입니다. Codex의 'parameter relabeling 의심'은 M07과 M01의 경제적 메커니즘 차이 (individual behavioral over-reaction vs industry fundamentals lead-lag)를 무시한 일반화 오류이며, Academic R1의 증거와 Governor R1 argument #2 (industry_momentum_residual_kr_rsi 미구축 sub-family Factor Taxonomy §9 기준)으로 직접 반박됩니다. 또한 Codex PIT risks 4/4 우려는 이미 (1) sd=1.000 Fix 1 검증 완료 (Quant Scenario B 수학적 증명), (2) load_month_factors 경유 Gate 13 hard_block, (3) expanding OLS beta_t walk-forward 설계로 현실적으로 통제되며, 'ex-post selected' 주장은 handoff kit v1.1이 s0_record 단계에서 명시된 설계 rationale임을 간과합니다. Codex 6점은 Governor Stance에서 under-score이며, PRIMARY는 과하지만 Core_Secondary 10% slot은 적정합니다."
+    },
+    {
+      "against": "risk_manager",
+      "point": "Risk Manager의 TDC 상한 0.65 (vs STR_1661_V2) 경고는 handoff kit v1.1 pre-measurement 추정치 (L-157 framework)로, S3 t-copula MLE 실측 전 단계의 upper bound 추정에 불과함을 명시적으로 구분해야 한다는 점에서 minor rebuttal입니다. Governor R1 concern은 이미 'STR_1661_V2 ML 계열과 expected TDC 0.35~0.55 (Core_Secondary gate 0.55 경계)'로 conservative range를 명시했으며, Risk Mgr의 0.45~0.65 범위는 동일 불확실성 대역 내 상한 강조입니다. 실측 없이 0.65 위반 결론은 premature이며, S3 단계 Gate 8 ≤ 0.4 empirical PASS가 최종 판정 기준이어야 합니다. 또한 M18 crisis_ratio 0.855 → 위기 시 잔차 = M07 수렴 우려는 Governor R1 concern의 β_t 낮을 때 퇴화 논리와 동일 구조이므로 중복 경고이나 방향성은 일치 (agreement로도 분류 가능). 단 MDD +1~3%p 악화 시나리오는 Core_Secondary 10% slot의 pro-rata contribution으로 환산 시 portfolio-level +0.1~0.3%p로 수렴하며 (현 -21.27% 여유 3.73%p 대비 충분), Risk Mgr 12점은 marginal under-score입니다 — 실측 전 conservative framing은 valid하나 portfolio-level impact scaling 반영 시 13~14점대가 적정합니다."
+    }
+  ],
+  "strongest_opposing_argument": "Quant R1의 L-051/L-072 KR 실패 선례 (STR_1457 IndMom+Quality Gate Grade F / STR_1462 IndMom×Consensus Grade F) + M07 ic_all=0.01059 약한 signal + residualization incremental 기여의 β_t 의존성 지적이 Governor 관점에서 가장 강력한 opposing argument입니다. 이는 (1) Academic의 이론적 지지 (Grinblatt 1999 + Shim 2017)와 empirical implementation 간의 gap을 정확히 지적하고, (2) Codex의 일반론적 L-161 family 비판보다 훨씬 구체적인 KR 실증 선례 2건을 제시하며, (3) Governor의 Core_Secondary 10% slot 배정 근거인 'SR +0.08~0.13 uplift'가 β_t 퇴화 시 ZERO로 수렴할 수 있다는 구조적 취약성을 정면으로 겨냥합니다. H_1692가 IndMom+Quality Gate/Consensus 조합이 아닌 RSI residualization이라는 점에서 구조적 차이는 존재하나, M07 standalone signal 강도가 약하다면 residualization transformation만으로 L-051/L-072 실패 패턴을 극복한다는 보장이 없습니다. 이 argument는 Governor R1 condition #3 (LOO portfolio SR delta ≥ +0.08 empirical)이 실측에서 미달 시 H_1692 Core_Secondary slot 배정을 재검토해야 함을 의미하며, Sequential Admission 프레임을 '선 편성 후 실측'이 아닌 '선 실측 후 편성'으로 강화해야 할 근거를 제공합니다. 다만 Governor 최종 판단은 (1) Academic Shim 2017 + 2024 IAJ + Grinblatt 1999 sub-family 차별화 + (2) 조건부 편성 (LOO SR delta + TDC + Harvey t + ICIR 실측 PASS 전제)의 안전장치로 score 15 유지가 정당하며, score_changed=false입니다."
+}

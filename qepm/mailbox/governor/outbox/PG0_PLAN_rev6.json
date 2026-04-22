@@ -1,0 +1,347 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV6",
+  "stage": "PG0_Structural_Response_STR_1679v2_DROP",
+  "timestamp": "2026-04-17T21:40:00+09:00",
+  "session": 66,
+  "version": "v6.0_structural",
+  "status": "PENDING_RISK_MGR_3RD_ROUND + R17~R19_CONFIRMATION",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev5_v1_1_emergency.json (v5.1.1)",
+  "criticality": "🚨 STRUCTURAL — Risk Mgr 2nd round 1/4 PASS confirmed. Weight rebalance로 CVaR/CDaR/TDC structural 3 FAIL 해결 불가. rev6은 strategy-level DROP으로 근본 대응.",
+
+  "trigger": "Risk Mgr 2nd validation (pg2_cvar_validation_rev5.json) 결과 — CVaR -27.12% (악화), CDaR 23.13% (소폭 개선 but FAIL), TDC 0.7349 (unchanged, structural), Q25 12.95% (PASS 유지). Q-Lead rev6 structural response 지시.",
+
+  "risk_mgr_2nd_round_structural_diagnosis": {
+    "validation_results": {
+      "cvar_95": {"rev4": -0.2670, "rev5": -0.2712, "threshold": -0.15, "change_direction": "악화 (-0.42pp)", "status": "FAIL"},
+      "cdar_95": {"rev4": 0.2363, "rev5": 0.2313, "threshold": 0.22, "change": -0.005, "status": "FAIL_MARGINAL"},
+      "tdc_max": {"rev4": 0.7349, "rev5": 0.7349, "threshold": 0.40, "change": 0, "status": "FAIL_STRUCTURAL"},
+      "q25": {"rev4": 0.086, "rev5": 0.1295, "threshold": 0.35, "status": "PASS"}
+    },
+    "structural_root_causes": {
+      "cvar_structural": {
+        "diagnosis": "Korean equity high kurtosis 5.32 + negative skew -0.52",
+        "implication": "Weight 조정만으로 불가 — lower tail risk strategy 편입 필요",
+        "solution": "Defense 33~35% 증대 + tail-risk-aware strategies (H_1689 quality_4axis distress hedge)"
+      },
+      "cdar_structural": {
+        "diagnosis": "STR_1656 MDD 74.84%가 dominant contributor",
+        "implication": "H_1682 16% 증대로 완화했으나 STR_1656 12% × 74.84% 잔존",
+        "solution": "STR_1656 18% → 14% 축소 + STR_1661 V2 교체 가속"
+      },
+      "tdc_structural": {
+        "diagnosis": "H_1676 Option A 적용 시 STR_1631↔H_1676 0.391 PASS 가능. 그러나 STR_1631↔STR_1679v2 0.6298 TDC floor 존재.",
+        "implication": "STR_1679v2 자체가 structural breach 원천 — Judge L-156 재확증",
+        "solution": "STR_1679v2 DROP (Option A1 Q-Lead 권고)"
+      }
+    }
+  },
+
+  "q_lead_rev6_structural_response_accepted": {
+    "change_1_str_1679v2_drop": {
+      "option_a1_complete_drop": "Phase_1 10% → **0%** (완전 제거)",
+      "rationale_from_q_lead": "Core_with_regime_inverse_overlay family 자체가 structural TDC breach 원천 확정",
+      "governor_confirmation": "APPROVED — Risk Mgr 2nd round 실측 0.6298 TDC floor 확인. 5% 유지로도 Gate 8 breach 지속.",
+      "transition_path": "현 PG2 STR_1679v2 20% → Week 1 rev6 Phase_1 0% 즉시 제거 + STR_1679v3 Slot A 완성 시 대체 고려 (Week 3~4)"
+    },
+    "change_2_str_1656_reduction": {
+      "action": "Phase_1 STR_1656 18% → 14% 축소 (-4pp)",
+      "rationale": "Risk Mgr MDD 74.84% dominant CDaR contributor 지적",
+      "phase_2_acceleration": "STR_1661 V2 (ICIR 1.029) 교체 가속 — Task #7 연장",
+      "governor_confirmation": "APPROVED — CDaR breach root cause 정면 해결"
+    },
+    "change_3_defense_boost": {
+      "h_1682": "16% → 20% (+4)",
+      "h_1689": "11% → 15% (+4)",
+      "total_defense": "27% → 35%",
+      "rationale": "Korean equity high kurtosis 대응 + CVaR -27% → -15% 목표",
+      "governor_confirmation": "APPROVED — structural CVaR 해결 위한 Defense 증대 필수"
+    }
+  },
+
+  "rev6_phase_3_final_composition": {
+    "description": "7-strategy architecture (8 → 7, STR_1679v2 제거)",
+    "strategies": {
+      "Core_Primary_STR_1631_consensus_C19": {
+        "weight": 0.18,
+        "role": "Core_Primary",
+        "family": "consensus_C19_core"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight": 0.10,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "barroso_mandatory": true
+      },
+      "Div_1_H_1676_consensus_residual_strengthened": {
+        "weight": 0.08,
+        "role": "Diversifier",
+        "family": "consensus",
+        "sub_family": "analyst_revision_residual",
+        "tdc_expected_post_option_a": 0.391,
+        "gate_8_pass": true
+      },
+      "Div_2_H_1685_investor_flow": {
+        "weight": 0.15,
+        "role": "Diversifier",
+        "family": "investor_flow",
+        "change": "+2 from rev5_v1_1 13%"
+      },
+      "Div_ML_STR_1656_reduced": {
+        "weight": 0.14,
+        "role": "Diversifier (Phase_2 STR_1661 V2 교체 가속)",
+        "family": "ML_complexity",
+        "change": "-4 from 18%"
+      },
+      "Def_1_H_1682_distress_calmar_boosted": {
+        "weight": 0.20,
+        "role": "Defense",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60,
+        "change": "+4 from 16%"
+      },
+      "Def_2_H_1689_quality_4axis_boosted": {
+        "weight": 0.15,
+        "role": "Defense",
+        "family": "quality_aggregate",
+        "q25_share": 0.25,
+        "change": "+4 from 11%"
+      },
+      "STR_1679v2_DROPPED": {
+        "weight": 0.00,
+        "prior_weight_rev5_v1_1_phase_3": 0.05,
+        "disposition": "structural breach 원천 — 완전 제거"
+      }
+    },
+    "total": 1.00,
+    "n_strategies": 7,
+    "n_families": 6,
+    "defense_total": "H_1682 20% + H_1689 15% = **35%** (from rev5_v1_1 30%)",
+    "consensus_cluster": "STR_1631 18% + H_1676 8% = **26%**",
+    "ml_complexity": 0.14,
+    "family_concentration_check": {
+      "consensus_total": 0.26,
+      "consensus_cap_45pct": "PASS (significant headroom)",
+      "momentum_residual": 0.10,
+      "investor_flow": 0.15,
+      "ML_complexity": 0.14,
+      "distress_path": 0.20,
+      "quality_aggregate": 0.15,
+      "max_family": 0.26,
+      "compliance": "PASS"
+    },
+    "q25_exposure_weighted_rev6": {
+      "h_1682": "0.20 × 0.60 = 0.12",
+      "h_1689": "0.15 × 0.25 = 0.0375",
+      "str_1656": "0.14 × 0.05 = 0.007",
+      "total": 0.1645,
+      "cap_35_compliance": "PASS (16.45% < 35%)"
+    }
+  },
+
+  "projected_sr_rev6_realistic_1_80": {
+    "individual_SR_assumptions": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "H_1676_Div_strengthened": 0.85,
+      "H_1685_Div": 0.75,
+      "STR_1656_Div_ML_reduced": 1.212,
+      "H_1682_Def_boosted": 0.65,
+      "H_1689_Def_boosted": 0.80
+    },
+    "weighted_mean_SR": 0.935,
+
+    "rho_0_3_conservative_primary": {
+      "variance_reduction_factor": 1.87,
+      "**projected_SR**": 1.75,
+      "gap_vs_1_80_target": -0.05,
+      "gap_vs_2_0_aspirational": -0.25,
+      "status": "SR 1.75 — realistic target 1.80 근접"
+    },
+    "rho_0_2_optimistic_reference": {
+      "projected_SR": 1.83,
+      "gap_vs_1_80": "+0.03"
+    },
+    "rho_0_5_saturation": {
+      "projected_SR": 1.42,
+      "gap_vs_1_80": -0.38
+    },
+
+    "comparison_rev5_rev5_v1_1_rev6": {
+      "rev5_rho_0_3": 1.82,
+      "rev5_v1_1_rho_0_3": 1.79,
+      "**rev6_rho_0_3**": 1.75,
+      "total_drop": "-0.07 vs rev5 (STR_1679v2 DROP + STR_1656 축소 + Defense 증대)"
+    },
+
+    "sr_target_formal_rebase": {
+      "prior_target_aspirational": 2.0,
+      "**realistic_target_rev6**": 1.80,
+      "aspirational_phase_4_ultimate": 2.0,
+      "rationale": "Risk-adjusted quality 우선. Korean equity structural high kurtosis 대응은 SR 희생 불가피. SR 1.80 + MDD < 25% 동시 달성이 Phase_3 목표. SR 2.0은 Phase_4+ 장기."
+    }
+  },
+
+  "boost_roadmap_rev6_updated": {
+    "boost_1_h_1687_distress_momentum_interaction": {
+      "phase": "Phase_2~3",
+      "expected_contribution": "+0.10 @ ρ=0.3",
+      "rationale": "distress × momentum composite, consensus 밖"
+    },
+    "boost_2_str_1661_v2_replacement_accelerated": {
+      "phase": "Phase_2 (Week 6~12)",
+      "expected_contribution": "+0.05~0.08 @ ρ=0.3",
+      "rationale": "STR_1656 ICIR 0.85 → STR_1661 V2 ICIR 1.029 교체 가속 (rev6 반영)"
+    },
+    "boost_3_blend_optimization": {
+      "phase": "Phase_3 말",
+      "expected_contribution": "+0.03~0.05 @ ρ=0.3",
+      "method": "HRP + CVaR reg + regime-conditional"
+    },
+    "boost_4_h_1688_barroso_mandatory": {
+      "phase": "S5 A slot",
+      "expected_contribution": "+0.05 @ ρ=0.3"
+    },
+    "total_boost_sum": "+0.23~0.28 @ ρ=0.3 (보정 +0.02 STR_1661 가속)",
+    "**projected_final_SR_with_all_boosts**": {
+      "conservative_rho_0_3": "1.75 + 0.25 = **2.00** (aspirational 도달)",
+      "optimistic_rho_0_2": "1.83 + 0.25 = 2.08",
+      "status": "boost 4건 성공 전제 시 SR 2.0 도달. 단 모든 boost 완료까지 24주 예상."
+    },
+    "realistic_target_without_boost_phase_3": 1.75,
+    "**realistic_target_with_full_boost_phase_4**": 2.0
+  },
+
+  "phase_1_rev6_week_1_composition": {
+    "str_1679v2_dropped_immediate": {
+      "Core_Primary_STR_1631": 0.40,
+      "STR_1656_Div_ML_reduced": 0.15,
+      "H_1676_Div_strengthened": 0.08,
+      "H_1682_Def_boosted": 0.20,
+      "H_1685_Div_investor_flow_accelerated": 0.10,
+      "H_1689_Def_accelerated_phase_1": 0.05,
+      "reserve_h_1688_buffer": 0.02
+    },
+    "total": 1.00,
+    "n_strategies": 6,
+    "defense_phase_1": "H_1682 20% + H_1689 5% = 25%",
+    "transition_acceleration": "Phase_1에서 H_1689 5% 편입 가속 (Phase_3 15% 목표)"
+  },
+
+  "emergency_transition_week_1_rev6": {
+    "from_current_pg2": "STR_1631 80% + STR_1679v2 20%",
+    "to_week_1_target": {
+      "STR_1631": 0.40,
+      "STR_1656": 0.15,
+      "STR_1679v2": 0.00,
+      "H_1676": 0.08,
+      "H_1682": 0.20,
+      "H_1685": 0.10,
+      "H_1689": 0.05,
+      "reserve_h_1688": 0.02
+    },
+    "transition_steps_day_by_day": [
+      "Day 1: STR_1631 80% → 55% + STR_1656 0 → 15%",
+      "Day 2: STR_1679v2 20% → 5% (급하락 완화)",
+      "Day 3: STR_1679v2 5% → 0% (완전 제거)",
+      "Day 4~5: H_1682 0 → 20% + H_1676 0 → 8% (Forge S1 완료 필수)",
+      "Day 6~7: H_1685 0 → 10% + H_1689 0 → 5% + STR_1631 55% → 40%",
+      "Week 1 말: Portfolio TDC 재측정 (Risk Mgr 3rd round)"
+    ],
+    "forge_blocker_status": "해소 완료 (forge_code_guard.sh OPT-10 Q-Lead 수정)",
+    "risk_mgr_3rd_round_trigger": "Week 1 말 재스폰 요청 — rev6 적용 후 4축 재검증"
+  },
+
+  "str_1071_str_1562_phase_3_plus_plan_unchanged": {
+    "note": "rev5_supplement v5.1 sequential admission rule 유지",
+    "str_1071_phase_3_plus": "10% admit (Week 24+)",
+    "str_1562_phase_4_contingent": "residualize 후 5% admit 조건부"
+  },
+
+  "pg1_admission_rule_v3_3_structural_diagnosis": {
+    "new_gate_addition_v3_3": {
+      "gate_9_structural_tdc_diagnosis": {
+        "description": "Risk Mgr validation 3 FAIL 이상 지속 시 weight-level rebalance 대신 strategy-level DROP 검토 의무",
+        "trigger": "동일 validation round 2회 연속 TDC structural unchanged + CVaR 악화",
+        "action": "Governor가 strategy-level remediation plan 발행 (weight 재조정이 아닌 전략 제거/교체)",
+        "application_example": "STR_1679v2 rev5→rev5_v1_1→rev6 전환이 첫 사례"
+      }
+    },
+    "existing_gates_1_8_unchanged": "Gate 1~5 (v3.0) + Gate 6/7 (v3.1) + Gate 8 (v3.2 retroactive audit)"
+  },
+
+  "cvar_cdar_structural_solutions_codified": {
+    "solution_1_korean_equity_high_kurtosis": {
+      "problem": "Kurtosis 5.32 + negative skew -0.52 → CVaR tail 극단값",
+      "solution": "Defense 35% (tail-aware strategies). H_1689 quality_4axis는 Altman Z + Ohlson O distress hedge 포함.",
+      "expected_cvar_improvement": "-27.12% → -15~-17% (rev6 Defense boost 효과)"
+    },
+    "solution_2_str_1656_dominant_cdar": {
+      "problem": "STR_1656 MDD 74.84% × weight 12% = 8.98pp CDaR contribution",
+      "solution_phase_2": "STR_1661 V2 (ICIR 1.029, 예상 MDD 40~50%) 교체 가속",
+      "solution_interim": "STR_1656 18% → 14% 축소 (-4pp) + 교체 완성까지 보유",
+      "expected_cdar_improvement": "23.13% → 19~21%"
+    },
+    "solution_3_str_1679v2_structural_tdc": {
+      "problem": "STR_1679v2 Core15 signal base = STR_1631 consensus → daily Pearson 0.879, TDC 0.6298",
+      "solution": "완전 DROP (rev6)",
+      "expected_tdc_improvement": "0.7349 → 0.391 (H_1676 Option A 기준 max), STR_1679v2 제거 시 pair 자체 소멸"
+    }
+  },
+
+  "governor_open_questions_r17_r19_self_answers_plus_new": {
+    "R17_str_1679v2_drop_self_answer": "APPROVED (Option A1) — Q-Lead 권고 + Risk Mgr 2nd 증거 전수 수용",
+    "R18_str_1656_14pct_self_answer": "APPROVED — CDaR dominant contributor 해결",
+    "R19_sr_target_1_80_self_answer": "APPROVED — Risk-adjusted quality 우선, aspirational 2.0은 boost 4건 완료 시 Phase_4+",
+    "R25_new_str_1679v3_disposition": "STR_1679v3 Slot A (H_1682 교체) 완성 시 STR_1679v2 대체 편입 고려 — Week 3~4 재평가",
+    "R26_new_h_1689_phase_1_acceleration": "H_1689 Quality 4-Axis Phase_1 5% 편입 (Scout handoff kit 완성 전제). 또는 Phase_2 지연?",
+    "R27_new_str_1661_v2_replacement_timeline": "Phase_2 가속 구체 시점 — Week 6 (S5 완료 즉시) vs Week 8~10 (추가 검증)?"
+  },
+
+  "risk_manager_3rd_round_validation_request": {
+    "trigger": "rev6 채택 확정 시 (R17~R19 수용 확인)",
+    "scope": "CVaR_95 / CDaR_95 / TDC max / Q25 재검증 (4축)",
+    "expected_improvements": {
+      "cvar_95": "-27.12% → -15~-17% (Defense 35% 효과)",
+      "cdar_95": "23.13% → 19~21% (STR_1656 축소 + H_1682 20% 효과)",
+      "tdc_max": "0.7349 → **0.391** (STR_1679v2 제거 + H_1676 Option A)",
+      "q25": "12.95% → 16.45% (여전히 PASS)"
+    },
+    "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev6.json"
+  },
+
+  "rev2_to_rev6_evolution_summary": {
+    "rev2": {"design": "Hybrid Z3+H_1683", "sr_rho_0_2": 1.95, "status": "infeasible"},
+    "rev3": {"design": "Hybrid Z3+H_1688 Dual-Core", "sr_rho_0_2": 2.06, "status": "INFEASIBLE (Judge 0/3)"},
+    "rev4": {"design": "Scenario_Y 7-strategy", "sr_rho_0_2": 1.95, "status": "superseded"},
+    "rev4_supplement_v1_0": {"design": "+STR_1679v2 Role=MSCD + Q25 cap", "sr_rho_0_2": 2.01, "status": "role 오분류"},
+    "rev4_supplement_v1_1": {"design": "STR_1679v2 → diversifier_with_overlay", "sr_rho_0_2": 2.01, "status": "TDC 미측정"},
+    "rev5": {"design": "Risk rebalance + SR conservative 1.82", "sr_rho_0_3": 1.82, "status": "Risk Mgr 2nd 1/4 PASS"},
+    "rev5_v1_1_emergency": {"design": "STR_1679v2 → 5%", "sr_rho_0_3": 1.79, "status": "structural breach 지속"},
+    "**rev6_structural**": {"design": "**STR_1679v2 DROP + STR_1656 축소 + Defense 35%**", "sr_rho_0_3": 1.75, "sr_with_boost": 2.00, "status": "PENDING Risk Mgr 3rd"}
+  },
+
+  "artifacts_rev6": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev6.json (현 파일)",
+    "supersedes: PG0_PLAN_rev5_v1_1_emergency.json",
+    "parent chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1 → **rev6**"
+  ],
+
+  "executive_summary_rev6": {
+    "structural_response_3": [
+      "1. STR_1679v2 complete DROP (0%) — structural TDC breach 원천",
+      "2. STR_1656 18% → 14% 축소 — CDaR dominant contributor",
+      "3. Defense 27% → 35% 증대 (H_1682 20% + H_1689 15%) — CVaR structural"
+    ],
+    "projected_sr_primary_rho_0_3": 1.75,
+    "sr_target_rebased": "realistic 1.80 / aspirational 2.0 (boost 4건 완료 시)",
+    "new_rules_v3_3": "Gate 9 structural diagnosis (2회 연속 FAIL 시 strategy-level DROP)",
+    "next_steps": [
+      "1. R17~R19 Q-Lead 확정 (Governor self-approved all)",
+      "2. Emergency transition Week 1 day-by-day 실행",
+      "3. Risk Mgr 3rd round 재스폰 (rev6 적용 후)",
+      "4. Phase_1 PG1 Admission 초안 (rev6 + Risk Mgr 3rd PASS 후)"
+    ]
+  }
+}

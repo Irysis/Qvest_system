@@ -1,0 +1,80 @@
+{
+  "artifact_type": "AX_ACTIVE_LEDGER",
+  "ax_id": "AX-008",
+  "title": "Verification Process Triangulation Mandate — 3-source 검증 의무화 Active Ledger",
+  "status": "ACTIVE",
+  "governor_agent_id": "governor",
+  "session": 68,
+  "created_at": "2026-04-19",
+
+  "canonical_path": {
+    "primary": ".cache/axiom_core.json (단일 원본 — AX-007과 동일 경로)",
+    "claude_md": "CLAUDE.md AX-008 섹션 (line ~368)",
+    "this_ledger": "stage_artifacts/ax_active_ledger_ax008_verification_triangulation_mandate.json",
+    "note": "qepm/memory/axioms/active/ 디렉토리 없음 확인 (2026-04-19). .cache/axiom_core.json 단일 canonical 경로 유지."
+  },
+
+  "ax008_record": {
+    "id": "AX-008",
+    "name": "Verification Process Triangulation Mandate (3-source 검증 의무)",
+    "grade": "EMPIRICAL",
+    "level": 0,
+    "text": "KR quant 연구에서 Forge self-check 단독 verification은 PIT/mandate/infra violation 탐지에 insufficient. 3-source verification 의무화: (1) Forge self-check, (2) Codex cross-model rescue, (3) Architect infra audit. 최소 2-source PASS + Layer A/B cross-check 시에만 admission.",
+    "scope": {
+      "market": "KR",
+      "layer": "verification_process_B",
+      "applies_to_all_strategies": true
+    },
+    "five_axis_score": {
+      "I": 0.78, "R": 1.00, "F": 0.85, "E": 0.72, "M": 0.88, "total": 0.846
+    },
+    "supporting_l_codes": [
+      {
+        "l_code": "L-159",
+        "signature": "STR_1682 spec transmission failure — Q-Lead→Forge handoff 체인 단절, Forge self-check 미탐지",
+        "role": "INITIATOR"
+      },
+      {
+        "l_code": "L-167",
+        "signature": "Forge self-check insufficient + Codex cross-model rescue mandatory — 4건 PIT 위반 Codex만 발견",
+        "role": "2ND_MEMBER"
+      },
+      {
+        "l_code": "L-168",
+        "signature": "factor_db_connector.R align_factor_direction() full-sample Mean_IC C01/C07/C14 위반 — infra-level PIT, 3-source 실패 공통 signature",
+        "role": "3RD_MEMBER_CROSS_LAYER"
+      }
+    ],
+    "two_layer_taxonomy": {
+      "layer_a_infrastructure": ["L-161 (Factor DB Z_Score)", "L-162 (linear dominance)", "L-164 (load_month_factors)", "L-168 (align_factor_direction — primary)"],
+      "layer_b_verification_process": ["L-159 (spec transmission — primary)", "L-167 (self-check — primary)", "L-168 (cross-evidence only)"],
+      "dual_count_rule": "L-168은 Layer A primary / Layer B cross-evidence. 5축 계산 시 Layer A 귀속 1회만 산입. Judge advisory cleanup 2026-04-19 반영."
+    },
+    "enforcement": {
+      "gate0": "Codex cross-model rescue 필수 (S0→S1 진입 조건)",
+      "architect_audit": "infra 경유 전략: Architect infra audit 권고",
+      "threshold": "2-source PASS 미달 → CONDITIONAL_HOLD",
+      "applies_to": ["Forge", "Judge", "Architect", "Q-Lead"]
+    }
+  },
+
+  "promotion_record": {
+    "promoted_by": "Judge (custodian APPROVED) + Governor (Task #14)",
+    "promoted_at": "2026-04-19",
+    "promotion_triggers": [
+      "L-168 3rd member 등재 완료 (3/3 supporting L-codes)",
+      "5축 점수 0.846 (EMPIRICAL threshold 초과)",
+      "Judge Gate 14 enforcement 설계 완료"
+    ],
+    "next_review": "2026-07-19"
+  },
+
+  "ax007_relationship": {
+    "ax007_id": "AX-007",
+    "ax007_ledger": "stage_artifacts/ax_promotion_packet_ax007_signal_portfolio_translation_failure.json",
+    "relationship": "AX-007(Layer A: signal-portfolio translation failure) + AX-008(Layer B: verification process failure). L-168은 양쪽 모두의 근거 L-code. 독립적 공리, 보완 관계.",
+    "canonical_path_consistency": "동일 — .cache/axiom_core.json"
+  },
+
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true"
+}

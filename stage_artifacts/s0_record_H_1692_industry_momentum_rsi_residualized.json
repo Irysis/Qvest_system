@@ -1,0 +1,256 @@
+{
+  "hypothesis_id": "H_1692",
+  "factor_id": "H_1692_IndMom_RSI_Residualized_Core_Secondary",
+  "name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "created": "2026-04-18",
+  "created_by": "Scout",
+  "designer": "Scout",
+  "pathway": "B (직관→논문, Governor rev8-A Core_Secondary 공백 대응)",
+  "bucket": "explore",
+  "trigger": "Governor rev8-A ACTIVE + H_1688 DROP (STR_1684 Grade F MDD 86.7% ICIR -0.1874 CAPM beta 1.0007) → Core_Secondary 16pp (Reserve 9 + Unallocated 16) 공백. Week 2~3 신규 Core_Secondary 가설 탐색 요청.",
+
+  "governor_request_reflected": {
+    "slot_target": "Core_Secondary (16pp 공백)",
+    "avoid_pattern": [
+      "L-161 residualization 실패 패턴 (Factor DB Z-score 정규화 왜곡)",
+      "CAPM beta 1.0007 함정 (실질 잔차 없는 peudo-residualization)",
+      "Carhart 4-factor standard residualization (관습적, 모든 Core_Secondary 사용)"
+    ],
+    "governor_direction_kr_specific": [
+      "KOSPI/KOSDAQ spread",
+      "sector momentum (M07_IndMom, M24_Sector_Rel_Mom)",
+      "investor flow regime",
+      "한국 특수 factor activation"
+    ]
+  },
+
+  "hypothesis_summary": {
+    "name": "Sector-Relative Industry Momentum Residualized on RSI",
+    "family": "industry_momentum_residual",
+    "sub_family": "sector_relative_rsi_orthogonalized",
+    "expected_role": "Core_Secondary",
+    "mechanism": "매월 t 시점: (1) M07_IndMom cross-section winsorize 1~99%, (2) M18_RSI cross-section winsorize, (3) Monthly cross-section OLS: lm(M07 ~ M18). (4) residual = M07 - β_t·RSI (overbought/oversold 효과 제거된 순수 industry momentum), (5) 잔차 → cross-section Z-score, (6) Top 20 EW Long, monthly t+1. S1 pure signal, NO overlay.",
+    "why_now": "H_1688 Carhart 4-factor residualization 실패 (Factor DB Z-score 정규화 왜곡 + CAPM beta 1.0 함정) 이후 Core_Secondary 16pp 공백. **M07_IndMom Factor DB sd=1.000 proper normalization 확인** (L-161 distortion 회피). Grinblatt-Moskowitz 1999 industry momentum + Wilder 1978 RSI orthogonal combination은 **한국시장 섹터 rotation + short-term reversal 필터링** 메커니즘. KR 특수: 섹터 순환 주기가 짧고 개인 투자자 비중 55%로 RSI overbought/oversold 효과 강함.",
+    "core_reference": "Grinblatt-Moskowitz 1999 JFE + Wilder 1978 RSI + Lee-Swaminathan 2000 JF (trading volume+momentum) + 한국 박영석-정재만 2017 재무관리연구 (산업 모멘텀 한국 실증)"
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Grinblatt, Mark and Tobias J. Moskowitz, 1999, 'Do Industries Explain Momentum?', Journal of Finance 54(4), 1249-1290.",
+    "secondary_references": [
+      "Moskowitz, Tobias J. and Mark Grinblatt, 1999, 'Do Industries Explain Momentum?', JF 54, 1249-1290 (industry momentum foundational)",
+      "Wilder, J. Welles, 1978, 'New Concepts in Technical Trading Systems' (RSI foundational)",
+      "Lee, Charles M.C. and Bhaskaran Swaminathan, 2000, 'Price Momentum and Trading Volume', Journal of Finance 55, 2017-2069 (momentum + volume interaction)",
+      "박영석·정재만 2017 '한국 주식시장의 산업 모멘텀 효과', 재무관리연구 (한국 실증, direct cite 확인 필요)",
+      "Asness, Moskowitz, Pedersen 2013 JF (multi-factor framework)"
+    ],
+    "mechanism_academic": "Grinblatt-Moskowitz 1999: industry momentum explains ~50% of price momentum. 섹터 단위 정보 흐름이 개별 종목 momentum 주도. Wilder 1978 RSI: 14-day RSI > 70 overbought, < 30 oversold. Lee-Swaminathan 2000: high-volume momentum stocks 미래 수익률 낮음 (reversal). Combined: **industry momentum 상위 종목 중 RSI overbought 종목 제외** → pure sector rotation alpha.",
+    "korean_specific": "한국 섹터 rotation 주기 6~9개월 (박영석 2017), 개인 투자자 55% 비중으로 RSI 효과 강력. 2022년 2차 전지, 2023년 반도체, 2024년 AI/바이오 등 섹터 단위 급격 rotation 관찰. RSI overbought 종목 제외 시 rotation 초기 진입 가능.",
+    "mechanism_distinctive_from_H_1688": [
+      "H_1688 (DROP): M01_Mom_12_1 (sd=0.66 distorted) residualized on CAPM beta + Size + R12_IdioVol. Factor DB Z-score 정규화 왜곡 → CAPM beta 1.0007 함정 (잔차 = M01 signed-flip).",
+      "H_1692 (신규): M07_IndMom (sd=1.000 proper) residualized on M18_RSI (sd=1.000 proper). **L-161 distortion 회피**. Carhart 4-factor 대신 KR-specific sector rotation channel."
+    ]
+  },
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "IndMom_RSI_Residualized",
+      "registry_id_new": "HYB01_IndMom_RSI_Resid",
+      "formula": "residual_t(i) = z_M07_t(i) - β_t × z_M18_t(i), where β_t = expanding-window pooled OLS (shift 1L strict, burn-in 36m)",
+      "components": [
+        {
+          "name": "z_IndMom_M07",
+          "formula": "cross-sectional Z-score of M07_IndMom at month t (Factor DB sd=1.000 proper)",
+          "factor_db_status": "EXISTS (Factor DB 실측 sd=1.000 PASS)",
+          "direction": "higher_better (registry)"
+        },
+        {
+          "name": "z_RSI_M18",
+          "formula": "cross-sectional Z-score of M18_RSI at month t (Factor DB sd=1.000 proper)",
+          "factor_db_status": "EXISTS (Factor DB 실측 sd=1.000 PASS)",
+          "direction": "higher_better (registry, 단 overbought = 높은 값 = negative alpha source)",
+          "note": "RSI는 mean-reversion signal — residualization regressor로 사용 시 RSI 양의 잔차는 'IndMom은 강하지만 RSI overbought 아님' → clean rotation opportunity"
+        },
+        {
+          "name": "beta_t_expanding",
+          "formula": "β_t = Σ_{s≤t-1} Σ_i z_M07_{s,i}·z_M18_{s,i} / Σ_{s≤t-1} Σ_i z_M18_{s,i}². pooled no-intercept OLS. shift(1L) strict lag (C1). burn-in 36 months.",
+          "expected_range": "0.05~0.20 (IndMom vs RSI 상관 낮음, clean residualization 기대)"
+        }
+      ],
+      "winsorization": "1~99% per factor before residualization",
+      "residualization_pseudocode": "매월 t: lm(z_M07 ~ z_M18). residual 추출. cross-section Z-score. Top 20 EW.",
+      "data_access": "load_month_factors() 경유 (C15)",
+      "pit_note": "t월 말 snapshot, t+1 실행 (C2). expanding β burn-in 36m (C1 strict)."
+    },
+    "portfolio_config": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+      "rebalance": "Monthly t+1",
+      "overlay": "NONE (S0/S1 pure signal, L0 rule)"
+    }
+  },
+
+  "l161_distortion_avoidance_check": {
+    "_note": "L-161 (Factor DB Z-score 정규화 불일치) 회피 설계 실증",
+    "base_factor_sd_verified": {
+      "M07_IndMom": {"sd": 1.000, "status": "proper_z_score"},
+      "M18_RSI": {"sd": 1.000, "status": "proper_z_score"}
+    },
+    "ols_scale_balance": "M07 (sd=1.0) vs M18 (sd=1.0) — balanced regression, scale mismatch 없음",
+    "pre_standardize_recommendation": "추가 안전장치로 Forge S1 시 scale(z_M07) ~ scale(z_M18) 적용 권고",
+    "r12_d01_duplicate_avoidance": "R12/D01 미사용 — L-161 B2 bug 무관",
+    "verdict": "PASS — L-161 distortion 3종 (normalization/duplicate/scale) 전수 회피"
+  },
+
+  "capm_beta_1_0_trap_avoidance": {
+    "_note": "H_1688 CAPM beta 1.0007 함정 회피 확인",
+    "h_1688_failure_mode": "M01 residualization이 CAPM beta 직접 제거 목적이나 실측 portfolio beta 1.0007 → 잔차화 무효",
+    "h_1692_design_difference": "H_1692는 RSI residualization으로 mean-reversion noise 제거 목적. CAPM beta 제거 목표 아님. portfolio beta는 M07 industry momentum의 구조적 특성 (KR 1.0~1.1 예상)으로 자연스럽게 Core_Secondary 역할에 부합",
+    "expected_portfolio_beta": "0.95~1.10 (industry momentum intrinsic)",
+    "interpretation": "Core_Secondary는 beta-neutrality 요구 없음. Core 성격이므로 BM correlation 0.7+ 허용. H_1688과 달리 residualization 목표가 다름 → CAPM beta 함정 아님",
+    "verdict": "NOT_A_CAPM_RESIDUALIZATION_STRATEGY — CAPM beta 1.0 문제 구조적 비발생"
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.25~0.40 (Core_Secondary 목표, M07 standalone ICIR 약 0.20~0.30 + RSI residualization으로 10~30% uplift 예상)",
+    "sr_forecast": "0.80~1.10 standalone (Core_Secondary는 beta-accepting, Sharpe 자연스러운 범위)",
+    "cagr_forecast": "12~18%",
+    "mdd_forecast": "35~50% (Core_Secondary 허용 범위, overlay 없는 pure signal)",
+    "portfolio_beta_forecast": "0.95~1.10 (industry momentum intrinsic)",
+    "bm_corr_forecast": "0.70~0.85 (Core_Secondary)",
+    "harvey_t_expected": "3.0~4.5 (pure signal)",
+    "scout_calibration_v4_score_prediction": {
+      "raw_range": "[58, 72]",
+      "calibrated_v4_range": "[52, 66]",
+      "per_debater_v4": {
+        "codex_critic": [7, 10],
+        "risk_manager": [10, 13],
+        "governor": [13, 16],
+        "quant": [11, 14],
+        "academic": [13, 16]
+      },
+      "verdict_projection": "APPROVE_CONDITIONAL (60-74) 하한 또는 REVISE (40-59) 차단선",
+      "most_uncertain": "Codex (novelty vs H_1688 precedent 경계), Risk (industry momentum beta 1.0+)"
+    }
+  },
+
+  "lesson_check": [
+    {"lcode": "L-090", "summary": "M01 IC 반감기 693M stable — momentum signal 지속성", "compliance": "AWARE (M07 industry 계열, M01과 유사 지속성 예상)"},
+    {"lcode": "L-119", "summary": "정적 EW 블렌드 alpha 희석", "compliance": "PASS — 단일 residual signal"},
+    {"lcode": "L-122", "summary": "factor timing vs risk management — Barroso 2015", "compliance": "AWARE — S5 mutation에서 overlay 재도입"},
+    {"lcode": "L-125", "summary": "IC ≠ SR", "compliance": "AWARE — ICIR 0.25~0.40 예상 + SR 0.80~1.10 예상 일치"},
+    {"lcode": "L-148", "summary": "Grade A != PIT clean", "compliance": "DIRECT_FIX — C1~C15 수동 검증"},
+    {"lcode": "L-156_v2", "summary": "TDC Gate 8 ≤0.4", "compliance": "DIRECT_AWARE — S3 vs STR_1631 + STR_1679v3 + STR_1656 측정"},
+    {"lcode": "L-157_v4", "summary": "Scout Calibration v4 draft", "compliance": "APPLIED — raw [58,72] → calibrated [52,66]"},
+    {"lcode": "L-161", "summary": "Factor DB Z-score 정규화 불일치 + OLS scale mismatch (H_1688 진단 Scout 제안)", "compliance": "DIRECT_FIX — M07/M18 proper sd=1.0 base factor 선택 + scale() 안전장치 권고"}
+  ],
+
+  "risks": [
+    "위험 1 — Industry momentum beta 1.0+ natural: Core_Secondary이나 BM correlation 0.7+ 자연스러운 범위. Risk Manager 'Core alpha beta 과도' 지적 대비 필요.",
+    "위험 2 — RSI residualization β_t 낮을 가능성: M07 vs M18 상관 낮으면 잔차 = M07 원본 근접. 이 경우 H_1692 = M07 standalone과 거의 동일.",
+    "위험 3 — Grinblatt-Moskowitz 1999 이후 27년 post-publication decay: Chordia-Shivakumar 2002 이후 industry momentum OOS decay 보고. 한국 박영석 2017 실증 rely 필요.",
+    "위험 4 — STR_1661 V2 (ML XGB_GPU) 대비 marginal contribution 약함: V2 ICIR 1.029가 H_1692 예상 0.25~0.40보다 압도적. Core_Secondary 자격은 ICIR 절대값보다 orthogonal diversity",
+    "위험 5 — M24_Sector_Rel_Mom 대안 고려 필요: M07(sd 1.000)과 M24(sd 0.628) 중 M07 선택이나 M24가 sector rotation 더 직접적일 가능성",
+    "위험 6 — KR 한국 실증 cite 약함 — 박영석 2017 direct access 미확인",
+    "위험 7 — ICIR 0.25~0.40 예상은 Alpha Lab Gate 0.20 PASS이나 M07 standalone ICIR 정확 측정 필요 (Scout S2 profile 대기)",
+    "위험 8 — L-161 distortion 회피 설계이나 S1 Forge 실행 시 validate_factor_sd() 사전 호출 권고"
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR >= 0.20 (residual composite)",
+    "pit_gate": "C1~C15 전수 + L-161 distortion 회피 check (M07/M18 sd=1.0 verified)",
+    "portfolio_gate": "MDD < 50% (Core_Secondary 허용)",
+    "harvey_gate": "t > 3.0",
+    "sr_gate": "SR >= 0.80 (Core_Secondary 하한)"
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": [
+      "STR_1631_SYN_05 (PG2 anchor, consensus) — expected TDC 0.25~0.40",
+      "STR_1656_MLRA_M05 (PG2 diversifier, ML) — expected TDC 0.30~0.45",
+      "STR_1679v3 (Phase_1 defense) — expected TDC 0.20~0.35",
+      "STR_1661_V2 (Core_Secondary candidate, ML) — expected TDC 0.35~0.55 (ML ↔ technical overlap)",
+      "H_1685_v2 (Phase_2 diversifier) — expected TDC 0.10~0.20"
+    ],
+    "orthogonality_gate": "portfolio-level rho ≤ 0.4 (diversifier gate), ≤ 0.55 (Core_Secondary gate 완화)",
+    "novelty_score_expected": "0.60~0.80 (industry momentum residual sub-family 신규)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutations": [
+      "Slot A (Primary): H_1692 baseline V1 + DD 8/22 overlay",
+      "Slot B: M07 residualized on M11_ST_Reversal (대안 reversal factor)",
+      "Slot C: M24_Sector_Rel_Mom residualized on M18 (sector direct)",
+      "Slot D: Regime-conditional RSI threshold (MRS<30 RSI 70 cut, MRS≥30 RSI 50 cut)"
+    ]
+  },
+
+  "soft_prior_recommendations_for_governor": {
+    "_note": "Soft Prior 업데이트 권고 (Scout → Governor transmission)",
+    "add_to_avoid": [
+      {
+        "family": "momentum_residual_carhart4",
+        "status": "failed",
+        "evidence": "STR_1684 H_1688 Grade F + L-161 Factor DB Z-score distortion",
+        "lesson": "Carhart 4-factor CAPM+Size+IdioVol residualization on M01_Mom_12_1 (sd 0.66 distorted) → CAPM beta 1.0007 pseudo-residualization + ICIR -0.187"
+      }
+    ],
+    "add_to_approved": [
+      {
+        "family": "investor_flow_residual",
+        "status": "approved_conditional",
+        "evidence": "H_1685_v2 APPROVE_CONDITIONAL 61/100",
+        "lesson": "Foreign flow residualized on Individual flow. expanding OLS + channel preservation 0.895 + mean|corr| 0.194"
+      }
+    ],
+    "add_to_candidate": [
+      {
+        "family": "industry_momentum_residual_kr_rsi",
+        "status": "proposed",
+        "evidence": "H_1692 Scout 제안 — M07(sd=1.0) residualized on M18(sd=1.0)",
+        "rationale": "L-161 distortion 회피 + KR 섹터 rotation + RSI mean-reversion filter"
+      }
+    ]
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "M07/M18 기등록. HYB01 신규 registry entry 필요 (Forge S1 전).",
+    "s0_record_duplicate_check": "H_1688 DROP 확정. H_1692는 완전 다른 residualization (RSI vs Carhart). Duplicate 없음.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED"
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_001": "N/A (Core_Secondary)",
+    "AX_002": "PASS",
+    "AX_003": "PASS (value 무관)",
+    "AX_004": "PASS (quality 무관)",
+    "AX_005": "PASS (BAB 무관)"
+  },
+
+  "scout_notes": [
+    "Governor rev8-A ACTIVE 직후 Core_Secondary 공백 (16pp) 대응 Scout 즉시 설계.",
+    "H_1688 L-161 distortion 교훈 전면 반영 — M07/M18 sd=1.0 proper 검증 완료.",
+    "Carhart 4-factor residualization 관습 회피 — KR 특수 RSI residualization 채택.",
+    "CAPM beta 1.0007 함정은 CAPM residualization 시도 시 발생. H_1692는 RSI residualization으로 구조적 회피.",
+    "M07 standalone ICIR 정확 측정 후 S1 실행. Scout S2 profile S1 완료 후 측정 가능.",
+    "families.json 파일 부재 확인 — Soft Prior 업데이트 권고는 Governor에 전달 (파일 직접 수정 불가).",
+    "Task #18 H_1687 (distress-momentum)는 H_1688 fix 의존이나, H_1692가 Core_Secondary 대체 후보로 H_1687 보류 유지.",
+    "Scout Calibration v4 draft 적용: predicted [52, 66] midpoint 59 (REVISE boundary or APPROVE_CONDITIONAL 하한)."
+  ],
+
+  "handoff_status": {
+    "s0_record_v1_complete": true,
+    "factor_db_verification_pass": true,
+    "l161_distortion_avoidance_verified": true,
+    "capm_beta_trap_avoidance_verified": true,
+    "soft_prior_recommendations_documented": true,
+    "ready_for_handoff_kit_v1": true,
+    "ready_for_qlead_r1_debate_spawn_pending_handoff_kit": "NEXT_STEP"
+  }
+}

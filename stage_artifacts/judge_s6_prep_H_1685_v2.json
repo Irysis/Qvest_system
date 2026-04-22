@@ -1,0 +1,211 @@
+{
+  "hypothesis_id": "H_1685_v2",
+  "strategy_id_planned": "STR_1686",
+  "hypothesis_name": "Foreign Flow Residualized on Individual Flow (Diversifier)",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-18 Session 67 Day 1",
+  "purpose": "H_1685 v2 APPROVE_CONDITIONAL 61 Forge S1 완료 후 Judge S6 진입 시 즉시 적용할 체크리스트",
+  "status": "PRE_S6_CHECKLIST_READY",
+  "s0_verdict_source": "stage_artifacts/S0_VERDICT_H_1685_v2.json (14:45 Session 67 Day 1)",
+
+  "executive_summary_for_s6": {
+    "s0_total_score": 61,
+    "verdict": "APPROVE_CONDITIONAL",
+    "priority": "P1 (H_1688/H_1690 PG1 admission 후 순차)",
+    "critical_risks_from_s0": [
+      "Quant R2: β_t = -0.36 음수 구조 (residual = z_F + 0.36*z_I 가중합)",
+      "Risk_mgr R2: 2020-2026 mean |corr| 0.2437 (gate <0.20 FAIL)",
+      "Codex REJECT 8점 유지 (crisis-regime TDC + PIT timestamp + impl fragility 3중)",
+      "p95 |corr| 0.4469 극단 월 13건 tail dependence (L-156 v2 TDC 0.4 breach)",
+      "21d lookback 회전율 Hard Fail >80% 확률"
+    ],
+    "codex_final_position": "REJECT 8 (r1 7 → r2 8, +1 rebuttals 수용)",
+    "barroso_mandatory": "NOT_APPLICABLE (momentum 아닌 flow residualization)",
+    "scope": "Diversifier (NOT Core, NOT Defense)"
+  },
+
+  "judge_gate_0_5_existing_checks": {
+    "gate_0_pit_C11_critical": {
+      "focus": "C11 거래주체 T+1 timing (Scout condition C3)",
+      "verification_method": "lookahead_detector.R 실행 + compute_investor.R Usable_Date 로직 검증 + Codex Gate-15 variance_ratio",
+      "expected_artifact": "detect_lookahead(run_all_path) CLEAN + INV13 5-pattern 등록 확인"
+    },
+    "gate_1_impl": {
+      "focus": "종목 20 + 15bps + 유동성. 21d vs 63d/126d lookback sensitivity",
+      "verification_method": "analysis_rolling.csv + output/variant_comparison.csv (3 lookbacks 병렬)",
+      "expected_artifact": "21d turnover >500% 시 FAIL, 63d/126d 중 1개 이상 <500% PASS 필수"
+    },
+    "gate_2_robustness": {
+      "focus": "stress outperform + worst 6M + 7 consecutive negative alpha",
+      "verification_method": "8대 stress 구간 분석 + rolling 6M/12M hit rate",
+      "expected_artifact": "stress 2/3+ outperform + rolling_12m_hit >= 55%"
+    },
+    "gate_3_perf": {
+      "focus": "SR / CAGR / MDD (Diversifier 기준 SR >= 0.6 + MDD <= 45%)",
+      "verification_method": "hurdle_result.json grade + Diversifier 역할 달성 여부",
+      "expected_artifact": "Grade A_NOVEL 허용 (SR 0.6 + CAGR 12%). Hard_fail MDD 45% 초과 금지"
+    },
+    "gate_4_stat": {
+      "focus": "FMB Harvey t > 3.0 (Scout condition C9)",
+      "verification_method": "FMB 외국인 residual t-stat (개인 + 기관 + M01_Rev1M 통제)",
+      "expected_artifact": "analysis_fmb.csv NW t-stat > 3.0. DSR 계산 시 n_trials 명시"
+    },
+    "gate_5_diversity_max_corr": {
+      "focus": "Diversifier max_abs_corr < 0.5 (existing Grade A 전략 대비)",
+      "verification_method": "strategy_analyzer.R correlation matrix. STR_1631 / STR_1656 / PG1 candidates 대비",
+      "expected_artifact": "max |corr| < 0.5 Diversifier 기준 PASS"
+    }
+  },
+
+  "judge_v3_4_gates_6_10": {
+    "gate_6_family_saturation": {
+      "focus": "investor_flow family saturation (H_1685 최초 — saturation 없음)",
+      "expected_verdict": "PASS (empty family)"
+    },
+    "gate_7_role_honesty": {
+      "focus": "provisional_role=Diversifier. max_abs_corr < 0.5 + crisis 기여도 분석",
+      "verification_method": "Core 위장 탐지 (corr > 0.7 → Core 의심 X) + Defense 위장 탐지 (crisis MDD > market → Defense 의심 X)",
+      "expected_artifact": "Diversifier 역할 확정 (S2 IC 성분 분해표 C5 요구사항 충족 시)"
+    },
+    "gate_8_pairwise_tdc_CRITICAL": {
+      "focus": "Scout C7/C8 regime-conditional TDC 이중 관문",
+      "thresholds": {
+        "전체_TDC": "<= 0.40",
+        "CRISIS_TDC": "<= 0.55"
+      },
+      "measurement_pairs": [
+        "H_1685v2 ↔ H_1674 (zero-sum 계보 origin)",
+        "H_1685v2 ↔ STR_1631 (PG2 anchor Core)",
+        "H_1685v2 ↔ STR_1656 (ML Div)",
+        "H_1685v2 ↔ H_1688 (Core_Secondary residual momentum)",
+        "H_1685v2 ↔ H_1689 (Defense quality)",
+        "H_1685v2 ↔ STR_1679v3 (multi-sleeve embedded)"
+      ],
+      "expected_artifact": "judge_pg1_candidates_tdc_matrix_H_1685v2.json. p95 |corr| 0.4469 확정 시 Gate 8 CONDITIONAL 분기"
+    },
+    "gate_9_structural_diagnosis": {
+      "focus": "1st S6 → pass. 2회 연속 FAIL 시 structural DROP (선제 대비)"
+    },
+    "gate_10_consensus_tier": {
+      "focus": "Tier 4 other_channels (investor_flow family) admission",
+      "expected_verdict": "Tier 4 within 10% cap"
+    }
+  },
+
+  "judge_v3_5_gates_11_12_proposed": {
+    "gate_11_variant_comparison": {
+      "status": "recommended_not_mandatory (Diversifier, Core_Secondary가 아닌 평가)",
+      "focus": "21d / 63d / 126d 3-lookback sensitivity (Scout C4 요구사항)",
+      "expected_artifact": "output/variant_comparison.csv 3 rows + primary >= worst sub-variant"
+    },
+    "gate_12_ic_return_coupling_ratio": {
+      "status": "advisory_for_diversifier (mandatory는 Defense family 한정)",
+      "focus": "SR_monthly / ICIR_full_sample >= 0.3 (Diversifier 기준 완화 가능)",
+      "expected_calculation": "analysis_report.md IC + hurdle_result.json Sharpe_m 조합"
+    }
+  },
+
+  "scout_conditions_C1_C12_enforcement_matrix": {
+    "C1_INV13_registry": {
+      "owner": "Forge",
+      "judge_verification": "compute_investor.R 존재 + expanding β + burn-in 60m 구현 + load_month_factors 경유 확인"
+    },
+    "C2_lookahead_5_patterns": {
+      "owner": "Forge",
+      "judge_verification": "lookahead_detector.R C1/C2/C11/burn-in/C13 5종 INV13 rule 등록 확인"
+    },
+    "C3_C11_T1_precheck": {
+      "owner": "Forge",
+      "judge_verification": "compute_investor.R Usable_Date 로직 (거래주체 T+1 lag) + test case 확인"
+    },
+    "C4_3_lookback_sensitivity": {
+      "owner": "Forge",
+      "judge_verification": "21d baseline + 63d + 126d 3 variants 실행 + variant_comparison.csv 확인. Gate 11 연계"
+    },
+    "C5_IC_decomposition": {
+      "owner": "Forge S2 reporting",
+      "judge_verification": "analysis_ic.csv 또는 별도 파일에 IC_z_F / IC_z_I / IC_residual / ICIR + β_t 시계열 plot"
+    },
+    "C6_three_period_ICIR": {
+      "owner": "Forge S2 profiling",
+      "judge_verification": "3-period (2005-2014 / 2015-2019 / 2020-2026) 분할 ICIR. post-2020 ICIR >= 0.15 + |ΔICIR| <= 0.20"
+    },
+    "C7_regime_conditional_TDC": {
+      "owner": "Scout S3 orthogonality",
+      "judge_verification": "전체 TDC <= 0.40 + CRISIS TDC <= 0.55. L-156 v2 cluster 등록"
+    },
+    "C8_crisis_TDC_matrix": {
+      "owner": "Scout S3",
+      "judge_verification": "crisis period (2008/2020/현재 63.1 CRISIS) 별도 pairwise TDC vs H_1674 + vs STR_1631"
+    },
+    "C9_FMB_Harvey_t": {
+      "owner": "Forge S1 FMB",
+      "judge_verification": "외국인 residual t-stat > 3.0 (Harvey 2016 multi-testing awareness). 통제변수: 개인 + 기관 + M01_Rev1M"
+    },
+    "C10_S6_PIT_comprehensive": {
+      "owner": "Judge",
+      "judge_verification": "Codex Gate-15 variance_ratio 실측 + input disclosure timestamp 전수 + lag policy 증명 문서"
+    },
+    "C11_phase_admission_5_step": {
+      "owner": "Governor",
+      "judge_verification": "Phase_1 보류 확인. normal regime 진입 (MRS < 63.1) 후 3% → 5% → 8% gradual + Herfindahl > 0.12 rollback"
+    },
+    "C12_expanding_vs_rolling_beta": {
+      "owner": "Forge S5",
+      "judge_verification": "expanding vs rolling 3Y β_t 차이. Δβ > 0.1 시 expanding 적시성 부족 → alternative 제안 요구"
+    }
+  },
+
+  "codex_5_cross_check_enforcement": {
+    "codex_condition_1_variance_ratio": "Codex Gate-15 variance_ratio 사전 탐지 (spec transmission failure 방지)",
+    "codex_condition_2_pit_timestamp": "모든 input disclosure timestamp 명시 + lag policy 증명",
+    "codex_condition_3_regime_exante": "regime-conditional TDC ex-ante 검증 (C7과 중복, 통합 enforcement)",
+    "codex_condition_4_crash_robustness": "crash period (2008/2020) 별도 robustness 실증",
+    "codex_condition_5_implementation_fragility": "INV13 구현 복잡성 + residualization 안정성 (β_t 시계열 anomaly 탐지)"
+  },
+
+  "unresolved_disputes_resolution_plan": {
+    "dispute_1_beta_negative_interpretation": {
+      "quant_vs_academic": "quant (가중합 구조) vs academic (OLS orthogonality)",
+      "judge_resolution_path": "S2 IC 성분 분해표 (C5) + β_t 시계열 plot. Judge가 수학적/경제적 해석 중 우세 판정"
+    },
+    "dispute_2_crisis_immediate_admission": {
+      "verdict": "Phase_1 보류 Governor 공식. Judge는 'normal regime 진입 확인 후 re-audit' 보조"
+    },
+    "dispute_3_21d_vs_63d_lookback": {
+      "judge_resolution_path": "Gate 11 variant_comparison 3-lookback sensitivity 결과 기반. 21d turnover Hard Fail 시 63d/126d 중 선택"
+    },
+    "dispute_4_codex_reject_vs_majority": {
+      "judge_resolution_path": "S1 이전 Codex 5 conditions 전수 PASS 검증. 5건 중 1건이라도 FAIL 시 Codex REJECT 승계"
+    },
+    "dispute_5_forge_v2_critical_path": {
+      "verdict": "Q-Lead가 결정. Judge는 H_1688/H_1690 PG1 admission 완료 확인 후 S6 진입"
+    }
+  },
+
+  "deliverables_checklist_for_s6_completion": {
+    "judge_gate_verdict_json": "stage_artifacts/judge_gate_STR_1686_verdict.json (Grade + Gate 별 PASS/FAIL + Role Audit + TDC matrix)",
+    "l_code_json": "stage_artifacts/l_code_STR_1686.json (grade + lesson_text + core_reference 정확 키명)",
+    "methodology_memory_entry": "L-161 or L-162 (sequence pending). core_reference + 100~500자 lesson_text + tags",
+    "tdc_matrix": "judge_pg1_candidates_tdc_matrix_H_1685v2.json (6 pairs 최소)",
+    "governor_delivery": "5건 (Grade/Gate + TDC/Role/Admission 적합성/L-code)",
+    "scout_feedback": "12 conditions enforcement result + Codex 5 cross-check result"
+  },
+
+  "priority_dependencies": {
+    "blocker_1_INV13_factor_registry": "Forge compute_investor.R 구현 미완료 시 S6 진입 불가",
+    "blocker_2_H_1688_H_1690_admission": "Forge v2 critical path 우선순위. Priority P1 대기",
+    "blocker_3_phase_admission_decision": "Governor Phase_2 normal regime 진입 판정 대기",
+    "enabler_1_scout_calibration_v3_hit_5_5": "L-157 v4 확정 상태 (5/5 hit) → S6 시 calibration bias 적용 낮음"
+  },
+
+  "expected_s6_duration": "45~60분 (Gate 0~12 전수 + TDC matrix 6 pairs + L-code 작성 + Governor 전달 5건)",
+
+  "estimated_s6_outcome_prior": {
+    "probability_grade_A_novel": 0.45,
+    "probability_grade_B": 0.25,
+    "probability_reject_hard_fail": 0.20,
+    "probability_archive_conditional": 0.10,
+    "rationale": "S0 APPROVE_CONDITIONAL 61 (threshold 60 대비 1점 여유) + 12 conditions + 5 Codex + 5 disputes 다수 → S1 실행 자체가 복잡. turnover Hard Fail 가능성 > 80% (21d), 63d 전환 시 감소. β_t 음수 구조 해석 + post-2020 corr 0.2437 FAIL 두 구조적 이슈가 Grade A 달성 어렵게 만듦."
+  }
+}

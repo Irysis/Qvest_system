@@ -1,0 +1,127 @@
+{
+  "axiom_id_candidate": "AX_CAND_spec_transmission_failure",
+  "status": "CANDIDATE_PENDING_5_AXIS_PROMOTION",
+  "source_agent": "Judge",
+  "created_at": "2026-04-18",
+  "review_scheduled": "2026-07-17",
+  "quarterly_review_quarter": "2026Q3",
+
+  "statement_draft": "market=KR, scope=research_process. Scout S0 handoff → Forge S1 implementation 변환 체인에서 spec drift (factor list 미반영, Factor DB 부재 미인지, 사전 validation 부재) 발생 시 baseline fallback 실행되어 원 가설 미검증 + 자원 소모 + Judge 오진 유발. 구조적 pattern (2회 이상 재현 시 프로세스 실패로 분류).",
+
+  "supporting_L_codes": [
+    {
+      "id": "L-159",
+      "version": "v1",
+      "title": "STR_1682 3중 인프라/프로세스 실패 — spec 미반영 + Factor DB 부재 + CAPM 버그",
+      "key_evidence": "run_log line 21 Size(none)=FALSE + line 19 SUE/beta_24m 요청 흔적 전무 + line 59 CAPM dimnames 버그 + line 40 FMB 2-regressor 실측 서명. Option A 4-regressor 지시 → 실제 2-regressor baseline 실행. Judge 이전 verdict '4-regressor 과도 희석' 오진."
+    },
+    {
+      "id": "STR_1537_demoted_2026-04-18",
+      "version": "DEMOTED_after_ET-101",
+      "strategy_name": "STR_1537_revision_breadth_tp_mom",
+      "status": "REMOVED_from_supporting — Scout ET-101 결과 별개 pattern 확증",
+      "et_101_finding": "Scout 5-step hunt 결과 git 이력 zero / _deleted_FreshIdea 부재 / 06_Registry 부재. H_1676 S0 debate consensus에서 재구성된 프로필은 raw multi-factor blend (Revision Breadth + TP_Gap + M01_Momentum) + S5 overlay 설계였음. STR_1682 spec transmission failure와 근본 원인 다름.",
+      "correct_pattern_classification": "L-119 (static factor blend alpha dilution) + L-146 (Overlay-driven MDD process rule) — NOT spec transmission failure",
+      "demotion_rationale": "동일 pattern 2회 재현 주장의 evidence 기반 약함 확증. STR_1682 단일 pattern 유지가 타당.",
+      "evidence_archive_location": "qepm/memory/axioms/review_log/AX-CAND_STR_1537_evidence_collection.json (Scout ET-101)"
+    }
+  ],
+
+  "five_axis_promotion_criteria": {
+    "I_impact": {
+      "status": "STRONG",
+      "score_estimate": 0.85,
+      "evidence_provided": "STR_1682 Grade F hurdle 32.7 + H_1676 Option A 미검증 + Forge/Q-Lead 자원 소모 + Judge 오진 루프. (STR_1537은 ET-101로 demote됨 → 단일 사례이나 I 높음 유지)."
+    },
+    "R_robustness": {
+      "status": "PARTIAL",
+      "score_estimate": 0.60,
+      "evidence_provided": "코드 증거 4건 (run_log line 19/21/40/59) + hurdle_result.json 정량 confirmation. 재현 조건 명확 (Factor DB 미존재 + spec audit 부재)."
+    },
+    "F_frequency": {
+      "status": "CRITICAL_BELOW_THRESHOLD",
+      "score_estimate": 0.28,
+      "previous_estimate": 0.45,
+      "downgrade_rationale": "Scout ET-101 결과 STR_1537 demote. 현재 **1회 단독 관측** (STR_1682). AX 승격 3회+ 기준 대비 큰 격차. STR_1657 CBPQ(L-145) 재검토 + 6개월 재현 1건+ 수집이 crucial path.",
+      "evidence_required": "(1) STR_1657 CBPQ spec transmission failure 재분류 확증 (Scout 차기 session), (2) 향후 6개월 신규 재현 1건+ 누적"
+    },
+    "E_economic_mechanism": {
+      "status": "PARTIAL",
+      "score_estimate": 0.55,
+      "evidence_provided": "프로세스 실패는 경제적 메커니즘이 아닌 인프라 실패이므로 E axis 직접 적용 애매. Process integrity를 economic foundation으로 대체 해석."
+    },
+    "M_measurability": {
+      "status": "STRONG",
+      "score_estimate": 0.90,
+      "evidence_provided": "run_log diff check + FMB regressor count + Factor DB availability grep 가능. 자동 탐지 hook 구현 가능."
+    }
+  },
+
+  "estimated_5_axis_score_pending": "~0.48 post-ET-101 (ARCHIVE 근접: <0.50). 기존 0.60 → 0.48로 하향. 2026Q3 review 시 STR_1657 재검토 + 신규 재현 없으면 ARCHIVE 결정.",
+
+  "promotion_blockers": [
+    "frequency 2회 (3회+ 기준 미달). STR_1537 외 1건 추가 재현 필요",
+    "economic_mechanism axis 애매 — process axiom은 전통 5축 외 별도 category 필요성",
+    "scope 정의 — market=KR 한정? 전체 research process 일반화?"
+  ],
+
+  "promotion_enablers": {
+    "measurability_score": 0.90,
+    "L_code_count": 1,
+    "linked_rules": ["handoff kit v2 schema (L-157)", "Factor DB pre-check preflight (구현 예정)"],
+    "process_integration": "다음 H_* 가설 전수 spec audit 의무화 시 frequency evidence 자연 축적"
+  },
+
+  "evidence_tracking_tasks": [
+    {
+      "task_id": "ET-101",
+      "description": "STR_1537 run_log 상세 evidence 수집 (동일 pattern 재확증). 현재 04_Research/strategies/STR_1537 dir 부재 → (a) git log 검색 (archive 커밋 추적), (b) _deleted_FreshIdea/ 하위 확인, (c) 06_Registry 기록, (d) Scout 당시 handoff kit s0_record 재생성 가능성 확인 순으로 접근.",
+      "target_quarter": "2026Q2",
+      "owner": "Judge + Scout coordinate",
+      "fallback_plan": "STR_1537 evidence 수집 불가능 시 ET-104 (향후 6개월 재현 1건 추가) 의존도 상승 — frequency axis 0.45 → 0.30 하락 가능성."
+    },
+    {
+      "task_id": "ET-102",
+      "description": "Forge `verify_factor_availability(required)` preflight 구현 + 회귀 test",
+      "target_quarter": "2026Q2",
+      "owner": "Forge"
+    },
+    {
+      "task_id": "ET-103",
+      "description": "Scout handoff → Forge spec diff audit 자동화 hook 설계",
+      "target_quarter": "2026Q3",
+      "owner": "Architect + Q-Lead"
+    },
+    {
+      "task_id": "ET-104",
+      "description": "향후 6개월 간 spec transmission failure pattern 재현 1건 이상 수집 시 AX 승격 재검토",
+      "target_quarter": "2026Q4",
+      "owner": "Judge"
+    }
+  ],
+
+  "quarterly_review_protocol": {
+    "review_date": "2026-07-17",
+    "decision_tree": {
+      "score_ge_0_85": "PROMOTE to AX active (inject to all agent prompts)",
+      "score_0_70_to_0_85": "EXTEND evidence collection 1 quarter",
+      "score_lt_0_70": "ARCHIVE candidate (retain L-code, revise statement)"
+    },
+    "reviewer": "Q-Lead + Judge + Architect (triple sign-off)"
+  },
+
+  "related_active_axioms": {
+    "AX-002": "프로세스 우회 = 판단의 미래참조 — AX_CAND_spec_transmission_failure는 AX-002의 역방향 (프로세스 단절 = 판단 훼손). Complementary."
+  },
+
+  "references": [
+    "stage_artifacts/judge_gate_STR_1682_verdict.json",
+    "stage_artifacts/l_code_STR_1682.json",
+    "04_Research/strategies/STR_1682_residual_consensus/output/run_log.txt",
+    "04_Research/strategies/STR_1682_residual_consensus/output/hurdle_result.json",
+    "methodology_memory.md L-159",
+    "L-157 (Scout handoff kit calibration v3, 관련)",
+    "L-158 (Gate 8 Early Warning, 관련)",
+    "STR_1537 strategy dir (evidence 수집 예정)"
+  ]
+}

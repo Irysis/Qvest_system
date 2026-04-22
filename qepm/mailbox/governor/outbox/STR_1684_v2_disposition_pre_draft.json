@@ -1,0 +1,138 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "STR_1684_v2_DISPOSITION_PRE_DRAFT",
+  "timestamp": "2026-04-18T Session67_Day1 post_Fix1_pre_STR_1684_v2_result",
+  "session": 67,
+  "day": 1,
+  "status": "PRE-DRAFT — STR_1684_v2 PID 2210532 ~15분 후 완료 예상. ICIR 결과 수신 즉시 해당 분기 ACTIVATE.",
+  "reference_active_rev8_a": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A.json (CONDITIONAL_VALIDATED + Fix 1 applied)",
+
+  "activation_trigger": "STR_1684_v2 hurdle_result.json 생성 확인 시 Q-Lead 통보 → Governor 5분 내 해당 branch activate",
+
+  "branch_A_ICIR_positive_gte_0_20": {
+    "probability_estimate": 0.55,
+    "rationale": "Fix 1로 sd=1.0 복원 → Scout hypothesis B (infra bug) 100% CONFIRMED과 일치 → ICIR positive 기대. Carhart 1997 + Blitz 2011 momentum premium 이론 뒷받침.",
+    "expected_metrics": {
+      "ICIR_full": ">= 0.20 (positive)",
+      "Sharpe_monthly": "> 0",
+      "gate_12_coupling_ratio": ">= 0.3 (conservative 0.15)",
+      "MDD": "<= 45% (hurdle PASS)"
+    },
+    "l_code_161_disposition": "PASS (L-161 infra bug hypothesis CONFIRMED, not structural failure)",
+    "hard_fail_accounting_update": {
+      "validated_count": 1,
+      "unvalidated_count": 0,
+      "stage_2_transition": "BLOCKED 유지 (2 VALIDATED 필요)",
+      "str_1684_final_classification": "PASS (infra bug resolved)"
+    },
+    "rev8_a_composition_update_scenario_A": {
+      "H_1688_Core_Secondary": {"weight": 0.10, "status": "RESTORED_ACTIVE"},
+      "미배분": "16pp → 6pp (10pp ingress to H_1688)",
+      "composition_final": {
+        "STR_1631": 0.18,
+        "H_1688_restored": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.10,
+        "H_1689": 0.23,
+        "H_1690": 0.10,
+        "Reserve": 0.09,
+        "Unallocated_final": 0.06,
+        "n_active": 6,
+        "total": 1.00
+      },
+      "projected_sr_update": "1.72~1.78 (rev8-A 최초 composition + Fix 1 post-execution)"
+    },
+    "governor_actions_branch_A": [
+      "1. rev8-A 문서 composition 업데이트 (H_1688 10% 복원)",
+      "2. L-161 Judge 통보: infra bug hypothesis CONFIRMED → L-161은 infra 교훈으로 재정의",
+      "3. Scout 통보: Core_Secondary 신규 가설 탐색 불필요 → Q07 sector-neutralization D1만 진행",
+      "4. Risk Mgr VERDICT 반영 시 H_1688 편입 가정 수정",
+      "5. Phase_1 PG1 admission H_1688 slot 재활성"
+    ],
+    "telegram_report_template_A": {
+      "header": "🎉 [Governor] STR_1684_v2 PASS — H_1688 복원 확정 (Scenario A)",
+      "body_lines": [
+        "ICIR positive 확인 (Fix 1 후 재실행)",
+        "L-161 infra bug hypothesis CONFIRMED",
+        "rev8-A composition: 6 active (H_1688 10% 복원)",
+        "Hard Fail accounting: VALIDATED 1 + UNVALIDATED 0 → Stage 2 BLOCKED 유지",
+        "projected SR: 1.72~1.78 + boost 6 시 2.00"
+      ]
+    }
+  },
+
+  "branch_C_ICIR_negative_or_below_0_20": {
+    "probability_estimate": 0.45,
+    "rationale": "Fix 1 후에도 ICIR 개선이 제한적일 경우 — residual_momentum 자체의 Carhart residualization 구조적 한계 가능성.",
+    "expected_metrics": {
+      "ICIR_full": "< 0.20 (여전히 정체 or negative)",
+      "Sharpe_monthly": "0 근접 or negative",
+      "gate_12_coupling_ratio": "< 0.3 (WARNING or hard_block)",
+      "MDD": "여전히 high"
+    },
+    "l_code_161_disposition": "VALIDATED_HARD_FAIL (L-161 structural failure 확정)",
+    "hard_fail_accounting_update": {
+      "validated_count": 2,
+      "unvalidated_count": 0,
+      "stage_2_transition": "**CONDITIONS MET** (2 VALIDATED 축적)",
+      "gate_12_hard_block_trigger": "자동 전환 조건 충족",
+      "str_1684_final_classification": "VALIDATED_HARD_FAIL"
+    },
+    "rev8_a_composition_no_change": {
+      "maintained": "rev8-A 현 composition 유지 (5 active + 미배분 16%)",
+      "H_1688_status": "DROP_CONFIRMED (not infra, structural)",
+      "미배분_16pp_use": "Week 2~3 Scout 신규 Core_Secondary 가설 + Phase_2 H_1685v2 진입 대비"
+    },
+    "governor_actions_branch_C": [
+      "1. rev8-A 문서 composition 유지 (5 active 확정)",
+      "2. L-161 Judge 통보: structural failure 확정 → methodology_memory.md 본문 확정",
+      "3. Scout 통보: Core_Secondary 신규 가설 탐색 **P1 가속** (Week 2~3 → Day 3~5로 당김)",
+      "4. v3.5 Gate 12 enforcement hard_block 전환 공식화 (Governor signoff 파일 update)",
+      "5. Judge admission_rule_v3_5_consolidated.json Stage 2 trigger 기록",
+      "6. Risk Mgr VERDICT 반영 시 H_1688 DROP 확정 전제"
+    ],
+    "telegram_report_template_C": {
+      "header": "📉 [Governor] STR_1684_v2 FAIL — H_1688 DROP 확정 (Scenario C)",
+      "body_lines": [
+        "ICIR 여전히 정체 (Fix 1 후에도)",
+        "L-161 structural failure 확정",
+        "rev8-A composition: 5 active 유지 (H_1688 DROP)",
+        "Hard Fail accounting: VALIDATED 2 → **Stage 2 transition 조건 충족**",
+        "Gate 12 hard_block 자동 전환 발효",
+        "Scout Core_Secondary 신규 가설 Day 3~5 가속"
+      ]
+    }
+  },
+
+  "branch_B_intermediate_ICIR_0_15_to_0_20": {
+    "probability_estimate": 0.00,
+    "rationale": "Governor는 이 브랜치를 별도로 정의하지 않음 — Branch C에 포함 (0.20 기준선 엄격 적용). Alpha Lab Gate ICIR >= 0.20 threshold 준수.",
+    "disposition": "Branch C 처리 준수"
+  },
+
+  "activation_decision_flowchart": {
+    "step_1_hurdle_result_receive": "STR_1684_v2 hurdle_result.json 생성 시 Q-Lead 또는 Forge 통보",
+    "step_2_governor_branch_select": "ICIR 값 확인 → Branch A (≥0.20) or Branch C (<0.20)",
+    "step_3_governor_actions_execute": "해당 branch governor_actions 5~6건 실행",
+    "step_4_judge_coordinate": "Judge L-161 본문 확정 + UNVALIDATED→PASS(A) or VALIDATED_HARD_FAIL(C) 재분류 통보",
+    "step_5_telegram_report": "해당 branch template 사용 (Q-Lead 발송 or Governor)",
+    "step_6_subsequent_pipeline": "STR_1685 + H_1689 S1 재실행 계속 (H_1688 결과와 독립)"
+  },
+
+  "complementary_scenario_handling": {
+    "str_1685_h_1690_s1_result": "별도 branch (Gate 11 variant comparison mandatory Defense + Gate 12 coupling)",
+    "h_1689_s1_result": "별도 branch (Gate 11/12 mandatory Defense)",
+    "all_three_results_consolidated": "Risk Mgr VERDICT 수신 후 종합 rev8-A-revised 발행 (Day 3~4)"
+  },
+
+  "governor_readiness": {
+    "branch_A_template_ready": true,
+    "branch_C_template_ready": true,
+    "telegram_reports_ready": true,
+    "l_code_161_disposition_logic_ready": true,
+    "hard_fail_accounting_ready": true,
+    "composition_update_templates_ready": true,
+    "estimated_execution_time_post_receive": "5분 (해당 branch activate + 문서 업데이트 + Judge/Scout 통보)"
+  }
+}

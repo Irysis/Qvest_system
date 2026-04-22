@@ -1,0 +1,116 @@
+{
+  "_purpose": "Scout H_1690 handoff kit L-157 v3 + L-158 + L-160/161/162 준수 재검토. rev7_v3 Def_3 primary 10% 편입 전 debate 준비.",
+  "hypothesis_id": "H_1690",
+  "hypothesis_name": "STR_1439 Score-Blend Redesign — Multi-Source Defense Anchor (v53)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T21:20:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1690_str_1439_score_blend_redesign.json",
+  "previous_handoff_kit": "stage_artifacts/s0_debate_handoff_H_1690.json",
+  "queue_priority": "P0 Session 67 Day 2 (rev7_v3 Def_3 primary 10%)",
+  "L157_v3_pre_checks_completed": true,
+
+  "changes_from_v1_handoff": [
+    "Scout calibration L-157 v3 반영 (-5 보정)",
+    "L-158 Gate 8 Early Warning consensus_tier_classification 추가",
+    "L-160/161/162 Gate 14 Algebraic + Gate 15 Linear Dominance 적용",
+    "H_1687 REVISE 50 결과에서 factor construction pre-check 필수 교훈"
+  ],
+
+  "L157_v3_pre_empirical_measurements_2026_04_17": {
+    "algebraic_identity_check": {
+      "formula_RISK_ON": "0.35·M08 + 0.40·C19 + 0.10·Q07 + 0.15·R16",
+      "formula_ELEVATED": "0.25·M08 + 0.25·C19 + 0.25·Q07 + 0.25·R16",
+      "formula_CRISIS": "0.10·M08 + 0.15·C19 + 0.40·Q07 + 0.35·R16",
+      "shared_terms_across_regimes": "M08/C19/Q07/R16 4 sub factor 동일, weight만 regime-conditional 변화",
+      "verdict": "PASS (4 sub factor 각각 별도 family, algebraic decomposition 시 공통 항 없음)"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "ELEVATED_regime_vs_C19_standalone": {
+        "mean": 0.259,
+        "median": 0.274,
+        "variance_explained": "6.7%",
+        "L157_threshold_70pct": "PASS (0.25 weight가 C19 → 7% variance explained, dominance 없음)"
+      },
+      "vs_H_1678_C19_D01_composite": {
+        "mean": -0.110,
+        "median": -0.120,
+        "interpretation": "near-independent (4-axis balanced vs 2-factor consensus+defense)",
+        "verdict": "PASS — 두 가설 PG2 공존 가능"
+      },
+      "vs_H_1682_expected": "0.50~0.65 (R16 공유, Scout 2026-04-17 측정 H_1688 vs H_1682 0.614 baseline + Q07 추가로 유사 수준)",
+      "vs_H_1688_expected": "0.40~0.55 (M08 공유, regime-smoothed weight로 약간 완화)",
+      "vs_STR_1631_expected": "0.35~0.50 (C19 ELEVATED 25% + CRISIS 15% = 낮은 평균 weight, 기존 Scout 예상 0.35~0.45 유지)"
+    },
+    "sd_ratio_analysis": {
+      "M08_C19_Q07_R16_all_Z_Score_Aligned": "정규화 1:1:1:1",
+      "verdict": "PASS (no imbalance)"
+    },
+    "linear_dominance_test": {
+      "ELEVATED_variance_explained_by_C19": "6.7% (25% weight × rank correlation)",
+      "CRISIS_Q07_R16_combined_weight": "75% → stress 구간 defense dominance (intentional)",
+      "L157_v3_threshold_70pct": "PASS (각 regime에서 single sub factor dominance 없음, 단 CRISIS는 defense family 집단 dominance intentional)"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "step_1_4_sub_factor_standalone_ICIR": "M08 0.40, C19 0.547, Q07 0.35, R16 0.30",
+      "step_2_ELEVATED_balanced_composite_ICIR_estimate": "0.40~0.50",
+      "step_3_regime_smoothed_dynamic_ICIR_estimate": "0.45~0.55 (정상 구간 C19 dominance, stress Q07+R16 dominance)",
+      "verdict": "CONDITIONAL PASS — L-119 dilution 허용 범위, Slot C (C19+M08 blend) alternative 준비"
+    }
+  },
+
+  "scout_calibration_adjusted_predictions_L157_v3": {
+    "note": "L-157 v3 prescription + linear dominance PASS + H_1690 complexity premium -8 보정",
+    "predicted_total_range_L157_v3": [59, 75],
+    "per_debater": {
+      "codex_critic": [7, 10],
+      "risk_manager": [12, 15],
+      "governor": [15, 18],
+      "quant": [12, 15],
+      "academic": [13, 16]
+    },
+    "verdict_projection_L157_v3": "APPROVE_CONDITIONAL (60-74) 유력",
+    "changes_vs_original_handoff_kit": "v1 [67,83] → v3 [59,75] (Codex -4, Quant -3, Governor -2, Academic -3, 전체 -8 보정)"
+  },
+
+  "debate_pre_checks_for_q_lead_attention": [
+    "Scout pre-empirical 측정에 따라 H_1690 ELEVATED vs C19 standalone 상관 0.274 (7% variance) → linear dominance 없음 실증",
+    "H_1690 vs H_1678 -0.110 상관 (독립) → 두 가설 PG2 공존 가능",
+    "H_1690 vs H_1682 예상 0.50~0.65 (R16 공유) → S3 TDC gate 8 borderline",
+    "H_1690 vs H_1688 예상 0.40~0.55 (M08 공유) → S3 TDC gate 8 compliant",
+    "H_1690 vs STR_1631 예상 0.35~0.50 → Gate 8 threshold 0.4 경계",
+    "STR_1439 FF5a t=2.953 borderline Harvey — score-blend 전환 후 유지 불확실",
+    "Regime weight ex-post tuning 의혹 (Codex attack vector)"
+  ],
+
+  "debaters_prompt_core_retained": "원본 stage_artifacts/s0_debate_handoff_H_1690.json 5 debater prompt 유지 + L-157 v3 pre-checks 결과 각 debater env_vars에 추가",
+
+  "consensus_tier_classification_L158": {
+    "tier": "Tier 1 C19_core (25%~40% weight, regime-conditional)",
+    "gate_10_warning": "ELEVATED 25%, CRISIS 15%, RISK_ON 40% C19 weight — Tier 1 Cap 1건 원칙 vs STR_1631 공존 여부",
+    "scout_v2_rule_application": "STR_1631 축소 + H_1690 partial 공존 (Governor admission 단계 결정)"
+  },
+
+  "bull_case_updated": [
+    "Judge 직접 권고 (sweep v3 Pass 2 governor_actions[3]) 수용",
+    "STR_1439 novelty 10 FF5a t=2.953 genuine alpha 계승",
+    "4 sub factor 기구축 + AX 전수 PASS + Defense anchor 공석 해소",
+    "Parent MISSING 해소 (H_1677 실패 교훈)",
+    "L-157 v3 pre-checks 전수 PASS (algebraic/dominance/sd ratio)",
+    "H_1678과 near-independent (-0.110)"
+  ],
+
+  "bear_case_updated": [
+    "Regime weight 3-state ex-post tuning 우려 (Codex major attack)",
+    "Complexity 4-factor + smoothing (L-125 IC≠SR risk, H_1687 complexity 교훈)",
+    "H_1682 R16 공유 예상 TDC 0.50~0.65 (Gate 8 borderline)",
+    "H_1688 M08 공유 예상 TDC 0.40~0.55",
+    "STR_1631 C19 공유 예상 TDC 0.35~0.50 (Gate 8 threshold 경계)",
+    "Harvey t borderline (원본 2.953, score-blend 후 유지 불확실)"
+  ],
+
+  "strategic_chain_updated": {
+    "if_approve_or_approve_conditional": "STR_1685 또는 Forge 자동 할당 → rev7_v3 Def_3 primary 10% admission candidate",
+    "if_revise": "Scout Path — (a) Q07 비중 축소 (40→25%), (b) sub A M08 교체 (M01 또는 잔차화 더 강하게), (c) regime weight 2-state 단순화",
+    "if_reject": "Path A 폐기 + Hybrid Z3 복구 고려 또는 Slot D alternative (overlay 축소)"
+  }
+}

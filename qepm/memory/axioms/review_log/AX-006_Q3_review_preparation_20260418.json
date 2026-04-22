@@ -1,0 +1,186 @@
+{
+  "axiom_id": "AX-006_candidate",
+  "preparation_document": "Q3 Review Preparation (2026-07-17)",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-18 Session 67 Day 1",
+  "purpose": "AX-006 candidate (pairwise TDC conditional cluster) 2026-07-17 quarterly review 대비 evidence 축적 경로 + promote.R 5축 검증 준비 자료",
+  "review_date_target": "2026-07-17",
+  "time_remaining": "90 days (3 months)",
+
+  "current_status_snapshot_20260418": {
+    "5_axis_score_estimate": "~0.60~0.70 (measurability 0.95 강하나 I/R/F 하위 축 evidence 부족)",
+    "decision_tree_current_projection": "EXTEND (0.70 <= x < 0.85) 근접 or PROMOTE (>= 0.85) 가능성",
+    "key_evidence_sources": [
+      "L-156 v2 (STR_1631↔STR_1679v2 TDC 0.621 breach, Daily Pearson 0.879 + Monthly ρ 0.902 + nu_MLE 4.38)",
+      "L-158 (Gate 8 Early Warning 3단계 structure)",
+      "STR_1071 TDC 0.000 / STR_1562 0.003 / STR_1433 0.000 PASS cases (3건)",
+      "STR_1071↔STR_1562 internal TDC 0.511 FAIL (cross-strategy cluster 1건)",
+      "Admission Rule v3.4 Gate 8 + v3.5 유지 + Retroactive audit 24h SLA normative 운영 실적"
+    ]
+  },
+
+  "axis_specific_evidence_accumulation_plan": {
+    "I_impact_0_80_target": {
+      "current_estimate": 0.70,
+      "evidence_accumulated": [
+        "STR_1679v2 DROP 의사결정 (rev5_v1_1_emergency 3-day transition 완료)",
+        "Admission Rule v3.2/v3.3/v3.4/v3.5 4회 version iteration에 Gate 8 편성",
+        "Scout handoff kit v2 schema 확장 요구 (predicted_tdc_vs_pg2_consensus 필드)"
+      ],
+      "evidence_to_collect_Q2_Q3": [
+        "v3.5 Retroactive audit 24h 완료 기록 (5건 STR_1631/1656/1071/1562/1433 결과) — **2026-04-19 내 수집**",
+        "STR_1684 H_1688 S6 TDC matrix 6 pairs 실측 결과",
+        "H_1685 v2 S6 TDC matrix 6 pairs + regime-conditional (CRISIS) 실측",
+        "rev8 ACTIVATE 후 Phase_1 transition portfolio impact (Week 1~4)"
+      ],
+      "promotion_path_to_0_80": "4건 evidence 축적 시 STR_1679v2 단독 impact → 4건 cumulative admission decision impact로 격상"
+    },
+    "R_robustness_0_80_target": {
+      "current_estimate": 0.60,
+      "evidence_gaps": [
+        "t-copula MLE sample size N>2000 일간 8Y+ 샘플 사전 검증 미완료",
+        "2008 financial crisis / 2020 COVID / 2022 Korean-specific crash 별도 TDC 안정성 검증 미완료",
+        "regime-conditional TDC (bull/bear/crisis) 분해 미완료"
+      ],
+      "evidence_to_collect_Q2_Q3": [
+        "Risk Mgr 3rd round에서 8Y+ 일간 sample 기반 t-copula MLE nu parameter 안정성 검증 (2026Q2)",
+        "8대 stress 구간 별도 TDC 계산 (2008 / 2020 / 2022 / 2008-2009 combined etc) — Risk Mgr 협업",
+        "Gate 13 regime-conditional variant comparison (v3.6 candidate) 선행 evidence — STR_1684/H_1685 v2 세션에서"
+      ],
+      "promotion_path_to_0_80": "Risk Mgr 3rd round 결과 + regime-conditional TDC 분해 2건 축적"
+    },
+    "F_frequency_0_70_target": {
+      "current_estimate": 0.40,
+      "critical_gap": "현재 1건 pair-level breach (STR_1631↔STR_1679v2) + 1건 internal cluster (STR_1071↔STR_1562)",
+      "evidence_to_collect_Q2_Q3": [
+        "H_1685 v2 TDC p95 |corr| 0.4469 확정 → 2번째 cross-family breach 후보 (Diversifier 가설)",
+        "v3.5 Retroactive audit에서 추가 5건 중 breach 발견 가능성 (낮으나 있음)",
+        "STR_1684 H_1688 ↔ 6 pairs 중 하나라도 TDC > 0.4 발견 시 3번째 evidence",
+        "H_1689 Quality 4-axis S6 시 ↔ H_1682 family 관련 TDC 측정"
+      ],
+      "promotion_path_to_0_70": "2026Q3까지 cross-family breach 3건+ 누적 시 F axis 0.70 달성 가능. 현재 추세 달성 가능성 60%."
+    },
+    "E_economic_mechanism_0_80_target": {
+      "current_estimate": 0.65,
+      "evidence_accumulated": [
+        "Embrechts-McNeil-Straumann (2002) conditional copula theory 기반",
+        "Demarta-McNeil (2005 ISR) t-copula MLE 방법론",
+        "QEPM §10 Statistical Defense 원칙 (Harvey 2016 multi-testing awareness)",
+        "C19 consensus factor 공유 = common factor 기반 tail coupling 필연적 귀결"
+      ],
+      "evidence_to_collect_Q2_Q3": [
+        "Korean market specific tail dependence literature review (e.g., Lee-Park-Yang 한국 거시-시장 tail) — Academic 협조",
+        "Conditional cluster mechanism 정식화 (TDC threshold 0.4 rationale 정량화)"
+      ],
+      "promotion_path_to_0_80": "Academic literature 1~2건 인용 추가 + threshold 정당화 정식 문서"
+    },
+    "M_measurability_0_95_target": {
+      "current_estimate": 0.95,
+      "evidence_accumulated": [
+        "judge_pg1_candidates_tdc_matrix.json 정량 산출 완료",
+        "t-copula MLE R code 구현 (copula package)",
+        "Daily Pearson + Monthly ρ + nu_MLE + TDC 4축 동시 측정 표준화"
+      ],
+      "no_further_action_required": "M axis 이미 strong. Q3 review 시 0.95 유지 전망"
+    }
+  },
+
+  "promotion_scenario_analysis": {
+    "optimistic_promotion_to_active_AX_006": {
+      "probability_estimate": 0.25,
+      "conditions_all_required": [
+        "F axis 0.70+ (3건+ breach)",
+        "R axis 0.80+ (Risk Mgr 3rd round 완료)",
+        "I axis 0.80+ (v3.5 retroactive audit + 2건+ S6 admission decision impact)",
+        "composite score >= 0.85"
+      ],
+      "implied_actions_post_promotion": [
+        "axiom_weekly.sh AX-006 자동 injection (all agent prompts)",
+        "Scout handoff kit v2 필수 field 전환 (predicted_tdc_vs_pg2_consensus 의무화)",
+        "Forge preflight_check에 Gate 8 자동 실행 통합"
+      ]
+    },
+    "expected_extend_evidence_collection_1_quarter": {
+      "probability_estimate": 0.50,
+      "conditions": [
+        "score 0.70 <= x < 0.85 (middle ground)",
+        "F axis 여전히 0.50~0.65 (breach 1~2건 추가)",
+        "R axis evidence 부분 완료"
+      ],
+      "next_review": "2026-10-17 (Q4) 재검토"
+    },
+    "archive_candidate_if_evidence_depletes": {
+      "probability_estimate": 0.25,
+      "conditions": [
+        "F axis 0.40 이하 (추가 breach 발견 없음)",
+        "composite score < 0.70"
+      ],
+      "archive_consequences": [
+        "L-156/L-158 L-code 유지 (교훈 보존)",
+        "Admission Rule v3.5 Gate 8 계속 운영 (gate 자체는 유효)",
+        "Axiom 승격만 보류 — AX-006 번호 free up"
+      ]
+    }
+  },
+
+  "evidence_tracking_tasks_ET_status": {
+    "ET-001_STR_1684_TDC": {
+      "description": "STR_1684 H_1688 S6 TDC matrix 6 pairs 실측",
+      "target_quarter": "2026Q2 (Session 67~68)",
+      "owner": "Judge",
+      "status": "pending (Forge hurdle_result 대기)",
+      "contribution": "I + F axis"
+    },
+    "ET-002_retroactive_audit_5건": {
+      "description": "v3.5 Retroactive audit 24h SLA (STR_1631/1656/1071/1562/1433) 결과",
+      "target_quarter": "2026-04-19 내",
+      "owner": "Governor + Judge cross-check",
+      "status": "in_progress (Task #39)",
+      "contribution": "I axis"
+    },
+    "ET-003_regime_conditional_TDC": {
+      "description": "8대 stress 구간 별도 TDC 분해 + regime-conditional (bull/bear/crisis)",
+      "target_quarter": "2026Q3 (Risk Mgr 3rd round 연계)",
+      "owner": "Risk Mgr + Judge",
+      "status": "pending",
+      "contribution": "R axis"
+    },
+    "ET-004_H_1685_v2_TDC": {
+      "description": "H_1685 v2 S6 TDC 6 pairs + p95 |corr| 0.4469 확정 + regime-conditional",
+      "target_quarter": "2026Q3 (Phase_2 이후)",
+      "owner": "Judge",
+      "status": "pending (Forge S1 critical path 대기)",
+      "contribution": "F + R axis"
+    },
+    "ET-005_academic_literature": {
+      "description": "Korean market tail dependence literature 1~2건 인용 + threshold 0.4 정당화",
+      "target_quarter": "2026Q3",
+      "owner": "Scout/Academic Debate 참여자",
+      "status": "pending",
+      "contribution": "E axis"
+    }
+  },
+
+  "promote_R_5_axis_validation_preparation": {
+    "preparation_checklist": [
+      "L-156 v2 + L-158 L-code JSON 스키마 검증 (grade/lesson_text/core_reference 정확 키명 확인)",
+      "promote.R 호출 전 5축 score input 파일 정규화 (JSON stat)",
+      "axiom_harvester queue 등록 (향후 ET-001~005 evidence 자동 집계)",
+      "승격 시 AX-006 활성 범위 (scope) 명확화 — market=KR + family=consensus_factor vs 전체 cross-strategy"
+    ],
+    "promote_command_ready": "Rscript qepm/scripts/promote.R --candidate AX-006 --L_codes L-156,L-158 --axis_scores {I,R,F,E,M} --review_date 2026-07-17"
+  },
+
+  "potential_conflicts_to_resolve_before_promotion": {
+    "conflict_1_AX_006_vs_existing_Gate_8": "AX-006 승격 시 Admission Rule v3.5 Gate 8과 redundant 여부 — Gate 8은 operational rule, AX-006은 axiom (broader applicability). 공존 가능하되 명확한 scope 분리 필요",
+    "conflict_2_threshold_0_4_rigidity": "AX-006 threshold 0.4는 operational rule에서 가져온 값. regime-conditional 차등화 시 axiom 본문 수정 필요",
+    "conflict_3_scope_KR_specific_vs_universal": "현재 evidence 모두 KR market. 승격 시 market=KR 한정 명시 vs universal axiom 결정"
+  },
+
+  "q3_review_decision_preview": {
+    "most_likely_outcome": "EXTEND (Q4 재검토) — F axis evidence 축적 충분치 않을 가능성 높음",
+    "rationale": "ET-001~004는 대부분 완료 가능하나 ET-003 regime-conditional (Risk Mgr 3rd round 완료 의존) + ET-005 Academic literature는 Q3까지 빠듯. 3개월은 evidence 축적에 짧은 기간.",
+    "recommendation": "Q-Lead + Judge 사전 협의 통해 Q3 review 시 EXTEND 결정을 기본값으로 두고, 상황 반전 시 PROMOTE 즉시 가동",
+    "alternative_if_F_axis_reaches_0_70_early": "3건+ cross-family breach 조기 축적 시 (e.g., STR_1684 + H_1685 v2 + rev8 활동 중) Q3 전 임시 review 가능"
+  }
+}

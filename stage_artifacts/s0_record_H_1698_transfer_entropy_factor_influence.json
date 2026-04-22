@@ -1,0 +1,89 @@
+{
+  "hypothesis_id": "H_1698",
+  "strategy_id_reserved": "STR_1698_transfer_entropy_factor_influence",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Information Flow Asymmetry — Mutual Information Factor Selection (C19 + Q07 + Mutual_Info_Residual)",
+
+  "mechanism": "Mutual Information(상호정보량)은 두 변수 간 비선형 의존성을 포착 — linear correlation이 놓치는 정보 구조를 검출. 핵심 설계: (1) C19_Composite_Earnings와 Q07_Earnings_Stability 사이의 Mutual Information을 월별로 계산, (2) 두 팩터의 MI-기반 잔차(MI residual)를 alpha signal로 사용 — 상관 구조가 낮고 고유 정보량이 높은 구간의 선택적 신호 활성화. Dionisio et al.(2004) 'Mutual information: a measure of dependency for nonlinear time series': MI residual이 Pearson correlation 잔차보다 tail dependence 구조를 더 정확히 포착. 실용적 구현: rolling mutual information coefficient로 C19-Q07 의존성 구조 측정 → MI가 낮은 구간(두 팩터 정보 독립)에서 composite 신호 가중치 동적 조정.",
+
+  "economic_rationale": "정보이론적 근거: Shannon(1948) 정보 엔트로피 기반. 두 alpha signal A, B의 MI(A;B)가 낮을 때 동시 활성화 시 portfolio entropy(정보량) 최대. 반대로 MI가 높은 구간(C19와 Q07이 같은 정보 포착 중)은 redundancy → 가중치 축소. Fiedor(2014 PRE) 'Networks in Financial Markets Based on the Mutual Information Rate': 금융시장 팩터 간 MI 기반 네트워크가 correlation 기반보다 실제 정보 흐름을 더 정확히 포착. 구현: C19_ic_rolling 과 Q07_ic_rolling의 비선형 의존성 측정 → MI 낮은 구간 = 두 signal 독립 → 동시 투자 최대 다양화. 기존 인프라(Factor DB IC 시계열)만 사용 — 크로스마켓/대체데이터 금지. Primary factor는 C19(STR_1631 기반)와 Q07의 MI-weighted composite.",
+
+  "trail": "explore",
+  "trail_note": "경로 B (직관→논문) 예산 30% 이내. 정보이론 기반 팩터 선택 — Factor DB 기존 인프라 활용. 크로스마켓/대체데이터 금지 준수.",
+
+  "expected_role": "regime_switcher",
+  "expected_role_rationale": "portfolio_gap_vector v1.0.8 sleeve_needs에는 regime_switcher slot이 명시되지 않았으나 v55 role 6종 중 하나. MI 기반 동적 가중치 조정은 regime-conditional 신호 선택의 정보이론적 구현 — 어떤 팩터가 '지금 유효한가'를 MI로 자동 탐지. diversifier로도 해석 가능(두 alpha source의 독립성 최대화). 1차 설계: regime_switcher. Judge S6에서 role_honesty_audit 시 diversifier로 재분류 가능.",
+
+  "gap_targeting_axes": ["sr_gap", "explore_info_theory"],
+
+  "why_now": "기존 인프라: Factor DB IC 시계열이 월별 존재 → MI 계산에 직접 활용 가능. 경로 B 예산 30% 내 Explore-B 버킷. 정보이론 기반 팩터 선택은 기존 전략 포트폴리오에서 전혀 탐색하지 않은 영역. CLAUDE.md: 'ML, 수리통계학, 물리학, 카오스이론 도입' 허용 명시. MI는 Shannon entropy 기반 수리통계학 도구 — 허용 범위 내.",
+
+  "overlay": "mi_weighted_dynamic",
+  "overlay_note": "S1에서는 C19 EW 20종목 pure signal 측정(baseline). S5에서 MI-weighted dynamic composite 구현. MI 계산에서 C1 준수: rolling MI(expanding window), full-sample MI 금지.",
+
+  "factor_set": {
+    "primary": "C19_Composite_Earnings",
+    "secondary": "Q07_Earnings_Stability",
+    "dynamic_mechanism": "Mutual_Information(C19_IC_rolling, Q07_IC_rolling) — rolling 12개월 window",
+    "weight_scheme_s1": "C19 pure EW 20종목 baseline (S1 pure signal, overlay 없음)",
+    "weight_scheme_s5": "w_C19 = MI_inv_C19 / (MI_inv_C19 + MI_inv_Q07); MI 낮을수록(독립) 균등 가중, MI 높을수록(중복) C19 우선.",
+    "c19_direction_note": "C19_Composite_Earnings: higher_better=TRUE. load_month_factors() 자동 처리.",
+    "q07_direction_note": "Q07_Earnings_Stability: higher_better=TRUE. load_month_factors() 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "C19_Composite_Earnings": {"conditional_value": -0.0130, "pass": false, "note": "STR_1631 primary signal — Gate 0.5 미통과(core signal). Explore-B: MI 메커니즘이 C19의 regime-conditional 활성화를 통해 crisis 구간 효율성 개선 가설."},
+    "Q07_Earnings_Stability": {"conditional_value": -0.0111, "pass": false, "note": "AX-001 v2 stress 실증(L-121)으로 defense 역할 별도 검증. MI 조합 시 독립성 측정이 목적."},
+    "coverage_ratio": "0/2 (Gate 0.5 미통과 — Explore-B trail: 새로운 메커니즘 가설. 기존 팩터의 동적 결합 방식이 alpha source)",
+    "explore_note": "Explore-B는 Gate 0.5 coverage가 아닌 '메커니즘 신규성'이 진입 기준. 기존 팩터(C19, Q07)를 MI 기반으로 결합하는 방법론 자체가 탐색 대상."
+  },
+
+  "core_reference": "Shannon(1948 Bell) 'A Mathematical Theory of Communication' — Mutual Information 이론적 기반. Dionisio, Menezes & Mendes(2004 Physica A) 'Mutual information: a measure of dependency for nonlinear time series' — 금융시계열 MI 측정. Fiedor(2014 PRE) 'Networks in Financial Markets Based on the Mutual Information Rate' — 금융시장 MI 네트워크 구조. 기존 인프라 활용: Factor DB IC 시계열(monthly) + load_month_factors() Z_Score_Aligned.",
+
+  "lesson_check": "L-119(정적 팩터 블렌드 alpha 희석): 정적 가중치 대신 MI 기반 동적 가중치로 해결 시도 — L-119 대안 접근. 경로 B 예산(30%) 사용 — Explore 버킷 내. CLAUDE.md 허용: 수리통계학(MI) 도구. C1 필수: MI 계산 rolling/expanding window만(full-sample MI = lookahead 위반).",
+
+  "pit_compliance_checklist": {
+    "C1": "MI 계산: rolling 12개월 expanding window 필수. full-sample MI 계산 절대 금지(lookahead). t월 MI = t-12~t-1 IC 시계열 기반",
+    "C5": "S5 overlay MI weight: t-1 기준 MI 사용 (당월 MI 사용 금지)",
+    "C14": "IC 접근: Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('C19_Composite_Earnings','Q07_Earnings_Stability')) 경유",
+    "overlay_s1": "S1 pure C19 baseline (MI overlay 없음)",
+    "mi_lookahead_guard": "MI(t) = f(IC_{t-12},...,IC_{t-1}) — 미래 IC 참조 금지"
+  },
+
+  "risk_flags": [
+    "C19 + Q07 모두 Gate 0.5 음수 → Explore-B 메커니즘이 실패 시 단순 복합 신호로 alpha 없을 수 있음",
+    "MI 계산의 구현 복잡도: rolling 12개월 IC 시계열의 mutual information 추정 — KDE 또는 kNN 방식 선택 필요",
+    "C1 위반 리스크: MI 구현 시 전체 기간 IC 시계열 사용 실수 가능 — Forge 구현 시 엄격 검토 필요",
+    "Explore-B trail: 실패 가능성 높음. S1 baseline(C19 pure) 결과와 비교 필수",
+    "regime_switcher role: v55 role taxonomy에서 Judge role_honesty_audit 대상 — S6에서 재분류 가능성"
+  ],
+
+  "expected_performance_range": {
+    "s1_baseline_sr": "0.8~1.2 (C19 pure — STR_1631 benchmark)",
+    "s5_mi_sr_target": "baseline + 0.1~0.3 (MI 동적 가중치의 추가 alpha)",
+    "mdd_target": "baseline MDD 유지 또는 개선",
+    "role": "regime_switcher",
+    "explore_note": "성공 기준: MI-weighted S5가 C19 pure baseline S1 대비 유의한 SR 향상. 실패 기준: MI overhead가 alpha를 잠식"
+  },
+
+  "v55_fields": {
+    "trail": "explore",
+    "gap_targeting_axes": ["sr_gap", "explore_info_theory"],
+    "expected_role": "regime_switcher",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Q-Lead H_1698 Explore-B: 정보이론/물리학 inspired",
+    "Shannon MI 기반 팩터 의존성 동적 가중치 — Factor DB 기존 인프라만 활용",
+    "C1 lookahead guard: rolling MI 구현 시 Forge 코드 검토 필수",
+    "선택적(optional) Explore-B — 우선순위 낮음. H_1695~H_1697 완료 후 capacity 여유 시 debate"
+  ]
+}

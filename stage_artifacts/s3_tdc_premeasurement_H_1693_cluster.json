@@ -1,0 +1,163 @@
+{
+  "artifact_type": "tdc_premeasurement_l156_v2",
+  "schema_version": "v1_pre_debate",
+  "hypothesis_id": "H_1693",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 1 — RAM 회복 대기 병렬 작업",
+  "purpose": "Q-Lead 지시 #4 병렬 작업 — H_1689 v3 variant_1 vs H_1693 TDC 사전 추정 (pairwise L-156 v2). H_1693 S0 Debate R1 대비 Governor + Risk Mgr debater의 cluster saturation / Sequential Admission concern 선제 대응.",
+
+  "_note_l156_v2_standards": {
+    "source": "L-156 v2 (Judge AX_CAND_006 pairwise TDC cluster detection, review 2026-07-17)",
+    "crisis_threshold": "pairwise TDC < 0.30 (Sequential Admission crisis gate)",
+    "general_threshold": "portfolio rho < 0.40 (diversifier gate)",
+    "core_secondary_threshold": "rho < 0.55 (Core_Secondary completion gate)",
+    "ax_001_v2_multi_sleeve_defense": "multi-sleeve defense sleeve 내 Q07 공유 3건은 sequential admission protocol로 관리"
+  },
+
+  "q07_quality_defense_cluster_members": [
+    {
+      "strategy_id": "STR_1679v3",
+      "role": "defense (Phase_1 Governor rev8-A-revised-v2 Scenario C)",
+      "q07_usage": "Q07 single factor embed as defense signal",
+      "q07_weight_in_composite": 1.00,
+      "additional_factors": "overlay DD/VT regime (STR_1679v2 inheritance)",
+      "pg1_status": "ACTIVE (Scenario C slot 4, Phase_1 admission confirmed)"
+    },
+    {
+      "strategy_id": "H_1689_v3_variant_2",
+      "role": "defense (Q24-replace 4-axis)",
+      "q07_usage": "Q07 as one of 4 composite axes (Q01 + Q04 + Q07 + -Q25)",
+      "q07_weight_in_composite": 0.25,
+      "additional_factors": "Q01 GPA + Q04 Piotroski_F + -Q25 Ohlson_O",
+      "pg1_status": "PENDING (H_1689 v3 S1 Forge dispatch 진행 중, variant_2 SECONDARY 경로)"
+    },
+    {
+      "strategy_id": "H_1693",
+      "role": "defense (Q07 sector-neutral + SUE)",
+      "q07_usage": "Q07 as dominant axis with sector-neutralization",
+      "q07_weight_in_composite": 0.70,
+      "additional_factors": "C01_SUE 0.30",
+      "pg1_status": "PENDING (H_1693 S0 Debate 대기 중, Governor rev8 Phase_3 후보)"
+    }
+  ],
+
+  "pairwise_tdc_predictions_v1": {
+    "_method": "L-157 v4 pre-empirical estimation — Q07 공유 비중 기반 + mechanism similarity + portfolio overlap proxy",
+    "_caveat": "**S3 실측 필수** — t-copula MLE 실측 전 추정치. L-158 Early Warning WARNING 구간 표기.",
+    "_q_lead_p2_update": "Q-Lead P2 지시 반영 — variant_1 (no Q07) × H_1693 pair 추가. variant_1 primary path 정량 근거 제공.",
+
+    "pair_0_H_1689_v3_variant_1_NO_Q07_vs_H_1693": {
+      "_governor_recommended_path": "Q07 cluster 완전 해소 경로 — variant_1 (Q01 0.33 + Q04 0.33 + -Q25 0.34, NO Q07) primary 전환 시 H_1693와 Q07 공유 없음",
+      "q07_shared_weight_product": "0.00 × 0.70 = 0.00 (ZERO direct Q07 share)",
+      "mechanism_similarity": "LOW-MEDIUM — variant_1 quality multi-axis (GP + F-score + distress Ohlson) / H_1693 earnings stability sector-neutral + SUE boost. 두 가설 모두 quality family이나 axis 구성 완전 다름.",
+      "q_family_factor_overlap": "variant_1 {Q01, Q04, Q25}, H_1693 {Q07, C01}. **0 factor overlap**",
+      "predicted_tdc_normal": "0.15~0.28 (quality family 간 weak baseline)",
+      "predicted_tdc_crisis": "0.20~0.35 (crisis 구간 quality defense co-move 가능성, but factor-level 독립)",
+      "sequential_admission_crisis_gate_0_30": "**PASS_LIKELY** — crisis TDC 0.20~0.35 span, 0.30 threshold 이내 약 60% 확률",
+      "judge_gate_11_tdc_pairwise_0_50_threshold": "**PASS** — 0.20~0.35 < 0.50 absolute safe margin",
+      "l158_flag": "GREEN-YELLOW (Early Warning 0.2~0.35 구간 margin 양호)",
+      "governor_admission_note": "**variant_1 primary path 최우선 추천** — Q07 cluster 완전 해소 + pairwise TDC 최저 예상. H_1693 parallel admission 경로 확보. Judge Gate 11 TDC < 0.50 comfortable margin.",
+      "conclusion_scenario_B_optimal": "Q-Lead decision_guide scenario_B 경로 (variant_1 primary) 정량 근거 — pair_0 TDC 최저, Q07 cluster 해소, H_1693 parallel admission path 확보"
+    },
+
+    "pair_1_STR_1679v3_vs_H_1689_v3_variant_2": {
+      "q07_shared_weight_product": "1.00 × 0.25 = 0.25 (low direct)",
+      "mechanism_similarity": "MEDIUM — STR_1679v3 Q07 single + overlay / H_1689 v3 variant_2 Q07 1/4 + Q01/Q04/Q25 co-factors",
+      "predicted_tdc_normal": "0.18~0.32",
+      "predicted_tdc_crisis": "0.25~0.45",
+      "sequential_admission_crisis_gate_0_30": "CRITICAL WARNING — 0.25~0.45 span, crisis 0.30 threshold 경계",
+      "l158_flag": "YELLOW (Early Warning 0.3~0.4 구간)",
+      "governor_admission_note": "H_1689 v3 variant_2 primary 시 STR_1679v3 reserve 또는 weight 축소. variant_1 (3-axis no Q07) primary 전환 시 cluster 해소."
+    },
+
+    "pair_2_STR_1679v3_vs_H_1693": {
+      "q07_shared_weight_product": "1.00 × 0.70 = 0.70 (HIGH direct)",
+      "mechanism_similarity": "HIGH — Q07 핵심 factor 공유, STR_1679v3 overlay 차별화 / H_1693 sector-neutralization + SUE 차별화",
+      "predicted_tdc_normal": "0.28~0.42",
+      "predicted_tdc_crisis": "0.40~0.60",
+      "sequential_admission_crisis_gate_0_30": "FAIL PREDICT — crisis TDC 0.30 threshold 명백 초과 예상",
+      "l158_flag": "RED (Early Warning 0.4~0.5+ 구간)",
+      "governor_admission_note": "**Sequential Admission 필수** — STR_1679v3 또는 H_1693 둘 중 하나만 primary 편입. 둘 다 Grade A 시 TDC 낮은 쪽 또는 정책 기여 큰 쪽 선택."
+    },
+
+    "pair_3_H_1689_v3_variant_2_vs_H_1693": {
+      "q07_shared_weight_product": "0.25 × 0.70 = 0.175 (MEDIUM direct, but mechanism 유사)",
+      "mechanism_similarity": "HIGH-MEDIUM — 두 가설 모두 Q07 활용 defense composite, quality multi-axis 접근. H_1689는 4-axis balanced / H_1693은 sector-neutral + earnings surprise boost.",
+      "predicted_tdc_normal": "0.25~0.38",
+      "predicted_tdc_crisis": "0.35~0.55",
+      "sequential_admission_crisis_gate_0_30": "FAIL PREDICT — crisis TDC 0.35+ 예상, 0.30 threshold 초과",
+      "l158_flag": "YELLOW-RED (Early Warning 0.35~0.55 구간)",
+      "governor_admission_note": "Q-Lead decision_guide_q07_cluster_winner 적용 — **H_1689 v3 variant_1 (3-axis no Q07) primary 전환** 시 이 pair 무효화 (cluster 해소 경로 최우선). 둘 다 primary 필요 시 sequential admission + weight dilution."
+    }
+  },
+
+  "premeasurement_bull_cases": [
+    "H_1693 Z_Sector neutralization이 effectively Q07 raw signal을 sector factor로 재구성 → STR_1679v3 / H_1689 v3 variant_2와 effective correlation 감소 가능 (S3 empirical 측정 필수)",
+    "SUE (C01) 30% weight로 earnings surprise momentum axis 추가 → H_1689 v3 variant_2 (Q01 profitability + Q04 accounting)와 orthogonal axis 확보",
+    "STR_1679v3는 overlay-heavy strategy (DD/VT regime) → underlying signal보다 regime timing이 return driver. H_1693 pure signal과 return path 차별화 가능",
+    "Factor DB Sector 컬럼 기반 neutralization은 factor-level operation, portfolio-level TDC와 분리된 측정 가능"
+  ],
+
+  "premeasurement_bear_cases": [
+    "Q07 direct 70% weight는 portfolio composition 5개 이상 종목 공유 가능성 높음 → t-copula upper tail 공분산 상승",
+    "Defense family crisis regime에서 동일 시점 alpha 실현 → crisis TDC 구조적 상승 (L-156 v2 pattern)",
+    "SUE 30% weight는 L-136 CAGR 2.59% 개선 목표 but stress regime에서 defense 역할 약화 가능 (earnings surprise 위기 시 noise)",
+    "Sector-neutralization은 cross-section level factor 처리, portfolio-level 20-stock 선택에서 공유 종목 자동 감소 보장 없음"
+  ],
+
+  "q_lead_decision_guide_alignment": {
+    "q_lead_directive": "Q07 cluster 의사결정 가이드 + Q-Lead P2 지시 variant_1 vs H_1693 pair 추가",
+    "scenario_A_both_grade_a": "TDC pairwise 낮은 쪽 primary — pair_0 (variant_1 vs H_1693) TDC 0.20~0.35 최저, scenario_B와 동일 귀결",
+    "scenario_B_h1689_v3_variant_1_3axis_primary_OPTIMAL": "**최적 경로** — variant_1 (Q01+Q04+Q25 no Q07) primary 선택 시 pair_0 crisis TDC 0.20~0.35 PASS_LIKELY → Q07 공유 완전 해소 + H_1693 parallel admission path 확보",
+    "scenario_C_h1693_differentiation_empirical": "H_1693 S1에서 Z_Sector 실효성 + SUE boost CAGR 증가 실증 시 primary 정당화 (차선)",
+    "scenario_D_all_fail": "rev8-A-revised-v3 Reserve 이동 + D2/D3 재설계"
+  },
+
+  "p2_scout_recommendation_final": {
+    "recommended_path": "scenario_B (variant_1 primary no Q07)",
+    "quantitative_basis": {
+      "pair_0_variant_1_vs_H_1693_crisis_tdc": "0.20~0.35 (PASS_LIKELY)",
+      "pair_1_STR_1679v3_vs_variant_2_crisis_tdc": "0.25~0.45 (YELLOW WARNING)",
+      "pair_2_STR_1679v3_vs_H_1693_crisis_tdc": "0.40~0.60 (RED FAIL_PREDICT)",
+      "pair_3_variant_2_vs_H_1693_crisis_tdc": "0.35~0.55 (RED-YELLOW FAIL_PREDICT)"
+    },
+    "judge_gate_11_impact": "variant_1 primary 시 H_1693 pair_0 TDC 0.20~0.35 < 0.50 absolute margin. variant_2 primary 시 H_1693 pair_3 TDC 0.35~0.55 경계/초과 위험.",
+    "governor_pg1_slot_impact": "variant_1 primary: STR_1679v3 8% + H_1689 v3 variant_1 10% + H_1693 10% = Defense 28% (cluster 완화 PASS). variant_2 primary: Q07 공유 cluster saturation RED, H_1693 reserve 강제.",
+    "final_scout_recommendation": "Forge S1 H_1689 v3 dispatch 시 variant_1 PRIMARY 우선 실행 + variant_2 SECONDARY parallel. variant_1 Grade A 달성 시 H_1693 primary admission path automatic. variant_1 FAIL 시에만 variant_2 consideration."
+  },
+
+  "s0_debate_risk_manager_concern_preemptive_response": {
+    "expected_concern": "Q07 cluster 3건 동시 편입 시 tail dependence 상승 + defense crisis alpha 중복 → Phase_3 Defense cluster 33% cap 내 효과적 alpha source 3배 아님",
+    "scout_response": "L-156 v2 Sequential Admission Protocol 엄수. 실측 TDC 결과에 따라 최소 1건 reserve 또는 weight dilution. 3건 동시 편입 금지.",
+    "governor_pg1_slot_allocation_projection": {
+      "case_1_all_3_reserved_or_diluted": "STR_1679v3 8% + H_1689 v3 primary 10% + H_1693 reserve = Defense cluster 18~23%",
+      "case_2_variant_1_primary": "STR_1679v3 8% + H_1689 v3 variant_1 (no Q07) 10% + H_1693 10% = Defense cluster 28% (Q07 cluster 완화)",
+      "case_3_sequential_admission": "STR_1679v3 primary → H_1693 secondary → H_1689 v3 variant_2 reserve (Governor judgement)"
+    }
+  },
+
+  "s3_measurement_protocol_post_s1": {
+    "required_data": [
+      "04_Research/strategies/STR_1679v3/output/daily_returns.csv",
+      "04_Research/strategies/STR_1689v3_variant_2/output/daily_returns.csv (Forge S1 post-dispatch)",
+      "04_Research/strategies/STR_1693/output/daily_returns.csv (Forge S1 post-dispatch)"
+    ],
+    "measurement_functions": [
+      "compute_tdc_tcopula(returns_a, returns_b) — full sample",
+      "compute_tdc_tcopula_regime(returns, regime_series, regime='CRISIS') — crisis conditional",
+      "compute_pairwise_tdc_matrix(returns_list, regime_series) — matrix 산출"
+    ],
+    "expected_runtime": "약 5~10분 (3 pairs × 2 regime = 6 MLE fits)",
+    "artifact_path": "stage_artifacts/s3_orthogonality_H_1693_crisis_tdc_measured.json"
+  },
+
+  "scout_notes": [
+    "R1 debate 중 Governor debater에게 이 artifact 경로 전달 권장 — cluster saturation / Sequential Admission 자체 응답 자원 제공",
+    "Risk Mgr debater에게도 전달 — tail dependence L-156 v2 감시 관점 선제 대응",
+    "추정치는 L-157 v4 pre-empirical level — S3 t-copula MLE 실측이 최종 결정",
+    "pair 2 (STR_1679v3 vs H_1693) crisis TDC 0.40~0.60 FAIL PREDICT는 H_1693 S0 debate R1 Governor 감점 주 요인 예상 → V1 calibration [62, 75] mid 68 prediction 유지 근거",
+    "scenario_B (H_1689 v3 variant_1 primary 전환) path가 cluster 전면 해소로 Q-Lead 의사결정에 유리한 경로",
+    "H_1693 v1.2 강화 반영 Scout Calibration v4 최종: per_debater_v4 {codex_critic:[10,14], risk_manager:[12,15], governor:[13,16], quant:[13,16], academic:[14,17]}, total_range [62, 75], mid 68"
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "_v54_freeze_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_override_timestamp": "2026-04-19T12:45+09:00",
+  "_v54_override_rationale": "team-lead Scenario_D Option 2 3항 승인 (H_1690 hard blocker). Composition 재조합 범위.",
+  "from": "Governor",
+  "to": "Q-Lead + Judge + Scout + Forge + team-lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON_v1_8",
+  "stage": "PG1_scenario_D_option_2_approved_final",
+  "timestamp": "2026-04-19T12:55+09:00",
+  "session": 68,
+  "day": 1,
+  "version": "v1.8_scenario_D_option_2_final",
+  "supersedes": "PHASE_1_PG1_ADMISSION_SKELETON_v1_7.json (2026-04-18 16:55)",
+  "status": "SKELETON v1.8 — Scenario_D Option 2 공식 확정 (team-lead 3항 승인). H_1690 DROP + H_1693 NEW Defense 편입 반영.",
+
+  "reference_files": {
+    "scenario_d_approved_final": "qepm/mailbox/governor/outbox/rev8_A_revised_v3_scenario_D_APPROVED_20260419.json",
+    "h_1693_s0_record_v1": "stage_artifacts/s0_record_H_1693_q07_sector_neutral_defense.json (2026-04-19 12:33)",
+    "scout_inbox_TODO_defense": "qepm/mailbox/scout/inbox/TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json",
+    "judge_signoff_reception": "qepm/mailbox/governor/outbox/session_68_day_1_governor_signoff_reply_20260419.json",
+    "gap_vector_v1_0_4": ".cache/portfolio_gap_vector.json (2026-04-19 12:35)",
+    "admission_rule_v3_5_1": "qepm/mailbox/governor/outbox/admission_rule_v3_5_1_amendment_GATE_13_20260418.json"
+  },
+
+  "v1_8_changes_from_v1_7": [
+    "1. H_1690 STR_1685 DROP 확정 (VALIDATED_HARD_FAIL 4 variants all Grade F, MDD 77~94%)",
+    "2. H_1693 Q07 SectorNeutral + SUE Defense NEW 편입 (10% slot)",
+    "3. Scenario_D Option 2 team-lead 3항 승인 반영",
+    "4. Phase_1 LIVE timeline +1일 slip (Day 6~7 → Day 8 전환)",
+    "5. L-165 custodian trigger Judge 공식 요청",
+    "6. Blender 5-sleeve pg2_allocation Day 2 발행 계획 편입",
+    "7. AX-004 Q07 scope EXCEPTION 명시 요구 Scout s0_record v2 보강"
+  ],
+
+  "admission_rule_v3_5_1_stage_2_enforcement_maintained": {
+    "status": "STAGE_2_ACTIVE (team-lead 승인 + Gate 13 L-164 mandatory)",
+    "validated_hard_fail_count": "2 confirmed + 1 pending L-165",
+    "validated_hard_fails": [
+      {"strategy": "STR_1683", "l_code": "L-160", "family": "L-125 extension"},
+      {"strategy": "STR_1684", "l_code": "L-161", "family": "AX_CAND_kr_momentum_inverse separate"},
+      {"strategy": "STR_1685", "l_code": "L-165 pending Judge custodian", "family": "L-125 extension 3rd member candidate"}
+    ],
+    "enforcement_level": {
+      "gate_11_variant_comparison": "advisory_warning (Stage 3 Architect signoff 2026Q2 대기)",
+      "gate_12_ic_return_coupling": "hard_block mandatory (전 family)",
+      "gate_13_factor_db_access": "hard_block mandatory (L-164 ACTIVE)"
+    }
+  },
+
+  "admission_candidates_per_scenario_d_option_2_final": {
+    "slot_1_STR_1631_Core_Primary": {
+      "admission_status": "ALREADY_PG2_ACTIVE_weight_transition",
+      "weight_current": 0.80,
+      "weight_target": 0.18,
+      "gate_11_verdict": "EXEMPT (Core_Primary single consensus signal, Judge 2026-04-18 17:10 signoff)",
+      "gate_12_verdict": "Proxy PASS 1.417 advisory_warning",
+      "gate_13_verdict": "PASS (load_month_factors 경유 확인)",
+      "final_verdict": "PASS",
+      "transition_plan": "Day 6~7 단계적 80→50→30→18% transition"
+    },
+    "slot_2_Core_Secondary_H_1692_v2": {
+      "admission_status": "PENDING_FORGE_S1_P0",
+      "weight_target": 0.10,
+      "family": "industry_momentum_residual_kr_rsi_strengthened",
+      "s0_record_reference": "stage_artifacts/s0_record_H_1692_v2_industry_momentum_rsi_residualized_strengthened.json (2026-04-19 00:41)",
+      "s0_verdict_reference": "stage_artifacts/S0_VERDICT_H_1692.json (00:36 → 재판정 pending v2)",
+      "s1_todo_inbox": "qepm/mailbox/forge/inbox/TODO_S1_H_1692_v2_core_secondary.json (12:28)",
+      "replaces": "H_1688 DROP (L-161 family)",
+      "l_161_avoidance_design": "M07 sd 1.0 + M18 sd 1.0 balanced OLS (CLEAN RESIDUALIZATION) + AX_CAND_kr_momentum_inverse scope EXCEPTION",
+      "gate_11_status": "ADVISORY (Scout S5 slate 4-variants 예정)",
+      "gate_12_status": "MANDATORY hard_block (Stage 2)",
+      "gate_13_status": "MANDATORY hard_block",
+      "expected_metrics": {"ICIR": "0.25~0.40", "SR": "0.80~1.10", "MDD": "35~50%"}
+    },
+    "slot_3_STR_1656_Div_ML": {
+      "admission_status": "ALREADY_PG2_ACTIVE",
+      "weight_target": 0.14,
+      "gate_11_verdict": "ADVISORY (v3.6 Gate 16 ML hyperparameter framework pending)",
+      "gate_12_verdict": "PASS 0.314 엄밀 (margin 0.014)",
+      "gate_13_verdict": "PASS",
+      "final_verdict": "PASS"
+    },
+    "slot_4_STR_1679v3_Div_1_reduced_CERTIFIED": {
+      "admission_status": "APPROVED_DUAL_TRACK_RESOLVED",
+      "weight_previous_v1": 0.10,
+      "weight_target": 0.08,
+      "reduction_rationale": "V1 TDC 0.52 L-156 대응 (Option a)",
+      "gate_11_verdict": "PASS (Q25 single-factor embed)",
+      "gate_12_verdict_certified": "엄밀 PASS proxy coupling_ratio 3.391 (11x threshold margin)",
+      "gate_13_verdict": "PASS",
+      "dual_track_trigger_resolution": "Option B Governor mathematical projection (team-lead 승인) + Judge 2026-04-18 19:25 joint signoff",
+      "final_verdict": "PASS",
+      "admission_timing": "Day 5 PG1 공동 심사"
+    },
+    "slot_5_H_1689_v3_Defense_Q24_exclude_3_axis": {
+      "admission_status": "PENDING_FORGE_S1_P0",
+      "weight_target": 0.23,
+      "axes": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+      "q24_removed": "Altman_Z stress_icir -0.695 poison pill (L-163)",
+      "s0_record_reference": "stage_artifacts/s0_record_H_1689_v3_quality_q24_exclude_q07_replace.json (2026-04-19 00:16)",
+      "s0_debate_transcript": "stage_artifacts/s0_debate_transcript_H_1689.json (R1 62 BORDERLINE)",
+      "s1_todo_inbox": "qepm/mailbox/forge/inbox/TODO_S1_H_1689_v3_defense_q24_exclude.json (12:30)",
+      "gate_11_status": "MANDATORY hard_block (Stage 2 + Defense family)",
+      "gate_12_status": "MANDATORY hard_block (Stage 2)",
+      "gate_13_status": "MANDATORY hard_block",
+      "ax_001_v2_audit_defense_v2_required": true,
+      "governor_preference": "Option 1 Q24-exclude 3-axis PRIMARY (saturation-safe, H_1693 Q07 overlap 회피)"
+    },
+    "slot_6_H_1693_Defense_Q07_sector_neutral_SUE_NEW": {
+      "admission_status": "PENDING_S0_DEBATE_5_AGENT + FORGE_S1_P2_NEW",
+      "weight_target": 0.10,
+      "replaces": "H_1690 STR_1685 (VALIDATED_HARD_FAIL DROP + L-165 candidate)",
+      "family": "quality_earnings_stability_sector_neutral",
+      "sub_family": "q07_sector_neutral_sue_boost",
+      "mechanism": "0.7 · z_sector_Q07 + 0.3 · z_SUE",
+      "s0_record_reference": "stage_artifacts/s0_record_H_1693_q07_sector_neutral_defense.json (v1, 2026-04-19 12:33)",
+      "s0_record_v2_required": "AX-004 scope EXCEPTION 명시 보강 (team-lead 지시)",
+      "gate_11_status": "MANDATORY hard_block (Defense family)",
+      "gate_12_status": "MANDATORY hard_block",
+      "gate_13_status": "MANDATORY hard_block",
+      "ax_001_v2_audit_defense_v2_required": true,
+      "ax_004_scope_exception": "Q07 Earnings_Stability (Dichev-Tang 2009) + SUE composite는 AX-004 single-signal scope 밖 (Governor + team-lead joint signoff)",
+      "expected_metrics": {"ICIR_composite": "0.25~0.40", "SR": "0.75~1.05", "MDD": "25~35% (Defense target)", "stress_outperform": "2/3+", "bad_normal_ic_ratio": "0.65~0.85", "core_mdd_reduction": "5~10%"}
+    },
+    "slot_7_H_1685_v2_Div_phase_2_plus": {
+      "admission_status": "NOT_ADMITTED_PHASE_1 (Phase_2+ gradual)",
+      "weight_phase_2": 0.03,
+      "weight_phase_3": 0.05,
+      "weight_phase_4_swap": 0.10,
+      "gate_11_12_13_stage_2": "MANDATORY hard_block 적용 (Phase_2 진입 시)"
+    }
+  },
+
+  "forge_day_2_queue_revised_v1_8": {
+    "P0_new_highest": [
+      "H_1692 v2 S1 Core_Secondary (BORDERLINE R1 61, TODO_S1 12:28)",
+      "H_1689 v3 S1 Defense Q24-exclude (BORDERLINE R1 62, TODO_S1 12:30)"
+    ],
+    "P1": [
+      "H_1685 v2 S1 Diversifier conditional (TODO_S2 기존)"
+    ],
+    "P2_NEW": [
+      "H_1693 S1 Defense Q07 sector_neutral_SUE (Scout handoff_kit_v1.2 도착 후 → Forge S1 스폰, AX-001 v2 audit_defense_v2 mandatory)"
+    ],
+    "dropped_and_prohibited": [
+      "H_1690 STR_1685 재실행 금지 (L-165 candidate + VALIDATED_HARD_FAIL DROP)",
+      "H_1688 baseline 재실행 금지 (L-161 family)",
+      "STR_1684 재실행 금지 (L-161 VALIDATED_HARD_FAIL)"
+    ]
+  },
+
+  "composition_totals_scenario_d_option_2_final": {
+    "STR_1631": 0.18,
+    "H_1692_v2": 0.10,
+    "STR_1656": 0.14,
+    "STR_1679v3_reduced_certified": 0.08,
+    "H_1689_v3": 0.23,
+    "H_1693_NEW": 0.10,
+    "active_total": 0.83,
+    "reserve": 0.09,
+    "misc_allocation": 0.08,
+    "total": 1.00,
+    "n_active": 6,
+    "status": "**APPROVED_FINAL** (team-lead 3항 승인)",
+    "core_cluster_pct": 28,
+    "diversifier_cluster_pct": 22,
+    "defense_cluster_pct": 33,
+    "defense_cluster_compliance": "35% cap margin 2pp PASS",
+    "family_saturation_overall": "전 family < 35% cap PASS"
+  },
+
+  "phase_1_timeline_final_v1_8": {
+    "day_1_complete": "team-lead Scenario_D Option 2 승인 (12:45) + Scout H_1693 s0_record v1 완료 (12:33) + Governor rev8-A-revised_v3 + skeleton v1.8 발행",
+    "day_2": "Scout H_1693 AX-004 EXCEPTION 보강 s0_record v2 + 5-agent S0 debate + Judge S6 H_1689 v3/H_1692 v2/H_1685 v2 순차 판정 + L-165 custodian 결정",
+    "day_3": "H_1693 S0 debate R3 VERDICT + Forge H_1693 S1 스폰 + AX-001 v2 audit_defense_v2 gate",
+    "day_4": "H_1693 S1 결과 + Forge S3/S4 + Judge S6 Gate 11/12/13 MANDATORY + poison_pill L-163 체크",
+    "day_5": "Governor PG1 Admission 5 candidates 공동 심사 (H_1692 v2 + H_1689 v3 + STR_1679v3 + H_1685 v2 + H_1693)",
+    "day_6_7": "STR_1631 80→18% transition + Blender pg2_allocation_5sleeve.json 발행",
+    "day_8": "Phase_1 LIVE 전환 (원계획 Day 6~7 대비 +1일 slip 승인)"
+  },
+
+  "dependencies_v1_8": [
+    "Scout H_1693 s0_record v2 AX-004 EXCEPTION 보강 (Day 2)",
+    "Scout H_1693 5-agent S0 debate R1~R3 (Day 2~3)",
+    "Forge v3 재스폰 (H_1689 v3 + H_1692 v2 + H_1685 v2 + H_1693 S1)",
+    "Forge v3 H_1690 재실행 중복 방지 (team-lead 지시 + Governor confirmation)",
+    "Judge S6 Gate 11/12/13 MANDATORY + L-163 poison_pill + L-165 custodian 결정",
+    "Governor PG1 공동 심사 (Day 5)",
+    "Blender pg2_allocation_5sleeve.json 발행 (Day 6~7)"
+  ],
+
+  "v54_freeze_compliance_v1_8": {
+    "new_rule_created": false,
+    "new_amendment_created": false,
+    "composition_reallocation_only": true,
+    "freeze_override_basis": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true (team-lead 12:45 approval, hard blocker H_1690)",
+    "admission_rule_version": "v3.5.1 (12 gates + Gate 13 L-164 = 13 gates) — unchanged",
+    "verdict": "PASS"
+  },
+
+  "telegram_notification_final": {
+    "channel": "[Governor] 한글 + 이모지",
+    "messages": [
+      "🏗️ [Governor] Phase_1 PG1 Skeleton v1.8 발행 (Scenario_D Option 2 final)",
+      "✅ [Governor] team-lead 3항 승인 + freeze override 반영",
+      "📊 [Governor] 6 active 83% composition (Defense 33% = H_1689 23% + H_1693 10%)",
+      "🎯 [Governor] Phase_1 LIVE Day 8 전환 (Session 68 Day 8)"
+    ]
+  }
+}

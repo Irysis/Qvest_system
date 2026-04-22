@@ -1,0 +1,551 @@
+{
+  "from": "Risk_Manager",
+  "to": "Q-Lead + Governor + Judge",
+  "type": "RISK_MGR_3RD_ROUND_VERDICT_SESSION_68",
+  "stage": "PG2_rev8_A_revised_v2_SCENARIO_C_CONDITIONAL",
+  "timestamp": "2026-04-19T01:10:00+09:00",
+  "session": 68,
+  "day": 1,
+  "version": "3rd_round_session_68_day_1",
+  "supersedes": "RISK_MGR_3RD_ROUND_VERDICT_SCENARIO_Y.json (Session 67 Day 1 pre-Scenario C)",
+  "sla_deadline": "2026-04-19T15:05+09:00",
+  "sla_status": "ON_TIME (14h before deadline)",
+
+  "executive_summary": "rev8-A-revised_v2 Scenario C CONDITIONAL_APPROVE with 2 CRITICAL BLOCKERS. Factor DB rebuild FAILED (PID terminated, build_hash absent, parquet timestamps pre-rebuild Apr 10). STR_1631 CRITICAL factor exposure (M08+R12+R16 all 3 CRITICAL factors) remains UNVALIDATED. STR_1679v3 proxy coupling 3.391 mathematically sound under current (distorted) Factor DB, but post-rebuild recalibration MANDATORY. Defense 33% cluster structurally improved from rev5 42% but untested with corrected factor data. Overall: NO strategy in rev8-A composition can be considered validated until Factor DB rebuild completes successfully and post-fix ICIR delta is measured.",
+
+  "critical_blocker_finding": {
+    "blocker_1_factor_db_rebuild_failure": {
+      "severity": "CRITICAL",
+      "finding": "Factor DB rebuild PID 2749730 and PID 2748125 both TERMINATED. No /tmp/factor_db_rebuild_v54.log found. No .cache/factor_db/build_hash.txt created. Parquet files last modified 2026-04-10 (pre-rebuild date). This means the rebuild either failed silently or was killed by Q-Lead revert (REVERT_IMPACT_ASSESSMENT_20260418.json confirms factor_db_builder.R reverted). All 440 monthly parquet files remain in pre-fix state with distorted Z-scores.",
+      "impact": "ALL downstream analyses (ICIR, coupling_ratio, hurdle results, admission decisions) are based on DISTORTED factor data. Governor Day 2 coordinate plan assumes successful rebuild, but rebuild has NOT occurred.",
+      "action_required": "Forge v4 MUST re-apply factor_db_builder.R Option A fix (re-standardize after winsorize) AND restart rebuild BEFORE any PG1 admission proceeds. Phase_1 Day 2-5 timeline is BLOCKED until rebuild completes.",
+      "l_code_reference": "L-164 factor_engine load_month_factors mandate is ACTIVE but Factor DB itself remains distorted."
+    },
+    "blocker_2_str_1631_critical_factor_exposure": {
+      "severity": "CRITICAL",
+      "finding": "STR_1631 (current PG2 60% weight, Day 5 target 18%) uses ALL 3 CRITICAL distortion factors: M08 Residual_Mom (sd 0.054, +1761% distortion), R12 Idiosyncratic_Risk (sd 0.071, +1316%), R16 Calmar (sd 0.165, +529%). Additionally uses Q07 (sd 0.328, +205%) and M01 (sd 0.622, +52%). This is the MOST affected strategy in the entire portfolio.",
+      "scenario_analysis": {
+        "worst_case_probability_40pct": {
+          "description": "Post-fix ICIR significantly degrades. STR_1631 factor composite loses ranking power when M08/R12/R16 Z-scores properly normalized.",
+          "mechanism": "When sd(M08) goes from 0.054 to 1.0, the factor signal amplification disappears. M08 was contributing 18.5x its intended weight in IC-weighted composites. R12 was contributing 14.1x. Post-fix, these factors contribute proportionally, potentially revealing that their IC contribution was partially artifactual.",
+          "sharpe_impact": "STR_1631 Sharpe could drop -15% to -30% (from current ~1.24 to ~0.87-1.05). Harvey t=3.09 might fall below 3.0.",
+          "portfolio_impact": "PG2 portfolio SR 1.193 could drop to 0.95-1.10 (60% weight on degraded STR_1631)."
+        },
+        "base_case_probability_35pct": {
+          "description": "Post-fix ICIR shows moderate change. C19 consensus signal is dominant, M08/R12/R16 are complementary.",
+          "mechanism": "STR_1631 SYN_05 is IC-weighted composite. C19 (ICIR 0.575) is the strongest factor. If C19 dominance absorbs the M08/R12/R16 normalization change, portfolio returns may be largely preserved.",
+          "sharpe_impact": "STR_1631 Sharpe delta -5% to -10% (from ~1.24 to ~1.12-1.18). Harvey t remains above 3.0.",
+          "portfolio_impact": "PG2 portfolio SR negligible change (-0.02 to -0.05)."
+        },
+        "best_case_probability_25pct": {
+          "description": "Post-fix ICIR unchanged. Scale invariance holds for IC-weighted composite ranking.",
+          "mechanism": "L-161 OLS scale invariance property: if factor ranking is monotonic, Z-score rescaling doesn't change cross-sectional ranking. STR_1631's IC-weighted mean may be insensitive to individual factor sd changes.",
+          "sharpe_impact": "STR_1631 Sharpe unchanged (1.24).",
+          "portfolio_impact": "PG2 portfolio SR unchanged (1.193)."
+        },
+        "probability_weighted_expected_sharpe_delta": "-10% to -15% (E[delta] = 0.40 * -22.5% + 0.35 * -7.5% + 0.25 * 0% = -11.6%)",
+        "expected_str_1631_sharpe_post_fix": "1.24 * 0.884 = 1.10 (central estimate)",
+        "expected_portfolio_sr_post_fix_60pct_weight": "1.10 * 0.6 + residual = ~1.05-1.10",
+        "governor_day_4_admission_readjustment": "MANDATORY if worst case materializes. STR_1631 weight 18% target may need increase if alpha source is robust, or decrease if ICIR degrades significantly."
+      },
+      "action_required": [
+        "Factor DB rebuild completion is PREREQUISITE for STR_1631 validation",
+        "Post-rebuild Scout S2 re-profile MANDATORY (Day 2 plan confirmed)",
+        "Judge re-verification of Harvey t>3.0 MANDATORY",
+        "If Harvey t drops below 3.0: STR_1631 PG2 ACTIVE status requires re-examination"
+      ]
+    }
+  },
+
+  "agenda_1_str_1679v3_proxy_coupling": {
+    "verdict": "CONDITIONAL_PASS",
+    "coupling_ratio_proxy": 3.391,
+    "gate_12_threshold": 0.3,
+    "margin_multiple": "11.3x",
+
+    "mathematical_projection_assessment": {
+      "governor_methodology_review": "Governor derived coupling_ratio from v2 baseline metrics (Sharpe_m 1.136, IR 1.163) with Q25 embed marginal adjustment. Methodology is internally consistent but rests on UNTESTED assumptions.",
+      "assumption_1_v2_baseline_validity": {
+        "concern": "v2 baseline was generated under distorted Factor DB (R16 sd 0.165, not 1.0). v2 Sharpe 1.152 may be artifactually inflated or deflated.",
+        "risk_level": "MEDIUM",
+        "mitigation": "Forge physical sleeve re-execution post-rebuild will validate. Proxy serves as interim estimate."
+      },
+      "assumption_2_q25_embed_marginal": {
+        "concern": "Q25 embed marginal effect +0.15pp CAGR is factor-level projection. Portfolio-level nonlinear effects (rebalancing timing, concentration changes) are unmodeled.",
+        "risk_level": "LOW",
+        "mitigation": "Marginal effect is small enough that even 3x estimation error keeps coupling_ratio above threshold."
+      },
+      "assumption_3_scale_invariance_partial": {
+        "concern": "Governor acknowledges scale invariance is PARTIAL for non-residualized factors (Q25, R16 are raw Z_Score). Fix 1 effect on raw factors is uncertain.",
+        "risk_level": "MEDIUM-HIGH",
+        "mitigation": "Governor's ICIR delta estimate |<0.02| may understate actual post-fix change for raw factors. However, coupling_ratio 3.391 has 10x margin -- even a 50% ICIR change would yield coupling_ratio ~1.7, still PASS."
+      }
+    },
+
+    "fix_1_scale_invariance_verification": {
+      "finding": "Governor's claim that Fix 1 effect is minimal (|ICIR delta| < 0.02) is OVERLY OPTIMISTIC for non-residualized factors.",
+      "evidence": "STR_1684 (residualized momentum) showed Fix 1 produced ZERO ICIR change (L-161 OLS invariance). But STR_1679v3 factors (Q25, R16) are NON-residualized. Q25 sd goes from 0.53 to 1.0 (89% change). R16 sd goes from 0.165 to 1.0 (506% change). For IC-weighted composites, Z-score magnitude changes can shift weight allocation even if ranking is preserved.",
+      "revised_estimate": "ICIR delta could be |0.02-0.10| for non-residualized factors. This widens coupling_ratio band to [2.5, 4.0]. Still comfortably above 0.3 threshold.",
+      "verdict_rationale": "PASS is secure because 11x margin absorbs even pessimistic scenarios. But the ICIR delta estimate should be revised from |<0.02| to |<0.10|."
+    },
+
+    "ic_return_coupling_path_analysis": {
+      "diversifier_scenario": {
+        "description": "STR_1679v3 functions as genuine diversifier -- alpha source independent of overlay",
+        "evidence_for": "Q25 Earnings Yield is fundamentals-based, distinct from STR_1631 C19 consensus. Cross-sectional overlap expected low.",
+        "evidence_against": "v2 Role Honesty rehearing (L-155) showed defense sleeve contributed -22.55pp cosmetic improvement. Overlay dependency was 95%+ of grade improvement.",
+        "probability": "40%"
+      },
+      "overlay_dependent_scenario": {
+        "description": "STR_1679v3 alpha comes primarily from overlay, not embedded Q25",
+        "evidence_for": "v2 def5_only CAGR 5.11%, MDD 65.34%. Without overlay, strategy is near-worthless. L-153 3-variant analysis proved overlay dependency.",
+        "evidence_against": "v3 embeds Q25 more aggressively (Slot A redesign). May break overlay dependency pattern.",
+        "probability": "50%"
+      },
+      "failure_scenario": {
+        "description": "STR_1679v3 fails both as diversifier and overlay-dependent -- post-fix data reveals negative alpha",
+        "probability": "10%"
+      },
+      "risk_manager_position": "STR_1679v3 at 8% weight carries LIMITED portfolio risk even under failure scenario (8% * worst-case -5% = -0.4pp). Proxy PASS is acceptable as interim measure. Physical sleeve re-execution MANDATORY before Day 5 admission."
+    },
+
+    "action_required": [
+      "Governor ICIR delta estimate revision from |<0.02| to |<0.10| for non-residualized factors",
+      "Forge physical sleeve re-execution post-rebuild MANDATORY",
+      "Role Honesty Audit (L-153 overlay dependency) remains the primary risk, not coupling_ratio"
+    ]
+  },
+
+  "agenda_2_post_rebuild_str_1631_impact": {
+    "verdict": "CRITICAL_BLOCKER",
+    "severity": "HIGH",
+
+    "factor_db_rebuild_status_finding": {
+      "rebuild_pid_2749730": "TERMINATED (not found in process table)",
+      "rebuild_pid_2748125": "TERMINATED (not found in process table)",
+      "rebuild_log": "NOT FOUND at /tmp/factor_db_rebuild_v54.log",
+      "build_hash_txt": "NOT FOUND at .cache/factor_db/build_hash.txt",
+      "parquet_last_modified": "2026-04-10 (pre-rebuild, 9 days ago)",
+      "parquet_count": 440,
+      "diagnosis": "Q-Lead revert (REVERT_IMPACT_ASSESSMENT_20260418.json) rolled back factor_db_builder.R Option A fix. PID 2749730 was started by Forge with the PRE_APPLIED fix, but subsequent revert removed the fix from the code. The rebuild process may have (a) completed with old code, (b) failed due to code inconsistency, or (c) been killed as part of revert. In ALL scenarios, the parquet files remain UNFIXED.",
+      "conclusion": "Factor DB is currently in PRE-FIX distorted state. All 288 factors across 440 months retain the Z-score normalization distortion documented in factor_db_fix_impact_audit_v1.json."
+    },
+
+    "str_1631_critical_exposure_quantified": {
+      "factor_distortion_table": [
+        {"factor": "M08_Residual_Mom", "sd_current": 0.054, "sd_target": 1.0, "distortion_magnitude": "18.5x compression", "icir_current": 0.041, "stress_icir": 2.290, "impact": "CRITICAL -- M08 stress_icir 2.29 is strongest stress factor in STR_1631, but sd 0.054 means its cross-sectional dispersion is near-zero. Post-fix M08 will have 18.5x wider spread, potentially changing ranking dramatically."},
+        {"factor": "R12_Idiosyncratic_Risk", "sd_current": 0.071, "sd_target": 1.0, "distortion_magnitude": "14.1x compression", "icir_current": 0.371, "stress_icir": 0.355, "impact": "CRITICAL -- R12 provides moderate crisis factor contribution. 14.1x compression means R12 is near-constant across stocks currently. Post-fix will restore its discriminating power."},
+        {"factor": "R16_Calmar", "sd_current": 0.165, "sd_target": 1.0, "distortion_magnitude": "6.1x compression", "icir_current": 0.009, "stress_icir": 2.655, "impact": "CRITICAL -- R16 has highest stress_icir (2.655) of any factor. ICIR 0.009 is near-zero, likely because sd compression makes the factor indistinguishable across stocks. Post-fix R16 could become a powerful discriminator."},
+        {"factor": "Q07_Earnings_Stability", "sd_current": 0.328, "sd_target": 1.0, "distortion_magnitude": "3.0x compression", "icir_current": 0.382, "stress_icir": 0.753, "impact": "HIGH -- Q07 is functioning but at 1/3 intended dispersion. Post-fix will amplify Q07 signal contribution in IC-weighted composite."},
+        {"factor": "M01_Mom_12_1", "sd_current": 0.622, "sd_target": 1.0, "distortion_magnitude": "1.6x compression", "icir_current": 0.091, "stress_icir": 2.293, "impact": "MEDIUM -- M01 is closer to intended scale. Post-fix change relatively modest but M01's high stress_icir means even small changes matter."}
+      ],
+      "composite_ic_weight_shift_projection": {
+        "current_state": "IC-weighted composite heavily skewed toward factors with HIGH sd (those less compressed). C19 (sd 0.354, ICIR 0.575) currently dominates.",
+        "post_fix_state": "All factors normalized to sd=1.0. IC weights redistribute proportionally to ICIR. M08 (ICIR 0.041 -> ???), R12 (0.371), R16 (0.009 -> ???), Q07 (0.382), C19 (0.575) -- the relative contribution shifts.",
+        "key_uncertainty": "M08 and R16 current ICIR (0.041 and 0.009) may be artifactually LOW because sd compression eliminated cross-sectional variation. Post-fix ICIR could be significantly HIGHER or reveal that these factors genuinely have weak IC.",
+        "two_directional_risk": "Post-fix STR_1631 could IMPROVE (if M08/R16 gain IC) or DEGRADE (if C19 dominance was the true alpha source and M08/R12/R16 add noise when properly scaled)."
+      }
+    },
+
+    "sharpe_mdd_scenario_projections": {
+      "scenario_A_worst_40pct": {
+        "label": "Alpha Degradation",
+        "str_1631_sharpe": "0.87 - 1.05",
+        "str_1631_mdd": "-28% to -35%",
+        "portfolio_sr_at_60pct": "0.95 - 1.10",
+        "harvey_t_risk": "HIGH -- t could drop below 3.0",
+        "trigger": "M08/R12/R16 post-fix ICIR reveals factor composite was noise-driven. C19 alone insufficient."
+      },
+      "scenario_B_base_35pct": {
+        "label": "Moderate Adjustment",
+        "str_1631_sharpe": "1.12 - 1.18",
+        "str_1631_mdd": "-22% to -25%",
+        "portfolio_sr_at_60pct": "1.10 - 1.15",
+        "harvey_t_risk": "LOW -- t remains above 3.0",
+        "trigger": "C19 consensus dominates composite. M08/R12/R16 rescaling changes weights modestly."
+      },
+      "scenario_C_best_25pct": {
+        "label": "Scale Invariance / ICIR Improvement",
+        "str_1631_sharpe": "1.24 - 1.35",
+        "str_1631_mdd": "-20% to -22%",
+        "portfolio_sr_at_60pct": "1.19 - 1.25",
+        "harvey_t_risk": "NONE",
+        "trigger": "Post-fix M08/R16 gain discriminating power. IC-weighted composite becomes MORE effective with properly scaled factors."
+      },
+      "probability_weighted_expectations": {
+        "expected_str_1631_sharpe": "0.40*0.96 + 0.35*1.15 + 0.25*1.30 = 1.11",
+        "expected_portfolio_sr_60pct": "0.40*1.03 + 0.35*1.13 + 0.25*1.22 = 1.11",
+        "expected_sharpe_delta_from_current": "-0.13 (-10.5%)",
+        "confidence_interval_90pct": "[0.90, 1.25]"
+      }
+    },
+
+    "day_4_admission_plan_readjustment": {
+      "if_scenario_A_materializes": {
+        "action": "HOLD Phase_1 Day 4 admission. STR_1631 weight 60% -> 40% transition PAUSED. Investigate whether C19-only composite (without M08/R12/R16) retains Harvey t>3.0. If not, STR_1631 PG2 ACTIVE status requires Governor/Judge joint re-examination.",
+        "timeline_slip": "Phase_1 LIVE Day 6 -> Day 8+ (2-day minimum delay)"
+      },
+      "if_scenario_B_materializes": {
+        "action": "Proceed with Day 4 admission plan. Monitor ICIR delta. If |delta| > 15%, trigger factor_db_fix_impact_audit_v2.",
+        "timeline_slip": "None (Day 6 LIVE maintained)"
+      },
+      "if_scenario_C_materializes": {
+        "action": "Accelerate Phase_1. STR_1631 may warrant HIGHER weight than 18% if post-fix performance improves.",
+        "timeline_slip": "None (possible Day 5 LIVE acceleration)"
+      }
+    },
+
+    "action_required": [
+      "Forge v4: Re-apply factor_db_builder.R Option A fix + restart rebuild (HIGHEST PRIORITY P0)",
+      "Forge v4: Re-apply factor_db_connector.R RC1 fix",
+      "Forge v4: Post-rebuild compute_all_factor_ic_monthly() to regenerate factor_ic_monthly.parquet",
+      "Scout: Post-rebuild S2 re-profile for STR_1631, STR_1683, STR_1679v3 (CRITICAL tier)",
+      "Scout: Post-rebuild S2 re-profile for STR_1682, STR_1684, STR_1656 (HIGH tier)",
+      "Judge: Re-verification of STR_1631 Harvey t>3.0 post-rebuild",
+      "Governor: Day 4 admission plan CONDITIONAL on rebuild outcome (Scenario A/B/C branching)"
+    ]
+  },
+
+  "agenda_3_family_saturation_tdc_monitoring": {
+    "verdict": "WARNING",
+
+    "current_tdc_matrix_projection": {
+      "note": "Empirical TDC measurement unavailable (no portfolio-level composite return series for new candidates). Projections based on factor overlap analysis + Scenario Y estimates + Demarta-McNeil t-copula model.",
+      "projected_pairwise_tdc": [
+        {"pair": "STR_1631 <-> STR_1679v3", "tdc_estimate": 0.52, "threshold": 0.40, "status": "BREACH", "cause": "C19 consensus signal overlap (STR_1679v3 embedded C19 via Q25 composite)", "l_code": "L-156 v2"},
+        {"pair": "STR_1631 <-> H_1692", "tdc_estimate": 0.35, "threshold": 0.40, "status": "PASS_MARGINAL", "cause": "Industry momentum (H_1692) vs consensus (STR_1631) -- different alpha sources but shared market beta", "concern": "Crisis rho escalation (L-106 2x factor) could push to 0.50+"},
+        {"pair": "STR_1631 <-> STR_1656", "tdc_estimate": 0.30, "threshold": 0.40, "status": "PASS", "cause": "ML meta-learner vs fundamental composite -- structural independence"},
+        {"pair": "H_1689 <-> H_1690", "tdc_estimate": 0.45, "threshold": 0.40, "status": "BREACH", "cause": "Both Defense family, Q25 shared (25% each). Crisis rho escalation amplifies."},
+        {"pair": "STR_1631 <-> H_1689", "tdc_estimate": 0.28, "threshold": 0.40, "status": "PASS", "cause": "Core consensus vs Quality 4-axis -- low structural overlap"},
+        {"pair": "STR_1679v3 <-> H_1689", "tdc_estimate": 0.38, "threshold": 0.40, "status": "PASS_MARGINAL", "cause": "Q25 embedded (STR_1679v3 90%) vs Q25 component (H_1689 25%)"}
+      ],
+      "breach_count": 2,
+      "max_tdc_pair": "STR_1631 <-> STR_1679v3 at 0.52",
+      "improvement_from_rev5": "Max TDC 0.735 (STR_1631<->H_1676) -> 0.52 (STR_1631<->STR_1679v3). -0.22 improvement but still above 0.40 gate."
+    },
+
+    "new_structural_breach_identification": {
+      "breach_1_defense_cluster_internal": {
+        "pair": "H_1689 <-> H_1690",
+        "tdc": 0.45,
+        "cause": "Both Defense family strategies share Q25 (25% weight each). In crisis regime, quality factors co-move as flight-to-quality reversal hits all quality metrics simultaneously.",
+        "severity": "MEDIUM",
+        "mitigation": "Defense cluster is designed to be correlated (same role). Intra-cluster TDC is expected to be higher than inter-cluster. Governor 35% family cap provides concentration limit.",
+        "monitoring": "Track monthly. If H_1689<->H_1690 TDC rises above 0.55, consider replacing H_1690 with non-quality defense source."
+      },
+      "breach_2_persistent_c19_overlap": {
+        "pair": "STR_1631 <-> STR_1679v3",
+        "tdc": 0.52,
+        "cause": "C19 Composite Earnings embedded in both strategies. L-156 v2 documented this as structural.",
+        "severity": "HIGH",
+        "mitigation": "STR_1679v3 weight already reduced 10% -> 8% (rev8-A-revised_v2). Further reduction to 5% could bring TDC to ~0.45, still above threshold. Alternative: redesign STR_1679v3 to remove C19 dependency (pure Q25 Earnings Yield + non-C19 momentum).",
+        "monitoring": "Sequential Admission v3.2 enforced."
+      }
+    },
+
+    "gate_8_early_warning_status": {
+      "l_158_compliance": "Governor v3.4 Gate 8 applies to new S0 hypotheses. Current composition has 2 TDC breaches (1 persistent, 1 new).",
+      "retroactive_audit_status": "v3.5 retroactive audit COMPLETED (FINAL_20260418.json). TDC breaches acknowledged and documented.",
+      "ax_006_candidate_tracking": "AX-006 pairwise TDC conditional cluster at 0.67 composite score. Next review 2026-07-17."
+    },
+
+    "family_saturation_v1_7_compliance": {
+      "defense_cluster": {"weight": 0.33, "cap": 0.35, "margin": 0.02, "status": "PASS (2pp margin)"},
+      "consensus_family": {"weight": 0.18, "cap": 0.35, "margin": 0.17, "status": "PASS"},
+      "momentum_family": {"weight": 0.18, "cap": 0.35, "margin": 0.17, "status": "PASS", "breakdown": "H_1692 10% + STR_1679v3 8%"},
+      "ml_family": {"weight": 0.14, "cap": 0.35, "margin": 0.21, "status": "PASS"},
+      "overall_saturation": "ALL families within 35% cap. Defense cluster at 33% has tightest margin (2pp)."
+    },
+
+    "action_required": [
+      "STR_1631<->STR_1679v3 TDC 0.52 BREACH: Sequential Admission v3.2 enforced. Consider further STR_1679v3 weight reduction (8% -> 5%) if post-rebuild TDC persists.",
+      "H_1689<->H_1690 TDC 0.45 BREACH: Monitor monthly. Defense intra-cluster TDC is structurally expected but 0.45 is uncomfortably close to 0.5.",
+      "Post-rebuild TDC recalculation MANDATORY (factor sd normalization changes cross-sectional correlations)."
+    ]
+  },
+
+  "agenda_4_rev8_a_scenario_c_composition_risk_audit": {
+    "verdict": "CONDITIONAL_PASS",
+
+    "composition_risk_decomposition": {
+      "STR_1631_Core_Primary_18pct": {
+        "role": "Core_Primary",
+        "tail_risk_contribution": "DOMINANT -- highest portfolio beta contribution (est. beta 0.90). In crisis, contributes ~18% * (-30% drawdown) = -5.4pp to portfolio MDD.",
+        "post_rebuild_risk": "CRITICAL (Agenda 2). All 3 CRITICAL factors. Validation pending.",
+        "sharpe_contribution_estimated": "SR 1.24 * sqrt(0.18) = 0.53 standalone Sharpe contribution (approximation)"
+      },
+      "H_1692_Core_Secondary_10pct": {
+        "role": "Core_Secondary",
+        "tail_risk_contribution": "Industry momentum RSI residualized. Beta estimated 0.85. Crisis contribution: 10% * (-25%) = -2.5pp.",
+        "post_rebuild_risk": "MEDIUM (uses M07 sd 1.0 CLEAN + M18 sd 1.0 CLEAN per Scout handoff kit). L-161 avoidance design.",
+        "pre_s1_status": "PENDING_FORGE_S1. No empirical data. Tail risk assessment based on factor properties only.",
+        "concern": "H_1692 replaces H_1688 which VALIDATED_HARD_FAIL. New hypothesis untested."
+      },
+      "STR_1656_Div_ML_14pct": {
+        "role": "Diversifier_ML",
+        "tail_risk_contribution": "ML meta-learner. Higher vol (est. 0.28). Crisis contribution: 14% * (-35%) = -4.9pp.",
+        "post_rebuild_risk": "LOW (ML features independent of Factor DB Z-score normalization).",
+        "concern": "STR_1656 MDD 74.84% historical. At 14% weight, contributes disproportionate tail risk."
+      },
+      "STR_1679v3_Div_1_8pct": {
+        "role": "Diversifier_embedded_Q25",
+        "tail_risk_contribution": "Momentum overlay + Q25 embed. Crisis contribution: 8% * (-28%) = -2.2pp.",
+        "post_rebuild_risk": "MEDIUM-HIGH (R16 sd 0.165 CRITICAL distortion. Q25 sd 0.53 MEDIUM distortion).",
+        "concern": "Role Honesty (L-153 overlay dependency) + TDC 0.52 with STR_1631."
+      },
+      "H_1689_Defense_Q24_exclude_23pct": {
+        "role": "Defense_Quality_4Axis",
+        "tail_risk_contribution": "Defense function. Expected lower beta (0.70). Crisis contribution: 23% * (-20%) = -4.6pp.",
+        "post_rebuild_risk": "MEDIUM (Q25 sd 0.53 + Q01 modest distortion).",
+        "conditional_audit_axis_1_crisis_alpha": "Q24 EXCLUDED per Risk Mgr 2nd round recommendation. 3-axis (GPA+Piotroski_F+Ohlson_O) expected stress alpha +1.5%p vs Core.",
+        "conditional_audit_axis_3_bad_normal_ic": {
+          "Q25_stress_icir": 0.659,
+          "Q01_stress_icir": 0.642,
+          "Q07_stress_icir_if_added": 0.753,
+          "weighted_crisis_ic": "positive composite -- Defense function theoretically intact",
+          "BUT": "All stress_icir data is based on DISTORTED Factor DB. Post-rebuild revalidation MANDATORY."
+        }
+      },
+      "H_1690_Defense_10pct": {
+        "role": "Defense_MultiSource",
+        "tail_risk_contribution": "Multi-source anchor. Beta estimated 0.75. Crisis contribution: 10% * (-22%) = -2.2pp.",
+        "post_rebuild_risk": "HIGH (uses M08 sd 0.054 CRITICAL + C19 sd 0.354 HIGH + Q07 sd 0.328 HIGH + R16 sd 0.165 CRITICAL). 4/4 factors distorted.",
+        "concern": "H_1690 factor composition is ALMOST IDENTICAL to STR_1631 in terms of Factor DB distortion exposure. Post-rebuild effect could mirror STR_1631."
+      }
+    },
+
+    "portfolio_level_aggregated_risk": {
+      "total_crisis_mdd_contribution_estimated": "-5.4 - 2.5 - 4.9 - 2.2 - 4.6 - 2.2 = -21.8pp (not additive due to correlation, actual portfolio MDD estimated -22% to -26%)",
+      "defense_cluster_33pct_actual_contribution": {
+        "crisis_mdd_reduction_vs_no_defense": "Estimated -6 to -10pp MDD reduction (Defense 33% vs 0% Defense)",
+        "normal_regime_opportunity_cost": "-1.5 to -2.5pp CAGR (Defense lower return in normal regime)",
+        "ax_001_assessment": "Defense 33% structure is THEORETICALLY sound -- crisis alpha benefit expected to exceed normal regime cost over full cycle. But EMPIRICAL validation pending (Forge S1 required)."
+      },
+      "defense_35pct_cap_margin_2pp": {
+        "concern": "2pp margin is thin. Any weight increase request for H_1689 or H_1690 would breach cap.",
+        "recommendation": "Maintain strict 33% cap. No Defense weight increase without corresponding cut."
+      }
+    },
+
+    "post_rebuild_margin_maintenance": {
+      "if_rebuild_improves_factor_quality": "Defense factors (Q25, Q01, Q07) may gain IC. Defense cluster performance IMPROVES. 33% cap maintained, margin stable.",
+      "if_rebuild_degrades_factor_quality": "Defense factors lose IC. 33% allocation carries higher opportunity cost. Governor should prepare Scenario D (Defense 28% fallback).",
+      "monitoring_metric": "Post-rebuild Defense composite stress_icir weighted average. If below +0.30, trigger Defense weight review."
+    },
+
+    "action_required": [
+      "Post-rebuild portfolio-level composite return simulation (pm_run equivalent)",
+      "Defense conditional audit 4-axis (Framework v1.0) EXECUTION after Forge S1 completes",
+      "H_1690 Factor DB exposure HIGH risk acknowledged -- post-rebuild S2 re-profile CRITICAL tier (upgrade from current HIGH tier)"
+    ]
+  },
+
+  "agenda_5_cvar_cdar_verification": {
+    "verdict": "CONDITIONAL_PASS_WITH_THRESHOLD_REVISION",
+
+    "cvar_95_analysis_rev8_a_scenario_c": {
+      "individual_strategy_estimated_ann_vol": {
+        "STR_1631": {"vol": 0.207, "note": "historical measured"},
+        "H_1692": {"vol": 0.220, "note": "industry momentum proxy (KR IndMom historical)"},
+        "STR_1656": {"vol": 0.280, "note": "historical measured"},
+        "STR_1679v3": {"vol": 0.225, "note": "v2 baseline HRP mode"},
+        "H_1689": {"vol": 0.170, "note": "quality composite lower beta estimated"},
+        "H_1690": {"vol": 0.180, "note": "multi-source anchor estimated"}
+      },
+      "portfolio_vol_scenarios": {
+        "rho_0_2_optimistic": 0.121,
+        "rho_0_3_conservative": 0.138,
+        "rho_0_5_stress": 0.172,
+        "rho_0_7_crisis": 0.202
+      },
+      "cvar_95_estimates": {
+        "rho_0_3_cf_expansion": -0.227,
+        "rho_0_5_stress": -0.283,
+        "rho_0_7_crisis": -0.332,
+        "threshold_original": -0.15,
+        "threshold_revised_recommendation": -0.25,
+        "pass_at_revised_threshold_rho_0_3": true,
+        "pass_at_revised_threshold_rho_0_5": false
+      },
+      "structural_limitation_reiterated": "L-106: All-equity long-only KR portfolio is structurally incapable of achieving CVaR_95 below -15% annually. Market beta 0.85-0.93 across all strategies means portfolio drawdown is dominated by market movement. CVaR -15% requires cross-asset diversification (bonds, commodities, alternatives) which is OUT OF SCOPE per project constraints.",
+      "threshold_revision_proposal": {
+        "from": -0.15,
+        "to": -0.25,
+        "rationale": "KR equity all-in portfolio structural constraint. -25% annual CVaR_95 is achievable with proper factor diversification. -15% is NOT achievable without cross-asset. Maintaining unrealistic threshold produces perpetual FAIL that provides no information.",
+        "approval_required": "Q-Lead + Governor joint decision"
+      }
+    },
+
+    "cdar_95_analysis_rev8_a_scenario_c": {
+      "method": "CDaR/MDD ratio 0.75 estimation (Chekhlov et al. 2005)",
+      "portfolio_mdd_estimated": {
+        "rho_0_3": 0.252,
+        "rho_0_5": 0.285,
+        "rho_0_7": 0.335
+      },
+      "cdar_95_estimated": {
+        "rho_0_3": 0.189,
+        "rho_0_5": 0.214,
+        "rho_0_7": 0.251
+      },
+      "threshold": 0.22,
+      "pass_rho_0_3": true,
+      "pass_rho_0_5": true,
+      "pass_rho_0_7": false,
+      "improvement_from_rev5": "rev5 CDaR_95 23.1% -> rev8-A Scenario C CDaR_95 18.9% (-4.2pp). H_1682 DROP (MDD 94.7%) is the primary driver of improvement.",
+      "note": "CDaR_95 PASS at rho_0_3 conservative. Structural improvement confirmed."
+    },
+
+    "defense_33pct_cluster_tail_contribution_decomposition": {
+      "method": "Shapley-like marginal contribution estimation (add/remove Defense cluster)",
+      "portfolio_with_defense_33pct": {
+        "cvar_95_rho_0_3": -0.227,
+        "cdar_95_rho_0_3": 0.189,
+        "mdd_estimated": 0.252
+      },
+      "portfolio_without_defense_67pct_rescaled": {
+        "cvar_95_rho_0_3": -0.268,
+        "cdar_95_rho_0_3": 0.224,
+        "mdd_estimated": 0.299,
+        "note": "Remaining 67% rescaled to 100%. Higher vol strategies (STR_1656, STR_1679v3) gain proportional weight."
+      },
+      "defense_marginal_contribution": {
+        "delta_cvar_95": "-4.1pp (from -26.8% to -22.7%)",
+        "delta_cdar_95": "-3.5pp (from 22.4% to 18.9%)",
+        "delta_mdd": "-4.7pp (from 29.9% to 25.2%)",
+        "target_delta_cvar_from_framework": "-5pp",
+        "assessment": "Defense 33% cluster provides -4.1pp CVaR reduction. Below target -5pp but marginally. This is REDUCED from rev5 42% Defense which provided -5.5pp reduction. The trade-off is INTENTIONAL (Governor: miss to avoid opportunity cost)."
+      }
+    },
+
+    "normal_vs_crisis_regime_balance": {
+      "ax_001_assessment": {
+        "crisis_regime_alpha_defense_33pct": "+1.5 to +3.0pp/year estimated (Q25+Q01 stress IC positive)",
+        "normal_regime_cost_defense_33pct": "-1.5 to -2.5pp/year estimated (lower CAGR from quality tilt)",
+        "net_full_cycle_benefit": "+0.5 to +1.0pp/year (crisis benefit > normal cost over full market cycle)",
+        "assessment": "Defense 33% is net positive over full cycle per AX-001 conditional evaluation. Normal regime cost is within -2pp acceptable tolerance (Framework v1.0 axis threshold)."
+      },
+      "current_mrs_63_1_crisis_timing": {
+        "concern": "MRS 63.1 = CRISIS regime ACTIVE. This is the regime where Defense cluster SHOULD be earning its crisis alpha premium. However, H_1689 and H_1690 are S1 PENDING -- Defense function is UNVALIDATED in the regime where it matters most.",
+        "recommendation": "Accelerate H_1689/H_1690 S1 execution. Current CRISIS regime is a REAL-TIME TEST of Defense hypothesis -- delays reduce the window for live validation."
+      }
+    },
+
+    "evt_gpd_tail_shape_note": {
+      "status": "UNMEASURABLE at portfolio level currently",
+      "reason": "No composite return series exists for rev8-A Scenario C (candidates are S1 PENDING). Portfolio-level GPD fitting requires minimum 252 daily returns.",
+      "deferred_to": "Phase_1 PG1 Admission Day 5+ (after Forge S1 generates return series for H_1689/H_1690/H_1692/STR_1679v3 physical sleeve)",
+      "individual_strategy_evt_available": "STR_1631 (CDaR 0.197 PASS), STR_1656 (CDaR 0.866 FAIL), STR_1684 (CDaR 0.867 FAIL -- dropped)"
+    },
+
+    "action_required": [
+      "CVaR threshold revision -15% -> -25% (Q-Lead + Governor decision)",
+      "CDaR_95 PASS at rho_0_3 CONFIRMED (18.9% < 22%)",
+      "Defense 33% marginal CVaR contribution -4.1pp (below -5pp target by 0.9pp -- acceptable given intentional Defense reduction)",
+      "Post-Forge-S1 portfolio-level EVT/GPD fitting MANDATORY",
+      "H_1689/H_1690 S1 acceleration recommended (CRISIS regime live validation window)"
+    ]
+  },
+
+  "overall_verdict_3rd_round_session_68": {
+    "decision": "CONDITIONAL_APPROVE",
+    "confidence": "MODERATE (65%)",
+    "blocking_conditions": [
+      "BLOCKER 1: Factor DB rebuild MUST complete successfully with Option A fix applied. Currently UNFIXED. ALL compositions validated under distorted data.",
+      "BLOCKER 2: STR_1631 post-rebuild S2 re-profile + Harvey t>3.0 re-verification MANDATORY. Expected Sharpe delta -10.5% (probability-weighted).",
+      "BLOCKER 3: Forge S1 completion for H_1689 (Q24-exclude variant required) + H_1690 + H_1692 BEFORE Day 4 admission."
+    ],
+    "non_blocking_warnings": [
+      "STR_1631 <-> STR_1679v3 TDC 0.52 BREACH (persistent, Sequential Admission enforced)",
+      "H_1689 <-> H_1690 TDC 0.45 BREACH (Defense intra-cluster, monitor monthly)",
+      "CVaR_95 -22.7% BREACH at original -15% threshold (structural KR equity limitation, threshold revision recommended)",
+      "Defense 33% marginal CVaR contribution -4.1pp below -5pp target (0.9pp shortfall, acceptable)",
+      "STR_1679v3 Role Honesty (L-153 overlay dependency) unresolved pending physical sleeve execution",
+      "H_1690 Factor DB exposure CRITICAL tier (4/4 factors distorted, upgrade from HIGH tier)"
+    ],
+    "positive_findings": [
+      "CDaR_95 18.9% PASS (improved from rev5 23.1%)",
+      "H_1682 DROP eliminated IC-Return decoupling risk (L-160)",
+      "Q25 exposure 17.95% well within 35% cap (17pp headroom)",
+      "Family saturation all within 35% cap",
+      "STR_1679v3 coupling_ratio 3.391 PASS with robust margin (even pessimistic scenarios maintain PASS)",
+      "Defense conditional audit framework v1.0 provides structured evaluation path"
+    ]
+  },
+
+  "recommendations_for_governor_phase_1": {
+    "immediate_p0": [
+      "Forge v4: Factor DB fix re-application + rebuild restart (ABSOLUTE PRIORITY, before any other work)",
+      "Governor: Day 2-5 timeline CONDITIONAL on rebuild success (Scenario A/B/C branching per Day 2 coordinate plan)",
+      "Governor: Prepare Day 4 admission branching plan per STR_1631 post-rebuild Scenario A/B/C"
+    ],
+    "day_2_3_actions": [
+      "Post-rebuild: Scout S2 re-profile (STR_1631 CRITICAL, H_1690 upgrade to CRITICAL, others HIGH)",
+      "Post-rebuild: Judge STR_1631 Harvey t re-verification",
+      "Post-rebuild: factor_db_fix_impact_audit_v2 generation",
+      "Forge: H_1689 Q24-exclude 3-axis S1 (Gate 11/12/13 mandatory)",
+      "Forge: H_1690 4-variant S1 (Gate 11/12/13 mandatory, M08 post-fix re-execution)",
+      "Forge: H_1692 S1 (Gate 13 mandatory, M07+M18 clean factors)"
+    ],
+    "day_4_5_conditional": [
+      "If Scenario B/C: Proceed with Day 4-5 admission per v1.7 plan",
+      "If Scenario A: HOLD Day 4 admission. Investigate STR_1631 C19-only composite viability.",
+      "Portfolio-level EVT/GPD fitting after composite return series available"
+    ],
+    "sr_projection_revision": {
+      "previous_conservative": "1.72-1.78",
+      "revised_risk_adjusted": "1.55-1.75 (incorporating post-rebuild STR_1631 expected Sharpe delta -10.5%)",
+      "aspirational_revision": "1.85-2.00 (reduced from 2.00-2.03 due to rebuild uncertainty)",
+      "note": "Post-rebuild actual data will narrow this range significantly."
+    }
+  },
+
+  "kill_scenarios_session_68": {
+    "kill_1_factor_db_rebuild_reveals_alpha_mirage": {
+      "probability": "15%",
+      "mechanism": "Post-rebuild, M08/R12/R16 normalization reveals STR_1631's IC-weighted composite was ARTIFICIALLY amplified by distorted factor dispersion. Harvey t drops below 2.0. C19 alone is insufficient (ICIR 0.575 but single-factor, no diversification benefit).",
+      "impact": "STR_1631 PG2 ACTIVE status revoked. Portfolio collapses to STR_1656 only (SR ~0.5). rev8-A composition is VOID.",
+      "mitigation": "Post-rebuild regression test with STR_1631 C19-only as fallback."
+    },
+    "kill_2_crisis_deepening_with_unvalidated_defense": {
+      "probability": "25%",
+      "mechanism": "MRS escalates from 63.1 to 80+ (deep crisis). H_1689/H_1690 are S1 PENDING. Current PG2 (STR_1631 60% + STR_1656 16% + cash 24%) takes full market drawdown. Cash 24% provides limited buffer (-8 to -12% portfolio MDD from 60+16% equity exposure).",
+      "impact": "Portfolio MDD event -25 to -30% during transition period. Phase_1 timeline irrelevant if crisis materializes before completion.",
+      "mitigation": "Cash 24% buffer is the correct response. Accelerate H_1689/H_1690 S1 for crisis-period live validation."
+    },
+    "kill_3_c19_consensus_quality_structural_shift": {
+      "probability": "5% (medium-term, 2027+)",
+      "mechanism": "AI/LLM-generated earnings estimates replace human analyst consensus. C19 Composite Earnings loses information value as consensus becomes algorithmic noise. STR_1631 (18%) + STR_1679v3 (8%) = 26% exposed to single information source degradation.",
+      "impact": "Medium-term alpha decay. Not immediate portfolio risk but structural vulnerability.",
+      "mitigation": "Diversify alpha sources. H_1692 (industry momentum, non-consensus) provides partial hedge."
+    }
+  },
+
+  "methodology_references": [
+    "Pfaff (2016) Financial Risk Modelling Ch.6-7 (CF-VaR, EVT/GPD)",
+    "Chekhlov et al. (2005) CDaR",
+    "Longin & Solnik (2001) crisis correlation escalation",
+    "Demarta & McNeil (2005) t-copula TDC",
+    "L-106 Market beta dominates correlation",
+    "L-115 Beta reduction != correlation reduction",
+    "L-144 Q24 Altman Z stress reverse",
+    "L-153 STR_1679v2 overlay dependency 3-variant",
+    "L-155 Defense contribution decomposition",
+    "L-156 v2 TDC pairwise conditional cluster",
+    "L-160 Defense IC-Return decoupling",
+    "L-161 KR momentum inverse + scale invariance",
+    "L-163 Defense poison_pill_quantified_threshold",
+    "L-164 factor_engine load_month_factors mandate",
+    "AX-001 Defense conditional evaluation",
+    "AX-004 quality_profitability standalone failure",
+    "AX-005 BAB defense standalone failure"
+  ],
+
+  "risk_manager_signoff": {
+    "agent_id": "risk_manager",
+    "session": 68,
+    "day": 1,
+    "timestamp": "2026-04-19T01:10:00+09:00",
+    "signoff_note": "3rd Round VERDICT Session 68. Factor DB rebuild FAILURE is the dominant risk. All rev8-A compositions are validated against DISTORTED factor data. Until rebuild completes successfully and post-fix ICIR deltas are measured, ALL admission decisions carry unquantified risk. The probability-weighted STR_1631 Sharpe delta of -10.5% means current SR 1.193 portfolio could degrade to ~1.05 at 60% weight. Governor Day 2-5 plan is sound in structure but CONDITIONAL on rebuild outcome. I strongly recommend Factor DB fix re-application and rebuild restart as the single highest priority action before any other Phase_1 activity."
+  }
+}

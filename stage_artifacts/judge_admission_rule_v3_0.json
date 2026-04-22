@@ -1,0 +1,183 @@
+{
+  "rule_version": "v3.0",
+  "supersedes": "v2.0 (Session 66 Task #18/MASTER)",
+  "effective_date": "2026-04-17",
+  "session": 66,
+  "author": "Judge (with Risk Manager 4-axis input)",
+  "trigger": "STR_1631↔H_1676 TDC 0.735 vs 0.4 critical breach detected by Risk Manager. v2.0 pairwise Pearson correlation blind to conditional tail dependence.",
+
+  "n_gates": 11,
+  "n_gates_v20": 7,
+  "n_gates_new_in_v30": 4,
+
+  "gates": [
+    {
+      "gate_id": 1,
+      "name": "max_abs_corr_lt_0_7",
+      "source": "v2.0",
+      "threshold": "max_abs_corr <= 0.7 vs existing PG members (daily returns, Pearson)",
+      "measurement": "cor(r_cand, r_existing) daily",
+      "auto_reject_if_breach": false,
+      "action_on_breach": "WARN + manual review (escalate to Governor)"
+    },
+    {
+      "gate_id": 2,
+      "name": "ff5_alpha_t_ge_3_0_harvey_strict",
+      "source": "v2.0",
+      "threshold": "FF5 alpha t >= 3.0 (Harvey, Liu, Zhu 2016 multiple testing)",
+      "measurement": "compute_ff5_alpha() with NW lag=4. If FF5 data unavailable, CAPM t as proxy with elevation to t>=4.0.",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT admission"
+    },
+    {
+      "gate_id": 3,
+      "name": "family_level_dedup",
+      "source": "v2.0",
+      "threshold": "At most 1 representative per near-clone family (pairwise Pearson >= 0.95)",
+      "measurement": "Pairwise correlation clustering. Family defined as connected component where all edges have corr >= 0.95.",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT if family slot taken; ALTERNATE eligible"
+    },
+    {
+      "gate_id": 4,
+      "name": "reproducibility_pending_tag",
+      "source": "v2.0",
+      "threshold": "run_all.R must be executable (all BASE_DIR/parent dependencies present on disk)",
+      "measurement": "Static dependency check: grep source() + file.exists() for referenced paths",
+      "auto_reject_if_breach": false,
+      "action_on_breach": "Admit with 're-runnability PENDING' tag; blocks production promotion until resolved"
+    },
+    {
+      "gate_id": 5,
+      "name": "three_variant_decomposition_l146_l155",
+      "source": "v2.0 + L-155 enhancement",
+      "threshold": "Def sleeve contribution measured via 3-variant decomp: (a) Core alone, (b) Core+Def no overlay, (c) Core+Def+Overlay. Def_contrib = (a) - (b). Overlay_contrib = (b) - (c). Simple (a)-(c) attribution BANNED. Def_contrib >= 2pp for multi_sleeve_core role claim.",
+      "measurement": "Forge must provide all 3 variants in performance.json. Judge validates arithmetic + 2pp threshold.",
+      "auto_reject_if_breach": false,
+      "action_on_breach": "Role relabel to diversifier_with_overlay_dependency (not core_alpha)"
+    },
+    {
+      "gate_id": 6,
+      "name": "tail_risk_schema_required",
+      "source": "v2.0",
+      "threshold": "tail_risk_result.json must contain daily_returns field + EVT VaR99 + CF VaR99 + CDaR95 + xi + variant decomposition",
+      "measurement": "JSON schema validation",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT admission (Forge must re-run with compute_tail_risk_suite)"
+    },
+    {
+      "gate_id": 7,
+      "name": "clone_byte_identity_auto_reject",
+      "source": "v2.0",
+      "threshold": "SR/CAGR/MDD all 3-digit match with another strategy → clone triplicate",
+      "measurement": "Hash of (round(SR,3), round(CAGR,2), round(MDD,2)) against catalog",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT all clones except original; see L-151 (STR_1060/1070/1085)"
+    },
+
+    {
+      "gate_id": 8,
+      "name": "pairwise_tdc_le_0_4",
+      "source": "v3.0 NEW — Risk Manager demand",
+      "threshold": "Lower-tail dependence coefficient lambda_L <= 0.4 vs ALL existing PG members",
+      "measurement": "t-copula MLE fit on pseudo-observations (pobs). lambda_L = 2 * pt(-sqrt((nu+1)(1-rho)/(1+rho)), df=nu+1) per Demarta-McNeil 2005. If MLE fails, closed-form with nu=4.",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT admission or require residualization (orthogonal component vs existing)",
+      "r_code_template": "library(copula); u<-pobs(r_cand); v<-pobs(r_existing); tau<-cor(u,v,method='kendall'); rho0<-sin(pi*tau/2); fit<-fitCopula(tCopula(rho0,dim=2,df=4), cbind(u,v), method='ml', start=c(rho0,4)); lambda_L <- 2*pt(-sqrt((fit@estimate[2]+1)*(1-fit@estimate[1])/(1+fit@estimate[1])), df=fit@estimate[2]+1)",
+      "reference": "Demarta & McNeil (2005) 'The t-Copula and Related Copulas'; Longin & Solnik (2001) crisis correlation escalation"
+    },
+    {
+      "gate_id": 9,
+      "name": "portfolio_cvar_95_annual_ge_neg_15pct",
+      "source": "v3.0 NEW",
+      "threshold": "Post-admission portfolio CVaR_95 (annualized) >= -15%",
+      "measurement": "Cornish-Fisher expansion on portfolio returns with new weight vector. R: cf_var_cf <- var_normal + (z_cf^3 - 3*z_cf)/6 * skew + ...",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT admission OR reduce weight until CVaR target met",
+      "reference": "Pfaff (2016) Financial Risk Modelling and Portfolio Optimization Ch.6"
+    },
+    {
+      "gate_id": 10,
+      "name": "portfolio_cdar_95_le_22pct",
+      "source": "v3.0 NEW",
+      "threshold": "Post-admission portfolio CDaR_95 <= 22%. Guided by CDaR/MDD ratio 0.75 rule-of-thumb.",
+      "measurement": "Rolling 95% drawdown on portfolio NAV. Compare to MDD proxy.",
+      "auto_reject_if_breach": true,
+      "action_on_breach": "REJECT admission OR require Defense sleeve increment"
+    },
+    {
+      "gate_id": 11,
+      "name": "conservative_rho_0_3_primary_target",
+      "source": "v3.0 NEW",
+      "threshold": "Projected portfolio SR computed with rho=0.3 (pairwise avg correlation assumption) as base case. rho=0.2 only as optimistic scenario.",
+      "measurement": "SR_blend = (sum_i w_i * mu_i) / sqrt(w' * Sigma * w) where Sigma uses rho=0.3 off-diagonal.",
+      "auto_reject_if_breach": false,
+      "action_on_breach": "Flag overstatement; Governor rev5 must report both scenarios"
+    }
+  ],
+
+  "integration_interface": {
+    "r_function": "portfolio_governor.R::pg1_admission_v3(candidate_id, existing_pg_ids, return_mat, ...)",
+    "return_value": "list(admit=TRUE/FALSE, failed_gates=c(), conditions=list(), warnings=list())",
+    "telegram_template": "tg_pg_admission_v3(result)"
+  },
+
+  "v2_to_v3_diff": {
+    "added": ["gate_8 TDC", "gate_9 CVaR", "gate_10 CDaR", "gate_11 conservative rho"],
+    "retained": "gates 1-7 unchanged",
+    "deprecated": [],
+    "philosophical_shift": "v2.0 treated each strategy in isolation + simple corr. v3.0 treats admission as portfolio construction problem (conditional tail dep + CVaR/CDaR + rho base case)."
+  },
+
+  "tdc_measurement_session_66_results": {
+    "method": "t-copula MLE (Demarta-McNeil 2005)",
+    "period": "2003-07-03 to 2026-03-20 (n=4319 daily observations)",
+    "baseline": "STR_1679v2 (PG2 existing proxy, 20% allocation)",
+    "results_vs_str_1679v2": {
+      "STR_1071": {"lambda_L_t_copula": 0.011, "empirical_L_5pct": 0.065, "rho_pearson": 0.059, "nu_mle": 9.43, "tdc_gate_8": "PASS"},
+      "STR_1562": {"lambda_L_t_copula": 0.007, "empirical_L_5pct": 0.079, "rho_pearson": 0.045, "nu_mle": 10.46, "tdc_gate_8": "PASS"},
+      "STR_1433": {"lambda_L_t_copula": 0.011, "empirical_L_5pct": 0.065, "rho_pearson": 0.061, "nu_mle": 9.43, "tdc_gate_8": "PASS"}
+    },
+    "results_internal_family_1": {
+      "STR_1071_vs_STR_1433": {"lambda_L_t_copula": 0.857, "tdc_gate_8": "FAIL (near-clone)"},
+      "STR_1071_vs_STR_1060": {"lambda_L_t_copula": 0.932, "tdc_gate_8": "FAIL (near-clone)"},
+      "STR_1435_vs_STR_1417": {"lambda_L_t_copula": 0.900, "tdc_gate_8": "FAIL (near-clone)"}
+    },
+    "results_cross_family_1_vs_2": {
+      "STR_1071_vs_STR_1562": {"lambda_L_t_copula": 0.511, "tdc_gate_8": "FAIL (crisis-time coupling)"},
+      "STR_1562_vs_STR_1433": {"lambda_L_t_copula": 0.497, "tdc_gate_8": "FAIL"},
+      "note": "Family 2 (Gerber) has moderate crisis coupling to Family 1 — marginal v3.0 concern"
+    }
+  },
+
+  "pg1_admission_final_list_v3": {
+    "admissible_with_no_breach": ["STR_1071", "STR_1562"],
+    "admissible_exclusive_with_STR_1071": ["STR_1433 (alternate)"],
+    "rejected_by_family_dedup": ["STR_1417", "STR_1435", "STR_1060"],
+    "cross_family_concern": "STR_1071 + STR_1562 joint admission: TDC 0.511 > 0.4 → Gate 8 breach IF both admitted simultaneously. Recommendation: admit STR_1071 first (lower MDD), monitor portfolio TDC, admit STR_1562 only if portfolio-level TDC stays < 0.4 via residualization or volatility scaling.",
+    "final_admit_recommendation": [
+      "STR_1071 (Family 1 primary, TDC 0.011 vs PG2 proxy, CLEAR PASS)",
+      "STR_1562 ONLY IF cross-family joint TDC 0.511 residualized OR weighted down to <0.4 effective"
+    ]
+  },
+
+  "next_actions_for_governor": [
+    "Apply v3.0 gate 8 on STR_1071 admission — confirmed PASS. Weight size 10-15% of PG1 slot.",
+    "STR_1562 admission contingent: residualize vs STR_1071 (OLS beta removal) or reduce weight to achieve joint TDC < 0.4.",
+    "H_1676/H_1682/H_1688 S6 PASS 시 각각 TDC gate 측정 필수. Expected concern: H_1676 (residual consensus) may have TDC > 0.4 with STR_1631 if consensus residual preserves original direction.",
+    "Portfolio-level CVaR_95 / CDaR_95 recomputation pipeline required — Governor/Forge infrastructure task."
+  ],
+
+  "next_actions_for_forge_judge_pipeline": [
+    "H_1676 Forge S1: residualization of SUE component to minimize TDC with STR_1631. Option A (SUE + beta_24m regressor) is correct direction.",
+    "H_1688 Barroso scaling: S5 pre-registration required — variant A slot. v3.0 Gate 11 (conservative rho 0.3) mandates pre-registration.",
+    "Judge H_1676/H_1682/H_1688 S6: apply v3.0 gates 1-11 in order. TDC gate first (fast kill).",
+    "compute_pairwise_tdc(r_cand, r_existing, alpha=0.05) helper in 02_Infrastructure/validation/ (new file) — wraps t-copula MLE. Expose to Judge + Governor."
+  ],
+
+  "l_code_adoption": {
+    "l_code": "L-156",
+    "file": "stage_artifacts/l_code_L156_tdc_gate_v3_0.json",
+    "creation_trigger": "Risk Manager STR_1631↔H_1676 TDC 0.735 breach + Session 66 v3.0 adoption"
+  }
+}

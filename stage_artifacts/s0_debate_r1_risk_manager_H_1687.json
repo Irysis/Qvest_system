@@ -1,0 +1,48 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1687",
+  "round": "R1",
+  "score": 11,
+  "arguments": [
+    "Tail Risk 평가 -- H_1687의 핵심 위험은 Q25_Ohlson_O와 M01_Mom_12_1(12M-1 momentum)의 regime-conditional IC 비대칭성에 있다. stress_factor_ic_analysis.csv 실증: Q25 stress_icir +0.659(pct_pos 0.80), M01 stress_icir +2.293(pct_pos 1.00)로 두 팩터 모두 stress 구간에서 양수 IC를 보인다. 그러나 이것은 6대 급락 사건(평균 40개월) 전체 평균이며, 실제 위기 시점의 행동은 4-regime 분석에서 드러난다. conditional_ic_matrix_4regime.csv 기준: CRISIS 국면에서 Q25 IC +0.016(약양수)인 반면 M01 IC는 -0.021(음수 전환)이다. 50/50 composite의 CRISIS conditional IC는 산술평균 기준 -0.003으로 사실상 0에 수렴하며, 이는 composite가 위기 시 alpha 생성 능력을 상실함을 의미한다. 더욱 심각한 것은 M04_Mom_1(1개월 momentum)의 CRISIS IC가 -0.041로 극심한 음수인 점인데, Scout이 s0_record에서 M04_Mom_12_1을 인용하면서도 formula에서 M01_Mom_12_1을 사용하고 있어 factor_id 혼선이 존재한다(실제 Factor DB에서 12-1 momentum은 M01이며, M04는 1개월 momentum). 이 혼선이 해소되더라도, M01의 CRISIS IC -0.021이 Q25 CRISIS IC +0.016을 상쇄하는 구조는 변하지 않는다. EVT 관점에서 momentum factor의 GPD shape parameter xi는 한국시장에서 0.15~0.25 범위로 추정되며(fat-tail), low-distress 필터가 tail을 얼마나 축소하는지는 미검증이다. H_1682(Q25+R16) 대비 H_1687이 열위인 결정적 이유: R16_Calmar의 stress_icir +2.655(pct_pos 1.00)는 CRISIS에서도 양수를 유지하는 반면, M01의 CRISIS IC는 음수 전환한다. 위기 시 composite alpha의 방향이 H_1682은 양수, H_1687은 0 또는 음수가 된다.",
+    "Kill Scenario 2건 -- (1) Momentum Crash + Distress Interaction 증폭 (미래참조 경로): Avramov 2013 JFE 원논문의 핵심 발견은 'momentum anomaly는 high-distress 종목에서만 작동'이었다. H_1687은 이를 뒤집어 'low-distress + high-momentum' intersection을 취하지만, Avramov의 발견 자체가 momentum crash의 메커니즘을 설명한다 -- 즉, momentum 반전은 distress 종목에 집중된다. H_1687이 low-distress 종목을 선택하면 momentum crash에서 부분적으로 보호되지만, 2008-09~2009-03 GFC에서 '어제의 low-distress 종목'이 오늘 high-distress로 급전환하는 credit migration이 발생한다. Ohlson O-Score는 재무제표 기반이므로 C4 lag(T+60~90일) 동안 distress 상태 변화를 반영하지 못한다. 이 lag 동안 M01 momentum이 이미 반전되어 있으므로, composite signal은 '3개월 전에는 건전했으나 현재는 distress인 종목의 이미 반전된 momentum'을 포착하게 된다. L-115 교훈: beta 감소가 상관 감소를 보장하지 않으며, low-distress 필터가 위기 시 종목 단위 jump-to-default risk를 제거하지 못한다. (2) H_1682와의 Q25 공유에 의한 Tail Dependence Coefficient(TDC) 급등: H_1687과 H_1682는 Q25_Ohlson_O를 공유한다. 정상 시 H_1687(Q25+M01)과 H_1682(Q25+R16)의 단면 상관은 Q25 공유 비중(50% vs 60%)에 의해 rho 0.30~0.50으로 추정되지만, 위기 시 M01 alpha가 소멸(-0.021)하고 R16 alpha도 conditional으로 변동하면, 남는 공통 변동은 Q25 단일 요인에 수렴한다. DCC-GARCH 조건부 상관으로 측정 시 CRISIS 국면 rho가 0.60~0.75로 급등하여, S3 orthogonality gate(rho < 0.6)을 위반할 가능성이 높다. 이 경우 H_1687이 portfolio-level에서 H_1682와 사실상 중복 exposure가 되어, 두 전략 동시 편입의 분산 효과가 소멸한다. L-106 교훈: market beta가 portfolio 상관을 지배하며, 공통 factor(Q25) 보유 시 이 효과가 증폭된다.",
+    "Regime Vulnerability + MDD Contribution -- H_1687의 4-regime 프로파일을 composite 가중 기준으로 재구성하면: CALM = 0.5*0.059 + 0.5*0.064 = 0.061, CAUTION = 0.5*0.004 + 0.5*0.027 = 0.015, CRISIS = 0.5*0.016 + 0.5*(-0.021) = -0.003, NORMAL = 0.5*0.019 + 0.5*(-0.005) = 0.007. CALM에서만 유의미한 alpha가 존재하며, 나머지 3개 국면에서 IC가 0에 수렴하거나 음수이다. 이는 H_1687이 구조적으로 '호황 전용 전략'임을 시사한다. PG0 gap analysis에서 SR gap 0.807 해소가 목표이나, CALM-only alpha 전략은 CRISIS/CAUTION에서 drag를 유발하여 portfolio SR에 마이너스 기여한다. MDD 관점: H_1682(Q25+R16)의 STR_1683 variant에서 Q25-only MDD 67.3%, 50/50 blend MDD 95.6%라는 실증이 존재한다. H_1687의 Q25+M01 composite은 M01의 momentum crash 취약성이 Q25의 방어력을 상쇄하므로, standalone MDD는 30~45% 범위를 예상하며, Scout 예상(25~38%)의 상단 이상이 현실적이다. 특히 현재 MRS 63.1 CRISIS 상태에서 momentum(M01 CRISIS IC -0.021)이 역방향으로 작용하므로, 편입 타이밍이 최악이다. CDaR 95% 기준으로 standalone 25% 이하 달성이 어렵다고 판단하며, S1 실측에서 CDaR 95% > 30%이면 diversifier role 자체의 유효성이 의문이다. 종합: H_1682(Q25+R16)과 비교 시, R16의 stress_pct_pos 1.00 + CRISIS 양수 유지 vs M01의 CRISIS 음수 전환이라는 근본적 차이로 인해, H_1687은 위기 방어력이 H_1682보다 명확히 열위이며, diversifier로서도 CALM-only alpha 구조가 portfolio-level 기여를 제한한다."
+  ],
+  "concern": "핵심 우려: H_1687의 composite CRISIS IC가 -0.003으로 0에 수렴하여 위기 시 alpha가 소멸하며, 이는 M01_Mom_12_1의 CRISIS IC -0.021이 Q25_Ohlson_O의 CRISIS IC +0.016을 상쇄하기 때문이다. Avramov 2013의 'momentum은 high-distress에서만 작동'이라는 원발견을 뒤집어 적용하는 H_1687은, 역설적으로 low-distress 필터가 momentum의 alpha source 자체를 약화시키는 구조를 내포한다. Q25 재무제표 C4 lag(T+60~90일) 동안 credit migration이 발생하면 distress 필터의 유효성이 훼손되며, 이 시점에서 M01 momentum 반전이 동시 발생한다. H_1682(Q25+R16)와의 Q25 공유로 위기 시 TDC 급등이 예상되어 두 전략 동시 편입의 분산 효과가 소멸한다. 결론적으로, H_1687은 CALM 호황기에만 유효한 alpha source이며, 다른 3개 국면에서는 drag를 유발하는 구조적 취약성을 가진다.",
+  "conditions": [
+    "S1에서 compute_tail_risk_suite() 적용: composite의 EVT shape xi < 0.25, CDaR 95% < 25%, ES 99% (월간) < -12% 검증. Q25-only/M01-only standalone 각각과 composite 비교 필수. CDaR 95% > 30%이면 diversifier role 재검토.",
+    "S3에서 H_1682(Q25+R16)와의 DCC-GARCH conditional correlation 측정: 8대 스트레스 구간에서 conditional rho < 0.50 충족 여부가 두 전략 공존의 최소 조건. CRISIS 국면 TDC(Tail Dependence Coefficient)가 0.4 이상이면 Q25 공유 전략 중 하나만 편입 가능.",
+    "Scout 예상 ICIR 0.30~0.50이 4-regime decomposition에서도 유지되는지 확인: CALM 제외 3국면(CAUTION+CRISIS+NORMAL) 합산 ICIR이 0.15 이상 유지되지 않으면, CALM-only alpha 전략으로 분류하여 PG2 편입 시 regime-conditional allocation(CALM 시만 active weight) 적용 조건 부여."
+  ],
+  "rubric_detail": {
+    "tail_risk": {
+      "score": 2,
+      "note": "M01 CRISIS IC -0.021이 composite alpha를 소멸시킨다. Q25 stress_icir +0.659는 방어적이나, M01과 결합 시 composite CRISIS IC가 -0.003으로 수렴. H_1682(R16 stress 2.655) 대비 위기 alpha 명확 열위. EVT xi 사전 추정 0.15~0.25 fat-tail."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "note": "2건 제시: (1) GFC credit migration + C4 lag 동안 distress 필터 무효화 + momentum 반전 동시 발생(미래참조 경로), (2) Q25 공유에 의한 H_1682와의 TDC 급등으로 분산 효과 소멸. 두 시나리오 모두 실증 데이터 기반 메커니즘 구체화."
+    },
+    "beta_orthogonality": {
+      "score": 2,
+      "note": "L-106(market beta 지배) + L-115(beta 감소 != 상관 감소) 직접 적용. Q25 공유로 H_1682와의 위기 시 rho 0.60~0.75 급등 예상. Diversifier 역할에서 orthogonality 확보가 구조적으로 어려움."
+    },
+    "mdd_contribution": {
+      "score": 2,
+      "note": "H_1682 variant 실증(Q25-only MDD 67.3%, blend MDD 95.6%)이 Q25 기반 전략의 tail risk를 입증. H_1687은 M01 momentum crash 추가로 MDD 30~45% 예상(Scout 상단 초과). CDaR 95% 25% 이하 달성 의문."
+    },
+    "regime_vulnerability": {
+      "score": 2,
+      "note": "4-regime composite IC: CALM +0.061(유일 양수 구간), CAUTION +0.015, CRISIS -0.003, NORMAL +0.007. 사실상 CALM-only 전략. MRS 63.1 CRISIS 현 시점 편입은 worst-case timing. PG2 portfolio pro-cyclical 편향 악화."
+    }
+  },
+  "data_sources_used": [
+    "stress_factor_ic_analysis.csv (Q25 stress_icir 0.659/pct_pos 0.80, M01 stress_icir 2.293/pct_pos 1.00, R16 stress_icir 2.655/pct_pos 1.00)",
+    "conditional_ic_matrix_4regime.csv (Q25 CRISIS +0.016/CALM +0.059, M01 CRISIS -0.021/CALM +0.064, M04 CRISIS -0.041)",
+    "conditional_ic_matrix.csv (Q25 icir 0.633, M01 icir 0.412, M04 icir -0.054)",
+    "s0_record_H_1682 (Q25+R16 APPROVE_CONDITIONAL 71/100, variant MDD 95.6%/67.3%)",
+    "portfolio_gap_vector.json (SR gap 0.807, MRS CAUTION 29.2 -> 현재 CRISIS 63.1)",
+    "L-106 (market beta dominance), L-115 (beta reduction != correlation reduction), L-118-ext (beta orthogonality > family orthogonality)"
+  ],
+  "timestamp": "2026-04-17T19:30:00+09:00"
+}

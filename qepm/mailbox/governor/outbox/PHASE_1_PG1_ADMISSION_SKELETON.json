@@ -1,0 +1,180 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON",
+  "stage": "PG1_pre_draft",
+  "timestamp": "2026-04-18T14:48:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v1.0_skeleton",
+  "status": "SKELETON — rev8-A ACTIVATE + Forge S1 + Judge S6 완료 후 values 채워 ACTIVE",
+  "target_completion_date": "Session 67 Day 5~6",
+
+  "context_brief": "rev8-A Phase_3 composition 전제. Phase_1 admission은 신규 편입 strategies 대상 Admission Rule v3.4 (10 gates) 전수 검증.",
+
+  "admission_rule_v3_4_10_gates": [
+    {"gate": 1, "name": "Scorecard Grade", "criterion": "Grade A or A_NOVEL (hurdle_gate.R)"},
+    {"gate": 2, "name": "Anti-pattern 13종", "criterion": "antipattern_detector.R 전체 PASS"},
+    {"gate": 3, "name": "LOO 4종", "criterion": "loo_validator.R PASS"},
+    {"gate": 4, "name": "Role Honesty", "criterion": "role_honesty_audit.R PASS"},
+    {"gate": 5, "name": "Family cap 35%", "criterion": "rev8-A family_concentration_check PASS"},
+    {"gate": 6, "name": "TDC pairwise", "criterion": "기존 편입 전략과 TDC < 0.5 (Sequential Admission Rule)"},
+    {"gate": 7, "name": "CVaR budget", "criterion": "portfolio CVaR 5% < -3.5% 한계"},
+    {"gate": 8, "name": "CDaR Early Warning", "criterion": "L-158 Gate 8 Early Warning — CDaR 10% < -15% 시 조건부"},
+    {"gate": 9, "name": "Retroactive TDC Audit", "criterion": "편입 후 기존 PG2 전략과 TDC 재측정"},
+    {"gate": 10, "name": "Consensus_tier", "criterion": "consensus taxonomy v2.0 sub-family 분류"}
+  ],
+
+  "admission_candidates_per_rev8_a": {
+    "slot_assignments": {
+      "Core_Primary_STR_1631": {
+        "admission_status": "ALREADY_PG2_ACTIVE",
+        "rationale": "Harvey t=3.09 유일 승인, 2026-04-17 rev7_v3_v1 base",
+        "gates_1_10_historical": "기존 PASS 기록 유지"
+      },
+      "Core_Secondary_H_1688": {
+        "admission_status": "PENDING_FORGE_S1_COMPLETION",
+        "gates_to_verify": "ALL_10",
+        "blocker": "STR_1684 output 비어있음, Forge v2 실행 대기",
+        "s0_debate_score": 67,
+        "pre_admission_gates_projected": {
+          "gate_1": "TBD (hurdle_result 대기)",
+          "gate_2": "TBD",
+          "gate_3": "TBD",
+          "gate_4": "Core_Secondary role honesty — Barroso mandatory 적용",
+          "gate_5": "momentum_residual family 10% < 35% PASS",
+          "gate_6": "STR_1631와 TDC 측정 필요 (residual vs consensus 예상 LOW)",
+          "gate_7": "TBD",
+          "gate_8": "TBD",
+          "gate_9": "TBD",
+          "gate_10": "momentum_residual sub-family"
+        }
+      },
+      "Div_ML_STR_1656": {
+        "admission_status": "ALREADY_PG2_ACTIVE",
+        "rationale": "rev7_v3_v1 base"
+      },
+      "Div_3_STR_1679v3": {
+        "admission_status": "PRE_APPROVED",
+        "rationale": "Session 66 rev6에서 STR_1679v2 DROP 후 v3 교체 승인",
+        "gates_partial_re_verify": [6, 9],
+        "reason_partial": "Q25 embedded overlap 100% 실증 후 TDC 재측정 필요 (retroactive)"
+      },
+      "Def_2_H_1689_23pct": {
+        "admission_status": "PENDING_FORGE_S1_AND_JUDGE_S6",
+        "gates_to_verify": "ALL_10",
+        "additional_checks": [
+          "AX-005 exclusion 재확인 (quality standalone 구조적 실패 scope 밖)",
+          "H_1689 단독 23% concentration over-concentration 없음 확인 (Risk Mgr V2)",
+          "L-160 IC-Return coupling ratio >= 0.3 확인 (Gate 12 제안)"
+        ]
+      },
+      "Def_3_H_1690_10pct": {
+        "admission_status": "PENDING_10_CONDITIONS_PASS",
+        "10_conditions_ref": "rev7_v3_v1 h_1690_10_conditions_integrated_into_governor_admission_gate",
+        "forge_s1_check_6": ["C1 cosine", "C2 R16 variance", "C4 R16 regime3 safety", "C6 2020-03 lag", "C9 KOSDAQ alignment", "C10 AX-001 3-axis"],
+        "phase_2_promotion_condition": "10 conditions 모두 PASS + Forge S1 + Judge S6 PASS 시 8→10% 승격"
+      }
+    },
+
+    "h_1685_v2_contingent": {
+      "admission_status": "PENDING_R2_R3_VERDICT",
+      "if_APPROVE_CONDITIONAL": "rev8-A 수정 draft 필요 (Div_4 신규 슬롯, 미배분 6% 활용)",
+      "if_REVISE": "Session 68 v3 재시도",
+      "if_REJECT": "Scout D1 가속",
+      "current_r2_trajectory": "Codex 7→8, Governor 15→12, 3인 background"
+    }
+  },
+
+  "family_concentration_rev8_a_verification": {
+    "consensus_C19_core": {"strategies": ["STR_1631"], "total": 0.18, "cap_35": "PASS"},
+    "momentum_residual": {"strategies": ["H_1688"], "total": 0.10, "cap_35": "PASS"},
+    "momentum_overlay_embedded_q25": {"strategies": ["STR_1679v3"], "total": 0.10, "cap_35": "PASS"},
+    "ML_complexity": {"strategies": ["STR_1656"], "total": 0.14, "cap_35": "PASS"},
+    "quality_aggregate": {"strategies": ["H_1689"], "total": 0.23, "cap_35": "PASS (12pp headroom)"},
+    "multi_source_defense_anchor": {"strategies": ["H_1690"], "total": 0.10, "cap_35": "PASS"},
+    "reserve_future": 0.09,
+    "unallocated_phase_3": 0.06,
+    "violations": [],
+    "status": "ALL PASS — rev8-A composition family cap 준수"
+  },
+
+  "tdc_pairwise_matrix_required": {
+    "existing_pg2_pairs": {
+      "STR_1631_vs_STR_1656": "기존 측정 유지 (rev7_v3_v1 base)",
+      "STR_1631_vs_STR_1679v2_breach_0_621": "STR_1679v2 DROP으로 해소 (rev6)",
+      "STR_1631_vs_STR_1679v3_retroactive_required": "**신규 측정 필요** (Gate 9 Retroactive Audit)"
+    },
+    "new_pairs_to_measure": [
+      "STR_1631 ↔ H_1688",
+      "STR_1631 ↔ H_1689",
+      "STR_1631 ↔ H_1690",
+      "STR_1656 ↔ H_1688",
+      "STR_1656 ↔ H_1689",
+      "STR_1656 ↔ H_1690",
+      "STR_1679v3 ↔ H_1689 (embedded Q25 유사성)",
+      "H_1688 ↔ H_1689",
+      "H_1688 ↔ H_1690",
+      "H_1689 ↔ H_1690 (quality_aggregate ↔ multi_source_defense 잠재 overlap)"
+    ],
+    "threshold_sequential_admission": "TDC < 0.5 (기본), 0.5~0.65 CONDITIONAL (sub-sleeve 조건부), >=0.65 REJECT"
+  },
+
+  "pg1_timeline_day_5_6": {
+    "day_5_am": "TDC pairwise matrix 측정 (Forge S1 완료 전략 기반)",
+    "day_5_pm": "10 gates verification per candidate",
+    "day_6_am": "Admission verdict draft (ADMIT / DEFER / REJECT per strategy)",
+    "day_6_pm": "Governor 최종 판정 + team-lead 승인 요청",
+    "day_7": "Phase_1 ACTIVATE (pm_run_multisleeve 시작)"
+  },
+
+  "phase_1_activation_protocol": {
+    "step_1": "모든 candidates admission verdict 확정",
+    "step_2": "Portfolio Policy pm_run_multisleeve() 파라미터 갱신",
+    "step_3": "pre-go-live simulation (20년 rolling backtest)",
+    "step_4": "STR_1631 80% → 60% 점진 조정 (Day 1)",
+    "step_5": "기타 sleeves 순차 activation (Day 1~7 gradual)",
+    "step_6": "LIVE 운영 시작 + daily_nav_report 활성",
+    "step_7": "PG3 monitoring 시작"
+  },
+
+  "risk_mitigation_plan": {
+    "phase_1_failure_modes": [
+      {"mode": "Forge S1 다수 FAIL", "probability": "low-moderate", "mitigation": "rev8-A 미배분 6% + Reserve 9% 활용하여 기존 PG2 유지 연장"},
+      {"mode": "TDC breach 신규 발견", "probability": "low", "mitigation": "Sequential Admission Rule per L-156 v2"},
+      {"mode": "Risk Mgr 3rd round concerns", "probability": "moderate", "mitigation": "rev8-A 조정안 또는 rev8-B 재검토"},
+      {"mode": "H_1685 v2 REJECT", "probability": "unknown", "mitigation": "Scout D1 가속"}
+    ]
+  },
+
+  "governor_pg1_admission_deliverable_format": {
+    "per_candidate_verdict": {
+      "strategy_id": "string",
+      "admission_status": "ADMIT / ADMIT_CONDITIONAL / DEFER / REJECT",
+      "gates_passed": "10/10 또는 n/10",
+      "gates_failed": ["list"],
+      "rationale": "string",
+      "role_admitted": "Core_Primary / Core_Secondary / Diversifier / Defense",
+      "weight_admitted": "decimal",
+      "sub_family_tier": "per consensus taxonomy v2.0"
+    },
+    "portfolio_level_summary": {
+      "total_admitted": "n",
+      "total_deferred": "n",
+      "total_rejected": "n",
+      "family_concentration_post_admission": "verified",
+      "tdc_matrix_violations": "0 or n",
+      "projected_pg2_active_sr": "decimal"
+    }
+  },
+
+  "dependencies": [
+    "rev8-A ACTIVATE (P0, audit 대기)",
+    "Forge STR_1684 (H_1688) S1 hurdle_result (P0)",
+    "Forge STR_1690 (H_1690) S1 hurdle_result (P0)",
+    "Judge S6 15 gates on H_1688, H_1689, H_1690 (P0)",
+    "Risk Mgr 3rd round VERDICT (P1)",
+    "H_1685 v2 VERDICT (P1, contingent admission)",
+    "TDC pairwise matrix measurement (P0, 10 pairs)"
+  ]
+}

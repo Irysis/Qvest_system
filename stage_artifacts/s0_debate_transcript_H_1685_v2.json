@@ -1,0 +1,295 @@
+{
+  "hypothesis_id": "H_1685_v2",
+  "round_1": [
+    {
+      "role": "codex_critic",
+      "score": 7,
+      "arguments": [
+        "KOSDAQ fundamentals are aligned by fiscal period instead of actual disclosure timestamp, so the regime/alpha stack indirectly uses not-yet-public data during backtest ranking.",
+        "The composite remains effectively linear-dominant (M01-like). During a Korea small/mid-cap factor unwind, the dominant sleeve drives synchronized losses and overwhelms diversification claims.",
+        "The weakest assumption is that regime adaptation can reduce drawdown without diluting core alpha. If this assumption is wrong -> overlay noise suppresses valid signals -> trading becomes procyclical ("
+      ],
+      "concern": "REJECT pending redesign. [Fact] H_1690 is linked to a failure chain (STR_1439, H_1677, H_1676, H_1685, H_1687). [Inference] Gate-15 variance_ratio and linear-dominance checks are required but not shown as passed, so L-code conflicts remain active. [Inference] Regime adaptation has only conditional L",
+      "conditions": [
+        "Pass Gate-15 variance_ratio audit with pre-registered thresholds and rolling OOS evidence that no single axis dominates composite contribution.",
+        "Provide formal non-equivalence proof versus H_1674/H_1687 family (not just parameter reweighting), including algebraic-distance and mechanism-level ablation.",
+        "Document strict PIT data timing (filing/publication timestamps, lag policy, execution clock) for every input used in alpha and regime overlay.",
+        "Show all regime/DD/VT cutoffs are expanding-window or fixed ex-ante; ban full-sample calibration and re-fit leakage.",
+        "Demonstrate crash-period robustness in KOSPI/KOSDAQ with liquidity-aware implementation and no return-blend rule violations."
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "score": 14,
+      "arguments": [
+        "Kill Scenario 1 (CRISIS regime 외국인 exodus 시 잔차 붕괴 비대칭): v2 residualization은 평균 |corr(resid, -z_I)| = 0.194로 H_1674 독립성을 확보했으나, p95 |corr| = 0.4469는 약 13건 극단 월이 존재함을 드러낸다. stress_factor_ic_analysis.csv 실증에서 INV02_Foreign_NetBuy_60d crisis_ratio = 0.364 (위기 시 63% 붕괴), INV01_20d crisis_ratio = 1.093 (소폭 개선)으로 lookback에 따라 위기 행태가 극적으로 달라진다. 핵심 위험: expanding OLS beta_t는 전체 기간 평균적 관계를 학습하므로, 2008 GFC/2020 COVID처럼 외국인-개인 관계가 구조적으로 전환 (regime break)되는 구간에서 beta_t가 과거 정상기 패턴에 고착되어 잔차에 위기 시 외국인 exodus 신호가 그대로 잔존하게 된다. 구체적으로 2020-03 외국인 11조원 순매도 구간에서 z_F가 극단 음수, z_I가 극단 양수로 반전하면 residual = z_F - beta_t * z_I는 이중 음수 (외국인 매도 + beta_t*개인 매수 제거 = 더 큰 음수)가 되어, 잔차 Top 20은 사실상 외국인 가장 덜 매도한 종목을 선택하게 된다. 이 구간 Choe-Kho-Stulz 2005 Table 6 '외국인 정보 우위'는 완전히 역전된다.",
+        "Kill Scenario 2 (미래참조 경로 - expanding beta_t 조기 수렴 및 C1 검증 한계): expanding-window pooled OLS beta_t는 burn-in 60개월 이후 매월 수십만 관측치가 누적되므로, 실질적으로 t=120 이후 beta_t 변동폭이 극히 작아진다 (law of large numbers). 이는 장점(안정성)이자 치명적 약점이다. 2000-2010 전반기 외국인-개인 관계 구조가 2020년대 한국시장 구조 변화 (passive ETF 급증, 동학개미, 외국인 KOSDAQ 확대)를 전혀 반영하지 못한다. beta_t가 사실상 상수로 수렴하면 residual = z_F - c * z_I (c=상수)가 되어, 시간에 따른 관계 변화를 포착 못하는 구조적 한계가 발생한다. 이것이 backtest에서는 안정적으로 보이지만 실시간 운용에서는 structural break 누적 위험이다. Rolling 3Y OLS beta와 expanding beta의 비교 검증이 S2에서 필수이며, 두 방법론 간 beta 괴리가 0.1 이상이면 expanding 방식의 적시성 부족을 의미한다.",
+        "L-106/L-156 v2 교차 적용 - p95 tail 0.447과 TDC cluster 위험: L-106은 시장 beta 0.85~0.93이 portfolio-level 상관을 지배함을 실증했고, L-156 v2는 pairwise TDC > 0.4이면 위기 시 sleeve 간 동조 drawdown이 구조적임을 확인했다. v2 residualization이 H_1674와의 평균 상관을 0.194로 줄였지만, p95 |corr| = 0.4469는 L-156 v2 TDC gate 0.4 기준을 초과하는 극단 월이 존재함을 의미한다. 이 극단 월이 CRISIS regime과 시간적으로 겹치면 (예: 2008-09~2009-03, 2020-02~2020-04), 바로 그 diversification이 가장 필요한 시점에서 H_1685와 H_1674의 tail dependence가 급등하는 역설이 발생한다. compute_copula_tdc() regime-conditional 측정에서 CRISIS 구간 TDC > 0.4 확인 시 diversifier 자격은 조건부로 제한되어야 한다. 현재 PG2 anchor STR_1631과의 TDC도 별도 측정 필수 — investor_flow family가 consensus family와 beta channel을 공유하면 L-106 패턴 재현이 불가피하다."
+      ],
+      "concern": "expanding OLS beta_t의 비대칭 적응 실패: beta_t는 정상기 수십만 관측에 의해 지배되므로, 위기 시 외국인-개인 관계의 구조적 전환 (foreign exodus + retail surge)을 반영하는 데 수개월~수년이 소요된다. 이로 인해 CRISIS regime 진입 직후 1~6개월간 residual은 사실상 '과거 정상기 관계에 기반한 잔차'로서, 위기 시 외국인 행태 변화를 포착하지 못하고 오히려 역방향 포지션을 유도할 수 있다. MRS 63.1 CRISIS 현재 시점에서 이 신호 기반 전략의 즉시 투입은 바로 이 비대칭 적응 실패 구간에 해당할 가능성이 높다.",
+      "conditions": [
+        "S2에서 expanding beta_t vs rolling 36m beta 시계열 비교 보고: 2008 GFC, 2011 EuDebt, 2020 COVID 전후 6개월간 beta 괴리 측정. 괴리 > 0.1이면 rolling 3Y 또는 decay-weighted expanding (lambda=0.99) 대안 검토 필수.",
+        "S3에서 regime-conditional TDC 측정 의무: compute_copula_tdc(method='empirical')로 CRISIS 구간 (reference_stress_periods.md 8대 구간) H_1685 vs H_1674, H_1685 vs STR_1631 pairwise TDC 개별 산출. CRISIS TDC > 0.4이면 diversifier 자격 조건부 제한 (regime overlay 필수).",
+        "S2에서 6대 스트레스 구간 stress ICIR >= 0.10 확인 (v1 R2 조건 0.15에서 0.10으로 완화 — residualized signal의 구조적 alpha 소거 반영). 특히 2020-03 COVID 월 residual Top 20 종목의 외국인 순매수 방향을 명시 보고하여, exodus 시 역방향 포지션 여부를 실증 확인.",
+        "S1에서 expanding OLS burn-in 60개월 이후 beta_t 시계열을 factor_engine.R 코드 내 로그로 출력하여, t=120 이후 beta_t 수렴 패턴과 CRISIS 구간 beta_t 변화폭을 검증. beta_t 변동 계수 (CV) < 0.05이면 사실상 상수화 경고 발령."
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 15,
+      "arguments": [
+        "PG0 gap + role admission 관점에서 v2는 v1 16점 대비 구조적으로 개선된 hypothesis입니다. v1 corr 0.897 (H_1674와 수학적 duplicate) 결함이 residualization으로 수식상·실증상 해소되었고(mean |corr| 0.194, median 0.168, 255개월 실증), channel preservation 0.895로 Choe-Kho-Stulz 2005 외국인 정보 우위 축 본체가 유지됩니다. investor_flow family 첫 diversifier axis 확보는 rev7_v3_v1 Phase_3 (STR_1631/H_1688/STR_1656/STR_1679v3/H_1682/H_1689/H_1690 7축) 이후 8번째 cross-channel 독립 alpha로 SR boost roadmap (target 2.0)에 정합합니다.",
+        "Role Honesty Audit 관점에서 diversifier 위장 위험은 v1 대비 감소했습니다: H_1674 (core_alpha, 개인 contrarian raw)와 v2 (foreign residualized) 사이 sub-family 분리 + 수식적 orthogonality 보장. Residual signal은 fundamental/consensus/ML/distress/quality/momentum/defense 기존 7개 family와 전혀 다른 거래행동 차원으로 원천 독립. Family saturation 측면에서 investor_flow 2건 (core_alpha + diversifier) 구성은 consensus 기존 STR_1631 1건보다 balanced family architecture를 제공합니다. 다만 precedent 부재 + tail dependence (p95 0.447) 경계 필요.",
+        "Implementation feasibility는 가장 큰 우려입니다: INV13 신규 factor registry 등록 + compute_investor.R expanding β accumulator 확장 + C11 거래주체 T+1 timing 검증 + burn-in 60개월 data loss + p95 극단 월 regime-conditional TDC 별도 검증. 구조적으로 필요한 5개 선결 조건 중 lookahead_detector INV13 4종 패턴은 초안 수준, factor_registry INV13 entry는 미등록, β_t accumulator builder 성능 구현은 미검증. rev7_v3_v1 Phase_1 편입 schedule 관점에서 H_1690 Forge S1 4-variants (V1~V4) + H_1682 Primary Contingency A/B/C + STR_1684 V1 3건 병행 중이므로 INV13 신규 구현은 Phase_2 이후 편입이 현실적이며 Phase_1 3~8% 편입은 신중한 조건부여야 합니다."
+      ],
+      "concern": "implementation_feasibility 1점 감점의 근원은 v1 대비 구현 복잡도 증가입니다. v1 (raw z_F - z_I divergence)는 기존 INV-series 단순 승계로 compute_investor.R 30줄 확장이면 충분했으나, v2는 expanding-window pooled OLS β accumulator (cum_SxY/cum_Sxx shift(1L), burn-in 60m) + 월별 cross-sectional z-score + residualization 3단계 로직 추가로 60~80 LOC 확장이 필요하고 builder 성능 최적화 (monthly 재계산 방지)까지 요구됩니다. Forge v2 현재 STR_1682/1683/1684 3-parallel + H_1690 4-variants + H_1682 Contingency 판정 등 critical path 과부하 상태에서 INV13 신규 등록 + PIT pre-check가 Phase_1 5~7일 내 완성 가능한지 schedule risk가 큽니다. 추가로 p95 |corr| 0.447 (약 13개월 극단 월) 존재 → S3 regime-conditional TDC 가 crisis regime 별도 PASS를 확보하지 못하면 Phase_3 8% 승격 가정이 무너져 rev7_v3_v1 projected SR 1.75 경로에서 investor_flow diversifier 공백이 발생합니다.",
+      "conditions": [
+        "Phase_1 초기 편입 cap 강화: Forge S1 PASS 이전 편입 금지. Phase_1 편입 시 3% cap (rev7_v3_v1 Phase_3 투입 시 3~5% 범위 하한). INV13 factor_registry 정식 등록 + lookahead_detector.R INV13 C1/C2/C11/burn-in 4종 패턴 정식 등록 + compute_investor.R expanding β accumulator 구현 완료 + Judge C11 거래주체 공시 T+1 timing precheck PASS 4개 모두 선결 조건. 1개라도 FAIL 시 Phase_2 이후로 편입 연기.",
+        "S3 regime-conditional TDC 이중 관문: 기본 TDC ≤ 0.4 vs H_1674 (residualization 수식 보장, 실측 0.194) + crisis regime conditional TDC ≤ 0.5 vs H_1674/STR_1631/STR_1656 (L-156 v2 + p95 |corr| 0.447 극단 월 검증 대응). crisis regime TDC 0.5 초과 시 투자주체 family 첫 diversifier 실증 전제가 무너진 것으로 간주하여 Phase_3 8% 승격 보류 및 investor_flow family 설계 재검토.",
+        "Phase 단계적 admission + rollback trigger: Phase_1 3% → Phase_2 5% → Phase_3 8% 3-step gradual. 각 step 승격 조건 — Phase_2 5% 승격: Forge S1 ICIR 실측 ≥ 0.20 (Alpha Lab Gate §8) + S3 mean TDC ≤ 0.40 PASS. Phase_3 8% 승격: S6 FF5 alpha positive + CAGR ≥ 8% + MDD ≤ 40% + Harvey t > 3.0 + regime-conditional TDC crisis ≤ 0.5 전수 PASS. Phase_3 도달 후에도 family Herfindahl > 0.12 악화 시 investor_flow 5%로 자동 하향. Phase_1 3% 진입 후 3개월 내 Forge S1 미완성 시 반려 + Phase_2 이후 재검토."
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 13,
+      "arguments": [
+        "β_t 방향성 발견 (v1 debate 미포착): expanding OLS β_t = -0.36 (음수). 이는 잔차가 z_F - (-0.36)×z_I = z_F + 0.36×z_I, 즉 z_F와 z_I의 가중합임을 의미. v2 설계에서 'H_1674와의 orthogonalization'을 목표로 했으나, 실제로는 OLS 잔차가 수식상 z_I를 0.36배 양방향으로 추가하는 구조. ICIR 관점에서: IC(residual) = IC(z_F) + 0.36×IC(z_I_raw). IC(z_I_raw) < 0 (개인 매수 = 역방향 signal)이므로 IC(residual) = IC(z_F) - 0.36×|IC(z_I_raw)| ≈ 0.052 - 0.037 = 0.015 monthly. ICIR(annualized) = 0.015 / IC_sd × sqrt(12). IC_sd 0.04~0.08 범위에서 ICIR 0.65~1.30 추정 — 0.20 gate 통과 확실. 단, R²(z_F ~ z_I) = 0.13이고 signal retention 87%로 외국인 정보 채널 대부분 보존. 잔차가 수식상 z_I를 부가하나 z_I의 IC 기여가 작아 IC 손실이 제한적.",
+        "2020-2026 구간 orthogonality 열화 실측: D_2020-2026(75개월) mean|corr vs H1674| = 0.2437 — 전체 255개월 0.1938은 PASS이나 최근 6년은 FAIL(>0.20 gate). 이 기간 months >0.30 = 32%, >0.40 = 10.7%. 극단 월: 2020-03(COVID 패닉, corr=0.667), 2022-03(러시아 침공, corr=0.609), 2021-03(경기 반등, corr=0.528). 패턴 분석: 한국시장 급락기에 외국인과 개인이 동시 매도('동반 이탈') → 외국인-개인 flow 공분산 방향이 평상시와 달리 동기화 → residual이 H_1674(개인 contrarian)와 양의 상관으로 전환. MRS 63.1 CRISIS 현재 상태는 2020-2026 구간 성격과 유사 → 단기 orthogonality 가정 압박. S3에서 regime-conditional TDC 검증 필수(L-156 v2 사전 인지 확인).",
+        "21d lookback 회전율 Hard Fail 위험 정량 추정: H_1674 v1에서 21d lookback → 연간 회전율 2,082%(Hard Fail) 실증. H_1685 v2 잔차는 channel preservation corr = 0.895(z_F_raw)로 z_F_21d 구조를 그대로 계승. 인접 월 공유 거래일: 21d 기준 ~15/21일 = 71%, 랭크 자기상관 ~0.65~0.75 예상. Top 20 포트폴리오(전체 2,000종목 중 1%)에서 이 자기상관으로 연간 회전율 1,200~2,000% 예상 → 600% Hard Fail 거의 확실. 반면 63d lookback: 공유 42/63일 = 67%, 회전율 400~600%(경계선), 126d lookback: 공유 105/126일 = 83%, 회전율 250~400%(PASS). S1 착수 전 63d/126d 병렬 sensitivity 의무화. 21d 단독으로 S1 실행 시 Hard Fail 위험."
+      ],
+      "concern": "가장 중요한 정량 우려: 2020-2026 구간(75개월) mean|corr| = 0.2437으로 이미 0.20 gate 초과 실측. 이는 현재 시장 국면(MRS 63.1 CRISIS)이 H_1685 v2의 orthogonality 전제가 가장 취약한 구간과 일치함을 의미. expanding OLS β_t가 -0.36으로 안정적이지만, 위기 구간에서 실제 corr(z_F, z_I)가 음수에서 양수로 전환되면 β_t 추정이 평균 근방을 유지하더라도 당기 잔차의 H_1674 상관이 급등. 즉, 잔차화 구조 자체는 PIT 적합하나 regime-dependent orthogonality 보장 실패 — 위기 국면에서 diversifier 역할이 무력화될 수 있음. 21d lookback Hard Fail 확실성(>80%)과 함께, H_1685 v2는 '설계 구조 OK + 국면 의존적 약점 + lookback 재조정 필수' 상태로 S1 전 선결 과제가 남아 있음.",
+      "conditions": [
+        "S1 착수 전 lookback 재조정 필수: 21d primary를 63d로 전환(또는 21d/63d/126d 3종 병렬). compute_investor.R에서 frollsum(Foreign, 63L) + frollsum(Individual, 63L)로 기본값 변경 후 동일 precheck 스크립트 재실행하여 회전율 및 H_1674 corr 재측정. 63d도 회전율 600% 초과 시 126d를 primary로 채택. 이 결과 없이 S1 착수 금지.",
+        "S3 regime-conditional orthogonality 이중 검증 요구: (a) 전체 샘플 TDC ≤ 0.40, (b) MRS CRISIS/BEAR 구간 한정 TDC ≤ 0.55 별도 계산. 2020-03/2022-03 같은 급락 월 포함 군집 TDC가 0.55 초과하면 S3 FAIL. L-156 v2 TDC cluster 사전 등록 확인 후 Judge에 검증 의뢰.",
+        "β_t 음수 구조를 s0_record v2에 명시하고 factor_construction 설명 보완 요청: 'residual = z_F + 0.36×z_I (weighted combination, not pure z_F residual)' 문구 추가 및 S2 artifact에 IC(residual) 성분 분해 표(IC_z_F, IC_z_I, IC_residual, IC_sd, ICIR 추정) 포함 의무화. S2 ICIR 실측이 0.15 미만이면 Alpha Lab Gate 재검토."
+      ]
+    },
+    {
+      "role": "academic",
+      "score": 16,
+      "arguments": [
+        "Peer-review 축은 v1과 동일하게 만점(4점)을 유지합니다. v2의 residualization 재설계는 학술적 토대를 약화시키지 않고, 오히려 Fama-MacBeth (1973) JPE + Daniel-Grinblatt-Titman-Wermers (1997) JF + Brennan-Chordia-Subrahmanyam (1998) JFE + Jegadeesh-Titman (1993) JF 등 methodological 정전 4편을 추가로 지지 논문에 편입할 여지를 만듭니다. Primary는 여전히 Choe-Kho-Stulz (2005) RFS이며 설계 철학이 Choe-Kho-Stulz의 원본 질문(한국에서 외국인이 정보 우위를 갖는가)을 residual space에서 정식화한 것이므로 학술적 계보가 v1보다 오히려 명료합니다. RFS 1편 + JFE 2편 + NBER WP 1편 + 한국재무학회지 1편 + (methodology) JPE 1편 + JF 2편 + JFE 1편 편입 가능 → 총 peer-reviewed 정전 커버리지는 investor_flow family 내에서 최상위입니다.",
+        "Mechanism_align 축은 v1 R2에서 quant의 corr 0.897 실측으로 1점 감점한 구간을 v2에서 만점(4점)으로 복원합니다. v1 R2의 핵심 감점 이유였던 'divergence 신호가 H_1674와 algebraically 동일' 문제가 v2 residualization으로 수식 수준에서 해소되었고, Scout의 실측(255개월, mean|corr| 0.194, median 0.168, channel preservation 0.895)이 이를 확증합니다. v2 residualization은 Fama-MacBeth (1973) cross-sectional regression residual 사용, Daniel-Grinblatt-Titman-Wermers (1997) characteristic-matched residual, Brennan-Chordia-Subrahmanyam (1998) risk-adjusted residual 등 1970~1990년대 학술 정전에서 반복 사용된 orthogonalization 기법이며, 단순 차분보다 학술적 위계가 오히려 높습니다. 또한 expanding-window + strict prior-month shift(1L) + 60m burn-in 구조는 C1 violation risk를 s0_record 수준에서 이미 차단하여, v1 R2 codex_critic의 'PIT 미확보' 우려를 설계 단계에서 해소합니다. 메커니즘의 학술적 narrative도 v1 '2-party interaction'(약)에서 v2 '외국인 고유 정보 - 개인 공유분 = 순수 informed flow'(강)로 격상되었습니다.",
+        "Korea_evidence와 time_decay 두 축은 v2에서도 구조적 우려가 해소되지 않아 v1 R1과 동일 점수(3점/2점)를 유지합니다. Korea_evidence: Choe-Kho-Stulz (2005) + Kho-Kim (2007) + 고영훈·안일찬 (2018) 3편 국내 direct 실증은 확보되나, 2020~2026 post-COVID 동학개미 구조 대변화 이후 residual signal의 predictability를 검증한 최신 한국 peer-reviewed 실증이 여전히 s0_record에 제시되지 않습니다. v2는 21d primary + 63d sensitivity를 S2 profiling으로 이관했지만 '2020-2026 sub-period 재현 실증'은 여전히 gap입니다. Time_decay: Choe-Kho-Stulz 2005 post-publication 20년 경과 + McLean-Pontiff (2016) JF 프레임 58% decay 중앙값 + 한국시장 외국인 long-term holder 전환, 동학개미 유입, ETF 비중 확대, 알고 트레이딩 등 4대 구조 변화가 여전히 risk로 남습니다. residualization이 '외국인 informed trader 전제'의 time decay를 막지는 못합니다. 이 두 축은 S2 sub-period ICIR 분할 검증이 조건부로 통과되어야 R3에서 회복 가능합니다."
+      ],
+      "concern": "v2의 가장 중대한 잔여 우려는 'residualization이 mechanism 수학은 치유했으나 time decay 학술 증거 공백은 치유하지 못했다'는 점입니다. v2 expanding-window OLS + channel preservation 0.895 + 실측 corr 0.194는 설계 수준에서 매우 훌륭하며 Fama-MacBeth 정전 계보로 peer_review·mechanism_align 두 축을 강화합니다. 그러나 Choe-Kho-Stulz (2005) RFS와 Grinblatt-Keloharju (2000) JFE가 모두 20~25년 경과 논문이라는 사실은 residualization으로 완화되지 않으며, 한국시장의 2020년대 구조 변화(패시브 자금 비중 30%+ 상승, 동학개미 일평균 거래대금 비중 60%+ 달성, ETF alpha flow의 '가짜 외국인' 효과 등)가 '외국인 informed trader 전제' 자체를 변질시켰을 가능성이 peer-reviewed 학술 증거로 sparse합니다. 또한 p95 |corr| 0.447 극단 월 13건은 평균 상관이 낮더라도 crisis regime에서 H_1674와 '공통 panic flow' 축으로 collapse할 수 있음을 Ang-Chen (2002) JFE 'asymmetric correlations' 프레임에서 경고합니다. 이는 일반 mean-correlation orthogonality로는 포착되지 않으며, S3 t-copula TDC 측정이 critical입니다. 마지막으로 21d primary + 63d sensitivity 구조는 v1 R2 Academic 권고('primary를 63d로 전환')를 절반만 수용한 것으로, S2 ICIR 비교에서 63d가 ICIR에서 우월하게 나올 경우 primary 전환 재권고가 예상됩니다.",
+      "conditions": [
+        "S2 profiling에서 three-period ICIR 분할 필수: (a) 2005-01~2014-12 (외국인 long-term holder 전환 전), (b) 2015-01~2019-12 (중간기), (c) 2020-01~2026-03 (동학개미 post-COVID). sub-period ICIR 격차가 |ΔICIR| > 0.20 또는 (c)에서 ICIR < 0.15일 경우, Choe-Kho-Stulz 프레임의 한국 2020년대 적용성 붕괴로 간주하고 S3 진입 전 재설계(예: 외국인을 기관으로 치환한 Grinblatt-Keloharju 2000 정합형) 권고. 특히 (c) sub-period에서 residual signal의 mean ICIR을 학술적 time-decay 증거로 기록할 것.",
+        "S2에서 21d primary vs 63d sensitivity ICIR + FM t-stat 동시 보고 필수. 고영훈·안일찬 (2018, 한국재무학회지 31) '3~6개월 누적순매수' 시간축과 본 가설 21d 설정의 학술적 정합성 gap을 artifact에 명시 문서화. 63d가 ICIR 또는 t-stat에서 >20% 우월한 경우 primary를 63d로 전환하고 21d를 sub-signal로 재정의. 126d variant도 고영훈 2018 상한(6개월) 대응용으로 선택적 비교 권고.",
+        "S3 orthogonality에서 mean correlation rho < 0.3 (vs non-flow) + rho < 0.4 (vs H_1674) 검증과 별도로, regime-conditional TDC (crisis vs normal) 측정 필수. Ang-Chen (2002) JFE 프레임에서 crisis regime 상관이 0.6 이상으로 급등하는 경우, 평균 상관 0.194 달성과 무관하게 'tail cohabitation' 발생으로 간주하고 H_1674 + H_1685 v2 조합의 ensemble allocation을 재조정 (예: crisis regime에서 H_1685 v2 weight 축소). p95 |corr| 0.447 극단 월 13건을 Risk Manager와 공동 식별하여 L-156 v2 TDC cluster 등록.",
+        "S1 FMB 회귀로 외국인 residual의 독립 alpha 검증 필수: (개인 flow 21d + institutional flow 21d + M01_Rev1M) 통제 후 residual t-stat > Harvey (2016) 기준 t > 3.0. 통제 변수 institutional flow 추가 이유는 Grinblatt-Keloharju (2000) 3-party (foreign/institutional/individual) 프레임에서 기관 flow가 외국인과 상관 0.4~0.6이므로, '외국인 residual'이 실제로는 '기관 residual'일 가능성을 배제해야 함. institutional 통제 후도 t > 3.0이면 'informed trader = foreign only'라는 Choe-Kho-Stulz 2005 narrative가 2020년대에도 유지됨을 실증."
+      ]
+    }
+  ],
+  "r1_total": 65,
+  "status": "R2_COMPLETE",
+  "round_2": [
+    {
+      "role": "codex_critic",
+      "r1_score": 7,
+      "r2_score": 8,
+      "delta": 1,
+      "score_changed": true,
+      "reason": "I raised the score slightly because v2 presents credible de-duplication progress versus H_1674 (255-month mean|corr| 0.194, median 0.168), which weakens the strict equivalence objection from R1. I sti",
+      "agreements": [
+        {
+          "with": "risk_manager",
+          "point": "I agree that expanding OLS beta can adapt too slowly under regime breaks, making residualization most fragile exactly at crisis transitions; the regime-conditional TDC requirement is necessary, not optional."
+        },
+        {
+          "with": "quant",
+          "point": "I agree that 2020-2026 orthogonality deterioration (mean|corr| ~0.244) and 21d turnover hard-fail risk materially threaten real diversification and live deployability."
+        }
+      ],
+      "rebuttals": [
+        {
+          "against": "governor",
+          "point": "I disagree with the implication that the diversifier axis is already established; with crisis-tail dependence still elevated (p95 |corr| ~0.447) and recent-period gate slippage, diversification is provisional, not validated.",
+          "severity": "major"
+        },
+        {
+          "against": "academic",
+          "point": "I disagree that PIT risk is effectively closed by shift(1L)+burn-in alone; PIT compliance also requires source-level disclosure/publication timestamps and lag policy proofs, which are still missing for all inputs.",
+          "severity": "major"
+        },
+        {
+          "against": "quant",
+          "point": "I disagree with near-certain ICIR gate confidence inferred from static decomposition; transaction costs, turnover, and regime non-stationarity can invalidate that extrapolation.",
+          "severity": "minor"
+        }
+      ],
+      "strongest_opposing_argument": "The strongest challenge to my position is the empirical claim that v2 is no longer algebraically/practically duplicate of H_1674 (mean|corr| 0.194 over 255 months with high foreign-channel preservatio"
+    },
+    {
+      "role": "risk_manager",
+      "r1_score": 14,
+      "r2_score": 13,
+      "delta": -1,
+      "score_changed": true,
+      "reason": "Quant의 beta_t = -0.36 음수 구조 발견이 KS-1(CRISIS 비대칭 적응) 위험을 R1 평가 이상으로 심화시킴. residual = z_F + 0.36*z_I 구조에서 위기 시 z_I 방향 전환(개인 동반매도)이 잔차 자체에 직접 전파되어, beta_t 적응 실패와 무관하게 잔차 오염이 구조적으로 발생함을 확인. 또한 2020-2026 m",
+      "agreements": [
+        {
+          "with": "quant",
+          "point": "beta_t = -0.36 음수 구조 발견은 R1 KS-1을 결정적으로 강화한다. expanding OLS beta_t가 음수로 안정화되면 residual = z_F + 0.36*z_I 가중합이 되므로, 위기 시 외국인-개인 공분산 방향 전환이 beta_t 적응 속도와 무관하게 잔차 공간 자체를 오염시킨다. 이는 KS-1이 '적응 지연' 문제가 아닌 '구조적 전파' 문제임을 의미하며, R1에서 제기한 '수개월~수년 소요'보다 더 즉각적인 위험이다."
+        },
+        {
+          "with": "quant",
+          "point": "2020-2026 mean|corr| 0.2437 FAIL 실측은 R1에서 p95 |corr| = 0.4469로 경고한 극단 시나리오를 sub-period 평균 수준으로 현실화시켰다. 6년 sub-period 전체 평균이 0.20 gate를 초과한다는 것은 tail이 아닌 body 분포 자체의 문제이며, 현재 MRS 63.1 CRISIS 환경에서 H_1685 v2의 diversifier 역할 신뢰도가 구조적으로 훼손됨을 실증한다."
+        },
+        {
+          "with": "governor",
+          "point": "3-step gradual admission(3→5→8%) 접근에 동의한다. Risk 관점에서 TDC regime-conditional 검증이 미완인 상태에서 초기 배분 3%는 CVaR 예산 관점에서 포트폴리오 레벨 tail risk 기여를 1% 이하로 억제할 수 있다. 다만 3%→5% 전이 조건에 반드시 regime-conditional TDC < 0.4 실증 통과를 추가 부의해야 한다."
+        },
+        {
+          "with": "academic",
+          "point": "time_decay 2점 유지에 동의한다. Choe-Kho-Stulz(2005) 20년 경과 + McLean-Pontiff(2016) 58% decay 중앙값은 risk 관점에서 '이 alpha source의 기대 Sharpe를 사전적으로 42% 이상 할인해야 함'을 의미한다. 할인된 ICIR이 0.20 gate를 여전히 통과하는지 S2에서 정량 검증이 필수이며, 통과하지 못하면 위기 구간 성과 열화의 구조적 근거가 된다."
+        }
+      ],
+      "rebuttals": [
+        {
+          "against": "codex_critic",
+          "point": "Codex의 REJECT 7점은 H_1690 failure chain 연결 흔적이 있어 H_1685 v2 고유 위험 평가로서 신뢰도가 제한적이다. H_1685 v2의 residualization은 v1(corr 0.897)과 구조적으로 완전히 다른 설계이며, 'M01-like linear dominant' 비판은 residual = z_F + 0.36*z_I 구조를 인식하지 못한 평가이다. residualization 자체는 Fama-MacBeth(1973) 정전 계보의 표준 방법론이며, 이를 무조건 REJECT하는 것은 risk 평가가 아닌 과잉 보수주의이다. 다만 Codex가 지적한 'regime adaptation이 core alpha를 희석할 수 있다'는 우려는 v2 구조에서는 regime overlay가 S1이 아닌 S5 mutation 단계이므로 현 시점에서 무관하다.",
+          "severity": "major"
+        },
+        {
+          "against": "academic",
+          "point": "Academic의 peer_review 4점 만점은 과대평가이다. v2 residualization의 학술적 계보(DGTW 1997, BCS 1998)는 인정하나, 핵심 문제는 이 논문들이 모두 US large-cap equity에서 검증된 것이며 한국 KOSPI/KOSDAQ 소형주 외국인-개인 flow 잔차에 대한 직접 실증이 없다는 점이다. Risk 관점에서 'methodology 계보가 훌륭하다'는 것과 '한국시장 tail risk에서 작동한다'는 것은 별개이다. INV02_Foreign_NetBuy_60d crisis_ratio 0.364(위기 시 63% 붕괴)는 외국인 flow 기반 신호의 한국시장 위기 행태가 미국 실증과 구조적으로 다를 수 있음을 시사한다.",
+          "severity": "minor"
+        },
+        {
+          "against": "governor",
+          "point": "Governor의 '8번째 cross-channel 독립 alpha' 평가에 부분 반박한다. 독립성의 근거인 mean |corr| 0.194는 전체 255개월 평균이며, Quant가 실증한 2020-2026 sub-period 0.2437 FAIL + COVID/러시아 극단월 corr 0.609~0.667은 L-106 교훈(market beta 0.85-0.93이 상관 지배)의 재현이다. 위기 시 '독립 alpha'가 바로 그 독립성을 잃는 구조이므로, PG0 gap 해소 기여도를 전체 평균이 아닌 CRISIS regime 조건부로 재산정해야 한다. CRISIS 조건부 독립성이 0.30 이상이면 diversifier SR boost 기대치를 50% 이상 할인해야 한다.",
+          "severity": "major"
+        },
+        {
+          "against": "quant",
+          "point": "Quant의 21d lookback Hard Fail(2,082%) 경고는 타당하나, 63d/126d 대안 제시에서 핵심 위험을 간과했다. lookback 연장은 회전율은 줄이지만 signal의 정보 반감기(information half-life)를 초과할 위험이 있다. 외국인/개인 거래 행태는 21d 기준 INV01 crisis_ratio 1.093(위기 소폭 개선)이지만 60d 기준 INV02 crisis_ratio 0.364(위기 63% 붕괴)로 lookback에 따라 위기 행태가 극적으로 달라진다. 126d lookback이 회전율 PASS를 달성하더라도 위기 시 signal 자체가 소멸할 수 있으며, 이는 회전율 Gate보다 심각한 alpha 소멸 위험이다. 63d vs 126d sensitivity에서 crisis_ratio 검증을 반드시 병행해야 한다.",
+          "severity": "minor"
+        }
+      ],
+      "strongest_opposing_argument": "Quant의 2020-2026 mean|corr| 0.2437 FAIL 실측이 가장 강한 반대 근거이다. 이는 R1에서 제기한 p95 tail 위험(0.447)이 극단 사건이 아닌 최근 6년 평균의 체계적 열화임을 보여준다. beta_t = -0.36 음수 구조와 결합하면, 위기 시 개인-외국인 동반매도로 z_I 방향 전환 → residual에 z_I 오염"
+    },
+    {
+      "role": "governor",
+      "r1_score": 15,
+      "r2_score": 12,
+      "delta": -3,
+      "score_changed": true,
+      "reason": "R1 15점 대비 3점 하향. Quant R1 β_t=-0.36 음수 발견(IC(resid)=IC(z_F)+0.36×IC(z_I) 가중합 구조)과 2020-2026 구간 mean|corr|=0.2437 실측 orthogonality FAIL 증거가 role_match 축의 diversifier 전제를 구조적으로 약화시킴. role_match 4→3 하향(수",
+      "agreements": [
+        {
+          "with": "quant",
+          "point": "β_t = -0.36 음수 발견은 v1 debate가 포착하지 못한 구조적 통찰입니다. residual = z_F - (-0.36)×z_I = z_F + 0.36×z_I 가중합 구조는 'orthogonalization을 통한 독립 diversifier 확보'라는 v2 설계 전제를 부분 훼손합니다. PG1 role admission 관점에서 diversifier 위장 위험(Role Honesty Audit)이 재점화됩니다 — 수식상 orthogonal하지만 신호 공간에서 z_I raw를 36% 편입하는 것은 H_1674 개인 contrarian 핵심 축과 의미론적 중첩을 내포합니다. 2020-2026 mean|corr|=0.2437 FAIL 실측과 결합하면, MRS 63.1 CRISIS 현재 시점 즉시 편입 시 diversifier 통계 수익이 최근 6년 평균 대비 30% 이상 감쇠 가능. S3 regime-conditional TDC(L-156 v2 gate 0.4)를 PG1 선결조건에 추가해야 합니다."
+        },
+        {
+          "with": "risk_manager",
+          "point": "expanding OLS β_t 조기수렴(t=120+ 상수화)과 비대칭 적응 실패 주장은 Governor의 Phase admission schedule 재설계를 강제합니다. β_t가 수십만 관측의 law of large numbers로 사실상 상수로 수렴하면 2008/2020 regime break 반영 지연(수개월~수년)이 구조적으로 내재되고, 이는 portfolio admission 관점에서 '지금 편입 = 과거 정상기 관계 기반 잔차에 CRISIS regime에서 베팅'이라는 역설을 낳습니다. Rev7_v3_v1 Phase_1 3% 즉시 편입은 부적절하며, Phase_2 이후 rolling 3Y OLS β_t 대안 비교검증 PASS까지 보류가 맞습니다. p95 0.447 > L-156 v2 TDC gate 0.4 breach는 family_saturation 축에서 investor_flow 2건 구성이 CRISIS 시 동조 붕괴 위험을 내포함을 확증합니다."
+        },
+        {
+          "with": "academic",
+          "point": "time_decay 학술 증거 공백이 residualization으로 치유되지 않는다는 통찰은 PG0 gap 진단 관점에서 결정적입니다. Choe-Kho-Stulz 2005 post-publication 20년 + Grinblatt-Keloharju 2000 25년 경과 + McLean-Pontiff 2016 58% decay 중앙값 프레임 하에서, 2020년대 한국시장 구조 변화(passive 30%+, 동학개미, 외국인 KOSDAQ 확대) 반영 peer-reviewed 실증 부재는 role admission 선결조건입니다. 특히 Quant 2020-2026 FAIL 실측과 결합하면 time decay가 실증적으로 이미 진행 중임을 시사하여, Phase_1 즉시 3% 편입 대신 2020-2026 sub-period 재현 PASS를 gate로 추가해야 합니다."
+        }
+      ],
+      "rebuttals": [
+        {
+          "against": "codex_critic",
+          "point": "Codex 7점 REJECT는 H_1690과의 혼동으로 H_1685 v2 고유 평가가 아닙니다. H_1690 linked failure chain(STR_1439, H_1677, H_1676, H_1687) 주장은 H_1685 v2의 Choe-Kho-Stulz 2005 + Grinblatt-Keloharju 2000 계보와 independent family이므로 감점 근거로 무효입니다. KOSDAQ fiscal-period alignment 우려도 v2 설계가 거래주체(INV) 채널 기반이어서 fundamentals 공시 timing과 독립적입니다. Gate-15 variance_ratio 미통과 주장은 v2 Scout 실측(mean|corr| 0.194, channel preservation 0.895, 255개월)에서 이미 부분 대응되었으므로 전면 REJECT는 과도합니다. 다만 regime adaptation procyclical 우려는 Risk Mgr/Quant 실측과 연결되어 Phase admission 재설계 근거로 부분 흡수됩니다. Severity: HIGH(혼동으로 인한 구조적 감점 오류)",
+          "severity": "high"
+        },
+        {
+          "against": "quant",
+          "point": "21d lookback Hard Fail 회전율 1,200~2,000% 추정은 S1 단계 sensitivity로 이관 가능한 기술적 우려이며 R2 score 감점 근거로는 이미 implementation_feasibility 1점에 반영되었습니다. Quant가 제시한 63d/126d 병렬 PASS 경로(63d 400~600% 경계선, 126d 250~400% PASS)는 Scout S2 profiling에서 의무화하면 해소 가능하므로 hypothesis 자체의 structural reject 근거는 아닙니다. 다만 β_t 음수 + 2020-2026 FAIL 실측은 role_match 구조적 감점(4→3) 타당하여 이 부분만 수용합니다. Severity: MEDIUM(기술적 해소 가능 vs 구조적 흠결 구분 필요)",
+          "severity": "medium"
+        },
+        {
+          "against": "risk_manager",
+          "point": "Kill Scenario 1(β_t 비대칭 적응 실패) severity HIGH 주장에 원칙적으로 동의하나, Risk Mgr의 '즉시 투입 위험' 프레임은 Governor Phase admission 재설계로 완화 가능합니다. Phase_1 3%→0%(보류), Phase_2 5%→3%(조건부), Phase_3 8%→5%(rolling 3Y β_t 대안 검증 PASS 시) 재조정으로 비대칭 적응 구간을 회피하면 hypothesis 자체는 유효합니다. 또한 Risk Mgr 14점은 severity 대비 보수적이며(Kill Scenario 2건 + p95 tail + TDC cluster 모두 HIGH인데 14점 유지), compute_copula_tdc() regime-conditional 검증으로 실측 해소 경로가 있음을 고려하면 R2에서 하향보다 유지가 합리적입니다. Severity: MEDIUM(설계 유효성 vs 투입 타이밍 구분)",
+          "severity": "medium"
+        }
+      ],
+      "strongest_opposing_argument": "Quant R1 주장 1 — β_t = -0.36 음수 발견과 2020-2026 구간(75개월) mean|corr|=0.2437 > 0.20 gate FAIL 실측. 이 두 증거는 governor R1의 'v2 residualization이 수식·실증적으로 orthogonal diversifier를 확보한다'는 role_match 4점 논리를 직접 반증합니"
+    },
+    {
+      "role": "quant",
+      "r1_score": 13,
+      "r2_score": 13,
+      "delta": 0,
+      "score_changed": false,
+      "reason": "Risk_mgr KS-1/KS-2가 내 β_t 음수 구조 발견 및 2020-2026 corr FAIL을 독립적으로 교차 확인. 두 우려가 상호 강화되어 점수 유지 판단. Governor implementation 1점 재확인으로 일부 완화 요소가 있으나 회전율 Hard Fail 위험(21d → 63d 전환 시에도 경계선)이 여전히 비해소 상태. 순 변동 없",
+      "agreements": [
+        {
+          "with": "risk_manager",
+          "point": "KS-1 (CRISIS 시 β_t 비대칭 적응 실패): Risk_mgr의 '외국인 exodus 시 잔차 이중 음수화' 논리가 내 β_t = -0.36 발견과 정확히 정합한다. β_t 음수이면 residual = z_F + 0.36×z_I 구조이므로 위기 시 z_F 극단 음수 + z_I 극단 양수(개인 매수 급증)가 겹치면 residual = (대형 음수) + 0.36×(대형 양수) = 방향 불확실. expanding OLS가 정상기 수십만 관측에 지배되어 2020-2026 구조 변화를 반영하지 못하는 KS-2도 내 2020-2026 mean|corr| 0.2437 FAIL과 동일 메커니즘. 두 Kill Scenario가 내 정량 발견과 인과적으로 연결됨 — 교차 확인으로 KS-1/KS-2 강도 상향 평가."
+        },
+        {
+          "with": "academic",
+          "point": "DGTW 1997 + Brennan-Chordia 1998 orthogonalization 계보 인정: residualization 방법론 자체는 학술적으로 타당하며 Fama-MacBeth 정전 계보에 해당. 내 R1 ICIR 추정(0.015×√12/IC_sd → 0.65~1.30 range)이 Alpha Lab Gate §8 ICIR ≥ 0.20 통과를 지지하는 점도 Academic의 mechanism_align 만점 근거와 정합. 단 post-2020 한국 실증 부재(Academic Korea_evidence 3점 유지)는 내 2020-2026 0.2437 FAIL로 독립적으로 재확인됨."
+        },
+        {
+          "with": "governor",
+          "point": "implementation_feasibility 1점의 구조적 근거 확인: compute_investor.R 실제 코드를 직접 검토한 결과, 함수 시그니처가 단일 sig_date 기반 호출 구조임을 확인. 각 리밸런싱월 독립 호출 방식이므로 expanding β accumulator 상태 유지를 위해서는 .fdb_env에 cum_SxY/cum_Sxx를 월간 persist하는 별도 메커니즘이 필요. Governor 예상 60~80 LOC 확장은 코드량 면에서는 수용 가능하나, 월간 상태 영속화(persistent state across calls) 구조 변경이 INV01~INV12 패턴과 근본적으로 다른 신규 아키텍처임. 1점은 정당하게 엄격한 평가."
+        }
+      ],
+      "rebuttals": [
+        {
+          "against": "codex_critic",
+          "point": "H_1685 v2와 H_1690 혼동 — CRITICAL 사실 오류. Codex concern에 'H_1690 is linked to a failure chain (STR_1439, H_1677, H_1676, H_1685, H_1687)' 기재되어 있으나, H_1690은 STR_1439 Score-Blend Redesign (Multi-Source Defense Anchor, family=multi_source_score_blend_defense)이고 H_1685 v2는 Foreign Residualized on Individual Flow (family=investor_flow)로 완전히 다른 전략. H_1685 v2는 STR_1439 failure chain과 인과 관계 없음. Codex가 평가한 'H_1690 failure chain 연결', 'Gate-15 variance_ratio 미통과', 'linear-dominant composite' 우려는 모두 H_1690(multi-source 4-axis blend)에 적용되는 체크포인트이지 H_1685 v2(단일 residual signal)에 해당하지 않음. s0_record H_1685 v2를 확인하면 overlay 없음, regime 없음, single signal 구조임이 명시되어 있음. 7점 REJECT 근거의 핵심이 대상 오판에서 발생한 것으로 판단. Codex 점수는 재검토 후 상향 필요하나 본 quant R2에서 직접 점수 변경 권한 없음 — Q-Lead에 재심 요청.",
+          "severity": "critical"
+        },
+        {
+          "against": "risk_manager",
+          "point": "KS-1 결론의 부분적 과잉 일반화: Risk_mgr의 '2020-03 외국인 11조원 순매도 시 잔차 Top 20 = 외국인 가장 덜 매도한 종목' 논리는 방향 판단으로는 맞으나, 이것이 반드시 CAGR/SR을 붕괴시키는 구간인지는 확인 필요. INV01_Foreign_NetBuy_20d의 crisis_ratio = 1.093으로 외국인 raw signal은 위기 시 오히려 소폭 개선되는 실증이 있음(Risk_mgr 본인 데이터). residual = z_F + 0.36×z_I에서 위기 시 z_F 음수의 크기가 z_I 양수 0.36배보다 크다면 잔차의 순서(rank)가 외국인 raw signal과 유사 패턴을 유지할 가능성이 있음. 즉 외국인 최대 매도 회피 = 단기 alpha 회피 전략이 실제로 위기에서 alpha positive일 수 있음. INV01 crisis_ratio 1.093이 이를 간접 지지. S2에서 stress ICIR을 직접 측정하기 전까지 KS-1은 가설 수준. severity는 medium으로 하향 재분류 권고.",
+          "severity": "minor"
+        },
+        {
+          "against": "governor",
+          "point": "implementation_feasibility 1점 재확인이지만 Phase_2 이후 이관 타임라인 추정에 이의: Governor는 'Forge v2 3-parallel + H_1690 4-variants + H_1682 Contingency 과부하로 Phase_1 5~7일 내 INV13 완성 불가'로 1점 유지 판단. 그러나 INV13은 Forge S1 착수 전 factor_registry + lookahead_detector 등록만 선결 조건이며, compute_investor.R 확장 자체는 표준 INV01 패턴에 expanding accumulator를 추가하는 작업임. compute_investor.R 실제 코드 구조상 함수 외부에서 .fdb_env$INVESTOR처럼 .fdb_env$INV13_BETA에 cum_SxY/cum_Sxx를 persist하면 기존 패턴과 병렬 가능. 60~80 LOC이나 architect 구조는 신규 아키텍처. Phase_2 이후 이관 타임라인은 타당하나 implementation_feasibility가 '기술적 불가능'이 아닌 '스케줄 제약'임을 명시 필요. 점수는 동의하나 라벨링 정확도 요청.",
+          "severity": "minor"
+        }
+      ],
+      "strongest_opposing_argument": "Risk_mgr KS-2 (expanding β_t 조기 수렴 + structural break 미반영): β_t가 t=120 이후 사실상 상수로 수렴하면 residual = z_F - c×z_I (c=상수)가 되어 한국시장 구조 변화(2020년 이후 동학개미 surge, passive ETF 30%+ 증가)를 전혀 반영하지 못한다. 이 경우 backtes"
+    },
+    {
+      "role": "academic",
+      "r1_score": 16,
+      "r2_score": 15,
+      "delta": -1,
+      "score_changed": true,
+      "reason": "Quant R1의 2020-2026 sub-period mean|corr| = 0.2437 실측 (75개월 중 32%가 >0.30, 10.7%가 >0.40) 및 Risk_mgr p95 tail 0.447 + KS-1 비대칭 적응 실패 증거가 R1에서 제가 지적한 time_decay 축의 구조적 우려(Choe-Kho-Stulz 2005 post-publica",
+      "agreements": [
+        {
+          "with": "quant",
+          "point": "β_t=-0.36 음수 구조는 학술적 orthogonalization 지위에 위반이 아님. OLS residual 정의(resid = y - βx)상 β가 음수이면 resid = z_F + 0.36×z_I 가중합으로 해석되며, 이는 Fama-MacBeth (1973) JPE cross-sectional regression + Daniel-Grinblatt-Titman-Wermers (1997) JF characteristic-matched residual 정통 계보와 수학적으로 완벽 합치. 음수 β_t는 메커니즘 위반이 아니라 Choe-Kho-Stulz (2005) RFS가 실증한 '한국시장 외국인-개인 flow 공분산 음수' 구조의 자연스러운 반영. Academic 관점에서 β_t 부호 자체는 문제 없음. 단, quant가 지적한 '2020-2026 75개월 mean|corr| = 0.2437 FAIL'은 time_decay 축 강하 정당화."
+        },
+        {
+          "with": "risk_manager",
+          "point": "expanding OLS beta_t의 비대칭 적응 실패는 Ang-Chen (2002) JFE 'Asymmetric correlations of equity portfolios' 프레임에서 학술적으로 확립된 우려. Ang-Chen 2002는 down-market conditional correlation이 up-market 대비 구조적으로 높음을 실증했고, p95 |corr| = 0.4469는 정확히 이 비대칭 tail dependence 프레임에 해당. residual이 정상기 관계에 학습되면 CRISIS 진입 직후 1~6개월 asymmetric adaptation lag가 발생하며, 이는 Pelletier (2006) JoE regime-switching DCC 모형이 지적한 구조적 한계. Academic 관점에서 expanding β의 정상기 pooled OLS 수렴은 structural break 탐지 실패의 대표 사례."
+        },
+        {
+          "with": "governor",
+          "point": "investor_flow family 첫 diversifier axis 확보의 학술적 가치는 Jegadeesh-Titman (1993) JF momentum + Fama-French (2015) JFE 5-factor 이후 family architecture balanced 확장 방향과 일치. residual signal이 fundamental/consensus/ML/distress/quality/momentum/defense 7개 family와 원천 독립한 '거래행동 차원'이라는 점은 Brennan-Chordia-Subrahmanyam (1998) JFE trading-based characteristics 프레임의 현대적 응용. 3-step gradual admission은 McLean-Pontiff (2016) JF post-publication decay 프레임 하 보수적 편입 전략으로 학술적으로 타당."
+        }
+      ],
+      "rebuttals": [
+        {
+          "against": "codex_critic",
+          "point": "Codex REJECT 7점의 근거인 'H_1690 linked to failure chain (STR_1439, H_1677, H_1676, H_1685, H_1687)' 지적은 H_1685 v2 hypothesis identity 혼동이다. H_1685 v2는 v1 (raw divergence) 16점 REJECT를 수용한 후 residualization으로 재설계된 독립 hypothesis이며, H_1690 (multi_source_defense_anchor)과는 별개 axis다. STR_1439/H_1677/H_1676 실패 체인은 value/quality_profitability family 구조적 실패(AX-003/AX-004)이고, H_1685 v2는 investor_flow family diversifier로 family이 다르다. Academic 관점에서 failure chain 논증은 family-level generalization 오류이며, Choe-Kho-Stulz (2005) RFS primary cite + Fama-MacBeth (1973) methodology 정전 계보는 재설계 버전에서도 학술적으로 독립 성립. Gate-15 variance_ratio + linear-dominance checks는 S1/S2 profiling 단계 empirical concern이지 S0 hypothesis design 단계 academic merit 판단 근거가 아님.",
+          "severity": "high"
+        },
+        {
+          "against": "quant",
+          "point": "2020-2026 D_period mean|corr| = 0.2437 FAIL은 time_decay 축 강하 정당화에는 동의하나, peer_review(4)와 mechanism_align(4) 축 감점 근거로 사용하는 것은 층위 혼동이다. Academic R1에서 peer_review 4점은 Fama-MacBeth (1973) + DGTW (1997) + Brennan-Chordia-Subrahmanyam (1998) 정전 계보 methodology의 학술적 정당성이며, 이는 실증 orthogonality 수치와 별개 층위. mechanism_align 4점은 '외국인 정보 우위 - 개인 contrarian' 메커니즘 학술 정합성이며, corr 0.2437은 residualization 구현의 robustness 문제 (S3 empirical gate)이지 mechanism 자체의 학술적 타당성 문제가 아님. McLean-Pontiff (2016) JF 프레임에서 post-publication decay 자체는 mechanism 약화가 아니라 crowding으로 해석되며, residualization으로 crowding 회피 시 mechanism 본체는 보존 가능. 따라서 quant 실측은 time_decay 1점 강하로 충분하며, peer_review/mechanism_align 추가 감점은 academic 층위 혼동.",
+          "severity": "medium"
+        },
+        {
+          "against": "risk_manager",
+          "point": "Kill Scenario 2 (expanding β_t 조기 수렴) 우려는 학술적으로 정당하나, academic 층위에서 이는 S2 profiling + S3 orthogonality gate empirical 검증 대상이지 S0 hypothesis design 단계 academic merit 감점 근거가 아니다. expanding-window pooled OLS의 law of large numbers 수렴은 Fama-MacBeth (1973) JPE + Pastor-Stambaugh (2003) JPE liquidity factor 등 정전 methodology의 보편적 특성이며, 이를 근거로 hypothesis design이 무효라고 주장하면 현대 cross-sectional asset pricing 전체가 부정된다. Rolling 3Y OLS vs expanding OLS 비교는 S2/S3 empirical robustness 검증 영역이며, Pelletier (2006) JoE regime-switching DCC는 S5 mutation 설계 영역에 해당. Academic 관점에서 H_1685 v2 S0 academic merit (15/20)은 유지되며, risk_mgr 지적은 S1/S2/S3 gate로 이관하는 것이 절차적으로 옳다.",
+          "severity": "medium"
+        }
+      ],
+      "strongest_opposing_argument": "Quant R1의 '2020-2026 75개월 mean|corr| = 0.2437 FAIL' 실측이 학술 축에서 가장 강력한 반대 주장이다. Choe-Kho-Stulz (2005) RFS는 2001-2002년 KOSDAQ 데이터 기반 primary cite이고, 고영훈·안일찬 (2018) 한국재무학회지도 2000년대 중반~2010년대 초반 샘플이 중심이다."
+    }
+  ],
+  "r2_total": 61,
+  "r3_needed_roles": []
+}

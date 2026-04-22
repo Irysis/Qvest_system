@@ -1,0 +1,182 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV8_A_WITH_H1685V2_DRAFT",
+  "stage": "PG0_post_H1685v2_APPROVE_CONDITIONAL_61",
+  "timestamp": "2026-04-18T14:55:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_A_with_H1685v2_DRAFT",
+  "status": "DRAFT — Phase 별 gradual admission 설계. Phase_1 ACTIVATE는 rev8-A 기본형 유지 (H_1685v2 Phase_1 편입 금지)",
+  "trigger": "H_1685 v2 S0 VERDICT APPROVE_CONDITIONAL 61/100 (Session 67 Day 1 late) — investor_flow diversifier family 활성. 시나리오 1 (APPROVE 경로) 반영.",
+
+  "supersedes_relationship": {
+    "base": "PG0_PLAN_rev8_A_FINAL_SKELETON.json (Phase_1 기본형)",
+    "extension": "Phase_2+ H_1685v2 gradual admission 추가",
+    "activation_condition": "rev8-A ACTIVATE (audit 결과 후) + Phase_2 진입 + MRS normal regime 확인"
+  },
+
+  "h_1685_v2_verdict_integration": {
+    "s0_score": 61,
+    "verdict": "APPROVE_CONDITIONAL",
+    "r2_trajectory": {
+      "codex": "7→8 (+1)",
+      "governor": "15→12 (-3, Quant β_t 수용)",
+      "risk_mgr_quant_academic": "R2 결과 통합되어 61"
+    },
+    "conditions_for_s1_count": 12,
+    "conditions_reference": "S0_VERDICT_H_1685v2 별도 파일",
+    "expected_conditions_scope": [
+      "INV13 registry activation",
+      "C11 FRED lag 준수",
+      "TDC pairwise pre-measurement",
+      "ICIR 3-period stability",
+      "21/63/126 window sensitivity",
+      "investor_flow data integrity",
+      "기타 C 유형 PIT + sector + liquidity 검증"
+    ]
+  },
+
+  "phase_by_phase_admission_schedule": {
+    "phase_1_day_1_7": {
+      "h_1685v2_status": "NOT_ADMITTED (Phase_1 편입 금지)",
+      "rationale": "MRS 63.1 CRISIS 지속 + 12 S1 conditions 미검증 + normal regime 조건 미충족",
+      "rev8_a_composition_unchanged": "STR_1631 18 / H_1688 10 / STR_1656 14 / STR_1679v3 10 / H_1689 23 / H_1690 10 + Reserve 9 + 미배분 6"
+    },
+    "phase_2_post_h_1685v2_conditions_pass": {
+      "trigger": "12 S1 conditions 전수 PASS + MRS normal regime 진입 확인 (score<30 또는 1개월 지속)",
+      "h_1685v2_admission": {
+        "weight": 0.03,
+        "role": "Diversifier (Div_4)",
+        "family": "investor_flow",
+        "source_of_funds": "Reserve 9% 유지하며 미배분 6% 중 3% 활용"
+      },
+      "updated_composition": {
+        "STR_1631": 0.18,
+        "H_1688": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.10,
+        "H_1689": 0.23,
+        "H_1690": 0.10,
+        "H_1685v2_Div_4": 0.03,
+        "Reserve": 0.09,
+        "Unallocated_remaining": 0.03,
+        "total": 1.00
+      },
+      "projected_sr_rho_0_3": 1.73,
+      "improvement_from_base_rev8_a": "+0.01"
+    },
+    "phase_3_incremental_to_5pct": {
+      "trigger": "Phase_2 H_1685v2 3% 운영 3개월+ stress 통과 + Retroactive TDC audit PASS",
+      "h_1685v2_weight": 0.05,
+      "additional_source": "Unallocated remaining 2%",
+      "updated_composition_note": "STR_1679v3 Div_1 유지 (아직 교체 없음)",
+      "projected_sr_rho_0_3": 1.75,
+      "improvement": "+0.02 from Phase_2"
+    },
+    "phase_4_full_8pct_or_div_swap": {
+      "trigger": "Phase_3 5% 운영 3개월+ + H_1685v2 Diversifier 역할 공고화",
+      "option_A_incremental_8pct": {
+        "h_1685v2_weight": 0.08,
+        "str_1679v3_weight": 0.10,
+        "total_diversifier_family": "ML 14 + embedded_q25 10 + investor_flow 8 = 32%",
+        "source": "Reserve 9% 중 3% 활용 (Reserve 6%로 축소)"
+      },
+      "option_B_div_swap_str_1679v3_10_to_8": {
+        "h_1685v2_weight": 0.10,
+        "str_1679v3_weight": 0.08,
+        "rationale": "Diversifier slot 4 (STR_1679v3) → Div_4 (H_1685v2) 2pp 교체 — embedded Q25 의존도 완화",
+        "q25_exposure_recalc": {
+          "str_1679v3_8pct_q25_share_0_90": 0.072,
+          "h_1689_23pct_q25_share_0_25": 0.0575,
+          "h_1690_10pct_q25_share_0_25": 0.025,
+          "str_1656_14pct_q25_share_0_05": 0.007,
+          "total_weighted_q25": 0.1615,
+          "improvement_from_rev8_a_base": "-1.8pp (17.95→16.15%)"
+        }
+      },
+      "projected_sr_rho_0_3_with_boost_6": {
+        "base_phase_4": "1.77~1.80",
+        "plus_all_boosts_accumulated": "2.00 aspirational"
+      }
+    }
+  },
+
+  "h_1685v2_admission_conditions_checklist": {
+    "s1_12_conditions_registry_verification": "Forge S1 완료 후 VERDICT conditions 명세 확인",
+    "regime_filter": "MRS < 30 (normal) 또는 MRS 30~50 (CAUTION) 1개월 지속",
+    "tdc_pairwise_pre_measurement": [
+      "H_1685v2 ↔ STR_1631 (TDC < 0.5)",
+      "H_1685v2 ↔ STR_1656 (TDC < 0.5)",
+      "H_1685v2 ↔ STR_1679v3 (TDC < 0.5, diversifier family 내 유사도 점검)",
+      "H_1685v2 ↔ H_1688 (TDC < 0.5)",
+      "H_1685v2 ↔ H_1689 (TDC < 0.5)",
+      "H_1685v2 ↔ H_1690 (TDC < 0.5)"
+    ],
+    "admission_rule_v3_4_10_gates": "Phase_2 진입 전 10 gates 전수 PASS 확인",
+    "retroactive_tdc_audit_gate_9": "Phase_2 3% 운영 3개월 후 재측정",
+    "stress_period_outperform": "Phase_2~3 6개월 내 최소 1건 stress event 동안 Div_4 positive contribution 확인"
+  },
+
+  "risk_mitigation_for_h_1685v2": {
+    "risk_1_investor_flow_data_availability": {
+      "description": "INV13 registry 외부 데이터 의존도",
+      "mitigation": "C11 FRED lag 동일 원칙 적용, Factor DB integration 사전 확인"
+    },
+    "risk_2_crisis_regime_premature_activation": {
+      "description": "MRS CRISIS 상태에서 Div_4 activation 시 flow reversal risk",
+      "mitigation": "MRS normal 확인 후 activation (hard condition)"
+    },
+    "risk_3_diversifier_cluster_concentration": {
+      "description": "Phase_4에서 Div 34%+ 도달 시 core 대비 과도",
+      "mitigation": "Div cluster cap 35% 적용 (family cap rule 확장)",
+      "phase_4_max_div": "ML 14 + embedded_q25 8 (Option B) + investor_flow 10 = 32% PASS"
+    },
+    "risk_4_verdict_rollback": {
+      "description": "H_1685v2 Forge S1 또는 Judge S6 단계 FAIL 시",
+      "mitigation": "Phase_1 rev8-A 기본형으로 회귀, Scout 재설계 경로"
+    }
+  },
+
+  "l_160_defense_application_to_h_1685v2": {
+    "scope_difference": "H_1685v2는 Diversifier family, L-160은 Defense family 교훈",
+    "partial_applicability": [
+      "Variant comparison (Gate 11 제안) 적용 — 21/63/126 window 이미 conditions에 포함",
+      "IC-Return coupling ratio (Gate 12 제안) 확인 권장"
+    ],
+    "difference_from_h_1682": [
+      "H_1685v2 investor_flow은 behavioral signal로 publication decay 상대적 적음",
+      "Diversifier 역할이므로 long-only 20종목 집중 리스크 완화",
+      "L-160 4 요인 중 sector bias와 composite offset만 선택적 적용"
+    ]
+  },
+
+  "dependencies_for_activation": [
+    "STR_1683 direction audit 결과 → rev8-A ACTIVATE (base 완료)",
+    "H_1685v2 Forge S1 실행 (Scout TODO 작성 필요)",
+    "12 S1 conditions registry + 사전 검증",
+    "Forge S1 hurdle_result PASS",
+    "Judge S6 15 gates PASS",
+    "MRS normal regime 진입",
+    "TDC pairwise 6 pairs < 0.5",
+    "Phase_2 진입 판정 (Governor)"
+  ],
+
+  "governor_next_actions_phase_2_preparation": [
+    "1. Scout에 H_1685v2 Forge S1 TODO 작성 요청 (12 conditions 반영)",
+    "2. MRS monitoring 강화 (daily regime score tracking)",
+    "3. Phase_2 진입 판정 기준 문서화 (MRS + 경제지표 + Forge/Judge 완료)",
+    "4. investor_flow family Soft Prior 등록 (families.json)",
+    "5. PG1 Admission skeleton에 H_1685v2 추가 candidate 반영"
+  ],
+
+  "executive_summary_rev8_a_with_h1685v2": {
+    "phase_1_base_unchanged": "rev8-A 기본형 유지 (H_1685v2 Phase_1 편입 금지)",
+    "phase_2_entry": "H_1685v2 3% (미배분 6%에서 활용, Reserve 9% 유지)",
+    "phase_3_incremental": "H_1685v2 5% (unallocated remaining 2% 추가)",
+    "phase_4_options": "A) 8% incremental (Reserve 6%) B) 10% swap (STR_1679v3 8%)",
+    "projected_sr_progression": "Phase_1 1.72 → Phase_2 1.73 → Phase_3 1.75 → Phase_4+boost 2.00",
+    "hard_conditions": "12 S1 conditions + MRS normal + TDC < 0.5 pairwise 6 pairs",
+    "file_path": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_with_H1685v2_DRAFT.json"
+  }
+}

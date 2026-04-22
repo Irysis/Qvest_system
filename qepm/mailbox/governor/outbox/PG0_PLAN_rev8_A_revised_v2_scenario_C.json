@@ -1,0 +1,199 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + Judge + Scout + Forge",
+  "type": "PG0_PLAN_REV8_A_REVISED_V2_SCENARIO_C_ACTIVE",
+  "stage": "PG0_rev8_A_revised_v2_SCENARIO_C_STAGE_2_ACTIVE",
+  "timestamp": "2026-04-18T Session67_Day1 post_STR_1684_v2b_Scenario_B",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_A_revised_v2_scenario_C_stage_2_active",
+  "supersedes": "PG0_PLAN_rev8_A_revised_v1.json",
+  "status": "ACTIVE — STR_1684_v2b Scenario B 확정 → Scenario C 경로 활성. H_1688 공식 DROP + H_1692 Core_Secondary 편성 경로. v3.5 STAGE_2_ACTIVE + Gate 12 hard_block mandatory.",
+
+  "families_json_v1_1_cross_reference": {
+    "source": "qepm/memory/registry/families.json (v1.1, Scout primary + Judge improvements 3건)",
+    "rev8_a_composition_family_mapping": {
+      "STR_1631_18pct": "consensus.approved_strategies[0] (PG2_active Harvey t=3.09 유일)",
+      "H_1692_10pct_NEW": "momentum.candidate_patterns[0] (handoff_kit_v1.1 PRIMARY, Grinblatt 1999 exception, Forge S1 pending P0)",
+      "STR_1656_14pct": "ml_meta.approved_strategies (PG2_active)",
+      "STR_1679v3_8pct": "momentum.candidate_patterns (embedded Q25, proxy 재계산 pending)",
+      "H_1689_Q24_exclude_23pct": "defense.candidate_strategies[H_1689_v3_variant_1] (Q24-exclude 3-axis approved)",
+      "H_1690_10pct": "defense.candidate_strategies[H_1690] (multi-source regime-smoothed APPROVE_CONDITIONAL 64)"
+    },
+    "family_concentration_audit": {
+      "consensus": 0.18,
+      "momentum_total": 0.18,
+      "momentum_breakdown": "H_1692 (10) + STR_1679v3 embedded Q25 (8)",
+      "ml_meta": 0.14,
+      "defense_cluster": 0.33,
+      "defense_breakdown": "H_1689 Q24-exclude (23) + H_1690 (10)",
+      "family_cap_compliance": "defense 33% < 35% cap PASS (families.json Cross-family rules 준수)"
+    },
+    "families_json_judge_improvements_3_incorporated": {
+      "gate_12_coupling_ratio_history_mapped": {
+        "STR_1631": "consensus.gate_12_coupling_ratio_history[0] Proxy 1.417 PASS",
+        "STR_1683": "defense.gate_12_coupling_ratio_history[0] 0.00 FAIL L-160 IC-Return decoupling",
+        "STR_1679v3_pending": "defense.gate_12_coupling_ratio_history[1] Governor 재계산 pending"
+      },
+      "ax_cand_tracking_4_expanded": {
+        "AX-006_pairwise_TDC": "Judge 주도, Governor frequency axis feeding 공조",
+        "AX_CAND_spec_transmission": "L-159, frequency 0.28 demote post-ET-101",
+        "AX_CAND_infrastructure_failures_APPROVED": "upper category, L-160 partial + L-161 + L-162 sub-entry + L-163 pending",
+        "AX_CAND_kr_momentum_inverse_EXTEND_Q3": "0.68 composite, Rouwenhorst 1999 + Asness 2013 + Chui 2010 + STR_1684 Scenario B empirical"
+      },
+      "l_code_family_mapping": "L-159~L-163 pending 각 family 본문 분산 연결"
+    },
+    "governor_read_only_compliance": "Governor는 families.json read-only reference + family_concentration check만 수행. Update 책임은 Scout primary."
+  },
+
+  "trigger_event": {
+    "str_1684_v2b_result": {
+      "CAGR": -4.3,
+      "SR": -0.130,
+      "MDD": 86.7,
+      "ICIR": -0.1874,
+      "CAPM_beta": 1.0007,
+      "Grade": "F",
+      "elapsed_min": 11.6
+    },
+    "fix_1_effect": "sd=1.0 복원 확인 but ICIR 동일 (inline Fix 1 적용 후 unchanged)",
+    "mathematical_explanation": "OLS residualization 후 Z-score 재적용 → scale invariant, ranking 동일, portfolio composition 동일, ICIR 동일",
+    "l_161_reclassification": "UNVALIDATED_HARD_FAIL → VALIDATED_HARD_FAIL",
+    "root_cause_revised": "Hypothesis A (KR momentum inverse, Rouwenhorst 1999 + Asness et al. 2013) 또는 Hypothesis D (winsorize 정보 손실 비가역)",
+    "h_1688_disposition": "공식 DROP (Core_Secondary slot 공백 확정)"
+  },
+
+  "v3_5_stage_2_transition": {
+    "from": "CONDITIONAL_ACTIVE Stage 1",
+    "to": "STAGE_2_ACTIVE",
+    "validated_hard_fail_count": 2,
+    "validated_hard_fails": ["STR_1683 L-160", "STR_1684 L-161 재분류"],
+    "gate_12_transition": "advisory_warning → **hard_block mandatory**",
+    "gate_11_status": "advisory_warning 유지 (Stage 3까지)",
+    "architect_signoff_pending": "Stage 3 ACTIVE_NORMATIVE 전환 조건"
+  },
+
+  "rev8_a_revised_v2_phase_3_composition_SCENARIO_C": {
+    "description": "H_1688 공식 DROP 확정. Core_Secondary slot → H_1692 10% 편성 경로 활성. H_1689 Q24-exclude 3-axis + STR_1679v3 8% 유지.",
+    "composition_final": {
+      "STR_1631_Core_Primary": {"weight": 0.18, "family": "consensus_C19_core", "status": "UNCHANGED"},
+      "H_1692_Core_Secondary_NEW": {
+        "weight": 0.10,
+        "family": "industry_momentum_residual_kr_rsi",
+        "s0_record": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+        "status": "PENDING_FORGE_S1 (P0 우선순위)",
+        "l_161_avoidance_design": "M07 sd 1.0 + M18 sd 1.0 balanced OLS (CLEAN RESIDUALIZATION)",
+        "replaces": "H_1688 (Carhart 4-factor residualization, L-161 VALIDATED HARD FAIL)"
+      },
+      "STR_1656_Div_ML": {"weight": 0.14, "family": "ML_complexity", "status": "UNCHANGED"},
+      "STR_1679v3_Div_1_reduced": {
+        "weight": 0.08,
+        "family": "momentum_overlay_embedded_q25",
+        "status": "weight 10→8% (V1 TDC 0.52 L-156 대응)",
+        "dual_track_trigger_flagged": "Q25 sd 0.328→1.0 변동 0.672 > 0.387 → Fix 1 재검증 권고 (Phase_1 PG1 admission 전)"
+      },
+      "H_1689_Def_2_Q24_exclude_3_axis": {
+        "weight": 0.23,
+        "family": "quality_aggregate",
+        "axes": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+        "status": "PENDING_FORGE_S1 (Q24-exclude variant)",
+        "gate_11_12": "**MANDATORY hard_block** (Stage 2 + Defense family)",
+        "risk_mgr_v2_response": "Q24 poison pill 완전 제거"
+      },
+      "H_1690_Def_3": {
+        "weight": 0.10,
+        "family": "multi_source_defense_anchor",
+        "status": "PENDING_10_CONDITIONS + Forge S1",
+        "gate_11_12": "**MANDATORY hard_block** (Stage 2 + Defense family)"
+      },
+      "H_1682_DEF_DROPPED": {"weight": 0.00, "previous": 0.12, "l_code": "L-160 VALIDATED HARD FAIL"},
+      "H_1688_Core_Secondary_DROPPED_confirmed": {"weight": 0.00, "previous": 0.10, "l_code": "L-161 VALIDATED HARD FAIL 재분류", "replacement": "H_1692"},
+      "Reserve": {"weight": 0.09, "composition": "H_1678 refit 6 + H_1690 promotion 2 + contingency 1"},
+      "Unallocated_phase_3_scenario_C": {"weight": 0.08, "note": "STR_1679v3 감축 2pp + 기존 미배분 6% = 8% (H_1692 편성 전 예비)"}
+    },
+    "composition_math_check": {
+      "STR_1631": 0.18,
+      "H_1692": 0.10,
+      "STR_1656": 0.14,
+      "STR_1679v3": 0.08,
+      "H_1689": 0.23,
+      "H_1690": 0.10,
+      "active_total": 0.83,
+      "reserve": 0.09,
+      "unallocated": 0.08,
+      "total": 1.00,
+      "n_active": 6
+    },
+    "defense_cluster": "H_1689 23 + H_1690 10 = 33% (unchanged)",
+    "core_secondary_recovery": "H_1688 10% → H_1692 10% (family: residual_momentum_carhart4 failed → industry_momentum_residual_kr_rsi)"
+  },
+
+  "gate_11_12_stage_2_enforcement": {
+    "gate_11_variant_comparison": "advisory_warning 유지 (Stage 1 → Stage 2 승격 없음, Stage 3 Architect signoff 대기)",
+    "gate_12_ic_return_coupling_ratio": "**hard_block mandatory (전 family 적용)**",
+    "defense_family_mandatory_gate_11_12": ["H_1689 Q24-exclude", "H_1690"],
+    "core_secondary_gate_12_mandatory": "H_1692 Gate 12 mandatory (Stage 2 전환 이후 Core·Div 경계 구분 없이 Gate 12 hard_block)",
+    "retroactive_reapplication_required": "기존 PG2 STR_1631/STR_1656도 Gate 12 재검증 필요 (Stage 2 retroactive 원칙)"
+  },
+
+  "forge_day_2_priority_revised": {
+    "p0_highest_new": "H_1692 Core_Secondary S1 (Core_Secondary alpha 핵심)",
+    "p1_defense_mandatory": "H_1689 Q24-exclude 3-axis S1 (Gate 11/12 mandatory)",
+    "p2_defense": "H_1690 S1 (Gate 11/12 mandatory)",
+    "p3_diversifier_reverification": "STR_1679v3 Fix 1 재검증 (Dual-track Trigger)",
+    "p4_investor_flow": "H_1685v2 Forge S1 (Phase_2+ 대비)",
+    "str_1684_confirmed_drop": "재실행 금지 — VALIDATED HARD FAIL 확정"
+  },
+
+  "phase_1_v1_3_to_v1_4_update_scope": {
+    "v1_4_changes": [
+      "1. Core_Secondary slot H_1688 → **H_1692** 확정",
+      "2. v3.5 status Stage 1 → Stage 2 반영",
+      "3. Gate 12 hard_block mandatory (전 family) 명시",
+      "4. STR_1679v3 Dual-track Trigger 재검증 권고",
+      "5. 3 Scenarios A/B/C → **Scenario C 확정** (단일 path)",
+      "6. H_1688 VALIDATED HARD FAIL 공식 기록"
+    ],
+    "phase_1_timeline_adjusted": {
+      "day_2": "Forge 재스폰 + H_1692 S1 + H_1689 Q24-exclude S1 + H_1690 S1 + STR_1679v3 재검증",
+      "day_3": "Judge S6 (H_1692 Gate 12 mandatory + H_1689/H_1690 Defense mandatory) + L-161 본문 재작성 반영",
+      "day_4_5": "Governor PG1 admission + rev8-A-revised_v2 최종 확정",
+      "day_6_7": "Phase_1 LIVE"
+    }
+  },
+
+  "l_161_reclassification_cross_reference": {
+    "scout_hypothesis_b_status": "partial contribution (인프라 현상 설명, ICIR 개선 기여 없음)",
+    "hypothesis_a_kr_momentum_inverse": "primary suspect (Rouwenhorst 1999 + Asness et al. 2013 KR momentum weak)",
+    "hypothesis_d_winsorize_info_loss": "secondary suspect (비가역 정보 손실)",
+    "judge_l_161_body_update_requested": "Hypothesis A/D 반영 + Fix 1 무효 + H_1688 VALIDATED HARD FAIL",
+    "ax_cand_kr_momentum_inverse_new": "Judge 신규 트래킹 요청 (L-161 ± L-090 IC 반감기 693M)"
+  },
+
+  "q_lead_infra_coordination": {
+    "factor_db_builder_option_a_fix": "COMPLETED (Q-Lead, line 367 뒤 re-standardize 5줄)",
+    "r12_d01_duplicate_dedup": "다음 단계 (compute_defense.R D01 alias로 전환)",
+    "factor_db_rebuild": "실행 필요 (Q-Lead or Forge Day 2)",
+    "l_163_factor_engine_standardization": "Judge 판정 대기 (여전히 유효한 infra L-code)"
+  },
+
+  "governor_actions_immediate": [
+    "1. admission_rule_v3_5_governor_signoff.json Stage 2 전환 반영 ✅ (본 파일과 병행)",
+    "2. rev8-A-revised_v2 Scenario C composition 확정 ✅ (본 파일)",
+    "3. Phase_1 v1.3 → v1.4 업데이트 (별도 파일)",
+    "4. Judge에 STR_1684 L-161 재분류 cross-reference 통보",
+    "5. Scout에 H_1692 P0 우선순위 + H_1688 DROP 공식 확정 통보",
+    "6. retroactive_v3_5_audit_final.json Stage 2 반영 amendment"
+  ],
+
+  "executive_summary_rev8_a_revised_v2": {
+    "composition_final_scenario_C": "STR_1631 18 + H_1692 10 (NEW) + STR_1656 14 + STR_1679v3 8 + H_1689 23 + H_1690 10 + Reserve 9 + Unallocated 8 = 100%",
+    "n_active": 6,
+    "defense_cluster": "33% (H_1689 23 + H_1690 10, unchanged)",
+    "core_secondary_replacement": "H_1688 DROP → H_1692 편성",
+    "v3_5_status": "STAGE_2_ACTIVE (VALIDATED 2/2 충족)",
+    "gate_12_hard_block_mandatory": "전 family 적용 (Defense 유지 + Core·Div 추가)",
+    "projected_sr_estimate_conservative": "1.72~1.78 (H_1692 Forge S1 PASS 전제)",
+    "timeline_live": "Day 7 (기존 plan 유지, Forge Day 2 재스폰 후 병렬 실행)"
+  }
+}

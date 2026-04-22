@@ -1,0 +1,42 @@
+{
+  "role": "academic",
+  "r1_score": 16,
+  "r2_score": 16,
+  "score_changed": false,
+  "score_change_reason": null,
+  "score_detail": {
+    "peer_review": 4,
+    "mechanism_align": 4,
+    "korea_evidence": 3,
+    "substantive_cite": 4,
+    "time_decay": 1,
+    "rationale": "R1 16점 유지. Quant의 M08 기구축 + 3factor cross-section 알고리즘 분리 발견은 내부적으로 substantive_cite 4점을 강화했으나 상한 도달로 추가 반영 불가. Risk Manager의 4-regime CRISIS IC -0.014 실측은 Blitz 2011 pro-cyclical foundational evidence와 정합하므로 time_decay를 '구조적 특성'으로 reclassify 가능하나 2014~2025 한국 OOS 11년 공백은 여전히 실증 부재이므로 1/4 유지가 보수적. 이진철 2015 이후 국내 동료심사 residual momentum 실증 신규 논문 검색 API(SSRN/arXiv) Payment Required 오류로 확인 불가 — korea_evidence 3/4 유지."
+  },
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "M08_Residual_Mom(CAPM 단일팩터 time-series)과 H_1688(3factor cross-section OLS) 사이의 알고리즘 레벨 차이 지적은 Blitz 2011 Table 3의 'Fama-French 3-factor residual이 CAPM residual 대비 Sharpe 월등' 실증과 정합. 이는 STR_1038~1043 M01 대비 mechanism-level 분리를 Blitz 2011 standard specification 그대로 반영한 것이므로 substantive_cite 4/4의 실질 근거."
+    },
+    {
+      "with": "governor",
+      "point": "momentum_residual 신규 family 편입이 Herfindahl 0.50→0.27로 개선되고 Core_Secondary 15% 블렌드 기여가 H_1683 대비 2.5배라는 Governor 논리는 Carhart 1997 UMD 팩터가 FF3 orthogonal 잔차 설계로 SMB/HML와 독립 family 지위를 획득한 학술 precedent와 정합. 학술적으로 residual momentum은 Jegadeesh-Titman 1993 raw momentum과 별도 family로 분류되는 것이 표준."
+    },
+    {
+      "with": "risk_manager",
+      "point": "4-regime CRISIS IC -0.014 실측이 Blitz 2011 논문 자체에서 공개된 'momentum pro-cyclical + CRISIS reversal' 구조의 한국 실증이라는 점은 수용. Grundy-Martin 2001도 2000년 기술주 버블 붕괴 시 momentum -91% drawdown을 문서화했으며 Daniel-Moskowitz 2016 'Momentum Crashes'가 후속 정립. Blitz 2011이 regime vulnerability를 명시적으로 인정한 foundational paper이므로 이는 '숨겨진 결함'이 아닌 '알려진 구조적 리스크'이며 Barroso 2015 dynamic volatility scaling이 이 문제의 학술적 해답으로 제시되어 있다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex가 'STR_1038~1043 대비 mechanism-level 분리 증명 요구'하며 잔차화를 '구현 방식 변경 수준'으로 평가절하한 부분은 Blitz 2011의 학술적 기여를 오독. Blitz 2011 Table 3은 raw momentum Sharpe 0.40 vs 3-factor residual momentum Sharpe 0.76으로 91% 개선을 실증하며, 이는 Grundy-Martin 2001이 식별한 'raw momentum은 beta/size implicit bet'라는 mechanism-level 결함을 직접 해결한 것. Carhart 1997 UMD도 FF3 orthogonal 설계로 SMB/HML과 분리된 독립 family로 학계에서 인정된 precedent. 따라서 3factor cross-section residualization은 '구현 변경'이 아닌 'signal source 차별화'로 분류되는 것이 학술 표준.",
+      "severity": "major"
+    },
+    {
+      "against": "risk_manager",
+      "point": "Risk Manager의 'MRS 63.1 CRISIS 편입 타이밍 최악' 경고는 수용 가능하나, Blitz 2011 Section 4 + Barroso 2015 Figure 2가 제시하는 'dynamic scaling 후 CRISIS IC가 양전환되는 out-of-sample evidence'는 편입 타이밍 자체가 kill factor가 아니라 mutation 설계 문제임을 명시. R1의 'DCC-GARCH conditional rho 정상<0.25 ≠ CRISIS<0.50' 기준은 학술적으로 과도하게 엄격 — Ang-Chen 2002 'Asymmetric Correlations' 표준은 CRISIS tail dependence 0.55까지 허용하며 이것이 moderate diversification의 empirical threshold.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Risk Manager의 '4-regime CRISIS IC -0.014 (M08 실측) + conditional beta asymmetry 누출 + MRS 63.1 CRISIS 현 편입 타이밍 최악' 조합이 Academic 관점에서 가장 강한 반론. 학술적으로 Blitz 2011 + Barroso 2015 + Daniel-Moskowitz 2016이 momentum pro-cyclical 구조와 CRISIS crash risk를 foundational paper로 모두 인정했으며 이진철 2015 한국 sample도 2008 GFC 포함 시 유사한 tail risk를 기록. Academic이 제시한 peer-reviewed solution(Barroso 2015 dynamic scaling)이 있음에도 한국 2014~2025 11년 OOS에서 이 solution이 verify되지 않았다는 Risk Manager 지적은 time_decay 1/4 감점의 핵심 근거와 수렴. 이 반론이 진실이라면 H_1688의 SR 1.5+ 달성은 Barroso mutation의 한국 OOS 성공 여부에 완전 의존하며, 실패 시 SR <0.2 + MDD +12~20% kill scenario가 Blitz 2011 foundational evidence와 정합한 '예측된 실패'가 된다."
+}

@@ -1,0 +1,158 @@
+{
+  "_purpose": "H_1693 S0 VERDICT APPROVE_CONDITIONAL 77/100 수신 → STR_1687 할당 확정 후 Q07 cluster 3-member Sequential Admission Protocol 정식화. Forge S1 DONE → Scout S3 orthogonality → Judge S6 → Governor PG1 실측 순서 강제.",
+  "stage": "PG1_PREP",
+  "version": "1.0.0",
+  "protocol_id": "Q07_CLUSTER_SEQ_ADMISSION_STR_1687",
+  "timestamp": "2026-04-19T (Session 68 Day 1 post-VERDICT)",
+  "issued_by": "Governor",
+  "triggered_by": "H_1693 S0 VERDICT APPROVE_CONDITIONAL 77 + STR_1687 Forge S1 dispatch",
+
+  "cluster_definition": {
+    "cluster_name": "Q07_Quality_Defense_Cluster",
+    "member_count": 3,
+    "members": [
+      {
+        "id": "STR_1679v3",
+        "role": "embedded_q25 diversifier",
+        "q07_exposure": "indirect (defense sleeve Q07 component)",
+        "slot_weight_target": 0.08,
+        "status": "Phase_1 diversifier"
+      },
+      {
+        "id": "H_1689_v3_variant_1_3axis_Q24_exclude",
+        "role": "defense Core_Anchor",
+        "q07_exposure": "3-axis Q07 direct share 25%",
+        "slot_weight_target": 0.23,
+        "status": "Phase_1 defense primary recommended (scenario_B)"
+      },
+      {
+        "id": "STR_1687 (H_1693)",
+        "role": "defense Secondary",
+        "q07_exposure": "Q07 sector-neutral 70% + SUE 30%",
+        "slot_weight_target": 0.10,
+        "status": "Forge S1 dispatch (queue 4번째), H_1690 DROP 대체"
+      }
+    ],
+    "cluster_cap_total": 0.33,
+    "cluster_cap_rationale": "rev8-A-revised-v3 Scenario_D Option 2 APPROVED — Defense sleeve 33% target 유지"
+  },
+
+  "sequential_admission_gates_v3_5_2": {
+    "gate_11_judge_tdc_pairwise_crisis": {
+      "threshold": "TDC_crisis < 0.30 (Sequential Admission Protocol v3.5.2 §1.1)",
+      "required_pairs": [
+        "H_1689_v3_variant_1 vs STR_1687",
+        "STR_1679v3 vs STR_1687",
+        "STR_1631_SYN_05 vs STR_1687",
+        "STR_1656_MLRA_M05 vs STR_1687"
+      ],
+      "pre_measurement_scout_estimate": {
+        "H_1689_v3_variant_1 vs STR_1687": "0.35~0.55 (Q07 share: variant_1 3-axis Q01+Q04+Q25 Q07 배제 확정 시 0.20~0.35로 하향, 직접 공유 경로 없음)",
+        "STR_1679v3 vs STR_1687": "0.25~0.40 (Q07 간접 공유 via v3 defense sleeve)",
+        "STR_1631_SYN_05 vs STR_1687": "0.20~0.35 (quality defense axis via Consensus C19)",
+        "STR_1656_MLRA_M05 vs STR_1687": "0.15~0.30 (ML diversifier low overlap)"
+      },
+      "decision_rule_on_breach": [
+        "H_1689 variant_1 (3-axis Q24-exclude)로 확정 시 Q07 direct 공유 없음 → H_1693과 clean separation. primary path.",
+        "H_1689 v3 variant_2 (Q07 4-axis) 복귀 시 H_1693과 direct share 0.35~0.55 → Sequential Admission 실패 → 하나만 primary 선택 의무"
+      ]
+    },
+    "gate_forge_s3_max_corr": {
+      "threshold": "max_corr ≤ 0.50 (Admission Rule v3.5.2 §1.2)",
+      "source": "Scout S3 orthogonality report (benchmark STR_1631 + STR_1656 + STR_1679v3 + H_1689_v3_variant_1)"
+    },
+    "gate_consensus_tier_l_158": {
+      "rule": "Q07 공유 전략 동시 편입 시 consensus_tier Tier 1 cap (L-158 Early Warning)",
+      "application": "STR_1679v3 (Q07 indirect) + H_1689_v3_variant_1 (Q07 배제) + STR_1687 (Q07 70%)로 직접 겹침 1건만 active → Tier 1 cap 여유 확보"
+    }
+  },
+
+  "veto_level_s1_gates_signal_portfolio_translation_failure": {
+    "_trigger": "AX_CAND_signal_portfolio_translation_failure 3/3 TRIGGER MET (L-160 + L-161 + L-165). STR_1687이 4th member 되지 않도록 S1 단계에서 kill gate 적용.",
+    "gate_14_net_ic_transmission_ratio": {
+      "formula": "net_return / pre_cost_return",
+      "threshold": "> 0.6 (mandatory)",
+      "kill_threshold": "< 0.4 (Hard Fail + AX_CAND promote 확정 위험)"
+    },
+    "gate_stress_outperform": {
+      "windows": 3,
+      "threshold": "2+ positive alpha (mandatory)",
+      "kill_threshold": "2+ negative → L-160 decoupling 재현 확정"
+    },
+    "gate_z_sector_empirical_effect": {
+      "comparison": "Z_Sector version vs raw Z version",
+      "threshold": "sector-neutralization 효과 positive empirical 측정",
+      "kill_threshold": "Z_Sector 버전이 raw Z 버전 대비 underperform → sector bias 해소 실패"
+    }
+  },
+
+  "ax_001_v2_4_gate_compliance_required": {
+    "gate_2a_multi_sleeve_only": "multi_sleeve_only=TRUE (standalone admission 금지)",
+    "gate_2b_crisis_alpha": "6대 위기 구간 alpha positive 전부",
+    "gate_2c_bad_normal_ic_ratio": "bad/normal IC ratio > 0.6 (Q07 L-121 baseline ~2.7)",
+    "gate_2d_core_mdd_reduction": "STR_1631 MDD -21.27% × 0.90 = -19.14% target (10%+ 완화)"
+  },
+
+  "d1_governor_mandatory_gates": {
+    "_source": "Governor TODO D1 + Q-Lead Session 68 Day 1 지시",
+    "stress_outperform": "≥ 2/3",
+    "bad_ic": "≥ 0.08",
+    "mdd": "< 35%"
+  },
+
+  "ax_cand_4th_member_prevention_protocol": {
+    "status_monitoring": "AX_CAND_signal_portfolio_translation_failure 3/3 → STR_1687 VALIDATED_HARD_FAIL 발생 시 4/3 promote 확정",
+    "gate_13_auto_detect_enabled": true,
+    "mitigation": "Forge S1 단계에서 veto-level 3-gate (Gate 14 + stress outperform + Z_Sector empirical) 모두 통과 필수",
+    "fallback_on_hard_fail": "STR_1687 DROP + Scout D2 (Risk-parity 3-factor) 또는 D3 (MRS-conditional Dynamic Defense) 재설계 전환"
+  },
+
+  "downstream_admission_timeline_session_68": {
+    "day_1_current": "H_1693 S0 VERDICT 77 APPROVE_CONDITIONAL + STR_1687 Forge S1 dispatch (queue 4번째)",
+    "day_2_3": "Forge S1 STR_1686 → H_1689_v3_variant_1 → H_1692_v2 → STR_1687 순차 완료",
+    "day_4": "Scout S3 orthogonality 실측 (Q07 cluster 3건 pairwise TDC crisis)",
+    "day_5_pg1": "Judge S6 Gate 0~8 (Gate 13/14 포함) + Governor PG1 Sequential Admission Protocol 실측 적용",
+    "day_6_7": "Blender 5-sleeve pg2_allocation 발행 (cluster winner 확정 기반)",
+    "day_8_live": "Phase_1 LIVE 전환"
+  },
+
+  "governor_decision_matrix_post_s1": {
+    "scenario_A_all_grade_A_tdc_low": {
+      "condition": "H_1689_v3_variant_1 Grade A + STR_1687 Grade A + pairwise TDC < 0.30",
+      "action": "Phase_1 PG1 공동 admission (H_1689 23% + STR_1687 10% = Defense 33% target 정확 달성)"
+    },
+    "scenario_B_h_1689_primary_str_1687_reserve": {
+      "condition": "H_1689_v3_variant_1 Grade A + STR_1687 Grade B/BORDERLINE or TDC 0.30~0.50",
+      "action": "H_1689 primary admission 23% + STR_1687 Reserve 이동 (Defense 23% + misc 10% 이동)"
+    },
+    "scenario_C_str_1687_primary_h_1689_fail": {
+      "condition": "H_1689_v3_variant_1 Grade F + STR_1687 Grade A + TDC 조건 충족",
+      "action": "STR_1687 primary 편입 10~20% 확장 + Defense 추가 slot Scout D2/D3 재탐색"
+    },
+    "scenario_D_str_1687_hard_fail_signal_portfolio": {
+      "condition": "STR_1687 Gate 14 net_IC_transmission_ratio < 0.4 OR stress 2+ negative",
+      "action": "STR_1687 DROP + AX_CAND promote 4/3 → L-166 발행 + Defense slot Scout D2/D3 긴급 재탐색"
+    },
+    "scenario_E_both_fail": {
+      "condition": "H_1689_v3_variant_1 + STR_1687 모두 Grade F",
+      "action": "Phase_1 PG1 Defense cluster 33% 전면 재설계 + Scout Session 69 전환"
+    }
+  },
+
+  "forge_s1_priority_guidance": {
+    "str_1687_queue_position": "4번째 (STR_1686 → H_1689_v3_variant_1 → H_1692_v2 → STR_1687)",
+    "sector_constraint_mandatory_strategy_r_factor_engine_r": "max 5 per sector (25% of 20) — HHI < 2500 + 재벌 cluster (삼성/현대/LG/SK) 과다 편중 방지",
+    "l_164_load_month_factors_mandate": "load_month_factors(c('Q07_Earnings_Stability', 'C01_SUE')) 경유 강제, inline parquet 금지",
+    "c4_quarterly_lag": "Q07 + C01_SUE 공시 45일 lag (보수적 60일 고려)",
+    "c13_z_score_aligned": "SUE는 Z_Score_Aligned, Q07은 Z_Sector (factor_db_builder.R .standardize_factors)"
+  },
+
+  "governor_next_actions": [
+    "STR_1687 Forge S1 DONE 수신 대기 (Day 2~3)",
+    "Scout S3 orthogonality 실측 report 수신 (Day 4)",
+    "Judge S6 Gate 0~8 signoff 대기 (Day 5)",
+    "PG1 Sequential Admission Protocol 실측 적용 + rev9 발행 (Day 5)",
+    "Blender 5-sleeve pg2_allocation 공동 심사 (Day 6~7)",
+    "Phase_1 LIVE 전환 signoff (Day 8)"
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "artifact_type": "JUDGE_REVERIFICATION_SIGNOFF_REV_V4_1_AND_AX007_LEDGER",
+  "target_artifacts": [
+    "stage_artifacts/governor_rev8_a_revised_v4_1_patch_20260419.json",
+    "CLAUDE.md Axioms section (AX-007 entry)",
+    "methodology_active.md L-160/L-165/L-166 AX-007 promotion reflection"
+  ],
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "trigger": "team-lead 재검증 요청 + Governor rev-v4.1 patch 발행 완료 + AX-007 active ledger 등록 알림",
+
+  "signoff_1_rev_v4_1_reverification": {
+    "status": "CONDITIONAL_REJECT — B1 blocker UNRESOLVED (산술 오류 재발)",
+    "critical_finding": {
+      "blocker_id": "B1_STILL_UNRESOLVED",
+      "severity": "HARD_BLOCKER (원 B1 해소 실패)",
+      "computed_weight_sum": 1.06,
+      "claimed_weight_sum_in_patch": 1.00,
+      "delta": "+0.06 (+6%pt overweight, 1차 v4의 +10%pt보다 개선됐으나 미해결)",
+      "per_slot_verification_v4_1": {
+        "S1_STR_1631": 0.18,
+        "S2_H_1692": 0.10,
+        "S3_STR_1656": 0.14,
+        "S4_STR_1686": 0.14,
+        "S5_H_1689": 0.23,
+        "S6_STR_1687": 0.00,
+        "S7_STR_1679v3": 0.12,
+        "S8_Reserve": 0.09,
+        "S9_misc": 0.06,
+        "sum": 1.06
+      },
+      "root_cause_analysis": "STR_1687 10%p DROP 재분배 시 delta 적용이 partial. Patch change_log가 Reserve -0.02 + misc -0.02 + STR_1679v3 +0.04 = 0.00 net delta를 의미함에도 실제 STR_1679v3 +0.04(8→12%)는 v4에서 이미 반영된 변화이고 v4.1에서는 추가 감산 없이 base v4의 overweight 10%를 partially correct 했을 뿐",
+      "arithmetic_demonstration": {
+        "v4_original_sum": 1.10,
+        "v4_1_reductions_applied": {
+          "Reserve -0.02": true,
+          "misc -0.02": true,
+          "total_reduction": 0.04
+        },
+        "expected_v4_1_sum": 1.10 - 0.04,
+        "actual_computed": 1.06,
+        "required_additional_reduction": 0.06
+      },
+      "required_fix_option_a_corrected": [
+        "option_a_final: STR_1679v3 0.12 → 0.06 (-0.06), Reserve 0.09 유지, misc 0.06 유지. 합 1.00 복원. 단 STR_1679v3이 S0 Debate에서 8% (rev-v3 original)에서 +4% 재분배 의미 상실 — STR_1679v3 재분배 의미 보존 어려움",
+        "option_b: H_1689 v3 0.23 → 0.17 (-0.06, concentration 우려 완화 부수 효과). 합 1.00 복원",
+        "option_c: Reserve 0.09 + misc 0.06 추가 0.06 감산 → Reserve 0.05 + misc 0.04 (-0.02 -0.02 추가), 합 1.00 복원. Reserve 축소로 Phase_1 안전 버퍼 위축 trade-off",
+        "option_d (judge recommend): STR_1679v3 0.12 → 0.08 (rev-v3 original 복원, STR_1687 재분배는 별도 표현), Reserve 0.09 → 0.07 (-0.02 추가), misc 0.06 → 0.05 (-0.01 추가), S4 STR_1686 0.14 → 0.11 (-0.03, diversifier concentration 완화 부수 효과). 합 0.18+0.10+0.14+0.11+0.23+0+0.08+0.07+0.05=0.96... 여전히 -0.04 필요",
+        "option_judge_final": "H_1689 v3 0.23 → 0.17 (concentration 완화 + B2 blocker 동시 해소)이 Phase_1 SR contribution 유지하면서 산술 정합 + defense cluster single 위험 완화 최적. rev-v4.2 patch 권고"
+      ]
+    },
+    "signoff_partial_approvals": {
+      "b1_structural_acknowledgment": "Reserve 0.11→0.09 + misc 0.08→0.06 방향성 OK. 단 quantity 부족",
+      "b3_c3_exception_2_ml_strengthening": {
+        "status": "APPROVE",
+        "evaluation": "SR_OOS/SR_IS>0.70 + feature_concentration<0.40 + holdout>=12M 3-gate 정확 반영. Judge 원 권고 trail ml_empirical_first 기준 준수. 적절한 구체화. STR_1656_MLRA + H_1692_v2 XGBoost-based에 적용 명시 양호"
+      },
+      "b2_advisory_phase_2_plan": {
+        "status": "CONDITIONAL_APPROVE (Advisory 수준에서 OK)",
+        "evaluation": "SLV4 regime matrix(normal 5% / crisis 40% / caution 20%) effective defense weight ~15% + H_1692 Core_Secondary Gate14 CLEAR 후 추가 defense 편입 검토 — 합리적 경로. 단 AX-001 v2 crisis_alpha ≥4/6 empirical 증명이 H_1689 v3 S6 PASS 후에만 확정되므로 Phase_2 전환 전 재확인 필요"
+      },
+      "admission_rule_v3_5_3_patch1": {
+        "status": "CONDITIONAL_APPROVE",
+        "evaluation": "14-gate list 전수 Judge 원안 일치. C3 exceptions[2] ML-based sizing 3-gate 구체화 정합. 단 Admission Rule 공식 발효는 (a) B1 patch 완료 + (b) L-168 infra PIT audit의 infra_pit_scan Gate 신규 추가 2건 모두 해소 후에만 가능"
+      }
+    },
+    "final_verdict_signoff_1": {
+      "decision": "REJECT_CURRENT_v4_1 + CONDITIONAL_APPROVE_v4_2_EXPECTED",
+      "blocker_unresolved": "B1 weight sum 1.06 (expected 1.00)",
+      "governor_next_action": "rev-v4.2 patch 필수 — option_judge_final 권고 (H_1689 v3 23→17%)",
+      "post_fix_signoff_trigger": "Governor rev-v4.2 patch 발행 + L-168 infra fix 완료 후 Judge 최종 signoff → Admission Rule v3.5.3-patch1 공식 발효"
+    }
+  },
+
+  "signoff_2_ax_007_active_ledger_audit": {
+    "status": "CONDITIONAL_APPROVE — 경미한 metadata 불일치 2건 존재하나 core 등재 PASS",
+
+    "claude_md_ax_007_entry_audit": {
+      "line_range": "CLAUDE.md lines 359-365",
+      "verified_fields": {
+        "axiom_id": {"expected": "AX-007", "actual": "AX-007", "match": true},
+        "category": {"expected": "[방법론] [실패]", "actual": "[방법론] [실패]", "match": true},
+        "statement": {"expected_core": "Signal-Portfolio Translation Failure + Defense/Core_Secondary single-sleeve top-20 long-only 구조적 실패", "actual": "정합", "match": true},
+        "scope": {"expected": "market=KR, roles=[defense, core_secondary], structure=single_sleeve_long_only_top20", "actual": "정합", "match": true},
+        "supporting_l_codes": {"expected": "L-160 + L-165 + L-166", "actual": "정합", "match": true},
+        "promotion_date": {"expected": "2026-04-19", "actual": "정합", "match": true}
+      },
+      "discrepancies_found": [
+        {
+          "field": "5축 세부 점수",
+          "judge_original": "I=0.82 R=1.00 F=0.90 E=0.75 M=0.85 → Total 0.86",
+          "claude_md_recorded": "I=0.80 R=1.00 F=1.00 E=0.60 M=1.00 → Total 0.86",
+          "severity": "METADATA_MINOR",
+          "impact": "총점 0.86은 정합. 개별 축 점수가 Judge 원안과 5축 전수 다름 — 다른 축 분포지만 우연히 동일 합계. quarterly review 2026-07-19 시 re-inspection 기준 불명확",
+          "required_fix": "CLAUDE.md AX-007 5축 점수 Judge 원안(I=0.82 R=1.00 F=0.90 E=0.75 M=0.85)으로 교체 또는 Governor가 자체 axiom_core.json 값으로 재산정한 rationale 별도 문서화"
+        },
+        {
+          "field": "예외 조항 표현",
+          "judge_original_exclusion_4_items": ["multi-sleeve blend 내 sleeve", "long-short structure", "50+ 분산 universe", "ML-based sizing 3-gate (v4.1 patch 신규)"],
+          "claude_md_recorded": "multi-sleeve 내 조건부 비중은 AX-007 적용 제외 (Gate14 단일 슬리브 단독 제출 시만)",
+          "severity": "DOCUMENTATION_MINOR",
+          "impact": "CLAUDE.md 예외 1건만 기록 — long-short / 50+ / ML-based 3건 누락. Scout/Forge가 CLAUDE.md만 참조할 경우 false positive (AX-007 scope 위반 오판)로 유효 설계 차단 가능",
+          "required_fix": "CLAUDE.md AX-007 예외 조항 4-item 전수 기재 (judge_signoff + ax_promotion_packet 원문 참조)"
+        },
+        {
+          "field": "다음 검토일",
+          "judge_original": "2026-07-17",
+          "claude_md_recorded": "2026-07-19",
+          "severity": "TRIVIAL",
+          "impact": "2일 차이 — quarterly review window 내. 중대성 없음",
+          "required_fix": "선택적 정정 (Governor 의도 명시하면 유지 가능)"
+        }
+      ]
+    },
+
+    "methodology_active_md_l_code_promotion_reflection": {
+      "l_160_status": "AX-007 supporting evidence로 반영 확인 (line 570-576 AX-007 PROMOTED section)",
+      "l_165_status": "AX-007 supporting evidence로 반영 확인",
+      "l_166_status": "AX-007 supporting evidence로 반영 확인 (line 603+ L-166 section에 AX-007 promotion trigger 기록)",
+      "verification_result": "3건 모두 AX-007 promotion 링크 정합. Judge custodian APPROVED 상태 명시 확인"
+    },
+
+    "qepm_memory_axioms_active_directory_audit": {
+      "path_checked": "qepm/memory/axioms/active/",
+      "finding": "디렉토리 미존재 (Glob 결과 No files found)",
+      "severity": "STRUCTURAL_MINOR",
+      "impact": "patch claim 'qepm/memory/axioms/active/' 등록이 실제 파일 시스템에는 미반영. 그러나 Governor patch text에 'axiom_core_json: .cache/axiom_core.json — AX-007 추가 완료'로 .cache 경로 사용 명시되어 있음 — ledger 위치 discrepancy",
+      "required_fix": "Governor 또는 Q-Lead가 (a) qepm/memory/axioms/active/ax_007.json 생성 또는 (b) .cache/axiom_core.json 단일 ledger로 정책 통일 → 문서 용어 불일치 해소"
+    },
+
+    "final_verdict_signoff_2": {
+      "decision": "CORE_APPROVE + METADATA_CLEANUP_REQUIRED",
+      "core_registration_ok": "AX-007 axiom 등재 자체는 CLAUDE.md + methodology_active.md 양쪽 반영 완료. 운영 즉시 가능",
+      "pending_cleanup_items": [
+        "CLAUDE.md 5축 세부 점수 Judge 원안으로 교체 또는 재산정 rationale 문서화",
+        "CLAUDE.md 예외 조항 4-item 전수 기재 (long-short / 50+ / ML-based 3건 추가)",
+        "qepm/memory/axioms/active/ 디렉토리 생성 또는 .cache/axiom_core.json 단일 ledger 정책 통일"
+      ],
+      "blocking_on_fix": false,
+      "rationale": "AX-007 본질 규칙(scope + supporting + core statement)은 전수 정합. metadata 불일치는 CLAUDE.md 주석 수준으로 blocking 아님 — Governor/Q-Lead 후속 정리로 충분"
+    }
+  },
+
+  "aggregated_judge_reverification_result": {
+    "signoff_1_status": "REJECT_CURRENT_v4_1 (B1 산술 1.06 unresolved)",
+    "signoff_2_status": "CORE_APPROVE (metadata cleanup 3건 advisory)",
+    "overall_gate_status_for_admission_rule_v3_5_3_live": "BLOCKED",
+    "blocking_conditions_list": [
+      "Governor rev-v4.2 patch 필요 (B1 weight sum 1.00 복원)",
+      "L-168 infrastructure PIT violation fix (Architect spawn + factor_db_connector.R patch + retroactive audit v2)",
+      "Admission Rule v3.5.4 amendment (infra_pit_scan Gate 추가)"
+    ],
+    "timeline_estimate": "rev-v4.2 patch 1h + L-168 infra fix 2-3d + audit v2 1d + STR_1631 재실행 0.5d → Day 5~6 (Session 68) PG1 LIVE 진입 가능"
+  },
+
+  "ax_005_v1_2_extension_note": {
+    "status": "PENDING_ISSUANCE_BY_JUDGE",
+    "plan": "본 signoff 처리 후 별도 AX-005 v1.2 promotion packet 발행 — supporting L-136+L-140+L-165+L-166 4건, confidence 0.90→0.94",
+    "trigger_for_issuance": "Governor의 rev-v4.2 B1 수정 완료 확인 후 또는 L-168 infra fix 완료 중 어느 쪽이 먼저"
+  },
+
+  "followup_actions": [
+    {"actor": "Governor", "action": "rev-v4.2 patch 발행 — option_judge_final (H_1689 v3 23→17%) 적용하여 weight sum 1.00 복원", "priority": "URGENT"},
+    {"actor": "Governor", "action": "CLAUDE.md AX-007 entry metadata cleanup (5축 세부 점수 + 예외 4-item 전수 + axioms ledger 경로 통일)", "priority": "MEDIUM"},
+    {"actor": "Q-Lead", "action": "Architect 온디맨드 스폰 승인 (L-168 infra fix)", "priority": "URGENT (기존 요청 연속)"},
+    {"actor": "Judge (본인)", "action": "Governor rev-v4.2 patch 수신 시 즉시 최종 signoff", "priority": "STANDBY"},
+    {"actor": "Judge (본인)", "action": "AX-005 v1.2 extension promotion packet 발행 (별도 artifact)", "priority": "MEDIUM"}
+  ]
+}

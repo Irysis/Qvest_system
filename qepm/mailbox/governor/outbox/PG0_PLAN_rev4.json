@@ -1,0 +1,379 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV4",
+  "stage": "PG0_Scenario_Y_Accelerated",
+  "timestamp": "2026-04-17T19:40:00+09:00",
+  "session": 66,
+  "version": "v4.0_draft",
+  "status": "PENDING_H_1688_S0_VERDICT_+_H_1676_H_1682_FORGE_S1",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev3.json (Hybrid Z3+H_1688 경로 — Judge Tier 1 0/3 PASS로 무효)",
+  "supersedes_reason": "Judge sweep v3 Pass 2 Tier 1 STR_1439/1435/1060 전수 REJECT. rev2/rev3 핵심 reactivation 경로 붕괴. STR_1070/1085도 STR_1060 clone family로 자동 제외. Scenario_Y 가속 필요.",
+
+  "trigger": "Q-Lead 지시 — rev3 폐기 + rev4 Scenario_Y 가속. 신규 가설 5건(H_1688/1676/1685/1682/1689)으로 Core+Div×3+Def×2 독립 alpha 경로 재구성.",
+
+  "q_lead_decisions_rev4": {
+    "hybrid_z3_disposition": "REMOVED — STR_1439/1435/1060 editable 경로 완전 폐기",
+    "str_1060_family_triplicate": "STR_1060/1070/1085 3건 중 가장 오래된 1건(STR_1060)만 historical reference 유지. STR_1070/1085 archive 권고.",
+    "str_1631_short_term_55pct": "Q-Lead 질문 — consensus 45% cap 초과 허용? → Governor 답변 별도 섹션",
+    "tier_2_fallback_approved": "STR_1417/1562/1433/1071 검증 결과 도착 시 rev4 fallback 편입 재평가",
+    "risk_manager_spawn": "Q-Lead 온디맨드 스폰 예정. CVaR_95/CDaR_95/tail_dependence + H_1688 momentum crash scenario"
+  },
+
+  "primary_path_v4_scenario_y_accelerated": {
+    "tier": "preferred_realistic_v4",
+    "description": "5 new hypotheses (H_1676/1682/1685/1688/1689) 병렬 개발. Scenario_Y 가속 — 기존 reactivation 경로 의존 제거. STR_1631 + STR_1656 기존 PG2 유지 + 신규 5건으로 Core/Div/Def 확장.",
+
+    "portfolio_composition": {
+      "Core_Primary_STR_1631_consensus_C19": {
+        "weight_short_term_initial": 0.55,
+        "weight_mid_term_3m": 0.35,
+        "weight_long_term_6m": 0.25,
+        "sub_family": "consensus_C19_core",
+        "role": "Core_Primary",
+        "transition_reason": "rev3에서 25% 즉시 전환 무리. Scenario_Y 가속 5건이 S0~S6 3~5주 소요 → 단기 55% 불가피.",
+        "rollout_schedule": [
+          "Week 1~4: 55% 유지 (신규 5건 S0~S2 병렬)",
+          "Week 5~8: 45% (H_1676/1682 PG1 편입)",
+          "Week 9~12: 35% (H_1688 PG1 편입)",
+          "Week 13~16: 30% (H_1685 PG1 편입)",
+          "Week 17~24: 25% (H_1689 PG1 편입)",
+          "Long-term aspirational: 18% (추가 diversifier 2건 후)"
+        ]
+      },
+      "Div_ML_STR_1656": {
+        "weight_initial": 0.20,
+        "weight_target": 0.13,
+        "family": "ML_complexity",
+        "role": "Diversifier (existing PG2)",
+        "cap_applied": 0.20,
+        "current_status": "ACTIVE"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight_at_admission": 0.15,
+        "family": "momentum_residual",
+        "role": "Core_Secondary",
+        "status": "H_1688 debate R1 3/5 완료 (Codex 8 + Governor 17 + Academic 16 = 41)",
+        "expected_admission": "Week 4~5 (S0 APPROVE_CONDITIONAL 유력 65~75)",
+        "prerequisite": "Factor DB 정정 3건 반영 (M04→M01, M08 기구축, 24M rolling beta 부재)"
+      },
+      "Div_1_H_1676_consensus_residual": {
+        "weight_at_admission": 0.15,
+        "family": "consensus",
+        "sub_family": "analyst_revision_residual",
+        "role": "Diversifier",
+        "status": "Forge S1 in_progress (Task #3)",
+        "expected_admission": "Week 4~5"
+      },
+      "Div_2_H_1685_foreign_individual_flow": {
+        "weight_at_admission": 0.10,
+        "family": "investor_flow",
+        "sub_family": "foreign_individual_divergence",
+        "role": "Diversifier",
+        "status": "Scout 2순위 (차기 handoff)",
+        "expected_admission": "Week 8~10 (debate + S1~S6)",
+        "academic_ref": "Choe-Kho-Stulz 1999 + Kim-Nofsinger 2008 + 국내 Kim 2016"
+      },
+      "Def_1_H_1682_distress_calmar": {
+        "weight_at_admission": 0.12,
+        "family": "distress_path_dependent",
+        "sub_family": "ohlson_calmar_cross_family",
+        "role": "Defense",
+        "status": "Forge S1 in_progress (Task #4)",
+        "expected_admission": "Week 4~5"
+      },
+      "Def_2_H_1689_quality_4_axis": {
+        "weight_at_admission": 0.10,
+        "family": "quality_aggregate",
+        "sub_family": "four_axis_composite",
+        "role": "Defense candidate",
+        "ax004_v3_exemption": "PASS — AX-004 v3 EXCLUSION 2번째 조항 '전통 quality composite (복수 quality axis 결합)' 충족",
+        "expected_composition": "Novy-Marx GP + Piotroski F-Score + Ohlson O + Altman Z 4-axis composite",
+        "status": "Scout handoff 예정",
+        "expected_admission": "Week 10~14"
+      }
+    },
+
+    "admission_schedule": {
+      "phase_1_week_4_5": {
+        "admitted": ["STR_1631 (45%)", "STR_1656 (15%)", "H_1676 (15%)", "H_1682 (12%)", "H_1688 (13%)"],
+        "total": 1.00,
+        "n_strategies": 5,
+        "n_families": 4,
+        "max_family": 0.60,
+        "compliance": "consensus family 60% (STR_1631 45% + H_1676 15%) — 단기 초과 허용 요청"
+      },
+      "phase_2_week_9_12": {
+        "admitted": ["STR_1631 (35%)", "STR_1656 (13%)", "H_1676 (15%)", "H_1682 (12%)", "H_1688 (15%)", "H_1685 (10%)"],
+        "total": 1.00,
+        "n_strategies": 6,
+        "n_families": 5,
+        "max_family": 0.50,
+        "compliance": "consensus 50% (45% cap +5%p 초과, 중기 점진 해소)"
+      },
+      "phase_3_week_17_24_final_target": {
+        "admitted": ["STR_1631 (25%)", "STR_1656 (13%)", "H_1676 (15%)", "H_1682 (12%)", "H_1688 (15%)", "H_1685 (10%)", "H_1689 (10%)"],
+        "total": 1.00,
+        "n_strategies": 7,
+        "n_families": 6,
+        "family_concentration": {
+          "consensus_C19_core_STR_1631": 0.25,
+          "consensus_revision_residual_H_1676": 0.15,
+          "consensus_total": 0.40,
+          "ML_complexity": 0.13,
+          "momentum_residual": 0.15,
+          "investor_flow": 0.10,
+          "distress_path_dependent": 0.12,
+          "quality_aggregate": 0.10,
+          "max_family": 0.40,
+          "compliance": "consensus 40% ≤ 45% cap PASS"
+        }
+      }
+    }
+  },
+
+  "projected_sr_recalculation_rev4": {
+    "individual_SR_assumptions_rev4": {
+      "STR_1631_Core": 1.243,
+      "STR_1656_Div_ML": 1.212,
+      "H_1676_Div_consensus_resid": 0.85,
+      "H_1682_Def_distress": 0.65,
+      "H_1688_Core_residual_momentum": 1.05,
+      "H_1685_Div_investor_flow": 0.75,
+      "H_1689_Def_quality_4axis": 0.80
+    },
+
+    "phase_1_projected_sr_week_4_5": {
+      "description": "5 strategies admitted, STR_1631 at 45%",
+      "weighted_mean_SR": 1.032,
+      "rho_0_2": {
+        "variance_reduction_factor": 1.68,
+        "projected_SR": 1.73,
+        "gap_vs_2_0": -0.27
+      },
+      "rho_0_3": {
+        "projected_SR": 1.58,
+        "gap_vs_2_0": -0.42
+      },
+      "rho_0_5": {
+        "projected_SR": 1.32,
+        "gap_vs_2_0": -0.68
+      }
+    },
+
+    "phase_2_projected_sr_week_9_12": {
+      "description": "6 strategies, H_1685 added, STR_1631 at 35%",
+      "weighted_mean_SR": 0.996,
+      "rho_0_2": {
+        "variance_reduction_factor": 1.85,
+        "projected_SR": 1.84,
+        "gap_vs_2_0": -0.16
+      },
+      "rho_0_3": {
+        "projected_SR": 1.67,
+        "gap_vs_2_0": -0.33
+      },
+      "rho_0_5": {
+        "projected_SR": 1.38,
+        "gap_vs_2_0": -0.62
+      }
+    },
+
+    "phase_3_projected_sr_week_17_24_final": {
+      "description": "7 strategies, all admitted, STR_1631 at 25%",
+      "weighted_mean_SR": 0.984,
+      "rho_0_2_design_target": {
+        "variance_reduction_factor": 1.98,
+        "projected_SR": 1.95,
+        "gap_vs_2_0": -0.05,
+        "status": "**SR 2.0 근접** (gap 0.05)"
+      },
+      "rho_0_25_moderate_design": {
+        "projected_SR": 1.85,
+        "gap_vs_2_0": -0.15
+      },
+      "rho_0_3_moderate": {
+        "projected_SR": 1.76,
+        "gap_vs_2_0": -0.24
+      },
+      "rho_0_5_saturation": {
+        "projected_SR": 1.42,
+        "gap_vs_2_0": -0.58
+      }
+    },
+
+    "sr_2_0_achievability_analysis": {
+      "under_rev3_assumptions_dual_core_18pct": {
+        "projected_SR": 2.06,
+        "status": "SR 2.0 초과 (이론적, reactivation 경로 가정)"
+      },
+      "under_rev4_scenario_y_core_25pct": {
+        "projected_SR": 1.95,
+        "gap": 0.05,
+        "status": "SR 2.0 근접, 초과는 ρ<0.2 + 추가 diversifier 필요"
+      },
+      "path_to_sr_2_0_excess": [
+        "Step 1: rev4 phase_3 완료 (Week 24) — SR 1.95",
+        "Step 2 optional: H_1687 Distress-Momentum Interaction 추가 diversifier (+0.10 contribution) → SR 2.05",
+        "Step 3 optional: STR_1656 ML 업그레이드 STR_1661 V2 (ICIR 1.029) 교체 → SR +0.03~0.05",
+        "Step 4 aspirational: Core_Primary 25%→18% 이행 + 7~8건 구조 → SR 2.08~2.12"
+      ],
+      "realistic_timeline": "24주(6개월) phase_3 → SR 1.95. 추가 8주(2개월) 확장 시 SR 2.0 초과 가능."
+    },
+
+    "comparison_rev2_rev3_rev4": {
+      "rev2_hybrid_z3_h_1683": {"projected_SR_rho_0_2": 1.95, "Core_weight": 0.25, "time_weeks": "4-5"},
+      "rev3_hybrid_z3_h_1688_dual_core": {"projected_SR_rho_0_2": 2.06, "Core_weight": 0.18, "time_weeks": "5-6", "status": "INFEASIBLE (Judge 0/3)"},
+      "rev4_scenario_y_phase_3": {"projected_SR_rho_0_2": 1.95, "Core_weight": 0.25, "time_weeks": 24, "status": "primary_path_v4"},
+      "finding": "rev4 phase_3 SR 1.95 = rev2 Hybrid Z3+H_1683과 동일 수준. 단 rev4는 reactivation 제로 + 7건 독립 alpha 설계 → 구조적 robustness 우위."
+    }
+  },
+
+  "str_1631_short_term_55pct_analysis": {
+    "q_lead_question_r2": "Q-Lead Q R2 — STR_1631 단기 55% 수용 가능성 (consensus 45% cap 초과 허용?)",
+    "governor_answer": "CONDITIONAL_ACCEPT — 단기 55% 허용. 단 명시적 transition plan + 중기 45% 준수 필수.",
+    "rationale": [
+      "현재 PG2 baseline STR_1631 80% → 즉시 25% 전환 시 포트 공백 55%p 발생. 신규 H_1676/1682/1688/1685/1689 admission 완료까지 3~6개월 소요. 공백 기간 cash 또는 benchmark 보유는 CAGR 기회비용 과대.",
+      "consensus 45% cap은 '장기 정상 운영' 기준. 단기 transition에는 55% 명시적 허용 (phase_1 Week 4~5, 최대 4주).",
+      "Phase_2 (Week 5~8)부터 H_1676/1682/1688 admit 시 STR_1631 weight 55%→45%로 자동 하향. 45% cap 복귀.",
+      "Phase_3 (Week 9~)부터 35%로 하향 후 25% 장기 목표."
+    ],
+    "constraint_preservation": [
+      "단기 55% 기간 동안 family_concentration 60% (STR_1631 45% + H_1676 15% 편입 시 기준)",
+      "중기 Week 8 이후 consensus 50% 이하 유지 필수",
+      "장기 Week 17 이후 consensus 40% 안정화",
+      "45% cap 위반 기간은 **최대 8주** (rolling basis)"
+    ],
+    "monitoring_triggers": [
+      "Phase_1 종료 (Week 5): STR_1631 45%로 자동 하향 확인",
+      "Phase_2 종료 (Week 12): consensus 50% 이하 확인",
+      "Phase_3 시작 (Week 17): 25% 목표 도달 확인",
+      "45% cap 초과 8주 초과 시 emergency transition acceleration trigger"
+    ],
+    "axiom_compliance": "AX-002 (규칙 안에서 찾아낸 성과) 준수. 'transition exception' 명시적 허용이 cap rule 변경이 아닌 일시적 예외 처리. 장기 규칙 보존."
+  },
+
+  "str_1060_family_triplicate_disposition": {
+    "identified_clones": ["STR_1060_brk02_no_short_dd", "STR_1070 (breakout clone)", "STR_1085 (breakout clone)"],
+    "retention_rule": "가장 오래된 STR_1060만 historical reference 유지. STR_1070/1085 archive.",
+    "archive_action": "stage_artifacts/archive/ 이동 또는 grade_a_catalog에서 mark=DUPLICATE",
+    "rationale": "family 중복 + Judge Tier 1 REJECT로 admission 불가. 카탈로그 무결성 위해 중복 제거.",
+    "executor": "Q-Lead 지시로 Forge/Judge teammate가 실행 (Governor는 권고만)"
+  },
+
+  "tier_2_fallback_evaluation": {
+    "tier_2_candidates": ["STR_1417_5sleeve_mrs3545", "STR_1562", "STR_1433_consgate_c11fix_dd722", "STR_1071_noShortDD_mrs1225"],
+    "judge_status": "승인됨 (Q-Lead) — 검증 결과 도착 시 rev4 fallback 편입 재평가",
+    "fallback_scenario_if_tier_1_only_0_pass": "이미 현재 상태. rev4 primary_path_v4 의존 불가. Tier 2에서 ≥2건 PASS 시 Z2-style 재활성화 부분 회복 가능.",
+    "tier_2_projected_contribution": {
+      "if_1_pass": "weight 7~8%, contribution +0.05",
+      "if_2_pass": "weight 12~15%, contribution +0.10~0.15",
+      "if_3_pass_plus": "weight 15~20%, contribution +0.15~0.20 (rev4 phase_3 SR 1.95 → 2.05 상향 가능)"
+    },
+    "reassessment_trigger": "Judge Tier 2 결과 도착 시 Governor rev4_supplement 발행"
+  },
+
+  "h_1688_debate_integration": {
+    "current_status": "R1 3/5 완료 (Codex 8 / Governor 17 / Academic 16 = 41)",
+    "scout_factor_db_corrections_3": [
+      "M04 → M01 (잔차화 기반 factor 변경)",
+      "M08 기구축 존재 (미인식)",
+      "24M rolling beta 부재 → 기구축 factor로 대체"
+    ],
+    "r2_rebuttal_expected": "conditions_for_s1에 구체화. Scout 정정 반영 R2 verdict 대기.",
+    "final_score_forecast": "65~75 → APPROVE_CONDITIONAL 유력",
+    "rev4_impact": "H_1688 APPROVE_CONDITIONAL 확정 시 Core_Secondary 편입 (Week 4~5 phase_1). REJECT 시 H_1687 Distress-Momentum Interaction fallback."
+  },
+
+  "fallback_plans_rev4": {
+    "if_h_1688_s0_reject": {
+      "trigger": "H_1688 debate final verdict REJECT (점수 55 미만)",
+      "response": "H_1687 Distress-Momentum Interaction 가속 + H_1683 Factor Seasonality 활성화",
+      "alternative_composition": "Core_Secondary 공석 → H_1687 composite (expected SR 0.85)"
+    },
+    "if_h_1676_forge_s1_sr_under_0_6": {
+      "trigger": "H_1676 S1 실측 SR < 0.6 (Pre-S6 warning)",
+      "response": "H_1676 REVISE 또는 DROP. consensus_residual sub-family 실증 실패.",
+      "alternative": "H_1685 Foreign-Individual Flow 가속 편입 (diversifier 공석 보강)"
+    },
+    "if_h_1682_forge_s1_mdd_over_30": {
+      "trigger": "H_1682 S1 MDD > 30% (Defense 자격 실패)",
+      "response": "S5 DD overlay 변형 (6/20 + 8/22 variant)",
+      "alternative": "H_1689 Quality 4-Axis 가속 (Defense 대체)"
+    },
+    "if_tier_2_full_reject": {
+      "trigger": "Tier 2 4건 전수 REJECT",
+      "response": "reactivation 경로 완전 폐기. Scenario_Y 7건 독립 alpha만 유지.",
+      "impact": "phase_3 SR 1.95 (이미 rev4 base scenario)"
+    },
+    "if_all_new_hypotheses_fail": {
+      "trigger": "H_1676/1682/1685/1688/1689 중 3건+ REJECT",
+      "response": "Scout 신규 가설 cycle 재시작. AX-004 v3 exemption scope 내 가설 추가 탐색.",
+      "escalation": "도훈 + Q-Lead 전략 재검토 필요"
+    }
+  },
+
+  "risk_controls_rev4": {
+    "transition_period_risk_core_55pct": {
+      "concern": "Phase_1 (4주) consensus 60% 도달. family saturation 임시 과대.",
+      "mitigation": "45% cap exception 명시 + 8주 내 45% 복귀 계약. 월별 audit.",
+      "abort_trigger": "Week 8 후 45% 미복귀 시 emergency Core 하향"
+    },
+    "single_point_failure_h_1688": {
+      "concern": "H_1688 debate REJECT 시 Core_Secondary 공석. rev4 SR 1.95 경로 이탈.",
+      "mitigation": "H_1687 fallback 준비. Scout H_1687 s0_record 초안 즉시 착수 권고.",
+      "monitoring": "H_1688 debate final verdict 주시"
+    },
+    "consensus_long_term_35pct_risk": {
+      "concern": "STR_1631 25% + H_1676 15% = consensus 40%. 장기 한도 경계.",
+      "mitigation": "추가 diversifier 2건 편입 시 consensus 35% 자동 축소.",
+      "long_term_plan": "H_1687 + H_1683 편입 시 consensus 30~32% 도달"
+    },
+    "scenario_y_n_hypothesis_cycles": {
+      "concern": "5 new hypotheses 병렬 개발 = Scout/Forge/Judge 부하 급증.",
+      "mitigation": "순차 phase 배치. Phase_1 H_1676/1682/1688, Phase_2 H_1685, Phase_3 H_1689.",
+      "bandwidth_check": "각 phase 종료 시 팀 resource 점검"
+    },
+    "cvar_cdar_compliance": {
+      "thresholds_proposed": {
+        "cvar_95_annual_max": -0.15,
+        "cdar_95_max": -0.22,
+        "tail_dependence_limit": 0.4
+      },
+      "verification_required": "Q-Lead Risk Manager agent 스폰 (PG2 allocation 전 필수)",
+      "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev4.json"
+    }
+  },
+
+  "governor_open_questions_rev4": {
+    "R1_scenario_y_sr_2_0_path": "Scenario_Y phase_3 SR 1.95 ≤ 2.0. SR 2.0 초과를 위해 H_1687 추가 편입 (Week 28~) 또는 STR_1656 → STR_1661 V2 교체 (ICIR 1.029) 승인?",
+    "R2_str_1631_55pct_acceptance": "단기 55% + 45% cap 초과 8주 예외 승인?",
+    "R3_cvar_cdar_timing": "Risk Manager agent 온디맨드 스폰 타이밍 — Phase_1 PG1 admission 전 (Week 4) vs Phase_3 final PG2 확정 전 (Week 17)?",
+    "R4_h_1687_fallback_priority": "H_1688 REJECT 시 H_1687 즉시 가속 vs 기존 Scenario 유지?",
+    "R5_str_1660_pass_to_rev4": "STR_1070/1085 archive는 Forge/Judge teammate에 지시 권장 (Governor 외부 action 권한 부재)"
+  },
+
+  "artifacts_rev4": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev4.json (현 파일)",
+    "qepm/mailbox/governor/outbox/consensus_taxonomy_proposal.json (v1.0 유지)",
+    "qepm/mailbox/governor/outbox/h1683_vs_h1688_differentiation_analysis.json (참고 유지)",
+    ".cache/portfolio_gap_vector v1.4 projection 작성 예정"
+  ],
+
+  "supersedes_rev3_sections": [
+    "primary_path_v3 Hybrid Z3+H_1688 Dual-Core → Scenario_Y 가속 7-strategy architecture",
+    "STR_1439/1435/1060 reactivation → 전면 폐기",
+    "Core weight 18% aspirational → 25% long-term (rev4 현실 조정)",
+    "6-week timeline → 24-week phased rollout"
+  ],
+
+  "pending_triggers_rev4": {
+    "h_1688_s0_final_verdict": "rev4 primary_path_v4 activation prerequisite",
+    "h_1676_forge_s1": "Task #3, Div_1 PG1 전제",
+    "h_1682_forge_s1": "Task #4, Def_1 PG1 전제",
+    "h_1685_scout_handoff": "Scout 2순위 개시 대기",
+    "h_1689_scout_handoff": "Scout 3순위 개시 대기",
+    "judge_tier_2_results": "rev4 supplement evaluation",
+    "risk_manager_cvar_cdar": "PG2 allocation 전 필수"
+  }
+}

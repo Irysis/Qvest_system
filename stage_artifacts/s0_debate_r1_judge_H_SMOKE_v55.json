@@ -1,0 +1,24 @@
+{
+  "role": "judge",
+  "stance": "APPROVE_CONDITIONAL",
+  "critical_concerns": [
+    "Selection PIT 경계 우려: conditional_ic_matrix.csv의 recent_3y_icir(0.367)은 현재 시점(2026-04, max(Date)) 기준 최근 3Y IC mean/sd로 산출됨(stage_gate_engine.R:952-955). 가설 선택 시 이 값으로 후보 ranking → 실시점에는 알 수 없는 정보로 ex-ante factor selection 가능성. Smoke run 명목상 alpha 발견이 목적이 아니므로 critical은 아니나, 향후 STR_XXX로 promote 시 retroactive selection bias로 hurdle gate 결과 신뢰성 훼손 위험. v55 정규 사이클 스모크라는 점을 record에 명시적으로 기재하고 hurdle 결과를 alpha 신뢰지표가 아닌 파이프라인 동작 증거로 한정해야 함.",
+    "L-137 MDD hard fail 선례 직접 적용 위험: STR_1636(Piotroski+RetAutocorr) score 45.4 / MDD 61.9% hard fail이 명확히 기록됨. H_SMOKE_v55는 Piotroski 결합도 없는 RetAutocorr 단독이므로 MDD가 더 악화될 가능성 농후. hurdle MDD<45% hard fail line을 넘을 경우 단일 팩터 smoke 예외도 무효 처리되며 Grade A/A_NOVEL 후보 범위 자체가 closed. S1 결과 MDD 측정 시 45% 초과 시 즉시 STOP하고 S5에서 overlay(DD/VT) 추가 검토 트리거 명시 필요.",
+    "단일 팩터 smoke 예외와 hurdle gate 적용 가능성 충돌: hurdle v2.2 Grade A는 score≥40 + CAGR≥16% + SR≥0.8을 요구. RetAutocorr 단독은 Lo&MacKinlay 메커니즘상 마진 alpha(연 1~3%)에 그칠 가능성 — CAGR 16% 도달 자연스럽지 않음. A_NOVEL(CAGR≥12% + novelty_bonus≥10) 경로는 liquidity family 미구축 상태에서 max_corr<0.3 가능성으로 가능하나 여전히 marginal. Smoke 목적 vs hurdle 통과 기대치 불일치를 record에 명시해야 hurdle 결과 후 실망/규칙 변경 압력 차단."
+  ],
+  "supporting_arguments": [
+    "Factor DB 적격성 PASS: L22_Ret_Autocorr는 02_Infrastructure/factor_db/compute_liquidity.R:432-454에 정식 구현되어 있으며 sig_date 기준 lookback_start = sig_d-365일 윈도우로 ticker별 lag-1 autocorr 계산 후 -|ac1| 변환(C13 Z_Score_Aligned 규약 준수, 수동 flip 없음). conditional_ic_matrix.csv에 n_months=254로 등재되어 충분한 IC 이력 확보. C15 Factor DB load_month_factors() 경유 명시(s0_record).",
+    "PIT 경계 핵심 3축 PASS: (a) factor 자체 PIT — compute_liquidity()는 sig_date 기반 windowing으로 미래 데이터 차단(file header 'PIT 준수: Date <= sig_date, 252d/20d lookback' 명시), (b) execution PIT — s0_record가 monthly rebalance + 거래대금 2억 + EW 20 + 15bps overlay none으로 same-day circular 패턴 회피(C2/C9 무관), (c) Z_Score_Aligned 사용 명시로 C13 준수. lesson_check L-137 + L-130 명시적 회피 경로 기재(naked S1 결과 검증 + 유동성 필터 후 ICIR 안정성 확인 약속).",
+    "Lawbook §0 / Exploration Rules §9 정합성: liquidity family는 Factor Taxonomy 미구축 상태로 우선 탐색 대상에 부합. AX-003(value)/AX-004(quality)/AX-005·AX-007(defense) saturation/restriction 모두 무관. expected_role=diversifier + trail=standard + gap_targeting_axes=[SR] + why_now(portfolio_gap_vector v1.0.8 sharpe_gap 0.807 인용) 모두 v55 s0_record 필수 필드 충족. core_reference Lo&MacKinlay(1988 RFS) + Amihud&Mendelson(1986 JFE) + 박종원 외(2024) 형식 인용이 아닌 메커니즘 근거 인용으로 S0 Hypothesis Rules 준수."
+  ],
+  "veto_flag": null,
+  "s1_gate_items": [
+    "S1 백테스트 결과 MDD < 45% 확인. 45% 초과 시 hurdle hard fail 즉시 STOP하고 단일 팩터 smoke 예외 무효 처리. S5 overlay(DD 6~8 / VT 20~25) 추가 mutation 트리거 명시.",
+    "유동성 필터(20일 평균 거래대금 ≥ 2억원) 적용 후 ICIR이 raw ICIR 대비 50% 이상 유지되는지 확인. L-130 회피 검증 — flow 의존적 alpha 소멸 패턴이 L22에 재현되는지 정량 측정.",
+    "L22_Ret_Autocorr Z_Score_Aligned 사용 검증 — pit_zscore_vec() 또는 동등 PIT-safe 함수 경유 + NEGATE_FACTORS/FLIP_SIGN 사용 흔적 0건 확인(C13).",
+    "Factor DB load_month_factors() 단일 경로 사용 검증 — parquet 직접 read_parquet/fread 흔적 0건(C15).",
+    "백테스트 turnover < 600% 확인(hurdle hard fail line). RetAutocorr 단독은 monthly recompute 시 turnover 폭증 가능 — 측정값 기록 후 600% 초과 시 bimonthly rebalance 또는 buffer_zone 도입 검토 트리거.",
+    "FF3/FF5/Carhart4 alpha t-stat 측정. Harvey et al.(2016) t > 3.0 인식 — 단일 팩터 smoke이므로 t < 3.0이어도 reject 사유 아니나 향후 promote 검토 시 DSR(Deflated Sharpe Ratio) 산출 의무.",
+    "s0_record에 'v55 정규 사이클 smoke run' 명시 + selection PIT 경계(recent_3y_icir 현재 시점 lookback 기반) 한계 기록. hurdle 결과는 파이프라인 동작 증거로 한정하고 alpha 신뢰지표로 격상 금지."
+  ]
+}

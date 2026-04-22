@@ -1,0 +1,126 @@
+{
+  "artifact_type": "s3_tdc_measurement_second_benchmark",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "stage": "S3",
+  "created_at": "2026-04-18",
+  "created_by": "Scout (nav_V2 + STR_1631 nav_c19 + nav_combo fallback, autonomous measurement #2)",
+  "supersedes": "s3_tdc_matrix_STR_1661_V2_first_measurement.json (benchmark 1 completed)",
+
+  "benchmark_2_STR_1631_SYN_05_variants": {
+    "relation": "consensus core (PG2 anchor 80% → Phase_1 60%) vs ML composite",
+    "expected_prior_tdc_range": [0.20, 0.30],
+    "expected_prior_gate_verdict": "DIVERSIFIER PASS (0.40)",
+    "variants_measured_both": {
+      "STR_1631_nav_c19": {
+        "daily_pearson": 0.7019,
+        "daily_spearman": 0.5998,
+        "monthly_pearson": 0.7153,
+        "monthly_spearman": 0.6872,
+        "upper_tail_5pct": 0.3629,
+        "lower_tail_5pct": 0.5780,
+        "avg_empirical_tdc": 0.4704,
+        "n_daily": 4464,
+        "n_monthly": 218
+      },
+      "STR_1631_nav_combo": {
+        "daily_pearson": 0.7070,
+        "daily_spearman": 0.6104,
+        "monthly_pearson": 0.7229,
+        "monthly_spearman": 0.6841,
+        "upper_tail_5pct": 0.3584,
+        "lower_tail_5pct": 0.5914,
+        "avg_empirical_tdc": 0.4749,
+        "n_daily": 4464,
+        "n_monthly": 218
+      },
+      "consistency_check": "c19 vs combo TDC delta 0.0045 (minimal) — STR_1631 기본 structure 동일, combo는 mutation 포함이나 TDC 영향 거의 없음"
+    },
+    "gate_verdict_matrix_CRITICAL": {
+      "diversifier_gate_0_40": {"tdc": 0.475, "verdict": "**FAIL** (0.075 초과)", "margin": "-0.075 BREACH"},
+      "core_secondary_gate_0_55": {"tdc": 0.475, "verdict": "PASS (margin 0.075)"},
+      "parent_child_gate_0_70": {"tdc": 0.475, "verdict": "PASS"},
+      "anchor_gate_critical": "**0.40 diversifier gate FAIL → STR_1661 V2 diversifier 자격 상실**. Core_Secondary role reclassification 필요."
+    },
+    "scout_calibration_v4_rule_6_TRIGGERED_2nd_time": {
+      "rule": "hypothesis probability >30% shift 시 기록",
+      "prior_expectation_midpoint": 0.25,
+      "actual_observed": 0.475,
+      "absolute_shift": 0.225,
+      "relative_shift_pct": 90.0,
+      "rule_6_trigger_severity": "MAX (>50% shift)",
+      "shift_interpretation": "Scout는 STR_1631 consensus anchor vs ML composite을 'mechanism 독립'으로 과대 추정. 실제 **ML feature에 C19 consensus signal 상당 포함**. Tree-based XGB가 C19/SUE/consensus 계열 feature를 heavy하게 활용.",
+      "underlying_bias_acknowledged": "Scout가 ML model을 'non-linear decomposition으로 direct sharing 약함'이라 예상. 실제 ML composite이 consensus core signal 상당 재활용 — feature importance 상위가 C19 계열일 가능성 높음.",
+      "calibration_update": "향후 ML composite vs consensus anchor TDC 추정 시 **+0.15~0.20 상향 보정** 필요 (signal cannibalization pattern)"
+    }
+  },
+
+  "critical_implications_for_STR_1661_V2_admission": {
+    "diversifier_role_failure": "TDC 0.475 > 0.40 gate → diversifier 자격 상실 (primary finding 변경)",
+    "role_reclassification_required": {
+      "from": "diversifier (S2 extended profile 가정)",
+      "to_candidate_1": "Core_Secondary (0.55 relaxed gate PASS, margin 0.075)",
+      "to_candidate_2": "Core_alpha_adjacent (consensus family 강한 overlap)",
+      "recommendation": "**Core_Secondary** — STR_1661 V2는 STR_1631 consensus core와 상당 overlap이나 ML 구조 차별화 + CRISIS counter-cyclical 1.26x 독립 alpha source"
+    },
+    "governor_pg1_admission_revised_scenarios": {
+      "scenario_1_replace_STR_1631": "불가 — STR_1631 Grade A PG2 anchor Harvey t 3.09 유지",
+      "scenario_2_partial_coexistence": "**conditional possible** — Core_Secondary relaxed gate PASS이나 family saturation (consensus + ML consensus-heavy) 우려",
+      "scenario_3_replace_STR_1656": "여전히 가능 (V2 vs parent 0.283 PASS)",
+      "governor_conservative_recommendation": "STR_1656 20%→10% 축소 + STR_1661 V2 Core_Secondary 5~7% 소규모 편성 (conservative)"
+    },
+    "ax_006_cluster_evidence_shift": {
+      "pre_measurement_cluster": "ML_XGB_counter_cyclical (STR_1661 V2 + STR_1656 parent)",
+      "post_measurement_cluster_revision": "**ML_XGB_consensus_absorption** — STR_1661 V2 가 consensus family (STR_1631) 절반-흡수 pattern",
+      "reverse_cluster_refinement": "V2 CRISIS counter-cyclical 1.26x이지만 daily TDC는 consensus와 상당 overlap — **signal structure 혼재형** (ML non-linearity + C19 consensus base)",
+      "ax_006_contribution_revised": "+0.03 (prior +0.05에서 downgrade — reverse cluster 단순 pattern 아님 혼재형)"
+    }
+  },
+
+  "scout_learning_2_consecutive_rule_6_triggers": {
+    "session_67_rule_6_evidence_log": [
+      {"trigger_1": "H_1688 Hypothesis A 10%→65% (Industry vs Cross-sectional momentum 구분 부족)"},
+      {"trigger_2": "L-090 factor mismatch (C19 vs M01 scope 오독)"},
+      {"trigger_3": "STR_1656 parent-child TDC prior 0.625 → actual 0.283 (-54.7%, LambdaRank 구조 변경 효과 underestimate)"},
+      {"trigger_4": "**STR_1631 TDC prior 0.25 → actual 0.475 (+90%, ML composite consensus absorption underestimate)**"}
+    ],
+    "pattern_analysis": "Scout는 ML model orthogonality를 체계적으로 **과대 추정**. Tree-based XGB가 features 중 consensus family (C19/SUE)를 heavy 재활용하는 empirical reality vs 'non-linear decomposition 독립' prior 사이 괴리.",
+    "calibration_v4_rule_6_expansion_proposal": {
+      "new_sub_rule": "**Rule 6b: ML model TDC vs explicit factor strategy adjustment**",
+      "rule_text": "ML composite (XGB/LightGBM/Neural) vs explicit factor strategy TDC 추정 시 tree-based feature re-use 고려하여 +0.15~0.20 상향 보정. 특히 consensus family (C19/SUE) heavy usage 예상 시.",
+      "evidence_support": "STR_1656 parent-child (ML↔ML) underestimate -0.20 + STR_1631 (ML↔consensus) underestimate +0.20 대칭 패턴 발견"
+    }
+  },
+
+  "remaining_benchmarks_priority_update": {
+    "priority_1_completed": [
+      {"benchmark": "STR_1656 parent (0.283 PASS)", "status": "completed"},
+      {"benchmark": "STR_1631 consensus (0.475 diversifier FAIL, core_secondary PASS)", "status": "**completed (이번 turn)**"}
+    ],
+    "priority_2_next": [
+      {"benchmark": "H_1692 momentum (BORDERLINE 0.55)", "status": "Forge v4 STR_1693 재스폰 중, daily_returns 생성 대기"},
+      {"benchmark": "STR_1679v3 defense (0.10~0.20 예상)", "status": "NAV 확보 가능"},
+      {"benchmark": "STR_1071 Family 1 (0.20~0.30 예상)", "status": "NAV 확보 가능"}
+    ],
+    "scout_next_autonomous_recommendation": "STR_1679v3 NAV 확인 후 실측 (P1 defense independent 검증) — 또는 Scout autonomous 여유 시 STR_1071 추가"
+  },
+
+  "governor_pg1_admission_decision_urgent_input": {
+    "finding_summary": "STR_1661 V2가 **STR_1631 consensus core와 0.47 overlap**으로 diversifier 자격 상실. Core_Secondary relaxed gate만 PASS.",
+    "admission_risk_revised": "**Core_Secondary 10% 편성 시 consensus family 집중도 상승** (STR_1631 60% + STR_1661 V2 10% consensus absorption = 실질 70% consensus exposure). rev8-A-revised_v2 family_concentration 재평가 필요.",
+    "scout_conservative_recommendation": [
+      "Option A: STR_1661 V2 admission 보류 or 소규모 5%",
+      "Option B: STR_1656 20% → 10% 축소 + V2 10% 편성 시 ML family 내부 교체",
+      "Option C: STR_1631 60% → 50% 추가 축소 (family_concentration 완화)"
+    ]
+  },
+
+  "scout_notes": [
+    "**CRITICAL UNEXPECTED**: STR_1631 TDC 0.475 — Scout prior [0.20, 0.30] 대비 +90% shift (Rule 6 2번째 trigger, 최대 severity)",
+    "STR_1661 V2 diversifier 자격 상실 — Core_Secondary 재분류 필수",
+    "c19 vs combo variants TDC 거의 동일 (0.470 vs 0.475) — STR_1631 base structure consistency 확인",
+    "Lower tail 0.59 > Upper tail 0.36 — 위기 시 동조 더 강함 (STR_1656 parent-child와 유사 asymmetry)",
+    "AX-006 cluster revision: ML_XGB_counter_cyclical → ML_XGB_consensus_absorption 혼재형",
+    "Rule 6b 신규 제안: ML model TDC +0.15~0.20 상향 보정 (tree-based feature re-use)",
+    "Governor rev8-A-revised_v2 family_concentration 재평가 urgent input — consensus 실질 70% 가능성"
+  ]
+}

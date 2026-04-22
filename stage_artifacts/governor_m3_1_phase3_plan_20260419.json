@@ -1,0 +1,158 @@
+{
+  "artifact_type": "GOVERNOR_M3_1_PHASE3_PLAN",
+  "title": "M3.1 Phase 3 — 44전략 Category A/B/C 분류 + 처리 순서",
+  "prepared_by": "governor",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "basis": "M3.1 Retroactive PIT Audit v2 + v3.5.4 Gate15 retroactive_scan_mandate",
+  "prerequisite": "Phase 2 STR_1631/STR_1656 재백테스트 완료 후 batch 가동",
+
+  "category_definitions": {
+    "category_A": {
+      "label": "Active Pipeline",
+      "definition": "현재 S1~S6 파이프라인 내 active 전략 또는 PG1 admission 대기 전략",
+      "action": "factor_engine.R load_month_factors() 경유 + sig_date 명시 전달 업데이트 필수 (Gate 15 C1 MANDATORY)",
+      "deadline": "v3.5.4 발효 + 7일 이내",
+      "priority": "HIGH",
+      "sr_delta_rerun": "필수"
+    },
+    "category_B": {
+      "label": "Archived Grade A",
+      "definition": "Grade A로 promoted됐으나 현재 재실행 없음",
+      "action": "strategy_catalog 주석 추가: '★★★ full-sample IC direction 기반 결과 — M3.1 Phase 3 scan 전 재검증 필요'",
+      "deadline": "Phase 3 완료 시점",
+      "priority": "LOW",
+      "sr_delta_rerun": "PG1 재편입 전 필수"
+    },
+    "category_C": {
+      "label": "Hard Fail / Archived",
+      "definition": "이미 Hard Fail 또는 archive됐으며 재활성화 계획 없음",
+      "action": "조치 불필요 — direction bug가 Hard Fail status 변경하지 않음",
+      "deadline": "N/A",
+      "priority": "NONE",
+      "sr_delta_rerun": "불필요"
+    }
+  },
+
+  "category_A_active_pipeline": {
+    "count": 4,
+    "strategies": [
+      {
+        "id": "STR_1679_score_blend",
+        "status": "PG1 candidate (STR_1679v3 slot 12%)",
+        "action": "L-168 post-fix 재실행 필수 (pre_l168_fix_invalid flag). Task #11 DONE → Forge post-fix 재실행 대기",
+        "priority": "P0"
+      },
+      {
+        "id": "STR_1686_foreign_resid_individual",
+        "status": "PG1 candidate (Task #2 pending — pre_l168_fix_invalid)",
+        "action": "Forge 재실행 대기 (Q-Lead Task #2)",
+        "priority": "P1"
+      },
+      {
+        "id": "STR_1692_industry_mom_rsi_residual",
+        "status": "Task #4 completed — post-fix HARD FAIL 분석 중",
+        "action": "Judge L-code 판정 후 Scenario_D v4.2 H_1692 v2 slot 재평가",
+        "priority": "P1"
+      },
+      {
+        "id": "STR_1693_sector_rel_mom_rsi_residual",
+        "status": "PG1 candidate / Judge S6 cascade 대기",
+        "action": "Judge Task #5 완료 후 PG1 Gate 15 scan 의무",
+        "priority": "P1"
+      }
+    ]
+  },
+
+  "category_B_archived_grade_a": {
+    "count": 5,
+    "strategies": [
+      {
+        "id": "STR_1631_SYN_05_2002",
+        "status": "PG2 active (80%) — Phase 2 재백테스트로 공식 확인",
+        "note": "자체 IC 시스템 — L-168 NOT_APPLICABLE. Phase 2 SR delta=0% 예상. catalog 주석 불필요.",
+        "category_note": "PG2 active이므로 엄밀히 Category A에 해당하나 L-168 경로 없음 → Phase 2 확인용"
+      },
+      {
+        "id": "STR_1631_SYN_02",
+        "status": "Grade A variant (archived)",
+        "action": "catalog 주석 추가"
+      },
+      {
+        "id": "STR_1631_M21_revbreadth",
+        "status": "Grade A variant (archived)",
+        "action": "catalog 주석 추가"
+      },
+      {
+        "id": "STR_1631_M22_5factor_q07",
+        "status": "Grade A variant (archived)",
+        "action": "catalog 주석 추가"
+      },
+      {
+        "id": "STR_1631_M26_gr05",
+        "status": "Grade A variant (archived)",
+        "action": "catalog 주석 추가"
+      }
+    ]
+  },
+
+  "category_C_hard_fail_archived": {
+    "count": 35,
+    "strategies": [
+      "FIX_1341_weighted_sum", "STR_1333_ridge_multifactor", "STR_1333_value_earnings_synergy",
+      "STR_1393_esbr_bm_simple", "STR_1417_esbr_hrp_tc_dd620", "STR_1563_price_level_liquidity",
+      "STR_1567_c19_l22_dd_regime", "STR_1570_c19_l22_d01_dd_regime", "STR_1571_c19_v14_d01_l22_dd_regime",
+      "STR_1621_M1~M9 (9 mutations)", "STR_1622_M9", "STR_1623_tailrisk_profitability_defense",
+      "STR_1624_distress_avoidance_liquidity_defense",
+      "STR_1637_quality_profitability_defense", "STR_1638_enhanced_quality_defense",
+      "STR_1639_conditional_quality_defense", "STR_1640_earnings_skew_blend",
+      "STR_1641_cashflow_skew_value", "STR_1650_C19_AC21_CR05_blend",
+      "STR_1652_DFA_on_VDplus", "STR_1652_dynamic_factor_allocation",
+      "STR_1662_defense_D25_Q07", "STR_1663_V02_EP_diversifier",
+      "STR_1675_Q07_D29_defense", "STR_1678_D43_skewness_diversifier",
+      "STR_1687_q07_sector_neutral_defense",
+      "STR_931_oc_fpbr", "STR_933_oc_accel_esbr_coverage", "STR_935_oc_fper_revmom"
+    ],
+    "action": "조치 불필요",
+    "note": "Hard Fail status는 direction bug 수정으로 변경되지 않음. Category C 이유: MDD > 45% / Grade C/D / EXPEL 확정 등"
+  },
+
+  "execution_order": {
+    "phase_2_prerequisite": "STR_1656 C10 fix 재실행 + STR_1631 공식 확인 (Forge 위임 대기)",
+    "batch_order": [
+      {
+        "batch": 1,
+        "label": "Category A P0 — active pipeline 최우선",
+        "targets": ["STR_1679_score_blend", "STR_1686_foreign_resid_individual"],
+        "method": "Forge 2-parallel 스폰 (Task #2 + STR_1679v3)",
+        "trigger": "Q-Lead Forge re-run 지시 수신 즉시"
+      },
+      {
+        "batch": 2,
+        "label": "Category A P1 — Judge S6 결과 반영",
+        "targets": ["STR_1692_industry_mom_rsi_residual", "STR_1693_sector_rel_mom_rsi_residual"],
+        "method": "Judge Task #5 완료 후 L-code 판정에 따라",
+        "trigger": "Judge S6 cascade 완료"
+      },
+      {
+        "batch": 3,
+        "label": "Category B catalog 주석 — 저비용",
+        "targets": ["STR_1631_SYN_02", "STR_1631_M21_revbreadth", "STR_1631_M22_5factor_q07", "STR_1631_M26_gr05"],
+        "method": "strategy_catalog.md 주석 추가 (Governor 직접)",
+        "trigger": "Phase 2 PASS 확인 후"
+      }
+    ]
+  },
+
+  "gate15_weekly_scan": {
+    "function": "detect_gate15_infra_pit(strategy_dir)",
+    "file": "02_Infrastructure/validation/lookahead_detector.R",
+    "scope": "Category A strategies 우선 — admission 전 Gate 15 C1~C2 scan 의무",
+    "cron": "axiom_weekly.sh 연동 (Architect 확인 후)",
+    "output": "stage_artifacts/infra_pit_scan_report_YYYYMMDD.json"
+  },
+
+  "pg1_gate_impact": {
+    "gate_15_effective_after_v354": "신규 PG1 admission 시 Category A 전략 Gate 15 INFRA_PIT_SCAN 통과 의무",
+    "category_b_readmission": "재편입 시 Category B도 Gate 15 scan + SR delta 재측정 필수"
+  }
+}

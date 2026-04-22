@@ -1,0 +1,85 @@
+{
+  "artifact_type": "scout_calibration_v4_hit_record",
+  "hypothesis_id": "H_1693",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 1 종결 — H_1693 VERDICT 77 확정",
+
+  "calibration_v4_predictions": {
+    "primary_range_legacy_score": "[62, 78]",
+    "primary_midpoint": 68,
+    "adjusted_midpoint_after_v2_strengthening": 70,
+    "per_debater_v4_range": {
+      "codex_critic": [10, 14],
+      "risk_manager": [12, 15],
+      "governor": [13, 16],
+      "quant": [13, 16],
+      "academic": [14, 17]
+    },
+    "sum_midpoint": 68,
+    "sum_upper_bound": 78,
+    "verdict_projection": "APPROVE_CONDITIONAL (70+) 경계"
+  },
+
+  "actual_verdict_result": {
+    "verdict": "APPROVE_CONDITIONAL",
+    "total_score": 77,
+    "range_position": "TOP_END (70-78 range 상단)",
+    "consensus_tag": "MAJORITY_APPROVE_CONDITIONAL (4A+1R minority)",
+    "per_debater_actual": {
+      "codex_critic": 12,
+      "risk_manager": 13,
+      "governor": 18,
+      "quant": 18,
+      "academic": 16
+    },
+    "actual_sum": 77,
+    "veto_count": 0,
+    "delta_r1_r2": "all |Δ| ≤ 4, R3 unnecessary"
+  },
+
+  "prediction_accuracy_analysis": {
+    "midpoint_error": "+9 (predicted mid 68 vs actual 77)",
+    "upper_bound_error": "-1 (predicted upper 78 vs actual 77, TOP_END 적중)",
+    "per_debater_analysis": {
+      "codex_critic": {"predicted": "[10, 14]", "actual": 12, "hit": "in_range ✓"},
+      "risk_manager": {"predicted": "[12, 15]", "actual": 13, "hit": "in_range ✓"},
+      "governor": {"predicted": "[13, 16]", "actual": 18, "hit": "above_range (+2)"},
+      "quant": {"predicted": "[13, 16]", "actual": 18, "hit": "above_range (+2)"},
+      "academic": {"predicted": "[14, 17]", "actual": 16, "hit": "in_range ✓"}
+    },
+    "hit_rate": "3/5 in_range, 2/5 above_range (Governor/Quant 상향)",
+    "systematic_bias_update": "+5 underestimate on Governor/Quant roles (v2 강화 5건 + AX-004 3-pillar + L-165 + D1 gates이 기대 이상 점수)"
+  },
+
+  "calibration_v4_5_hits_cumulative_tracking": {
+    "H_1685_v2": {"predicted_mid": 54, "actual": 61, "error": "+7 underestimate"},
+    "H_1687": {"predicted_mid": 54, "actual": 55, "error": "+1"},
+    "H_1688": {"predicted_mid": 61, "actual": 67, "error": "+6 underestimate"},
+    "H_1692_v1": {"predicted_mid": 61, "actual": 65, "error": "+4"},
+    "H_1693": {"predicted_mid": 68, "actual": 77, "error": "+9 underestimate"}
+  },
+
+  "systematic_bias_v4_refined": {
+    "average_underestimate": "+5.4 (previously +4.5)",
+    "pattern": "v2 강화 명문화 및 AX exempt detailed analysis + L-code cross-reference 강화 전략이 Governor/Quant score 상승에 더 큰 영향 미침",
+    "v5_adjustment_proposal": "raw mid → +6 (v4 adjustment -3보다 더 보수적 + 상향)",
+    "next_prediction_adjustment": "handoff kit v2 + AX exempt 3+ pillars + L-code cross-reference 5+ 가설은 predicted range 상한 +5 상향 필요"
+  },
+
+  "lessons_learned_scout_pattern_recognition": [
+    "AX-004 3-pillar exempt 명문화 → Academic/Judge/Governor score 동시 +3 상향 pattern",
+    "Signal-Portfolio Translation Failure family + Gate 14 design 명문화 → Risk Mgr/Quant score 경계 유지 (v55 veto 0 효과)",
+    "Governor D1 mandatory gates + Sector constraint 25% mandate 사전 반영 → Governor score 최고점 상승 (+5 이상)",
+    "v4 [62, 78] 상한 적중은 v2 5건 강화 + L-165 공식 명칭 + 3-pillar documentation + joint signoff 조합 효과",
+    "predicted midpoint conservative bias +5~9 — Strong strategy 설계일수록 actual score bonus 반영 부족"
+  ],
+
+  "scout_notes": [
+    "H_1693 VERDICT 77 = v4 predicted upper bound 78 TOP_END 적중 (±1)",
+    "midpoint 68 vs actual 77 = +9 underestimate (Governor/Quant 각 +2 bonus)",
+    "Calibration v4 cumulative 5 hits — systematic bias +5.4",
+    "v5 adjustment: raw midpoint → +6 (상향)",
+    "다음 가설 prediction은 v5 bias 반영 필수"
+  ]
+}

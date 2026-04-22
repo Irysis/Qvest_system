@@ -1,0 +1,166 @@
+{
+  "hypothesis_id": "H_1693",
+  "hypothesis_name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+  "formula": "composite = 0.7·z_sector_Q07 + 0.3·z_C01_SUE",
+  "expected_role": "defense (AX-001 v2 multi_sleeve_only=TRUE)",
+  "family": "quality_earnings_stability_sector_neutral (신규 label)",
+  "verdict": "APPROVE_CONDITIONAL",
+  "v55_scoring_deprecation_note": "v55 Consensus addendum에 따라 점수제(rubric 0-20, total 5×20=100) 폐기. 본 verdict는 stance + veto 기반. R1/R2 파일에 포함된 score/rubric_breakdown 필드는 하위호환(artifact_validator 일시 허용)이며 판정 근거 아님. Verdict 산출 시 합산 로직 미사용.",
+  "verdict_rationale": "v55 Consensus stance 기반 판정. (1) veto_flag: 5인 전원 null — domain veto 없음. (2) stance distribution: 4 APPROVE_CONDITIONAL(risk_manager/governor/quant/academic) + 1 REVISE(codex_critic minority). (3) MAJORITY APPROVE_CONDITIONAL 확정. (4) Codex minority REVISE의 5개 S1 gate items를 unresolved_disputes로 승격하여 conditions_for_s1에 반영. (5) R2에서 |Δ|≤4 전원 유지되어 R3 불필요(안정적 consensus). S1 진입 허용, Codex minority concerns 필수 해소 조건부.",
+  "v55_consensus_format": {
+    "stance_distribution": {
+      "APPROVE": 0,
+      "APPROVE_CONDITIONAL": 4,
+      "REVISE": 1,
+      "REJECT": 0
+    },
+    "consensus_tier": "MAJORITY_APPROVE_CONDITIONAL",
+    "minority_dissent": "codex_critic REVISE — 5 S1 gate items 반영 조건부 해소",
+    "veto_flags_triggered": 0,
+    "veto_flags_domain_check": {
+      "tail_risk (risk_manager)": "null",
+      "mechanism (academic)": "null",
+      "PIT (quant)": "null",
+      "kr_empirical_hard_fail (quant)": "null",
+      "admission_rule (governor)": "null",
+      "gap_misaligned (governor)": "null"
+    }
+  },
+  "final_scores": {
+    "codex_critic": {"r1": 11, "final": 12, "delta": 1, "stance": "REVISE"},
+    "risk_manager": {"r1": 14, "final": 13, "delta": -1, "stance": "APPROVE_CONDITIONAL"},
+    "governor": {"r1": 17, "final": 18, "delta": 1, "stance": "APPROVE_CONDITIONAL"},
+    "quant": {"r1": 19, "final": 18, "delta": -1, "stance": "APPROVE_CONDITIONAL"},
+    "academic": {"r1": 15, "final": 16, "delta": 1, "stance": "APPROVE_CONDITIONAL"}
+  },
+  "kr_empirical_penalty": {
+    "applied": false,
+    "reason": "quant kr_empirical_check = 'confirmed' (L-121 Q07 stress ICIR +0.7529 positive evidence). VALIDATED_HARD_FAIL L-code family 동일 방향 아님. -10 penalty 해당 없음."
+  },
+  "special_rules_check": {
+    "risk_manager_final_leq_4_or_quant_final_leq_4": "false (13, 18). REJECT 특수 규칙 해당 없음."
+  },
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "entries": [
+          {"role": "codex_critic", "score": 11, "stance": "REVISE"},
+          {"role": "risk_manager", "score": 14, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "governor", "score": 17, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "quant", "score": 19, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "academic", "score": 15, "stance": "APPROVE_CONDITIONAL"}
+        ],
+        "total": 76
+      },
+      {
+        "round": 2,
+        "entries": [
+          {"role": "codex_critic", "r1": 11, "final": 12, "delta": 1, "stance": "REVISE"},
+          {"role": "risk_manager", "r1": 14, "final": 13, "delta": -1, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "governor", "r1": 17, "final": 18, "delta": 1, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "quant", "r1": 19, "final": 18, "delta": -1, "stance": "APPROVE_CONDITIONAL"},
+          {"role": "academic", "r1": 15, "final": 16, "delta": 1, "stance": "APPROVE_CONDITIONAL"}
+        ],
+        "total": 77,
+        "delta_total": 1,
+        "all_delta_within_4": true
+      }
+    ]
+  },
+  "consensus_points": [
+    "Signal-level 품질 우수: Q07 stress ICIR +0.7529 (L-121 확인) + C01_SUE stress ICIR +0.593 (Risk Mgr 실측) → composite +0.705",
+    "AX-004 3-pillar exempt 성립 (Academic backing 완전)",
+    "L-121 Q07 KR empirical positive evidence (kr_empirical_check confirmed)",
+    "Factor DB VERIFIED (Q07 line 2172 + C01_SUE line 5112)",
+    "S1 empirical validation 필수 (5인 공통)",
+    "AX_CAND_signal_portfolio_translation_failure 2/3 PENDING (L-161 FINAL BLOCKED, INFRASTRUCTURE 재분류)",
+    "Signal-Portfolio Translation Failure 3-gate S1 veto-level (Risk Mgr + Codex + Governor 공동)",
+    "H_1689 v3 variant_1 primary path로 Q07 cluster 해소 가능 (Governor 권고)"
+  ],
+  "unresolved_disputes": [
+    "Codex REVISE minority: parameter rescue 의심 vs Academic structural mechanism change 주장",
+    "Sector cap turnover spiral 확률 (Codex high vs 4인 moderate)",
+    "C01_SUE regime_profile 불일치 (Quant 지적, 4인 미언급) — 위기 방향 역전 위험",
+    "Z_Sector taxonomy drift 숨은 PIT/backfill leakage (Codex R2 신규)",
+    "0.7/0.3 weight ex-ante pre-registration 문서 여부",
+    "GOOD/NORMAL 65% 구간 carry drag 크기"
+  ],
+  "conditions_for_s1_integrated": [
+    {"id": "S1-C1", "requirement": "strict PIT integrity audit (Q07 45일 + C01_SUE daily lag, announcement-date, restatement policy)"},
+    {"id": "S1-C2", "requirement": "walk-forward pre-registration (0.7/0.3 weight + Top20 + sector cap ex-ante rule 문서)"},
+    {"id": "S1-C3", "requirement": "Signal-Portfolio Translation audit veto-level (net_IC_transmission_ratio > 0.6, stress_portfolio_return 2+ positive, rank_corr > 0.20)"},
+    {"id": "S1-C4", "requirement": "KOSPI vs KOSDAQ split + ablation (Q07-only, SUE-only, equal-weight)"},
+    {"id": "S1-C5", "requirement": "Sector cap turnover 실측 + cluster_exposure_limit ≤35%"},
+    {"id": "S1-C6", "requirement": "Z_Sector taxonomy drift audit (classification mapping 안정성 + backfill leakage 검출)"},
+    {"id": "S1-C7", "requirement": "C01_SUE regime_profile 불일치 해소 (정성 'negative' vs 실측 +0.301)"},
+    {"id": "S1-C8", "requirement": "Z_Sector sector_sd NA 처리 로직 Forge 코드 확인"},
+    {"id": "S1-C9", "requirement": "S1 5중 gate 전수 통과 (D1 + Signal-Portfolio Translation 3-gate + Sector constraint + AX-001 v2 4-gate + Sequential Admission TDC<0.30)"},
+    {"id": "S1-C10", "requirement": "학술 인용 강화 (Dichev-Tang 수식, Foster SUE formula, Bernard-Thomas PEAD, 한국 sector HHI, L-164 주석)"}
+  ],
+  "debaters": [
+    {
+      "agent_id": "codex_critic_h1693",
+      "role": "codex_critic",
+      "score": 12,
+      "stance": "REVISE",
+      "findings": "Q07 cluster + L-136/L-160/L-165 family 재현 우려. PIT + walk-forward pre-registration 미해소. Sector cap + Top20 EW turnover structurally persistent. Z_Sector taxonomy drift 신규 kill scenario. 5 S1 gate 선 해소 후 재평가."
+    },
+    {
+      "agent_id": "risk_manager_h1693",
+      "role": "risk_manager",
+      "score": 13,
+      "stance": "APPROVE_CONDITIONAL",
+      "findings": "Composite stress ICIR +0.705 signal 최상급. Signal-Portfolio Translation Failure veto-level gate. GOOD/NORMAL 65% carry drag. cluster_exposure_limit ≤35% 추가 gate."
+    },
+    {
+      "agent_id": "governor_h1693",
+      "role": "governor",
+      "score": 18,
+      "stance": "APPROVE_CONDITIONAL",
+      "findings": "Q07 cluster 41% saturation + 3rd member 위험 (2/3 PENDING). S1 5중 gate로 empirical measurement 강제 커버. Role match + implementation feasibility 우수."
+    },
+    {
+      "agent_id": "quant_h1693",
+      "role": "quant",
+      "score": 18,
+      "stance": "APPROVE_CONDITIONAL",
+      "findings": "kr_empirical_check confirmed. Factor DB VERIFIED. C01_SUE regime_profile 불일치 + Z_Sector NA + C4 PIT 혼재 S1 해소. Signal-Portfolio Translation 3rd member 위험 internal_corr 하향 반영."
+    },
+    {
+      "agent_id": "academic_h1693",
+      "role": "academic",
+      "score": 16,
+      "stance": "APPROVE_CONDITIONAL",
+      "findings": "AX-004 3-pillar exempt 학술 backing 완전. 3-domain literature 결합 structural mechanism change. Dichev-Tang 본문 인용 깊이 + 한국 SUE decay 연구 부재 보강 필요."
+    }
+  ],
+  "routing": {
+    "next_stage": "S1 (Forge S1 dispatch)",
+    "strategy_id_assigned": "STR_1687",
+    "forge_todo": "qepm/mailbox/forge/inbox/TODO_S1_STR_1687_H_1693_q07_sector_neutral_defense.json",
+    "downstream_chain": [
+      "S1 Forge (strategy_id=STR_1687): 10 conditions_for_s1 전수 검증",
+      "S3 Scout (orthogonality): pairwise TDC crisis 실측",
+      "S6 Judge: Gate 0~8 + AX-001 v2 4-gate + Gate 13 Signal-Portfolio Translation Failure",
+      "PG1 Governor: consensus_tier Tier 1 cap + Q07 cluster winner 판정"
+    ]
+  },
+  "calibration_feedback": {
+    "scout_v4_predicted_range": "[62, 78]",
+    "scout_v4_mid": 68,
+    "actual_total": 77,
+    "accuracy": "TOP_END approach (+9 from mid)",
+    "v4_bias_correction_validated": "v1.2 보강 +2~3 uplift 적중 수준 초과"
+  },
+  "timestamp": "2026-04-19T14:15+09:00",
+  "version": "v55_consensus_final",
+  "enforcer_state_machine": {
+    "r1_complete": true,
+    "r2_complete": true,
+    "r3_needed": false,
+    "verdict_ready": true,
+    "codex_r2_verdict_exists": true,
+    "codex_r2_path": "stage_artifacts/r2_codex_verdict_H_1693.json"
+  }
+}

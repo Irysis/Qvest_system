@@ -1,0 +1,360 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV6_V1",
+  "stage": "PG0_Overlap_Recognition_+_Sub_Family_v2_Integration",
+  "timestamp": "2026-04-17T22:00:00+09:00",
+  "session": 66,
+  "version": "v6.1_overlap_recognition",
+  "status": "ACTIVE_PENDING_RISK_MGR_3RD + FORGE_V2_S1",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev6.json (v6.0)",
+  "criticality": "CRITICAL — Scout Task #27 overlap 100% CONFIRMED (R21 우려 현실화) + Task #28 consensus sub-family v2 반영 필수.",
+
+  "trigger": "Scout 선제 작업 2건 완료 — Task #27 STR_1679v3 Def 5 × H_1682 Top 20 overlap 100% 실측 + Task #28 consensus sub-family v2 4-tier taxonomy. rev6 structural 반영 불충분 → rev6_v1 재발행.",
+
+  "scout_task_27_overlap_100pct_confirmed": {
+    "measurement": "Factor DB 12M rolling 실측",
+    "overlap_ratio": {
+      "str_1679v3_def_5_in_h_1682_top_20": "5.0/5 (100%)",
+      "rationale": "동일 Q25_Ohlson_O + R16_Calmar composite formula 구조적 결과",
+      "effective_double_counting": 0.268,
+      "interpretation": "STR_1679v3 내부 Def sleeve 5종목이 H_1682 portfolio Top-20의 Top-5와 100% 일치"
+    },
+    "scout_recommendation": {
+      "option_3_embedded_overlap_recognition": {
+        "description": "H_1682 net new weight = standalone_target - STR_1679v3_Def_embedded_weight",
+        "formula": "H_1682_effective = 20% (target) - 8% (STR_1679v3 내부 Def 5종목 weight 기여) = 12%",
+        "governor_acceptance": "APPROVED — double-counting 방지 + portfolio weight 정규화"
+      }
+    }
+  },
+
+  "scout_task_28_consensus_sub_family_v2_integrated": {
+    "taxonomy_4_tier": {
+      "tier_1_C19_core": {
+        "members_current": ["STR_1631_SYN_05_VDplus"],
+        "cap": 0.25,
+        "admission_cap_strategies": 1,
+        "rationale": "Core anchor tier. 최대 1건 전략 only."
+      },
+      "tier_2_analyst_revision_residual": {
+        "members_current": ["H_1676 (spec 강화 Option A)"],
+        "cap": 0.15,
+        "admission_cap_strategies": 2,
+        "rationale": "잔차화 consensus diversifier. TDC 0.391 post-spec"
+      },
+      "tier_3_consensus_breadth_raw": {
+        "members": ["미편입 — 향후 확장 가능"],
+        "cap": 0.10,
+        "note": "raw C19 breadth signal without residualization"
+      },
+      "tier_4_other_channels": {
+        "members": ["multi-factor / 5sleeve / gate 등 — rev2 consensus_taxonomy v1.0 기타 sub-family"],
+        "cap": 0.10
+      }
+    },
+    "admission_rules_6": {
+      "rule_1_tier_1_cap_1": "Tier 1 C19_core 최대 1건 admission (STR_1631 점유)",
+      "rule_2_cross_tier_tdc": "cross-tier pairwise TDC ≤ 0.4 (v3.0 Gate 5 확장)",
+      "rule_3_total_consensus_cap": "전체 consensus (Tier 1+2+3+4) ≤ 45% (v1.0 유지)",
+      "rule_4_c19_effective_cap": "Tier 1 C19_core effective exposure ≤ 25% (embedded overlap 포함)",
+      "rule_5_current_pg2_violation": "**STR_1631 80% alone = consensus 80% > 45% cap → Rule 5 violation 공식 확인**. Phase_1 Day 1~7 transition 의무.",
+      "rule_6_gate_8_pre_detection": "handoff kit에 predicted_tdc_vs_pg2_consensus 필드 필수 (Scout S0 단계 사전 탐지)"
+    }
+  },
+
+  "rev6_v1_phase_3_final_with_overlap_recognition": {
+    "description": "8-strategy architecture with embedded overlap recognition",
+    "strategies": {
+      "Core_Primary_STR_1631_consensus_C19_core_tier_1": {
+        "weight": 0.18,
+        "role": "Core_Primary",
+        "sub_family_tier": "Tier 1 consensus_C19_core",
+        "cap_compliance": "≤ 25% effective PASS"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight": 0.10,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "barroso_mandatory": true
+      },
+      "Div_1_H_1676_consensus_residual_tier_2": {
+        "weight": 0.08,
+        "role": "Diversifier",
+        "sub_family_tier": "Tier 2 analyst_revision_residual",
+        "tdc_expected_post_option_a": 0.391,
+        "gate_8_pass": true
+      },
+      "Div_2_H_1685_investor_flow": {
+        "weight": 0.15,
+        "role": "Diversifier",
+        "family": "investor_flow"
+      },
+      "Div_ML_STR_1656": {
+        "weight": 0.14,
+        "role": "Diversifier (Phase_2 STR_1661 V2 교체 가속)",
+        "family": "ML_complexity"
+      },
+      "Div_3_STR_1679v3_embedded_q25_r16": {
+        "weight": 0.10,
+        "role": "Diversifier with embedded Q25+R16 Def sleeve",
+        "family": "momentum_overlay_embedded_q25",
+        "internal_structure": "Core15 (C19 Top-15) + Def5 (Q25+R16 Top-5) + Regime Inverse Overlay",
+        "def_5_embedded_weight_contribution": 0.08,
+        "note": "STR_1679v3 내부 Def 5종목 × 1.6% = 8% Q25+R16 exposure 기여"
+      },
+      "Def_1_H_1682_effective_overlap_adjusted": {
+        "weight": 0.12,
+        "weight_standalone_target": 0.20,
+        "weight_embedded_from_str_1679v3": 0.08,
+        "**weight_effective_net_new**": "20% - 8% = **12%**",
+        "role": "Defense",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60,
+        "overlap_recognition": "Scout Task #27 100% overlap 반영 Embedded Overlap Recognition 적용"
+      },
+      "Def_2_H_1689_quality_4axis": {
+        "weight": 0.15,
+        "role": "Defense",
+        "family": "quality_aggregate",
+        "q25_share": 0.25
+      }
+    },
+    "total_nominal": 1.02,
+    "overlap_recognition_adjustment": -0.02,
+    "effective_total": 1.00,
+    "n_strategies": 8,
+    "n_families": 7,
+    "family_concentration_check_with_sub_family_v2": {
+      "consensus_total_tier_1_2": {
+        "tier_1_str_1631": 0.18,
+        "tier_2_h_1676": 0.08,
+        "tier_3_4_none_phase_3": 0.00,
+        "total_consensus": 0.26,
+        "rule_3_45pct_cap": "PASS (26% << 45%)",
+        "rule_4_c19_effective_25pct": "PASS (18% < 25%)"
+      },
+      "momentum_residual_h_1688": 0.10,
+      "momentum_overlay_embedded_q25_str_1679v3": 0.10,
+      "investor_flow_h_1685": 0.15,
+      "ML_complexity_str_1656": 0.14,
+      "distress_path_h_1682_effective": 0.12,
+      "quality_aggregate_h_1689": 0.15,
+      "max_family": 0.26,
+      "compliance": "PASS (all caps satisfied)"
+    },
+    "q25_r16_total_exposure_audit": {
+      "h_1682_effective_12pct_q25_share_0_60": 0.072,
+      "str_1679v3_def_embedded_8pct_q25_share_0_90": 0.072,
+      "h_1689_15pct_q25_share_0_25": 0.0375,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_weighted_q25": 0.189,
+      "cap_35_compliance": "PASS (18.9% < 35%)",
+      "change_vs_rev6": "rev6 16.45% → rev6_v1 18.9% (STR_1679v3 embedded Q25 인식 추가)"
+    }
+  },
+
+  "pg1_admission_rule_v3_4_consensus_tier_classification": {
+    "new_gate_addition_v3_4": {
+      "gate_10_consensus_tier_classification": {
+        "description": "편입 전 consensus sub-family 자동 분류 (Tier 1~4)",
+        "checks": [
+          "Tier 1 cap 1건 PG1 admission only",
+          "Cross-tier TDC ≤ 0.4",
+          "Total consensus ≤ 45% (Rule 3)",
+          "Tier 1 C19_core effective ≤ 25% (embedded overlap 포함)",
+          "handoff kit predicted_tdc_vs_pg2_consensus 필드 의무"
+        ],
+        "code_path": "02_Infrastructure/portfolio/portfolio_governor.R::consensus_tier_audit()",
+        "technical_debt_task_8_extension": "Forge Task #8 연계 구현"
+      }
+    },
+    "existing_gates_1_9_unchanged": "v3.0 Gate 1~5 + v3.1 Gate 6/7 + v3.2 Gate 8 + v3.3 Gate 9 유지",
+    "total_gates_v3_4": 10
+  },
+
+  "phase_1_day_by_day_transition_updated_forge_v2_restored": {
+    "forge_v2_restoration_confirmed": {
+      "old_forge_status": "40+ minutes unresponsive",
+      "new_forge_instance": "forge_v2 spawned by Q-Lead",
+      "opt_10_fix_applied": "forge_code_guard.sh line 172-182",
+      "s1_execution_parallel_3": ["H_1676 Option A spec 강화", "H_1682 distress+calmar", "H_1688 residual momentum"],
+      "first_progress_report_eta": "15 minutes"
+    },
+    "emergency_transition_week_1": {
+      "from_current_pg2": "STR_1631 80% + STR_1679v2 20%",
+      "to_week_1_target_rev6_v1": {
+        "STR_1631": 0.40,
+        "STR_1656": 0.15,
+        "STR_1679v2": 0.00,
+        "H_1676": 0.08,
+        "H_1682_effective": 0.12,
+        "H_1685": 0.10,
+        "H_1689": 0.05,
+        "str_1679v3_slot_a_pending": 0.00,
+        "reserve_h_1688_buffer": 0.10
+      },
+      "total": 1.00,
+      "n_strategies_phase_1": 6,
+      "day_by_day_revised": [
+        "Day 1: STR_1631 80% → 55% + STR_1656 0 → 15%",
+        "Day 2: STR_1679v2 20% → 5%",
+        "Day 3: STR_1679v2 5% → 0% (완전 제거, Gate 8 critical 해소)",
+        "Day 4~5: H_1682 0 → 12% + H_1676 0 → 8% (forge_v2 S1 완료 필수)",
+        "Day 6~7: H_1685 0 → 10% + H_1689 0 → 5% + STR_1631 55% → 40%",
+        "Week 1 말: portfolio TDC + CVaR + CDaR 재측정 (Risk Mgr 3rd round)"
+      ],
+      "critical_dependencies": [
+        "forge_v2 H_1676 Option A spec 강화 S1 완료 (Day 4~5 의존)",
+        "forge_v2 H_1682 S1 완료 (Day 4~5 의존)",
+        "reserve 10% buffer for H_1688 admission Phase_1.5 + STR_1679v3 Slot A transition Week 3~4"
+      ]
+    }
+  },
+
+  "phase_2_str_1679v3_replacement_integration": {
+    "week_3_4_str_1679v3_slot_a_completion": {
+      "trigger": "forge_v2 STR_1679v3 Slot A completion (H_1682 교체)",
+      "composition_at_transition": {
+        "Core_Primary_STR_1631": 0.40,
+        "STR_1656": 0.15,
+        "H_1676": 0.08,
+        "H_1682_standalone_reduced": 0.08,
+        "STR_1679v3_Slot_A": 0.10,
+        "H_1685": 0.10,
+        "H_1689": 0.05,
+        "H_1688_admission_phase_1_5": 0.04,
+        "reserve": 0.00
+      },
+      "h_1682_standalone_adjustment": "12% → 8% (STR_1679v3 Def embedded 8% 인식 후 추가 축소)",
+      "effective_q25_r16_exposure": "H_1682 8% × 0.60 + STR_1679v3 8% × 0.90 = 11.28%"
+    }
+  },
+
+  "projected_sr_rev6_v1_recalculated": {
+    "individual_SR_assumptions": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "H_1676_Div_strengthened": 0.85,
+      "H_1685_Div": 0.75,
+      "STR_1656_Div_ML": 1.212,
+      "STR_1679v3_with_embedded_q25": 1.00,
+      "H_1682_Def_effective_12pct": 0.65,
+      "H_1689_Def": 0.80
+    },
+    "weighted_mean_SR_phase_3_v6_1": 0.958,
+    "rho_0_3_conservative_primary": {
+      "variance_reduction_factor": 1.86,
+      "**projected_SR**": 1.78,
+      "gap_vs_1_80_realistic_target": -0.02,
+      "gap_vs_rev6_1_75": "+0.03 (slight improvement)",
+      "rationale": "STR_1679v3 + STR_1679v2 DROP + overlap recognition 순효과"
+    },
+    "rho_0_2_optimistic_reference": {
+      "projected_SR": 1.86,
+      "gap_vs_1_80": "+0.06"
+    },
+    "rho_0_5_saturation": {
+      "projected_SR": 1.41,
+      "gap_vs_1_80": -0.39
+    },
+
+    "boost_roadmap_rev6_v1": {
+      "boost_1_h_1687": "+0.10 (Phase_2~3)",
+      "boost_2_str_1661_v2_accelerated": "+0.05~0.08 (Phase_2)",
+      "boost_3_blend_optimization": "+0.03~0.05 (Phase_3 말)",
+      "boost_4_h_1688_barroso": "+0.05 (S5)",
+      "total_boost_sum": "+0.23~0.28",
+      "**projected_final_SR_with_all_boosts**": {
+        "conservative_rho_0_3": "1.78 + 0.25 = **2.03**",
+        "optimistic_rho_0_2": "1.86 + 0.25 = 2.11",
+        "status": "SR 2.0 도달 가능 (boost 4건 성공 전제)"
+      }
+    }
+  },
+
+  "rev6_vs_rev6_v1_comparison": {
+    "rev6_structural": {
+      "composition": "7-strategy (STR_1679v2 DROP)",
+      "h_1682_weight": "20% standalone",
+      "str_1679v3_weight": "N/A (미반영)",
+      "q25_exposure": 0.1645,
+      "sr_rho_0_3": 1.75
+    },
+    "rev6_v1_overlap_recognition": {
+      "composition": "8-strategy (STR_1679v3 재편입 with embedded recognition)",
+      "h_1682_weight_effective": "12% (overlap adjusted)",
+      "str_1679v3_weight": "10%",
+      "q25_exposure": 0.189,
+      "sr_rho_0_3": 1.78,
+      "overlap_recognition_benefit": "+0.03 SR + Q25 exposure 정확 반영"
+    }
+  },
+
+  "risk_manager_3rd_round_validation_request": {
+    "trigger": "rev6_v1 + forge_v2 S1 결과 수신 후",
+    "scope_4_axis": [
+      "CVaR_95: 목표 -15~-17% (Defense 27% + STR_1679v3 + rev6_v1 overlap 조정)",
+      "CDaR_95: 목표 19~21% (STR_1656 14% + H_1682 12% + H_1689 15%)",
+      "TDC max: 목표 ≤ 0.4 (STR_1679v2 DROP + Option A spec)",
+      "Q25 weighted: 18.9% (PASS 유지)"
+    ],
+    "additional_audit": [
+      "STR_1679v3 × H_1682 overlap 12M rolling 실측 재검증",
+      "embedded Q25+R16 exposure 18.9% vs 35% cap 여유 확인",
+      "consensus_tier_classification Rule 1~6 PASS 확인"
+    ],
+    "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev6_v1.json"
+  },
+
+  "governor_open_questions_r25_r27_self_answers": {
+    "R25_str_1679v3_week_3_4_replacement": "APPROVED — rev6_v1 Phase_2 integration에서 구체화 (Week 3~4 Slot A 완성 시 H_1682 standalone 12% → 8% 추가 축소)",
+    "R26_h_1689_phase_1_acceleration": "APPROVED — Phase_1 Day 6~7 H_1689 5% 편입. Scout handoff kit 완성 전제 + Forge 병렬 구현",
+    "R27_str_1661_v2_replacement_timing": "Week 6~8 권고 — STR_1661 V2 S5 mutation 완료 + Harvey t>3 + Grade A/B 확인 후. Forge 재스폰 완료로 조기 실행 가능"
+  },
+
+  "governor_open_questions_v6_1_new": {
+    "R28_embedded_overlap_recognition_institutionalization": "Scout Option 3 'Embedded Overlap Recognition' rule 제도화 — portfolio_governor.R::embedded_overlap_audit() 구현 승인?",
+    "R29_str_1679v3_family_naming": "'momentum_overlay_embedded_q25' family 명칭 확정? 또는 'multi_sleeve_with_embedded_q25_defense' 대안?",
+    "R30_reserve_10pct_buffer_utilization": "Phase_1 reserve 10% (H_1688 buffer + STR_1679v3 Slot A transition) 적정? 축소/증대 조정 필요?"
+  },
+
+  "session_66_governor_final_contribution_12_artifacts": {
+    "chain": "rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1_emergency → rev6 → **rev6_v1**",
+    "non_rev_artifacts": [
+      "consensus_taxonomy_proposal.json (v1.0 taxonomy original)",
+      "h1683_vs_h1688_differentiation_analysis.json"
+    ],
+    "total_artifacts": 12,
+    "rules_institutionalized": [
+      "consensus_taxonomy v1.0 + v2.0 (Scout Task #28)",
+      "Q25 Cap Rule v1.0 (weighted_portfolio_exposure)",
+      "PG1 Admission Rule v2.0/v3.0/v3.1/v3.2/v3.3/**v3.4** (10 gates)",
+      "Sequential Admission Rule (cross-family TDC > 0.4)",
+      "Retroactive TDC Audit (신규 rule 도입 시 24h audit)",
+      "Structural Diagnosis (2회 연속 FAIL 시 strategy-level DROP)",
+      "**Embedded Overlap Recognition** (Scout Option 3, rev6_v1 첫 적용)"
+    ]
+  },
+
+  "artifacts_rev6_v1": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev6_v1.json (현 파일)",
+    "supersedes: PG0_PLAN_rev6.json",
+    "parent chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1 → rev6 → **rev6_v1**"
+  ],
+
+  "executive_summary_v6_1": {
+    "overlap_recognition_key_finding": "STR_1679v3 Def 5 × H_1682 Top 20 = 100% overlap → H_1682 net new = 12% (20% - 8% embedded)",
+    "sub_family_v2_applied": "4-tier taxonomy + 6 admission rules + Gate 10 v3.4",
+    "phase_3_composition_8_strategy": "STR_1631 18 / H_1688 10 / H_1676 8 / H_1685 15 / STR_1656 14 / STR_1679v3 10 / H_1682 12 / H_1689 15",
+    "projected_sr_primary": 1.78,
+    "sr_boost_roadmap_ultimate": 2.03,
+    "forge_v2_restored": "H_1676/H_1682/H_1688 parallel S1 진행",
+    "next_steps": [
+      "1. Risk Mgr 3rd round 스폰 (rev6_v1 기준)",
+      "2. forge_v2 S1 first progress report (15분 내)",
+      "3. Phase_1 Week 1 day-by-day transition (Day 1부터 즉시 가능)",
+      "4. R28~R30 Q-Lead 회신"
+    ]
+  }
+}

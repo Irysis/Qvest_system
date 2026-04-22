@@ -1,0 +1,181 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead",
+  "type": "ADMISSION_RULE_V3_4_CONSOLIDATED",
+  "stage": "PG1_Admission_Rule_Consolidation",
+  "timestamp": "2026-04-18T09:00:00+09:00",
+  "session": 67,
+  "version": "v3.4_final_consolidated",
+  "status": "ACTIVE_NORMATIVE",
+  "supersedes": ["v3.0 (base)", "v3.1 (+Gate 6/7)", "v3.2 (+Gate 8 Sequential+Retroactive)", "v3.3 (+Gate 9 Structural Diagnosis)"],
+  "references": {
+    "governor_chain": "PG0_PLAN_rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1_emergency → rev6 → rev6_v1 (11건)",
+    "judge_source": "judge_pg1_candidates_tdc_matrix.json + L-156 v2 retroactive audit",
+    "scout_source": "Task #27 overlap 100% + Task #28 consensus sub-family v2 taxonomy + L-157 calibration log",
+    "axiom_alignment": "AX-001 Defense 조건부, AX-002 프로세스 우회 금지, AX-006 candidate (pairwise TDC conditional cluster)"
+  },
+  "criticality": "NORMATIVE — v3.4는 10 gates 최종 consolidated 본문. 모든 향후 PG1 admission 판정은 v3.4 기준 필수.",
+
+  "scope": {
+    "applicable_to": "모든 Grade A/A_NOVEL candidate의 PG1 admission 판정",
+    "enforcer": "Judge (S6 Gate 5+8 확장) + Governor (PG1 gate orchestrator)",
+    "trigger_point": "Hurdle Gate v2.2 PASS 직후, PG2 편입 전",
+    "blocking_behavior": "Gate 1~10 중 1건 FAIL 시 admission 차단. retroactive audit은 active PG2에도 소급 적용."
+  },
+
+  "ten_gates_definition": {
+    "gate_1_hard_fail": {
+      "source": "v3.0 base",
+      "rule": "MDD ≤ 45%, Turnover ≤ 600%",
+      "rationale": "Hurdle v2.2 hard_fail 기준 그대로",
+      "evidence": "hurdle_result.json MDD + Turnover 필드"
+    },
+    "gate_2_validity_hierarchy": {
+      "source": "v3.0 base",
+      "rule": "Validity > Implementability > Robustness > Performance > Novelty (우선순위 준수)",
+      "rationale": "하위 지표 우수로 상위 지표 결함 보상 금지",
+      "evidence": "judge_result.json objective_hierarchy_audit"
+    },
+    "gate_3_grade_threshold": {
+      "source": "v3.0 base",
+      "rule": "Grade A (score≥40 & CAGR≥16% & SR≥0.8) OR Grade A_NOVEL (score≥40 & CAGR≥12% & SR≥0.6 & novelty_bonus≥10)",
+      "rationale": "Hurdle v2.2 grade 공식 채택",
+      "evidence": "hurdle_result.json grade 필드"
+    },
+    "gate_4_ff5_alpha_t_stat": {
+      "source": "v3.0 base",
+      "rule": "FF5 alpha t-stat ≥ 2.0 (Harvey et al. 2016 t>3.0 multi-testing awareness 병기)",
+      "rationale": "통계 유의성 확보 + DSR 계산 필수",
+      "evidence": "ff5_alpha_t + DSR 필드"
+    },
+    "gate_5_max_abs_corr": {
+      "source": "v3.0 base",
+      "rule": "기존 Grade A 전략 대비 max |corr| < 0.7 (Core) / < 0.5 (Diversifier)",
+      "rationale": "다양성 확보. Role Honesty Audit 연계",
+      "evidence": "strategy_analyzer.R correlation matrix"
+    },
+    "gate_6_family_saturation": {
+      "source": "v3.1 addition",
+      "rule": "family 내 기존 active 전략 6건 이상이면 saturation penalty + admission 재심사",
+      "rationale": "family saturation 방지, Q07/Q25 등 편중 차단",
+      "evidence": "family_concentration_audit"
+    },
+    "gate_7_role_honesty": {
+      "source": "v3.1 addition",
+      "rule": "provisional_role 위장 탐지. Core 위장/Diversifier 위장/Defense 위장 3축",
+      "rationale": "AX-001 Defense 조건부 평가 + 역할 정직성",
+      "evidence": "role_honesty_audit 결과 (corr>0.7 Core 의심, max_abs_corr>0.5 Div 의심, crisis MDD>market Def 의심)"
+    },
+    "gate_8_pairwise_tdc_sequential_retroactive": {
+      "source": "v3.2 addition (Session 66 L-156 v2)",
+      "rule_primary": "Pairwise TDC (tail dependence coefficient) ≤ 0.4 (모든 active PG2 × candidate 조합)",
+      "rule_sequential": "신규 편입 시 기존 active PG2와 cross-family TDC 사전 측정 필수",
+      "rule_retroactive": "신규 rule 도입 시 24h 이내 기존 PG2 소급 audit. 위반 시 emergency remediation",
+      "rule_early_warning": "handoff kit에 predicted_tdc_vs_pg2 필드 의무 (Scout S0 사전 탐지, L-158)",
+      "rationale": "Daily Pearson + monthly rho로 포착되지 않는 tail co-movement 검출. STR_1631↔STR_1679v2 TDC 0.621 breach 재발 방지.",
+      "evidence": "judge_pg1_candidates_tdc_matrix.json (daily Pearson + monthly rho + Nu heavy tail + TDC 4축)"
+    },
+    "gate_9_structural_diagnosis": {
+      "source": "v3.3 addition (Session 66 Risk Mgr 2nd)",
+      "rule": "2회 연속 remediation FAIL (rev 단위) 시 strategy-level DROP 자동 트리거",
+      "rationale": "국부 최적화 실패 시 구조적 교체. STR_1679v2 DROP 의사결정 준거",
+      "evidence": "remediation_history.json + structural_diagnosis flag"
+    },
+    "gate_10_consensus_tier_classification": {
+      "source": "v3.4 addition (Session 66 Scout Task #28 + rev6_v1)",
+      "rule_tier_1_c19_core_cap_1": "Tier 1 consensus_C19_core 최대 1건 admission (STR_1631 점유)",
+      "rule_cross_tier_tdc": "cross-tier pairwise TDC ≤ 0.4 (Gate 8 연계)",
+      "rule_total_consensus_cap": "Tier 1+2+3+4 total consensus ≤ 45%",
+      "rule_c19_effective_cap": "Tier 1 effective exposure ≤ 25% (embedded overlap 포함)",
+      "rule_handoff_kit_field": "handoff kit predicted_tdc_vs_pg2_consensus 필드 의무",
+      "rule_embedded_overlap_recognition": "sleeve-level overlap 측정 시 net new weight = standalone_target - embedded_weight (Scout Option 3)",
+      "taxonomy_4_tier": {
+        "tier_1_C19_core": {"cap_exposure": 0.25, "cap_strategies": 1, "members_current": ["STR_1631_SYN_05_VDplus"]},
+        "tier_2_analyst_revision_residual": {"cap_exposure": 0.15, "cap_strategies": 2, "members_current": ["H_1676_spec_A"]},
+        "tier_3_consensus_breadth_raw": {"cap_exposure": 0.10, "members": ["pending"]},
+        "tier_4_other_channels": {"cap_exposure": 0.10, "members": ["multi-factor / 5sleeve / gate channels"]}
+      },
+      "rationale": "consensus sub-family 4-tier 분류로 C19 saturation + overlap 사전 차단. rev6_v1 첫 적용.",
+      "evidence": "02_Infrastructure/portfolio/portfolio_governor.R::consensus_tier_audit() + embedded_overlap_audit()"
+    }
+  },
+
+  "gate_order_and_enforcement": {
+    "sequential_check": "Gate 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 순차. 1건 FAIL 시 즉시 stop.",
+    "enforcement_layers": {
+      "layer_1_judge_s6": "Gate 0~5 (PIT + 구현 + 견고성 + 성과 + 통계) — existing Gate 0~5",
+      "layer_2_judge_s6_extended": "Gate 5 확장 = v3.4 Gate 5 (max corr) + Gate 7 (Role Honesty) + Gate 8 (TDC)",
+      "layer_3_governor_pg1": "Gate 6 (family saturation) + Gate 10 (consensus tier) — portfolio-level",
+      "layer_4_governor_pg1_retroactive": "Gate 9 (structural diagnosis) + Gate 8 retroactive audit"
+    },
+    "blocking_severity": {
+      "hard_block": ["Gate 1 (hard_fail)", "Gate 3 (grade<A)", "Gate 8 critical (TDC>0.6)"],
+      "conditional_block": ["Gate 4 (t<2)", "Gate 5 (corr>0.7 Core)", "Gate 7 (role misclassification)", "Gate 8 warning (TDC 0.4~0.6)"],
+      "advisory_only": ["Gate 6 (family_saturation penalty)", "Gate 10 (tier cap 접근)"]
+    }
+  },
+
+  "retroactive_audit_protocol": {
+    "trigger": "신규 gate 도입 / threshold 변경 / rule 명확화 발생 시",
+    "sla": "24시간 이내 기존 active PG2 전수 재검증 의무",
+    "scope": "PG2 편입 모든 전략 × pairwise combinations",
+    "remediation_order": {
+      "step_1_critical_fail": "TDC > 0.6 or hard fail → emergency single-day reduction (STR_1679v2 case: 20% → 5% → 0%)",
+      "step_2_warning": "TDC 0.4~0.6 → 2주 내 단계적 transition",
+      "step_3_advisory": "cap 접근 → 4주 내 rebalancing"
+    },
+    "precedent": "Session 66 STR_1631↔STR_1679v2 TDC 0.621 Gate 8 retroactive discovery → rev5_v1_1_emergency → 3-day transition"
+  },
+
+  "integration_with_hurdle_v2_2": {
+    "upstream": "Hurdle v2.2 PASS (grade A/A_NOVEL) = Gate 1/3 충족 전제",
+    "downstream": "v3.4 10 gates = PG1 admission 필수 조건",
+    "grade_v21_preservation": "Hurdle v2.2 grade_v21 보존 필수 (backward compat). v3.4는 별도 admission 계층."
+  },
+
+  "known_limitations_and_future_work": {
+    "v3_4_limitations": [
+      "Gate 8 TDC는 GPD-based copula 추정 N>2000 샘플 필요 (T<8Y 신뢰구간 넓음)",
+      "Gate 10 Tier 3/4 members 미편입 — 확장 시 taxonomy 재정의 필요",
+      "Gate 9 structural diagnosis는 '2회 연속 FAIL'이 정성적. 정량 threshold 추가 가능"
+    ],
+    "v3_5_candidate_agenda": [
+      "Gate 11: regime-conditional tail dependence (bull/bear/crisis 분리 TDC)",
+      "Gate 12: cross-asset exposure (KR equity vs KR bond vs USD) decomposition",
+      "AX-006 promotion: pairwise TDC conditional cluster 공리화 여부 (L-156 v2 5축 승격 검증 후)"
+    ]
+  },
+
+  "axiom_candidate_tracking": {
+    "AX_006_candidate": {
+      "source": "Judge L-156 v2 retroactive audit + pairwise TDC conditional cluster",
+      "statement_draft": "market=KR, family=consensus_factor, cross-strategy pairwise TDC > 0.4는 daily Pearson/monthly rho로 포착되지 않는 구조적 tail co-movement. Admission 전 사전 측정 + retroactive audit 필수.",
+      "supporting_L_codes": ["L-156 v2", "L-158 (준비중)"],
+      "5_axis_score_pending": "promote.R 검증 대기",
+      "review_date": "2026-07-17"
+    }
+  },
+
+  "executive_summary_v3_4": {
+    "total_gates": 10,
+    "new_in_v3_4": ["Gate 10 consensus_tier_classification + 4-tier taxonomy + 6 admission rules + embedded_overlap_recognition"],
+    "new_in_v3_3": ["Gate 9 structural_diagnosis"],
+    "new_in_v3_2": ["Gate 8 pairwise_tdc_sequential_retroactive"],
+    "new_in_v3_1": ["Gate 6 family_saturation + Gate 7 role_honesty"],
+    "base_v3_0": ["Gate 1~5"],
+    "enforcement_artifacts": [
+      "hurdle_result.json (Gate 1~4)",
+      "judge_result.json (Gate 5+7+8)",
+      "judge_pg1_candidates_tdc_matrix.json (Gate 8)",
+      "portfolio_governor.R::consensus_tier_audit() (Gate 10)",
+      "portfolio_governor.R::embedded_overlap_audit() (Gate 10)",
+      "remediation_history.json (Gate 9)"
+    ],
+    "normative_precedence": "v3.4 ≥ v3.3 ≥ v3.2 ≥ v3.1 ≥ v3.0. 하위 버전 rule은 상위 버전 rule에 흡수됨.",
+    "downstream_dependencies": [
+      "Forge Task #8: consensus_tier_audit() 구현",
+      "Scout handoff kit template: predicted_tdc_vs_pg2_consensus 필드 추가",
+      "Risk Mgr 3rd round: rev6_v1 기준 4축 검증"
+    ]
+  }
+}

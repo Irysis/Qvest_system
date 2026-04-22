@@ -1,0 +1,93 @@
+{
+  "strategy_id": "STR_1692",
+  "hypothesis_id": "H_1692_v2",
+  "stage": "S1",
+  "date": "2026-04-19",
+  "family": "industry_momentum_residual",
+  "expected_role": "core_secondary",
+  "role_bias": "RoleBias_Core",
+  "trail": "standard",
+  "gap_targeting_axes": ["SR", "KR_structural"],
+  "performance": {
+    "cagr": 8.64,
+    "sharpe": 0.261,
+    "mdd": 68.4,
+    "grade": "F",
+    "score": 36.5
+  },
+  "portfolio": {
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "buffer_zone": {
+      "keep_n": 22,
+      "entry_n": 20
+    },
+    "liq_threshold": 200000000
+  },
+  "pit_evidence": {
+    "factor": "HYB01_IndMom_RSI_Resid_v2",
+    "data_source": "load_month_factors() C15+L-164 mandatory",
+    "c1_compliant": "expanding beta via cumsum pooled OLS, shift=1m, burn-in 36m",
+    "c2_compliant": "t+1 execution in run_all.R",
+    "c10_compliant": "LIQ_THRESHOLD=2e8, shift(frollmean,1L) via RAWDATA$LiqPass",
+    "c13_compliant": "Z_Score_Aligned from Factor DB; residual is final signal, no manual negate",
+    "c15_compliant": "load_month_factors() only"
+  },
+  "alpha_lab_gate": {
+    "icir_threshold": 0.2,
+    "icir": 0.09,
+    "pass": false
+  },
+  "three_period_icir": {
+    "p1_2004_2014": 0.296,
+    "p2_2015_2019": -0.046,
+    "p3_2020_2026": -0.042
+  },
+  "net_ic_gain_vs_M07": -0.0921,
+  "transmission_ratio": 0.9479,
+  "beta_structural_break": [
+    {
+      "period": "pre_2008",
+      "mean_beta": 0.0831,
+      "sd_beta": 0.0216,
+      "n": 48
+    },
+    {
+      "period": "mid_2008_2019",
+      "mean_beta": 0.0176,
+      "sd_beta": 0.018,
+      "n": 144
+    },
+    {
+      "period": "post_2020",
+      "mean_beta": 0.004,
+      "sd_beta": 0.0025,
+      "n": 76
+    }
+  ],
+  "variant_comparison": [
+    {
+      "variant": "V1_residual",
+      "cagr": 8.64,
+      "sr": 0.261,
+      "mdd": 68.4
+    },
+    {
+      "variant": "V2_M07only",
+      "cagr": 9.53,
+      "sr": 0.308,
+      "mdd": 65.79
+    },
+    {
+      "variant": "V3_M18neg",
+      "cagr": -19.5,
+      "sr": -0.628,
+      "mdd": 99.29
+    }
+  ],
+  "tail_risk_gate": {
+    "pass": false,
+    "cdar_95": 0.684
+  }
+}

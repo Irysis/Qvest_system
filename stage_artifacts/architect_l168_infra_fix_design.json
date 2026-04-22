@@ -1,0 +1,121 @@
+{
+  "artifact_type": "ARCHITECT_INFRA_FIX_DESIGN",
+  "title": "L-168 align_factor_direction() PIT-safe Redesign + Connector Full Audit",
+  "architect_agent_id": "architect",
+  "session": 68,
+  "created_at": "2026-04-19",
+  "trigger": "Q-Lead emergency spawn — Codex STR_1692 rescue + Judge infra_pit_emergency_audit",
+
+  "design_decision": {
+    "chosen_alternative": "C_Hybrid",
+    "alternatives_evaluated": {
+      "A_Expanding_IC": {
+        "description": "sig_date mandatory + Usable_Date filter + expanding mean_IC",
+        "pros": "PIT-safe + IC information preserved",
+        "cons": "Function signature change breaks backward compatibility for 50+ direct callers",
+        "rejected_reason": "Breaking change to direct callers (align_factor_direction(FDB_RAW, registry) pattern)"
+      },
+      "B_Registry_Only": {
+        "description": "Remove IC-based inference entirely, registry.direction only",
+        "pros": "Simplest, PIT violation source eliminated by construction",
+        "cons": "Loses IC-based automatic direction learning. Registry may have stale/wrong directions.",
+        "rejected_reason": "Discards useful IC signal. Some factors have no registry direction entry."
+      },
+      "C_Hybrid": {
+        "description": "sig_date=NULL default (registry-only safe), sig_date provided triggers expanding IC",
+        "pros": "Full backward compatibility + PIT-safe when sig_date given + IC learning preserved",
+        "cons": "Slightly more complex",
+        "chosen": true,
+        "rationale": [
+          "Backward compatibility: 50+ direct callers using align_factor_direction(dt, registry) continue to work with registry-only safe default",
+          "PIT-safe: load_month_factors() now passes sig_date, getting expanding-window IC direction",
+          "Consistent: Same Usable_Date <= sig_date pattern as compute_rolling_ic_all() (same file)",
+          "36-month burn-in: Matches compute_rolling_ic_all() min_months=36 default",
+          "Graceful degradation: insufficient IC -> registry -> higher_better (3-tier fallback)"
+        ]
+      }
+    }
+  },
+
+  "changes_made": {
+    "file": "02_Infrastructure/factor_db/factor_db_connector.R",
+    "changes": [
+      {
+        "function": "align_factor_direction()",
+        "change_type": "MAJOR_REDESIGN",
+        "old_signature": "align_factor_direction(factor_dt, registry)",
+        "new_signature": "align_factor_direction(factor_dt, registry, sig_date = NULL, min_ic_months = 36L)",
+        "backward_compatible": true,
+        "key_changes": [
+          "Added sig_date parameter (default NULL = registry-only safe mode)",
+          "Added min_ic_months parameter (default 36 = 3-year burn-in)",
+          "When sig_date provided: Usable_Date <= sig_date filter on IC history",
+          "When sig_date NULL: registry-only direction (no IC, no lookahead possible)",
+          "3-tier fallback: IC-inferred -> registry -> higher_better",
+          "Logging: prints sig_date, IC-inferred count, fallback count for auditability"
+        ]
+      },
+      {
+        "function": "load_month_factors()",
+        "change_type": "MINOR_PATCH",
+        "change": "Now passes sig_date=sig_d to align_factor_direction()",
+        "impact": "All strategies using load_month_factors() automatically get PIT-safe direction"
+      },
+      {
+        "function": ".load_ic_history()",
+        "change_type": "MINOR_PATCH",
+        "change": "Added Usable_Date as.Date() type coercion for consistent Date filtering",
+        "impact": "Defensive fix — prevents potential Date type mismatch in <= comparison"
+      },
+      {
+        "location": "File header comment",
+        "change_type": "DOCUMENTATION",
+        "change": "Added v2.0 L-168 fix description"
+      }
+    ]
+  },
+
+  "full_audit_results": {
+    "scope": "factor_db_connector.R all 6 functions + 2 helpers",
+    "audit_date": "2026-04-19",
+    "functions_audited": {
+      ".load_registry": {"pit_status": "CLEAN", "reason": "Static JSON, no time dependency"},
+      ".load_ic_history": {"pit_status": "N/A_HELPER", "reason": "Loads full parquet. Caller must filter. Now ensures Usable_Date type coercion."},
+      "load_month_factors": {"pit_status": "FIXED_v2.0", "reason": "Now passes sig_date to align_factor_direction"},
+      "align_factor_direction": {"pit_status": "FIXED_v2.0", "reason": "Usable_Date filter + 36-month burn-in + registry fallback"},
+      "compute_rolling_ic_all": {"pit_status": "CLEAN", "reason": "Already had Usable_Date <= sig_d (line 274)"},
+      "group_factors_by_family": {"pit_status": "CLEAN", "reason": "Static registry classification, no time dependency"}
+    },
+    "additional_findings": [
+      {
+        "finding": "Usable_Date type coercion gap in .load_ic_history()",
+        "severity": "LOW",
+        "status": "FIXED",
+        "detail": "Date column was coerced to Date type but Usable_Date was not. Arrow auto-restores, but explicit coercion is safer."
+      }
+    ],
+    "no_additional_violations_found": true
+  },
+
+  "impact_analysis": {
+    "direct_callers_via_load_month_factors": {
+      "pattern": "load_month_factors(sig_date, ...) -> align_factor_direction(dt, registry, sig_date=sig_d)",
+      "behavior_change": "NOW PIT-SAFE. Direction inferred from expanding IC up to sig_date only. Previously used full-sample IC.",
+      "potential_sr_delta": "0-15% depending on direction flip boundary factors. Factors whose expanding IC sign differs from full-sample IC sign will flip direction.",
+      "strategies_affected": "All strategies using load_month_factors() — estimated 100+ across S1-S6 pipeline"
+    },
+    "direct_callers_via_align_factor_direction": {
+      "pattern": "align_factor_direction(FDB_RAW, registry) — no sig_date",
+      "behavior_change": "REGISTRY-ONLY (no IC). Previously used full-sample IC. This is CONSERVATIVE — may change direction for some factors.",
+      "files_affected": "30+ factor_engine.R and batch scripts that call align_factor_direction directly",
+      "migration_recommendation": "These callers should be updated to pass sig_date for IC-based direction. But registry-only is PIT-safe by construction — no urgency."
+    }
+  },
+
+  "verification_plan": {
+    "unit_test": "Call align_factor_direction with sig_date='2020-01-31'. Verify IC history only includes Usable_Date <= 2020-01-31. Compare direction signs with full-sample version to identify flip factors.",
+    "integration_test": "Re-run STR_1631_SYN_05 with fixed connector. Compare SR with previous 1.193.",
+    "regression_test": "Call align_factor_direction without sig_date. Verify registry-only behavior matches expectation.",
+    "codex_rescue": "Q-Lead to re-invoke Codex rescue on factor_db_connector.R to verify C01/C07/C14 now PASS"
+  }
+}

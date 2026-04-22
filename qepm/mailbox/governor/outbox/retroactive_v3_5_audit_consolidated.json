@@ -1,0 +1,175 @@
+{
+  "from": "Governor",
+  "to": "Judge + Q-Lead",
+  "type": "RETROACTIVE_V3_5_AUDIT_CONSOLIDATED",
+  "timestamp": "2026-04-18T15:15:00+09:00",
+  "session": 67,
+  "day": 1,
+  "v3_5_status": "CONDITIONAL_ACTIVE Stage 1 (team-lead 최종 arbitration, Judge 16:05 재확인)",
+  "v3_5_active_since": "2026-04-18T15:05 activation + 15:20 Q-Lead arbitration + 15:45 team-lead revised + 16:05 Q-Lead clarification final",
+  "sla_deadline": "2026-04-19T15:05:00+09:00 (24h)",
+  "enforcement_level": "advisory_warning (Stage 1, Gate 11/12 hard_block 보류) — Defense family (H_1689 Q24 WARNING 후) Gate 11 mandatory 승격 Judge 판정 별도",
+  "status": "IN_PROGRESS → FINAL_PENDING — 5건 audit (4건 active + STR_1433 ARCHIVE). Judge R1~R3 회신 수신. WARNING 수준 결과 1건 (STR_1631 ICIR 부재).",
+
+  "hard_fail_taxonomy_3_category_per_judge_arbitration": {
+    "reference": "Judge 16:30 공식 판정 + Q-Lead 16:05 clarification",
+    "VALIDATED_HARD_FAIL": {
+      "definition": "Hypothesis 평가 후 structural failure 확인",
+      "count_for_stage_2_transition": true,
+      "current_count": 1,
+      "members": ["STR_1683 L-160 Defense IC-Return decoupling (4-variants 전량 Hard Fail)"]
+    },
+    "UNVALIDATED_HARD_FAIL": {
+      "definition": "인프라/구현 버그로 hypothesis 미검증",
+      "count_for_stage_2_transition": false,
+      "current_count": 1,
+      "members": ["STR_1684 (Scout DIAG hypothesis B 85% + Architect RC1/RC2/RC3 확증 → Fix 1 + inline patch 후 STR_1684_v2b 재실행 중)"],
+      "resolution_path": "STR_1684_v2b Scenario A/B/C/D 판정 후 재분류 (Scenario B = ICIR still negative 시 VALIDATED로 승격)"
+    },
+    "CONDITIONAL_FAIL": {
+      "definition": "Stress FAIL but hypothesis valid",
+      "count_for_stage_2_transition": false,
+      "current_count": 0,
+      "level": "Stage 1 advisory"
+    },
+    "stage_2_transition_status": "BLOCKED (VALIDATED 2건 필요, 현재 1/2)",
+    "governor_prior_misstatement_correction": "이전 Governor 메시지 'STR_1684 Grade F 확정 시 2번째 Hard Fail 축적'은 Judge 3-taxonomy 기준 UNVALIDATED_HARD_FAIL로 재분류됨 (Stage 2 trigger count 제외). Governor 수용."
+  },
+
+  "audit_targets_and_verdicts": {
+    "STR_1631_SYN_05_2002": {
+      "role": "Core_Primary",
+      "family": "consensus_C19_core",
+      "weight_current_pg2": 0.80,
+      "weight_rev8_a_target": 0.18,
+      "gate_11_variant_check": {
+        "status": "EXEMPT",
+        "rationale": "Core_Primary single consensus signal (C19 consensus-based). variant 분기 의미 약함 → v3.5 Gate 11 exemption 조항 적용",
+        "admission_log_entry": "2026-04-18 Gate 11 exempt recorded per v3.5 Core_Primary single-signal exemption"
+      },
+      "gate_12_coupling_ratio_check": {
+        "status": "PENDING_COMPUTATION",
+        "needs_data": "Sharpe_monthly + ICIR_full_sample from STR_1631 output",
+        "expected_result": "PASS (기존 Grade A 전략, Harvey t=3.09 유일 승인 → coupling ratio 양호 예상)",
+        "governor_note": "기존 hurdle_result.json 확인 필요, 현 시점 available 없으면 Judge에 요청"
+      },
+      "admission_impact": "현 PG2 active 유지. rev8-A Phase_3 18% target 무영향. retroactive audit은 documentation 목적."
+    },
+
+    "STR_1656_MLRA_M05": {
+      "role": "Diversifier",
+      "family": "ML_complexity",
+      "weight_current_pg2": 0.20,
+      "weight_rev8_a_target": 0.14,
+      "gate_11_variant_check": {
+        "status": "ADVISORY_RECOMMENDED",
+        "rationale": "ML model는 hyperparameter variants (learning_rate / depth / L2) 비교가 해당될 수 있음. Diversifier 역할이므로 권장 수준.",
+        "governor_note": "ML 복잡도 내 variant comparison 개념 적용 가능하나 v3.5 Gate 11 minimum 3 variants 기준은 factor signal 분기 지향 — ML model hyperparameter는 별도 framework 필요. 현재 ADVISORY 처리."
+      },
+      "gate_12_coupling_ratio_check": {
+        "status": "PENDING_COMPUTATION",
+        "expected_result": "PASS 예상 (기존 Div_ML Grade A)",
+        "governor_note": "ML signal은 전통 factor IC 개념과 다름 — coupling ratio 해석 주의. portfolio SR 1.21 기준 OK 예상."
+      },
+      "admission_impact": "현 PG2 active 유지. rev8-A Phase_3 14% target 무영향."
+    },
+
+    "STR_1071": {
+      "role": "Family_1_primary (PG1 candidate)",
+      "family": "consensus_cluster_family_1",
+      "weight_current": 0.00,
+      "gate_11_variant_check": {
+        "status": "REQUIRES_VARIANT_HISTORY",
+        "rationale": "PG1 candidate 상태이므로 Forge S1 단계에서 variant_comparison.csv 생성 의무. 기존 결과는 variant 1건만 있을 가능성 높음.",
+        "next_action": "STR_1071 PG1 admission 진행 시 추가 variant Forge 재실행 요청 (Judge coordinate)"
+      },
+      "gate_12_coupling_ratio_check": {
+        "status": "PENDING_COMPUTATION",
+        "expected_result": "PASS_LIKELY (Judge Pass 2 MASTER에서 STR_1071 Family 1 primary 승인)",
+        "governor_note": "Harvey t-stat 확인 필요"
+      },
+      "admission_impact": "PG1 진행 시 v3.5 Gate 11 mandatory 적용. Forge에 variant 3+ 재실행 요청 분기 가능성."
+    },
+
+    "STR_1562": {
+      "role": "Family_2_independent (PG1 candidate)",
+      "family": "consensus_cluster_family_2",
+      "weight_current": 0.00,
+      "gate_11_variant_check": {
+        "status": "REQUIRES_VARIANT_HISTORY",
+        "rationale": "PG1 candidate 동일 — Forge S1 variant comparison 필요"
+      },
+      "gate_12_coupling_ratio_check": {
+        "status": "PENDING_COMPUTATION",
+        "expected_result": "PASS_LIKELY (Judge Pass 2 MASTER 승인 + STR_1071↔1562 TDC 0.511 Sequential)",
+        "governor_note": "STR_1071과 유사한 처리 필요"
+      },
+      "admission_impact": "PG1 진행 시 v3.5 Gate 11/12 mandatory + Sequential Admission 병행"
+    },
+
+    "STR_1433": {
+      "role": "Family_1_near_clone (archived or PG1 candidate)",
+      "family": "consensus_cluster_family_1_clone",
+      "weight_current": 0.00,
+      "gate_11_variant_check": {
+        "status": "REQUIRES_CLARIFICATION",
+        "rationale": "STR_1433은 Family 1 near-clone 5건(STR_1417/1433/1071/1435/1060 corr 0.857~0.997)에 포함. MEMORY.md상 status 재확인 필요.",
+        "governor_note": "STR_1071 primary이면 STR_1433은 redundant로 archive 대상 가능성. v3.5 Gate 11 exemption 검토"
+      },
+      "gate_12_coupling_ratio_check": {
+        "status": "PENDING_CLARIFICATION",
+        "note": "near-clone 관계가 redundancy 문제 우선이므로 Gate 12 단독 평가 의미 약함"
+      },
+      "admission_impact": "Family 1 primary(STR_1071) 승인 시 STR_1433 archive 권장. v3.5 소급 audit 부가 의미 제한적."
+    }
+  },
+
+  "governor_judge_coordination_requests": [
+    {
+      "request_id": "R1",
+      "target": "STR_1631 + STR_1656 Gate 12 coupling_ratio computation",
+      "data_source": "기존 hurdle_result.json 또는 strategy_catalog.md 기록",
+      "judge_responsibility": "coupling_ratio 필드 계산 및 Governor 통보",
+      "deadline": "24h 내"
+    },
+    {
+      "request_id": "R2",
+      "target": "STR_1071 / STR_1562 PG1 admission 진행 시 Forge variant 3+ 재실행 요청",
+      "coordinator": "Governor (admission gate 관리자) + Judge (v3.5 enforcer)",
+      "timing": "Phase_1 PG1 admission 착수 시점"
+    },
+    {
+      "request_id": "R3",
+      "target": "STR_1433 status 명확화",
+      "question": "Family 1 near-clone으로 archive 예정인가, 별도 PG1 candidate 유지인가?",
+      "coordinator": "Judge (Pass 2 MASTER 기록 확인)"
+    }
+  ],
+
+  "immediate_notifications_to_judge": [
+    {
+      "severity": "ADVISORY",
+      "issue": "STR_1656 ML_complexity family의 Gate 11 variant 개념 적용 기준 미정의",
+      "proposal": "v3.6 agenda에 'ML hyperparameter variant framework' 추가 검토 요청"
+    }
+  ],
+
+  "retroactive_audit_summary_preliminary": {
+    "5_targets_audited": 5,
+    "hard_block_findings": 0,
+    "conditional_block_findings": 0,
+    "advisory_findings": 1,
+    "exempt_cases": 1,
+    "pending_computation": 5,
+    "pending_clarification": 2,
+    "status": "IN_PROGRESS — Judge coordinate로 computation 완료 후 final verdict",
+    "governor_confidence": "대부분 PASS 또는 exempt 예상 (team-lead 예측과 일치). 24h 내 final deliverable 달성 가능."
+  },
+
+  "next_actions_retroactive_completion": [
+    "1. Judge에 R1~R3 coordinate 요청 SendMessage",
+    "2. hurdle_result.json 또는 analysis_report.md 기반 coupling_ratio 계산 (Governor 자체 시도)",
+    "3. STR_1433 status clarification 수신 시 verdict update",
+    "4. 24h 내 final retroactive_v3_5_audit_final.json 발행"
+  ]
+}

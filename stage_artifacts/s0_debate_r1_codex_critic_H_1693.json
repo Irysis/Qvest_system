@@ -1,0 +1,62 @@
+{
+  "role": "codex_critic",
+  "agent_id": "codex_critic_h1693",
+  "hypothesis_id": "H_1693",
+  "round": 1,
+  "stance": "REVISE",
+  "stance_original_codex": "Reject-for-now",
+  "score": 11,
+  "arguments": [
+    "Q07 cluster 재활용 + L-136/L-160/L-165 family 재현 우려: 0.7/0.3 + Top20 EW 구성은 mechanism change가 아닌 parameter rescue로 판단되며, sector-neutral + SUE만으로 signal-portfolio translation failure 회피 증명 부족.",
+    "PIT 정합성 + walk-forward pre-registration 부재 위험: Q07/C01_SUE announcement-date lag + restatement policy 명시 없이 0.7/0.3 weight + Top20 + sector cap이 ex-ante rule로 지정되지 않아 full-sample parameter contamination 가능성 높음.",
+    "Sector cap ≤25% + Top20 EW 구조적 충돌: earnings cluster 시 KOSDAQ 저유동성 substitution 유발 → 회전율 급증 + 실행 drag → MDD +20~35% + net alpha -300~600bps/yr 예상."
+  ],
+  "concern": "Q07 quality cohort 동일 집중 + sector-cap turnover 증폭 → defensive sleeve persistent alpha decay with MDD expansion. PIT + walk-forward pre-registration 선 해소 없이는 S1 진입 위험.",
+  "critical_concerns": [
+    "Q07 cluster 재활용 + L-160/L-165 signal-portfolio translation failure family 맥락에서 0.7/0.3 + Top20 EW 구성은 mechanism change가 아닌 parameter rescue로 보임",
+    "PIT 정합성 의심 — Q07/C01_SUE announcement-date lag + restatement policy 명시 부재",
+    "Sector cap ≤25% + Top20 EW 결합이 earnings cluster 시 KOSDAQ 저유동성 substitution 유발",
+    "0.7/0.3 weight 선택이 period-specific outcome 전제 (ex-ante rule 아님)",
+    "KR risk-on 반등 국면에서 earnings-stability + PEAD long-only defense sleeve persistent drawdown"
+  ],
+  "supporting_arguments": [],
+  "veto_flag": null,
+  "veto_flag_rationale": "Codex는 veto 권한 없음 (flag만 제시, 집계 제외). 하지만 stance REVISE는 명시적.",
+  "s1_gate_items": [
+    "Q07 + C01_SUE as-of snapshot 기반 strict PIT 검증 (announcement/filing lag, restatement policy 명시)",
+    "Expanding-window walk-forward 재실행 — 0.7/0.3 weight + Top20 + sector cap ex-ante pre-registration",
+    "Signal-Portfolio Translation audit: turnover, slippage, capacity, raw score→executable book tracking gap (L-160/L-165 방지)",
+    "KOSPI vs KOSDAQ split + ablation (Q07-only, SUE-only, equal-weight blend) robustness test",
+    "Sector cap ≤25% with Top20 EW earnings cluster period 실측 turnover 측정"
+  ],
+  "rubric_breakdown": {
+    "l_code_check": 2,
+    "failure_avoidance": 1,
+    "banned_factor": 3,
+    "lesson_check": 3,
+    "structural_risk": 2
+  },
+  "kill_scenarios": [
+    {
+      "scenario": "C01_SUE/Q07 inputs revised or non-PIT timestamps — backtest trades on information not observable at rebalance.",
+      "probability": "medium",
+      "expected_loss": "SR -0.7 to -1.0; MDD +15~25%",
+      "blind_spot": true
+    },
+    {
+      "scenario": "Sector cap ≤25% with Top20 EW forces frequent substitution into KOSDAQ during earnings clusters.",
+      "probability": "high",
+      "expected_loss": "MDD 20~35%; net alpha -300~600bps/yr",
+      "blind_spot": false
+    },
+    {
+      "scenario": "KR risk-on/value rebound led by cyclicals leaves earnings-stability + PEAD names lagging.",
+      "probability": "medium",
+      "expected_loss": "SR -0.4~0.8; drawdown -18~30%",
+      "blind_spot": false
+    }
+  ],
+  "weakest_assumption": "sector-neutralized Q07 + 30% SUE additive 가정이 틀릴 경우 → combined score가 동일 quality cohort 집중 → sector-cap + Top20 constraints forces noisy substitutions + 회전율 상승 → defensive sleeve persistent alpha decay with MDD expansion (+20~35%) + SR materially lower",
+  "design_pit_assessment": "1) factor choice appears partly ex-post (L-121 stress success + prior family failures 알고 선정). 2) real-time construction은 Q07/SUE strict announcement-date availability + lag + no revised-history leakage 전제 시만 유효. 3) 0.7/0.3 blend는 period-specific outcomes 전제 가능. 4) weights + Top20 + cap pre-registration + walk-forward only 없으면 full-sample parameter contamination 유력.",
+  "findings": "Q07 cluster + L-136/L-160/L-165 family 재현 우려. Parameter rescue 의심. PIT + sector-cap 실행 시 live edge 손실. REVISE 권고 — 4 conditions 선 해소 후 재진입 가능."
+}

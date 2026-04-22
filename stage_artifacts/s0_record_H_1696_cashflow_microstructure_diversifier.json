@@ -1,0 +1,101 @@
+{
+  "hypothesis_id": "H_1696",
+  "strategy_id_reserved": "STR_1696_residual_income_equity_issuance_diversifier",
+  "_supersedes_note": "v2 재설계 — Q35/Q09 conditional_value 음수 확인으로 V24+V21+Q34로 교체",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Cashflow Quality + Information Asymmetry Diversifier (Q09_CFOA + L04_Bid_Ask + Q35_CashBased_OpProf)",
+
+  "mechanism": "Q09_CFOA(현금흐름 수익성)와 Q35_CashBased_OpProf(현금기반 영업수익성)는 순이익 기반 팩터(Q03_ROA, Q02_ROE, C19 composite)와 구조적으로 다른 정보를 담음 — accrual을 제거한 현금 실현 수익성. Ball et al.(2016 JAR) 'Accruals, Cash Flows, and Operating Profitability in the Cross Section of Stock Returns': cash-based profitability는 accrual-based measure보다 alpha persistence 높음. L04_Bid_Ask_Proxy(bid-ask spread 역수 = 유동성/정보비대칭 지표)를 추가: Amihud&Mendelson(1986 JFE) 유동성 premium — bid-ask spread 높은 종목이 정보비대칭으로 인해 higher expected return. STR_1631(C19 earnings quality)과 다른 alpha source: (1) accrual-free cashflow vs accrual-based earnings, (2) market microstructure liquidity friction vs fundamental earnings momentum → TDC 낮을 것으로 예상.",
+
+  "economic_rationale": "Ball et al.(2016 JAR) 실증: cash-based operating profitability는 Fama&French RMW 팩터보다 alpha 강함 (FF5 alpha 유의). 현금 수익성은 accrual manipulation에 오염되지 않는 순수 경제적 성과 측정. Q09_CFOA conditional_value=0.0044(Gate 0.5 경계), Q35 cv=0.0083(Gate 0.5 PASS). L04_Bid_Ask_Proxy: Amihud&Mendelson(1986 JFE) 'Asset Pricing and the Bid-Ask Spread' — spread가 넓은 종목은 거래비용 보상을 위한 expected return premium 구조. L04 cv=0.0359 Gate 0.5 PASS, recent_3y_icir=-0.111(최근 약화). 핵심 설계 논리: STR_1631(C19 = earnings revision/SUE/F-score composite)은 fundamentals를 '지금 얼마나 좋은가'로 측정. 본 전략은 '현금으로 얼마나 실현했는가'(cashflow quality) + '시장 마찰이 alpha를 얼마나 숨겼는가'(bid-ask asymmetry)로 측정 → 완전히 다른 정보 축. TDC < 0.35 vs STR_1631 설계 목표. L-165 신호-포트폴리오 translation failure 회피: cashflow 팩터는 L-165 scope(defense family long-only)와 무관.",
+
+  "trail": "standard",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "portfolio_gap_vector v1.0.8 sleeve_needs=[diversifier]. STR_1679v3 embedded_q25 Hard Fail 대비 P1_diversifier 2순위. STR_1631(C19 earnings composite)과 alpha source 독립 — cashflow vs earnings revision + bid-ask microstructure vs fundamentals. Sequential Admission 조건: pairwise TDC vs STR_1631 < 0.50 (Gate 11), vs STR_1656 < 0.50. Crisis conditional: TDC < 0.30 권장. AX-007 scope 밖: diversifier role. AX-003 scope: value 단독 아님(cashflow quality + microstructure hybrid). AX-004 scope: quality_profitability standalone 아님 — microstructure 결합 + diversifier role.",
+
+  "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+
+  "why_now": "STR_1679v3 재실행(Task #11) — Hard Fail 가능성 대비. L04_Bid_Ask: cv=0.0359 Gate 0.5 상위 25위권, 미사용. Q35_CashBased_OpProf: cv=0.0083, recent_3y_icir=0.507(매우 안정). Q09 cv=0.0044(Gate 0.5 경계). Q35 icir=0.507이 전략의 anchor — 최근 3년 KR 시장에서 현금 수익성 팩터 강세. STR_1631과 alpha source 독립성 = diversification 즉각 기여. 비-momentum family 설계로 L-165 signal-portfolio translation failure scope 완전 회피.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "Q35_CashBased_OpProf",
+    "filter_1": "L04_Bid_Ask_Proxy",
+    "filter_2": "Q09_CFOA",
+    "weight_scheme": "composite: 0.50 * z_Q35 + 0.30 * z_L04 + 0.20 * z_Q09",
+    "rationale": "Q35가 primary — recent_3y_icir=0.507 최강. L04_Bid_Ask 보조(0.30) — 정보비대칭 프리미엄 강화. Q09 추가(0.20) — Q35와 다른 cashflow 측정(순현금흐름 vs 영업수익성)으로 cashflow quality 두 차원 포착.",
+    "q35_direction_note": "Q35_CashBased_OpProf: higher_better = TRUE. load_month_factors() Z_Score_Aligned 자동 처리.",
+    "l04_direction_note": "L04_Bid_Ask_Proxy: bid-ask spread 역수(유동성 높을수록 좋음) = higher_better. Amihud&Mendelson(1986) 원문은 spread 높은 종목이 higher return이나, KR ic_sign이 양수 방향 정렬 여부 load_month_factors() 확인 필수. 수동 반전 절대 금지(C13).",
+    "q09_direction_note": "Q09_CFOA: higher_better = TRUE. load_month_factors() 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "Q35_CashBased_OpProf": {"conditional_value": 0.0083, "pass": true},
+    "L04_Bid_Ask_Proxy": {"conditional_value": 0.0359, "pass": true},
+    "Q09_CFOA": {"conditional_value": 0.0044, "pass": true},
+    "coverage_ratio": "3/3 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A3.10 Ball, Gerakos, Linnainmaa & Nikolaev(2016 JAR) 'Accruals, Cash Flows, and Operating Profitability in the Cross Section of Stock Returns'. Cash-based operating profitability > accrual-based: FF5 alpha 유의, persistence 높음. Amihud & Mendelson(1986 JFE) 'Asset Pricing and the Bid-Ask Spread'. 유동성 premium: spread-based expected return compensation. KR 중소형주 적용 근거: 시장 마찰이 bid-ask premium 지속.",
+
+  "lesson_check": "L-133(CBPQ cash profitability KR DART 데이터 품질 실패): Ball et al.(2016) cash-based profitability KR 실패 사례. 그러나 L-133은 DART 현금흐름 '직접 계산' 방식 실패 — Q35/Q09는 Factor DB에서 이미 계산된 팩터(DART 파싱 오류 아님). C15 준수(load_month_factors() 경유)로 L-133 위험 회피. L-135(sector neutral accrual 희석): accrual 단독 한계 → cashflow로 대체 타당. L-130(IC≠SR): Q09 ic_all=0.026 확인 — S1 quintile 수익률 필수.",
+
+  "pit_compliance_checklist": {
+    "C1": "Q35/Q09: rolling expanding window 계산 필수. L04 bid-ask: 단기 이동평균 사용 시 expanding window",
+    "C4": "Q35/Q09: 재무제표 기반 → 연간 5월 리밸 lag. 분기 현금흐름 항목 시 45일 lag",
+    "C10": "유동성 필터 2억원 lag=1",
+    "C13_Q35": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_L04": "L04 방향 ic_sign 확인 필수. 수동 반전 금지(C13). load_month_factors() 자동 처리.",
+    "C13_Q09": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('Q35_CashBased_OpProf','L04_Bid_Ask_Proxy','Q09_CFOA')) 경유 필수",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "L-133 재발 위험: Q35/Q09 Factor DB 내 DART 현금흐름 계산 방식 확인 필요. load_month_factors() 경유 시 이미 검증된 값이나 Usable_Date 패턴 확인 권장",
+    "L04 ic_sign 방향 불확실: bid-ask proxy direction KR 시장에서 확인 필요(spread 낮을수록 좋은지 높을수록 좋은지)",
+    "Q35 recent_3y_icir=0.507 강하나 n_months=254 full 기간 ic_all=0.029 vs recent 차이 주목 — 최근 구조 변화",
+    "Q09 conditional_value=0.0044 Gate 0.5 경계 — composite에서 보조 역할 한정",
+    "STR_1631과 TDC 측정 S3에서 확인 필수 (pairwise TDC 설계 목표 < 0.35)"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.25~0.45 (Q35 anchor 0.507 반영)",
+    "sr_target": "0.7~1.1 (diversifier 역할)",
+    "mdd_target": "< 45%",
+    "role": "diversifier",
+    "tdc_target_str1631": "< 0.35 (cashflow quality + bid-ask microstructure vs earnings momentum — 독립적 설계)",
+    "tdc_target_str1656": "< 0.50"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "sequential_admission_precheck": {
+    "tdc_target_str1631": "< 0.35",
+    "tdc_target_str1656": "< 0.50",
+    "tdc_crisis_target": "< 0.30",
+    "rationale": "Cashflow quality alpha와 earnings momentum(STR_1631 C19)은 정보 수집 시점과 유형이 다름 — 현금 실현 vs 어닝 서프라이즈. TDC 낮을 것으로 예상이나 S3 실측 필수."
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Q-Lead 방향 재설계: H_1696 = Diversifier #2 (비-momentum family)",
+    "Q35 recent_3y_icir=0.507 가장 강한 최근 3년 anchor",
+    "L-133 재발 방지: load_month_factors() 경유로 DART 계산 오류 회피",
+    "L04 방향 확인 필수 사항으로 risk_flags 명시",
+    "STR_1679v3 Hard Fail 대비 즉시 투입 가능한 P1_diversifier 2순위"
+  ]
+}

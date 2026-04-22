@@ -15,15 +15,20 @@ TeamCreate(team_name="research-v7", description="V7 All-Weather Portfolio Resear
 
 2. 4인 teammate 병렬 스폰 (Agent tool, run_in_background=true):
 ```
-Agent(name="scout", team_name="research-v7", run_in_background=true,
+Agent(name="scout", team_name="research-v7", run_in_background=true, model="sonnet",
   prompt="Read 02_Infrastructure/prompts/scout_init.md. inbox TODO 확인 → S0 가설 또는 S3/S5 작업.")
-Agent(name="forge", team_name="research-v7", run_in_background=true,
+Agent(name="forge", team_name="research-v7", run_in_background=true, model="sonnet",
   prompt="Read 02_Infrastructure/prompts/forge_init.md. inbox TODO 대기.")
-Agent(name="judge", team_name="research-v7", run_in_background=true,
+Agent(name="judge", team_name="research-v7", run_in_background=true, model="opus",
   prompt="Read 02_Infrastructure/prompts/judge_init.md. inbox TODO 대기.")
-Agent(name="governor", team_name="research-v7", run_in_background=true,
+Agent(name="governor", team_name="research-v7", run_in_background=true, model="sonnet",
   prompt="Read 02_Infrastructure/prompts/governor_init.md. inbox TODO_PG0 대기.")
 ```
+
+**모델 라우팅 원칙 (토큰 절감)**:
+- **Opus 유지**: Judge (PIT/검증 최종 판결), Q-Lead (메인 세션)
+- **Sonnet 다운그레이드**: Scout, Forge, Governor, Academic/Quant (S0 Debate)
+- Risk Manager는 agent 정의 파일에서 model 지정 (R3 Closing 책임으로 Opus 권장)
 
 3. 팀 상태 확인: `Read ~/.claude/teams/research-v7/config.json`
 

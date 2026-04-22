@@ -1,0 +1,149 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_SCENARIO_Y_FINAL",
+  "timestamp": "2026-04-18T Session67_Day1 post_Architect_MEDIUM_diagnosis",
+  "session": 67,
+  "day": 1,
+  "status": "FINAL ACTIVATED — Q-Lead Option A (즉시 spawn) 권고 수락. rev8-A VALIDATED baseline 기준 Risk Mgr 3rd round 스폰.",
+  "supersedes": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION.json (이전 ACTIVE 버전)",
+
+  "spawn_directive": {
+    "method": "Agent tool — subagent_type: risk-manager",
+    "initial_message_reference": [
+      "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json (V1~V5 base)",
+      "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A.json (ACTIVE_VALIDATED scenario Y)",
+      "qepm/mailbox/governor/outbox/rev8_A_scenario_XYZ_response_plan.json (UNVALIDATED_HARD_FAIL category)"
+    ],
+    "context_brief": "rev8-A ACTIVE_VALIDATED scenario Y MEDIUM severity 확정. Architect Factor DB 진단 완료 (RC1/RC2/RC3). Option B 5줄 runtime rescale Forge 적용 중. STR_1684_v2/H_1689/H_1690 S1 재실행 병행. 현재 Hard Fail VALIDATED 1 + UNVALIDATED 1 → Stage 2 BLOCKED, Gate 12 advisory_warning.",
+    "time_budget": "1~1.5일 (Session 67 Day 2~3)"
+  },
+
+  "verification_scope_5_items_scenario_Y_finalized": [
+    {
+      "id": "V1",
+      "title": "Defense cluster 33% tail_risk",
+      "change_from_pre_diagnosis": "변동 없음 — Architect 진단이 composition 자체는 유효하다고 확인",
+      "composition": "H_1689 23% + H_1690 10% = 33%",
+      "concerns": [
+        "현 MRS 63.1 CRISIS 상태 timing risk",
+        "H_1689 23% single-factor concentration",
+        "H_1690 Phase_2 조기 10% 승격 조건 (S1 재실행 PASS 시)"
+      ],
+      "risk_mgr_deliverable": "CVaR 5% / CDaR 10% estimate + Defense 33% 권고 여부"
+    },
+    {
+      "id": "V2",
+      "title": "H_1689 23% + S1 재실행 필요성 (Fix 1 후)",
+      "s1_re_execution_context": "Architect Fix 1 (Option B runtime rescale) 적용 후 재실행",
+      "expected_change": "Quality 4-axis Z_Score 분산 정상화 → ICIR 실측치 개선 예상",
+      "questions": [
+        "AX-005 exclusion 재확인 (multi-sleeve Defense scope 밖)",
+        "H_1689 bad/normal IC ratio >= 1.5 확인 (fix 후 실측)",
+        "Gate 11 mandatory: variant 3+ 확보 + Gate 12 coupling >= 0.3"
+      ],
+      "risk_mgr_deliverable": "H_1689 재실행 결과 대기 병행 + 결과 반영 권고"
+    },
+    {
+      "id": "V3",
+      "title": "H_1690 Phase_2 10% + S1 재실행 (Fix 1 후)",
+      "s1_re_execution_context": "Factor DB 4 factors (M08/C19/Q07/R16) 전수 fix 영향",
+      "expected_change": "M08 sd 0.054 → 정상화 시 signal 품질 개선 유력",
+      "questions": [
+        "10 conditions Forge S1 check 6건 PASS 가능성 (fix 후)",
+        "4 variants (V1 primary + V2~V4 baselines) Gate 11 comparison",
+        "Gate 12 coupling_ratio >= 0.3 Defense mandatory"
+      ],
+      "risk_mgr_deliverable": "H_1690 4-variant 재실행 + promotion 판정 권고"
+    },
+    {
+      "id": "V4",
+      "title": "Q25 exposure 17.95% (변동 없음)",
+      "current_state": {
+        "str_1679v3_embedded_10pct": 0.090,
+        "h_1689_23pct": 0.0575,
+        "h_1690_10pct": 0.025,
+        "str_1656_14pct": 0.007,
+        "total_weighted_q25": 0.1795,
+        "cap_35_headroom": 20.1
+      },
+      "risk_mgr_deliverable": "17.95% exposure validation + soft threshold 30% 여유도 평가 (변동 없음 재확인)"
+    },
+    {
+      "id": "V5",
+      "title": "projected SR 1.72~1.78 + Architect fix 후 실측치 수렴",
+      "scenario_Y_projections": {
+        "pre_fix_estimate": "1.72 conservative (rev8-A original)",
+        "post_fix_expected": "1.72~1.78 (H_1689/H_1690 재실행 결과 반영 후 upside)",
+        "boost_6_aspirational": "2.00 (신규 Core_Secondary + Scout D1 + Phase_2 H_1685v2 + Blend + H_1678)"
+      },
+      "h_1688_disposition": "PENDING_INFRA_FIX (STR_1684_v2 재실행 결과 대기)",
+      "risk_mgr_deliverable": "boost correlation 가정 + Core_Secondary gap 메꾸는 candidate 추천 (infra fix 후 H_1688 복원 가능성 포함)"
+    }
+  ],
+
+  "scenario_Y_specific_additions": {
+    "s1_re_execution_parallel_during_audit": {
+      "description": "Risk Mgr 3rd round audit 1~1.5일 + Forge S1 재실행 병행 가능",
+      "coordination": "재실행 결과 수신 시 Risk Mgr 중간 update (필수 아님, 권장)",
+      "final_verdict_timing": "재실행 완료 후 Risk Mgr 최종 VERDICT"
+    },
+    "unvalidated_hard_fail_accounting": {
+      "current": "VALIDATED 1 (STR_1683) + UNVALIDATED 1 (STR_1684)",
+      "post_re_run_projection": "STR_1684_v2 재실행 결과 → VALIDATED or PASS 재분류 → Gate 12 enforcement 재조정",
+      "risk_mgr_awareness": "prompt V5에 STR_1684_v2 결과 의존성 명시"
+    },
+    "architect_fix_validation_required": {
+      "description": "Option B 5줄 runtime rescale이 실제로 ICIR/Sharpe 분산 개선을 가져오는지 검증",
+      "validation_metric": "post-fix Q07/C19/M08/R16 sd 재측정 → target 1.000 근접",
+      "regression_test": "기존 Factor DB 사용 전략 (STR_1631/STR_1656) 성능 동일성 확인"
+    }
+  },
+
+  "h_1682_direction_audit_addendum_resolved": {
+    "status": "AUDIT COMPLETE — direction bug 없음, structural failure 확정",
+    "resolution": "STR_1683 L-160 VALIDATED 유지. Architect scope에서 제외"
+  },
+
+  "out_of_scope_explicit": [
+    "STR_1679v2 DROP (기존 확정)",
+    "STR_1683 variants (VALIDATED Hard Fail 1건)",
+    "STR_1684 H_1688 (UNVALIDATED, re-test pending)",
+    "STR_1631 PG2 active (Harvey t=3.09 승인 + Architect 재현성 확인)",
+    "v3.5 Admission Rule (ACTIVE_NORMATIVE)",
+    "Factor DB builder 구조 (Architect 결정)"
+  ],
+
+  "deliverable_format": {
+    "output_path": "qepm/mailbox/risk_manager/outbox/RISK_MGR_3RD_ROUND_VERDICT.json",
+    "schema": {
+      "verdict_per_item_V1_V5": "PASS / CONDITIONAL / FAIL + rationale 3줄",
+      "rev8_A_recommendation": "APPROVE / APPROVE_WITH_REVISIONS / REJECT",
+      "tail_risk_summary": "CVaR 5% / CDaR 10% estimate + Defense 33% 적절성",
+      "s1_re_execution_dependency_notes": "H_1689/H_1690 재실행 결과 대기 flags",
+      "core_secondary_gap_recommendations": "H_1688 infra fix 후 복원 vs 신규 탐색 권고",
+      "boost_roadmap_robustness": "6 boosts correlation 가정 타당성",
+      "scenario_Y_specific_concerns": "Architect fix 검증 + UNVALIDATED → VALIDATED 전환 path"
+    },
+    "deadline": "Session 67 Day 2~3 (1~1.5일)"
+  },
+
+  "post_verdict_governor_actions": [
+    "1. Risk Mgr VERDICT 수신 → rev8-A composition 조정 (필요 시)",
+    "2. Phase_1 PG1 Admission 초안 착수 (Day 5~6)",
+    "3. STR_1684_v2/H_1689/H_1690 재실행 결과 수신 → UNVALIDATED → VALIDATED 재분류 + Gate 12 enforcement 업데이트",
+    "4. Judge L-161 infra-bug vs structural 최종 판정 반영",
+    "5. Scout 신규 Core_Secondary 가설 탐색 진행 감독"
+  ],
+
+  "telegram_report_post_spawn_template": {
+    "header": "⚖️ [Governor] Risk Mgr 3rd round SPAWN — rev8-A Scenario Y VALIDATED",
+    "body_lines": [
+      "Architect 진단: MEDIUM severity, Option B 적용 중",
+      "rev8-A composition 유지 (Defense 33% / Q25 17.95%)",
+      "STR_1684_v2/H_1689/H_1690 S1 재실행 병행 예정",
+      "Risk Mgr V1~V5 scenario Y 반영 prompt",
+      "projected SR 1.72~1.78 (boost 6 시 2.00)"
+    ]
+  }
+}

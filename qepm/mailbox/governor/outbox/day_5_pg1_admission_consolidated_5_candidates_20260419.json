@@ -1,0 +1,224 @@
+{
+  "_v54_freeze_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_override_timestamp": "2026-04-19T12:45+09:00",
+  "_v54_override_rationale": "team-lead Scenario_D Option 2 승인 scope 내 Day 5 PG1 공동 심사 preparation single-source document.",
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Scout + Forge",
+  "type": "DAY_5_PG1_ADMISSION_CONSOLIDATED_5_CANDIDATES",
+  "timestamp": "2026-04-19T17:00+09:00",
+  "session": 68,
+  "day": 1,
+  "purpose": "Day 5 PG1 공동 심사 진입 시 single-source reference document. 5 candidates별 admission gate 상태 + Sequential Admission sequence + family scope 판정 기준 통합 참조.",
+  "status": "PREPARATION_REFERENCE — Forge S1 + Judge S6 + Scout S3 실측 결과 수신 시 섹션별 업데이트 예정",
+
+  "context": {
+    "team_lead_directive_day_5": "5 candidates 공동 심사 (H_1692 v2 + H_1689 v3 + STR_1679v3 + H_1685 v2 + STR_1687/H_1693)",
+    "scenario_d_option_2_approved": "rev8-A-revised-v3 Scenario_D Option 2 APPROVED (team-lead 12:45)",
+    "phase_1_live_target": "Session 68 Day 8 전환",
+    "admission_sequence_scenario_b_variant_1_primary": "Step 1 H_1689 v3 variant_1 → Step 2 STR_1687 → Step 3 STR_1679v3"
+  },
+
+  "candidate_1_H_1689_v3_variant_1": {
+    "strategy_id_assigned_upon_admission": "STR_1689_v3_variant_1 (pending Forge S1)",
+    "hypothesis_id": "H_1689 v3",
+    "role": "defense",
+    "weight_target": 0.23,
+    "admission_priority": "Step 1 (primary, saturation-safe, Q07 미공유)",
+    "s0_verdict": "BORDERLINE_REVISE (R1 62) → v3 Q24-exclude 재설계로 보강",
+    "forge_s1_status": "TODO_S1 in queue (대기 중, STR_1686 수정 후 순차)",
+    "variant_1_formula": "0.33·z_Q01 + 0.33·z_Q04 + 0.34·(-z_Q25)",
+    "factors": ["Q01_GPA", "Q04_Piotroski_F", "Q25_Ohlson_O_negative"],
+    "scenario_b_confirmed": "Governor + Scout joint signoff (artifact: h_1689_v3_variant_1_primary_scenario_B_CONFIRMED_20260419.json)",
+    "l_163_poison_pill_check": "PASS (composite +0.307 positive)",
+    "ax_001_v2_compliance_check": {
+      "multi_sleeve_only": "PASS (설계상 single-sleeve 편입 안 됨, Scenario_D Option 2 내)",
+      "crisis_alpha": "Expected positive (Q25 Ohlson distress signed)",
+      "bad_normal_ic_ratio": "Expected > 0.6",
+      "core_mdd_reduction": "STR_1631 -21.27% × 0.90 = -19.14% target"
+    },
+    "admission_gates_pending": ["Forge S1 Grade A", "Judge S6 Gate 0~14", "Sequential TDC vs STR_1679v3/STR_1631/STR_1656 < 0.30"],
+    "fallback_variant_2_activation": "variant_1 Grade F or CONDITIONAL 시 activation (AX-005 Judge formal sign-off 필요)",
+    "task_reference": "Governor Task #28 completed, Task #27 TDC 실측 trigger"
+  },
+
+  "candidate_2_STR_1687_H_1693": {
+    "strategy_id": "STR_1687",
+    "hypothesis_id": "H_1693",
+    "role": "defense",
+    "weight_target": 0.10,
+    "admission_priority": "Step 2 (Q07 cluster sequential)",
+    "s0_verdict": "APPROVE_CONDITIONAL 77/100 (MAJORITY APPROVE_CONDITIONAL 4/5, veto 0)",
+    "s0_verdict_artifact": "stage_artifacts/S0_VERDICT_H_1693.json",
+    "forge_s1_status": "실행 중 (04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/ 아직 비어있음)",
+    "formula": "0.7·z_sector_Q07 + 0.3·z_C01_SUE",
+    "factors": ["Q07_Earnings_Stability (sector-neutral)", "C01_SUE"],
+    "ax_004_scope_exception": "Scout s0_record v2 5-point EXCEPTION 근거 반영 (Judge custodian 수용)",
+    "family_scope_preliminary_assessment": {
+      "l_165_family_inclusion_probability": "LOW (scope 밖 가능성 높음)",
+      "design_differences_3": [
+        "factor 수: L-165 4-axis vs STR_1687 2-axis",
+        "sector handling: L-165 단순 long-only vs STR_1687 sector-neutralized",
+        "sleeve context: L-165 single-sleeve vs STR_1687 multi-sleeve context"
+      ],
+      "grade_a_or_b_path": "AX-005 EXCLUSION 검증 성공 case → L-166 non-failure L-code 발행",
+      "hard_fail_path": "Judge custodian scope 판정 (if_scope_outside → 별도 family 신설 검토)"
+    },
+    "admission_4_and_conditions_checklist": {
+      "condition_1_grade_a": "PENDING (SR≥0.75, CAGR>5%, MDD<35%)",
+      "condition_2_gate_13_signal_portfolio_translation": "PENDING (net_IC_transmission_ratio > 0.6 + portfolio stress 2+ + Z_Sector empirical)",
+      "condition_3_pair_0_crisis_tdc_below_0_30": "PENDING (예측 0.20~0.35 PASS_LIKELY)",
+      "condition_4_ax_001_v2_audit_defense_v2": "PENDING (multi_sleeve_only + crisis_alpha + bad/normal IC > 0.6 + core_mdd_reduction ≥ 0.05)"
+    },
+    "l_167_watch_reference": "Forge verification process 신뢰도 고려 (L-167 watch pattern 재현 시 condition_1 판정 재조정)",
+    "fallback_scenarios": {
+      "condition_1_fail": "REJECT + Reserve 이동 + Scout 재설계",
+      "condition_2_fail": "REJECT + AX_CAND 3rd member 검토",
+      "condition_3_fail_0_30_to_0_50": "weight 축소 (10% → 5~8%)",
+      "condition_3_fail_over_0_50": "admission_BLOCKED + Reserve 이동",
+      "condition_4_fail": "REJECT 또는 weight 축소"
+    },
+    "task_reference": "Governor Task #29 in_progress, STR_1687 PG1 admission checklist 발행 완료"
+  },
+
+  "candidate_3_STR_1679v3": {
+    "strategy_id": "STR_1679v3",
+    "role": "diversifier_embedded_q25",
+    "weight_target": 0.08,
+    "admission_priority": "Step 3 (tertiary, Q07 cluster sequential completion)",
+    "current_status": "PG2 ACTIVE (Scenario C 유지 중)",
+    "judge_stage_2_certification": "PASS (Option B proxy coupling_ratio 3.391, 11x margin, Judge 2026-04-18 19:25 joint signoff)",
+    "dual_track_resolution": "RESOLVED_PASS (Option B mathematical projection, team-lead 승인)",
+    "q07_usage": "Q25 embed + Q07 overlay (Q07 cluster membership)",
+    "family_scope": "Diversifier role (defense cluster 포함 안 됨, 별도 Q07 cluster 참여)",
+    "admission_gates_pending": [
+      "Sequential TDC vs STR_1631 (0.25~0.35 expected)",
+      "Sequential TDC vs STR_1687 (0.25~0.40 empirical 확인 필요, CAUTION)"
+    ],
+    "role_honesty_post_audit": "diversifier_embedded_Q25 (L-153 overlay dependency 구조적 해결 — Q25 embed로 hrp_base 단독 PASS 가능)"
+  },
+
+  "candidate_4_H_1692_v2_core_secondary": {
+    "strategy_id_assigned_upon_admission": "STR_XXXX (pending Forge S1)",
+    "hypothesis_id": "H_1692 v2",
+    "role": "core_secondary",
+    "weight_target": 0.10,
+    "admission_priority": "parallel Core track (Defense cluster 외)",
+    "s0_verdict": "BORDERLINE_REVISE (R1 61) → v2 strengthened 재설계",
+    "forge_s1_status": "TODO_S1 in queue (대기 중)",
+    "formula": "M07 sd 1.0 + M18 sd 1.0 balanced OLS (CLEAN RESIDUALIZATION)",
+    "ax_cand_kr_momentum_inverse_exception": "scope EXCEPTION 공식 인정 (AX_CAND_kr_momentum_inverse INFRASTRUCTURE 재분류로 scope 밖)",
+    "family_scope_preliminary_assessment": {
+      "l_165_family_inclusion_possibility": "MEDIUM (defense_or_core_secondary scope overlap 지점 있음)",
+      "judge_preliminary_note": "H_1692 v2가 long-only 20종목 single-sleeve이면서 ICIR>=0.7 + MDD>=77% signature 재현 시 family 편입 고려 가능",
+      "mechanism_distinction": "residual_momentum core_secondary mechanism vs defense composite mechanism 구분 신중"
+    },
+    "admission_gates_pending": ["Forge S1 Grade A", "Judge S6 Gate 0~14", "Gate 12 IC-Return coupling_ratio ≥ 0.30"]
+  },
+
+  "candidate_5_STR_1686_H_1685_v2": {
+    "strategy_id": "STR_1686",
+    "hypothesis_id": "H_1685 v2",
+    "role": "diversifier",
+    "weight_target": "phase_2+ gradual (0.03 → 0.05 → 0.10 swap)",
+    "admission_priority": "NOT_ADMITTED_PHASE_1 (Phase_2+ gradual)",
+    "current_status": "PIT 위반 3건 수정 대기 (Forge + Codex rescue 30~60분)",
+    "pit_violations_3": ["C11 투자자 T+1 lag FAIL", "C14 Usable_Date IC FAIL", "C15 load_month_factors 경유 FAIL (L-164 mandate 위반)"],
+    "l_167_watch_linkage": "Forge verification process insufficient pattern 잠정 candidate",
+    "family_scope_preliminary_assessment": {
+      "l_165_family_inclusion": "불가 (Diversifier role, defense_or_core_secondary scope 밖)",
+      "judge_preliminary_note": "STR_1686 Hard Fail 시 'Diversifier IC-Portfolio Translation Failure' family 신설 후보 가능성 (INV13 Foreign Resid Individual factor)",
+      "alternative_path": "Diversifier family 2~3건 누적 시 별도 AX_CAND 검토"
+    },
+    "admission_gates_pending": ["PIT 수정 완료", "Judge S6 Gate 0 C11/C14/C15 집중 검증", "후속 Gate 1~14"]
+  },
+
+  "final_composition_if_all_admitted": {
+    "Scenario_D_Option_2_Target": {
+      "STR_1631": 0.18,
+      "H_1692_v2": 0.10,
+      "STR_1656": 0.14,
+      "STR_1679v3": 0.08,
+      "H_1689_v3_variant_1": 0.23,
+      "STR_1687": 0.10,
+      "Reserve": 0.09,
+      "misc": 0.08
+    },
+    "total": 1.00,
+    "core_cluster": "28% (STR_1631 18% + H_1692_v2 10%)",
+    "diversifier_cluster": "22% (STR_1656 14% + STR_1679v3 8%)",
+    "defense_cluster": "33% (H_1689 v3 variant_1 23% + STR_1687 10%)",
+    "defense_cluster_cap": "35% margin 2pp PASS",
+    "q07_cluster_factor_shared": "18% (STR_1679v3 8% + STR_1687 10%, H_1689 v3 variant_1 no Q07)",
+    "family_saturation": "전 family < 35% cap PASS"
+  },
+
+  "sequential_admission_tdc_matrix": {
+    "_source": "Governor pre-admission TDC prediction + Scout S3 orthogonality 실측 (변경 가능)",
+    "pair_1_h_1689_v3_variant_1_vs_str_1679v3": "0.15~0.25 PASS_LIKELY (Q07 미공유)",
+    "pair_2_h_1689_v3_variant_1_vs_str_1687": "0.20~0.35 PASS_LIKELY (공유 factor 없음)",
+    "pair_3_str_1687_vs_str_1679v3": "0.25~0.40 CAUTION (Q07 embed vs sector-neutral, L-158 Early Warning 0.30~0.40 구간)",
+    "pair_4_str_1687_vs_str_1631_syn_05": "< 0.30 expected",
+    "pair_5_str_1687_vs_str_1656_mlra": "< 0.30 expected",
+    "scout_s3_measurement_status": "PENDING (Forge S1 daily_returns 산출 후 실행)",
+    "scout_s3_script": "04_Research/s3_h1693_orthogonality_measure.R"
+  },
+
+  "day_5_pg1_admission_decision_tree": {
+    "step_1_h_1689_v3_variant_1_admission": {
+      "trigger": "Forge S1 Grade A + Judge S6 Gate 0~14 PASS + Sequential TDC < 0.30 PASS",
+      "action": "H_1689 v3 variant_1 23% Defense slot 편입 확정",
+      "fallback": "Grade B/F → variant_2 activation (AX-005 Judge formal sign-off) 또는 Scenario_D Option 3 simplified"
+    },
+    "step_2_str_1687_admission": {
+      "trigger": "STR_1687 4 AND 조건 전수 PASS (Grade A + Gate 13 + pair_0 TDC < 0.30 + AX-001 v2 4-gate)",
+      "action": "STR_1687 10% Defense slot 편입 확정 (H_1690 대체)",
+      "fallback": "1+ condition FAIL → weight 축소 (10% → 5~8%) 또는 Reserve 이동 또는 Scout 재설계 + L-166 or family 신설 판정"
+    },
+    "step_3_str_1679v3_admission": {
+      "trigger": "Sequential TDC pair_3 vs STR_1687 < 0.30 PASS",
+      "action": "STR_1679v3 8% Diversifier slot 유지 (기존 PG2 active)",
+      "fallback": "TDC CAUTION 0.30~0.50 시 Option 3 시간 분산 admission (Day 5 STR_1679v3 / Day 7 STR_1687)"
+    },
+    "step_4_h_1692_v2_admission": {
+      "trigger": "Forge S1 Grade A + Judge S6 Gate 0~14 PASS + Gate 12 coupling_ratio ≥ 0.30",
+      "action": "H_1692 v2 10% Core_Secondary slot 편입",
+      "fallback": "Grade F + signature 일치 시 L-165 family 3rd member 편입 검토 (Judge custodian)"
+    },
+    "step_5_str_1686_admission": {
+      "trigger": "PIT 위반 수정 완료 + Judge S6 Gate 0~14 PASS (Gate 0 C11/C14/C15 집중)",
+      "action": "Phase_2+ gradual (0.03 → 0.05 → 0.10 swap) — Phase_1 미편입",
+      "fallback": "PIT 수정 실패 → Phase_1 제외 + L-167 watch pattern 재현 가능성 검토"
+    }
+  },
+
+  "governor_day_5_checklist_summary": {
+    "required_inputs": [
+      "Forge S1 결과 4건 (STR_1686 + H_1689 v3 variant_1 + H_1692 v2 + STR_1687)",
+      "Judge S6 verdicts 4건 (Gate 0~14 + AX-001 v2 audit_defense_v2 + Role Honesty Audit)",
+      "Scout S3 pairwise TDC 실측 5 pairs (crisis regime)",
+      "Risk Mgr 4th round (optional, TDC 결과 기반)"
+    ],
+    "governor_actions_day_5": [
+      "5 candidates admission sequential 판정",
+      "Sequential TDC < 0.30 실측 확인 (pair별)",
+      "Defense cluster 33% cap + Q07 cluster 18% 관리",
+      "H_1693 family scope 판정 (Judge custodian 협의)",
+      "L-167 watch pattern 재현 여부 (condition_1 Grade A 판정 시 참조)",
+      "3rd member 축적 trigger 확인 (AX_CAND promote.R 재실행 조건 충족 시)"
+    ]
+  },
+
+  "v54_freeze_compliance": {
+    "new_rule_or_amendment": false,
+    "consolidation_reference_document_only": true,
+    "freeze_override_basis": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true (Scenario_D Option 2 scope 내)",
+    "verdict": "PASS"
+  },
+
+  "next_actions_governor": {
+    "current": "idle — Forge S1 DONE 순차 + Judge S6 cascade + Scout S3 실측 수신 대기",
+    "day_5_approach": "5 candidates 공동 심사 준비 완료 (본 consolidated reference 활용)",
+    "day_6_7": "Blender pg2_allocation_5sleeve.json 발행 (PG1 admission 결과 기반)",
+    "day_8": "Phase_1 LIVE 전환"
+  }
+}

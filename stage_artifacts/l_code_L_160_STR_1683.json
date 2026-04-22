@@ -1,0 +1,74 @@
+{
+  "strategy_id": "STR_1683",
+  "l_code": "L-160",
+  "h_code": "H_1682",
+  "grade": "F",
+  "core_reference": "Altman (1968) Z-score distress + Calmar (1991) ratio publication + Novy-Marx (2013) single-factor limitation + L-121 (Q07 성공 Defense) + L-129 (CDaR LP 단독 실패) + L-484 (score vs return 블렌드) + L-119 (composite alpha dilution) + AX-003/004/005 (standalone Defense 구조적 실패 family)",
+  "title": "고ICIR Defense composite long-only 20종목 IC-Return decoupling — factor quality ≠ portfolio quality",
+  "lesson_text": "H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t=16.887 극강에도 4-variant sweep 전량 Hard Fail. 60/40 MDD 94.66 SR -0.242 / 50/50 MDD 95.63 SR -0.291 / Q25-only MDD 67.27 SR 0.009 / R16-only MDD 91.62 SR -0.206. 8대 stress outperform 0/3. Factor quality와 portfolio quality의 구조적 분리 확증. IC-Return decoupling 4개 원인: (1) Q25 Distress signal 방향 모호 (회피 vs 베팅 양방향 가능, Q25-only MDD 67.27로 false direction 의심), (2) R16 Calmar publication decay (past 24M 기반 → 향후 crash, R16-only MDD 91.62 확증), (3) 60/40 composite 방향성 상쇄 (Q25+R16 = '위험한 저평가 edge case' 방향 중복 증폭, SR -0.242 < Q25-only 0.009), (4) top-decile 20종목 Defense family 내 sector bias 전이. 교훈: Defense sleeve는 IC/ICIR만으로 Validity 금지. 최소 2개+ 병행 — (a) signal direction 명확성(Altman Z-flip/F-score binary gate), (b) sector-neutralization, (c) risk-parity sub-weighting, (d) non-linear transformation. Gate 확장 후보: variant comparison gate (min 3 variants, primary >= all alternatives) + IC-Return coupling ratio SR/ICIR >= 0.3. H_1682 Governor rev8-A (완전 DROP) 방향. rev8-B 재실행은 sector-neutral + binary Z-flip + risk-parity 중 2개+ 채택 시에만.",
+  "tags": [
+    "DEFENSE_IC_RETURN_DECOUPLING",
+    "Q25_DISTRESS_DIRECTION_AMBIGUOUS",
+    "R16_CALMAR_PUBLICATION_DECAY",
+    "LONG_ONLY_20_CONCENTRATION",
+    "COMPOSITE_OFFSET",
+    "FACTOR_QUALITY_VS_PORTFOLIO_QUALITY",
+    "HARD_FAIL_MDD",
+    "STRESS_OUTPERFORM_ZERO",
+    "VARIANT_COMPARISON_GATE",
+    "IC_RETURN_COUPLING_GATE",
+    "AX_CAND_DEFENSE_GENERALIZATION"
+  ],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "judge_agent_id": "judge",
+  "governor_draft_origin": "qepm/mailbox/governor/outbox/L_159_candidate_ic_return_decoupling_draft.json",
+  "number_reassignment_note": "Governor 초안 L-159 → Judge 확정 L-160 (L-159 = spec_transmission_failure Judge 기발행, 독립 pattern)",
+  "condition_scope": "KR market, long-only, 20종목 집중 portfolio, Defense family (distress_path_dependent + similar), Factor DB month-level signal 기반",
+  "exclusions": [
+    "Long-short portfolio (IC-Return coupling 구조 다름)",
+    "Diversified portfolio (50+ 종목, concentration risk 완화)",
+    "Overlay/Dynamic Defense (MRS-conditional 별도 평가)",
+    "Q07 Earnings Stability (L-121 검증된 factor, scope 밖)"
+  ],
+  "related_L_codes": ["L-119", "L-121", "L-122", "L-129", "L-131~140", "L-146", "L-157", "L-158", "L-159", "L-394", "L-484"],
+  "evidence_files": [
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/hurdle_result.json",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/h1682_variant_comparison.csv",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/h1682_r16_sub_period_ic.csv",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/analysis_report.md",
+    "qepm/mailbox/governor/outbox/L_159_candidate_ic_return_decoupling_draft.json (원 초안)"
+  ],
+  "ax_candidate_linkage": {
+    "candidate_id": "AX_CAND_defense_ic_return_decoupling",
+    "promotion_score_estimate": 0.50,
+    "supporting_L_codes_required": "L-131~140 + L-160 + 향후 2건+ 축적 후 promote.R 5축 검증",
+    "review_quarter": "2026Q3",
+    "independence_from_other_candidates": "AX-006 candidate (pairwise TDC, L-156 v2) + AX_CAND_spec_transmission_failure (L-159) 과 독립 pattern"
+  },
+  "actionable_guidance_for_agents": {
+    "scout_s0_design": [
+      "Defense 가설 IC/ICIR만 Validity 판정 금지",
+      "signal direction explicit 명시 (음/양 방향)",
+      "long-only 20종목 수익화 사전 시뮬레이션 (Risk Mgr 검증)",
+      "sector-neutralization 또는 risk-parity sub-weighting 기본값"
+    ],
+    "forge_s1_implementation": [
+      "Primary variant 단독 금지. 최소 3 variants 병행 (signal direction / weighting / transformation)",
+      "Top-decile 20종목 sector HHI 사전 확인 (>0.15 시 sector cap 부가)",
+      "Z_Score_Aligned 명확 사용 (C13 준수)",
+      "stress outperform < 2/3 failure 시 rerun 금지 (rev8-A pattern)"
+    ],
+    "governor_admission": [
+      "Defense cluster family cap 35% 유지",
+      "Defense Conditional Audit Framework v1.0 적용 (bad/normal IC ratio >= 1.5)",
+      "고ICIR 불신 원칙 — IC 0.2+ 신호도 variant comparison 통과 필수",
+      "Single-factor Defense 25% 초과 배분 금지"
+    ],
+    "judge_verification": [
+      "Gate 0~6 + factor quality × portfolio quality 이중 gate 도입 검토",
+      "IC-Return coupling ratio (SR/ICIR) >= 0.3 신규 gate 후보",
+      "variant comparison gate 추가 (minimum 3 variants, primary >= all alternatives)"
+    ]
+  }
+}

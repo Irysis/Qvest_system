@@ -1,0 +1,29 @@
+{
+  "hypothesis_id": "H_1694",
+  "agent_id": "quant_h1694_r1",
+  "role": "quant",
+  "round": 2,
+  "submitted_at": "2026-04-19",
+  "r1_score": 15,
+  "r2_score": 15,
+  "stance": "APPROVE_CONDITIONAL",
+  "veto": null,
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex R1에서 'S1 liquidity-filtered quintile evidence 없음'을 지적했으나, S1 프로토콜은 EW 20종목 + 15bps + 유동성 2억 필터로 정해진 표준 구현이다. quintile IC 분석은 S2 profiling 단계 과제다. S1에서 quintile 증거를 요구하는 것은 stage gate 순서 위반이다. Codex의 이 지적은 S1 vs S2 역할 혼동에 기인한다."
+    }
+  ],
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "Harvey t-stat full-period 미달 가능성(ic_all 기반 composite t~1.2)과 DSR S1 mandatory 계산 필요성에 완전 동의. Quant가 R1에서 제시한 t~1.2 추정치가 이 가설의 가장 취약한 정량 지점이다. S1 rolling ICIR + DSR 계산으로 Harvey 허들 충족 경로가 있는지 확인 후 진행."
+    }
+  ],
+
+  "strongest_opposing_argument": "Risk Manager R1이 제기한 DCC crisis spike 위험. Quant 관점에서도 rolling correlation 계산 시 M25×Q04 composite와 STR_1631 사이의 위기 구간 상관이 0.7+로 급등하면 diversifier IC 측정값 자체가 normal 구간 편향 추정치가 된다. Regime-conditional IC 분석이 S1/S2에서 필요하다.",
+
+  "findings": "R1 입장 유지(APPROVE_CONDITIONAL, 15점). Codex의 quintile S1 요구는 stage 혼동으로 반박. Harvey t-stat + DSR + Usable_Date C14 필터 S1 선행 체크가 핵심 조건 유지. composite 가중치 0.6/0.4 실측 비교 S2 과제."
+}

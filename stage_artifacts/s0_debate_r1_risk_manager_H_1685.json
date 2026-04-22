@@ -1,0 +1,71 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1685",
+  "round": "R1",
+  "score": 12,
+  "arguments": [
+    "Kill Scenario 1 (위기 시 외국인 자금 유출 반전): 2020-03 COVID 급락 시 외국인은 11조원 순매도(KOSPI 역사적 최대). 이 구간에서 외국인 net buy signal은 강한 음수로 반전하며, 개인은 역추세 매수로 순매수 전환한다. 즉 divergence score가 극단적 음수(외국인 매도 - 개인 매수)로 뒤집어지면서, 정상 시 'smart money 추종' 논리가 붕괴한다. stress_factor_ic_analysis.csv 실증: INV02_Foreign_NetBuy_60d의 stress ICIR 0.446 vs normal ICIR 0.711로 위기 시 37% 급감(crisis_ratio 0.364). 21d lookback도 유사한 방향성 노출이 불가피하며, 위기 시 외국인 매도 집중은 Choe-Kho-Stulz 2005 Table 6에서도 확인된 사실이다. Diversifier 역할이 가장 필요한 바로 그 시점에서 signal이 무력화되는 구조적 한계가 존재한다.",
+    "Kill Scenario 2 (미래참조 경로 — 21d lookback vs monthly rebalance 기간 불일치 MDD 증폭): 21d 누적 flow intensity를 월말에 1회 리밸런싱하는 구조에서, 월초~월중의 flow 정보가 t+1 시점까지 최대 30일간 stale 상태로 유지된다. 위기 시 외국인 매도 전환은 3~5일 내 급반전(2008-09 Lehman, 2020-03 COVID 모두 1주 내 순매도 전환)하므로, 월말 리밸런싱 시점에 이미 포지션은 역방향 노출 상태다. 이 기간 불일치는 backtest에서는 '월말 시점 signal이 이미 반영된 것'처럼 보이지만, 실시간 운용에서는 최대 30일 지연으로 MDD 5~10%p 과소추정 위험이 있다. C3(같은 기간 집계-적용) 관점에서 21d window의 마지막 거래일이 리밸런싱 당일과 겹치면 same-day circular 유사 구조가 발생할 수 있으므로, Forge 구현 시 C2/C3 엄밀 검증이 필수다.",
+    "L-106 교훈 적용 — Market beta 지배 하의 diversifier 환상: L-106은 종목 겹침 3%에 불과한 두 전략이 수익률 상관 0.78을 기록한 사실을 보여준다 (market beta 0.85~0.93 지배). H_1685의 기대 beta는 시장 전체 상위 20종목 EW 선정이므로 0.85~1.05 범위가 예상되며, PG2 anchor(STR_1631_SYN_05)의 beta 역시 유사 수준이다. 단순 flow channel 독립성(investor_flow family)이 수익률 직교를 보장하지 못한다. L-115도 beta 0.93에서 0.40으로 절반 이상 감소시켜도 Core 상관 0.575를 기록한 사실을 확인했다. H_1685가 PG2 SR gap 0.807 해소에 실질 기여하려면, S3에서 반드시 잔차 수익률(market beta 제거 후) 기준 상관을 측정해야 하며, 총수익률 상관 < 0.3뿐 아니라 잔차 상관 < 0.25 조건을 충족해야 진정한 diversifier로 인정 가능하다."
+  ],
+  "concern": "외국인 순매수는 본질적으로 momentum-following(추세추종) 행태를 보인다 (Choe-Kho-Stulz 2005 Section IV). 따라서 H_1685의 divergence score는 momentum factor와의 내재적 상관을 가지며, 기존 PG2의 STR_1631(consensus revision = earnings momentum 유사)과 STR_1656(ML = 다중 factor 포함)과의 beta-adjusted 상관이 0.3을 초과할 위험이 높다. stress_factor_ic_analysis에서 INV01 stress ICIR 0.703은 양호하나, 이는 '외국인 매수 종목' 단독이며, '외국인 매수 + 개인 매도' divergence의 위기 행태는 미검증이다. 개인 55% 비중의 noise amplification + 외국인 herding(기관 간 correlated flow, Sias 2004) 결합 시, signal-to-noise ratio가 위기 구간에서 급격히 저하될 수 있다.",
+  "conditions": [
+    "S1에서 C2/C3 엄밀 검증: 21d lookback window 마지막 거래일과 리밸런싱일 간 최소 1일 gap 보장 (t-1 이전 데이터만 사용). C11 거래주체 공시 T+1 반영 확인.",
+    "S3에서 총수익률 상관 < 0.3 AND 잔차 상관(market beta 제거) < 0.25 이중 게이트 적용. L-106 교훈 준수를 위해 beta decomposition 필수 보고.",
+    "S2에서 6대 스트레스 구간(reference_stress_periods.md) 별도 분리하여 stress ICIR >= 0.15 확인. 특히 2020-03 COVID 구간의 signal 방향 반전 여부를 명시적으로 보고. Stress ICIR < 0 시 diversifier 역할 자격 박탈."
+  ],
+  "rubric_breakdown": {
+    "tail_risk": {
+      "score": 2,
+      "max": 4,
+      "rationale": "INV02_60d crisis_ratio 0.364(63% 붕괴). 21d도 유사 위험. 위기 시 signal 무력화 구조 확인. EVT shape parameter 사전 추정 불가하나 fat tail 노출 예상."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "max": 4,
+      "rationale": "2건 제시 (외국인 exodus + lookback-rebalance mismatch). 1건은 미래참조 경로(C2/C3). 둘 다 구조적이나 S1 설계로 완화 가능."
+    },
+    "beta_orthogonality": {
+      "score": 2,
+      "max": 4,
+      "rationale": "L-106 적용: market beta 0.85~1.05 예상, PG2 anchor와 beta 겹침 높음. Flow channel 독립성이 수익률 직교를 보장 못함. 잔차 상관 미검증."
+    },
+    "mdd_contribution": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Standalone MDD 25~40% 예상. PG2 blend 시 위기 동조(correlated drawdown) 위험. 다만 diversifier 역할이므로 소규모 배분(10~20%)으로 제한하면 portfolio MDD 기여 제한적."
+    },
+    "regime_vulnerability": {
+      "score": 2,
+      "max": 4,
+      "rationale": "CRISIS regime에서 외국인 flow reversal 구조적. 현재 MRS 63.1 CRISIS 상태에서 즉시 투입 시 역방향 노출 가능. Regime-conditional 활성화 없이 전 구간 적용은 위험."
+    }
+  },
+  "data_evidence": {
+    "INV01_Foreign_NetBuy_20d": {
+      "stress_icir": 0.703,
+      "normal_icir": 0.621,
+      "crisis_premium": 0.004,
+      "crisis_ratio": 1.093,
+      "interpretation": "외국인 단독은 위기 시 소폭 개선되나, divergence(외-개 차이) 행태는 별도 검증 필요"
+    },
+    "INV02_Foreign_NetBuy_60d": {
+      "stress_icir": 0.446,
+      "normal_icir": 0.711,
+      "crisis_premium": -0.030,
+      "crisis_ratio": 0.364,
+      "interpretation": "장기 외국인 signal 위기 시 63% 붕괴 — 21d도 방향성 유사 위험"
+    },
+    "INV07_Retail_Contrarian": {
+      "stress_icir": 1.121,
+      "normal_icir": 1.236,
+      "crisis_premium": -0.003,
+      "crisis_ratio": 0.963,
+      "interpretation": "개인 contrarian signal 위기 시 소폭 약화 — divergence의 개인 측 안정성 제한적"
+    }
+  },
+  "lesson_references": {
+    "L-106": "Market beta 0.85~0.93 지배. 종목 겹침 3%에도 수익률 상관 0.78. Long-only에서 economic family 직교만으로 diversifier 예단 불가.",
+    "L-115": "Beta 0.93→0.40 절반 감소에도 Core 상관 0.575. Beta cutting은 필요조건이지 충분조건 아님."
+  }
+}

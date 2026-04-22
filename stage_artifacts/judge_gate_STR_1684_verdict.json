@@ -1,0 +1,246 @@
+{
+  "strategy_id": "STR_1684",
+  "h_code": "H_1688",
+  "strategy_dir": "STR_1684_residual_momentum",
+  "description": "Residual Momentum (Core_Secondary) — Carhart 1997 + Blitz-Huij-Martens 2011 residual momentum construct",
+  "judge_timestamp": "2026-04-18 Session 67 Day 1 FINAL",
+  "session": 67,
+  "judge_version": "v6.0_v3_5_rules_conditional_active",
+  "verdict_revision_note": "DRAFT (pre-hurdle) KR momentum inverse 가설 → Scout DIAG_STR_1684 진단 수용으로 implementation bug 가설로 전면 수정. Forge hurdle_result 공식 확정 + Scout 실측 evidence 3종 반영.",
+
+  "overall_verdict": "REJECT_WITH_IMPLEMENTATION_BUG_CAVEAT",
+  "grade_final": "F (hard_fail MDD 86.66%) — with caveat 'implementation_bug_suspected'",
+  "s7_decision": "ARCHIVE_WITH_REDESIGN_PATH_OPEN + INFRA_FIX_REQUIRED",
+  "s7_rationale": "H_1688 residual momentum **hypothesis 자체는 미검증 상태**. Grade F (total_score 22.9 / MDD 86.66% / SR -0.13 / CAGR -4.32% / stress 0/3)는 Factor DB Z_Score 정규화 버그 + OLS scale mismatch (Scout hypothesis B 85% probability)로 인한 implementation failure. Carhart 1997 + Blitz-Huij-Martens 2011 residual momentum 정통 설계 자체는 재검증 필요. Forge factor_engine.R 수정 + Factor DB Z_Score rescale 후 STR_1684_v2 재실행 경로 유지. **Team-lead revised guidance (2026-04-18T15:45)**: Scout hypothesis B 85% 재채택 확정, v3.5 Stage 2 transition 보류, AX 승격 candidate 재분류 대상 아님.",
+  "team_lead_revised_guidance_15_45": {
+    "timestamp": "2026-04-18T15:45+09:00",
+    "key_directives": [
+      "Scout DIAG hypothesis B 85% (implementation bug) 재채택",
+      "Grade F REJECT with caveat 'implementation_bug_suspected' 분류",
+      "Rationale: H_1688 가설 자체 미검증. Factor DB 인프라 bug 해소 후 재실행 필수. 현 결과는 인프라 영향 포함.",
+      "AX 승격 candidate 재분류 대상이 아님 (가설 평가 못 함)",
+      "v3.5 Stage 2 transition 보류 — Hard Fail 2건 자연 축적 조건 미충족 재검토"
+    ],
+    "hard_fail_count_impact": "STR_1684는 conditional_hard_fail (VALIDATED count에서 제외). STR_1684_v2 재실행 결과 Hard Fail 재확인 시 VALIDATED count 포함 재검토.",
+    "supersedes_15_30_guidance": "15:30 'L-161 KR momentum structural failure + Stage 2 승인' 방향 취소됨. 15:45 revised가 최종."
+  },
+
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "factor_engine.R + run_all.R PIT CLEAN. 구현 버그는 PIT 위반 아닌 정규화 왜곡."
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "critical_findings": [
+        "Factor DB Z_Score 정규화 불일치 (Scout 실측): M07 sd 1.000 vs R12/D01 sd 0.071 vs M08 sd 0.054",
+        "R12_Idiosyncratic_Risk와 D01_IdioVol Z_Score 완전 동일 (DUPLICATE finding)",
+        "OLS 회귀 `m01_w ~ size_w + r12_w + beta_w`에서 regressor sd 불균형 처리 부재 (size_w 지배)"
+      ],
+      "de_facto_execution": "requested residual momentum → actual M01 - β·size approximation (signed-flip M01 근접)",
+      "note": "Gate 1 implementation integrity 실패. 통상 Gate 1 세부지표(종목수/유동성/비용)와 다른 '구현 integrity' 실패. 20 stocks + 15bps + liquidity는 정상."
+    },
+    "gate_2_robustness": {
+      "pass": false,
+      "stress_outperform": "0/3",
+      "worst_6m_ret_pct": -70.95,
+      "max_consec_neg_alpha": 8,
+      "rolling_12m_hit_pct": 47.0,
+      "rolling_3y_positive_pct": 38.7,
+      "note": "stress 0/3 (GFC -14.67 alpha / COVID -2.91 / Rate_2022 -15.39 all underperform). Worst6M -70.95% extreme drawdown. 단, 원인이 구현 버그임을 명시."
+    },
+    "gate_3_perf": {
+      "pass": false,
+      "hard_fail": true,
+      "hard_fail_reason": "MDD 86.66% > 45% (v2.2 hurdle hard gate)",
+      "sharpe_monthly": 0.049,
+      "sharpe_annual": -0.13,
+      "ir": -0.509,
+      "cagr": -4.32,
+      "mdd": 86.66,
+      "turnover_ann": 525.6,
+      "total_score": 22.9,
+      "grade_hurdle": "F",
+      "note": "Grade F confirmed. 원 hypothesis 미검증 상태에서의 Hard Fail (implementation bug 결과)."
+    },
+    "gate_4_stat": {
+      "pass": false,
+      "alpha_lab_gate_icir_pass": false,
+      "icir_measured": -0.187,
+      "icir_threshold": 0.20,
+      "gap": -0.387,
+      "fmb_score_lambda_t": -5.573,
+      "fmb_harvey_t_abs": 5.573,
+      "harvey_t_direction_check": "absolute value > 3.0이나 NEGATIVE SIGNIFICANT (부호 자체가 reject 방향)",
+      "note": "통계적으로 결정적 부호 반전이나 Scout 진단 반영 — factor-level data 왜곡으로 인한 현상."
+    },
+    "gate_5_diversity": "NA_HARD_FAIL",
+    "gate_6_family_saturation": "PASS (momentum_residual family 최초, saturation 없음)",
+    "gate_7_role_honesty": {
+      "pass": false,
+      "provisional_role": "Core_Secondary",
+      "crisis_beta_improvement": false,
+      "note": "Core_Secondary (residual_momentum) 역할 실패. 단 원인이 구현 버그 → role_honesty audit은 Scout hypothesis B 반영 후 'unvalidated' 판정."
+    },
+    "gate_8_v3_2_tdc": "NA_PRE_HARD_FAIL",
+    "gate_9_v3_3_structural_diagnosis": {
+      "pass": "PENDING_RE_RUN",
+      "rationale": "1st FAIL (STR_1684 단독). 2회 연속 FAIL 조건은 STR_1684_v2 재실행 후 판정. 현재 '구현 버그 확증'으로 structural factor failure 아님."
+    },
+    "gate_10_v3_4_consensus_tier": "NA_HARD_FAIL",
+    "gate_11_v3_5_variant_comparison_advisory_warning": {
+      "stage_1_applied": "advisory_warning only (CONDITIONAL_ACTIVE)",
+      "v1_baseline_only": true,
+      "v2_v4_s5_deferred": "S5 mutation lab 이관 (Forge v2 critical path 우선 사유)",
+      "advisory_verdict": "WARNING — variant mandate 미충족 인정 (Core_Secondary 최초 가설 sense)",
+      "note": "v3.5 Stage 1 advisory level이므로 실행 차단 아님. 단, re-run 시 Gate 11 variant 3+ 권장."
+    },
+    "gate_12_v3_5_ic_return_coupling_advisory_skip": {
+      "stage_1_applied": "advisory_warning SKIP",
+      "reason": "ICIR -0.187 음수 상태에서 coupling_ratio (SR/ICIR) 계산 의미 무효",
+      "advisory_verdict": "SKIP — Gate 12는 factor quality positive 전제 gate. 음수 ICIR은 Gate 4 Alpha Lab Gate 기준 이미 FAIL"
+    }
+  },
+
+  "scout_diagnosis_integration": {
+    "scout_source": "qepm/mailbox/scout/outbox/DIAG_STR_1684_H_1688_residualization.json (2026-04-18 P0_CRITICAL)",
+    "scout_confidence": "HIGH",
+    "root_cause_hypothesis_accepted": "HYPOTHESIS_B_IMPLEMENTATION_BUG (85% probability)",
+    "hypothesis_A_kr_momentum_inverse_rejected": {
+      "probability": 0.10,
+      "rejection_basis": [
+        "STR_1631 SYN_05 momentum계열 positive ICIR 유지",
+        "M07_IndMom Factor DB sd 1.000 정상, ICIR PASS precedent",
+        "STR_1661 V2 ML signal momentum feature ICIR 1.0291 positive"
+      ]
+    },
+    "hypothesis_C_direction_alignment_rejected": {
+      "probability": 0.05,
+      "rejection_basis": "Registry 4 factors 모두 'higher_better', align_factor_direction() identity transformation"
+    },
+    "three_critical_evidence_adopted": {
+      "evidence_1_Z_Score_sd_inconsistency": {
+        "source": ".cache/factor_db/factor_db_202603.parquet 실측",
+        "data": {
+          "M07_IndMom": 1.000,
+          "S01_Size": 0.998,
+          "M01_Mom_12_1": 0.660,
+          "Q25_Ohlson_O": 0.530,
+          "V01_BM": 0.363,
+          "C19_Composite_Earnings": 0.361,
+          "Q07_Earnings_Stability": 0.328,
+          "R12_Idiosyncratic_Risk": 0.071,
+          "D01_IdioVol": 0.071,
+          "M08_Residual_Mom": 0.054
+        },
+        "interpretation": "Factor DB parquet Z_Score는 cross-sectional Z-score가 아닌 clipping/scale-distorted value. proper Z-score sd=1.0 기준 불충족."
+      },
+      "evidence_2_r12_d01_duplicate": {
+        "finding": "R12_Idiosyncratic_Risk와 D01_IdioVol Z_Score identical (sd 0.07063515 동일, n=2543)",
+        "serious_issue": "Factor DB 차원의 serious issue. Registry 2 factors 명시되나 actual data identical. mis-labeled or alias."
+      },
+      "evidence_3_ols_scale_mismatch": {
+        "formula": "lm(m01_w ~ size_w + r12_w + beta_w) where sd imbalance: M01 0.66 / size 1.0 / R12 0.07 / beta unknown",
+        "result": "size_w 단독 지배 잔차화. residual ≈ M01 - β·size (signed-flip M01 근접)",
+        "empirical_match": "결과 ICIR -0.162 (hurdle -0.187) = M01 original positive ICIR의 approximate negation"
+      }
+    },
+    "sub_bugs_identified_by_scout": [
+      "B1 CRITICAL: Factor DB Z_Score 정규화 불일치 — factor_db_builder pipeline 재검토",
+      "B2 CRITICAL: R12 vs D01 duplicate (동일값) — registry 수정 필요",
+      "B3 HIGH: OLS 회귀 regressor sd 불균형 처리 부재 — scale() 권장",
+      "B4 MEDIUM: M08_Residual_Mom sd 0.054 extreme clipping"
+    ]
+  },
+
+  "comparison_with_L_159_spec_transmission": {
+    "l_159_str_1682_pattern": "Q-Lead Option A 4-regressor 지시 → Forge 2-regressor baseline 실행 (spec transmission failure)",
+    "l_161_str_1684_pattern": "Residualization 정통 spec → Factor DB Z_Score 정규화 버그 + R12/D01 duplicate + OLS scale mismatch로 M01 signed-flip approximate",
+    "common_ground": "둘 다 Scout/Q-Lead의 가설 자체 문제가 아닌 인프라 / 구현 layer 실패",
+    "different_layer": "L-159 = spec → implementation handoff chain. L-161 = Factor DB pipeline 정규화 + factor_engine residualization 구현",
+    "combined_process_implication": "**Factor DB 차원의 전수 재점검 필요** (Architect 협업). factor_db_builder.R Z-score 재정규화 + R12/D01 duplicate 해소 + factor_engine scale() 표준화"
+  },
+
+  "h_1688_hypothesis_status": {
+    "status": "UNVALIDATED — 구현 버그로 hypothesis 자체 미검증",
+    "redesign_path_open": true,
+    "forge_actions_required": [
+      "factor_engine.R scale normalize 적용 (Scout priority_1)",
+      "Factor DB Z_Score 재정규화 (Architect 협업)",
+      "R12 vs D01 duplicate 원인 파악 및 해소 (registry 수정)"
+    ],
+    "re_run_expected_outcome": "scale + rescale 후 ICIR 재측정 시 positive expected (Scout hypothesis A 10% 대비 B 85%)",
+    "if_re_run_still_negative": "그때 KR momentum structural failure 가설 재검토 → AX_CAND 승격 검토"
+  },
+
+  "hard_fail_cumulative_tracking_v3_5_stage_transition": {
+    "1st_hard_fail_str_1683": {
+      "strategy_id": "STR_1683",
+      "pattern": "Defense IC-Return decoupling (L-160)",
+      "validation_status": "VALIDATED_HARD_FAIL (원 hypothesis 검증 완료)"
+    },
+    "2nd_hard_fail_str_1684": {
+      "strategy_id": "STR_1684",
+      "pattern": "Implementation bug (Scout hypothesis B, L-161)",
+      "validation_status": "UNVALIDATED_HARD_FAIL — 구현 버그로 원 hypothesis 미검증",
+      "question_for_stage_2_transition": "UNVALIDATED_HARD_FAIL이 v3.5 Stage 2 transition trigger에 포함되는가?"
+    },
+    "judge_recommendation_for_stage_transition": {
+      "conservative_interpretation": "UNVALIDATED hard_fail은 Stage 2 trigger에 포함 제외. Gate 12 hard_block 전환은 VALIDATED hard_fail 2건 축적 시로 제한.",
+      "permissive_interpretation": "Hard Fail 자체가 2건 축적되었으므로 Stage 2 trigger 충족",
+      "judge_proposed_resolution": "Q-Lead + Governor 합동 판정 요청. UNVALIDATED case 정의를 향후 v3.5 body에 명시 필요. 임시 보수적 해석 권장 (VALIDATED only)."
+    }
+  },
+
+  "l_code_issued_L_161_revised": {
+    "l_code_id": "L-161",
+    "title_revised": "Factor DB Z_Score 정규화 불일치 + R12/D01 duplicate + OLS scale mismatch — residualization 구현 버그 (H_1688 UNVALIDATED pattern)",
+    "draft_origin": "Scout DIAG_STR_1684_H_1688_residualization.json proposal 채택",
+    "draft_replaces_pre_hurdle": "Pre-hurdle judge DRAFT 'KR momentum inverse' 가설은 Scout evidence로 REJECTED. Implementation bug 가설 채택.",
+    "file_path_to_issue": "stage_artifacts/l_code_STR_1684.json (향후 발행)",
+    "methodology_memory_position": "L-160 직후 line ~1110"
+  },
+
+  "ax_candidate_judgment": {
+    "proposal_ax_cand_kr_momentum_inverse_in_draft": "REJECTED (Scout evidence 반영)",
+    "current_evidence_pattern": "Factor DB 정규화 버그 + Scope 단일 (STR_1684)",
+    "ax_cand_eligibility": "NOT_ELIGIBLE — 구현 버그는 L-code 교훈으로 충분, AX 승격은 hypothesis 자체 재검증 후에만 검토",
+    "related_ax_cand": {
+      "spec_transmission_failure_L159": "독립 pattern 유지 (STR_1682 단일)",
+      "defense_ic_return_decoupling_L160": "독립 pattern 유지 (STR_1683 단일)"
+    }
+  },
+
+  "followup_actions_for_scout": [
+    "priority_2 S5 slate update: Slot A-D 설계 완료 (scale-normalized + rank-based + Blitz original + overlay)",
+    "Factor DB Z_Score pipeline 전수 점검 (Architect 협조)",
+    "R12 vs D01 duplicate 원인 파악 — compute function 실제 식별 + registry 수정"
+  ],
+
+  "followup_actions_for_forge": [
+    "factor_engine.R scale() 정규화 추가 (lm 전 all regressors pre-standardize)",
+    "Factor DB builder Z_Score 재정규화 (factor_db_builder.R)",
+    "STR_1684_v2 재실행 (v1 artifacts 보존 + v2 output dir 분리)",
+    "R12/D01 Z_Score 재계산 후 duplicate 해소 확인"
+  ],
+
+  "followup_actions_for_governor": [
+    "H_1688 Core_Secondary admission 보류 (원 hypothesis 미검증)",
+    "rev8-A Phase_1 PG1 admission 후보 list에서 H_1688 임시 제거 or pending 표기",
+    "STR_1684_v2 재실행 결과 수령 후 admission 재검토",
+    "UNVALIDATED_HARD_FAIL 정의 협의 요청 — v3.5 Stage 2 trigger 기준 명시 필요"
+  ],
+
+  "followup_actions_for_q_lead": [
+    "Factor DB 전수 재점검 Architect 스폰 (factor_db_builder + registry + factor_engine 3-layer)",
+    "v3.5 Stage 2 transition 판정 — UNVALIDATED HF 포함 여부 arbitration",
+    "STR_1684_v2 재실행 priority 결정 (Forge critical path 상 위치)"
+  ],
+
+  "judge_signoff_final": {
+    "agent_id": "judge",
+    "timestamp": "2026-04-18 Session 67 Day 1 FINAL (Scout DIAG 반영)",
+    "signoff_note": "STR_1684 REJECT_UNVALIDATED_IMPLEMENTATION_BUG 공식 판정. Pre-hurdle 'KR momentum inverse' 가설 폐기 → Scout hypothesis B (Factor DB 정규화 버그) 채택. L-161 revised (implementation bug pattern). H_1688 hypothesis redesign path open. v3.5 Stage 2 transition UNVALIDATED HF 해석 Q-Lead arbitration 요청."
+  }
+}

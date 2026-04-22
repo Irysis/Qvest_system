@@ -1,0 +1,54 @@
+{
+  "role": "codex_critic",
+  "score": 6,
+  "arguments": [
+    "L-161 KR momentum inverse VALIDATED_HARD_FAIL와 동일 family residualization — parameter relabeling 의심 (STR_1684/H_1688 hard failures close overlap, mechanism novelty 부재)",
+    "IC ≠ SR/MDD decoupling 교훈(L-125, L-160) 재현 위험 — KOSDAQ turnover/cost drag + policy shock 구간 equal-weight rebalancing으로 net SR ≤ 0 + MDD 25~40% 잠재 (kill scenario #3)",
+    "PIT risks 4/4 우려 (design_pit_assessment): Q1 섹터 rotation ex-post selected, Q2 실시간 실행 명세 부재 (lagged snapshots + expanding-window coefficients 미명시), Q3 exception framing outcome-conditioned, Q4 'sd=1.0 proper post Fix 1' full-sample 의존 가능성"
+  ],
+  "concern": "Residualizing industry momentum on RSI가 independent alpha를 isolate한다는 가정이 틀릴 시 residual은 unstable noise proxy — turnover/cost 증가 + signal 약화 → IC-return transmission 붕괴 → 30~50% deep drawdown + materially negative live SR 종국.",
+  "conditions": [
+    "strict expanding-window walk-forward + frozen monthly parameters 엄수 (full-sample z-score / full-sample residual coefficients 금지)",
+    "PIT audit 제출: timestamped industry membership + RSI inputs + factor loads T+1 implementation lag under L-164",
+    "IC-to-return transmission net of realistic KR cost/slippage 증명 (Top-20 EW) + stress_icir × weight ≥ -0.05 PASS (L-163)",
+    "failed comparators(H_1688/H_1682 family) 대비 SR/MDD/turnover-adjusted return 초과 입증 (단순 IC 비교 불가)"
+  ],
+  "codex_metadata": {
+    "total": 6,
+    "breakdown": {
+      "l_code_check": 1,
+      "failure_avoidance": 1,
+      "banned_factor": 2,
+      "lesson_check": 1,
+      "structural_risk": 1
+    },
+    "kill_scenarios": [
+      {
+        "scenario": "Hidden PIT leak through month-end industry mapping or revised prices when residualizing M07 on M18",
+        "probability": "medium",
+        "expected_loss": "SR drops by 0.5 to 0.9; MDD worsens by 20% to 35%",
+        "blind_spot": true
+      },
+      {
+        "scenario": "KR regime shifts to narrow mega-cap leadership + policy-driven flows; sector/industry rotation weakens + RSI anchoring no longer predicts",
+        "probability": "high",
+        "expected_loss": "MDD 35% to 50%; SR degradation 0.6+",
+        "blind_spot": false
+      },
+      {
+        "scenario": "Transaction-cost/capacity drag in KOSDAQ-heavy names — equal-weight rebalancing + spreads + policy-shock gaps create IC-positive but PnL-negative outcomes (L-125/L-160 decoupling)",
+        "probability": "medium",
+        "expected_loss": "Net SR near or below 0; MDD 25% to 40%",
+        "blind_spot": false
+      }
+    ],
+    "weakest_assumption": "If residualizing industry momentum on RSI truly isolates independent alpha is wrong → residual becomes unstable noise proxy → turnover/cost rise + signal weakens → IC-return transmission breaks → terminal 30~50% drawdown + negative live SR",
+    "design_pit_assessment": {
+      "q1_data_pit": "Concern yes — 6-9M KR rotation + RSI anchoring ex-post selected from known historical behavior",
+      "q2_outcome_influence": "Concern yes/unclear — real-time construction requires lagged snapshots + expanding-window coefficients, not specified",
+      "q3_rationalization": "Concern yes — exception framing after family hard-fails suggests outcome-conditioned combination logic",
+      "q4_sd_full_sample": "Concern yes — 'sd=1.0 proper post Fix 1' may rely on full-sample standardization unless explicitly rolling/expanding (direct PIT risk)"
+    },
+    "verdict_recommendation": "Reject as PRIMARY"
+  }
+}

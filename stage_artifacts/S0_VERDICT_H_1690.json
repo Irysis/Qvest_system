@@ -1,0 +1,185 @@
+{
+  "debate_id": "S0_DEBATE_H_1690",
+  "hypothesis_id": "H_1690",
+  "hypothesis_name": "STR_1439 Score-Blend Redesign — Multi-Source Defense Anchor (v53)",
+  "compiled_by": "Q-Lead (Forge 위임 집계)",
+  "compiled_at": "2026-04-17",
+  "verdict": "APPROVE_CONDITIONAL",
+
+  "total_score": {
+    "r1": 67,
+    "final": 64,
+    "delta": -3
+  },
+
+  "final_scores": {
+    "codex_critic":  { "r1": 7,  "final": 8,  "delta": 1  },
+    "risk_manager":  { "r1": 14, "final": 13, "delta": -1 },
+    "governor":      { "r1": 16, "final": 15, "delta": -1 },
+    "quant":         { "r1": 14, "final": 13, "delta": -1 },
+    "academic":      { "r1": 16, "final": 15, "delta": -1 }
+  },
+
+  "verdict_rationale": "64/100으로 APPROVE_CONDITIONAL 구간(60~74). R2에서 전원 -1점 조정(codex만 +1)은 regime weight ex-post tuning 의혹과 conditional TDC 3중 borderline에 대한 공통 우려가 반영된 결과. 그러나 핵심 강점 3가지는 변하지 않았다: (1) Gate 14 algebraic identity PASS — 4 sub factor 완전 독립 계산 경로, (2) Q07(stress_icir 0.753) + R16(stress_icir 2.655) defense IC 실측 근거 확보, (3) Factor DB 4건 standalone 완비 + parent MISSING 해소(H_1677 교훈 직접 반영). Codex의 REJECT 입장도 R2에서 8점으로 +1 상향 — failure chain 원인별 해소를 부분 인정. Scout 예측 [59, 75] 중앙값 67 대비 64점으로 하단 근처이며 Scout calibration L-157 v3 예측 범위 내.",
+
+  "consensus_points": [
+    "Gate 14 algebraic identity PASS: M08(CAPM residual)/C19(SUE+ESBR+EPS_Chg+TP_Gap)/Q07(-sd_roe)/R16(mean_r*252/abs_MDD) 4개 입력 변수 완전 분리 — 5인 공통 인정",
+    "regime weight ex-post tuning 의혹: RISK_ON 35/40/10/15 vs CRISIS 10/15/40/35가 STR_1439 원본 implicit weight와 cosine similarity 측정 필요 — codex/risk_mgr/governor/quant 4인 공통 지적 (S1 측정 condition)",
+    "R16 conditional TDC 위험: vs H_1682 평상시 TDC 0.50~0.65가 위기 시 0.75+ 급등 가능 — risk_mgr/governor 공통 우려 (S3 실측 condition)",
+    "M08/R16 한국 실증 논문 부재: korea_evidence 2/4 보강 필요 — academic/risk_mgr 공통 요청",
+    "R16 월별 raw value 변동성 과대 위험: composite turnover 통제 필요 — quant/risk_mgr 독립 확인"
+  ],
+
+  "unresolved_disputes": [
+    "Codex vs 나머지 4인 — failure chain = REJECT 여부: Codex는 expanding-window 사전 등록 없이 approve 불가 입장 유지(8점). 나머지는 원인별 해소를 인정하고 conditional approve. R3 미발동(delta ≤4점)이므로 APPROVE_CONDITIONAL로 결론. Codex 조건은 S1 conditions에 반영.",
+    "KS-1 regime lag severity — kill scenario vs 조건부 우려: Risk Mgr은 kill-level 위험으로 분류, Governor/Quant는 M08 stress_icir 2.290(pct_pos 0.975)이 초기 3개월 loss amplifier를 방지한다고 반박. 해소되지 않음 → S1에서 2020-03 구간 일별 composite score 추적 측정 조건 부여."
+  ],
+
+  "admission_recommendation": {
+    "verdict": "APPROVE_CONDITIONAL",
+    "governor_admission": "Phase_1 8% 점진 승격 (즉시 10% 금지). S1 ICIR >= 0.25 + AX-001 3축 측정 완료 후 Phase_2 10% 상향 결정.",
+    "key_conditions_summary": [
+      "C1 — regime weight cosine similarity 측정: STR_1439 원본 implicit weight vs H_1690 weight 코사인 유사도 < 0.75. 초과 시 25/25/25/25 EW baseline 고정 + S5 IC-weighted dynamic 전환",
+      "C2 — S1 R16 월별 변동성 측정: sd(z_R16) vs sd(z_M08/C19/Q07) 비교. 3배 초과 시 R16 winsorization 0.5~99.5% 또는 rank-score 변환",
+      "C3 — MRS 경계값(15/30) 출처 명시: regime_engine.R expanding-window 백분위수 여부 코드 주석 명시. 성과 최적화 도출이면 C3 위반 판정",
+      "C4 — R16 4-regime regime3 IC -0.031 반영: CRISIS weight 배정 시 MRS 15~30 구간에서 R16 비중 자동 10%p 축소 안전장치",
+      "C5 — S3 conditional TDC 실측: vs H_1682 crisis 구간 conditional TDC > 0.70이면 sub D를 R18_Sortino로 교체 contingency plan 사전 문서화",
+      "C6 — 2020-03 구간 일별 composite score 추적: regime transition lag 실현 시점 vs 실제 MDD 발생 시점 영업일 기준 측정. lag > 40영업일이면 smoothing 속도 재설계",
+      "C7 — Gate 15 rolling OOS 분산기여: ELEVATED/CRISIS/RISK_ON 각 regime에서 per-factor variance contribution rolling 측정 (Codex 요구 반영)",
+      "C8 — korea_evidence 보강: M08 Residual Momentum + R16 Calmar 한국 실증 논문 2편 추가 (Hocquard 2013 JPM + 강형구-이상빈 2019 증권학회지 제안)",
+      "C9 — KOSDAQ 결산월 정렬 확인: compute_quality.R Q07 계산 시 비12월 결산 KOSDAQ 기업 ROE 기간 정렬 처리 방식 코드 레벨 확인",
+      "C10 — AX-001 조건부 defense 평가 3축: (a) stress 6구간 composite IC avg > 0.03, (b) Core STR_1631 대비 MDD 축소 8%p+, (c) bad/good IC ratio > 1.2 — 3축 중 1개 이상 실패 시 primary 10% → secondary 5% 강등"
+    ]
+  },
+
+  "s1_routing": {
+    "next_stage": "S1",
+    "assigned_to": "Forge",
+    "priority": "P1 (Defense anchor 공석 — rev7_v3 Def_3 후보)",
+    "baseline_variants": [
+      "Primary V1: regime-smoothed 4-axis (H_1690 원본)",
+      "Baseline B1: static EW 25/25/25/25 (regime weight cosine similarity 비교용)",
+      "Baseline B2: 2-axis C19+Q07 only (sub signal 필요성 실증)",
+      "Baseline B3: 3-axis R16 제외 (H_1682 TDC 최소화 버전)"
+    ],
+    "s1_exit_criteria": {
+      "icir_gate": "composite ICIR >= 0.25",
+      "sr_gate": "SR >= 1.0 (pure signal, overlay 없음)",
+      "mdd_gate": "MDD < 40%",
+      "stress_ic_gate": "stress 6구간 composite IC avg > 0.03",
+      "pit_gate": "C1~C15 전수 PASS (C13/C15 엄수)"
+    }
+  },
+
+  "transcript": {
+    "rounds": [
+      {
+        "round": "R1",
+        "scores": {
+          "codex_critic": 7,
+          "risk_manager": 14,
+          "governor": 16,
+          "quant": 14,
+          "academic": 16
+        },
+        "total": 67,
+        "key_arguments": {
+          "codex_critic": "failure chain STR_1439→H_1677→H_1685→H_1687 + regime weight ex-post calibration 의혹 + composite linearity 미검증",
+          "risk_manager": "M08/Q07/R16 stress IC 실증 강점 + KS-1 regime lag 3개월 kill scenario + KS-2 cosine similarity 미래참조 위험",
+          "governor": "rev7_v3 Def_3 공석 직접 해소 + Factor DB standalone 완비 + Gate 14/15 pre-check PASS",
+          "quant": "Gate 14 algebraic PASS(compute_*.R 직접 확인) + Q07/R16 방향 C13 PASS + R16 월별 변동성 조건",
+          "academic": "peer_review 4/4 + substantive_cite 4/4 + korea_evidence 2/4 M08/R16 보강 필요"
+        }
+      },
+      {
+        "round": "R2",
+        "scores": {
+          "codex_critic": 8,
+          "risk_manager": 13,
+          "governor": 15,
+          "quant": 13,
+          "academic": 15
+        },
+        "total": 64,
+        "key_crossfire": {
+          "codex_rebuttals": "governor Gate 15 해소 불충분 + quant ELEVATED 정적 근사 과감 / agreements: risk_mgr KS-1 lag 동의 + quant 런타임 composite 위험 동의",
+          "risk_mgr_rebuttals": "codex failure chain = REJECT 오류(원인별 해소 확인) + governor TDC manageable 과소평가",
+          "governor_rebuttals": "codex failure chain Judge 권고 무시 불가 + risk_mgr KS-1 kill-level 과도(M08 stress_icir 2.290 완충)",
+          "quant_rebuttals": "codex H_1687 유비 오류(2-factor raw vs 4-factor aligned z) + risk_mgr KS-1 kill-level 과도",
+          "academic_rebuttals": "codex failure chain 구현 실패≠이론 실패 + risk_mgr R16 stress_icir 2.655 structural property 지지(partial)"
+        }
+      }
+    ]
+  },
+
+  "debaters": [
+    {
+      "agent_id": "codex_critic_r1_H_1690",
+      "role": "codex_critic",
+      "score": 8,
+      "findings": [
+        "failure chain STR_1439→H_1677→H_1685→H_1687 + expanding-window 사전 등록 없이 regime weight 승인 불가",
+        "composite effective linearity: Gate 15 rolling OOS 분산기여 안정성 미검증",
+        "R2 +1: Quant 코드 레벨 검증으로 수식 중복/부호 오류 리스크 일부 완화 인정"
+      ]
+    },
+    {
+      "agent_id": "risk_manager_r1_H_1690",
+      "role": "risk_manager",
+      "score": 13,
+      "findings": [
+        "M08(2.290)/Q07(0.753)/R16(2.655) stress ICIR 실측 강점 확인",
+        "KS-1 COVID 2020-03형 급락 시 smoothing 3개월 지연 + KS-2 cosine similarity C3 위반 가능성",
+        "R2 -1: conditional TDC vs H_1682 0.75+ 급등 위험 추가 반영"
+      ]
+    },
+    {
+      "agent_id": "governor_r1_H_1690",
+      "role": "governor",
+      "score": 15,
+      "findings": [
+        "rev7_v3 Def_3 primary 10% 공석 직접 해소 경로 — Phase_1 8% 점진 승격 권고",
+        "Factor DB standalone 완비 + L-157 v3 Gate 14/15 pre-check 전수 PASS",
+        "R2 -1: conditional TDC 급등 과소평가 수정 + Condition 3(cosine similarity) 추가"
+      ]
+    },
+    {
+      "agent_id": "quant_r1_H_1690",
+      "role": "quant",
+      "score": 13,
+      "findings": [
+        "compute_*.R 직접 확인: Q07 Raw=-sd_roe / R16=mean_r*252/abs_MDD C13 PASS",
+        "R16 4-regime regime3 IC -0.031 반영: elevated risk 구간 alpha 역전 위험 추가",
+        "R2 -1: MRS 경계값 출처 명시 조건 추가 + regime3 R16 안전장치 조건 추가"
+      ]
+    },
+    {
+      "agent_id": "academic_r1_H_1690",
+      "role": "academic",
+      "score": 15,
+      "findings": [
+        "peer_review 4/4 + substantive_cite 4/4 견고 (Blitz/Bernard-Thomas/Dichev-Tang/Barroso 설계 실질 지탱)",
+        "korea_evidence 2/4: M08/R16 한국 실증 누락 — Hocquard 2013 JPM + 강형구-이상빈 2019 보강 제안",
+        "R2 -1: KOSDAQ 결산월 Q07 PIT leakage 위험 추가 + korea_evidence 보강 condition 구체화"
+      ]
+    }
+  ],
+
+  "ax_compliance": {
+    "AX_000": "PASS",
+    "AX_001": "조건부 평가 대상 — S1 AX-001 3축 측정 의무",
+    "AX_002": "PASS — S0/S1 overlay 없음",
+    "AX_003": "PASS — value factor 미사용",
+    "AX_004_v3": "PASS — Q07 단독 아닌 4-axis composite 내 25~40% 비중",
+    "AX_005_v2": "PASS — single-sleeve standalone 아님, multi-source regime-smoothed"
+  },
+
+  "pit_final_check": {
+    "C1_full_sample": "PASS — expanding window z-score",
+    "C3_same_period_apply": "CONDITIONAL — regime weight cosine similarity 측정 후 확정 (S1 C1)",
+    "C5_overlay_lag": "PASS — MRS t-1 lag",
+    "C9_DD_VT": "N/A — overlay 없음",
+    "C13_z_score_aligned": "PASS — compute_*.R 직접 확인",
+    "C15_factor_db": "PASS — load_month_factors() 경유 4 sub factor"
+  }
+}

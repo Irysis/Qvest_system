@@ -1,5 +1,5 @@
 #==============================================================================
-# Factor DB — Investor Flow Factors (INV01~INV12)
+# Factor DB — Investor Flow Factors (INV01~INV13)
 #
 # compute_investor(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL)
 #   RAWDATA:    data.table(Date, Ticker, Close, Ret, Vol, Size, Sector, BM_Ret)
@@ -18,23 +18,29 @@
 #      Size normalization also uses t-1 most recent value
 #
 # Factors:
-#   INV01  Foreign_NetBuy_20d       frollsum(Foreign,20) / Size
-#   INV02  Foreign_NetBuy_60d       frollsum(Foreign,60) / Size
-#   INV03  Inst_NetBuy_20d          frollsum(Institutional,20) / Size
-#   INV04  Inst_NetBuy_60d          frollsum(Institutional,60) / Size
-#   INV05  Foreign_Momentum         roll_F20 / roll_F60 - 1  (acceleration)
-#   INV06  Inst_Momentum            roll_I20 / roll_I60 - 1
-#   INV07  Retail_Contrarian        -1 * frollsum(Individual,20) / Size
-#   INV08  Foreign_Inst_Agreement   sign(F20)*sign(I20)*min(|F20|,|I20|) / Size
-#   INV09  Flow_Persistence         fraction of last 20 days with F+I > 0
-#   INV10  Smart_Money_Flow         rollsum(F+I,20) / rollsum(|F|+|I|+|Ind|,20)
-#   INV11  Foreign_Concentration    1 if Foreign_20d >= 90th pct (cross-sectional)
-#   INV12  Supply_Demand_Imbalance  rollmean((F+I-Ind)/(|F|+|I|+|Ind|), 20)
+#   INV01  Foreign_NetBuy_20d             frollsum(Foreign,20) / Size
+#   INV02  Foreign_NetBuy_60d             frollsum(Foreign,60) / Size
+#   INV03  Inst_NetBuy_20d                frollsum(Institutional,20) / Size
+#   INV04  Inst_NetBuy_60d                frollsum(Institutional,60) / Size
+#   INV05  Foreign_Momentum               roll_F20 / roll_F60 - 1  (acceleration)
+#   INV06  Inst_Momentum                  roll_I20 / roll_I60 - 1
+#   INV07  Retail_Contrarian              -1 * frollsum(Individual,20) / Size
+#   INV08  Foreign_Inst_Agreement         sign(F20)*sign(I20)*min(|F20|,|I20|) / Size
+#   INV09  Flow_Persistence               fraction of last 20 days with F+I > 0
+#   INV10  Smart_Money_Flow               rollsum(F+I,20) / rollsum(|F|+|I|+|Ind|,20)
+#   INV11  Foreign_Concentration          1 if Foreign_20d >= 90th pct (cross-sectional)
+#   INV12  Supply_Demand_Imbalance        rollmean((F+I-Ind)/(|F|+|I|+|Ind|), 20)
+#   INV13  Foreign_Resid_Individual_{n}d  residual_t(i) = z_F_t(i) - beta_t * z_I_t(i)
+#          beta_t = expanding-window no-intercept OLS (burn-in 60 months, C1 strict lag)
+#          Variants: 21d / 63d / 126d lookback window for rolling z-score computation
+#          Reference: Choe-Kho-Stulz (2005 RFS), Fama-MacBeth (1973) orthogonalization
 #
 # References:
 #   Gompers & Metrick (2001) "Institutional Investors and Equity Prices"
 #   Yan & Zhang (2009) "Institutional Trade Persistence and Long-Term Equity Returns"
 #   Barber & Odean (2000) "Trading Is Hazardous to Your Wealth"
+#   Choe, Kho & Stulz (2005) "Do Domestic Investors Have an Edge?" RFS
+#   Fama & MacBeth (1973) "Risk, Return, and Equilibrium" JPE
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -281,6 +287,149 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     }
   }
 
+  # ── INV13: Foreign_Resid_Individual (3 lookback variants) ─────────────────
+  # PIT: all data strictly < sig_date (C2). Expanding beta with burn-in 60m (C1).
+  # beta_t = shift(cumsum(z_F * z_I) / cumsum(z_I^2), 1L) — no-intercept OLS, lag 1
+  # Variants: 21d / 63d / 126d rolling window for z_F / z_I cross-section z-score base
+  # Reference: Choe-Kho-Stulz (2005), Fama-MacBeth (1973)
+  inv13_results <- list()
+
+  # Load expanding beta accumulator from .fdb_env if available (builder-level cache)
+  inv13_beta_cache_key <- "INV13_BETA_ACC"
+  inv13_beta_acc <- if (exists(".fdb_env", envir=.GlobalEnv) &&
+                          exists(inv13_beta_cache_key,
+                                 envir=get(".fdb_env", envir=.GlobalEnv))) {
+    get(".fdb_env", envir=.GlobalEnv)[[inv13_beta_cache_key]]
+  } else {
+    list(SxY=0, Sxx=0, n_months=0L)
+  }
+
+  # Compute cross-section z-scores at sig_date for each lookback window
+  # Using full inv data (already filtered Date < sig_d)
+  inv13_compute_variant <- function(lb_days, variant_suffix) {
+    # Rolling sum over lb_days per ticker → month-end snapshot
+    inv_lb <- inv[, .(
+      roll_F  = frollsum(Foreign,    n=lb_days, na.rm=TRUE, align="right"),
+      roll_I  = frollsum(Individual, n=lb_days, na.rm=TRUE, align="right"),
+      n_F     = frollsum(!is.na(Foreign),    n=lb_days, align="right"),
+      n_I     = frollsum(!is.na(Individual), n=lb_days, align="right")
+    ), by=Ticker]
+    # Use last row per ticker (most recent before sig_date)
+    snap <- inv[, .SD[.N], by=Ticker, .SDcols=character(0)]
+    snap <- inv[, .(Date=last(Date)), by=Ticker]  # just ticker list
+    snap[, `:=`(
+      roll_F = inv_lb$roll_F[match(snap$Ticker, inv[, last(Ticker), by=Ticker]$Ticker)],
+      roll_I = inv_lb$roll_I[match(snap$Ticker, inv[, last(Ticker), by=Ticker]$Ticker)]
+    )]
+
+    # Simpler: take last value per ticker from inv after adding rolling cols
+    inv_snap <- inv[, {
+      n <- .N
+      rf <- frollsum(Foreign,    n=lb_days, na.rm=TRUE, align="right")
+      ri <- frollsum(Individual, n=lb_days, na.rm=TRUE, align="right")
+      .(roll_F=rf[n], roll_I=ri[n],
+        n_F=sum(!is.na(Foreign[pmax(1,n-lb_days+1):n])),
+        n_I=sum(!is.na(Individual[pmax(1,n-lb_days+1):n])))
+    }, by=Ticker]
+
+    min_obs <- as.integer(lb_days * 0.75)
+    inv_snap <- inv_snap[n_F >= min_obs & n_I >= min_obs &
+                           !is.na(roll_F) & !is.na(roll_I)]
+    if (nrow(inv_snap) < 20L) return(NULL)
+
+    # Cross-section winsorize 1~99%
+    winsor_cs <- function(x) {
+      q <- quantile(x, probs=c(0.01,0.99), na.rm=TRUE)
+      pmax(pmin(x, q[2]), q[1])
+    }
+    inv_snap[, roll_F := winsor_cs(roll_F)]
+    inv_snap[, roll_I := winsor_cs(roll_I)]
+
+    # Cross-section z-score (C13: Z_Score_Aligned pattern)
+    zscore_cs <- function(x) {
+      m <- mean(x, na.rm=TRUE); s <- sd(x, na.rm=TRUE)
+      if (is.na(s) || s < 1e-12) return(rep(NA_real_, length(x)))
+      (x - m) / s
+    }
+    inv_snap[, z_F := zscore_cs(roll_F)]
+    inv_snap[, z_I := zscore_cs(roll_I)]
+    inv_snap <- inv_snap[!is.na(z_F) & !is.na(z_I)]
+    if (nrow(inv_snap) < 20L) return(NULL)
+
+    # Expanding beta (C1: uses only data strictly before sig_date)
+    # beta_t = shift(SxY/Sxx, 1) — we use builder-cached accumulator + lag
+    # At this call, inv13_beta_acc reflects data up to PREVIOUS month (shift=1)
+    SxY_cum <- inv13_beta_acc$SxY + sum(inv_snap$z_F * inv_snap$z_I, na.rm=TRUE)
+    Sxx_cum <- inv13_beta_acc$Sxx + sum(inv_snap$z_I^2, na.rm=TRUE)
+    n_cum   <- inv13_beta_acc$n_months + 1L
+
+    # Use LAGGED beta (beta from previous accumulation state) — C1 strict lag
+    beta_lagged <- if (inv13_beta_acc$n_months >= 60L && inv13_beta_acc$Sxx > 1e-10) {
+      inv13_beta_acc$SxY / inv13_beta_acc$Sxx
+    } else {
+      NA_real_  # burn-in: 60 months not yet reached
+    }
+
+    if (is.na(beta_lagged)) return(NULL)  # burn-in period
+
+    inv_snap[, residual := z_F - beta_lagged * z_I]
+    inv_snap[, Raw_Value := residual]
+
+    data.table(
+      Ticker      = inv_snap$Ticker,
+      Factor_Name = paste0("INV13_Foreign_Resid_Individual_", variant_suffix),
+      Raw_Value   = inv_snap$Raw_Value
+    )
+  }
+
+  # 3 lookback variants: 21d / 63d / 126d
+  for (lb_info in list(c(21L, "21d"), c(63L, "63d"), c(126L, "126d"))) {
+    res13 <- tryCatch(
+      inv13_compute_variant(as.integer(lb_info[1]), lb_info[2]),
+      error = function(e) NULL
+    )
+    if (!is.null(res13) && nrow(res13) > 0L) {
+      inv13_results[[lb_info[2]]] <- res13
+    }
+  }
+
+  # Update accumulator in .fdb_env for next month's call (C1: expanding window)
+  if (exists(".fdb_env", envir=.GlobalEnv)) {
+    # Compute current month's pooled z-scores for accumulator update (using 21d default)
+    inv_acc_snap <- tryCatch({
+      inv[, {
+        n <- .N
+        rf <- frollsum(Foreign,    n=21L, na.rm=TRUE, align="right")
+        ri <- frollsum(Individual, n=21L, na.rm=TRUE, align="right")
+        .(roll_F=rf[n], roll_I=ri[n])
+      }, by=Ticker]
+    }, error=function(e) NULL)
+
+    if (!is.null(inv_acc_snap)) {
+      inv_acc_snap <- inv_acc_snap[!is.na(roll_F) & !is.na(roll_I)]
+      if (nrow(inv_acc_snap) >= 20L) {
+        zscore_cs <- function(x) {
+          m <- mean(x,na.rm=TRUE); s <- sd(x,na.rm=TRUE)
+          if (is.na(s)||s<1e-12) return(rep(NA_real_,length(x))); (x-m)/s
+        }
+        inv_acc_snap[, z_F := zscore_cs(roll_F)]
+        inv_acc_snap[, z_I := zscore_cs(roll_I)]
+        inv_acc_snap <- inv_acc_snap[!is.na(z_F) & !is.na(z_I)]
+        new_SxY <- inv13_beta_acc$SxY + sum(inv_acc_snap$z_F * inv_acc_snap$z_I, na.rm=TRUE)
+        new_Sxx <- inv13_beta_acc$Sxx + sum(inv_acc_snap$z_I^2, na.rm=TRUE)
+        new_n   <- inv13_beta_acc$n_months + 1L
+        assign(inv13_beta_cache_key,
+               list(SxY=new_SxY, Sxx=new_Sxx, n_months=new_n),
+               envir=get(".fdb_env", envir=.GlobalEnv))
+      }
+    }
+  }
+
+  # ── Inf / NaN 방어 (INV13) ────────────────────────────────────────────────
+  inv13_all <- if (length(inv13_results) > 0L) {
+    rbindlist(inv13_results, use.names=TRUE)
+  } else NULL
+
   # ── Long format으로 변환 ───────────────────────────────────────────────────
   factor_names <- c(
     "INV01_Foreign_NetBuy_20d",
@@ -305,6 +454,10 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       sub <- dt[!is.na(get(fc)), .(Ticker, Factor_Name = fname, Raw_Value = get(fc))]
       if (nrow(sub) > 0L) results[[fname]] <- sub
     }
+  }
+
+  if (!is.null(inv13_all) && nrow(inv13_all) > 0L) {
+    results[["INV13"]] <- inv13_all[is.finite(Raw_Value)]
   }
 
   if (length(results) == 0L) return(empty_result())

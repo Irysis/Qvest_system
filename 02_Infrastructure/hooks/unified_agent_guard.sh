@@ -7,33 +7,14 @@
 #   3. S0 Debate: s0_debate_guard.sh로 위임 (별도 Hook 유지)
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
-
 INPUT=$(cat)
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
+
 DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$DIR" ]; then echo '{}'; exit 0; fi
 
 ARTS="$DIR/stage_artifacts"
 TRACKER="$DIR/.cache/mutation_tracker.json"
-
-# Agent name + prompt 추출
-AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('tool_input', {}).get('name', ''))
-except: print('')
-" 2>/dev/null || echo "")
-
-AGENT_PROMPT=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    print(d.get('tool_input', {}).get('prompt', '')[:4000])
-except: print('')
-" 2>/dev/null || echo "")
-
-AGENT_NAME_LC=$(echo "$AGENT_NAME" | tr '[:upper:]' '[:lower:]')
 
 # 전략 ID 추정 (name → prompt 순)
 STRATEGY_ID=$(printf '%s' "$AGENT_NAME $AGENT_PROMPT" | grep -oE 'STR_[0-9]+[A-Za-z0-9_]*' | head -1)
@@ -254,40 +235,59 @@ except Exception as ex:
   fi
 fi
 
-# ─── v53 Sprint 4 AX-P2: 전 에이전트에 Active Axiom 주입 (대전제화) ────────────
-# Scout/Forge/Judge/Governor/Blender 모든 스폰 시 active AX-code 전체를 additionalContext로 주입
+# ─── v53 Sprint 4 AX-P2 + Block C v1.0 토큰 절감: Axiom 캐시 기반 주입 ────────
+# AX-* JSON 파일들의 내용을 .cache/axiom_inject_body.md에 pre-render.
+# 소스 mtime 대비 캐시 mtime이 최신이면 cat만, 아니면 재생성.
+# Agent 스폰 시마다 발생하던 python3 spawn + json parse + string serialize 제거.
 AXIOM_CONTEXT=""
 ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
+CACHE_BODY="$DIR/.cache/axiom_inject_body.md"
+mkdir -p "$DIR/.cache" 2>/dev/null
+
 if [ -d "$ACTIVE_DIR" ]; then
-  AXIOM_CONTEXT=$(python3 -c "
+  # 캐시 유효성 검사: 소스 폴더의 최신 mtime > 캐시 mtime 이면 재생성
+  NEED_REGEN=1
+  if [ -f "$CACHE_BODY" ]; then
+    NEWEST_SRC=$(find "$ACTIVE_DIR" -name 'AX-*.json' -printf '%T@\n' 2>/dev/null | sort -rn | head -1)
+    CACHE_TS=$(stat -c '%Y' "$CACHE_BODY" 2>/dev/null || echo 0)
+    # bash 산술 비교 (float → int)
+    NEWEST_SRC_INT=${NEWEST_SRC%.*}
+    [ -z "$NEWEST_SRC_INT" ] && NEWEST_SRC_INT=0
+    if [ "$NEWEST_SRC_INT" -le "$CACHE_TS" ]; then
+      NEED_REGEN=0
+    fi
+  fi
+
+  if [ "$NEED_REGEN" -eq 1 ]; then
+    python3 -c "
 import json, os, glob
 lines = []
 for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
     try:
         ax = json.load(open(f))
-        # Schema tolerance: legacy (id/name/text) vs v53 (axiom_id/type/polarity/statement)
         ax_id = ax.get('axiom_id') or ax.get('id') or os.path.basename(f).replace('.json','')
         stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:200]
         tag_type = ax.get('type') or ax.get('grade') or 'IMMUTABLE'
         tag_pol = ax.get('polarity') or ('axiom' if ax.get('grade')=='IMMUTABLE' else '?')
-        lines.append(f\"{ax_id} [{tag_type}/{tag_pol}]: {stmt}\")
+        lines.append(f'  - {ax_id} [{tag_type}/{tag_pol}]: {stmt}')
     except Exception: pass
-if lines:
-    role = '$AGENT_NAME_LC'
-    if 'scout' in role:
-        header = '[AX 전제 — Scout] 이미 확립된 영역은 재탐색 금지. 새 construction/regime/미확립 영역에 집중.'
-    elif 'forge' in role:
-        header = '[AX 전제 — Forge] AX 범위 내 실험이면 AX 인용 + 경계 조건 명시.'
-    elif 'judge' in role:
-        header = '[AX 전제 — Judge] AX 범위인데 반대 결과면 결과가 아닌 실험을 먼저 의심 (auditor).'
-    elif 'governor' in role:
-        header = '[AX 전제 — Governor] AX covered 전략은 core 배정 confidence 상승.'
-    elif 'blender' in role:
-        header = '[AX 전제 — Blender] AX 인증 전략만 앙상블 후보 base weight 상향.'
-    else:
-        header = '[AX 전제] 아래 공리는 qvest 모든 행위의 대전제.'
-    print(header + chr(10) + chr(10).join('  - ' + l for l in lines))
-" 2>/dev/null)
+open('$CACHE_BODY', 'w').write(chr(10).join(lines))
+" 2>/dev/null
+  fi
+
+  # 캐시된 body 읽기 + role-specific header 조합
+  if [ -s "$CACHE_BODY" ]; then
+    case "$AGENT_NAME_LC" in
+      *scout*)    HEADER='[AX 전제 — Scout] 이미 확립된 영역은 재탐색 금지. 새 construction/regime/미확립 영역에 집중.' ;;
+      *forge*)    HEADER='[AX 전제 — Forge] AX 범위 내 실험이면 AX 인용 + 경계 조건 명시.' ;;
+      *judge*)    HEADER='[AX 전제 — Judge] AX 범위인데 반대 결과면 결과가 아닌 실험을 먼저 의심 (auditor).' ;;
+      *governor*) HEADER='[AX 전제 — Governor] AX covered 전략은 core 배정 confidence 상승.' ;;
+      *blender*)  HEADER='[AX 전제 — Blender] AX 인증 전략만 앙상블 후보 base weight 상향.' ;;
+      *)          HEADER='[AX 전제] 아래 공리는 qvest 모든 행위의 대전제.' ;;
+    esac
+    AXIOM_CONTEXT="$HEADER
+$(cat "$CACHE_BODY")"
+  fi
 fi
 
 # ─── 3. v53 Fix #5 (legacy): Scout 스폰 시 Axiom Signal 힌트 (실패 패턴 회피) ──

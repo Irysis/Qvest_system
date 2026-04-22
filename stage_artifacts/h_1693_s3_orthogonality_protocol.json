@@ -1,0 +1,200 @@
+{
+  "artifact_type": "s3_orthogonality_protocol_template",
+  "schema_version": "v1_pre_s1",
+  "hypothesis_id": "H_1693",
+  "strategy_id_reserved": "STR_1693",
+  "stage": "S3_PROTOCOL_DESIGN",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2 — Q-Lead 신규 지시 #1",
+  "status": "PRE_S1_TEMPLATE — H_1693 S1 Forge 완료 + daily_returns.csv 생성 후 활성화",
+
+  "purpose": "Q-Lead 지시 S3 orthogonality 사전 작업. H_1693 APPROVE_CONDITIONAL 예상 후 Forge S1 완료 즉시 S3 pairwise TDC 실측 실행 가능한 protocol template 사전 작성. s3_tdc_premeasurement_H_1693_cluster.json의 L-157 v4 추정치 → S3 t-copula MLE + DCC-GARCH 실측 전환.",
+
+  "prerequisites": {
+    "s1_completion_required": [
+      "04_Research/strategies/STR_1693/output/daily_returns.csv (Forge S1 산출)",
+      "04_Research/strategies/STR_1693/output/hurdle_result.json",
+      "04_Research/strategies/STR_1693/output/net_IC_transmission_audit.json (Gate 14 sub_gate_14a)"
+    ],
+    "benchmark_strategies_daily_returns_check": {
+      "STR_1631_SYN_05": "PG2 anchor — daily_returns.csv EXISTS (PG2 active)",
+      "STR_1656_MLRA_M05": "PG2 diversifier — daily_returns.csv EXISTS (PG2 active)",
+      "STR_1679v3": "Phase_1 defense — daily_returns.csv EXISTS (Scenario_D Option 2 approved)",
+      "STR_1661_XGB_GPU_V2": "ML Core_Secondary candidate — nav_V2.csv EXISTS",
+      "STR_1689_v3_variant_1": "H_1689 v3 variant_1 — Forge S1 예정 (Day 2 queue)",
+      "STR_1689_v3_variant_2": "H_1689 v3 variant_2 — Forge S1 예정 (variant_2 SECONDARY)"
+    },
+    "measurement_dependencies": [
+      "02_Infrastructure/L13/tail_risk_engine.R — compute_tdc_tcopula()",
+      "02_Infrastructure/L13/regime_garch.R — DCC-GARCH conditional rho",
+      ".cache/unified_regime_signal.parquet — regime series (CRISIS/Bad/Normal/Good)"
+    ]
+  },
+
+  "s3_measurement_protocol_7_steps": {
+    "step_1_daily_returns_merge": {
+      "description": "H_1693 + 5 benchmark strategies daily_returns merge to common date index",
+      "r_pseudocode": [
+        "library(data.table)",
+        "dr_1693 <- fread('04_Research/strategies/STR_1693/output/daily_returns.csv')",
+        "dr_1631 <- fread('04_Research/strategies/STR_1631_SYN_05/output/daily_returns.csv')",
+        "dr_1656 <- fread('04_Research/strategies/STR_1656_MLRA_M05/output/daily_returns.csv')",
+        "dr_1679 <- fread('04_Research/strategies/STR_1679v3/output/daily_returns.csv')",
+        "dr_1661 <- fread('04_Research/strategies/STR_1661_XGB_GPU/output/nav_V2.csv')",
+        "dr_1689_v1 <- fread('04_Research/strategies/STR_1689_v3_variant_1/output/daily_returns.csv')",
+        "merged <- Reduce(function(x, y) merge(x, y, by='Date', all=FALSE), list(dr_1693, dr_1631, dr_1656, dr_1679, dr_1661, dr_1689_v1))"
+      ],
+      "expected_date_range": "2003-01 ~ 2026-04 (279 months, STR_1631 PG2 active since 2002)",
+      "expected_n_days": "~5800 trading days"
+    },
+    "step_2_monthly_aggregation_for_spearman": {
+      "description": "월별 합산 return for monthly cross-section Spearman correlation",
+      "measurement": "Spearman 순위 상관 for each pair across months",
+      "purpose": "L-156 v2 Gate 8 primary metric — monthly rank correlation"
+    },
+    "step_3_daily_pearson_correlation": {
+      "description": "일별 return Pearson correlation full-sample",
+      "purpose": "baseline correlation reference"
+    },
+    "step_4_tail_dependence_coefficient_tcopula_MLE": {
+      "description": "t-copula MLE fit for each pair → upper tail dependence coefficient (TDC)",
+      "function": "compute_tdc_tcopula(returns_a, returns_b)",
+      "output": "scalar TDC value per pair (upper tail)",
+      "threshold_gate_11": "TDC < 0.50 (Admission Rule v3.5.2)",
+      "threshold_crisis_sequential": "TDC_crisis < 0.30 (L-156 v2 Sequential Admission)"
+    },
+    "step_5_regime_conditional_tdc": {
+      "description": "CRISIS regime subset TDC separate measurement",
+      "regime_series": ".cache/unified_regime_signal.parquet MRS >= 30 CRISIS mask",
+      "function": "compute_tdc_tcopula_regime(returns, regime_mask, target_regime='CRISIS')",
+      "output": "TDC_crisis per pair",
+      "comparison": "TDC_full vs TDC_crisis — crisis 구간 tail risk 상승 정량"
+    },
+    "step_6_dcc_garch_conditional_rho": {
+      "description": "DCC-GARCH dynamic conditional correlation 시계열",
+      "function": "dcc_garch_rho(returns_matrix, window=252)",
+      "output": "rho_t timeseries per pair",
+      "purpose": "time-varying correlation regime switch 시점 탐지",
+      "l_156_v2_extension": "peak rho_t during stress windows (GFC 2008 + COVID 2020 + Rate Hike 2022)"
+    },
+    "step_7_pairwise_matrix_aggregation": {
+      "description": "6 strategies × 6 = 15 unique pairs + H_1693 vs 5 benchmarks = 5 primary pairs",
+      "primary_pairs_5": [
+        "H_1693 vs STR_1631_SYN_05 (PG2 anchor)",
+        "H_1693 vs STR_1656_MLRA_M05 (PG2 diversifier)",
+        "H_1693 vs STR_1679v3 (defense Q07 공유 HIGH)",
+        "H_1693 vs STR_1689_v3_variant_1 (no Q07 scenario_B)",
+        "H_1693 vs STR_1689_v3_variant_2 (Q07 4-axis, if admitted)"
+      ],
+      "secondary_pairs_for_cluster_analysis": [
+        "STR_1679v3 vs STR_1689_v3_variant_1 (Q07 공유 해소 검증)",
+        "STR_1679v3 vs STR_1689_v3_variant_2 (Q07 cluster saturation)",
+        "STR_1631 vs STR_1656 (PG2 current pair reference)"
+      ],
+      "matrix_output": "output/s3_h1693_pairwise_tdc_matrix.csv"
+    }
+  },
+
+  "expected_tdc_results_from_s3_pre_measurement": {
+    "_caveat": "s3_tdc_premeasurement_H_1693_cluster.json L-157 v4 기반 예측 — S3 실측으로 검증",
+
+    "primary_pair_expectations": {
+      "H_1693_vs_STR_1631": {
+        "predicted_tdc_full": "0.15~0.28",
+        "predicted_tdc_crisis": "0.20~0.35",
+        "gate_11_verdict": "PASS (< 0.50)",
+        "sequential_admission_crisis_0_30": "PASS_LIKELY (60%)"
+      },
+      "H_1693_vs_STR_1656": {
+        "predicted_tdc_full": "0.10~0.22",
+        "predicted_tdc_crisis": "0.15~0.30",
+        "gate_11_verdict": "PASS (< 0.50)",
+        "sequential_admission_crisis_0_30": "PASS (80%)"
+      },
+      "H_1693_vs_STR_1679v3_Q07_shared_HIGH": {
+        "predicted_tdc_full": "0.28~0.42",
+        "predicted_tdc_crisis": "0.40~0.60",
+        "gate_11_verdict": "BORDERLINE (0.42~0.60)",
+        "sequential_admission_crisis_0_30": "FAIL_PREDICT (crisis TDC 0.40+ 예상)",
+        "risk_mitigation": "scenario_B (variant_1 primary) 경로 + STR_1679v3 weight 축소 또는 H_1693 reserve 고려"
+      },
+      "H_1693_vs_H_1689_v3_variant_1_NO_Q07": {
+        "predicted_tdc_full": "0.15~0.28",
+        "predicted_tdc_crisis": "0.20~0.35",
+        "gate_11_verdict": "PASS (< 0.50, comfortable margin)",
+        "sequential_admission_crisis_0_30": "PASS_LIKELY (60%)",
+        "advantage": "Q factor overlap ZERO (variant_1 {Q01/Q04/Q25} vs H_1693 {Q07/C01}) — scenario_B OPTIMAL"
+      },
+      "H_1693_vs_H_1689_v3_variant_2_Q07_4axis": {
+        "predicted_tdc_full": "0.25~0.38",
+        "predicted_tdc_crisis": "0.35~0.55",
+        "gate_11_verdict": "BORDERLINE (0.38~0.55)",
+        "sequential_admission_crisis_0_30": "FAIL_PREDICT (crisis TDC 0.35+)",
+        "risk_mitigation": "variant_2 reserve 유지 권고, variant_1 primary 경로 우선"
+      }
+    }
+  },
+
+  "artifact_outputs_s3_deliverables": {
+    "primary_output": "stage_artifacts/s3_orthogonality_H_1693_measured.json",
+    "fields_schema": [
+      "hypothesis_id: H_1693",
+      "strategy_id: STR_1693",
+      "tdc_matrix: {pair_name: {tdc_full, tdc_crisis, pearson_daily, spearman_monthly}}",
+      "dcc_rho_peaks: {pair_name: {max_rho_t, peak_date, regime}}",
+      "novelty_score: weighted average (lower TDC = higher novelty)",
+      "candidate_role_hint: defense (expected)",
+      "orthogonality_gate_verdict: {gate_8_pairwise_tdc, gate_11_admission_rule_tdc}",
+      "sequential_admission_protocol: {primary_path_recommended, cluster_members, crisis_gate_results}"
+    ],
+    "secondary_outputs": [
+      "output/s3_h1693_pairwise_tdc_matrix.csv",
+      "output/s3_h1693_dcc_rho_timeseries.csv",
+      "output/s3_h1693_regime_conditional_tdc.csv"
+    ],
+    "downstream_routing": [
+      "Judge S6: Gate 11 TDC pairwise < 0.50 verdict + cluster saturation check",
+      "Governor PG1: Sequential Admission scenario 선택 + H_1693 slot 확정 (10% 배분)",
+      "Forge S5: orthogonality PASS 확인 후 Slot A baseline + DD overlay mutation"
+    ]
+  },
+
+  "s3_execution_timeline": {
+    "trigger": "H_1693 S1 Forge 완료 + daily_returns.csv 생성 + Gate 14 sub_gate_14a net_IC_transmission_ratio > 0.6 PASS",
+    "estimated_runtime": "15~30분 (5 pairs × 7 steps)",
+    "blocker_dependencies": [
+      "H_1693 S0 Debate VERDICT APPROVE_CONDITIONAL 확정",
+      "Forge S1 dispatch + daily_returns.csv 생성",
+      "Gate 14 sub_gate_14a PASS (net_IC_transmission 측정)"
+    ],
+    "scout_action_post_s1": "s3_orthogonality_H_1693_measured.json 작성 + Judge S6 routing"
+  },
+
+  "risk_mitigation_plan": {
+    "if_pair_2_STR_1679v3_crisis_tdc_fails": {
+      "scenario": "crisis TDC > 0.50 FAIL",
+      "action": "Governor Sequential Admission — STR_1679v3 또는 H_1693 하나만 primary + 다른 하나 reserve 또는 weight dilution"
+    },
+    "if_pair_5_variant_2_crisis_tdc_fails": {
+      "scenario": "crisis TDC > 0.50 FAIL",
+      "action": "scenario_B 확정 — variant_1 primary, variant_2 DROP",
+      "governor_coordination": "rev8-A-revised-v3 update"
+    },
+    "if_all_pass_optimal_scenario_B": {
+      "scenario": "5 primary pairs 모두 gate 11 PASS + crisis < 0.30 majority",
+      "action": "H_1693 primary admission + STR_1679v3 공존 + variant_1 parallel + variant_2 reserve",
+      "defense_cluster_target": "33% cap 내 STR_1679v3 8% + variant_1 10% + H_1693 10% = 28% (margin 5%)"
+    }
+  },
+
+  "scout_notes": [
+    "Q-Lead 지시 #1 — S3 orthogonality protocol template 사전 작성 완료",
+    "H_1693 S1 Forge 완료 후 즉시 활성화 가능한 template",
+    "7-step measurement protocol (merge / monthly / daily / t-copula / regime-conditional / DCC-GARCH / matrix)",
+    "s3_tdc_premeasurement_H_1693_cluster.json L-157 v4 예측 → S3 실측 전환 경로",
+    "scenario_B (variant_1 primary) 경로 최적화 — pair_4 (variant_1 vs H_1693) 0.20~0.35 PASS_LIKELY",
+    "crisis sequential admission gate 0.30 threshold 주의 — pair 2/5 FAIL_PREDICT 대응 경로 준비",
+    "DCC-GARCH conditional rho 추가 측정으로 regime switch 시점 peak 탐지 (L-156 v2 extension)"
+  ]
+}

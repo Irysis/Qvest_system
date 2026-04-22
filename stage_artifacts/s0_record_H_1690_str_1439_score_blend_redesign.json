@@ -1,0 +1,252 @@
+{
+  "hypothesis_id": "H_1690",
+  "factor_id": "H_1690_STR_1439_Score_Blend_Redesign",
+  "stage": "S0_DRAFT",
+  "status": "PENDING_DEBATE",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "designer": "Scout",
+  "pathway": "A (논문→가설)",
+  "bucket": "stabilize",
+  "roleBias": "RoleBias_Defense_Anchor_Candidate",
+  "successor_to_rejected": "H_1677 (STR_1439 v53 repair, REJECTED 2026-04-17: parent STR_1037/898/1035 MISSING)",
+  "note": "Judge sweep v3 Pass 2 Tier 1 governor_actions_required[3] 직접 수용 — 'STR_1439 novelty_bonus=10 is genuine alpha signal that may warrant score-blend redesign as new S0 hypothesis'. H_1677 보존 가치(regime-conditional weight smoothing + multi-source alpha 다각화) 재활용. 단 parent MISSING 문제 해소 위해 4 sub-signal을 기구축 Factor DB factor로 재구성.",
+
+  "hypothesis_summary": {
+    "name": "STR_1439 Score-Blend Redesign — Multi-Source Defense Anchor (v53 compliant)",
+    "family": "multi_source_score_blend_defense",
+    "sub_family": "regime_smoothed_4axis_composite",
+    "expected_role": "defense_anchor (AX-001 조건부 평가)",
+    "mechanism": "4개 독립 economic rationale signal의 cross-sectional Z-score를 regime-conditional weight로 합산 → Top 20 EW union. Sub signal: (A) M08_Residual_Mom (Blitz 2011 잔차 momentum), (B) C19_Composite_Earnings (Bernard-Thomas 1989 PEAD), (C) Q07_Earnings_Stability (Dichev-Tang 2009 + L-121 양쪽 위기 최강), (D) R16_Calmar (risk-adjusted ratio, L-143/144 cross-family defense). regime-smoothed max 10%p/month weight change — STR_1047 TO 3702% → STR_1439 TO 154% 달성 구조 재현.",
+    "why_now": "(1) PG0 SR gap 0.807 + defensive Grade A 공석 지속, (2) Judge sweep v3 Pass 2: Tier 1 3건(STR_1439/1435/1060) REJECT 확정 후 defensive anchor 후보 공백 재확장, (3) STR_1439 FF5 alpha t=2.953 (borderline Harvey) + novelty 10 genuine alpha 신호는 Judge가 공식 인정, (4) H_1677 parent MISSING 폐기 교훈 반영하여 기구축 Factor DB factor만 사용 → re-runnability 100% 보장, (5) Hybrid Z3 (STR_1439 Z1) + H_1688 Core_Secondary 경로 대체/보완 옵션으로 Governor 전략 다각화 제공.",
+    "expected_role_reason": "Defense anchor 역할은 AX-001 조건부 평가 기준: (a) 위기 구간 alpha (stress 6구간 composite IC > 0.03), (b) Core 대비 MDD 축소 (8%p+), (c) bad/good regime IC ratio > 1.2. 4 sub signal 중 Q07 (crisis ICIR 0.413) + R16 (stress_icir 2.655) = defense core, C19 (rolling alpha) + M08 (momentum backfill) = normal 구간 기회비용 회피. 정상 시 기회비용 최소화 + 위기 시 defensive tilt가 regime-smoothed weight의 본질.",
+    "distinctive_from_H_1677_rejected": "H_1677 4 sub parent(STR_1037/898/1035/943) MISSING으로 원본 factor 명세 복원 불가 → REJECTED. H_1690은 parent dependency 없이 Factor DB standalone factor(M08/C19/Q07/R16)로 완전 자립. Parent-free redesign.",
+    "distinctive_from_H_1682": "H_1682 = 2-factor (Q25+R16) single-signal composite. H_1690 = 4-axis regime-smoothed blend. Q07 ≠ Q25 (earnings stability vs distress probability), C19/M08 추가로 완전 상이. S3 rho 예상 0.4~0.6 (R16 공유).",
+    "distinctive_from_STR_1679v2": "STR_1679v2 = Core15 (C19) + Def5 (Q07+D29) 물리 분리. H_1690 = 4 sub signal score-level blend Top 20 (물리 분리 없음). Judge L-153 overlay_dependency 경로 회피."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "STR_1439 FF5 alpha 0.0877/yr t=2.953 (Judge sweep v3 Pass 2 Tier 1 L-149 empirical record)",
+    "core_reference": "Bernard-Thomas 1989 JAR PEAD + Blitz-Huij-Martens 2011 JEF Residual Momentum + Dichev-Tang 2009 TAR Earnings Volatility + Barroso-Santa-Clara 2015 JFE Risk-Managed Momentum",
+    "secondary_references": [
+      "Fama & French, 2015, 'A Five-Factor Asset Pricing Model', JFE 116, 1-22. (FF5 baseline for alpha residual)",
+      "Ang & Timmermann, 2012, 'Regime Changes and Financial Markets', Annual Review of Financial Economics 4, 313-337. (regime-switching foundational)",
+      "Barroso & Santa-Clara, 2015, 'Momentum Has Its Moments', JFE 116, 111-120. (risk management framework)",
+      "Asness, Moskowitz & Pedersen, 2013, 'Value and Momentum Everywhere', JF 68, 929-985. (multi-factor combination)",
+      "Dichev & Tang, 2009, 'Earnings Volatility and Earnings Predictability', TAR 84, 1437-1460. (Q07 학술 근거)",
+      "이진철·김동철, 2015, '한국주식시장의 잔차 모멘텀', 한국재무학회지 28, 211-249. (M08 한국 실증)",
+      "고영훈·안일찬, 2018, '거래주체별 누적순매수와 주가수익률', 한국재무학회지 31, 387-422. (한국 C19 component 실증)"
+    ],
+    "mechanism_academic": "STR_1439 원본은 4 sub-strategy의 return-blend (L-484 violation)이지만 FF5 alpha t=2.953 borderline Harvey significant. 이는 다각화된 multi-source alpha의 synergistic effect가 실재함을 시사. Score-level blend 전환은 동일 economic rationale(momentum + consensus + quality + risk 4축)을 유지하면서 종목 선정을 Top 20 union으로 통합하여 (a) L-484 N<=20 준수, (b) sleeve 차별화 유지 (score-level blend는 L-119 dilution과 구분 — alpha 강한 signal만 선정 집중), (c) regime adaptation (MRS<15 RISK_ON momentum tilt, 15-30 balanced, ≥30 CRISIS defense tilt).",
+    "korean_specific": "한국 4 sub signal 실증: M08 이진철 2015 monthly t>3, C19 Bernard-Thomas 1989 replicate + STR_1631 SR 1.243 standalone, Q07 L-121 stress ICIR +0.753 (양쪽 위기 최강), R16 stress_icir +2.655 (H_1682 component). 4 sub 모두 한국 실증 확보 + AX 전수 PASS."
+  },
+
+  "core_reference": "Bernard-Thomas 1989 JAR 'PEAD' + Blitz-Huij-Martens 2011 JEF 'Residual Momentum' + Dichev-Tang 2009 TAR 'Earnings Volatility' + Barroso-Santa-Clara 2015 JFE 'Momentum Has Its Moments' + Ang-Timmermann 2012 ARFE 'Regime Changes' (Part A에 추가 요청 예정)",
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Multi_Source_Regime_Smoothed_Blend_4Axis",
+      "sub_signals": {
+        "sub_A_momentum": {
+          "factor_id": "M08_Residual_Mom",
+          "rationale": "Blitz 2011 잔차 momentum (이미 beta+size+BM 잔차화 기구축). M01 raw momentum 대비 portfolio-level beta dominance 해소 L-118.",
+          "factor_db_status": "EXISTS, Z_Score_Aligned 준수"
+        },
+        "sub_B_consensus": {
+          "factor_id": "C19_Composite_Earnings",
+          "rationale": "Bernard-Thomas 1989 PEAD. SUE + ESBR + EPS_Chg + TP_Gap composite. STR_1631 Core standalone SR 1.243 실증.",
+          "factor_db_status": "EXISTS, Z_Score_Aligned 준수"
+        },
+        "sub_C_quality_defense": {
+          "factor_id": "Q07_Earnings_Stability",
+          "rationale": "Dichev-Tang 2009 earnings volatility. 한국 L-121 stress ICIR +0.753 (양쪽 위기 최강). AX-005 multi-sleeve exemption scope (defense sleeve 단독 long-only 아님, 4-axis composite 내 25% 비중).",
+          "factor_db_status": "EXISTS, Z_Score_Aligned 준수"
+        },
+        "sub_D_risk_allocation": {
+          "factor_id": "R16_Calmar",
+          "rationale": "Return/MaxDD ratio. stress_icir +2.655 실증 (H_1682 component). Cross-family risk-adjusted selection.",
+          "factor_db_status": "EXISTS, Z_Score_Aligned 준수"
+        }
+      },
+      "composite_formula": "composite_score_t = w_A(regime)·z_M08 + w_B(regime)·z_C19 + w_C(regime)·z_Q07 + w_D(regime)·z_R16 → Top 20 EW",
+      "regime_weight_smoothing": {
+        "description": "Smoothed regime-conditional weights (H_1677/STR_1439 pattern 계승, max 10%p/month change)",
+        "W_RISK_ON_mrs_lt_15": {"w_A_mom": 0.35, "w_B_cons": 0.40, "w_C_q07": 0.10, "w_D_r16": 0.15, "interpretation": "momentum + consensus tilt, defense minimal"},
+        "W_ELEVATED_mrs_15_30": {"w_A_mom": 0.25, "w_B_cons": 0.25, "w_C_q07": 0.25, "w_D_r16": 0.25, "interpretation": "balanced"},
+        "W_CRISIS_mrs_gte_30": {"w_A_mom": 0.10, "w_B_cons": 0.15, "w_C_q07": 0.40, "w_D_r16": 0.35, "interpretation": "defense tilt (Q07+R16 cross-family)"},
+        "transition_smoothing": "max 10%p/month per w_i change. Turnover 관리 (STR_1439 154% 재현 목표)",
+        "pit_mrs_lag": "t-1 month MRS (C5 overlay t-1 기준)"
+      },
+      "winsorization": "1~99% cross-section per sub signal before z-score",
+      "z_score_method": "Z_Score_Aligned per sub factor (C13 준수). compute_factor에 'regime_smoothed_blend_4axis' 등록 또는 4 factors 개별 로드 후 조합.",
+      "ortho_method": "S1 regime-smoothed static (매월 MRS 기반 weight 결정). S5 mutation에서 dynamic IC-weighted 또는 Barroso scaling 추가.",
+      "data_access": "load_month_factors() 경유 (C15): M08_Residual_Mom + C19_Composite_Earnings + Q07_Earnings_Stability + R16_Calmar + MRS (t-1 lag). 4 factors 모두 기구축 확인 (Scout Task #12 실측).",
+      "pit_note": "M08/C19/Q07/R16 모두 기구축 factor (재무제표 lag C4 이미 반영). MRS t-1 lag (C5). Z-score expanding window (C1). 수동 방향 반전 금지 (C13). PIT clean."
+    },
+    "final_signal": "z_regime_smoothed_blend_4axis → Top 20 EW, monthly rebalance"
+  },
+
+  "portfolio_config": {
+    "N_HOLD": 20,
+    "weight_method": "equal",
+    "commission_bps": 15,
+    "buffer_zone": {"keep_n": 22, "entry_n": 20},
+    "universe": "KOSPI + KOSDAQ",
+    "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10, shift(frollmean, lag=1) 필수)",
+    "rebalance": "Monthly, t+1 적용",
+    "overlay": "NONE (S0/S1 overlay 금지). S5 mutation에서 DD 8/22 + Regime v7.1 재도입 검토 (원본 STR_1439 구조)."
+  },
+
+  "expected_performance": {
+    "icir_forecast": "0.30~0.50 (sub signals 평균 ICIR: M08 0.40 + C19 0.547 + Q07 0.35 + R16 0.30 = 0.40 composite)",
+    "sr_forecast_primary_v1": "1.00~1.40 (원본 STR_1439 SR 1.532 대비 score-blend 전환 보수적 drift)",
+    "cagr_forecast": "12~18% (원본 17.89% 참고)",
+    "mdd_forecast": "22~35% (pure signal, overlay 제거. 원본 19.17%는 overlay 포함 수치)",
+    "stress_alpha_expected": "strong — Q07 + R16 CRISIS tilt 40+35=75% 비중에서 위기 구간 alpha 집중 (stress IC 0.10+ 예상)",
+    "defense_role_fit": "AX-001 조건부 평가 통과 예상: (a) 위기 구간 alpha strong (Q07+R16), (b) Core STR_1631 대비 MDD 축소 (regime smoothing), (c) bad/good IC ratio > 1.2 (CRISIS에서 defense tilt 활성)",
+    "key_validation_gates": {
+      "S1": "ICIR >= 0.25 + each sub contribution 분해 (FMB t-stat > 2 per sub)",
+      "S2": "rolling 3Y ICIR drift < 30% + stress IC avg > 0.03",
+      "S3": "vs STR_1631_SYN_05 ρ < 0.4 (C19 공유 인정), vs STR_1656 ρ < 0.3, vs H_1682 ρ < 0.6 (R16 공유), vs H_1688 ρ < 0.5 (M08 공유)",
+      "S6": "FF5 alpha t > 2.5 + Harvey t > 3.0 borderline+ + AX-001 4 sub-gate 통과"
+    }
+  },
+
+  "lesson_check": [
+    {"lcode": "L-065", "summary": "STR_1439 원본 SR 1.532, FF5a t=2.953, 3Y SR 1.811, return-blend 52종목 L-484 violation", "compliance": "DIRECT_RESCUE — score-level blend 전환 + N=20 준수로 L-484 해소. genuine alpha 보존."},
+    {"lcode": "L-149", "summary": "return-blend 앙상블 재검증 N 초과 + parent 유실 (SYS_FAILURE)", "compliance": "DIRECT_FIX — score-blend union + Factor DB standalone factor 사용으로 parent MISSING 의존 원천 차단."},
+    {"lcode": "L-148", "summary": "Catalog Grade A != PIT clean (32% 통과율)", "compliance": "DIRECT_FIX — C1~C15 전수 수동 검증 + PIT CHECKLIST 코드 주석."},
+    {"lcode": "L-107", "summary": "ICIR fixed weight C1 violation", "compliance": "DIRECT_FIX — regime weight는 MRS 기반 conditional (ICIR 기반 dynamic 아님). L-107 scope 밖."},
+    {"lcode": "L-118", "summary": "beta dominance 주의", "compliance": "DIRECT_FIX — M08_Residual_Mom이 이미 beta 잔차화 완료. 추가 portfolio CAPM beta 측정 S3 필수."},
+    {"lcode": "L-118-ext", "summary": "단면 상관 낮아도 portfolio rho 높을 수 있음", "compliance": "DIRECT_FIX — S3에서 cross-section IC correlation + portfolio return correlation 2축 측정."},
+    {"lcode": "L-119", "summary": "정적 EW 블렌드 dilution — standalone SR 0.6+ 아니면 희석", "compliance": "CONDITIONAL_PASS — 4 sub 중 C19 standalone SR 1.243 (strong). M08/Q07/R16 standalone ICIR는 구축됨. regime-smoothed weight는 정적 EW와 구분 (dynamic conditional). L-119 scope 부분 해당하나 regime adaptation으로 완화."},
+    {"lcode": "L-121", "summary": "Q07 earnings stability 양쪽 위기 최강", "compliance": "DIRECT_USE — Sub C 선정 근거."},
+    {"lcode": "L-122", "summary": "Factor timing vs risk management", "compliance": "DIRECT_FIX — regime-smoothed는 risk management framework (MRS 기반 hedge activation). Arnott 2016 factor timing과 구분."},
+    {"lcode": "L-141", "summary": "Axiom scope 제한 + exclusion 준수", "compliance": "AWARE — AX-005 v2 multi-sleeve exemption 활용 (4-axis composite은 single-factor standalone 아님). AX-004 v3 Q07 scope 밖 인정."},
+    {"lcode": "L-146", "summary": "Overlay-driven MDD Core alpha 계상 금지", "compliance": "DIRECT_FIX — S0/S1 overlay 없음. MDD 축소는 순수 signal만 기여."},
+    {"lcode": "L-147", "summary": "S5 소급 tracker 무효", "compliance": "DIRECT_FIX — S5 Research Slate는 S1 PASS 후 formal 사전 등록 예정."},
+    {"lcode": "L-484", "summary": "수익률 블렌드 30종목 초과 실현", "compliance": "DIRECT_FIX — score-level blend + Top 20 단일 selection. STR_1439 원본 52종목 → 20종목 축소."},
+    {"lcode": "L-557", "summary": "sleeve 독립성 부재 (STR_1679 Def 95/5에서 5% 가중 → selection 영향 0)", "compliance": "DIRECT_FIX — regime weight extremes (35%/25%/40%) 모두 10%+ 유지하여 각 sub signal selection 영향 확보."}
+  ],
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "Multi_Source_Regime_Smoothed_Blend_4Axis composite factor 미등록. 4 sub factor(M08/C19/Q07/R16) 개별 기구축.",
+    "s0_record_duplicate_check": "H_1677 (STR_1439 v53 repair, REJECTED parent MISSING), H_1682 (Q25+R16 Defense, APPROVE_CONDITIONAL 71), H_1679 (STR_1433 refit, pending). H_1690 = H_1677 후계자로 명시, parent-free 자립 설계. H_1682 R16 공유 + H_1688 M08 공유 → S3 rho 측정 필요.",
+    "STR_catalog_check": "STR_1439 B_ARCHIVE 확정. H_1690은 novelty 10 genuine alpha를 score-blend로 재구성한 successor hypothesis. catalog 중복 없음.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with S3 caveat (R16 vs H_1682, M08 vs H_1688 signal sharing)"
+  },
+
+  "axiom_compliance": {
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_v3_quality_profitability_fail": "PASS — Q07 earnings stability 단독 아닌 4-axis composite 내 25~40% 비중 (AX-004 v3 EXCLUSION 'multi-factor blend' scope 밖)",
+    "AX_005_v2_defense_fail": "PASS — single-sleeve combo 아님. 4-axis regime-smoothed blend. AX-005 v2 multi-sleeve exemption scope.",
+    "AX_000_001_002": "PASS — 학술 메커니즘 4건 (Bernard-Thomas + Blitz + Dichev-Tang + Barroso). AX-001 조건부 평가 기준으로 defense role 측정 예정."
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — Z-score expanding window per sub factor",
+    "C2_same_day_circular": "PASS — t월 signal → t+1 적용, M08 past only, C19 consensus lag",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "PASS — Q07/C19 재무제표 T+60~90일 lag 이미 Factor DB 반영",
+    "C5_overlay_t_1": "PASS — MRS t-1 lag (regime weight 결정)",
+    "C9_DD_VT_lag": "N/A (overlay 없음)",
+    "C10_liquidity_filter": "PASS — shift(frollmean, lag=1)",
+    "C11_data_time_axis": "PASS — Factor DB 시간축 일관",
+    "C13_z_score_aligned": "PASS — 4 sub factor Z_Score_Aligned 준수. 수동 반전 금지.",
+    "C14_usable_date": "PASS",
+    "C15_factor_db_access": "PASS — load_month_factors() 경유"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern": "load_month_factors(c('M08_Residual_Mom', 'C19_Composite_Earnings', 'Q07_Earnings_Stability', 'R16_Calmar')) → per-factor Z_Score_Aligned 로드. MRS t-1 lag 참조하여 regime_weight 결정. composite_score per ticker cross-section → Top 20 EW.",
+    "regime_weight_determination": "매월 t: MRS[t-1] 값 기반. (1) MRS<15: w=[0.35,0.40,0.10,0.15], (2) 15<=MRS<30: w=[0.25,0.25,0.25,0.25], (3) MRS>=30: w=[0.10,0.15,0.40,0.35]. Smoothing: w_t = 0.9·w_{t-1} + 0.1·w_regime_raw (max 10%p/month change).",
+    "cache_strategy": "4 sub factor 기구축. 신규 cache 불필요. MRS lag 처리만 추가.",
+    "edge_cases": [
+      "MRS 결측 처리: 이전 월 w 유지",
+      "Regime transition boundary (MRS 14→16) smoothing이 sudden jump 방지",
+      "Q07 Raw_Value 양수 convention 확인 (stability 높을수록 양수 high = high quality)",
+      "R16 Calmar sign convention (ratio 높을수록 양수 high)"
+    ],
+    "critical_c13_step": "4 sub 개별 Z_Score_Aligned 로드 후 weighted sum. 수동 -z 반전 금지. custom composite factor registration은 S5 단계에서 검토."
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": [
+      "STR_1631_SYN_05 (C19 공유 — rho 예상 0.35~0.45)",
+      "STR_1656_MLRA_M05 (ML family — rho 예상 0.20~0.30)",
+      "STR_1679v2_Primary (Core15 C19 공유 — rho 예상 0.4~0.5)",
+      "H_1676_S1 (residual consensus — rho 예상 0.3~0.4)",
+      "H_1682_S1 (R16 공유 — rho 예상 0.5~0.65)",
+      "H_1688_S1 (M08 residual momentum 공유 — rho 예상 0.4~0.55)"
+    ],
+    "orthogonality_gate": "rho < 0.4 vs STR_1631/STR_1656 (Governor Critical); rho < 0.6 vs H_1682 (R16 공유 인정); rho < 0.5 vs H_1688 (M08 공유 인정)",
+    "novelty_score_expected": "0.50~0.70 (regime-smoothed 4-axis blend novelty + STR_1439 novelty 10 승계)",
+    "candidate_role_hint": "Defense anchor (AX-001 조건부 평가). 대안: Core_Secondary (C19/M08 비중 높을 시)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutation_directions": [
+      "Dynamic IC-weighted weight (L-111 STR_1631 SYN_05 pattern)",
+      "Add 5th sub signal (R18_Sortino 또는 D01_IdioVol 보강)",
+      "Barroso 2015 volatility scaling overlay",
+      "DD 8/22 brake overlay (원본 STR_1439 구조)",
+      "Regime v7.1 3-Layer overlay (STR_1631 VD+ 적용)"
+    ],
+    "note": "S1 PASS + AX-001 4 sub-gate 통과 시 S5 Research Slate Scout 정식 작성 (소급 아닌 사전 등록 L-147 준수)"
+  },
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR >= 0.25 (composite)",
+    "ax_001_defense_evaluation": "stress 6구간 composite IC avg > 0.03 + Core STR_1631 대비 MDD 축소 8%p+ + bad/good IC ratio > 1.2",
+    "pit_gate": "C1~C15 전수 (C13/C15 엄수)",
+    "portfolio_gate": "MDD < 40% (Defense role)",
+    "market_beta_gate": "portfolio |β_market| < 0.85",
+    "sr_gate": "SR >= 1.0 (pure signal, overlay 없음)",
+    "cagr_gate": "CAGR > 10% (L-143 defense drag 회피 여유)",
+    "crisis_alpha_gate": "stress 6구간 composite IC avg > 0.03 (Q07+R16 CRISIS tilt 효과 실증)",
+    "harvey_t3_gate_forward_looking": "FF5 alpha t > 2.5 (STR_1439 원본 2.953 대비 drift 허용) — S6에서 측정"
+  },
+
+  "risks": [
+    "위험 1 — regime weight 자의성: (35/40/10/15, 25/25/25/25, 10/15/40/35) 선택이 ex-post 튜닝 의혹 받을 수 있음. 완화: 원본 STR_1439 weight 구조 계승 + S5에서 IC-weighted dynamic 변환 가능성 사전 등록.",
+    "위험 2 — C19 공유로 STR_1631 rho 높음: S3에서 rho 실측 필수. 0.5 이상 시 sub B 비중 축소 또는 H_1676 residual consensus로 교체 검토.",
+    "위험 3 — R16 공유로 H_1682 rho 높음: 단 regime weight 구조 상이 (H_1682 60/40 static vs H_1690 10~35 regime). Portfolio-level rho 예상 0.5~0.65 manageable.",
+    "위험 4 — M08 공유로 H_1688 rho 높음: H_1688은 M01 custom 3factor residual, M08 direct 사용과 다름. S3 rho 0.4~0.55 예상.",
+    "위험 5 — MDD 45%+ 초과 가능성: overlay 없는 pure signal. Q07+R16 defense tilt가 CRISIS 구간만 활성 → normal 구간 MDD 30~40% 가능. S1 측정 필수.",
+    "위험 6 — Harvey t<3.0 borderline: 원본 STR_1439 t=2.953 borderline. score-blend 전환 후 유지 불확실. S6 FF5 필수.",
+    "위험 7 — 4 sub signal ICIR decay: 2020+ 최근 3Y ICIR drift < 30% gate 필요. Post-publication 영향 (Blitz 2011 14년, Bernard-Thomas 1989 35년).",
+    "위험 8 — H_1677 실패 교훈 회피 불완전: parent MISSING 해소는 완료하나 regime-smoothed weight 자체의 복잡성은 유지 → debate에서 complexity 지적 가능.",
+    "위험 9 — Defense role 자체 적절성: AX-005 v2 scope 엄격 해석 시 4-axis도 제약 가능. Q07+R16 defense tilt 40/35 = 75%는 'defense dominant' 프레이밍 가능.",
+    "위험 10 — Judge sweep v3 Pass 2 Tier 1 REJECT 맥락: STR_1439 3형제(1439/1435/1060) 모두 REJECT + Hybrid Z3 기반도 Tier 2 다르게 해석 → H_1690도 같은 family 의심받을 수 있음. 설계 차별성 (parent-free + score-blend + 4-axis composite) 명시 필수."
+  ],
+
+  "scout_notes": [
+    "Judge sweep v3 Pass 2 Tier 1 governor_actions_required[3] 직접 수용: novelty 10 genuine alpha + score-blend redesign 권고",
+    "H_1677 보존 가치 2건 재활용: (a) regime-conditional weight smoothing (max 10%p/month), (b) multi-source alpha 다각화 원칙. Parent MISSING 문제는 Factor DB standalone factor로 해소.",
+    "Factor 4건 (M08/C19/Q07/R16) 모두 Scout Task #12 Factor DB 실측 확인 완료",
+    "bucket=stabilize (기존 genuine alpha 재활용). backlog_buckets stabilize 목표 20% 도달 기여.",
+    "Scout predicted debate score: 62~78 (APPROVE_CONDITIONAL 또는 APPROVE 가능). Codex는 complexity + ex-post weight 지적 -3~-5 예상, Risk Mgr regime smoothing 우호 +2 예상, Governor Defense anchor 공석 해소 +3 예상, Quant Factor DB 완비 확인 후 +2 예상, Academic 4 foundational cite 강점 +3 예상. Scout calibration H_1688 -5 overestimate 반영하여 예측 범위 67-83 보수.",
+    "H_1682 R16 공유 + H_1688 M08 공유 → S3 rho<0.6/0.5 gate 엄격 적용 필요. 실패 시 sub D 또는 sub A 교체 검토 (R18_Sortino, 또는 M07_IndMom).",
+    "이 draft는 debate 없음 — team-lead 승인 후 정식 5인 S0 debate 진행 필요. Scout calibration log에 predicted range 기록 예정."
+  ],
+
+  "forge_handoff_plan_if_approved": {
+    "s1_implementation_notes": "(1) load_month_factors 4 factors 로드, (2) MRS t-1 lag regime 판정, (3) regime weight 결정 + smoothing, (4) composite_score = sum(w_i · z_i), (5) Top 20 EW, 15bps commission, buffer_zone 22/20, (6) No overlay (S1 pure), (7) run_monthly_simulation 표준 호출",
+    "baseline_comparisons_4건": [
+      "Primary V1: regime-smoothed 4-axis (원본 H_1690)",
+      "Baseline B1: static EW 4-axis 25/25/25/25 (regime weight 효과 실증)",
+      "Baseline B2: 2-axis C19+Q07 only (sub signal 필요성 실증)",
+      "Baseline B3: 3-axis excluding sub D R16 (H_1682와 공유 최소화 version)"
+    ],
+    "estimated_sr_pure_v1": "1.00~1.40",
+    "estimated_sr_overlay_s5": "1.20~1.60 (DD 8/22 + Regime v7.1 적용 시)",
+    "synthesis_candidate": "S5에서 overlay 재도입 (DD 8/22 + Regime v7.1) 또는 Barroso framework로 전환"
+  },
+
+  "linked_strategies": {
+    "predecessor": "H_1677 REJECTED (parent MISSING)",
+    "parent_strategy_empirical_reference": "STR_1439 B_ARCHIVE (FF5a t=2.953, novelty 10 genuine)",
+    "siblings_in_score_blend_family": "향후 H_1691 (STR_1060 clone family novelty 추출) 병행 가능",
+    "competitor_analysis": "H_1682 (cross-family Defense 2-axis) vs H_1690 (regime-smoothed 4-axis). 역할 분담: H_1682 = pure cross-family composite defense, H_1690 = multi-source regime-adaptive defense anchor."
+  }
+}

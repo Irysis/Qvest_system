@@ -1,0 +1,177 @@
+{
+  "_freeze_marker_for_hook": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_freeze_override_rationale": "team-lead Spawn message Day 2 즉시 가능 작업 #4 'Defense cluster 33% AX-001 v2 multi-sleeve 검증' 명시 지시. AX-001 v2는 v55 Lawbook addendum (00_Lawbook/ax001_v2_defense_conditional.md)에 정식 등재된 axiom 갱신, 본 spec은 그 운영 framework 문서화. 새 rule 미포함, 기존 axiom 운영 spec만.",
+  "_v54_override_timestamp": "2026-04-19T22:45+09:00",
+
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Risk Manager + Scout",
+  "type": "AX_001_V2_AUDIT_DEFENSE_V2_FRAMEWORK_SPEC",
+  "timestamp": "2026-04-19T22:45+09:00",
+  "session": 68,
+  "day": 2,
+  "task_id": "Task #10 / team-lead Day 2 즉시 가능 작업 #4",
+  "version": "v1.0",
+  "status": "DRAFT_SPEC — Judge S6 cascade에서 audit_defense_v2() 호출 시 본 spec 기반 검증",
+
+  "purpose": "Defense cluster 33% (또는 v3 Path C 23%) 후보 admission 시 AX-001 v2 'Defense는 multi-sleeve 내에서만 평가, crisis_alpha > 0 + bad/normal IC ratio > 0.6' 강제 framework 정식화.",
+
+  "ax_001_v2_principle": {
+    "axiom_id": "AX-001 v2",
+    "lawbook_path": "00_Lawbook/ax001_v2_defense_conditional.md",
+    "v1_versus_v2": {
+      "v1_original": "Defense는 조건부 성과로 평가한다. 전기간 SR 기준 적용 금지.",
+      "v2_extension_2026_04_19": "Defense standalone 평가 금지. multi-sleeve 내 평가만 허용. 4축 metric (multi_sleeve + crisis_alpha + bad/normal_IC + core_mdd_reduction) 동시 PASS 필수."
+    },
+    "implication_for_v3_path_c_default": "H_1689 v3 variant_1 단독 23% Defense 의존 시 single-source robustness 검증 강화 필수 — audit_defense_v2() 4축 모두 PASS 시에만 admission."
+  },
+
+  "audit_defense_v2_function_spec": {
+    "function_name": "audit_defense_v2",
+    "module": "02_Infrastructure/validation/role_honesty_audit.R",
+    "v55_extension_module": "02_Infrastructure/pipeline/v55_stage_gate_extensions.R::sg_determine_role_v55 + audit_defense_v2",
+    "signature": "audit_defense_v2(strategy_id, daily_returns, regime_history, core_returns, sleeve_context = 'multi_sleeve_or_standalone')",
+
+    "input_requirements": {
+      "strategy_id": "STR_XXX or H_XXX 식별자",
+      "daily_returns": "data.frame(Date, Ret) — strategy daily returns",
+      "regime_history": "data.frame(Date, regime_score, regime_category) — t-1 lag",
+      "core_returns": "data.frame(Date, Ret) — Core sleeve(STR_1631 또는 Core sleeve weighted) returns for Δ MDD comparison",
+      "sleeve_context": "'multi_sleeve' or 'standalone' — standalone일 경우 즉시 FAIL"
+    },
+
+    "axis_1_multi_sleeve_only": {
+      "name": "Multi-Sleeve Context Verification",
+      "measurement": "sleeve_context 입력 검증 + 전략 metadata 확인",
+      "pass_threshold": "sleeve_context == 'multi_sleeve' AND strategy designed for multi-sleeve embedding",
+      "fail_action": "AUTO_REJECT (AX-001 v2 violation)",
+      "scenario_d_option_2_compliance": "STR_1687/H_1689 모두 PASS (Scenario_D 5-sleeve 설계 내)"
+    },
+
+    "axis_2_crisis_regime_alpha": {
+      "name": "Crisis Regime Conditional Alpha",
+      "measurement": "MRS ≥ 30 (또는 regime_category == 'CRISIS') 구간 strategy alpha vs Core",
+      "formula": "α_crisis = mean(r_strategy | regime == CRISIS) - mean(r_core | regime == CRISIS)",
+      "target": "+3 ~ +5 %p/year (annualized)",
+      "pass_threshold": "α_crisis > 0 (양수 필수, 기본). 강건성을 위해 ≥ +3%p/year 권고",
+      "fail_action": "REJECT + Defense sleeve 재구성 검토"
+    },
+
+    "axis_3_bad_normal_ic_ratio": {
+      "name": "Bad/Normal Regime IC Ratio",
+      "measurement": "CRISIS IC 절댓값 / NORMAL IC 절댓값",
+      "formula": "IC_ratio = |IC(signal | regime == CRISIS or BAD)| / |IC(signal | regime == NORMAL)|",
+      "target": ">= 0.6 (위기 IC가 정상 IC의 60% 이상)",
+      "pass_threshold": "IC_ratio >= 0.6 (Defense는 위기에서 작동해야 함)",
+      "interpretation": "ratio < 0.6 → 위기에서 signal degradation → defense 자격 미달",
+      "fail_action": "REJECT 또는 weight 축소"
+    },
+
+    "axis_4_core_relative_mdd_reduction": {
+      "name": "Core Relative MDD Reduction",
+      "measurement": "Defense 포함 시 portfolio MDD vs Core-only MDD 차이",
+      "formula": "ΔMDD = |MDD(portfolio_with_defense)| - |MDD(core_only)|, normalized by |MDD(core_only)|",
+      "target": "MDD reduction >= 5% (5%p+ MDD 완화 또는 core MDD의 10% 이상 완화)",
+      "pass_threshold": "ΔMDD reduction (in absolute terms) >= 0.05 OR ratio MDD reduction >= 0.10",
+      "reference_str_1631_core_mdd": -0.2127,
+      "reference_target_after_defense": "STR_1631 -21.27% × 0.90 = -19.14% 또는 더 낮음",
+      "fail_action": "REJECT + Defense weight 재조정"
+    },
+
+    "composite_pass_logic": {
+      "rule": "all_4_axes_must_pass",
+      "axis_1": "MUST PASS (multi_sleeve_only)",
+      "axis_2": "MUST PASS (crisis_alpha > 0)",
+      "axis_3": "MUST PASS (IC_ratio >= 0.6)",
+      "axis_4": "MUST PASS (MDD reduction >= 5%)",
+      "any_fail": "REJECT (AX-001 v2 hard gate)"
+    },
+
+    "output_format": {
+      "verdict": "PASS_AX001_V2 or REJECT_AX001_V2",
+      "axes_results": {
+        "multi_sleeve_only": {"pass": true, "value": "multi_sleeve"},
+        "crisis_alpha_pp_per_year": {"pass": true, "value": 4.2},
+        "bad_normal_ic_ratio": {"pass": true, "value": 0.72},
+        "mdd_reduction_pct_pts": {"pass": true, "value": 0.058}
+      },
+      "recommended_weight_adjustment": "0.23 (PASS) or 0.10 (PARTIAL) or 0.00 (FAIL)",
+      "rationale": "string"
+    }
+  },
+
+  "candidates_audit_v3_priority": {
+    "candidate_1_h_1689_v3_variant_1_defense_PRIMARY": {
+      "weight_target": 0.23,
+      "axis_1_multi_sleeve_only": "PASS (Scenario_D Option 2 설계 multi-sleeve 내)",
+      "axis_2_crisis_alpha_target": "Expected +3~+5%p (Q25 Ohlson distress signal in crisis) — Forge S1 + Judge S6 측정 대기",
+      "axis_3_bad_normal_ic_ratio_target": "Expected >= 0.7 (Q01 GPA + Q04 Piotroski + Q25 Ohlson 3-axis) — 측정 대기",
+      "axis_4_core_mdd_reduction_target": "STR_1631 -21.27% → Defense 23% 적용 시 -18~-19% target — 측정 대기",
+      "expected_verdict": "PASS_AX001_V2 likely (3-axis design, scenario_B_confirmed)"
+    },
+
+    "candidate_2_str_1687_defense_SUSPENDED": {
+      "weight_target": "0.00 (SUSPENDED in v3 preview)",
+      "current_status": "Grade F + Hard Fail (MDD 58.67%) — AX-001 v2 axis 4 (MDD reduction) 자동 FAIL",
+      "axis_1_multi_sleeve_only": "PASS (sector-neutral + multi-sleeve 설계)",
+      "axis_2_crisis_alpha_v1_result": "stress 2/3 outperform (partial PASS)",
+      "axis_3_bad_normal_ic_ratio_v1_result": "IC stability ratio 1.20 (improving) — full IC 0.0311 / recent 3Y 0.0372",
+      "axis_4_core_mdd_reduction_v1_result": "MDD 58.67% > Core MDD 21.27% → MDD INCREASE (FAIL)",
+      "verdict": "REJECT_AX001_V2 (axis 4 catastrophic fail)",
+      "step_9_crash_fix_dependency": "재실행 결과 Grade A/B/F 분기 후 재audit"
+    },
+
+    "candidate_3_str_1679v3_diversifier": {
+      "weight_target": 0.08,
+      "note": "Defense role 아님 (diversifier_with_overlay_dependency). AX-001 v2 적용 미해당. PG1 PASS 확정.",
+      "skip": "audit_defense_v2 미적용"
+    }
+  },
+
+  "v3_path_c_default_implication": {
+    "single_source_defense_concern": "STR_1687 SUSPENDED 상태에서 H_1689 v3 variant_1 단독 23% Defense (single-source) — AX-001 v2 axis 1 multi_sleeve_only 통과하나 robustness 강화 필요",
+    "additional_safeguards_recommended": [
+      "Reserve 19% 임시 확장으로 MDD shock buffer 확보",
+      "Risk Mgr 4th round spawn 시 H_1689 v3 variant_1 single-source TDC sensitivity 측정 추가",
+      "Day 6~7 Blender 5-sleeve 정식 발행 시 H_1689 v3 variant_1 max 25% cap 강제 검토",
+      "STR_1687 Hard Fail 최종 확정 시 Scout alternative defense (예: H_1693 v2 Q07-only without sector-neutral, Q07 + risk-managed overlay) sourcing 트리거"
+    ]
+  },
+
+  "judge_s6_integration_requirement": {
+    "current_s6_cascade_task_id": "Task #6 in_progress",
+    "audit_defense_v2_invocation_timing": "Gate 11 (Defense Conditional Audit) 또는 Gate 12 (Multi-Sleeve Compliance) 단계에서 호출",
+    "judge_responsibility": "audit_defense_v2() 함수 invocation + 4축 결과 hurdle_result.json 'defense_metrics' 필드에 기록",
+    "governor_responsibility": "Judge 결과 수신 후 PG1 admission 판정 시 verdict 기반 weight 결정",
+    "fail_handling": "audit_defense_v2 FAIL → admission BLOCKED → Reserve 또는 alternative defense 이동"
+  },
+
+  "v54_freeze_compliance": {
+    "new_rule_or_amendment": false,
+    "framework_spec_documentation_only": true,
+    "ax_001_v2_lawbook_already_published": "00_Lawbook/ax001_v2_defense_conditional.md (Session 67 Day 2 발행)",
+    "spec_purpose": "Lawbook axiom의 운영 framework 정식화 + audit_defense_v2() 함수 spec 명문화",
+    "freeze_override_basis": "team-lead Day 2 즉시 가능 작업 #4 명시 지시",
+    "verdict": "PASS"
+  },
+
+  "next_actions": {
+    "governor_immediate": [
+      "본 spec 발행 완료",
+      "team-lead 보고 (STR_1687 Grade F + Defense primary 재배치 + AX-001 v2 audit framework)",
+      "Judge S6 cascade에 audit_defense_v2() invocation 요청 메시지"
+    ],
+    "judge_dependency": [
+      "S6 cascade Gate 11/12에서 audit_defense_v2() invocation",
+      "결과 hurdle_result.json defense_metrics 필드에 기록",
+      "Governor 통보"
+    ],
+    "scout_dependency": [
+      "STR_1687 Hard Fail 최종 확정 시 alternative defense sourcing 트리거 대기",
+      "H_1693 v2 Q07-only without sector-neutral 또는 Q07 + risk-managed overlay 설계 검토"
+    ],
+    "risk_mgr_4th_round_dependency": [
+      "H_1689 v3 variant_1 single-source TDC sensitivity 측정 추가",
+      "Defense 23% single-source robustness 검증"
+    ]
+  }
+}

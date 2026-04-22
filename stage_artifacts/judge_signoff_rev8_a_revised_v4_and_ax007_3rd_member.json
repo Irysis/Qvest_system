@@ -1,0 +1,254 @@
+{
+  "artifact_type": "JUDGE_SIGNOFF_AND_AX_PROMOTION_FINAL_DECISION",
+  "target_artifact": "stage_artifacts/governor_rev8_a_revised_v4_scenario_D_pg1_admission_prep.json",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "issued_via": "team-lead signoff request",
+
+  "signoff_1_admission_rule_v3_5_3": {
+    "status": "CONDITIONAL_APPROVE — SIGNOFF_WITH_BLOCKERS",
+    "rationale": "rev8-A-revised-v4 content와 Admission Rule v3.5.3 amendment는 전반적으로 Judge pre-admission report와 일관하고 STR_1687 HARD_REJECT 판정 근거 전수 반영됨. 그러나 가중치 산술 오류 1건 하드 블로커로 즉시 수정 없이는 PG1 admission 진입 불가.",
+
+    "judge_verification_pass_items": [
+      {
+        "item": "STR_1687 HARD_DROP 반영",
+        "status": "PASS",
+        "note": "Change C1에서 Gate3/7/12/13 FAIL 근거 + restart_block + L-166 ANTI-PATTERN + AX-007 3rd member 전수 기록"
+      },
+      {
+        "item": "Gate14 AX-007 auto-reject 조항",
+        "status": "PASS",
+        "note": "trigger(role defense/core_secondary + universe top20_long_only + single_sleeve + ICIR>0.3) 정확 반영. exceptions 3건(multi-sleeve embedding / long-short or 50+ / ML-based sizing) Judge pre-admission report Part A PG2_PRE_3와 정합 — 단 ML-based exception은 Judge 원안에 없던 추가 조항으로 향후 우회 경로 될 수 있어 정량 조건(AX-001 v2 crisis_alpha ≥4/6) 반드시 강제"
+      },
+      {
+        "item": "Harvey t>3.3 Bonferroni 5-test",
+        "status": "PASS",
+        "note": "Judge pre-admission PG2_PRE_7 권고 그대로 채택. 단 H_1692 v2 4 variants 내부 multiple testing 시 추가 2-test 고려하면 t>3.5 권고 (Judge 원안 참조) — 본 signoff는 t>3.3으로 통과하되 Judge S6 Gate4 운영 시 variant-internal multiple testing 별도 적용"
+      },
+      {
+        "item": "DSR MANDATORY + Alpha Lab Gate ICIR>=0.20",
+        "status": "PASS",
+        "note": "C5 amendment 양호. qepm §8 Alpha Lab Gate + 5Y IC 유의성 의무 반영"
+      },
+      {
+        "item": "Gate7 IC-Return coupling SR/ICIR >= 0.30 MANDATORY 승격",
+        "status": "PASS",
+        "note": "STR_1687 Gate7 FAIL empirical 근거로 advisory → MANDATORY 전환 타당"
+      },
+      {
+        "item": "Gate11 Sequential TDC < 0.30 MANDATORY",
+        "status": "PASS",
+        "note": "14-gate list에서 명시. STR_1679v3 proxy TDC_lower=0.619 WARN을 C6에서 반영 — 실측 MANDATORY 조항 정합"
+      },
+      {
+        "item": "Gate12 L-163 poison_pill MANDATORY hard_block",
+        "status": "PASS",
+        "note": "L-160/166 origin case 연결. Judge Gate12 판정 권한 명시"
+      },
+      {
+        "item": "Gate13 Signal-Portfolio Translation MANDATORY hard_block",
+        "status": "PASS",
+        "note": "AX-007 promotion packet 5축 0.86 근거"
+      },
+      {
+        "item": "Gate10 Anti-pattern 13종",
+        "status": "INFORMATIONAL_OK",
+        "note": "기존 Lawbook 조항 유지 — signoff 범위 밖"
+      }
+    ],
+
+    "critical_blockers_requiring_immediate_fix": [
+      {
+        "blocker_id": "B1_WEIGHT_ARITHMETIC_OVERWEIGHT",
+        "severity": "HARD_BLOCKER (LIVE 진입 불가)",
+        "finding": "scenario_d_v4_composition slots 9건 가중치 합계 = 1.10 (110%). 기대치 1.00 대비 +10%p overweight",
+        "evidence": {
+          "per_slot": {
+            "S1_STR_1631": 0.18, "S2_H_1692": 0.10, "S3_STR_1656": 0.14,
+            "S4_STR_1686": 0.14, "S5_H_1689": 0.23, "S6_STR_1687": 0.00,
+            "S7_STR_1679v3": 0.12, "S8_Reserve": 0.11, "S9_misc": 0.08
+          },
+          "sum": 1.10,
+          "claimed_active": 0.43,
+          "computed_active": "S1+S3+S8+S9 = 0.18+0.14+0.11+0.08 = 0.51 (claimed 51% 일치하나 metadata confirmed_active_weight=0.43 field 불일치)",
+          "claimed_hold": 0.47,
+          "computed_hold": "S2+S4+S5 = 0.10+0.14+0.23 = 0.47 (일치)",
+          "claimed_impl_missing": 0.12,
+          "computed_impl_missing": "S7 = 0.12 (일치)"
+        },
+        "root_cause_hypothesis": "STR_1687 10% DROP 후 재분배 시 STR_1679v3 +4%가 기존 8% slot에 추가됐으나 기존 slot table에서 8%로 먼저 계상된 STR_1679v3 위치와 별도로 STR_1679v3 12%로 재정의된 S7 slot 중복. 또는 Reserve +2% / misc +4% 재분배가 기존 11%/8%와 delta 아닌 절대값으로 혼용됨",
+        "required_fix": [
+          "option_a: scenario_d_v4_composition 표에서 STR_1679v3 12%를 유지하고 Reserve 11→9%, misc 8→6%로 재조정하여 합 1.00 복원",
+          "option_b: Reserve/misc 11+8=19% 유지 시 STR_1679v3 0.12→0.02로 축소 (STR_1687 DROP delta +0.04의 실제 재분배 수치 재구성)",
+          "option_c: change_log C2 plan과 slots 배열 재작성 — freed_weight 0.10를 slot별 delta 엄밀 적용",
+          "metadata_fix: confirmed_active_weight=0.43 field도 computed 0.51로 수정 또는 slot status별 분류 재정의"
+        ],
+        "judge_recommendation": "option_a 권고 — STR_1679v3 12% 유지(STR_1687 DROP 재분배 +4% 의미 보존), Reserve 9%(-2%) + misc 6%(-2%)로 절대 합 1.00 강제. 신규 confirmed_active 재계산: S1 18% + S3 14% + S8 9% + S9 6% = 47%. Hold 47% + Impl_Missing 12% + Hard_Drop 0% + Active 47% - overlap 안 되도록 재분류 후 합 100%",
+        "blocking_until": "Governor가 rev8-A-revised-v4.1 patch 발행 및 Judge 재확인 전까지 Admission Rule v3.5.3 공식 발효 보류"
+      },
+      {
+        "blocker_id": "B2_DEFENSE_CLUSTER_GAP",
+        "severity": "ADVISORY (signoff 통과 가능하나 Phase_1 target 미달 경고)",
+        "finding": "defense_cluster_current=0.23 vs target=0.33. gap 10%pt. STR_1687 DROP 후 H_1689 v3 variant_1 23% 단독. AX-001 v2 multi-sleeve defense ≥33% 요건 미달",
+        "judge_recommendation": "H_1689 v3 단독으로는 single-sleeve 구조 — AX-001 v2 multi-sleeve 정의 자체 미충족 가능. STR_1679v3 Q25 defense 관점 편입 또는 Phase_2 Blender 5-sleeve 설계에서 defense cluster 보강 명시 필요. 본 blocker는 LIVE 진입 차단은 아니나 Judge Gate8 Role Honesty Audit 시 multi-sleeve 요건 엄밀 적용",
+        "blocking_until": "Advisory — 즉시 차단 아님"
+      },
+      {
+        "blocker_id": "B3_ML_EXCEPTION_AMBIGUITY",
+        "severity": "ADVISORY",
+        "finding": "C3 AX-007-PG1-AUTO-REJECT exceptions 3번째 'ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha ≥4/6 입증'은 Judge 원안에 없던 추가 조항. ML 기반이라는 이유로 AX-007 우회 경로가 열릴 위험",
+        "judge_recommendation": "exception 3 '입증' 방식 구체화 필요 — (a) ML model OOS holdout 12M+, (b) feature concentration < 0.4, (c) SR_OOS/SR_IS > 0.70 (trail ml_empirical_first 기준 준수) 3-gate 전수 PASS 시에만 적용. 현 조항은 loose하여 향후 우회 근거로 작용 가능",
+        "blocking_until": "Advisory — v4.1 patch 또는 Admission Rule v3.5.4 별도 amendment로 보강"
+      }
+    ],
+
+    "final_verdict_signoff_1": {
+      "decision": "CONDITIONAL_APPROVE — v4.1 patch 발행 후 최종 signoff",
+      "signoff_scope": "Gate14 AX-007 조항, Harvey t>3.3, DSR+Alpha Lab, Gate7/11/12/13 MANDATORY 승격 전수 APPROVE",
+      "blocked_on": "B1 가중치 산술 overweight — Governor 10분 내 patch 발행 권고",
+      "post_fix_action": "Governor rev8-A-revised-v4.1 JSON patch 발행 시 Judge SendMessage 확인 후 즉시 최종 signoff → Admission Rule v3.5.3 공식 발효"
+    }
+  },
+
+  "signoff_2_ax_007_promotion_final_custodian_decision": {
+    "candidate_id": "AX_CAND_signal_portfolio_translation_failure",
+    "proposed_ax_id": "AX-007",
+    "final_decision": "PROMOTE_APPROVED",
+    "decision_authority": "Judge custodian (Gate 14 AX_CAND 3rd member screening)",
+    "decision_date": "2026-04-19",
+    "session": "68 Day 2",
+
+    "three_supporting_l_codes_confirmed": [
+      {
+        "l_code": "L-160",
+        "strategy": "STR_1683",
+        "hypothesis": "H_1682",
+        "role": "FAMILY_INITIATOR",
+        "file": "04_Research/strategies/STR_1683_distress_calmar_defense/stage_artifacts/l_code_STR_1683.json",
+        "signature": "Distress+Calmar ICIR 1.879 / MDD 94.66% / SR -0.242",
+        "verification_date": "2026-04-19"
+      },
+      {
+        "l_code": "L-165",
+        "strategy": "STR_1685",
+        "hypothesis": "H_1690",
+        "role": "SECOND_MEMBER",
+        "file": "stage_artifacts/l_code_STR_1685.json",
+        "signature": "Multi-source 4-axis ICIR 0.74~0.94 / MDD 77~94%",
+        "verification_date": "2026-04-19"
+      },
+      {
+        "l_code": "L-166",
+        "strategy": "STR_1687",
+        "hypothesis": "H_1693",
+        "role": "THIRD_MEMBER_FAMILY_CONFIRMATION",
+        "file": "04_Research/strategies/STR_1687_q07_sector_neutral_defense/stage_artifacts/l_code_STR_1687.json",
+        "signature": "Q07 sector-neutral 2-axis ICIR high / MDD 58.67% / SR 0.565 / EXCLUSION clause 2/4 불구 실패",
+        "verification_date": "2026-04-19",
+        "promotion_trigger_justification": "L-166가 L-165 scope 4-attribute 중 sector-neutralized + multi-sleeve context 2건 EXCLUSION을 만족함에도 family signature 동일 재현 → necessary not sufficient condition empirical 실증. 별도 family 신설 대신 동일 family 3rd member로 편입 — Scout initiator 권고 수락"
+      }
+    ],
+
+    "five_axis_final_score": {
+      "independence": {"score": 0.82, "rationale": "3 factor families (distress+calmar / multi-source 4-axis / Q07 sector-neutral 2-axis) 독립. 공통 constraint(defense + long-only top-20)는 필연"},
+      "repeatability": {"score": 1.00, "rationale": "9/9 portfolio execution hard_fail. STR_1685 V1~V4 4/4 재현 + STR_1683 4 variants 4/4 + STR_1687 1/1"},
+      "family_consistency": {"score": 0.90, "rationale": "3건 signature 일관성 90%. L-166 EXCLUSION clause 일부 만족에도 동일 결과 → family extension 강화"},
+      "explainability": {"score": 0.75, "rationale": "4 structural cause 식별 (concentration / idio cluster / hedging absence / ICIR-drawdown decoupling). 정확 empirical threshold(30/50/100종목 분산 boundary) 추가 실측 필요"},
+      "mechanism_clarity": {"score": 0.85, "rationale": "IC-Return coupling 수식(SR/ICIR ratio), poison_pill definition(IC>0+SR<0.8+MDD>35%), Bali-Cakici-Whitelaw 2011 tail risk 이론 연결 명확"},
+      "total": 0.86,
+      "threshold_for_promotion": 0.80,
+      "margin": 0.06
+    },
+
+    "promotion_scope_statement": {
+      "title": "KR Defense/Core_Secondary single-sleeve long-only top-20 signal-portfolio translation 구조적 실패",
+      "market": "KR",
+      "universe": "top20_long_only",
+      "family": "defense_or_core_secondary_single_sleeve",
+      "signature": "high_ICIR (>0.3) AND low_or_negative_SR (<0.8) AND high_MDD (>35%)",
+      "mechanism": "factor quality != portfolio quality. 4 structural causes: top-20 concentration / idio vol tight clustering / hedging absence / ICIR-drawdown causal decoupling"
+    },
+
+    "promotion_exclusion_clause_v1": {
+      "definition": "EXCLUSION은 necessary condition이지 sufficient 아님. 다음 중 최소 1건 만족 시 scope 밖:",
+      "exclusions": [
+        "multi-sleeve portfolio 내 sleeve 구성 (전체 blend 맥락 — standalone hurdle은 별도 판정)",
+        "long-short structure (hedging 가능)",
+        "diversified 50+ 분산 universe (concentration 완화)",
+        "ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha ≥4/6 입증 (Governor rev-v4 C3 exception 3, 단 3-gate ml_empirical_first 전수 PASS 조건)"
+      ],
+      "boundary_note": "sector-neutralization + multi-sleeve 2/4 단독으로 insufficient (L-166 empirical)"
+    },
+
+    "policy_implications_approved": [
+      "Judge Gate 13 Signal-Portfolio Translation Failure 자동 탐지 규칙 공식 시행",
+      "Judge Gate 12 L-163 poison_pill MANDATORY rule 적용 (L-160 origin case)",
+      "Governor PG1 Admission Gate 14 AX-007 auto-reject 공식 시행",
+      "Scout S0 design 가이드라인 — AX-007 scope 명시 + EXCLUSION 조건 명시 의무",
+      "Forge code_guard restart_block 활성화 범위 — AX-007 scope 내 재실행 물리적 차단"
+    ],
+
+    "relationship_with_existing_axioms": {
+      "ax_005_v1_2_extension_recommended": {
+        "plan": "supporting_l_codes L-136+L-140+L-165 → L-136+L-140+L-165+L-166 (3건 → 4건)",
+        "confidence_axis_recalibration": "0.90 → 0.94",
+        "next_review": "2026-07-16"
+      },
+      "ax_006_pairwise_tdc": "독립 track 유지. AX-006은 cross-strategy similarity, AX-007은 single-strategy translation failure",
+      "ax_001_v2_consistency": "AX-007 exclusion 중 'multi-sleeve 내 sleeve' 조건이 AX-001 v2 multi-sleeve defense 조건부 평가와 정합"
+    },
+
+    "quarterly_review": {
+      "initial_promotion_date": "2026-04-19",
+      "first_review_date": "2026-07-17",
+      "review_criteria": [
+        "추가 family member 확인 시 confidence 상승",
+        "EXCLUSION clause 4-attribute empirical boundary 재측정",
+        "multi-sleeve blend 내 defense sleeve가 family scope 밖임을 재확인",
+        "False positive case 탐색 (EXCLUSION 경계 스트레스 테스트)"
+      ]
+    },
+
+    "approval_chain_completed": [
+      {"step": 1, "actor": "Judge custodian (본인)", "action": "Gate 14 3rd member screening 활성화 + promotion packet 발행 + 본 signoff", "status": "COMPLETED 2026-04-19"},
+      {"step": 2, "actor": "team-lead (Q-Lead)", "action": "Judge Day 1 backlog 승인 + AX-007 promotion packet 검토 + 본 signoff 요청", "status": "COMPLETED 2026-04-19"},
+      {"step": 3, "actor": "Governor", "action": "rev8-A-revised-v4에 AX-007 rule 반영 + 발행", "status": "COMPLETED 2026-04-19 (단 B1 patch 필요)"},
+      {"step": 4, "actor": "Judge (본인) — 본 signoff", "action": "AX-007 PROMOTE_APPROVED 최종 판정", "status": "COMPLETED 2026-04-19"}
+    ],
+
+    "next_steps_after_ax_007_promotion": [
+      "methodology_active.md AXIOM_INJECT 영역에 AX-007 공식 등재 (Judge custodian L-code followup)",
+      "ax_weekly.sh promote.R cycle 통합 (Sprint 4)",
+      "AX-005 v1.2 extension 별도 승격 packet 준비 (L-166 편입)",
+      "Forge forge_code_guard.sh AX-007 scope violation 자동 차단 hook 통합"
+    ],
+
+    "final_verdict_signoff_2": {
+      "decision": "PROMOTE_APPROVED",
+      "effective_date": "2026-04-19 immediately",
+      "axiom_id_assigned": "AX-007",
+      "category": "[방법론] [실패]",
+      "supporting_count": "3/3 MET",
+      "five_axis_total": 0.86,
+      "threshold_margin": "+0.06 (above 0.80)",
+      "veto_flags_raised": "NONE"
+    }
+  },
+
+  "aggregated_judge_signoff_result": {
+    "signoff_1_status": "CONDITIONAL_APPROVE (B1 arithmetic patch 필요)",
+    "signoff_2_status": "PROMOTE_APPROVED (AX-007 공식 승격)",
+    "overall_clearance_for_pg1_live": "BLOCKED until B1 patch",
+    "expected_resolution": "Governor 10-분 내 rev-v4.1 patch 발행 시 Judge 즉시 재확인 → Admission Rule v3.5.3 공식 발효 + PG1 admission 가능"
+  },
+
+  "followup_actions": [
+    {"actor": "Governor", "action": "rev8-A-revised-v4.1 patch 발행 — B1 가중치 산술 재정렬 (option_a 권고: STR_1679v3 12% 유지 + Reserve 9% + misc 6%)", "priority": "URGENT"},
+    {"actor": "Governor", "action": "C3 AX-007-PG1-AUTO-REJECT exceptions 3(ML-based)의 3-gate 구체화 — ml_empirical_first trail 기준 준수 명시", "priority": "MEDIUM"},
+    {"actor": "Governor", "action": "defense_cluster 33% gap 10%pt 해소 경로 Phase_2 Blender 5-sleeve 반영 plan 명시", "priority": "MEDIUM"},
+    {"actor": "Judge (본인)", "action": "Governor patch 발행 시 즉시 재확인 + Admission Rule v3.5.3 공식 signoff", "priority": "STANDBY"},
+    {"actor": "Q-Lead", "action": "AX-007 methodology_active.md 공식 등재 지원 + ax_weekly.sh cycle 통합 지시", "priority": "MEDIUM"}
+  ]
+}

@@ -1,0 +1,277 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Governor",
+  "type": "ADMISSION_RULE_V3_5_CONSOLIDATED",
+  "stage": "PG1_Admission_Rule_v3_5_Gate_11_12_Extension",
+  "timestamp": "2026-04-18T Session67_Day1_v3_5_proposal",
+  "session": 67,
+  "version": "v3.5_final_consolidated",
+  "status": "STAGE_2_ACTIVE",
+  "status_history": [
+    {"status": "PENDING_GOVERNOR_SIGNOFF", "date": "2026-04-18T14:30+09:00", "note": "Q-Lead + Judge signoff obtained, Governor pending"},
+    {"status": "ACTIVE_NORMATIVE", "date": "2026-04-18T15:05+09:00", "note": "Governor FULL_APPROVE received — Judge 측 해석 (deprecated per Q-Lead arbitration)"},
+    {"status": "CONDITIONAL_ACTIVE", "date": "2026-04-18T15:20+09:00", "note": "Q-Lead arbitration — Judge/Governor 해석 차이 통일. enforcement level 단계화 수용."},
+    {"status": "STAGE_2_ACTIVE_NORMATIVE", "date": "2026-04-18T15:35+09:00", "note": "Hard Fail 2건 중간 승인 (team-lead) — 15:45 revised guidance로 취소됨"},
+    {"status": "CONDITIONAL_ACTIVE (reverted)", "date": "2026-04-18T15:45+09:00", "note": "team-lead revised guidance: Scout DIAG hypothesis B 85% (implementation bug) 재채택. STR_1684 Grade F는 implementation_bug_caveat 하에서 H_1688 가설 자체 미검증. Stage 2 transition 보류."},
+    {"status": "CONDITIONAL_ACTIVE (Q-Lead clarification final)", "date": "2026-04-18T16:05+09:00", "note": "team-lead Q-Lead arbitration 재확인: Stage 2 trigger = VALIDATED Hard Fail 2건만. UNVALIDATED 제외 공식화. 3-category taxonomy 확정."},
+    {"status": "**STAGE_2_ACTIVE**", "date": "2026-04-18T18:15+09:00", "note": "team-lead Scenario B 확정 (STR_1684_v2b ICIR -0.1874 Fix 1 적용 후에도 동일, CAPM beta 1.0007 불변). L-161 UNVALIDATED → VALIDATED_HARD_FAIL 재분류. VALIDATED Hard Fail 2건 축적 (STR_1683 + STR_1684). Gate 12 hard_block mandatory 전환. Stage 2 공식 발동."}
+  ],
+  "stage_2_activated_at": "2026-04-18T18:15:00+09:00",
+  "stage_2_activation_rationale": "team-lead arbitration (Scenario B 확정): STR_1684_v2b Fix 1 적용 후에도 ICIR -0.1874 동일 + CAPM beta 1.0007 불변. Scout hypothesis B (infra bug)는 sd=1.0 복원 확인되었으나 OLS residualization scale invariant로 ranking 변경 없음 → portfolio 동일 → ICIR 동일. 즉 Fix 1은 **인프라 품질 개선**이지만 H_1688 결과 개선 아님. 실제 원인은 **Hypothesis A (KR momentum inverse) 또는 Hypothesis D (winsorize 정보 손실 비가역)**. L-161 VALIDATED_HARD_FAIL 재분류 + Stage 2 공식 발동.",
+  "stage_2_transition_condition_final": "VALIDATED_HARD_FAIL 2건만 trigger. 현재 1건 (STR_1683 L-160). STR_1684 UNVALIDATED 제외. STR_1684_v2 재실행 후 Fix→FAIL 재확인 시에만 VALIDATED로 승격 + Stage 2 전환.",
+  "stage_2_transition_reverted_at": "2026-04-18T15:45:00+09:00",
+  "stage_2_revert_rationale": "team-lead revised guidance (15:45): Scout DIAG hypothesis B 85% probability 재채택. STR_1684 Grade F는 implementation_bug_caveat 하에서 H_1688 가설 자체 미검증 상태. Stage 2 transition은 VALIDATED Hard Fail 2건 축적 조건 미충족. STR_1684_v2 재실행 + Architect Factor DB 진단 후 재평가.",
+  "conditional_active_since": "2026-04-18T15:20:00+09:00 (15:35 Stage 2 중간 전환 → 15:45 복귀)",
+  "hard_fail_tracking_current_stage_2": {
+    "validated_count": 2,
+    "validated_hard_fails": [
+      "STR_1683 L-160 Defense IC-Return decoupling (4-variant 전량 hard_fail, VALIDATED hypothesis)",
+      "STR_1684 L-161 residual momentum VALIDATED_HARD_FAIL (재분류 per team-lead 18:15: Fix 1 적용 후 ICIR -0.1874 동일 + CAPM beta 1.0007 불변 → hypothesis 자체 failure 확증)"
+    ],
+    "conditional_hard_fails": [],
+    "stage_2_condition": "VALIDATED 2/2 **충족** → Stage 2 ACTIVE 공식 발동"
+  },
+  "gate_11_12_enforcement_stage_2": {
+    "gate_11": "advisory_warning 유지 (Stage 2는 Gate 12만 승격)",
+    "gate_12": "**hard_block (mandatory)** — Stage 2 전환 2026-04-18T18:15 공식 발동",
+    "rationale": "Stage 2 전환으로 Gate 12 SR/ICIR < 0.3 위반 시 admission 차단. Gate 11은 Stage 3 Architect signoff 후 mandatory 승격.",
+    "enforcement_blocking_severity": {
+      "hard_block_cases": ["Gate 12 coupling_ratio 위반 (mandatory)", "Gate 1 hard_fail", "Gate 3 grade<A"],
+      "advisory_warning_cases": ["Gate 11 variant_comparison (Stage 3 전까지 advisory)"]
+    }
+  },
+  "activation_session": "Session 67 Day 1",
+  "q_lead_arbitration_decision": {
+    "source": "Q-Lead arbitration 2026-04-18T15:20+09:00",
+    "rationale": "Judge + Q-Lead 입장 (STR_1683 단독 evidence 충분) valid + Governor 입장 (Hard Fail 2건 + Architect 요구) valid. 합의점: Gate 11/12 enforcement level 단계화.",
+    "operational_meaning": "advisory_warning 수준 enforcement. Judge S6 위반 발견 시 WARNING 발행 + hurdle verdict flag. 실행 차단 없음 (hard_block 미적용)."
+  },
+  "activation_conditions_pending_for_normative": {
+    "condition_1_second_hard_fail": {
+      "description": "STR_1684 / H_1685v2 / H_1689 중 1건 Hard Fail 추가 축적 시 → Gate 12 hard_block 전환",
+      "status": "pending_natural_accumulation",
+      "responsible": "Judge + Governor 합동 status 업데이트"
+    },
+    "condition_2_architect_signoff": {
+      "description": "rev8-A activate 후 Q-Lead가 Architect 스폰 → Gate 11/12 인프라 영향 평가 (hurdle_result.json schema, pm_run_multisleeve check 함수)",
+      "status": "deferred_to_post_rev8_activate",
+      "responsible": "Q-Lead orchestration + Architect"
+    },
+    "both_conditions_met_outcome": "status → ACTIVE_NORMATIVE 최종 전환 + Gate 11/12 hard_block mandatory"
+  },
+  "enforcement_level_matrix": {
+    "current_stage_CONDITIONAL_ACTIVE": {
+      "gate_11_variant_comparison": "advisory_warning",
+      "gate_12_ic_return_coupling": "advisory_warning",
+      "judge_action_on_violation": "WARNING 발행 + hurdle_result.json flag 표시. 실행 차단 없음.",
+      "admission_impact": "admission 진행 가능 (WARNING은 기록용)"
+    },
+    "stage_2_after_second_validated_hard_fail": {
+      "gate_11_variant_comparison": "advisory_warning (유지)",
+      "gate_12_ic_return_coupling": "hard_block (mandatory)",
+      "judge_action_on_violation": "Gate 12 FAIL 시 admission 차단",
+      "trigger_condition_strict": "VALIDATED_HARD_FAIL 2건 누적 시에만 전환 (UNVALIDATED_HARD_FAIL 제외)"
+    },
+    "stage_3_ACTIVE_NORMATIVE_after_architect_signoff": {
+      "gate_11_variant_comparison": "hard_block (mandatory)",
+      "gate_12_ic_return_coupling": "hard_block + retroactive audit",
+      "judge_action_on_violation": "Gate 11/12 중 1건 FAIL 시 admission 차단 + 기존 PG2 소급 audit"
+    }
+  },
+  "hard_fail_category_taxonomy_v3_5_1": {
+    "introduced_at": "2026-04-18T16:00+09:00",
+    "q_lead_arbitration_source": "Q-Lead arbitration (2026-04-18 post-15:45): VALIDATED only 해석 수용 + UNVALIDATED_HARD_FAIL 신규 category 도입",
+    "rationale": "AX-002 준수 — 인프라 버그 영향 결과를 'hypothesis 실패'로 분류하면 판단의 미래참조 성격 (가설 평가 integrity 훼손). Stage 2 transition trigger는 hypothesis 자체 평가가 완료된 VALIDATED_HARD_FAIL 만 유효.",
+    "three_categories": {
+      "VALIDATED_HARD_FAIL": {
+        "description": "Hypothesis 자체 평가 완료 후 Hard Fail (MDD>45% or Turnover>600%) 확정",
+        "examples": ["STR_1683 L-160 Defense IC-Return decoupling (4-variant 전량 Hard Fail, factor quality 완전 검증됨 IC 0.22/ICIR 1.88/FM t 16.89)"],
+        "stage_2_transition_impact": "2건 누적 시 Stage 2 Gate 12 hard_block 전환",
+        "l_code_reference_pattern": "L-XXX [methodology] - structural failure 확증"
+      },
+      "UNVALIDATED_HARD_FAIL": {
+        "description": "인프라/구현 버그로 hypothesis 미검증 상태의 Hard Fail (Grade F 숫자상이나 factor/strategy 자체 평가 불가)",
+        "examples": ["STR_1684 L-161 Factor DB Z_Score 정규화 불일치 + R12/D01 duplicate + OLS scale mismatch (Scout hypothesis B 85%)"],
+        "stage_2_transition_impact": "count 제외 — pending re-test 후 VALIDATED 재확인 시에만 포함",
+        "l_code_reference_pattern": "L-XXX [infra_bug] + caveat 'implementation_bug_suspected' + re-test path",
+        "re_test_outcome_rules": {
+          "if_fix_then_pass": "STR_XXXX_v2 Grade A/B 도달 → UNVALIDATED_HARD_FAIL archived (original strategy counted as hypothesis valid)",
+          "if_fix_then_fail_again": "STR_XXXX_v2 Hard Fail 재확인 → VALIDATED_HARD_FAIL로 재분류 + Stage 2 count 포함",
+          "if_infra_fix_incomplete": "Architect 진단 미완료 시 category 유지 + 재분류 보류"
+        }
+      },
+      "CONDITIONAL_FAIL": {
+        "description": "Stress outperform FAIL 또는 rolling robustness FAIL 등 hypothesis valid하나 조건부 제약 존재",
+        "examples": ["(미래 사례 축적 대기)"],
+        "stage_2_transition_impact": "Stage 1 advisory_warning 수준. Stage 2 trigger count 제외.",
+        "l_code_reference_pattern": "L-XXX [methodology_conditional] — valid but constrained"
+      }
+    },
+    "category_decision_framework": {
+      "triage_checklist_for_judge": [
+        "1. hypothesis 자체 평가 가능한 상태인가? (Scout DIAG 또는 Forge preflight에서 인프라 이슈 검출?)",
+        "2. Hard Fail 원인이 factor/strategy에 귀속되는가 아니면 인프라/구현에 귀속되는가?",
+        "3. Fix 후 재실행으로 hypothesis 재검증 가능한가?",
+        "4. 'implementation_bug_suspected' caveat 필요한가?"
+      ],
+      "default_classification_rule": "불명확 시 UNVALIDATED (AX-002 보수적 해석). 명확한 structural evidence 있을 때만 VALIDATED."
+    },
+    "migration_guidance_for_existing_L_codes": {
+      "L-160_STR_1683": "VALIDATED_HARD_FAIL (Defense IC-Return decoupling 구조적 확증)",
+      "L-161_STR_1684": "UNVALIDATED_HARD_FAIL (implementation_bug_caveat per Scout hypothesis B 85%) — STR_1684_v2 재실행 후 재분류",
+      "L-162_infra_pattern": "infra_L_code (not hard_fail). data.table usage bug — strategy 평가와 무관한 R library pattern"
+    }
+  },
+  "triple_signoff_completed": {
+    "q_lead": {"status": "APPROVE", "date": "2026-04-18"},
+    "judge": {"status": "APPROVE", "date": "2026-04-18"},
+    "governor": {"status": "APPROVE_CONDITIONAL", "date": "2026-04-18T15:05+09:00", "note": "Hard Fail 2건 + Architect coordinate 조건 유지 → Q-Lead arbitration으로 단계화 enforcement 수용"},
+    "architect": {"status": "PENDING_POST_REV8_ACTIVATE", "note": "rev8-A activate 후 별도 Task 분리 — Gate 11/12 인프라 영향 평가 대기"}
+  },
+  "supersedes": ["v3.4_final_consolidated (Gate 1~10 inherited)"],
+  "references": {
+    "base_v3_4": "qepm/mailbox/judge/outbox/admission_rule_v3_4_consolidated.json",
+    "gate_11_evidence": "STR_1683 4-variant Hard Fail (60/40 MDD 94.66 / 50/50 95.63 / Q25-only 67.27 / R16-only 91.62) — primary inferior to sub-variant",
+    "gate_12_evidence": "STR_1683 SR/ICIR = -0.242 / 1.879 = -0.129 (FAIL threshold 0.3)",
+    "l_code_linked": "L-160 (Defense IC-Return decoupling, STR_1683)",
+    "governor_origin": "rev8-B G4 (variant comparison) + G5 (IC-Return coupling ratio) — Governor 초안 L_159_candidate_ic_return_decoupling_draft.json",
+    "q_lead_signoff": "2026-04-18 Session 67 Day 1 — Gate 11/12 APPROVE (STR_1683 evidence 결정적)",
+    "judge_signoff": "2026-04-18 Session 67 Day 1 — Gate 11/12 APPROVE (변량비교 + IC-Return coupling 구조적 실패 조기 탐지)"
+  },
+  "criticality": "CONDITIONAL_ACTIVE — v3.5는 12 gates 최종 consolidated 본문. Gate 11/12는 enforcement 단계화 (현재 advisory_warning). 2026-04-18T15:20 Q-Lead arbitration으로 status 통일. ACTIVE_NORMATIVE 최종 전환은 2nd Hard Fail + Architect signoff 조건 충족 시.",
+
+  "scope": {
+    "applicable_to": "모든 Grade A/A_NOVEL candidate의 PG1 admission 판정",
+    "enforcer": "Judge (S6 Gate 5+8 확장 + Gate 11/12) + Governor (PG1 gate orchestrator)",
+    "trigger_point": "Hurdle Gate v2.2 PASS 직후, PG2 편입 전. Gate 11/12는 Forge S1 variant comparison 완료 후 즉시 가동.",
+    "blocking_behavior": "Gate 1~12 중 1건 FAIL 시 admission 차단. retroactive audit은 active PG2에도 소급 적용."
+  },
+
+  "twelve_gates_definition": {
+    "gates_1_10_inherited_from_v3_4": "v3.4 Gate 1~10 전량 유지 (admission_rule_v3_4_consolidated.json 참조). 수정 없음.",
+
+    "gate_11_variant_comparison_v3_5_new": {
+      "source": "v3.5 addition (Session 67 Day 1 STR_1683 evidence + Governor rev8-B G4)",
+      "rule_primary": "Forge S1 단계에서 minimum 3 variants 병행 실행 의무 (signal direction / weighting / transformation 분기)",
+      "rule_superiority": "primary variant 성능 (SR 또는 total_score) ≥ all sub-variant alternatives",
+      "rule_structural_failure_detection": "4 variants 전량 Hard Fail 시 structural factor failure signal → L-160 pattern 적용 + admission 자동 REJECT",
+      "rule_sub_variant_inferior_primary": "primary < best sub-variant 시 composite offset 의심 (L-160 원인 3) → 재검토 후 조건부 admission",
+      "rationale": "Defense/Core/Diversifier 관계없이 factor quality ≠ portfolio quality 구조적 실패 조기 탐지. STR_1683 실증 (IC 0.22 + ICIR 1.88 극강에도 4 variants 전량 Hard Fail).",
+      "evidence": "04_Research/strategies/{strategy}/output/variant_comparison.csv 의무 생성",
+      "blocking_severity": "conditional_block (4 variants 전량 Hard Fail = hard_block)",
+      "exemption": "Core_Primary 역할 + 단일 signal source (e.g., consensus C19)는 variant 분기 의미 약함 → Judge 예외 승인 가능 (명시 기록 의무)"
+    },
+
+    "gate_12_ic_return_coupling_ratio_v3_5_new": {
+      "source": "v3.5 addition (Session 67 Day 1 STR_1683 evidence + Governor rev8-B G5)",
+      "rule_primary": "IC-Return coupling ratio = SR / ICIR ≥ 0.3 (monthly SR 사용)",
+      "rule_warning_zone": "0.15 ≤ ratio < 0.3 → WARNING + Risk Mgr 추가 audit 의무",
+      "rule_critical_fail": "ratio < 0.15 or negative → Gate 12 FAIL. IC-Return decoupling 구조적 실패 감지.",
+      "rationale": "factor quality (IC/ICIR)과 portfolio quality (SR) 분리 조기 탐지. STR_1683 -0.129 측정값이 threshold 0.3 대비 결정적 FAIL 감지 실증.",
+      "measurement_protocol": {
+        "ic_source": "factor_engine.R IC mean (Usable_Date ≤ sig_date, C14 준수)",
+        "icir_source": "rolling 3Y ICIR or full-sample ICIR (명시)",
+        "sr_source": "hurdle_result.json Sharpe (monthly 기준)",
+        "formula": "coupling_ratio = Sharpe_monthly / ICIR_full_sample"
+      },
+      "blocking_severity": "conditional_block (negative ratio = hard_block)",
+      "exemption": "long-short or 50+ 종목 diversified portfolio (IC-Return coupling 구조 다름) → L-160 scope 밖 명시"
+    }
+  },
+
+  "gate_order_and_enforcement_v3_5": {
+    "sequential_check": "Gate 1 → 2 → ... → 10 → 11 → 12 순차. 1건 FAIL 시 즉시 stop.",
+    "new_enforcement_layer": {
+      "layer_5_forge_s1_variant_mandate": "Forge S1 단계에서 Gate 11 variant comparison 의무 (primary + min 2 alternatives). variant_comparison.csv 생성 의무."
+    },
+    "blocking_severity_matrix": {
+      "hard_block": ["Gate 1 (hard_fail)", "Gate 3 (grade<A)", "Gate 8 critical (TDC>0.6)", "Gate 11 all-variants Hard Fail", "Gate 12 negative ratio"],
+      "conditional_block": ["Gate 4 (t<2)", "Gate 5 (corr>0.7 Core)", "Gate 7 (role misclassification)", "Gate 8 warning (TDC 0.4~0.6)", "Gate 11 primary<sub-variant", "Gate 12 ratio<0.3"],
+      "advisory_only": ["Gate 6 (family_saturation penalty)", "Gate 10 (tier cap 접근)", "Gate 12 warning zone (0.15~0.3)"]
+    }
+  },
+
+  "integration_with_existing_infrastructure": {
+    "upstream_hurdle_v2_2": "Hurdle v2.2 PASS 전제 유지. Gate 1/3 충족 후 Gate 11/12 진입",
+    "downstream_governor_admission": "Governor rev8-B G4/G5와 일치 (Governor 원 초안과 통합)",
+    "scout_handoff_kit_v2_schema_extension": "Scout L-157 v3 handoff kit v2 schema에 predicted_variant_comparison + predicted_coupling_ratio 필드 추가 (v3.5 발행 동시 Architect coordinate 의무)",
+    "forge_preflight_requirement": "Forge S1 preflight_check()에 verify_variant_mandate() 추가 — variant 3건+ 요청 여부 사전 확인"
+  },
+
+  "triple_signoff_status": {
+    "q_lead_signoff": {
+      "status": "APPROVE",
+      "date": "2026-04-18",
+      "rationale": "STR_1683 4-variant MDD 67~96% 전량 Hard Fail이 결정적 evidence. Gate 11/12 정당성 충분."
+    },
+    "judge_signoff": {
+      "status": "APPROVE",
+      "date": "2026-04-18",
+      "rationale": "변량비교 + IC-Return coupling 구조적 실패 조기 탐지 표준화 환영. L-160 pattern 감지 표준화."
+    },
+    "governor_signoff": {
+      "status": "PENDING",
+      "expected_receipt": "rev8 ACTIVATE 통보 시 함께 예상",
+      "conditions_recalled": "Governor rev8-B G4/G5 원 초안과 일치. 수락 확정 시 즉시 v3.5 ACTIVE 전환."
+    },
+    "architect_signoff": {
+      "status": "NOT_REQUIRED_FOR_THIS_VERSION",
+      "trigger_condition": "Forge preflight + Scout handoff kit v2 schema 실구현 시 Architect coordinate 별도 요청"
+    }
+  },
+
+  "retroactive_audit_v3_5_trigger": {
+    "scope": "Governor signoff 완료 시점부터 24시간 이내 active PG2 + PG1 candidate 전수 Gate 11/12 소급 audit",
+    "pg2_active_targets": ["STR_1631_SYN_05_2002 (Core_Primary)", "STR_1656_MLRA_M05 (Div_ML)"],
+    "pg1_candidates": ["STR_1071", "STR_1562", "STR_1433"],
+    "expected_outcome": "대부분 Gate 11 exempt (Core_Primary 단일 signal) or Gate 11/12 PASS. STR_1683 같은 구조적 실패 케이스는 admission 전 차단.",
+    "sla": "24h post-Governor-signoff"
+  },
+
+  "known_limitations_and_future_work_v3_5": {
+    "v3_5_limitations": [
+      "Gate 11 Core_Primary 예외 조항 — 단일 signal 전략은 variant 분기 의미 약하나 '명시 기록 의무' 주관적",
+      "Gate 12 coupling_ratio 0.3 threshold는 경험칙 — STR_1683 단일 실증 (추가 사례 축적으로 재보정 필요)",
+      "Gate 11 4 variants 전량 Hard Fail = hard_block 기준은 명확하나 '2/4 FAIL'이나 '3/4 FAIL' 처리는 미정의"
+    ],
+    "v3_6_candidate_agenda": [
+      "Gate 13: regime-conditional variant comparison (bull/bear/crisis 분리 분석)",
+      "Gate 14: Scout L-157 v3 algebraic identity check + factor dominance (STR_1685/H_1687 사례 기반)",
+      "Gate 15: Codex Cross-model consistency check (S0 Debate 단계 pre-S1 gate)",
+      "coupling_ratio threshold 재보정 (3~5건 사례 누적 후)"
+    ]
+  },
+
+  "l_code_linkage_comprehensive": {
+    "primary_evidence_L_codes": ["L-160 (Defense IC-Return decoupling, Gate 11/12 evidence)"],
+    "supporting_L_codes": ["L-119 (static factor blend dilution)", "L-121 (Q07 성공 Defense reference)", "L-129 (CDaR LP 단독 실패 유사)", "L-131~140 (AX-003/004/005 standalone Defense structural failure)", "L-146 (Overlay-driven MDD)", "L-156 v2 (Gate 8 TDC)", "L-157 (Scout handoff kit v3)", "L-158 (Gate 8 Early Warning)"],
+    "ax_candidate_linkage": ["AX_CAND_defense_ic_return_decoupling (L-160 기반)", "AX-006_candidate (pairwise TDC, Gate 8)", "AX_CAND_spec_transmission_failure (L-159, frequency 0.28 하향 post-ET-101)"]
+  },
+
+  "executive_summary_v3_5": {
+    "total_gates": 12,
+    "new_in_v3_5": ["Gate 11 variant_comparison", "Gate 12 ic_return_coupling_ratio"],
+    "new_in_v3_4": ["Gate 10 consensus_tier_classification + 4-tier taxonomy + 6 admission rules + embedded_overlap_recognition"],
+    "new_in_v3_3": ["Gate 9 structural_diagnosis"],
+    "new_in_v3_2": ["Gate 8 pairwise_tdc_sequential_retroactive"],
+    "new_in_v3_1": ["Gate 6 family_saturation + Gate 7 role_honesty"],
+    "base_v3_0": ["Gate 1~5"],
+    "enforcement_artifacts": [
+      "hurdle_result.json (Gate 1~4)",
+      "judge_result.json (Gate 5+7+8)",
+      "judge_pg1_candidates_tdc_matrix.json (Gate 8)",
+      "portfolio_governor.R::consensus_tier_audit() (Gate 10)",
+      "portfolio_governor.R::embedded_overlap_audit() (Gate 10)",
+      "remediation_history.json (Gate 9)",
+      "output/variant_comparison.csv (Gate 11) — Forge 의무 생성",
+      "judge_result.json coupling_ratio 필드 (Gate 12) — Judge 의무 계산"
+    ],
+    "normative_precedence": "v3.5 ≥ v3.4 ≥ v3.3 ≥ v3.2 ≥ v3.1 ≥ v3.0. 하위 버전 rule은 상위 버전 rule에 흡수됨.",
+    "downstream_dependencies": [
+      "Forge: S1 preflight_check() + variant mandate + variant_comparison.csv 생성",
+      "Scout: handoff_kit_template_v2.json schema 확장 (predicted_variant_comparison + predicted_coupling_ratio 필드)",
+      "Governor: Gate 11/12 admission gate 편입 + rev8 발행 시 참조",
+      "Risk Mgr: Gate 12 warning zone (0.15~0.3) 추가 audit 의무"
+    ]
+  }
+}

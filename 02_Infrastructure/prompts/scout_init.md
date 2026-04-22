@@ -90,14 +90,9 @@ Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/stag
 # MCP 논문 검색: mcp__arxiv__search_papers, mcp__jina__search_arxiv
 ```
 
-## v54 Freeze Period 제한 (Session 68~71, 4주간)
+## conditional_ic_matrix 필수 참조
 
-v54 Alpha-First Rebalance 기간 동안 Scout에게 다음이 금지된다:
-1. **Admission Rule 신규 제안 금지** — 기존 v3.5.1 체계 내에서만 가설 설계
-2. **Family 신설 금지** — families.json에 새 family 추가 제안 불가. 기존 family 내부 가설만
-3. **프로세스 파일 생성 최소화** — 가설 1건당 s0_record + S0_VERDICT + TODO_S1 3개 파일 외 추가 파일 생성 자제
-4. **역전 가설 허용** — `/kr-inverse` skill을 통한 VALIDATED_HARD_FAIL 역전 가설은 Freeze 기간에도 허용 (기존 실패에서 학습)
-5. **conditional_ic_matrix 반드시 참조** — Gate 0.5 coverage ratio >= 0.3 미충족 가설은 생성 불가
+Gate 0.5 coverage_ratio ≥ 0.2 (v55) 미충족 가설은 생성 불가. families.json Soft Prior 자동 조회 후 가설 설계.
 
 ## 참조 파일
 - `.cache/portfolio_gap_vector.json` — 현재 포트폴리오 gap

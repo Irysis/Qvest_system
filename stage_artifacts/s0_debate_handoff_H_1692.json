@@ -1,0 +1,279 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v1 for H_1692 debate. H_1688 DROP + Fix 1 적용 후 Core_Secondary 대체 가설. L-161 distortion 회피 clean design.",
+  "hypothesis_id": "H_1692",
+  "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3 late)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+  "version": "v1",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P0 (Governor rev8-A Core_Secondary 16pp 공백 긴급 대응)",
+  "L157_v4_pre_checks_completed": true,
+
+  "post_fix_1_context": {
+    "architect_fix_1_applied": "2026-04-18 Q-Lead 직접 적용 — factor_db_connector.R line 113-117",
+    "verification": "factor_db_202603.parquet 288 factors sd = 1.0 복원 확인",
+    "impact_on_H_1692": "H_1692는 M07_IndMom(사전 sd=1.0)과 M18_RSI(사전 sd=1.0) 사용 → Fix 1 적용 전/후 영향 MINIMAL (M07/M18 이미 proper). Fix 1 효과는 다른 factor에 더 큼.",
+    "verification_required": "Forge S1 실행 시 preflight 재확인: M07/M18 post-fix sd도 1.0 유지 확인"
+  },
+
+  "one_line_summary": "M07_IndMom (sd=1.0 proper) residualized on M18_RSI (sd=1.0 proper). KR 섹터 rotation 6~9M + 개인 55% RSI 효과. Top 20 EW Long. H_1688 실패 교훈 3종 반영 clean residualization design (L-161 distortion 회피 + CAPM β 1.0 함정 회피 + Carhart 관습 탈피).",
+
+  "str_number_allocation": {
+    "recommended": "STR_1692 (다음 순번)",
+    "note": "APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정"
+  },
+
+  "L159_spec_transmission_pre_empirical_check": {
+    "verification_date": "2026-04-18 (Fix 1 적용 전/후 2회)",
+    "verification_source": ".cache/factor_db/factor_db_202603.parquet",
+    "required_factors": ["M07_IndMom", "M18_RSI"],
+    "availability_result": {
+      "M07_IndMom": {"present": true, "sd_pre_fix": 1.000, "sd_post_fix_expected": 1.000, "status": "proper"},
+      "M18_RSI": {"present": true, "sd_pre_fix": 1.000, "sd_post_fix_expected": 1.000, "status": "proper"}
+    },
+    "verdict": "PASS — 2-factor 전수 AVAILABLE + proper Z-score. L-159 spec transmission + L-161 distortion 재현 risk DOUBLE_ELIMINATED.",
+    "forge_preflight_required": [
+      "M07/M18 post-Fix 1 sd >= 0.95 verification",
+      "OLS scale balance check (z_M07 vs z_M18 sd ratio 0.9~1.1)",
+      "M01/M08/R12 mutation variants 위한 post-fix sd 검증"
+    ]
+  },
+
+  "L161_distortion_avoidance_verified": {
+    "architect_fix_1_rc_confirmed": {
+      "RC1_winsorize_rescale_missing": "Fix 1 line 113-117 적용으로 해소",
+      "RC2_r12_d01_duplicate": "2 factors 모두 sd=1.0 복원 (Fix 1 후), H_1692 미사용이나 범용 해소",
+      "RC3_M08_252d_extreme_scale": "Fix 1 후 sd=1.0 복원, S5 Slot B (M07 residualized on M11_ST_Reversal) alternate 활용 가능"
+    },
+    "h_1692_design_l161_immunity": [
+      "Base (M07) + Regressor (M18) 모두 Fix 1 이전부터 proper sd=1.0 — L-161 distortion 무관",
+      "OLS `z_M07 ~ z_M18` scale balance 1:1 보장",
+      "R12/D01 duplicate 미사용으로 RC2 bug 무관",
+      "252d sum 극단 scale (M08 RC3) 미사용",
+      "**Clean residualization design confirmed**"
+    ],
+    "capm_beta_1_0_trap_immunity": [
+      "H_1692는 CAPM residualization 아님 (RSI residualization)",
+      "portfolio beta 0.95~1.10 예상은 industry momentum 구조적 특성",
+      "H_1688의 β=1.0007 pseudo-residualization 문제 구조적 비발생",
+      "Core_Secondary role은 BM corr 0.7+ 허용 — beta-neutrality 요구 없음"
+    ]
+  },
+
+  "L157_v4_pre_empirical_measurements": {
+    "algebraic_identity_check": {
+      "formula": "residual_t(i) = z_M07_t(i) - β_t × z_M18_t(i)",
+      "shared_term": "NONE — Grinblatt-Moskowitz 1999 industry momentum vs Wilder 1978 RSI mean-reversion은 직교 mechanism",
+      "verdict": "PASS"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_rho": "0.25~0.40",
+        "rationale": "M07 industry momentum vs C19 consensus 직접 overlap 없음, 간접 momentum-consensus 긍정 상관"
+      },
+      "vs_STR_1656_MLRA_M05": {
+        "predicted_rho": "0.30~0.45",
+        "rationale": "ML model feature importance에 M07/momentum 포함 가능"
+      },
+      "vs_STR_1661_V2_ML_XGB": {
+        "predicted_rho": "0.35~0.55",
+        "rationale": "ML vs technical indicator 공통 signal overlap — Core_Secondary gate 완화 0.55 경계. **S3 실측 critical**"
+      },
+      "vs_H_1685_v2_foreign_resid": {
+        "predicted_rho": "0.10~0.20",
+        "rationale": "investor_flow vs industry momentum 독립 channel"
+      },
+      "vs_H_1679_STR_1433_5sleeve_refit": {
+        "predicted_rho": "0.40~0.55",
+        "rationale": "H_1679 IndMom sleeve (M07 1/5 공유) — family saturation 주의"
+      },
+      "vs_STR_1684_v2_if_pass": {
+        "predicted_rho": "**0.45~0.65**",
+        "rationale": "**momentum family 내 M01 residualized vs M07 residualized — S3 두 momentum variants 공존 가능 여부 critical**"
+      }
+    },
+    "sd_ratio_analysis": {
+      "M07_sd": 1.000,
+      "M18_sd": 1.000,
+      "ratio": "1:1 perfect balance",
+      "verdict": "PASS — L-161 distortion 완전 무관"
+    },
+    "linear_dominance_test": {
+      "expected_M07_M18_corr_median": 0.10,
+      "variance_explained_by_M18": "1% (β_t 매우 낮음 예상)",
+      "L157_threshold_70pct": "NOT_EXCEEDED 큰 여유",
+      "verdict": "PASS — RSI residualization은 light touch, M07 본질 alpha 보존"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "M07_standalone_ICIR_estimate": "0.20~0.30 (기본 momentum 추정)",
+      "residual_composite_ICIR_estimate": "0.22~0.35 (RSI noise 제거로 10~20% uplift)",
+      "verdict": "CONDITIONAL PASS — M07 standalone ICIR 측정 부재로 보수 추정"
+    }
+  },
+
+  "L156_v2_tdc_cluster_registration": {
+    "cluster_name": "Industry_Momentum_RSI",
+    "members": ["H_1692 (신규)"],
+    "expected_conditional_tdc": {
+      "normal_regime": "vs STR_1631 0.25~0.40, vs STR_1661_V2 0.35~0.55",
+      "crisis_regime": "vs STR_1631 0.35~0.55, vs STR_1661_V2 0.45~0.65 (섹터 집중 crisis 시 ML과 overlap 증가)"
+    },
+    "AX_006_candidate_contribution": "+0.03 frequency (8번째 cluster)",
+    "momentum_family_concentration_warning": "STR_1684_v2 (M01 residualized) + H_1692 (M07 residualized) + H_1679 (M07 sleeve) momentum family 3건 + PG1 admission 시 Herfindahl 관리 필요"
+  },
+
+  "scout_calibration_v4_adjusted_predictions": {
+    "predicted_total_range_v4": [52, 66],
+    "predicted_midpoint_v4": 59,
+    "per_debater_v4": {
+      "codex_critic": [7, 10],
+      "risk_manager": [10, 13],
+      "governor": [13, 16],
+      "quant": [11, 14],
+      "academic": [13, 16]
+    },
+    "v4_rules_applied": {
+      "rule_1_R2_auto_delta_-3": "R1 55-69 → final 52-66",
+      "rule_2_codex_rebound": "Codex R1 7 → final 8 default",
+      "rule_3_governor_variance": "lower bound [14→13] — H_1688 DROP 후 Core_Secondary 슬롯 재검토 맥락",
+      "rule_5_tail_warning_penalty": "warnings 2건: (1) Grinblatt 1999 27년 post-publication decay, (2) Core_Secondary admission Governor cap 민감 — -2 applied"
+    },
+    "verdict_projection_v4": "APPROVE_CONDITIONAL (60-74) 하한 경계 or REVISE (40-59) 차단선",
+    "most_uncertain_debater": "Governor (Core_Secondary 재진입 위험 vs novelty 균형), Academic (Grinblatt-Moskowitz 27년 decay vs 박영석 2017 한국 실증)"
+  },
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "M07/M18 Factor DB sd=1.0 proper (L-159 + L-161 distortion DOUBLE_ELIMINATED)",
+      "H_1688 실패 교훈 3종 설계 반영 (L-161 회피 + CAPM 1.0 함정 회피 + Carhart 관습 탈피)",
+      "Grinblatt-Moskowitz 1999 JF foundational (industry momentum 50% of price momentum)",
+      "KR 특수: 섹터 rotation 6~9M + 개인 55% RSI 효과 (박영석 2017)",
+      "Core_Secondary 공백 16pp 긴급 대응 (Governor rev8-A)",
+      "Scout Calibration v4 draft 적용 (2건 연속 5/5 hit 기반)"
+    ],
+    "bear_case": [
+      "Grinblatt-Moskowitz 1999 post-publication 27년 decay (Chordia-Shivakumar 2002 이후 OOS decay 보고)",
+      "한국 direct cite 약함 — 박영석 2017 direct access 미확인",
+      "STR_1661 V2 (ML) overlap 예상 0.35~0.55 — Core_Secondary gate 0.55 경계",
+      "H_1679 momentum sleeve 공유 family saturation 우려",
+      "STR_1684_v2 (M01 residualized) 성공 시 momentum family 3건 누적 (Governor cap 검토)",
+      "portfolio beta 0.95~1.10 예상 — Risk Manager 'Core alpha beta 과도' 지적 대비 필요"
+    ]
+  },
+
+  "strategic_chain": {
+    "if_approve_or_approve_conditional": "**STR_1692** 할당 → Forge S1 → Governor PG1 Core_Secondary admission (rev8-A 16pp 공백 중 8~10pp 배분 후보). H_1688 DROP 공백 일부 대체.",
+    "if_revise": "Scout Path — (a) M18 RSI 제거 M07 standalone 측정, (b) M07 residualized on M11_ST_Reversal (short-term reversal 강조), (c) M24_Sector_Rel_Mom 직접 사용 (sector rotation 명시)",
+    "if_reject": "Core_Secondary 공백 유지, Reserve allocation으로 대기. 향후 residualization 재설계 시 참조."
+  },
+
+  "consensus_tier_classification_L158": {
+    "tier": "Tier 3 Industry Momentum (신규 sub-family)",
+    "gate_10_warning": "기존 momentum family (STR_1684_v2 pending + H_1679 sleeve 1/5) 누적 시 Core_Secondary cap 관찰",
+    "admission_policy": "Phase_2 이후 partial 5~10% Core_Secondary slot (H_1688 DROP 공백 대체)"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1692 Industry Momentum RSI Residualized Core_Secondary. M07(sd=1.0)+M18(sd=1.0) monthly cross-section OLS lm(z_M07 ~ z_M18). 잔차 → Top 20 EW. Grinblatt-Moskowitz 1999 + Wilder 1978 + 박영석 2017. H_1688 DROP 후 Core_Secondary 공백 16pp 긴급 대응. L-161 distortion 회피 + CAPM 1.0 함정 회피 + Carhart 관습 탈피 3종 설계.",
+        "L_CODE_FINDINGS": "L-090 M01 IC 반감기 693M AWARE (M07 유사 가능), L-119 CONDITIONAL_PASS (단일 residual), L-122 factor risk management AWARE (S5 overlay), L-125 IC≠SR AWARE, L-148 C1-C15 DIRECT_FIX, L-156 v2 cluster Industry_Momentum_RSI, L-157 v4 calibration, **L-161 DIRECT_AVOIDANCE** (M07/M18 proper sd), L-146 overlay role honesty (S5 Slot D)",
+        "FAILED_STRATEGIES": "STR_1684 H_1688 Grade F (L-161 distortion + CAPM β 1.0007 pseudo-residualization), STR_1682 H_1676 Option A FAIL (L-159 spec transmission), STR_1683 H_1682 FAIL (direction audit). H_1688 DROP 전제.",
+        "HYP_ID": "H_1692"
+      },
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "Grinblatt-Moskowitz 1999 post-publication 27년 → post-2002 OOS decay 보고 (Chordia-Shivakumar)",
+        "RSI residualization light touch (β_t 0.1 예상) → 실질 alpha improvement 미미 가능성",
+        "momentum family 3건 누적 시 (STR_1684_v2 + H_1692 + H_1679) Core_Secondary cap violation",
+        "portfolio beta 0.95~1.10 예상은 Core alpha 영역 침범 가능 (Core_Secondary vs Core_Primary)",
+        "H_1688 DROP 직후 재진입은 academic 신중성 위반 가능성"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1692 Industry Momentum RSI Residualized. L13 관점 — 섹터 집중 crisis 시 tail dependence, KR 섹터 rotation 급변 구간 (2022 2차 전지, 2024 AI/바이오) performance, 개인 55% RSI 효과 stress 구간 붕괴 위험, portfolio beta 1.0+ Core_Secondary 허용 여부.",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "섹터 집중 crisis 시 industry momentum + RSI 동시 붕괴 위험",
+        "KR 개인 55% 비중 → panic 국면 RSI overbought/oversold 효과 역전 가능",
+        "portfolio beta 1.0+ Core_Secondary 내 있으나 Core_Alpha 영역 침범",
+        "momentum crash exposure (2020-03 COVID) — overlay 없으면 MDD 55%+"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1692. rev8-A Core_Secondary 공백 16pp 긴급 대응 후보. H_1688 DROP 맥락에서 재진입 위험 vs novelty 균형. momentum family 누적 (STR_1684_v2 pending + H_1692 + H_1679 1/5) cap 검토.",
+      "rubric_focus": "role_match(4) + family_saturation(4) + axiom_compliance(4) + mdd_contribution(4) + kill_diversification(4) = 20",
+      "expected_assessment_vectors": [
+        "Core_Secondary 공백 긴급 대응 → novelty score 상향",
+        "H_1688 DROP 직후 재진입 시 Governor 신중 — Scout Path B (RSI 제거 standalone) fallback 대기",
+        "momentum family 3건 누적 (STR_1684_v2 + H_1692 + H_1679) Herfindahl 관리 필요",
+        "Scout L-161 회피 설계 인정 (M07/M18 proper sd=1.0)"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1692. M07/M18 Factor DB 기구축 sd=1.0 proper 확인. OLS balance 1:1. M07 standalone ICIR 측정 부재 + STR_1661 V2 대비 marginal contribution 검증 필요. Harvey t borderline.",
+      "rubric_focus": "icir(4) + correlation_sanity(4) + data_availability(4) + implementability(4) + statistical_power(4) = 20",
+      "expected_fact_check_vectors": [
+        "M07 standalone ICIR 공식 측정 부재 — Scout 추정 0.20~0.30 근거 약함",
+        "β_t (M07 vs M18) 실측 필요 (0.1 예상)",
+        "composite ICIR 0.22~0.35 uplift 10~20% 예상 검증",
+        "Harvey t 3.0~4.5 forecast — pure signal borderline",
+        "STR_1661 V2 ML 대비 marginal contribution 약할 가능성 (ML이 M07 feature 포함 시)"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1692. Grinblatt-Moskowitz 1999 JF + Wilder 1978 RSI + Lee-Swaminathan 2000 JF + 박영석·정재만 2017 재무관리연구 + Asness-Moskowitz-Pedersen 2013 JF. peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Grinblatt-Moskowitz 1999 JF foundational (industry momentum 50%)",
+        "Wilder 1978 RSI foundational technical analysis",
+        "Lee-Swaminathan 2000 momentum+volume interaction",
+        "박영석 2017 한국 industry momentum 실증 (direct cite 희망)",
+        "Asness 2013 multi-factor framework"
+      ],
+      "expected_concern_vectors": [
+        "Grinblatt 1999 27년 post-publication decay (Chordia-Shivakumar 2002)",
+        "박영석 2017 direct cite 미확인 — Scout claim 검증 필요",
+        "RSI academic precedent은 technical analysis 영역, institutional academic research 약함",
+        "H_1688 DROP 직후 재진입 academic 신중성 위반"
+      ]
+    }
+  ],
+
+  "handoff_completeness_v1": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": true,
+    "factor_db_availability_verified_post_fix_1": true,
+    "L161_distortion_avoidance_verified": true,
+    "capm_beta_trap_avoidance_verified": true,
+    "L157_v4_draft_applied": true,
+    "L156_v2_TDC_cluster_registered": "Industry_Momentum_RSI (cluster 8)",
+    "L159_spec_transmission_double_eliminated": true,
+    "str_number_recommended": "STR_1692",
+    "ready_for_qlead_r1_debate_spawn": true
+  },
+
+  "scout_notes": [
+    "Fix 1 적용 후 첫 신규 가설. M07/M18 사전 sd=1.0로 Fix 1 영향 MINIMAL이나 distortion DOUBLE_ELIMINATED (L-159 + L-161).",
+    "Governor rev8-A Core_Secondary 16pp 공백 긴급 대응. STR_1684_v2 재실행 결과 보조 dependent하지 않음 — 독립 가설.",
+    "Scout Calibration v4 draft 적용: predicted [52, 66] midpoint 59 (APPROVE_CONDITIONAL 하한 경계).",
+    "S3 critical check: STR_1684_v2 (M01 residualized) + H_1692 (M07 residualized) + H_1679 momentum sleeve → momentum family 누적 Herfindahl 관리.",
+    "Academic 핵심 rebuttal 필요: Grinblatt 1999 27년 decay vs 박영석 2017 KR 실증 + KR 개인 55% RSI 효과 특수성.",
+    "S5 slate 4 slots (Scout 사전 등록): V1 + DD 8/22 overlay / M07 residualized on M11 / M24_Sector_Rel_Mom residualized on M18 / Regime-conditional RSI threshold."
+  ]
+}

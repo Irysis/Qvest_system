@@ -1,0 +1,133 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead (Risk Mgr spawn prompt draft)",
+  "type": "RISK_MGR_3RD_ROUND_PROMPT_DRAFT",
+  "timestamp": "2026-04-18T14:15:00+09:00",
+  "session": 67,
+  "day": 1,
+  "status": "DRAFT — team-lead rev8 옵션 결정 후 최종본 확정",
+  "base_version": "rev7_v3_v1 → rev8 (H_1682 DROP 긴급 migration 반영)",
+
+  "context_brief": {
+    "2nd_round_outcome": "1/4 PASS structural 한계. STR_1679v2 DROP 확정. Defense 35%→40% 재배치",
+    "3rd_round_trigger": [
+      "1. STR_1683 (H_1682) 4 variants 전체 Hard Fail (MDD 67~96%, stress outperform 0/3)",
+      "2. rev7_v3_v1 Phase_3 H_1682 12% 배치 무효",
+      "3. rev8 긴급 발행 (team-lead 옵션 A/B/C 결정 대기)",
+      "4. Scout Calibration v1.0 H_1690 debate 5/5 정확 검증 (range [59,75] vs 실제 64)"
+    ],
+    "expected_scope": "structural FAIL 이미 확인. 한정 범위만 검증 (간소화 prompt)."
+  },
+
+  "verification_scope_5_items": [
+    {
+      "id": "V1",
+      "scope": "rev8 Defense cluster 35% vs 40% 분기 검증",
+      "options": {
+        "rev8_option_A_Defense_first": {
+          "H_1689": 0.25,
+          "H_1690": 0.10,
+          "defense_cluster_total": 0.35,
+          "family_concentration": "quality_aggregate 0.25 (<35% cap PASS, 그러나 2nd round structural 25% 한계 가깝다)"
+        },
+        "rev8_option_B_Core_absorption": {
+          "defense_cluster_total": 0.28,
+          "Core_expansion": "STR_1631 0.22 + STR_1656 0.18",
+          "concern": "Defense 28% — AX-001 조건부 평가 시 방어력 의심"
+        },
+        "rev8_option_C_Reserve_buffer": {
+          "defense_cluster_total": 0.28,
+          "reserve": 0.12,
+          "concern": "현금 drag + Scout 재설계 대기 시간 비용"
+        }
+      },
+      "risk_mgr_question": "3개 옵션 중 tail_risk / CVaR / CDaR 관점 권고 순위"
+    },
+    {
+      "id": "V2",
+      "scope": "H_1689 25% single-factor concentration over-concentration",
+      "question": "H_1689 quality_aggregate 25% 단독 편성 시 정상국면 기회비용 + 위기구간 alpha 기여도 측정. AX-005 (defense standalone 구조적 실패) scope 밖인지 재확인 (H_1689가 multi-sleeve 내 defense sleeve이므로 exclusion).",
+      "data_needed": "H_1689 stress_icir, bad/normal IC ratio, 2008/2018/2020/2022 drawdown"
+    },
+    {
+      "id": "V3",
+      "scope": "H_1690 Phase_2 조건부 10% 승격 조건 완화 타당성 (8→10%)",
+      "question": "H_1690 multi-source composite (M08+C19+Q07+R16) Scout calibration 예측 범위 [59,75] 실제 64 적중. 10 conditions 중 Forge S1 check 6건 PASS 예측 확률. 조기 승격의 tail risk 영향.",
+      "reference": "rev7_v3_v1 h_1690_10_conditions_integrated_into_governor_admission_gate"
+    },
+    {
+      "id": "V4",
+      "scope": "Q25 exposure 14.9% headroom 효과 (rev7_v3_v1 22.1% 대비 -7.2pp 완화)",
+      "question": "Q25 cap 35% 대비 20.1pp headroom 확보로 Q25 family concentration risk 완화. 추가 Q25 편입 여지 확보 평가. monitoring thresholds v2 대조.",
+      "reference": "rev7_v3_v1 q25_r16_total_exposure_audit"
+    },
+    {
+      "id": "V5",
+      "scope": "projected SR 1.73~1.78 range robustness + boost 6건 실현 가능성",
+      "question": "rev8 옵션별 primary projected SR (rho=0.3 conservative) 1.73 (A) / 1.78 (B) / 1.70 (C). boost roadmap 6건 누적 +0.25~0.33 → 2.00 도달 가능성. 각 boost의 correlation 가정 타당성.",
+      "boost_list": [
+        "H_1678 admission (+0.05~0.08)",
+        "STR_1661 V2 accelerated (+0.05~0.08)",
+        "Blend optimization (+0.03~0.05)",
+        "H_1688 Barroso (+0.05)",
+        "H_1687 redesign Session 68 (+0.05)",
+        "H_1690 Phase_2 promotion (+0.02)"
+      ]
+    }
+  ],
+
+  "out_of_scope_explicit": [
+    "STR_1679v2 DROP — 이미 Session 66 rev6에서 확정",
+    "STR_1683 H_1682 variants — 이미 Forge S1 Hard Fail 확정",
+    "STR_1631 PG2 active — 이미 Harvey t=3.09 유일 승인",
+    "Admission Rule v3.4 본문 재검토 — Judge 영역"
+  ],
+
+  "deliverable_format": {
+    "output": "qepm/mailbox/risk_manager/outbox/RISK_MGR_3RD_ROUND_VERDICT.json",
+    "schema": {
+      "verdict_per_item": "PASS / CONDITIONAL / FAIL + rationale 3줄",
+      "rev8_option_recommendation": "A / B / C 중 1개 + 근거",
+      "tail_risk_summary": "CVaR 5% / CDaR 10% estimate per option",
+      "concerns_raised": "신규 structural risk 발견 시 기록"
+    },
+    "time_budget": "2nd round 대비 50% 단축 목표 (한정 범위)"
+  },
+
+  "data_references": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json (base)",
+    "qepm/mailbox/governor/outbox/defense_conditional_audit_framework_v1_0.json",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/h1682_variant_comparison.csv",
+    "04_Research/strategies/STR_1682_residual_consensus/output/hurdle_result.json",
+    ".cache/portfolio_gap_vector.json (v1.0.3)",
+    ".cache/conditional_ic_matrix.csv",
+    "memory/methodology_memory.md (L-156 v2 + L-157 Calibration v1.0 + L-158 Gate 8 Early Warning)"
+  ],
+
+  "2nd_round_structural_fails_carry": {
+    "case_1_PASS": "STR_1631 PG2 active (유일 PASS)",
+    "case_2_FAIL": "STR_1679v2 DROP (Def 0.01pp cosmetic + Overlay 22.54pp dependency)",
+    "case_3_FAIL": "Defense cluster 35% structural (H_1689 단독 25% 한계)",
+    "case_4_FAIL": "Q25 cap structural (22.54%→22.1%→14.9% 점진 완화)"
+  },
+
+  "h_1682_direction_audit_addendum": {
+    "description": "Task #10 assignment에서 요청된 'H_1682 direction audit 필요성'",
+    "question": "H_1682 IC 0.2207 ICIR 1.879 매우 강력한데 long-only 20종목 portfolio로 수익화 완전 실패. 이는 IC signal direction과 실제 return loading 간 structural decoupling을 시사.",
+    "audit_scope": [
+      "A1. Q25 (Distress) signal 방향성 — 부실기업 회피(음의 방향) vs 부실기업 편입(양의 방향) 정렬 확인",
+      "A2. R16 (Calmar) signal 방향성 — 과거 Calmar 높은 종목 편입 시 future return 역전 여부 (publication decay 의심)",
+      "A3. Q25+R16 composite 60/40 weighting이 방향성 상쇄 초래하는지 (두 signal 모두 한쪽 방향일 때 strong, 상쇄 시 weak)",
+      "A4. Z_Score_Aligned 사용 여부 (C13 위반 없는지)",
+      "A5. Long-only 20종목 집중 시 top-decile 선택이 signal direction과 일치하는지"
+    ],
+    "decision_weight": "audit 결과에 따라 H_1682 family 자체 폐기 vs signal 재설계 가능성 판정. Scout 재설계 요청 시 근거로 사용."
+  },
+
+  "next_steps": [
+    "1. team-lead rev8 옵션 결정 수신",
+    "2. prompt 최종본 확정 (옵션별 V1 bullet 정리)",
+    "3. Risk Mgr spawn 지시 전달 (Q-Lead or team-lead)",
+    "4. VERDICT 수신 후 rev8 최종본 확정"
+  ]
+}

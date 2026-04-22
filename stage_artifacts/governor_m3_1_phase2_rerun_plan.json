@@ -1,0 +1,118 @@
+{
+  "artifact_type": "GOVERNOR_RERUN_PLAN",
+  "title": "M3.1 Phase 2 재백테스트 계획 — L-168 post-fix SR delta 측정",
+  "governor_agent_id": "governor",
+  "session": 68,
+  "created_at": "2026-04-19",
+  "trigger": "Q-Lead 지시 — Architect L-168 fix + M3.1 Audit v2 완료 후 Phase 2 준비",
+
+  "context": {
+    "l168_fix": "factor_db_connector.R v2.0 — align_factor_direction() Usable_Date <= sig_date (C_Hybrid, sig_date=NULL registry-only backward compat)",
+    "audit_v2_finding": "STR_1631_SYN_05 + STR_1656_MLRA 모두 load_month_factors() 미경유. L-168 fix SR delta = 0% (경로 없음). Phase 2 목적: post-fix 공식 확인 + Phase 3 대상 전략 SR delta 측정",
+    "pg2_active": "STR_1631_SYN_05 (80%) + STR_1656_MLRA_M05 (20%), SR 1.193"
+  },
+
+  "sr_delta_thresholds": {
+    "pass": "SR delta ≤ 5% → CLEAN, PG2 현행 유지",
+    "caution": "SR delta 5~10% → SOFT_FREEZE 유지 + Judge 재검증 요청",
+    "rev9_trigger": "SR delta > 10% OR SR < 1.00 → PG2 active 재평가 + rev9 발행 + Q-Lead 즉시 보고"
+  },
+
+  "phase2_primary": {
+    "description": "PG2 active 전략 2건 공식 post-fix 재실행",
+    "targets": [
+      {
+        "strategy_id": "STR_1631_SYN_05",
+        "weight_in_portfolio": 0.80,
+        "script_path": "04_Research/strategies/STR_1631_SYN_05/run_all.R",
+        "execution": "cd '04_Research/strategies/STR_1631_SYN_05' && Rscript -e 'source(\"run_all.R\")'",
+        "expected_sr_delta": "0% (Factor DB 미경유 확인)",
+        "l168_path": "NOT_APPLICABLE — 자체 IC 시스템 (SUE/ESBR/EPS1M/TP_Gap)",
+        "rerun_rationale": "공식 확인용. 성과 변동 없을 것으로 예측.",
+        "priority": "P1_CONFIRM"
+      },
+      {
+        "strategy_id": "STR_1656_MLRA_M05",
+        "weight_in_portfolio": 0.20,
+        "script_path": "04_Research/strategies/STR_1656_MLRA/run_all.R",
+        "execution": "cd '04_Research/strategies/STR_1656_MLRA' && Rscript -e 'source(\"run_all.R\")'",
+        "expected_sr_delta": "0% (L-168 미경유) + C10 fix 영향 측정 (유동성 필터 변경)",
+        "l168_path": "NOT_APPLICABLE — load_month_factors() 미사용 확인",
+        "c10_fix_note": "C10 fix(AvgTV20) 적용. 종목 선택 일부 변경 가능 → SR delta 0~5% 예상",
+        "rerun_rationale": "C10 fix 성과 재측정 (L-168 무관). 정식 성과 확정 필요.",
+        "priority": "P0_REQUIRED"
+      }
+    ],
+    "execution_order": "STR_1656 먼저 (C10 fix 검증) → STR_1631 (공식 확인)",
+    "estimated_time": "각 30~60분. 병렬 가능 (Forge 2-parallel 스폰)",
+    "forge_delegation": "Q-Lead L-168 post-fix 재실행 지시 수신 시 즉시 Forge 위임 가능"
+  },
+
+  "phase3_secondary": {
+    "description": "align_factor_direction 직접 호출 전략 30+건 SR delta scan",
+    "scan_target": "04_Research/strategies/*/run_all.R — load_month_factors() OR align_factor_direction() 호출",
+    "scan_method": "grep -rl 실행 결과 기반 (백그라운드 실행 중)",
+    "expected_count": "30+건 (Architect protocol 기준)",
+    "sr_delta_risk": "0~15% 범위 (factor별 expanding vs full-sample IC sign 차이 비례)",
+    "execution_plan": "Phase 2 완료 후 batch 실행. 병렬 최대 3건 동시 (RAM 80% 이하)",
+    "priority_order": [
+      "1. Factor DB 직접 경유 + Grade A 전략 우선",
+      "2. Grade B/C 전략 일괄 후순위",
+      "3. archived 전략 선택적 (PG1 candidate만)"
+    ],
+    "forge_delegation": "Phase 2 SR delta 확인 후 Phase 3 batch 위임. Governor SR delta 집계 → Q-Lead 보고"
+  },
+
+  "str1679v3_status": {
+    "note": "Q-Lead 지시: L-168 pre-fix HARD FAIL 무효 선언. 12% slot 유지.",
+    "scenario_d_v42": "유지 (rev-v4.3 발행 금지)",
+    "action": "L-168 post-fix 재실행 결과 수신 후 최종 판정. Governor 대기."
+  },
+
+  "gap_vector_note": {
+    "current_version": "v1.0.8 (이미 업데이트됨 — Task #13 완료 시점)",
+    "alert": "Q-Lead 지시(v1.0.7 유지 금지)와 충돌. v1.0.8은 M3.1 Gate 2/3 PASS 반영 목적으로 업데이트됨. Phase 2 SR delta 확정 후 v1.0.9 추가 업데이트 예정.",
+    "revert_option": "Q-Lead 승인 시 v1.0.7 롤백 가능. 단 Gate 2/3 PASS 정보 소실됨."
+  },
+
+  "phase3_scan_results": {
+    "scan_completed": "2026-04-19",
+    "total_strategies_found": 44,
+    "note": "load_month_factors() OR align_factor_direction() 직접 호출 전략 전수 목록",
+    "pg1_candidates_in_list": ["STR_1679_score_blend", "STR_1686_foreign_resid_individual", "STR_1692_industry_mom_rsi_residual", "STR_1693_sector_rel_mom_rsi_residual"],
+    "grade_a_variants": ["STR_1631_SYN_05_2002", "STR_1631_SYN_02", "STR_1631_M21_revbreadth", "STR_1631_M22_5factor_q07", "STR_1631_M26_gr05"],
+    "archived_strategies": ["STR_931_oc_fpbr", "STR_933_oc_accel_esbr_coverage", "STR_935_oc_fper_revmom", "STR_1333_ridge_multifactor", "STR_1333_value_earnings_synergy", "STR_1393_esbr_bm_simple"],
+    "full_list": [
+      "FIX_1341_weighted_sum", "STR_1333_ridge_multifactor", "STR_1333_value_earnings_synergy",
+      "STR_1393_esbr_bm_simple", "STR_1417_esbr_hrp_tc_dd620", "STR_1563_price_level_liquidity",
+      "STR_1567_c19_l22_dd_regime", "STR_1570_c19_l22_d01_dd_regime", "STR_1571_c19_v14_d01_l22_dd_regime",
+      "STR_1621_M1~M9 (9 mutations)", "STR_1622_M9", "STR_1623_tailrisk_profitability_defense",
+      "STR_1624_distress_avoidance_liquidity_defense", "STR_1631_M21_revbreadth", "STR_1631_M22_5factor_q07",
+      "STR_1631_M26_gr05", "STR_1631_SYN_02", "STR_1631_SYN_05_2002", "STR_1637_quality_profitability_defense",
+      "STR_1638_enhanced_quality_defense", "STR_1639_conditional_quality_defense", "STR_1640_earnings_skew_blend",
+      "STR_1641_cashflow_skew_value", "STR_1650_C19_AC21_CR05_blend", "STR_1652_DFA_on_VDplus",
+      "STR_1652_dynamic_factor_allocation", "STR_1662_defense_D25_Q07", "STR_1663_V02_EP_diversifier",
+      "STR_1675_Q07_D29_defense", "STR_1678_D43_skewness_diversifier", "STR_1679_score_blend",
+      "STR_1686_foreign_resid_individual", "STR_1687_q07_sector_neutral_defense",
+      "STR_1692_industry_mom_rsi_residual", "STR_1693_sector_rel_mom_rsi_residual",
+      "STR_931_oc_fpbr", "STR_933_oc_accel_esbr_coverage", "STR_935_oc_fper_revmom"
+    ],
+    "batch_execution_plan": {
+      "order": "PG1 candidates → Grade A variants → archived (선택적)",
+      "parallelism": "최대 3건 동시 (RAM 80% 이하)",
+      "forge_delegation": "Phase 2 PASS 확인 후 Day 3~4 batch 위임"
+    }
+  },
+
+  "timeline": {
+    "now": "Phase 3 대상 전략 scan 완료 대기 (백그라운드)",
+    "t0_forge_delegation": "Q-Lead L-168 post-fix 지시 수신 즉시",
+    "t1_str1656_rerun": "Forge 위임 후 30~60분",
+    "t2_str1631_rerun": "STR_1656 완료 직후 또는 병렬 (30~60분)",
+    "t3_sr_delta_report": "Phase 2 완료 후 Governor SR delta 집계 + v1.0.9 업데이트 + Q-Lead 보고",
+    "t4_phase3_batch": "Phase 2 PASS 확인 후 Day 3~4",
+    "t5_pg1_gate4": "v3.5.4 amendment (Judge+Architect) 완료 후"
+  },
+
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true"
+}

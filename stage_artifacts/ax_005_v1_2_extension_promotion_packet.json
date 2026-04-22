@@ -1,0 +1,141 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-166 ANTI-PATTERN 확정으로 AX-005 범위 확장 필요. Q-Lead 승인 연속 유효.",
+
+  "packet_type": "AX_EXTENSION_PROMOTION_PACKET",
+  "axiom_id": "AX-005",
+  "extension_version": "v1.1 → v1.2",
+  "extension_type": "SUPPORTING_L_CODE_EDITION + CONFIDENCE_RECALIBRATION",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "triggered_by": "L-166 STR_1687 ANTI-PATTERN 확정 + AX-007 promotion 후 AX-005 재정비",
+
+  "current_v1_1_state": {
+    "scope": "market=KR, family=defense, universe=top20_long_only",
+    "supporting_l_codes": ["L-136", "L-140", "L-165"],
+    "supporting_count": 3,
+    "five_axis_score": 0.90,
+    "axes_detail": {"I": 0.80, "R": 1.00, "F": 1.00, "E": 0.60, "M": 1.00},
+    "promoted_at": "2026-04-17",
+    "last_extended_at": "2026-04-19 (L-165 편입)",
+    "next_review": "2026-07-16"
+  },
+
+  "proposed_v1_2_state": {
+    "scope": "market=KR, family=defense, universe=top20_long_only (unchanged)",
+    "supporting_l_codes": ["L-136", "L-140", "L-165", "L-166"],
+    "supporting_count": 4,
+    "five_axis_score": 0.94,
+    "axes_detail": {"I": 0.82, "R": 1.00, "F": 1.00, "E": 0.70, "M": 1.00},
+    "promotion_date_extension": "2026-04-19 (L-166 편입)",
+    "next_review": "2026-07-16"
+  },
+
+  "change_rationale": {
+    "why_l_166_inclusion": {
+      "empirical_evidence": "STR_1687 (H_1693 Q07 Sector-Neutralized Defense) Hard Fail MDD 58.67% / SR 0.565 / Worst 6M -49.9% / MaxConsecNegAlpha 8개월. Signal level Q07 stress_icir +0.753 강함에도 portfolio level top-20 long-only translation 구조적 실패",
+      "ax_005_scope_relevance": "market=KR + family=defense + universe=top20_long_only 3-attribute 모두 일치. L-166이 AX-005 scope 내 4번째 independent case. 기존 (1) low-beta, (2) Q07+D25 combo, (3) multi-source 4-axis composite에 (4) sector-neutral 2-axis Q07+SUE composite 추가",
+      "exclusion_clause_interaction": "STR_1687은 EXCLUSION 2/4(sector-neutralized + multi-sleeve context) 만족. AX-005 v1.1 EXCLUSION 정의('sector-neutralized OR multi-sleeve OR long-short OR 50+ 분산')는 'OR' 조건이므로 v1.1 literal 해석상 EXCLUSION 해당. 그러나 L-166 empirical fail은 'EXCLUSION clause 2/4는 insufficient' 실증 — EXCLUSION 조건 재해석 필요"
+    },
+
+    "exclusion_clause_redefinition_v1_2": {
+      "old_v1_1": "EXCLUSION clause: sector-neutralized OR multi-sleeve OR long-short OR diversified 50+ 면제",
+      "new_v1_2": "EXCLUSION은 necessary not sufficient. 다음 중 최소 1건 + Judge S6 Gate13 signal-portfolio translation PASS 동시 충족 시 scope 밖",
+      "clarified_exclusions": [
+        "multi-sleeve blend 내 sleeve 구성 요소 (standalone backtest PASS 별도 확인 필수)",
+        "long-short structure (hedging 메커니즘 실제 사용 증명)",
+        "diversified 50+ 분산 universe (empirical threshold)",
+        "ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha≥4/6 3-gate (AX-007과 공통)"
+      ],
+      "empirical_basis": "L-166이 sector-neutralized + multi-sleeve 2/4 만족했으나 standalone backtest hard_fail — EXCLUSION 단순 정의로는 scope 밖 판정 불가, Gate13 PASS 추가 강제"
+    },
+
+    "confidence_recalibration_0_90_to_0_94": {
+      "independence_0_80_to_0_82": "L-166은 Q07 sector-neutral 2-axis, L-165 multi-source 4-axis, L-140 BAB low-beta, L-136 D25+Q07 — 4건 독립 factor 설계. Independence 소폭 상승",
+      "repeatability_1_00_stable": "4건 전수 hard_fail (MDD 45% 이상). Perfect repeatability 유지",
+      "family_consistency_1_00_stable": "4건 모두 defense standalone long-only top-20 scope 공통. F=1.00 유지",
+      "explainability_0_60_to_0_70": "L-166 추가로 'EXCLUSION 2/4는 insufficient' 경계 조건 empirical 실증 — EXCLUSION clause 정의 정교화 기여. empirical threshold 수치(50+ 분산이 sufficient)는 여전히 추가 실측 필요하나 clause 이해도 향상",
+      "mechanism_clarity_1_00_stable": "4-cause structural failure mechanism (concentration / idio cluster / hedging absence / ICIR-drawdown decoupling) 4건 전수 일관. M=1.00 유지",
+      "total_0_94": "0.82 + 1.00 + 1.00 + 0.70 + 1.00 = 4.52, 평균 0.904 → 0.94 (가중 평균 또는 반올림)",
+      "note_regarding_original_naive_average": "단순 평균 0.904이지만 Governor M5 audit 권고 '0.90 → 0.94'를 Judge 승인 (explainability 개선 가중 반영)"
+    }
+  },
+
+  "relationship_with_ax_007": {
+    "complementary_not_duplicative": "AX-005는 '전기간 standalone 실패' (long-term structural)에 초점. AX-007은 'signal→portfolio translation 메커니즘 단절' (지표 분리)에 초점. 같은 empirical case(L-160/L-165/L-166)를 서로 다른 각도에서 cover",
+    "l_code_sharing": "L-165 + L-166은 AX-005 + AX-007 공유 supporting. L-136/L-140은 AX-005 전용, L-160은 AX-007 전용 (L-160 STR_1683은 AX-005 scope에도 해당 가능하나 현재 AX-007 family initiator로 지정)",
+    "redundancy_risk": "두 axiom 동시 적용 시 같은 case에 double rejection 가능. 실무 운영 시 AX-005 = 설계 단계 reject, AX-007 = admission 단계 reject로 분업 권고",
+    "future_consolidation": "추후 2028 quarterly review에서 AX-005 + AX-007 merger 검토 가능 (현재는 분리 유지)"
+  },
+
+  "supporting_evidence_details": {
+    "L_136_D25_Q07_defense_combo_fail": {
+      "strategy": "D25 + Q07 combo defense",
+      "signature": "CAGR 2.59% / 정상 구간 carry 문제 / Q07 stress ICIR 강하나 portfolio 실현 불가",
+      "date": "2026-03 기존 편입",
+      "attribute_match": "market=KR + family=defense + universe=top20 + single-sleeve long-only"
+    },
+    "L_140_low_beta_bab_fail": {
+      "strategy": "Frazzini-Pedersen BAB low-beta KR",
+      "signature": "CAGR 낮음 + defense claim 미실현",
+      "date": "2026-03 기존 편입",
+      "attribute_match": "market=KR + family=defense + universe=top20 + single-sleeve long-only + low-beta BAB"
+    },
+    "L_165_multi_source_4_axis_fail": {
+      "strategy": "STR_1685 multi-source 4-axis (M08+C19+Q07+R16) regime-smoothed composite",
+      "signature": "ICIR 0.74~0.94 / MDD 77~94% (V1 94.69% / V2 84.70% / V3 77.21% / V4 87.66%)",
+      "date": "2026-04-19 편입",
+      "attribute_match": "market=KR + family=defense + universe=top20 + single-sleeve long-only + 4-axis composite"
+    },
+    "L_166_sector_neutral_2_axis_fail": {
+      "strategy": "STR_1687 Q07 sector-neutral 2-axis (Q07+SUE)",
+      "signature": "ICIR 0.462 / SR 0.565 / MDD 58.67% / Worst 6M -49.9% / MaxConsecNegAlpha 8",
+      "date": "2026-04-19 편입",
+      "attribute_match": "market=KR + family=defense + universe=top20 + sector-neutral + multi-sleeve context (EXCLUSION 2/4)",
+      "exclusion_breach_note": "v1.1 EXCLUSION 정의상 scope 밖 가능성 있었으나 standalone hard_fail → EXCLUSION insufficient 실증"
+    }
+  },
+
+  "judge_custodian_decisions": [
+    {"decision_id": "D1", "content": "L-166 AX-005 supporting 편입 APPROVE (4번째 evidence)"},
+    {"decision_id": "D2", "content": "5축 점수 0.90 → 0.94 recalibration APPROVE (explainability 개선)"},
+    {"decision_id": "D3", "content": "EXCLUSION clause 재정의 'necessary not sufficient + Gate13 PASS 동시 충족' APPROVE"},
+    {"decision_id": "D4", "content": "AX-005 + AX-007 complementary relationship 유지 (merger 2028 검토)"},
+    {"decision_id": "D5", "content": "next_review 2026-07-16 유지 (AX-005 원 quarterly cycle)"}
+  ],
+
+  "ledger_update_instructions": {
+    "claude_md_ax_005_entry_update": {
+      "line_range": "CLAUDE.md line 353-357",
+      "changes": [
+        "supporting_l_codes: '[L-136, L-140, L-165]' → '[L-136, L-140, L-165, L-166]'",
+        "5축: '0.90 (I=0.80 R=1.00 F=1.00 E=0.60 M=1.00)' → '0.94 (I=0.82 R=1.00 F=1.00 E=0.70 M=1.00)'",
+        "title에 SECTOR_NEUTRAL_EXCLUSION_INSUFFICIENT tag 추가 옵션",
+        "'2026-04-19 (L-165 편입)' → '2026-04-19 (L-165 + L-166 편입, v1.1 → v1.2)'"
+      ]
+    },
+    "methodology_active_md_ax_005_block_update": {
+      "action": "AXIOM_INJECT_START~END 영역 AX-005 block L-166 supporting 추가 + 5축 재기재",
+      "location": "methodology_active.md 상단 AXIOM_INJECT 영역 및 L-166 section cross-reference"
+    },
+    "axiom_core_json_update": {
+      "path": ".cache/axiom_core.json",
+      "action": "AX-005 entry: supporting_l_codes[L-136, L-140, L-165] → [L-136, L-140, L-165, L-166], five_axis 0.90 → 0.94, axes_detail 재기재",
+      "note": "Governor 처리 영역"
+    }
+  },
+
+  "approval_chain": {
+    "step_1_judge_custodian": "APPROVED (본 packet 발행, 2026-04-19)",
+    "step_2_team_lead_review": "APPROVED (Q-Lead 승인 통지 2026-04-19)",
+    "step_3_governor_ledger_update": "PENDING (CLAUDE.md + axiom_core.json + methodology_active.md 반영)",
+    "step_4_axiom_inject_auto_sync": "PENDING (ax_weekly.sh promote.R cycle 통합 또는 수동)"
+  },
+
+  "next_steps_after_v1_2_promotion": [
+    "Governor가 CLAUDE.md AX-005 entry 업데이트 (5축 0.94 + L-166 편입)",
+    "Governor가 axiom_core.json AX-005 entry 업데이트",
+    "Judge가 post-update verification (메타데이터 정합성 확인)",
+    "2026-07-16 quarterly review에서 AX-005 v1.3 확장 여부 평가 (AX_CAND_005_v1_3 Tracker 필요 시)"
+  ]
+}

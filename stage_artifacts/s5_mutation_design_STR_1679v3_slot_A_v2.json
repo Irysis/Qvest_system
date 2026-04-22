@@ -1,0 +1,296 @@
+{
+  "artifact_type": "s5_mutation_design_urgent_v2",
+  "schema_version": "v2_tdc_gate_compliant",
+  "mutation_id": "STR_1679v3_Slot_A_v2",
+  "parent_strategy": "STR_1679v2_physical_sleeve",
+  "priority": "P0_URGENT",
+  "created": "2026-04-17",
+  "created_by": "Scout",
+  "trigger_v2": "CRITICAL — Judge TDC matrix 2026-04-17: STR_1679v2 vs STR_1631 TDC 0.621 (v3.0 Gate 8 threshold 0.4 FAIL). 기존 PG2 blend 위반 상태. STR_1679v3 교체가 v3.0 Gate 8 해결 핵심 경로.",
+  "activation_condition_revised": "기존 trigger (H_1682 S1 PASS) + 신규 trigger (TDC 0.621 FAIL) 동시 활성. 사전 설계 완성 후 H_1682 S1 결과 도착 즉시 Forge TODO 발송.",
+
+  "critical_finding_context": {
+    "str_1679v2_tdc_breakdown": {
+      "tdc_vs_str_1631": 0.621,
+      "v3_threshold": 0.40,
+      "verdict": "Gate 8 FAIL (+0.221 above threshold)",
+      "monthly_rho": 0.902,
+      "daily_pearson": 0.879,
+      "nu_mle_heavy_tail": 4.38,
+      "empirical_L_5pct": 0.722,
+      "root_cause": "Core 15 C19 Top-15 + Regime Inverse Overlay — 둘 다 KOSPI200 beta ~0.88 공유. Def 5 cosmetic (L-155). 'diversifier' 라벨 nominal only."
+    },
+    "source_document": "stage_artifacts/judge_pg1_candidates_tdc_matrix.json",
+    "governor_rev5_v1_1_expected_actions": [
+      "STR_1679v2 PG2 weight 10% → 5% 축소",
+      "STR_1679v3 완성 시 STR_1679v2 → STR_1679v3 완전 교체",
+      "Reserve 5%p 추가 H_1682 또는 H_1685 가속"
+    ]
+  },
+
+  "mutation_spec_v2_detailed": {
+    "name": "STR_1679v3 Slot A v2 — Defense Sleeve Full Replacement (Q25+R16 Cross-Family)",
+    "inherits_from": "STR_1679v2 Primary (Core 15 + Def 5 + Layer 3 overlay)",
+    "change_scope": "Def 5 sleeve만 교체 (Q07+D29 cosmetic → Q25+R16 cross-family substantive). Core 15 변경 없음 (Slot C 별도). Overlay 유지.",
+
+    "def_sleeve_spec_new": {
+      "n_def_stocks": 5,
+      "universe": "Core 15 제외 remaining KOSPI+KOSDAQ (LIQ_THRESHOLD 2e8, C10)",
+      "factor_inputs": {
+        "Q25_Ohlson_O": {
+          "direction": "signed -z (Ohlson distress 낮을수록 안전 = high quality)",
+          "weight": 0.6,
+          "factor_db_status": "EXISTS + Z_Score_Aligned (H_1682 debate Quant R1 확인)",
+          "stress_icir": 0.659,
+          "stress_pct_pos": 0.80
+        },
+        "R16_Calmar": {
+          "direction": "positive z (Return/MaxDD 높을수록 양호)",
+          "weight": 0.4,
+          "factor_db_status": "EXISTS + Z_Score_Aligned (H_1682 debate Quant R1 확인)",
+          "stress_icir": 2.655,
+          "stress_pct_pos": 1.00
+        }
+      },
+      "composite_formula": "Def_Score = 0.6 · Z_Score_Aligned(-Q25_Ohlson_O) + 0.4 · Z_Score_Aligned(R16_Calmar)",
+      "selection_logic": "remaining_universe = load_month_factors(sig_date)[Ticker NOT IN top_core_15]. For each remaining ticker: Def_Score. setorder(-Def_Score). head(5L).",
+      "z_score_method": "Z_Score_Aligned (C13 준수). -Q25 signed convention은 compute_factor 등록 또는 strict 명시.",
+      "l484_check": "Core 15 ∩ Def 5 = ∅ (remaining_universe 제약으로 자동 보장)",
+      "quant_empirical_support": "Quant debate R2 확인: Q25-R16 상관 median 0.053 (cross-family 독립성 실증). H_1682 S1 동일 공식 사용 예정."
+    },
+
+    "core_sleeve_spec_unchanged": {
+      "n_core_stocks": 15,
+      "signal": "C19_Composite_Earnings Top-15 (STR_1631 Core SR 1.243 실증 유지)",
+      "change": "NONE (Slot A는 Core 15 변경 없음. Core 변경은 Slot C1/C2/C3가 담당)"
+    },
+
+    "regime_weight_unchanged": {
+      "normal_mrs_lt_20": {"w_core": 0.95, "w_def": 0.05},
+      "caution_mrs_20_50": {"w_core": 0.80, "w_def": 0.20},
+      "crisis_mrs_ge_50": {"w_core": 0.60, "w_def": 0.40},
+      "note": "STR_1679v2 원본 구조 유지. selection invariant."
+    },
+
+    "overlay_unchanged": {
+      "type": "Layer 3 Inverse ETF + Cash (STR_1679v2 원본)",
+      "mdd_contribution_acknowledged": "22.54pp (L-155 rehearing 확정)",
+      "keep_reason": "Slot A는 Def sleeve 교체만 담당. Overlay 축소는 Slot D (overlay_reduction) 별도.",
+      "v3_forward_looking": "Slot A + Slot C1 병행 시 Core+Def 순수 기여 강화로 overlay 의존성 자연 감소 기대"
+    }
+  },
+
+  "implementation_pseudocode_r": {
+    "critical_steps": [
+      "# STR_1679v3 Slot A v2: Def sleeve Q25+R16 교체",
+      "# Phase 1: Core 15 Selection (unchanged from STR_1679v2)",
+      "c19 <- load_month_factors(sig_date)[Factor_Name == 'C19_Composite_Earnings', .(Ticker, Z_C19 = Z_Score_Aligned)]",
+      "setorder(c19, -Z_C19)",
+      "top_core <- head(c19, 15L)$Ticker",
+      "",
+      "# Phase 2: Def 5 Selection (NEW — Q25+R16 cross-family)",
+      "q25 <- load_month_factors(sig_date)[Factor_Name == 'Q25_Ohlson_O', .(Ticker, Z_Q25 = Z_Score_Aligned)]",
+      "r16 <- load_month_factors(sig_date)[Factor_Name == 'R16_Calmar', .(Ticker, Z_R16 = Z_Score_Aligned)]",
+      "remaining <- setdiff(q25$Ticker, top_core)",
+      "def_merged <- merge(",
+      "  q25[Ticker %in% remaining, .(Ticker, Z_Q25_neg = -Z_Q25)],  # Q25 signed neg (distress 낮을수록 good)",
+      "  r16[Ticker %in% remaining, .(Ticker, Z_R16)],",
+      "  by = 'Ticker', all = FALSE",
+      ")",
+      "def_merged[, Def_Score := 0.6 * Z_Q25_neg + 0.4 * Z_R16]",
+      "setorder(def_merged, -Def_Score)",
+      "top_def <- head(def_merged, 5L)$Ticker",
+      "",
+      "# L-484 assertion",
+      "stopifnot(length(intersect(top_core, top_def)) == 0L)",
+      "",
+      "# Phase 3: Combine + regime weight + overlay (v2 logic 동일)",
+      "combined_portfolio <- union(top_core, top_def)",
+      "# ... (regime weight + HRP + overlay 기존 STR_1679v2 factor_engine.R 재활용)"
+    ],
+    "key_pit_assertions": [
+      "sig_date 기준 load_month_factors (C15 준수)",
+      "Q25/R16 Z_Score_Aligned 활용 (C13 수동 반전 금지 — -Z_Q25는 negative convention 명시)",
+      "C19 재무제표 T+60~90일 lag 이미 Factor DB 반영 (C4)",
+      "Core 15 ∩ Def 5 = ∅ (L-484 compliant)",
+      "Q25/R16 둘 다 기구축 (H_1682 S1 이미 전수 사용 예정)"
+    ]
+  },
+
+  "v3_gate_8_compliance_prediction": {
+    "scout_predicted_tdc_vs_str_1631": {
+      "slot_a_alone": {
+        "tdc_estimate": [0.30, 0.45],
+        "rationale": "Def sleeve 교체만으로 Core 15 C19 공유가 남음. monthly ρ 0.7~0.8 예상 (0.902 → 0.75), tail dependence 일부 완화.",
+        "v3_gate_8_verdict": "BORDERLINE_PASS (목표 < 0.4), Slot C1 병행 필수"
+      },
+      "slot_a_plus_c1_combined": {
+        "tdc_estimate": [0.15, 0.25],
+        "rationale": "Core 15 (C19 → C19+M08 50/50) + Def 5 (Q07+D29 → Q25+R16) 2축 교체로 STR_1631 vs STR_1679v3 공통성 극적 감소.",
+        "v3_gate_8_verdict": "PASS_CONFIDENT",
+        "monthly_rho_estimate": [0.55, 0.70]
+      }
+    },
+    "fallback_if_slot_a_alone_borderline": "Slot C1 (C19+M08 Core 재최적화) 즉시 활성화. Slot A + Slot C1 combined variant가 v3.0 Gate 8 PASS 확정 경로."
+  },
+
+  "gate_criteria_v3_aware": {
+    "primary_grade": "A (STR_1679v2 77.1 수준 이상 유지 또는 개선)",
+    "def_contribution_cagr_pp": "0.3pp → 2.0pp+ (L-143/L-146 target, Def 진짜 기여 확보)",
+    "overlay_dependency_gap": "0.225 → 0.10~0.15 (Core+Def 순수 기여 강화)",
+    "tdc_vs_str_1631_v3_gate_8": "≤ 0.40 (Slot A 단독) / ≤ 0.30 (Slot A + Slot C1)",
+    "pairwise_tdc_vs_other_candidates": {
+      "vs_STR_1071": "< 0.5 목표",
+      "vs_STR_1562": "< 0.5 목표",
+      "note": "L-156 v3.0 pairwise gate 준수"
+    },
+    "portfolio_cvar_10pct": "< 20% (L-156 Gate 9)",
+    "base_hrp_grade_no_overlay": "B 이상 (overlay 의존 감소 증거)",
+    "harvey_t3_gate": "FF5 alpha t > 2.5 (STR_1679v2 Harvey t=4.50 수준 유지)",
+    "axiom_compliance": {
+      "AX_001_defense": "COND_12 4-gate 준수 (stress IC 0.03 / MDD 8%p / bad-good 1.2 / CAGR 5%)",
+      "AX_003": "PASS — value factor 미사용",
+      "AX_004_v3": "PASS — Q25 distress 단독 (multi-factor blend exemption)",
+      "AX_005_v2": "PASS — multi-sleeve exemption (STR_1679v3 Core+Def+Overlay 구조)"
+    }
+  },
+
+  "forge_execution_plan": {
+    "strategy_id_proposed": "STR_1685 (다음 순번) 또는 STR_1679v3 subvariant suffix (_slotA)",
+    "trigger_conditions": [
+      "Forge blocker 해소 (Architect 복구 완료)",
+      "H_1682 S1 PASS 확정 (Task #4) — Q25+R16 factor-level alpha 실증 확보",
+      "Q-Lead Slot A activation 승인"
+    ],
+    "execution_variants_4건": [
+      "Primary_Slot_A_alone: Core 15 (C19 원본) + Def 5 (Q25+R16) + overlay",
+      "Combined_A1_C1: Core 15 (C19+M08 50/50) + Def 5 (Q25+R16) + overlay (v3.0 Gate 8 PASS 확정 경로)",
+      "Ablation_Core_only: Core 15 (C19+M08) + NO Def + overlay (Def 기여 측정)",
+      "Ablation_Def_only: Core 15 (C19) + Def 5 (Q25+R16) + NO overlay (순수 Def contribution)"
+    ],
+    "output_artifacts_required": [
+      "output/hurdle_result_slot_A_primary.json",
+      "output/hurdle_result_combined_A1C1.json",
+      "output/hurdle_result_ablation_core.json",
+      "output/hurdle_result_ablation_def.json",
+      "output/daily_returns_primary.csv (모든 variant)",
+      "output/tail_risk_result.json",
+      "output/str_1679v3_slotA_tdc_matrix.json (vs STR_1631, L-156 필수)",
+      "output/str_1679v3_combined_tdc_matrix.json (vs STR_1631 + vs PG1 candidates)",
+      "output/def_sleeve_contribution_3variant.csv (Core / Core+Def / Core+Def+Overlay)",
+      "output/regime_conditional_correlation.csv (L-156 Gate 11 3-regime)"
+    ],
+    "judge_v3_0_gate_8_trigger": "daily_returns_primary.csv 생성 즉시 Judge TDC 재측정 자동 발동 (L-156 준수)"
+  },
+
+  "synthesis_phase_5_combined_A1_C1": {
+    "recommended_primary": "Combined A1 + C1 variant (Core 15 C19+M08 + Def 5 Q25+R16 + overlay)",
+    "expected_performance": {
+      "sharpe": [1.30, 1.55],
+      "cagr": [22, 28],
+      "mdd": [25, 32],
+      "def_contribution_pp": [2, 5],
+      "tdc_vs_str_1631": [0.15, 0.25],
+      "monthly_rho_vs_str_1631": [0.55, 0.70]
+    },
+    "role_final_label": "defensive_diversifier_v3_gate_8_compliant",
+    "pg2_transition_recommendation": {
+      "phase_0": "STR_1679v2 20% (현재, Gate 8 FAIL)",
+      "phase_1_interim": "STR_1679v2 10% + STR_1679v3 primary 10% (Governor rev5_v1_1 예상)",
+      "phase_2_complete": "STR_1679v3 primary 20% + STR_1679v2 0% (완전 교체)",
+      "phase_3_final": "STR_1631 55~70% + STR_1679v3 20~30% + Reserve 5~15% (H_1682/H_1685 추가 admission)"
+    }
+  },
+
+  "l_code_compliance_summary": {
+    "L_143_defense_drag": "DIRECT_FIX — Q07+D29 cosmetic defense → Q25+R16 substantive defense",
+    "L_146_overlay_mdd_core_alpha_ban": "DIRECT_FIX — Def 진짜 기여 2pp+ 목표 + 3-variant decomposition",
+    "L_147_s5_retroactive_ban": "DIRECT_FIX — formal S5 slate 사전 등록 (Forge 실행 전 Scout 설계 완성)",
+    "L_149_return_blend_fail": "DIRECT_FIX — score-blend union + N=20 준수",
+    "L_153_str_1679v2_cosmetic_def": "DIRECT_FIX — H_1682 substantive Def 교체",
+    "L_155_tdc_misattribution": "DIRECT_FIX — 3-variant decomposition + TDC 직접 측정",
+    "L_156_v3_0_tdc_gate": "DIRECT_COMPLIANCE — TDC ≤ 0.4 목표 + 11-gate 체계 준수",
+    "L_157_scout_calibration": "META_AWARE — Scout predicted tdc ranges 보수적 추정"
+  },
+
+  "scout_notes": [
+    "P0_URGENT: STR_1679v2 TDC 0.621 Gate 8 FAIL이 STR_1679v3 전환 긴급성 핵심 근거.",
+    "Slot A 단독으로는 TDC 0.30~0.45 borderline 가능. Slot C1 병행이 PASS_CONFIDENT 경로.",
+    "Slot A v2 + Slot C v2 병행 설계 완료 (parallel_design). Forge는 Combined A1+C1 variant 우선 측정 권고.",
+    "Forge blocker 해소 후 Q-Lead Slot A activation 승인 즉시 TODO_S5_MUTATION_STR_1679v3_combined.json 작성 예정.",
+    "L-156 canonical Judge TDC Gate v3.0 + L-157 Scout calibration L-code 번호 충돌 해소 완료.",
+    "Governor rev5_v1.1 예상 actions (STR_1679v2 10%→5%, STR_1679v3 교체) 반영하여 pg2_transition_recommendation 사전 설계."
+  ],
+
+  "governor_r21_overlap_analysis": {
+    "_added": "2026-04-17 Scout Task #27 response — Governor R21 우려 실측 검증",
+    "empirical_measurement": {
+      "method": "Factor DB 12개월 rolling snapshot (2023-07 ~ 2024-06)",
+      "per_month_samples": 11,
+      "def_5_in_h1682_top20_avg": "5.0 / 5 (100%)",
+      "core_15_in_h1682_top20_avg": "0.4 / 15 (2.4%)",
+      "effective_double_counting_pct_of_h1682": "26.8% (5.4/20 stocks)",
+      "interpretation": "STR_1679v3 Def 5 (Q25+R16 Top-5 composite, Core 15 제외) = H_1682 standalone Top 20의 Top 5 부분집합 100% 일치. Q25+R16 composite 동일 공식 사용하므로 구조적 100% overlap 불가피. Core 15 vs H_1682 overlap 2.4%는 C19 consensus와 Q25+R16 독립 family 입증."
+    },
+    "double_counting_risk_scenarios": {
+      "scenario_A_both_admit_PG2": {
+        "pg2_composition_hypothetical": "STR_1631 55% + STR_1679v3 20% + H_1682 25%",
+        "effective_exposure_to_q25_r16_top5": "STR_1679v3 Def 5 × 0.2 × 0.4(CRISIS) = 0.016 + H_1682 Top 5 × 0.25 × 0.25(position) = 0.016 → total ~3.2% exposure double-counted in CRISIS regime",
+        "problem": "Q25+R16 상위 5종목이 portfolio에서 실질 3~5% 추가 exposure 효과. Governor가 target weight 20%+25% 가정했으나 realized effective weight 더 높음.",
+        "severity": "MEDIUM (effective 3.2% double-count는 treaty 범위 내 allow 가능하나 explicit accounting 필요)"
+      },
+      "scenario_B_sequential_admission": {
+        "plan": "STR_1679v3 먼저 PG2 admission → H_1682 S1 PASS 후 추가 고려",
+        "issue": "Q25+R16 exposure 이미 STR_1679v3 Def 5로 확보 → H_1682 standalone 추가 admission 시 marginal alpha 감소",
+        "mitigation": "H_1682 admission 전 alpha 분해: STR_1679v3 Def 5 기여 (Top 5 Q25+R16) vs H_1682 marginal (Top 6-20 추가 15종목) 비교"
+      }
+    },
+    "effective_weight_calculation_3_options_for_governor": {
+      "option_1_simple_sum_allow_double_count": {
+        "description": "Governor가 target weight 그대로 부여. Q25+R16 Top 5 종목의 effective portfolio weight가 합산됨.",
+        "example": "STR_1679v3 20% × Def 40%(CRISIS) × 1/5 = 1.6% per Top 5 stock. H_1682 25% × 1/20 = 1.25% per stock. Overlap 5 stocks의 effective: (1.6 + 1.25) × 5 = 14.25%.",
+        "pros": "구현 단순. PG2 admission rule 기존 유지.",
+        "cons": "effective concentration risk 증가. L-155 3-variant decomposition 관점 불투명.",
+        "recommended_for": "H_1682 Def role이 STR_1679v3와 다른 horizon 또는 rebalance freq 가질 때"
+      },
+      "option_2_average_weight_prevent_double": {
+        "description": "Overlap 종목의 weight를 평균 (STR_1679v3 1.6% + H_1682 1.25%) / 2 = 1.425%. 원본 가정 weight 대비 감소.",
+        "example": "Top 5 stocks: 1.425% each. Non-overlap H_1682 stocks (15): 1.25% each. STR_1679v3 효과 축소, H_1682 효과 일부 유지.",
+        "pros": "explicit double-count 방지. effective exposure 명확.",
+        "cons": "STR_1679v3 CRISIS tilt 효과 약화. Governor rev5_v1.1 weight 재조정 필요.",
+        "recommended_for": "v3.0 Gate 9 portfolio CVaR/CDaR 엄격 적용 시"
+      },
+      "option_3_embedded_overlap_recognition": {
+        "description": "STR_1679v3 Def sleeve = H_1682 Top 5 embedded partial exposure 인식. PG2 admission rule에서 STR_1679v3 Def 비중을 H_1682 'reserved allocation'의 일부로 간주.",
+        "example": "STR_1679v3 20% 편입 시 H_1682 Top 5에 이미 STR_1679v3 Def × Def_weight = 1.6%p × 5 = 8% exposure 기확보. H_1682 standalone 추가 admission 시 effective weight = H_1682_target - STR_1679v3_Def_embedded. 예: H_1682 target 25% - STR_1679v3 Def 8% embedded = 17% net new allocation.",
+        "pros": "embedded overlap 완전 인식. STR_1679v3 = 'quality anchor with H_1682 partial exposure' 명확 라벨링. effective Q25+R16 exposure 정밀 계산.",
+        "cons": "Governor admission rule 복잡도 증가. STR_1679v3 설계 document에 embedded exposure 명시 필요.",
+        "recommended_for": "Judge v3.0 Role Honesty + Governor sophisticated admission (권장)"
+      }
+    },
+    "scout_recommendation": {
+      "preferred_option": "Option 3 (embedded overlap recognition)",
+      "rationale": [
+        "v3.0 Gate 8 TDC + Gate 9 CVaR/CDaR 체계에서 effective exposure 정밀 계산 필수",
+        "L-155 role honesty 원칙 (3-variant decomposition) 연장선 — 'STR_1679v3 Def sleeve는 H_1682 partial' 명시가 정직",
+        "Governor rev5_v1.1 STR_1679v2 → STR_1679v3 교체 + H_1682 standalone admission 두 결정을 separate decision variable로 분리 유지 가능"
+      ],
+      "implementation_action_items": [
+        "Governor PG2 admission rule에 'embedded_exposure' 필드 신설",
+        "STR_1679v3 Def sleeve weight를 H_1682 'partial reservation' 으로 명시",
+        "Judge v3.0 Gate 9 계산 시 embedded exposure 반영 portfolio CVaR 재측정",
+        "Forge S5 Forge inbox TODO에 'embedded_overlap_acknowledgment' 섹션 추가"
+      ]
+    },
+    "alternative_design_consideration": {
+      "proposal": "STR_1679v3 Def sleeve 종목 선택 logic 미세 조정으로 overlap 축소",
+      "options_for_scout_redesign": [
+        "Option D1: Def 5 = Q25+R16 Top 5 BUT H_1682 Top 10 exclusion (Def 5는 H_1682 Top 11~N 부분집합에서 선정)",
+        "Option D2: Def 5 = Q25+R16 Top 5 BUT sector diversification (H_1682 같은 sector 종목 exclusion)",
+        "Option D3: Def 5 = Q25+R16 Top 5 WITH 2nd-stage filter (C19 상위 50% 조건 추가 → H_1682와 구조적 차별화)"
+      ],
+      "scout_assessment": "현재 design (Option Default)는 overlap 100% 구조이므로 Option 3 Governor embedded recognition이 합리적. 추가 종목 분산은 Def 5의 Q25+R16 순수도를 약화시킴. 단 v3.0 Gate 8 TDC 예측 0.15~0.25가 target 초과 시 Option D1 fallback 가능.",
+      "decision_authority": "Governor + Q-Lead (Scout은 제안만)"
+    }
+  }
+}

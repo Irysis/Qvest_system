@@ -1,0 +1,31 @@
+{
+  "role": "codex_critic",
+  "r1_score": 8,
+  "r2_score": 7,
+  "score_changed": true,
+  "score_change_reason": "Quant's measured 0.897 mean cross-sectional correlation between H_1685 divergence and H_1674 proxy, plus risk_manager's lookback-rebalance staleness kill path, upgrades my prior structural-risk concern from hypothetical to evidenced; downside risk is larger than I priced in R1.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "동의: H_1685(z_foreign_21d - z_individual_21d)가 H_1674(-z_individual_21d)와 월별 평균 상관 0.897이라는 증거는 내가 지적한 'static pass-through vs dilution' 리스크를 정량으로 확인한다. 이 수준이면 diversifier 주장 자체가 약하다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "동의: 21d 집계와 월말 리밸런싱의 기간 불일치, 그리고 C11(T+1 공시) 검증 필요성은 내 PIT/leakage 우려와 직접 일치한다. one-bar delay 민감도 테스트 없이는 승인 불가다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "이견: PG0 Sharpe gap 정렬만으로 Phase_1 즉시 편입을 허용하는 것은 과속이다. C11 timestamp-level PIT pre-check, revised-value 금지, 조합식 명세가 확정되기 전에는 '조건부 승인'도 premature이며 implementation feasibility 평가는 낙관적이다.",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "이견: peer-reviewed 근거의 강도를 높게 본 평가는 과대평가 소지가 있다. 문헌은 방향성(외국인 vs 개인)을 지지하지만 실제 거래 가능한 21d divergence 구성·지연처리·실행규칙을 검증하지 않아 설계 타당성 점수에 직접 전이되기 어렵다.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "governor의 'PG0 Sharpe gap 0.807 해소를 위한 유일한 diversifier 슬롯이며, 기존 인프라와 단계별 게이트(C11 pre-check, S2 ICIR, S3 TDC)를 붙이면 조건부 승인 가능' 주장이 가장 강한 반론이다.",
+  "kill_scenarios_update": "신규/강화: (1) H_1685가 H_1674 clone(ρ≈0.90)로 작동해 diversification이 아닌 중복 베팅이 되는 구조적 실패, (2) 위기국면에서 외국인 flow 급반전 + 월내 stale signal 결합으로 실거래 MDD 과소추정 및 성과 역전."
+}

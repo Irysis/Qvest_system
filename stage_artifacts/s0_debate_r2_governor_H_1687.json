@@ -1,0 +1,31 @@
+{
+  "role": "governor",
+  "r1_score": 17,
+  "r2_score": 14,
+  "score_changed": true,
+  "score_change_reason": "Quant의 corr(H_1687, H_1682)=0.853 실측이 결정적이다. R1에서 설정한 S3 rho<0.6 gate를 사전에 이미 위반할 가능성이 confirmed(수식 수정 전)이므로, H_1682 동시 편입 구조에서 Q25 exposure cap 위반 + momentum cluster 중복이 PG2 portfolio 분산에 실질적 기여를 하기 어렵다. gap_alignment 최상 판단은 유지하되(H_1685 공석 해소 필요성은 변하지 않음), role_match와 marginal_contribution을 하향 조정한다. 수식 수정(IQR normalize or gated double-sort) 이후라면 gate 통과 가능성이 열려 있어 REVISE가 아닌 조건부 진행을 권장한다. 17→14 조정(role_match 3.5→2.5, marginal_contribution 3.0→2.0).",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "corr(H_1687, H_1682)=0.853 실측 발견에 동의한다. governor 관점에서 이는 Q25 exposure cap 문제보다 더 직접적인 위협이다 — S3 TDC gate rho<0.6을 현행 수식에서는 통과하기 어려워 H_1682와 H_1687을 동시 편입하는 rev7_v2 시나리오 자체가 위협받는다. 수식 수정이 선행 조건임을 인정하며, IQR normalize 또는 percentile rank 변환이 corr을 0.5 이하로 낮출 수 있는지 S1 전 수식 시뮬레이션이 필요하다는 quant 조건에 동의한다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "MRS 63.1 CRISIS 현 시점에서 momentum(M01 CRISIS IC -0.021)이 역방향 작동 중이라는 지적에 동의한다. governor 관점에서도 지금 당장 H_1687을 편입해도 CRISIS 국면이 지속되는 한 H_1685 공석을 의미있게 메우지 못한다. 수식 수정 + MRS CAUTION 이하 복귀(50 이하) 타이밍에 편입 집행을 조건화하는 것이 합리적이다."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "risk_manager",
+      "point": "CALM-only alpha 구조가 portfolio SR에 마이너스 기여한다는 결론에는 반박한다. CALM-only IC +0.061은 CALM 국면에서 유의미한 alpha를 생성하며, CRISIS에서 IC -0.003은 마이너스가 아닌 0에 가깝다 — drag라고 볼 수 없다. Core alpha가 CRISIS에서도 강한 STR_1631(SR 1.248)과 조합 시, H_1687의 CRISIS IC 0에 수렴은 drag가 아닌 neutral 기여다. Diversifier의 역할은 CRISIS에서 방어가 아니라 CALM/NORMAL에서 alpha를 추가하는 것이며, 이 관점에서 H_1687은 설계 의도에 부합한다. 단 수식 수정이 전제다.",
+      "severity": "major"
+    },
+    {
+      "against": "codex_critic",
+      "point": "STR_1683 Primary 실측 후 Q25 family 구조적 실패 판정 선행 요구에 반박한다. STR_1683은 H_1687과 다른 구조의 전략이며, Q25 family 전체를 하나의 실패 category로 묶는 것은 과잉 일반화다. Governor 관점에서 AX-004 v3 Scout A안 exemption과 AX-005 v2 multi-sleeve exempt 공리가 이미 Q25 단독 실패를 composite 전략에 확대 적용하는 것을 제한하고 있다. H_1687 수식 수정 후 S3 gate 통과 여부가 진입 결정의 적절한 기준이지, STR_1683 결과 대기는 불필요한 지연이다.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Quant의 corr(H_1687, M01)=0.936 + corr(H_1687, H_1682)=0.853 이중 발견이 governor에게 가장 강력한 반론이다. H_1685 공석을 채운다 해도 실질적으로 M01 노출과 H_1682 중복을 추가하는 것이라면, portfolio-level diversification 기여가 minimal하여 gap_alignment의 경제적 의미가 희석된다. 수식 수정 없이는 PG2 편입의 정당성이 없다.",
+  "r2_assessment": "수식 수정(IQR normalize 또는 gated double-sort)을 전제로 H_1687의 방향성은 유지한다. 현행 수식의 corr(H_1687, M01)=0.936 + corr(H_1687, H_1682)=0.853은 gap_alignment 이점을 상쇄하지만, 수식 수정 후 corr이 0.5 수준으로 낮아지면 S3 gate 통과 후 Diversifier 편입 경로가 열린다. 핵심 조건: (1) S1 전 IQR normalize 시뮬레이션으로 수식 수정 후 corr 추정, (2) MRS CAUTION 이하 복귀 타이밍에 편입 집행, (3) Q25 Cap 25.6% 상태 모니터링. REVISE → Scout 수식 재설계 권고이나 gap_alignment 긴급성 감안 APPROVE_CONDITIONAL 경계에 위치한다."
+}

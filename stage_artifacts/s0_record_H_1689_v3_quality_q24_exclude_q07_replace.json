@@ -1,0 +1,418 @@
+{
+  "hypothesis_id": "H_1689_v3",
+  "factor_id": "H_1689_v3_Quality_Q24_Poison_Pill_Removed",
+  "name": "Quality Aggregate Composite Diversifier v3 — Q24 Poison Pill Removed (variant_1 3-axis PRIMARY + variant_2 Q07 replace SECONDARY)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE",
+  "created": "2026-04-19",
+  "created_by": "Scout",
+  "designer": "Scout",
+  "pathway": "A (논문→가설, Asness-Frazzini-Pedersen 2019 QMJ + Risk Mgr 3rd round blocking condition 반영)",
+  "bucket": "explore",
+  "supersedes": "s0_record_H_1689_quality_aggregate_composite.json (v1 4-axis including Q24)",
+  "supersedes_reason": "Risk Mgr 3rd round CONDITIONAL_APPROVE blocking condition: Q24_Altman_Z stress_icir -0.695 poison pill. Q24 25% × -0.513 stress_icir_delta가 Q01/Q04/Q25 positive contribution 77% 상쇄 → 반드시 Q24-exclude 3-axis variant 포함 + Q07 대체 4-axis variant 2종 복수 설계.",
+  "handoff_kit_source": "stage_artifacts/s0_debate_handoff_H_1689_v3.json (2026-04-18)",
+
+  "risk_manager_3rd_round_blocking_reflection": {
+    "verdict_received": "CONDITIONAL_APPROVE",
+    "timebox": "5분 초단축",
+    "blocking_level": "CRITICAL",
+    "poison_pill_factor": "Q24_Altman_Z",
+    "stress_icir_q24": -0.695,
+    "weight_25pct_composite_drag": "-0.695 × 0.25 = -0.174",
+    "positive_contribution_from_Q01_Q04_Q25": "+0.2275 (Q01 +0.025 + Q04 +0.0375 + Q25 +0.165)",
+    "cancellation_ratio": "0.77 (77% of positive contribution canceled by Q24 drag)",
+    "mitigation_design": "variant_1 (Q24 complete exclusion) + variant_2 (Q24 → Q07 substitution) 복수 설계",
+    "kill_scenarios_referenced": [
+      "Kill 1: Q24 Crisis Amplification — variant 1/2로 완전 회피",
+      "Kill 2: C19 Consensus Quality Collapse — H_1689 변경 무관, Governor admission 단계 주의"
+    ]
+  },
+
+  "hypothesis_summary": {
+    "name": "Quality Aggregate Composite v3 Q24-Excluded / Q07-Replaced Diversifier",
+    "family": "quality_multi_axis_composite",
+    "sub_family": "gp_piotroski_ohlson_q24_exclude_or_q07_replace",
+    "expected_role": "diversifier",
+    "why_now": "Risk Mgr 3rd round VERDICT blocking condition 충실 반영. H_1689 v1/v2 Q24_Altman_Z stress_icir -0.695 poison pill empirical 확인 → Quality family composite의 stress-robust 재설계. AX-004 v3 EXCLUSION 명문 유지 ('전통 quality composite Q01+Q04+Q25+Q07 등 복수 quality axis 결합은 scope 밖'). Phase_1 Defense refit에 quality diversifier sleeve 10% 확보가 Governor rev8-A-revised-v2 Defense 35% 편제의 필수 구성.",
+    "core_reference": "Asness-Frazzini-Pedersen 2019 RAS 'Quality Minus Junk' multi-axis composite framework + Novy-Marx 2013 JFE Gross Profitability + Piotroski 2000 JAR F-Score + Ohlson 1980 JAR Bankruptcy + Campbell-Hilscher-Szilagyi 2008 JF Distress (Q07 용 Earnings Stability Barber-Lyon)",
+    "expected_role_reason": "multi-axis quality composite은 (1) Value family와 구분, (2) Consensus family와 구분, (3) defense/low-beta family와 구분 → diversifier 역할. v3 설계는 poison pill 제거로 stress-robust 특성 추가 → Defense sleeve 보완 diversifier로 승격 가능."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Asness, Clifford S., Andrea Frazzini, and Lasse Heje Pedersen, 2019, 'Quality Minus Junk', Review of Accounting Studies 24, 34-112.",
+    "secondary_references": [
+      "Novy-Marx, Robert, 2013, 'The Other Side of Value: The Gross Profitability Premium', JFE 108, 1-28.",
+      "Piotroski, Joseph D., 2000, 'Value Investing: The Use of Historical Financial Statement Information', JAR 38, 1-41.",
+      "Ohlson, James A., 1980, 'Financial Ratios and the Probabilistic Prediction of Bankruptcy', JAR 18, 109-131.",
+      "Altman, Edward I., 1968, 'Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy', JF 23, 589-609.",
+      "Barber, Brad M. and John D. Lyon, 1997, 'Detecting long-run abnormal stock returns', JFE 43, 341-372. (Q07 Earnings Stability foundational)",
+      "Campbell, John Y., Jens Hilscher and Jan Szilagyi, 2008, 'In Search of Distress Risk', JF 63, 2899-2939. (distress premium foundational)",
+      "김재익·이준 (2020), '한국시장의 Quality-Minus-Junk 팩터', 한국재무학회지. (direct cite 미확인 경고)"
+    ],
+    "mechanism_academic": "Asness 2019 multi-axis quality composite: 각 sub-factor의 noise는 독립이므로 equal-weight aggregation이 idiosyncratic noise cancellation을 통해 signal-to-noise 개선. v3 설계 추가: Q24 한국시장 negative stress_icir -0.695는 Altman Z 1968 원 공식이 USA 1950-60년대 corporate bond default 기반이며 KR 경제구조·재벌·금융감독 특성과 불일치. Campbell-Hilscher-Szilagyi 2008 hazard model은 Ohlson O (Q25) 형태로 유지 (distress 차원 커버).",
+    "korean_specific": "한국 quality 실증 3층 교훈: (1) Q01 GPA standalone L-139 OOS 소멸, (2) Q04 Piotroski standalone L-133 실패, (3) Q24 Altman Z stress_icir -0.695 L-144 역방향. 단 Asness 2019 framework의 multi-axis composite은 single-axis 한계 극복. v3는 poison pill Q24 제거로 stress-robust 보강. Q07 Earnings Stability는 L-121 양쪽 위기 최강 (stress ICIR +0.753) — variant_2에서 대체 factor로 활용.",
+    "v3_distinction_from_v1": [
+      "v1: 4-axis Q01+Q04+Q25+Q24 including poison pill (stress_icir -0.695)",
+      "v3 variant_1 (PRIMARY): Q24 complete exclusion → 3-axis Q01+Q04+Q25 clean composite",
+      "v3 variant_2 (SECONDARY): Q24 → Q07 substitution → 4-axis Q01+Q04+Q07+Q25 defense uplift"
+    ]
+  },
+
+  "factor_construction": {
+    "variant_1_PRIMARY_3axis_Q24_exclude": {
+      "variant_id": "H_1689_v3_variant_1_3axis",
+      "priority": "P0 PRIMARY",
+      "composite_formula": "score = 0.33·z_Q01 + 0.33·z_Q04 + 0.34·(-z_Q25)",
+      "components": [
+        {"axis": "profitability_GP", "factor": "Q01_GPA", "weight": 0.33, "direction": "positive"},
+        {"axis": "accounting_F_score", "factor": "Q04_Piotroski_F", "weight": 0.33, "direction": "positive"},
+        {"axis": "distress_Ohlson_low", "factor": "signed_distress_low = -z_Q25_Ohlson_O", "weight": 0.34, "direction": "signed (low distress = high quality)"}
+      ],
+      "winsorization": "1~99% per factor before composite",
+      "z_score_method": "Z_Score_Aligned per factor (C13). signed_distress_low factor 등록 필수. 수동 반전 금지.",
+      "data_access": "load_month_factors(['Q01_GPA', 'Q04_Piotroski_F', 'Q25_Ohlson_O']) (C15)",
+      "rationale": "Risk Mgr blocking condition 충실 반영. Q24 완전 제거 → stress_icir -0.695 poison pill 완전 해소. Q01 (Novy-Marx 2013) + Q04 (Piotroski 2000) + Q25 (Ohlson 1980 distress negatively signed)의 3-axis clean composite. Q24 vs -Q25 부분 중복 (distress 2축) 자동 해소. L-119 dilution 감소 (4→3 axis).",
+      "expected_performance": {
+        "icir_forecast": "0.18~0.30 (Q24 제거로 보수 하향)",
+        "stress_icir_forecast": "+0.30~+0.60 (positive, Q01/Q04/Q25 positive contribution 온전 보존)",
+        "sr_forecast": "0.55~0.75",
+        "cagr_forecast": "9~14%",
+        "mdd_forecast": "35~50%",
+        "crisis_sr_forecast": "1.05~1.25 (Kill Scenario 1 회피)"
+      },
+      "pit_note": "Q-factors 재무제표 기반 — T+60~90일 lag (C4) 준수. Usable_Date 기반 filter (C14)."
+    },
+
+    "variant_2_SECONDARY_4axis_Q07_replace": {
+      "variant_id": "H_1689_v3_variant_2_4axis_Q07",
+      "priority": "P1 SECONDARY",
+      "composite_formula": "score = 0.25·z_Q01 + 0.25·z_Q04 + 0.25·z_Q07 + 0.25·(-z_Q25)",
+      "components": [
+        {"axis": "profitability_GP", "factor": "Q01_GPA", "weight": 0.25, "direction": "positive"},
+        {"axis": "accounting_F_score", "factor": "Q04_Piotroski_F", "weight": 0.25, "direction": "positive"},
+        {"axis": "earnings_stability", "factor": "Q07_Earnings_Stability", "weight": 0.25, "direction": "positive"},
+        {"axis": "distress_Ohlson_low", "factor": "signed_distress_low = -z_Q25_Ohlson_O", "weight": 0.25, "direction": "signed (low distress = high quality)"}
+      ],
+      "data_access": "load_month_factors(['Q01_GPA', 'Q04_Piotroski_F', 'Q07_Earnings_Stability', 'Q25_Ohlson_O']) (C15)",
+      "rationale": "Q24 → Q07 대체. Q07 stress_icir +0.753 (L-121 양쪽 위기 최강) 반영. 4-axis EW balanced composite 유지하면서 Q24 poison pill → Q07 defensive star 교체. Risk Mgr Option B 직접 채택. 4-dimension balance (profitability/accounting/stability/distress) Asness 2019 framework 충실.",
+      "expected_performance": {
+        "icir_forecast": "0.25~0.40 (Q07 +0.753 stress_icir uplift)",
+        "stress_icir_forecast": "+0.40~+0.70 (Q07 강한 positive stress + Q01/Q04/Q25 positive)",
+        "sr_forecast": "0.70~1.00",
+        "cagr_forecast": "11~17%",
+        "mdd_forecast": "30~42% (Q07 defense family로 overlay 없이 MDD 축소)",
+        "crisis_sr_forecast": "1.25~1.50 (Kill Scenario 1 완화 + V5 Crisis SR 1.22 → 1.25~1.50 개선)"
+      },
+      "axiom_consideration": {
+        "ax_005_scope_check": "AX-005 v3 EXCLUSION 명문 'multi-sleeve portfolio 내 defense sleeve 해당' scope. Q07 multi-axis composite 내 1/4 weight 사용은 Q07+D25 single-sleeve combo와 구조적 다름. Scout recommendation: AX-005 scope 밖 (Judge 최종 확정 필요).",
+        "judge_pre_emptive_coordination": "variant_2 spawn 전 Judge에 AX-005 scope interpretation 사전 확인 권고"
+      }
+    },
+
+    "variant_baseline_control_v1_original": {
+      "variant_id": "H_1689_v3_baseline_v1_original",
+      "priority": "P3 BASELINE CONTROL",
+      "composite_formula": "score = 0.25·z_Q01 + 0.25·z_Q04 + 0.25·(-z_Q25) + 0.25·z_Q24",
+      "rationale": "v1 4-axis original with Q24. variant_1/2 대비 stress_icir drag 실증 목적. Risk Mgr WARNING 실증. **실제 admission 후보 아님** — Scout Risk Mgr 우려 empirical validation 목적.",
+      "expected_performance": {
+        "stress_icir_forecast": "-0.10~+0.10 (Q24 -0.695 × 25% = -0.174 drag dominant)",
+        "note": "baseline_control 성과 나쁠수록 variant 1/2 대비 개선 효과 증명 명확"
+      },
+      "execution_priority": "Forge variant_1/2 완료 후 여유 capacity 시만"
+    },
+
+    "portfolio_config": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+      "rebalance": "Monthly, t+1 적용 (재무제표 공시 반영 지연 고려 — annual T+5월, quarterly T+45일)",
+      "overlay": "NONE (S0/S1 pure signal, L0 rule)"
+    }
+  },
+
+  "l144_poison_pill_quantified_rule": {
+    "_note": "L-144 poison pill 실증 + L-163 제안 (Judge authority pending)",
+    "l144_reference_full_text": "Q24_Altman_Z 한국시장 cross-section 실증 stress 6대 급락 구간 역방향 작용 확정. stress_icir -0.695, stress_pct_pos 0.25 (40 stress months 중 25%만 양수), crisis_ratio -2.89. Z-score 높은 (Altman 기준 '안전') 종목이 급락 시 오히려 underperform.",
+    "poison_pill_quantification": {
+      "weight_25pct_scenario": "Q24 25% × -0.695 stress_icir = -0.174 composite stress drag",
+      "positive_contribution_sum": "Q01 (+0.10 stress_icir × 25% = +0.025) + Q04 (+0.15 × 25% = +0.0375) + Q25 (+0.659 × 25% = +0.165) = +0.2275",
+      "cancellation_quantified": "-0.174 / +0.2275 = 77% cancellation"
+    },
+    "l_163_proposal": {
+      "proposed_l_code": "L-163 (pending Judge authority)",
+      "title_draft": "Quality composite 내 poison pill factor 식별 — stress_icir negative 25%+ weight drag dominance 패턴",
+      "quantified_rule": "for each factor in composite: stress_icir × weight >= -0.05 (poison pill threshold). if violation, reduce weight to ≤10% or exclude.",
+      "tags": ["QUALITY_COMPOSITE_DESIGN", "POISON_PILL_PATTERN", "STRESS_ICIR_THRESHOLD", "Q24_ALTMAN_KR_INVERSE", "L_119_DILUTION_REFINEMENT"],
+      "supporting_l_codes": ["L-144 (direct evidence)", "L-104 STR_1624 Q24+V05+L04 Grade F (historical)", "L-145 AX-005 Evidence Synthesis"],
+      "automated_check_protocol": "Scout S0 composite 가설 설계 시 모든 sub-factor stress_icir × weight ≥ -0.05 규약 자동 체크. 위반 시 weight 재조정 또는 factor exclusion 필수."
+    }
+  },
+
+  "l161_post_fix_1_verification": {
+    "_note": "Factor DB Z-score normalization Fix 1 적용 후 post-fix sd=1.0 재검증 필수",
+    "q_factor_sd_pre_fix": {
+      "Q01_GPA": 0.587,
+      "Q04_Piotroski_F": 1.000,
+      "Q07_Earnings_Stability": 0.328,
+      "Q24_Altman_Z": 0.191,
+      "Q25_Ohlson_O": 0.530
+    },
+    "fix_1_applied": "factor_db_connector.R line 113-117 (2026-04-18 Q-Lead 팀 lead 재정규화 패치)",
+    "post_fix_1_expected_sd": "all 1.000 (Fix 1 자동 rescale)",
+    "forge_preflight_required": "S1 실행 시 post-fix sd=1.0 verification 필수 — L-164 factor_engine.R load_month_factors() mandate 준수",
+    "inline_direct_parquet_load_prohibition": "STR_1684 factor_engine.R inline direct parquet load + Fix 1 inline 적용 사례 재발 방지 — H_1689 v3 factor_engine은 load_month_factors() 경유 강제"
+  },
+
+  "expected_performance_summary": {
+    "variant_1_primary": {
+      "icir_forecast": "0.18~0.30",
+      "sr_forecast": "0.55~0.75",
+      "stress_icir_forecast": "+0.30~+0.60",
+      "crisis_sr_forecast": "1.05~1.25"
+    },
+    "variant_2_secondary": {
+      "icir_forecast": "0.25~0.40",
+      "sr_forecast": "0.70~1.00",
+      "stress_icir_forecast": "+0.40~+0.70",
+      "crisis_sr_forecast": "1.25~1.50"
+    },
+    "harvey_t_expected": "2.5~4.0 (composite diversifier)",
+    "scout_calibration_v4_predicted": {
+      "variant_1_range": [53, 68],
+      "variant_1_midpoint": 61,
+      "variant_2_range": [55, 71],
+      "variant_2_midpoint": 63,
+      "verdict_projection": "APPROVE_CONDITIONAL (variant_2 우세 예상)"
+    }
+  },
+
+  "lesson_check": [
+    {"lcode": "L-107", "summary": "ICIR fixed-weight C1 violation", "compliance": "DIRECT_FIX — 정적 25/25/25/25 composite (variant_2) 또는 33/33/34 (variant_1). 동적 ICIR weight S5 mutation 대기."},
+    {"lcode": "L-113", "summary": "quality defense single-axis fail", "compliance": "AWARE — single-axis 실패 scope. v3는 multi-axis composite으로 극복."},
+    {"lcode": "L-119", "summary": "static EW blend dilution", "compliance": "CRITICAL — 정확히 해당 리스크. AX-004 v3 EXCLUSION 명문 'Scout Quality Defensive Composite scope 밖' 인정. Asness 2019 framework 실증."},
+    {"lcode": "L-121", "summary": "Q07 양쪽 위기 최강 stress ICIR +0.753", "compliance": "APPLIED — variant_2 Q07 25% 편입 근거."},
+    {"lcode": "L-122", "summary": "factor timing vs risk management", "compliance": "PASS — 정적 composite."},
+    {"lcode": "L-133", "summary": "Q04 standalone fail", "compliance": "AWARE — Q04 standalone 실패. 4-axis 1/4 비중으로 완화."},
+    {"lcode": "L-139", "summary": "Q01 GP standalone fail", "compliance": "AWARE — Q01 standalone 실패. 같은 완화 방식."},
+    {"lcode": "L-140", "summary": "Q07+D25 standalone fail", "compliance": "PASS — variant_2 Q07 사용하나 D25 미사용 + multi-axis composite scope."},
+    {"lcode": "L-144", "summary": "Q24 Altman stress_icir -0.695 poison pill", "compliance": "DIRECT_FIX — variant_1 Q24 완전 제거 + variant_2 Q24→Q07 대체."},
+    {"lcode": "L-148", "summary": "Grade A != PIT clean", "compliance": "DIRECT_FIX — C1~C15 수동 검증."},
+    {"lcode": "L-156_v2", "summary": "TDC Gate 8 ≤0.4", "compliance": "DIRECT_AWARE — S3 vs STR_1631 + STR_1679v3 (Q07 공유 variant_2 주의) + STR_1656 측정."},
+    {"lcode": "L-157_v4", "summary": "Scout Calibration v4 draft", "compliance": "APPLIED — variant_1 [53,68] + variant_2 [55,71]."},
+    {"lcode": "L-158", "summary": "Judge Gate 8 Early Warning — handoff kit predicted_tdc 사전 탐지 + S0 사전 차단", "compliance": "DIRECT_AWARE — v3 handoff kit에 TDC cluster 추정치 포함 (variant_1 vs STR_1679v3 0.15~0.25 / variant_2 vs STR_1679v3 0.30~0.45 경계). 0.3~0.4 WARNING 구간 시 S6 실측 재확인 의무."},
+    {"lcode": "L-160", "summary": "고ICIR Defense composite long-only 20종목 IC-Return decoupling (STR_1683 H_1682 4-variant Hard Fail)", "compliance": "DIRECT_FIX — IC-Return decoupling 5개 원인 중 (1) direction ambiguity: Q01/Q04/Q25 방향 명확화 + Q24 poison pill 제거, (2) publication decay: Q04 Piotroski 2000 + Q25 Ohlson 1980 publication 25~40년 + KR 실증 이미 반영, (3) long-only 20 concentration: sector-neutralization S5 mutation 후보, (4) composite offset: Q24 direct 제거로 완화, (5) non-linear signal: percentile-rank S5 mutation. IC-Return decoupling 실증 cross-reference 반영."},
+    {"lcode": "L-161", "summary": "Factor DB Z-score 정규화 불일치", "compliance": "DIRECT_FIX — Fix 1 post 재정규화 + preflight validate_factor_sd() 호출."},
+    {"lcode": "L-164", "summary": "factor_engine.R load_month_factors() mandate", "compliance": "DIRECT_FIX — inline parquet load 금지, load_month_factors() 경유 강제."}
+  ],
+
+  "risks": [
+    "위험 1 — variant_2 Q07 AX-005 scope 재해석: Q07 multi-axis composite 1/4 사용이 AX-005 'multi-sleeve portfolio 내 defense sleeve' scope 인정 필요. Judge pre-emptive coordination 권고.",
+    "위험 2 — variant_1 3-axis academic precedent 약함: Asness 2019 QMJ 4-dimension original 대비 simpler. 박영석 등 한국 3-axis 실증 제한. Academic 점수 하락 risk.",
+    "위험 3 — variant_2 STR_1679v3 (Core Def) cluster formation: Q07 공유로 TDC 0.30~0.45 예상. L-156_v2 TDC ≤0.4 gate 경계. S3 측정 필수.",
+    "위험 4 — 한국 direct cite 약함 (김재익-이준 2020 QMJ 미확인). Academic 약점.",
+    "위험 5 — Kill Scenario 2 (C19 Consensus Quality Collapse)는 variant 1/2 무관 — Governor admission 단계 주의.",
+    "위험 6 — AX-004 v3 EXCLUSION 원문에 'Q07 등' 포함되나 exemption 범위의 strict interpretation 논쟁 가능. Judge 최종 판정 대기.",
+    "위험 7 — Q24 → Q07 대체 시 variant_2 Q07 공유로 Core Defense STR_1679v3과 family saturation 가능성 (Governor family 규칙 check).",
+    "위험 8 — variant_1 3-axis EW balance (0.33/0.33/0.34)는 Q25 0.34가 약간 더 큰 weight — distress axis dominance가 signal degradation 유발 가능. Forge S2 분해 필수.",
+    "위험 9 — L-163 poison pill quantified rule (stress_icir × weight ≥ -0.05)은 pending Judge authority — 공식 L-code 승격 전 Scout internal guideline으로만 운용."
+  ],
+
+  "v3_decision_tree_2_scenarios_plus_A_B_C_D": {
+    "scenario_A_variant_1_best": {
+      "condition": "variant_1 (3-axis) SR ≥ 0.70 AND stress_icir ≥ +0.30",
+      "verdict": "Q24 제거 충분. variant_1 primary admission.",
+      "governor_recommendation": "rev8-A-revised-v2 H_1689 10% 배분 → variant_1 진행",
+      "str_id": "STR_1689_v3_3axis"
+    },
+    "scenario_B_variant_2_best": {
+      "condition": "variant_2 (Q07 대체) SR > variant_1 + 0.10 AND AX-005 scope interpretation PASS",
+      "verdict": "Q07 stress uplift 실증. variant_2 primary admission.",
+      "governor_recommendation": "rev8-A-revised-v2 H_1689 10~15% 배분 (Q07 defensive lift) → variant_2 진행",
+      "str_id": "STR_1689_v3_4axis_Q07"
+    },
+    "scenario_C_both_acceptable": {
+      "condition": "variant_1 + variant_2 모두 SR ≥ 0.70",
+      "verdict": "variant_2 primary (Q07 uplift 우수) + variant_1 backup",
+      "governor_recommendation": "variant_2 primary 10% + variant_1 backup standby"
+    },
+    "scenario_D_both_fail": {
+      "condition": "variant_1 AND variant_2 모두 SR < 0.70",
+      "verdict": "Quality 4-axis composite 자체 한국 구조적 실패 실증",
+      "action": "H_1689 전체 REJECT + Defense slot 재설계. AX-004 v3 EXCLUSION revision 검토."
+    }
+  },
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR ≥ 0.20 (variant_1) / 0.25 (variant_2)",
+    "pit_gate": "C1~C15 전수 + L-161 distortion 회피 + L-164 load_month_factors mandate + Fix 1 post sd=1.0 verification",
+    "portfolio_gate": "MDD < 50% (diversifier 허용), MDD < 42% (variant_2 Q07 uplift 기대)",
+    "harvey_gate": "t > 3.0 (각 variant)",
+    "sr_gate": "SR ≥ 0.55 (variant_1 하한) / 0.70 (variant_2 하한)",
+    "stress_icir_gate": "stress_icir ≥ +0.30 (variant_1) / +0.40 (variant_2) — Risk Mgr blocking condition 충족",
+    "poison_pill_gate": "각 sub-factor stress_icir × weight ≥ -0.05 (L-163 proposed rule)"
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": [
+      "STR_1631_SYN_05 (PG2 anchor) — expected TDC 0.15~0.25",
+      "STR_1656_MLRA_M05 (PG2 diversifier) — expected TDC 0.20~0.30",
+      "STR_1679v3 (Phase_1 defense, Q07 공유 variant_2 경계) — expected TDC variant_1 0.15~0.25 / variant_2 0.30~0.45",
+      "STR_1661_V2 (Core_Secondary candidate, ML) — expected TDC 0.20~0.35",
+      "H_1685_v2 (Phase_2 diversifier) — expected TDC 0.10~0.20",
+      "H_1692 (Core_Secondary candidate) — expected TDC 0.10~0.20 (family 상이)"
+    ],
+    "orthogonality_gate": "portfolio-level rho ≤ 0.4 (diversifier gate). variant_2 vs STR_1679v3 0.45 경계 시 SEQUENTIAL_ADMISSION 필수.",
+    "novelty_score_expected": "variant_1 0.45~0.65 (3-axis novelty) / variant_2 0.40~0.55 (Q07 공유로 novelty 제한)"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutations": [
+      "Slot A (Primary): v3 variant_1 or variant_2 (scenario 결과) baseline + DD 8/22 overlay",
+      "Slot B: Asness 2019 full 4-sub-composite (profitability/growth/safety/payout 각 4+ signals) expansion",
+      "Slot C: IC-weighted dynamic weight (L-111 STR_1631 SYN_05 패턴 차용)",
+      "Slot D: Regime-conditional composite (CAUTION/CRISIS 국면에서 distress axis 강화)"
+    ]
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "Q01/Q04/Q07/Q24/Q25 individual existing. signed_distress_low (Q25 기반) + Quality_Composite_3axis / Quality_Composite_4axis_Q07 composite factor 신규 registry entry 필요.",
+    "s0_record_duplicate_check": "H_1689 v1 (4-axis with Q24) 대체. GSCD / CBPQ / H_1675 Q07-D29 ConditionalDefense / STR_1679v3 Q07 defense sleeve와 구조 구분.",
+    "STR_1679v3_Q07_defense_distinction": "STR_1679v3는 Q07 earnings stability standalone-in-defense-sleeve role. variant_2는 Q07 25% 비중 multi-axis composite diversifier role. 완전 구분.",
+    "conclusion": "NEW_HYPOTHESIS_APPROVED with AX-004 v3 EXCLUSION direct citation + L-163 poison pill auto-check protocol"
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_001": "N/A (diversifier, not defense)",
+    "AX_002": "PASS",
+    "AX_003_value_fail": "PASS (value 무관)",
+    "AX_004_v3_quality_profitability_fail": {
+      "status": "PASS (scope 밖 명문 exemption)",
+      "direct_citation": "AX-004 v3 EXCLUSION 원문: '전통 quality composite (Novy-Marx GP + Piotroski F-Score + Ohlson O-Score + Q07 등 복수 quality axis 결합)은 scope 밖 — Scout의 Quality Defensive Composite(A안)은 scope 밖'",
+      "variant_1_match": "Q01 GP + Q04 F + Q25 Ohlson 3-axis — exemption 명문 직접 해당",
+      "variant_2_match": "Q01 GP + Q04 F + Q07 Stability + Q25 Ohlson 4-axis — exemption 'Q07 등' 명문 직접 해당"
+    },
+    "AX_005_defense_fail": {
+      "status": "PASS (scope 밖)",
+      "direct_citation": "AX-005 v3 EXCLUSION 원문: 'multi-sleeve portfolio 내 defense sleeve(STR_1679 Core+Def, STR_905 3-sleeve 등)는 AX-001에 따라 조건부 성과로 평가, scope 밖'",
+      "variant_2_Q07_scope": "Q07 multi-axis composite 내 25% 비중 사용은 Q07+D25 single-sleeve standalone combo와 구조적 다름 — scope 밖 (Judge 최종 확정 권고)"
+    }
+  },
+
+  "families_saturation_check_v1_2": {
+    "_note": "families.json v1.2 Soft Prior defense/quality family saturation check (team-lead 가이드)",
+    "families_json_path": "qepm/memory/registry/families.json",
+    "caveat": "families.json JSON 파싱 오류 확인 (line 80 column 97 — JSONDecodeError). team-lead/Governor 파일 수정 권고. 본 s0_record는 strategy_catalog 기반 수동 점검으로 대체.",
+    "current_defense_family_active": [
+      "STR_1679v3 (Phase_1 Q07 defense sleeve candidate, PG1)",
+      "STR_1631_SYN_05 (PG2 core anchor, consensus/residual/IndMom composite 포함)"
+    ],
+    "current_quality_multi_axis_composite_family_active": [],
+    "saturation_assessment": {
+      "quality_multi_axis_composite_family": "현재 active 0건 — 신규 family entry (saturation 없음)",
+      "defense_family_via_Q07_sharing": "STR_1679v3 Q07 defense sleeve 1건만 가동 중. variant_2 Q07 공유로 2건 cluster 형성 가능 — Governor saturation 규칙 check 필요",
+      "variant_1_saturation": "PASS (Q07 미사용, 3-axis Q01/Q04/Q25 독립 family entry)",
+      "variant_2_saturation": "CAUTION (Q07 공유로 STR_1679v3과 Q07-sleeve family saturation 가능성 — Governor PG1 admission 단계에서 family 규칙 judgment 필요. 단 variant_2는 diversifier role + composite 1/4 비중으로 standalone Q07 sleeve와 구조적 다름)"
+    },
+    "recommended_action_for_governor": "variant_2 admission 시 Q07 sleeve 공유 투명성 공개 + family saturation 규칙 재해석 (composite 1/4 vs standalone sleeve 구분) 판정 요청"
+  },
+
+  "pit_enforcement_checklist_c1_c15": {
+    "C1_full_sample_stats": "PASS — monthly factor snapshot",
+    "C2_same_day_circular": "PASS — t-1 기준 재무제표",
+    "C3_same_period_agg_apply": "PASS",
+    "C4_fs_lag": "CRITICAL — Q01/Q04/Q07/Q24/Q25 모두 재무제표 기반. Annual T+5월, Quarterly T+45일 lag 준수. Factor DB Usable_Date 로직 검증 필수.",
+    "C5_overlay_t_1": "N/A",
+    "C9_DD_VT_lag": "N/A",
+    "C10_liquidity_filter": "PASS",
+    "C11_data_time_axis": "PASS",
+    "C13_z_score_aligned": "CRITICAL — signed_distress_low_ohlson factor 등록 필수. 수동 -z_Q25 금지.",
+    "C14_usable_date": "CRITICAL — 각 factor 전수 Usable_Date 준수",
+    "C15_factor_db_access": "PASS — load_month_factors 경유 (L-164 mandate)"
+  },
+
+  "s1_implementation_notes_for_forge": {
+    "signal_code_pattern_variant_1": "load_month_factors(['Q01_GPA', 'Q04_Piotroski_F', 'Q25_Ohlson_O']) → per-factor Z-score → weighted sum (0.33, 0.33, 0.34·(-1))",
+    "signal_code_pattern_variant_2": "load_month_factors(['Q01_GPA', 'Q04_Piotroski_F', 'Q07_Earnings_Stability', 'Q25_Ohlson_O']) → per-factor Z-score → weighted sum (0.25, 0.25, 0.25, 0.25·(-1))",
+    "cache_strategy": "기존 factor 재활용. signed_distress_low_ohlson 신규 factor 등록만 필요.",
+    "edge_cases": [
+      "Missing data (특정 factor 결측) 처리 방침 사전 정의 (partial composite 금지 - 모든 factor 가용 월만 포지션)",
+      "재무제표 lag 준수 — annual vs quarterly 혼재 Usable_Date 통일 처리",
+      "variant_2 Q07 post-Fix 1 sd=1.0 재검증 필수",
+      "Forge artifacts: output/variant_1_hurdle_result.json + variant_2_hurdle_result.json + variant_v1_baseline_hurdle_result.json + h1689_v3_variant_comparison.csv"
+    ],
+    "critical_c13_c14_step": "signed_distress_low_ohlson 등록 + 3/4 factors Usable_Date filter 이중 검증",
+    "forge_preflight_mandatory": [
+      "Q01/Q04/Q07/Q24/Q25 post-Fix 1 sd ≥ 0.95 verification",
+      "load_month_factors() 경유 강제 (L-164 mandate)",
+      "signed_distress_low align_factor_direction() registry entry 확인",
+      "variant_1 + variant_2 + baseline_control 3 variants output directory 분리"
+    ],
+    "forge_execution_sequence": [
+      "Stage 1: variant_1 3-axis PRIMARY (P0)",
+      "Stage 2: variant_2 4-axis Q07 SECONDARY (P1)",
+      "Stage 3: baseline_control v1 original (P3 demonstration only, Forge capacity 여유 시)"
+    ]
+  },
+
+  "soft_prior_recommendations_for_governor": {
+    "_note": "Soft Prior 업데이트 권고 (Scout → Governor transmission)",
+    "add_to_approved_conditional": [
+      {
+        "family": "quality_multi_axis_composite_q24_exclude",
+        "status": "proposed",
+        "evidence": "H_1689 v3 variant_1 3-axis Q24-exclude",
+        "rationale": "L-144 poison pill 제거 + Asness 2019 framework adherence"
+      },
+      {
+        "family": "quality_multi_axis_composite_q07_substitute",
+        "status": "proposed",
+        "evidence": "H_1689 v3 variant_2 4-axis Q07 replace",
+        "rationale": "Q07 stress_icir +0.753 uplift + Kill Scenario 1 완전 회피"
+      }
+    ],
+    "add_to_avoid": [
+      {
+        "family": "quality_composite_with_q24_altman",
+        "status": "failed",
+        "evidence": "H_1689 v1/v2 Q24 25% weight × -0.695 stress_icir = -0.174 composite drag (77% cancellation of positive contribution)",
+        "lesson": "Q24 Altman Z 한국시장 역방향 stress → multi-axis composite 내 25%+ 비중 시 positive contribution 77% 상쇄. L-144 + L-163 poison pill quantified rule 적용 필수."
+      }
+    ]
+  },
+
+  "scout_notes_v3": [
+    "Risk Mgr 3rd round blocking condition (Q24 poison pill -0.695) 충실 반영 v3 발행.",
+    "L-163 poison pill quantified rule 제안 (stress_icir × weight ≥ -0.05) — pending Judge authority 승격.",
+    "variant_1 (3-axis) predicted [53, 68] mid 61 — v1 대비 APPROVE_COND 진입 upgrade.",
+    "variant_2 (4-axis Q07 대체) predicted [55, 71] mid 63 — Q07 stress uplift로 variant_1보다 우수 예상.",
+    "Q07 AX-005 scope 재해석은 Judge 확정 필수 — Scout recommendation: AX-005 v3 EXCLUSION multi-sleeve 조항 적용 exemption.",
+    "Kill Scenario 1 완전 회피 + V5 Crisis SR 1.22 개선은 variant_2 Q07 대체가 최적 경로.",
+    "Kill Scenario 2 (C19 Consensus Quality Collapse)는 H_1689 변경 무관 — Governor admission 단계 주의.",
+    "Forge H_1689 factor_engine.R은 load_month_factors() 경유 강제 (L-164 mandate).",
+    "STR_1684 inline direct parquet load + Fix 1 inline 적용 사례 교훈 반영 — v3는 load_month_factors 의무화.",
+    "handoff kit v3 (2026-04-18)이 본 s0_record의 prepared context이며, R1 debate 진입 시 v3 handoff kit의 5인 debaters v3 additional_context 주입 필요."
+  ],
+
+  "handoff_status": {
+    "s0_record_v3_complete": true,
+    "variant_1_primary_design_complete": true,
+    "variant_2_secondary_design_complete": true,
+    "baseline_control_v1_included": true,
+    "l144_poison_pill_reflection_complete": true,
+    "l161_fix_1_verification_protocol_included": true,
+    "l163_proposal_documented": true,
+    "l164_load_month_factors_mandate_compliance": true,
+    "risk_manager_blocking_condition_reflected": true,
+    "decision_tree_4_scenarios_defined": true,
+    "scout_calibration_v4_predicted_per_variant": true,
+    "ax_004_v3_exemption_direct_citation": true,
+    "ax_005_v3_exemption_scope_documented": true,
+    "ready_for_qlead_r1_debate_spawn": true,
+    "handoff_kit_v3_source": "stage_artifacts/s0_debate_handoff_H_1689_v3.json"
+  }
+}

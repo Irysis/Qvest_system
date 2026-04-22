@@ -1,0 +1,258 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v2 for H_1691 debate. L-157 v4 draft + Factor DB pre-check + clone family residue audit 강화 + STR_1060 novelty salvage 맥락 재정립.",
+  "hypothesis_id": "H_1691",
+  "hypothesis_name": "STR_1060 DD Brake Removal Novelty — Long-Only Drawdown Regime Filter",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1691_str_1060_clone_novelty_extraction.json",
+  "version": "v2",
+  "supersedes_reason": "(1) L-157 v4 draft 2건 연속 hit 적용, (2) Factor DB C19+R06_MDD 2-factor availability PASS 실증, (3) H_1685 v2 APPROVE 61 precedent 반영, (4) L-156 v2 Drawdown_Regime cluster pre-registration, (5) clone family residue audit trail 강화 (STR_1060/1070/1085 DROP 맥락)",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P1 (H_1678/H_1679/H_1689 debate 이후 4번째, stabilize bucket)",
+  "L157_v4_pre_checks_completed": true,
+
+  "one_line_summary": "2-factor score blend: 0.6·z_C19_Composite_Earnings + 0.4·(-z_R06_MDD) with MRS t-1 binary gate (MRS<30: 60/40 / MRS≥30: 30/70 drawdown tilt). STR_1060 byte-identical triplicate REJECT 이후 novelty salvage Path A — 5-sleeve 구조 해체 + long-only drawdown regime filter 단순화 추출.",
+
+  "str_number_allocation": {
+    "recommended": "STR_1690 (다음 순번, Forge 최종 할당 가능)",
+    "note": "APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정"
+  },
+
+  "L159_spec_transmission_pre_empirical_check": {
+    "verification_date": "2026-04-18",
+    "verification_source": ".cache/factor_db/factor_db_202603.parquet",
+    "required_factors": ["C19_Composite_Earnings", "R06_MDD"],
+    "availability_result": {
+      "C19_Composite_Earnings": true,
+      "R06_MDD": true,
+      "all_pass": true
+    },
+    "verdict": "PASS — 2-factor 전수 AVAILABLE. L-159 spec transmission failure 재현 risk ELIMINATED.",
+    "signed_convention_note": "R06_MDD: past 12M MaxDD (높을수록 나쁨) → composite score에 -z_R06_MDD 사용 (low MDD = high quality long preference). align_factor_direction() registry 확인 필수 (C13).",
+    "mrs_t1_lag_c5_compliance": "Regime v7.1 MRS t-1 lag 필수 (C5). regime_engine.R shift(1L) 패턴 준수.",
+    "binary_gate_note": "MRS<30 vs MRS≥30 binary switch — 경계 MRS 29→31 sudden jump risk (Codex attack vector)"
+  },
+
+  "clone_family_residue_audit_v2": {
+    "clone_triplicate_reject_precedent": {
+      "str_1060_status": "REJECT (L-151, CLONE_FAMILY_TRIPLICATE, Judge sweep v3 Pass 2 Tier 1)",
+      "str_1070_status": "REJECT (byte-identical clone)",
+      "str_1085_status": "REJECT (byte-identical clone)",
+      "parent_STR_770_status": "MISSING (Scout 포렌식 확인 — BASE_DIR 부재)"
+    },
+    "H_1691_novelty_salvage_path_a_justification": [
+      "Judge sweep v3 Pass 2 Tier 1 공식 확인: STR_1060 Phase 3 'DD_med + MRS only'는 5-sleeve 구조와 독립된 고유 novelty (short brake 제거 후 long-only drawdown filter)",
+      "H_1691은 5-sleeve 구조 해체 + 2-factor score-blend 단순화 (C19 + R06_MDD 만 사용)",
+      "parent STR_770 BASE_DIR MISSING 완전 해소 — Factor DB standalone + 재현성 100% 보장",
+      "clone 기반 novelty 10 evidence 재활용하되 byte-identical 패턴 회피"
+    ],
+    "codex_attack_risk_high": "Codex는 'H_1691이 STR_1060 clone residue 상속' 관점에서 REJECT 위험. S0 Debate에서 'structural novelty' 입증 핵심 — 5-sleeve vs 2-factor + MRS gate 구조 대비 증거 필수",
+    "governor_path_b_delegation": "STR_1060/1070/1085 clone dedup policy는 Governor rev5 담당 (별도 진행). H_1691 Path A와 명확히 분리"
+  },
+
+  "L157_v4_pre_empirical_measurements": {
+    "algebraic_identity_check": {
+      "formula": "score = w_C19(regime)·z_C19 + w_MDD(regime)·(-z_R06_MDD)",
+      "regime_weights": {
+        "MRS<30_normal": {"w_C19": 0.6, "w_MDD": 0.4},
+        "MRS>=30_crisis": {"w_C19": 0.3, "w_MDD": 0.7}
+      },
+      "shared_term": "NONE — consensus (C19) vs drawdown (R06_MDD) 완전 independent families",
+      "verdict": "PASS (no algebraic identity)"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_portfolio_rho": "0.45~0.55 (C19 0.3~0.6 weight 공유, regime-dependent)",
+        "l156_gate_8_prediction": "BORDERLINE_FAIL (0.4 threshold 초과 가능, regime 따라 변동)",
+        "mitigation": "R06_MDD drawdown filter 완화 효과 + CRISIS 시 C19 weight 0.3으로 축소"
+      },
+      "vs_H_1678_C19_D01_2F": {
+        "predicted_rho": "0.35~0.50 (C19 공유, D01 vs R06_MDD 차이)",
+        "verdict": "BORDERLINE"
+      },
+      "vs_H_1690_4axis": {
+        "predicted_rho": "0.25~0.40 (C19 공유 비중 차이, regime 처리 방식 차이)",
+        "verdict": "PASS"
+      },
+      "vs_H_1685_v2_foreign_resid": {
+        "predicted_rho": "0.05~0.15 (investor_flow vs consensus+drawdown, 독립)",
+        "verdict": "PASS"
+      }
+    },
+    "sd_ratio_analysis": {
+      "C19_sd": "~1.0 (Z_Score_Aligned 정규화)",
+      "R06_MDD_sd": "~1.0",
+      "ratio": "1:1 (balanced)",
+      "verdict": "PASS"
+    },
+    "linear_dominance_test": {
+      "max_weight_in_normal": 0.6,
+      "max_weight_in_crisis": 0.7,
+      "variance_explained_by_C19_normal": "36% (0.6² × 100)",
+      "variance_explained_by_MDD_crisis": "49% (0.7² × 100)",
+      "L157_threshold_70pct": "NOT_EXCEEDED",
+      "verdict": "PASS"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "C19_standalone_ICIR": "0.547 (STR_1631 precedent)",
+      "R06_MDD_standalone_ICIR": "weak (drawdown filter 단독 약함, selection gate 성격)",
+      "composite_normal_regime_ICIR_estimate": "0.40~0.50",
+      "composite_crisis_regime_ICIR_estimate": "0.30~0.45 (MDD filter dominant 시)",
+      "verdict": "CONDITIONAL PASS"
+    }
+  },
+
+  "L156_v2_tdc_cluster_pre_registration": {
+    "cluster_name": "Drawdown_Regime_Filter",
+    "members": ["H_1691 (신규)"],
+    "expected_conditional_tdc": {
+      "normal_regime": "vs STR_1631 0.40~0.55",
+      "crisis_regime": "vs STR_1631 0.30~0.50 (MDD filter crisis 시 differentiation)"
+    },
+    "AX_006_candidate_contribution": "+0.03 frequency (단독 cluster, 6번째)"
+  },
+
+  "scout_calibration_v4_adjusted_predictions": {
+    "predicted_total_range_v4": [50, 65],
+    "predicted_midpoint_v4": 58,
+    "per_debater_v4": {
+      "codex_critic": [5, 8],
+      "risk_manager": [10, 13],
+      "governor": [10, 13],
+      "quant": [11, 14],
+      "academic": [12, 15]
+    },
+    "v4_rules_applied": {
+      "rule_1_R2_auto_delta_-3": "R1 53-68 → final 50-65",
+      "rule_2_codex_rebound": "Codex R1 5 → final 6 default (clone residue attack 강력 예상)",
+      "rule_3_governor_variance": "lower [11→10] — novelty salvage marginal contribution uncertainty",
+      "rule_5_tail_warning_penalty": "warnings: (1) clone family residue audit trail, (2) STR_1060 Phase 3 단일 empirical 유효성 불명, (3) binary MRS gate sudden jump, (4) C19 STR_1631 dominance → -4 applied"
+    },
+    "verdict_projection_v4": "REVISE (40-59) 유력 boundary or APPROVE_CONDITIONAL (60-74) 하한. Midpoint 58 = REVISE boundary.",
+    "most_uncertain_debater": "Codex + Governor — clone residue audit + marginal contribution 공통 uncertainty"
+  },
+
+  "pre_debate_scout_risk_assessment_v2": {
+    "bull_case_v2": [
+      "Factor DB 2-factor 기구축 (L-159 risk ELIMINATED)",
+      "STR_1060 novelty 10 evidence 재활용 (Judge sweep v3 Tier 1 official)",
+      "Parent STR_770 MISSING 완전 해소 (Factor DB standalone 구조)",
+      "2-factor + MRS gate 단순화 → 5-sleeve clone 패턴 회피",
+      "Long-only drawdown filter = 한국시장 실투 가능",
+      "stabilize bucket target 20% 기여"
+    ],
+    "bear_case_v2": [
+      "**clone family residue audit (Codex primary attack)** — novelty 10 상속 정당성 의혹",
+      "STR_1060 Phase 3 'DD_med + MRS only' 단일 empirical 유효성 불명",
+      "Binary MRS gate sudden jump (MRS 29→31 경계)",
+      "C19 STR_1631 dominance risk (normal regime 60% weight)",
+      "R06_MDD standalone weak signal — drawdown filter alpha 불확실",
+      "novelty salvage vs marginal contribution 판정 Governor 양분 가능성"
+    ]
+  },
+
+  "strategic_chain_v2": {
+    "if_approve_or_approve_conditional": "**STR_1690** 할당. Forge S1 → Governor PG1 admission. Drawdown filter diversifier slot.",
+    "if_revise": "Scout Path — (a) Binary MRS → 3-state smooth gate, (b) R06_MDD → R16_Calmar 교체 (positive signal), (c) C19 → M01 Mom_12_1 교체 (family shift)",
+    "if_reject": "STR_1060 clone novelty salvage 공식 포기. novelty 10 catalog 기록만 유지."
+  },
+
+  "consensus_tier_classification_L158_v2": {
+    "tier": "Tier 2 Consensus partial + novel Drawdown axis",
+    "gate_10_warning": "C19 60% weight normal regime → STR_1631 rule 5 45% cap violation risk",
+    "admission_policy": "Phase_2 이후 partial 3~5% novelty salvage slot"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1691 STR_1060 DD Brake Removal Novelty. 2-factor: 0.6·z_C19 + 0.4·(-z_R06_MDD) MRS t-1 binary gate (MRS<30: 60/40 / MRS≥30: 30/70). Top 20 EW. STR_1060 clone triplicate REJECT (L-151)에서 long-only drawdown filter novelty 단순화 추출. 5-sleeve 해체 + parent STR_770 MISSING 해소.",
+        "L_CODE_FINDINGS": "L-151 CLONE_FAMILY_TRIPLICATE PATH_A_EXTRACTION, L-154 Tier 2 5-sleeve near-clone DIRECT_FIX, L-148/149 catalog + return-blend DIRECT_FIX, L-107 ICIR fixed weight DIRECT_FIX (binary regime gate), L-118 beta dominance AWARE, L-119 CONDITIONAL_PASS, L-122 risk management DIRECT_FIX, L-129 CDaR LP AWARE (scope 밖), L-442 Regime v7.1 PIT DIRECT_USE, L-146/147 overlay free + formal slate DIRECT_FIX, L-156 v2 cluster, L-157 v4 calibration, L-159 spec transmission PASS",
+        "FAILED_STRATEGIES": "STR_1060/1070/1085 byte-identical triplicate REJECT (L-151). STR_770 BASE_DIR MISSING. STR_1435/1439 같은 family REJECT. H_1677 parent MISSING REJECTED. STR_1682 L-159.",
+        "HYP_ID": "H_1691"
+      },
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "**Clone family residue audit trail — H_1691이 STR_1060 novelty 상속 시 clone 기반 전략으로 재분류 위험 (primary)**",
+        "STR_1060 Phase 3 'DD_med + MRS only' 5-sleeve 전체에서 기여도 empirical 불명",
+        "R06_MDD signed convention (C13) 정확성 요구",
+        "2-factor 단순화 alpha dilution 위험 (C19 dominance)",
+        "Binary MRS gate sudden jump (MRS 29→31)"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1691. L13 관점 — binary MRS gate regime transition tail dependence, R06_MDD filter crisis 구간 효과성, C19 weight shift regime 적응성, STR_1060 원본 tail_risk profile 계승 여부.",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "Binary MRS 29→31 threshold boundary tail risk",
+        "R06_MDD single factor drawdown filter가 다양한 crisis 형태 대응 불충분",
+        "CRISIS 시 MDD filter 70% weight → momentum crash defense 부족",
+        "C19 normal 60% weight → crisis 전환 시 lag risk"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1691. PG0 gap + stabilize bucket + novelty salvage path A. marginal contribution vs novelty evidence 평가.",
+      "rubric_focus": "role_match(4) + family_saturation(4) + axiom_compliance(4) + mdd_contribution(4) + kill_diversification(4) = 20",
+      "expected_assessment_vectors": [
+        "novelty salvage path A 정당성 (Judge Tier 1 명시)",
+        "C19 dominance rule 5 violation risk (STR_1631 + H_1678 + H_1679 기축 누적)",
+        "MDD filter diversifier slot 신규 vs marginal contribution 양분",
+        "STR_1060 novelty 10 catalog salvage 기능"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1691. Factor DB C19+R06_MDD 실측 PASS. signed R06_MDD convention 확인. Binary regime gate 구현 복잡도. composite ICIR 0.30~0.50 예상.",
+      "rubric_focus": "icir(4) + correlation_sanity(4) + data_availability(4) + implementability(4) + statistical_power(4) = 20",
+      "expected_fact_check_vectors": [
+        "2-factor 전수 Factor DB 기구축 (2026-04-18 실측)",
+        "R06_MDD past 12M MaxDD 기반 PIT 확인 필요",
+        "Binary gate R regime_engine.R 구현 pattern (Forge ConsGate 유사)",
+        "composite ICIR 0.30~0.50 예상 (regime dependent)",
+        "Harvey t borderline"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1691. Chekhlov-Uryasev-Zabarankin 2005 JFQA 'Drawdown Measure' + Magdon-Ismail-Atiya 2004 RM + Barroso-Santa-Clara 2015 JFE + Ang-Timmermann 2012 ARFE + 이상빈-윤영석 2020 한국재무학회지 (미확인). peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Chekhlov 2005 JFQA CDaR foundational",
+        "Magdon-Ismail 2004 Sharpe vs Calmar foundational",
+        "이상빈 2020 한국 drawdown portfolio 실증 (direct cite 희망)",
+        "Regime-conditional MDD filter novel empirical"
+      ],
+      "expected_concern_vectors": [
+        "MDD-based stock selection academic precedent 약함 (대부분 portfolio-level)",
+        "Binary regime gate 이론 근거 부족",
+        "이상빈 2020 direct cite 미확인",
+        "Ang-Timmermann 2012 → 2025 13년 time_decay"
+      ]
+    }
+  ],
+
+  "handoff_completeness_v2": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": true,
+    "handoff_kit_v2_complete": true,
+    "empirical_precheck_complete": true,
+    "factor_db_availability_verified": true,
+    "clone_family_residue_audit_enhanced": true,
+    "L157_v4_draft_applied": true,
+    "L156_v2_TDC_cluster_registered": true,
+    "str_number_recommended": "STR_1690",
+    "ready_for_qlead_r1_debate_spawn": true
+  }
+}

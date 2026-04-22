@@ -60,6 +60,29 @@ if (!dir.exists(FACTOR_DB_DIR)) {
 cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
 
 #==============================================================================
+# v54 Gate 13.1 — build_hash helpers
+#==============================================================================
+
+#' Write build_hash.txt to FACTOR_DB_DIR (timestamp + git short hash).
+#' Called at end of build_factor_db() and build_factor_db_monthly().
+.write_build_hash <- function() {
+  tryCatch({
+    git_rev <- tryCatch(
+      system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE),
+      error = function(e) "unknown"
+    )
+    if (length(git_rev) == 0 || nchar(git_rev) == 0) git_rev <- "unknown"
+    hash_str <- paste(format(Sys.time(), "%Y%m%d%H%M%S"), git_rev, sep = "_")
+    hash_path <- file.path(FACTOR_DB_DIR, "build_hash.txt")
+    writeLines(hash_str, hash_path)
+    cat(sprintf("[factor_db_builder] build_hash written: %s -> %s\n", hash_str, hash_path))
+  }, error = function(e) {
+    cat(sprintf("[factor_db_builder] WARN: could not write build_hash: %s\n",
+                conditionMessage(e)))
+  })
+}
+
+#==============================================================================
 # Internal: Load base data (cached within session)
 #==============================================================================
 
@@ -367,6 +390,17 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
   dt[!is.na(Z_Score), Z_Score := pmin(pmax(Z_Score, -3), 3)]
   dt[!is.na(Z_Sector), Z_Sector := pmin(pmax(Z_Sector, -3), 3)]
 
+  # Option A fix: re-standardize after winsorize to guarantee sd=1
+  # Winsorize clips tails → sd < 1 for heavy-tailed factors (M08 +1761%, R16 +529%)
+  dt[!is.na(Z_Score), Z_Score := {
+    s <- sd(Z_Score, na.rm = TRUE)
+    if (!is.na(s) && s > 1e-12) Z_Score / s else Z_Score
+  }, by = Factor_Name]
+  dt[!is.na(Z_Sector), Z_Sector := {
+    s <- sd(Z_Sector, na.rm = TRUE)
+    if (!is.na(s) && s > 1e-12) Z_Sector / s else Z_Sector
+  }, by = .(Factor_Name, Sector)]
+
   # Drop Sector column (not in output schema)
   dt[, Sector := NULL]
 
@@ -520,6 +554,8 @@ if (!force && file.exists(out_path)) {
     cat(sprintf("  Saved: %s (%.1f MB)\n",
                 out_path,
                 file.size(out_path) / 1e6))
+    # v54 Gate 13.1 — update build hash on every save
+    .write_build_hash()
   }
 
   result
@@ -581,6 +617,9 @@ build_factor_db_monthly <- function(start_date = format(ANALYSIS_START_DATE, "%Y
   elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "mins")), 1)
   cat(sprintf("\n[build_factor_db_monthly] Complete: %d months in %.1f minutes\n",
               length(month_ends), elapsed))
+
+  # v54 Gate 13.1 — record build hash after batch completion
+  .write_build_hash()
 
   invisible(month_ends)
 }

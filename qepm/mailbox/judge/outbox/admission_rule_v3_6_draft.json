@@ -1,0 +1,394 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Governor + Scout + Forge + team-lead",
+  "type": "ADMISSION_RULE_V3_6_DRAFT",
+  "stage": "PG1_Admission_Rule_v3_6_Extension_17_Gates",
+  "timestamp": "2026-04-18T21:00+09:00",
+  "session": 67,
+  "version": "v3.6_draft",
+  "parent": "v3.5.1",
+  "issued_by": "judge",
+  "status": "DRAFT — 17 gates (v3.5.1 16 gates preserved + Gate 13.1/14/15/16 신규 ACTIVE 승격 4건)",
+  "freeze_period_applies": true,
+  "enforcement_active_schedule": "Session 72 평가 후 공식 활성화 (DRAFT 성격 유지)",
+  "supersedes_note": "본 draft는 v3.5.1 (13 gates + 3 sub-conditions 확장) 토대로 team-lead 20:50 P3 task 승인 근거 정식 승격",
+
+  "v3_6_metadata": {
+    "parent_version": "v3.5.1 (ext. 13 gates + Gate 13.1 sub-extension)",
+    "draft_version": "v3.6_draft",
+    "total_gates_target": 17,
+    "breakdown": {
+      "preserved_from_v3_5_1": 13,
+      "sub_extension_gate_13_1": 1,
+      "new_active_promotions": 3,
+      "total": 17
+    },
+    "team_lead_approval_basis": "2026-04-18T20:50 P3 task directive",
+    "drafting_period": "Freeze Period (Session 67 continuous, day boundary removed)",
+    "activation_schedule": "DRAFT → CONDITIONAL_ACTIVE (Session 68~71 evidence validation) → ACTIVE_NORMATIVE (Session 72 평가 후 확정)"
+  },
+
+  "gates_preserved_from_v3_5_1": {
+    "preservation_principle": "v3.5.1 16 gate 정의 전수 보존 — team-lead 20:50 명시",
+    "v3_3_foundation_7_gates": [
+      {
+        "id": 1,
+        "name": "Grade (A 허들)",
+        "severity": "hard_block",
+        "stage": "Stage_1+",
+        "description": "Grade A 기본 요건 충족 여부",
+        "criteria": {"grade_minimum": "A", "hard_fail_block": "MDD>45% OR Turnover>600%"},
+        "enforcement_mechanism": "Judge S6 Gate 1 verification + pm_run admission_check()",
+        "failed_strategies_examples": ["STR_1683 Grade F (MDD 94%)", "STR_1684 Grade F (SR negative)"],
+        "l_code_refs": ["L-160 Defense IC-Return decoupling VALIDATED", "L-161 KR momentum inverse VALIDATED"]
+      },
+      {
+        "id": 2,
+        "name": "IC Statistical Significance",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "IC t-stat + Harvey multiple testing 보정",
+        "criteria": {"ic_t_stat_min": 2.0, "harvey_t_min": 3.0},
+        "enforcement_mechanism": "Judge S6 Gate 2 + Harvey 2016 threshold",
+        "l_code_refs": []
+      },
+      {
+        "id": 3,
+        "name": "Family Saturation",
+        "severity": "hard_block_contextual",
+        "stage": "Stage_1+",
+        "description": "family 편입 비율 상한 (defense 35% cap 등)",
+        "criteria": {"family_cap_defense": 0.35, "family_cap_general": 0.30},
+        "enforcement_mechanism": "Governor admission check + pm_run family_saturation_check()",
+        "l_code_refs": []
+      },
+      {
+        "id": 4,
+        "name": "Harvey Multiple Testing",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "Harvey/Liu/Zhu 2016 t > 3.0 다중검정 인지",
+        "criteria": {"harvey_t_threshold": 3.0, "dsr_computation_mandatory": true},
+        "enforcement_mechanism": "Judge S6 Gate 4 DSR computation",
+        "l_code_refs": []
+      },
+      {
+        "id": 5,
+        "name": "Factor Diversity",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "factor pool 내부 diversity + near-clone 감지",
+        "criteria": {"max_corr_threshold": 0.997, "near_clone_cluster_limit": 5},
+        "enforcement_mechanism": "Judge S6 Gate 5 + TDC matrix",
+        "l_code_refs": []
+      },
+      {
+        "id": 6,
+        "name": "TDC (Tail Dependence Coefficient) L-156",
+        "severity": "hard_block_contextual",
+        "stage": "Stage_1+",
+        "description": "pairwise tail dependence threshold (L-156 0.40)",
+        "criteria": {"tdc_pairwise_threshold": 0.40, "sequential_admission_if_near": 0.35},
+        "enforcement_mechanism": "Judge S6 + Scout TDC matrix + Governor Sequential Admission",
+        "l_code_refs": ["L-156 TDC threshold", "AX-006 pairwise TDC 0.67"]
+      },
+      {
+        "id": 7,
+        "name": "Role Admission",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "core_alpha / diversifier / defense 역할 배분 적합성",
+        "criteria": {"role_declared_mandatory": true, "role_gap_compliance": true},
+        "enforcement_mechanism": "Judge S6 Gate 7 + Governor PG0 gap matching",
+        "l_code_refs": []
+      }
+    ],
+    "v3_4_additions_3_gates": [
+      {
+        "id": 8,
+        "name": "Early Warning (L-158)",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "IC 하락 trend + regime shift 경고",
+        "criteria": {"ic_decay_threshold": 0.5, "regime_mismatch_warning": true},
+        "enforcement_mechanism": "Judge S6 Gate 8 Early Warning System",
+        "l_code_refs": ["L-158 Gate 8 Early Warning 본문"]
+      },
+      {
+        "id": 9,
+        "name": "Stress Regime OOS",
+        "severity": "verify_at_s6",
+        "stage": "Stage_1+",
+        "description": "8대 stress period OOS outperformance",
+        "criteria": {"stress_outperform_min": "2/3", "stress_icir_min": 0.15},
+        "enforcement_mechanism": "Judge S6 Gate 9 + reference_stress_periods.md",
+        "l_code_refs": ["L-163 poison_pill_quantified_threshold"]
+      },
+      {
+        "id": 10,
+        "name": "MDD Contribution",
+        "severity": "hard_block_contextual",
+        "stage": "Stage_1+",
+        "description": "portfolio MDD 기여도 상한",
+        "criteria": {"mdd_contribution_max": 0.50, "tail_var_max": 0.30},
+        "enforcement_mechanism": "Judge S6 Gate 10 + Risk Mgr tail_risk_engine",
+        "l_code_refs": []
+      }
+    ],
+    "v3_5_additions_2_gates": [
+      {
+        "id": 11,
+        "name": "Variant Comparison",
+        "severity": "advisory_warning",
+        "stage": "Stage_2_advisory",
+        "description": "3+ factor signal variant 비교 의무",
+        "criteria": {"variant_min_count": 3, "variant_category_diversity": 2},
+        "enforcement_mechanism": "Judge S6 Gate 11 (advisory) + Forge S5 variant slate",
+        "stage_3_promotion_condition": "Architect signoff + ACTIVE_NORMATIVE 전환",
+        "l_code_refs": []
+      },
+      {
+        "id": 12,
+        "name": "IC-Return Coupling",
+        "severity": "hard_block_mandatory",
+        "stage": "Stage_2+",
+        "description": "Sharpe_monthly / ICIR coupling_ratio threshold (L-125/L-160 방지)",
+        "criteria": {"coupling_ratio_min": 0.30, "translation_failure_trigger": 0.387},
+        "enforcement_mechanism": "Judge S6 Gate 12 hard_block mandatory (Stage 2)",
+        "l_code_refs": ["L-125 IC≠SR", "L-160 Defense IC-Return decoupling"]
+      }
+    ],
+    "v3_5_extended_13th_gate": [
+      {
+        "id": 13,
+        "name": "Factor DB Access Compliance",
+        "severity": "hard_block_mandatory",
+        "stage": "Stage_2+",
+        "description": "factor Z_Score 접근 load_month_factors() 경유 의무 + direct read_parquet(factor_db) 금지",
+        "criteria": {"load_month_factors_mandate": true, "direct_parquet_read_prohibition": true, "exception_scope": ["factor_db 내부 utilities", "diagnostic scripts"]},
+        "enforcement_mechanism": "Forge preflight_check() grep pattern 'read_parquet.*factor_db' → fail",
+        "empirical_basis": "Scout families.json v1.3 R16_Calmar +529% sd delta (pre-Fix 1 0.1589 vs load_month_factors 1.0000)",
+        "l_code_refs": ["L-164 factor_engine load_month_factors mandate ACTIVE"]
+      }
+    ]
+  },
+
+  "new_active_promotions_v3_6": {
+    "gate_13_1_factor_db_build_hash_compatibility": {
+      "id": "13.1",
+      "name": "Factor DB Build Hash Compatibility",
+      "parent": "Gate 13 (Gate 13의 sub-extension)",
+      "severity": "hard_block_mandatory",
+      "stage": "Stage_2+",
+      "description": "각 전략 hurdle_result.json에 factor_db_build_hash 기록 의무화 — build hash mismatch 시 재검증 강제",
+      "criteria": {
+        "hurdle_result_schema_mandatory_field": "factor_db_build_hash",
+        "hash_format": "sha256 of factor_db parquet 전체 + registry.json",
+        "mismatch_behavior": "hard_block + 자동 re-execution trigger",
+        "historical_backtest_audit_scope": "Session 67 이전 전체 backtest 소급 audit",
+        "grace_period_for_retroactive_hash_assignment": "Session 68~71 (Session 72 이후 hash 없는 hurdle_result reject)"
+      },
+      "enforcement_mechanism": "Forge backtest_harness.R 내 build_hash 자동 생성 + hurdle_result.json 기록 + Judge S6 verification",
+      "r_code_snippet_proposed": {
+        "build_hash_generation": "build_hash <- digest::digest(list(parquet_paths, registry), algo='sha256')",
+        "hurdle_result_field": "hurdle_result$factor_db_build_hash <- build_hash",
+        "judge_s6_check": "if (hurdle_result$factor_db_build_hash != current_factor_db_hash) stop('Build hash mismatch — re-execution required')"
+      },
+      "failed_strategies_examples": [
+        "Session 67 Z_Score 9/12 CRITICAL 발견 → 과거 backtest 오염 가능성 (STR_1631/1656 제외 retroactive audit 필요 전략)",
+        "STR_1684_v2b Fix 1 적용/revert 반복 → hash 변경 시점별 결과 추적 필수"
+      ],
+      "l_code_refs": ["L-164 factor_engine mandate", "L-161 Factor DB Z_Score 정규화 incident"],
+      "rationale": "Session 67 Factor DB 인프라 버그 발견으로 과거 backtest 결과 재현성 보증 필수. Build hash = empirical validity anchor."
+    },
+    "gate_14_role_honesty_audit": {
+      "id": 14,
+      "name": "Role Honesty Audit",
+      "severity": "hard_block_mandatory",
+      "stage": "Stage_2+",
+      "description": "S6 Gate 6 필수 체크 — core_alpha / diversifier / defense 역할 위장 탐지",
+      "promotion_basis": "S2.11 Role Honesty Runner (LLM-powered post-check) → Gate 14 공식 S6 integration",
+      "criteria": {
+        "declared_role_vs_attribution_match_mandatory": true,
+        "role_specific_metrics": {
+          "core_alpha": {"consensus_signal_density_min": 0.60, "harvey_t_min": 3.0},
+          "diversifier": {"tdc_threshold_L156": 0.40, "idiosyncratic_alpha_positive": true},
+          "defense": {"stress_icir_positive": true, "crisis_outperformance_observable": true, "overlay_dependency_prohibition": true}
+        },
+        "role_disguise_detection": {
+          "overlay_dependency_disguise": "Defense 선언 but overlay 의존 → DROP (L-153/L-155 STR_1679v2 사례)",
+          "cash_equivalent_disguise": "Defense 선언 but turnover 과다 + 실질 cash equivalent → DROP",
+          "long_only_disguise": "Diversifier 선언 but market-cap weighted long-only 편향 → DROP"
+        }
+      },
+      "enforcement_mechanism": "Judge S6 Gate 14 mandatory check + Role Honesty Runner (S2.11) 공식 integration",
+      "empirical_basis": "L-153 STR_1679v2 diversifier_with_overlay_dependency + L-155 3-variant overlay dependency 잔존",
+      "failed_strategies_examples": [
+        "STR_1679v2 (L-153): Def 0.01pp cosmetic + Overlay 22.54pp 전담 → Role Honesty FAIL → DROP",
+        "Phase 3 예상: Defense 선언 but long-only 20-stock + factor_alpha 0 → DROP 예상"
+      ],
+      "l_code_refs": ["L-153 diversifier_with_overlay_dependency", "L-155 3-variant overlay dependency 잔존"],
+      "integration_with_existing": "기존 S2.11 Role Honesty Runner (informal post-check) → Gate 14 공식 formalization + S6 integration 필수",
+      "rationale": "역할 위장은 portfolio allocation 왜곡 + admission integrity 훼손. S2.11 informal → Gate 14 공식 승격으로 enforcement 강화."
+    },
+    "gate_15_translation_validation_us_kr": {
+      "id": 15,
+      "name": "Translation Validation (US→KR)",
+      "severity": "hard_block_mandatory",
+      "stage": "Stage_1_to_Stage_2_transition",
+      "description": "논문 기반 가설이 S1 진입 전 'KR 역사 데이터에서 동일 signal이 동방향 작동했는가' 1-page empirical precheck 의무",
+      "criteria": {
+        "kr_long_horizon_minimum_years": 10,
+        "ic_sign_consistency_required": true,
+        "hit_rate_minimum": 0.55,
+        "precheck_document_format": "1-page empirical precheck (factor_registry reference + IC sign + Hit Rate + 한국 시장 검증 논문 1편)",
+        "submission_timing": "S1 진입 전 (Forge run_all.R 실행 전)",
+        "reject_conditions": {
+          "ic_sign_opposite": "KR IC direction이 US 기반 가설과 반대 → REJECT",
+          "hit_rate_below_55pct": "Hit Rate < 55% → REJECT",
+          "insufficient_history": "KR 데이터 < 10Y → REJECT"
+        }
+      },
+      "enforcement_mechanism": "Scout S0 handoff kit에 KR precheck 섹션 의무 포함 + Forge run_all.R pre-exec check + Judge S6 Gate 15 verification",
+      "empirical_basis": [
+        "L-160 Defense IC-Return decoupling: Q25/R16 composite IC positive but portfolio 실패 (US 가설 직접 번역 실패)",
+        "L-161 KR momentum inverse: Rouwenhorst 1999 + Asness 2013 KR structural weakness (US momentum 정반대)"
+      ],
+      "failed_strategies_examples": [
+        "STR_1683 L-160 (IC 0.22 US momentum+value composite 가설 → KR MDD 94%)",
+        "STR_1684 L-161 (Carhart 1997 + Blitz 2011 residual momentum KR inverse → ICIR -0.187)"
+      ],
+      "l_code_refs": ["L-160 IC-Return decoupling", "L-161 KR momentum inverse", "L-125 IC≠SR original pattern"],
+      "kr_validation_reference_sources": [
+        "factor_registry.json direction + IC sign history",
+        "families.json v1.3+ factor_tracking empirical data",
+        "한국 시장 실증 논문 (한국증권학회지 등)",
+        "Scout s0_record 내 kr_empirical_precheck 섹션"
+      ],
+      "rationale": "US 논문 기반 가설 맹목 번역 방지. Session 67 L-160/L-161 사례로 KR structural difference 실증. Stage 1 → Stage 2 transition gate 역할."
+    },
+    "gate_16_ml_hyperparameter_guardrail": {
+      "id": 16,
+      "name": "ML Hyperparameter Guardrail",
+      "severity": "hard_block_mandatory",
+      "stage": "Stage_2+",
+      "description": "ML 모델 기반 전략의 과적합 방지 — hyperparameter search 투명성 + OOS robustness 검증",
+      "criteria": {
+        "oos_is_sr_ratio_min": 0.70,
+        "hyperparameter_grid_search_record_public": true,
+        "random_seed_fixed_mandatory": true,
+        "bayesian_optimization_log_publication": "required for Bayesian tuning",
+        "cross_validation_folds_min": 5,
+        "early_stopping_rounds_documented": true,
+        "complexity_regularization_required": ["max_depth", "min_samples_split", "L1_L2_regularization"]
+      },
+      "enforcement_mechanism": "Forge ML pipeline에 hyperparameter_log.json 의무 생성 + Judge S6 Gate 16 verification + OOS stability check",
+      "hyperparameter_log_schema": {
+        "model_type": "string (xgboost/lightgbm/catboost 등)",
+        "search_method": "string (grid/random/bayesian)",
+        "search_space": "dict",
+        "best_params": "dict",
+        "cv_scores": "list",
+        "random_seed": "int (fixed)",
+        "oos_is_sr_ratio": "float"
+      },
+      "empirical_basis": [
+        "STR_1656 M05 Gate 11 variant_comparison advisory (ML hyperparameter framework pending)",
+        "STR_1661 V2 XGB_GPU S5 slate (hyperparameter variant 설계 중)"
+      ],
+      "failed_strategies_examples_future": [
+        "ML 전략 OOS SR 2.0 + IS SR 3.5 = ratio 0.57 → Gate 16 FAIL 예상",
+        "Hyperparameter log 미공개 → Gate 16 FAIL"
+      ],
+      "l_code_refs": [],
+      "integration_with_existing_gate_11": "Gate 11 variant_comparison은 factor signal variant 전용. Gate 16은 ML hyperparameter variant 전용 분리 framework.",
+      "rationale": "Session 65 사용자 요청 ML/XGBoost 도입 허용 but 과적합 방지 framework 필요. STR_1656/STR_1661 V2 사례로 ML specific guardrail 필수."
+    }
+  },
+
+  "v3_6_enforcement_matrix": {
+    "hard_block_mandatory_7_gates": ["Gate 1", "Gate 12", "Gate 13", "Gate 13.1", "Gate 14", "Gate 15", "Gate 16"],
+    "hard_block_contextual_3_gates": ["Gate 3", "Gate 6", "Gate 10"],
+    "advisory_warning_1_gate": ["Gate 11 variant_comparison (Stage 3 승격 대기)"],
+    "verify_at_s6_6_gates": ["Gate 2", "Gate 4", "Gate 5", "Gate 7", "Gate 8", "Gate 9"],
+    "total_17_gates": {"hard_block": 10, "advisory": 1, "verify": 6}
+  },
+
+  "v3_6_stage_assignments": {
+    "stage_1": "S1 factor construction + S2 profiling — Gate 1/2/4/5/8 verify + Gate 15 pre-S1 check",
+    "stage_2": "S3 orthogonality + S4 integration + S5 mutation + S6 validation — Gate 3/6/7/9/10 verify + Gate 11/12/13/13.1/14/16 hard_block",
+    "stage_3_ACTIVE_NORMATIVE_transition_conditions": [
+      "Architect persistent fix COMPLETE (factor_db_builder.R 자체 rescale + parquet rebuild)",
+      "L-164 enforcement 3-session empirical validation (Forge preflight fail 0건 달성)",
+      "Gate 13 + 13.1 stability verification (false positive/negative 최소화)",
+      "Gate 14/15/16 evidence 축적 3건+ 각 category",
+      "Session 72 평가 후 Judge + Governor joint signoff"
+    ]
+  },
+
+  "session_67_continuous_context": {
+    "day_boundary_removed": "team-lead 20:10 지시 수용",
+    "current_admission_rule_active": "v3.5.1 (13 gates)",
+    "v3_6_draft_status": "FREEZE_PERIOD_DRAFT — enforcement active는 Session 72 평가 후",
+    "drafting_rationale": [
+      "Gate 13/14/15/16 evidence 이미 축적 (Session 67 L-160/L-161/L-164 + STR_1679v2 L-153)",
+      "Session 68~71 empirical validation period",
+      "Session 72 공식 활성화 timeline"
+    ]
+  },
+
+  "l_code_family_references": {
+    "l_125_signal_portfolio_translation_failure_family": {
+      "current_members": ["L-125", "L-160"],
+      "upper_category_promotion_trigger": "3건째 case 축적 (Phase 2, 2026Q2)",
+      "gate_15_integration": "Gate 15 Translation Validation이 선제 방어 gate 역할"
+    },
+    "l_161_kr_momentum_inverse_independent_track": {
+      "ax_cand": "AX_CAND_kr_momentum_inverse (composite 0.68)",
+      "gate_15_integration": "Gate 15가 US→KR 번역 실패 pattern 체계적 차단"
+    },
+    "l_164_factor_engine_mandate": {
+      "gate_13_integration": "Gate 13 (primary) + Gate 13.1 (build hash sub-extension)"
+    },
+    "l_153_155_role_honesty_evidence": {
+      "gate_14_integration": "Gate 14 Role Honesty Audit formal integration"
+    }
+  },
+
+  "governor_cross_check_request_v3_6_draft": {
+    "scope": [
+      "Gate 13.1 Factor DB Build Hash Compatibility hard_block 수용",
+      "Gate 14 Role Honesty Audit S6 integration 수용",
+      "Gate 15 Translation Validation S1→S2 transition gate 수용",
+      "Gate 16 ML Hyperparameter Guardrail Stage 2 수용",
+      "17 gates total roster + enforcement matrix 수용",
+      "Session 72 activation timeline 수용"
+    ],
+    "non_blocking": "DRAFT 성격 + freeze period 내 작성"
+  },
+
+  "forge_v4_coordination_requirements": {
+    "gate_13_1_build_hash_implementation": "backtest_harness.R 내 digest::digest() 기반 build_hash 생성 + hurdle_result.json schema 업데이트",
+    "gate_14_role_honesty_integration": "S2.11 Role Honesty Runner → S6 mandatory check integration (Forge preflight 또는 Judge S6 pipeline)",
+    "gate_15_kr_precheck_template": "Scout s0_record template에 kr_empirical_precheck 섹션 신설 (Scout 담당)",
+    "gate_16_ml_hyperparameter_log": "Forge ML pipeline에 hyperparameter_log.json 자동 생성 + STR_1656/STR_1661 V2 적용"
+  },
+
+  "next_autonomous_judge_actions": {
+    "drafting_completed": "본 파일 21:00 발행 = 본 task 완료",
+    "parallel_work_in_progress": [
+      "Forge v4 S1 결과 대기 + S6 cascade 진입 준비",
+      "v3.6 Gate 14~16 evidence monitoring (Session 68~71)",
+      "L-code registry active 6건 유지"
+    ]
+  },
+
+  "judge_artifact_count_update": "26 → 27 files (본 draft 추가)",
+  "joint_signoff_3_files_maintained": "COMPLETE (Stage 2 cert + completion_FINAL + proxy 5-point)",
+  "l_code_active_count": 6,
+  "admission_rule_versions": {
+    "v3_5": "12 gates (original)",
+    "v3_5_1": "13 gates (Gate 13 Factor DB Access Compliance 추가)",
+    "v3_6_draft": "17 gates (Gate 13.1 + 14 + 15 + 16 신규 ACTIVE promotions, 본 파일)"
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "from": "Risk_Manager",
+  "to": "Q-Lead",
+  "type": "RISK_MGR_3RD_ROUND_VERDICT_SCENARIO_Y",
+  "stage": "PG2_rev8_A_ACTIVE_CONDITIONAL_VALIDATED",
+  "timestamp": "2026-04-18T16:15:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "3rd_round_scenario_Y",
+
+  "executive_summary": "rev8-A Scenario Y CONDITIONAL_APPROVE. 5 verifications: 3 PASS / 1 WARNING / 1 CONDITIONAL_FAIL. Defense cluster 33% 구조적 리스크는 AX-005 BAB 예외 조건 충족. H_1689 23% single-factor 집중도는 Q24 stress_icir -0.695 CRITICAL 교차 위험으로 WARNING 발행. H_1690 Phase_2 편입 조건은 v3.5 Gate 11/12 advisory 준수로 CONDITIONAL_PASS. Projected SR 1.72-1.78은 conservative 범위 내. STR_1684_v2 재실행 결과 대기 중 (Fix 1 적용). 전체 verdict: CONDITIONAL_APPROVE pending STR_1684_v2 결과.",
+
+  "audit_scope_rev8_a_composition": {
+    "STR_1631_Core_Primary": {"weight": 0.18, "role": "Core_Primary", "family": "consensus_C19_core", "harvey_t": 3.09, "status": "PG2_ACTIVE"},
+    "STR_1656_Div_ML": {"weight": 0.14, "role": "Diversifier_ML", "family": "ML_complexity", "status": "PG2_ACTIVE"},
+    "STR_1679v3_Div_1": {"weight": 0.10, "role": "Diversifier_embedded_Q25", "family": "momentum_overlay_embedded_q25", "status": "VALIDATED"},
+    "H_1689_Def_2": {"weight_conditional": 0.23, "role": "Defense_Quality_4Axis", "family": "quality_aggregate", "status": "PENDING_S1_RERUN"},
+    "H_1690_Def_3": {"weight_conditional": 0.10, "role": "Defense_MultiSource", "family": "multi_source_defense_anchor", "status": "PENDING_S1_RERUN"},
+    "H_1688_Core_Secondary": {"weight_conditional": 0.10, "role": "Core_Secondary", "family": "momentum_residual", "status": "PENDING_INFRA_FIX_RERUN"},
+    "Reserve": {"weight": 0.09},
+    "Unallocated": {"weight": 0.06}
+  },
+
+  "verifications": {
+
+    "V1_defense_cluster_tail_risk": {
+      "verdict": "CONDITIONAL_PASS",
+      "scope": "H_1689 (23%) + H_1690 (10%) + STR_1679v3 (10%) = 43% defense+diversifier cluster",
+      "analysis": {
+        "cluster_composition": {
+          "pure_defense_pct": 0.33,
+          "defense_plus_diversifier_pct": 0.43,
+          "rev5_comparison": "rev5 42% -> rev8-A 33% pure defense (-9pp)",
+          "change_direction": "Defense 축소 (H_1682 12% DROP 반영)"
+        },
+        "stress_factor_ic_evidence": {
+          "Q25_Ohlson_O": {"stress_icir": 0.659, "normal_icir": 0.415, "crisis_premium": 0.0163, "crisis_ratio": 1.554, "assessment": "MODERATE crisis outperformance"},
+          "Q01_GPA": {"stress_icir": 0.642, "normal_icir": 0.473, "crisis_premium": 0.0149, "crisis_ratio": 1.412, "assessment": "MODERATE crisis outperformance"},
+          "Q07_Earnings_Stability": {"stress_icir": 0.753, "normal_icir": 0.776, "crisis_premium": 0.002, "crisis_ratio": 1.040, "assessment": "NEUTRAL -- comparable IC both regimes"},
+          "Q24_Altman_Z": {"stress_icir": -0.695, "normal_icir": -0.182, "crisis_premium": -0.041, "crisis_ratio": -2.889, "assessment": "CRITICAL -- stress regime AMPLIFIES wrong direction"},
+          "R16_Calmar": {"stress_icir": 2.655, "normal_icir": 1.473, "crisis_premium": -0.004, "crisis_ratio": 0.984, "assessment": "HIGH all-regime ICIR but NO crisis premium"}
+        },
+        "8_stress_period_projection": {
+          "Q25_expected_crisis_alpha": "+1.6%p/year conditional",
+          "Q01_expected_crisis_alpha": "+1.5%p/year conditional",
+          "Q24_expected_crisis_DAMAGE": "-4.1%p/year (AMPLIFIED wrong direction in crisis L-144)",
+          "R16_expected_crisis_alpha": "NEAR ZERO premium (calmar is backward-looking metric L-160)",
+          "combined_defense_projection": "NET mixed -- Q25+Q01 positive partially offset by Q24 negative. R16 near zero."
+        },
+        "ax_005_bab_exemption_check": {
+          "ax_005_scope": "한국시장 low-beta/Q07+D25 defense standalone 구조적 실패",
+          "h_1689_exempt": true,
+          "exemption_rationale": "H_1689 = Quality 4-axis composite (GPA+Piotroski_F+Ohlson_O+Altman_Z), NOT low-beta/BAB standalone. AX-005는 BAB single-factor family defense 대상. 4-axis quality composite는 다른 메커니즘.",
+          "however_warning": "AX-004 v3 (quality_profitability standalone 실패)는 PARTIAL overlap. 4-axis composite가 AX-004 예외인지는 S1 결과 후 재검증 필요."
+        },
+        "cvar_projection_rev8_a": {
+          "method": "CF-expansion portfolio-level CVaR_95 annual at rho=0.3",
+          "individual_strategy_estimated_ann_vol": {
+            "STR_1631": 0.207,
+            "STR_1656": 0.280,
+            "STR_1679v3": 0.225,
+            "H_1689_estimated": 0.170,
+            "H_1690_estimated": 0.180,
+            "H_1688_estimated": 0.250
+          },
+          "portfolio_vol_rho_0_3": 0.142,
+          "cvar_95_annual_estimated": -0.234,
+          "cvar_95_threshold": -0.15,
+          "cvar_pass": false,
+          "cvar_note": "CVaR_95 BREACH (-23.4% vs -15%). All-equity long-only KR portfolio는 market beta 지배로 CVaR -15% 달성이 구조적으로 극히 어렵다 (L-106). Cross-asset 없이 CVaR -15%는 비현실적 threshold."
+        },
+        "cdar_projection_rev8_a": {
+          "method": "CDaR/MDD ratio 0.75 estimation",
+          "estimated_portfolio_mdd_rho_0_3": 0.26,
+          "cdar_95_estimated": 0.195,
+          "cdar_95_threshold": 0.22,
+          "cdar_pass": true,
+          "cdar_note": "CDaR_95 PASS (19.5% < 22%). rev5의 23.1% 대비 -3.6pp 개선. H_1682 DROP(MDD 94.7%) 제거 효과."
+        },
+        "tdc_projection_rev8_a": {
+          "method": "Bivariate t-copula nu=4, Longin-Solnik 2x crisis escalation",
+          "estimated_max_tdc": 0.52,
+          "max_tdc_pair": "STR_1631 <-> STR_1679v3 (consensus C19 + momentum overlay -- embedded C19 signal overlap)",
+          "tdc_threshold": 0.40,
+          "tdc_pass": false,
+          "tdc_note": "Max TDC BREACH (0.52 vs 0.40). STR_1679v3의 embedded C19 신호가 STR_1631과 구조적 상관 유발 (L-156 교훈). Rev5의 STR_1631<->H_1676 TDC 0.735에서 대폭 개선(0.52)이나 threshold 미달. Sequential Admission v3.2 준수 필수."
+        }
+      },
+      "risk_manager_assessment": "Defense 33% cluster는 rev5 42% 대비 구조적으로 개선. H_1682 DROP으로 IC-Return decoupling 제거(L-160). 그러나 Q24 Altman_Z stress_icir -0.695는 H_1689 내부에서 위기 시 역방향 기여. H_1689 S1 결과에서 Q24를 별도 분리(variant Q24-exclude)하여 variant comparison 필수. CVaR -15% threshold는 L-106(market beta 지배)에 의해 구조적으로 비현실적이므로 threshold 재조정 권고(-25%).",
+      "action_required": [
+        "H_1689 S1 실행 시 Q24-exclude variant 추가 (Gate 11 variant comparison)",
+        "CVaR threshold -15% -> -25% 재조정 Q-Lead+Governor 협의",
+        "STR_1631<->STR_1679v3 TDC 0.52 -> Sequential Admission Rule 적용"
+      ]
+    },
+
+    "V2_h1689_23pct_concentration": {
+      "verdict": "WARNING",
+      "scope": "H_1689 Quality 4-axis (GPA+Piotroski_F+Ohlson_O+Altman_Z) 23% single-strategy allocation",
+      "analysis": {
+        "herfindahl_check": {
+          "h_1689_weight": 0.23,
+          "portfolio_hhi_strategy": 0.1018,
+          "hhi_threshold": 0.12,
+          "hhi_pass": true,
+          "hhi_note": "HHI 0.102 < 0.12 PASS. 6-strategy portfolio에서 23%는 최대이나 분산 한계 내."
+        },
+        "q24_altman_z_critical_finding": {
+          "q24_stress_icir": -0.695,
+          "q24_normal_icir": -0.182,
+          "q24_crisis_premium": -0.041,
+          "q24_crisis_ratio": -2.889,
+          "L_144_reference": "Q24 Altman Z stress 역방향 실증 -- Defense factor 자격 박탈",
+          "severity": "CRITICAL",
+          "interpretation": "Altman Z는 위기 구간에서 IC가 음수로 반전 증폭. distress firms가 위기 시 추가 하락하는 것이 아니라, Altman Z 높은(건전한) 종목이 위기 시 더 하락. 이는 Dichev(1998) 'distress risk is not priced' 실증과 일치. H_1689의 4-axis 중 Altman_Z는 위기 방어 기능 훼손.",
+          "quantified_damage": "Q24 weight 25% * stress_icir -0.695 = -0.174 wt_icir. 이는 Q01(+0.160) + Q25(+0.165) 양의 기여를 near-fully offset."
+        },
+        "q24_q25_distress_overlap": {
+          "expected_cross_sectional_corr": "0.50~0.70",
+          "issue": "Q24(Altman_Z)와 Q25(Ohlson_O) 모두 distress proxy이나 방향 반대 가능성. Q25는 distress 확률(higher=worse), Q24는 건전성(higher=better). cross-sectional에서는 partial overlap이나 crisis regime에서 divergence 가능.",
+          "ax_004_v3_assessment": "AX-004 (quality_profitability standalone 실패)의 exemption 여부: 4-axis composite는 single-signal이 아니므로 AX-004 직접 적용 대상 아님. 그러나 4-axis 중 2개(GPA, Piotroski_F)가 profitability family이므로 AX-004 부분 적용 가능."
+        },
+        "concentration_risk_quantification": {
+          "if_h1689_underperforms_5pct": "portfolio impact = 0.23 * -5% = -1.15%p",
+          "if_h1689_mdd_event_30pct": "portfolio impact = 0.23 * -30% = -6.9%p (portfolio MDD 기여)",
+          "max_acceptable_single_strategy": 0.25,
+          "headroom": "2pp only -- 추가 증대 불가"
+        }
+      },
+      "risk_manager_assessment": "H_1689 23%는 HHI 0.102 기준 PASS이나, Q24 Altman_Z stress_icir -0.695가 위기 방어 핵심 메커니즘을 구조적으로 훼손. L-144 교훈에 따라 Q24를 H_1689 composite에서 제거하고 GPA+Piotroski_F+Ohlson_O 3-axis로 수정하는 것을 강력 권고. 만약 Q24 유지 시, H_1689 weight를 15%로 하향하고 잔여 8%를 H_1690 또는 Reserve 재배분 필요.",
+      "action_required": [
+        "H_1689 S1에서 4-axis vs 3-axis(Q24-exclude) variant comparison 필수",
+        "Q24 유지 시 weight 23% -> 15% 하향 MANDATORY",
+        "L-144 Q24 stress 역방향 재확인 -- Judge S6 Gate 검증 대상"
+      ]
+    },
+
+    "V3_h1690_phase_2_admission": {
+      "verdict": "CONDITIONAL_PASS",
+      "scope": "H_1690 multi-source defense anchor Phase_2 편입 10% -- 10 S0 conditions + v3.5 Gate 11/12",
+      "analysis": {
+        "s0_conditions_status": {
+          "total_required": 10,
+          "status": "PENDING_S1_RERUN",
+          "conditions_pre_verifiable": [
+            "C1: 논문 근거 2건+ (PASS -- M08 residual + R16 Calmar + Q25 Ohlson)",
+            "C2: economic_family 독립 (PASS -- multi_source_defense_anchor)",
+            "C3: expected_role defense (PASS)",
+            "C4: why_now gap-directed (PASS -- Defense cluster gap)",
+            "C5: lesson_check L-160 반영 (PASS)"
+          ],
+          "conditions_s1_dependent": [
+            "C6: ICIR >= 0.20 (PENDING)",
+            "C7: 5Y IC 유의성 (PENDING)",
+            "C8: stress outperform 2/3+ (PENDING)",
+            "C9: MDD < 45% (PENDING)",
+            "C10: turnover < 600% (PENDING)"
+          ]
+        },
+        "v3_5_gate_11_variant_comparison": {
+          "status": "advisory_warning (Stage 1 CONDITIONAL_ACTIVE)",
+          "requirement": "minimum 3 variants + primary >= alternatives",
+          "enforcement": "WARNING only (hard_block 미적용 at current stage)",
+          "recommendation": "H_1690 S1 시 4 variants 설계 (Governor rev8-A 명시): (a) M08+R16+Q25 composite, (b) M08+Q25 only, (c) R16+Q25 only, (d) Q25 only baseline"
+        },
+        "v3_5_gate_12_ic_return_coupling": {
+          "status": "advisory_warning (Stage 1)",
+          "requirement": "SR_monthly / ICIR >= 0.3",
+          "enforcement": "WARNING only",
+          "l_160_application": "H_1690은 L-160 IC-Return decoupling 교훈 직접 적용 대상. Defense composite는 high-ICIR에도 portfolio return 실패 가능성 구조적."
+        },
+        "phase_2_immediate_10pct_risk": {
+          "concern": "Phase_1 10% 즉시 편입 시, S1 미완료 전략에 allocation 배정은 portfolio 리스크",
+          "mitigation": "S1 PASS 전까지 10% Reserve 유지 (실질 편입 보류)",
+          "risk_manager_recommendation": "H_1690 10%는 S1 ICIR > 0 + MDD < 45% + Gate 12 coupling_ratio >= 0.3 확인 후에만 실질 편입. 이전까지 Reserve로 분류."
+        }
+      },
+      "risk_manager_assessment": "H_1690 10% 편입 자체는 조건부 수용 가능하나, S1 결과 미확인 상태에서 실질 편입 불가. M08 sd 0.054 (RC3 extreme clipping, Fix 1 후 sd 1.0 복원) 영향으로 M08 기여도가 v1 대비 대폭 변동 예상. L-160 Gate 12 coupling ratio 사전 확인 MANDATORY.",
+      "action_required": [
+        "H_1690 S1 실행 시 4 variants 병행 (Gate 11 advisory 준수)",
+        "S1 완료 + Gate 12 coupling_ratio >= 0.3 확인 전까지 Reserve로 분류",
+        "M08 sd 1.0 복원 후 M08 기여도 재검증"
+      ]
+    },
+
+    "V4_q25_exposure_headroom": {
+      "verdict": "PASS",
+      "scope": "Portfolio Q25 Ohlson_O weighted exposure 17.95% vs 35% cap",
+      "analysis": {
+        "q25_decomposition_rev8_a": {
+          "STR_1679v3_embedded": {"weight": 0.10, "q25_share": 0.90, "contribution": 0.090},
+          "H_1689": {"weight": 0.23, "q25_share": 0.25, "contribution": 0.0575},
+          "H_1690": {"weight": 0.10, "q25_share": 0.25, "contribution": 0.025},
+          "STR_1656": {"weight": 0.14, "q25_share": 0.05, "contribution": 0.007},
+          "total_weighted_q25": 0.1795,
+          "cap_35_headroom": 0.1705,
+          "soft_threshold_30_headroom": 0.1205
+        },
+        "comparison_rev5_to_rev8_a": {
+          "rev5_q25_total": 0.221,
+          "rev8_a_q25_total": 0.1795,
+          "change": "-4.15pp (H_1682 DROP: q25_share 0.60 * weight 0.16 = 0.096 제거 + H_1689 증대 0.0575 추가 = net -3.85pp)"
+        },
+        "crisis_regime_q25_behavior_2020_2026": {
+          "q25_stress_icir": 0.659,
+          "q25_stress_pct_positive": 0.80,
+          "q25_normal_icir": 0.415,
+          "assessment": "Q25는 stress regime에서 IC 강화 (0.659 vs 0.415). 20% 이내 Q25 exposure는 위기 방어에 기여.",
+          "however": "Q25 direction (higher = more distressed = worse)가 portfolio return에 미치는 영향은 L-160 메커니즘 A 참조. STR_1679v3의 Q25 90% share는 alpha source이지 defense가 아님."
+        }
+      },
+      "risk_manager_assessment": "Q25 exposure 17.95%는 35% cap 대비 headroom 17pp로 충분. Rev5 대비 -4.15pp 감소는 H_1682 DROP 반영. PASS.",
+      "action_required": []
+    },
+
+    "V5_projected_sr_robustness": {
+      "verdict": "CONDITIONAL_PASS",
+      "scope": "Projected SR 1.72-1.78 at rho=0.3 conservative + boost roadmap",
+      "analysis": {
+        "baseline_sr_projection": {
+          "weighted_mean_individual_SR": 0.895,
+          "rho_0_3_conservative_SR": 1.72,
+          "rho_0_2_optimistic_SR": 1.80,
+          "methodology": "Markowitz portfolio SR approximation: SR_port = (w'mu) / sqrt(w'Sigma*w), rho=0.3 uniform assumption"
+        },
+        "sensitivity_analysis": {
+          "rho_0_1_best_case": 1.95,
+          "rho_0_3_base_case": 1.72,
+          "rho_0_5_stress_case": 1.48,
+          "rho_0_7_crisis_case": 1.22,
+          "note": "L-106 market beta 지배로 crisis rho 0.6-0.7 현실적. Crisis SR 1.22는 현 PG2 v3.0 SR 1.193과 유사 -- 위기 시 rev8-A가 현 포트폴리오 대비 유의미한 개선을 제공하지 못할 수 있음."
+        },
+        "boost_roadmap_validation": {
+          "boost_1_h1688_reinstated": {"sr_add": "+0.03~0.08", "status": "PENDING_FIX_1_RERUN", "risk": "MEDIUM"},
+          "boost_2_str_1661_v2_xgb": {"sr_add": "+0.05~0.10", "status": "S2_PROFILING", "risk": "LOW"},
+          "boost_3_blend_optimization": {"sr_add": "+0.05~0.10", "status": "PHASE_3+", "risk": "MEDIUM"},
+          "boost_4_h1688_barroso": {"sr_add": "+0.03~0.05", "status": "S5_DEFERRED", "risk": "LOW"},
+          "boost_5_new_defense_scout_d1": {"sr_add": "+0.05~0.10", "status": "S0_PENDING", "risk": "HIGH"},
+          "boost_6_regime_dynamic_overlay": {"sr_add": "+0.02~0.05", "status": "PHASE_4+", "risk": "MEDIUM"},
+          "total_boost_range": "+0.23~0.48",
+          "realistic_boost_50pct_hit": "+0.12~0.24",
+          "aspirational_sr": "1.72 + 0.24 = 1.96 (target 2.00에 근접)"
+        },
+        "fix_1_impact_on_projection": {
+          "factor_db_rescale_effect": "Fix 1 (sd 1.0 복원) 후 factor_engine.R의 OLS 잔차화가 정상 작동. STR_1684_v2 결과가 양호하면 H_1688 10% 복원 시 SR +0.03~0.08 추가.",
+          "str_1631_str_1656_unchanged": "STR_1631 (C19 단독 factor) / STR_1656 (ML 독립 signal)은 Fix 1 영향 없음. 재현성 유지 확인.",
+          "regression_test_needed": "STR_1631 재실행 불필요 (Architect 진단 NONE_IMMEDIATE). 그러나 C19 sd 0.361 -> 1.0 변화가 score ranking에 미치는 간접 영향은 모니터링 필요."
+        }
+      },
+      "risk_manager_assessment": "SR 1.72 baseline은 현 PG2 1.193 대비 +0.53 개선이나 TARGET 2.00에는 0.28 부족. Crisis rho 0.7에서 SR 1.22로 하락하므로, 실제 위기 경험 시 개선 폭은 미미. Boost roadmap 50% 적중 시 1.96으로 target 근접 가능하나, 6건 중 2건(H_1688, D1 Defense)은 고위험. CONDITIONAL_PASS.",
+      "action_required": [
+        "STR_1684_v2 결과로 boost_1 실현 가능성 즉시 판정",
+        "Crisis rho 0.7 시나리오 SR 1.22 명시적 인식 -- L-106 교훈",
+        "Boost roadmap 우선순위: boost_2 (STR_1661 V2) > boost_4 (Barroso) > boost_1 (H_1688)"
+      ]
+    }
+  },
+
+  "tail_risk_result_existing_v1": {
+    "source": "04_Research/strategies/STR_1684_residual_momentum/output/tail_risk_result.json",
+    "strategy_id": "STR_1684",
+    "hypothesis_id": "H_1688",
+    "variant": "V1_baseline (pre-Fix_1)",
+    "cdar_95": 0.8666,
+    "es_99_monthly": -0.0617,
+    "evt_xi": null,
+    "cdar_gate": false,
+    "es_gate": true,
+    "overall_pass": false,
+    "note": "V1 결과는 Factor DB 정규화 버그 하에서의 결과. V2 재실행 후 tail_risk 재계산 필수."
+  },
+
+  "tail_risk_portfolio_level_projection": {
+    "method": "component estimation -- individual strategy CVaR/CDaR weighted average with crisis correlation escalation",
+    "portfolio_evt_var_99_daily_estimated": 0.041,
+    "portfolio_cf_var_99_daily_estimated": 0.038,
+    "portfolio_cdar_95_estimated": 0.195,
+    "portfolio_max_dd_estimated": 0.26,
+    "cf_vs_normal_ratio_estimated": 1.3,
+    "tail_shape_xi_note": "개별 전략 xi 미측정 (S1 미완료 H_1689/H_1690). portfolio 수준 GPD 피팅은 합성 수익률 시계열 필요 -- Phase_1 PG1 Admission 후 실측 예정.",
+    "references": ["Pfaff(2016) Ch.7 EVT/GPD", "Chekhlov et al.(2005) CDaR", "Longin&Solnik(2001) crisis correlation"]
+  },
+
+  "regime_stress_test": {
+    "current_mrs": {"date": "2026-04", "score": 63.1, "category": "CRISIS"},
+    "stress_concern": "현재 CRISIS regime (MRS 63.1). Rev8-A 편입 전략 중 3건(H_1689/H_1690/H_1688)이 S1 미완료. CRISIS regime 진입 상태에서 unvalidated 전략 편입은 높은 리스크.",
+    "regime_conditional_assessment": {
+      "if_crisis_persists_q2_2026": {
+        "implication": "Defense cluster 33% 실질 작동 필요. H_1689/H_1690 S1 결과가 stress outperform 미달 시 Defense vacancy 발생.",
+        "contingency": "STR_1631 80% + STR_1656 20% 현 PG2 유지 (SR 1.193). rev8-A 전환 연기."
+      },
+      "if_normal_transition_q3_2026": {
+        "implication": "Defense cluster 기회비용 완화. Phase_1 전환 여유.",
+        "window": "정상 국면에서 Phase_1 편입 + backtesting 여유 확보."
+      }
+    },
+    "l_106_application": "Market beta 0.85~0.93 지배. CRISIS regime에서 모든 전략이 동시 하락. Defense sleeve가 'alpha 양의 기여'를 하는 것이 아니라 '상대적 덜 하락'이 Defense 역할. 절대 수익 보호는 현 all-equity long-only 구조에서 불가.",
+    "l_115_application": "Beta 감소 != 상관 감소. H_1689 Quality 4-axis의 beta 0.7 예상에도 crisis rho는 0.6-0.8으로 상승. 위기 시 portfolio drawdown 보호 한계."
+  },
+
+  "cross_verification_findings": {
+    "finding_1_q24_altman_z_poison_pill": {
+      "severity": "HIGH",
+      "description": "H_1689의 Q24 Altman_Z stress_icir -0.695는 Defense composite 내에서 위기 방어 기능을 구조적으로 훼손. Q24의 crisis_ratio -2.889는 위기 시 역방향 IC가 정상 대비 2.9배 증폭됨을 의미. L-144 기존 발견과 완전 일치.",
+      "quantified_impact": "H_1689 23% allocation * Q24 weight 25% * stress_icir_delta -0.513 = portfolio stress IC 기여 -0.030 (significant negative)",
+      "recommendation": "Q24를 H_1689 composite에서 제거하거나, Q24 weight를 10% 이하로 축소. 3-axis (GPA+Piotroski_F+Ohlson_O) 또는 3-axis + Q07(Earnings_Stability, L-121 stress_icir +0.753) 대체.",
+      "kill_scenario_1": "CRISIS 심화 시(MRS > 80) Q24 역방향 IC 증폭 -> H_1689 Defense 전략이 위기에서 Core보다 더 하락 -> Defense 역할 완전 실패. AX-001 conditional 평가 축 1(Crisis Alpha) FAIL."
+    },
+    "finding_2_str_1631_str_1679v3_tdc_overlap": {
+      "severity": "MEDIUM",
+      "description": "STR_1631(C19 consensus) <-> STR_1679v3(momentum_overlay with embedded C19)의 TDC 0.52 예상. L-156 TDC gate <=0.40 위반. C19 신호 공유가 구조적 원인.",
+      "recommendation": "STR_1679v3의 C19 embedded weight를 감소시키거나, STR_1679v3 weight 10%를 7%로 하향. 또는 STR_1679v3를 C19-independent momentum overlay로 재설계.",
+      "kill_scenario_2_future_reference": "C19 Consensus Earnings의 정보원(애널리스트 커버리지) 대폭 축소 또는 AI 자동 추정치 도입으로 consensus quality 급락 -> STR_1631 + STR_1679v3 동시 alpha 소멸. Portfolio 28% (18%+10%)가 단일 information source에 의존."
+    },
+    "finding_3_fix_1_secondary_effects": {
+      "severity": "LOW",
+      "description": "Fix 1 (Z_Score sd 1.0 복원) 후 C19 sd 0.361->1.0 변화. STR_1631은 C19 단독 factor composite이므로 cross-sectional ranking 불변 (monotonic transformation). 그러나 Factor DB 경유 모든 전략의 잠재적 미세 변동 가능.",
+      "recommendation": "STR_1631 regression test (Fix 1 전후 동일 결과 확인) Day 3까지 실행."
+    }
+  },
+
+  "overall_verdict": {
+    "decision": "CONDITIONAL_APPROVE",
+    "conditions": [
+      "1. STR_1684_v2 결과 확인 후 H_1688 Scenario A/B/C 분기 결정",
+      "2. H_1689 S1에서 Q24-exclude 3-axis variant 필수 포함 (V2 WARNING 해소 조건)",
+      "3. H_1690 실질 편입은 S1 PASS + Gate 12 coupling_ratio >= 0.3 후에만",
+      "4. STR_1631 regression test (Fix 1 영향 없음 확인)",
+      "5. CVaR threshold -15% -> -25% Q-Lead+Governor 재조정 협의"
+    ],
+    "blocking_conditions": [
+      "H_1689 S1에서 Q24 포함 4-axis version stress outperform 0/3 -> 23% weight를 15%로 하향 MANDATORY",
+      "STR_1684_v2에서 ICIR 여전히 음수 -> H_1688 VALIDATED_HARD_FAIL 재분류 + v3.5 Stage 2 진입 검토"
+    ],
+    "non_blocking_warnings": [
+      "STR_1631<->STR_1679v3 TDC 0.52 -> Sequential Admission 준수 + 모니터링",
+      "Crisis rho 0.7 시 SR 1.22 -> 위기 시 rev8-A 대비 현 PG2 대비 유의미한 개선 미보장"
+    ]
+  },
+
+  "telegram_ready_briefing": {
+    "header": "[RiskMgr] 3rd Round VERDICT -- rev8-A Scenario Y CONDITIONAL_APPROVE",
+    "body": [
+      "V1 Defense 33% tail: CONDITIONAL_PASS (CDaR 19.5% OK, CVaR -23.4% BREACH -- L-106 threshold 재조정 권고)",
+      "V2 H_1689 23%: WARNING (Q24 Altman_Z stress_icir -0.695 CRITICAL, L-144 -- 3-axis variant 필수)",
+      "V3 H_1690 10%: CONDITIONAL_PASS (S1 결과 전 Reserve 유지)",
+      "V4 Q25 17.95%: PASS (headroom 17pp)",
+      "V5 SR 1.72: CONDITIONAL_PASS (crisis rho 0.7 -> 1.22, boost 50% -> 1.96)",
+      "",
+      "Kill scenario 1: Q24 crisis 증폭 -> H_1689 Defense 역전",
+      "Kill scenario 2: C19 consensus quality 붕괴 -> STR_1631+1679v3 28% 동시 실패",
+      "",
+      "Blocking: H_1689 Q24-exclude variant 필수 + STR_1684_v2 결과 대기"
+    ]
+  },
+
+  "methodology_references": [
+    "Pfaff (2016) Financial Risk Modelling Ch.6-7 (CF-VaR, EVT/GPD)",
+    "Chekhlov et al. (2005) CDaR",
+    "Longin & Solnik (2001) crisis correlation escalation",
+    "Demarta & McNeil (2005) t-copula TDC",
+    "L-106 Market beta dominates",
+    "L-115 Beta reduction != correlation reduction",
+    "L-144 Q24 Altman Z stress reverse",
+    "L-160 Defense IC-Return decoupling",
+    "L-156 TDC gate v3.0",
+    "AX-001 Defense conditional evaluation",
+    "AX-004 quality_profitability standalone failure",
+    "AX-005 BAB defense standalone failure"
+  ],
+
+  "next_actions_risk_manager": [
+    "STR_1684_v2 완료 시 tail_risk_suite 재실행 -> tail_risk_result_v2.json 생성",
+    "H_1689 S1 완료 시 4-axis vs 3-axis variant 비교 + compute_tail_risk_suite()",
+    "H_1690 S1 완료 시 Gate 12 coupling_ratio 계산 + tail_risk 검증",
+    "Phase_1 PG1 Admission 시 portfolio-level DCC-GARCH + Copula TDC 실측"
+  ],
+
+  "risk_manager_signoff": {
+    "agent_id": "risk_manager",
+    "session": 67,
+    "timestamp": "2026-04-18T16:15:00+09:00",
+    "signoff_note": "3rd Round CONDITIONAL_APPROVE. Q24 Altman_Z는 H_1689의 위기 방어 메커니즘을 구조적으로 약화시키는 poison pill factor. L-144 교훈 재확인. 3-axis variant comparison 없이는 H_1689 23% 편입 승인 불가. STR_1684_v2 결과가 rev8-A 최종 composition의 핵심 분기점."
+  }
+}

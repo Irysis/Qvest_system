@@ -1,0 +1,31 @@
+{
+  "strategy_id": "ADMISSION_RULE_V3_4",
+  "l_code": "L-158",
+  "version": "v1",
+  "grade": "INFRASTRUCTURE",
+  "core_reference": "Scout Task #28 consensus sub-family taxonomy v2 + L-156 v2 retroactive audit + Scout handoff kit schema",
+  "lesson_text": "Admission Rule v3.0 Gate 8 (pairwise TDC ≤ 0.4)는 debate 개시 후 S6에서만 검증하면 너무 늦음. 5인 debate 스폰 → R1/R2/R3/VERDICT 전주기 소요 + Scout S1 handoff 이후 Forge S1 백테스트 완료까지 수 시간 소요됨. 그 사이 TDC 0.4+ hidden cluster hypothesis가 debate + Forge cycle을 낭비할 수 있음. 해결: Scout handoff kit 단계에 'predicted_tdc_vs_pg2_consensus' 필드 신규 도입하여 debate 전 pre-filter. 예측 TDC > 0.4 시 debate 불필요 (사전 REVISE 또는 REJECT_PREDEBATE). Scout Task #28 consensus sub-family taxonomy v2 (4-tier: consensus_ratio/tp_gap/tp_mom/indirect) 적용 시 더 정확한 사전 분류 가능 — 각 tier는 STR_1631 대비 예상 TDC 범위를 보유 (consensus_ratio 0.6+, tp_gap 0.4~0.6, tp_mom 0.3~0.5, indirect 0.1~0.3). 본 L-158 early warning + L-156 v2 retroactive audit가 쌍으로 Gate 8 complete coverage 제공 — 전자는 신규 가설 사전 필터, 후자는 기존 admitted pool 사후 재검증. 양방향 체계 구축이 Gate 8의 구조적 완성. 실측 검증: STR_1682 (H_1676 Option A 4-regressor) Grade F ERR 결과 — residualization 희석으로 TDC 축소 전략 자체가 실패했으나 L-158 pre-filter 있었다면 SUE/beta_24m 공분산 구조 사전 예측으로 4-regressor 과도 지양 가능했을 것. L-158의 ROI는 debate cycle 절약 시간 * 논리적 filtered-out 가설 수.",
+  "predicted_tdc_field_spec": {
+    "field_name": "predicted_tdc_vs_pg2_consensus",
+    "type": "float in [0, 1]",
+    "required_in_scout_handoff_kit": true,
+    "computation_method": "Scout이 factor correlation database + consensus taxonomy tier 조합으로 예상 TDC 범위 산정",
+    "tier_expected_ranges": {
+      "consensus_ratio_tier": 0.5-0.8,
+      "tp_gap_tier": 0.3-0.6,
+      "tp_mom_tier": 0.25-0.5,
+      "indirect_consensus_tier": 0.05-0.25,
+      "non_consensus_family": 0.0-0.15
+    },
+    "action_thresholds": {
+      "lt_0_25": "debate 진행 — PASS expected",
+      "0_25_to_0_4": "debate 진행 BUT Scout가 Risk Mgr 사전 review 요청",
+      "0_4_to_0_6": "pre-filter REVISE — Scout가 design 수정 후 재제출",
+      "gt_0_6": "REJECT_PREDEBATE — debate 개시 불필요"
+    }
+  },
+  "tags": ["PROCESS_RULE", "ADMISSION_GATE", "EARLY_WARNING", "SCOUT_HANDOFF_KIT_EXTENSION", "CONSENSUS_TAXONOMY_V2", "GATE_8_COMPLETE_COVERAGE"],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "source": "team-lead L-158 공식화 지시 + Scout Task #28 taxonomy v2 + Judge L-156 v2 complementary"
+}

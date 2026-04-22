@@ -1,0 +1,82 @@
+{
+  "report_type": "JUDGE_SWEEP_V3_PASS2_TIER2_PATH2_LIMITED",
+  "tier": 2,
+  "path_mode": "PATH_2_LIMITED_VERIFICATION",
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "judge_teammate_run": true,
+  "total": 4,
+  "strategies": [
+    {"strategy_id": "STR_1417", "grade_v3": "B_REDUNDANT", "family": "FAMILY_1", "primary_reason": "Near-clone with STR_1435 (0.993), prior ARCHIVE"},
+    {"strategy_id": "STR_1562", "grade_v3": "A_CONDITIONAL", "family": "FAMILY_2 INDEPENDENT", "primary_reason": "Only independent diversifier candidate. Gerber+DCC+HRP."},
+    {"strategy_id": "STR_1433", "grade_v3": "B_REDUNDANT", "family": "FAMILY_1", "primary_reason": "Near-clone 0.989 with STR_1060, 0.987 with STR_1071. Novelty 10 alternate."},
+    {"strategy_id": "STR_1071", "grade_v3": "A_PRIMARY_FAMILY_1", "family": "FAMILY_1", "primary_reason": "Lowest MDD 22.72% in Family 1 — Primary Family 1 pick."}
+  ],
+  "family_structure": {
+    "FAMILY_1_5SLEEVE_CONSGATE": {
+      "members_tier2": ["STR_1417", "STR_1433", "STR_1071"],
+      "members_tier1": ["STR_1435", "STR_1060"],
+      "within_family_corr_range_daily": "0.957 ~ 0.997",
+      "primary_pick": "STR_1071 (lowest MDD)",
+      "alternate_pick": "STR_1433 (highest hurdle + novelty)",
+      "admission_rule": "At most 1 member to PG pool"
+    },
+    "FAMILY_2_GERBER_DCC": {
+      "members": ["STR_1562"],
+      "corr_vs_FAMILY_1": "0.78~0.80",
+      "independent": true
+    }
+  },
+  "pit_clean_rate": 1.000,
+  "pit_clean_count": 4,
+  "pit_clean_detail": "4/4 run_all.R top-level CLEAN. BASE_DIR sub-engine inheritance risk not re-scanned (WAIVED).",
+  "re_runnability_rate": 0.0,
+  "re_runnability_detail": "4/4 WAIVED per Path 2. All depend on STR_770_phase2_cross BASE_DIR (MISSING).",
+  "harvey_t3_capm_pass_rate": 1.000,
+  "harvey_t3_capm_pass_count": 4,
+  "harvey_t3_detail": "CAPM alpha t-stats: STR_1417=5.69, STR_1562=5.59, STR_1433=5.49, STR_1071=5.30. All Harvey PASS.",
+  "harvey_t3_ff5_detail": "FF5 NOT_COMPUTED — FF5 KR factor data not available. CAPM may overstate vs FF5 (size/value controls).",
+  "dsr_0_95_rate": 1.000,
+  "dsr_0_95_count": 4,
+  "n20_compliance_rate": 0.0,
+  "n20_compliance_detail": "4/4 FAIL (5-sleeve union up to 30)",
+  "admissible_strategies_after_dedup": 2,
+  "admissible_list": ["STR_1071 (Family 1 primary)", "STR_1562 (Family 2 independent diversifier)"],
+  "alternate_list": ["STR_1433 (Family 1 alternate)"],
+  "sharpe_gap_contribution": {
+    "estimated_sr_boost_best_case": 0.12,
+    "estimated_sr_boost_with_Family1_alternate": 0.08,
+    "post_blend_sr_best_case": 1.386,
+    "remaining_gap_to_2_0": 0.614,
+    "note": "Family 1 near-clone reduces 4 strategies to 1. Only STR_1562 adds fresh diversification beyond Family 1 slot."
+  },
+  "cross_cutting_findings": [
+    {
+      "finding": "CLONE FAMILY 1 공식 확인 (5건 near-identical)",
+      "detail": "STR_1071/1060/1433/1417/1435 daily corr 0.957~0.997. Parameter variations only (DD/MRS thresholds). Common 5-sleeve consgate core engine."
+    },
+    {
+      "finding": "STR_1562 유일 진짜 diversifier 후보",
+      "detail": "Gerber robust correlation + DCC + HRP methodology가 distinct. Family 1 대비 corr 0.78~0.80. rolling 3Y SR peak 2.082 (recent alpha strength)."
+    },
+    {
+      "finding": "Path 2 limited verification의 구조적 한계",
+      "detail": "4/4 Gate 1 WAIVED. BASE_DIR STR_770_phase2_cross 복원 없이는 재현성 검증 불가. PG 편입 시 '재현성 PENDING' 태그 유지 필수."
+    },
+    {
+      "finding": "Family 1 내부 near-clone은 L-151 triplicate와 다른 패턴",
+      "detail": "Family 1a (STR_1060/1070/1085)는 byte-identical triplicate. Family 1 본체(STR_1071/1417/1433 등)는 near-clone (0.957~0.997) — 776+ days 10bp 이상 차이. 전자는 bug, 후자는 parameter tuning 결과."
+    }
+  ],
+  "governor_actions_required": [
+    "Family 1 admission rule: STR_1071 Primary OR STR_1433 Alternate. Exclude STR_1417/1435/1060/1070/1085.",
+    "Family 2 admission: STR_1562 독립 diversifier 편입 가능 (conditional).",
+    "'재현성 PENDING' 태그로 Gate 1 WAIVER 전략 관리 — BASE_DIR 복원까지 production 승격 불가.",
+    "PG1 admission pool 최대 2건 (STR_1071 + STR_1562) 또는 3건 (+STR_1433 alternate 동시 보유 불가)."
+  ],
+  "next_steps": [
+    "BASE_DIR STR_770_phase2_cross 복원 경로 Scout에게 요청 (methodology_memory/experiment_log 원본 사양 발굴)",
+    "H_1676/H_1682 S6 (Task #3/#4) 대기 — Forge S1 완료 시 즉시 착수",
+    "Tier 2 결과를 토대로 Governor Task #14 (STR_1439 PG1 admission 초안) 재검토 — STR_1439 대신 STR_1071 또는 STR_1562로 대체 권고"
+  ]
+}

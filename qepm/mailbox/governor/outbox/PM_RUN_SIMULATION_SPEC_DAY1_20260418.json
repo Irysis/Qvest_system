@@ -1,0 +1,177 @@
+{
+  "from": "Governor",
+  "to": "Forge_v4 + Q-Lead + team-lead",
+  "type": "PM_RUN_SIMULATION_SPEC_DAY1",
+  "timestamp": "2026-04-18T20:40+09:00",
+  "session": 67,
+  "continuous_session_mode": true,
+  "status": "FORGE_V4_EXECUTION_SPEC — pm_run() simulation Day 1 rebalance",
+  "execution_mode": "SIMULATION (paper trading level, NOT live)",
+
+  "reference_files": {
+    "phase_1_day_1_execution": "qepm/mailbox/governor/outbox/PHASE_1_DAY_1_TRANSITION_EXECUTION_20260418.json (20:20)",
+    "phase_1_v1_7": "qepm/mailbox/governor/outbox/PHASE_1_PG1_ADMISSION_SKELETON_v1_7.json (20:25)",
+    "admission_rule_v3_5_1": "qepm/mailbox/governor/outbox/admission_rule_v3_5_1_amendment_GATE_13_20260418.json (20:30)",
+    "team_lead_approval": "team-lead 20:35 (Day 1 EXECUTE + v1.7 + v3.5.1 전면 승인 + Q-Lead pm_run 직접 실행 지양 + Forge v4 coordinate 지시)"
+  },
+
+  "team_lead_directive_20_35": {
+    "approval_items": [
+      "Phase_1 Day 1 EXECUTE VERDICT (task #85) 승인",
+      "Phase_1 v1.7 (task #86) 승인",
+      "admission_rule v3.5.1 amendment 승인 (Governor 자발 발행 OK)"
+    ],
+    "q_lead_pm_run_guidance": "Q-Lead 직접 pm_run 실행 지양 → Forge v4 coordinate 영역",
+    "governor_action": "pm_run simulation spec 파일 발행 → Forge v4 실행 요청"
+  },
+
+  "pm_run_simulation_specification": {
+    "execution_mode": "simulation",
+    "trigger_level": "paper_trading (NOT live investment)",
+    "scope": "Phase_1 Day 1 rebalance step 1 (PG2 internal)",
+    "target_composition": {
+      "STR_1631_SYN_05": {"weight": 0.60, "from": 0.80, "delta": -0.20},
+      "STR_1656_MLRA_M05": {"weight": 0.16, "from": 0.20, "delta": -0.04},
+      "cash_reserve_temporary": {"weight": 0.24, "from": 0.00, "delta": +0.24}
+    },
+    "composition_sum_check": "0.60 + 0.16 + 0.24 = 1.00 ✅",
+    "output_files_expected": [
+      "stage_artifacts/rebalance_Day1_STR_1631_80_to_60.json",
+      "stage_artifacts/rebalance_Day1_STR_1656_20_to_16.json",
+      "stage_artifacts/rebalance_Day1_cash_reserve_24pct_buffer.json",
+      "stage_artifacts/pm_run_simulation_Day1_summary.json"
+    ],
+    "admission_gates_not_applicable": "PG2 internal rebalance (not new strategy admission)"
+  },
+
+  "forge_v4_execution_instructions": {
+    "priority": "P1 (after H_1692 factor_engine 완료)",
+    "function_to_call": "pm_run(composition_target = ..., mode = 'simulation')",
+    "simulation_inputs": {
+      "STR_1631_weight_target": 0.60,
+      "STR_1656_weight_target": 0.16,
+      "cash_reserve_target": 0.24,
+      "rebalance_date": "2026-04-18",
+      "mode": "simulation"
+    },
+    "expected_outputs": [
+      "stage_artifacts/pm_run_simulation_Day1_STR_1631_rebalance.json",
+      "stage_artifacts/pm_run_simulation_Day1_composition_summary.json",
+      "stage_artifacts/pm_run_simulation_Day1_risk_metrics.json"
+    ],
+    "validation_criteria": [
+      "composition sum = 1.00",
+      "STR_1631 weight 0.80 → 0.60 (-20pp)",
+      "STR_1656 weight 0.20 → 0.16 (-4pp)",
+      "cash reserve 0.00 → 0.24 (+24pp)",
+      "no new strategy admission (Gate 11/12/13 N/A)"
+    ]
+  },
+
+  "performance_projection_day_1_simulation": {
+    "expected_sr_post_rebalance": "1.15-1.20 (cash 24% drag 약간 + STR_1631 감축 상쇄)",
+    "expected_mdd_post_rebalance": "-15% ~ -20% (cash buffer → defensive)",
+    "expected_cagr_post_rebalance": "12-14% (temporary lower due to cash drag)",
+    "interpretation": "Day 1 simulation 목표는 Day 2~5 gradual migration buffer 확보. CAGR 일시 하락은 precursor step의 정상 trade-off."
+  },
+
+  "str_1685_pre_gate_13_baseline_integration": {
+    "status": "Rscript PID 2299540 실행 중 (16:45~)",
+    "post_completion_plan": [
+      "1. hurdle_result.json 기록 (Pre-Gate 13 baseline)",
+      "2. Forge v4 factor_engine.R Gate 13 compliant 재작성",
+      "3. Rscript 재실행 (Post-Gate 13)",
+      "4. Pre/Post 비교 → R16/M08/C19/Q07 factor Fix 1 영향 정량 실증",
+      "5. Scout L-164 evidence +1 reinforcement"
+    ],
+    "factor_db_persistent_fix_note": "factor_db_connector.R runtime wrapper 제거 + factor_db_builder.R 자체 rescale → Pre/Post 비교는 Post-Persistent-Fix 기반"
+  },
+
+  "forge_v4_spawn_status_confirmation": {
+    "team_lead_confirmation": "forge-v4@research-v7 agent active",
+    "current_task": "H_1692 → STR_1693 factor_engine + run_all 작성",
+    "gate_13_preflight_included": true,
+    "next_task_after_h_1692": "STR_1693 Rscript 실행 → Pre-Gate 13 vs Post-Gate 13 비교 + pm_run simulation"
+  },
+
+  "day_2_forge_queue_finalized_v1_7": {
+    "p0_strategy_execution": [
+      "1. H_1692 → STR_1693 factor_engine (Gate 13 compliant) 작성 + S1 4 variants",
+      "2. STR_1685 PID 2299540 완료 → Pre-Gate 13 baseline 기록 → Gate 13 compliant 재작성 → Post-Gate 13 재실행",
+      "3. H_1689 v3 S1 (Gate 13 preflight PASS 후, 3-axis Q24-exclude)",
+      "4. STR_1686 (H_1685 v2) factor_engine Gate 13 준수 사전 작성"
+    ],
+    "p0_infra": [
+      "**Architect persistent fix (factor_db_builder.R self-rescale + parquet rebuild) 완료 확인**",
+      "Forge preflight_check Gate 13 pattern 구현 (forge_code_guard.sh 또는 R-level)"
+    ],
+    "p1_pm_run_simulation": [
+      "**본 spec 기반 pm_run simulation Day 1 실행** (Forge v4 coordinate)",
+      "stage_artifacts rebalance records 생성"
+    ]
+  },
+
+  "str_1679v3_pending_resolution_path": {
+    "current_status": "PENDING_FORGE_PHYSICAL_SLEEVE_RE_EXEC (v1.7 기록)",
+    "team_lead_guidance": [
+      "proxy 3.391 Gate 12 PASS 이미 확정",
+      "Physical sleeve re-exec는 **optional** (proxy로 충분)",
+      "Phase_2+ Forge 여유 시 OR skip 가능"
+    ],
+    "governor_verdict": "proxy integrity 충족 → physical sleeve re-execution optional. Phase_1 LIVE Day 6 이후 Forge 여유 시 실행 or skip 판정"
+  },
+
+  "scout_gate_13_violation_audit_reference": {
+    "task_84_complete": "Scout 11 전략 scan 완료 (team-lead 20:35 확인)",
+    "summary": {
+      "total_scanned": 11,
+      "active_violations": 1,
+      "dropped": 3,
+      "legacy": 2,
+      "compliant": 5
+    },
+    "str_1685_active_violation": "Rscript PID 2299540 (Pre-Gate 13 baseline 처리)",
+    "governor_action": "Scout audit 결과 portfolio integrity assessment 지지"
+  },
+
+  "continuous_session_governor_actionable_next": {
+    "completed": [
+      "admission_rule v3.5.1 amendment (20:30)",
+      "pm_run simulation spec (본 파일 20:40)"
+    ],
+    "next_autonomous": [
+      "STR_1679v3 PENDING status decision (optional vs skip) — Phase_1 LIVE Day 6 이후 판정",
+      "Phase_1 Day 2 Forge S1 결과 수신 후 Gate 12/13 재판정",
+      "Architect persistent fix 완료 확인 + Gate 13 enforcement 재검토 support"
+    ],
+    "trigger_driven_standby": [
+      "Forge v4 H_1692 → STR_1693 factor_engine 완료",
+      "Forge v4 pm_run simulation Day 1 실행 결과 (본 spec 기반)",
+      "STR_1685 Rscript PID 2299540 완료 + Pre-Gate 13 baseline",
+      "Architect persistent fix 결과 (factor_db rebuild)",
+      "Judge S6 cascade + Day 3 Triple-check",
+      "Judge L-164 methodology_memory 본문 + MEMORY.md v5.3",
+      "Scout families.json v1.4 update + R16 Post-Persistent-Fix 재측정",
+      "team-lead 추가 지시"
+    ]
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "43 files (v3.5.1 amendment 포함)",
+    "current": "**44 files** (pm_run simulation spec 추가)",
+    "session_67_continuous_governor_total": "44 outbox files"
+  },
+
+  "session_67_continuous_status_snapshot_20_40": {
+    "governor_tasks_completed": "70~88 (19 tasks)",
+    "governor_outbox_total": "44 files",
+    "phase_1_day_1_status": "EXECUTING (pm_run simulation spec pending Forge v4)",
+    "phase_1_live_target": "Day 6 (2026-04-23)",
+    "admission_rule_version": "v3.5.1 STAGE_2_ACTIVE (13 gates)",
+    "l_code_registry": "6 ACTIVE (L-159~L-164)",
+    "architect_persistent_fix": "진행 중 (factor_db_connector.R + factor_db_builder.R 동시 수정 감지)",
+    "forge_v4_status": "active (H_1692 → STR_1693 작성 중)",
+    "str_1685_status": "PID 2299540 실행 중 (Pre-Gate 13 baseline)",
+    "team_lead_directives_absorbed": "7건 (20:00 3건 + 20:10 continuous + 20:20 Day 1 execute + 20:35 approval + 20:35 Q-Lead guidance)"
+  }
+}

@@ -49,6 +49,30 @@ veto 2+ 동의      → REVISE (Codex 제외. 도메인별 REJECT 가능)
 그 외            → REVISE
 ```
 
+### §1.6 Compact Mode (v6 Amendment, 2026-04-19 APPROVED)
+
+**근거**: `00_Lawbook/v6_amendment_debate_compact.md` (APPROVED 상태)
+
+**5인 → 3인 전환 허용**:
+- 3인 debate = Codex Critic + Risk Manager + (Judge 또는 Governor)
+- Academic·Quant는 자동 fact-check Hook으로 대체 (`academic_factcheck.sh`, `quant_factcheck.sh`)
+- **Shadow mode 5회** 합격 (verdict 일치율 ≥80%, veto 누락 0건) 전에는 기존 5인과 **병행**
+
+**3인 Consensus 규칙** (router 자동 집계):
+```
+3/3 APPROVE               → APPROVE (S1 즉시 dispatch, consensus_tier: strong)
+2+ REJECT                 → REJECT (archive)
+veto 1+ (Risk or Judge)   → REVISE (veto 도메인 즉시 block)
+2+ APPROVE/COND && 0 REJECT → APPROVE_CONDITIONAL (unresolved → S1 gate)
+그 외                      → REVISE
+```
+
+**R3 Closing 생략 조건**:
+- R2 stance 3/3 일치 + veto 변동 없음 → 즉시 VERDICT_READY (consensus_tier: strong)
+- 그 외 → R3 진입
+
+**Fallback**: 3인 verdict 모호 또는 fact-check Hook 2건 이상 실패 시 → 자동 escalate_to_5p (Academic·Quant LLM 1회 스폰 복구)
+
 **Consensus Tag**: UNANIMOUS / MAJORITY / MINORITY / DEADLOCK 자동 라벨링.
 
 ### Veto 도메인 권한 매트릭스
@@ -143,7 +167,7 @@ Judge S6 Gate 추가:
 
 ## 6. Admission Rule v3.5.2 — Role-Specific Thresholds
 
-**v54 Freeze 호환**: 기존 hard fail(MDD>45%, TO>600%) 유지 + "확장(addition)" 프레이밍
+**구조**: 기존 hard fail(MDD>45%, TO>600%) 유지 + "확장(addition)" 프레이밍 (v54 freeze는 2026-04-19 폐기)
 
 | Role | Threshold |
 |------|-----------|

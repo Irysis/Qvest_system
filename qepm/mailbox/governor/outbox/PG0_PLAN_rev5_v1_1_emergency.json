@@ -1,0 +1,246 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV5_V1_1_EMERGENCY",
+  "stage": "PG0_STR_1679v2_BREACH_REMEDIATION",
+  "timestamp": "2026-04-17T21:20:00+09:00",
+  "session": 66,
+  "version": "v5.1.1_emergency",
+  "status": "ACTIVE_EMERGENCY_REMEDIATION (Judge TDC STR_1631↔STR_1679v2 0.621 Gate 8 FAIL)",
+  "parent_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev5.json (v5.0)",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev5_supplement.json (v5.1)",
+  "criticality": "🚨🚨 CRITICAL — 현재 active PG2 (STR_1631 80% + STR_1679v2 20%)가 Admission Rule v3.0 Gate 8 위반 상태. 즉시 remediation 필요.",
+
+  "trigger": "Q-Lead 🚨 CRITICAL 통지 — Judge 확장 TDC 측정 (judge_pg1_candidates_tdc_matrix.json) STR_1631↔STR_1679v2 TDC 0.621 (Gate 8 threshold 0.4 대비 +0.221 초과). Daily Pearson 0.879, Nu 4.38 heavy tail co-movement. 현 PG2 포트폴리오 자체가 v3.0 위반.",
+
+  "judge_tdc_extended_measurement_integrated": {
+    "pg1_candidates_vs_str_1631_core": {
+      "STR_1071": {"tdc": 0.000, "monthly_rho": 0.412, "gate_8": "PASS"},
+      "STR_1562": {"tdc": 0.003, "monthly_rho": 0.453, "gate_8": "PASS"},
+      "STR_1433": {"tdc": 0.000, "monthly_rho": 0.413, "gate_8": "PASS"},
+      "STR_1679v2": {
+        "tdc": 0.621,
+        "monthly_rho": 0.902,
+        "daily_pearson": 0.879,
+        "nu_heavy_tail_co_movement": 4.38,
+        "monthly_bm_corr": 0.733,
+        "gate_8": "🚨 FAIL_CRITICAL",
+        "gap_vs_threshold": 0.221
+      }
+    },
+    "root_cause_analysis": {
+      "mechanism": "STR_1679v2 Core15 = C19 Top-15 → STR_1631 Core C19 합성과 factor overlap 심각",
+      "factor_overlap": "Core15 (C19 Top-15) + Regime Inverse Overlay ≡ STR_1631 consensus signal 공유",
+      "diversifier_misclassification": "Judge 추가 판정 — STR_1679v2 'diversifier_nominal_only' (daily 독립성만, monthly+tail 전혀 독립 아님)",
+      "prior_v1_1_classification_insufficient": "rev4_supplement v1.1 'diversifier_with_overlay_dependency' 분류는 L-146 overlay-driven MDD는 잡았으나 TDC factor overlap 미포착"
+    }
+  },
+
+  "governor_decision_option_a_plus_b_hybrid_accepted": {
+    "q_lead_recommendation_accepted": "Option A 단기 + Option B 중기 병행",
+    "option_a_immediate_week_1": {
+      "action": "STR_1679v2 Phase_1 10% → **5%** 축소 (기존 PG2 20%에서 단계적 탈출)",
+      "week_1_target_portfolio": "현 PG2 (STR_1631 80% + STR_1679v2 20%) → Week 1 rev5_v1.1 Phase_1으로 전환 시 STR_1679v2 5% 즉시",
+      "rationale": "TDC breach critical 상태 즉시 해소 + 기존 20% 포지션 일시 청산 리스크 완화 (5% 단계 축소)"
+    },
+    "option_b_medium_week_3_4": {
+      "action": "STR_1679v3 Slot A (H_1682 Q25+R16 Def sleeve 교체) 완성 시 STR_1679v2 → STR_1679v3 완전 교체",
+      "expected_tdc_post_replacement": "0.621 → 0.3~0.4 (Q25+R16 non-consensus family)",
+      "prerequisite": "H_1682 S1 완료 (Forge blocker 해소 후 1~2주)",
+      "task_ref": "Task #7 Slot A 이미 등록"
+    },
+    "option_c_rejected": {
+      "reason": "residualization 구조 복잡성 증가 + alpha 희석 리스크. Slot B/C 대안 수용."
+    }
+  },
+
+  "rev5_v1_1_phase_1_composition": {
+    "week_1_target_immediate_transition": {
+      "Core_Primary_STR_1631": {"weight": 0.42, "change_from_current_80pct": "-38pp emergency transition"},
+      "STR_1656_Div_ML": 0.20,
+      "**STR_1679v2_reduced**": {"weight": 0.05, "change_from_rev5": "-5pp (10 → 5)", "note": "Gate 8 breach 완화 긴급"},
+      "H_1676_Div_spec_strengthened": 0.08,
+      "H_1682_Def_distress_calmar_priority_boost": {"weight": 0.16, "change_from_rev5": "0 (유지)"},
+      "H_1685_Div_investor_flow_accelerated": {"weight": 0.05, "change_from_rev5_phase_3": "+5pp reserve reallocation"},
+      "reserve_h_1688_buffer": 0.04,
+      "total": 1.00,
+      "n_strategies": 6
+    },
+    "week_3_4_str_1679v3_replacement_target": {
+      "Core_Primary_STR_1631": 0.42,
+      "STR_1656_Div_ML": 0.20,
+      "**STR_1679v3_Slot_A_H_1682_Def_replaced**": 0.10,
+      "H_1676_Div_spec_strengthened": 0.08,
+      "H_1682_Def_distress_calmar": 0.12,
+      "H_1685_Div_investor_flow": 0.05,
+      "reserve_h_1688_buffer": 0.03,
+      "total": 1.00,
+      "note": "STR_1679v2 → STR_1679v3 완전 교체 (Slot A). TDC 0.621 → 예상 0.3~0.4."
+    }
+  },
+
+  "rev5_v1_1_phase_3_final_composition": {
+    "str_1679v2_5pct_retained_minimal": {
+      "description": "v5.1 대비 STR_1679v2 12% → 5% 축소. Defense 증대로 재분배.",
+      "composition": {
+        "Core_Primary_STR_1631_consensus_C19": 0.18,
+        "Core_Secondary_H_1688_residual_momentum": 0.10,
+        "Div_1_H_1676_consensus_residual_strengthened": 0.08,
+        "Div_2_H_1685_investor_flow_boosted": 0.17,
+        "Div_3_STR_1679v2_reduced_5pct": 0.05,
+        "Div_ML_STR_1656": 0.12,
+        "Def_1_H_1682_distress_calmar_boosted": 0.18,
+        "Def_2_H_1689_quality_4axis": 0.12
+      },
+      "total": 1.00,
+      "n_strategies": 8,
+      "n_families": 7
+    },
+    "alternative_str_1679v3_replaced_full": {
+      "description": "STR_1679v3 완전 교체 시 STR_1679v2 제거 + STR_1679v3 12%",
+      "composition": {
+        "Core_Primary_STR_1631": 0.18,
+        "Core_Secondary_H_1688": 0.10,
+        "Div_1_H_1676": 0.08,
+        "Div_2_H_1685": 0.13,
+        "Div_3_STR_1679v3_H_1682_Def_replaced": 0.12,
+        "Div_ML_STR_1656": 0.12,
+        "Def_1_H_1682_direct_standalone": 0.16,
+        "Def_2_H_1689": 0.11
+      },
+      "total": 1.00,
+      "issue": "STR_1679v3 내부 H_1682 sleeve + standalone H_1682 double-count 위험. 구조 재검토 필요 (Scout/Forge 확인)."
+    }
+  },
+
+  "projected_sr_rev5_v1_1_recalculated": {
+    "individual_SR_assumption": {
+      "STR_1679v2_reduced_5pct": 1.266,
+      "H_1685_boosted_17pct": 0.75,
+      "H_1682_boosted_18pct": 0.65
+    },
+    "weighted_mean_SR_phase_3_v5_1_1": 0.979,
+    "rho_0_3_conservative_primary": {
+      "projected_SR": 1.79,
+      "gap_vs_rev5_1_82": -0.03,
+      "status": "SR 2.0 미달 + v5.0 대비 -0.03 소폭 하향. TDC breach 해소 benefit 초과."
+    },
+    "rho_0_2_optimistic_reference": {
+      "projected_SR": 1.87,
+      "gap_vs_rev5_1_90": -0.03
+    },
+    "rho_0_5_saturation": 1.43,
+    "trade_off_analysis": {
+      "sr_cost": "0.03 (rev5 1.82 → 1.79, Defense boost + STR_1679v2 reduction)",
+      "risk_benefit": "TDC 0.621 FAIL_CRITICAL → 0.3~0.4 PASS expected (STR_1679v3 replacement)",
+      "quality_ratio": "SR 0.03 손실 cost < TDC 0.221 해소 benefit. Risk-adjusted 크게 개선."
+    },
+    "boost_roadmap_unchanged": {
+      "base_1_79_plus_4_boosts": "1.79 + 0.21 = 2.00 (SR 2.0 도달, boost 4건 성공 전제)",
+      "boost_list_unchanged": [
+        "+H_1687 Distress-Momentum: +0.10",
+        "+STR_1661 V2 교체: +0.03~0.05",
+        "+Blend optimization: +0.03~0.05",
+        "+H_1688 Barroso MANDATORY: +0.05"
+      ],
+      "projected_final_with_all_boosts": {
+        "conservative_rho_0_3": 2.00,
+        "optimistic_rho_0_2": 2.08
+      }
+    }
+  },
+
+  "emergency_transition_plan_week_1": {
+    "current_pg2_state": {
+      "STR_1631": 0.80,
+      "STR_1679v2": 0.20,
+      "tdc_str_1631_str_1679v2": 0.621,
+      "gate_8_status": "🚨 FAIL_CRITICAL"
+    },
+    "week_1_target_state": {
+      "STR_1631": 0.42,
+      "STR_1656": 0.20,
+      "STR_1679v2": 0.05,
+      "H_1676": 0.08,
+      "H_1682": 0.16,
+      "H_1685": 0.05,
+      "reserve_h_1688": 0.04
+    },
+    "transition_steps": [
+      "Day 1: STR_1631 80% → 60% 축소 + STR_1656 reserve 0 → 20% (기존 0%에서 추가 편입 필요 여부 확인)",
+      "Day 2: STR_1679v2 20% → 10% 축소",
+      "Day 3~5: H_1682 0 → 16% + H_1676 0 → 8% (S1 완료 전제, BLOCKED 해소 필수)",
+      "Day 6~7: H_1685 0 → 5% + STR_1679v2 10% → 5% (최종 Gate 8 breach 해소)",
+      "Week 1 말 validation: portfolio TDC 재측정 (Risk Mgr 3rd round 또는 Judge spot check)"
+    ],
+    "critical_dependencies": [
+      "Forge blocker 해소 (H_1676/H_1682 S1 완료 필수)",
+      "Architect 진단 + 복구",
+      "최후 수단: Q-Lead 직접 R 실행 (forge_blocker_1hr+ 시)"
+    ]
+  },
+
+  "l_156_v2_retroactive_audit_rule": {
+    "rule_name": "Retroactive Portfolio TDC Audit",
+    "trigger": "Any new Gate (v3.0+) institutionalization OR PG0_PLAN 발행 시점",
+    "procedure": [
+      "Step 1: 기존 admitted portfolio pairwise TDC 재측정",
+      "Step 2: 신규 Gate rule 적용 위반 여부 검증",
+      "Step 3: 위반 발견 시 emergency remediation plan 작성",
+      "Step 4: Remediation PG0_PLAN 발행 (rev_x_v1_x_emergency)"
+    ],
+    "applicability": "현 L-156 v2는 v3.0 Gate 8 도입 시 retroactive audit 적용. STR_1631↔STR_1679v2 breach가 첫 적용 사례.",
+    "institutionalization": "PG0/PG1 절차에 retroactive audit mandatory step 추가. portfolio_governor.R::retroactive_tdc_audit() 함수 구현 (Task #8 extension).",
+    "lesson_learned": "rev5 v1.1 이전 5세대 PG0_PLAN 모두 기존 portfolio audit 생략. 향후 재발 방지 rule."
+  },
+
+  "str_1071_str_1562_phase_3_plus_plan_unchanged": {
+    "note": "v5.1 sequential admission rule 유지 (STR_1071 Phase_3+, STR_1562 Phase_4 conditional)",
+    "phase_3_plus_composition": "rev5_supplement v5.1 Extension plan 그대로 적용 (Phase_3 18% Core + Phase_3+ STR_1071 10% 편입)"
+  },
+
+  "pg1_admission_rule_v3_2_retroactive_audit": {
+    "v3_0_gates_unchanged": "Gate 1~5 + Gate 6/7 (v3.1 Sequential + Residualization)",
+    "v3_2_new_gate": {
+      "gate_8_retroactive_audit": {
+        "description": "신규 Gate rule 도입 시 기존 admitted portfolio pairwise 재측정 의무",
+        "application": "v3.0 Gate 5 (TDC ≤ 0.4) 도입 시 STR_1631↔STR_1679v2 0.621 발견 → 이번 emergency remediation 사례",
+        "code_path": "portfolio_governor.R::pg1_admission_with_retroactive_audit() 확장"
+      }
+    }
+  },
+
+  "risk_manager_2nd_round_reassessment_needed": {
+    "context": "Risk Mgr 2nd round agent 진행 중 (agent_id a5e62a09c9883c4c9) — rev5 기준 rebalance portfolio 검증",
+    "concern": "rev5 기준 측정 시 여전히 STR_1679v2 12% 포함 → TDC max 0.621 실측 시 FAIL 가능성 높음",
+    "governor_action_needed": "Risk Mgr 2nd round 결과 도착 시 rev5_v1_1 emergency rebalance (STR_1679v2 5% 축소) 적용 후 **Risk Mgr 3rd round 재스폰 요청**",
+    "q_lead_request": "Risk Mgr 2nd round 완료 후 결과 확인 → rev5_v1_1 반영 → 3rd round 재스폰"
+  },
+
+  "governor_open_questions_v5_1_1": {
+    "R20_str_1679v2_final_disposition": "Phase_3 5% 유지 vs STR_1679v3 완전 교체 후 제거 — 어느 경로 확정?",
+    "R21_str_1679v3_sleeve_double_count": "STR_1679v3 내부 H_1682 sleeve + standalone H_1682 편입 시 double-count 확인 필요. Scout/Forge에 구조 검토 요청 지시?",
+    "R22_emergency_transition_day_by_day": "Week 1 day-by-day transition plan 승인? 또는 한번에 rev5_v1_1 composition 전환?",
+    "R23_risk_mgr_3rd_round_trigger": "Risk Mgr 2nd round 결과 + rev5_v1_1 적용 후 3rd round 즉시 재스폰?",
+    "R24_l_156_v2_retroactive_audit_institutionalization": "v3.2 Gate 8 retroactive audit rule portfolio_governor.R 주입 승인?"
+  },
+
+  "artifacts_v5_1_1_emergency": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev5_v1_1_emergency.json (현 파일)",
+    "supersedes: PG0_PLAN_rev5_supplement.json (v5.1)",
+    "parent chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → **v5.1.1 emergency**"
+  ],
+
+  "executive_summary_v5_1_1": {
+    "emergency_trigger": "STR_1631↔STR_1679v2 TDC 0.621 Gate 8 FAIL_CRITICAL",
+    "option_adopted": "A (STR_1679v2 → 5%) + B (STR_1679v3 교체 Week 3~4)",
+    "phase_1_week_1_composition": "STR_1631 42% + STR_1656 20% + STR_1679v2 5% + H_1676 8% + H_1682 16% + H_1685 5% + reserve 4%",
+    "phase_3_str_1679v2_5pct_retained": "Defense 30% (H_1682 18% + H_1689 12%) + H_1685 17% + STR_1679v2 5% + rest",
+    "projected_sr_primary_rho_0_3": 1.79,
+    "sr_cost_of_remediation": "-0.03 (rev5 1.82 → 1.79)",
+    "risk_benefit_of_remediation": "TDC 0.621 → 0.3~0.4 expected (STR_1679v3 replacement)",
+    "boost_to_sr_2_0": "1.79 + 0.21 (boost 4건) = 2.00 도달 가능",
+    "new_rules_institutionalized": "v3.2 Retroactive TDC Audit + L-156 v2 retroactive audit procedure",
+    "next_governor_action": "R20~R24 회신 + Risk Mgr 2nd 결과 + Forge blocker 해소 → Week 1 emergency transition 실행"
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "hypothesis_id": "H_1688",
+  "hypothesis_name": "Residual Momentum Core_Secondary",
+  "verdict": "APPROVE_CONDITIONAL",
+  "total_score": 67,
+  "max_score": 100,
+  "decision_band": "60-74 APPROVE_CONDITIONAL",
+  "r3_skipped": true,
+  "r3_skip_reason": "R2 delta 전원 |delta| <= 1, R3_NEEDED gate(|delta|>4) 미충족. VERDICT_READY 자동 전이.",
+  "decided_by": "Q-Lead",
+  "decided_at": "2026-04-17T19:10:00+09:00",
+
+  "final_scores": {
+    "codex_critic": {"r1": 8, "final": 9, "delta": 1},
+    "risk_manager": {"r1": 13, "final": 13, "delta": 0},
+    "governor": {"r1": 17, "final": 16, "delta": -1},
+    "quant": {"r1": 13, "final": 13, "delta": 0},
+    "academic": {"r1": 16, "final": 16, "delta": 0}
+  },
+
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "entries": [
+          {"role": "codex_critic", "score": 8, "file": "stage_artifacts/s0_debate_r1_codex_critic_H_1688.json"},
+          {"role": "risk_manager", "score": 13, "file": "stage_artifacts/s0_debate_r1_risk_manager_H_1688.json"},
+          {"role": "governor", "score": 17, "file": "stage_artifacts/s0_debate_r1_governor_H_1688.json"},
+          {"role": "quant", "score": 13, "file": "stage_artifacts/s0_debate_r1_quant_H_1688.json"},
+          {"role": "academic", "score": 16, "file": "stage_artifacts/s0_debate_r1_academic_H_1688.json"}
+        ]
+      },
+      {
+        "round": 2,
+        "entries": [
+          {"role": "codex_critic", "score": 9, "delta": 1, "file": "stage_artifacts/s0_debate_r2_codex_critic_H_1688.json"},
+          {"role": "risk_manager", "score": 13, "delta": 0, "file": "stage_artifacts/s0_debate_r2_risk_manager_H_1688.json"},
+          {"role": "governor", "score": 16, "delta": -1, "file": "stage_artifacts/s0_debate_r2_governor_H_1688.json"},
+          {"role": "quant", "score": 13, "delta": 0, "file": "stage_artifacts/s0_debate_r2_quant_H_1688.json"},
+          {"role": "academic", "score": 16, "delta": 0, "file": "stage_artifacts/s0_debate_r2_academic_H_1688.json"}
+        ]
+      }
+    ]
+  },
+
+  "consensus_points": [
+    "M08_Residual_Mom이 Factor DB 기구축 → H_1688 S1 Phase 1에서 M08 baseline vs H_1688 3factor cross-section ICIR 직접 비교 필수 (incremental value 실증)",
+    "24M rolling CAPM beta가 Factor DB 독립 팩터 미등록 → S1에서 per-ticker rolling OLS (t-1 월말 기준 + Vasicek shrinkage 신규상장) 별도 계산 필요",
+    "Factor ID 정정: M04_Mom_12_1 (오표기) → M01_Mom_12_1 (실제 Factor DB ID). M04는 1-month reversal",
+    "R12_Idiosyncratic_Risk 부호 이슈: R12 = -sd(residuals) 이므로 OLS 리그레서 투입 시 sign convention 명시 필수 (C13)",
+    "S3 DCC-GARCH conditional correlation 측정: 정상기 ρ<0.25 + 8대 스트레스 구간 각각 conditional ρ<0.50 (Risk Mgr + Governor + Quant 3인 공통)",
+    "S5 Barroso-Santa-Clara 2015 dynamic volatility scaling A슬롯 사전 등록 필수 (Risk Mgr + Governor + Academic 3인 공통)",
+    "Post-publication decay 우려: Blitz 2011 발표 후 14년 + 이진철 2015 sample 1990-2013 → 2014-2025 rolling 3Y ICIR drift < 30% S2 gate (Academic + Codex 공통)",
+    "잔차화 mechanism은 유효: 3-factor cross-section OLS가 M08 time-series 1-factor approach와 알고리즘 레벨 분리 (Quant 반박 → Codex R2에서 부분 수용)"
+  ],
+
+  "unresolved_disputes": [
+    "H_1688이 SR 2.0 유일 realistic 경로인가? — Governor 주장(Hybrid Z3+H_1688 SR 2.06 @ ρ=0.2), Codex/Risk Mgr 반박(ρ=0.2 가정 OOS 미검증, strategic necessity ≠ alpha proof)",
+    "MRS 63.1 CRISIS 편입 타이밍 — Risk Mgr 우려(pro-cyclical 현 시점 최악), Quant 반박(편입 타이밍은 PG1 Governor 소관, S0 signal quality와 분리)",
+    "L-106/L-115/L-118-ext long-only beta dominance 교훈이 cross-section 잔차화로 해소되는가? — Risk Mgr 우려 (위기 시 realized portfolio correlation market beta 지배), Quant+Academic 반박 (Blitz 2011 Table 3 잔차화 sharpe 91% 개선 실증)",
+    "STR_1679v2 family 분류: Governor \"multi_sleeve_core_with_active_defense\" vs Judge 재심사 \"diversifier with overlay_dependency\" — Q-Lead 중재 요청 전달됨 (rev4_supplement v1.1 대기)"
+  ],
+
+  "conditions_for_s1": [
+    {"id": "COND_01", "source": "consensus_all", "requirement": "S1 Phase 1: M08_Residual_Mom baseline ICIR 측정 + H_1688 3factor cross-section ICIR 직접 비교. H_1688 ICIR <= M08 시 설계 재검토."},
+    {"id": "COND_02", "source": "Quant R2 + Codex R2", "requirement": "24M rolling CAPM beta 계산: per-ticker monthly OLS, window [t-504일, t-1일], Vasicek shrinkage 신규상장, C2 same-day circular 방지 코드 주석 명시."},
+    {"id": "COND_03", "source": "Quant R2 + Codex R2", "requirement": "Factor ID 정정: M04 오표기 → M01_Mom_12_1 사용. R12 부호 governance (raw sd + declared sign OR strict -R12 convention) S1 코드 주석 명시."},
+    {"id": "COND_04", "source": "Codex R1/R2", "requirement": "strict PIT protocol S1 코드 주석 명시: point-in-time universe + lagged fundamentals + T+1 executable signals + no same-day close circularity."},
+    {"id": "COND_05", "source": "Risk Mgr R1/R2 + Governor R1", "requirement": "S1 compute_tail_risk_suite(): EVT xi < 0.25 + CDaR 95% < 25% + ES 99% < -12% 월간 (Barroso 없는 vanilla 기준)."},
+    {"id": "COND_06", "source": "Risk Mgr + Governor + Quant", "requirement": "S3 Orthogonality Critical Gate: 정상기 ρ < 0.25 (H_1688 vs STR_1631_SYN_05) + 8대 스트레스 구간 각각 conditional ρ < 0.50 (DCC-GARCH). 실패 시 Core_Secondary 자격 박탈."},
+    {"id": "COND_07", "source": "Risk Mgr + Governor + Academic", "requirement": "S5 Barroso-Santa-Clara 2015 dynamic scaling variant A슬롯 사전 등록 필수. DD 8/22 overlay + multi-horizon(6-1+12-1+18-1) B/C 슬롯."},
+    {"id": "COND_08", "source": "Academic R1/R2 + Codex R1", "requirement": "S2 Profiling: 2014~2025 rolling 3Y ICIR drift < 30%. 30% 이상 하락 시 post-publication decay 확정 + S5 Barroso scaling 강제 + regime-conditional weighting 추가."},
+    {"id": "COND_09", "source": "Governor R1", "requirement": "PG1 Admission 전제 3건: (1) consensus_taxonomy 45% cap + sub-family caps 승인 (Q-Lead 승인 완료), (2) STR_1631 80%→점진 이행 plan 확정 (Q-Lead R2 답변 55% 단기 8주 limit 승인), (3) Factor DB correction 반영 (COND_03)."},
+    {"id": "COND_10", "source": "Governor R1", "requirement": "S2 Profiling Gate: ICIR ≥ 0.35 + residual stability 3Y rolling drift < 30%. SR standalone 0.70 미만 시 Core_Secondary 자격 박탈 → Diversifier 재분류 또는 fallback H_1687/H_1683."},
+    {"id": "COND_11", "source": "Academic R1 + Risk Mgr R1", "requirement": "S3 H_1687 직교성 측정: 단면 Spearman IC correlation + portfolio return correlation 2축 (L-118-ext). ρ > 0.5 시 H_1687과 drop 결정."},
+    {"id": "COND_12", "source": "Academic R1 + R2", "requirement": "S6 FF5 UMD factor exposure t < 2 확인 (잔차화 실효성 증명). S5 Barroso risk-managed version 병행 백테스트."}
+  ],
+
+  "debaters": [
+    {
+      "agent_id": "codex_critic_H_1688_R1_R2",
+      "role": "codex_critic",
+      "score": 9,
+      "findings": "R1 reject-leaning(8/20) → R2 cautious conditional support(9/20). Quant의 mechanism-level 분리 주장(3factor cross-section ≠ M08 time-series)을 수용하여 +1 상향. strict PIT + overlay ablation + M08 baseline + R12 sign governance + STR_1038~1043 mechanism separation 5건 조건 고수."
+    },
+    {
+      "agent_id": "risk_manager_H_1688_R1_R2",
+      "role": "risk_manager",
+      "score": 13,
+      "findings": "R1 13/20 → R2 13/20 유지. Governor ρ=0.2 가정 + SR 2.0 유일 경로 주장에 major 반박 2건. Codex 8점은 과도 감점 (minor), Academic CRISIS IC는 structural pro-cyclicality (minor). beta orthogonality 2/4 + regime vulnerability 2/4 평가 R2에서 강화. S1 EVT + S3 DCC + S5 Barroso 3-gate hard requirement 권고."
+    },
+    {
+      "agent_id": "governor_H_1688_R1_R2",
+      "role": "governor",
+      "score": 16,
+      "findings": "R1 17/20 → R2 16/20 (-1). Academic post-pub 58% decay 수용 → marginal_contribution 3.0→2.5. Codex STR_1038~1043 구조 유사 비판 부분 수용 → role_match 3.5→3.0. gap_alignment 4 유지. APPROVE_CONDITIONAL + phased admission (5%→10%→15%) + S2 ICIR 0.35 kill gate + Role Honesty Audit 3중 안전장치 필수."
+    },
+    {
+      "agent_id": "quant_H_1688_R1_R2",
+      "role": "quant",
+      "score": 13,
+      "findings": "R1 13/20 → R2 13/20 유지. Risk Mgr 24M beta regime-shift lag + Vasicek shrinkage 동의. Codex PIT beta 계산 C2 same-day circular 동의. Codex 'STR_1038~1043 단순 구현 방식 변경' 반박 (M08 time-series vs H_1688 cross-section 3factor 알고리즘 레벨 차이). Risk Mgr MRS 편입 타이밍 S0 vs PG1 분리 반박. S1 M08 baseline + 24M beta spec + R12 sign + S3 regime-conditional 상관 4건 조건 추가."
+    },
+    {
+      "agent_id": "academic_H_1688_R1_R2",
+      "role": "academic",
+      "score": 16,
+      "findings": "R1 16/20 → R2 16/20 유지. peer_review 4 + mechanism_align 4 + korea_evidence 3 + substantive_cite 4 + time_decay 1. Quant M08 vs H_1688 알고리즘 분리 (Blitz 2011 Table 3 실증 정합) + Governor Core_Secondary family (Carhart 1997 UMD precedent) + Risk Mgr CRISIS IC (Daniel-Moskowitz 2016 pro-cyclical foundational) 동의. Codex 구현 방식 평가절하 major 반박. 외부 SSRN/arXiv 최근 한국 실증 발굴 실패로 korea_evidence 3/4 유지."
+    }
+  ],
+
+  "scout_prediction_vs_actual": {
+    "predicted_total_range": "72-84",
+    "actual_total": 67,
+    "delta": "-5 from lower bound",
+    "biggest_miss": "Codex 예측 11-14 vs 실제 8 (-3 to -6)",
+    "accurate_predictions": "Governor 17-19 (actual 17, within range), Academic 16-18 (actual 16, within range)",
+    "calibration_notes": "Scout은 Codex failure_avoidance + structural_risk 평가를 과소 추정함. Quant도 C19 상관 실측 부재로 -2 하락 (15-17 예상 vs 13 실제). 향후 Scout handoff kit 예측은 L-106/118 beta orthogonality + PIT 프로토콜 부재 리스크에 대해 Codex 시점에서 더 엄격 판정 가능성 인식 필요."
+  },
+
+  "verdict_summary": {
+    "approve_conditional_rationale": "총점 67/100은 APPROVE_CONDITIONAL 밴드(60-74). Codex 9점은 특수 REJECT 규칙(4점 이하) 미저촉. Risk Mgr 13점도 4점 이상. 5인 공통 consensus: Factor DB M08 baseline + 24M beta custom + Factor ID correction + R12 sign + S3 DCC + S5 Barroso 필수. Governor Hybrid Z3+H_1688 SR 2.06 projected 경로는 valid하나 ρ 실측 + post-pub decay 확인 전 decision-grade 아님.",
+    "next_stage": "S1 — Forge 백테스트. conditions_for_s1 12건 전수 반영.",
+    "governor_admission_path": "APPROVE_CONDITIONAL → PG0 admission candidate (phased admission 5%→10%→15% 권고). Scenario_Y Phase_1 합류.",
+    "strategy_id_assignment": "H_1688 → STR_1684 (다음 순번) 또는 Forge 자동 할당. Scout TODO_S1_H_1688_residual_momentum_core_alpha.json 작성 필요 (H_1676/H_1682 S1 TODO와 동일 형식)."
+  }
+}

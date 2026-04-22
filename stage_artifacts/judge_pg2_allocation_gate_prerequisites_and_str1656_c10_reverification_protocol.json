@@ -1,0 +1,168 @@
+{
+  "report_type": "JUDGE_PG2_GATE_PREREQUISITES_AND_STR1656_C10_REVERIFICATION_PROTOCOL",
+  "scope": "Task #8 Judge 사전 검증 기여 — Blender 5-sleeve 수학/PIT 요건 + STR_1656 C10 fix 재검증 설계",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "note": "Task #8은 Blender(국면별 5-sleeve 배분) + Forge(STR_1656 C10 fix 재실행) 권한 작업. Judge는 (a) Blender 산출물 Gate 심사 기준 사전 정의 + (b) STR_1656 재실행 후 C10 violation 완전 제거 검증 protocol 공식화로 기여.",
+
+  "part_a_blender_5sleeve_judge_prerequisites": {
+    "target_artifact": "stage_artifacts/pg2_allocation_5sleeve.json (Day 6~7 Blender 정식 발행분)",
+    "prerequisite_conditions_before_judge_pg2_gate_review": [
+      {
+        "condition_id": "PG2_PRE_1_WEIGHT_SUM",
+        "rule": "sleeve weight sum = 100.0% (±0.01% tolerance). overlap 허용하나 binding active exposure는 100%",
+        "judge_check": "sum(weights) == 1.0 ± 1e-4"
+      },
+      {
+        "condition_id": "PG2_PRE_2_TDC_MATRIX",
+        "rule": "pairwise TDC matrix 5×5 모든 off-diagonal < 0.30 (L-156 v2 sequential TDC threshold)",
+        "judge_check": "매 sleeve pair TDC 계산 → max off-diag < 0.30. 위반 시 Blender 재설계 요청",
+        "critical_pairs_for_phase_1": [
+          "STR_1631_SYN_05 (80% → Phase_1 재조정 후 18%) ↔ 신규 sleeve (H_1689 v3 / H_1692 v2)",
+          "STR_1656_MLRA (20% → 14%) ↔ 신규 sleeve",
+          "STR_1679v3 (8%) ↔ defense cluster 다른 sleeve"
+        ]
+      },
+      {
+        "condition_id": "PG2_PRE_3_AX_007_SCOPE_VIOLATION",
+        "rule": "any sleeve가 AX-007 scope(defense_or_core_secondary single-sleeve long-only top-20, ICIR>0.3, SR<0.8, MDD>35%) 해당 시 admission 차단",
+        "judge_check": "5 sleeves 각각 AX-007 scope 밖 증명 필요. EXCLUSION clause 4-attribute 중 최소 2건 명시 + empirical evidence"
+      },
+      {
+        "condition_id": "PG2_PRE_4_REGIME_MATRIX_4x5_COVERAGE",
+        "rule": "regime matrix 4(crisis/recovery/normal/expansion) × 5(sleeve) 모두 non-empty. 각 regime 내 weight sum=100%",
+        "judge_check": "20 cells non-empty + regime별 sum=100%"
+      },
+      {
+        "condition_id": "PG2_PRE_5_CRISIS_REGIME_MDD_COVERAGE",
+        "rule": "crisis regime에서 defense cluster (multi-sleeve) ≥ 33% (AX-001 v2 audit_defense_v2 minimum coverage)",
+        "judge_check": "crisis row 중 defense 분류 sleeves sum ≥ 33%"
+      },
+      {
+        "condition_id": "PG2_PRE_6_LOO_VALIDATION",
+        "rule": "Leave-one-crisis-out 검증 — 2008/2020/2022 각각 제거 시에도 portfolio SR > 1.5 유지",
+        "judge_check": "3회 LOO 실행 → SR min > 1.5"
+      },
+      {
+        "condition_id": "PG2_PRE_7_HARVEY_MULTIPLE_TESTING",
+        "rule": "5 sleeves 동시 admission → Bonferroni Harvey t>3.3 (5-test family-wise error correction)",
+        "judge_check": "각 sleeve alpha t-stat > 3.3 확인 (aggregate blended portfolio도 별도 t>3.3)"
+      },
+      {
+        "condition_id": "PG2_PRE_8_DSR_AGGREGATE",
+        "rule": "blended portfolio DSR 0.7 이상, n_trials 최소 5 (candidate admission 횟수)",
+        "judge_check": "compute_dsr(sharpe_blended, n_trials=5, T=periods) → dsr > 0.7"
+      },
+      {
+        "condition_id": "PG2_PRE_9_PIT_RETROACTIVE_AUDIT",
+        "rule": "PG2 편입 모든 sleeve PIT-clean 확정. STR_1656 C10 fix 완료 + re-run 결과 Judge 재검증 PASS 후 편입",
+        "judge_check": "retroactive_pit_audit_active_strategies.json 최신본에서 모든 sleeve VIOLATION 0 확인"
+      },
+      {
+        "condition_id": "PG2_PRE_10_ALPHA_LAB_GATE",
+        "rule": "모든 sleeve ICIR ≥ 0.20 + 5Y IC 유의성 + RoleBias tag 명시",
+        "judge_check": "qepm §8 Alpha Lab Gate 전수 통과"
+      }
+    ],
+    "judge_gate_review_sequence_after_blender_delivery": [
+      "Gate PG2-0: 파일 schema 검증 (5 sleeves + 4 regime × 5 matrix + metadata)",
+      "Gate PG2-1 ~ PG2-10: 위 10건 prerequisite 순차",
+      "Gate PG2-11: Conservative vs Aspirational scenario 양자 모두 prerequisite PASS 확인",
+      "Gate PG2-12: sharpe_gap_decomposition_20260419.json과 일관성 (projected SR 1.78 realistic + 2.00 aspirational)",
+      "Gate PG2-13: portfolio_gap_vector v1.0.3 gap 지표 개선도 정량화 (M1 target)"
+    ]
+  },
+
+  "part_b_str_1656_c10_fix_reverification_protocol": {
+    "target_strategy": "STR_1656_MLRA",
+    "violation_source": "Architect M3 Retroactive PIT Audit — C10 major (liquidity filter Size-based, should be AvgTV20)",
+    "secondary_violation": "C15 minor (load_month_factors minor 우회)",
+    "severity": "MAJOR (SR 영향 LOW 0~5% but PIT integrity critical)",
+    "fix_required_by": "Forge (Task #8 Phase_2 Day 6~7)",
+    "reverification_protocol": {
+      "step_1_forge_code_change_verification": {
+        "actor": "Judge (post-Forge)",
+        "action": "STR_1656 factor_engine.R + run_all.R diff review — Size → AvgTV20 치환 확인",
+        "check": [
+          "liquidity filter 코드에서 `Size > threshold` → `AvgTV20 > 2e8` 또는 rank 기준으로 명확 변환",
+          "C15 준수 확인: load_month_factors() 경유 — carve-out exception 사용 시 별도 주석 rationale 필수",
+          "PIT lag 유지 (AvgTV20 t-1 기준, same-day 금지)"
+        ]
+      },
+      "step_2_codex_cross_model_rescue": {
+        "actor": "Judge (L-167 mandate)",
+        "action": "Codex rescue flag 발행 + PASS 확인. mandatory (advisory 아님)",
+        "check": "codex_rescue_result_STR_1656_c10_fix.json 생성 + PASS verdict"
+      },
+      "step_3_lookahead_detector": {
+        "actor": "Judge",
+        "action": "02_Infrastructure/validation/lookahead_detector.R 실행 → C1~C15 전수 scan",
+        "expected": "C10 violation 0건, C15 compliant"
+      },
+      "step_4_backtest_rerun_and_sr_delta": {
+        "actor": "Forge (Judge 검증)",
+        "action": "STR_1656 재실행 → 신규 hurdle_result.json 생성",
+        "judge_check": [
+          "SR delta vs 원본(SR 1.193 PG2 2nd sleeve 기여분) 측정",
+          "|Δ SR| ≤ 10% 예상 (Architect M3 LOW 0~5% 기준 완화 범위)",
+          "만약 |Δ SR| > 10% → 원본 결과 PIT-contaminated 가능성 → 심층 조사 필수",
+          "hurdle v2.2 Grade 재평가 (기존 Grade A 유지 여부)"
+        ]
+      },
+      "step_5_pg2_active_reintegration_check": {
+        "actor": "Judge",
+        "action": "PG2 active 20% → Phase_1 14% 재배분 시 재실행분 사용. 원본 결과 archive",
+        "check": [
+          "retroactive_pit_audit_active_strategies.json 업데이트 — STR_1656 VIOLATION 0 확정",
+          "STR_1631_SYN_05 (80% → 18%) ↔ STR_1656 new (14%) pairwise TDC 재측정",
+          "portfolio_13_strategy_pairwise_tdc_matrix 업데이트"
+        ]
+      },
+      "step_6_l_code_update": {
+        "actor": "Judge",
+        "action": "L-code 발행 — STR_1656 C10 fix 전후 비교 + SR delta + PG2 재편입 확정",
+        "l_code_id_assignment": "L-168 (다음 순번, pending allocation)",
+        "content": "STR_1656_MLRA C10 fix: Size→AvgTV20 치환 + C15 compliant + SR delta X% → Grade 재평가 Y → PG2 active 14% 재편입 확정"
+      }
+    },
+    "expected_timeline": "Day 6~7 병렬 (Blender 5-sleeve 설계와 동시 진행 가능, Blender 발행 후 STR_1656 재실행분이 sleeve 기준 데이터로 필요)",
+    "risk_if_skipped": [
+      "AX-002 위반 (PIT 우회 = 판단의 미래참조) — 규칙 안에서 찾은 성과가 아니게 됨",
+      "portfolio integrity L-167 restart 필요",
+      "Phase_1 LIVE Day 8 전환 차단"
+    ]
+  },
+
+  "part_c_phase_1_live_day_8_transition_judge_requirements": {
+    "transition_target": "Phase_1 LIVE Day 8 (Session 69 Day 1 예상)",
+    "judge_final_validation_checklist": [
+      "PG2 allocation 5sleeve.json Judge Gate PG2-0 ~ PG2-13 전수 PASS",
+      "STR_1656 C10 fix 재검증 protocol step 1~6 전수 PASS + L-168 발행",
+      "5 PG1 candidates 중 admission 확정 sleeves 최소 3건 Judge S6 Gate 0~14 PASS",
+      "AX-007 promotion packet Governor 승인 + methodology_active.md 등재",
+      "sharpe_gap_decomposition 업데이트 (실제 admitted sleeves 기반 projected SR 재측정)",
+      "friday_alpha_snapshot.sh 실행 + 텔레그램 발송 (CLAUDE.md v54 freeze 규칙 준수)"
+    ],
+    "blocking_conditions": [
+      "Forge Task #1~#4 중 2건 이상 hard_fail 시 Phase_1 재설계 필요 → LIVE 지연",
+      "STR_1656 C10 fix SR delta > 10% 시 PG2 자체 재평가",
+      "AX-007 Governor 미승인 시 admission rule 불일치"
+    ]
+  },
+
+  "judge_deliverables_for_task_8_preparation": [
+    "본 prerequisites + protocol json 발행 (완료)",
+    "Blender 산출물 도착 시 Gate PG2-0 ~ PG2-13 순차 심사",
+    "STR_1656 재실행 hurdle_result.json 도착 시 reverification step 1~6 실행",
+    "L-168 발행 (STR_1656 C10 fix 완료 시)",
+    "Phase_1 LIVE Day 8 final validation checklist PASS 선언"
+  ],
+
+  "open_issues_requiring_team_lead_arbitration": [
+    "Blender teammate 미구현 상태 — Q-Lead가 직접 5-sleeve 배분 설계 또는 Blender Agent 스폰 결정 필요",
+    "STR_1656 C10 fix task 독립 sub-task 필요 여부 (현재 Task #8 통합인데 Forge 작업량 분리 고려)",
+    "PG2_PRE_5 crisis regime defense cluster ≥ 33% 기준이 AX-007 single-sleeve 금지와 호환 가능 여부 (multi-sleeve blend 내부에서만 가능)"
+  ]
+}

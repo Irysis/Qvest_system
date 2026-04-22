@@ -1,0 +1,186 @@
+{
+  "from": "Judge",
+  "to": "Governor + Scout + Q-Lead + Architect + team-lead",
+  "type": "JUDGE_V3_6_AGENDA_GATE_13_16_DRAFT",
+  "timestamp": "2026-04-18T20:15+09:00",
+  "session": 67,
+  "day": "continuous (day boundary removed per team-lead 20:10)",
+  "status": "DRAFT — v3.6 Admission Rule 확장 Gate 13~16 세부 설계 + Signal-Portfolio Translation Failure upper category framework",
+  "trigger": "team-lead 20:10 연속 작업 지시 + Judge autonomous v3.6 agenda 세부 draft",
+
+  "v3_6_agenda_context": {
+    "current_version": "v3.5 STAGE_2_ACTIVE (12 gates)",
+    "target_version": "v3.6 (16 gates + upper category framework)",
+    "timeline": "evidence 축적 + Architect persistent fix 완료 후 공식 발행",
+    "precondition": "Gate 13 L-164 ACTIVE enforcement (2026-04-18T20:00 발행)"
+  },
+
+  "gate_13_factor_db_access_compliance_final_draft": {
+    "gate_name": "Gate 13 Factor DB Access Compliance",
+    "enforcement_level": "hard_block mandatory (v3.6 공식 통합 시)",
+    "already_active_via_l_164": "2026-04-18T20:00+09:00 (본 파일 발행 전 L-164 ACTIVE promotion으로 enforcement 개시)",
+    "scope": [
+      "모든 factor_engine.R 내 factor Z_Score 접근",
+      "Forge S1/S5 실행 전 preflight_check() 내부 verification",
+      "PG2 운영 전략 periodic audit (Q-Lead coordination)"
+    ],
+    "rule_definition": "factor Z_Score 접근은 반드시 load_month_factors() 함수 경유. direct read_parquet(factor_db 경로) 사용 금지.",
+    "exceptions": [
+      "factor_db 내부 utilities (factor_db_builder.R, factor_db_connector.R 자체)",
+      "diagnostic/audit scripts (읽기 전용, portfolio 결정 미참여)"
+    ],
+    "preflight_check_grep_pattern": {
+      "block_pattern": "read_parquet\\s*\\([^)]*factor_db",
+      "allow_alternative": "load_month_factors\\s*\\(",
+      "scan_scope": "factor_engine.R + run_all.R + 관련 source files"
+    },
+    "violation_consequences": [
+      "Forge S1 실행 pre-exec fail",
+      "preflight_check() FAIL status return",
+      "Q-Lead 통보 + Scout evidence 재수집 요청"
+    ],
+    "empirical_basis": "Scout families.json v1.3 R16_Calmar 2026-03 실증 (direct 0.1589 vs runtime 1.0000, +529% delta)"
+  },
+
+  "gate_14_role_honesty_compliance_draft": {
+    "gate_name": "Gate 14 Role Honesty Compliance",
+    "enforcement_level": "hard_block mandatory (proposed)",
+    "motivation": "L-153/L-155 STR_1679v2 DROP 교훈 — overlay dependency 잔존 위험 실증",
+    "scope": [
+      "모든 신규 전략 S6 Judge Role Honesty Audit 의무",
+      "Core/Diversifier/Defense 역할 위장 탐지",
+      "Physical sleeve mode vs logical sleeve mode 구분 실측"
+    ],
+    "rule_definition": "전략 S6 시 선언된 role (Core/Diversifier/Defense)과 실측 attribution decomposition 일치 확인. 불일치 시 DROP.",
+    "audit_dimensions": [
+      "Defense 전략: 위기 구간 OOS outperformance (기간 alpha positive)",
+      "Diversifier: TDC threshold L-156 준수 (0.40 이하)",
+      "Core: consensus signal density + Harvey t > 3.0"
+    ],
+    "empirical_basis": "STR_1679v2 L-153 3-variant overlay dependency → L-155 role 위장 실증 → DROP 결정 (Session 66)",
+    "integration_with_existing": "기존 Judge Role Honesty Audit (S6 내 informal step) → Gate 14 공식 formalization",
+    "evidence_accumulation": "L-153 + L-155 + 향후 case → v3.6 공식 발행 조건"
+  },
+
+  "gate_15_signal_portfolio_translation_validation_draft": {
+    "gate_name": "Gate 15 Signal-Portfolio Translation Validation",
+    "enforcement_level": "advisory_warning (initial) → hard_block (after 3-case accumulation)",
+    "motivation": "L-125 Signal-Portfolio Translation Failure family (L-125 + L-160) 축적 + 3건째 case 대비",
+    "scope": [
+      "Positive IC + Positive ICIR + negative portfolio return 패턴 감지",
+      "Long-only 20-stock concentration 한정 적용",
+      "Defense/Core family 우선 검증"
+    ],
+    "rule_definition": "IC ≥ 0.15 + ICIR ≥ 1.5 + FM t ≥ 5.0 strong 조건 시 portfolio return projection 추가 실측 의무. Factor quality vs tradeable alpha 분리 검증.",
+    "translation_check_metrics": [
+      "Signal layer: IC / ICIR / FM t-stat",
+      "Portfolio layer: Sharpe / MDD / Calmar",
+      "Translation ratio: (Sharpe / ICIR) 비율 anomaly 탐지"
+    ],
+    "empirical_basis": "L-125 원본 + L-160 STR_1683 (IC 0.22 + ICIR 1.88 + FM t=16.9 → portfolio MDD 94%)",
+    "activation_condition": "v3.6 공식 발행 시점 enforcement_level 결정 (현재 advisory)",
+    "upper_category_promotion_criteria": "3건째 translation failure case 축적 시 AX_CAND upper category 승격 (Judge + Scout initiator)"
+  },
+
+  "gate_16_ml_hyperparameter_framework_draft": {
+    "gate_name": "Gate 16 ML Hyperparameter Framework",
+    "enforcement_level": "advisory (v3.6 initial) → hard_block (evidence 축적 후)",
+    "motivation": "STR_1656_MLRA_M05 Gate 11 variant_comparison 직접 적용 제한 (ML hyperparameter는 factor signal variant와 다름)",
+    "scope": [
+      "ML 기반 전략 (STR_1656, STR_1661 V2 XGB_GPU 등)",
+      "Hyperparameter variant 정의 + 비교 framework",
+      "Complexity penalty + overfitting risk 검증"
+    ],
+    "rule_definition": "ML 전략은 Gate 11 factor signal variant 개념 대신 hyperparameter variant framework 적용. variant 최소 3종 비교 + OOS stability 검증.",
+    "variant_categories": [
+      "Tree depth / max_features / min_samples_split",
+      "Regularization (L1/L2) / learning rate",
+      "Feature selection threshold"
+    ],
+    "empirical_basis": "STR_1656 Session 65 Gate 11 v3.5 ADVISORY 판정 (ML framework pending)",
+    "future_integration": "STR_1661 V2 S5 research slate (Slot A~D conditional)와 병행 검토"
+  },
+
+  "signal_portfolio_translation_failure_upper_category_framework": {
+    "current_status": "L-125 extension family (Judge custodian, 19:50 공식 편성)",
+    "current_members_2": [
+      "L-125 원본 (IC ≠ SR pattern, existing)",
+      "L-160 Defense IC-Return decoupling (STR_1683 VALIDATED)"
+    ],
+    "phase_2_trigger": "3건째 positive IC + portfolio 실패 case 축적",
+    "phase_3_upper_category_promotion": {
+      "category_name": "AX_CAND_signal_portfolio_translation_failure",
+      "composite_target": "0.70+ (PROMOTE zone)",
+      "promotion_authority": "Judge + Scout joint initiator (team-lead arbitration 필요 시)",
+      "evidence_requirements": [
+        "Minimum 3 L-codes (L-125 + L-160 + 1건 추가)",
+        "Market diversity (KR primary + extension possibility)",
+        "Role diversity (Defense primary + Core/Diversifier 확장 시 mechanism 검증)"
+      ]
+    },
+    "distinction_from_kr_momentum_inverse": {
+      "l_161_track": "AX_CAND_kr_momentum_inverse (IC negative + SR negative = self-consistent inverse)",
+      "translation_failure_track": "IC positive + SR negative = signal-portfolio decoupling",
+      "mechanism_polarity_분리": "team-lead 19:45 arbitration 반영 + 19:50 Judge 공식 편성"
+    }
+  },
+
+  "v3_6_agenda_full_checklist": {
+    "gates_13_16_total": 4,
+    "gate_13_l_164_active": "COMPLETE (2026-04-18T20:00 enforcement 개시)",
+    "gate_14_role_honesty": "DRAFT (본 파일) — evidence 축적 진행",
+    "gate_15_translation_validation": "DRAFT (본 파일) — 3건째 case 대기",
+    "gate_16_ml_framework": "DRAFT (본 파일) — STR_1661 V2 S5 결과 대기",
+    "supporting_frameworks": [
+      "Signal-Portfolio Translation Failure upper category (Phase 2~3 plan)",
+      "Role Honesty Audit formal integration",
+      "ML hyperparameter variant framework"
+    ],
+    "timeline_estimate": "Session 68~Session 70 (evidence 축적 + Architect persistent fix 완료 후)"
+  },
+
+  "stage_3_transition_conditions_update": {
+    "original_conditions": "Architect persistent fix (factor_db_builder.R 자체 rescale) + ACTIVE_NORMATIVE 전환",
+    "updated_conditions_with_l_164": [
+      "Architect persistent fix COMPLETE (factor_db rebuild + parquet re-generation)",
+      "L-164 enforcement 3-session empirical validation (Forge preflight fail 0건 달성)",
+      "Gate 13 stability verification (false positive/negative 최소화)"
+    ],
+    "advancement_window": "Session 68 초반 (team-lead 승인 대기)",
+    "stage_3_scope": "Gate 11 variant_comparison advisory → hard_block 승격 + ACTIVE_NORMATIVE 전환"
+  },
+
+  "next_autonomous_judge_actions": {
+    "while_forge_s1_in_progress": [
+      "v3.6 agenda Gate 14/15/16 세부 criteria refinement",
+      "Role Honesty Audit framework formalization (S6 integration)",
+      "L-code 통계 monitoring (active 6건 + MEMORY.md v5.2 163건)"
+    ],
+    "upon_forge_s1_completion": [
+      "H_1692 S6 (Core_Secondary 신규 가설 평가 + L-125 family 회피 확인)",
+      "H_1689 v3 S6 (Gate 11 mandatory + L-163 poison pill 자동 체크)",
+      "H_1690 S6 (Gate 11/12/13 hard_block Stage 2)",
+      "STR_1685 S6 (Defense family 진입 검증)",
+      "STR_1686 S6 (H_1685 v2 Diversifier conditional)"
+    ],
+    "session_67_continuous_readiness": "day boundary 제거 수용 + 대기 최소화"
+  },
+
+  "governor_cross_check_request_gate_13_16_draft": {
+    "scope": [
+      "Gate 13 final draft (L-164 enforcement 반영)",
+      "Gate 14 Role Honesty Compliance 수용 + evidence 축적 계획",
+      "Gate 15 Signal-Portfolio Translation Validation 수용",
+      "Gate 16 ML Hyperparameter Framework 수용",
+      "v3.6 timeline (Session 68~70) 적정성"
+    ],
+    "non_blocking": "DRAFT 성격 + 향후 evidence 축적 필요 — Governor 검토 + 의견 제시"
+  },
+
+  "session_67_continuous_status": {
+    "day_boundary_removed": "team-lead 20:10 지시 수용",
+    "judge_autonomous_progression": "v3.6 agenda draft 진행 (현재) + Forge S1 대기 중 병행 monitoring",
+    "judge_total_artifacts": "22 → 23 files (본 draft 추가)",
+    "joint_signoff_3_files_maintained": "COMPLETE 유지"
+  }
+}

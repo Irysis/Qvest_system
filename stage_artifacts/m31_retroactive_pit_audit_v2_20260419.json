@@ -1,0 +1,71 @@
+{
+  "artifact_type": "PIT_AUDIT_REPORT",
+  "title": "M3.1 Retroactive PIT Audit v2 — STR_1631 SR 1.193 재검증 + STR_1656 C10 확인",
+  "governor_agent_id": "governor",
+  "session": 68,
+  "created_at": "2026-04-19",
+  "trigger": "Architect L-168 factor_db_connector.R fix 완료 후 PG1 Gate 3 필수 선행",
+
+  "scope": {
+    "strategies": ["STR_1631_SYN_05", "STR_1656_MLRA"],
+    "infra_fix": "L-168 align_factor_direction() Usable_Date <= sig_date (C_Hybrid v2.0)",
+    "audit_rules": ["C1", "C2", "C3", "C4", "C5", "C9", "C14", "L-168"]
+  },
+
+  "str1631_syn05": {
+    "strategy": "STR_1631_SYN_05",
+    "reported_sr": 1.193,
+    "reported_cagr": 22.53,
+    "reported_mdd": 33.86,
+    "factor_db_path": "NONE — self-contained IC system (consensus: SUE/ESBR/EPS1M/TP_Gap)",
+    "l168_impact": "NOT_APPLICABLE",
+    "l168_reason": "load_month_factors() 미사용. 자체 expanding IC 계산 (ic_history, 전략 내부 Step 3c~3d)",
+    "pit_checks": {
+      "C1": {"status": "PASS", "evidence": "Step 3c: ic_history 순차 축적. Step 3d line 252: past_ic = ic_history[Date < sd] (expanding)"},
+      "C2": {"status": "PASS", "evidence": "Score tilt (line 318): prev_score_map[sd] = FACTORS[prev_d] — 직전 리밸런싱 Score (t-1 lag)"},
+      "C3": {"status": "PASS", "evidence": "IC 가중치 = past_ic[Date < sd] — 집계 기간과 적용 기간 분리"},
+      "C4": {"status": "NOTE", "evidence": "ESBR/SUE: consensus roll=7L (7일 이내 최신). 정식 재무제표 래깅 대상 아님. 컨센서스 데이터 별도 검토 권장"},
+      "C5": {"status": "PASS", "evidence": "MRS overlay: regime_engine_daily.R에서 이미 t-1 lag 처리. line 372-373 주석 명시 (double-lag 방지)"},
+      "C9": {"status": "PASS", "evidence": "DD/VT 오버레이 없음. HRP 가중치: Date < sd 과거 수익률만 사용 (lines 295-299)"},
+      "C14": {"status": "PASS", "evidence": "IC[Date=T] = corr(z[T], fwd_ret[T→T+1]). past_ic[Date < sd] = T < sig_date. Usable 기준 엄격 준수"}
+    },
+    "verdict": "PIT_CLEAN",
+    "sr_status": "SR 1.193 VALID — L-168 fix 영향 없음. C1~C14 전수 PASS (C4 NOTE 제외)",
+    "sr_rerun_required": false,
+    "sr_rerun_reason": "STR_1631_SYN_05는 Factor DB load_month_factors() 미경유. L-168 fix가 SR에 영향 불가"
+  },
+
+  "str1656_mlra": {
+    "strategy": "STR_1656_MLRA",
+    "c10_fix_applied": "2026-04-19",
+    "c10_fix_detail": "SIZE → AvgTV20 (frollmean 20L, align=right). 4곳 수정: SIZE_DT 정의 + IS filter + OOS filter + scA/scB",
+    "pit_checks": {
+      "C10": {"status": "PASS", "evidence": "line 102: AvgTV20 := frollmean(Size, 20L, align='right'). lines 283-284, 314-315, 328-329: AvgTV20 기준 필터"},
+      "C13": {"status": "PASS", "evidence": "Z_Score_Aligned PASS (hurdle_result pit_compliance 확인)"},
+      "C14": {"status": "PASS", "evidence": "fwd t+1~t+21 PASS (hurdle_result pit_compliance 확인)"}
+    },
+    "verdict": "C10_FIXED",
+    "rerun_recommended": true,
+    "rerun_reason": "C10 fix는 유동성 필터를 변경 → 종목 선택이 일부 변경될 수 있음. 정식 성과 재측정 권장"
+  },
+
+  "pg1_gate_status": {
+    "gate_2_l168_prereq": "PASS — factor_db_connector.R v2.0 C01/C07/C14 PASS 확인 (Task #15)",
+    "gate_3_m31_audit": "PASS — STR_1631 SR 1.193 PIT_CLEAN 판정. L-168 영향 없음",
+    "gate_4_v354_prereq": "PENDING — Admission Rule v3.5.4 amendment (infra_pit_scan Gate 추가) 미완료",
+    "pg1_proceed_condition": "Gate 4 (v3.5.4) 완료 후 PG1 정식 개시 가능"
+  },
+
+  "summary": {
+    "sr1193_pit_clean_confirmed": true,
+    "l168_fix_impact_on_active_portfolio": "ZERO — STR_1631_SYN_05 자체 IC 시스템 사용",
+    "str1656_c10_status": "FIXED — 재실행 권장",
+    "open_items": [
+      "C4 NOTE: ESBR/SUE roll=7L 컨센서스 래깅 허용 여부 Judge 판단 요청 (낮은 우선순위)",
+      "STR_1656 재실행 (C10 fix 성과 재측정)",
+      "v3.5.4 Admission Rule amendment (Gate 4)"
+    ]
+  },
+
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true"
+}

@@ -1,0 +1,107 @@
+{
+  "role": "quant",
+  "score": 13,
+  "rubric_detail": {
+    "icir_pass": {
+      "points": 2,
+      "max": 3,
+      "evidence": "M07_IndMom recent_3y_icir=0.289 (≥0.20 PASS). 그러나 ic_all=0.01059 (전체기간 낮음). residualized signal ICIR는 S1 실측 전 미확인. Alpha Lab Gate §8 통과 가능성 높으나 전체기간 기준 불확실.",
+      "alpha_lab_gate_verdict": "CONDITIONAL_PASS"
+    },
+    "internal_corr": {
+      "points": 2,
+      "max": 3,
+      "evidence": "M07_IndMom standalone SR=0.316, MDD 61% (L-051 실측). Core_Secondary gate 0.55 이하 기대되나 L-051에서 M07 단독 vs Core 상관 0.732 확인. RSI residualization 후 상관 감소 기대되나 실측 전 불확실.",
+      "core_secondary_corr_gate": "0.55 — 잔차화 효과 미실측"
+    },
+    "c19_corr": {
+      "points": 2,
+      "max": 3,
+      "evidence": "C19_Composite_Earnings ic_all=0.0444 vs M07_IndMom ic_all=0.01059. 두 팩터 category 다름 (consensus vs momentum). 그러나 M07 단독 vs Core(C19+DD) 상관 0.732 (L-051) — RSI residual 후 감소 예상되나 포트폴리오 레벨 상관 C15 검증 필요.",
+      "overlap_risk": "MODERATE — S3에서 측정 필수"
+    },
+    "defense_ic": {
+      "points": 3,
+      "max": 3,
+      "evidence": "Core_Secondary role — Defense IC 0.15+ 기준 미적용. 참고: M07_IndMom ic_bad(위기)=0.01393 양수 → 위기 구간에서도 양의 IC 유지. AX-001 (Defense 조건부 평가) 미해당. 만점 부여.",
+      "note": "Core_Secondary 역할 확인 — defense 기준 부적용"
+    },
+    "data_avail": {
+      "points": 4,
+      "max": 4,
+      "evidence": "M07_IndMom n_months=253 (21년+ 데이터), sd=1.000 verified (L-161 proper). M18_RSI n_months=254, sd=1.000 verified. load_month_factors() 경유 설계 명시 (C15 + L-164 ACTIVE 2026-04-18). Fix 1 scope 포함 (load_month_factors 경유 시 runtime rescale 적용). 데이터 가용성 완전 PASS.",
+      "l164_compliance": "PASS — s0_record에 'data_access: load_month_factors() 경유 (C15)' 명시"
+    },
+    "kr_empirical_check": {
+      "points": 2,
+      "max": 4,
+      "verdict": "partial",
+      "evidence_positive": [
+        "M07_IndMom ic_all=0.01059 양수 → KR 시장에서 industry momentum 양의 방향 확인",
+        "L-161 Hypothesis A (KR momentum inverse) REJECTED — infrastructure bug가 primary (10% 확률 → REJECTED)",
+        "Grinblatt-Moskowitz 1999 industry momentum은 cross-sectional M01/M02 momentum과 구조적으로 다름 — L-051에도 별도 분석 가능"
+      ],
+      "evidence_negative": [
+        "M07_IndMom conditional_value=-0.01090 (ic_bad=0.0139 < ic_good=0.0248 — 위기 시 premium 낮아짐)",
+        "L-051: STR_1457_indmom_quality_gate Grade F (IndMom+Quality Gate S5 전량 실패) — KR IndMom standalone 취약성 입증",
+        "L-072: STR_1462_consensus_indmom_cross Grade F — IndMom cross 설계도 KR에서 실패",
+        "M07_IndMom ic_all=0.01059는 C19 ic_all=0.04437 대비 4.2배 낮음 — alpha 강도 낮음",
+        "한국 직접 실증 약함: 박영석 2017 미확인, 엄철준 2018 KR momentum weak"
+      ],
+      "l161_scope": "L-161 KR momentum inverse는 M01_Mom_12_1(sd=0.66 distorted) 기반 hypothesis — H_1692의 M07_IndMom(sd=1.000)에 직접 적용 불가. 단 KR industry momentum premium 자체의 실증 강도는 별도 검증 필요.",
+      "grinblatt_1999_exception_assessment": "PARTIAL — industry momentum 구조적 차이 인정. 그러나 KR 시장 2024년 기준 sector rotation 효과가 이론과 다를 수 있음 (L-051/L-072 실패 선례)."
+    }
+  },
+  "arguments": [
+    "M07_IndMom 데이터 품질은 충분함 (n_months=253, sd=1.000 proper, L-164 load_month_factors 경유 설계 명시). M18_RSI도 동일 수준. Scenario B 수학적 증명(Fix 1 scale invariant)에 따라 H_1692 ICIR는 residualization 대상의 sd 정규화 상태에 무관하게 동일. 단 M07 standalone ic_all=0.01059로 전체기간 signal 강도가 낮아, ICIR 0.22~0.35 post-fix 예측치 달성을 위해 S1 실측이 필수 — Alpha Lab Gate §8 통과 여부는 S1 완료 전 미확정.",
+    "KR 시장 industry momentum 실증이 부분적으로만 지지됨. conditional_ic_matrix M07 ic_all=0.01059 양수(방향 확인)이나 L-051(STR_1457 IndMom+Quality Gate Grade F), L-072(STR_1462 IndMom×Consensus Grade F) 2건의 KR 실패 선례가 존재함. Grinblatt-Moskowitz 1999 industry momentum exception은 이론적으로 타당하나, 한국 시장 직접 실증(박영석 2017 미확인) 약함. kr_empirical_check=partial 판정: 방향은 맞으나 강도 불확실.",
+    "OLS residualization beta_t 낮을 위험: M07 vs M18 상관이 낮으면 β_t 수렴값이 0.05~0.10 수준에 그쳐 H_1692 잔차 = M07 원본과 거의 동일 (위험 2 in s0_record). 이 경우 RSI residualization 부가가치 ZERO — M07 standalone 재측정 대비 incremental ICIR improvement 0에 수렴. S1 실행 전 M07 vs M18 cross-section 상관 사전 측정 의무(Scout Calibration v4 pre-measurement 프로토콜) 적용 권고."
+  ],
+  "concern": "M07_IndMom ic_all=0.01059 전체기간 signal 강도가 낮음. L-051 STR_1457(IndMom+Quality Gate Grade F), L-072 STR_1462(IndMom×Consensus Grade F) 2건의 KR 실패 선례가 있어 KR 시장에서 M07 기반 standalone signal의 structural 약점이 반복될 수 있음. ICIR 0.22~0.35 목표 달성 여부는 S1 실측 전 불확실하며, M07 standalone 재측정 대비 RSI residualization의 incremental 기여가 beta_t 낮을 경우 사실상 없을 수 있음. S1 실행 시 M07 standalone vs H_1692 residual ICIR 비교 측정 의무화 권고.",
+  "conditions": [
+    "S1 실행 전 M07_IndMom standalone ICIR 사전 측정 필수 (conditional_ic_matrix recent_3y_icir=0.289이나 전략 기간 전체 확인)",
+    "S1 실행 시 M07 vs M18 cross-section 월별 상관 distribution 기록 (beta_t 낮을 경우 RSI residualization 부가가치 확인)",
+    "S1 완료 후 M07 standalone ICIR vs H_1692 residual ICIR 비교표 산출 (incremental contribution 정량화)",
+    "load_month_factors() 경유 확인 코드: factor_engine.R에서 직접 read_parquet() 호출 금지 (L-164 ACTIVE 2026-04-18 기준)",
+    "S3에서 STR_1661_V2(ML) 대비 portfolio-level 상관 0.55 이하 확인 (Core_Secondary gate)"
+  ],
+  "kr_empirical_check": "partial",
+  "meta": {
+    "assessed_at": "2026-04-19",
+    "assessor_role": "quant",
+    "hypothesis_id": "H_1692",
+    "scout_calibration_v4_predicted_range": [11, 14],
+    "actual_score": 13,
+    "within_predicted_range": true,
+    "key_data_sources": {
+      "M07_IndMom": {
+        "ic_all": 0.01059,
+        "ic_bad": 0.01393,
+        "ic_good": 0.02483,
+        "conditional_value": -0.01090,
+        "recent_3y_icir": 0.289,
+        "n_months": 253,
+        "sd_verified": 1.000
+      },
+      "M18_RSI": {
+        "ic_all": -0.01761,
+        "ic_bad": -0.03046,
+        "ic_good": -0.00246,
+        "conditional_value": -0.02800,
+        "recent_3y_icir": -0.0801,
+        "n_months": 254,
+        "sd_verified": 1.000
+      },
+      "C19_Composite_Earnings": {
+        "ic_all": 0.04437,
+        "note": "M07 ic_all 대비 4.2배 높음 — overlap 위험은 낮으나 M07 signal 강도 상대적 약함"
+      }
+    },
+    "l_codes_referenced": ["L-051", "L-072", "L-161", "L-162", "L-164"],
+    "scenario_b_fix1_scale_invariant": "CONFIRMED — H_1692 sd=1.0 both factors, OLS residualization scale invariant property 적용. Fix 1 후 ICIR 변화 없을 수 있음(STR_1684_v2b 동일 패턴).",
+    "validated_hard_fail_l_codes_checked": {
+      "L161_kr_momentum_inverse": "M01 기반 (sd=0.66 distorted) — M07_IndMom(sd=1.000)에 직접 미적용. KR industry momentum 방향 확인(ic_all 양수). partial 판정.",
+      "L160_defense_ic_return_decoupling": "Defense family 해당 없음 — H_1692 Core_Secondary"
+    }
+  }
+}

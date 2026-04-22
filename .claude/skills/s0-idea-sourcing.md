@@ -23,15 +23,15 @@ hooks:
 ### Level 0: S0 debate 필수 경유 (절대 규칙, 3중 Hook 강제)
 - **S0 가설은 반드시 `/s0-debate` 스킬을 통해 생성**해야 한다.
 - Scout이 직접 S0_VERDICT를 작성하거나 TODO_S1을 Forge에 전달하는 것은 **금지**.
-- 정규 프로세스: Scout 설계 → Q-Lead `/s0-debate` 호출 → 4인 토론 → APPROVE 후에만 S1 진행.
+- 정규 프로세스: Scout 설계 → Q-Lead `/s0-debate` 호출 → 5인(또는 compact 3인) v55 consensus 토론 → APPROVE/APPROVE_CONDITIONAL 후에만 S1 진행.
 - Scout을 Agent로 스폰할 때 S0 가설 관련이면 **반드시 plan mode** 사용.
 
-**3중 Hook 강제 (우회 불가, v53):**
+**3중 Hook 강제 (우회 불가, v55 strict):**
 1. **PreToolUse[Agent] — s0_debate_guard.sh**: 단일 Agent에 2개+ 역할 주입 시 차단
-2. **PostToolUse[Write] — s0_debate_enforcer.sh**: R1/R2/R3/VERDICT 상태 머신 + debaters/final_scores/transcript 스키마 검증
-3. **FileChanged — s0_verdict_router.sh**: S0_VERDICT debaters agent_id 중복/역할 누락 시 라우팅 차단
+2. **PostToolUse[Write] — s0_debate_enforcer.sh**: R1/R2/R3/VERDICT 상태 머신 + stance/veto/unresolved/final_stances/consensus_tally 스키마 검증 (점수제 폐기)
+3. **FileChanged — s0_verdict_router.sh**: stance/veto consensus 집계 + 라우팅 (debaters agent_id 중복/역할 누락 시 차단)
 
-단축 경로(Scout 1인 4역할 시뮬레이션)는 3개 Hook 모두에서 탐지됩니다.
+단축 경로(Scout 1인 다역할 시뮬레이션)는 3개 Hook 모두에서 탐지됩니다.
 
 ### 필수 읽기 순서 (생략 금지)
 1. `methodology_memory.md` — L-code 전수. 실패 팩터 재시도 금지.
@@ -65,20 +65,22 @@ hooks:
    - **defense 역할 시**: conditional_value > 0 팩터만 (ic_bad > ic_good)
 3. ExitPlanMode → **R1 5인 Write로 시작** (s0_debate_enforcer.sh가 상태 머신 구동 + R2 Codex 자동 트리거)
 
-### 토론 자동 체인 (Scout은 대기)
+### 토론 자동 체인 (Scout은 대기, v55 Consensus)
 - Scout ExitPlanMode 후 Hook이 Q-Lead에 토론팀 스폰을 지시
-- Q-Lead가 4명(Critic/Quant/Academic/Gov-proxy) 병렬 스폰
-- 4명이 합산 점수제(0~100점)로 채점
-- **Scout의 가설이 높은 점수를 받으려면**:
-  - L-code 교훈 전수 확인 + 과거 실패 팩터 미사용 (Critic 25점)
-  - ICIR ≥ 0.20 + 내부상관 < 0.5 + C19 상관 < 0.3 (Quant 25점)
-  - 피어리뷰 논문 실질 인용 + 한국시장 적용 근거 (Academic 25점)
-  - gap 정합성 + family 다양성 + MDD 기여 (Gov-proxy 25점)
+- Q-Lead가 5인(Codex/Risk/Governor/Quant/Academic) 또는 compact 3인(Codex/Risk/(Judge or Governor)) 병렬 스폰
+- 각자 stance(APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) + veto_flag + critical_concerns + supporting_arguments + s1_gate_items 출력
+- s0_verdict_router가 consensus 집계(approve/approve_conditional/revise/reject + veto_count)로 verdict 결정
+- **Scout의 가설이 APPROVE를 받으려면 (도메인별 무결점)**:
+  - L-code 교훈 전수 확인 + 과거 실패 팩터 미사용 (Codex critical_concerns 0건)
+  - ICIR ≥ 0.20 + 내부상관 < 0.5 + C19 상관 < 0.3 (Quant veto: PIT / kr_empirical_hard_fail 없음)
+  - tail_risk + kill_scenario + EVT 정합 (Risk veto: tail_risk 없음)
+  - 피어리뷰 논문 실질 인용 + 한국시장 적용 근거 (Academic veto: mechanism 없음)
+  - gap 정합 + family 비포화 + role admission (Governor veto: admission_rule / gap_misaligned 없음)
 
 ### 토론 결과 피드백 (REVISE 시)
-- Q-Lead가 S0_VERDICT JSON의 점수 breakdown + findings를 피드백으로 전달
-- 낮은 점수 항목을 보강하여 재설계 → plan 재제출
-- 최대 3회 REVISE. 3회 후 < 60점 → REJECT
+- Q-Lead가 S0_VERDICT의 critical_concerns + unresolved_disputes + veto_flags를 피드백으로 전달
+- veto/critical_concerns를 모두 addressing하는 revised hypothesis로 재설계 → plan 재제출
+- 동일 가설 REVISE 2회 연속 → REJECT 전환 권고
 
 ### 등록 (APPROVE 후)
 `allocate_str(name_slug)` → `sg_init(factor_id, strategy_id)` → s0_record → Forge TODO_S1

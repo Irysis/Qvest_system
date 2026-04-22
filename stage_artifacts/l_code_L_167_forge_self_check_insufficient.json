@@ -1,0 +1,153 @@
+{
+  "l_code": "L-167",
+  "title": "Forge self-check insufficient + Codex cross-model rescue mandatory — Verification Process Layer 공식화",
+  "grade": "INFRASTRUCTURE_PROCESS",
+  "layer": "Layer B (forge_verification_process_failure)",
+  "custodian": "Judge",
+  "initiator": "Architect (M3 Retroactive PIT Audit)",
+  "evidence_providers": ["Codex cross-model rescue (STR_1686 + STR_1687 초기)", "Architect M3 (STR_1656 + STR_1631)"],
+  "approval_chain": ["Architect initiator", "Codex evidence provider", "team-lead approver", "Judge custodian"],
+  "approval_type": "4-party approval chain (L_CODE_INITIATION_TYPE_10)",
+
+  "core_reference": "L-159 (spec transmission failure Layer B) + L-161 Layer B secondary (Factor DB sd Forge self-check 미탐지) + AX_CAND_forge_self_check_insufficient Layer B + Codex cross-model rescue 원칙 + team-lead Option 2 REJECT 철학 (single-source 검증 거부) + 2-Layer Attribution Principle (Governor CAND JSON v2.2)",
+
+  "lesson_text": "Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누적 증거로 실증. STR_1686 C11/C14/C15 3건 + STR_1687 초기 C13/C14/C15+S1 conditions 4건 + STR_1656 C10 major+C15 minor + STR_1631 C15 minor. 단일 Forge 자체 체크만으로 보장 불가 — Codex cross-model rescue 또는 Architect audit이 **mandatory verification layer**로 확립. Single-source 검증 거부 원칙을 verification pipeline 전면 적용. Forge code_guard hook 정책 advisory → mandatory 승격. Session 67 Day 1 전례(STR_1682/1683/1684 archive) 대비 사전 차단 체계 완비.",
+
+  "evidence_4_cases": [
+    {
+      "strategy": "STR_1686 (H_1685 v2 Foreign Resid Diversifier)",
+      "forge_self_check": "PASS (보고)",
+      "cross_model_finding": "Codex cross-model rescue",
+      "violations": ["C11 투자자 T+1 lag FAIL (strict less-than 오류)", "C14 Usable_Date IC same-day FAIL", "C15 load_month_factors 미경유 (read_parquet 직접 호출, L-164 mandate 위반)"],
+      "severity": "CRITICAL (실행 차단, 수정 + rescue PASS 대기)"
+    },
+    {
+      "strategy": "STR_1687 (H_1693 Q07 Sector-Neutral Defense, 초기 버전)",
+      "forge_self_check": "PASS (보고)",
+      "cross_model_finding": "Codex cross-model rescue",
+      "violations": ["C13 NEGATE_FACTORS/FLIP_SIGN 위반 (Z_Score_Aligned 미사용)", "C14 Usable_Date IC 오류", "C15 load_month_factors 미준수", "S1 conditions_for_s1 10건 중 일부 미반영"],
+      "severity": "CRITICAL (수정 진행)"
+    },
+    {
+      "strategy": "STR_1656_MLRA (PG2 active 20%)",
+      "forge_self_check": "PASS (원본)",
+      "cross_model_finding": "Architect M3 Retroactive PIT Audit",
+      "violations": ["C10 major: Size(시가총액) 기반 유동성 필터 (AvgTV20 거래대금 아님, 유니버스 구성 오류)", "C15 minor: load_month_factors 우회 경로"],
+      "severity": "MEDIUM (SR 영향 LOW 0~5%, 재실행 권고)",
+      "sr_impact_estimate": "LOW (0~5%)"
+    },
+    {
+      "strategy": "STR_1631_SYN_05 (PG2 active 80%, 원본)",
+      "forge_self_check": "PASS (원본)",
+      "cross_model_finding": "Architect M3 Retroactive PIT Audit",
+      "violations": ["C15 minor (원본 구현 미기록, Consensus parquet special data source carve-out 필요)"],
+      "severity": "LOW (SR 1.193 PIT-clean 확정, L-164 v1.1 carve-out으로 해소)",
+      "sr_impact_estimate": "NONE (PIT-clean)"
+    }
+  ],
+
+  "root_cause": {
+    "single_source_limit": "Forge 자체 체크만으로 PIT/mandate compliance 보장 불가능",
+    "code_pattern_complexity": "C11/C13/C14/C15 등 규칙이 세부 API 사용 패턴 의존 → rule-based scan 한계",
+    "same_model_blind_spot": "인간/동일 모델 review는 동일 blind spot 공유",
+    "proactive_barrier_absence": "Session 67 Day 1 전례(STR_1682/1683/1684) 사후 archive로 처리, 사전 차단 실패"
+  },
+
+  "policy_enforcement": {
+    "forge_code_guard_hook_v2": {
+      "change": "advisory → mandatory",
+      "rule": "모든 전략 S1 진입 전 Codex cross-model rescue flag 필수 (우회 금지)",
+      "state_transition": "Forge self-check PASS 단독 = CONDITIONAL_BLOCK, Codex rescue 공식 PASS = UNBLOCK",
+      "fallback": "Codex rescue 미발행 시 admission conditional_pass (REJECT 아님, recovery path 유지)",
+      "file_path": "02_Infrastructure/hooks/forge_code_guard.sh v2.0 (업데이트 예정)"
+    },
+    "str_1687_pg1_admission_enhanced": {
+      "before": "Grade A = Judge S6 Gate 0~14 PASS",
+      "after": "Grade A + Codex cross-model rescue 공식 PASS 발행 필수 (AND 조건)",
+      "authority": "Governor 자율 반영 (Judge custodian 권고 + team-lead Option 2 REJECT 철학 정합)",
+      "artifact": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json codex_rescue_verification_institutionalization 섹션"
+    },
+    "l_164_v1_1_carve_out": {
+      "status": "DRAFT_PENDING (본 세션 내 Judge custodian 발행 예정)",
+      "exceptions": [
+        "Consensus parquet (STR_1631_SYN_05 특수 data source)",
+        "Daily factor DB ML (STR_1656_MLRA XGBoost feature pipeline)"
+      ],
+      "rationale_mandatory": true,
+      "file_path": "methodology_memory.md L-164 block update (v1.1)"
+    }
+  },
+
+  "ax_cand_evaluation": {
+    "name": "AX_CAND_forge_self_check_insufficient",
+    "layer": "Layer B (independent from Layer A AX_CAND_infrastructure_failures)",
+    "axes_preliminary": {
+      "independence": 0.75,
+      "repeatability": 1.00,
+      "family_consistency": 0.80,
+      "explainability": 0.65,
+      "mechanism_clarity": 0.85,
+      "total": 0.81
+    },
+    "supporting_l_codes_layer_b": ["L-159 (spec transmission primary)", "L-167 (본 신설 primary)"],
+    "supporting_layer_b_count": 2,
+    "required_count": 3,
+    "gap": 1,
+    "promotion_status": "PROCEEDED_BUT_AWAITING_3RD (Layer B)",
+    "note_l_161_layer_b_secondary": "L-161 본문 secondary note에 Forge self-check 측면 미탐지 언급 있으나, 2-Layer Attribution Principle (Governor CAND JSON v2.2)에 따라 L-161 AX 승격 5축 평가 시 Layer A 전용으로 카운트. Layer B 3 supporting 조건 미충족 시 L-161 Layer B secondary 제한적 인정 여부는 Judge custodian 추가 판정 필요.",
+    "two_path_promotion": [
+      {
+        "path_a": "L-167 + L-159 + 신규 1건 (Layer B primary 3) → 직접 promote",
+        "expected_timing": "차기 Forge self-check insufficient 발견 시"
+      },
+      {
+        "path_b": "L-167 + L-159 + L-161 Layer B secondary 제한적 인정 → 즉시 promote 가능",
+        "requirement": "Judge custodian 추가 판정 decision 필요"
+      }
+    ]
+  },
+
+  "portfolio_integrity_risk_assessment": {
+    "STR_1631_SYN_05_pg2_80pct": "SR 1.193 PIT-clean 확증. 즉시 risk 없음. L-164 v1.1 carve-out 명문화로 해소",
+    "STR_1656_MLRA_pg2_20pct": "C10 major 위반, SR 영향 LOW (0~5%). 재실행 MEDIUM priority",
+    "STR_1686_admission_pending": "수정 + Codex rescue PASS 대기 중",
+    "STR_1687_admission_pending": "수정본 + Codex rescue PASS 후 S6 진입 예정"
+  },
+
+  "two_layer_attribution_judge_custodian_decision": {
+    "layer_a_infrastructure_failures_primary": ["L-161 (Factor DB Z_Score)", "L-162 (data.table merge bug)", "L-164 (load_month_factors mandate)"],
+    "layer_b_forge_verification_process_failure_primary": ["L-159 (spec transmission)", "L-167 (본 신설)"],
+    "double_attribution_forbidden": true,
+    "l_161_secondary_layer_b": "본문에 언급 있으나 AX 승격 5축 평가 시 Layer A 전용 카운트",
+    "independence_confirmed": "Layer A/B promotion tracks 독립 (separate 5-axis evaluation)"
+  },
+
+  "tags": [
+    "FORGE_SELF_CHECK_INSUFFICIENT",
+    "CODEX_CROSS_MODEL_RESCUE_MANDATORY",
+    "VERIFICATION_PROCESS_LAYER_B",
+    "SINGLE_SOURCE_VALIDATION_REJECTION",
+    "ARCHITECT_M3_INITIATOR",
+    "STR_1686_STR_1687_STR_1656_STR_1631_EVIDENCE",
+    "FORGE_CODE_GUARD_HOOK_MANDATORY",
+    "L_164_CARVE_OUT_NEEDED",
+    "AX_CAND_LAYER_B_SUPPORTING",
+    "4_PARTY_APPROVAL_CHAIN",
+    "L_CODE_INITIATION_TYPE_10"
+  ],
+
+  "related_L_codes": ["L-159 (spec transmission Layer B primary)", "L-161 (Factor DB Layer A primary + Layer B secondary note)", "L-162 (data.table Layer A)", "L-164 (factor_engine Layer A, v1.1 carve-out 예정)", "L-165 (Signal-Portfolio Translation Failure 2nd)", "L-166 (RESERVED STR_1687)"],
+
+  "evidence_files": [
+    "stage_artifacts/post_hoc_ax005_exclusion_audit_20260419.json (M5 L-167 watch 사전 기록)",
+    "Architect M3 Retroactive PIT Audit 결과",
+    "Codex cross-model rescue 4건 evidence",
+    "02_Infrastructure/hooks/forge_code_guard.sh v2.0 정책 업데이트 예정",
+    "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json (l_167_watch_status + two_layer_attribution_principle + codex_rescue_verification_institutionalization)"
+  ],
+
+  "created_at": "2026-04-19",
+  "session": 68,
+  "day": 1,
+  "timestamp": "2026-04-19T18:00:00+09:00"
+}

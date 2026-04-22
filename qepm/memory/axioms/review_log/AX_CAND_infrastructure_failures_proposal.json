@@ -1,0 +1,216 @@
+{
+  "axiom_id_candidate": "AX_CAND_infrastructure_failures",
+  "axiom_name_draft": "Infrastructure-Layer Failure Patterns",
+  "status": "CANDIDATE_PROPOSAL_SCOUT_INITIATED",
+  "source_agent": "Scout (initiator) + Judge (approver - pending)",
+  "created_at": "2026-04-18",
+  "session": "Session 67 Day 3",
+  "q_lead_authorization": "2026-04-18 Q-Lead 공식 제안 발행 승인",
+  "quarterly_review_scheduled": "2026-07-17 (2026Q3)",
+
+  "executive_summary": {
+    "purpose": "L-159/L-160/L-161 infrastructure/implementation layer 패턴을 AX_CAND_spec_transmission_failure (process layer)와 분리하여 독립 axiom candidate 계열로 공식화. 2 category taxonomy (process vs infrastructure) 확립.",
+    "motivation": [
+      "AX_CAND_spec_transmission_failure (L-159)는 Scout handoff → Forge implementation 전환 체인 실패 (**process layer**)",
+      "L-161 Factor DB Z-score distortion은 data pipeline 자체 결함 (**infrastructure layer**)",
+      "L-160 STR_1683 direction audit은 factor direction alignment 결함 (**infrastructure layer**)",
+      "두 계열이 혼합 시 AX 승격 criteria 불명확 + diagnostic action tree 혼란",
+      "separation으로 Judge 3-category taxonomy (VALIDATED/UNVALIDATED/CONDITIONAL) 상호보완"
+    ],
+    "scout_initiator_evidence_base": "L-161 Architect 진단 RC1/RC2/RC3 100% confirmed + Fix 1 적용 테스트 성공. Scout Hypothesis B 정확도 실증"
+  },
+
+  "statement_draft": "market=KR_global, scope=infrastructure_layer. Factor DB parquet / data pipeline / factor registry 등 insfrastructure-level 구조 결함이 hypothesis 검증 오염을 유발하는 패턴. process transmission (Scout→Forge handoff) 실패와 구별되며, infrastructure 결함은 전 전략 광범위 영향 (cross-strategy contamination). 최소 3건 재현 시 AX 승격.",
+
+  "proposed_taxonomy_2_categories": {
+    "category_1_process_transmission_AX_CAND_spec_transmission_failure": {
+      "scope": "Scout S0 handoff → Forge S1 implementation 변환 체인",
+      "examples": ["L-159 STR_1682 Size 미로드 + SUE/beta_24m spec 미반영", "handoff kit 오표기 (예: C06_TP_Gap을 Z18로)"],
+      "root_cause_type": "communication / specification",
+      "detection_method": "spec diff audit (handoff kit vs factor_engine.R)",
+      "mitigation": "preflight_check + spec verification hook",
+      "current_status": "frequency 0.28 (ET-101 결과), 5축 0.48 ARCHIVE 근접"
+    },
+    "category_2_infrastructure_AX_CAND_infrastructure_failures_NEW": {
+      "scope": "Factor DB / data pipeline / factor registry / direction alignment — system-level 결함",
+      "examples": [
+        "L-161 Factor DB Z-score 정규화 불일치 (RC1 winsorize rescale 누락)",
+        "L-161 R12≡D01 duplicate (compute 함수 공유)",
+        "L-161 M08 252d extreme scale (RC3)",
+        "L-160 STR_1683 factor direction alignment 오류 (Q25/R16 sign convention)"
+      ],
+      "root_cause_type": "data / pipeline / registry / alignment",
+      "detection_method": "cross-factor Z-score sd 실측 + duplicate value check + direction verification",
+      "mitigation": "Fix 1 runtime rescale (Architect Option B) + registry integrity check",
+      "current_status": "frequency 1~2건 (L-161 primary + L-160 partial), 5축 estimation 0.35~0.50"
+    }
+  },
+
+  "supporting_l_codes_by_category": {
+    "infrastructure_category_evidence": [
+      {
+        "l_code": "L-161",
+        "title_draft": "Factor DB Z-score 정규화 불일치 + OLS scale 충돌 residualization 왜곡 pattern",
+        "evidence_strength": "CRITICAL",
+        "architect_verified": true,
+        "root_causes": ["RC1 Winsorize 후 re-standardize 누락 (PRIMARY)", "RC2 R12≡D01 duplicate", "RC3 M08 252d 극단 scale"],
+        "scout_diagnostic_contribution": "Hypothesis B 85% → 100% Architect CONFIRMED",
+        "fix_applied": "2026-04-18 Q-Lead 직접 적용 (factor_db_connector.R line 113-117 Option B)",
+        "fix_test_verified": "288 factors sd=1.0 복원 확인",
+        "impact_scope": "전 전략 광범위 영향 (residualization family + Z-score consumer 전수)"
+      },
+      {
+        "l_code": "L-160",
+        "title_draft": "STR_1683 direction audit FAIL — factor direction alignment 구조 오류",
+        "evidence_strength": "MODERATE (Scout partial contribution, Q-Lead 직접 진단 완료)",
+        "architect_verified": "partial (Q-Lead direct)",
+        "root_cause_type": "factor_engine.R line 213 bug + align_factor_direction Q25/R16 sign convention",
+        "impact_scope": "defense family STR_1683 + 유사 direction-critical factor 전략"
+      }
+    ],
+    "process_category_evidence_reference": [
+      {
+        "l_code": "L-159",
+        "title_draft": "STR_1682 3중 인프라/프로세스 실패 — spec 미반영 + Factor DB 부재 + CAPM 버그",
+        "note": "L-159는 originally process + infrastructure 혼합. Scout ET-101 후 process layer 분리 권고 (AX_CAND_spec_transmission_failure 소속)"
+      }
+    ]
+  },
+
+  "5_axis_promotion_criteria_estimate": {
+    "I_impact": {
+      "score": 0.75,
+      "evidence": "L-161 해결이 전 전략 광범위 영향 (residualization family 전수). Fix 1 적용 후 288 factors 전체 가용성 회복. STR_1684_v2 재실행 가능 + H_1688 재검증 unlock."
+    },
+    "R_robustness": {
+      "score": 0.85,
+      "evidence": "Architect root cause 3 (RC1/RC2/RC3) 공식 확정 + Scout Hypothesis B 100% validation. Fix 1 5줄 runtime rescale로 해소 검증 완료. 재현 조건 명확."
+    },
+    "F_frequency": {
+      "score": 0.40,
+      "evidence": "현재 L-161 primary + L-160 partial 1~2건. AX 승격 3건+ 기준 미달. 추가 infrastructure bug 재현 필요 (Q-Lead retroactive audit 24h에서 발견 가능).",
+      "needed_for_promotion": "3건+ (L-161 + L-160 + 1~2건 추가)"
+    },
+    "E_economic_mechanism": {
+      "score": 0.20,
+      "evidence": "infrastructure failure는 경제적 메커니즘이 아닌 system integrity. AX_CAND_spec_transmission_failure처럼 E axis 해석 애매 — process integrity를 economic foundation으로 대체 해석 필요.",
+      "recommendation": "E axis 대신 'System Integrity' dimension으로 해석 rule 확장"
+    },
+    "M_measurability": {
+      "score": 0.90,
+      "evidence": "factor Z-score sd cross-check + duplicate value detection + direction verification 자동화 가능. Architect Factor DB builder pipeline scan hook 구현 가능."
+    },
+    "total_estimated": {
+      "conservative": 0.52,
+      "optimistic": 0.60,
+      "threshold_for_promotion": 0.70,
+      "verdict_current": "EXTEND 2026Q3 review 예상 — F_frequency blocker + E_economic_mechanism 해석 필요"
+    }
+  },
+
+  "promotion_path_forward": {
+    "2026q3_review_likely_outcome": "EXTEND 1 quarter (frequency + economic mechanism blocker)",
+    "accelerators": [
+      "F_frequency 0.40→0.60: retroactive audit 24h에서 추가 infrastructure bug 발견",
+      "F_frequency 0.60→0.85: Architect Factor DB builder pipeline 전수 audit 결과 추가 distortion 발견 시",
+      "E_economic_mechanism 0.20→0.50: 'System Integrity axis' rule 확장 (Judge + Scout coordinate)",
+      "I_impact 0.75→0.85: Fix 1 후 STR_1684_v2 성공 + 추가 strategy unlock 실증"
+    ],
+    "timeline": {
+      "2026q3": "current evidence 기준 EXTEND",
+      "2026q4": "retroactive audit + 추가 bug 발견 시 PROMOTE candidate",
+      "2027q1": "최종 승격 or 폐기 결정"
+    }
+  },
+
+  "judge_coordination_required": {
+    "_note": "Scout initiator + Judge approver 이중 승인 구조",
+    "judge_review_items": [
+      "AX_CAND_infrastructure_failures 공식 등록 (axiom registry)",
+      "L-161 본문 재작성 (Scout 초안 + Architect RC1/RC2/RC3 반영)",
+      "L-160 AX_CAND_infrastructure_failures 소속 재분류 검토",
+      "5축 점수 공식 재계산 (Scout 추정 0.52~0.60 확정)",
+      "2 category taxonomy (process vs infrastructure) Judge 3-category (VALIDATED/UNVALIDATED/CONDITIONAL)와 상호 매핑",
+      "2026Q3 review 기준 EXTEND/PROMOTE 사전 판정 가이드라인 확정"
+    ],
+    "expected_judge_timeline": "Risk Mgr 3rd round VERDICT 수신 후 + STR_1684_v2 결과 판정 후 (Session 67 Day 2)"
+  },
+
+  "relation_to_existing_ax_candidates": {
+    "ax_006_pairwise_tdc_conditional_cluster": {
+      "relation": "**orthogonal** — AX-006은 portfolio-level cluster dynamics, AX_CAND_infrastructure는 system-level integrity",
+      "interaction": "AX-006 cluster validation은 Fix 1 적용 후 empirical TDC 실측에 의존 → infrastructure soundness 전제"
+    },
+    "ax_cand_spec_transmission_failure": {
+      "relation": "**complementary** — process (AX_CAND_spec_transmission) vs infrastructure (AX_CAND_infrastructure) 2 category 보완",
+      "interaction": "두 계열 joint evidence base로 Session 67 prozess integrity axiom engine 확립"
+    },
+    "ax_002_process_integrity": {
+      "relation": "**parent** — AX-002는 general process integrity axiom, AX_CAND_infrastructure는 specific infrastructure subset",
+      "interaction": "AX-002가 infrastructure failure를 '판단의 미래참조' 수준으로 승격하는 핵심 지렛대"
+    }
+  },
+
+  "scout_recommendations_for_ax_cand_promotion": [
+    "Judge L-161 본문 승격 시 Architect RC1/RC2/RC3 원문 직접 인용 (Scout 초안 대체)",
+    "L-160 STR_1683 direction audit을 AX_CAND_infrastructure 소속으로 재분류 (Scout + Judge 합동 결정)",
+    "Q-Lead retroactive audit 24h 결과에서 추가 infrastructure bug 발견 시 AX_CAND 즉시 업데이트 (F_frequency 누적)",
+    "Architect에 Factor DB builder pipeline 전수 audit 공식 요청 (추가 distortion 발견 시 F_frequency 가속)",
+    "2 category taxonomy 공식화: process (communication) vs infrastructure (system). 향후 L-code 발행 시 sub-category tagging 의무화 권고",
+    "E_economic_mechanism 해석 rule 확장 — 'System Integrity as foundation for economic interpretability' dimension 도입",
+    "AX-002 (프로세스 우회 = 판단의 미래참조)를 parent axiom으로 설정 + AX_CAND_infrastructure를 AX-002 specific subset으로 운영"
+  ],
+
+  "evidence_tracking_tasks": [
+    {
+      "task_id": "ET-201",
+      "description": "Q-Lead retroactive audit 24h 결과 infrastructure bug 발견 평가 + AX_CAND_infrastructure F_frequency 업데이트",
+      "owner": "Q-Lead + Scout monitor",
+      "target": "2026-04-19 Session 67 Day 2"
+    },
+    {
+      "task_id": "ET-202",
+      "description": "Architect Factor DB builder pipeline 전수 audit 공식 요청 — 추가 distortion 탐색",
+      "owner": "Scout request → Architect execute",
+      "target": "Session 68 초반"
+    },
+    {
+      "task_id": "ET-203",
+      "description": "Judge L-161 본문 재작성 + AX_CAND_infrastructure 공식 등록",
+      "owner": "Judge",
+      "target": "Session 67 Day 2 (STR_1684_v2 결과 수신 후)"
+    },
+    {
+      "task_id": "ET-204",
+      "description": "L-160 AX_CAND_infrastructure 소속 재분류 검토",
+      "owner": "Scout + Judge coordinate",
+      "target": "Session 67 Day 2"
+    },
+    {
+      "task_id": "ET-205",
+      "description": "'System Integrity axis' rule 확장 proposal (E_economic_mechanism 해석)",
+      "owner": "Scout + Judge + Q-Lead discussion",
+      "target": "Session 68"
+    }
+  ],
+
+  "artifacts_generated": [
+    "qepm/memory/axioms/review_log/AX_CAND_infrastructure_failures_proposal.json (본 파일)",
+    "related: calibration_v4_draft_L157_v2_post_fix1.json (L-161 Fix 1 verification)",
+    "related: AX-CAND_spec_transmission_failure_L159_20260418.json (AX_CAND sibling)",
+    "related: DIAG_STR_1684_H_1688_residualization.json (L-161 evidence base)"
+  ],
+
+  "scout_notes": [
+    "AX_CAND_infrastructure_failures는 Session 67 Day 3 Fix 1 실증 후 자연스럽게 emerging한 계열.",
+    "AX_CAND_spec_transmission_failure (process) vs AX_CAND_infrastructure (system) 2 category 분리가 axiom engine 성숙의 핵심.",
+    "현재 5축 estimated 0.52~0.60으로 2026Q3 review EXTEND 예상. F_frequency blocker 해소가 promotion critical path.",
+    "Q-Lead retroactive audit 24h가 F_frequency 가속 가능한 중요한 evidence source.",
+    "Judge approver 역할 필수 — Scout initiator로는 AX_CAND 공식 등록 불가 (Judge authority).",
+    "AX-002 parent + AX_CAND_infrastructure child 구조 권고 — general-to-specific axiom hierarchy 확립.",
+    "L-160 재분류는 Scout-Judge coordinate 필요 — 현재 L-160은 별도 L-code로 L-161과 독립 취급됨."
+  ],
+
+  "proposal_status_for_judge_approval": "PENDING_JUDGE_REVIEW",
+  "next_action_expected": "Judge가 본 proposal 검토 후 AX_CAND_infrastructure_failures 공식 등록 + L-161 본문 재작성 + L-160 재분류 판정"
+}

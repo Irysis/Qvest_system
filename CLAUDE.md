@@ -40,20 +40,22 @@ When ending a productive session (strategies run, infra changed, or significant 
   - S5 진입 시 `sg_generate_research_slate()` 자동 생성 (4슬롯 A/B/C/D)
 - **위반 시**: Judge가 REJECT, Q-Lead가 위반 로그 기록.
 
-## S0 Debate 5인 독립 토론 강제 (Level 0 -- 3중 Hook 강제)
+## S0 Debate v55 Consensus 강제 (Level 0 -- 3중 Hook 강제)
 - **S0 가설 생성 시 반드시 /s0-debate 스킬 사용**. Scout 1인 다역할 시뮬레이션 금지.
-- **5인 독립 에이전트 (5×20=100점)**:
-  1. **Codex Critic** (Bash 직접 호출, GPT-5.4): cross-model 다양성, 설계 PIT, weakest assumption
-  2. **Risk Manager** (agent): 통계적 리스크 — Harvey t>3.0, EVT/GPD, DCC, tail dependence
-  3. **Governor** (agent): 포트폴리오 적합 — PG0 gap, family saturation, role admission, MDD 기여
-  4. **Quant** (agent): 정량 팩트체크 — ICIR, 상관, data 가용성, R 구현
-  5. **Academic** (agent): 학술 검증 — 논문 타당성, 메커니즘, 한국 실증, 인용 실질성
-- **Hook 강제 (우회 불가, v53)**:
+- **점수제 폐기 (v55, 2026-04-19)**: stance(APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) + veto_flag + critical_concerns/supporting_arguments + s1_gate_items + (R2) stance_change/unresolved 기반.
+- **Full 5인 독립 에이전트** (또는 Compact 3인 = Codex+Risk+(Judge or Governor), `QVEST_DEBATE_MODE=compact`):
+  1. **Codex Critic** (Bash 직접 호출, GPT-5.4): cross-model 다양성, 설계 PIT, weakest assumption — flag만 (veto 권한 없음)
+  2. **Risk Manager** (agent): 통계적 리스크 — Harvey t>3.0, EVT/GPD, DCC, tail dependence — veto: `tail_risk`
+  3. **Governor** (agent): 포트폴리오 적합 — PG0 gap, family saturation, role admission, MDD 기여 — veto: `admission_rule` / `gap_misaligned`
+  4. **Quant** (agent): 정량 팩트체크 — ICIR, 상관, data 가용성, R 구현 — veto: `PIT` / `kr_empirical_hard_fail`
+  5. **Academic** (agent): 학술 검증 — 논문 타당성, 메커니즘, 한국 실증, 인용 실질성 — veto: `mechanism`
+  - **Compact mode 한정** Judge: PIT 경계 + 신규 factor 판단 — veto: `PIT`
+- **Hook 강제 (우회 불가)**:
   1. `s0_debate_guard.sh` (PreToolUse[Agent]): 단일 Agent에 2개+ 역할 주입 시 스폰 차단
-  2. `s0_debate_enforcer.sh` (PostToolUse[Write]): R1/R2/R3/VERDICT 상태 머신 + transcript/final_scores/debaters 스키마 검증 + Codex R2 자동 트리거(S2.13)
-  3. `s0_verdict_router.sh` (FileChanged): debaters agent_id 중복/역할 누락 시 라우팅 차단
-- **S0_VERDICT 필수 스키마**: `debaters: [{agent_id(고유), role, score, findings}]` x 5건
-- **필수 역할**: codex_critic, risk_manager, governor, quant, academic
+  2. `s0_debate_enforcer.sh` (PostToolUse[Write]): R1/R2/R3/VERDICT 상태 머신 + stance/veto/unresolved/final_stances/consensus_tally 검증 + Codex R2 자동 트리거(S2.13)
+  3. `s0_verdict_router.sh` (FileChanged): consensus 집계(approve/cond/revise/reject + veto count) → APPROVE/REVISE/REJECT 라우팅
+- **S0_VERDICT 필수 스키마 (v55)**: `verdict`, `consensus_tier`(UNANIMOUS/MAJORITY/MINORITY/DEADLOCK), `consensus_tally`(approve/approve_conditional/revise/reject/veto_count, 합=N), `final_stances`(role별 r1/final/stance_change/veto_flag), `transcript.rounds`(R1+R2 최소), `consensus_points` + `unresolved_disputes`, `debaters: [{agent_id, role, stance, veto_flag, findings}]` × N건 (compact 3 / full 5).
+- **필수 역할**: codex_critic, risk_manager, (governor 또는 judge), quant*, academic* (* compact mode에서는 factcheck Hook으로 대체 가능)
 - Q-Lead가 debaters에 포함되면 REJECT. Q-Lead는 집계만 수행.
 
 ## Harness Engineering v52 (Level 0 — 기계적 강제)
@@ -66,13 +68,13 @@ When ending a productive session (strategies run, infra changed, or significant 
 | 3 | forge_code_guard.sh | PreToolUse[W/E/B] | OPT-1~8 코드 최적화 + S1 overlay 금지 | L3 |
 | 4 | unified_agent_guard.sh | PreToolUse[Agent] | Stage 순서 + S5 RiskMgr 선행 | L3 |
 | 5 | s0_debate_guard.sh | PreToolUse[Agent] | 1인 다역할 스폰 차단 | L4 |
-| 6 | artifact_validator.sh | PostToolUse[Write] | artifact 스키마 + PIT 패턴 | L2 |
+| 6 | artifact_validator.sh | PostToolUse[Write] | artifact 스키마(v55 s0_record: expected_role 6종/trail 3종/gap_targeting_axes) + PIT 패턴 | L2 |
 | 7 | pipeline_trigger.sh | PostToolUse[W/B] | DONE→TODO 자동 라우팅 | L3 |
 | 8 | circuit_breaker.sh | PostToolUse[Bash] | 3회 연속 실패 자동 차단 | L3 |
 | 9 | risk_gate.sh | PostToolUse[Bash] | tail_risk 검증 | L2 |
 | 10 | (LLM agent) tail_risk check | PostToolUse[Bash(Rscript)] | 백테스트 후 tail_risk_result.json 존재 확인 | L4 |
 | 11 | (LLM prompt) s0_record QA | PostToolUse[Write(s0_record_*)] | S0 필수 필드 + ML 추가 필드 검증 | L4 |
-| 12 | **s0_debate_enforcer.sh** | PostToolUse[Write] | **3-Round 상태 머신** — R1/R2/R3/VERDICT 전이 강제 + 텔레그램 중계 | L4 |
+| 12 | **s0_debate_enforcer.sh** | PostToolUse[Write] | **3-Round 상태 머신 (v55 strict)** — R1 stance/veto + R2 stance_change/unresolved + VERDICT final_stances/consensus_tally/consensus_tier 강제 + 텔레그램 중계 | L4 |
 | 13 | s0_verdict_router.sh | FileChanged[S0_VERDICT_*] | APPROVE/REVISE/REJECT 라우팅 | L3 |
 | 14 | teammate_idle_guard.sh | TeammateIdle[*] | idle teammate 감지 → 작업 재할당 | L3 |
 | 15 | task_complete_guard.sh | TaskCompleted[*] | 태스크 완료 시 파이프라인 다음 단계 트리거 | L3 |
@@ -280,6 +282,39 @@ regime-classification, axiom-io, telegram-protocol, risk-modeling-advanced
 
 **에이전트 프롬프트 (Layer 2):** `02_Infrastructure/prompts/*_init.md` — on-demand 로드
 
+## Caching Discipline (Block D — 토큰 절감, Session 68 Day 2)
+Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버.
+
+### 모델 라우팅 (Block A 적용)
+- **Opus 4.7 유지**: Q-Lead (메인), Judge (PIT 최종 판결), Risk Manager R3 Closing
+- **Sonnet 4.6 다운그레이드**: Scout, Forge, Governor, Academic(scout타입), Quant(forge타입)
+- Agent tool 호출 시 `model: "sonnet"` parameter 명시. `.claude/commands/{scout,forge,governor}.md` frontmatter에도 명시.
+
+### 캐시 히트 최대화
+- **상단 300줄 동결 선언**: 이 CLAUDE.md 상단 300줄(Level 0 규칙·Axiom·Gate)은 **불변**. 수정은 별도 PR/lawbook amendment 필요. 안정된 prefix = 높은 cache hit.
+- **Init prompts 공통 헤더**: `02_Infrastructure/prompts/*_init.md` 6종의 상단 80%는 공통 블록. Agent 스폰 시 prefix 캐시 공유.
+- **TeamCreate teammate**: 4인 teammate가 같은 세션에서 공유된 prefix를 반복 사용 → 첫 스폰 이후 캐시 히트로 절감.
+
+### ScheduleWakeup 사용 규칙
+- `delaySeconds ≤ 270` 권장 (5분 TTL 내 유지). 즉 **60~270초** = 캐시 유효.
+- `300~3600초` = cache miss 감수. "1~5분 애매 구간 금지" — 270 아니면 1200+ 로 점프.
+- **절대 금지**: 짧은 sleep (300~500초)을 여러 번 → 매번 cache miss 누적.
+
+### 메모리 autoload 최소화 (Block B 적용)
+- 세션 시작 시 MEMORY.md 인덱스의 "매 세션 로드" 그룹만: next_session_task / methodology_active / strategy_catalog / evolution_roadmap / production_patterns
+- feedback은 `feedback_INDEX.md` 1건만 autoload. 개별 feedback_*.md는 필요 시 Read
+- methodology_archive.md (L-000~L-129)는 온디맨드만. active에 없는 L-code 참조 필요 시 Read
+
+### Codex 결과 수신 (Block C 적용)
+- Codex verdict JSON 전체를 Claude context로 적재 금지. `run_codex_critic*.sh`가 `jq`로 필요 필드만 반환.
+- 전체 JSON은 `/tmp/codex_*_result.json` 감사용 보존. 필요 시 Q-Lead가 명시 Read.
+
+### 하네스 동결 (Session 68 Day 2 이후 유지)
+- 이 section(Caching Discipline) + Axioms section + Safety Rules section의 구조는 동결.
+- 변경 시 prefix cache 무효화 → 전체 세션 재계산 비용 발생.
+
+---
+
 ## Axioms (auto-injected -- agent premises, Level 0)
 모든 에이전트는 아래 공리를 전제로 작동한다. AX-code 위반 = 즉시 중단.
 
@@ -301,8 +336,27 @@ regime-classification, axiom-io, telegram-protocol, risk-modeling-advanced
 - 5축 점수: 0.89 (I=0.78 R=1.00 F=1.00 E=0.50 M=1.00)
 - 승격: 2026-04-17 | 다음 검토: 2026-07-16
 
-### AX-005 [방법론] [실패]: [방법론 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL, supporting=2건 L-code. 한국시장 low-beta/Q07+D25 defense standalone의 구조적 실패.
-- 범위: market=KR, family=defense, 
-- 근거: L-136, L-140 (L-code 2건)
-- 5축 점수: 0.89 (I=0.75 R=1.00 F=1.00 E=0.50 M=1.00)
-- 승격: 2026-04-17 | 다음 검토: 2026-07-16
+### AX-005 [방법론] [실패]: [방법론 실패 규칙 확장 v1.2] family=defense, tags=DEFENSE_LOW_RETURN,Q07_D25_COMBO,CAGR_TOO_LOW,LOW_BETA_FAIL,MULTI_SOURCE_DEFENSE_ANCHOR_FAIL,SIGNAL_PORTFOLIO_TRANSLATION_FAILURE, supporting=4건 L-code. 한국시장 defense standalone long-only 구조적 실패 — (1) low-beta, (2) Q07+D25 combo, (3) multi-source 4-axis regime-smoothed composite(M08+C19+Q07+R16)도 동일 패턴. ICIR 0.74~0.94 강한 signal에도 MDD 77~94% catastrophic translation failure. L-166: EXCLUSION clause(sector-neutralized + multi-sleeve 2/4) 만족에도 standalone fail → EXCLUSION은 necessary not sufficient condition 실증.
+- 범위: market=KR, family=defense, universe=top20_long_only
+- 근거: L-136, L-140, L-165, L-166 (L-code 4건)
+- 5축 점수: 0.94 (I=0.82 R=1.00 F=1.00 E=0.70 M=1.00)
+- EXCLUSION 주의: necessary not sufficient. EXCLUSION 1건 만족 + Gate13 signal-portfolio translation PASS 동시 충족 시에만 scope 밖 확정.
+- 승격: 2026-04-17 | 범위 확장: 2026-04-19 (L-165+L-166 편입, v1.1→v1.2) | 다음 검토: 2026-07-16
+
+### AX-007 [방법론] [실패]: Signal-Portfolio Translation Failure — Defense/Core_Secondary 단일 슬리브 top-20 long-only 구조적 실패. ICIR 강도에 무관하게 포트폴리오 레벨 MDD 파국 발생. 해결 경로: multi-sleeve 조건부 비중 (AX-001 v2 프레임).
+- 범위: market=KR, roles=[defense, core_secondary], structure=single_sleeve_long_only_top20
+- 근거: L-160 (STR_1683) + L-165 (STR_1685) + L-166 (STR_1687) — 3건 실증
+- 5축 점수: 0.86 (I=0.82 R=1.00 F=0.90 E=0.75 M=0.85)
+- 예외 4종 (Gate14 auto-reject 면제): (1) multi-sleeve portfolio 내 sleeve, (2) long-short structure, (3) diversified 50+ 분산, (4) ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha≥4/6 3-gate 입증
+- AX-005 관계: AX-005=전기간 standalone 실패, AX-007=signal→portfolio translation 메커니즘 단절 (보완적)
+- axiom 등록: .cache/axiom_core.json (단일 원본)
+- 승격: 2026-04-19 (Judge signoff PROMOTE_APPROVED, 5축 0.86) | 다음 검토: 2026-07-19
+
+### AX-008 [방법론] [프로세스]: Verification Process Triangulation Mandate — Forge self-check 단독 검증으로는 PIT/mandate/infra 위반 탐지 불충분. 3-source 검증 의무화 (Forge + Codex + Architect). 최소 2-source PASS 필수.
+- 범위: KR quant 전략 전반 (Layer B: verification process failure)
+- 근거: L-159 (spec transmission) + L-167 (Forge self-check 미탐지) + L-168 (factor_db_connector infra PIT) — 3건 실증
+- 5축 점수: 0.846 (I=0.78 R=1.00 F=0.85 E=0.72 M=0.88)
+- 2-layer 분류: Layer A(infrastructure: L-161/162/164/168 primary) vs Layer B(verification: L-159/167 primary, L-168 cross-evidence) — L-168은 Layer A primary / Layer B cross-evidence (5축 계산 시 1회만 산입)
+- 집행: Gate0 확장 — Codex cross-model rescue 필수. 2-source PASS 미달 → CONDITIONAL_HOLD
+- axiom 등록: .cache/axiom_core.json (단일 원본)
+- 승격: 2026-04-19 (Judge custodian APPROVED, 5축 0.846) | 다음 검토: 2026-07-19

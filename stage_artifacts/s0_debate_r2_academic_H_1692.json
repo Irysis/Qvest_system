@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "hypothesis_id": "H_1692",
+    "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary)",
+    "stage": "S0_DEBATE_R2",
+    "round": "R2_REBUTTAL",
+    "role": "academic",
+    "agent_id": "academic_r2_H_1692",
+    "created_at": "2026-04-19",
+    "created_by": "Academic R2 Rebuttal (R1 독립 instance와 별개 R2 전용 instance)",
+    "r1_reference_file": "stage_artifacts/s0_debate_r1_academic_H_1692.json",
+    "transcript_reference": "stage_artifacts/s0_debate_transcript_H_1692.json"
+  },
+
+  "role": "academic",
+  "r1_score": 15,
+  "r2_score": 15,
+  "score_changed": false,
+  "score_change_reason": null,
+  "score_hold_rationale": "R1에서 제기한 저자 표기 오류 + 합성 residualization 선행 부재 + 27년 post-pub decay 우려는 여전히 유효하며, 다른 4인의 R1 주장에서 academic rubric(peer_review 4/4, mechanism_align 3/4, korea_evidence 3.5/4, substantive_cite 3/4, time_decay 2.5/4 = 15/20) 점수를 올리거나 내릴 결정적 신규 증거가 제시되지 않았습니다. Codex 6점의 L-161 relabeling + 27년 decay 주장은 academic 관점에서 major rebuttal 대상(Shim 2017 + 2024 IAJ + Asness 2013 scope 재프레이밍)이나 이미 R1 15점에 반영되어 있고, Governor EXCEPTION 지지와 정합하여 점수 유지가 적정합니다. Risk Mgr의 L-106 beta dominance와 Quant의 L-051/L-072 KR 실패 선례는 일부 동의하나 academic mechanism 정합성 자체의 peer-review/cite rubric을 훼손하지는 않아 점수 조정 불필요합니다.",
+
+  "agreements": [
+    {
+      "with": "governor",
+      "point": "Governor의 'AX_CAND_kr_momentum_inverse scope EXCEPTION 공식 인정' 조건은 Academic R1의 핵심 주장과 완전히 정합합니다. Asness-Moskowitz-Pedersen 2013 'Value and Momentum Everywhere'의 Korea momentum exception은 **individual cross-sectional** 범위에 한정된다는 academic reading과, KAIST Shim 2017 석사논문 + 2024 Investment Analysts Journal 'Momentum and reversal effects in the Korean stock market'의 'momentum is largely sector-specific in Korea' 실증이 industry-level KR momentum은 working한다는 EXCEPTION 논리를 지지합니다. Governor가 Core_Secondary 10% slot 편입을 family saturation + role honesty 관점에서 승인한 것은 academic backing과 portfolio governance가 동일 방향으로 수렴한 결과이며, Scout의 Core_Secondary 설계 정당성을 강화합니다."
+    },
+    {
+      "with": "quant",
+      "point": "Quant의 'L-051(STR_1457 IndMom+Quality Gate Grade F) + L-072(STR_1462 IndMom×Consensus Grade F) KR 실패 선례 2건' 지적은 부분적으로 academic 관점에서도 수용합니다. Shim 2017 + 2024 IAJ에도 불구하고 한국 industry momentum signal의 **실무적 강도가 약할 가능성**은 M07 ic_all=0.01059 (C19 대비 4.2배 낮음)에서 확인되며, 이는 Hanauer-Huber 2019 Review of Finance의 post-pub decay 실증과 일관됩니다. 단 H_1692는 composite(IndMom × Quality Gate) 설계가 아니라 **residualization on RSI**로 설계되어 L-051/L-072의 composite 실패 메커니즘과 구조적으로 다르며, Academic mechanism 정합성은 유지됩니다. Quant의 kr_empirical_check=partial 판단에 동의합니다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "Risk Manager의 'Kill Scenario #1: 27년 post-pub momentum crash + KR 2020/2024 급반전 MDD 50%+' 우려는 Academic R1의 time_decay 2.5/4 점수 근거(Chordia-Shivakumar 2002 + Hanauer-Huber 2019 post-pub decay 보고)와 정합합니다. Barroso-Santa-Clara 2015 'Momentum has its moments'에서 momentum crash risk가 실증된 바, residualization으로 crash risk를 완전히 해소할 수 있다는 가정은 academic 관점에서도 조심스럽게 접근해야 합니다. Risk Mgr의 EVT xi + CDaR 95% 측정 조건은 학술적으로도 필수 방어선으로 동의합니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex의 'L-161 KR momentum inverse VALIDATED_HARD_FAIL와 동일 family residualization — parameter relabeling 의심' 주장은 **Asness-Moskowitz-Pedersen 2013의 Korea momentum exception scope을 오해한 판단**입니다. L-161은 M01 cross-sectional individual momentum(distorted sd=0.66 with L-164 pre-fix) 기반 validation이며, Asness 2013 'Value and Momentum Everywhere'의 Korea exception 역시 **individual cross-sectional** 범위에 명시적으로 한정됩니다(Table 4 Korea column, individual stock momentum 기반). H_1692는 M07_IndMom sector-level signal을 M18_RSI로 residualize하는 설계로, **구조적으로 다른 signal channel**(sector rotation vs individual return chasing)입니다. KAIST Shim 2017 + 2024 Investment Analysts Journal이 한국 industry momentum의 최근 10년 실증을 보고한 점을 Codex가 고려하지 않고 family 동일성만으로 relabeling을 주장한 것은 academic 관점에서 mechanism-level 분석 부재이며 major rebuttal 대상입니다.",
+      "severity": "major"
+    },
+    {
+      "against": "codex_critic",
+      "point": "Codex의 '27년 post-publication decay(Chordia-Shivakumar 2002, Hanauer-Huber 2019)로 인한 30~50% drawdown + negative live SR' 우려는 academic 관점에서 **부분 타당하나 KR 최근 증거를 무시한 점에서 major rebuttal**입니다. US industry momentum post-pub decay는 Hanauer-Huber 2019 Review of Finance에서 확인되나 동 연구는 **international data**로, Korea sector-specific momentum은 오히려 2024 Investment Analysts Journal에서 recent evidence로 보고됩니다. 학술 문헌은 decay가 region-specific이며 한국의 경우 개인 투자자 비중 55%(KRX 2020~2023 통계) + sector rotation 6~9개월 주기의 구조적 특성으로 industry momentum persistence가 유지된다는 가설을 지지합니다. Codex가 KAIST Shim 2017 + 2024 IAJ 최근 증거를 평가에 통합하지 않고 US-centric decay만 적용한 것은 cross-regional evidence 평가 실패로 6점 부여 근거가 약합니다. Academic 관점에서 Codex 점수는 9~10점이 적정하며 6점은 under-scoring입니다.",
+      "severity": "major"
+    },
+    {
+      "against": "codex_critic",
+      "point": "Codex의 'PIT risks 4/4: Q3 exception framing outcome-conditioned' 주장은 academic 관점에서 **reversed causation 오류**입니다. AX_CAND_kr_momentum_inverse EXCEPTION framing은 Asness 2013 + Shim 2017의 theoretical framework에서 **사전적으로 도출**되며(industry vs individual 채널 구분은 2013년 Asness 논문 자체에 존재), outcome-conditioned 재프레이밍이 아닙니다. Scout가 H_1688/STR_1684 실패 결과를 보고 사후적으로 EXCEPTION을 만든 것이 아니라, 학술 문헌에서 individual vs industry scope을 분리하는 근거가 pre-existing합니다. Codex가 framing을 outcome-conditioned로 판단한 것은 academic prior 지식 부재이며, severity major rebuttal입니다.",
+      "severity": "major"
+    },
+    {
+      "against": "risk_manager",
+      "point": "Risk Manager의 'Kill Scenario #2: expanding OLS beta_t constant 수렴 → M07 standalone 퇴화 = L-161 scale invariance 재발' 주장은 academic 관점에서 **과도한 일반화**입니다. OLS residualization beta_t 수렴 위험은 Quant도 지적한 리스크이나, 이는 S1 empirical 측정 사안이지 academic mechanism 자체의 결함이 아닙니다. Barberis-Shleifer 2003 'Style Investing' JFE framework에서 style rotation anchoring은 behavioral cross-sectional structure로 residualization이 zero alpha로 수렴하지 않는 이론적 근거를 제공합니다. L-161 scale invariance는 M01 단일 factor 내부의 linear transformation 문제이고, H_1692는 **two-factor residualization**(M07 on M18)으로 cross-factor structural relationship을 활용하므로 수학적으로 다른 구조입니다. severity는 minor로 조정합니다.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Codex Critic의 'L-161 VALIDATED_HARD_FAIL와 동일 family residualization은 parameter relabeling이며 27년 post-publication decay + PIT risks 4/4로 Reject as PRIMARY'는 Academic 관점에서 가장 강력한 반대 주장입니다. 이는 (1) Grinblatt-Moskowitz 1999의 peer-review 강도와 (2) 최근 KR 실증(Shim 2017 + 2024 IAJ)의 recency를 동시에 공격하면서, Harvey-Liu-Zhu 2016 multiple testing + Hanauer-Huber 2019 international post-pub decay를 근거로 academic credibility 자체를 훼손하려 시도합니다. 그러나 Academic R2는 이 주장을 major rebuttal 대상으로 판단합니다 — (a) Asness 2013 Korea exception은 individual cross-sectional 범위에 한정되어 industry-level과 구조적으로 다르고, (b) KAIST Shim 2017 + 2024 Investment Analysts Journal 최근 10년 KR sector-specific evidence가 US-centric decay를 완화하며, (c) EXCEPTION framing은 Asness 2013 이론에서 pre-existing(outcome-conditioned 아님)하기 때문입니다. Codex가 cross-regional + mechanism-level 분석 없이 family 동일성과 US decay만으로 6점을 부여한 것은 under-scoring이며, 9~10점이 적정 범위로 평가됩니다."
+}

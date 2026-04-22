@@ -1,0 +1,45 @@
+{
+  "strategy_id": "ADMISSION_RULE_V3_0",
+  "l_code": "L-156",
+  "version": "v2",
+  "grade": "INFRASTRUCTURE_CRITICAL",
+  "amendment_to_v1": "retroactive_audit_principle_added + AX-code_promotion_candidate_marked",
+  "core_reference": "Demarta & McNeil (2005) t-copula + Longin & Solnik (2001) crisis correlation + Risk Manager 4-axis STR_1631↔H_1676 TDC 0.735 breach + Judge PG1 TDC matrix STR_1679v2↔STR_1631 TDC 0.621 breach (Session 66 실측) + L-156 v1 Admission Rule v3.0 + Pfaff (2016) Financial Risk Modelling Ch.6",
+  "lesson_text": "Admission Rule v3.0 Gate 8 (Pairwise TDC ≤ 0.4)는 신규 admission뿐만 아니라 기존 admitted portfolio 재검토에도 적용 필수. L-156 v1 제정 직후 Judge 실측에서 현 PG2 STR_1631↔STR_1679v2 TDC 0.621 Gate 8 FAIL 발견(monthly ρ 0.902, daily Pearson 0.879, nu 4.38 heavy tail). 이는 retroactive audit 원칙 부재 시 structural risk가 무한 은폐되는 직접 증거. v2.0 pairwise correlation 7 gate (max_abs_corr ≤ 0.7 — STR_1679v2 monthly 0.902 → 이미 WARN)만으로 불충분하며 v3.0 TDC 0.4 gate가 정확한 risk detection. 따라서 신규 rule 도입 시 기존 admitted pool 전수 재검증 + 위반 발견 시 rev* 재발행 강제. 본 사례: PG2 blend (STR_1631 80% + STR_1679v2 20%) 이미 v3.0 Gate 8 FAIL 상태 → Governor rev5 STR_1679v2 비중 축소(Option A 20%→10%) + STR_1679v3 H_1682 교체(Option B) 병행 필요. v3.0 11 gates (v2.0 7 + 신규 4): (8) pairwise TDC ≤ 0.4 via t-copula MLE, (9) portfolio CVaR_95 ≥ -15%, (10) portfolio CDaR_95 ≤ 22%, (11) conservative ρ=0.3 base case. Session 66 실측: STR_1071 vs STR_1631 TDC 0.000 / STR_1562 vs STR_1631 TDC 0.003 / STR_1433 vs STR_1631 TDC 0.000 (3건 PASS). 내부 joint admission: STR_1071 vs STR_1562 TDC 0.511 (Family cross FAIL) → 순차 admission 또는 residualization 필요. STR_1060/1070/1085 triplicate L-151 TDC 0.87~0.93. 교훈: 포트폴리오 admission은 독립 전략 평가가 아닌 portfolio construction problem이며 정상기간 correlation + 위기시 tail dependence + portfolio-level risk measure + 기존 pool retroactive audit의 4축 체계가 필수.",
+  "retroactive_audit_principle": {
+    "principle": "신규 admission rule (TDC gate, CVaR gate, CDaR gate 등) 도입 시 기존 admitted pool 전수 재검증 강제",
+    "process": "1. 새 rule 공식화 → 2. 기존 admitted pool 전 pair 매트릭스 측정 → 3. 위반 pair 식별 → 4. Governor rev* supplement 발행 + 시정조치(축소/residualize/교체) → 5. 시정 확인 후 신규 admission 재개",
+    "evidence": "L-156 v1 제정 직후 Judge가 retroactive 측정에서 STR_1631↔STR_1679v2 TDC 0.621 breach 발견. retroactive audit 없었으면 현 PG2의 hidden tail coupling이 H_1676 breach 발견과 동일 기간 동안 계속 은폐되었을 것.",
+    "mandatory_trigger": "새 gate 도입 시 24h 내 기존 admitted pool retroactive audit 완료 + 결과 Governor 전달"
+  },
+  "ax_code_promotion_candidate": {
+    "eligible": true,
+    "qualification": "자격 3요소 충족: (a) 2건 이상 실측 근거 (STR_1631↔H_1676 0.735 + STR_1631↔STR_1679v2 0.621), (b) 구조적 pattern (monthly ρ 고/daily ρ 저 + tail dependence 존재 → conditional cluster), (c) process violation 회피 가치 (retroactive audit 없었으면 PG2 hidden risk 무한 은폐)",
+    "promotion_review_date": "2026-07-17 (quarterly review)",
+    "promotion_path": "AX-006 candidate: '포트폴리오 admission rule은 tail-dependent conditional cluster 까지 포괄해야 하며, 신규 rule 도입 시 기존 pool retroactive audit 24h 내 완료 강제'"
+  },
+  "critical_finding_str_1679v2": {
+    "discovery_session": 66,
+    "pair": "STR_1631 (PG2 active 80%) vs STR_1679v2 (PG2 20%)",
+    "tdc_t_copula_mle": 0.621,
+    "threshold_v3_gate_8": 0.4,
+    "breach_magnitude": 1.55,
+    "rho_pearson_daily": 0.879,
+    "rho_monthly": 0.902,
+    "nu_mle": 4.38,
+    "empirical_L_5pct": 0.722,
+    "v2_gate_1_status": "이미 WARN (monthly 0.902 > 0.7 threshold)이었으나 action 없이 admission 지속",
+    "root_cause": "v2.0 max_abs_corr 0.7 gate는 WARN만 발동. admission에 hard_reject 권한 없었음. v3.0 Gate 1 WARN + Gate 8 FAIL 조합 시 hard_reject로 규정."
+  },
+  "governor_action_items": [
+    "1. STR_1679v2 Option A 단기 조치: 20% → 10% 비중 축소 (tail 리스크 1/2 감소)",
+    "2. STR_1679v3 Option B 중기 교체: H_1682 기반 Def sleeve 교체 (Scout Task #7 P0 urgent 상향)",
+    "3. Governor rev5_v1.1 발행 시 retroactive audit 원칙 명시 + STR_1679v2 시정조치 확인",
+    "4. pg1_admission_v3() 구현 시 기존 pool retroactive audit 자동 trigger + 24h 내 결과 발행 강제"
+  ],
+  "tags": ["PROCESS_RULE", "ADMISSION_GATE", "TAIL_DEP", "RETROACTIVE_AUDIT", "AX_CANDIDATE_006", "PG2_STR_1679V2_BREACH", "L156_V2"],
+  "created_at": "2026-04-17",
+  "v2_amended_at": "2026-04-17",
+  "session": 66,
+  "source": "Judge L-156 v2 update per team-lead directive after retroactive TDC measurement found PG2 breach"
+}

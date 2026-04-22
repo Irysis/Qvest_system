@@ -1,0 +1,61 @@
+{
+  "role": "risk_manager",
+  "agent_id": "risk_manager_h1693",
+  "hypothesis_id": "H_1693",
+  "round": 2,
+  "stance": "APPROVE_CONDITIONAL",
+  "r1_score": 14,
+  "r2_score": 13,
+  "score_changed": true,
+  "score_change_reason": "Quant의 C01_SUE regime_profile 불일치 (정성 'negative' vs 실측 +0.301) + Z_Sector sector_sd NA 문제가 내 R1 regime_vulnerability 2점 평가를 더 악화시킴. R1에서 GOOD/NORMAL carry drag를 구조적 우려로 지적했으나 SUE가 carry 보강할 것이라는 암묵적 가정이 있었음. 그러나 SUE crisis regime_profile 불일치가 해소되지 않으면 composite stress ICIR +0.705 자체가 불안정. 또한 Codex의 walk-forward pre-registration 부재 지적이 parameter contamination 위험을 concrete하게 만듦. -1점 하향.",
+  "agreements": [
+    {
+      "with": "codex_critic",
+      "point": "Walk-forward pre-registration 부재 지적에 동의. 0.7/0.3 weight + Top20 + sector cap 25% 모두 ex-ante pre-registration 없이 설정되면 full-sample parameter contamination. 내 Kill Scenario 3 (sector 분류 PIT)과 결합 시 PIT 위험이 중첩적. S1에서 expanding-window walk-forward 재실행을 veto-level gate로 격상 필요."
+    },
+    {
+      "with": "quant",
+      "point": "C01_SUE regime_profile 불일치 (registry 정성 'negative' vs conditional_ic_matrix 실측 +0.301) 매우 중요한 발견. 내 R1에서 C01_SUE stress ICIR +0.593을 근거로 composite +0.705를 산출했으나, regime_profile 정성 태깅이 'negative'라면 registry 자체의 신뢰성 문제 또는 SUE crisis IC가 기간별로 불안정할 가능성 존재. 이 불일치가 해소되기 전까지 composite stress ICIR +0.705는 조건부 수치로 취급해야 함."
+    },
+    {
+      "with": "governor",
+      "point": "Q07 cluster 41% saturation (STR_1679v3 8% + H_1689 v3 23% + H_1693 10%) 경고에 동의. 내 R1 Kill Scenario에서 Q07 cluster TDC 0.35~0.55를 지적했으나, Governor의 정량 41% allocation 비중은 위기 시 Q07 factor 단일 충격이 portfolio 41%를 동시 타격하는 concentration risk를 의미. DCC-GARCH conditional TDC가 위기 시 0.55에서 0.70+ 상승 시 실질 exposure는 41% 이상."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex의 'parameter rescue' 판단 (mechanism change가 아닌 0.7/0.3 조정)은 과도. Q07 (earnings stability, 2차 모멘트) + SUE (earnings surprise, 1차 모멘트)는 학술적으로 독립 경제 메커니즘. Dichev-Tang (2009) information quality와 Foster (1984) PEAD는 동일 factor family 내 parameter variation이 아닌 cross-mechanism composite. 0.7/0.3 weight는 물론 ex-ante 정당화 필요하나, composite 자체를 'rescue'로 분류하면 모든 multi-factor composite를 부정하는 논리적 확대 오류. 다만 walk-forward 검증으로 weight robustness 확인은 필수 동의.",
+      "severity": "major"
+    },
+    {
+      "against": "quant",
+      "point": "Quant 19점은 다소 낙관적. C01_SUE regime_profile 불일치를 발견했음에도 score를 최고점으로 유지한 것은 일관성 부족. regime_profile 불일치는 단순 태깅 오류일 수 있으나, 만약 SUE의 crisis IC가 기간별로 불안정하다면 composite stress ICIR +0.705의 0.3 x 0.593 항이 noise. 이는 내 R1 regime_vulnerability 2점의 근거를 강화하는 발견인데 Quant 스스로 발견하고도 점수에 미반영. kr_empirical_check +4 가산은 Q07에 해당하나 C01_SUE는 한국 실증이 regime_profile 불일치로 오히려 불확실하므로 +4 전체 적용은 과대.",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "Dichev-Tang 본문 인용 깊이 부족을 academic weakness로만 분류했으나, risk 관점에서는 mechanism specification 불확실성으로 읽힘. 'accounting information quality'의 조작적 정의가 Q07 earnings_stability와 정확히 일치하는지, 아니면 broader construct인지 불명확하면 S1 factor_engine 설계에서 proxy mismatch 발생 가능. 이는 Kill Scenario 2 (Signal-Portfolio Translation Failure)의 근원적 경로 중 하나. 단순 citation depth 문제가 아닌 construct validity 위험.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Codex의 walk-forward pre-registration 부재 + Quant의 C01_SUE regime_profile 불일치 결합: 0.7/0.3 weight가 ex-post optimal이고 SUE의 crisis 기여가 registry 태깅과 실측 간 모순이면, composite stress ICIR +0.705 근거 자체가 sand foundation 위에 구축된 것.",
+  "critical_concerns": [
+    "C01_SUE regime_profile 불일치 (registry 'negative' vs 실측 +0.301)가 해소되지 않으면 composite stress ICIR +0.705는 unreliable — 내 R1 전체 supporting argument의 핵심 수치가 조건부로 전환됨",
+    "Q07 cluster 41% portfolio concentration + 위기 시 DCC-GARCH conditional TDC surge로 단일 factor shock가 portfolio 40%+ 동시 타격하는 systemic risk. Sequential Admission만으로 부족, cluster exposure cap 필요",
+    "Walk-forward pre-registration 없이 0.7/0.3 + Top20 + sector cap 25% 동시 설정은 degrees of freedom 3개 — Harvey et al. (2016) multiple testing correction 관점에서 backtest SR discount 필요",
+    "Signal-Portfolio Translation Failure AX_CAND 2/3 상태에서 H_1693 S1 진입은 3rd member 확정 리스크 15~25% 유지. S1 net_IC_transmission_ratio > 0.6 gate가 유일한 차단선이며 이 gate 자체가 미검증"
+  ],
+  "supporting_arguments": [
+    "Q07 stress ICIR +0.753 (288 factor 1위)은 5인 전원 인정한 hard evidence. Signal-level defense quality는 KR 시장 최상급이며 L-121 positive evidence와 일관",
+    "Sector constraint max 5/sector + sector-neutralization 이중 안전장치는 H_1682 H3 sector bias 실패를 구조적으로 해소. Academic의 3-axis 학술 정합성 (Dichev-Tang + Foster + Daniel-Titman) 인정",
+    "AX-001 v2 4-gate compliance 설계 완전 (multi_sleeve_only + crisis_alpha + bad/normal IC ratio + core MDD 완화). Defense 10% allocation으로 portfolio tail risk 기여 제한적"
+  ],
+  "veto_flag": null,
+  "arguments": [
+    "Quant C01_SUE regime_profile 불일치 발견으로 composite stress ICIR +0.705가 조건부 수치로 격하 — R1 core 근거 약화에도 Q07 단독 +0.753은 여전히 최강이므로 stance 유지하되 score -1",
+    "Codex walk-forward pre-registration 부재와 내 Kill Scenario 3 (sector PIT) 결합 시 PIT 위험 중첩적. 그러나 Codex의 'parameter rescue' 판단은 cross-mechanism composite를 부정하는 과도한 확대이므로 major rebuttal",
+    "Governor Q07 cluster 41% saturation + 내 DCC-GARCH conditional TDC surge 분석 결합으로 cluster exposure cap 신규 조건 추가. S1 gate에 cluster_exposure_limit 35% 이하 추가 권고"
+  ],
+  "concern": "R2 종합: Signal-level 최상급 Q07 근거는 견고하나, Quant이 발견한 SUE regime_profile 불일치가 composite 근거를 약화시키고, Codex의 walk-forward 부재가 parameter robustness 의문을 제기. Governor의 41% cluster saturation과 결합 시 risk budget 관점에서 H_1693은 Q07 cluster 내 marginal addition의 위험 대비 수익이 점차 감소하는 구간. S1 empirical 7-gate (R1 6건 + R2 신규 cluster_exposure_limit 1건) 전수 통과를 전제로 APPROVE_CONDITIONAL 유지."
+}

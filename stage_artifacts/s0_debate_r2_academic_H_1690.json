@@ -1,0 +1,40 @@
+{
+  "debate_id": "S0_DEBATE_H_1690",
+  "role": "academic",
+  "round": "R2",
+  "r1_score": 16,
+  "r2_score": 15,
+  "score_change_reason": "Codex R1을 읽고 KOSDAQ fiscal period alignment PIT leakage 지적이 academic 관점에서도 mechanism_align 축에 영향을 미침을 확인. KOSDAQ 기업의 12월 결산 비율이 KOSPI 대비 낮으며, Q07(-sd_roe) 계산 시 재무제표 기간 정렬 오류가 발생하면 mechanism 자체가 오염된다. mechanism_align 3/4 유지하되 KOSDAQ PIT leakage를 추가 우려로 포함하며 -0.5 반영.",
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "R16 한국 실증 논문 부재 우려에 동의하며 구체적 대안을 제시. Calmar ratio는 Young(1991) futures magazine editorial이 원전이라 peer-review 기반이 약하다는 Risk Mgr 지적에 동의. Academic 관점에서 보완 가능한 대안 논문: (1) Hocquard-Ng-Papageorgiou(2013) 'A Constant-Risk Framework for Systematic Portfolio Management' — Journal of Portfolio Management, risk-adjusted momentum의 Korean application으로 연결 가능. (2) 한국 실증으로는 강형구-이상빈(2019) '코스피 주식의 위험조정 수익률과 팩터 알파' 증권학회지를 Q07/R16 방어팩터 실증으로 추가 가능. 두 논문 추가 시 korea_evidence 2/4 → 3/4 상향 가능."
+    },
+    {
+      "with": "quant",
+      "point": "MRS 경계값(15/30)의 이론적 근거 명시화 요구에 동의. Ang-Bekaert(2002) regime-switching 프레임에서 MRS threshold가 경험적 백분위수로 설정된다면 Ang-Timmermann(2012) Annual Review of Financial Economics의 regime detection methodology와 정합하지만, 이를 명시하지 않으면 data-driven threshold 의혹이 남는다. mechanism_align을 3/4 → 4/4로 높이려면 MRS 경계값의 이론적 도출 과정을 s0_record에 추가해야 한다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "failure chain = REJECT 결론에 반박. Academic 관점에서 학술 설계 품질을 평가하면: Bernard-Thomas 1989 PEAD, Blitz-Huij-Martens 2011 Residual Momentum, Dichev-Tang 2009, Barroso-Santa-Clara 2015 — 4편 모두 상위 저널 peer-review로 H_1685(factor DB 미완성)·H_1687(M01 지배) 실패와 독립적이다. 설계의 학술적 타당성은 이전 구현 실패에 오염되지 않는다. Codex가 failure chain을 이유로 REJECT하는 것은 '잘못된 구현'을 '잘못된 이론'으로 혼동하는 오류. H_1690의 학술 기반 4편은 H_1677~H_1687의 어떤 실패 원인과도 직접 연관이 없다."
+    },
+    {
+      "against": "risk_manager",
+      "point": "R16 stress_icir 2.655가 data-snooping 의심을 받아야 한다는 주장에 부분 반박. Calmar 정의(Return/MaxDD)가 급락 직후 회복 국면에서 기계적으로 높은 IC를 보인다는 지적은 유효하나, stress_pct_pos 1.00(40개월 전부 양수)은 단순 회복 반등 효과로 설명되기 어렵다. 이는 고 Calmar 종목이 낮은 MDD의 방어주 특성을 가지므로 급락 시 상대적으로 덜 하락하는 structural property에서 비롯된다. Barroso-Santa-Clara(2015)의 risk-managed momentum 프레임에서도 과거 drawdown이 낮은 종목이 위기 시 우월한 성과를 보이는 것은 이론적으로 정합. 다만 sub-sample breakdown(pre-2008/2008-2015/post-2015) 요청은 Academic도 조건으로 지지."
+    }
+  ],
+
+  "strongest_opposing_argument": "Codex R1의 KOSDAQ fiscal period alignment PIT leakage 지적이 가장 강력한 반론이다. Q07(-sd_roe)은 재무제표 기간 일관성에 의존하는데 KOSDAQ 기업의 결산월 분포가 다양하면(12월 외 3·6·9월 결산) 동일 sig_date에서 기업별로 다른 기간의 ROE 표준편차가 비교되어 cross-section 오염이 발생할 수 있다. Factor DB compute_quality.R이 이 문제를 어떻게 처리하는지 확인이 필요하다. 이것이 mechanism_align 완전 신뢰를 막는 academic 관점의 가장 강력한 잠재적 약점이다.",
+
+  "conditions_updated": [
+    "한국 실증 논문 2편 추가: Hocquard-Ng-Papageorgiou(2013) Journal of Portfolio Management + 강형구-이상빈(2019) 증권학회지를 s0_record core_reference에 추가하여 korea_evidence 2/4 → 3/4 상향. M08·R16 한국 alpha 지속성 외부 타당성 gap 해소.",
+    "KOSDAQ 결산월 다양성 처리 확인: compute_quality.R의 Q07(-sd_roe) 계산 시 KOSDAQ 비12월 결산 기업의 ROE 기간 정렬 처리 방식을 코드 레벨에서 확인. 기간 정렬 보정 없이 혼합되면 cross-section PIT 오염이므로 sig_date 기준 가장 최근 N개 기간만 사용하는 rolling 방식 채택 여부 명시 필요."
+  ],
+
+  "created": "2026-04-17",
+  "created_by": "forge_debate_academic_instance_H_1690_r2"
+}

@@ -1,0 +1,57 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-168 infra PIT + B1 hard blocker 연속 조치. Judge signoff FINAL APPROVED. Q-Lead 동일 통지 확인.",
+
+  "artifact_type": "pg1_gate_ledger",
+  "rule_id": "admission_rule_v3.5.3-patch1",
+  "status": "EFFECTIVE",
+  "effective_date": "2026-04-19",
+  "issued_by": "governor",
+  "judge_signoff_ref": "stage_artifacts/judge_signoff_rev_v4_2_final_admission_rule_v3_5_3_effective.json",
+  "issued_at": "2026-04-19T21:35:00Z",
+
+  "judge_final_decisions": {
+    "d1_weight_sum_arithmetic": "CONFIRMED (sum=1.0000000000)",
+    "d2_admission_rule_v3_5_3_patch1": "APPROVED_EFFECTIVE",
+    "d3_ax007_cleanup_3items": "ACCEPTED",
+    "d4_b2_defense_cluster": "ACCEPTABLE (Phase_2 SLV4 mitigation plan)",
+    "d5_pg1_live_blocked": "Gate 2/3/4 완료 전 실행 금지 (rule 발효와 실행 분리)",
+    "d6_ax005_v1_2_extension": "PENDING Judge 별도 packet"
+  },
+
+  "gates_14_effective": [
+    "Gate0: PIT C1~C15 + lookahead_detector + Codex (AX-008 3-source verification)",
+    "Gate1~3: 허들 + Grade (hard_fail → REJECT)",
+    "Gate4: Harvey t > 3.3 (Bonferroni 5-test) + DSR MANDATORY",
+    "Gate5: FF5/Carhart alpha",
+    "Gate6: tail_risk CDaR/CVaR",
+    "Gate7: IC-Return SR/ICIR >= 0.30 MANDATORY",
+    "Gate8: Role Honesty (AX-001 v2 / AX-005 exclusion / AX-007 scope)",
+    "Gate9: Alpha Lab ICIR >= 0.20 + 5Y IC 유의성",
+    "Gate10: Anti-pattern 13종",
+    "Gate11: Sequential TDC < 0.30 MANDATORY",
+    "Gate12: L-163 poison_pill MANDATORY hard_block",
+    "Gate13: Signal-Portfolio Translation MANDATORY hard_block",
+    "Gate14: AX-007 auto-reject (single-sleeve defense/core_secondary top-20)"
+  ],
+
+  "c3_ml_sizing_3gate": "SR_OOS/SR_IS > 0.70 + feature_concentration < 0.40 + holdout >= 12M",
+
+  "pg1_live_transition_gates": {
+    "gate_1_rule_ledger": "DONE (본 artifact)",
+    "gate_2_l168_infra_fix": "PASS (Architect Task #12 완료, factor_db_connector.R v2.0 C14 PASS)",
+    "gate_3_retroactive_audit_v2": "PASS (Task #13 완료, STR_1631 SR 1.193 PIT_CLEAN, delta=0%)",
+    "gate_4_v3_5_4_amendment": "IN_PROGRESS — lookahead_detector C17/C18 patch DONE (Governor 2026-04-19). Judge signoff PENDING.",
+    "gate_5_forge_s1_done_4": "IN_PROGRESS (Tasks #2/#3/#4 pending — pre_l168_fix_invalid flag)",
+    "live_entry_blocked_until": "Gate 4 Judge signoff 완료",
+    "gate_4_detail": {
+      "governor_action_done": "lookahead_detector.R C17/C18 패턴 + detect_gate15_infra_pit() 함수 추가 (376→457 lines)",
+      "c17_pattern": "align_factor_direction without sig_date — L-168 violation",
+      "c18_pattern": "factor_ic_monthly direct read + mean(IC) — full-sample IC direction bias",
+      "pending": "Judge independent review of C17/C18 regex + v3.5.4 draft formal signoff"
+    }
+  },
+
+  "portfolio_composition_ref": "stage_artifacts/governor_rev8_a_revised_v4_2_patch_20260419.json",
+  "axiom_ledger": ".cache/axiom_core.json"
+}

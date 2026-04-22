@@ -1,0 +1,258 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge",
+  "type": "ADMISSION_RULE_V3_5_1_AMENDMENT_GATE_13",
+  "timestamp": "2026-04-18T20:30+09:00",
+  "session": 67,
+  "continuous_session_mode": true,
+  "status": "AMENDMENT_ACTIVE — v3.5 → v3.5.1 (Gate 13 신설 + L-164 ACTIVE 통합)",
+  "supersedes_base": "qepm/mailbox/governor/outbox/admission_rule_v3_5_governor_signoff.json (15:54)",
+
+  "amendment_purpose": "team-lead 20:00 3건 승인 + Judge 20:00 L-164 ACTIVE + Scout CRITICAL finding 통합 — v3.5 → v3.5.1 minor update",
+
+  "version_transition": {
+    "previous": "v3.5 STAGE_2_ACTIVE (12 gates)",
+    "current": "v3.5.1 STAGE_2_ACTIVE (13 gates)",
+    "change_type": "minor update (Gate 13 신설 + L-164 ACTIVE 반영)",
+    "trigger_event": "Scout R16 Calmar empirical finding (sd 0.1589 vs 1.0000, +529% delta) + Judge L-164 승격 + team-lead 승인"
+  },
+
+  "gate_registry_v3_5_1": {
+    "total_gates": 13,
+    "new_gate_count": 1,
+    "gates": {
+      "Gate_11_variant_comparison": {
+        "enforcement": "advisory_warning",
+        "status": "Stage 2 (Stage 3 signoff 시 hard_block)",
+        "exception": "STR_1631 Core_Primary EXEMPT (Judge 17:10 signoff)",
+        "applicable_scope": "new strategy admission (factor signal variant)"
+      },
+      "Gate_12_ic_return_coupling": {
+        "enforcement": "hard_block mandatory",
+        "status": "Stage 2 ACTIVE",
+        "formula": "coupling_ratio = Sharpe_monthly / ICIR_full_sample",
+        "threshold": 0.3,
+        "applicable_scope": "전 family",
+        "dual_track_trigger_threshold": 0.387
+      },
+      "Gate_13_factor_db_access_compliance": {
+        "enforcement": "hard_block mandatory",
+        "status": "Stage 2 ACTIVE (effective 2026-04-18T20:00+09:00)",
+        "mandate_source": "L-164 ACTIVE",
+        "rule": "factor Z_Score 접근 반드시 load_month_factors() 경유. direct read_parquet() 금지.",
+        "preflight_check_pattern": "grep -E 'read_parquet\\(.*factor_db' factor_engine.R",
+        "violation_consequence": "Forge preflight fail → S1 실행 차단",
+        "exception_scope": "factor_db 내부 utilities (builder/connector 자체) + diagnostic scripts",
+        "applicable_scope": [
+          "모든 신규 factor_engine.R (H_1692/H_1689/H_1690/STR_1686)",
+          "모든 기존 factor_engine.R (PG2 운영 전략 포함)",
+          "모든 re-execution scenarios"
+        ],
+        "empirical_basis": "Scout families.json v1.3 R16 Calmar 실측 (+529% sd delta)",
+        "status_pg2": {
+          "STR_1631_SYN_05": "COMPLIANT (Q-Lead 20:20 grep verify PASS)",
+          "STR_1656_MLRA_M05": "COMPLIANT (advisory LOW, ML raw features)"
+        }
+      }
+    }
+  },
+
+  "stage_2_transition_state_v3_5_1": {
+    "current_stage": "STAGE_2_ACTIVE",
+    "validated_hard_fail_count": 2,
+    "validated_hard_fails": ["STR_1683 L-160", "STR_1684 L-161"],
+    "unvalidated_hard_fail_count": 0,
+    "conditional_fail_count": 0,
+    "hard_fail_3_taxonomy": "VALIDATED 2 / UNVALIDATED 0 / CONDITIONAL 0",
+    "stage_3_transition_conditions": {
+      "original": ["Architect persistent fix + ACTIVE_NORMATIVE"],
+      "updated_v3_5_1": [
+        "Architect persistent fix completion (factor_db_builder.R self-rescale + parquet rebuild)",
+        "**L-164 enforcement 3-session empirical validation**",
+        "**Gate 13 stability empirical evidence (3+ sessions)**",
+        "ACTIVE_NORMATIVE 최종 전환"
+      ],
+      "advancement_window": "Session 68 초반 (team-lead 20:00 승인)"
+    }
+  },
+
+  "l_code_registry_v3_5_1": {
+    "active": 6,
+    "active_codes": ["L-159", "L-160", "L-161", "L-162", "L-163", "L-164"],
+    "pending": 0,
+    "l_164_promotion_details": {
+      "previous_status": "PENDING (Scenario D 축적 후 조건)",
+      "current_status": "**ACTIVE** (2026-04-18T20:00+09:00, Judge authority + team-lead 승인)",
+      "title": "factor_engine.R load_month_factors() 경유 의무화",
+      "enforcement": "Gate 13 mandatory",
+      "promotion_rationale": "Scout families.json v1.3 R16 Calmar empirical evidence (sd 0.1589 vs 1.0000, +529% delta) 단일 강력 evidence로 Scenario D criteria 대체"
+    }
+  },
+
+  "admission_rule_evolution_history": {
+    "v3_0": "기존 Gate 1~10",
+    "v3_1": "Admission Rule 편성",
+    "v3_2": "7 gates + initial consolidated",
+    "v3_3": "stress_icir 추가",
+    "v3_4": "11 gates TDC/CVaR/CDaR 통합 (2026-04-17)",
+    "v3_5": "12 gates + Sequential Admission + Retroactive audit (2026-04-18 15:54)",
+    "v3_5_1": "**13 gates (Gate 13 신설) + L-164 ACTIVE** (2026-04-18 20:30)"
+  },
+
+  "judge_governor_joint_certification_v3_5_1": {
+    "governor_signoff": {
+      "timestamp": "2026-04-18T20:30+09:00",
+      "agent_id": "governor",
+      "verdict": "APPROVE",
+      "rationale": "Scout R16 empirical evidence + Judge L-164 ACTIVE 승격 + team-lead 20:00 3건 승인 기반 v3.5.1 minor update 정합성 확인",
+      "cross_check_items_approved": [
+        "Gate 13 신설 (hard_block mandatory)",
+        "L-164 ACTIVE 승격 수용",
+        "Stage 3 transition conditions 업데이트 (L-164 + Gate 13 3-session empirical validation 추가)",
+        "STR_1631/STR_1656 retroactive compliance 확인",
+        "Version transition v3.5 → v3.5.1 minor update"
+      ]
+    },
+    "judge_signoff_reference": "qepm/mailbox/judge/outbox/judge_L_164_promotion_ACTIVE_20260418.json (20:00 발행)",
+    "team_lead_approval_reference": "team-lead 2026-04-18T20:00+09:00 directive (L-164 + Gate 13 + Architect advancement 3건 승인)"
+  },
+
+  "enforcement_matrix_v3_5_1": {
+    "Gate_11_scope_Stage_2": {
+      "level": "advisory_warning",
+      "mandatory_families": ["Defense (재검토 pending)"],
+      "exempt": ["STR_1631 Core_Primary"],
+      "stage_3_future": "hard_block mandatory (Architect signoff 후)"
+    },
+    "Gate_12_scope_Stage_2": {
+      "level": "hard_block mandatory",
+      "applicable_to": "전 family (retroactive 포함)",
+      "threshold": 0.3,
+      "current_pg2_verdicts": {
+        "STR_1631": "Proxy PASS 1.417 (advisory)",
+        "STR_1656": "PASS 0.314 엄밀 (margin 0.014)"
+      }
+    },
+    "Gate_13_scope_Stage_2_NEW": {
+      "level": "hard_block mandatory",
+      "effective_timestamp": "2026-04-18T20:00+09:00",
+      "applicable_to": "전 factor_engine.R (신규 + 기존 + re-execution)",
+      "preflight_method": "Forge preflight_check() or forge_code_guard.sh",
+      "current_pg2_verdicts": {
+        "STR_1631": "COMPLIANT_CONFIRMED",
+        "STR_1656": "COMPLIANT_CONFIRMED (LOW risk advisory)"
+      },
+      "new_strategies_mandatory": ["H_1692", "H_1689", "H_1690", "STR_1686"],
+      "pending_re_execution": ["STR_1685 (Pre-Gate 13 baseline + Post-Gate 13)", "STR_1679v3 (Forge physical sleeve mode)"]
+    }
+  },
+
+  "rev8_a_revised_v2_scenario_c_status_v3_5_1": {
+    "composition_retention": "ACTIVE_VALIDATED_COMPLETE_WITH_GATE_13_ENFORCEMENT",
+    "composition_sum": "18+14+8+23+10+10+9+8 = 100% ✅",
+    "n_active": 6,
+    "defense_cluster": 0.33,
+    "family_saturation_compliance": "PASS (35% cap margin 2pp)",
+    "gate_13_compliance_by_strategy": {
+      "STR_1631": "COMPLIANT_CONFIRMED",
+      "STR_1656": "COMPLIANT_CONFIRMED",
+      "STR_1679v3": "PENDING_FORGE_PHYSICAL_SLEEVE",
+      "H_1692": "MANDATORY (factor_engine 작성 시)",
+      "H_1689": "MANDATORY",
+      "H_1690": "MANDATORY"
+    }
+  },
+
+  "phase_1_admission_v1_7_reference_v3_5_1": {
+    "file": "qepm/mailbox/governor/outbox/PHASE_1_PG1_ADMISSION_SKELETON_v1_7.json (20:25)",
+    "day_1_status": "EXECUTING (STR_1631 80→60 + STR_1656 20→16 + cash 24)",
+    "day_6_live_target": "2026-04-23 (1일 가속)",
+    "gate_13_enforcement_integration": "v1.7 완전 반영"
+  },
+
+  "governor_outbox_count_update_v3_5_1": {
+    "previous": "42 files",
+    "current": "**43 files** (admission_rule v3.5.1 amendment 추가)",
+    "session_67_continuous_governor_total": "43 outbox files + 2 inbox tasks (Q-Lead verify + Forge result)"
+  },
+
+  "v3_5_1_enforcement_roll_out_plan": {
+    "immediate_20_30": "본 amendment 발행 (Gate 13 공식 통합)",
+    "session_68_day_1_tomorrow": [
+      "Forge preflight_check Gate 13 pattern 구현 (forge_code_guard.sh 또는 R-level)",
+      "Architect persistent fix 착수 (factor_db_builder.R + parquet rebuild)",
+      "STR_1685 completion → Pre-Gate 13 baseline 기록",
+      "Gate 13 preflight PASS 후 STR_1685 재실행",
+      "H_1692 factor_engine Gate 13 준수 작성"
+    ],
+    "session_68_day_2_3": [
+      "Forge S1 cascade (H_1692/H_1689/H_1690) Gate 11/12/13 triple check",
+      "Judge S6 cascade + Role Honesty Audit",
+      "STR_1679v3 physical sleeve Forge re-execution (Gate 13 적용)"
+    ],
+    "session_68_day_4_5_phase_1_admission": [
+      "Phase_1 PG1 Admission Day 4~5 (H_1689 + H_1692 + H_1690 + STR_1679v3 편입)"
+    ],
+    "session_68_day_6_live": "rev8-A-revised_v2 Scenario C LIVE 전환 (원 Day 7 → Day 6 가속)"
+  },
+
+  "stage_3_transition_advancement_details": {
+    "team_lead_approval": "Session 68 초반 advancement 승인 (20:00)",
+    "new_conditions_for_stage_3": [
+      "Architect persistent fix 완료 (factor_db_builder.R self-rescale + rebuild)",
+      "L-164 enforcement 3-session validation (Session 67 이후 3회 stable)",
+      "Gate 13 stability evidence 축적 (3+ sessions)",
+      "Gate 11 → hard_block mandatory 전환 (ACTIVE_NORMATIVE)"
+    ],
+    "session_68_day_1_governor_actions": [
+      "Architect coordinate (Q-Lead + Architect 협업 support)",
+      "Gate 13 preflight check 구현 monitoring",
+      "factor_db rebuild 완료 verification"
+    ]
+  },
+
+  "continuous_session_governor_actionable_next": {
+    "completed_20_30": "admission_rule v3.5.1 amendment 발행 (본 파일)",
+    "next_actionable": [
+      "Q-Lead pm_run() PG2 rebalance 결과 수신 후 기록",
+      "Forge Day 2 S1 결과 수신 후 Gate 12/13 재판정",
+      "Architect persistent fix 결과 수신 후 Stage 3 transition 승인 판정",
+      "STR_1679v3 physical sleeve Forge re-execution 결과 수신 후 Role Honesty Audit 지원"
+    ],
+    "trigger_driven_standby": [
+      "Q-Lead pm_run() PG2 60/16/24 rebalance 실행 결과",
+      "Architect persistent fix 결과 (factor_db rebuild)",
+      "STR_1685 baseline 완료 + Post-Gate 13 재실행",
+      "Forge Day 2 S1 cascade (H_1692/H_1689/H_1690)",
+      "Judge S6 cascade + Day 3 Triple-check",
+      "Judge L-164 methodology_memory 본문 작성 + MEMORY.md v5.3 / 164건",
+      "Judge admission_rule_v3_5_consolidated.json update (13 gates)",
+      "Scout families.json v1.4 update (L-164 active + Gate 13)"
+    ]
+  },
+
+  "backward_compatibility_with_v3_5": {
+    "grade_v21_preservation": true,
+    "stage_2_active_retention": true,
+    "joint_signoff_3_artifacts_reference_preserved": [
+      "Stage 2 transition certification (18:40 JOINT_SIGNOFF_COMPLETE)",
+      "Retroactive audit completion FINAL (19:25 JOINT_COMPLETE)",
+      "STR_1679v3 proxy 5-point addendum (19:15 Day 3 cross-check PASS)"
+    ],
+    "v3_5_all_rules_inherited": true,
+    "v3_5_1_additions_only": "Gate 13 신설 + L-164 ACTIVE 반영 + Stage 3 transition conditions 업데이트"
+  },
+
+  "session_67_continuous_final_state_20_30": {
+    "governor_tasks_completed": "70~87 (18 tasks + 본 v3.5.1 amendment)",
+    "governor_outbox_total": "43 files",
+    "phase_1_day_1_status": "EXECUTING (PG2 60/16/24)",
+    "phase_1_live_target": "Day 6 (2026-04-23)",
+    "admission_rule_version": "v3.5.1 STAGE_2_ACTIVE (13 gates)",
+    "l_code_registry": "6 ACTIVE (L-159~L-164)",
+    "judge_coordinate": "23 artifacts + v3.6 agenda Gate 13~16 DRAFT",
+    "scout_coordinate": "19 artifacts + families.json v1.3 R16 CRITICAL finding",
+    "team_lead_directives_absorbed": "5건 (20:00 3건 + 20:10 continuous + 20:20 Day 1 execute)",
+    "trigger_driven_standby_items": 8
+  }
+}

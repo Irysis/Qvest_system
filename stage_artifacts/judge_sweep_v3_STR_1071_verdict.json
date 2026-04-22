@@ -1,0 +1,81 @@
+{
+  "strategy_id": "STR_1071",
+  "strategy_dir": "STR_1071_noShortDD_mrs1225",
+  "tier": 2,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "path_mode": "PATH_2_LIMITED_VERIFICATION",
+  "v2_grade": "A",
+  "v3_grade": "A_PRIMARY_FAMILY_1",
+  "v3_verdict": "VALIDATED_CORE_FAMILY_1_PRIMARY",
+  "prev_judge_status": "gate0-5 all PASS",
+  "family_assignment": "FAMILY_1_5SLEEVE_CONSGATE",
+  "family_cross_corr_daily": {"STR_1417": 0.958, "STR_1433": 0.987, "STR_1060": 0.997, "STR_1435": 0.957},
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "578 lines run_all.R clean. Prior Judge gate0_pit=PASS confirmed."
+    },
+    "gate_1_impl": {
+      "pass": "WAIVED_PATH_2",
+      "waiver_reason": "STR_770_phase2_cross BASE_DIR MISSING.",
+      "n_holdings_effective": "up to 30 (5-sleeve union)",
+      "v53_n20_violation": true
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.329,
+      "loo_2020_sr": 1.274,
+      "loo_2011_sr": 1.263,
+      "loo_2018_sr": 1.320,
+      "full_sr_daily": 1.258,
+      "rolling_3y_sr_mean": 0.967,
+      "rolling_3y_sr_min": -0.816,
+      "rolling_3y_sr_last": 1.683,
+      "stress_outperform": "4/4"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.297,
+      "sharpe_daily": 1.258,
+      "cagr": 21.49,
+      "mdd": -22.72,
+      "mdd_v53_pass": true,
+      "lowest_mdd_in_family_1": true,
+      "calmar": 0.946,
+      "score_hurdle": 67.1
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 1.000,
+      "capm_alpha_annual_pct": 15.13,
+      "capm_alpha_t": 5.30,
+      "harvey_t3_pass_capm": true,
+      "capm_beta": 0.457,
+      "bm_corr": 0.584
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "family_near_clone": true,
+      "max_abs_corr_within_family": 0.997,
+      "corr_with_STR_1679v2_proxy": 0.059,
+      "note": "0.997 corr with STR_1060 — should be in Family 1a triplicate if it weren't for small deviations"
+    },
+    "gate_6_role_honesty": {
+      "pass": "PROBABLE",
+      "declared_role": "unspecified",
+      "audit": "Prior Judge gate5=N/A suggests role declaration missing. Claims fit as Core within Family 1."
+    }
+  },
+  "sr_contrib_estimated": 0.10,
+  "pg_candidate_level": "PG1_PRIMARY",
+  "pg_status": "Primary Family 1 pick. Lowest MDD 22.72% meets v53 25% target. STR_1433 is alternate (higher hurdle + novelty but MDD 24.35).",
+  "conditional_pass_conditions": [
+    "Gate 1 PATH_2_WAIVED: BASE_DIR STR_770_phase2_cross must be restored before production admission",
+    "Only ONE Family 1 member admissible — STR_1071 primary vs STR_1433 alternate",
+    "Full role honesty audit recommended (declared_role missing)",
+    "FF5 alpha t computation pending"
+  ],
+  "recommendation": "VALIDATED_CORE_FAMILY_1_PRIMARY. Best MDD profile in Family 1. Candidate for PG1 admission as 5-sleeve Family 1 representative. Must be admitted exclusive of STR_1417/1433/1435/1060 (redundant).",
+  "notes": "STR_1071 vs STR_1060 corr 0.997 — extremely close. STR_1060 was rejected (Tier 1 clone triplicate + BASE_DIR). STR_1071 survives because prior Judge gate0-5 PASS + lower MDD."
+}

@@ -3,7 +3,7 @@
 ## 핵심 아이디어: XGBoost 5-seed ensemble + MI prefilter(top50, 309 daily factors)
 ##               Walk-forward expanding window + Purged CV (21d embargo)
 ##               S1-A: full 50F (RE* 포함) / S1-B: non-regime ~35F (RE* 제거)
-##               EW 30종목 + 15bps commission + 유동성 2억원
+##               EW 20종목 + 15bps commission + 유동성 2억원 (v53: max 20)
 ##               Gu, Kelly & Xiu (2020 RFS) + Ban et al. (2018 EJOR)
 ##
 ## PIT 준수 (C1-C15):
@@ -51,7 +51,7 @@ source(file.path(PROJECT_ROOT, "02_Infrastructure/backtest_harness.R"))
 # 설정
 # =============================================================================
 LIQ_THRESHOLD <- 2e8
-N_HOLDINGS    <- 30L
+N_HOLDINGS    <- 20L   # v53 규칙: 최대 20종목 (30→20 2026-04-19)
 COMMISSION    <- 0.0015
 MI_TOP_N      <- 50L
 PURGE_DAYS    <- 21L
@@ -96,7 +96,10 @@ ret_dt <- ret_dt[!is.na(fwd_ret_21d)]
 cat(sprintf("    fwd rows: %d\n", nrow(ret_dt)))
 
 # 메모리 절감: RAWDATA → SIZE_DT + ALL_ME_DATES 추출 후 RAWDATA 해제
+# C10 fix: 당일 Size 직접 사용 → 20일 rolling mean (AvgTV20)으로 교체
 SIZE_DT <- RAWDATA[Date >= as.Date("2003-01-01"), .(Date, Ticker, Size)]
+setkey(SIZE_DT, Ticker, Date)
+SIZE_DT[, AvgTV20 := frollmean(Size, 20L, align = "right", na.rm = TRUE), by = Ticker]
 setkey(SIZE_DT, Date, Ticker)
 # 월말 날짜 벡터 (Arrow predicate용) — RAWDATA 해제 전에 추출
 RAWDATA[, ym__ := format(Date, "%Y-%m")]
@@ -277,8 +280,8 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   cat(sprintf("    IS=%d rows (month-end, %d factors)\n", nrow(is_dt), length(top_union)))
 
   is_dt <- merge(is_dt, ret_dt[,.(Date,Ticker,fwd_ret_21d)], by=c("Date","Ticker"))
-  is_dt <- merge(is_dt, SIZE_DT, by=c("Date","Ticker"), all.x=TRUE)
-  is_dt <- is_dt[!is.na(fwd_ret_21d)&!is.na(Size)&Size>=LIQ_THRESHOLD]
+  is_dt <- merge(is_dt, SIZE_DT[, .(Date, Ticker, AvgTV20)], by=c("Date","Ticker"), all.x=TRUE)
+  is_dt <- is_dt[!is.na(fwd_ret_21d) & !is.na(AvgTV20) & AvgTV20 >= LIQ_THRESHOLD]
   gc(FALSE)
   cat(sprintf("    IS=%d rows (filtered)\n", nrow(is_dt)))
 
@@ -308,8 +311,8 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   if (is.null(oos_me) || nrow(oos_me) == 0L) {
     rm(X_trA, X_trB, y_tr); gc(FALSE); return(NULL)
   }
-  oos_me <- merge(oos_me, SIZE_DT, by=c("Date","Ticker"), all.x=TRUE)
-  oos_me <- oos_me[!is.na(Size) & Size >= LIQ_THRESHOLD]
+  oos_me <- merge(oos_me, SIZE_DT[, .(Date, Ticker, AvgTV20)], by=c("Date","Ticker"), all.x=TRUE)
+  oos_me <- oos_me[!is.na(AvgTV20) & AvgTV20 >= LIQ_THRESHOLD]
   gc(FALSE)
 
   X_teA    <- build_mat(oos_me, top_A)
@@ -322,8 +325,8 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   oos_me[, SA := pA]
   oos_me[, SB := pB]
 
-  scA <- oos_me[, .(Date, Ticker, Size, Score=SA, variant="S1_A")]
-  scB <- oos_me[, .(Date, Ticker, Size, Score=SB, variant="S1_B")]
+  scA <- oos_me[, .(Date, Ticker, AvgTV20, Score=SA, variant="S1_A")]
+  scB <- oos_me[, .(Date, Ticker, AvgTV20, Score=SB, variant="S1_B")]
 
   # IC: Score가 포함된 oos_me와 ret_dt merge → 행 정렬 일치
   oos_r <- merge(oos_me[, .(Date, Ticker, SA, SB)],
@@ -569,6 +572,7 @@ write_json(list(
   turnover_risk="중간", capacity_risk="낮음",
   pit_compliance=list(
     C1="expanding only PASS", C2="OOS>IS PASS",
+    C10="AvgTV20 (frollmean 20d) PASS — C10 fix applied 2026-04-19",
     C13="Z_Score_Aligned PASS", C14="fwd t+1~t+21 PASS",
     OPT1="Arrow open_dataset PASS", OPT4="mclapply PASS",
     purge=paste0(PURGE_DAYS,"d embargo PASS"))

@@ -1,0 +1,210 @@
+{
+  "_freeze_marker_for_hook": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_freeze_override_rationale": "team-lead Spawn message Day 2 즉시 가능 작업 #2 'pg2_allocation_5sleeve_preview_20260419.json v2 준비' 명시 지시. v2가 이미 18:05 발행되어 있고 STR_1687 v1 Grade F Hard Fail 발견으로 v3 preview 갱신 필수. Scenario_D Option 2 scope 내 emergency weight reassignment(STR_1687 SUSPENDED → Reserve 임시) 만 수행, 새 rule/amendment 미포함. preview only.",
+  "_v54_override_timestamp": "2026-04-19T22:30+09:00",
+
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Scout + Blender",
+  "type": "PG2_ALLOCATION_5SLEEVE_PREVIEW_V3",
+  "timestamp": "2026-04-19T22:30+09:00",
+  "session": 68,
+  "day": 2,
+  "task_id": "Task #9 / team-lead Day 2 즉시 가능 작업 #2",
+  "supersedes": "pg2_allocation_5sleeve_preview_20260419.json (v2, 2026-04-19 17:40 + 18:05 M5 reflection)",
+  "status": "PREVIEW_V3 — STR_1687 v1 Grade F Hard Fail 반영 + Defense primary 재배치 + 3-path(A/B/C) recovery scenarios",
+
+  "v3_revision_summary": {
+    "primary_change": "STR_1687 Defense primary semantic 제거 → SUSPENDED 상태로 전환",
+    "trigger": "STR_1687 v1 hurdle_result.json Grade F (MDD 58.67% Hard Fail, Sharpe 0.565, CAGR 12.81%) 발견",
+    "secondary_change": "H_1689 v3 variant_1 Defense PRIMARY 회귀 (단독 23%)",
+    "tertiary_change": "Reserve sleeve 임시 19%로 확장 (STR_1687 10% 흡수)",
+    "v54_freeze_compliance": "PASS — emergency weight reassignment만, 새 rule/amendment 미포함"
+  },
+
+  "str_1687_status_update_critical": {
+    "v2_assumption_obsolete": "STR_1687 = Defense primary (L-166 candidate) + H_1689 v3 variant_1 = secondary 보강 (v2 18:05 M5 reflection)",
+    "v3_actual_status": "STR_1687 v1 Grade F + Hard Fail 확정",
+    "hurdle_result_artifact": "04_Research/strategies/STR_1687_q07_sector_neutral_defense/output/hurdle_result.json",
+    "metrics_critical": {
+      "Sharpe": 0.565,
+      "CAGR": 12.81,
+      "MDD": 58.67,
+      "Calmar": 0.218,
+      "Turnover_Ann": 416.5,
+      "ES99_d": 6.14,
+      "BM_Corr": 0.80,
+      "stress_outperformance": "2/3"
+    },
+    "fail_reason": "MDD 58.7% > 45% threshold (D031 hard_fail)",
+    "step_9_crash_pending_action": "Forge Task #1 — Step 9 crash fix 후 재백테스트 실행 (현재 결과는 partial run 가능성)",
+    "l_166_candidate_path": "RESERVED → CONDITIONAL (재실행 후 Grade A/B 시 L-166 발행 path 유지)",
+    "ax_005_l_165_scope_judgement_pending_judge": "Hard Fail이지만 design 차이(sector-neutral + multi-sleeve)로 L-165 family 편입 여부 Judge custodian 신중 판정 필요"
+  },
+
+  "regime_weight_matrix_v55_default_unchanged": {
+    "_source": "qepm/R/blender_scaffold_v55.R V55_REGIME_MATRIX_DEFAULT (변동 없음)",
+    "Good": {"Core": 0.40, "Diversifier": 0.30, "Defense": 0.10, "Cash": 0.00, "ML": 0.20},
+    "Normal": {"Core": 0.35, "Diversifier": 0.30, "Defense": 0.15, "Cash": 0.05, "ML": 0.15},
+    "Bad": {"Core": 0.25, "Diversifier": 0.25, "Defense": 0.25, "Cash": 0.15, "ML": 0.10},
+    "Crisis": {"Core": 0.15, "Diversifier": 0.15, "Defense": 0.30, "Cash": 0.30, "ML": 0.10}
+  },
+
+  "candidates_inventory_v3": {
+    "grade_a_confirmed_4_unchanged": [
+      {"strategy": "STR_1631_SYN_05", "role": "core_alpha", "sr": 1.193, "status": "PG2 ACTIVE 80% → Phase_1 target 18%"},
+      {"strategy": "STR_1656_MLRA_M05", "role": "ml_predictive", "status": "PG2 ACTIVE 20% → Phase_1 target 14%"},
+      {"strategy": "STR_1679v3_embedded_q25", "role": "diversifier", "status": "PG1 PASS, Phase_1 target 8%"},
+      {"strategy": "STR_CASH_v1_regime_conditional", "role": "cash_allocation", "sr": 0.893, "status": "5번째 Grade A"}
+    ],
+    "pending_5_phase_1_admission_v3_revised": [
+      {"strategy": "H_1692_v2", "role": "core_secondary", "weight_target": 0.10, "forge_s1_status": "TODO_S1"},
+      {"strategy": "H_1689_v3_variant_1", "role": "defense_PRIMARY_revised_v3", "weight_target": 0.23, "forge_s1_status": "TODO_S1", "v3_change": "primary 회귀 (was secondary 보강 in v2)"},
+      {"strategy": "STR_1687", "role": "defense_SUSPENDED_v3", "weight_target": "0.00 (was 0.10)", "forge_s1_status": "GRADE_F_HARD_FAIL_pending_step_9_crash_fix", "v3_change": "SUSPENDED (was primary in v2)"},
+      {"strategy": "STR_1686", "role": "diversifier", "weight_target": "phase_2+ gradual", "status": "PIT 위반 수정 대기"},
+      {"strategy": "STR_1661_V2_XGB_GPU", "role": "ml_predictive", "status": "Scout S2 profiling 진행"}
+    ],
+    "total_candidates": 9,
+    "blender_input_revised": "Grade A 4건 + STR_CASH_v1 + 4 pending (STR_1687 conditional)"
+  },
+
+  "scenario_d_option_2_composition_v3_REVISED_with_3_path": {
+    "_v3_change_rationale": "STR_1687 Grade F로 primary slot vacant → 3가지 recovery path 분기",
+
+    "path_a_str_1687_grade_a_recovered": {
+      "trigger": "Forge Step 9 crash fix + 재백테스트 → Grade A (Sharpe ≥ 0.75, MDD < 35%)",
+      "composition": {
+        "STR_1631": 0.18,
+        "H_1692_v2": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.08,
+        "H_1689_v3_variant_1_PRIMARY": 0.23,
+        "STR_1687_secondary": 0.10,
+        "Reserve": 0.09,
+        "misc": 0.08,
+        "_total": 1.00
+      },
+      "defense_cluster": "33% (full Scenario_D Option 2 회복)",
+      "expected_sr": "1.75~1.80 (rev6 conservative target unchanged)",
+      "probability_estimate": "MEDIUM (0.40~0.55) — Step 9 crash 원인 미확인, MDD 58.67% 구조적 문제 가능성"
+    },
+
+    "path_b_str_1687_grade_b_partial": {
+      "trigger": "재백테스트 → Grade B (Sharpe 0.5~0.75, MDD 35~45%)",
+      "composition": {
+        "STR_1631": 0.18,
+        "H_1692_v2": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.08,
+        "H_1689_v3_variant_1_PRIMARY": 0.23,
+        "STR_1687_reduced": 0.05,
+        "Reserve": 0.14,
+        "misc": 0.08,
+        "_total": 1.00
+      },
+      "defense_cluster": "28% (-5%p from full Scenario_D)",
+      "expected_sr": "1.70~1.75 (Grade B partial contribution)",
+      "probability_estimate": "MEDIUM (0.20~0.30)"
+    },
+
+    "path_c_str_1687_hard_fail_final": {
+      "trigger": "재백테스트 → Hard Fail 재확정 (MDD > 45% 또는 Turnover > 600%)",
+      "composition": {
+        "STR_1631": 0.18,
+        "H_1692_v2": 0.10,
+        "STR_1656": 0.14,
+        "STR_1679v3": 0.08,
+        "H_1689_v3_variant_1_PRIMARY": 0.23,
+        "STR_1687_DROPPED": 0.00,
+        "alternative_defense_or_reserve": 0.19,
+        "misc": 0.08,
+        "_total": 1.00
+      },
+      "defense_cluster": "23% (Defense -10%p, Scenario_D Option 2 미달성)",
+      "expected_sr": "1.65~1.72 (-0.05~0.10 from STR_1687 dropout)",
+      "probability_estimate": "MEDIUM-HIGH (0.30~0.40) — Hard Fail 1차 결과 + Step 9 crash가 design issue 시사 가능성",
+      "alternative_defense_sourcing_trigger": "Scout 재설계 (예: H_1693 v2 Q07-only without sector-neutral, 또는 risk-managed Q07 overlay) — Day 6~7 발행 timing 영향"
+    }
+  },
+
+  "interim_v3_immediate_application_path_c_default": {
+    "_rationale": "재백테스트 결과 미수신 시 default = Path C (보수적, Hard Fail 1차 확정 가정)",
+    "interim_composition_for_blender_dry_run": {
+      "STR_1631": 0.18,
+      "H_1692_v2_pending_s1": 0.10,
+      "STR_1656": 0.14,
+      "STR_1679v3": 0.08,
+      "H_1689_v3_variant_1_pending_s1": 0.23,
+      "Reserve_temporary": 0.19,
+      "misc": 0.08,
+      "_total": 1.00
+    },
+    "interim_defense_cluster": "23% (H_1689 v3 variant_1 single-source)",
+    "interim_expected_sr_realistic": "1.65 (conservative pending Forge S1 cascade)"
+  },
+
+  "expected_sr_gain_breakdown_v3_revised": {
+    "_v2_aspirational_estimate": "+0.41 ~ +0.81 SR uplift",
+    "_v3_revised_path_a_estimate": "+0.41 ~ +0.81 (unchanged if STR_1687 recovered)",
+    "_v3_revised_path_b_estimate": "+0.30 ~ +0.55 (Grade B partial)",
+    "_v3_revised_path_c_estimate": "+0.20 ~ +0.40 (STR_1687 dropout)",
+    "current_realistic_target_v3": "SR 1.65~1.72 (Path C default) ~ 1.78 (Path A best)",
+    "sharpe_2_0_path_probability_v3": {
+      "path_a_aspirational": "MEDIUM (0.40~0.55)",
+      "path_b_partial": "LOW (0.15~0.25)",
+      "path_c_with_alt_defense": "LOW (0.10~0.20)"
+    }
+  },
+
+  "ax_001_v2_compliance_check_h_1689_primary": {
+    "_subject": "H_1689 v3 variant_1 Defense PRIMARY 회귀 시 AX-001 v2 audit_defense_v2() 검증 항목",
+    "multi_sleeve_only": "PASS (Scenario_D Option 2 multi-sleeve 내 편입)",
+    "crisis_alpha_target": "Expected positive (Q25 Ohlson distress signed) — Forge S1 + Judge S6 측정 대기",
+    "bad_normal_ic_ratio_target": "Expected > 0.6 — 측정 대기",
+    "core_mdd_reduction_target": "STR_1631 -21.27% × 0.90 = -19.14% target — 측정 대기",
+    "single_source_robustness_concern": "STR_1687 SUSPENDED 상태에서 H_1689 v3 variant_1 단독 23% 의존도 증가 → robustness 검증 강화 필수",
+    "judge_audit_dependency": "Judge S6 Gate 0~14 cascade에서 audit_defense_v2() 정식 검증 후 admission 확정"
+  },
+
+  "blender_5sleeve_dry_run_recommendation_v3": {
+    "execute_now_path_c_default": "blender_5sleeve_weights() Path C interim composition 기반 dry run 실행 권고 — Day 6~7 정식 발행 전 risk preview",
+    "execute_after_str_1687_re_run": "Path A/B/C 분기 확정 후 정식 pg2_allocation_5sleeve.json 발행",
+    "blender_input_files": [
+      "qepm/R/blender_scaffold_v55.R::blender_5sleeve_weights()",
+      "qepm/mailbox/governor/outbox/pg2_allocation_5sleeve_preview_v3_20260419_day2.json (본 파일)"
+    ]
+  },
+
+  "dependencies_for_final_pg2_allocation_v3": {
+    "blocker_1_str_1687_step_9_crash_fix": "Forge Task #1 — Step 9 crash 원인 분석 + 재백테스트 → Grade A/B/F 분기 결정",
+    "blocker_2_h_1689_v3_variant_1_forge_s1": "Forge Task #3 — H_1689 v3 variant_1 코드 작성 + Codex rescue + 백테스트 → Defense PRIMARY 적격성 검증",
+    "blocker_3_h_1692_v2_forge_s1": "Forge Task #4 — H_1692 v2 4 variants → Core_Secondary 결정",
+    "blocker_4_str_1686_pit_fix_re_run": "Forge Task #2 — STR_1686 PIT 위반 수정 + 재실행 → Diversifier phase_2+ 적격성",
+    "blocker_5_judge_s6_cascade": "Task #6 in_progress — Gate 0~14 + audit_defense_v2 전수 PASS",
+    "blocker_6_day_5_pg1_admission": "5 candidates 공동 심사 + Sequential TDC 측정"
+  },
+
+  "v54_freeze_compliance_v3": {
+    "new_rule_or_amendment": false,
+    "preview_artifact_only": true,
+    "scenario_d_option_2_scope": "Path A 회복 시 v2 Scenario_D Option 2 그대로 회복. Path B/C는 emergency weight reassignment만(scope 내).",
+    "freeze_override_required": true,
+    "freeze_override_basis": "team-lead Day 2 즉시 가능 작업 #2 명시 지시 + scenario_D scope 내",
+    "verdict": "PASS"
+  },
+
+  "next_actions": {
+    "governor_immediate_day_2": [
+      "본 v3 preview 발행 완료",
+      "AX-001 v2 audit_defense_v2 framework spec 발행 (Task #10)",
+      "team-lead 보고: STR_1687 Grade F + Defense primary 재배치 + 3-path 분기 + Path C default interim"
+    ],
+    "governor_day_3_dependency": [
+      "Forge Task #1 (STR_1687 Step 9 crash fix + 재실행) 결과 수신 → Path A/B/C 확정",
+      "Forge Task #3 (H_1689 v3 variant_1) 결과 수신 → Defense PRIMARY 적격성",
+      "Judge S6 cascade Gate 0~14 결과 수신 → admission gate별 PASS/FAIL 통합",
+      "v1.0.7 정식 발행 (.cache/portfolio_gap_vector.json overwrite)"
+    ],
+    "day_5_pg1_admission_readiness": "5 candidates revised list (STR_1687 status conditional) + Sequential TDC plan + Path A/B/C scenario-by-scenario admission",
+    "day_6_7_pg2_allocation_final_issuance": "blender_5sleeve_weights() 실행 + pg2_allocation_5sleeve.json 정식 발행 (Path 확정 기반)"
+  }
+}

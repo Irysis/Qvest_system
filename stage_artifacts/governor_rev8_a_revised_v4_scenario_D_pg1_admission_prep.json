@@ -1,0 +1,191 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "STR_1687 Judge HARD_REJECT (L-166 ANTI-PATTERN + AX-007 3rd member + Gate7/12/13 POISON_PILL) = v54 Freeze 조항 하드 블로커. Q-Lead 승인 2026-04-19 Session 68 Day 2.",
+
+  "artifact_type": "GOVERNOR_SCENARIO_REVISION",
+  "revision_id": "rev8-A-revised-v4",
+  "base": "rev8-A-revised-v3 Scenario_D",
+  "issued_by": "Governor",
+  "issued_at": "2026-04-19 Session 68 Day 2",
+  "v54_freeze_compliant": true,
+
+  "change_log": [
+    {
+      "change_id": "C1",
+      "type": "HARD_DROP",
+      "target": "STR_1687",
+      "prev_weight": 0.10,
+      "new_weight": 0.00,
+      "reason": "Judge HARD_REJECT: L-166 ANTI-PATTERN 확정. restart_block=true. MDD 58.67% Gate3 hard_fail. Gate7 IC-Return coupling SR/ICIR ratio poison_pill. Gate12 L-163 MANDATORY FAIL. Gate13 Signal-Portfolio Translation FAIL. AX-007 3rd member.",
+      "effective": "즉시"
+    },
+    {
+      "change_id": "C2",
+      "type": "WEIGHT_REDISTRIBUTION",
+      "freed_weight": 0.10,
+      "plan": {
+        "STR_1679v3": {
+          "prev": 0.08, "new": 0.12, "delta": 0.04,
+          "condition": "Judge S6 PASS + TDC_vs_STR_1631 실측 < 0.50 (Gate11). proxy TDC_lower=0.619 WARN"
+        },
+        "Reserve": {
+          "prev": 0.09, "new": 0.11, "delta": 0.02,
+          "rationale": "Phase_1 안전 버퍼. Forge S1 대기 중 현금성 유지"
+        },
+        "misc_subtotal": {
+          "note": "0.04 + 0.02 + 0.04(잔여 misc) = 0.10 OK"
+        }
+      }
+    },
+    {
+      "change_id": "C3",
+      "type": "PG1_RULE_AMENDMENT",
+      "rule_id": "AX-007-PG1-AUTO-REJECT",
+      "description": "AX-007 scope violation 자동 차단 — Defense/Core_Secondary single-sleeve long-only top-20 admission 금지",
+      "trigger": "role in [defense, core_secondary] AND universe=top20_long_only AND single_sleeve=TRUE AND signal_ICIR > 0.30",
+      "action": "AUTO_REJECT",
+      "exceptions": [
+        "multi-sleeve blend 내 sleeve embedding 명시적 입증",
+        "long-short structure 또는 50+ 분산 universe",
+        "ML-based sizing + regime-conditional + AX-001 v2 crisis_alpha ≥4/6 입증"
+      ],
+      "basis": "L-166 ANTI-PATTERN (STR_1687) + AX-005 v1.1 + judge_pg1_pre_admission_report"
+    },
+    {
+      "change_id": "C4",
+      "type": "GATE_MANDATORY",
+      "gate_id": "Gate7_IC_Return_Coupling",
+      "rule": "SR / ICIR >= 0.30 (poison_pill 사전 차단)",
+      "prior_status": "advisory",
+      "new_status": "MANDATORY — FAIL 시 admission 차단",
+      "basis": "L-163 + STR_1687 Gate7 FAIL"
+    },
+    {
+      "change_id": "C5",
+      "type": "ADMISSION_RULE_AMENDMENT",
+      "rule_id": "Admission_Rule_v3.5.3",
+      "base": "v3.5.2",
+      "amendments": [
+        "Harvey t 보정: 5 candidates → t > 3.3 (Bonferroni family-wise, 5 tests)",
+        "DSR 계산 의무: 각 candidate SR DSR 검증 필수",
+        "Alpha Lab Gate 의무: ICIR >= 0.20 + 5Y IC 유의성 (qepm §8)"
+      ]
+    },
+    {
+      "change_id": "C6",
+      "type": "S3_TDC_FINDING_INTEGRATED",
+      "source": "stage_artifacts/s3_q07_cluster_tdc_preliminary_20260419.json",
+      "finding": "STR_1679v2 proxy vs STR_1631: TDC_lower=0.619 (Q-Lead 공식 수치). Governor 실측: upper=0.241 / lower=0.464",
+      "policy": "STR_1679v3 편입 조건: Gate11 실측 TDC_max < 0.50 필수. proxy 경계선 — v3 재설계 후 실측 없이 admission 불가"
+    }
+  ],
+
+  "scenario_d_v4_composition": {
+    "portfolio_id": "V7_ALLWEATHER_001",
+    "slots": [
+      {
+        "id": "S1", "strategy": "STR_1631_SYN_05_2002",
+        "role": "Core_Primary", "weight": 0.18,
+        "status": "ACTIVE_CONFIRMED"
+      },
+      {
+        "id": "S2", "strategy": "H_1692_v2",
+        "role": "Core_Secondary", "weight": 0.10,
+        "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge S6 Gate0~14 PASS + AX-007 scope CLEAR + Harvey t>3.3"
+      },
+      {
+        "id": "S3", "strategy": "STR_1656_MLRA_M05",
+        "role": "Diversifier_ML", "weight": 0.14,
+        "status": "ACTIVE_CONFIRMED",
+        "pit_note": "C10 fix PENDING (Task#8)",
+        "tdc_vs_str1631": 0.455
+      },
+      {
+        "id": "S4", "strategy": "STR_1686",
+        "role": "Diversifier_Foreign", "weight": 0.14,
+        "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 재실행 DONE + Judge Gate0/8/11/13 PASS + TDC_vs_STR_1631 < 0.30",
+        "risk_flag": "L-160 Algebraic Identity Risk (H_1674 overlap 확인 필수)"
+      },
+      {
+        "id": "S5", "strategy": "H_1689_v3_variant_1",
+        "role": "Defense_Primary", "weight": 0.23,
+        "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge S6 Gate0~14 PASS + AX-007 scope check + Harvey t>3.3",
+        "concentration_note": "23% single slot — Risk Mgr 4th round CVaR/CDaR 필수 (GOV-REQ-002)"
+      },
+      {
+        "id": "S6", "strategy": "STR_1687",
+        "role": "Defense_Secondary", "weight": 0.00,
+        "status": "HARD_DROP",
+        "drop_reason": "L-166 + Gate3/7/12/13 FAIL + restart_block=true"
+      },
+      {
+        "id": "S7", "strategy": "STR_1679v3",
+        "role": "Diversifier_Q25", "weight": 0.12,
+        "status": "IMPLEMENTATION_MISSING",
+        "condition": "신규 구현 → S1/S2 → Judge S6 → TDC_vs_STR_1631 실측 < 0.50",
+        "weight_note": "v3 8% → v4 12% (STR_1687 DROP 재분배 +4%)",
+        "tdc_warning": "proxy TDC_lower=0.619 (Q-Lead) WARN — v3 실측 MANDATORY",
+        "ax_005_status": "PASS (Q25 ≠ D25 독립 증명 2026-04-19)"
+      },
+      {
+        "id": "S8", "strategy": "Reserve_Cash",
+        "role": "Reserve", "weight": 0.11,
+        "status": "ACTIVE"
+      },
+      {
+        "id": "S9", "strategy": "misc_unallocated",
+        "role": "Misc", "weight": 0.08,
+        "status": "PENDING_REALLOCATION",
+        "note": "H_1689/H_1692 Judge S6 결과 후 조정"
+      }
+    ],
+    "confirmed_active_weight": 0.43,
+    "conditional_hold_weight": 0.47,
+    "hard_drop_weight": 0.10,
+    "defense_cluster_current": 0.23,
+    "defense_cluster_target": 0.33,
+    "defense_gap_note": "STR_1687 DROP -10pp. H_1689 v3 Judge PASS 후 23% 단독 유지"
+  },
+
+  "admission_rule_v3_5_3": {
+    "version": "v3.5.3",
+    "base": "v3.5.2",
+    "gates_14_total": [
+      "Gate0: PIT C1~C15 + lookahead_detector + Codex",
+      "Gate1~3: 허들 + Grade (hard_fail → REJECT)",
+      "Gate4: Harvey t > 3.3 (Bonferroni 5-test) + DSR MANDATORY",
+      "Gate5: FF5/Carhart alpha",
+      "Gate6: tail_risk CDaR/CVaR",
+      "Gate7: IC-Return SR/ICIR >= 0.30 MANDATORY",
+      "Gate8: Role Honesty (AX-001 v2 / AX-005 exclusion)",
+      "Gate9: Alpha Lab ICIR >= 0.20 + 5Y IC 유의성",
+      "Gate10: Anti-pattern 13종",
+      "Gate11: Sequential TDC < 0.30 MANDATORY",
+      "Gate12: L-163 poison_pill MANDATORY hard_block",
+      "Gate13: Signal-Portfolio Translation MANDATORY hard_block",
+      "Gate14: AX-007 auto-reject (single-sleeve defense/core_secondary top-20)"
+    ]
+  },
+
+  "projected_sr": {
+    "prev": 1.78,
+    "str1687_drop_delta": -0.03,
+    "net_conservative": 1.74,
+    "upside_if_h1689_pass": 1.78
+  },
+
+  "governance_requests": [
+    {"id": "GOV-REQ-001", "to": "Q-Lead", "action": "STR_1679v3 신규 Forge task 발행", "priority": "HIGH"},
+    {"id": "GOV-REQ-002", "to": "Risk Manager", "action": "H_1689 v3 23% CVaR/CDaR 4th round", "priority": "HIGH"},
+    {"id": "GOV-REQ-003", "to": "Judge", "action": "STR_1687 AX_CAND 3rd member 판정", "priority": "MEDIUM"}
+  ],
+
+  "governor_next_actions": [
+    "Judge에 rev8-A-revised-v4 검토 + Admission Rule v3.5.3 signoff 요청",
+    "Q-Lead GOV-REQ-001 STR_1679v3 Forge task 발행 확인",
+    "Forge S1 완료 대기 → Judge S6 PASS → 최종 admission (Day 4~5)"
+  ]
+}

@@ -41,31 +41,36 @@ fdb_files <- sort(fdb_files)
 cat(sprintf("[factor_engine] Bulk-loading %d factor DB files (C13+R12+Size)...\n",
             length(fdb_files)))
 
+# LIQ_THRESHOLD=2e8 유동성 필터는 run_all.R Step 2에서 LiqPass 컬럼으로 적용됨 (C10)
+# C13: Z_Score 로드 후 align_factor_direction() 경유 (Z_Score_Aligned 컬럼 parquet에 없음)
 FDB_ALL <- rbindlist(lapply(fdb_files, function(fp) {
-  ym  <- gsub(".*factor_db_(\\d{6})\\.parquet$", "\\1", basename(fp))
+  ym    <- gsub(".*factor_db_(\\d{6})\\.parquet$", "\\1", basename(fp))
   sig_d <- tryCatch(as.Date(paste0(substr(ym,1,4),"-",substr(ym,5,6),"-01")),
                     error = function(e) NA)
   if (is.na(sig_d) || sig_d < as.Date("2002-01-01")) return(NULL)
   dt <- tryCatch(
     as.data.table(read_parquet(fp,
-      col_select = c("Ticker", "Factor_Name", "Z_Score_Aligned", "Coverage"))),
+      col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage"))),
     error = function(e) NULL
   )
   if (is.null(dt) || nrow(dt) == 0) return(NULL)
   dt <- dt[Factor_Name %in% NEEDED_FACTORS & Coverage == TRUE,
-           .(Ticker, Factor_Name, Z_Score_Aligned)]
+           .(Ticker, Factor_Name, Z_Score)]
   if (nrow(dt) == 0) return(NULL)
-  dt[, Date := sig_d]
-  dt
+  dt[, Date := sig_d]; dt
 }), use.names = TRUE, fill = TRUE)
 
+if (nrow(FDB_ALL) == 0) stop("[factor_engine] FDB_ALL empty — NEEDED_FACTORS not in parquet")
+FDB_ALL <- align_factor_direction(FDB_ALL, .load_registry())
+if ("Z_Score_Aligned" %in% names(FDB_ALL)) {
+  FDB_ALL[, Z_Score := Z_Score_Aligned]; FDB_ALL[, Z_Score_Aligned := NULL]
+}
 setkey(FDB_ALL, Date, Ticker)
 cat(sprintf("[factor_engine] Loaded: %s rows | %d months\n",
             format(nrow(FDB_ALL), big.mark=","), uniqueN(FDB_ALL$Date)))
 
-# ---- Wide pivot (single dcast, OPT-1 compliant) ----
 FDB_WIDE <- dcast(FDB_ALL, Date + Ticker ~ Factor_Name,
-                  value.var = "Z_Score_Aligned", fill = NA_real_)
+                  value.var = "Z_Score", fill = NA_real_)
 setkey(FDB_WIDE, Date, Ticker)
 rm(FDB_ALL); gc(verbose = FALSE)
 

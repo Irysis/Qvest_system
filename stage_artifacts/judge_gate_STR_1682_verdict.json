@@ -1,0 +1,146 @@
+{
+  "strategy_id": "STR_1682",
+  "h_code": "H_1676",
+  "strategy_dir": "STR_1682_residual_consensus",
+  "description": "Residual Consensus Revision (Option A requested 4-regressor, actually executed 2-regressor baseline due to spec transmission failure)",
+  "judge_timestamp": "2026-04-18T Session67_Day1_v2_revised",
+  "session": 67,
+  "judge_version": "v6.0_v3_0_rules",
+  "verdict_revision_note": "v1 (11:00 Apr 18) verdict misdiagnosed root cause as '4-regressor over-dilution'. v2 (Session 67 Day 1) corrected after run_log forensic: actual cause = spec transmission failure (Size Factor DB missing + SUE/beta_24m never requested + CAPM dimnames bug → 2-regressor baseline de facto execution).",
+  "overall_verdict": "REJECT_ARCHIVE",
+  "grade_final": "F",
+  "score_final": 32.7,
+  "s7_decision": "ARCHIVE_WITH_PROCESS_LESSON",
+  "s7_rationale": "H_1676 Option A 가설 자체는 실증 미검증 (실제 구현 실패로 인해). Grade F는 원 가설 실패가 아닌 spec transmission 3중 실패 결과. L-159 교훈 적립 + AX_CAND_spec_transmission_failure 트래킹 등록 후 ARCHIVE.",
+
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "lines_scanned": 328,
+      "note": "run_all.R 328 lines CLEAN. PIT 자체는 문제 없음."
+    },
+    "gate_1_impl": {
+      "pass": false,
+      "critical_findings": [
+        "Size Factor DB S01/S02 미존재 (run_log line 21: Size(none)=FALSE)",
+        "SUE / beta_24m Factor DB 요청 흔적 전무 (run_log line 19 bulk-load 목록)",
+        "CAPM beta 계산 dimnames 버그 (run_log line 59 WARN)"
+      ],
+      "de_facto_execution": "requested 4-regressor → actually 2-regressor (log_mcap + R12) baseline",
+      "note": "Gate 1 구현 단계에서 3중 실패로 원 가설 미실행. 통상 Gate 1 세부지표(종목수/유동성/비용)와는 다른 '구현 integrity' 실패."
+    },
+    "gate_2_robustness": {
+      "pass": false,
+      "rolling6m_hit_pct": 61.4,
+      "worst_6m_ret_pct": -57.3,
+      "max_consec_neg_alpha": 7,
+      "rolling_12m_hit_pct": 64.6,
+      "note": "Worst6M -57.3% extreme drawdown. 7 consecutive negative alpha months. 단, 이는 원 가설 평가가 아닌 잘못 실행된 2-regressor baseline 결과."
+    },
+    "gate_3_perf": {
+      "pass": false,
+      "hard_fail": true,
+      "hard_fail_reason": "MDD 70.9% > 45% (v2.2 hurdle hard gate)",
+      "sharpe_monthly": 0.264,
+      "cagr": 7.9,
+      "mdd": -70.9,
+      "total_score": 32.7,
+      "total_score_v21": 32.7,
+      "grade_hurdle": "F",
+      "note": "Grade F confirmed. 다만 원 가설의 실패가 아닌 spec transmission failure의 결과임을 명시."
+    },
+    "gate_4_stat": {
+      "pass": "NA_HARD_FAIL",
+      "dsr": "NA",
+      "ff5_alpha_t": "NA",
+      "note": "Hard fail + 원 가설 미실행으로 통계적 방어 의미 없음."
+    },
+    "gate_5_diversity": {
+      "pass": "NA_HARD_FAIL",
+      "grade_a_corr": "NA",
+      "detected_family": "defense",
+      "note": "role=none (not core/diversifier/defense). detected_family=defense는 regressor 결과일 뿐 실효 defense 아님."
+    },
+    "gate_6_family_saturation_v3_1": "NA_HARD_FAIL",
+    "gate_7_role_honesty_v3_1": "NA_HARD_FAIL",
+    "gate_8_tdc_v3_2": "NA_PRE_HARD_FAIL — admission 후보 자격 상실",
+    "gate_9_structural_diagnosis_v3_3": {
+      "pass": false,
+      "trigger_condition": "STR_1682는 1회 FAIL (2회 연속 FAIL 아직 아님). Structural diagnosis 발동 미해당.",
+      "note": "다만 STR_1537 + STR_1682 = spec transmission failure pattern 2회 재현으로 **process-level structural diagnosis** 별도 발동."
+    },
+    "gate_10_consensus_tier_v3_4": "NA_HARD_FAIL"
+  },
+
+  "root_cause_analysis_v2_corrected": {
+    "v1_diagnosis_deprecated": "4-regressor 과도 희석 (오진)",
+    "v2_root_cause_evidence_based": {
+      "failure_1_factor_db_missing": {
+        "evidence": "run_log line 21: 'C13: TRUE | R12: TRUE | Size(none): FALSE'",
+        "interpretation": "S01/S02 Size 팩터 Factor DB 미존재. 잔차화 1번째 regressor 로드 실패."
+      },
+      "failure_2_spec_transmission": {
+        "evidence": "run_log line 19: 'Bulk-loading C13+R12+Size'만 존재. SUE/beta_24m 요청 흔적 전무.",
+        "interpretation": "Q-Lead Option A 강화 지시 (4-regressor: log_mcap + R12 + SUE + beta_24m) → Forge 실제 구현은 Size만 요청 (3-factor 시도) → Size 부재로 사실상 2-regressor (log_mcap + R12)로 fallback."
+      },
+      "failure_3_capm_dimnames_bug": {
+        "evidence": "run_log line 59: 'WARN CAPM: length of dimnames [2] not equal to array extent'",
+        "interpretation": "beta_24m 계산 루틴 R matrix dimnames 불일치. 설령 beta_24m 요청했어도 계산 실패했을 것."
+      },
+      "confirmation": "run_log line 40 FMB 'Size t=-0.62 | Mom t=0.11 | R2=0.029' = 2-regressor 실측 서명 (4개 regressor가 아닌 Size+Mom 2개만 FMB에 등장)"
+    },
+    "precedent_STR_1537": "동일 spec transmission failure pattern 최초 발생. 2회 재현 = process-level structural diagnosis 발동 조건 충족."
+  },
+
+  "l_code_issued": {
+    "l_code_id": "L-159",
+    "file_path": "stage_artifacts/l_code_STR_1682.json",
+    "methodology_memory_location": "methodology_memory.md line ~1060 (L-158 직후)",
+    "title": "STR_1682 3중 인프라/프로세스 실패 — spec 미반영 + Factor DB 부재 + CAPM 버그 (AX 승격 후보)"
+  },
+
+  "ax_candidate_issued": {
+    "ax_candidate_id": "AX_CAND_spec_transmission_failure",
+    "file_path": "qepm/memory/axioms/review_log/AX-CAND_spec_transmission_failure_L159_20260418.json",
+    "estimated_5_axis_score": 0.60,
+    "review_date": "2026-07-17",
+    "blockers": "frequency 2회 (3회+ 기준 미달), economic_mechanism axis 해석 필요"
+  },
+
+  "archive_status": {
+    "strategy_id": "STR_1682",
+    "archive_reason": "H_1676 Option A spec transmission failure 3중 실패로 원 가설 미검증 상태에서 Grade F. ARCHIVE_WITH_PROCESS_LESSON.",
+    "pg_admission_status": "REJECTED",
+    "strategy_dir_retention": "retain as L-159 / AX candidate evidence",
+    "h_1676_hypothesis_status": "UNVALIDATED — Option A 실제 실행되지 않음. 재설계 후 재실행 필요."
+  },
+
+  "followup_actions_for_scout": [
+    "H_1676 Option A 포기 권고 (실증 자체가 이루어지지 않음). Option B 재설계 or 2-regressor baseline 복귀.",
+    "handoff kit에 required_factors list 명시 + Factor DB availability 사전 점검 절차 추가 (L-157 v3 pre-checks 확장)",
+    "Step-wise variance ratio 사전 측정 프로토콜 (향후 모든 잔차화 설계 일반화)"
+  ],
+
+  "followup_actions_for_forge": [
+    "`verify_factor_availability(required_factors)` preflight 함수 구현 (load_month_factors 호출 전 필수)",
+    "CAPM beta 루틴 dimnames 가드 추가 (nrow/ncol pre-check + tryCatch fallback)",
+    "Scout spec (handoff kit) → Forge implementation 변환 diff audit 자동화"
+  ],
+
+  "followup_actions_for_governor": [
+    "H_1676 PG1 admission 경로 일시 중단 (재설계 대기)",
+    "STR_1679v3 Slot A (H_1682 기반) 집중 — Slot B (H_1676 residual consensus) 재설계 후 재검토"
+  ],
+
+  "followup_actions_for_qlead": [
+    "Q-Lead → Forge spec 전달 체인 감사: Scout S0 → handoff → Forge S1 구현 사이 spec drift 탐지 인프라 설계 (STR_1537/STR_1682 공통 근본 원인)",
+    "AX_CAND_spec_transmission_failure 2026Q3 review까지 STR_1537 evidence 수집 + 추가 재현 모니터링"
+  ],
+
+  "judge_signoff": {
+    "agent_id": "judge",
+    "timestamp": "2026-04-18 Session 67 Day 1",
+    "signoff_note": "STR_1682 REJECT_ARCHIVE 공식 판정 완료. L-159 적립 + AX candidate 트래킹 등록. 원 H_1676 Option A 가설은 미검증 상태로 남음 — 향후 재설계 후 재실행 가능."
+  }
+}

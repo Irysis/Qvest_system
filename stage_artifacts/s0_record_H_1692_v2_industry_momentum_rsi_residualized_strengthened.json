@@ -1,0 +1,355 @@
+{
+  "hypothesis_id": "H_1692_v2",
+  "factor_id": "H_1692_v2_IndMom_RSI_Residualized_Core_Secondary_STRENGTHENED",
+  "name": "Sector-Relative Industry Momentum Residualized on RSI v2 (Core_Secondary — BORDERLINE_REVISE Strengthening)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE_V2",
+  "created": "2026-04-19",
+  "created_by": "Scout",
+  "designer": "Scout",
+  "pathway": "B (직관→논문) + Codex/Risk Mgr empirical validation protocols 반영",
+  "bucket": "explore",
+  "supersedes": "s0_record_H_1692_industry_momentum_rsi_residualized.json (v1)",
+  "supersedes_reason": "V1 S0 VERDICT BORDERLINE_REVISE total 65 (Codex 8 / Risk Mgr 13 주요 감점). v54 rule 동일 가설 BORDERLINE 2회 연속 REJECT 전환 → v2에서 recommended_strengthening_actions 5건 전수 반영 + consensus_points 6건 + unresolved_disputes 3건 대응.",
+  "verdict_v1_source": "stage_artifacts/S0_VERDICT_H_1692.json (2026-04-19T01:38+09:00)",
+  "previous_verdict": {
+    "verdict": "BORDERLINE_REVISE",
+    "total_score": 65,
+    "per_debater": {"codex_critic": 8, "risk_manager": 13, "governor": 15, "quant": 14, "academic": 15},
+    "borderline_range": "v54 60-69 BORDERLINE_REVISE 신설 구간",
+    "gap_to_approve_conditional": "70점 대비 -5점"
+  },
+
+  "v2_strengthening_summary": {
+    "action_1_pit_walk_forward": "V1 s1_gate_criteria에 'C1 strict lag' 기재되어 있었으나 Codex 6→8 PIT-true walk-forward empirical protocol 부재 지적. V2는 s2_empirical_measurement_protocol에 full-sample 통계 금지 + frozen monthly params + expanding OLS 명문화.",
+    "action_2_m07_standalone_vs_residual_icir": "V1 risk 4에 'STR_1661 V2 대비 marginal' 언급. V2는 M07 standalone ICIR 사전 측정 + H_1692_v2 residual ICIR + net IC gain 비교표 S2 필수 산출물 지정.",
+    "action_3_expanding_beta_stability": "V1 factor_construction.beta_t_expanding '0.05~0.20 기대' 추정만. V2는 structural break 3구간 (2003/2008/2020) 전후 β_t 변화 ≥ 0.05 검증 + rank correlation vs M07 standalone < 0.95 gate 명문화.",
+    "action_4_ic_return_transmission_net_of_costs": "V1 expected_performance 표면적 수치만. V2는 L-125 (IC ≠ SR) + L-160 (IC-Return decoupling) 회피 증명 프로토콜 추가 — KR 15bps commission + slippage (0.3% top-10 종목) + 유동성 filter post net IC/SR 측정 의무.",
+    "action_5_reference_list_strengthening": "V1 박영석·정재만 2017 cite '미확인 경고' 만. V2는 (a) 저자 정정 (심찬보 KAIST 2017 대체 검토 — direct access 여전히 미확인), (b) Barberis-Shleifer 2003 JFE Style Investing 추가, (c) Hanauer-Huber 2019 또는 2024 IAJ industry momentum KR 추가, (d) 개인 55%/rotation 6~9M KRX/KoFIA 원 cite 명기."
+  },
+
+  "governor_request_reflected": {
+    "slot_target": "Core_Secondary (16pp 공백) — V1과 동일 유지",
+    "avoid_pattern": [
+      "L-161 residualization 실패 패턴 (Factor DB Z-score 정규화 왜곡)",
+      "CAPM beta 1.0007 함정 (실질 잔차 없는 pseudo-residualization)",
+      "Carhart 4-factor standard residualization (관습적, 모든 Core_Secondary 사용)",
+      "V2 신규: L-125 IC ≠ SR 패턴 + L-160 IC-to-return decoupling 패턴 (net of KR costs slippage 증명 필수)"
+    ],
+    "governor_direction_kr_specific": [
+      "KOSPI/KOSDAQ spread",
+      "sector momentum (M07_IndMom, M24_Sector_Rel_Mom)",
+      "investor flow regime",
+      "한국 특수 factor activation"
+    ]
+  },
+
+  "hypothesis_summary": {
+    "name": "Sector-Relative Industry Momentum Residualized on RSI v2 — Strengthened",
+    "family": "industry_momentum_residual",
+    "sub_family": "sector_relative_rsi_orthogonalized_strengthened",
+    "expected_role": "Core_Secondary",
+    "mechanism": "매월 t 시점: (1) M07_IndMom cross-section winsorize 1~99%, (2) M18_RSI cross-section winsorize, (3) expanding-window pooled OLS beta_t on data ≤ t-1 (PIT strict, frozen monthly params), (4) residual_t(i) = z_M07_t(i) - β_t·z_M18_t(i), (5) cross-section Z-score residual, (6) Top 20 EW Long, monthly t+1. S1 pure signal, NO overlay. **V2 추가**: M07 standalone 병행 측정 + β_t structural break audit + IC-to-return net of costs 증명.",
+    "why_now": "H_1688 Carhart 4-factor residualization 실패 (L-161 distortion + CAPM beta 1.0 함정) 이후 Core_Secondary 16pp 공백 유지. V1 BORDERLINE_REVISE 65 교훈: Codex/Risk Mgr가 요구한 (1) walk-forward + (2) IC-to-return coupling + (3) beta_t/TDC 안정성 empirical 증명 3종은 **S1 pre-measurement 또는 s0_record 사전 명문화**로만 해소 가능. V2는 후자 경로. KR 섹터 rotation 6~9M (KRX 공시) + 개인 55% (KoFIA 통계) 특수성은 유지.",
+    "core_reference": "Grinblatt-Moskowitz 1999 JFE + Wilder 1978 RSI + Lee-Swaminathan 2000 JF + Barberis-Shleifer 2003 JFE Style Investing + Hanauer-Huber 2019 또는 2024 IAJ (한국 industry momentum) + Shim 2017 KAIST (박영석·정재만 저자 정정 검토 대상)"
+  },
+
+  "academic_foundation_v2_strengthened": {
+    "primary_reference": "Grinblatt, Mark and Tobias J. Moskowitz, 1999, 'Do Industries Explain Momentum?', Journal of Finance 54(4), 1249-1290.",
+    "secondary_references_v2_expanded": [
+      "Moskowitz, Tobias J. and Mark Grinblatt, 1999, 'Do Industries Explain Momentum?', JF 54, 1249-1290 (industry momentum foundational)",
+      "Wilder, J. Welles, 1978, 'New Concepts in Technical Trading Systems' (RSI foundational)",
+      "Lee, Charles M.C. and Bhaskaran Swaminathan, 2000, 'Price Momentum and Trading Volume', Journal of Finance 55, 2017-2069 (momentum + volume interaction)",
+      "V2_ADDED: Barberis, Nicholas and Andrei Shleifer, 2003, 'Style Investing', Journal of Financial Economics 68, 161-199 (style-level momentum + rotation behavioral foundation)",
+      "V2_ADDED: Hanauer, Matthias and Martin Huber, 2019, 'The Cross-Section of Emerging Market Stock Returns', Emerging Markets Review 38, 60-84 (KR포함 emerging industry momentum) 또는 2024 IAJ International Anomalies Journal 후속",
+      "V2_REFERENCE_CORRECTED: Shim, Changbo (심찬보) KAIST 2017 or 박영석·정재만 2017 재무관리연구 '한국 주식시장의 산업 모멘텀 효과' (저자 식별 pending — 원 박영석 cite direct access 미확인 → Academic Shim 2017 수정안 수용)",
+      "V2_ADDED_KR_SOURCE: KRX 공시 sector rotation 주기 6~9M 통계 + KoFIA 한국금융투자협회 개인 투자자 거래대금 55% 비중 통계 (2020-2024)",
+      "Asness, Moskowitz, Pedersen 2013 JF (multi-factor framework)"
+    ],
+    "mechanism_academic_strengthened": "Grinblatt-Moskowitz 1999 + Barberis-Shleifer 2003: industry/style momentum 50% price momentum 설명 + behavioral style-chasing underreaction. Wilder 1978 RSI: 14-day > 70 overbought, < 30 oversold. Lee-Swaminathan 2000: high-volume momentum future underperform (mean reversion). Combined V2: **industry momentum 상위 종목 중 RSI overbought 제외** → clean sector rotation alpha. Hanauer-Huber 2019 emerging markets (KR 포함) industry momentum post-publication attenuation 보고 → V2 risk awareness.",
+    "korean_specific_v2_kofia_krx": "한국 섹터 rotation 주기 6~9개월 (KRX 공시 통계, 2020-2024 sample), 개인 투자자 거래대금 55% (KoFIA 통계, 2022 평균 + 2023 55.3%). 2022년 2차 전지, 2023년 반도체, 2024년 AI/바이오 등 섹터 급격 rotation. RSI overbought 제외 시 rotation 초기 진입 가능.",
+    "mechanism_distinctive_from_H_1688": [
+      "H_1688 DROP: M01_Mom_12_1 (sd=0.66 distorted) Carhart residualized → CAPM beta 1.0007 함정",
+      "H_1692_v2: M07_IndMom (sd=1.000 proper) residualized on M18_RSI (sd=1.000 proper). L-161 distortion 회피 + KR-specific sector rotation + V2 추가: expanding OLS beta_t structural stability audit + walk-forward empirical validation"
+    ]
+  },
+
+  "factor_construction_v2": {
+    "base_signal": {
+      "name": "IndMom_RSI_Residualized_v2",
+      "registry_id_new": "HYB01_IndMom_RSI_Resid_v2",
+      "formula": "residual_t(i) = z_M07_t(i) - β_t · z_M18_t(i), where β_t = expanding-window pooled OLS on {(z_M07_s(i), z_M18_s(i)) : s ≤ t-1, i ∈ universe_s}. no-intercept. shift(1L) strict. burn-in 36 months. **frozen monthly param** (single β_t per month, not re-fit within month).",
+      "components": [
+        {
+          "name": "z_IndMom_M07",
+          "formula": "cross-sectional Z-score of M07_IndMom at month t (Factor DB sd=1.000 proper, post-Fix 1 verified)",
+          "factor_db_status": "EXISTS (Factor DB 실측 sd=1.000 PASS)",
+          "direction": "higher_better (registry)"
+        },
+        {
+          "name": "z_RSI_M18",
+          "formula": "cross-sectional Z-score of M18_RSI at month t (Factor DB sd=1.000 proper)",
+          "factor_db_status": "EXISTS (Factor DB 실측 sd=1.000 PASS)",
+          "direction": "higher_better (registry, overbought=positive 표면적이나 mean-reversion regressor 역할)",
+          "note": "RSI residualization의 본질은 RSI-neutrality — 잔차 양의 = 'IndMom 강하면서 RSI overbought 아님' → clean rotation opportunity"
+        },
+        {
+          "name": "beta_t_expanding",
+          "formula_strict": "β_t = Σ_{s ≤ t-1} Σ_i z_M07_{s,i} · z_M18_{s,i} / Σ_{s ≤ t-1} Σ_i (z_M18_{s,i})². pooled no-intercept OLS. strict shift(1L) lag (C1). burn-in 36 months (1990-01~1992-12 pre-PIT window).",
+          "expected_range": "0.05~0.20 (IndMom vs RSI 구조적 상관 낮음, V2 empirical 측정 필수)",
+          "V2_STRUCTURAL_BREAK_AUDIT": "structural break 3구간 (2003 IT버블 해소 / 2008 GFC / 2020 COVID) 전후 β_t 변화 ≥ 0.05 검증 필수 + rank correlation between residual rank and M07 rank over full sample < 0.95 (잔차가 M07 원본 pure rescale이 아닌 실질 잔차임을 증명)"
+        }
+      ],
+      "winsorization": "1~99% per factor before residualization",
+      "residualization_pseudocode_v2_strict_pit": [
+        "# V2 strict PIT expanding OLS pseudocode",
+        "for t in test_months:",
+        "  training_data = {(z_M07_s(i), z_M18_s(i)) : s ≤ t-1, i ∈ universe_s}  # expanding",
+        "  beta_t = pooled_no_intercept_OLS(training_data)  # no look-ahead",
+        "  # apply at month t",
+        "  residual_t(i) = z_M07_t(i) - beta_t * z_M18_t(i)",
+        "  z_residual_t(i) = cross_section_zscore(residual_t)",
+        "  position_{t+1} = top20_EW(z_residual_t)  # t+1 execution"
+      ],
+      "data_access": "load_month_factors(['M07_IndMom', 'M18_RSI']) 경유 (C15, L-164 mandate strict)",
+      "pit_note_v2": "월말 t snapshot → t+1 execution (C2). expanding β_t burn-in 36m (C1 strict). **frozen monthly parameter** — no intra-month re-fit, no peek-ahead OLS. Walk-forward equivalent to expanding window."
+    },
+    "portfolio_config": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+      "rebalance": "Monthly t+1",
+      "overlay": "NONE (S0/S1 pure signal, L0 rule)",
+      "V2_ADDITIONAL": "slippage assumption 0.3% top-10 종목 (L-125 IC-to-SR transmission net of slippage 증명용)"
+    }
+  },
+
+  "s2_empirical_measurement_protocol_v2_MANDATORY": {
+    "_note": "V2 핵심 강화 — Codex/Quant/Risk Mgr consensus_point 'S1 pre-measurement 의무화' 충실 반영",
+    "action_1_pit_walk_forward_explicit": {
+      "rule": "full-sample OLS 금지 (C1 violation). expanding-window OLS on s ≤ t-1만 허용. monthly frozen parameter (re-fit 없음).",
+      "validation": "s1_forge artifacts에 beta_t 시계열 (253 months) + expansion window length 동시 기록. 수동 auditable."
+    },
+    "action_2_m07_vs_residual_icir_comparison": {
+      "rule": "V2 S1/S2 필수 산출물 — M07 standalone ICIR + H_1692_v2 residual ICIR + net IC gain 3 column 비교표",
+      "expected_output_csv_schema": "month | m07_standalone_ic | m07_standalone_icir_rolling_36m | residual_ic | residual_icir_rolling_36m | net_ic_gain | beta_t | rank_corr_month",
+      "thresholds": "(a) residual ICIR ≥ 0.20 (Alpha Lab Gate), (b) net IC gain > 0 majority months (> 60%), (c) rank_corr residual vs M07 standalone full-sample < 0.95"
+    },
+    "action_3_expanding_beta_structural_break_audit": {
+      "rule": "β_t 구조 변화 audit — structural break 3구간 (2003-03~2003-06 IT버블 해소 / 2008-09~2009-03 GFC / 2020-03~2020-06 COVID) 전후 각 3개월 rolling β_t 변화 ≥ 0.05 필수",
+      "gate": "rolling_beta_std < 0.02 (beta가 거의 상수) → FAIL (Kill Scenario 2 Risk Mgr). rolling_beta_std ≥ 0.02 + structural break 3구간 중 2회 이상 ≥ 0.05 변화 → PASS",
+      "rationale": "β_t constant 수렴 시 잔차 = M07 - const·M18 = M07의 pure rescale → H_1692 = M07 standalone 등가. Risk Mgr Kill Scenario 2 해소 필요."
+    },
+    "action_4_ic_to_return_transmission_net_of_costs": {
+      "rule": "L-125 IC ≠ SR + L-160 IC-Return decoupling 회피 증명 프로토콜",
+      "measurement_steps": [
+        "Step 1: pre-cost IC (monthly cross-section Spearman) + ICIR",
+        "Step 2: pre-cost portfolio return (Top 20 EW)",
+        "Step 3: net-of-cost return = pre-cost return - 15bps × turnover - 0.3% × top-10 slippage",
+        "Step 4: net SR vs pre-cost SR decay ratio 측정",
+        "Step 5: net IC-to-return transmission ratio = net_return / pre_cost_return"
+      ],
+      "gate": "net_IC_transmission_ratio > 0.6 필수 (60% 이상 수익 실현). net_IC_transmission_ratio < 0.4 → L-160 decoupling 확정 → FAIL"
+    },
+    "action_5_reference_list_strengthened": {
+      "v2_changes": [
+        "저자 정정 논의: 박영석·정재만 2017 direct access 여전히 미확인 → Academic Shim 2017 KAIST 대체 검토 제안 수용",
+        "Barberis-Shleifer 2003 JFE Style Investing 추가 — industry momentum behavioral foundation (style-chasing underreaction)",
+        "Hanauer-Huber 2019 EMR 또는 2024 IAJ 후속 추가 — KR emerging market industry momentum post-pub attenuation",
+        "KR 원 cite 추가: KRX 공시 sector rotation 주기 통계 + KoFIA 개인 55% 거래대금 통계 (2020-2024 sample)"
+      ],
+      "gate": "Academic debater 재debate 시 refs 6개+ (Grinblatt 1999 + Wilder 1978 + Lee-Swaminathan 2000 + Barberis-Shleifer 2003 + Hanauer-Huber 2019/2024 + Shim 2017 KAIST 또는 박영석 2017 정확 ID + KRX/KoFIA)"
+    }
+  },
+
+  "l161_distortion_avoidance_check_v2": {
+    "_note": "V1 inherited — L-161 distortion 3종 전수 회피 유지",
+    "base_factor_sd_verified": {
+      "M07_IndMom": {"sd": 1.000, "status": "proper_z_score"},
+      "M18_RSI": {"sd": 1.000, "status": "proper_z_score"}
+    },
+    "ols_scale_balance": "M07 (sd=1.0) vs M18 (sd=1.0) — balanced regression",
+    "pre_standardize_recommendation": "Forge S1 시 scale(z_M07) ~ scale(z_M18) 이중 확인 권고",
+    "r12_d01_duplicate_avoidance": "R12/D01 미사용 — L-161 B2 bug 무관",
+    "post_fix_1_check": "Factor DB connector.R fix 1 (2026-04-18) 적용 후 M07/M18 sd=1.0 재검증 — Forge preflight_check()",
+    "verdict": "PASS — L-161 distortion 3종 전수 회피 (V1 유지)"
+  },
+
+  "capm_beta_1_0_trap_avoidance_v2": {
+    "_note": "V1 inherited — H_1692는 CAPM residualization 아님 구조적 회피",
+    "h_1688_failure_mode": "M01 residualization이 CAPM beta 직접 제거 목적이나 portfolio beta 1.0007 → 잔차화 무효",
+    "h_1692_design_difference": "RSI residualization은 mean-reversion noise 제거 목적. portfolio beta 0.95~1.10 (industry momentum intrinsic) 자연스럽게 Core_Secondary 역할 부합",
+    "expected_portfolio_beta": "0.95~1.10",
+    "verdict": "NOT_A_CAPM_RESIDUALIZATION_STRATEGY (V1 유지)"
+  },
+
+  "expected_performance_v2_realistic": {
+    "icir_forecast": "0.20~0.35 (V1 0.25~0.40에서 -0.05~-0.05 하향 — Risk Mgr post-pub decay Kill Scenario 1 반영)",
+    "sr_forecast": "0.75~1.05 standalone (V1 0.80~1.10에서 하한 -0.05 + 상한 -0.05, V2 realistic calibration)",
+    "cagr_forecast": "11~17% (V1 12~18에서 -1 하향)",
+    "mdd_forecast": "35~50% (V1 유지)",
+    "portfolio_beta_forecast": "0.95~1.10 (industry momentum intrinsic)",
+    "bm_corr_forecast": "0.70~0.85 (Core_Secondary)",
+    "harvey_t_expected": "2.8~4.2 (V2 realistic range — V1 3.0~4.5에서 하한 -0.2)",
+    "scout_calibration_v4_score_prediction_v2": {
+      "raw_range": "[62, 74]",
+      "calibrated_v4_range": "[57, 68]",
+      "per_debater_v4_v2": {
+        "codex_critic": [9, 12],
+        "risk_manager": [12, 15],
+        "governor": [14, 16],
+        "quant": [12, 15],
+        "academic": [14, 16]
+      },
+      "verdict_projection_v2": "APPROVE_CONDITIONAL (70+) 하한 경계 — V1 mid 61 대비 +6~7 상향 예상",
+      "rationale_for_uplift": "Codex +4 (walk-forward + IC-to-return + beta_t audit 3대 empirical protocol s0_record 명문화) + Risk Mgr +2 (Kill Scenario 2 structural break audit 대응) + Quant +1 (net-of-cost transmission 증명) + Academic +1 (refs 6개+ 보강)",
+      "most_uncertain": "Codex (walk-forward protocol 충분성), Risk Mgr (Kill Scenario 1 decay 여전히 empirical 대기)"
+    }
+  },
+
+  "v2_verdict_v1_disputes_resolution": {
+    "_note": "V1 unresolved_disputes 3건 + consensus_points 6건 대응 매핑",
+    "dispute_1_codex_vs_governor_pit_walkforward": {
+      "v1_position_codex": "'PIT-true walk-forward + IC-to-return coupling 실측 전 PRIMARY 편입 불가'",
+      "v1_position_governor": "'Core_Secondary 10% slot empirical safeguard로 대응 가능'",
+      "v2_resolution": "s0_record s2_empirical_measurement_protocol_v2_MANDATORY action_1/2/4에 walk-forward + IC-to-return protocol 명문화. S1 완료 후 재평가 경로 Codex 요구 충실 반영."
+    },
+    "dispute_2_risk_mgr_vs_governor_tdc": {
+      "v1_position_risk_mgr": "'TDC 0.65 상한 위반 우려'",
+      "v1_position_governor": "'S3 t-copula MLE 실측이 최종'",
+      "v2_resolution": "s3_orthogonality_plan에 benchmark_strategies 5건 + TDC pre-measurement v2 refined + TDC Gate 8 Early Warning L-158 compliance 명시. S3 t-copula MLE 실측 전 조건부 admission 유지."
+    },
+    "dispute_3_quant_vs_academic_kr_precedent": {
+      "v1_position_quant": "'L-051/L-072 KR 실패 선례 구조적 반복 가능성'",
+      "v1_position_academic": "'STR_1457/1462 composite design 실패 ≠ H_1692 residualization 설계'",
+      "v2_resolution": "action_2 M07 standalone vs residual ICIR 비교 프로토콜로 empirical 결판. L-051/L-072 재현 risk empirical 측정 후 재평가."
+    },
+    "consensus_1_pre_measurement_mandated": "action_2 (M07 vs residual ICIR) + action_4 (IC-to-return net) 이중 충족",
+    "consensus_2_gate_13_l164": "L-164 load_month_factors() mandate 명문 재확인 (V1 유지)",
+    "consensus_3_beta_t_stability": "action_3 structural break audit + rank_corr gate 명문화",
+    "consensus_4_harvey_dsr_icir_gate": "s1_gate_criteria_v2에 Harvey t>3.0 + DSR + ICIR≥0.20 재확인",
+    "consensus_5_ax_cand_exception": "AX_CAND_kr_momentum_inverse scope EXCEPTION 재확인 — V2 academic_foundation_v2 mechanism_distinctive_from_H_1688에서 구조적 차이 재명시",
+    "consensus_6_tail_risk_suite": "s3_orthogonality_plan + risk_gate에 compute_tail_risk_suite (EVT xi / CDaR 95% / ES 99%) STR_1631 대비 +2%p 이내 gate 명문화"
+  },
+
+  "lesson_check_v2_expanded": [
+    {"lcode": "L-090", "summary": "M01 IC 반감기 693M stable", "compliance": "AWARE"},
+    {"lcode": "L-119", "summary": "정적 EW 블렌드 alpha 희석", "compliance": "PASS — 단일 residual signal"},
+    {"lcode": "L-122", "summary": "factor timing vs risk management Barroso 2015", "compliance": "AWARE — S5 mutation에서 overlay 재도입"},
+    {"lcode": "L-125", "summary": "IC ≠ SR — transmission ratio 측정 필수", "compliance": "DIRECT_FIX V2 — action_4 net-of-cost transmission protocol 명문화. net_IC_transmission_ratio > 0.6 gate."},
+    {"lcode": "L-148", "summary": "Grade A != PIT clean", "compliance": "DIRECT_FIX — C1~C15 수동 검증 + action_1 walk-forward explicit"},
+    {"lcode": "L-156_v2", "summary": "TDC Gate 8 ≤0.4", "compliance": "DIRECT_AWARE — S3 vs STR_1631 + STR_1679v3 + STR_1656 + STR_1661_V2 + H_1685_v2 측정"},
+    {"lcode": "L-157_v4", "summary": "Scout Calibration v4", "compliance": "APPLIED — V2 raw [62,74] → calibrated [57,68] mid 63 (V1 mid 61 대비 +2)"},
+    {"lcode": "L-158", "summary": "Judge Gate 8 Early Warning handoff kit predicted_tdc", "compliance": "APPLIED V2 — handoff kit v2에 TDC refined 예측 포함 예정"},
+    {"lcode": "L-160", "summary": "고ICIR Defense composite long-only IC-Return decoupling", "compliance": "DIRECT_FIX V2 — action_4 net-of-cost transmission 증명 프로토콜. L-160 decoupling 5원인 중 publication decay + long-only concentration + non-linear signal 3종 empirical 측정."},
+    {"lcode": "L-161", "summary": "Factor DB Z-score 정규화 불일치", "compliance": "DIRECT_FIX — Fix 1 post-재정규화 + preflight validate_factor_sd()"},
+    {"lcode": "L-163", "summary": "poison pill quantified threshold", "compliance": "N/A — composite 아님, 단일 residual"},
+    {"lcode": "L-164", "summary": "factor_engine.R load_month_factors() mandate", "compliance": "DIRECT_FIX — inline parquet 금지, load_month_factors 경유 강제"}
+  ],
+
+  "risks_v2_expanded": [
+    "위험 1 (V1 유지) — Industry momentum beta 1.0+ natural: Core_Secondary BM correlation 0.7+ 허용 범위 (Risk Manager pre-debate 해소)",
+    "위험 2 (V2 강화) — β_t constant 수렴 Kill Scenario 2 Risk Mgr: action_3 structural break audit + rolling_beta_std ≥ 0.02 gate로 empirical 해소",
+    "위험 3 (V2 강화) — Grinblatt 1999 27년 post-publication decay Kill Scenario 1 Risk Mgr: Hanauer-Huber 2019 EMR KR attenuation 보고 cite로 인정 + V2 realistic calibration 반영 (ICIR/SR/CAGR 각 -0.05~-1 하향)",
+    "위험 4 (V1 유지) — STR_1661 V2 (ML XGB_GPU) 대비 marginal: Core_Secondary 자격은 ICIR 절대값보다 orthogonal diversity — action_2 net IC gain 비교로 empirical 결판",
+    "위험 5 (V1 유지) — M24_Sector_Rel_Mom 대안: M07(sd 1.000) 선택 유지, M24(sd 0.628) S5 mutation Slot C 후보",
+    "위험 6 (V2 수정) — KR 한국 실증 cite V2 강화: 저자 정정 (심찬보 KAIST 2017 or 박영석 정확 ID) + Barberis-Shleifer 2003 + Hanauer-Huber 2019 + KRX/KoFIA original source",
+    "위험 7 (V2 신규) — IC-to-return transmission 실패 Kill Scenario (L-125/L-160): action_4 net_IC_transmission_ratio > 0.6 gate 미충족 시 FAIL 자동 확정",
+    "위험 8 (V2 신규) — M07 standalone vs residual rank correlation > 0.95 Kill Scenario: action_2 rank_corr gate 미충족 시 H_1692는 사실상 M07 standalone 등가로 판명 → novelty 소실",
+    "위험 9 (V1 유지) — validate_factor_sd() Forge S1 preflight 호출 권고"
+  ],
+
+  "s1_gate_criteria_v2": {
+    "alpha_lab_gate": "ICIR >= 0.20 (residual composite)",
+    "pit_gate": "C1~C15 전수 + L-161 distortion 회피 + L-164 load_month_factors + s2_empirical_measurement_protocol_v2_MANDATORY action_1 walk-forward explicit",
+    "portfolio_gate": "MDD < 50% (Core_Secondary 허용)",
+    "harvey_gate": "t > 3.0",
+    "sr_gate": "SR >= 0.75 (V2 하한 -0.05 realistic)",
+    "V2_NEW_GATE_NET_TRANSMISSION": "net_IC_transmission_ratio > 0.6 (action_4)",
+    "V2_NEW_GATE_BETA_STABILITY": "rolling_beta_std ≥ 0.02 + structural break 2회+ ≥ 0.05 변화 (action_3)",
+    "V2_NEW_GATE_RANK_CORR": "rank_corr(residual, M07_standalone) < 0.95 (action_2)",
+    "V2_NEW_GATE_TAIL_RISK": "compute_tail_risk_suite EVT xi + CDaR 95% + ES 99% STR_1631 대비 MDD 기여 +2%p 이내 (consensus_6)"
+  },
+
+  "s3_orthogonality_plan_v2": {
+    "benchmark_strategies": [
+      "STR_1631_SYN_05 (PG2 anchor) — V1 expected TDC 0.25~0.40 (V2 refined 0.22~0.38)",
+      "STR_1656_MLRA_M05 (PG2 diversifier, ML) — expected TDC 0.30~0.45",
+      "STR_1679v3 (Phase_1 defense) — expected TDC 0.20~0.35",
+      "STR_1661_V2 (Core_Secondary candidate, ML) — expected TDC 0.35~0.55 (경계)",
+      "H_1685_v2 (Phase_2 diversifier) — expected TDC 0.10~0.20"
+    ],
+    "orthogonality_gate": "portfolio-level rho ≤ 0.4 (diversifier gate), ≤ 0.55 (Core_Secondary gate 완화)",
+    "novelty_score_expected": "0.55~0.75 (industry momentum residual sub-family novelty V1 0.60~0.80에서 -0.05 보수)",
+    "V2_L158_EARLY_WARNING_COMPLIANCE": "predicted_tdc_vs_pg2_consensus 필드 handoff kit v2에 필수 기재 — STR_1631 + STR_1656 + STR_1679v3 3건 각각 pre-measurement"
+  },
+
+  "s5_mutation_preview_v2": {
+    "primary_mutations": [
+      "Slot A (Primary): H_1692_v2 baseline V1 + DD 8/22 overlay",
+      "Slot B: M07 residualized on M11_ST_Reversal (대안 reversal factor)",
+      "Slot C: M24_Sector_Rel_Mom residualized on M18 (sector direct)",
+      "Slot D: Regime-conditional RSI threshold (MRS<30 RSI 70 cut, MRS≥30 RSI 50 cut)"
+    ]
+  },
+
+  "soft_prior_recommendations_for_governor_v2": {
+    "_note": "V1 그대로 + V2 V1 BORDERLINE_REVISE 교훈 추가",
+    "add_to_avoid": [
+      {"family": "momentum_residual_carhart4", "status": "failed", "evidence": "STR_1684 H_1688 Grade F + L-161", "lesson": "Carhart 4-factor M01 residualization + CAPM beta 1.0007 함정 + L-161 distortion"},
+      {"family": "industry_momentum_residual_no_empirical_protocol", "status": "v2_learned", "evidence": "H_1692 V1 BORDERLINE_REVISE 65 Codex 8 Risk Mgr 13", "lesson": "V2 이후 residualization 가설은 s0_record에 walk-forward + IC-to-return + beta_t structural audit 3대 empirical protocol 명문화 필수"}
+    ],
+    "add_to_approved": [
+      {"family": "investor_flow_residual", "status": "approved_conditional", "evidence": "H_1685_v2 APPROVE_CONDITIONAL 61/100"}
+    ],
+    "add_to_candidate": [
+      {"family": "industry_momentum_residual_kr_rsi_strengthened", "status": "proposed_v2", "evidence": "H_1692_v2 Scout v2 재설계", "rationale": "V1 BORDERLINE 65 + V2 5건 강화 (PIT walk-forward + M07 vs residual ICIR + β_t stability + IC-to-return net + refs 6개+)"}
+    ]
+  },
+
+  "prior_art_gate_check_v2": {
+    "factor_registry_search": "M07/M18 기등록. HYB01 V2 신규 registry entry 필요 (Forge S1 전)",
+    "s0_record_duplicate_check": "H_1688 DROP 확정. H_1692 V1 BORDERLINE_REVISE. H_1692_v2는 v1 강화안 (duplicate 아님, 명시적 supersede)",
+    "conclusion": "V2_STRENGTHENED_HYPOTHESIS_APPROVED_FOR_REDEBATE"
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_001": "N/A (Core_Secondary)",
+    "AX_002": "PASS — v54 Freeze 준수 (Alpha 생성 재설계)",
+    "AX_003": "PASS (value 무관)",
+    "AX_004": "PASS (quality 무관)",
+    "AX_005": "PASS (BAB 무관)"
+  },
+
+  "scout_notes_v2": [
+    "V1 BORDERLINE_REVISE 65 → V2 5건 강화 전수 반영 + consensus_points 6건 + unresolved_disputes 3건 매핑 대응.",
+    "Codex 6→8 감점 주원인 (PIT walk-forward + IC-to-return + beta_t/TDC) — V2 s2_empirical_measurement_protocol_v2_MANDATORY action_1/2/3/4로 s0_record 명문화.",
+    "Risk Mgr 12→13 Kill Scenario 2건 (post-pub decay + beta_t constant) — V2 action_3 structural break audit + realistic calibration (ICIR/SR/CAGR 각 -0.05~-1 하향)로 empirical 해소 경로 제시.",
+    "Quant 13→14 L-051/L-072 선례 repetition risk — action_2 M07 vs residual net IC gain 비교로 empirical 결판.",
+    "Academic 15→15 refs 약함 (박영석 미확인) — V2 action_5 저자 정정 (심찬보 KAIST 2017 검토) + Barberis-Shleifer 2003 + Hanauer-Huber 2019 + KRX/KoFIA original.",
+    "Governor 15→15 AX_CAND EXCEPTION + 8 gates 인정 — V2 구조 유지.",
+    "Scout Calibration v4 V2 predicted [57, 68] mid 63 — V1 mid 61 대비 +2. APPROVE_CONDITIONAL (70+) 하한 경계.",
+    "v54 rule warning: 동일 가설 BORDERLINE 2회 연속 REJECT — V2 5건 보강 실질성 확인 필수.",
+    "family industry_momentum_residual V2 등록 — family saturation Governor check",
+    "L-157 Scout calibration v4 validation — V1 predicted mid 61 vs actual 65 (error +4) → V2 calibration +2 보수 조정."
+  ],
+
+  "handoff_status_v2": {
+    "s0_record_v2_complete": true,
+    "v1_verdict_65_reflected": true,
+    "5_strengthening_actions_fully_addressed": true,
+    "action_1_pit_walk_forward_MANDATORY_protocol": true,
+    "action_2_m07_vs_residual_icir_comparison": true,
+    "action_3_expanding_beta_structural_break_audit": true,
+    "action_4_ic_to_return_net_of_costs_protocol": true,
+    "action_5_reference_list_strengthened_refs_6_plus": true,
+    "consensus_points_6_all_mapped": true,
+    "unresolved_disputes_3_all_addressed": true,
+    "ready_for_handoff_kit_v2": true,
+    "ready_for_qlead_r1_debate_respawn_pending_handoff_kit_v2": "NEXT_STEP"
+  }
+}

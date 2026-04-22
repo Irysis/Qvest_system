@@ -1,0 +1,88 @@
+{
+  "hypothesis_id": "H_1695",
+  "strategy_id_reserved": "STR_1695_ret_autocorr_liquidity_premium",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Return Autocorrelation Liquidity Friction Premium (L22 + C08 + Q10)",
+
+  "mechanism": "L22_Ret_Autocorr(수익률 자기상관)이 높은 종목은 유동성 마찰(bid-ask spread, 가격충격)로 인해 정보가 가격에 늦게 반영됨 → 단기 자기상관 구조 지속 → 후속 기간 초과수익 획득 가능. L22를 primary signal로, C08_Coverage(애널리스트 커버리지 희소 = 정보 비효율 강화)를 필터로, Q10_Gross_Margin(수익성 품질 최소 조건)을 하방 보호 스크린으로 활용. Lo & MacKinlay(1990) short-term return predictability + Jegadeesh(1990) short-term reversal의 반대 방향(자기상관 지속 구조).",
+
+  "economic_rationale": "Lo & MacKinlay(1990 RFS) 'Stock Market Prices Do Not Follow Random Walks': 소형주 수익률의 양의 자기상관은 거래 마찰과 정보 비대칭에서 기인. 자기상관이 높은 종목 = 아직 가격에 충분히 반영되지 않은 정보가 있는 종목 → 후속 기간 드리프트. Brennan & Subrahmanyam(1996) 유동성 비용이 낮은 종목군에서 이 효과 감소 → 유동성 낮은 KR 중소형주에서 지속. C08_Coverage 낮을수록 기관 분석 부재 → 정보 반영 지연 증폭. Q10_Gross_Margin 스크린으로 fundamentally weak 종목(재무 악화로 인한 자기상관) 제거 → 진짜 유동성 마찰 효과만 포착.",
+
+  "trail": "standard",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "L22_Ret_Autocorr는 price momentum(C19, M07)과 다른 메커니즘 — 유동성 마찰 기반. portfolio_gap_vector v1.0.7 P1_diversifier 필요 + STR_1679v3 HARD FAIL 대비 대안. L22 ic_bad/ic_good=3.93으로 위기 시 유동성 마찰 악화 → signal 강화. STR_1631(C19 기반 earnings composite)과 낮은 상관 예상 — 완전히 다른 alpha source(유동성 vs earnings). AX-007 scope 밖: diversifier role + multi-factor composite.",
+
+  "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+
+  "why_now": "portfolio_gap_vector v1.0.7 sleeve_needs=[defense, diversifier]. STR_1679v3 재설계 중(Task #11) — v3 HARD FAIL 가능성 대비 P1_diversifier 2순위 후보 필요. L22_Ret_Autocorr는 conditional_ic_matrix에서 conditional_value=0.0181(상위 5위)으로 Gate 0.5 PASS. recent_3y_icir=0.367로 최근 3년 안정. 미사용(used=FALSE) 팩터 중 ic_bad/ic_good ratio 3.93 최강 — 위기 구간 signal 가장 크게 강화. KR structural gap: KOSPI 중소형주 시장 구조적 유동성 부족이 이 효과를 미국보다 강하게 유지. C08_Coverage recent_3y_icir=0.585로 최근 3년 강건.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "L22_Ret_Autocorr",
+    "filter_1": "C08_Coverage",
+    "filter_2": "Q10_Gross_Margin",
+    "weight_scheme": "composite: 0.60 * z_L22 + 0.25 * z_C08_inv + 0.15 * z_Q10",
+    "rationale": "L22가 primary liquidity friction signal. C08 반전(커버리지 낮을수록 = 정보 비대칭 높음 → 양수 신호)으로 정보 비효율 강화. Q10 수익성 스크린으로 fundamentally weak 종목 차단.",
+    "c08_direction_note": "C08_Coverage: higher_better = TRUE (커버리지 높을수록 일반적으로 좋음). 그러나 본 가설에서는 커버리지 낮을수록 정보 비효율 효과 강함 → z_C08_inv = -1.0 * Z_Score_Aligned(C08). C13 준수: 명시적 부호 반전."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "L22_Ret_Autocorr": {"conditional_value": 0.0181, "pass": true},
+    "C08_Coverage": {"conditional_value": 0.0051, "pass": true},
+    "Q10_Gross_Margin": {"conditional_value": 0.0183, "pass": true},
+    "coverage_ratio": "3/3 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A2.3 Lo & MacKinlay(1990 RFS) 'Stock Market Prices Do Not Follow Random Walks: Evidence from a Simple Specification Test'. 소형주 수익률 양의 자기상관 + 유동성 마찰 기원 실증. A2.7 Brennan & Subrahmanyam(1996 JFE) 'Market Microstructure and Asset Pricing: On the Compensation for Illiquidity in Stock Returns'. KR 중소형주 응용 근거.",
+
+  "lesson_check": "L-130(IC≠SR): L22 ic_all=0.012로 낮음 — S1에서 유동성 필터 후 quintile 수익률 확인 필수. L-395/396(가격/거래량 3rd alpha 한계): 순수 price-based signal의 약점 인지. C08 반전 사용 시 C13 명시적 곱셈 적용(NEGATE 금지). AX-005 scope: defense family 팩터 미포함 — 해당 없음.",
+
+  "pit_compliance_checklist": {
+    "C1": "L22 rolling autocorrelation은 expanding window 계산 필수 — full-sample 자기상관 계산 금지",
+    "C10": "유동성 필터 2억원 기준 lag=1",
+    "C13_L22": "L22_Ret_Autocorr higher_better 확인 필요. load_month_factors() Z_Score_Aligned 자동 처리",
+    "C13_C08_inv": "C08_Coverage 반전: z_C08_inv = -1.0 * Z_Score_Aligned(C08). NEGATE_FACTORS 금지.",
+    "C15": "load_month_factors(c('L22_Ret_Autocorr','C08_Coverage','Q10_Gross_Margin')) 경유",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "L22 ic_all=0.012 낮음 — quintile 수익률 S1에서 단조성 확인 필수(L-130)",
+    "C08 반전 방향 설계 비직관적 — S1에서 reverse IC plot 검증",
+    "Q10_Gross_Margin KR 적용: 매출총이익률 음수 기업 필터링 효과 확인",
+    "AX-005 scope 체크: defense family 팩터 없음 → AX-005 해당 없음 확인",
+    "L22 Factor DB Usable_Date 패턴: rolling autocorrelation 계산 기준 확인 필요"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.20~0.35 (L22 ic_all 낮으나 composite으로 보완)",
+    "sr_target": "0.7~1.1 (diversifier 역할, ic_bad 강점으로 crisis 방어)",
+    "mdd_target": "< 45%",
+    "role": "diversifier",
+    "tdc_target": "< 0.35 vs STR_1631 (유동성 마찰 = earnings composite과 다른 alpha source)"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Q-Lead 지시 #2 신규 S0 탐색 (P1_diversifier 우선)",
+    "Gate 0.5 coverage ratio 3/3 = 1.0 PASS",
+    "ic_bad/ic_good L22=3.93 — conditional_ic_matrix 전체 최강 위기 IC 비율",
+    "C08 반전 설계 C13 준수 필수 확인 필요",
+    "STR_1679v3 대안으로 설계 — v3 HARD FAIL 시 P1_diversifier 즉시 투입 가능"
+  ]
+}

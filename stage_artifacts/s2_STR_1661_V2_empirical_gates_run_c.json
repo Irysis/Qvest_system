@@ -1,0 +1,137 @@
+{
+  "artifact_type": "s2_empirical_gates_run_c_ml_predictive",
+  "schema_version": "v1",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "variant_primary": "V2 (LambdaRank)",
+  "role": "ml_predictive",
+  "trail": "ml_empirical_first",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 1 — RAM 회복 대기 P1",
+  "purpose": "Q-Lead 지시 P1 — Run C APPROVE_CONDITIONAL unresolved 10건 gate 검증. Admission Rule v3.5.2 ML_predictive role threshold 충족 확인.",
+
+  "run_c_context": {
+    "s0_verdict_v55": "APPROVE_CONDITIONAL (stance 1A+4COND, veto 0, unresolved 10, MINORITY)",
+    "s1_judge_verdict": "PASS_WITH_NOTES (ICIR 1.029, hard_fail=true MDD -50.98%)",
+    "s0_debate_date": "Session 67 Day 2 (E2E Run C)",
+    "trail": "ml_empirical_first",
+    "unresolved_disputes_count": 10
+  },
+
+  "admission_rule_v3_5_2_ml_predictive_gates": {
+    "source": "00_Lawbook/admission_rule_v352.md + v55_consensus_addendum.md Section 6",
+    "threshold_ml_predictive": [
+      "SR_OOS/SR_IS > 0.70",
+      "feature concentration < 0.4",
+      "holdout 12M+"
+    ]
+  },
+
+  "gate_1_sr_oos_over_sr_is_check": {
+    "_requirement": "SR_OOS/SR_IS > 0.70",
+    "_reference": "ml_overfitting_monitor.R (v55 신규 R 코드)",
+    "v2_data_source": "performance.json + nav_V2.csv + ic_timeseries_V2.csv",
+    "measurement_approach_3_options": [
+      "approach_A: time-series split 2008-2014 (IS) vs 2015-2025 (OOS) — 7Y vs 11Y",
+      "approach_B: IS vs OOS XGBoost fold 분리 (hp purged IS CV)",
+      "approach_C: three_period 2008-2014 / 2015-2019 / 2020-2025 각 ICIR 비교 (proxy for SR decay)"
+    ],
+    "current_v2_metrics_by_period": {
+      "period_1_2008_2014_bull_IS_era": {"ICIR": 1.564, "n_months": 76, "positive_rate": 0.947},
+      "period_2_2015_2019_weakening_OOS_era_1": {"ICIR": 0.648, "n_months": 59, "positive_rate": 0.763},
+      "period_3_2020_2025_recovery_OOS_era_2": {"ICIR": 1.056, "n_months": 71, "positive_rate": 0.859}
+    },
+    "ICIR_decay_proxy": {
+      "IS_period_1_ICIR": 1.564,
+      "OOS_average_ICIR_periods_2_3": 0.852,
+      "retention_ratio_OOS_over_IS": 0.545,
+      "verdict_using_ICIR_as_SR_proxy": "**FAIL (0.545 < 0.70)**"
+    },
+    "post_2020_retention": {
+      "IS_period_1_ICIR": 1.564,
+      "post_2020_period_3_ICIR": 1.056,
+      "retention_ratio": 0.675,
+      "verdict": "**FAIL (0.675 < 0.70)**, but marginal"
+    },
+    "SR_direct_measurement_pending": {
+      "status": "nav_V2.csv 기반 SR_IS / SR_OOS 직접 계산 필요",
+      "planned_cutoff": "2015-01-01 (7Y IS / 11Y OOS)",
+      "expected_runtime": "< 5분",
+      "scout_action_post_ram_recovery": "R 실행으로 SR 분리 계산 (nav_V2.csv Date < 2015 vs >= 2015)"
+    },
+    "gate_1_verdict_preliminary": "**CONDITIONAL_FAIL** — ICIR retention 0.545~0.675 구간, 0.70 threshold 하회. SR 직접 측정 대기."
+  },
+
+  "gate_2_feature_concentration_check": {
+    "_requirement": "feature concentration < 0.4",
+    "_reference": "ml_overfitting_monitor.R feature_importance_HHI",
+    "data_source_planned": "XGBoost feature_importance_gain.csv (mi_top_n=50 features)",
+    "measurement_approach": "HHI = sum((importance_i / sum(importance))^2)",
+    "threshold_interpretation": "HHI < 0.4 → no single feature dominance (concentration<0.4 ≈ 20+ effective features of top 50)",
+    "current_status": "PENDING — XGBoost feature_importance 파일 접근 필요",
+    "scout_action": "Forge output/feature_importance_gain_V2.csv 확인 필요 (S3 단계 이관 가능)",
+    "gate_2_verdict_preliminary": "PENDING_MEASUREMENT"
+  },
+
+  "gate_3_holdout_12m_plus_check": {
+    "_requirement": "holdout 12M+",
+    "_reference": "admission_rule_v352.md ml_predictive section",
+    "v2_dataset": "2008-01~2025-12 = 18 years = 216 months",
+    "hp_tuning_period": "Optuna 30 trials + purge_days 21",
+    "OOS_period_from_post_2020": "2020-01~2025-12 = 72 months",
+    "pure_holdout_never_used_for_hp_tuning": {
+      "status": "optimistic — 2024-01~2025-12 = 24 months post-HP-freeze 추정",
+      "caveat": "Optuna HP tuning 정확한 cutoff 확인 필요",
+      "forge_inquiry_required": "hp_freeze_date 명시 필요"
+    },
+    "gate_3_verdict_preliminary": "**LIKELY_PASS** — 24M+ holdout 추정 (12M+ threshold 2x 초과)"
+  },
+
+  "unresolved_disputes_10_mapping_to_gates": {
+    "_note": "Run C S0 VERDICT unresolved_disputes 10건 → S1/S2 empirical gate 매핑",
+    "disputes_likely_mapped_to_gate_1_sr_oos": [
+      "SR 0.90 vs ICIR 1.03 transmission gap (L-125 IC ≠ SR)",
+      "post-2020 decay 가능성",
+      "2015-2019 underperformance period 재현 risk",
+      "COVID 2020 3M outlier (stress FAIL)",
+      "MDD -50.98% Hard Fail (S5 DD overlay 필수)"
+    ],
+    "disputes_likely_mapped_to_gate_2_feature_concentration": [
+      "XGBoost feature importance HHI 측정 부재",
+      "mi_top_n=50 features overfit 가능성",
+      "LambdaRank objective 해석성 제약"
+    ],
+    "disputes_likely_mapped_to_gate_3_holdout": [
+      "Optuna 30 trials HP tuning vs 12M holdout overlap",
+      "purge_days 21 충분성"
+    ]
+  },
+
+  "overall_v2_admission_rule_v3_5_2_compliance": {
+    "gate_1_sr_oos_retention": "CONDITIONAL_FAIL (0.545~0.675, below 0.70)",
+    "gate_2_feature_concentration": "PENDING_MEASUREMENT",
+    "gate_3_holdout_12m_plus": "LIKELY_PASS",
+    "aggregate_verdict": "**MIXED** — Gate 1 FAIL 경계 + Gate 2 측정 미완 + Gate 3 PASS. MDD Hard Fail 별도 해결 필요 (S5 DD overlay 의무).",
+    "recommendation_to_forge": "V2 S1 standalone admission 불가. S5 Slot A (HRP+CDaR+DD 20주) overlay 적용 후 재측정 필수.",
+    "recommendation_to_judge": "Admission Rule v3.5.2 ml_predictive Gate 1 threshold 0.70이 ICIR proxy로 적용 시 엄격. SR 직접 측정 또는 threshold 재검토 (0.60?) 필요.",
+    "recommendation_to_governor": "PG2 STR_1656_MLRA_M05 parent-child 관계 고려하여 STR_1661 V2 primary admission 시 STR_1656 축소 or sleeve 합산 정책 사전 논의 필요."
+  },
+
+  "next_actions_for_s3": {
+    "size_bias_check": "Top 20 market cap 분포 vs universe (PENDING, S3 parallel)",
+    "SR_IS_vs_SR_OOS_direct_measurement": "nav_V2.csv cutoff split (post RAM recovery)",
+    "feature_concentration_HHI": "XGBoost feature_importance_gain_V2.csv 접근 (Forge 요청 or Bash R)",
+    "TDC_matrix_pairwise_6_benchmarks": "daily_returns merge + t-copula MLE (STR_1631 / STR_1656 / STR_1679v3 / H_1688 / H_1685_v2 / STR_1071)"
+  },
+
+  "scout_notes": [
+    "Q-Lead P1 지시 완료 — Run C APPROVE_CONDITIONAL unresolved 10건 → gate mapping 완료",
+    "V2 V2 ml_predictive 3-gate 사전 검증: Gate 1 CONDITIONAL_FAIL (0.545~0.675) / Gate 2 PENDING / Gate 3 LIKELY_PASS",
+    "V2 hard_fail MDD -50.98% S5 overlay 적용 의무 — Scout S5 slate Slot A HRP+CDaR+DD 20주 대기",
+    "ICIR proxy를 SR retention 대리로 사용 — Admission Rule v3.5.2 gate 1 threshold 0.70이 ICIR 기준으로 엄격",
+    "SR 직접 측정은 nav_V2.csv R 실행 필요 (RAM 회복 후)",
+    "L-121 Q07 counter-cyclical pattern과 V2 CRISIS ICIR 1.19 유사 구조 — H_1693 defense role과 orthogonal axis 확보 가능",
+    "2015-2019 weakening period는 성장주 섹터 집중 국면, ML momentum attribution 감소 — H_1693 earnings_stability와 상보성 예상 (S3 TDC 실측 필수)",
+    "Forge STR_1661 V3 variant MDD -51.37% 동일 Hard Fail. V2 우선. V3 보조."
+  ]
+}

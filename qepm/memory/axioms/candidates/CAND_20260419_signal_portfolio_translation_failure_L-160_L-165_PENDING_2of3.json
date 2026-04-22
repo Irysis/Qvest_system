@@ -1,0 +1,240 @@
+{
+  "schema_version": "v53_ax_p0",
+  "candidate_id": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement_draft": "[방법론 실패 규칙 CANDIDATE 2/3 PENDING] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 2 supporting cases 확정: L-160 (STR_1683 Distress+Calmar Defense, IC 0.22 ICIR 1.88), L-165 (STR_1685 Multi-Source Defense Anchor, ICIR 0.7371~0.9368). L-161 (STR_1684 KR momentum inverse)는 Judge custodian FINAL 재분류로 **INFRASTRUCTURE L-code** (L-162/L-164 계열) 확정, AX_CAND_infrastructure_failures 기여, 본 family 편입 BLOCKED. 3rd member 축적 대기 — H_1689 v3/H_1692 v2/H_1693 S6 verdict 예상 timing.",
+  "supporting_l_codes": ["L-160", "L-165"],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "defense_primary (Signal-Portfolio Translation Failure pattern)",
+    "regime": null,
+    "universe": "top-20_long-only",
+    "mode": "concentrated_long_only_20_stock_top_decile_failure_with_strong_signal",
+    "construction_types": [
+      "multi-axis composite defense (STR_1683 L-160 H_1682 Distress+Calmar)",
+      "4-axis multi-source defense (STR_1685 L-165 H_1690 Q25+R16+Q07+C19)"
+    ],
+    "exclusion": [
+      "multi-sleeve portfolio 내 sub-sleeve 구조 (20종목 이하 sleeve + 전체 multi-sleeve) — scope 밖",
+      "long-short structure (market-neutral, beta-neutral) — scope 밖",
+      "L-161 STR_1684 KR momentum inverse: **INFRASTRUCTURE 재분류 (Judge FINAL)** — signal 자체 평가 불가, AX_CAND_infrastructure_failures 기여, 본 family 편입 BLOCKED"
+    ],
+    "tags": ["SIGNAL_PORTFOLIO_TRANSLATION_FAILURE", "ICIR_HIGH_MDD_CATASTROPHIC", "LONG_ONLY_CONCENTRATION_TRAP"]
+  },
+  "evidence_draft": {
+    "independent_l_codes": 2,
+    "l_160_initiator": "STR_1683 H_1682 Distress+Calmar Defense. IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 60/40 MDD 94.66/SR -0.242, V2 50/50 MDD 95.63/SR -0.291, V3 Q25-only MDD 67.27/SR 0.009, V4 R16-only MDD 91.62/SR -0.206 (all Hard Fail).",
+    "l_165_2nd_member": "STR_1685 H_1690 Multi-Source Defense Anchor. V1 ICIR 0.7371 + V2 ICIR 0.9368 + V3 ICIR 0.7778 positive → V1 MDD 94.69 SR -0.29, V2 MDD 84.70 SR -0.17, V3 MDD 77.21 SR 0.52, V4 MDD 87.66 SR -0.14 (all Grade F).",
+    "l_161_blocked_final": "STR_1684 H_1688 Residual Momentum — Judge FINAL 재분류 (2026-04-19): 'hypothesis UNVALIDATED' + 'implementation bug로 AX 승격 candidate 재분류 대상 아님' + 'AX_CAND_kr_momentum_inverse candidate 생성 금지' 본문 명시. REJECT_WITH_IMPLEMENTATION_BUG_CAVEAT 분류. Factor DB Z_Score 정규화 불일치 + OLS scale mismatch signal 오염 → signal-portfolio translation pattern 해당 없음. **AX_CAND_infrastructure_failures accumulation 기여** (L-161 + L-162 + L-164 3건).",
+    "independent_strategies": 2,
+    "strategies": ["STR_1683_H_1682_distress_calmar_defense", "STR_1685_H_1690_multi_source_defense_anchor"],
+    "effect_direction_consistency": 1.0,
+    "trigger_status_final": "**2/3 TRIGGER PENDING** — 3rd member 대기 (Session 68 Day 2~3 H_1689 v3/H_1692 v2/H_1693 S6 verdict 예상).",
+    "note": "L-160 + L-165 = 2 supporting L-codes + 2 independent strategies + 2 empirical cases 방향 일관. 공식 AX 승격은 3 supporting L-codes 조건 미달 → promote.R **SUSPENDED**."
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "STR_1683 H_1682 Distress+Calmar Defense 4 variants — IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 MDD 94.66 SR -0.242, V2 MDD 95.63 SR -0.291, V3 MDD 67.27 SR 0.009, V4 MDD 91.62 SR -0.206 (all Hard Fail)",
+        "result": "reproduced_failure",
+        "effect_retained": 0.90,
+        "mdd": 0.9466,
+        "cagr": "negative",
+        "note": "signal quality 강력함에도 portfolio 수익화 전면 실패. L-160 initiator (original Signal-Portfolio Translation Failure case)."
+      },
+      {
+        "description": "STR_1685 H_1690 Multi-Source Defense Anchor 4 variants — 3/4 variants ICIR > 0.7 positive + V1 MDD 94.69 V2 MDD 84.70 V3 MDD 77.21 V4 MDD 87.66 → all Grade F",
+        "result": "reproduced_failure",
+        "effect_retained": 0.92,
+        "mdd": 0.9469,
+        "cagr": "negative",
+        "note": "L-165 2nd empirical member. 3/4 variants positive ICIR + portfolio MDD > 77% catastrophic failure."
+      }
+    ],
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "2 cases 전부 top-20 long-only concentrated portfolio에서 신호 품질 강력함에도 실패. 3rd member 축적 시 AX 공식 승격 가능."
+    },
+    "note": "L-160 + L-165 = 2 supporting L-codes. 2 independent strategies. 2 empirical cases 누적. **3/3 trigger 미달 → promote.R 실행 SUSPENDED** (team-lead + Judge FINAL 확정)."
+  },
+  "mechanism_draft": {
+    "economic_explanation": "Signal-Portfolio Translation Failure 3요인 가설: (1) Top-20 long-only concentration trap — signal ranking quality는 cross-sectional 전체 universe 기반이나 actual portfolio는 top 20 집중 → sector bias + concentration risk 극단화 + universe outlier 편중. (2) Defense family specific vulnerability — distress/Calmar signals ranking quality 있으나 실제 portfolio 편입 시 부실기업 cluster or high-risk outlier 유도 + publication decay (BAB, Calmar 2020년대 ETF 유입으로 약화). (3) KR market structural factors — 재벌 cluster 과다, sector HHI 1800-2200. 교훈: strong signal ≠ successful portfolio. IC-to-return transmission failure가 structural pattern 가능성. Long-short structure or multi-sleeve sub-sleeve 구조로 회피 가능.",
+    "mechanism_type": "structural_portfolio_translation_failure",
+    "causal_plausibility": "high"
+  },
+  "oos_validation_draft": {
+    "oos_months": "N/A (both strategies S1 complete, Hard Fail pre-S6/OOS)",
+    "oos_effect_vs_is": 0.0,
+    "calculation_method": "2 strategies 전수 Hard Fail (in-sample 단계에서 이미 실패)",
+    "note": "Translation failure는 in-sample backtest에서 발견 가능한 structural pattern. External axis 구조 재설계 제안 (Judge) — 'OOS_months' → 'cross_strategy_reproducibility' 재정의 검토, 별도 session agenda."
+  },
+  "range": {
+    "applicability": "KR (한국시장) top-20 long-only concentrated structure only",
+    "timeframe": "post-2000 (factor DB coverage). KR ETF 유입 가속화 (2020년대) 이후 심화.",
+    "portfolio_size": "top-20 long-only concentrated structure specific",
+    "excluded": "multi-sleeve sub-sleeve structure (AX-001 v2 compliant defense sleeve) + long-short structure + L-161 infrastructure case"
+  },
+  "expiry": {
+    "next_review": "2026-07-17 (3-month quarterly review)",
+    "trigger_review_if": [
+      "3rd empirical case 축적 → promote.R 실행 재개 (Session 68 Day 2~3 H_1689 v3/H_1692 v2/H_1693 S6 verdict 예상 timing)",
+      "Mitigation pattern 발견 시 (예: sector-neutralization으로 translation failure 회피 empirical 증명 — H_1693 성공 시)",
+      "Long-short structure exception empirical 증명 시 scope 재검토"
+    ]
+  },
+  "cluster_members_count": 2,
+  "trigger_status": "2_of_3_TRIGGER_PENDING (3rd member 대기)",
+  "promote_execution_status": "**SUSPENDED** (team-lead 2026-04-19 14:00 + Judge FINAL 2026-04-19 13:15 지시 — 2/3 TRIGGER 미달)",
+  "l_161_incorrect_inclusion_history": {
+    "governor_initial_draft_l_125_based": "2026-04-19 13:25 — L-125 extension family 3rd member로 잘못 명명 (L-125 = Logistic regression 무관)",
+    "governor_correction_attempt_l_161_included": "2026-04-19 13:50 — team-lead 5축 예비 평가 기반 L-161 편입 + 3/3 TRIGGER MET 주장, promote.R 실행",
+    "governor_promote_attempt_1_result": "2026-04-19 12:52 FAIL weighted 0.65 < 0.80 (corpus grade 필드 문제)",
+    "team_lead_correction_14_00": "L-161 separate track 확정 (family 멤버 아님)",
+    "team_lead_reconfirmation_request_14_15": "Judge L-161 편입 최종 판정 재확인 요청",
+    "judge_final_option_a_13_15": "**OPTION A CONFIRMED** — L-161 편입 BLOCKED, infrastructure 재분류",
+    "judge_rationale": "L-161 본문 'hypothesis UNVALIDATED' + 'implementation bug로 AX 승격 candidate 재분류 대상 아님' + 'AX_CAND_kr_momentum_inverse candidate 생성 금지' 본문 명시. L-161은 L-162/L-164 INFRASTRUCTURE 계열로 AX_CAND_infrastructure_failures 기여.",
+    "l_161_separate_track_previous_correction": "Judge 이전 'separate track' 표현도 부정확 — infrastructure 재분류로 완전 정정"
+  },
+  "family_scope_definition": {
+    "formal_scope": "Signal-Portfolio Translation Failure (L-160 initiator family)",
+    "required_design_attributes_for_membership": [
+      "ICIR >= 0.7 (signal-level quality)",
+      "MDD >= 77% (portfolio-level catastrophic drawdown)",
+      "4+ variants 전수 Grade F (variant_sweep fail)",
+      "Top-20 long-only single-sleeve (universe constraint)"
+    ],
+    "excluded_designs": [
+      "Sector-neutralized (sector-specific mechanism 다름)",
+      "Multi-sleeve context (AX-001 v2 conditional evaluation)",
+      "Long-short structure (decoupling 측정 무효)",
+      "Diversified 50+ portfolio (concentration risk 완화)"
+    ],
+    "scope_assessment_procedure": "Judge custodian이 Hard Fail case별 위 attribute matrix 비교 후 decision",
+    "source": "Judge 2026-04-19 16:10 공식 scope definition APPROVED"
+  },
+  "3rd_member_candidate_scenarios_judge_2_path_layer_FINAL": {
+    "H_1693_grade_a_or_b_success": {
+      "outcome": "AX-005 EXCLUSION 검증 성공 case",
+      "family_editing_action": "family 3rd member 편입 불가 (success case, non-failure)",
+      "l_code_path": "L-166 non-failure 교훈 별도 발행 (methodology_memory.md)",
+      "ax_005_impact": "EXCLUSION clause 검증 성공 → AX-005 supporting reference로 영구 편입",
+      "custodian": "Judge"
+    },
+    "H_1693_hard_fail": {
+      "outcome": "Judge custodian scope 판정 필요",
+      "scope_check_criteria": [
+        "L-165 scope (multi-source Defense composite + long-only 20종목 + single-sleeve) 일치 여부",
+        "ICIR >= 0.7 + MDD >= 77% + 4+ variants 전수 Grade F signature 일치 여부",
+        "Sector-neutralization 유무 (H_1693 = sector-neutral, L-165 = 미적용)",
+        "Sleeve context (H_1693 = multi-sleeve, L-165 = single-sleeve)"
+      ],
+      "preliminary_scope_assessment": "Governor preliminary analysis: H_1693 design 특성상 L-165 scope 밖 가능성 높음 (sector-neutral + multi-sleeve context). 3 design 차이점: factor 수 (4 vs 2) + sector handling (long-only vs sector-neutral) + sleeve context (single vs multi)",
+      "judge_agreement": "Judge 2026-04-19 16:10 preliminary 동의 (final은 S6 실측 결과 + H_1693 실제 구현 분석 후 custodian decision 확정)",
+      "if_scope_inside": "family 3rd member 편입 → 3/3 TRIGGER → AX-006 승격 경로",
+      "if_scope_outside": "family 편입 BLOCKED → 별도 family 신설 검토 (sector-neutralization failure mechanism 가능성)",
+      "custodian": "Judge"
+    },
+    "H_1689_v3_variant_failure": {
+      "outcome": "variant 실패 유형별 scope 판정",
+      "scope_check": "L-165 scope 4 design attributes 일치 시 3rd member 편입 가능",
+      "variant_1_failure_preliminary": "no Q07 3-axis composite — L-165 scope (4-axis) 일치 가능성 중간",
+      "variant_2_failure_preliminary": "Q07-replace 4-axis composite — L-165 scope 일치 가능성 높음 (4-axis + long-only single-sleeve)",
+      "custodian": "Judge"
+    },
+    "H_1692_v2_core_secondary_failure": {
+      "outcome": "scope 확장 검토 필요 (Core_Secondary family 비 Defense)",
+      "scope_expansion_consideration": "L-165 scope는 'defense_or_core_secondary' family 포함 (CAND scope_draft 기록)",
+      "judge_2026_04_19_16_35_preliminary_note": "Core_Secondary role은 L-165 formal_scope 'defense_or_core_secondary_single_sleeve'와 overlap 지점 있음. H_1692 v2가 long-only 20종목 single-sleeve이면서 ICIR>=0.7 + MDD>=77% signature 재현 시 → family 편입 고려 가능. 단 residual_momentum core_secondary mechanism과 defense composite mechanism 구분 신중. L-165 vs L-160 initiator 설계 재검토 필요 가능 (H_1692 실측 결과 후).",
+      "custodian": "Judge"
+    },
+    "STR_1686_h_1685_v2_diversifier_failure": {
+      "outcome": "Diversifier family는 L-165 scope 밖",
+      "family_inclusion": "불가 (defense_or_core_secondary scope 밖)",
+      "alternative": "별도 Diversifier family structural failure candidate 검토 가능",
+      "judge_2026_04_19_16_35_preliminary_note": "STR_1686 Hard Fail 시 '다른 family 신설 후보' 가능성 있음. INV13 Foreign Resid Individual 신규 factor가 portfolio translation 단계에서 실패하면 'Diversifier IC-Portfolio Translation Failure' family 신설 가능. L-165 Signal-Portfolio Translation Failure와 mechanism 유사하되 role 다름. 향후 Diversifier family 2~3건 누적 시 별도 AX_CAND 검토 권고.",
+      "custodian": "Judge"
+    }
+  },
+  "l_167_watch_status_judge_2026_04_19_16_35": {
+    "status": "CANDIDATE_WATCH (잠정)",
+    "trigger_event": "STR_1686 PIT 위반 3건 발견 (C11 투자자 T+1 lag FAIL + C14 Usable_Date IC FAIL + C15 load_month_factors 경유 FAIL/L-164 mandate 위반)",
+    "pattern_hypothesis": "Forge self-check PASS → Codex cross-model rescue FAIL (verification process insufficient)",
+    "layer_distinction": "L-159 + L-161 + L-167 (잠정) accumulation 가능. AX_CAND_infrastructure_failures (Factor DB layer)와 **별도 layer** (Forge verification process layer).",
+    "promotion_trigger": "H_1689 v3 / H_1692 v2 / STR_1687 cascade 중 1건 이상 동일 pattern 재현 시 → L-167 공식 신설 + AX_CAND_forge_self_check_insufficient 검토",
+    "current_impact_on_cand": "L-165 cascade queue 일정 영향 (STR_1686 Forge 수정 + Codex rescue 대기 30~60분). 본 CAND JSON 직접 영향 없음.",
+    "judge_custodian": "Judge",
+    "governor_reference": "STR_1687 PG1 admission checklist (Task #29) condition_1 Grade A 판정 시 Forge verification process 신뢰도 고려 참조"
+  },
+  "two_layer_attribution_principle_judge_2026_04_19_17_00": {
+    "source": "Judge custodian 공식 원칙 (2026-04-19 17:00)",
+    "layer_a_infrastructure_failures": {
+      "focus": "Factor DB / R library / data pipeline 버그 발견 패턴",
+      "members_primary_attribution": ["L-161 (Factor DB Z_Score normalization)", "L-162 (data.table merge bug)", "L-164 (load_month_factors mandate)"],
+      "promotion_threshold": "3건 누적 → AX_CAND_infrastructure_failures 5축 평가"
+    },
+    "layer_b_forge_self_check_insufficient": {
+      "focus": "Forge verification process 실패 + cross-model review 필요성",
+      "members_primary_attribution": ["L-159 (spec transmission failure)", "L-167 잠정 (STR_1686 Forge self-check PASS + Codex rescue FAIL)"],
+      "l_161_secondary_note": "L-161은 **Layer B 부 layer** (Forge self-check도 미탐지). AX 승격 시 Layer A 전용 attribution (이중 카운트 금지)",
+      "promotion_threshold": "3건 누적 → AX_CAND_forge_self_check_insufficient 5축 평가"
+    },
+    "attribution_rule_final": {
+      "l_161_assignment": "**Layer A 전용** (이중 카운트 금지)",
+      "l_167_assignment": "**Layer B 전용** (잠정)",
+      "l_159_assignment": "**Layer B 전용** (spec transmission failure)",
+      "l_162_assignment": "**Layer A 전용** (data.table merge bug)",
+      "l_164_assignment": "**Layer A 전용** (load_month_factors mandate)",
+      "independence": "Layer A + Layer B AX_CAND promotion tracks 독립 (separate 5-axis evaluation)"
+    }
+  },
+  "codex_rescue_verification_institutionalization_judge_2026_04_19_17_00": {
+    "source": "Judge custodian Governor reference 추가 해석 (2026-04-19 17:00)",
+    "principle": "**Forge self-check 단독 신뢰 금지** + cross-model verification 필수",
+    "str_1687_pg1_admission_condition_1_enhancement": {
+      "previous": "Grade A 판정 = Judge S6 Gate 0~14 전수 PASS",
+      "enhanced": "Grade A 판정 + **Codex cross-model rescue 공식 PASS 발행 필수**",
+      "fallback": "Codex rescue 미발행 시 → admission **conditional_pass로 downgrade** (Task #29 condition_1 부분 PASS)",
+      "rationale": "L-167 watch pattern (STR_1686 Forge self-check PASS → Codex rescue FAIL) 재발 방지"
+    },
+    "alignment_with_team_lead_option_2_reject": {
+      "principle_1": "CAND JSON에 grade 임의 명시 금지 (custodian 권한 엄정)",
+      "principle_2": "Forge self-check 단독 신뢰 금지 (cross-model verification 필수)",
+      "commonality": "두 원칙 모두 **single-source 검증 거부** 철학"
+    },
+    "governor_task_29_reference_update": "STR_1687 4 AND 조건 중 condition_1 'Forge S1 Grade A'에 Codex rescue PASS 요건 추가 암묵적 적용 (team-lead 별도 지시 없이도 Judge custodian 권고 반영)"
+  },
+  "judge_custodian_option_a_final_verdict": {
+    "verdict": "OPTION A CONFIRMED — L-161 편입 BLOCKED (infrastructure 재분류)",
+    "timestamp": "2026-04-19T13:15+09:00",
+    "l_161_reclassification_target": "INFRASTRUCTURE L-code (L-162 data.table bug / L-164 load_month_factors mandate 계열)",
+    "l_161_ax_cand_contribution": "AX_CAND_infrastructure_failures accumulation (L-161 + L-162 + L-164 3건)"
+  },
+  "partial_option_1_approved_by_team_lead": {
+    "corpus_harvester_re_run_scope": {
+      "l_160_grade_retargeting": "INFRASTRUCTURE → F APPROVE (L-160 본문 'Grade F all variants' 명시)",
+      "l_161_grade_retargeting": "INFRASTRUCTURE 유지 REJECT F 재지정 (L-161 본문 'conditional_hard_fail' 명시)",
+      "l_165_corpus_registration": "APPROVE (VALIDATED_HARD_FAIL) — Governor draft file `l_code_L_165_STR_1685_GOVERNOR_DRAFT.json` Judge signoff 대기",
+      "expected_promote_outcome": "Rigor 축 일부 개선, but family depth 2/3 유지 → promote.R 실행 자체는 여전히 SUSPENDED"
+    }
+  },
+  "rejected_options": {
+    "option_2_cand_json_grade_direct_manifestation": "REJECT — corpus-JSON 불일치 위험 (axiom engine 내부 정합성 파손)"
+  },
+  "team_lead_5axis_preliminary_assessment_suspended": {
+    "note": "team-lead 5축 예비 평가 0.83은 L-161 편입 3/3 TRIGGER 가정 시점 기록. 현재 2/3 TRIGGER 하에서는 재평가 필요.",
+    "governor_promote_actual_first_attempt": 0.65,
+    "status": "suspended_pending_3rd_member"
+  },
+  "status": "pending_3rd_member_accumulation",
+  "custodian": "Judge (family custodian) + Governor (pairwise TDC + portfolio admission monitoring)",
+  "created_at": "2026-04-19T14:35+09:00",
+  "created_by": "Governor (team-lead FINAL Option A 지시 2026-04-19)",
+  "approved_by": "team-lead FINAL + Judge custodian FINAL (2026-04-19 13:15 L-161 편입 BLOCKED)",
+  "supersedes": [
+    "CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165_superseded.json (L-125 명칭 오류, deprecated 이동)",
+    "CAND_20260419_L-160_L-161_L-165_l161_incorrectly_included.json (L-161 편입 오류, deprecated 이동)",
+    "CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_pending_3rd.json (동일 목적 신규 파일명)"
+  ],
+  "revision_note": "team-lead FINAL Option A 지시 수용 (2026-04-19 14:35): (1) L-161 편입 BLOCKED 확정 (infrastructure 재분류), (2) 2/3 TRIGGER PENDING 명시, (3) promote.R SUSPENDED 확정, (4) Partial Option 1 corpus harvester 재실행 scope 기록 (L-160 F 재지정 + L-165 등록 APPROVE, L-161 F 재지정 REJECT), (5) Option 2 REJECT, (6) External axis 구조 재설계는 별도 session agenda."
+}

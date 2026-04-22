@@ -1,0 +1,84 @@
+{
+  "strategy_id": "STR_1433",
+  "strategy_dir": "STR_1433_consgate_c11fix_dd722",
+  "tier": 2,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "path_mode": "PATH_2_LIMITED_VERIFICATION",
+  "v2_grade": "A",
+  "v3_grade": "B_REDUNDANT",
+  "v3_verdict": "REDUNDANT_FAMILY_1",
+  "prev_judge_status": "gate0_pit=FALSE (prior), gate1-5 TRUE. detected_family=defense",
+  "family_assignment": "FAMILY_1_5SLEEVE_CONSGATE",
+  "family_cross_corr_daily": {"STR_1417": 0.971, "STR_1071": 0.987, "STR_1060": 0.989, "STR_1435": 0.978},
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "580 lines run_all.R clean. c11fix suffix indicates prior FRED fix attempt.",
+      "prev_judge_gate0_fail": "conflict — prior Judge gate0_pit=FALSE. Re-scan shows CLEAN. Possibly prior fail referred to sub-engine (defense_sleeve/consgate_pure_engine FRED) per Tier 1 findings."
+    },
+    "gate_1_impl": {
+      "pass": "WAIVED_PATH_2",
+      "waiver_reason": "STR_770_phase2_cross BASE_DIR MISSING.",
+      "n_holdings_effective": "up to 30 (5-sleeve union)",
+      "v53_n20_violation": true
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.354,
+      "loo_2020_sr": 1.299,
+      "loo_2011_sr": 1.293,
+      "loo_2018_sr": 1.329,
+      "full_sr_daily": 1.285,
+      "rolling_3y_sr_mean": 1.041,
+      "rolling_3y_sr_min": -0.596,
+      "rolling_3y_sr_last": 1.608,
+      "stress_outperform": "4/4"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.329,
+      "sharpe_daily": 1.285,
+      "cagr": 22.18,
+      "mdd": -24.35,
+      "mdd_v53_pass": "BORDERLINE (24.35% < 25% target)",
+      "calmar": 0.911,
+      "score_hurdle": 74.1,
+      "novelty_bonus": 10,
+      "highest_hurdle_in_family_1": true
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 1.000,
+      "capm_alpha_annual_pct": 15.77,
+      "capm_alpha_t": 5.49,
+      "harvey_t3_pass_capm": true,
+      "capm_beta": 0.460,
+      "bm_corr": 0.584
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "family_near_clone": true,
+      "max_abs_corr_within_family": 0.989,
+      "detected_family": "defense (per prior Judge)",
+      "corr_with_STR_1679v2_proxy": 0.060
+    },
+    "gate_6_role_honesty": {
+      "pass": "CONCERN",
+      "declared_role": "unspecified",
+      "detected_family": "defense",
+      "concern": "Prior Judge detected family=defense but strategy is effectively core_alpha (22.18% CAGR, 1.285 SR). Role label requires Scout clarification."
+    }
+  },
+  "sr_contrib_estimated": 0.08,
+  "pg_candidate_level": "PG1_ALTERNATE",
+  "pg_status": "Alternate to STR_1071 within Family 1. Higher hurdle score (74.1 vs 67.1) + novelty 10. Lower MDD (24.35 vs 22.72).",
+  "hard_fail_reasons": [
+    "Gate 1 WAIVED (BASE_DIR missing)",
+    "Gate 1 N>20 (5-sleeve union)",
+    "Gate 5 near-clone within Family 1 (0.987 with STR_1071)",
+    "Gate 6 role label ambiguous (declared vs detected_family=defense conflict)"
+  ],
+  "recommendation": "REDUNDANT_FAMILY_1. Strong individual metrics but blocked by Family 1 admission rule. If Governor selects STR_1433 over STR_1071, justification: higher hurdle + novelty. Downside: slightly higher MDD (24.35 vs 22.72).",
+  "notes": "This is the highest-scoring Family 1 member. Novelty 10 from methodology bonus. BORDERLINE MDD below 25% target. Could be Primary PG1 pick if Governor prioritizes hurdle score over MDD."
+}

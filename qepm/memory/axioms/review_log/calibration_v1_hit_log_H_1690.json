@@ -1,0 +1,153 @@
+{
+  "task_id": "Task_12_H_1690_calibration_hit",
+  "parent_task": "L-158 Gate 8 Early Warning + AX-006 candidate evidence",
+  "owner": "Scout",
+  "created_at": "2026-04-18",
+  "purpose": "Scout Calibration v1.0 (L-157) H_1690 debate 실측 정확도 기록. L-158/AX-006 evidence 수집.",
+
+  "calibration_version_chain": {
+    "v1_0": {
+      "source": "L-157 초안 (Session 66)",
+      "adjustments_from_raw_prediction": {
+        "codex_critic": -3,
+        "quant": -2,
+        "governor": 0,
+        "academic": 0,
+        "risk_manager": 0
+      },
+      "rationale": "Scout 경험적 overestimate 보정 (Codex/Quant가 debate 실측에서 Scout 예측 대비 consistently 낮음)"
+    },
+    "v3": {
+      "source": "L-157 v3 재캘리브레이션 (H_1687 REVISE 50 결과 반영)",
+      "cumulative_adjustment": -6,
+      "per_debater_adjustment_vs_v1": {
+        "codex_critic": -4,
+        "quant": -3,
+        "governor": -2,
+        "academic": -3,
+        "risk_manager": 0
+      },
+      "rationale": "H_1687 Scout 예측 overestimate -8 발생 → linear dominance PASS라도 complexity premium 추가 -8 반영"
+    }
+  },
+
+  "H_1690_debate_prediction_vs_actual": {
+    "handoff_kit_v1_prediction": {
+      "range": [67, 83],
+      "midpoint": 75,
+      "per_debater": {
+        "codex_critic": [8, 12],
+        "risk_manager": [13, 16],
+        "governor": [17, 19],
+        "quant": [13, 16],
+        "academic": [16, 18]
+      },
+      "verdict_projection": "APPROVE_CONDITIONAL (67-83 range) 또는 APPROVE (75+)"
+    },
+    "handoff_kit_v3_recheck_prediction": {
+      "range": [59, 75],
+      "midpoint": 67,
+      "per_debater": {
+        "codex_critic": [7, 10],
+        "risk_manager": [12, 15],
+        "governor": [15, 18],
+        "quant": [12, 15],
+        "academic": [13, 16]
+      },
+      "verdict_projection": "APPROVE_CONDITIONAL (60-74) 유력"
+    },
+    "actual_verdict": {
+      "r1_total": 67,
+      "final_total": 64,
+      "delta_r1_to_final": -3,
+      "verdict": "APPROVE_CONDITIONAL",
+      "final_scores": {
+        "codex_critic": {"r1": 7, "final": 8, "delta": 1},
+        "risk_manager": {"r1": 14, "final": 13, "delta": -1},
+        "governor": {"r1": 16, "final": 15, "delta": -1},
+        "quant": {"r1": 14, "final": 13, "delta": -1},
+        "academic": {"r1": 16, "final": 15, "delta": -1}
+      }
+    }
+  },
+
+  "accuracy_analysis": {
+    "v1_accuracy": {
+      "total_score_hit": "MISS — v1 [67,83] 하한 67 vs 실제 64 → 미스 3점 (v1 overestimate by 11 midpoint)",
+      "per_debater_hits": {
+        "codex_critic": {"pred": [8, 12], "actual_final": 8, "hit": "BOUNDARY_HIT (하한)"},
+        "risk_manager": {"pred": [13, 16], "actual_final": 13, "hit": "BOUNDARY_HIT (하한)"},
+        "governor": {"pred": [17, 19], "actual_final": 15, "hit": "MISS (2점 under)"},
+        "quant": {"pred": [13, 16], "actual_final": 13, "hit": "BOUNDARY_HIT (하한)"},
+        "academic": {"pred": [16, 18], "actual_final": 15, "hit": "MISS (1점 under)"}
+      },
+      "hit_count": "3/5 BOUNDARY + 2/5 MISS → 60% boundary hit, 2건 추가 하향 보정 필요"
+    },
+    "v3_accuracy": {
+      "total_score_hit": "HIT — v3 [59,75] 범위 내 실제 64 + v3 midpoint 67 vs 실제 64 (중앙값 near-hit by 3점)",
+      "per_debater_hits": {
+        "codex_critic": {"pred": [7, 10], "actual_final": 8, "hit": "HIT (range 내)"},
+        "risk_manager": {"pred": [12, 15], "actual_final": 13, "hit": "HIT (range 내)"},
+        "governor": {"pred": [15, 18], "actual_final": 15, "hit": "HIT (하한)"},
+        "quant": {"pred": [12, 15], "actual_final": 13, "hit": "HIT (range 내)"},
+        "academic": {"pred": [13, 16], "actual_final": 15, "hit": "HIT (range 내)"}
+      },
+      "hit_count": "5/5 HIT (100% within range)",
+      "verdict": "Calibration v3 prediction 정확도 완벽 — Session 67+ 지속 적용 권장"
+    }
+  },
+
+  "calibration_v4_draft_suggestions": {
+    "based_on_H_1690_observation": [
+      "v3 5/5 HIT이지만 전원 **하한 근접** (codex_critic R2에서만 +1 상향) → v3도 여전히 약간 overestimate",
+      "Governor 하한 15 정확 — Governor calibration은 v3가 완벽",
+      "Academic 하한 13 대비 실제 15 → Academic calibration은 v3 여전히 -1 overestimate 여지",
+      "R2 전원 -1 delta 공통 패턴 → 'R2 자동 -3 보정 rule' 신설 고려 (5인 × -1 가정)"
+    ],
+    "v4_proposed_adjustments_pending_more_data": {
+      "codex_critic": "v3 유지 [7,10]",
+      "risk_manager": "v3 유지 [12,15]",
+      "governor": "v3 하한 고정 또는 [14,17]로 -1 추가",
+      "quant": "v3 유지 [12,15]",
+      "academic": "[13,16] → [12,15]로 -1 추가",
+      "r2_delta_rule": "R1 total 예측값 -3 보정한 값을 final total 예측으로 사용"
+    },
+    "confidence": "LOW — 1건 sample만으로 v4 전환 불가. 최소 3건 debate 추가 관찰 (H_1685 v2, H_1678, H_1679, H_1689 등) 후 v4 draft 확정"
+  },
+
+  "L_158_gate_8_early_warning_evidence": {
+    "gate_8_trigger": "H_1690 consensus_tier_classification Tier 1 C19_core (25-40% regime-conditional)",
+    "STR_1631_coexistence_assessment": "Scout v2 rule: STR_1631 축소 + H_1690 partial 공존 (Governor admission 단계 결정)",
+    "early_warning_signals_captured": [
+      "R2 delta -3 (consensus 우려 결집) — warning level 낮음 (Accept)",
+      "codex_critic R2 +1 상향 (failure chain partial 해소 인정) — 반대 warning 부재",
+      "STR_1631 TDC 0.50~0.65 예상 vs H_1682 — Gate 8 borderline, S3에서 실측 필수",
+      "regime weight ex-post tuning 의혹 resolved → S1 cosine similarity measurement condition (C1)"
+    ],
+    "gate_8_verdict": "PASS_WITH_CONDITIONS — Tier 1 concentration warning은 인지되었으나 APPROVE_CONDITIONAL 이유 존재"
+  },
+
+  "AX_006_candidate_evidence_contribution": {
+    "ax_006_definition_draft": "Pairwise TDC conditional cluster — crisis/stress 구간에서 diversifier 간 conditional TDC 급등으로 role 가장 발생 (L-156 v2)",
+    "H_1690_contribution": [
+      "H_1690 vs H_1682 TDC 예상 0.50~0.65 (정상) → 0.75+ (crisis) conditional TDC 급등 시나리오 = AX-006 재현 케이스 후보",
+      "R16 Calmar 공유가 R16-R16 tail dependency 경로 제공 — AX-006 재현 mechanism 증거",
+      "Q07 + R16 CRISIS tilt 75%가 cross-family conditional concentration 유발 가능 — AX-006 재현 양상"
+    ],
+    "axiom_promotion_impact": "AX-006 5축 점수 기여: I=0.05 (H_1690 case detail), R=0.05 (재현 mechanism), F=0.10 (frequency 1건+추가), E=0 (mechanism 아닌 case), M=0.05 (pairwise TDC 측정 가능). 합 0.25 추가. 현재 AX-006 base score 미상 — Judge L-156 v2 확인 필요."
+  },
+
+  "artifacts_generated": [
+    "qepm/memory/axioms/review_log/calibration_v1_hit_log_H_1690.json (본 파일)",
+    "L-157 v4 draft input (추후 debate 3건+ 관찰 후 확정)",
+    "L-158 Gate 8 Early Warning evidence (H_1690 Tier 1 concentration warning 사례)",
+    "AX-006 candidate evidence (pairwise TDC conditional cluster 재현 시나리오)"
+  ],
+
+  "scout_notes": [
+    "Calibration v3 5/5 HIT은 **우연 vs 실력** 판정하려면 최소 3건 debate 추가 관찰 필요. H_1685 v2 진행 중이므로 debate 종료 시 hit log 추가 예정.",
+    "R2 전원 -1 delta 공통 패턴은 debate structural feature — 'R2 자동 -3 보정 rule'을 v4에 반영하면 calibration precision 추가 향상 예상.",
+    "Governor 하한 15 정확 hit은 Scout calibration v3의 signature — Governor는 role admission + family saturation 관점에서 marginal SR gap 인식이 일관되어 예측 용이.",
+    "codex_critic R2 +1 상향은 Codex의 'failure chain 원인별 해소 인정' 표식 — Scout calibration은 codex의 conditional acceptance 패턴을 이미 내재화."
+  ]
+}

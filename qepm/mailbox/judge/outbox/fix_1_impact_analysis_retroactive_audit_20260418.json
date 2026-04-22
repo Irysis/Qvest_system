@@ -1,0 +1,135 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Governor + Architect",
+  "type": "FIX_1_IMPACT_ANALYSIS_RETROACTIVE_AUDIT",
+  "stage": "Retroactive_Audit_24h_Fix_1_Extension",
+  "timestamp": "2026-04-18T16:15+09:00",
+  "session": 67,
+  "status": "ACTIVE_ANALYSIS",
+
+  "fix_1_applied_context": {
+    "applier": "Q-Lead (Forge 45분+ 무응답으로 직접 적용)",
+    "file_modified": "02_Infrastructure/factor_db/factor_db_connector.R line 113~117",
+    "patch_type": "Architect Option B — runtime rescale wrapper (load_month_factors 경유 시 적용)",
+    "patch_content": "dt[!is.na(Z_Score), Z_Score := {s <- sd(Z_Score, na.rm = TRUE); if (s > 1e-12) Z_Score / s else Z_Score}, by = Factor_Name]",
+    "test_result": {
+      "factors_restored": "288 all sd = 1.0",
+      "r12_d01_recovery": "0.071 → 1.0 ✅",
+      "m08_recovery": "0.054 → 1.0 (예상) ✅",
+      "rows_loaded": "722,767 rows 정상"
+    },
+    "architecture_layer": "runtime (loader) vs persistent (builder) — factor_db_builder.R 원본 Z_Score 데이터는 여전히 sd 왜곡 상태, load_month_factors() 호출 시 실시간 재정규화"
+  },
+
+  "judge_fix_1_impact_classification": {
+    "category_1_NO_IMPACT_historical_results": {
+      "description": "기존 Grade A 전략 이전 hurdle_result.json에 저장된 수치는 원본 그대로 유지",
+      "strategies": ["STR_1631_SYN_05_2002", "STR_1656_MLRA", "STR_1071", "STR_1562", "STR_1433"],
+      "rationale": "Architect 확증: '모든 전략이 동일 데이터 사용 → 상대적 재현성 유지'. 기존 backtests는 distorted Z_Score로 일관되게 계산됨.",
+      "retroactive_audit_impact": "기존 결과 무효화 없음. STR_1631/1656 PG2 admission 유지."
+    },
+    "category_2_NEW_IMPACT_future_reruns": {
+      "description": "향후 load_month_factors() 경유 재실행 시 Fix 1 적용된 sd=1.0 Z_Score 사용 → 결과 달라짐",
+      "key_question": "ICIR, FMB regressor coefficients, rolling IC, portfolio weights 모두 변동 가능",
+      "specific_concerns": [
+        "Gate 12 coupling_ratio: SR/ICIR 분모 ICIR이 Fix 1 전후로 다름 → advisory_warning vs PASS 판정 달라질 수 있음",
+        "Residualization 전략 (H_1676/H_1688/H_1685v2): factor_engine OLS 회귀 scale 정상화 → 결과 전면 변동",
+        "Pairwise TDC matrix (Gate 8): IC signal 변동 시 copula parameter 재추정 필요"
+      ]
+    },
+    "category_3_DUAL_TRACK_NEEDED": {
+      "description": "이전 결과 vs Fix 1 후 결과 dual tracking으로 Fix 1 실질 영향 정량화",
+      "recommended_protocol": [
+        "STR_1631_SYN_05_2002 재실행 (control) — ICIR/SR/MDD 변동 측정",
+        "STR_1656_MLRA 재실행 (ML variant) — ICIR 변동 + S1_A/S1_B consistency",
+        "변동 < 5% (상대적) → Architect 결론 재확증 + Fix 1 deployment 승인",
+        "변동 ≥ 5% → STR_1631 PG2 admission 재심사 필요 (Stage 1 alert)"
+      ]
+    }
+  },
+
+  "retroactive_audit_24h_extension": {
+    "original_scope_15_05": "5 strategies (STR_1631/1656/1071/1562/1433) Gate 11/12 소급 audit (24h SLA 2026-04-19T15:05)",
+    "extended_scope_16_15": "original scope + Fix 1 전/후 ICIR 변동 측정 + dual-track validation",
+    "new_deliverables": [
+      "Governor retroactive_v3_5_audit_consolidated.json에 fix_1_impact_addendum block 추가",
+      "Judge fix_1_impact_analysis_retroactive_audit_20260418.json (현 파일)",
+      "Judge + Governor 합동: STR_1631/1656 재실행 impact 정량 보고 (24h SLA 준수)"
+    ],
+    "critical_path_sequence": [
+      "1. STR_1684_v2 재실행 (Fix 1 영향 primary test case) — Forge 또는 Q-Lead",
+      "2. 결과 ICIR 측정 + 이전 -0.187 대비 변동 확인",
+      "3. positive ICIR (예상 ≥0.20) 시 Fix 1 성공 확증 + hypothesis A 최종 REJECTED 재확인",
+      "4. STR_1631/1656 재실행 (선택적, control validation)",
+      "5. Governor audit final + Judge cross-check 24h 내"
+    ]
+  },
+
+  "gate_12_coupling_ratio_recalculation_fix_1_aware": {
+    "str_1631_proxy_previous": "Sharpe_m 1.152 / IR 0.813 = 1.417 (proxy, advisory PASS)",
+    "str_1631_fix_1_post_re_run_needed": "ICIR 엄밀 측정 후 coupling_ratio 재계산 — 변동 polarity 예측 불가 (ICIR이 positive 유지되나 절대값 변동)",
+    "str_1656_previous": "Sharpe_m ~0.267 / ICIR 0.8496 = 0.314 (PASS near threshold)",
+    "str_1656_fix_1_post_re_run_concern": "ICIR 0.8496 → Fix 1 후 값이 증가/감소할 수 있음. coupling_ratio threshold 0.3 근접이므로 flip 가능성",
+    "judge_recommendation": "Fix 1 후 재실행 결과로 공식 coupling_ratio 산정. 현재 advisory_warning (Stage 1)이므로 실행 차단 없음 + Stage 2 전환 시 hard_block 발동 전 완전 재검증"
+  },
+
+  "ax_cand_tracking_updates": {
+    "AX_CAND_spec_transmission_failure_L159": {
+      "fix_1_impact": "L-159 pattern 자체는 유효 (STR_1682 Q-Lead→Forge handoff 체인 단절). Fix 1과 무관.",
+      "frequency_axis_current": 0.28,
+      "no_change": true
+    },
+    "AX_CAND_defense_ic_return_decoupling_L160": {
+      "fix_1_impact": "L-160 pattern 유효 (STR_1683 IC 0.22/ICIR 1.88/FM t 16.89 VALIDATED). Fix 1 post re-run 시 IC/ICIR 변동 있을 수 있으나 factor quality 자체는 positive 유지 예상 (Architect 재현성 확증).",
+      "frequency_axis_current": 0.40,
+      "note": "STR_1683 재실행 후 IC/ICIR 재확인 권장 (fix 1 aware, non-blocking)"
+    },
+    "AX_006_pairwise_TDC_L156_L158": {
+      "fix_1_impact": "TDC matrix는 factor IC가 아닌 strategy return series 기반 → Fix 1 직접 영향 미미. 단 factor-based residualization 전략 재실행 시 return series 변동으로 TDC 변동 가능.",
+      "frequency_axis_current": 0.45,
+      "note": "Fix 1 post re-run 후 STR_1631↔STR_1679v2 TDC 0.621 재측정 권장 (change magnitude 확인)"
+    }
+  },
+
+  "v3_5_stage_2_transition_fix_1_aware_rules": {
+    "rule_extension": "STR_1684_v2 재실행 (Fix 1 적용) 결과로 UNVALIDATED → VALIDATED/ARCHIVED 재분류:",
+    "scenarios": {
+      "A_fix_1_positive_ICIR": {
+        "condition": "STR_1684_v2 ICIR ≥ 0.20 (Alpha Lab Gate PASS)",
+        "outcome": "UNVALIDATED_HARD_FAIL archived. Hypothesis B 100% 확증 (Architect + Fix 1 empirical proof). hypothesis A REJECTED 재확증. H_1688 hypothesis valid 평가 완료 → Grade A/B 별도 판정.",
+        "stage_2_impact": "Stage 2 trigger count unchanged (1 VALIDATED)"
+      },
+      "B_fix_1_still_negative_ICIR": {
+        "condition": "STR_1684_v2 ICIR < 0 (Fix 1 후에도 여전히 negative)",
+        "outcome": "UNVALIDATED → **VALIDATED_HARD_FAIL 재분류**. hypothesis A (KR momentum inverse) 재검토 가능성 → 그때 AX_CAND_kr_momentum_inverse 별도 candidate 트래킹 시작 가능.",
+        "stage_2_impact": "VALIDATED count 1 → **2** → Stage 2 transition 자동 트리거"
+      },
+      "C_fix_1_marginal_ICIR_0_to_0_20": {
+        "condition": "ICIR > 0 이나 < 0.20 (Gate 4 FAIL but positive direction)",
+        "outcome": "CONDITIONAL_FAIL 재분류 (직접 Hard Fail 아님). Stage 2 count 제외 유지.",
+        "stage_2_impact": "unchanged"
+      }
+    }
+  },
+
+  "architect_coordination_continued": {
+    "architect_fix_1_success_ack": "Architect Option B 권고 Q-Lead 직접 적용 성공 — Judge 공식 합의",
+    "next_architect_request": [
+      "Fix 1 persistent solution (factor_db_builder.R 자체 수정) 구현 검토 — runtime wrapper는 임시 우회이며 builder에서 re-standardize 원인 제거가 근본 해법",
+      "R12 vs D01 registry 조정 (duplicate alias 경고 추가)",
+      "factor_engine.R OLS 회귀 pre-standardize 의무 (L-157 v4 Scout handoff kit과 통합)"
+    ],
+    "architect_stage_3_activation_readiness": "Fix 1 성공 + STR_1684_v2 positive ICIR 확인 후 Architect signoff 완료 기준 충족. v3.5 Stage 3 ACTIVE_NORMATIVE 전환 가능 (VALIDATED 2건 축적 + Architect signoff 2 conditions).",
+    "caveat": "Stage 3 진입은 VALIDATED 2건 조건도 함께 필요. 현재 1건 → 자연 축적 대기."
+  },
+
+  "judge_current_action_items": [
+    "1. Task #59 in_progress (Fix 1 impact 분석, 본 파일)",
+    "2. STR_1684_v2 재실행 결과 수신 대기 → S6 재판정 (Scenario A/B/C 중 판정)",
+    "3. Governor retroactive_v3_5_audit_final (24h SLA 2026-04-19T15:05) 합동 발행 대기",
+    "4. Architect persistent fix + R12/D01 registry 조정 결과 대기 → v3.5 Stage 3 readiness 검토",
+    "5. Scout S0 debate 후속 (H_1687/H_1692 등) 진행 시 Codex Cross-check 도입 여부 (v3.6 Gate 15 agenda 연계)"
+  ],
+
+  "telegram_briefing_note": "Q-Lead 별도 발송 예정 per team-lead 통보. Judge 측 별도 보고 불필요."
+}

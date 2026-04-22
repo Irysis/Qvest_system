@@ -1,0 +1,135 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit for H_1690 debate (STR_1439 score-blend redesign).",
+  "hypothesis_id": "H_1690",
+  "hypothesis_name": "STR_1439 Score-Blend Redesign — Multi-Source Defense Anchor (v53)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T20:00:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1690_str_1439_score_blend_redesign.json",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "H_1688 APPROVE_CONDITIONAL 이후 P1 우선",
+  "predecessor": "H_1677 REJECTED (parent MISSING)",
+
+  "one_line_summary": "4-axis regime-smoothed score blend: M08_Residual_Mom + C19_Composite_Earnings + Q07_Earnings_Stability + R16_Calmar. Weight max 10%p/month smoothing (STR_1439 계승). parent MISSING 해소 + L-149 N<=20 준수. Defense anchor role AX-001 조건부 평가.",
+
+  "scout_calibration_adjusted_predictions": {
+    "note": "L-156 calibration rule 반영 (Codex -3, Quant -2 하한 조정)",
+    "predicted_total_range": [67, 83],
+    "per_debater": {
+      "codex_critic": [8, 12],
+      "risk_manager": [13, 16],
+      "governor": [17, 19],
+      "quant": [13, 16],
+      "academic": [16, 18]
+    },
+    "verdict_projection": "APPROVE_CONDITIONAL (67-83 range) 또는 APPROVE (75+)"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "script": "02_Infrastructure/hooks/run_codex_critic.sh",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1690 STR_1439 Score-Blend Redesign 4-axis Defense Anchor. z_M08 + z_C19 + z_Q07 + z_R16 regime-smoothed weighted composite (RISK_ON 35/40/10/15, ELEVATED 25/25/25/25, CRISIS 10/15/40/35). max 10%p/month weight change smoothing. Top 20 EW. Parent STR_1037/898/1035/943 MISSING 해소 (Factor DB standalone). L-149/484 compliance.",
+        "L_CODE_FINDINGS": "L-065 STR_1439 원본 SR 1.532 FF5a t=2.953 novelty 10 DIRECT_RESCUE, L-149 SYS_FAILURE return-blend DIRECT_FIX, L-148 catalog Grade A != PIT DIRECT_FIX, L-118/118_ext beta dominance + cross-section vs portfolio rho DIRECT_FIX, L-119 정적 블렌드 dilution CONDITIONAL_PASS (regime adaptation), L-121 Q07 양쪽 위기 최강 DIRECT_USE, L-122 risk management framework DIRECT_FIX, L-146/147 overlay free + formal slate DIRECT_FIX, L-557 sleeve 독립성 DIRECT_FIX (weight extremes 10%+ 유지)",
+        "FAILED_STRATEGIES": "STR_1439 B_ARCHIVE (L-484 return-blend 52종목 violation). STR_1060/1070/1085 triplicate REJECT. STR_1435 5-sleeve PIT cascade REJECT. H_1677 parent MISSING REJECTED.",
+        "HYP_ID": "H_1690"
+      },
+      "output_path": "stage_artifacts/s0_debate_r1_codex_critic_H_1690.json",
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "Regime weight 3-state (35/40/10/15 등) ex-post tuning 우려 — 원본 STR_1439 weight 계승 정당성 요구",
+        "Complexity 높음 (4-factor + regime-smoothed) — L-125 IC≠SR 리스크",
+        "STR_1439 FF5a t=2.953 borderline Harvey — score-blend 전환 후 유지 불확실",
+        "H_1677 REJECTED 후 같은 family 재시도 의혹 — differentiation 명시 요구",
+        "Q07 + R16 CRISIS tilt 75% — defense 라벨링과 실제 selection 괴리 가능"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1690 4-axis regime-smoothed score blend defense anchor. L13 관점 — regime transition boundary (MRS 14→16, 29→31) smoothing 충분한지, Q07+R16 CRISIS tilt 75% 편중 tail risk, 8대 스트레스 구간 per-regime performance, portfolio CAPM beta M08 residual momentum 효과, DCC-GARCH conditional correlation vs STR_1631.",
+      "output_path": "stage_artifacts/s0_debate_r1_risk_manager_H_1690.json",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "Regime smoothing max 10%p/month이 sudden regime shift (2020-03 COVID) 대응 지연 위험",
+        "Q07+R16 CRISIS tilt 75%로 정상 복귀 구간 lag risk",
+        "4 sub factor EW combine이 cross-section clustering 유발 가능",
+        "M08 residual momentum momentum crash exposure (CRISIS 10%만 완화)"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1690 Defense anchor 공석 해소 후보. PG0 gap 0.807 + AX-001 조건부 평가 + family: multi_source_score_blend_defense 신규 family 진입. Hybrid Z3 대체/보완 옵션. Q25 concentration risk (H_1682 R16 공유).",
+      "output_path": "stage_artifacts/s0_debate_r1_governor_H_1690.json",
+      "rubric_focus": "gap_alignment(4) + role_match(4) + family_saturation(4) + marginal_contribution(4) + implementation_feasibility(4) = 20",
+      "expected_assessment_vectors": [
+        "Defense anchor 공석 해소 직접 경로 — SR gap 기여 예상 +0.15~0.25",
+        "Hybrid Z3 (STR_1439/1435/1060 REJECT 후) 대체 옵션으로 전략적 가치 high",
+        "multi_source_score_blend_defense family 신규 진입 — family diversification 긍정",
+        "H_1682 R16 공유 concentration 주의 — S3 rho<0.6 엄격 gate",
+        "phased admission 5%→10%→15% 권고 (H_1688 동일 패턴)"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1690. Factor DB 4 sub factor 가용성 실측 (M08/C19/Q07/R16 모두 기구축 Scout Task #12 확인). Regime weight 3-state smoothing implementation feasibility. vs STR_1631 cross-section 상관 사전 측정. Harvey t>3.0 gate.",
+      "output_path": "stage_artifacts/s0_debate_r1_quant_H_1690.json",
+      "rubric_focus": "icir_pass(4) + internal_corr(4) + c19_corr(4) + defense_ic(4) + data_avail(4) = 20",
+      "expected_fact_check_vectors": [
+        "4 sub factor ICIR 실측: M08 0.40, C19 0.547, Q07 0.35, R16 0.30 → composite 0.40 예상",
+        "MRS t-1 lag 구현 feasibility (C5 준수)",
+        "Regime weight smoothing max 10%p/month 실장 방법 (w_t = 0.9·w_{t-1} + 0.1·w_regime_raw)",
+        "STR_1631 C19 공유 portfolio-level rho 사전 추정",
+        "Harvey t>3.0 gate STR_1439 원본 t=2.953 → score-blend 후 향상/감소 여부"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1690. Bernard-Thomas 1989 JAR + Blitz 2011 JEF + Dichev-Tang 2009 TAR + Barroso 2015 JFE + Ang-Timmermann 2012 ARFE + Asness 2013 JF + 이진철 2015 + 고영훈 2018. peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "output_path": "stage_artifacts/s0_debate_r1_academic_H_1690.json",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "Bernard-Thomas 1989 JAR + Barroso 2015 JFE top-tier foundational 4건",
+        "Blitz 2011 + Dichev-Tang 2009 direct primary references",
+        "한국 실증 2건 (이진철 2015 잔차 momentum + 고영훈 2018 한국 C19 component)",
+        "regime-conditional framework Ang-Timmermann 2012 foundational"
+      ],
+      "expected_concern_vectors": [
+        "Bernard-Thomas 1989 JAR 35년 후 post-publication decay (L-090 C19 IC 반감기 693개월 예외적)",
+        "이진철 2015 M08 sample 2013까지 → 2014+ OOS 부재",
+        "Multi-source score blend의 academic precedent 약함 (각 factor 개별 실증만)"
+      ]
+    }
+  ],
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "Judge 직접 권고 수용 (sweep v3 Pass 2 governor_actions[3])",
+      "STR_1439 novelty 10 + FF5a t=2.953 borderline Harvey genuine alpha 계승",
+      "4 sub factor 모두 Factor DB 기구축 + AX 전수 PASS",
+      "Parent MISSING 완전 해소 (H_1677 실패 교훈)",
+      "Defense anchor 공석 해소 + multi_source family 신규 진입"
+    ],
+    "bear_case": [
+      "Regime weight 3-state ex-post tuning 우려 (Codex attack)",
+      "Complexity 4-factor + smoothing (L-125 IC≠SR 리스크)",
+      "H_1682 R16 공유 S3 rho 0.5~0.65 concentration",
+      "STR_1631 C19 공유 S3 rho 0.35~0.45 (Governor Critical<0.4)",
+      "H_1688 M08 공유 S3 rho 0.4~0.55"
+    ]
+  },
+
+  "strategic_chain": {
+    "if_approve_or_approve_conditional": "STR_1685 또는 Forge 자동 할당 → S1 Forge 병렬 실행 (H_1676/H_1682/H_1688 완료 후 4번째 slot)",
+    "if_revise": "Scout Path 재검토 — (a) Q07 비중 축소 (40→25%), (b) sub A M08 교체 (M01 직접 사용), (c) regime weight 2-state 단순화",
+    "if_reject": "Path A 폐기 + Hybrid Z3 복구 (STR_1439/1435/1060 재활용 경로 재검토)"
+  }
+}

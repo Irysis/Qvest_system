@@ -4,28 +4,8 @@
 # Write/Edit/Bash 실행 전에 금지 패턴 차단.
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
-
 INPUT=$(cat)
-
-# Parse tool name and inputs via pipe (not here-string, which corrupts Korean/special chars)
-PARSED=$(printf '%s' "$INPUT" | python3 -c "
-import sys, json
-try:
-    d = json.load(sys.stdin)
-    ti = d.get('tool_input', {})
-    print(d.get('tool_name', ''))
-    print(ti.get('file_path', ''))
-    print(ti.get('command', ''))
-except:
-    print('')
-    print('')
-    print('')
-" 2>/dev/null || true)
-
-TOOL_NAME=$(printf '%s\n' "$PARSED" | sed -n '1p')
-FILE_PATH=$(printf '%s\n' "$PARSED" | sed -n '2p')
-COMMAND=$(printf '%s\n' "$PARSED" | sed -n '3p')
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 # Rule 1: Write/Edit to 05_Production/ 차단 (file_path만 체크)
 if [ "$TOOL_NAME" = "Write" ] || [ "$TOOL_NAME" = "Edit" ]; then

@@ -1,0 +1,144 @@
+{
+  "axiom_id_candidate": "AX_CAND_kr_momentum_inverse",
+  "status": "CANDIDATE_PENDING_5_AXIS_PROMOTION",
+  "source_agent": "Judge (post Scenario B 확정 team-lead 18:15)",
+  "created_at": "2026-04-18T18:20+09:00",
+  "review_scheduled": "2026-07-17",
+  "quarterly_review_quarter": "2026Q3",
+  "team_lead_directive_trigger": "2026-04-18T18:15 Scenario B 확정: STR_1684_v2b ICIR -0.1874 + CAPM beta 1.0007 Fix 1 적용 후에도 동일. Hypothesis A (KR momentum inverse) 재복원 공식 확정.",
+
+  "statement_draft": "market=KR. 한국시장 residual momentum long-only 20종목 portfolio의 구조적 부호 반전 또는 약화 현상. Carhart (1997) US momentum premium positive 전제가 한국시장에서 breakdown. Rouwenhorst (1999) emerging markets momentum weak + Asness-Moskowitz-Pedersen (2013) 글로벌 momentum KR low 실증 연계. residualization (Vasicek shrinkage beta 24M + size + idio vol)이 scale invariance로 개선 불가 — 구조적 현상 시사.",
+
+  "supporting_L_codes": [
+    {
+      "id": "L-161 (VALIDATED 재분류)",
+      "title": "Factor DB Z_Score 정규화 불일치 + OLS scale 충돌 — 원본 (Scout hypothesis B) + Scenario B 재복원 (KR momentum inverse)",
+      "original_hypothesis_classification": "UNVALIDATED_HARD_FAIL (Scout hypothesis B 85%)",
+      "revised_classification_post_scenario_B": "VALIDATED_HARD_FAIL (team-lead 18:15 arbitration)",
+      "key_evidence": "STR_1684_v2b Fix 1 적용 후 ICIR -0.1874 동일 + CAPM beta 1.0007 불변. OLS residualization scale invariance property로 sd=1.0 복원에도 ranking/portfolio/ICIR 동일. Hypothesis B는 현상 설명 valid이나 Fix 효과 예측 실패. 실제 원인 Hypothesis A 재확증.",
+      "portfolio_metrics_final": {
+        "cagr": -4.32,
+        "sharpe": -0.13,
+        "sharpe_m": 0.049,
+        "ir": -0.509,
+        "mdd": 86.66,
+        "icir_v1": -0.1874,
+        "icir_m08_baseline": -0.9742,
+        "capm_beta": 1.0007,
+        "stress_outperform": "0/3 (GFC -14.67 / COVID -2.91 / Rate_2022 -15.39 all FAIL)"
+      }
+    }
+  ],
+
+  "five_axis_promotion_criteria": {
+    "I_impact": {
+      "status": "STRONG",
+      "score_estimate": 0.75,
+      "evidence_provided": "STR_1684 Grade F + H_1688 hypothesis 공식 reject + rev8-A Core_Secondary 공백 → H_1692 편성 경로. 포트폴리오 composition 재설계 유발."
+    },
+    "R_robustness": {
+      "status": "PARTIAL",
+      "score_estimate": 0.65,
+      "evidence_provided": "STR_1684_v2b 실측 + Scout DIAG + Architect RC1/RC2/RC3 + Fix 1 empirical 검증 (scale invariance)",
+      "evidence_gap": "추가 KR momentum strategy 재현 검증 필요 (L-090 IC 반감기 693M M01 vs residualized composite 차이 해석 필요)"
+    },
+    "F_frequency": {
+      "status": "BELOW_THRESHOLD",
+      "score_estimate": 0.35,
+      "evidence_provided": "현재 STR_1684 단일 strategy case. 과거 momentum strategy 결과 재검증 필요.",
+      "evidence_required": "3건+ KR momentum strategy structural fail or weak 재현 case 축적 → Q3 review 시 0.55+ 목표"
+    },
+    "E_economic_mechanism": {
+      "status": "STRONG",
+      "score_estimate": 0.75,
+      "evidence_provided": "Rouwenhorst (1999 JF) emerging market momentum weak + Asness-Moskowitz-Pedersen (2013 JF) KR momentum premium low + Carhart (1997 JoF) US momentum premium positive breakdown KR. 경제적 메커니즘 literature backing strong.",
+      "potential_mechanisms_5": [
+        "(1) 한국 momentum crash 빈도 > developed markets (2022 retail speculation)",
+        "(2) 개인투자자 60%+ trading volume retail contrarian behavior",
+        "(3) large-cap concentration 대 residual small/mid-cap 편중 volatility risk premium 반대",
+        "(4) 공매도 제한 period momentum unwinding 지연",
+        "(5) 한국 winner-take-all 미약 + size-momentum decoupling"
+      ]
+    },
+    "M_measurability": {
+      "status": "STRONG",
+      "score_estimate": 0.90,
+      "evidence_provided": "ICIR + FMB Score lambda t-stat + stress outperform + CAPM beta + residualization 스펙 전수 측정 가능. Fix 1 effect 분석 methodology 확립."
+    }
+  },
+
+  "total_composite_estimate": "~0.68 (EXTEND zone, 0.70 threshold 근접)",
+
+  "promotion_blockers_and_enablers": {
+    "blocker_1_frequency": "F_frequency 0.35 — 단일 STR_1684 case. 추가 KR momentum strategy 재현 필요 (ET 설계).",
+    "blocker_2_l_090_reconciliation": "L-090 M01 IC 반감기 693M stability와 residualized composite 실패 차이 해석 필요 (Scout 학술 evidence 수집 영역)",
+    "enabler_1_team_lead_directive": "Scenario B 공식 확정으로 candidate 생성 승인",
+    "enabler_2_strong_E_mechanism": "Rouwenhorst 1999 + Asness+ 2013 literature backing",
+    "enabler_3_architect_fix_1_mathematical_proof": "scale invariance property 증명으로 hypothesis A 재확증"
+  },
+
+  "evidence_tracking_tasks_ET": [
+    {
+      "task_id": "ET-301",
+      "description": "과거 KR momentum strategy (STR_1038~1043 범주, STR_1439 variants 등) 결과 재검증 — residualized momentum inverse pattern 재현 여부",
+      "owner": "Scout + Judge",
+      "target": "2026Q2",
+      "contribution": "F_frequency 0.35 → 0.55+"
+    },
+    {
+      "task_id": "ET-302",
+      "description": "L-090 M01 IC 반감기 693M vs residualized momentum ICIR 음수 reconciliation (Scout 학술 evidence)",
+      "owner": "Scout + Academic",
+      "target": "2026Q2",
+      "contribution": "R_robustness 0.65 → 0.75"
+    },
+    {
+      "task_id": "ET-303",
+      "description": "한국시장 momentum 학술 evidence 수집 (Lee-Park-Yang + 김순영 2018 + 박명호-심기은 2020 등 KR 문헌)",
+      "owner": "Scout + Academic",
+      "target": "2026Q2~Q3",
+      "contribution": "E_economic_mechanism 0.75 → 0.85"
+    },
+    {
+      "task_id": "ET-304",
+      "description": "Hypothesis D (winsorize 정보 손실 비가역) 별도 검증 — Architect Option A Fix (factor_db_builder.R 자체 수정) 후 재실험",
+      "owner": "Architect + Forge + Judge",
+      "target": "2026Q2~Q3",
+      "contribution": "R_robustness 확장 + hypothesis 정밀화"
+    }
+  ],
+
+  "relation_to_other_ax_candidates": {
+    "AX_CAND_infrastructure_failures": {
+      "relation": "complementary — L-161 primary evidence 공유이나 mechanism 다름",
+      "interaction": "AX_CAND_infrastructure (Fix 1 전)와 AX_CAND_kr_momentum_inverse (Fix 1 후 hypothesis A)는 동일 L-161에 대한 두 관점 해석. Fix 1 증거로 infra_failures 기여도 감소 + kr_momentum_inverse 기여도 증가."
+    },
+    "AX-006_pairwise_TDC": {
+      "relation": "orthogonal — cluster level vs single factor level",
+      "interaction": "없음"
+    },
+    "AX_CAND_spec_transmission_failure_L159": {
+      "relation": "independent — process vs structural mechanism",
+      "interaction": "없음"
+    },
+    "AX_CAND_defense_ic_return_decoupling_L160": {
+      "relation": "complementary — structural failure 계열 family. Defense (L-160) + Momentum inverse (new)가 한국시장 single-factor long-only 20종목 구조적 실패 2건 확보.",
+      "interaction": "family 통합 candidate (kr_single_factor_long_only_20_structural_failure) 검토 가능"
+    }
+  },
+
+  "q3_review_decision_preview": {
+    "most_likely_outcome": "EXTEND 1 quarter (composite 0.68, frequency 0.35 blocker)",
+    "rationale": "현재 단일 strategy case. ET-301 추가 재현 2~3건 축적 + ET-302 reconciliation + ET-303 literature expansion 완료 시 Q4 review에서 PROMOTE 가능성 상승.",
+    "acceleration_scenarios": [
+      "ET-301 KR momentum 추가 실패 2건 즉시 축적 시 F 0.35 → 0.65 → composite 0.75 → PROMOTE 검토",
+      "ET-304 Hypothesis D 검증 시 mechanism dichotomy 해소 → R 0.65 → 0.85"
+    ]
+  },
+
+  "judge_signoff": {
+    "agent_id": "judge",
+    "timestamp": "2026-04-18T18:20+09:00",
+    "signoff_note": "AX_CAND_kr_momentum_inverse 신규 candidate 생성 공식 (team-lead Scenario B 확정 지시). L-161 VALIDATED 재분류 + Hypothesis A 재복원 기반. Scout DIAG hypothesis B 85%와 무관하지 않으나 Scenario B 실측 확증으로 독립 axiom candidate 자격 획득. ET-301~304 evidence 축적 plan + 2026Q3 EXTEND 예상."
+  }
+}

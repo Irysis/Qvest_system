@@ -1,0 +1,89 @@
+{
+  "role": "governor",
+  "debate_id": "H_1685_v2_R1_governor",
+  "hypothesis_id": "H_1685",
+  "version": "v2",
+  "round": "R1_OPENING",
+  "timestamp": "2026-04-18T15:20:00+09:00",
+  "score": 15,
+  "score_breakdown": {
+    "gap_alignment": {
+      "value": 4,
+      "max": 4,
+      "rationale": "PG0 Sharpe gap 0.807 (1.193 → 2.0) 잔존. rev7_v3_v1 projected SR primary 1.75, Phase_2 H_1690 promotion 1.77, total boost 2.00 경로에서 investor_flow family 첫 diversifier axis로 4번째 cross-channel 독립 축 확보. sleeve_needs='diversifier' 명시적 충족. v1 corr 0.897 구조 결함을 residualization (실측 mean |corr| 0.194, median 0.168)으로 수식적·실증적 해소. PG0 gap alignment 관점 완전 정렬."
+    },
+    "role_match": {
+      "value": 4,
+      "max": 4,
+      "rationale": "Residualization으로 수식상 orthogonal 보장 + channel preservation 0.895 (Choe-Kho-Stulz 2005 smart money 정보 본체 유지). H_1674 (core_alpha, 개인 contrarian raw -z_I)와 sub-family 완전 분리 (foreign_resid_individual). Role Honesty Audit 관점 위장 위험 낮음 — residual 자체가 '개인에 설명되지 않는 외국인 고유 정보 축'으로 core_alpha return predictability가 아닌 cross-channel diversifier 성격. L-146 overlay-driven MDD 계상 문제와 무관 (overlay 없음, 순수 signal)."
+    },
+    "family_saturation": {
+      "value": 3,
+      "max": 4,
+      "rationale": "investor_flow family: 기존 H_1674 core_alpha + H_1685 v2 diversifier = 2건. Family concentration 기준 max 35% cap 대비 충분한 여유. rev7_v3_v1 family distribution에서 investor_flow 미등록 상태 → Phase_3 3~8% 편입은 max family (quality_aggregate 0.20) 대비 하위. Herfindahl index 악화 없음. 다만 consensus 32% cap 여유 (50% cap까지 18pp)와 별개로 investor_flow 첫 diversifier는 precedent 부재 — 실증 불확실성 1점 감점. v1의 duplicate 우려(0.897)가 v2 residualization으로 해소되었으나 tail dependence (p95 |corr| 0.447) 극단 월 존재."
+    },
+    "marginal_contribution": {
+      "value": 3,
+      "max": 4,
+      "rationale": "실측 mean |corr| 0.194 + diversifier 성격 → blended SR 기여 +0.08~0.15 예상. v1 R1 16점에서 C11/ICIR/TDC 3-gate 가정으로 +0.02 net 기여 산정했으나 v2는 pre-precheck PASS (255개월 실증)로 ICIR 불확실성 일부 해소. 그러나 Scout forecast ICIR 0.20~0.40 (v1 0.30~0.55에서 하향) + SR forecast 0.50~0.80으로 보수화 → SR 하단 실현 시 +0.05, 상단 실현 시 +0.15. rev7_v3_v1 projected SR 1.75에 3~8% 편입 시 +0.03~0.08 순수 기여. Phase_2 H_1690 10% 승격 대안과 마진 비교 시 유사 수준. 1점 감점."
+    },
+    "implementation_feasibility": {
+      "value": 1,
+      "max": 4,
+      "rationale": "CRITICAL concerns 다수 누적: (1) INV13 factor registry 신규 등록 필수 + compute_investor.R 확장 (expanding β accumulator 60~80 LOC 신규) — 기존 INV01~INV12 pattern 승계하나 expanding OLS 로직은 신규. (2) C11 거래주체 공시 T+1 timing 재확인 필수 — lookahead_detector.R INV13 패턴 4종 사전 등록은 초안 수준. (3) burn-in 60개월 (2005-01 이후 분석 → 1999~2004 5년 데이터 loss). (4) β_t expanding accumulator가 monthly 재계산 방지로 구현되어야 builder 성능 확보. (5) p95 |corr| 0.447 극단 월 약 13건 존재 → crisis regime S3/S6 regime-conditional TDC 별도 검증 필수. v1 대비 구현 복잡도 증가(잔차화 β accumulator 추가) + INV13 신규 등록 리스크 → 2점 감점 추가로 1점으로 하향."
+    }
+  },
+  "arguments": [
+    "PG0 gap + role admission 관점에서 v2는 v1 16점 대비 구조적으로 개선된 hypothesis입니다. v1 corr 0.897 (H_1674와 수학적 duplicate) 결함이 residualization으로 수식상·실증상 해소되었고(mean |corr| 0.194, median 0.168, 255개월 실증), channel preservation 0.895로 Choe-Kho-Stulz 2005 외국인 정보 우위 축 본체가 유지됩니다. investor_flow family 첫 diversifier axis 확보는 rev7_v3_v1 Phase_3 (STR_1631/H_1688/STR_1656/STR_1679v3/H_1682/H_1689/H_1690 7축) 이후 8번째 cross-channel 독립 alpha로 SR boost roadmap (target 2.0)에 정합합니다.",
+    "Role Honesty Audit 관점에서 diversifier 위장 위험은 v1 대비 감소했습니다: H_1674 (core_alpha, 개인 contrarian raw)와 v2 (foreign residualized) 사이 sub-family 분리 + 수식적 orthogonality 보장. Residual signal은 fundamental/consensus/ML/distress/quality/momentum/defense 기존 7개 family와 전혀 다른 거래행동 차원으로 원천 독립. Family saturation 측면에서 investor_flow 2건 (core_alpha + diversifier) 구성은 consensus 기존 STR_1631 1건보다 balanced family architecture를 제공합니다. 다만 precedent 부재 + tail dependence (p95 0.447) 경계 필요.",
+    "Implementation feasibility는 가장 큰 우려입니다: INV13 신규 factor registry 등록 + compute_investor.R expanding β accumulator 확장 + C11 거래주체 T+1 timing 검증 + burn-in 60개월 data loss + p95 극단 월 regime-conditional TDC 별도 검증. 구조적으로 필요한 5개 선결 조건 중 lookahead_detector INV13 4종 패턴은 초안 수준, factor_registry INV13 entry는 미등록, β_t accumulator builder 성능 구현은 미검증. rev7_v3_v1 Phase_1 편입 schedule 관점에서 H_1690 Forge S1 4-variants (V1~V4) + H_1682 Primary Contingency A/B/C + STR_1684 V1 3건 병행 중이므로 INV13 신규 구현은 Phase_2 이후 편입이 현실적이며 Phase_1 3~8% 편입은 신중한 조건부여야 합니다."
+  ],
+  "concern": "implementation_feasibility 1점 감점의 근원은 v1 대비 구현 복잡도 증가입니다. v1 (raw z_F - z_I divergence)는 기존 INV-series 단순 승계로 compute_investor.R 30줄 확장이면 충분했으나, v2는 expanding-window pooled OLS β accumulator (cum_SxY/cum_Sxx shift(1L), burn-in 60m) + 월별 cross-sectional z-score + residualization 3단계 로직 추가로 60~80 LOC 확장이 필요하고 builder 성능 최적화 (monthly 재계산 방지)까지 요구됩니다. Forge v2 현재 STR_1682/1683/1684 3-parallel + H_1690 4-variants + H_1682 Contingency 판정 등 critical path 과부하 상태에서 INV13 신규 등록 + PIT pre-check가 Phase_1 5~7일 내 완성 가능한지 schedule risk가 큽니다. 추가로 p95 |corr| 0.447 (약 13개월 극단 월) 존재 → S3 regime-conditional TDC 가 crisis regime 별도 PASS를 확보하지 못하면 Phase_3 8% 승격 가정이 무너져 rev7_v3_v1 projected SR 1.75 경로에서 investor_flow diversifier 공백이 발생합니다.",
+  "conditions": [
+    "Phase_1 초기 편입 cap 강화: Forge S1 PASS 이전 편입 금지. Phase_1 편입 시 3% cap (rev7_v3_v1 Phase_3 투입 시 3~5% 범위 하한). INV13 factor_registry 정식 등록 + lookahead_detector.R INV13 C1/C2/C11/burn-in 4종 패턴 정식 등록 + compute_investor.R expanding β accumulator 구현 완료 + Judge C11 거래주체 공시 T+1 timing precheck PASS 4개 모두 선결 조건. 1개라도 FAIL 시 Phase_2 이후로 편입 연기.",
+    "S3 regime-conditional TDC 이중 관문: 기본 TDC ≤ 0.4 vs H_1674 (residualization 수식 보장, 실측 0.194) + crisis regime conditional TDC ≤ 0.5 vs H_1674/STR_1631/STR_1656 (L-156 v2 + p95 |corr| 0.447 극단 월 검증 대응). crisis regime TDC 0.5 초과 시 투자주체 family 첫 diversifier 실증 전제가 무너진 것으로 간주하여 Phase_3 8% 승격 보류 및 investor_flow family 설계 재검토.",
+    "Phase 단계적 admission + rollback trigger: Phase_1 3% → Phase_2 5% → Phase_3 8% 3-step gradual. 각 step 승격 조건 — Phase_2 5% 승격: Forge S1 ICIR 실측 ≥ 0.20 (Alpha Lab Gate §8) + S3 mean TDC ≤ 0.40 PASS. Phase_3 8% 승격: S6 FF5 alpha positive + CAGR ≥ 8% + MDD ≤ 40% + Harvey t > 3.0 + regime-conditional TDC crisis ≤ 0.5 전수 PASS. Phase_3 도달 후에도 family Herfindahl > 0.12 악화 시 investor_flow 5%로 자동 하향. Phase_1 3% 진입 후 3개월 내 Forge S1 미완성 시 반려 + Phase_2 이후 재검토."
+  ],
+  "verdict_preliminary": "APPROVE_CONDITIONAL",
+  "verdict_rationale": "5축 합산 15/20 (gap 4 + role 4 + family 3 + marginal 3 + implementation 1). v1 16점 대비 -1점 (implementation_feasibility -1). PG0 gap alignment + role match는 v2 residualization으로 구조적 개선(완전 정렬 유지, v1 대비 질적 개선) + family saturation/marginal contribution은 실증 검증 의존성 유지 + implementation_feasibility는 INV13 신규 등록 복잡도 및 critical path 과부하로 v1 2점에서 1점으로 하향. Phase_1 3% 시범 편입은 debate APPROVE + 4개 선결 조건 모두 PASS 시 가능하나, 5%/8% 가속은 3-step gradual admission 조건부. Scout calibration v3 예측 [46,62] calibrated 범위 내 상위 (15점 → raw 16점 예상 해석 시 Scout 예측 [52,68] 중간값 근접).",
+  "calibration_alignment": {
+    "scout_predicted_range_raw": "[52, 68]",
+    "scout_calibrated_range": "[46, 62]",
+    "governor_v1_score": 13,
+    "governor_v2_score_now": 15,
+    "calibration_note": "Scout L-157 v3 calibration 적용 시 governor 예측 [13, 16] 범위 내 15점. v1 재심사 16점에서 implementation_feasibility -1 감점 반영. v2 구조적 개선 (residualization)은 gap/role/family/marginal 유지 + implementation 복잡도 증가라는 trade-off 정확히 반영."
+  },
+  "references": {
+    "portfolio_gap_vector": ".cache/portfolio_gap_vector.json (v1.0.3, sharpe_gap 0.807)",
+    "pg0_plan_active": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json (rev7_v3_v1, H_1685 DROPPED → v2 재심사)",
+    "s0_record_v2": "stage_artifacts/s0_record_H_1685_v2.json",
+    "precheck_validation": "stage_artifacts/h1685_v2_residual_validation_result.json (OPTION_A_VIABLE, PASS)",
+    "v1_r1_governor": "stage_artifacts/s0_debate_r1_governor_H_1685.json (score 16)",
+    "v1_r2_governor": "stage_artifacts/s0_debate_r2_governor_H_1685.json (score 13)",
+    "v1_verdict": "stage_artifacts/S0_VERDICT_H_1685.json (REVISE 55)",
+    "subfamily_taxonomy": "stage_artifacts/scout_consensus_subfamily_proposal_v2.json (investor_flow family 외부)",
+    "h_1674_same_family": "stage_artifacts/s0_record_H_1674* (core_alpha 개인 contrarian)",
+    "related_l_codes": [
+      "L-146 overlay-driven MDD Core alpha 계상 금지 (N/A — overlay 없음)",
+      "L-148 Grade A != PIT clean (INV13 C1~C15 수동 전수 검증 필수)",
+      "L-156 v2 TDC pairwise cluster (p95 0.447 극단 월 regime-conditional TDC)",
+      "L-157 Scout Calibration v3 (-6 overestimate, governor 예측 [13,16] 범위 내 적중)",
+      "L-457 investor_flow PIT (compute_investor.R C2 패턴 승계 + C11 T+1 timing 재확인)"
+    ],
+    "axiom_compliance": "AX-000 (no limits) PASS + AX-001 (defense conditional) N/A (diversifier) + AX-002 (process integrity) PASS (v1 REVISE 정식 수용 후 재설계 + 실측 검증 선행)"
+  },
+  "governor_specific_assessment": {
+    "diversifier_role_genuine_vs_hidden_core": "Residualization 수식상 개인 flow 차원과 orthogonal + channel preservation 0.895로 외국인 정보 채널 본체 유지. 실측 mean |corr| 0.194 (v1 0.897 대비 -78% reduction)으로 hidden core 위험 해소. Scout S2 ICIR 실측이 0.20대 (forecast 하단) 머물면 SR 0.50 수준으로 Core 수준 return predictability 미도달 → diversifier role 적합. 0.40대 (forecast 상단) 도달 시 SR 0.80 수준으로 upper diversifier ~ lower core_secondary 경계에 근접하나 sub-family 분리로 role 위장 리스크 여전히 낮음.",
+    "family_saturation_investor_flow": "investor_flow family 기존 H_1674 core_alpha 1건 → v2 diversifier 추가로 2건. Family 구성 측면에서 consensus (STR_1631 1건), ML (STR_1656 1건), distress (H_1682 1건), quality (H_1689 1건), momentum_residual (H_1688 1건), momentum_overlay (STR_1679v3 1건), multi_source_defense (H_1690 1건)과 동등한 2-tier family architecture 형성. 35% cap 여유 충분.",
+    "marginal_sr_contribution_phase_scenario": {
+      "phase_1_3pct_admission": "SR 기여 +0.015~0.024 (3% × 0.50~0.80 SR)",
+      "phase_2_5pct_admission": "SR 기여 +0.025~0.040 (5% × 0.50~0.80 SR)",
+      "phase_3_8pct_admission": "SR 기여 +0.040~0.064 (8% × 0.50~0.80 SR)",
+      "rho_adjustment": "mean |corr| 0.194 → rho_0_2 optimistic 영역. variance reduction factor 1.83 (rev7_v3_v1) 유지 기준 net +0.02~0.08 기대",
+      "competing_slot": "Phase_2 H_1690 10% promotion (+0.02 SR) 대안 대비 유사 margin — H_1685 v2 admission은 family diversity 추가, H_1690 promotion은 기존 family 강화. rev7_v3_v1 SR boost roadmap에서 상호 배타 아님(병행 가능)."
+    },
+    "phase_3_admission_size_recommendation": "Phase_1 3% (debate APPROVE + 4 선결 조건 PASS) → Phase_2 5% (Forge S1 ICIR ≥ 0.20 + S3 mean TDC ≤ 0.40 PASS) → Phase_3 8% (S6 FF5 alpha+ + CAGR ≥ 8% + MDD ≤ 40% + Harvey t > 3.0 + crisis TDC ≤ 0.5 PASS). Scout 제안 3~8% 범위 내 gradual 경로 준수. 직접 8% 편입은 C11 + ICIR + TDC 3-gate 동시 PASS 전제 하에서만 허용.",
+    "rev7_v3_v1_consensus_cap_compliance": "rev7_v3_v1 consensus 32% (STR_1631 18% + H_1688 10% + H_1678 reserve 6% 구성 중 reserve 제외 28%). H_1685 v2는 investor_flow family로 consensus cap과 무관. family_cap 35% 기준 investor_flow 신규 family 8% 편입은 여유 27pp.",
+    "defense_40pct_and_q25_audit_impact": "defense 40% (H_1682 12 + H_1689 20 + H_1690 8) + Q25 22.1% (rev7_v3_v1 audit). H_1685 v2는 investor_flow diversifier로 defense 40%나 Q25 22.1% 어디도 영향 없음. 증분 영향 zero."
+  }
+}

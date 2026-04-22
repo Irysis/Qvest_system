@@ -1,0 +1,159 @@
+{
+  "artifact_type": "gate_design_signal_portfolio_translation_failure",
+  "gate_id": "Gate 14 (신규 제안)",
+  "schema_version": "v1_proposal",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 1 — Q-Lead P3 지시",
+  "purpose": "Q-Lead P3 지시 — Signal-Portfolio Translation Failure family (L-160 initiator + L-165 2nd member) 자동 탐지 gate 신규 설계. Judge Gate 13 (Factor DB Access Compliance)와 구분하여 Gate 14 제안.",
+
+  "_note_gate_numbering": {
+    "gate_13_existing": "Factor DB Access Compliance (L-164 load_month_factors mandate, factor_engine direct parquet 금지). Scout gate_13_violation_audit_scout_scan.json + v2_expanded.json 기 발행.",
+    "gate_14_proposal": "Signal-Portfolio Translation Failure 자동 탐지. L-160/L-165 family 3rd member 방지 + AX_CAND 3/3 trigger 방어."
+  },
+
+  "motivation": {
+    "family_members_validated_hard_fail_3": [
+      "L-160 initiator: STR_1683 Distress+Calmar (signal IC 0.2207, ICIR 1.879, FM t=16.887 매우 강력 / portfolio MDD 94.66 SR -0.242)",
+      "L-161 separate track: STR_1684 KR momentum inverse (Carhart residual ICIR -0.1874 + CAPM beta 1.0007)",
+      "L-165 2nd member: STR_1685 H_1690 Multi-Source Defense Anchor (AX-005 범위 확장 편입)"
+    ],
+    "ax_cand_status": "AX_CAND_signal_portfolio_translation_failure TRIGGER 2/3 (L-160 + L-165)",
+    "problem_statement": "signal-level IC/ICIR 지표는 portfolio-level alpha를 보장하지 않는다. 한국시장 long-only 20-stock 구현 단계에서 (a) publication decay, (b) concentration risk, (c) non-linear signal transformation 부재, (d) sector bias 등으로 수익화 실패. 5 supervisor-level gates (S0~S4 + Judge S6 existing 12 gates)로 탐지 불가."
+  },
+
+  "gate_14_design_specification": {
+    "gate_name": "Signal-Portfolio Translation Failure Detection Gate",
+    "gate_scope": "S1 (Forge factor_engine + strategy 실행 후) + S6 (Judge Role Honesty Audit 동시)",
+    "enforcement_level": "L3 hard_block (Admission Rule v3.5.2 mandatory addition 제안)",
+    "trigger_conditions": "hypothesis에 다음 중 하나라도 true일 때 gate 14 자동 활성화:\n1. expected_role = defense OR core_secondary\n2. signal_level_ICIR ≥ 0.5 OR signal_level_FM_t ≥ 3.0 declared in s0_record\n3. factor_engine 내 single-axis composite weight ≥ 0.5 (Q07 0.7 weight 등)\n4. S0 record lesson_check에 L-160 또는 L-165 reference 존재\n5. sub_family에 'residual' / 'composite' / 'multi_source' 포함"
+  },
+
+  "gate_14_sub_gates_3": {
+    "sub_gate_14a_net_ic_transmission_ratio": {
+      "definition": "net_IC_transmission_ratio = net_cost_adjusted_portfolio_return / pre_cost_signal_projected_return",
+      "measurement_protocol_5_step": [
+        "Step 1: pre_cost_IC = monthly cross-section Spearman (portfolio weights based prediction vs realized next-month return)",
+        "Step 2: pre_cost_portfolio_return = Top 20 EW Long signal-based portfolio monthly return",
+        "Step 3: net_cost_portfolio_return = pre_cost_portfolio_return - 15bps·turnover - 0.3%·top10_slippage",
+        "Step 4: decay_ratio = net_SR / pre_cost_SR",
+        "Step 5: net_IC_transmission_ratio = net_cost_portfolio_return_annualized / pre_cost_portfolio_return_annualized"
+      ],
+      "pass_threshold": "net_IC_transmission_ratio > 0.6",
+      "soft_warning": "0.4 ≤ ratio ≤ 0.6 → CONDITIONAL (S5 mutation overlay 의무)",
+      "hard_fail": "ratio < 0.4 → L-160 decoupling 확정 → L-165 family 3rd member trigger → AX_CAND 3/3 promote 경고"
+    },
+    "sub_gate_14b_stress_portfolio_return_window_check": {
+      "definition": "3개 stress window 중 portfolio return positive count",
+      "stress_windows_3_primary": [
+        "2008-09~2009-03 GFC (7 months)",
+        "2020-02~2020-04 COVID Crash (3 months)",
+        "2022-01~2022-10 Rate Hike (10 months)"
+      ],
+      "pass_threshold": "2+ window positive portfolio return",
+      "soft_warning": "1 window positive → CONDITIONAL",
+      "hard_fail": "0 window positive → L-160 stress decoupling 확정",
+      "fallback_windows_if_missing_data": [
+        "1997-07~1998-12 Asian Financial Crisis",
+        "2000-03~2002-10 Dotcom Bust",
+        "2011-07~2011-12 EU Debt"
+      ]
+    },
+    "sub_gate_14c_signal_portfolio_rank_correlation": {
+      "definition": "rank correlation between (a) signal-based Top 20 selection and (b) actual realized Top 20 performance rank",
+      "measurement": "monthly cross-section Spearman rank corr → average",
+      "pass_threshold": "rank_corr > 0.20",
+      "soft_warning": "0.05 ≤ rank_corr ≤ 0.20 → CONDITIONAL",
+      "hard_fail": "rank_corr < 0.05 → signal quality은 있으나 portfolio translation 완전 실패",
+      "rationale": "signal high-ranked 종목이 actual return도 상위면 translation 작동. 낮으면 signal-portfolio decoupling."
+    }
+  },
+
+  "gate_14_aggregate_verdict": {
+    "all_pass": "3 sub-gates 모두 PASS → Signal-Portfolio Translation VALIDATED → S6 진입 + Governor PG1 admission 가능",
+    "conditional": "1+ sub-gate CONDITIONAL + 0 hard_fail → S5 mutation 의무 (overlay 또는 N_HOLD 조정)",
+    "hard_fail_any": "1+ sub-gate hard_fail → Signal-Portfolio Translation Failure family 3rd member 확정 → VALIDATED_HARD_FAIL 즉시 태깅 + Governor AX_CAND_signal_portfolio_translation_failure 3/3 promote trigger",
+    "grade_decision_impact": "hard_fail 발생 시 Grade F 자동 + Admission Rule v3.5.2 mandatory hard fail 추가 (MDD>45%, TO>600% 다음 3번째 absolute reject)"
+  },
+
+  "gate_14_implementation_proposal": {
+    "r_code_signature": "02_Infrastructure/validation/signal_portfolio_translation_audit.R (신규 예정)",
+    "function_spec": "audit_signal_portfolio_translation(strategy_id, hypothesis_id, return_series, signal_scores, cost_bps, slippage_bps, stress_windows)",
+    "integration_points": [
+      "Forge factor_engine.R 완료 후 자동 호출 (strategy.R post-backtest hook)",
+      "Judge S6 role_honesty_audit.R audit_defense_v2() 내 필수 호출",
+      "Governor PG1 admission artifact_validator.sh gate 14 output.json 검증"
+    ],
+    "artifact_output": "output/{strategy_id}/signal_portfolio_translation_audit.json",
+    "fields": [
+      "net_IC_transmission_ratio",
+      "stress_portfolio_return_positive_count",
+      "signal_portfolio_rank_correlation",
+      "overall_verdict (PASS/CONDITIONAL/HARD_FAIL)",
+      "sub_gate_verdicts[3]",
+      "l_160_l_165_family_3rd_member_flag (true/false)"
+    ]
+  },
+
+  "multi_sleeve_context_H_1693_specific": {
+    "_note": "Q-Lead P3 지시 핵심 — standalone vs multi-sleeve context 구분",
+    "standalone_test": {
+      "portfolio": "H_1693 top-20 long-only EW, 15bps commission, LIQ 2e8",
+      "purpose": "pure signal-to-portfolio translation quality 측정",
+      "expected_result": "gate 14 sub_gates 측정 가능 (standalone 모든 sub-gates 계산)",
+      "grade_impact": "if hard_fail → H_1693 Defense role 단독 배치 불가 (AX-001 v2 multi_sleeve_only=TRUE 설계 전제)"
+    },
+    "multi_sleeve_test": {
+      "portfolio": "Core (STR_1631 60%) + Div (STR_1656 20%) + Defense (H_1693 10%) + reserve 10%",
+      "purpose": "multi-sleeve 내 H_1693의 defense contribution 측정 (core MDD 완화 + crisis alpha)",
+      "expected_result": "gate 14 sub_gates + AX-001 v2 4-gate 동시 측정",
+      "evaluation": "standalone gate 14 결과가 CONDITIONAL이어도 multi-sleeve context AX-001 v2 PASS 시 Defense 자격 유효 (AX-001 v2 철학: 조건부 평가)"
+    },
+    "h_1693_gate_14_multi_sleeve_bypass_path": {
+      "condition": "standalone gate 14 CONDITIONAL (not hard_fail) + multi_sleeve AX-001 v2 4-gate ALL PASS (crisis_alpha > 0 + bad/normal IC ratio > 0.6 + core MDD reduction ≥ 10%)",
+      "verdict": "H_1693 Defense admission 가능 (Grade B or Grade A depending on total)",
+      "rationale": "AX-001 v2 철학: Defense는 전기간 SR/CAGR/MDD 아닌 multi-sleeve 내 기여로 평가. Gate 14 standalone CONDITIONAL은 multi-sleeve context에서 overlay/다른 sleeve 보완 가능."
+    },
+    "h_1693_gate_14_hard_fail_no_bypass": {
+      "condition": "standalone gate 14 HARD_FAIL (net_IC_transmission_ratio < 0.4)",
+      "verdict": "H_1693 즉시 VALIDATED_HARD_FAIL + L-165 family 3rd member → AX_CAND 3/3 promote",
+      "rationale": "net_IC_transmission_ratio < 0.4는 signal quality zero — multi-sleeve context로 救済 불가"
+    }
+  },
+
+  "H_1693_compliance_forecast_pre_s1": {
+    "sub_gate_14a_net_IC_transmission_ratio_forecast": "0.55~0.72 (L-121 Q07 stress ICIR +0.753 high but L-136 D25+Q07 CAGR 2.59% 과거 실패 고려)",
+    "sub_gate_14b_stress_portfolio_return_forecast": "2/3~3/3 window positive (Q07 CRISIS ICIR +0.413 강력, but COVID 2020 3M short duration 주의)",
+    "sub_gate_14c_rank_correlation_forecast": "0.15~0.28 (sector-neutralization로 주요 종목 rank 재배열 가능, SUE forward-looking boost로 momentum alignment)",
+    "aggregate_forecast": "PASS or CONDITIONAL (AX-001 v2 multi-sleeve bypass path 활성)",
+    "scout_confidence": "60% PASS, 30% CONDITIONAL, 10% HARD_FAIL (L-136 재현 risk 완화되었으나 잔존)"
+  },
+
+  "gate_14_vs_existing_gates_comparison": {
+    "Gate 1 ICIR >= 0.20": "signal level (not portfolio). L-160 STR_1683 ICIR 1.879로 PASS but portfolio hard_fail",
+    "Gate 2 Harvey t > 3.0": "signal level (not portfolio)",
+    "Gate 7 MDD < 45%": "portfolio level but only hard_fail check (not decoupling pattern)",
+    "Gate 10 Admission Rule role threshold": "role-specific (not family-based translation check)",
+    "Gate 11 TDC pairwise": "portfolio-level correlation (not signal-portfolio translation)",
+    "Gate 13 Factor DB Access Compliance": "process level (not performance)",
+    "Gate 14 (신규)": "**signal-to-portfolio translation quality** — 기존 gate 누락 영역. L-160/L-165 family 전용 탐지."
+  },
+
+  "implementation_priority": {
+    "priority_p0_immediate": "H_1693 S1 Forge dispatch 시 sub_gate_14a (net_IC_transmission_ratio) 측정 필수 (handoff_kit v1.2 이미 명문)",
+    "priority_p1_week_2": "02_Infrastructure/validation/signal_portfolio_translation_audit.R 코드 작성 (Judge or Architect)",
+    "priority_p2_week_3": "Admission Rule v3.5.2 mandatory section 편입 (Q-Lead 승인 + lawbook update)",
+    "priority_p3_week_4": "기존 active 전략 retroactive audit (STR_1631 + STR_1656 gate 14 측정)"
+  },
+
+  "scout_notes": [
+    "Q-Lead P3 지시 완료 — Gate 14 Signal-Portfolio Translation Failure 자동 탐지 gate 사전 설계",
+    "Gate 13 (factor DB access)와 구분하여 Gate 14 명명 — 기존 audit artifact gate_13 유지",
+    "3 sub-gates (net_IC_transmission_ratio / stress_portfolio_return / rank_corr) + standalone vs multi-sleeve context 분리 명시",
+    "H_1693 AX-001 v2 multi_sleeve_only=TRUE 설계로 standalone CONDITIONAL bypass path 확보",
+    "L-160/L-165 family 3rd member hard_fail 시 AX_CAND_signal_portfolio_translation_failure 3/3 promote trigger",
+    "R 코드 구현은 Judge or Architect 담당 (Scout 설계만 제안)",
+    "Admission Rule v3.5.2 mandatory section 편입은 Q-Lead 승인 필요 (v54 Freeze 기간 hard blocker 근거 충족)",
+    "H_1693 compliance forecast: PASS or CONDITIONAL 90% confidence, HARD_FAIL 10% (L-136 잔존 risk)"
+  ]
+}

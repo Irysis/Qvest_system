@@ -1,0 +1,121 @@
+{
+  "packet_type": "AX_PROMOTION_PACKET",
+  "candidate_id": "AX_CAND_signal_portfolio_translation_failure",
+  "proposed_ax_id": "AX-007",
+  "proposed_category": "[방법론] [실패]",
+  "title": "KR Defense/Core_Secondary single-sleeve long-only top-20 signal-portfolio translation 구조적 실패",
+  "status": "PROMOTION_READY (3/3 supporting L-codes, 5축 0.86)",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "judge_cascade_trigger": "Gate 14 AX_CAND 3rd member screening PASS (STR_1687 L-166이 3rd member slot 충족)",
+  "statement_draft": "KR market에서 defense 또는 core_secondary single-sleeve long-only top-20 전략은 signal level ICIR이 강함(0.5+ 또는 t>2.0)에도 portfolio level top-20 long-only translation이 구조적으로 실패한다. 4가지 structural cause: (1) top-20 concentration 위험 누적, (2) idio volatility tight clustering, (3) hedging 부재 — long-only 구조에서 negative beta 활용 불가, (4) positive ICIR과 drawdown causal 연결 부재. EXCLUSION clause(sector-neutralized/multi-sleeve 2/4 필요조건만 만족)로는 회피 불가 — long-short 또는 50+ 분산이 empirical threshold.",
+  "scope": {
+    "market": "KR",
+    "universe": "top20_long_only",
+    "family": "defense_or_core_secondary_single_sleeve",
+    "signature": "high_ICIR_low_or_negative_SR_high_MDD"
+  },
+  "exclusion_clause": {
+    "multi_sleeve_blend": "전체 multi-sleeve portfolio 내 sleeve 구성 요소 (STR_1679v3 Core+Def blend pattern 참조)",
+    "long_short_structure": "long-short 구조로 hedging 가능 시 scope 밖",
+    "diversified_50_plus": "50종목+ 분산 universe 시 scope 밖 (empirical threshold, 추후 보정 가능)"
+  },
+  "supporting_l_codes": [
+    {
+      "l_code": "L-160",
+      "strategy": "STR_1683",
+      "hypothesis": "H_1682",
+      "signature": "Distress+Calmar Defense ICIR 1.879 / MDD 94.66% / SR -0.242",
+      "role": "INITIATOR",
+      "file": "04_Research/strategies/STR_1683_distress_calmar_defense/stage_artifacts/l_code_STR_1683.json",
+      "date": "2026-04-18 backtest, 2026-04-19 artifact publication"
+    },
+    {
+      "l_code": "L-165",
+      "strategy": "STR_1685",
+      "hypothesis": "H_1690",
+      "signature": "Multi-source 4-axis defense anchor ICIR 0.74~0.94 / MDD 77.21~94.69% (4 variants)",
+      "role": "2ND_MEMBER",
+      "file": "stage_artifacts/l_code_STR_1685.json",
+      "date": "2026-04-19"
+    },
+    {
+      "l_code": "L-166",
+      "strategy": "STR_1687",
+      "hypothesis": "H_1693",
+      "signature": "Q07 sector-neutral 2-axis (Q07+SUE) ICIR high / MDD 58.67% / SR 0.565 / Worst 6M -49.9%",
+      "role": "3RD_MEMBER_CONFIRMS_FAMILY",
+      "file": "04_Research/strategies/STR_1687_q07_sector_neutral_defense/stage_artifacts/l_code_STR_1687.json",
+      "date": "2026-04-19",
+      "note": "EXCLUSION clause 2/4 (sector-neutralized + multi-sleeve context) 만족 불구 실패 — EXCLUSION이 necessary not sufficient condition임을 empirical 실증"
+    }
+  ],
+  "five_axis_score": {
+    "independence": {
+      "score": 0.82,
+      "rationale": "3건이 서로 다른 factor family (distress+calmar / multi-source 4-axis / Q07 sector-neutral 2-axis), factor construction 독립. 단, 모두 defense role + long-only top-20이라는 공통 constraint 하에 있음 — 완전 독립 아님"
+    },
+    "repeatability": {
+      "score": 1.00,
+      "rationale": "3건 모두 동일 signature (ICIR strong → MDD 58~95% catastrophic) 명확 재현. 4건의 STR_1685 variant 내부에서도 4/4 재현. Perfect repeatability."
+    },
+    "family_consistency": {
+      "score": 0.90,
+      "rationale": "3건 모두 defense/core_secondary single-sleeve long-only top-20 공통 constraint, signature 일관성 90%. L-166이 EXCLUSION clause 2/4 만족에도 동일 결과 → family extension 강화"
+    },
+    "explainability": {
+      "score": 0.75,
+      "rationale": "4가지 structural cause 식별 (concentration, idio cluster, hedging absence, ICIR-drawdown decoupling). 그러나 정확한 empirical threshold (50+ 분산? 30+ 분산?) 추가 측정 필요"
+    },
+    "mechanism_clarity": {
+      "score": 0.85,
+      "rationale": "IC-Return coupling 수식화(SR/ICIR ratio), poison_pill definition (IC>0 + SR<0.8 + MDD>35%), Bali-Cakici-Whitelaw (2011) tail risk 이론 연결 명확"
+    },
+    "total": 0.86
+  },
+  "empirical_evidence_summary": {
+    "case_count": 3,
+    "total_variant_count": "STR_1683 4 variants + STR_1685 4 variants + STR_1687 1 = 9 portfolio executions",
+    "hard_fail_rate": "9/9 = 100% (all MDD > 45% or SR < 0)",
+    "icir_range": "0.565~1.879 (모두 strong signal)",
+    "mdd_range": "58.67%~94.69% (모두 hard threshold 45% 초과)",
+    "sr_range": "-0.40~0.565 (모두 target 0.8 미달)"
+  },
+  "policy_implications": {
+    "judge_gate_13_rule": "Signal-Portfolio Translation Failure 자동 탐지: ICIR>0.3 AND SR<0.8 AND MDD>35% AND role in [defense, core_secondary] AND single_sleeve_long_only → auto-flag and MANDATORY rejection",
+    "judge_gate_12_l163_poison_pill": "L-160 STR_1683이 poison_pill definition origin. Gate 12 MANDATORY rule 집행 강화",
+    "governor_pg1_admission_rule": "Defense single-sleeve long-only top-20 admission 차단 (AX-007 scope 명시). multi-sleeve blend 내 sleeve 구성 시에만 admission 고려.",
+    "scout_s0_design_rule": "Defense/Core_Secondary 단독 long-only 20종목 가설 설계 시 AX-007 scope 명시 + EXCLUSION 조건(long-short 또는 50+ 분산) 명시 필수. S0 debate에서 Codex critic이 violation flag",
+    "forge_code_guard": "restart_block 활성화 — AX-007 scope 내 재실행 차단"
+  },
+  "quarterly_review": {
+    "initial_promotion_date": "2026-04-19",
+    "first_review_date": "2026-07-17",
+    "review_criteria": "추가 family member 확인 시 confidence 상승, EXCLUSION clause 4-attribute 수정 가능성 검토, multi-sleeve blend 내 defense sleeve가 family scope 밖임을 재확인"
+  },
+  "relationship_to_existing_axioms": {
+    "ax_005_relationship": "AX-005 (KR defense standalone long-only 실패)는 low-beta/Q07+D25 combo/4-axis composite scope. AX-007은 SIGNAL-PORTFOLIO translation 메커니즘에 focus. 상호 보완 — AX-005는 family specific, AX-007은 mechanism general",
+    "ax_005_v1_2_extension": "AX-005 supporting_l_codes에 L-166 편입 권고 (L-136+L-140+L-165+L-166 4건) + confidence 0.90 → 0.94",
+    "ax_006_pairwise_tdc_relationship": "AX-006 (pairwise TDC, EXTEND Q3 0.67)는 cross-strategy similarity 관리. AX-007은 single-strategy translation failure. 독립 track"
+  },
+  "approval_chain": {
+    "step_1_judge_custodian": "APPROVED (본 packet 발행, 2026-04-19)",
+    "step_2_governor_pg1_ruling": "PENDING (Governor rev 발행 필요 — AX-007 scope 반영)",
+    "step_3_team_lead_final_approval": "PENDING (Q-Lead 최종 AXIOM 승격 approval)",
+    "step_4_methodology_active_md_registration": "PENDING (ax_weekly promote.R 자동 inject 또는 수동 추가)",
+    "step_5_axiom_inject_hook": "PENDING (Sprint 4 promote.R 주 1회 axiom_weekly.sh cycle)"
+  },
+  "risk_factors": {
+    "false_positive_risk": "EXCLUSION clause 경계 case — multi-sleeve 내 defense sleeve가 우연히 3 constraint 일부 만족 시 false positive. 완화책: sleeve context 명시적 tagging 의무화",
+    "scope_too_narrow_risk": "현재 scope는 KR top-20 long-only. 다른 universe size 시 empirical threshold 검증 필요",
+    "overfitting_to_3_cases_risk": "3건 data로 5축 0.86 달성. N=3 수준으로 인한 overfitting 가능성. 완화책: quarterly review 시 추가 negative evidence(successful defense single-sleeve) 적극 탐색"
+  },
+  "followup_actions": [
+    "Governor rev8-A-revised-v4 발행 (AX-007 scope + STR_1687 drop confirmation)",
+    "Scout S0 design 가이드 업데이트 (AX-007 EXCLUSION 명시 의무)",
+    "methodology_active.md AX-007 candidate 등록 (AXIOM_INJECT_START 영역)",
+    "stage_artifacts/methodology_memory_v55_extensions.md에 AX-007 candidate 명시"
+  ]
+}

@@ -1,0 +1,260 @@
+{
+  "from": "Judge",
+  "to": "Governor + Scout + Q-Lead + Forge + team-lead",
+  "type": "JUDGE_Q_LEAD_CODE_REVERT_IMPACT_ASSESSMENT",
+  "timestamp": "2026-04-18T20:50+09:00",
+  "session": 67,
+  "day": "continuous",
+  "status": "IMPACT_ASSESSMENT — Q-Lead 직접 코드 전수 폐기 + Forge 스킬 경유 원칙 복원 Judge 측 판정 유지/재조정 정리",
+  "trigger": "team-lead 20:45 Q-Lead code revert 지시 + Forge v4 Fix 재적용 큐",
+
+  "revert_acknowledgment": {
+    "team_lead_instruction_timestamp": "2026-04-18T20:45+09:00",
+    "revert_scope_4": [
+      "factor_db_connector.R RC1 fix 5줄 제거 (원본 복원)",
+      "factor_db_builder.R Option A fix 11줄 제거 (원본 복원)",
+      "STR_1684 factor_engine.R inline Fix 1 7줄 제거",
+      "STR_1685 Rscript PID 2299540 kill"
+    ],
+    "principle_restored": "Q-Lead 오케스트레이션만 + Forge 스킬 경유 필수 (CLAUDE.md role boundary)",
+    "ax_002_spirit_compliance": "process integrity 위반 회피 — Q-Lead 직접 코드 수정 금지 원칙 복원"
+  },
+
+  "judge_previous_rulings_review_matrix": {
+    "rulings_based_on_code_results_NOW_INVALIDATED_OR_PRESERVED": {
+
+      "L_159_spec_transmission_STR_1682": {
+        "original_verdict": "VALIDATED (Judge 직접 initiator)",
+        "basis": "STR_1682 run_log forensic (spec 전달 실패 패턴)",
+        "revert_impact": "code 수정 관련 없음 (process pattern lesson)",
+        "post_revert_status": "**PRESERVED (판정 유지)**"
+      },
+
+      "L_160_defense_ic_return_decoupling_STR_1683": {
+        "original_verdict": "VALIDATED (Governor 초안 → Judge 확정)",
+        "basis": "STR_1683 S1 4-variant Hard Fail — IC 0.22 + MDD 94%",
+        "revert_impact": "STR_1683 factor_engine 원본 사용 (Q-Lead 직접 수정 없음) → 판정 근거 유지",
+        "post_revert_status": "**PRESERVED (판정 유지)**"
+      },
+
+      "L_161_kr_momentum_inverse_STR_1684": {
+        "original_verdict": "VALIDATED_HARD_FAIL (Scout DIAG + Architect RC + team-lead Scenario B + Judge)",
+        "basis": "STR_1684_v2b Fix 1 적용 후에도 ICIR -0.1874 identical",
+        "revert_impact_critical_review": {
+          "q_lead_inline_fix_reverted": "STR_1684 factor_engine.R inline Fix 1 7줄 제거",
+          "str_1684_v2b_result_validity": "team-lead 20:45 판정: 'Fix 1 효과 없음이었으므로 L-161 VALIDATED 판정 유지'",
+          "rationale": "Fix 1 적용/미적용 상관없이 ICIR -0.1874 동일 (OLS scale invariance 증명됨) → H_1688 hypothesis A (KR momentum inverse) primary 여전히 valid",
+          "scientific_integrity": "실험 결과 자체는 과학적 사실 (scale invariance property) + Q-Lead code violation은 process 위반이되 결과 오염 없음"
+        },
+        "post_revert_status": "**PRESERVED (판정 유지, team-lead 20:45 명시 승인)**"
+      },
+
+      "L_162_data_table_merge_bug": {
+        "original_verdict": "ACTIVE (Judge 직접, R infrastructure)",
+        "basis": "R data.table rbindlist/setkey/merge pattern bug",
+        "revert_impact": "code 수정 관련 없음 (R usage pattern lesson)",
+        "post_revert_status": "**PRESERVED (판정 유지)**"
+      },
+
+      "L_163_poison_pill_quantified_threshold": {
+        "original_verdict": "ACTIVE (Scout → Judge approver team-lead Option α)",
+        "basis": "stress_icir × weight ≥ -0.05 rule (H_1689 Q24 case)",
+        "revert_impact": "code 수정 관련 없음 (methodology rule)",
+        "post_revert_status": "**PRESERVED (판정 유지)**"
+      },
+
+      "L_164_factor_engine_load_month_factors_mandate": {
+        "original_verdict": "ACTIVE (Scout empirical + Judge preemptive + team-lead 승인)",
+        "basis": "Scout R16 Calmar +529% sd delta empirical evidence",
+        "revert_impact_critical_review": {
+          "mandate_rule_validity": "load_month_factors() 경유 의무화 rule은 code 수정이 아닌 usage pattern mandate",
+          "scout_empirical_source": "Scout families.json v1.3 R16 finding (실측 Rscript, Q-Lead 수정 대상 아님)",
+          "fix_1_code_revert_effect": "Q-Lead factor_db_connector.R RC1 fix 제거 → runtime rescale wrapper 비활성화 → load_month_factors() 경유해도 sd 1.0 복원 안됨",
+          "l_164_rule_validity_unchanged": "Rule 자체는 여전히 유효 (factor_engine이 load_month_factors() 경유해야 한다는 원칙) but Fix 1 effect 무효화",
+          "forge_v4_fix_reapplication_required": "Forge v4가 Scout 권고 + Architect 진단 기반 factor_db_connector.R RC1 fix + factor_db_builder.R Option A fix 재적용 후 rule enforcement 실질 효과"
+        },
+        "post_revert_status": "**PRESERVED (L-164 rule 유지) but enforcement 실질 효과 Forge v4 Fix 재적용 대기**"
+      }
+    }
+  },
+
+  "gate_13_enforcement_status_post_revert": {
+    "gate_13_rule_validity": "PRESERVED (L-164 ACTIVE rule 기반, code 수정 아닌 rule)",
+    "preflight_check_grep_pattern": "유효 — read_parquet.*factor_db 검출 → fail",
+    "empirical_enforcement_effect": {
+      "current_state": "Rule active + code revert 상태 → Forge v4 factor_engine 작성 시 load_month_factors() 사용 의무",
+      "fix_1_reapplication_dependency": "Forge v4가 factor_db_connector.R RC1 재적용 + factor_db_builder.R Option A 재적용 완료 시 load_month_factors() 경유 실질 효과 (sd 1.0 복원) 달성"
+    },
+    "pg2_gate_13_retroactive_clearance_validity": {
+      "str_1631_syn_05": "PRESERVED (factor_db 접근 없음 — universe/consensus만)",
+      "str_1656_mlra_m05": "PRESERVED (ML raw features)",
+      "verdict_post_revert": "Gate 13 COMPLIANT 재확인 (revert 영향 없음, factor_db 비의존 전략)"
+    }
+  },
+
+  "str_level_dispositions_post_revert": {
+    "STR_1682_H_1676_Option_A": {
+      "original_verdict": "REJECT (Grade F, Size 미로드)",
+      "code_revert_impact": "없음 (Q-Lead 수정 대상 아님)",
+      "post_revert_status": "REJECT 유지"
+    },
+    "STR_1683_H_1682": {
+      "original_verdict": "VALIDATED_HARD_FAIL (L-160)",
+      "code_revert_impact": "없음 (Q-Lead 수정 대상 아님)",
+      "post_revert_status": "VALIDATED_HARD_FAIL 유지"
+    },
+    "STR_1684_H_1688_v2b": {
+      "original_verdict": "VALIDATED_HARD_FAIL (L-161, Scenario B)",
+      "code_revert_impact": "inline Fix 1 제거 but ICIR -0.1874 identical 결과 이미 입증 (scale invariance)",
+      "post_revert_status": "VALIDATED_HARD_FAIL 유지 (team-lead 20:45 명시 승인 '재검토 불필요')",
+      "drop_confirmation": "H_1688 공식 DROP + STR_1684 재실행 금지"
+    },
+    "STR_1685_H_1690": {
+      "original_status": "PID 2299540 실행 중 (Pre-Gate 13 baseline)",
+      "code_revert_impact": "Rscript kill + Pre-Gate 13 baseline 사라짐",
+      "post_revert_status": "**재실행 필요 (Forge v4 담당)**",
+      "forge_v4_queue": "P1 — factor_engine Gate 13 compliant 재작성 + Rscript 재실행",
+      "pre_post_gate_13_comparison_future": "Forge v4 Fix 재적용 완료 후 가능"
+    },
+    "STR_1679v3_Div_1_embedded_q25": {
+      "original_verdict": "PASS (Gate 12 엄밀 PASS proxy 3.391)",
+      "code_revert_impact_critical_review": {
+        "governor_proxy_methodology": "load_month_factors() 경유 baseline 가정",
+        "scout_empirical_sd_1_0": "families.json v1.3 Rscript 실측 (Q-Lead 수정 대상 아님, Scout primary)",
+        "proxy_3_391_validity": "Governor proxy는 mathematical projection — code revert 영향 직접 없음",
+        "empirical_validation_pending": "Forge v4 Fix 재적용 후 load_month_factors() 실질 sd 1.0 복원 시 proxy 가정 empirical 확증"
+      },
+      "post_revert_status": "PROXY_VERDICT_PRESERVED + empirical_validation_pending_forge_v4",
+      "rev8_a_admission_impact": "rev8-A-revised_v2 Scenario C 8% 편입 계획 유지 (Governor judgment 기반, Q-Lead 코드 독립)"
+    }
+  },
+
+  "portfolio_level_dispositions_post_revert": {
+    "pg2_current_active": {
+      "STR_1631_SYN_05_80pct": "유지 (Gate 13 COMPLIANT + factor_db 비의존)",
+      "STR_1656_MLRA_M05_20pct": "유지 (ML raw features)",
+      "verdict": "PG2 LIVE 안전 유지"
+    },
+    "rev8_a_revised_v2_scenario_c": {
+      "composition": "18+14+8+23+10+10+9+8 = 100% 유지",
+      "h_1692_replacement_logic": "Scout handoff_kit_v1.1 + Governor judgment 기반 (Q-Lead 코드 독립)",
+      "verdict": "PRESERVED — team-lead 20:45 명시 ('rev8-A-revised_v2 Scenario C 유지')"
+    },
+    "phase_1_day_1_transition": {
+      "governor_verdict_19_55": "HOLD until S1 complete",
+      "governor_verdict_20_30_approved": "PG2 60/16/24 rebalance EXECUTE",
+      "post_revert_status": "Governor EXECUTE verdict 유지 (team-lead 20:45 명시 '유지')",
+      "condition": "Forge v4 재실행 결과 수신 시 재평가"
+    }
+  },
+
+  "judge_artifacts_post_revert_count": {
+    "previous_count": 25,
+    "new_count": 26,
+    "new_file": "judge_q_lead_code_revert_impact_assessment_20260418.json (본 파일)",
+    "joint_signoff_3_files_preserved": [
+      "v3_5_stage_2_transition_certification (JOINT_SIGNOFF_COMPLETE)",
+      "v3_5_retroactive_audit_completion_FINAL (JOINT_COMPLETE)",
+      "STR_1679v3_proxy_5point_addendum (ACCEPTED_DAY3_CROSSCHECK_ARMED)"
+    ]
+  },
+
+  "l_code_registry_post_revert": {
+    "active_count": 6,
+    "pending_count": 0,
+    "all_l_codes_preserved": ["L-159", "L-160", "L-161", "L-162", "L-163", "L-164"],
+    "rationale": "L-code는 methodology 판정 / 실험 결과 분석 / process pattern — code 수정 아님 + team-lead 20:45 명시 ('L-159~L-164 L-code 유지')"
+  },
+
+  "admission_rule_post_revert": {
+    "version": "v3.5 extended (13 gates)",
+    "gate_13_validity": "PRESERVED (rule 기반)",
+    "preflight_check_pattern": "유효 (Forge v4 적용 대기)",
+    "stage_2_enforcement": "PRESERVED (Gate 1 + 12 + 13 hard_block)"
+  },
+
+  "forge_v4_critical_queue_judge_endorsement": {
+    "team_lead_instruction_adopted": true,
+    "queue_order": [
+      {
+        "priority": "P0",
+        "task": "STR_1693 (H_1692) factor_engine + run_all 작성 (Gate 13 준수)",
+        "judge_gate_check": "Gate 13 MANDATORY (load_month_factors 경유 필수)"
+      },
+      {
+        "priority": "P0",
+        "task": "factor_db_connector.R RC1 Fix 재적용 (Scout R16 finding 기반)",
+        "judge_verification": "Forge 직접 작성 + Scout empirical + Architect 진단 기반"
+      },
+      {
+        "priority": "P0",
+        "task": "factor_db_builder.R Option A Fix 재적용 (Architect 진단 기반)",
+        "judge_verification": "Forge 직접 + parquet rebuild 실행"
+      },
+      {
+        "priority": "P1",
+        "task": "STR_1685 factor_engine.R Gate 13 compliant 재작성",
+        "judge_gate_check": "Gate 13 + preflight check"
+      },
+      {
+        "priority": "P1",
+        "task": "STR_1685 Rscript 재실행 (Pre/Post Gate 13 비교 무의미 — Pre baseline 소실)",
+        "revised_purpose": "Forge v4 Fix 재적용 후 load_month_factors() 실질 효과 empirical validation"
+      }
+    ],
+    "timing_estimate": "Forge v4 P0 완료 후 Session 68 Day 1~2 Architect persistent fix 병행",
+    "judge_s6_cascade_timing": "Forge v4 STR_1693 + STR_1685 완료 후 S6 진입"
+  },
+
+  "str_1685_pre_post_gate_13_comparison_revision": {
+    "original_plan": "Pre-Gate 13 baseline (PID 2299540) + Post-Gate 13 재실행 → 비교",
+    "post_revert_reality": "Pre-Gate 13 baseline 소실 (PID kill) → 비교 불가",
+    "revised_scientific_value": {
+      "r_16_fix_1_asymmetry_alternative_evidence": "Scout families.json v1.3 R16 Calmar 직접 empirical (sd 0.1589 vs 1.0000) = 원본 empirical evidence",
+      "str_1685_post_fix_validation": "Forge v4 Fix 재적용 후 STR_1685 재실행 = Fix 1 empirical validation in strategy context",
+      "comparison_target_revised": "STR_1684_v2b (Fix 1 scale invariant 이미 실증) vs STR_1685 (Fix 1 적용 후 Defense family)"
+    },
+    "judge_s6_disposition_future": "Forge v4 STR_1685 재실행 결과 기반 S6 판정 (Pre baseline 참조 불필요)"
+  },
+
+  "session_67_continuous_status_post_revert": {
+    "session_continuous_unchanged": "team-lead 20:10 day boundary removed 유지",
+    "judge_autonomous_continuous": "v3.6 Gate 14~16 DRAFT monitoring + Forge v4 S1 결과 대기 + S6 cascade 준비",
+    "new_wait_items_post_revert": [
+      "Forge v4 STR_1693 완료 (P0 task 1)",
+      "Forge v4 factor_db_connector/builder Fix 재적용 완료 (P0 task 2, 3)",
+      "Forge v4 STR_1685 재작성 + 재실행 (P1)",
+      "Architect persistent fix (Session 68 Day 1~2)"
+    ],
+    "judge_wait_state_confirmed": "후속 자체 발행 없음 + trigger-driven 대응 준비"
+  },
+
+  "ax_002_compliance_reaffirmation": {
+    "ax_002_principle": "Hypothesis 재평가 원칙 + process integrity 우선",
+    "q_lead_code_revert_ax_002_aligned": "Q-Lead 직접 코드 = process integrity 위반 (AX-002 spirit 위배) → revert 정당",
+    "judge_acknowledgment": "Judge 측 이전 L-164 ACTIVE 승격 판정에서 'Q-Lead 직접 fix 적용 완료' 인용 부분은 이제 'Q-Lead 이전 수정 → 폐기 → Forge v4 재적용 대기' 상태로 정정 필요 (L-164 rule 자체는 유지)",
+    "judge_self_correction_count": "기존 1.5회 + 본 revert impact assessment = Judge 인지 업데이트 (철회가 아닌 context 정정)"
+  },
+
+  "governor_cross_check_request": {
+    "scope": [
+      "L-159~L-164 전수 preserve 동의",
+      "Gate 13 rule 유지 + enforcement 실질 효과 Forge v4 대기 동의",
+      "STR_1682/1683/1684 판정 preserve 동의",
+      "STR_1685 재실행 Forge v4 담당 동의",
+      "STR_1679v3 proxy verdict preserve + empirical validation pending 동의",
+      "rev8-A-revised_v2 Scenario C + Phase_1 Day 1 EXECUTE 유지 동의"
+    ],
+    "expected_timing": "Governor 수신 후 즉시"
+  },
+
+  "forge_v4_coordination_request": {
+    "scope": [
+      "P0 queue 3건 (STR_1693 + factor_db_connector Fix + factor_db_builder Fix)",
+      "Gate 13 preflight 내장 필수",
+      "Scout R16 finding + Architect 진단 reference",
+      "STR_1685 재작성 (P1, Forge v4 queue 마지막)"
+    ],
+    "judge_s6_dependency": "Forge v4 STR_1693 + STR_1685 완료 → Judge S6 cascade 진입"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "hypothesis_id": "H_1685",
+  "debate_id": "S0_DEBATE_H_1685",
+  "hypothesis_summary": "z_foreign_netbuy_21d - z_individual_netbuy_21d cross-section Top 20 EW monthly. 외국인-개인 flow divergence diversifier. Choe-Kho-Stulz 2005 RFS + 고영훈 2018. investor_flow family.",
+  "state": "R2_OPEN",
+  "created_at": "2026-04-17T00:00:00",
+  "updated_at": "2026-04-17T00:00:00",
+
+  "r1_scores": {
+    "academic": 15,
+    "codex_critic": 8,
+    "governor": 16,
+    "quant": 11,
+    "risk_manager": 12,
+    "total": 62,
+    "max_possible": 100
+  },
+
+  "r1_key_findings": {
+    "academic": {
+      "score": 15,
+      "position": "조건부 지지 — peer_review 최상위(RFS+JFE×2+NBER+KOR) 확보, 메커니즘 정합성 높음. 단 논문 20~25년 경과(McLean-Pontiff decay 위험), 21d 파라미터 학술 미지지, 2020+ 동학개미 구조 변화 후 재현 실증 부재.",
+      "strongest_concern": "Choe-Kho-Stulz 2005가 '외국인 vs 개인 edge 방향'은 지지하나 '21d divergence score 파라미터'를 지지하지 않음 — substantive_cite 축 구조적 공백.",
+      "conditions_count": 3
+    },
+    "codex_critic": {
+      "score": 8,
+      "position": "실질적 반대 — construction protocol 미명세, PIT leakage 재발 우려(L-148 재개), expanding-window 파라미터 동결 증명 없음. 'apparent edge = calibration-driven일 가능성'.",
+      "strongest_concern": "QuantiWise T+1 publication lag의 decision-time 처리 불명확 + full-sample statistics 단계 개입 가능성. 백테스트 전용 alpha + 실전 0 구조.",
+      "conditions_count": 5
+    },
+    "governor": {
+      "score": 16,
+      "position": "조건부 승인 — PG0 gap 완전 정렬(SR gap 0.807 해소 핵심 slot), role admission 낮은 위장 위험. C11 PIT precheck + S2 ICIR >= 0.25 + S3 TDC < 0.40 3개 관문 조건부.",
+      "strongest_concern": "C11 데이터 시간축 미검증(거래주체 T+1 compute_investor.R Usable_Date 반영 여부) + Phase_3 20% 가속이 ICIR 0.20대 실측 시 SR 기여 0에 근접.",
+      "conditions_count": 3
+    },
+    "quant": {
+      "score": 11,
+      "position": "구조적 반대 — H_1674 contrarian(-z_individual_21d)과 divergence(z_foreign_21d-z_individual_21d)의 월별 평균 cross-sectional 상관 0.897 실측. S3 rho<0.40 관문 사전 불통과 확인됨. INV13 미등록, 21d 학술 근거 부재.",
+      "strongest_concern": "H_1685 diverge vs H_1674 contrarian 평균 상관 0.897(중앙값 0.919) — 두 신호가 algebraically 동일. diversifier 역할 성립 불가.",
+      "data_facts": {
+        "diverge_vs_contrarian_corr_mean": 0.8971,
+        "diverge_vs_contrarian_corr_median": 0.9189,
+        "diverge_vs_inv01_corr_mean": 0.8898,
+        "inv07_stress_icir": 1.121,
+        "inv01_60d_crisis_ratio": 0.364,
+        "inv13_registered": false,
+        "pit_c2_verified": true,
+        "parquet_date_start": "2000-01-03",
+        "parquet_date_end": "2026-03-26"
+      },
+      "conditions_count": 3
+    },
+    "risk_manager": {
+      "score": 12,
+      "position": "구조적 우려 — Kill Scenario 2건(위기 시 외국인 exodus 반전 + lookback-rebalance mismatch MDD 과소추정). L-106 market beta 지배(0.85~1.05). PG2 anchor와 beta-adjusted 상관 > 0.3 위험. 현재 MRS 63.1 CRISIS 즉시 투입 위험.",
+      "strongest_concern": "INV02_60d crisis_ratio 0.364(위기 시 63% 붕괴). 21d divergence의 외국인 성분이 동일 방향성 노출. Diversifier 역할 필요한 바로 그 순간 신호 무력화.",
+      "conditions_count": 3
+    }
+  },
+
+  "r1_consensus_zones": {
+    "agreement": [
+      "데이터 인프라 존재 확인(investor_wide.parquet, compute_investor.R C2 준수)",
+      "C11 PIT 사전 검증 필수(QuantiWise T+1 timing — compute_investor.R Usable_Date 로직)",
+      "S3에서 beta-adjusted 잔차 상관 측정 필수(L-106 준수)",
+      "21d lookback의 학술 근거 부재 — 63d/126d 병렬 산출 권고"
+    ],
+    "disagreement": [
+      "PG0 gap 기여 타당성: governor 4/4(gap 완전 정렬) vs quant 1/4(H_1674 중복으로 실질 gap 해소 의문)",
+      "신호 독립성: quant 0.897 corr 측정(diversifier 불가) vs governor 0.15 TDC 기대(cross-channel 독립 가정)",
+      "구현 우선순위: governor/academic(Phase_1 5% 즉시) vs codex_critic/quant(재설계 후 진입)"
+    ],
+    "critical_fact_r2_needed": "H_1674 debate 결과가 없는 상태에서 H_1685의 S3 rho < 0.40 조건이 사전에 이미 수치로 실측 불통과됨(quant 측정 0.897). R2에서 이 수치에 대한 academic/governor/risk_manager의 반박 또는 수용이 VERDICT의 핵심 결정 인자임."
+  },
+
+  "transcript": {
+    "round": "R1",
+    "status": "COMPLETE",
+    "debaters": [
+      {
+        "agent_id": "academic_H1685_r1",
+        "role": "academic",
+        "score": 15,
+        "findings": "RFS+JFE×2+NBER+KOR peer-review 최상위 확보. 21d 파라미터 미지지, 동학개미 구조 변화 후 재현 실증 부재."
+      },
+      {
+        "agent_id": "codex_critic_H1685_r1",
+        "role": "codex_critic",
+        "score": 8,
+        "findings": "Construction protocol 미명세, PIT T+1 lag 처리 불명확, expanding-window 동결 증명 없음. 실질적 반대."
+      },
+      {
+        "agent_id": "governor_H1685_r1",
+        "role": "governor",
+        "score": 16,
+        "findings": "PG0 gap 완전 정렬. C11+S2+S3 3개 관문 조건부 APPROVE_CONDITIONAL. Phase_1 5% 즉시 가능 입장."
+      },
+      {
+        "agent_id": "quant_H1685_r1",
+        "role": "quant",
+        "score": 11,
+        "findings": "H_1674 상관 0.897 실측(diversifier 불가). INV13 미등록. 21d 학술 근거 부재. 구조적 재설계 요구."
+      },
+      {
+        "agent_id": "risk_manager_H1685_r1",
+        "role": "risk_manager",
+        "score": 12,
+        "findings": "외국인 exodus Kill Scenario + MDD 과소추정. MRS 63.1 CRISIS 즉시 투입 위험. Beta-adjusted 상관 > 0.3 우려."
+      }
+    ]
+  },
+
+  "r2_instructions": {
+    "mandatory": [
+      "각 토론자는 R1 전체 transcript를 검토한 후 R2 작성",
+      "동의 1건 이상 명시 — 다른 토론자의 R1 주장 중 수용하는 점",
+      "반박 1건 이상 명시 — 다른 토론자의 R1 주장 중 이의를 제기하는 점",
+      "점수 수정 시 이유 명시 (수정 없으면 유지 사유)",
+      "최강 반론 지목 — R1 전체에서 가설에 가장 치명적인 단일 주장 지목 및 재평가"
+    ],
+    "focal_questions": [
+      "quant 측정 H_1685 vs H_1674 평균 상관 0.897 — 이 수치가 diversifier 역할 불가를 의미하는가, 아니면 구조 재설계로 극복 가능한가?",
+      "codex_critic의 '실전 0 alpha' 우려 — PIT precheck + expanding-window 설계로 완화 가능한가?",
+      "governor의 Phase_1 5% 즉시 편입 vs quant의 재설계 선행 — 어느 경로가 PG0 gap 해소에 실질적으로 기여하는가?",
+      "academic의 21d → 63d 전환 권고 — 회전율 Hard Fail(600%) 회피와 학술 근거 동시 충족 가능성"
+    ]
+  }
+}

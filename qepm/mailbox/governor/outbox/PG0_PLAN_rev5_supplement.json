@@ -1,0 +1,198 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV5_SUPPLEMENT",
+  "stage": "PG0_Sequential_Admission_Rule_+_Phase_3_Extension",
+  "timestamp": "2026-04-17T21:00:00+09:00",
+  "session": 66,
+  "version": "v5.1_supplement",
+  "status": "ACTIVE (Judge TDC L-156 반영)",
+  "parent_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev5.json (v5.0)",
+
+  "trigger": "Q-Lead 지시 — Judge Admission Rule v3.0 완료 + TDC 재측정 결과 (L-156). STR_1071 vs STR_1562 TDC 0.511 gate 8 FAIL → 공동 admission 불가. 순차 admission rule 반영 필요.",
+
+  "judge_tdc_results_integrated": {
+    "pg1_candidates_vs_str_1679v2_pg2_proxy": {
+      "STR_1071": {"tdc": 0.011, "status": "PASS"},
+      "STR_1562": {"tdc": 0.007, "status": "PASS"},
+      "STR_1433": {"tdc": 0.011, "status": "PASS"}
+    },
+    "family_1_internal_triplicate_clones": {
+      "STR_1071_vs_STR_1060": {"tdc": 0.932, "status": "FAIL_CLONE", "l_code": "L-151 재확증"},
+      "STR_1435_vs_STR_1417": {"tdc": 0.900, "status": "FAIL_PARENT_VARIANT"},
+      "STR_1071_vs_STR_1433": {"tdc": 0.857, "status": "FAIL_NEAR_CLONE"}
+    },
+    "family_1_vs_family_2_cross": {
+      "STR_1071_vs_STR_1562": {
+        "tdc": 0.511,
+        "threshold_gate_8": 0.4,
+        "gap": 0.111,
+        "status": "FAIL_GATE_8",
+        "implication": "STR_1071 + STR_1562 공동 admission 불가"
+      },
+      "STR_1562_vs_STR_1433": {"tdc": 0.497, "status": "FAIL_GATE_8"}
+    }
+  },
+
+  "governor_decision_option_1_plus_3_hybrid": {
+    "q_lead_recommendation_accepted": "Option 1 (순차) + Option 3 (축소) 하이브리드",
+    "rationale": [
+      "STR_1071 MDD 22.72% 최저 + v53 compliant → Family 1 primary (Phase_3+ 재활성화 경로)",
+      "STR_1562 독립 diversifier (Family 2)이나 STR_1071과 TDC 0.511 cross → 공동 편입 시 joint tail risk 증폭",
+      "Phase_3 이후 확장 시 STR_1562 5~7% weight + residualization 추가 검토 권장"
+    ],
+    "rejected_options": {
+      "option_2_str_1562_residualization_only": "OLS residual 추출만으로는 TDC 0.4 달성 불확실. 실측 기반 관문 필요.",
+      "option_3_weight_down_only": "STR_1562 5% 단독은 diversifier 역할 약화. 순차 + 축소 결합이 최적."
+    }
+  },
+
+  "sequential_admission_rule_phase_3_plus": {
+    "rule_name": "Sequential Admission Rule (SAR) — Family cross TDC > 0.4 시",
+    "scope": "PG1 admission 단계. Family 1 (STR_1071/1433/1435/1417/1060) × Family 2 (STR_1562) cross TDC 관리.",
+    "procedure": [
+      "Step 1: Family 1 primary (STR_1071) 단독 admit 시 portfolio-level TDC 측정 (post-admission 4~8주 observation window)",
+      "Step 2: Phase_3+ 확장 시 STR_1562 5~7% weight 조건부 편입 검토",
+      "Step 3: STR_1562 편입 전 residualization OLS 실행 (residual = STR_1562_returns ~ STR_1071_returns)",
+      "Step 4: joint TDC 재측정 — 0.4 미달 시 admit, 초과 시 defer/reject"
+    ],
+    "phase_1_application": "Phase_1은 STR_1071/1562 미포함 → rule 비활성 상태. 단 rev5 Phase_3+ 확장 시 선제 명시.",
+    "phase_3_extension_composition_with_str_1071": {
+      "base_rev5_phase_3": {
+        "STR_1631": 0.18,
+        "H_1688": 0.10,
+        "H_1676": 0.08,
+        "H_1685": 0.13,
+        "STR_1679v2": 0.12,
+        "STR_1656": 0.12,
+        "H_1682": 0.16,
+        "H_1689": 0.11
+      },
+      "phase_3_plus_extension_add_str_1071": {
+        "STR_1631": 0.15,
+        "H_1688": 0.10,
+        "H_1676": 0.08,
+        "H_1685": 0.12,
+        "STR_1679v2": 0.10,
+        "STR_1656": 0.10,
+        "H_1682": 0.15,
+        "H_1689": 0.10,
+        "**STR_1071_Family_1_primary**": 0.10
+      },
+      "total": 1.00,
+      "n_strategies": 9,
+      "expected_sr_rho_0_3": "1.82 + 0.08 (STR_1071 contribution, MDD-weighted 저기여) = 1.90",
+      "comment": "STR_1071 편입은 Phase_3+ (Week 17~24 말) 또는 Phase_4 확장 시점 검토. 부분 Core 축소로 weight 확보."
+    },
+    "phase_4_str_1562_contingent_admission": {
+      "trigger": "Phase_3+ STR_1071 편입 후 4~8주 관찰. portfolio TDC 측정 후 STR_1562 residualization evaluation.",
+      "composition_if_str_1562_admitted": {
+        "STR_1071": 0.08,
+        "STR_1562_residualized": 0.05,
+        "other_strategies_slight_reduction": "각 1~2%p 축소"
+      },
+      "joint_tdc_target": "< 0.4 (residualization 후)",
+      "fallback_if_joint_tdc_fails": "STR_1562 편입 포기. STR_1071 단독 유지. Scout 대안 diversifier 탐색."
+    }
+  },
+
+  "family_1_admission_cap_update": {
+    "previous_rev5_rule": "Family 1 (STR_1417/1433/1071/1435/1060): admission cap 1건 — STR_1071 primary",
+    "updated_rule_with_l_156": {
+      "cap_strict_1": "Family 1 내부 TDC 0.85+ 확인 (STR_1071 vs STR_1060 0.932, STR_1435 vs STR_1417 0.900, STR_1071 vs STR_1433 0.857) → **Family 1 admission cap 1건 엄격 유지**",
+      "primary_candidate": "STR_1071 (SR 1.297, MDD 22.72%, v53 compliant, MDD 최저)",
+      "secondary_fallback": "STR_1433 (primary REJECT 시만)",
+      "rationale": "family_1 내부는 structural clone — alpha channel 공유로 TDC 0.85+ 불가피"
+    }
+  },
+
+  "pg1_admission_rule_v3_1_sequential_addition": {
+    "existing_v3_0_gates": [
+      "Gate 1: max_abs_corr ≤ 0.7",
+      "Gate 2: FF5 alpha t-stat > 3.0",
+      "Gate 3: parent-variant 별도 관리",
+      "Gate 4: pairwise corr matrix",
+      "Gate 5: pairwise TDC ≤ 0.4 (v3.0 신규)"
+    ],
+    "v3_1_additions": [
+      {
+        "gate_6_sequential_admission": {
+          "description": "cross-family TDC > 0.4 발견 시 Family primary 단독 admit 원칙",
+          "application": "Family 1 × Family 2 cross (STR_1071 × STR_1562) 해당",
+          "action": "primary 먼저 admit → 4~8주 observation → secondary 조건부"
+        }
+      },
+      {
+        "gate_7_residualization_fallback": {
+          "description": "sequential admit 후 joint TDC 초과 시 secondary strategy returns residualization",
+          "formula": "residual = secondary_returns ~ primary_returns (OLS)",
+          "admit_condition": "joint TDC (residual 기반) ≤ 0.4"
+        }
+      }
+    ],
+    "code_path": "02_Infrastructure/portfolio/portfolio_governor.R::pg1_admission_v3_1_sequential() 확장",
+    "technical_debt_task_8": "Task #8 기술부채 extension 포함"
+  },
+
+  "phase_1_trigger_status_update": {
+    "trigger_1_risk_mgr_2nd_round": {
+      "status": "IN_PROGRESS",
+      "agent_id": "a5e62a09c9883c4c9",
+      "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev5.json"
+    },
+    "trigger_2_forge_h_1676_spec": {
+      "status": "BLOCKED",
+      "root_cause": "Forge 13 idle notifications — Architect 온디맨드 진단 스폰 완료",
+      "fallback": "Q-Lead 직접 R 실행 (최후 수단, CLAUDE.md 예외적 허용)"
+    },
+    "trigger_3_h_1682_forge_s1": {
+      "status": "BLOCKED",
+      "root_cause": "Forge blocker 동일 원인"
+    },
+    "trigger_4_judge_tdc_re_measurement": {
+      "status": "COMPLETED",
+      "completed_at": "Task #24 completion",
+      "l_code": "L-156",
+      "key_findings": "STR_1071/1562/1433 vs STR_1679v2 PG2 proxy 전수 PASS. STR_1071 × STR_1562 cross 0.511 FAIL → sequential rule 필요"
+    }
+  },
+
+  "rev5_final_confirmed_unchanged_for_phase_1": {
+    "phase_1_composition_week_4_5": "rev5 원안 유지 — STR_1631 40% + STR_1656 18% + H_1676 8% + H_1682 16% + STR_1679v2 10% + Reserve 8%",
+    "rationale": "Phase_1은 STR_1071/1562 미포함 → rev5 supplement 영향 zero. Phase_3+ 확장 시점에만 sequential rule 활성.",
+    "phase_3_final_composition_unchanged": "rev5 Phase_3 8-strategy 구조 유지. STR_1071은 Phase_3+ extension 단계에서 선택적 편입."
+  },
+
+  "governor_action_summary": {
+    "immediate_actions_none": "Phase_1 실행 trigger 4건 중 3건 pending (Risk Mgr / Forge 2건). Judge 1건 완료. Governor 모니터링 대기 상태 유지.",
+    "supplement_v5_1_purpose": [
+      "L-156 Judge TDC 결과 문서화",
+      "Sequential Admission Rule v3.1 제도화",
+      "Phase_3+ STR_1071 편입 경로 명시",
+      "Phase_4 STR_1562 조건부 편입 절차 명시",
+      "Family 1 admission cap 1건 엄격 유지 재확증"
+    ]
+  },
+
+  "governor_open_questions_v5_1": {
+    "R17_phase_3_plus_str_1071_timing": "Phase_3+ STR_1071 편입 시점 — Phase_3 말 (Week 24) vs Phase_4 (Week 25~32)?",
+    "R18_str_1562_fallback_priority": "Phase_4 STR_1562 residualization 시도 후 FAIL 시 대체 diversifier 탐색 — Scout 방향 제시 필요? (H_1690 / H_1691 또는 신규)",
+    "R19_residualization_method_approval": "STR_1562 residualization OLS 방식 승인? (또는 alternative: Ledoit-Wolf shrinkage 기반 partial correlation 활용?)"
+  },
+
+  "artifacts_v5_1": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev5_supplement.json (현 파일)",
+    "parent: PG0_PLAN_rev5.json",
+    "chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1"
+  ],
+
+  "executive_summary_v5_1": {
+    "key_addition": "Sequential Admission Rule (SAR) for cross-family TDC > 0.4",
+    "affected_strategies": "STR_1071 (Family 1 primary) + STR_1562 (Family 2 diversifier)",
+    "phase_1_impact": "zero (미포함)",
+    "phase_3_plus_impact": "STR_1071 선제 편입 경로 확보 (10% weight 권고)",
+    "phase_4_impact": "STR_1562 residualization 후 조건부 편입 (5% weight max)",
+    "new_rules_institutionalized": "PG1 Admission Rule v3.1 (Gate 6 Sequential + Gate 7 Residualization)",
+    "next_governor_action": "Risk Mgr 2nd + Forge 2건 완료 대기 → Phase_1 PG1 Admission 초안 (Task #23)"
+  }
+}

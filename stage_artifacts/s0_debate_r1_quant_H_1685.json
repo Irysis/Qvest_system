@@ -1,0 +1,77 @@
+{
+  "hypothesis_id": "H_1685",
+  "round": 1,
+  "role": "quant",
+  "agent_id": "quant_H1685_r1",
+  "timestamp": "2026-04-17T00:00:00",
+  "score": 11,
+  "score_breakdown": {
+    "icir_pass": 3,
+    "internal_corr": 1,
+    "c19_corr": 3,
+    "defense_ic": 2,
+    "data_avail": 2
+  },
+  "arguments": [
+    "데이터 인프라 확인: .cache/investor_stock/investor_foreign.parquet (9,211,959행, 2000-01-03~2026-03-26, 3,390종목)과 investor_individual.parquet (10,243,405행, 동일 범위, 3,410종목)가 모두 존재하며, investor_wide.parquet (Date, Ticker, Foreign, Individual, Institutional, OtherCorp 6개 컬럼)로 통합 가공 완료 상태입니다. compute_investor.R 파이프라인이 02_Infrastructure/factor_db/에 구현되어 있으며, C2 준수(Date < sig_d strict less-than), t-1 lag, frollsum(align='right') 패턴이 코드 레벨에서 확인됩니다. 단, 현재 INV01~INV12 레지스트리에 INV13_Flow_Divergence_21d는 미등록 상태로, Forge S1 진입 전 factor_registry에 신규 팩터 등록이 필수입니다.",
+    "H_1685 divergence 신호(z_foreign_21d - z_individual_21d)와 H_1674 contrarian 신호(-z_individual_21d) 간 cross-sectional 상관을 2010-2026 investor_wide.parquet 기반으로 사전 측정한 결과, 월별 상관 평균 0.897(중앙값 0.919, SD 0.096)이 확인됐습니다. 이는 Governor가 제시한 rho<0.40 조건에서 대폭 이탈하며, S3 TDC 관문(< 0.40) 통과 불가능이 사전에 수치로 검증된 상태입니다. 구조적 원인은 H_1685의 divergence 항에서 개인 z-score 항이 음수 방향으로 포함되어 있어, H_1674(-z_individual)와 algebraically 유사한 신호를 생성하기 때문입니다. 외국인 z-score 항(z_foreign_21d)이 추가되지만, 개인 flow 신호가 cross-section 분산의 지배적 구성요소임에 따라 divergence의 설명력 대부분이 H_1674 성분에서 유래합니다.",
+    "ICIR 사전 추정: compute_investor.R INV07(Retail_Contrarian = -1 × frollsum(Individual,20)/Size)의 stress_factor_ic_analysis.csv 실측값이 stress_icir 1.121, normal_icir 1.236입니다. H_1685 divergence 신호는 INV07에 INV01(Foreign_NetBuy_20d, stress_icir 0.703, normal_icir 0.621)을 가산하는 구조이므로, 단순 선형 합산 기준으로 divergence의 ICIR은 구성요소 간 상관(rho~0.9)을 감안 시 INV07 단독보다 낮거나 유사한 수준에 그칠 가능성이 높습니다. ICIR >= 0.20(Alpha Lab Gate)은 통과 가능성이 있으나, INV07 standalone 대비 유의한 incremental ICIR 기여를 실증하지 못할 경우 '신호 복잡도 증가 대비 알파 희석'의 L-119 패턴에 해당합니다. defense_ic 축에서는 risk_manager가 INV02_60d의 crisis_ratio 0.364(위기 시 63% 붕괴)를 지적했고, 21d divergence의 stress ICIR은 INV07(stable, ratio 0.963)보다 INV01(unstable, 위기 시 역방향 전환 가능)의 취약성을 상속합니다."
+  ],
+  "concern": "정량적으로 가장 치명적인 문제는 H_1674 내부 상관입니다. 사전 측정 결과 divergence 신호와 contrarian 신호 간 월별 평균 상관이 0.897로, 두 신호이 실질적으로 동일한 정보를 담고 있습니다. H_1685가 H_1674와 동시에 포트폴리오에 편입될 경우 diversifier 역할이 아닌 H_1674 신호의 중복 편입에 해당하며, 외국인 z-score 항이 부가하는 설명력이 한계기여(marginal ICIR gain)로 정당화되지 않으면 L-119(정적 팩터 블렌드 = alpha 희석) 적용 대상이 됩니다. 또한 현재 MRS 63.1 CRISIS 상태에서 외국인 flow 역방향 전환 위험과 INV01의 60d lookback crisis_ratio 0.364 실증이 21d 버전에서도 재현될 가능성이 높습니다.",
+  "conditions": [
+    "S1 구현 전 필수 선결 과제로, H_1674 debate 결과와 무관하게 divergence 신호를 compute_investor.R INV07 대비 추가 ICIR 기여 측면에서 검증해야 합니다. 구체적으로 monthly cross-section IC 회귀에서 z_foreign_21d 항의 독립적 t-stat이 Harvey et al.(2016) 기준 t > 3.0을 충족하는지를 측정하여, divergence의 외국인 성분이 단순 noise인지 독립 정보인지 구분해야 합니다. 충족하지 못하면 신호 설계를 (A) 외국인 단독(INV01/INV02 계승) 또는 (B) 개인 대비 외국인 초과 흐름(sector-neutral divergence)으로 재설계해야 합니다.",
+    "H_1685 독립성 확보를 위한 구조 재설계 검토가 필요합니다. 현재 z_foreign_21d - z_individual_21d 공식에서 개인 z-score 의존성을 제거하고 '외국인 z-score를 Size/sector-neutral residual로 정의한 뒤, 이를 INV07 잔차화(직교화)한 신호'로 재정의하면 H_1674와의 상관을 구조적으로 낮출 수 있습니다. 이 경우 residualization은 full-sample 통계 사용이 불가(C1)하므로 expanding window z-score 방식만 허용됩니다.",
+    "21d lookback 파라미터의 학술적 근거가 부재합니다. 고영훈(2018)의 실증이 3~6개월(63~126일) 누적순매수를 기준으로 하고, Choe-Kho-Stulz(2005)도 monthly~quarterly 포트폴리오를 분석했다는 academic 지적을 수용하여, S1 구현 시 21d/63d/126d 3종을 병렬 산출하고 ICIR 및 회전율을 비교해야 합니다. 21d 버전이 연간 회전율 600% Hard Fail 기준 초과 시(H_1674 사례: 2,082%), 63d 또는 126d로 primary lookback을 전환해야 합니다."
+  ],
+  "quant_evidence": {
+    "data_verified": {
+      "investor_foreign_parquet_exists": true,
+      "investor_individual_parquet_exists": true,
+      "investor_wide_parquet_exists": true,
+      "date_range_start": "2000-01-03",
+      "date_range_end": "2026-03-26",
+      "n_stocks_foreign": 3390,
+      "n_stocks_individual": 3410,
+      "compute_investor_r_exists": true,
+      "pit_c2_verified_in_code": true,
+      "inv13_registered": false,
+      "comment": "investor_stock/ 하위에 investor_foreign/individual/institutional/othercorp/all/wide.parquet 6종 모두 존재. naver investor CSV는 .cache/investor/에 별도 존재."
+    },
+    "h1685_vs_h1674_correlation": {
+      "diverge_vs_contrarian_mean_cs_corr": 0.8971,
+      "diverge_vs_contrarian_median_cs_corr": 0.9189,
+      "diverge_vs_contrarian_sd_cs_corr": 0.0957,
+      "sample_period": "2010-01-01 ~ 2026-03-26",
+      "method": "monthly cross-sectional Pearson correlation, z-score computed cross-sectionally per month",
+      "h1685_signal": "z_foreign_21d - z_individual_21d",
+      "h1674_proxy": "-z_individual_21d",
+      "interpretation": "구조적 동일성 — 두 신호가 실질적으로 동일 정보를 담고 있어 rho<0.40 S3 관문 미달 사전 확인됨"
+    },
+    "h1685_vs_inv01_correlation": {
+      "diverge_vs_inv01_mean_cs_corr": 0.8898,
+      "interpretation": "외국인 단독 INV01(20d)과도 상관 0.890. 기존 INV 팩터 대비 신규 정보 기여 한계적"
+    },
+    "icir_proxy_estimates": {
+      "inv07_retail_contrarian_stress_icir": 1.121,
+      "inv07_retail_contrarian_normal_icir": 1.236,
+      "inv01_foreign_stress_icir": 0.703,
+      "inv01_foreign_normal_icir": 0.621,
+      "inv02_foreign_60d_crisis_ratio": 0.364,
+      "divergence_icir_estimate": "INV07 대비 유사 또는 낮음(rho~0.9 가중 합산 효과로 독립 ICIR 기여 제한적)",
+      "icir_passgate_expected": "PASS(>=0.20) 가능성 있으나 INV07 standalone 대비 incremental 기여 불명확"
+    },
+    "data_availability": {
+      "parquet_start_year": 2000,
+      "investortype_available": ["Foreign", "Individual", "Institutional", "OtherCorp"],
+      "quantiwise_lag": "T+1 공시 기준 — compute_investor.R Date < sig_d 로 이미 반영",
+      "monthly_stocks_2000": 1144,
+      "monthly_stocks_recent": 2441,
+      "inv13_registration_needed": true
+    },
+    "normalization_structure": {
+      "current_spec": "z_foreign_21d: cross-sectional z-score per month / z_individual_21d: cross-sectional z-score per month",
+      "pit_concern": "expanding-window z-score 필수(C1 full-sample 금지) — 현재 spec에서 lookback window 명시 필요",
+      "recommended": "expanding-window cross-sectional standardization 또는 rolling 252d window z-score"
+    }
+  }
+}

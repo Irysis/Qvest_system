@@ -1,0 +1,102 @@
+{
+  "report_type": "JUDGE_SWEEP_V3_PASS2_MASTER_AGGREGATE",
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "judge_teammate_run": true,
+  "total_scope": "11 strategies + 1 rehearing = 12 judgments",
+  "pass_2_full_status": "COMPLETE (Tier 1 + Tier 2 Path 2 + Tier 3 + STR_1679v2 rehearing)",
+
+  "tier_aggregates": {
+    "tier_1": {"path": "full", "total": 3, "pass": 0, "reject_archive": 3, "ref": "stage_artifacts/judge_sweep_v3_pass2_tier1_20260417.json"},
+    "tier_2": {"path": "path_2_limited", "total": 4, "admissible": 2, "redundant": 2, "ref": "stage_artifacts/judge_sweep_v3_pass2_tier2_20260417.json"},
+    "tier_3": {"path": "fail_fast", "total": 4, "pg2_confirmed": 1, "reject_archive": 3, "ref": "stage_artifacts/judge_sweep_v3_pass2_tier3_20260417.json"},
+    "str_1679v2_rehearing": {"path": "full_gate_0_6", "verdict": "A_CONDITIONAL_REAFFIRMED", "ref": "stage_artifacts/judge_gate6_STR_1679v2_rehearing.json"}
+  },
+
+  "final_admissible_pool_after_pass_2": {
+    "pg2_active_confirmed": [
+      {"strategy_id": "STR_1631_SYN_05_2002", "role": "core_alpha", "allocation_pct": 80, "confidence": "HIGH — Harvey t=3.09, role_honesty PASS"}
+    ],
+    "pg1_conditional_admit_candidates": [
+      {"strategy_id": "STR_1679v2", "role": "diversifier_with_overlay_dependency", "sr": 1.27, "cagr": 24.7, "mdd": 29.1, "tier": "existing_pg2", "note": "role reaffirmed after rehearing"},
+      {"strategy_id": "STR_1071", "role": "core_family_1_primary", "sr": 1.297, "cagr": 21.49, "mdd": 22.72, "tier": 2, "note": "lowest MDD in Family 1, v53 compliant"},
+      {"strategy_id": "STR_1562", "role": "independent_diversifier", "sr": 1.333, "cagr": 17.58, "mdd": 31.78, "tier": 2, "note": "Gerber+DCC+HRP, rolling 3Y SR peak 2.082"}
+    ],
+    "pg1_alternate_option": [
+      {"strategy_id": "STR_1433", "role": "core_family_1_alternate", "sr": 1.329, "cagr": 22.18, "mdd": 24.35, "tier": 2, "note": "higher hurdle 74.1 + novelty 10 but exclusive of STR_1071"}
+    ],
+    "family_admission_constraints": {
+      "FAMILY_1_5sleeve_consgate": "At most 1 member (STR_1071 or STR_1433)",
+      "FAMILY_2_gerber": "STR_1562 independent",
+      "excluded_redundant": ["STR_1417", "STR_1435", "STR_1060", "STR_1070 (not on disk)", "STR_1085 (not on disk)"]
+    }
+  },
+
+  "statistical_summary": {
+    "harvey_t3_pass_rate_overall": "5/11 = 45.5% (STR_1417 + STR_1562 + STR_1433 + STR_1071 + STR_1631_SYN_05_2002)",
+    "harvey_t3_failed": ["STR_1439 t=2.95", "STR_1435 t=2.77", "STR_1060 t=2.61", "STR_686 t_unknown_legacy", "STR_1469 t_unknown", "STR_1393 t=1.81"],
+    "dsr_significant_rate": "11/11 = 100% (all DSR=1.000 even at n_trials=400+)",
+    "pit_clean_top_level": "10/11 (only STR_1631_SYN_05 parent had C1b; 2002 variant clean)",
+    "re_runnability_pass": "3/11 (STR_686 STR_1393 STR_1679v2 — rest WAIVED or FAIL)"
+  },
+
+  "sharpe_gap_analysis": {
+    "current_pg2_sr_estimated": 1.266,
+    "target_sr": 2.0,
+    "gap_initial": 0.734,
+    "tier2_best_case_boost_estimate": 0.12,
+    "sr_after_tier2_pg1_blend": 1.386,
+    "remaining_gap_after_tier2_admission": 0.614,
+    "note": "Tier 2 boost estimate assumes STR_1071 + STR_1562 admission with equal weighting. Actual boost depends on correlation + allocation.",
+    "path_forward_to_sr_2": [
+      "1. STR_1071 + STR_1562 PG1 admission → SR ~1.39",
+      "2. H_1676 (Residual Consensus Revision) if PASS → expected +0.10~0.15",
+      "3. H_1682 (Distress+Calmar Cross-Family Defense) if PASS → expected +0.15~0.25",
+      "4. Scenario Y accelerated pipeline (H_1683~1689) → expected +0.20~0.35 best case",
+      "5. Blend optimization (Governor PG2+PG3 re-weighting) → expected +0.05~0.10"
+    ],
+    "best_case_total_post_admission_sr": 1.89,
+    "conclusion": "SR 2.0 achievable but contingent on H_1676/H_1682 S1+S6 clean PASS AND Scenario Y delivery of 2+ Harvey-clean novel diversifiers."
+  },
+
+  "process_quality_metrics": {
+    "v4_legacy_judge_grade_a_survival_rate": "1/4 = 25% (STR_1631_SYN_05_2002 only). STR_686/1393/1469 all downgraded under v53 strict Harvey gate.",
+    "clone_family_detection_rate": "2 families identified (FAMILY_1 near-clone, FAMILY_1a byte-identical triplicate per L-151)",
+    "path_2_waiver_resolution_required": "5/11 strategies dependent on STR_770_phase2_cross BASE_DIR restoration for production admission",
+    "re_runnability_escalation_path": "Scout to investigate methodology_memory/experiment_log for STR_770_phase2_cross original spec"
+  },
+
+  "l_codes_adopted_session_66": [
+    {"code": "L-149", "topic": "STR_1439 return-blend 80-stock + parent missing"},
+    {"code": "L-150", "topic": "STR_1435 5-sleeve PIT cascade + BASE_DIR missing"},
+    {"code": "L-151", "topic": "STR_1060 CLONE_FAMILY_TRIPLICATE"},
+    {"code": "L-152", "topic": "Tier 3 v4.0 catalog drift + role masquerade"},
+    {"code": "L-153", "topic": "STR_1679v2 overlay dependency initial"},
+    {"code": "L-154", "topic": "Tier 2 FAMILY_1 near-clone + pairwise corr admission gate"},
+    {"code": "L-155", "topic": "STR_1679v2 rehearing Def 22.55pp attribution rebutted + L-146 3-variant rule"}
+  ],
+
+  "governor_admission_rules_proposed": [
+    "1. Pairwise correlation matrix check as mandatory admission pre-gate (reject if max_abs_corr >= 0.95 with existing PG member)",
+    "2. FF5 alpha t >= 3.0 strict gate (Harvey 2016) — blocks ~50% of v4.0 legacy Grade A catalog",
+    "3. Family-level dedup rule — at most 1 representative per near-clone family",
+    "4. Re-runnability PENDING tag for Path 2 waivered strategies — blocks production promotion until BASE_DIR restored",
+    "5. L-146 Def contribution 3-variant decomposition (Core alone / Core+Def / Core+Def+Overlay) — simple Core vs Combined delta BANNED",
+    "6. tail_risk_result.json must include daily_returns + variant decomposition fields",
+    "7. Clone byte-identity check (performance SR/CAGR/MDD all 3-digit match) triggers auto-rejection"
+  ],
+
+  "next_session_handoff": {
+    "judge_pending_tasks_when_unblocked": [
+      "Task #3: H_1676 S6 Gate 0~6 (after Forge S1 + PIT flag resolution)",
+      "Task #4: H_1682 S6 Gate 0~6 (after Forge S1 + PIT flag resolution)"
+    ],
+    "out_of_judge_scope_but_dependent": [
+      "Forge Task #5: Orthogonality measurement STR_1439/1435/1060 vs STR_1631",
+      "Forge Task #7: STR_1679v3 Def sleeve replacement + STR_1661 V2 S5 mutation",
+      "Forge Task #8: P3 Technical Debt patches",
+      "Scout Task #19/20: H_1690/H_1691 post-Pass-2 novelty extraction"
+    ],
+    "infrastructure_request": "Scout to recover STR_770_phase2_cross BASE_DIR original spec (enables Gate 1 resolution for 5 strategies)"
+  }
+}

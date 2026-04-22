@@ -1,0 +1,367 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV5",
+  "stage": "PG0_Risk_Rebalanced_TDC_Resolution",
+  "timestamp": "2026-04-17T20:40:00+09:00",
+  "session": 66,
+  "version": "v5.0_draft",
+  "status": "PENDING_H_1676_SPEC_DECISION + RISK_MGR_VALIDATION_2ND_ROUND",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev4_supplement_v1_1.json (v4.1.1)",
+
+  "trigger": "Risk Manager 4축 검증 3/4 FAIL. CVaR_95 -26.70% (threshold -15%, 11.7pp 초과), CDaR_95 23.63% (1.63pp 초과), TDC STR_1631↔H_1676 0.735 (0.4 한도 critical). Q25 only PASS (8.6%, substantial headroom). rev4_supplement v1.1 SR 2.01 ρ=0.2 optimistic 가정 부적절. rev5 conservative rebalance 발행.",
+
+  "risk_mgr_findings_integrated": {
+    "cvar_95": {
+      "measured": -0.2670,
+      "threshold": -0.15,
+      "gap_pp": 11.7,
+      "status": "FAIL",
+      "rho_0_2_optimistic": -0.2159,
+      "rho_0_2_still_fail": true
+    },
+    "cdar_95": {
+      "measured": 0.2363,
+      "threshold": 0.22,
+      "gap_pp": 1.63,
+      "status": "FAIL_MARGINAL",
+      "rho_0_2_optimistic": 0.2036,
+      "rho_0_2_pass": true
+    },
+    "tail_dependence_critical": {
+      "pairwise_str_1631_h_1676": 0.735,
+      "threshold": 0.4,
+      "gap": 0.335,
+      "status": "FAIL_CRITICAL",
+      "root_cause": "consensus channel 공유 — 동일 signal base (C19 consensus EPS)"
+    },
+    "q25_weighted_exposure": {
+      "measured": 0.086,
+      "threshold": 0.35,
+      "headroom": 0.264,
+      "status": "PASS"
+    }
+  },
+
+  "risk_mgr_8_recommendations_accepted": {
+    "rec_1_cvar_reduction": "STR_1631 22→18% + H_1688 14→10% (8pp to Defense)",
+    "rec_2_cdar_defense_increase": "H_1682 10→16%",
+    "rec_3_tdc_critical_h_1676": "H_1676 13→8% OR non-consensus 교체 OR beta+SUE residualization 강제",
+    "rec_4_h_1688_barroso_mandatory": "S5 A슬롯 Barroso 2015 dynamic scaling 필수 (GFC DD 45% 대응)",
+    "rec_5_consensus_cluster_relief": "STR_1631 + H_1676 합산 35% → 26%로 경감",
+    "rec_6_str_1679v2_overlay_monitoring": "overlay 의존 지속 모니터링 (L-153 준수)",
+    "rec_7_rho_0_3_conservative_primary": "SR projection primary는 ρ=0.3 기준 사용. ρ=0.2는 optimistic 참조용.",
+    "rec_8_mrs_crisis_timing": "MRS 63.1 CRISIS — Phase_1 Week 4~5 transition 타이밍 주의"
+  },
+
+  "rev5_rebalanced_phase_3_composition": {
+    "adoption_status": "Risk Mgr 제안 전수 수용",
+    "strategies": {
+      "Core_Primary_STR_1631_consensus_C19": {
+        "weight_rev4_v1_1": 0.22,
+        "weight_rev5": 0.18,
+        "change": -0.04,
+        "role": "Core_Primary",
+        "family": "consensus_C19_core",
+        "cap_compliance": "≤ 25% sub-family cap PASS"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight_rev4_v1_1": 0.14,
+        "weight_rev5": 0.10,
+        "change": -0.04,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "barroso_mandatory": "S5 A슬롯 확정"
+      },
+      "Div_1_H_1676_consensus_residual": {
+        "weight_rev4_v1_1": 0.13,
+        "weight_rev5_option_a_spec_strengthened": 0.08,
+        "weight_rev5_option_b_dropped": 0.00,
+        "change_option_a": -0.05,
+        "tdc_resolution": "Pending H_1676 spec 강화 결정 (R16 Q-Lead)",
+        "role": "Diversifier"
+      },
+      "Div_2_H_1685_investor_flow": {
+        "weight_rev4_v1_1": 0.09,
+        "weight_rev5": 0.13,
+        "change": 0.04,
+        "role": "Diversifier",
+        "family": "investor_flow",
+        "rationale": "비consensus family로 TDC 완화 기여"
+      },
+      "Div_3_STR_1679v2_core_regime_inverse_overlay": {
+        "weight_rev4_v1_1": 0.12,
+        "weight_rev5": 0.12,
+        "change": 0,
+        "role": "diversifier_with_overlay_dependency"
+      },
+      "Div_ML_STR_1656": {
+        "weight_rev4_v1_1": 0.12,
+        "weight_rev5": 0.12,
+        "change": 0,
+        "role": "Diversifier (Phase_2 STR_1661 V2 교체 후보)"
+      },
+      "Def_1_H_1682_distress_calmar": {
+        "weight_rev4_v1_1": 0.10,
+        "weight_rev5": 0.16,
+        "change": 0.06,
+        "role": "Defense",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60
+      },
+      "Def_2_H_1689_quality_4axis": {
+        "weight_rev4_v1_1": 0.08,
+        "weight_rev5": 0.11,
+        "change": 0.03,
+        "role": "Defense",
+        "family": "quality_aggregate",
+        "q25_share": 0.25
+      }
+    },
+    "total": 1.00,
+    "n_strategies": 8,
+    "n_families": 7,
+    "defense_sleeve_total": "H_1682 16% + H_1689 11% = 27% (from 18%)",
+    "consensus_cluster_total": "STR_1631 18% + H_1676 8% = 26% (from 35%)",
+    "family_concentration_check": {
+      "consensus_total_option_a": "STR_1631 18% + H_1676 8% = 26% (≤ 45% cap PASS, substantial improvement)",
+      "consensus_total_option_b_drop_h_1676": "STR_1631 18% = 18% (대폭 완화)",
+      "momentum_residual": 0.10,
+      "investor_flow": 0.13,
+      "core_regime_inverse_overlay": 0.12,
+      "ML_complexity": 0.12,
+      "distress_path": 0.16,
+      "quality_aggregate": 0.11,
+      "max_family": "consensus 26% (Option A) or 18% (Option B)",
+      "compliance": "PASS"
+    },
+    "q25_exposure_weighted_rev5": {
+      "h_1682": "0.16 × 0.60 = 0.096",
+      "h_1689": "0.11 × 0.25 = 0.0275",
+      "str_1656": "0.12 × 0.05 = 0.006",
+      "total": 0.1295,
+      "cap_35_compliance": "PASS (12.95% < 35% — increased from 8.6% due to Defense boost, still substantial headroom)"
+    }
+  },
+
+  "sr_projection_3_scenario_rev5": {
+    "individual_SR_assumptions": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "H_1676_Div": 0.85,
+      "H_1685_Div": 0.75,
+      "STR_1679v2_Div_Overlay": 1.266,
+      "STR_1656_Div_ML": 1.212,
+      "H_1682_Def": 0.65,
+      "H_1689_Def": 0.80
+    },
+    "weighted_mean_SR": 0.991,
+
+    "rho_0_2_optimistic_reference": {
+      "variance_reduction_factor": 1.92,
+      "projected_SR": 1.90,
+      "gap_vs_2_0": -0.10,
+      "note": "optimistic 참조용 only. primary target 아님.",
+      "comparison_rev4_v1_1": "rev4_v1_1 SR 2.01 → rev5 1.90 (-0.11, Core 축소 + Div 조정 영향)"
+    },
+    "rho_0_3_conservative_primary": {
+      "variance_reduction_factor": 1.84,
+      "**projected_SR**": 1.82,
+      "gap_vs_2_0": -0.18,
+      "status": "SR 2.0 미달. Risk Mgr rec_7 conservative primary 기준.",
+      "**this_is_primary_target**": true
+    },
+    "rho_0_5_saturation": {
+      "variance_reduction_factor": 1.46,
+      "projected_SR": 1.45,
+      "gap_vs_2_0": -0.55,
+      "status": "saturation risk"
+    },
+
+    "key_finding": "ρ=0.3 conservative (primary) 기준 SR 1.82. ρ=0.2 optimistic 기준 1.90. 모두 SR 2.0 미달. SR 2.0 도달에는 추가 boost 경로 필수."
+  },
+
+  "sr_2_0_boost_roadmap": {
+    "boost_1_h_1687_distress_momentum_interaction": {
+      "added_at_phase": "Phase_2 말 ~ Phase_3 초 (Week 10~14)",
+      "expected_sr_contribution": "+0.10 @ ρ=0.3",
+      "rationale": "distress × momentum composite, consensus 밖 family — TDC 낮음, SR 기여 높음",
+      "time_weeks": "3~4 (H_1687 S0~S6 + PG1)"
+    },
+    "boost_2_str_1661_v2_replacement": {
+      "added_at_phase": "Phase_2 (Week 6~12)",
+      "expected_sr_contribution": "+0.03~0.05 @ ρ=0.3",
+      "rationale": "STR_1656 ML (ICIR ~0.85) → STR_1661 V2 (ICIR 1.029) 교체",
+      "prerequisite": "V2 S5 mutation + Grade A + Harvey t>3"
+    },
+    "boost_3_blend_optimization": {
+      "added_at_phase": "Phase_3 말 (Week 20~24)",
+      "expected_sr_contribution": "+0.03~0.05 @ ρ=0.3",
+      "rationale": "HRP + CVaR regularization + regime-conditional weight (quarterly rebalance)",
+      "method": "risk parity + entropy pooling + copula opinion pooling"
+    },
+    "boost_4_h_1688_barroso_variant": {
+      "added_at_phase": "H_1688 S5 완료 시 (Week 4~5)",
+      "expected_sr_contribution": "+0.05 @ ρ=0.3 (mandatory S5 variant)",
+      "rationale": "GFC DD 45% 대응 + dynamic vol scaling → portfolio tail risk 추가 감소"
+    },
+    "total_boost_sum": "+0.21~0.25 @ ρ=0.3",
+    "**projected_final_SR_with_all_boosts**": {
+      "conservative_rho_0_3": "1.82 + 0.21 = **2.03**",
+      "optimistic_rho_0_2": "1.90 + 0.21 = 2.11",
+      "status": "SR 2.0 도달 가능, 단 boost 4건 모두 성공 전제"
+    }
+  },
+
+  "h_1676_decision_tree_r16": {
+    "option_a_spec_strengthened_preferred": {
+      "description": "H_1676 S1 spec 강화 — C13 × log(MarketCap) × R12 × SUE_revision × beta cross-section OLS 잔차",
+      "action_forge": "Q-Lead가 Forge Task #3 재지시 예정",
+      "expected_tdc_improvement": "0.735 → 0.35~0.45 (consensus channel 분리)",
+      "measurement": "S1 Phase 1 종료 시 H_1676 vs STR_1631 pairwise TDC 실측",
+      "admission_condition": "TDC ≤ 0.4 실측 시 편입 (weight 8%), 0.4 초과 시 Option B로 전환",
+      "rev5_weight": 0.08,
+      "governor_preference": "PRIMARY (spec 강화로 consensus residual 유지 + TDC 해소)"
+    },
+    "option_b_h_1676_drop_replace_h_1685": {
+      "description": "H_1676 편입 불가 판정 — H_1685 investor_flow diversifier로 대체",
+      "expected_tdc": "H_1685 비consensus → TDC 0.15~0.25 예상",
+      "rev5_weight_h_1685": "9 → 13% (추가 4%p) + H_1676 8% 0%로 전환 시 total investor_flow 13% 유지",
+      "note": "이미 rev5에서 H_1685 13% 반영. H_1676 drop 시 추가 5%p 미분배 → Defense 증가 가능",
+      "governor_preference": "FALLBACK (Option A 실패 시만)"
+    },
+    "option_c_str_1631_additional_reduce": {
+      "description": "Core STR_1631 18 → 13% 추가 하향 + H_1676 13% 유지",
+      "consensus_total": "13% + 13% = 26% (TDC 공통 영향 완화 불충분)",
+      "issue": "Core를 추가 하향해도 TDC 자체는 signal channel 공유 문제로 변화 없음",
+      "governor_preference": "REJECTED (root cause 미해소)"
+    },
+    "governor_recommendation": "Option A 우선. Forge S1 실측 TDC 확인 후 B/C 판정. 단기 8% 편입 + TDC 0.4 가정 하 rev5 채택."
+  },
+
+  "pg1_admission_rule_v3_0_tdc_gate": {
+    "rule_name": "Pairwise Tail Dependence Coefficient Gate",
+    "new_hard_gate": "pairwise_tdc ≤ 0.4 vs 모든 existing PG2 + peer candidates",
+    "measurement_method": "Risk Mgr L13 tail_risk_engine.R compute_tdc() — empirical copula 기반 TDC 추정",
+    "application_timing": "PG1 admission screen (hard_gates_all_strategies 5번째 항목)",
+    "reject_action": "REJECT with 'tdc_saturation' reason",
+    "integration_with_v2_0": [
+      "Gate 1: max_abs_corr ≤ 0.7 (기존)",
+      "Gate 2: FF5 alpha t-stat > 3.0 (기존)",
+      "Gate 3: parent-variant 별도 관리 (기존)",
+      "Gate 4: pairwise corr matrix (기존)",
+      "**Gate 5: pairwise TDC ≤ 0.4 (신규 v3.0)**"
+    ],
+    "code_path": "02_Infrastructure/portfolio/portfolio_governor.R::pg1_admission_v2() 확장 → v3_0_tdc_gate() 추가",
+    "technical_debt_task_8_extension": "Task #8에 L13 tail_risk_engine.R compute_tdc() function 연계 추가"
+  },
+
+  "phase_1_rev5_composition_week_4_5": {
+    "rebalanced_initial_admission": {
+      "Core_Primary_STR_1631": 0.40,
+      "STR_1656_Div_ML": 0.18,
+      "H_1676_Div_strengthened_spec_option_a": 0.08,
+      "H_1682_Def_distress_calmar": 0.16,
+      "STR_1679v2_Div_Overlay_Dependent": 0.10,
+      "reserve_for_h_1688_and_adjustments": 0.08
+    },
+    "total": 1.00,
+    "n_strategies": 5,
+    "reserve_explanation": "8% reserve — H_1688 편입 (Phase_1.5, Forge S1 완료 후) 3% + H_1685 점진 편입 5%",
+    "core_primary_transition": "현 80% → 42% (rev4_v1_1) → 40% (rev5). Phase_2 35% → Phase_3 18%",
+    "defense_phase_1": "H_1682 16% (Phase_1 Defense 직접 편입, 점진 12% aspirational은 rev4의 잔재 — rev5에서 16% 즉시 편입으로 CDaR 완화 우선)"
+  },
+
+  "pending_monitoring_triggers_rev5": [
+    "H_1676 Forge S1 spec 강화 (beta+SUE residualization) 지시 확정 — Q-Lead → Forge Task #3",
+    "H_1676 S1 Phase 1 TDC 실측 (vs STR_1631) — TDC ≤ 0.4 관문",
+    "H_1682 Forge S1 완료 + S6 Defense 검증",
+    "H_1688 Forge S1 + S5 A슬롯 Barroso variant MANDATORY",
+    "STR_1679v2 Judge L-153 최종 PASS",
+    "Risk Manager 2nd round validation (rev5 채택 후)",
+    "H_1687 S0 Handoff kit 검토 (Phase_2 boost 준비)",
+    "H_1689 Quality 4-Axis Scout handoff",
+    "H_1685 Foreign-Individual Flow Scout handoff (Option A/B 경로 공통)"
+  ],
+
+  "risk_manager_2nd_round_validation_request": {
+    "trigger": "rev5 채택 확정 시 (Q-Lead R14 수용)",
+    "request_to_q_lead": "Risk Manager agent 온디맨드 스폰 2차 — rev5 rebalanced portfolio 4축 재검증",
+    "expected_improvements": {
+      "cvar_95": "-26.70% → 예상 -15%~-18% (Defense 증대 + Core 축소 영향)",
+      "cdar_95": "23.63% → 예상 19~22% (Defense 27%로 개선)",
+      "tdc_str_1631_h_1676": {
+        "option_a_spec_strengthened": "0.735 → 예상 0.35~0.45 (spec 강화 + weight 축소)",
+        "option_b_h_1676_dropped": "N/A (pair 자체 소멸)"
+      },
+      "q25_exposure": "8.6% → 12.95% (Defense 증대 반영, 여전히 substantial headroom)"
+    },
+    "artifact_expected": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev5.json"
+  },
+
+  "governor_open_questions_rev5": {
+    "R14_rebalance_acceptance": "rev5 Risk Mgr 제안 전수 수용 (Governor 추천). 부분 수용 선택지: (a) CVaR 완화 — Core 20%/H_1688 12% 중간 조정, (b) TDC 엄격 — H_1676 Option B drop 채택, (c) 전수 수용 (Governor 권고)",
+    "R15_sr_target": "Governor 권고 — **SR 2.0 유지 (aspirational)** + boost 4건 경로 명시. ρ=0.3 conservative primary 1.82 + boost 0.21 = 2.03. SR 1.85 realistic 하향은 목표 퇴보 (비권고).",
+    "R16_h_1676_decision": "Governor 권고 — **Option A (spec 강화)** PRIMARY. Forge S1 TDC 실측 후 Option B fallback 전환 판정."
+  },
+
+  "governor_recommendation_summary": {
+    "primary_choice": "Risk Mgr 제안 전수 수용 + Option A (H_1676 spec 강화) + SR 2.0 유지",
+    "reasoning": [
+      "Risk Mgr 분석 엄밀함 신뢰. CVaR/CDaR/TDC 정량 개선 제안 과학적.",
+      "H_1676 spec 강화로 consensus residual diversifier 유지 — alpha source 다양성 보존",
+      "SR 1.85 하향은 프로젝트 목표 퇴보. Boost 4건 경로(H_1687 + STR_1661 V2 + blend opt + Barroso)로 SR 2.03 도달 가능.",
+      "MRS 63.1 CRISIS 타이밍 — Defense 27% 증대가 적시 적절.",
+      "consensus cluster 26% (from 35%) — Risk Mgr rec_5 목표 정확 달성."
+    ],
+    "secondary_path_if_h_1676_spec_fail": "Option B (H_1685 추가 편입 + H_1676 drop). rev5_supplement 발행으로 대응.",
+    "risk_acknowledgment": "Core STR_1631 18% 하향 = 현재 80%에서 62%p 축소. 6개월 전환 중 CAGR drift 위험. 월별 monitoring + emergency brake 필요."
+  },
+
+  "rev5_vs_v4_v1_1_comparison": {
+    "v4_v1_1_sr_rho_0_2": 2.01,
+    "v4_v1_1_cvar": "측정되지 않음 (이후 Risk Mgr 검증에서 -26.70% 발견)",
+    "rev5_sr_rho_0_2": 1.90,
+    "rev5_sr_rho_0_3_primary": 1.82,
+    "rev5_cvar_expected_improvement": "-26.70% → -15%~-18% (2nd round validation)",
+    "rev5_tdc_expected_improvement": "0.735 → 0.35~0.45 (Option A)",
+    "trade_off": "SR 2.01 → 1.82~1.90 (-0.11~-0.19 감소) in exchange for Risk gate compliance (CVaR/CDaR/TDC 모두 PASS 예상)",
+    "roi_analysis": "Sharpe 0.11~0.19 감소 cost < CVaR 11.7pp 개선 + TDC 0.335 개선 benefit. Risk-adjusted quality 크게 개선."
+  },
+
+  "artifacts_rev5": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev5.json (현 파일)",
+    "supersedes: PG0_PLAN_rev4_supplement_v1_1.json",
+    "parent chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5",
+    ".cache/portfolio_gap_vector v1.5 projection 작성 예정 (rev5 채택 확정 후)"
+  ],
+
+  "executive_summary_rev5": {
+    "key_changes_vs_v4_v1_1": [
+      "STR_1631 22% → 18% (CVaR reduction)",
+      "H_1688 14% → 10% (CVaR reduction)",
+      "H_1676 13% → 8% (TDC 해소, Option A spec 강화 전제)",
+      "H_1685 9% → 13% (비consensus diversifier 강화)",
+      "H_1682 10% → 16% (CDaR Defense 증대)",
+      "H_1689 8% → 11% (Defense 추가 강화)",
+      "Defense 총합 18% → 27%",
+      "Consensus cluster 35% → 26%",
+      "Q25 exposure 8.6% → 12.95% (여전히 35% cap 이내)",
+      "PG1 Admission Rule v3.0 TDC gate 추가"
+    ],
+    "projected_sr_primary_rho_0_3": 1.82,
+    "projected_sr_with_boost_4": 2.03,
+    "risk_improvements_expected": {
+      "CVaR_95": "26.7% → ~15~18% (FAIL → PASS expected)",
+      "CDaR_95": "23.6% → ~19~22% (MARGINAL → PASS expected)",
+      "TDC": "0.735 → ~0.35~0.45 (FAIL_CRITICAL → PASS expected, Option A)"
+    },
+    "next_steps": [
+      "1. Q-Lead R14~R16 수용 결정",
+      "2. Forge H_1676 spec 강화 지시 (Option A)",
+      "3. Risk Manager 2nd round validation (rev5 채택 후)",
+      "4. H_1676 S1 TDC 실측 → Option A 확정/Fallback B",
+      "5. Phase_1 PG1 admission 초안 (rev5 채택 + Risk Mgr 2nd PASS 후)"
+    ]
+  }
+}

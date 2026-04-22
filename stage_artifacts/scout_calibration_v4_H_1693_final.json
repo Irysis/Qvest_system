@@ -1,0 +1,228 @@
+{
+  "artifact_type": "scout_calibration_v4_prediction",
+  "schema_version": "v1",
+  "hypothesis_id": "H_1693",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 1 — RAM 회복 대기 병렬 작업 (Q-Lead 지시 #1)",
+  "purpose": "Q-Lead 지시 Calibration v4 prediction range 최종 기록. v55 Consensus 포맷 변경 이후 prediction 정정 — score 기반이 아닌 stance 기반 예측.",
+
+  "calibration_version_history": {
+    "v1_base": "raw range prediction (no adjustment)",
+    "v2": "H_1688 calibration +4 underestimate 학습",
+    "v3": "H_1685 v2 + Forge handoff kit 정합성 학습 (2 hits)",
+    "v4_current": "5 hits 누적 (H_1685 v2 / H_1688 / H_1689 v3 / H_1692 v2 / H_1693). v55 Consensus 전환 반영"
+  },
+
+  "hypothesis_context": {
+    "name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+    "handoff_kit_version": "v1.2 (AX-004 3-pillar exempt + Signal-Portfolio Translation Failure family + Governor D1 gates + Sector constraint + Q07 cluster Sequential Admission Protocol)",
+    "strengthening_actions_5": [
+      "AX-004 3-pillar exempt (Dichev-Tang 2009 mechanism + KR empirical override + multi-sleeve EXCLUSION)",
+      "Signal-Portfolio Translation Failure family 3 gates (net_IC_transmission_ratio > 0.6 + stress return 2+ positive + Z_Sector vs raw Z)",
+      "Governor D1 mandatory gates (stress_outperform ≥ 2/3, bad_ic ≥ 0.08, mdd < 35%)",
+      "Sector constraint max 5/sector MANDATORY (of 20 holdings)",
+      "Q07 cluster Sequential Admission Protocol (Gate 11 TDC < 0.50 + consensus_tier Tier 1)"
+    ]
+  },
+
+  "v55_consensus_prediction_primary": {
+    "_format_note": "v55 Consensus 포맷: score 대신 stance / veto_flag / unresolved_disputes 예측",
+    "overall_stance_distribution": {
+      "APPROVE": 0,
+      "APPROVE_CONDITIONAL": 4,
+      "REVISE": 1,
+      "REJECT": 0
+    },
+    "overall_verdict_projection": "APPROVE_CONDITIONAL (MINORITY tag, 4A+1COND 또는 4COND+1R)",
+    "veto_flags_expected": {
+      "tail_risk": 0,
+      "mechanism": 0,
+      "PIT": 0,
+      "kr_empirical_hard_fail": 0,
+      "admission_rule": "0~1 (Governor gap_misaligned possible)",
+      "gap_misaligned": "0~1 (current gap SR 0.807 primary vs defense indirect contribution)"
+    },
+    "unresolved_disputes_expected_count": "6~10건",
+    "most_likely_unresolved_topics": [
+      "AX-005 3rd axis 추가 필요성 (Judge R0 지시 핵심 논점)",
+      "SUE weight 0.3 L-163 threshold 경계 (stress_icir +0.15 추정 vs 실측)",
+      "Q07 cluster Sequential Admission empirical TDC 측정 전 결론 불가",
+      "Z_Sector neutralization 효과 empirical 증명 (S1 실측 대기)",
+      "L-160 IC-Return decoupling 재현 가능성 (L-121 signal high vs portfolio translation)",
+      "Defense cluster 33% cap saturation (rev8-A-revised-v2 slack 재확인 필요)"
+    ]
+  },
+
+  "per_debater_v4_stance_predictions": {
+    "codex_critic_h1693": {
+      "predicted_stance": "APPROVE_CONDITIONAL",
+      "confidence": 0.65,
+      "primary_concerns_expected": [
+        "SUE empirical measurement 부재 — weight 0.3 L-163 경계 검증 필요",
+        "Z_Sector sector 분류 체계 GICS vs KRX 업종 일관성",
+        "L-160 IC-Return transmission empirical 증명 필수 (signal SR ≠ portfolio SR)",
+        "Q07 quarterly C4 45일 lag Forge 코드 수준 검증"
+      ],
+      "veto_risk": "LOW (Codex veto 권한 없음, flag만)",
+      "s1_gate_items_expected": "3~5건 (walk-forward / M07 vs residual / net transmission / sector classification / beta stability)",
+      "calibration_v4_adjustment": "+2 (Codex empirical flag는 v55에서 s1_gate_items 이동, stance reject 완화)"
+    },
+    "risk_manager_h1693": {
+      "predicted_stance": "APPROVE_CONDITIONAL",
+      "confidence": 0.70,
+      "primary_concerns_expected": [
+        "Q07 cluster 3건 동시 편입 tail dependence 상승 — L-156 v2 감시",
+        "MDD forecast 18~28% 낙관성 — L-160 decoupling risk 재현 가능",
+        "Kill Scenario: COVID 2020 3M CRISIS 구간 Q07 signal 방향 검증 (L-121은 stress ICIR mean)",
+        "Defense cluster 33% cap saturation tail_risk_suite STR_1631 대비 +2%p 이내"
+      ],
+      "veto_risk": "LOW-MEDIUM (tail_risk veto 가능 but multi-sleeve 설계로 완화)"
+    },
+    "governor_h1693": {
+      "predicted_stance": "APPROVE_CONDITIONAL or REVISE",
+      "confidence": 0.60,
+      "primary_concerns_expected": [
+        "Defense cluster cap — STR_1679v3 8% + H_1689 v3 (10~25%) + H_1693 편입 시 saturation check",
+        "Sequential Admission TDC<0.30 crisis gate H_1689 v3 variant_2 pair 충족 불확실 (predict 0.35~0.55 FAIL)",
+        "gap_misaligned veto 가능성 — 현재 gap SR 0.807 primary, Defense MDD_regime indirect contribution",
+        "rev8-A-revised-v2 / rev8-A-revised-v3 Phase_3 slot 활성 타이밍 불확실"
+      ],
+      "veto_risk": "MEDIUM (gap_misaligned 또는 admission_rule veto 가능)"
+    },
+    "quant_h1693": {
+      "predicted_stance": "APPROVE_CONDITIONAL",
+      "confidence": 0.72,
+      "primary_concerns_expected": [
+        "Z_Sector infrastructure factor_db_builder.R .standardize_factors() 실제 동작 검증 필요",
+        "C01_SUE QoQ vs YoY 방법론 정확성 (Foster 1984 seasonal random walk)",
+        "ICIR forecast 0.25~0.45 현실성 (Q07 standalone + SUE composite)",
+        "kr_empirical_check: L-121 direct supporting (+0.753) + L-136 개선 방향 — kr_empirical_check=confirmed 예상"
+      ],
+      "veto_risk": "LOW (PIT 설계 양호, kr_empirical_check positive)"
+    },
+    "academic_h1693": {
+      "predicted_stance": "APPROVE or APPROVE_CONDITIONAL",
+      "confidence": 0.75,
+      "primary_concerns_expected": [
+        "Dichev-Tang 2009 ROS primary reference 강도 (AX-004 exempt backing)",
+        "Asness 2019 QMJ Safety axis 별도 분류 (profitability axis와 구분) 학술적 확인",
+        "Foster 1984 SUE + Bernard-Thomas 1989 PEAD + Daniel-Titman 2006 sector-neutral precedent 조합 강도",
+        "KRX sector HHI 원 cite + KoFIA 개인 비중 통계 KR empirical backing"
+      ],
+      "veto_risk": "LOW (mechanism veto 가능성 낮음, AX-004 exempt 3-pillar 강력)"
+    }
+  },
+
+  "verdict_projection": {
+    "primary_path": "APPROVE_CONDITIONAL with unresolved_disputes 6~10건 (majority or minority consensus tag)",
+    "probability_APPROVE_CONDITIONAL": 0.70,
+    "probability_APPROVE_full": 0.15,
+    "probability_REVISE": 0.13,
+    "probability_REJECT": 0.02,
+    "kr_inverse_penalty_applicable": false,
+    "kr_inverse_penalty_rationale": "Q07 Earnings_Stability는 VALIDATED_HARD_FAIL L-code 없음. L-121 positive evidence 대신. L-160 defense IC-Return decoupling 관련 있으나 mechanism 다름 (Q07 direct vs Distress signal). kr_empirical_check: confirmed 예상."
+  },
+
+  "if_legacy_score_format_applied": {
+    "_caveat": "v55 Consensus 포맷 공식 채택 — 아래 legacy score prediction은 참고용",
+    "per_debater_score_range_legacy": {
+      "codex_critic": [10, 14],
+      "risk_manager": [12, 15],
+      "governor": [13, 16],
+      "quant": [13, 16],
+      "academic": [14, 17]
+    },
+    "total_score_range": [62, 78],
+    "total_midpoint": 70,
+    "total_rounded_mid": 68,
+    "v54_verdict_projection_legacy": {
+      "APPROVE_COND_>=70_threshold": "70 mid 경계 — legacy score 기준 APPROVE_CONDITIONAL 진입 경계",
+      "BORDERLINE_60_69_risk": "LOW-MEDIUM (62~69 range 가능성 존재 but v1.2 5건 강화 반영 +2~3 uplift 기대)"
+    }
+  },
+
+  "key_success_signals": [
+    "v1.2 강화 5건 (AX-004 3-pillar + Signal-Portfolio Translation Failure family + D1 gates + Sector constraint + Sequential Admission) 사전 반영으로 Codex/Risk Mgr/Governor 감점 요인 선제 해소",
+    "L-121 Q07 직접 supporting + Dichev-Tang 2009 ROS primary reference strong",
+    "AX-001 v2 multi_sleeve_only=TRUE 설계로 AX-004/AX-005 scope 밖 명시",
+    "Z_Sector infrastructure 기존 지원 (factor_db_builder.R) — 구현 LOW, spec_transmission 위험 낮음",
+    "L-163 poison pill PASS (Q07 +0.527 + SUE +0.045 composite +0.572 positive)"
+  ],
+
+  "key_failure_signals_if_revise_or_reject": [
+    "Q07 cluster Sequential Admission crisis TDC 실측 필수 — 미측정 상태 BORDERLINE 가능",
+    "SUE empirical measurement 부재 — weight 0.3 validity 경계",
+    "Z_Sector GICS vs KRX 업종 일관성 확인 미완",
+    "Governor gap_misaligned veto 가능 (SR gap primary, Defense indirect)",
+    "Judge R0 AX-005 3rd axis 추가 요구 선제 미반영 (현 2-axis composite)"
+  ],
+
+  "calibration_v4_accuracy_tracking": {
+    "prior_predictions_vs_actual": [
+      {"hypothesis": "H_1685 v2", "predicted_mid": 54, "actual_total": 61, "error": "+7"},
+      {"hypothesis": "H_1687", "predicted_mid": 54, "actual_total": 55, "error": "+1"},
+      {"hypothesis": "H_1688", "predicted_mid": 61, "actual_total": 67, "error": "+6"},
+      {"hypothesis": "H_1689 v3", "predicted_mid": 61, "actual_total": null, "status": "pending"},
+      {"hypothesis": "H_1692 v1", "predicted_mid": 61, "actual_total": 65, "error": "+4"},
+      {"hypothesis": "H_1692 v2", "predicted_mid": 63, "actual_total": null, "status": "pending"}
+    ],
+    "systematic_bias": "+4.5 average underestimate (v4 calibration 이후 감소 from v3 +6)",
+    "v4_adjustment_applied": "raw mid → -2 (calibration 후 actual mid 접근)",
+    "h_1693_prediction_rationale": "raw mid 73 → v4 calibration -3 = 70. range [62, 78] 보수 조정."
+  },
+
+  "bull_bear_probability_weighted": {
+    "bull_scenario_APPROVE_or_APPROVE_COND_high_70s": {
+      "probability": 0.35,
+      "path": "AX-004 exempt + D1 gates + L-121 strong + 5건 강화 Codex/Risk Mgr 선제 해소",
+      "score_range_legacy": [72, 78]
+    },
+    "base_scenario_APPROVE_COND_mid_60s_to_low_70s": {
+      "probability": 0.50,
+      "path": "Governor cluster saturation concern + SUE empirical 부재 Codex flag + 기본 L-121 supporting",
+      "score_range_legacy": [66, 72]
+    },
+    "bear_scenario_BORDERLINE_REVISE_60_65": {
+      "probability": 0.12,
+      "path": "Q07 cluster Sequential TDC 선제 측정 부재 + Governor gap_misaligned veto 근접",
+      "score_range_legacy": [60, 65]
+    },
+    "tail_scenario_REVISE_or_below": {
+      "probability": 0.03,
+      "path": "예상치 못한 Kill Scenario (Judge AX-005 3rd axis veto 또는 Risk Mgr tail_risk veto)",
+      "score_range_legacy": "< 60"
+    }
+  },
+
+  "post_debate_action_plan": {
+    "if_APPROVE_or_APPROVE_CONDITIONAL": [
+      "STR_1693 할당 → Forge S1 dispatch (TODO_S1_H_1693 생성)",
+      "Forge preflight: validate_factor_sd(c('Q07_Earnings_Stability', 'C01_SUE')) + Z_Sector column 확인",
+      "sector constraint max 5/sector strategy.R 구현 + factor_engine.R Z_Sector branch",
+      "L-165 family 3rd member 방지 3 gates 필수 측정 (S1 출력)",
+      "Scout S3 orthogonality — H_1689 v3 variant_2 + STR_1679v3 pairwise TDC t-copula MLE 실측"
+    ],
+    "if_BORDERLINE_REVISE": [
+      "H_1693 v2 재설계 — SUE weight 조정 또는 3rd axis 추가 (Judge AX-005 요구 반영)",
+      "Q07 cluster Sequential Admission pre-measurement 보강 (L-157 v4 refinement)",
+      "Governor gap_misaligned 우려 해소 — Defense MDD_regime 기여 정량 증명"
+    ],
+    "if_REVISE_or_REJECT": [
+      "D2 Risk-parity 3-factor Defense sub-sleeve 재설계 (Governor TODO priority P2)",
+      "D3 MRS-conditional Dynamic Defense (Governor TODO priority P3, AX-001 부합도 최고)",
+      "Scout Path: Q07 standalone sector-neutral only (2-axis → 1-axis 축소) baseline 탐색"
+    ]
+  },
+
+  "scout_notes": [
+    "v55 Consensus 포맷 공식 채택 — stance 기반 prediction primary, legacy score range 참고용만",
+    "AX-004 exempt 3-pillar + L-165 family 3 gates + D1 mandatory + Sector constraint + Sequential Admission 5건 강화로 v1.2 calibration +2~3 uplift",
+    "Q07 cluster Sequential Admission pair 2 (STR_1679v3 vs H_1693) crisis TDC 0.40~0.60 FAIL PREDICT — R1 Governor 감점 주 요인 예상",
+    "Judge R0 AX-005 3rd axis 추가 지시 debate 논점 핵심 — Scout R1 debate 중 반영 필수",
+    "v4 systematic bias +4.5 underestimate 반영하여 mid 68 → actual 70~72 추정",
+    "bear_case BORDERLINE_REVISE 12% 확률 — Q07 cluster pre-measurement 부재 + Governor gap_misaligned 경계",
+    "primary path APPROVE_CONDITIONAL 70% 확률 (4A+1COND 또는 4COND+1R) — MINORITY tag",
+    "Scout 집계 역할만 수행, debaters 참여 금지. R1 5/5 완료 대기."
+  ]
+}

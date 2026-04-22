@@ -1,0 +1,82 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_PRE_DRAFT",
+  "timestamp": "2026-04-18T14:34:00+09:00",
+  "session": 67,
+  "day": 1,
+  "status": "PRE_DRAFT — rev8-A or rev8-B ACTIVATE 후 최종본 확정 → Q-Lead 전달",
+
+  "context_brief_for_q_lead": "STR_1683 direction audit 결과 + rev8 최종 결정 후 즉시 Risk Mgr 3rd round 스폰 지시. rev8-A/B 시나리오별 spawn 분기 prompt 포함.",
+
+  "spawn_instruction_common_template": {
+    "spawn_method": "Agent tool — subagent_type: risk-manager",
+    "initial_message_ref": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json (V1~V5 + H_1682 direction audit addendum)",
+    "session_context": "Session 67 Day 1 late — rev8 ACTIVATE 직후",
+    "2nd_round_carry_forward": "1/4 PASS structural 한계 유지 + STR_1679v2 DROP + Defense 35~40% 결정",
+    "time_budget": "1~1.5일 (2nd round 2~3일 대비 50% 단축)"
+  },
+
+  "rev8_A_scenario_spawn_instruction": {
+    "trigger": "audit 버그 없음 또는 fundamental bug → rev8-A ACTIVATE",
+    "additional_scope_V1_finalized": {
+      "V1_rev8_A": "Defense cluster 33% (rev7_v3_v1 40% 대비 -7pp) tail_risk 영향 — H_1689 23% + H_1690 10% 구성. CRISIS 국면 (MRS 63.1) timing risk 포함"
+    },
+    "key_concerns_for_risk_mgr": [
+      "Defense 축소로 현 CRISIS 방어력 17.5% 감소",
+      "H_1689 단독 23% single-factor concentration",
+      "Scout 신규 Defense 가설 (D1 Q07 sector-neutralization) 성공 확률",
+      "projected SR 1.72 → boost 6건 +0.28~0.41 → 2.00 각 boost correlation 가정 타당성"
+    ],
+    "verdict_format_expected": {
+      "V1_PASS_CONDITIONAL_FAIL": "Defense 33% 권고 여부",
+      "V2_PASS_CONDITIONAL_FAIL": "H_1689 23% over-concentration AX-005 exclusion 확인",
+      "V3_PASS_CONDITIONAL_FAIL": "H_1690 Phase_2 10% 조기 승격 + 10 conditions PASS 의존성",
+      "V4_PASS_CONDITIONAL_FAIL": "Q25 exposure 17.95% headroom 효과",
+      "V5_PASS_CONDITIONAL_FAIL": "projected SR 1.72 + boost robustness",
+      "rev8_option_recommendation": "A / A_with_revisions / fallback_B",
+      "tail_risk_summary": "CVaR 5% / CDaR 10% estimate"
+    }
+  },
+
+  "rev8_B_scenario_spawn_instruction": {
+    "trigger": "audit minor bug + Forge fix + rerun G1~G10 PASS → rev8-B ACTIVATE",
+    "additional_scope_V1_finalized": {
+      "V1_rev8_B": "rev7_v3_v1 composition 유지 + H_1682 conditional activation gate G1~G10 적절성 검증"
+    },
+    "additional_questions_rev8_B_specific": [
+      "G3 stress outperform 2/3 → 4/6 완화가 Defense 기능 희석시키는지",
+      "G5 IC/Return coupling ratio 0.3 기준 적절성 (L-159 후보 반영)",
+      "G10 bad/normal IC ratio 1.5 기준 Defense 충분성",
+      "H_1682 rerun SR 재측정 + 2nd round TDC audit 재검증 (STR_1679v2와 TDC)"
+    ],
+    "verdict_format_expected": {
+      "G1_G10_per_gate_PASS_CONDITIONAL_FAIL": "각 gate 검증",
+      "V2_V5_same_as_rev7_v3_v1": "기존 scope 유지",
+      "rev8_option_recommendation": "B / B_with_tighter_gates / fallback_A"
+    }
+  },
+
+  "post_verdict_governor_actions": [
+    "1. Risk Mgr VERDICT 수신 → rev8 최종본 확정 (필요 시 조정 사항 반영)",
+    "2. rev8 최종본 qepm/mailbox/governor/outbox/PG0_PLAN_rev8.json 발행 (DRAFT 접미사 제거)",
+    "3. Portfolio Policy 갱신 (pm_run 파라미터 업데이트)",
+    "4. Q-Lead에 Phase_1 PG1 Admission 초안 착수 지시 (Task #11 → Phase_1 Day 5~6 목표)",
+    "5. Judge에 L-159 본문 확정 요청 (이미 draft 작성, coordinate 필요)",
+    "6. Scout TODO_NEW_DEFENSE_HYPOTHESIS activate (rev8-A 시 우선순위 상승)",
+    "7. 텔레그램 보고: 🚨 rev8 ACTIVATE + Risk Mgr 3rd round VERDICT 요약"
+  ],
+
+  "telegram_report_template_draft": {
+    "tag_line": "[Governor]",
+    "emoji_context": "🚨 rev8 ACTIVATE",
+    "header": "🚨 [Governor] rev8_{A|B} ACTIVATE — H_1682 {DROP|conditional} 확정",
+    "body_sections": [
+      "📊 Phase_3 composition",
+      "🛡️ Defense cluster {33%|40%}",
+      "📈 projected SR {1.72|1.75} → boost 6건 시 2.00",
+      "⚖️ Risk Mgr 3rd round {PASS|CONDITIONAL|concerns}",
+      "📁 artifacts: PG0_PLAN_rev8_{A|B}.json + L-159 + Scout TODO"
+    ]
+  }
+}

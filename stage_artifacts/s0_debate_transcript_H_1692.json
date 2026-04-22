@@ -1,0 +1,108 @@
+{
+  "hypothesis_id": "H_1692",
+  "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary PRIMARY)",
+  "compiled_at": "2026-04-19T00:32+09:00",
+  "session": "Session 68 Day 1",
+  "r1_total_score": 61,
+  "expected_verdict_r1_only": "BORDERLINE_REVISE (v54 60-69)",
+  "round_1": [
+    {
+      "role": "codex_critic",
+      "score": 6,
+      "key_arguments": [
+        "L-161 KR momentum inverse VALIDATED_HARD_FAIL와 동일 family residualization — parameter relabeling 의심 (STR_1684/H_1688 hard failures close overlap)",
+        "IC ≠ SR/MDD decoupling 교훈(L-125, L-160) 재현 위험 — KOSDAQ turnover/cost drag + policy shock 구간 net SR ≤ 0 + MDD 25~40% 잠재",
+        "PIT risks 4/4 우려: Q1 ex-post selected, Q2 실시간 실행 명세 부재, Q3 exception framing outcome-conditioned, Q4 sd=1.0 full-sample 의존 가능성"
+      ],
+      "concern": "Residualization이 independent alpha isolate한다는 가정 틀릴 시 residual = unstable noise proxy → 30~50% drawdown + negative live SR",
+      "key_conditions": [
+        "expanding-window walk-forward + frozen monthly params (full-sample 금지)",
+        "PIT audit (timestamped industry membership + RSI inputs + T+1 lag)",
+        "stress_icir × weight ≥ -0.05 PASS",
+        "H_1688/H_1682 family 대비 SR/MDD/turnover-adjusted return 초과"
+      ],
+      "verdict_recommendation": "Reject as PRIMARY"
+    },
+    {
+      "role": "risk_manager",
+      "score": 12,
+      "key_arguments": [
+        "M07 stress_icir 0.804/normal 0.466 양호하나 portfolio beta 0.95~1.10은 L-106 market beta 지배 교훈 정면 노출. MRS CRISIS 63.1에서 tail co-movement 완충 부재",
+        "Kill Scenarios 2건: (1) 27년 post-pub momentum crash + KR 2020/2024 급반전 MDD 50%+ (2) expanding OLS beta_t constant 수렴 → M07 standalone 퇴화 = L-161 scale invariance 재발",
+        "TDC 예상 vs STR_1661_V2 0.45~0.65 / vs STR_1631 0.35~0.55 — L-156 Gate 8 <= 0.4 경계~위반. L-115 beta 감소 ≠ 상관 감소"
+      ],
+      "concern": "M18 crisis_ratio 0.855 위기 약화 → 잔차 = M07 원본 수렴. MDD +1~3%p 악화 가능 (현 -21.27% 여유 3.73%p 소진)",
+      "key_conditions": [
+        "compute_tail_risk_suite (EVT xi, CDaR 95%, ES 99%) STR_1631 대비 보고 + MDD 기여 +2%p 이내",
+        "t-copula TDC MLE 실측 (STR_1631, STR_1661_V2) + Gate 8 ≤ 0.4 PASS + 위기 conditional TDC 별도",
+        "expanding OLS beta_t 안정성 (structural break 전후 변화 ≥ 0.05) + rank corr vs M07 standalone < 0.95",
+        "Top 20 월별 HHI > 0.25 비율 < 30%"
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 15,
+      "key_arguments": [
+        "PG0 gap 정합: SR +0.08~0.13 uplift 추정 (10% × diversification √(1-ρ²) 0.85~0.92). Scenario C Core_Secondary 10% slot 확정 + SR 2.0 aspirational 1.75~1.78 conservative 경로 기여 +0.10",
+        "Family saturation PASS: H_1688 DROP 후 momentum 실질 0%. industry_momentum_residual_kr_rsi 미구축 sub-family Explore bucket. 35% cap 여유. 단 STR_1661_V2 TDC 0.35~0.55는 Sequential Admission 필수",
+        "Implementation feasibility + Role honesty PASS 가능성 높음: Top 20 EW + LIQ 2e8 + 15bps 기존 infra. beta 0.95~1.10 + BM corr 0.70~0.85 Core_Secondary 정의 일치. Core/Defense 위장 인센티브 없음"
+      ],
+      "concern": "β_t 낮을 경우 residual ≈ M07 원본 → STR_1679v3 momentum sleeve TDC 0.40~0.55 Core_Secondary gate 0.55 경계 근접. Gate 13 L-164 load_month_factors 경유 preflight mandatory",
+      "key_conditions": [
+        "Gate 13 Factor DB Access Compliance PASS",
+        "Gate 12 IC-Return Coupling coupling_ratio ≥ 0.30",
+        "LOO portfolio SR delta ≥ +0.08 empirical",
+        "TDC vs STR_1661_V2 < 0.55 실측",
+        "Role Honesty Audit PASS + Harvey t > 3.0 + ICIR ≥ 0.20",
+        "AX_CAND_kr_momentum_inverse scope EXCEPTION 공식 인정"
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 13,
+      "key_arguments": [
+        "데이터 품질 PASS (n_months=253/254, sd=1.000 proper, L-164 load_month_factors 경유 설계). Scenario B 수학적 증명으로 Fix 1 전후 ICIR 동일. 단 M07 ic_all=0.01059 낮아 ICIR 0.22~0.35 달성 S1 실측 필수",
+        "KR industry momentum 실증 partial: conditional_ic_matrix M07 ic_all=0.01059 양수이나 L-051(STR_1457 IndMom+Quality Gate Grade F), L-072(STR_1462 IndMom×Consensus Grade F) KR 실패 선례 2건. Grinblatt 1999 exception 이론적 타당하나 한국 실증 강도 불확실",
+        "OLS residualization beta_t 낮을 위험 (s0_record risk #2): M07 vs M18 상관 낮으면 β_t 0.05~0.10 수렴 → 잔차 = M07 원본 거의 동일. RSI residualization 부가가치 ZERO 위험. S1 전 cross-section 상관 사전 측정 의무"
+      ],
+      "concern": "L-051/L-072 KR 실패 선례 반복 가능성 + M07 signal 강도 약함(C19 대비 4.2배 낮음) + residualization incremental 기여 beta_t 의존",
+      "key_conditions": [
+        "S1 전 M07 standalone ICIR 사전 측정",
+        "S1 시 M07 vs M18 cross-section 월별 상관 distribution 기록",
+        "S1 완료 후 M07 standalone vs H_1692 residual ICIR 비교표",
+        "load_month_factors 경유 확인 (L-164)",
+        "S3 STR_1661_V2 portfolio 상관 ≤ 0.55"
+      ],
+      "kr_empirical_check": "partial"
+    },
+    {
+      "role": "academic",
+      "score": 15,
+      "key_arguments": [
+        "Grinblatt-Moskowitz 1999 JF 54(4) peer-review top-tier (citation 수천 건) + 27년 post-pub decay (Chordia-Shivakumar 2002, Hanauer-Huber 2019) 우려. KAIST Shim 2017 + 2024 IAJ 'momentum largely sector-specific in Korea'로 한국 persistence 보존",
+        "Asness-Moskowitz-Pedersen 2013 Korea momentum exception은 **individual cross-sectional** 범위 한정 — industry level은 Shim 2017 + 2024 IAJ 증거로 working. AX_CAND_kr_momentum_inverse scope EXCEPTION academic 지지",
+        "합성 메커니즘 (M07 residualized on M18) 직접 peer-reviewed 선행 부재 — Barberis-Shleifer 2003 Style Investing 근접 지지. s0_record reference_list 박영석·정재만 2017 저자 표기 오류 (실제 심찬보 KAIST 2017 가능성) + 개인 55%/rotation 6~9M 수치 cite 약함"
+      ],
+      "concern": "reference_list 저자 표기 오류 + 합성 residualization 직접 선행 부재 + 개인 55%/rotation 6~9M KRX/KoFIA cite 미기재",
+      "key_conditions": [
+        "reference_list 저자 표기 수정 (심찬보 KAIST 2017 또는 정확 박영석·정재만)",
+        "Barberis-Shleifer 2003 Style Investing 추가",
+        "Hanauer-Huber 2019 또는 2024 IAJ 추가",
+        "개인 55%+rotation 6~9M KRX/KoFIA cite 명시",
+        "Asness 2013 Korea exception industry scope EXCEPTION academic_foundation 통합"
+      ]
+    }
+  ],
+  "key_tensions": [
+    "Codex L-161 family 동일 parameter relabeling 주장 vs Governor/Academic industry momentum sub-family EXCEPTION (Grinblatt 1999 + Shim 2017 + 2024 IAJ)",
+    "Risk Mgr expanding OLS beta_t structural break + TDC 0.65 위반 우려 vs Governor role honesty + Quant data_avail PASS",
+    "Quant L-051/L-072 KR 실패 선례 vs Academic Shim 2017 + 2024 IAJ sector-specific evidence",
+    "Codex PIT risks 4/4 (full-sample 우려) vs Quant sd=1.000 verified + Scenario B scale invariant 수학적 증명"
+  ],
+  "r2_focus_points_for_rebuttal": [
+    "Codex 6점 적정성: L-161이 M01 cross-sectional(distorted sd=0.66)에 한정됨을 다른 4인이 명시적으로 반박 가능",
+    "Risk Mgr TDC 상한 0.65 근거 vs 실측 전 추정 한계",
+    "Quant L-051/L-072 실패 선례가 H_1692 residualization으로 해소되는지",
+    "Academic 박영석·정재만 저자 오류 Scout 수정 필요성"
+  ]
+}

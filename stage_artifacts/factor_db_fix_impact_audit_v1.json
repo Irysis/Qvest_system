@@ -1,0 +1,214 @@
+{
+  "meta": {
+    "audit_version": "v1",
+    "created_at": "2026-04-18 23:13:05",
+    "rebuild_pid": 2748125,
+    "rebuild_cmd": "build_factor_db_monthly(start='2005-01', end='2026-04', force=TRUE)",
+    "fix_description": "v54 re-standardize after winsorize (sd=1 guarantee) in .standardize_factors() + align_factor_direction()"
+  },
+  "pre_fix_distortions": [
+    {
+      "factor": "M08_Residual_Mom",
+      "sd_pre_approx": 0.054,
+      "distortion_pct": 1761,
+      "severity": "CRITICAL"
+    },
+    {
+      "factor": "R12_Idiosyncratic_Risk",
+      "sd_pre_approx": 0.071,
+      "distortion_pct": 1316,
+      "severity": "CRITICAL"
+    },
+    {
+      "factor": "R16_Calmar",
+      "sd_pre_approx": 0.165,
+      "distortion_pct": 529,
+      "severity": "CRITICAL"
+    },
+    {
+      "factor": "Q07_Earnings_Stability",
+      "sd_pre_approx": 0.328,
+      "distortion_pct": 205,
+      "severity": "HIGH"
+    },
+    {
+      "factor": "C19_Composite_Earnings",
+      "sd_pre_approx": 0.354,
+      "distortion_pct": 177,
+      "severity": "HIGH"
+    },
+    {
+      "factor": "V01_BM",
+      "sd_pre_approx": 0.395,
+      "distortion_pct": 176,
+      "severity": "HIGH"
+    },
+    {
+      "factor": "Q25_Ohlson_O",
+      "sd_pre_approx": 0.52,
+      "distortion_pct": 89,
+      "severity": "MEDIUM"
+    },
+    {
+      "factor": "M01_Mom_12_1",
+      "sd_pre_approx": 0.63,
+      "distortion_pct": 52,
+      "severity": "MEDIUM"
+    }
+  ],
+  "post_fix_sd_check": {
+    "M01_Mom_12_1": {
+      "factor": "M01_Mom_12_1",
+      "sd_current": 0.6215,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "M08_Residual_Mom": {
+      "factor": "M08_Residual_Mom",
+      "sd_current": 0.0538,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "Q07_Earnings_Stability": {
+      "factor": "Q07_Earnings_Stability",
+      "sd_current": 0.3281,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "Q25_Ohlson_O": {
+      "factor": "Q25_Ohlson_O",
+      "sd_current": 0.5296,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "V01_BM": {
+      "factor": "V01_BM",
+      "sd_current": 0.3606,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "C19_Composite_Earnings": {
+      "factor": "C19_Composite_Earnings",
+      "sd_current": 0.3609,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "R12_Idiosyncratic_Risk": {
+      "factor": "R12_Idiosyncratic_Risk",
+      "sd_current": 0.071,
+      "sd_target": 1,
+      "fix_verified": false
+    },
+    "R16_Calmar": {
+      "factor": "R16_Calmar",
+      "sd_current": 0.1493,
+      "sd_target": 1,
+      "fix_verified": false
+    }
+  },
+  "icir_post": [
+    {
+      "factor": "C19_Composite_Earnings",
+      "icir": 0.5751,
+      "mean_ic": 0.0444,
+      "n_months": 254
+    },
+    {
+      "factor": "M01_Mom_12_1",
+      "icir": 0.0909,
+      "mean_ic": 0.0141,
+      "n_months": 254
+    },
+    {
+      "factor": "M08_Residual_Mom",
+      "icir": 0.041,
+      "mean_ic": 0.0052,
+      "n_months": 254
+    },
+    {
+      "factor": "Q07_Earnings_Stability",
+      "icir": 0.3817,
+      "mean_ic": 0.0399,
+      "n_months": 163
+    },
+    {
+      "factor": "Q25_Ohlson_O",
+      "icir": 0.3074,
+      "mean_ic": 0.0316,
+      "n_months": 254
+    },
+    {
+      "factor": "R12_Idiosyncratic_Risk",
+      "icir": 0.3707,
+      "mean_ic": 0.0581,
+      "n_months": 254
+    },
+    {
+      "factor": "R16_Calmar",
+      "icir": 0.0091,
+      "mean_ic": 0.0014,
+      "n_months": 254
+    },
+    {
+      "factor": "V01_BM",
+      "icir": 0.1725,
+      "mean_ic": 0.0245,
+      "n_months": 254
+    }
+  ],
+  "strategy_impact_map": [
+    {
+      "strategy": "STR_1631",
+      "factors_used": ["M08_Residual_Mom", "R12_Idiosyncratic_Risk", "R16_Calmar", "Q07_Earnings_Stability", "M01_Mom_12_1"],
+      "n_critical": 3
+    },
+    {
+      "strategy": "STR_1682",
+      "factors_used": ["M08_Residual_Mom", "C19_Composite_Earnings"],
+      "n_critical": 1
+    },
+    {
+      "strategy": "STR_1684",
+      "factors_used": ["M08_Residual_Mom", "M01_Mom_12_1"],
+      "n_critical": 1
+    },
+    {
+      "strategy": "STR_1656",
+      "factors_used": ["R12_Idiosyncratic_Risk", "C19_Composite_Earnings"],
+      "n_critical": 1
+    },
+    {
+      "strategy": "STR_1683",
+      "factors_used": ["R12_Idiosyncratic_Risk", "R16_Calmar", "Q25_Ohlson_O"],
+      "n_critical": 2
+    },
+    {
+      "strategy": "STR_1679v3",
+      "factors_used": "R16_Calmar",
+      "n_critical": 1
+    },
+    {
+      "strategy": "STR_1071",
+      "factors_used": ["Q07_Earnings_Stability", "V01_BM", "M01_Mom_12_1"],
+      "n_critical": 0
+    },
+    {
+      "strategy": "STR_1562",
+      "factors_used": ["Q07_Earnings_Stability", "V01_BM", "M01_Mom_12_1"],
+      "n_critical": 0
+    },
+    {
+      "strategy": "STR_1433",
+      "factors_used": "V01_BM",
+      "n_critical": 0
+    }
+  ],
+  "conclusion": {
+    "fix_in_connector_R": "DONE — align_factor_direction() re-standardize at line 186-189",
+    "fix_in_builder_R": "DONE — .standardize_factors() re-standardize at line 372-379",
+    "build_hash_connector": "DONE — load_month_factors() attaches factor_db_build_hash attr",
+    "build_hash_builder": "DONE — .write_build_hash() called after each save",
+    "rebuild_status": "IN_PROGRESS — PID 2748125, monitor at /tmp/factor_db_rebuild_v54.log",
+    "icir_delta_status": "MEASURED"
+  }
+}

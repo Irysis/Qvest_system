@@ -118,23 +118,8 @@ scan_and_trigger() {
     local role="core_alpha"  # 기본값
     if [ -n "$strategy_dir" ]; then
       role=$(cd "$PROJECT_ROOT" && Rscript --no-save -e "
-        suppressMessages({
-          source('02_Infrastructure/config.R')
-          source('02_Infrastructure/stage_gate_engine.R')
-          library(jsonlite)
-        })
-        strat_dir <- '${strategy_dir}'
-        # S2 artifact
-        s2_path <- list.files(strat_dir, pattern='s2_profile.*\\.json', recursive=TRUE, full.names=TRUE)
-        s2 <- if (length(s2_path) > 0) tryCatch(fromJSON(s2_path[1], simplifyVector=FALSE), error=function(e) list()) else list()
-        # S3 artifact
-        s3_path <- list.files(strat_dir, pattern='s3_orthogonality.*\\.json', recursive=TRUE, full.names=TRUE)
-        s3 <- if (length(s3_path) > 0) tryCatch(fromJSON(s3_path[1], simplifyVector=FALSE), error=function(e) list()) else list()
-        # S4 artifact (DONE_S4 파일 자체)
-        s4 <- tryCatch(fromJSON('${f}', simplifyVector=FALSE), error=function(e) list())
-        # sg_determine_role 호출
-        role <- tryCatch(sg_determine_role(s2, s3, s4), error=function(e) 'core_alpha')
-        cat(role, '\n')
+        suppressMessages(source('02_Infrastructure/R/hook_batch_runner.R'))
+        cat(hook_determine_role('${strategy_dir}', '${f}'), '\n')
       " 2>/dev/null | tail -1 | tr -d '[:space:]')
       [ -z "$role" ] && role="core_alpha"
     fi
@@ -282,44 +267,10 @@ print('F')
     if [ ! -f "$trigger_file" ]; then
       touch "$trigger_file"
       echo "$(date +%H:%M:%S) TRIGGER: PG2 완료 — Axiom distill + gap→Scout ($strategy)" >> "$LOG"
-      cd "$PROJECT_ROOT" && Rscript --no-save -e "
-        suppressMessages({
-          source('02_Infrastructure/config.R')
-          source('02_Infrastructure/axiom_memory_interface.R')
-          source('02_Infrastructure/portfolio_governor.R')
-          library(jsonlite)
-        })
-
-        # 1. Axiom 부분 distill
-        sg_sync_methodology_memory()
-
-        # 2. PG0 gap 갱신
-        gap <- pg0_gap_review('V7_ALLWEATHER_001')
-
-        # 3. Scout에 gap TODO 생성 (PG0→S0 피드백 루프)
-        scout_inbox <- file.path(PROJECT_ROOT, 'qepm/mailbox/scout/inbox')
-        existing <- list.files(scout_inbox, 'TODO_S0_GAP_', full.names = TRUE)
-        if (length(existing) == 0 && length(gap[['sleeve_needs']]) > 0) {
-          todo <- list(
-            task_type = 'S0_gap_directed',
-            sleeve_needs = gap[['sleeve_needs']],
-            gap = gap[['gap']],
-            regime = gap[['regime_state']],
-            instructions = sprintf(
-              'PG2 완료 후 gap 재진단: %s 부족. CAGR %+.1f%%, SR %+.3f, MDD %+.1f%%. %s. 이 gap을 메우는 가설 1건 설계.',
-              paste(gap[['sleeve_needs']], collapse='+'),
-              gap[['gap']][['cagr_gap']] * 100, gap[['gap']][['sharpe_gap']], gap[['gap']][['mdd_gap']] * 100,
-              gap[['regime_state']][['category']]
-            ),
-            created_at = as.character(Sys.time())
-          )
-          ts <- gsub('[- :]', '', as.character(Sys.time()))
-          todo_path <- file.path(scout_inbox, sprintf('TODO_S0_GAP_%s.json', ts))
-          write_json(todo, todo_path, auto_unbox = TRUE, pretty = TRUE)
-          cat(sprintf('[Hook] PG2→S0 피드백: Scout TODO_S0_GAP 생성 (%s)\n', paste(gap[['sleeve_needs']], collapse='+')))
-        }
-        cat('[Axiom] Partial distill + gap update for $strategy\n')
-      " >> "$LOG" 2>&1 &
+      nohup bash -c "cd '$PROJECT_ROOT' && Rscript --no-save -e \"
+        suppressMessages(source('02_Infrastructure/R/hook_batch_runner.R'))
+        hook_pg2_distill_and_gap('$strategy')
+      \"" > "/tmp/pipeline_trigger_pg2_$$.log" 2>&1 &
       triggered=1
     fi
     archive_done "$f"
@@ -340,15 +291,10 @@ print('F')
       fi
       touch "$trigger_file"
       echo "$(date +%H:%M:%S) TRIGGER: Axiom 전체 증류 — PG3 ($strategy)" >> "$LOG"
-      cd "$PROJECT_ROOT" && Rscript -e "
-        source('02_Infrastructure/axiom_memory_interface.R')
-        sg_sync_methodology_memory()
-        tryCatch({
-          source('qepm/R/memory/r7_axiom.R')
-          candidates <- scan_axiom_candidates()
-          cat(sprintf('[Axiom] Full distill: %d candidates for $strategy\n', length(candidates)))
-        }, error = function(e) cat('[Axiom] scan_axiom error:', e\$message, '\n'))
-      " >> "$LOG" 2>&1 &
+      nohup bash -c "cd '$PROJECT_ROOT' && Rscript --no-save -e \"
+        suppressMessages(source('02_Infrastructure/R/hook_batch_runner.R'))
+        hook_pg3_full_distill('$strategy')
+      \"" > "/tmp/pipeline_trigger_pg3_$$.log" 2>&1 &
       triggered=1
     fi
     archive_done "$f"

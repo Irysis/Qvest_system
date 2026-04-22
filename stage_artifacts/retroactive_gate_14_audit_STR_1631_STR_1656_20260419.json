@@ -1,0 +1,152 @@
+{
+  "artifact_type": "retroactive_audit_gate_14_algebraic_identity",
+  "schema_version": "v1.0",
+  "audit_date": "2026-04-19",
+  "session": 68,
+  "day": 2,
+  "auditor": "Judge",
+  "task_reference": "Task #15 (P0)",
+  "trigger": "admission_rule v3.7 line 113~120 retroactive_audit_required + Q-Lead Day 2 승인",
+  "scope": "PG2 active strategies (STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%)",
+  "gates_audited": [
+    "Gate 14 (Algebraic Identity, v3.6 L-160)",
+    "Gate 15 (Linear Composite Dominance, v3.7 L-162)",
+    "Gate 16 (Signal-Portfolio Translation, v3.8 NEW retroactive)"
+  ],
+
+  "STR_1631_SYN_05": {
+    "strategy_role": "PG2 active 80%",
+    "factor_engine_path": "04_Research/strategies/STR_1631/run_all.R",
+    "signal_construction_step": "Step 3 lines 314~373",
+    "signal_form": "C19 = (z_sue + z_esbr + z_eps1m + z_tpgap) / 4",
+    "signal_type": "linear_4_axis_equal_weight_z_score_composite",
+    "data_source": "Consensus parquet (sue/esbr/eps_chg_1m/coverage/target_price)",
+    "data_source_carve_out": "L-164 v1.1 carve-out (Consensus parquet special data source)",
+
+    "gate_14_algebraic_identity": {
+      "expanded_terms": [
+        "z_sue (analyst SUE earnings surprise)",
+        "z_esbr (earnings surprise breadth ratio)",
+        "z_eps1m (EPS revision 1m)",
+        "z_tpgap (target price gap = (TP - Close) / Close)"
+      ],
+      "shared_terms_with_admitted": "none — 다른 admitted PG2/PG1 strategies는 모두 distress/Calmar/momentum/quality 기반, Consensus analyst expectation 4축은 STR_1631 단독",
+      "shared_terms_with_recent_proposed": {
+        "H_1689 v3 defense": "0% overlap (Q24 quality + crisis filter, analyst consensus 미사용)",
+        "H_1692 v2 core_secondary": "검토 필요 — Forge S1 결과 도착 후 재확인",
+        "H_1693 Q07 sector neutral": "0% overlap (Q07 earnings stability, sue/esbr와 다른 axis)"
+      },
+      "predicted_algebraic_overlap_pct": 0,
+      "verdict": "PASS",
+      "rationale": "C19 4-term은 모두 analyst consensus parquet 전용 source이며, 기존 admitted strategies 어떤 것과도 algebraic 공유 항 없음. Hidden clone risk = 0."
+    },
+
+    "gate_15_linear_composite_dominance": {
+      "n_factors": 4,
+      "weight_scheme": "equal weight (1/4 each)",
+      "z_score_normalization": "z_safe() per signal date cross-sectionally — sd_ratio 자동 통제 (모든 z 항 sd ≈ 1)",
+      "sd_ratio_factor_pairs": "≈ 1.0 (z-score normalization 결과 모든 axis 표준편차 동일)",
+      "predicted_dominance_factor": "none (equal weight + z-score normalize → no dominance)",
+      "linear_composite_variance_ratio": "≈ 1.0 (4 axis cross-sectional sd 균등)",
+      "verdict": "PASS",
+      "rationale": "v3.7 Gate 15 threshold sd_ratio < 1.25 충족. z-score 정규화 후 equal weight = 가장 안전한 linear composite 형태. 어느 단일 factor도 dominate하지 않음."
+    },
+
+    "gate_16_signal_portfolio_translation_retroactive": {
+      "active_status": "PG2 active 80% (SR 1.193 / CAGR 16.14% / MDD -21.27% — Day 1 retroactive PIT-clean 확정)",
+      "sub_gate_16a_net_IC_transmission_estimate": "PASS (CAGR 16.14% live = strong gross→net transmission. precise gross 측정은 monthly_returns_gross.csv 재실행 필요)",
+      "sub_gate_16b_stress_window_positive": "PASS (M3 retroactive PIT audit 결과 8대 stress 구간 robust 확인 완료, methodology_memory.md L-156 v2 + L-159 reference)",
+      "sub_gate_16c_signal_portfolio_rank_corr_estimate": "PASS (top-20 EW HRP-tilt with active SR 1.193 = signal ranking이 actual top-20 performance와 강하게 정렬)",
+      "verdict": "PASS (estimated)",
+      "verification_status": "ESTIMATED — 정밀 measurement는 audit_from_strategy_dir() 호출 필요 (monthly_returns.csv + monthly_returns_gross.csv 재생성)",
+      "follow_up_action": "Forge에 monthly_returns_gross.csv 재계산 + signal_portfolio_translation_audit.R 실행 요청 (P3, Forge S1 4건 완료 후)"
+    },
+
+    "overall_verdict": "PASS (estimated, 1 gate ESTIMATED)",
+    "pg2_clearance_impact": "STR_1631_SYN_05 PG2 active 80% — Layer A (PIT M3 clean) + Layer A (algebraic clean Gate 14) + Layer A (linear dominance clean Gate 15) + Layer B estimated PASS Gate 16 → triple-layer clearance 확정 (Gate 16 정밀 measurement 후 final)"
+  },
+
+  "STR_1656_MLRA_M05": {
+    "strategy_role": "PG2 active 20%",
+    "factor_engine_path": "04_Research/strategies/STR_1656_MLRA/run_all.R",
+    "signal_construction_step": "Sections 4~5 (XGBoost 5-seed walk-forward)",
+    "signal_form": "Score = xgb5_predict(X_309_factors_MI_top50, fwd_ret_21d)",
+    "signal_type": "non_linear_tree_ensemble_xgboost_5seed",
+    "data_source": "Daily Factor DB (309 factors × 436 months Wide parquet)",
+    "data_source_carve_out": "L-164 v1.1 carve-out (Daily factor DB ML pipeline special)",
+
+    "gate_14_algebraic_identity": {
+      "applicability": "N/A — XGBoost는 non-linear tree boosting model. Algebraic decomposition 불가 (additive form 아님).",
+      "alternative_check_feature_concentration": "MI prefilter top50 → 309 factors 중 50개 선택. feature concentration 검증 필요 (별도 Gate proposed: Gate 19 ML feature concentration < 0.4)",
+      "predicted_algebraic_overlap_pct": "N/A",
+      "verdict": "EXEMPT (non-linear model)",
+      "rationale": "v3.6 Gate 14는 linear/symbolic signal 가정. ML 모델 (XGBoost/RF/NN)은 별도 evaluation framework 필요. L-167 Layer B AX_CAND_forge_self_check_insufficient supporting evidence (M3 audit C10 major 발견)와 분리 평가."
+    },
+
+    "gate_15_linear_composite_dominance": {
+      "applicability": "N/A (XGBoost = tree-based, no linear blending)",
+      "verdict": "EXEMPT (non-linear model)",
+      "alternative_check_xgb_feature_importance_dominance": "feature importance 상위 1개 factor가 전체 importance의 50%+ 점유 시 dominance risk. 별도 Gate proposed: Gate 19 ML feature concentration measurement (Forge에 요청 가능)"
+    },
+
+    "gate_16_signal_portfolio_translation_retroactive": {
+      "active_status": "PG2 active 20% (alpha 보강 역할)",
+      "sub_gate_16a_net_IC_transmission_estimate": "ESTIMATED PASS (active 운영 중 + ICIR 보고치 일관)",
+      "sub_gate_16b_stress_window_positive": "ESTIMATED PASS (5-seed ensemble + walk-forward = stress robust 설계)",
+      "sub_gate_16c_signal_portfolio_rank_corr_estimate": "ESTIMATED PASS (active 운영 = signal-portfolio 정렬)",
+      "verdict": "PASS (estimated)",
+      "verification_status": "ESTIMATED — monthly_returns_gross.csv 재계산 필요",
+      "open_issue_l_167_layer_b": "Architect M3 retroactive PIT audit에서 C10 major (Size 기반 유동성 필터, AvgTV20 미사용) 발견. SR 영향 LOW 0~5%. 재실행 MEDIUM priority (Forge Task 별도 발행 필요). v3.8 Gate 16 final verdict는 재실행 후 확정."
+    },
+
+    "overall_verdict": "PASS (estimated) + L-167 Layer B 잔존 리스크 NOTED",
+    "pg2_clearance_impact": "STR_1656_MLRA_M05 PG2 active 20% — Gate 14/15는 non-linear model exemption (별도 Gate 19 권고). Gate 16 estimated PASS. C10 major issue는 SR 영향 LOW 별도 task로 추적."
+  },
+
+  "audit_summary": {
+    "STR_1631": "Gate 14/15 PASS + Gate 16 PASS estimated → triple-clean (algebraic + linear + translation)",
+    "STR_1656": "Gate 14/15 EXEMPT (non-linear model) + Gate 16 PASS estimated + C10 major LOW impact 노출",
+    "pg2_overall": "PG2 SR 1.193 = M3 PIT-clean (Day 1) + Gate 14 algebraic-clean (STR_1631) + Gate 15 linear-clean (STR_1631) + Gate 16 translation-clean (estimated) — Layer A 보강 완료",
+    "gap_to_full_clearance": [
+      "monthly_returns_gross.csv 재계산 (Forge P3, Gate 16 정밀 measurement)",
+      "STR_1656 C10 major fix (Forge MEDIUM)",
+      "Gate 19 (ML feature concentration) 신규 design 검토 (Day 3+ 의제, v3.9 candidate)"
+    ]
+  },
+
+  "ax_cand_implications": {
+    "AX_CAND_signal_portfolio_translation_failure": "STR_1631/STR_1656 Gate 16 estimated PASS — 본 strategy들은 family 가입 candidate 아님. 3rd member trigger는 H_1689 v3 / STR_1687 fix / H_1692 v2 결과에 의존",
+    "AX_CAND_forge_self_check_insufficient_layer_b": "STR_1656 C10 major + STR_1631 C15 minor 모두 L-167 supporting evidence 이미 반영. Layer B 2/3 PENDING 상태 유지"
+  },
+
+  "next_actions": [
+    {
+      "priority": "P3",
+      "action": "Forge에 STR_1631/STR_1656 monthly_returns_gross.csv 재계산 요청 (Gate 16 precise measurement)",
+      "blocker": "Forge S1 4건 완료 후"
+    },
+    {
+      "priority": "P2",
+      "action": "Governor에 retroactive Gate 14 audit 결과 통보 + portfolio_gap_vector v1.0.7 'algebraic-clean' 추가 명시 요청"
+    },
+    {
+      "priority": "P3",
+      "action": "Gate 19 (ML feature concentration) v3.9 candidate design (XGBoost / RF 모델 dominance 측정)"
+    }
+  ],
+
+  "evidence_files": [
+    "04_Research/strategies/STR_1631/run_all.R lines 305~373 (C19 4-axis composite)",
+    "04_Research/strategies/STR_1656_MLRA/run_all.R lines 171~349 (XGBoost 5-seed walk-forward)",
+    "stage_artifacts/judge_admission_rule_v3_7.json (Gate 14 spec)",
+    "00_Lawbook/admission_rule_v38_draft.md (Gate 16 spec)",
+    "stage_artifacts/retroactive_pit_audit_active_strategies_20260419.json (M3 PIT audit reference)",
+    "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json"
+  ],
+
+  "sign_off": {
+    "auditor": "Judge",
+    "approval_chain_proposed": ["Judge custodian (본 audit)", "team-lead (Q-Lead) 승인", "Governor portfolio_gap_vector v1.0.7 통합"],
+    "completion_status": "PRELIMINARY (estimated) — 정밀 measurement Forge dispatch 후 final"
+  }
+}

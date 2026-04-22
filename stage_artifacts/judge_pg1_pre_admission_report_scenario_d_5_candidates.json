@@ -1,0 +1,175 @@
+{
+  "report_type": "JUDGE_PG1_PRE_ADMISSION_REPORT",
+  "scope": "rev8-A-revised-v3 Scenario_D — 5 candidates Judge pre-validation",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "target_governor_action": "Task #7 PG1 Admission 심사 — rev8-A-revised-v4 발행 입력 자료",
+  "note": "Task #7 Governor 역할 작업. Judge는 5 candidates 각각의 Gate 0~14 사전 검증 결과를 정리하여 Governor admission 판단에 근거 제공.",
+  "candidates": [
+    {
+      "id": "STR_1687",
+      "hypothesis": "H_1693 Q07 Sector-Neutral Defense",
+      "proposed_weight": "10%",
+      "proposed_role": "Defense",
+      "judge_verdict": "HARD_REJECT",
+      "judge_status": "L-166 ANTI-PATTERN 확정 + AX-007 scope 내 + restart_block 활성",
+      "evidence": {
+        "hurdle_result": "MDD 58.67% / SR 0.565 / CAGR 12.81% / Worst 6M -49.9% / MaxConsecNegAlpha 8",
+        "gate_failures": ["Gate 3 hard_fail", "Gate 7 IC-Return coupling poison_pill", "Gate 12 L-163 MANDATORY", "Gate 13 signal-portfolio translation", "Gate 8 AX-001 v2 audit_defense_v2 전수 FAIL"],
+        "family_role": "AX_CAND_signal_portfolio_translation_failure 3rd member"
+      },
+      "pg1_recommendation": "DROP from Scenario_D — weight 10% 완전 제거. Defense cluster 할당은 STR_1679v3(8%) + STR_1656(14%) 등 다른 sleeve에 재분배",
+      "governor_action_required": "rev8-A-revised-v4에서 STR_1687 slot 삭제 + 10% 재분배 plan 명시"
+    },
+    {
+      "id": "H_1689_v3_variant_1",
+      "hypothesis": "Gap Killer v3 variant_1 (Q01+Q04+Q25, Q07 없음)",
+      "proposed_weight": "23%",
+      "proposed_role": "Core Alpha (최대 gap killer +0.20 SR)",
+      "judge_verdict": "PENDING (Forge S1 미실행, Task #3 in_progress)",
+      "judge_status": "S6 진입 전. hurdle_result.json 미존재",
+      "pre_admission_risk_flags": [
+        {
+          "flag": "HIGH_WEIGHT_RISK",
+          "detail": "23% concentration은 portfolio 단일 slot 최대치. Gate 11 Sequential TDC<0.30 vs STR_1631(18%)+STR_1656(14%) 필수. 미충족 시 concentration risk 폭증"
+        },
+        {
+          "flag": "AX_CAND_SCOPE_EXAMINATION",
+          "detail": "Q01+Q04+Q25 3-factor composite — AX-007 scope(defense_or_core_secondary_single_sleeve) 해당 여부 사전 판정 필요. Core Alpha claim이라면 AX-007 scope 밖이나 Gate 13 signal-portfolio translation 별도 측정 의무"
+        },
+        {
+          "flag": "CODEX_MANDATORY",
+          "detail": "L-167 mandatory Codex rescue flag 필수 (Forge self-check insufficient 방지)"
+        },
+        {
+          "flag": "L_164_V1_1_LOAD_MONTH_FACTORS",
+          "detail": "Factor DB 경유 의무 (carve-out exception 미해당)"
+        }
+      ],
+      "pg1_recommendation": "CONDITIONAL_HOLD — Forge S1 DONE 후 Judge S6 Gate 0~14 cascade 통과 시에만 admission. 통과 전 Scenario_D 확정 보류",
+      "governor_action_required": "Forge DONE 도착 대기. Judge S6 verdict 확인 후 rev8-A-revised-v4 slot 반영"
+    },
+    {
+      "id": "H_1692_v2",
+      "hypothesis": "Core_Secondary 4 variants (V1 + B1/B2/B3)",
+      "proposed_weight": "10%",
+      "proposed_role": "Core_Secondary",
+      "judge_verdict": "PENDING (Forge S1 미실행, Task #4 in_progress)",
+      "judge_status": "S6 진입 전. 4 variants 중 best 선정 필요",
+      "pre_admission_risk_flags": [
+        {
+          "flag": "AX_007_SCOPE_DIRECT_HIT",
+          "detail": "Core_Secondary role은 AX-007 scope(defense_or_core_secondary_single_sleeve) 직접 해당. 4 variants 모두 multi-axis composite + single sleeve long-only 여부 사전 검증 필수. single sleeve이면 AX-007 restart_block 적용 가능"
+        },
+        {
+          "flag": "VARIANT_SELECTION_BIAS",
+          "detail": "4 variants 중 best 선정은 multiple testing (Harvey t>3.0 상향 조정 필요). 최소 t>3.2 또는 DSR 검증"
+        },
+        {
+          "flag": "CODEX_MANDATORY + L_164_V1_1",
+          "detail": "H_1689 동일 조건 적용"
+        }
+      ],
+      "pg1_recommendation": "CONDITIONAL_HOLD — Forge S1 DONE 후 Judge가 best variant 선정 + Gate 13/14 AX-007 scope 검증. 4/4 fail 시 slot 공석",
+      "governor_action_required": "Forge DONE 후 Judge S6 verdict 확인"
+    },
+    {
+      "id": "STR_1686",
+      "hypothesis": "H_1685 v2 Foreign Resid Diversifier",
+      "proposed_weight": "14%",
+      "proposed_role": "Diversifier",
+      "judge_verdict": "PENDING (Forge S1 재실행 미완료, Task #2 in_progress)",
+      "judge_status": "S6 진입 전. PIT 수정(C2 strict less-than) 완료분 재실행 대기",
+      "pre_admission_risk_flags": [
+        {
+          "flag": "ALGEBRAIC_IDENTITY_RISK (L-160)",
+          "detail": "Foreign Resid는 H_1674 (-z_individual)과 수식 공유 항 발견됨 (L-160 algebraic identity). S0 handoff kit에서 algebraic_overlap 명시 확인 필수. 미명시 시 hidden clone 가능성"
+        },
+        {
+          "flag": "GATE_11_SEQUENTIAL_TDC",
+          "detail": "Diversifier role claim → STR_1631/STR_1656 pairwise TDC<0.30 필수. 측정 후 admission 여부 결정"
+        },
+        {
+          "flag": "ROLE_HONESTY_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY",
+          "detail": "STR_1679v2 pattern 재현 가능성 — overlay 의존 diversifier 위장. Gate 8 audit_diversifier sleeve decomposition 필수"
+        }
+      ],
+      "pg1_recommendation": "CONDITIONAL_HOLD — Forge S1 DONE 후 Judge S6 Gate 0/8/11/13 전수 검증. TDC pass 시에만 admission",
+      "governor_action_required": "Forge DONE 대기. Judge TDC 측정 결과 반영"
+    },
+    {
+      "id": "STR_1679v3",
+      "hypothesis": "Q25 Replacement Defense (v2 DROP 후 Slot A 교체)",
+      "proposed_weight": "8%",
+      "proposed_role": "Diversifier (Session 68 Day 1 Q25≠D25 완전 독립 증명)",
+      "judge_verdict": "PENDING — 전략 폴더 미존재",
+      "judge_status": "STR_1679v3 04_Research/strategies/ 폴더 미생성. Forge 신규 생성 필요",
+      "pre_admission_risk_flags": [
+        {
+          "flag": "IMPLEMENTATION_MISSING",
+          "detail": "전략 코드 자체 미작성. Scout/Forge handoff kit 존재 여부 사전 확인 필요. 없으면 Forge 코드 작성 task 추가 필요"
+        },
+        {
+          "flag": "Q25_VS_D25_INDEPENDENCE_CONFIRMED",
+          "detail": "Day 1 q25_d25_factor_identity_verification_20260419.json 완전 독립 증명 완료 — AX-005 PASS 확정. 이 부분은 clear"
+        },
+        {
+          "flag": "GATE_11_SEQUENTIAL_TDC",
+          "detail": "Diversifier role + Core cluster(STR_1631/STR_1656) 대비 pairwise TDC<0.30 측정 필수"
+        },
+        {
+          "flag": "AX_007_SCOPE_EXAMINATION",
+          "detail": "multi-sleeve blend (STR_1679v2 Core+Def) 내 defense sleeve 교체로 진입 시 AX-007 exclusion clause 2/4(multi-sleeve) 적용. 단, L-166 결과가 sufficient not necessary 경고 — 별도 Gate 8 audit_defense_v2 검증 필수"
+        }
+      ],
+      "pg1_recommendation": "CONDITIONAL_HOLD — Forge 코드 작성 → S1/S2 → Judge S6 전체 파이프라인 필요. Scenario_D 확정 시점 지연 가능",
+      "governor_action_required": "Forge에 STR_1679v3 신규 생성 task 발행 (별도 task 필요 시 Q-Lead에 요청)"
+    }
+  ],
+  "current_aggregated_verdict": {
+    "immediate_drop": ["STR_1687 (L-166 ANTI-PATTERN)"],
+    "conditional_hold_forge_dependent": ["H_1689 v3 variant_1", "H_1692 v2", "STR_1686"],
+    "implementation_missing": ["STR_1679v3"],
+    "ready_for_pg1_admission": 0,
+    "blocked_by_day_2_forge": 3,
+    "blocked_by_implementation": 1,
+    "rejected": 1
+  },
+  "governor_rev8_a_revised_v4_guidance": {
+    "mandatory_changes": [
+      "STR_1687 10% slot DELETE",
+      "10% 재분배 plan 명시 (STR_1679v3 8→10%? Reserve 9→14%? 또는 신규 slot 확장?)",
+      "AX-007 scope violation 자동 차단 rule 추가 (Defense/Core_Secondary single-sleeve long-only top-20 admission 금지)",
+      "Gate 7 IC-Return coupling ratio SR/ICIR>=0.3 Gate Pipeline 의무 명시"
+    ],
+    "conditional_holds": [
+      "H_1689 v3 variant_1 23%, H_1692 v2 10%, STR_1686 14% 모두 Forge DONE + Judge S6 PASS 후 확정",
+      "STR_1679v3 8%는 Forge 신규 생성 task 필요 — 실질 admission 지연 가능"
+    ],
+    "best_case_scenario_d_v4_ready_timing": "Day 4~5 (Forge S1 4건 완료 + Judge S6 cascade 완료 + STR_1679v3 신규 생성)",
+    "worst_case_fallback": "H_1689 v3/H_1692 v2/STR_1686 중 일부 hard_fail 시 Scenario_D 재설계 또는 Reserve 13%+ 확대"
+  },
+  "ax_007_integration_with_pg1": {
+    "new_rule": "PG1 Admission Gate — AX-007 scope violation 자동 차단",
+    "detection_criteria": "role in [defense, core_secondary] AND universe=top20_long_only AND single_sleeve=true AND signal_ICIR>0.3",
+    "required_exclusion_verification": "multi-sleeve blend embedding 입증 또는 long-short structure 또는 50+ 분산 universe",
+    "integration_target": "Governor admission_rule v3.5.3 (v3.5.2 freeze 내 amendment — 하드 블로커 사유: L-166 ANTI-PATTERN + AX-007 promotion)"
+  },
+  "statistical_integrity_notes": {
+    "harvey_t_multi_candidate": "5 candidates 동시 심사는 family-wise error rate 상승. Harvey t>3.0 → t>3.3 (Bonferroni-like correction 5 tests)",
+    "dsr_per_candidate": "각 candidate SR DSR 계산 필수. Alpha lab gate ICIR≥0.20 + 5Y IC 유의성 재확인"
+  },
+  "governor_deliverables": [
+    "rev8-A-revised-v4 JSON 발행 (STR_1687 DROP + 10% 재분배 + AX-007 rule)",
+    "Admission Rule v3.5.3 amendment (AX-007 scope violation 자동 차단)",
+    "STR_1679v3 신규 생성 task Q-Lead 요청",
+    "Forge DONE 대기 후 4건 admission 최종 판정 (Day 4~5)"
+  ],
+  "judge_next_actions": [
+    "Forge DONE 도착 시 즉시 Gate 0~14 cascade 진입 (Task #5 trigger)",
+    "각 candidate Gate 13 signal-portfolio translation + Gate 14 AX_CAND scope 검증",
+    "Governor rev8-A-revised-v4 발행 시 Judge side review 요청 대기"
+  ]
+}

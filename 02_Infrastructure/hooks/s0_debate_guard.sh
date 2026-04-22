@@ -2,10 +2,16 @@
 #==============================================================================
 # s0_debate_guard.sh — PreToolUse[Agent] Hook (방어선 1)
 #
-# S0 Debate를 단일 에이전트가 4역할 시뮬레이션하는 것을 기계적으로 차단.
+# S0 Debate를 단일 에이전트가 다역할 시뮬레이션하는 것을 기계적으로 차단.
+#
+# 허용 구성 (V6 Amendment APPROVED 2026-04-19):
+#   Compact (3인): codex_critic + risk_manager + (judge OR governor)
+#     → QVEST_DEBATE_MODE=compact 환경변수 설정 시 활성화
+#   Full (5인): codex_critic + risk_manager + governor + quant + academic
+#     → 기본값 (QVEST_DEBATE_MODE 미설정 또는 =full)
 #
 # 탐지 패턴:
-#   1. 하나의 Agent 프롬프트에 5인 역할(critic/risk/governor/quant/academic) 중 2+ 동시 포함
+#   1. 하나의 Agent 프롬프트에 역할 2+ 동시 포함 + 채점 지시
 #   2. "각 역할" / "5인 토론" / "5개 관점" 등 시뮬레이션 유도 표현
 #   3. S0 debate 관련 Agent인데 /s0-debate 스킬 미사용 시 경고
 #
@@ -61,28 +67,38 @@ echo "$AGENT_PROMPT" | grep -qiE 'governor|gap.*alignment|family.*saturation|rol
 HAS_SIMULATION_INTENT=0
 echo "$AGENT_PROMPT" | grep -qiE '채점.*rubric|점수.*매기|각각.*평가|독립.*채점|역할.*수행.*(평가|채점)|시뮬레이션|simulate.*roles|역할별.*(20|25)점' && HAS_SIMULATION_INTENT=1
 
+# ─── Compact mode 감지 ───
+DEBATE_MODE="${QVEST_DEBATE_MODE:-full}"
+if [ "$DEBATE_MODE" = "compact" ]; then
+  MIN_DEBATERS=3
+  DEBATER_DESC="3인 Compact (codex_critic + risk_manager + judge|governor)"
+else
+  MIN_DEBATERS=5
+  DEBATER_DESC="5인 Full (codex_critic + risk_manager + governor + quant + academic)"
+fi
+
 if [ "$ROLE_COUNT" -ge 3 ] && [ "$HAS_SIMULATION_INTENT" -eq 1 ]; then
-  REASON="[S0 Debate Guard] 단일 Agent에 ${ROLE_COUNT}개 역할 + 채점 지시가 탐지되었습니다. S0 Debate는 5개 독립 에이전트를 개별 스폰해야 합니다. /s0-debate 스킬을 사용하세요."
-  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD BLOCK: single-agent multi-role ($ROLE_COUNT roles in prompt)" >> "$LOG"
-  # 이중 출력: decision:block (레거시) + hookSpecificOutput (신규)
+  REASON="[S0 Debate Guard] 단일 Agent에 ${ROLE_COUNT}개 역할 + 채점 지시가 탐지되었습니다. S0 Debate는 ${DEBATER_DESC} 독립 에이전트를 개별 스폰해야 합니다. /s0-debate 스킬을 사용하세요."
+  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD BLOCK: single-agent multi-role ($ROLE_COUNT roles, mode=$DEBATE_MODE)" >> "$LOG"
   ESCAPED=$(echo "$REASON" | sed 's/"/\\"/g')
   printf '{"decision":"block","reason":"%s","hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' "$ESCAPED" "$ESCAPED"
   exit 0
 fi
 
 # ─── 탐지 2: 시뮬레이션 유도 표현 ───
-if echo "$AGENT_PROMPT" | grep -qiE '각 역할.*(평가|채점|점수)|[45]인 토론.*시뮬|[45]개 관점.*채점|역할별.*(20|25)점|모든 역할.*수행|1인 [45]역|혼자.*[45]명|[45]명.*역할.*한번에'; then
+if echo "$AGENT_PROMPT" | grep -qiE '각 역할.*(평가|채점|점수)|[345]인 토론.*시뮬|[345]개 관점.*채점|역할별.*(20|25)점|모든 역할.*수행|1인 [345]역|혼자.*[345]명|[345]명.*역할.*한번에'; then
   REASON="[S0 Debate Guard] 단일 Agent에 다인 시뮬레이션 패턴이 탐지되었습니다. S0 Debate 규칙 위반: 각 역할은 독립 에이전트로 스폰해야 합니다. /s0-debate 스킬의 Phase 2를 따르세요."
-  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD BLOCK: simulation pattern detected" >> "$LOG"
+  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD BLOCK: simulation pattern detected (mode=$DEBATE_MODE)" >> "$LOG"
   ESCAPED=$(echo "$REASON" | sed 's/"/\\"/g')
   printf '{"decision":"block","reason":"%s","hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}' "$ESCAPED" "$ESCAPED"
   exit 0
 fi
 
 # ─── 탐지 3: S0 debate Agent인데 역할이 불명확한 경우 경고 ───
-# 하나의 명확한 역할(risk_manager, quant, academic 중 정확히 1개)이 아니면 경고
+# compact 모드: risk_manager / judge / governor / codex_critic 중 1개
+# full 모드: risk_manager / quant / academic / governor / codex_critic 중 1개
 CLEAR_ROLE=0
-echo "$AGENT_PROMPT" | grep -qiE '"role"\s*:\s*"(risk_manager|quant|academic)"' && CLEAR_ROLE=1
+echo "$AGENT_PROMPT" | grep -qiE '"role"\s*:\s*"(risk_manager|quant|academic|judge|governor|codex_critic)"' && CLEAR_ROLE=1
 
 if [ "$CLEAR_ROLE" -eq 0 ] && [ "$ROLE_COUNT" -eq 1 ]; then
   # 1개 역할만 있으면 OK
@@ -90,9 +106,13 @@ if [ "$CLEAR_ROLE" -eq 0 ] && [ "$ROLE_COUNT" -eq 1 ]; then
 fi
 
 if [ "$CLEAR_ROLE" -eq 0 ] && [ "$ROLE_COUNT" -eq 0 ]; then
-  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD WARN: S0 debate agent without clear role" >> "$LOG"
-  # 경고만 (차단은 안 함) -- 정보 부족으로 오탐 방지
-  echo '{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"[S0 Debate Guard] S0 debate Agent에 명확한 역할(risk_manager/quant/academic)이 지정되지 않았습니다. /s0-debate 스킬 Phase 2 준수를 확인하세요."}}'
+  echo "$(date +%H:%M:%S) S0_DEBATE_GUARD WARN: S0 debate agent without clear role (mode=$DEBATE_MODE)" >> "$LOG"
+  if [ "$DEBATE_MODE" = "compact" ]; then
+    ROLE_LIST="risk_manager/judge/governor"
+  else
+    ROLE_LIST="risk_manager/quant/academic/governor"
+  fi
+  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"[S0 Debate Guard] S0 debate Agent에 명확한 역할(${ROLE_LIST})이 지정되지 않았습니다. /s0-debate 스킬 Phase 2 준수를 확인하세요. (mode=${DEBATE_MODE})\"}}"
   exit 0
 fi
 

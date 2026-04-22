@@ -1,0 +1,177 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit for H_1678 debate (STR_1555 v53 Refit Core Alpha stabilization). Session 67 Day 2 P0.",
+  "hypothesis_id": "H_1678",
+  "hypothesis_name": "STR_1555 v53 Refit — Core Alpha Anchor Stabilization (AX-003 정비 + N=20)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T21:15:00+09:00",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1678_STR_1555_v53_refit.json",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P0 Session 67 Day 2 (H_1687 REVISE_PENDING 대체, Diversifier rev7_v3 필요)",
+  "L157_v3_pre_checks_completed": true,
+
+  "one_line_summary": "STR_1555 V14 제거 (AX-003 정비) + N=20 (v53) + overlay 제거 pure signal. 2-factor 0.6·z_C19 + 0.4·z_D01 score blend → Top 20 EW. L-048 원본 SR 1.005 pure + 1.080 overlay precedent 재활용.",
+
+  "L157_v3_pre_empirical_measurements_2026_04_17": {
+    "_note": "L-157 v3 prescription 필수 pre-checks 완료",
+    "algebraic_identity_check": {
+      "formula": "score = 0.6·z_C19 + 0.4·z_D01",
+      "c19_components": ["SUE", "ESBR", "EPS_Chg", "TP_Gap (consensus family)"],
+      "d01_family": "defense low-volatility (idio vol)",
+      "shared_term": "NONE — consensus vs idio vol 완전 orthogonal families",
+      "verdict": "PASS (no algebraic identity)"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_portfolio_rho": "0.55~0.70 (C19 0.6 weight 공유)",
+        "measurement_method": "Forge S1 daily_returns 생성 후 Judge TDC matrix 측정 필수",
+        "l156_gate_8_prediction": "BORDERLINE_FAIL (0.4 threshold 초과 가능)",
+        "mitigation": "D01 cross-channel 완화 효과 40% — S3 실측 필요"
+      },
+      "vs_H_1690_ELEVATED_regime": {
+        "mean": -0.110,
+        "median": -0.120,
+        "interpretation": "near-independent (D01 defense vs H_1690 4-axis balanced). 두 가설 PG2 공존 가능성 높음.",
+        "verdict": "PASS"
+      },
+      "vs_H_1676_residual_consensus": {
+        "predicted": "0.40~0.55 (C19 공유이나 H_1676 잔차화로 완화)",
+        "note": "H_1676 Option A S1 ERR 상태, 실측 대기"
+      },
+      "vs_H_1688_residual_momentum": {
+        "predicted": "0.10~0.25 (momentum family vs consensus+defense, 독립)",
+        "verdict": "PASS"
+      }
+    },
+    "sd_ratio_analysis": {
+      "C19_sd_z_aligned": "~1.0 (Z_Score_Aligned 정규화)",
+      "D01_sd_z_aligned": "~1.0",
+      "ratio": "1:1 (balanced)",
+      "verdict": "PASS (no sd imbalance dominance)"
+    },
+    "linear_dominance_test": {
+      "H_1678_vs_C19_standalone_correlation_median": 0.586,
+      "variance_explained_by_C19": "32% (0.586² × 100)",
+      "L157_threshold_70pct": "NOT EXCEEDED",
+      "verdict": "PASS — C19 0.6 weight가 composite 신호의 32%만 설명, 70% threshold 하회",
+      "interpretation": "D01 추가로 C19 dominance 완화됨. Genuine 2-factor composite 입증."
+    },
+    "variance_explanation_ratio_step_wise": {
+      "step_1_C19_standalone_ICIR_estimate": "0.547 (STR_1631 SR 1.243 precedent)",
+      "step_2_D01_standalone_ICIR_estimate": "0.30~0.40 (L-121 idio vol defense 참고)",
+      "step_3_composite_ICIR_estimate": "0.45~0.55 (L-119 dilution 허용 범위, C19 standalone 대비 drop)",
+      "verdict": "CONDITIONAL PASS — C19 standalone vs composite ICIR drop 10~20% 예상, 실측 필요"
+    }
+  },
+
+  "scout_calibration_adjusted_predictions_L157_v3": {
+    "note": "L-157 v3 prescription: Codex -3, Quant -2, 전체 -5~-8 보정 + linear dominance PASS → 전체 -5 적용",
+    "predicted_total_range_L157_v3": [55, 70],
+    "per_debater": {
+      "codex_critic": [8, 12],
+      "risk_manager": [11, 14],
+      "governor": [13, 16],
+      "quant": [11, 14],
+      "academic": [12, 15]
+    },
+    "verdict_projection": "APPROVE_CONDITIONAL (60-74) 또는 REVISE (40-59)",
+    "most_uncertain_debater": "Governor — C19 공유 집중도 우려(rule 5 45% cap violation)"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1678 STR_1555 v53 Refit. 0.6·z_C19 + 0.4·z_D01 composite Top 20 EW. V14 제거(AX-003 정비) + N=20(v53) + overlay 제거 pure signal. L-048 원본 SR 1.005 pure, 1.080 overlay. 스카우트 pre-check: C19 dominance 32% PASS(L-157 v3), algebraic identity NONE, pairwise H_1690 상관 -0.11 independent.",
+        "L_CODE_FINDINGS": "L-048 STR_1555 원본 DIRECT_RESCUE, AX-003 V14 제거 DIRECT_FIX, L-119 CONDITIONAL_PASS (32% variance C19 dominance 범위 내), L-122 factor risk management (S5 overlay 재도입), L-146 overlay-free S1 pure signal, L-147 formal slate 사전 등록, L-148 C1-C15 수동 검증, L-156 TDC Gate 8 조건부 PASS, L-157 v3 linear dominance PASS, L-158 Gate 8 early warning consensus_tier classification 필수",
+        "FAILED_STRATEGIES": "STR_1555 원본 V14 AX-003 위반 + 30종목 v53 violation. L-119 C19+AC21+CR05 EW blend SR 0.38 Hard Fail. V14 standalone Value Trap L-132.",
+        "HYP_ID": "H_1678"
+      },
+      "expected_attack_vectors": [
+        "Pure 2F SR 0.95~1.15 예상, overlay 제거 시 MDD 50%+ Hard Fail",
+        "V14 기여 +0.004 미미였으나 N=20 축소 + recent 3Y 데이터로 실측 변동 가능",
+        "STR_1631 C19 공유 → Rule 5 consensus 45% cap violation risk (Scout taxonomy v2 Gate 10)",
+        "Harvey t>3.0 gate borderline (pure signal)"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1678. L13 관점 — D01 idio vol defense sleeve의 stress 구간 성능, C19+D01 composite portfolio beta, H_1690 ELEVATED regime 대비 correlation -0.11 독립성, pure signal MDD 50%+ Hard Fail risk.",
+      "expected_attack_vectors": [
+        "D01 IdioVol 정상구간 outperform but CRISIS 구간 underperform 패턴 (factor timing risk)",
+        "Pure signal MDD 50%+ → Hard Fail 45% cap 초과 risk",
+        "S5 overlay 재도입(DD 8/22 + Regime v7.1) 시 tail_risk improvement 예상이나 Slot/Overlay dependence (L-146 3-variant decomposition 필수)"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1678. PG0 gap (SR 0.807) 대응 + consensus family rule 5 (45% cap) 위반 risk + Tier 1 C19_core cap 1건 원칙 (현재 STR_1631 차지). Governor Scout taxonomy v2 신규 rule 적용.",
+      "expected_assessment_vectors": [
+        "C19_core Tier 1 cap 1건 (STR_1631) → H_1678 admission 시 STR_1631 교체 or partial (Scout v2 Rule 1)",
+        "H_1678 stabilize bucket 기존 앵커 refit 긍정 (stabilize 20% target)",
+        "AX-003 정비 기능 긍정 (V14 제거로 AX 준수)",
+        "rev7_v3 Diversifier slot 후보 (H_1687 REVISE 대체)"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1678. Factor DB C19 + D01 가용성 (기구축 확정). Scout pre-check 결과: algebraic NONE, linear dominance 32% PASS, vs H_1690 -0.11 독립, C19 standalone vs composite ICIR drop 10~20% 예상. Harvey t>3 gate 검증 필요.",
+      "expected_fact_check_vectors": [
+        "C19 ICIR 0.547 + D01 ICIR 0.30~0.40 → composite ICIR 0.45~0.55 예상 (실측 필요)",
+        "STR_1631 C19 portfolio-level rho 사전 추정 0.55~0.70 (S3 실측 gate)",
+        "Harvey t 원본 STR_1555 데이터 없음, S1 실측 필수"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1678. Bernard-Thomas 1989 JAR PEAD + Ang et al. 2006 JF IdioVol + Chan-Jegadeesh-Lakonishok 1996 JF Earnings Momentum + Asness-Moskowitz-Pedersen 2013 JF Multi-Factor + Barroso 2015 JFE. peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "expected_support_vectors": [
+        "Bernard-Thomas 1989 + Ang 2006 top-tier 2건",
+        "Chan-Jegadeesh-Lakonishok 1996 + Asness 2013 multi-factor framework foundational 2건",
+        "Barroso 2015 risk-managed (S5 overlay 재도입 근거)",
+        "C19 PEAD 불멸 (L-090 IC 반감기 693개월)"
+      ],
+      "expected_concern_vectors": [
+        "V14 제거 후 2F blend academic precedent 약함 (대부분 3F+)",
+        "한국 direct cite 부재 (STR_1555 empirical only)",
+        "D01 idio vol post-publication decay (Ang 2006 → 2025 19년)"
+      ]
+    }
+  ],
+
+  "pre_debate_scout_risk_assessment": {
+    "bull_case": [
+      "L-048 원본 Grade A 실증 (novelty 10 equivalent)",
+      "Factor DB 2 factor 기구축 + AX-003 정비 (value 제거)",
+      "Scout L-157 v3 pre-check 전수 PASS (algebraic/dominance/sd ratio)",
+      "H_1690 vs 상관 -0.11 독립 (공존 가능)",
+      "stabilize bucket target 20% 기여"
+    ],
+    "bear_case": [
+      "STR_1631 C19 공유 → consensus rule 5 45% cap violation risk",
+      "Pure signal MDD 50%+ Hard Fail risk (overlay 없는 S1)",
+      "C19 standalone vs composite ICIR 10~20% drop (L-119 dilution 일부)",
+      "Harvey t>3 gate borderline (STR_1555 원본 데이터 재확인 필요)"
+    ]
+  },
+
+  "strategic_chain": {
+    "if_approve_or_approve_conditional": "STR_1686 또는 Forge 자동 할당. S1 Forge. STR_1631 교체 vs partial 결정은 Governor PG1 admission 단계.",
+    "if_revise": "Scout Path — (a) Core cap 초과 우려 완화 위해 D01 → D01+Q07 50/25/25 3F composite, (b) H_1690 ELEVATED와 완전 독립성 고려하여 D01 → R16 교체",
+    "if_reject": "STR_1555 v53 refit Session 68+ carry, H_1678 archive"
+  },
+
+  "consensus_tier_classification_L158_required": {
+    "tier": "Tier 1 C19_core (60% weight)",
+    "gate_10_consensus_tier_warning": "Tier 1 Cap 1건 원칙 (Scout taxonomy v2 Rule 1)",
+    "admission_policy": "STR_1631 PG2 20%에서 축소 + H_1678 15% partial 공존 or STR_1631 0% + H_1678 20% 완전 교체"
+  }
+}

@@ -1,0 +1,213 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Scout (initiator) + Governor",
+  "type": "AX_CAND_INFRASTRUCTURE_FAILURES_JUDGE_VERDICT",
+  "timestamp": "2026-04-18T16:30+09:00",
+  "session": 67,
+  "status": "APPROVED_WITH_REFINEMENTS",
+  "scout_proposal_source": "qepm/memory/axioms/review_log/AX_CAND_infrastructure_failures_proposal.json (Scout initiator 16:00)",
+  "q_lead_guidance_source": "2026-04-18T16:20 team-lead message (Category 2 APPROVE / L-160 VALIDATED 유지 + infra_partial tag / 5축 재계산 Judge 권한 / taxonomy 매핑 가이드)",
+
+  "overall_verdict": "APPROVED_WITH_REFINEMENTS",
+  "registration_decision": {
+    "official_registry_entry": "APPROVED — qepm/memory/axioms/review_log/AX_CAND_infrastructure_failures_proposal.json을 공식 AX_CAND registry entry로 등록",
+    "candidate_id_confirmed": "AX_CAND_infrastructure_failures",
+    "status_transition": "CANDIDATE_PROPOSAL_SCOUT_INITIATED → **JUDGE_APPROVED_PENDING_5_AXIS_PROMOTION**",
+    "parent_axiom": "AX-002 (프로세스 우회 = 판단의 미래참조) — infrastructure failure는 AX-002의 system-integrity specific subset",
+    "sibling_AX_CAND": "AX_CAND_spec_transmission_failure (L-159, process layer) — complementary 2-category taxonomy 확립"
+  },
+
+  "judge_6_coordinate_responses": {
+    "coordinate_1_official_registry_registration": {
+      "decision": "APPROVE",
+      "rationale": "Scout proposal 구조 sound. 2-category taxonomy (process vs infrastructure) 정당성 확증. Parent-sibling 관계 명시 + AX-002 specific subset 위치 명확.",
+      "action": "AX_CAND_infrastructure_failures_proposal.json을 active registry entry로 승격. 2026Q3 review target 유지."
+    },
+    "coordinate_2_L_161_architect_rc_direct_quotation": {
+      "decision": "ALREADY_COMPLETED_16_10",
+      "rationale": "L-161 본문 16:10 업데이트로 Scout 3종 + Architect RC1/RC2/RC3 수렴 구조 반영 완료. methodology_memory.md line 1120~1126 확인 완료.",
+      "action_if_further_strengthening_needed": "Architect FACTOR_DB_ZSCORE_DIAGNOSIS.json 전체 원문 link 추가 가능 (현재 RC1/RC2/RC3 요약 수준)"
+    },
+    "coordinate_3_L_160_reclassification_review": {
+      "decision": "Q-Lead 권고 수용 — VALIDATED_HARD_FAIL 유지 + infrastructure_partial tag 추가",
+      "rationale": "Q-Lead 판단 정확: L-160 IC-Return decoupling은 **strategy-level structural** (factor quality IC 0.22 validated + portfolio quality 4-variant Hard Fail). Infrastructure는 secondary 요소 (direction alignment 부분 관여). Primary category 유지 + tag로 infrastructure 연계 표시.",
+      "taxonomy_tag_added": "L-160 태그에 'INFRASTRUCTURE_PARTIAL' tag 추가 권고. methodology_memory.md L-160 본문 수정 불필요 (태그 수준 조정만)",
+      "scout_recommendation_refined": "Scout 초안 '소속 재분류 검토' 권고 중 '완전 이동'은 reject, 'tag 추가'는 accept."
+    },
+    "coordinate_4_5_axis_official_recalculation": {
+      "decision": "Judge 공식 5축 점수 확정 (Scout 추정 0.52~0.60 참고)",
+      "recalculated_scores": {
+        "I_impact": {
+          "score": 0.75,
+          "evidence": "L-161 해결이 전 전략 광범위 영향 — Fix 1 적용 후 288 factors 전체 가용성 회복. STR_1684_v2 재실행 + H_1688 재검증 unlock. Residualization family 전수 fix 영향 scope.",
+          "scout_estimate": 0.75,
+          "judge_final": 0.75,
+          "alignment": "identical"
+        },
+        "R_robustness": {
+          "score": 0.80,
+          "evidence": "Architect RC1/RC2/RC3 공식 확정 + Scout Hypothesis B 100% validation + Fix 1 empirical 검증 (288 sd=1.0). 재현 조건 명확.",
+          "scout_estimate": 0.85,
+          "judge_final": 0.80,
+          "alignment": "slight_downgrade (persistent fix 미구현 — runtime wrapper만 적용, factor_db_builder.R 원본 수정 대기)"
+        },
+        "F_frequency": {
+          "score": 0.40,
+          "evidence": "L-161 primary (RC1+RC2+RC3 cluster = 1 event 취급 가능, 3 sub-bugs) + L-160 partial tagged. Judge 판정: **1.5 count** (L-161 = 1.0 + L-160 infra_partial = 0.5).",
+          "scout_estimate": 0.40,
+          "judge_final": 0.40,
+          "alignment": "identical",
+          "needed_for_promotion": "3건+ infrastructure bug 축적. 현재 1.5건 → 추가 1.5건+ 필요 (Architect persistent fix + 추가 factor_db_builder audit 발견 시 가속 가능)"
+        },
+        "E_economic_mechanism": {
+          "score": 0.30,
+          "evidence": "infrastructure failure는 경제적 메커니즘 아닌 system integrity. Judge 판정: Scout 0.20은 overly conservative. AX-002 parent (process integrity = 판단의 미래참조)가 economic foundation 제공하므로 0.30 (0.20 → 0.30 upgrade).",
+          "scout_estimate": 0.20,
+          "judge_final": 0.30,
+          "alignment": "judge_upgrade"
+        },
+        "M_measurability": {
+          "score": 0.90,
+          "evidence": "factor Z-score sd cross-check + duplicate value detection + direction verification 자동화. Architect Factor DB builder scan hook 구현 가능. Fix 1 runtime 검증 완료.",
+          "scout_estimate": 0.90,
+          "judge_final": 0.90,
+          "alignment": "identical"
+        }
+      },
+      "total_composite_official": {
+        "judge_5_axis_composite": "(0.75 + 0.80 + 0.40 + 0.30 + 0.90) / 5 = **0.63**",
+        "scout_conservative": 0.52,
+        "scout_optimistic": 0.60,
+        "judge_official_placement": "0.63 — scout optimistic 초과, EXTEND zone (0.70 이하) 유지",
+        "threshold_for_promotion": 0.70,
+        "gap_to_promotion": 0.07,
+        "verdict": "EXTEND 2026Q3 review 공식 확정 — F_frequency blocker 해소가 핵심"
+      }
+    },
+    "coordinate_5_taxonomy_mapping_2x3": {
+      "decision": "Q-Lead 권고 매핑 공식 채택",
+      "mapping_table": {
+        "strategy_vs_system_axis": {
+          "VALIDATED_HARD_FAIL (Judge)": "strategy-level structural (⊥ infrastructure). primary category.",
+          "UNVALIDATED_HARD_FAIL (Judge)": "infra bug 의심 → **infrastructure category 자연 매핑**. Fix 후 재실행으로 resolve",
+          "CONDITIONAL_FAIL (Judge)": "strategy-level 조건부 (⊥ infrastructure). stress/rolling 제약"
+        },
+        "2_category_scout": {
+          "process_transmission": "Scout→Forge handoff 실패 (communication layer). UNVALIDATED 일 수 있으나 process sub-category.",
+          "infrastructure": "data pipeline / registry / alignment 결함 (system layer). UNVALIDATED 일 수 있으나 infrastructure sub-category."
+        },
+        "crossmap_matrix": {
+          "UNVALIDATED ∩ process": "AX_CAND_spec_transmission_failure (L-159)",
+          "UNVALIDATED ∩ infrastructure": "AX_CAND_infrastructure_failures (L-161 primary)",
+          "VALIDATED ∩ infrastructure_partial": "L-160 tagged (strategy primary + infrastructure secondary)",
+          "VALIDATED ∩ strategy_pure": "L-160 primary role",
+          "CONDITIONAL ∩ strategy": "(미래 사례)",
+          "CONDITIONAL ∩ infrastructure": "(매우 드문 edge case, system degradation + hypothesis valid)"
+        },
+        "operational_rule": "Judge S6 판정 시 triage: (1) 먼저 hypothesis 평가 가능성 판단 (VALIDATED vs UNVALIDATED vs CONDITIONAL), (2) UNVALIDATED/VALIDATED_partial 경우 sub-category tagging (process vs infrastructure), (3) AX_CAND 참조로 연결"
+      }
+    },
+    "coordinate_6_q3_review_extend_promote_guideline": {
+      "decision": "EXTEND/PROMOTE pre-judgment criteria 확정",
+      "criteria_table": {
+        "PROMOTE_to_AX_active (score ≥ 0.85)": {
+          "required_conditions": [
+            "F_frequency ≥ 0.70 (3건+ infrastructure bug 축적)",
+            "R_robustness ≥ 0.85 (Architect persistent fix factor_db_builder.R 자체 수정 완료)",
+            "I_impact ≥ 0.85 (Fix 적용 후 광범위 전략 unlock 실증)",
+            "E_economic_mechanism ≥ 0.50 (System Integrity dimension 규정화)"
+          ],
+          "probability_estimate_q3": 0.15
+        },
+        "EXTEND_1_quarter (0.70 ≤ score < 0.85)": {
+          "conditions": "current 0.63 + F_frequency 0.40→0.60 축적 + 일부 R/E 개선",
+          "next_review": "2026-10-17 Q4",
+          "probability_estimate_q3": 0.55,
+          "note": "**Most likely outcome per current trajectory**"
+        },
+        "ARCHIVE_candidate (< 0.70 stagnant)": {
+          "conditions": "F_frequency 정체 (추가 bug 발견 없음) + Architect persistent fix 지연",
+          "consequences": "L-code 유지 + AX 승격 보류 + candidate 번호 free up",
+          "probability_estimate_q3": 0.30
+        }
+      },
+      "acceleration_path_to_promote": [
+        "ET-201 Q-Lead retroactive audit 24h 결과 (2026-04-19) 추가 infra bug 발견 시 F +0.10",
+        "Architect Factor DB builder 전수 audit 결과 (2026Q2) 추가 distortion 발견 시 F +0.10",
+        "Architect persistent fix (factor_db_builder.R 자체 수정) 완료 시 R +0.05",
+        "Judge + Scout 합동 'System Integrity as foundation' rule 확장 문서 발행 시 E +0.10",
+        "STR_1684_v2/1685/1686/H_1689 재실행 성공 시 I +0.05"
+      ]
+    }
+  },
+
+  "refinements_added_by_judge": {
+    "refinement_1_L_160_tag_only_not_reclassify": "L-160 primary category = VALIDATED_HARD_FAIL 유지. INFRASTRUCTURE_PARTIAL tag 추가만 (Q-Lead guidance)",
+    "refinement_2_F_frequency_1_5_counting": "L-161 = 1.0 + L-160 partial = 0.5 → 1.5 count (Scout 1~2건 범위 내 공식화)",
+    "refinement_3_E_economic_upgrade_0_20_to_0_30": "AX-002 parent axiom 연결로 E axis 최소 base 확보 (Scout 0.20은 과도하게 보수적)",
+    "refinement_4_R_robustness_slight_downgrade_0_85_to_0_80": "persistent fix 미구현 (runtime wrapper만) 반영 — Architect factor_db_builder.R 자체 수정 완료 시 0.85 복원 가능",
+    "refinement_5_composite_0_63": "Judge 공식 0.63 (Scout 0.52~0.60 초과, EXTEND 유지)"
+  },
+
+  "migration_of_existing_L_codes_final": {
+    "L-159 STR_1682": {
+      "primary_category": "AX_CAND_spec_transmission_failure (process)",
+      "Judge_3_category": "UNVALIDATED_HARD_FAIL",
+      "tag_on_methodology_memory": "SPEC_REFLECTION_FAILURE 유지",
+      "AX_CAND_linkage": "process sub-category"
+    },
+    "L-160 STR_1683": {
+      "primary_category": "VALIDATED_HARD_FAIL (strategy structural — IC-Return decoupling)",
+      "Judge_3_category": "VALIDATED_HARD_FAIL",
+      "tag_addition_recommended": "INFRASTRUCTURE_PARTIAL (direction alignment 부분 관여)",
+      "AX_CAND_linkage": "primary AX_CAND_defense_ic_return_decoupling + secondary AX_CAND_infrastructure_failures"
+    },
+    "L-161 STR_1684": {
+      "primary_category": "AX_CAND_infrastructure_failures (infrastructure — Factor DB Z_Score + R12/D01 + M08)",
+      "Judge_3_category": "UNVALIDATED_HARD_FAIL (pending STR_1684_v2 재실행)",
+      "tag_on_methodology_memory": "FACTOR_DB_LAYER_INFRA_BUG + RC1_WINSORIZE_RESCALE 등 유지",
+      "AX_CAND_linkage": "infrastructure primary candidate"
+    },
+    "L-162 data_table_bug": {
+      "primary_category": "R infrastructure pattern (별개 sub-category)",
+      "Judge_3_category": "infra_L_code (not hard_fail)",
+      "tag_on_methodology_memory": "R_INFRASTRUCTURE_PATTERN 유지",
+      "AX_CAND_linkage": "AX_CAND_infrastructure_failures의 R-code layer sub-entry (0.5 sub-frequency 기여 가능)"
+    }
+  },
+
+  "evidence_tracking_tasks_judge_owned": [
+    {
+      "task_id": "ET-201 (inherited from Scout)",
+      "description": "Q-Lead retroactive audit 24h 결과 infrastructure bug 발견 평가 + AX_CAND_infrastructure F_frequency 업데이트",
+      "owner": "Q-Lead + Scout monitor + Judge 반영",
+      "target": "2026-04-19 Session 67 Day 2"
+    },
+    {
+      "task_id": "ET-202 (Judge new)",
+      "description": "STR_1684_v2 재실행 Scenario 판정 후 UNVALIDATED → VALIDATED/ARCHIVED 재분류 + AX_CAND_infrastructure F_frequency 영향 업데이트",
+      "owner": "Judge",
+      "target": "STR_1684_v2 결과 수신 직후"
+    },
+    {
+      "task_id": "ET-203 (Judge new)",
+      "description": "Architect persistent fix (factor_db_builder.R 자체 수정) 완료 시 R_robustness 0.80 → 0.85 업데이트",
+      "owner": "Judge + Architect coordinate",
+      "target": "2026Q2"
+    },
+    {
+      "task_id": "ET-204 (Judge new)",
+      "description": "'System Integrity as foundation' rule 확장 문서 발행 (E axis 0.30 → 0.50 upgrade path)",
+      "owner": "Judge + Scout 합동",
+      "target": "2026Q2~Q3"
+    }
+  ],
+
+  "telegram_briefing_note": "Q-Lead 별도 발송 예정. Judge 발행 필요 없음.",
+
+  "judge_signoff": {
+    "agent_id": "judge",
+    "timestamp": "2026-04-18T16:30+09:00",
+    "signoff_note": "Scout initiator proposal + Q-Lead guidance 전수 수용. 6 coordinate 요청 모두 처리 완료. AX_CAND_infrastructure_failures 공식 registry 등록 + 5축 composite 0.63 확정 (EXTEND 2026Q3 most likely). L-159/L-160/L-161/L-162 migration 매핑 완료. 2 Scout category × 3 Judge category crossmap 운영 rule 확립."
+  }
+}

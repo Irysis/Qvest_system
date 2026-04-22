@@ -1,0 +1,40 @@
+{
+  "debate_id": "S0_DEBATE_H_1690",
+  "role": "risk_manager",
+  "round": "R2",
+  "r1_score": 14,
+  "r2_score": 13,
+  "score_change_reason": "Governor R1을 읽고 TDC borderline 3중 공유(vs H_1682 0.50~0.65 / vs H_1688 0.40~0.55 / vs STR_1631 0.35~0.50)가 R1에서 충분히 가중하지 않은 구조적 위험임을 확인. mdd_contribution 축 -0.5 조정: TDC 3중 borderline은 L-156 Gate 8 복수 초과 시 portfolio 차원 marginal contribution이 무효화될 수 있음.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "Gate 14 algebraic PASS 판정에 동의. compute_risk.R 직접 확인 결과 R16=(mean_r*252)/abs(MDD)는 C19·Q07·M08과 입력 변수 완전 분리. Quant R1이 R16 월별 raw value 변동성 과대를 조건으로 식별한 것도 Risk Mgr R1과 독립적으로 일치 — R16 variance dominance 위험이 2인 분석가 공통 확인이므로 S1 winsorization 강화 필요성의 강력한 근거."
+    },
+    {
+      "with": "academic",
+      "point": "M08 및 R16 한국 실증 논문 누락(korea_evidence 2/4)에 동의. 특히 R16 stress_icir 2.655(pct_pos 1.00)는 tail risk 예측 모델 외부 타당성 gap이며 한국 시장 구조(개인 투자자 패닉 매도 + 정책 유동성 공급) 하에서 Calmar 기반 alpha 지속 근거가 미검증 상태. 한국 peer-review 실증 2편 추가 전까지 R16 비중을 CRISIS 최대 35% → 25%로 사전 cap 권고."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "failure chain = REJECT 결론에 반박. STR_1439→H_1677→H_1685→H_1687 각 실패 원인이 구조적으로 다르다: H_1677 parent MISSING(SYS_FAILURE), H_1685 PIT violation, H_1687 M01 0.716 linear dominance. H_1690은 세 원인을 각각 다르게 해소 — (a) Factor DB standalone(H_1677 해소), (b) C1~C15 전수 pre-check(H_1685 해소), (c) 4-axis composite + Gate 15 PASS(H_1687 해소). failure chain 존재 자체를 REJECT 근거로 사용하면 학습 기반 재설계와 원인 없는 반복 실패를 구분 못하는 오류. Codex의 expanding-window 사전 등록 요구는 condition으로는 채택 가능."
+    },
+    {
+      "against": "governor",
+      "point": "vs H_1682 TDC 0.50~0.65를 manageable로 평가한 것에 부분 반박. 이 수치는 L-156 Gate 8 threshold 0.4를 명확히 초과한다. KS-1 시나리오에서 COVID 2020-03형 급락 시 H_1682(Q25+R16)와 H_1690(R16 35% weight) 두 전략이 R16 공유로 동방향 drawdown 발생 — conditional TDC가 평상시 0.5에서 위기 시 0.75+로 급등 가능. Defense cluster 2건 동시 편입 시 portfolio-level concentration risk를 Governor가 과소평가. conditional TDC 실측 의무화 필요."
+    }
+  ],
+
+  "strongest_opposing_argument": "Codex R1의 가장 강력한 반론: regime weight 3-state(35/40/10/15 vs 25/25/25/25 vs 10/15/40/35)가 expanding-window 사전 등록 없이는 full-sample ex-post calibration 의혹을 해소할 수 없다. STR_1439 원본 return-blend에서 역산한 implicit weight와 H_1690 regime weight 간 cosine similarity가 0.75 이상이면 이 weight 선택이 미래참조(C3)에 해당할 수 있다. Risk Mgr은 이를 최강 반론으로 지목하며 S1에서 cosine similarity 측정 의무화를 condition에 추가한다.",
+
+  "conditions_updated": [
+    "R16 conditional TDC 측정 의무: vs H_1682 TDC 평상시 0.50~0.65만 아니라 crisis 구간(6대 급락 40개월) conditional TDC를 t-copula로 실측. conditional TDC > 0.70이면 H_1690 sub D를 R18_Sortino로 교체 또는 H_1682 편입 비중 축소(12% → 8%).",
+    "Regime weight cosine similarity 측정: STR_1439 4 sub-strategy realized return contribution으로 역산한 implicit weight와 H_1690 regime weight 간 cosine similarity 계산. > 0.75이면 weight를 25/25/25/25 EW baseline으로 고정하고 regime별 차별화는 S5 IC-weighted dynamic 전환으로 이관."
+  ],
+
+  "created": "2026-04-17",
+  "created_by": "forge_debate_risk_manager_instance_H_1690_r2"
+}

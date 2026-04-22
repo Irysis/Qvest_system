@@ -1,0 +1,113 @@
+{
+  "schema_version": "v53_ax_p0",
+  "candidate_id": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement_draft": "[방법론 실패 규칙] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 3 supporting cases (L-160 STR_1683 Distress+Calmar Defense IC 0.22 ICIR 1.88, L-161 STR_1684 KR momentum inverse ICIR -0.187 CAPM beta 1.0007, L-165 STR_1685 Multi-Source Defense Anchor ICIR 0.7371~0.9368) 모두 4-variant all Hard Fail (MDD 60-95%, CAGR negative). EXCLUSION: (a) multi-sleeve 내 sleeve 구조 (20종목 이하 sub-sleeve + 전체 multi-sleeve portfolio) scope 밖, (b) long-short structure scope 밖. 범위: market=KR, universe=top-20_long-only, family=defense_or_core_secondary.",
+  "supporting_l_codes": ["L-160", "L-161", "L-165"],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "defense_or_core_secondary (Signal-Portfolio Translation Failure pattern)",
+    "regime": null,
+    "universe": "top-20_long-only",
+    "mode": "concentrated_long_only_20_stock_top_decile_failure_with_strong_signal",
+    "construction_types": [
+      "multi-axis composite defense (STR_1683 L-160 H_1682 Distress+Calmar)",
+      "residualized momentum (STR_1684 L-161 H_1688 baseline)",
+      "4-axis multi-source defense (STR_1685 L-165 H_1690 Q25+R16+Q07+C19)"
+    ],
+    "exclusion": [
+      "multi-sleeve portfolio 내 sub-sleeve 구조 (20종목 이하 sleeve + 전체 multi-sleeve) — scope 밖",
+      "long-short structure (market-neutral, beta-neutral) — scope 밖",
+      "non-defense/non-core_secondary family (diversifier, ML, cash_allocation) — 3 case 추가 축적 필요"
+    ],
+    "tags": ["SIGNAL_PORTFOLIO_TRANSLATION_FAILURE", "ICIR_HIGH_MDD_CATASTROPHIC", "LONG_ONLY_CONCENTRATION_TRAP"]
+  },
+  "evidence_draft": {
+    "independent_l_codes": 3,
+    "l_160_initiator": "STR_1683 H_1682 Distress+Calmar Defense. IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 60/40 MDD 94.66/SR -0.242, V2 50/50 MDD 95.63/SR -0.291, V3 Q25-only MDD 67.27/SR 0.009, V4 R16-only MDD 91.62/SR -0.206 (all Hard Fail).",
+    "l_161_2nd_member": "STR_1684 H_1688 Residual Momentum baseline. ICIR -0.187 (Fix 1 scale invariance 동일 후) + CAPM beta 1.0007 residualization 실패 + KR momentum inverse structural. Hypothesis A Rouwenhorst 1999 + Asness 2013 primary.",
+    "l_165_3rd_member": "STR_1685 H_1690 Multi-Source Defense Anchor. V1 ICIR 0.7371 + V2 ICIR 0.9368 + V3 ICIR 0.7778 positive → V1 MDD 94.69 SR -0.29, V2 MDD 84.70 SR -0.17, V3 MDD 77.21 SR 0.52, V4 MDD 87.66 SR -0.14 (all Grade F).",
+    "independent_strategies": 3,
+    "strategies": ["STR_1683_H_1682_distress_calmar_defense", "STR_1684_H_1688_residual_momentum_baseline", "STR_1685_H_1690_multi_source_defense_anchor"],
+    "effect_direction_consistency": 1.0,
+    "note": "3 supporting L-codes + 3 independent strategies + 3 failures 방향 일관 (all Hard Fail / ICIR high or signal strong + portfolio catastrophic failure). 충분 evidence 누적."
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "STR_1683 H_1682 Distress+Calmar Defense 4 variants — IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 MDD 94.66 SR -0.242, V2 MDD 95.63 SR -0.291, V3 MDD 67.27 SR 0.009, V4 MDD 91.62 SR -0.206 (all Hard Fail)",
+        "result": "reproduced_failure",
+        "effect_retained": 0.90,
+        "mdd": 0.9466,
+        "cagr": "negative",
+        "note": "signal quality 강력함에도 portfolio 수익화 전면 실패. L-160 initiator (original Signal-Portfolio Translation Failure case)."
+      },
+      {
+        "description": "STR_1684 H_1688 Residual Momentum baseline — ICIR -0.187 + CAPM beta 1.0007 → residualization 실패 자체가 KR momentum inverse 구조적 패턴 확인",
+        "result": "reproduced_failure",
+        "effect_retained": 0.85,
+        "note": "L-161 2nd member. Fix 1 scale invariance identity — structural inverse hypothesis empirical 뒷받침."
+      },
+      {
+        "description": "STR_1685 H_1690 Multi-Source Defense Anchor 4 variants — 3/4 variants ICIR > 0.7 positive + V1 MDD 94.69 V2 MDD 84.70 V3 MDD 77.21 V4 MDD 87.66 → all Grade F",
+        "result": "reproduced_failure",
+        "effect_retained": 0.92,
+        "mdd": 0.9469,
+        "cagr": "negative",
+        "note": "L-165 3rd empirical member. 3/4 variants positive ICIR + portfolio MDD > 77% catastrophic failure."
+      }
+    ],
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "3 cases 전부 top-20 long-only concentrated portfolio에서 신호 품질 강력함에도 실패. Multi-sleeve sub-sleeve or long-short structure 시 exception 가능성 존재하나 scope 밖."
+    },
+    "note": "L-160 + L-161 + L-165 = 3 supporting L-codes. 3 independent strategies. 3 empirical cases 누적 완료. AX 공식 승격 trigger 충족 (3/3 TRIGGER)."
+  },
+  "mechanism_draft": {
+    "economic_explanation": "Signal-Portfolio Translation Failure 3요인 가설: (1) Top-20 long-only concentration trap — signal ranking quality는 cross-sectional 전체 universe 기반이나 actual portfolio는 top 20 집중 → sector bias + concentration risk 극단화 + universe outlier 편중. (2) KR market structural vulnerability — 재벌 cluster (삼성/현대/LG/SK) 시총 비중 과다, sector HHI 1800-2200, ETF 유입으로 대형주 프리미엄 강화, momentum reversal 패턴 구조적 (Rouwenhorst 1999 + Asness 2013 KR exception). (3) Signal-specific translation failure — defense family distress/Calmar signals은 ranking quality 있으나 실제 portfolio 편입 시 부실기업 cluster or high-risk outlier 유도 + publication decay. 교훈: strong signal ≠ successful portfolio. IC-to-return transmission failure가 structural pattern. Long-short structure or multi-sleeve sub-sleeve 구조로 회피 가능.",
+    "mechanism_type": "structural_portfolio_translation_failure",
+    "causal_plausibility": "high"
+  },
+  "oos_validation_draft": {
+    "oos_months": "N/A (all 3 strategies S1 complete, Hard Fail pre-S6/OOS)",
+    "oos_effect_vs_is": 0.0,
+    "calculation_method": "3 strategies 전수 Hard Fail (in-sample 단계에서 이미 실패) → OOS extension 불가. 단 translation failure는 in-sample backtest 단계에서 발견되므로 OOS 의존성 없음.",
+    "note": "Translation failure는 in-sample backtest에서 발견 가능한 structural pattern. OOS 검증 불필요 (신호 강도 vs portfolio 성과 불일치가 즉시 관찰)."
+  },
+  "range": {
+    "applicability": "KR (한국시장) top-20 long-only concentrated structure only",
+    "timeframe": "post-2000 (factor DB coverage). KR ETF 유입 가속화 (2020년대) 이후 심화.",
+    "portfolio_size": "top-20 long-only concentrated structure specific (N=20, equal-weight or buffer-zone)",
+    "excluded": "multi-sleeve sub-sleeve structure (AX-001 v2 compliant defense sleeve) + long-short structure"
+  },
+  "expiry": {
+    "next_review": "2026-07-17 (3-month quarterly review)",
+    "trigger_review_if": [
+      "추가 empirical case 3건 이상 축적 시 (현재 3 cases, Defense family 외 non-defense case 축적 시 scope 확장 검토)",
+      "Mitigation pattern 발견 시 (예: sector-neutralization으로 translation failure 회피 empirical 증명)",
+      "Long-short structure exception empirical 증명 case 1건 이상 수집 시 exclusion 재검토"
+    ]
+  },
+  "cluster_members_count": 3,
+  "trigger_status": "3_of_3_TRIGGER_MET (ready for promotion)",
+  "team_lead_5axis_preliminary_assessment": {
+    "I_independence": 0.80,
+    "R_rigor": 1.00,
+    "F_falsification": 0.85,
+    "E_external": 0.70,
+    "M_mechanism": 0.80,
+    "weighted_total_preliminary": 0.83,
+    "methodological_weights": "I=0.15 R=0.20 F=0.30 E=0.15 M=0.20",
+    "computation": "0.15*0.80 + 0.20*1.00 + 0.30*0.85 + 0.15*0.70 + 0.20*0.80 = 0.12 + 0.20 + 0.255 + 0.105 + 0.16 = 0.84 (표시 0.83, rounding 허용)",
+    "threshold_comparison": "AX-003 0.82 + AX-004 0.89 + AX-005 0.89 comparable"
+  },
+  "status": "pending_5axis_promote_to_run",
+  "custodian": "Judge (L-125 concept original, but AX-006 승격 후 Judge 유지) + Governor (pairwise TDC + portfolio admission monitoring)",
+  "created_at": "2026-04-19T13:50+09:00",
+  "created_by": "Governor (team-lead instruction 2026-04-19 13:XX)",
+  "approved_by": "team-lead (2026-04-19 decision 4 APPROVE + custodian decision 3건)",
+  "judge_custodian_verdict": "APPROVE (MEMORY.md 13:05 entry + team-lead 13:XX 수신 transcript)",
+  "supersedes": "CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165 (L-125 명칭 제거, L-161 편입)",
+  "revision_note": "team-lead 정정 수용: (1) L-125 명칭 제거 (Logistic regression 무관), (2) L-161 편입 (STR_1684 KR momentum inverse), (3) 3 supporting L-codes 확정 L-160+L-161+L-165, (4) 3/3 TRIGGER MET 상태, (5) 5축 예비 평가 0.83 (AX-003/AX-004/AX-005 comparable). promote_to_axiom() 실행 준비 완료."
+}

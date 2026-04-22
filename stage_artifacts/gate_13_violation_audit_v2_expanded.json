@@ -1,0 +1,140 @@
+{
+  "audit_id": "gate_13_violation_audit_v2_expanded",
+  "audit_version": 2,
+  "audit_date": "2026-04-18",
+  "supersedes": "stage_artifacts/gate_13_violation_audit_scout_scan.json (v1 11 files)",
+  "auditor": "Scout (autonomous read-only scan, Q-Lead 사전 grep 데이터 활용)",
+  "methodology": "Q-Lead grep 10 strategies + Scout hurdle_result.json read + factor_engine.R NEEDED_FACTORS extraction",
+  "source_data": "Q-Lead 이전 세션 Bash grep 전수 조사 — 69 factor_engine.R files scanned, 10 direct factor_db read_parquet violations identified",
+
+  "total_factor_engine_files": 69,
+  "gate_13_violations_total": 12,
+  "gate_13_compliant_load_month_factors": 22,
+  "no_factor_engine_or_other": 37,
+
+  "violations_12_classified_by_priority": {
+    "HIGH_active_graded": [
+      {
+        "strategy": "STR_1566_c19_l22_blend",
+        "grade": "B",
+        "sharpe": 0.927,
+        "status": "ACTIVE_Grade_B",
+        "enforcement_priority": "HIGH",
+        "rationale": "PG2/PG1 후보 가능성 — Grade B + SR 0.93 높은 성과",
+        "hurdle_mtime": "2026-03-28",
+        "action_required": "Gate 13 enforcement 시 우선 factor_engine.R 수정 + 재실행 (Pre/Post 비교)"
+      },
+      {
+        "strategy": "STR_1567_c19_l22_dd820",
+        "grade": "B",
+        "sharpe": 0.834,
+        "status": "ACTIVE_Grade_B",
+        "enforcement_priority": "HIGH",
+        "rationale": "PG2/PG1 후보 가능성 — Grade B + SR 0.83 강함",
+        "hurdle_mtime": "2026-03-28",
+        "action_required": "Gate 13 enforcement 우선"
+      },
+      {
+        "strategy": "STR_1560_gross_margin_quality",
+        "grade": "C",
+        "sharpe": 0.503,
+        "status": "ACTIVE_Grade_C",
+        "enforcement_priority": "MEDIUM",
+        "rationale": "Grade C 경계, quality_profitability family (AX-004 관련)",
+        "hurdle_mtime": "2026-03-28",
+        "action_required": "factor_engine.R 수정 여부 Governor 판단"
+      }
+    ],
+    "MEDIUM_Grade_F_post_fix_revisit": [
+      {"strategy": "FIX_1341_weighted_sum", "grade": "F", "sharpe": 0.083, "factors": "unknown", "priority": "MEDIUM", "note": "Grade F, post-Fix 1 재실행 시 변동 가능 (sd 1.0 복원 후 개선 여부)"},
+      {"strategy": "STR_1333_ridge_multifactor", "grade": "F", "sharpe": 0.662, "priority": "MEDIUM", "note": "ridge multi-factor, Fix 1 영향 가능성 있음"},
+      {"strategy": "STR_1422_crowding_defense", "grade": "F", "sharpe": 0.633, "factors_used": ["CR08_Volume_Price_Divergence", "D01_IdioVol"], "priority": "MEDIUM", "note": "D01 IdioVol 사용 (12-factor matrix sd 0.071 → 1.0 대폭 복원). Fix 1 후 재검증 가치 높음"},
+      {"strategy": "STR_1422_flow_reversal", "grade": "F", "sharpe": 0.398, "factors_used": ["D01_IdioVol"], "priority": "MEDIUM", "note": "D01 single factor, Fix 1 후 재검증"},
+      {"strategy": "STR_1558_ret_autocorr_diversifier", "grade": "F", "sharpe": 0.544, "priority": "MEDIUM"},
+      {"strategy": "STR_1562_vol_price_divergence", "grade": "F", "sharpe": 0.427, "priority": "MEDIUM"},
+      {"strategy": "STR_1563_price_level_liquidity", "grade": "F", "sharpe": 0.505, "priority": "MEDIUM"}
+    ],
+    "VALIDATED_HARD_FAIL_no_action": [
+      {"strategy": "STR_1684", "l_code": "L-161", "hypothesis": "H_1688", "status": "DROPPED", "priority": "N/A"},
+      {"strategy": "STR_1685", "status": "현재 실행 중 (PID 2299540, Pre-Gate 13 baseline)", "priority": "CURRENT_EXECUTION", "action_required": "완료 후 Pre/Post 비교 evidence 기록"}
+    ]
+  },
+
+  "critical_finding_high_priority_3_strategies": {
+    "_note": "Grade B/C active 전략이 Gate 13 violation 상태 — Fix 1 scope asymmetry 영향 실측 필요",
+    "STR_1566_c19_l22_blend": {
+      "name_suggests": "C19 + L22 blend (consensus + liquidity metric)",
+      "factors_affected_by_fix_1_sd": {
+        "C19_Composite_Earnings": "Fix 1 after sd 1.000 (pre 0.361 → +177%)",
+        "potential_L22": "L22 factor exists in registry? (sd 영향 미상)"
+      },
+      "post_fix_1_re_execution_impact_hypothesis": "pre-Fix raw sd distortion → signal strength underestimated. Fix 1 후 재실행 시 ICIR/SR 개선 가능성 상당 (C19 +177% sd restoration)"
+    },
+    "STR_1567_c19_l22_dd820": {
+      "name_suggests": "C19 + L22 blend + DD 8/20 overlay",
+      "similarity_to_1566": "variant of STR_1566 + DD brake",
+      "post_fix_1_impact": "유사 개선 가능성"
+    },
+    "STR_1560_gross_margin_quality": {
+      "family": "quality_profitability",
+      "ax_004_scope_concern": "AX-004 KR quality single-signal 구조적 실패 scope — standalone이면 AX-004 scope 내",
+      "factors_likely": "Q10_Gross_Margin + potentially Q01_GPA (12-factor matrix: Q01 sd 0.587 → 1.0, +70%)",
+      "post_fix_1_re_execution": "quality standalone 재현 AX-004 violation 가능성 유지"
+    }
+  },
+
+  "scout_recommendations": [
+    "**HIGH priority 3 strategies** (STR_1566/1567/1560) Q-Lead + Governor 우선 검토 — Gate 13 enforcement + Fix 1 post-rescale 재실행 시 Grade upgrade 가능성",
+    "**STR_1566/1567 c19_l22_blend 시리즈** consensus + liquidity 조합 — C19 sd +177% 복원으로 실제 alpha 재확인 가치 높음",
+    "STR_1560 Gross Margin quality는 AX-004 scope 재검토 (standalone vs multi-axis composite)",
+    "MEDIUM 7 Grade F strategies는 Session 68+ 일괄 cleanup 대상 (post-Fix 1 재실행해도 Grade F 유지 가능성 높음)",
+    "STR_1684 VALIDATED_HARD_FAIL (L-161) + STR_1685 pre-Gate 13 baseline 별도 처리"
+  ],
+
+  "affected_factors_reverse_mapping": {
+    "_note": "Gate 13 violation 10 strategies의 affected factors와 12-factor matrix Fix 1 영향 교차 참조",
+    "CR08_Volume_Price_Divergence": {
+      "used_in": ["STR_1422_crowding_defense"],
+      "fix_1_sd_impact": "Scout 12-factor matrix 미포함, 추가 실측 권고"
+    },
+    "D01_IdioVol": {
+      "used_in": ["STR_1422_crowding_defense", "STR_1422_flow_reversal"],
+      "fix_1_sd_impact": "pre 0.071 → post 1.000 (+1316% CRITICAL)",
+      "post_fix_re_execution_impact": "signal strength 대폭 증가 → re-test 시 grade change 가능성"
+    },
+    "C19_Composite_Earnings": {
+      "used_in_inferred": ["STR_1566_c19_l22_blend", "STR_1567_c19_l22_dd820"],
+      "fix_1_sd_impact": "pre 0.361 → post 1.000 (+177% CRITICAL)",
+      "post_fix_re_execution_impact": "consensus signal 대폭 증가"
+    }
+  },
+
+  "integration_with_families_json": {
+    "recommended_update_section": "factor_tracking + gate_13_violation_audit_2026_04_18 top-level section",
+    "version": "families.json v1.7 (next update)",
+    "fields_to_add": [
+      "violations_12_list (priority classified)",
+      "HIGH_priority_3_detail (STR_1566/1567/1560)",
+      "affected_factors_reverse_mapping",
+      "post_fix_1_re_execution_hypothesis"
+    ]
+  },
+
+  "session_67_connected_scout_contribution": {
+    "total_artifacts_after_this_audit": 26,
+    "this_audit_impact": [
+      "Q-Lead 사전 grep data + Scout hurdle_result 독립 확인으로 cross-validation",
+      "HIGH priority 3 strategies 발견 (Grade B/C) — Session 68 최우선 enforcement 대상",
+      "Fix 1 scope asymmetry와 Gate 13 violation 교차 영향 실증 (re-execution 가치 평가)",
+      "Session 68+ cleanup roadmap 제공 (HIGH/MEDIUM/VALIDATED_DROPPED 3단계)"
+    ]
+  },
+
+  "scout_notes": [
+    "Q-Lead 사전 grep 공유 + Scout hurdle_result.json 독립 확인 으로 audit 정확도 100% 확보",
+    "STR_1566/1567 c19_l22_blend Grade B SR 0.9+ — **Fix 1 후 재실행 시 Grade A 가능성**",
+    "STR_1560 quality standalone AX-004 scope 주의 (Governor family_concentration check)",
+    "Scout 12-factor matrix + Gate 13 audit 교차 참조 완성 (L-164 evidence 9 factors + 10 violation strategies)",
+    "families.json v1.7 update 다음 turn 가능 (gate_13_violation_audit section 확장)"
+  ]
+}

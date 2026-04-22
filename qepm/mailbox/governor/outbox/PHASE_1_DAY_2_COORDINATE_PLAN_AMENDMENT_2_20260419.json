@@ -1,0 +1,260 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Forge + Scout + Risk_Manager",
+  "type": "PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_2",
+  "timestamp": "2026-04-19T02:00+09:00",
+  "session": 68,
+  "day": 1,
+  "continuous_session_day_2_entry": true,
+  "version": "v1.0_amendment_2",
+  "amends": "PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1_20260419.json (01:30)",
+  "status": "AMENDMENT 2 — H_1692 BORDERLINE_REVISE (65점) 반영 + Scenario C 10% slot 공백 plan + Option A 채택",
+  "amendment_type": "internal_coordinate_amendment (NOT new rev, NOT new admission rule)",
+  "v54_freeze_compliance": "PASS (amendment of existing coordinate plan, no new rev/rule)",
+
+  "reference_files": {
+    "h_1692_verdict": "stage_artifacts/S0_VERDICT_H_1692.json (2026-04-19T00:36 BORDERLINE_REVISE 65점)",
+    "amended_base_amendment_1": "qepm/mailbox/governor/outbox/PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1_20260419.json",
+    "risk_mgr_3rd_round_verdict": "qepm/mailbox/risk_manager/outbox/risk_mgr_3rd_round_verdict_20260419.json",
+    "amendment_final": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_FINAL_20260419.json"
+  },
+
+  "h_1692_borderline_revise_details": {
+    "verdict_type": "BORDERLINE_REVISE (v54 threshold 60-69)",
+    "total_score": 65,
+    "breakdown": {
+      "codex_critic": 8,
+      "risk_manager": 13,
+      "governor": 15,
+      "quant": 14,
+      "academic": 15
+    },
+    "approve_conditional_threshold": 70,
+    "shortfall": 5,
+    "downstream_impact_explicit": [
+      "Forge TODO_S1_H_1692 생성 금지 (admission NOT_GRANTED)",
+      "rev8-A-revised-v2 Scenario C Core_Secondary 10% slot 편입 불가",
+      "Phase_1 Day 4 admission H_1692 제외 plan 필요"
+    ],
+    "recovery_path": "Scout H_1692_v2 재설계 → re-debate → APPROVE_CONDITIONAL(70+) 시 10% 복원"
+  },
+
+  "scenario_c_slot_adjustment_option_a_selected": {
+    "selected_option": "OPTION_A",
+    "rationale_for_a_over_b_c": [
+      "Option A 권장 이유: (1) Core_Secondary 기능 공백 단기 tolerance (2) Reserve 확대로 유동성 확보 → Defense 실제 편입 후 재배분 여지 (3) H_1692_v2 재debate 기한 내 복원 가능성 보존",
+      "Option B 거부 이유: STR_1631 18%→28% 상향은 post-fix 결과 양호 시에만 고려 가능. 현재 Scenario A 40% 확률에서 STR_1631 증대는 portfolio risk 증가.",
+      "Option C 거부 이유: STR_1679v3 8%→18% 상향은 TDC 0.52 BREACH (STR_1631과) 구조적 persistent. 10pp 증대는 TDC 악화 + L-153 overlay dependency 미해결 상태에서 risk 증대."
+    ],
+    "revised_composition_amendment_2": {
+      "STR_1631_Core_Primary": 0.18,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1": 0.08,
+      "H_1689_Defense_Q24_exclude": 0.23,
+      "H_1690_Defense": 0.10,
+      "H_1692_Core_Secondary_VACANCY": 0.00,
+      "Reserve_expanded": 0.19,
+      "misc_allocation": 0.08,
+      "total": 1.00,
+      "note": "Reserve 9%+10% = 19% 임시 holding"
+    },
+    "defense_cluster_retained": {
+      "weight": 0.33,
+      "cap_margin": 0.02,
+      "status": "PASS"
+    },
+    "family_saturation_compliance": "ALL within 35% cap",
+    "liquidity_benefit": "Reserve 19% → 하드 블로커 (e.g., STR_1631 Scenario A 발동 시) 대응 유동성 확보"
+  },
+
+  "sr_projection_revised_further": {
+    "previous_amendment_1": {
+      "conservative": "1.55-1.75",
+      "aspirational": "1.85-2.00",
+      "weighted_expected": 1.58
+    },
+    "amendment_2_h_1692_vacancy_impact": {
+      "h_1692_expected_contribution_lost": "+0.10 SR (Core_Secondary 분산 효과)",
+      "reserve_19pct_drag": "-0.03 to -0.05 SR (cash opportunity cost)",
+      "net_delta_estimated": "-0.10 to -0.15 SR"
+    },
+    "revised_projection_amendment_2": {
+      "conservative": "**1.45-1.65**",
+      "aspirational": "**1.75-1.90**",
+      "weighted_expected": "**1.48-1.53** (team-lead 추정 채택)",
+      "methodology": "0.40×1.25 + 0.35×1.55 + 0.25×1.75 = 0.50+0.54+0.44 = 1.48"
+    },
+    "freeze_release_margin_impact": {
+      "previous_margin_vs_1_5_threshold": "+0.08 (1.58 - 1.50)",
+      "revised_margin_vs_1_5_threshold": "-0.02 to +0.03 (1.48~1.53 - 1.50)",
+      "freeze_release_probability_revised": "50% (MEDIUM, previous 60% MEDIUM-HIGH)",
+      "interpretation": "margin 축소로 Scenario B/C 의존도 증가. Scenario A 40% 발동 시 freeze 해제 미달 가능성 50%까지 상승."
+    },
+    "recovery_path_for_freeze_release": {
+      "h_1692_v2_re_debate_approve_scenario": {
+        "trigger": "Scout H_1692_v2 재debate APPROVE (70+) 시 10% 복원",
+        "sr_recovery": "1.48-1.53 → 1.55-1.70 복원",
+        "freeze_release_probability_recovered": "60-65% MEDIUM-HIGH"
+      },
+      "str_1631_scenario_b_c_materialize": {
+        "trigger": "post-rebuild STR_1631 Scenario B(35%) 또는 C(25%) 발동",
+        "sr_recovery": "Scenario B 1.55-1.70 / C 1.75-1.95",
+        "interpretation": "Scenario A 40% 회피 시 H_1692 부재에도 freeze 해제 가능"
+      }
+    }
+  },
+
+  "day_4_admission_plan_h_1692_excluded": {
+    "day_4_2026_04_21_revised": {
+      "composition_changes_scenario_B_default": {
+        "STR_1631_SYN_05": "0.60 → 0.40 (-20pp, Scenario B만)",
+        "cash_reserve": "0.24 → 0.19 (-5pp, H_1692 10% 공백 + H_1689 10% 신규로 재조정)",
+        "H_1689_Defense_new": "0.00 → 0.10 (+10pp 신규)",
+        "H_1692_Core_Secondary_NOT_ADMITTED": "H_1692 공백 유지 (VERDICT 65 미달)",
+        "Reserve_phase": "0.19 유지"
+      },
+      "composition_end_of_day_4_scenario_B": {
+        "STR_1631_SYN_05": 0.40,
+        "STR_1656_MLRA_M05": 0.16,
+        "H_1689_Defense": 0.10,
+        "cash_reserve": 0.19,
+        "unallocated": 0.15,
+        "total": 1.00,
+        "note": "unallocated 15%는 Day 5 H_1690 + STR_1679v3 + misc 편입 대기"
+      },
+      "admission_gates_mandatory": "Gate 11/12/13 triple check (H_1689 only, H_1692 excluded)"
+    },
+    "day_5_2026_04_22_final_h_1692_absent": {
+      "composition_final_h_1692_vacancy": {
+        "STR_1631_SYN_05": 0.18,
+        "STR_1656_MLRA_M05": 0.14,
+        "STR_1679v3_Div_1": 0.08,
+        "H_1689_Defense": 0.23,
+        "H_1690_Defense": 0.10,
+        "H_1692_Core_Secondary_VACANCY": 0.00,
+        "Reserve": 0.19,
+        "misc_allocation": 0.08,
+        "total": 1.00,
+        "defense_cluster": 0.33,
+        "family_saturation_compliance": "PASS"
+      },
+      "h_1692_v2_recovery_target": "H_1692_v2 APPROVE 시 Reserve 19% → 9% + H_1692 10% 편입 (Day 5+ 복원)"
+    }
+  },
+
+  "critical_blockers_status_compounded": {
+    "blocker_1_factor_db_rebuild_failure": "진행 중 (Forge v4 재시작, eta 03:00~09:00)",
+    "blocker_2_str_1631_critical_factor_exposure": "Scenario A 40% 확률",
+    "blocker_3_forge_s1_dependencies": {
+      "h_1689_q24_exclude_3_axis_s1": "REQUIRED (Gate 11/12/13 mandatory)",
+      "h_1690_4_variant_s1": "REQUIRED (CRITICAL tier, post-rebuild re-execution)",
+      "h_1692_s1": "**EXCLUDED** (VERDICT 65 미달, H_1692_v2 재debate 경로)"
+    },
+    "blocker_4_new_h_1692_vacancy": {
+      "severity": "MEDIUM",
+      "impact": "Core_Secondary 기능 공백 → SR -0.10-0.15 하향",
+      "recovery_timeline": "H_1692_v2 재설계 + 재debate (Scout 진행 여부 team-lead 알림 대기)",
+      "mitigation": "Reserve 19% 확대 + Scenario B/C 의존"
+    }
+  },
+
+  "risk_mgr_amendment_template_update_required": {
+    "target_file": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_FINAL_20260419.json (01:50)",
+    "update_items": [
+      "H_1692 Core_Secondary 현재 미편입 반영",
+      "composition_day_6_live_target에서 H_1692 10% → Reserve 19% 변경",
+      "SR projection 1.48-1.53 하향 수정",
+      "admission_rule v3.5.1 signoff amendment에 H_1692 vacancy 상태 명시"
+    ],
+    "update_approach": "추가 파일 발행 대신 Amendment 2 내에 병기 (redundant file 생성 방지)"
+  },
+
+  "judge_verification_scope_adjustment": {
+    "h_1692_excluded_from_s6_cascade": "Judge S6 검증 대상 H_1692 제외 (VERDICT 65 BORDERLINE_REVISE로 종료)",
+    "remaining_s6_targets": [
+      "H_1689 v3 Q24-exclude 3-axis (Gate 11/12/13 mandatory + L-163 poison_pill auto-check)",
+      "H_1690 4-variant (Gate 11/12/13 mandatory + CRITICAL tier post-rebuild)",
+      "STR_1679v3 physical sleeve (Role Honesty Audit L-153)"
+    ],
+    "judge_action_required": "S6 cascade scope H_1689 + H_1690 + STR_1679v3 3건으로 재조정"
+  },
+
+  "ax_cand_kr_momentum_inverse_scope_exception_maintained": {
+    "context": "H_1692 VERDICT 65는 가설 설계 품질 문제, AX_CAND exception은 유효",
+    "h_1692_v2_re_debate_scope": "AX_CAND exception 적용 가능 (team-lead 지시)",
+    "scout_redesign_guidance": "Codex Critic 8점 및 Risk Mgr 13점 반영한 설계 개선 필요 — 구체적 feedback 수용"
+  },
+
+  "governor_actions_amendment_2_completed": [
+    "1. H_1692 BORDERLINE_REVISE 수용 (admission NOT_GRANTED 인지)",
+    "2. Scenario C slot 공백 Option A 채택 (Reserve 9% → 19%)",
+    "3. SR projection 1.58 → 1.48-1.53 하향 공식화",
+    "4. Freeze 해제 probability 60% → 50% MEDIUM 조정",
+    "5. Day 4/5 admission plan H_1692 제외 재작성",
+    "6. Judge S6 cascade scope H_1689/H_1690/STR_1679v3 3건으로 축소",
+    "7. Judge Risk Mgr cross-check 재조정"
+  ],
+
+  "trigger_driven_standby_amendment_2": [
+    "Forge rebuild 재시작 완료 (eta 03:00~04:30)",
+    "Forge rebuild 실제 완료 (eta 06:00~09:00)",
+    "Post-rebuild Scout S2 re-profile CRITICAL tier (STR_1631 + H_1690)",
+    "Judge S6 cascade (H_1689 + H_1690 + STR_1679v3 — H_1692 제외)",
+    "STR_1631 Harvey t>3.0 re-verification",
+    "factor_db_fix_impact_audit_v2",
+    "CVaR threshold revision user approval (아침)",
+    "**NEW**: Scout H_1692_v2 재debate 진행 여부 team-lead 알림",
+    "**NEW**: H_1692_v2 APPROVE 시 Reserve 19% → 9% + H_1692 10% 복원 plan"
+  ],
+
+  "composition_day_6_live_target_revised_final": {
+    "scenario_B_C_60_percent_h_1692_absent_default": {
+      "STR_1631_Core_Primary": 0.18,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1": 0.08,
+      "H_1689_Defense_Q24_exclude": 0.23,
+      "H_1690_Defense": 0.10,
+      "H_1692_Core_Secondary_VACANT": 0.00,
+      "Reserve": 0.19,
+      "misc": 0.08,
+      "total": 1.00,
+      "defense_cluster": 0.33,
+      "family_saturation_max": "Defense 33% (margin 2pp)"
+    },
+    "scenario_B_C_60_percent_h_1692_recovered_target": {
+      "description": "H_1692_v2 APPROVE 시 복원 composition",
+      "STR_1631_Core_Primary": 0.18,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1": 0.08,
+      "H_1689_Defense_Q24_exclude": 0.23,
+      "H_1690_Defense": 0.10,
+      "H_1692_v2_Core_Secondary": 0.10,
+      "Reserve": 0.09,
+      "misc": 0.08,
+      "total": 1.00,
+      "sr_projection_recovered": "1.55-1.70 conservative"
+    }
+  },
+
+  "v54_freeze_compliance_amendment_2": {
+    "file_type": "coordinate_plan_amendment_2 (NOT new rev)",
+    "admission_rule_change": "NONE (v3.5.1 유지, CVaR revision 여전히 pending)",
+    "governor_rev_change": "NONE (rev8-A-revised_v2 Scenario C composition amendment, structure 유지)",
+    "new_hooks_or_rules": "NONE",
+    "freeze_violation_check": "PASS"
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "47 files (Amendment FINAL)",
+    "current": "**48 files** (본 Amendment 2)",
+    "session_68_day_1_governor_actions": 6,
+    "actions_list": [
+      "1. PHASE_1_DAY_2_COORDINATE_PLAN (00:10)",
+      "2. STR_1631_POST_REBUILD_SENSITIVITY_ANALYSIS (00:25)",
+      "3. RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_TEMPLATE (00:45)",
+      "4. PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1 (01:30)",
+      "5. RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_FINAL (01:50)",
+      "6. PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_2 (02:00)"
+    ]
+  }
+}

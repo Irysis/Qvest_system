@@ -1,0 +1,327 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Forge + Scout + Risk_Manager",
+  "type": "PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1",
+  "timestamp": "2026-04-19T01:30+09:00",
+  "session": 68,
+  "day": 1,
+  "continuous_session_day_2_entry": true,
+  "version": "v1.0_amendment_1",
+  "supersedes": null,
+  "amends": "PHASE_1_DAY_2_COORDINATE_PLAN_20260419.json (v1.0)",
+  "status": "AMENDMENT 1 — Risk Mgr 3rd round VERDICT + rebuild 재시작 + SR projection 하향 + H_1690 CRITICAL 상향 반영",
+  "amendment_type": "internal_coordinate_amendment (NOT new rev, NOT new admission rule)",
+  "v54_freeze_compliance": "PASS (amendment of existing coordinate plan, no new rev/rule)",
+
+  "reference_files": {
+    "risk_mgr_3rd_round_verdict": "qepm/mailbox/risk_manager/outbox/risk_mgr_3rd_round_verdict_20260419.json (01:10 01h before)",
+    "amended_base": "qepm/mailbox/governor/outbox/PHASE_1_DAY_2_COORDINATE_PLAN_20260419.json (00:10)",
+    "sensitivity_analysis": "qepm/mailbox/governor/outbox/STR_1631_POST_REBUILD_SENSITIVITY_ANALYSIS_20260419.json (00:25)",
+    "amendment_template_preparatory": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_TEMPLATE_20260419.json (00:45)",
+    "q_lead_revert_context": "qepm/mailbox/forge/outbox/REVERT_IMPACT_ASSESSMENT_20260418.json (Q-Lead revert 20:45)"
+  },
+
+  "amendment_summary": {
+    "critical_updates_3": [
+      "1. Factor DB rebuild 실제 미완료 확인 → Forge v4 rebuild 재시작 진행 중 (Q-Lead 00:30 지시)",
+      "2. SR projection 하향: conservative 1.72-1.78 → **1.55-1.75** (Risk Mgr probability-weighted -10.5% Sharpe delta 반영)",
+      "3. H_1690 tier 상향: HIGH → **CRITICAL** (4/4 factors 왜곡, STR_1631과 거의 동일 노출)"
+    ],
+    "timeline_updates": [
+      "rebuild ETA 재계산: Day 2 03:00~04:30 KST (Forge v4 재시작 1~2시간 + Option A fix 재적용)",
+      "post-fix re-profile 시작: Day 2 04:30 이후",
+      "Day 6 LIVE 목표: 유지 가능성 MEDIUM (Scenario B 35% 확률이 주요 시나리오)"
+    ],
+    "cvar_threshold_revision": {
+      "current": -0.15,
+      "proposed": -0.25,
+      "rationale": "L-106 KR equity all-in 구조적 한계 (-15% 달성 불가, -25%가 현실적 target)",
+      "approval_path": "Q-Lead + Governor 합의 후 admission_rule v3.5.1 minor update (hard_block 발생 시만 허용)",
+      "freeze_violation_check": "threshold 하향 조정은 hard_block 조건 충족 (L-106 구조적 실패 인식 + Risk Mgr 근거 문서 제출) → 승인 가능"
+    }
+  },
+
+  "critical_blocker_1_factor_db_rebuild_status_updated": {
+    "risk_mgr_finding": "Factor DB rebuild PID 2749730 and PID 2748125 both TERMINATED. No log, no build_hash, parquet 4/10 PRE-FIX",
+    "root_cause": "Q-Lead revert (2026-04-18 20:45 REVERT_IMPACT_ASSESSMENT) rolled back factor_db_builder.R Option A fix 11줄 제거",
+    "current_action_in_progress": {
+      "owner": "Forge v4",
+      "task": "factor_db_builder.R Option A fix + factor_db_connector.R RC1 fix 재적용",
+      "eta": "2026-04-19T03:00~04:30 KST (1~2시간 fix 재적용 + 3~5시간 rebuild)",
+      "rebuild_estimated_completion": "2026-04-19T06:00~09:00 KST (worst case)"
+    },
+    "governor_coordinate_update": {
+      "day_2_critical_path_revision": "rebuild 재시작이 Day 2 blocker 1번. 완료 전 모든 PG1 admission 활동 HOLD.",
+      "day_3_transition_risk": "rebuild 06:00+ 완료 시 Day 3 여유 축소. Judge S6 cascade 시작 지연 가능",
+      "day_6_live_target_maintained": "Scenario B/C (60%) 시 달성 가능. Scenario A (40%) 시 Day 8+ 2-day slip"
+    }
+  },
+
+  "critical_blocker_2_str_1631_exposure_quantified": {
+    "risk_mgr_probability_weighted_estimates": {
+      "expected_str_1631_sharpe_delta": "-10.5%",
+      "expected_str_1631_sharpe_post_fix": "1.24 × 0.895 = 1.10",
+      "expected_portfolio_sr_60pct_weight": "0.95~1.10 (central 1.05)",
+      "confidence_interval_90pct": "[0.90, 1.25]",
+      "scenario_probability_update": {
+        "A_worst_40_percent": {"str_1631_sharpe": "0.87-1.05", "portfolio_sr": "0.95-1.10"},
+        "B_base_35_percent": {"str_1631_sharpe": "1.12-1.18", "portfolio_sr": "1.10-1.15"},
+        "C_best_25_percent": {"str_1631_sharpe": "1.24-1.35", "portfolio_sr": "1.19-1.25"}
+      }
+    },
+    "governor_sensitivity_revision": {
+      "previous_sensitivity_3_case": "A 60% / B 30% / C 10% (Governor 00:25)",
+      "risk_mgr_3_case": "A 40% / B 35% / C 25% (Risk Mgr 01:10 — 더 보수적 worst case 확률 상향)",
+      "resolution": "Risk Mgr 확률 채택 (구조적 CRITICAL factor 분석 근거 우선)",
+      "final_scenario_probability": "A(worst) 40% / B(base) 35% / C(best) 25%"
+    },
+    "day_4_admission_plan_branching": {
+      "scenario_A_materialize_40": {
+        "action": "HOLD Phase_1 Day 4 admission",
+        "str_1631_weight_60_to_40_transition": "PAUSED",
+        "investigation": "C19-only composite without M08/R12/R16 Harvey t>3.0 여부 확인",
+        "fallback": "C19-only fail 시 STR_1631 PG2 ACTIVE 재검토 — Governor/Judge joint re-examination",
+        "timeline_slip": "Day 6 LIVE → Day 8+ (2-day minimum delay)",
+        "revised_composition_required": "Revised Composition Option 1 or Scenario D (Defense 28% fallback)"
+      },
+      "scenario_B_materialize_35": {
+        "action": "PROCEED Day 4 admission per v1.7 plan",
+        "monitoring": "|ICIR delta| > 15% 시 factor_db_fix_impact_audit_v2 trigger",
+        "timeline": "Day 6 LIVE 유지"
+      },
+      "scenario_C_materialize_25": {
+        "action": "ACCELERATE Phase_1 (best case)",
+        "consideration": "STR_1631 weight higher than 18% 검토 가능 (post-fix 성능 개선 시)",
+        "timeline": "Day 5 LIVE 가속 가능 (원 Day 6보다 1일 추가 가속)"
+      }
+    }
+  },
+
+  "critical_blocker_3_forge_s1_dependencies": {
+    "required_before_day_4": [
+      "H_1689 Q24-exclude 3-axis S1 (Gate 11/12/13 mandatory)",
+      "H_1690 4-variant S1 (Gate 11/12/13 mandatory, M08 post-fix re-execution)",
+      "H_1692 S1 (Gate 13 mandatory, M07+M18 clean factors)"
+    ],
+    "governor_dependency": "Day 4 admission은 Forge S1 3건 + Judge S6 cascade 완료 이후만 가능",
+    "crisis_regime_urgency": {
+      "mrs_current": 63.1,
+      "state": "CRISIS ACTIVE",
+      "ax_001_reminder": "Defense는 조건부 성과로 평가 — 현재 CRISIS는 Defense 가설의 REAL-TIME TEST window",
+      "recommendation": "H_1689/H_1690 S1 acceleration 권고 (Risk Mgr 동일 recommendation)"
+    }
+  },
+
+  "sr_projection_revision_formal": {
+    "previous_conservative_range": "1.72-1.78",
+    "previous_aspirational": "2.00-2.03",
+    "revised_risk_adjusted_conservative": "**1.55-1.75**",
+    "revised_aspirational": "**1.85-2.00**",
+    "methodology_delta": "Risk Mgr probability-weighted Sharpe delta -10.5% 반영",
+    "freeze_release_implication": {
+      "previous_prob_sr_1_50_achievement": "HIGH (Governor sensitivity 1.62-1.70 base)",
+      "revised_prob_sr_1_50_achievement": "MEDIUM-HIGH (Risk Mgr 1.55-1.75 range, lower bound 1.55 이하 가능성 증가)",
+      "scenario_A_40_pct_risk": "SR 0.95-1.10 × 60% + Defense cluster 33% alpha 보완 → 전체 SR 1.30-1.45 추정 (Freeze 해제 조건 1.50 미달 가능성 40%)",
+      "scenario_B_35_pct": "SR 1.55-1.70 (충분한 Freeze 해제 여유)",
+      "scenario_C_25_pct": "SR 1.75-1.95 (aspirational 달성)",
+      "weighted_expected_sr": "0.40×1.38 + 0.35×1.63 + 0.25×1.85 = 1.38+0.40×(-1.38)+0.35×1.63+0.25×1.85 = **1.58**",
+      "freeze_release_probability": "60% (MEDIUM-HIGH)"
+    }
+  },
+
+  "h_1690_tier_upgrade": {
+    "previous_tier": "HIGH",
+    "revised_tier": "**CRITICAL**",
+    "rationale": "Risk Mgr finding: H_1690 uses M08 sd 0.054 CRITICAL + C19 sd 0.354 HIGH + Q07 sd 0.328 HIGH + R16 sd 0.165 CRITICAL = **4/4 factors distorted**. STR_1631과 거의 동일한 CRITICAL 노출.",
+    "post_rebuild_action": "Scout S2 re-profile CRITICAL tier 승격 (STR_1631과 함께 최우선)",
+    "day_2_impact": "H_1690 S1 실행도 rebuild 완료 후에만 가능 (pre-rebuild 실행 시 재실행 MANDATORY)"
+  },
+
+  "tdc_monitoring_matrix_update_risk_mgr_measurements": {
+    "context": "Risk Mgr 3rd round projected TDC matrix (empirical 부재, factor overlap + Longin-Solnik 2x escalation 기반)",
+    "breach_count": 2,
+    "breaches": [
+      {
+        "pair": "STR_1631 × STR_1679v3",
+        "tdc": 0.52,
+        "threshold": 0.40,
+        "severity": "HIGH (persistent)",
+        "cause": "C19 consensus signal overlap (STR_1679v3 embedded C19 via Q25)",
+        "mitigation": "Sequential Admission v3.2 enforced + weight 8% 이미 감소 적용"
+      },
+      {
+        "pair": "H_1689 × H_1690",
+        "tdc": 0.45,
+        "threshold": 0.40,
+        "severity": "MEDIUM (Defense intra-cluster, structurally expected)",
+        "cause": "Both Defense family + Q25 shared (25% each). Crisis regime flight-to-quality co-movement.",
+        "mitigation": "Monthly monitoring. Defense 35% cap 유지. TDC > 0.55 시 H_1690 non-quality defense source로 교체 검토"
+      }
+    ],
+    "passes": [
+      {"pair": "STR_1631 × H_1692", "tdc": 0.35, "status": "PASS_MARGINAL (crisis escalation 시 0.50+)"},
+      {"pair": "STR_1631 × STR_1656", "tdc": 0.30, "status": "PASS (ML vs fundamental 구조적 독립)"},
+      {"pair": "STR_1631 × H_1689", "tdc": 0.28, "status": "PASS (Consensus vs Quality 4-axis)"},
+      {"pair": "STR_1679v3 × H_1689", "tdc": 0.38, "status": "PASS_MARGINAL (Q25 embed vs Q25 component)"}
+    ],
+    "post_rebuild_recalculation_mandatory": "factor sd normalization 변경 시 cross-sectional correlation 재측정 필요"
+  },
+
+  "cvar_threshold_revision_proposal_formal": {
+    "current_threshold": -0.15,
+    "proposed_threshold": -0.25,
+    "rationale_documentation": [
+      "L-106: All-equity long-only KR portfolio은 market beta 지배로 CVaR -15% 구조적 달성 불가",
+      "Cross-asset 없이 CVaR -15% 요구는 unrealistic threshold — 영구 FAIL 생성으로 정보가치 없음",
+      "-25% CVaR_95는 factor diversification으로 달성 가능한 현실적 target (Risk Mgr V5)"
+    ],
+    "current_projection_rho_0_3_conservative": -0.227,
+    "pass_at_current_threshold_minus_15": false,
+    "pass_at_proposed_threshold_minus_25": true,
+    "approval_path": {
+      "step_1": "Governor + Q-Lead 합의 (본 파일 요청)",
+      "step_2": "admission_rule v3.5.1 minor update 발행 (Governor signoff)",
+      "step_3": "v54 Freeze 위반 검사: hard_block 발생 조건 충족 여부 확인",
+      "step_4_freeze_check": "threshold 하향은 rule 완화가 아닌 **구조적 현실 반영** → hard_block 성격 (현재 영구 FAIL) → 변경 허용"
+    },
+    "governor_recommendation": "APPROVE threshold -0.25 반영. admission_rule v3.5.1 minor update로 발행 검토 (team-lead 최종 승인 필수)."
+  },
+
+  "day_2_revised_critical_path": {
+    "p0_absolute_priority": [
+      "Forge v4 factor_db_builder.R + factor_db_connector.R fix 재적용 (진행 중)",
+      "Factor DB rebuild 재시작 (eta 03:00~04:30 KST)",
+      "Rebuild 완료 후 compute_all_factor_ic_monthly() 재실행"
+    ],
+    "p0_post_rebuild_immediate": [
+      "Scout S2 re-profile CRITICAL tier: STR_1631, H_1690 (NEW upgrade), STR_1683, STR_1679v3",
+      "Scout S2 re-profile HIGH tier: STR_1682, STR_1684, STR_1656",
+      "Judge STR_1631 Harvey t>3.0 re-verification",
+      "factor_db_fix_impact_audit_v2 생성"
+    ],
+    "p1_forge_day_2_post_rebuild": [
+      "H_1692 S1 (M07+M18 clean factors, Gate 13 mandatory)",
+      "H_1689 v3 Q24-exclude 3-axis S1 (Gate 11/12/13 mandatory)",
+      "H_1690 4-variant S1 (Gate 11/12/13 mandatory, M08 post-fix re-execution)"
+    ],
+    "p1_judge_cascade_day_3": [
+      "Judge S6 Gate 0~6 for H_1692/H_1689/H_1690",
+      "Gate 11/12/13 triple check",
+      "L-163 poison_pill auto-check (stress_icir × weight ≥ -0.05)",
+      "Role Honesty Audit for STR_1679v3 physical sleeve"
+    ],
+    "p2_governor_day_4_conditional_admission": [
+      "Scenario A/B/C 판정 (post-rebuild ICIR delta 확인)",
+      "Scenario A HOLD + C19-only investigation / B PROCEED / C ACCELERATE 분기",
+      "Phase_1 Day 4 admission plan v1.8 발행 (composition 확정)"
+    ]
+  },
+
+  "composition_day_6_live_target_conditional_retention": {
+    "scenario_B_C_60_percent_default": {
+      "STR_1631_Core_Primary": 0.18,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1": 0.08,
+      "H_1689_Defense_Q24_exclude": 0.23,
+      "H_1690_Defense": 0.10,
+      "H_1692_Core_Secondary": 0.10,
+      "Reserve": 0.09,
+      "misc": 0.08,
+      "total": 1.00,
+      "defense_cluster": 0.33
+    },
+    "scenario_A_40_percent_contingency_option_1": {
+      "description": "STR_1631 degraded, composition revision required",
+      "STR_1631_Core_Primary": 0.35,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1": 0.12,
+      "H_1689_Defense_Q24_exclude": 0.25,
+      "H_1690_Defense": 0.10,
+      "H_1692_Core_Secondary": 0.10,
+      "Reserve": 0.04,
+      "misc": 0.00,
+      "total": 1.00,
+      "defense_cluster": 0.35,
+      "family_saturation_at_cap": "Defense 35% exactly at cap (margin 0)"
+    },
+    "scenario_A_40_percent_contingency_option_2_drop_str_1631": {
+      "description": "STR_1631 PG2 ACTIVE 재검토 결과 Harvey t<3.0 시",
+      "STR_1631_Core_Primary": 0.00,
+      "STR_1656_Div_ML": 0.20,
+      "STR_1679v3_Div_1": 0.15,
+      "H_1689_Defense_Q24_exclude": 0.25,
+      "H_1690_Defense": 0.15,
+      "H_1692_Core_Secondary": 0.15,
+      "Reserve": 0.10,
+      "misc": 0.00,
+      "total": 1.00,
+      "defense_cluster": 0.40,
+      "family_saturation_violation": "Defense 40% > 35% cap → REJECT",
+      "requires_new_core_candidate": "Governor Scenario D 발동 (Defense 28% fallback + new core 탐색)"
+    }
+  },
+
+  "freeze_release_revised_projection": {
+    "weighted_expected_sr_day_6_live": 1.58,
+    "lower_bound_scenario_A_40pct": "SR 1.30-1.45 (freeze 해제 조건 1.50 미달 40% 확률)",
+    "base_case_scenario_B_35pct": "SR 1.55-1.70 (freeze 해제 달성)",
+    "upper_bound_scenario_C_25pct": "SR 1.75-1.95 (aspirational)",
+    "freeze_release_probability_revised": "60% (MEDIUM-HIGH, previous HIGH에서 소폭 하향)",
+    "session_72_evaluation_point": "2026-week 20 예정 SR 측정 시 1.50 미달 시 Freeze 연장 or 체제 재편 결정"
+  },
+
+  "governor_actionable_items_amendment": [
+    "1. 본 amendment 발행 (01:30)",
+    "2. CVaR threshold revision 제안 team-lead 승인 요청",
+    "3. STR_1631 Scenario A 40% 대비 revised composition 사전 준비 (Option 1 + Option 2 + Scenario D)",
+    "4. Forge rebuild 완료 trigger 수신 시 Scout S2 re-profile request 발행",
+    "5. Judge STR_1631 Harvey t re-verification coordinate (Post-rebuild)",
+    "6. Phase_1 Day 4 admission plan v1.8 preparation (Scenario 판정 후)",
+    "7. admission_rule v3.5.1 Governor signoff amendment 검토 (CVaR threshold revision 승인 시 동반)"
+  ],
+
+  "trigger_driven_standby_amendment_1": [
+    "Forge rebuild 재시작 결과 (eta 03:00~04:30 KST fix 재적용 완료)",
+    "Forge rebuild 실제 완료 (eta 06:00~09:00 KST)",
+    "Scout post-rebuild S2 re-profile 결과 수신",
+    "Judge S6 cascade (H_1692/H_1689/H_1690) 결과",
+    "STR_1631 Harvey t re-verification 결과",
+    "CVaR threshold revision team-lead 승인"
+  ],
+
+  "kill_scenarios_acknowledged_3": [
+    {"name": "kill_1_factor_db_rebuild_alpha_mirage", "probability": "15%", "impact": "STR_1631 PG2 ACTIVE 취소 + rev8-A composition VOID"},
+    {"name": "kill_2_crisis_deepening_unvalidated_defense", "probability": "25%", "impact": "Portfolio MDD -25~-30% during transition"},
+    {"name": "kill_3_c19_consensus_structural_shift", "probability": "5% (medium-term 2027+)", "impact": "STR_1631 + STR_1679v3 26% exposed to information source degradation"}
+  ],
+
+  "mitigation_responses_to_kills": [
+    "kill_1 mitigation: STR_1631 C19-only fallback 사전 준비 + Judge Harvey t re-verification",
+    "kill_2 mitigation: Cash 24% buffer 유지 + H_1689/H_1690 S1 acceleration (AX-001 live validation)",
+    "kill_3 mitigation: H_1692 industry momentum 다양화 + long-term alpha source 확장 로드맵 (Session 72+)"
+  ],
+
+  "v54_freeze_compliance_amendment_1": {
+    "file_type": "coordinate_plan_amendment (NOT new rev)",
+    "admission_rule_change": "NONE (v3.5.1 13 gates 유지)",
+    "governor_rev_change": "NONE (rev8-A-revised_v2 Scenario C 유지)",
+    "new_hooks_or_rules": "NONE",
+    "hard_block_triggers_acknowledged_in_amendment": [
+      "CVaR threshold -15% → -25% revision (구조적 현실 반영, admission_rule v3.5.1 minor update 승인 시 발행)",
+      "rebuild failure (Blocker 1) → Forge v4 재시작 조치 이미 진행 중"
+    ],
+    "freeze_violation_check": "PASS (amendment, no new rev/rule)"
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "45 files (amendment template)",
+    "current": "**46 files** (본 Day 2 amendment 1)",
+    "session_68_day_1_governor_actions": 4,
+    "actions_list": [
+      "1. PHASE_1_DAY_2_COORDINATE_PLAN (00:10)",
+      "2. STR_1631_POST_REBUILD_SENSITIVITY_ANALYSIS (00:25)",
+      "3. RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_TEMPLATE (00:45)",
+      "4. PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1 (01:30)"
+    ]
+  }
+}

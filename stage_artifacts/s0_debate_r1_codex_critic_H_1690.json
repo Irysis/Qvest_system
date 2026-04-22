@@ -1,0 +1,39 @@
+{
+  "role": "codex_critic",
+  "score": 7,
+  "arguments": [
+    "H_1690은 failure chain 연결 확인: STR_1439 B_ARCHIVE → H_1677 REJECTED → H_1676 Option A S1 ERR → H_1685 REVISE → H_1687 REVISE 직계 계승. Gate 15 variance_ratio + linear-dominance pre-check 의무적이나 handoff kit pre-fill 없음. L-code 충돌 (L-118/119/122/146/147/156/162) 중 다수가 여전히 active.",
+    "Regime adaptation (RISK_ON/ELEVATED/CRISIS 3-state weight)이 L-119 dilution relief를 CONDITIONAL_PASS로 주장하나, ex-post selection 의혹 + 3-state weight tuning이 full-sample calibration에 의존 가능성. expanding-window + pre-registered protocol 문서 없음.",
+    "Composite의 effective linearity 검증 부재 — regime-smoothed 구조가 M01-like dominant factor 수렴 피하는지 증명 필요. H_1687 50/50 linear composite 0.716 M01 수렴 재발 가능성 + KOSDAQ fundamentals fiscal period alignment로 PIT leakage blind spot."
+  ],
+  "concern": "regime adaptation이 drawdown 감소하면서 core alpha 유지 가능하다는 가정이 틀릴 경우: overlay noise가 valid signal을 억제 → 거래가 pro-cyclical (bottom sell + rebound late buy) → 종단 SR 0.3 이하, MDD 이전 deep drawdown territory 회귀. L-122 framework 인용에도 불구 실제 implementation에서 이 위험 회피 증명 없음.",
+  "conditions": [
+    "Pass Gate-15 variance_ratio audit with pre-registered thresholds + rolling OOS evidence that no single axis dominates composite contribution.",
+    "Provide formal non-equivalence proof vs H_1674/H_1687 family (not just parameter reweighting), including algebraic-distance and mechanism-level ablation.",
+    "Document strict PIT data timing (filing/publication timestamps, lag policy, execution clock) for every input used in alpha AND regime overlay.",
+    "Show all regime/DD/VT cutoffs are expanding-window or fixed ex-ante; ban full-sample calibration and re-fit leakage.",
+    "Demonstrate crash-period robustness in KOSPI/KOSDAQ with liquidity-aware implementation and no return-blend rule violations."
+  ],
+  "_meta": {
+    "source_file": "/tmp/codex_critic_result.json",
+    "breakdown": {
+      "l_code_check": 1,
+      "failure_avoidance": 1,
+      "banned_factor": 2,
+      "lesson_check": 2,
+      "structural_risk": 1
+    },
+    "weakest_assumption": "regime adaptation이 drawdown 감소하면서 core alpha 유지 가능 가정 — pro-cyclical whipsaw 위험",
+    "kill_scenarios": [
+      "KOSDAQ fiscal period alignment PIT leakage (SR -0.7~-1.0, MDD +10~15%p, BLIND_SPOT=true)",
+      "Composite effective linearity M01-like dominance (MDD 25~35%, SR ~0)",
+      "Regime threshold misclassification BoK+semi shock pro-cyclical (MDD +15~25%p, SR -0.4~-0.7)"
+    ],
+    "failure_chain_link": "STR_1439 → H_1677 → H_1676 Option A → H_1685 → H_1687 → H_1690",
+    "original_verdict": "REJECT pending redesign",
+    "scout_prediction_vs_actual": "Scout L-157 v3 Codex [8, 12] vs actual 7 (-1 from lower)",
+    "timestamp": "2026-04-18T13:31:00+09:00",
+    "compiled_by": "Q-Lead (manual schema conversion)",
+    "codex_companion_status": "RECOVERED (3252 bytes success after H_1687 2회 retry failure)"
+  }
+}

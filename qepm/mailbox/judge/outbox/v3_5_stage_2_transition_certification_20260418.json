@@ -1,0 +1,232 @@
+{
+  "from": "Judge + Governor (joint certification)",
+  "to": "Q-Lead + team-lead",
+  "type": "V3_5_STAGE_2_TRANSITION_CERTIFICATION",
+  "timestamp_judge_draft": "2026-04-18T18:30+09:00",
+  "timestamp_governor_cross_check_signoff": "2026-04-18T18:40+09:00",
+  "session": 67,
+  "day": 1,
+  "status": "JOINT_SIGNOFF_COMPLETE — Judge draft (18:30) + Governor cross-check PASS + joint signoff (18:40)",
+  "supersedes_note": "v3_5_retroactive_audit_completion_20260418.json (18:00 발행, CONDITIONAL_ACTIVE 기준)의 amendment",
+
+  "transition_event": {
+    "from_status": "CONDITIONAL_ACTIVE Stage 1",
+    "to_status": "STAGE_2_ACTIVE",
+    "arbitration_source": "team-lead Scenario B 확정 (2026-04-18T18:15+09:00)",
+    "activation_timestamp": "2026-04-18T18:15:00+09:00",
+    "legal_basis": "v3.5 Admission Rule → activation_conditions_pending_for_normative.condition_1_second_hard_fail → VALIDATED Hard Fail 2건 축적 시 Gate 12 hard_block 자동 전환"
+  },
+
+  "scenario_b_evidence": {
+    "strategy_source": "STR_1684_v2b",
+    "forge_execution": {
+      "pid": "2210532/2237594",
+      "fix_1_applied": true,
+      "fix_1_type": "Q-Lead inline 5줄 patch (Architect Option B runtime rescale)",
+      "elapsed_min": 11.6
+    },
+    "portfolio_metrics_final": {
+      "cagr": -4.32,
+      "sharpe_annual": -0.13,
+      "sharpe_monthly": 0.049,
+      "ir": -0.509,
+      "mdd": 86.66,
+      "icir_v1_residualized": -0.1874,
+      "icir_m08_baseline": -0.9742,
+      "capm_beta": 1.0007,
+      "calmar": -0.05,
+      "turnover_ann": 525.6,
+      "stress_outperform": "0/3"
+    },
+    "fix_1_mathematical_explanation": {
+      "observation": "Fix 1 Q-Lead 적용 후 sd=1.0 복원 확인되나 ICIR -0.1874 동일 + CAPM beta 1.0007 불변",
+      "reason": "OLS residualization의 scale invariance property — lm(y ~ X)에서 X에 scale factor 곱해도 residual 순서 동일 → ranking 동일 → portfolio 동일 → ICIR 동일",
+      "implication": "Fix 1은 인프라 품질 개선이나 H_1688 hypothesis 개선 기여 없음"
+    },
+    "hypothesis_reassessment": {
+      "hypothesis_A_kr_momentum_inverse": "**재복원 확증** (Scenario B 실측). Rouwenhorst 1999 + Asness+2013 KR momentum weak 재인용.",
+      "hypothesis_B_scout_infra_bug": "현상 (sd 왜곡) 설명 valid이나 Fix 효과 예측 실패 → partial contribution으로 격하",
+      "hypothesis_D_winsorize_irreversible_info_loss": "secondary suspect — Architect Option A (factor_db_builder.R 자체 수정) 후 재실험 필요"
+    }
+  },
+
+  "l_161_reclassification": {
+    "original_classification_15_45_to_16_05": "UNVALIDATED_HARD_FAIL (Scout hypothesis B 85% 기반, AX-002 보수적 해석)",
+    "revised_classification_18_15": "**VALIDATED_HARD_FAIL** (team-lead Scenario B arbitration)",
+    "reclassification_ax_002_compliance": "Hypothesis 자체 평가 완료 (Fix 1 무효 확증으로 structural failure 확증) → AX-002 준수",
+    "judge_3_category_taxonomy_re_test_outcome_rule_applied": "v3.5 taxonomy: 'Fix → FAIL: VALIDATED로 재분류 + Stage 2 count 포함' 규칙 적용"
+  },
+
+  "validated_hard_fail_count_stage_2_trigger": {
+    "count": 2,
+    "entries": [
+      {
+        "strategy_id": "STR_1683",
+        "l_code": "L-160",
+        "pattern": "Defense IC-Return decoupling (factor quality IC 0.22 + portfolio 4-variant Hard Fail)",
+        "validated_since": "2026-04-18 Session 67 Day 1",
+        "stage_2_trigger_contribution": 1
+      },
+      {
+        "strategy_id": "STR_1684",
+        "l_code": "L-161",
+        "pattern": "KR momentum inverse (Fix 1 무효 + scale invariance + Hypothesis A 재복원)",
+        "validated_since": "2026-04-18T18:15+09:00 (team-lead Scenario B 재분류)",
+        "stage_2_trigger_contribution": 1
+      }
+    ],
+    "stage_2_condition_status": "VALIDATED 2/2 충족 → Stage 2 transition 자동 발동"
+  },
+
+  "gate_12_hard_block_mandatory_retroactive_check": {
+    "rule": "Stage 2 전환으로 Gate 12 coupling_ratio SR_monthly / ICIR_full_sample < 0.3 시 admission 차단 (mandatory)",
+    "existing_pg2_strategies_check": {
+      "STR_1631_SYN_05_2002": {
+        "role": "Core_Primary",
+        "coupling_ratio_proxy": 1.417,
+        "icir_source": "ICIR 원자료 부재 → IR 0.813 proxy (Sharpe_m 1.152 / IR 0.813)",
+        "gate_12_verdict": "**PASS** (Proxy 1.417 >> threshold 0.3)",
+        "gate_11_exempt_status": "EXEMPT 유지 (Core_Primary single signal, `judge_gate_11_exempt_STR_1631_core_primary.json` 참조)",
+        "stage_2_admission_impact": "**영향 없음** (기존 PG2 admission 유지)"
+      },
+      "STR_1656_MLRA_M05": {
+        "role": "Diversifier_ML",
+        "coupling_ratio_full": 0.314,
+        "coupling_ratio_3y": 0.493,
+        "icir_source": "performance.json s1_b.ICIR 0.8496 (직접)",
+        "gate_12_verdict": "**PASS** (0.314 > threshold 0.3, 0.014 margin)",
+        "gate_11_advisory_note": "ML hyperparameter variant framework (v3.6 Gate 16 agenda)",
+        "stage_2_admission_impact": "**영향 없음** (threshold 근접이나 PASS 유지)"
+      }
+    },
+    "summary": "기존 PG2 composition (STR_1631 + STR_1656) **영향 없음 확정**. Stage 2 전환이 기존 admission 무효화 없음."
+  },
+
+  "rev8_a_revised_v2_scenario_c_composition_stage_2_certification": {
+    "governor_file": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_revised_v2_scenario_C.json (15:55)",
+    "composition_elements": {
+      "STR_1631_Core_Primary": 0.18,
+      "STR_1656_Div_ML": 0.14,
+      "STR_1679v3_Div_1_embedded_q25": 0.08,
+      "H_1689_Defense": 0.23,
+      "H_1690_Defense": 0.10,
+      "H_1692_Core_Secondary_NEW": 0.10,
+      "Reserve": 0.09,
+      "misc_allocation": 0.08,
+      "H_1688_DROP": "공식 DROP per Scenario B (VALIDATED_HARD_FAIL)"
+    },
+    "gate_12_mandatory_enforcement_post_stage_2": {
+      "defense_family_H_1689_H_1690": "MANDATORY hard_block — Forge S1 결과 후 재판정",
+      "core_secondary_H_1692": "MANDATORY hard_block — Forge S1 결과 후 재판정",
+      "diversifier_STR_1679v3": "MANDATORY (Governor proxy 재계산 결과 기반, Dual-track Trigger active)",
+      "diversifier_H_1685v2": "Phase_2+ 적용 MANDATORY (12 conditions 전수 + Judge S6)",
+      "core_primary_STR_1631": "Gate 11 EXEMPT 유지 + Gate 12 Proxy PASS"
+    }
+  },
+
+  "ax_cand_kr_momentum_inverse_new_tracking": {
+    "file_issued": "qepm/memory/axioms/review_log/AX-CAND_kr_momentum_inverse_L161_20260418.json (18:20 Judge 발행)",
+    "composite_5_axis": 0.68,
+    "axis_scores": {"I": 0.75, "R": 0.65, "F": 0.35, "E": 0.75, "M": 0.90},
+    "promotion_zone": "EXTEND (threshold 0.70 미달, blocker: F_frequency)",
+    "review_date": "2026-07-17 Q3",
+    "et_tasks_301_304": "KR momentum strategy 재현 + L-090 reconciliation + 학술 evidence + Hypothesis D 검증"
+  },
+
+  "stage_3_transition_conditions": {
+    "current_status": "Stage 2 ACTIVE",
+    "stage_3_trigger": "Architect signoff (factor_db_builder.R 자체 수정 완료) → Gate 11/12 hard_block mandatory + ACTIVE_NORMATIVE 최종 전환",
+    "architect_persistent_fix_scope": [
+      "factor_db_builder.R Z-score rescale 근본 해법 (RC1)",
+      "R12 vs D01 registry deduplication (RC2)",
+      "M08 extreme clipping alternative algorithm (RC3)",
+      "factor_engine.R common module 표준화 (L-163 pending)"
+    ],
+    "estimated_timeline": "2026Q2 (Architect coordinate 시)"
+  },
+
+  "judge_governor_joint_certification": {
+    "judge_draft": {
+      "agent_id": "judge",
+      "timestamp": "2026-04-18T18:30+09:00",
+      "triple_check_result": "PASS (Stage 2 전환 판단 + L-161 재분류 AX-002 준수 + STR_1679v3 proxy 방법론 적절)",
+      "signoff_note": "Stage 2 transition 공식 certification. Gate 12 hard_block mandatory 재검증 결과 기존 PG2 영향 없음. team-lead Scenario B 확정 수용 + Governor 파일 3건 업데이트 확인."
+    },
+    "governor_cross_check_pending": {
+      "expected_receipt": "Governor STR_1679v3 proxy 재계산 완료 후 cross-check + joint signoff",
+      "cross_check_scope": [
+        "Stage 2 전환 timeline + legal basis 확인",
+        "Gate 12 hard_block 재검증 결과 (STR_1631/STR_1656 PASS) 확인",
+        "rev8-A-revised_v2 Scenario C composition 정합성 확인",
+        "AX_CAND_kr_momentum_inverse tracking 수용"
+      ]
+    },
+    "governor_cross_check_result_2026_04_18_18_40": {
+      "agent_id": "governor",
+      "timestamp": "2026-04-18T18:40+09:00",
+      "cross_check_4_items_all_PASS": {
+        "item_1_stage_2_timeline_legal_basis": {
+          "verdict": "PASS",
+          "rationale": "team-lead 18:15 arbitration + activation_conditions_pending_for_normative.condition_1_second_hard_fail 규칙 적용 정확. Scenario B 실측 evidence (Fix 1 무효 + ICIR -0.1874 + CAPM beta 1.0007) → L-161 VALIDATED_HARD_FAIL 재분류 → VALIDATED 2/2 축적 → Gate 12 hard_block 자동 전환. Legal basis v3.5 Admission Rule 명문 규정 준수."
+        },
+        "item_2_gate_12_retroactive_pg2_check": {
+          "verdict": "PASS",
+          "rationale": "STR_1631 Proxy 1.417 PASS (exempt 유지, ICIR 원자료 부재 Architect persistent fix 후 재계산 pending). STR_1656 coupling_ratio 0.314 PASS (0.014 margin, threshold 0.3 근접이나 PASS). PG2 composition (80/20 STR_1631 80% + STR_1656 20%) Stage 2 전환 영향 없음 확정. 재확인 team-lead 관찰 + Judge 판정과 일치."
+        },
+        "item_3_rev8_a_revised_v2_scenario_c_composition": {
+          "verdict": "PASS",
+          "composition_math_check": "18 + 14 + 8 + 23 + 10 + 10 + 9 + 8 = 100% ✅",
+          "breakdown": "STR_1631 18 + STR_1656 14 + STR_1679v3 8 + H_1689 23 + H_1690 10 + H_1692 10 + Reserve 9 + misc 8",
+          "n_active": 6,
+          "defense_cluster": "33% (H_1689 23 + H_1690 10)",
+          "family_cap_compliance": "defense 33% < 35% cap PASS, momentum total 18% < 35% cap PASS",
+          "h_1688_drop_confirmation": "공식 DROP per Scenario B + Scout handoff_kit_v1.1 H_1692 replacement",
+          "rationale": "Governor PG0_PLAN_rev8_A_revised_v2_scenario_C.json (15:55) composition과 Judge certification composition 완전 일치."
+        },
+        "item_4_ax_cand_kr_momentum_inverse_tracking": {
+          "verdict": "ACCEPT",
+          "composite_0_68_EXTEND_zone": true,
+          "promotion_blocker_F_frequency_0_35": true,
+          "et_tasks_301_304_Scout_Academic_coordinate": "Governor 참조 role — rev8-A 운영 결과 + Forge Day 2 재실행 결과 feeding 공조",
+          "ax_cand_family_relations": {
+            "complementary_with_infrastructure_failures": "AX_CAND_infrastructure_failures (0.63) + AX_CAND_kr_momentum_inverse (0.68) 독립",
+            "defense_ic_return_decoupling_L160_family": "L-160 (defense IC-Return) + L-161 (momentum KR inverse) structural-failure family 통합 candidate 검토 (Judge 판단)"
+          }
+        }
+      },
+      "additional_observations_from_governor": [
+        "Governor STR_1679v3 proxy 재계산은 team-lead Option B 승인 기반 autonomous 진행 중 — 본 certification 발행 후 결과 수신 시 별도 addendum 가능",
+        "Gate 12 hard_block mandatory 전환으로 Forge Day 2 H_1692/H_1689/H_1690 S1 재실행 결과 기반 재판정 필수 — Phase_1 PG1 admission 전 완료 목표",
+        "Stage 3 transition 조건 Architect persistent fix는 timeline 2026Q2 기대 — 그 전까지 Stage 2 enforcement 유지"
+      ],
+      "joint_signoff_status": "COMPLETE — Judge draft + Governor cross-check PASS + joint signoff",
+      "telegram_report_recommended": "🎖️ [Judge + Governor joint] v3.5 Stage 2 Transition Certification 발행 — Gate 12 hard_block mandatory. PG2 composition 영향 없음 확인. Scenario B L-161 VALIDATED 재분류 + Stage 2 trigger 2/2 충족."
+    }
+  },
+
+  "session_67_day_1_final_state_snapshot": {
+    "v3_5_admission_rule": "STAGE_2_ACTIVE (12 gates + Gate 12 mandatory)",
+    "validated_hard_fail_count": 2,
+    "l_codes_issued": "L-159/160/161/162 + L-163 infra pending",
+    "ax_cand_tracking": {
+      "AX-006_pairwise_TDC": 0.67,
+      "AX_CAND_spec_transmission_L159": 0.48,
+      "AX_CAND_infrastructure_failures_L161_primary_L160_partial_L162_sub": 0.63,
+      "AX_CAND_kr_momentum_inverse_L161_NEW": 0.68
+    },
+    "strategy_rejects": ["STR_1682 REJECT", "STR_1683 REJECT", "STR_1684 REJECT_VALIDATED + ARCHIVE"],
+    "portfolio_composition_rev8_a_revised_v2_scenario_c": "STR_1631(18%) + STR_1656(14%) + STR_1679v3(8%) + H_1689(23%) + H_1690(10%) + H_1692(10%) + Reserve(9%) + misc(8%)",
+    "retroactive_audit_completion": "18:00 joint signoff 발행",
+    "stage_2_transition_certification": "18:30 Judge draft (본 파일), Governor cross-check pending"
+  },
+
+  "open_items_next_session": [
+    "Governor cross-check → 본 certification joint signoff 완료",
+    "STR_1679v3 Governor proxy 재계산 결과 수신",
+    "Architect persistent fix 진행 (Stage 3 transition 조건)",
+    "Forge Day 2 재스폰 후 H_1692 P0 + H_1689 Gate 11 MANDATORY + STR_1685/1686 순차 실행",
+    "Judge S6 연쇄 판정 (H_1692 → H_1689 → STR_1685 → STR_1686)",
+    "Risk Mgr VERDICT 후속 (이미 17:35 integration 완료)",
+    "AX_CAND_kr_momentum_inverse ET-301~304 evidence 축적 (Scout + Academic 협조)"
+  ]
+}

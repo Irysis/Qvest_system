@@ -1,0 +1,95 @@
+{
+  "hypothesis_id": "H_1694",
+  "strategy_id_reserved": "STR_1694_earnings_streak_quality_filter",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Earnings Momentum Streak + Piotroski Quality Filter (PEAD + Financial Health Screen)",
+
+  "mechanism": "M25_Earnings_Mom_Streak(실적 상향 연속성) × Q04_Piotroski_F(재무 건전성 필터) 조합. 수익 모멘텀 연속성(streak)이 높은 종목 중 Piotroski F-score 상위 종목 선별. 투자자 과소반응(underreaction to consecutive earnings surprises)을 primary alpha source로, Piotroski F-score를 value trap / financial distress 차단 필터로 활용. PEAD(Post-Earnings Announcement Drift)의 한국시장 실증 버전.",
+
+  "economic_rationale": "Bernard & Thomas(1989 JAE) PEAD: 시장이 분기 실적 서프라이즈의 지속성을 과소평가 → 연속 상향 기업에서 drift. Piotroski(2000 JAR) F-Score: GP + 현금흐름 + 레버리지 + 효율성 9개 신호로 재무 건전성 측정 → 약한 기업 필터 제거로 alpha 개선. 한국시장에서 외국인·기관 투자자의 제한적 분석 커버리지가 중소형주 실적 드리프트를 증폭(Kang 2026c behavioral finance). M25는 PEAD의 지속 현상(streak duration)을 직접 포착, Q04는 재무 악화로 인한 모멘텀 반전 위험을 사전 차단.",
+
+  "trail": "standard",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "M25 Earnings Mom Streak은 기존 Core(C19 composite)와 ic_all 상관 낮음 — Core는 price momentum + quality composite 혼합이나 M25는 순수 earnings quality 시계열. Q04 필터가 low-quality value trap을 차단하여 defense 계열과도 독립성 유지. conditional_value=0.014로 CAUTION 구간에서 안정적 alpha 기대. 기존 admitted diversifier(STR_1656 ML)와 다른 메커니즘으로 SR gap 기여.",
+
+  "gap_targeting_axes": ["sr_gap", "kr_structural_gap"],
+
+  "why_now": "portfolio_gap_vector.json v1.0.6 sleeve_needs_priority P1_diversifier: STR_1679v3 외 추가 diversifier alpha source 필요. Diversifier sleeve 목표 22%(STR_1656 14% + 신규 8%+). SR gap 0.807 해소 경로에서 Phase_1 Defense cluster(H_1689/H_1693 33%) + Core_Secondary(H_1692 10%) 이외 독립 alpha 확보 필수. M25_Earnings_Mom_Streak은 recent_3y_icir=0.326으로 최근 3년 견고하며 conditional_ic_matrix top30%에 포함(cv=0.014). Q04_Piotroski_F도 recent_3y_icir=0.532. 두 팩터 모두 미사용(used=FALSE). KR structural gap: 외국인 낮은 분석 커버리지로 중소형 실적 드리프트 지속. v54 Freeze Explore budget 내.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "M25_Earnings_Mom_Streak",
+    "filter": "Q04_Piotroski_F",
+    "weight_scheme": "composite: 0.6 * z_M25 + 0.4 * z_Q04 (streak 우선 weighting)",
+    "rationale": "M25가 primary alpha source, Q04가 defensive filter. Q04 비중을 0.4로 설정하여 value trap 차단 효과 유지하면서 M25 streak signal 우선"
+  },
+
+  "conditional_ic_coverage": 1.0,
+  "conditional_ic_coverage_detail": {
+    "gate_05_threshold_top30pct": 0.0023,
+    "M25_Earnings_Mom_Streak_in_top30": true,
+    "Q04_Piotroski_F_in_top30": true,
+    "coverage_ratio": "2/2 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A1.5 Bernard & Thomas(1989 JAE) PEAD + A3.6 Piotroski(2000 JAR) F-Score. Bernard-Thomas: SUE(Standardized Unexpected Earnings) 기반 drift는 분기 이후 60일+까지 지속. M25 streak은 consecutive SUE positive를 포착. Piotroski: 9개 신호 F-score 0~9, 고F-score 장기 low-PBR 포트폴리오 연23%+ 초과 수익(미국), 한국 적용 가능성 KB증권(2018) A5.8 확인.",
+
+  "lesson_check": "L-130(IC≠SR): M25 ICIR 높아도 유동성 필터 후 quintile 수익률 S1 확인 필수. L-132(EP standalone fail): 팩터 단독 아닌 조합 설계. L-135(accrual sector-neutral dilution): sector-neutral 적용 시 alpha 희석 위험 — 본 가설은 cross-section z-score 사용(sector-neutral 없음). AX-004(quality standalone fail): Q04는 standalone 아닌 M25 filter 역할로 AX-004 scope 밖. Explore 버킷 30% 예산 내(현재 Explore 86.7%로 초과이나 Exploit bucket 보충 필요) — 이 가설은 기존 S0 실패 패턴 회피 + 미활용 family(momentum) 탐색으로 적합.",
+
+  "s0_ablation_design": {
+    "V1_primary": "0.6*z_M25 + 0.4*z_Q04 (composite)",
+    "V2_streak_only": "z_M25 standalone (streak 신호 단독 기여 측정)",
+    "V3_piotroski_only": "z_Q04 standalone (quality filter 단독 기여)",
+    "V4_equal_weight": "0.5*z_M25 + 0.5*z_Q04"
+  },
+
+  "pit_compliance_checklist": {
+    "C4_restatement_lag": "M25: earnings streak count는 Factor DB Usable_Date 경유. 분기 발표 45일 lag 적용.",
+    "C4_piotroski_lag": "Q04: Piotroski F-score는 연간 재무제표 기반 → 5월 리밸런싱 또는 Usable_Date 경유",
+    "C10_liquidity": "2억원 기준 shift(frollmean, lag=1) 필수",
+    "C13_z_score": "load_month_factors() 경유 시 Z_Score_Aligned 자동 생성 (expanding IC sign × Z_Score). M25/Q04 모두 higher_better → ic_sign=+1 → 수동 반전 불필요. 직접 parquet Z_Score 접근 금지. Judge R1 확인: direction=higher_better 양자 모두 확인됨.",
+    "C4_q04_mixed_lag_guard": "Q04 F-score는 annual + quarterly 항목 혼합. 최보수 lag(연간 5월 리밸) 강제 적용. Usable_Date가 5월 이전이면 해당 회계연도 데이터 사용 금지. Judge R1 조건부 필수.",
+    "C15_factor_db": "load_month_factors() 경유 필수 — M25(Factor DB line 1682) + Q04(line 2067) 모두 lifecycle=active 확인 완료 (Judge R1). 직접 parquet load 금지.",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "M25 Earnings Mom Streak Factor DB 등록 여부 확인 필요 (Forge S1 전 load_month_factors 테스트)",
+    "Q04 Piotroski_F 최근 3년 IC 0.532이지만 한국시장 적용 시 회계 데이터 라깅 주의(연간→5월)",
+    "AX-004 Exclusion 확인: Q04 standalone이 아닌 M25 filter 역할 — multi-factor composite이므로 AX-004 scope 밖",
+    "Explore 버킷 현재 86.7% 초과(목표 20%) — 이 가설 추가 후 Exploit/Stabilize 보충 필요",
+    "[Governor] family concentration: consensus/momentum 합산 32%(STR_1631 18%+STR_1656 14%) + H_1694 추가 시 35%+ 한도 도달 위험. S3 TDC + family 분류 후 PG1 Gate 6 확인 필수.",
+    "[Governor] KOSDAQ 지연 신고: M25 Usable_Date 분포를 KOSDAQ vs KOSPI 구분 확인 필수. 45일 lag만으로 KOSDAQ 지연 구조 커버 불충분 가능성. S1에서 Usable_Date <= sig_date 필터 후 유효 IC 개월 수 확인."
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.25~0.45 (M25 recent_3y_icir 0.326 + Q04 0.532 조합 하한)",
+    "sr_target": "0.8~1.2 (diversifier 역할, SR gap 기여 +0.10~0.15 예상)",
+    "mdd_target": "< 45% (hard fail 회피 — Q04 filter가 downside protection)",
+    "role": "diversifier (STR_1631 corr 예상 0.3~0.5)",
+    "tdc_target": "< 0.40 vs STR_1631 (earnings momentum은 price momentum과 구분)"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["sr_gap", "kr_structural_gap"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Forge Tasks #1~#4 대기 중 Explore bucket 가설 설계",
+    "Gate 0.5 coverage ratio 1.0 (M25 + Q04 모두 top30% 포함)",
+    "v54 Freeze: family 신설 금지 준수 — 기존 momentum family 내 신규 팩터 조합",
+    "L-130 경고 준수: S1에서 유동성 필터 후 quintile 수익률 반드시 확인",
+    "AX-004 scope 확인: Q04는 standalone quality가 아닌 momentum filter 역할 — composite 내 보조 신호",
+    "S0 Debate 진입 전 Factor DB에서 M25/Q04 Usable_Date 패턴 확인 필요"
+  ]
+}

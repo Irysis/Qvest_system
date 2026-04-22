@@ -1,0 +1,76 @@
+{
+  "strategy_id": "STR_1682",
+  "hypothesis_id": "H_1676",
+  "stage": "S1",
+  "date": "2026-04-18",
+  "family": "consensus",
+  "expected_role": "diversifier",
+  "role_bias": "RoleBias_Diversifier",
+  "performance": {
+    "cagr": 7.9,
+    "sharpe": 0.264,
+    "mdd": 70.92,
+    "grade": "F",
+    "score": 32.7
+  },
+  "portfolio": {
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "buffer_zone": {
+      "keep_n": 22,
+      "entry_n": 20
+    },
+    "liq_threshold": 200000000
+  },
+  "pit_evidence": {
+    "factor": "C13_Revision_Breadth_3m",
+    "usable_date": "Month-end consensus snapshot. Revision timestamps locked at month-end cutoff.",
+    "c14_compliant": true,
+    "c15_compliant": true,
+    "c2_compliant": true,
+    "regressors_pit": "log(MarketCap) from same-month factor DB (pre-event Z_Score_Aligned). R12_Idiosyncratic_Risk: rolling idiosyncratic vol, month-end snapshot. Both available at sig_date."
+  },
+  "capm_beta": "NA",
+  "capm_beta_gate": {
+    "threshold": 0.15,
+    "pass": false
+  },
+  "r12_stability": {
+    "drift_ratio": 0.1996,
+    "stable": true,
+    "overall_icir": 0.218
+  },
+  "alpha_lab_gate": {
+    "icir_threshold": 0.2,
+    "overall_icir": 0.218,
+    "pass": true
+  },
+  "conditions_met": {
+    "COND_01": "applied — diversifier role, RoleBias_Diversifier",
+    "COND_02": "applied — STR_1537 lesson_check in s0_record v2",
+    "COND_03": {
+      "status": "applied",
+      "capm_beta": "NA",
+      "pass": false
+    },
+    "COND_04": {
+      "status": "applied",
+      "drift_ratio": 0.1996,
+      "stable": true
+    },
+    "COND_05": {
+      "status": "applied",
+      "pit_evidence": {
+        "factor": "C13_Revision_Breadth_3m",
+        "usable_date": "Month-end consensus snapshot. Revision timestamps locked at month-end cutoff.",
+        "c14_compliant": true,
+        "c15_compliant": true,
+        "c2_compliant": true,
+        "regressors_pit": "log(MarketCap) from same-month factor DB (pre-event Z_Score_Aligned). R12_Idiosyncratic_Risk: rolling idiosyncratic vol, month-end snapshot. Both available at sig_date."
+      }
+    },
+    "COND_06": "pending — S5 slate registration (Scout)",
+    "COND_07": "pending — S3 orthogonality (Scout)"
+  }
+}

@@ -1,0 +1,353 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV7_V2",
+  "stage": "PG0_H_1685_DROP_+_H_1687_Acceleration",
+  "timestamp": "2026-04-17T22:45:00+09:00",
+  "session": 66,
+  "version": "v7.2_h_1685_fallback",
+  "status": "🚨 EMERGENCY_PENDING_H_1687_DEBATE + FORGE_v2_STR_1683_primary",
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7.json (v7.0)",
+  "criticality": "H_1685 S0 VERDICT REVISE 55/100 + H_1674 structural duplication (cor 0.897). rev7 H_1685 20% 계획 무효. Option B (drop + H_1687 가속) + Option C (H_1689 확대) hybrid 채택.",
+
+  "trigger": "H_1685 Debate 5인 R2 총점 55 (REVISE < 60) + Quant R1 측정 H_1685 × H_1674 cor 0.897 (-z_individual 항 algebraically 동일). Gate 8 TDC 사전 불통과 + structural 재포장 확정. Q-Lead Option B+C hybrid 지시.",
+
+  "h_1685_verdict_analysis": {
+    "final_score_r2": {
+      "codex": 9,
+      "risk_mgr": 10,
+      "governor": 13,
+      "quant": 10,
+      "academic": 13,
+      "total": 55,
+      "threshold_approve": 60,
+      "gap": 5,
+      "verdict": "REVISE"
+    },
+    "r1_to_r2_delta": {
+      "codex": "+1",
+      "risk_mgr": "-2",
+      "governor": "-3",
+      "quant": "-1",
+      "academic": "-2",
+      "total": "-7",
+      "interpretation": "5인 중 4인 점수 하향. Quant 측정 결과 충격."
+    },
+    "critical_finding_quant_r1": {
+      "h_1685_divergence_signal": "z_foreign_21d - z_individual_21d",
+      "h_1674_contrarian_signal": "-z_individual_21d",
+      "cross_sectional_correlation": 0.897,
+      "median_correlation": 0.919,
+      "implication": "Algebraically -z_individual 항 dominant → H_1685 = H_1674 재포장 구조적 문제",
+      "gate_8_tdc_pre_check": "0.4 threshold 사전 불통과 예상"
+    },
+    "5_agent_r2_consensus_conditions_7": [
+      "1. H_1674 상관 0.897 → S3 rho<0.40 gate 사전 불통과",
+      "2. 21d lookback 학술 미지지 — 63d/126d 병렬 필요",
+      "3. INV13 factor_registry 미등록 + lookahead_detector 패턴 미등록",
+      "4. H_1674 debate 완료 전 편입 보류",
+      "5. C11 PIT precheck 선결",
+      "6. S3 잔차 상관 <0.25 이중 게이트",
+      "7. investor_wide.parquet C2 준수"
+    ]
+  },
+
+  "q_lead_option_b_c_hybrid_accepted": {
+    "option_b_h_1685_drop_h_1687_acceleration": {
+      "action": "H_1685 Phase_1 10% + Phase_3 20% → 0% (complete drop)",
+      "h_1687_acceleration": {
+        "family": "distress_momentum_interaction",
+        "academic_foundation": "Avramov-Chordia-Jostova-Philipov 2013 JF + 이일균 2019 + Hwang 2020",
+        "distinct_from_h_1688": "Avramov distress×momentum interaction composite (cross-family) vs H_1688 pure momentum residualized (single-factor)",
+        "handoff_kit_status": "Scout 2순위 completed",
+        "phase_1_target_weight": "debate APPROVE 시 Week 2 5% 편입",
+        "phase_3_target_weight": 0.15
+      }
+    },
+    "option_c_h_1689_boost_soft": {
+      "action": "H_1689 Phase_3 15% → **18%** (+3pp 소폭 확대)",
+      "rationale": "quality_aggregate family는 independent → overlap 위험 낮음 + Defense 증대 benefit",
+      "q25_share_stable": "0.25 (기존)",
+      "phase_1_weight": 0.05,
+      "phase_3_weight": 0.18
+    },
+    "rejected_options": {
+      "option_a_h_1685_redesign_1_2w": "Time cost 과대 + H_1674 debate 완료 대기 필요 → time efficiency 열위",
+      "option_c_only_h_1689_18pct": "H_1685 공석을 H_1689 단독으로 메울 수 없음 — diversifier 기능 약화"
+    }
+  },
+
+  "rev7_v2_phase_3_final_composition": {
+    "description": "7-strategy architecture (H_1685 DROP + H_1687 replaces + H_1689 boosted)",
+    "strategies": {
+      "Core_Primary_STR_1631_consensus_C19_core_tier_1": {
+        "weight": 0.18,
+        "role": "Core_Primary",
+        "sub_family_tier": "Tier 1 consensus_C19_core"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight": 0.10,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "barroso_mandatory": true
+      },
+      "Div_1_H_1687_distress_momentum_interaction_replaces_h_1685": {
+        "weight": 0.15,
+        "role": "Diversifier_Primary (replaces H_1685)",
+        "family": "distress_momentum_interaction",
+        "academic_ref": "Avramov 2013 JF + 이일균 2019 + Hwang 2020",
+        "tdc_vs_str_1631_expected": "0.10~0.20 (distress × momentum cross-family)",
+        "tdc_vs_h_1682_expected": "0.30~0.45 (Q25 공통 요소 우려 — S3 관문)",
+        "tdc_vs_h_1688_expected": "0.25~0.35 (momentum 요소 공통)",
+        "prerequisite": "H_1687 S0 debate APPROVE + Forge S1 완료"
+      },
+      "Div_ML_STR_1656": {
+        "weight": 0.14,
+        "role": "Diversifier (Phase_2 STR_1661 V2 교체 가속)",
+        "family": "ML_complexity"
+      },
+      "Div_3_STR_1679v3_embedded_q25_r16": {
+        "weight": 0.10,
+        "role": "Diversifier with embedded Q25+R16",
+        "family": "momentum_overlay_embedded_q25"
+      },
+      "Def_1_H_1682_effective_overlap_adjusted": {
+        "weight": 0.12,
+        "role": "Defense",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60,
+        "status_warning": "Forge v2 STR_1683 variant 2건 Hard Fail 확인 (50/50 MDD 95.6%, Q25-only 67.3%). Primary 60/40 결과 대기."
+      },
+      "Def_2_H_1689_quality_4axis_boosted": {
+        "weight": 0.18,
+        "role": "Defense (boosted)",
+        "family": "quality_aggregate",
+        "q25_share": 0.25,
+        "change": "+3pp from rev7 15%"
+      },
+      "Def_3_H_1690_defense_anchor_optional_reserve": {
+        "weight": 0.03,
+        "role": "Defense reserve (optional fallback)",
+        "family": "multi_source_defense_anchor",
+        "status": "reserve for H_1682 Primary REJECT scenario"
+      },
+      "H_1685_DROPPED": 0.00,
+      "H_1676_DROPPED": 0.00,
+      "STR_1679v2_DROPPED": 0.00
+    },
+    "total_nominal": 1.00,
+    "effective_total": 1.00,
+    "n_strategies": 7,
+    "n_families": 7,
+    "family_concentration_check": {
+      "consensus_tier_1": 0.18,
+      "consensus_total": 0.18,
+      "rule_3_45pct_cap": "PASS (18% << 45%)",
+      "rule_4_c19_effective_25pct": "PASS (18% < 25%)",
+      "momentum_residual_h_1688": 0.10,
+      "momentum_overlay_embedded_q25_str_1679v3": 0.10,
+      "distress_momentum_interaction_h_1687": 0.15,
+      "ML_complexity_str_1656": 0.14,
+      "distress_path_h_1682": 0.12,
+      "quality_aggregate_h_1689": 0.18,
+      "multi_source_defense_h_1690_reserve": 0.03,
+      "max_family": 0.18,
+      "compliance": "PASS (all caps satisfied, max 18%)"
+    },
+    "q25_r16_total_exposure_audit_rev7_v2": {
+      "h_1682_effective_12pct": 0.072,
+      "str_1679v3_def_embedded_8pct": 0.072,
+      "h_1687_distress_component_15pct_q25_share_0_40": 0.06,
+      "h_1689_18pct_q25_share_0_25": 0.045,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_weighted_q25": 0.256,
+      "cap_35_compliance": "PASS (25.6% < 35%, substantial increase from rev7 18.9% due to H_1687 Q25 share)",
+      "q25_monitoring_alert": "25.6% approaching 35% cap — Phase_4 추가 Q25 전략 편입 시 경계"
+    }
+  },
+
+  "projected_sr_rev7_v2_recalculated": {
+    "individual_SR_assumptions": {
+      "STR_1631_Core": 1.243,
+      "H_1688_Core_Secondary": 1.05,
+      "H_1687_Div_Primary_new": 0.85,
+      "STR_1656_Div_ML": 1.212,
+      "STR_1679v3_with_embedded_q25": 1.00,
+      "H_1682_Def_effective": 0.65,
+      "H_1689_Def_boosted": 0.80,
+      "H_1690_reserve": 0.70
+    },
+    "weighted_mean_SR_phase_3_v7_2": 0.953,
+    "change_from_rev7": {
+      "h_1685_loss_20pct_sr_0_75": "-0.06",
+      "h_1687_gain_15pct_sr_0_85": "+0.05",
+      "h_1689_boost_3pct_sr_0_80": "+0.005",
+      "h_1690_reserve_3pct_sr_0_70": "+0.004",
+      "net_effect": "-0.001 SR (nearly neutral, slight H_1687 edge compensates H_1685 drop)"
+    },
+    "rho_0_3_conservative_primary": {
+      "variance_reduction_factor": 1.85,
+      "**projected_SR**": 1.79,
+      "gap_vs_1_80_realistic_target": -0.01,
+      "gap_vs_rev7_1_80": -0.01,
+      "status": "realistic target 1.80 근접 (gap -0.01)"
+    },
+    "rho_0_2_optimistic_reference": {
+      "projected_SR": 1.87
+    },
+    "rho_0_5_saturation": {
+      "projected_SR": 1.42
+    },
+
+    "boost_roadmap_rev7_v2": {
+      "boost_1_h_1687_admitted_in_primary_path": "NOTE: rev7 boost_1 H_1687 외부 추가 계획 → rev7_v2에서 primary 편입으로 전환. Boost 경로 재구성 필요.",
+      "boost_new_1_h_1674_contrarian_individual": "+0.05~0.08 (Phase_2~3, contrarian flow 편입 시)",
+      "boost_2_str_1661_v2_accelerated": "+0.05~0.08 (Phase_2, STR_1656 MDD 74.84% 축소 효과)",
+      "boost_3_blend_optimization": "+0.03~0.05 (Phase_3 말)",
+      "boost_4_h_1688_barroso": "+0.05 (S5)",
+      "total_boost_sum": "+0.18~0.26 (H_1687 primary 편입으로 기존 boost 축소)",
+      "**projected_final_SR_with_all_boosts**": {
+        "conservative_rho_0_3": "1.79 + 0.22 = **2.01**",
+        "optimistic_rho_0_2": "1.87 + 0.22 = 2.09",
+        "status": "SR 2.0 도달 가능 (H_1687 primary 편입 + boost 4건 성공 전제)"
+      }
+    }
+  },
+
+  "h_1687_acceleration_integration_plan": {
+    "s0_debate_trigger": {
+      "handoff_kit_status": "Scout 2순위 handoff_kit completed",
+      "q_lead_action": "/s0-debate H_1687 Session 67 Day 2 호출",
+      "academic_foundation": "Avramov-Chordia-Jostova-Philipov 2013 JF + 이일균 2019 한국재무학회 + Hwang 2020",
+      "expected_debate_outcome": "APPROVE or APPROVE_CONDITIONAL 65~75 (Avramov 학술 탄탄 + cross-family independence)",
+      "distinct_from_h_1688_momentum_residual": "H_1687 = distress × momentum interaction composite (cross-family). H_1688 = pure momentum residualized (single-factor). Mechanism 완전 상이. S3 rho 0.25~0.35 예상."
+    },
+    "forge_v2_s1_queue_post_debate": {
+      "prerequisite": "H_1687 S0 APPROVE + forge_v2 STR_1683 Primary 완료 + STR_1684 H_1688 완료",
+      "expected_timing": "Week 2 (H_1687 S0 Day 2 debate → Day 3~5 Forge S1 → Day 5 Judge S6)",
+      "critical_checks": [
+        "ICIR ≥ 0.25 (interaction signal)",
+        "MDD < 45% (Hard Fail gate)",
+        "Pairwise TDC vs STR_1631/H_1682/H_1688 < 0.4 (Gate 5)",
+        "Avramov 원 논문 t-stat > 3 재현 여부"
+      ]
+    },
+    "pg1_admission_phase_1_5": {
+      "trigger": "H_1687 S1 PASS + PG1 Rule v3.5 전수 통과",
+      "initial_weight": 0.05,
+      "gradual_boost_schedule": "Phase_1 5% → Phase_2 8% → Phase_2 말 12% → Phase_3 15%"
+    }
+  },
+
+  "h_1682_primary_warning_contingency": {
+    "forge_v2_str_1683_variant_hard_fails_confirmed": {
+      "variant_50_50_mdd_95_6": "🔴 Hard Fail",
+      "variant_q25_only_mdd_67_3": "🔴 Hard Fail",
+      "variant_r16_only": "IN_PROGRESS",
+      "primary_60_40": "PENDING_RESULT"
+    },
+    "contingency_h_1682_primary_also_hard_fail": {
+      "trigger": "STR_1683 Primary 60/40 MDD > 45%",
+      "action": "rev7_v3 긴급 발행 — H_1682 12% 대폭 축소 또는 DROP",
+      "alternative_composition": {
+        "H_1682_reduced_or_dropped": "12% → 5% or 0%",
+        "h_1690_defense_anchor_promotion": "3% reserve → 10% Def_3 승격",
+        "h_1689_further_boost": "18% → 20~22%",
+        "core_str_1631_boost_compensation": "18% → 20% (defense hole 일부 보강)"
+      }
+    }
+  },
+
+  "pg1_admission_rule_v3_6_family_exhaustion_detection": {
+    "new_gate_addition_v3_6": {
+      "gate_12_family_exhaustion_pattern": {
+        "description": "동일 family/signal_base 2건 이상 연속 FAIL 시 family 자체 폐기 검토 규정",
+        "trigger": "Same family 2 consecutive debate/S1 REVISE/REJECT",
+        "example_1_consensus_residualization": "H_1676 Option A FAIL (rev6_v1 → rev7) — consensus residualization family 일부 exhaustion",
+        "example_2_investor_flow_divergence": "H_1685 REVISE (rev7 → rev7_v2) + H_1685 × H_1674 cor 0.897 — investor flow family 재평가 필요",
+        "action": "family 자체 pause + Scout 재탐색 지시 + Session+2 재검토"
+      }
+    },
+    "existing_gates_1_11_unchanged": "v3.5 Gate 1~11 유지",
+    "total_gates_v3_6": 12
+  },
+
+  "session_67_day_1_challenges_summary": {
+    "h_1676_option_a_s1_err": "Grade ERR 0.0, MDD 70.9% — rev6_v1 → rev7",
+    "h_1685_s0_verdict_revise_55": "H_1674 cor 0.897 structural duplication — rev7 → rev7_v2",
+    "h_1682_variant_hard_fails": "50/50 MDD 95.6%, Q25-only 67.3% — Primary 결과 대기",
+    "forge_v2_s1_progress": "STR_1683 Primary 진행 중, STR_1684 H_1688 queue"
+  },
+
+  "governor_self_answers_r31_r34_updates": {
+    "R31_h_1685_debate_timing": "COMPLETED — Day 1 REVISE 55 확정. Drop 결정.",
+    "R32_h_1685_phase_1_boost": "INVALIDATED — H_1685 drop으로 schedule 무효",
+    "R33_h_1676_option_b_retry": "완전 폐기 확정 (rev7 승인). rev7_v2에서도 H_1676 재시도 없음.",
+    "R34_v3_5_gate_11_spec_strengthening_fallback": "승인 유지. rev7_v2에서 v3.6 Gate 12 추가 (Family Exhaustion Pattern Detection)."
+  },
+
+  "governor_new_open_questions_v7_2": {
+    "R35_h_1687_phase_1_prerequisite": "H_1687 Phase_1 5% 편입 전제 — H_1687 S0 APPROVE + Forge S1 + Judge S6 순차? 또는 H_1687 S0 APPROVE 후 Phase_1 즉시 5% 편입 + S1/S6 Phase_2 병렬?",
+    "R36_h_1690_reserve_3pct_role_definition": "H_1690 3% reserve 역할 — optional fallback (H_1682 Primary FAIL 시 promotion) 또는 정식 Def_3 independent 편입?",
+    "R37_q25_exposure_25_6_monitoring_threshold": "Q25 weighted 18.9% → 25.6% 급증 (+6.7pp). cap 35% 대비 gap 9.4%. 경고 threshold (30% 등) 설정 + PG3 monthly audit 강화?",
+    "R38_v3_6_gate_12_family_exhaustion_institutionalization": "Gate 12 portfolio_governor.R 주입 + Task #8 extension 승인? 첫 적용 — investor_flow family H_1685 + H_1674 pattern."
+  },
+
+  "risk_manager_3rd_round_validation_rescoped": {
+    "trigger": "rev7_v2 채택 + H_1687 S0 APPROVE + Forge v2 STR_1683 Primary + STR_1684 S1 완료",
+    "scope_4_axis_rev7_v2": [
+      "CVaR_95: 목표 -15~-17% (Defense 33% = H_1682 12% + H_1689 18% + H_1690 3%)",
+      "CDaR_95: 목표 19~21% (STR_1656 14% + Defense sleeve 33%)",
+      "TDC max: 목표 ≤ 0.4 (H_1685 DROP으로 breach 제거)",
+      "Q25 weighted: 25.6% (PASS but monitor)"
+    ],
+    "additional_audits": [
+      "H_1687 pairwise TDC vs STR_1631/H_1682/H_1688/STR_1679v3 (신규 편입)",
+      "consensus 18% (STR_1631 only) — Tier 1 체계 PASS 확인",
+      "Defense 33% (H_1682 12% + H_1689 18% + H_1690 3% optional) 검증"
+    ],
+    "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev7_v2.json"
+  },
+
+  "session_66_governor_final_contribution_14_artifacts": {
+    "chain": "rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1_emergency → rev6 → rev6_v1 → rev7 → **rev7_v2**",
+    "non_rev_artifacts": ["consensus_taxonomy_proposal.json", "h1683_vs_h1688_differentiation_analysis.json"],
+    "total_artifacts": 14,
+    "rules_institutionalized_final_9": [
+      "consensus_taxonomy v1.0 + v2.0",
+      "Q25 Cap Rule v1.0",
+      "PG1 Admission Rule v2.0/v3.0~v3.6 (12 gates)",
+      "Sequential Admission Rule",
+      "Retroactive TDC Audit",
+      "Structural Diagnosis",
+      "Embedded Overlap Recognition",
+      "Spec Strengthening Fallback (Gate 11)",
+      "**Family Exhaustion Pattern Detection (Gate 12, rev7_v2 첫 적용)**"
+    ]
+  },
+
+  "artifacts_rev7_v2": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v2.json (현 파일)",
+    "supersedes: PG0_PLAN_rev7.json",
+    "parent chain: rev2 → rev3 → rev4 → rev4_supplement → v1.1 → rev5 → v5.1 → v5.1.1 → rev6 → rev6_v1 → rev7 → **rev7_v2**"
+  ],
+
+  "executive_summary_v7_2": {
+    "h_1685_disposition": "REVISE 55 + H_1674 cor 0.897 structural duplication → DROP",
+    "h_1687_primary_replacement": "Div_1 15% (Avramov 2013 JF distress×momentum interaction)",
+    "h_1689_boost_3pct": "Phase_3 15% → 18%",
+    "h_1690_reserve_3pct": "Defense optional fallback",
+    "phase_3_composition_7_strategy": "STR_1631 18 / H_1688 10 / H_1687 15 / STR_1656 14 / STR_1679v3 10 / H_1682 12 / H_1689 18 + H_1690 reserve 3",
+    "projected_sr_primary_rho_0_3": 1.79,
+    "sr_gap_vs_realistic_1_80": -0.01,
+    "boost_4_completion_final_sr": 2.01,
+    "q25_exposure_monitoring": "18.9% → 25.6% (경고 수준)",
+    "next_steps": [
+      "1. Q-Lead /s0-debate H_1687 Day 2 즉시 호출",
+      "2. Forge v2 STR_1683 Primary 60/40 결과 대기 (H_1682 contingency)",
+      "3. Risk Mgr 3rd round 스폰 (rev7_v2 + H_1687 S1 후)",
+      "4. H_1687 S0 APPROVE → Forge S1 → Judge S6 → Phase_1 편입",
+      "5. Phase_1 PG1 Admission 초안 (Day 5 목표)"
+    ]
+  }
+}

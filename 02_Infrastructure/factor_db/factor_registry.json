@@ -982,7 +982,7 @@
   "M05_Trended_Mom": {
     "name": "Trend Momentum",
     "category": "momentum",
-    "definition": "log-price 252-day slope \u00d7 252. Linear trend strength.",
+    "definition": "log-price 252-day slope × 252. Linear trend strength.",
     "direction": "higher_better",
     "data_source": "rawdata",
     "lag_rule": "Date <= sig_d",
@@ -11442,6 +11442,132 @@
       "last_validated": null,
       "deprecation_reason": null,
       "mutation_parent": null
+    }
+  },
+  "INV13_Foreign_Resid_Individual_21d": {
+    "name": "Foreign Flow Residualized on Individual Flow (21d)",
+    "category": "investor_flow",
+    "definition": "residual_t(i) = z_F_t(i) - beta_t * z_I_t(i). z_F: 21d foreign net buy z-score. z_I: 21d individual net buy z-score. beta_t: expanding-window no-intercept OLS (lag 1, burn-in 60m). Reference: Choe-Kho-Stulz (2005 RFS).",
+    "direction": "higher_better",
+    "data_source": "investor_flow",
+    "lag_rule": "Date < sig_d (C2 strict, T+1 disclosure)",
+    "update_freq": "monthly",
+    "labels": {
+      "economic_family": "investor_flow",
+      "construction": "residual_orthogonalization",
+      "neutrality": "residualized",
+      "horizon": "short",
+      "capacity": "medium",
+      "evidence_tier": "B",
+      "macro_sensitivity": "neutral",
+      "regime_profile": {
+        "risk_on": "positive",
+        "elevated": "neutral",
+        "crisis": "neutral"
+      },
+      "correlation_group": "investor_flow_cluster",
+      "turnover_profile": "high",
+      "data_dependency": "quantiwise_investor"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S1",
+      "mutation_count": 0,
+      "added_date": "2026-04-18",
+      "last_validated": null,
+      "deprecation_reason": null,
+      "mutation_parent": null
+    },
+    "pit_compliance": {
+      "C1": "expanding_window_strict_lag",
+      "C2": "date_strict_less_than_sig_date",
+      "C11": "quantiwise_T1_timing",
+      "C13": "z_score_aligned_no_manual_flip",
+      "burn_in_months": 60
+    }
+  },
+  "INV13_Foreign_Resid_Individual_63d": {
+    "name": "Foreign Flow Residualized on Individual Flow (63d)",
+    "category": "investor_flow",
+    "definition": "residual_t(i) = z_F_t(i) - beta_t * z_I_t(i). z_F: 63d foreign net buy z-score. z_I: 63d individual net buy z-score. beta_t: expanding-window no-intercept OLS (lag 1, burn-in 60m). Reference: Choe-Kho-Stulz (2005 RFS).",
+    "direction": "higher_better",
+    "data_source": "investor_flow",
+    "lag_rule": "Date < sig_d (C2 strict, T+1 disclosure)",
+    "update_freq": "monthly",
+    "labels": {
+      "economic_family": "investor_flow",
+      "construction": "residual_orthogonalization",
+      "neutrality": "residualized",
+      "horizon": "short",
+      "capacity": "medium",
+      "evidence_tier": "B",
+      "macro_sensitivity": "neutral",
+      "regime_profile": {
+        "risk_on": "positive",
+        "elevated": "neutral",
+        "crisis": "neutral"
+      },
+      "correlation_group": "investor_flow_cluster",
+      "turnover_profile": "medium",
+      "data_dependency": "quantiwise_investor"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S1",
+      "mutation_count": 0,
+      "added_date": "2026-04-18",
+      "last_validated": null,
+      "deprecation_reason": null,
+      "mutation_parent": null
+    },
+    "pit_compliance": {
+      "C1": "expanding_window_strict_lag",
+      "C2": "date_strict_less_than_sig_date",
+      "C11": "quantiwise_T1_timing",
+      "C13": "z_score_aligned_no_manual_flip",
+      "burn_in_months": 60
+    }
+  },
+  "INV13_Foreign_Resid_Individual_126d": {
+    "name": "Foreign Flow Residualized on Individual Flow (126d)",
+    "category": "investor_flow",
+    "definition": "residual_t(i) = z_F_t(i) - beta_t * z_I_t(i). z_F: 126d foreign net buy z-score. z_I: 126d individual net buy z-score. beta_t: expanding-window no-intercept OLS (lag 1, burn-in 60m). Reference: Choe-Kho-Stulz (2005 RFS).",
+    "direction": "higher_better",
+    "data_source": "investor_flow",
+    "lag_rule": "Date < sig_d (C2 strict, T+1 disclosure)",
+    "update_freq": "monthly",
+    "labels": {
+      "economic_family": "investor_flow",
+      "construction": "residual_orthogonalization",
+      "neutrality": "residualized",
+      "horizon": "short",
+      "capacity": "medium",
+      "evidence_tier": "B",
+      "macro_sensitivity": "neutral",
+      "regime_profile": {
+        "risk_on": "positive",
+        "elevated": "neutral",
+        "crisis": "neutral"
+      },
+      "correlation_group": "investor_flow_cluster",
+      "turnover_profile": "low",
+      "data_dependency": "quantiwise_investor"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S1",
+      "mutation_count": 0,
+      "added_date": "2026-04-18",
+      "last_validated": null,
+      "deprecation_reason": null,
+      "mutation_parent": null
+    },
+    "pit_compliance": {
+      "C1": "expanding_window_strict_lag",
+      "C2": "date_strict_less_than_sig_date",
+      "C11": "quantiwise_T1_timing",
+      "C13": "z_score_aligned_no_manual_flip",
+      "burn_in_months": 60
     }
   }
 }

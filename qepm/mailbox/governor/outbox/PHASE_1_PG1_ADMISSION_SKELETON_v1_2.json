@@ -1,0 +1,191 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON_v1_2",
+  "stage": "PG1_pre_draft_v3_5_enhanced",
+  "timestamp": "2026-04-18T15:20:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v1.2_v3_5_enhanced",
+  "supersedes": "PHASE_1_PG1_ADMISSION_SKELETON_v1_1.json",
+  "status": "SKELETON v1.2 — v3.5 CONDITIONAL_ACTIVE Stage 1 (team-lead 최종 arbitration) 반영. Gate 11/12 advisory_warning 수준 적용.",
+  "reference_v3_5": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json",
+  "v3_5_status_clarification": "Stage 1 CONDITIONAL_ACTIVE. Gate 11/12 현재 advisory_warning. Stage 2 전환 (VALIDATED Hard Fail 2건) 시 Gate 12 hard_block / Stage 3 전환 (Architect signoff) 시 ACTIVE_NORMATIVE + Gate 11/12 hard_block.",
+
+  "v3_5_enhancements_applied_stage_1": [
+    "1. Admission Rule v3.4 10 gates → v3.5 12 gates로 승격 (ruleset 승인)",
+    "2. Gate 11 variant_comparison: 현 단계 advisory_warning 전면 적용 (Defense mandatory는 Stage 2 이후)",
+    "3. Gate 12 IC-Return coupling ratio: 현 단계 advisory_warning 전면 적용",
+    "4. variant_comparison.csv + coupling_ratio 산출 권장 (Stage 2 mandatory 승격 대비)",
+    "5. Core_Primary exemption 기록 의무 명시 (STR_1631)",
+    "6. Retroactive audit preliminary 결과 embedding (WARNING 수준)"
+  ],
+
+  "admission_rule_v3_5_12_gates_normative": {
+    "gates_1_10_v3_4_inherited": {
+      "gate_1": "Scorecard Grade A or A_NOVEL",
+      "gate_2": "Anti-pattern 13종 antipattern_detector.R PASS",
+      "gate_3": "LOO 4종 loo_validator.R PASS",
+      "gate_4": "Role Honesty role_honesty_audit.R PASS",
+      "gate_5": "Family cap 35%",
+      "gate_6": "TDC pairwise < 0.5 (Sequential Admission)",
+      "gate_7": "CVaR budget 5% < -3.5%",
+      "gate_8": "CDaR Early Warning (L-158, 10% < -15% 조건부)",
+      "gate_9": "Retroactive TDC Audit",
+      "gate_10": "Consensus_tier (taxonomy v2.0 sub-family)"
+    },
+    "gates_11_12_v3_5_new": {
+      "gate_11": {
+        "name": "variant_comparison",
+        "criterion": "Forge S1 min 3 variants + primary >= alternatives",
+        "hard_block_condition": "4 variants 전량 Hard Fail (L-160 pattern)",
+        "conditional_block_condition": "primary < best sub-variant (composite offset 의심)",
+        "exemption": "Core_Primary single signal (명시 기록 의무)",
+        "artifact_required": "04_Research/strategies/{strategy}/output/variant_comparison.csv"
+      },
+      "gate_12": {
+        "name": "ic_return_coupling_ratio",
+        "criterion": "SR_monthly / ICIR_full_sample >= 0.3",
+        "hard_block_condition": "ratio < 0.15 or negative",
+        "warning_zone": "0.15 <= ratio < 0.3 (Risk Mgr audit)",
+        "exemption": "long-short or 50+ diversified portfolio",
+        "computation": "hurdle_result.json Sharpe_monthly / ICIR_full_sample"
+      }
+    }
+  },
+
+  "admission_candidates_per_rev8_a_v3_5_enhanced": {
+    "slot_1_STR_1631_Core_Primary": {
+      "admission_status": "ALREADY_PG2_ACTIVE",
+      "weight_current": 0.80,
+      "weight_target": 0.18,
+      "gate_11_application": "EXEMPT (v3.5 Core_Primary single consensus signal exemption, 명시 기록)",
+      "gate_12_application": "PENDING_COMPUTATION (Judge R1 coordinate 요청)",
+      "retroactive_audit_verdict": "qepm/mailbox/governor/outbox/retroactive_v3_5_audit_consolidated.json 참조"
+    },
+    "slot_2_H_1688_Core_Secondary": {
+      "admission_status": "PENDING_FORGE_S1",
+      "weight_target": 0.10,
+      "role": "Core_Secondary residual_momentum",
+      "gate_11_application": "ADVISORY (Core_Secondary이므로 mandatory 아님. Forge S1에서 variant 3+ 권장)",
+      "gate_12_application": "ADVISORY (warning zone시 Risk Mgr audit)",
+      "forge_s1_requirement": "variant_comparison.csv 권장 생성 (Gate 11 권장 적용)",
+      "s0_debate_score": 67
+    },
+    "slot_3_STR_1656_Div_ML": {
+      "admission_status": "ALREADY_PG2_ACTIVE",
+      "weight_current": 0.20,
+      "weight_target": 0.14,
+      "gate_11_application": "ADVISORY (ML family — Gate 11 factor variant 개념 적용 제한, v3.6 framework 대기)",
+      "gate_12_application": "PENDING_COMPUTATION (Judge R1 coordinate)",
+      "retroactive_audit_note": "ML hyperparameter variant framework v3.6 agenda 제안됨"
+    },
+    "slot_4_STR_1679v3_Div_3": {
+      "admission_status": "PRE_APPROVED_NEW_ENTRY",
+      "weight_target": 0.10,
+      "gate_11_application": "ADVISORY (Div family, momentum_overlay_embedded_q25)",
+      "gate_12_application": "ADVISORY",
+      "gate_9_retroactive_tdc_required": "STR_1631↔STR_1679v3 TDC < 0.5 재확인 (L-156 v2)"
+    },
+    "slot_5_H_1689_Def_2": {
+      "admission_status": "PENDING_FORGE_S1_JUDGE_S6",
+      "weight_target": 0.23,
+      "role": "Defense quality_aggregate",
+      "gate_11_application": "**MANDATORY** (Defense family — L-160 재발 방지)",
+      "gate_12_application": "**MANDATORY** (Defense family — L-160 재발 방지)",
+      "forge_s1_requirement": [
+        "variant_comparison.csv 의무 생성 (min 3 variants)",
+        "hurdle_result.json Sharpe_monthly + ICIR_full_sample 수치 정확 기록",
+        "coupling_ratio = Sharpe_m / ICIR_full >= 0.3 확인"
+      ],
+      "additional_checks": [
+        "AX-005 exclusion 재확인 (quality standalone 구조적 실패 scope 밖)",
+        "H_1689 단독 23% over-concentration (Risk Mgr V2)"
+      ]
+    },
+    "slot_6_H_1690_Def_3": {
+      "admission_status": "PENDING_10_CONDITIONS_PASS",
+      "weight_target": 0.10,
+      "role": "Defense multi_source_defense_anchor",
+      "gate_11_application": "**MANDATORY** (Defense family)",
+      "gate_12_application": "**MANDATORY** (Defense family)",
+      "10_conditions_forge_s1_check_6": ["C1 cosine", "C2 R16 variance", "C4 R16 regime3", "C6 2020-03 lag", "C9 KOSDAQ alignment", "C10 AX-001 3-axis"],
+      "forge_s1_variant_baseline_4_required": ["V1 primary regime-smoothed 4-axis", "V2 EW 25/25/25/25", "V3 2-axis C19+Q07", "V4 3-axis excluding R16"],
+      "note": "Quant R2 권고 4 variants 이미 TODO에 포함됨 → Gate 11 satisfied by design"
+    },
+    "slot_7_H_1685v2_Div_4_phase_2_plus": {
+      "admission_status": "NOT_ADMITTED_PHASE_1 (Phase_2 대기)",
+      "weight_target_phase_2": 0.03,
+      "weight_target_phase_4_A": 0.08,
+      "weight_target_phase_4_B_swap": 0.10,
+      "gate_11_application": "ADVISORY (Div family investor_flow)",
+      "gate_12_application": "ADVISORY",
+      "additional_12_conditions": "S0 VERDICT conditions_for_s1 (INV13 + C11 + TDC + ICIR 3-period + 21/63/126 sensitivity)"
+    }
+  },
+
+  "forge_s1_requirements_per_role_matrix": {
+    "Defense_mandatory": {
+      "applies_to": ["H_1689", "H_1690", "Scout D1~D5 future"],
+      "requirements": [
+        "variant_comparison.csv 의무 생성 (min 3 variants)",
+        "Sharpe_monthly + ICIR_full_sample 명시 기록",
+        "Gate 11 structural failure detection",
+        "Gate 12 coupling_ratio >= 0.3 확인"
+      ]
+    },
+    "Core_Secondary_Diversifier_advisory": {
+      "applies_to": ["H_1688", "STR_1679v3", "H_1685v2"],
+      "requirements": [
+        "variant_comparison.csv 권장 생성",
+        "Gate 12 warning zone 발견 시 Risk Mgr audit"
+      ]
+    },
+    "Core_Primary_exempt": {
+      "applies_to": ["STR_1631"],
+      "requirements": ["admission log에 exemption 명시 기록"]
+    }
+  },
+
+  "str_1631_weight_migration_path_unchanged_v1_1_reference": "PHASE_1_PG1_ADMISSION_SKELETON_v1_1.json의 4-step migration path Day 1~4 동일 유지",
+
+  "tdc_pairwise_matrix_10_pairs_unchanged_v1_1_reference": "v1_1과 동일. Judge R2 coordinate 진행 시 실측치 기입",
+
+  "activation_flow_6_steps_unchanged_v1_1_reference": "v1_1과 동일. audit 수신 → 10분 ACTIVATE",
+
+  "retroactive_audit_integration": {
+    "preliminary_complete_5_strategies": "qepm/mailbox/governor/outbox/retroactive_v3_5_audit_consolidated.json",
+    "hard_block_findings": 0,
+    "conditional_block_findings": 0,
+    "sla_deadline": "2026-04-19T15:05 KST",
+    "final_verdict_pending": "Judge R1~R3 coordinate 후 completion"
+  },
+
+  "dependencies_v1_2": [
+    "rev8-A ACTIVATE (P0, audit 대기)",
+    "Forge STR_1684 (H_1688) S1 hurdle_result + variant_comparison.csv (P0)",
+    "Forge STR_1690 (H_1690) S1 hurdle_result + 4 variants (P0)",
+    "Forge H_1689 S1 hurdle_result + variant_comparison.csv (P0, Defense mandatory)",
+    "Judge S6 15 gates + v3.5 Gate 11/12 + coupling_ratio computation (P0)",
+    "Judge R1~R3 coordinate (Governor 요청 발송 완료)",
+    "Risk Mgr 3rd round VERDICT (P1)",
+    "Retroactive audit final verdict (24h SLA)"
+  ],
+
+  "governor_deliverable_format_per_candidate_enhanced": {
+    "per_candidate_verdict": {
+      "strategy_id": "string",
+      "admission_status": "ADMIT / ADMIT_CONDITIONAL / DEFER / REJECT",
+      "gates_1_10_passed": "n/10",
+      "gate_11_result": "EXEMPT / PASS / ADVISORY_WARNING / CONDITIONAL_BLOCK / HARD_BLOCK",
+      "gate_12_result": "EXEMPT / PASS / WARNING_0_15_0_3 / CONDITIONAL_BLOCK / HARD_BLOCK",
+      "coupling_ratio_measured": "numeric",
+      "variants_examined_count": "integer",
+      "rationale": "string",
+      "role_admitted": "Core_Primary / Core_Secondary / Diversifier / Defense",
+      "weight_admitted": "decimal",
+      "sub_family_tier": "per consensus taxonomy v2.0",
+      "l_160_pattern_detected": "logical"
+    }
+  }
+}

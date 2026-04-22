@@ -1,0 +1,229 @@
+{
+  "artifact_type": "s3_tdc_matrix_methodology_prework",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "factor_id": "ML_XGB_GPU_V2",
+  "stage": "S3",
+  "created_at": "2026-04-18",
+  "created_by": "Scout",
+  "supersedes": null,
+  "purpose": "STR_1661 V2 S3 orthogonality TDC matrix 측정 방법론 사전 설계. Forge daily_returns 재생성 전 methodology + R code template + benchmark pre-estimate 완비하여 daily_returns 수신 즉시 실행 가능.",
+  "trigger": "Q-Lead Session 67 연속 명령 — 대기 금지 + Scout autonomous 병행 작업",
+  "dependency": "Forge v3 STR_1661 V2 재실행 시 daily_returns.csv 생성 (Fix 1 적용 load_month_factors 경유 + STR_1684_v2b 교훈 반영)",
+
+  "s3_measurement_methodology": {
+    "framework": "L-156 v2 TDC (Tail Dependence Coefficient) pairwise cluster measurement",
+    "statistical_tests": [
+      "Pairwise Spearman rank correlation (monthly returns)",
+      "Daily Pearson correlation (daily_returns)",
+      "t-copula tail dependence coefficient (conditional on stress regime)",
+      "CRISIS regime subset TDC (MRS >= 30 or stress_period filter)"
+    ],
+    "threshold_gates": {
+      "diversifier_max_TDC": 0.40,
+      "core_secondary_relaxed_max_TDC": 0.55,
+      "parent_child_relaxed_max_TDC": 0.70,
+      "crisis_conditional_max_TDC": 0.55,
+      "source": "families.json v1.4 cross_family_rules.tdc_thresholds"
+    }
+  },
+
+  "benchmark_strategies_tdc_pre_estimates": {
+    "_note": "STR_1661 V2 S2 extended profile (Scout) + families.json v1.4 factor_tracking 기반 사전 추정",
+    "benchmarks": [
+      {
+        "strategy": "STR_1631_SYN_05",
+        "role": "PG2 anchor consensus (Tier 1 C19 core)",
+        "predicted_spearman_monthly": [0.15, 0.25],
+        "predicted_pearson_daily": [0.20, 0.30],
+        "predicted_tdc_normal": [0.20, 0.30],
+        "predicted_tdc_crisis": [0.25, 0.40],
+        "rationale": "ML composite에 C19 feature 포함 가능이나 non-linear tree-based decomposition으로 direct sharing 약함",
+        "gate_verdict": "PASS (diversifier gate 0.40 여유)"
+      },
+      {
+        "strategy": "STR_1656_MLRA_M05",
+        "role": "**parent** (PG2 diversifier ML family)",
+        "predicted_spearman_monthly": [0.50, 0.70],
+        "predicted_pearson_daily": [0.55, 0.75],
+        "predicted_tdc_normal": [0.55, 0.70],
+        "predicted_tdc_crisis": [0.60, 0.75],
+        "rationale": "ML family 공유 + parent-child signal 계승 (V2는 LambdaRank 구조 개선 on V0 base)",
+        "gate_verdict": "PARENT_CHILD PASS (0.70 relaxed threshold)",
+        "admission_policy_note": "Parent-child relationship 인정 — STR_1661 V2 admission 시 STR_1656 weight 축소 or partial 공존 (Governor PG1 결정)"
+      },
+      {
+        "strategy": "STR_1679v3",
+        "role": "Phase_1 Defense (Q25+R16 weighted composite)",
+        "predicted_spearman_monthly": [0.10, 0.20],
+        "predicted_pearson_daily": [0.10, 0.20],
+        "predicted_tdc_normal": [0.15, 0.25],
+        "predicted_tdc_crisis": [0.30, 0.45],
+        "rationale": "ML composite vs Defense single-sleeve 독립 channel, crisis 시 flight-to-quality 부분 overlap 예상",
+        "gate_verdict": "PASS (diversifier gate 0.40)"
+      },
+      {
+        "strategy": "STR_1071_Family1_primary",
+        "role": "PG1 candidate 5_sleeve_legacy",
+        "predicted_spearman_monthly": [0.20, 0.30],
+        "predicted_pearson_daily": [0.25, 0.35],
+        "predicted_tdc_normal": [0.25, 0.35],
+        "predicted_tdc_crisis": [0.30, 0.45],
+        "rationale": "ML composite vs 5-sleeve physical separation, indirect feature overlap",
+        "gate_verdict": "PASS"
+      },
+      {
+        "strategy": "STR_1562_Family2_independent",
+        "role": "PG1 candidate Family 2",
+        "predicted_spearman_monthly": [0.15, 0.25],
+        "predicted_pearson_daily": [0.15, 0.25],
+        "predicted_tdc_normal": [0.15, 0.25],
+        "predicted_tdc_crisis": [0.25, 0.40],
+        "rationale": "독립 family 설계",
+        "gate_verdict": "PASS"
+      },
+      {
+        "strategy": "H_1685_v2 (pending S1)",
+        "role": "Phase_2 diversifier investor_flow",
+        "predicted_spearman_monthly": [0.05, 0.15],
+        "predicted_pearson_daily": [0.05, 0.15],
+        "predicted_tdc_normal": [0.05, 0.15],
+        "predicted_tdc_crisis": [0.10, 0.25],
+        "rationale": "ML vs investor_flow 완전 독립 channel",
+        "gate_verdict": "PASS (높은 독립성)"
+      },
+      {
+        "strategy": "H_1692 (pending S1)",
+        "role": "Core_Secondary Industry momentum RSI residualized",
+        "predicted_spearman_monthly": [0.35, 0.55],
+        "predicted_pearson_daily": [0.40, 0.60],
+        "predicted_tdc_normal": [0.35, 0.55],
+        "predicted_tdc_crisis": [0.40, 0.60],
+        "rationale": "ML composite에 M07_IndMom feature 포함 가능 + technical momentum signal overlap",
+        "gate_verdict": "**BORDERLINE** (core_secondary_relaxed 0.55 근접)",
+        "critical_check": "Scout handoff kit H_1692 v1.1 line 56 기록 0.35~0.55 일치 — S3 실측 critical"
+      }
+    ],
+    "_total_benchmarks": 7
+  },
+
+  "r_code_template_daily_returns_based": {
+    "_description": "Forge daily_returns 수신 직후 즉시 실행 가능한 R 코드 template",
+    "libraries_required": ["data.table", "copula (t-copula TDC)", "xts (regime filter)"],
+    "input_files": [
+      "04_Research/strategies/STR_1661_XGB_GPU/output/daily_returns.csv (Forge 재생성 대기)",
+      "04_Research/strategies/STR_1631_SYN_05/output/daily_returns.csv",
+      "04_Research/strategies/STR_1656_MLRA_M05/output/daily_returns.csv",
+      "04_Research/strategies/STR_1679v3/output/daily_returns.csv",
+      "04_Research/strategies/STR_1071_*/output/daily_returns.csv",
+      "04_Research/strategies/STR_1562_*/output/daily_returns.csv",
+      "stage_artifacts/STR_1661_V2_daily_returns.csv (fallback scores_V2 기반 재구성)"
+    ],
+    "output_file": "stage_artifacts/s3_tdc_matrix_STR_1661_V2.json",
+    "pseudocode": [
+      "# 1. Load daily_returns 7 strategies + STR_1661 V2",
+      "# 2. Align dates (common trading days)",
+      "# 3. Pairwise Spearman monthly aggregation: cor(monthly_ret_V2, monthly_ret_BM, method='spearman')",
+      "# 4. Pairwise Pearson daily: cor(daily_ret_V2, daily_ret_BM)",
+      "# 5. t-copula TDC: fit t-copula → extract tail_dep (Kendall's tau → TDC)",
+      "# 6. CRISIS regime filter: MRS >= 30 or stress period subset → conditional TDC",
+      "# 7. matrix 저장 + gate verdict (threshold PASS/BORDERLINE/FAIL)"
+    ],
+    "regime_filter_source": "02_Infrastructure/regime/regime_engine.R (MRS daily series)",
+    "stress_periods_reference": [
+      "GFC_2008 (2007-10 ~ 2009-03)", "EU_Debt_2011 (2010-12 ~ 2012-03)",
+      "China_Shock_2015", "Brexit_2016", "Trade_War_2018",
+      "COVID_2020 (2020-02 ~ 2020-04)", "Rate_Hike_2022", "Iran_War_2024"
+    ]
+  },
+
+  "measurement_priority_order": {
+    "priority_1_critical": [
+      "vs STR_1656 parent-child (parent-child gate 0.70 검증)",
+      "vs STR_1631 consensus core (diversifier gate 0.40 검증)",
+      "vs H_1692 momentum family overlap (BORDERLINE core_secondary 0.55 critical)"
+    ],
+    "priority_2_secondary": [
+      "vs STR_1679v3 Defense (diversifier 독립성 검증)",
+      "vs STR_1071 Family 1 (5-sleeve overlap)",
+      "vs STR_1562 Family 2 (독립 family)"
+    ],
+    "priority_3_conditional": [
+      "vs H_1685 v2 investor_flow (S1 완료 후)"
+    ]
+  },
+
+  "admission_scenarios_decision_tree": {
+    "scenario_A_full_PASS": {
+      "condition": "모든 benchmark TDC gate PASS + parent STR_1656 relaxed PASS",
+      "verdict": "STR_1661 V2 Core_Secondary candidate 자격 확보 + S4 integration test 진입",
+      "admission_path": "Phase_2+ 5~10% 편성 후보 (STR_1656 parent-child 교체 or partial 공존)"
+    },
+    "scenario_B_borderline_H_1692": {
+      "condition": "vs H_1692 TDC 0.55 근접 or 초과",
+      "verdict": "momentum family cluster formation risk — Core_Secondary 2건 동시 admission 어려움",
+      "admission_path_options": [
+        "Option A: STR_1661 V2 primary + H_1692 Phase_3 후순위",
+        "Option B: H_1692 primary + STR_1661 V2 Phase_3 backup",
+        "Governor PG1 결정 필요"
+      ]
+    },
+    "scenario_C_parent_child_breach": {
+      "condition": "vs STR_1656 TDC > 0.70",
+      "verdict": "parent-child relaxed gate 초과 — STR_1656 즉시 교체 or STR_1661 V2 DROP",
+      "admission_path": "STR_1656 14% → 0% + STR_1661 V2 14% 편성 (교체)"
+    },
+    "scenario_D_anchor_breach": {
+      "condition": "vs STR_1631 TDC > 0.40",
+      "verdict": "diversifier 자격 상실 — Core_Secondary 재분류 or S3 REJECT",
+      "admission_path": "Core_Primary 재분류 or DROP"
+    }
+  },
+
+  "ax_006_interaction": {
+    "cluster_name_registered": "ML_XGB_counter_cyclical",
+    "members": ["STR_1661_V2", "STR_1656_MLRA (parent)"],
+    "expected_crisis_tdc": 0.55,
+    "counter_cyclical_note": "STR_1661 V2 S2 extended profile: CRISIS conditional ICIR 1.194 (normal 0.949, ratio 1.26x) — reverse cluster pattern (crisis resilience)",
+    "ax_006_contribution": "+0.05 frequency + bidirectional refinement (formation vs decoupling pattern)"
+  },
+
+  "l_157_v4_calibration_application": {
+    "_note": "v4 rule 6 (Hypothesis Self-Revision Pattern) 적용 — S3 결과가 prior expectation과 >30% shift 시 기록",
+    "expected_prior_tdc_ranges_captured_above": true,
+    "actual_measurement_pending": "Forge daily_returns 수신 후",
+    "trigger_rule_6_scenarios": [
+      "예상 TDC 범위 밖 결과 (e.g., STR_1656 parent-child 0.70+ 예상했으나 0.30 관측 시)",
+      "BORDERLINE H_1692 케이스 확정 방향 (0.55 초과 or 대폭 하회)",
+      "CRISIS regime 역방향 dynamics (normal vs crisis 반대 방향 shift)"
+    ]
+  },
+
+  "forge_handoff_pre_requirements": {
+    "forge_action_required": [
+      "STR_1661 V2 재실행 시 daily_returns.csv 생성 (Fix 1 load_month_factors 경유 mandatory, L-164 preflight)",
+      "scores_V2.csv 이미 존재 (stage_artifacts/s2_profile_STR_1661_XGB_GPU.json 언급)",
+      "nav_V2.csv 이미 존재 (output/nav_V2.csv 확인됨)"
+    ],
+    "scout_fallback_if_no_daily_returns": "nav_V2.csv에서 daily return 재구성: daily_ret = diff(log(nav_V2))",
+    "forge_resource_status": "STR_1661 V2 Forge re-execution 우선순위 낮음 (rev8-A 대비). Scout S3는 기존 nav_V2.csv fallback으로 primary measurement 가능"
+  },
+
+  "scout_next_actions_post_daily_returns_reception": [
+    "1. R 코드 template 실행 (7 benchmarks pairwise measurement)",
+    "2. 4 decision tree scenarios 중 확정",
+    "3. stage_artifacts/s3_tdc_matrix_STR_1661_V2.json 발행 (final measurement)",
+    "4. L-157 v4 rule 6 trigger 여부 판정 (prior vs actual)",
+    "5. AX-006 cluster ML_XGB_counter_cyclical empirical validation",
+    "6. Governor PG1 admission decision input 제공",
+    "7. Judge S3 verdict 검토 request"
+  ],
+
+  "scout_notes": [
+    "Forge daily_returns 수신 없이 사전 설계 완료 — daily_returns 수신 즉시 R 코드 template 실행 가능 (즉각성 보장)",
+    "nav_V2.csv fallback으로 Scout autonomous primary measurement 가능 (Forge 지연 시)",
+    "가장 critical: STR_1656 parent-child (0.70 relaxed gate) + H_1692 momentum family (0.55 BORDERLINE)",
+    "AX-006 cluster ML_XGB_counter_cyclical empirical validation 기회 — reverse cluster pattern evidence",
+    "L-157 v4 rule 6 (Hypothesis Self-Revision Pattern) S3 결과에 따라 trigger 가능 — prior expectation 기록 완비",
+    "Scout Session 67 연속 Active 21 artifacts (families.json v1.4 + 본 S3 pre-work design)"
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV4_SUPPLEMENT_V1_1",
+  "stage": "PG0_Role_Reclassification_+_Weight_Adjustment",
+  "timestamp": "2026-04-17T20:15:00+09:00",
+  "session": 66,
+  "version": "v4.1.1_supplement",
+  "status": "ACTIVE (Q-Lead R4~R9 답변 반영 완료)",
+  "parent_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev4.json (v4.0)",
+  "supersedes_v1_0": "qepm/mailbox/governor/outbox/PG0_PLAN_rev4_supplement.json (v4.1)",
+
+  "trigger": "Q-Lead R4~R9 답변 수용. R6 STR_1679v2 family 재분류 (Judge L-153 A_CONDITIONAL VALIDATED_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY) + R9 Phase_1 weight 10% 하향 반영.",
+
+  "q_lead_r4_r9_integration": {
+    "R4_h_1688_reject_fallback": {
+      "decision": "H_1687 즉시 가속",
+      "current_status": "H_1688 R2 4/5 완료 (Codex 9 + Governor 16 + Quant 13 + Academic 16 = 54). Risk Mgr R2 대기. 최종 66~68 예상 → APPROVE_CONDITIONAL 유력.",
+      "fallback_trigger": "H_1688 total score < 40 (REJECT)",
+      "fallback_action": "H_1687 (Scout Handoff kit 완성) debate 즉시 개시",
+      "sr_impact_if_fallback": "H_1687 expected SR ~0.85 (composite) → Phase_3 SR 2.01 → 1.92 (-0.09)"
+    },
+    "R5_str_1656_to_str_1661_v2": {
+      "decision": "V2 S5 mutation + Grade A + Harvey t>3 PASS 후 교체",
+      "timing": "Phase_2 (Week 6~12) 병렬 진행",
+      "current_status": "STR_1661 V2 Judge S1 PASS_WITH_NOTES, S5 (HRP+CDaR+DD 20주) 대기"
+    },
+    "R6_str_1679v2_family_reclassification": {
+      "decision": "Governor Option A 부분 수정 — role/family 재명명",
+      "judge_re_verdict_l_153": {
+        "status": "A_CONDITIONAL VALIDATED_DIVERSIFIER_WITH_OVERLAY_DEPENDENCY",
+        "findings": {
+          "core_15_alone_sr": 1.29,
+          "primary_sr": 1.27,
+          "implication_1": "Core15 alone SR 1.29 ≥ Primary 1.27 → Def5 추가해도 Sharpe 향상 없음",
+          "def_5_alone_sr": 0.214,
+          "def_5_alone_cagr": 0.0511,
+          "implication_2": "Def5 단독 alpha drag (SR 0.21)",
+          "overlay_effect": "Core15 + Regime Inverse Overlay가 MDD 22.6pp 축소 — Def5가 아닌 Overlay가 실제 defense"
+        },
+        "root_cause": "Def sleeve는 cosmetic defense, Regime Inverse Overlay가 실제 defense 기능",
+        "impact_on_governor_v1_0": "Governor Supplement v1.0에서 'multi_sleeve_core_with_active_defense' 명명 오류 — Def sleeve 자체는 contribution 미미"
+      },
+      "governor_v1_1_corrected_classification": {
+        "role": "**diversifier_with_overlay_dependency**",
+        "family": "**core_regime_inverse_overlay**",
+        "rationale": "Judge L-153 재심사 결과 반영 — Def sleeve 기여가 cosmetic이고 Overlay가 defense 기능 담당. 'Core'가 아닌 'Diversifier + Overlay dependency' 표기가 정직.",
+        "family_name_justification": "'core_regime_inverse_overlay'는 C19 Core15 + Regime Inverse Overlay 구조를 정확 표현. consensus family 내부 sub-family가 아닌 독립 family로 유지 (Overlay 의존성이 구조적 differentiation).",
+        "option_alignment": "Q-Lead R6 제시 Option 'diversifier_with_overlay_dependency' 수용 + family 'core_regime_inverse_overlay' 신규 분류"
+      },
+      "ax_rule_alignment": {
+        "l_146_applicability": "**L-146 PARTIAL APPLY** — overlay-driven MDD는 맞으나 구조적으로 명시된 '2-sleeve + Overlay' 설계. 'core_alpha 계상 금지'는 Core role 명명 시 해당, diversifier role 명명 시는 적절.",
+        "role_honesty_compliance": "PASS — 'Diversifier + Overlay Dependency' 명시는 정확한 역할 표기."
+      }
+    },
+    "R7_R8_q25_cap_weighted_exposure": {
+      "decision": "APPROVED — 35% cap + weighted_portfolio_q25_exposure 방식",
+      "implementation": "portfolio_governor.R family_saturation_rule에 Q25 sub-factor cap 추가 요청 (Task #8 기술부채 패치 포함)"
+    },
+    "R9_str_1679v2_phase_1_weight": {
+      "decision": "**10%** (15% → 10% 하향)",
+      "rationale": "Judge 재심사 diversifier role + overlay_dependency flag → Core_Secondary 다음 우선순위. diversifier slot 10% 표준 cap.",
+      "phase_3_final_weight": 0.12,
+      "reason_for_phase_3_increase": "Phase_3에서 점진 확대 (10% → 12%). 여전히 diversifier slot 표준 범위."
+    }
+  },
+
+  "updated_phase_3_final_composition_v1_1": {
+    "strategies": {
+      "Core_Primary_STR_1631_consensus_C19": {
+        "weight": 0.22,
+        "role": "Core_Primary",
+        "family": "consensus_C19_core"
+      },
+      "Core_Secondary_H_1688_residual_momentum": {
+        "weight": 0.14,
+        "role": "Core_Secondary",
+        "family": "momentum_residual",
+        "status": "PENDING_DEBATE_FINAL"
+      },
+      "Div_1_H_1676_consensus_residual": {
+        "weight": 0.13,
+        "role": "Diversifier",
+        "family": "consensus",
+        "sub_family": "analyst_revision_residual"
+      },
+      "Div_2_H_1685_investor_flow": {
+        "weight": 0.09,
+        "role": "Diversifier",
+        "family": "investor_flow"
+      },
+      "Div_3_STR_1679v2_mscd_RENAMED": {
+        "weight": 0.12,
+        "role": "**diversifier_with_overlay_dependency** (R6 수용)",
+        "family": "**core_regime_inverse_overlay**",
+        "phase_1_initial_weight": 0.10,
+        "phase_3_final_weight": 0.12,
+        "note": "Judge L-153 재심사 반영 — Def5 alpha drag 확인. Core15 + Overlay가 실제 mechanism."
+      },
+      "Div_ML_STR_1656": {
+        "weight": 0.12,
+        "role": "Diversifier (existing PG2, Phase_2 STR_1661 V2 교체 후보)",
+        "family": "ML_complexity"
+      },
+      "Def_1_H_1682_distress_calmar": {
+        "weight": 0.10,
+        "role": "Defense",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60
+      },
+      "Def_2_H_1689_quality_4axis": {
+        "weight": 0.08,
+        "role": "Defense",
+        "family": "quality_aggregate",
+        "q25_share": 0.25
+      }
+    },
+    "total": 1.00,
+    "n_strategies": 8,
+    "n_families": 7,
+    "family_concentration": {
+      "consensus_total": "STR_1631 22% + H_1676 13% = 35% (≤ 45% cap PASS)",
+      "core_regime_inverse_overlay": 0.12,
+      "momentum_residual": 0.14,
+      "ML_complexity": 0.12,
+      "investor_flow": 0.09,
+      "distress_path": 0.10,
+      "quality_aggregate": 0.08,
+      "max_family": 0.35,
+      "compliance": "PASS"
+    },
+    "q25_exposure_weighted": {
+      "h_1682": "0.10 × 0.60 = 0.06",
+      "h_1689": "0.08 × 0.25 = 0.02",
+      "str_1656": "0.12 × 0.05 = 0.006",
+      "total": 0.086,
+      "cap_35_compliance": "PASS (8.6% << 35%)"
+    },
+    "projected_sr_rho_0_2": 2.01,
+    "projected_sr_rho_0_3": 1.82
+  },
+
+  "phase_1_composition_v1_1_week_4_5": {
+    "str_1679v2_weight_10pct": 0.10,
+    "composition": {
+      "Core_Primary_STR_1631": 0.42,
+      "STR_1656_Div_ML": 0.18,
+      "H_1676_Div_consensus_resid": 0.15,
+      "H_1682_Def_distress_calmar": 0.12,
+      "**STR_1679v2_Div_Overlay_Dependent**": 0.10,
+      "remaining_reserve_for_h_1688": 0.03
+    },
+    "total": 1.00,
+    "core_primary_transition": "55% → 42% (STR_1679v2 편입으로 5%p 추가 하향)",
+    "remaining_reserve_explanation": "3% cash/benchmark buffer for Phase_1.5 H_1688 편입 (Week 4~5 debate 완료 후)",
+    "n_strategies": 5
+  },
+
+  "base_dir_strategies_pending_label_rule": {
+    "trigger": "Q-Lead 지시 2 — BASE_DIR STR_770_phase2_cross 복원 불가 확정",
+    "affected_strategies": [
+      "STR_1028",
+      "STR_1033",
+      "STR_1060",
+      "STR_1071",
+      "STR_1417",
+      "STR_1435"
+    ],
+    "label_rule": "PG 풀 조건부 admission 라벨링",
+    "admission_conditions": [
+      "'sleeve source forensic rebuild required' 조건 태그",
+      "PENDING_RECONSTRUCTION 상태 유지",
+      "Forge reconstruction task 완료 시에만 admission 재검토",
+      "reconstruction 없이는 portfolio_gap_vector admitted_ids 제외"
+    ],
+    "forge_reconstruction_task_request": {
+      "scope": "STR_770_phase2_cross sleeve source 역추적 + 현재 Factor DB 기반 재구성",
+      "priority": "P2 (rev4 primary_path 의존 없음, technical debt)",
+      "executor": "Forge teammate (Judge 협의)",
+      "expected_timeline": "별도 사이클 (rev4 phase_3 완료 후)"
+    },
+    "rev4_impact": "primary_path_v4 의존 없음. Tier 2 fallback 경로에서만 영향 (STR_1417/1071 등)"
+  },
+
+  "pg1_admission_rule_institutionalization": {
+    "trigger": "Q-Lead 지시 3 — Judge 권고 수용",
+    "governor_pg1_admission_rule_v2_0": {
+      "hard_gates_all_strategies": [
+        {
+          "gate": "max_abs_corr ≤ 0.7 사전 체크",
+          "description": "new candidate vs existing PG2 + peer candidates pairwise correlation matrix. abs max ≤ 0.7.",
+          "reject_action": "REJECT with 'correlation_saturation' reason"
+        },
+        {
+          "gate": "FF5 alpha t-stat > 3.0 strict",
+          "description": "Fama-French 5-factor regression α t-stat > 3.0 required (Harvey 2016 multiple testing).",
+          "reject_action": "REJECT with 'ff5_alpha_insignificant' reason"
+        },
+        {
+          "gate": "parent-variant 별도 관리",
+          "description": "STR_XXX_baseline vs STR_XXX_variant1/2는 동일 parent에서 파생된 경우 variant set 단일 slot 허용 (최대 1건 admit).",
+          "reject_action": "DEFER with 'parent_variant_contention' reason"
+        },
+        {
+          "gate": "pairwise corr 매트릭스 admission 관문",
+          "description": "전체 candidate pool pairwise corr matrix 사전 검사. ρ > 0.7 쌍 발견 시 SR 기준 tiebreak.",
+          "reject_action": "DEFER lower SR"
+        }
+      ],
+      "family_specific_rules": {
+        "family_1_reactivation_pool": {
+          "members": ["STR_1417", "STR_1433", "STR_1071", "STR_1435", "STR_1060"],
+          "admission_cap": 1,
+          "primary_candidate": "**STR_1071**",
+          "rationale": "Q-Lead 지시 — Family 1에서 단 1건만 admission. STR_1071 primary.",
+          "tiebreak": "STR_1071 SR 1.297 + MDD 22.72% + multi-sleeve Family 1 중 우수 balance"
+        },
+        "family_2_diversifier": {
+          "members": ["STR_1562"],
+          "role": "independent diversifier",
+          "admission_cap": 1,
+          "primary_candidate": "STR_1562"
+        }
+      }
+    },
+    "implementation": "portfolio_governor.R pg1_admission 함수에 rule v2.0 hard gates 추가. Task #8 기술부채 패치에 포함."
+  },
+
+  "str_1060_1070_1085_triplicate_execution": {
+    "q_lead_will_execute": "Q-Lead가 Forge/Judge teammate에 지시 예정",
+    "governor_record": {
+      "retain": "STR_1060 (가장 오래된, historical reference)",
+      "archive": ["STR_1070", "STR_1085"],
+      "archive_method": "stage_artifacts/archive/ 이동 또는 grade_a_catalog mark=DUPLICATE"
+    },
+    "impact_on_rev4": "zero (rev4 primary_path 의존 없음). Family 1 reactivation pool에서 STR_1060만 evaluation 후보로 유지 (단 Q-Lead 지시 3으로 STR_1071 primary)."
+  },
+
+  "risk_manager_spawn_confirmation": {
+    "status": "Q-Lead 스폰 완료 보고 수신",
+    "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev4.json",
+    "validation_axes_4_confirmed": [
+      "CVaR_95 annual ≤ -15%",
+      "CDaR_95 ≤ -22%",
+      "tail_dependence ≤ 0.4",
+      "Q25 weighted exposure ≤ 35% (v1.0 rule)"
+    ],
+    "governor_action_on_arrival": "즉시 검증 결과 분석 + Phase_1 PG1 admission decision 반영"
+  },
+
+  "h_1688_debate_status_update": {
+    "current_r2": "4/5 완료 (Codex 9 + Governor 16 + Quant 13 + Academic 16 = 54)",
+    "pending": "Risk Manager R2",
+    "forecast_final": "66~68 → APPROVE_CONDITIONAL 유력",
+    "governor_standby": "final verdict 도착 시 H_1688 Core_Secondary 편입 confirm + phase_1.5 편입 준비",
+    "r4_fallback_trigger_threshold": "total < 40 → H_1687 가속"
+  },
+
+  "updated_projected_sr_with_str_1679v2_rename": {
+    "individual_SR_assumptions_unchanged": {
+      "STR_1679v2_mscd_renamed_diversifier": 1.266
+    },
+    "note": "Role 재분류는 SR 수치에 영향 없음 (weight 유지). R9 weight 15% → 10% (Phase_1), 12% (Phase_3).",
+    "phase_3_projected_sr_unchanged": {
+      "rho_0_2": 2.01,
+      "gap_vs_2_0": "+0.01",
+      "status": "SR 2.0 도달 유지"
+    }
+  },
+
+  "governor_open_questions_v1_1": {
+    "R10_str_1679v2_rename_approval": "'core_regime_inverse_overlay' family 명칭 + 'diversifier_with_overlay_dependency' role 승인?",
+    "R11_phase_1_reserve_3pct": "Phase_1 remaining_reserve 3% (H_1688 편입 대기 buffer) 수용?",
+    "R12_base_dir_forge_reconstruction_priority": "BASE_DIR 의존 6건 재구성 Forge task 우선순위 P2 (rev4 이후) 수용?",
+    "R13_pg1_admission_rule_v2_0_adoption": "hard gates 4종 + family-specific rules portfolio_governor.R 주입 승인?"
+  },
+
+  "artifacts_v1_1": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev4_supplement_v1_1.json (현 파일)",
+    "supersedes: PG0_PLAN_rev4_supplement.json (v1.0)",
+    "parent: PG0_PLAN_rev4.json (v4.0)"
+  ],
+
+  "pending_triggers_v1_1": [
+    "Risk Manager CVaR/CDaR/tail_dep/Q25 4축 검증 결과 수신",
+    "H_1688 debate Risk Mgr R2 + final verdict",
+    "Judge STR_1679v2 재심사 PASS confirmation (L-153 A_CONDITIONAL 최종 승인)",
+    "Q-Lead R10~R13 회신",
+    "Forge reconstruction task BASE_DIR 6건 (P2)"
+  ],
+
+  "executive_summary_v1_1": {
+    "key_changes_vs_v1_0": [
+      "STR_1679v2 role: Core_MSCD → diversifier_with_overlay_dependency (Judge L-153)",
+      "STR_1679v2 family: multi_sleeve_core_with_active_defense → core_regime_inverse_overlay",
+      "STR_1679v2 Phase_1 weight: 15% → 10% (diversifier slot 표준)",
+      "STR_1679v2 Phase_3 weight: 12% 유지",
+      "PG1 Admission Rule v2.0 제도화 (hard gates 4종)",
+      "BASE_DIR 6건 PENDING_RECONSTRUCTION 라벨"
+    ],
+    "projected_sr_phase_3": 2.01,
+    "readiness": "Risk Manager + H_1688 final verdict + Q-Lead R10~R13 → Phase_1 PG1 admission 진행 가능",
+    "next_governor_action": "Risk Manager artifact 도착 시 즉시 분석 + Phase_1 PG1 admission 초안"
+  }
+}

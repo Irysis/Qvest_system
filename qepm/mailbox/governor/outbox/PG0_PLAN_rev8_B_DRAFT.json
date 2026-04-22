@@ -1,0 +1,199 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV8_B_DRAFT",
+  "stage": "PG0_H_1682_conditional_retention_post_audit_fix",
+  "timestamp": "2026-04-18T14:23:00+09:00",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_B_DRAFT",
+  "status": "DRAFT 🔍 — STR_1683 direction audit 버그 발견 + 수정 재실행 PASS 시 ACTIVATE",
+  "supersedes_on_activation": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json (v7.3.1)",
+  "supersedes_chain": "rev2 → ... → rev7_v3_v1 → **rev8_B** (H_1682 conditional retention)",
+
+  "trigger": "STR_1683 direction audit 결과 Q25/R16 signal direction, Z_Score_Aligned, composite weighting 중 1가지+ 버그 발견. Forge 수정 재실행 (1회) 후 PASS 시 H_1682 12% 유지. FAIL 시 rev8-A 전환.",
+
+  "activation_condition": {
+    "description": "2단계 확정",
+    "stage_1_audit_bug_found": "Scout + Forge audit 결과 버그 1건+ 확인",
+    "stage_2_rerun_result": {
+      "all_variants_PASS_hurdle": "rev8-B ACTIVATE (본 파일)",
+      "1_or_more_variant_fail": "rev8-A 전환",
+      "partial_pass_primary_only": "rev8-B conservative (Primary 60/40만 채택, variants 2/3/4 DROP)"
+    },
+    "audit_owner": "Scout (진단) + Forge (수정 + 재실행)",
+    "audit_timeline": "direction audit 30분 + 수정 재실행 2~4시간"
+  },
+
+  "rev8_b_phase_3_composition": {
+    "description": "rev7_v3_v1 유지 + H_1682 12% conditional activation + 10 conditions 추가",
+    "strategies": {
+      "Core_Primary_STR_1631": {"weight": 0.18, "unchanged": true},
+      "Core_Secondary_H_1688": {"weight": 0.10, "unchanged": true},
+      "RESERVED_FOR_H_1678_REFIT": {"weight": 0.06, "unchanged": true},
+      "Div_ML_STR_1656": {"weight": 0.14, "unchanged": true},
+      "Div_3_STR_1679v3": {"weight": 0.10, "unchanged": true},
+      "Def_1_H_1682_CONDITIONAL_RETENTION": {
+        "weight": 0.12,
+        "rerun_PASS_condition": "audit 수정 후 재실행 hurdle PASS (MDD<45%, SR>=0.5, stress outperform >=2/3)",
+        "role": "Defense (distress_path_dependent)",
+        "family": "distress_path_dependent",
+        "q25_share": 0.60,
+        "contingency_fallback_on_rerun_fail": "rev8-A 전환, H_1682 DROP + H_1689 23% / H_1690 10% / Reserve 9%"
+      },
+      "Def_2_H_1689_boosted_20pct": {"weight": 0.20, "unchanged": true},
+      "Def_3_H_1690_conservative_8pct": {"weight": 0.08, "unchanged_from_rev7_v3_v1": true},
+      "Buffer_Phase_2_H_1690_promotion": {"weight": 0.02, "unchanged": true}
+    },
+    "total_allocated": 0.92,
+    "reserve_h_1678": 0.06,
+    "buffer_h_1690_promotion": 0.02,
+    "effective_total": 1.00,
+    "n_strategies_active": 7,
+    "key_difference_from_rev7_v3_v1": "H_1682 12% 배치는 유지하되 **conditional activation gate** 추가 (audit PASS 필수)"
+  },
+
+  "h_1682_conditional_activation_gate_10_items": [
+    {
+      "id": "G1",
+      "scope": "Direction audit bug fix verification",
+      "check": "Scout 진단 bug 1건+ → Forge 수정 적용 → 재실행 전 review",
+      "pass_criterion": "bug fix rationale 문서화 + unit test equivalent"
+    },
+    {
+      "id": "G2",
+      "scope": "Hurdle regain",
+      "check": "재실행 hurdle_result.json PASS (grade A or B, MDD<45%, SR>=0.5)",
+      "pass_criterion": "hard_fail=false"
+    },
+    {
+      "id": "G3",
+      "scope": "Stress outperform recovery",
+      "check": "8대 stress 구간 중 outperform >= 2/3 (rev7_v3_v1 기준)",
+      "pass_criterion": "최소 4/6 outperform (rev8-B 완화 기준 적용)"
+    },
+    {
+      "id": "G4",
+      "scope": "Variant comparison",
+      "check": "60/40 Primary가 Q25-only 또는 R16-only 대비 우월 (또는 동등)",
+      "pass_criterion": "Primary SR >= max(Q25-only SR, R16-only SR)"
+    },
+    {
+      "id": "G5",
+      "scope": "IC-Return coupling recovery",
+      "check": "IC 0.2207 → actual return transformation ratio >= 0.3 (Sharpe / ICIR)",
+      "pass_criterion": "SR / ICIR >= 0.3"
+    },
+    {
+      "id": "G6",
+      "scope": "Crowding risk maintain",
+      "check": "analysis_crowding.csv persistent>75% 유지",
+      "pass_criterion": "persistent>75% <= 5"
+    },
+    {
+      "id": "G7",
+      "scope": "PIT compliance (C13 Z_Score_Aligned)",
+      "check": "Factor DB Z_Score_Aligned 사용, manual flip 없음",
+      "pass_criterion": "pit_enforcement.R scan PASS"
+    },
+    {
+      "id": "G8",
+      "scope": "FMB significance retention",
+      "check": "Fama-MacBeth t-stat >= 3.0 (Harvey 기준)",
+      "pass_criterion": "t-stat 유지 또는 소폭 하락 허용 (>=2.5)"
+    },
+    {
+      "id": "G9",
+      "scope": "Sector HHI < 0.15",
+      "check": "analysis_sector.csv HHI 확인",
+      "pass_criterion": "Avg HHI <= 0.15"
+    },
+    {
+      "id": "G10",
+      "scope": "AX-001 conditional evaluation",
+      "check": "bad/normal IC ratio >= 1.5 (Defense 기능 확인)",
+      "pass_criterion": "ratio >= 1.5"
+    }
+  ],
+
+  "q25_r16_exposure_audit_rev8_b": {
+    "total_weighted_q25": 0.221,
+    "cap_35_compliance": "PASS (22.1%, rev7_v3_v1 동일)",
+    "same_as_rev7_v3_v1": true
+  },
+
+  "projected_sr_rev8_b": {
+    "scenario_H_1682_PASS_after_fix": {
+      "individual_SR_H_1682_revised": 0.65,
+      "weighted_mean_SR_phase_3": 0.898,
+      "rho_0_3_projected_SR": 1.75,
+      "same_as_rev7_v3_v1": true
+    },
+    "scenario_H_1682_FAIL_after_fix_fallback_rev8_A": {
+      "rho_0_3_projected_SR": 1.72,
+      "degradation_from_rev7_v3_v1": -0.03
+    },
+    "expected_value_both_scenarios": {
+      "p_audit_bug_found_and_fix_success": 0.40,
+      "p_audit_bug_found_and_fix_fail": 0.30,
+      "p_no_bug_found": 0.30,
+      "expected_sr": "0.40×1.75 + 0.30×1.72 + 0.30×1.72 = 1.732",
+      "note": "audit 결과 불확실성 반영"
+    }
+  },
+
+  "risk_manager_3rd_round_integration_rev8_b": {
+    "scope_additional": "H_1682 conditional activation gate 10 items 타당성 검증",
+    "additional_questions": [
+      "G3 stress outperform 2/3 → 4/6 완화가 Defense 기능 희석시키는지",
+      "G5 IC/Return coupling ratio 0.3 기준 적절성",
+      "G10 bad/normal IC ratio 1.5 기준 Defense 충분성"
+    ]
+  },
+
+  "governor_recommendation_between_A_and_B": {
+    "rev8_A_preferred_conditions": [
+      "direction audit 버그 없음 확정",
+      "또는 수정 후에도 MDD 60%+ 유지 예상",
+      "Scout 신규 Defense 가설 진행 의지"
+    ],
+    "rev8_B_preferred_conditions": [
+      "direction audit 명확한 버그 발견 (예: C13 violation, composite sign flip)",
+      "수정이 단순 (< 1시간 구현)",
+      "재실행 시 80%+ 확률로 MDD 35% 이하 예상"
+    ],
+    "governor_lean": "rev8-A slight preference (Defense 3중 전략 실패에서 한 번 더 시도하는 것보다 신규 가설 탐색이 장기적 boost 기여 큼)"
+  },
+
+  "decision_flowchart": {
+    "step_1_audit_result": "Scout/Forge direction audit (30분)",
+    "step_2_bug_triage": {
+      "no_bug": "→ rev8-A ACTIVATE (즉시)",
+      "bug_minor_fix": "→ Forge 수정 (1시간) → 재실행 (2~3시간)",
+      "bug_major_fundamental": "→ rev8-A ACTIVATE (수정 비용 대비 신규 가설 우위)"
+    },
+    "step_3_rerun_result_if_B_path": {
+      "all_gates_G1_G10_PASS": "→ rev8-B ACTIVATE",
+      "gate_fail": "→ rev8-A 전환"
+    },
+    "step_4_risk_mgr_spawn": "rev8-A or rev8-B 확정 후"
+  },
+
+  "artifacts_rev8_b": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_B_DRAFT.json (현 파일)",
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_DRAFT.json (병행 초안)",
+    "qepm/mailbox/scout/inbox/TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json (rev8-A 조건부 활성)"
+  ],
+
+  "executive_summary_rev8_b": {
+    "scenario": "H_1682 direction audit 버그 발견 + 수정 재실행 PASS",
+    "composition": "rev7_v3_v1 유지 + H_1682 12% conditional activation (10 gates G1~G10)",
+    "defense_cluster": "40% (rev7_v3_v1 유지)",
+    "q25_exposure": "22.1% (rev7_v3_v1 유지)",
+    "projected_sr_PASS": 1.75,
+    "projected_sr_FAIL_fallback_rev8_a": 1.72,
+    "expected_sr_considering_audit_uncertainty": 1.732,
+    "risk_mgr_additional_scope": "10 gates G1~G10 적절성 검증",
+    "fallback": "rev8-A 전환 (audit fail 또는 rerun fail 시)"
+  }
+}

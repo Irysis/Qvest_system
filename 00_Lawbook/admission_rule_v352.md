@@ -1,21 +1,11 @@
-<!-- FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true -->
-<!-- 승인 일자: 2026-04-19 -->
-<!-- 승인 사유: v55 Plan (unified-tumbling-mitten) Tier 2.3 — 확장(addition) 프레이밍. 기존 v3.5.1 hard fail 유지, 신규 3종 role(cash_allocation/regime_adaptive/ml_predictive) admission threshold 추가 및 gap_misaligned veto 신설. v54 Freeze 호환: "하드 블로커 발생 시에만 Q-Lead 승인으로 수정" 규정 준수. -->
-
 # Admission Rule v3.5.2 — Role-Specific Thresholds + Gap-Misaligned Veto + Sequential TDC
 
 **발효 일자**: 2026-04-19 (v55)
-**이전 버전**: v3.5.1 (Session 66, v54 Freeze 중 동결)
+**이전 버전**: v3.5.1 (Session 66)
 **변경 성격**: **확장(addition)** — 기존 hard fail 및 11 gates 유지, 6종 role 지원 및 gap_misaligned veto 신설
-**Q-Lead 승인**: `FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true` (2026-04-19)
+**진화 정책**: v54 freeze 폐기(2026-04-19) 후 자유롭게 amendment 가능. 단 v55 6 role + consensus_tier 정합 필수.
 
 ---
-
-## 0. v54 Freeze 호환 조항
-
-> v54 Freeze Period (Session 68~71) 규칙: "Admission Rule 동결. 새 amendment 하드 블로커 발생 시에만 Q-Lead 승인으로 허용."
->
-> **v3.5.2 적용**: **확장(addition) 규정**으로 분류. 기존 hard fail, 11 gates, Sequential Admission 로직 **모두 유지**. 신규 role 3종 지원을 위한 threshold 추가만 허용. Q-Lead 승인으로 v54 freeze 예외 처리 완료.
 
 **유지되는 hard fail (v3.5.1 동일)**:
 - `MDD > 45%` → REJECT

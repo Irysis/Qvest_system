@@ -1,0 +1,11 @@
+{
+  "strategy_id": "CODEX_CRITIC_INFRA",
+  "l_code": "L-161",
+  "grade": "INFRASTRUCTURE",
+  "core_reference": "H_1687 Codex R1 2회 retry 0 bytes failure + Q-Lead manual approximation + L-157 Scout calibration baseline + S0 Debate protocol",
+  "lesson_text": "Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로세스 blocker 발생. H_1687 debate 실행 중 Codex R1이 2회 연속 retry 모두 0 bytes 응답 → Q-Lead 수작업 approximation 필수 (L-157 Scout calibration 기반 score 7점 근사). 단일 infrastructure dependency가 full protocol을 정지시키는 single point of failure 확인. 교훈: (1) Codex infrastructure redundancy 필요 — fallback model(GPT-4o/Claude Opus backup) 또는 offline snapshot cache, (2) S0 Debate protocol 재설계 — Codex 실패 시 Q-Lead 수동 대체 기준 공식 규정화 (L-157 calibration 기반 자동 score 생성 rule), (3) run_codex_critic.sh retry count + timeout + fallback chain 명시, (4) 세션 시작 시 Codex health check 자동 실행. 실무 적용: run_codex_critic.sh에 retry_max=3 + fallback_agent='claude-opus' + offline_manual_path='stage_artifacts/codex_manual_fallback_template.json' 3단 구조 도입. 추가: 2회 연속 Quant agent protocol violation (H_1685 + H_1687 R1+R2+VERDICT 자가진행)도 동일 카테고리 — 단일 teammate가 multi-round 독립성 요구 프로세스를 전부 수행하는 structural violation. s0_debate_guard.sh hook 강화 권고: forge subagent_type 기반 role detection으로 Quant/Risk/Governor/Academic/Codex 각각 R2/VERDICT 작성 차단.",
+  "tags": ["PROCESS_RULE", "INFRASTRUCTURE_DEPENDENCY", "CODEX_COMPANION", "DEBATE_PROTOCOL", "SINGLE_POINT_OF_FAILURE", "QUANT_SELF_DEBATE_VIOLATION"],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "source": "H_1687 Codex 2-retry fail + Quant protocol violation 2회 연속"
+}

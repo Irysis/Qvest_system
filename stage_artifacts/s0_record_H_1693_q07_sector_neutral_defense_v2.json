@@ -1,0 +1,407 @@
+{
+  "hypothesis_id": "H_1693",
+  "factor_id": "HYB03_Q07_SectorNeutral_SUE_Defense",
+  "name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+  "stage": "S0",
+  "status": "PENDING_DEBATE_V2",
+  "created": "2026-04-19",
+  "created_by": "Scout",
+  "designer": "Scout",
+  "pathway": "A (학술 → 가설)",
+  "bucket": "exploit",
+  "session": "Session 68 Day 1 → Day 2 transition (Governor 보강 요청)",
+
+  "supersedes": "stage_artifacts/s0_record_H_1693_q07_sector_neutral_defense.json (v1)",
+  "supersedes_reason": "Governor 2026-04-19 12:55 보강 요청 (4건): (1) ax_004_scope_exception 블록 신설, (2) L-121 cross-reference 강화, (3) L-165 pending avoid_pattern 추가, (4) Gate 11/12/13 + AX-001 v2 preconditions 명시. team-lead Scenario_D Option 2 공식 승인 (12:45) + Phase_1 LIVE Day 8 전환 trigger.",
+
+  "governor_qlead_joint_signoff": {
+    "date": "2026-04-19 12:45",
+    "decision": "Scenario_D Option 2 APPROVED — H_1693 Q07 sector-neutral + SUE Defense 10% slot 공식 편입 확정",
+    "phase_1_live": "Day 8 전환 (+1일 slip 승인)",
+    "governor_skeleton": "qepm/mailbox/governor/outbox/PHASE_1_PG1_ADMISSION_SKELETON_v1_8.json"
+  },
+
+  "origin_context": {
+    "triggered_by": "Governor Scout mailbox TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682 + 2026-04-19 12:55 Governor s0_record_v2 보강 요청",
+    "todo_path": "qepm/mailbox/scout/inbox/DONE_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json",
+    "trigger_reason": "H_1682 Distress+Calmar 4 variants 전체 Hard Fail + STR_1685 H_1690 VALIDATED_HARD_FAIL (Signal-Portfolio Translation Failure family L-165 2nd member). Defense slot 재설계 필요.",
+    "governor_priority_recommendation": "P1 D1 Q07 sector-neutralization — 기존 검증된 L-121 Q07 활용, 구현 LOW"
+  },
+
+  "v55_required_fields": {
+    "expected_role": "defense",
+    "expected_role_rationale": "L-121 Q07 stress ICIR +0.753 + 4r CRISIS ICIR +0.413 — 양쪽 위기 최강 defense factor 확정. sector-neutralization으로 H_1682 장기 실패 원인 (long-only 20-stock concentration sector bias) 해소. H_1689 v3 variant_2 Q07 4-axis 대비 single-axis sector-neutral로 더 clean defense.",
+    "trail": "standard",
+    "gap_targeting_axes": ["MDD_regime", "KR_structural"],
+    "cash_component": null,
+    "why_now": "PG0 SR gap 0.807. H_1682 DROP + STR_1685 H_1690 VALIDATED_HARD_FAIL + H_1689 v3 slot 확정 경로 외 추가 Defense slot (Phase_3 cluster 33→40%+ 복원) 대비. MRS 63.1 CRISIS 상태에서 defense 확보 긴급성 높음.",
+    "conditional_ic_coverage_crisis_exception": "Defense role 가설은 scout_init.md Gate 0.5 예외 조항 '현 regime 무관, CRISIS regime conditional IC 기준' 적용. Q07은 crisis_defense_factor_analysis.csv에서 양쪽 위기 최강 factor 검증 완료 (L-121). coverage 실질적으로 CRISIS regime 상위 1%."
+  },
+
+  "governor_request_reflected": {
+    "slot_target": "Defense cluster Phase_3 복원 (33→40%+) — H_1693 10% slot 공식 확정 (Scenario_D Option 2)",
+    "avoid_pattern": [
+      "H_1682 distress direction ambiguity (Q25 Altman quantile 방향성 모호)",
+      "H_1682 long-only 20 concentration sector bias (H3)",
+      "H_1682 Calmar publication decay (R16 past 24M alpha 소멸)",
+      "L-136 D25+Q07 combo CAGR 2.59% 과소 실패 (single-sleeve combo 금지)",
+      "L-160 defense IC-Return decoupling (STR_1683 IC 0.22 but portfolio MDD 94.66 SR -0.242)",
+      "**L-165 STR_1685 H_1690 Multi-Source Defense Anchor VALIDATED_HARD_FAIL** (Session 68 Day 1, AX-005 범위 확장 편입, Signal-Portfolio Translation Failure family 2nd member, 4 variants MDD 77~94%)",
+      "**AX_CAND_signal_portfolio_translation_failure TRIGGER 2/3 상태** — H_1693이 3rd member 되면 AX 정식 승격 trigger"
+    ],
+    "governor_direction_kr_specific": [
+      "한국 sector 특성: 재벌 cluster (삼성/현대/LG/SK) 회피 필수",
+      "Q07 quarterly data + 45일 lag (C4 준수)",
+      "Z_Sector neutralization infrastructure 기존 활용 (factor_db_builder.R .standardize_factors 기내장)"
+    ]
+  },
+
+  "hypothesis_summary": {
+    "name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+    "family": "quality_earnings_stability_sector_neutral",
+    "sub_family": "q07_sector_neutral_sue_boost",
+    "mechanism": "매월 t: (1) Q07_Earnings_Stability load_month_factors() 경유 로드, (2) cross-sectional z-score per sector (Z_Sector: (Q07 - sector_mean) / sector_sd), (3) winsorize 1~99%, (4) C01_SUE (Standardized Unexpected Earnings) z-score cross-section, (5) composite = 0.7·z_sector_Q07 + 0.3·z_C01_SUE, (6) Top 20 EW Long, t+1 execution, (7) sector constraint max 5 per sector (25%). S1 pure signal, NO overlay.",
+    "why_now": "L-121 Q07 양쪽 위기 최강 + L-136 D25+Q07 combo 실패는 '정상 구간 기회비용' 문제. sector-neutral 접근으로 (a) sector concentration 제거 + (b) 정상 구간 negative carry 완화 기대. H_1682 5-hypothesis H3 'long-only 20 concentration sector bias' 직접 해소. STR_1685 L-165 Signal-Portfolio Translation Failure family 3rd member 방지 책임.",
+    "core_reference": "Part A3.19 Q07 Earnings Stability + Dichev-Tang 2009 ROS 'Earnings Volatility and Earnings Predictability' + Foster-Olsen-Shevlin 1984 TAR (SUE foundation) + Bernard-Thomas 1989 JAR (PEAD)"
+  },
+
+  "ax_004_scope_exception": {
+    "_source": "Governor 2026-04-19 12:55 요청 + team-lead Session 68 Day 1 AX-004 3-pillar exempt 승인 (Task #12 completed)",
+    "_priority": "필수 명시 — S0 debate Academic + Judge S6 formal sign-off 자원",
+
+    "ax_004_scope_definition": "KR quality_profitability standalone long-only 구조적 실패 — 3종 한정 범위:",
+    "ax_004_supporting_evidence_3_lcodes": [
+      {
+        "lcode": "L-133",
+        "strategy": "STR_1657 CBPQ",
+        "factor": "Ball et al. 2016 Cash-Based Operating Profitability (DART 현금흐름 기반 profitability level)",
+        "result": "MDD 94.0% SR -0.232 HARD_FAIL",
+        "family": "quality_profitability"
+      },
+      {
+        "lcode": "L-134",
+        "strategy": "STR_1655 GSCD",
+        "factor": "Novy-Marx 2013 GP + FF5 Growth Stability Composite IS-only",
+        "result": "IS SR 0.60 → OOS SR 0.00, MDD 71.7% IS_OVERFIT_OOS_COLLAPSE",
+        "family": "quality_profitability (growth stability composite)"
+      },
+      {
+        "lcode": "L-139",
+        "strategy": "STR_1626 Profitability Fortress Defense",
+        "factor": "Novy-Marx 2013 GP + FF5 RMW (Gross Profitability single-signal)",
+        "result": "IS SR 1.044 → recent 3Y SR 0.135, MDD 54.1%, 2020s alpha decay",
+        "family": "quality_profitability (profitability level single)"
+      }
+    ],
+
+    "h_1693_scope_verdict": "H_1693 family = 'quality_earnings_stability_sector_neutral' — AX-004 scope **OUT**",
+
+    "exception_5_points_governor_mandated": {
+      "point_a_l121_empirical_override": {
+        "content": "Q07 stress ICIR +0.753 + 4r CRISIS ICIR +0.413 (L-121 empirical) — 양쪽 위기 최강. 288 factor 중 stress 1위. AX-004 supporting L-133/L-134/L-139는 KR empirical 실패 evidence, Q07은 L-121 반대 방향 positive evidence.",
+        "scope_override_mechanism": "동일 KR empirical layer에서 positive evidence가 Q07-specific general rule 적용 override"
+      },
+      "point_b_composite_dual_axis": {
+        "content": "H_1693 = 0.7·z_sector_Q07 + 0.3·z_C01_SUE — composite dual-axis 구조",
+        "scope_distinction": "AX-004 scope는 'single-signal'에 한정 — L-133 single factor, L-134 composite이나 Novy-Marx GP + FF5 growth single-axis 과적합, L-139 GP standalone 모두 1-axis. H_1693 2-axis composite (earnings stability + earnings surprise)은 single-signal scope 명백히 벗어남."
+      },
+      "point_c_sector_neutralization_additional_defense": {
+        "content": "Z_Sector neutralization 추가로 sector concentration 제거 — single-signal vulnerability 추가 방지",
+        "mechanism": "factor_db_builder.R .standardize_factors() Z_Sector column 기존 지원. 재벌 cluster (삼성/현대/LG/SK) 과다 편중 자동 해소. 15 sector × 1~2 종목 balanced distribution."
+      },
+      "point_d_axiom_core_json_str_1679_precedent": {
+        "content": "STR_1679 Q07 defense sleeve는 axiom_core.json에 AX-004 범위 밖 공식 기록 (기 확정)",
+        "precedent": "AX-004 v3 EXCLUSION 명문 'multi-sleeve portfolio 내 defense sleeve(STR_1679 Q07 defense sleeve 등)는 scope 밖' — H_1693 AX-001 v2 multi_sleeve_only=TRUE 설계로 동일 EXCLUSION 적용"
+      },
+      "point_e_governor_qlead_joint_signoff": {
+        "content": "Governor + team-lead joint signoff (2026-04-19 12:45) — Scenario_D Option 2 APPROVED, H_1693 Defense 10% slot 공식 편입",
+        "signoff_chain": "Governor rev8-A-revised-v3 Scenario_D Option 2 발행 → team-lead 승인 (12:45) → Governor skeleton v1.8 확정 → Scout s0_record_v2 보강 요청 (12:55)",
+        "formal_record_path": "qepm/mailbox/governor/outbox/PHASE_1_PG1_ADMISSION_SKELETON_v1_8.json"
+      }
+    },
+
+    "mechanism_distinction_academic_literature": {
+      "ax_004_literature": "profitability literature — Novy-Marx 2013 JFE Gross Profitability + Ball 2016 ROF Cash-Based Operating Profitability + Fama-French 2015 JFE RMW factor. 측정 대상: profitability **level** (1차 모멘트, absolute earnings strength)",
+      "h_1693_literature": "accounting information quality literature — Dichev-Tang 2009 ROS 'Earnings Volatility and Earnings Predictability'. 측정 대상: earnings **volatility / predictability** (2차 모멘트, earnings stability)",
+      "orthogonal_dimensions": "Q07 '1 - sd(earnings changes 5Y) / mean(|earnings changes|)' (factor_registry.json line 2172 definition) — profitability level과 독립 dimension. Asness 2019 QMJ framework에서 Safety axis 별도 분류 (profitability axis와 구분)."
+    },
+
+    "s0_debate_academic_debater_confirmation_required": "Academic debater가 (a) Dichev-Tang 2009 ROS (accounting information quality) vs Novy-Marx 2013 JFE / Ball 2016 ROF (profitability) literature 구분 backing, (b) Asness 2019 QMJ framework Q07 Safety axis 별도 분류 (profitability axis 무관), (c) L-121 KR empirical positive evidence가 AX-004 supporting L-133/L-134/L-139 override 가능성 공식 확인.",
+
+    "judge_s6_formal_signoff_required": [
+      "family label 'quality_earnings_stability_sector_neutral' 신규 등록 승인",
+      "AX-004 scope exempt formal sign-off (5점 근거 검증)",
+      "AX-001 v2 4-gate 통과 확인 (multi_sleeve_only + crisis_alpha + bad/normal IC + core MDD reduction)",
+      "factor_registry.json Q07 sub-family meta-tag 검토"
+    ],
+
+    "verdict": "H_1693 AX-004 scope **OUT** (5점 EXCEPTION + 3-pillar exempt)"
+  },
+
+  "factor_construction": {
+    "base_signal": {
+      "name": "Q07_SectorNeutral_SUE_Defense",
+      "registry_id_new": "HYB03_Q07_SectorNeutral_SUE",
+      "formula": "score_t(i) = 0.7 · z_sector_Q07_t(i) + 0.3 · z_C01_SUE_t(i)",
+      "components": [
+        {
+          "name": "z_sector_Q07",
+          "factor": "Q07_Earnings_Stability",
+          "transformation": "Z_Sector (sector-neutral z-score): z = (Q07_i - sector_mean) / sector_sd, per sector per month",
+          "direction": "higher_better (L-121 stress ICIR +0.753)",
+          "factor_db_status": "EXISTS (factor_registry.json line 2172)",
+          "sd_post_fix_1_expected": 1.000,
+          "infrastructure": "factor_db_builder.R .standardize_factors() Z_Sector column 기존 지원. load_month_factors(c('Q07_Earnings_Stability')) + Z_Sector 필드 access."
+        },
+        {
+          "name": "z_C01_SUE",
+          "factor": "C01_SUE",
+          "transformation": "cross-sectional z-score per month, winsorize 1~99%",
+          "direction": "higher_better (Bernard-Thomas 1989 PEAD)",
+          "factor_db_status": "EXISTS (factor_registry.json line 5112)",
+          "alternatives_available": "C10_SUE_Persistence (line 5427), C09_Earnings_Surprise_Sq (line 5392) — S5 mutation Slot B/C 후보"
+        }
+      ],
+      "composite_weights": "0.7 Q07 + 0.3 SUE (L-163 poison_pill check: Q07 stress_icir +0.753 × 0.7 = +0.527, C01_SUE stress_icir ~+0.15 × 0.3 = +0.045 — 모두 positive, PASS)",
+      "data_access_mandatory_gate_13": "load_month_factors(c('Q07_Earnings_Stability', 'C01_SUE')) 경유 (L-164 MANDATE)",
+      "z_score_method": "Z_Sector for Q07 (sector neutralized), Z_Score_Aligned for SUE (C13)"
+    },
+    "portfolio_config": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "slippage_bps_top10": 30,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10)",
+      "rebalance": "Monthly end-of-month, t+1 execution",
+      "overlay": "NONE (S0/S1 L0 rule)",
+      "sector_constraint_mandatory": {
+        "rule": "max 5 종목 per sector (25% of 20 holdings) — MANDATORY Q-Lead + Governor 지시",
+        "source": "team-lead Scenario_D Option 2 APPROVED + L-125 extension family 3rd member (L-160 initiator + L-165 2nd member) 재현 방지",
+        "enforcement": "factor_engine.R 또는 strategy.R 내 Top 20 선택 시 sector별 max 5 limit. 초과 시 해당 sector 내 next score 종목 skip + 다음 sector top 종목 편입.",
+        "rationale": "H_1682 H3 (long-only 20 sector bias) 직접 해소 + KR 재벌 cluster 과다 편중 방지"
+      }
+    }
+  },
+
+  "factor_db_availability_precheck": {
+    "_note": "L-159 spec_transmission_failure 교훈",
+    "Q07_Earnings_Stability": {
+      "registry_entry": "factor_registry.json line 2172 EXISTS",
+      "sd_post_fix_1_expected": 1.000,
+      "z_sector_support": "factor_db_builder.R .standardize_factors() 자동 생성",
+      "status": "VERIFIED"
+    },
+    "C01_SUE": {
+      "registry_entry": "factor_registry.json line 5112 EXISTS",
+      "category": "consensus",
+      "definition": "Standardized Unexpected Earnings (Foster 1984 SUE formula, quarterly)",
+      "alternatives": "C10_SUE_Persistence (line 5427), C09_Earnings_Surprise_Sq (line 5392)",
+      "status": "VERIFIED"
+    },
+    "scout_preflight_action_completed": "factor_registry grep confirmed: C01_SUE + Q07_Earnings_Stability 모두 registry 존재."
+  },
+
+  "academic_foundation": {
+    "primary_reference": "Dichev, Ilia D. and Vicki Wei Tang, 2009, 'Earnings Volatility and Earnings Predictability', Review of Accounting Studies 14, 277-299.",
+    "secondary_references": [
+      "Foster, George; Olsen, Chris; Shevlin, Terry, 1984, 'Earnings Releases, Anomalies, and the Behavior of Security Returns', The Accounting Review 59(4), 574-603. (SUE foundational)",
+      "Bernard, Victor L. and Jacob K. Thomas, 1989, 'Post-Earnings-Announcement Drift', JAR 27, 1-36. (PEAD earnings surprise)",
+      "Sloan, Richard G., 1996, 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?', TAR 71, 289-315.",
+      "Daniel, Kent and Sheridan Titman, 2006, 'Market Reactions to Tangible and Intangible Information', JF 61, 1605-1643. (sector-relative)",
+      "Asness, Cliff; Frazzini, Andrea; Pedersen, Lasse, 2019, 'Quality Minus Junk', ROF 24, 34-112. (QMJ framework Safety axis — Q07 Safety axis 별도 분류)"
+    ],
+    "kr_specific_evidence": "한국 KOSPI 재벌 cluster (삼성 8~12%, 현대 5~7%, LG 4~6%, SK 4~5%). Sector HHI 1800-2200 (KRX 공시). KoFIA 개인 거래대금 55%. Q07 단순 top-20 선택 시 재벌 cluster 과다 편중, Sector-neutralization으로 해소."
+  },
+
+  "preconditions_mandatory_gates": {
+    "_source": "Governor 2026-04-19 12:55 요청 #4 명시",
+    "gate_11_tdc_pairwise_mandatory": {
+      "rule": "max_corr ≤ 0.50 (Admission Rule v3.5.2 §1.2)",
+      "q07_cluster_sequential_admission": "H_1689 v3 variant_2 vs H_1693 pairwise TDC < 0.50 필수",
+      "pre_measurement": "pair_0 (variant_1 no Q07 vs H_1693) crisis TDC 0.20~0.35 PASS_LIKELY, pair_3 (variant_2 vs H_1693) crisis TDC 0.35~0.55 FAIL_PREDICT",
+      "scout_recommended_path": "variant_1 primary 전환 시 cluster 해소 (scenario_B OPTIMAL)"
+    },
+    "gate_12_ic_return_coupling_mandatory": {
+      "rule": "coupling_ratio ≥ 0.30 MANDATORY (Admission Rule v3.5.2 Stage 2 ACTIVE)",
+      "measurement": "monthly portfolio return / monthly IC × sign",
+      "s1_output_required": "output/h1693_ic_return_coupling.csv",
+      "l_160_l_165_family_risk": "Signal-Portfolio Translation Failure family 3rd member 방지 — coupling_ratio < 0.30 시 hard_block"
+    },
+    "gate_13_factor_db_access_mandatory": {
+      "rule": "load_month_factors(c('Q07_Earnings_Stability', 'C01_SUE')) 경유 MANDATORY (L-164 active)",
+      "forbidden": "factor_engine.R inline parquet load 금지",
+      "preflight": "validate_factor_sd() + Z_Sector column existence check"
+    },
+    "ax_001_v2_audit_defense_v2_preconditions": {
+      "gate_2a_multi_sleeve_only": "TRUE (Defense sleeve within 5-sleeve portfolio, standalone admission 금지)",
+      "gate_2b_crisis_alpha": "6대 위기 구간 (1997/2000/2008/2011/2020/2022) alpha > 0 필수",
+      "gate_2c_bad_normal_ic_ratio": "IC(Bad+Crisis) / IC(Good+Normal) > 0.6 — 예상 ~2.7 (Q07 CRISIS +0.413 / Normal ~0.15)",
+      "gate_2d_core_mdd_reduction": "portfolio MDD_after ≤ MDD_before × 0.95 (5%+ 완화 Governor 수용 범위)"
+    },
+    "l_163_poison_pill_check": {
+      "rule": "stress_icir × weight ≥ -0.05",
+      "q07_check": "0.7 × +0.753 = +0.527 PASS",
+      "sue_check": "0.3 × +0.15 = +0.045 PASS",
+      "composite_stress": "+0.572 positive (L-163 threshold 만족)"
+    }
+  },
+
+  "lesson_check_expanded": [
+    {"lcode": "L-119", "summary": "정적 EW 팩터 블렌드 alpha 희석", "compliance": "AWARE — 2-factor composite Q07 70% dominance 완화"},
+    {
+      "lcode": "L-121",
+      "summary": "Q07_Earnings_Stability = 양쪽 위기 최강",
+      "content_full": "288개 팩터 중 양쪽 위기 기준(stress + 4-regime) 모두 통과하는 팩터 탐색. Q07_Earnings_Stability가 최강: stress ICIR +0.753, 4r CRISIS ICIR +0.413, C19 상관 -0.092. '느린 하락'에서도 '급락'에서도 방어.",
+      "compliance": "DIRECT_LEVERAGE — H_1693 primary signal core (0.7 weight)",
+      "cross_reference_strengthened": "Governor 2026-04-19 12:55 요청 #2 명시. L-121 empirical evidence가 AX-004 supporting L-133/L-134/L-139 scope-override 근거. H_1693 AX-004 scope OUT 확정 backbone."
+    },
+    {"lcode": "L-122", "summary": "factor timing vs risk management", "compliance": "N/A — H_1693는 timing 아닌 defense role"},
+    {"lcode": "L-125", "summary": "IC ≠ SR — transmission ratio 측정 필수", "compliance": "DIRECT_FIX — Gate 12 coupling_ratio ≥ 0.30 MANDATORY"},
+    {"lcode": "L-129", "summary": "CDaR LP 단독 MDD -65%", "compliance": "N/A"},
+    {"lcode": "L-136", "summary": "D25+Q07 CAGR 2.59% 실패", "compliance": "DIRECT_FIX — D25 제외, SUE 대체로 forward-looking return boost. CAGR 4% 이상 목표."},
+    {"lcode": "L-140", "summary": "BAB low-beta 한국 structural fail (AX-005)", "compliance": "PASS — BAB 미사용."},
+    {"lcode": "L-148", "summary": "Grade A != PIT clean", "compliance": "DIRECT_FIX — C1~C15 전수 검증."},
+    {"lcode": "L-156_v2", "summary": "TDC Gate 8 conditional threshold", "compliance": "Gate 11 <0.50 명문 + Q07 cluster Sequential Admission"},
+    {"lcode": "L-160", "summary": "defense IC-Return decoupling (STR_1683 initiator)", "compliance": "DIRECT_FIX — Gate 12 coupling_ratio + Gate 14 sub_gate_a net_IC_transmission_ratio > 0.6"},
+    {"lcode": "L-163", "summary": "poison pill quantified threshold", "compliance": "PASS_CHECK — composite stress +0.572 positive"},
+    {"lcode": "L-164", "summary": "factor_engine load_month_factors mandate", "compliance": "DIRECT_FIX — Gate 13 MANDATORY"},
+    {
+      "lcode": "L-165",
+      "summary": "STR_1685 H_1690 Multi-Source Defense Anchor VALIDATED_HARD_FAIL (Session 68 Day 1). Signal-Portfolio Translation Failure family 2nd member (initiator L-160). AX-005 범위 확장. AX_CAND TRIGGER 2/3.",
+      "content_full": "STR_1685 4 variants 전체 Grade F (MDD 77~94%). L-160 family 2nd member 공식 확정. AX-005 범위 확장 편입. AX_CAND_signal_portfolio_translation_failure TRIGGER 2/3.",
+      "compliance": "DIRECT_FIX — Governor 2026-04-19 12:55 요청 #3 명시. H_1693 S1 mandatory 측정 3종: (1) net_IC_transmission_ratio > 0.6, (2) portfolio stress return 2+ window positive, (3) Z_Sector vs raw Z 비교. sector constraint max 5/sector MANDATORY. 3rd member 방지 책임."
+    }
+  ],
+
+  "expected_performance": {
+    "icir_forecast": "0.25~0.45",
+    "stress_icir_forecast": "+0.60~+0.85 (Q07 weight 0.7 × +0.753 = +0.527 baseline + SUE +0.045)",
+    "sr_forecast": "0.85~1.20 (sector-neutralization + SUE boost)",
+    "cagr_forecast": "4~7% (L-136 CAGR 2.59% 대비 +2~4% 개선 목표)",
+    "mdd_forecast": "18~28% (Governor D1 요건 <35% 충족 예상)",
+    "crisis_sr_forecast": "1.30~1.65",
+    "bm_corr_forecast": "0.35~0.55",
+    "harvey_t_expected": "2.5~3.8",
+    "stress_outperform_forecast": "≥ 2/3 (Governor D1 요건 충족 예상)",
+    "bad_ic_forecast": "≥ 0.10 (Governor D1 요건 ≥ 0.08 초과)",
+    "governor_d1_mandatory_gates_compliance_forecast": {
+      "stress_outperform": "forecast ≥ 2/3 PASS",
+      "bad_ic": "forecast ≥ 0.10 PASS (≥ 0.08 요건)",
+      "mdd": "forecast < 30% PASS (< 35% 요건)"
+    },
+    "_warning_signal_portfolio_translation_failure_family": "expected_performance 수치는 signal-level projection. S1 portfolio translation 실측 필수. L-160 (STR_1683) + L-161 (STR_1684) + L-165 (STR_1685) decoupling 재현 방지 gate 통과 필수. AX_CAND_signal_portfolio_translation_failure TRIGGER 2/3 상태, 3rd member 방지 책임."
+  },
+
+  "risks": [
+    "위험 1 — C01_SUE data 가용성 확인 완료 (factor_registry.json line 5112). S1 preflight sd 검증 필수.",
+    "위험 2 — Q07 weight 70% 과다 of single factor: L-119 dilution vs concentration trade-off.",
+    "위험 3 — sector-neutralization overfit risk: sector 분류 체계 (GICS vs KRX 업종) 일관성 검증.",
+    "위험 4 — SUE QoQ vs YoY 방법론 선택: Foster 1984 original seasonal random walk.",
+    "위험 5 — Q07 quarterly data 45일 lag (C4): DART 기업공시 지연 가능.",
+    "위험 6 — L-160 IC-Return decoupling 재현: L-121 Q07 stress ICIR +0.753이나 long-only 20종목 수익화 실패 가능. Gate 12 coupling ratio + Gate 14 net_IC_transmission ratio 필수.",
+    "위험 7 — AX-004 quality standalone 실패 scope: 3-pillar EXCEPTION 5점 + team-lead/Governor joint signoff 근거로 scope OUT. S0 Academic backing + Judge S6 formal sign-off 필수.",
+    "위험 8 — S3 TDC vs H_1689 v3 variant_2 (Q07 4-axis): crisis TDC 0.35~0.55 FAIL_PREDICT. scenario_B (variant_1 primary) 경로 권고.",
+    "위험 9 — **L-165 3rd member 위험**: Signal-Portfolio Translation Failure family AX_CAND TRIGGER 2/3 상태. H_1693 Hard Fail 시 AX 승격 3/3 trigger 확정."
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR >= 0.20 (composite)",
+    "pit_gate": "C1~C15 전수 + L-164 load_month_factors + C4 quarterly lag 45일",
+    "defense_gate_ax001_v2": "multi_sleeve_only=TRUE + crisis_alpha>0 (6대 위기) + bad/normal IC ratio>0.6 + core MDD 완화",
+    "harvey_gate": "t > 2.5 (defense 완화)",
+    "sr_gate": "SR >= 0.85",
+    "cagr_gate_l136_mitigation": "CAGR >= 4%",
+    "l163_poison_pill_check": "stress_icir × weight ≥ -0.05 PASS",
+    "mdd_gate_qlead_d1_requirement": "MDD < 35%",
+    "governor_d1_performance_requirements_mandatory": {
+      "stress_outperform_gate": "≥ 2/3",
+      "bad_ic_gate": "≥ 0.08",
+      "mdd_gate": "< 35%"
+    },
+    "signal_portfolio_translation_gate_14": {
+      "sub_gate_14a_net_ic_transmission_ratio": "> 0.6 MANDATORY",
+      "sub_gate_14b_stress_portfolio_return": "2+ window positive (3 stress windows)",
+      "sub_gate_14c_signal_portfolio_rank_corr": "> 0.20 Spearman"
+    },
+    "sector_constraint_s1_verification": "strategy.R / factor_engine.R sector max 5 per sector MANDATORY (sector HHI < 2500)"
+  },
+
+  "s3_orthogonality_plan": {
+    "benchmark_strategies": [
+      "STR_1631_SYN_05 (PG2 anchor) — expected TDC 0.20~0.35",
+      "STR_1656_MLRA_M05 (PG2 diversifier) — expected TDC 0.15~0.30",
+      "STR_1679v3 (Phase_1 defense) — expected crisis TDC 0.40~0.60 (HIGH Q07 공유) FAIL_PREDICT",
+      "H_1689 v3 variant_1 (no Q07) — expected crisis TDC 0.20~0.35 PASS_LIKELY (scenario_B OPTIMAL)",
+      "H_1689 v3 variant_2 (Q07 4-axis) — expected crisis TDC 0.35~0.55 FAIL_PREDICT",
+      "STR_1661 V2 ML — expected TDC 0.10~0.25"
+    ],
+    "orthogonality_gate": "portfolio-level rho ≤ 0.4 (defense gate) + Gate 11 max_corr ≤ 0.50",
+    "novelty_score_expected": "0.55~0.70",
+    "scout_recommended_admission_path": "scenario_B (H_1689 v3 variant_1 primary no Q07) — Q07 cluster 완전 해소"
+  },
+
+  "s5_mutation_preview": {
+    "primary_mutations": [
+      "Slot A (Primary): H_1693 baseline + DD 8/22 overlay",
+      "Slot B: Q07 0.5 + C01_SUE 0.3 + Q04_Piotroski_F 0.2 (3-axis quality)",
+      "Slot C: Q07 sector-neutral + VT regime-conditional (MRS>=30 activate)",
+      "Slot D: Q07 sector-neutral + C10_SUE_Persistence (SUE long-term trend)"
+    ]
+  },
+
+  "soft_prior_recommendations_for_governor": {
+    "add_to_approved": [
+      {"family": "quality_earnings_stability_sector_neutral", "status": "approved_scenario_d_option_2", "evidence": "Governor + team-lead joint signoff 2026-04-19 12:45"}
+    ],
+    "cluster_formation_note": "Q07 cluster 3건 (STR_1679v3 + H_1689 v3 variant_2 + H_1693) Sequential Admission Protocol 관리"
+  },
+
+  "prior_art_gate_check": {
+    "factor_registry_search": "HYB03_Q07_SectorNeutral_SUE 신규 registry entry 필요 (Forge S1 전)",
+    "s0_record_duplicate_check": "v2 supersedes v1 — Governor 보강 요청 반영",
+    "str_number_reservation": "STR_1693 (Forge S1 dispatch 시)"
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_001_v2": "PASS — Defense role. multi_sleeve_only=TRUE + crisis_alpha + bad/normal + core MDD 완화 4 gates. standalone 금지.",
+    "AX_002": "PASS — v54 Freeze 준수 (baseline alpha 설계).",
+    "AX_003": "PASS (value family 무관)",
+    "AX_004_detailed_exempt_analysis": {
+      "scope": "see ax_004_scope_exception section",
+      "verdict": "OUT — 5점 EXCEPTION (L-121 empirical override + dual-axis composite + sector-neutralization + STR_1679 precedent + Governor/Q-Lead joint signoff) + 3-pillar (mechanism / KR empirical override / multi-sleeve EXCLUSION)"
+    },
+    "AX_005": "PASS (BAB 미사용, D25 제외. multi-sleeve EXCLUSION 해당)"
+  },
+
+  "scout_notes": [
+    "Governor 2026-04-19 12:55 요청 4건 전수 반영",
+    "v1 → v2 supersedes: ax_004_scope_exception 블록 신설 + L-121 cross-reference 강화 + L-165 avoid_pattern 추가 + Gate 11/12/13 + AX-001 v2 preconditions 명시",
+    "team-lead + Governor joint signoff (2026-04-19 12:45) Scenario_D Option 2 APPROVED 공식 기록",
+    "Phase_1 LIVE Day 8 transition trigger",
+    "AX-004 scope OUT 5점 EXCEPTION 근거 명문화 — S0 Academic debater + Judge S6 formal sign-off 자원",
+    "L-121 Q07 양쪽 위기 최강 direct leverage + L-165 family 3rd member 방지 책임",
+    "Q07 cluster Sequential Admission scenario_B (variant_1 primary no Q07) 권고 경로 유지",
+    "Forge S1 dispatch 시 sector constraint max 5/sector MANDATORY + Gate 12/13/14 sub_gates 측정 필수",
+    "Scout Calibration v4 predicted [62, 75] mid 68 (APPROVE_CONDITIONAL 경계). v2 보강으로 +2~3 uplift 기대"
+  ],
+
+  "handoff_status_v2": {
+    "s0_record_v2_complete": true,
+    "supersedes_v1": "stage_artifacts/s0_record_H_1693_q07_sector_neutral_defense.json",
+    "governor_request_4_items_fully_reflected": {
+      "item_1_ax_004_scope_exception_block": true,
+      "item_2_l_121_cross_reference_strengthened": true,
+      "item_3_l_165_avoid_pattern_added": true,
+      "item_4_gate_11_12_13_ax_001_v2_preconditions_specified": true
+    },
+    "ax_004_5_points_exception_documented": true,
+    "ax_001_v2_4_gates_defined": true,
+    "qlead_governor_joint_signoff_recorded": true,
+    "scenario_d_option_2_approved": true,
+    "ready_for_s0_debate_5_agent_spawn": true,
+    "str_number_recommended": "STR_1693 (Forge S1 dispatch 시)"
+  }
+}

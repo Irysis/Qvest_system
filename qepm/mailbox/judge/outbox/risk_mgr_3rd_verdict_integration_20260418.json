@@ -1,0 +1,138 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Governor + Risk Mgr + Scout",
+  "type": "RISK_MGR_3RD_VERDICT_JUDGE_INTEGRATION",
+  "timestamp": "2026-04-18T16:35+09:00",
+  "session": 67,
+  "status": "ACTIVE_INTEGRATION",
+
+  "risk_mgr_verdict_summary": {
+    "status": "CONDITIONAL_APPROVE",
+    "completion": "5분 타임박스 초단축",
+    "blocking_conditions": [
+      {
+        "id": "B1_V2_H_1689_Q24_POISON_PILL",
+        "severity": "CRITICAL",
+        "evidence": "Q24 Altman_Z stress_icir -0.695 (L-144 재확인). Q24 weight 25% × -0.513 stress_icir_delta가 Q01/Q25 기여 완전 상쇄.",
+        "required_action": "H_1689 S1 **Q24-exclude 3-axis variant 필수 포함** (blocking)",
+        "alternatives": ["GPA + Piotroski_F + Ohlson_O (3-axis)", "**Q07 대체** (stress_icir +0.753)"]
+      }
+    ],
+    "other_warnings": [
+      {
+        "id": "W1_V1_TDC_BREACH",
+        "evidence": "V1 Max TDC 0.52 (STR_1631↔STR_1679v3) — L-156 threshold 0.40 위반",
+        "severity": "WARNING",
+        "judge_note": "Gate 8 pairwise TDC Conditional 분기 발동 예정. Stage 1 CONDITIONAL_ACTIVE advisory_warning 수준이나 admission 판정 시 명시 기록"
+      },
+      {
+        "id": "W2_V5_CRISIS_SR_MARGINAL",
+        "evidence": "V5 Crisis SR 1.22 (현 PG2 1.193 대비 개선 미미)",
+        "severity": "ADVISORY",
+        "judge_note": "Core 역할 개선 불충분. Novelty bonus 재검토 필요"
+      }
+    ],
+    "kill_scenarios": [
+      {
+        "id": "K1_Q24_CRISIS_AMPLIFICATION",
+        "description": "H_1689 Defense 실패 시 Q24 crisis amplification으로 portfolio MDD 급증",
+        "trigger": "Q24 weighted exposure > 0.15 + MRS CRISIS regime",
+        "mitigation": "Q24-exclude variant 의무 + Q24 weight cap 0.10"
+      },
+      {
+        "id": "K2_C19_CONSENSUS_QUALITY_COLLAPSE",
+        "description": "STR_1631 + STR_1679v3 총 28% (Core_Primary + multi-sleeve embedded) 동시 소멸 시나리오",
+        "trigger": "C19 consensus signal decay or analyst revision flip",
+        "mitigation": "Core secondary (H_1688 Fix 1 후 재검증) 독립 alpha source 확보 가속 + Tier 1 C19_core cap 25% 엄격 적용"
+      }
+    ]
+  },
+
+  "judge_integration_actions": {
+    "action_1_H_1689_gate_11_variant_design": {
+      "gate_11_v3_5_mandatory_for_H_1689": "Defense family 가설 + Risk Mgr blocking condition 조합 → Gate 11 권장이 아닌 **mandatory 승격**",
+      "required_variants_minimum_4": [
+        "V1_baseline_4_axis (Q24+Q01+Q25+Q07 각 25%)",
+        "V2_Q24_exclude_3_axis (Q01+Q25+Q07 각 33%) — Risk Mgr B1 대응 mandatory",
+        "V3_Q07_substitute_4_axis (Q07 대체 Q24 포지션, 25% each)",
+        "V4_GPA_Piotroski_Ohlson_3_axis (대안 quality composite — Novy-Marx 2013 + Piotroski 2000 + Ohlson 1980)"
+      ],
+      "gate_11_pass_criteria": [
+        "primary V1 (current) ≥ all sub-variants 조건 + 4 variants 전량 Hard Fail 방지",
+        "V2 Q24-exclude이 V1 대비 **stress_icir 개선 확인** (Risk Mgr 핵심 요구)",
+        "SR/MDD/Calmar 모든 variant 비교표 생성 (variant_comparison.csv 의무)"
+      ],
+      "gate_11_fail_rule_special": "Defense family 특수 규칙: primary V1이 V2 (Q24-exclude) 대비 stress_icir 낮을 시 **admission 차단** (L-160 IC-Return decoupling 재발 방지)"
+    },
+
+    "action_2_gate_8_TDC_breach_handling": {
+      "v1_TDC_0_52_breach": "STR_1631↔STR_1679v3 TDC 0.52 → L-156 threshold 0.40 위반 확증",
+      "judge_s6_handling": "H_1689 admission 판정 시 Gate 8 CONDITIONAL_BLOCK 발동 (Stage 1 advisory_warning이나 TDC 0.5+ 는 심각)",
+      "rev8_impact": "H_1689 admission 전 V1 재설계 or STR_1679v3 weight 감축 검토 — Governor coordinate",
+      "retroactive_audit_implication": "기존 Retroactive audit 24h scope에 STR_1631↔STR_1679v3 pairwise TDC 재측정 포함 권고 (0.52 실측치 공식 기록)"
+    },
+
+    "action_3_kill_scenario_safeguards": {
+      "K1_Q24_amplification_safeguard": {
+        "rule_added_to_v3_5": "Defense family Q24 weighted portfolio exposure > 0.15 admission 자동 CONDITIONAL_BLOCK",
+        "enforcement_layer": "Gate 10 consensus_tier + new Defense-family sub-rule",
+        "judge_note": "L-144 stress_icir -0.695 실증 기반. Risk Mgr 권고 수용."
+      },
+      "K2_C19_collapse_safeguard": {
+        "rule_added_to_v3_5": "Tier 1 C19_core + multi-sleeve embedded C19 총 effective exposure ≤ 25% 엄격 적용 (기존 cap 강화)",
+        "enforcement_layer": "Gate 10 rule_4 + embedded_overlap_audit() 의무",
+        "judge_note": "현 PG2 STR_1631 40% + STR_1679v3 10% = embedded 감안 시 위반 가능성. Fix 1 후 재계산 필요."
+      }
+    },
+
+    "action_4_ax_cand_updates": {
+      "AX_CAND_infrastructure_failures": {
+        "impact": "Risk Mgr VERDICT는 strategy-level (Q24/TDC/Kill) — infrastructure layer 직접 영향 없음",
+        "note": "STR_1684_v2b inline Fix 적용으로 factor_engine 표준화 이슈 발견 → L-163 후보 (infrastructure 계열 추가 evidence 가능성)"
+      },
+      "AX_006_pairwise_TDC": {
+        "impact": "STR_1631↔STR_1679v3 TDC 0.52 실측치는 **AX-006 frequency 축 추가 evidence** (2번째 breach)",
+        "frequency_axis_revised": "0.45 → **0.50** (proposed, L-161 indirect + STR_1631↔STR_1679v3 direct 실측 evidence 2건 축적)",
+        "judge_recommendation": "AX_CAND_pairwise_TDC tracking 업데이트 — Q3 review 시 frequency 축 개선 반영"
+      }
+    }
+  },
+
+  "L_163_candidate_factor_engine_standardization": {
+    "l_code": "L-163 (candidate)",
+    "title_draft": "factor_engine.R load_month_factors() 경유 의무화 — inline read_parquet() 우회로 Fix 효과 partial 전달 pattern",
+    "core_evidence": "STR_1684 factor_engine.R line 73 이전 read_parquet() 직접 호출. Fix 1 runtime wrapper load_month_factors()에 적용되었으나 STR_1684는 경유 안 함 → ICIR -0.187 동일 유지 → Q-Lead가 inline Z_Score 재정규화 5줄 추가로 해소 (STR_1684_v2b).",
+    "lesson_draft": "factor_engine.R 표준화 필요: 모든 factor 로드는 load_month_factors() 경유 의무. read_parquet() 직접 호출 시 Fix 1 같은 runtime wrapper 효과 전달 안 됨 — partial fix effect. 교훈: (a) strategy factor_engine.R 템플릿 통일 (Forge common utility), (b) preflight에 load_month_factors() 사용 여부 검증 추가, (c) 기존 factor_engine.R 전수 audit + 표준화 migration, (d) AX_CAND_infrastructure_failures L-162 cousin — R_infrastructure_pattern sub-category 추가.",
+    "tags": ["FACTOR_ENGINE_STANDARDIZATION", "LOAD_MONTH_FACTORS_MANDATORY", "READ_PARQUET_DIRECT_ANTI_PATTERN", "FIX_1_PARTIAL_TRANSMISSION", "INFRASTRUCTURE_BUG_PATTERN", "L_162_COUSIN"],
+    "related_L_codes": ["L-157", "L-159", "L-161", "L-162"],
+    "AX_CAND_infrastructure_failures_contribution": "F_frequency +0.2 potential (L-163 confirmed 시 infrastructure evidence 3rd case — L-161 primary + L-160 partial + L-163 → 3-category criteria 근접)",
+    "decision_pending": "STR_1684_v2b 결과 수신 후 공식 발행 여부 결정 (ICIR positive 시 L-163 공식 발행 + AX_CAND 증거 반영 / negative 시 L-161 확장으로 병합)"
+  },
+
+  "str_1684_v2b_scenario_preparation": {
+    "pid": 2237594,
+    "expected_completion": "약 20분 (16:55~17:00 예상)",
+    "scenario_rules_unchanged": {
+      "A_ICIR_geq_0_20": "UNVALIDATED archived, Hypothesis B 100% 확증, Fix 1 완전 검증, rev8-A H_1688 복원 검토",
+      "B_ICIR_still_negative": "UNVALIDATED → **VALIDATED_HARD_FAIL 재분류**, Hypothesis A (KR momentum inverse) 재검토 가능, Stage 2 자동 트리거 (2 VALIDATED)",
+      "C_ICIR_positive_but_below_0_20": "CONDITIONAL_FAIL 재분류, Stage 2 count 제외 유지"
+    },
+    "new_scenario_D_added_inline_fix_specific": {
+      "description": "Fix 1 완전 전달 + factor_engine 표준화 이슈 동시 해소 확인",
+      "condition": "STR_1684_v2b ICIR positive + Q-Lead inline patch가 L-163 pattern 해소 확증",
+      "impact": "L-163 공식 발행 + AX_CAND_infrastructure_failures F_frequency +0.2 (1.5 → 1.7)",
+      "follow_up": "Forge 재스폰 후 factor_engine 표준화 migration (Architect coordinate)"
+    }
+  },
+
+  "timeline_updated": {
+    "16_15": "Fix 1 Impact 분석 완료",
+    "16_30": "AX_CAND_infrastructure_failures verdict APPROVE + 6 coordinate",
+    "16_35": "Risk Mgr 3rd VERDICT Judge integration (현 파일)",
+    "16_55_17_00_expected": "STR_1684_v2b hurdle_result.json 생성 → Judge S6 재판정",
+    "17_30_expected": "H_1689 handoff kit v3 수신 (Q24-exclude variant Scout 작성) + Judge gate 11 검증 gate 준비",
+    "Day_2_target": "H_1689 S1 Q24-exclude 실행 + STR_1685/1686 순차 + Judge S6 연쇄"
+  },
+
+  "judge_current_status": "ACTIVE_INTEGRATION — Risk Mgr VERDICT 수용 + Gate 11 H_1689 mandatory 설계 + L-163 후보 pending STR_1684_v2b 결과"
+}

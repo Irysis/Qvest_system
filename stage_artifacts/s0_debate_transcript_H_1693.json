@@ -1,0 +1,161 @@
+{
+  "hypothesis_id": "H_1693",
+  "hypothesis_name": "Q07 Earnings Stability Sector-Neutralized + SUE Quality Boost (Defense)",
+  "formula": "composite = 0.7·z_sector_Q07 + 0.3·z_C01_SUE",
+  "expected_role": "defense (AX-001 v2 multi_sleeve_only)",
+  "round_1_summary": {
+    "total_score": 76,
+    "stance_counts": {
+      "APPROVE": 0,
+      "APPROVE_CONDITIONAL": 4,
+      "REVISE": 1,
+      "REJECT": 0
+    },
+    "consensus_tier": "MAJORITY APPROVE_CONDITIONAL (4/5)",
+    "minority_dissent": "codex_critic REVISE (Reject-for-now)",
+    "veto_flags_triggered": 0
+  },
+  "round_1": [
+    {
+      "role": "codex_critic",
+      "agent_id": "codex_critic_h1693",
+      "stance": "REVISE",
+      "score": 11,
+      "rubric": {"l_code_check":2,"failure_avoidance":1,"banned_factor":3,"lesson_check":3,"structural_risk":2},
+      "arguments": [
+        "Q07 cluster 재활용 + L-136/L-160/L-165 family 재현 우려: 0.7/0.3 + Top20 EW 구성은 mechanism change가 아닌 parameter rescue로 판단",
+        "PIT 정합성 + walk-forward pre-registration 부재: Q07/C01_SUE announcement-date lag + restatement policy 명시 없이 ex-ante rule 지정되지 않아 full-sample parameter contamination 위험",
+        "Sector cap ≤25% + Top20 EW 구조적 충돌: earnings cluster 시 KOSDAQ 저유동성 substitution → 회전율 급증 + 실행 drag, MDD +20~35%"
+      ],
+      "concern": "Q07 quality cohort 집중 + sector-cap turnover 증폭 → defensive sleeve alpha decay with MDD expansion. PIT + walk-forward pre-registration 선 해소 없이 S1 진입 위험.",
+      "veto_flag": null,
+      "s1_gate_items": [
+        "Q07 + C01_SUE strict PIT 검증 (announcement lag + restatement policy)",
+        "Expanding-window walk-forward 재실행 (weight + Top20 + sector cap ex-ante pre-registration)",
+        "Signal-Portfolio Translation audit (turnover, slippage, capacity, raw→executable gap)",
+        "KOSPI vs KOSDAQ split + ablation (Q07-only, SUE-only, equal-weight blend)",
+        "Sector cap + Top20 EW earnings cluster turnover 실측 (KOSDAQ substitution frequency)"
+      ],
+      "kill_scenarios_top3": [
+        "PIT leakage (prob medium, SR -0.7~-1.0, MDD +15~25%, blind_spot)",
+        "Sector cap turnover spiral (prob high, MDD 20~35%, alpha -300~600bps/yr)",
+        "KR risk-on cyclicals rebound (prob medium, SR -0.4~-0.8, dd -18~30%)"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "agent_id": "risk_manager_h1693",
+      "stance": "APPROVE_CONDITIONAL",
+      "score": 14,
+      "rubric": {"tail_risk":3,"kill_scenario":3,"beta_orthogonality":3,"mdd_contribution":3,"regime_vulnerability":2},
+      "arguments": [
+        "C01_SUE stress ICIR 실측 +0.593 (Scout 추정 +0.15의 4배). Composite stress ICIR = 0.7·0.753 + 0.3·0.593 = +0.705 signal-level defense 품질 최상급",
+        "Signal-Portfolio Translation Failure family (L-160/L-165) AX_CAND 2/3 TRIGGER 상태에서 H_1693이 3rd member 될 위험. S1 net_IC_transmission_ratio > 0.6 gate veto-level 중요도",
+        "Regime 취약성: CRISIS만 확실히 강력 (Q07 IC +0.413). GOOD/NORMAL 65% 구간 carry drag + sector-neutral 가정 불안정"
+      ],
+      "concern": "Signal-level 최상급이지만 portfolio translation gap + GOOD/NORMAL 취약. S1 empirical 6-gate 검증 필수.",
+      "veto_flag": null,
+      "s1_gate_items": [
+        "net_IC_transmission_ratio > 0.6",
+        "stress_outperform ≥ 2/3",
+        "Z_Sector vs raw Z 비교",
+        "compute_tail_risk_suite() (EVT/CDaR/ES)",
+        "sector HHI 실측",
+        "DCC-GARCH conditional rho"
+      ],
+      "kill_scenarios_top3": [
+        "Sector-neutralization alpha dilution + 정상 carry drought (prob 25~35%)",
+        "L-160/L-165 Signal-Portfolio Translation Failure 재현 (prob 15~25%, CRITICAL)",
+        "Sector 분류 체계 backtest 무효화 PIT 경로 (prob 10~20%)"
+      ]
+    },
+    {
+      "role": "governor",
+      "agent_id": "governor_h1693",
+      "stance": "APPROVE_CONDITIONAL",
+      "score": 17,
+      "rubric": {"gap_alignment":3,"role_match":4,"family_saturation":3,"marginal_contribution":3,"implementation_feasibility":4},
+      "arguments": [
+        "Q07 cluster 3-member saturation (STR_1679v3 8% + H_1689 v3 variant_1 23% + H_1693 10% = 41% cluster)",
+        "AX_CAND_signal_portfolio_translation_failure 4th member 발생 위험. S1 net_IC_transmission_ratio + portfolio stress + Z_Sector empirical 3-gate 필수",
+        "gap_targeting partial — H_1693 SR gap 직접 기여 부재, MDD 완화 간접 경로만"
+      ],
+      "concern": "Q07 cluster saturation + Signal-Portfolio Translation Failure 4th member 우려. S1 3-gate veto-level.",
+      "veto_flag": null,
+      "s1_gate_items": [
+        "D1 gates (stress_outperform ≥2/3, bad_ic ≥0.08, mdd <35%)",
+        "Signal-Portfolio Translation 3-gate (net_IC_transmission_ratio, portfolio stress 2+, Z_Sector)",
+        "Sector constraint max 5/sector (HHI <2500)",
+        "AX-001 v2 4-gate 전수 통과",
+        "S3 orthogonality TDC <0.50",
+        "Sequential Admission TDC <0.30",
+        "L-163 poison_pill 재확인",
+        "C4 45일 lag 엄수"
+      ],
+      "correction_needed_r2": "critical_concerns #2에 'AX_CAND 3/3 TRIGGER MET' 기록됨. 현재 정확한 상태는 2/3 TRIGGER (L-161 infrastructure 재분류). R2 rebuttal에서 자동 반영 가능"
+    },
+    {
+      "role": "quant",
+      "agent_id": "quant_h1693",
+      "stance": "APPROVE_CONDITIONAL",
+      "score": 19,
+      "rubric": {"icir_pass":3,"internal_corr":3,"c19_corr":2,"defense_ic":3,"data_avail":4,"kr_empirical_check_score":4},
+      "kr_empirical_check": "confirmed",
+      "arguments": [
+        "Q07 stress_icir=0.7529 실증 확인 + icir_CRISIS=0.413 양쪽 위기 최강. L-121 KR 직접 확인, VALIDATED_HARD_FAIL family 없음 → kr_empirical_check confirmed +4",
+        "C01_SUE factor_registry.json regime_profile.crisis='negative' — 정성 태깅과 conditional_ic_matrix_4regime 실측 icir_CRISIS=0.301 (positive) 간 불일치. S1 실측 해소 필수",
+        "Z_Sector sector_sd≈0 소규모 sector NA 처리 로직 + C01_SUE lag_rule 'Date <= sig_d' (daily) vs Q07 quarterly 45일 lag — C4 PIT 혼재 위험, S1 명시적 검증"
+      ],
+      "concern": "Factor signal 최상급 + Factor DB VERIFIED. 잔존 위험은 C01_SUE regime_profile 불일치 + Z_Sector NA + C4 PIT 혼재. S1에서 실측 해소 가능.",
+      "veto_flag": null,
+      "s1_gate_items": [
+        "C01_SUE regime_profile 불일치 해소 (정성 'negative' vs 실측 +0.301)",
+        "Z_Sector sector_sd≈0 NA 처리 로직 Forge 코드 확인",
+        "C01_SUE daily lag vs Q07 quarterly 45일 lag PIT 명시 검증",
+        "Q07 × C01_SUE internal 상관 실측",
+        "vs C19_Composite_Earnings 상관 (STR_1631 SYN_05 핵심)"
+      ]
+    },
+    {
+      "role": "academic",
+      "agent_id": "academic_h1693",
+      "stance": "APPROVE_CONDITIONAL",
+      "score": 15,
+      "rubric": {"peer_review":3,"mechanism_align":4,"korea_evidence":3,"substantive_cite":2,"time_decay":3},
+      "arguments": [
+        "Q07 2차 모멘트 (Dichev-Tang 2009 accounting info quality) + SUE 1차 모멘트 (Foster 1984) + sector-neutral (Daniel-Titman 2006) 3-axis 학술 정합 완전. AX-004 3-pillar exempt 성립",
+        "L-121 KR empirical +0.753 positive evidence 강력하나 sector HHI KRX cite + SUE post-2010 KR empirical 부재 (korea_evidence -1)",
+        "Dichev-Tang 본문 수식/표 직접 인용 부재 + Foster SUE formula 누락 (substantive_cite -2). 형식 인용 수준"
+      ],
+      "concern": "AX-004 exempt backing 학술 완전. 약점은 Dichev-Tang/Foster 본문 인용 깊이 + 한국 SUE decay 연구 부재. S1 전 보강 가능.",
+      "veto_flag": null,
+      "s1_gate_items": [
+        "Dichev-Tang 2009 본문 수식/표 직접 인용",
+        "Foster 1984 SUE formula (seasonal random walk) 명시",
+        "한국 sector HHI KRX 원 cite",
+        "Asness 2019 QMJ Safety axis 명시적 인용 (AX-004 exempt sign-off)",
+        "SUE 2010s+ 한국 decay 선행연구 조회",
+        "factor_engine.R 학술 참조 주석 (L-164 mandate)"
+      ]
+    }
+  ],
+  "r1_completion_timestamp": "2026-04-19T13:00+09:00",
+  "next_step": "R2 Rebuttal 5-agent spawn (R1 transcript 주입)",
+  "consensus_vs_dispute": {
+    "consensus_points": [
+      "Signal-level 품질 우수 (Q07 stress ICIR +0.7529, composite +0.705)",
+      "AX-004 3-pillar exempt 성립 (Academic backing 완전)",
+      "L-121 positive evidence 공유",
+      "Factor DB VERIFIED",
+      "S1 empirical validation 필수 (5인 공통)"
+    ],
+    "unresolved_disputes": [
+      "Q07 cluster saturation 3-member vs sector-neutral 효과 충분성",
+      "Signal-Portfolio Translation Failure family 3rd member 될 위험 확률",
+      "Sector cap ≤25% + Top20 EW turnover spiral 가능성 (Codex high vs 나머지 낮음)",
+      "0.7/0.3 weight ex-ante vs ex-post parameter 정합성",
+      "C01_SUE regime_profile 불일치 (정성 'negative' vs 실측 +0.301)",
+      "GOOD/NORMAL 65% carry drag 크기"
+    ]
+  }
+}

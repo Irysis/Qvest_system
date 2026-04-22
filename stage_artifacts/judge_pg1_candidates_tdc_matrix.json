@@ -1,0 +1,132 @@
+{
+  "report_type": "JUDGE_PG1_CANDIDATES_TDC_MATRIX",
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "triggered_by": "team-lead Task #24 refinement — TDC 재측정 vs STR_1631 direct (not STR_1679v2 proxy)",
+  "method": "t-copula MLE (Demarta & McNeil 2005) on pseudo-observations",
+  "data": {
+    "str_1631_source": "04_Research/strategies/STR_1631_PG2_MDD_OPT/output/daily_nav_bcde.csv Strategy_Ret column",
+    "str_1679v2_source": "04_Research/strategies/STR_1679_score_blend/output/daily_returns_primary.csv",
+    "str_1071_1562_1433_source": "respective sim_result.rds strategy_xts",
+    "merged_n_obs": 4319,
+    "date_range": "2003-07-03 to 2026-03-20"
+  },
+
+  "v3_gate_8_threshold": 0.4,
+
+  "results_vs_str_1631_pg2_current": {
+    "STR_1071": {
+      "lambda_L_t_copula": 0.000,
+      "rho_pearson_daily": 0.049,
+      "rho_monthly": 0.412,
+      "nu_mle": 18.45,
+      "empirical_L_5pct": 0.046,
+      "gate_8_verdict": "PASS",
+      "interpretation": "Near-zero tail dependence. High nu (18.45) indicates near-Gaussian joint distribution with independent tails. Monthly rho 0.412 shows moderate directional co-movement but NO crisis coupling."
+    },
+    "STR_1562": {
+      "lambda_L_t_copula": 0.003,
+      "rho_pearson_daily": 0.040,
+      "rho_monthly": 0.453,
+      "nu_mle": 12.68,
+      "empirical_L_5pct": 0.088,
+      "gate_8_verdict": "PASS",
+      "interpretation": "Near-zero tail dependence. Independent Gerber+DCC+HRP methodology confirmed distinct from 5-sleeve consgate core."
+    },
+    "STR_1433": {
+      "lambda_L_t_copula": 0.000,
+      "rho_pearson_daily": 0.051,
+      "rho_monthly": 0.413,
+      "nu_mle": 19.43,
+      "empirical_L_5pct": 0.046,
+      "gate_8_verdict": "PASS",
+      "interpretation": "Same family as STR_1071 (Family 1 alternate). TDC vs STR_1631 also near-zero."
+    },
+    "STR_1679v2": {
+      "lambda_L_t_copula": 0.621,
+      "rho_pearson_daily": 0.879,
+      "rho_monthly": 0.902,
+      "nu_mle": 4.38,
+      "empirical_L_5pct": 0.722,
+      "gate_8_verdict": "FAIL",
+      "interpretation": "CRITICAL FINDING. STR_1679v2 (current PG2 20% allocation) has TDC 0.621 with STR_1631 (PG2 80%). Pearson daily 0.879 and monthly 0.902 show near-identical directional co-movement. Low nu (4.38) indicates heavy-tailed joint distribution with significant tail coupling. Existing PG2 blend VIOLATES v3.0 Gate 8.",
+      "explanation": "STR_1679v2 structure: Core C19 Top-15 + Regime Inverse Overlay. STR_1631: consensus-based 5-sleeve. Both share high KOSPI200 beta (STR_1679v2 Core15 beta ~0.88; STR_1631 beta ~0.88 implied from monthly rho). Overlap source: both select top-N stocks from similar KOSPI200 universe with overlapping factor exposures (beta + momentum + quality). STR_1679v2 'diversifier' label is challenged: monthly-frequency diversification is weak."
+    }
+  },
+
+  "results_internal_pg1_candidates": {
+    "STR_1071_vs_STR_1562": {
+      "lambda_L_t_copula": 0.511,
+      "rho_pearson_daily": 0.789,
+      "nu_mle": 4.89,
+      "gate_8_verdict": "FAIL",
+      "interpretation": "Cross-family (Family 1 consgate vs Family 2 Gerber) but crisis-time coupling is significant. Joint admission STR_1071+STR_1562 would breach Gate 8. Sequential or residualized admission required."
+    },
+    "STR_1562_vs_STR_1433": {
+      "lambda_L_t_copula": 0.497,
+      "rho_pearson_daily": 0.793,
+      "nu_mle": 5.28,
+      "gate_8_verdict": "FAIL"
+    }
+  },
+
+  "critical_finding_str_1679v2": {
+    "finding": "PG2 current blend (STR_1631 80% + STR_1679v2 20%) violates v3.0 Gate 8",
+    "tdc_measurement": 0.621,
+    "v3_threshold": 0.4,
+    "risk_magnitude": "crisis-time coupling + 20% weight = material effective correlation under stress",
+    "recommended_actions": [
+      "1. Governor must recompute PG2 effective CVaR/CDaR accounting for 0.621 TDC (not 0.04 daily Pearson)",
+      "2. Consider reducing STR_1679v2 weight from 20% to 10% to limit joint tail exposure",
+      "3. Or residualize STR_1679v2 vs STR_1631 (OLS beta removal on daily + monthly) to reduce effective TDC",
+      "4. Long-term: replace STR_1679v2 with H_1682 (Distress+Calmar Defense) which has expected cross-family independence"
+    ],
+    "upgrade_path": "Task #7 STR_1679v3 Def sleeve replacement (H_1682-based) directly addresses this TDC breach.",
+    "telegram_escalation_level": "HIGH — silent hidden correlation in current PG2"
+  },
+
+  "pg1_admission_matrix_v3_final": {
+    "single_admission_scenarios": {
+      "admit_STR_1071_only": {
+        "gate_1_7_pass": true,
+        "gate_8_vs_str_1631": "PASS (TDC 0.000)",
+        "gate_9_cvar": "needs portfolio recomputation by Governor",
+        "gate_10_cdar": "needs portfolio recomputation by Governor",
+        "overall": "ADMIT (pending CVaR/CDaR check)"
+      },
+      "admit_STR_1562_only": {
+        "gate_1_7_pass": true,
+        "gate_8_vs_str_1631": "PASS (TDC 0.003)",
+        "overall": "ADMIT (pending CVaR/CDaR check)"
+      }
+    },
+    "joint_admission_scenarios": {
+      "STR_1071_plus_STR_1562": {
+        "pairwise_TDC": 0.511,
+        "gate_8_joint": "FAIL",
+        "remedy": "Sequential admission OR residualize STR_1562 vs STR_1071",
+        "residualization_formula": "r_STR_1562_resid = r_STR_1562 - (OLS_beta_daily + OLS_beta_monthly) * r_STR_1071",
+        "post_residualization_tdc_estimate": "expected < 0.4 (requires measurement)"
+      }
+    },
+    "full_pg_state_if_all_admitted": {
+      "strategies": ["STR_1631 (80%)", "STR_1679v2 (20%, TDC 0.621 CONCERN)", "STR_1071 (new)", "STR_1562 (new)"],
+      "gate_8_breaches": ["STR_1631 vs STR_1679v2 (0.621)", "STR_1071 vs STR_1562 (0.511)"],
+      "recommendation": "Before adding STR_1071/1562, Governor must resolve STR_1679v2 breach first. Options: (a) weight-down 20%→10%, (b) residualize, (c) replace with H_1682 upon Forge S1+Judge S6 PASS."
+    }
+  },
+
+  "final_judge_admission_order_v3": [
+    {"step": 1, "action": "Resolve STR_1679v2 breach (Gate 8 0.621)", "owner": "Governor + Forge (Task #7)", "blocker": true},
+    {"step": 2, "action": "Admit STR_1071 (standalone, cleanest)", "TDC_vs_1631": 0.000, "expected_weight_pct": "10-12%"},
+    {"step": 3, "action": "Admit STR_1562 (after residualization vs STR_1071)", "TDC_vs_1631": 0.003, "TDC_vs_1071": 0.511, "remedy": "residualize"},
+    {"step": 4, "action": "H_1676/H_1682/H_1688 S6 with v3.0 Gate 8 enforcement", "blocker": "Forge S1 completion"}
+  ],
+
+  "connection_to_l156": {
+    "l_code": "L-156",
+    "adoption_status": "filed stage_artifacts/l_code_L156_tdc_gate_v3_0.json",
+    "primary_evidence": "STR_1631↔H_1676 TDC 0.735 (Risk Manager 4-axis) + STR_1631↔STR_1679v2 TDC 0.621 (Judge direct measurement session 66)",
+    "implication": "PG2 current state violates v3.0. Retroactive application reveals existing blend is higher-risk than Pearson-based analysis suggested. Governor rev5 must apply v3.0 to current PG2 as well as new admissions."
+  }
+}

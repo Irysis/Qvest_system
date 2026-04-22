@@ -1,0 +1,320 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV4_SUPPLEMENT",
+  "stage": "PG0_STR_1679v2_readmit_+_Q25_cap_rule",
+  "timestamp": "2026-04-17T19:55:00+09:00",
+  "session": 66,
+  "version": "v4.1_supplement",
+  "status": "PENDING_JUDGE_RE_HONESTY_PASS + Q25_CAP_APPROVAL",
+  "parent_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev4.json (v4.0 Scenario_Y 가속)",
+
+  "trigger": "Q-Lead 2건 중대 업데이트: (1) STR_1679v2 Def contrib 22.55pp 실측 — Session 65 0.3pp 오측정 정정, (2) Q25 과집중 경고 (H_1682 60% + H_1687 50% + H_1689 25% 중첩 위험). rev4 draft에 6건 전수 반영 지시.",
+
+  "update_1_str_1679v2_readmit_scenario": {
+    "forge_task_2_results": {
+      "primary_grade_a_77_1": {
+        "SR": 1.266,
+        "CAGR": 0.2471,
+        "MDD": -0.2906
+      },
+      "core_15_only_ablation": {
+        "MDD": -0.5161,
+        "implication": "Core 단독 MDD 51.61% — defense 없이는 목표 25% 초과 실패"
+      },
+      "def_5_only_ablation": {
+        "CAGR": 0.0511,
+        "SR": 0.214,
+        "implication": "Def sleeve 단독 SR 0.214 — Q07 standalone 약함 (AX-005 v2 scope 밖 multi-sleeve 구성 조건 준수)"
+      },
+      "def_sleeve_contribution_calculated": {
+        "mdd_combined": -0.2906,
+        "mdd_core_only": -0.5161,
+        "**def_sleeve_mdd_reduction_pp**": 22.55,
+        "interpretation": "Core MDD 51.61% - Combined MDD 29.06% = **22.55pp MDD 감소** — Def sleeve의 실질적 active defense 기여 확인"
+      },
+      "session_65_judge_misread_correction": {
+        "prior_report": "Def contrib 0.3pp (role misalignment 경고)",
+        "root_cause": "tail_risk_result.json daily_returns 필드 누락으로 Def sleeve 재계산 오류",
+        "corrected_assessment": "Def contrib 22.55pp — role honesty PASS 예상",
+        "l_146_applicability": "L-146 (overlay-driven MDD core alpha 계상 금지) 해당 없음. STR_1679v2는 **진정한 Core+Def multi-sleeve 구조**."
+      }
+    },
+
+    "role_reclassification_proposal": {
+      "old_role": "Core_Primary (Session 65 Judge CONDITIONAL_PASS role_misalignment 경고)",
+      "proposed_new_role": "**multi_sleeve_core_with_active_defense**",
+      "role_definition": "단순 Core alpha가 아닌 Core15 + Def5 two-sleeve 구조로 active defense 내장. Defense는 Q07 기반 + ivol neutralization. Def sleeve contribution ≥ 20pp MDD reduction 실측 시 role 확정.",
+      "role_honesty_compliance": "passes — overlay-driven이 아닌 구조적 defense 편입. Judge 재심사 PASS 전제 필요.",
+      "family_classification_decision_required": [
+        "Option A: 신규 family 'momentum_5sleeve_active_defense' 생성 (Scout 초안 권고)",
+        "Option B: 기존 family 'momentum_residual' 내 sub-family 'multi_sleeve_with_defense'로 편입",
+        "Option C: 기존 family 'consensus_multi_sleeve' 확장 + defense sub-family 추가",
+        "**Governor 권고**: Option A (신규 family) — 'multi_sleeve_core_with_active_defense'로 family-level 독립 분류. 이유: STR_1679v2 signal base (consensus 아님, momentum 요소 혼합) + active defense 구조 모두 기존 family와 구분됨."
+      ]
+    },
+
+    "rev4_admission_scenario_integration": {
+      "target_allocation_in_rev4": {
+        "phase_1_week_4_5_integration": {
+          "rationale": "Judge Role Honesty 재심사 PASS 즉시 편입. H_1682 Defense admission과 타이밍 겹침.",
+          "proposed_composition": {
+            "Core_Primary_STR_1631": 0.40,
+            "STR_1679v2_multi_sleeve_core_with_active_defense": 0.15,
+            "STR_1656_Div_ML": 0.18,
+            "H_1676_Div_consensus_resid": 0.15,
+            "H_1682_Def_distress_calmar": 0.12
+          },
+          "total": 1.00,
+          "n_strategies": 5,
+          "total_core_exposure": "STR_1631 40% + STR_1679v2 15% = **55% effective core**",
+          "note": "STR_1679v2 Core15 (75% of 15%) = 11.25% Core effective + Def5 = 3.75% Def effective"
+        },
+        "phase_2_week_9_12": {
+          "composition": {
+            "Core_Primary_STR_1631": 0.30,
+            "STR_1679v2_mscd": 0.13,
+            "STR_1656_Div_ML": 0.15,
+            "H_1676_Div": 0.13,
+            "H_1682_Def": 0.10,
+            "H_1688_Core_Secondary_ResMom": 0.13,
+            "H_1685_Div_investor_flow": 0.06
+          }
+        },
+        "phase_3_week_17_24_final": {
+          "composition": {
+            "Core_Primary_STR_1631": 0.22,
+            "STR_1679v2_mscd": 0.12,
+            "STR_1656_Div_ML": 0.12,
+            "H_1676_Div": 0.13,
+            "H_1682_Def": 0.10,
+            "H_1688_Core_Secondary": 0.14,
+            "H_1685_Div": 0.09,
+            "H_1689_Def_quality_4axis": 0.08
+          },
+          "total": 1.00,
+          "n_strategies": 8,
+          "n_families": 7
+        }
+      }
+    },
+
+    "rev4_projected_sr_with_str_1679v2": {
+      "individual_SR_assumption_added": {
+        "STR_1679v2_mscd": 1.266
+      },
+      "phase_3_revised_projection": {
+        "weighted_mean_SR": 1.018,
+        "rho_0_2": {
+          "projected_SR": 2.01,
+          "gap_vs_2_0": "+0.01 (**SR 2.0 도달**)",
+          "impact": "STR_1679v2 편입으로 +0.06 SR 상향"
+        },
+        "rho_0_3": {
+          "projected_SR": 1.82,
+          "gap_vs_2_0": -0.18
+        }
+      },
+      "comparison_with_rev4_base_sr_1_95": {
+        "rev4_base_no_str_1679v2_rho_0_2": 1.95,
+        "rev4_with_str_1679v2_rho_0_2": 2.01,
+        "improvement": "+0.06 SR (STR_1679v2 MDD 기여 + Core_Primary 부담 경감)"
+      }
+    }
+  },
+
+  "update_2_q25_exposure_cap_rule": {
+    "scout_concern_q25_overconcentration": {
+      "strategies_with_q25_exposure": [
+        {
+          "hypothesis": "H_1682_distress_calmar",
+          "q25_estimated_exposure": 0.60,
+          "source": "Q25_Ohlson_O + R16_Calmar 60/40 composite, Q25 weight 60%"
+        },
+        {
+          "hypothesis": "H_1687_distress_momentum_interaction",
+          "q25_estimated_exposure": 0.50,
+          "source": "Q25_distress × M04_momentum 50/50 composite"
+        },
+        {
+          "hypothesis": "H_1689_quality_4_axis",
+          "q25_estimated_exposure": 0.25,
+          "source": "Altman Z-score 4-axis 중 1개 (25%)"
+        }
+      ],
+      "combined_q25_exposure_if_all_admit": "60% + 50% + 25% / 3 = 45% weighted average (단순 sum은 오해)",
+      "weighted_portfolio_q25_exposure_if_all_admit": {
+        "h_1682_weight_10pct": 0.10,
+        "h_1687_potential_weight_8pct": 0.08,
+        "h_1689_weight_8pct": 0.08,
+        "weighted_q25_exposure": "0.10 × 0.60 + 0.08 × 0.50 + 0.08 × 0.25 = 0.12 (12%)",
+        "interpretation": "단순 전략 합산이 아닌 portfolio-level Q25 exposure 계산 시 12%. 경고 수준이나 cap 35% 내."
+      }
+    },
+
+    "governor_q25_cap_rule_v1_0": {
+      "rule_name": "Q25_Distress_Family_Exposure_Cap",
+      "parent_sub_factor": "Q25_Ohlson_O_Altman_Z_distress",
+      "cap_proposed": 0.35,
+      "cap_rationale": [
+        "distress family는 한국 실증에서 high-volatility signal. 35% 초과 시 portfolio tail risk 급증.",
+        "Q25 기반 전략은 stress_icir 높으나(H_1682 Q25 stress_icir 0.659) normal regime에서 underperform.",
+        "35% cap은 consensus 45% cap과 유사 tier (non-core family 표준 상한)"
+      ],
+      "exposure_calculation_method": {
+        "method": "weighted_portfolio_q25_exposure",
+        "formula": "Q25_exposure = Σ (strategy_weight_i × q25_share_in_strategy_i)",
+        "example": {
+          "h_1682_with_0_10_weight_and_0_60_q25_share": 0.06,
+          "h_1687_with_0_08_weight_and_0_50_q25_share": 0.04,
+          "h_1689_with_0_08_weight_and_0_25_q25_share": 0.02,
+          "total_portfolio_q25_exposure": 0.12,
+          "cap_35pct_check": "PASS (12% < 35%)"
+        },
+        "justification": "simple_sum(60% + 50% + 25% = 135%)은 각 전략 내 Q25 share로 무시됨. portfolio-level exposure가 정확."
+      },
+      "cap_violation_tiebreak_rule": {
+        "when_triggered": "portfolio_q25_exposure > 35%",
+        "priority_order": [
+          "1: SR 기준 descending rank",
+          "2: stress_icir 기준 descending",
+          "3: admission timing (later admitted first reduced)"
+        ],
+        "action": "하위 rank 전략 weight 축소 → 35% cap 준수"
+      },
+      "application_scope": [
+        "PG0 initial scenario construction (rev4 phase_3 8-strategy check)",
+        "PG1 admission candidate evaluation (Q25 exposure 검증 add)",
+        "PG2 allocation finalization (weighted Q25 확정)",
+        "PG3 monthly monitoring (Q25 drift ±5% alert)"
+      ]
+    },
+
+    "q25_cap_applied_to_rev4_phase_3": {
+      "strategies": [
+        "STR_1631 (consensus, Q25 share 0)",
+        "STR_1679v2 (consensus/momentum, Q25 share 0)",
+        "STR_1656 (ML, Q25 share ~0.05)",
+        "H_1676 (consensus, Q25 share 0)",
+        "H_1682 (Q25 share 0.60)",
+        "H_1688 (momentum residual, Q25 share 0)",
+        "H_1685 (investor flow, Q25 share 0)",
+        "H_1689 (Q25 share 0.25)"
+      ],
+      "weighted_q25_exposure": "0.10 × 0.60 + 0.08 × 0.25 + 0.12 × 0.05 = 0.086 (8.6%)",
+      "**cap_35_compliance**": "PASS (8.6% << 35%)",
+      "implication": "rev4 phase_3 구조는 Q25 cap 여유 있음. H_1687 추가 편입 가능성도 열려있음."
+    },
+
+    "governor_q25_cap_decision": "APPROVED — rule v1.0 적용. portfolio_governor.R family_saturation_rule 함수에 Q25 sub-factor cap 35% 추가 update 요청."
+  },
+
+  "h_1688_debate_r1_4of5_impact_on_rev4": {
+    "current_score": "54점 (Codex 8 + Governor 17 + Academic 16 + Risk Manager 13)",
+    "quant_pending": "⏳",
+    "forecast_final": "69~71 → APPROVE_CONDITIONAL 유력",
+    "risk_manager_conditions_mandatory": [
+      "S3 DCC 스트레스 ρ < 0.50",
+      "S5 Barroso scaling S1 spec 필수 포함"
+    ],
+    "rev4_integration_timing": "H_1688 APPROVE_CONDITIONAL + 조건 3건 충족 시 phase_1 Week 4~5 편입. Role: Core_Secondary 공식화."
+  },
+
+  "rev4_final_composition_with_str_1679v2_and_q25_cap": {
+    "phase_3_week_17_24_8_strategy_final": {
+      "Core_Primary_STR_1631_consensus_C19": 0.22,
+      "Core_Multi_Sleeve_Core_Active_Def_STR_1679v2_MSCD": 0.12,
+      "Core_Secondary_H_1688_residual_momentum": 0.14,
+      "Div_1_H_1676_consensus_residual": 0.13,
+      "Div_2_H_1685_investor_flow": 0.09,
+      "Div_ML_STR_1656": 0.12,
+      "Def_1_H_1682_distress_calmar": 0.10,
+      "Def_2_H_1689_quality_4axis": 0.08,
+      "total": 1.00,
+      "n_strategies": 8,
+      "n_families": 7
+    },
+    "family_concentration_check": {
+      "consensus_C19_core_STR_1631": 0.22,
+      "multi_sleeve_core_with_active_defense_STR_1679v2": 0.12,
+      "momentum_residual_H_1688": 0.14,
+      "consensus_residual_H_1676": 0.13,
+      "investor_flow_H_1685": 0.09,
+      "ML_complexity_STR_1656": 0.12,
+      "distress_path_H_1682": 0.10,
+      "quality_aggregate_H_1689": 0.08,
+      "consensus_total": "0.22 + 0.13 = 0.35 (PASS vs 45% cap)",
+      "max_family": 0.22,
+      "compliance": "PASS (max family 22%, consensus 35%, nothing approaching caps)"
+    },
+    "q25_exposure_check": {
+      "weighted_q25": "0.10 × 0.60 + 0.08 × 0.25 + 0.12 × 0.05 = 0.086",
+      "compliance_35_cap": "PASS"
+    },
+    "projected_sr": {
+      "rho_0_2": 2.01,
+      "gap_vs_2_0": "+0.01 (SR 2.0 도달)",
+      "rho_0_3": 1.82,
+      "rho_0_5": 1.46
+    }
+  },
+
+  "scout_task_next_actions": [
+    "H_1685 Foreign-Individual Flow handoff 우선 개시 (Scout 2순위)",
+    "H_1687 s0_record 초안 작성 (H_1688 fallback case)",
+    "H_1689 Quality 4-Axis handoff (Phase_3 defense candidate)",
+    "STR_1679v2 family classification 제안 (Option A vs B vs C — Governor Option A 권고)"
+  ],
+
+  "q_lead_coordination_actions": [
+    "Judge Role Honesty 재심사 결과 수신 시 STR_1679v2 admission confirm",
+    "STR_1679v2 family classification 최종 결정 (Governor Option A 권고 수용?)",
+    "H_1688 R1 Quant 점수 완료 후 final verdict trigger",
+    "Risk Manager agent 온디맨드 스폰 + CVaR_95 / CDaR_95 / tail_dependence / Q25_exposure_consistency 4축 검증",
+    "STR_1070/1085 archive 실행 (Forge/Judge teammate 지시)"
+  ],
+
+  "governor_open_questions_supplement": {
+    "R6_str_1679v2_family_classification": "Option A (신규 family 'multi_sleeve_core_with_active_defense') 승인?",
+    "R7_q25_cap_35pct_approval": "Q25 sub-factor cap 35% 적용 승인?",
+    "R8_q25_exposure_method": "weighted_portfolio_q25_exposure 계산 방식 승인? (simple sum 대신)",
+    "R9_str_1679v2_phase_1_weight": "15% vs 12% vs 10% — Phase_1 admission weight 결정?"
+  },
+
+  "risk_manager_spawn_signal": {
+    "trigger_now": "rev4_supplement 발행 완료 = Risk Manager 온디맨드 스폰 시점",
+    "validation_axes_4": [
+      "CVaR_95 annual ≤ -15%",
+      "CDaR_95 ≤ -22%",
+      "tail_dependence ≤ 0.4",
+      "Q25 weighted exposure ≤ 35% (신규 rule v1.0 적용)"
+    ],
+    "expected_artifact": "qepm/mailbox/risk_manager/outbox/pg2_cvar_validation_rev4.json",
+    "critical_scenarios_to_test": [
+      "H_1688 momentum crash (2009 recovery style)",
+      "STR_1679v2 Def sleeve 22.55pp 기여 stress test",
+      "consensus 35% + momentum_residual 14% + Q25 8.6% 중첩 tail risk",
+      "Phase_1 Week 4~5 55% transition 단기 tail risk"
+    ]
+  },
+
+  "artifacts_rev4_supplement": [
+    "qepm/mailbox/governor/outbox/PG0_PLAN_rev4_supplement.json (현 파일)",
+    "parent: PG0_PLAN_rev4.json (v4.0)",
+    "추가 참조: consensus_taxonomy_proposal.json v1.0 (Q25 cap 추가 반영 필요)"
+  ],
+
+  "executive_summary_for_q_lead": {
+    "str_1679v2_readmission": "Def contrib 22.55pp 실측 → L-146 해당 없음 → multi_sleeve_core_with_active_defense Role로 admission 가능",
+    "q25_cap_rule": "35% 적용 + weighted_portfolio_exposure 방식 승인 필요",
+    "rev4_projected_sr_with_8_strategies": "SR 2.01 @ ρ=0.2 (**SR 2.0 도달**)",
+    "next_steps": [
+      "1. Judge STR_1679v2 Role Honesty 재심사 PASS 확인",
+      "2. STR_1679v2 family 분류 R6 결정",
+      "3. Q25 cap rule R7/R8 승인",
+      "4. Risk Manager agent 스폰 + 4축 검증",
+      "5. H_1688 debate Quant 점수 → final verdict",
+      "6. Phase_1 PG1 admission (H_1676 + H_1682 + H_1688 + STR_1679v2 재편입)"
+    ]
+  }
+}

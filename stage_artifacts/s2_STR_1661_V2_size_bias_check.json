@@ -1,0 +1,87 @@
+{
+  "artifact_type": "s2_size_bias_check",
+  "schema_version": "v1",
+  "strategy_id": "STR_1661_XGB_GPU",
+  "variant": "V2 (LambdaRank)",
+  "stage": "S2",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2 — Q-Lead 신규 지시 #2 (PENDING size_bias_check 처리)",
+  "purpose": "Q-Lead 지시 #2 PENDING 처리. STR_1661 V2 S2 profiling size-bias 분석 — Top 20 종목의 market cap 분포가 universe 대비 large-cap 편중 여부 확인. S3 TDC 측정 전 prerequisite.",
+
+  "source_data": {
+    "file": "04_Research/strategies/STR_1661_XGB_GPU/output/scores_V2.csv",
+    "n_rows": 416599,
+    "date_range": "2008-01~2025-12 (206 months)",
+    "n_unique_tickers": 3170,
+    "columns": ["Date", "Ticker", "Size", "Score", "variant"]
+  },
+
+  "methodology": {
+    "step_1_top_20_extraction": "Each month t: select Top 20 tickers by Score descending (LambdaRank prediction)",
+    "step_2_universe_stats": "Each month t: universe size median / q25 / q75 compute",
+    "step_3_top20_size_stats": "Top 20 size median / q25 / q75 compute",
+    "step_4_ratio_analysis": "Top 20 size_median / Universe size_median ratio per month",
+    "step_5_percentile_analysis": "Each Top 20 ticker's size percentile within monthly universe (1~100 scale)",
+    "step_6_aggregation": "Cross-monthly mean/median ratio + percentile distribution"
+  },
+
+  "results_overall": {
+    "top20_vs_universe_median_size_ratio": {
+      "mean": 1.136,
+      "median": 0.656,
+      "min": 0.069,
+      "max": 15.497,
+      "interpretation": "Top 20 median size는 universe median과 비슷 수준 (ratio 0.66~1.14). random sampling 대비 systematic large-cap bias 없음 — ML signal이 size에 무관한 neutral selection."
+    },
+    "top20_percentile_within_universe": {
+      "mean_percentile": 52.5,
+      "pct_in_top_30pct_large_cap": 0.35,
+      "pct_in_top_50pct": 0.55,
+      "interpretation": "Top 20 평균 size percentile 52.5% — universe median과 거의 동일. Top 30% (large-cap) 편중 35% (random uniform 30% 대비 +5%p, 미미한 large-cap 약간 선호). ML V2는 size-neutral strategy에 가까움."
+    }
+  },
+
+  "size_neutrality_verdict": "**SIZE_NEUTRAL** — ML V2 LambdaRank signal은 large-cap systematic bias 없음. small/mid/large cap 균등 분포 선택.",
+
+  "comparison_with_expectations": {
+    "expected": "ML feature engineering (momentum/value/quality 조합)은 대개 size 관련 factor 포함 → large-cap bias 경향 (mean percentile 60~75% 범위)",
+    "actual": "mean percentile 52.5% — expectation 대비 size-neutral",
+    "explanation": "LambdaRank objective의 pairwise ordering 학습이 절대 return level 아닌 rank를 학습 → size level 자체와 독립. mi_top_n=50 features 중 size factor importance 낮은 것으로 추정."
+  },
+
+  "implications_for_s3": {
+    "liquidity_concern": "size-neutral 은 small-cap 포함 가능 → 유동성 필터 LIQ_THRESHOLD=2e8 (C10) 엄수 필수",
+    "tdc_measurement_impact": "STR_1661 V2 size-neutral이면 STR_1631 (Consensus C19 기반, large-cap 선호 경향) 대비 자동 orthogonality 확보 가능성 높음",
+    "expected_tdc_update": "s3_tdc_premeasurement H_1693 vs STR_1661 V2 TDC 0.10~0.25 예측 유지 (size-neutral 확인으로 재확인)",
+    "parent_child_relationship": "STR_1656 MLRA parent 관계는 ML family 공유로 TDC 높음 예상 (0.50~0.70), 그러나 V2 LambdaRank는 parent의 reg:squarederror 대비 objective 다름 → 상대적 orthogonality 확보"
+  },
+
+  "implications_for_governor_pg1_admission": {
+    "size_distribution": "size-neutral 선택은 portfolio diversification 관점 긍정적",
+    "concentration_risk_reduction": "large-cap 집중 없으므로 Top 10 HHI (시가총액 기준) 낮게 분포 예상",
+    "role_alignment": "ML_predictive role (v55 6-taxonomy)에 size-neutral이 적합 — pure prediction alpha로 size factor 오염 없음"
+  },
+
+  "output_files": [
+    "stage_artifacts/s2_STR_1661_V2_size_bias_monthly.csv (206 months × Top20 percentile stats)",
+    "stage_artifacts/s2_STR_1661_V2_size_bias_summary.csv (monthly universe vs Top20 size stats)"
+  ],
+
+  "s2_profile_verdict_update": {
+    "previous_status": "size_bias: PENDING (s2_profile_STR_1661_V2_extended.json)",
+    "updated_status": "size_bias: **SIZE_NEUTRAL** (mean percentile 52.5%, top30% 35%)",
+    "overall_s2_verdict": "CONDITIONAL_PASS 유지 — three_period PASS + rolling_drift UNSTABLE (time-varying feature 정상) + stress_ic STRONG + **size_bias SIZE_NEUTRAL** 추가. advance_to_s3: TRUE"
+  },
+
+  "scout_notes": [
+    "Q-Lead 지시 #2 완료 — PENDING size_bias_check R 실측 실행",
+    "STR_1661 V2 LambdaRank는 size-neutral 확인 — large-cap bias 없음 (mean percentile 52.5%)",
+    "pairwise ordering 학습 objective가 절대 level 아닌 rank 학습 → size factor 무관",
+    "STR_1631 (Consensus C19 large-cap 경향) 대비 자동 orthogonality 확보 가능",
+    "S3 TDC measurement 준비 완료 — STR_1631 vs STR_1661_V2 TDC 0.10~0.25 예측 재확인",
+    "ML_predictive role (v55 taxonomy) size-neutral 특성 적합",
+    "유동성 필터 C10 LIQ_THRESHOLD=2e8 엄수 필수 (small-cap 포함 가능성)",
+    "S2 overall verdict CONDITIONAL_PASS 유지 (advance_to_s3: TRUE)"
+  ]
+}

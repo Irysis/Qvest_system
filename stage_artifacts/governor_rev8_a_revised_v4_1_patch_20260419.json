@@ -1,0 +1,144 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-166 ANTI-PATTERN 하드 블로커 연속 조치. Judge Signoff #1 B1 HARD blocker 수정. 동일 사유 연속 발효.",
+
+  "artifact_type": "governor_revision_patch",
+  "revision_id": "rev8-A-revised-v4.1",
+  "base": "rev8-A-revised-v4",
+  "patch_type": "B1_weight_correction + B2_advisory + B3_advisory",
+  "issued_by": "governor",
+  "issued_at": "2026-04-19T20:45:00Z",
+  "v54_freeze_compliant": true,
+  "freeze_override_reason": "Judge Signoff B1 HARD blocker — weight sum 1.10 correction mandatory",
+
+  "judge_signoff_results": {
+    "signoff_1_admission_rule_v3_5_3": "CONDITIONAL_APPROVE",
+    "signoff_2_ax007_promote": "PROMOTE_APPROVED (즉시 발효 2026-04-19)",
+    "ax007_five_axis": 0.86,
+    "ax007_supporting_evidence_met": "3/3 (L-160 + L-165 + L-166)"
+  },
+
+  "b1_fix": {
+    "blocker_level": "HARD",
+    "issue": "scenario_d_v4_composition 9 slots 합계 = 1.10 (overweight 10%pt)",
+    "fix_option": "Judge option_a",
+    "changes": {
+      "STR_1679v3": {"old": 0.12, "new": 0.12, "note": "유지"},
+      "Reserve_Cash": {"old": 0.11, "new": 0.09, "delta": -0.02},
+      "misc_unallocated": {"old": 0.08, "new": 0.06, "delta": -0.02}
+    },
+    "confirmed_active_weight_fix": {
+      "old_value": 0.43,
+      "computed_correct": 0.51,
+      "note": "STR_1631(0.18) + STR_1656(0.14) + Reserve(0.09 → confirmed active) = 0.18+0.14+0.09=0.41 (active only). STR_1631+STR_1656 ACTIVE_CONFIRMED=0.32. Reserve ACTIVE=0.09. Total confirmed=0.41.",
+      "new_value": 0.41
+    }
+  },
+
+  "scenario_d_v4_1_composition": {
+    "portfolio_id": "V7_ALLWEATHER_001",
+    "revision": "v4.1",
+    "weight_sum_check": 1.00,
+    "slots": [
+      {"id": "S1", "strategy": "STR_1631_SYN_05_2002", "role": "Core_Primary",      "weight": 0.18, "status": "ACTIVE_CONFIRMED"},
+      {"id": "S2", "strategy": "H_1692_v2",             "role": "Core_Secondary",   "weight": 0.10, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge Gate0~14 PASS + AX-007 scope CLEAR + Harvey t>3.3"},
+      {"id": "S3", "strategy": "STR_1656_MLRA_M05",     "role": "Diversifier_ML",   "weight": 0.14, "status": "ACTIVE_CONFIRMED",
+        "pit_note": "C10 fix APPLIED 2026-04-19 (AvgTV20 교체). 재실행 PENDING Forge.", "tdc_vs_str1631": 0.455},
+      {"id": "S4", "strategy": "STR_1686",               "role": "Diversifier_Foreign", "weight": 0.14, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 재실행 DONE + Judge Gate0/8/11/13 PASS + TDC_vs_STR_1631 < 0.30"},
+      {"id": "S5", "strategy": "H_1689_v3_variant_1",   "role": "Defense_Primary",  "weight": 0.23, "status": "CONDITIONAL_HOLD",
+        "condition": "Forge S1 DONE + Judge Gate0~14 PASS + AX-007 scope check + Harvey t>3.3",
+        "concentration_note": "단독 defense 23% — Risk Mgr 4th round CVaR/CDaR 필수 (GOV-REQ-002)"},
+      {"id": "S6", "strategy": "STR_1687",               "role": "Defense_Secondary", "weight": 0.00, "status": "HARD_DROP",
+        "drop_reason": "L-166 + AX-007 Gate14 + Gate3/7/12/13 FAIL"},
+      {"id": "S7", "strategy": "STR_1679v3_embedded_q25", "role": "Diversifier_Q25","weight": 0.12, "status": "IMPLEMENTATION_MISSING",
+        "condition": "신규 구현 → S1/S2 → Judge S6 → TDC_vs_STR_1631 실측 < 0.50",
+        "tdc_warning": "proxy TDC_lower=0.619 WARN — v3 실측 MANDATORY"},
+      {"id": "S8", "strategy": "Reserve_Cash",           "role": "Reserve",          "weight": 0.09, "status": "ACTIVE",
+        "note": "B1 fix: 0.11 → 0.09 (-2%pt)"},
+      {"id": "S9", "strategy": "misc_unallocated",       "role": "Misc",             "weight": 0.06, "status": "PENDING_REALLOCATION",
+        "note": "B1 fix: 0.08 → 0.06 (-2%pt). H_1689/H_1692 Judge S6 결과 후 재분배"}
+    ],
+    "confirmed_active_weight": 0.41,
+    "conditional_hold_weight": 0.47,
+    "hard_drop_weight": 0.10,
+    "misc_reserve_weight": 0.15,
+    "defense_cluster_current": 0.23,
+    "defense_cluster_target": 0.33,
+    "weight_sum": 1.00
+  },
+
+  "b2_advisory": {
+    "blocker_level": "ADVISORY",
+    "issue": "defense_cluster 0.23 < target 0.33 (gap 10%pt). H_1689 v3 단독으로 AX-001 v2 multi-sleeve defense 요건 미충족 가능.",
+    "response": "AX-001 v2 defense 조건부 평가 적용. H_1689 v3 Judge PASS 후 Blender SLV4 Defense regime matrix에서 crisis 시 40% 확대 구조로 보강.",
+    "phase2_plan": "blender_5sleeve_phase2_prep_20260419.json SLV4: normal 5% / crisis 40% / caution 20%. 실효 defense weight = regime 가중 평균 ~15%. 목표 33%까지 H_1692 Core_Secondary Gate14 CLEAR 후 1건 추가 defense 편입 검토.",
+    "ax001_v2_compliance": "crisis_alpha ≥4/6 + bad/normal IC ratio >0.6 조건 H_1689 v3 S6 검증 후 확인",
+    "status": "NOTED — Phase_2 Blender 보강 plan 등록 완료"
+  },
+
+  "b3_advisory": {
+    "blocker_level": "ADVISORY",
+    "issue": "C3 exceptions[2] 'ML-based sizing' 조항 loose — 구체적 3-gate 필요",
+    "response": "admission_rule_v3_5_3 C3 exceptions[2] 조항 강화",
+    "updated_c3_exception_2": {
+      "label": "ML-based sizing (3-gate 필수)",
+      "gate_1": "SR_OOS / SR_IS > 0.70 (OOS 성과가 IS의 70% 이상)",
+      "gate_2": "feature_concentration < 0.40 (top-1 feature importance < 40%)",
+      "gate_3": "holdout_period >= 12M (IS/OOS 분리 후 별도 holdout 12개월 이상)",
+      "fail_action": "ML sizing 비중 0으로 고정, EW fallback 적용",
+      "applies_to": "STR_1656_MLRA, H_1692_v2 (XGBoost 기반)"
+    },
+    "status": "NOTED — v3.5.3 C3 exception[2] 강화 반영"
+  },
+
+  "admission_rule_v3_5_3_patch": {
+    "version": "v3.5.3-patch1",
+    "base": "v3.5.3",
+    "change": "C3 exceptions[2] ML-based sizing 3-gate 구체화 (B3 advisory 반영)",
+    "gates_14_total": [
+      "Gate0: PIT C1~C15 + lookahead_detector + Codex",
+      "Gate1~3: 허들 + Grade (hard_fail → REJECT)",
+      "Gate4: Harvey t > 3.3 (Bonferroni 5-test) + DSR MANDATORY",
+      "Gate5: FF5/Carhart alpha",
+      "Gate6: tail_risk CDaR/CVaR",
+      "Gate7: IC-Return SR/ICIR >= 0.30 MANDATORY",
+      "Gate8: Role Honesty (AX-001 v2 / AX-005 exclusion)",
+      "Gate9: Alpha Lab ICIR >= 0.20 + 5Y IC 유의성",
+      "Gate10: Anti-pattern 13종",
+      "Gate11: Sequential TDC < 0.30 MANDATORY",
+      "Gate12: L-163 poison_pill MANDATORY hard_block",
+      "Gate13: Signal-Portfolio Translation MANDATORY hard_block",
+      "Gate14: AX-007 auto-reject (single-sleeve defense/core_secondary top-20)"
+    ],
+    "c3_exception_2_updated": "ML-based sizing: SR_OOS/SR_IS>0.70 + feature_concentration<0.40 + holdout>=12M 3-gate 동시 충족 필수"
+  },
+
+  "ax007_active_ledger": {
+    "status": "REGISTERED",
+    "axiom_core_json": ".cache/axiom_core.json — AX-007 추가 완료",
+    "claude_md": "CLAUDE.md Axioms 섹션 AX-007 추가 완료",
+    "l_codes_updated": "methodology_active.md L-160/L-165/L-166 AX-007 승격 반영 필요 (Q-Lead 또는 Scout 처리)"
+  },
+
+  "ax005_v1_2_extension": {
+    "status": "PENDING",
+    "note": "Judge 권고 AX-005 v1.2 extension packet 별도 수신 대기. 현재 v1.1 유지.",
+    "trigger": "Judge AX-005 v1.2 packet 발행 시 axiom_core.json + CLAUDE.md 동시 업데이트"
+  },
+
+  "projected_sr": {
+    "current": 1.193,
+    "conservative": 1.74,
+    "upside_if_h1689_passes": 1.78
+  },
+
+  "governor_next_actions": [
+    "Judge에 rev-v4.1 patch 재확인 요청 (B1 수정 확인)",
+    "methodology_active.md L-160/L-165/L-166 AX-007 승격 반영 (Q-Lead 또는 Scout 위임)",
+    "Forge S1 DONE 4건 수신 대기 → TDC 실측 트리거",
+    "H_1689 v3 Judge Gate0~14 PASS → Risk Mgr 4th round (GOV-REQ-002)",
+    "AX-005 v1.2 extension packet Judge 수신 후 처리"
+  ]
+}

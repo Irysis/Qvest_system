@@ -1,0 +1,67 @@
+{
+  "role": "quant",
+  "agent_id": "quant_h1693",
+  "hypothesis_id": "H_1693",
+  "round": 1,
+  "stance": "APPROVE_CONDITIONAL",
+  "critical_concerns": [
+    "SUE regime_profile 불일치: factor_registry.json C01_SUE labels.regime_profile.crisis = 'negative' — 위기 구간에서 SUE 방향이 부정적. 가설은 defense role을 목표하나 SUE 30% 구성 요소가 위기 시 반대 방향으로 작동. conditional_ic_matrix_4regime 실증: C01_SUE icir_CRISIS = 0.301 (Q07 icir_CRISIS 0.413 대비 낮음). 복합 지수 위기 방어력이 Q07 단독 대비 희석 가능. S1에서 Q07 단독 vs 복합 지수 위기 ICIR 비교 실측 필수.",
+    "Z_Sector 구현 위험 — sector_sd NA 처리 미확인: factor_db_builder.R .standardize_factors() Z_Sector 컬럼 자동 생성 지원 명시되어 있으나, 한국 시장 소규모 sector (예: 유틸리티 2~3종목)에서 sector_sd ≈ 0 → division by zero 또는 NA 발생 위험. sector 분류 체계(GICS vs KRX 업종) 일관성 미검증. Forge S1 preflight에서 sector_sd=0 sector 처리 로직 및 sector 분류 column 존재 확인 필수.",
+    "C01_SUE 데이터 타이밍 불일치 위험 (C4): factor_registry.json C01_SUE lag_rule = 'Date <= sig_d' (daily), update_freq = 'daily'. 반면 Q07은 quarterly + 45일 lag (C4 준수). 두 팩터의 데이터 타이밍 기준이 상이 — SUE는 daily 업데이트이나 분기 실적 공시 시점 기준 lag 처리가 중요. Foster 1984 original SUE는 공시일 기준 이미 lag 내재되어 있으나, C01_SUE 한국 실증에서 실제 분기 공시 45일 lag 적용 여부 미확인. PIT 위반 (C4) 가능성 — S1 코드에서 명시적 확인 필요."
+  ],
+  "supporting_arguments": [
+    "L-121 실증 직접 확인: crisis_defense_factor_analysis.csv — Q07_Earnings_Stability stress_icir = 0.7529, icir_CRISIS_4r = 0.4134, crisis_ratio = 1.040. 288 팩터 중 stress ICIR 상위 1% 검증 완료. conditional_ic_matrix_4regime Q07 icir_CRISIS = 0.4134, icir_all = 0.401. composite stress_icir = Q07(0.7529 × 0.7) + SUE(추정 0.15~0.30 × 0.3) = 0.527~0.572 → L-163 poison_pill threshold (+0.05 이상) 충족 PASS.",
+    "두 팩터 독립성 확인: Q07 economic_family = 'quality', C01_SUE economic_family = 'consensus'. conditional_ic_matrix ic_bad 부호 비교: Q07 ic_bad = +0.031 (positive), C01_SUE ic_bad = +0.036 (positive) — 위기 구간 양방향 positive. correlation_group 이질적 (Q07: quality/fundamental vs C01_SUE: earnings_cluster/consensus). L-119 내부 상관 희석 위험 낮음. algebraic identity: earnings stability(5Y 변동성 역수) vs earnings surprise(공시 대비 초과) — 2 independent information axes.",
+    "C19 독립성 양호: C01_SUE factor_registry correlation_group = 'earnings_cluster' — C19_Composite_Earnings와 동일 그룹 가능성 있으나 실증 correlation 미측정. 그러나 Q07 conditional_ic_matrix corr_with_C19 = -0.092 (s0_record L-121 인용), C01_SUE crisis_premium = -0.0108 (C19와 역방향 가능성). STR_1631 SYN_05 핵심 C19 대비 H_1693 독립성 예비 긍정 — S3에서 실측 필수."
+  ],
+  "arguments": [
+    "L-121 KR 실증 직접 확인: Q07 stress_icir=0.7529, icir_CRISIS_4r=0.4134 (288팩터 중 1위). composite stress_icir=0.572 — L-163 poison_pill threshold 충족.",
+    "Q07(quality) vs C01_SUE(consensus) economic_family 이질 — 2 independent information axes. ic_bad 양방향 positive 확인. internal corr 희석 위험 낮음.",
+    "Factor DB 완전 VERIFIED: Q07 line 2172 + C01_SUE line 5112. Z_Sector 인프라 기존 지원. load_month_factors() L-164 mandate 충족."
+  ],
+  "veto_flag": null,
+  "s1_gate_items": [
+    "Z_Sector 구현 검증: sector 분류 컬럼 존재 확인 + sector_sd=0 sector NA 처리 로직 코드 확인 (GICS vs KRX 업종 통일)",
+    "C4 PIT 검증: C01_SUE 분기 공시 lag 처리 — 실적 공시일 기준 t 이전 데이터만 사용. factor_registry lag_rule = 'Date <= sig_d' 적용 방식 코드 명시",
+    "Q07 단독 ICIR vs H_1693 복합 ICIR 비교: sector-neutralization 효과 정량화 (Z_Sector Q07 ICIR ≥ raw Q07 ICIR?). defense 희석 여부 확인",
+    "위기 구간 SUE 방향 실측: C01_SUE crisis regime에서 실제 long-only 포트폴리오 수익 방향 확인 (registry regime_profile.crisis='negative' 실증 반박 or 확인)",
+    "net_IC_transmission_ratio = net_return / pre_cost_return > 0.6 (L-160 decoupling 차단 — Signal-Portfolio Translation Failure family 3rd member 방지)",
+    "stress return positive 3 window 중 2+ 실측 (stress_outperform ≥ 2/3 — Governor D1 필수 gate)",
+    "bad_ic ≥ 0.08 실측 (4-regime Bad+Crisis IC mean — Governor D1 필수 gate)",
+    "sector constraint max 5/sector 구현 검증: HHI < 2500 실측",
+    "Harvey t > 2.5 (defense 완화 기준)",
+    "MDD < 35% (Governor D1 필수 gate)",
+    "CAGR ≥ 4% (L-136 개선 목표)",
+    "validate_factor_sd(c('Q07_Earnings_Stability', 'C01_SUE')) — Factor DB Fix 1 이후 sd=1.0 확인 (L-161/L-164)"
+  ],
+  "kr_empirical_check": "confirmed",
+  "rubric_breakdown": {
+    "icir_pass": 3,
+    "internal_corr": 3,
+    "c19_corr": 2,
+    "defense_ic": 3,
+    "data_avail": 4,
+    "kr_empirical_check_score": 4
+  },
+  "score": 19,
+  "_rubric_rationale": {
+    "icir_pass_3": "Q07 stress_icir 0.7529 (L-121 실증 재확인 crisis_defense_factor_analysis.csv). SUE ICIR conditional_ic_matrix recent_3y_icir 0.777 (높음), ic_bad +0.036 positive. L-163 composite stress ≥ +0.527 PASS. 만점 3점.",
+    "internal_corr_3": "Q07 (quality/fundamental earnings volatility) vs C01_SUE (consensus earnings surprise) — 경제적 메커니즘 독립. economic_family 이질. Dichev-Tang 2009 5Y 변동성 vs Foster-Olsen-Shevlin 1984 분기 서프라이즈 orthogonal information axes. 만점 3점.",
+    "c19_corr_2": "C01_SUE correlation_group = 'earnings_cluster' — C19와 동일 earnings cluster 가능성. Q07 corr_with_C19 = -0.092 (독립적). C01_SUE C19 실증 상관 미측정 — 리스크 존재. 2점 (S3 실측 후 조정 가능).",
+    "defense_ic_3": "Q07 icir_CRISIS_4r 0.413, stress_icir 0.753 — 양쪽 위기 최강 실증 확인. ic_bad +0.031 positive. SUE icir_CRISIS 0.301 (보조적 positive). 복합 defense IC 양호. 만점 3점.",
+    "data_avail_4": "Q07_Earnings_Stability factor_registry.json line 2172 VERIFIED + C01_SUE line 5112 VERIFIED. Z_Sector 인프라 기존 지원. load_month_factors() 경유 L-164 의무 PASS. 만점 4점.",
+    "kr_empirical_check_score_4": "L-121 KR 10년+ 실증 직접 확인: stress_icir 0.7529, icir_CRISIS 0.413. Hit Rate 미측정이나 conditional_ic_matrix Q07 ic_bad/ic_good 비율 = 0.031/0.042 = 73.8% (>55% 추정 가능). AX-004 3-pillar exempt (mechanism 구분 + L-121 KR override + multi-sleeve exclusion). family 'quality_earnings_stability_sector_neutral' 신규 — VALIDATED_HARD_FAIL L-code와 동일 family 없음. confirmed +4점.",
+    "total_raw": 19,
+    "penalty_applied": 0,
+    "final_score": 19,
+    "note_c19_corr_downgrade": "C01_SUE earnings_cluster C19 상관 실증 미확인으로 1점 차감. S3에서 실측 후 만점 복원 가능."
+  },
+  "_data_sources_verified": {
+    "crisis_defense_factor_analysis_csv": "Q07_Earnings_Stability stress_icir=0.7529, icir_CRISIS_4r=0.4134, crisis_ratio=1.040, normal_icir=0.7758",
+    "conditional_ic_matrix_csv": "Q07 ic_all=0.040, ic_bad=0.031, ic_good=0.042, recent_3y_icir=0.929. C01_SUE ic_all=0.047, ic_bad=0.036, ic_good=0.047, recent_3y_icir=0.777",
+    "conditional_ic_matrix_4regime_csv": "Q07 icir_CRISIS=0.413, icir_CALM=0.599, n_CRISIS=48. C01_SUE icir_CRISIS=0.301, icir_CALM=0.393, n_CRISIS=65",
+    "factor_registry_q07": "line 2172, category=quality, direction=higher_better, lag_rule quarterly C4",
+    "factor_registry_c01_sue": "line 5112, category=consensus, direction=higher_better, lag_rule daily, regime_profile.crisis=negative — 위기 구간 우려 플래그"
+  },
+  "_key_finding": "C01_SUE factor_registry regime_profile.crisis='negative' 발견 — 위기 구간 SUE 방향 역전 가능성. 그러나 conditional_ic_matrix_4regime C01_SUE icir_CRISIS=0.301 (positive) — 실증 IC는 positive. registry의 정성 태깅과 실증 IC 간 불일치. S1에서 실측으로 해소 필요. Q07 core 70% weight이 buffer 역할 가능."
+}

@@ -1,0 +1,106 @@
+{
+  "hypothesis_id": "H_1689",
+  "hypothesis_name": "Quality Aggregate Composite Diversifier v3 (Q24 Poison Pill Removed)",
+  "compiled_at": "2026-04-19T02:20+09:00",
+  "r1_total_score": 62,
+  "expected_verdict_r1_only": "BORDERLINE_REVISE (v54 60-69)",
+  "round_1": [
+    {
+      "role": "codex_critic",
+      "score": 6,
+      "key_arguments": [
+        "KR quality_profitability 검증 실패 패턴 재현 위험 (L-133/L-134/L-139 AX-004 + L-125 + L-160) — Q24 제거만 validated, 나머지 core는 relabel/tweak",
+        "PIT failure 경로: Q04/Q07/Q25 disclosure lag protocol 미명시 + monthly loading mandate에도 실시간 constructability 증명 부재. Kill Scenario 2 Live SR drop 0.5-0.9 (medium prob, blind_spot)",
+        "설계 PIT 4/4 HIGH: ex-post pattern selection + disclosure-lag 미명시 + Q24 outcome-conditioned 제거 + Scenario C 23% slot full-sample tuning"
+      ],
+      "concern": "Q24 제거 + Q01/Q04/(Q07)/-Q25 averaging만으로 validated IC-to-return decoupling 해소 불충분 시 → crowded quality proxy → top-20 집중 regime reversal 증폭 → SR ≤ 0 + MDD 70-90%",
+      "key_conditions": [
+        "PIT rebuild + filing-date lag mapping + post-disclosure rebalance delays",
+        "STR_1683/H_1682 baseline ablation (SR/MDD 통계적 유의 개선, 단순 IC change 불충분)",
+        "monetization guardrails (SR/MDD-aware gate) — L-125/L-160 pre-approval",
+        "exposure controls + KOSDAQ stress robustness",
+        "pre-registered thresholds + weights/slot freeze"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "score": 13,
+      "key_arguments": [
+        "Q24 poison pill 완전 제거 확인 — 본인 3rd round CRITICAL blocking v3 충실 반영. composite stress_icir +0.72~0.73 positive 기대",
+        "Factor DB rebuild 미완 불확실성 — Q01 sd 0.587, Q25 sd 0.530 DISTORTED 상태. post-fix stress_icir +0.50~0.85 범위 변동 가능. 현재 수치 액면 신뢰 불가",
+        "L-160 IC-Return decoupling 잔존 위험 — 5대 원인 중 2건만 해소. Gate 12 coupling ≥ 0.3 실측이 S1 최대 관문"
+      ],
+      "concern": "Factor DB pre-fix distortion + L-160 decoupling 5대 원인 중 3건 미해소 (long-only concentration, composite offset, non-linear signal)",
+      "key_conditions": [
+        "Factor DB rebuild 완료 + post-fix sd=1.0 검증 S1 선결",
+        "Gate 12 IC-Return coupling_ratio ≥ 0.3 실측",
+        "variant_2 채택 시 STR_1679v3 TDC 실측 (> 0.40 시 Sequential Admission 또는 variant_1 전환)"
+      ]
+    },
+    {
+      "role": "governor",
+      "score": 15,
+      "key_arguments": [
+        "SR gap 0.807 단독 해소 불가, diversifier Sharpe 증폭 간접 기여. variant_1 3-axis PRIMARY 우선 admission (saturation-safe)",
+        "Defense cluster 33% (cap 35% margin 2pp), variant_2 Q07 공유 시 STR_1679v3 TDC 0.30~0.45 경계 — Sequential Admission",
+        "L-164/Gate 13 compliant 설계, skeleton v1_6 axes 표기 오류(Q25_Piotroski_F) 수정 필요. Gate 11/12/13 triple hard_block PASS + Role Honesty Audit 선결"
+      ],
+      "concern": "diversifier 선언하나 defense cluster 33% 내 23% anchor — cosmetic role mismatch 우려. Kill 2 (C19 Consensus Quality Collapse) 미해소로 baseline_control empirical 전 상한 불명",
+      "key_conditions": [
+        "variant_1 (3-axis Q24-exclude) PRIMARY 우선 admission",
+        "Gate 11/12/13 triple hard_block PASS + Role Honesty Audit",
+        "Family saturation 재평가 + Kill 2 exposure stress test (variant_2 경로 시 weight 10~15% 하향 Sequential Admission)",
+        "L-163 poison_pill rule + L-164 mandate + STR_1685 Pre/Post 비교",
+        "Scenario D contingency plan 사전 정의 (v54 freeze 내, H_1690 증강 또는 STR_1679v3 복원)"
+      ]
+    },
+    {
+      "role": "quant",
+      "score": 13,
+      "key_arguments": [
+        "variant_1 composite 위기IC +0.0353 / variant_2 +0.0336 — 4팩터 ic_bad 모두 양수. ICIR ≥ 0.20 통과 확률 variant_1 65~70% / variant_2 80~85%. Q01 recent_3y_icir=0.0815 variant_1 하한 압력 vs Q04(0.532)/Q07(0.929)/Q25(0.633) 상쇄",
+        "C19 overlap 경제적 orthogonality 충분하나 composite-level 실측 미확인. **Q07 n_months=163 — GFC(2008) 구간 검증 구조적 불가**: s0_record 미명시 중요 constraint, Forge S1 전 Q07 available 시작 월 명시 보고 필수. L-164 C15 compliance 확인",
+        "AX-004 EXCLUSION multi-axis composite 면제 명문 → hard_fail_match 아닌 partial. L-133/L-134/L-139 3건 모두 single-axis standalone 실패 확인. 조건부 경고: Q01 alpha decay(L-139 패턴) + L-160 IC-Return decoupling"
+      ],
+      "concern": "Q07 n_months=163 GFC 검증 불가 구조 + Q01 alpha decay 압력 + L-160 IC-Return decoupling 잔존",
+      "key_conditions": [
+        "Q07 available 시작 월 s0_record 명시 (GFC 2008 검증 가능 여부)",
+        "variant_1 composite-level ICIR 실측 (S1)",
+        "C19 vs H_1689 composite-level 상관 실측 (S3)",
+        "L-160 IC-Return decoupling 5대 원인 해소 증명",
+        "Q01 alpha decay monitoring (L-139 패턴)"
+      ],
+      "kr_empirical_check": "partial"
+    },
+    {
+      "role": "academic",
+      "score": 15,
+      "key_arguments": [
+        "peer_review 3/4 — 7건 top-tier (Novy-Marx 2013 JFE + Piotroski 2000 JAR + Ohlson 1980 JAR + Francis 2004 AR + Asness 2019 QMJ) 확인. 김재익-이준 2020 KR QMJ direct cite 미확인으로 -1",
+        "mechanism_align 3/4 — Asness 2019 QMJ 4-dimension (profitability + growth + safety + payout) 대비 growth+payout 2 axes 누락. variant_2 Q07 4-axis가 Asness 2019 근접. **variant_2 academic preferred**",
+        "AX-004 single-signal scope 구분 타당하나 KR 4-axis QMJ 직접 실증 부재. time_decay 2/4 — Q01 2013/Q04 2000/Q25 1980/Q24 1968 publication decay 심각, L-139/L-133/L-144 KR 소멸 실증"
+      ],
+      "concern": "publication decay 심각 + KR 4-axis QMJ 직접 실증 부재. 김재익-이준 2020 KR QMJ direct cite 미확인",
+      "key_conditions": [
+        "김재익-이준 2020 KR QMJ 정확 cite 보강",
+        "Asness 2019 QMJ 4-dimension framework 명시 (variant_2 경로 지원)",
+        "Francis 2004 earnings attributes + Campbell 2008 distress framework 추가",
+        "L-121 Q07 KR 실증 cross-reference",
+        "publication decay 완화 evidence (2020년대 KR quality 지속성)"
+      ]
+    }
+  ],
+  "key_tensions": [
+    "Codex AX-004 relabel/tweak 주장 vs Quant/Academic multi-axis composite EXCEPTION (hard_fail_match 아닌 partial)",
+    "Risk Mgr Factor DB rebuild 미완 불확실성 vs Governor variant_1 PRIMARY 즉시 admission",
+    "Governor cosmetic role mismatch (diversifier vs 33% anchor) vs Risk Mgr Kill 2 C19 collapse 28% 동시 소멸",
+    "Academic variant_2 4-axis preferred (Asness 2019) vs Governor variant_1 3-axis saturation-safe",
+    "Quant Q07 n_months=163 GFC 검증 불가 발견 (중요 constraint) — s0_record 보강 필수"
+  ],
+  "r2_focus_points_for_rebuttal": [
+    "Codex AX-004 relabel 주장 vs Quant partial 판정 — multi-axis composite EXCEPTION 명확화",
+    "Risk Mgr Factor DB rebuild 조건부 admission 타당성",
+    "variant_1 vs variant_2 선택: Governor saturation-safe vs Academic 4-dimension completeness",
+    "Q07 n_months=163 GFC 검증 불가 구조적 constraint — variant_2 academic preferred에 미치는 영향"
+  ]
+}

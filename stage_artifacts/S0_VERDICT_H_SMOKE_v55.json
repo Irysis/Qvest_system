@@ -1,0 +1,210 @@
+{
+  "schema_version": "v55",
+  "hypothesis_id": "H_SMOKE_v55",
+  "verdict_timestamp": "2026-04-19",
+  "aggregator": "q_lead",
+
+  "transcript": {
+    "rounds": [
+      {
+        "round": "R1",
+        "participants": ["academic", "codex_critic", "judge", "quant", "governor"],
+        "stances": {
+          "academic": "REVISE",
+          "codex_critic": "REVISE",
+          "judge": "APPROVE_CONDITIONAL",
+          "quant": "APPROVE_CONDITIONAL",
+          "governor": "APPROVE_CONDITIONAL"
+        },
+        "veto_flags": {
+          "academic": "mechanism",
+          "codex_critic": null,
+          "judge": null,
+          "quant": null,
+          "governor": null
+        },
+        "key_issues_surfaced": [
+          "Lo & MacKinlay(1988) mechanism-sign mismatch — 낮은 |AC1| → 양의 횡단면 alpha 함의 미입증",
+          "Amihud & Mendelson(1986) 방향 충돌 — 비유동성 프리미엄 vs 가설 방향 역전",
+          "Selection PIT 경계 — recent_3y_icir 현재 시점 기준 선택",
+          "L-137 MDD 61.9% hard fail 선례 — RetAutocorr 조합 vs 단독 ambiguity",
+          "S3 TDC vs STR_1631 미확정",
+          "Factor timestamping PIT (AC1 윈도우 lag 명시 필요)"
+        ]
+      },
+      {
+        "round": "R2",
+        "participants": ["codex_critic", "governor"],
+        "stances": {
+          "academic": "UNCHANGED(REVISE)",
+          "codex_critic": "UNCHANGED(REVISE)",
+          "judge": "R2 미참여(R1 유지)",
+          "quant": "R2 미참여(R1 유지)",
+          "governor": "UNCHANGED(APPROVE_CONDITIONAL)"
+        },
+        "veto_flags": {
+          "academic": "mechanism(conditional)",
+          "codex_critic": null,
+          "judge": null,
+          "quant": null,
+          "governor": null
+        },
+        "key_issues_addressed": [
+          "Judge/Quant의 factor construction PIT 확인(sig_date 기반 windowing, Z_Score_Aligned)으로 implementation PIT 일부 해소",
+          "Governor: Academic veto = admission_rule 위반 아님, S1 진입 조건 강화로 흡수",
+          "Governor: selection PIT = factor construction PIT 범위 외, s0_record 기재 조건으로 흡수",
+          "Governor: L-137 = 조합 실패 선례, family saturation 차단 사유 아님"
+        ],
+        "key_issues_unresolved": [
+          "mechanism-sign mismatch 문헌 보강 미완료 (Roll 1984 추가 여부)",
+          "S3 TDC 실측값 여전히 없음",
+          "Academic REVISE vs Governor APPROVE_CONDITIONAL 불일치 — R3 불필요 판정으로 Q-Lead 집계 필요"
+        ]
+      }
+    ]
+  },
+
+  "final_stances": {
+    "codex_critic": {
+      "r1": "REVISE",
+      "final": "REVISE",
+      "stance_change": "UNCHANGED",
+      "veto_flag": null
+    },
+    "risk_manager": {
+      "r1": "APPROVE_CONDITIONAL",
+      "final": "APPROVE_CONDITIONAL",
+      "stance_change": "UNCHANGED",
+      "veto_flag": null
+    },
+    "governor": {
+      "r1": "APPROVE_CONDITIONAL",
+      "final": "APPROVE_CONDITIONAL",
+      "stance_change": "UNCHANGED",
+      "veto_flag": null
+    },
+    "quant": {
+      "r1": "APPROVE_CONDITIONAL",
+      "final": "APPROVE_CONDITIONAL",
+      "stance_change": "UNCHANGED",
+      "veto_flag": null
+    },
+    "academic": {
+      "r1": "REVISE",
+      "final": "REVISE",
+      "stance_change": "UNCHANGED",
+      "veto_flag": "mechanism"
+    },
+    "_judge_advisory": {
+      "r1": "APPROVE_CONDITIONAL",
+      "final": "APPROVE_CONDITIONAL",
+      "stance_change": "UNCHANGED",
+      "veto_flag": null,
+      "note": "Compact mode 3번째 자리 advisor — Full 5인 consensus_tally 합산 제외. PIT 경계 평가 보조."
+    }
+  },
+
+  "consensus_tally": {
+    "approve": 0,
+    "approve_conditional": 3,
+    "revise": 2,
+    "reject": 0,
+    "veto_count": 1,
+    "veto_flags": [{"role": "academic", "flag": "mechanism"}],
+    "total": 5,
+    "_note": "Full 5인 mode — codex/risk/governor/quant/academic. judge는 advisory(_judge_advisory)로 합산 제외."
+  },
+
+  "consensus_tier": "MAJORITY",
+  "consensus_tier_rationale": "Full 5인: APPROVE_CONDITIONAL 3/5 (risk+governor+quant) + REVISE 2/5 (codex+academic). veto 1건 (academic mechanism, codex 제외 후 도메인별 1건만). v55 router 규칙: 3+ AC && REJECT≤1 + veto<2 → APPROVE_CONDITIONAL. tier=MAJORITY (AC 우세 + veto 미충족).",
+
+  "consensus_points": [
+    "CP-1: L22_Ret_Autocorr Factor DB 구축 완료 + Z_Score_Aligned + load_month_factors() 경로 확인 — implementation PIT 기초 준수",
+    "CP-2: liquidity family PG2 미편입(0%) — Exploration Rules §9 탐색 우선순위 대상, family saturation 패널티 없음",
+    "CP-3: L22 vs C19 corr -0.0008, vs M08 corr 0.0546 — 기존 Core/momentum family와 구조적 독립성 확인",
+    "CP-4: ic_bad(0.0243) > ic_good(0.0062), recent_3y_icir 0.367 — Alpha Lab Gate(ICIR ≥ 0.20) 조건부 충족",
+    "CP-5: S1 MDD ≤ 45% hard limit 확인 필수 — L-137 선례 공통 인식 (5인 전원 동의)",
+    "CP-6: smoke run 목적 = 파이프라인 검증. hurdle 결과는 alpha 신뢰지표가 아닌 동작 증거로 한정 (5인 전원 동의)"
+  ],
+
+  "unresolved_disputes": [
+    {
+      "id": "UD-1",
+      "parties": ["academic", "codex_critic", "judge", "quant", "governor"],
+      "point": "mechanism-sign mismatch: Lo & MacKinlay(1988)이 낮은 |AC1| → 양의 횡단면 alpha를 함의하는지 미합의. Academic/Codex는 Roll(1984) 추가 필요 주장. Judge/Quant/Governor는 S1 IC_orthogonal로 대체 가능 판단. 해소 경로: S1에서 Amihud ILLIQ 통제 후 독립 IC 확인."
+    },
+    {
+      "id": "UD-2",
+      "parties": ["codex_critic", "judge", "governor"],
+      "point": "selection PIT 경계: recent_3y_icir 현재 시점 기준 선택이 factor selection bias를 내포하는지 미합의. Governor는 admission_rule 범위 외로 판단. Codex는 ex-post selection으로 forward 기대치 과대 위험 주장. 해소 경로: s0_record에 한계 명시 후 논쟁 유보."
+    },
+    {
+      "id": "UD-3",
+      "parties": ["academic", "quant", "governor"],
+      "point": "S3 TDC vs STR_1631 미확정: L22 vs C19 corr -0.0008으로 TDC ≤ 0.4 가능성 높으나 S3 실측 전 미확정. 해소 경로: S3 측정 후 최종 판정."
+    },
+    {
+      "id": "UD-4",
+      "parties": ["codex_critic", "quant"],
+      "point": "L22 경제적 식별성: |AC1|이 size/beta/volatility/Amihud ILLIQ/reversal과 독립적 alpha를 갖는지 미검증. 해소 경로: S1 factor exposure decomposition."
+    }
+  ],
+
+  "verdict": "APPROVE_CONDITIONAL",
+  "verdict_rationale": "APPROVE_CONDITIONAL 3/5(judge+quant+governor), REVISE 2/5(academic+codex). veto_flag=mechanism 1건(academic, conditional 수준). Hard veto 0건. v55 MINORITY tier: S1 진입 허용하되 조건 강화. Academic REVISE 조건(mechanism 재정의)은 COND-4로 흡수하여 S1 진입 전 또는 S1 내에서 해소 가능. 5인 전원 S1 MDD ≤ 45% hard limit + smoke 목적 한정에 동의.",
+
+  "s1_admission_conditions": [
+    "COND-1: S1 backtest MDD ≤ 45% 확인 — 초과 시 즉시 STOP + S5 DD/VT overlay 검토 트리거",
+    "COND-2: S3 TDC vs STR_1631 ≤ 0.4 확인 — admission_rule v3.5.1 Gate 3 필수",
+    "COND-3: C13 Z_Score_Aligned + C15 load_month_factors() + C14 Usable_Date ≤ sig_date 코드 검증",
+    "COND-4: Roll(1984) 기반 mechanism 재정의 OR S1에서 Amihud ILLIQ / 거래회전율 통제 후 독립 IC(IC_orthogonal) 확인 보고",
+    "COND-5: s0_record에 'v55 정규 사이클 smoke run + recent_3y_icir 현재 시점 기준 한계 + hurdle 결과 파이프라인 동작 증거 한정' 명시",
+    "COND-6: S1 turnover < 600% 확인 — hard fail line",
+    "COND-7: S2 profiling 시 ic_bad/ic_good ratio 3.93 + diversifier role 적합성 재검토 보고 (AX-001 v2 defense 경계 명확화)"
+  ],
+
+  "debaters": [
+    {
+      "agent_id": "academic_smoke_001",
+      "role": "academic",
+      "stance": "REVISE",
+      "veto_flag": "mechanism",
+      "findings": "Lo & MacKinlay(1988)은 -|AC1| → 양의 횡단면 alpha를 함의하지 않음. Amihud & Mendelson(1986)은 반대 방향 예측. Roll(1984) 추가 + Amihud ILLIQ 통제 후 독립 IC 확인 조건으로 REVISE. Hard REJECT 아님 — KR-original trail 허용 조항 적용."
+    },
+    {
+      "agent_id": "codex_critic_gpt54_smoke_001",
+      "role": "codex_critic",
+      "stance": "REVISE",
+      "veto_flag": null,
+      "findings": "Mechanism-sign mismatch + |AC1| 경제적 식별성 미확정 + selection PIT 경계. Judge의 factor construction PIT 확인으로 implementation PIT 일부 해소. S1 exposure decomposition + 독립 IC 확인 후 재평가 가능."
+    },
+    {
+      "agent_id": "judge_smoke_001",
+      "role": "judge",
+      "stance": "APPROVE_CONDITIONAL",
+      "veto_flag": null,
+      "findings": "Factor DB PIT(sig_date windowing, Z_Score_Aligned) PASS. Selection PIT는 s0_record 기재로 흡수. S1 7개 gate items 확인 조건. smoke 결과 = 파이프라인 동작 증거 한정 명시 필수."
+    },
+    {
+      "agent_id": "quant_smoke_001",
+      "role": "quant",
+      "stance": "APPROVE_CONDITIONAL",
+      "veto_flag": null,
+      "findings": "L22 Factor DB 실재 확인(2390 rows, NA 0%). L22 vs C19 corr -0.0008 — diversifier 구조 지지. ic_bad/ic_good ratio 3.93 — Alpha Lab Gate 충족. L-137 ambiguity 해소를 위한 단독 smoke 설계 적절."
+    },
+    {
+      "agent_id": "governor_smoke_r2",
+      "role": "governor",
+      "stance": "APPROVE_CONDITIONAL",
+      "veto_flag": null,
+      "findings": "PG0 gap 정합(SR gap 0.807, diversifier sleeve) + family 비포화(liquidity 0%) + role honesty(ic_bad>ic_good) 3축 PASS. Academic veto = admission_rule 위반 아님, COND-4로 흡수. selection PIT = factor construction PIT 범위 외. S3 TDC 미확정(U1) 유지. 7개 조건 충족 시 PG1 Admission 진입 가능."
+    },
+    {
+      "agent_id": "risk_manager_smoke_001",
+      "role": "risk_manager",
+      "stance": "APPROVE_CONDITIONAL",
+      "veto_flag": null,
+      "findings": "tail_risk 사전 평가: L-137 MDD 61.9% hard fail 선례로 단독 RetAutocorr의 좌측 꼬리 위험 존재. S1 MDD ≤ 45% hard limit + turnover ≤ 600% 확인 필수. ic_bad(0.0243) > ic_good(0.0062) 구조는 위기구간 다변화 신호로 CVaR 완화 기여 가능성 있으나 S2 profiling 전 확정 불가. smoke run 목적상 S1 tail_risk_result.json 산출 후 최종 판단."
+    }
+  ]
+}

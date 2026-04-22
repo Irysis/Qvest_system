@@ -1,0 +1,102 @@
+{
+  "hypothesis_id": "H_1692",
+  "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary PRIMARY candidate)",
+  "verdict": "BORDERLINE_REVISE",
+  "verdict_version": "v54",
+  "total_score": 65,
+  "total_score_range": [60, 69],
+  "verdict_rationale": "v54 VERDICT rule: total 60-69 → BORDERLINE_REVISE (APPROVE_CONDITIONAL과 REVISE 사이 신설 구간). Codex 8점 + Risk Mgr 13점이 주요 감점 요인. 핵심 결론: PIT-true walk-forward + IC-to-return coupling + beta_t/TDC 안정성 empirical 검증 없이 PRIMARY Core_Secondary 10% 편입 정당화 불가. S1 pre-measurement 완료 후 re-debate 또는 가설 강화 후 재도전.",
+  "compiled_at": "2026-04-19T01:38+09:00",
+  "session": "Session 68 Day 1",
+  "compiled_by": "team-lead (Q-Lead)",
+  "transcript": {
+    "rounds": [
+      {
+        "round": 1,
+        "description": "Opening — 5인 독립 초기 평가 (타 debater 주장 미공개)",
+        "entries": [
+          {"role": "codex_critic", "score": 6, "concern": "Residual이 unstable noise proxy → 30~50% drawdown", "key_args_count": 3},
+          {"role": "risk_manager", "score": 12, "concern": "M18 crisis 약화 → M07 원본 수렴, MDD +1~3%p", "key_args_count": 3},
+          {"role": "governor", "score": 15, "concern": "β_t 낮을 시 momentum sleeve TDC 0.55 경계", "key_args_count": 3},
+          {"role": "quant", "score": 13, "concern": "L-051/L-072 KR 실패 선례 + M07 signal 약함", "key_args_count": 3, "kr_empirical_check": "partial"},
+          {"role": "academic", "score": 15, "concern": "저자 오류 + 합성 residualization 직접 선행 부재", "key_args_count": 3}
+        ],
+        "round_total": 61
+      },
+      {
+        "round": 2,
+        "description": "Rebuttal — R1 transcript 주입 후 동의/반박, 점수 재평가",
+        "entries": [
+          {"role": "codex_critic", "r1": 6, "r2": 8, "delta": 2, "score_change_reason": "Quant/Academic evidence (L-161 scope + KR sector-specific) 수용 +2"},
+          {"role": "risk_manager", "r1": 12, "r2": 13, "delta": 1, "score_change_reason": "Academic Shim 2017 + 2024 IAJ Kill Scenario 1 부분 완화 +1"},
+          {"role": "governor", "r1": 15, "r2": 15, "delta": 0, "score_change_reason": null},
+          {"role": "quant", "r1": 13, "r2": 14, "delta": 1, "score_change_reason": "Academic KR sector-specific evidence로 kr_empirical_check partial→partial+ +1"},
+          {"role": "academic", "r1": 15, "r2": 15, "delta": 0, "score_change_reason": null}
+        ],
+        "round_total": 65,
+        "r3_needed": false,
+        "r3_rationale": "모든 debater |delta| ≤ 4 → R3 불필요, VERDICT_READY 전이"
+      }
+    ]
+  },
+  "final_scores": {
+    "codex_critic": {"r1": 6, "final": 8, "delta": 2},
+    "risk_manager": {"r1": 12, "final": 13, "delta": 1},
+    "governor": {"r1": 15, "final": 15, "delta": 0},
+    "quant": {"r1": 13, "final": 14, "delta": 1},
+    "academic": {"r1": 15, "final": 15, "delta": 0}
+  },
+  "special_rules_applied": {
+    "reject_if_risk_or_quant_leq_4": "NOT_TRIGGERED (Risk 13, Quant 14)",
+    "kr_inverse_penalty": "NOT_APPLIED (Quant kr_empirical_check=partial+, not hard_fail_match. Industry momentum Grinblatt 1999 sub-family EXCEPTION 인정)",
+    "total_after_all_rules": 65
+  },
+  "consensus_points": [
+    "S1 pre-measurement 의무화 — M07 standalone ICIR + M07 vs M18 cross-section 상관 distribution + residual ICIR 비교표 산출 필수 (Codex/Quant/Risk Mgr 3인 consensus)",
+    "Gate 13 L-164 load_month_factors() 경유 필수 (Governor/Quant/Academic)",
+    "expanding OLS beta_t structural break 안정성 검증 — rank correlation vs M07 standalone < 0.95 (Codex/Risk Mgr/Quant)",
+    "Harvey t > 3.0 + DSR + ICIR ≥ 0.20 Alpha Lab Gate 필수 (Governor/Quant/Academic)",
+    "AX_CAND_kr_momentum_inverse scope EXCEPTION — industry momentum sub-family Grinblatt 1999 구조적 차이 인정 (Governor/Quant/Academic 3인, Codex R2 부분 수용)",
+    "compute_tail_risk_suite (EVT xi, CDaR 95%, ES 99%) STR_1631 대비 보고 + MDD 기여 +2%p 이내 (Risk Mgr/Academic)"
+  ],
+  "unresolved_disputes": [
+    "Codex 'PIT-true walk-forward + IC-to-return coupling 실측 전 PRIMARY 편입 불가' vs Governor 'Core_Secondary 10% slot 편입 empirical 실측 safeguard로 대응 가능' — S1 완료 후 재평가",
+    "Risk Mgr 'TDC 0.65 상한 위반 우려' vs Governor 'pre-measurement L157 framework 한계, S3 t-copula MLE 실측이 최종' — S3 실측 전 결론 불가",
+    "Quant 'L-051/L-072 KR 실패 선례 구조적 반복 가능성' vs Academic 'STR_1457/1462 composite design 실패 ≠ H_1692 residualization 설계' — S1 결과로 판단"
+  ],
+  "debaters": [
+    {"agent_id": "codex_critic_H_1692_r1r2", "role": "codex_critic", "score": 8, "findings": "L-161 scope 부분 수용 (+2), 그러나 PIT-true walk-forward + IC-to-return coupling + beta_t/TDC 안정성 empirical 증명 전까지 PRIMARY 편입 반대. PG0 uplift 낙관 + role-honesty pre-S1 평가 moratorium 권고."},
+    {"agent_id": "risk_manager_H_1692_r1r2", "role": "risk_manager", "score": 13, "findings": "Kill Scenarios 2건 (27년 decay momentum crash + expanding OLS beta_t constant 수렴) 유지. L-106/L-115/L-156 cross-reference. Governor LOO +0.08 낙관 unconditional correlation 기반 반박 (major). Academic Shim 2017 증거로 Kill Scenario 1 부분 완화 +1."},
+    {"agent_id": "governor_H_1692_r1r2", "role": "governor", "score": 15, "findings": "rev8-A-revised-v2 Scenario C Core_Secondary 10% slot 편입 적절 유지. AX_CAND EXCEPTION 공식 인정. 8개 편입 조건 (Gate 13/12, LOO +0.08, TDC<0.55, Role Honesty, Harvey t, AX_CAND, family cap) 전수 제시. Codex major rebuttal (scope overreach), Risk Mgr minor rebuttal (pre-measurement 추정 한계)."},
+    {"agent_id": "quant_H_1692_r1r2", "role": "quant", "score": 14, "findings": "data_avail 완전 PASS (sd=1.000, n_months=253/254, L-164 load_month_factors 설계). kr_empirical_check partial → partial+ (+1, Academic Shim 2017 수용). L-051/L-072 KR 실패 선례 유지. Codex L-161 scope overreach major rebuttal + Governor AX_CAND exception 정량 기반 요구 minor rebuttal."},
+    {"agent_id": "academic_H_1692_r1r2", "role": "academic", "score": 15, "findings": "Grinblatt 1999 JF peer-review + KAIST Shim 2017 + 2024 IAJ KR sector-specific evidence로 AX_CAND EXCEPTION 학술 backing 확보. 저자 오류 (박영석·정재만 → 심찬보 가능성) 수정 + Barberis-Shleifer 2003 추가 + 개인 55%/rotation 6~9M KRX/KoFIA cite 요구. Codex 3건 major rebuttal (L-161 scope + 27년 decay + PIT Q3)."}
+  ],
+  "codex_cross_check": "Codex R2 verify(S2.13) score 7 vs debater 8 — ±1 일치성 OK (PASS). 두 check 모두 PRIMARY 편입 미승인 판정.",
+  "v54_borderline_revise_feedback_for_scout": {
+    "main_score_gaps": {
+      "codex_critic": {"score": 8, "gap_to_approve_conditional": "+6 필요", "root_cause": "PIT-true walk-forward + IC-to-return coupling + beta_t/TDC 안정성 empirical 증명 부재"},
+      "risk_manager": {"score": 13, "gap_to_high_confidence": "+3 필요", "root_cause": "Kill Scenario 2건 (post-pub decay + beta_t constant 수렴) S1/S3 실측 전 해소 불가, TDC 실측 전 추정 한계"}
+    },
+    "recommended_strengthening_actions": [
+      "s0_record에 PIT-true expanding-window walk-forward 명시 (full-sample 금지 + frozen monthly params 엄수)",
+      "s0_record에 M07 standalone vs H_1692 residual ICIR 비교 측정 프로토콜 명시 (S1 필수 산출물)",
+      "s0_record에 expanding OLS beta_t 안정성 분석 명시 (structural break 전후 ≥ 0.05 변화 + rank corr vs M07 standalone < 0.95)",
+      "s0_record에 IC-to-return transmission net of KR costs/slippage 증명 프로토콜 명시 (L-125/L-160 decoupling 회피)",
+      "reference_list 저자 표기 오류 수정 (심찬보 KAIST 2017 또는 정확 박영석·정재만) + Barberis-Shleifer 2003 Style Investing 추가 + Hanauer-Huber 2019 또는 2024 IAJ 추가 + 개인 55%/rotation 6~9M KRX/KoFIA cite"
+    ],
+    "reentry_options": [
+      "Option A (권장): s0_record 보강 (recommended_strengthening_actions 5건 모두) → s0_debate 재개 (H_1692_v2 handoff kit 발행)",
+      "Option B: S1 pre-measurement 실시 (M07 standalone ICIR + cross-section 상관) → 결과 반영 s0_record 보강 → re-debate",
+      "Option C (risky): 현 VERDICT 유지, Governor rev8-A-revised-v3 재설계 (H_1692 slot 공백 유지 + Reserve 10% 이동)"
+    ],
+    "warning": "v54 rule: 동일 가설 BORDERLINE 2회 연속 시 REJECT 전환 권고. s0_record 실질적 보강 없이 재debate 시 REJECT risk."
+  },
+  "downstream_impact": {
+    "forge_s1_admission": "NOT_GRANTED — Forge TODO_S1_H_1692 생성 금지. Scout 재설계 필요",
+    "governor_rev8_a_revised_v2_scenario_c": "H_1692 10% slot 편입 불가 → Core_Secondary slot 공백 유지 (Reserve 9% + misc 8% 활용). Phase_1 composition 재검토 필요",
+    "phase_1_day_4_admission": "H_1692 제외 plan — Scout 재설계 완료 및 H_1692_v2 APPROVE_CONDITIONAL 이상 달성 전까지 미편성",
+    "kr_inverse_ax_cand_scope": "EXCEPTION 인정 유지 (industry momentum sub-family). H_1692 VERDICT 65는 가설 설계 품질 문제이지 AX_CAND 적용 반대 논리 아님"
+  },
+  "telegram_broadcast_required": true,
+  "router_action": "Scout 재설계 요청 (Phase 1 revisit) — s0_verdict_router.sh 자동 처리 예상"
+}

@@ -1,0 +1,135 @@
+{
+  "artifact_type": "s0_exploration_redesign_feasibility",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-17T19:20:00+09:00",
+  "related_tasks": ["Task #6 H_1677 pivot", "Task #9 새 가설 탐색", "Judge sweep v3 Pass 2 권고 수용"],
+  "purpose": "STR_1439 novelty 10 (genuine) + STR_1060 triplicate (byte-identical) 재설계 탐색. H_1690/H_1691 s0_record 본격 작성 가능 여부 판정.",
+
+  "h_1690_str_1439_score_blend_redesign": {
+    "hypothesis_name_candidate": "STR_1439 Genuine Novelty Score-Blend Redesign",
+    "parent_strategy": "STR_1439 (B_ARCHIVE, L-149 SYS_FAILURE)",
+    "judge_recommendation": "Judge sweep v3 Pass 2 Tier 1 보고서 (governor_actions_required[3]): 'STR_1439 novelty_bonus=10 is genuine alpha signal that may warrant score-blend redesign as new S0 hypothesis.'",
+    "judge_retry_findings_key": "return-blend 4 sub-sim × 20 = 최대 80종목 violation. novelty 10은 genuine이나 architecture가 L-484 violation.",
+
+    "redesign_path_A_score_blend": {
+      "description": "4 sub-strategy의 선정 로직을 signal score 합산으로 재설계 → Top 20 union (N<=20 준수)",
+      "mechanism_preserved": [
+        "STR_1439의 genuine novelty source 식별 필요 (Judge novelty 10 근거)",
+        "Scout가 catalog + run_all.R 역공학으로 original 4 sub-sim 메커니즘 파악",
+        "각 sub의 factor signal을 cross-section Z 변환 → weighted sum → Top 20"
+      ],
+      "feasibility": "MEDIUM — STR_1439 run_all.R 접근 가능하면 sub-sim factor 추출 가능. 단 parent STR_1037/898/1035 MISSING으로 과거 sub-sim factor 정의 확인 필요.",
+      "scout_action_required": [
+        "STR_1439/run_all.R 검토 → 4 sub-sim 호출 소스 확인",
+        "parent MISSING 3건의 factor 정의를 methodology_memory + strategy_catalog에서 역추적",
+        "4 sub signal을 Z-score 통합 가능한지 확인"
+      ]
+    },
+
+    "redesign_path_B_single_novel_factor_extraction": {
+      "description": "4 sub-sim 중 novelty 원천 1건 식별 → standalone S0 가설",
+      "mechanism": "Judge가 novelty 10 부여 근거가 4 sub composite 자체인지 특정 sub의 signal인지 확인. 후자면 해당 signal 단독 extraction 가능.",
+      "feasibility": "HIGH if Judge novelty 10 근거가 특정 sub signal에 국한. LOW if 4-sub interaction 자체가 novelty.",
+      "scout_action_required": [
+        "Judge novelty 10 산정 근거 조회 (stage_artifacts/judge_sweep_v3_STR_1439_verdict.json 또는 유사)",
+        "특정 sub signal 식별 시 standalone Alpha Lab Gate 재측정"
+      ]
+    },
+
+    "verdict_for_teamlead": {
+      "redesign_feasible": true,
+      "path_preference": "Path A (score-blend) 우선 시도. Path B는 Path A 실패 시 fallback.",
+      "estimated_scout_effort": "30~45분 (run_all.R 검토 + parent MISSING factor 역추적 + S0 draft)",
+      "pivot_H_1677_option": "H_1677 STR_1439 v53 repair 기존 s0_record를 H_1690 score-blend로 pivot 가능. stabilize bucket 유지.",
+      "recommended_next_step": "Q-Lead가 H_1690 본격 설계 승인하면 Scout이 STR_1439 run_all.R 검토 + judge_sweep_v3_STR_1439_verdict.json 조회 후 s0_record 작성"
+    }
+  },
+
+  "h_1691_str_1060_1070_1085_triplicate_dedupe": {
+    "hypothesis_name_candidate": "STR_1060 Clone Family Genuine Signal Extraction",
+    "parent_strategies": ["STR_1060 BRK02 No Short DD", "STR_1070 (clone)", "STR_1085 (clone)"],
+    "judge_finding_key": "L-151 CLONE_FAMILY_TRIPLICATE — byte-identical performance (SR 1.333, CAGR 22.66%, MDD 24.81%). 각각 No Short DD Brake / Risk Parity / Quality Gate를 표방하나 실제 return stream 동일.",
+    "triplicate_detection_method": "Gate 5 WARN_CLONE (soft) → Pass 2 Gate 6 Role Honesty FAIL (hard)",
+
+    "scout_observation_STR_1060_sleeve_structure": {
+      "phase_1a_defense_sleeve": "N=6, vol_target 25% — BASE_DIR STR_770 참조, SOURCE MISSING",
+      "phase_1b_indmom_sleeve": "N=6, vol_target 15% — BASE_DIR STR_770 참조, SOURCE MISSING",
+      "phase_1c_consensus_sleeve": "SUE Pure 100% (W_CONF=0, W_SUE_824=1, W_IDIOVOL_824=0) — **STR_824_rev_breadth_ivol 참조, 존재 확인 필요**",
+      "remaining_2_sleeves": "STR_1060/run_all.R 100 라인+ 더 필요 — Phase 1d/1e 확인 미실행"
+    },
+
+    "redesign_path_A_extract_genuine_novel_sleeve": {
+      "description": "3 clone 중 유일한 novelty signal 식별 → standalone 재구성",
+      "mechanism_hypothesis": "STR_1060 'No Short DD Brake' 메커니즘 자체가 novelty일 가능성. DD Brake 제거 + DD_med only + MRS condition. Return stream이 parent STR_1036(원본 DD Brake)과 diverge하는 구간에서 alpha 발생.",
+      "feasibility": "HIGH — STR_1060/run_all.R에서 Phase 3 DD_med + MRS 로직 추출 가능",
+      "scout_action_required": [
+        "STR_1060 Phase 3 (DD_med + MRS) 로직 확인",
+        "parent STR_1036 존재 여부 확인 (없으면 메커니즘 비교 불가)",
+        "Clone 2건(STR_1070/1085)의 actual selector 로직 비교 — WARN_CLONE 근거 byte-level return stream 동일성 확인"
+      ]
+    },
+
+    "redesign_path_B_formal_rejection_and_clone_policy": {
+      "description": "3 clone 모두 REJECT + Governor dedup 정책 공식화. 신규 가설 아닌 infrastructure cleanup.",
+      "mechanism": "Judge L-151 SYS_FAILURE 승인 + Governor byte-level dedup hash pipeline 구축. s0_record 형태가 아닌 infrastructure task로 변환.",
+      "feasibility": "Scout scope 밖 — Q-Lead가 Governor에 dedup task 위임 권장",
+      "implication": "H_1691은 s0_record 아닌 governance task로 pivot"
+    },
+
+    "verdict_for_teamlead": {
+      "redesign_feasible": "PARTIAL — Path A only (DD Brake removal novelty extraction)",
+      "clone_family_cleanup_scope": "Scout 권한 초과 — Governor dedup 정책 수립 권장",
+      "estimated_scout_effort_path_A": "20~30분 (STR_1060 Phase 3 로직 추출 + clone stream 비교 + S0 draft)",
+      "recommended_next_step": "Q-Lead가 Path A 승인 시 Scout s0_record 작성. Path B는 Governor 위임."
+    }
+  },
+
+  "base_dir_forensic_report_summary": {
+    "target": "STR_770_phase2_cross directory",
+    "searched_locations": [
+      "04_Research/strategies/STR_770* (glob)",
+      "project-wide find -iname STR_770 (file + dir)",
+      "experiment_log.md (612KB) grep",
+      "strategy_catalog.md grep",
+      "methodology_memory.md grep"
+    ],
+    "findings": {
+      "directory_status": "MISSING — 어떤 경로에도 존재하지 않음",
+      "defense_sleeve_r_nearest_match": "04_Research/strategies/STR_686_ms_d70m30_vt/defense_sleeve.R (그러나 실제 내용은 STR_654 CA z2 VT CW Triple — 동일 sleeve 파일명이나 원본 내용 다름)",
+      "indmom_sleeve_r": "MISSING globally",
+      "consgate_pure_r": "MISSING globally",
+      "partial_reverse_engineering_possible": "YES — STR_1028/STR_1060의 run_all.R에서 sleeve 호출 방식 (N=6, vol_target 15/25/20%, commission 0.15%) 역공학 가능. 단 factor spec(어떤 Z-score, ortho method, winsorization)은 sleeve 스크립트 없이 복원 불가."
+    },
+    "waiver_basis_for_tier2_gate1": {
+      "waiver_feasibility": "NO — BASE_DIR 완전 소실 + sleeve 파일 3개 이상 MISSING + STR_770 자체 directory 없음",
+      "alternative": "Tier 2 REJECT 권고. BASE_DIR 의존 전략 전체(STR_1028/1033/1417/1435/1060/1071 등)를 **재현 불가** 라벨로 격리 필요"
+    }
+  },
+
+  "scout_recommendation_for_teamlead": {
+    "priority_1_immediate": "L-149/150/151 methodology_memory.md append 완료 ✅ (SYS_FAILURE 태깅 + AX-code 승격 후보 마킹)",
+    "priority_2_h_1690": {
+      "action": "Q-Lead 승인 시 Scout이 H_1690 s0_record 본격 작성 (30~45분)",
+      "preconditions": [
+        "STR_1439 run_all.R 접근 가능 (확인됨)",
+        "judge_sweep_v3_STR_1439_verdict.json 또는 유사 novelty 10 근거 문서 조회 필요",
+        "H_1677 pivot 여부 결정 (Q-Lead)"
+      ]
+    },
+    "priority_3_h_1691": {
+      "action": "Path A (DD Brake removal novelty) 승인 시 Scout s0_record (20~30분). Path B는 Governor 위임.",
+      "feasibility": "Path A HIGH / Path B Scout scope 밖"
+    },
+    "priority_4_base_dir_forensic": {
+      "status": "완료 — 복원 불가 확인",
+      "implication": "Tier 2 전략 전체가 재현 불가 라벨로 격리 필요. Governor에 BASE_DIR 의존 전략 전수 조사 권장."
+    }
+  },
+
+  "follow_up_tasks_for_governor_or_qlead": [
+    "Governor: BASE_DIR STR_770 의존 전략 전수 조사 + 재현 불가 라벨 격리",
+    "Governor: Clone Family byte-level hash dedup policy 수립 (L-151 SYS_FAILURE 대응)",
+    "Q-Lead: AX-code 승격 후보 4건 (L-149/150/151 + 추가 L-code) 분기 리뷰 일정",
+    "Scout: H_1690 (score-blend redesign) / H_1691 (clone signal extraction) 승인 시 s0_record 본격 작성"
+  ]
+}

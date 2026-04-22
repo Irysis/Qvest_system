@@ -1,0 +1,255 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v2 for H_1679 debate. L-157 v4 draft + Factor DB pre-check + L-159 spec transmission 예방 + TP_Gap registry ID 정정.",
+  "hypothesis_id": "H_1679",
+  "hypothesis_name": "STR_1433 v53 Refit — ConsGate 5-sleeve Stabilize + C11 Full Fix + N=20",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1679_STR_1433_v53_refit.json",
+  "version": "v2",
+  "supersedes_reason": "(1) L-157 v4 draft 2건 연속 hit 적용, (2) Factor DB pre-check 실측 결과 TP_Gap factor_id는 **C06_TP_Gap** (v1 Z18_TP_Gap 오표기), (3) H_1685 v2/H_1690 APPROVE 선례 반영, (4) L-156 v2 TDC cluster 'Multi_Sleeve_Diversifier' pre-registration, (5) L-159 spec transmission precheck 강화",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P1 (H_1678 debate 이후 2번째, stabilize bucket)",
+  "L157_v4_pre_checks_completed": true,
+
+  "one_line_summary": "STR_1433 5-sleeve (Defense + IndMom + Consensus + ConsGate + TPGap) v53 refit. sleeve별 N=4 × 5 = 20종목 (L-484 준수), L-058 C11 FRED lag 전수 fix, 2026-04 최신 Factor DB drift 측정. 원본 FF5a t=2.953 genuine alpha 보존 목표.",
+
+  "str_number_allocation": {
+    "recommended": "STR_1688 (STR_1687 H_1678 다음 순번)",
+    "note": "APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정"
+  },
+
+  "L159_spec_transmission_pre_empirical_check": {
+    "_note": "STR_1682 교훈 (L-159) 반영 — required_factors Factor DB pre-check 실증",
+    "verification_date": "2026-04-18",
+    "verification_source": ".cache/factor_db/factor_db_202603.parquet",
+    "required_factors_by_sleeve": {
+      "defense_sleeve": {"factors": ["D01_IdioVol", "Q07_Earnings_Stability"], "availability": [true, true]},
+      "indmom_sleeve": {"factors": ["M07_IndMom"], "availability": [true]},
+      "consensus_sleeve": {"factors": ["C19_Composite_Earnings"], "availability": [true]},
+      "consgate_sleeve": {"factors": ["C01_SUE", "market_beta_custom"], "availability": [true, "custom_compute"]},
+      "tpgap_sleeve": {"factors": ["C06_TP_Gap"], "availability": [true], "v1_correction": "v1 s0_record 'Z18_TP_Gap'은 오표기. 실제 Factor DB registry ID는 **C06_TP_Gap** (consensus family)."}
+    },
+    "spec_correction_required": {
+      "location": "s0_record_H_1679 signal_construction / factor_engine.R spec",
+      "v1_factor_id_error": "Z18_TP_Gap",
+      "correct_factor_id": "C06_TP_Gap",
+      "impact": "Forge S1 시 load_month_factors(['C06_TP_Gap']) 사용 필수. Z18 호출 시 load FAIL → L-159 재현",
+      "scout_action": "TODO_S1_H_1679 작성 시 spec 정정 명시"
+    },
+    "verdict": "CONDITIONAL_PASS — factor_id correction required, 나머지 4 sleeves 전부 AVAILABLE",
+    "market_beta_24m_custom_note": "ConsGate sleeve의 'low-beta gate'는 Factor DB 미등록 custom compute (H_1688 pattern 동일). Forge CAPM beta 24M rolling 구현 필요."
+  },
+
+  "L157_v4_pre_empirical_measurements": {
+    "algebraic_identity_check": {
+      "formula": "5-sleeve physical separation: 각 sleeve 독립 Top 4, no score blend between sleeves",
+      "shared_term": "sleeve 간 factor 공유 없음 (D01 defense only, M07 indmom only, C19 consensus only, SUE consgate only, C06 tpgap only)",
+      "verdict": "PASS (physical separation)"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_portfolio_rho": "0.40~0.55 (C19 consensus sleeve 1/5 공유 + sleeve 차별화 효과)",
+        "l156_gate_8_prediction": "BORDERLINE_PASS (0.4 threshold 근접)"
+      },
+      "vs_H_1678_STR_1555_refit": {
+        "predicted_rho": "0.45~0.60 (C19 + D01 공유, H_1678는 score-blend vs H_1679는 sleeve 분리)",
+        "note": "두 가설 동시 admission 시 Tier 1 C19_core cap violation risk 증가"
+      },
+      "vs_H_1685_v2_foreign_resid": {
+        "predicted_rho": "0.10~0.20 (sleeve vs residual flow channel, 독립)",
+        "verdict": "PASS"
+      },
+      "vs_H_1688_residual_momentum": {
+        "predicted_rho": "0.30~0.45 (M07 IndMom sleeve + M08 residual momentum 공유 family)",
+        "note": "momentum channel 부분 중복"
+      },
+      "vs_H_1690_4axis_defense": {
+        "predicted_rho": "0.35~0.50 (C19 + Q07 공유, regime-smoothed vs physical separation 구조 차이)"
+      }
+    },
+    "sd_ratio_analysis": {
+      "per_sleeve_independence": "각 sleeve Top 4 selection는 cross-section Z-score independent → sd ratio 무관",
+      "verdict": "PASS (sleeve-level Z_Score_Aligned 각각 정규화)"
+    },
+    "linear_dominance_test": {
+      "dominant_sleeve": "NONE — 5 sleeves physical separation으로 single-sleeve dominance 수학적 불가능",
+      "L157_threshold_70pct": "NOT_APPLICABLE",
+      "verdict": "PASS"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "step_1_consensus_sleeve_ICIR": "0.547 (C19 standalone)",
+      "step_2_defense_sleeve_ICIR": "0.30~0.50 (D01+Q07 2-axis)",
+      "step_3_indmom_sleeve_ICIR": "0.25~0.40 (M07 IndMom)",
+      "step_4_consgate_sleeve_ICIR": "0.35~0.45 (SUE + low-beta)",
+      "step_5_tpgap_sleeve_ICIR": "0.20~0.30 (C06 TP_Gap)",
+      "combined_portfolio_expected_SR": "1.05~1.30 (v1 s0_record pre_screening 기반)",
+      "verdict": "CONDITIONAL PASS"
+    }
+  },
+
+  "L156_v2_tdc_cluster_pre_registration": {
+    "cluster_name": "Multi_Sleeve_Diversifier",
+    "members": ["STR_1433 (legacy A_CONDITIONAL)", "H_1679 (refit)", "STR_1631 (consensus sleeve partial overlap)"],
+    "expected_conditional_tdc": {
+      "normal_regime": "0.35~0.50",
+      "crisis_regime": "0.50~0.70 (sleeve 독립성이 crisis 시 부분 붕괴 가능)"
+    },
+    "AX_006_candidate_contribution": "+0.05 frequency (기존 H_1690/H_1685v2/H_1678 cluster에 이어 4번째)"
+  },
+
+  "scout_calibration_v4_adjusted_predictions": {
+    "predicted_total_range_v4": [55, 70],
+    "predicted_midpoint_v4": 62,
+    "per_debater_v4": {
+      "codex_critic": [7, 10],
+      "risk_manager": [11, 14],
+      "governor": [12, 15],
+      "quant": [12, 15],
+      "academic": [13, 16]
+    },
+    "v4_rules_applied": {
+      "rule_1_R2_auto_delta_-3": "R1 58-73 → final 55-70",
+      "rule_2_codex_rebound": "Codex R1 7 → final 8 default",
+      "rule_3_governor_variance": "lower bound [13→12]",
+      "rule_5_tail_warning_penalty": "warnings: (1) C11 FRED lag partial previous fail, (2) clone family scrutiny (STR_1433는 clone family 밖이나 L-151 감시), (3) STR_1555 Tier 1 cap 가능성 → -2 applied"
+    },
+    "verdict_projection_v4": "APPROVE_CONDITIONAL (60-74) 유력, 하한 경계 이중 위험 (tail warning + Governor cap)",
+    "most_uncertain_debater": "Governor — stabilize 긍정 vs family saturation (consensus + 기존 STR_1631) 대립"
+  },
+
+  "debaters": [
+    {
+      "role": "codex_critic",
+      "spawn_method": "Bash",
+      "script": "02_Infrastructure/hooks/run_codex_critic.sh",
+      "env_vars": {
+        "SCOUT_PLAN": "H_1679 STR_1433 v53 Refit. 5-sleeve (Defense D01+Q07 + IndMom M07 + Consensus C19 + ConsGate SUE+low-beta + TPGap C06) × Top 4 = 20종목. L-058 C11 FRED lag 전수 fix 필수. 2026-04 drift 측정. 원본 FF5a t=2.953 genuine alpha 보존. L-159 TP_Gap factor_id 정정 (Z18→C06_TP_Gap).",
+        "L_CODE_FINDINGS": "L-053 STR_1469 5-sleeve precedent, L-058 C11 partial fix REMEDIATE, L-484 30→20 DIRECT_FIX, L-557 sleeve 독립성 DIRECT_USE, L-119 CONDITIONAL_PASS (physical separation), L-146/147 S5 overlay 재도입, L-148 C1-C15 수동 검증, L-156 v2 TDC cluster Multi_Sleeve_Diversifier, L-157 v4 calibration, L-159 spec transmission factor_id verification",
+        "FAILED_STRATEGIES": "STR_1682 L-159 spec transmission (Size 미로드), STR_1683 direction audit failure, STR_1537 L-119 dilution, H_1677 REJECTED parent MISSING",
+        "HYP_ID": "H_1679"
+      },
+      "rubric_focus": "l_code_check(4) + failure_avoidance(4) + banned_factor(4) + lesson_check(4) + structural_risk(4) = 20",
+      "expected_attack_vectors": [
+        "L-058 C11 partial fix 재발 risk — defense_sleeve + indmom_sleeve macro_regime_dt 수정 완료 여부 S1 전 증빙 필수",
+        "STR_1433 원본 A_CONDITIONAL (not A) 격상 여부 — v53 refit에서 진짜 A 달성 가능한가",
+        "sleeve × N=4 = 20종목 structural MDD 증가 risk (per-stock ~5% weight)",
+        "TP_Gap C06 factor_id 수정 후 v1 예측 유효성 재확인 필요",
+        "STR_1433 drawdown 24.35%가 v53 환경에서 25% 초과 시 Hurdle v2.2 borderline"
+      ]
+    },
+    {
+      "role": "risk_manager",
+      "spawn_method": "Agent",
+      "subagent_type": "risk-manager",
+      "prompt_core": "S0 Debate R1. H_1679 STR_1433 v53 refit 5-sleeve. L13 관점 — per-sleeve MDD contribution, sleeve 간 tail dependence (crisis 시 공통 drawdown), DD 7/22 overlay의 효과 유지 여부, C11 FRED lag fix 후 SR 1.10~1.25 drift 예상.",
+      "rubric_focus": "tail_risk(4) + kill_scenario(4) + beta_orthogonality(4) + mdd_contribution(4) + regime_vulnerability(4) = 20",
+      "expected_attack_vectors": [
+        "5 sleeves × N=4 각 per-stock 5% weight → single stock crash 시 portfolio -5% 직접 영향",
+        "C19+SUE+C06 (consensus family 3 sleeves) stress 구간 공통 MDD 급증 risk",
+        "MRS Regime overlay 없음 → CRISIS 시 defense sleeve 단독 의존",
+        "FF5 alpha t=2.953은 Harvey 3.0 미달 — 수정 후 더 하락 가능성",
+        "STR_1433 legacy 데이터 누락(hurdle_result SR=0) → genuine alpha 재확인 선결"
+      ]
+    },
+    {
+      "role": "governor",
+      "spawn_method": "Agent",
+      "subagent_type": "governor",
+      "prompt_core": "S0 Debate R1. H_1679. PG0 gap (SR 0.807) + stabilize bucket 0% (target 20%). STR_1631 family 밖 + Judge A-pass + MDD<25% + SR strong. consensus sleeve 부분 중복 risk. diversifier_stabilize role.",
+      "rubric_focus": "role_match(4) + family_saturation(4) + axiom_compliance(4) + mdd_contribution(4) + kill_diversification(4) = 20",
+      "expected_assessment_vectors": [
+        "stabilize bucket 기여 강함 (기존 A-pass refit)",
+        "consensus sleeve C19 중복 (STR_1631과 1/5 공유) — family saturation 경고",
+        "AX-003 PASS (value factor 무관) / AX-004 CONDITIONAL (Q07 defense sleeve 내) / AX-005 CONDITIONAL (D01+Q07 defense sleeve combo는 v3 EXCLUSION 'multi-sleeve portfolio 내 defense sleeve scope 밖' 해당)",
+        "H_1678 + H_1679 동시 admission 시 consensus Tier 1 cap violation risk 증가"
+      ]
+    },
+    {
+      "role": "quant",
+      "spawn_method": "Agent",
+      "subagent_type": "forge",
+      "prompt_core": "S0 Debate R1. H_1679. Factor DB 검증 (C06_TP_Gap 확인 완료 + Z18 오표기 정정). Harvey t=2.953 → v53 refit 후 변동 예상, SR drift 1.10~1.25 (C11 FRED fix -5~-10% + N=4 per-sleeve + 2026-04 데이터). multi-sleeve PIT 전수 검증 필요.",
+      "rubric_focus": "icir(4) + correlation_sanity(4) + data_availability(4) + implementability(4) + statistical_power(4) = 20",
+      "expected_fact_check_vectors": [
+        "C06_TP_Gap + D01 + Q07 + M07 + C19 + C01_SUE 전수 Factor DB 기구축 (2026-04-18 실증)",
+        "low-beta custom compute는 Forge 구현 필요 (H_1688 24M CAPM beta pattern 동일)",
+        "5-sleeve × N=4 multi-key sorting 구현 복잡도 — buffer_zone per sleeve 관리",
+        "Harvey t=2.953 borderline (원본), v53 후 2.5~3.0 예상",
+        "SR 1.329 → refit 1.10~1.25 drift (C11 fix 5~10% + 기타 요인)"
+      ]
+    },
+    {
+      "role": "academic",
+      "spawn_method": "Agent",
+      "subagent_type": "scout",
+      "prompt_core": "S0 Debate R1. H_1679. Asness-Moskowitz-Pedersen 2013 Multi-factor + Bernard-Thomas 1989 PEAD + Ang 2006 IdioVol + Novy-Marx 2013 GPA + Frazzini-Pedersen 2014 BAB (ConsGate low-beta). peer_review + mechanism_align + korea_evidence + substantive_cite + time_decay.",
+      "rubric_focus": "peer_review(4) + mechanism_align(4) + korea_evidence(4) + substantive_cite(4) + time_decay(4) = 20",
+      "expected_support_vectors": [
+        "5-sleeve 앙상블 Asness 2013 multi-factor framework 강력",
+        "각 sleeve foundational paper 충분 (5개 factor family 전수)",
+        "STR_1060/1071 5-sleeve 프로젝트 선행 연구 internal"
+      ],
+      "expected_concern_vectors": [
+        "한국 direct cite STR_1433 + 선행 연구만 (external academic 미직접 cite)",
+        "5-sleeve sequential combination 아닌 parallel EW blend는 academic precedent 약함",
+        "ConsGate SUE+low-beta custom aggregation academic justification 부족"
+      ]
+    }
+  ],
+
+  "pre_debate_scout_risk_assessment_v2": {
+    "bull_case_v2": [
+      "STR_1433 Judge-verified A_CONDITIONAL (novelty 10 equivalent + FF5a t=2.953)",
+      "Factor DB 5-sleeve 필수 factor 전수 기구축 (L-159 risk ELIMINATED after C06 factor_id fix)",
+      "L-484 N=20 준수 + L-058 C11 전수 fix 설계",
+      "Scout L-157 v4 calibration 적용 (2건 연속 5/5 hit 기반)",
+      "H_1685 v2 선례 방식 (structural proof + pre-check)",
+      "stabilize bucket target 20% 기여 명확"
+    ],
+    "bear_case_v2": [
+      "L-058 C11 partial fix 이력 — 이번에도 일부 누락 가능성 (Forge S1 증빙 필수)",
+      "STR_1433 A_CONDITIONAL (not A) — 진짜 A 격상 가능성 불확실",
+      "C11 FRED lag 완전 fix 시 SR 1.329 → 1.10~1.25 drift (Honest estimate)",
+      "Harvey t 3.0 미달 (원본 2.953) — 수정 후 추가 하락 risk",
+      "consensus 2 sleeves (C19 + C06) 공유 — family saturation 우려",
+      "**v2 신규 warning**: C06_TP_Gap factor_id 정정 — Forge S1 spec 오류 재발 모니터링"
+    ]
+  },
+
+  "strategic_chain_v2": {
+    "if_approve_or_approve_conditional": "**STR_1688** 할당 (STR_1687 H_1678 다음 순번). Forge S1 → Governor PG1 admission. STR_1631 partial 공존 vs 교체 결정 (PG1).",
+    "if_revise": "Scout Path — (a) TPGap sleeve 제거 (4-sleeve × N=5 = 20), (b) ConsGate 단순화 (SUE standalone), (c) DD 7/22 → 8/22 동일화 STR_1555 family",
+    "if_reject": "STR_1433 v53 refit archive, drift 측정 기록만 유지"
+  },
+
+  "consensus_tier_classification_L158_v2": {
+    "tier": "Tier 2 Consensus (C19 1/5 + C06 1/5 = 40%)",
+    "gate_10_warning": "Tier 1 C19_core cap 1건 (STR_1631) + H_1678 pending + H_1679 추가 admission → 3건 중복",
+    "admission_policy": "Governor PG1 단계에서 STR_1631 / H_1678 / H_1679 순차 admission vs partial vs replace 결정",
+    "gate_8_evidence": "H_1679 Tier 2 partial C19 공유 사례 (L-158 evidence 축적)"
+  },
+
+  "forge_handoff_pre_requirements_v2": {
+    "required_factor_availability_pass": "CONFIRMED_WITH_CORRECTION (C06_TP_Gap factor_id 정정 후)",
+    "critical_spec_correction": "Scout v1 s0_record 'Z18_TP_Gap' → v2 '**C06_TP_Gap**'. TODO_S1 작성 시 반드시 반영.",
+    "forge_preflight_required": [
+      "C06_TP_Gap load 성공 verification",
+      "market_beta_24m custom compute 구현 (H_1688 pattern)",
+      "defense_sleeve + indmom_sleeve macro_regime_dt t-1 lag 재검증 (L-058)",
+      "5 sleeves × N=4 buffer_zone 관리 (per sleeve list(keep_n=5, entry_n=4))"
+    ]
+  },
+
+  "handoff_completeness_v2": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": "partial (v1 kit 전문 미확인, v2로 보강)",
+    "handoff_kit_v2_complete": true,
+    "empirical_precheck_complete": true,
+    "factor_db_availability_verified_with_correction": true,
+    "L157_v4_draft_applied": true,
+    "L156_v2_TDC_cluster_registered": true,
+    "L159_spec_transmission_preempted": true,
+    "str_number_recommended": "STR_1688",
+    "ready_for_qlead_r1_debate_spawn": true
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "role": "quant",
+  "hypothesis_id": "H_1692",
+  "round": "R2_Rebuttal",
+  "assessed_at": "2026-04-19",
+  "r1_score": 13,
+  "r2_score": 14,
+  "score_changed": true,
+  "score_change_reason": "Academic이 제시한 Shim 2017 + 2024 IAJ 한국 sector-specific momentum 지속성 증거를 수용하여 kr_empirical_check partial (+2점)→partial+ (+3점)으로 0.5포인트 상향. 단 L-051/L-072 실패 선례는 cross-sectional M07과 residualized M07을 구분하지 않은 설계 문제일 수 있음을 인정 — 합성 residualization의 sector-level 효과는 여전히 S1 실측 필요. 기존 2점 → 3점으로 조정 (반올림 +1점 최종).",
+
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "expanding OLS beta_t structural break + 잔차 = M07 원본 수렴 위험에 완전 동의. 본인 R1 argument #3에서 '비고 M07 vs M18 상관이 낮으면 β_t 0.05~0.10 수렴 → RSI residualization 부가가치 ZERO'를 이미 제시한 것과 정확히 일치한다. Risk Mgr이 실증 근거(MRS CRISIS 63.1 조건에서 tail co-movement 완충 부재, M18_RSI ic_bad=-0.03046 위기 구간 역방향)를 추가 정량화한 점은 본인 우려를 강화한다. S1 전 M07 vs M18 cross-section 월별 상관 분포 사전 측정 프로토콜(Scout Calibration v4)이 반드시 선행해야 한다."
+    },
+    {
+      "with": "academic",
+      "point": "Shim 2017 + 2024 IAJ 'momentum largely sector-specific in Korea' 증거를 부분 수용한다. 본인 R1에서 '한국 직접 실증 약함: 박영석 2017 미확인, 엄철준 2018 KR momentum weak'라고 제시했으나, Academic이 지적한 Shim 2017(KAIST) + 2024 IAJ는 cross-sectional M01/M02 momentum 역전(L-161)과 industry-level M07 persistence를 구분하는 key 문헌이다. 즉 L-161의 VALIDATED_HARD_FAIL은 cross-sectional 기반이므로 industry-level에는 별도 증거가 적용된다는 academic 논리를 인정한다. kr_empirical_check을 partial→partial+ (소폭 상향)로 수정한다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "Codex의 'L-161 KR momentum inverse VALIDATED_HARD_FAIL와 동일 family — parameter relabeling 의심' 주장은 중요한 scope 오류를 포함한다. 본인 R1에서 명시적으로 제시한 바: 'L-161은 M01_Mom_12_1(sd=0.66 distorted) 기반 hypothesis — H_1692의 M07_IndMom(sd=1.000)에 직접 적용 불가.' M01_Mom_12_1은 개별 종목 cross-sectional 12개월 수익률 모멘텀(sd=0.66 distorted — L-162 data.table 버그 오염)이고, M07_IndMom은 산업 평균 대비 relative momentum(sd=1.000 verified)으로 측정 단위·집계 수준·market structure가 모두 다르다. 이 두 팩터를 '동일 family parameter relabeling'으로 처리하는 것은 Grinblatt-Moskowitz(1999)가 cross-sectional vs industry-level momentum의 구조적 차이를 핵심 기여로 제시한 논문 전체를 무효화하는 것이다. Codex의 6점 평가는 이 구분을 고려하지 않은 과도한 감점이며, sd=1.0 verified 상태에서의 PIT Q4 우려(full-sample 의존)도 본인 R1에서 이미 'Scenario B 수학적 증명으로 Fix 1 전후 ICIR 동일'로 반박한 사항이다. 재평가 시 8~10점 수준이 적정하다.",
+      "severity": "major"
+    },
+    {
+      "against": "governor",
+      "point": "Governor의 'AX_CAND_kr_momentum_inverse scope EXCEPTION 공식 인정' 조건은 행정 처리만으로 해결되지 않는다. Governor가 '구조적 차이 인정'을 EXCEPTION 라벨링으로 처리하려는 접근에 Quant 관점의 추가 요건을 제시한다: industry-level vs cross-sectional 구분의 정량적 검증이 필요하다. 구체적으로 (1) M01_Mom_12_1 vs M07_IndMom의 rank correlation < 0.50 실측, (2) 두 팩터의 sector-level IC decomposition에서 cross-section 비중 vs within-sector 비중 분리, (3) AX_CAND EXCEPTION 인정 전 위 측정값을 S1 artifacts에 포함해야 한다. 단순 scope 레이블 변경이 아닌 정량 측정 기반 EXCEPTION이어야 L-code 수준의 신뢰도를 갖는다.",
+      "severity": "minor"
+    }
+  ],
+
+  "strongest_opposing_argument": "Risk Manager의 'expanding OLS beta_t structural break — M07 vs M18 상관이 낮으면 잔차 = M07 원본 수렴 → RSI residualization 부가가치 ZERO' 주장이 가장 강력한 반대 논거다. 이는 단순 파라미터 우려가 아니라 H_1692 가설의 핵심 메커니즘(RSI로 residualize해서 순수 industry momentum을 isolate)이 실제로 작동하지 않을 수 있다는 구조적 비판이다. M18_RSI ic_all=-0.01761(음수), ic_bad=-0.03046(위기 구간 역방향)이라는 실증값은 M07과 M18 간의 cross-section 상관이 체계적으로 낮을 가능성을 지지한다. 이 경우 β_t 추정값이 통계적으로 0에 수렴하고 H_1692 잔차 = M07 standalone과 사실상 동일해지며, L-051/L-072 KR 실패 선례 반복 위험이 잔존한다. 따라서 S1 전 M07 vs M18 cross-section 상관 사전 측정을 BLOCKING 조건으로 유지해야 한다.",
+
+  "updated_kr_empirical_check": "partial+ (Academic Shim 2017 + 2024 IAJ 수용으로 industry-level KR persistence 증거 인정. 단 S1 전 cross-section 상관 측정 BLOCKING 조건 유지)",
+
+  "updated_conditions": [
+    "S1 실행 전 M07 vs M18 cross-section 월별 상관 분포 측정 (beta_t 분포 사전 확인) — BLOCKING",
+    "M01_Mom_12_1 vs M07_IndMom rank correlation < 0.50 실측 (AX_CAND EXCEPTION 정량 근거)",
+    "S1 완료 후 M07 standalone ICIR vs H_1692 residual ICIR 비교표 (incremental contribution)",
+    "factor_engine.R에서 load_month_factors() 경유 확인 (L-164 C15 ACTIVE)",
+    "S3에서 STR_1661_V2 portfolio-level 상관 ≤ 0.55 (Core_Secondary gate)"
+  ],
+
+  "meta": {
+    "assessor_role": "quant",
+    "r2_stance_summary": "Codex의 L-161 scope 오류를 major rebuttal. Risk Mgr beta_t 구조 우려에 full agreement. Academic sector-specific KR 증거 partial 수용 → kr_empirical_check partial+. Governor EXCEPTION은 정량 측정 기반으로 강화 요구.",
+    "score_breakdown_delta": {
+      "kr_empirical_check": "+1 (2→3점, Academic Shim 2017 + 2024 IAJ 수용, L-051/L-072는 cross-sectional 설계 차이로 일부 해소)",
+      "total_delta": "+1 (13→14점)"
+    }
+  }
+}

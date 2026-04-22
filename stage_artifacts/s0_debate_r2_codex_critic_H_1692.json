@@ -1,0 +1,42 @@
+{
+  "role": "codex_critic",
+  "r1_score": 6,
+  "r2_score": 8,
+  "score_changed": true,
+  "score_change_reason": "Quant와 Academic이 (a) H_1692가 L-161 직접 scaling 실패의 복제가 아니며(M07 sd=1.0 pipeline 정상화 + 정상 최근 ICIR) (b) Korean industry momentum에 외부 문헌 지지(Shim 2017 + 2024 IAJ)가 존재함을 신뢰 가능하게 입증. 그러나 PRIMARY 편입은 여전히 PIT-true walk-forward + cost-aware IC-to-return coupling + beta_t/TDC 안정성 증명 없이 정당화되지 않으므로 제한적 +2.",
+  "agreements": [
+    {
+      "with": "risk_manager",
+      "point": "beta_t 수렴 붕괴가 핵심 위험임에 동의 — residualization 계수가 near-zero/constant로 drift하면 신호는 사실상 plain M07 momentum으로 회귀하고 위기 시 co-movement로 diversification 주장이 무너짐"
+    },
+    {
+      "with": "quant",
+      "point": "M07 standalone vs residual 직접 비교가 필수임에 동의 — 낮은 baseline IC 강도에서 residualization이 clear incremental ICIR + net return transmission을 보이지 못하면 cosmetic 설계에 불과"
+    },
+    {
+      "with": "academic",
+      "point": "citation/mechanism 엄밀성이 현재 부족함에 동의 — 이 정확한 residualized 구조의 직접 peer-reviewed 지지 부재. evidence 기준 상향 필요"
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "초기 PG0 uplift 낙관 + family-saturation PASS에 과도한 가중 부여 반대. Ex-ante slot 수학은 이 특정 신호가 PIT 제약 + turnover + KR 구현 마찰에서 생존한다는 증거가 아님. LOO SR delta +0.08 실측 전 편입 결정 보류 권고",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "Korean sector-specific momentum 증거가 본 가설을 단독으로 실질적 de-risk한다는 것에 반대. industry-level persistence는 M07-on-M18 residualization이 repackaged momentum noise 대신 독립 alpha를 추출한다는 증명이 아님",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Quant의 주장 — post-Fix-1 scale normalization + pipeline 검증으로 L-161 직접 실패 analogy의 강도가 약화됨. 이것이 가장 강한 challenge로, 내 비판의 범위를 단순 implementation-bug 유사성에서 economic incremental value + live robustness로 재조정함.",
+  "kill_scenarios_update": "신규 Kill Scenario: expanding-window beta_t이 좁은/near-zero 범위로 수렴 + residual ranks가 M07 standalone과 0.95+ 상관 + 위기 구간 momentum sleeves와 TDC 상승 → diversification 실패 + drawdown 증폭",
+  "codex_metadata": {
+    "s2_13_verify_result": {
+      "r2_score": 7,
+      "note": "S2.13 verify는 debater R2 8점과 ±1 일치성 OK (cross-check PASS)"
+    },
+    "verdict_recommendation_r2": "Still below PRIMARY admission threshold; S1 실측 + PIT walk-forward + IC-to-return coupling 검증 후 re-debate 필요"
+  }
+}

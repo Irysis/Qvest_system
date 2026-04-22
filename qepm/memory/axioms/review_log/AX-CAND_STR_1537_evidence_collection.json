@@ -1,0 +1,142 @@
+{
+  "task_id": "ET-101",
+  "task_parent": "AX-CAND_spec_transmission_failure_L159_20260418.json",
+  "owner": "Scout",
+  "created_at": "2026-04-18",
+  "mission": "STR_1537 원본 evidence (run_log + factor_engine.R) 수집하여 L-159 spec transmission failure pattern 소급 검증 + frequency 축 0.45 → 0.60+ 개선 가능성 판정",
+
+  "evidence_hunt_result": {
+    "status": "PARTIAL_EVIDENCE_RECOVERED",
+    "direct_artifacts_recovered": 0,
+    "indirect_evidence_confidence": "MEDIUM",
+    "pattern_classification_updated": true
+  },
+
+  "hunt_log": {
+    "step_1_git_log_all_paths": {
+      "command": "git log --all --oneline -- '04_Research/strategies/STR_1537*' 'research_output/strategies/STR_1537*'",
+      "result": "ZERO commits — STR_1537 strategy dir git 이력 전무",
+      "inference": "STR_1537은 git 추적 전 legacy run이거나 .gitignore 대상이었음. auto-commit rotation에 포함되지 않음."
+    },
+    "step_2_git_pickaxe_content": {
+      "command": "git log --all -S'STR_1537' --diff-filter=A --name-only",
+      "result": "ZERO matching commits",
+      "inference": "STR_1537 문자열이 git tracked 파일에 신규 추가된 이력 없음. 기 존재 파일 언급만 있고 source file 자체는 미추적."
+    },
+    "step_3_deleted_freshidea": {
+      "command": "ls _deleted_FreshIdea/ | grep 1537",
+      "result": "ZERO files — 01_Mad_Reviews, 03_Mutation_Seeds 어느 하위에도 STR_1537 없음",
+      "note": "2026-04-18 14:30 최신 _deleted_FreshIdea에도 부재"
+    },
+    "step_4_registry_scan": {
+      "command": "grep -rn 'STR_1537' 06_Registry/",
+      "result": "ZERO matches in 06_Registry",
+      "note": "registry.json / strategy_catalog 메타데이터에도 기록 없음 → 정식 승격/심사 전 drop된 것으로 추정"
+    },
+    "step_5_global_scan": {
+      "command": "grep -rn 'STR_1537\\|revision_breadth_tp_mom' entire_project",
+      "total_files_with_evidence": 9,
+      "direct_evidence_sources": [
+        "qepm/memory/experiment_log.md (line 7577/7586/7595 — 3 auto-generated runs)",
+        "qepm/memory/methodology_memory.md (L-159 tags + refs 언급만)",
+        "stage_artifacts/s0_record_H_1676_residual_revision.json (line 152~154 — key details)",
+        "stage_artifacts/S0_VERDICT_H_1676.json (line 18/25/26/42/55/73/79/91 — debate consensus)",
+        "stage_artifacts/s0_debate_r2_academic_H_1676.json",
+        "stage_artifacts/s0_debate_r2_risk_manager_H_1676.json",
+        "stage_artifacts/s0_debate_r2_governor_H_1676.json",
+        "stage_artifacts/s0_debate_r2_quant_H_1676.json",
+        "stage_artifacts/s0_debate_transcript_H_1676.json"
+      ]
+    }
+  },
+
+  "reconstructed_STR_1537_profile": {
+    "source_authority": "H_1676 S0 Debate consensus (2026-04-17, 5인 debate lesson_check 검증)",
+    "strategy_id": "STR_1537",
+    "strategy_name_full": "STR_1537_revision_breadth_tp_mom",
+    "family_canonical": "revision_breadth_tp_mom",
+    "spec_design": {
+      "base_factors": ["Revision Breadth (C13 family raw)", "TP_Gap (Target Price Gap)", "M01_Momentum (proxy)"],
+      "blend_type": "multi-factor composite (EW or score-weighted raw blend)",
+      "residualization": "NONE — raw blending (s0_record line 154: 'STR_1537은 raw revision_breadth 사용')",
+      "size_ortho": "unknown (NOT specified as applied)",
+      "beta_ortho": "unknown (NOT specified as applied)",
+      "overlay": "unknown"
+    },
+    "run_metrics_3_auto_runs": {
+      "run_1": {"grade": "F", "score": 42.3, "cagr_pct": 13.6, "sharpe": 0.590, "mdd_pct": 59.1},
+      "run_2": {"grade": "F", "score": 42.3, "cagr_pct": 13.6, "sharpe": 0.590, "mdd_pct": 59.1},
+      "run_3": {"grade": "F", "score": 34.3, "cagr_pct": 13.6, "sharpe": 0.590, "mdd_pct": 59.1},
+      "interpretation": "3 runs는 hurdle_gate 재실행 (score variance 8점 — strict_gate 설정 차이 추정). metrics (CAGR/SR/MDD) 100% identical → 동일 backtest 결과에 hurdle 재판정 3회."
+    },
+    "preceded_variants": ["S5_ddA Grade B SR 0.613 MDD 38%", "S5_ddB Grade B SR 0.591 MDD 41.5%", "S5_ddC Grade B SR 0.595 MDD 45.7%"],
+    "mutation_variants_interpretation": "S5_dd* 3건은 DD overlay 추가한 mutation → Grade B 근접 SR 0.59~0.61 + MDD 38~46%. Overlay 없는 STR_1537 standalone은 Grade F SR 0.59 + MDD 59%. **즉 Mutation overlay가 alpha 소멸 없이 MDD 21%p 개선** → 원 STR_1537 실패 원인은 'standalone MDD excess' (raw multi-factor dilution + overlay 부재)."
+  },
+
+  "L159_spec_transmission_failure_retrospective_audit": {
+    "audit_question": "STR_1537이 L-159 (spec transmission failure — Size/SUE/beta spec 미반영)의 동일 pattern인가?",
+    "audit_result": "NO — DIFFERENT FAILURE MODE",
+    "audit_reasoning": [
+      "STR_1682 (L-159 primary case): Scout handoff가 Size+R12+SUE+beta_24m 4-regressor 잔차화 지시 → Forge 실제 실행은 C13+R12 2-regressor (Size 미로드, SUE/beta 미추가). **의도된 spec이 실행 안 됨** = spec transmission failure.",
+      "STR_1537 (claimed precedent): Spec 자체가 'raw revision_breadth + TP_Gap + Momentum blend standalone, no residualization' — **의도된 spec 그대로 실행 후 실패**. S0_VERDICT_H_1676 line 42 Quant 반박: 'multi-factor 희석 원인 가능성' → **L-119 dilution pattern (의도된 실행 실패)**.",
+      "L-159 core definition: 'Scout → Forge 변환 체인에서 spec drift 발생, baseline fallback 실행, 원 가설 미검증' — STR_1537은 **baseline fallback 없음, 원 가설 실행 후 진짜 실패** → L-159 정의 미부합.",
+      "Variant 증거: S5_ddA/B/C (DD overlay 추가 mutation) Grade B SR 0.59~0.61 → STR_1537 알파는 살아있고 overlay 부재가 MDD 원인 = L-119 + L-146 (overlay-driven MDD rule) 패턴이지 L-159 아님."
+    ],
+    "frequency_axis_impact": "**STR_1537은 L-159 precedent으로 분류 불가**. AX_CAND frequency 축 2회 (STR_1682 + STR_1537) 주장은 **잘못된 grouping**. 실제 frequency = **1회 (STR_1682 only)**. frequency score 0.45 → **0.25~0.30 하락** 예상.",
+    "alternative_precedent_candidates": [
+      "L-159 pattern 재현 후보는 향후 H_1688 STR_1684 (24M CAPM beta custom compute 실패 시), H_1690 STR_1685 (4-factor composite spec, M08/C19/Q07/R16 전수 로드 실패 시) 가능성",
+      "ET-104 (향후 6개월 재현 1건 수집) 의존도 crucial 상승",
+      "STR_1657 CBPQ Grade F (L-145) 검증 필요 — 만일 spec 미반영 baseline 실행 증거 있으면 L-159 2번째 precedent 가능"
+    ]
+  },
+
+  "frequency_axis_re_assessment": {
+    "pre_hunt_estimate": 0.45,
+    "post_hunt_estimate": 0.28,
+    "delta": -0.17,
+    "reasoning": "STR_1537 indirect evidence reconstruction 결과 spec transmission failure가 아닌 L-119 (raw multi-factor dilution) 패턴. Frequency 단독 case = STR_1682 1회만 유효.",
+    "impact_on_5_axis_score": {
+      "pre_estimate": 0.55,
+      "post_estimate": 0.48,
+      "delta": -0.07,
+      "promotion_probability": "LOWER — 0.55→0.48로 ARCHIVE_candidate 구간 (<0.50) 근접"
+    }
+  },
+
+  "recommendations_for_judge": [
+    "AX-CAND_spec_transmission_failure_L159_20260418.json의 supporting_L_codes[1] (STR_1537_precedent) **REMOVE 또는 demote**. 근거 미약 — experiment_log 3 auto-runs + H_1676 debate lesson_check만 존재, 실제 spec transmission 증거 zero.",
+    "team-lead 진단 'STR_1537 + STR_1682 동일 pattern 2회 재현'은 **재검토 필요**. Scout 증거 수집 결과 동일 pattern 아님 — STR_1537은 L-119 dilution + L-146 overlay 부재, STR_1682는 L-159 spec transmission.",
+    "AX_CAND frequency axis 재평가: 0.45 → 0.28로 하락. 5축 score 0.55 → 0.48로 조정. 2026Q3 review 시 ARCHIVE 검토 가능성 증가.",
+    "ET-104 (6개월 재현 1건 수집) 의존도 상승. 향후 Forge S1 실행 전 spec audit (ET-103) 자동화 hook 구현 우선순위 격상 — 1번째 STR_1682 이후 2번째 발생 시 즉시 frequency 재평가.",
+    "L-157 (Scout handoff calibration v3) + L-158 (Gate 8 Early Warning) 결합 운용이 STR_1682 재현 방지의 핵심 — ET-103 (spec diff audit hook)은 Architect 협업 우선."
+  ],
+
+  "scout_notes": [
+    "STR_1537이 archived/deleted가 아닌 **그냥 존재한 적 없음** — 04_Research/strategies 생성 전 legacy pre-systematic run 추정. strategy dir 자체가 만들어지지 않은 상태에서 hurdle_gate 3회 실행하여 auto-generated experiment_log entry만 남음.",
+    "H_1676 s0_record line 154의 'raw revision_breadth 사용'은 Scout 본인의 과거 기억 또는 experiment_log family tag 기반 추정 — **1차 자료 부재**. Judge가 이를 precedent evidence로 쓸 때 신뢰도 MEDIUM 이하 표기 필수.",
+    "methodology_memory.md L-159 line 1062 참조 'STR_1537 precedent (2회 재현)' 표현도 **재수정 필요** — 본 evidence collection 결과 재현이 아님. team-lead 초안 작성 시 Scout evidence 미수집 상태 표기였던 듯.",
+    "AX-CAND file line 22 'known_metrics: Grade F / Score 42.3 or 34.3 (3-run variance)' 기록은 정확 — 3 auto-runs 중 run 1/2는 42.3, run 3은 34.3 score variance hurdle strict_gate 설정 차이 추정. metrics (CAGR 13.6% SR 0.590 MDD 59.1%) 전수 identical."
+  ],
+
+  "artifacts_generated": [
+    "qepm/memory/axioms/review_log/AX-CAND_STR_1537_evidence_collection.json (본 파일)"
+  ],
+
+  "followup_tasks_suggested": [
+    {
+      "id": "ET-101-followup-1",
+      "desc": "Judge 검토 후 AX-CAND_spec_transmission_failure_L159_20260418.json supporting_L_codes 업데이트 (STR_1537_precedent REMOVE 또는 demote)",
+      "owner": "Judge"
+    },
+    {
+      "id": "ET-101-followup-2",
+      "desc": "methodology_memory.md L-159 tags + 참조 line 1062/1069 'STR_1537 precedent (2회 재현)' 표현 수정",
+      "owner": "Q-Lead"
+    },
+    {
+      "id": "ET-101-followup-3",
+      "desc": "STR_1657 CBPQ (L-145) 재검토 — spec transmission failure 2번째 precedent 후보 가능성",
+      "owner": "Scout (차기 세션)"
+    }
+  ]
+}

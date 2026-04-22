@@ -1,0 +1,41 @@
+{
+  "strategy_id": "STR_1682",
+  "h_code": "H_1676",
+  "grade": "F",
+  "core_reference": "QEPM §10 Statistical Defense + Fama-French (1992/1993) Size factor + C13 Analyst Revision Residualization + L-146 (Overlay-driven MDD Core alpha 계상 금지 process rule) + STR_1537 precedent (2회 재현)",
+  "lesson_text": "STR_1682 Option A 4-regressor 잔차화(log_mcap + R12 + SUE + beta_24m) 시도는 3중 인프라/프로세스 실패로 Grade F (hurdle 32.7 / MDD 70.9% / Sharpe 0.264 / hard_fail). 실측 코드 증거: run_log line 21 'C13: TRUE | R12: TRUE | Size(none): FALSE' Size 팩터 Factor DB 미존재 → 잔차화 근본 미작동. line 19 'Bulk-loading C13+R12+Size' SUE/beta_24m 요청 흔적 전무 → Q-Lead Option A 강화 지시가 Forge code에 반영되지 않아 실제로는 2-regressor baseline 실행. line 59 'WARN CAPM: length of dimnames[2] not equal to array extent' CAPM beta 계산 실패. line 40 FMB 'Size t=-0.62 | Mom t=0.11 | R2=0.029' 2-regressor 실측 확증. 이전 judge verdict의 '4-regressor 과도 희석' 가설은 오진이었고, **실제 원인은 (a) Size Factor DB S01/S02 존재 점검 부재 + (b) spec 변경 전달 체인 단절 + (c) CAPM dimnames 버그**. STR_1537에 이어 STR_1682 동일 pattern 2회 재현은 단순 전략 실패가 아닌 프로세스 실패. 교훈: (1) Factor DB 사전 존재 점검 preflight 필수(load_month_factors 호출 전 required_factors vector 전수 검증), (2) Scout handoff spec → Forge implementation 변환 audit 의무화(diff check), (3) CAPM beta 루틴 dimnames 가드 추가(nrow/ncol check), (4) 2회 재현 pattern은 AX 승격 후보(전달 체인 단절의 구조적 실패). 원래 H_1676 Option A 가설 자체는 미검증 상태 — 재설계 시 2-regressor baseline 복귀 또는 Option B (대체 regressor set) + step-wise variance ratio 사전 측정.",
+  "tags": [
+    "SPEC_REFLECTION_FAILURE",
+    "FACTOR_DB_PRE_CHECK_MISSING",
+    "CAPM_DIMNAMES_BUG",
+    "RESIDUALIZATION_2_REGRESSOR_FALLBACK",
+    "STR_1537_REPEAT_PATTERN",
+    "AX_CANDIDATE_PROCESS_FAILURE",
+    "Q_LEAD_FORGE_HANDOFF_AUDIT_REQUIRED",
+    "STEP_WISE_VARIANCE_RATIO_PROTOCOL",
+    "H_1676_OPTION_A_UNVALIDATED",
+    "GATE_0_PIT_PASS_GATE_3_HARD_FAIL"
+  ],
+  "created_at": "2026-04-18",
+  "session": 67,
+  "judge_agent_id": "judge",
+  "related_strategies": ["STR_1537", "STR_1682"],
+  "related_L_codes": ["L-146", "L-153", "L-155", "L-156", "L-157", "L-158"],
+  "evidence_files": [
+    "04_Research/strategies/STR_1682_residual_consensus/output/hurdle_result.json",
+    "04_Research/strategies/STR_1682_residual_consensus/output/run_log.txt",
+    "04_Research/strategies/STR_1682_residual_consensus/output/analysis_report.md",
+    "stage_artifacts/judge_gate_STR_1682_verdict.json",
+    "stage_artifacts/TODO_S1_H_1676_residual_consensus_revision.json (deleted)",
+    "qepm/mailbox/scout/inbox/DONE_S1_RESULT_H_1676_residual_consensus_revision.json"
+  ],
+  "ax_candidate_linkage": {
+    "candidate_id": "AX_CAND_spec_transmission_failure",
+    "promotion_score_estimate": 0.55,
+    "blockers": "3회+ 재현 필요 (현재 2회: STR_1537 + STR_1682), measurability 강하나 frequency 부족",
+    "review_quarter": "2026Q3"
+  },
+  "followup_scout": "H_1676 Option A 포기 권고. 2-regressor baseline 복귀 or Option B 재설계. Step-wise variance ratio 사전 측정 프로토콜 도입.",
+  "followup_forge": "Factor DB pre-check 함수 `verify_factor_availability(required)` 구현 의무. CAPM dimnames 가드 추가. spec→code diff audit 자동화.",
+  "followup_qlead": "Q-Lead → Forge spec 전달 체인 감사: Scout S0→handoff→Forge S1 구현 사이 spec drift 탐지 인프라 설계 (STR_1537/STR_1682 공통 근본 원인)."
+}

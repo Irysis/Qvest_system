@@ -1,0 +1,156 @@
+{
+  "from": "Governor",
+  "to": "Judge + Q-Lead",
+  "type": "ADMISSION_RULE_V3_5_GOVERNOR_SIGNOFF",
+  "timestamp": "2026-04-18T15:05:00+09:00",
+  "session": 67,
+  "day": 1,
+  "reference": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json",
+
+  "decision": "APPROVE (full ruleset, STAGE_2_ACTIVE post-Scenario-B + Gate 12 hard_block mandatory)",
+  "signoff_status": "GOVERNOR_APPROVED_STAGE_2_ACTIVE — STR_1684_v2b Scenario B 확정 (2026-04-18, Fix 1 유효하나 ICIR 개선 없음, L-161 VALIDATED_HARD_FAIL 재분류)",
+  "stage_2_transition_event": {
+    "trigger_timestamp": "2026-04-18T Session67_Day1 late",
+    "trigger_cause": "STR_1684_v2b Scenario B 확정 (ICIR -0.1874 Fix 1 후에도 동일)",
+    "validated_hard_fail_count": 2,
+    "validated_hard_fails": ["STR_1683 L-160 (Defense IC-Return decoupling)", "STR_1684 L-161 재분류 (H_1688 VALIDATED — KR momentum inverse hypothesis A 또는 winsorize 정보 손실 hypothesis D)"],
+    "unvalidated_hard_fail_count": 0,
+    "fix_1_analysis": "sd=1.0 복원 확인 but ICIR 동일 — OLS residualization scale invariant. Fix 1은 인프라 품질 개선이지만 H_1688 결과 개선 기여 없음.",
+    "gate_12_transition": "advisory_warning → **hard_block mandatory**",
+    "enforcement_change": "Stage 1 → Stage 2"
+  },
+  "team_coordination_final_2026_04_18": "team 내 status 표현 혼선 관찰 — team-lead 메시지는 'ACTIVE_NORMATIVE 팀 수렴'으로 표기했으나 Judge는 Q-Lead 15:20 arbitration 기준 CONDITIONAL_ACTIVE 통일. Governor는 Judge와 동기화를 선택하여 CONDITIONAL_ACTIVE 복원 (staged enforcement 실무 명확성 + 파일 consistency 우선).",
+  "rationale_3_pillars_final": [
+    "1. Governor 원 초안 rev8-B G4/G5와 v3.5 Gate 11/12 100% 일치 — 제안자 정합성 검증 완료",
+    "2. Q-Lead ✅ + Judge ✅ + Governor ✅ = Triple signoff complete (ruleset 승인)",
+    "3. Staged enforcement (Stage 1 advisory → Stage 2 hard_block → Stage 3 ACTIVE_NORMATIVE) 3-tier 수락"
+  ],
+  "v3_5_activation_conditional_active": {
+    "status": "CONDITIONAL_ACTIVE",
+    "stage": "Stage 1 (Gate 11/12 advisory_warning)",
+    "activation_timestamp": "2026-04-18T15:05:00+09:00",
+    "q_lead_arbitration_timestamp": "2026-04-18T15:20:00+09:00",
+    "triple_signoff": {"q_lead": "APPROVE ✅", "judge": "APPROVE ✅", "governor": "APPROVE ✅"},
+    "architect_signoff": "DEFERRED (Stage 3 ACTIVE_NORMATIVE 전환 조건)",
+    "retroactive_audit_trigger": "IMMEDIATE (24h SLA, deadline 2026-04-19T15:05 KST) — WARNING 수준",
+    "enforcement_stages": {
+      "stage_1_current_CONDITIONAL_ACTIVE": "Gate 11/12 advisory_warning (Judge S6 WARNING 발행)",
+      "stage_2_after_2nd_hard_fail": "Gate 12 hard_block (Stage 2 transition trigger)",
+      "stage_3_ACTIVE_NORMATIVE": "Gate 11/12 hard_block + retroactive (Architect signoff 후)"
+    }
+  },
+  "arbitration_history_final": {
+    "original_governor_position": "APPROVE_CONDITIONAL + 2 conditions (Hard Fail 2건 + Architect)",
+    "q_lead_arbitration_1520": "CONDITIONAL_ACTIVE + staged enforcement (Stage 1/2/3)",
+    "team_lead_message_interpretation_variance": "ACTIVE_NORMATIVE 최종 수렴 표기 — 단 Judge는 Q-Lead 15:20 arbitration 기준 유지",
+    "governor_final_choice": "CONDITIONAL_ACTIVE 선택 (Judge 동기화 + 실무 명확성)",
+    "note": "team-lead 메시지 ACTIVE_NORMATIVE 수용 가능하나 Judge autonomous 존중 + staged enforcement 실용성 중시"
+  },
+  "str_1684_implication_note": "ICIR -0.1874 음수 실측 인지 — Gate 12 coupling_ratio 계산 시 분자 부호 문제 (ICIR 음수 자체). Judge S6에서 Alpha Lab Gate (ICIR >= 0.20) 우선 FAIL 적용 예상. Gate 12는 Judge coupling 계산 후 판정. 2번째 Hard Fail 후보.",
+  "deprecated_conditions_2_items_note": {
+    "note": "이전 Governor signoff v1에서 제시한 'APPROVE_CONDITIONAL + 조건 2건' 해석은 Q-Lead 재해석(2026-04-18)으로 철회. Triple 완성 시점 즉시 ACTIVE 원칙으로 통일.",
+    "condition_1_hard_fail_2nd_case_deprecated": {
+      "former_status": "PENDING — 2건째 자연 축적 대기",
+      "new_interpretation": "Evidence 강화 권장사항 (not release gate). 추가 evidence는 v3.6 recalibration input으로 활용",
+      "natural_accumulation_sources": ["STR_1684", "H_1685v2 Forge S1", "H_1689 Forge S1", "Scout D1~D5"]
+    },
+    "condition_2_architect_coordinate_deprecated": {
+      "former_status": "NOT_YET_REQUESTED",
+      "scope": "Forge preflight_check() verify_variant_mandate() + Scout handoff kit v2 schema 확장 + Architect 인프라 진단",
+      "trigger": "rev8-A ACTIVATE 후 별도 요청"
+    }
+  },
+
+  "v3_5_ruleset_accepted": {
+    "gates_1_10_unchanged": "v3.4 normative 전체 유지",
+    "gate_11_variant_comparison_accepted": {
+      "primary_rule": "Forge S1 minimum 3 variants + primary ≥ alternatives",
+      "structural_failure_4_variants_hard_block": "accepted",
+      "primary_inferior_conditional_block": "accepted",
+      "core_primary_single_signal_exemption": "accepted (명시 기록 의무 준수)"
+    },
+    "gate_12_ic_return_coupling_ratio_accepted": {
+      "primary_rule": "SR_monthly / ICIR_full_sample >= 0.3",
+      "warning_zone_0_15_to_0_3": "accepted (Risk Mgr 추가 audit 의무)",
+      "critical_fail_negative_or_below_0_15": "accepted (hard_block)",
+      "long_short_50plus_diversified_exemption": "accepted (L-160 scope 밖 명시)"
+    },
+    "enforcement_artifacts_accepted": [
+      "variant_comparison.csv (Forge 의무 생성)",
+      "judge_result.json coupling_ratio 필드 (Judge 의무 계산)",
+      "portfolio_governor.R에 Gate 11/12 check 함수 추가 예정"
+    ]
+  },
+
+  "governor_admission_gate_integration_plan": {
+    "immediate_action": [
+      "1. rev8 ACTIVATE 시 v3.5 citation 반영 (FINAL_SKELETON에 이미 언급, 명시 강화)",
+      "2. Phase_1 PG1 Admission skeleton v1.1에 Gate 11/12 적용 명시 (Defense mandatory / Core·Div 권장)",
+      "3. pm_run_multisleeve() admission 함수에 Gate 11/12 check 함수 스텁 추가"
+    ],
+    "defense_family_stricter_application": {
+      "scope": ["H_1689", "H_1690", "향후 Scout D1~D5"],
+      "enforcement": "Gate 11 variant min 3 + Gate 12 coupling ratio >= 0.3 mandatory",
+      "rationale": "L-160 Defense IC-Return decoupling 재발 방지"
+    },
+    "core_diversifier_flexible_application": {
+      "scope": ["STR_1631 exempt Core_Primary", "STR_1656 기존 PG2", "H_1688 Core_Secondary", "STR_1679v3 Div_3", "H_1685v2 investor_flow Div_4"],
+      "enforcement": "Gate 11/12 권장 수준 (signal 특성 다양성 존중)",
+      "exemption_grounds": "Core_Primary single signal + diversified correlation structure"
+    }
+  },
+
+  "retroactive_audit_24h_acknowledgment": {
+    "sla_accepted": "Governor signoff 완료 시점 (2026-04-18T15:05:00+09:00) 기준 24시간 이내 completion",
+    "audit_targets": [
+      "STR_1631_SYN_05_2002 (Core_Primary exempt 예상)",
+      "STR_1656_MLRA_M05 (Div_ML)",
+      "STR_1071 (PG1 candidate)",
+      "STR_1562 (PG1 candidate)",
+      "STR_1433 (PG1 candidate)"
+    ],
+    "governor_deliverable": "retroactive_v3_5_audit_verdict.json per strategy (24h 내)",
+    "judge_coordination": "Gate 11/12 예외 사례 또는 WARNING 발견 시 Judge 즉시 통보"
+  },
+
+  "scout_handoff_kit_v2_schema_extension_coordination": {
+    "field_additions_mandatory_per_v3_5": [
+      "predicted_variant_comparison (S0 단계 variant 계획 명시)",
+      "predicted_coupling_ratio (S0 단계 IC-Return coupling 사전 등록)"
+    ],
+    "architect_coordination_required": "Scout handoff kit v2 schema 실구현 시 Architect coordinate",
+    "governor_responsibility": "schema 확장 완료 시 Governor Admission Rule v3.5 파일에 cross-reference 추가"
+  },
+
+  "v3_6_candidate_agenda_governor_comments": {
+    "gate_13_regime_conditional": "Governor 강력 지지 — 4-regime별 variant 성능 분리 필수",
+    "gate_14_algebraic_identity": "Governor 지지 — H_1687/STR_1685 사례 반복 방지",
+    "gate_15_codex_cross_model": "Governor 중립 — S0 debate 통합 효과 실증 필요",
+    "coupling_ratio_threshold_recalibration": "Governor 3~5건 사례 축적 공조 — rev8-A/B 운영 결과 + Scout D1 결과 feeding"
+  },
+
+  "file_version_management": {
+    "current_file": "qepm/mailbox/governor/outbox/admission_rule_v3_5_governor_signoff.json",
+    "judge_canonical_reference": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json",
+    "v3_4_archival": "admission_rule_v3_4_consolidated.json은 historical reference로 유지, v3.5 ACTIVE 후 SUPERSEDED 상태",
+    "governor_internal_update": "Governor Admission Rule v3.4 파일 → v3.5 swap (별도 commit)"
+  },
+
+  "telegram_report_trigger": {
+    "when": "rev8 ACTIVATE 동시 또는 Governor signoff 공식 승인 메시지 수신 직후",
+    "template_draft": "📜 [Governor] Admission Rule v3.5 ACTIVE — Gate 11 variant comparison + Gate 12 IC-Return coupling ratio 공식 normative. L-160 evidence 기반. Defense family mandatory / Core·Div 권장."
+  },
+
+  "governor_signoff_summary": {
+    "decision_final": "APPROVE_CONDITIONAL ✅ (v3.5 STAGE_2_ACTIVE (전환 발동 2026-04-18, STR_1684_v2b Scenario B 확정), team-lead 최종 arbitration 확정)",
+    "signoff_obtained": ["Q-Lead signoff ✅", "Judge signoff ✅", "Governor signoff ✅"],
+    "v3_5_status_final": "STAGE_2_ACTIVE (전환 발동 2026-04-18, STR_1684_v2b Scenario B 확정) (team-lead 최종 arbitration, 2026-04-18)",
+    "enforcement_level_current": "advisory_warning (Gate 11/12 모두) — Stage 2 전환 시 Gate 12 hard_block / Stage 3 전환 시 Gate 11/12 hard_block + ACTIVE_NORMATIVE",
+    "v3_5_conditional_active_timestamp": "2026-04-18T15:05 activation + 15:20 Q-Lead arbitration + 16:00 재확인",
+    "retroactive_audit_start": "IMMEDIATE (deadline 2026-04-19T15:05 KST, WARNING 수준)",
+    "retroactive_preliminary_result": "5건 0 hard_block (STR_1631 EXEMPT advisory_warning + STR_1656 PASS + STR_1071/1562 pending Phase_1 + STR_1433 ARCHIVE)",
+    "architect_signoff": "Stage 3 ACTIVE_NORMATIVE 전환 조건 (deferred)",
+    "stage_2_transition_trigger": "VALIDATED Hard Fail 2건 축적 (현 1/2, STR_1684_v2 결과 기반 추가 여부 확정)",
+    "next_version_v3_6_planning": "rev8-A/B 운영 결과 + 추가 evidence 2~3건 축적 후 + ML hyperparameter variant framework"
+  }
+}

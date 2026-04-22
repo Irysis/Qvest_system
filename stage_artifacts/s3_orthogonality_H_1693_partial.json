@@ -1,0 +1,58 @@
+{
+  "artifact_type": "s3_orthogonality_partial",
+  "hypothesis_id": "H_1693",
+  "strategy_id": "STR_1687",
+  "status": "PARTIAL",
+  "blocker": "STR_1687 daily_returns.csv MISSING (Codex:rescue + Forge rerun 대기). STR_1689 S1 미완료.",
+  "measured_at": "2026-04-19T19:20:59",
+  "regime_threshold": "MSM_Crisis_Prob >= 0.5",
+  "n_days_baseline": 4475,
+  "date_range": ["2008-02-05", "2026-03-31"],
+  "baseline_pairs": {
+    "STR_1631__vs__STR_1656": {
+      "pair": ["STR_1631", "STR_1656"],
+      "pearson": 0.6494,
+      "tdc_upper": 0.3498,
+      "tdc_lower": 0.5381,
+      "gate11": "FAIL",
+      "seq_gate": "REVIEW",
+      "tdc_crisis_upper": 0.4688,
+      "tdc_crisis_lower": 0.625,
+      "sequential_admission_crisis_gate_actual": "REVIEW",
+      "tdc_normal_upper": 0.3194,
+      "tdc_normal_lower": 0.445
+    },
+    "STR_1631__vs__STR_1679": {
+      "pair": ["STR_1631", "STR_1679"],
+      "pearson": 0.7736,
+      "tdc_upper": 0.4215,
+      "tdc_lower": 0.6188,
+      "gate11": "FAIL",
+      "seq_gate": "REVIEW",
+      "tdc_crisis_upper": 0.3438,
+      "tdc_crisis_lower": 0.5,
+      "sequential_admission_crisis_gate_actual": "REVIEW",
+      "tdc_normal_upper": 0.4764,
+      "tdc_normal_lower": 0.6178
+    },
+    "STR_1656__vs__STR_1679": {
+      "pair": ["STR_1656", "STR_1679"],
+      "pearson": 0.5296,
+      "tdc_upper": 0.2422,
+      "tdc_lower": 0.4619,
+      "gate11": "PASS",
+      "seq_gate": "REVIEW",
+      "tdc_crisis_upper": 0.25,
+      "tdc_crisis_lower": 0.2812,
+      "sequential_admission_crisis_gate_actual": "PASS",
+      "tdc_normal_upper": 0.2723,
+      "tdc_normal_lower": 0.4241
+    }
+  },
+  "gate_11_baseline_summary": ["FAIL", "FAIL", "PASS"],
+  "key_finding": {
+    "STR_1631_vs_STR_1679_TDC_lower": 0.6188,
+    "STR_1631_vs_STR_1679_Gate11": "FAIL",
+    "note": "STR_1631 vs STR_1679(v2): TDC_lower=0.619 Gate11=FAIL — Phase_1 PG1 sequential admission 필요"
+  }
+}

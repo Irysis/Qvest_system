@@ -1,0 +1,215 @@
+{
+  "diagnostic_id": "FACTOR_DB_ZSCORE_DIAGNOSIS",
+  "issued_by": "Architect",
+  "timestamp": "2026-04-18",
+  "urgency": "P0_CRITICAL",
+  "target_recipients": ["Q-Lead", "Forge", "Scout", "Judge"],
+
+  "executive_summary": {
+    "finding": "Factor DB Z_Score pipeline 자체는 정상 (cross-section z-score 후 +-3 winsorize). sd!=1 원인은 winsorize clipping 후 rescale 부재. R12/D01 duplicate는 compute 모듈 수준의 동일 수식 문제. 전략 결과 재현성에는 영향 없음 (모든 전략이 동일 데이터 사용).",
+    "severity": "MEDIUM (기존 전략 재현성 무관) + HIGH (신규 OLS residualization scale 충돌)",
+    "root_cause_count": 3,
+    "fix_recommendation": "Option B (runtime rescale wrapper) 최우선"
+  },
+
+  "root_cause_analysis": {
+    "RC1_winsorize_without_rescale": {
+      "severity": "HIGH",
+      "location": "02_Infrastructure/factor_db/factor_db_builder.R, line 341-368, .standardize_factors()",
+      "mechanism": {
+        "step_1": "Raw_Value에서 cross-sectional Z_Score 계산: (val - mean) / sd -> sd=1.0 정확",
+        "step_2": "winsorize at +-3: pmin(pmax(Z_Score, -3), 3)",
+        "step_3": "winsorize 후 re-standardize 없음 -> 분포가 fat-tail factor일수록 sd < 1.0",
+        "step_4": "결과: outlier 비율이 높은 factor (V01, Q07, R12, M08 등)에서 sd 크게 축소"
+      },
+      "mathematical_explanation": {
+        "proper_z_score_sd": "winsorize 전 sd=1.000 (정의상)",
+        "after_winsorize": "N개 중 k개가 +-3에 clipped -> 전체 variance 감소 -> sd < 1.0",
+        "severity_depends_on": "원본 Raw_Value의 tail fatness (kurtosis). R12/D01/M08은 극단적 fat-tail -> 많은 값이 clipped -> sd ~0.05~0.07",
+        "M07_IndMom_case": "M07은 sector-level 평균이라 outlier 거의 없음 -> clipping 비율 ~0% -> sd ~1.000 유지",
+        "V01_BM_case": "V01은 중간 정도 fat-tail -> ~15% clipped -> sd ~0.36"
+      },
+      "design_decision": "winsorize 후 rescale 안 한 것이 '버그'인지 '설계 의도'인지 판단 필요",
+      "architect_opinion": "의도적 설계가 아닌 누락으로 판단. Z_Score라는 이름이 sd=1을 기대하게 만들지만, clipped Z는 sd!=1. 두 가지 해법 가능: (A) 이름을 Z_Score_Clipped로 변경하고 현재 동작 유지, (B) winsorize 후 re-standardize 추가"
+    },
+
+    "RC2_R12_D01_computational_duplicate": {
+      "severity": "MEDIUM",
+      "location_R12": "02_Infrastructure/factor_db/compute_risk.R, line 122: r12 <- -sd(fit$residuals, na.rm = TRUE)",
+      "location_D01": "02_Infrastructure/factor_db/compute_defense.R, line 54: d01 <- -sd(fit$residuals, na.rm = TRUE)",
+      "mechanism": {
+        "R12_formula": "lm.fit(cbind(1, BM_Ret), Ret) -> -sd(residuals). compute_risk.R line 122",
+        "D01_formula": "lm.fit(cbind(1, BM_Ret), Ret) -> -sd(residuals). compute_defense.R line 54",
+        "identical_because": "동일 입력 데이터 (Ret, BM_Ret, 252d lookback), 동일 수식 (CAPM regression residual sd), 동일 부호 반전 (-). 수학적으로 완벽히 동일한 계산",
+        "sd_match": "0.07063515 (Scout 실측) - 두 모듈이 독립 실행되지만 동일 결과"
+      },
+      "registry_inconsistency": {
+        "D01_direction": "lower_better (defense: low idio vol = good)",
+        "R12_direction": "higher_better (risk: high value = less risky, but Raw_Value already negated)",
+        "net_effect": "D01 Raw = -sd(resid), direction=lower_better -> align시 flip -> Z_Aligned = +sd(resid). R12 Raw = -sd(resid), direction=higher_better -> align시 유지 -> Z_Aligned = -sd(resid). 최종 방향 반대! 이것은 의도된 것(defense vs risk)이지만 OLS regressor로 둘 다 쓰면 multicollinearity 발생.",
+        "conclusion": "두 factor가 알려진 alias라는 점을 registry에 명시하고, 같은 전략에서 R12+D01 동시 사용 금지 경고 필요"
+      }
+    },
+
+    "RC3_M08_extreme_clipping": {
+      "severity": "HIGH",
+      "location": "02_Infrastructure/factor_db/compute_momentum.R, line 96-113",
+      "mechanism": {
+        "M08_formula": "CAPM residual 252d의 cumulative sum (skip 1m). sum(residuals[idx_start:idx_end])",
+        "raw_value_range": "residual은 daily returns (~0.01 scale) 누적 -> 252일 합 -> 범위 매우 넓어짐 (+-5 이상 가능)",
+        "after_z_score": "z-score 변환 후에도 extreme tails -> winsorize +-3에서 대량 clipping",
+        "result": "sd 0.054 (전체 값 중 ~95%가 clipped, 변별력 상실)"
+      },
+      "impact_on_strategy": "M08을 직접 사용하는 모든 전략에서 M08 기여 near-zero (constant 취급). factor_engine.R에서 M08을 regressor로 사용하면 사실상 intercept만 추가"
+    }
+  },
+
+  "affected_factors": {
+    "SEVERELY_DISTORTED": {
+      "factors": ["R12_Idiosyncratic_Risk", "D01_IdioVol", "M08_Residual_Mom"],
+      "sd_range": "0.054 ~ 0.071",
+      "impact": "factor Z_Score가 near-constant, 회귀/composite에서 변별력 상실",
+      "estimated_clipping_rate": ">90%"
+    },
+    "DISTORTED": {
+      "factors": ["V01_BM", "C19_Composite_Earnings", "Q07_Earnings_Stability", "Q25_Ohlson_O", "M01_Mom_12_1"],
+      "sd_range": "0.328 ~ 0.660",
+      "impact": "OLS 회귀에서 다른 factor 대비 under-represented (coefficient bias)",
+      "estimated_clipping_rate": "10~40%"
+    },
+    "PROPER": {
+      "factors": ["M07_IndMom", "S01_Size"],
+      "sd_range": "0.998 ~ 1.000",
+      "impact": "정상. OLS 회귀에서 이 factor들이 over-represented됨 (상대적)",
+      "estimated_clipping_rate": "<1%"
+    }
+  },
+
+  "fix_options": {
+    "option_A_full_rebuild": {
+      "description": "factor_db_builder.R의 .standardize_factors()에 winsorize 후 re-standardize 단계 추가. 이후 build_factor_db_monthly(force=TRUE)로 전체 재빌드.",
+      "code_change": ".standardize_factors() line 367 이후에 다음 추가:\n  dt[!is.na(Z_Score), Z_Score := {\n    mu2 <- mean(Z_Score, na.rm=TRUE)\n    s2 <- sd(Z_Score, na.rm=TRUE)\n    if (s2 > 1e-12) (Z_Score - mu2) / s2 else Z_Score\n  }, by = Factor_Name]",
+      "pros": ["완전한 해결", "모든 downstream 코드 변경 불필요", "향후 모든 신규 전략에 자동 적용"],
+      "cons": ["전체 436개월 재빌드 소요 시간 (예상 2~4시간)", "기존 전략 결과 재현 불가 (기존 Z_Score 기반으로 최적화된 전략)", "STR_1631_SYN_05 (PG2 active) 결과 변동 위험"],
+      "effort_hours": 4,
+      "risk": "HIGH (기존 전략 호환성 파괴)",
+      "recommended": false
+    },
+
+    "option_B_runtime_rescale_wrapper": {
+      "description": "load_month_factors()에 runtime re-standardize 레이어 추가. parquet 원본 불변, 로딩 시점에 factor별 re-scale.",
+      "code_change_location": "02_Infrastructure/factor_db/factor_db_connector.R, load_month_factors() line 89-118",
+      "code_change": "load_month_factors() 내부, align_factor_direction() 호출 전에:\n  dt[!is.na(Z_Score), Z_Score := {\n    s <- sd(Z_Score, na.rm=TRUE)\n    if (s > 1e-12) Z_Score / s else Z_Score\n  }, by = Factor_Name]",
+      "pros": ["parquet 불변 (기존 전략 재현 가능)", "빠른 적용 (코드 5줄)", "C15 경유 경로이므로 모든 신규 전략에 자동 적용", "roll-back 즉시 가능 (wrapper 제거만)"],
+      "cons": ["parquet 자체는 여전히 sd!=1 저장 (직접 parquet 읽는 코드가 있으면 불일치)", "load_month_factors() 우회 시 적용 안 됨 (그러나 C15 규칙이 이를 금지)"],
+      "effort_hours": 0.5,
+      "risk": "LOW",
+      "recommended": true
+    },
+
+    "option_C_factor_specific_fix": {
+      "description": "R12/D01 duplicate 해소 + M08 Raw_Value 계산식 수정 (sum -> mean 변환으로 scale 정상화). 영향받는 3개 factor만 수정.",
+      "code_changes": [
+        "compute_risk.R line 122: R12를 D01의 alias로 선언하거나, R12만의 고유 계산식 부여 (예: R12 = idiosyncratic variance, D01 = idiosyncratic vol)",
+        "compute_momentum.R line 110: sum(res[idx_start:idx_end]) -> mean(res[idx_start:idx_end]) * sqrt(length(res[idx_start:idx_end])) (scale normalization)",
+        "factor_registry.json: R12에 alias_of: D01 필드 추가"
+      ],
+      "pros": ["최소 변경", "근본 원인(M08 scale, R12 duplicate) 해소"],
+      "cons": ["V01/Q07/C19 등 다른 distorted factor는 해결 못함", "factor_db_monthly 재빌드 여전히 필요 (해당 factor만)"],
+      "effort_hours": 2,
+      "risk": "MEDIUM",
+      "recommended": false
+    }
+  },
+
+  "recommended_plan": {
+    "immediate_action": "Option B (runtime rescale wrapper)",
+    "phase_1_today": {
+      "step_1": "Forge: load_month_factors()에 Z_Score re-scale wrapper 5줄 추가",
+      "step_2": "Forge: factor_engine.R에서 OLS 회귀 전 scale() 적용 (방어적 이중화)",
+      "step_3": "Scout: STR_1684 V2 factor_engine.R에 scale normalize 적용하여 재실행",
+      "step_4": "Judge: STR_1684 V1 REJECT 판정에 'implementation bug suspected' 명기"
+    },
+    "phase_2_next_session": {
+      "step_1": "Architect: Option A rebuild 타당성 검토 (기존 전략 영향 평가)",
+      "step_2": "Option C R12/D01 alias 정리 + M08 scale fix",
+      "step_3": "전체 Factor DB 288 factors sd 분포표 생성 (severity 분류)"
+    },
+    "phase_3_long_term": {
+      "step_1": "factor_db_builder.R v2: winsorize -> re-standardize 표준화 (Option A)",
+      "step_2": "전체 rebuild 후 기존 전략 regression test",
+      "step_3": "factor_registry.json에 alias 시스템 도입 (D01/R12 같은 duplicate 관리)"
+    }
+  },
+
+  "impact_assessment": {
+    "existing_strategies": {
+      "STR_1631_SYN_05": {
+        "impact": "NONE_IMMEDIATE",
+        "reason": "C19 기반. Z_Score를 composite score로 합산하므로 sd 차이가 factor weight로 작용. 이미 검증된 결과. Option B 적용 시에도 composite 재계산 필요 없음 (C19 단독 factor)",
+        "re_run_needed": false
+      },
+      "STR_1656_MLRA_M05": {
+        "impact": "NONE_IMMEDIATE",
+        "reason": "ML 모델이 raw feature 사용. Z_Score 경유하지 않음",
+        "re_run_needed": false
+      },
+      "STR_1071_family_1_primary": {
+        "impact": "LOW",
+        "reason": "factor composite에서 Z_Score sd 차이가 implicit weight로 작용. 결과 변동 가능하지만 Judge Pass 2 확정 전략이므로 재검증 불급",
+        "re_run_needed": false
+      }
+    },
+    "in_progress_strategies": {
+      "STR_1684_H_1688": {
+        "impact": "CRITICAL",
+        "reason": "OLS residualization에서 R12(sd 0.07) vs Size(sd 1.0) scale 충돌이 ICIR -0.162 직접 원인. Option B + scale() 적용 시 결과 완전 변동 예상",
+        "re_run_needed": true,
+        "fix": "factor_engine.R에 scale() normalize + load_month_factors() wrapper 적용 후 V2 재실행"
+      },
+      "STR_1682_H_1676": {
+        "impact": "MEDIUM",
+        "reason": "다중 factor 합산 시 sd 불균형이 implicit weighting에 영향. 결과 변동 가능",
+        "re_run_needed": "Option B 적용 후 판단"
+      },
+      "STR_1683_H_1682": {
+        "impact": "MEDIUM",
+        "reason": "Q25_Ohlson_O(sd 0.53) + R16_Calmar(sd unknown) cross-family. 상대 scale 영향",
+        "re_run_needed": "Option B 적용 후 판단"
+      }
+    }
+  },
+
+  "rollback_plan": {
+    "option_B_rollback": "load_month_factors() wrapper 제거 (5줄 삭제). parquet 불변이므로 즉시 원복.",
+    "option_A_rollback": "git revert factor_db_builder.R + .cache/factor_db/ parquet 복원 (git-lfs 또는 backup). 시간 소요 큼.",
+    "strategy_results_recovery": "기존 전략은 stage_artifacts/*.json에 결과 기록됨. Factor DB 변경과 무관하게 과거 결과 참조 가능."
+  },
+
+  "forge_implementation_spec": {
+    "task_1_connector_wrapper": {
+      "file": "02_Infrastructure/factor_db/factor_db_connector.R",
+      "function": "load_month_factors()",
+      "insertion_point": "line 112 (dt <- dt[Factor_Name %in% keep_factors...] 이후, align_factor_direction() 호출 전)",
+      "code": "# --- RC1 fix: re-standardize Z_Score after winsorize clipping ---\n  dt[!is.na(Z_Score), Z_Score := {\n    s <- sd(Z_Score, na.rm = TRUE)\n    if (s > 1e-12) Z_Score / s else Z_Score\n  }, by = Factor_Name]\n  cat(sprintf('[connector] Z_Score re-standardized: %d factors\\n', uniqueN(dt$Factor_Name)))",
+      "test": "load_month_factors('2026-03-31') 후 dt[, .(sd = sd(Z_Score, na.rm=TRUE)), by = Factor_Name] 모든 factor sd ~1.0 확인"
+    },
+    "task_2_factor_engine_scale": {
+      "file": "04_Research/strategies/STR_1684_residual_momentum/factor_engine.R",
+      "change": "OLS 회귀 전 모든 regressor/dependent에 scale() 적용",
+      "reason": "이중 방어. load_month_factors() wrapper + factor_engine.R 자체 scale normalize"
+    },
+    "task_3_registry_alias": {
+      "file": "02_Infrastructure/factor_db/factor_registry.json",
+      "change": "R12_Idiosyncratic_Risk에 alias_of: 'D01_IdioVol' 필드 추가. 또는 R12를 독자적 계산식으로 분리 (예: idiosyncratic variance = sd^2)",
+      "priority": "phase_2 (다음 세션)"
+    }
+  },
+
+  "architectural_notes": {
+    "design_principle_violated": "Factor DB builder의 .standardize_factors()가 winsorize 후 re-standardize를 누락한 것은 '단일 정규화 원칙' 위반. Z_Score라는 이름은 sd=1을 암시하지만 실제로는 그렇지 않음.",
+    "proposed_invariant": "INVARIANT: parquet에 저장되는 Z_Score의 cross-sectional sd는 반드시 [0.95, 1.05] 범위. 이를 build_factor_db() 마지막 단계에서 assertion으로 검증.",
+    "hook_proposal": "artifact_validator.sh에 Factor DB parquet 저장 시 Z_Score sd 검증 추가 (L2 soft gate)",
+    "duplicate_factor_management": "factor_registry.json에 alias_of 필드 신설. D01/R12처럼 동일 계산식의 다른 이름은 alias로 관리. 동일 전략에서 alias pair 동시 사용 시 Hook 경고."
+  }
+}

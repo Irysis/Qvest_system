@@ -1,0 +1,138 @@
+{
+  "artifact_type": "h_1689_v3_variant_selection_rationale",
+  "schema_version": "v2",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2 — Q-Lead 신규 지시 #3",
+  "purpose": "Q-Lead Governor 권고 scenario_B 확인 지시 — H_1689 v3 variant_1 (3-axis Q24-exclude, no Q07) PRIMARY path 재확인 + variant_2 (Q07-replace 4-axis) reserve 근거 강화. S0 debate R2 진행 중 + Forge S1 dispatch 시점 판단 자원.",
+
+  "context": {
+    "h_1689_v3_handoff_kit": "stage_artifacts/s0_debate_handoff_H_1689_v3.json",
+    "h_1689_v3_s0_record": "stage_artifacts/s0_record_H_1689_v3_quality_q24_exclude_q07_replace.json",
+    "risk_mgr_3rd_round_blocking": "Q24 Altman_Z stress_icir -0.695 × 0.25 = -0.174 poison pill (L-163 rule violation 5x threshold)",
+    "scenarios_defined_v3": ["A: variant_1 best", "B: variant_2 best", "C: both acceptable", "D: both fail"],
+    "governor_path_recommendation": "scenario_B via variant_1 primary (H_1693 TDC cluster 해소)"
+  },
+
+  "variant_comparison_matrix": {
+    "variant_1_3axis_Q24_exclude_PRIMARY": {
+      "formula": "score = 0.33·z_Q01 + 0.33·z_Q04 + 0.34·(-z_Q25)",
+      "factors": ["Q01_GPA", "Q04_Piotroski_F", "Q25_Ohlson_O_negative"],
+      "n_axes": 3,
+      "q07_included": false,
+      "icir_forecast": "0.18~0.30 (Q24 제거로 보수)",
+      "stress_icir_forecast": "+0.30~+0.60 (Q01/Q04/Q25 positive 보존)",
+      "sr_forecast": "0.55~0.75",
+      "mdd_forecast": "35~50%",
+      "l163_poison_pill_check": {
+        "Q01": "+0.10 × 0.33 = +0.033 PASS",
+        "Q04": "+0.15 × 0.33 = +0.050 PASS",
+        "neg_Q25_Ohlson_distress": "+0.659 × 0.34 = +0.224 PASS",
+        "composite_stress": "+0.307 positive PASS"
+      },
+      "kill_scenario_1_q24_crisis_amplification": "COMPLETELY_AVOIDED (Q24 제거)",
+      "ax_004_exempt_path": "3-axis composite scope 밖 (single-signal 아님)",
+      "h_1693_parallel_admission": "Q07 공유 ZERO → H_1693 parallel path 확보"
+    },
+    "variant_2_4axis_Q07_replace_SECONDARY": {
+      "formula": "score = 0.25·z_Q01 + 0.25·z_Q04 + 0.25·z_Q07 + 0.25·(-z_Q25)",
+      "factors": ["Q01_GPA", "Q04_Piotroski_F", "Q07_Earnings_Stability", "Q25_Ohlson_O_negative"],
+      "n_axes": 4,
+      "q07_included": true,
+      "q07_weight": 0.25,
+      "icir_forecast": "0.25~0.40 (Q07 uplift)",
+      "stress_icir_forecast": "+0.40~+0.70 (Q07 +0.753 × 0.25 = +0.188 추가)",
+      "sr_forecast": "0.70~1.00",
+      "mdd_forecast": "30~42%",
+      "l163_poison_pill_check": {
+        "Q01": "+0.10 × 0.25 = +0.025 PASS",
+        "Q04": "+0.15 × 0.25 = +0.038 PASS",
+        "Q07": "+0.753 × 0.25 = +0.188 PASS (strong)",
+        "neg_Q25_Ohlson_distress": "+0.659 × 0.25 = +0.165 PASS",
+        "composite_stress": "+0.416 positive PASS (variant_1 대비 +0.109)"
+      },
+      "kill_scenario_1_q24_crisis_amplification": "COMPLETELY_AVOIDED (Q24 → Q07 교체)",
+      "ax_004_exempt_path": "4-axis composite scope 밖 (single-signal 아님)",
+      "ax_005_exemption_concern": "AX-005 'Q07+D25 combo' standalone scope — multi-axis 내 Q07 1/4 사용은 v3 EXCLUSION 해당하나 Judge formal 재확인 필요",
+      "h_1693_parallel_admission_risk": "Q07 direct 공유 (variant_2 25% + H_1693 70%) → L-156 v2 crisis TDC 0.35~0.55 FAIL_PREDICT"
+    }
+  },
+
+  "scenario_b_governor_recommendation_rationale": {
+    "primary_recommendation": "variant_1 (3-axis Q24-exclude, no Q07) primary admission",
+    "quantitative_basis_5_points": [
+      {
+        "point_1_q07_cluster_resolution": "variant_1 vs H_1693 pair_0 crisis TDC 0.20~0.35 PASS_LIKELY (L-156 v2 + L-157 v4 pre-measurement). variant_2 vs H_1693 pair_3 crisis TDC 0.35~0.55 FAIL_PREDICT. cluster 해소 최적."
+      },
+      {
+        "point_2_judge_gate_11_margin": "variant_1 primary 시 pair_0 TDC 0.20~0.35 < 0.50 absolute safe margin. variant_2 primary 시 pair_3 TDC 0.35~0.55 경계/초과."
+      },
+      {
+        "point_3_governor_pg1_slot_allocation": "scenario_B: STR_1679v3 8% + variant_1 10% + H_1693 10% = Defense 28% (cap 33% margin 5%). scenario with variant_2: Q07 공유 cluster saturation RED, H_1693 reserve 강제 → Defense cluster 18~23%."
+      },
+      {
+        "point_4_ax_005_exemption_clarity": "variant_1 (Q01+Q04+Q25 no Q07) AX-005 범위 완전 밖. variant_2 (Q07 포함)는 AX-005 v3 EXCLUSION scope 해석 Judge formal sign-off 필요 — 불확실 경로."
+      },
+      {
+        "point_5_parent_Asness_2019_qmj_alignment": "variant_1 3-axis (Profitability GP + Piotroski F-score + Ohlson distress signed) Asness 2019 QMJ framework Profitability + Safety 2 dimensions 커버. variant_2 4-axis + Q07 Earnings Stability는 Safety axis 중복."
+      }
+    ]
+  },
+
+  "variant_2_reserve_rationale": {
+    "use_case": "variant_1 S1 Grade F 또는 CONDITIONAL인 경우 backup plan",
+    "conditions_for_variant_2_activation": [
+      "variant_1 S1 stress_icir < +0.30 (Governor D1 요건 미달)",
+      "variant_1 S1 bad_ic < 0.08 (Governor D1 요건 미달)",
+      "variant_1 S1 SR < 0.55 (하한 미달)",
+      "H_1693 REVISE/REJECT 확정 시 Q07 cluster 위험 해소 (variant_2 Q07 25% standalone admission 가능)"
+    ],
+    "scenario_c_both_acceptable_decision": "둘 다 Grade A 시 variant_2 primary (Q07 uplift 우수) + variant_1 backup (Governor judgement). 단 H_1693 cluster 고려 시 variant_1 유리.",
+    "ax_005_judge_confirmation_required": "Q07 multi-axis composite 1/4 사용이 AX-005 v3 EXCLUSION 'multi-sleeve portfolio 내 defense sleeve' 해당 여부 Judge formal sign-off"
+  },
+
+  "forge_s1_dispatch_guidance": {
+    "primary_execution_order": [
+      "Stage 1: variant_1 (3-axis) PRIMARY — 단일 실행, 결과 우선 확인",
+      "Stage 2 (conditional on Stage 1 PASS with margin): variant_2 (4-axis Q07-replace) SECONDARY parallel — variant_1 Grade A 확정 시 reserve 목적만",
+      "Stage 3 (variant_1 FAIL only): variant_2 priority 전환 + baseline_control v2 original 비교 demonstration"
+    ],
+    "resource_optimization": "Forge 3-parallel capacity 제약 시 variant_1 단일 실행 우선 (variant_2 순차 실행 허용). variant_1 결과 기반 Stage 2 decision.",
+    "expected_timeline": "variant_1 S1 backtest: 30~45분 예상, variant_2 추가 시 +30~45분"
+  },
+
+  "downstream_impact_analysis": {
+    "if_variant_1_grade_a": {
+      "h_1689_status": "variant_1 primary admission → STR_1689_v3 할당",
+      "h_1693_status": "parallel admission path 확보 (Q07 cluster ZERO overlap with variant_1)",
+      "governor_rev8_update": "Scenario_D Option 2 compatible — STR_1679v3 8% + STR_1689_v3 (variant_1) 10% + H_1693 10% + STR_1631 18% + STR_1656 14% + H_1692_v2 10% = Defense+Core+Div 70% (Reserve 30%)",
+      "defense_cluster_utilization": "28% / 33% cap (85% 활용, margin 5%)"
+    },
+    "if_variant_1_grade_b_or_conditional": {
+      "h_1689_status": "variant_1 S5 mutation 필요 or variant_2 전환 consideration",
+      "h_1693_status": "independent 진행 가능 (variant_1 결과 무관)",
+      "scout_action": "variant_2 S1 activation + AX-005 judge formal sign-off 요청"
+    },
+    "if_variant_1_grade_f": {
+      "h_1689_status": "variant_2 전환 (Q07-replace 4-axis)",
+      "h_1693_status": "Q07 cluster formation risk 재검토 (variant_2 + H_1693 TDC pair_3 FAIL_PREDICT)",
+      "scout_action": "Scout decision_guide scenario_C ('both acceptable') 또는 scenario_D (both fail → rev8 재설계)"
+    }
+  },
+
+  "governor_communication_summary": {
+    "consistency_check": "Governor 권고 scenario_B (variant_1 primary) 정량 근거 확인됨 (5 points)",
+    "divergence_from_governor": "없음 — Scout 권고와 Governor 권고 일치",
+    "joint_signoff_candidate": "variant_1 primary admission path Governor + Scout joint signoff 가능. team-lead Scenario_D Option 2 APPROVED 체제 하 compatible."
+  },
+
+  "scout_notes": [
+    "Q-Lead 지시 #3 — H_1689 v3 variant_1 primary path 재확인 완료",
+    "Governor scenario_B 권고 일치 — 5-point quantitative rationale 명시",
+    "variant_1 (no Q07) vs variant_2 (Q07 4-axis) 비교 매트릭스 + kill scenario + ax_004/ax_005 exempt + L-163 poison pill + H_1693 cluster impact 전수 분석",
+    "Forge S1 dispatch guidance: variant_1 PRIMARY 단일 실행 우선, variant_2 SECONDARY는 Stage 2 parallel 또는 backup",
+    "downstream impact 3 scenarios (variant_1 Grade A/B/F) 별 대응 path 명시",
+    "AX-005 v3 EXCLUSION Q07 multi-axis composite 해석은 Judge formal sign-off 필요 (variant_2 사용 시)",
+    "Governor + Scout joint signoff 가능 path 확보"
+  ]
+}

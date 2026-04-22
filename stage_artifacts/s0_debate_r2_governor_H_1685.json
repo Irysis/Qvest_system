@@ -1,0 +1,42 @@
+{
+  "hypothesis_id": "H_1685",
+  "round": 2,
+  "role": "governor",
+  "agent_id": "governor_H1685_r2",
+  "timestamp": "2026-04-17T00:00:00",
+  "r1_score": 16,
+  "r2_score": 13,
+  "score_change_reason": "quant의 H_1674 상관 0.897 실측을 수용하여 marginal_contribution 축 3점→1점 재산정(H_1685가 H_1674 중복 신호이면 portfolio SR 기여 사실상 0). implementation_feasibility 축도 2점→1점 하향(재설계 필수로 구현 복잡도 상승). PG0 gap alignment는 4점 유지 — gap 자체는 유효하나 현재 설계로는 gap 해소 불가.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "H_1685 divergence 신호와 H_1674 contrarian 간 평균 cross-sectional 상관 0.897 측정 결과를 수용합니다. R1에서 '예상 TDC vs H_1674 < 0.40'을 조건으로 제시했으나, 이 조건이 현재 신호 구조로는 수학적으로 충족 불가능합니다. Phase_1 즉시 편입 주장을 철회하고 신호 재설계 완료 후 재검토로 입장을 수정합니다."
+    },
+    {
+      "with": "risk_manager",
+      "point": "H_1674 debate 완료 및 STR 할당 전까지 H_1685 Phase_1 편입 보류하자는 의견에 동의합니다. 두 신호의 S3 TDC 동시 측정 없이 H_1685를 선취 편입하면, 추후 H_1674 편입 시 portfolio-level 리스크 관리가 불가능해집니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "codex_critic",
+      "point": "codex_critic의 '실전 0 alpha — 실질적 반대' 입장은 과도하게 비관적입니다. compute_investor.R이 C2(Date < sig_d strict less-than)를 코드 레벨에서 이미 구현하고 있으며, QuantiWise T+1 공시 timing도 이 필터로 자동 처리됩니다. PIT 기술적 실현 가능성은 인프라 레벨에서 이미 확보된 상태이므로, 문제는 신호 설계(H_1674 중복)이지 PIT 구현 불가가 아닙니다. codex_critic의 우려는 신호 재설계 후 재평가 대상이어야 합니다."
+    },
+    {
+      "against": "academic",
+      "point": "academic의 '(B) sector-neutral 외국인 flow(INV01 계열)로 전환하면 H_1685 학술 정체성(2-party divergence)을 포기' 주장에 이의를 제기합니다. (B) 경로(INV01 계열 + 63d lookback)도 Choe-Kho-Stulz의 '외국인 정보 우위' 메커니즘을 단독 포착하므로 학술적 정체성이 완전히 소멸하지는 않습니다. 다만 이 경우 H_1685는 사실상 INV02(Foreign_NetBuy_60d) 변형이 되어 factor registry에서 INV14로 등록하고 H_1685 hypothesis ID는 폐기하는 것이 적절합니다."
+    }
+  ],
+
+  "strongest_opposing_argument": "quant의 H_1674 상관 0.897 측정이 가장 치명적입니다. PG0 gap alignment 관점에서 H_1685의 존재 목적은 H_1676 drop 보전 + 새로운 diversifier axis 확보였는데, 신호가 H_1674(아직 debate 미완료)와 실질 동일하면 '새로운 axis' 확보 목적이 달성되지 않습니다. rev7 projected SR 1.80 도달 가정에서 H_1685의 기여(+0.02 SR)는 H_1674와 중복 편입 시 +0.00~-0.01로 역전됩니다. 이는 Fallback A 자체의 실현 가능성을 다시 검토해야 함을 의미합니다.",
+
+  "r2_updated_position": "REVISE 지지로 입장 변경. 현재 설계의 Phase_1 즉시 편입 주장 철회. REVISE 경로: (A) 외국인 flow를 INV07 잔차화한 신호 + expanding-window 직교화, 또는 (B) INV01/INV02 계열 재활용 + 신규 hypothesis 번호. 두 경로 모두 S3 TDC < 0.40(vs H_1674) 달성 가능성 수식 검증 후 Scout이 설계 확정. Fallback A 대안 경로(H_1689 Quality Aggregate 또는 H_1688 Residual Momentum 조기 심사)도 병행 검토 권고.",
+
+  "updated_conditions": [
+    "신호 재설계 전 Fallback A 대안 경로 평가: H_1689(quality_aggregate) 또는 H_1688(residual_momentum) S0 debate 진행 상황과 타임라인을 Governor가 비교하여, H_1685 재설계 지연(예상 2~3 debate 사이클) 대비 대안 후보의 SR 기여 가능성을 portfolio_gap_vector에 반영할 것.",
+    "H_1685 재설계 완료 후 Scout이 신호 수식과 H_1674 예상 상관(수식 기반 사전 추정)을 stage_artifacts에 제출하면, Governor가 gap alignment 및 marginal_contribution 재평가를 실시하고 Phase_1 편입 재심사를 진행할 것.",
+    "Fallback A Phase_1 5% 슬롯을 H_1685 재설계 완료까지 보류(Reserve 상태). 재설계 지연이 8주 초과 시 H_1689 또는 H_1688로 Phase_1 슬롯 자동 이전. Governor가 timeline 모니터링 책임."
+  ]
+}

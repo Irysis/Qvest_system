@@ -1,0 +1,86 @@
+{
+  "schema_version": "v53_ax_p0",
+  "candidate_id": "CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement_draft": "[방법론 실패 규칙] Signal-Portfolio Translation Failure family — signal quality(IC/ICIR/FM t-stat)가 강력함에도 long-only 20-stock top-decile portfolio 구조에서 수익화 실패하는 구조적 패턴. (1) positive IC > 0.15 (2) positive ICIR > 0.5 (3) FM t-stat strong > 2.0 조건 하에서도 portfolio MDD > 45% / CAGR < 0% 발생. EXCLUSION: L-161 KR momentum inverse (negative IC + negative return self-consistent)는 별도 track. 3번째 empirical member 축적 시 공식 AX 승격 trigger.",
+  "supporting_l_codes": ["L-125", "L-160", "L-165"],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "defense_primary (Signal-Portfolio Translation Failure pattern)",
+    "regime": null,
+    "mode": "long_only_20_stock_top_decile_failure_with_strong_signal",
+    "construction_types": [
+      "multi-axis composite defense (STR_1683 H_1682 Distress+Calmar)",
+      "4-axis multi-source defense (STR_1685 H_1690 Q25+R16+Q07+C19)",
+      "L-125 parent theoretical category"
+    ],
+    "exclusion": "L-161 STR_1684 KR momentum inverse (negative IC/SR self-consistent — AX_CAND_kr_momentum_inverse separate track, composite 0.68 EXTEND_Q3). Non-defense family cases는 추가 empirical member 축적 대기."
+  },
+  "evidence_draft": {
+    "independent_l_codes": 3,
+    "l_125_parent": "theoretical Signal-Portfolio Translation Failure concept (original)",
+    "l_160_initiator": "STR_1683 H_1682 Distress+Calmar Defense IC 0.22 ICIR 1.88 FM t-stat strong → 4-variant all Hard Fail MDD 60-95%",
+    "l_165_2nd_member": "STR_1685 H_1690 Multi-Source Defense Anchor ICIR 0.7371~0.9368 → 4-variant all Grade F MDD 77-94%",
+    "independent_strategies": 2,
+    "strategies": ["STR_1683_H_1682_distress_calmar_defense", "STR_1685_H_1690_multi_source_defense_anchor"],
+    "effect_direction_consistency": 1.0,
+    "note": "L-160 initiator + L-165 2nd member = 2/3 empirical TRIGGER 상태 (L-125 parent 포함 시 3 supporting L-codes). 3번째 empirical case 축적 필요 (공식 AX-006 or AX-007 승격 trigger)."
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "STR_1683 H_1682 Distress+Calmar Defense 4 variants — IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 60/40 MDD 94.66/SR -0.242, V2 50/50 MDD 95.63/SR -0.291, V3 Q25-only MDD 67.27/SR 0.009, V4 R16-only MDD 91.62/SR -0.206 (all Hard Fail)",
+        "result": "reproduced_failure",
+        "effect_retained": 0.90,
+        "mdd": 0.9466,
+        "cagr": "negative",
+        "note": "signal quality 강력함에도 portfolio 수익화 전면 실패. L-160 initiator."
+      },
+      {
+        "description": "STR_1685 H_1690 Multi-Source Defense Anchor 4 variants — V1 ICIR 0.7371 + V2 ICIR 0.9368 + V3 ICIR 0.7778 positive → V1 MDD 94.69 SR -0.29, V2 MDD 84.70 SR -0.17, V3 MDD 77.21 SR 0.52, V4 MDD 87.66 SR -0.14 (all Grade F)",
+        "result": "reproduced_failure",
+        "effect_retained": 0.92,
+        "mdd": 0.9469,
+        "cagr": "negative",
+        "note": "L-165 2nd empirical member. 3/4 variants ICIR > 0.7 positive + portfolio MDD > 77% catastrophic failure."
+      }
+    ],
+    "exception_counter": {
+      "reproduced_success_exception": 0,
+      "note": "Defense family long-only 20-stock에서 strong signal → portfolio 실패 패턴 2건 연속 재현. 3번째 case 축적 시 AX 승격 trigger."
+    },
+    "note": "L-125 parent + L-160 initiator + L-165 2nd member = 3 supporting L-codes. Empirical cases 2/3 TRIGGER. 추가 case 축적 대기 (e.g., non-defense family positive IC + portfolio failure, 또는 defense family 3rd case)."
+  },
+  "mechanism_draft": {
+    "economic_explanation": "Signal-Portfolio Translation Failure 3요인 가설: (1) long-only 20-stock top-decile 구조 inherent limitation — signal ranking quality는 cross-sectional 전체 universe 기반이나 actual portfolio는 top 20 집중 → sector bias + concentration risk 극단화. (2) Defense family special vulnerability — distress signal 강력한 경우 실제로 부실기업 cluster 편입 유도 (Q25 Altman Z-score quantile flip 방향성 모호). (3) Publication decay + KR structural factors — Calmar, BAB 등 academic factor의 2020년대 ETF 유입 + 성장주 랠리로 alpha 소멸. 교훈: strong signal ≠ successful portfolio. IC-to-return transmission failure가 structural pattern이 될 가능성. 3번째 case 축적 시 정식 AX 승격.",
+    "mechanism_type": "structural_portfolio_translation_failure",
+    "causal_plausibility": "moderate_to_high"
+  },
+  "oos_validation_draft": {
+    "oos_months": "N/A (both strategies S1 complete, Hard Fail pre-S6)",
+    "oos_effect_vs_is": 0.0,
+    "calculation_method": "STR_1683 4-variant + STR_1685 4-variant 전수 Hard Fail (in-sample 단계에서 이미 실패) → OOS extension 불가",
+    "note": "Translation failure는 in-sample backtest 단계에서 발견 (OOS 의존성 없음). 신호 강도 vs portfolio 성과 불일치가 구조적 패턴."
+  },
+  "range": {
+    "applicability": "KR (한국시장) defense family primary, non-defense family extension 가능성 대기",
+    "timeframe": "post-2000 (factor DB coverage)",
+    "portfolio_size": "long-only 20-stock top-decile structure specific"
+  },
+  "expiry": {
+    "next_review": "2026-07-17 (AX-006 review_date 정합)",
+    "trigger_review_if": "(a) 3번째 empirical member 축적 (SP translation failure 공식 AX 승격 trigger), (b) STR_1683 or STR_1685 재실행 시 exception 발견, (c) mitigation pattern 발견 (예: sector-neutralization으로 translation 성공 증명)"
+  },
+  "cluster_members_count": 2,
+  "trigger_status": "2_of_3_TRIGGER (empirical)",
+  "ax_promotion_path": "Official AX-006 or AX-007 promotion upon 3rd empirical case accumulation",
+  "ax_candidate_composite_estimated_post_L165": 0.71,
+  "status": "pending_5axis",
+  "custodian": "Judge (L-125 extension concept) + Governor (pairwise TDC monitoring)",
+  "created_at": "2026-04-19T13:25+09:00",
+  "created_by": "Governor",
+  "approved_by": "team-lead (2026-04-19 12:45 decision 4 APPROVE)",
+  "judge_custody_verdict_pending": "qepm/mailbox/judge/outbox/judge_L_165_formal_promulgation (예정)",
+  "revision_note": "CAND 신규 생성. L-160 initiator + L-165 2nd member 2/3 TRIGGER 상태 공식 기록. 3번째 case 축적 시 promote_to_axiom() 5축 평가 진입."
+}

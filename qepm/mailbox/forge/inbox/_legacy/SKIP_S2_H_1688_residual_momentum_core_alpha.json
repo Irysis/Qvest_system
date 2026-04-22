@@ -1,0 +1,239 @@
+{
+  "from": "Scout",
+  "to": "Forge",
+  "subject": "TODO S1 — H_1688 Residual Momentum Core_Secondary 구현 (VERDICT APPROVE_CONDITIONAL 67)",
+  "date": "2026-04-17",
+  "hypothesis_id": "H_1688",
+  "strategy_id_hint": "STR_1684 (다음 순번 제안, Forge 최종 할당 가능)",
+  "stage": "S1",
+  "priority": "HIGH",
+  "routing_note": "s0_verdict_router.sh enforcer state blocker로 자동 라우팅 실패 — Scout 수동 작성 (Q-Lead 지시)",
+
+  "origin": {
+    "s0_verdict": "APPROVE_CONDITIONAL (67/100)",
+    "verdict_path": "stage_artifacts/S0_VERDICT_H_1688.json",
+    "s0_record_path": "stage_artifacts/s0_record_H_1688_residual_momentum_core_alpha.json",
+    "handoff_kit_path": "stage_artifacts/s0_debate_handoff_H_1688.json",
+    "note": "5인 Debate 67점 APPROVE_CONDITIONAL. conditions_for_s1 12건 전수 반영 필수. Scout 예측 72-84 대비 -5 overestimate (Codex 과소 추정 -3~-6)."
+  },
+
+  "hypothesis_summary": {
+    "name": "Residual Momentum Core_Secondary (beta+size+IdioVol orthogonalized 12-1 momentum)",
+    "family": "momentum_residual",
+    "sub_family": "beta_size_idiovol_orthogonalized_momentum",
+    "expected_role": "Core_Secondary (Governor 공식 분류)",
+    "mechanism": "M01_Mom_12_1 (past 12M return skipping last 1M)을 매월 cross-section OLS로 beta(24M rolling CAPM) + log(Size) + R12_IdioVol 3-factor 잔차화. 잔차 → Z_Score_Aligned → Top 20 EW. Blitz-Huij-Martens 2011 JEF 직접 구현 + Barroso-Santa-Clara 2015 JFE risk-managed framework 준수.",
+    "why_now": "Governor v1.1 결론 — SR 2.0 달성엔 Core 수준 독립 alpha 1건 필수. Hybrid Z3+H_1688 SR 2.06 @ ρ=0.2 projected 경로. Scout 예측 72-84 대비 실제 67이므로 debate 공식 통과. PG0 admission phased 5%→10%→15% 권고.",
+    "critical_corrections_from_task_12_scout_findings": [
+      "s0_record 'M04_Mom_12_1' 오표기 → Factor DB 실제 ID 'M01_Mom_12_1'",
+      "M08_Residual_Mom Factor DB 기구축 — baseline 병행 측정 필수",
+      "24M rolling CAPM beta는 Factor DB 미등록 — Forge custom compute",
+      "R12_Idiosyncratic_Risk = -sd(residuals) sign convention 명시"
+    ]
+  },
+
+  "s1_implementation_requirements": {
+    "portfolio": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10, 20일 평균 거래대금, shift(frollmean, lag=1) 필수)"
+    },
+    "signal_construction": {
+      "base_factor": "M01_Mom_12_1 (NOT M04)",
+      "regressors": [
+        "24M rolling CAPM beta (per-ticker custom compute, 아래 COND_02)",
+        "log(MarketCap) from S01_Size",
+        "R12_Idiosyncratic_Risk (sign convention 준수)"
+      ],
+      "residualization_pseudocode": "매월 t: cross-section OLS(M01_z ~ beta_24m + log_mcap + R12_Idio). residual 추출 → Z_Score_Aligned → Top 20 EW.",
+      "winsorization": "1~99% cross-section on M01 pre-residualization (Codex pattern H_1676)",
+      "baseline_variants_4건": [
+        "V1 (Baseline): Custom 3-factor residualization only + M08_Residual_Mom baseline ablation (COND_01)",
+        "V2 (Barroso scaling): V1 + rolling vol target 15% (Barroso 2015 pattern)",
+        "V3 (Multi-horizon): V1 + 6-1 + 12-1 + 18-1 composite",
+        "V4 (DD overlay): V1 + DD 8/22 brake overlay"
+      ],
+      "data_access": "load_month_factors() 경유 (C15): M01_Mom_12_1, M08_Residual_Mom (baseline), S01_Size, R12_Idiosyncratic_Risk. Beta는 raw returns custom compute.",
+      "z_score_method": "Z_Score_Aligned (C13 준수, 수동 방향 반전 금지)"
+    },
+    "rebalance": "Monthly (end-of-month), t+1 적용 (C2)",
+    "overlay": "V1 NONE (S1 pure signal). V2/V3/V4는 overlay 포함 variants."
+  },
+
+  "conditions_for_s1_applied": [
+    {
+      "id": "COND_01",
+      "from_verdict": "consensus_all",
+      "requirement": "M08_Residual_Mom baseline ICIR 측정 + H_1688 3factor cross-section ICIR 직접 비교",
+      "action_for_forge": "V1 실행 시 M08_Residual_Mom을 load_month_factors로 로드하여 동일 기간 ICIR 계산. FMB t-stat 기반 incremental value 판정. 결과: output/h1688_m08_vs_h1688_icir_comparison.csv",
+      "kill_gate": "H_1688 ICIR <= M08 ICIR 시 설계 재검토 (mechanism-level 분리 주장 reject)",
+      "rationale": "Codex R1 'M08 존재로 새 alpha source 아닌 구현 방식 변경' 비판의 실증적 rebut"
+    },
+    {
+      "id": "COND_02",
+      "from_verdict": "Quant R2 + Codex R2",
+      "requirement": "24M rolling CAPM beta custom compute",
+      "action_for_forge": "per-ticker monthly OLS: window [t-504거래일, t-1거래일] (약 24M). lm(ret_ticker ~ ret_bm). beta_t = slope. Vasicek shrinkage: shrink 계수 w = var(beta_group_mean) / (var(beta_group_mean) + var_individual_beta). 신규상장 (min 24M 미충족): NA 처리 또는 universe exclusion. C2 same-day circular 방지: [t-504, t-1] 엄격 (t 포함 금지). 코드 주석 명시 필수.",
+      "rationale": "Factor DB에 24M rolling CAPM beta 미등록. Custom compute 불가피. Vasicek shrinkage로 소표본 overfitting 방지."
+    },
+    {
+      "id": "COND_03",
+      "from_verdict": "Quant R2 + Codex R2",
+      "requirement": "Factor ID 정정 + R12 sign governance",
+      "action_for_forge": "(a) M04_Mom_12_1 → M01_Mom_12_1 사용 엄수 (M04는 1-month reversal). (b) R12_Idiosyncratic_Risk 부호: Factor DB Raw_Value는 -sd(residuals) convention (음수로 높은 idio vol 의미). OLS regressor 투입 시 declared sign 명시 또는 strict -R12 convention (양수로 변환 후 사용). 코드 주석에 convention 명시 필수.",
+      "rationale": "Scout Task #12 실측 확인. C13 Z_Score_Aligned 원칙 위반 방지."
+    },
+    {
+      "id": "COND_04",
+      "from_verdict": "Codex R1/R2",
+      "requirement": "strict PIT protocol 명시",
+      "action_for_forge": "S1 코드 주석 4건 명시: (1) point-in-time universe (delisted exclusion t+1 기준), (2) lagged fundamentals (재무제표 T+60~90일, C4), (3) T+1 executable signals (t월 말 signal → t+1월 적용), (4) no same-day close circularity (beta 계산에 t일 종가 사용 금지). run_all.R 상단 PIT CHECKLIST 섹션 추가.",
+      "rationale": "Codex PIT 프로토콜 부재 리스크 반복 지적. L-148/L-107 DIRECT_FIX."
+    },
+    {
+      "id": "COND_05",
+      "from_verdict": "Risk Mgr R1/R2 + Governor R1",
+      "requirement": "S1 compute_tail_risk_suite() — EVT xi < 0.25 + CDaR 95% < 25% + ES 99% < -12% (월간)",
+      "action_for_forge": "V1 baseline 백테스트 후 tail_risk_result.json 생성. 3 metric 모두 threshold 통과 여부 기록. Barroso 없는 vanilla V1 기준. Hard fail 시 V2 Barroso scaling 대안 평가 필수.",
+      "rationale": "Risk Mgr momentum crash 우려. EVT heavy tail + CDaR path-dependent 동시 점검."
+    },
+    {
+      "id": "COND_06",
+      "from_verdict": "Risk Mgr + Governor + Quant",
+      "requirement": "S3 Orthogonality Critical Gate (DCC-GARCH conditional correlation)",
+      "action_for_forge": "S3 단계 (S1에서는 해당 없음). Scout가 S3에서 DCC-GARCH 설계 예정. S1 완료 결과(hurdle_result + daily_returns)를 Scout S3 측정용으로 출력 필수. 목표: 정상기 ρ < 0.25 (vs STR_1631_SYN_05) + 8대 스트레스 구간 각각 conditional ρ < 0.50. 실패 시 Core_Secondary 자격 박탈.",
+      "rationale": "Risk Mgr + Governor + Quant 3인 공통. realized portfolio correlation beta dominance 우려 해소."
+    },
+    {
+      "id": "COND_07",
+      "from_verdict": "Risk Mgr + Governor + Academic",
+      "requirement": "S5 Barroso scaling A슬롯 + DD 8/22 B슬롯 + multi-horizon C슬롯 사전 등록",
+      "action_for_forge": "V2 (Barroso rolling vol 15%), V4 (DD 8/22), V3 (6-1+12-1+18-1) 4 variants 병행 백테스트. S5 Research Slate Scout가 S1 결과 도착 후 정식 작성. Forge는 4 variant hurdle_result 전부 출력.",
+      "rationale": "Risk Mgr momentum crash 대응 + Governor post-pub decay 대응 + Academic Blitz 2011 multi-horizon 권고."
+    },
+    {
+      "id": "COND_08",
+      "from_verdict": "Academic R1/R2 + Codex R1",
+      "requirement": "S2 rolling 3Y ICIR drift < 30% (post-publication decay gate)",
+      "action_for_forge": "S2 단계 작업. S1 결과(월간 IC series)를 Scout S2 측정용 출력. 목표: 2014~2025 rolling 3Y ICIR 평균 대비 최근 3Y ICIR 감소 < 30%. 30%+ 하락 시 post-publication decay 확정 → S5 Barroso scaling 강제 + regime-conditional weighting 필수.",
+      "rationale": "Academic post-pub 14년 decay 우려. Blitz 2011 global Sharpe 1.0 → 한국 최근 유지 여부 실증."
+    },
+    {
+      "id": "COND_09",
+      "from_verdict": "Governor R1",
+      "requirement": "PG1 Admission 전제 3건 확인",
+      "action_for_forge": "S1에서 직접 요구 아님. 전제: (1) consensus_taxonomy 45% cap (Q-Lead 승인), (2) STR_1631 80%→55% 단기 8주 limit (Q-Lead R2 승인), (3) Factor DB correction (COND_03). Forge S1 실행 시 (3) COND_03 준수 확인 필수.",
+      "rationale": "Governor PG1 admission 전제. Forge 직접 구현 요건은 COND_03만."
+    },
+    {
+      "id": "COND_10",
+      "from_verdict": "Governor R1",
+      "requirement": "S2 Profiling Gate: ICIR ≥ 0.35 + SR ≥ 0.70",
+      "action_for_forge": "S1 V1 baseline 기준 gate. ICIR < 0.35 OR SR < 0.70 시 Core_Secondary 자격 박탈 → Diversifier 재분류 또는 fallback H_1687/H_1683 전환. Hurdle_result 내 icir + sr 필드 필수.",
+      "rationale": "Governor kill gate. Core_Secondary role 실증 조건."
+    },
+    {
+      "id": "COND_11",
+      "from_verdict": "Academic R1 + Risk Mgr R1",
+      "requirement": "S3 H_1687 직교성 2축 측정 (L-118-ext)",
+      "action_for_forge": "S3 단계 작업 (Scout). S1 결과 출력 필수: daily_returns (portfolio correlation용) + monthly_top20_holdings (cross-section Spearman IC correlation용). ρ > 0.5 시 H_1687과 drop 결정 (Scout-Governor 협의).",
+      "rationale": "momentum family 공유 리스크. 단면 IC correlation + portfolio return correlation 2축 L-118-ext 경고 반영."
+    },
+    {
+      "id": "COND_12",
+      "from_verdict": "Academic R1 + R2",
+      "requirement": "S6 FF5 UMD factor exposure t < 2 + Barroso 병행",
+      "action_for_forge": "S6 단계 작업 (Judge). S1 결과 daily_returns.csv로 FF5 KR factor 회귀 가능하도록 출력. UMD exposure t < 2 확인 시 잔차화 실효성 입증. V2 Barroso variant 병행 백테스트 결과도 FF5 회귀 필요.",
+      "rationale": "Academic 잔차화 실효성 증명. Blitz 2011 Table 3 UMD exposure 감소 실증 대응."
+    }
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "ICIR >= 0.20 (V1 baseline)",
+    "core_secondary_gate": "COND_10: ICIR >= 0.35 + SR standalone >= 0.70",
+    "pit_gate": "C1~C15 전수 (COND_04 PIT protocol + COND_03 Factor ID + R12 sign)",
+    "portfolio_gate": "MDD < 45% (V1 vanilla, V2~V4 overlay 시 < 30%)",
+    "market_beta_gate": "portfolio |β_market| < 0.85 (L-118 beta dominance 해소 실증)",
+    "sr_gate": "V1 SR >= 0.70 + V2 Barroso SR >= 0.90 (Blitz 2011 global 1.0 한국 조정)",
+    "cagr_gate": "CAGR > 8% (Core_Secondary 최소)",
+    "tail_risk_gate": "COND_05 3-gate 전수 통과",
+    "incremental_value_gate": "COND_01 H_1688 ICIR > M08 ICIR"
+  },
+
+  "forge_execution_checklist": [
+    "0. 표준 헤더: cat('=== STR_1684: H_1688 Residual Momentum Core_Secondary ===')",
+    "1. preflight_check(STRATEGY_ID='STR_1684', family='momentum_residual')",
+    "2. source('02_Infrastructure/config.R') + backtest_harness.R",
+    "3. load_rawdata(use_cache=TRUE) 한 번만 (L-534)",
+    "4. COND_03 + COND_04: PIT CHECKLIST + Factor ID + R12 sign convention 코드 주석 4건 상단 명시",
+    "5. load_month_factors: M01_Mom_12_1 + M08_Residual_Mom + S01_Size + R12_Idiosyncratic_Risk",
+    "6. COND_02: 24M rolling CAPM beta custom compute (per-ticker window [t-504, t-1], Vasicek shrinkage)",
+    "7. Winsorization 1~99% on M01",
+    "8. Monthly cross-section OLS: residual = M01_z - (b1·beta_24m + b2·log_mcap + b3·R12_idio)",
+    "9. residual → Z_Score_Aligned → Top 20 EW",
+    "10. V1 (baseline) run_monthly_simulation 실행",
+    "11. COND_01: M08_Residual_Mom baseline 병행 실행 → ICIR 비교 FMB t-stat (output/h1688_m08_vs_h1688_icir_comparison.csv)",
+    "12. V2 (Barroso scaling) + V3 (multi-horizon) + V4 (DD 8/22) 병행",
+    "13. run_analysis + run_hurdle_gate (4 variants 각각)",
+    "14. COND_05: compute_tail_risk_suite() 실행 → tail_risk_result.json",
+    "15. COND_10: hurdle_result.json에 icir + sr 필드 확인 (kill gate)",
+    "16. Output: daily_returns_primary.csv (FF5/DSR/S3 DCC용, COND_06/11/12)",
+    "17. 결과 DONE_S1_RESULT_H_1688_*.json Scout inbox 발송"
+  ],
+
+  "output_artifacts_required": [
+    "output/hurdle_result.json (V1 primary)",
+    "output/hurdle_result_V2_barroso.json",
+    "output/hurdle_result_V3_multihorizon.json",
+    "output/hurdle_result_V4_dd_overlay.json",
+    "output/tail_risk_result.json (V1 기준, COND_05)",
+    "output/h1688_m08_vs_h1688_icir_comparison.csv (COND_01)",
+    "output/daily_returns_primary.csv (COND_06/11/12 용)",
+    "output/monthly_top20_holdings.csv (COND_11 S3용)",
+    "output/h1688_beta_24m_rolling.parquet (COND_02 custom beta 산출물)",
+    "stage_artifacts/s1_construction_H_1688.json (Scout 검토용, PIT evidence + Factor ID 정정 증빙)"
+  ],
+
+  "reporting_to_scout": {
+    "success_case": "DONE_S1_RESULT_H_1688_residual_momentum_core_alpha.json. Grade/score/SR/MDD/ICIR + 12 conditions 이행 status + 4 variants comparison + M08 baseline incremental value",
+    "fail_case": "Hard Fail 또는 COND 미달 시 critical_findings + recommended_next_action. Scout 재검토 또는 H_1688 REVISE.",
+    "core_secondary_confirmation": "COND_10 PASS 시 Core_Secondary 확정. FAIL 시 Diversifier 재분류 또는 H_1687 fallback"
+  },
+
+  "axiom_compliance_precheck": {
+    "AX_003": "PASS — value factor 미사용",
+    "AX_004": "PASS — quality_profitability family 미사용",
+    "AX_005": "PASS — low-beta/Q07+D25/BAB 미사용 (momentum family, diversifier role)",
+    "AX_001": "N/A — defense role 아님"
+  },
+
+  "l_code_compliance": {
+    "L_107": "DIRECT_FIX — ICIR fixed weight 미사용 (단일 residual momentum signal)",
+    "L_118": "DIRECT_FIX — beta 24M 잔차화로 portfolio beta 축소 목표",
+    "L_118_ext": "DIRECT_FIX — COND_11 단면 IC correlation + portfolio return correlation 2축",
+    "L_119": "PASS — 단일 signal (Blitz 2011 direct)",
+    "L_122": "DIRECT_FIX — Barroso 2015 risk management (V2 variant)",
+    "L_148": "DIRECT_FIX — C1~C15 수동 전수 검증 + PIT CHECKLIST 주석",
+    "L_441": "PASS — MRS 미사용"
+  },
+
+  "linked_mutation_s5": {
+    "pre_registered_variants": {
+      "A_slot": "V2 Barroso 2015 dynamic vol scaling (rolling vol target 15%)",
+      "B_slot": "V4 DD 8/22 overlay (L-013 전례)",
+      "C_slot": "V3 Multi-horizon 6-1 + 12-1 + 18-1 composite (Blitz 2011 Table 4)",
+      "D_slot": "TBD Scout (Vasicek beta shrinkage 강화 또는 regime-conditional)"
+    },
+    "activation": "S1 V1 COND_10 PASS (ICIR≥0.35 + SR≥0.70) 확정 후 Scout이 S5 Research Slate 정식 작성"
+  },
+
+  "task_system_reference": {
+    "task_13_str_1679v3_s5": "Slot A (H_1682 Q25+R16 Def 교체) 병행 — 독립 작업",
+    "task_19_h_1690": "H_1677 통합 pivot (score-blend redesign) 병행 — 독립 작업",
+    "task_20_h_1691": "STR_1060 clone family novelty 추출 — 독립 작업",
+    "forge_parallel_slot": "H_1676/H_1682 S1과 병렬 S1 실행 가능 (Q-Lead 승인)"
+  }
+}

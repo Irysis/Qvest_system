@@ -1,0 +1,161 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON_v1_4",
+  "stage": "PG1_pre_draft_stage_2_active_scenario_C",
+  "timestamp": "2026-04-18T Session67_Day1 post_Scenario_B_Stage_2_transition",
+  "session": 67,
+  "day": 1,
+  "version": "v1.4_stage_2_active_scenario_C",
+  "supersedes": "PHASE_1_PG1_ADMISSION_SKELETON_v1_3.json",
+  "status": "SKELETON v1.4 — STR_1684_v2b Scenario B 확정 + Stage 2 transition + Scenario C H_1692 편성",
+  "reference_files": {
+    "rev8_a_active": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_revised_v2_scenario_C.json",
+    "v3_5_governor_signoff": "qepm/mailbox/governor/outbox/admission_rule_v3_5_governor_signoff.json (STAGE_2_ACTIVE)",
+    "retroactive_audit_final": "qepm/mailbox/governor/outbox/retroactive_v3_5_audit_final.json",
+    "h_1692_s0_record": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json"
+  },
+
+  "v1_4_changes_from_v1_3": [
+    "1. H_1688 DROP 공식 확정 → H_1692 Core_Secondary 10% 편성 (Scenario C active)",
+    "2. v3.5 status CONDITIONAL_ACTIVE Stage 1 → **STAGE_2_ACTIVE**",
+    "3. Gate 12 hard_block mandatory 전환 (전 family 적용)",
+    "4. STR_1679v3 10→8% 유지 + Governor proxy 재계산 권한 위임 (Option B, team-lead 승인)",
+    "5. Forge Day 2 priority: P0 H_1692 + P0 H_1689 + P1 H_1690 + P1 H_1685v2 + P2 STR_1631 regen_hurdle",
+    "6. STR_1684 VALIDATED_HARD_FAIL 재분류"
+  ],
+
+  "admission_rule_v3_5_stage_2_enforcement": {
+    "status": "STAGE_2_ACTIVE",
+    "validated_hard_fail_count": 2,
+    "validated_hard_fails": ["STR_1683 L-160", "STR_1684 L-161 재분류"],
+    "enforcement_level": {
+      "gate_11_variant_comparison": "advisory_warning (Stage 3 Architect signoff 시 hard_block 승격 대기)",
+      "gate_12_ic_return_coupling": "**hard_block mandatory (전 family)**"
+    },
+    "retroactive_reapplication": "기존 PG2 STR_1631/STR_1656 Gate 12 재검증 (Governor proxy + Judge Option 1 기반)"
+  },
+
+  "admission_candidates_per_rev8_a_revised_v2": {
+    "slot_1_STR_1631_Core_Primary": {
+      "admission_status": "ALREADY_PG2_ACTIVE_weight_adjustment",
+      "weight_current": 0.80,
+      "weight_target": 0.18,
+      "gate_11_verdict": "EXEMPT (Core_Primary single consensus signal)",
+      "gate_12_verdict": "Proxy PASS ratio 1.417 (advisory_warning) → Stage 2 hard_block 전환 시 재평가 필요 (Architect persistent fix + factor-level ICIR 계산)",
+      "stage_2_gate_12_action": "Judge Option 1 수용하나 Architect coordinate 진행 시 재확인"
+    },
+    "slot_2_Core_Secondary_H_1692_NEW": {
+      "admission_status": "PENDING_FORGE_S1_P0",
+      "weight_target": 0.10,
+      "family": "industry_momentum_residual_kr_rsi",
+      "s0_record_reference": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+      "replaces": "H_1688 (L-161 VALIDATED HARD FAIL)",
+      "l_161_avoidance_design": "M07 sd 1.0 + M18 sd 1.0 balanced OLS (CLEAN RESIDUALIZATION)",
+      "gate_11_status": "ADVISORY (Core_Secondary single signal + Scout S5 slate 4-variants 예정)",
+      "gate_12_status": "**MANDATORY hard_block (Stage 2)**",
+      "expected_metrics": {"ICIR": "0.25~0.40", "SR": "0.80~1.10", "MDD": "35~50%"}
+    },
+    "slot_3_STR_1656_Div_ML": {
+      "admission_status": "ALREADY_PG2_ACTIVE",
+      "weight_target": 0.14,
+      "gate_11_verdict": "ADVISORY (ML hyperparameter variant framework v3.6 pending)",
+      "gate_12_verdict": "PASS 0.314 (Stage 2 hard_block 재확인 불필요, 이미 PASS)",
+      "stage_2_status": "PASS 유지"
+    },
+    "slot_4_STR_1679v3_Div_1_reduced": {
+      "admission_status": "PRE_APPROVED_REDUCED_DUAL_TRACK",
+      "weight_previous": 0.10,
+      "weight_target": 0.08,
+      "reduction_rationale": "V1 TDC 0.52 L-156 대응 (Option a)",
+      "gate_11_verdict": "ADVISORY",
+      "gate_12_verdict_dual_track_pending": "Q25 sd 0.328→1.0 변동 0.672 Dual-track Trigger 활성 → **Governor proxy 재계산 예정** (team-lead Option B 승인)",
+      "proxy_recalculation_spec": {
+        "inputs": ["기존 hurdle_result return series", "FACTORS 파일 Q25 sd 1.0 기반"],
+        "computation": "Sharpe_m / ICIR proxy + Gate 12 coupling_ratio 재추정",
+        "fallback": "Proxy 의심 시 Phase_2+ 진입 시 Forge 재실행"
+      },
+      "timeline": "24h SLA (2026-04-19T15:05 KST) 내 완료",
+      "stage_2_gate_12_action": "proxy 결과에 따라 PASS 확정 or contingency (8pp 미배분 확대)"
+    },
+    "slot_5_H_1689_Def_2_Q24_exclude_3_axis": {
+      "admission_status": "PENDING_FORGE_S1_P0",
+      "weight_target": 0.23,
+      "axes_revised": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+      "q24_removed": "Altman_Z stress_icir -0.695 poison pill (L-144)",
+      "gate_11_variant_comparison": "Scout handoff kit v3 — Q24-exclude 3-axis + Q07 substitute 4-axis 2 variants",
+      "gate_11_status": "**MANDATORY hard_block (Stage 2 + Defense family)**",
+      "gate_12_status": "**MANDATORY hard_block (Stage 2)**",
+      "governor_preference": "Option 1 Q24-exclude (Implementation LOW + H_1690 Q07 overlap 회피)"
+    },
+    "slot_6_H_1690_Def_3": {
+      "admission_status": "PENDING_10_CONDITIONS + Forge Day 2",
+      "weight_target": 0.10,
+      "4_variants_design": ["V1 regime-smoothed 4-axis (primary)", "V2 EW 25/25/25/25", "V3 2-axis C19+Q07", "V4 3-axis excluding R16"],
+      "gate_11_status": "**MANDATORY hard_block (Stage 2 + Defense family)**",
+      "gate_12_status": "**MANDATORY hard_block (Stage 2)**",
+      "promotion_condition": "Phase_2 10 conditions PASS + Judge S6 PASS"
+    },
+    "slot_7_H_1685v2_Div_4_phase_2_plus": {
+      "admission_status": "NOT_ADMITTED_PHASE_1 (Phase_2+ gradual)",
+      "weight_phase_2": 0.03,
+      "weight_phase_3": 0.05,
+      "weight_phase_4_swap": 0.10,
+      "gate_11_12_stage_2": "MANDATORY hard_block 적용 (Phase_2 진입 시)"
+    }
+  },
+
+  "forge_day_2_queue_finalized": {
+    "P0_new_highest": ["H_1692 S1 Core_Secondary 4 variants", "H_1689 Q24-exclude 3-axis S1"],
+    "P1": ["STR_1685 H_1690 S1 4 variants", "STR_1686 H_1685v2 S1"],
+    "P2": ["REGEN_HURDLE STR_1631 v5 M19~M23"],
+    "excluded": ["STR_1684 DROP 확정 (재실행 금지)", "STR_1679v3 Governor proxy로 대체 (Forge 부하 회피)"],
+    "infra_coordinate": "Q-Lead factor_db_builder.R Option A Fix 적용 완료 + R12/D01 dedup 후 factor_db rebuild (Q-Lead or Forge Day 2)"
+  },
+
+  "composition_totals_scenario_C": {
+    "STR_1631": 0.18,
+    "H_1692_new": 0.10,
+    "STR_1656": 0.14,
+    "STR_1679v3_reduced": 0.08,
+    "H_1689_revised": 0.23,
+    "H_1690": 0.10,
+    "active_total": 0.83,
+    "reserve": 0.09,
+    "unallocated": 0.08,
+    "total": 1.00,
+    "n_active": 6
+  },
+
+  "phase_1_timeline_adjusted": {
+    "day_2": "Forge 재스폰 + P0 H_1692/H_1689 + P1 H_1690/H_1685v2 병행 실행 + Governor STR_1679v3 proxy 재계산 (24h SLA)",
+    "day_3": "Judge S6 (H_1692/H_1689/H_1690 Gate 11/12 mandatory) + L-161 본문 재작성 반영 + Governor proxy 결과 cross-check",
+    "day_4_5": "Governor PG1 admission + rev8-A-revised_v2 최종 확정 + 공동 retroactive_v3_5_audit_completion.json 발행",
+    "day_6_7": "Phase_1 LIVE (기존 plan 유지)"
+  },
+
+  "governor_str_1679v3_proxy_recalculation_plan": {
+    "authorization": "team-lead Option B 승인 (2026-04-18)",
+    "scope": "STR_1679v3 hurdle_result + FACTORS 파일 기반 Fix 1 적용 후 proxy 재계산",
+    "deliverable": "qepm/mailbox/governor/outbox/STR_1679v3_proxy_recalculation_result.json",
+    "timeline": "24h SLA (2026-04-19T15:05 KST)",
+    "integration": "retroactive_v3_5_audit_completion.json 공동 발행에 반영",
+    "fallback": "Proxy 결과 의심 시 Phase_2+ Forge 재실행"
+  },
+
+  "ax_cand_kr_momentum_inverse_reference": {
+    "owner": "Scout/Judge coordinate",
+    "governor_role": "reference only (rev8-A composition 영향 없음)",
+    "evidence_base": "L-161 재분류 + L-090 IC 반감기 693M + Rouwenhorst 1999 + Asness et al. 2013"
+  },
+
+  "dependencies_updated_v1_4": [
+    "Forge Day 2 재스폰 (H_1692/H_1689/H_1690/H_1685v2 S1)",
+    "Governor STR_1679v3 proxy 재계산 (24h SLA, 병렬)",
+    "Judge L-161 본문 재작성 (Hypothesis A/D + Fix 1 무효)",
+    "Judge S6 Gate 11/12 mandatory 적용 재판정",
+    "Judge Triple-check 회신 (retroactive audit)",
+    "공동 retroactive_v3_5_audit_completion.json 발행",
+    "Q-Lead factor_db rebuild 실행 or Forge Day 2"
+  ]
+}

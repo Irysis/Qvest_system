@@ -1,0 +1,120 @@
+{
+  "_v54_freeze_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_v54_override_timestamp": "2026-04-19T12:45+09:00",
+  "_v54_override_rationale": "team-lead 2026-04-19 13:XX AX_CAND promote 지시 수용 + L-165 custodian 승인 scope.",
+  "from": "Governor",
+  "to": "team-lead + Judge + Q-Lead",
+  "type": "AX_CAND_PROMOTE_ATTEMPT_FAIL_DIAGNOSIS",
+  "timestamp": "2026-04-19T12:55+09:00",
+  "session": 68,
+  "day": 1,
+  "status": "**PROMOTE_FAIL_PARTIAL_0.65_vs_0.80_threshold** — 5축 실측 결과 team-lead 예비 평가 0.83과 큰 차이. Diagnosis + 대응 plan 보고.",
+
+  "promote_execution_context": {
+    "candidate_file": "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165.json (13:50 발행)",
+    "supersedes": "CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165 (deprecated 이동)",
+    "promote_function_called": "promote_to_axiom(candidate_path, threshold=0.80)",
+    "execution_timestamp": "2026-04-19T12:52:05",
+    "review_log_file": "qepm/memory/axioms/review_log/AX-PENDING_CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165_20260419_125205.json"
+  },
+
+  "promote_fail_result_detailed": {
+    "weighted_score_actual": 0.65,
+    "threshold": 0.80,
+    "delta_vs_team_lead_estimate": "-0.18 (team-lead 0.83 예비 vs 실측 0.65)",
+    "passed": false,
+    "failing_axes": ["rigor", "external"],
+    "axes_detail": {
+      "independence": {
+        "score": 1.00,
+        "team_lead_estimate": 0.80,
+        "actual_calculation": "2 strategies, 2 families, consistency=1.00 (promote.R corpus lookup에서 2 strategy만 인식, L-165 strategy_id 필드 누락 가능성)",
+        "delta": "+0.20 (team-lead 저평가)"
+      },
+      "rigor": {
+        "score": 0.00,
+        "team_lead_estimate": 1.00,
+        "actual_calculation": "negative polarity: 0/3 failed. grades=['INFRASTRUCTURE', 'INFRASTRUCTURE', '?']. L-160/L-161 grade=INFRASTRUCTURE (failure pattern 명시 부재), L-165 grade=? (corpus 미등록)",
+        "delta": "-1.00 (심각한 실측 괴리, corpus 데이터 품질 문제)"
+      },
+      "falsification": {
+        "score": 1.00,
+        "team_lead_estimate": 0.85,
+        "actual_calculation": "attempts=3 (3 supporting L-codes + Hard Fail 재현)",
+        "delta": "+0.15 (team-lead 저평가)"
+      },
+      "external": {
+        "score": 0.00,
+        "team_lead_estimate": 0.70,
+        "actual_calculation": "OOS_months=NA, oos_effect_vs_is=0.0, hurdle_matches=0, rolling_ok=0. Translation failure가 in-sample 단계 실패이므로 OOS 검증 불가 structural.",
+        "delta": "-0.70 (OOS 기반 score 할당 불가 → axis_external 구조적 낮음)"
+      },
+      "mechanism": {
+        "score": 1.00,
+        "team_lead_estimate": 0.80,
+        "actual_calculation": "economic_explanation_present=TRUE, mechanism_type=structural_portfolio_translation_failure, causal_plausibility=high",
+        "delta": "+0.20 (team-lead 저평가)"
+      }
+    },
+    "root_cause_diagnosis": {
+      "primary": "lcode_corpus.json grade 필드 누락 — L-160/L-161 grade='INFRASTRUCTURE' (failure pattern 미반영), L-165 grade='?' (corpus 미등록). Rigor axis는 grade ∈ {'F', 'C'} 기반 negative polarity 판정으로 0 점.",
+      "secondary": "External axis OOS 의존성 — translation failure는 in-sample 단계 발견 구조적 패턴으로 OOS_months=NA 불가피. axis_external 0 점은 structural feature (team-lead 0.70 예비는 낙관적)."
+    }
+  },
+
+  "mitigation_options_proposed": {
+    "option_1_corpus_harvester_re_run": {
+      "action": "lcode_corpus.json harvester 재실행 (L-160/L-161/L-165 grade 'F' or 'FAIL' 재지정)",
+      "expected_rigor_improvement": "0.00 → 1.00 (negative polarity 3/3 failed)",
+      "expected_weighted_improvement": "0.65 → 0.65 + 0.20 = 0.85 (PASS)",
+      "effort": "MEDIUM (infrastructure 작업, corpus harvester script 확인 필요)",
+      "risk": "corpus 정합성 재구축 시 기존 AX-003/004/005 re-calculation trigger 가능성",
+      "governor_recommendation": "PRIMARY (가장 확실한 resolution)"
+    },
+    "option_2_manual_candidate_fix": {
+      "action": "CAND JSON에 grades 정보 직접 명시 (evidence_draft.grades=['F', 'F', 'F'])",
+      "expected_rigor_improvement": "negative polarity 3/3 failed 인식 (corpus lookup fallback if possible)",
+      "risk": "promote.R 코드 구조가 corpus-based이므로 manual fix 무시 가능",
+      "governor_recommendation": "SECONDARY (option 1 실패 시 fallback)"
+    },
+    "option_3_external_axis_structural_exception": {
+      "action": "promote.R .axis_external에 translation_failure structural exception 추가",
+      "expected_external_improvement": "0.00 → 0.50 (structural pattern 인정)",
+      "risk": "promote.R 코드 수정 시 다른 CAND 평가 영향",
+      "governor_recommendation": "REJECT (코드 수정 위험 높음, freeze period 금지)"
+    },
+    "option_4_accept_partial_review_log": {
+      "action": "현재 AX-PENDING review_log 상태 유지 + 3rd case 축적 재시도 대기",
+      "expected": "AX_CAND 상태 'PENDING' 유지, 공식 승격 지연",
+      "governor_recommendation": "FALLBACK (team-lead 결정 대기)"
+    }
+  },
+
+  "governor_recommendation_next_step": "Option 1 PRIMARY — corpus harvester 재실행 후 promote_to_axiom() 재실행. L-165 corpus 등록 + L-160/L-161 grade 재지정 필요. Q-Lead or Architect teammate에 harvester re-run task 요청 제안.",
+
+  "existing_artifacts_status_update_required": {
+    "ax_cand_cand_json_renamed": "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165.json (신규, team-lead 지시 반영)",
+    "ax_cand_cand_json_deprecated": "qepm/memory/axioms/deprecated/CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165_superseded.json (L-125 명칭 이동)",
+    "rev8_scenario_d_header_correction_pending": "rev8_A_revised_v3_scenario_D_APPROVED L-125 명칭 제거 작업 pending",
+    "gap_vector_v1_0_5_update_pending": "AX_CAND supporting L-codes L-160/L-161/L-165 + AX-005 확장 pending"
+  },
+
+  "next_actions_immediate": {
+    "governor_1": "rev8 Scenario_D 헤더 L-125 명칭 정정 (Edit)",
+    "governor_2": "gap_vector.json v1.0.5 AX_CAND supporting 정정 + AX-005 확장 반영",
+    "governor_3": "team-lead 본 파일 보고 + corpus harvester re-run 승인 요청",
+    "dependency": "team-lead Option 1 승인 시 → Q-Lead or Architect가 corpus harvester 재실행 → Governor promote.R 재실행 (AX-006 승격 확정 시도)"
+  },
+
+  "v54_freeze_compliance": {
+    "new_rule_or_amendment": false,
+    "corpus_re_run_type": "data re-indexing (infrastructure 유지작업, 기존 Lawbook rule 변경 없음)",
+    "freeze_override_basis": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true (team-lead 12:45 + 13:XX 지시)",
+    "verdict": "PASS"
+  },
+
+  "telegram_notification": {
+    "channel": "[Governor] 한글 + 이모지",
+    "message": "⚠️ [Governor] AX_CAND_signal_portfolio_translation_failure promote FAIL (0.65 < 0.80). Rigor 0.00 + External 0.00 축 미달. lcode_corpus.json grade 필드 누락 (L-160/L-161 INFRASTRUCTURE, L-165 미등록). corpus harvester 재실행 후 재시도 권고."
+  }
+}

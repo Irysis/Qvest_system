@@ -1,0 +1,59 @@
+{
+  "audit_type": "CLONE_FAMILY_SWEEP_V3",
+  "timestamp": "2026-04-17",
+  "session": 66,
+  "scope": "Tier 1 + Tier 2 combined (6 strategies)",
+  "families": [
+    {
+      "family_id": "FAMILY_1_5SLEEVE_CONSGATE",
+      "members": ["STR_1417_5sleeve_mrs3545", "STR_1433_consgate_c11fix_dd722", "STR_1071_noShortDD_mrs1225", "STR_1435_5sleeve_dd620_repair", "STR_1060_brk02_no_short_dd"],
+      "cross_correlation_matrix_daily": {
+        "STR_1417_vs_STR_1433": 0.971,
+        "STR_1417_vs_STR_1071": 0.958,
+        "STR_1417_vs_STR_1435": 0.993,
+        "STR_1417_vs_STR_1060": 0.969,
+        "STR_1433_vs_STR_1071": 0.987,
+        "STR_1433_vs_STR_1060": 0.989,
+        "STR_1071_vs_STR_1060": 0.997,
+        "STR_1435_vs_STR_1060": 0.968
+      },
+      "verdict": "NEAR_CLONE_FAMILY",
+      "admission_rule": "At most 1 member admissible to PG pool. Remaining members treated as redundant duplicates.",
+      "recommended_primary": "STR_1071_noShortDD_mrs1225 (lowest MDD 22.72% among family, SR 1.297)",
+      "recommended_alternate": "STR_1433_consgate_c11fix_dd722 (novelty 10, MDD 24.35%, SR 1.329, higher hurdle score 74.1)",
+      "already_rejected": ["STR_1435 (Tier 1 PIT FAIL)", "STR_1060 (Tier 1 CLONE_FAMILY_TRIPLICATE with STR_1070/1085)"],
+      "independence_vs_PG2_active": {
+        "corr_with_STR_1679v2_proxy_daily": "0.044 ~ 0.060",
+        "diversifier_threshold_lt_0_5": "PASS — family is independent from current PG2"
+      }
+    },
+    {
+      "family_id": "FAMILY_2_GERBER_DCC",
+      "members": ["STR_1562_gerber_dcc_hrp_c11fix"],
+      "cross_correlation_vs_FAMILY_1": "0.78 ~ 0.80 (daily)",
+      "verdict": "INDEPENDENT_DIVERSIFIER_CANDIDATE",
+      "unique_features": "Gerber + DCC + HRP covariance methodology — distinct from 5-sleeve consgate core",
+      "independence_vs_PG2_active": {
+        "corr_with_STR_1679v2_proxy_daily": 0.044
+      }
+    }
+  ],
+  "tier1_clone_family_triplicate_from_l151": {
+    "family_id": "FAMILY_1a_SLEEVE_TRIPLICATE",
+    "members": ["STR_1060", "STR_1070", "STR_1085"],
+    "note": "L-151 findings — byte-identical performance SR 1.333 / CAGR 22.66 / MDD 24.81. Distinct from Family 1 near-clones (which have small parameter variations producing 776+ days of >10bp differences). These three are fully cloned.",
+    "status": "ALL 3 EXCLUDED FROM PG POOL"
+  },
+  "governor_admission_guidance": {
+    "step_1": "Exclude Family 1a triplicate (STR_1060, 1070, 1085) per L-151.",
+    "step_2": "From Family 1, select at most ONE member. Primary recommendation: STR_1071 (lowest MDD). Alternate: STR_1433 (highest novelty).",
+    "step_3": "Family 2 (STR_1562) eligible as independent diversifier candidate IF PIT re-audit passes (see STR_1562 verdict).",
+    "step_4": "Effective Tier 1+2 admissible strategies: AT MOST 2 (1 from Family 1 + STR_1562)."
+  },
+  "sr_gap_impact_revised": {
+    "prev_assumption_tier2_boost": 0.28,
+    "actual_possible_boost": 0.12,
+    "reason": "Family 1 near-clone constraint reduces 4 strategies to 1. Only STR_1562 adds fresh diversification.",
+    "remaining_gap_to_2_0_if_best_case": 0.55
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "strategy_id": "STR_1417",
+  "strategy_dir": "STR_1417_5sleeve_mrs3545",
+  "tier": 2,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "path_mode": "PATH_2_LIMITED_VERIFICATION",
+  "v2_grade": "A",
+  "v3_grade": "B_REDUNDANT",
+  "v3_verdict": "ARCHIVE_FAMILY_REDUNDANT",
+  "prev_judge_final_verdict": "ARCHIVE",
+  "family_assignment": "FAMILY_1_5SLEEVE_CONSGATE",
+  "family_cross_corr_daily": {"STR_1433": 0.971, "STR_1071": 0.958, "STR_1435": 0.993, "STR_1060": 0.969},
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "inherited_risk": "consgate_pure_engine FRED no-lag (C11) per Tier 1 findings",
+      "note": "578 lines run_all.R clean. BASE_DIR deps per Path 2 WAIVER."
+    },
+    "gate_1_impl": {
+      "pass": "WAIVED_PATH_2",
+      "waiver_reason": "STR_770_phase2_cross BASE_DIR MISSING. Per Q-Lead Path 2 directive.",
+      "n_holdings_logged": 6,
+      "n_holdings_effective": "up to 30 (5-sleeve union)",
+      "v53_n20_violation": true,
+      "commission": 0.0015,
+      "turnover_ann_from_hurdle": 154
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.377,
+      "loo_2020_sr": 1.331,
+      "loo_2011_sr": 1.330,
+      "loo_2018_sr": 1.365,
+      "full_sr_daily": 1.308,
+      "rolling_3y_sr_mean": 1.047,
+      "rolling_3y_sr_min": -0.917,
+      "rolling_3y_sr_last": 1.714,
+      "stress_outperform": "4/4"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.361,
+      "sharpe_daily": 1.308,
+      "cagr": 24.63,
+      "mdd": -30.61,
+      "mdd_v53_fail": true,
+      "score_hurdle": 66.7
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 1.000,
+      "dsr_significant": true,
+      "dsr_n_trials": 400,
+      "capm_alpha_annual_pct": 17.16,
+      "capm_alpha_t": 5.69,
+      "harvey_t3_pass_capm": true,
+      "capm_beta": 0.527,
+      "bm_corr": 0.618,
+      "ff5_alpha_t": "NOT_COMPUTED"
+    },
+    "gate_5_diversity": {
+      "pass": false,
+      "family_near_clone": true,
+      "max_abs_corr_within_family": 0.993,
+      "corr_with_STR_1562_family2": 0.802,
+      "corr_with_STR_1679v2_proxy": 0.044
+    },
+    "gate_6_role_honesty": {
+      "pass": "ARCHIVE_LEGACY",
+      "note": "Prior Judge already marked ARCHIVE. Role audit not needed for archived strategy."
+    }
+  },
+  "sr_contrib_estimated": 0.0,
+  "pg_candidate_level": "NONE",
+  "hard_fail_reasons": [
+    "Gate 1 WAIVED (BASE_DIR missing)",
+    "Gate 1 N>20 (5-sleeve union up to 30)",
+    "Gate 5 near-clone with STR_1435 (0.993), STR_1433 (0.971), STR_1071 (0.958), STR_1060 (0.969)",
+    "MDD 30.61% > v53 25% target",
+    "Family 1 PG admission rule: at most 1 member — STR_1071 preferred"
+  ],
+  "recommendation": "ARCHIVE_FAMILY_REDUNDANT. Already flagged ARCHIVE by prior Judge. Family 1 admission slot prefers STR_1071 (lower MDD) or STR_1433 (higher novelty).",
+  "notes": "Gate 2~4 individually strong (DSR 1, CAPM t=5.69, LOO 4/4). But Gate 5 near-clone overrides. Confirms L-150 (near-clones in 5-sleeve family)."
+}

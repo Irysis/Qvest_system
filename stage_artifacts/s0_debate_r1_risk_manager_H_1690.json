@@ -1,0 +1,65 @@
+{
+  "role": "risk_manager",
+  "hypothesis_id": "H_1690",
+  "round": "R1",
+  "score": 14,
+  "arguments": [
+    "Tail Risk 관점에서 4-axis regime-smoothed composite는 defense anchor 역할을 구조적으로 수행 가능하다. 핵심 근거: (1) Q07 stress_icir +0.753 + 4-regime 전구간 IC 양수(0.018~0.036) 안정성, (2) R16 stress_icir +2.655 + stress_pct_pos 100%로 6대 위기 전구간 양의 IC 실현, (3) M08 stress_icir +2.290으로 momentum crash 통상 우려와 달리 잔차화 완료 팩터는 위기 시에도 IC 0.191 유지 (L-118 beta dominance 해소), (4) 10%p/month smoothing은 단기 regime spike noise 필터링에 유효하여 EVT 관점 whipsaw 비용을 억제한다. 다만 C19 stress_icir 0.200(4개 중 최약)은 CRISIS 시 15% 비중으로도 defense dilution 요인이므로 S1 composite 수준에서 C19 기여분 분리 측정이 필수이다.",
+    "Kill Scenario 2건 제시. (KS-1 Regime Lag Whipsaw): 2020-03 COVID 급락 사례에서 MRS 20(ELEVATED)→65(CRISIS)가 2주 만에 발생. max 10%p/month smoothing으로는 RISK_ON weight(M08 35%, Q07 10%)에서 CRISIS weight(M08 10%, Q07 40%)까지 전환에 최소 3개월 소요된다. 그 3개월간 M08 35%→25%→15%→10% 점진 이동 중 momentum crash가 발생하면 defense 역할 실패. 이 구간에서 MDD 기여는 M08의 momentum reversal에 의해 증폭된다. (KS-2 미래참조 경로 -- Regime Weight Ex-Post Optimization): RISK_ON 35/40/10/15 vs CRISIS 10/15/40/35 weight 조합이 실제로 STR_1439 원본의 사후 최적 배분을 답습하고 있을 가능성이 있다. 원본 4 sub-strategy return-blend의 실현 성과에서 역산된 implicit weight와의 유사도를 S1에서 반드시 측정해야 하며, 만약 유사도 0.8 이상이면 regime weight 자체가 미래참조적 파라미터 설정(C3 위반 잠재)이다.",
+    "Beta Orthogonality 관점에서 M08은 잔차화 완료 팩터이나 나머지 C19/Q07/R16은 market beta를 명시적으로 제거하지 않았다. L-106 교훈에 따르면 market beta 0.85~0.93이 long-only 팩터 전략을 지배하며, 4개 팩터의 composite portfolio가 시장 대비 beta를 얼마나 낮추는지가 defense anchor 역할의 핵심이다. 특히 R16(Calmar=Return/MaxDD)은 return 성분이 시장 beta에 강하게 연동되므로 4-regime conditional에서 regime 3 IC가 -0.031로 음수 전환된다. CRISIS weight에서 R16 35% 비중은 regime 3 (elevated risk) 구간에서 alpha 역전 위험이 있다. S3에서 portfolio CAPM beta 측정과 함께 DCC-GARCH 조건부 상관 분석 필수이며, L-156 TDC gate(tail dependence <= 0.4) 통과 여부가 PG1 admission의 전제 조건이다."
+  ],
+  "concern": "4-axis composite의 가장 심각한 구조적 취약점은 regime transition lag이다. max 10%p/month smoothing은 정상-위기 점진 전환에는 유효하나, COVID-19 유형의 급격한 regime shift(2주 내 MRS 45pt 급등)에서 방어 weight 전환이 3개월 지연된다. Defense anchor가 위기 '초기' 3개월간 momentum-heavy weight로 남아있으면 portfolio 차원에서 defense anchor가 아닌 loss amplifier가 된다. 이는 compute_tail_risk_suite() 사전 시뮬레이션으로 검증 가능하며, S1에서 2020-03 구간 composite score의 regime transition path를 일별로 추적하여 defense tilt 실현 시점과 실제 MDD 발생 시점의 시간차를 정량화해야 한다.",
+  "conditions": [
+    "S1에서 regime weight 전환 지연 시뮬레이션 필수: 2020-03 COVID 급락 구간에서 smoothed weight path 일별 추적 + MDD 기여 분해 (defense tilt 실현 시점 vs 실제 최대 낙폭 시점의 lag를 영업일 기준으로 보고). Lag > 40영업일이면 smoothing 속도 파라미터 재설계 필요.",
+    "Regime weight ex-post optimization 의혹 해소: STR_1439 원본 4 sub-strategy의 realized return contribution 역산 implicit weight와 H_1690 regime weight 간 cosine similarity 측정. 유사도 > 0.75이면 weight를 EW 25/25/25/25로 고정한 baseline과 비교하여 regime weight의 순수 기여분을 분리해야 하며, 분리 불가 시 regime weight 자체를 IC-weighted dynamic으로 교체(L-122 Barroso framework).",
+    "L-156 TDC gate 사전 예측: C19 공유로 STR_1631과의 tail dependence coefficient가 0.4를 초과할 가능성이 높다 (STR_1679v2 TDC 0.621 실패 선례). S3에서 t-copula TDC 실측 필수이며, 0.4 초과 시 C19 비중 축소 또는 C19를 H_1676(residual consensus)으로 교체하는 contingency plan을 S1 artifact에 사전 문서화할 것."
+  ],
+  "rubric_breakdown": {
+    "tail_risk": {
+      "score": 3,
+      "max": 4,
+      "rationale": "4 sub factor 중 3개(M08/Q07/R16)의 stress ICIR이 양호하여 위기 구간 tail risk 축소 가능성 있음. 그러나 C19 stress_icir 0.200으로 composite 내 defense 희석 요인 존재. EVT 관점에서 composite의 tail shape parameter 사전 추정 불가(S1 실측 필요). 조건부 합격."
+    },
+    "kill_scenario": {
+      "score": 3,
+      "max": 4,
+      "rationale": "KS-1(regime lag whipsaw)과 KS-2(ex-post weight optimization 미래참조 경로) 2건 제시. KS-1은 구조적이나 smoothing parameter 조정으로 완화 가능(max 15%p/month 등). KS-2는 S1에서 cosine similarity 측정으로 해소 가능. 완전 치명적이지 않으나 condition 부착."
+    },
+    "beta_orthogonality": {
+      "score": 3,
+      "max": 4,
+      "rationale": "M08 잔차화로 beta dominance 1축 해소(L-118). 그러나 C19/Q07/R16은 시장 beta 미제거. L-106 교훈상 portfolio beta 0.85~0.93 범위 예상되며, defense anchor 역할 수행을 위해서는 portfolio beta 0.70 이하가 바람직. S3 CAPM beta + DCC conditional correlation 실측 전까지 보류."
+    },
+    "mdd_contribution": {
+      "score": 2,
+      "max": 4,
+      "rationale": "순수 signal(overlay 없음) MDD 22~35% 예상은 defense anchor 역할과 부합하나, regime transition lag(KS-1)에 의한 초기 3개월 MDD 증폭 가능성이 감점 요인. STR_1679v2 L-153/L-155 사례처럼 overlay 없이는 MDD 제어 한계가 있으며, 이 전략의 MDD가 Core STR_1631 대비 8%p+ 축소 달성 여부가 불확실. S1 실측 전 조건부 평가."
+    },
+    "regime_vulnerability": {
+      "score": 3,
+      "max": 4,
+      "rationale": "Regime-smoothed weight는 L-122 risk management framework에 부합하며 Barroso-Santa-Clara(2015) 학술 근거도 견고. 다만 R16의 4-regime regime 3 IC 음수(-0.031)는 elevated risk 구간에서 역방향 신호 위험. CRISIS weight에서 R16 35%가 regime 3에서 activated될 경우 alpha 역전 가능. MRS 경계값(15/30) 자체가 정적이라 regime misclassification risk도 잔존."
+    }
+  },
+  "data_references": {
+    "stress_factor_ic": {
+      "M08": {"stress_icir": 2.290, "stress_pct_pos": 0.975, "crisis_ratio": 1.064},
+      "C19": {"stress_icir": 0.200, "stress_pct_pos": 0.625, "crisis_ratio": 0.367},
+      "Q07": {"stress_icir": 0.753, "stress_pct_pos": 0.775, "crisis_ratio": 1.040},
+      "R16": {"stress_icir": 2.655, "stress_pct_pos": 1.000, "crisis_ratio": 0.984}
+    },
+    "4regime_crisis_ic": {
+      "M08": {"crisis_ic": 0.0389, "crisis_icir": 0.351, "regime3_ic": -0.003},
+      "C19": {"crisis_ic": 0.0493, "crisis_icir": 0.675, "regime3_ic": 0.026},
+      "Q07": {"crisis_ic": 0.0363, "crisis_icir": 0.599, "regime3_ic": 0.023},
+      "R16": {"crisis_ic": 0.0580, "crisis_icir": 0.457, "regime3_ic": -0.031}
+    },
+    "l_codes_cited": ["L-106", "L-115", "L-118", "L-118-ext", "L-119", "L-121", "L-122", "L-143", "L-146", "L-153", "L-155", "L-156", "L-157"],
+    "kill_scenarios": ["KS-1 Regime Lag Whipsaw (COVID 2020-03 analog)", "KS-2 Regime Weight Ex-Post Optimization (미래참조 경로)"]
+  },
+  "gate_pre_checks": {
+    "gate_14_algebraic_identity": "M08(잔차 momentum) / C19(composite earnings) / Q07(earnings stability) / R16(Calmar ratio) — 공유 항 분석: Q07과 C19은 earnings 관련이나 Q07은 변동성(sd), C19은 수준(SUE+ESBR+EPS_Chg+TP_Gap) composite으로 직접적 algebraic identity 없음. R16(Return/MaxDD)은 price-based이므로 accounting factor(Q07/C19)와 독립. M08은 FF3 잔차. 결론: 직접적 공유 항 없으나, C19과 Q07의 earnings family 근접성(quality vs consensus)에 의한 잠재 상관은 S1 cross-section rho 측정 필요.",
+    "gate_15_variance_ratio_audit": "사전 예측: M08 sd(z) 약 1.0(잔차화로 분산 축소), C19 sd(z) 약 1.0(composite 정규화), Q07 sd(z) 약 0.8~1.0(안정적 quality), R16 sd(z) 약 1.2~1.5(return 성분 변동성 높음). R16이 composite variance의 35~45%를 설명할 가능성 높으며, CRISIS weight 35%와 결합 시 R16 linear dominance 위험. S1에서 4-factor composite의 per-factor variance decomposition 실측 후 R16 dominance > 50%이면 비중 cap 30% 이하로 조정 권고.",
+    "ax_004_q07_exemption": "유지. Q07은 4-axis composite 내 최대 40% 비중(CRISIS)이며, quality_profitability standalone long-only 아님. AX-004 v3 exclusion 'multi-factor blend' scope에 해당."
+  }
+}

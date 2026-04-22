@@ -1,0 +1,55 @@
+{
+  "debate_id": "S0_DEBATE_H_1688",
+  "role": "quant",
+  "round": "R2",
+  "agent_id": "quant_H_1688_R2",
+  "r1_score": 13,
+  "r2_score": 13,
+  "score_change_reason": "R1 점수 유지. R2에서 Risk Manager의 4-regime CRISIS IC 실측치(-0.014) 확인이 pro-cyclical 구조 우려를 실증 보강하나, Factor DB 가용성 및 ICIR 예상치 분석은 변동 없음. Codex 반박에서 mechanism 차이가 일부 인정될 여지 확인. 총점 변동 없음.",
+
+  "agreements": [
+    {
+      "target": "risk_manager",
+      "agreed_point": "24M rolling beta의 regime-shift lag로 인한 conditional beta asymmetry 누출 우려를 동의합니다. Quant R1에서 beta_24m이 Factor DB 독립 팩터로 미등록되어 S1 신규 계산이 필요함을 지적했는데, 이 계산 과정에서 GFC/COVID 급락 시점의 beta 급등을 24M window가 느리게 반영하는 문제가 실제 존재합니다. Vasicek shrinkage를 적용해도 market beta=1 귀환 속도 문제가 완전 해소되지 않으며, Risk Manager 조건 'S3 DCC-GARCH conditional rho 측정'은 정당한 추가 gate입니다. 이를 S1 사전 조건 목록에 추가합니다.",
+      "quantitative_basis": "M01 4-regime CRISIS IC -0.005, M08 CRISIS IC -0.014 (risk_manager 실측 인용). 24M window가 2008-10 시점에서 2006-10~2008-10 안정기 beta를 사용하는 구조적 lag 확인됨."
+    },
+    {
+      "target": "codex_critic",
+      "agreed_point": "PIT 구체 프로토콜 미증명 중 beta_24m 계산의 C2 same-day circular 위험을 동의합니다. Quant R1에서 'beta 계산 윈도우는 t-1 월말까지만 사용'을 조건으로 명시했으나, 이는 설계 의도이지 코드 검증이 아닙니다. Codex 요구 'expanding-window 명시 + pre-registered cutoffs'는 S1 코드에 주석으로 명시하고 Forge 구현 시 강제해야 합니다.",
+      "quantitative_basis": "beta 계산 윈도우 범위: [t - 504일, t - 1일] (24M rolling, t-1 월말 기준). same-day close 미사용 구조 코드 명시 필요."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "target": "codex_critic",
+      "rebuttal_point": "Codex의 'H_1688은 STR_1038~1043 대비 단순 구현 방식 변경' 주장을 반박합니다. compute_momentum.R 코드 직접 확인 결과, M08_Residual_Mom은 per-ticker time-series CAPM 단일팩터 잔차 누적합(시장 beta만 제거, time-series 방식)입니다. H_1688은 이와 달리 M01_Mom_12_1을 매월 cross-section에서 {beta_24m + log_size + R12_IdioVol} 3factor에 대해 OLS 잔차화합니다. 이 두 방식의 차이는 파라미터 변경이 아닌 알고리즘 레벨 차이입니다. (1) Time-series vs cross-section: M08은 각 종목 독립적 시계열 잔차, H_1688은 전 종목 동시 단면 잔차화. (2) Factor 수: 1factor(BM beta만) vs 3factor(beta+size+idiovol). (3) Signal 정의: M08은 잔차의 누적합(daily residual sum), H_1688은 12-1 return의 cross-section OLS residual. 이는 Blitz 2011 JEF가 명시적으로 기존 momentum과 다른 mechanism으로 제시한 방법입니다. STR_1038~1043은 raw momentum blend(잔차화 없음)이므로 비교 대상 자체가 부적절합니다.",
+      "evidence": "compute_momentum.R lines 96~113: M08 = lm.fit(cbind(1, BM_Ret), Ret) 잔차 time-series 누적합. H_1688 설계: lm(M01_z ~ beta_24m + log_size + R12_idiovol) cross-section monthly. 두 방식의 신호 상관은 < 0.50 예상(같은 momentum family지만 직교화 방식 상이)."
+    },
+    {
+      "target": "risk_manager",
+      "rebuttal_point": "Risk Manager의 'MRS 63.1 CRISIS 편입 타이밍 최악' 주장을 S0 Debate 맥락에서 반박합니다. Quant의 역할은 Factor DB 가용성, ICIR 예상치, 내부 상관 구조를 평가하는 것이며, 이는 '지금 당장 포트폴리오에 편입해야 하는가'가 아닌 '이 가설이 유효한 alpha source인가'를 판단하는 것입니다. MRS 현재 상태는 S0 hypothesis validity와 독립적입니다. 편입 타이밍은 PG1 Admission 단계(Governor 소관)에서 결정될 사항이며, S0 Debate에서 타이밍을 이유로 score를 낮추는 것은 평가 맥락 혼동입니다. 다만 Risk Manager의 regime vulnerability 분석(4-regime CRISIS IC -0.014)은 팩터 자체의 구조적 취약성을 보여주므로 score에 반영해야 하는 별개 사항입니다. 이 두 가지를 분리합니다.",
+      "evidence": "S0 Debate rubric은 '현재 시점 편입 가능성'이 아닌 'hypothesis validity + data feasibility + expected ICIR'를 평가. PG1 타이밍 게이트는 Governor 도메인. 단, 4-regime CRISIS IC 실측치는 유효한 factor quality 근거."
+    }
+  ],
+
+  "strongest_counterargument": {
+    "from_debater": "risk_manager",
+    "counterargument_summary": "4-regime CRISIS IC -0.014 + L-106 long-only beta dominance 교훈의 조합이 가장 강력한 반론입니다. Cross-section 잔차화가 factor-level에서 beta를 제거하더라도, long-only portfolio에서 위기 시 realized beta는 잔차화 이전보다 낮아질 수 있으나 0이 되지는 않습니다. 이것이 H_1688의 diversifier fit 기대(rho < 0.25)가 실제로 달성될지에 대한 가장 근거 있는 의문이며, DCC-GARCH conditional correlation 측정 없이는 Governor의 SR 2.0 경로 계산이 ρ=0.2 가정 위에 세워진 구조임을 인정해야 합니다.",
+    "quant_response": "이 반론은 S3 Orthogonality 게이트를 더욱 강하게 설계해야 하는 이유가 됩니다. 정상기 rho < 0.25만이 아니라 Risk Manager 조건대로 8대 스트레스 구간 각각의 conditional rho < 0.50을 S3 gate에 추가하는 것에 동의합니다. 다만 이것은 S3에서 실측 후 판단할 사항이지, S0 단계에서 가설을 기각해야 할 근거는 아닙니다."
+  },
+
+  "r2_new_findings": [
+    "R12 방향 이슈 최종 정리: R12_Idiosyncratic_Risk = -sd(CAPM_residuals). OLS 리그레서로 쓸 때 '-R12' 사용하면 양수 idiovol이 양수 값을 가지게 됨. 그러나 cross-section OLS의 목적은 signal에서 idiovol exposure를 제거하는 것이므로, 부호보다 변수의 실질 의미(idiovol 크기)가 중요. 구현 시 abs(-R12) = sd(CAPM_residuals)를 리그레서로 직접 사용하는 것이 C13 정신에 더 부합. Z_Score_Aligned는 잔차 신호 자체에 적용되므로 리그레서 부호는 C13 대상 아님. 단 S1 코드에 명시 필수.",
+    "M08 baseline 측정 가치 재확인: M08이 이미 Factor DB에 존재하므로 H_1688 S1에서 M08과 직접 ICIR 비교가 가능. H_1688 ICIR > M08 ICIR이면 3factor 잔차화의 incremental value 실증, H_1688 ICIR <= M08 ICIR이면 설계 재검토. 이는 S2 판단을 명확하게 하는 유용한 ablation으로 S1 코드에 M08 병행 측정을 반드시 포함시킬 것을 권고."
+  ],
+
+  "r2_conditions_updated": [
+    "S1 코드에 beta 계산 윈도우 명시 필수: Date 범위 [t - 504일, t - 1일], 신규상장 24M 미만 종목 Vasicek shrinkage 처리, 모든 lag 관계 주석 작성 (C2 방지)",
+    "S1에서 M08_Residual_Mom ICIR 병행 측정 필수: H_1688 3factor cross-section vs M08 단일팩터 time-series 직접 비교. H_1688 ICIR <= M08 ICIR 시 mechanism 재설계",
+    "S3에서 8대 스트레스 구간 conditional rho < 0.50 추가 gate: 정상기 rho < 0.25만이 아닌 DCC-GARCH conditional correlation 측정 (Risk Manager 조건 동의)"
+  ],
+
+  "created": "2026-04-17",
+  "created_by": "forge_debate_quant_instance_H_1688_R2"
+}

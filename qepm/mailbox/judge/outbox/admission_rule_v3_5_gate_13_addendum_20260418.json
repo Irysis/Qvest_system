@@ -1,0 +1,210 @@
+{
+  "from": "Judge",
+  "to": "Governor + Scout + Q-Lead + Architect + team-lead",
+  "type": "ADMISSION_RULE_V3_5_GATE_13_ADDENDUM",
+  "timestamp": "2026-04-18T20:20+09:00",
+  "session": 67,
+  "day": "continuous (day boundary removed)",
+  "status": "ADMISSION_RULE_V3_5_EXTENDED_13_GATES — Gate 13 Factor DB Access Compliance 공식 통합",
+  "supersedes": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json (12 gates, 15:55)",
+  "team_lead_approval": "2026-04-18T20:10+09:00 (전면 승인)",
+
+  "version_extension": {
+    "from": "v3.5 (12 gates)",
+    "to": "v3.5 extended (13 gates) — v3.6 precursor",
+    "new_gate": "Gate 13 Factor DB Access Compliance",
+    "effective_timestamp": "2026-04-18T20:00+09:00 (L-164 ACTIVE promotion과 동시)"
+  },
+
+  "gate_13_factor_db_access_compliance_official_spec": {
+    "gate_id": 13,
+    "gate_name": "Factor DB Access Compliance",
+    "enforcement_level": "hard_block_mandatory",
+    "stage_assignment": "Stage 2 + continued enforcement Stage 3+",
+    "authority_basis": [
+      "Scout R16_Calmar empirical evidence (+529% sd delta)",
+      "L-164 ACTIVE promotion (2026-04-18T20:00)",
+      "team-lead 20:10 전면 승인"
+    ],
+
+    "rule_formal_definition": {
+      "mandate": "모든 factor_engine.R 내 factor Z_Score 접근은 반드시 load_month_factors() 함수 경유.",
+      "prohibition": "direct read_parquet() 사용 금지 (factor_db 경로 타겟)",
+      "exceptions": [
+        "factor_db 내부 utilities: factor_db_builder.R, factor_db_connector.R 자체",
+        "Diagnostic/audit scripts: 읽기 전용 + portfolio 결정 미참여",
+        "Scout empirical verification scripts (families.json update 목적)"
+      ]
+    },
+
+    "preflight_check_implementation": {
+      "location": "Forge preflight_check() 함수 + Judge S6 Gate 13 verification",
+      "block_regex_pattern": "read_parquet\\s*\\([^)]*factor_db",
+      "allow_alternative_pattern": "load_month_factors\\s*\\(",
+      "scan_scope": [
+        "factor_engine.R",
+        "run_all.R",
+        "factor_engine 관련 source() include 파일 전수"
+      ],
+      "grep_command_example": "grep -nE 'read_parquet.*factor_db' factor_engine.R && echo 'GATE_13_VIOLATION'",
+      "r_code_snippet_proposed": "if (any(grepl('read_parquet.*factor_db', readLines('factor_engine.R')))) { stop('Gate 13 violation: use load_month_factors()') }"
+    },
+
+    "violation_consequences": {
+      "primary_action": "Forge S1 실행 pre-exec fail",
+      "secondary_actions": [
+        "preflight_check() FAIL status return",
+        "Q-Lead 자동 통보 + Scout evidence 재수집 요청",
+        "Judge S6 진입 차단 (Gate 13 PASS 전제 조건)"
+      ],
+      "baseline_exception": "이미 실행 중인 전략 (예: STR_1685 PID 2299540)은 Pre-Gate 13 baseline으로 기록 + Gate 13 enforcement 후 재실행으로 Pre/Post 비교 수행"
+    },
+
+    "empirical_basis": {
+      "primary_evidence": {
+        "source": "Scout families.json v1.3 R16_Calmar section (2026-04-18 16:43)",
+        "test_spec": "R16_Calmar 2026-03 (2529 tickers)",
+        "direct_parquet_sd": 0.1589,
+        "load_month_factors_sd": 1.0000,
+        "sd_delta_pct": 529,
+        "interpretation": "Fix 1 rescale은 load_month_factors() 함수 내부에서만 active. direct read_parquet()는 pre-Fix 1 distortion 유지."
+      },
+      "supporting_evidence": [
+        "factor_db_connector.R line 113-117 runtime rescale (Q-Lead inline fix 2026-04-18)",
+        "factor_db_builder.R Option A (Q-Lead winsorize + re-standardize, parquet rebuild 미실행)",
+        "STR_1684_v2b Fix 1 적용 후에도 ICIR -0.1874 identical (L-161 Hypothesis B partial contribution)"
+      ]
+    }
+  },
+
+  "interaction_with_existing_gates": {
+    "gate_11_variant_comparison": {
+      "current": "advisory_warning (Stage 2)",
+      "gate_13_complement": "Gate 13 PASS 전제로 Gate 11 variant 비교 의미 유효"
+    },
+    "gate_12_ic_return_coupling": {
+      "current": "hard_block mandatory (Stage 2)",
+      "gate_13_complement": "Gate 13 PASS = Gate 12 coupling_ratio 계산 empirical validity 보증"
+    },
+    "gate_13_new": {
+      "ordering_in_preflight": "Gate 13 → Gate 11 → Gate 12 → Gate 8 sequence (preflight 1st)"
+    }
+  },
+
+  "strategy_specific_compliance_status": {
+    "STR_1685_currently_running": {
+      "pid": 2299540,
+      "execution_start": "2026-04-18T16:45",
+      "factor_engine_line_92": "as.data.table(read_parquet(fp, ...))",
+      "gate_13_status": "VIOLATION (direct read_parquet factor_db)",
+      "disposition": "Pre-Gate 13 baseline 기록 + Gate 13 enforcement 후 재실행 (Pre/Post 비교)",
+      "scientific_value": "R16 Fix 1 asymmetry 추가 실증 자료"
+    },
+    "STR_1631_SYN_05_pg2_80pct": {
+      "gate_13_status": "VERIFY_PENDING",
+      "action_required": "Q-Lead 직접 grep verify (factor_engine.R 경로 확인)",
+      "timeline": "Session 68 Day 1 초반"
+    },
+    "STR_1656_MLRA_M05_pg2_20pct": {
+      "gate_13_status": "LOW_RISK (ML raw features 기반)",
+      "action_required": "advisory verification",
+      "ml_pipeline_exception": "Gate 13은 factor_engine Z_Score 접근 한정 — ML raw features 직접 사용은 제외"
+    },
+    "forge_day_2_queue": {
+      "H_1692_Core_Secondary": "factor_engine 작성 시 Gate 13 준수 필수",
+      "H_1689_Q24_exclude": "factor_engine 작성 시 Gate 13 준수 필수",
+      "H_1690_multi_source": "factor_engine 작성 시 Gate 13 준수 필수",
+      "STR_1686_H_1685v2": "factor_engine 작성 시 Gate 13 준수 필수",
+      "preflight_check_mandatory": "Forge preflight_check() 내 Gate 13 pattern 추가 (기존 PIT 패턴 옆)"
+    },
+    "STR_1679v3_proxy_integrity": {
+      "gate_13_relevance": "proxy methodology = load_month_factors 경유 baseline 가정",
+      "scout_empirical_confirmation": "sd 1.0 복원 확인 → coupling_ratio 3.391 유효성 PASS",
+      "status": "rev8-A-revised_v2 Scenario C 8% 유지 근거 강화"
+    }
+  },
+
+  "v3_5_13_gates_final_roster": {
+    "original_7_gates_v3_3": [
+      "Gate 1 Grade (A 허들)",
+      "Gate 2 IC Statistical Significance",
+      "Gate 3 Family Saturation",
+      "Gate 4 Harvey Multiple Testing",
+      "Gate 5 Factor Diversity",
+      "Gate 6 TDC (L-156)",
+      "Gate 7 Role Admission"
+    ],
+    "v3_4_additions": [
+      "Gate 8 Early Warning (L-158)",
+      "Gate 9 Stress Regime OOS",
+      "Gate 10 MDD Contribution"
+    ],
+    "v3_5_additions": [
+      "Gate 11 variant_comparison (advisory)",
+      "Gate 12 IC-Return coupling (hard_block Stage 2)"
+    ],
+    "v3_5_extended_addition": [
+      "**Gate 13 Factor DB Access Compliance (hard_block mandatory)** — 2026-04-18T20:00 L-164 ACTIVE 연계"
+    ],
+    "total_gates": 13,
+    "future_v3_6_planned": ["Gate 14 Role Honesty Compliance", "Gate 15 Translation Validation", "Gate 16 ML Hyperparameter"]
+  },
+
+  "stage_2_enforcement_level_consolidated": {
+    "hard_block_mandatory": ["Gate 1", "Gate 12", "Gate 13"],
+    "hard_block_contextual": ["Gate 3 (family saturation)", "Gate 6 (TDC L-156)", "Gate 10 (MDD contribution)"],
+    "advisory_warning": ["Gate 11 variant_comparison (Stage 3 승격 대기)"],
+    "verify_at_s6": ["Gate 2", "Gate 4", "Gate 5", "Gate 7", "Gate 8", "Gate 9"]
+  },
+
+  "stage_3_transition_conditions_final_update": {
+    "original": "Architect persistent fix + ACTIVE_NORMATIVE 전환",
+    "updated_with_l_164": [
+      "Architect persistent fix COMPLETE (factor_db_builder.R 자체 rescale + parquet rebuild 실행)",
+      "L-164 enforcement 3-session empirical validation (Forge preflight fail 0건 달성)",
+      "Gate 13 stability verification (false positive/negative 최소화)"
+    ],
+    "advancement_decision": "team-lead 20:10 전면 승인 — Session 68 Day 1~2 Architect persistent fix advancement 실행"
+  },
+
+  "governor_cross_check_items": [
+    "Gate 13 official integration 수용",
+    "13 gates final roster 수용",
+    "STR_1685 Pre-Gate 13 baseline 기록 방침 수용",
+    "Forge preflight_check() Gate 13 pattern 추가 수용",
+    "rev8-A-revised_v2 Gate 13 enforcement 반영 (Governor task #81 in_progress)",
+    "Phase_1 v1.5 → v1.6 Gate 13 integration (Governor task #82 pending)"
+  ],
+
+  "next_actions_queue": {
+    "judge_immediate": [
+      "methodology_memory.md L-164 본문 추가 ✅ (완료 20:20)",
+      "MEMORY.md v5.2 → v5.3 164건 업데이트 ✅ (완료 20:20)",
+      "admission_rule v3.5 Gate 13 addendum 발행 ✅ (본 파일)"
+    ],
+    "governor_immediate": [
+      "rev8-A-revised_v2 Gate 13 enforcement 반영 (task #81)",
+      "Phase_1 v1.5 → v1.6 (task #82)",
+      "STR_1631/STR_1656 경로 확인 조정 (task #83 Q-Lead coordinate)"
+    ],
+    "scout_immediate": [
+      "families.json v1.3 → v1.4 (L-164 ACTIVE + Gate 13 추가)",
+      "l_code_family_mapping: L-164_pending → L-164_active"
+    ],
+    "forge_immediate": [
+      "STR_1685 완료 대기 (Pre-Gate 13 baseline 확보)",
+      "H_1692 factor_engine 작성 시 Gate 13 준수",
+      "preflight_check Gate 13 pattern 추가"
+    ],
+    "q_lead_immediate": [
+      "Architect 재스폰 예고 (factor_db rebuild 주도)",
+      "STR_1631/STR_1656 경로 verify 직접 실행",
+      "next_session_task.md Gate 13 반영"
+    ]
+  },
+
+  "judge_total_artifacts_updated": "23 → 24 files (본 파일 추가)",
+  "joint_signoff_3_files_maintained": "COMPLETE (Stage 2 cert + completion_FINAL + proxy 5-point)",
+  "l_code_active_count": 6,
+  "admission_rule_version": "v3.5 extended (13 gates, v3.6 precursor)"
+}

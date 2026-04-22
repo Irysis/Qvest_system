@@ -1,0 +1,527 @@
+{
+  "schema_version": "1.7",
+  "created": "2026-04-18",
+  "created_by": "Q-Lead (Session 67 Day 1, bootstrap v1.0)",
+  "maintained_by": "Scout (Session 67 Day 1 종료 이후 primary ownership)",
+  "purpose": "Soft Prior 표준 저장소 — Scout S0 가설 설계 시 참조. families별 approved / failed / avoid pattern + L-code references + AX_CAND references 통합 관리.",
+  "note": "이 파일은 methodology_memory.md L-code들의 family-level 요약. 개별 L-code 본문은 methodology_memory.md 참조.",
+  "v1_1_changes_summary": [
+    "momentum: L-161 VALIDATED_HARD_FAIL + H_1688 재실행 금지 + H_1692 handoff_kit_v1.1 PRIMARY + AX_CAND_kr_momentum_inverse 0.68",
+    "defense: L-160 VALIDATED_HARD_FAIL + Gate 12 hard_block mandatory Stage 2 + H_1689 Q24-exclude v3 approved + H_1690 multi-source candidate",
+    "Judge improvement 1: gate_12_coupling_ratio_history 필드 각 family 추가",
+    "Judge improvement 2: ax_cand_tracking 4건 확장 (composite + status)",
+    "Judge improvement 3: l_code_family_mapping 추가 (L-159~L-163 pending)"
+  ],
+  "v1_2_changes_summary": [
+    "L-163 scope 확정 (Option α, Scout 제안 채택): poison_pill_quantified_threshold stress_icir × weight >= -0.05 — ACTIVE 승격",
+    "L-164 재배정 (이전 L-163 Option β): factor_engine_load_month_factors_mandate — infrastructure pending",
+    "l_code_family_mapping L-163/L-164 분리 반영",
+    "Scout self-revision pattern (H_1688 A 10%→65% + L-090 factor mismatch) AX-002 evidence 명시"
+  ],
+  "v1_3_changes_summary": [
+    "R16 Calmar factor_tracking 섹션 신규 추가 (Governor Day 3 Judge cross-reference 의존성 대응)",
+    "R16 post-Fix 1 sd CRITICAL finding: 1.0000 (load_month_factors 경유) vs 0.1589 (direct parquet read) — Fix 1 runtime wrapper 경유만 효과",
+    "R16 IC direction + Usable_Date + Q25_R16 weighted composite 관계 명시",
+    "L-164_pending evidence 강화 (Fix 1 effective only via load_month_factors, direct read bypass 경고)"
+  ],
+  "v1_4_changes_summary": [
+    "factor_tracking 12-factor Fix 1 scope asymmetry 매트릭스 신규 추가 (Scout autonomous 실측 2026-04-18)",
+    "9/12 CRITICAL_DISTORTION_FIXED (M08/R12/D01/R16/Q07/C19/V01/Q25/M01) + 3/12 already proper (Q04/M07/S01)",
+    "L-164 evidence frequency 축 1→9 cases 대폭 가속 (ACTIVE 승격 criteria 전수 충족)",
+    "R12=D01 duplicate empirical 확증 (sd 0.07063515 identical)",
+    "M08 extreme distortion +1761% (raw 0.054 → 1.0 post-fix, 252d sum scale)"
+  ],
+  "v1_5_changes_summary": [
+    "L-164 ACTIVE 승격 (Judge authority 2026-04-18, Scout R16 empirical evidence 결정적 기반)",
+    "Gate 13 Factor DB Access Compliance 신설 (v3.5: 12 → 13 gates, hard_block mandatory Stage 2)",
+    "mandate: factor_engine.R load_month_factors() 경유 필수. read_parquet.*factor_db 패턴 preflight fail",
+    "Architect persistent fix Stage 3 → Session 68 Day 1~2 advancement (Q-Lead 승인)",
+    "STR_1685 pre-Gate 13 baseline 기록 (Pre/Post 비교 evidence)"
+  ],
+  "v1_6_changes_summary": [
+    "STR_1631/STR_1656 Gate 13 compliant 실증 확정 (Q-Lead grep verification) — PG2 안전 공식화",
+    "STR_1631: universe.parquet + consensus dir read_parquet, factor_db 접근 없음",
+    "STR_1656: ML features 별도 pipeline, read_parquet/load_month_factors 미매치",
+    "Gate 13 violation audit 결과 반영 (Scout audit 23 artifacts): 6 violations / 5 compliant / 11 total",
+    "Phase_1 transition Day 1 승인 (STR_1631 80→60% + STR_1656 20→16% 안전 진행)",
+    "Session 68 timeline 가속 (LIVE Day 6-7 → Day 5-6)"
+  ],
+  "v1_7_changes_summary": [
+    "Gate 13 audit v2 expanded 통합 — HIGH priority 3 strategies 반영 (STR_1566 Grade B 0.927 + STR_1567 Grade B 0.834 + STR_1560 Grade C 0.503)",
+    "TDC 3-benchmark measurements 통합 — STR_1661 V2 vs STR_1656 0.283 PASS, vs STR_1631 0.475 FAIL diversifier, vs STR_1679 0.388 borderline",
+    "AX-006 cluster revision — ML_XGB_consensus_absorption_mixed (counter-cyclical + consensus absorption 혼재형, 4-node network empirical)",
+    "Scout Calibration v5 Rule 6b 공식화 — ML composite TDC +0.15~0.20 상향 보정 (3 benchmarks 연속 empirical evidence)",
+    "v54 Freeze Period 반영 — families 구조 동결 (새 family 편성 금지, 기존 family 내부 update만 허용)",
+    "STR_1661 V2 Core_Secondary reclassification 공식 — diversifier 자격 실증 상실 (2/3 gate fail/borderline)"
+  ],
+  "freeze_period_metadata": {
+    "freeze_period_active": true,
+    "freeze_start": "2026-04-18",
+    "freeze_end": "TBD (Q-Lead arbitration)",
+    "freeze_rationale": "v54 Track A/B coordination — Forge v4 persistent fix 완료 + Phase_1 PG1 admission 안정화 중 families 구조 동결 필요. 새 family 편성 금지, 기존 family 내부 update만 허용.",
+    "allowed_during_freeze": [
+      "기존 family 내 strategy status update (Gate 13 compliance, TDC measurement 등)",
+      "factor_tracking 섹션 추가 실측 결과 (post-Fix 1 재확증 등)",
+      "ax_cand_tracking scope refinement",
+      "l_code_family_mapping 신규 L-code 추가 (Judge approver 경유)"
+    ],
+    "prohibited_during_freeze": [
+      "families 키 신규 추가 (현재 7 families: consensus/defense/quality_profitability/momentum/investor_flow/value/ml_meta)",
+      "family description 근본 변경",
+      "Admission Rule version bump 제안 (Scout freeze)"
+    ],
+    "scope_scout_permitted_actions": "Scout families.json read/update within freeze rules. Governor/Judge read-only reference 유지."
+  },
+  "scout_calibration_v5_rule_6b_formalized": {
+    "_note": "3 benchmarks consecutive empirical evidence 기반 공식화 (STR_1656/STR_1631/STR_1679)",
+    "rule_6b_text": "ML composite (XGB/LightGBM/Neural tree-based) vs explicit factor strategy TDC 추정 시 **+0.15~0.20 상향 보정** 필수 적용. 특히 consensus family (C19/SUE) heavy usage 예상 시 +0.20 적용.",
+    "empirical_evidence_3_benchmarks": [
+      {"benchmark": "STR_1656 (ML parent)", "prior_mid": 0.625, "actual": 0.283, "shift": -0.342, "direction": "over-estimate (parent-child relaxed prior overshot)"},
+      {"benchmark": "STR_1631 (consensus anchor)", "prior_mid": 0.25, "actual": 0.475, "shift": 0.225, "direction": "under-estimate (ML consensus absorption)"},
+      {"benchmark": "STR_1679 (consensus+defense blend)", "prior_mid": 0.15, "actual": 0.388, "shift": 0.238, "direction": "under-estimate (indirect consensus absorption via C19 1/3 weight)"}
+    ],
+    "underlying_bias_systematic": "Scout ML model orthogonality 체계적 과대 추정 (ML ↔ explicit factor family TDC underestimate). Tree-based XGB가 C19/SUE consensus features를 heavy 재활용.",
+    "application_rule": "ML strategy TDC 추정 시 explicit factor strategy와 비교할 때: (a) consensus family이면 +0.20 보정, (b) quality/defense score blend이면 +0.15 보정, (c) 다른 ML strategy (parent-child)이면 structural mutation 강도 인식 후 별도 보정",
+    "exception": "Structural mutation 명시적 적용 (e.g., LambdaRank loss function change in STR_1661 V2 vs STR_1656 V0) 시 parent-child TDC -0.20~-0.30 하향 보정 가능",
+    "next_verification": "H_1692 momentum measurement (Forge v4 STR_1693 실행 완료 후) 4번째 evidence 확인 시 Rule 6b ACTIVE 승격 고려"
+  },
+  "ownership_matrix": {
+    "scout_primary": "maintenance + update responsibility",
+    "judge_secondary": "read-only reference + improvement proposal",
+    "governor_tertiary": "read-only + family_concentration check",
+    "q_lead": "v1.0 bootstrap 완료, 이후 Scout 주도"
+  },
+
+  "families": {
+    "consensus": {
+      "description": "Analyst consensus / earnings revision 기반 factor family",
+      "canonical_factors": ["C01_SUE", "C05_ESCR", "C13_Revision_Breadth_3m", "C19_Composite_Earnings", "C06_TP_Gap"],
+      "approved_strategies": [
+        {"id": "STR_1631_SYN_05", "grade": "PG2_active", "sharpe": 1.152, "harvey_t": 3.09, "note": "Core_Primary PG2 유일 Harvey t > 3 실증"}
+      ],
+      "failed_strategies": [
+        {"id": "STR_1537", "l_code": "L-119_dilution + L-146_overlay_absent", "note": "multi-factor blend without residualization"}
+      ],
+      "avoid_patterns": [
+        "consensus single-signal standalone long-only",
+        "static factor blend without regime conditional"
+      ],
+      "approved_patterns": [
+        "C19 core + Q25 distress composite (STR_1631)",
+        "ML meta-labeling on consensus features (STR_1656)"
+      ],
+      "gate_12_coupling_ratio_history": [
+        {"strategy": "STR_1631_SYN_05_proxy", "ratio": 1.417, "threshold": 0.30, "verdict": "PASS", "gate_13_compliance": "COMPLIANT (Q-Lead verify 2026-04-18: universe.parquet + consensus dir read_parquet, factor_db 접근 없음)"}
+      ]
+    },
+
+    "defense": {
+      "description": "Low-beta / low-vol / distress-avoidance family",
+      "canonical_factors": ["D01_IdioVol", "D02_Beta", "Q25_Ohlson_O", "R16_Calmar"],
+      "ax_restrictions": [
+        "AX-005 KR defense standalone 구조적 실패",
+        "Gate 12 hard_block mandatory Stage 2 (L-160 VALIDATED_HARD_FAIL 2/2 trigger)"
+      ],
+      "failed_strategies": [
+        {"id": "STR_1683", "l_code": "L-160", "hypothesis": "H_1682", "grade": "VALIDATED_HARD_FAIL", "note": "IC-Return decoupling Defense IC 0.22 강력 but portfolio long-only 전량 FAIL"},
+        {"id": "Q07+D25 combo", "l_code": "AX-005", "note": "CAGR 2.59% standalone 기회비용"}
+      ],
+      "avoid_patterns": [
+        "BAB standalone (AX-005 prohibited)",
+        "Q24 Altman_Z in composite (L-144 stress_icir -0.695 poison pill)",
+        "single-sleeve Defense long-only"
+      ],
+      "approved_patterns": [
+        "Multi-sleeve composite Defense (H_1689 Q24-exclude 3-axis variant_1)",
+        "Multi-source Defense with regime overlay (H_1690 Q07 + M08 + C19 + R16 regime-smoothed)"
+      ],
+      "candidate_strategies": [
+        {"id": "H_1689_v3_variant_1", "design": "Q01 + Q04 + Q25 3-axis Q24-exclude", "status": "handoff_kit_v3, Forge S1 pending P0 Defense mandatory"},
+        {"id": "H_1690", "design": "M08 + C19 + Q07 + R16 regime-smoothed", "status": "S0 APPROVE_CONDITIONAL 64, Forge S1 pending"}
+      ],
+      "poison_pill_factors": [
+        {"factor": "Q24_Altman_Z", "stress_icir": -0.695, "l_code": "L-144", "reason": "KR 위기 구간 역방향 IC 증폭"},
+        {"rule_name": "poison_pill_quantified_threshold", "formula": "stress_icir × weight >= -0.05", "l_code": "L-163_ACTIVE (Scout Option α 채택 2026-04-18)", "source": "Scout H_1689 v3 handoff kit", "example": "Q24 -0.695 × 0.25 = -0.174 (한도 -0.05 크게 초과)"}
+      ],
+      "gate_12_coupling_ratio_history": [
+        {"strategy": "STR_1683_H_1682", "ratio": 0.00, "threshold": 0.30, "verdict": "FAIL (L-160 IC-Return decoupling)"},
+        {"strategy": "STR_1679v3_proxy_pending", "status": "Governor 재계산 대기 (Option B)"}
+      ]
+    },
+
+    "quality_profitability": {
+      "description": "Profitability / quality multi-axis family",
+      "canonical_factors": ["Q01_GPA", "Q04_Piotroski_F", "Q07_Earnings_Stability", "Q11_Net_Margin"],
+      "ax_restrictions": ["AX-004 KR quality_profitability single-signal long-only = 구조적 실패"],
+      "failed_strategies": [
+        {"id": "L-133", "note": "GPA standalone"},
+        {"id": "L-134", "note": "Novy-Marx 2013 GP single-factor"},
+        {"id": "L-139", "note": "Ball 2016 cash-based profitability"}
+      ],
+      "avoid_patterns": [
+        "GPA / Ball / Piotroski / Ohlson standalone long-only",
+        "Q24 Altman_Z 25% weight in composite (L-144 poison pill, L-163 threshold violation)"
+      ],
+      "approved_patterns": [
+        "Multi-axis composite (3+ factors) with regime overlay",
+        "Q07 Earnings_Stability counter-cyclical (L-121 stress_icir +0.753)",
+        "Q24-exclude 3-axis (H_1689 v3 variant_1)"
+      ],
+      "gate_12_coupling_ratio_history": []
+    },
+
+    "momentum": {
+      "description": "Cross-sectional / residual momentum family",
+      "canonical_factors": ["M01_Mom_12_1", "M02_Mom_6_1", "M05_Trended_Mom", "M07_IndMom", "M08_Residual_Mom", "M18_RSI"],
+      "ax_restrictions": [
+        "AX_CAND_kr_momentum_inverse (0.68 composite, EXTEND 2026Q3): traditional cross-sectional raw momentum KR 구조적 inverse",
+        "Exceptions explicit: Industry momentum (M07 Grinblatt 1999) + ML composite + earnings momentum (C19) OUT of scope"
+      ],
+      "failed_strategies": [
+        {"id": "STR_1684", "l_code": "L-161", "hypothesis": "H_1688", "grade": "VALIDATED_HARD_FAIL", "note": "Carhart 1997 + Blitz 2011 residual momentum KR ICIR -0.187 Scenario B confirmed (Fix 1 scale invariant 후 동일)", "re_execution": "PROHIBITED (Forge Day 2 queue 제외)"},
+        {"id": "STR_1684_v2b", "l_code": "L-161", "hypothesis": "H_1688", "grade": "VALIDATED_HARD_FAIL_CONFIRMED", "note": "Fix 1 inline applied 후에도 ICIR -0.1874 identical → infrastructure zero impact on ICIR axis, KR momentum inverse primary"}
+      ],
+      "avoid_patterns": [
+        "Carhart 1997 residual momentum KR 직접 구현 (Fix 1 scale invariant, hypothesis A primary)",
+        "factor_engine.R 내 read_parquet 직접 사용 (L-164 ACTIVE + Gate 13 hard_block — load_month_factors 경유 강제)",
+        "Traditional cross-sectional M01/M02/M05 raw long-only (AX_CAND_kr_momentum_inverse scope)"
+      ],
+      "approved_patterns": [
+        "Industry momentum residualized on RSI (H_1692 Grinblatt 1999 exception)",
+        "ML composite momentum feature (STR_1661 V2 XGB exception)",
+        "Earnings momentum PEAD (STR_1631 C19 exception)"
+      ],
+      "candidate_patterns": [
+        {"id": "H_1692", "design": "Sector-relative Industry Momentum (M07 sd=1.0) residualized on RSI (M18 sd=1.0) — Grinblatt-Moskowitz 1999 exception", "status": "handoff_kit_v1.1 PRIMARY, rev8-A-revised-v2 Core_Secondary 10% slot 편성 확정, Forge S1 pending P0"}
+      ],
+      "ax_cand_tracking": [
+        {"id": "AX_CAND_kr_momentum_inverse", "composite": 0.68, "status": "EXTEND_Q3", "scout_initiator_file": "qepm/memory/axioms/review_log/AX_CAND_kr_momentum_inverse_evidence.json", "judge_approver_file": "qepm/memory/axioms/review_log/AX-CAND_kr_momentum_inverse_L161_20260418.json", "note": "Rouwenhorst 1999 + Asness 2013 + Chui 2010 KR momentum weak + STR_1684 Scenario B empirical"}
+      ],
+      "gate_12_coupling_ratio_history": [
+        {"strategy": "STR_1684", "ratio": "-0.187 ICIR → negative SR/ICIR", "verdict": "FAIL (L-161 VALIDATED)"}
+      ]
+    },
+
+    "investor_flow": {
+      "description": "Foreign / institutional / retail trading flow family (KR 특수)",
+      "canonical_factors": ["INV01_Foreign_NetBuy_20d", "INV02_Foreign_NetBuy_60d", "INV07_Retail_Contrarian", "INV13_Foreign_Resid_Individual_21d"],
+      "approved_strategies": [
+        {"id": "H_1674", "role": "core_alpha", "design": "Retail contrarian 20d"},
+        {"id": "H_1685_v2", "role": "diversifier", "s0_score": 61, "design": "Foreign flow residualized on Individual flow (expanding OLS + burn-in 60m)", "note": "S0 APPROVE_CONDITIONAL, INV13 신규 factor + 12 conditions_for_s1, STR_1686 할당, Phase_2+ admission"}
+      ],
+      "rejected_designs": [
+        {"id": "H_1685_v1", "corr_vs_H1674": 0.897, "note": "raw divergence duplicate structure REVISE — Option A residualization superseded"}
+      ],
+      "avoid_patterns": [
+        "Raw investor flow divergence without residualization (H_1674 duplicate)",
+        "Short-period 21d without 63d/126d sensitivity (S2 profiling condition)"
+      ],
+      "approved_patterns": [
+        "Expanding OLS residual for orthogonal axis (H_1685 v2)",
+        "Contrarian retail signal with regime overlay (H_1674)"
+      ],
+      "gate_12_coupling_ratio_history": []
+    },
+
+    "value": {
+      "description": "Value premium (E/P, B/P, PSR) family",
+      "canonical_factors": ["V01_BM", "V05_EP", "V14_EBIT_EV"],
+      "ax_restrictions": ["AX-003 empirical failure (L-132, L-135 supporting)"],
+      "avoid_patterns": [
+        "Value standalone long-only (VALUE_FAIL, LOW_TURNOVER)",
+        "EP standalone (EP_STANDALONE)"
+      ],
+      "approved_patterns": [
+        "Value + Quality composite (V14 inside multi-factor)",
+        "Value-timing with regime (Value Spread)"
+      ],
+      "gate_12_coupling_ratio_history": []
+    },
+
+    "ml_meta": {
+      "description": "Machine Learning meta-labeling strategies",
+      "approved_strategies": [
+        {"id": "STR_1656_MLRA_M05", "grade": "PG2_active", "sharpe": 0.927, "icir": 0.849, "note": "ML Risk Architecture meta-labeling"}
+      ],
+      "candidate_patterns": [
+        {"id": "STR_1661_V2", "status": "S2 CONDITIONAL_PASS", "note": "XGB_GPU post-2020 ICIR 1.056 counter-cyclical 1.194 (stress/normal ratio 1.26x), CRISIS conditional resilience demonstrated"}
+      ],
+      "v3_6_agenda": "ML hyperparameter variant framework (Gate 16 candidate)",
+      "gate_12_coupling_ratio_history": [
+        {"strategy": "STR_1656_MLRA_M05", "ratio": 0.314, "threshold": 0.30, "verdict": "PASS (borderline)", "gate_13_compliance": "COMPLIANT advisory (Q-Lead verify 2026-04-18: ML features 별도 pipeline, read_parquet/load_month_factors 미매치)"}
+      ]
+    }
+  },
+
+  "factor_tracking": {
+    "_note": "Governor Day 3 Judge cross-reference 의존성 대응 (Scout v1.3 추가). 주요 factor의 Fix 1 전/후 sd + IC direction + composite 관계 기록.",
+    "_update_trigger": "STR_1679v3 proxy 재계산 (Governor Option B) + Judge Day 3 Triple-check R16 variance 확인 필요",
+    "R16_Calmar": {
+      "factor_id": "R16_Calmar",
+      "category": "risk",
+      "direction": "higher_better (registry)",
+      "definition": "Annualized return / abs(MDD). Return relative to max drawdown.",
+      "usable_date": "Month-end snapshot (price-based, no financial statement lag)",
+      "pre_fix_1_sd_2026_03": 0.1589,
+      "post_fix_1_sd_2026_03": {
+        "via_load_month_factors_runtime_wrapper": 1.0000,
+        "via_direct_parquet_read": 0.1589,
+        "interpretation": "Fix 1 runtime wrapper (factor_db_connector.R line 113-117)는 load_month_factors() 경유 시만 active. Direct read_parquet 사용 시 distortion 유지",
+        "l_164_pending_evidence": "factor_engine.R이 load_month_factors() 경유 강제 필요 (L-164 근거 강화)"
+      },
+      "ic_direction": "positive (higher Calmar = better risk-adjusted alpha)",
+      "stress_icir_reference": "+2.655 (기존 L-142 관련)",
+      "composite_usage": {
+        "STR_1679v3_Slot_A": "Q25_R16 weighted composite (Q25 distress + R16 Calmar, Defense sleeve)",
+        "H_1690_4axis": "M08 + C19 + Q07 + R16 regime-smoothed (Tier 1 Defense)",
+        "H_1682_DROPPED": "R16 + Q25 60/40 (STR_1683 Grade F L-160)",
+        "governor_proxy_recalc": "STR_1679v3 proxy 3.391 PASS (Gate 12 threshold 0.30 기준 11x margin)"
+      },
+      "scout_empirical_measurement_2026_04_18": {
+        "source": "Scout direct Rscript via both parquet read + load_month_factors",
+        "pre_fix_raw_sd": 0.1589,
+        "post_fix_load_month_factors_sd": 1.0000,
+        "delta_pct": 529,
+        "n_tickers_2026_03": 2529
+      },
+      "judge_cross_reference_ready": "2026-04-18 Session 67 Day 1 종결 직전 (Day 3 04-20 Triple-check 준비 완료)",
+      "governor_coupling_ratio_implication": {
+        "estimated_range": "[3.20, 3.40] Governor 추정",
+        "scout_observation": "Fix 1 load_month_factors 경유로 R16 sd 1.0 복원 확인 → coupling_ratio 재측정 시 proper scale 반영"
+      }
+    },
+    "fix_1_scope_asymmetry_empirical_matrix_2026_03": {
+      "_note": "Scout autonomous 12-factor 실측 (2026-04-18 Session 67 연속) — L-164 evidence frequency 축 가속 data",
+      "_critical_distortion_fixed_count": 9,
+      "_already_proper_count": 3,
+      "_total_measured": 12,
+      "measurements": {
+        "M08_Residual_Mom": {"raw_sd": 0.0537, "lm_sd": 1.0000, "delta_pct": 1761, "status": "CRITICAL_DISTORTION_FIXED"},
+        "R12_Idiosyncratic_Risk": {"raw_sd": 0.0706, "lm_sd": 1.0000, "delta_pct": 1316, "status": "CRITICAL_DISTORTION_FIXED", "note": "D01 duplicate (identical sd)"},
+        "D01_IdioVol": {"raw_sd": 0.0706, "lm_sd": 1.0000, "delta_pct": 1316, "status": "CRITICAL_DISTORTION_FIXED", "note": "R12 duplicate (identical sd)"},
+        "R16_Calmar": {"raw_sd": 0.1589, "lm_sd": 1.0000, "delta_pct": 529, "status": "CRITICAL_DISTORTION_FIXED"},
+        "Q07_Earnings_Stability": {"raw_sd": 0.3281, "lm_sd": 1.0000, "delta_pct": 205, "status": "CRITICAL_DISTORTION_FIXED"},
+        "C19_Composite_Earnings": {"raw_sd": 0.3611, "lm_sd": 1.0000, "delta_pct": 177, "status": "CRITICAL_DISTORTION_FIXED"},
+        "V01_BM": {"raw_sd": 0.3626, "lm_sd": 1.0000, "delta_pct": 176, "status": "CRITICAL_DISTORTION_FIXED"},
+        "Q25_Ohlson_O": {"raw_sd": 0.5296, "lm_sd": 1.0000, "delta_pct": 89, "status": "CRITICAL_DISTORTION_FIXED"},
+        "M01_Mom_12_1": {"raw_sd": 0.6600, "lm_sd": 1.0000, "delta_pct": 52, "status": "CRITICAL_DISTORTION_FIXED"},
+        "Q04_Piotroski_F": {"raw_sd": 1.0000, "lm_sd": 1.0000, "delta_pct": 0, "status": "proper"},
+        "M07_IndMom": {"raw_sd": 1.0000, "lm_sd": 1.0000, "delta_pct": 0, "status": "proper"},
+        "S01_Size": {"raw_sd": 0.9976, "lm_sd": 1.0000, "delta_pct": 0, "status": "proper"}
+      },
+      "l_164_evidence_impact": {
+        "frequency_axis_before": "1 case (R16 only)",
+        "frequency_axis_after": "9 cases (direct 9 factors CRITICAL_DISTORTION_FIXED)",
+        "promotion_criteria_acceleration": "L-164 ACTIVE 승격 criteria 이미 전수 충족 — Judge authority 가속 권고",
+        "forge_preflight_mandate_evidence": "direct read_parquet은 9/12 factors에서 structural distortion 유지 — load_month_factors mandate 필수"
+      },
+      "methodology": {
+        "tool": "Scout autonomous Rscript",
+        "source_files": [".cache/factor_db/factor_db_202603.parquet", "02_Infrastructure/factor_db/factor_db_connector.R (load_month_factors)"],
+        "sig_date": "2026-03-01",
+        "verification": "dual path comparison (read_parquet raw Z_Score vs load_month_factors Z_Score_Aligned post-Fix 1)"
+      }
+    },
+    "gate_13_violation_audit_2026_04_18": {
+      "_note": "Scout audit v2 expanded (Q-Lead 10 strategies + Scout hurdle_result 교차 확인). v1.7 공식 통합.",
+      "total_factor_engine_files_scanned": 69,
+      "gate_13_violations_total": 12,
+      "gate_13_compliant_load_month_factors": 22,
+      "HIGH_priority_active_graded": [
+        {"strategy": "STR_1566_c19_l22_blend", "grade": "B", "sharpe": 0.927, "fix_1_impact": "C19 sd +177% restoration, post-fix re-execution시 Grade A 가능성", "enforcement_priority": "HIGH"},
+        {"strategy": "STR_1567_c19_l22_dd820", "grade": "B", "sharpe": 0.834, "fix_1_impact": "C19 sd +177% + DD overlay", "enforcement_priority": "HIGH"},
+        {"strategy": "STR_1560_gross_margin_quality", "grade": "C", "sharpe": 0.503, "fix_1_impact": "Q01 sd +70% + AX-004 scope 주의", "enforcement_priority": "MEDIUM"}
+      ],
+      "MEDIUM_grade_F_post_fix_revisit": [
+        "FIX_1341_weighted_sum (Grade F)", "STR_1333_ridge_multifactor (Grade F)",
+        "STR_1422_crowding_defense (Grade F, CR08+D01)", "STR_1422_flow_reversal (Grade F, D01)",
+        "STR_1558_ret_autocorr_diversifier (Grade F)", "STR_1562_vol_price_divergence (Grade F)",
+        "STR_1563_price_level_liquidity (Grade F)"
+      ],
+      "VALIDATED_HARD_FAIL_no_action": ["STR_1684 (L-161 DROPPED)", "STR_1685 (pre-Gate 13 baseline, Q-Lead revert 후 재실행 대기)"],
+      "gate_13_compliant_5_strategies": ["STR_1674", "STR_1657", "STR_887", "STR_824", "STR_1422_flow_reversal (non-factor_db scope)"],
+      "scout_audit_sources": [
+        "stage_artifacts/gate_13_violation_audit_scout_scan.json (v1, 11 files)",
+        "stage_artifacts/gate_13_violation_audit_v2_expanded.json (v2, 12 classified)"
+      ]
+    },
+    "s3_tdc_measurements_STR_1661_V2_2026_04_18": {
+      "_note": "Scout autonomous primary measurement (nav_V2.csv + benchmark NAV fallback) — Forge daily_returns 대기 없이 진행",
+      "measurement_date": "2026-04-18 Session 67 연속",
+      "benchmarks_measured_3": {
+        "STR_1656_MLRA_M05_parent_child": {
+          "expected_prior": [0.55, 0.70],
+          "actual_tdc": 0.283,
+          "daily_pearson": 0.3613,
+          "monthly_pearson": 0.4638,
+          "upper_tail_5pct": 0.1517,
+          "lower_tail_5pct": 0.4150,
+          "shift_pct": -54.7,
+          "gate_verdict": "PASS parent-child 0.70 relaxed (margin 0.417)",
+          "scout_rule_6_trigger": "YES (structural mutation underestimate — LambdaRank vs V0)"
+        },
+        "STR_1631_SYN_05_anchor": {
+          "expected_prior": [0.20, 0.30],
+          "actual_tdc": 0.475,
+          "variants_measured_2": {"nav_c19": 0.470, "nav_combo": 0.475},
+          "daily_pearson": 0.707,
+          "monthly_pearson": 0.723,
+          "upper_tail_5pct": 0.358,
+          "lower_tail_5pct": 0.591,
+          "shift_pct": 90.0,
+          "gate_verdict": "🔴 FAIL diversifier 0.40 BREACH -0.075 / PASS core_secondary 0.55",
+          "scout_rule_6b_trigger": "YES (ML consensus absorption, underestimate +90%)",
+          "family_concentration_implication": "V2 10% admission 시 consensus 실질 64.75%"
+        },
+        "STR_1679_defense_score_blend": {
+          "expected_prior": [0.10, 0.20],
+          "actual_tdc": 0.388,
+          "daily_pearson": 0.598,
+          "monthly_pearson": 0.574,
+          "upper_tail_5pct": 0.277,
+          "lower_tail_5pct": 0.500,
+          "shift_pct": 159.0,
+          "gate_verdict": "PASS diversifier 0.40 borderline (margin 0.012만)",
+          "scout_rule_6b_trigger": "YES EXTREME (indirect consensus absorption via C19 1/3 weight)"
+        }
+      },
+      "str_1661_v2_role_reclassification_empirical": {
+        "previous": "diversifier candidate",
+        "current_empirical_confirmed": "Core_Secondary only",
+        "reason": "2/3 gate fail or borderline (STR_1631 FAIL + STR_1679 borderline, STR_1656 parent-child PASS only)"
+      },
+      "common_empirical_pattern_lower_tail_asymmetry": "3 benchmarks 전체 lower_tail >> upper_tail (1.5~2.7x) — 위기 구간 동조 강화",
+      "scout_measurement_sources": [
+        "stage_artifacts/s3_tdc_matrix_STR_1661_V2_first_measurement.json (STR_1656)",
+        "stage_artifacts/s3_tdc_matrix_STR_1661_V2_second_measurement.json (STR_1631)",
+        "stage_artifacts/s3_tdc_matrix_STR_1661_V2_third_measurement.json (STR_1679)"
+      ],
+      "pending_priority_1": "H_1692 momentum (Forge v4 STR_1693 실행 완료 후)",
+      "pending_priority_2": "STR_1071 / STR_1562 / H_1685_v2 (NAV 확보 필요)"
+    }
+  },
+
+  "cross_family_rules": {
+    "tdc_thresholds": {
+      "diversifier_max": 0.40,
+      "crisis_max": 0.55,
+      "core_secondary_relaxed": 0.55,
+      "parent_child_relaxed": 0.70,
+      "source": "L-156 v2 TDC cluster + Admission Rule v3.5"
+    },
+    "hard_fail_taxonomy": {
+      "VALIDATED_HARD_FAIL": "Hypothesis 평가 후 실패 (Stage 2 trigger count 포함) — current count 2/2 (STR_1683 L-160 + STR_1684 L-161)",
+      "UNVALIDATED_HARD_FAIL": "인프라 버그로 미검증 (count 제외, re-test pending)",
+      "CONDITIONAL_FAIL": "Stress 제약이나 hypothesis valid (Stage 1 advisory)"
+    },
+    "gate_11_variant_comparison": "Defense family mandatory (Stage 2), Core/Div advisory (v3.5)",
+    "gate_12_ic_return_coupling": "SR/ICIR >= 0.3 (Defense mandatory Stage 2 hard_block, L-160 교훈)",
+    "gate_13_factor_db_access_compliance": "factor_engine.R load_month_factors() 경유 필수 (hard_block mandatory Stage 2, L-164 ACTIVE enforcement). preflight pattern: `read_parquet.*factor_db` → violation → S1 차단",
+    "v3_5_status": "STAGE_2_ACTIVE (VALIDATED Hard Fail 2/2 trigger 발동, Gate 12 + Gate 13 hard_block mandatory, 총 13 gates)"
+  },
+
+  "ax_codes_reference": {
+    "AX-000": "한계란 없다 (immutable)",
+    "AX-001": "방어형 팩터 조건부 평가 (immutable)",
+    "AX-002": "프로세스 우회 = 미래참조 (immutable)",
+    "AX-003": "KR value standalone 구조적 실패 (empirical)",
+    "AX-004": "KR quality_profitability single-signal 구조적 실패 (methodological)",
+    "AX-005": "KR defense standalone low-beta 구조적 실패 (methodological)",
+    "AX-006_candidate": "Pairwise TDC conditional cluster (pending 2026Q3, composite 0.67)"
+  },
+
+  "ax_cand_tracking": {
+    "AX-006_pairwise_TDC_conditional_cluster": {
+      "composite": 0.67,
+      "status": "EXTEND_Q3",
+      "scout_contribution": 0.25,
+      "judge_base": 0.42,
+      "scout_initiator_file": "qepm/memory/axioms/review_log/AX-006_cumulative_evidence_compilation.json",
+      "cluster_count": 8,
+      "cluster_name_revised_v1_7": "ML_XGB_consensus_absorption_mixed (previously ML_XGB_counter_cyclical)",
+      "empirical_4_node_network": {
+        "STR_1661_V2": "child (direct)",
+        "STR_1656_MLRA_M05": "parent-child 0.283 (ML↔ML structural diversification)",
+        "STR_1631_SYN_05": "consensus absorption 0.475 (ML↔consensus heavy re-use)",
+        "STR_1679_defense": "indirect consensus absorption 0.388 (C19 1/3 weight)"
+      },
+      "bidirectional_pattern_refinement_empirical": "형식적 reverse cluster (CRISIS 1.26x counter-cyclical) + daily 동조 mix (consensus 0.40+) 혼재형 common empirical signature",
+      "lower_tail_asymmetry_universal": "3 benchmarks 공통 lower_tail > upper_tail (1.5~2.7x) — 위기 구간 동조 강화 empirical",
+      "note": "7 cluster + H_1692 Industry_Momentum_RSI (8번째). Bidirectional refinement (formation + decoupling) Scout proposal. v1.7 update: empirical 4-node network 실증 확증."
+    },
+    "spec_transmission_L159": {
+      "composite": 0.48,
+      "status": "ARCHIVE_NEAR",
+      "scout_contribution": 0.28,
+      "scout_et_101_impact": "frequency 0.45 → 0.28 (STR_1537 ≠ STR_1682 pattern 실증)",
+      "scout_file": "qepm/memory/axioms/review_log/AX-CAND_STR_1537_evidence_collection.json",
+      "note": "ET-101 Scout evidence hunt 결과 ARCHIVE 근접 전환"
+    },
+    "infrastructure_failures_L161_primary_L160_partial_L162_sub": {
+      "composite": 0.63,
+      "status": "APPROVED_PENDING",
+      "scout_contribution": 0.05,
+      "scout_initiator": true,
+      "judge_approver": true,
+      "scout_file": "qepm/memory/axioms/review_log/AX_CAND_infrastructure_failures_proposal.json",
+      "judge_file": "qepm/memory/axioms/review_log/AX_CAND_infrastructure_failures_judge_verdict.json",
+      "note": "Scout initiator + Judge approver 이중 파일 구조. 2-category taxonomy (process vs infrastructure). Fix 1 적용으로 R_robustness 0.80 유지, persistent fix 후 0.85 복원 예정."
+    },
+    "kr_momentum_inverse_L161_NEW": {
+      "composite": 0.68,
+      "status": "EXTEND_Q3",
+      "scout_initiator_primary": true,
+      "judge_approver": true,
+      "scout_file": "qepm/memory/axioms/review_log/AX_CAND_kr_momentum_inverse_evidence.json",
+      "judge_file": "qepm/memory/axioms/review_log/AX-CAND_kr_momentum_inverse_L161_20260418.json",
+      "note": "Scenario B empirical (STR_1684 + v2b identical ICIR) + Rouwenhorst 1999 + Asness 2013 + Chui 2010 literature. Scout Hypothesis A probability 10%→65% self-revision pattern."
+    }
+  },
+
+  "l_code_family_mapping": {
+    "L-159": {"pattern": "spec_transmission", "family": "process", "ax_cand": "spec_transmission_L159"},
+    "L-160": {"pattern": "defense_ic_return_decoupling", "family": "defense", "grade": "VALIDATED_HARD_FAIL", "trigger": "Stage 2 count 1/2"},
+    "L-161": {"pattern": "kr_momentum_inverse + factor_db_infrastructure_partial", "family": "momentum + infrastructure", "grade": "VALIDATED_HARD_FAIL", "trigger": "Stage 2 count 2/2 (Gate 12 hard_block mandatory 발동)", "ax_cands": ["kr_momentum_inverse_L161_NEW", "infrastructure_failures_L161_primary_L160_partial_L162_sub"]},
+    "L-162": {"pattern": "data_table_merge_bug", "family": "infrastructure", "ax_cand": "infrastructure_failures"},
+    "L-163": {"pattern": "poison_pill_quantified_threshold", "family": "defense_composite_design", "status": "ACTIVE (Judge 승격, Scout Option α 채택 2026-04-18)", "formula": "stress_icir × weight >= -0.05", "source_files": ["s0_debate_handoff_H_1689_v3.json"], "evidence_case": "Q24_Altman_Z -0.695 × 0.25 = -0.174 (한도 -0.05 크게 초과)"},
+    "L-164": {"pattern": "factor_engine_load_month_factors_mandate", "family": "infrastructure", "status": "ACTIVE (Judge authority 승격 2026-04-18, Scout R16 empirical evidence + 12-factor matrix 9 cases 결정적 기반)", "enforcement_gate": "Gate 13 Factor DB Access Compliance (v3.5 hard_block mandatory Stage 2)", "preflight_pattern": "read_parquet.*factor_db → violation → S1 차단", "note": "factor_engine.R read_parquet 직접 사용 금지, load_month_factors() 경유 강제", "source_files": ["DIAG_STR_1684_H_1688_residualization.json", "families.json v1.4 factor_tracking.fix_1_scope_asymmetry_empirical_matrix_2026_03"]}
+  },
+
+  "session_67_day_1_changes_log": [
+    "2026-04-17: STR_1682 FAIL 진단 (L-159 spec transmission)",
+    "2026-04-17: H_1690 Debate VERDICT APPROVE_CONDITIONAL 64 (Scout Calibration v3 5/5 HIT #1)",
+    "2026-04-18: H_1685 v2 Debate VERDICT APPROVE_CONDITIONAL 61 (Scout Calibration v3 5/5 HIT #2 TOP_END)",
+    "2026-04-18: ET-101 STR_1537 evidence hunt — spec_transmission_L159 frequency 0.45→0.28",
+    "2026-04-18: STR_1683 S6 REJECT + L-160 VALIDATED_HARD_FAIL (Stage 2 count 1/2)",
+    "2026-04-18: Architect Factor DB Fix 1 진단 + Scout Hypothesis B 85%→100% validation",
+    "2026-04-18: Q-Lead Fix 1 직접 적용 (factor_db_connector.R line 113-117, runtime rescale)",
+    "2026-04-18: STR_1684 + STR_1684_v2b Scenario B 확정 ICIR -0.1874 identical → L-161 VALIDATED_HARD_FAIL (Stage 2 count 2/2 Gate 12 hard_block 발동)",
+    "2026-04-18: Scout Hypothesis A 재평가 10%→65% (self-revision pattern, process integrity AX-002 evidence)",
+    "2026-04-18: AX_CAND_infrastructure_failures Scout initiator + Judge APPROVE 0.63 composite",
+    "2026-04-18: AX_CAND_kr_momentum_inverse Scout initiator primary + Judge composite 0.68",
+    "2026-04-18: H_1689 handoff kit v3 Q24 poison pill 제거 (L-144) + variant_2 Q07 대체 2-variant 설계",
+    "2026-04-18: H_1692 handoff kit v1.1 PRIMARY 승격 (Scenario C activated, rev8-A-revised-v2 Core_Secondary 10% 편성)",
+    "2026-04-18: Governor rev8-A-revised-v2 composition 확정 (H_1688 DROP + H_1692 편성)",
+    "2026-04-18: Risk Mgr 3rd round CONDITIONAL_APPROVE (V2 WARNING Q24 blocking) + Scout 5축 자기성찰 pattern 정착"
+  ],
+
+  "last_updated": "2026-04-18 Session 67 연속 (Scout v1.7 Gate 13 audit v2 + TDC 3-benchmark + AX-006 ML_XGB_consensus_absorption_mixed + Freeze Period + Rule 6b 공식화)",
+  "last_updated_by": "Scout",
+  "next_update_triggers": [
+    "신규 VALIDATED_HARD_FAIL 추가 시",
+    "신규 APPROVE_CONDITIONAL strategy 편입 시",
+    "AX-code 공식 승격 시",
+    "L-code 신규 발행 시 family 영향 있으면",
+    "AX_CAND tracking update (Scout initiator proposal 발행 시)"
+  ],
+  "version_history": [
+    {"version": "1.0", "created": "2026-04-18 Session 67 Day 1 초반", "by": "Q-Lead", "note": "Bootstrap v1.0 — 7 families + cross-family rules + AX codes reference"},
+    {"version": "1.1", "created": "2026-04-18 Session 67 Day 1 종료 시점", "by": "Scout", "note": "Judge improvement 3건 통합 (gate_12_coupling_ratio_history + ax_cand_tracking 확장 + l_code_family_mapping) + Session 67 Day 1 changes 전수 반영 + ownership matrix 공식화"},
+    {"version": "1.2", "created": "2026-04-18 Session 67 Day 1 종결 직전", "by": "Scout", "note": "L-163 scope 확정 (Option α Scout 제안 채택, ACTIVE 승격) + L-164 재배정 (이전 L-163 Option β, factor_engine load_month_factors mandate pending) + l_code_family_mapping 분리 반영"},
+    {"version": "1.3", "created": "2026-04-18 Session 67 Day 1 종결", "by": "Scout", "note": "R16 Calmar factor_tracking 섹션 신규 추가 (Governor Day 3 Judge cross-reference 의존성 대응) — Fix 1 load_month_factors vs direct parquet read sd 괴리 실측 (1.0000 vs 0.1589) + L-164 evidence 강화"},
+    {"version": "1.4", "created": "2026-04-18 Session 67 연속 (Day 경계 제거)", "by": "Scout", "note": "factor_tracking 12-factor Fix 1 scope asymmetry 매트릭스 신규 추가 (Scout autonomous 실측) — 9/12 CRITICAL_DISTORTION_FIXED (M08 +1761% / R12=D01 +1316% duplicate / R16/Q07/C19/V01/Q25/M01) + 3/12 proper (Q04/M07/S01). L-164 frequency 1→9 cases (ACTIVE 승격 criteria 충족)"},
+    {"version": "1.5", "created": "2026-04-18 Session 67 연속 (L-164 ACTIVE 승격 직후)", "by": "Scout", "note": "L-164 PENDING → ACTIVE 승격 반영 (Judge authority 승인) + Gate 13 Factor DB Access Compliance 신설 (v3.5: 12→13 gates, hard_block mandatory Stage 2) + Architect persistent fix Session 68 Day 1~2 advancement"},
+    {"version": "1.6", "created": "2026-04-18 Session 67 연속 (STR_1631/STR_1656 Gate 13 clearance 확정 직후)", "by": "Scout", "note": "Q-Lead grep verification 결과 — STR_1631 (universe.parquet + consensus dir, factor_db 접근 없음) + STR_1656 (ML features 별도 pipeline) Gate 13 compliant 확정. PG2 안전 공식화. Phase_1 transition Day 1 진행 승인 (STR_1631 80→60% + STR_1656 20→16%). gate_12_coupling_ratio_history 양 strategy에 gate_13_compliance 필드 추가. Session 68 timeline 가속 (LIVE Day 6-7 → Day 5-6)"},
+    {"version": "1.7", "created": "2026-04-18 Session 67 연속 (v54 Track A P2 Scout 전담)", "by": "Scout", "note": "Gate 13 audit v2 expanded 통합 (HIGH 3 + MEDIUM 7 + DROPPED 2) + TDC 3-benchmark empirical (STR_1656 0.283 / STR_1631 0.475 / STR_1679 0.388) + AX-006 cluster revision (ML_XGB_consensus_absorption_mixed 4-node empirical) + Scout Calibration v5 Rule 6b 공식화 (ML TDC +0.15~0.20 보정) + v54 Freeze Period 반영 (families 구조 동결)"}
+  ]
+}

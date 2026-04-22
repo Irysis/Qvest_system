@@ -1,0 +1,161 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead + Governor + Architect (향후)",
+  "type": "V3_6_AGENDA_PREPARATION",
+  "stage": "Admission_Rule_v3_6_Candidate_Agenda",
+  "timestamp": "2026-04-18 Session 67 Day 1",
+  "session": 67,
+  "status": "PREPARATION_DOCUMENT — v3.5 Stage 3 ACTIVE_NORMATIVE 전환 후 공식 논의 대상",
+  "purpose": "v3.5 12 gates 운영 경험 + STR_1683/1684 Hard Fail 축적 + STR_1656 ML advisory flag + Scout L-157 v3 patterns 누적으로 제안된 v3.6 Gate 13~15 후보 agenda 정리",
+
+  "prerequisite_conditions": {
+    "v3_5_stage_3_active_normative_required": "Architect signoff + 2nd Hard Fail 축적 완료 후 v3.6 논의 시작 가능",
+    "stage_2_transition_STR_1684_hurdle_confirmation": "STR_1684 hurdle_result 공식 FAIL 확정 → Hard Fail 2건 → Gate 12 hard_block 전환",
+    "stage_3_architect_signoff": "rev8 ACTIVATE 후 Architect 스폰 → hurdle_result.json schema 표준화 + pm_run_multisleeve check 함수 구현",
+    "v3_6_review_window": "Stage 3 전환 후 1~2 세션 (2026-04-19 이후)"
+  },
+
+  "v3_6_candidate_gates": {
+    "gate_13_regime_conditional_variant_comparison": {
+      "priority": "P1 (강력 지지 — Governor + Judge 공조)",
+      "rule_draft": "Gate 11 variant comparison을 3-regime (bull/bear/crisis) 분리 검증. 각 regime에서 primary >= alternatives 별도 확인. crisis regime 별도 Hard Fail threshold 적용.",
+      "evidence_foundation": [
+        "STR_1683 4-variant 전량 crisis 구간 MDD 67~96% — regime-unconditional Gate 11에서 탐지됨",
+        "그러나 stress 1/4 등 분리 관점에서 regime-conditional 분석이 더 정밀",
+        "H_1685 v2 2020-2026 sub-period corr 0.2437 FAIL — regime-conditional 분해 필요성 확증 (L-158 Gate 8 Early Warning과 연계)"
+      ],
+      "implementation_complexity": "MEDIUM — variant_comparison.csv에 regime column 추가 + 각 regime별 metrics 분할",
+      "infrastructure_requirement": "regime_engine.R MRS regime tagging + variant 집계 함수",
+      "backward_compat": "Gate 11 unconditional 병행 유지 (regime-conditional은 추가 gate)",
+      "blocking_severity_proposed": {
+        "hard_block": "crisis regime variants 전량 FAIL",
+        "conditional_block": "crisis regime primary < crisis regime best sub-variant",
+        "advisory_only": "bull/bear regime에서 primary 열세"
+      }
+    },
+
+    "gate_14_algebraic_identity_and_factor_dominance": {
+      "priority": "P1 (Scout L-157 v3 직접 integration)",
+      "rule_draft": "2-factor composite 설계 시 algebraic identity check + 공통 항 식별 + cross-sectional pairwise 상관 사전 측정 + linear dominance test (강신호 factor 50%+ weight가 composite variance의 >70% 설명 시 WARNING)",
+      "evidence_foundation": [
+        "Scout L-157 v3 calibration discovery: H_1685 v1 `z_foreign - z_individual` algebraically 동일 H_1674 `-z_individual` (median 0.919)",
+        "H_1687 Q25+M01 50/50 vs H_1682 median 0.869 / vs H_1688 median 0.782 — linear dominance로 incremental value 제한",
+        "Scout handoff kit v3 pre-checks 5가지 이미 설계 — Gate 14 formal 편입 시 enforcement"
+      ],
+      "implementation_complexity": "LOW-MEDIUM — Scout handoff kit v2 schema 확장으로 일부 이미 처리",
+      "infrastructure_requirement": "Scout handoff_kit_template_v2.json + Forge preflight verify_algebraic_independence() 함수",
+      "blocking_severity_proposed": {
+        "hard_block": "algebraic identity 발견 (median corr >= 0.9)",
+        "conditional_block": "dominant factor variance ratio >= 0.80",
+        "advisory_only": "dominant factor variance ratio 0.70~0.80"
+      }
+    },
+
+    "gate_15_codex_cross_model_consistency": {
+      "priority": "P2 (중립 — Governor 중립, 실증 축적 후 결정)",
+      "rule_draft": "S0 Debate 단계 pre-S1 gate로 Codex GPT-5.4 cross-model consistency check 편성. Scout predicted range 대비 Codex 예측 하한 -3 이하 검출 + weakest assumption 탐지 + design PIT 의심 사항 5건+ 축적 시 S1 진입 블록",
+      "evidence_foundation": [
+        "Scout L-157 calibration: Codex H_1688 예측 7 R1 → 8 R2 (하한 -3 이하 탐지)",
+        "H_1685 v2 Codex REJECT 8 유지 (majority APPROVE_CONDITIONAL과 괴리) — 구조적 경고",
+        "STR_1682 spec transmission failure 사전 탐지 실패 사례 — Codex가 만약 S0에서 탐지했다면 회피 가능"
+      ],
+      "implementation_complexity": "HIGH — Codex CLI runtime 안정성 + API 비용 + 5인 debate 통합",
+      "infrastructure_requirement": "codex-companion runtime + S0_VERDICT 스키마 확장 (codex_rejection_count_cumulative)",
+      "blocking_severity_proposed": {
+        "hard_block": "(추후 실증 축적 필요)",
+        "conditional_block": "Codex REJECT 연속 2건 + Scout 예측 하한 -5 이하",
+        "advisory_only": "Codex 예측 < Scout 예측 하한"
+      },
+      "governor_position": "중립 — 실증 필요. Stage 3 ACTIVE 후 최소 5건 S0 debate 축적 후 결정"
+    },
+
+    "gate_16_ml_hyperparameter_variant_framework": {
+      "priority": "P2 (신규 — Governor R1 advisory flag + Judge 강력 지지)",
+      "rule_draft": "ML 기반 전략 (hyperparameter sensitivity 중심)은 factor signal variant 대신 hyperparameter × ML_model × feature_set 3축 variant framework 적용. 3축 × 3수준 최소 9 variants (or 요약 summary 대표 3~5). Gate 11 factor signal variant 대체 적용.",
+      "evidence_foundation": [
+        "STR_1656_MLRA performance.json: seeds [42,123,456,789,2024] + mi_top_n 50 + purge_days 21 → 현재 2 variants (S1_A/S1_B) 부족",
+        "ML 전략은 factor signal 분기 개념 애매 — hyperparameter variant가 더 의미 있음",
+        "Stage 3 ACTIVE 전환 시 STR_1656 retroactive 확장 필요 (Governor audit R1 advisory)"
+      ],
+      "implementation_complexity": "MEDIUM-HIGH — ML pipeline hyperparameter grid search infra 확장",
+      "infrastructure_requirement": "ml_variant_grid.R + variant_comparison.csv 표준 (hyperparameter 3축 기록)",
+      "blocking_severity_proposed": {
+        "hard_block": "ML 전략이 hyperparameter variant 의무 mandatory 단계에서 미제공",
+        "conditional_block": "3축 중 2축 이하만 variant 분기",
+        "advisory_only": "3수준 이하 variant (3x3=9 minimum 미충족)"
+      },
+      "governor_strong_advocacy": "PASS with advisory — STR_1656 case evidence"
+    }
+  },
+
+  "coupling_ratio_threshold_recalibration": {
+    "priority": "P3 (3~5건 축적 후 공조)",
+    "rationale": "현재 Gate 12 threshold 0.3은 STR_1683 단일 evidence 기반 — 경험칙. 추가 사례 누적으로 threshold 정당화 or 재조정",
+    "data_accumulation_plan": [
+      "STR_1683 SR/ICIR -0.129 FAIL (1건)",
+      "STR_1684 hurdle 확정 시 ICIR 음수로 coupling_ratio skip (ML 대상 아님)",
+      "STR_1656 coupling 0.314 PASS 근접 (1건)",
+      "STR_1631 proxy 1.417 PASS 여유 (1건 proxy)",
+      "H_1685 v2 S6 시 coupling 실측 (1건 pending)",
+      "H_1689 Defense S6 시 coupling mandatory (1건 pending, Stage 2 후)",
+      "총 5~6건 축적 2026Q3 중 달성 가능"
+    ],
+    "threshold_candidates": [
+      "유지 0.3 (현재 기준)",
+      "완화 0.25 (ML 전략 대응)",
+      "분리 {Core: 0.3, Div: 0.25, Defense: 0.4}"
+    ]
+  },
+
+  "backward_compatibility_considerations": {
+    "v3_5_to_v3_6_migration": [
+      "기존 Gate 1~12 그대로 유지 (supersedes 대신 extends)",
+      "Gate 13~16 신규 추가 (선별적 적용)",
+      "각 gate 별 blocking_severity matrix 유지 + Stage 1~3 단계화 지속"
+    ],
+    "retroactive_audit_v3_6": "v3.6 발행 시 Stage 3 기준 active PG2 전수 Gate 13~16 소급 audit (24h SLA)"
+  },
+
+  "agenda_decision_framework": {
+    "q_lead_triple_signoff_required": "v3.5와 동일 패턴 — Q-Lead + Judge + Governor + Architect",
+    "approval_sequence": [
+      "Stage 1: v3.6 DRAFT 발행 (Judge)",
+      "Stage 2: Governor 검토 + admission-level rules 추가",
+      "Stage 3: Q-Lead arbitration + triple signoff 확정",
+      "Stage 4: Architect 인프라 영향 평가 (Gate 13 regime / Gate 16 ML infra)",
+      "Stage 5: Forge variant schema 확장 + Scout handoff kit v3 통합",
+      "Stage 6: v3.6 ACTIVE_NORMATIVE (기존 v3.5 supersedes)"
+    ],
+    "expected_review_window": "2026Q2~Q3 (Stage 3 v3.5 ACTIVE 후 1~2 세션)"
+  },
+
+  "consolidated_v3_6_scope": {
+    "gates_inherited_from_v3_5": "Gate 1~12 유지",
+    "gates_new_in_v3_6": {
+      "gate_13": "regime_conditional_variant_comparison (P1 강력지지)",
+      "gate_14": "algebraic_identity_and_factor_dominance (P1 Scout L-157 v3 integration)",
+      "gate_15": "codex_cross_model_consistency (P2 중립)",
+      "gate_16": "ml_hyperparameter_variant_framework (P2 Governor 강력지지)"
+    },
+    "additional_adjustments": {
+      "coupling_ratio_recalibration": "P3 — 3~5건 축적 후",
+      "core_primary_exempt_clarification": "Gate 11 exempt 조건 구체화 (single signal source definition)"
+    },
+    "total_gates_v3_6": 16
+  },
+
+  "risk_and_mitigation": {
+    "risk_1_over_complexity": "16 gates는 운영 복잡도 증가 — Judge S6 45~60분 → 60~90분 예상. Mitigation: gate_autorun() 자동화 함수 Architect coordinate",
+    "risk_2_backward_compat_break": "v3.5 → v3.6 migration 시 기존 전략 status 혼란. Mitigation: v3.5 Stage 3 완전 전환 후에만 v3.6 적용",
+    "risk_3_codex_api_dependency": "Gate 15는 Codex 의존 — 외부 API 실패 시 gate block 발생. Mitigation: Gate 15는 advisory만 + fallback skip option"
+  },
+
+  "summary_for_q_lead_review": {
+    "total_new_gates_proposed": 4,
+    "strongest_evidence_based_gate": "Gate 14 algebraic identity (Scout L-157 v3 5/5 calibration hit)",
+    "most_complex_implementation_gate": "Gate 16 ML hyperparameter variant",
+    "governor_strongly_supports": ["Gate 13 regime-conditional", "Gate 16 ML variant"],
+    "judge_strongly_supports": ["Gate 14 algebraic identity", "Gate 13 regime-conditional"],
+    "q_lead_recommended_decision": "v3.5 Stage 3 ACTIVE 완료 후 1~2 세션 뒤 v3.6 DRAFT 발행 검토. 긴급성 LOW — v3.5 운영 경험 더 축적 후 결정"
+  }
+}

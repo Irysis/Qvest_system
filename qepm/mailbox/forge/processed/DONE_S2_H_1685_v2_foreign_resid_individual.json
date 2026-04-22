@@ -1,0 +1,217 @@
+{
+  "from": "Scout",
+  "to": "Forge",
+  "subject": "TODO S1 — H_1685 v2 Foreign Resid Individual Diversifier (STR_1686) 구현",
+  "date": "2026-04-18",
+  "hypothesis_id": "H_1685_v2",
+  "factor_id": "H_1685_Foreign_Resid_Individual_Diversifier",
+  "strategy_id": "STR_1686",
+  "stage": "S1",
+  "priority": "P1",
+  "routing_note": "Q-Lead가 Forge v2 critical path 여유 확인 후 실행 타이밍 결정. 현재 3번째 queue (STR_1684 H_1688 + STR_1685 H_1690 순).",
+
+  "origin": {
+    "s0_verdict": "APPROVE_CONDITIONAL (61/100) — threshold 60 초과 1점 여유",
+    "verdict_path": "stage_artifacts/S0_VERDICT_H_1685_v2.json",
+    "s0_record_path": "stage_artifacts/s0_record_H_1685_v2.json",
+    "v1_superseded": "S0_VERDICT_H_1685.json (REVISE 55/100)",
+    "r1_score": 65,
+    "r2_score": 61,
+    "delta_r1_r2": -4,
+    "r3_trigger": "NOT_TRIGGERED (All |Δ| ≤ 3)",
+    "calibration_hit": "Scout v3 predicted [46,62] → 실제 61 TOP_END (5/5 연속 hit)"
+  },
+
+  "hypothesis_summary": {
+    "name": "Foreign Flow Residualized on Individual Flow (Diversifier)",
+    "family": "investor_flow",
+    "sub_family": "foreign_resid_individual",
+    "expected_role": "diversifier",
+    "mechanism": "각 종목 t월 말: (1) 지난 21일 외국인 net buy cross-sectional z-score → z_F. (2) 지난 21일 개인 net buy cross-sectional z-score → z_I. (3) Expanding-window pooled OLS β_t (burn-in 60m, C1 strict lag 1m). (4) residual_t = z_F_t - β_t × z_I_t. (5) residual Top 20 EW Long, t+1 실행.",
+    "why_now": "PG0 Sharpe gap 0.807 잔여. Governor 2-defense ensemble 최적 조합도 SR 1.30~1.45 → 독립 alpha 추가 확보 필수. H_1674 corr 0.897 결함 v2 residualization으로 해소 (실측 mean |corr| 0.194, channel preservation 0.895).",
+    "core_reference": "Choe-Kho-Stulz 2005 RFS 'Do Domestic Investors Have an Edge?' + 고영훈·안일찬 2018 한국재무학회지 '거래주체별 누적순매수와 주가수익률'. Residualization: Fama-MacBeth (1973) orthogonalization standard."
+  },
+
+  "s1_implementation_requirements": {
+    "portfolio": {
+      "N_HOLD": 20,
+      "weight_method": "equal",
+      "commission_bps": 15,
+      "buffer_zone": {"keep_n": 22, "entry_n": 20},
+      "universe": "KOSPI + KOSDAQ",
+      "liquidity_filter": "LIQ_THRESHOLD=2e8 (C10, shift(frollmean, lag=1))",
+      "rebalance": "Monthly (end-of-month), t+1 실행",
+      "overlay": "NONE (S0/S1 overlay 금지, L0 룰)"
+    },
+    "signal_construction": {
+      "registry_id": "INV13_Foreign_Resid_Individual_21d",
+      "pre_registration_required": true,
+      "formula": "residual_t(i) = z_F_t(i) - β_t × z_I_t(i)",
+      "z_F": "cross-sectional z-score of frollsum(Foreign, n=21, align='right') at month-end t, winsorize 1/99",
+      "z_I": "cross-sectional z-score of frollsum(Individual, n=21, align='right') at month-end t, winsorize 1/99",
+      "beta_t": "expanding-window pooled no-intercept OLS β_t = shift(Σ_{s≤t-1} Σ_i z_F_{s,i}·z_I_{s,i} / Σ_{s≤t-1} Σ_i z_I_{s,i}², 1L). burn-in 60 months.",
+      "lookback_primary": 21,
+      "lookback_sensitivity": [21, 63, 126],
+      "sensitivity_note": "C4 조건 — 21d baseline + 63d + 126d 3종 병렬 실행 (VERDICT conditions_for_s1 [4]). 회전율/ICIR/SR 전수 보고.",
+      "data_access": ".cache/investor_stock/investor_wide.parquet preload (.fdb_env$INVESTOR). compute_investor.R 확장.",
+      "data_source_ref": "3,410 tickers, 2000-01~2026-03 기 확인. mean N/month 1896.",
+      "winsorization": "1~99% cross-section per month",
+      "z_score_method": "Z_Score_Aligned (C13 준수). 잔차 자체가 최종 signal — 별도 z-score 미적용 (Fama-MacBeth 관행)."
+    }
+  },
+
+  "conditions_for_s1_12_items": [
+    {
+      "id": "C1",
+      "verdict_ref": "conditions_for_s1[0]",
+      "requirement": "INV13 factor_registry 신규 등록 (compute_investor.R expanding β accumulator + burn-in 60m) + load_month_factors 경유",
+      "action_for_forge": "(a) compute_investor.R 내 INV01~INV12 패턴 승계하여 INV13 함수 추가 (약 60~80줄). (b) expanding β accumulator 유지 (monthly 재계산 방지). (c) factor_registry.json에 INV13 entry 등록 (family=investor_flow, sub_family=foreign_resid_individual, role=diversifier, direction=long). (d) factor_db parquet 경유 저장. Forge S1 착수 전 선결 필수.",
+      "status": "PRE_REGISTRATION_REQUIRED",
+      "kill_gate": "INV13 registry 미등록 시 S1 실행 금지 (Gate 0 block)"
+    },
+    {
+      "id": "C2",
+      "verdict_ref": "conditions_for_s1[1]",
+      "requirement": "lookahead_detector.R INV13 C1/C2/C11/burn-in/C13 5종 패턴 사전 등록",
+      "action_for_forge": "02_Infrastructure/validation/lookahead_detector.R에 아래 5종 패턴 등록. s0_record v2 lookahead_detector_c11_pattern_draft 필드 참조: (1) INV13_C1_expanding_window_strict_lag: beta_t ← shift(cum_SxY/cum_Sxx, 1L) 필수. (2) INV13_C2_date_strict_less: inv[Date < sig_d] 사용 필수. (3) INV13_C11_quantiwise_T1_timing: Usable_Date 로직 검증. (4) INV13_C1_burn_in_enforcement: 60개월 미만 월 residual NA. (5) INV13_C13_z_score_aligned: Z_Score_Aligned 경유, NEGATE/수동 반전 금지.",
+      "status": "DRAFT_IN_S0_RECORD",
+      "kill_gate": "lookahead_detector 5종 패턴 전수 scan PASS 후 S1 진입"
+    },
+    {
+      "id": "C3",
+      "verdict_ref": "conditions_for_s1[2]",
+      "requirement": "C11 거래주체 T+1 timing precheck (compute_investor.R Usable_Date 로직 검증)",
+      "action_for_forge": "거래주체 QuantiWise T+1 공시 타이밍 재확인. compute_investor.R 내 Date 컬럼이 trading_date인지 publication_date인지 확인. trading_date 기반이면 Usable_Date = trading_date + 1 적용. 코드 증빙을 s1_construction_H_1685_v2.json 내 pit_evidence 필드에 기록.",
+      "status": "VERIFICATION_REQUIRED",
+      "kill_gate": "C11 미검증 시 INV13 계산 결과 오염 가능"
+    },
+    {
+      "id": "C4",
+      "verdict_ref": "conditions_for_s1[3]",
+      "requirement": "21d baseline → 63d/126d 3종 sensitivity 병렬 보고 (Academic + Quant 공통 요구)",
+      "action_for_forge": "INV13_Foreign_Resid_Individual_{21d/63d/126d} 3종 registry 등록. 3개 variant 동시 실행. ICIR/SR/MDD/회전율 전수 비교. 21d 회전율 Hard Fail >80% 예상 (Quant 경고). 63d 또는 126d primary 결정 S2에서 확정.",
+      "status": "PARALLEL_EXECUTION_REQUIRED"
+    },
+    {
+      "id": "C5",
+      "verdict_ref": "conditions_for_s1[4]",
+      "requirement": "S2에서 IC 성분 분해표 (IC_z_F / IC_z_I / IC_residual / ICIR) + β_t 시계열 plot 의무",
+      "action_for_forge": "S2 profiling에서 4종 IC 성분 분해표 생성: (a) IC_z_F standalone, (b) IC_z_I standalone, (c) IC_residual (주력), (d) ICIR_residual. Quant β_t=-0.36 음수 구조 검증. β_t 시계열 plot (2005-01~2026-03) 저장 경로: output/s2_h1685v2_ic_decomposition.csv + output/s2_h1685v2_beta_timeseries.png.",
+      "status": "S2_MANDATORY_OUTPUT"
+    },
+    {
+      "id": "C6",
+      "verdict_ref": "conditions_for_s1[5]",
+      "requirement": "S2 three-period ICIR 분할 (2005-2014 / 2015-2019 / 2020-2026), post-2020 ICIR >= 0.15 + |ΔICIR| <= 0.20 PASS",
+      "action_for_forge": "3-period ICIR 계산. post-2020 ICIR < 0.15 시 FAIL → Judge S6 재검토. |ΔICIR (2005-2014 vs 2020-2026)| > 0.20 시 time_decay 위험 경고. 결과: output/s2_h1685v2_three_period_icir.csv.",
+      "status": "S2_GATE_KEY_METRIC",
+      "kill_gate": "post-2020 ICIR < 0.15 시 diversifier axis 미확인 — REJECT 경로"
+    },
+    {
+      "id": "C7",
+      "verdict_ref": "conditions_for_s1[6]",
+      "requirement": "S3 regime-conditional TDC 이중 관문 (전체 <= 0.40 + CRISIS <= 0.55) — L-156 v2 cluster 등록",
+      "action_for_forge": "S3 단계에서 pairwise t-copula TDC 측정. 전체 구간 TDC 0.4 gate + CRISIS (MRS>=30) 구간 TDC 0.55 gate. vs H_1674 + vs STR_1631 (PG2 anchor) + vs STR_1656 (PG2 diversifier). p95 |corr| 0.447 warning 구간 집중 검증.",
+      "status": "S3_TASK (Scout 담당, Forge는 data 제공)"
+    },
+    {
+      "id": "C8",
+      "verdict_ref": "conditions_for_s1[7]",
+      "requirement": "S3 crisis period 별도 pairwise TDC matrix vs H_1674 + vs STR_1631 (PG2 anchor)",
+      "action_for_forge": "8대 stress period (GFC/EU_Debt/China_Shock/Trade_War/COVID/Rate_Hike/Iran_War/Taper_Tantrum) 별 pairwise TDC 분리 측정. c-i 표 생성. Scout S3 단계.",
+      "status": "S3_TASK"
+    },
+    {
+      "id": "C9",
+      "verdict_ref": "conditions_for_s1[8]",
+      "requirement": "S1 FMB 회귀 외국인 residual t-stat > Harvey 3.0 (개인 + 기관 + M01_Rev1M 통제)",
+      "action_for_forge": "Fama-MacBeth 회귀: return_{t+1} ~ INV13_residual + INV01_Individual + INV03_Institutional + M01_Rev1M + log(Size). NW t-stat 보고. Harvey (2016) t > 3.0 기준 충족 여부. 결과: output/s1_h1685v2_fmb_t_stat.csv.",
+      "status": "S1_MANDATORY_OUTPUT",
+      "kill_gate": "Harvey t ≤ 3.0 시 multi-testing penalty 필요 (Judge S6 재검토)"
+    },
+    {
+      "id": "C10",
+      "verdict_ref": "conditions_for_s1[9]",
+      "requirement": "S6 PIT 전수 검증 (Codex Gate-15 variance_ratio + 전체 input disclosure timestamp + lag policy 증명)",
+      "action_for_forge": "S1 단계 증빙: (a) compute_investor.R 내 모든 input (Foreign/Individual/Institutional) disclosure timestamp 문서화. (b) lag policy (T+1) 코드 증명. (c) Judge S6 scan용 variance_ratio 사전 계산 (Gate-15 expanding vs rolling 괴리). pit_evidence 필드에 기록.",
+      "status": "S6_PREPARATION"
+    },
+    {
+      "id": "C11",
+      "verdict_ref": "conditions_for_s1[10]",
+      "requirement": "Phase admission 5-step gradual: Phase_1 보류 → Phase_2 normal regime 확인 후 3% → Phase_3 5% → Phase_4 8% + Herfindahl > 0.12 시 5% 자동 rollback",
+      "action_for_forge": "Governor 작업 — Scout/Forge 관여 X. Forge는 metric 계산만. Scout은 S3/S6 pass 후 Governor에 phase admission 설계 의견서 제출.",
+      "status": "GOVERNOR_TASK"
+    },
+    {
+      "id": "C12",
+      "verdict_ref": "conditions_for_s1[11]",
+      "requirement": "S5 expanding vs rolling 3Y β_t 괴리 검증, 두 방법론 β 차이 > 0.1 시 expanding 적시성 부족",
+      "action_for_forge": "S5 단계에서 expanding β_t + rolling 3Y β_t 2종 variant 병렬 계산. 괴리 > 0.1 월 비율 측정. 괴리 > 0.1 월이 전체의 10%+ 차지 시 rolling 3Y primary 교체 고려. Scout S5 slate에 Variant 사전 등록.",
+      "status": "S5_MUTATION_PREVIEW"
+    }
+  ],
+
+  "s1_gate_criteria": {
+    "alpha_lab_gate": "composite ICIR >= 0.20 (residual signal)",
+    "fmb_gate": "Harvey t > 3.0 (C9)",
+    "pit_gate": "C1~C15 전수 + INV13 5종 패턴 lookahead_detector 0 violations",
+    "portfolio_gate_mdd": "< 45% (Hurdle v2.2 Hard Fail)",
+    "liquidity_gate": "유동성 필터 후 avg daily holdings >= 20",
+    "turnover_gate": "21d baseline Hard Fail >80% 예상 — 63d/126d sensitivity 결과 기반 primary 전환 가능",
+    "three_period_icir_gate": "post-2020 ICIR >= 0.15 + |ΔICIR| <= 0.20 (C6)",
+    "s3_tdc_gate_prospective": "전체 TDC <= 0.40 + CRISIS TDC <= 0.55 (C7)"
+  },
+
+  "forge_execution_checklist": [
+    "0. 표준 헤더: cat('=== STR_1686: H_1685 v2 Foreign Resid Individual Diversifier ===') + ## 핵심아이디어",
+    "1. preflight_check(strategy_id='STR_1686', family='investor_flow') 호출 필수",
+    "2. source('02_Infrastructure/config.R') + backtest_harness.R",
+    "3. **선결 C1**: INV13_Foreign_Resid_Individual_{21d/63d/126d} 3종 factor_registry 등록 + compute_investor.R 확장 (s0_record v2 factor_registry_registration_plan 참조)",
+    "4. **선결 C2**: lookahead_detector.R INV13 5종 패턴 등록 (s0_record v2 lookahead_detector_c11_pattern_draft 참조)",
+    "5. **선결 C3**: compute_investor.R Usable_Date 로직 C11 검증 + pit_evidence 기록",
+    "6. load_rawdata(use_cache=TRUE) 한 번만 (L-534)",
+    "7. load_month_factors() 경유 INV13 3종 로드 + INV01/INV03/M01_Rev1M 제어 load",
+    "8. 3-variant simulation: run_monthly_simulation(RAWDATA, BM_DT, FACTORS_21d/63d/126d, n_holdings=20L, weight_method='equal', commission=0.0015, buffer_zone=list(keep_n=22L, entry_n=20L))",
+    "9. **NO overlay**: DD/VT/Regime 전부 제외 (S0/S1 금지)",
+    "10. run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir) — IC/ICIR/FMB/rolling SR 전수 (3 variants)",
+    "11. **C5**: IC 성분 분해표 생성 (IC_z_F/IC_z_I/IC_residual/ICIR_residual) + β_t 시계열 plot",
+    "12. **C6**: three-period ICIR 분할 (2005-2014/2015-2019/2020-2026)",
+    "13. **C9**: FMB 회귀 + Harvey t-stat 3.0 검증",
+    "14. run_hurdle_gate() + hurdle_result.json 저장 (3 variants 각각)",
+    "15. lookahead_detector --target compute_investor.R --patterns INV13 전수 PASS",
+    "16. 결과를 stage_artifacts/s1_construction_H_1685_v2.json에 저장: grade/score/SR/MDD/ICIR(3종)/FMB_t/three_period_icir/pit_evidence/beta_timeseries/ic_decomposition"
+  ],
+
+  "reporting_to_scout": {
+    "success_case": "DONE_S1_RESULT_H_1685_v2.json — 3-variant 비교 + 12 conditions_met 상세 + primary lookback 추천",
+    "conditions_met_format": "각 C1~C12별 status=applied/pending/violated + 근거",
+    "critical_variant_decision": "21d/63d/126d 3종 ICIR/SR/회전율 비교 후 Scout이 S2에서 primary 결정. 21d Hard Fail 예상 (Quant), 63d Academic 정합, 126d 회전율 최저."
+  },
+
+  "axiom_compliance_precheck": {
+    "AX_000_no_limits": "PASS — Sharpe gap 0.807 해소 경로",
+    "AX_001_defense_conditional_eval": "N/A — diversifier role",
+    "AX_002_process_integrity": "PASS — v1 REVISE → v2 재설계 규정 준수. 실측 검증(255m)이 s0_record 작성 전 수행 — 결과 아는 상태에서 규칙 변경 아닌 data 확인 절차.",
+    "AX_003_value_fail": "PASS — value factor 미사용",
+    "AX_004_quality_profitability_fail": "PASS",
+    "AX_005_defense_fail": "PASS — low-beta/Q07+D25/BAB 미사용"
+  },
+
+  "phase_admission_note": {
+    "critical_constraint": "Phase_1 직접 편입 금지 (Governor 결정)",
+    "admission_path": "Phase_1 보류 → Phase_2 normal regime 확인 후 3% → Phase_3 5% → Phase_4 8%",
+    "rollback_trigger": "Herfindahl > 0.12 시 5% 자동 rollback (Governor rev8-A 반영)",
+    "current_regime": "MRS 63.1 CRISIS — 즉시 편입 불가. normal regime 진입 대기",
+    "sequential_queue_position": "3rd after STR_1684 (H_1688) + STR_1685 (H_1690)"
+  },
+
+  "scout_notes": [
+    "s0_record v2 실측 검증 255개월 완료 (mean|corr| 0.194, channel preservation 0.895)",
+    "5/5 consecutive calibration hit (Codex/Risk/Gov/Quant/Academic) → L-157 v4 draft 적립",
+    "Quant β_t=-0.36 음수 구조는 OLS residual 수학적 직교 (mean signed corr 0.03 확증) + Risk/Gov/Academic 모두 -1/-3/-1 감점 수용. 논쟁 미해결 → S2 C5 IC 성분 분해표로 실증 해결.",
+    "21d vs 63d/126d 결정은 S2 profiling 실측 후. Quant 회전율 >80% 경고 + Academic 3~6개월 정합 + Governor 3종 병렬 합의 → 3-variant 병렬 실행 확정.",
+    "p95 |corr| 0.447 극단 월(13건) 존재 — S3 regime-conditional TDC (전체 0.4 + CRISIS 0.55) 필수. L-156 v2 cluster 사전 등록.",
+    "compute_investor.R expanding β accumulator 구현이 Forge critical path. Scout은 Phase 1 종료 — 후속은 Q-Lead 할당 대기."
+  ]
+}

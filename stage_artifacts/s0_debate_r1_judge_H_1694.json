@@ -1,0 +1,71 @@
+{
+  "role": "judge",
+  "agent_id": "judge_h1694",
+  "hypothesis_id": "H_1694",
+  "hypothesis_title": "Earnings Streak Quality Filter (M25 streak + Q04 F-score composite)",
+  "round": 1,
+  "mode": "compact",
+  "session": 68,
+  "phase": "Day 2",
+  "created_at": "2026-04-19",
+  "stance": "APPROVE_CONDITIONAL",
+  "veto_flag": null,
+  "critical_concerns": [
+    "M25 factor registry label 불일치 실증 검증 필요 — registry regime_profile.crisis=negative인데 Scout 제시 ic_bad=0.026 양수. 이는 (a) label outdated, (b) ic_bad 계산 sample window가 crisis 정의와 다름, (c) 위기 정의(stress 4-period vs 4-regime bad) 혼용 중 하나를 의미하며 S1 진입 전 명확화 필수. L-120 교훈('위기 IC 정의 차이 주의')에 정면 해당",
+    "M25 data_source=consensus + update_freq=daily 특성상 C14 Usable_Date 경유 통과해도 consensus forecast 변경 시점과 거래 가능 시점 사이 intra-day revision risk 존재. Scout 제시 'C14 Usable_Date <= sig_date'만 강제가 아니라 consensus_date revision 시점 multi-analyst aggregation 규칙 명시 필요",
+    "Q04 F-score는 annual filing 기반(lag_rule=Factor_Date <= sig_d, quarterly update)이나 9-point composite 내 일부 항목(현금흐름 관련)은 분기 공시 의존. C4 '분기→45일 lag, 연간→5월 리밸'은 Q04 annual 항목과 quarterly 항목이 mixed → Usable_Date 생성 시 가장 보수적인 lag(연간 공시 기준 5월) 강제 확인 필요. 혼합 lag로 annual 항목 5월 전 사용 시 C4 위반",
+    "AX-004 면제 판단 타당하나 근거 강화 필요. AX-004 v1.1 scope='quality_profitability standalone single-signal long-only'. M25(0.6)+Q04(0.4) composite은 momentum dominant + quality filter 구조로 'single-signal' 정의 밖 — 적용 면제 정당. 단 S1 분해 실증 시 Q04 가중치 감소(0.4→0.2) 또는 Q04 dropped 경우 AX-004 재적용. Gate 14 AX_CAND 스크리닝 경계 조건 명시 필요",
+    "Recent_3y_icir M25=0.326 / Q04=0.532 — Q04 solo가 M25 solo보다 recent 3Y 강함. Composite 0.6 M25 + 0.4 Q04 weight 정당화 부재. Q04 filter 역할이면 weight 비대칭(0.7 Q04 filter + 0.3 M25 streak trigger) 또는 sequential filter(Q04>=5 필터 후 M25 streak 랭크) 구조가 이론적으로 타당. 가중치 선정 rationale 보강 필요"
+  ],
+  "supporting_arguments": [
+    "경제 메커니즘 학술적 타당성 강함 — PEAD(Bernard & Thomas 1989) earnings momentum streak + Piotroski F-score(2000) quality filter 결합은 KR 실증 적법 pipeline. PEAD drift는 analyst 주목도 낮은 small/mid-cap에서 강하고 F-score는 저품질 earnings(accounting manipulation) 제거 효과 → 두 factor 교집합이 earnings quality persistence layer 대표. Novy-Marx(2013) 'Quality over Profitability' 이후 earnings momentum + quality 결합은 QMJ + Carhart family 다각화 후보로 학술 support 존재",
+    "AX-004/005/007 scope 전수 면제 정당 — AX-004 v1.1 EXCLUSION에 '전통 quality composite(GP + F-Score + O-Score + Q07 등 복수 quality axis 결합)' 포함. 본 가설 Q04를 momentum streak filter로 사용하는 composite이므로 AX-004 single-signal scope 밖. AX-005 해당 없음(diversifier role). AX-007 signal-portfolio translation scope 사전 회피 가능 — M25 recent_3y_icir 0.326 + Q04 0.532 양자 0.3+로 signal quality 충분, 단 portfolio translation 실측 S6 Gate 13 필수",
+    "Factor DB 등록 확인 + infrastructure 구비 — M25_Earnings_Mom_Streak(registry line 1682) + Q04_Piotroski_F(registry line 2067) 모두 정식 등록(lifecycle=active, research_stage=S7). C15 load_month_factors() 경유 가능 상태. direction 양자 higher_better로 C13 Z_Score_Aligned 직접 사용 가능(수동 반전 불필요). PIT 준수 infrastructure 기본 구비됨. 단 실제 parquet Usable_Date 컬럼 + Factor_Date/Date lag 적용 패턴 S1 preflight 실측 재검증 필수"
+  ],
+  "arguments": [
+    "경제 메커니즘 학술적 타당성 강함 — PEAD(Bernard & Thomas 1989) earnings momentum streak + Piotroski F-score(2000) quality filter 결합은 KR 실증 적법 pipeline. PEAD drift는 analyst 주목도 낮은 small/mid-cap에서 강하고 F-score는 저품질 earnings(accounting manipulation) 제거 효과 → 두 factor 교집합이 earnings quality persistence layer 대표. Novy-Marx(2013) 'Quality over Profitability' 이후 earnings momentum + quality 결합은 QMJ + Carhart family 다각화 후보로 학술 support 존재",
+    "AX-004/005/007 scope 전수 면제 정당 — AX-004 v1.1 EXCLUSION에 '전통 quality composite(GP + F-Score + O-Score + Q07 등 복수 quality axis 결합)' 포함. 본 가설 Q04를 momentum streak filter로 사용하는 composite이므로 AX-004 single-signal scope 밖. AX-005 해당 없음(diversifier role). AX-007 signal-portfolio translation scope 사전 회피 가능 — M25 recent_3y_icir 0.326 + Q04 0.532 양자 0.3+로 signal quality 충분, 단 portfolio translation 실측 S6 Gate 13 필수",
+    "Factor DB 등록 확인 + infrastructure 구비 — M25_Earnings_Mom_Streak(registry line 1682) + Q04_Piotroski_F(registry line 2067) 모두 정식 등록(lifecycle=active, research_stage=S7). C15 load_month_factors() 경유 가능 상태. direction 양자 higher_better로 C13 Z_Score_Aligned 직접 사용 가능(수동 반전 불필요). PIT 준수 infrastructure 기본 구비됨. 단 실제 parquet Usable_Date 컬럼 + Factor_Date/Date lag 적용 패턴 S1 preflight 실측 재검증 필수"
+  ],
+  "s1_gate_items": [
+    "C14 M25 Usable_Date 경유 실측: Factor DB parquet load 후 M25 signal 사용 시 Usable_Date <= sig_date strict 조건 확인. consensus revision date logic 검증(multi-analyst median/mean 집계 시점)",
+    "C4 Q04 lag 실측: annual 항목과 quarterly 항목 mixed composite 처리 시 최보수 lag(연간 5월 리밸) 강제 확인. Factor_Date <= sig_d 조건 외 month(sig_date) >= 5 after fiscal year-end 추가 필터 의무화",
+    "C15 load_month_factors() 경유 확인: direct parquet read 금지. L-164 v1.1 carve-out 해당 없음(consensus parquet 또는 daily factor DB ML carve-out 아님 — 일반 factor pull)",
+    "C13 Z_Score_Aligned 사용 확인: M25 higher_better + Q04 higher_better 모두 direction positive → sign flip 불필요. Factor DB가 제공하는 Z_Score_Aligned 컬럼 직접 사용 강제(수동 z-score 계산 또는 negate 절대 금지)",
+    "M25 registry label vs empirical regime IC 불일치 해소: S1 sub-period IC 측정 시 4-regime bad ic / stress 4-period ic / 6대 위기 crisis ic 3종 전수 제시 필요. Scout 제시 ic_bad=0.026이 어느 정의인지 명시",
+    "Composite weight 0.6 M25 + 0.4 Q04 rationale 명시 또는 3-way comparison(standard 0.6/0.4 vs filter 0.3/0.7 vs sequential filter) 실측 비교. S2 profiling 단계 optimal weight 선정 과정 투명화",
+    "Alpha Lab Gate ICIR composite >= 0.20 확인: M25 ic_all=0.017 + recent_3y_icir 0.326 + Q04 ic_all=0.029 + recent_3y_icir 0.532 조합 후 composite ICIR 측정 S1 첫 산출물 필수",
+    "L-130 IC≠SR 경계 확인: IC 양수이더라도 유동성 필터 적용 후 Top-20 quintile realized SR 검증. Signal IC만으로 admission 불가. S6 Gate 7 IC-Return coupling ratio SR/ICIR >= 0.3 pre-check",
+    "Gate 14 AX_CAND scope 사전 확인: diversifier role claim + composite. AX-007 scope(Defense/Core_Secondary single-sleeve) 해당 여부 — diversifier 포지셔닝 시 scope 밖, 단 S6 pairwise TDC vs STR_1631/STR_1656 측정으로 diversifier label empirical 증명"
+  ],
+  "rubric_breakdown": {
+    "gap_alignment": 3,
+    "role_match": 3,
+    "pit_compliance": 3,
+    "economic_mechanism": 4,
+    "implementation_feasibility": 4
+  },
+  "score": 17,
+  "detailed_verdict_rationale": {
+    "stance": "APPROVE_CONDITIONAL",
+    "reason": "경제 메커니즘(PEAD + F-score) 학술 타당성 + Factor DB 정식 등록 + AX-004/005/007 scope 전수 면제 + recent_3y_icir 양자 0.3+ 강함으로 APPROVE 근거 충분. 단 M25 regime label 불일치 / Q04 mixed lag 처리 / composite weight rationale 3건은 S1 진입 전 해소 필수 conditional items. Veto 사유 아님(PIT 구조적 위반 없음, 모두 실측 verification 가능). REVISE 수준도 아님(설계 자체 변경 불필요)",
+    "pit_risk_tier": "MEDIUM (Factor DB 등록 + lag_rule 명시되어 infrastructure는 갖춰졌으나 mixed quarterly/annual + consensus revision 경계 조건 실측 필수)",
+    "ax_scope_determination": "AX-004 면제 APPROVE (composite filter role) / AX-005 해당 없음 (diversifier) / AX-007 scope 밖 가능성 (diversifier + multi-sleeve context, 단 S6 실측 필수)",
+    "l_code_alignment": [
+      "L-120 위기 IC 정의 차이 — ic_bad 계산 정의 명시 필요, S1 해소",
+      "L-130 IC≠SR 유동성 후 quintile — realized SR 검증 의무",
+      "L-157 algebraic identity — M25+Q04 composite 기존 factor hidden clone 가능성 낮음, S3 orthogonality 실측",
+      "L-164 v1.1 carve-out 해당 없음 — load_month_factors() 강제"
+    ]
+  },
+  "conditional_approval_precondition_list": [
+    "S1 preflight: M25 Usable_Date + Q04 Factor_Date 양자 Factor DB load 실측 pattern 확인",
+    "S1 preflight: consensus revision date logic 명시 + annual/quarterly mixed lag 최보수 적용 확인",
+    "S2 profiling: regime IC 정의 명확화 + composite weight rationale 투명화",
+    "S2 profiling: Alpha Lab Gate ICIR composite >= 0.20 확인",
+    "S6 Gate 7: IC-Return coupling ratio SR/ICIR >= 0.3 (L-163 poison_pill 사전 회피)",
+    "S6 Gate 11: pairwise TDC vs STR_1631_SYN_05 + STR_1656_MLRA < 0.30 (Sequential Admission)",
+    "S6 Gate 13: signal-portfolio translation failure 자동 탐지 scan",
+    "S6 Gate 14: AX_CAND scope 사전 재확인 (composite evolution single-signal 전환 위험 모니터링)"
+  ]
+}

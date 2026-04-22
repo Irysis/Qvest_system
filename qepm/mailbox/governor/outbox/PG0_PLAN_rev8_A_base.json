@@ -1,0 +1,287 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PG0_PLAN_REV8_A_CONDITIONAL_VALIDATED",
+  "stage": "PG0_ACTIVE_CONDITIONAL_VALIDATED_scenario_Y_fix1_applied",
+  "timestamp_created": "2026-04-18T14:45:00+09:00",
+  "timestamp_activated": "2026-04-18T Session67_Day1_rev8_A_ACTIVE",
+  "timestamp_conditional_validated": "2026-04-18T Session67_Day1 (Q-Lead Option 2 수락)",
+  "timestamp_fix1_applied": "2026-04-18T Session67_Day1 (Q-Lead 직접 적용 + 테스트 성공, 288 factors sd 1.0 복원)",
+  "session": 67,
+  "day": 1,
+  "version": "v8.0_A_ACTIVE_CONDITIONAL_VALIDATED_fix1_applied",
+  "status": "✅ ACTIVE_CONDITIONAL_VALIDATED (Fix 1 applied) — Architect 진단 MEDIUM severity, Q-Lead Option B 5줄 runtime rescale 직접 적용 완료. 288 factors all sd=1.0 복원 확인 (R12/D01/M08 포함). rev8-A composition baseline VALIDATED. H_1689/H_1690/STR_1684_v2 S1 재실행으로 최종 VALIDATED 전환 예정. Risk Mgr 3rd round 즉시 spawn 가능.",
+  "status_transition_path": "ACTIVE_CONDITIONAL_VALIDATED + Fix1 APPLIED (현재) → S1 재실행 완료 → ACTIVE_VALIDATED (최종)",
+  "fix1_application_confirmed": {
+    "method": "Q-Lead 직접 적용 (Forge 45분+ 무응답)",
+    "file": "02_Infrastructure/factor_db/factor_db_connector.R line 113~117",
+    "test_result": "288 factors all sd=1.0 + R12 0.071→1.0 + D01 0.071→1.0 + 722,767 rows loaded 정상",
+    "critical_observation": "Fix 1 후 load_month_factors() 경유 시 sd 1.0 (이전 대비 다름) → 신규 재실행 시 다른 결과 가능. Judge retroactive audit 24h 대상."
+  },
+  "architect_diagnosis_summary": {
+    "severity": "MEDIUM (Scenario Y)",
+    "root_causes": {
+      "RC1_PRIMARY": "Winsorize ±3 후 re-standardize 누락 → fat-tail clipping (R12/D01 90%+ clipped)",
+      "RC2": "R12 vs D01 계산식 완전 동일 (compute_risk.R ≡ compute_defense.R)",
+      "RC3": "M08 Raw_Value 252일 sum 극단 scale"
+    },
+    "fix_decision": "Option B — factor_db_connector.R line 112 insert 5줄 runtime rescale (Parquet 불변 + rollback 가능)",
+    "str_1631_str_1656_impact": "없음 (재현성 유지, Parquet 불변)",
+    "str_1684_impact": "CRITICAL (Size 14배 지배 → ICIR -0.162 확증, H_1688 재평가 필수)"
+  },
+  "original_activation_trigger": "STR_1683 direction audit 결과 'no bug (structural failure)' + STR_1684 Grade F (ICIR -0.1874 CAPM beta 1.0007) — Architect 재검증으로 STR_1684 UNVALIDATED 확정",
+  "admission_rule_v3_5_normative_reference": {
+    "status": "v3.5 CONDITIONAL_ACTIVE Stage 1 (team-lead 최종 arbitration 2026-04-18)",
+    "enforcement_level": "advisory_warning (Gate 11/12 모두, hard_block 보류)",
+    "stage_transition_triggers": "Stage 2 = VALIDATED Hard Fail 2건 축적 (Gate 12 hard_block) / Stage 3 = Architect signoff (Gate 11/12 hard_block + ACTIVE_NORMATIVE)",
+    "reference_file": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json",
+    "governor_signoff": "qepm/mailbox/governor/outbox/admission_rule_v3_5_governor_signoff.json",
+    "gate_stub_spec": "qepm/mailbox/governor/outbox/pm_run_multisleeve_gate_11_12_stub_spec.json",
+    "application_to_rev8_a_admission_stage_1": {
+      "Defense_family_advisory_warning": ["H_1689 (23%)", "H_1690 (10%)"],
+      "note": "Stage 1에서는 Defense도 advisory_warning 수준 적용. Stage 2 전환 시 Defense mandatory hard_block로 승격.",
+      "Defense_gates_checked": ["Gate 11 variant_comparison (min 3 + primary >= alternatives)", "Gate 12 IC-Return coupling ratio (SR_monthly/ICIR >= 0.3)"],
+      "Core_Diversifier_advisory": ["H_1688 Core_Secondary (PENDING_INFRA_FIX)", "STR_1679v3 Div", "H_1685v2 Div_4 Phase_2+"],
+      "Core_Primary_exemption": ["STR_1631 Core_Primary single consensus signal"],
+      "retroactive_audit_preliminary": "qepm/mailbox/governor/outbox/retroactive_v3_5_audit_consolidated.json (5건 → 4건, STR_1433 ARCHIVE)"
+    }
+  },
+
+  "activation_protocol": {
+    "step_1_receive_audit": "team-lead/Q-Lead로부터 audit 결과 + rev8-A 선택 지시 수신",
+    "step_2_fill_runtime_values": "본 skeleton의 PENDING_AUDIT_* 3개 placeholder 채우기",
+    "step_3_rename_file": "PG0_PLAN_rev8_A_FINAL_SKELETON.json → PG0_PLAN_rev8_A.json",
+    "step_4_supersede_rev7_v3_v1": "rev7_v3_v1 → archive status",
+    "step_5_risk_mgr_spawn": "RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_PRE_DRAFT.json의 rev8_A_scenario 지시서 발행",
+    "step_6_telegram_report": "🚨 rev8-A ACTIVATE + Risk Mgr spawn 보고"
+  },
+
+  "supersedes": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3_v1.json",
+  "supersedes_chain": "rev2 → ... → rev7_v3_v1 → **rev8_A**",
+
+  "trigger_confirmed": "STR_1683 4 variants 전체 Hard Fail + direction audit 결과 (PENDING_AUDIT_DIAGNOSIS) → L-160 Defense IC-Return decoupling 확정 (Judge 2026-04-18 methodology_memory.md v4.9)",
+
+  "audit_results_initial_filled_now_revised": {
+    "audit_diagnosis_original": "STR_1683 direction bug 없음. IC-Return decoupling 구조적 실패 (L-160). STR_1684 CAPM beta 1.0007 잔차화 실패 + ICIR -0.1874",
+    "audit_diagnosis_REVISED_scout_2026_04_18": "STR_1684 ICIR -0.1874는 Factor DB Z_Score builder 버그에 의한 미검증 상태 가능성 85%. H_1688 가설 자체 폐기 금지. 인프라 fix 후 재시도 필요.",
+    "bug_list": "(1) factor_engine.R merge Date 충돌 (Fix 1/2 적용 완료, 인프라 L-code 후보). (2) **Factor DB Z_Score normalization distortion CRITICAL**: M01 sd 0.660, C19 sd 0.361, R12/D01 sd 0.071 identical duplicate, M08 sd 0.054 clipped. OLS scale 충돌로 size_w 지배.",
+    "direction_evidence": "no_direction_bug_but_infra_bug_suspected_85pct",
+    "str_1683_grade": "F CONFIRMED (MDD 94.7%, IC-Return decoupling L-160 pattern structural)",
+    "str_1684_grade_REVISED": "F TENTATIVE (MDD 86.7%, ICIR -0.1874, 그러나 Factor DB Z_Score builder 버그로 재평가 필요)",
+    "hard_fail_accumulation_revised": "1~2건 (STR_1683 확정 1건 + STR_1684 pending-infra-fix)",
+    "v3_5_stage_2_transition_trigger": "**보류** — STR_1684 재평가 후 확정 (infra fix 후 재실행)"
+  },
+
+  "l_code_candidates_REVISED": {
+    "L_160": "Defense IC-Return decoupling (STR_1683, Judge 2026-04-18 methodology_memory.md v4.9) — 확정 유지",
+    "L_161_candidate_SUSPENDED": "Core_Secondary residual_momentum 잔차화 실패 — **Scout 진단으로 infra bug 가능성 우선, Architect 결과 후 재평가**",
+    "L_162_candidate_PROMOTED": "**Factor DB Z_Score normalization distortion CRITICAL** (R12/D01 duplicate + M01/C19/M08 sd 분산 불일치) — 프로젝트 전체 영향, Architect 진단 후 공식 발행 권고",
+    "L_163_candidate_NEW": "factor_engine.R merge Date 컬럼 충돌 (Fix 1/2 인프라 교훈) — 별도 인프라 L-code",
+    "coordinate": "Judge L-162 (Factor DB 무결성) + L-163 (merge) 별도 판정. L-161은 infra fix 후 STR_1684 재실행 결과로 판정."
+  },
+
+  "rev8_a_phase_3_composition_CONDITIONAL_pending_architect": {
+    "description": "Scout CRITICAL 진단으로 composition 전체 재검토 필요. H_1688/H_1689 Factor DB 의존도 높아 infra bug 영향 가능. STR_1631 proxy coupling_ratio 1.417도 재검증 가능성.",
+    "status_per_strategy_conditional": {
+      "STR_1631_Core_Primary": {"weight": 0.18, "role": "Core_Primary", "family": "consensus_C19_core", "infra_impact": "RE_VERIFICATION_POSSIBLE (C19 sd 0.361 distortion 영향 평가 필요)", "gate_11_status": "EXEMPT", "gate_12_status": "PENDING_ARCHITECT_DIAGNOSIS"},
+      "Core_Secondary_H_1688_PENDING_INFRA_FIX": {"weight_conditional": 0.10, "status": "**PENDING_INFRA_FIX** (was DROP, reverted)", "reason": "Scout 가설 B 85% infra bug — 인프라 fix 후 STR_1684_v2 재실행 필요", "decision_blocker": "Architect 진단 결과"},
+      "STR_1656_Div_ML": {"weight": 0.14, "role": "Diversifier", "family": "ML_complexity", "infra_impact": "LOW (ML model 독립 signal 생성, Factor DB Z_Score 직접 의존도 낮음)"},
+      "STR_1679v3_Div_1": {"weight": 0.10, "role": "Diversifier embedded Q25", "family": "momentum_overlay_embedded_q25", "infra_impact": "MEDIUM (Q25 sd 영향 확인 필요)"},
+      "H_1682_DEF_DROPPED_confirmed": {"weight": 0.00, "previous": 0.12, "reason": "L-160 IC-Return decoupling structural 확정 (infra bug와 별개)", "decision": "DROP 유지"},
+      "H_1689_Def_2_PENDING_ARCHITECT": {"weight_conditional": 0.23, "status": "**PENDING_ARCHITECT_DIAGNOSIS** (was PENDING, elevated)", "infra_impact": "HIGH (Quality 4-axis + residualization = Factor DB 전면 의존)", "gate_11_12": "v3.5 Defense mandatory, infra fix 후 적용"},
+      "H_1690_Def_3_PENDING_ARCHITECT": {"weight_conditional": 0.10, "status": "PENDING_10_CONDITIONS + ARCHITECT", "infra_impact": "MEDIUM (multi-source composite — R16 sd 확인 필요)"},
+      "Reserve": {"weight": 0.09, "composition": "H_1678 refit 6 + H_1690 promotion 2 + contingency 1"},
+      "Unallocated_phase_3": {"weight": 0.16, "note": "H_1688 10pp revert 시 6pp로 환원 예정. conditional 유지"}
+    },
+
+    "_placeholder_not_active_":{
+      "removed_Core_Secondary_H_1688": {"weight": 0.10, "role": "Core_Secondary", "family": "momentum_residual", "barroso_mandatory": true},
+      "RESERVED_FOR_H_1678_REFIT": {"weight": 0.06, "role": "Reserved Phase_2+"},
+      "Div_ML_STR_1656": {"weight": 0.14, "role": "Diversifier", "family": "ML_complexity"},
+      "Div_3_STR_1679v3": {"weight": 0.10, "role": "Diversifier with embedded Q25+R16", "family": "momentum_overlay_embedded_q25"},
+      "Def_1_H_1682_DROPPED": {"weight": 0.00, "previous": 0.12, "l_code_reference": "L-160", "rationale": "STR_1683 4 variants Hard Fail + L-160 IC-Return decoupling 확정"},
+      "Def_2_H_1689_conservative_23pct": {"weight": 0.23, "previous": 0.20, "change": "+3pp", "rationale": "Scout 권고 25% 대비 보수화", "family": "quality_aggregate", "q25_share": 0.25},
+      "Def_3_H_1690_promoted_10pct": {"weight": 0.10, "previous": 0.08, "promotion_condition": "10 conditions PASS", "family": "multi_source_defense_anchor", "q25_share": 0.25},
+      "Reserve_expanded_9pct": {"weight": 0.09, "composition": {"H_1678_refit": 0.06, "H_1690_promotion_buffer": 0.02, "contingency": 0.01}},
+      "Unallocated_phase_3_6pct": {"weight": 0.06, "description": "Scout 신규 Defense 가설 (D1 Q07 sector-neutralization) Phase_3 편성 대기"}
+    },
+
+    "phase_3_totals_CONDITIONAL": {
+      "scenario_A_if_infra_fix_successful_H_1688_reinstated": {
+        "STR_1631": 0.18, "H_1688_restored": 0.10, "STR_1656": 0.14, "STR_1679v3": 0.10, "H_1689_verified": 0.23, "H_1690_verified": 0.10,
+        "total_active_6": 0.85, "reserve": 0.09, "unallocated": 0.06, "n_active": 6
+      },
+      "scenario_B_if_infra_fix_partial_H_1688_modified": {
+        "H_1688_modified_spec": "Architect guidance 반영 재설계 후 S1 재실행",
+        "composition": "Scenario A와 유사하나 H_1688 weight 조정 (5~10%)"
+      },
+      "scenario_C_if_infra_bug_confirmed_but_H_1688_still_fails": {
+        "H_1688_confirmed_drop": "infra fix 후에도 ICIR <= 0 → structural failure 확정",
+        "composition": "현 rev8-A ACTIVE 버전과 동일 (Core_Secondary slot 공백, Week 2~3 탐색)"
+      },
+      "decision_flowchart": "Architect 진단 → Forge infra fix → STR_1684_v2 재실행 → 결과로 scenario A/B/C 분기 → rev8-A-revised ACTIVATE"
+    },
+    "total_conditional_pending_architect": "Scenario A/B/C 중 결정 대기",
+    "n_strategies_active_conditional": "5 or 6",
+    "note_composition_change_REVISED": "team-lead 명령: ACTIVATE 보류 + H_1688 DROP → PENDING_INFRA_FIX 전환. Architect Factor DB 진단 수신 후 composition 최종 확정.",
+    "suspended_timestamp": "2026-04-18T Session67_Day1",
+    "activation_blockers": [
+      "1. Architect Factor DB Z_Score builder 진단 결과 수신",
+      "2. Forge infra fix (Z_Score normalization + R12/D01 duplicate 해결)",
+      "3. STR_1684_v2 + H_1689 S1 재실행",
+      "4. Judge S6 재판정 + L-161 최종 판정 (infra bug vs structural failure)"
+    ],
+
+    "defense_cluster_audit": {
+      "h_1689_23pct": 0.23,
+      "h_1690_10pct": 0.10,
+      "total_defense": 0.33,
+      "change_from_rev7_v3_v1": "-7pp",
+      "ax_001_framework_applied": "Defense Conditional Audit Framework v1.0 (qepm/mailbox/governor/outbox/defense_conditional_audit_framework_v1_0.json)",
+      "l_160_citation": "Defense cluster 33% 설계 시 L-160 IC-Return decoupling 회피 원칙 적용 — H_1689/H_1690 각각 (a) sector-neutralization, (b) risk-parity sub-weighting, (c) non-linear transformation 중 2개+ 준수 확인 필요"
+    },
+
+    "family_concentration_check": {
+      "consensus_C19_core": 0.18,
+      "momentum_residual": 0.10,
+      "momentum_overlay_embedded_q25": 0.10,
+      "ML_complexity": 0.14,
+      "quality_aggregate": 0.23,
+      "multi_source_defense": 0.10,
+      "reserve": 0.09,
+      "unallocated": 0.06,
+      "max_family": 0.23,
+      "rule_3_45pct_cap": "PASS (quality_aggregate 23% < 35% cap, 12pp headroom)"
+    },
+
+    "q25_r16_exposure_audit_rev8_a": {
+      "str_1679v3_embedded_10pct_q25_share_0_90": 0.090,
+      "h_1689_23pct_q25_share_0_25": 0.0575,
+      "h_1690_10pct_q25_share_0_25": 0.025,
+      "str_1656_14pct_q25_share_0_05": 0.007,
+      "total_weighted_q25": 0.1795,
+      "cap_35_compliance": "PASS (17.95%, rev7_v3_v1 22.1% 대비 -4.15pp)",
+      "soft_threshold_30_compliance": "PASS (headroom 12.05pp)"
+    }
+  },
+
+  "projected_sr_rev8_a": {
+    "weighted_mean_SR_phase_3": 0.895,
+    "rho_0_3_conservative": {"projected_SR": 1.72},
+    "rho_0_2_optimistic": {"projected_SR": 1.80},
+    "boost_roadmap_6_items_total": "+0.28~0.41",
+    "final_target_with_all_boosts": {
+      "conservative": "1.72 + 0.28 = 2.00",
+      "optimistic": "1.80 + 0.30 = 2.10"
+    },
+    "boost_6_new_defense_scout_D1": "+0.05~0.10 (Q07 sector-neutralization 성공 시)"
+  },
+
+  "l_160_integration_rev8_a": {
+    "reference": "stage_artifacts/l_code_L_160_STR_1683.json (Judge 확정 2026-04-18)",
+    "title": "Defense IC-Return decoupling — 고ICIR Defense composite long-only 20종목 수익화 구조적 실패",
+    "application_to_rev8_a": [
+      "1. H_1682 12% DROP 근거",
+      "2. Scout 신규 Defense 가설 D1~D5 설계 원칙 (sector-neutralization / risk-parity / non-linear transformation 중 2+)",
+      "3. Forge S1 variant comparison (min 3 variants) 표준 적용 (Gate 11 제안)",
+      "4. Governor admission 시 IC-Return coupling ratio (SR/ICIR >= 0.3) 참조 (Gate 12 제안)"
+    ],
+    "ax_cand_tracking": "AX_CAND_defense_ic_return_decoupling (Judge tracking, 2026-07-17 Q3 review, Governor frequency axis feeding 공조)"
+  },
+
+  "judge_coordinate_status": {
+    "l_160_confirmed": true,
+    "l_159_independent_maintained": true,
+    "gate_11_12_v3_5_proposal_pending": "triple sign-off + 2 Hard Fail 사례 + Scout handoff kit v2 통합 시 v3.5 발행",
+    "governor_judge_role_separation": "Governor 초안 발의 → Judge 본문 확정 분업 유지"
+  },
+
+  "scout_coordinate_status": {
+    "todo_new_defense_hypothesis_dispatched": "qepm/mailbox/scout/inbox/TODO_NEW_DEFENSE_HYPOTHESIS_POST_H_1682.json",
+    "priority_recommendation": "P1 D1 Q07 sector-neutralization (LOW difficulty)",
+    "timeline": "Day 3~4 handoff + S0 debate (H_1685 v2 REJECT 시 Day 2~3로 가속)"
+  },
+
+  "risk_mgr_3rd_round_spawn_plan": {
+    "prompt": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_PROMPT_DRAFT.json",
+    "spawn_instruction": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_SPAWN_INSTRUCTION_PRE_DRAFT.json (rev8_A_scenario branch)",
+    "scope_5_items": ["V1 Defense 33%", "V2 H_1689 23% concentration", "V3 H_1690 Phase_2 10%", "V4 Q25 17.95% headroom", "V5 projected SR 1.72 + boost 6"],
+    "addendum": "H_1682 direction audit 결과 A1~A5 반영"
+  },
+
+  "phase_1_day_1_7_transition_plan_updated": {
+    "day_1_completed": [
+      "Judge v3.4 10 gates normative",
+      "H_1690 S0 APPROVE 64",
+      "Forge STR_1682 FAIL",
+      "Forge STR_1683 FAIL (L-160 근거)",
+      "Governor rev7_v3_v1 → rev8-A migration"
+    ],
+    "day_2": [
+      "rev8-A ACTIVATE (audit 후)",
+      "Risk Mgr 3rd round spawn",
+      "Forge STR_1684 S1 실행",
+      "Forge STR_1690 S1 실행",
+      "H_1685 v2 R2/R3 completion + VERDICT"
+    ],
+    "day_3": [
+      "Risk Mgr VERDICT → rev8-A 조정 (필요 시)",
+      "Judge S6 15 gates on STR_1684",
+      "Scout D1 handoff kit 완성"
+    ],
+    "day_4": [
+      "Scout D1 S0 debate (5인)",
+      "H_1678 handoff kit 모니터링"
+    ],
+    "day_5_6": [
+      "Phase_1 PG1 Admission 초안",
+      "Governor 최종 적격성 판정"
+    ],
+    "day_7": [
+      "Phase_1 ACTIVATE (STR_1631 80→60%, 기타 sleeves activation)",
+      "LIVE 운영 시작"
+    ]
+  },
+
+  "governor_next_actions_post_activation": [
+    "1. rev8-A ACTIVE 발행 (PG0_PLAN_rev8_A.json, DRAFT 접미사 제거)",
+    "2. Portfolio Policy pm_run_multisleeve() 파라미터 갱신",
+    "3. Risk Mgr 3rd round spawn 지시서 Q-Lead 전달",
+    "4. Telegram 🚨 rev8-A ACTIVATE 보고",
+    "5. Scout TODO_NEW_DEFENSE_HYPOTHESIS priority P1 D1 가속",
+    "6. Judge 통보 (L-160 reference 반영 확인)",
+    "7. Phase_1 PG1 Admission 초안 Day 5~6 목표 착수"
+  ],
+
+  "telegram_report_template_rev8_a": {
+    "header": "🚨 [Governor] rev8-A ACTIVATE — H_1682 완전 DROP 확정",
+    "body": [
+      "📊 Phase_3 composition 재편: STR_1631 18 / H_1688 10 / STR_1656 14 / STR_1679v3 10 / H_1689 23 / H_1690 10 + Reserve 9 + 미배분 6",
+      "🛡️ Defense cluster: 40% → 33% (-7pp)",
+      "📉 Q25 exposure: 22.1% → 17.95% (-4.15pp)",
+      "📈 Projected SR: 1.72 → boost 6건 시 2.00",
+      "📚 L-160 확정 — Defense IC-Return decoupling 교훈 반영",
+      "⚖️ Risk Mgr 3rd round 스폰 예정",
+      "🔬 Scout D1 Q07 sector-neutralization 가속"
+    ],
+    "charts_attached": ["rev8_a_composition_pie.png (option)", "projected_sr_roadmap.png (option)"]
+  },
+
+  "executive_summary_rev8_a_pre_activation": {
+    "trigger_cascade": [
+      "STR_1683 4 variants Hard Fail (2026-04-18 Forge v2 S1)",
+      "L-160 Judge 확정 (IC-Return decoupling)",
+      "rev8-A/B 병행 DRAFT",
+      "team-lead rev8-A slight preference 수용",
+      "Judge rev8-A 승인 방향 확인",
+      "STR_1683 direction audit 결과 대기 (30분 예상)"
+    ],
+    "ready_to_activate": true,
+    "missing_inputs": [
+      "PENDING_AUDIT_DIAGNOSIS",
+      "PENDING_AUDIT_BUG_LIST",
+      "PENDING_AUDIT_DIRECTION_EVIDENCE"
+    ],
+    "estimated_activation_time": "audit 수신 후 5분 이내"
+  }
+}

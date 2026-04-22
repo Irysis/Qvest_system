@@ -1,0 +1,87 @@
+{
+  "strategy_id": "STR_1562",
+  "strategy_dir": "STR_1562_gerber_dcc_hrp_c11fix",
+  "tier": 2,
+  "sweep_v3_pass2_timestamp": "2026-04-17",
+  "path_mode": "PATH_2_LIMITED_VERIFICATION",
+  "v2_grade": "A",
+  "v3_grade": "A_CONDITIONAL",
+  "v3_verdict": "VALIDATED_DIVERSIFIER_CONDITIONAL",
+  "prev_judge_final_verdict": "PASS_WITH_CONDITIONS",
+  "family_assignment": "FAMILY_2_GERBER_DCC (independent)",
+  "family_cross_corr_daily": {"vs_FAMILY_1": "0.787~0.802", "vs_STR_1679v2_proxy": 0.044},
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "note": "584 lines clean. c11fix suffix indicates prior FRED lag fix applied.",
+      "inherited_risk": "BASE_DIR STR_770_phase2_cross MISSING — same as other Family 1/2 members"
+    },
+    "gate_1_impl": {
+      "pass": "WAIVED_PATH_2",
+      "waiver_reason": "STR_770_phase2_cross BASE_DIR MISSING. Per Q-Lead Path 2 directive.",
+      "n_holdings_effective": "up to 30 (still 5-sleeve structure despite different covariance method)",
+      "v53_n20_violation": true,
+      "commission": 0.0015
+    },
+    "gate_2_robustness": {
+      "pass": true,
+      "loo_2008_sr": 1.405,
+      "loo_2020_sr": 1.332,
+      "loo_2011_sr": 1.331,
+      "loo_2018_sr": 1.365,
+      "full_sr_daily": 1.295,
+      "rolling_3y_sr_mean": 0.941,
+      "rolling_3y_sr_min": -0.786,
+      "rolling_3y_sr_last": 2.082,
+      "rolling_3y_sr_peak": "strong — peak 2.082 recent",
+      "stress_outperform": "4/4"
+    },
+    "gate_3_perf": {
+      "pass": true,
+      "sharpe_monthly": 1.333,
+      "sharpe_daily": 1.295,
+      "cagr": 17.58,
+      "mdd": -31.78,
+      "mdd_v53_fail": true,
+      "annvol": 13.19,
+      "note": "Lowest AnnVol in Tier 2 (13.19%) — risk-managed profile",
+      "score_hurdle": 57.5
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr": 1.000,
+      "dsr_significant": true,
+      "dsr_n_trials": 400,
+      "capm_alpha_annual_pct": 12.55,
+      "capm_alpha_t": 5.59,
+      "harvey_t3_pass_capm": true,
+      "capm_beta": 0.371,
+      "bm_corr": 0.596,
+      "ff5_alpha_t": "NOT_COMPUTED"
+    },
+    "gate_5_diversity": {
+      "pass": true,
+      "family_assignment": "INDEPENDENT_FAMILY_2",
+      "max_abs_corr_with_FAMILY_1": 0.802,
+      "corr_with_STR_1679v2_proxy": 0.044,
+      "note": "Only Tier 2 member outside 5-sleeve near-clone family. Independent covariance methodology (Gerber + DCC + HRP)."
+    },
+    "gate_6_role_honesty": {
+      "pass": "PROBABLE",
+      "declared_role": "unspecified (prev Judge: PASS_WITH_CONDITIONS)",
+      "audit": "No ROLE_MISMATCH flag in prior artifacts. Daily corr 0.044 vs PG2 active confirms diversifier claim.",
+      "note": "Full role audit requires running role_honesty_audit.R — not done in Path 2 limited verification."
+    }
+  },
+  "sr_contrib_estimated": 0.08,
+  "pg_candidate_level": "PG1_WITH_CONDITIONS",
+  "conditional_pass_conditions": [
+    "Gate 1 PATH_2_WAIVED: BASE_DIR STR_770_phase2_cross must be restored before production admission",
+    "FF5 alpha t computation when KR factor data available",
+    "Full Gate 6 Role Honesty audit recommended before PG2 elevation",
+    "N>20 violation — requires union size reduction or sleeve structure redesign"
+  ],
+  "recommendation": "VALIDATED_DIVERSIFIER_CONDITIONAL. Only Tier 2 strategy passing all available gates + independent family. Candidate for PG1 admission with explicit 're-runnability PENDING' tag per Q-Lead directive. Holds back until Gate 1 WAIVER resolved.",
+  "notes": "Gerber robust correlation + DCC + HRP is methodologically distinct from Family 1's simple Pearson + equal-weight approach. This accounts for the 0.78~0.80 correlation discount. rolling 3Y SR peak 2.082 is highest among Tier 2 — indicates recent alpha strength."
+}

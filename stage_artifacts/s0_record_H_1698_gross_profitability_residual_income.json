@@ -1,0 +1,93 @@
+{
+  "hypothesis_id": "H_1698",
+  "strategy_id_reserved": "STR_1698_gross_profitability_residual_income",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Gross Profitability Residual Income Diversifier (Q01 + V24 + M12)",
+
+  "mechanism": "Q01_GPA(총이익 대비 총자산 = Gross Profit to Assets)는 Novy-Marx(2013 JFE) 실증: COGS에서 R&D, SGA를 뺀 raw profitability는 market noise 최소화. V24_Residual_Income(잔여이익 = ROE - 자본비용 × Book_Value)는 Ohlson(1995 CAR) 내재가치 모델의 핵심 — 단순 이익이 아닌 자본조달 비용 초과 이익. 두 지표 모두 기업의 경제적 부가가치를 포착하나 다른 차원에서 측정: GPA는 생산 효율성(매출 단계), Residual Income은 자본 효율성(투자자 귀속 단계). 이 두 축이 모두 양수인 기업 = 구조적으로 가치를 창출하는 기업 → 장기 alpha 지속성. M12_LR_Reversal(장기 반전) 보조 필터로 과도한 단기 모멘텀에 의한 과대평가 종목 차단.",
+
+  "economic_rationale": "Novy-Marx(2013 JFE) 'The Other Side of Value: The Gross Profitability Premium': GPA는 FF3 alpha t=5.54, Fama-MacBeth CAGR +17.7%. 핵심 메커니즘: gross profit이 accrual 오염 없는 순수 생산성 지표 — COGS만 반영, SGA/R&D/DA 전 단계. KR 시장에서 Q01 conditional_value=0.0240(Gate 0.5 PASS), recent_3y_icir=0.081(약하나 양수). Ohlson(1995 CAR) 잔여이익 모델: V24_Residual_Income cv=0.0174, icir=0.298(최근 3년 안정). 중요: V24 recent_3y_icir=0.298이 Q01(0.081)보다 훨씬 강 → 최근 KR 시장에서 잔여이익 팩터가 더 유효. M12_LR_Reversal: cv=0.0089, icir=0.205 — 3~5년 장기 반전(DeBondt&Thaler 1985 JF). 단기 과대평가 종목 차단 역할. 조합 논리: (1) GPA=생산 효율성, (2) Residual Income=자본 효율성, (3) LR_Reversal=가격 역전(과대평가 차단) → 세 차원이 독립적 정보 제공.",
+
+  "trail": "standard",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "Q01+V24 조합은 수익성(consensus/earnings momentum 계열인 STR_1631)과 다른 차원의 alpha — 생산 효율성과 자본 효율성. AX-004 scope: quality_profitability standalone 실패 → 본 가설은 (1) diversifier role(not defense), (2) GPA+Residual Income composite(not standalone), (3) LR_Reversal 역가격 필터 추가 → AX-004 직접 적용 대상 아님. 단, AX-004의 근본 원인(KR quality 팩터 단독 장기 alpha 약화)을 고려하여 S1에서 엄격 검증. STR_1631(C19 earnings quality) 대비 다른 alpha source → TDC 낮을 것으로 예상. portfolio_gap_vector v1.0.8 P1_diversifier 슬롯: STR_1679v3(8%) 외 추가 후보 필요.",
+
+  "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+
+  "why_now": "portfolio_gap_vector v1.0.8 sleeve_needs=[diversifier]. V24_Residual_Income recent_3y_icir=0.298 — 최근 3년 KR 시장에서 잔여이익 팩터 강세. Q01_GPA 미사용(used=FALSE) + V24 미사용. M12_LR_Reversal 미사용 + icir=0.205 안정. 세 팩터 모두 Gate 0.5 PASS. 잔여이익 기반 내재가치 접근은 전략 포트폴리오에서 아직 탐색하지 않은 family — Explore 버킷 신규 영역. STR_1631과의 상관이 낮을 경우 diversification 효과 즉각 기여.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "V24_Residual_Income",
+    "filter_1": "Q01_GPA",
+    "filter_2": "M12_LR_Reversal",
+    "weight_scheme": "composite: 0.50 * z_V24 + 0.35 * z_Q01 + 0.15 * z_M12",
+    "rationale": "V24를 primary로 — recent_3y_icir=0.298으로 최근 강세. Q01_GPA 보조(0.35) — 생산 효율성으로 V24 신뢰도 강화. M12_LR_Reversal(0.15) — 과대평가 차단 역할. V24+Q01 두 수익성 차원을 primary로 두고 M12는 price correction filter.",
+    "v24_direction_note": "V24_Residual_Income: higher_better = TRUE (잔여이익 클수록 양수). load_month_factors() Z_Score_Aligned 자동 처리.",
+    "q01_direction_note": "Q01_GPA: higher_better = TRUE (GPA 높을수록 생산성 높음). load_month_factors() 자동 처리.",
+    "m12_direction_note": "M12_LR_Reversal: 방향 확인 필요. DeBondt&Thaler(1985) 장기 반전 → 과거 패자 = 미래 승자. higher_better 여부 load_month_factors() ic_sign 자동 처리. 수동 반전 금지(C13)."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "V24_Residual_Income": {"conditional_value": 0.0174, "pass": true},
+    "Q01_GPA": {"conditional_value": 0.0240, "pass": true},
+    "M12_LR_Reversal": {"conditional_value": 0.0089, "pass": true},
+    "coverage_ratio": "3/3 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A3.8 Novy-Marx(2013 JFE) 'The Other Side of Value: The Gross Profitability Premium'. Q01_GPA FF3 alpha t=5.54, CAGR +17.7%. 생산성 premium의 accrual-free 특성. Ohlson(1995 CAR) 'Earnings, Book Values, and Dividends in Equity Valuation' — 잔여이익 내재가치 모델. V24 fundamental basis. A1.1 DeBondt & Thaler(1985 JF) 'Does the Stock Market Overreact?' — M12 장기 반전 anomaly 근거.",
+
+  "lesson_check": "AX-004 scope 인지: quality_profitability standalone KR 실패 → 본 가설은 diversifier role + composite 설계 + LR 필터 추가로 차별화. S1에서 quintile 수익률 단조성 + crisis 구간 performance 엄격 검증(L-130). L-132(EP 단독 실패): GPA/V24 단독 위험 → composite 설계로 회피. V24 recent_3y_icir=0.298이 전체 3년 ic 대비 강 — 최근 구조 변화 여부 S2에서 확인.",
+
+  "pit_compliance_checklist": {
+    "C1": "V24 잔여이익: ROE와 cost_of_equity 기반 계산 — expanding window 필수",
+    "C4": "Q01 GPA: 매출총이익/총자산 — 연간 재무제표 → 5월 리밸 lag. V24: 연간 항목 → 5월 리밸 lag. M12 수익률 기반 → 3-5년 과거 수익률 PIT 준수",
+    "C10": "유동성 필터 2억원 lag=1",
+    "C13_V24": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_Q01": "higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_M12": "M12_LR_Reversal 방향: load_month_factors() ic_sign 자동 처리. 수동 반전 절대 금지(C13).",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('V24_Residual_Income','Q01_GPA','M12_LR_Reversal')) 경유 필수",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "AX-004 경계: quality_profitability composite이 KR에서 구조적 실패 패턴 → S1에서 엄격 quintile 검증 필수",
+    "Q01 recent_3y_icir=0.081 약함 — 최근 3년 GPA premium 약화 가능성",
+    "V24 잔여이익 계산: 자본비용(cost_of_equity) Factor DB 반영 방식 확인 필요 — CAPM 기반인지",
+    "M12_LR_Reversal 방향(higher_better) Factor DB ic_sign 확인 필수",
+    "V24+Q01 상관 높을 수 있음(둘 다 수익성 기반) — composite에서 중복 정보 희석 리스크"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.20~0.35 (V24 최근 3년 강세 반영)",
+    "sr_target": "0.7~1.1 (diversifier 역할)",
+    "mdd_target": "< 45%",
+    "role": "diversifier",
+    "tdc_target": "< 0.45 vs STR_1631 (생산/자본 효율성 vs earnings momentum — 독립적)",
+    "ax_004_boundary": "S1 hard fail 시 AX-004 supporting evidence 편입 검토 (Judge custodian decision 필요)"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Task #16 P1_diversifier 4번째 후보",
+    "V24_Residual_Income recent_3y_icir=0.298 — 최근 3년 KR 시장 잔여이익 팩터 강세 주목",
+    "AX-004 경계선에 있는 조합 — S1 결과에 따라 AX-004 supporting evidence 가능성",
+    "M12 방향 확인 필수 (ic_sign): DeBondt&Thaler 역전 방향이 한국시장에서 동일한지",
+    "H_1698은 Task #16 4번째 후보로 총 H_1695~H_1698 4건 완성"
+  ]
+}

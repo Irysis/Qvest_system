@@ -1,0 +1,51 @@
+{
+  "debate_id": "S0_DEBATE_H_1690",
+  "role": "quant",
+  "round": "R1",
+  "score": 14,
+  "rubric_breakdown": {
+    "icir_pass": 4,
+    "internal_corr": 3,
+    "c19_corr": 2,
+    "defense_ic": 4,
+    "data_avail": 1
+  },
+  "score_rationale": "4 sub factor 모두 Factor DB 기구축 확인 + Gate 14 PASS + defense_ic(Q07/R16) 실측 근거 직접 재사용 가능 → 4건 강점. 그러나 C19 공유 상관 실측 부재(Scout 예상치 0.259만 제공)로 c19_corr 2점 제한, data_avail 측면에서 composite_score 월별 smoothing 로직이 Factor DB 내 미등록(런타임 계산 필요)이어서 data_avail 1점 감점.",
+
+  "arguments": [
+    "【icir_pass 4/4】 Gate 14 Algebraic Identity PASS + 4 sub factor ICIR 실측 근거 충분: compute_quality.R 확인 결과 Q07_Earnings_Stability = -sd(ROE) 방향 이미 내장(높을수록 안정 = 양수), compute_risk.R 확인 결과 R16_Calmar = (mean_r × 252) / abs(MDD) 방향 양수(Calmar 클수록 좋음). 두 팩터 모두 수동 부호 반전 없이 Z_Score_Aligned 직접 사용 가능하여 C13 PASS. compute_momentum.R M08 = CAPM residual 252d 누적합 skip 1m: s0_record에서 M08 standalone ICIR 0.40 명시. compute_consensus.R C19 = z(SUE)+z(ESBR)+z(EPS_Chg_1m)+z(TP_Gap) 평균(2/4 이상 필요), STR_1631 SR 1.243 실증으로 C19 standalone ICIR 0.547 확인. 4 sub factor 평균 ICIR 0.40을 composite 기준으로 볼 때 Alpha Lab Gate 기준 0.20 대비 여유 100%. Gate 14 algebraic identity: M08(잔차 누적), C19(consensus 합성), Q07(ROE 안정성), R16(Calmar) 4개는 formula decomposition에서 공유 항 없음 — 각자 RAWDATA(가격/재무/컨센서스) 별도 접근, PASS 확실.",
+    "【internal_corr 3/4】 4 sub factor 간 Cross-Section 상관 낮으나 H_1690 vs H_1682(R16 공유) Portfolio rho 0.50~0.65 borderline 우려: M08(가격 잔차 누적), C19(analyst revision), Q07(ROE 변동성), R16(Calmar=수익률/MDD)는 계산 원천 데이터가 완전히 다르다 — M08은 일간 가격에서, C19는 컨센서스 DB에서, Q07은 재무제표 ROE에서, R16은 일간 수익률×MDD에서. 따라서 단면 상관 0.05~0.15 수준 예상. Gate 15 Linear Dominance도 Scout 사전 실측 결과 ELEVATED balanced 25/25/25/25 기준 C19 단독 variance 기여 6.7%(분산기여 = weight×rank_corr = 0.25×0.267 ≈ 0.067), PASS. 단 H_1690 composite vs H_1682(Q25+R16) portfolio-level rho는 R16 sub signal 공유로 0.50~0.65 예상 — H_1682 APPROVE_CONDITIONAL 71 S3 gate에서 rho<0.6 임계치에서 borderline. composite에서 R16 비중이 RISK_ON 15%, ELEVATED 25%, CRISIS 35%로 가변적이어서 portfolio rho 실측 전 확정 불가.",
+    "【defense_ic 4/4】 Q07_Earnings_Stability + R16_Calmar defense IC 실측 근거 직접 재사용 가능: Q07 stress_icir +0.753 + crisis_4r_ICIR +0.413 (L-121 양쪽 위기 최강 확정, pg0_gap_review_STR_1655_GSCD.json 실측 기록). R16 stress_icir +2.655 + stress_pct_pos 1.00 (s0_debate_r1_quant_H_1682.json Factor DB 직접 확인 기록, conditional_ic_matrix 실측 근거). CRISIS 구간에서 Q07 40% + R16 35% = 75% weight tilt는 defense IC 집중 효과 충분. AX-001 defense 평가 3개 sub-gate 중 (a) stress 6구간 composite IC avg > 0.03: Q07 stress_icir/sqrt(40)=0.753/6.32=0.119 per month IC > 0.03 충족, R16 stress_icir 기여 추가 → composite 0.05~0.10 예상. (b) Core 대비 MDD 축소: pure signal overlay 없음이라 STR_1631 대비 MDD 개선 여부는 S1 실측 필요, 그러나 regime-smoothed defense tilt가 없는 것보다 MDD 개선 기여 기대. (c) bad/good IC ratio: Q07 ic_bad/ic_good = 0.031/0.042 = 0.74(낮음), 반면 CRISIS tilt 75% 효과로 composite bad/good > 1.0 예상. defense_ic 구조 강점."
+  ],
+
+  "concern": "가장 큰 정량적 위험은 regime weight의 out-of-sample 적용 시 turnover 충격입니다. compute_risk.R 확인 결과 R16_Calmar는 252일(365-lookback) 일간 수익률 전체로 계산되며, MDD 분모가 동일 윈도우의 cummax(cumprod) 기반 — 월간 팩터 집계 시 R16 raw value의 월별 변동성이 M08·Q07 대비 매우 클 가능성이 있습니다. STR_1047 TO 3702% → STR_1439 TO 154% 감소가 smoothing max 10%p/month 적용으로 재현된다고 s0_record에 명시되어 있으나, R16의 월별 volatility가 크면 composite score 순위 급변이 발생하여 buffer_zone 22/20 완충을 넘어서는 turnover가 나올 수 있습니다. 두 번째 우려는 data_avail 측면: 4 sub factor 개별 Z_Score_Aligned는 Factor DB에 등록되어 있으나, regime-smoothed weight를 매월 MRS t-1 기반으로 결정하고 10%p smoothing을 적용하는 로직은 run_all.R에서 런타임 계산이 필요합니다. load_month_factors()가 composite factor ID 'Multi_Source_Regime_Smoothed_Blend_4Axis'를 반환하지 않으므로 Forge가 S1에서 4 factor 개별 로드 후 직접 조합해야 하며, MRS 시계열 t-1 lag 처리 로직의 C5 위반 위험이 코드 레벨에서 재검증 필요합니다.",
+
+  "conditions": [
+    "S1 구현 전 R16_Calmar 월별 raw value 변동성 측정 필수: compute_risk.R 252d lookback 기반 Calmar는 월별 max_drawdown 업데이트로 raw value 분포 왜도가 매우 클 가능성. Forge는 S1 코드에서 R16 z-score 월별 standard deviation 및 outlier 비율(99th percentile 초과 빈도)을 로그로 출력하고, 이 값이 M08/Q07/C19 z-score 변동성 대비 3배 이상이면 R16 winsorization 강화(0.5~99.5%) 또는 rank-score 변환 적용 검토.",
+    "S1 결과 제출 시 4 sub factor 개별 ICIR vs composite ICIR 비교 표 제출 필수: composite ICIR이 4 sub factor 평균보다 낮으면(dilution 확인 — L-119 정적 블렌드 희석 risk) 가장 약한 sub factor 교체 또는 비중 0 처리로 3-axis 축소 검토. 기준: composite ICIR < 0.30이면 설계 재검토 트리거.",
+    "H_1682(R16 공유) portfolio return correlation을 S3에서 sub-period(RISK_ON 구간 vs CRISIS 구간 분리) 측정 제출: 전기간 rho가 0.60 이내라도 CRISIS 구간 conditional rho가 0.75 이상이면 Defense sleeve 역할 중복으로 PG2 공존 불가 판정 위험. CRISIS conditional rho가 임계치 초과 시 R16 비중 10%로 축소 또는 R18_Sortino로 대체 설계."
+  ],
+
+  "fact_checks_performed": {
+    "Gate_14_algebraic_identity": "PASS — compute_momentum.R M08(CAPM잔차), compute_consensus.R C19(analyst SUE/EPS/TP 합성), compute_quality.R Q07(-sd(ROE)), compute_risk.R R16(mean_r*252/abs(MDD)). 4개 별도 compute 함수, 공유 항 없음.",
+    "Q07_direction_convention": "CONFIRMED — compute_quality.R line 805: Raw_Value = -sd_roe. 안정(낮은 sd_roe) = 높은 Raw_Value = 높은 Z_Score. 수동 반전 없이 C13 PASS.",
+    "R16_direction_convention": "CONFIRMED — compute_risk.R line 144: r16 = (mean_r*252)/abs(r06). Calmar 높을수록(높은 수익/낮은 MDD) = 양수 큰 값. Z_Score 직접 사용 C13 PASS.",
+    "M08_capm_residual_construction": "CONFIRMED — compute_momentum.R line 104: .lm.fit(cbind(1, BM_Ret), Ret), skip 1m, sum(res[idx_start:idx_end]). 단일팩터 CAPM 잔차 누적합.",
+    "C19_composite_construction": "CONFIRMED — compute_consensus.R line 376: z(SUE)+z(ESBR)+z(EPS_Chg_1m)+z(TP_Gap) rowMeans, n_c>=2. 내부 z-score는 cross-section 계산(같은 날 동일 함수 내), C1 위반 아닌 동일 횡단면 정규화.",
+    "Q07_standalone_ICIR_source": "pg0_gap_review_STR_1655_GSCD.json: Q07_3y_ICIR=0.929, stress_ICIR=0.753, crisis_4r_ICIR=0.413",
+    "R16_stress_icir_source": "s0_debate_r1_quant_H_1682.json: R16 ic_all=0.0014, ic_bad=0.0056, stress_icir=2.655, stress_pct_pos=1.00. conditional_ic_matrix 실측 기록.",
+    "C19_standalone_SR_source": "STR_1631_SYN_05 SR 1.248 Grade A 확인. ICIR 0.547은 s0_debate_handoff_H_1690.json 인용.",
+    "M08_standalone_ICIR_source": "s0_debate_handoff_H_1690.json: M08 ICIR 0.40 (Scout 측정, 독립 실측 미확인).",
+    "regime_weight_smoothing_factor_db_status": "NOT IN FACTOR DB — composite score 런타임 계산 필요. load_month_factors(c('M08','C19','Q07','R16')) 개별 로드 후 Forge 직접 조합 필요.",
+    "STR_1439_FF5a_t_stat": "2.953 (borderline Harvey t>3.0). Judge sweep v3 Pass 2 Tier 1 기록."
+  },
+
+  "gate_14_gate_15_summary": {
+    "gate_14_algebraic_identity": "PASS — M08/C19/Q07/R16 각각 독립 compute 함수, 공유 입력 변수 없음.",
+    "gate_15_variance_ratio": "PASS — ELEVATED 25/25/25/25 기준 C19 단독 분산기여 6.7%. CRISIS 75%는 defense family 집단 dominance(Q07+R16) intentional 설계. single-factor dominance 없음.",
+    "linear_dominance_risk": "LOW — 4 factor Z_Score_Aligned 동일 정규화. C19 ELEVATED weight 25% = variance 6.7%, H_1687 0.716 dominance 재발 없음 예상."
+  },
+
+  "created": "2026-04-17",
+  "created_by": "forge_debate_quant_instance_H_1690"
+}

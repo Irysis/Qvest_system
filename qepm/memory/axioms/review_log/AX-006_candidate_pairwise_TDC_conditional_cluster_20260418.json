@@ -1,0 +1,135 @@
+{
+  "axiom_id_candidate": "AX-006",
+  "status": "CANDIDATE_PENDING_5_AXIS_PROMOTION",
+  "source_agent": "Judge",
+  "created_at": "2026-04-18",
+  "review_scheduled": "2026-07-17",
+  "quarterly_review_quarter": "2026Q3",
+
+  "statement_draft": "market=KR, family=consensus_factor (및 cross-strategy 일반). Pairwise TDC (t-copula tail dependence coefficient) > 0.4는 daily Pearson 및 monthly rho 기반 orthogonality gate로 포착되지 않는 구조적 tail co-movement를 나타낸다. Admission 전 사전 측정 + retroactive audit 24h SLA 의무.",
+
+  "supporting_L_codes": [
+    {
+      "id": "L-156",
+      "version": "v2",
+      "title": "Judge TDC Gate v3.0 Admission Rule — t-copula tail dependence ≤ 0.4 강제 (retroactive audit 포함)",
+      "key_evidence": "STR_1631↔STR_1679v2 TDC 0.621 breach, Daily Pearson 0.879 + Monthly ρ 0.902 + nu_MLE 4.38. 'diversifier' 라벨 nominal only. STR_1071 TDC 0.000 / STR_1562 0.003 / STR_1433 0.000 (PASS). STR_1071↔STR_1562 internal TDC 0.511 FAIL."
+    },
+    {
+      "id": "L-158",
+      "version": "v1",
+      "title": "Judge Gate 8 Early Warning — handoff kit predicted_tdc 사전 탐지 + S0 사전 차단 (v3.4 Gate 10 보조)",
+      "key_evidence": "Scout S0 handoff kit에 predicted_tdc_vs_pg2_consensus 필드 부재 → retroactive discovery 강제. Gate 8 Early Warning 3단계 (S0 사전 측정 의무 + S0 사전 차단 기준 + Retroactive audit 24h SLA)."
+    }
+  ],
+
+  "five_axis_promotion_criteria": {
+    "I_impact": {
+      "status": "PENDING",
+      "target": "≥0.80",
+      "evidence_required": "STR_1679v2 DROP + rev5_v1_1_emergency 3-day transition 실측 portfolio impact. 추가 사례 2건+ 필요."
+    },
+    "R_robustness": {
+      "status": "PENDING",
+      "target": "≥0.80",
+      "evidence_required": "t-copula MLE sample size N>2000 일간 8Y+ 샘플 기반 TDC 추정. 2008/2020/2022 crisis 구간별 TDC 안정성 검증."
+    },
+    "F_frequency": {
+      "status": "PENDING",
+      "target": "≥0.70",
+      "evidence_required": "3건+ 전략 pairwise TDC breach 사례. 현재 1건 (STR_1679v2), 2건 추가 필요."
+    },
+    "E_economic_mechanism": {
+      "status": "PARTIAL",
+      "score_estimate": 0.65,
+      "evidence_provided": "Embrechts-McNeil-Straumann (2002) conditional copula theory + Demarta-McNeil (2005) t-copula MLE. 경제적으로 tail coupling은 common factor (C19 consensus) 공유 시 필연적 귀결."
+    },
+    "M_measurability": {
+      "status": "STRONG",
+      "score_estimate": 0.95,
+      "evidence_provided": "TDC 측정 code 완비 (02_Infrastructure/validation/tdc_estimation.R 또는 copula 패키지). judge_pg1_candidates_tdc_matrix.json 정량 산출물."
+    }
+  },
+
+  "estimated_5_axis_score_pending": "~0.60~0.70 (robustness/frequency 추가 evidence 필요)",
+
+  "promotion_blockers": [
+    "frequency evidence 부족 — STR_1679v2 단일 사례. 추가 2건 breach 또는 PASS 사례 10건+ 누적 필요.",
+    "robustness evidence — 8Y+ sample 기반 crisis/regime-conditional TDC 재측정 미완료.",
+    "scope definition — market=KR + family=consensus에 한정할지, 전체 cross-strategy로 일반화할지 결정 필요."
+  ],
+
+  "promotion_enablers": {
+    "measurability_score": 0.95,
+    "L_code_count": 2,
+    "linked_rules": ["Admission Rule v3.5 Gate 8/10 + Stage 2 Gate 12 hard_block (ACTIVE 2026-04-18T15:35)", "handoff kit v2 schema"],
+    "process_integration": "Gate 8 Early Warning (L-158)이 실효성 확보 시 frequency evidence 자연 축적 가능. v3.5 Stage 2 transition으로 Gate 12 hard_block 발효 — 향후 pairwise TDC breach 추가 탐지 가능성 상승."
+  },
+  "kr_momentum_evidence_update_2026_04_18_16_05_FINAL": {
+    "final_timestamp": "2026-04-18T16:05+09:00",
+    "team_lead_directive_final": "AX-006 frequency +0.05 (0.40 → 0.45) 유지. 단 Judge 주석 'L-161 indirect contribution' 명시. AX_CAND_kr_momentum_inverse 별도 candidate 생성 금지 (hypothesis A REJECTED).",
+    "revision_timeline": [
+      "15:30 Judge initial proposal: +0.05 (structural + implementation 공존 가정)",
+      "15:45 team-lead revised: +0.05 withdrawal 제안 (Scout hypothesis B 85% 단독 채택)",
+      "16:05 team-lead final clarification: +0.05 **유지** + 'L-161 indirect' 명시 (Architect 3 RC 수렴 기반)"
+    ],
+    "related_L_code": "L-161 (STR_1684) — implementation_bug_caveat + Architect RC1/RC2/RC3 수렴. AX-006 pairwise TDC와 다른 axiom이나 infra-level failure pattern으로 category 참조.",
+    "new_L_code_added": "L-162 (data.table merge Date bug) — 별도 infra pattern, AX 승격 대상 아님",
+    "frequency_axis_final": "0.40 → **0.45** (team-lead 지시 유지, Judge indirect 주석 보전)",
+    "composite_5_axis_estimate": "~0.66 → ~0.67 (frequency bump 반영, I 0.70 + R 0.60 + F 0.45 + E 0.65 + M 0.95)",
+    "architect_evidence_note": "Architect FACTOR_DB_ZSCORE_DIAGNOSIS 3 RC (RC1 winsorize_without_rescale HIGH / RC2 R12-D01 MEDIUM / RC3 M08 clipping HIGH) 확증으로 Scout hypothesis B 정밀 수렴. 기존 전략 재현성 유지 + 신규 OLS residualization scale 충돌만 HIGH.",
+    "ax_cand_kr_momentum_inverse_PROHIBITED": "별도 candidate 생성 금지. hypothesis A (Rouwenhorst 1999 + Asness+2013 KR structural) REJECTED 공식 확정. STR_1684_v2 Fix 후 재실행 여전히 FAIL 시 그때 재검토 가능하나 현재 infra bug 100% 원인."
+  },
+
+  "evidence_tracking_tasks": [
+    {
+      "task_id": "ET-001",
+      "description": "STR_1683/1684 Judge S6 TDC matrix 측정 시 pairwise TDC 추가 사례 누적",
+      "target_quarter": "2026Q2",
+      "owner": "Judge"
+    },
+    {
+      "task_id": "ET-002",
+      "description": "기존 Grade A 전략 전수 pairwise TDC retroactive audit (rev6_v1 발효 후 24h SLA)",
+      "target_quarter": "2026Q2",
+      "owner": "Judge + Governor"
+    },
+    {
+      "task_id": "ET-003",
+      "description": "regime-conditional TDC 분해 (bull/bear/crisis 3-regime 별도 TDC)",
+      "target_quarter": "2026Q3",
+      "owner": "Risk Mgr"
+    },
+    {
+      "task_id": "ET-004",
+      "description": "H_1690 debate calibration hit 증거 정리 (Task #12 연계)",
+      "target_quarter": "2026Q2",
+      "owner": "Judge"
+    }
+  ],
+
+  "quarterly_review_protocol": {
+    "review_date": "2026-07-17",
+    "review_axis": ["I", "R", "F", "E", "M"],
+    "decision_tree": {
+      "score_ge_0_85": "PROMOTE to AX-006 active (inject to all agent prompts)",
+      "score_0_70_to_0_85": "EXTEND evidence collection 1 quarter",
+      "score_lt_0_70": "ARCHIVE candidate (retain L-code, revise statement)"
+    },
+    "reviewer": "Q-Lead + Judge + Governor (triple sign-off)"
+  },
+
+  "related_active_axioms": {
+    "AX-001": "Defense 조건부 평가 — AX-006은 Defense admission 시 TDC 조건부 평가를 보강 (complementary)",
+    "AX-002": "프로세스 우회 = 판단의 미래참조 — AX-006 retroactive audit rule은 AX-002 구체화 (process integrity)"
+  },
+
+  "references": [
+    "Demarta, S. & McNeil, A. J. (2005). The t Copula and Related Copulas. International Statistical Review, 73(1), 111-129.",
+    "Embrechts, P., McNeil, A., & Straumann, D. (2002). Correlation and dependence in risk management: Properties and pitfalls. In Risk Management: Value at Risk and Beyond.",
+    "QEPM §10 Statistical Defense",
+    "qepm/mailbox/judge/outbox/admission_rule_v3_4_consolidated.json",
+    "qepm/mailbox/judge/outbox/judge_pg1_candidates_tdc_matrix.json",
+    "methodology_memory.md L-156 v2, L-158"
+  ]
+}

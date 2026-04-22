@@ -1,0 +1,20 @@
+{
+  "role": "governor",
+  "score": 15,
+  "arguments": [
+    "PG0 gap 정합성: 현 portfolio SR 1.193 (gap 0.807) 대비 H_1692 예상 SR 0.80~1.10 + 예상 TDC vs STR_1631 0.25~0.40은 Core_Secondary 10% slot에 부합. LOO 기준 portfolio SR +0.08~0.13 uplift 추정(10% 편성 × diversification benefit √(1-ρ²) ≈ 0.85~0.92 계수 적용). Scenario C rev8-A-revised-v2 composition (STR_1631 18 + H_1692 10 + STR_1656 14 + STR_1679v3 8 + H_1689 23 + H_1690 10 = 83% active, defense 33%)에서 Core_Secondary 16pp 공백을 10pp 소진 + Reserve 9pp로 재조정하는 구조적 보완 역할 확정. SR 2.0 aspirational 목표의 conservative 1.75~1.78 경로에 기여도 +0.10 수준.",
+    "Family saturation + AX_CAND scope EXCEPTION 인정: H_1688 DROP (STR_1684 Grade F MDD 86.7% L-161 VALIDATED_HARD_FAIL) 이후 momentum family 실질 보유량 0% (STR_1679v3 Q25 defense axis는 momentum 아님). M07_IndMom은 Grinblatt-Moskowitz 1999 industry momentum sub-family로 M01 cross-sectional traditional momentum과 구조적 다름. Factor Taxonomy §9 기준 industry_momentum_residual_kr_rsi는 미구축 sub-family → Explore bucket 부합. 35% family cap 여유 충분. 단, STR_1661_V2 ML 계열과 expected TDC 0.35~0.55 (Core_Secondary gate 0.55 경계)는 Sequential Admission 필수 사유 (STR_1661 V2 Phase_2+ 진입 시 H_1692 재평가).",
+    "Implementation feasibility + Role honesty 중도 평가: Top 20 EW monthly rebalance, LIQ 2e8 KRW, 15bps commission 모두 기존 infra 정합. 예상 portfolio beta 0.95~1.10 + BM corr 0.70~0.85는 Core_Secondary 정의(Core-leaning diversifier)에 일치하여 role honesty PASS 가능성 높음 — Core 위장(beta 낮추고 corr 0.6 이하 주장) 또는 Defense 위장(crisis IC 과장)의 구조적 인센티브 없음. L-161 distortion 회피 (M07 sd=1.0 + M18 sd=1.0 balanced OLS)와 CAPM beta 1.0 함정 회피 (RSI residualization 목표가 CAPM 제거 아님) 설계 명시성 우수."
+  ],
+  "concern": "Marginal contribution 불확실성이 가장 큰 우려입니다. β_t (M07 vs M18 expanding OLS) 낮을 경우 (risk #2) residual ≈ M07 원본 근접 → STR_1679v3 momentum sleeve와 expected TDC 0.40~0.55 (handoff v1.1 L157 measurement)로 Core_Secondary gate 0.55 경계 근접 가능. 또한 Gate 13 Factor DB Access Compliance (L-164 ACTIVE) mandatory hard_block 적용으로 factor_engine.R load_month_factors() 경유 의무 — preflight PASS 전 S1 실행 금지. Defense cluster 33% (cap 35% 대비 2pp margin)는 H_1692 Core_Secondary 편입 자체는 영향 없지만, Scenario C 전체 composition 유지 가정 전제이므로 H_1689/H_1690 S1 FAIL 시 defense 비중 재조정과 함께 H_1692 slot 재검토 필요.",
+  "conditions": [
+    "Gate 13 Factor DB Access Compliance PASS: factor_engine.R에서 load_month_factors() 경유 확인 (grep -E 'read_parquet.*factor_db' fail)",
+    "Gate 12 IC-Return Coupling hard_block PASS: coupling_ratio proxy ≥ 0.30 (Stage 2 active)",
+    "LOO portfolio SR delta ≥ +0.08 empirical 측정 (Forge S1 완료 후 Judge S6 cascade)",
+    "TDC vs STR_1661_V2 ML < 0.55 실측 확인 (Core_Secondary gate 경계) — 초과 시 H_1692 Sequential Admission 후순위",
+    "Role Honesty Audit PASS: portfolio beta 0.95~1.10 + BM corr 0.70~0.85 실측 범위 내 + crisis alpha 위장 없음",
+    "Harvey t > 3.0 + ICIR ≥ 0.20 (Alpha Lab Gate) PASS",
+    "AX_CAND_kr_momentum_inverse scope EXCEPTION 공식 인정 (Judge approver 승인 필요) — 미인정 시 H_1692 재평가",
+    "Family concentration 35% cap 유지 (defense 33% + H_1692 Core_Secondary 10% 편입 시에도 momentum family 10% 단독)"
+  ]
+}

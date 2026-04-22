@@ -1,0 +1,188 @@
+{
+  "from": "Risk_Manager",
+  "to": "Q-Lead",
+  "type": "PG2_CVAR_VALIDATION",
+  "stage": "PG2_rev5_4axis_validation",
+  "timestamp": "2026-04-17T19:36:22+0900",
+  "session": "current",
+  "portfolio_composition": {
+    "STR_1631": {
+      "name": "Core_Primary STR_1631_SYN_05 consensus_C19",
+      "weight": 0.18,
+      "role": "Core_Primary",
+      "family": "consensus"
+    },
+    "H_1688": {
+      "name": "Core_Secondary H_1688 residual_momentum",
+      "weight": 0.1,
+      "role": "Core_Secondary",
+      "family": "momentum_residual"
+    },
+    "H_1676": {
+      "name": "Div_1 H_1676 consensus_residual",
+      "weight": 0.08,
+      "role": "Diversifier_1",
+      "family": "consensus_residual"
+    },
+    "H_1685": {
+      "name": "Div_2 H_1685 investor_flow",
+      "weight": 0.13,
+      "role": "Diversifier_2",
+      "family": "investor_flow"
+    },
+    "STR_1679v2": {
+      "name": "Core_MSCD STR_1679v2",
+      "weight": 0.12,
+      "role": "Core_MSCD",
+      "family": "multi_sleeve_active_defense"
+    },
+    "STR_1656": {
+      "name": "Div_ML STR_1656_MLRA_M05",
+      "weight": 0.12,
+      "role": "Diversifier_ML",
+      "family": "ML_complexity"
+    },
+    "H_1682": {
+      "name": "Def_1 H_1682 distress_calmar",
+      "weight": 0.16,
+      "role": "Defense_1",
+      "family": "distress_path"
+    },
+    "H_1689": {
+      "name": "Def_2 H_1689 quality_4axis",
+      "weight": 0.11,
+      "role": "Defense_2",
+      "family": "quality_multi_axis"
+    }
+  },
+  "validation_4axis": {
+    "cvar_95_annual": {
+      "value": -0.2712,
+      "threshold": -0.15,
+      "pass": false,
+      "note": "CVaR_95 annual = -27.12% at rho=0.3 (CF expansion)"
+    },
+    "cdar_95": {
+      "value": 0.2313,
+      "threshold": 0.22,
+      "pass": false,
+      "note": "CDaR_95 = 23.13% (MDD est 30.85% x ratio 0.75, crisis rho 0.60)"
+    },
+    "tail_dependence_max": {
+      "value": 0.7349,
+      "threshold": 0.4,
+      "pass": false,
+      "note": "Max pairwise TDC = 0.7349 (STR_1631 <-> H_1676), nu=4, crisis_factor=2x"
+    },
+    "q25_weighted_exposure": {
+      "value": 0.1295,
+      "threshold": 0.35,
+      "pass": true,
+      "note": "Portfolio Q25 exposure = 12.95% (H_1682 w=0.16 q25=60%, H_1689 w=0.11 q25=25%, STR_1656 w=0.12 q25=5%)"
+    }
+  },
+  "pass_count": "1/4",
+  "overall_verdict": "FAIL",
+  "rev4_comparison": {
+    "cvar_95": {
+      "rev4": -0.267,
+      "rev5": -0.2712
+    },
+    "cdar_95": {
+      "rev4": 0.2363,
+      "rev5": 0.2313
+    },
+    "tdc_max": {
+      "rev4": 0.7349,
+      "rev5": 0.7349
+    },
+    "q25": {
+      "rev4": 0.086,
+      "rev5": 0.1295
+    },
+    "pass": {
+      "rev4": "1/4",
+      "rev5": "1/4"
+    }
+  },
+  "h1676_scenario_ab": {
+    "scenario_A": {
+      "description": "H_1676 spec strengthened (size+idiovol residualization tightened)",
+      "base_rho": 0.35,
+      "crisis_rho": 0.7,
+      "tdc_vs_str1631": 0.3907,
+      "portfolio_max_tdc": 0.6298,
+      "max_tdc_pair": "STR_1631 <-> STR_1679v2",
+      "pass": false
+    },
+    "scenario_B": {
+      "description": "H_1676 current spec maintained",
+      "base_rho": 0.55,
+      "crisis_rho": 0.95,
+      "tdc_vs_str1631": 0.7349,
+      "portfolio_max_tdc": 0.7349,
+      "max_tdc_pair": "STR_1631 <-> H_1676",
+      "pass": false
+    }
+  },
+  "tail_dependence_detail": {
+    "top_5_pairs": [
+      {
+        "pair": "STR_1631 <-> H_1676",
+        "tdc": 0.7349
+      },
+      {
+        "pair": "STR_1631 <-> STR_1679v2",
+        "tdc": 0.6298
+      },
+      {
+        "pair": "H_1682 <-> H_1689",
+        "tdc": 0.4896
+      },
+      {
+        "pair": "STR_1631 <-> H_1688",
+        "tdc": 0.3907
+      },
+      {
+        "pair": "H_1676 <-> STR_1679v2",
+        "tdc": 0.3907
+      }
+    ],
+    "nu_df": 4,
+    "crisis_rho_multiplier": 2
+  },
+  "q25_detail": {
+    "H_1682": {
+      "weight": 0.16,
+      "q25_share": 0.6,
+      "contribution": 0.096
+    },
+    "H_1689": {
+      "weight": 0.11,
+      "q25_share": 0.25,
+      "contribution": 0.0275
+    },
+    "STR_1656": {
+      "weight": 0.12,
+      "q25_share": 0.05,
+      "contribution": 0.006
+    },
+    "total": 0.1295
+  },
+  "recommendations": [
+    "CVaR_95 BREACH (-27.12% vs -15% threshold). Core+momentum vol still dominates. Consider further H_1682 increase or H_1688 cut.",
+    "CDaR_95 BREACH (23.13% vs 22% threshold). STR_1656 MDD 74.84% is the structural outlier. Consider reducing STR_1656 or enforcing CDaR cap.",
+    "TDC BREACH max=0.7349 (STR_1631 <-> H_1676). H_1676 spec strengthening (scenario A) reduces this to 0.3907. MANDATORY.",
+    "H_1676 scenario A (residualization strengthened) reduces STR_1631<->H_1676 TDC from 0.7349 to 0.3907. Portfolio max TDC under A: 0.6298 (STR_1631 <-> STR_1679v2). Still FAILS.",
+    "L-115 reminder: beta reduction does not equal correlation reduction. Residualization targets cross-sectional correlation but portfolio-level beta dominance persists in crisis.",
+    "L-106 reminder: market beta dominates in stress. All 8 strategies share KR equity market exposure. True diversification requires cross-asset, which is out of scope."
+  ],
+  "methodology": {
+    "cvar": "Cornish-Fisher CVaR_95 annual, portfolio-level moment approx",
+    "cdar": "CDaR/MDD ratio 0.75 (specified), MDD via drawdown-space Longin-Solnik crisis correlation",
+    "tdc": "Bivariate t-copula (nu=4), Longin-Solnik 2x crisis escalation (Demarta-McNeil 2005)",
+    "q25": "Linear weighted portfolio Q25 Ohlson O exposure",
+    "conservative_base": "rho=0.3 (NOT optimistic 0.2)",
+    "references": ["Pfaff (2016) Ch.6-7", "Chekhlov et al. (2005) CDaR", "Longin & Solnik (2001)", "Demarta & McNeil (2005)", "L-115 (beta != correlation)", "L-106 (market beta dominates)"]
+  }
+}

@@ -11,6 +11,9 @@
 #   align_factor_direction(factor_dt, registry)
 #
 # PIT: All functions use data available at or before sig_date only.
+# v2.0 (L-168 fix): align_factor_direction() uses Usable_Date <= sig_date
+#   for IC-based direction inference (expanding window, 36-month burn-in).
+#   Backward compatible: sig_date=NULL triggers registry-only safe default.
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -74,6 +77,10 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   }
   .fdc_ic_hist <<- as.data.table(read_parquet(FACTOR_IC_MONTHLY_PATH))
   .fdc_ic_hist[, Date := as.Date(Date)]
+  # v2.0 (L-168): ensure Usable_Date is also Date type for consistent filtering
+  if ("Usable_Date" %in% names(.fdc_ic_hist)) {
+    .fdc_ic_hist[, Usable_Date := as.Date(Usable_Date)]
+  }
   .fdc_ic_hist
 }
 
@@ -111,11 +118,22 @@ load_month_factors <- function(sig_date, coverage_min = 0.05) {
 
   dt <- dt[Factor_Name %in% keep_factors & Coverage == TRUE]
 
-  # Direction alignment
+  # Direction alignment (v2.0 PIT-safe: pass sig_date for expanding IC window)
   registry <- .load_registry()
-  dt <- align_factor_direction(dt, registry)
+  dt <- align_factor_direction(dt, registry, sig_date = sig_d)
 
-  dt[, .(Ticker, Factor_Name, Z_Score_Aligned)]
+  result <- dt[, .(Ticker, Factor_Name, Z_Score_Aligned)]
+
+  # v54 Gate 13.1 — attach build hash for traceability
+  build_hash_path <- file.path(FACTOR_DB_DIR, "build_hash.txt")
+  build_hash <- if (file.exists(build_hash_path)) {
+    tryCatch(readLines(build_hash_path, n = 1L), error = function(e) "unknown")
+  } else {
+    "unknown"
+  }
+  attr(result, "factor_db_build_hash") <- build_hash
+
+  result
 }
 
 
@@ -124,62 +142,117 @@ load_month_factors <- function(sig_date, coverage_min = 0.05) {
 #==============================================================================
 
 #' Flip factor z-scores so higher = better for all factors.
-#' Uses IC sign to AUTOMATICALLY determine direction (no manual registry needed).
+#'
+#' v2.0 PIT-SAFE (L-168 fix): When sig_date is provided, uses ONLY IC history
+#' with Usable_Date <= sig_date (expanding window). This ensures no future IC
+#' information leaks into direction inference. Matches compute_rolling_ic_all()
+#' PIT treatment (line 220-230 of this file).
 #'
 #' Logic: IC = corr(Raw_Value, Forward_Return)
-#'   If mean IC > 0 → higher Raw_Value = higher return → Z_Aligned = Z_Score
-#'   If mean IC < 0 → higher Raw_Value = lower return → Z_Aligned = -Z_Score
-#'   If IC unknown → fall back to registry direction
+#'   If expanding mean IC > 0 → higher Raw_Value = higher return → Z_Aligned = Z_Score
+#'   If expanding mean IC < 0 → higher Raw_Value = lower return → Z_Aligned = -Z_Score
+#'   If IC unknown or insufficient → fall back to registry direction
 #'
-#' This eliminates double-negation bugs from compute modules that pre-negate.
+#' Backward compatibility: sig_date=NULL triggers registry-only mode (safe default).
 #'
 #' @param factor_dt data.table with Factor_Name, Z_Score columns
-#' @param registry Parsed factor_registry.json (fallback only)
+#' @param registry Parsed factor_registry.json (fallback / primary when no sig_date)
+#' @param sig_date Date or character. Signal date for PIT-safe IC filtering (default: NULL)
+#' @param min_ic_months Integer. Minimum IC observations for direction inference (default: 36)
 #' @return factor_dt with Z_Score_Aligned column added
-align_factor_direction <- function(factor_dt, registry) {
-  # Load IC history for automatic direction detection
-  ic_hist <- tryCatch(.load_ic_history(), error = function(e) NULL)
+align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_months = 36L) {
 
-  if (!is.null(ic_hist) && nrow(ic_hist) > 0) {
-    # IC-based direction: mean IC sign determines direction
-    ic_dir <- ic_hist[, .(Mean_IC = mean(IC, na.rm = TRUE), N = .N), by = Factor_Name]
-    ic_dir[, ic_sign := fifelse(Mean_IC >= 0, 1L, -1L)]  # positive IC → higher Raw = better
-    factor_dt <- merge(factor_dt, ic_dir[, .(Factor_Name, ic_sign)],
-                       by = "Factor_Name", all.x = TRUE)
-
-    # Fallback for factors without IC history: use registry
-    if (!is.null(registry) && length(registry) > 0) {
-      reg_dir <- data.table(
-        Factor_Name = names(registry),
-        reg_sign = sapply(registry, function(x) {
-          d <- x$direction %||% "higher_better"
-          if (d == "lower_better") -1L else 1L
-        })
-      )
-      factor_dt <- merge(factor_dt, reg_dir, by = "Factor_Name", all.x = TRUE)
-      factor_dt[is.na(ic_sign), ic_sign := reg_sign]
-      factor_dt[is.na(ic_sign), ic_sign := 1L]
-      factor_dt[, reg_sign := NULL]
-    } else {
-      factor_dt[is.na(ic_sign), ic_sign := 1L]
-    }
-  } else {
-    # No IC history at all: use registry only
-    dir_map <- data.table(
+  # ---- Registry-based direction map (always computed as fallback) ----
+  reg_dir <- NULL
+  if (!is.null(registry) && length(registry) > 0) {
+    reg_dir <- data.table(
       Factor_Name = names(registry),
-      ic_sign = sapply(registry, function(x) {
+      reg_sign = sapply(registry, function(x) {
         d <- x$direction %||% "higher_better"
         if (d == "lower_better") -1L else 1L
       })
     )
-    factor_dt <- merge(factor_dt, dir_map, by = "Factor_Name", all.x = TRUE)
+  }
+
+  # ---- IC-based direction: PIT-safe expanding window ----
+  ic_dir <- NULL
+
+  if (!is.null(sig_date)) {
+    sig_d <- as.Date(sig_date)
+    ic_hist <- tryCatch(.load_ic_history(), error = function(e) NULL)
+
+    if (!is.null(ic_hist) && nrow(ic_hist) > 0) {
+      # PIT ENFORCED: Usable_Date <= sig_date (identical to compute_rolling_ic_all line 222-224)
+      if ("Usable_Date" %in% names(ic_hist)) {
+        ic_avail <- ic_hist[Usable_Date <= sig_d]
+      } else {
+        # Legacy fallback: Date < sig_d (excludes current month, 1-month safety)
+        cat("[WARN] align_factor_direction: factor_ic_monthly.parquet missing Usable_Date. Using Date < sig_d (legacy).\n")
+        ic_avail <- ic_hist[Date < sig_d]
+      }
+
+      if (nrow(ic_avail) > 0) {
+        # Expanding window mean IC per factor, with min_ic_months burn-in
+        ic_dir <- ic_avail[, {
+          n <- .N
+          if (n >= min_ic_months) {
+            m <- mean(IC, na.rm = TRUE)
+            list(Mean_IC = m, ic_sign = fifelse(m >= 0, 1L, -1L), N_IC = n)
+          } else {
+            # Insufficient IC history: mark for registry fallback
+            list(Mean_IC = NA_real_, ic_sign = NA_integer_, N_IC = n)
+          }
+        }, by = Factor_Name]
+
+        # Log direction inference summary
+        n_ic_inferred <- sum(!is.na(ic_dir$ic_sign))
+        n_ic_fallback <- sum(is.na(ic_dir$ic_sign))
+        cat(sprintf("[align_factor_direction] PIT-safe: sig_date=%s | IC-inferred=%d | fallback=%d | min_months=%d\n",
+                    sig_d, n_ic_inferred, n_ic_fallback, min_ic_months))
+      }
+    }
+  } else {
+    # No sig_date: registry-only mode (backward compatible, PIT-safe by construction)
+    cat("[align_factor_direction] No sig_date provided — registry-only direction (PIT-safe default).\n")
+  }
+
+  # ---- Merge direction into factor_dt ----
+  if (!is.null(ic_dir) && nrow(ic_dir[!is.na(ic_sign)]) > 0) {
+    # Primary: IC-based direction (PIT-filtered)
+    factor_dt <- merge(factor_dt, ic_dir[, .(Factor_Name, ic_sign)],
+                       by = "Factor_Name", all.x = TRUE)
+
+    # Secondary fallback: registry direction for factors without sufficient IC
+    if (!is.null(reg_dir)) {
+      factor_dt <- merge(factor_dt, reg_dir, by = "Factor_Name", all.x = TRUE)
+      factor_dt[is.na(ic_sign), ic_sign := reg_sign]
+      factor_dt[, reg_sign := NULL]
+    }
+
+    # Tertiary fallback: default higher_better
     factor_dt[is.na(ic_sign), ic_sign := 1L]
+  } else {
+    # Registry-only path (no IC available or no sig_date)
+    if (!is.null(reg_dir)) {
+      factor_dt <- merge(factor_dt, reg_dir[, .(Factor_Name, ic_sign = reg_sign)],
+                         by = "Factor_Name", all.x = TRUE)
+      factor_dt[is.na(ic_sign), ic_sign := 1L]
+    } else {
+      factor_dt[, ic_sign := 1L]
+    }
   }
 
   # Apply direction: Z_Score_Aligned = Z_Score * ic_sign
   # This ensures higher Z_Score_Aligned = higher expected return for ALL factors
   factor_dt[, Z_Score_Aligned := Z_Score * ic_sign]
   factor_dt[, ic_sign := NULL]
+
+  # RC1 fix: re-standardize to sd=1 after direction flip (winsorize in builder may leave sd!=1)
+  # Prevents M08 +1761% / R12=D01 +1316% / R16 +529% distortion (Scout 9/12 CRITICAL finding)
+  factor_dt[!is.na(Z_Score_Aligned), Z_Score_Aligned := {
+    s <- sd(Z_Score_Aligned, na.rm = TRUE)
+    if (!is.na(s) && s > 1e-12) Z_Score_Aligned / s else Z_Score_Aligned
+  }, by = Factor_Name]
 
   factor_dt
 }

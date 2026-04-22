@@ -1,0 +1,42 @@
+{
+  "hypothesis_id": "H_1685",
+  "round": 2,
+  "role": "academic",
+  "agent_id": "academic_H1685_r2",
+  "timestamp": "2026-04-17T00:00:00",
+  "r1_score": 15,
+  "r2_score": 13,
+  "score_change_reason": "quant의 R1 측정(H_1674 상관 0.897)을 수용하여 mechanism_align 축 1점 감점. divergence 신호가 H_1674와 algebraically 동일하다는 사실은 학술적으로도 '2-party interaction' 메커니즘 주장을 약화시킵니다. 또한 codex_critic의 '파라미터 학술 미지지' 지적을 수용하여 substantive_cite 축 1점 추가 감점.",
+
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "H_1685 divergence 신호(z_foreign_21d - z_individual_21d)와 H_1674 contrarian(-z_individual_21d) 간 평균 cross-sectional 상관 0.897 측정값을 수용합니다. 이는 학술적으로도 중요한데, '2-party interaction'이라는 가설의 핵심 메커니즘 주장이 실제 신호 수준에서 H_1674(개인 contrarian 단독)와 구별되지 않는다면, Choe-Kho-Stulz의 '외국인 정보 우위' 채널이 신호에 독립적으로 반영되지 않고 있다는 의미입니다. 즉, 외국인 z-score 항의 실질적 기여가 noise에 불과하며, 학술 메커니즘과 실제 factor construction 사이 간극이 심각합니다."
+    },
+    {
+      "with": "codex_critic",
+      "point": "21d lookback이 Choe-Kho-Stulz 2005(monthly~quarterly 포트폴리오)와 고영훈 2018(3~6개월 누적순매수) 어느 논문도 명시적으로 지지하지 않는다는 지적에 동의합니다. 63d 또는 126d lookback이 학술적으로 더 정합적이며, 이 변경은 회전율 Hard Fail 회피에도 기여합니다."
+    }
+  ],
+
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "governor의 '메커니즘 독립성이 확보되어 Role Honesty Audit 관점에서 위장 가능성 낮음' 주장에 이의를 제기합니다. 신호가 H_1674와 0.897 상관을 가진다면, 설령 경제적 family가 investor_flow로 분류되더라도 실질적으로 H_1674(개인 contrarian)를 중복 편입하는 것과 동일합니다. L-119(정적 팩터 블렌드 = alpha 희석)가 적용되는 구조입니다. Role Honesty Audit은 경제적 family 레이블이 아닌 실제 신호 행태를 기준으로 판단해야 합니다."
+    },
+    {
+      "against": "risk_manager",
+      "point": "risk_manager의 '위기 시 외국인 exodus 반전' Kill Scenario는 타당하지만, 이를 가설 폐기가 아닌 lookback 재설계로 완화할 수 있다는 점을 지적합니다. 고영훈(2018)의 3~6개월 누적순매수 predictability는 단기 외국인 herding(noise) 효과를 평균화하여 longer-horizon의 정보성을 포착합니다. 21d→63d 전환은 위기 시 단기 자금 유출 노이즈를 일부 흡수할 수 있으며, sub-period 검증에서 이를 확인해야 합니다."
+    }
+  ],
+
+  "strongest_opposing_argument": "quant의 H_1674 상관 0.897 측정이 R1 전체에서 가장 치명적인 주장입니다. 학술적 관점에서도 이는 'Choe-Kho-Stulz의 외국인 정보 우위 채널'이 factor construction 수준에서 구현되지 않고 있음을 의미합니다. 신호가 실질적으로 H_1674와 동일하다면, H_1685의 존재 이유(2-party interaction 메커니즘 포착)가 실증적으로 성립하지 않습니다. 이 문제는 구조 재설계(외국인 flow를 개인 flow에서 직교화) 없이는 학술적으로도 방어되지 않습니다.",
+
+  "r2_updated_position": "REVISE 지지로 입장 변경. 현재 설계(z_foreign - z_individual)는 H_1674와 algebraically 동일한 신호를 생성하므로, Choe-Kho-Stulz의 '외국인 vs 개인 정보 비대칭' 메커니즘을 실제로 포착하지 못합니다. 재설계 방향은 (A) 외국인 flow를 개인 flow에서 직교화한 residual signal, 또는 (B) sector-neutral 외국인 flow(INV01 계열)에 63d lookback 적용으로의 전환입니다. (B)는 H_1685 자체의 학술 정체성(2-party divergence)을 포기하는 대신 구현 단순성을 얻습니다.",
+
+  "updated_conditions": [
+    "S1 설계에서 외국인 z-score 항의 독립적 정보 기여를 FMB 회귀로 검증할 것. 개인 z-score 통제 후 외국인 z-score의 t-stat이 Harvey(2016) 기준 t > 3.0 미달 시 H_1685는 H_1674의 variation으로 재분류하고 별도 가설 번호 유지 불가.",
+    "재설계 신호가 Choe-Kho-Stulz 2005의 '외국인 정보 우위' 채널을 실제로 분리 포착하는지를 S3에서 FMB 회귀(개인 flow, institutional flow 동시 통제)로 검증하여, 외국인 flow의 독립 alpha t-stat > 2.0을 확인할 것.",
+    "lookback을 63d로 전환하고 고영훈(2018)의 3~6개월 predictability와의 정합성을 S2 artifact에 학술적으로 문서화할 것. 21d 버전은 학술 근거 부재로 primary signal에서 제외."
+  ]
+}

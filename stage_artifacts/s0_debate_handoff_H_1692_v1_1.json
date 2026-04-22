@@ -1,0 +1,194 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v1.1 for H_1692 debate. Scenario B 확정 (STR_1684_v2b H_1688 VALIDATED_HARD_FAIL) 반영. H_1688 DROP → H_1692 Core_Secondary 10% PRIMARY admission candidate 승격.",
+  "hypothesis_id": "H_1692",
+  "hypothesis_name": "Sector-Relative Industry Momentum Residualized on RSI (Core_Secondary — PRIMARY POST-SCENARIO-B)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3, Scenario B 확정 직후)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+  "version": "v1.1",
+  "supersedes": "s0_debate_handoff_H_1692.json (v1, STR_1684_v2b 결과 수신 전)",
+  "supersedes_reason": "STR_1684_v2b Scenario B 확정 (ICIR -0.1874 Fix 1 후에도 동일) → H_1688 VALIDATED_HARD_FAIL → H_1692 backup → **primary Core_Secondary 10% 편입 candidate**로 승격. Soft Prior + strategic chain + v3.5 Stage 2 반영 update.",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "**P0 PRIMARY**  (Scenario C activated — Governor rev8-A-revised Core_Secondary 10%)",
+
+  "scenario_b_confirmation_context": {
+    "str_1684_v2b_result": {
+      "cagr": -4.3,
+      "sr": -0.130,
+      "mdd": 86.7,
+      "icir": -0.1874,
+      "capm_beta": 1.0007,
+      "grade": "F",
+      "fix_1_effect": "ZERO on ICIR (scale-invariant OLS residualization 수학적 이유)"
+    },
+    "scout_hypothesis_reassessment": {
+      "pre_scenario_b": {"A_kr_inverse": 0.10, "B_infrastructure": 0.85, "C_direction": 0.05},
+      "post_scenario_b": {"A_kr_inverse": 0.65, "B_infrastructure": 0.00, "C_direction": 0.00, "D_winsorize": 0.05, "E_other": 0.30}
+    },
+    "l_161_reclassification": "UNVALIDATED_HARD_FAIL → VALIDATED_HARD_FAIL (Judge 공식)",
+    "v3_5_stage_2_transition": "CONDITIONAL_ACTIVE → STAGE_2_ACTIVE (Gate 12 hard_block mandatory)"
+  },
+
+  "h_1692_role_upgrade_post_scenario_b": {
+    "previous_role_v1": "백업 Core_Secondary 후보 (H_1688 PENDING_INFRA_FIX 중)",
+    "updated_role_v1_1": "**PRIMARY Core_Secondary 10% admission candidate** (H_1688 VALIDATED_HARD_FAIL 확정)",
+    "governor_rev8_a_revised_v2_integration": {
+      "core_secondary_slot": "H_1692 10%",
+      "miss_배분": "6pp → 0pp (H_1692 편입 시 소진)",
+      "h_1688_allocation_previous": "10% → 0% (DROP 확정)"
+    },
+    "scenario_c_activation_confirmed": true
+  },
+
+  "one_line_summary": "M07_IndMom (sd=1.0 proper) residualized on M18_RSI (sd=1.0 proper). KR 섹터 rotation 6~9M + 개인 55% RSI 효과. Top 20 EW Long. **AX_CAND_kr_momentum_inverse scope EXCEPTION** (industry momentum은 Grinblatt 1999 positive premium 유지, traditional cross-sectional M01 inverse와 구분).",
+
+  "ax_cand_kr_momentum_inverse_interaction_critical": {
+    "h_1692_scope_outside_ax_cand": true,
+    "reasoning": [
+      "M07_IndMom은 **industry momentum** (Grinblatt-Moskowitz 1999 JF) — cross-sectional traditional momentum M01과 **구조적 다름**",
+      "AX_CAND_kr_momentum_inverse scope: traditional cross-sectional raw momentum (M01/M02/M05 등)",
+      "industry momentum + earnings momentum (C19) + ML composite momentum (STR_1661 V2)는 **명시 exception**"
+    ],
+    "validation_opportunity_for_ax_cand": "H_1692 PASS 시 industry momentum exception **강화 evidence** → AX_CAND scope narrowing 명확화",
+    "risk": "H_1692 FAIL 시 industry momentum도 KR inverse 포함으로 AX_CAND scope 확장 (unlikely scenario)"
+  },
+
+  "str_number_allocation_confirmed": {
+    "recommended": "STR_1692",
+    "note": "APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정. Governor rev8-A-revised-v2 Core_Secondary 10% 편입 candidate."
+  },
+
+  "soft_prior_updates_v1_1_corrected": {
+    "family_momentum_residual_carhart4": {
+      "pre_v1_1": "UNVALIDATED → re-test after Fix 1",
+      "post_v1_1_final": "**VALIDATED_HARD_FAIL** (Scenario B 확정, Fix 1 무효, KR momentum inverse primary)",
+      "action": "H_1688 DROP + M01 기반 전통 cross-sectional residualization 가설 금지"
+    },
+    "family_industry_momentum_residual_kr_rsi": {
+      "pre_v1_1": "proposed_H_1692",
+      "post_v1_1": "**PRIMARY Core_Secondary candidate** — Scenario C activated",
+      "action": "Scout H_1692 Forge S1 P0 + Governor 10% 편입 경로"
+    },
+    "family_ml_xgb_counter_cyclical": {
+      "status": "approved (STR_1661 V2)",
+      "note": "AX_CAND_kr_momentum_inverse exception 유지"
+    },
+    "family_investor_flow_residual": {
+      "status": "approved_conditional (H_1685 v2)",
+      "note": "독립 family, AX_CAND 무관"
+    }
+  },
+
+  "L157_v4_pre_empirical_measurements_retained": {
+    "algebraic_identity_check": "PASS (M07 + M18 orthogonal mechanism)",
+    "pairwise_correlation_pre_measurement_v1_1_updated": {
+      "vs_STR_1631_SYN_05": "0.25~0.40",
+      "vs_STR_1684_v2b_DROPPED": "**N/A** (H_1688 VALIDATED_HARD_FAIL — pairwise 불필요)",
+      "vs_STR_1661_V2_ML": "0.35~0.55 (Core_Secondary gate 0.55 경계)",
+      "vs_H_1685_v2": "0.10~0.20",
+      "vs_H_1679_momentum_sleeve": "0.40~0.55 (momentum family 공유)",
+      "_previous_momentum_family_2_members": "v1 kit에 STR_1684_v2 포함 → v1.1에서 DROP 제외 (H_1688 archived)"
+    },
+    "sd_ratio_analysis": "PASS (M07/M18 각 sd=1.0)",
+    "linear_dominance_test": "PASS (variance explained ~1% by M18)",
+    "l161_distortion_double_elimination_maintained": true
+  },
+
+  "L156_v2_tdc_cluster_updated_v1_1": {
+    "cluster_name": "Industry_Momentum_RSI",
+    "members": ["H_1692 (신규 PRIMARY)"],
+    "former_cluster_entry_removed": "STR_1684_v2 (H_1688 DROP으로 Industry_Momentum 집합에서 제외)",
+    "expected_conditional_tdc_primary": {
+      "vs_STR_1661_V2_crisis": "0.45~0.65 (ML ↔ technical overlap 주의)",
+      "vs_STR_1631_crisis": "0.35~0.55"
+    },
+    "AX_006_candidate_contribution": "+0.03 frequency (8번째 cluster, v1 동일)",
+    "ax_cand_kr_momentum_inverse_exception_cluster": "H_1692는 AX_CAND scope 밖 exception — cluster에 특별 tag 부여 권고"
+  },
+
+  "scout_calibration_v4_predictions_updated": {
+    "predicted_total_range_v4_v1_1": [54, 68],
+    "predicted_midpoint_v4_v1_1": 61,
+    "changes_from_v1": {
+      "v1_range": [52, 66],
+      "v1_1_range": [54, 68],
+      "delta": "+2 (Scenario B 확정 → H_1692 primary 승격 + governor rev8-A 편입 확정)"
+    },
+    "per_debater_v4_v1_1": {
+      "codex_critic": [7, 10],
+      "risk_manager": [11, 14],
+      "governor": [14, 17],
+      "quant": [11, 14],
+      "academic": [13, 16]
+    },
+    "verdict_projection_v1_1": "APPROVE_CONDITIONAL (60-74) 유력 (v1 하한 경계 대비 +2 상향)",
+    "rationale": "Scenario B 확정으로 Governor rev8-A-revised-v2 H_1692 10% 편입 경로 공식화 → Governor evaluation +2 상향 예상"
+  },
+
+  "pre_debate_scout_risk_assessment_v1_1_updated": {
+    "bull_case_v1_1": [
+      "**Scenario B 확정으로 H_1692 PRIMARY Core_Secondary 10% 편입 경로 공식** (Governor rev8-A-revised-v2)",
+      "M07/M18 Factor DB sd=1.0 proper (L-161 distortion DOUBLE_ELIMINATED)",
+      "**AX_CAND_kr_momentum_inverse scope EXCEPTION** (Grinblatt 1999 industry momentum 예외)",
+      "H_1688 실패 교훈 3종 설계 반영 (L-161 회피 + CAPM 함정 회피 + Carhart 관습 탈피)",
+      "KR 특수: 섹터 rotation 6~9M + 개인 55% RSI 효과",
+      "Scout Calibration v4 draft 적용 (2건 연속 5/5 hit 기반)",
+      "**Governor rev8-A-revised-v2 편입 backing** (10% slot allocated)"
+    ],
+    "bear_case_v1_1": [
+      "Grinblatt 1999 post-publication 27년 decay",
+      "한국 direct cite 약함 (박영석 2017 미확인, 엄철준 2018 KR momentum weak)",
+      "STR_1661_V2 (ML) overlap 0.35~0.55 (Core_Secondary gate 경계)",
+      "H_1679 momentum sleeve 공유 family saturation",
+      "**AX_CAND_kr_momentum_inverse H_1688 validation으로 인해 H_1692 academic scrutiny 강화 예상**",
+      "portfolio beta 0.95~1.10 Core_Secondary 영역 경계"
+    ]
+  },
+
+  "strategic_chain_v1_1_updated": {
+    "if_approve_or_approve_conditional": "**STR_1692** 할당 → Forge S1 P0 (Day 2 재스폰 후) → Governor rev8-A-revised-v2 PG1 Core_Secondary 10% admission. Scenario C 확정 편입 경로.",
+    "if_revise": "Scout Path — (a) M07 standalone 측정 후 residual 필요성 재검증, (b) M11_ST_Reversal 교체, (c) M24_Sector_Rel_Mom 직접 사용",
+    "if_reject": "Core_Secondary 공백 유지 (6pp 미배분) + Reserve allocation으로 대기. Governor rev8-A-revised-v3 재설계 고려."
+  },
+
+  "ax_cand_kr_momentum_inverse_coordination": {
+    "scout_initiator_proposal": "qepm/memory/axioms/review_log/AX_CAND_kr_momentum_inverse_evidence.json (이번 turn Scout 발행)",
+    "judge_approver_pending": true,
+    "h_1692_relation_to_ax_cand": "EXCEPTION — Scout 권고: Judge가 H_1692 approval 시 AX_CAND scope narrowing evidence로 사용",
+    "dual_ax_cand_coordinate_approach": "AX_CAND_infrastructure_failures (Judge 0.63 APPROVE) + AX_CAND_kr_momentum_inverse (Scout initiator) 이원 계열 운영"
+  },
+
+  "debaters_prompts_v1_1_additional_context": {
+    "v1_debaters_prompts_core_retained": true,
+    "v1_1_additional_context_for_5_agents": [
+      "codex_critic: 'STR_1684_v2b Scenario B 확정 — H_1688 VALIDATED_HARD_FAIL. H_1692가 KR momentum inverse exception (industry momentum)인지 strict verification'",
+      "risk_manager: 'Scenario C rev8-A-revised-v2 H_1692 10% Core_Secondary 편입 공식 — Risk Mgr 본인 3rd round VERDICT Kill Scenario H_1688 Core_Secondary 공백 해소'",
+      "governor: 'rev8-A-revised-v2 Core_Secondary slot 10% H_1692 primary candidate. AX_CAND_kr_momentum_inverse scope EXCEPTION 인정 여부'",
+      "quant: 'Scenario B empirical — Fix 1 scale invariant 수학적 증명 수용. H_1692 ICIR 0.22~0.35 post-fix sd=1.0 조건 재실측 필수'",
+      "academic: 'Rouwenhorst 1999 + Asness 2013 KR momentum weak literature 적용 시 H_1692 Grinblatt 1999 industry momentum 예외 academic backing 강도'"
+    ]
+  },
+
+  "handoff_completeness_v1_1": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": "SUPERSEDED by v1.1",
+    "handoff_kit_v1_1_complete": true,
+    "scenario_b_confirmation_reflected": true,
+    "soft_prior_v1_1_corrected": true,
+    "ax_cand_kr_momentum_inverse_exception_documented": true,
+    "scout_calibration_v4_v1_1_updated": "predicted [54, 68] midpoint 61 (v1 대비 +2)",
+    "governor_rev8_a_revised_v2_integration_documented": true,
+    "str_number_recommended": "STR_1692",
+    "ready_for_qlead_r1_debate_spawn": true
+  },
+
+  "scout_notes_v1_1": [
+    "Scenario B 확정 직후 긴급 v1.1 발행 — v1 Soft Prior '재분류 UNVALIDATED' → v1.1 'VALIDATED_HARD_FAIL' 정정.",
+    "H_1692는 **PRIMARY Core_Secondary admission candidate 승격** — Governor rev8-A-revised-v2 10% slot.",
+    "AX_CAND_kr_momentum_inverse scope EXCEPTION 핵심 — Grinblatt 1999 industry momentum 예외 명시.",
+    "Scout Hypothesis A 확률 10% → 65% 대폭 상향 자기성찰.",
+    "v3.5 Stage 2 transition 발동 — Gate 12 hard_block mandatory 인지.",
+    "predicted [54, 68] midpoint 61로 v1 [52, 66] mid 59 대비 Scenario B 공식화 반영 +2 상향.",
+    "Forge Day 2 재스폰 후 H_1692 S1 P0 execution 대기."
+  ]
+}

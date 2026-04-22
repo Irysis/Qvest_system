@@ -1,0 +1,38 @@
+{
+  "role": "codex_critic",
+  "r1_score": 8,
+  "r2_score": 9,
+  "score_changed": true,
+  "score_change_reason": "Quant and Academic presented a credible mechanism argument that 3-factor cross-sectional residualization could generate a meaningfully different exposure map from existing M08/CAPM residual momentum, so I move from reject-leaning to cautious conditional support pending strict PIT and ablation proof.",
+  "agreements": [
+    {
+      "with": "quant",
+      "point": "Q5 (R12 방향 이슈)가 핵심 구현 리스크임에 동의. R12 = -sd(residuals)를 OLS에 직접 사용하면 의도한 exposure가 반전될 수 있음. C13 alignment 위해 명시적 sign governance 필요 (raw sd + 선언된 sign expectation, 또는 strict -R12 convention). 또한 M08 baseline ICIR uplift는 실증적으로 보여야 함."
+    },
+    {
+      "with": "risk_manager",
+      "point": "Crisis behavior가 가장 큰 취약점이라는 Risk Manager 지적에 동의. near-zero/negative CRISIS IC + conditional-correlation spikes가 beta-neutral framing을 지배할 수 있으므로, tail-dependence/rho gating은 allocation scaling 이전 hard requirements여야 함."
+    }
+  ],
+  "rebuttals": [
+    {
+      "against": "governor",
+      "point": "H_1688이 이미 유일한 SR 2.0 경로라는 주장에 동의하지 않음. SR 2.06 결과는 ρ=0.2 가정 + 기타 blend 가정에 의존. CRISIS 구간 realized OOS rho 안정성 + capacity/cost 검증 없이는 decision-grade evidence가 아님.",
+      "severity": "major"
+    },
+    {
+      "against": "academic",
+      "point": "강력한 literature support가 현재 approval risk를 실질적으로 줄이지 않음에 반박. 외부 증거는 plausibility를 뒷받침하지만, PIT 미증명 + overlay ablation 부재 + 한국 2014-2025 decay 불확실성을 해소하지 않음.",
+      "severity": "minor"
+    }
+  ],
+  "strongest_opposing_argument": "Quant의 주장 — 3-factor cross-sectional residualization이 기존 time-series/CAPM residual momentum과 구별되는 exposure map을 생성할 수 있으므로 STR_1038~1043과 mechanism-level 분리가 가능하다는 것 — 이 나의 novelty skepticism에 대한 가장 강력한 도전.",
+  "_meta": {
+    "source": "/tmp/codex_critic_r2_result.json",
+    "kill_scenarios_added_in_r2": [
+      "Q5 sign-governance failure: R12 polarity mishandling → silently flipped idiosyncratic-risk exposure → unintended high-vol crowding",
+      "M08 non-superiority scenario: H_1688 ICIR ≤ M08 under identical PIT/cost → complexity = overfit not alpha"
+    ],
+    "timestamp": "2026-04-17T19:07:00+09:00"
+  }
+}

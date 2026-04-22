@@ -1,0 +1,195 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "REV8_A_SCENARIO_XYZ_RESPONSE_PLAN",
+  "timestamp": "2026-04-18T Session67_Day1 post_Scout_CRITICAL_diagnosis",
+  "session": 67,
+  "day": 1,
+  "status": "DRAFT — Architect Factor DB 진단 결과 수신 시 severity 판정 후 해당 시나리오 ACTIVATE. UNVALIDATED_HARD_FAIL 신규 category 반영 (team-lead Judge arbitration 수용 2026-04-18).",
+  "reference_active": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A.json (ACTIVE, PENDING_INFRA_VALIDATION 내부 표시)",
+
+  "unvalidated_hard_fail_category_v3_5_enforcement_update": {
+    "source": "team-lead Judge arbitration 수용 2026-04-18 Session 67 Day 1",
+    "taxonomy": {
+      "VALIDATED_HARD_FAIL": {
+        "definition": "hypothesis 평가 후 structural fail 확인",
+        "count_for_stage_2_transition": true,
+        "example": "STR_1683 L-160 IC-Return decoupling (Defense 4-variants 전량 Hard Fail)"
+      },
+      "UNVALIDATED_HARD_FAIL": {
+        "definition": "인프라/구현 버그로 미검증 상태",
+        "count_for_stage_2_transition": false,
+        "example": "STR_1684 L-161 (Factor DB Z_Score distortion 의심, re-test pending)",
+        "resolution_path": "Architect fix + Forge re-run → VALIDATED_HARD_FAIL or PASS 재분류"
+      },
+      "CONDITIONAL_FAIL": {
+        "definition": "Stress FAIL but hypothesis valid",
+        "count_for_stage_2_transition": false,
+        "level": "Stage 1 advisory"
+      }
+    },
+    "current_hard_fail_accounting_2026_04_18": {
+      "validated": 1,
+      "unvalidated": 1,
+      "conditional": 0,
+      "stage_2_transition_status": "**BLOCKED** — 2 VALIDATED 필요, 현재 1/2",
+      "gate_12_hard_block_auto_transition_status": "**SUSPENDED** — VALIDATED count 부족"
+    },
+    "v3_5_enforcement_matrix_updated": {
+      "gate_11_variant_comparison": {
+        "Defense_family_mandatory": "유지 (H_1689/H_1690)",
+        "Core_Secondary_advisory": "유지 (H_1688 infra fix 후 재평가)",
+        "Core_Primary_exempt": "유지 (STR_1631)"
+      },
+      "gate_12_ic_return_coupling_ratio": {
+        "enforcement_level_current": "advisory_warning (VALIDATED Hard Fail 1건 → hard_block 미달)",
+        "transition_trigger": "STR_1684_v2 re-run 결과 VALIDATED_HARD_FAIL 확정 시 hard_block 전환",
+        "alternative_trigger": "H_1685v2/H_1689 또는 신규 가설에서 VALIDATED Hard Fail 추가 축적"
+      }
+    }
+  },
+
+  "scout_critical_diagnosis_summary": {
+    "hypothesis_B_infra_bug_probability": 0.85,
+    "evidence": {
+      "R12_D01_duplicate": "sd 0.071 identical — 직접 데이터 무결성 문제",
+      "M01_sd_0_660": "distorted normalization",
+      "C19_sd_0_361": "distorted",
+      "Q07_sd_0_328": "distorted (Q-Lead 실측)",
+      "M08_sd_0_054": "severely clipped",
+      "M07_sd_1_000": "proper reference"
+    },
+    "mechanism": "OLS 회귀 scale 충돌 → size_w 지배 → M01 signed-flip 근접 → ICIR -0.162 artifact"
+  },
+
+  "h_1690_factor_db_impact_confirmed": {
+    "source": "Q-Lead 실측 factor_engine.R 확인",
+    "factors_used_4": ["M08_Residual_Mom (sd 0.054 severely distorted)", "C19_Composite_Earnings (sd 0.361)", "Q07_Earnings_Stability (sd 0.328)", "R16_Calmar (sd TBD)"],
+    "load_method": "load_month_factors() Factor DB 경유",
+    "impact_severity": "HIGH (4/4 factors Factor DB distortion 영향)",
+    "str_1685_s1_execution_hold": "STR_1685 (H_1690) S1 실행도 Architect 진단 후로 보류 확정"
+  },
+
+  "scenario_X_severity_LOW": {
+    "diagnosis": "Architect 결과: R12/D01 duplicate만 문제. Z_Score builder 전반 정상.",
+    "unvalidated_hard_fail_disposition_X": "STR_1684 재실행 R12/D01 관련 factor 미사용 시 → 기존 결과 VALIDATED_HARD_FAIL로 승격 가능. 관련 시 infra fix 후 재실행 필수.",
+    "rev8_a_action": "**유지 (no change)**",
+    "remediation_minimal": [
+      "1. Factor DB registry에서 R12/D01 duplicate merge or rename",
+      "2. 기존 전략 전수 재검증 불필요",
+      "3. STR_1631/STR_1656 PG2 active 유지"
+    ],
+    "forge_work": "R12/D01 registry 정정 (~30분)",
+    "risk_mgr_spawn": "즉시 재개 (rev8-A ACTIVE 기준)",
+    "str_1684_str_1685_actions": [
+      "STR_1684 H_1688 재평가 — R12/D01 영향 없으면 DROP 확정 structural",
+      "STR_1685 H_1690 실행 진행"
+    ],
+    "timeline": "1~2시간 내 rev8-A 완전 ACTIVATE 재개",
+    "l_code_impact": "L-162 minor 수준 (infrastructure hygiene)",
+    "phase_1_transition": "Day 1 migration 재개 가능"
+  },
+
+  "scenario_Y_severity_MEDIUM": {
+    "diagnosis": "Architect 결과: Z_Score builder rescale 필요 (복수 factor sd 불일치 수정) + R12/D01 duplicate 해결. 근본 알고리즘은 유지.",
+    "unvalidated_hard_fail_disposition_Y": "STR_1684 UNVALIDATED 유지 → Factor DB rebuild 후 STR_1684_v2 재실행 → 결과로 VALIDATED_HARD_FAIL or PASS 재분류. H_1688 PENDING_INFRA_FIX → re-run PASS 시 Core_Secondary 편입 후보 재평가.",
+    "rev8_a_action": "**conditional revision — rev8-A-revised**",
+    "remediation_moderate": [
+      "1. Z_Score builder pipeline 수정 (normalization 재구현)",
+      "2. Factor DB 전수 재생성 (288 팩터 × 436개월)",
+      "3. 기존 PG2 active 전략 재검증 필요",
+      "4. R12/D01 merge"
+    ],
+    "forge_work": "Factor DB rebuild 2~4시간 + 검증 1~2시간",
+    "str_1684_str_1685_actions": [
+      "**STR_1684_v2 재실행** (new Factor DB 기준) — 결과로 H_1688 DROP 재확정 or 복원 판정",
+      "**H_1689 S1 재실행** (Quality 4-axis 무결성 확인)",
+      "**STR_1685 S1 실행** (새 Factor DB 기준)"
+    ],
+    "governor_rev8_a_revised_draft": {
+      "str_1631_status": "PG2 active 유지 (재검증 결과 Grade A 재확인 전제)",
+      "str_1656_status": "PG2 active 유지 (ML 독립성으로 Factor DB 영향 LOW)",
+      "str_1679v3_status": "재검증 필요 (Q25 embedded)",
+      "h_1688_outcome": "재실행 결과 따라 분기 (Scenario A/B/C within Y)",
+      "h_1689_outcome": "재실행 결과 따라 Defense 23% 확정 or 재조정",
+      "h_1690_outcome": "동일, 재실행 4 variants"
+    },
+    "risk_mgr_spawn": "Forge 재실행 완료 + rev8-A-revised 발행 후 재개",
+    "timeline": "Session 67 Day 2~3 rev8-A-revised ACTIVATE",
+    "l_code_impact": "L-162 MAJOR (Factor DB infrastructure critical lesson)",
+    "phase_1_transition": "Day 1~7 재개 Day 4~5로 이동"
+  },
+
+  "scenario_Z_severity_HIGH": {
+    "diagnosis": "Architect 결과: Factor DB 전체 retrofit 필요 (builder 알고리즘 재설계 + 과거 Factor DB 사용 결과 전수 재검증).",
+    "unvalidated_hard_fail_disposition_Z": "STR_1684 UNVALIDATED + 추가로 기존 STR_1683 L-160 VALIDATED 상태도 재검증 필요 (Q25/R16 factor도 Factor DB 경유). Hard Fail accounting 전면 reset 가능성. Stage 2 transition 무기한 연기.",
+    "rev8_a_action": "**temporarily paused — rev8-A-v2 설계 대기**",
+    "remediation_major": [
+      "1. Factor DB builder 전면 재설계 (Z_Score + direction alignment 재검토)",
+      "2. 전체 Factor DB rebuild (288 × 436개월)",
+      "3. **기존 PG2 active STR_1631/STR_1656 성능 재검증** (CRITICAL)",
+      "4. Hurdle v2.2 재실행 대상: STR_1631/1656/1679v3 포함 전 Grade A 전략",
+      "5. Retroactive audit 5건 결과 전면 재해석"
+    ],
+    "forge_work": "Factor DB retrofit 1~2일 + 전략 재검증 1~2일",
+    "critical_risk": [
+      "STR_1631 Harvey t=3.09 유일 승인이 Factor DB 버그에 의한 artifact일 가능성",
+      "현 PG2 80/20 profile (SR 1.193) 재측정 필요",
+      "gap_vector.json v1.0.3 무효화 가능성"
+    ],
+    "governor_rev8_a_v2_design_principles": [
+      "현 PG2 active는 **제로 베이스 재평가**",
+      "Phase_1 transition 전면 연기 (신규 baseline 확정 후)",
+      "신규 가설 탐색 Week 2+로 이동 (현 baseline 불안정)",
+      "rev8-A-v2는 Factor DB v2 기준 신규 composition 설계"
+    ],
+    "risk_mgr_spawn": "Factor DB v2 + 전략 재검증 완료 후",
+    "timeline": "Session 67 Day 3~5 Factor DB retrofit + rev8-A-v2 design",
+    "l_code_impact": "L-162 CRITICAL (프로젝트 전체 baseline 재수립)",
+    "phase_1_transition": "**전면 연기** (Week 2+ 재개)",
+    "alpha_lab_gate_impact": "Alpha Lab Gate (ICIR >= 0.20) 자체 재검증 — bug 영향받은 ICIR 무효"
+  },
+
+  "severity_decision_criteria_for_architect": {
+    "criterion_X_LOW": "Z_Score builder 알고리즘 본질 정상 + distortion 1~2 factor 국소",
+    "criterion_Y_MEDIUM": "Z_Score rescale 필요하나 direction alignment 정상 + 3~5 factor 영향",
+    "criterion_Z_HIGH": "Z_Score + direction + merge 복합 문제 + 6+ factor 영향 + downstream IC/ICIR 계산 오염"
+  },
+
+  "governor_action_per_scenario_ready_states": {
+    "scenario_X": "rev8-A 유지 문서 in place + Risk Mgr spawn instruction 즉시 사용 가능",
+    "scenario_Y": "rev8-A-revised composition draft 준비 완료 (현 composition + Defense weight 조정 가능성)",
+    "scenario_Z": "rev8-A-v2 design principles 문서화 — Factor DB v2 이후 재설계"
+  },
+
+  "immediate_deliverables_governor_ready": [
+    "1. 시나리오 X/Y/Z별 rev8-A 대응 plan 명시 (본 파일)",
+    "2. Architect 진단 결과 수신 시 해당 시나리오 ACTIVATE 30분 내 문서 확정",
+    "3. v3.5 Gate 11/12 enforcement 적용은 Scenario별 재판단",
+    "4. Judge/Scout 재통보 준비 (정정 메시지 사전 작성 가능)",
+    "5. UNVALIDATED_HARD_FAIL category 반영 완료 (본 파일 v2 update)",
+    "6. H_1688 DROP → PENDING_INFRA_FIX 재분류 + 미배분 16pp contingency 유지"
+  ],
+
+  "phase_1_transition_timeline_revised_per_unvalidated_category": {
+    "original_target": "Session 67 Day 7 LIVE",
+    "revised_target_per_team_lead": "Session 67 Day 7+ (최소 Day 2 retrofit 후)",
+    "day_2_3": "Architect fix plan + Forge Factor DB retrofit 구현",
+    "day_3_4": "STR_1684_v2 + STR_1685 + H_1689 S1 (순차 or 병렬)",
+    "day_5_7": "Judge S6 + Governor PG1 admission + rev8-A-revised 확정",
+    "day_7_plus": "Phase_1 LIVE (기존 plan 시작)",
+    "fallback_z_scenario": "Factor DB retrofit 시 Week 2+로 연기"
+  },
+
+  "risk_mgr_spawn_status": {
+    "current": "HOLD (team-lead 연기 결정 수락)",
+    "resume_condition": "Architect 진단 결과 수신 → severity 판정 → X scenario 시 즉시 재개 / Y scenario 시 Forge 재실행 후 / Z scenario 시 Factor DB v2 후",
+    "prompt_revision_reservation": "V1 bullet rev8-A composition은 scenario에 따라 조정 가능 — prompt 최종본은 Architect 결과 후 확정"
+  },
+
+  "governor_communications_impact": {
+    "judge_notification_sent": "ACTIVE 통보 — Architect 결과 수신 후 정정 통보 필요 여부 판정",
+    "scout_notification_sent": "Core_Secondary gap 탐색 요청 — H_1688 DROP 확정은 Architect 결과 후 재판정 가능성 명시 필요",
+    "correction_messaging_strategy": "Architect 결과 severity 확정 후 일괄 정정 메시지 발송 (현재는 판정 전이므로 premature)"
+  }
+}

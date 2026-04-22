@@ -1,0 +1,43 @@
+{
+  "hypothesis_id": "H_1687",
+  "debate_round": "R1",
+  "role": "quant",
+  "agent_id": "quant_r1_h1687",
+  "score": 11,
+  "rubric_breakdown": {
+    "icir_pass": 3,
+    "internal_corr": 1,
+    "c19_corr": 4,
+    "defense_ic": 2,
+    "data_avail": 1
+  },
+  "score_rationale": "Factor DB 가용성 + C19 독립성은 양호하나, H_1687 현행 수식(50/50 Z-score 블렌드)은 sd 불균형(Q25_Z sd=0.27, M01_Z sd=0.72)으로 인해 사실상 M01 단일팩터(corr=0.936)가 되어 버린다. Diversifier role의 핵심 조건인 H_1688 분리 불가(M01 원신호 공유). H_1682와도 corr=0.853으로 포트폴리오 중복 심각. ICIR은 M01 momentum 강세(recent_3y_icir=0.412)로 통과 가능하나 이는 interaction alpha가 아닌 momentum 단순 노출이다. 등분산 normalize 또는 rank-z transform 적용 시 구조 개선 가능.",
+  "arguments": [
+    "【icir_pass 실측 + sd 불균형 구조 문제】 Factor DB 직접 확인: Q25_Ohlson_O recent_3y_icir=0.633(ic_all=0.0316), M01_Mom_12_1 recent_3y_icir=0.412(ic_all=0.0141). 두 팩터 모두 Alpha Lab Gate ICIR>=0.20 충족. Avramov(2013) 인용 Sharpe 0.8~1.2는 미국 long-short 기준으로 한국 long-only EW에서는 0.5~0.9로 조정 적용이 타당(이일균 2019 실증 월간 t-stat 2.5+ 수준). 단 현행 수식 0.5*(-Q25)+0.5*M01에서 sd(Q25_Z)=0.267 vs sd(M01_Z)=0.722(ratio 2.69x)로 명목 50/50이 실효 27%:73%로 왜곡된다. 이 왜곡 구조에서 composite ICIR은 M01 ICIRx0.73+Q25 ICIRx0.27 ≈ 0.471로 통과는 되나 interaction alpha가 아닌 M01 노출에서 비롯된다. Alpha Lab Gate 통과 가능성: 높음(PASS 예상) — 단 interaction 증분 alpha 미검증.",
+
+    "【L-160 algebraic identity — H_1687 vs H_1682/H_1688 공유 항 실측 분해】 H_1687=0.5*(-Q25)+0.5*M01, H_1682=0.5*(-Q25)+0.5*R16, H_1688=residual(M01; Q25,R12,S01). 분기별 60개 시점(2010~2024) 실측 결과: (1) corr(H_1687 composite, M01): mean=0.936, range=[0.904,0.960] — sd 불균형으로 인한 algebraic 귀결. 단면 분석에서 analytical 계산값과 정확히 일치(0.9341). (2) corr(H_1687, H_1682): 단면 실측 0.853 — 공유 항 0.5*(-Q25) + M01-R16 상관 0.845 결합. (3) corr(H_1687, H_1688): H_1688이 M01 잔차화 버전이므로 H_1687∩H_1688=M01 원신호 공유, corr 추정치 0.70~0.85(H_1688 R1 quant의 M08 선례: H_1688도 M01 상관 높음). H_1682 corr 0.853은 S3 rho<0.6 gate 위반 우려. H_1688 corr도 S3 threshold 미달 가능성. 수식 재설계 없이는 H_1687, H_1682, H_1688이 사실상 momentum 단일 cluster를 형성.",
+
+    "【C19 독립성 + data_avail 판정】 corr(H_1687 composite, C19): mean=-0.0002, range=[-0.067,+0.098] — 사실상 zero. STR_1631_SYN_05 대비 독립성 확보. corr(Q25,C19) mean=0.027, corr(M01,C19) mean=0.009으로 H_1687 공유 팩터 모두 C19와 무상관. Factor DB 가용성: Q25_Ohlson_O(288팩터 확인), M01_Mom_12_1(확인), Z_Score_Aligned NA=0 확인. C15 load_month_factors() 경유 준수 가능. C13 이슈: s0_record에서 'NEGATE_FACTORS 금지, compute_factor에 signed_distress_low_z 등록 후 사용' 명시돼 있으나 실제 Factor DB에 해당 파생 팩터 미등록 상태 — S1 전 등록 절차 필수. C4 Q25 재무제표 T+60~90일 lag는 compute_quality.R 기준으로 PIT clean 예상."
+  ],
+  "concern": "현행 수식(50/50 Z-score 블렌드)은 Q25_Z sd=0.267 vs M01_Z sd=0.722의 극심한 불균형으로 인해 H_1687이 M01 단일팩터의 선형 변환(corr=0.936)에 불과해진다. Diversifier 설계 목표인 'Q25×M01 interaction alpha'가 실현되지 않는다. 더 심각한 문제는 H_1682(corr=0.853)·H_1688(corr 추정 0.70~0.85)와의 중복으로, 세 가설이 동시 포트폴리오 편입 시 momentum cluster 구성이 되어 PG0 family_saturation penalty 발동 가능성이 있다. 수식 수정안: (1) 각 팩터를 IQR 기반 등분산 normalize 후 블렌드, 또는 (2) 퍼센타일 rank 변환 후 composite, 또는 (3) gated double-sort(Q25 하위30% ∩ M01 상위70% intersection)로 전환하면 M01 algebraic 종속성 탈피 가능. 수정 없이 S1 진행 시 S3에서 H_1682 rho<0.6 gate 위반 및 H_1688 rho<0.5 gate 위반 high risk.",
+  "conditions": [
+    "S1 착수 전 수식 수정 필수: 현행 0.5*(-Q25)+0.5*M01에서 IQR-normalize 또는 percentile-rank 변환 후 composite으로 교체해야 sd 불균형(Q25:M01=0.27:0.72) 문제 해소. 수정 없이 S1 실행 시 M01 단일팩터 결과만 반복.",
+    "S1 코드 작성 전 compute_factor 등록 확인: signed_distress_low_z 파생 팩터가 Factor DB에 미등록 상태 — C13 NEGATE_FACTORS 금지 규칙 준수를 위해 compute_quality.R에 등록 후 load_month_factors() 경유 사용 필수.",
+    "S3 전략 상관 실측에서 H_1682 rho<0.6, H_1688 rho<0.5 gate를 별도 명시: 현재 추정치(H_1682: 0.853, H_1688: >0.70)가 이미 문턱 초과 — 수식 수정 후 실측으로만 확인 가능. 수정 전 gate 충족 예상 근거 없음."
+  ],
+  "_verification_sources": {
+    "factor_db_availability": "factor_db_202604.parquet Factor_Name column — Q25_Ohlson_O, M01_Mom_12_1 모두 확인(288팩터 중 존재)",
+    "q25_icir": ".cache/conditional_ic_matrix.csv Q25_Ohlson_O: ic_all=0.0316, ic_bad=0.0334, recent_3y_icir=0.633",
+    "m01_icir": ".cache/conditional_ic_matrix.csv M01_Mom_12_1: ic_all=0.0141, ic_bad=0.0131, recent_3y_icir=0.412",
+    "q25_stress": ".cache/stress_factor_ic_analysis.csv Q25: stress_icir=0.659, stress_pct_pos=0.80, crisis_ratio=1.55",
+    "m01_stress": ".cache/stress_factor_ic_analysis.csv M01: stress_icir=2.293, stress_pct_pos=1.00, crisis_ratio=1.05",
+    "cross_corr_q25_m01": "분기별 60개 시점(2010Q1~2024Q4) 실측 — mean=0.092, median=0.070",
+    "h1687_vs_m01_corr": "분기별 60개 시점 실측 — mean=0.936, range=[0.904,0.960]",
+    "h1687_vs_h1682_corr": "단면 202403 실측 — 0.853",
+    "h1687_vs_c19_corr": "분기별 60개 시점 실측 — mean=-0.0002, range=[-0.067,+0.098]",
+    "sd_imbalance": "단면 202403: sd(Q25_Z)=0.267, sd(M01_Z)=0.722, ratio=2.69x",
+    "algebraic_decomposition": "analytical corr(H1687,M01) = 0.9341 수식에서 exact 일치 확인"
+  },
+  "created": "2026-04-17",
+  "created_by": "forge_quant_r1_h1687"
+}

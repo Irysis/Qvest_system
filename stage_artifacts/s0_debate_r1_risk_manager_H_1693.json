@@ -1,0 +1,129 @@
+{
+  "role": "risk_manager",
+  "agent_id": "risk_manager_h1693",
+  "hypothesis_id": "H_1693",
+  "round": 1,
+  "stance": "APPROVE_CONDITIONAL",
+  "arguments": [
+    "Q07 stress ICIR +0.753 (288 factor 1위) + C01_SUE stress ICIR +0.593 (실측 확인, Scout 추정 4배 상향) composite +0.705. L-163 poison pill PASS. 양 component strong positive.",
+    "Sector constraint max 5/sector + sector-neutralization 이중 안전장치로 H_1682 H3 sector bias 해소. AX-001 v2 4-gate compliance 완전 설계. Defense 10% allocation으로 portfolio MDD 기여 +1~2%p 제한적.",
+    "Signal-Portfolio Translation Failure family (L-160/L-165) AX_CAND 2/3 TRIGGER — S1 net_IC_transmission_ratio > 0.6 veto-level gate 필수. CRISIS sector correlation surge로 sector-neutral 가정 불안정. GOOD/NORMAL 75% 구간 carry drag 구조적."
+  ],
+  "concern": "L-160/L-165 Signal-Portfolio Translation Failure family 3rd member 위험 — S1 net_IC_transmission_ratio > 0.6 gate가 veto-level. Q07 cluster 3건 TDC WARNING 0.35~0.55.",
+  "critical_concerns": [
+    "Signal-Portfolio Translation Failure family (L-160/L-165) AX_CAND 2/3 TRIGGER 상태에서 H_1693이 3번째 member가 될 경우 AX 승격 확정 — Q07 stress ICIR +0.753이 portfolio-level defense alpha로 실현되는지 S1 net_IC_transmission_ratio > 0.6 gate가 veto-level 중요도. STR_1683(IC 0.22/ICIR 1.879/FM t=16.887)도 portfolio MDD 94.66%로 catastrophic 전환된 선례 직접 적용.",
+    "Q07 cluster 3건 동시 형성 위험 (STR_1679v3 + H_1689 v3 variant_2 + H_1693): L-156 v2 pairwise TDC 실측 전 사전 추정치 H_1689 vs H_1693 = 0.35~0.55로 Gate 8 WARNING 구간 진입. 위기 시 Q07 factor 기반 전략 동시 하락(conditional correlation surge) 가능성 — DCC-GARCH 위기 구간 conditional TDC 상승 패턴 반복 예상.",
+    "Defense standalone CAGR forecast 4~7%는 L-136 D25+Q07 CAGR 2.59% 대비 낙관적 추정. SUE 30% weight가 정상 구간 carry를 얼마나 보강하는지 empirical 근거 부재. sector-neutralization이 cross-sectional alpha를 희석할 가능성 존재 (sector-mean 회귀로 best Q07 종목 제외 위험)."
+  ],
+  "supporting_arguments": [
+    "Q07 stress ICIR +0.753 (288 factor 중 1위) + C01_SUE stress ICIR +0.593 (실제 데이터 확인, Scout 추정치 +0.15 대비 4배 강력) — composite stress ICIR = 0.7 × 0.753 + 0.3 × 0.593 = +0.705. L-163 poison pill PASS 확정 (양 component 모두 strong positive).",
+    "Sector constraint max 5/sector는 H_1682 H3 failure (long-only 20-stock sector bias) 직접 해소. sector-neutralization + sector cap 이중 안전장치로 재벌 cluster 과집중 방지 — tail risk 관점에서 idiosyncratic risk 분산 효과 긍정적.",
+    "AX-001 v2 compliance 설계 완전: multi_sleeve_only=TRUE + crisis_alpha gate + bad/normal IC ratio gate + core MDD 완화 gate 4중 평가 체계. Defense 10% allocation (Scenario_D)으로 portfolio-level MDD 기여 제한적 (+1~2%p 이내 예상)."
+  ],
+  "veto_flag": null,
+  "s1_gate_items": [
+    "net_IC_transmission_ratio > 0.6 (L-160 IC-Return decoupling 차단 — veto-level gate. < 0.4 시 Hard Fail + AX_CAND 3rd member TRIGGER)",
+    "portfolio stress return positive 3개 window 중 2+ (stress_outperform >= 2/3) — signal stress ICIR 높아도 portfolio-level 실현 검증 필수",
+    "Z_Sector vs raw Z 성과 비교 — sector-neutralization alpha 희석 여부 정량. Z_Sector SR < raw Z SR × 0.8 시 sector-neutralization 역효과 판정",
+    "EVT VaR 99% + CDaR 95% + ES 99% compute_tail_risk_suite() 실행 — STR_1631 대비 portfolio-level tail risk 기여 +2%p 이내 검증",
+    "sector concentration HHI 실측 — max 5/sector constraint 작동 확인 + 월별 sector HHI 시계열로 재벌 cluster 편입 빈도 추적",
+    "DCC-GARCH conditional correlation vs STR_1631 — 위기 구간(MRS >= 50) conditional rho 실측. rho_crisis > 0.6 시 defense 역할 무효화 경고"
+  ],
+  "rubric_breakdown": {
+    "tail_risk": 3,
+    "kill_scenario": 3,
+    "beta_orthogonality": 3,
+    "mdd_contribution": 3,
+    "regime_vulnerability": 2
+  },
+  "score": 14,
+
+  "detailed_assessment": {
+    "tail_risk_analysis": {
+      "score": 3,
+      "rationale": "Q07 stress ICIR +0.753 + C01_SUE stress ICIR +0.593 (실측 확인) composite = +0.705로 tail risk 관점에서 강력한 defense signal. EVT/GPD 분석은 S1 실측 필수이나 signal-level tail protection은 top 1% 수준. 그러나 L-160 precedent (ICIR 1.879 signal → MDD 94.66% portfolio) 고려 시 signal tail protection이 portfolio tail protection으로 전환되는지는 미확인. 3점 부여: signal-level 근거 강력하나 portfolio translation 미검증으로 만점 불가."
+    },
+    "kill_scenario_analysis": {
+      "score": 3,
+      "scenarios": [
+        {
+          "name": "Kill Scenario 1: Sector-Neutralization Alpha Dilution + 정상구간 Carry Drought",
+          "description": "Sector-neutralization은 각 sector 내 best Q07 종목을 선택하나, 특정 sector(IT/반도체)에 Q07 top 종목이 집중된 경우 해당 종목 제외 → alpha dilution. 동시에 정상 구간(MRS < 25)에서 Q07 defense factor는 structural underperform (L-136 CAGR 2.59% 선례). SUE 30% weight가 정상 carry 보강 목적이나 C01_SUE Mean IC 0.045 수준으로 충분한 carry 보장 불확실. 결과: 위기 아닌 구간(전체 기간의 75%)에서 systematic negative carry 누적 → CAGR 2~3% 수준 재현 시 portfolio drag 발생.",
+          "probability": "25~35%",
+          "severity": "MEDIUM — CAGR 2~3% 수준이면 L-136 재현. Defense 역할은 유지하나 portfolio-level CAGR 희석."
+        },
+        {
+          "name": "Kill Scenario 2: Signal-Portfolio Translation Failure 재현 (L-160/L-165 family pattern)",
+          "description": "Q07 signal ICIR 0.58 + SUE ICIR 0.59 composite로 signal 품질은 높으나, long-only top-20 EW portfolio로 translation 시 (a) sector-neutral 선택이 liquidity 낮은 소형주 편입 → slippage 확대, (b) 20종목 concentration으로 idio vol 집중 → 위기 시 개별 종목 급락이 portfolio crash 유발, (c) SUE quarterly 데이터의 stale signal 문제 (45일 lag 후 정보 잔존 가치 감소). L-160 STR_1683 pattern과 동일 구조: high signal quality → portfolio MDD 77~94% catastrophic. 이 경우 AX_CAND_signal_portfolio_translation_failure 3/3 TRIGGER 발동 → AX 승격 확정.",
+          "probability": "15~25%",
+          "severity": "CRITICAL — portfolio MDD > 45% 발생 시 Hard Fail. AX_CAND 3rd member 확정으로 Defense long-only 20-stock 구조 전체 재검토 필요."
+        },
+        {
+          "name": "Kill Scenario 3 (미래참조 경로): Sector 분류 체계 변경에 의한 backtest 무효화",
+          "description": "Z_Sector 계산이 Factor DB의 Sector 컬럼에 의존. 한국 GICS/KRX 업종 분류는 2018년 대규모 개편(IT → 커뮤니케이션 서비스 분리), 2020년 ESG 관련 재분류 등 변경 이력 존재. backtest 기간(1990~2026) 동안 sector 분류 일관성이 보장되지 않으면 in-sample Z_Sector 계산에 implicit lookahead (현재 sector 분류를 과거에 소급 적용). 이는 C1 variant: sector assignment lookahead — full-sample 통계 금지 원칙의 sector 버전.",
+          "probability": "10~20%",
+          "severity": "HIGH — PIT 위반 확정 시 전체 backtest 무효. Forge S1에서 sector assignment 시점 검증 필수 (point-in-time sector membership)."
+        }
+      ]
+    },
+    "beta_orthogonality_analysis": {
+      "score": 3,
+      "rationale": "STR_1631_SYN_05 (C19 Consensus 기반) 대비 Q07+SUE composite는 mechanism 상이 (earnings stability + earnings surprise vs consensus earnings forecast). 예상 TDC 0.20~0.35 범위로 Gate 8 PASS 예상. 그러나 C01_SUE가 C19 Consensus 하위 component와 상관 가능성 (SUE = actual - forecast, C19 = forecast composite → 정보 공유). STR_1656_MLRA 대비 낮은 overlap 예상 (ML vs fundamental factor). H_1689 v3 variant_2 (Q07 4-axis) 대비 TDC 0.35~0.55 WARNING 구간 — Q07 direct 공유 70%로 cluster 형성 거의 확실. Sequential Admission Protocol 필수. 3점: 기존 Core/Div 대비 독립적이나 Q07 cluster 내부 orthogonality 우려."
+    },
+    "mdd_contribution_analysis": {
+      "score": 3,
+      "rationale": "Scenario_D 기준 H_1693 allocation 10%. Portfolio-level MDD 기여 = 10% × standalone MDD. MDD forecast 18~28% → portfolio 기여 +1.8~2.8%p. +2%p 이내 기준 충족은 MDD 20% 이하일 때만 가능. L-136 선례(MDD 10.2%)에서 D25+Q07은 MDD 양호했으나 CAGR 2.59%로 드래그. H_1693은 D25 제외 + SUE 추가로 MDD 상승 가능성 있으나 sector constraint가 완화 요인. 3점: 10% allocation으로 portfolio 영향 제한적이나 standalone MDD 20% 이하 달성 여부 불확실."
+    },
+    "regime_vulnerability_analysis": {
+      "score": 2,
+      "regime_assessment": {
+        "GOOD": "Q07 Good regime IC ~+0.15 (약양수). SUE Good regime IC 불확실. 정상 성장기에서 earnings stability premium 약화 — 성장주 outperform 구간에서 stable earnings 선호도 하락. CAGR drag 핵심 구간.",
+        "NORMAL": "Q07 Normal regime IC ~+0.12. 중립적 성과. SUE PEAD drift는 Normal에서 가장 강력할 수 있으나 한국 실증 부재. 전체 기간의 ~40%를 차지하는 구간에서 benchmark 수준 성과 예상.",
+        "BAD": "Q07 Bad regime IC ~+0.20. Defense 기능 활성화 시작. 그러나 '느린 둔화기'(L-120 정의)에서는 sector rotation이 활발 → sector-neutral 접근이 rotation alpha 포착 불가. sector 내 best Q07이 rotation 대상 sector에 집중될 경우 defense 효과 상쇄.",
+        "CRISIS": "Q07 Crisis regime IC +0.413 (양쪽 위기 최강). 핵심 강점 구간. 그러나 위기 시 sector 간 correlation 급등 (L-156 v2 DCC-GARCH 패턴) → sector-neutralization 효과 무력화 가능. 위기 시 모든 sector 동시 하락하면 sector-neutral z-score 순위가 무작위화. 이 구간이 전체 기간의 ~10% — defense 핵심이나 sector-neutral 가정 불안정."
+      },
+      "rationale": "2점 부여: CRISIS 구간 Q07 IC +0.413 최강이나, (a) GOOD/NORMAL 구간(~65%) 취약으로 장기 drag, (b) CRISIS 시 sector correlation surge로 sector-neutralization 가정 불안정, (c) BAD 구간 sector rotation과 conflict. 4-regime 중 1개만 확실히 강력하고 나머지 3개에서 구조적 약점 보유."
+    }
+  },
+
+  "c01_sue_stress_icir_correction": {
+    "scout_original_estimate": 0.15,
+    "actual_measured": 0.593,
+    "data_source": ".cache/stress_factor_ic_analysis.csv line 181",
+    "impact": "composite stress ICIR = 0.7 × 0.753 + 0.3 × 0.593 = +0.705 (Scout 추정 +0.572 대비 +0.133 상향). L-163 poison pill PASS 더욱 확고. SUE의 위기 방어 기여가 Scout 예상보다 4배 강력 — bear case 1건 완화.",
+    "remaining_risk": "stress ICIR는 6대 급락 사건 기준 (L-120). 4-regime CRISIS IC와 다를 수 있음 — SUE 4r CRISIS IC 별도 확인 필요."
+  },
+
+  "q07_marginal_screening_data": {
+    "mean_ic": 0.0458,
+    "icir": 0.5805,
+    "hit_rate": 0.7021,
+    "n_months": 94,
+    "t_stat": 5.6285,
+    "assessment": "Q07 standalone signal quality 양호 (t=5.63 > Harvey 3.0). ICIR 0.58은 defense factor로서 충분. 그러나 sector-neutralization 후 ICIR 변화 미측정 — Z_Sector 변환이 ICIR을 유지/개선/악화시키는지 S1 실측 필수."
+  },
+
+  "portfolio_gap_vector_alignment": {
+    "sr_gap": "0.807 — H_1693 defense 10% allocation의 SR 직접 기여 제한적 (+0.05~0.10 예상). 간접 기여: Core MDD 완화 → Sharpe 개선 경로.",
+    "mdd_regime_gap": "현재 ACHIEVED (-21.27% vs <25%). H_1693 추가 시 MDD 유지/소폭 개선 예상. 단, standalone MDD > 28% 시 portfolio MDD 악화 가능.",
+    "assessment": "Defense role로서 gap targeting은 MDD_regime + KR_structural 2축. SR gap 해소 직접 기여도 낮으나 multi-sleeve 구조에서 Core 보호 역할로 간접 기여 가능. gap_misaligned veto 대상 아님."
+  },
+
+  "ax_cand_3rd_member_risk_quantification": {
+    "current_trigger_status": "AX_CAND_signal_portfolio_translation_failure 2/3 (L-160 + L-165)",
+    "h_1693_3rd_member_probability": "15~25% (Kill Scenario 2 발생 시)",
+    "consequence_if_triggered": "AX 승격 확정 → Defense long-only 20-stock 구조 전체에 대한 structural prohibition 가능. 향후 Defense 설계 패러다임 변경 필요 (long-short, hedged beta, risk-parity only).",
+    "mitigation": "S1 net_IC_transmission_ratio > 0.6 gate + portfolio stress return 2+ window positive gate. 양 gate 모두 PASS 시 family pattern 재현 확률 < 5%로 감소."
+  },
+
+  "conditional_requirements_for_approval": [
+    "S1 net_IC_transmission_ratio > 0.6 (veto-level gate — 미충족 시 stance REJECT 전환)",
+    "S1 portfolio stress return 2+ window positive (stress_outperform >= 2/3)",
+    "S1 Z_Sector vs raw Z 비교 — sector-neutralization 효과 정량 측정",
+    "S1 sector assignment point-in-time 검증 (Kill Scenario 3 PIT 위반 방지)",
+    "S3 pairwise TDC vs H_1689 v3 variant_2 < 0.50 (Sequential Admission Protocol)",
+    "S1 compute_tail_risk_suite() 실행 — EVT VaR 99% / CDaR 95% / ES 99% STR_1631 대비 기여 +2%p 이내"
+  ],
+
+  "risk_manager_summary": "H_1693은 Q07 stress ICIR +0.753 (288 factor 1위) + C01_SUE stress ICIR +0.593 (실측 확인, Scout 추정 4배 상향) composite로 signal-level defense 품질은 최상급. sector constraint + sector-neutralization 이중 안전장치로 H_1682 H3 실패 직접 해소. 그러나 Signal-Portfolio Translation Failure family (L-160/L-165) AX_CAND 2/3 TRIGGER 상태에서 portfolio translation 검증이 veto-level 중요도. CRISIS 구간 sector correlation surge로 sector-neutralization 가정 불안정 + GOOD/NORMAL 구간 carry drag 구조적 우려. S1 net_IC_transmission_ratio > 0.6 gate 통과 시 APPROVE 전환, 미통과 시 REJECT 전환. 현 단계에서는 설계 품질 인정하되 empirical gate 6건 부과하여 APPROVE_CONDITIONAL."
+}

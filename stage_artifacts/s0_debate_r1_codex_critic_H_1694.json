@@ -1,0 +1,53 @@
+{
+  "role": "codex_critic",
+  "hypothesis_id": "H_1694",
+  "stance": "REJECT",
+  "score": 6,
+  "breakdown": {
+    "l_code_check": 1,
+    "failure_avoidance": 1,
+    "banned_factor": 2,
+    "lesson_check": 1,
+    "structural_risk": 1
+  },
+  "critical_concerns": [
+    "Q04_Piotroski_F KR hard_fail 계열 — AX-004 quality standalone failure와 유사. 40% 비중이 KR quality 실패 패턴 재도입 위험.",
+    "S1 유동성 필터 후 quintile 수익률 증거 없음 — IC가 순수익으로 전환되는지 미검증 (L-130 미준수)",
+    "Factor DB 등록 미확인, PIT filing 타이밍(KOSDAQ 지연 신고/수정) 과도하게 단순화"
+  ],
+  "supporting_arguments": [
+    "M25 Earnings Mom Streak은 이론적으로 PEAD를 포착하는 적절한 구조",
+    "Bernard & Thomas(1989) PEAD 논문 근거 견고, 한국시장 외국인 커버리지 제한 배경 유효",
+    "두 팩터 모두 conditional_ic_matrix top30% 포함 — Gate 0.5 통과"
+  ],
+  "veto_flag": null,
+  "s1_gate_items": [
+    "Show liquidity-filtered S1 quintile returns for standalone M25, standalone Q04, and the 0.6/0.4 composite, net of realistic KOSPI/KOSDAQ costs.",
+    "Prove event-level PIT handling with actual announcement, filing, amendment, and DB-ingestion timestamps; a flat quarterly 45-day and annual May rule is not sufficient.",
+    "Demonstrate that the composite adds out-of-sample alpha over pure M25 and is not just repackaged momentum-plus-profitability exposure.",
+    "Pre-specify the 0.6/0.4 weighting and z-score construction with expanding-window logic only; no full-sample normalization, crisis-period tuning, or ex-post correlation targeting."
+  ],
+  "kill_scenarios": [
+    {
+      "scenario": "The backtest applies a universal quarterly 45-day and annual May lag, but some KOSDAQ issuers file late, amend statements, or enter the Factor DB after those dates. Live trading loses the apparent PEAD edge that the historical test captured.",
+      "probability": "medium",
+      "expected_loss": "SR drops by 0.25-0.40 and MDD worsens by 8-12 percentage points.",
+      "blind_spot": false
+    },
+    {
+      "scenario": "M25 and Q04 are less independent than assumed because both crowd into profitable, earnings-stable names. In a junk rebound or policy-driven speculative rally, both sleeves fail together and the supposed diversifier turns into a single crowded factor bet.",
+      "probability": "high",
+      "expected_loss": "SR roughly halves and MDD reaches 20-30%.",
+      "blind_spot": true
+    },
+    {
+      "scenario": "After liquidity filters and realistic turnover costs, the composite's modest IC does not convert into monotonic quintile spreads; Q04 mainly adds stale annual information and extra churn. The portfolio degrades into another weak static blend similar to prior failures.",
+      "probability": "medium",
+      "expected_loss": "Net SR falls below 0.20 and excess return becomes statistically fragile.",
+      "blind_spot": false
+    }
+  ],
+  "weakest_assumption": "The weakest assumption is that Q04 behaves as a harmless filter rather than a second alpha sleeve. If that assumption is wrong -> 40% weight re-imports the same KR quality/profitability weakness flagged by AX-004 -> the composite dilutes M25's crisis edge while increasing overlap with failed defensive/quality clusters -> quintile spread compresses after costs and the strategy ends in STR_1650-like SR with materially wider drawdowns.",
+  "design_pit_assessment": "Concerned. 1) Partly yes: the rationale leans on ex-post observations such as M25 being stronger in bad periods and Q04 having strong recent 3-year ICIR. 2) Only conditionally: real-time construction is possible only with exact security-level announcement, filing, amendment, and DB-ingestion timestamps; the stated 45-day/May convention is too coarse for KR implementation risk. 3) Yes: the 0.6/0.4 blend appears justified by observed historical behavior rather than a pre-committed mechanism. 4) Unclear and risky: the z-score normalization window, correlation estimate, and any crisis-strength inference may rely on full-sample statistics unless expanding-window rules are explicitly enforced.",
+  "findings": "Verdict: reject for now. Fact: Q04 quality already hard-failed in KR and still receives 40% weight; S1 liquidity-filtered quintile evidence is missing; Factor DB registration is unconfirmed. Inference: this is much closer to a rerun of static blend logic than a true filter design. Speculation: the diversifier claim likely collapses once PIT filing timing, liquidity, and costs are enforced."
+}

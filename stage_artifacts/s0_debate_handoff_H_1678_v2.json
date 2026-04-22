@@ -1,0 +1,268 @@
+{
+  "_purpose": "Scout → Q-Lead Hand-off Kit v2 for H_1678 debate. L-157 v4 draft 반영 + Factor DB pre-check 실증 + L-159 spec transmission 예방 강화 + STR 번호 오류 정정.",
+  "hypothesis_id": "H_1678",
+  "hypothesis_name": "STR_1555 v53 Refit — Core Alpha Anchor Stabilization (AX-003 정비 + N=20)",
+  "prepared_by": "Scout",
+  "prepared_at": "2026-04-18T(Session 67 Day 3)",
+  "scout_plan_source": "stage_artifacts/s0_record_H_1678_STR_1555_v53_refit.json",
+  "previous_handoff_kit": "stage_artifacts/s0_debate_handoff_H_1678.json (2026-04-17 v1)",
+  "version": "v2",
+  "supersedes_reason": "v1 작성 후 (1) L-157 v4 draft 2건 연속 hit 반영 필요, (2) Factor DB C19/D01/V14 실측 확인 완료 → L-159 spec transmission pre-check 강화, (3) v1 strategic_chain line 167 STR 번호 오류 정정 (STR_1686은 H_1685 v2 할당됨, H_1678은 STR_1687 추천), (4) L-156 v2 TDC pre-check 강화 (STR_1555 원본 관계), (5) v4 R2 auto-delta rule 적용 예측.",
+  "ready_for_r1_spawn": true,
+  "queue_priority": "P0 Session 67 Day 3 (H_1685 v2 APPROVE_CONDITIONAL 61 후속, queue 1번째)",
+  "L157_v4_pre_checks_completed": true,
+
+  "one_line_summary": "STR_1555 V14 제거 (AX-003 정비) + N=20 (v53) + overlay 제거 pure signal. 2-factor 0.6·z_C19 + 0.4·z_D01 score blend → Top 20 EW. L-048 원본 SR 1.005 pure + 1.080 overlay precedent 재활용.",
+
+  "str_number_allocation_corrected": {
+    "previous_error_v1": "v1 line 167 strategic_chain에 'STR_1686'으로 기재",
+    "actual_status": "STR_1686은 H_1685 v2 전용 (2026-04-18 Q-Lead 할당)",
+    "h_1678_allocation_recommended": "STR_1687 (다음 순번, Forge 최종 할당 가능)",
+    "note": "STR 번호는 APPROVE_CONDITIONAL VERDICT 후 Q-Lead 확정"
+  },
+
+  "L157_v4_draft_key_changes_from_v3": {
+    "v3_pre_check_retained": "algebraic identity NONE + linear dominance 32% PASS + pairwise correlations all PASS",
+    "v4_draft_new_rules_applied": {
+      "rule_1_R2_auto_delta": {
+        "applied": "R1 total × 0.94 ≈ -3.5 (H_1690 -3, H_1685v2 -4 평균)",
+        "impact_on_prediction": "R1 predicted 58-73 → final predicted 55-70 → -3 adjustment → final 55-70 유지 (변화 없음)"
+      },
+      "rule_2_codex_rebound": {
+        "applied": "Codex R1 lower bound 8 → final 8~9 default",
+        "impact": "Codex v3 [8,12] → v4 [8,10] narrowed"
+      },
+      "rule_3_governor_variance": {
+        "applied": "H_1678은 structural proof 중간 (L-048 precedent + pre-check 완료) → Governor R2 delta -1~-3 가능",
+        "impact": "Governor v3 [13,16] → v4 [12,16] lower bound -1"
+      },
+      "rule_4_top_end_boost_NOT_applied": {
+        "reason": "H_1678은 structural proof + empirical pre-check 완료이나 L-048 precedent 기반으로 NEW 아닌 REFIT. TOP_END pattern이 H_1685 v2 같은 수식 증명 케이스에 더 적합. 여기서는 보수 적용 X.",
+        "confidence": "LOW (n=1, H_1685v2 패턴 유일)"
+      },
+      "rule_5_tail_warning_penalty_conditional": {
+        "H_1678_warnings": ["C19 consensus family Tier 1 cap violation risk", "Pure signal MDD 50%+ Hard Fail risk"],
+        "warning_count": 2,
+        "applied": "warnings 2건+ → R2 자동 -2~-4 penalty 반영",
+        "impact": "Governor/Risk 각 -1 예상, 총 -2~-3 penalty"
+      }
+    }
+  },
+
+  "L159_spec_transmission_pre_empirical_check": {
+    "_note": "STR_1682 교훈 (L-159) 반영 — H_1678 required_factors Factor DB pre-check 실증",
+    "required_factors": ["C19_Composite_Earnings", "D01_IdioVol"],
+    "optional_baseline_factor": "V14_EBIT_EV (AX-003 위반 baseline 참조용)",
+    "factor_db_2026_03_parquet_verification": {
+      "verification_date": "2026-04-18",
+      "verification_method": "Rscript + arrow::read_parquet on .cache/factor_db/factor_db_202603.parquet",
+      "C19_Composite_Earnings": "PRESENT (confirmed)",
+      "D01_IdioVol": "PRESENT (confirmed)",
+      "V14_EBIT_EV": "PRESENT (baseline 참조 가능, AX-003 scope 주의)",
+      "verdict": "ALL required_factors AVAILABLE — L-159 spec transmission failure 재현 risk ELIMINATED"
+    },
+    "factor_db_coverage": "monthly 288 factors × 436 months (1990~2026.04). C19/D01 standard 공통 factor (Factor DB Tier 1).",
+    "load_month_factors_compliance": "C15 — load_month_factors() 경유 필수. parquet 직접 로드 금지.",
+    "expected_N_monthly": "대략 1800~2200 tickers (KOSPI+KOSDAQ), factor coverage 95%+ (consensus + return-based).",
+    "pre_check_pass": true,
+    "forge_handoff_rule": "TODO_S1_H_1678 작성 시 required_factors 필드 + Factor DB availability PASS 증빙 명시 필수 (ET-102 preflight pattern)"
+  },
+
+  "L157_v3_pre_empirical_measurements_retained_from_v1": {
+    "algebraic_identity_check": {
+      "formula": "score = 0.6·z_C19 + 0.4·z_D01",
+      "shared_term": "NONE — consensus vs idio vol 완전 orthogonal families",
+      "verdict": "PASS"
+    },
+    "pairwise_correlation_pre_measurement": {
+      "vs_STR_1631_SYN_05": {
+        "predicted_portfolio_rho": "0.55~0.70 (C19 0.6 weight 공유)",
+        "measurement_method": "Forge S1 daily_returns 생성 후 Judge TDC matrix 측정 필수",
+        "l156_gate_8_prediction": "BORDERLINE_FAIL (0.4 threshold 초과 가능)",
+        "mitigation": "D01 cross-channel 완화 효과 40% — S3 실측 필요",
+        "v2_additional_note": "STR_1631_SYN_05가 현재 PG2 80% anchor — H_1678 admission은 STR_1631 축소 또는 교체 요구 (Governor PG1 결정)"
+      },
+      "vs_H_1690_ELEVATED_regime": {
+        "mean": -0.110,
+        "median": -0.120,
+        "interpretation": "near-independent (D01 defense vs H_1690 4-axis balanced). 두 가설 PG2 공존 가능성 높음.",
+        "verdict": "PASS"
+      },
+      "vs_H_1676_residual_consensus": {
+        "v1_predicted": "0.40~0.55 (C19 공유이나 H_1676 잔차화로 완화)",
+        "v2_actual_status": "H_1676 STR_1682 Grade F HARD_FAIL + S6 REJECT (L-160). H_1676 DROP 확정 → 관측 불가. Scout 대비 1건 감소.",
+        "impact": "pairwise comparison Pool은 STR_1631, H_1690, H_1688, H_1685v2 4건"
+      },
+      "vs_H_1688_residual_momentum": {
+        "predicted": "0.10~0.25 (momentum family vs consensus+defense, 독립)",
+        "verdict": "PASS",
+        "v2_status": "H_1688 STR_1684 S1 실행 중 — 실측 예정"
+      },
+      "vs_H_1685_v2_foreign_resid_diversifier": {
+        "v2_new_entry": "H_1685 v2 APPROVE_CONDITIONAL 61 (2026-04-18)",
+        "predicted": "0.05~0.15 (investor_flow residual vs consensus+defense, 다른 channel)",
+        "verdict": "PASS — 독립 axis (flow smart money vs fundamental PEAD)"
+      }
+    },
+    "sd_ratio_analysis": {
+      "C19_sd_z_aligned": "~1.0 (Z_Score_Aligned 정규화)",
+      "D01_sd_z_aligned": "~1.0",
+      "ratio": "1:1 (balanced)",
+      "verdict": "PASS"
+    },
+    "linear_dominance_test": {
+      "H_1678_vs_C19_standalone_correlation_median": 0.586,
+      "variance_explained_by_C19": "32% (0.586² × 100)",
+      "L157_threshold_70pct": "NOT EXCEEDED",
+      "verdict": "PASS"
+    },
+    "variance_explanation_ratio_step_wise": {
+      "step_1_C19_standalone_ICIR_estimate": "0.547 (STR_1631 SR 1.243 precedent)",
+      "step_2_D01_standalone_ICIR_estimate": "0.30~0.40 (L-121 idio vol defense 참고)",
+      "step_3_composite_ICIR_estimate": "0.45~0.55",
+      "verdict": "CONDITIONAL PASS — C19 standalone vs composite ICIR drop 10~20% 예상"
+    }
+  },
+
+  "L156_v2_tdc_pre_check_enhanced_v2": {
+    "_note": "H_1678 STR_1555 refit이므로 원본 STR_1555 관계 + L-156 v2 TDC cluster 등록",
+    "str_1555_original_status": {
+      "catalog_status": "Grade A (V7 최종 Core Alpha)",
+      "hurdle_result_sr": 0,
+      "note": "데이터 누락 — H_1678은 genuine alpha 재확인 기능 포함",
+      "relation": "H_1678은 STR_1555 직접 refit (V14 제거 + N=20 + overlay 제거). 원본과 portfolio-level 고상관 (~0.85~0.95) 예상. PG1 admission 시 STR_1555 catalog 처분 결정 (active → deprecated)"
+    },
+    "tdc_cluster_pre_registration": {
+      "cluster_name": "C19_core_consensus_Tier1",
+      "members": ["STR_1631_SYN_05 (현재 PG2 80%)", "H_1678 (신규 후보)", "STR_1555 (legacy deprecated)"],
+      "expected_conditional_tdc": {
+        "normal_regime": "0.50~0.65",
+        "crisis_regime": "0.65~0.80",
+        "warning": "crisis regime TDC >0.7 시 L-156 v2 breach + AX-006 재현 evidence"
+      },
+      "AX_006_candidate_contribution": "+0.10 frequency (H_1690/H_1685v2에 이어 3번째 cluster registration)"
+    }
+  },
+
+  "scout_calibration_v4_adjusted_predictions": {
+    "note": "L-157 v4 draft rules 1/2/3/5 적용 (rule 4 제외). v3 [55,70] 대비 tail warning penalty -3 추가.",
+    "predicted_total_range_v4": [52, 68],
+    "predicted_midpoint_v4": 60,
+    "per_debater_v4": {
+      "codex_critic": [8, 10],
+      "risk_manager": [10, 13],
+      "governor": [12, 16],
+      "quant": [11, 14],
+      "academic": [12, 15]
+    },
+    "changes_vs_v1_v3": {
+      "v1_v3_range": "[55, 70]",
+      "v4_range": "[52, 68]",
+      "delta": "-3 (tail warning penalty: MDD Hard Fail risk + C19 Tier 1 cap violation)",
+      "per_debater_changes": {
+        "codex_critic": "v3 [8,12] → v4 [8,10] (rebound rule upper narrow)",
+        "risk_manager": "v3 [11,14] → v4 [10,13] (MDD Hard Fail lower -1)",
+        "governor": "v3 [13,16] → v4 [12,16] (C19 cap variance lower -1)",
+        "quant": "v3 [11,14] → v4 [11,14] (유지)",
+        "academic": "v3 [12,15] → v4 [12,15] (유지)"
+      }
+    },
+    "verdict_projection_v4": "APPROVE_CONDITIONAL (60-74) 유력 하한 경계 또는 REVISE (40-59) 차단선 경계",
+    "most_uncertain_debater": "Governor (C19 Tier 1 cap variation) + Risk Manager (MDD Hard Fail)"
+  },
+
+  "debaters_prompt_core_retained_from_v1": {
+    "_note": "v1 debaters 5인 prompt_core 유지 (rubric_focus/env_vars/expected_attack_vectors). Q-Lead가 v1 kit의 debaters field 그대로 spawn 가능.",
+    "v2_enhancement": [
+      "codex_critic env_vars 'FAILED_STRATEGIES'에 STR_1682 L-159 precedent 추가 권고",
+      "governor prompt_core에 'H_1685 v2 APPROVE_CONDITIONAL 61 Phase_2 대기' 추가 (diversifier pool 공존 가능성 인지)",
+      "academic prompt_core에 'H_1685 v2 Choe-Kho-Stulz 2005 정통 계보 인정 선례' 추가 (substantive_cite 근거 확대)",
+      "risk_manager prompt_core에 'STR_1683 direction audit + STR_1682 spec fail + L-159 frequency 축 0.28 하락' 추가 (risk governance recent events)"
+    ],
+    "v1_file_reference": "stage_artifacts/s0_debate_handoff_H_1678.json debaters field 그대로 사용 + v2 enhancements 병합"
+  },
+
+  "pre_debate_scout_risk_assessment_v2": {
+    "bull_case_v2": [
+      "L-048 원본 Grade A 실증 (novelty 10 equivalent)",
+      "Factor DB C19 + D01 + V14 모두 기구축 (2026-04-18 실증 PASS) — L-159 spec transmission 재현 risk ELIMINATED",
+      "Scout L-157 v3/v4 pre-check 전수 PASS (algebraic/dominance/sd ratio/pairwise)",
+      "H_1690 vs 상관 -0.11, H_1688 0.10~0.25, H_1685v2 0.05~0.15 전부 PASS (공존 가능)",
+      "stabilize bucket target 20% 기여",
+      "AX-003 정비 명시적 기능 (V14 제거)",
+      "Scout Calibration v4 draft 적용 (2건 연속 5/5 hit 기반)"
+    ],
+    "bear_case_v2": [
+      "STR_1631 C19 공유 → consensus rule 5 45% cap violation risk (Tier 1 Cap 1건 원칙)",
+      "Pure signal MDD 50%+ → Hard Fail 45% risk (overlay 없는 S1)",
+      "C19 standalone vs composite ICIR 10~20% drop (L-119 dilution 일부)",
+      "Harvey t>3 gate borderline (STR_1555 원본 데이터 재확인 필요)",
+      "STR_1555 원본 hurdle_result SR=0 (데이터 누락) → genuine alpha 재확인 선결",
+      "**v2 신규 tail warning**: 2026-04 Factor DB에 V14 존재 but AX-003 위반 — Forge baseline 병행 측정 시 AX 감시 필요"
+    ]
+  },
+
+  "strategic_chain_v2_corrected": {
+    "if_approve_or_approve_conditional": "**STR_1687** (다음 순번) Forge 자동 할당 또는 Q-Lead 지정. S1 Forge. STR_1631 교체 vs partial 결정은 Governor PG1 admission 단계. (v1 STR_1686 오류 정정)",
+    "if_revise": "Scout Path — (a) Core cap 초과 우려 완화 위해 D01 → D01+Q07 50/25/25 3F composite, (b) H_1690 ELEVATED와 완전 독립성 고려하여 D01 → R16 교체, (c) weight 60/40 → IC-weighted dynamic (factor timing 함정 경계)",
+    "if_reject": "STR_1555 v53 refit Session 68+ carry, H_1678 archive. STR_1631 PG2 80% 유지 + H_1690/H_1685v2 diversifier 확장으로 gap 경로 대체."
+  },
+
+  "consensus_tier_classification_L158_v2": {
+    "tier": "Tier 1 C19_core (60% weight)",
+    "gate_10_consensus_tier_warning": "Tier 1 Cap 1건 원칙 (Scout taxonomy v2 Rule 1)",
+    "current_tier1_occupant": "STR_1631_SYN_05 (PG2 80% anchor)",
+    "admission_policy_options": [
+      "Option A: STR_1631 PG2 축소 (80% → 40%) + H_1678 20% partial 공존",
+      "Option B: STR_1631 PG2 0% + H_1678 40% 완전 교체 (급격 교체 risk)",
+      "Option C: STR_1631 유지 + H_1678 archive (stabilize 기능만 정보 저장)",
+      "Governor 결정: PG1 admission 단계에서 option 확정"
+    ],
+    "gate_8_early_warning_evidence": "H_1678 Tier 1 C19_core cap 추가 violation 사례 (L-158 evidence 축적)"
+  },
+
+  "forge_handoff_pre_requirements_v2": {
+    "_note": "L-159 spec transmission failure 예방 — STR_1682 교훈 반영",
+    "required_factor_availability_pass": "CONFIRMED (2026-04-18 Scout 실측)",
+    "factor_engine_spec_requirements": {
+      "base_factors": ["C19_Composite_Earnings", "D01_IdioVol"],
+      "load_method": "load_month_factors() 경유 (C15)",
+      "composite_formula": "score = 0.6 × Z_Score_Aligned(C19) + 0.4 × Z_Score_Aligned(D01)",
+      "no_overlay_S1": "DD/VT/Regime 전부 제외 (L0 rule)",
+      "buffer_zone": "list(keep_n=22L, entry_n=20L)",
+      "universe": "KOSPI+KOSDAQ, LIQ_THRESHOLD=2e8, commission 15bps"
+    },
+    "forge_preflight_check_mandatory": [
+      "C19_Composite_Earnings load 성공 verification",
+      "D01_IdioVol load 성공 verification",
+      "2 factors 공통 월별 coverage >=50 tickers verification",
+      "V14_EBIT_EV 참조 baseline 병행 (AX-003 위반 주의, Forge는 Grade A 제출 금지)"
+    ],
+    "ET_102_preflight_pattern_forge_action": "compute_composite_score.R 또는 factor_engine.R 내 required_factors 필드 + verify_factor_availability() 함수 사전 호출"
+  },
+
+  "handoff_completeness_check_v2": {
+    "s0_record_v1_complete": true,
+    "handoff_kit_v1_complete": true,
+    "handoff_kit_v2_enhanced": true,
+    "empirical_precheck_complete": true,
+    "factor_db_availability_verified": true,
+    "lookahead_detector_patterns_drafted": "not_required (factor engine 수준, compute_investor.R 같은 신규 registry 없음)",
+    "L157_v4_draft_applied": true,
+    "L156_v2_TDC_cluster_registered": true,
+    "L159_spec_transmission_preempted": true,
+    "str_number_corrected": true,
+    "unresolved_disputes_pre_resolution": true,
+    "ready_for_qlead_r1_debate_spawn": true
+  },
+
+  "scout_phase1_closure_notes": [
+    "H_1678 s0_record v1 (2026-04-17) 완성도 높음 — revision 불필요. v2 handoff kit로 보강만 수행.",
+    "Factor DB 2026-03 parquet 실측 결과 C19 + D01 + V14 모두 존재 확인. L-159 spec transmission failure 재현 risk ELIMINATED.",
+    "Scout Calibration v4 draft 적용: predicted range [52, 68], midpoint 60. tail warning penalty -3 적용 (MDD Hard Fail + Tier 1 cap violation 2건 warning).",
+    "**Phase 1 종료** — Scout Q-Lead에게 R1 debate 5인 spawn 요청. v2 handoff kit + v1 debaters field 병합 사용.",
+    "v1 strategic_chain STR 번호 오류 정정: 'STR_1686' → 'STR_1687' (STR_1686은 H_1685 v2 할당됨).",
+    "L-156 v2 TDC cluster 'C19_core_consensus_Tier1' pre-registration: STR_1631 + H_1678 + STR_1555 legacy. AX-006 candidate 기여 +0.10 frequency.",
+    "Scout taxonomy v2 Gate 10 Tier 1 cap warning: STR_1631 차지 중. PG1 admission 단계에서 Governor가 option A/B/C 결정."
+  ]
+}

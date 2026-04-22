@@ -1,0 +1,150 @@
+{
+  "hypothesis_id": "H_1694",
+  "hypothesis_title": "Earnings Streak Quality Filter (M25 streak + Q04 F-score composite)",
+  "verdict": "APPROVE_CONDITIONAL",
+  "verdict_date": "2026-04-19",
+  "session": 68,
+  "compiled_by": "Q-Lead (Scout 집계)",
+
+  "debaters": [
+    {
+      "agent_id": "codex_critic_h1694",
+      "role": "codex_critic",
+      "r1_score": 6,
+      "r2_score": 9,
+      "final_score": 9,
+      "delta": "+3",
+      "stance_r1": "REJECT",
+      "stance_r2": "APPROVE_CONDITIONAL",
+      "findings": "Factor DB 등록 확인으로 입장 전환. Q04 40% weight AX-004 유사성 우려 유지. Harvey t-stat + Q04 분해 IC S1 실측 조건."
+    },
+    {
+      "agent_id": "risk_manager_h1694_r1",
+      "role": "risk_manager",
+      "r1_score": 13,
+      "r2_score": 13,
+      "final_score": 13,
+      "delta": "0",
+      "stance_r1": "APPROVE_CONDITIONAL",
+      "stance_r2": "APPROVE_CONDITIONAL",
+      "findings": "Harvey t-stat + TDC 0.30 + DCC crisis spike 3중 HIGH concern 유지. S1 DSR + S3 TDC/DCC 실측 해소 조건."
+    },
+    {
+      "agent_id": "governor_H1694_r1",
+      "role": "governor",
+      "r1_score": 14,
+      "r2_score": 14,
+      "final_score": 14,
+      "delta": "0",
+      "stance_r1": "APPROVE_CONDITIONAL",
+      "stance_r2": "APPROVE_CONDITIONAL",
+      "findings": "family concentration 35% + KOSDAQ Usable_Date + IC cross-correlation 실측 필수. S3 전 PG1 Gate 6/11 미보장."
+    },
+    {
+      "agent_id": "quant_h1694_r1",
+      "role": "quant",
+      "r1_score": 15,
+      "r2_score": 15,
+      "final_score": 15,
+      "delta": "0",
+      "stance_r1": "APPROVE_CONDITIONAL",
+      "stance_r2": "APPROVE_CONDITIONAL",
+      "findings": "Codex quintile S1 요구는 stage 혼동으로 반박. Harvey t-stat + DSR + Usable_Date C14 필터 S1 핵심 조건 유지."
+    },
+    {
+      "agent_id": "academic_h1694_r1",
+      "role": "academic",
+      "r1_score": 16,
+      "r2_score": 15,
+      "final_score": 15,
+      "delta": "-1",
+      "stance_r1": "APPROVE_CONDITIONAL",
+      "stance_r2": "APPROVE_CONDITIONAL",
+      "findings": "Governor 반박 수용 — IC cross-correlation 실측 없이 earnings_streak 독립 family 주장 수위 조정. PEAD×F-score 메커니즘 근거 유효. KR 직접 실증 S1 보완 필요."
+    }
+  ],
+
+  "codex_r2_external": {
+    "source": "r2_codex_verdict_H_1694.json",
+    "r1_score": 6,
+    "r2_score": 7,
+    "stance": "APPROVE_CONDITIONAL",
+    "note": "Background Codex 결과 참고. 내부 debate codex_r2_score=9와 차이 있으나 stance 일치 — APPROVE_CONDITIONAL. 외부 Codex의 Q04 standalone IC + PIT timing 우려를 unresolved_disputes에 반영."
+  },
+
+  "final_scores": {
+    "codex_critic":  {"r1": 6,  "final": 9,  "delta": "+3"},
+    "risk_manager":  {"r1": 13, "final": 13, "delta": "0"},
+    "governor":      {"r1": 14, "final": 14, "delta": "0"},
+    "quant":         {"r1": 15, "final": 15, "delta": "0"},
+    "academic":      {"r1": 16, "final": 15, "delta": "-1"},
+    "total_r1": 64,
+    "total_final": 66,
+    "max_possible": 100
+  },
+
+  "rounds": [
+    {
+      "round": 1,
+      "stances": {
+        "codex_critic": "REJECT",
+        "risk_manager": "APPROVE_CONDITIONAL",
+        "governor": "APPROVE_CONDITIONAL",
+        "quant": "APPROVE_CONDITIONAL",
+        "academic": "APPROVE_CONDITIONAL"
+      },
+      "veto_flags": [],
+      "consensus": "MINORITY (1 REJECT, 4 APPROVE_CONDITIONAL)"
+    },
+    {
+      "round": 2,
+      "stances": {
+        "codex_critic": "APPROVE_CONDITIONAL",
+        "risk_manager": "APPROVE_CONDITIONAL",
+        "governor": "APPROVE_CONDITIONAL",
+        "quant": "APPROVE_CONDITIONAL",
+        "academic": "APPROVE_CONDITIONAL"
+      },
+      "veto_flags": [],
+      "consensus": "UNANIMOUS_CONDITIONAL (5/5 APPROVE_CONDITIONAL)"
+    }
+  ],
+
+  "consensus_points": [
+    "Factor DB M25(line1682) + Q04(line2067) 등록 확인 — S1 인프라 준비 완료",
+    "Harvey t-stat full-period 미달 가능성(ic_all 기반 t~1.2) → S1 DSR + rolling ICIR 의무",
+    "KOSDAQ Usable_Date 45일 lag PIT C4/C14 위험 → S1 KOSPI/KOSDAQ 분포 비교 필수",
+    "STR_1631과 lower tail TDC 0.30 threshold → S3 copula 측정 의무 (Gate 11)",
+    "DCC crisis spike 위험 → S3 regime-conditional DCC 측정 (0.60+ 발생 시 role 재분류)",
+    "PEAD×F-score composite 메커니즘 학술 근거 유효 — AX-004/005 scope 면제 잠정 수용",
+    "P1_diversifier 슬롯 gap 방향 적합 (portfolio_gap_vector v1.0.8 확인)"
+  ],
+
+  "unresolved_disputes": [
+    "Q04 40% weight AX-004 유사성 — Codex 우려 vs Judge/Academic 면제 논리. S1 Q04 단독 IC 분해 측정으로만 해소 가능.",
+    "M25 earnings_streak family 분류(consensus sub-family vs 독립 sub-family) — Judge custodian 판정 필요. IC cross-correlation 실측 전 Gate 6 판정 보류.",
+    "Codex external(r2_codex_verdict): liquidity-filtered quintile net evidence + PIT amendment handling 추가 우려 — S1/S2 과제로 이관."
+  ],
+
+  "conditional_approval_items": [
+    "S1: M25 단독 IC + Q04 단독 IC + composite IC 분해 측정 (Q04 standalone alpha 여부 판정)",
+    "S1: full-period rolling ICIR + Harvey t-stat + DSR 계산 (Gate 4 Harvey t > 3.3 경로 확인)",
+    "S1: KOSDAQ vs KOSPI Usable_Date 분포 비교 + 45일 lag 커버율 (PIT C4/C14 검증)",
+    "S1: 8대 스트레스 구간 sub-period IC (2008 GFC + 2020 COVID)",
+    "S3: M25×Q04 composite vs STR_1631 lower tail TDC < 0.30 (Gate 11 hard block)",
+    "S3: DCC crisis 구간 spike 측정 (MRS >= 70 구간, 0.60+ 발생 시 diversifier_with_regime_dependency 재분류)",
+    "S6: CDaR_95 < 20%, CVaR_99 < 15% (diversifier tail risk limit)"
+  ],
+
+  "veto_conditions": [
+    "Harvey t < 2.0 AND DSR < 0 동시 — fundamental alpha 부재",
+    "S3 lower tail TDC > 0.50 vs STR_1631 — diversifier 역할 무효화",
+    "2008 GFC 구간 composite IC < -0.10 — PEAD mechanism KR 실패",
+    "Q04 단독 IC > M25 단독 IC (Q04가 primary driver) — AX-004 재도입 확정"
+  ],
+
+  "next_stage": "S1",
+  "assigned_to": "Forge",
+  "role_tag": "RoleBias_Diversifier",
+  "s0_record_ref": "stage_artifacts/s0_record_H_1694_earnings_streak_quality_filter.json"
+}

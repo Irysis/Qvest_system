@@ -1,0 +1,14 @@
+{
+  "strategy_id": "STR_1679v2",
+  "l_code": "L-147",
+  "grade": "PROCESS_INTEGRITY_RULE",
+  "core_reference": "STR_1679v2 mutation_tracker sources vs actual files mismatch + Stage Gate v53 s2.6 Fast-Track Guard + s2.7 Mutation Tracker Hook",
+  "lesson_text": "STR_1679v2 Session 65 Judge 심사에서 도출된 S5 산출물 검증 규칙. STR_1679v2의 .cache/mutation_tracker.json은 passes_s5_rule=true로 기록되어 있으나 실제 stage_artifacts 디렉토리에 s5_research_slate/s5_mutation_record 파일 부재. sources 필드가 실제 경로를 가리키지 않음. retroactive=true 플래그로 자인. Hook s2.6 Fast-Track 차단은 파일 존재 + 스키마 유효성을 요구하므로 tracker JSON 필드만 수정하는 소급은 금지. 교훈: Scout의 S5 산출물 쓰기 실패가 있으면 Judge는 sg_check_s6_entry Gate 0에서 반드시 차단하고 가상의 PASS 선언 금지. mutation_tracker.json의 sources 필드는 실제 파일 존재를 가리켜야 하며, passes_s5_rule=true는 sources 파일들이 모두 존재할 때만 유효. Scout 책임: S5 산출물 정상 쓰기 + sources 필드 정확 기록. Judge 책임: sg_check_s6_entry에서 sources 파일 존재 여부 실제 확인.",
+  "tags": ["STAGE_GATE", "ARTIFACT_SCHEMA", "PROCESS_INTEGRITY", "S5_ENTRY_CONDITION"],
+  "market": "ALL",
+  "supporting_lcodes": [],
+  "created_at": "2026-04-17",
+  "session": 65,
+  "source": "Judge S6 review of STR_1679v2 (Session 65) — originally recorded as 'L-145' in s6_judge_STR_1679v2.json internal field; renumbered to L-147 in canonical L-code space.",
+  "restoration_note": "Restored from s6_judge_STR_1679v2.json l_code_new['L-145'] field after Scout reported methodology_memory.md L-146/147 gap. Original Session 65 timestamp preserved."
+}

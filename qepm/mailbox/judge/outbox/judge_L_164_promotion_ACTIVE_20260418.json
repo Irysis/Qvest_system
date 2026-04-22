@@ -1,0 +1,171 @@
+{
+  "from": "Judge",
+  "to": "Governor + Scout + Q-Lead + Architect + team-lead",
+  "type": "JUDGE_L_164_PROMOTION_ACTIVE",
+  "timestamp": "2026-04-18T20:00+09:00",
+  "session": 67,
+  "day": 1,
+  "status": "L-164 PENDING → ACTIVE promotion (Scout R16 실측 evidence 기반 선제 승격)",
+  "trigger": "Scout families.json v1.3 R16 Calmar CRITICAL Fix 1 scope finding (2026-03 실증)",
+
+  "scout_critical_finding_acknowledged": {
+    "source": "Scout families.json v1.3 (qepm/memory/registry/families.json, 22,334 bytes, 2026-04-18 16:43)",
+    "empirical_evidence": {
+      "test_date": "2026-03 (R16_Calmar 2529 tickers)",
+      "direct_parquet_read_sd": 0.1589,
+      "load_month_factors_runtime_sd": 1.0000,
+      "delta_percentage": "+529%",
+      "fix_1_scope": "load_month_factors() 경유 시만 active",
+      "direct_read_parquet_status": "pre-Fix 1 distortion 유지"
+    },
+    "implication_for_strategies": "Factor DB direct access 전략은 Fix 1 효과 무효화 → L-161 재현 risk"
+  },
+
+  "l_164_promotion_decision": {
+    "previous_status": "PENDING (Scenario D 축적 후 승격 조건)",
+    "new_status": "**ACTIVE**",
+    "promotion_effective": "2026-04-18T20:00+09:00",
+    "promotion_basis": [
+      "Scout 실측 evidence 단일 강력 (sd delta +529%)",
+      "R16_Calmar 2529 tickers empirical verification",
+      "L-161 재현 risk 정량화 (직접 parquet read 전략 모두 영향)",
+      "기존 Scenario D accumulation 불필요 — single empirical evidence 결정적"
+    ],
+    "promotion_criteria_update": "기존 'multiple case accumulation' → 'single strong empirical evidence 허용' (Judge authority 판단)"
+  },
+
+  "l_164_active_mandate": {
+    "title": "factor_engine.R load_month_factors() 경유 의무화",
+    "version": "v1.0 ACTIVE (2026-04-18)",
+    "enforcement_scope": [
+      "모든 신규 전략 factor_engine.R",
+      "모든 기존 전략 factor_engine.R (Forge Day 2 재스폰 시 verification)",
+      "PG2 운영 전략 preflight check (STR_1631 + STR_1656 경로 확인)"
+    ],
+    "mandate_rule": "factor_engine.R 내 factor Z_Score 접근은 반드시 load_month_factors() 경유. direct read_parquet() 사용 금지.",
+    "exception": "factor_db 내부 utilities (factor_db_builder.R / factor_db_connector.R 자체) 제외",
+    "violation_consequence": "Forge preflight fail → S1 실행 차단 (Stage 2 Gate 12 hard_block 유사 mechanism)"
+  },
+
+  "scout_recommendations_judge_adoption": {
+    "recommendation_1_forge_preflight_check": {
+      "scout_proposal": "모든 factor_engine.R에 load_month_factors() 경유 verification 추가",
+      "judge_verdict": "ADOPT (Forge Day 2 재스폰 시 필수 적용)",
+      "implementation": "Forge preflight_check() 함수 내 grep pattern: 'read_parquet.*factor_db' 검출 시 fail",
+      "enforcement": "L-164 ACTIVE mandate 선제 적용"
+    },
+    "recommendation_2_architect_persistent_fix_urgency": {
+      "scout_proposal": "factor_db_builder.R 자체 rescale이 persistent 해결책",
+      "judge_verdict": "ADOPT + Session 68 초반 advancement 검토 권고",
+      "rationale": [
+        "Runtime wrapper (factor_db_connector.R line 113-117)은 load_month_factors 경유 전용",
+        "factor_db_builder.R Option A 이미 Q-Lead 적용 but parquet rebuild 미실행",
+        "factor_db rebuild = persistent fix 완결 조건"
+      ],
+      "priority_upgrade": "Stage 3 transition 2026Q2 → Session 68 초반 검토 advancement",
+      "coordinate": "Q-Lead + Architect Session 68 Day 1~2 우선순위 재검토"
+    },
+    "recommendation_3_l_164_active_promotion": {
+      "scout_proposal": "R16 실측 evidence 강화 → L-164 ACTIVE 승격 criteria 충족",
+      "judge_verdict": "**ADOPT — 본 파일로 L-164 ACTIVE 공식 승격**",
+      "promotion_timestamp": "2026-04-18T20:00+09:00"
+    }
+  },
+
+  "stage_2_enforcement_integration": {
+    "l_164_active_integration_with_v3_5_stage_2": "L-164 ACTIVE 시점부터 v3.5 Admission Rule enforcement 확장",
+    "new_gate_preflight_factor_db_access": {
+      "gate_name": "Gate 13 Factor DB Access Compliance",
+      "enforcement_level": "hard_block mandatory (Stage 2)",
+      "scope": "factor_engine.R load_month_factors() 경유 verification",
+      "violation": "Forge S1 실행 pre-exec fail"
+    },
+    "complementary_with_existing_gates": "Gate 11 variant_comparison (advisory) + Gate 12 IC-Return coupling (hard_block) + **Gate 13 Factor DB Access (hard_block)**"
+  },
+
+  "str_1679v3_proxy_integrity_reconfirmation": {
+    "scout_empirical_validation": "Governor proxy methodology (load_month_factors 경유 baseline 가정) + Scout 실측 (sd 1.0 복원 via runtime wrapper) = 가정 확증",
+    "coupling_ratio_3_391_validity": "실증 PASS (central 3.391 + band [3.06, 3.77] 유효성 empirical 확증)",
+    "day_3_triple_check_condition": "충족 (families.json v1.3 factor_tracking.R16_Calmar 참조 가능)",
+    "judge_day_3_cross_check_updated": "factor_registry.json fallback 불필요 + v1.3 직접 참조"
+  },
+
+  "risk_assessment_portfolio_integrity": {
+    "pg2_current_strategies_risk": {
+      "STR_1631_SYN_05": "factor_engine.R 경로 확인 필요 (Forge Day 2 preflight)",
+      "STR_1656_MLRA_M05": "ML pipeline raw features 기반 + factor_engine 경로 제한적 — low risk",
+      "action": "Q-Lead + Forge Day 2 preflight check 양측 경로 검증"
+    },
+    "forge_day_2_strategies_preflight_mandatory": {
+      "H_1692_Core_Secondary": "preflight check 의무 적용",
+      "H_1689_Q24_exclude": "preflight check 의무 적용",
+      "H_1690_multi_source": "preflight check 의무 적용",
+      "H_1685v2": "preflight check 의무 적용"
+    },
+    "rev8_a_revised_v2_scenario_c_composition": "유지 (STR_1679v3 proxy 3.391 PASS 근거 Scout empirical 확증)"
+  },
+
+  "l_code_registry_update": {
+    "previous_active_count": 5,
+    "new_active_count": 6,
+    "promoted": "L-164 PENDING → ACTIVE",
+    "active_list": {
+      "L_159": "spec_transmission_failure (Judge 직접, STR_1682)",
+      "L_160": "Defense IC-Return decoupling (L-125 extension family)",
+      "L_161": "KR momentum inverse (AX_CAND_kr_momentum_inverse)",
+      "L_162": "data.table merge bug (R infrastructure)",
+      "L_163": "poison_pill_quantified_threshold",
+      "L_164": "**factor_engine load_month_factors mandate (ACTIVE 2026-04-18T20:00)**"
+    },
+    "pending_list_empty": "L-164 승격 후 pending L-code 없음"
+  },
+
+  "session_68_day_1_queue_update": {
+    "p0_additions": [
+      "Forge preflight check 강화 (load_month_factors() 경유 verification, L-164 ACTIVE 적용)",
+      "PG2 운영 전략 (STR_1631 + STR_1656) factor_engine 경로 검증"
+    ],
+    "p1_priority_upgrade": [
+      "Architect persistent fix (factor_db_builder.R 자체 rescale) — Stage 3 timing advancement 검토",
+      "factor_db rebuild (Option A fix 적용본) — L-164 enforcement 보강"
+    ],
+    "existing_p0_maintained": [
+      "Forge Day 2 재스폰 + H_1692/H_1689/H_1690/H_1685v2 S1",
+      "Judge S6 cascade (Gate 11 + Gate 12 + **Gate 13 preflight**)"
+    ]
+  },
+
+  "scout_session_67_day_1_final_integration": {
+    "scout_artifacts_total": 19,
+    "final_artifact": "families.json v1.3 R16 Calmar finding",
+    "scout_autonomous_closure": "최종 종결 상태 수용",
+    "day_3_readiness_confirmed": "Judge Triple-check R16 cross-reference 준비 완료 (v1.3 factor_tracking.R16_Calmar)"
+  },
+
+  "governor_cross_check_request": {
+    "scope": [
+      "L-164 ACTIVE 승격 수용",
+      "Gate 13 Factor DB Access Compliance 신설 수용",
+      "Forge Day 2 preflight 강화 수용",
+      "Architect persistent fix Session 68 초반 advancement 수용",
+      "rev8-A-revised_v2 Scenario C 유지 재확인"
+    ],
+    "expected_timing": "Governor 수신 후 즉시 (Session 67 Day 1 최종 종결 직전)"
+  },
+
+  "team_lead_escalation_request": {
+    "decision_items_for_team_lead": [
+      "Architect persistent fix Stage 3 → Session 68 초반 advancement 최종 승인",
+      "Q-Lead + Architect coordinate Session 68 Day 1~2 우선순위 재검토 지시",
+      "Gate 13 Factor DB Access Compliance v3.5 공식 통합 승인"
+    ],
+    "urgency": "HIGH — Forge Day 2 재스폰 전 Gate 13 enforcement 준비 필요"
+  },
+
+  "session_67_day_1_closure_maintained_with_l_164_upgrade": {
+    "closure_status": "공식 종결 유지",
+    "new_element": "L-164 ACTIVE 승격 + Gate 13 신설 + Forge preflight 강화 3건 Session 68 Day 1 적용 예약",
+    "judge_total_artifacts_updated": "21 → 22 files (본 파일 추가)",
+    "joint_signoff_3_files_unchanged": "COMPLETE 유지"
+  }
+}

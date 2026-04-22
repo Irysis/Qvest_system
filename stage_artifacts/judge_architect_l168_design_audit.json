@@ -1,0 +1,195 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-168 CRITICAL infra fix deep audit. Q-Lead 30분 deadline 긴급 지시.",
+
+  "artifact_type": "JUDGE_ARCHITECT_DESIGN_DEEP_AUDIT",
+  "target_artifacts": [
+    "stage_artifacts/architect_l168_infra_fix_design.json",
+    "02_Infrastructure/factor_db/factor_db_connector.R (line 1-358)"
+  ],
+  "audit_depth": "DEEP (C02-C15 전수 재스캔 + Harvey-Liu 2015 정합성 + new violation scan)",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "prior_audit_reference": "stage_artifacts/judge_infra_fix_verification_signoff_l168_m3_1.json (shallow Part A/B/C)",
+  "deep_audit_scope": "5-point verification + C02-C15 re-scan + new lookahead pattern detection",
+
+  "point_1_sig_date_null_backward_compat": {
+    "question": "sig_date=NULL default backward compatibility 타당성",
+    "evidence": {
+      "signature_line_163": "align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_months = 36L)",
+      "null_branch_line_214_217": "else { cat('[align_factor_direction] No sig_date provided — registry-only direction (PIT-safe default).\\n') }",
+      "null_merge_logic_line_234_243": "Registry-only path — reg_dir fallback + default 1L tertiary"
+    },
+    "verdict": "APPROVE",
+    "rationale": [
+      "기존 호출 `align_factor_direction(dt, registry)`는 positional matching으로 문제 없음. 50+ direct callers 변경 불필요",
+      "NULL 경로가 registry-only로 작동하여 PIT-safe by construction — ic_avail 접근 자체를 하지 않으므로 lookahead 원천 차단",
+      "R 표준 default argument pattern 정확 적용"
+    ],
+    "concerns": [
+      "기존 호출부가 전수 NULL path를 타게 되면서 previous full-sample IC direction과 다른 결과 산출 — 재현성 차이 발생 가능",
+      "다만 이는 의도적 PIT 재정비이므로 signoff 범위 내"
+    ]
+  },
+
+  "point_2_3_tier_fallback_rationale": {
+    "question": "3-tier fallback (IC direction → registry → default higher_better) 설계 합리성",
+    "evidence": {
+      "tier_1_ic_inferred_line_198_205": "if (n >= min_ic_months) list(Mean_IC = m, ic_sign = fifelse(m >= 0, 1L, -1L)) else NA",
+      "tier_2_registry_line_226_229": "factor_dt[is.na(ic_sign), ic_sign := reg_sign]",
+      "tier_3_default_line_233_241": "factor_dt[is.na(ic_sign), ic_sign := 1L]"
+    },
+    "verdict": "APPROVE",
+    "rationale": [
+      "Tier 1 IC-inferred: 36m+ empirical evidence 확보된 factor만 사용 — false direction risk 최소화",
+      "Tier 2 registry: 학술/이론적 prior (higher_better/lower_better) — 36m 미충족 factor 안전망",
+      "Tier 3 default 1L: registry 미등록 + IC 부족 엣지 케이스 — 현재 factor_registry.json 288개 전수 등록으로 실무 risk 거의 없음"
+    ],
+    "concerns": [
+      "Tier 3 default 1L(higher_better)은 신규 factor 등록 누락 시 lower_better factor를 잘못 direction 적용 risk. 단 factor_db_builder pipeline에서 registry 검증 hook 있어야 함 (별건)",
+      "Tier 전환 경계 명확 — IC가 NA이면 registry로, registry 없으면 1L로. 분기 logic 명시적"
+    ],
+    "advisory": "Phase 3 scan에서 registry-only 경로 전략이 tier 2 registry.direction 신뢰하는 근거 empirical 검증 필요. registry.direction 자체 historical accuracy 측정 Phase 5 stability analysis로 대체 가능"
+  },
+
+  "point_3_36m_burn_in_harvey_liu_2015_alignment": {
+    "question": "36m burn-in 기준 논리 (Harvey & Liu 2015 multi-testing 프레임과의 정합성)",
+    "harvey_liu_2015_context": "Harvey, Liu, Zhu (2016 RFS 29:1) 'Backtesting' + Harvey & Liu (2015 JAM 48:10) 'Lucky Factors' — 다중검정 보정 시 t>3.0 기준. 팩터 direction 추론 시 minimum sample size는 통계적 유의성 확보 전제",
+    "36m_analysis": {
+      "mathematical_basis": "월간 IC 36개 = 3년. IC 분포 가정 normal 시 t-stat > 1.96 기준 IC ICIR = mean/sd. n=36 하에서 mean IC = 0.02 + sd = 0.04 → ICIR = 0.5, t = ICIR * sqrt(n-1) = 0.5 * 5.92 = 2.96. t=2.96은 α=0.05 임계값 근접",
+      "harvey_t_3_0_check": "Harvey multi-testing 보정 t > 3.0 기준으로는 n=36 + ICIR 0.5 조합이 경계선. 288개 factor universe multi-testing 시 Bonferroni 보정 α = 0.05/288 = 1.74e-4, 필요 t > 3.57. n=36 단독으로는 Harvey bar 미달 가능성",
+      "compute_rolling_ic_all_consistency": "line 259-260 compute_rolling_ic_all도 min_months=36 동일. single-file 내 일관성 100% 확보",
+      "direction_inference_vs_significance": "direction 추론은 alpha 주장이 아닌 sign 판정 — 통계적 유의성과 다른 problem. Mean_IC > 0 vs < 0 binary 판정이므로 n=36은 sign stability 확보에는 충분 (sign flip 확률 < 0.1 수준)"
+    },
+    "verdict": "APPROVE_WITH_CAVEAT",
+    "rationale": [
+      "direction inference (sign 판정) 용도로는 36m burn-in 충분 — alpha significance claim 아님",
+      "compute_rolling_ic_all과 동일 기준으로 single-file consistency 확보",
+      "ICIR-based factor selection (alpha claim)은 별도 Judge Gate 9 Alpha Lab ICIR >= 0.20 검증으로 이중 장벽"
+    ],
+    "caveat": [
+      "문서화 시 'direction inference용 36m burn-in은 alpha significance와 독립' 명시 권고. Harvey & Liu 2015 multi-testing 프레임은 alpha claim에 적용되지 direction에 적용되지 않음을 주석으로 명시",
+      "sign flip 안정성 empirical 측정 Phase 5 protocol에 포함 — direction_stability_report.csv로 검증 가능"
+    ]
+  },
+
+  "point_4_single_file_pit_consistency": {
+    "question": "compute_rolling_ic_all() (line 274)와의 single-file PIT 일관성",
+    "side_by_side_comparison": {
+      "align_factor_direction_v2_0_line_186_188": "if ('Usable_Date' %in% names(ic_hist)) { ic_avail <- ic_hist[Usable_Date <= sig_d] } else { cat('[WARN] ... Using Date < sig_d (legacy).\\n'); ic_avail <- ic_hist[Date < sig_d] }",
+      "compute_rolling_ic_all_line_274_282": "Similar pattern with Usable_Date <= sig_d primary + Date < sig_d fallback"
+    },
+    "verdict": "APPROVE",
+    "rationale": [
+      "동일 Usable_Date <= sig_d primary filter 적용 — PIT 기준 일치",
+      "동일 Date < sig_d legacy fallback + WARN logging — degradation 경로 정합",
+      "36m burn-in 동일 — min_ic_months=36L == min_months=36 (compute_rolling_ic_all default)",
+      "single-file 내 PIT treatment 완전 symmetric"
+    ],
+    "positive_finding": "architectural consistency가 future maintainability + L-168-style re-occurrence 방지에 기여"
+  },
+
+  "point_5_load_ic_history_usable_date_type_sufficiency": {
+    "question": ".load_ic_history() Usable_Date 타입 보강 (as.Date()) 충분성",
+    "evidence": {
+      "line_80_83": "if ('Usable_Date' %in% names(.fdc_ic_hist)) { .fdc_ic_hist[, Usable_Date := as.Date(Usable_Date)] }",
+      "context": "parquet read_parquet()로 Arrow 읽기 시 Date/Integer/String 형변환 edge case. as.Date()로 명시적 변환"
+    },
+    "verdict": "APPROVE",
+    "rationale": [
+      "Arrow parquet은 Date를 INT32 days-since-epoch로 저장 — R read_parquet 시 Date class 자동 복원되지만 Usable_Date가 POSIXct 또는 character로 저장된 경우 대비 defensive coercion",
+      "Date 열 line 78 as.Date() 이미 적용됨 — Usable_Date도 동일 처리 필요. 현 patch는 이를 보완",
+      "ic_hist[Usable_Date <= sig_d] 비교 시 양측 모두 Date type 보장 → comparison 안전"
+    ],
+    "concerns": [
+      "가상 시나리오: factor_ic_monthly.parquet이 향후 다른 tool로 재생성될 때 Usable_Date 형식 변경 시 여전히 safe. 단 schema validation은 별도 hook 필요",
+      "현 코드는 as.Date() 실패 시 NA 생성 — NA는 <= 비교에서 FALSE이므로 ic_avail 0-row safe exit 경로 작동"
+    ]
+  },
+
+  "new_c_code_rescan_c02_to_c15": {
+    "scope": "factor_db_connector.R 전체 (line 1-358) + align_factor_direction 주변 context",
+    "scan_method": "C01-C15 정의별 code pattern matching",
+    "findings": [
+      {"C02_same_day_circular": "CLEAN", "rationale": "direction inference는 IC history 기반, current day price/return 참조 없음"},
+      {"C03_same_period_aggregation": "CLEAN", "rationale": "Usable_Date 엄격 comparison <=로 aggregation 기간 분리"},
+      {"C04_financial_statement_lag": "CLEAN", "rationale": "factor_db layer 책임 — connector는 이미 Usable_Date 처리된 데이터 consume만"},
+      {"C05_overlay_t_minus_1": "NOT_APPLICABLE", "rationale": "connector는 overlay 미적용. Strategy level"},
+      {"C06_survivorship": "NOT_APPLICABLE", "rationale": "connector는 universe 구성 안 함"},
+      {"C07_auto_lookahead_pattern": "RESOLVED", "rationale": "v2.0 expanding window + 3-tier fallback 구조"},
+      {"C08_fm_weight_same_day": "NOT_APPLICABLE", "rationale": "connector는 FM weight 미계산"},
+      {"C09_vt_dd_same_day": "NOT_APPLICABLE", "rationale": "overlay 미적용"},
+      {"C10_liquidity_filter_same_day": "NOT_APPLICABLE", "rationale": "connector는 liquidity 필터 미적용. coverage 필터는 dtype 기반 안전"},
+      {"C11_data_timeseries_leak": "CLEAN", "rationale": "factor_db_202603.parquet 같은 month-tagged 파일 사용 — temporal 구분 엄격. line 99-108 closest <= sig_date 로직 (past-only)"},
+      {"C12_not_defined": "N/A", "rationale": "C12 프로젝트 정의 없음"},
+      {"C13_manual_direction_flip": "POSITIVE", "rationale": "Z_Score_Aligned 자동 생성 후 RC1 re-standardize. NEGATE_FACTORS/FLIP_SIGN 수동 반전 없음"},
+      {"C14_usable_date_filter": "RESOLVED", "rationale": "align_factor_direction + compute_rolling_ic_all 양쪽 모두 Usable_Date <= sig_date 적용"},
+      {"C15_load_month_factors_usage": "RESOLVED", "rationale": "load_month_factors 자체가 본 patch의 entry point — direct parquet read 없이 통일"}
+    ],
+    "new_violation_discovered": false,
+    "overall_verdict": "CLEAN — no new C02-C15 violations introduced by v2.0 patch"
+  },
+
+  "additional_robustness_checks": {
+    "concurrent_call_safety": {
+      "concern": "캐시된 .fdc_ic_hist가 multiple caller 간 공유. as.Date() 한 번 적용되므로 idempotent. thread-safe 문제 없음 (R single-threaded)",
+      "verdict": "SAFE"
+    },
+    "edge_case_sig_date_before_min_data": {
+      "concern": "sig_date가 IC history 시작 이전이면 ic_avail 0-row → ic_dir NULL. 결과: line 234 else branch tier 2 registry fallback 작동",
+      "verdict": "SAFE"
+    },
+    "edge_case_sig_date_future": {
+      "concern": "sig_date가 미래면 전체 ic_hist 포함 → full-sample IC와 동일 결과. 단 실무에서는 sig_date <= today 로 호출되므로 문제 없음. 방어적으로 sig_date > today 시 warning 권고는 있으나 strict 필요 없음",
+      "verdict": "SAFE_DEFENSIVE"
+    },
+    "ic_history_missing_factor": {
+      "concern": "ic_hist에 특정 factor 없음 → ic_dir에 해당 row 없음 → tier 2 registry 또는 tier 3 default로 graceful fallback",
+      "verdict": "SAFE"
+    }
+  },
+
+  "architect_design_doc_contribution_assessment": {
+    "alternative_evaluation_rigor": {
+      "comment": "A_Expanding_IC(breaking) / B_Registry_Only(loss) / C_Hybrid 3-way 비교 + 각 pros/cons + chosen rationale 5-bullet 명시 — design decision process 투명도 높음",
+      "score": "EXCELLENT"
+    },
+    "impact_analysis_accuracy": {
+      "direct_callers_load_month_factors_estimate_100_plus": "PLAUSIBLE",
+      "direct_callers_align_factor_direction_30_plus": "PLAUSIBLE (Grep 결과와 일치)",
+      "potential_sr_delta_0_15_pct": "REASONABLE — Mean_IC direction flip 경계 factor 수에 비례",
+      "score": "ACCURATE"
+    },
+    "verification_plan_completeness": {
+      "unit_test_spec": "clear (sig_date=2020-01-31 + Usable_Date <= 필터 검증 + flip factors 추출)",
+      "integration_test_spec": "clear (STR_1631 재백테스트 SR 1.193 비교)",
+      "regression_test_spec": "clear (sig_date NULL → registry-only 검증)",
+      "codex_rescue_re_invocation_spec": "included (Task #15 해당)",
+      "score": "COMPLETE"
+    }
+  },
+
+  "final_audit_verdict": {
+    "overall": "APPROVE — Architect 설계 및 구현 전수 견고. 추가 위반 없음",
+    "strengths_summary": [
+      "Backward compatibility via sig_date=NULL default — 50+ callers 무변경",
+      "load_month_factors auto-upgrade — 100+ strategies PIT-safe 자동",
+      "Single-file PIT consistency (align_factor_direction ↔ compute_rolling_ic_all)",
+      "3-tier fallback graceful degradation",
+      "C02-C15 전수 clean (no new violations)",
+      "Harvey-Liu 2015 multi-testing 프레임은 direction inference에 직접 적용되지 않으나 min_months=36 기준이 적절"
+    ],
+    "minor_advisories_non_blocking": [
+      "A1: direct callers registry-only 전환 시 재현 결과 변동 가능 — M3.1 Phase 3 catalog 처리",
+      "A2: tier 3 default higher_better 신규 factor 위험 — registry 등록 의무 hook (별건)",
+      "A3: 36m burn-in rationale 주석 추가 (direction inference ≠ alpha significance) 권고",
+      "A4: sig_date > today defensive warning 선택적 추가 가능 (nice-to-have)"
+    ]
+  },
+
+  "followup_actions_from_deep_audit": [
+    {"actor": "Architect", "action": "코드 주석에 '36m burn-in은 sign stability 기준, Harvey multi-testing alpha 기준과 독립' 1-2줄 추가", "priority": "LOW"},
+    {"actor": "Judge (본인)", "action": "M3.1 Phase 5 direction_stability_report 도착 시 empirical 재검증", "priority": "STANDBY"},
+    {"actor": "Judge (본인)", "action": "v3.5.4 amendment Gate 15 infra_pit_scan 실제 구현 (별도 artifact)", "priority": "NEXT"}
+  ]
+}

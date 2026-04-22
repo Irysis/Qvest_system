@@ -1,0 +1,50 @@
+{
+  "role": "judge",
+  "agent_id": "judge_smoke_r2",
+  "r1_stance": "APPROVE_CONDITIONAL",
+  "r1_veto_flag": null,
+  "stance_change": "UNCHANGED",
+  "new_stance": "APPROVE_CONDITIONAL",
+  "stance_change_reason": "",
+  "veto_flag": null,
+  "addressed_concerns": [
+    {
+      "by": "quant",
+      "concern": "Factor DB L22_Ret_Autocorr 실제 존재 + Z_Score_Aligned NA 0% + 정상 분포(min -3.32, max 1.24) 확인. 또한 internal_corr 정량(L22 vs C19 -0.0008, vs M01_Mom_12_1 0.1017, vs M08_Residual_Mom 0.0546)으로 Core(STR_1631)·momentum family 직교성이 사전 입증됨. judge R1의 'Factor DB 적격성 PASS' 및 'C13/C15 준수' 주장이 quant의 직접 데이터 검증으로 보강됨. PIT 도메인 측면에서 factor 자체 PIT(compute_liquidity sig_date windowing)는 confirmed."
+    },
+    {
+      "by": "governor",
+      "concern": "AX-003/004/005/007 무관 + family saturation 패널티 없음 + ic_bad(0.0243) > ic_good(0.0062) 구조로 diversifier 역할이 lawbook §0 / Exploration Rules §9 정합성 측면에서 추가 확인됨. judge R1 supporting_argument 3번(Lawbook §0 정합성)을 governor의 portfolio gap 분석이 보강. 단 governor도 동일하게 L-137 MDD 위험을 critical로 명시하여 judge의 hurdle 적용 우려와 정합."
+    },
+    {
+      "by": "codex_critic",
+      "concern": "Codex R2가 'narrower implementation-PIT concern around factor construction/timestamping was substantially addressed'로 명시 — sig_date-bounded windows + in-DB -|AC1| construction + load_month_factors() + Z_Score_Aligned 준수가 raw signal 자체의 future-month 오염 가능성을 낮춤을 인정. 즉 PIT 도메인의 factor-construction 축은 R1→R2 사이에 substantially resolved. 이는 judge R1 supporting_argument 2번(PIT 경계 핵심 3축 PASS)의 (a)축 검증."
+    }
+  ],
+  "unresolved": [
+    {
+      "with": "academic",
+      "point": "Academic R1의 mechanism veto는 도메인이 다르다. PIT veto는 '데이터·정보의 시간축 위반(미래참조)' 도메인이고, mechanism veto는 '경제적 인과·논문 함의 일치' 도메인이다. judge 권한은 PIT/Gate 0~6/Hurdle/C1~C15에 한정되며, mechanism-sign mismatch는 학술 도메인 책임이므로 judge가 PIT veto로 격상할 근거 없음. 단 academic의 우려는 향후 promote 시 DSR/multiple-testing penalty에 반영되어야 하며, S1 단계에서 'Amihud ILLIQ + 단기 reversal + size + turnover 통제 후 IC_orthogonal 측정'을 s1_gate_items에 추가 필수. Smoke 목적상 reject 사유는 아니나 promote-blocker로 기록."
+    },
+    {
+      "with": "codex_critic",
+      "point": "Codex R2 unresolved 'STR_1636/L-137 crash lineage'는 judge R1 critical_concern 2번과 정합하며 본 R2에서도 미해결. Piotroski 결합 제거가 left-tail 사라짐의 증거가 아니라는 지적은 합리적. S1 결과 MDD 측정 시 (a) 45% 초과 시 즉시 STOP, (b) 45% 미만이라도 crisis-period(2008/2020/2022) 구간별 drawdown 클러스터링 정량 측정 + STR_1636 lineage 비교 보고를 hurdle gate 통과 조건으로 강화. monthly recompute turnover 폭증 위험(>600%)도 동시 측정."
+    },
+    {
+      "with": "codex_critic",
+      "point": "Selection PIT — judge R1 critical_concern 1번에서 제기한 'recent_3y_icir 기반 ex-post selection bias'를 Codex R2가 재확인. v55 정규 사이클 smoke이므로 reject 사유는 아니나, S1 산출물(stage_gate_engine 로그)과 s0_record에 (a) hypothesis selection 시 recent_3y_icir 사용 여부 명시, (b) hurdle 결과를 'pipeline 동작 증거'로만 사용하고 alpha 신뢰지표로 격상 금지를 명문화. 향후 STR_XXX promote 검토 시 selection-PIT contamination을 명시 디스카운트(forward expectation 하향) 적용 의무."
+    },
+    {
+      "with": "codex_critic",
+      "point": "Codex R2 'sign-semantics drift' kill scenario 신규 제기 — 낮은 |AC1|이 'mean reversion 강함'이 아니라 'bland liquid low-vol 종목'으로 귀착될 위험. quant R1이 direction 설계(C13 Z_Score_Aligned + 추가 sign 반전 없음)는 검증했으나 economic 의미는 미해결. S1 산출물에 '편입 종목의 size/turnover/Amihud-ILLIQ 분포'를 의무 보고하여 sleeve가 단순 mega-cap low-vol descriptor로 collapse하는지 모니터링 필요."
+    },
+    {
+      "with": "codex_critic",
+      "point": "AC1 lookback window 정의 + rebalance date 시점 audit — Codex R1/R2가 일관 제기. judge R1 supporting_argument에서 '252d/20d lookback' file header만 인용했으나, run_all.R 실제 코드에서 (a) AC1 window가 rebalance 결정 이전 종료, (b) same-day close/future month return 미포함을 명시 검증한 흔적 필요. C2/C9/C11 도메인 직접 적용. S1 진입 전 forge가 코드 인라인 주석으로 timestamping 명시 + judge gate 0/1에서 lookahead_detector.R 자동 스캔 결과 첨부 의무."
+    },
+    {
+      "with": "quant",
+      "point": "ic_bad/ic_good ratio 3.93는 defense 패턴(예: Q07 +0.75)과 달리 위기 IC 절대값(0.0243)이 낮은 'weak diversifier' 패턴. AX-001 v2 defense 평가 프레임이 아닌 diversifier 평가 프레임으로 진행하는 것은 정합하나, S2 profiling에서 (a) AX-001 v2 crisis_alpha 계산 시도, (b) 만약 crisis_alpha 4/6 미달 시 명시적 'diversifier-only, defense 역할 주장 금지' 라벨링이 role honesty audit 통과 조건. Smoke 단계에서는 reject 사유 아니나 S6 진입 전 명시 필수."
+    }
+  ]
+}

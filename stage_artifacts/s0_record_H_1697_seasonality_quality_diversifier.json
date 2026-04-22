@@ -1,0 +1,94 @@
+{
+  "hypothesis_id": "H_1697",
+  "strategy_id_reserved": "STR_1697_seasonality_quality_diversifier",
+  "stage": "S0",
+  "created_at": "2026-04-19",
+  "created_by": "Scout",
+  "session": "Session 68 Day 2",
+  "status": "PENDING_DEBATE",
+
+  "hypothesis_title": "Seasonality Earnings Momentum Quality Filter (M21 + Q24 + C11)",
+
+  "mechanism": "M21_Seasonality(계절성 수익률 모멘텀)은 특정 월의 과거 수익률 패턴이 반복되는 현상 — Heston & Sadka(2008 JFE) 'Seasonality in the Cross-Section of Stock Returns'. 이 계절성 패턴은 수익성 발표 사이클(분기 어닝 시즌)과 결합될 때 강화됨. Q24_Altman_Z(재무 건전성)를 필터로 사용 — 재정 위기 기업의 계절성 신호는 부도 리스크로 오염. C11_Earnings_Streak(연속 어닝 달성)을 보조 신호로 — 계절성 + 연속 어닝이 겹치는 종목이 가장 강한 seasonal alpha. Heston&Sadka: 1~5년 전 같은 달 수익률이 예측력 — 계절성은 어닝 발표 패턴의 잔존. Keloharju et al.(2016 RFS) 'Return Seasonality': 글로벌 66개 시장에서 계절성 반복 실증.",
+
+  "economic_rationale": "Heston & Sadka(2008 JFE): 미국시장 계절성 수익률은 1년 전 동월 대비 6%, 2년 전 동월 대비 5% 양의 자기상관. 메커니즘: (1) 반복적 어닝 발표 사이클 → 투자자 반응 패턴 예측 가능, (2) 기관 포트폴리오 리밸 사이클(연말 세금 매도 → 연초 효과), (3) 분기별 어닝 발표 시즌 타이밍. KR 적용: 한국 분기 어닝 발표(3/4/5월, 8월, 11월) + 연말 배당주 매집 패턴 → 계절성 효과 구조적 존재. Q24_Altman_Z: 재무 건전성 스크린 — Altman Z-score 높은 기업만 계절성 alpha 포착 (부도 리스크 기업의 신호 오염 제거). C11_Earnings_Streak: conditional_value=0.0141, recent_3y_icir=0.329 — 연속 어닝 달성은 계절성 패턴 지속성의 fundamental anchor. M21 conditional_value=0.0312 Gate 0.5 PASS (위기 시 계절성 효과 지속). 교훈: STR_1631(C19 earnings composite)과 다른 알파 소스 — 계절성 패턴 vs 현재 어닝 모멘텀.",
+
+  "trail": "standard",
+
+  "expected_role": "diversifier",
+  "expected_role_rationale": "M21_Seasonality는 C19_Composite_Earnings (STR_1631 primary signal)와 다른 차원의 alpha. C19는 현재 어닝 모멘텀, M21은 과거 동월 패턴 — 시계열 독립성 높음. portfolio_gap_vector v1.0.8 P1_diversifier 슬롯: STR_1679v3 8% + 추가 diversifier 필요. STR_1679v3 Hard Fail 대비 2순위 후보. M21 category=momentum이나 경제 메커니즘은 seasonality pattern — 표준 momentum(M07 IndMom, M02 Mom_6_1)과 독립적. TDC vs STR_1631 낮을 것으로 예상: 어닝 모멘텀 vs 계절성 패턴은 신호 주기와 입력 데이터가 다름. AX-007 scope 밖: diversifier role + H_1697은 AX-007 defense only 제약과 무관.",
+
+  "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+
+  "why_now": "portfolio_gap_vector v1.0.8 sleeve_needs=[defense, diversifier]. STR_1679v3 재실행(Task #11) — Hard Fail 가능성 대비 P1_diversifier 2순위. M21_Seasonality conditional_value=0.0312 Gate 0.5 PASS (전체 25위), recent_3y_icir=0.179 (약하나 양수). 미사용(used=FALSE). Q24_Altman_Z cv=0.0335 Gate 0.5 PASS, C11 cv=0.0141 PASS. 계절성 팩터는 전략 포트폴리오에서 아직 전혀 탐색하지 않은 family — Explore 버킷 20% 내 완전 신규 territory. STR_1631과 다른 alpha source 확보로 portfolio diversification 향상.",
+
+  "overlay": "none",
+
+  "factor_set": {
+    "primary": "M21_Seasonality",
+    "filter_1": "Q24_Altman_Z",
+    "filter_2": "C11_Earnings_Streak",
+    "weight_scheme": "composite: 0.55 * z_M21 + 0.25 * z_Q24 + 0.20 * z_C11",
+    "rationale": "M21이 primary seasonal alpha signal. Q24_Altman_Z 재무 건전성 필터로 부도 리스크 오염 제거(weight 0.25 — 스크린 + 보조 신호). C11 연속 어닝 달성으로 계절성 패턴의 fundamental anchor(weight 0.20). M21 단독보다 Q24+C11 결합 시 신호 품질 개선 예상.",
+    "m21_direction_note": "M21_Seasonality: higher_better = TRUE (과거 동월 수익률 높을수록 양수 신호). load_month_factors() Z_Score_Aligned 자동 처리.",
+    "q24_direction_note": "Q24_Altman_Z: higher_better = TRUE (Z-score 높을수록 재무 건전). load_month_factors() 자동 처리.",
+    "c11_direction_note": "C11_Earnings_Streak: higher_better = TRUE (연속 어닝 달성 길수록 양수). load_month_factors() 자동 처리."
+  },
+
+  "conditional_ic_coverage": {
+    "gate_05_threshold": 0.0023,
+    "M21_Seasonality": {"conditional_value": 0.0312, "pass": true},
+    "Q24_Altman_Z": {"conditional_value": 0.0335, "pass": true},
+    "C11_Earnings_Streak": {"conditional_value": 0.0141, "pass": true},
+    "coverage_ratio": "3/3 = 1.0 (PASS)"
+  },
+
+  "core_reference": "A4.5 Heston & Sadka(2008 JFE) 'Seasonality in the Cross-Section of Stock Returns'. 미국시장 1~5년 전 동월 수익률 예측력 실증. 계절성 패턴의 어닝 사이클 기원. Keloharju, Linnainmaa & Nyberg(2016 RFS) 'Return Seasonality': 글로벌 66개 시장 계절성 반복 실증 — KR 시장 포함 cross-country 견고성. A3.6 Piotroski(2000 JAR) F-Score — Q24 Altman Z는 동류의 financial distress signal, 재무 건전성 스크린 근거.",
+
+  "lesson_check": "L-130(IC≠SR): M21 ic_all=0.008로 낮음 — S1 유동성 필터 후 quintile 수익률 확인 필수. L-137(Piotroski+RetAutocorr): 다른 메커니즘 조합의 가능성 실증 (M21+Q24+C11 유사 구조). Q24 Altman Z-score는 L-138(accrual defense 실패)와 달리 재무 건전성 지표 — 계절성 신호 오염 제거 역할. AX-005 scope 체크: diversifier role → AX-005(defense standalone) 해당 없음.",
+
+  "pit_compliance_checklist": {
+    "C1": "M21 계절성 계산: 1-5년 전 동월 수익률 mean — expanding window 필수. full-sample 계절성 금지.",
+    "C4": "Q24 Altman Z: 재무제표 기반 → 연간 5월 리밸 lag. C11 Earnings_Streak: 분기 기반 → 45일 lag 최소 적용",
+    "C10": "유동성 필터 2억원 lag=1",
+    "C13_M21": "M21 higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_Q24": "Q24 higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C13_C11": "C11 higher_better=TRUE. Z_Score_Aligned 자동 처리",
+    "C14": "IC 계산 시 Usable_Date <= sig_date",
+    "C15": "load_month_factors(c('M21_Seasonality','Q24_Altman_Z','C11_Earnings_Streak')) 경유 필수",
+    "overlay": "none (S1 pure signal)"
+  },
+
+  "risk_flags": [
+    "M21 ic_all=0.008 낮음 — quintile 수익률 단조성 S1 확인 필수(L-130)",
+    "M21 recent_3y_icir=0.179 약함 — 최근 3년 신호 약화 가능성",
+    "Q24 recent_3y_icir=-0.043 약함 — 단독 신호로는 불안정. M21 보조 역할만으로 제한",
+    "C11 recent_3y_icir=0.329 안정 — C11 비중 상향 고려 가능(S5 mutation 대상)",
+    "M21 계절성 계산: Factor DB 기준 정확한 look-back 확인 필요 (1년/2년/3년 lag 평균 여부)",
+    "STR_1631(C19 기반)과 상관 사전 측정 권장 — C11이 C19 subfamily인지 확인 필요"
+  ],
+
+  "expected_performance_range": {
+    "icir_target": "0.15~0.30 (M21 낮은 ic_all 감안, composite 보완)",
+    "sr_target": "0.6~0.9 (diversifier 역할, seasonality 안정성 기대)",
+    "mdd_target": "< 45%",
+    "role": "diversifier",
+    "tdc_target": "< 0.40 vs STR_1631 (seasonality pattern vs current earnings momentum — 독립적 alpha source)",
+    "novelty_note": "Seasonality family는 전략 포트폴리오 미탐색 — novelty_bonus 가능성 높음 (Hurdle v2.2 max_corr<0.50 → +5~8점)"
+  },
+
+  "v55_fields": {
+    "trail": "standard",
+    "gap_targeting_axes": ["sr_gap", "p1_diversifier_slot"],
+    "expected_role": "diversifier",
+    "cash_component": null
+  },
+
+  "scout_notes": [
+    "Session 68 Day 2 — Task #16 P1_diversifier 추가 탐색",
+    "Seasonality family 전략 포트폴리오 최초 탐색 — Explore 버킷 신규 territory",
+    "M21 ic_all 낮으나 conditional_value(crisis) 양수 + 계절성 패턴 구조적 반복 근거",
+    "STR_1679v3 Hard Fail 대비 P1_diversifier 2순위 후보",
+    "C11과 C19(STR_1631 signal) subfamily 관계 S1 전 확인 필요 — 상관 높을 시 M21+Q24 2-factor 재설계 검토"
+  ]
+}

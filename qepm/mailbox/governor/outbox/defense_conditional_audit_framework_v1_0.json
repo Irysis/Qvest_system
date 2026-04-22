@@ -1,0 +1,216 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "DEFENSE_CONDITIONAL_AUDIT_FRAMEWORK_V1_0",
+  "stage": "PG3_Live_Monitoring_Defense_42pct_AX_001",
+  "timestamp": "2026-04-17T23:30:00+09:00",
+  "session": 66,
+  "version": "v1.0",
+  "parent_plan": "qepm/mailbox/governor/outbox/PG0_PLAN_rev7_v3.json (Defense 42%)",
+  "status": "ACTIVE — R42 Q-Lead 승인 후 정식 framework 문서화",
+
+  "trigger": "rev7_v3 Defense cluster 42% (H_1682 12% + H_1689 20% + H_1690 10%) — AX-001 conditional 성과 평가 framework 정식화 필요. Q-Lead R42 승인.",
+
+  "ax_001_conditional_defense_principle": {
+    "governing_axiom": "AX-001 — Defense는 조건부 성과로 평가한다. 전기간 SR 기준 적용 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio로 평가.",
+    "implication_for_rev7_v3": "Defense 42% 전기간 SR drag 수용 (aspirational 1.80 대비 -0.04). 단 conditional 성과 4축 충족 시 편입 타당성 확인."
+  },
+
+  "defense_conditional_audit_4_axis_framework": {
+    "axis_1_crisis_regime_alpha": {
+      "name": "Crisis Regime Conditional Alpha",
+      "measurement": "MRS ≥ 30 구간 Defense portfolio alpha vs Core (non-defense)",
+      "formula": "α_crisis = mean(r_defense | MRS ≥ 30) - mean(r_core | MRS ≥ 30)",
+      "target": "+3 ~ +5 %p/year outperform vs Core",
+      "strategy_specific_decomposition": {
+        "H_1682_distress_calmar_target_alpha": "+4 ~ +6 %p (distress signal amplification in crisis)",
+        "H_1689_quality_4axis_target_alpha": "+2 ~ +4 %p (quality flight to safety)",
+        "H_1690_multi_source_anchor_target_alpha": "+3 ~ +5 %p (M08 SKEW + R16 Calmar composite)"
+      },
+      "pass_threshold": "≥ +3%p/year average",
+      "fail_action": "Defense sleeve 구성 재검토 + H_1689/H_1690 boost 재조정"
+    },
+    "axis_2_core_relative_mdd_reduction": {
+      "name": "Core Relative MDD Reduction in Stress Periods",
+      "measurement": "8대 stress 구간 Defense 포함 vs 제거 MDD 차이",
+      "stress_periods_8": [
+        "1997 Asian Financial Crisis",
+        "2000 Dot-com Bubble Burst",
+        "2008 Global Financial Crisis",
+        "2011 Eurozone Crisis + US Debt Ceiling",
+        "2018 Q4 Fed Rate Hike",
+        "2020 COVID-19 Pandemic",
+        "2022 Ukraine War + Fed Tightening",
+        "2025-H1 Iran War + Tariff Shock"
+      ],
+      "formula": "ΔMDD_stress = MDD(portfolio_with_defense_42%) - MDD(portfolio_no_defense)",
+      "target": "-20%p+ MDD absolute reduction (Defense 포함 시 MDD 20% 이상 감소)",
+      "pass_threshold": "평균 |ΔMDD| ≥ 20%p",
+      "fail_action": "H_1682 또는 H_1689 weight 재조정, Defense sleeve 구성 변경",
+      "reference_l_code": "L-155 (3-variant decomposition) 확장 적용"
+    },
+    "axis_3_bad_normal_ic_ratio": {
+      "name": "Bad/Normal Regime IC Ratio",
+      "measurement": "CRISIS IC 절댓값 / NORMAL IC 절댓값",
+      "formula": "IC_ratio = |IC(signal | MRS ≥ 30)| / |IC(signal | MRS < 15)|",
+      "target": "|ratio| > 2.0 (위기 상대 우위)",
+      "strategy_specific_thresholds": {
+        "H_1682_distress_calmar": {"target_crisis_ic": 0.65, "target_normal_ic": "0.2~0.3", "target_ratio": "2.5~3.0"},
+        "H_1689_quality_4axis": {"target_crisis_ic": 0.45, "target_normal_ic": "0.15~0.25", "target_ratio": "2.0~2.5"},
+        "H_1690_multi_source": {"target_crisis_ic": 0.50, "target_normal_ic": "0.20~0.30", "target_ratio": "2.0~2.5"}
+      },
+      "pass_threshold": "각 Defense strategy IC_ratio > 2.0",
+      "fail_action": "Defense 기능 약함 — weight 축소 또는 다른 strategy로 교체"
+    },
+    "axis_4_tail_risk_reduction": {
+      "name": "Portfolio Tail Risk Reduction Contribution",
+      "measurement": "CVaR_95 / CDaR_95 감소량 (Defense 포함 vs 제거)",
+      "formula": "ΔCVaR = CVaR(portfolio_no_defense) - CVaR(portfolio_with_defense)",
+      "target": "ΔCVaR_95 ≥ -5%p (CVaR 5%p 이상 축소)",
+      "combined_with_cvar_cap": "rev5 이후 Risk Mgr CVaR threshold -15% annual 유지",
+      "pass_threshold": "ΔCVaR_95 ≤ -5%p + Portfolio CVaR_95 ≥ -17%",
+      "fail_action": "Defense cluster 재구성 + H_1690 multi-source composite 강화"
+    }
+  },
+
+  "normal_regime_underperform_tolerance": {
+    "description": "Defense 42% structural trade-off — NORMAL regime 시 underperform 허용 범위",
+    "threshold_acceptable": "-2%p/year 이내",
+    "threshold_concerning": "-2 ~ -3%p/year (경고)",
+    "threshold_fail": ">-3%p/year (Defense 축소 검토)",
+    "measurement_period": "rolling 12M, MRS < 15 (NORMAL) 구간",
+    "rationale": "위기 구간 +3~5%p alpha benefit > NORMAL 구간 -2%p cost"
+  },
+
+  "integrated_audit_scorecard": {
+    "composite_score_calculation": {
+      "axis_1_weight": 0.30,
+      "axis_2_weight": 0.30,
+      "axis_3_weight": 0.20,
+      "axis_4_weight": 0.20,
+      "total": 1.00
+    },
+    "pass_criteria": "composite score ≥ 0.7 (4축 중 3축+ PASS)",
+    "conditional_pass_range": "0.5 ≤ score < 0.7 (2축 PASS, monitoring + 개선 요구)",
+    "fail_action": "composite < 0.5 → Defense rebalance 또는 strategy 교체"
+  },
+
+  "monthly_audit_procedure_pg3": {
+    "frequency": "monthly (PG3 live monitoring cycle)",
+    "report_artifact": "qepm/mailbox/governor/outbox/monthly_defense_audit_YYYY_MM.json",
+    "kpi_tracking": [
+      "rolling 12M crisis alpha (axis 1)",
+      "YTD stress period MDD reduction (axis 2)",
+      "current month IC ratio crisis/normal (axis 3)",
+      "current month CVaR_95 contribution (axis 4)",
+      "NORMAL regime underperform YTD"
+    ],
+    "alert_conditions": [
+      "composite score < 0.5 → emergency rebalance",
+      "NORMAL underperform > -3%p rolling 12M → Defense 축소 검토",
+      "any axis 3개월 연속 FAIL → strategy 교체 검토"
+    ]
+  },
+
+  "phase_4_plus_dynamic_allocation_overlay_concept": {
+    "description": "MRS regime-conditional Defense weight rotation",
+    "regime_overlay_rules": {
+      "NORMAL_mrs_under_15": {
+        "defense_weight": 0.32,
+        "defense_breakdown": "H_1682 8% + H_1689 15% + H_1690 9%",
+        "change_from_base_42pct": "-10pp (conditional defense/diversifier role 허용)",
+        "rationale": "NORMAL regime Defense 축소 → Diversifier weight 증대"
+      },
+      "CAUTION_mrs_15_to_30": {
+        "defense_weight": 0.42,
+        "defense_breakdown": "rev7_v3 기본 (H_1682 12% + H_1689 20% + H_1690 10%)",
+        "rationale": "기본 base composition"
+      },
+      "CRISIS_mrs_over_30": {
+        "defense_weight": 0.48,
+        "defense_breakdown": "H_1682 14% + H_1689 22% + H_1690 12%",
+        "change_from_base_42pct": "+6pp",
+        "rationale": "CRISIS 강화 + STR_1631 Core 축소 (18% → 14%)",
+        "core_str_1631_reduction_compensation": "Defense 증대로 portfolio MDD 방어"
+      }
+    },
+    "implementation_phase": "Phase_4+ (Session 68~ carry)",
+    "code_path": "02_Infrastructure/portfolio/portfolio_governor.R::dynamic_defense_overlay()",
+    "prerequisite_study": [
+      "MRS regime transition backtesting (10+ year history)",
+      "Overlay sleeve turnover impact 검토 (월별 리밸런싱 cost)",
+      "AX-001 정합성 재확인 (Defense 조건부 평가 원칙 유지)"
+    ]
+  },
+
+  "implementation_request_portfolio_governor_r_task_8_extension": {
+    "function_signatures": [
+      {
+        "name": "defense_conditional_audit",
+        "signature": "defense_conditional_audit(portfolio_composition, backtest_results, regime_series) -> list(axis_1_alpha, axis_2_mdd_reduction, axis_3_ic_ratio, axis_4_tail_contribution, composite_score, pass_status)",
+        "implementation_complexity": "중간 (8 stress periods + 3 regime classification + 4 axis computation)",
+        "estimated_implementation_time": "2~4 hours"
+      },
+      {
+        "name": "monthly_defense_audit",
+        "signature": "monthly_defense_audit(portfolio_id, as_of_date) -> audit_report_json",
+        "integration": "PG3 daily_nav_report() 확장 — monthly cycle에 defense audit 추가"
+      },
+      {
+        "name": "dynamic_defense_overlay",
+        "signature": "dynamic_defense_overlay(base_composition, regime_state) -> adjusted_composition",
+        "implementation_phase": "Phase_4+ (Session 68~ carry)"
+      }
+    ],
+    "code_path": "02_Infrastructure/portfolio/portfolio_governor.R",
+    "task_8_extension_sequence": [
+      "1. Priority: pg1_admission_v3_7() (Gate 13~15 기본 구현)",
+      "2. Next: defense_conditional_audit() (PG3 monthly audit)",
+      "3. Future: dynamic_defense_overlay() (Phase_4+)"
+    ]
+  },
+
+  "governor_next_actions_post_framework": [
+    "1. Q-Lead R42 framework 승인 확인 + Task #8 Forge 구현 지시",
+    "2. H_1682 Primary 결과 수신 시 contingency A/B/C 판정 (30분 내)",
+    "3. H_1690 debate Day 2 결과 분석 (APPROVE/REVISE)",
+    "4. H_1678 handoff kit 완성 후 Day 3~4 debate",
+    "5. Phase_1 PG1 Admission 초안 (Day 5~6 목표, Task #23)"
+  ],
+
+  "session_66_67_cumulative_rules_institutionalized_11": [
+    "consensus_taxonomy v1.0 + v2.0",
+    "Q25 Cap Rule v1.0 + monitoring thresholds v2",
+    "PG1 Admission Rule v2.0/v3.0~v3.7 (15 gates 누적)",
+    "Sequential Admission Rule",
+    "Retroactive TDC Audit",
+    "Structural Diagnosis",
+    "Embedded Overlap Recognition",
+    "Spec Strengthening Fallback (Gate 11)",
+    "Family Exhaustion Pattern Detection (Gate 12)",
+    "Variance Ratio Audit (Gate 13→15)",
+    "**Defense Conditional Audit Framework (4-axis, rev7_v3 R42)**"
+  ],
+
+  "artifacts_v1_0": [
+    "qepm/mailbox/governor/outbox/defense_conditional_audit_framework_v1_0.json (현 파일)",
+    "parent: PG0_PLAN_rev7_v3.json",
+    "related: consensus_taxonomy_proposal.json"
+  ],
+
+  "executive_summary_v1_0": {
+    "purpose": "Defense 42% (rev7_v3) AX-001 conditional evaluation 정식화",
+    "4_axis_framework": [
+      "1. Crisis Regime Alpha (target +3~5%p vs Core)",
+      "2. Core Relative MDD Reduction (target -20%p absolute)",
+      "3. Bad/Normal IC Ratio (target > 2.0)",
+      "4. Tail Risk Reduction (target ΔCVaR ≥ -5%p)"
+    ],
+    "composite_score_threshold": "≥ 0.7 PASS / 0.5~0.7 CONDITIONAL / < 0.5 REBALANCE",
+    "normal_regime_tolerance": "-2%p/year 허용",
+    "pg3_monthly_audit": "defense_conditional_audit() 월별 실행",
+    "phase_4_plus_dynamic_overlay": "regime-conditional weight rotation (Session 68+ carry)",
+    "implementation_request": "portfolio_governor.R Task #8 extension (Forge 담당)",
+    "session_66_67_cumulative_11_rules": "Defense Conditional Audit Framework 신규 추가"
+  }
+}

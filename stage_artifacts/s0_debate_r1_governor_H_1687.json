@@ -1,0 +1,26 @@
+{
+  "role": "governor",
+  "agent_id": "governor_r1_h_1687",
+  "hypothesis_id": "H_1687",
+  "round": "R1",
+  "timestamp": "2026-04-17T23:05:00+09:00",
+  "score": 17,
+  "rubric_breakdown": {
+    "gap_alignment": 4.0,
+    "role_match": 3.5,
+    "family_saturation": 3.0,
+    "marginal_contribution": 3.0,
+    "implementation_feasibility": 3.5
+  },
+  "arguments": [
+    "Gap 정합성 최상: PG0 Sharpe gap 0.807 잔여 상황에서 H_1685 REVISE 55 DROP 공석(20pp)을 Diversifier_Primary 15%로 즉시 대체. rev7_v2 projection 유지 (primary rho=0.3에서 1.79, boost 4건 성공 시 2.01) 경로 확보. Fallback B time efficiency 우월 — H_1685 재설계 1~2주(H_1674 debate 완료 대기 포함) 대비 H_1687 Scout handoff_kit 완료 상태로 Day 2 debate 즉시 가능, Week 2 편입 schedule realistic. gap_alignment 4.0 만점 부여.",
+    "Diversifier 역할 적합성 양호: expected_role = diversifier 명시. Avramov 2013 JFE 역방향 한국 adaptation (low-distress × high-momentum = clean momentum) mechanism 설계로 Core Primary (STR_1631 consensus 18%) 및 Core Secondary (H_1688 residual momentum 10%)와 signal 처리 방식 명확히 구분됨. SR 0.60~1.00 forecast는 Diversifier_Primary 기준 적정 수준 (STR_1656 MLRA 1.212 참조 시 중간값). role_match 3.5 — Q25 Defense (H_1682)와의 factor 공유로 순수 diversifier 정체성 0.5pp 감점.",
+    "Family diversification 신규 진입 긍정적: factor_interaction (distress × momentum composite)은 factor taxonomy §9 미구축 family로 portfolio family 다양성 직접 기여. rev7_v2 7-strategy 7-family 구조 유지 + max_family 18% (STR_1631 consensus) 준수. Cross-family interaction signal 자체가 단일 factor 대비 novelty 우위 (S3 novelty_score 0.55~0.75 forecast). Scenario D (H_1676+H_1682+H_1688+H_1687 다중 admit) 경로에서 independent alpha 4+ 확보 → Blender 활성화 트리거 충족 가능성. 단 아래 concern 섹션 Q25/momentum 누적 경고 반영해 family_saturation 3.0 중간 평가."
+  ],
+  "concern": "Q25 total exposure 누적이 구조적 부담: rev7_v2 Q25 weighted exposure 18.9% → 25.6% (+6.7pp 급증, cap 35% 대비 gap 9.4%만 남음). H_1682 Defense 12% (q25_share 0.60) + STR_1679v3 Div 10% embedded (q25_share 0.60) + H_1687 Div 15% (q25_share 0.40) + H_1689 Defense 18% (q25_share 0.25) + STR_1656 Div 14% (q25_share 0.05) 합산 구조로, Q-Lead 30% soft threshold 접근 + Phase_4 추가 Q25 전략 편입 시 cap breach 위험. 또한 momentum family 누적 부담 — H_1688 Core Secondary 10% residual momentum + H_1687 Div 15% raw momentum (quant handoff_kit expected rho 0.4~0.6)으로 momentum 25% 이중 편입이며 cross-family TDC gate (rho < 0.4) 사전 불통과 위험 존재. 추가로 Avramov 2013 원논문은 'high-distress에서 momentum strong' 결론인데 H_1687은 반대 방향 적용 (long-only 한국 adaptation) — mechanism alignment 학술 타당성은 이일균 2019 한국 실증이 뒷받침하나 Avramov 원 프레임워크 long-short 왜곡 우려 academic R1에서 공격 벡터로 예상됨.",
+  "conditions": [
+    "S3 pairwise TDC gate 의무화 — vs H_1682 rho < 0.6 (Q25 공유 인정), vs H_1688 rho < 0.4 (momentum family 공유, cross-family TDC gate per Q-Lead Gate 5 기준 엄수), vs STR_1631 rho < 0.3, vs STR_1679v3 rho < 0.5 (embedded Q25 공유). 이 중 어느 하나라도 breach 시 Phase_1 5% 편입 보류 및 Scout gated double-sort variant 재설계 지시.",
+    "Q25 weighted exposure monitoring threshold 신설 — PG1 Admission Rule v3.6 Gate 12 Family Exhaustion 외에 Q25 Cap Rule v1.0 보강해 30% warning threshold 설정 + PG3 monthly audit 강화. H_1687 편입 후 25.6% 수준에서 Phase_4 추가 Q25 전략(예: H_1686 insider cluster) 편입 제한 또는 기존 H_1682/STR_1679v3 effective weight 재조정 검토.",
+    "signed_distress_low_ohlson factor 정식 등록 선결조건 — compute_factor C13 준수 (Z_Score_Aligned, NEGATE_FACTORS 금지 엄수) + factor_registry 등록 + lookahead_detector 패턴 추가 완료 후에야 Forge S1 진입 허용. Scout 초안에서 'signed_distress_low_ohlson factor 신규 등록 필요' 명시되어 있으나 C13 정식 절차 및 Q25 Ohlson O Usable_Date 로직 compute_quality.R 검증이 Forge S1 prerequisite."
+  ]
+}

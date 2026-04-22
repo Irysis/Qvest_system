@@ -1,0 +1,150 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead",
+  "type": "PHASE_1_PG1_ADMISSION_SKELETON_v1_3",
+  "stage": "PG1_pre_draft_v3_5_revised_post_risk_mgr_verdict",
+  "timestamp": "2026-04-18T Session67_Day1 post_Risk_Mgr_CONDITIONAL_APPROVE_plus_team_lead_APPROVE",
+  "session": 67,
+  "day": 1,
+  "version": "v1.3_rev8_A_revised_v1",
+  "supersedes": "PHASE_1_PG1_ADMISSION_SKELETON_v1_2.json",
+  "status": "SKELETON v1.3 — Risk Mgr VERDICT 반영 + rev8-A-revised_v1 기반. v3.5 CONDITIONAL_ACTIVE Stage 1.",
+  "reference_files": {
+    "rev8_a_revised_v1": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_revised_v1.json (ACTIVE)",
+    "rev8_a_base_archive": "qepm/mailbox/governor/outbox/PG0_PLAN_rev8_A_base.json (Architect 진단 전 baseline, historical)",
+    "risk_mgr_verdict": "Risk Mgr 3rd round CONDITIONAL_APPROVE (5분 완료)",
+    "scout_h_1692_s0_record": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+    "admission_rule": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json (CONDITIONAL_ACTIVE Stage 1)"
+  },
+
+  "v1_3_changes_from_v1_2": [
+    "1. H_1689 Quality 4-axis → **Q24-exclude 3-axis** (Q01+Q25+Ohlson_O) — Risk Mgr V2 WARNING 대응",
+    "2. STR_1679v3 10% → **8%** (V1 TDC 0.52 L-156 대응, Option a)",
+    "3. 미배분 6% → **8%** (STR_1679v3 감축 2pp 흡수)",
+    "4. Core_Secondary slot: H_1688 PENDING_INFRA_FIX or H_1692 (Scenario branching)",
+    "5. v3.5 status CONDITIONAL_ACTIVE Stage 1 명시 (enforcement advisory_warning)"
+  ],
+
+  "admission_rule_v3_5_enforcement_stage_1": {
+    "status": "CONDITIONAL_ACTIVE Stage 1",
+    "enforcement_level": "advisory_warning (Gate 11/12 모두)",
+    "stage_2_trigger": "VALIDATED Hard Fail 2건 축적 시 Gate 12 hard_block 전환",
+    "stage_3_trigger": "Architect signoff 후 Gate 11/12 hard_block + ACTIVE_NORMATIVE",
+    "gates_1_10_v3_4_inherited_normative": "유지"
+  },
+
+  "admission_candidates_per_rev8_a_revised_v1": {
+    "slot_1_STR_1631_Core_Primary": {
+      "admission_status": "ALREADY_PG2_ACTIVE_weight_adjustment",
+      "weight_current": 0.80,
+      "weight_target": 0.18,
+      "gate_11_status": "EXEMPT (Core_Primary single consensus signal)",
+      "gate_12_status": "Proxy PASS ratio 1.417 (advisory_warning — ICIR 원자료 부재)",
+      "retroactive_audit_verdict": "advisory_warning (documented exempt)"
+    },
+    "slot_2_Core_Secondary_branching": {
+      "admission_status": "BRANCHING — STR_1684_v2b 결과 대기",
+      "branch_A_H_1688_restored": {
+        "conditional_weight": 0.10,
+        "status": "복원 (STR_1684_v2b ICIR ≥ 0.20 시)",
+        "gate_11_12": "Stage 1 advisory_warning, variant comparison 권장",
+        "L_161_disposition": "PASS (infra bug hypothesis CONFIRMED)"
+      },
+      "branch_C_H_1692_admission": {
+        "conditional_weight": 0.10,
+        "status": "편성 (STR_1684_v2b ICIR < 0.20 + H_1692 Forge S1 PASS 시)",
+        "gate_11_12": "Stage 1 advisory_warning + Scout handoff kit v3 predicted variant/coupling",
+        "scout_s0_record": "stage_artifacts/s0_record_H_1692_industry_momentum_rsi_residualized.json",
+        "expected_metrics": {"ICIR": "0.25~0.40", "SR": "0.80~1.10"}
+      },
+      "branch_B_both_fail": {
+        "conditional_weight": 0.00,
+        "미배분_확대": "미배분 8% → 18% (H_1688+H_1692 둘 다 FAIL 시)",
+        "action": "Phase_2+ Scout 추가 Core_Secondary 탐색"
+      }
+    },
+    "slot_3_STR_1656_Div_ML": {
+      "admission_status": "ALREADY_PG2_ACTIVE",
+      "weight_target": 0.14,
+      "gate_11_status": "ADVISORY (ML hyperparameter variant framework v3.6 대기)",
+      "gate_12_status": "PASS (coupling_ratio 0.314, Judge R1 계산)"
+    },
+    "slot_4_STR_1679v3_Div_1_REDUCED": {
+      "admission_status": "PRE_APPROVED_REDUCED",
+      "weight_previous": 0.10,
+      "weight_target_revised": 0.08,
+      "reduction_rationale": "V1 TDC 0.52 L-156 위반 대응 (Option a, 2pp 감축)",
+      "gate_11_12_status": "advisory",
+      "gate_6_tdc_retroactive_required": "STR_1631↔STR_1679v3 TDC 재측정 + Sequential Admission"
+    },
+    "slot_5_H_1689_Def_2_Q24_EXCLUDE_3_AXIS": {
+      "admission_status": "PENDING_FORGE_S1_Q24_EXCLUDE_VARIANT",
+      "weight_target": 0.23,
+      "axes_revised": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+      "q24_removed": "Altman_Z stress_icir -0.695 poison pill (L-144)",
+      "gate_11_variant_comparison_mandatory_per_risk_mgr": "Q24-exclude 3-axis + Q07 substitute 4-axis 2 variants (Scout handoff kit v3)",
+      "gate_12_coupling_ratio_advisory_warning_stage_1": "재실행 후 재측정",
+      "ax_005_exclusion_reconfirmation": "multi-sleeve Defense scope 밖"
+    },
+    "slot_6_H_1690_Def_3_unchanged": {
+      "admission_status": "PENDING_10_CONDITIONS + Forge Day 2",
+      "weight_target": 0.10,
+      "gate_11_mandatory_per_risk_mgr": "4 variants 설계 (V1 primary + V2~V4 baselines)",
+      "h_1689_h_1690_q07_overlap_note": "Q24→Q07 substitute (H_1689 Variant 2) 선택 시 correlation 급증 주의",
+      "promotion_target": "Phase_2 시 12% 승격 후보"
+    },
+    "slot_7_H_1685v2_Div_4_phase_2_plus": {
+      "admission_status": "NOT_ADMITTED_PHASE_1 (Phase_2+ gradual)",
+      "weight_phase_2": 0.03,
+      "weight_phase_3": 0.05,
+      "weight_phase_4_A_or_B": "0.08 incremental or 0.10 swap",
+      "gate_11_12_advisory": "Stage 1 권장"
+    }
+  },
+
+  "tdc_pairwise_matrix_v1_3_updates": {
+    "str_1631_str_1679v3_WARNING": {
+      "risk_mgr_v1_measured": 0.52,
+      "l_156_threshold": 0.40,
+      "violation": "0.12pp",
+      "mitigation": "STR_1679v3 10→8% 감축 (Option a) + Gate 6 CONDITIONAL PASS 확보"
+    },
+    "h_1689_h_1690_new_pair": {
+      "required_for_q24_exclude_vs_q07_substitute": "Scout handoff kit v3 pre-estimate 요청",
+      "governor_preference_rationale": "Q24-exclude 선택으로 Q07 overlap 회피 (correlation 낮게 유지)"
+    }
+  },
+
+  "v1_3_composition_totals": {
+    "scenario_a_h_1688_restored": {
+      "STR_1631": 0.18, "H_1688": 0.10, "STR_1656": 0.14, "STR_1679v3": 0.08, "H_1689_revised": 0.23, "H_1690": 0.10,
+      "active_total": 0.83, "reserve": 0.09, "unallocated": 0.08, "total": 1.00, "n_active": 6
+    },
+    "scenario_c_h_1692_admission": {
+      "STR_1631": 0.18, "H_1692": 0.10, "STR_1656": 0.14, "STR_1679v3": 0.08, "H_1689_revised": 0.23, "H_1690": 0.10,
+      "active_total": 0.83, "reserve": 0.09, "unallocated": 0.08, "total": 1.00, "n_active": 6
+    },
+    "scenario_b_both_fail": {
+      "STR_1631": 0.18, "STR_1656": 0.14, "STR_1679v3": 0.08, "H_1689_revised": 0.23, "H_1690": 0.10,
+      "active_total": 0.73, "reserve": 0.09, "unallocated": 0.18, "total": 1.00, "n_active": 5
+    }
+  },
+
+  "governor_actions_post_v1_3": [
+    "1. Scout H_1689 handoff kit v3 완료 수신 (Governor 직접 요청 발송 완료)",
+    "2. STR_1684_v2b 결과 수신 → Scenario A or C 확정",
+    "3. H_1692 Forge S1 결과 (Scenario C 경로)",
+    "4. H_1689 Forge S1 Q24-exclude variant 결과",
+    "5. Risk Mgr VERDICT 2차 (필요 시)",
+    "6. rev8-A-revised-v2 최종 발행 (Scenario 확정 후)"
+  ],
+
+  "dependencies_revised": [
+    "STR_1684_v2b hurdle_result (~15분, Branch A/C trigger)",
+    "Scout H_1689 handoff kit v3 (Governor 직접 요청)",
+    "Scout H_1692 handoff kit v1 (이미 승인)",
+    "Forge Day 2 재스폰 (H_1689 Q24-exclude + STR_1685 H_1690 + H_1692 S1)",
+    "Judge S6 재판정 (variant comparison Gate 11 Stage 1)",
+    "Judge L-163 판정 (factor_engine.R load_month_factors 표준화)"
+  ]
+}

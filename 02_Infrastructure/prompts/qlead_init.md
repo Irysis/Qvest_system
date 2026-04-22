@@ -59,6 +59,7 @@ source("02_Infrastructure/stage_gate_engine.R")
 
 | 현재 Stage | 대상 Agent | 작업 |
 |-----------|-----------|------|
+| S0 Debate | **Scout + 5인(또는 compact 3인) debater** | `/s0-debate` skill, v55 stance/veto consensus, S0_VERDICT 작성은 Q-Lead 책임 |
 | S0 (가설) | **Scout** | sg_init() + s0_record 작성 |
 | S1 (팩터 구축) | **Forge** | factor_engine.R 작성 + s1_construction |
 | S2 (프로파일) | **Forge** | IC/ICIR 계산 + s2_profile + Scout 전달 |
@@ -276,3 +277,61 @@ hybrid_daily_digest()
 - 5축 점수: 0.89 (I=0.78 R=1.00 F=1.00 E=0.50 M=1.00)
 - 승격: 2026-04-17 | 다음 검토: 2026-07-16
 <!-- AXIOM_INJECT_END -->
+
+---
+
+## S0 Debate VERDICT 작성 가이드 (v55 Consensus)
+
+R2_COMPLETE 또는 R3_NEEDED 종료 후 enforcer가 `additionalContext`로 VERDICT 작성을 요구하면, Q-Lead는 다음 절차로 `stage_artifacts/S0_VERDICT_{HYP_ID}.json`을 작성한다. **점수제 폐기, 합산 금지.**
+
+### 1. Codex R2 verdict 확인 (사전 체크)
+- `stage_artifacts/r2_codex_verdict_{HYP_ID}.json` 존재 여부 확인. 없으면 enforcer가 BLOCK.
+- 긴급 시 `QVEST_SKIP_CODEX_R2=1` 환경변수로 우회 가능 (감사 로그 남김).
+
+### 2. consensus_tally 계산 (router 자동 집계 규칙과 일치)
+- R2 모든 debater의 `new_stance` 카운트: approve / approve_conditional / revise / reject (합 = N).
+- R2 `veto_flag` 중 codex 제외 + null 제외한 효력 veto 카운트 → `veto_count`.
+- `veto_flags` 배열에 효력 veto의 `{role, flag}` 기록.
+
+### 3. consensus_tier 결정
+- **UNANIMOUS** — N/N 동일 stance + veto 0
+- **MAJORITY** — APPROVE+APPROVE_CONDITIONAL ≥ 과반 + REJECT ≤ 1 (full) / 0 (compact)
+- **MINORITY** — REVISE 우세 또는 stance 분포가 균형 부근
+- **DEADLOCK** — 동수 또는 veto 도메인 충돌
+
+### 4. verdict 결정 (router 규칙 정확 인용 — `02_Infrastructure/hooks/s0_verdict_router.sh:147-202`)
+**Compact 3인**:
+- veto 1+ (Risk or Judge/Governor) → **REVISE**
+- 3/3 APPROVE → **APPROVE** (consensus_tier=strong)
+- 2+ REJECT → **REJECT**
+- 2+ (APPROVE | APPROVE_CONDITIONAL) && 0 REJECT → **APPROVE_CONDITIONAL**
+- 그 외 → **REVISE**
+
+**Full 5인**:
+- veto 2+ 동의 (codex 제외) → **REVISE** (도메인 충돌 시 REJECT)
+- 4+ APPROVE && veto 0 → **APPROVE**
+- 3+ REJECT → **REJECT**
+- 3+ (APPROVE | APPROVE_CONDITIONAL) && REJECT ≤ 1 → **APPROVE_CONDITIONAL**
+- 그 외 → **REVISE**
+
+### 5. final_stances 작성 (각 role별 r1/final/stance_change/veto_flag)
+R2 artifact를 직접 읽어 r1_stance / new_stance / stance_change / veto_flag를 그대로 옮긴다.
+
+### 6. consensus_points + unresolved_disputes
+- `consensus_points`: R1+R2에서 전원이 동의한 사실. 1건+ 필수.
+- `unresolved_disputes`: R2 unresolved 항목 + S1 측정 필요 항목. R2 모든 debater의 unresolved 합집합. 빈 배열 허용.
+  - **APPROVE_CONDITIONAL일 때 S1 gate items로 자동 승계** → s0_record + TODO_S1에 전달.
+
+### 7. debaters 배열 (N건, 필수 역할 전부 포함)
+각 항목: `{agent_id(고유), role, stance(R2 final), veto_flag, findings(2~3 문장 요약)}`
+
+### 8. codex_cross_check 필드
+Codex R2 verdict 요약 1~2문장 (cross-model 동의 여부 명시).
+
+### 9. enforcer 통과 후 router 자동 라우팅
+APPROVE → STR 번호 할당 + s0_record + Forge inbox TODO_S1 / APPROVE_CONDITIONAL → 동일 + s1_gate_items 전달 / REVISE → Scout 재스폰 + critical_concerns 전달 / REJECT → archive + 새 가설 탐색.
+
+### 금지 항목 (자동 BLOCK)
+- `total_score`, `final_scores` 필드 작성 (v54 잔재) — 있어도 무시되나 작성 자체 비권장
+- score 합산으로 verdict 결정
+- Q-Lead 자신을 debaters에 포함

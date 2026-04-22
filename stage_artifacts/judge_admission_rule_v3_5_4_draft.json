@@ -1,0 +1,217 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "L-168 critical infra PIT fix 연속 amendment. v3.5.3-patch1 발효 후 infra_pit_scan Gate 추가 필수.",
+
+  "artifact_type": "JUDGE_ADMISSION_RULE_v3_5_4_DRAFT",
+  "version": "v3.5.4",
+  "base": "v3.5.3-patch1",
+  "patch_type": "Infrastructure PIT Scan Gate Addition + Weight Arithmetic Assert + Retroactive Scan Mandate",
+  "prepared_by": "judge",
+  "prepared_at": "2026-04-19 Session 68 Day 2",
+  "related_l_codes": ["L-168 (infra PIT origin)", "L-169 candidate (weight arithmetic assert)"],
+  "related_axioms": ["AX-002", "AX-007", "AX-008"],
+
+  "14_to_16_gate_evolution": {
+    "v3_5_3_patch1_14_gates_preserved": [
+      "Gate0: PIT C1~C15 + lookahead_detector + Codex",
+      "Gate1~3: 허들 + Grade (hard_fail → REJECT)",
+      "Gate4: Harvey t > 3.3 (Bonferroni 5-test) + DSR MANDATORY",
+      "Gate5: FF5/Carhart alpha",
+      "Gate6: tail_risk CDaR/CVaR",
+      "Gate7: IC-Return SR/ICIR >= 0.30 MANDATORY",
+      "Gate8: Role Honesty (AX-001 v2 / AX-005 exclusion)",
+      "Gate9: Alpha Lab ICIR >= 0.20 + 5Y IC 유의성",
+      "Gate10: Anti-pattern 13종",
+      "Gate11: Sequential TDC < 0.30 MANDATORY",
+      "Gate12: L-163 poison_pill MANDATORY hard_block",
+      "Gate13: Signal-Portfolio Translation MANDATORY hard_block",
+      "Gate14: AX-007 auto-reject (single-sleeve defense/core_secondary top-20)"
+    ],
+    "v3_5_4_new_gates_added": [
+      "Gate15: INFRA_PIT_SCAN MANDATORY (신규 — L-168 근거)",
+      "Gate16: WEIGHT_SUM_ARITHMETIC_ASSERT MANDATORY (신규 — L-169 candidate 근거)"
+    ],
+    "total_gate_count": "14 → 16"
+  },
+
+  "gate_15_infra_pit_scan": {
+    "id": "Gate15",
+    "name": "INFRA_PIT_SCAN",
+    "mandatory": true,
+    "status": "hard_block",
+    "purpose": "Admission 전 전략 factor_engine.R + run_all.R + 보조 script에서 infrastructure-level PIT violation 자동 탐지",
+    "basis": "L-168 Infrastructure-level PIT violation (align_factor_direction full-sample Mean_IC) — AX-002 판단의 미래참조 infrastructure 층 적용",
+
+    "automated_checks": [
+      {
+        "check_id": "Gate15_C1_align_factor_direction_sig_date",
+        "description": "align_factor_direction 호출 시 sig_date 인자 필수",
+        "pattern_to_detect": "align_factor_direction\\(.*?\\)(?!.*sig_date)",
+        "fail_action": "REJECT with code snippet + line number",
+        "exception": "load_month_factors 경유 호출은 자동 sig_date 전달 (line 123) → exempt",
+        "implementation": "lookahead_detector.R C16 regex pattern + Judge manual review"
+      },
+      {
+        "check_id": "Gate15_C2_load_ic_history_usable_date",
+        "description": ".load_ic_history() 직접 호출 후 Usable_Date 필터 부재 검출",
+        "pattern_to_detect": "\\.load_ic_history\\(\\).*(?!Usable_Date)",
+        "fail_action": "REJECT with code snippet",
+        "exception": "compute_rolling_ic_all / align_factor_direction 내부 사용은 PIT-safe로 확인됨 → exempt",
+        "implementation": "lookahead_detector.R C17 regex pattern"
+      },
+      {
+        "check_id": "Gate15_C3_factor_ic_monthly_direct_read",
+        "description": "factor_ic_monthly.parquet 직접 read_parquet 후 mean(IC) 계산 검출",
+        "pattern_to_detect": "read_parquet\\(.*factor_ic_monthly.*\\).*mean\\(IC",
+        "fail_action": "REJECT with migration guide (load_month_factors 사용 권고)",
+        "implementation": "lookahead_detector.R C18 regex pattern"
+      },
+      {
+        "check_id": "Gate15_C4_z_score_aligned_manual_computation",
+        "description": "Z_Score_Aligned 수동 계산 (Z_Score * custom_sign) 검출 — align_factor_direction 우회 감지",
+        "pattern_to_detect": "Z_Score\\s*\\*\\s*(?:ic_sign|direction|sign)",
+        "fail_action": "REJECT (PIT-unsafe manual override)",
+        "exception": "factor_db_connector.R 자체 line 247 (공식 구현) exempt",
+        "implementation": "Judge manual review + optional pattern"
+      }
+    ],
+
+    "implementation_requirements": {
+      "lookahead_detector_extension": {
+        "file": "02_Infrastructure/validation/lookahead_detector.R",
+        "new_functions": [
+          "detect_c16_direction_lookahead(file_path)",
+          "detect_c17_ic_history_lookahead(file_path)",
+          "detect_c18_direct_parquet_read_lookahead(file_path)"
+        ],
+        "integration": "기존 detect_lookahead() main 함수에 C16/C17/C18 추가 scan"
+      },
+      "judge_gate_0_integration": {
+        "description": "Gate 0 PIT 단계에서 자동 infra_pit_scan 실행. C1~C15 + C16~C18 전수 통과 시에만 Gate 1 진행",
+        "automated": true,
+        "manual_fallback": "regex 미포착 pattern에 대한 Judge 수동 review"
+      }
+    }
+  },
+
+  "gate_16_weight_sum_arithmetic_assert": {
+    "id": "Gate16",
+    "name": "WEIGHT_SUM_ARITHMETIC_ASSERT",
+    "mandatory": true,
+    "status": "hard_block",
+    "purpose": "Governor rev/patch 발행 시 portfolio weight 합계 산술 정합성 assert 의무화",
+    "basis": "L-169 candidate — v4→v4.1→v4.2 3-round 재산술 오류 실증 (v4 +0.10, v4.1 +0.06 overweight)",
+
+    "assert_protocol": {
+      "step_1_programmatic_sum": "Governor가 scenario_*_composition.slots 배열 실측 sum 계산 후 JSON 필드에 기재",
+      "step_2_tolerance_check": "abs(sum - 1.00) < 1e-9 assert 통과 시에만 publish",
+      "step_3_weight_sum_verified_field": "최종 JSON에 'weight_sum_verified': true + 'weight_sum': 1.0000000000 수치 명시 의무",
+      "step_4_judge_independent_recompute": "Judge signoff 시 독립 재산술 (Python/R) 수행하여 claim 대조",
+      "step_5_partition_check": "Active/Hold/Impl/Drop/Misc 등 partition별 합계도 claim과 대조 (v4.1 메타데이터 오류 사례)"
+    },
+
+    "implementation_requirements": {
+      "governor_side": {
+        "pre_publish_validation": "rev/patch JSON 작성 후 자체 검증 script (sum_check.R 또는 jq) 실행 → PASS 후에만 발행",
+        "example_assert_r_code": "stopifnot(abs(sum(slots_weights) - 1.00) < 1e-9)",
+        "example_assert_jq": "jq '.scenario_d_v4_2_composition.slots | map(.weight) | add' | awk '{print ($1-1 < 0.000000001 && 1-$1 < 0.000000001) ? \"PASS\" : \"FAIL\"}'"
+      },
+      "judge_side": {
+        "auto_recompute_on_signoff": "Judge가 rev/patch 수신 시 Python/R script로 독립 sum 재계산",
+        "partition_cross_check": "confirmed_active_weight / conditional_hold_weight / impl_missing_weight claim vs computed 전수 대조",
+        "reject_condition": "|sum - 1.00| >= 1e-9 OR any partition claim vs computed delta > 1e-9"
+      }
+    },
+
+    "historical_precedent_summary": {
+      "v4_failure": "weight_sum 1.10 (+0.10 overweight). Judge B1 blocker 발견",
+      "v4_1_failure": "option_a 불충분 -0.04만 감산. weight_sum 1.06 (+0.06 여전히 overweight). Judge 재검증 재발견",
+      "v4_2_success": "H_1689 0.23→0.17 (-0.06) 추가 조정. weight_sum 1.0000000000 PASS",
+      "churn_cost": "3-round 반복 발행 = 1일 deliberation time. programmatic assert로 1초 이내 해결 가능했음"
+    }
+  },
+
+  "retroactive_scan_mandate": {
+    "scope": "기존 50+ 전략 align_factor_direction / load_month_factors / Z_Score_Aligned 사용 전수 scan",
+    "categorization_per_m3_1_protocol_phase_3": {
+      "category_A_active_pipeline": {
+        "definition": "현재 S1-S6 파이프라인 내 active 전략",
+        "action": "factor_engine.R 업데이트 필수 — load_month_factors() 사용 또는 sig_date 명시 전달",
+        "priority": "HIGH — Gate 15 C1 MANDATORY 발효 후 admission 불가",
+        "deadline": "v3.5.4 발효 + 7일 이내"
+      },
+      "category_B_archived_grade_a": {
+        "definition": "Grade A로 promoted됐으나 현재 재실행 없음 (STR_1071, STR_1562 등)",
+        "action": "catalog 주석 추가: '★★★ full-sample IC direction 기반 결과 — M3.1 Phase 3 scan 전 재검증 필요'",
+        "priority": "LOW",
+        "deadline": "M3.1 Phase 3 완료 시점"
+      },
+      "category_C_hard_fail_archived": {
+        "definition": "이미 Hard Fail 또는 archived 전략",
+        "action": "조치 불필요 — direction bug가 Hard Fail status 변경하지 않음",
+        "priority": "NONE"
+      }
+    },
+    "automated_scan_pipeline": {
+      "cron_schedule": "주 1회 전수 scan (suggest: axiom_weekly.sh 연동)",
+      "output": "stage_artifacts/infra_pit_scan_report_YYYYMMDD.json",
+      "judge_review": "weekly scan 결과 Judge 주간 review"
+    }
+  },
+
+  "m3_1_protocol_integration": {
+    "description": "Architect M3.1 Protocol (stage_artifacts/m3_1_retroactive_audit_protocol.json)을 v3.5.4 규범으로 공식 통합",
+    "5_phase_norm_enforcement": [
+      "Phase 1 infra fix verification → Gate 15 C1~C4 집행 기반",
+      "Phase 2 PG2 재측정 → Active pipeline admission 전제",
+      "Phase 3 direct caller scan → Gate 15 retroactive scan 구현 기반",
+      "Phase 4 Gate 13.1 통합 → Gate 15 integration path",
+      "Phase 5 direction stability → factor-level trustworthiness assessment"
+    ],
+    "execution_authority": "Architect initiator + Judge custodian 공동 감독"
+  },
+
+  "effective_date_and_deployment": {
+    "proposed_effective_date": "2026-04-20 (Session 68 Day 3)",
+    "prerequisite": "M3.1 Phase 2 STR_1631 재측정 완료 + 결과 Judge 검증",
+    "deployment_order": [
+      "Day 2 (오늘): v3.5.4 draft 발행 (본 artifact)",
+      "Day 2 or Day 3: Architect lookahead_detector.R C16/C17/C18 patch 구현",
+      "Day 3: M3.1 Phase 2 결과 도착 + Judge 검증",
+      "Day 3: v3.5.4 공식 발효 + L-169 정식 발행 + Governor notification",
+      "Day 3~5: Retroactive scan cron 가동 + category_A 전략 migration"
+    ]
+  },
+
+  "backward_compatibility": {
+    "v3_5_3_patch1_rules_preserved": true,
+    "new_rules_only_add": "Gate 15, Gate 16은 기존 14-gate에 추가 — 기존 rule 제거/변경 없음",
+    "grandfathering_policy": {
+      "already_admitted_strategies": "현 PG2 active (STR_1631 + STR_1656)는 M3.1 Phase 2 재검증 결과 기준 재평가",
+      "new_admissions": "v3.5.4 발효 이후 신규 PG1 admission은 Gate 15 + Gate 16 MANDATORY"
+    }
+  },
+
+  "expected_impact": {
+    "false_positive_risk": "LOW — regex pattern false match 가능성 있으나 Judge manual fallback으로 완화",
+    "false_negative_risk": "LOW — Gate 15 + Codex cross-reference + Architect M3.1 scan 삼중 방어",
+    "admission_throughput_impact": "MINIMAL — 자동화 scan 1-2초 추가. 실질 bottleneck 없음",
+    "cost_benefit": "HIGH POSITIVE — L-168-style 1년+ 미탐지 infra violation 재발 방지"
+  },
+
+  "open_items_for_architect_collaboration": [
+    "lookahead_detector.R C16/C17/C18 regex pattern 정밀화 (false positive minimize)",
+    "cron schedule 결정 (weekly vs on-demand)",
+    "category_A 전략 migration timeline 세부화",
+    "grandfathering 정책 구체화 (STR_1631 재검증 결과에 따라 조정)",
+    "Gate 15 + AX-008 관계 — Gate 15는 '코드 스캔', AX-008은 '3-source verification'. 보완적"
+  ],
+
+  "approval_chain": {
+    "step_1_judge_draft": "본 artifact 발행 (2026-04-19)",
+    "step_2_architect_review": "PENDING (lookahead_detector patch 공동 설계)",
+    "step_3_team_lead_approval": "PENDING",
+    "step_4_governor_integration": "PENDING (admission_rule ledger 업데이트)",
+    "step_5_effective_publication": "PENDING"
+  }
+}

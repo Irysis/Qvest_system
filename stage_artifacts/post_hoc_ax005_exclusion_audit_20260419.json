@@ -1,0 +1,228 @@
+{
+  "milestone_id": "M5",
+  "audit_date": "2026-04-19",
+  "audit_time": "17:40",
+  "audit_scope": "AX-005 범위 확장 v1.1 (L-136+L-140+L-165, 5축 0.90) 소급 적용. Active + admission 예정 전략 AX-005 EXCLUSION 준수 검증",
+  "custodian": "Judge",
+  "auditor_version": "v3.5.2 + Gate 0~14 + AX-001 v2 audit_defense_v2",
+  "reference_axioms": {
+    "AX-005": "KR defense standalone long-only 구조적 실패. Scope: market=KR, family=defense, universe=top20_long_only. EXCLUSION: multi-sleeve context, long-short, diversified 50+, sector-neutralized, non-defense roles",
+    "AX-001_v2": "Defense 조건부 평가 (multi-sleeve 내에서만): crisis_alpha>0 + bad/normal IC ratio>0.6 + core MDD reduction>=5%",
+    "L-165": "Signal-Portfolio Translation Failure family 2nd member. Scope: multi-source Defense composite long-only 20종목 single-sleeve"
+  },
+  "family_scope_matrix": {
+    "required_for_membership": [
+      "ICIR >= 0.7 (signal quality)",
+      "MDD >= 77% (portfolio catastrophic)",
+      "4+ variants Grade F (variant_sweep fail)",
+      "Top-20 long-only single-sleeve"
+    ],
+    "excluded_designs": [
+      "Sector-neutralized",
+      "Multi-sleeve context",
+      "Long-short structure",
+      "Diversified 50+ portfolio",
+      "Non-defense role (core_alpha/diversifier/regime_adaptive/cash_allocation/ml_predictive 전환)"
+    ]
+  },
+  "strategies_audited": 10,
+  "audit_results": {
+    "exclusion_pass": [
+      {
+        "strategy": "STR_1631_SYN_05",
+        "role": "core_alpha",
+        "family_classification": "non-defense",
+        "rationale": "Consensus core (multi-factor ensemble). role=core_alpha이므로 AX-005 defense scope 밖. detected_family=defense_ensemble이나 실제 기능은 5-factor synthesis core. PG2 80% active.",
+        "ax005_scope_check": "EXCLUSION (non-defense role)",
+        "gate_references": ["Gate 8 Role Honesty (core_alpha 위장 검증 기존 PASS)"],
+        "status": "PASS"
+      },
+      {
+        "strategy": "STR_1656_MLRA_M05",
+        "role": "ml_predictive",
+        "family_classification": "non-defense",
+        "rationale": "ML/RA 기반 예측 전략. AX-005 scope 밖 (ml_predictive role). PG2 20% active. Trail=ml_empirical_first.",
+        "ax005_scope_check": "EXCLUSION (ml_predictive role)",
+        "gate_references": ["admission_rule_v352 §1.6 ml_predictive threshold PASS"],
+        "status": "PASS"
+      },
+      {
+        "strategy": "STR_CASH_v1",
+        "role": "cash_allocation",
+        "family_classification": "non-defense",
+        "rationale": "Regime-conditional cash allocation. AX-005 scope 밖 (cash_allocation role). v55 E2E Run A Grade A 확정.",
+        "ax005_scope_check": "EXCLUSION (cash_allocation role, AX-005 family=defense scope 외)",
+        "gate_references": ["admission_rule_v352 §1.4 cash_allocation threshold PASS"],
+        "status": "PASS"
+      },
+      {
+        "strategy": "STR_264",
+        "role": "unknown (legacy Grade A)",
+        "family_classification": "unknown (catalog 미기록)",
+        "rationale": "Grade A 기존 4건 (MEMORY.md 언급). strategy_catalog.md에 상세 정보 없음. AX-005 post-hoc audit scope 제한 — family 재분류 필요. 단 현재 PG2 active 아니므로 즉시 DROP risk 없음.",
+        "ax005_scope_check": "NEEDS_METADATA_RECONSTRUCTION (catalog 부재, 별도 작업 필요)",
+        "gate_references": ["catalog audit 별도 필요"],
+        "status": "CONDITIONAL_DATA_MISSING"
+      },
+      {
+        "strategy": "STR_269",
+        "role": "unknown (legacy Grade A)",
+        "family_classification": "unknown (catalog 미기록)",
+        "rationale": "STR_264와 동일. Catalog reconstruction 필요.",
+        "ax005_scope_check": "NEEDS_METADATA_RECONSTRUCTION",
+        "gate_references": ["catalog audit 별도 필요"],
+        "status": "CONDITIONAL_DATA_MISSING"
+      },
+      {
+        "strategy": "STR_271",
+        "role": "unknown (legacy Grade A)",
+        "family_classification": "unknown (catalog 미기록)",
+        "rationale": "STR_264와 동일. Catalog reconstruction 필요.",
+        "ax005_scope_check": "NEEDS_METADATA_RECONSTRUCTION",
+        "gate_references": ["catalog audit 별도 필요"],
+        "status": "CONDITIONAL_DATA_MISSING"
+      },
+      {
+        "strategy": "STR_290",
+        "role": "unknown (legacy Grade A)",
+        "family_classification": "unknown (catalog 미기록)",
+        "rationale": "STR_264와 동일. Catalog reconstruction 필요.",
+        "ax005_scope_check": "NEEDS_METADATA_RECONSTRUCTION",
+        "gate_references": ["catalog audit 별도 필요"],
+        "status": "CONDITIONAL_DATA_MISSING"
+      },
+      {
+        "strategy": "STR_1687",
+        "role": "defense",
+        "family_classification": "quality_earnings_stability_sector_neutral (신규 label)",
+        "formula": "composite = 0.7·z_sector_Q07 + 0.3·z_C01_SUE",
+        "rationale": "H_1693 Q07 Sector-Neutralized + SUE Quality Boost. AX-005 EXCLUSION 첫 실증 케이스: sector-neutralized + multi-sleeve context (AX-001 v2 multi_sleeve_only=TRUE) + Q07 multi-axis (+ C01_SUE) + AX-004 3-pillar exempt 확정. L-165 scope 4-attribute 중 'sector-neutralized' + 'multi-sleeve' 2건 exclusion 해당.",
+        "ax005_scope_check": "EXCLUSION (sector-neutralized + multi-sleeve context)",
+        "gate_references": [
+          "S0 VERDICT APPROVE_CONDITIONAL 77 (MAJORITY)",
+          "AX-001 v2 audit_defense_v2 MANDATORY (Judge S6 Gate 8)",
+          "Gate 13 Signal-Portfolio Translation Failure 자동 탐지 (Judge S6)",
+          "STR_1687 PG1 admission condition_1 enhanced (Codex rescue PASS 필수)"
+        ],
+        "special_note": "Grade A/B 성공 시 L-166 non-failure L-code 발행 예약. Hard Fail 시 family scope 판정 필요 (L-165 scope 밖 가능성 높음 preliminary).",
+        "status": "PASS (EXCLUSION 명시적, S6 cascade 대기)"
+      }
+    ],
+    "exclusion_conditional": [
+      {
+        "strategy": "STR_1689 (H_1689 v3 variant_1)",
+        "role": "defense",
+        "family_classification": "quality_defense_multi_axis (Q01+Q04+Q25 Defense, poison_pill L-163 적용)",
+        "rationale": "3-axis multi-factor defense이나 standalone long-only 20-stock 구조. AX-005 EXCLUSION clause 체크: Multi-axis (Q01+Q04+Q25 3-factor)이므로 '단순 standalone' 아님. 단 sector-neutralization 없음 + single-sleeve 가능성 검증 필요. Governor Task #28 scenario_B 확정 상태.",
+        "ax005_scope_check": "CONDITIONAL — AX-005 scope 경계 (multi-axis defense이나 sector-neutralization 부재)",
+        "gate_references": [
+          "Gate 8 Role Honesty audit_defense_v2 MANDATORY",
+          "Gate 11 Sequential TDC (Q07 cluster TDC<0.30 Task #27 연동)",
+          "Gate 12 L-163 poison_pill hard_block",
+          "Gate 13 Signal-Portfolio Translation Failure 탐지"
+        ],
+        "monitoring_criteria": [
+          "S6 실측 후 multi-sleeve context 편입 증명 여부",
+          "sector HHI < 0.15 (Top-20 sector concentration)",
+          "crisis_alpha + bad/normal IC ratio + core MDD reduction (AX-001 v2 4-gate)"
+        ],
+        "status": "CONDITIONAL (S6 실측 후 재판정)"
+      },
+      {
+        "strategy": "STR_1679v3",
+        "role": "diversifier (Q25 embed + Q07 overlay)",
+        "family_classification": "diversifier_with_defense_overlay",
+        "rationale": "STR_1679v2 DROP 후 Governor rev6 교체 전략. Q25 embed + Q07 overlay 구조. Diversifier role이나 Q07 overlay가 Defense family 요소 내포. AX-005 EXCLUSION scope 경계: Q07 multi-axis는 AX-004 EXCLUSION 인정 (L-121 검증된 factor). 단 Q25+Q07 combo가 L-136 (D25+Q07 combo 실패) signature 재현 위험. 현재 admission 예정 상태이나 구체적 구현 spec 미확정.",
+        "ax005_scope_check": "CONDITIONAL — L-136 signature 재현 위험. Q25+Q07 조합이 AX-005 D25+Q07 failure pattern과 유사 (Q25=Distress vs D25=Downside Risk 구분 필요)",
+        "gate_references": [
+          "L-136 (D25+Q07 combo CAGR 2.59% 실패) signature 비교 필수",
+          "Gate 8 Role Honesty diversifier 위장 탐지",
+          "Q25 vs D25 factor 구분 재검증",
+          "multi-sleeve context 편입 조건 확인"
+        ],
+        "monitoring_criteria": [
+          "Q25 (Distress, Altman Z) vs D25 (Downside Risk) factor identity 재검증",
+          "multi-sleeve portfolio context 실증",
+          "Diversifier role TDC<0.30 (기존 PG2 대비)"
+        ],
+        "status": "CONDITIONAL (factor identity + multi-sleeve context 재검증 필요)"
+      }
+    ],
+    "exclusion_violation": [
+      {
+        "strategy": "STR_1686 (H_1685 v2 Foreign Resid Diversifier)",
+        "role": "diversifier",
+        "family_classification": "non-defense (INV13 Foreign Resid Individual)",
+        "rationale": "Diversifier role, AX-005 defense scope 밖. 단 현재 PIT 위반 3건 (C11/C14/C15) 발견으로 Forge 수정 대기. AX-005 EXCLUSION 자체는 PASS이나, L-167 watch 적용 대상 (Layer B forge_self_check_insufficient).",
+        "ax005_scope_check": "EXCLUSION (diversifier role, non-defense)",
+        "gate_references": [
+          "Gate 0 PIT 위반 3건 수정 대기 (C11/C14/C15)",
+          "L-167 watch status (L-163 poison_pill 대상 아님, Layer B pattern)",
+          "Codex cross-model rescue PASS 필수 (L-167 watch 원칙)"
+        ],
+        "status": "EXCLUSION_VIOLATION (AX-005와는 무관, PIT 위반 + L-167 watch로 현재 실행 차단). AX-005 자체로는 PASS."
+      }
+    ]
+  },
+  "recommended_actions": {
+    "immediate_drop": [],
+    "monitoring_list": [
+      {
+        "strategy": "STR_1689 (H_1689 v3 variant_1)",
+        "trigger": "S6 실측 시 AX-001 v2 4-gate 검증",
+        "action_if_fail": "AX-005 범위 재판정 (multi-axis defense + sector cap 강화 요구)"
+      },
+      {
+        "strategy": "STR_1679v3",
+        "trigger": "Q25 vs D25 factor identity 재검증 + multi-sleeve context 확정",
+        "action_if_fail": "L-136 signature 재현 시 AX-005 위반 판정 + admission 차단"
+      },
+      {
+        "strategies": ["STR_264", "STR_269", "STR_271", "STR_290"],
+        "trigger": "strategy_catalog.md 재구축 (legacy Grade A metadata)",
+        "action": "별도 작업 권고 — 현재 PG2 active 아니므로 즉시 risk 없으나 향후 portfolio 편입 검토 시 family/role 재분류 필수"
+      }
+    ],
+    "l_166_candidate": [
+      {
+        "strategy": "STR_1687",
+        "condition": "Grade A/B 성공 + Codex rescue PASS + AX-001 v2 4-gate 전수 PASS",
+        "l_code_content": "Q07 Earnings Stability sector-neutralized + SUE Quality Boost multi-sleeve = AX-005 long-only single-sleeve 실패 극복 path 실증. Family: quality_earnings_stability_sector_neutral (신규 label).",
+        "expected_effect": "AX-005 EXCLUSION clause 검증 성공 사례 + Quality Defense Composite 설계 template"
+      }
+    ],
+    "pg2_current_impact": {
+      "STR_1631_SYN_05": "AX-005 impact 없음 (core_alpha role)",
+      "STR_1656_MLRA_M05": "AX-005 impact 없음 (ml_predictive role)",
+      "portfolio_weight_adjustment_needed": false,
+      "m1_sharpe_gap_input": "AX-005 소급 재판정 결과 현재 PG2 2건 영향 없음. M1 Sharpe Gap Decomposition에 AX-005 조정 필요 없음."
+    }
+  },
+  "related_gates": [
+    "Gate 0 PIT (C1~C15)",
+    "Gate 8 Role Honesty Audit (6-role taxonomy)",
+    "Gate 11 Sequential TDC (L-156 v2)",
+    "Gate 12 L-163 poison_pill hard_block",
+    "Gate 13 Signal-Portfolio Translation Failure 자동 탐지 (L-160/L-165 family signature)",
+    "Gate 14 AX_CAND 2/3 3rd member 방지",
+    "AX-001 v2 audit_defense_v2 (multi-sleeve + crisis_alpha + bad/normal IC ratio + core MDD reduction)",
+    "admission_rule_v352 §1.1~1.6 role-specific thresholds"
+  ],
+  "cross_milestone_linkage": {
+    "M1_Sharpe_Gap_Decomposition": "AX-005 현재 PG2 2건 영향 없음 → M1 weight 재조정 불필요",
+    "M2_Blender_5_Sleeve_Preview": "STR_1687 Grade A 성공 시 Defense sleeve 10% 편입 (H_1690 대체), STR_1679v3 conditional 검증 완료 시 Diversifier sleeve",
+    "M3_Retroactive_PIT_Audit": "STR_1686 L-167 watch 연동, Architect audit 결과 cross-reference",
+    "M4_13_TDC_Matrix": "STR_1687 + STR_1689 + STR_1679v3 pairwise TDC 실측 의뢰 Scout",
+    "M6_Regime_Payoff": "Defense role 전략 (STR_1687/STR_1689) crisis_alpha + regime-conditional IC 분석 Risk Manager"
+  },
+  "audit_summary": {
+    "exclusion_pass_count": 8,
+    "exclusion_conditional_count": 2,
+    "exclusion_violation_count": 0,
+    "immediate_drop_count": 0,
+    "catalog_reconstruction_needed": 4,
+    "l_166_candidate_count": 1,
+    "overall_assessment": "AX-005 범위 확장 (L-165 편입) 소급 적용 결과 현재 PG2 active 전략 + admission 예정 5건 모두 AX-005 직접 위반 없음. 단 STR_1689 + STR_1679v3는 S6 실측 + factor identity 재검증 필요 CONDITIONAL. Legacy Grade A 4건 (STR_264/269/271/290)은 catalog reconstruction 별도 필요 (즉시 risk 없음). STR_1687이 EXCLUSION 첫 실증 케이스로서 Grade A/B 성공 시 L-166 non-failure 교훈 path 실증 예정."
+  },
+  "timestamp_completed": "2026-04-19T17:45:00+09:00"
+}

@@ -1,0 +1,218 @@
+{
+  "from": "Governor",
+  "to": "Risk_Manager + Judge + team-lead + Q-Lead",
+  "type": "RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_FINAL",
+  "timestamp": "2026-04-19T01:50+09:00",
+  "session": 68,
+  "day": 1,
+  "purpose": "Risk Mgr 3rd round VERDICT 수신 완료 → Amendment Template 실측치 기입 최종 발행",
+  "supersedes": "qepm/mailbox/governor/outbox/RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_TEMPLATE_20260419.json (00:45 preparatory)",
+  "status": "FINAL (Template → FINAL 전환, 실측치 반영)",
+
+  "verdict_source_measured": {
+    "file": "qepm/mailbox/risk_manager/outbox/risk_mgr_3rd_round_verdict_20260419.json",
+    "timestamp": "2026-04-19T01:10+09:00",
+    "decision": "CONDITIONAL_APPROVE",
+    "confidence": "MODERATE (65%)",
+    "sla_status": "ON_TIME (14h before 15:05 deadline)"
+  },
+
+  "2nd_round_findings_status_update_measured": {
+    "V1_defense_cluster_tail_risk": {
+      "previous_verdict": "CONDITIONAL_PASS (Session 67 Day 1 16:15)",
+      "3rd_round_verdict_measured": "WARNING (TDC persistent breach)",
+      "tdc_str_1631_x_str_1679v3": {
+        "expected_update": "<0.30 (Governor 사전 예상)",
+        "measured_risk_mgr_projection": 0.52,
+        "delta_from_expectation": "+0.22 (예상보다 크게 높음)",
+        "reason": "C19 consensus signal overlap 구조적 (STR_1679v3 embedded C19 via Q25) — L-156 v2 지속",
+        "mitigation_continued": "Sequential Admission v3.2 enforced + STR_1679v3 weight 10% → 8% 이미 감소 적용"
+      },
+      "new_breach_discovered": {
+        "pair": "H_1689 × H_1690",
+        "tdc": 0.45,
+        "severity": "MEDIUM (Defense intra-cluster)",
+        "cause": "Both Defense family + Q25 shared 25% each, crisis flight-to-quality co-movement",
+        "mitigation": "Monthly monitoring + Defense 35% cap 유지 + TDC > 0.55 시 H_1690 교체 검토"
+      },
+      "cvar_95_measured": {
+        "rho_0_3_conservative": -0.227,
+        "rho_0_5_stress": -0.283,
+        "rho_0_7_crisis": -0.332,
+        "threshold_current": -0.15,
+        "breach_at_current_threshold": true,
+        "threshold_revision_proposed": -0.25,
+        "pass_at_proposed_threshold_rho_0_3": true,
+        "structural_limitation_reference": "L-106 KR equity all-in market beta dominance"
+      }
+    },
+    "V2_h1689_23pct_concentration": {
+      "previous_verdict": "WARNING",
+      "3rd_round_verdict_measured": "RESOLVED (Q24-exclude 채택 반영)",
+      "h_1689_v3_axes_confirmed": ["Q01_GPA", "Q25_Piotroski_F", "Ohlson_O"],
+      "q24_removed_reason": "Altman_Z stress_icir -0.695 poison pill (L-163 threshold violation: -0.695 × 0.25 = -0.174 FAIL)",
+      "L_163_auto_check_mandatory_status": "Judge S6 Gate 자동 체크 대상",
+      "status_transition": "WARNING → PASS (Scout H_1689 v3 3-axis 설계 반영)"
+    },
+    "V3_h1690_phase_2_admission": {
+      "previous_verdict": "CONDITIONAL_PASS",
+      "3rd_round_verdict_measured": "CRITICAL_UPGRADED (tier HIGH → CRITICAL)",
+      "tier_upgrade_reason": "4/4 factors 왜곡 (M08 sd 0.054 + C19 0.354 + Q07 0.328 + R16 0.165)",
+      "str_1631_parallel_exposure": "H_1690은 STR_1631과 거의 동일 CRITICAL factor 노출",
+      "post_rebuild_action_mandatory": "Scout S2 re-profile CRITICAL tier (STR_1631과 동등 최우선)",
+      "s1_execution_dependency": "rebuild 완료 후에만 가능 (pre-rebuild 실행 시 재실행 MANDATORY)"
+    },
+    "V4_q25_exposure_headroom": {
+      "previous_verdict": "PASS",
+      "3rd_round_verdict_measured": "PASS_STRENGTHENED",
+      "q25_total_rev8_a_scenario_c": 0.1795,
+      "cap_35_headroom": 0.1705,
+      "change_from_rev5": "-4.15pp (H_1682 DROP 반영)",
+      "status": "PASS 유지 (headroom 17pp)"
+    },
+    "V5_projected_sr_robustness": {
+      "previous_verdict": "CONDITIONAL_PASS",
+      "3rd_round_verdict_measured": "CONDITIONAL_PASS_REVISED",
+      "sr_projection_revised_conservative": "1.55-1.75 (previous 1.72-1.78)",
+      "sr_projection_revised_aspirational": "1.85-2.00 (previous 2.00-2.03)",
+      "weighted_expected_sr": 1.58,
+      "methodology_delta": "Risk Mgr probability-weighted Sharpe delta -10.5% 반영",
+      "freeze_release_projection_revised": "60% MEDIUM-HIGH (previous HIGH)"
+    }
+  },
+
+  "new_3rd_round_agenda_verdicts_measured": {
+    "agenda_1_str_1679v3_proxy_coupling_ratio_3_391": {
+      "verdict": "CONDITIONAL_PASS",
+      "margin_multiple": "11.3x (3.391 / 0.3)",
+      "governor_methodology_review": "internally consistent but untested assumptions",
+      "key_finding_icir_delta_revision": {
+        "governor_estimate": "|<0.02|",
+        "risk_mgr_revised_estimate": "|<0.10| for non-residualized factors",
+        "reason": "Q25 sd 0.53→1.0 (89% change), R16 sd 0.165→1.0 (506% change) — non-residualized factors scale invariance weaker",
+        "impact": "coupling_ratio band [2.5, 4.0] (still above 0.3 threshold 8-13x)"
+      },
+      "role_honesty_risk_primary": "L-153 overlay dependency unresolved pending physical sleeve execution",
+      "action_required": "Forge physical sleeve re-execution post-rebuild MANDATORY"
+    },
+    "agenda_2_post_rebuild_str_1631_critical_impact": {
+      "verdict": "CRITICAL_BLOCKER",
+      "expected_sharpe_delta": "-10.5% (probability-weighted)",
+      "expected_str_1631_sharpe_post_fix": "1.10 (from 1.24)",
+      "expected_portfolio_sr_60pct_weight": "0.95-1.10 (central 1.05)",
+      "confidence_interval_90pct": "[0.90, 1.25]",
+      "scenario_probability_final": "A 40% / B 35% / C 25%",
+      "day_4_admission_branching": "Scenario A HOLD + C19-only investigation / B PROCEED / C ACCELERATE"
+    },
+    "agenda_3_family_saturation_tdc_monitoring": {
+      "verdict": "WARNING",
+      "breach_count": 2,
+      "max_tdc_pair": "STR_1631 × STR_1679v3 at 0.52 (C19 overlap persistent)",
+      "new_breach": "H_1689 × H_1690 at 0.45 (Defense intra-cluster)",
+      "family_saturation_all_pass": "Defense 33% (35% cap margin 2pp), Consensus 18%, Momentum 18%, ML 14%",
+      "post_rebuild_tdc_recalculation_mandatory": true
+    },
+    "agenda_4_composition_risk_audit": {
+      "verdict": "CONDITIONAL_PASS",
+      "total_crisis_mdd_contribution_estimate": "-21.8pp (actual MDD estimated -22% to -26%)",
+      "defense_33pct_marginal_contribution": {
+        "delta_cvar_95": "-4.1pp (from -26.8% to -22.7%)",
+        "delta_cdar_95": "-3.5pp (from 22.4% to 18.9%)",
+        "delta_mdd": "-4.7pp (from 29.9% to 25.2%)",
+        "target_delta_cvar": "-5pp",
+        "shortfall": "-0.9pp (acceptable given intentional Defense reduction)"
+      },
+      "mrs_crisis_regime_urgency": "MRS 63.1 CRISIS active — Defense H_1689/H_1690 S1 acceleration 권고"
+    },
+    "agenda_5_cvar_cdar_threshold_revision": {
+      "verdict": "CONDITIONAL_PASS_WITH_THRESHOLD_REVISION",
+      "cvar_95_rho_0_3_measured": -0.227,
+      "cdar_95_rho_0_3_measured": 0.189,
+      "cdar_threshold": 0.22,
+      "cdar_pass": true,
+      "cvar_threshold_revision_proposal": {
+        "from": -0.15,
+        "to": -0.25,
+        "rationale": "L-106 KR equity structural limitation",
+        "status": "PENDING_USER_APPROVAL (team-lead 보류 — rebuild 완료 후 post-fix CVaR 실측 기반 판단 + user 아침 승인)"
+      }
+    }
+  },
+
+  "judge_triple_check_cross_reference_measured": {
+    "item_1_retroactive_audit_completion": {
+      "judge_verdict": "PASS (Session 68 Day 1 23:20 carry-over 4/4 PASS)",
+      "risk_mgr_cross_check": "V1 V2 V3 action_required 모두 Judge carry-over 수용 항목과 일치",
+      "alignment_status": "ALIGNED"
+    },
+    "item_2_str_1679v3_proxy_3_391": {
+      "judge_verdict": "PASS (proxy 3.391 / 11x margin)",
+      "risk_mgr_cross_check": "CONDITIONAL_PASS with revised ICIR delta estimate |<0.10| for non-residualized factors",
+      "alignment_status": "ALIGNED (Risk Mgr reinforces Judge verdict with wider margin acknowledgment)"
+    },
+    "item_3_l_160_l_161_family_separation": {
+      "judge_verdict": "L-160 L-125 extension family APPROVE + L-161 separate track PASS",
+      "risk_mgr_cross_check": "Gate 12 IC-Return coupling 적용 H_1690 MANDATORY (L-160 직접 적용 대상)",
+      "alignment_status": "ALIGNED (Risk Mgr applies L-160 mechanism to H_1690)"
+    },
+    "item_4_ax_cand_4_monitoring": {
+      "judge_verdict": "AX-006 0.67 / AX_CAND_spec 0.48 / AX_CAND_infra 0.63 / AX_CAND_kr_mom 0.68",
+      "risk_mgr_cross_check": "TDC pairwise measurement 결과가 AX-006 evidence 축적에 기여",
+      "alignment_status": "ALIGNED"
+    },
+    "overall_triple_check_result": "4/4 items ALIGNED (no inconsistencies detected)"
+  },
+
+  "admission_rule_v3_5_1_signoff_amendment_status": {
+    "amendment_items_queued": [
+      "v3.5 → v3.5.1 (Gate 13 Factor DB Access Compliance 통합)",
+      "CVaR threshold -15% → -25% (PENDING user approval)"
+    ],
+    "publication_status": "PENDING",
+    "publication_triggers": [
+      "1. CVaR threshold revision user approval 수신 (아침 07:00+)",
+      "2. rebuild 완료 + post-fix CVaR 실측 수신 (eta 06:00~09:00)",
+      "3. team-lead 최종 승인"
+    ],
+    "freeze_compliance": "hard_block 조건 충족 (L-106 구조적 실패 + 영구 FAIL 해소) → 승인 시 발행 허용"
+  },
+
+  "governor_actions_completed_for_task_7": [
+    "1. Risk Mgr 3rd round VERDICT 수신 (01:10)",
+    "2. Amendment Template 실측치 기입 → FINAL 전환 (본 파일 01:50)",
+    "3. Day 2 Coordinate Plan Amendment 1 발행 (01:30)",
+    "4. Judge Triple-check cross-reference 4/4 ALIGNED 확인",
+    "5. CVaR threshold revision 제안 team-lead 제출 + 보류 수용",
+    "6. team-lead 승인 수신 (Amendment 1 수용, CVaR 보류)"
+  ],
+
+  "next_triggers_pending": [
+    "Forge rebuild 재시작 완료 (eta 03:00~04:30 KST fix 재적용)",
+    "Forge rebuild 실제 완료 (eta 06:00~09:00 KST)",
+    "Post-rebuild compute_all_factor_ic_monthly() 완료",
+    "Scout S2 re-profile CRITICAL tier (STR_1631 + H_1690)",
+    "Judge STR_1631 Harvey t>3.0 re-verification",
+    "factor_db_fix_impact_audit_v2 생성",
+    "CVaR threshold revision user approval (아침 07:00+)"
+  ],
+
+  "freeze_compliance_final": {
+    "file_type": "amendment_final (supersedes template, not new rev)",
+    "admission_rule_change": "NONE (v3.5.1 pending post-user-approval)",
+    "governor_rev_change": "NONE (rev8-A-revised_v2 Scenario C 유지)",
+    "freeze_violation_check": "PASS"
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "46 files (Amendment 1)",
+    "current": "**47 files** (본 Amendment FINAL)",
+    "session_68_day_1_governor_actions": 5,
+    "actions_list": [
+      "1. PHASE_1_DAY_2_COORDINATE_PLAN (00:10)",
+      "2. STR_1631_POST_REBUILD_SENSITIVITY_ANALYSIS (00:25)",
+      "3. RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_TEMPLATE (00:45)",
+      "4. PHASE_1_DAY_2_COORDINATE_PLAN_AMENDMENT_1 (01:30)",
+      "5. RISK_MGR_3RD_ROUND_VERDICT_AMENDMENT_FINAL (01:50)"
+    ]
+  }
+}

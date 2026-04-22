@@ -1,0 +1,148 @@
+{
+  "strategy_id": "STR_1679v2",
+  "strategy_dir": "STR_1679_score_blend",
+  "rehearing_timestamp": "2026-04-17",
+  "rehearing_type": "FULL_GATE_0_6_WITH_DEF_CONTRIB_VERIFICATION",
+  "session": 66,
+  "triggered_by": "team-lead Task #11 escalation — Def contrib 22.55pp claim",
+  "verdict_final": "A_CONDITIONAL",
+  "role_final": "DIVERSIFIER_WITH_OVERLAY_DEPENDENCY",
+  "promotion_to_multi_sleeve_core_denied": true,
+  "grade_final": "A",
+  "score_final": 77.1,
+
+  "team_lead_claim_vs_hard_evidence": {
+    "claim": "Def sleeve contrib = -22.55pp MDD reduction. L-146 threshold |contrib| >= 2pp PASSES by 10x.",
+    "hard_evidence_from_performance_json": {
+      "core15_alone_mdd_pct": 51.61,
+      "hrp_base_core_def_no_overlay_mdd_pct": 51.60,
+      "ew_base_core_def_no_overlay_mdd_pct": 53.54,
+      "primary_core_def_overlay_mdd_pct": 29.06,
+      "true_def_sleeve_contrib_hrp": "51.61 - 51.60 = 0.01pp (Core15 → HRP Base)",
+      "true_def_sleeve_contrib_ew":  "51.61 - 53.54 = -1.93pp (Core15 → EW Base)  → actually HARMS",
+      "true_overlay_contrib": "51.60 - 29.06 = 22.54pp (HRP Base → Primary)"
+    },
+    "analysis": "The claimed -22.55pp is the TOTAL Core15→Primary MDD reduction. Decomposition shows Def sleeve alone contributes 0.01pp (HRP) or -1.93pp (EW). The 22.54pp belongs to the Regime Inverse + Cash Overlay, NOT the Defense sleeve. Team-lead's interpretation conflates two separate levers."
+  },
+
+  "def_sleeve_standalone_hard_evidence": {
+    "def5_only_sharpe": 0.214,
+    "def5_only_cagr_pct": 5.11,
+    "def5_only_mdd_pct": 65.3,
+    "interpretation": "Standalone Def sleeve is alpha drag (SR 0.21, MDD 65.3). It does not stand as independent alpha source."
+  },
+
+  "l146_compliance_verdict": {
+    "l146_rule": "Overlay-driven MDD improvement shall NOT be counted as Core alpha contribution.",
+    "threshold_def_contrib_abs_ge_2pp": "FAIL",
+    "measured_def_contrib_abs_max": 1.93,
+    "verdict": "L-146 COMPLIANCE STILL FAILED. Def sleeve is cosmetic. Overlay remains the true MDD lever. Role cannot be elevated to 'multi_sleeve_core_with_active_defense' — that would re-commit the L-146 violation that Session 65 caught.",
+    "role_relabel_request_denied": true
+  },
+
+  "gate_results": {
+    "gate_0_pit": {
+      "pass": true,
+      "detect_lookahead_run_all_violations": [],
+      "lines_scanned": 793,
+      "note": "793 lines clean. Top-level PIT clean."
+    },
+    "gate_1_impl": {
+      "pass": true,
+      "n_hold": 20,
+      "v53_n20_compliance": true,
+      "turnover_ann_pct": 251,
+      "commission": 0.0015,
+      "liq_threshold": 2e8
+    },
+    "gate_2_risk": {
+      "pass": "PRIMARY_ONLY",
+      "primary_mdd_pct": 29.06,
+      "hrp_base_mdd_pct": 51.60,
+      "ew_base_mdd_pct": 53.54,
+      "core15_alone_mdd_pct": 51.61,
+      "def5_alone_mdd_pct": 65.3,
+      "base_variants_hard_fail_ge_45pct": true,
+      "primary_mdd_v53_target_fail": "29.06% > 25% (borderline)",
+      "mdd_lever_attribution": "Overlay 22.54pp / Def sleeve 0.01pp"
+    },
+    "gate_3_robustness": {
+      "pass": true,
+      "rolling_3y_sr_mean": 1.068,
+      "rolling_3y_sr_min": -0.150,
+      "rolling_3y_sr_last": 1.535,
+      "rolling_3y_sr_peak": 2.621,
+      "stress_outperform": "3/3 (per prior Judge)",
+      "oos_retention": 0.704
+    },
+    "gate_4_stat": {
+      "pass": true,
+      "dsr_400": 1.000,
+      "dsr_465_family_aware": 1.000,
+      "dsr_significant": true,
+      "capm_alpha_annual_pct": 21.51,
+      "capm_alpha_t_raw": 4.50,
+      "capm_alpha_t_nw5": 4.45,
+      "harvey_t3_pass": true,
+      "capm_beta": 0.002,
+      "r_squared": 0.0001,
+      "bm_corr_daily": 0.002,
+      "bm_corr_monthly_hurdle": 0.733,
+      "ff5_alpha_t": "NOT_COMPUTED — FF5 KR factor data not available in repo (same limitation as Tier 2)",
+      "ff5_computation_method_note": "compute_ff5_alpha requires monthly data with RF/Mkt.RF/SMB/HML/RMW/CMA columns. Repository does not contain this file. CAPM-only proxy provided. True FF5 t may differ from CAPM 4.50 when size/value controls applied.",
+      "daily_monthly_bm_corr_discrepancy": "daily 0.002 vs monthly 0.733 — Overlay's regime-switched cash periods hide in monthly aggregation. Diversification at monthly frequency is LIMITED."
+    },
+    "gate_5_diversification": {
+      "pass": "PARTIAL",
+      "bm_corr_monthly": 0.733,
+      "top10_concentration_pct": 50,
+      "family_a_corr": "NA (grade_a_composite_cache missing)",
+      "note": "Monthly BM corr 0.733 exceeds standard diversifier threshold (<0.5). Daily beta 0.002 offers zero daily market exposure but monthly exposure is material."
+    },
+    "gate_6_tail_risk": {
+      "pass": "CONDITIONAL",
+      "evt_var_99_pct": 3.96,
+      "cf_var_99_pct": 4.64,
+      "normal_var_99_pct": 2.77,
+      "cf_vs_normal_ratio": 1.68,
+      "evt_shape_xi": 0.602,
+      "xi_interpretation": "xi > 0.5 is HEAVY TAIL. Moderate-to-heavy tail risk confirmed. Target xi < 0.25 standard — this exceeds by 2.4x.",
+      "cdar_95_pct": 21.84,
+      "max_dd_pct": 29.06,
+      "recovery_ratio": 0.898,
+      "crisis_resilience_note": "Despite heavy tail xi=0.602, stress 4/4 (or 3/3) outperform confirms crisis-time resilience. Tail risk is present in normal-period drawdowns, not crisis drawdowns. Pass CONDITIONAL: monitor xi drift in production."
+    }
+  },
+
+  "role_honesty_final_determination": {
+    "session_65_judgment": "Role Misalignment — Def sleeve 0.3pp",
+    "session_66_prior_judgment": "A_CONDITIONAL DIVERSIFIER_WITH_OVERLAY_DEPENDENCY — Def 0.01pp, Overlay 22.54pp",
+    "team_lead_request_reclassify": "multi_sleeve_core_with_active_defense (based on 22.55pp)",
+    "rehearing_verdict": "DENIED — team-lead's 22.55pp attribution is MDD-delta of (Core15 → Primary), not (Core15 → Core+Def). Correct decomposition uses HRP Base as intermediate. Measured Def contribution remains 0.01pp, fails L-146 2pp threshold.",
+    "final_role": "DIVERSIFIER_WITH_OVERLAY_DEPENDENCY",
+    "reasoning": "Overlay-dependency is the honest description. Defense sleeve kept in design for optionality but NOT counted toward MDD lever. Promoting to 'multi_sleeve_core_with_active_defense' would re-commit the exact L-146 violation that was corrected in Session 65."
+  },
+
+  "pg1_admission_recommendation": {
+    "judge_verdict": "CONDITIONAL_ADMIT",
+    "pg_candidate_level": "PG1_CONDITIONAL",
+    "conditions": [
+      "Role label = DIVERSIFIER_WITH_OVERLAY_DEPENDENCY (not core_alpha, not multi_sleeve_core)",
+      "Overlay dependency flag maintained in PG tracking — strategy is NOT portable without Regime Inverse Overlay infrastructure",
+      "Defense sleeve retained in design but NOT credited for MDD contribution",
+      "Monthly BM corr 0.733 → allocation sized for diversifier role with market-exposure awareness",
+      "Heavy tail xi=0.602 → monitor in production; xi drift > 0.7 triggers Governor review",
+      "FF5 alpha t computation pending KR factor data",
+      "BM corr daily-monthly discrepancy documented"
+    ],
+    "note_vs_session_66_prior": "Prior Session 66 judgment (A_CONDITIONAL) stands. Rehearing requested by team-lead did not produce new evidence that changes the role determination. The 22.55pp figure was misattributed."
+  },
+
+  "l146_update_recommendation": {
+    "updated_rule": "Def sleeve contribution measurement MUST use three-variant decomposition: (a) Core alone, (b) Core+Def no overlay, (c) Core+Def+Overlay. Def contrib = (a) MDD - (b) MDD. Overlay contrib = (b) MDD - (c) MDD. Simple (a) - (c) attribution is BANNED as it conflates two levers.",
+    "additional_requirement": "tail_risk_result.json MUST include daily_returns field + variant decomposition data to prevent misattribution.",
+    "retroactive_application": "Apply to STR_1679v2 first. Any prior strategy claiming Def sleeve contribution based on total MDD delta requires re-measurement."
+  },
+
+  "judge_note_to_team_lead": "The 22.55pp figure is correct as a DESCRIPTION of (Core15 → Primary) MDD compression, but it is MISATTRIBUTED when assigned to Def sleeve. The HRP Base intermediate shows Def sleeve contributes 0.01pp — the remaining 22.54pp belongs to Overlay. Session 65's Role Misalignment finding was CORRECT (Def cosmetic), and Session 66 Prior's Diversifier_With_Overlay_Dependency is CORRECT. Rehearing: no role change. Strategy still eligible for PG1 admission as CONDITIONAL diversifier."
+}

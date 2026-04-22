@@ -1,0 +1,195 @@
+{
+  "debate_id": "S0_DEBATE_H_1687",
+  "hypothesis_id": "H_1687",
+  "hypothesis_name": "Distress-Momentum Interaction Diversifier",
+  "hypothesis_summary": "Q25_Ohlson_O × M01_Mom_12_1 Low-Distress + High-Momentum composite, Top 20 EW monthly",
+  "compiled_by": "Q-Lead",
+  "compiled_at": "2026-04-17",
+  "protocol_version": "S0_Debate_v53",
+  "state": "R1_COMPLETE",
+
+  "r1_scores": {
+    "academic":      14,
+    "codex_critic":   8,
+    "governor":      17,
+    "quant":         11,
+    "risk_manager":  11,
+    "total":         61,
+    "max":          100
+  },
+
+  "r1_score_note": "codex_critic 8점은 Q-Lead 수작업 근사치(infra failure). Session 68+ codex-companion 복구 후 retry 권장(L-161 후보).",
+
+  "r1_findings_summary": {
+    "academic": "Avramov 2013 JFE 4편 top-tier 확보(peer_review 4/4). 핵심 약점: (1) 원논문 long leg IC 약함 본문 미해명, (2) 한국 실증 이일균 2019 + Hwang 2020 WP 2편 빈약, (3) McLean-Pontiff 2016 post-publication attenuation 방어 부재, (4) Barroso-Santa-Clara 2015 momentum crash 인용 누락.",
+    "codex_critic": "Q25 distress family 2회 연속 FAIL + Avramov 역방향 적용 학술 근거 취약 지적. H_1682/H_1688과의 TDC 이중 overlap = momentum cluster 위험. STR_1683 Primary 60/40 실측 후 Q25 구조적 실패 판정 선행 요구. INFRA_FAILURE 근사치 점수.",
+    "governor": "Gap 정합성 최상(gap_alignment 4.0 만점). H_1685 REVISE 공석을 Day 2 즉시 대체 가능. 단 Q25 weighted exposure 18.9%→25.6%(cap 35% 대비 9.4%p 잔여) + momentum 이중 편입(H_1688 10% + H_1687 15%) 경고. S3 H_1682 rho<0.6 / H_1688 rho<0.4 gate 의무화.",
+    "quant": "Factor DB Q25+M01 가용성 확인(288팩터 내 존재). 핵심 발견: sd(Q25_Z)=0.267 vs sd(M01_Z)=0.722(ratio 2.69x) → 50/50 명목이 실효 27%:73%로 왜곡 → corr(H_1687 composite, M01)=0.936. H_1687은 사실상 M01 단일팩터. H_1682와 corr=0.853(Q25 공유+M01/R16 상관 0.845). C19 상관 mean=-0.0002로 STR_1631 독립성은 확보. 수식 수정(IQR normalize 또는 percentile rank) 없이 S1 진행 불가.",
+    "risk_manager": "4-regime decomposition: CALM IC +0.061(유일 양수), CAUTION +0.015, CRISIS -0.003, NORMAL +0.007 → 사실상 CALM-only 전략. M01 CRISIS IC -0.021이 Q25 CRISIS IC +0.016을 상쇄. Kill scenario 2건: (1) GFC credit migration + C4 lag 동안 distress 필터 무효화+momentum 반전 동시 발생, (2) Q25 공유 H_1682와 위기 시 TDC 급등(rho 0.60~0.75)으로 분산 효과 소멸. MRS 63.1 CRISIS 현 시점 편입 worst-case timing."
+  },
+
+  "r1_consensus_map": {
+    "agreed_positives": [
+      "Avramov 2013 JFE + Ohlson 1980 + Jegadeesh-Titman 1993 top-tier 학술 기반 견고 (academic, quant 동의)",
+      "Q25+M01 Factor DB 가용성 완전 확인(288팩터 내 존재, Z_Score_Aligned NA=0) (quant 실측)",
+      "C19/STR_1631 독립성 확보: corr(H_1687, C19) mean=-0.0002 (quant 실측, governor 긍정)",
+      "factor_interaction family는 factor taxonomy §9 미구축 — novelty 기여 긍정 (governor)",
+      "PG0 SR gap 0.807 해소 목표에서 H_1685 공석 즉시 대체 gap_alignment 최상 (governor 4.0 만점)"
+    ],
+    "agreed_concerns": [
+      "H_1687 composite vs M01 상관 0.936: sd 불균형으로 사실상 M01 단일팩터 — 모든 역할이 공통 확인 필요 (quant 실측, risk_manager implied)",
+      "H_1682와 corr=0.853: Q25 공유 + M01/R16 상관 0.845로 S3 rho<0.6 gate 위반 high risk (quant 실측, governor, risk_manager 동의)",
+      "M01 CRISIS IC -0.021 → composite CRISIS IC -0.003 → CALM-only alpha 구조 (risk_manager 실측)",
+      "Avramov 2013 역방향 적용(long-only low-distress)에 대한 학술 본문 해명 부재 (academic, codex_critic, risk_manager 공통 지적)",
+      "현재 MRS 63.1 CRISIS 상태에서 M01 역방향 작용 — 편입 타이밍 최악 (risk_manager)"
+    ],
+    "divergent_views": [
+      "Governor: Gap 정합성 최상 + diversifier role 적합(3.5) → 진행 긍정. Risk_manager: CALM-only alpha + 현 CRISIS 편입 최악 → 설계 수정 선행. 이 긴장이 R2 핵심 논쟁 포인트.",
+      "Quant: 수식 수정(IQR normalize) 시 구조 개선 가능 → 조건부 진행. Codex_critic: STR_1683 실측 전 Q25 family 구조 판정 선행 요구 → 더 보수적."
+    ]
+  },
+
+  "r1_key_facts_for_r2": {
+    "quant_measured": {
+      "sd_Q25_Z": 0.267,
+      "sd_M01_Z": 0.722,
+      "effective_weight_Q25": 0.273,
+      "effective_weight_M01": 0.727,
+      "corr_H1687_M01_mean": 0.936,
+      "corr_H1687_M01_range": "[0.904, 0.960]",
+      "corr_H1687_H1682_cross_section": 0.853,
+      "corr_M01_R16_cross_section": 0.845,
+      "corr_H1687_C19_mean": -0.0002,
+      "Q25_recent3y_icir": 0.633,
+      "M01_recent3y_icir": 0.412,
+      "note": "분기별 60개 시점(2010Q1~2024Q4) 실측"
+    },
+    "risk_manager_measured": {
+      "Q25_CRISIS_IC": 0.016,
+      "M01_CRISIS_IC": -0.021,
+      "composite_CRISIS_IC": -0.003,
+      "Q25_CALM_IC": 0.059,
+      "M01_CALM_IC": 0.064,
+      "composite_CALM_IC": 0.061,
+      "Q25_stress_icir": 0.659,
+      "M01_stress_icir": 2.293,
+      "R16_stress_icir": 2.655,
+      "note": "conditional_ic_matrix_4regime.csv + stress_factor_ic_analysis.csv"
+    }
+  },
+
+  "transcript": [
+    {
+      "round": "R1",
+      "agent_id": "academic_r1_H_1687",
+      "role": "academic",
+      "score": 14,
+      "key_argument": "Avramov 2013 JFE 4편 top-tier 확보. 원논문 long leg IC 약함 본문 해명 부재 + 한국 실증 2편 빈약 + McLean-Pontiff 2016 post-publication attenuation 방어 부재가 주요 약점.",
+      "concern_summary": "한국 신용평가 변동 빈도 US 대비 낮아 Avramov transferability 제약. Hwang 2020 working paper 미게재. 이일균 2019 2017 이후 OOS 8년 공백.",
+      "conditions": [
+        "한국 distress 실증 논문 2건 추가(Kho-Kim 2007/Eom-Park 2014/Bae-Kang-Wang 2015 중 선택)",
+        "Avramov 2013 long leg IC 약함 본문 명시 + Asness-Frazzini-Pedersen 2014 QMJ 인용",
+        "Hwang 2020 WP 게재 여부 재확인",
+        "McLean-Pontiff 2016 attenuation 방어 + 2020-03 momentum crash 구간 포함 sub-period 검증",
+        "Barroso-Santa-Clara 2015 JFE 인용 + S5 Time-varying weight와 연계 명시"
+      ]
+    },
+    {
+      "round": "R1",
+      "agent_id": "codex_critic_r1_H_1687",
+      "role": "codex_critic",
+      "score": 8,
+      "key_argument": "Q25 distress family 2회 연속 FAIL 직후 유사 family 재진입. H_1682/H_1688과 이중 TDC overlap. Avramov 역방향 학술 근거 취약. STR_1683 Primary 실측 선행 요구.",
+      "concern_summary": "Q25 family exhaustion + momentum cluster 형성(H_1687+H_1688+M01 노출) 구조적 위험. INFRA_FAILURE 근사치 점수(신뢰도 제한).",
+      "conditions": [
+        "S3 TDC gate: vs H_1682<0.6 / vs H_1688<0.4 / vs STR_1631<0.3",
+        "Avramov 2013 방향 재확인 + 이일균 2019 sub-period 3분할 ICIR drift",
+        "signed_distress_low_ohlson C13 정식 등록 + lookahead_detector 추가",
+        "STR_1683 Primary 실측 후 Q25 family 구조적 실패 판정 선행",
+        "Barroso scaling S5 pre-register"
+      ],
+      "_note": "INFRA_FAILURE 근사치. 신뢰도 제한."
+    },
+    {
+      "round": "R1",
+      "agent_id": "governor_r1_h_1687",
+      "role": "governor",
+      "score": 17,
+      "key_argument": "PG0 SR gap 0.807 해소 + H_1685 공석 즉시 대체 gap_alignment 최상. factor_interaction family §9 미구축 신규 family. Diversifier role 적합.",
+      "concern_summary": "Q25 weighted exposure 18.9%→25.6%(cap 35% 대비 9.4%p 잔여). H_1688(10%) + H_1687(15%) momentum 이중 편입. S3 rho gate 4건 의무화.",
+      "conditions": [
+        "S3 pairwise TDC gate: vs H_1682 rho<0.6 / vs H_1688 rho<0.4 / vs STR_1631 rho<0.3 / vs STR_1679v3 rho<0.5",
+        "Q25 Cap Rule v1.0 신설: 30% warning threshold + PG3 monthly audit",
+        "signed_distress_low_ohlson C13 등록 선결 후 Forge S1 허용"
+      ]
+    },
+    {
+      "round": "R1",
+      "agent_id": "quant_r1_h1687",
+      "role": "quant",
+      "score": 11,
+      "key_argument": "Factor DB Q25+M01 가용성 확인. 핵심 발견: sd 불균형(0.267 vs 0.722, ratio 2.69x) → corr(H_1687, M01)=0.936 → 사실상 M01 단일팩터. H_1682 corr=0.853. C19 corr=-0.0002 독립성 확보.",
+      "concern_summary": "수식 수정(IQR normalize/percentile rank) 없이 S1 진행 시 M01 단일팩터 결과 반복. signed_distress_low_z 미등록.",
+      "conditions": [
+        "S1 착수 전 수식 수정 필수: IQR-normalize 또는 percentile-rank 변환",
+        "compute_factor signed_distress_low_z C13 등록 필수",
+        "S3 H_1682 rho<0.6 / H_1688 rho<0.5 gate 별도 명시"
+      ]
+    },
+    {
+      "round": "R1",
+      "agent_id": "risk_manager_r1_h1687",
+      "role": "risk_manager",
+      "score": 11,
+      "key_argument": "4-regime decomposition: composite CRISIS IC -0.003(CALM-only alpha). Kill scenario: (1) GFC credit migration + C4 lag distress 필터 무효화 + M01 반전 동시발생, (2) Q25 공유 → 위기 시 H_1682 TDC 급등(rho 0.60~0.75). MRS 63.1 CRISIS 편입 최악 timing.",
+      "concern_summary": "M01 CRISIS IC -0.021이 Q25 +0.016 상쇄. H_1682(R16 stress 2.655) 대비 위기 alpha 명확 열위. CALM-only 전략은 portfolio SR에 마이너스 기여 가능.",
+      "conditions": [
+        "S1 compute_tail_risk_suite(): EVT xi<0.25, CDaR 95%<25%, ES 99%<-12% 검증",
+        "S3 DCC-GARCH: vs H_1682 8대 스트레스 conditional rho<0.50, TDC<0.4",
+        "CALM 제외 3국면 합산 ICIR>=0.15 미달 시 CALM-only 분류 + PG2 regime-conditional allocation 부여"
+      ]
+    }
+  ],
+
+  "r2_debate_instructions": {
+    "required_from_each": [
+      "동의 최소 1건: 다른 역할의 R1 argument 중 동의하는 것 명시",
+      "반박 최소 1건: 다른 역할의 R1 argument 중 반박하는 것 + 근거",
+      "점수 수정 시 이유 필수(±2 이상 변동 시 정량 근거)",
+      "최강 반론 지목: 가장 강력한 반대 의견 1건 지목 + 자기 입장에서 대응"
+    ],
+    "key_debates_for_r2": [
+      "Quant sd 불균형 발견(corr=0.936) → H_1687이 M01 단일팩터인가 vs 수식 수정으로 구조 개선 가능한가 (quant ↔ governor, risk_manager)",
+      "Governor gap_alignment 최상 vs Risk_manager CALM-only alpha + CRISIS 편입 최악 timing 긴장 (governor ↔ risk_manager)",
+      "Codex_critic STR_1683 실측 선행 요구 vs Governor Day 2 즉시 대체 가능 time efficiency (codex_critic ↔ governor)",
+      "Quant H_1682 corr=0.853 S3 gate 위반 high risk vs Governor rho<0.6 threshold 완화 근거 있는가 (quant ↔ governor)",
+      "Academic Avramov 2013 long leg IC 약함 해명 부재 vs Risk_manager 이미 CRISIS IC -0.003 실증으로 확인 (academic ↔ risk_manager)"
+    ]
+  },
+
+  "r2_hypothesis_context": {
+    "H_1687_formula": "H_1687 = 0.5*(-Q25_Z) + 0.5*(M01_Z)  [현행 수식 — sd 불균형 이슈]",
+    "H_1682_formula": "H_1682 = 0.5*(-Q25_Z) + 0.5*(R16_Z)  [방어 역할, Q25 공유]",
+    "H_1688_formula": "H_1688 = residual(M01; cross-section OLS on Q25_Z, R12_Z, S01_Z)  [잔차화 momentum]",
+    "shared_terms": {
+      "H1687_H1682": "0.5*(-Q25_Z) 완전 동일 공유항",
+      "H1687_H1688": "M01_Mom_12_1 원신호 공유 (H_1688은 M01 잔차화 버전)"
+    },
+    "measured_correlations": {
+      "H1687_vs_M01": "0.936 (mean, 분기 60시점)",
+      "H1687_vs_H1682": "0.853 (202403 단면)",
+      "H1687_vs_C19": "-0.0002 (mean, 분기 60시점)",
+      "M01_vs_R16": "0.845 (202403 단면)"
+    },
+    "4regime_IC": {
+      "Q25_CRISIS": 0.016,
+      "M01_CRISIS": -0.021,
+      "composite_CRISIS": -0.003,
+      "Q25_CALM": 0.059,
+      "M01_CALM": 0.064,
+      "composite_CALM": 0.061
+    }
+  },
+
+  "r2_spawn_note": "R2 Rebuttal: 5인 재스폰 시 이 transcript 전문을 r2_hypothesis_context + r1_key_facts_for_r2 포함 프롬프트에 주입. 각 역할은 자신의 R1 score/arguments를 수정하거나 유지하며 타 역할 반박 수행."
+}

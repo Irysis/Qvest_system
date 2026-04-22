@@ -1,0 +1,262 @@
+{
+  "from": "Governor",
+  "to": "team-lead + Judge + Risk Mgr (pending spawn)",
+  "type": "STR_1631_POST_REBUILD_SENSITIVITY_ANALYSIS",
+  "timestamp": "2026-04-19T00:25+09:00",
+  "session": 68,
+  "day": 1,
+  "purpose": "STR_1631 post-rebuild best/worst case scenario 사전 분석 + Day 4 admission plan 조정 옵션",
+  "authority": "Governor internal risk matrix (Risk Mgr spawn pending)",
+
+  "context": {
+    "str_1631_composition": "STR_1631_SYN_05 Core Primary (current PG2 weight 0.60 post Day 1 rebalance)",
+    "factors_used_5": [
+      {"factor": "M08_Residual_Mom", "severity": "CRITICAL", "sd_pre": 0.054, "distortion_pct": 1761},
+      {"factor": "R12_Idiosyncratic_Risk", "severity": "CRITICAL", "sd_pre": 0.071, "distortion_pct": 1316},
+      {"factor": "R16_Calmar", "severity": "CRITICAL", "sd_pre": 0.149, "distortion_pct": 529},
+      {"factor": "Q07_Earnings_Stability", "severity": "HIGH", "sd_pre": 0.328, "distortion_pct": 205},
+      {"factor": "M01_Mom_12_1", "severity": "MEDIUM", "sd_pre": 0.622, "distortion_pct": 52}
+    ],
+    "icir_pre_rebuild": {
+      "M08_Residual_Mom": 0.041,
+      "R12_Idiosyncratic_Risk": 0.3707,
+      "R16_Calmar": 0.0091,
+      "Q07_Earnings_Stability": 0.3817,
+      "M01_Mom_12_1": 0.0909
+    },
+    "original_pg2_sr": 1.193,
+    "original_pg2_cagr": 0.1614,
+    "original_pg2_mdd": -0.2127
+  },
+
+  "scenario_A_best_case_post_fix_icir_preserved": {
+    "assumption": "Post-rebuild ICIR ±5% 범위 유지 (scale invariance OLS property)",
+    "rationale": "Z-score rescale 후 OLS residualization 후 identical ICIR (L-161 Fix 1 증명 참조)",
+    "expected_outcome": {
+      "str_1631_sr_post_fix": "1.15~1.22 (원 1.193 ±3%)",
+      "str_1631_cagr_post_fix": "15.8~16.5% (원 16.14% ±3%)",
+      "str_1631_mdd_post_fix": "-20~-22% (원 -21.27% ±5%)"
+    },
+    "day_4_5_plan_impact": "원 v1.7 plan 그대로 유지 (STR_1631 0.60→0.40→0.18 migration)",
+    "gate_0_validity_re_verification": "PASS (ICIR 유지 → empirical alpha 보존)",
+    "gate_11_variant_comparison_advisory": "PASS (no structural breach)",
+    "probability_estimate": "60% (scale invariance OLS property 신뢰도)",
+    "governor_action": "Day 3~5 원 plan 실행 진행"
+  },
+
+  "scenario_B_worst_case_post_fix_icir_degradation": {
+    "assumption": "CRITICAL factors (M08+R12+R16) post-fix ICIR 20%+ 저하",
+    "rationale": "step-function distortion에 의한 raw value scale 변형이 OLS 후에도 residual carry-over 가능성",
+    "expected_outcome": {
+      "str_1631_sr_post_fix": "0.80~1.05 (원 1.193 대비 -12~-33%)",
+      "str_1631_cagr_post_fix": "11~14% (원 16.14% 대비 -13~-32%)",
+      "str_1631_mdd_post_fix": "-22~-28% (MDD 악화 가능)"
+    },
+    "day_4_5_plan_impact": {
+      "migration_delay": "STR_1631 0.60 유지 Day 4 고려 (admission block)",
+      "alternative_admission": "Reserve 9% → STR_1679v3 또는 H_1689 가중 선제 편입",
+      "revised_composition_option_1": {
+        "STR_1631_Core_Primary": 0.35,
+        "STR_1656_Div_ML": 0.14,
+        "STR_1679v3_Div_1": 0.12,
+        "H_1689_Defense": 0.25,
+        "H_1690_Defense": 0.10,
+        "H_1692_Core_Secondary": 0.10,
+        "Reserve": 0.04,
+        "misc": 0.00,
+        "total": 1.00,
+        "defense_cluster": 0.35,
+        "family_saturation_at_cap": "Defense 35% (exactly at cap — caution)"
+      },
+      "revised_composition_option_2_drop_str_1631": {
+        "STR_1631_Core_Primary": 0.00,
+        "STR_1656_Div_ML": 0.20,
+        "STR_1679v3_Div_1": 0.15,
+        "H_1689_Defense": 0.25,
+        "H_1690_Defense": 0.15,
+        "H_1692_Core_Secondary": 0.15,
+        "Reserve": 0.10,
+        "misc": 0.00,
+        "total": 1.00,
+        "defense_cluster": 0.40,
+        "family_saturation_violation": "Defense 40% > 35% cap — REJECT",
+        "requires_new_core_candidate": "H_1692 core_secondary 확대 불가 (novelty 제한)"
+      }
+    },
+    "gate_0_validity_re_verification": "FAIL or BORDERLINE (ICIR 저하 시 alpha source 재평가 필요)",
+    "gate_11_variant_comparison_advisory": "WARNING (structural scale 변화 → variant comparison 재측정)",
+    "probability_estimate": "30%",
+    "governor_action": "Scenario B 발생 시 rev8-A-revised_v3 (Scenario D) 신규 발행 검토 — **v54 Freeze 해제 trigger** 가능"
+  },
+
+  "scenario_C_mixed_case_partial_degradation": {
+    "assumption": "일부 factors만 저하 (예: M08만 20% 저하, R12/R16 유지)",
+    "rationale": "step-function distortion은 factor별 상이 (M08 2025-12, R12 2026-03 시점 차이)",
+    "expected_outcome": {
+      "str_1631_sr_post_fix": "1.05~1.15 (원 1.193 대비 -6~-12%)",
+      "str_1631_cagr_post_fix": "14~15.5% (경미한 저하)",
+      "str_1631_mdd_post_fix": "-21~-23% (거의 동일)"
+    },
+    "day_4_5_plan_impact": "원 v1.7 plan 유지 + STR_1631 0.18→0.15 미세 조정 옵션",
+    "probability_estimate": "10%",
+    "governor_action": "Judge re-verification Gate 0 BORDERLINE_REVISE 판정 시 Day 4 plan 미세 조정"
+  },
+
+  "portfolio_impact_projection_post_rebuild_3_scenarios": {
+    "scenario_A_60_percent_probability": {
+      "day_6_live_sr_projection": "1.72~1.78 conservative (원 plan 유지)",
+      "aspirational_target": "2.00-2.03 (H_1689 alpha + H_1692 residual 가산)",
+      "governor_confidence": "HIGH"
+    },
+    "scenario_B_30_percent_probability": {
+      "day_6_live_sr_projection": "1.45~1.60 conservative (STR_1631 degradation carry-over)",
+      "aspirational_target": "1.75 (수정 composition 가능 시)",
+      "governor_confidence": "MEDIUM",
+      "freeze_release_trigger_risk": "SR 1.50 달성 어려움 → v54 Freeze 해제 Session 72 평가 재검토 필요"
+    },
+    "scenario_C_10_percent_probability": {
+      "day_6_live_sr_projection": "1.65~1.72 conservative (경미한 impact)",
+      "aspirational_target": "1.85-1.95",
+      "governor_confidence": "HIGH"
+    },
+    "weighted_expected_sr": "1.62~1.70 conservative (0.6 × 1.75 + 0.3 × 1.52 + 0.1 × 1.68 = 1.671)",
+    "weighted_expected_sr_aspirational": "1.91 (0.6 × 2.02 + 0.3 × 1.75 + 0.1 × 1.90 = 1.91)"
+  },
+
+  "risk_mitigation_plan_per_scenario": {
+    "scenario_A_actions": [
+      "Day 4 STR_1631 0.60→0.40 원 schedule 진행",
+      "Judge Gate 0 Validity re-verification PASS 확인",
+      "Scout families.json v1.4 update (post-fix factor metadata)",
+      "Forge H_1692/H_1689/H_1690 S1 baseline post-rebuild 실행"
+    ],
+    "scenario_B_actions": [
+      "Day 4 STR_1631 migration 지연 (0.60 유지)",
+      "Revised composition Option 1 준비 (STR_1631 35% + Defense 35% 엄밀 at cap)",
+      "Judge + team-lead 긴급 알림 (v54 Freeze 해제 검토 trigger)",
+      "Risk Mgr spawn 최우선 (STR_1631 alpha 재평가)",
+      "Scout inverse pattern miner skill 호출 준비 (KR consensus inverse 가설 탐색)"
+    ],
+    "scenario_C_actions": [
+      "Day 4 STR_1631 0.60→0.40 진행하되 weight 0.18 대신 0.15 미세 조정",
+      "Reserve 0.09 → 0.12 소폭 확대 (buffer 확보)",
+      "Judge Gate 0 BORDERLINE_REVISE 판정 시 v3.5.1 freeze 유지 + additional monitoring"
+    ]
+  },
+
+  "day_3_5_composition_migration_detailed": {
+    "day_3_2026_04_20": {
+      "primary_event": "Judge S6 cascade + rev8-A-revised_v2 편입 결정",
+      "composition_end_of_day_3": {
+        "STR_1631_SYN_05": 0.60,
+        "STR_1656_MLRA_M05": 0.16,
+        "cash_reserve": 0.24,
+        "total": 1.00
+      },
+      "governor_outputs": [
+        "Judge S6 verdict 수신 후 Day 4 go/no-go decision",
+        "Scenario A/B/C 판정 (post-rebuild ICIR delta 확인)",
+        "Phase_1 Day 4 admission plan v1.8 발행 (composition 확정)"
+      ]
+    },
+    "day_4_2026_04_21_scenario_A_default": {
+      "composition_changes": {
+        "STR_1631_SYN_05": "0.60 → 0.40 (-20pp, Scenario A만 적용)",
+        "cash_reserve": "0.24 → 0.24 (유지)",
+        "H_1689_Defense_new": "0.00 → 0.10 (+10pp 신규)",
+        "H_1692_Core_Secondary_new": "0.00 → 0.05 (+5pp 신규)"
+      },
+      "composition_end_of_day_4": {
+        "STR_1631_SYN_05": 0.40,
+        "STR_1656_MLRA_M05": 0.16,
+        "H_1689_Defense": 0.10,
+        "H_1692_Core_Secondary": 0.05,
+        "cash_reserve": 0.24,
+        "unallocated": 0.05,
+        "total": 1.00
+      },
+      "admission_gates_mandatory": "Gate 11/12/13 triple check (H_1689 + H_1692)",
+      "governor_verification_required": "family saturation + TDC pairwise check"
+    },
+    "day_5_2026_04_22_final_composition": {
+      "composition_changes": {
+        "STR_1631_SYN_05": "0.40 → 0.18 (-22pp, final)",
+        "STR_1656_MLRA_M05": "0.16 → 0.14 (-2pp, final)",
+        "H_1689_Defense": "0.10 → 0.23 (+13pp, final)",
+        "H_1692_Core_Secondary": "0.05 → 0.10 (+5pp, final)",
+        "H_1690_Defense_new": "0.00 → 0.10 (+10pp 신규, final)",
+        "STR_1679v3_Div_1_new": "0.00 → 0.08 (+8pp 신규, final)",
+        "cash_reserve": "0.24 → 0.09 (final)",
+        "misc_allocation": "0.00 → 0.08 (+8pp final)"
+      },
+      "composition_end_of_day_5_final": {
+        "STR_1631_SYN_05": 0.18,
+        "STR_1656_MLRA_M05": 0.14,
+        "STR_1679v3_Div_1": 0.08,
+        "H_1689_Defense": 0.23,
+        "H_1690_Defense": 0.10,
+        "H_1692_Core_Secondary": 0.10,
+        "Reserve": 0.09,
+        "misc": 0.08,
+        "total": 1.00,
+        "defense_cluster": 0.33,
+        "family_saturation_compliance": "PASS (35% cap margin 2pp)"
+      },
+      "admission_gates_mandatory": "Gate 11/12/13 triple check (H_1690 + STR_1679v3)",
+      "governor_verification_required": "full composition Gate 8 TDC pairwise + Gate 12 coupling_ratio all-pairs"
+    },
+    "day_6_2026_04_23_LIVE": {
+      "event": "**rev8-A-revised_v2 Scenario C LIVE 공식 활성화**",
+      "status": "6 active strategies (83%) + Reserve 9% + misc 8% = 100%",
+      "tg_broadcast_triggers": ["Governor Phase_1 LIVE announcement", "SR/CAGR/MDD projection 갱신", "regime state t-1 lag 확인"]
+    }
+  },
+
+  "tdc_pairwise_check_preemptive_matrix": {
+    "note": "Governor 내부 사전 준비 — Risk Mgr 스폰 후 검증 요청",
+    "known_tdc_values": {
+      "STR_1631_x_STR_1679v2": 0.621,
+      "STR_1631_x_STR_1679v3": "PROXY (v2→v3 Q25 embed 후 재측정 필요, proxy 예상 <0.5)",
+      "STR_1071_x_STR_1562": 0.511
+    },
+    "pending_measurements_day_3": [
+      "STR_1631 x H_1692 (industry momentum residual 방향 반대 예상 low TDC)",
+      "STR_1631 x H_1689 (Q24-exclude 3-axis defense, low correlation 예상)",
+      "STR_1631 x H_1690 (multi_source_defense_anchor, low TDC 예상)",
+      "H_1689 x H_1690 (Defense cluster 2 전략 TDC 중요)",
+      "H_1692 x STR_1656 (Core_Secondary vs ML Div TDC)",
+      "STR_1679v3 x H_1689 (Defense + Diversifier 교차)"
+    ],
+    "structural_breach_threshold": "TDC > 0.60 (L-156 v2 Gate 8 trigger)",
+    "advisory_threshold": "TDC > 0.50 (consensus_tier monitoring)"
+  },
+
+  "governor_actionable_tasks_pending_trigger": [
+    "trigger-driven: rebuild 완료 시 post-fix ICIR delta 확인",
+    "trigger-driven: Judge Gate 0 Validity re-verification 수신",
+    "trigger-driven: Risk Mgr spawn 후 3rd round VERDICT 수신",
+    "trigger-driven: Forge S1 cascade 결과 (H_1692/H_1689/H_1690)",
+    "self-initiate: Day 3 Judge S6 수신 시 Day 4 go/no-go + Scenario A/B/C 판정",
+    "self-initiate: Phase_1 Day 4 admission plan v1.8 발행 (composition 확정)"
+  ],
+
+  "freeze_release_monitoring_point": {
+    "target_sr": "≥ 1.50 (gap ≤ 0.5)",
+    "evaluation_session": "Session 72 (2026-week 20, 약 3-4주 후)",
+    "current_sr": 1.193,
+    "projection_day_6_live_weighted": "1.62~1.70 conservative → freeze 해제 조건 충족 가능성 HIGH",
+    "aspirational_sr": "1.91 → freeze 해제 + v54 체제 정식 전환 trigger"
+  },
+
+  "v54_freeze_compliance_reconfirmed": {
+    "admission_rule_v3_5_1_status": "ACTIVE (13 gates, no amendment proposed in this analysis)",
+    "governor_rev_status": "rev8-A-revised_v2 Scenario C 유지 (no new rev)",
+    "current_file_type": "sensitivity_analysis (internal risk matrix, no new rule)",
+    "freeze_violation_risk": "NONE (본 파일은 분석 문서)"
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "43 files (Day 2 coordinate plan)",
+    "current": "**44 files** (본 sensitivity analysis)"
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "from": "Governor",
+  "to": "Q-Lead + team-lead + Judge + Forge",
+  "type": "PHASE_1_DAY_1_TRANSITION_EXECUTION",
+  "timestamp": "2026-04-18T20:20+09:00",
+  "session": 67,
+  "continuous_session_mode": true,
+  "status": "**EXECUTE — STR_1631 80→60% + STR_1656 20→16% PG2 internal rebalance**",
+  "supersedes": "qepm/mailbox/governor/outbox/PHASE_1_DAY_1_TRANSITION_VERDICT_20260418.json (19:55 HOLD)",
+
+  "reversal_rationale": {
+    "prior_verdict_19_55": "HOLD until S1 + S6 + Gate 13 triple PASS",
+    "team_lead_20_20_directive": "STR_1631/STR_1656 Gate 13 compliant 확정 → Phase_1 Day 1 transition 진행 승인",
+    "new_evidence_reversing_hold": [
+      "STR_1631_SYN_05 run_all.R grep: universe.parquet + consensus dir (no factor_db) → Gate 13 compliant",
+      "STR_1656_MLRA_M05 run_all.R grep: read_parquet 매치 없음 + ML features 별도 pipeline → Gate 13 compliant",
+      "PG2 현 composition (80/20) Gate 13 retroactive audit 통과"
+    ],
+    "safety_envelope_justification": "PG2 internal rebalance (80→60, 20→16)는 new strategy admission 아님 → Gate 11/12/13 mandatory 적용 불필요",
+    "approach": "rev8-A-revised_v2 Scenario C 복합 편입 전 PRECURSOR STEP (6 active 목표 + pre-migration safe)"
+  },
+
+  "transition_execution_plan_day_1": {
+    "target_date": "2026-04-18 (Session 67 Continuous, 즉시 실행)",
+    "pg2_internal_rebalance": {
+      "STR_1631_SYN_05": {"from": 0.80, "to": 0.60, "delta": -0.20},
+      "STR_1656_MLRA_M05": {"from": 0.20, "to": 0.16, "delta": -0.04},
+      "cash_reserve_temporary": {"from": 0.00, "to": 0.24, "delta": +0.24, "note": "rev8-A-revised_v2 편입 대기 buffer"},
+      "sum_check": "0.60 + 0.16 + 0.24 = 1.00 ✅"
+    },
+    "admission_gates_not_applicable": {
+      "rationale": "PG2 internal rebalance + 기존 전략 비중 감축 + cash reserve 임시 편성",
+      "gate_11": "N/A (variant_comparison은 new strategy admission 대상)",
+      "gate_12": "N/A (기존 승인된 coupling_ratio 유효)",
+      "gate_13": "N/A (STR_1631/STR_1656 compliant 확정)"
+    }
+  },
+
+  "phase_1_day_2_to_6_timeline_accelerated": {
+    "day_2_2026_04_19": {
+      "primary": "Forge S1 3건 + Factor DB rebuild",
+      "tasks": [
+        "STR_1685 완료 대기 + Pre-Gate 13 baseline 기록",
+        "Gate 13 preflight 구현 (forge_code_guard.sh 또는 R preflight)",
+        "STR_1685 post-Gate 13 재실행 (Pre/Post 비교)",
+        "Architect persistent fix (factor_db_builder.R self-rescale + parquet rebuild ~1h+)",
+        "H_1692 factor_engine Gate 13 준수 작성 + S1 4 variants 시작"
+      ]
+    },
+    "day_3_2026_04_20": {
+      "primary": "Judge S6 + rev8-A-revised_v2 편입 결정",
+      "tasks": [
+        "H_1692/H_1689/H_1690 S1 완료",
+        "Judge S6 cascade (Gate 11/12/13 triple check)",
+        "Role Honesty Audit (STR_1679v3 L-153 재검증)",
+        "Judge Day 3 Triple-check (STR_1679v3 proxy 5-point + R16 cross-reference)",
+        "rev8-A-revised_v2 Scenario C composition 편입 최종 결정"
+      ]
+    },
+    "day_4_2026_04_21": {
+      "primary": "Phase_1 admission 본격 편입",
+      "tasks": [
+        "STR_1631 60→40% (추가 20pp 감축)",
+        "H_1689 0→10% 신규 편입 (Defense 1st)",
+        "H_1692 0→5% 신규 편입 (Core_Secondary 1st)"
+      ]
+    },
+    "day_5_2026_04_22": {
+      "primary": "Phase_1 admission 완료",
+      "tasks": [
+        "STR_1631 40→18% (최종 감축)",
+        "STR_1656 16→14%",
+        "H_1689 10→23% (최종 편입)",
+        "H_1692 5→10% (최종 편입)",
+        "H_1690 0→10% 편입 (Defense 2nd)",
+        "STR_1679v3 0→8% 편입 (Div_1 certified)"
+      ]
+    },
+    "day_6_2026_04_23": {
+      "primary": "**Phase_1 LIVE 전환 (원래 Day 7 → 1일 가속)**",
+      "tasks": [
+        "rev8-A-revised_v2 Scenario C 전 composition 공식 활성화",
+        "STR_1631 18% + STR_1656 14% + STR_1679v3 8% + H_1689 23% + H_1690 10% + H_1692 10% + Reserve 9% + misc 8%",
+        "total 100% (6 active 83%)"
+      ]
+    }
+  },
+
+  "timeline_acceleration_summary": {
+    "original_plan": "Day 6~7 Phase_1 LIVE",
+    "accelerated_plan": "**Day 5~6 Phase_1 LIVE** (1일 가속)",
+    "acceleration_source": "PG2 Day 1 precursor rebalance + Gate 13 enforcement 병렬 + Architect advancement",
+    "risk_mitigation": "Day 1 internal rebalance는 new strategy admission 아님 → safe precursor"
+  },
+
+  "admission_readiness_day_1_post_rebalance": {
+    "STR_1631_Core_Primary": {
+      "weight": 0.60,
+      "status": "PG2_ACTIVE_REBALANCED",
+      "gate_13": "COMPLIANT_CONFIRMED",
+      "day_2_plus_target": 0.18
+    },
+    "STR_1656_Div_ML": {
+      "weight": 0.16,
+      "status": "PG2_ACTIVE_REBALANCED",
+      "gate_13": "COMPLIANT_CONFIRMED",
+      "day_5_target": 0.14
+    },
+    "cash_reserve_temporary": {
+      "weight": 0.24,
+      "status": "TEMPORARY_BUFFER",
+      "day_2_plus_allocation_plan": "rev8-A-revised_v2 Scenario C 편입 대기"
+    }
+  },
+
+  "governor_actions_executed": {
+    "action_1_verdict_reversal": "Phase_1 Day 1 VERDICT HOLD → EXECUTE 전환 (본 파일 20:20)",
+    "action_2_phase_1_v1_7_update_needed": "PHASE_1_PG1_ADMISSION_SKELETON_v1_6 → v1.7 (Day 1 execution 반영 + accelerated timeline)",
+    "action_3_admission_rule_v3_5_1_amendment_pending": "admission_rule_v3_5_governor_signoff.json amendment (v3.5 → v3.5.1, Gate 13 추가) Governor 자발 발행 가능",
+    "action_4_pg2_telemetry_coordinate": "Q-Lead portfolio manager pm_run() 실행 권장 (STR_1631 60/16/24 composition)"
+  },
+
+  "portfolio_impact_assessment": {
+    "sr_projection_day_1_rebalance": "SR 1.19 유지 (cash 24% drag 최소 + STR_1631 감축 상쇄)",
+    "sr_projection_day_2_to_5": "SR 1.30~1.50 (gradual Defense + Core_Secondary 편입)",
+    "sr_projection_day_6_LIVE": "SR 1.72~1.78 conservative → 2.00 aspirational (rev8-A-revised_v2 Scenario C 목표)",
+    "mdd_projection_day_1_rebalance": "MDD -15% ~ -20% (cash 24% buffer → defensive)",
+    "mdd_projection_day_6_LIVE": "MDD -22% ~ -25% (6 active 분산 + Defense 33% cluster)",
+    "composition_retention": "Day 6 LIVE 목표 composition 변경 없음 (Day 1 precursor rebalance → gradual migration)"
+  },
+
+  "gate_13_enforcement_status": {
+    "pg2_retroactive_audit": "PASS (STR_1631 + STR_1656 compliant)",
+    "new_strategies_h_1692_h_1689_h_1690": "MANDATORY (factor_engine 작성 시 load_month_factors 경유)",
+    "str_1685_current_execution": "PRE_GATE_13_BASELINE (team-lead Option 2, 완료 대기)",
+    "str_1679v3_physical_sleeve": "PENDING_FORGE_RE_EXECUTION (Gate 13 적용)",
+    "str_1686_h_1685v2": "MANDATORY (factor_engine 사전 작성 Gate 13 준수)"
+  },
+
+  "l_code_registry_update": {
+    "active": "L-159~L-164 (6건)",
+    "pending": 0,
+    "l_164_promotion": "2026-04-18T20:00+09:00 (Judge authority, team-lead 승인)",
+    "memory_md_target": "v5.2 → v5.3 / 164건 (Judge update pending)"
+  },
+
+  "session_68_day_1_critical_path_accelerated": {
+    "p0_critical": [
+      "Architect persistent fix (factor_db_builder.R self-rescale + parquet rebuild) — Session 68 Day 1 advancement",
+      "Gate 13 preflight_check 구현 (Forge-level enforcement)",
+      "STR_1685 완료 대기 + Pre-Gate 13 baseline + Post-Gate 13 재실행",
+      "H_1692 factor_engine Gate 13 준수 작성"
+    ],
+    "p0_strategy_execution_day_2": [
+      "H_1692 S1 4 variants",
+      "H_1689 v3 S1 3-axis Q24-exclude",
+      "H_1690 S1 4 variants",
+      "STR_1686 factor_engine 사전 작성"
+    ],
+    "p1_judge_cascade_day_3": [
+      "Judge S6 (H_1692/H_1689/H_1690 Gate 11/12/13 triple check)",
+      "Role Honesty Audit (STR_1679v3 L-153)",
+      "Judge Day 3 Triple-check (Scout families.json v1.3 R16)",
+      "L-164 methodology_memory.md 본문 작성",
+      "Judge MEMORY.md v5.3 / 164건 update"
+    ],
+    "p2_admission_day_4_5": [
+      "Phase_1 PG1 admission Day 4 (H_1689 10% + H_1692 5% + STR_1631 40%)",
+      "Phase_1 PG1 admission Day 5 (final composition: STR_1631 18% + STR_1656 14% + STR_1679v3 8% + H_1689 23% + H_1690 10% + H_1692 10%)"
+    ],
+    "p2_live_day_6": [
+      "rev8-A-revised_v2 Scenario C 공식 LIVE 전환"
+    ]
+  },
+
+  "governor_outbox_count_update": {
+    "previous": "40 files (Phase_1 v1.6)",
+    "current": "41 files (본 Day 1 Transition Execution 추가)",
+    "next_pending": "Phase_1 v1.7 (v1.6 supersede + accelerated timeline) + admission_rule v3.5.1 amendment"
+  },
+
+  "continuous_session_governor_actionable_tasks": {
+    "in_progress": [
+      "본 Day 1 Transition Execution VERDICT 발행 (20:20)"
+    ],
+    "next_actionable": [
+      "Phase_1 v1.7 발행 (v1.6 supersede + accelerated timeline Day 1 execution)",
+      "admission_rule_v3_5_governor_signoff.json amendment (v3.5 → v3.5.1 Gate 13 추가) — team-lead 승인 시"
+    ],
+    "trigger_driven": [
+      "Q-Lead pm_run() PG2 rebalance 실행 결과",
+      "Architect persistent fix 결과",
+      "STR_1685 baseline 완료",
+      "Forge Day 2 S1 cascade 결과",
+      "Judge S6 cascade 결과"
+    ]
+  },
+
+  "team_lead_directive_compliance": {
+    "directive_1_phase_1_v1_6_update": "v1.7 발행 예정 (Day 1 execution + accelerated timeline 반영)",
+    "directive_2_pg2_transition_day_1": "EXECUTE 발행 (본 파일 20:20)",
+    "directive_3_architect_advancement": "Session 68 Day 1 critical path 최우선 반영",
+    "directive_4_dae_ki_금지": "trigger-driven standby는 유지하나 actionable task (Phase_1 v1.7 + admission_rule v3.5.1) 자발 발행 준비"
+  }
+}

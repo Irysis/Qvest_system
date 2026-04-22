@@ -1,0 +1,145 @@
+{
+  "from": "Governor",
+  "to": "Forge / Architect (implementation coordinate)",
+  "type": "PM_RUN_MULTISLEEVE_GATE_11_12_STUB_SPEC",
+  "timestamp": "2026-04-18T15:10:00+09:00",
+  "session": 67,
+  "day": 1,
+  "reference_rule": "qepm/mailbox/judge/outbox/admission_rule_v3_5_consolidated.json (ACTIVE 2026-04-18T15:05)",
+  "target_file": "02_Infrastructure/portfolio_governor.R",
+  "status": "SPEC — Governor 설계 완료. Forge/Architect 구현 coordinate 대기.",
+
+  "function_stubs": {
+    "gate_11_variant_check": {
+      "signature": "gate_11_variant_check(strategy_id, family, role) -> list(pass = logical, severity = string, reason = string, variants_examined = data.frame)",
+      "inputs": {
+        "strategy_id": "string — 대상 STR_XXX or H_XXXX",
+        "family": "string — factor family (defense, core, diversifier, etc)",
+        "role": "string — Core_Primary / Core_Secondary / Diversifier / Defense"
+      },
+      "enforcement_rules": [
+        "1. load variant_comparison.csv from 04_Research/strategies/{strategy_id}/output/",
+        "2. if file missing AND role != Core_Primary_single_signal → FAIL (hard_block, 'variant_comparison.csv required')",
+        "3. if role == Core_Primary AND single signal → exempt (명시 기록)",
+        "4. count_variants = nrow(variant_comparison)",
+        "5. if count_variants < 3 → FAIL (conditional_block, 'minimum 3 variants required')",
+        "6. count_hard_fail = sum(variant$mdd > 0.45 | variant$sharpe < 0)",
+        "7. if count_hard_fail == count_variants → FAIL (hard_block, 'all variants structural failure L-160 pattern')",
+        "8. primary_metric = variant$total_score[variant$is_primary == TRUE]",
+        "9. alt_max = max(variant$total_score[!is_primary])",
+        "10. if primary_metric < alt_max → FAIL (conditional_block, 'primary inferior to alternative, composite offset suspected')",
+        "11. else → PASS"
+      ],
+      "output_schema": {
+        "pass": "logical",
+        "severity": "'exempt' | 'pass' | 'advisory' | 'conditional_block' | 'hard_block'",
+        "reason": "string — human-readable",
+        "variants_examined": "data.frame (variant, sharpe, mdd, total_score, is_primary)",
+        "l_160_pattern_detected": "logical — TRUE if hard_block 'all variants fail'"
+      },
+      "exemption_logic": {
+        "core_primary_single_signal": "role == 'Core_Primary' AND length(signal_sources) == 1 → severity = 'exempt', record in admission log"
+      }
+    },
+
+    "gate_12_coupling_ratio_check": {
+      "signature": "gate_12_coupling_ratio_check(strategy_id, role, portfolio_type) -> list(pass, severity, ratio, reason)",
+      "inputs": {
+        "strategy_id": "string",
+        "role": "string — affects mandatory vs advisory",
+        "portfolio_type": "string — 'long_only_concentrated' (default, 20 stocks) | 'long_short' | 'diversified_50plus'"
+      },
+      "enforcement_rules": [
+        "1. load hurdle_result.json from output/",
+        "2. sharpe_monthly = hurdle_result$metrics$Sharpe_m (if exists) else hurdle_result$metrics$Sharpe",
+        "3. icir_full = hurdle_result$metrics$ICIR (or analysis_report.md extraction)",
+        "4. if missing either → FAIL (advisory, 'metrics unavailable for coupling calculation')",
+        "5. coupling_ratio = sharpe_monthly / icir_full",
+        "6. if portfolio_type != 'long_only_concentrated' → exempt (L-160 scope 밖 명시)",
+        "7. if coupling_ratio < 0 → FAIL (hard_block, 'negative coupling, L-160 IC-Return decoupling confirmed')",
+        "8. if coupling_ratio < 0.15 → FAIL (hard_block, 'below critical threshold')",
+        "9. if coupling_ratio < 0.3 → WARNING (advisory if Core/Div, conditional_block if Defense mandatory)",
+        "10. else → PASS"
+      ],
+      "output_schema": {
+        "pass": "logical",
+        "severity": "'exempt' | 'pass' | 'advisory' | 'conditional_block' | 'hard_block'",
+        "ratio": "numeric",
+        "reason": "string",
+        "risk_mgr_audit_required": "logical — TRUE if severity in (advisory, conditional_block)"
+      },
+      "defense_mandatory_core_div_advisory": {
+        "Defense": "warning zone 0.15~0.3 → conditional_block (L-160 Defense scope)",
+        "Core": "warning zone 0.15~0.3 → advisory",
+        "Diversifier": "warning zone 0.15~0.3 → advisory"
+      }
+    },
+
+    "gate_11_12_integrated_admission_check": {
+      "signature": "gate_11_12_admission_check(strategy_id, family, role, portfolio_type) -> list(overall_pass, gate_11, gate_12, admission_decision)",
+      "logic": [
+        "1. g11 = gate_11_variant_check(strategy_id, family, role)",
+        "2. g12 = gate_12_coupling_ratio_check(strategy_id, role, portfolio_type)",
+        "3. if g11$severity == 'hard_block' OR g12$severity == 'hard_block' → admission_decision = 'REJECT'",
+        "4. if g11$severity == 'conditional_block' OR g12$severity == 'conditional_block' → admission_decision = 'DEFER'",
+        "5. if g11$severity == 'advisory' OR g12$severity == 'advisory' → admission_decision = 'ADMIT_CONDITIONAL' + Risk Mgr audit flag",
+        "6. else → admission_decision = 'ADMIT'"
+      ],
+      "integration_point_pm_run_multisleeve": "기존 pg1_admission() 함수 내 Anti-pattern 검사 후 단계에 삽입"
+    }
+  },
+
+  "pg1_admission_function_update_spec": {
+    "current_flow": "Grade → Anti-pattern → LOO → Role Honesty → Family cap → TDC → CVaR → CDaR → Retroactive TDC → Consensus_tier",
+    "new_v3_5_flow": "Grade (1) → Anti-pattern (2) → LOO (3) → Role Honesty (4) → Family cap (5) → TDC (6) → CVaR (7) → CDaR (8) → Retroactive TDC (9) → Consensus_tier (10) → **Variant comparison (11)** → **IC-Return coupling (12)**",
+    "sequential_check": "1건 FAIL 시 즉시 stop (v3.4와 동일 원칙 유지)"
+  },
+
+  "implementation_priority_and_coordinate": {
+    "priority": "P1 — Governor spec 완료, Forge/Architect 구현 대기",
+    "forge_responsibility": [
+      "1. variant_comparison.csv 의무 생성 로직 Forge S1 run_all.R에 추가",
+      "2. hurdle_result.json 스키마에 coupling_ratio 필드 추가 (optional, Gate 12 Judge 계산과 병행)"
+    ],
+    "architect_responsibility": [
+      "1. forge preflight_check()에 verify_variant_mandate() 추가",
+      "2. Scout handoff kit v2 schema 확장 (predicted_variant_comparison + predicted_coupling_ratio)",
+      "3. Governor 본 스텁 spec 통합 검토 + 인프라 진단"
+    ],
+    "governor_responsibility": [
+      "1. Gate 11/12 check 함수 실제 R 코드 구현 (Forge와 coordinate)",
+      "2. pg1_admission() 파이프라인 통합",
+      "3. retroactive audit 함수 구현 (기존 active PG2 재적용)"
+    ]
+  },
+
+  "test_cases_for_validation": [
+    {
+      "case_id": "TC1_STR_1683_reproduces_hard_block",
+      "description": "STR_1683 variant_comparison.csv (60/40, 50/50, Q25-only, R16-only 전량 Hard Fail) 입력 시 Gate 11 hard_block + L-160 pattern detected = TRUE",
+      "expected": "g11$severity = 'hard_block', l_160_pattern_detected = TRUE"
+    },
+    {
+      "case_id": "TC2_STR_1683_reproduces_gate_12_hard_block",
+      "description": "STR_1683 SR -0.242 / ICIR 1.879 → coupling_ratio = -0.129 → Gate 12 hard_block (negative)",
+      "expected": "g12$severity = 'hard_block', ratio = -0.129"
+    },
+    {
+      "case_id": "TC3_STR_1631_core_primary_exemption",
+      "description": "STR_1631 Core_Primary single consensus signal → Gate 11 exempt",
+      "expected": "g11$severity = 'exempt'"
+    },
+    {
+      "case_id": "TC4_Defense_Core_differential_application",
+      "description": "H_1689 Defense coupling_ratio 0.2 (warning zone) → Gate 12 conditional_block. 동일 ratio의 H_1688 Core_Secondary → advisory",
+      "expected": "g12$severity differs by role"
+    }
+  ],
+
+  "retroactive_audit_integration": {
+    "scope": "v3.5 ACTIVE 시점 현재 PG2 + PG1 candidates 전체 Gate 11/12 소급 적용",
+    "targets_task_38": ["STR_1631", "STR_1656", "STR_1071", "STR_1562", "STR_1433"],
+    "per_target_deliverable": "retroactive_v3_5_audit_verdict_{strategy}.json",
+    "deadline": "2026-04-19T15:05 KST (24h SLA)"
+  }
+}
