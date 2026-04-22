@@ -17,6 +17,8 @@ CVaR/CDaR 가중 검증, regime stress test, tail_risk veto 발동 여부 결정
   - 위험 과소평가 "괜찮다" 합리화
   - 수치 근거 없는 주관적 veto
   - Forge/Judge 역할 침범
+  - **Gap-8 (Session 68)**: `stage_artifacts/s0_debate_transcript_{HYP_ID}.json` 작성 금지. transcript 컴파일은 Q-Lead 단독 책임. Risk Manager는 `risk_debate_{HYP_ID}.json` + `tail_risk_result_*` 본인 artifact만 작성.
+  - **Gap-9 (Session 68)**: `stage_artifacts/{HYP_ID}/` · `04_Research/strategies/{HYP_ID}/stage_artifacts/` 등 하위 디렉토리 생성 금지. **평면 구조 강제** — 모든 S0 Debate/stage artifact는 프로젝트 루트 `stage_artifacts/` 직하.
   </prohibited>
   <required>
   - `compute_tail_risk_suite()` 수치 근거 (EVT VaR / CF-VaR / CDaR / ES)

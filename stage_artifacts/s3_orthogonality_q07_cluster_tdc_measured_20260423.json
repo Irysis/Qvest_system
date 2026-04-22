@@ -1,0 +1,140 @@
+{
+  "artifact_type": "s3_orthogonality_tdc_measured",
+  "schema_version": "v3.0_Gate8",
+  "measured_by": "Governor (Session 69, 2026-04-23)",
+  "method": "t-copula MLE (Demarta & McNeil 2005) on pseudo-observations + regime-conditional split (MRS lag t-1)",
+  "measurement_timestamp": "2026-04-23",
+  "session": 69,
+
+  "_context": "TODO_S3 3건 처리: H_1685_v2/STR_1686, H_1690/STR_1685, STR_1687/H_1693. 실측 가용 데이터 제약으로 proxy 활용: STR_1679v2(score_blend) → STR_1679v3 proxy, STR_1685_H1690(multi_source_defense) → H_1690 측정, STR_1687은 HARD_FAIL(L-166) 확정으로 TDC 측정 생략. H_1686/STR_1686 pre_l168_fix_invalid → 현 측정 대상 제외.",
+
+  "data_sources": {
+    "STR_1631_anchor": "04_Research/strategies/STR_1631_PG2_MDD_OPT/output/daily_nav_bcde.csv (Strategy_Ret, PIT-clean confirmed SR 1.193)",
+    "STR_1679v2_proxy_v3": "04_Research/strategies/STR_1679_score_blend/output/daily_returns_primary.csv (STR_1679v2 = v3 re-run 전 proxy. v3 re-run 후 재측정 필수)",
+    "STR_1685_H1690": "04_Research/strategies/STR_1685_multi_source_defense_anchor/output/daily_returns_primary.csv (pre_l168_fix_invalid 없음 — 유효 데이터)",
+    "STR_1684_H1688": "04_Research/strategies/STR_1684_residual_momentum/output/daily_returns_primary.csv"
+  },
+
+  "common_period": {
+    "n_days": 5477,
+    "date_start": "2004-02-04",
+    "date_end": "2026-04-08",
+    "regime_split": {
+      "CRISIS_MRS_gte_30": 923,
+      "CAUTION_MRS_15_30": 856,
+      "NORMAL_MRS_lt_15": 3698
+    }
+  },
+
+  "tdc_results": {
+    "pair_1_STR_1679v2_proxy_vs_STR_1631": {
+      "label_a": "STR_1679v2_proxy_v3 (Q25 embedded)",
+      "label_b": "STR_1631_anchor (PG2 primary)",
+      "full_sample": { "tdc": 0.624, "rho_mle": 0.901, "nu_mle": 4.2, "kendall_tau": 0.722 },
+      "crisis_MRS_gte_30": { "tdc": 0.170, "n": 923 },
+      "gate11_tdc_lt_050": "FAIL",
+      "seq_adm_full_lt_030": "FAIL",
+      "seq_adm_crisis_lt_030": "PASS",
+      "interpretation": "CRITICAL BREACH. Full-sample TDC 0.624 (동일 패턴 — judge_pg1_candidates_tdc_matrix.json 0.621 재확인). STR_1679v2 high overlap 구조(PG2 anchor와 실질적 동일 전략). v3 re-run 후 embedded Q25+regime 구조로 변경되면 TDC 하락 가능. 현재 proxy 기준 PG1 Gate11 FAIL.",
+      "governor_action": "STR_1679v3 Forge re-run 후 실측 TDC 재측정 필수. 현재 proxy TDC 0.624로는 PG1 직접 편입 불가. v3 설계 변경(Q25 단일 → Q25+regime conditional)이 실효 차별화 여부 S3에서 확인 필요.",
+      "note_v3_expectation": "v3 embedded Q25 구조는 Q25 + regime-conditional DD/VT로 STR_1631 anchor와 상관 감소 기대. 사전추정: full TDC 0.45~0.60 (크게 낮아지지 않을 가능성). S3 실측 필수."
+    },
+    "pair_2_STR_1685_H1690_vs_STR_1631": {
+      "label_a": "STR_1685_H1690 (4-axis multi-source defense)",
+      "label_b": "STR_1631_anchor (PG2 primary)",
+      "full_sample": { "tdc": 0.157, "rho_mle": 0.418, "nu_mle": 5.3, "kendall_tau": 0.270 },
+      "crisis_MRS_gte_30": { "tdc": 0.315, "n": 923 },
+      "gate11_tdc_lt_050": "PASS",
+      "seq_adm_full_lt_030": "PASS",
+      "seq_adm_crisis_lt_030": "WARN (0.315 > 0.30, threshold 초과 0.015)",
+      "interpretation": "Full-sample TDC 0.157 — 우수한 전략적 독립성. Crisis TDC 0.315는 임계값(0.30) 소폭 초과. H_1690 multi-source defense의 regime-conditional weight(CRISIS: Q07 40% + R16 35%)가 STR_1631 anchor와 crisis 구간 co-move를 소폭 발생시키는 것으로 보임. 그러나 0.30 대비 0.015 초과는 실용적 허용 범위.",
+      "governor_action": "Gate11 PASS 확정. Crisis TDC 0.315는 WARN 처리 — L-156 v2 Early Warning 범위(0.30~0.40). Sequential Admission 조건부 허용: PG1 입장 시 L-156 v2 cluster 등록 + 분기별 모니터링. H_1690 HARD_FAIL(L-165) 확정됐으므로 이 측정은 아카이브 참조용.",
+      "note_l165_context": "H_1690(STR_1685)는 L-165 VALIDATED_HARD_FAIL(MDD 77~94%) — 현 측정은 historical TDC 기록 보존 목적. 후속 multi-source defense 재설계 시 이 TDC 범위(0.15~0.32) 를 벤치마크로 활용."
+    },
+    "pair_3_STR_1684_H1688_vs_STR_1631": {
+      "label_a": "STR_1684_H1688 (residual momentum)",
+      "label_b": "STR_1631_anchor (PG2 primary)",
+      "full_sample": { "tdc": 0.241, "rho_mle": 0.550, "nu_mle": 4.8, "kendall_tau": 0.365 },
+      "crisis_MRS_gte_30": { "tdc": 0.363, "n": 923 },
+      "gate11_tdc_lt_050": "PASS",
+      "seq_adm_full_lt_030": "PASS",
+      "seq_adm_crisis_lt_030": "WARN (0.363 > 0.30)",
+      "interpretation": "Full-sample TDC 0.241 — 양호한 독립성. Crisis TDC 0.363은 임계값 초과. H_1688(Barroso-Santa Clara risk-managed momentum)이 crisis 구간에서 STR_1631과 동반 조정 — momentum crash 공통 요인. 그러나 0.40 미만으로 L-156 v2 WARN 범위 내.",
+      "governor_action": "Gate11 PASS. Crisis TDC WARN — H_1688 편입 시 Sequential Admission + momentum crash 리스크 분리 모니터링 필요. Scenario_D Phase_1 Core Secondary 10% 편입 조건: 재실행 후 crisis TDC 재측정 필수(현재 pre_l168_fix 미적용)."
+    },
+    "pair_4_STR_1679v2_proxy_vs_STR_1685_H1690": {
+      "label_a": "STR_1679v2_proxy_v3",
+      "label_b": "STR_1685_H1690 (defense)",
+      "full_sample": { "tdc": 0.095, "rho_mle": 0.409, "nu_mle": 7.4, "kendall_tau": 0.265 },
+      "crisis_MRS_gte_30": { "tdc": 0.191, "n": 923 },
+      "gate11_tdc_lt_050": "PASS",
+      "seq_adm_crisis_lt_030": "PASS",
+      "interpretation": "TDC 0.095 — 거의 완전한 tail 독립. Q25(STR_1679v2)와 4-axis composite(H_1690)는 서로 다른 alpha source. 향후 STR_1679v3 + H_1689 v3 pair 측정 시 유사 범위 예상."
+    },
+    "pair_5_STR_1685_H1690_vs_STR_1684_H1688": {
+      "label_a": "STR_1685_H1690 (4-axis defense)",
+      "label_b": "STR_1684_H1688 (residual momentum)",
+      "full_sample": { "tdc": 0.284, "rho_mle": 0.621, "nu_mle": 4.9, "kendall_tau": 0.423 },
+      "crisis_MRS_gte_30": { "tdc": 0.454, "n": 923 },
+      "gate11_tdc_lt_050": "PASS",
+      "seq_adm_crisis_lt_030": "FAIL (0.454 >> 0.30)",
+      "interpretation": "Crisis TDC 0.454 — 심각한 위기 공조. H_1690 4-axis에 M08 Residual Momentum이 포함되어 있어 H_1688(잔차 모멘텀 전용)과 crisis 구간 동반 하락. M08 공유 factor가 crisis tail dependence의 주 원인. 이 pair는 PG2 동시 편입 금지.",
+      "governor_action": "SEQUENTIAL ADMISSION 필수. H_1690(또는 후속 defense)와 H_1688(Core Secondary)은 crisis TDC 0.454로 동시 편입 불가. H_1690이 DROP(L-165)됐으므로 후속 defense 재설계 시 M08 공유 최소화 필요.",
+      "note": "H_1690 L-165 HARD_FAIL로 실제 편입 없음. 단 후속 defense 설계 시 M08 Residual Momentum 포함 전략은 H_1688과 crisis TDC 유사 패턴 발생 가능 — 사전 경고."
+    }
+  },
+
+  "str_1687_h1693_tdc_status": {
+    "measurement": "SKIPPED",
+    "reason": "STR_1687(H_1693) L-166 VALIDATED_HARD_FAIL 확정 (MDD 58.67%, AX-007 Gate14 auto-reject, restart_block=true). TDC 측정 무의미. DROP 확정.",
+    "q07_cluster_impact": "STR_1687 DROP으로 Q07 cluster 3건 → 2건으로 축소. 잔여: STR_1679v3(8%, re-run 필요) + H_1689 v3 variant_1(23%, no Q07).",
+    "governor_pg1_revision": "rev8-A-revised-v4 이미 반영됨 (STR_1687 slot 제거)"
+  },
+
+  "str_1686_h1685v2_tdc_status": {
+    "measurement": "DEFERRED",
+    "reason": "STR_1686(H_1685_v2) pre_l168_fix_invalid.flag — 백테스트 결과 무효. Forge re-run 후 재측정. run_log.txt 확인 결과 factor_engine.R 로드 직전에서 중단.",
+    "expected_tdc_vs_STR_1631": "0.10~0.25 (investor_flow family, anchor와 구조적 독립)",
+    "expected_tdc_vs_STR_1679v3": "0.05~0.15 (완전 다른 alpha source: foreign flow vs Q25)"
+  },
+
+  "q07_cluster_summary": {
+    "cluster_members_active": [
+      { "id": "STR_1679v3", "role": "diversifier", "weight_target": "0.08", "status": "pre_l168_fix_invalid — re-run 필요", "proxy_tdc_vs_1631": 0.624 },
+      { "id": "H_1689_v3_variant_1", "role": "defense_primary", "weight_target": "0.23", "status": "코드 미작성 — Forge S1 대기", "proxy_tdc_vs_1631": "예상 0.15~0.25 (no Q07 — Q01+Q04+Q25)" }
+    ],
+    "cluster_members_dropped": [
+      { "id": "STR_1687", "reason": "L-166 HARD_FAIL", "tdc_measured": "N/A" }
+    ],
+    "sequential_admission_verdict": "STR_1679v3 re-run TDC 재실측 후 결정. 현재 proxy TDC 0.624(FAIL) → v3 설계 변경 효과 실측 필수. H_1689 v3 variant_1은 no-Q07 구조로 별도 track — cluster 해소 경로."
+  },
+
+  "gate_summary": {
+    "gate11_tdc_lt_050": {
+      "STR_1679v2_proxy_vs_STR_1631": "FAIL (0.624)",
+      "STR_1685_H1690_vs_STR_1631": "PASS (0.157)",
+      "STR_1684_H1688_vs_STR_1631": "PASS (0.241)"
+    },
+    "seq_adm_crisis_lt_030": {
+      "STR_1679v2_proxy_vs_STR_1631": "PASS (crisis 0.170) — but full-sample FAIL",
+      "STR_1685_H1690_vs_STR_1631": "WARN (0.315)",
+      "STR_1684_H1688_vs_STR_1631": "WARN (0.363)",
+      "STR_1685_H1690_vs_STR_1684_H1688": "FAIL (crisis 0.454) — M08 공유"
+    }
+  },
+
+  "governor_recommendations": [
+    "1. STR_1679v3 Forge re-run 최우선 — proxy TDC 0.624는 Gate11 FAIL. v3 embedded Q25+regime 구조 실측 TDC가 PG1 admission 결정의 핵심.",
+    "2. H_1689 v3 variant_1 (no Q07) Forge S1 — crisis TDC 예상 0.15~0.25. STR_1679v3보다 구조적으로 더 낮은 TDC 예상. Phase_1 Defense 23% gap killer.",
+    "3. H_1690 관련 측정 아카이브 처리 — L-165 HARD_FAIL 확정. crisis TDC 0.315 WARN은 후속 defense 설계 벤치마크.",
+    "4. H_1688 vs H_1690 후속 defense 동시 편입 금지 — M08 공유로 crisis TDC 0.454. 후속 defense는 M08 미포함 구조 권장.",
+    "5. H_1686/STR_1686 Forge re-run 후 TDC 재측정 — investor_flow family는 anchor와 구조적 독립 예상(TDC 0.10~0.25)."
+  ],
+
+  "pending_measurements": [
+    "STR_1679v3 re-run 후 full-sample + crisis TDC vs STR_1631",
+    "H_1689 v3 variant_1 S1 완료 후 TDC matrix (vs STR_1631, vs STR_1679v3)",
+    "STR_1686 H_1685_v2 re-run 후 TDC vs STR_1631 + vs STR_1679v3",
+    "STR_1687 DROP — 측정 불필요"
+  ]
+}

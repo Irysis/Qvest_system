@@ -44,7 +44,14 @@ hooks:
 `factor_id`, `hypothesis`(50자+), `economic_rationale`(100자+), `prior_art`, `source_reference`, `expected_role`(core_alpha/diversifier/defense), `why_now`(gap 근거), `core_reference`("Part A 참조번호 + 논문명"), `lesson_check`("L-001~L-XXX 확인 결과"), `overlay`="none"
 
 ### Prior Art Gate
-`factor_registry.json` 검색 → 기존 팩터와 중복 시 생성 금지.
+**Fallback 우선순위 (Gap-3, Session 68 Day 2)** — `06_Registry/factor_registry.json`이 실제로 존재하지 않는다:
+
+1. **Primary**: `06_Registry/factor_registry.json` (존재 시 사용)
+2. **Fallback 1**: `06_Registry/strategy_registry.json` (strategy 단위, 222KB, 기존 STR 전수)
+3. **Fallback 2**: `06_Registry/idea_registry.json` (idea 단위, 40KB)
+4. **Fallback 3**: `04_Research/strategies/STR_*/stage_artifacts/s1_construction_*.json`의 `factor_list` 필드
+
+Scout이 Prior Art Gate 검증 시 1~4 순서로 조회. 1번 부재 시 반드시 2~4 중 1개 이상으로 중복 확인. 검증 방식(strategy_registry의 factor_list 필드 vs 별도 factor_registry 생성)은 Q-Lead 결정에 따름. **현재 정책: strategy_registry fallback 사용**. 추후 factor_registry.json을 build script로 자동 생성할 수 있다(미구현).
 
 ### 금지
 - ICIR 랭킹 조합, 파라미터 변형, core_knowledge 미참조

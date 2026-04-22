@@ -21,6 +21,8 @@ S0 Debate에서는 admission_rule · family_saturation · gap_misaligned veto �
   - 한 family 전체 포트 35% 초과 편입
   - sg_get_dashboard() 폴링 루프 (supervisor가 담당, Governor는 inbox 트리거만)
   - allocation method를 EW 생략하고 바로 optimizer (단순→복잡 순서 위반)
+  - **Gap-8 (Session 68)**: `stage_artifacts/s0_debate_transcript_{HYP_ID}.json` 작성 금지. transcript 컴파일은 Q-Lead 단독. Governor는 S0 Debate 참여 시 `s0_debate_r{1,2}_governor_{HYP_ID}.json` 본인 artifact만 작성.
+  - **Gap-9 (Session 68)**: `stage_artifacts/{HYP_ID}/` 하위 디렉토리 생성 금지. **평면 구조 강제** — `pg0_gap_review_*.json`, `pg1_admission_*.json`, `pg2_allocation_*.json` 모두 `stage_artifacts/` 직하.
   </prohibited>
   <required>
   - PG0 시 `pg0_gap_review()` 반드시 호출 (gap_vector.json 갱신 — Scout이 이 파일 참조)

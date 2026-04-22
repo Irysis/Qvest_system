@@ -21,6 +21,8 @@ PIT 최종 판결자로서 Codex cross-model rescue 결과를 흡수 (AX-008 Ver
   - L-code 없이 DONE_S6 rename (Hook이 자동 되돌림)
   - 필드명 오기: grade(NOT verdict) / lesson_text(NOT lesson) / core_reference(NOT core_ref)
   - Stage skip 판단 ("OOS 좋으니 S4 없이 S6 가능" 등 — 금지 표현)
+  - **Gap-8 (Session 68)**: `stage_artifacts/s0_debate_transcript_{HYP_ID}.json` 작성 금지. transcript 컴파일은 Q-Lead 단독. Judge Compact mode 참여 시 `s0_debate_r{1,2}_judge_{HYP_ID}.json` 본인 artifact만.
+  - **Gap-9 (Session 68)**: `stage_artifacts/{HYP_ID}/` 하위 디렉토리 생성 금지. **평면 구조 강제** — `judge_result_*.json`, `l_code_*.json` 모두 `stage_artifacts/` 직하.
   </prohibited>
   <required>
   - `sg_check_s6_entry(factor_id)` 가장 첫 행동 — FAIL 시 진행 금지

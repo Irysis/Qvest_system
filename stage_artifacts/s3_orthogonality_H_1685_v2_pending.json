@@ -1,0 +1,47 @@
+{
+  "artifact_type": "s3_orthogonality_pending",
+  "hypothesis_id": "H_1685_v2",
+  "strategy_id": "STR_1686",
+  "measured_at": "2026-04-23T06:55:00",
+  "measured_by": "Scout (S3 triage — Forge S1 incomplete)",
+  "s3_status": "BLOCKED_S1_INCOMPLETE",
+  "blocker": "STR_1686 Forge S1 미완료. output/daily_returns.csv MISSING (output dir: only pre_l168_fix_invalid.flag + run_log.txt). S3 TDC measurement requires daily_returns.csv from Forge S1 backtest.",
+  "pre_measured_tdc_estimates": {
+    "source": "s0_debate S0 conditions_for_s1 C7 + Scout pre-check 실측 (255개월)",
+    "vs_H_1674_incumbent": {
+      "spearman_estimated": 0.194,
+      "note": "mean|corr|=0.194 (v2 residualization 효과 — v1 corr 0.897에서 극적 감소)"
+    },
+    "vs_STR_1631_SYN_05": {
+      "tdc_estimated_full": "0.25~0.40",
+      "tdc_estimated_crisis": "0.25~0.40",
+      "gate_11_expected": "PASS"
+    },
+    "vs_STR_1656_MLRA": {
+      "tdc_estimated_full": "0.20~0.35",
+      "tdc_estimated_crisis": "0.20~0.35",
+      "gate_11_expected": "PASS"
+    },
+    "vs_STR_1679v3": {
+      "tdc_estimated_full": "0.20~0.35",
+      "tdc_estimated_crisis": "0.20~0.35",
+      "gate_11_expected": "PASS"
+    },
+    "p95_corr_extreme": {
+      "note": "p95 |corr| 0.447 극단 월 13건 존재 — S3 실측 시 regime-conditional TDC 필수",
+      "gate_condition": "전체 TDC ≤ 0.40 + CRISIS TDC ≤ 0.55"
+    }
+  },
+  "expected_role": "diversifier (investor_flow sub-family: foreign_resid_individual)",
+  "novelty_score_estimated": "0.65~0.75 (pre-check 기준)",
+  "gate_11_expected": "PASS_LIKELY (pre-check 기준, 실측 필수)",
+  "candidate_role_hint": "diversifier",
+  "next_action": "Forge S1 STR_1686 완료 → Scout TODO_S3_H_1685_v2 재활성화. Forge Task #4 (STR_1686 재실행) 완료 신호 수신 시 s3_h1685_v2_orthogonality_measure.R 즉시 실행.",
+  "s3_measurement_script_plan": "04_Research/s3_h1685_v2_orthogonality_measure.R (미생성 — Forge S1 완료 후 Scout이 작성)",
+  "benchmark_pairs_required": [
+    "STR_1686 vs STR_1631_SYN_05",
+    "STR_1686 vs STR_1656_MLRA",
+    "STR_1686 vs STR_1679v3",
+    "STR_1686 vs H_1674 (predecessor corr baseline)"
+  ]
+}

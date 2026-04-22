@@ -1,0 +1,33 @@
+{
+  "artifact_type": "s3_orthogonality_drop_decision",
+  "hypothesis_id": "H_1690",
+  "strategy_id": "STR_1685",
+  "measured_at": "2026-04-23T06:55:00",
+  "measured_by": "Scout (S3 triage — Grade F Hard Fail at S1)",
+  "s3_status": "SKIPPED_GRADE_F",
+  "drop_reason": "S1 Hard Fail confirmed: 4 variants all Grade F. V1 MDD=94.69%, SR=-0.295; V2 MDD=84.7%, SR=-0.171; V3 MDD=77.21%, SR=0.516; V4 MDD=87.66%, SR=-0.140. AX-001 v2 defense_audit FAIL (axis_b: MDD_delta=-0.734, FAIL). Regime cosine similarity FAIL. TDC measurement not meaningful given S1 portfolio failure.",
+  "s1_key_diagnostics": {
+    "V1_mdd": 0.9469,
+    "V1_sr": -0.2947,
+    "V2_mdd": 0.847,
+    "V2_sr": -0.1712,
+    "V3_mdd": 0.7721,
+    "V3_sr": 0.5158,
+    "V4_mdd": 0.8766,
+    "V4_sr": -0.1403,
+    "defense_audit_axis_b_pass": false,
+    "c1_cosine_pass": false
+  },
+  "failure_attribution": {
+    "primary_cause": "4-axis regime-smoothed composite unable to construct coherent defense portfolio in long-only KR universe. R16_Calmar regime3 IC=-0.031 reverse (C4 안전장치 발동 수준). Regime weight cosine similarity FAIL indicates weight vectors are not structurally distinct.",
+    "ax_code": "AX-005 v1.2 + AX-007",
+    "l_codes": ["L-165", "L-166"],
+    "note": "L-119 static blend + L-122 factor timing vs risk management — dynamic weights did NOT overcome structural signal-portfolio translation failure in KR defense universe."
+  },
+  "drop_decision": "DROP",
+  "drop_confirmation": "Governor rev6: STR_1685 DROP confirmed. H_1690 4-variant all FAIL — no fallback path.",
+  "novelty_score": null,
+  "gate_11_overall_pass": null,
+  "candidate_role_hint": "DROPPED",
+  "next_action": "H_1690 DROP finalized. Scout TODO_S3_H_1690 → DONE_S3_H_1690_DROP. Q07 cluster defense slot reassigned to H_1693/STR_1687 pending S3 resolution."
+}

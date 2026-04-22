@@ -2,17 +2,27 @@
 #==============================================================================
 # run_codex_critic.sh — S0 Debate Critic을 Codex CLI(GPT-5.4)로 직접 실행
 #
-# 사용법:
-#   bash 02_Infrastructure/hooks/run_codex_critic.sh \
+# 사용법 (경로는 Phase A 2026-04-22 이후 02_Infrastructure/tools/debate_helpers/):
+#   bash 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh \
 #     "가설 요약 텍스트" \
 #     "관련 L-code 텍스트" \
 #     "실패 전략 목록"
 #
 # 또는 환경변수:
 #   SCOUT_PLAN="..." L_CODE_FINDINGS="..." FAILED_STRATEGIES="..." \
-#   bash 02_Infrastructure/hooks/run_codex_critic.sh
+#   bash 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh
 #
 # 출력: /tmp/codex_critic_result.json
+#
+# ── 호출 방식 경고 (Gap-4, Session 68 Day 2, 2026-04-19) ─────────────────────
+# **FOREGROUND SYNC 전용.** `nohup ... &` 또는 `&` background 호출 금지.
+# 증상: nohup detach 후 stdout/stderr pipe 단절로 codex-companion이 "Turn started"
+#       stderr만 남기고 OUTPUT 0 바이트로 silent exit (exit 0 반환). 호출자가
+#       "성공했으나 빈 응답"을 받음. foreground `timeout 240 bash ...` 호출은 정상.
+# 회피: enforcer/helper가 본 스크립트를 반드시 foreground sync로 호출.
+#       병렬이 필요하면 호출자 측에서 multiple foreground processes를 spawn
+#       (각자 별도 프로세스 + wait), **본 스크립트 자체는 non-detached 전제**.
+# 참조: plans/v55-greedy-abelson.md Gap-4.
 #==============================================================================
 
 set -euo pipefail

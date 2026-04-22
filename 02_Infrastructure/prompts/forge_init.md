@@ -21,6 +21,7 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
   - 05_Production/ 또는 01_Literature/ 수정
   - Factor DB parquet 직접 로드 (C15 위반 — load_month_factors() 경유)
   - Z_Score 수동 반전 (C13 — Z_Score_Aligned만)
+  - **Gap-9 (Session 68)**: `stage_artifacts/{HYP_ID}/` 하위 디렉토리 생성 금지. **평면 구조 강제** — `s1_construction_*.json`, `s2_profile_*.json` 모두 `stage_artifacts/` 직하. (전략별 산출물 `equity_curve.png` 등은 예외로 `04_Research/strategies/STR_*/output/` 유지)
   </prohibited>
   <required>
   - `source('run_all.R')` 패턴만 (--file=는 한글 경로 인코딩 버그)

@@ -106,7 +106,29 @@ def add_role(state_file: str, round_key: str, role: str) -> int:
     return len(d[key])
 
 
-def debate_mode() -> str:
+def debate_mode(hyp_id: str = None) -> str:
+    """
+    Debate mode 결정 (Gap-6 Option B, Session 68 Day 2).
+
+    우선순위:
+      1. hypothesis-level marker file: /tmp/qvest_debate_mode_compact_{HYP_ID} (존재 시 compact)
+      2. global marker file: /tmp/qvest_debate_mode_compact (존재 시 compact)
+      3. env var QVEST_DEBATE_MODE (hook context에서 자주 누락)
+      4. default: full
+
+    이유: PostToolUse Write hook은 Claude Bash shell과 별도 프로세스 컨텍스트로
+    시작되어 env var가 전달되지 않음. Marker file은 filesystem 기반으로 hook도 읽음.
+
+    Marker 생성 (Q-Lead 또는 사용자):
+      touch /tmp/qvest_debate_mode_compact                    # 전역
+      touch /tmp/qvest_debate_mode_compact_H_SMOKE_v55        # 가설별
+    """
+    if hyp_id:
+        per_hyp_marker = f"/tmp/qvest_debate_mode_compact_{hyp_id}"
+        if os.path.exists(per_hyp_marker):
+            return "compact"
+    if os.path.exists("/tmp/qvest_debate_mode_compact"):
+        return "compact"
     return os.environ.get("QVEST_DEBATE_MODE", "full")
 
 
@@ -493,7 +515,7 @@ def handle_r1(hyp_id: str, state_file: str, file_path: str, content: str) -> dic
         write_state(state_file, hyp_id, "R1_IN_PROGRESS")
     n_roles = add_role(state_file, "r1", v["role"])
 
-    mode = debate_mode()
+    mode = debate_mode(hyp_id)
     r1_total = threshold_for(mode)
     veto_disp = f"  🚫{v['veto']}" if v["veto"] != "null" and v["veto"] else ""
     tg_msg = (f"🎙 [S0 · {hyp_id} · R1]  {ROLE_ICONS.get(v['role'], '👤')} {v['role']}  "
@@ -566,7 +588,7 @@ def handle_r2(hyp_id: str, state_file: str, file_path: str, content: str) -> dic
         write_state(state_file, hyp_id, "R2_IN_PROGRESS")
     n_roles = add_role(state_file, "r2", v["role"])
 
-    mode = debate_mode()
+    mode = debate_mode(hyp_id)
     r2_threshold = threshold_for(mode)
     veto_disp = f"  🚫{v['veto']}" if v["veto"] != "null" and v["veto"] else ""
     if v["veto_changed"]:
@@ -721,7 +743,7 @@ def handle_verdict(hyp_id: str, state_file: str, _file_path: str, content: str,
             "/tmp/codex_critic_r2_stderr.log 확인 후 재시도하거나 QVEST_SKIP_CODEX_R2=1로 우회하세요."
         )
 
-    mode = debate_mode()
+    mode = debate_mode(hyp_id)
     v = _validate_verdict(content, mode)
     if not v["ok"]:
         _log(f"ENFORCER BLOCK VERDICT: {v['error']}")

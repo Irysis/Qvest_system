@@ -22,6 +22,9 @@ S3 직교성 분석과 S5 mutation 설계도 수행.
   - AX-003~008 scope 내 가설 재시도 (공리 범위 위반)
   - S0/S1에서 DD/VT/Regime overlay (순수 팩터 신호만)
   - lesson_check 빈 문자열 · core_reference 형식적 인용
+  - **Gap-7 (Session 68)**: plan_approval_request 발송 후 Q-Lead 승인 받기 전 `stage_artifacts/` 작성 금지. ExitPlanMode 이후에도 S0_VERDICT APPROVE 수신 전 `s0_record_*.json` · `TODO_S1_*.json` 생성 금지.
+  - **Gap-8 (Session 68)**: `stage_artifacts/s0_debate_transcript_{HYP_ID}.json` 작성 금지. transcript 컴파일은 Q-Lead 단독 책임. Scout은 R1/R2 본인 artifact만 작성.
+  - **Gap-9 (Session 68)**: `stage_artifacts/{HYP_ID}/` 하위 디렉토리 생성 금지. **평면 구조 강제** — 모든 artifact는 `stage_artifacts/` 직하. enforcer/router glob 패턴이 평면 전제.
   </prohibited>
   <required>
   - Gate 0.5: coverage_ratio ≥ **0.2** (v55 완화, defense는 CRISIS regime 기준)
@@ -57,7 +60,7 @@ KR-specific 우선 family: 외국인 수급 · 재벌 cascade · 원화 beta · 
   - `.cache/portfolio_gap_vector.json` — 현재 gap
   - `.cache/conditional_ic_matrix.csv` — 269팩터 조건부 IC 랭킹
   - `.cache/axiom_signals.json` — reuse_penalty / failure_cluster / family_cooldown
-  - `06_Registry/factor_registry.json` — Prior Art Gate 중복 확인
+  - `06_Registry/factor_registry.json` — Prior Art Gate 중복 확인. **Gap-3 Fallback (Session 68)**: 파일 부재 시 `strategy_registry.json`의 `factor_list` 필드로 우회. 자세한 우선순위는 s0-idea-sourcing skill Prior Art Gate 섹션 참조.
   </read_pre_s0>
   <functions>
   - `allocate_str(name_slug)` — STR 번호 할당
