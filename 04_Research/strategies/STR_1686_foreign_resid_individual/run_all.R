@@ -98,9 +98,9 @@ tryCatch({
 })
 
 # ===================================================================
-# 5. 3-variant simulations (mclapply parallel)
+# 5. 3-variant simulations (sequential — OOM recovery, Session 69 Day 1)
 # ===================================================================
-cat("\n[Step 5] 3-variant simulations (mclapply)...\n")
+cat("\n[Step 5] 3-variant simulations (sequential)...\n")
 
 variants <- list(
   V1_21d  = FACTORS,
@@ -114,15 +114,15 @@ sim_args <- list(
   commission = COMMISSION, buffer_zone = BUFFER_ZONE
 )
 
-n_cores <- min(3L, max(1L, detectCores() - 1L))
-sims <- mclapply(names(variants), function(vname) {
+sims <- lapply(names(variants), function(vname) {
   fac <- variants[[vname]]
   if (nrow(fac) < 100L) return(list(error = paste("empty:", vname)))
+  cat(sprintf("[Step 5] Running variant: %s ...\n", vname))
   tryCatch(
     do.call(run_monthly_simulation, c(list(FACTORS = fac), sim_args)),
     error = function(e) list(error = conditionMessage(e))
   )
-}, mc.cores = n_cores)
+})
 names(sims) <- names(variants)
 
 sim <- sims[["V1_21d"]]
@@ -132,13 +132,16 @@ if (!is.null(sim$error)) {
 cat(sprintf("[Step 5] V1 done: %d trading days\n", length(sim$strategy_xts)))
 
 # ===================================================================
-# 6. Analysis (V1 primary)
+# 6. Analysis (V1 primary) — timeout guard: 90s limit
 # ===================================================================
 cat("\n[Step 6] Analysis (V1 primary)...\n")
 tryCatch({
   source(file.path(FUNC_PATH, "strategy_analyzer.R"))
+  setTimeLimit(elapsed = 90, transient = TRUE)
   run_analysis(sim, FACTORS, RAWDATA, BM_DT, OUT_DIR, strategy_name = STRATEGY_ID)
+  setTimeLimit(elapsed = Inf)
 }, error = function(e) {
+  setTimeLimit(elapsed = Inf)
   cat("[Step 6 WARN]", conditionMessage(e), "\n")
   tryCatch({
     perf <- summarise_perf(sim$strategy_xts, STRATEGY_ID)
