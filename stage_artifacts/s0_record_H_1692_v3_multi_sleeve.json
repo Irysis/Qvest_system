@@ -1,0 +1,114 @@
+{
+  "schema_version": "v55",
+  "hypothesis_id": "H_1692_v3",
+  "name": "Industry Momentum + Ohlson Health 2-Sleeve FM-Weighted (Core_Secondary multi-sleeve)",
+  "family": "industry_momentum_multi_sleeve",
+  "sub_family": "cross_industry_earnings_convergence_plus_financial_health",
+  "expected_role": "core_secondary",
+  "trail": "standard",
+  "gap_targeting_axes": ["SR", "KR_structural"],
+  "expected_role_rationale": "H_1692 v2 AX-007 HARD_FAIL (single_sleeve_long_only_top20 Core_Secondary 구조적 signal-portfolio translation 단절, MDD 68.4% / TO 849%). v3은 multi-sleeve 구조로 AX-007 EXCLUSION 충족. Industry Momentum sleeve(10종)는 cross-industry alpha를 생성하고, Ohlson Financial Health sleeve(10종)는 downside risk를 완화. FM-weighted union 20종 = 종목수 제약 준수. SR gap 0.807 해소를 위한 Core_Secondary 역할 (STR_1631 Core_Primary 보완, CAGR/SR 향상 목표).",
+  "why_now": "PG0 gap_vector v1.0.8: Sharpe gap 0.807 잔여. Core sleeve 강화 경로 확인 (H_1692 v2 Judge REJECT 후 multi-sleeve 재설계 지시, 2026-04-23). conditional_ic_matrix에서 M07_IndMom(ic_all=0.011, ic_bad=0.014) + C09_Earnings_Surprise_Sq(ic_all=0.047, recent3Y=0.777)의 cross-family combination 미개척. Q25_Ohlson_O(ic_bad=0.033) + D43_Skewness(recent3Y=1.063) defense sleeve가 AX-007 EXCLUSION multi-sleeve 구조로 감싸면 포트폴리오 생존성 보장 가능. KR market B1 실증: IndMom = 2nd independent alpha, 섹터중립 해제가 핵심.",
+  "mechanism": "2-sleeve FM-weighted 구조. 최종 포트폴리오 20종 (N_ind=10 + N_def=10). t월 말 실행:\n\n[Sleeve A — Industry Momentum Convergence, 10종]\n(1) M07_IndMom load_month_factors() 경유 — 섹터 12-1m 수익률 cross-industry momentum (섹터중립 미적용, 섹터 간 격차 신호로 활용)\n(2) C09_Earnings_Surprise_Sq load_month_factors() 경유 — 어닝 서프라이즈 제곱 (방향 + 크기 동시 포착)\n(3) Z_A = 0.6·Z_Score_Aligned(M07) + 0.4·Z_Score_Aligned(C09)\n(4) Top 10 EW from Z_A (buffer 12/10)\n\n[Sleeve B — Ohlson Financial Health + Skewness Anomaly, 10종]\n(5) Q25_Ohlson_O load_month_factors() 경유 — Ohlson O-score 높은 종목 (재무건전성 상위, 도산 확률 하위)\n(6) D43_Skewness load_month_factors() 경유 — 수익률 왜도 (negative skewness 종목 long → 투자자 복권 선호 역이용)\n(7) Z_B = 0.5·Z_Score_Aligned(Q25) + 0.5·Z_Score_Aligned(D43)\n(8) Top 10 EW from Z_B (buffer 12/10)\n\n[FM-Weighted Union]\n(9) Sleeve A + Sleeve B union = 20종 (중복 시 Sleeve A 우선, 중복 제거 후 각 sleeve에서 보충)\n(10) FM weight: each sleeve contribution = IC_{sleeve_a} / (IC_a + IC_b) rolling 12m expanding (C1 준수, shift 1m)\n(11) Final EW within each sleeve, FM weight between sleeves (초기 50/50, expanding IC로 조정)\n(12) t+1 실행 (C2 준수)\n\n메커니즘 근거:\n- Moskowitz & Grinblatt (1999): 개별 주식 모멘텀의 25~50%가 산업 모멘텀에서 기인. 섹터 rotation은 정보 전파 속도 차이에서 발생 → 느린 정보 확산 국가(한국)에서 더 강할 수 있음.\n- Ohlson (1980): O-score 조건부 파산 확률 모형. 재무건전성 상위 종목 long = 파산 위험 프리미엄 회피 + 안정적 이익 창출력.\n- Harvey & Siddique (2000): 음(negative) 왜도 종목에 복권 선호 프리미엄. Sleeve B 포함 시 skewness anomaly alpha 수확.\n- Kim (2021): 한국시장 cross-exposure 통제 필수 → Sleeve A (momentum) / Sleeve B (health) 분리 = 각 sleeve 내부 팩터 상호 cross-exposure 최소화.",
+  "signal_construction": {
+    "factors_sleeve_a": ["M07_IndMom", "C09_Earnings_Surprise_Sq"],
+    "factors_sleeve_b": ["Q25_Ohlson_O", "D43_Skewness"],
+    "weight_sleeve_a": {"M07": 0.6, "C09": 0.4},
+    "weight_sleeve_b": {"Q25": 0.5, "D43": 0.5},
+    "fm_weight_between_sleeves": "rolling_expanding_12m_IC_ratio (shift 1m, burn-in 24m, initial 50/50)",
+    "N_sleeve_a": 10,
+    "N_sleeve_b": 10,
+    "N_total": 20,
+    "buffer_zone_each": {"keep_n": 12, "entry_n": 10},
+    "z_score_method": "Z_Score_Aligned (C13 준수, NEGATE 금지)",
+    "data_access": "load_month_factors() 경유 (C15)",
+    "winsorization": "1~99% cross-section per factor",
+    "lag_rules": {
+      "M07_IndMom": "monthly signal, no additional lag beyond C14 Usable_Date",
+      "C09_Earnings_Surprise_Sq": "earnings announcement lag C4 45일, Usable_Date <= sig_date",
+      "Q25_Ohlson_O": "annual financial statement lag C4 5월, Usable_Date <= sig_date",
+      "D43_Skewness": "price-based, daily Usable_Date t-1 (C2)"
+    },
+    "sector_constraint": "AX-007 multi-sleeve 구조로 sector constraint 별도 불필요 (sleeve B Q25 sector rotation 자연스럽게 분산)"
+  },
+  "pit_checklist": {
+    "C1_full_sample": "FM weight expanding window (cumIC shift 1m). full-sample 통계 없음.",
+    "C2_same_day_circular": "t+1 실행. sig_date = month-end. execution = next trading day.",
+    "C4_financial_lag": "Q25_Ohlson_O annual 5월 lag, C09 45일 lag — Usable_Date 준수.",
+    "C10_liquidity": "LIQ_THRESHOLD=2e8, shift(frollmean, lag=1L). 당일 거래량 금지.",
+    "C13_z_score": "Z_Score_Aligned 전용. 수동 반전 절대 금지.",
+    "C14_ic_usable_date": "load_month_factors() → Usable_Date <= sig_date 자동 준수.",
+    "C15_factor_db": "load_month_factors() 경유 4개 팩터 전부."
+  },
+  "ax_compliance": {
+    "AX_000": "PASS — SR 2.0 목표 경로 탐색",
+    "AX_001_v2": "N/A — core_secondary role (defense 아님)",
+    "AX_002": "PASS — v55 프로세스 준수, v3 재설계 Q-Lead 지시 기반",
+    "AX_003_value": "PASS — value factor 미사용",
+    "AX_004_quality_profitability": "PASS — Q25 Ohlson 단독 아닌 2-factor sleeve B + multi-sleeve 구조 (EXCLUSION 적용)",
+    "AX_005_defense": "PASS — defense role 아님",
+    "AX_007_signal_portfolio_translation": "EXCLUSION 충족: multi-sleeve 구조 (N_ind=10 + N_def=10, FM-weighted union 20종). v2 single_sleeve_long_only HARD_FAIL 직접 수정."
+  },
+  "gate_0_5_coverage": {
+    "M07_IndMom_ic_all": 0.011,
+    "M07_IndMom_ic_bad": 0.014,
+    "C09_EarningsSurpriseSq_ic_all": 0.047,
+    "C09_recent_3y_icir": 0.777,
+    "Q25_Ohlson_O_ic_bad": 0.033,
+    "D43_Skewness_recent_3y_icir": 1.063,
+    "composite_coverage_estimate": 0.31,
+    "gate_0_5_threshold": 0.20,
+    "gate_0_5_pass": true,
+    "note": "C09 recent3Y ICIR 0.777 + D43 1.063으로 coverage_ratio 0.20 기준 충분히 초과 예상."
+  },
+  "tdc_pre_estimate": {
+    "vs_STR_1631_SYN_05": {
+      "estimate": "0.15~0.30",
+      "note": "IndMom 섹터 rotation + Ohlson health = C19 consensus와 family 완전 상이. M07 cross-industry vs C19 cross-stock → low corr 예상.",
+      "gate_11_expected": "PASS"
+    },
+    "vs_STR_1656_MLRA": {
+      "estimate": "0.20~0.35",
+      "note": "MLRA는 ML 앙상블. IndMom과 일부 시계열 공유 가능하나 alpha source 별개.",
+      "gate_11_expected": "PASS"
+    },
+    "vs_H_1685_v2_STR_1686": {
+      "estimate": "0.10~0.25",
+      "note": "investor_flow family vs momentum + health — 완전 독립 family.",
+      "gate_11_expected": "PASS"
+    },
+    "basis": "L-158 Gate 8 Early Warning pre-check 의무 준수"
+  },
+  "v2_failure_attribution": {
+    "L_code": "L-170 (신규 발의 예정)",
+    "primary_cause": "single_sleeve_long_only_top20 Core_Secondary AX-007 구조적 실패. beta 소멸 (post_2020: 0.004). ICIR 2015 이후 음수 전환.",
+    "secondary_cause": "RSI residualization 이후 M07 incremental IC 0.09 불충분. v2 alpha source가 RSI 역추세만으로 단순화.",
+    "exclusion_applied": "v3는 multi-sleeve 구조로 AX-007 EXCLUSION 충족 + 신규 독립 alpha source (C09 + Q25 + D43) 추가."
+  },
+  "lesson_check": "L-170(H_1692_v2 AX-007 단일슬리브 Core_Secondary 실패): multi-sleeve 구조 미채택으로 signal-portfolio translation 단절. v3에서 2-sleeve FM-weighted 직접 수정 적용. L-154(near-clone family 회피): IndMom + Ohlson sleeve 조합은 STR_1631 family와 수식 독립. L-157 v3(pre-check 필수): C09/Q25/D43 algebraic identity check — C09는 earnings surprise 제곱(방향+크기), Q25는 Ohlson 11-variable composite, D43은 price-based skewness. 공통항 없음. L-119(static blend 희석): FM-weighted expanding IC 동적 배분으로 정적 희석 방지.",
+  "core_reference": "Moskowitz & Grinblatt (1999 JF) 'Do Industries Explain Momentum?' — Vol. 54(4), pp. 1249-1290. 산업 모멘텀이 개별 주식 모멘텀의 핵심 동인. 섹터 rotation 정보 전파 속도 차이. Ohlson (1980 JAR) 'Financial Ratios and the Probabilistic Prediction of Bankruptcy' — Vol. 18(1), pp. 109-131. 조건부 파산 확률 O-score 11변수 모형. Harvey & Siddique (2000 JF) 'Conditional Skewness in Asset Pricing Tests' — Vol. 55(3), pp. 1263-1295. 음의 왜도 종목 위험 프리미엄. Kim (2021 PBFJ) 'Enhanced Factor Investing in the Korean Stock Market' — cross-exposure 통제 + 한국 IndMom 실증.",
+  "conditional_ic_evidence": {
+    "M07_IndMom": {"ic_all": 0.011, "ic_bad": 0.014, "ic_good": 0.025, "recent_3y_icir": 0.289},
+    "C09_Earnings_Surprise_Sq": {"ic_all": 0.047, "ic_bad": 0.036, "ic_good": 0.047, "recent_3y_icir": 0.777},
+    "Q25_Ohlson_O": {"ic_all": 0.032, "ic_bad": 0.033, "ic_good": 0.0, "recent_3y_icir": 0.633},
+    "D43_Skewness": {"ic_all": 0.044, "ic_bad": 0.035, "ic_good": 0.0, "recent_3y_icir": 1.063}
+  },
+  "s1_preview": {
+    "expected_icir_sleeve_a": "0.25~0.40 (C09 dominant, M07 보완)",
+    "expected_icir_sleeve_b": "0.30~0.45 (D43 recent3Y 1.063 기여)",
+    "expected_sr_pure": "0.8~1.2 (no overlay, S1 pure signal)",
+    "expected_mdd": "35~50% (sleeve B defense 기여, v2 68.4% 대비 개선 예상)",
+    "primary_kill_gate": "ICIR < 0.20 or MDD > 55% (AX-007 EXCLUSION 충족해도 절대 hard fail 기준)",
+    "s1_conditions": [
+      "C09 PIT lag 검증 (earnings surprise announcement date Usable_Date 기준)",
+      "Q25 annual 5월 lag 엄격 적용",
+      "FM weight expanding IC ratio shift 1m burn-in 24m PASS",
+      "sleeve union 20종 N 제약 준수 (중복 제거 로직)",
+      "AX-007 EXCLUSION 충족 명시 (multi-sleeve 구조 증명)"
+    ]
+  },
+  "backlog_bucket": "exploit",
+  "created_at": "2026-04-23",
+  "created_by": "Scout (Session 69 H_1692_v3 재설계)",
+  "v2_superseded_by": "H_1692_v3"
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": "s7_v1",
+  "factor_id": "H_SMOKE_v55",
+  "str_num": "STR_1695",
+  "str_name": "STR_1695_h_smoke_v55_l22",
+  "disposition": "DROP",
+  "disposition_reason": "smoke_run_pipeline_verification_only",
+  "decided_by": "Q-Lead",
+  "decided_date": "2026-04-23",
+  "session": "Session 69 Day 1",
+  "purpose_achieved": {
+    "pipeline_cycle_executed": "S0 Debate → S1 Construction",
+    "v55_consensus_validated": "APPROVE_CONDITIONAL / MAJORITY (stance/veto/unresolved 기반)",
+    "hook_chain_verified": "s0_debate_enforcer state machine + s0_verdict_router + pipeline_trigger",
+    "forge_code_guard_v2_tested": "mandatory Codex rescue 차단 정상 작동"
+  },
+  "strategy_value": {
+    "cagr": 0.1332,
+    "sharpe": 0.571,
+    "mdd": -0.630,
+    "turnover": 11.20,
+    "hurdle_grade": "F",
+    "hard_fail": true,
+    "cond_violations": ["COND1_mdd_le45", "COND6_turnover_lt600"],
+    "note": "strategy 자체는 가치 없음. smoke run 목적 달성으로 S5 mutation 생략."
+  },
+  "artifacts_preserved": [
+    "stage_artifacts/s0_debate_transcript_H_SMOKE_v55.json",
+    "stage_artifacts/S0_VERDICT_H_SMOKE_v55.json",
+    "stage_artifacts/s1_construction_H_SMOKE_v55.json",
+    "qepm/mailbox/forge/done/DONE_S1_H_SMOKE_v55.json"
+  ],
+  "follow_up": "없음. L22_Ret_Autocorr 단일 EW20 구조적 실패 — 향후 재시도 시 multi-sleeve 또는 regime overlay 필수.",
+  "lessons_learned": {
+    "L_code_candidate": "L-169 (smoke run pattern): single-factor Ret_Autocorr long-only KR top20 구조적 TO 과다 + MDD 통제 실패 — 향후 smoke run은 이미 검증된 STR_1631 clone으로 대체 권장",
+    "process_observation": "v55 Consensus 최초 실전에서 APPROVE_CONDITIONAL/MAJORITY 처리 정상. Codex R2 자동 verify (S2.13) 정상 작동."
+  }
+}
