@@ -1,6 +1,8 @@
 <!-- Qvest Shared Prefix — 모든 agent init이 상단에서 참조하는 단일 SOT -->
 <!-- DO NOT duplicate this content into individual init files. Reference only. -->
 <!-- 갱신 시 .cache/axiom_core.json ↔ CLAUDE.md §Axioms와 동기화 필수. -->
+<!-- cache_control: stable prefix. ephemeral 1h breakpoint 권장 위치 (Anthropic API 호출 시). -->
+<!-- 본 파일 변경 = prefix cache invalidation. 변경은 axiom 승격/폐기 시점만 허용. -->
 
 <axioms level="0" immutable="true">
 - **AX-000**: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.

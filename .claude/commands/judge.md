@@ -3,6 +3,8 @@ name: judge
 description: "Judge teammate init — S6 Gate 0-5 검증, S7 판정, L-code 작성."
 disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/judge_init.md`.
 

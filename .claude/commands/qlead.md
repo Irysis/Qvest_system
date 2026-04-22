@@ -3,6 +3,8 @@ name: qlead
 description: "Q-Lead 세션 시작 — dashboard, monitoring, briefing, Scout plan 승인."
 disable-model-invocation: true
 user-invocable: true
+model: opus
+effort: high
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/qlead_init.md`.
 
