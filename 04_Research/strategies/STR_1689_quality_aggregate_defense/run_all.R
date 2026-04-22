@@ -109,15 +109,16 @@ sim_args <- list(
   commission = COMMISSION, buffer_zone = BUFFER_ZONE
 )
 
-n_cores <- min(2L, max(1L, detectCores() - 1L))
-sims <- mclapply(names(variants), function(vname) {
+# OOM recovery: sequential lapply (WSL global_oom, Session 69 Day 1)
+sims <- lapply(names(variants), function(vname) {
   fac <- variants[[vname]]
   if (nrow(fac) < 100L) return(list(error = paste("empty:", vname)))
+  cat(sprintf("[Step 5] Running variant: %s ...\n", vname))
   tryCatch(
     do.call(run_monthly_simulation, c(list(FACTORS = fac), sim_args)),
     error = function(e) list(error = conditionMessage(e))
   )
-}, mc.cores = n_cores)
+})
 names(sims) <- names(variants)
 
 sim <- sims[["V1_3axis"]]
