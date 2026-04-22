@@ -1,11 +1,15 @@
 #!/bin/bash
 #==============================================================================
 # Forge Code Guard — PreToolUse[Write|Edit|Bash] Hook
-# 1) R 코드 최적화 위반 차단 (Write/Edit) — OPT-1~6
+# 1) R 코드 최적화 위반 차단 (Write/Edit) — OPT-1~11
 # 2) ML Guard L-123 강제 (Write/Edit) — OPT-7 (MC-P1~P3)
 # 3) Codex PIT Review 미완료 시 실행 차단 (Bash)
+# 4) PIT Engine v3 — Phase C1: Rscript 분리. cache flag 우선 판정 + daemon spawn.
 # 참조: optimized-backtest 스킬, ml-factor-model 스킬, CLAUDE.md
 #==============================================================================
+
+# ERR trap (Phase C1 전수 강제) — hook 실패 시 도구 차단 방지
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
@@ -350,8 +354,10 @@ if [ "$TOOL_NAME" = "Bash" ]; then
         echo "$(date +%H:%M:%S) PIT_GATE_PASS: $STRAT_NAME" >> "$LOG"
       fi
 
-      # ─── v53 Sprint 3 P0-A: PIT Engine v3 auto blocking_gate ────────
-      # run_all.R 내용 해시 기반 캐시 (변경 없으면 재검사 skip, ~3s saving)
+      # ─── v55 Phase C1: PIT Engine v3 비동기 분리 ────────────────────
+      # PreToolUse critical path에서 Rscript 제거 (~45s 절감).
+      # 분석은 pit_v3_daemon.sh가 background에서 수행 → flag 저장 → 다음 호출 시 즉시 판정.
+      # 우선순위: BLOCK_FLAG (즉시 차단) > CLEAN_FLAG (즉시 통과) > 미분석 (첫 통과 + daemon spawn)
       PROJ=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
       STRAT_DIR=$(find "$PROJ/04_Research/strategies" -maxdepth 1 -type d -name "${STRAT_NAME}*" 2>/dev/null | head -1)
       if [ -n "$STRAT_DIR" ] && [ -d "$STRAT_DIR" ]; then
@@ -361,31 +367,32 @@ if [ "$TOOL_NAME" = "Bash" ]; then
         if [ -f "$RUN_ALL" ]; then
           CONTENT_HASH=$(cat "$RUN_ALL" "$FACTOR_ENGINE" 2>/dev/null | md5sum | cut -d' ' -f1)
         fi
-        PIT_CACHE="/tmp/pit_v3_clean_${STRAT_NAME}_${CONTENT_HASH}.flag"
         QVEST_SKIP_PIT_V3="${QVEST_SKIP_PIT_V3:-0}"
 
-        if [ "$QVEST_SKIP_PIT_V3" != "1" ] && [ -n "$CONTENT_HASH" ] && [ ! -f "$PIT_CACHE" ]; then
-          # 오래된 cache 정리 (같은 전략 이전 해시)
-          find /tmp -maxdepth 1 -name "pit_v3_clean_${STRAT_NAME}_*.flag" -mmin +10080 -delete 2>/dev/null
-          PIT_OUT=$(cd "$PROJ" && timeout 45 Rscript --no-save -e "
-suppressMessages(source('02_Infrastructure/R/hook_batch_runner.R'))
-hook_pit_gate('$STRAT_DIR')
-" 2>&1)
-          PIT_STATUS=$(echo "$PIT_OUT" | grep '^PIT_RESULT|' | head -1 | cut -d'|' -f2)
-          PIT_SEV=$(echo "$PIT_OUT" | grep '^PIT_RESULT|' | head -1 | cut -d'|' -f3)
-          PIT_NV=$(echo "$PIT_OUT" | grep '^PIT_RESULT|' | head -1 | cut -d'|' -f4)
+        if [ "$QVEST_SKIP_PIT_V3" != "1" ] && [ -n "$CONTENT_HASH" ]; then
+          BLOCK_FLAG="/tmp/pit_v3_BLOCK_${STRAT_NAME}_${CONTENT_HASH}.flag"
+          CLEAN_FLAG="/tmp/pit_v3_clean_${STRAT_NAME}_${CONTENT_HASH}.flag"
 
-          if [ "$PIT_STATUS" = "CLEAN" ]; then
-            touch "$PIT_CACHE"
-            echo "$(date +%H:%M:%S) PIT_V3_CLEAN: $STRAT_NAME ($CONTENT_HASH)" >> "$LOG"
-          else
-            # 상위 5개 위반만 reason에 포함
-            VIOLATIONS_BRIEF=$(echo "$PIT_OUT" | grep '^  -' | head -5 | tr '\n' '|' | sed 's/"/\\"/g; s/|/ | /g')
-            echo "$(date +%H:%M:%S) PIT_V3_BLOCK: $STRAT_NAME severity=$PIT_SEV n=$PIT_NV" >> "$LOG"
-            echo "$PIT_OUT" >> "$LOG"
-            printf '{"decision":"block","reason":"[P0-A] PIT Engine v3 %s: %s — %d violations in %s. 상위: %s. 해결 후 재실행하거나 QVEST_SKIP_PIT_V3=1로 우회."}' \
-              "$PIT_SEV" "$STRAT_NAME" "$PIT_NV" "$STRAT_DIR" "$VIOLATIONS_BRIEF"
+          if [ -f "$BLOCK_FLAG" ]; then
+            # 이전 daemon 실행에서 위반 검출 → 즉시 차단
+            BLOCK_INFO=$(cat "$BLOCK_FLAG" 2>/dev/null)
+            PIT_SEV=$(echo "$BLOCK_INFO" | cut -d'|' -f1)
+            PIT_NV=$(echo "$BLOCK_INFO" | cut -d'|' -f2)
+            VIOLATIONS_BRIEF=$(echo "$BLOCK_INFO" | cut -d'|' -f3-)
+            echo "$(date +%H:%M:%S) PIT_V3_CACHED_BLOCK: $STRAT_NAME severity=$PIT_SEV n=$PIT_NV" >> "$LOG"
+            printf '{"decision":"block","reason":"[Phase C1 cached] PIT Engine v3 %s: %s — %s violations. 상위: %s. 코드 수정 후 hash 변경되면 재분석. QVEST_SKIP_PIT_V3=1로 우회."}' \
+              "$PIT_SEV" "$STRAT_NAME" "$PIT_NV" "$VIOLATIONS_BRIEF"
             exit 0
+          elif [ -f "$CLEAN_FLAG" ]; then
+            # 이전 daemon 실행에서 CLEAN → 즉시 통과
+            echo "$(date +%H:%M:%S) PIT_V3_CACHED_CLEAN: $STRAT_NAME" >> "$LOG"
+          else
+            # 미분석 → 첫 실행 통과 + daemon 비동기 스폰 (다음 호출 시 차단 가능)
+            echo "$(date +%H:%M:%S) PIT_V3_DAEMON_SPAWN: $STRAT_NAME ($CONTENT_HASH) — 첫 실행 통과" >> "$LOG"
+            nohup bash "$PROJ/02_Infrastructure/hooks/pit_v3_daemon.sh" \
+              "$STRAT_NAME" "$STRAT_DIR" "$CONTENT_HASH" \
+              > /dev/null 2>&1 < /dev/null &
+            disown 2>/dev/null || true
           fi
         fi
       fi
