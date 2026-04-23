@@ -68,24 +68,31 @@ HH_OUT=$(bash "$PROJECT/02_Infrastructure/hooks/harness_health.sh" 2>&1)
 HH_SUMMARY=$(echo "$HH_OUT" | grep -E "Result:" | head -1)
 echo "[boot] $HH_SUMMARY"
 
-# 8. 상태 보고
-SCOUT_T=$(ls "$PROJECT"/qepm/mailbox/scout/inbox/TODO_*.json 2>/dev/null | wc -l)
+# 8. 상태 보고 (v6 — 3-agent Work Task)
+ALPHA_T=$(ls "$PROJECT"/qepm/mailbox/alpha/inbox/TODO_*.json 2>/dev/null | wc -l)
+RISK_T=$(ls "$PROJECT"/qepm/mailbox/risk/inbox/TODO_*.json 2>/dev/null | wc -l)
+OPT_T=$(ls "$PROJECT"/qepm/mailbox/optimizer/inbox/TODO_*.json 2>/dev/null | wc -l)
 FORGE_T=$(ls "$PROJECT"/qepm/mailbox/forge/inbox/TODO_*.json 2>/dev/null | wc -l)
 JUDGE_T=$(ls "$PROJECT"/qepm/mailbox/judge/inbox/TODO_*.json 2>/dev/null | wc -l)
 GOV_T=$(ls "$PROJECT"/qepm/mailbox/governor/inbox/TODO_*.json 2>/dev/null | wc -l)
+
+# Work Task 상태
+WT_ACTIVE=$(ls -d "$PROJECT"/qepm/mailbox/worktask/WT*_*/ 2>/dev/null | wc -l)
 
 # AX 상태
 AX_ACTIVE=$(ls "$PROJECT"/qepm/memory/axioms/active/AX-*.json 2>/dev/null | wc -l)
 AX_CAND=$(ls "$PROJECT"/qepm/memory/axioms/candidates/CAND_*.json 2>/dev/null | wc -l)
 
 echo ""
-echo "━━━ 부트스트랩 완료 ━━━"
-echo "Skills:     $(ls "$PROJECT"/.claude/skills/*.md 2>/dev/null | wc -l)개"
+echo "━━━ 부트스트랩 완료 (v6 QEPM 3-Agent) ━━━"
+echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer 포함)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
-echo "Inbox:      scout=$SCOUT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
+echo "WT Active:  $WT_ACTIVE건"
+echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND"
 free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}'
 echo "Remote:     tmux rc 세션 가동 (persistent_remote_control)"
 echo ""
-echo "다음: /qvest 커맨드의 TeamCreate 절차를 따라 Q-Lead가 팀 스폰"
+echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"
+echo "  wt_create('{hypothesis}') → alpha-research → risk-research → optimizer-research"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

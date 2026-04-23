@@ -1,142 +1,270 @@
 ---
 name: qvest
-description: "Qvest 시스템 구동 — 전천후 포트폴리오 수확을 위한 퀀트 리서치 에이전트팀 부트스트랩"
+description: "Qvest 시스템 구동 (QEPM 3-Agent v6) — Alpha → Risk → Optimizer Work Task 기반 리서치 엔진 부트스트랩"
 disable-model-invocation: true
 user-invocable: true
 ---
-# Qvest — Quant + Harvest
 
-전천후 포트폴리오 수확을 위한 퀀트 리서치 시스템을 구동합니다.
+# Qvest — QEPM 3-Agent Work Task System (v6)
+
+전천후 포트폴리오 수확을 위한 QEPM 기반 자율 리서치 시스템.
+
+**핵심 철학** (사용자 설계도):
+> **"예상 초과수익(α)을 만들고, 공통위험을 계량화하고, 비용과 제약 하에서 최적 비중으로 변환한다."**
+
+- **Alpha Agent**: "무엇이 좋아 보이는가?" (α̂만)
+- **Risk Agent**: "무엇이 함께 망가질까?" (Σ만)
+- **Optimizer Agent**: "무엇을 얼마나?" (weights만)
+
+섞으면 자기합리화 엔진 전락. **3-agent 분리 = QEPM 내부통제**.
+
+---
 
 ## 구동 순서
 
-1. **부트스트랩 실행**
+### 1. 부트스트랩 실행
 ```bash
 bash 02_Infrastructure/ops/bootstrap.sh
 ```
 
-1.5. **[Session 68 Day 2 설정] Block A~H 토큰 절감 검증 자동 실행**
-
-다음 조건 시 자동으로 검증 스크립트 실행:
-```bash
-if [ -f .cache/token_reduction_test_pending.flag ]; then
-  bash 02_Infrastructure/ops/test_token_reduction.sh
-fi
-```
-
-**동작**:
-- 플래그 존재 시 `02_Infrastructure/ops/test_token_reduction.sh` 실행
-- Block A(모델 라우팅) / B(컨텍스트 분할) / C(Hook+Codex) / D(Caching) / E(R1→R2 요약) / F(Codex 캐시) / G(Lawbook) / H(Compact Mode Hook) 전수 검증
-- 완료 시 플래그를 `.cache/token_reduction_test_done_{TS}.log`로 rename (1회만 자동 실행)
-- **결과 보고**: PASS/FAIL/WARN 카운트 + 실패 항목 상세 보고
-- FAIL 있을 시 Q-Lead가 텔레그램으로 알림
-- 모두 PASS면 바로 리서치 사이클 진행
-
-**수동 재실행**: `touch .cache/token_reduction_test_pending.flag` 후 /qvest
-
-**Shadow Mode 테스트 (Compact Debate 검증)**:
-자동 검증 PASS 후, 사용자가 `export QVEST_DEBATE_MODE=compact` 설정 시 다음 S0 Debate부터 3인 모드로 실행됩니다. 기본(미설정)은 5인 Full 모드 유지.
-
-
-2. **플러그인 리로드**
+### 2. 플러그인 리로드
 ```
 /reload-plugins
 ```
 
-3. **시스템 상태 확인**
-- Skills: 27개 도메인별 (.claude/skills/) — Skill-scoped hooks + 동적 주입(`!`) 지원
-- Commands: 7개 + qvest (.claude/commands/)
-- Hooks: 4-Tier 방어선 (v53)
-  - Tier 1 (전역): safety_guard, pipeline_trigger, artifact_validator
-  - Tier 2 (Agent tool): PostToolUse[Write]→s0_debate_enforcer(상태머신), FileChanged→s0_verdict_router
-  - Tier 3 (TeamCreate): TeammateIdle, TaskCompleted
-  - Tier 4 (LLM-Powered): risk_gate agent, Codex R2 verify(S2.13), role_honesty_runner(S2.11)
-- Agents: `.claude/agents/risk-manager.md` — TeamCreate + Agent tool 재사용
-- Plugins: pyright-lsp, r-lsp, commit-commands, pr-review-toolkit
-- MCP: 6개 서버 (jina, arxiv, paper-search, fred, yfinance, rss)
+### 3. 시스템 상태 확인 (v6 기준)
 
-4. **포트폴리오 gap 확인**
+**Agent Registry** (.claude/agents/ 자동 감지):
+- **`alpha-research`** — Alpha Research Agent (신규, Scout 대체)
+- **`risk-research`** — Risk Research Agent (격상)
+- **`optimizer-research`** — Optimizer Research Agent (신규)
+- `forge` — 3-agent 산출물 통합 + backtest
+- `judge` — S6 Gate 0~18 검증
+- `governor` — PG0~PG3 admission
+- `architect` — 아키텍처 진단
+- `blender` — (기존, v6에서 Optimizer에 통합 검토)
+- `scout` — (archived, Alpha Research로 흡수)
+
+**Skills**:
+- 신규 4종: `worktask` / `alpha-research` / `risk-research` / `optimizer-research`
+- 재작성: `telegram-protocol` v2 / `simplify` 3-agent 인식
+- 유지: `pit-validation` / `factor-db-access` / `axiom-io` / `kr-inverse-pattern-miner` / `commit-commands` / `codex` 등
+- 폐기: `s0-idea-sourcing` / `s0-debate` / `s1~s5` stage skill (archive)
+
+**Hooks 4-Tier 방어선**:
+- Tier 1 (전역): `safety_guard`, `axiom_enforcement_hook`
+- Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서)
+- Tier 3 (Write/Edit): `worktask_constraint_enforcer` (20종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
+- Tier 4 (Post): `worktask_artifact_validator`, `red_flag_detector`, `pipeline_trigger`, `auto_commit_on_stop`
+
+### 4. Work Task 상태 확인
+
 ```bash
-cat .cache/portfolio_gap_vector.json
+cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+Rscript -e 'source("02_Infrastructure/worktask/worktask_manager.R"); wt_list()'
 ```
 
-5. **팀 스폰 (TeamCreate — Hook 완전 자동)**
+또는 `cat .cache/portfolio_gap_vector.json` (PG0 gap)
 
-Q-Lead는 관리·감독·브리핑만 수행한다. 코드 작성/실행은 반드시 팀원에게 위임한다.
-TeamCreate 모델에서는 모든 Hook(SubagentStop, FileChanged, TeammateIdle 등)이
-Q-Lead 세션 내에서 자동 발동한다. supervisor 불필요.
+### 5. 리서치 개시 — Work Task 기반
 
-5-1. TeamCreate로 연구팀 생성:
-```
-TeamCreate(team_name="research-v7", description="V7 All-Weather Portfolio Research Team")
-```
+#### 5-A. 신규 Work Task 생성
 
-5-2. 4인 teammate 병렬 스폰 (Agent tool, run_in_background=true):
-```
-Agent(name="scout", team_name="research-v7", prompt="Read 02_Infrastructure/prompts/scout_init.md. inbox TODO 확인 → S0 가설 또는 S3/S5 작업.")
-Agent(name="forge", team_name="research-v7", prompt="Read 02_Infrastructure/prompts/forge_init.md. inbox TODO 대기. TODO_S1 도착 시 run_all.R 작성 + 백테스트.")
-Agent(name="judge", team_name="research-v7", prompt="Read 02_Infrastructure/prompts/judge_init.md. inbox TODO 대기. TODO_S6 도착 시 Gate 0-6 검증.")
-Agent(name="governor", team_name="research-v7", prompt="Read 02_Infrastructure/prompts/governor_init.md. inbox TODO_PG0 대기. S7 완료 전략 PG0~PG3.")
+```r
+source("02_Infrastructure/worktask/worktask_manager.R")
+wt_id <- wt_create(
+  hypothesis_title = "{가설 제목}",
+  hypothesis_description = "{동기 + 접근}",
+  universe = "KOSPI200_KOSDAQ150_intersection",
+  benchmark = "KOSPI200_total_return"
+)
 ```
 
-5-3. 팀 상태 확인: `Read ~/.claude/teams/research-v7/config.json`
+자동 주입:
+- `task_id = WT{YYYYMMDD}_{NNN}`
+- `hard_constraints.max_names = 20`
+- `weight_bounds = [0, 0.20]`
+- `liquidity_min = 2e8`
+- `cost_model = v2.3_kr_retail_15bps`
+- `data_lag_rules` 4종 (fundamental / price / investor_flow / macro)
+- `status = SPEC_APPROVED`
 
-5-4. 이미 팀 실행 중이면 재생성 않고 SendMessage로 상태 확인. idle teammate에 작업 재할당.
+#### 5-B. 3-Agent 순차 실행 (Q-Lead orchestration)
 
-5-5. 세션 종료 시: `SendMessage(to="*", message={type:"shutdown_request"})`
+```
+Step 1: Agent(subagent_type="alpha-research",
+              prompt="WT{id} Alpha Research...")
+  → 자율 7-step → alpha_package.json
 
-6. **리서치 시작 — S0 가설 토론**
-Q-Lead가 Scout을 plan mode로 스폰 → 4명 토론팀 검증 → 승인 후 실행.
-supervisor.md의 "5 Agent Debate 체계" 참조.
+Step 2: (Hook 선행 검증) Agent(subagent_type="risk-research",
+                                prompt="WT{id} Risk Research...")
+  → 자율 5-step → risk_package.json + covariance.parquet
 
-**Q-Lead 역할 경계 (Level 0)**:
+Step 3: (Hook 선행 검증) Agent(subagent_type="optimizer-research",
+                                prompt="WT{id} Optimizer Research...")
+  → 10+ 방법론 비교 → optimization_package.json + weights.csv
+
+Step 4: Agent(subagent_type="forge",
+              prompt="WT{id} Integrate 3-agent packages → backtest")
+  → run_all_template 기반 통합 → backtest 결과
+
+Step 5: Agent(subagent_type="judge",
+              prompt="WT{id} S6 cascade Gate 0~18")
+  → JUDGE_PASSED / JUDGE_FAILED
+
+Step 6: Agent(subagent_type="governor",
+              prompt="WT{id} PG0~PG3 admission")
+  → GOVERNOR_ADMITTED / GOVERNOR_REJECTED
+```
+
+**WT 간 병렬 허용** (WT001 + WT002 동시 진행 가능).
+**WT 내부 순차 강제** (`worktask_sequence_enforcer.sh` Hook).
+
+#### 5-C. 기존 Legacy 전략 호환
+
+PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
+신규 가설만 Work Task 방식 사용. 점진 마이그레이션.
+
+---
+
+## Hard Constraints (사용자 강제, Hook 자동 검증)
+
+| 제약 | 값 | 강제 Hook |
+|---|---|---|
+| **max_names** | **20 hard** | `worktask_constraint_enforcer.sh` |
+| **Long-only** | weights ≥ 0 | same |
+| **Weight bounds** | **[0, 0.20]** | same |
+| **Σw** | = 1 (absolute) / = 0 (active) | same |
+| **Universe** | KOSPI200 ∪ KOSDAQ150 | `worktask_spec_validator.sh` |
+| **Liquidity** | 20d TV ≥ 2e8원 | same + Alpha Agent filter |
+| **Transaction cost** | 15bps one-way | `cost_model_version` 고정 |
+| **PIT C1~C15** | 전체 | Common Charter 원칙 1 |
+| **3-agent 역할 경계** | Alpha/Risk/Opt 침범 금지 | `agent_role_guard.sh` |
+| **WT 순서** | Alpha → Risk → Optimizer | `worktask_sequence_enforcer.sh` |
+
+---
+
+## Common Charter 8원칙 (3-agent 공통)
+
+1. Point-in-time Only
+2. Research Process First (QEPM 5단계)
+3. Factor Family vs Proxy 구분
+4. 논문은 출발점, 승인서 아님
+5. Data Mining 방지
+6. Dynamic Smart Alpha
+7. 비용 · 용량 · 군집위험 mandatory
+8. No Silent Override (challenge_note / infeasibility_report 의무)
+
+전체: `02_Infrastructure/worktask/common_charter.md`
+
+---
+
+## Red Flag 자동 감지 (`red_flag_detector.sh`)
+
+**Alpha Red Flags**: RF-A1 논문 단독 근거 / RF-A2 Composite 개선 불명확 / RF-A3 recent 3Y 과적합 / RF-A4 sector-neutral 후 붕괴 / RF-A5 top decile illiquid
+
+**Risk Red Flags**: RF-R1 섹터 집중 / RF-R2 Covariance ill-conditioned / RF-R3 Crowding / RF-R4 Stress 초과 / RF-R5 Style 중복
+
+**Optimizer Red Flags**: RF-O1 Top alpha 미실현 / RF-O2 낮은 순알파 / RF-O3 미세 리밸런싱 / RF-O4 Constraint 민감도 폭발 / RF-O5~7 Hard Constraint 위반 (CRITICAL Hook block)
+
+전체: `02_Infrastructure/worktask/red_flag_rules.md`
+
+---
+
+## Q-Lead 역할 경계 (Level 0)
+
 - ✅ 진단, 지시, 모니터링, 결과 수집, 텔레그램 보고
-- ❌ 직접 Rscript 실행, factor_engine 수정, 백테스트 실행 → Forge에 위임
-- ❌ 직접 S3/S6 검증 코드 실행 → Judge에 위임
+- ✅ Work Task 생성 + 3-agent spawn orchestration
+- ❌ 직접 Rscript 실행 / 백테 / factor_engine 수정 → Forge / Alpha Agent에 위임
+- ❌ weight 결정 / 공분산 계산 → Optimizer / Risk Agent에 위임
+- ❌ Alpha/Risk/Opt 경계 침범 감독 (Hook 자동 차단)
 
-## 시스템 구성
+---
+
+## 시스템 아키텍처 (v6)
 
 ```
-Qvest Architecture v53 (TeamCreate + Hook 단일 세션 모델)
-
-┌─ Q-Lead 세션 (유일한 Claude instance) ────────────────────┐
-│  /s0-debate → 5인 3-Round 토론 자동 체인                    │
-│  TeamCreate("research-v7") → teammate 4인 spawn            │
-│  SendMessage + TaskList 기반 분업                           │
-│  Agent tool (온디맨드) → RiskMgr / Architect / Codex       │
-│  진척률 모니터링 + 텔레그램 브리핑                           │
-├─ 상시 백그라운드 tmux ──────────────────────────────────────┤
-│  "rc"  : persistent_remote_control (텔레그램 listener)      │
-├─ Hooks (v53 — 17중 4-Tier 방어선, Q-Lead 세션 내 발동) ────┤
-│  Pre:  axiom_enforcement / safety_guard / forge_code_guard  │
-│        unified_agent_guard (+AX 전제 주입 P0-B/P1-B/AX-P2) │
-│        s0_debate_guard                                      │
-│  Post: artifact_validator (스키마 + P2-B 합리화 탐지)       │
-│        pipeline_trigger / circuit_breaker / risk_gate       │
-│        s0_debate_enforcer (상태머신 + Codex R2 S2.13)       │
-│        role_honesty_runner (S2.11)                          │
-│        mutation_tracker / grade_a_catalog / axiom_harvester │
-│  Event: s0_verdict_router (FileChanged)                     │
-│         teammate_idle / task_complete                       │
-├─ S0 Debate 3-Round + 합산 점수 ─────────────────────────────┤
-│  Scout(plan) → R1 Write 5인 → enforcer 상태머신             │
-│  → R2 Rebuttal 5인 + Codex R2 자동 verify                  │
-│  → R3 Closing (|Δ|>4만 재소환)                              │
-│  → VERDICT (transcript.rounds ≥2 필수)                      │
-│  → FileChanged Hook → 자동 라우팅                           │
-├─ Pipeline (S0→PG3→Axiom — 자동) ──────────────────────────┤
-│  S0(debate) → S1~S7 → PG0~PG3 → AX promote                 │
-│  DONE→TODO 자동 전환 (pipeline_trigger.sh)                  │
-│  Stage gate S2/S3/S4 선행 artifact 강제 (P0-B)              │
-│  S5 Fast-Track 차단 (S2.6 mutation_tracker)                 │
-│  Grade 허들: DSR+FF5 Hard Gate(S2.9) + D075 AX Suspicion    │
-│  PG0~PG3 단계별 gate (P1-B)                                 │
-│  Role Honesty Audit 자동 (S2.11)                            │
-│  L-code 추가 시 AX 엔진 auto-harvest/cluster/promote        │
-└────────────────────────────────────────────────────────────┘
-
-v50/v52 레거시 (deprecated):
-  - tmux research 4-pane (scout/forge/judge/governor 독립 Claude)
-  - tmux supervisor (qlead_supervisor.sh R 상주)
-  부팅 시 자동 종료. QVEST_KEEP_LEGACY_TMUX=1로 유지 가능.
+┌─ Q-Lead 세션 ───────────────────────────────────────┐
+│  /worktask create → WT{id} 생성                      │
+│  Agent(alpha-research) → alpha_package              │
+│  Agent(risk-research) → risk_package (순서 강제)    │
+│  Agent(optimizer-research) → optimization_package    │
+│  Agent(forge) → run_all.R + backtest                │
+│  Agent(judge) → S6 Gate 0~18                        │
+│  Agent(governor) → PG0~PG3 admission                │
+├─ Hooks (6 신규 + 14 유지) ─────────────────────────┤
+│  Pre:  safety / axiom / agent_role_guard /           │
+│        worktask_sequence_enforcer /                  │
+│        worktask_constraint_enforcer /                │
+│        worktask_spec_validator                       │
+│  Post: worktask_artifact_validator / red_flag /      │
+│        pipeline_trigger / milestone_commit           │
+├─ Work Task Lifecycle ──────────────────────────────┤
+│  SPEC_APPROVED → ALPHA_DONE → RISK_DONE →           │
+│  OPTIMIZER_DONE → FORGE_DONE →                       │
+│  JUDGE_PASSED → GOVERNOR_ADMITTED → COMPLETED        │
+├─ Legacy 유지 ──────────────────────────────────────┤
+│  PG2 active: STR_1631 + STR_1656                     │
+│  Governor / Judge / Forge / Codex Critic 유지        │
+│  Axiom 엔진 active 6건 + AX_CAND tracking            │
+└────────────────────────────────────────────────────┘
 ```
+
+---
+
+## 부팅 직후 체크리스트
+
+1. ✅ `02_Infrastructure/worktask/` 존재 확인
+2. ✅ Agent registry에 `alpha-research`, `risk-research`, `optimizer-research` 등록 확인
+3. ✅ Skill 목록에 `worktask`, `alpha-research`, `risk-research`, `optimizer-research` 확인
+4. ✅ `qepm/mailbox/{worktask,alpha,risk,optimizer}/` 디렉토리 존재
+5. ✅ Hook 신규 6종 `settings.json` 등록 확인
+6. ✅ `02_Infrastructure/hooks/_archive_v55/` 폐기 Hook 6종 archive 확인
+7. ✅ Git tag `pre-qepm-3agent-migration` 존재 (rollback 지점)
+
+체크 실패 시 → `next_session_task.md` 참조 + 복구.
+
+---
+
+## 새 세션 시작 패턴
+
+1. `/qvest` → 이 파일 read + 부트스트랩
+2. `next_session_task.md` 확인 → 직전 세션 carry + 현 과제
+3. `wt_list()` → 진행 중 WT 목록
+4. 신규 가설 → `/worktask create "{hypothesis}"` or 직접 `wt_create()`
+5. 3-agent pipeline 순차 실행 (Agent tool spawn)
+
+---
+
+## Legacy v53 요소 (아직 살아있는 부분)
+
+- TeamCreate + SendMessage (teammate 간 자율 peer DM)
+- qepm 하이브리드 모드 (hybrid_commit / hybrid_status 등)
+- Telegram listener (tmux `rc` 세션)
+- Axiom 엔진 (AX-000~008 + candidates)
+- L-code 적립 체계
+
+**v6는 v53을 replace가 아니라 확장**. 기존 Governor/Judge/Forge/Codex Critic 역할 그대로 유지, Scout만 Alpha Research Agent로 교체, 새 Work Task layer 추가.
+
+---
+
+## 참조
+
+- Plan: `/home/quant/.claude/plans/ethereal-gliding-dahl.md`
+- Common Charter: `02_Infrastructure/worktask/common_charter.md`
+- Red Flag: `02_Infrastructure/worktask/red_flag_rules.md`
+- Schema: `02_Infrastructure/worktask/schema.json`
+- Constraints 기본값: `02_Infrastructure/worktask/constraint_defaults.json`
+- Manager: `02_Infrastructure/worktask/worktask_manager.R`
+- 3-agent prompt: `02_Infrastructure/prompts/{alpha,risk,optimizer}_research_init.md`
+- MVO 정통: `02_Infrastructure/portfolio/mean_variance_optimizer.R`
+- Method Registry: `02_Infrastructure/portfolio/weight_method_registry.R`
+- Git tag: `pre-qepm-3agent-migration`
+
+---
+
+## Version
+
+- **v6.0** — 2026-04-23 Session 69 — QEPM 3-Agent Work Task 아키텍처 도입
+- v5.5 — 2026-04-19 Session 67 v55 strict
+- v5.3 — 2026-04-13 v53 TeamCreate + Hook 17종
