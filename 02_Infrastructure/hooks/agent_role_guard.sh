@@ -108,6 +108,49 @@ check_forge() {
   echo '{"decision":"allow"}'
 }
 
+check_execution_agent() {
+  # v6.1 R8: Execution Agent는 3-package 전수 read-only
+  # 쓰기 허용: execution_package.json, trade_list.csv, realized_slippage_*.csv, impact_estimate.json
+  case "$FP_LOWER" in
+    */alpha_package.json|*/alpha_scores*.parquet|*/alpha_hypothesis.json|*/alpha_validation.json)
+      echo '{"decision":"block","reason":"R8 Execution: Alpha package 수정 금지 (target_weights 재해석 차단)."}'
+      exit 0
+      ;;
+    */risk_package.json|*/covariance*.parquet|*/tail_risk.json)
+      echo '{"decision":"block","reason":"R8 Execution: Risk package 수정 금지."}'
+      exit 0
+      ;;
+    */optimization_package.json|*/weights*.csv|*/weight_method_*)
+      echo '{"decision":"block","reason":"R8 Execution: Optimizer package + weights.csv 수정 금지 (target_weights 불변)."}'
+      exit 0
+      ;;
+    */judge_verdict*|*/judge_ready/*|*/judge_result*)
+      echo '{"decision":"block","reason":"R8 Execution: Judge 산출물 수정 금지."}'
+      exit 0
+      ;;
+    */governor_admission*|*/book_state.json|*/pg*_*.json)
+      echo '{"decision":"block","reason":"R8 Execution: Governor 산출물 수정 금지."}'
+      exit 0
+      ;;
+  esac
+  echo '{"decision":"allow"}'
+}
+
+check_monitoring_agent() {
+  # v6.1 R9: Monitoring Agent는 read-only + monitoring_report만 쓰기 허용
+  case "$FP_LOWER" in
+    */alpha_package.json|*/risk_package.json|*/optimization_package.json|*/execution_package.json)
+      echo '{"decision":"block","reason":"R9 Monitoring: 타 agent 산출물 수정 금지 (read-only, drift 감지만)."}'
+      exit 0
+      ;;
+    */weights*.csv|*/judge_verdict*|*/governor_admission*|*/book_state.json)
+      echo '{"decision":"block","reason":"R9 Monitoring: 운영 산출물 수정 금지. 전략 수정 권한 없음 (Q-Lead 영역)."}'
+      exit 0
+      ;;
+  esac
+  echo '{"decision":"allow"}'
+}
+
 case "$AGENT_NAME" in
   alpha*)
     check_alpha_agent
@@ -120,6 +163,12 @@ case "$AGENT_NAME" in
     ;;
   forge*)
     check_forge
+    ;;
+  execution*)
+    check_execution_agent
+    ;;
+  monitoring*)
+    check_monitoring_agent
     ;;
   *)
     # Q-Lead / Judge / Governor / Codex 등은 allow (orchestration 권한)

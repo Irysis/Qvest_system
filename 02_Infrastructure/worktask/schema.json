@@ -290,6 +290,96 @@
       }
     },
 
+    "execution_package": {
+      "type": "object",
+      "description": "R8 Execution Agent 산출물. Deployment WT의 target_weights → 주문 분할 + impact 추정.",
+      "required": ["task_id", "rebalance_date", "trade_list", "schedule"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "rebalance_date": {"type": "string", "format": "date"},
+        "trade_list": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["ticker", "side", "shares"],
+            "properties": {
+              "ticker": {"type": "string"},
+              "side": {"type": "string", "enum": ["buy", "sell"]},
+              "shares": {"type": "integer", "minimum": 0},
+              "target_weight": {"type": "number", "minimum": 0, "maximum": 0.20},
+              "current_weight": {"type": "number"}
+            }
+          }
+        },
+        "schedule": {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {"type": "string", "enum": ["single_shot", "TWAP", "VWAP", "POV"]},
+            "duration_hours": {"type": "number"},
+            "participation_rate": {"type": "number", "minimum": 0, "maximum": 1},
+            "start_time": {"type": "string"},
+            "end_time": {"type": "string"}
+          }
+        },
+        "impact_estimate_bps": {
+          "type": "object",
+          "properties": {
+            "avg": {"type": "number"},
+            "worst_ticker": {"type": "string"},
+            "worst_bps": {"type": "number"}
+          }
+        },
+        "expected_slippage_bps": {"type": "number"},
+        "capacity_warnings": {"type": "array", "items": {"type": "string"}},
+        "method": {"type": "string"}
+      }
+    },
+
+    "monitoring_report": {
+      "type": "object",
+      "description": "R9 Monitoring Agent 산출물. admitted WT realized vs predicted drift.",
+      "required": ["monitoring_month", "admitted_wts_monitored", "per_wt_results"],
+      "properties": {
+        "monitoring_month": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}$"},
+        "admitted_wts_monitored": {"type": "array", "items": {"type": "string"}},
+        "per_wt_results": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "alpha_predicted": {"type": "number"},
+              "alpha_realized": {"type": "number"},
+              "alpha_ratio": {"type": "number"},
+              "te_predicted": {"type": "number"},
+              "te_realized": {"type": "number"},
+              "te_ratio": {"type": "number"},
+              "crowding_now": {"type": "number"},
+              "crowding_3m_ago": {"type": "number"},
+              "crowding_drift": {"type": "number"},
+              "ic_3m": {"type": "number"},
+              "ic_12m": {"type": "number"},
+              "ic_decay_ratio": {"type": "number"},
+              "regime_cached": {"type": "string"},
+              "regime_current": {"type": "string"},
+              "alerts": {"type": "array", "items": {"type": "string"}},
+              "action_requested": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "book_level": {
+          "type": "object",
+          "properties": {
+            "aggregate_alpha_ratio": {"type": "number"},
+            "aggregate_te_ratio": {"type": "number"},
+            "highest_alert_count_wt": {"type": "string"}
+          }
+        },
+        "telegram_sent": {"type": "boolean"},
+        "created_at": {"type": "string", "format": "date-time"}
+      }
+    },
+
     "governance_log": {
       "type": "object",
       "description": "Work Task 내 결정 이력",
@@ -302,7 +392,7 @@
             "required": ["timestamp", "agent", "action", "summary"],
             "properties": {
               "timestamp": {"type": "string", "format": "date-time"},
-              "agent": {"type": "string", "enum": ["alpha", "risk", "optimizer", "forge", "judge", "governor", "q-lead"]},
+              "agent": {"type": "string", "enum": ["alpha", "risk", "optimizer", "forge", "judge", "governor", "execution", "monitoring", "q-lead"]},
               "action": {"type": "string"},
               "summary": {"type": "string"},
               "challenge_notes": {"type": "array", "items": {"type": "string"}}
@@ -364,6 +454,8 @@
             "FORGE_PENDING", "FORGE_RUNNING", "FORGE_DONE",
             "JUDGE_PENDING", "JUDGE_RUNNING", "JUDGE_PASSED", "JUDGE_FAILED",
             "GOVERNOR_PENDING", "GOVERNOR_ADMITTED", "GOVERNOR_REJECTED",
+            "EXECUTION_PENDING", "EXECUTION_RUNNING", "EXECUTION_DONE",
+            "MONITORING_SCHEDULED", "MONITORING_ACTIVE",
             "COMPLETED", "ABORTED"
           ]
         },
@@ -399,6 +491,8 @@
     {"$ref": "#/definitions/alpha_package"},
     {"$ref": "#/definitions/risk_package"},
     {"$ref": "#/definitions/optimization_package"},
+    {"$ref": "#/definitions/execution_package"},
+    {"$ref": "#/definitions/monitoring_report"},
     {"$ref": "#/definitions/governance_log"},
     {"$ref": "#/definitions/artifact_lineage"},
     {"$ref": "#/definitions/status"}
