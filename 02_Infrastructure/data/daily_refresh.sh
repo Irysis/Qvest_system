@@ -18,7 +18,7 @@ LOGFILE="/tmp/qm_daily_refresh_$(date +%Y%m%d).log"
 exec > >(tee -a "$LOGFILE") 2>&1
 
 echo "=== Daily Refresh v2 @ $(date) ==="
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
 # ──────────────────────────────────────────────────────────────────────────────
