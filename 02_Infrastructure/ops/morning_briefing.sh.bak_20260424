@@ -19,8 +19,8 @@ echo "[1/5] KRX Data Update..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_build_rawdata.R")
+  source("krx_data_collector.R")
+  source("krx_build_rawdata.R")
   gap <- krx_detect_gap()
   cat(sprintf("Gap: %s → %s (%d days)\n", gap$last_rawdata_date, gap$end, gap$n_calendar_days))
   if (gap$n_calendar_days > 0) {
@@ -35,7 +35,7 @@ echo "[1.5/5] Naver T+0 Supplement..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/naver_data_collector.R")
+  source("naver_data_collector.R")
   tryCatch({
     naver_run_pipeline()
   }, error = function(e) cat(sprintf("Naver pipeline skipped: %s\n", e$message)))
@@ -46,8 +46,8 @@ echo "[2/5] Arrow + KTRI..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_arrow_pipeline.R")
+  source("krx_data_collector.R")
+  source("krx_arrow_pipeline.R")
   tryCatch({
     krx_extend_arrow()
     cat("Arrow extension complete.\n")
@@ -66,12 +66,12 @@ echo "[3/5] FRED + Regime Signal..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  if (file.exists("data/data_collector_fred.R")) {
-    source("data/data_collector_fred.R")
-    tryCatch(fred_fetch_all(), error = function(e)
+  if (file.exists("fred_macro_collector.R")) {
+    source("fred_macro_collector.R")
+    tryCatch(fred_update_regime(), error = function(e)
       cat(sprintf("FRED update skipped: %s\n", e$message)))
   }
-  source("regime/regime_signal.R")
+  source("regime_signal.R")
   tryCatch(build_regime_signal_table(), error = function(e)
     cat(sprintf("Regime signal skipped: %s\n", e$message)))
 '
@@ -81,7 +81,7 @@ echo "[4/5] Sending Regime Briefing..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("telegram/telegram_notify.R")
+  source("telegram_notify.R")
   tryCatch(tg_regime_briefing(), error = function(e)
     cat(sprintf("Regime briefing failed: %s\n", e$message)))
 '
@@ -90,4 +90,4 @@ echo "=== Morning Briefing Done @ $(date) ==="
 
 # Step 3: Production strategy daily NAV report
 # NOTE: sleeve_save_helper.R 제거됨. daily_portfolio_nav.R만으로 동작.
-Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/portfolio/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1
+Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1

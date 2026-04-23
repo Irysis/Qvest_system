@@ -30,7 +30,7 @@ echo "[0/7] QuantiWise xlsx update check..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/incremental_cache_update.R")
+  source("incremental_cache_update.R")
   incremental_update_all()
 '
 
@@ -42,8 +42,8 @@ echo "[1/7] KRX Data Pipeline (always run)..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_build_rawdata.R")
+  source("krx_data_collector.R")
+  source("krx_build_rawdata.R")
   gap <- krx_detect_gap()
   cat(sprintf("Gap: %s → %s (%d days)\n", gap$last_rawdata_date, gap$end, gap$n_calendar_days))
   if (gap$n_calendar_days > 0) {
@@ -60,7 +60,7 @@ echo "[2/7] Naver T+0 Supplement..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/naver_data_collector.R")
+  source("naver_data_collector.R")
   tryCatch(naver_run_pipeline(),
     error = function(e) cat(sprintf("Naver skipped: %s\n", e$message)))
 '
@@ -74,11 +74,11 @@ echo "[3/7] Universe update + RAWDATA mapping..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_update_universe.R")
+  source("krx_update_universe.R")
   tryCatch(krx_update_universe(),
     error = function(e) cat(sprintf("Universe update skipped: %s\n", e$message)))
 
-  source("data/apply_universe_mapping.R")
+  source("apply_universe_mapping.R")
   tryCatch(apply_universe_mapping(),
     error = function(e) cat(sprintf("Universe mapping skipped: %s\n", e$message)))
 '
@@ -92,18 +92,18 @@ echo "[4/7] Arrow + FRED + KTRI + Regime..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_arrow_pipeline.R")
+  source("krx_data_collector.R")
+  source("krx_arrow_pipeline.R")
   tryCatch(krx_extend_arrow(),
     error = function(e) cat(sprintf("Arrow skipped: %s\n", e$message)))
 '
 
 # FRED (regime compute 비활성화 — v7.1 사용 중)
 cd "$INFRA"
-if [ -f "data/data_collector_fred.R" ]; then
+if [ -f "data_collector_fred.R" ]; then
   Rscript --no-save -e '
     source("config.R")
-    source("data/data_collector_fred.R")
+    source("data_collector_fred.R")
     tryCatch(fred_fetch_all(),
       error = function(e) cat(sprintf("FRED skipped: %s\n", e$message)))
   '
@@ -113,8 +113,8 @@ fi
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/ktri_index_collector.R")
+  source("krx_data_collector.R")
+  source("ktri_index_collector.R")
   tryCatch(ktri_update_indices(),
     error = function(e) cat(sprintf("KTRI skipped: %s\n", e$message)))
 '
@@ -126,7 +126,7 @@ Rscript --no-save -e '
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("regime/regime_signal.R")
+  source("regime_signal.R")
   tryCatch(build_regime_signal_table(),
     error = function(e) cat(sprintf("Regime signal skipped: %s\n", e$message)))
 '
@@ -140,7 +140,7 @@ if [ "$DAY_OF_MONTH" = "01" ]; then
   cd "$INFRA"
   Rscript --no-save -e '
     source("config.R")
-    source("data/data_collector_dart.R")
+    source("data_collector_dart.R")
     tryCatch(dart_run_pipeline(years = as.integer(format(Sys.Date(), "%Y"))),
       error = function(e) cat(sprintf("DART skipped: %s\n", e$message)))
   '
@@ -155,7 +155,7 @@ echo "[6/7] Factor DB update..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  source("factor_db/factor_db_builder.R")
+  source("factor_db_builder.R")
   tryCatch({
     if (exists("update_factor_db_daily") && is.function(update_factor_db_daily)) {
       update_factor_db_daily()
@@ -173,7 +173,7 @@ cd "$INFRA"
 Rscript --no-save -e '
   library(data.table)
   source("config.R")
-  source("telegram/telegram_notify.R")
+  source("telegram_notify.R")
   raw <- as.data.table(arrow::read_parquet(RAWDATA_CACHE))
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
@@ -187,10 +187,10 @@ WATCHLIST="$INFRA/nav_watchlist.json"
 if [ -f "$WATCHLIST" ] && [ "$(cat "$WATCHLIST" | wc -c)" -gt 5 ]; then
   cd "$INFRA" && Rscript --no-save -e '
     source("config.R")
-    source("telegram/telegram_notify.R")
-    source("portfolio/daily_nav_tracker.R")
+    source("telegram_notify.R")
+    source("daily_nav_tracker.R")
     nav_track()
-    tryCatch(source("portfolio/regime_change_detector.R"), error=function(e) cat("regime_change_detector skipped\n"))
+    source("regime_change_detector.R")
     detect_regime_change()
   ' 2>&1
 fi
@@ -200,7 +200,7 @@ cd "$BASE"
 Rscript --no-save -e '
 suppressMessages({
   source("02_Infrastructure/config.R")
-  source("02_Infrastructure/memory/memory_logger.R")
+  source("02_Infrastructure/memory_logger.R")
 })
 tryCatch(update_memory_summary(), error = function(e) NULL)
 cat("[distill] MEMORY.md updated\n")

@@ -239,7 +239,7 @@ tg_strategy_result <- function(strategy_name, hurdle_result) {
   hard_fail_str <- if (isTRUE(v[["hard_fail"]])) {
     fr <- v[["fail_reasons"]]
     if (is.list(fr)) fr <- unlist(fr)
-    sprintf("\n⛔ Hard Fail: %s", paste(fr, collapse = " | "))
+    sprintf("\n<b>⛔ Hard Fail:</b> %s", paste(fr, collapse = " | "))
   } else ""
 
   # ── 점수 세부 (score_breakdown 있을 때만) ──
@@ -288,7 +288,7 @@ tg_strategy_result <- function(strategy_name, hurdle_result) {
     main_row <- paste(sapply(intersect(main_items, names(sb)), fmt_item), collapse = " │ ")
 
     score_detail_str <- sprintf(
-      "\n─────────────\n📊 점수 세부 (%.1f/100)\n%s\n✅ 강점: %s\n⚠️ 약점: %s",
+      "\n─────────────\n📊 <b>점수 세부 (%.1f/100)</b>\n%s\n✅ 강점: %s\n⚠️ 약점: %s",
       score,
       main_row,
       paste(sapply(strong2, fmt_item), collapse = " │ "),
@@ -303,7 +303,7 @@ tg_strategy_result <- function(strategy_name, hurdle_result) {
   }
 
   msg <- sprintf(
-    "[백테스트 완료] %s\n%s (%.1f/100)%s\n─────────────\nCAGR: %.1f%% │ Sharpe: %.3f\nMDD: %.1f%% │ IR: %.3f │ Calmar: %.3f%s%s",
+    "<b>[백테스트 완료]</b> %s\n%s (%.1f/100)%s\n─────────────\nCAGR: %.1f%% │ Sharpe: %.3f\nMDD: %.1f%% │ IR: %.3f │ Calmar: %.3f%s%s",
     strategy_name, verdict_str, score, hard_fail_str,
     .n(m$CAGR), .n(m$Sharpe), .n(m$MDD), .n(m$IR), .n(m$Calmar),
     family_str, score_detail_str
@@ -380,7 +380,7 @@ tg_strategy_commentary <- function(strategy_name, hurdle_result, output_dir) {
     lines <- c(lines, "📝 참고 수준. 팩터 신호는 다른 전략의 보조 인자로 활용")
   }
 
-  msg <- sprintf("[코멘트] %s\n%s", strategy_name, paste(lines, collapse = "\n"))
+  msg <- sprintf("<b>[코멘트]</b> %s\n%s", strategy_name, paste(lines, collapse = "\n"))
   tg_send(msg)
 }
 
@@ -420,7 +420,7 @@ tg_cumulative_lessons <- function() {
   batch <- new_lessons[1:10]
   batch_ids <- new_ids[1:10]
   msg <- sprintf(
-    "[누적 교훈 업데이트] 새 교훈 %d건\n─────────────\n%s",
+    "<b>[누적 교훈 업데이트]</b> 새 교훈 %d건\n─────────────\n%s",
     length(batch),
     paste(gsub("^###\\s*(Lesson\\s+)?", "- ", batch), collapse = "\n")
   )
@@ -584,7 +584,7 @@ tg_pass_analysis <- function(strategy_name, output_dir) {
 
   if (length(lines_out) == 0) return(invisible(NULL))
 
-  msg <- sprintf("[팩터 분석] %s\n─────────────\n%s",
+  msg <- sprintf("<b>[팩터 분석]</b> %s\n─────────────\n%s",
                  strategy_name, paste(lines_out, collapse = "\n"))
   tg_send(msg)
 }
@@ -594,14 +594,14 @@ tg_dart_progress <- function(done, total, ok_count = NULL, fail_count = NULL) {
   pct   <- round(done / total * 100, 1)
   extra <- if (!is.null(ok_count))
     sprintf("\nOK: %d │ FAIL: %d", ok_count, fail_count) else ""
-  msg <- sprintf("[DART 수집] %d/%d (%.1f%%)%s", done, total, pct, extra)
+  msg <- sprintf("<b>[DART 수집]</b> %d/%d (%.1f%%)%s", done, total, pct, extra)
   tg_send(msg)
 }
 
 # ─── DART 완료 ────────────────────────────────────────────────────────────────
 tg_dart_complete <- function(ok_count, empty_count, fail_count) {
   msg <- sprintf(
-    "[DART 수집 완료] ✅\nOK: %d │ EMPTY: %d │ FAIL: %d\n펀더멘털 팩터 계산 준비 완료",
+    "<b>[DART 수집 완료]</b> ✅\nOK: %d │ EMPTY: %d │ FAIL: %d\n펀더멘털 팩터 계산 준비 완료",
     ok_count, empty_count, fail_count
   )
   tg_send(msg)
@@ -610,20 +610,20 @@ tg_dart_complete <- function(ok_count, empty_count, fail_count) {
 # ─── 논문 분석 완료 ────────────────────────────────────────────────────────────
 tg_paper_analyzed <- function(paper_id, title, idea_summary = NULL) {
   extra <- if (!is.null(idea_summary)) sprintf("\n💡 %s", idea_summary) else ""
-  msg <- sprintf("[논문 분석] %s\n%s%s", paper_id, title, extra)
+  msg <- sprintf("<b>[논문 분석]</b> %s\n<i>%s</i>%s", paper_id, title, extra)
   tg_send(msg)
 }
 
 # ─── 오류 알림 ────────────────────────────────────────────────────────────────
 tg_error <- function(strategy_name, error_msg) {
-  msg <- sprintf("[오류] %s\n<code>%s</code>",
+  msg <- sprintf("<b>[오류]</b> %s\n<code>%s</code>",
                  strategy_name, substr(error_msg, 1, 300))
   tg_send(msg)
 }
 
 # ─── 단순 브리핑 ──────────────────────────────────────────────────────────────
 tg_briefing <- function(content, slot = "AM") {
-  header <- sprintf("[%s 브리핑] %s", slot, format(Sys.Date(), "%Y-%m-%d"))
+  header <- sprintf("<b>[%s 브리핑]</b> %s", slot, format(Sys.Date(), "%Y-%m-%d"))
   msg <- paste(header, content, sep = "\n─────────────\n")
   tg_send(msg)
 }
@@ -662,13 +662,13 @@ tg_full_briefing <- function(slot = "AM") {
         sr_val   <- suppressWarnings(as.numeric(r["sharpe"]))
         mdd_val  <- suppressWarnings(as.numeric(r["mdd"]))
         sc_val   <- suppressWarnings(as.numeric(r["hurdle_score"]))
-        sprintf("%s %s %.0f점 │ CAGR %.1f%% │ SR %.2f │ MDD %.1f%%",
+        sprintf("%s <b>%s</b> %.0f점 │ CAGR %.1f%% │ SR %.2f │ MDD %.1f%%",
                 icon, r["id"], sc_val %||% 0, cagr_val %||% 0,
                 sr_val %||% 0, abs(mdd_val %||% 0))
       })
 
       score_text <- paste(
-        c(sprintf("전략 현황 (%d개 │ ✅%d ❌%d)", nrow(strats), n_pass, n_fail),
+        c(sprintf("<b>전략 현황 (%d개 │ ✅%d ❌%d)</b>", nrow(strats), n_pass, n_fail),
           rows),
         collapse = "\n"
       )
@@ -688,7 +688,7 @@ tg_full_briefing <- function(slot = "AM") {
         nrow(tryCatch(jsonlite::fromJSON(idea_path), error = function(e) data.frame()))
       } else 0L
       research_text <- sprintf(
-        "리서치 진행률\n논문: %d/%d 분석 (%.0f%%) │ 아이디어: %d개",
+        "<b>리서치 진행률</b>\n논문: %d/%d 분석 (%.0f%%) │ 아이디어: %d개",
         n_analyzed, n_total, n_analyzed / n_total * 100, n_ideas
       )
     }
@@ -701,12 +701,12 @@ tg_full_briefing <- function(slot = "AM") {
     last_lines <- tail(readLines(dart_log, warn = FALSE), 5)
     progress_line <- tail(grep("^  \\[", last_lines, value = TRUE), 1)
     if (length(progress_line) > 0) {
-      dart_text <- sprintf("DART 수집\n%s", progress_line)
+      dart_text <- sprintf("<b>DART 수집</b>\n%s", progress_line)
     }
   }
 
   full_msg <- paste(
-    c(sprintf("[%s 브리핑] %s", slot, today),
+    c(sprintf("<b>[%s 브리핑]</b> %s", slot, today),
       "─────────────",
       score_text, "",
       research_text, "",
@@ -817,7 +817,7 @@ tg_trigger_check <- function(current_metrics, strategy_name = "Portfolio") {
 
   # Send alerts
   if (length(alerts) > 0) {
-    msg <- sprintf("[KPI Trigger Alert] %s\n─────────────\n%s",
+    msg <- sprintf("<b>[KPI Trigger Alert]</b> %s\n─────────────\n%s",
                    strategy_name, paste(alerts, collapse = "\n"))
     tg_send(msg)
     cat(sprintf("[tg_trigger] %d alert(s) sent for %s\n", length(alerts), strategy_name))
@@ -1114,7 +1114,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     qzone <- if (!is.null(ktri_latest$zone) && length(ktri_latest$zone) > 0) ktri_latest$zone else "N/A"
     dir_label <- if (!is.null(ktri_latest$dir5)) ktri_latest$dir5 else ""
     ktri_str <- sprintf(
-      "\n\n\xf0\x9f\x93\x8d [KTRI-VEA 9-Quad]\nKTRI: %.1f %s | VEA: %.1f\nZone: %s | Action: %s\n5D: %s",
+      "\n\n\xf0\x9f\x93\x8d <b>[KTRI-VEA 9-Quad]</b>\nKTRI: %.1f %s | VEA: %.1f\nZone: <b>%s</b> | Action: %s\n5D: %s",
       ktri_latest$KTRI, ktri_arrow, ktri_latest$VEA,
       qzone, ktri_latest$Action_v3, dir_label)
   }
@@ -1131,18 +1131,18 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   }
 
   msg <- sprintf(paste0(
-    "%s Regime Briefing (%s)\n\n",
-    "\xf0\x9f\x93\x8a [Regime Score]\n",
-    "Score: %.1f (%s) | Cash: %.1f%% (%s)\n",
-    "Category: %s\n\n",
-    "\xf0\x9f\x94\x8d [3-Layer Signal]\n",
+    "%s <b>Regime Briefing (%s)</b>\n\n",
+    "\xf0\x9f\x93\x8a <b>[Regime Score]</b>\n",
+    "Score: <b>%.1f</b> (%s) | Cash: <b>%.1f%%</b> (%s)\n",
+    "Category: <b>%s</b>\n\n",
+    "\xf0\x9f\x94\x8d <b>[3-Layer Signal]</b>\n",
     "%s L1 MSM Crisis: %.1f%%\n",
     "%s L2 FRED MRS: %.1f\n",
     "%s L3 KTRI: %.1f | VEA: %.1f",
     "%s\n\n",
-    "\xf0\x9f\x93\x88 [Factor Tilt]\n",
+    "\xf0\x9f\x93\x88 <b>[Factor Tilt]</b>\n",
     "%s\n\n",
-    "\xf0\x9f\x8e\xaf [Verdict]\n%s"),
+    "\xf0\x9f\x8e\xaf <b>[Verdict]</b>\n%s"),
     cat_emoji, ref_date,
     latest$Regime_Score, score_trend, latest$Cash_Pct * 100, cash_trend,
     latest$Category,
