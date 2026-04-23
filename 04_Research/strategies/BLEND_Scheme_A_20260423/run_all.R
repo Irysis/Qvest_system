@@ -140,18 +140,28 @@ setkey(FACTORS_BLEND, Date, Ticker)
 cat("[7] Backtest (EW N=20 comm=15bps)...\n")
 options(mc.cores=1L)
 sim <- run_monthly_simulation(RAWDATA, BM_DT, FACTORS_BLEND,
-  n_holdings=N_HOLDINGS, commission=COMMISSION, weight_method="ew")
+  n_holdings=N_HOLDINGS, commission=COMMISSION, weight_method="equal")
 
 # ── 8. 성과 ───────────────────────────────────────────────────────────────────
-perf <- summarise_perf(sim, BM_DT)
-cat(sprintf("\nCAGR %.2f%% | SR %.3f | MDD %.2f%% | TO %.0f%%\n",
-            perf$CAGR*100, perf$Sharpe, perf$MDD*100, perf$Turnover*100))
+perf <- summarise_perf(sim$strategy_xts)
+# summarise_perf returns CAGR/MDD already in % (21.65 = 21.65%)
+to_avg <- tryCatch({
+  pl <- sim$PORTFOLIO_LOG
+  if (!is.null(pl) && "Turnover_Pct" %in% names(pl))
+    mean(pl$Turnover_Pct, na.rm=TRUE)
+  else NA_real_
+}, error=function(e) NA_real_)
+cat(sprintf("\nCAGR %.2f%% | SR %.3f | MDD %.2f%% | TO %.1f%%\n",
+            perf$CAGR, perf$Sharpe, perf$MDD, to_avg))
 
 # ── 9. Stress ─────────────────────────────────────────────────────────────────
-navd <- setDT(copy(sim$daily_nav))
-if ("nav"  %in% names(navd)) setnames(navd,"nav","NAV")
-if ("date" %in% names(navd)) setnames(navd,"date","Date")
-navd[, Date:=as.Date(Date)]
+navd <- setDT(copy(sim$DAILY_NAV_DT))
+if (!"Date" %in% names(navd) && "date" %in% names(navd)) setnames(navd,"date","Date")
+navd[, Date := as.Date(as.character(Date))]
+if (!"NAV" %in% names(navd)) {
+  ret_col <- if ("Strategy_Ret" %in% names(navd)) "Strategy_Ret" else names(navd)[2]
+  navd[, NAV := cumprod(1 + fifelse(is.na(get(ret_col)), 0, get(ret_col))) * 1e8]
+}
 
 slist <- list(
   list("GFC_2008","2008-09-01","2009-03-31"),
@@ -185,16 +195,16 @@ p2 <- ggplot(ar, aes(x=factor(Year), y=ar*100, fill=ar>=0)) +
 ggsave(file.path(OUTPUT_DIR,"annual_returns.png"), p2, width=12, height=5, dpi=120)
 
 # ── 11. Holdings ──────────────────────────────────────────────────────────────
-if (!is.null(sim$holdings_log))
-  fwrite(rbindlist(sim$holdings_log, fill=TRUE), file.path(OUTPUT_DIR,"monthly_holdings.csv"))
+if (!is.null(sim$HOLDINGS_LOG) && nrow(sim$HOLDINGS_LOG) > 0)
+  fwrite(sim$HOLDINGS_LOG, file.path(OUTPUT_DIR,"monthly_holdings.csv"))
 
 # ── 12. JSON ─────────────────────────────────────────────────────────────────
 write_json(list(
   strategy_id="BLEND_Scheme_A_20260423", strategy_type="blend_multi_sleeve",
   blend_weights=list(STR_1631=W_1631,STR_1656=W_1656,STR_1689=W_1689),
   period=list(start=as.character(min(common_dates)),end=as.character(max(common_dates))),
-  CAGR=round(perf$CAGR,4), Sharpe=round(perf$Sharpe,4),
-  MDD=round(perf$MDD,4), Turnover=round(perf$Turnover,4),
+  CAGR=round(perf$CAGR/100,4), Sharpe=round(perf$Sharpe,4),
+  MDD=round(perf$MDD/100,4), Turnover=round(to_avg/100,4),
   N_holdings=N_HOLDINGS, commission=COMMISSION, timestamp=as.character(Sys.time())
 ), file.path(OUTPUT_DIR,"hurdle_result.json"), auto_unbox=TRUE, pretty=TRUE)
 
@@ -207,8 +217,8 @@ write_json(list(
   ),
   combination_method="cross_section_zscore_weighted", n_holdings=N_HOLDINGS,
   common_period=list(start=as.character(min(common_dates)),end=as.character(max(common_dates))),
-  performance=list(CAGR=round(perf$CAGR,4),Sharpe=round(perf$Sharpe,4),
-                   MDD=round(perf$MDD,4),Turnover=round(perf$Turnover,4)),
+  performance=list(CAGR=round(perf$CAGR/100,4),Sharpe=round(perf$Sharpe,4),
+                   MDD=round(perf$MDD/100,4),Turnover=round(to_avg/100,4)),
   timestamp=as.character(Sys.time())
 ), file.path(STRATEGY_DIR,"stage_artifacts","blended_backtest_scheme_A_20260423.json"),
    auto_unbox=TRUE, pretty=TRUE)
@@ -219,7 +229,7 @@ dir.create(mbdone, showWarnings=FALSE, recursive=TRUE)
 write_json(list(
   task="DONE_BLEND_A_20260423", strategy_id="BLEND_Scheme_A_20260423",
   result=sprintf("CAGR %.2f%% / SR %.3f / MDD %.2f%% / TO %.0f%%",
-                  perf$CAGR*100,perf$Sharpe,perf$MDD*100,perf$Turnover*100),
+                  perf$CAGR, perf$Sharpe, perf$MDD, to_avg),
   timestamp=as.character(Sys.time())
 ), file.path(mbdone,"DONE_BLEND_A_20260423.json"), auto_unbox=TRUE, pretty=TRUE)
 
