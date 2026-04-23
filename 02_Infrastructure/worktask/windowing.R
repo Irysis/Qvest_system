@@ -16,9 +16,11 @@ suppressPackageStartupMessages({
 })
 
 # ─── Split windows 자동 계산 ─────────────────────────────
-# as_of_date 기준 과거로 거슬러 split
+# as_of_date 기준 과거로 거슬러 split.
+# train_start가 주어지면 train을 그 날짜부터 시작 (train_years 무시). 기본: 1990-01-04 (benchmark 시작).
 split_windows <- function(as_of_date,
-                          train_years = 10,
+                          train_start = "1990-01-04",
+                          train_years = NULL,
                           val_years = 2,
                           lockbox_years = 2,
                           paper_months = 3) {
@@ -35,12 +37,23 @@ split_windows <- function(as_of_date,
   val_start <- seq(val_end, length = 2, by = sprintf("-%d years", val_years))[2]
 
   train_end <- val_start - 1
-  train_start <- seq(train_end, length = 2, by = sprintf("-%d years", train_years))[2]
+
+  # train_start 우선 (explicit date). 없으면 train_years로 역산 (backward compat).
+  if (!is.null(train_start)) {
+    train_start <- as.Date(train_start)
+  } else if (!is.null(train_years)) {
+    train_start <- seq(train_end, length = 2, by = sprintf("-%d years", train_years))[2]
+  } else {
+    train_start <- as.Date("1990-01-04")
+  }
+
+  train_years_actual <- as.numeric(train_end - train_start) / 365.25
 
   list(
     train_window = list(
       start = format(train_start, "%Y-%m-%d"),
       end = format(train_end, "%Y-%m-%d"),
+      years = round(train_years_actual, 2),
       role = "factor_selection + signal_engineering (Alpha)"
     ),
     validation_window = list(
@@ -90,8 +103,8 @@ is_lockbox_sealed <- function(task_id) {
                           "GOVERNOR_REJECTED", "COMPLETED")
 }
 
-cat("[windowing.R] Loaded. Functions:\n")
-cat("  split_windows(as_of_date, train_years=10, val_years=2, lockbox_years=2, paper_months=3)\n")
+cat("[windowing.R] Loaded (v1.1 — train_start default 1990-01-04). Functions:\n")
+cat("  split_windows(as_of_date, train_start='1990-01-04', val_years=2, lockbox_years=2, paper_months=3)\n")
 cat("  filter_by_window(data, date_col, window)\n")
 cat("  log_lockbox_access(task_id, agent_name, file_path)\n")
 cat("  is_lockbox_sealed(task_id)\n")
