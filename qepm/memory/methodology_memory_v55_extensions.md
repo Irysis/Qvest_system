@@ -239,3 +239,23 @@
 - `qepm/trails/trail_registry.json` (3 Trail 메타데이터)
 - `qepm/schemas/strategy_registry_v55.md` (스키마)
 - `00_Lawbook/admission_rule_v352.md` (role 6종 threshold)
+
+---
+
+## 6. v6.1 Work Task Pilot 교훈 (L-190~L-192)
+
+### L-192 (신규 — 2026-04-24 Session, Judge)
+
+- **strategy_id**: WT-D20260424_001
+- **grade**: F
+- **disposition**: DISCARD_WITH_IMPROVEMENTS
+- **trail**: standard
+- **tags**: ["RAPC_GRADE_F_BORDERLINE", "L-191_AVOIDED", "L-190_PARTIAL_REPEAT", "OPTIMIZER_CONCENTRATION", "GRINOLD_BREADTH_LIMIT", "VAL_GT_TRAIN_SUCCESS"]
+- **core_reference**: Bernard-Thomas (1989) PEAD + Sloan (1996) Accruals Anomaly + Grinold (1989) Fundamental Law of Active Management (breadth)
+- **lesson_text**: 자율 리서치 Step 0에서 RAPC 3-factor composite (C04_ESBR + C01_SUE + AC21_CF_to_Accrual) IC-weighted expanding 24M burn-in + regime modulation(Crisis→accrual+30% / Normal→SUE+20%) 발굴. 핵심 성과: (1) Val SR 0.317 > Train SR 0.275 (1.153x) — L-191 Val<Train 메커니즘 회피 실증. (2) Val MDD 21.34% vs Train 44.59% regime adaptation 작동. (3) multicollinearity 무결 (VIF 1.006~1.01, pairwise TDC 0.04~0.17), Ledoit-Wolf cond=1.0. 그러나 Gate C/D/E 3개 실패: (C) rank_ic 0.0318<0.04 + DSR 0.039<0.1, (D) Market 48% RF-R1 + earnings_surprise family overlap (ESBR+SUE), (E) n_names=8 Grinold breadth 한계 재발 (Pilot 1 L-190 / Pilot 2 L-191 공통 패턴). MDD -44.59%는 hard_fail -45% 경계 0.41pp 통과. 근본 원인: Optimizer MVO 특성상 alpha outlier(A140860 alpha=3.0)에 과집중 + max_weight=0.20 binding 3 names + min_names 제약 부재. 교훈: **Alpha 차원 개선(L-191 회피)은 validated, Portfolio construction 차원 structural 한계가 Pilot 1/2/3 공통 장애물.** 해법(Task #26): Optimizer 제약 강화 (min_names>=15 + HHI_cap<=0.10 + per-name bound[0, 0.10] + alpha winsorization ±2σ). Alpha는 재사용, Optimizer만 업그레이드하여 재도전.
+- **related_l_codes**: L-190 (rate hedge hard_fail), L-191 (macro residual Val<Train), L-119 (정적 팩터 블렌드 alpha 희석), L-122 (Barroso risk-managed), AX-007 (single_sleeve_top20 signal-portfolio 단절)
+- **pilot_cumulative**: Pilot 1 CAGR 8.72/SR 0.413/MDD -54.30 (hard_fail) | Pilot 2 CAGR 4.06/SR 0.289/MDD -44.03 (Val<Train) | Pilot 3 CAGR 6.00/SR 0.282/MDD -44.59 (breadth 한계) — 3 Pilot 모두 8 names 집중 공통.
+- **gate_summary**: A PIT PASS / B Isolation PASS / C Net Alpha FAIL (rank_ic+DSR) / D Crowding FAIL (market48%+family overlap) / E Concentration FAIL (n=8 HHI 0.176) / F Drift PASS (Val>Train)
+- **ax_hits**: AX-002 PASS, AX-007 WARNING (실증 재확인), AX-008 PASS (Forge+Judge 2-source)
+- **verdict_file**: `qepm/mailbox/worktask/WT-D20260424_001/judge_verdict.json`
+
