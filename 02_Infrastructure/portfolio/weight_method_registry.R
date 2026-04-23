@@ -144,13 +144,21 @@ describe_method <- function(method_name) {
 }
 
 # ─── Dispatch (단일 방법론 실행) ─────────────────────────
+# v6.1 Task#26 (L-192 Remediation, 2026-04-24):
+#   - bounds default 0.20 → 0.10 (per-name 상한 축소)
+#   - min_names = 15 (Grinold breadth 하한)
+#   - hhi_cap = 0.10 (집중 방지)
+#   - alpha_winsor = 2.0 (outlier ±2σ clip)
 dispatch_weight_method <- function(method_name,
                                      alpha = NULL,
                                      cov_matrix = NULL,
                                      returns = NULL,
                                      confidence = NULL,
-                                     bounds = c(0, 0.20),
+                                     bounds = c(0, 0.10),
                                      max_names = 20,
+                                     min_names = 15L,
+                                     hhi_cap = 0.10,
+                                     alpha_winsor = 2.0,
                                      ...) {
   spec <- describe_method(method_name)
   fn_name <- spec$fn
@@ -173,6 +181,13 @@ dispatch_weight_method <- function(method_name,
   if ("returns" %in% spec$requires) args$returns <- returns
   args$bounds <- bounds
   args$max_names <- max_names
+
+  # v6.1 Task#26 breadth 제약 — MVO만 native 지원. 기타 method는 호환 시도
+  # (method fn이 해당 인자 formals에 있으면 전달, 없으면 drop)
+  fn_formals <- names(formals(fn))
+  if ("min_names" %in% fn_formals) args$min_names <- min_names
+  if ("hhi_cap" %in% fn_formals) args$hhi_cap <- hhi_cap
+  if ("alpha_winsor" %in% fn_formals) args$alpha_winsor <- alpha_winsor
 
   # v6.1 R4: confidence propagation — MVO가 native 지원
   # Non-MVO 메소드에는 alpha × confidence 로 pre-scale (best-effort)
@@ -202,7 +217,9 @@ dispatch_weight_method <- function(method_name,
 # ─── 전체 방법론 비교 (Optimizer Agent 자율 탐색 보조) ───
 compare_all_methods <- function(alpha, cov_matrix, returns = NULL,
                                   confidence = NULL,
-                                  bounds = c(0, 0.20), max_names = 20,
+                                  bounds = c(0, 0.10), max_names = 20,
+                                  min_names = 15L, hhi_cap = 0.10,
+                                  alpha_winsor = 2.0,
                                   methods = NULL) {
   if (is.null(methods)) {
     # returns 없으면 tail-aware는 제외
@@ -224,7 +241,10 @@ compare_all_methods <- function(alpha, cov_matrix, returns = NULL,
                                  returns = returns,
                                  confidence = confidence,
                                  bounds = bounds,
-                                 max_names = max_names)
+                                 max_names = max_names,
+                                 min_names = min_names,
+                                 hhi_cap = hhi_cap,
+                                 alpha_winsor = alpha_winsor)
     if (is.null(r$infeasible) || !r$infeasible) {
       ir <- r$expected_information_ratio %||% NA
       cat(sprintf("IR=%.3f\n", ir %||% NA))

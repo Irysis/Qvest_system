@@ -188,7 +188,7 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 1. **[현재 Step 1]** 설계 문서 (본 파일) ✅
 2. **[Step 2]** ktri_v3_builder full schema + VEA NA fix
 3. **[Step 3]** msm_daily_refit
-4. **[Step 4]** fred_robust
+4. **[Step 4]** fred_robust ✅ (2026-04-24 — `fred_robust.R` 22 series retry/graceful + long+wide 병행 저장. `load_fred_signal()` wide 우선 호환 갱신)
 5. **[Step 5]** regime_signal v2 strong
 6. **[Step 6]** Briefing graceful fallback
 7. **[Step 7]** Healthcheck + alert

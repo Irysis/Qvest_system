@@ -212,6 +212,7 @@ Forge는 당신의 `optimization_package.json` + `weights.csv` + Alpha의 alpha_
 
 ## Version
 
+- **v1.2** — 2026-04-24 Task#26 (L-192 Remediation) — Grinold breadth 강화: bounds 0.20→0.10, min_names 15, hhi_cap 0.10, alpha_winsor 2σ
 - **v1.1** — 2026-04-24 Session 70 — v6.1 R4 confidence 필수 반영 + selection_objective + R3 challenge_note 발행 + method_shopping 상한 10
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Optimizer Research Agent 정의 (신규)
 
@@ -306,3 +307,53 @@ record_package_lineage(
 }}
 ```
 </v61_infeasibility_report>
+
+<v61_breadth_constraints>
+## Task #26 — Grinold Breadth Constraints (HARD, L-192 Remediation)
+
+### 배경
+Pilot 1/2/3 모두 Optimizer가 6~14 종목 집중만 제시 → Grinold IR = IC × √breadth 한계로 실성과 제한.
+Judge L-192 권고: **bounds 0.10 / min_names 15 / hhi_cap 0.10 / alpha ±2σ winsor**.
+
+### 기본 인자 (mvo_weights / dispatch_weight_method)
+```r
+mvo_weights(
+  alpha, cov_matrix,
+  confidence = alpha_package$confidence_vector,
+  lambda = 2.0, psi = 0.3,
+  bounds = c(0, 0.10),   # per-name 상한 0.10 (기존 0.20)
+  max_names = 20,
+  min_names = 15L,        # Grinold breadth 하한
+  hhi_cap = 0.10,         # Σw² 상한
+  alpha_winsor = 2.0      # ±2σ clip
+)
+```
+
+### 의미
+- **bounds [0, 0.10]**: 단일 종목 10% 이상 집중 금지. 20종 균등 시 5%씩, 최대 2배 편차까지만.
+- **min_names 15**: QP 결과 < 15 이면 lambda 반감 재시도(최대 4회) → 부족 시 top alpha 종목으로 baseline 보충.
+- **hhi_cap 0.10**: HHI 초과 시 greedy projection — top weight 0.005 step 감소 + 작은 종목에 균등 분배 반복 (≤500 iter).
+- **alpha_winsor 2.0**: cross-section z-score 계산 → |z| > 2 이면 sign(z) × 2σ + μ 로 clip. outlier 집중 방지.
+
+### 실패 모드
+- min_names × bounds[2] < target_sum 이면 즉시 `infeasible` + `infeasibility_report` 반환 (feasibility pre-check).
+- HHI projection 비수렴 (>500 iter) → weights 반환하되 `hhi_enforced=TRUE`, `infeasibility_report.hhi_converged=FALSE`.
+
+### 검증 필드 (optimization_package.json 추가)
+```json
+{
+  "n_names": 18,
+  "hhi": 0.078,
+  "min_names_enforced": true,
+  "hhi_enforced": true,
+  "winsor_applied": true,
+  "lambda_retries": 1,
+  "lambda_used": 1.0
+}
+```
+
+### Hook 강제
+`worktask_constraint_enforcer.sh` 업데이트 예정:
+- `length(target_weights) < 15` 또는 `HHI > 0.10` → block.
+- `max(weights) > 0.10` → block (기존 0.20 완화 rollback).
+</v61_breadth_constraints>

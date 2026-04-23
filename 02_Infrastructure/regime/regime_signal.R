@@ -102,34 +102,90 @@ load_msm_signal <- function() {
 #==============================================================================
 
 load_fred_signal <- function() {
+  # Priority 1: macro_regime.parquet (pre-computed monthly MRS via fred_compute_regime)
   fred_path <- if (exists("FRED_REGIME_CACHE")) {
     FRED_REGIME_CACHE
   } else {
     file.path(CACHE_DIR, "macro_regime.parquet")
   }
 
-  if (!file.exists(fred_path)) {
+  if (file.exists(fred_path)) {
+    dt <- as.data.table(read_parquet(fred_path))
+    dt[, Date := as.Date(Date)]
+    dt[, YM := format(Date, "%Y-%m")]
+    setnames(dt, "Macro_Risk_Score", "FRED_MRS", skip_absent = TRUE)
+    keep_cols <- intersect(names(dt),
+                           c("Date", "YM", "FRED_MRS", "VIX_Regime", "Buddha_Mode"))
+    dt <- dt[, ..keep_cols]
+    cat(sprintf("[regime_signal] FRED loaded (regime cache): %d months | %s ~ %s\n",
+                nrow(dt), min(dt$Date), max(dt$Date)))
+    return(dt)
+  }
+
+  # Priority 2 (Step 4): fred_robust wide/long format → compute simple MRS placeholder
+  # Briefing 호환: wide 우선, long fallback. MRS 계산 불가 시 NA_real_ 반환.
+  robust_wide <- file.path(CACHE_DIR, "fred_macro_wide.parquet")
+  robust_long <- file.path(CACHE_DIR, "fred_macro.parquet")
+
+  wide_dt <- NULL
+  if (file.exists(robust_wide)) {
+    wide_dt <- as.data.table(read_parquet(robust_wide))
+    cat(sprintf("[regime_signal] FRED loaded (robust wide): %d rows\n", nrow(wide_dt)))
+  } else if (file.exists(robust_long)) {
+    long_dt <- as.data.table(read_parquet(robust_long))
+    if (all(c("Date", "Series", "Value") %in% names(long_dt))) {
+      wide_dt <- dcast(long_dt, Date ~ Series, value.var = "Value")
+      cat(sprintf("[regime_signal] FRED loaded (robust long→wide): %d rows\n",
+                  nrow(wide_dt)))
+    }
+  }
+
+  if (is.null(wide_dt) || nrow(wide_dt) == 0) {
     warning("[regime_signal] FRED regime cache not found. Layer 2 disabled.")
     return(data.table(Date = as.Date(character(0)),
                       YM = character(0),
                       FRED_MRS = numeric(0)))
   }
 
-  dt <- as.data.table(read_parquet(fred_path))
-  dt[, Date := as.Date(Date)]
-  dt[, YM := format(Date, "%Y-%m")]
+  # Monthly aggregation: last obs per YM
+  date_col <- intersect(c("Date", "date"), names(wide_dt))[1]
+  if (is.na(date_col)) {
+    warning("[regime_signal] FRED wide has no Date column. Layer 2 disabled.")
+    return(data.table(Date = as.Date(character(0)), YM = character(0),
+                      FRED_MRS = numeric(0)))
+  }
+  if (date_col != "Date") setnames(wide_dt, date_col, "Date")
+  wide_dt[, Date := as.Date(Date)]
+  wide_dt[, YM := format(Date, "%Y-%m")]
 
-  # Rename for clarity
-  setnames(dt, "Macro_Risk_Score", "FRED_MRS", skip_absent = TRUE)
+  # Month-end last obs for key axes
+  key_cols <- intersect(c("VIX", "HY_Spread", "Term_Spread", "KRW_USD",
+                          "StL_Fin_Stress", "Chi_Fin_Cond"),
+                        names(wide_dt))
+  monthly <- wide_dt[, {
+    last_row <- .SD[which.max(Date)]
+    as.list(last_row)
+  }, by = YM, .SDcols = unique(c("Date", key_cols))]
 
-  # Keep essential columns
-  keep_cols <- intersect(names(dt),
-                         c("Date", "YM", "FRED_MRS", "VIX_Regime", "Buddha_Mode"))
-  dt <- dt[, ..keep_cols]
-
-  cat(sprintf("[regime_signal] FRED loaded: %d months | %s ~ %s\n",
-              nrow(dt), min(dt$Date), max(dt$Date)))
-  dt
+  # Simplified MRS approximation (full calc in fred_compute_regime)
+  monthly[, FRED_MRS := 0]
+  if ("VIX" %in% names(monthly)) {
+    monthly[, FRED_MRS := FRED_MRS +
+              fifelse(!is.na(VIX) & VIX > 30, 20,
+                      fifelse(!is.na(VIX) & VIX > 20, 10, 0))]
+  }
+  if ("Term_Spread" %in% names(monthly)) {
+    monthly[, FRED_MRS := FRED_MRS +
+              fifelse(!is.na(Term_Spread) & Term_Spread < 0, 15, 0)]
+  }
+  if ("HY_Spread" %in% names(monthly)) {
+    monthly[, FRED_MRS := FRED_MRS +
+              fifelse(!is.na(HY_Spread) & HY_Spread > 5.0, 15, 0)]
+  }
+  monthly <- monthly[, .(Date, YM, FRED_MRS)]
+  cat(sprintf("[regime_signal] FRED robust MRS computed: %d months | %s ~ %s\n",
+              nrow(monthly), min(monthly$Date), max(monthly$Date)))
+  monthly
 }
 
 
