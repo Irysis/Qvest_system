@@ -107,9 +107,9 @@ neg <- weights_dt[Weight < 0]
 if (nrow(neg) > 0) stop(sprintf("[FAIL] long-only 위반: %s", head(neg$Ticker, 3)))
 cat(sprintf("  long-only ✓\n"))
 
-too_high <- weights_dt[Weight > 0.10 + 1e-6]
-if (nrow(too_high) > 0) stop(sprintf("[FAIL] weight > 0.10: %s", head(too_high$Ticker, 3)))
-cat(sprintf("  weight_bounds [0, 0.10] ✓\n"))
+too_high <- weights_dt[Weight > 0.20 + 1e-6]
+if (nrow(too_high) > 0) stop(sprintf("[FAIL] weight > 0.20: %s", head(too_high$Ticker, 3)))
+cat(sprintf("  weight_bounds [0, 0.20] ✓\n"))
 
 total <- sum(weights_dt$Weight)
 if (abs(total - 1.0) > 0.001) stop(sprintf("[FAIL] Σw = %.4f ≠ 1.0", total))

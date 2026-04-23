@@ -89,7 +89,7 @@
 - **조치**: Optimizer Agent 재실행
 
 ### RF-O7: Weight bounds 위반 (Severity: CRITICAL — Hook block)
-- **조건**: `any(target_weights < 0 || target_weights > 0.10)`
+- **조건**: `any(target_weights < 0 || target_weights > 0.20)`
 - **대응**: Hook hard block
 - **조치**: Optimizer Agent 재실행
 

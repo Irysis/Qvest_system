@@ -24,5 +24,5 @@ $$\text{subject to} \quad \mathbf{1}'x = 0$$
 **Hard Constraints** (사용자 강제, Hook block):
 - max_names ≤ 20
 - long-only (weights ≥ 0)
-- weight_bounds [0, 0.10]
+- weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)

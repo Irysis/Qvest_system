@@ -54,7 +54,7 @@ Agent가 주어진 Alpha + Risk에서 SR 최대화 방법론 **스스로 발견*
 
 - max_names ≤ 20
 - long-only (weights ≥ 0)
-- weight_bounds [0, 0.10]
+- weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)
 
 ## 실패 시

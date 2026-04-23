@@ -135,7 +135,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 | RF-O4 | HIGH | constraint dual 급증 > 1000 |
 | RF-O5 | CRITICAL | length(target_weights) > 20 (Hook block) |
 | RF-O6 | CRITICAL | \|sum(weights) - 1\| > 0.001 (Hook block) |
-| RF-O7 | CRITICAL | any(weights < 0) or any(weights > 0.10) (Hook block) |
+| RF-O7 | CRITICAL | any(weights < 0) or any(weights > 0.20) (Hook block) |
 </red_flags>
 
 <hard_constraints>
@@ -143,7 +143,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 
 - **max_names ≤ 20** (hard cap, 슬리브당 아님)
 - **long-only** (weights ≥ 0)
-- **weight_bounds** [0, 0.10]
+- **weight_bounds** [0, 0.20]
 - **Σw** = 1 (absolute) / = 0 (active)
 - **universe** request.json `universe_definition.label` 준수
 - **liquidity** 20d avg TV ≥ 2e8원 (universe 필터)

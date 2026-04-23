@@ -99,7 +99,7 @@ APT 실무: 거시요인 접근보다 **기업특성(fundamental) 접근**이 OO
 |---|---|---|
 | 최종 종목수 | **20종 hard** | `worktask_constraint_enforcer.sh` |
 | Long-only | weights ≥ 0 | same |
-| Weight bounds | [0, 0.10] | same |
+| Weight bounds | [0, 0.20] | same |
 | Σw | = 1 (absolute) / = 0 (active) | same |
 | Universe | KOSPI200 ∪ KOSDAQ150 | `worktask_spec_validator.sh` |
 | Liquidity | 20d avg TV ≥ 2e8원 | same |

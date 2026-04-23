@@ -60,7 +60,7 @@ description: QEPM 3-Agent 아키텍처 인식 코드 검토 + 간소화. Alpha/R
 모든 코드에서 확인:
 - **max_names 20** 적용 여부 (Optimizer + Forge)
 - **long-only** (weights ≥ 0)
-- **weight_bounds [0, 0.10]**
+- **weight_bounds [0, 0.20]**
 - **liquidity_min 2e8** (LIQ_THRESHOLD)
 - **transaction_cost 15bps** (cost_model_version 준수)
 - **universe** (KOSPI200 ∪ KOSDAQ150)

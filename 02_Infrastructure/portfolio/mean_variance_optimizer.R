@@ -21,7 +21,7 @@ suppressPackageStartupMessages({
 #   alpha: named vector (Ticker → expected active return)
 #   cov_matrix: symmetric PD matrix (Ticker × Ticker)
 #   lambda: risk-aversion (default 1.0)
-#   bounds: c(min_w, max_w) = c(0, 0.10)
+#   bounds: c(min_w, max_w) = c(0, 0.20)
 #   max_names: hard cap (default 20)
 #   current_weights: named vector (for turnover penalty)
 #   turnover_penalty: φ (default 0.0)
@@ -29,7 +29,7 @@ suppressPackageStartupMessages({
 mvo_weights <- function(alpha,
                          cov_matrix,
                          lambda = 1.0,
-                         bounds = c(0, 0.10),
+                         bounds = c(0, 0.20),
                          max_names = 20,
                          current_weights = NULL,
                          turnover_penalty = 0.0,
@@ -147,7 +147,7 @@ mvo_weights <- function(alpha,
 mvo_grid_search <- function(alpha, cov_matrix,
                              lambda_grid = c(0.5, 1.0, 2.0, 5.0),
                              phi_grid = c(0.0, 0.2, 0.5),
-                             bounds = c(0, 0.10),
+                             bounds = c(0, 0.20),
                              max_names = 20) {
   results <- list()
   i <- 0
@@ -176,5 +176,5 @@ mvo_grid_search <- function(alpha, cov_matrix,
 }
 
 cat("[mean_variance_optimizer.R] Loaded. Functions:\n")
-cat("  mvo_weights(alpha, cov_matrix, lambda=1.0, bounds=c(0,0.10), max_names=20)\n")
+cat("  mvo_weights(alpha, cov_matrix, lambda=1.0, bounds=c(0,0.20), max_names=20)\n")
 cat("  mvo_grid_search(alpha, cov_matrix, lambda_grid, phi_grid)\n")

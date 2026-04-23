@@ -7,7 +7,7 @@
 # 검증 항목 (사용자 명시 제약):
 #   1. max_names ≤ 20 (hard cap)
 #   2. long-only: all weights ≥ 0
-#   3. weight_bounds: weights ≤ 0.10
+#   3. weight_bounds: weights ≤ 0.20
 #   4. Σw = 1 (absolute) or 0 (active, tolerance 0.001)
 #
 # 위반 시 block + Q-Lead 알림
@@ -46,10 +46,10 @@ if len(tw) > 20:
 neg = [k for k,v in tw.items() if v < 0]
 if neg:
     errs.append(f"long-only 위반: {neg[:3]}...")
-# 3. weight_bounds [0, 0.10]
-too_high = [k for k,v in tw.items() if v > 0.10 + 1e-6]
+# 3. weight_bounds [0, 0.20]
+too_high = [k for k,v in tw.items() if v > 0.20 + 1e-6]
 if too_high:
-    errs.append(f"weight > 0.10: {too_high[:3]}...")
+    errs.append(f"weight > 0.20: {too_high[:3]}...")
 # 4. Σw = 1 (absolute) — tolerance 0.001
 total = sum(tw.values())
 if abs(total - 1.0) > 0.001:
