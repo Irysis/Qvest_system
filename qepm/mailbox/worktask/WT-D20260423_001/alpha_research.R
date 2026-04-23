@@ -104,19 +104,13 @@ load_candidates <- function(fpath) {
 
 cat("Loading factor data via load_month_factors() (PIT-safe, C13/C15 compliant)...\n")
 cat("This may take several minutes for 145 months...\n")
-# Process in batches to avoid verbose align output
-invisible(capture.output(
-  factor_list <- lapply(seq_along(use_files), function(i) {
-    if (i %% 20 == 0) cat("  Progress:", i, "/", length(use_files), "\n")
-    load_candidates(use_files[i])
-  })
-))
+factor_list <- lapply(seq_along(use_files), function(i) {
+  if (i %% 20 == 0) cat("  Progress:", i, "/", length(use_files), "\n")
+  load_candidates(use_files[i])
+})
 factor_list <- Filter(Negate(is.null), factor_list)
-factor_all  <- rbindlist(factor_list, use.names = TRUE)
+factor_all  <- rbindlist(factor_list, use.names = TRUE, fill = TRUE)
 
-# Convert month_ym to Date (end of month for PIT consistency)
-factor_all[, sig_date := as.Date(paste0(substr(as.character(month_ym), 1, 4), "-",
-                                         substr(as.character(month_ym), 5, 6), "-20"))]
 cat("Factor DB loaded:", nrow(factor_all), "rows, unique months:", uniqueN(factor_all$sig_date), "\n")
 cat("Coverage per factor:\n")
 print(factor_all[, .(n_months = uniqueN(sig_date), n_rows = .N), by = Factor_Name])
@@ -146,28 +140,22 @@ raw <- as.data.table(raw)
 cat("RAWDATA cols:", paste(names(raw)[1:min(15, ncol(raw))], collapse=", "), "\n")
 cat("RAWDATA rows:", nrow(raw), "\n")
 
-# Determine return column
-if ("Ret" %in% names(raw)) {
-  raw[, Date := as.Date(Date)]
-  raw[, month_date := as.Date(format(Date, "%Y-%m-01"))]
-  # Use last daily return aggregated to monthly cumulative
-  # Actually Ret here is likely daily — cumulate
-  setkey(raw, Ticker, Date)
-  raw_monthly <- raw[, .(Ret_monthly = prod(1 + Ret, na.rm=TRUE) - 1), by=.(Ticker, month_date)]
-  monthly_raw <- raw_monthly
-  setnames(monthly_raw, "Ret_monthly", "Ret")
-} else if ("Close" %in% names(raw)) {
-  raw[, Date := as.Date(Date)]
-  setkey(raw, Ticker, Date)
-  raw[, month_date := as.Date(format(Date, "%Y-%m-01"))]
-  monthly_raw <- raw[, .(Close = last(Close)), by = .(Ticker, month_date)]
-  setkey(monthly_raw, Ticker, month_date)
-  monthly_raw[, Ret := Close / shift(Close, 1L) - 1, by = Ticker]
-} else {
-  cat("[ERROR] Cannot construct returns: missing Close and Ret columns\n")
-  cat("Available columns:", paste(names(raw), collapse=", "), "\n")
-  stop("Return construction failed")
-}
+# Compute monthly returns from daily data (compound)
+# PIT-safe: use Close price, last trade day of each month
+raw[, Date := as.Date(Date)]
+setkey(raw, Ticker, Date)
+raw[, month_date := as.Date(format(Date, "%Y-%m-01"))]
+
+# Take last Close of each month, compute month-over-month return
+# Filter to KOSPI200/KOSDAQ150 universe (K200=1 or KQ150=1) and date range
+raw_univ <- raw[(K200 == 1 | KQ150 == 1) & !is.na(Close) &
+                  Date >= (ret_min - 60) & Date <= as.Date("2024-03-31")]
+cat("Universe rows:", nrow(raw_univ), "\n")
+
+monthly_raw <- raw_univ[, .(Close_end = last(Close)), by=.(Ticker, month_date)]
+setkey(monthly_raw, Ticker, month_date)
+monthly_raw[, Ret := Close_end / shift(Close_end, 1L) - 1, by=Ticker]
+cat("Monthly return rows constructed\n")
 
 # Filter to allowed window + 1 extra month for forward return
 ret_min <- as.Date(format(TRAIN_START, "%Y-%m-01"))
