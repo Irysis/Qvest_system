@@ -1,0 +1,50 @@
+{
+  "l_code": "L-191",
+  "strategy_id": "WT-D20260423_002",
+  "grade": "F",
+  "created_at": "2026-04-23",
+  "created_by": "Judge v6.1",
+  "core_reference": "Novy-Marx R (2012) 'Is Momentum Really Momentum?' JFE + Blitz D, Huij J, Martens M (2011) 'Residual Momentum' JFQA + Harvey-Liu-Zhu (2016) 'The Cross-Section of Expected Returns' RFS multiple testing threshold",
+  "lesson_text": "Macro-Neutral Residual Alpha Discovery WT 실패. 3축(KR10Y + KRW + VIX) rolling 24M OLS residualization은 Novy-Marx(2012)/Blitz-Huij(2011) 이론적으로 타당하나 2022 rate_hike regime 전환 속도 > OLS window 적응 속도로 VAL IC 부호 역전 실증(train +0.0123 → val -0.0353, rate_2022 IC -0.067). 백테스트 CAGR 4.06% / SR 0.289 / MDD -44.03% / IR 0.217 / Harvey t 1.306 / DSR 0.462 모두 hurdle 미달. Gate A/B/E PASS (PIT·Isolation·Concentration HHI 0.108), Gate C/D/F FAIL (net IR·stress 1/4·drift sign reversal). 교훈 3건: (1) rolling OLS coefficient adaptation lag가 structural break(rate_2022 +250bps) 구간에서 signal reversal 유발, (2) Reversal_5d ↔ Momentum_15d corr=-0.33 음의 상관으로 0.5/0.5 EW 결합이 내부 희석(alpha dilution), (3) idio 49.6% 신호는 MVO confidence-aware가 일부 구제하나 근본 alpha 부족이면 translation 한계(AX-007 partial). 권고 alt: regime-conditional coefficient(Kalman filter) 또는 4-factor 확장(+ KOSPI_mkt). 신규 가설은 별도 Discovery WT로 재제출.",
+  "tags": [
+    "MACRO_RESIDUAL_FAIL",
+    "REGIME_ADAPTATION_LAG",
+    "OLS_WINDOW_LIMIT",
+    "VAL_SIGN_REVERSAL",
+    "DISCOVERY_FAIL",
+    "AX-007_PARTIAL",
+    "ROLE_HONESTY_PARTIAL_FAIL",
+    "NOVY_MARX_2012",
+    "BLITZ_HUIJ_2011",
+    "HARVEY_T_FAIL",
+    "DSR_METHOD_SHOPPING_PENALTY",
+    "STRESS_1_OF_4"
+  ],
+  "hurdle_metrics": {
+    "cagr": 0.0406,
+    "sr": 0.2892,
+    "mdd": -0.4403,
+    "ir_realized": 0.217,
+    "rank_ic": 0.0123,
+    "icir": 0.134,
+    "harvey_t": 1.306,
+    "dsr": 0.462,
+    "val_ic": -0.0353
+  },
+  "gate_result": {
+    "A_PIT": "PASS",
+    "B_Isolation": "PASS",
+    "C_NetAlpha": "FAIL",
+    "D_Crowding": "FAIL",
+    "E_Concentration": "PASS",
+    "F_Drift": "FAIL"
+  },
+  "applicable_to": {
+    "market": "KR",
+    "family": "macro_residual",
+    "universe": "top100_by_abs_alpha",
+    "structure": "long_only_top14_mvo"
+  },
+  "retention_priority": "HIGH",
+  "expire_after": null
+}

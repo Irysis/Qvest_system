@@ -1,0 +1,194 @@
+{
+  "task_id": "WT-D20260423_002",
+  "judge_agent": "Judge v6.1",
+  "judged_at": "2026-04-23T17:25:00+0900",
+  "schema_version": "v6.1_gate_ABCDEF",
+  "hypothesis": "Macro-Neutral Residual Alpha Discovery (Residual_Reversal_5d + Residual_Momentum_15d, 3-axis macro OLS)",
+  "wt_type": "DISCOVERY",
+  "verdict": "FAIL",
+  "grade": "F",
+  "disposition": "DISCARD_WITH_LESSONS",
+  "admission_allowed": false,
+
+  "sg_check_s6_entry": {
+    "status": "PASS",
+    "packages_complete": ["alpha_package", "risk_package", "optimization_package", "backtest_result", "judge_ready"],
+    "integration_hash_match": true,
+    "lockbox_sealed": true,
+    "bt_end_lt_lockbox_start": true,
+    "note": "Integration audit 3-hash match 확인, lockbox 2024-01-22+ 미접근. Judge 진입 자격 충족."
+  },
+
+  "gates": {
+    "A_PIT_Enforcement": {
+      "status": "PASS",
+      "C1_full_sample_stats": "OK — rolling 24M OLS, expanding windows only",
+      "C2_same_day_circular": "OK — price t-1, monthly ret t-1 close",
+      "C9_overlay_lag": "OK — no DD/VT overlay applied (Discovery WT — S1 signal only)",
+      "C11_macro_time_axis": "OK — KR_Gov10Y / KRW_USD / VIX 모두 t-1 lag",
+      "C14_IC_Usable_Date": "OK — alpha scores PIT-safe",
+      "lookahead_patterns_detected": 0,
+      "note": "Forge integration_audit C1/C2/C9/C14 PASS 확인 + 설계 원리(rolling OLS residualization) 자체가 PIT-safe."
+    },
+    "B_Isolation": {
+      "status": "PASS",
+      "lockbox_window": "2024-01-22 ~ 2026-01-22 SEALED",
+      "lockbox_accessed": false,
+      "train_end": "2022-01-20",
+      "val_end": "2024-01-21",
+      "bt_end": "2024-01-21",
+      "r2_p2_compliant": true,
+      "note": "Alpha selection(C_Composite)은 train+val에서만 수행. lockbox zero-access 검증."
+    },
+    "C_Net_Alpha_Gt_Cost": {
+      "status": "FAIL",
+      "ir_realized": 0.217,
+      "ir_threshold_discovery": 0.20,
+      "ir_threshold_deployment": 0.30,
+      "net_ir_expected": 0.2525,
+      "cost_realized_bps": 4.5,
+      "cagr": 0.0406,
+      "sr": 0.2892,
+      "note": "IR 0.217은 Discovery threshold 0.20을 간신히 초과하지만, val IC 부호 역전(-0.035) + Harvey t 1.306 + DSR 0.462가 동반되어 OOS에서 net alpha > cost 유지 불가. 실질 FAIL.",
+      "verdict_reason": "realized IR이 threshold를 충족하더라도 val sign reversal 실증으로 OOS predictive power 상실."
+    },
+    "D_Crowding_Stress": {
+      "status": "FAIL",
+      "stress_passed": 1,
+      "stress_total": 4,
+      "stress_breakdown": {
+        "gfc_2008": {"value": -0.4052, "pass": false, "threshold": "> -0.20"},
+        "eudebt_2011": {"value": -0.1921, "pass": true, "threshold": "> -0.20"},
+        "covid_2020": {"value": -0.3384, "pass": false, "threshold": "> -0.20"},
+        "rate_2022": {"value": -0.2378, "pass": false, "threshold": "> -0.20"}
+      },
+      "regime_breakdown_realized": {
+        "rate_2022": -0.0316,
+        "covid_2020": -0.1221,
+        "normal": 0.0547
+      },
+      "note": "stress ≥ 3/4 생존 요건 미달 (1/4 PASS). rate_2022 + covid_2020 모두 negative realized alpha. Residual signal이 macro shock 구간에 구조적으로 취약."
+    },
+    "E_Concentration": {
+      "status": "PASS",
+      "n_names": 14,
+      "max_weight": 0.1767,
+      "max_weight_threshold": 0.20,
+      "hhi": 0.108,
+      "hhi_threshold": 0.15,
+      "top3_weight": 0.4412,
+      "long_only": true,
+      "sum_weights": 1.0,
+      "note": "집중도 기준은 명백히 PASS. 그러나 alpha 자체가 부실해 집중도 PASS가 구제 효과 없음."
+    },
+    "F_Drift_Tolerance": {
+      "status": "FAIL",
+      "oos_is_ratio": -2.87,
+      "train_ic": 0.0123,
+      "val_ic": -0.0353,
+      "drift_direction": "SIGN_REVERSAL",
+      "threshold": 0.7,
+      "subperiod_breakdown": {
+        "2012_2014": -0.024,
+        "2015_2019": 0.0022,
+        "2020_2022": 0.0511
+      },
+      "note": "train IC +0.012 → val IC -0.035. 부호 역전은 drift 중 최악. rolling 24M OLS coefficient adaptation lag가 rate_hike_2022 regime transition 속도 대비 부족. oos/is ratio -2.87 (계산불가 수준 악화)."
+    }
+  },
+
+  "gate_summary": {
+    "total_gates": 6,
+    "passed": 3,
+    "failed": 3,
+    "pass_list": ["A_PIT", "B_Isolation", "E_Concentration"],
+    "fail_list": ["C_Net_Alpha", "D_Crowding", "F_Drift"],
+    "critical_fails": ["F_Drift (sign reversal)", "C_Net_Alpha (val IC negative)", "D_Crowding (1/4 stress)"]
+  },
+
+  "multi_objective_8": {
+    "rank_ic": {"value": 0.0123, "threshold": 0.03, "pass": false},
+    "icir": {"value": 0.134, "threshold": 0.50, "pass": false},
+    "harvey_t": {"value": 1.306, "threshold": 3.0, "pass": false, "reference": "Harvey-Liu-Zhu 2016"},
+    "dsr": {"value": 0.462, "threshold": 0.95, "pass": false, "reference": "Bailey-Lopez de Prado 2014"},
+    "subperiod_stability": {"value": 0.667, "threshold": 0.7, "pass": false},
+    "monotonicity": {"value": 0.444, "threshold": 0.7, "pass": false},
+    "ir_realized": {"value": 0.217, "threshold": 0.20, "pass": true, "caveat": "Discovery threshold only"},
+    "mdd": {"value": -0.4403, "threshold": -0.25, "pass": false}
+  },
+
+  "axiom_audit": {
+    "AX-001_v2": {
+      "applicable": false,
+      "reason": "이 가설은 Defense role이 아닌 idiosyncratic alpha. 전기간 SR/MDD 정상 평가."
+    },
+    "AX-002": {
+      "status": "COMPLIANT",
+      "auditor_note": "실험 우선 의심 완료: residualization 절차(rolling 24M OLS) 자체는 Novy-Marx (2012) + Blitz-Huij (2011) 정석. 신호 자체가 부실 — 실험 버그 아닌 가설 본질 한계."
+    },
+    "AX-007": {
+      "status": "PARTIAL_VIOLATION",
+      "note": "Signal→Portfolio translation 메커니즘 점검: IC 0.012 × √14 ≈ 0.046 예상 IR → 실제 0.217 (MVO confidence-aware가 일부 상향). 그러나 근본 alpha 부족으로 translation도 약함."
+    },
+    "AX-003_KR_value": {"applicable": false},
+    "AX-004_KR_quality": {"applicable": false},
+    "AX-005_KR_defense": {"applicable": false},
+    "AX-008_triangulation": {
+      "status": "MET",
+      "sources": ["Forge integration_audit PASS", "Alpha Agent GRAD_FAIL self-report", "Judge independent review"],
+      "consensus": "All 3 sources agree on FAIL disposition."
+    }
+  },
+
+  "role_honesty_audit": {
+    "declared_role": "idiosyncratic_alpha (macro-neutral)",
+    "actual_role_evidence": "rate_2022 IC -0.067 + KR10Y residual exposure 0.0372 → macro-neutral claim 부분 위반",
+    "role_disguise_detected": "PARTIAL — 'macro-neutral' 라벨이 rolling OLS adaptation lag 구간에서 실증적으로 유효하지 않음",
+    "verdict": "Role honesty PARTIAL FAIL (경미). AX-007 partial violation과 일관."
+  },
+
+  "dsr_penalty_applied": {
+    "method_shopping_count": {
+      "alpha_candidates": 3,
+      "risk_candidates": 3,
+      "opt_candidates": 7,
+      "total": 13
+    },
+    "penalty_formula": "0.05 per candidate",
+    "total_penalty": 0.65,
+    "dsr_before_penalty": 0.462,
+    "dsr_after_penalty": "approx 0 (cap floor)",
+    "note": "method shopping 13회 누적 (R2C 기준 HARD 5 초과 2회). DSR 실질 0."
+  },
+
+  "challenge_note_response": {
+    "cn_id": "CN-WT-D20260423_002-001",
+    "status": "ACKNOWLEDGED",
+    "alpha_agent_recommendations": [
+      "alt_A: KR 금리 regime 조건부 잔차 신호",
+      "alt_B: 일간 잔차 직접 사용 + weekly rebalance",
+      "alt_C: 4-factor (KR10Y + KRW_USD + VIX + KOSPI_mkt)"
+    ],
+    "judge_recommendation": "alt_A(regime-conditional OLS coefficient, Kalman filter) 또는 4-factor 확장이 structural break 구간 adaptation lag 해소에 가장 유망. 단, 신규 가설은 별도 Discovery WT로 재제출 필요."
+  },
+
+  "final_verdict_text": "WT-D20260423_002 Macro-Neutral Residual Alpha Discovery는 Gate A/B/E PASS(PIT·Isolation·Concentration)에도 불구하고 Gate C/D/F FAIL(Net alpha·Crowding·Drift). VAL IC 부호 역전(-0.035) + Harvey t 1.306 + DSR 0.462(penalty 후 0) + rate_2022 stress -23.8% + 4/4 multi-obj FAIL로 FAIL 확정. AX-007 partial violation, Role Honesty partial fail. Discovery WT 자격 유지(학습 교훈으로 가치), Deployment 전환 절대 불가. L-191 적립.",
+
+  "disposition_details": {
+    "status": "DISCARD_WITH_LESSONS",
+    "retain_artifacts_for_knowledge": true,
+    "archive_path": "qepm/mailbox/_archive/judge/done/",
+    "l_code_recorded": "L-191",
+    "registry_action": "DO_NOT_PROMOTE",
+    "governor_action": "NOTIFY_AND_ARCHIVE"
+  },
+
+  "next_steps": {
+    "for_alpha_agent": "alt_A(regime-conditional OLS + Kalman) 또는 alt_C(4-factor + KOSPI_mkt) 신규 Discovery WT 제출",
+    "for_governor": "WT-D20260423_002 admission NEVER. STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20% 유지",
+    "for_q_lead": "L-191 methodology_memory.md 적립, Pilot 2 FAIL 확정 보고, Pilot 3(있다면) 재개 준비"
+  },
+
+  "r11_lineage": "record_package_lineage() 직접 호출 완료 (judge_verdict 엔트리 추가 예정)",
+  "r12_hurdle_preservation": "허들 기준 하향 없음. v2.3 6-Gate + Discovery IR 0.20 threshold 엄격 적용. FAIL 확정."
+}

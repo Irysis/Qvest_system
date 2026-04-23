@@ -1,0 +1,32 @@
+{
+  "task_id": "WT-D20260423_002",
+  "as_of_date": "2026-04-23",
+  "estimation_method": "structural_proxy_discovery_wt",
+  "signal_type": "Macro-Residual (Reversal_5d + Momentum_15d)",
+  "note": "Discovery WT — Factor DB 미적용 구조적 추정. Alpha 약함(ICIR=0.134) 기반 Sigma 추정.",
+  "port_vol_monthly_pct": 6.764,
+  "port_vol_annual_pct": 23.431,
+  "var_99_monthly": 0.1576,
+  "cvar_95_monthly": 0.125,
+  "cvar_99_monthly": 0.1891,
+  "key_risk_finding": {
+    "rate_2022_alpha_fail_mechanism": "KR10Y +250bps(2022) → rolling 24M OLS 계수 적응 지연 → 잔류 KR10Y 노출 (avg_exposure=0.0372) → train IC +0.012 → val IC -0.035 부호 역전. 이는 signal 실패가 아닌 regime 전환 속도 > rolling window 적응 속도의 구조적 결과.",
+    "reversal_momentum_structure": "Reversal_5d ↔ Momentum_15d factor cor = -0.330 (음의 상관). 단일 alpha_package 내 상반된 방향성 → 신호 희석."
+  },
+  "stress_tests": {
+    "market_down_5": -0.0451,
+    "value_crash": -0.0757,
+    "momentum_reversal": -0.054,
+    "gfc_2008": -0.4052,
+    "eudebt_2011": -0.1921,
+    "covid_2020": -0.3384,
+    "rate_2022": -0.2378,
+    "normal_baseline": -0.0181
+  },
+  "regime_correlation": {
+    "crisis_market_cor": 0.68,
+    "rate_hike_market_cor": 0.74,
+    "rate_hike_macro_kr10y_cor": 0.58,
+    "normal_market_cor": 0.83
+  }
+}

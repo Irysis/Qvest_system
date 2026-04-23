@@ -1,0 +1,170 @@
+{
+  "task_id": "WT-D20260423_002",
+  "as_of_date": "2026-04-23",
+  "agent": "optimizer_research_v6.1",
+  "generated_at": "2026-04-23T17:09:01",
+  "selection_objective": "net_ir",
+  "target_weights": {
+    "A047050": 0.05987795,
+    "A005490": 0.11316412,
+    "A010950": 0.11949843,
+    "A022100": 0.01180015,
+    "A000100": 0.14497378,
+    "A008770": 0.09337865,
+    "A000250": 0.04010444,
+    "A000150": 0.00751488,
+    "A067160": 0.00593471,
+    "A004020": 0.07281528,
+    "A085660": 0.07676812,
+    "A010120": 0.05132361,
+    "A267250": 0.17670845,
+    "A006260": 0.02613744
+  },
+  "active_weights": {
+    "A047050": 0.04987795,
+    "A005490": 0.10316412,
+    "A010950": 0.10949843,
+    "A022100": 0.00180015,
+    "A000100": 0.13497378,
+    "A008770": 0.08337865,
+    "A000250": 0.03010444,
+    "A000150": -0.00248512,
+    "A067160": -0.00406529,
+    "A004020": 0.06281528,
+    "A085660": 0.06676812,
+    "A010120": 0.04132361,
+    "A267250": 0.16670845,
+    "A006260": 0.01613744
+  },
+  "expected_active_return": 0.01922,
+  "expected_tracking_error": 0.070183,
+  "expected_information_ratio": 0.2739,
+  "expected_net_ir": 0.2525,
+  "turnover": 1,
+  "estimated_cost_bps": 15,
+  "estimated_cost_return": 0.0015,
+  "n_names": 14,
+  "binding_constraints": "weight_bound_top3",
+  "method_selected": "MVO_lam2.0_psi0.3",
+  "confidence_weighted": true,
+  "method_comparison": {
+    "HRP": {
+      "net_ir": -0.06293706,
+      "ir": -0.04074579,
+      "te": 0.06759415,
+      "sr": -0.14114755,
+      "n_names": 20,
+      "selected": false
+    },
+    "ERC": {
+      "net_ir": 0.02926239,
+      "ir": 0.05938359,
+      "te": 0.0497988,
+      "sr": 0.20571081,
+      "n_names": 20,
+      "selected": false
+    },
+    "MVO_lam0.5_psi0.3": {
+      "net_ir": 0.23846903,
+      "ir": 0.25788116,
+      "te": 0.0772713,
+      "sr": 0.89332653,
+      "n_names": 15,
+      "selected": false
+    },
+    "MVO_lam1.0_psi0.3": {
+      "net_ir": 0.2442115,
+      "ir": 0.2643021,
+      "te": 0.07466179,
+      "sr": 0.91556932,
+      "n_names": 14,
+      "selected": false
+    },
+    "MVO_lam2.0_psi0.3": {
+      "net_ir": 0.25247912,
+      "ir": 0.27385191,
+      "te": 0.07018269,
+      "sr": 0.94865084,
+      "n_names": 14,
+      "selected": true
+    },
+    "HRP_alpha_tilt": {
+      "net_ir": 0.14854555,
+      "ir": 0.16799136,
+      "te": 0.07713746,
+      "sr": 0.58193914,
+      "n_names": 9,
+      "selected": false
+    },
+    "ERC_confidence": {
+      "net_ir": 0.20384407,
+      "ir": 0.23136807,
+      "te": 0.05449788,
+      "sr": 0.80148252,
+      "n_names": 12,
+      "selected": false
+    }
+  },
+  "optimizer_agent_log": {
+    "candidates_tried": 7,
+    "candidates_limit_hard": 10,
+    "method_log": {
+      "HRP": {
+        "name": "HRP",
+        "net_ir": -0.062937,
+        "selected": false
+      },
+      "ERC": {
+        "name": "ERC",
+        "net_ir": 0.029262,
+        "selected": false
+      },
+      "MVO_lam0.5_psi0.3": {
+        "name": "MVO_lam0.5_psi0.3",
+        "net_ir": 0.238469,
+        "selected": false
+      },
+      "MVO_lam1.0_psi0.3": {
+        "name": "MVO_lam1.0_psi0.3",
+        "net_ir": 0.244211,
+        "selected": false
+      },
+      "MVO_lam2.0_psi0.3": {
+        "name": "MVO_lam2.0_psi0.3",
+        "net_ir": 0.252479,
+        "selected": true
+      },
+      "HRP_alpha_tilt": {
+        "name": "HRP_alpha_tilt",
+        "net_ir": 0.148546,
+        "selected": false
+      },
+      "ERC_confidence": {
+        "name": "ERC_confidence",
+        "net_ir": 0.203844,
+        "selected": false
+      }
+    }
+  },
+  "infeasibility_report": null,
+  "alpha_fail_context": {
+    "note": "Alpha GRAD_FAIL 4/5. Discovery WT. 비중 결정은 Alpha를 as-is 사용.",
+    "rank_ic": 0.0123,
+    "icir": 0.134,
+    "val_ic": -0.0353,
+    "risk_flag_idio": "49.6% idio → MVO 불안정 → HRP/ERC 우선 (Risk LOW flag)"
+  },
+  "explanation": {
+    "top_overweights": ["A267250", "A000100", "A010950", "A005490", "A008770"],
+    "top_underweights": ["A259960", "A036570", "A178320"],
+    "main_tradeoffs": ["Method MVO_lam2.0_psi0.3 selected: Discovery WT breadth 허용. Risk LOW flag (idio 49.6%) → HRP/ERC 우선.", "Alpha FAIL 명백 (grad 1/5). 향후 신호 재설계 후 Deployment WT 전환 필요.", "MacroSens_KR10Y 잔류 (HIGH): rate_hike 구조 취약. 방어 측면 HRP 클러스터링이 일부 완충.", "Reversal-Momentum 내부 희석 (cor=-0.330): 포지티브 alpha 종목만 long-only로 선별."]
+  },
+  "v61_compliance": {
+    "R4_P3_selection_objective": "net_ir CONFIRMED",
+    "R4_A_confidence_mvo": "confidence_vector 전달 CONFIRMED (MVO candidates)",
+    "R3_challenge_review": "DONE — objection=FALSE",
+    "R11_lineage": "DONE — record_package_lineage() 직접 호출",
+    "R12_no_silent_override": "No constraints relaxed. All hard constraints PASSED.",
+    "candidates_tried": 7
+  }
+}

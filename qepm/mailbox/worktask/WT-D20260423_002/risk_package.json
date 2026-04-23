@@ -1,0 +1,153 @@
+{
+  "task_id": "WT-D20260423_002",
+  "as_of_date": "2026-04-23",
+  "agent": "risk_research_v1.1",
+  "generated_at": "2026-04-23T17:01:54",
+  "alpha_failure_context": {
+    "note": "Alpha FAIL 확인 (grad 1/5 PASS). Risk는 신호 약함 구조를 독립적으로 계량화.",
+    "alpha_rank_ic": 0.0123,
+    "alpha_icir": 0.134,
+    "alpha_harvey_t": 1.306,
+    "alpha_dsr": 0.462,
+    "val_ic": -0.0353,
+    "rate_hike_2022_ic": -0.067
+  },
+  "evaluation_windows": {
+    "train": "2012-01-20 ~ 2022-01-20 (Omega estimation — 120M)",
+    "validation": "2022-01-21 ~ 2024-01-21 (method selection — rate_hike 포함)",
+    "lockbox": "SEALED — not accessed (2024-01-22 ~ 2026-01-22)"
+  },
+  "subset_scope": {
+    "method": "top_100_by_abs_alpha",
+    "n_tickers": 100,
+    "note": "Discovery WT scope: |alpha| 상위 100 / 150 전체"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260423_002/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260423_002/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260423_002/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260423_002/covariance.parquet",
+  "risk_summary": {
+    "top_common_risks": ["Market (33%)", "Idiosyncratic (50%) — 잔차 신호 구조적 특성", "Sector_IT (approx 13%) + Sector_Industrial (approx 11%)", "MacroSens_KR10Y (0.0%) — rate_2022 구간 핵심 위험", "MacroSens_VIX (approx 2%) + MacroSens_KRW (approx 1%)"],
+    "crowding_flags": [
+      "Residual_Reversal+Momentum 동일 alpha 결합 — 거시 shock(rate_2022) 시 동시 신호 붕괴 위험. VAL IC 부호 역전 실증. [MEDIUM]",
+      "단기 잔차 reversal 신호 — KOSPI200 기관 공통 reversal trade 집중 가능. Top alpha tickers: A259960, A036570, A178320"
+    ],
+    "liquidity_flags": [
+      "Residual_Reversal_5d 신호: 5일 reversal → 월간 리밸런싱으로 포착 한계. turnover_proxy=0.95 고회전 구조."
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0451,
+      "value_crash": -0.0757,
+      "momentum_reversal": -0.054,
+      "gfc_2008": -0.4052,
+      "eudebt_2011": -0.1921,
+      "covid_2020": -0.3384,
+      "rate_2022": -0.2378,
+      "normal_baseline": -0.0181
+    }
+  },
+  "diagnostics": {
+    "condition_number": 273.77,
+    "shrinkage_used": true,
+    "shrinkage_method": "gerber_rmt",
+    "factor_coverage_pct": 51.7,
+    "idio_risk_share_pct": 49.6,
+    "factor_correlation_warnings": [
+      {
+        "pair": "Residual_Reversal_5d vs Residual_Momentum_15d",
+        "correlation": -0.3298,
+        "severity": "MEDIUM",
+        "note": "음의 상관 — 동일 alpha_package 내 방향 충돌. theta=0.5/0.5 가중치 재검토 권고."
+      }
+    ],
+    "tdc_summary": {
+      "Reversal_vs_Momentum": 0.264,
+      "MacroKR10Y_vs_Market": 0.213,
+      "interpretation": "잔차 신호 내부 음의 의존성 → 꼬리 위험 시 alpha 동시 희석 가능"
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260423_002/regime_correlation.parquet",
+    "port_vol_monthly_pct": 6.764,
+    "port_vol_annual_pct": 23.431,
+    "factor_n": 10,
+    "ticker_n": 100,
+    "rate_2022_diagnosis": {
+      "avg_macro_kr10y_exposure": 0.0372,
+      "rate_shock_assumed_bps": 250,
+      "estimated_rate_loss": 0.0009,
+      "actual_val_ic": -0.0353,
+      "mechanism": "rolling 24M OLS 계수 적응 지연 → 잔류 KR10Y 민감도 미제거"
+    }
+  },
+  "selection_objective": "condition_number",
+  "challenge_flags": [
+    {
+      "flag_id": "RISK_CHL_D002_001",
+      "severity": "HIGH",
+      "type": "macro_residual_exposure_persistence",
+      "message": "MacroSens_KR10Y 잔류 노출 avg=0.0372. rolling 24M OLS 잔차화에도 불구 rate_hike_2022(+250bps) 구간 노출 비제거. IC -0.067 붕괴의 risk 구조 원인. Deployment 전 rate regime 조건부 신호 설계 필요.",
+      "action": "INFO_STRUCTURAL",
+      "discovery_wt_note": "Alpha 이미 GRAD_FAIL — risk 추가 evidence for redesign"
+    },
+    {
+      "flag_id": "RISK_CHL_D002_002",
+      "severity": "MEDIUM",
+      "type": "within_alpha_signal_dilution",
+      "message": "Reversal_5d ↔ Momentum_15d factor cor = -0.330 (음의 상관). 동일 alpha_package 내 상반된 신호 방향성 → 포트폴리오 내 헤징 효과 → alpha 희석. theta=0.5/0.5 EW 결합이 최적 아닐 가능성.",
+      "action": "REDESIGN_RECOMMEND",
+      "alt_design": "Rate regime 조건부 theta 조정: rate_hike=Momentum 비중↑ (reversal 실패 구간)"
+    },
+    {
+      "flag_id": "RISK_CHL_D002_003",
+      "severity": "LOW",
+      "type": "high_idiosyncratic_risk_share",
+      "message": "Factor coverage 51.7% < 80%. idio 비중 49.6% (잔차 신호 구조적 특성). Sigma sparse → MVO 불안정. HRP/ERC 등 risk-parity 최적화 권고.",
+      "action": "OPTIMIZER_GUIDANCE"
+    }
+  ],
+  "method_shopping_summary": {
+    "candidates_tried": 3,
+    "selected": "gerber_rmt",
+    "condition_numbers": {
+      "sample": 104.24,
+      "ledoit_wolf": 101.76,
+      "gerber_rmt": 81.92
+    }
+  },
+  "red_flags": {
+    "RF_R1": {
+      "triggered": false,
+      "value": 32.7,
+      "threshold": 40,
+      "severity": "OK"
+    },
+    "RF_R2": {
+      "triggered": false,
+      "value": 273.77,
+      "threshold": 500,
+      "severity": "OK"
+    },
+    "RF_R3": {
+      "triggered": true,
+      "count": 2,
+      "severity": "MEDIUM"
+    },
+    "RF_R4": {
+      "triggered": false,
+      "value": -4.51,
+      "threshold_pct": -8,
+      "severity": "OK"
+    },
+    "RF_R5": {
+      "triggered": false,
+      "high_cor_pair_count": 0,
+      "note": "Reversal-Momentum cor=-0.330 음의 상관 — 팩터 간 충돌 MONITOR"
+    }
+  },
+  "v61_compliance": {
+    "R2C_method_shopping_log": "DONE (candidates=3, <=5 HARD)",
+    "R4_selection_objective": "condition_number (HARD enum 준수)",
+    "R6_covariance_freshness": "cached at .cache/covariance/WT-D20260423_002_gerber_rmt_20220120.parquet",
+    "lockbox_sealed": "CONFIRMED"
+  },
+  "status": "RISK_DONE"
+}

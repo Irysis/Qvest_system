@@ -1,0 +1,136 @@
+{
+  "task_id": "WT-D20260423_002",
+  "wt_type": "discovery",
+  "hypothesis": "Macro-Neutral Residual Alpha Discovery (Residual_Reversal_5d + Residual_Momentum_15d, 3-axis macro OLS)",
+  "governor_agent": "governor_v61_R5",
+  "evaluated_at": "2026-04-23",
+  "input_refs": {
+    "judge_verdict": "qepm/mailbox/worktask/WT-D20260423_002/judge_verdict.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260423_002/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260423_002/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260423_002/optimization_package.json",
+    "book_state_ref": "qepm/mailbox/governor/book_state.json"
+  },
+  "verdict": "REJECT",
+  "reason": "Judge FAIL Grade F (Gate C Net_Alpha / Gate D Crowding_Stress / Gate F Drift_Tolerance) + VAL IC 부호 역전(-0.035) + Harvey t 1.306 + DSR 0.462(penalty 후 0) + stress 1/4 PASS + multi-objective 7/8 FAIL",
+  "deployment_allowed": false,
+  "admission_rule_evaluation": {
+    "rule_source": "constraint_defaults.json::success_criteria_v61_r10::governor_admission_rule",
+    "rule_text": "judge_pass AND book-level IR improvement >= 0.05 (marginal contribution)",
+    "checks": {
+      "judge_pass": {
+        "value": false,
+        "required": true,
+        "pass": false,
+        "note": "Judge overall_verdict = FAIL (Gate C/D/F FAIL, disposition=DISCARD_WITH_LESSONS)"
+      },
+      "book_ir_improvement_ge_0_05": {
+        "value": "N/A",
+        "required": true,
+        "pass": "N/A",
+        "note": "judge_pass=false 단계에서 admission 중단 — marginal IR 계산 불필요"
+      }
+    },
+    "final_decision": "REJECT (judge_pass=false 단독으로 admission 차단)"
+  },
+  "book_state_snapshot": {
+    "before": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null
+    },
+    "after": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null,
+      "book_weights_unchanged": true
+    },
+    "n_admitted_before": 0,
+    "n_admitted_after": 0,
+    "book_update_called": false,
+    "note": "REJECT 확정으로 book_update() 미호출 — book state 변화 없음. WT-D20260423_001에 이어 연속 REJECT, book 여전히 empty."
+  },
+  "multi_objective_summary": {
+    "net_information_ratio": 0.217,
+    "ir_threshold_discovery": 0.20,
+    "ir_threshold_deployment": 0.30,
+    "harvey_t": 1.306,
+    "dsr_after_penalty": 0.0,
+    "rank_ic": 0.0123,
+    "icir": 0.134,
+    "subperiod_stability": 0.667,
+    "monotonicity": 0.444,
+    "mdd": -0.4403,
+    "regime_robustness_score": {
+      "value": 0.25,
+      "interpretation": "LOW (1/4 stress survival — eudebt_2011만 PASS, gfc_2008/covid_2020/rate_2022 FAIL)"
+    },
+    "interpretability_score": {
+      "value": 0.60,
+      "interpretation": "MEDIUM (3-axis rolling OLS residual composite, 경제적 설명은 가능하나 coefficient adaptation lag 발견)"
+    },
+    "multi_objective_pass_count": "1/8 (ir_realized만 Discovery threshold 통과, 7개 지표 FAIL)",
+    "hurdle_grade_conventional": "F (MDD -44.03% > -45% threshold 근접 + val IC sign reversal)"
+  },
+  "ax_findings": [
+    {
+      "axiom": "AX-007",
+      "status": "PARTIAL_VIOLATION",
+      "detail": "Signal to Portfolio translation 점검: IC 0.012 x sqrt(14) ~ 0.046 예상 IR vs 실제 0.217 (MVO confidence-aware로 일부 상향). 근본 alpha 부족으로 translation도 약함. Judge audit와 일관."
+    },
+    {
+      "axiom": "AX-008",
+      "status": "MET",
+      "detail": "3-source triangulation 충족: Forge integration_audit PASS + Alpha Agent GRAD_FAIL self-report + Judge independent review. 모두 FAIL disposition 일치."
+    },
+    {
+      "axiom": "AX-002",
+      "status": "COMPLIANT (Judge 확인)",
+      "detail": "Residualization 절차(rolling 24M OLS)는 Novy-Marx 2012 + Blitz-Huij 2011 정석. 실험 버그가 아닌 가설 본질 한계로 확인 — 하네스 우회 없음."
+    },
+    {
+      "axiom": "AX-001_v2",
+      "status": "NOT_APPLICABLE",
+      "detail": "Idiosyncratic alpha 역할. Defense 조건부 평가 대상 아님."
+    }
+  ],
+  "role_honesty_note": {
+    "declared_role": "idiosyncratic_alpha (macro-neutral)",
+    "actual": "rate_2022 IC -0.067 + KR10Y residual exposure 0.0372 → macro-neutral 라벨 부분 위반",
+    "verdict": "Role honesty PARTIAL FAIL (경미)"
+  },
+  "remediation_forwarded": [
+    {
+      "priority": 1,
+      "action": "Regime-conditional OLS coefficient (Kalman filter) 적용",
+      "rationale": "rolling 24M OLS adaptation lag가 rate_2022 regime transition 속도 대비 부족 (F_Drift sign reversal 원인). Kalman filter로 coefficient 동적 갱신."
+    },
+    {
+      "priority": 2,
+      "action": "4-factor 확장 (KR10Y + KRW_USD + VIX + KOSPI_mkt)",
+      "rationale": "3-axis macro residualization이 KOSPI 시장 요인을 residual에 남겨 macro-neutral claim 위반. KOSPI_mkt 추가로 완전한 market-neutral 달성."
+    },
+    {
+      "priority": 3,
+      "action": "신규 가설을 별도 Discovery WT로 재제출",
+      "rationale": "현 WT-D20260423_002는 DISCARD_WITH_LESSONS 확정. L-191 교훈 반영 후 신규 WT-D 번호로 재출발 필요. 기존 artifact 수정 금지(R2C lockbox 규정)."
+    }
+  ],
+  "recent_rejections_entry": {
+    "wt_id": "WT-D20260423_002",
+    "rejected_at": "2026-04-23",
+    "hypothesis": "Macro-Neutral Residual Alpha Discovery (Residual_Reversal_5d + Residual_Momentum_15d)",
+    "reason_code": "JUDGE_FAIL_GATE_CDF_VAL_IC_SIGN_REVERSAL",
+    "grade": "F",
+    "gate_fail": ["C_Net_Alpha", "D_Crowding_Stress", "F_Drift_Tolerance"],
+    "ax_fail": ["AX-007_PARTIAL"],
+    "verdict_ref": "qepm/mailbox/worktask/WT-D20260423_002/judge_verdict.json",
+    "admission_ref": "qepm/mailbox/worktask/WT-D20260423_002/governor_admission.json",
+    "l_code_recorded": "L-191"
+  },
+  "next_action": "Discovery 완전 재설계. 현 가설 DISCARD. Deployment 전환 영구 차단. 현 production portfolio(STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%) 유지. book_state 변화 없음. Pilot 2 FAIL 확정, Pilot 3(있다면) 재개 준비.",
+  "timestamp": "2026-04-23",
+  "schema_version": "v1.0"
+}

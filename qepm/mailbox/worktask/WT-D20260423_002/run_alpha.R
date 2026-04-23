@@ -126,30 +126,33 @@ ROLL_WIN <- 504L  # trading days
 compute_residuals_fast <- function(ret, x1, x2, x3, win=504L) {
   n <- length(ret)
   eps <- rep(NA_real_, n)
-  for (i in seq(win, n)) {
-    idx <- seq.int(i - win + 1L, i)
-    y  <- ret[idx]; xx1 <- x1[idx]; xx2 <- x2[idx]; xx3 <- x3[idx]
-    ok <- !is.na(y) & !is.na(xx1) & !is.na(xx2) & !is.na(xx3)
-    if (sum(ok) < 100L) next
-    X  <- cbind(1, xx1[ok], xx2[ok], xx3[ok])
+  # Start from win (need full window)
+  start_i <- win
+  for (i in seq(start_i, n)) {
+    idx <- seq.int(max(1L, i - win + 1L), i)
+    y   <- ret[idx]; xx1 <- x1[idx]; xx2 <- x2[idx]; xx3 <- x3[idx]
+    ok  <- !is.na(y) & !is.na(xx1) & !is.na(xx2) & !is.na(xx3)
+    if (sum(ok) < 80L) next
+    if (is.na(ret[i]) || is.na(x1[i]) || is.na(x2[i]) || is.na(x3[i])) next
+    X   <- cbind(1, xx1[ok], xx2[ok], xx3[ok])
     tryCatch({
       coef <- .lm.fit(X, y[ok])$coefficients
-      eps[i] <- y[i] - (coef[1] + coef[2]*x1[i] + coef[3]*x2[i] + coef[4]*x3[i])
+      eps[i] <- ret[i] - (coef[1] + coef[2]*x1[i] + coef[3]*x2[i] + coef[4]*x3[i])
     }, error = function(e) NULL)
   }
   eps
 }
 
-# Process each ticker; skip if < 600 obs (need 504 + 100 margin)
-tickers_use <- dt[, .N, by=Ticker][N >= 604, Ticker]
+# Process each ticker; need at least win+50 obs
+tickers_use <- dt[, .N, by=Ticker][N >= (ROLL_WIN + 50L), Ticker]
 cat("  Eligible tickers:", length(tickers_use), "\n")
 
 res_list <- vector("list", length(tickers_use))
-names(res_list) <- tickers_use
 
 for (i in seq_along(tickers_use)) {
-  tk <- tickers_use[i]
+  tk  <- tickers_use[i]
   sub <- dt[Ticker == tk, .(Date, Ret, x1, x2, x3)]
+  setorder(sub, Date)
   eps_vec <- compute_residuals_fast(sub$Ret, sub$x1, sub$x2, sub$x3, win=ROLL_WIN)
   res_list[[i]] <- data.table(Date=sub$Date, Ticker=tk, epsilon=eps_vec)
   if (i %% 50 == 0) cat("  Processed", i, "/", length(tickers_use), "tickers\n")
@@ -158,7 +161,7 @@ for (i in seq_along(tickers_use)) {
 dt_eps <- rbindlist(res_list)
 dt_eps <- dt_eps[!is.na(epsilon)]
 setkey(dt_eps, Ticker, Date)
-cat("  Residuals: ", nrow(dt_eps), "obs |", uniqueN(dt_eps$Ticker), "tickers\n")
+cat("  Residuals:", nrow(dt_eps), "obs |", uniqueN(dt_eps$Ticker), "tickers\n")
 
 # ===========================================================================
 # STEP 5: SIGNAL CONSTRUCTION
@@ -168,74 +171,89 @@ cat("  Residuals: ", nrow(dt_eps), "obs |", uniqueN(dt_eps$Ticker), "tickers\n")
 # ===========================================================================
 cat("[Step 5] Signal construction: A (reversal), B (momentum), C (composite)...\n")
 
-# Candidate A: -mean(eps_{t-1:t-5}) — lagged by 1 then rolling 5
-dt_eps[, signal_A := -frollmean(shift(epsilon, n=1, type="lag"), n=5,
-                                  align="right", na.rm=FALSE), by=Ticker]
-
-# Candidate B: mean(eps_{t-6:t-20}) / sd(eps_{t-6:t-20})
-# Implement as: lag1 then skip 5, use next 15
-dt_eps[, eps_lag1 := shift(epsilon, n=1, type="lag"), by=Ticker]
-
-# Use rolling: for each row i, take eps rows [i-20+1 .. i-5] (relative to lagged series)
-# Equivalent: apply rolling mean/sd over lag=5 within 15-day window of lagged series
-compute_resid_sharpe_vec <- function(eps_l1) {
-  n <- length(eps_l1)
-  out <- rep(NA_real_, n)
-  # For row i: use eps_l1[i-14 .. i-5+1] = eps_l1[(i-14):(i-4)]
-  for (i in seq(20L, n)) {
-    chunk <- eps_l1[seq(i-14L, i-4L)]
-    mu <- mean(chunk, na.rm=TRUE)
-    sg <- sd(chunk, na.rm=TRUE)
-    if (!is.na(sg) && sg > 1e-12) out[i] <- mu / sg
-  }
-  out
-}
-
-dt_eps[, signal_B := compute_resid_sharpe_vec(eps_lag1), by=Ticker]
-
-cat("  signal_A coverage:", dt_eps[!is.na(signal_A), .N], "obs\n")
-cat("  signal_B coverage:", dt_eps[!is.na(signal_B), .N], "obs\n")
+# Step 5 computes daily residuals only.
+# Signals A/B/C are constructed in Step 6 from monthly aggregated residuals.
+cat("  Daily residuals ready for monthly aggregation in Step 6.\n")
+cat("  signal_A = -1M lagged cumulative residual (Novy-Marx 2012 reversal)\n")
+cat("  signal_B = 3M lagged residual Sharpe, skip 1M (Blitz-Huij 2011 momentum)\n")
 
 # ===========================================================================
 # STEP 6: MONTHLY AGGREGATION + FORWARD RETURN
+# Monthly signals are computed from the PREVIOUS month's accumulated residuals.
+# Signal A: negative of cumulative residual in the PAST 1M (reversal)
+# Signal B: mean/sd of residuals in PAST 2-4M window (momentum, skip 1M)
+# This avoids EOM single-day noise and aligns with 1M rebalancing horizon.
 # ===========================================================================
-cat("[Step 6] Monthly aggregation (EOM) and forward returns...\n")
+cat("[Step 6] Monthly aggregation and forward returns...\n")
 
 dt_eps[, YM := format(Date, "%Y-%m")]
 
-# EOM signal: last observation of each month per ticker
-monthly_sig <- dt_eps[, .SD[.N], by=.(Ticker, YM)]
-monthly_sig[, eom_date := Date]
+# Monthly cumulative residual per ticker
+monthly_eps <- dt_eps[!is.na(epsilon),
+  .(eps_sum   = sum(epsilon),         # cumulative residual
+    eps_mean  = mean(epsilon),
+    eps_sd    = sd(epsilon),
+    eps_n     = .N,
+    eps_abs   = sum(abs(epsilon))),
+  by=.(Ticker, YM)]
+setkey(monthly_eps, Ticker, YM)
 
-# Liquidity at EOM
+# Liquidity and sector at EOM
 liq_eom <- dt[, .(liq_eom = last(TV_20d),
                    sector   = last(Sector)),
                by=.(Ticker, YM = format(Date, "%Y-%m"))]
 
-monthly_sig <- merge(monthly_sig, liq_eom, by=c("Ticker","YM"), all.x=TRUE)
-monthly_sig <- monthly_sig[!is.na(liq_eom) & liq_eom >= LIQ_FLOOR]
+monthly_eps <- merge(monthly_eps, liq_eom, by=c("Ticker","YM"), all.x=TRUE)
+monthly_eps <- monthly_eps[!is.na(liq_eom) & liq_eom >= LIQ_FLOOR & eps_n >= 10L]
 
-# Cross-sectional rank within month (for signal selection)
+# Build lagged signals:
+# signal_A[YM] = -eps_sum[YM-1]  (reversal: negative of last month's cumulative residual)
+# signal_B[YM] = eps_mean[YM-2..YM-4] / eps_sd[YM-2..YM-4]  (momentum, skip 1M)
+setorder(monthly_eps, Ticker, YM)
+
+# Lag eps_sum by 1 month per ticker
+monthly_eps[, eps_sum_lag1 := shift(eps_sum,   n=1L, type="lag"), by=Ticker]
+monthly_eps[, eps_mean_lag2 := shift(eps_mean, n=2L, type="lag"), by=Ticker]
+monthly_eps[, eps_mean_lag3 := shift(eps_mean, n=3L, type="lag"), by=Ticker]
+monthly_eps[, eps_mean_lag4 := shift(eps_mean, n=4L, type="lag"), by=Ticker]
+monthly_eps[, eps_sd_lag2   := shift(eps_sd,   n=2L, type="lag"), by=Ticker]
+
+# Signal A: reversal = negative of 1M lagged cumulative residual
+monthly_eps[, signal_A := -eps_sum_lag1]
+
+# Signal B: idio Sharpe of 3-month window (lags 2,3,4), skip 1M reversal bias
+monthly_eps[, sig_B_mean := (eps_mean_lag2 + eps_mean_lag3 + eps_mean_lag4) / 3]
+monthly_eps[, sig_B_sd   := sqrt((eps_sd_lag2^2 + shift(eps_sd,3,type="lag")^2 + shift(eps_sd,4,type="lag")^2)/3 + 1e-12), by=Ticker]
+monthly_eps[, signal_B   := sig_B_mean / (sig_B_sd + 1e-8)]
+
+monthly_sig <- monthly_eps[!is.na(signal_A) | !is.na(signal_B)]
+
+# Cross-sectional rank within month
 monthly_sig[, rank_A := frank(signal_A, na.last="keep", ties.method="average") / .N, by=YM]
 monthly_sig[, rank_B := frank(signal_B, na.last="keep", ties.method="average") / .N, by=YM]
-monthly_sig[, rank_C := 0.5*rank_A + 0.5*rank_B]
+monthly_sig[, rank_C := fifelse(!is.na(rank_A) & !is.na(rank_B),
+                                 0.5*rank_A + 0.5*rank_B,
+                                 fifelse(!is.na(rank_A), rank_A, rank_B))]
 
 # Monthly returns from rawdata
 rawdata[, YM := format(Date, "%Y-%m")]
 monthly_ret <- rawdata[, .(fwd_ret = prod(1 + Ret, na.rm=TRUE) - 1), by=.(Ticker, YM)]
 
-# Forward return = next month's return (lag by 1 month per ticker)
+# Forward return: signal in month YM → return in month YM+1
+# Join: monthly_sig$YM ↔ monthly_ret$YM_fwd (= next month)
 setkey(monthly_ret, Ticker, YM)
-monthly_ret[, YM_prev := {
-  ym_d <- as.Date(paste0(YM, "-01"))
-  as.character(format(ym_d - 32, "%Y-%m"))  # go back ~32 days → previous month
-}, by=.(Ticker, YM)]
 
-# Signal month = fwd_ret month - 1
+# Create next-month key in monthly_ret (signal month = this YM, fwd = next YM)
+monthly_ret[, YM_signal := {
+  ym_d <- as.Date(paste0(YM, "-01"))
+  format(ym_d - 32, "%Y-%m")  # prev month
+}]
+
 monthly_sig <- merge(
   monthly_sig,
-  monthly_ret[, .(Ticker, YM_signal = YM_prev, fwd_ret)],
-  by.x = c("Ticker","YM"), by.y = c("Ticker","YM_signal"),
+  monthly_ret[, .(Ticker, YM_signal, fwd_ret)],
+  by.x = c("Ticker","YM"),
+  by.y = c("Ticker","YM_signal"),
   all.x = TRUE
 )
 monthly_sig <- monthly_sig[!is.na(fwd_ret)]
@@ -395,32 +413,42 @@ cat("  Alpha N:", nrow(alpha_m), "| mean:", round(mean(alpha_m$alpha_hat,na.rm=T
 
 # ===========================================================================
 # STEP 13: CONFIDENCE VECTOR (R4-A)
+# Basis: (1) residual variance inverse (idio noise proxy)
+#        (2) data coverage (eps obs count proxy)
+# Both normalised [0,1]. Higher = more confident alpha signal.
 # ===========================================================================
 cat("[Step 13] Confidence vector (R4-A)...\n")
 
-# 1. Residual variance (lower noise = higher confidence)
+# 1. Residual variance from daily dt_eps (recent 24M)
 eps_stats <- dt_eps[Ticker %in% alpha_m$Ticker &
                      Date >= as.Date("2021-01-01"),
-                    .(eps_var = var(epsilon, na.rm=T),
-                      eps_n   = sum(!is.na(epsilon))),
+                    .(eps_var = var(epsilon, na.rm=TRUE),
+                      eps_obs = sum(!is.na(epsilon))),
                     by=Ticker]
+
 alpha_m <- merge(alpha_m, eps_stats, by="Ticker", all.x=TRUE)
 
-med_var <- median(alpha_m$eps_var, na.rm=T)
+# conf_noise: inverse variance, normalised
+med_var <- median(alpha_m$eps_var, na.rm=TRUE)
+if (is.na(med_var) || med_var <= 0) med_var <- 1e-4
 alpha_m[, conf_noise := ifelse(!is.na(eps_var) & eps_var > 0,
                                 1 / (1 + eps_var / med_var), 0.5)]
-max_n   <- max(alpha_m$eps_n, na.rm=T)
-alpha_m[, conf_cov   := pmin(1, eps_n / (max_n * 0.8))]
+
+# conf_cov: data coverage (obs count / max_obs)
+max_obs <- max(alpha_m$eps_obs, na.rm=TRUE)
+if (is.na(max_obs) || !is.finite(max_obs) || max_obs <= 0) max_obs <- 1L
+alpha_m[, conf_cov := ifelse(!is.na(eps_obs) & eps_obs > 0,
+                              pmin(1.0, eps_obs / (max_obs * 0.8)), 0.3)]
 alpha_m[is.na(conf_cov), conf_cov := 0.3]
 
-# 2. Subperiod IC consistency per ticker (optional signal stability)
+# Final confidence: average of two components
 alpha_m[, confidence := (conf_noise + conf_cov) / 2]
 alpha_m[is.na(confidence), confidence := 0.3]
 alpha_m[, confidence := pmax(0, pmin(1, confidence))]
 
-cat("  conf mean:", round(mean(alpha_m$confidence),3),
-    "| min:", round(min(alpha_m$confidence),3),
-    "| max:", round(max(alpha_m$confidence),3), "\n")
+cat("  conf mean:", round(mean(alpha_m$confidence, na.rm=TRUE), 3),
+    "| min:", round(min(alpha_m$confidence, na.rm=TRUE), 3),
+    "| max:", round(max(alpha_m$confidence, na.rm=TRUE), 3), "\n")
 
 # ===========================================================================
 # STEP 14: METHOD SHOPPING LOG (R2-C)

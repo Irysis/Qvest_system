@@ -1,0 +1,60 @@
+{
+  "alpha_agent": {
+    "candidates_tried": 3,
+    "selection_objective": "rank_ic",
+    "method_log": [
+      {
+        "name": "A_ResidualReversal_5d",
+        "description": "Novy-Marx (2012): signal = -mean(eps_{t-1:t-5}); macro-orthogonalized daily residuals",
+        "rank_ic_train": 0.0038,
+        "icir_train": 0.0353,
+        "rank_ic_val": -0.0082,
+        "icir_val": -0.0493,
+        "selected": false
+      },
+      {
+        "name": "B_ResidualMomentum_15d",
+        "description": "Blitz-Huij (2011): signal = mean(eps_{t-6:t-20})/sd(eps_{t-6:t-20}); idio Sharpe",
+        "rank_ic_train": 0.0174,
+        "icir_train": 0.1438,
+        "rank_ic_val": -0.0348,
+        "icir_val": -0.2513,
+        "selected": false
+      },
+      {
+        "name": "C_Composite_EW",
+        "description": "Equal-weight composite: 0.5*rank_A + 0.5*rank_B (cross-sectional)",
+        "rank_ic_train": 0.0123,
+        "icir_train": 0.134,
+        "rank_ic_val": -0.0353,
+        "icir_val": -0.2539,
+        "selected": true
+      }
+    ]
+  },
+  "risk_agent": {
+    "candidates_tried": 3,
+    "selection_objective": "condition_number",
+    "selected_method": "gerber_rmt",
+    "method_log": [
+      {
+        "name": "sample",
+        "condition_number": 104.24,
+        "selected": false,
+        "note": "baseline — N=120 D/N=12 adequate"
+      },
+      {
+        "name": "ledoit_wolf",
+        "condition_number": 101.76,
+        "selected": false,
+        "note": "LW analytic shrinkage (Ledoit-Wolf 2004)"
+      },
+      {
+        "name": "gerber_rmt",
+        "condition_number": 81.92,
+        "selected": true,
+        "note": "Gerber 2022 + Marchenko-Pastur RMT noise filter (q=12)"
+      }
+    ]
+  }
+}
