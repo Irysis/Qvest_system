@@ -166,9 +166,29 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 }
 
 # ─── Core send function ───────────────────────────────────────────────────────
-tg_send <- function(msg, parse_mode = "", silent = FALSE) {
+tg_send <- function(msg, parse_mode = "", silent = FALSE,
+                     validate_emoji = TRUE, emoji_min = 1L) {
   # 2026-04-23: 기본 parse_mode "" (plain). HTML은 <, > 기호로 parse error 유발.
-  # 3-agent WT 브리핑이 수치/이모지 위주라 plain이 안전.
+  # 2026-04-24: validate_emoji — 이모지 0개 감지 시 warning log (Judge/Risk 누락 방지)
+  if (validate_emoji) {
+    # Unicode emoji 범위 (1F300~1F9FF 확장 + 2600~27BF 기본)
+    emoji_n <- length(
+      regmatches(msg, gregexpr("[\U0001F300-\U0001F9FF☀-➿]", msg))[[1]]
+    )
+    if (!is.finite(emoji_n)) emoji_n <- 0L
+    if (emoji_n < emoji_min) {
+      warn_line <- sprintf(
+        "%s [tg_send WARN] emoji count %d < min %d (msg first 60: '%s')",
+        format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+        emoji_n, emoji_min, substr(msg, 1, 60)
+      )
+      cat(warn_line, "\n", sep = "")
+      try(cat(warn_line, "\n", file = "/tmp/qvest_tg_emoji_warn.log",
+              append = TRUE, sep = ""),
+          silent = TRUE)
+    }
+  }
+
   tryCatch({
     resp <- POST(.TG_API, body = list(
       chat_id    = .TG_CHAT_ID,
@@ -182,6 +202,53 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE) {
   }, error = function(e) {
     cat(sprintf("[tg] Error: %s\n", e$message))
   })
+}
+
+# ─── 표 포맷 헬퍼 (Step 6, 2026-04-24) ─────────────────────────────────────
+# data.frame → <pre> HTML 블록. 고정폭 공백 정렬. tg_send_rich와 함께 사용.
+tg_format_table <- function(df, separator = "-") {
+  if (!is.data.frame(df) || nrow(df) == 0) return("")
+  # 각 column 최대 너비 = max(header, values)
+  cols <- names(df)
+  char_df <- as.data.frame(lapply(df, function(x) as.character(x)),
+                            stringsAsFactors = FALSE)
+  widths <- mapply(function(colname, vals) {
+    max(nchar(colname, type = "width"),
+        max(nchar(vals, type = "width"), na.rm = TRUE))
+  }, cols, char_df, USE.NAMES = FALSE)
+
+  pad <- function(s, w) {
+    spc <- w - nchar(s, type = "width")
+    if (spc > 0) paste0(s, strrep(" ", spc)) else s
+  }
+
+  header <- paste(mapply(pad, cols, widths), collapse = "  ")
+  sep_line <- paste(sapply(widths, function(w) strrep(separator, w)),
+                     collapse = "  ")
+  body_rows <- apply(char_df, 1, function(row_vals) {
+    paste(mapply(pad, as.character(row_vals), widths), collapse = "  ")
+  })
+
+  paste0("<pre>",
+         paste(c(header, sep_line, body_rows), collapse = "\n"),
+         "</pre>")
+}
+
+# ─── Rich send (HTML parse_mode) ───────────────────────────────────────────
+# <pre> 표 / <b> 강조 등 HTML 허용. Message 내 &, <, > 는 caller가 escape 필수
+# (tg_format_table는 이미 plain 입력).
+tg_send_rich <- function(msg, silent = FALSE,
+                          validate_emoji = TRUE, emoji_min = 1L) {
+  tg_send(msg, parse_mode = "HTML", silent = silent,
+          validate_emoji = validate_emoji, emoji_min = emoji_min)
+}
+
+# HTML-safe escape 헬퍼 (표 밖 일반 텍스트에 < > & 있을 때 사용)
+tg_html_escape <- function(x) {
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x
 }
 
 # ─── Photo / Document send ────────────────────────────────────────────────────

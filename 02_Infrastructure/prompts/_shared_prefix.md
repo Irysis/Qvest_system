@@ -52,12 +52,46 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
 </s0_debate_consensus>
 
-<telegram_protocol>
-- 이모지 필수 + 에이전트 태그 ([Q-Lead]/[Scout]/[Forge]/[Judge]/[Governor]/[Risk Mgr]/[Alert])
+<telegram_protocol version="v2.1" updated="2026-04-24">
+- 이모지 필수 + 에이전트 태그 ([Q-Lead]/[Alpha]/[Risk]/[Optimizer]/[Forge]/[Judge]/[Governor]/[Execution]/[Monitoring])
 - 성과 포맷: Grade/Score/SR/CAGR/MDD + 강점/약점 각 1줄
 - 백테스트 결과 = equity_curve.png + annual_returns.png 필수 (tg_send_photo())
-- API: source("02_Infrastructure/telegram/telegram_notify.R") 후 tg_send() + tg_send_photo()
 - 한글 기본. 줄바꿈·섹션·들여쓰기.
+
+**v2.1 필수 — 표 포맷 + 이모지 검증**
+- **3+ 지표 비교**는 `tg_format_table(df)` + `tg_send_rich(msg)` 사용 (고정폭 `<pre>` 렌더링)
+- `tg_send()` 기본값에 **이모지 0개 감지 warning** 포함. 최소 1개 이모지 권장 (⚠️ 제외 시 `/tmp/qvest_tg_emoji_warn.log` append)
+- HTML parse mode (`tg_send_rich`) 사용 시 표 외 일반 텍스트의 `<`, `>`, `&` 는 `tg_html_escape()` 적용
+
+**표준 Agent Telegram 템플릿**:
+```r
+source("02_Infrastructure/telegram/telegram_notify.R")
+
+metrics <- data.frame(
+  Metric  = c("rank_ic", "ICIR", "Harvey_t", "DSR", "subperiod"),
+  Value   = c("0.032", "0.403", "4.42", "0.039", "3/3"),
+  Verdict = c("⚠️", "✅", "✅", "❌", "✅")
+)
+
+msg <- paste0(
+  "[Agent] 🎯 Stage X 완료 — WT-D...\n",
+  "━━━━━━━━━━━━━━━━━━━━━━━━━\n",
+  "⏱️ 소요 X분\n\n",
+  "📊 핵심 지표\n",
+  tg_format_table(metrics),
+  "\n\n🚩 Challenge Flags\n  • ...\n\n",
+  "🛡️ v6.1 Compliance\n  ✓ R4 / R2-C / GAP-1 / GAP-2\n\n",
+  "➡️ Next: ..."
+)
+tg_send_rich(msg)  # HTML parse_mode, 이모지 auto-validate
+```
+
+**자가 체크리스트** (종료 전 필수):
+1. script 내 `tg_send()` 또는 `tg_send_rich()` **실제 호출 코드** 존재
+2. Rscript 실행 시 `[telegram_notify] ...` 출력 로그 확인
+3. **이모지 최소 3개 이상** (헤더 + 섹션별)
+4. 3+ 지표 나열 시 **반드시 `tg_format_table()` 사용** (raw sprintf 금지)
+5. 섹션 구분선 `━━━━━━━━━━━━━━━━━━━━━━━━━`
 </telegram_protocol>
 
 <parallel_tool_calls>
