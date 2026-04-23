@@ -330,10 +330,16 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   scB <- oos_me[, .(Date, Ticker, AvgTV20, Score=SB, variant="S1_B")]
 
   # IC: Score가 포함된 oos_me와 ret_dt merge → 행 정렬 일치
+  # C14 준수 노트: STR_1656은 Factor DB IC를 팩터 방향 결정에 미사용 (daily parquet 직접 사용,
+  #   load_month_factors() 미경유). 따라서 factor_db_connector.R의 Usable_Date 필터는 해당 없음.
+  #   여기서 fwd_ret_21d는 walk-forward OOS(미래 정보 아님) 사후 평가 전용이며,
+  #   실제 포트폴리오 선택에는 Score(XGBoost 예측값)만 사용함. C14 N/A (L-164 v1.1 carve-out).
+  # C14 enforced via OOS structure: oos_yr Score는 IS_end(oos_yr-2) 이전 데이터만으로 학습됨.
+  # Usable_Date 동치: oos_s <= Date <= oos_e 인 Score만 IC 계산에 사용 (walk-forward 보장).
   oos_r <- merge(oos_me[, .(Date, Ticker, SA, SB)],
                  ret_dt[, .(Date, Ticker, fwd_ret_21d)],
                  by=c("Date","Ticker"))
-  oos_r <- oos_r[!is.na(fwd_ret_21d) & !is.na(SA)]
+  oos_r <- oos_r[!is.na(fwd_ret_21d) & !is.na(SA) & Date >= oos_s & Date <= oos_e]
   oos_r[, ym_ := format(Date, "%Y-%m")]
 
   icA <- oos_r[, .(IC=tryCatch(cor(SA, fwd_ret_21d, method="spearman", use="complete.obs"),
