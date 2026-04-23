@@ -15,8 +15,10 @@
       ],
       "properties": {
         "task_id": {"type": "string", "pattern": "^WT[0-9]{8}_[0-9]{3}$", "description": "WT{YYYYMMDD}_{seq}"},
-        "hypothesis_title": {"type": "string", "maxLength": 200},
+        "theme": {"type": "string", "maxLength": 200, "description": "주제 레벨 (예: 'Defense family 강화'). Alpha Agent가 Step 0에서 가설 자동 발굴 모드. hypothesis_title 있으면 무시."},
+        "hypothesis_title": {"type": ["string", "null"], "maxLength": 200, "description": "구체 가설. null이면 Alpha Agent Step 0 Hypothesis Discovery 활성화."},
         "hypothesis_description": {"type": "string"},
+        "hypothesis_source": {"type": "string", "enum": ["user_defined", "alpha_agent_discovered"], "description": "user_defined = 사용자 지정 / alpha_agent_discovered = Step 0 자동 발굴"},
         "as_of_date": {"type": "string", "format": "date"},
         "forecast_horizon": {"type": "string", "enum": ["1M", "3M", "6M", "12M"]},
         "rebalance_frequency": {"type": "string", "enum": ["weekly", "monthly", "quarterly"]},

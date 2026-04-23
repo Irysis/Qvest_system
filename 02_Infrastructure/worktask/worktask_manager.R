@@ -29,7 +29,9 @@ wt_generate_id <- function() {
 }
 
 # ─── WT 디렉토리 + request.json 생성 ─────────────────────
-wt_create <- function(hypothesis_title,
+# theme만 주고 hypothesis_title=NULL이면 Alpha Agent Step 0 (Hypothesis Discovery) 자동 활성화
+wt_create <- function(hypothesis_title = NULL,
+                       theme = NULL,
                        hypothesis_description = "",
                        universe = "KOSPI200_KOSDAQ150_intersection",
                        benchmark = "KOSPI200_total_return",
@@ -39,6 +41,10 @@ wt_create <- function(hypothesis_title,
                        current_portfolio = "STR_1631_80_STR_1656_20",
                        override_constraints = NULL) {
 
+  if (is.null(hypothesis_title) && is.null(theme)) {
+    stop("[wt_create] hypothesis_title 또는 theme 중 최소 하나 필요")
+  }
+
   task_id <- wt_generate_id()
   wt_dir <- file.path(WT_ROOT, task_id)
   dir.create(wt_dir, recursive = TRUE, showWarnings = FALSE)
@@ -46,11 +52,16 @@ wt_create <- function(hypothesis_title,
   # 기본 제약 로드
   defaults <- fromJSON(WT_CONSTRAINT_DEFAULTS, simplifyVector = FALSE)
 
+  # Hypothesis source 결정
+  hyp_source <- if (!is.null(hypothesis_title)) "user_defined" else "alpha_agent_discovered"
+
   # Request 조립
   request <- list(
     task_id = task_id,
+    theme = theme,
     hypothesis_title = hypothesis_title,
     hypothesis_description = hypothesis_description,
+    hypothesis_source = hyp_source,
     as_of_date = format(as.Date(as_of_date), "%Y-%m-%d"),
     forecast_horizon = forecast_horizon,
     rebalance_frequency = rebalance_frequency,
@@ -98,20 +109,26 @@ wt_create <- function(hypothesis_title,
              pretty = TRUE, auto_unbox = TRUE, null = "null")
 
   # governance_log 초기화
+  display_title <- if (!is.null(hypothesis_title)) hypothesis_title else sprintf("[theme] %s (Alpha Agent 자동 발굴)", theme)
   gov_log <- list(
     task_id = task_id,
     events = list(list(
       timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
       agent = "q-lead",
       action = "WT_CREATED",
-      summary = sprintf("Work Task 생성: %s", hypothesis_title)
+      summary = sprintf("Work Task 생성: %s | source=%s", display_title, hyp_source)
     ))
   )
   write_json(gov_log, file.path(wt_dir, "governance_log.json"),
              pretty = TRUE, auto_unbox = TRUE, null = "null")
 
   cat(sprintf("[wt_create] %s 생성 완료: %s\n", task_id, wt_dir))
-  cat(sprintf("  Hypothesis: %s\n", hypothesis_title))
+  if (!is.null(hypothesis_title)) {
+    cat(sprintf("  Hypothesis: %s (user_defined)\n", hypothesis_title))
+  } else {
+    cat(sprintf("  Theme: %s (alpha_agent_discovered mode)\n", theme))
+    cat("  → Alpha Agent Step 0 Hypothesis Discovery 활성화\n")
+  }
   cat(sprintf("  Universe: %s\n", universe))
   cat(sprintf("  Current phase: SPEC_APPROVED (Alpha Agent 대기)\n"))
 

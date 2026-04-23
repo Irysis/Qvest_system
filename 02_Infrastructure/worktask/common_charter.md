@@ -44,6 +44,14 @@
 
 **팩터 이름만으로 결론 내리지 않음.** 항상 proxy를 명시하고 자사 데이터로 검증.
 
+**Alpha Agent는 Factor DB 288개에 종속되지 않음**:
+- A. 기존 Factor DB proxy 재사용 (효율 우선)
+- B. DB 기반 변형 (residualization / ratio / composite)
+- C. **신규 팩터 직접 설계** (DART / 투자자 flow / FRED / 자체 derived metric)
+- D. Alternative data (사전 승인)
+
+Alpha Agent는 가설에 맞는 source를 **자율 선택**. 각 팩터에 `source` 필드 기록 필수 (`db_existing` / `db_derived` / `new_designed` / `alt_data`).
+
 ### 4. 논문은 출발점, 승인서 아님
 
 논문 기반 팩터는 **후보군 생성에 유용**하지만, 최종 채택은:
