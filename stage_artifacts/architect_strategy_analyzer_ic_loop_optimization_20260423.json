@@ -1,0 +1,262 @@
+{
+  "type": "arch_proposal",
+  "proposal_id": "ARCH-2026-0423-IC-OPT",
+  "title": "strategy_analyzer.R IC/FMB/Liquidity Loop Performance Optimization",
+  "date": "2026-04-23",
+  "author": "Architect",
+  "trigger": "Session 69 Day 1 — STR_1689/STR_1686 Step 6 timeout (90s limit hit)",
+  "status": "PROPOSED",
+
+  "diagnosis": {
+    "symptom": "run_analysis() exceeds 90s setTimeLimit, producing '[Step 6 WARN] reached elapsed time limit' and skipping IC/FMB/Rolling/Stress/Liquidity outputs entirely.",
+    "affected_strategies": ["STR_1689_quality_aggregate_defense", "STR_1686_foreign_resid_individual"],
+    "impact": "analysis_ic.csv, analysis_fmb.csv, analysis_rolling.csv not generated => S6 cascade Gate missing IC/ICIR/FMB material",
+
+    "root_causes": [
+      {
+        "id": "RC-1",
+        "severity": "CRITICAL",
+        "location": "Line 69 — inside IC loop (repeated 268 times)",
+        "description": "all_dates <- sort(unique(RAWDATA$Date)) called INSIDE the for-loop. RAWDATA has 14.17M rows. sort(unique()) on 14.17M Date values costs ~0.3s per call. Over 268 iterations = ~80s on this single line alone.",
+        "complexity": "O(N_signal * M_rawdata) where N_signal=268, M_rawdata=14.17M. The sort(unique()) is O(M log M) repeated N times = O(N * M log M)"
+      },
+      {
+        "id": "RC-2",
+        "severity": "HIGH",
+        "location": "Lines 79-82 — IC loop RAWDATA subset",
+        "description": "RAWDATA[Date >= exec_d & Date <= next_exec & Ticker %in% fac$Ticker, ...] performs a full table scan on 14.17M rows (no key set). Each iteration scans ~14M rows for a range filter + Ticker membership test. Over 268 iterations = ~268 * 14M row comparisons.",
+        "complexity": "O(N_signal * M_rawdata)"
+      },
+      {
+        "id": "RC-3",
+        "severity": "HIGH",
+        "location": "Lines 112-153 — FMB loop duplicates IC loop structure",
+        "description": "FMB loop repeats the same pattern with 3 additional RAWDATA subsets per iteration (rets, size_dt, mom_dt). Although all_dates_fmb is hoisted outside the loop (line 110), the 3 unkeyed RAWDATA subsets (lines 122, 126, 129) scan 14M rows each = 3 * 268 * 14M row comparisons.",
+        "complexity": "O(N_signal * M_rawdata * 3)"
+      },
+      {
+        "id": "RC-4",
+        "severity": "MEDIUM",
+        "location": "Lines 396-419 — Liquidity audit loop",
+        "description": "RAWDATA[Ticker %in% tickers & Date <= sd_date][order(Date), tail(.SD, 20), by = Ticker] performs full scan + sort + group-tail. With 268 signal dates and 14M rows, this adds significant time. The order() + tail(.SD, 20) pattern is O(M log M) per iteration.",
+        "complexity": "O(N_holdlog * M_rawdata * log M)"
+      },
+      {
+        "id": "RC-5",
+        "severity": "HIGH",
+        "location": "Missing — no setkey() on RAWDATA or FACTORS",
+        "description": "RAWDATA loaded from parquet via as.data.table(read_parquet()) loses all keys. data.table subset operations (Date ==, Date >=, Ticker %in%) fall back to vector scan instead of binary search. Setting key(RAWDATA, Date, Ticker) would convert O(M) scans to O(log M) lookups.",
+        "complexity": "Every subset degrades from O(log M) to O(M)"
+      }
+    ],
+
+    "estimated_current_time": {
+      "RC1_sort_unique_268x": "~80s",
+      "RC2_ic_subset_268x": "~60s",
+      "RC3_fmb_subset_268x3": "~120s",
+      "RC4_liquidity_268x": "~40s",
+      "RC5_keying_overhead": "multiplicative (2-5x slower without keys)",
+      "total_estimated": "300-600s (5-10 min) without timeout",
+      "observed": "90s timeout hit before IC loop completes"
+    }
+  },
+
+  "options": [
+    {
+      "id": "A",
+      "name": "data.table vectorization + key + hoist",
+      "description": "Pure R/data.table optimization: (1) setkey(RAWDATA, Date, Ticker) at entry, (2) hoist all_dates outside loop, (3) pre-compute period returns as a single vectorized operation, (4) replace IC loop with by=sig_date group operation",
+      "estimated_speedup": "15-30x (300s -> 10-20s)",
+      "implementation_difficulty": "LOW-MEDIUM",
+      "lines_changed": "~60 lines modified, 0 new files",
+      "regression_risk": "LOW — same algorithm, same output schema, just vectorized",
+      "pit_risk": "NONE — no change to data access pattern or temporal logic",
+      "details": {
+        "step1_key": "setkey(RAWDATA, Date, Ticker) — O(M log M) once, saves O(M) per subset",
+        "step2_hoist": "Move sort(unique(RAWDATA$Date)) to line 64 (before loop). One-time cost: 0.3s vs 80s.",
+        "step3_period_rets": "Pre-join FACTORS with RAWDATA and compute period returns via data.table grouped operation instead of 268 separate subsets",
+        "step4_ic_vectorize": "Use FACTORS[, sig_idx := .GRP, by=Date] then merge with RAWDATA period returns, compute cor() by sig_idx group"
+      }
+    },
+    {
+      "id": "B",
+      "name": "Option A + parallel::mclapply for FMB lm()",
+      "description": "Apply Option A vectorization for IC loop, then parallelize FMB regressions with mclapply (lm() is the non-vectorizable part). WSL typically has 4+ cores available.",
+      "estimated_speedup": "20-40x (300s -> 8-15s)",
+      "implementation_difficulty": "MEDIUM",
+      "lines_changed": "~80 lines modified, 0 new files",
+      "regression_risk": "LOW — mclapply preserves determinism (same seed per chunk)",
+      "pit_risk": "NONE — parallelism doesn't change data access temporal logic",
+      "details": {
+        "parallel_scope": "FMB lm() fitting only (268 independent regressions)",
+        "core_count": "detectCores() - 1 (leave 1 for system)",
+        "overhead": "mclapply fork cost ~0.5s, negligible vs 120s savings"
+      }
+    },
+    {
+      "id": "C",
+      "name": "Rcpp inner loop (period return computation)",
+      "description": "Move the period return computation (prod(1+Ret) over date range by Ticker) to C++ via Rcpp. This is the innermost hot loop.",
+      "estimated_speedup": "50-100x for the return computation kernel (but diminishing returns — Option A already removes the main bottleneck)",
+      "implementation_difficulty": "MEDIUM-HIGH",
+      "lines_changed": "~30 R lines + ~80 C++ lines in hurdle_gate_perf.cpp",
+      "regression_risk": "MEDIUM — new C++ code requires careful testing for edge cases (NA handling, empty groups)",
+      "pit_risk": "NONE — same temporal logic in C++",
+      "details": {
+        "function": "period_ret_by_ticker_cpp(dates, tickers, rets, date_from, date_to, target_tickers) -> data.table(Ticker, Period_Ret)",
+        "integration": "Add to existing hurdle_gate_perf.cpp, fallback to R if Rcpp unavailable"
+      }
+    },
+    {
+      "id": "D",
+      "name": "Hybrid: A (vectorize) + C (Rcpp period_ret kernel) + incremental FMB",
+      "description": "Full optimization stack: vectorized IC via data.table grouping, Rcpp for inner period_ret, and incremental (non-redundant) FMB data preparation.",
+      "estimated_speedup": "50-100x (300s -> 3-6s)",
+      "implementation_difficulty": "HIGH",
+      "lines_changed": "~100 R lines + ~80 C++ lines",
+      "regression_risk": "MEDIUM — complex refactor requires thorough regression test",
+      "pit_risk": "NONE",
+      "details": {
+        "note": "Marginal benefit over Option A is small. Recommended only if Option A proves insufficient."
+      }
+    }
+  ],
+
+  "recommendation": {
+    "primary": "A",
+    "rationale": "Option A eliminates 95%+ of the bottleneck with minimal code change and zero regression risk. The dominant cost is RC-1 (sort(unique) inside loop = 80s) and RC-5 (missing key = 2-5x slowdown on every subset). Fixing these two alone should bring total time from 300s+ to under 15s. The vectorized IC computation is a natural data.table idiom. Option B (mclapply) is a good follow-up if FMB still takes >10s after A, but is unlikely needed.",
+    "fallback": "If Option A does not achieve < 30s target, add Option B (mclapply for FMB) as incremental improvement.",
+    "reject_reason_for_C_D": "Rcpp (Option C/D) adds build complexity, C++ maintenance burden, and Rcpp compilation dependency. Given that Option A should achieve 15-30x speedup (well within 90s budget), the marginal gain does not justify the complexity."
+  },
+
+  "implementation_spec": {
+    "option_A_diff": {
+      "description": "Detailed code changes for Option A — Forge implements exactly this spec",
+      "changes": [
+        {
+          "section": "Entry point (after line 60, before IC loop)",
+          "action": "ADD: setkey + hoist all_dates",
+          "code": [
+            "  # --- Performance: key RAWDATA and pre-compute date vector ---",
+            "  if (!haskey(RAWDATA) || !identical(key(RAWDATA), c('Date', 'Ticker'))) {",
+            "    setkey(RAWDATA, Date, Ticker)",
+            "  }",
+            "  if (!haskey(FACTORS) || !identical(key(FACTORS), c('Date'))) {",
+            "    setkey(FACTORS, Date)",
+            "  }",
+            "  all_dates <- sort(unique(RAWDATA$Date))  # HOIST: once, not 268 times"
+          ]
+        },
+        {
+          "section": "IC loop (lines 62-93) — REPLACE with vectorized version",
+          "action": "REPLACE entire for-loop with data.table group operation",
+          "old_pattern": "for (i in seq_along(signal_dates)) { ... ic_rows[[...]] }",
+          "new_code_description": "1. Build a date mapping: for each signal_date, find exec_d and next_exec via binary search on all_dates. 2. Build a long table of (sig_date, Ticker, Score, Period_Ret) by joining FACTORS with RAWDATA period returns. 3. Compute IC = cor(rank(Score), rank(Period_Ret)) by sig_date group. All done without for-loop.",
+          "pseudocode": [
+            "# 1. Date mapping table",
+            "date_map <- data.table(sig_date = signal_dates)",
+            "date_map[, sig_idx := .I]",
+            "date_map[, exec_d := all_dates[findInterval(sig_date, all_dates) + 1L]]  # first date > sig_date",
+            "date_map[, next_sig := shift(sig_date, type='lead')]",
+            "date_map[, next_exec := all_dates[findInterval(next_sig, all_dates) + 1L]]",
+            "date_map <- date_map[!is.na(exec_d) & !is.na(next_sig) & !is.na(next_exec)]",
+            "",
+            "# 2. Pre-compute all period returns in one pass",
+            "# For each signal period i, we need prod(1+Ret) for Ticker where Date in [exec_d[i], next_exec[i]]",
+            "# Strategy: use non-equi join or foverlaps",
+            "RAWDATA_sub <- RAWDATA[, .(Date, Ticker, Ret)]  # minimal columns",
+            "# Non-equi join: RAWDATA_sub[date_map, on=.(Date >= exec_d, Date <= next_exec), allow.cartesian=TRUE]",
+            "period_rets <- RAWDATA_sub[date_map, on=.(Date >= exec_d, Date <= next_exec),",
+            "                           .(sig_date = i.sig_date, Ticker, Ret),",
+            "                           allow.cartesian = TRUE, nomatch = NULL]",
+            "period_rets <- period_rets[, .(Period_Ret = prod(1 + Ret, na.rm=TRUE) - 1), by=.(sig_date, Ticker)]",
+            "",
+            "# 3. Merge with FACTORS and compute IC",
+            "fac_all <- FACTORS[, .(Date, Ticker, Score)]",
+            "setnames(fac_all, 'Date', 'sig_date')",
+            "merged_all <- period_rets[fac_all, on=.(sig_date, Ticker), nomatch=NULL]",
+            "merged_all <- merged_all[!is.na(Score) & !is.na(Period_Ret)]",
+            "",
+            "# Filter: minimum 10 stocks per signal date",
+            "merged_all[, n_stocks := .N, by=sig_date]",
+            "merged_all <- merged_all[n_stocks >= 10]",
+            "",
+            "IC_DT <- merged_all[, .(IC = tryCatch(cor(rank(Score), rank(Period_Ret), method='spearman'),",
+            "                                       error = function(e) NA_real_),",
+            "                        N_stocks = .N), by=.(Signal_Date = sig_date)]"
+          ]
+        },
+        {
+          "section": "FMB loop (lines 109-154) — partial vectorize + retain lm() loop",
+          "action": "Vectorize data preparation, keep lm() in loop (lm is inherently sequential per-period)",
+          "changes": [
+            "Remove line 110 all_dates_fmb (use hoisted all_dates)",
+            "Pre-compute date_map (reuse from IC section)",
+            "Pre-compute period_rets (reuse from IC section)",
+            "Pre-compute size_at_signal and mom_12m as single vectorized passes",
+            "Keep lm() fitting in loop but on pre-joined data"
+          ]
+        },
+        {
+          "section": "IC loop — remove line 69 (CRITICAL)",
+          "action": "DELETE: all_dates <- sort(unique(RAWDATA$Date)) from inside loop",
+          "reason": "This single line is ~80s of the ~300s total. Moving it outside the loop is the single highest-impact fix."
+        },
+        {
+          "section": "Liquidity audit (lines 396-419) — vectorize",
+          "action": "Replace per-signal-date loop with rolling window join",
+          "changes": [
+            "Pre-compute 20-day rolling average volume for all tickers",
+            "Join with hold_log by (Signal_Date, Ticker) to get volume at each signal date",
+            "This eliminates 268 full-table scans"
+          ]
+        }
+      ]
+    }
+  },
+
+  "test_plan": {
+    "regression_test": {
+      "strategy": "STR_1631_SYN_05_2002",
+      "reason": "Production PG2 strategy with known IC/ICIR/FMB values",
+      "method": "Run original code -> save analysis_ic.csv + analysis_fmb.csv. Run patched code -> compare. Max allowed delta: IC values within 1e-10 (floating point).",
+      "command": "cd STR_1631_SYN_05_2002 && Rscript -e 'source(\"run_all.R\")'"
+    },
+    "performance_benchmark": {
+      "method": "system.time() wrapper around run_analysis() call",
+      "target": "< 30s (down from 300s+)",
+      "minimum_acceptable": "< 90s (within setTimeLimit budget)",
+      "code": "t0 <- proc.time(); run_analysis(sim, FACTORS, RAWDATA, BM_DT, OUT_DIR, 'benchmark'); elapsed <- (proc.time() - t0)[3]; cat(sprintf('Elapsed: %.1fs\\n', elapsed))"
+    },
+    "edge_cases": [
+      "FACTORS with < 10 stocks on some dates (should produce NA IC, same as before)",
+      "RAWDATA with Date gaps (missing trading days — should not affect results)",
+      "Empty hold_log (liquidity audit should skip gracefully)"
+    ]
+  },
+
+  "l_code_draft": {
+    "id": "L-172",
+    "category": "infrastructure_optimization",
+    "title": "strategy_analyzer IC/FMB loop 10min+ timeout — sort(unique()) inside loop + missing setkey",
+    "lesson_text": "strategy_analyzer.R의 IC/FMB 계산 루프가 RAWDATA 14M rows에서 10분+ 소요되어 90s timeout에 걸림. 원인 3가지: (1) sort(unique(RAWDATA$Date))가 for-loop 내부에서 268회 반복 호출 (~80s), (2) RAWDATA에 setkey() 미설정으로 모든 subset이 vector scan (~2-5x 패널티), (3) IC/FMB의 RAWDATA subset이 268회 전체 테이블 스캔. 해결: all_dates 루프 밖 호이스트 + setkey(Date, Ticker) + 가능 시 data.table 그룹 연산 벡터화. 예상 15-30x 개선.",
+    "core_reference": "L-534 (루프 내 parquet 반복 로드 금지 — 동일 반패턴), CLAUDE.md data.table 키 규칙",
+    "tags": ["performance", "data.table", "setkey", "vectorize", "strategy_analyzer", "IC", "FMB"],
+    "grade": "VALIDATED",
+    "conditions": "market=KR, RAWDATA_rows>10M, signal_dates>200"
+  },
+
+  "forge_handoff": {
+    "priority": "HIGH — blocks S6 Gate evaluation for STR_1689/STR_1686 and all future strategies",
+    "scope": "02_Infrastructure/strategy_analyzer.R lines 60-154 (IC + FMB) + lines 393-419 (liquidity)",
+    "constraints": [
+      "Output CSV schema must be identical (analysis_ic.csv, analysis_fmb.csv columns and types)",
+      "Numerical results must match within floating point tolerance (1e-10)",
+      "No PIT rule changes — temporal logic (exec_d, next_exec, t-1 lag) must be preserved exactly",
+      "Rcpp fallback path must continue to work (some builds may not have Rcpp)",
+      "Do not add new package dependencies",
+      "setkey() call should be non-destructive (check haskey() first to avoid re-keying)"
+    ],
+    "estimated_effort": "1-2 hours Forge time"
+  }
+}
