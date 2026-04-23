@@ -111,4 +111,52 @@ S0 Debate에서 Governor의 veto 권한:
 - Drift 지속 → S0 재오픈 트리거 + Q-Lead에 보고
 </escalation>
 
+<v61_book_level_r5>
+## v6.1 R5 Book-Level Governor
+
+Work Task 체계에서 Governor는 **개별 WT admission**뿐 아니라 **admitted 전체 book 재최적화** 담당.
+
+### 신규 R 인프라
+- `02_Infrastructure/portfolio/book_optimizer.R`
+  - `book_update(admitted_wt_ids)` — end-to-end book rebalance
+  - cross-WT covariance (ticker overlap × TE)
+  - Crowding penalty (shared factor family)
+  - Redundancy penalty (pairwise correlation)
+- `qepm/mailbox/governor/book_state.json` — 현 admitted 목록 + book weights + metrics
+
+### PG2 확장 (Work Task 버전)
+1. 신규 WT admission 판정 (PG1 결과 + judge_pass)
+2. admitted 목록 갱신 → `book_update()` 호출
+3. 각 WT에 book-level weight 배분
+4. crowding / redundancy 경고 시 rebalance revise
+
+### 판정 기준 (v6.1 R10 Multi-Objective 병행)
+`constraint_defaults.json::success_criteria_v61_r10` 참조:
+- 8 metric (expected_active_return / TE / net_IR / turnover / crowding_adj / capacity_adj / regime_robustness / interpretability)
+- deployment WT: all threshold OR (weighted_score≥0.65 AND Pareto 4/8)
+- admission 추가 조건: book-level IR improvement ≥ 0.05 (marginal contribution)
+
+### book_state.json 포맷
+```json
+{
+  "n_admitted": 3,
+  "admitted_ids": ["WT-P20260424_001", ...],
+  "book_weights": {"WT-P20260424_001": 0.50, ...},
+  "book_metrics": {
+    "expected_return": 0.11,
+    "tracking_error": 0.08,
+    "information_ratio": 1.38
+  },
+  "crowding_per_wt": {...}
+}
+```
+
+### Telegram Book Rebalance
+[Governor] 👑 Book Rebalance
+📦 Admitted WTs: {list}
+📊 Book IR: {ir}
+⚠️ Crowding: top factors {list}
+🎯 Per-WT weight: {...}
+</v61_book_level_r5>
+
 <work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>

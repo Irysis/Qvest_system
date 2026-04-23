@@ -12,6 +12,8 @@
 suppressPackageStartupMessages({
   library(data.table)
   library(arrow)
+  library(jsonlite)
+  library(digest)
 })
 
 COVARIANCE_CACHE_DIR <- ".cache/covariance"
@@ -116,17 +118,70 @@ compute_and_cache_covariance <- function(task_id,
 
   write_parquet(cov_dt, cache_file)
 
+  # v6.1 R6: freshness 메타데이터 저장
+  meta_file <- sub("\\.parquet$", ".meta.json", cache_file)
+  cache_hash <- digest::digest(cov_matrix, algo = "sha256", serialize = TRUE)
+  meta <- list(
+    task_id = task_id,
+    method = method,
+    covariance_asof = format(as.Date(sig_date), "%Y-%m-%d"),
+    estimation_window_months = N,
+    dimension = D,
+    condition_number = cond_num,
+    regime_tag = regime,
+    created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    freshness_sla_days = 30L,
+    cache_hash = cache_hash,
+    invalidate_rule = "regime_change OR age_gt_30d OR dimension_change"
+  )
+  jsonlite::write_json(meta, meta_file, pretty = TRUE, auto_unbox = TRUE)
+
   cat(sprintf("  cached: %s\n", cache_file))
+  cat(sprintf("  meta:   %s (regime=%s, SLA=30d)\n", meta_file, regime))
 
   list(
     cov_matrix = cov_matrix,
     method = method,
     condition_number = cond_num,
     cache_path = cache_file,
+    meta_path = meta_file,
+    regime_tag = regime,
+    cache_hash = cache_hash,
     N = N,
     D = D
   )
 }
+
+# ─── v6.1 R6: Freshness check ───────────────────────────
+# stale cache 사용 여부 판정. Optimizer Agent가 loading 전 호출.
+check_cache_freshness <- function(cache_path, current_regime = NULL) {
+  meta_file <- sub("\\.parquet$", ".meta.json", cache_path)
+  if (!file.exists(meta_file)) {
+    return(list(fresh = FALSE, reason = "meta_missing"))
+  }
+
+  meta <- jsonlite::fromJSON(meta_file, simplifyVector = TRUE)
+  asof <- as.Date(meta$covariance_asof)
+  sla <- meta$freshness_sla_days %||% 30L
+  age_days <- as.integer(Sys.Date() - asof)
+
+  if (age_days > sla) {
+    return(list(fresh = FALSE, reason = sprintf("stale_age_%dd_sla_%dd", age_days, sla),
+                meta = meta))
+  }
+
+  if (!is.null(current_regime) && !is.null(meta$regime_tag) &&
+      current_regime != meta$regime_tag) {
+    return(list(fresh = FALSE,
+                reason = sprintf("regime_mismatch_cached_%s_current_%s",
+                                 meta$regime_tag, current_regime),
+                meta = meta))
+  }
+
+  list(fresh = TRUE, age_days = age_days, meta = meta)
+}
+
+`%||%` <- function(a, b) if (!is.null(a)) a else b
 
 # ─── 캐시 조회 ───────────────────────────────────────────
 load_cached_covariance <- function(task_id, sig_date, method = NULL) {
@@ -173,8 +228,9 @@ cache_stats <- function() {
   invisible(dt)
 }
 
-cat("[covariance_cache.R] Loaded. Functions:\n")
-cat("  compute_and_cache_covariance(task_id, returns_matrix, sig_date, method='auto')\n")
+cat("[covariance_cache.R] v6.1 R6 Loaded. Functions:\n")
+cat("  compute_and_cache_covariance(task_id, returns_matrix, sig_date, method='auto', regime='normal')\n")
 cat("  load_cached_covariance(task_id, sig_date, method=NULL)\n")
+cat("  check_cache_freshness(cache_path, current_regime=NULL)  # v6.1 R6\n")
 cat("  cache_stats()\n")
 cat("  select_cov_method(N, D, regime_volatility)\n")

@@ -97,4 +97,53 @@ Defense 전략은 multi-sleeve 내에서만 평가:
 - Gate 4 ALPHA DECAY (최근 3Y SR < 0.3) → Governor에 PG1 재심사 트리거
 </escalation>
 
+<v61_worktask_gates>
+## v6.1 Work Task Judge Gate A~F (R7 설명 가능성)
+
+Work Task (WT-D/WT-P) 심사 시 기존 Gate 0~5 대신 **가설 중심 Gate A~F** 사용.
+각 Gate는 `hypothesis_tested` / `metric` / `threshold` / `actual` / `verdict` / `remediation` 기록.
+
+| Gate | Hypothesis tested | Metric | Threshold | Remediation on FAIL |
+|------|-------------------|--------|-----------|--------------------|
+| **A. PIT** | Alpha/Risk/Optimizer 모두 C1~C15 준수 | `lookahead_count` | 0 | Pipeline 재실행 |
+| **B. Selection/Test Isolation** | lockbox가 selection에 오염되지 않음 | `lockbox_access_count` (non-judge) | 0 | WT 전체 무효 |
+| **C. Net alpha > cost** | 15bps 차감 후 positive IR | `net_information_ratio` | > 0.3 (dep) / > 0.2 (disc) | Optimizer method_shopping_log 재점검 |
+| **D. Crowding stress** | Factor crowding × stress 구간 생존 | `stress_survival_count / stress_total` | ≥ 3/4 | Alpha family 다양화 |
+| **E. Concentration** | 포트폴리오 집중도 허용 범위 | `max_weight`, `HHI` | max ≤ 0.20, HHI ≤ 0.15 (dep) | Optimizer re-run with stricter bound |
+| **F. Drift tolerance** | IS → OOS 지표 degradation | `oos_is_ratio` | ≥ 0.7 | Signal decay 의심 → 단기화 or drop |
+
+### Gate Verdict JSON 포맷 (각 Gate별)
+```json
+{
+  "gate_id": "B",
+  "gate_name": "Selection/Test Isolation",
+  "hypothesis_tested": "lockbox 데이터가 selection에 오염되지 않았는가",
+  "metric": "lockbox_access_count_non_judge",
+  "threshold": 0,
+  "actual": 3,
+  "verdict": "FAIL",
+  "retry_possible": false,
+  "remediation": "Alpha Agent re-run with strict window isolation"
+}
+```
+
+### Multi-objective Verdict (R10)
+최종 `judge_verdict.json`은 다차원 지표 전수:
+- expected_active_return / expected_tracking_error / net_information_ratio
+- turnover / crowding_adjusted_return / capacity_adjusted_return
+- regime_robustness_score / interpretability_score
+
+Pass/Fail 판정: 8지표 중 2개+ FAIL OR Pareto-dominated.
+
+### method_shopping_log DSR penalty (R2-C)
+`method_shopping_log.json` 로드 → `candidates_tried * 0.05` penalty 적용 → Deflated SR 산출.
+
+### Lockbox Access (R2-B)
+Judge는 lockbox 데이터 접근 허용 (유일). `selection_contamination_detector.sh`가 다른 agent 차단.
+접근 기록 `/tmp/qvest_lockbox_access_{wt_id}.log` 전수 검토.
+
+### Judge Verdict 저장 → lockbox_post_judge_seal.sh 자동 발동
+`judge_verdict_{wt_id}.json` Write 시 Hook이 `lockbox_sealed.json` 생성. 재접근 warn.
+</v61_worktask_gates>
+
 <work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>

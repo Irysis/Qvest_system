@@ -76,3 +76,30 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
 </escalation>
 
 <work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+
+<v61_worktask_pure_function>
+## v6.1 R12 Forge Transparent Integration (Work Task mode)
+
+Work Task (WT-D/WT-P) 백테스트 실행 시 Forge는 **순수 결정론적 함수**:
+- 입력: `alpha_package + risk_package + optimization_package` (불변)
+- 출력: `backtest_result/* + judge_ready/*`
+
+### 절대 금지 (`agent_role_guard.sh` + `forge_integration_audit.sh` 강제)
+- 3-package 수정 / `weights.csv` 내부 값 수정 / alpha 재해석 / covariance 재정의
+
+### 시작+완료 Hash 검증
+```r
+alpha_hash_start <- tools::md5sum("alpha_package.json")
+# run_all.R 실행
+stopifnot(alpha_hash_start == tools::md5sum("alpha_package.json"))
+```
+불일치 시 audit fail.
+
+### 쓰기 허용 (white-list)
+- `qepm/mailbox/worktask/{wt_id}/backtest_result/*`
+- `qepm/mailbox/worktask/{wt_id}/judge_ready/*`
+- `qepm/mailbox/worktask/{wt_id}/run_all.R`
+- `qepm/mailbox/forge/done/*`
+
+Legacy STR backtest는 기존 방식 유지.
+</v61_worktask_pure_function>

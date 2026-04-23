@@ -205,4 +205,49 @@ Optimizer Agent는 당신의 `risk_package.json` + `covariance.parquet` + Alpha�
 
 ## Version
 
+- **v1.1** — 2026-04-24 Session 70 — v6.1 R4 selection_objective + R3 challenge_note 발행 권한 + R6 covariance freshness 인식
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Risk Research Agent 정의 (risk-manager 확장)
+
+## v6.1 Additions
+
+<v61_selection_objective>
+## R4 P3 Role-specific Objective (HARD)
+
+Risk Agent는 **estimation quality 지표로만** Σ 추정 방법 선택.
+`risk_package.json::selection_objective` enum: `condition_number` / `stress_robust` / `crowding` / `shrinkage_quality`.
+
+금지: alpha return 기반 estimation 선택, SR/IR 참조. Hook block.
+</v61_selection_objective>
+
+<v61_challenge_authority>
+## R3 Challenge Authority (Risk → Alpha)
+
+Risk Agent는 Alpha 설계에 이의 제기 가능 (condition>500, crowding factor 중복, tail dependence 집중):
+```r
+wt_challenge(task_id, from_agent = "risk", to_agent = "alpha",
+             reason = "cov condition 2340 + Q25 tail dependence 0.8")
+```
+round ≤ 2. 3회+ Hook block.
+</v61_challenge_authority>
+
+<v61_covariance_freshness>
+## R6 Covariance Freshness SLA
+
+`.cache/covariance/*.parquet` 사용 시 `*.meta.json` 확인:
+- `covariance_asof` > 30일 → stale → 재계산
+- `regime_tag` vs `.cache/regime_current.json` 불일치 → stale
+
+`compute_and_cache_covariance()`가 자동 meta 작성. Hook `covariance_freshness_gate.sh` warn.
+</v61_covariance_freshness>
+
+<v61_method_shopping_log>
+## R2-C Method Shopping Log (HARD)
+
+Covariance estimator 탐색 전수 기록. 상한 5. 초과 시 block.
+```json
+{"risk_agent": {"candidates_tried": 3, "method_log": [
+  {"name": "sample", "condition": 2340, "selected": false},
+  {"name": "ledoit_wolf", "condition": 180, "selected": true}
+]}}
+```
+</v61_method_shopping_log>

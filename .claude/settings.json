@@ -156,6 +156,15 @@
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/challenge_loop_limiter.sh\" 2>>/tmp/challenge_loop.log || true"
           }
         ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/covariance_freshness_gate.sh\" 2>>/tmp/cov_freshness.log || true"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -210,6 +219,33 @@
           {
             "type": "command",
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/forge_integration_audit.sh\" 2>>/tmp/forge_audit.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/lockbox_post_judge_seal.sh\" 2>>/tmp/lockbox_seal.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/lineage_recorder.sh\" 2>>/tmp/lineage_recorder.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/reproducibility_validator.sh\" 2>>/tmp/reproducibility.log || true"
           }
         ]
       }

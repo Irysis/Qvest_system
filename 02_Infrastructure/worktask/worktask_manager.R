@@ -297,6 +297,8 @@ wt_advance <- function(task_id, new_phase, blocker = NULL) {
   status$current_phase <- new_phase
   status$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   status$blocker <- blocker
+  if (is.null(status$challenge_round)) status$challenge_round <- 0L
+  if (is.null(status$challenge_history)) status$challenge_history <- list()
 
   write_json(status, status_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 
@@ -313,6 +315,90 @@ wt_advance <- function(task_id, new_phase, blocker = NULL) {
 
   cat(sprintf("[wt_advance] %s: %s -> %s\n", task_id, old_phase, new_phase))
   invisible(new_phase)
+}
+
+# ─── Challenge Loop (R3) ────────────────────────────────
+# Risk/Optimizer 에이전트가 Alpha/Risk 설계에 반론 제기.
+# challenge_round >= 3 시 Hook이 block → Q-Lead 수동 개입.
+# wt_challenge(task_id, from_agent, to_agent, reason)
+wt_challenge <- function(task_id, from_agent, to_agent, reason) {
+  stopifnot(from_agent %in% c("risk", "optimizer"))
+  stopifnot(to_agent %in% c("alpha", "risk"))
+
+  wt_dir <- file.path(WT_ROOT, task_id)
+  if (!dir.exists(wt_dir)) stop(sprintf("[wt_challenge] %s 없음", task_id))
+  status_path <- file.path(wt_dir, "status.json")
+  status <- fromJSON(status_path, simplifyVector = FALSE)
+
+  round_n <- (status$challenge_round %||% 0L) + 1L
+  if (is.null(status$challenge_history)) status$challenge_history <- list()
+
+  new_phase <- switch(to_agent,
+    "alpha" = "ALPHA_REVISE_REQUIRED",
+    "risk" = "RISK_REVISE_REQUIRED"
+  )
+
+  status$current_phase <- new_phase
+  status$challenge_round <- round_n
+  status$challenge_history[[length(status$challenge_history) + 1]] <- list(
+    round = round_n,
+    from_agent = from_agent,
+    to_agent = to_agent,
+    timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    challenge_reason = reason,
+    resolution = NULL
+  )
+  status$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+
+  write_json(status, status_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+
+  # challenge_note artifact (target agent가 읽음)
+  note_path <- file.path(wt_dir, sprintf("%s_challenge_note.json", to_agent))
+  note <- list(
+    task_id = task_id,
+    round = round_n,
+    from_agent = from_agent,
+    to_agent = to_agent,
+    timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    challenge_reason = reason,
+    resolution_required = TRUE
+  )
+  write_json(note, note_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+
+  # governance_log
+  gov_path <- file.path(wt_dir, "governance_log.json")
+  gov <- fromJSON(gov_path, simplifyVector = FALSE)
+  gov$events[[length(gov$events) + 1]] <- list(
+    timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    agent = from_agent,
+    action = "CHALLENGE_RAISED",
+    summary = sprintf("Round %d: %s -> %s | %s", round_n, from_agent, to_agent, substr(reason, 1, 100))
+  )
+  write_json(gov, gov_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+
+  cat(sprintf("[wt_challenge] %s round %d: %s -> %s\n", task_id, round_n, from_agent, to_agent))
+  if (round_n >= 2) cat("  WARN: round 2 도달 — Q-Lead 개입 검토 권장\n")
+  if (round_n >= 3) cat("  BLOCK: round 3 — Hook이 차단. 수동 개입 필수\n")
+  invisible(round_n)
+}
+
+# Challenge 해결 기록 (Alpha/Risk가 revise 완료 후 호출)
+wt_resolve_challenge <- function(task_id, resolution_note) {
+  wt_dir <- file.path(WT_ROOT, task_id)
+  status_path <- file.path(wt_dir, "status.json")
+  status <- fromJSON(status_path, simplifyVector = FALSE)
+
+  n_hist <- length(status$challenge_history %||% list())
+  if (n_hist == 0) {
+    cat("[wt_resolve_challenge] challenge_history 비어있음\n")
+    return(invisible(FALSE))
+  }
+  status$challenge_history[[n_hist]]$resolution <- resolution_note
+  status$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+
+  write_json(status, status_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+  cat(sprintf("[wt_resolve_challenge] %s round %d resolved\n", task_id, n_hist))
+  invisible(TRUE)
 }
 
 # ─── Package 검증 (schema 기반) ──────────────────────────
@@ -347,9 +433,10 @@ wt_validate_package <- function(task_id, package_type) {
   list(valid = TRUE)
 }
 
-# ─── WT 전수 목록 ───────────────────────────────────────
+# ─── WT 전수 목록 (v6.1 WT-D/WT-P + legacy WT 모두 지원) ─
 wt_list <- function(include_completed = FALSE) {
-  wts <- list.files(WT_ROOT, pattern = "^WT[0-9]{8}_[0-9]{3}$",
+  wts <- list.files(WT_ROOT,
+                    pattern = "^WT-?[DP]?[0-9]{8}_[0-9]{3}$",
                     full.names = FALSE)
   if (length(wts) == 0) {
     cat("(WT 없음)\n")
@@ -362,16 +449,20 @@ wt_list <- function(include_completed = FALSE) {
     if (file.exists(status_path)) {
       st <- fromJSON(status_path, simplifyVector = TRUE)
       if (!include_completed && st$current_phase %in% c("COMPLETED", "ABORTED")) next
-      cat(sprintf("  %s | %s | updated %s\n",
-                  id, st$current_phase, st$updated_at))
+      type_tag <- if (grepl("^WT-D", id)) "[D]" else if (grepl("^WT-P", id)) "[P]" else "[L]"
+      cat(sprintf("  %s %s | %s | updated %s\n",
+                  type_tag, id, st$current_phase, st$updated_at))
     }
   }
   invisible(wts)
 }
 
 cat("[worktask_manager.R] Loaded. Functions:\n")
-cat("  wt_create(hypothesis_title, universe, ...)\n")
+cat("  wt_create(hypothesis_title, wt_type='discovery'|'deployment', ...)\n")
 cat("  wt_status(task_id)\n")
 cat("  wt_advance(task_id, new_phase, blocker=NULL)\n")
+cat("  wt_challenge(task_id, from_agent, to_agent, reason)\n")
+cat("  wt_resolve_challenge(task_id, resolution_note)\n")
+cat("  wt_check_graduation(task_id)\n")
 cat("  wt_validate_package(task_id, package_type)\n")
 cat("  wt_list(include_completed=FALSE)\n")

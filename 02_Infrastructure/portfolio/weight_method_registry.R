@@ -148,7 +148,8 @@ dispatch_weight_method <- function(method_name,
                                      alpha = NULL,
                                      cov_matrix = NULL,
                                      returns = NULL,
-                                     bounds = c(0, 0.10),
+                                     confidence = NULL,
+                                     bounds = c(0, 0.20),
                                      max_names = 20,
                                      ...) {
   spec <- describe_method(method_name)
@@ -173,6 +174,21 @@ dispatch_weight_method <- function(method_name,
   args$bounds <- bounds
   args$max_names <- max_names
 
+  # v6.1 R4: confidence propagation — MVO가 native 지원
+  # Non-MVO 메소드에는 alpha × confidence 로 pre-scale (best-effort)
+  if (!is.null(confidence)) {
+    if (method_name == "MVO" && "alpha" %in% spec$requires) {
+      args$confidence <- confidence
+    } else if ("alpha" %in% spec$requires && !is.null(alpha)) {
+      common <- intersect(names(alpha), names(confidence))
+      if (length(common) > 0) {
+        c_scaled <- confidence[names(alpha)]
+        c_scaled[is.na(c_scaled)] <- 0.5
+        args$alpha <- alpha * c_scaled
+      }
+    }
+  }
+
   tryCatch(
     do.call(fn, args),
     error = function(e) {
@@ -185,7 +201,8 @@ dispatch_weight_method <- function(method_name,
 
 # ─── 전체 방법론 비교 (Optimizer Agent 자율 탐색 보조) ───
 compare_all_methods <- function(alpha, cov_matrix, returns = NULL,
-                                  bounds = c(0, 0.10), max_names = 20,
+                                  confidence = NULL,
+                                  bounds = c(0, 0.20), max_names = 20,
                                   methods = NULL) {
   if (is.null(methods)) {
     # returns 없으면 tail-aware는 제외
@@ -205,6 +222,7 @@ compare_all_methods <- function(alpha, cov_matrix, returns = NULL,
                                  alpha = alpha,
                                  cov_matrix = cov_matrix,
                                  returns = returns,
+                                 confidence = confidence,
                                  bounds = bounds,
                                  max_names = max_names)
     if (is.null(r$infeasible) || !r$infeasible) {

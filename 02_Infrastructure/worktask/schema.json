@@ -312,6 +312,40 @@
       }
     },
 
+    "artifact_lineage": {
+      "type": "object",
+      "description": "R11 Artifact lineage + reproducibility. Each package write appends an entry.",
+      "required": ["task_id", "entries"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "schema_version": {"type": "string"},
+        "last_updated": {"type": "string", "format": "date-time"},
+        "entries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["package_type", "created_at", "git_commit", "file_hash_sha256"],
+            "properties": {
+              "package_type": {"type": "string"},
+              "created_at": {"type": "string", "format": "date-time"},
+              "git_commit": {"type": "string"},
+              "git_dirty": {"type": "boolean"},
+              "r_version": {"type": "string"},
+              "r_packages": {"type": "object"},
+              "random_seed": {"type": "integer"},
+              "input_hashes": {"type": "object"},
+              "method_selected": {"type": ["string", "null"]},
+              "method_shopping_log_ref": {"type": ["string", "null"]},
+              "windows": {"type": ["object", "null"]},
+              "file_path": {"type": "string"},
+              "file_hash_sha256": {"type": "string"},
+              "reproduction_command": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+
     "status": {
       "type": "object",
       "description": "Work Task 진행 단계",
@@ -366,6 +400,7 @@
     {"$ref": "#/definitions/risk_package"},
     {"$ref": "#/definitions/optimization_package"},
     {"$ref": "#/definitions/governance_log"},
+    {"$ref": "#/definitions/artifact_lineage"},
     {"$ref": "#/definitions/status"}
   ]
 }

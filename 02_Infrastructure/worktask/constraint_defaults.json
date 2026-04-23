@@ -145,5 +145,24 @@
     "parallel_forbidden_within_task": true,
     "challenge_loop_max_rounds": 2,
     "rationale": "1 WT 내부는 순차 + challenge loop 2회 허용. WT 간은 병렬."
+  },
+
+  "success_criteria_v61_r10": {
+    "description": "R10 Multi-Objective Success Criteria — SR 단일 최대화 탈피. Judge + Governor가 Pareto + weighted score 병행.",
+    "metrics": {
+      "expected_active_return": {"direction": "max", "weight": 0.20, "threshold_deployment": 0.03, "threshold_discovery": 0.02},
+      "expected_tracking_error": {"direction": "min", "weight": 0.10, "threshold_deployment": 0.10, "threshold_discovery": 0.15},
+      "net_information_ratio": {"direction": "max", "weight": 0.25, "threshold_deployment": 0.30, "threshold_discovery": 0.20},
+      "turnover_annual": {"direction": "min", "weight": 0.10, "threshold_deployment": 3.00, "threshold_discovery": 6.00},
+      "crowding_adjusted_return": {"direction": "max", "weight": 0.10, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
+      "capacity_adjusted_return": {"direction": "max", "weight": 0.05, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
+      "regime_robustness_score": {"direction": "max", "weight": 0.15, "threshold_deployment": 0.60, "threshold_discovery": 0.50},
+      "interpretability_score": {"direction": "max", "weight": 0.05, "threshold_deployment": 0.50, "threshold_discovery": 0.40}
+    },
+    "judge_pass_rule_deployment": "all threshold meet OR (weighted_score >= 0.65 AND Pareto-non-dominated in at least 4/8 metrics)",
+    "judge_pass_rule_discovery": "net_information_ratio threshold + 4/8 metric threshold",
+    "governor_admission_rule": "judge_pass AND book-level IR improvement >= 0.05 (marginal contribution)",
+    "regime_robustness_formula": "min(IC_easy, IC_caution, IC_crisis) / avg(IC_all_regimes)",
+    "interpretability_formula": "1 - (num_factors > 5 ? 0.3 : 0) - (non_linear_ML ? 0.2 : 0) - (regime_switching ? 0.1 : 0)"
   }
 }

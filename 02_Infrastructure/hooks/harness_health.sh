@@ -1,6 +1,6 @@
 #!/bin/bash
 #==============================================================================
-# Harness Health Check — v52
+# Harness Health Check — v6.1 (2026-04-24)
 # 모든 Hook 정상 작동 여부 검증. /qvest 부트스트랩에서 호출.
 #==============================================================================
 
@@ -13,26 +13,65 @@ FAIL=0
 TOTAL=0
 PASS=0
 
-echo "=== Harness Health Check (v52) ==="
+echo "=== Harness Health Check (v6.1) ==="
 
-# 필수 Hook 파일 목록 (v53 Legacy Cleanup: s0_verdict_validator → s0_verdict_router, s0_debate_chain → s0_debate_enforcer)
+# v6.1 Required Hooks (v55 legacy archived to _archive_v55/)
 REQUIRED_HOOKS=(
+  # Tier 1 전역
   "safety_guard.sh"
-  "forge_code_guard.sh"
+  "axiom_enforcement_hook.sh"
+
+  # Tier 2 Agent 경계
   "unified_agent_guard.sh"
-  "s0_debate_guard.sh"
-  "s0_debate_enforcer.sh"
-  "s0_verdict_router.sh"
-  "artifact_validator.sh"
+  "agent_role_guard.sh"
+  "role_taxonomy_admission_gate.sh"
+
+  # v6.1 Work Task 순서 + 제약
+  "worktask_sequence_enforcer.sh"
+  "worktask_spec_validator.sh"
+  "worktask_constraint_enforcer.sh"
+  "worktask_artifact_validator.sh"
+
+  # v6.1 R1 Discovery/Deployment
+  "discovery_graduation_gate.sh"
+
+  # v6.1 R2 Selection/Test Isolation + Method Shopping
+  "selection_contamination_detector.sh"
+  "lockbox_audit_trail.sh"
+  "lockbox_post_judge_seal.sh"
+  "method_shopping_limiter.sh"
+
+  # v6.1 R3 Challenge Loop
+  "challenge_loop_limiter.sh"
+
+  # v6.1 R4 Role-specific Objective
+  "role_objective_guard.sh"
+
+  # v6.1 R6 Covariance Freshness
+  "covariance_freshness_gate.sh"
+
+  # v6.1 R11 Lineage + Reproducibility
+  "lineage_recorder.sh"
+  "reproducibility_validator.sh"
+
+  # v6.1 R12 Forge Transparent Integration
+  "forge_integration_audit.sh"
+
+  # Pipeline + Post-Use
   "pipeline_trigger.sh"
-  "risk_gate.sh"
+  "red_flag_detector.sh"
   "circuit_breaker.sh"
   "teammate_idle_guard.sh"
   "task_complete_guard.sh"
-  "axiom_enforcement_hook.sh"
+
+  # Session
   "harness_health.sh"
   "auto_commit_on_stop.sh"
   "milestone_commit.sh"
+
+  # Legacy 유지 (v55 호환)
+  "trail_consistency_checker.sh"
+  "cash_sleeve_validator.sh"
 )
 
 for HOOK in "${REQUIRED_HOOKS[@]}"; do
@@ -67,8 +106,11 @@ else
   FAIL=$((FAIL + 1))
 fi
 
-# ERR trap 확인 (신규 Hook에 필수)
-for HOOK in "unified_agent_guard.sh" "circuit_breaker.sh" "s0_debate_guard.sh" "s0_verdict_router.sh" "safety_guard.sh"; do
+# ERR trap 확인 (v6.1 신규 Hook에 필수)
+for HOOK in "unified_agent_guard.sh" "circuit_breaker.sh" "safety_guard.sh" \
+            "selection_contamination_detector.sh" "method_shopping_limiter.sh" \
+            "role_objective_guard.sh" "challenge_loop_limiter.sh" \
+            "covariance_freshness_gate.sh" "agent_role_guard.sh"; do
   FPATH="$HOOKS_DIR/$HOOK"
   if [ -f "$FPATH" ]; then
     if ! grep -q "trap.*ERR\|trap.*err" "$FPATH"; then

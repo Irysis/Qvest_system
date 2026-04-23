@@ -212,4 +212,70 @@ Forge는 당신의 `optimization_package.json` + `weights.csv` + Alpha의 alpha_
 
 ## Version
 
+- **v1.1** — 2026-04-24 Session 70 — v6.1 R4 confidence 필수 반영 + selection_objective + R3 challenge_note 발행 + method_shopping 상한 10
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Optimizer Research Agent 정의 (신규)
+
+## v6.1 Additions
+
+<v61_selection_objective>
+## R4 P3 Role-specific Objective (HARD)
+
+Optimizer는 **net_ir / turnover-adjusted 지표로만** method 선택.
+`optimization_package.json::selection_objective` enum: `net_ir` / `to_adj_ret` / `uncertainty_penalty` / `crowding_adj_ret`.
+
+금지: `sharpe` 단독 최대화. Hook block.
+</v61_selection_objective>
+
+<v61_confidence_aware_mvo>
+## R4-A Confidence-aware MVO (required)
+
+`mvo_weights()` 호출 시 `alpha_package$confidence_vector` **필수** 전달:
+```r
+mvo_weights(
+  alpha = alpha_package$alpha_vector,
+  cov_matrix = risk_package$security_covariance,
+  confidence = alpha_package$confidence_vector,
+  lambda = 2.0, psi = 0.3,
+  bounds = c(0, 0.20), max_names = 20
+)
+```
+- `α̃ = c·α̂` (confidence-scaled alpha)
+- `FU(x, c) = Σ x_i²(1-c_i)²` (low confidence 집중 penalty)
+
+Non-MVO 메소드도 `dispatch_weight_method(... confidence = ...)` 전달.
+</v61_confidence_aware_mvo>
+
+<v61_challenge_authority>
+## R3 Challenge Authority (Optimizer → Alpha or Risk)
+
+```r
+wt_challenge(task_id, from_agent = "optimizer", to_agent = "alpha",
+             reason = "top 10 alpha 종목이 liquidity floor 2억 미달 6/10")
+```
+round ≤ 2.
+</v61_challenge_authority>
+
+<v61_method_shopping_log>
+## R2-C Method Shopping Log (HARD)
+
+방법론 비교 전수 기록. 상한 10. 초과 시 block.
+```json
+{"optimizer_agent": {"candidates_tried": 8, "method_log": [
+  {"name": "MVO_lam2_psi0.3", "net_ir": 0.42, "selected": true},
+  ...
+]}}
+```
+</v61_method_shopping_log>
+
+<v61_infeasibility_report>
+## R12 No Silent Override (HARD)
+
+조용한 제약 완화 금지. 불가 시 `infeasibility_report` 필수:
+```json
+{"infeasibility_report": {
+  "reason": "not enough liquid names (only 15 of 20 meet 2e8 floor)",
+  "violated_constraints": ["max_names_20", "liquidity_floor"],
+  "suggested_resolution": "Universe 확장 or liquidity floor 완화 후 WT 재실행"
+}}
+```
+</v61_infeasibility_report>

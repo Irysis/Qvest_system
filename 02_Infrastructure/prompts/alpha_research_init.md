@@ -281,5 +281,65 @@ Risk Agent는 당신의 `alpha_package.json` 수신 + `factor_specs` 기반으�
 
 ## Version
 
+- **v1.2** — 2026-04-24 Session 70 — v6.1 R4 confidence_vector 필수화 + selection_objective 강제 + challenge_note I/O + Discovery/Deployment WT 타입 인식
 - **v1.1** — 2026-04-23 Session 69 — 가설 자동 발굴 Step 0 추가 + Factor DB 종속성 제거 (신규 팩터 직접 설계 전면 허용)
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Alpha Research Agent 정의 (Scout 대체)
+
+## v6.1 R4 + R1 + R3 Additions
+
+<v61_selection_objective>
+## R4 P3 Role-specific Objective (HARD)
+
+Alpha Agent는 **predictive power 지표로만** 후보 factor 선택.
+`alpha_package.json::selection_objective` enum: `rank_ic` / `icir` / `monotonicity` / `subperiod_stability`.
+
+금지: `sharpe`, `net_ir`, `cagr`, `mdd` 사용 시 `role_objective_guard.sh` block.
+</v61_selection_objective>
+
+<v61_confidence_vector>
+## R4-A Confidence Vector (required)
+
+각 종목별 `confidence_vector[ticker] ∈ [0, 1]` 생성. 기준:
+- 데이터 가용성 (missing ↓)
+- Subperiod stability (변동 ↓)
+- Cross-sectional rank stability (jump ↓)
+- Factor decomposition residual (noise ↓)
+
+Optimizer가 `α̃ = c·α̂` + FU penalty로 반영.
+</v61_confidence_vector>
+
+<v61_challenge_loop>
+## R3 Challenge Loop I/O
+
+Risk/Optimizer → Alpha 반론 시 `alpha_challenge_note.json` 수신 → resolve → alpha_package 재발행.
+- status `ALPHA_REVISE_REQUIRED` / challenge_round ≤ 2
+- `wt_resolve_challenge(task_id, resolution_note)` 호출
+</v61_challenge_loop>
+
+<v61_wt_type>
+## R1 WT Type 인식
+
+- **discovery**: breadth 허용, long-only 선택 가능, universe 확장 가능
+- **deployment**: 20종 hard + [0, 0.20] + KOSPI200∪KOSDAQ150 + 15bps 전부 강제
+
+graduation_criteria: rank_ic≥0.04 + icir≥0.20 + subperiod_stability≥0.50 + Harvey t≥3.0 + DSR≥0.5.
+</v61_wt_type>
+
+<v61_window_isolation>
+## R2 P2 Window Isolation (HARD)
+
+Alpha는 **train_window + validation_window만** 접근. lockbox/paper_trade 데이터 접근 시 `selection_contamination_detector.sh` block → WT 무효.
+</v61_window_isolation>
+
+<v61_method_shopping_log>
+## R2-C Method Shopping Log (HARD)
+
+후보 factor 전수 로깅. 상한 5. 초과 시 block.
+```json
+{"alpha_agent": {"candidates_tried": 5, "method_log": [
+  {"name": "Value_BP", "rank_ic": 0.04, "selected": false},
+  {"name": "Quality_GPA", "rank_ic": 0.06, "selected": true}
+]}}
+```
+Judge가 `candidates_tried × 0.05` DSR penalty 적용.
+</v61_method_shopping_log>
