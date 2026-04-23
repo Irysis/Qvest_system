@@ -120,12 +120,20 @@ audit_p4_challenge <- function(wt_id) {
   }
   gov <- fromJSON(gov_path, simplifyVector = FALSE)
   events <- gov$events %||% list()
-  challenges <- Filter(function(e) e$action %in% c("CHALLENGE_RAISED", "CHALLENGE_NO_OBJECTION"),
-                       events)
+  # GAP-1 수정: CHALLENGE_REVIEWED 도 인정 (NO_OBJECTION 명시 기록 포함)
+  challenges <- Filter(function(e) {
+    e$action %in% c("CHALLENGE_RAISED", "CHALLENGE_NO_OBJECTION", "CHALLENGE_REVIEWED")
+  }, events)
+  # Risk / Optimizer 각각 최소 1회 review 필수
+  reviewers <- unique(sapply(challenges, function(e) e$agent %||% ""))
+  has_risk <- "risk" %in% reviewers
+  has_opt <- "optimizer" %in% reviewers
+  pass <- has_risk && has_opt
   list(
     principle = "P4",
-    pass = length(challenges) >= 1,
-    reason = sprintf("challenge_events_count=%d (expected ≥ 1)", length(challenges)),
+    pass = pass,
+    reason = sprintf("challenge_events=%d / risk=%s / optimizer=%s (둘 다 필수)",
+                     length(challenges), has_risk, has_opt),
     details = challenges
   )
 }

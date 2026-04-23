@@ -343,3 +343,20 @@ Alpha는 **train_window + validation_window만** 접근. lockbox/paper_trade 데
 ```
 Judge가 `candidates_tried × 0.05` DSR penalty 적용.
 </v61_method_shopping_log>
+
+<v61_lineage_obligation>
+## R11 Lineage 직접 호출 (GAP-2 patch 2026-04-23)
+
+Alpha는 challenge 발행 권한 없으나 lineage 기록은 필수.
+Agent가 alpha_package.json 저장 직후 Rscript 내에서:
+```r
+source("02_Infrastructure/worktask/lineage_utils.R")
+record_package_lineage(
+  task_id = "WT-D...",
+  package_type = "alpha_package",
+  method_selected = "3-factor Q07+Q32+Q28",
+  input_file_paths = c("raw data 경로들")
+)
+```
+→ `artifact_lineage.json` append. P7 audit 통과 확보.
+</v61_lineage_obligation>

@@ -246,14 +246,41 @@ Non-MVO 메소드도 `dispatch_weight_method(... confidence = ...)` 전달.
 </v61_confidence_aware_mvo>
 
 <v61_challenge_authority>
-## R3 Challenge Authority (Optimizer → Alpha or Risk)
+## R3 Challenge Authority + P4 Obligation (GAP-1 patch 2026-04-23)
 
+### 반론 있을 때
 ```r
 wt_challenge(task_id, from_agent = "optimizer", to_agent = "alpha",
              reason = "top 10 alpha 종목이 liquidity floor 2억 미달 6/10")
 ```
+
+### 반론 없을 때 — P4 audit 통과 필수
+```r
+wt_record_challenge_review(
+  task_id, from_agent = "optimizer",
+  objection = FALSE,
+  targets_reviewed = c("alpha_vector", "risk_sigma", "bound_feasibility")
+)
+```
+
 round ≤ 2.
 </v61_challenge_authority>
+
+<v61_lineage_obligation>
+## R11 Lineage 직접 호출 (GAP-2 patch 2026-04-23)
+
+Agent가 Rscript 내에서 직접 호출:
+```r
+source("02_Infrastructure/worktask/lineage_utils.R")
+record_package_lineage(
+  task_id = "WT-D...",
+  package_type = "optimization_package",
+  method_selected = "MVO_lam2_psi0.3",
+  input_file_paths = c("alpha_package.json 경로", "risk_package.json 경로")
+)
+```
+→ `artifact_lineage.json` append. P7 audit 통과 확보.
+</v61_lineage_obligation>
 
 <v61_method_shopping_log>
 ## R2-C Method Shopping Log (HARD)

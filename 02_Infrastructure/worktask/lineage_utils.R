@@ -132,6 +132,36 @@ append_lineage <- function(task_id, lineage_entry,
   invisible(lineage)
 }
 
+# ─── Convenience: 한 번에 lineage 기록 (GAP-2 대응) ──────
+# Agent가 package.json 저장 직후 Rscript 내에서 직접 호출.
+# Hook matcher가 subagent Bash 경유 file write에 발동 안 하는 문제 우회.
+record_package_lineage <- function(task_id,
+                                     package_type,
+                                     method_selected = NA,
+                                     input_file_paths = character(0),
+                                     windows = NULL,
+                                     random_seed = NULL,
+                                     extra = list(),
+                                     wt_root = "qepm/mailbox/worktask") {
+  pkg_path <- file.path(wt_root, task_id, sprintf("%s.json", package_type))
+
+  if (file.exists(pkg_path)) {
+    extra$file_path <- pkg_path
+    extra$file_hash_sha256 <- digest::digest(file = pkg_path, algo = "sha256")
+  }
+
+  entry <- build_lineage_entry(
+    task_id = task_id,
+    package_type = package_type,
+    method_selected = method_selected,
+    input_file_paths = input_file_paths,
+    windows = windows,
+    random_seed = random_seed,
+    extra = extra
+  )
+  append_lineage(task_id, entry, wt_root = wt_root)
+}
+
 # ─── Reproducibility smoke test ─────────────────────────
 # WT COMPLETED 시 호출. run_all.R 재실행 → 결과 일치 확인.
 smoke_reproduce <- function(task_id,
@@ -173,5 +203,6 @@ smoke_reproduce <- function(task_id,
 cat("[lineage_utils.R] v6.1 R11 Loaded. Functions:\n")
 cat("  build_lineage_entry(task_id, package_type, ...)\n")
 cat("  append_lineage(task_id, lineage_entry)\n")
+cat("  record_package_lineage(task_id, package_type, method_selected=NA, ...)\n")
 cat("  capture_git_state() / capture_r_env() / capture_input_hashes(paths)\n")
 cat("  smoke_reproduce(task_id)\n")

@@ -220,15 +220,48 @@ Risk Agent는 **estimation quality 지표로만** Σ 추정 방법 선택.
 </v61_selection_objective>
 
 <v61_challenge_authority>
-## R3 Challenge Authority (Risk → Alpha)
+## R3 Challenge Authority (Risk → Alpha) + P4 Obligation (GAP-1)
 
-Risk Agent는 Alpha 설계에 이의 제기 가능 (condition>500, crowding factor 중복, tail dependence 집중):
+Risk Agent는 Alpha 설계에 이의 제기 가능. 그러나 **이슈 없어도 반론 검토 완료 명시 필수** (GAP-1 2026-04-23 patch).
+
+### 종료 직전 필수 호출 (둘 중 하나)
+
+반론 있을 때:
 ```r
 wt_challenge(task_id, from_agent = "risk", to_agent = "alpha",
              reason = "cov condition 2340 + Q25 tail dependence 0.8")
 ```
+
+반론 없을 때 (P4 audit 통과 필수):
+```r
+wt_record_challenge_review(
+  task_id, from_agent = "risk",
+  objection = FALSE,
+  targets_reviewed = c("alpha_package", "confidence_vector", "factor_specs")
+)
+```
+
 round ≤ 2. 3회+ Hook block.
 </v61_challenge_authority>
+
+<v61_lineage_obligation>
+## R11 Lineage 직접 호출 (GAP-2 patch 2026-04-23)
+
+Hook (lineage_recorder.sh)이 subagent Bash → Rscript → write_json 경로에서 발동 안 함.
+**Agent가 Rscript 내에서 직접 호출** 필요:
+
+```r
+source("02_Infrastructure/worktask/lineage_utils.R")
+record_package_lineage(
+  task_id = "WT-D...",
+  package_type = "risk_package",
+  method_selected = "gerber_rmt",
+  input_file_paths = c("alpha_package.json 경로"),
+  windows = list(train_window, validation_window)
+)
+```
+→ `artifact_lineage.json` 자동 append. P7 audit 통과 확보.
+</v61_lineage_obligation>
 
 <v61_covariance_freshness>
 ## R6 Covariance Freshness SLA

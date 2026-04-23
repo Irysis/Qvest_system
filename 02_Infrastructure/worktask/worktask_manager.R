@@ -382,6 +382,44 @@ wt_challenge <- function(task_id, from_agent, to_agent, reason) {
   invisible(round_n)
 }
 
+# GAP-1 대응: Challenge 검토 완료 기록 (NO_OBJECTION 포함).
+# Risk/Optimizer가 challenge 발행 여부와 무관하게 "반론 검토 수행"을 명시 기록.
+# P4 audit 통과 조건 = CHALLENGE_REVIEWED 또는 CHALLENGE_RAISED 이벤트 ≥ 1.
+wt_record_challenge_review <- function(task_id, from_agent,
+                                         objection = FALSE,
+                                         reason = NA,
+                                         targets_reviewed = character(0)) {
+  stopifnot(from_agent %in% c("risk", "optimizer"))
+  wt_dir <- file.path(WT_ROOT, task_id)
+  if (!dir.exists(wt_dir)) stop(sprintf("[wt_record_challenge_review] %s 없음", task_id))
+
+  gov_path <- file.path(wt_dir, "governance_log.json")
+  gov <- fromJSON(gov_path, simplifyVector = FALSE)
+
+  review_summary <- if (isTRUE(objection)) {
+    sprintf("Review: %s raised objection — %s",
+            from_agent, substr(reason %||% "", 1, 100))
+  } else {
+    sprintf("Review complete: %s — no formal challenge (targets=%s)",
+            from_agent, paste(targets_reviewed, collapse = ","))
+  }
+
+  gov$events[[length(gov$events) + 1]] <- list(
+    timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    agent = from_agent,
+    action = "CHALLENGE_REVIEWED",
+    summary = review_summary,
+    objection_raised = isTRUE(objection),
+    reason = reason,
+    targets_reviewed = as.list(targets_reviewed)
+  )
+  write_json(gov, gov_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+
+  cat(sprintf("[challenge_review] %s / %s / objection=%s\n",
+              task_id, from_agent, isTRUE(objection)))
+  invisible(TRUE)
+}
+
 # Challenge 해결 기록 (Alpha/Risk가 revise 완료 후 호출)
 wt_resolve_challenge <- function(task_id, resolution_note) {
   wt_dir <- file.path(WT_ROOT, task_id)
@@ -462,6 +500,7 @@ cat("  wt_create(hypothesis_title, wt_type='discovery'|'deployment', ...)\n")
 cat("  wt_status(task_id)\n")
 cat("  wt_advance(task_id, new_phase, blocker=NULL)\n")
 cat("  wt_challenge(task_id, from_agent, to_agent, reason)\n")
+cat("  wt_record_challenge_review(task_id, from_agent, objection=F, reason=NA, targets_reviewed=c())\n")
 cat("  wt_resolve_challenge(task_id, resolution_note)\n")
 cat("  wt_check_graduation(task_id)\n")
 cat("  wt_validate_package(task_id, package_type)\n")
