@@ -1,0 +1,45 @@
+{
+  "task_id": "WT20260423_001",
+  "hypothesis_title": "Rate Hedge Defense — Duration-neutral Quality",
+  "hypothesis_description": "STR_1689 Rate 2022 FAIL (-7.04pt) 보완용 defense factor. 금리 급등 구간 resilient alpha 탐색. Duration-neutral quality family (Cash_Ratio / Interest_Coverage / Net_Debt_to_EBITDA) 또는 short-duration value 또는 real-asset linked.",
+  "as_of_date": "2026-04-23",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_constraints": {
+    "max_names": 20,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "sector_active_weight_cap": 0.1,
+    "liquidity_min_won_20d_avg": 200000000
+  },
+  "soft_penalties": {
+    "turnover_cap_annual": 3,
+    "turnover_cap_rationale": "연 300% 초과 시 penalty. 600% 이상은 hard fail.",
+    "beta_target": 1,
+    "beta_target_rationale": "시장 베타 1.0 근처 (시장중립 아님, 시장 노출 유지)",
+    "style_exposure_cap": 2,
+    "style_exposure_cap_rationale": "스타일 z-score 2.0 이내"
+  },
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
