@@ -16,6 +16,7 @@ cat("Timestamp:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n\n")
 
 # --- Paths ---
 PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+FUNC_PATH    <- file.path(PROJECT_ROOT, "02_Infrastructure")  # required by factor_db_connector
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 FDB_DIR      <- file.path(CACHE_DIR, "factor_db")
 OUT_DIR      <- file.path(PROJECT_ROOT, "qepm/mailbox/worktask/WT-D20260423_001")
@@ -30,7 +31,8 @@ VAL_START    <- as.Date("2022-01-21")
 VAL_END      <- as.Date("2024-01-21")
 LOCKBOX_START <- as.Date("2024-01-22")  # SEALED
 
-# --- Factor DB connector ---
+# --- Factor DB connector (C15 compliant) ---
+source(file.path(PROJECT_ROOT, "02_Infrastructure/config.R"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 
 # =============================================================================
