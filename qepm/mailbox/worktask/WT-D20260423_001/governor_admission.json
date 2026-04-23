@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-D20260423_001",
+  "wt_type": "discovery",
+  "hypothesis": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28)",
+  "governor_agent": "governor_v61_R5",
+  "evaluated_at": "2026-04-23",
+  "input_refs": {
+    "judge_verdict": "qepm/mailbox/worktask/WT-D20260423_001/judge_verdict.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260423_001/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260423_001/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260423_001/optimization_package.json",
+    "book_state_ref": "qepm/mailbox/governor/book_state.json"
+  },
+  "verdict": "REJECT",
+  "reason": "Judge FAIL (Gate D Crowding/Stress + Gate E Concentration) + AX-001 v2 crisis_alpha 양쪽 음수 + AX-007 signal→portfolio translation breach + 6종 집중 구조",
+  "deployment_allowed": false,
+  "admission_rule_evaluation": {
+    "rule_source": "constraint_defaults.json::success_criteria_v61_r10::governor_admission_rule",
+    "rule_text": "judge_pass AND book-level IR improvement ≥ 0.05 (marginal contribution)",
+    "checks": {
+      "judge_pass": {
+        "value": false,
+        "required": true,
+        "pass": false,
+        "note": "Judge overall_verdict = FAIL (Gate D + E FAIL, AX-001 v2 FAIL)"
+      },
+      "book_ir_improvement_ge_0_05": {
+        "value": "N/A",
+        "required": true,
+        "pass": "N/A",
+        "note": "judge_pass=false 단계에서 admission 중단 — marginal IR 계산 불필요"
+      }
+    },
+    "final_decision": "REJECT (judge_pass=false 단독으로 admission 차단)"
+  },
+  "book_state_snapshot": {
+    "before": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null
+    },
+    "after": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null,
+      "book_weights_unchanged": true
+    },
+    "book_update_called": false,
+    "note": "REJECT 확정으로 book_update() 미호출 — book state 변화 없음"
+  },
+  "multi_objective_summary": {
+    "net_information_ratio": 0.3983,
+    "expected_information_ratio_z_scale": 4.2006,
+    "tracking_error_realized": 0.2424,
+    "turnover_annual": 1.0,
+    "crowding_adjusted_return": -0.2262,
+    "regime_robustness_score": {
+      "value": 0.25,
+      "interpretation": "LOW (1/4 stress survival — market_down_5만 PASS, rate_2022/covid_2020/gfc_2008 FAIL)"
+    },
+    "interpretability_score": {
+      "value": 0.72,
+      "interpretation": "HIGH (Q07+Q32+Q14 단순 composite, 경제적 설명 명확)"
+    },
+    "multi_objective_pass_count": "3/8 (required: 4/8 — FAIL)",
+    "hurdle_grade_conventional": "F (MDD -54.3% > -45%)"
+  },
+  "ax_findings": [
+    {
+      "axiom": "AX-001_v2",
+      "status": "FAIL",
+      "detail": "crisis_alpha rate_2022=-0.27%, covid_2020=-1.69% 양쪽 음수. Defense 조건부 평가의 필수 조건(crisis_alpha ≥ 0) 미달. bad/normal IC ratio 1.53 PASS + core MDD 완화 N/A(standalone)"
+    },
+    {
+      "axiom": "AX-005_v1_2",
+      "status": "STRUCTURAL (Discovery exception applied)",
+      "detail": "roles=defense + universe=top20_long_only(6종 실질) + structure=single_sleeve. EXCLUSION 4종(multi-sleeve / long-short / 50+ 분산 / ML sizing) 미충족 → Discovery 탐색은 허용하되 Deployment 전환 차단"
+    },
+    {
+      "axiom": "AX-007",
+      "status": "TRANSLATION_BREACH",
+      "detail": "signal-level ICIR 0.318 + Harvey t 3.83 양호 but portfolio 구현 후 MDD -54.3% + stress active -0.27%/-1.69%. 6종 집중이 signal→portfolio 증폭 요인"
+    },
+    {
+      "axiom": "AX-008",
+      "status": "PARTIAL (Discovery 허용)",
+      "detail": "Forge backtest + Integration audit 2-source PASS. Codex/Architect 검증 없음 but Discovery WT는 2-source 허용"
+    }
+  ],
+  "remediation_forwarded": [
+    {
+      "priority": 1,
+      "action": "Q14_Current_Ratio 제거 → Q07+Q32 2-factor 재구성",
+      "rationale": "rank_ic 0.0064 + harvey_t 0.754 기여 미미. 희석 제거"
+    },
+    {
+      "priority": 2,
+      "action": "20~50 종목 multi-sleeve 구조 전환",
+      "rationale": "6종 집중 single shock 취약 → defense(Q07+Q32) sleeve + core_secondary sleeve 병합"
+    },
+    {
+      "priority": 3,
+      "action": "Rebalance 빈도 monthly → quarterly",
+      "rationale": "turnover 100% → 40~50% 축소. 15bps → 6bps 비용 절감 + signal stability 활용"
+    },
+    {
+      "priority": 4,
+      "action": "Core + Defense sleeve 조합 (AX-005 v1.2 EXCLUSION 충족)",
+      "rationale": "standalone defense 구조적 실패 확정 → Core sleeve 동반으로 MDD 완화 역할 입증 필요"
+    }
+  ],
+  "recent_rejections_entry": {
+    "wt_id": "WT-D20260423_001",
+    "rejected_at": "2026-04-23",
+    "reason_code": "JUDGE_FAIL_AX001V2_AX007",
+    "grade": "F"
+  },
+  "next_action": "Discovery 재실행 권장 (remediation priority 1~3 반영 필수). Deployment 전환 영구 차단. book_state 변화 없음.",
+  "timestamp": "2026-04-23",
+  "schema_version": "v1.0"
+}

@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-24T00:00:00+0900",
+  "updated_at": "2026-04-23T00:00:00+0900",
   "n_admitted": 0,
   "admitted_ids": [],
   "book_weights": {},
@@ -9,7 +9,20 @@
     "information_ratio": null
   },
   "crowding_per_wt": {},
-  "method": "initial_empty_state",
-  "notes": "book_state placeholder — book_update() 호출 후 갱신됨. v6.1 R5 Book-level Governor.",
-  "schema_version": "v1.0"
+  "recent_rejections": [
+    {
+      "wt_id": "WT-D20260423_001",
+      "rejected_at": "2026-04-23",
+      "hypothesis": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28)",
+      "reason_code": "JUDGE_FAIL_AX001V2_AX007",
+      "grade": "F",
+      "gate_fail": ["D_crowding_stress", "E_concentration"],
+      "ax_fail": ["AX-001_v2", "AX-007"],
+      "verdict_ref": "qepm/mailbox/worktask/WT-D20260423_001/judge_verdict.json",
+      "admission_ref": "qepm/mailbox/worktask/WT-D20260423_001/governor_admission.json"
+    }
+  ],
+  "method": "initial_empty_state_with_rejection_log",
+  "notes": "book_state placeholder — book_update() 호출 후 갱신됨. v6.1 R5 Book-level Governor. WT-D20260423_001 REJECT로 book 변화 없음.",
+  "schema_version": "v1.1"
 }

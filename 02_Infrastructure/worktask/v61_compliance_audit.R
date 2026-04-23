@@ -135,15 +135,14 @@ audit_p5_book_primacy <- function(wt_id) {
   wt_dir <- file.path(WT_ROOT, wt_id)
   adm_path <- file.path(wt_dir, "governor_admission.json")
   if (!file.exists(adm_path)) {
-    # Not yet admitted → skip
     return(list(principle = "P5", pass = NA, reason = "not_yet_admitted"))
   }
   adm <- fromJSON(adm_path, simplifyVector = FALSE)
-  book_ref <- adm$book_state_ref %||% adm$book_state_snapshot %||% NA
+  has_ref <- !is.null(adm$book_state_ref) || !is.null(adm$book_state_snapshot)
   list(
     principle = "P5",
-    pass = !is.na(book_ref),
-    reason = if (!is.na(book_ref)) "book_state_referenced" else "book_state_missing_in_admission"
+    pass = has_ref,
+    reason = if (has_ref) "book_state_referenced" else "book_state_missing_in_admission"
   )
 }
 
