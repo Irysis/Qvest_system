@@ -1,0 +1,83 @@
+{
+  "task_id": "WT-D20260423_001",
+  "hypothesis": "Rate Hedge Defense -- Duration-neutral Quality",
+  "wt_type": "discovery",
+  "stage": "FORGE_DONE",
+  "generated_at": "2026-04-23T16:01:45",
+  "gate_a": {
+    "lockbox_sealed": true,
+    "bt_window": "2012-01-20 ~ 2024-01-21",
+    "n_months_realized": 145,
+    "hash_verified": true,
+    "pit_flags": {
+      "C1": "PASS",
+      "C2": "PASS",
+      "C4": "PASS",
+      "C9": "PASS"
+    }
+  },
+  "gate_b": {
+    "cagr": 8.72,
+    "sr": 0.413,
+    "mdd": -54.3,
+    "calmar": 0.161,
+    "ann_vol": 21.12,
+    "sharpe_m": 0.481,
+    "win_rate": 58.6,
+    "worst_month": -18.19,
+    "bm_cagr": 2.51,
+    "bm_sr": 0.161
+  },
+  "gate_c": {
+    "te_expected_annual": 0.2424,
+    "te_realized_pct": 17.3933,
+    "ir_expected_annual": 4.2006,
+    "ir_realized": 0.3983,
+    "n_names": 6,
+    "method": "MVO_lam5_psi0.3"
+  },
+  "gate_d": {
+    "rate_2022_active_monthly": -0.0027,
+    "covid_2020_active_monthly": -0.0169,
+    "normal_baseline_monthly": 0.0061,
+    "risk_stress_rate2022": -0.2262,
+    "risk_stress_covid2020": -0.3211,
+    "hypothesis_test": "rate_2022 IC > 0 => core hypothesis supported"
+  },
+  "gate_e": {
+    "tdc_q07_q32": 0.62,
+    "condition_number": 2119.35,
+    "tikhonov_applied": true,
+    "crowding_flags": [
+      "Q07+Q32 고점 alpha tickers(A000420,A001600,A002530 등) — 기관 방어 포지션 집중 가능성 (MEDIUM)",
+      "TDC(Q07,Q32)=0.62 > 0.6 — 금리 급등 시 기관 공동 해소 위험 (MEDIUM)"
+    ],
+    "challenge_flags": [
+      {
+        "flag_id": "RISK_CHL_001",
+        "severity": "MEDIUM",
+        "type": "tail_dependence_concentration",
+        "message": "Q07-Q32 구조적 TDC=0.62 (>0.6). rate shock 시 동반 하락 — Deployment WT empirical Kendall tau 재추정 권고.",
+        "action": "INFO_ONLY"
+      },
+      {
+        "flag_id": "RISK_CHL_002",
+        "severity": "LOW",
+        "type": "factor_correlation_warning",
+        "message": "Q07-Q32 factor correlation 0.477 (>0.45). 동일 family 중복 → 분산효과 부분 소실. Q14 희석 이슈와 결합 시 effective factor 수 감소.",
+        "action": "MONITOR"
+      }
+    ]
+  },
+  "gate_f": {
+    "graduation_criteria": {
+      "min_rank_ic": 0.04,
+      "min_icir": 0.2,
+      "min_subperiod_stability": 0.5,
+      "max_drawdown_days": 100,
+      "min_harvey_t_stat": 3,
+      "min_deflated_sharpe_ratio": 0.5
+    },
+    "note": "Judge evaluates graduation_criteria vs realized backtest stats"
+  }
+}

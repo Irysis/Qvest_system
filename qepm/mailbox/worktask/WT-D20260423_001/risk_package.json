@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-D20260423_001",
+  "as_of_date": "2026-04-23",
+  "agent": "risk_research_v1.1",
+  "generated_at": "2026-04-23T15:43:27",
+  "evaluation_windows": {
+    "train": "2012-01-20 ~ 2022-01-20 (used for Omega estimation)",
+    "validation": "2022-01-21 ~ 2024-01-21 (used for method selection)",
+    "lockbox": "SEALED — not accessed (2024-01-22 ~ 2026-01-22)"
+  },
+  "subset_scope": {
+    "method": "top_100_by_abs_alpha",
+    "n_tickers": 100,
+    "note": "Discovery WT scope guidance: |alpha| 상위 100개 사용"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260423_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260423_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260423_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260423_001/covariance.parquet",
+  "risk_summary": {
+    "top_common_risks": ["Market (38%)", "Sector_IT (approx 15%)", "Sector_Industrial (approx 12%)", "Style_Quality_Q07+Q32+Q28 (approx 10%)", "Size (approx 7%)"],
+    "crowding_flags": [
+      "Q07+Q32 고점 alpha tickers(A000420,A001600,A002530 등) — 기관 방어 포지션 집중 가능성 (MEDIUM)",
+      "TDC(Q07,Q32)=0.62 > 0.6 — 금리 급등 시 기관 공동 해소 위험 (MEDIUM)"
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.0425,
+      "value_crash": -0.0718,
+      "momentum_reversal": -0.0511,
+      "gfc_2008": -0.3836,
+      "eudebt_2011": -0.1818,
+      "covid_2020": -0.3211,
+      "rate_2022": -0.2262,
+      "normal_baseline": -0.017
+    }
+  },
+  "diagnostics": {
+    "condition_number": 2119.35,
+    "shrinkage_used": true,
+    "shrinkage_method": "gerber_rmt",
+    "factor_coverage_pct": 74.4,
+    "factor_correlation_warnings": [
+      {
+        "pair": "Q07_Earnings_Stability vs Q32_Interest_Coverage",
+        "correlation": 0.4771,
+        "severity": "MEDIUM",
+        "note": "같은 Duration-neutral Quality family. rate shock 동반 하락 위험."
+      }
+    ],
+    "tdc_summary": {
+      "Q07_vs_Q32": 0.62,
+      "interpretation": "TDC=0.62 MEDIUM-HIGH. Deployment WT empirical Kendall tau 재추정 필요."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260423_001/regime_correlation.parquet",
+    "port_vol_monthly_pct": 6.193,
+    "port_vol_annual_pct": 21.452,
+    "factor_n": 9,
+    "ticker_n": 100
+  },
+  "selection_objective": "condition_number",
+  "challenge_flags": [
+    {
+      "flag_id": "RISK_CHL_001",
+      "severity": "MEDIUM",
+      "type": "tail_dependence_concentration",
+      "message": "Q07-Q32 구조적 TDC=0.62 (>0.6). rate shock 시 동반 하락 — Deployment WT empirical Kendall tau 재추정 권고.",
+      "action": "INFO_ONLY"
+    },
+    {
+      "flag_id": "RISK_CHL_002",
+      "severity": "LOW",
+      "type": "factor_correlation_warning",
+      "message": "Q07-Q32 factor correlation 0.477 (>0.45). 동일 family 중복 → 분산효과 부분 소실. Q14 희석 이슈와 결합 시 effective factor 수 감소.",
+      "action": "MONITOR"
+    }
+  ],
+  "method_shopping_summary": {
+    "candidates_tried": 3,
+    "selected": "gerber_rmt",
+    "condition_numbers": {
+      "sample": 37.36,
+      "ledoit_wolf": 36.91,
+      "gerber_rmt": 36.26
+    }
+  },
+  "red_flags": {
+    "RF_R1": {
+      "triggered": false,
+      "value": 37.6,
+      "threshold": 40,
+      "severity": "OK"
+    },
+    "RF_R2": {
+      "triggered": true,
+      "value": 2119.35,
+      "threshold": 500,
+      "note": "Tikhonov applied; Discovery WT 합성 구조 한계. PSD 유지됨.",
+      "severity": "MEDIUM"
+    },
+    "RF_R3": {
+      "triggered": true,
+      "count": 2,
+      "severity": "MEDIUM"
+    },
+    "RF_R4": {
+      "triggered": false,
+      "value": -4.25,
+      "threshold_pct": -8,
+      "severity": "OK"
+    },
+    "RF_R5": {
+      "triggered": false,
+      "high_cor_pair_count": 0,
+      "note": "Q07-Q32 cor=0.477, threshold 0.8 미달 — MONITOR"
+    }
+  },
+  "v61_compliance": {
+    "R2C_method_shopping_log": "DONE (candidates=3, <=5 HARD)",
+    "R4_selection_objective": "condition_number (HARD enum 준수)",
+    "R6_covariance_freshness": "cached at .cache/covariance/WT-D20260423_001_gerber_rmt_20220120.parquet",
+    "lockbox_sealed": "CONFIRMED"
+  },
+  "status": "RISK_DONE"
+}

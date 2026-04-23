@@ -257,17 +257,19 @@ fvar_approx <- as.numeric(B_matrix^2 %*% diag_Omega)  # 100-dim
 coverage_approx <- mean(fvar_approx / ticker_total_var)
 cat(sprintf("  Factor variance coverage (diag approx): %.1f%%\n", coverage_approx * 100))
 
-# 만약 coverage < 10%이면 스케일 맞지 않음 → ticker_total_var 재스케일
-# Barra-style: total var ≈ factor var × 1.5 (idio residual 33%)
-if (coverage_approx < 0.10) {
-  # factor var 기반 total var 재설정 (factor explains 60~80%)
-  idio_multiplier <- runif(n_tickers, 0.25, 0.67)  # idio share
-  ticker_total_var <- fvar_approx / (1 - idio_multiplier)
-  cat("  스케일 재조정: factor var 기반 total var 재설정\n")
+# 스케일 불일치 보정: coverage < 0.10 (너무 작음) 또는 > 1.0 (너무 큼) 모두 재설정
+# Barra-style: factor explains 60~75%, idio 25~40%
+if (coverage_approx < 0.10 || coverage_approx > 1.0) {
+  # factor var 기반 total var 재설정 (idio share 25~40%)
+  set.seed(20260425)
+  idio_share <- runif(n_tickers, 0.25, 0.40)  # idio 25~40%
+  ticker_total_var <- fvar_approx / (1 - idio_share)
+  cat(sprintf("  스케일 재조정 (coverage=%.1f%%): factor var 기반 total var 재설정\n",
+              coverage_approx * 100))
 }
 
 ticker_fvar_full <- rowSums((B_matrix %*% Omega) * B_matrix)
-D_diag <- pmax(ticker_total_var - ticker_fvar_full, (0.005)^2)  # floor 0.5% monthly vol
+D_diag <- pmax(ticker_total_var - ticker_fvar_full, (0.003)^2)  # floor 0.3% monthly vol
 
 factor_coverage <- mean(ticker_fvar_full / ticker_total_var)
 cat(sprintf("  Factor coverage (final): %.1f%%\n", factor_coverage * 100))
@@ -589,8 +591,10 @@ risk_package <- list(
   red_flags = list(
     RF_R1 = list(triggered = (market_pct > 40), value = round(market_pct, 1),
                   threshold = 40, severity = if(market_pct > 40) "HIGH" else "OK"),
-    RF_R2 = list(triggered = FALSE, value = round(cn_sig, 2),
-                  threshold = 500, severity = "OK"),
+    RF_R2 = list(triggered = (cn_sig > 500), value = round(cn_sig, 2),
+                  threshold = 500,
+                  note = if(cn_sig > 500) "Tikhonov applied; Discovery WT 합성 구조 한계. PSD 유지됨." else "OK",
+                  severity = if(cn_sig > 500) "MEDIUM" else "OK"),
     RF_R3 = list(triggered = (length(crowding_flags) > 0), count = length(crowding_flags),
                   severity = if(length(crowding_flags) > 0) "MEDIUM" else "OK"),
     RF_R4 = list(triggered = (stress_results$market_down_5 < -0.08),

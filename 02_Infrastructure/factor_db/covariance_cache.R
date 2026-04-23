@@ -66,10 +66,13 @@ compute_and_cache_covariance <- function(task_id,
       }
     },
     "gerber_rmt" = {
-      # hrp_core.R의 .get_cor_cov 활용
-      if (file.exists("02_Infrastructure/portfolio/hrp_core.R")) {
+      # hrp_core.R의 .get_cor_cov 활용 (파라미터명 cov_method)
+      if (exists(".get_cor_cov", mode = "function")) {
+        res <- .get_cor_cov(returns_matrix, cov_method = "gerber_rmt")
+        res$cov
+      } else if (file.exists("02_Infrastructure/portfolio/hrp_core.R")) {
         source("02_Infrastructure/portfolio/hrp_core.R", local = TRUE)
-        res <- .get_cor_cov(returns_matrix, method = "gerber_rmt")
+        res <- .get_cor_cov(returns_matrix, cov_method = "gerber_rmt")
         res$cov
       } else {
         cov(returns_matrix, use = "pairwise.complete.obs")
