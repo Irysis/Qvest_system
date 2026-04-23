@@ -2,7 +2,7 @@
   "factor_id": "ML_XGB_ENSEMBLE",
   "strategy_id": "STR_1656_MLRA",
   "stage": "S1",
-  "created_at": "2026-04-10 20:39:04.635748",
+  "created_at": "2026-04-23 10:39:25.614359",
   "variants": ["S1_A_full50F", "S1_B_nonRE35F"],
   "implementation_profile": {
     "model": "XGBoost 5-seed ensemble",
@@ -10,7 +10,7 @@
     "mi_prefilter_top": 50,
     "window_type": "expanding walk-forward",
     "purge_window_days": 21,
-    "n_holdings": 30,
+    "n_holdings": 20,
     "commission_bps": 15,
     "liq_threshold_krw": 200000000,
     "overlay": "없음 S1 순수 팩터",
@@ -21,6 +21,7 @@
   "pit_compliance": {
     "C1": "expanding only PASS",
     "C2": "OOS>IS PASS",
+    "C10": "AvgTV20 (frollmean 20d) PASS — C10 fix applied 2026-04-19",
     "C13": "Z_Score_Aligned PASS",
     "C14": "fwd t+1~t+21 PASS",
     "OPT1": "Arrow open_dataset PASS",
