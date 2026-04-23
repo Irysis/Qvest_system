@@ -87,6 +87,9 @@ ret_dt <- ret_dt[!is.na(fwd_ret_21d)]
 cat(sprintf("    fwd rows: %d\n", nrow(ret_dt)))
 
 SIZE_DT <- RAWDATA[Date >= as.Date("2003-01-01"), .(Date, Ticker, Size)]
+setkey(SIZE_DT, Ticker, Date)
+# C10 fix (2026-04-23): t-1 lag — same-day circular 방지
+SIZE_DT[, AvgTV20_lag := shift(frollmean(Size, 20L, align = "right", na.rm = TRUE), 1L), by = Ticker]
 setkey(SIZE_DT, Date, Ticker)
 RAWDATA[, ym__ := format(Date, "%Y-%m")]
 ALL_ME_DATES <- RAWDATA[, .(me_date = max(Date)), by = ym__][order(me_date)]$me_date
@@ -218,8 +221,8 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   is_dt   <- tryCatch(arrow_collect(top_B, dates_vec = is_me_d), error = function(e) NULL)
   if (is.null(is_dt) || nrow(is_dt) < 1000L) return(NULL)
   is_dt <- merge(is_dt, ret_dt[, .(Date, Ticker, fwd_ret_21d)], by = c("Date", "Ticker"))
-  is_dt <- merge(is_dt, SIZE_DT, by = c("Date", "Ticker"), all.x = TRUE)
-  is_dt <- is_dt[!is.na(fwd_ret_21d) & !is.na(Size) & Size >= LIQ_THRESHOLD]
+  is_dt <- merge(is_dt, SIZE_DT[, .(Date, Ticker, AvgTV20_lag)], by = c("Date", "Ticker"), all.x = TRUE)
+  is_dt <- is_dt[!is.na(fwd_ret_21d) & !is.na(AvgTV20_lag) & AvgTV20_lag >= LIQ_THRESHOLD]
   X_trB <- build_mat(is_dt, top_B)
   y_tr  <- is_dt$fwd_ret_21d
   is_last <- max(is_dt$Date)
@@ -243,8 +246,8 @@ wf_out <- lapply(OOS_YEARS, function(oos_yr) {
   if (is.null(oos_me) || nrow(oos_me) == 0L) {
     rm(X_trB, y_tr); gc(FALSE); return(NULL)
   }
-  oos_me <- merge(oos_me, SIZE_DT, by = c("Date", "Ticker"), all.x = TRUE)
-  oos_me <- oos_me[!is.na(Size) & Size >= LIQ_THRESHOLD]
+  oos_me <- merge(oos_me, SIZE_DT[, .(Date, Ticker, AvgTV20_lag)], by = c("Date", "Ticker"), all.x = TRUE)
+  oos_me <- oos_me[!is.na(AvgTV20_lag) & AvgTV20_lag >= LIQ_THRESHOLD]
   X_teB  <- build_mat(oos_me, top_B)
 
   pB <- tryCatch(xgb5_predict(X_trB, y_tr, X_teB, X_vlB), error = function(e) rep(0, nrow(X_teB)))

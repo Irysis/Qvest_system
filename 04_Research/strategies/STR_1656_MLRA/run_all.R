@@ -11,7 +11,7 @@
 ##   C2  : OOS > IS (same-day circular 없음)
 ##   C13 : Z_Score_Aligned (일간 DB 이미 정규화)
 ##   C14 : fwd_ret = t+1~t+21 (IS target 전용)
-##   C15 : 월간 DB 미사용 (일간 DB open_dataset 직접)
+##   C15 : L-164 v1.1 carve-out — ML 전략은 일간 DB(309F) 필수, load_month_factors() 예외 허용
 ##   purge: 21d embargo gap
 ##
 ## OPT 준수:
@@ -99,7 +99,8 @@ cat(sprintf("    fwd rows: %d\n", nrow(ret_dt)))
 # C10 fix: 당일 Size 직접 사용 → 20일 rolling mean (AvgTV20)으로 교체
 SIZE_DT <- RAWDATA[Date >= as.Date("2003-01-01"), .(Date, Ticker, Size)]
 setkey(SIZE_DT, Ticker, Date)
-SIZE_DT[, AvgTV20 := frollmean(Size, 20L, align = "right", na.rm = TRUE), by = Ticker]
+# C10 fix (2026-04-23): t-1 lag 추가 — 당일 Size 직접 사용 시 same-day circular
+SIZE_DT[, AvgTV20 := shift(frollmean(Size, 20L, align = "right", na.rm = TRUE), 1L), by = Ticker]
 setkey(SIZE_DT, Date, Ticker)
 # 월말 날짜 벡터 (Arrow predicate용) — RAWDATA 해제 전에 추출
 RAWDATA[, ym__ := format(Date, "%Y-%m")]
