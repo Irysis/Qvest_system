@@ -220,10 +220,14 @@ mvo_weights <- function(alpha,
             rep(-bounds[2], D))
   meq <- 1  # 1st constraint is equality
 
-  # v2.1 Feasibility pre-check: min_names × bounds[2] >= target_sum?
+  # v2.1 Feasibility pre-check:
+  #   target_sum=1 과 bounds[2] 일관성 + min_names × bounds[2] >= target_sum 확인.
+  #   min_names 종목에 고르게 분배 시 종목당 target_sum/min_names_eff 필요.
+  #   단, D >= min_names 이고 universe 전체가 bound 채우면 달성 가능하므로
+  #   실제로 infeasible 한 경우는 min_names × bounds[2] < target_sum 이 엄격히 맞을 때.
   target_sum <- if (active) 0 else 1
   min_names_eff <- if (is.null(min_names) || is.na(min_names)) 1L else as.integer(min_names)
-  if (!active && min_names_eff > 0) {
+  if (!active && min_names_eff > 1) {
     # min_names 종목에 고르게 분배 시 종목당 target_sum/min_names_eff 필요
     per_name_need <- target_sum / min_names_eff
     if (per_name_need > bounds[2] + 1e-9) {
@@ -240,6 +244,19 @@ mvo_weights <- function(alpha,
         )
       ))
     }
+  }
+  # Universe 크기 vs min_names
+  if (!active && min_names_eff > D) {
+    return(list(
+      weights = NULL,
+      method = "mvo",
+      infeasible = TRUE,
+      reason = sprintf("min_names (%d) > universe size (%d)", min_names_eff, D),
+      infeasibility_report = list(
+        violated_constraints = c("min_names", "universe_size"),
+        suggested_resolution = "Expand universe or lower min_names"
+      )
+    ))
   }
 
   # Solve QP (1st attempt)

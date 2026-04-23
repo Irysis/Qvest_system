@@ -142,6 +142,36 @@ Pass/Fail 판정: 8지표 중 2개+ FAIL OR Pareto-dominated.
 Judge는 lockbox 데이터 접근 허용 (유일). `selection_contamination_detector.sh`가 다른 agent 차단.
 접근 기록 `/tmp/qvest_lockbox_access_{wt_id}.log` 전수 검토.
 
+### OOS Chart 생성 (Gate F 판정 전 필수)
+Gate A~E 실행 완료 후, **Gate F (Drift tolerance) 판정 전에 반드시 다음을 수행**:
+
+```r
+source("02_Infrastructure/validation/judge_oos_helper.R")
+oos <- judge_generate_oos_charts(wt_id)   # lockbox 접근 (judge 권한)
+# 반환: list(full_chart_path, oos_chart_path, oos_summary_path,
+#            oos_performance, oos_is_ratio)
+```
+
+산출물 (모두 `<wt_dir>/backtest_result/`):
+- `equity_curve_full.png` — 1990~2026-01-22 전 기간 (train 회색 / val 연노랑 / lockbox OOS 연파랑 음영)
+- `equity_curve_oos.png` — 2024-01-23~2026-01-22 OOS 강조 (SR/MDD/α/IR annotation)
+- `oos_summary.json` — train/val/lockbox 성과 비교 + `gate_f.verdict`
+
+**Forge의 기존 `equity_curve.png` (train+val까지)은 덮어쓰지 말 것.** Judge는 `_full`/`_oos` 2건을 **별도 생성**.
+
+### Gate F 판정 (OOS 기반)
+`oos_summary.json::gate_f` 참조:
+- `oos_is_ratio = OOS_Sharpe / mean(train_Sharpe, val_Sharpe)` ≥ 0.7 → PASS
+- `< 0.7` → FAIL (signal decay 의심 → alpha 단기화 권고 or DISCARD)
+- Lockbox performance (CAGR/SR/MDD/α/IR vs KOSPI200_TR) 심사 comment에 반드시 기술.
+
+### Telegram 발송 (차트 2건 첨부)
+```r
+tg_send_photo(oos$full_chart_path,  caption = sprintf("[Judge] %s | Full Period (Train+Val+Lockbox OOS)", wt_id))
+tg_send_photo(oos$oos_chart_path,   caption = sprintf("[Judge] %s | Lockbox OOS (24M) | SR=%.3f / MDD=%.2f%%",
+                                                         wt_id, oos$oos_performance$Sharpe, oos$oos_performance$MDD))
+```
+
 ### Judge Verdict 저장 → lockbox_post_judge_seal.sh 자동 발동
 `judge_verdict_{wt_id}.json` Write 시 Hook이 `lockbox_sealed.json` 생성. 재접근 warn.
 </v61_worktask_gates>
