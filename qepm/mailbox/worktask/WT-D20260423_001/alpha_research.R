@@ -138,17 +138,18 @@ raw <- tryCatch({
 })
 if (is.null(raw)) stop("RAWDATA load failed")
 
-raw <- as.data.table(raw)
 cat("RAWDATA cols:", paste(names(raw)[1:min(15, ncol(raw))], collapse=", "), "\n")
 cat("RAWDATA rows:", nrow(raw), "\n")
 
-# Compute monthly returns from daily data (compound)
-# PIT-safe: use Close price, last trade day of each month
+# Compute monthly returns from daily data (month-end Close)
+# PIT-safe: t-1 close, no future data. C9: no same-day circular.
+ret_min <- as.Date(format(TRAIN_START, "%Y-%m-01"))
+ret_max <- as.Date("2024-02-01")  # 1 month beyond VAL_END for forward return
+
 raw[, Date := as.Date(Date)]
 setkey(raw, Ticker, Date)
 raw[, month_date := as.Date(format(Date, "%Y-%m-01"))]
 
-# Take last Close of each month, compute month-over-month return
 # Filter to KOSPI200/KOSDAQ150 universe (K200=1 or KQ150=1) and date range
 raw_univ <- raw[(K200 == 1 | KQ150 == 1) & !is.na(Close) &
                   Date >= (ret_min - 60) & Date <= as.Date("2024-03-31")]
@@ -157,11 +158,7 @@ cat("Universe rows:", nrow(raw_univ), "\n")
 monthly_raw <- raw_univ[, .(Close_end = last(Close)), by=.(Ticker, month_date)]
 setkey(monthly_raw, Ticker, month_date)
 monthly_raw[, Ret := Close_end / shift(Close_end, 1L) - 1, by=Ticker]
-cat("Monthly return rows constructed\n")
 
-# Filter to allowed window + 1 extra month for forward return
-ret_min <- as.Date(format(TRAIN_START, "%Y-%m-01"))
-ret_max <- as.Date("2024-02-01")  # 1 month beyond VAL_END for forward return
 monthly_raw <- monthly_raw[month_date >= ret_min & month_date <= ret_max & !is.na(Ret)]
 cat("Monthly returns: ", nrow(monthly_raw), "rows, unique months:", uniqueN(monthly_raw$month_date), "\n")
 
