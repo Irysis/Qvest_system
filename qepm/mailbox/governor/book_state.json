@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-04-23T17:45:00+0900",
+  "updated_at": "2026-04-24T08:45:00+0900",
   "n_admitted": 0,
   "admitted_ids": [],
   "book_weights": {},
@@ -32,9 +32,23 @@
       "verdict_ref": "qepm/mailbox/worktask/WT-D20260423_002/judge_verdict.json",
       "admission_ref": "qepm/mailbox/worktask/WT-D20260423_002/governor_admission.json",
       "l_code_recorded": "L-191"
+    },
+    {
+      "wt_id": "WT-D20260424_001",
+      "rejected_at": "2026-04-24",
+      "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC) — ESBR + SUE + Accrual IC-weighted expanding",
+      "reason_code": "JUDGE_GRADE_F_GATE_CDE_BREADTH_BORDERLINE_MDD",
+      "grade": "F",
+      "gate_fail": ["C_Net_Alpha", "D_Crowding_Saturation", "E_Concentration_Breadth"],
+      "gate_pass": ["A_PIT", "B_Package_Isolation", "F_Drift_Regime"],
+      "ax_fail": ["AX-007_WARNING"],
+      "positive_findings": ["L-191_AVOIDED_VAL_GT_TRAIN", "RAPC_SIGNAL_VALIDATED"],
+      "verdict_ref": "qepm/mailbox/worktask/WT-D20260424_001/judge_verdict.json",
+      "admission_ref": "qepm/mailbox/worktask/WT-D20260424_001/governor_admission.json",
+      "l_code_recorded": "L-192"
     }
   ],
   "method": "initial_empty_state_with_rejection_log",
-  "notes": "book_state placeholder — book_update() 호출 후 갱신됨. v6.1 R5 Book-level Governor. WT-D20260423_001/002 연속 REJECT로 book 여전히 empty. Pilot 2 FAIL 확정.",
+  "notes": "book_state placeholder — book_update() 호출 후 갱신됨. v6.1 R5 Book-level Governor. Pilot 1 (WT-D20260423_001) + Pilot 2 (WT-D20260423_002) + Pilot 3 (WT-D20260424_001) 3연속 REJECT로 book 여전히 empty. Pilot 3은 Gate F PASS (L-191 회피 실증) + Alpha 통계 유효 (Harvey t=4.42, ICIR 0.403) — DISCARD_WITH_IMPROVEMENTS로 RAPC alpha 재사용 가능 자산. Task #26 (Optimizer 제약 강화 min_names>=15 + HHI_cap<=0.10 + bound[0,0.10] + winsorize) 하 재도전 경로 확립.",
   "schema_version": "v1.1"
 }

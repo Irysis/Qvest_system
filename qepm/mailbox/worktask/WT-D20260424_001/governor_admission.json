@@ -1,0 +1,172 @@
+{
+  "task_id": "WT-D20260424_001",
+  "wt_type": "discovery",
+  "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC) — ESBR + SUE + Accrual IC-weighted expanding composite",
+  "pilot_label": "Pilot 3 RAPC",
+  "governor_agent": "governor_v61_R5",
+  "evaluated_at": "2026-04-24",
+  "input_refs": {
+    "judge_verdict": "qepm/mailbox/worktask/WT-D20260424_001/judge_verdict.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260424_001/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260424_001/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260424_001/optimization_package.json",
+    "book_state_ref": "qepm/mailbox/governor/book_state.json"
+  },
+  "verdict": "REJECT",
+  "reason": "Judge Grade F / Gate C+D+E FAIL / MDD 44.59 경계",
+  "reason_long": "Judge GRADE_F (3 PASS / 3 FAIL). Gate C Net_Alpha FAIL (rank_ic 0.0318<0.04, DSR 0.039<0.1). Gate D Crowding FAIL (Market 48% RF-R1, ESBR+SUE earnings_surprise family overlap). Gate E Concentration FAIL (n=8 Grinold breadth, HHI 0.176, max_w 0.20 binding 3 names). MDD -44.59% hard_fail(-45%) 0.41pp 경계 통과. AX-007 WARNING 재확인 (signal-to-portfolio translation 단절).",
+  "deployment_allowed": false,
+  "positive_findings": [
+    "L-191_AVOIDED_VAL_GT_TRAIN",
+    "RAPC_SIGNAL_VALIDATED"
+  ],
+  "positive_findings_detail": {
+    "L-191_AVOIDED_VAL_GT_TRAIN": {
+      "metric": "Val SR 0.317 > Train SR 0.275 (ratio 1.153x)",
+      "supporting": "Val MDD 21.34% << Train MDD 44.59% / Val Sortino 0.469 > Train 0.39 / regime IC Normal 0.0286 / Transition_LR 0.0584 / subperiod IC 0.027~0.038 안정적",
+      "significance": "Pilot 1/2 실패 원인 중 regime adaptation lag (Val<Train 하자) 구조적 해결 증명. Gate F PASS. 향후 재사용 가능한 alpha 자산."
+    },
+    "RAPC_SIGNAL_VALIDATED": {
+      "metric": "Harvey t=4.42 (>3.0 multi-testing bar), ICIR 0.403, rank_ic 0.0318 near-threshold",
+      "supporting": "VIF 1.006~1.01 (multicollinearity clean), pairwise TDC 0.04~0.17 (mutually independent), Ledoit-Wolf cond=1.0, Turnover 46.9%/yr (cost 효율)",
+      "significance": "Alpha composite 자체는 통계적으로 유효. IC weighting 구조 + regime modulation 설계 유효성 확인. DISCARD_WITH_IMPROVEMENTS (Judge) — alpha 폐기가 아니라 Optimizer 업그레이드 후 재사용."
+    }
+  },
+  "admission_rule_evaluation": {
+    "rule_source": "constraint_defaults.json::success_criteria_v61_r10::governor_admission_rule",
+    "rule_text": "judge_pass AND book-level IR improvement >= 0.05 (marginal contribution)",
+    "checks": {
+      "judge_pass": {
+        "value": false,
+        "required": true,
+        "pass": false,
+        "note": "Judge overall_verdict=FAIL (Gate C/D/E FAIL, disposition=DISCARD_WITH_IMPROVEMENTS)"
+      },
+      "book_ir_improvement_ge_0_05": {
+        "value": "N/A",
+        "required": true,
+        "pass": "N/A",
+        "note": "judge_pass=false 단계에서 admission 중단 — marginal IR 계산 불필요"
+      }
+    },
+    "final_decision": "REJECT (judge_pass=false 단독으로 admission 차단)"
+  },
+  "book_state_snapshot": {
+    "before": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null
+    },
+    "after": {
+      "n_admitted": 0,
+      "admitted_ids": [],
+      "book_weights": {},
+      "book_ir": null,
+      "book_weights_unchanged": true
+    },
+    "n_admitted_before": 0,
+    "n_admitted_after": 0,
+    "book_update_called": false,
+    "note": "REJECT 확정으로 book_update() 미호출. Pilot 1 (WT-D20260423_001) + Pilot 2 (WT-D20260423_002) + Pilot 3 (WT-D20260424_001) 3연속 REJECT. book 여전히 empty. 현 production portfolio(STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%) 유지 결정."
+  },
+  "multi_objective_summary": {
+    "sharpe": {"value": 0.282, "target": 2.0, "gap": -1.718, "status": "FAR_BELOW"},
+    "cagr_pct": {"value": 6.00, "target": 16.0, "gap": -10.0, "status": "FAR_BELOW"},
+    "mdd_pct": {"value": -44.59, "target": -25.0, "gap": -19.59, "status": "HARD_FAIL_BORDERLINE (0.41pp 여유)"},
+    "sortino": {"value": 0.402, "target": 1.5, "gap": -1.098, "status": "FAR_BELOW"},
+    "calmar": {"value": 0.134, "target": 0.6, "gap": -0.466, "status": "FAR_BELOW"},
+    "turnover_ann_pct": {"value": 46.9, "budget": 600, "status": "OK (효율)"},
+    "rank_ic": {"value": 0.0318, "target": 0.04, "gap": -0.0082, "status": "BORDERLINE_FAIL"},
+    "dsr": {"value": 0.039, "target": 0.5, "gap": -0.461, "status": "FAR_BELOW"},
+    "gate_pass_count": "3/6 (A/B/F PASS, C/D/E FAIL)",
+    "hurdle_grade_conventional": "F"
+  },
+  "ax_findings": [
+    {
+      "axiom": "AX-002",
+      "status": "COMPLIANT",
+      "detail": "하네스 내 성과만 유효. lockbox sealed 2024-01-23 > backtest_end 2024-01-22. commission 15bps 적용. 프로세스 우회 없음."
+    },
+    {
+      "axiom": "AX-007",
+      "status": "WARNING (재확인)",
+      "detail": "structure=single_sleeve_long_only_top20 (실질 top8), roles=[core_secondary]. Signal-to-portfolio translation 단절 재발. 예외 4종(multi-sleeve/long-short/50+분산/ML sizing) 미충족. Pilot 1/2/3 공통 패턴."
+    },
+    {
+      "axiom": "AX-008",
+      "status": "MET",
+      "detail": "3-source triangulation 충족: Forge(backtest) + Architect(integration_audit PASS) + Judge(본 심사). 2+ source PASS."
+    },
+    {
+      "axiom": "AX-001_v2",
+      "status": "NOT_APPLICABLE",
+      "detail": "core_secondary alpha 역할. Defense 조건부 평가 대상 아님."
+    }
+  ],
+  "role_honesty_note": {
+    "declared_role": "core_secondary (earnings+accrual composite)",
+    "actual": "RF-R1 HIGH Market 48% exposure + ESBR/SUE 모두 earnings_surprise family → family-level crowding + market neutrality 라벨 부분 위반",
+    "verdict": "Role honesty PARTIAL FAIL (경미) — neutralization 미흡"
+  },
+  "remediation_forwarded": [
+    {
+      "priority": 1,
+      "action": "Optimizer min_names >= 15 제약 추가",
+      "rationale": "Grinold breadth(n=8) 한계 Pilot 1/2/3 공통 장애물. min_names 제약 부재가 root cause."
+    },
+    {
+      "priority": 2,
+      "action": "HHI_cap <= 0.10 추가",
+      "rationale": "현 HHI 0.176 (0.10 상회). effective N 확보."
+    },
+    {
+      "priority": 3,
+      "action": "per-name bound [0, 0.10] 하향 (max_weight 0.20 → 0.10)",
+      "rationale": "현 max_w 0.20 binding 3 names (A140860/A028050/A058470). 집중 완화."
+    },
+    {
+      "priority": 4,
+      "action": "Alpha winsorization ±2σ (A140860 alpha=3.0 outlier 완화)",
+      "rationale": "MVO의 outlier 과집중 특성. winsorize로 robust alpha vector 확보."
+    },
+    {
+      "priority": 5,
+      "action": "RAPC alpha 재사용 + Optimizer 업그레이드 후 재백테스트 (신규 WT-D 번호)",
+      "rationale": "Gate F PASS (L-191 회피) + Alpha 통계 유효 (Harvey t=4.42) → alpha 폐기 아닌 재사용. 기존 artifact 수정 금지 (R2C lockbox 규정). Task #26 반영 별도 WT-D로 재출발."
+    },
+    {
+      "priority": 6,
+      "action": "Earnings-surprise family empirical redundancy test (ESBR+SUE regime-conditional validation)",
+      "rationale": "Gate D FAIL 원인. family-level crowding empirical 검증 필수."
+    },
+    {
+      "priority": 7,
+      "action": "Market exposure hedge overlay 고려 (RF-R1 완화)",
+      "rationale": "Market 48% → beta target 0.8 hedge overlay or market neutralization 강화."
+    }
+  ],
+  "recent_rejections_entry": {
+    "wt_id": "WT-D20260424_001",
+    "rejected_at": "2026-04-24",
+    "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC) — ESBR + SUE + Accrual",
+    "reason_code": "JUDGE_GRADE_F_GATE_CDE_BREADTH_BORDERLINE_MDD",
+    "grade": "F",
+    "gate_fail": ["C_Net_Alpha", "D_Crowding_Saturation", "E_Concentration_Breadth"],
+    "gate_pass": ["A_PIT", "B_Package_Isolation", "F_Drift_Regime"],
+    "ax_fail": ["AX-007_WARNING"],
+    "positive_findings": ["L-191_AVOIDED_VAL_GT_TRAIN", "RAPC_SIGNAL_VALIDATED"],
+    "verdict_ref": "qepm/mailbox/worktask/WT-D20260424_001/judge_verdict.json",
+    "admission_ref": "qepm/mailbox/worktask/WT-D20260424_001/governor_admission.json",
+    "l_code_recorded": "L-192"
+  },
+  "pilot_cumulative_analysis": {
+    "pilot_1_L190_rate_hedge": {"CAGR": 8.72, "SR": 0.413, "MDD": -54.30, "result": "hard_fail (MDD>45%)", "gate_fail": ["D", "E"]},
+    "pilot_2_L191_macro_residual": {"CAGR": 4.06, "SR": 0.289, "MDD": -44.03, "result": "Val<Train 하자", "gate_fail": ["C", "D", "F"]},
+    "pilot_3_RAPC": {"CAGR": 6.00, "SR": 0.282, "MDD": -44.59, "result": "Val>Train 성공 / breadth 한계 재발", "gate_fail": ["C", "D", "E"]},
+    "common_pattern": "3 Pilot 모두 MDD 40%+ 유지 + Optimizer 집중 패턴(8 names) 공통. Alpha 차원 개선은 누적(Pilot 3 L-191 회피 실증)되고 있으나 Portfolio construction 차원 structural 한계가 root cause. Task #26 Optimizer 업그레이드가 unlock 경로."
+  },
+  "next_action": "현 WT-D20260424_001 DISCARD_WITH_IMPROVEMENTS 확정. Alpha 자산(RAPC) 보존 — 신규 WT-D로 Task #26 제약 업그레이드 후 재도전. 현 production portfolio(STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%) 유지. book_state 변화 없음.",
+  "timestamp": "2026-04-24",
+  "schema_version": "v1.1"
+}
