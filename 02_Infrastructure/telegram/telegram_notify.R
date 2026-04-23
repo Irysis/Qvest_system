@@ -166,7 +166,9 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 }
 
 # ─── Core send function ───────────────────────────────────────────────────────
-tg_send <- function(msg, parse_mode = "HTML", silent = FALSE) {
+tg_send <- function(msg, parse_mode = "", silent = FALSE) {
+  # 2026-04-23: 기본 parse_mode "" (plain). HTML은 <, > 기호로 parse error 유발.
+  # 3-agent WT 브리핑이 수치/이모지 위주라 plain이 안전.
   tryCatch({
     resp <- POST(.TG_API, body = list(
       chat_id    = .TG_CHAT_ID,
@@ -183,7 +185,7 @@ tg_send <- function(msg, parse_mode = "HTML", silent = FALSE) {
 }
 
 # ─── Photo / Document send ────────────────────────────────────────────────────
-tg_send_photo <- function(image_path, caption = "", parse_mode = "HTML") {
+tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
   if (!file.exists(image_path)) {
     cat(sprintf("[tg] Photo not found: %s\n", image_path))
     return(invisible(NULL))

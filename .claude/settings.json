@@ -75,6 +75,42 @@
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/role_taxonomy_admission_gate.sh\" 2>>/tmp/role_taxonomy_gate.log || true"
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/agent_role_guard.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/worktask_constraint_enforcer.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/worktask_spec_validator.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/worktask_sequence_enforcer.sh\" 2>>/tmp/worktask_seq.log || true"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -93,6 +129,24 @@
           {
             "type": "command",
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/milestone_commit.sh\" 2>>/tmp/milestone_commit.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/worktask_artifact_validator.sh\" 2>>/tmp/worktask_validator.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/red_flag_detector.sh\" 2>>/tmp/red_flag_detector.log || true"
           }
         ]
       }
