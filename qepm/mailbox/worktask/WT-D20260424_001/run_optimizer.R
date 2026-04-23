@@ -796,6 +796,8 @@ cat(sprintf("[Step 11] weight_method_selected.md -> %s\n", md_path))
 cat("\n[Step 12] R3 GAP-1 — wt_record_challenge_review()...\n")
 
 source(wt_mgr_path)
+# Override WT_ROOT to absolute path (relative path fails when cwd != PROJECT_ROOT)
+WT_ROOT <- file.path(PROJECT_ROOT, "qepm/mailbox/worktask")
 
 tryCatch({
   wt_record_challenge_review(
