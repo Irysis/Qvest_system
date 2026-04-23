@@ -1,0 +1,185 @@
+{
+  "task_id": "WT-D20260424_001",
+  "theme": "KR Breadth-Robust Alpha — Regime Adaptive + Orthogonal to Existing PG2",
+  "step0_generated_at": "2026-04-24T00:00:00+0900",
+  "pg2_current": {
+    "core": "STR_1631_SYN_05 (consensus + regime overlay)",
+    "diversifier": "STR_1656_MLRA_M05 (ML gradient boost)"
+  },
+  "gap_vector_summary": {
+    "sr_gap": 0.807,
+    "cagr_gap": -0.0014,
+    "mdd_gap": -0.0373,
+    "priority": "SR 최우선 — 새 orthogonal alpha source 필요"
+  },
+  "candidates_explored": [
+    {
+      "rank": 1,
+      "name": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
+      "family": "earnings_surprise + accrual_quality",
+      "mechanism": "Post-Earnings Announcement Drift (Bernard-Thomas 1989): 시장은 earnings surprise를 즉각 반영하지 못해 이후 1~3개월 드리프트 발생. Accrual quality (Sloan 1996): 저발생주의(low accrual) 종목은 이익 지속성 높아 이후 초과수익. 두 factor의 경제적 메커니즘이 상호 보완 — PEAD는 단기 catalyst, accrual은 이익 품질 필터. Regime-adaptive: SUE는 CAUTION/CRISIS에서 IC 안정적(분기 실적 발표는 regime 무관), accrual은 CRISIS시 오히려 강화(부실 기업 노출). IC-weighted regime blending (expanding window, 24M burn-in).",
+      "factor_specs_proposed": [
+        {
+          "factor_id": "C04_ESBR",
+          "name": "Earnings Surprise Breadth",
+          "ic_all": 0.0512,
+          "icir_all": 0.547,
+          "ic_bad": 0.0474,
+          "ic_good": 0.0477,
+          "regime_stability_note": "bad/good IC almost equal — regime-robust signal",
+          "data_lag": "quarterly 45d (실적 발표 지연)"
+        },
+        {
+          "factor_id": "C01_SUE",
+          "name": "Standardized Unexpected Earnings",
+          "ic_all": 0.0474,
+          "icir_all": 0.777,
+          "ic_bad": 0.0364,
+          "ic_good": 0.0472,
+          "regime_stability_note": "high ICIR 0.777 — most stable earnings signal",
+          "data_lag": "quarterly 45d"
+        },
+        {
+          "factor_id": "AC21_CF_to_Accrual_Ratio",
+          "name": "Cash Flow to Accrual Ratio",
+          "ic_all": 0.0360,
+          "icir_all": 0.706,
+          "ic_bad": 0.0158,
+          "ic_good": 0.0384,
+          "regime_stability_note": "ICIR 0.706 — consistent quality filter",
+          "data_lag": "quarterly 45d"
+        }
+      ],
+      "expected_breadth": 40,
+      "breadth_rationale": "KOSPI200+KOSDAQ150 중 유동성 기준(5000만원 이상) 통과 종목 약 250~300개에서 상위 20% 기준 50~60종목 유효 신호. 상위 30~40종목 집중으로 breadth 목표",
+      "regime_robustness_rationale": "SUE(ICIR 0.777)는 실적 발표 기반으로 regime 무관. ESBR은 bad/good IC 거의 동일(0.0474 vs 0.0477) — regime-neutral. CF/Accrual은 CRISIS시 저품질 기업 노출 강화. 3-factor IC-weighted blending이 regime 편향 제거.",
+      "core_reference": "Bernard & Thomas (1989, Journal of Accounting and Economics) 'Post-Earnings-Announcement Drift: Delayed Price Response or Risk Premium?' / Sloan (1996, Accounting Review) 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?' / Ball & Brown (1968, Journal of Accounting Research) 'An Empirical Evaluation of Accounting Income Numbers'",
+      "anti_pattern_check": {
+        "l190_concentration": "PASS — 3-factor composite + 유동성 필터 기준 40+ breadth 기대",
+        "l191_regime_lag": "PASS — 고정 window OLS 없음. IC-weighted rolling blend (expanding 24M). 부호 역전 방어: SUE는 실적 발표 기반으로 rate_hike 2022에서도 IC 안정",
+        "ax003_ep_standalone": "PASS — value EP 미사용. earnings surprise family",
+        "ax004_quality_single": "PASS — single quality 아님. earnings_surprise + accrual 복합",
+        "ax005_standalone": "PASS — defense 아님. alpha generation (diversifier or core_secondary 역할)"
+      },
+      "expected_orthogonality_to_pg2": "HIGH",
+      "orthogonality_rationale": "STR_1631은 analyst consensus + regime overlay 기반. STR_1656은 ML gradient boost with price/quality features. RAPC는 earnings_surprise + accrual_quality — 완전히 다른 factor family. 상관 0.3 이하 기대.",
+      "risk_flags": [
+        "KR 실적 발표 분기 lag(45d) — 분기 집중 시 월별 turnover 급등 위험. → 발표일 분산 + 45d lag strict 적용으로 완화",
+        "accrual factor 커버리지 낮을 수 있음 (재무제표 필요) → AC21 커버리지 사전 확인 필요"
+      ],
+      "selected": true
+    },
+    {
+      "rank": 2,
+      "name": "Idiosyncratic Volatility Low-Vol Alpha (AHXZ-KR)",
+      "family": "low_volatility_idiosyncratic",
+      "mechanism": "Ang-Hodrick-Xing-Zhang (2006, JF): 고 idio-vol 종목이 낮은 미래 수익 — low-vol anomaly in KR. D01_IdioVol (IC=0.068, ICIR=0.582) + D41_Vol_of_Vol (IC=0.060, ICIR=0.795). 단, IC 양수 = high-vol이 좋다는 신호 → inverse direction 적용 필요. KR long-only에서 low idio-vol 선호.",
+      "expected_breadth": 35,
+      "regime_robustness_rationale": "D41 Vol_of_Vol ICIR 0.795 — CALM 상태에서도 안정. 단, CRISIS 시 vol이 폭발 → AX-005 방어형 위험 있음. 단독 long-only 상위 20종목 구조는 AX-005 위반 위험.",
+      "core_reference": "Ang, Hodrick, Xing & Zhang (2006, JF) 'The Cross-Section of Volatility and Expected Returns'",
+      "anti_pattern_check": {
+        "l190_concentration": "PASS — vol factor는 전 종목 커버",
+        "l191_regime_lag": "PASS — vol 계산 rolling window",
+        "ax005_standalone": "FAIL_RISK — single vol signal + long-only top20 구조 = AX-005 경계선. defense family가 단독으로는 L-165 위험. multi-sleeve 내 방어 슬리브로만 허용."
+      },
+      "expected_orthogonality_to_pg2": "MEDIUM",
+      "selected": false,
+      "rejection_reason": "AX-005 standalone defense 위험. RAPC 대비 orthogonality 낮음 (STR_1656이 vol 피처 포함 가능성)."
+    },
+    {
+      "rank": 3,
+      "name": "Intermediate Momentum + Analyst Revision Composite",
+      "family": "momentum_analyst_revision",
+      "mechanism": "Jegadeesh-Titman (1993) 12-1 momentum의 KR 변형 — M10 Intermediate Mom (6~12M)이 단기 reversal 없이 more stable. M27_Analyst_Rev_Mom (ICIR 0.233) + M10 (ICIR 0.573). Analyst revision momentum: 분석가 추정치 상향조정이 주가 드리프트로 이어짐 (Chan et al. 1996).",
+      "expected_breadth": 35,
+      "regime_robustness_rationale": "M10_Intermediate_Mom IC 0.022 stable. 단, 2022 rate_hike 구간 momentum IC 부호 역전 위험 (L-191 유사). regime-conditional weight 필요.",
+      "core_reference": "Jegadeesh & Titman (1993, JF) + Chan, Jegadeesh & Lakonishok (1996, JF) 'Momentum Strategies'",
+      "anti_pattern_check": {
+        "l190_concentration": "PASS",
+        "l191_regime_lag": "BORDERLINE — 2022 rate_hike 시 momentum 역전 위험. rolling IC-weight 필요",
+        "ax005_standalone": "PASS — momentum family, not defense"
+      },
+      "expected_orthogonality_to_pg2": "MEDIUM",
+      "selected": false,
+      "rejection_reason": "STR_1631_SYN_05가 이미 일부 momentum 피처 포함. orthogonality MEDIUM. L-191 regime_lag 위험 잔존. RAPC가 더 독립적."
+    },
+    {
+      "rank": 4,
+      "name": "Transfer Entropy Factor (Information Flow Alpha)",
+      "family": "physics_information_theory",
+      "mechanism": "Schreiber (2000) Transfer Entropy: sector 내 선도 종목에서 후행 종목으로의 정보 흐름 측정. 정보 흐름 수신 강도가 높은 종목 = 가격 반영 지연 → alpha. 독창적 메커니즘, PG2와 완전 무관.",
+      "expected_breadth": 30,
+      "regime_robustness_rationale": "정보 흐름 속도 자체가 regime 영향 받지만 상대적 순서는 안정적",
+      "core_reference": "Schreiber (2000, PRL) 'Measuring Information Transfer' / Fiedor (2014, PRE) 'Networks in Financial Markets Based on the Mutual Information Rate'",
+      "anti_pattern_check": {
+        "l190_concentration": "PASS",
+        "l191_regime_lag": "PASS — rolling window",
+        "ax005_standalone": "PASS — momentum/information family"
+      },
+      "expected_orthogonality_to_pg2": "HIGH",
+      "selected": false,
+      "rejection_reason": "일간 고빈도 데이터 필요 (30분 tick). 현재 Factor DB에 없음. 신규 설계 시간 비용 대비 불확실성 높음. RAPC는 기존 Factor DB 활용 가능하여 즉각 측정 가능."
+    },
+    {
+      "rank": 5,
+      "name": "Composite Earnings Quality + Growth (GARP-KR)",
+      "family": "earnings_quality_growth",
+      "mechanism": "Growth At Reasonable Price: C19_Composite_Earnings (IC=0.044, ICIR=0.543) + GR02_Earnings_Growth (IC=0.032, ICIR=0.531) + GR04_GPA_Growth (IC=0.027, ICIR=0.431). earnings 품질과 성장의 복합 — Novy-Marx (2013) profitability + growth 조합.",
+      "expected_breadth": 35,
+      "regime_robustness_rationale": "Growth는 CALM/NORMAL 선호. CRISIS 시 성장 프리미엄 축소 우려. regime 편향 존재.",
+      "core_reference": "Novy-Marx (2013, JFE) 'The Other Side of Value: The Gross Profitability Premium'",
+      "anti_pattern_check": {
+        "l190_concentration": "PASS",
+        "l191_regime_lag": "FAIL_RISK — growth IC CRISIS 역전 가능성",
+        "ax005_standalone": "PASS"
+      },
+      "expected_orthogonality_to_pg2": "MEDIUM",
+      "selected": false,
+      "rejection_reason": "Growth factor CRISIS regime IC 역전 위험 (L-191 유사). STR_1631이 이미 quality/profitability 피처 일부 포함. RAPC 선택."
+    }
+  ],
+  "selected_hypothesis": {
+    "title": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
+    "description": "Post-Earnings Announcement Drift (PEAD) + Accrual Quality 복합 팩터를 Regime-adaptive IC-weighted blending으로 결합한 Alpha signal. 핵심 주장: (1) SUE(SUE)는 ICIR 0.777 — KR에서 가장 안정적인 earnings 신호. (2) ESBR은 regime-neutral (bad/good IC 0.0474 vs 0.0477). (3) CF/Accrual이 이익 품질 필터 역할. (4) 세 factor의 IC 부호 모두 동일방향 (양수). (5) 기존 PG2(STR_1631 consensus + STR_1656 ML)와 family 완전 분리 → orthogonality HIGH. Regime weight: CRISIS 시 accrual weight 상향(부실기업 필터 강화), CALM 시 SUE weight 상향(실적 모멘텀 강조).",
+    "wt_role_expected": "core_secondary 또는 diversifier",
+    "factor_specs": [
+      {
+        "factor_id": "C04_ESBR",
+        "factor_family": "earnings_surprise",
+        "proxy": "Earnings Surprise Breadth Ratio",
+        "direction": "positive (높을수록 good)",
+        "lag_rule": "quarterly 45d",
+        "winsorization": "3std",
+        "neutralization": "sector+size"
+      },
+      {
+        "factor_id": "C01_SUE",
+        "factor_family": "earnings_surprise",
+        "proxy": "Standardized Unexpected Earnings",
+        "direction": "positive",
+        "lag_rule": "quarterly 45d",
+        "winsorization": "3std",
+        "neutralization": "sector+size"
+      },
+      {
+        "factor_id": "AC21_CF_to_Accrual_Ratio",
+        "factor_family": "accrual_quality",
+        "proxy": "Cash Flow to Accrual Ratio (Sloan 1996 variant)",
+        "direction": "positive (CF > Accrual = better quality)",
+        "lag_rule": "quarterly 45d",
+        "winsorization": "3std",
+        "neutralization": "sector+size"
+      }
+    ],
+    "composite_method": "IC-weighted rolling blend (expanding window, 24M burn-in). Regime-conditional: weight_sue 상향 in CALM; weight_accrual 상향 in CRISIS.",
+    "pit_compliance": "C1: rolling/expanding only. C2: t-1 lag. C4: quarterly 45d. C13: Z_Score_Aligned (no manual flip). C14: Usable_Date <= sig_date via load_month_factors().",
+    "graduation_criteria_targets": {
+      "rank_ic_target": ">= 0.04",
+      "icir_target": ">= 0.20",
+      "harvey_t_target": ">= 3.0",
+      "dsr_target": ">= 0.5",
+      "subperiod_stability_target": ">= 0.5",
+      "breadth_target": ">= 20"
+    }
+  }
+}
