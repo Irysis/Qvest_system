@@ -20,18 +20,24 @@ WT_ROOT <- "qepm/mailbox/worktask"
 WT_SCHEMA <- "02_Infrastructure/worktask/schema.json"
 WT_CONSTRAINT_DEFAULTS <- "02_Infrastructure/worktask/constraint_defaults.json"
 
-# ─── WT ID 생성 ──────────────────────────────────────────
-wt_generate_id <- function() {
+# ─── WT ID 생성 (v6.1 wt_type 접두사) ───────────────────
+wt_generate_id <- function(wt_type = "discovery") {
   today <- format(Sys.Date(), "%Y%m%d")
-  existing <- list.files(WT_ROOT, pattern = sprintf("^WT%s_", today))
+  prefix <- if (wt_type == "discovery") "WT-D" else "WT-P"
+  existing <- list.files(WT_ROOT, pattern = sprintf("^%s%s_", prefix, today))
   seq <- length(existing) + 1
-  sprintf("WT%s_%03d", today, seq)
+  sprintf("%s%s_%03d", prefix, today, seq)
 }
 
 # ─── WT 디렉토리 + request.json 생성 ─────────────────────
+# v6.1 R1+R13: wt_type 분기 + Discovery/Deployment 이원화
+#   wt_type="discovery" → Soft 제약 면제, breadth 허용, alpha 존재 확인 목적
+#   wt_type="deployment" → 모든 제약 강제, production 편성 목적
 # theme만 주고 hypothesis_title=NULL이면 Alpha Agent Step 0 (Hypothesis Discovery) 자동 활성화
 wt_create <- function(hypothesis_title = NULL,
                        theme = NULL,
+                       wt_type = "discovery",
+                       discovery_of = NULL,
                        hypothesis_description = "",
                        universe = "KOSPI200_KOSDAQ150_intersection",
                        benchmark = "KOSPI200_total_return",
@@ -39,25 +45,51 @@ wt_create <- function(hypothesis_title = NULL,
                        forecast_horizon = "1M",
                        rebalance_frequency = "monthly",
                        current_portfolio = "STR_1631_80_STR_1656_20",
+                       long_only = NULL,
+                       max_names = NULL,
                        override_constraints = NULL) {
 
   if (is.null(hypothesis_title) && is.null(theme)) {
     stop("[wt_create] hypothesis_title 또는 theme 중 최소 하나 필요")
   }
+  if (!wt_type %in% c("discovery", "deployment")) {
+    stop("[wt_create] wt_type must be 'discovery' or 'deployment'")
+  }
+  if (wt_type == "deployment" && is.null(discovery_of)) {
+    warning("[wt_create] Deployment WT without discovery_of — graduation_criteria 우회 허용 (검증 완료된 alpha 직접 편성 목적).")
+  }
 
-  task_id <- wt_generate_id()
+  task_id <- wt_generate_id(wt_type = wt_type)
   wt_dir <- file.path(WT_ROOT, task_id)
   dir.create(wt_dir, recursive = TRUE, showWarnings = FALSE)
 
-  # 기본 제약 로드
+  # 기본 제약 로드 (v6.1 3-tier)
   defaults <- fromJSON(WT_CONSTRAINT_DEFAULTS, simplifyVector = FALSE)
 
   # Hypothesis source 결정
   hyp_source <- if (!is.null(hypothesis_title)) "user_defined" else "alpha_agent_discovered"
 
+  # v6.1 R1+R13: wt_type별 제약 분기
+  if (wt_type == "discovery") {
+    # Discovery: HARD만, SOFT는 null (breadth 허용)
+    liquidity_floor <- defaults$tier_hard_mandate$liquidity_floor_won_20d_avg
+    effective_max_names <- if (!is.null(max_names)) max_names else NULL
+    effective_long_only <- if (!is.null(long_only)) long_only else "configurable"
+    effective_bounds <- defaults$discovery_defaults$weight_bounds
+  } else {
+    # Deployment: HARD + SOFT 모두 강제
+    liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
+    effective_max_names <- 20L
+    effective_long_only <- TRUE
+    effective_bounds <- defaults$tier_soft_deployment$weight_bounds
+  }
+
   # Request 조립
   request <- list(
     task_id = task_id,
+    wt_type = wt_type,
+    discovery_of = discovery_of,
+    graduation_criteria = defaults$tier_graduation,
     theme = theme,
     hypothesis_title = hypothesis_title,
     hypothesis_description = hypothesis_description,
@@ -67,22 +99,32 @@ wt_create <- function(hypothesis_title = NULL,
     rebalance_frequency = rebalance_frequency,
     universe_definition = list(
       label = universe,
-      liquidity_min_won_20d_avg = defaults$hard_constraints$liquidity_min_won_20d_avg,
+      liquidity_min_won_20d_avg = liquidity_floor,
       max_names_total = 500L
     ),
     benchmark_definition = benchmark,
-    data_lag_rules = defaults$data_lag_rules_default,
-    cost_model_version = defaults$cost_model$cost_model_version,
+    data_lag_rules = defaults$tier_hard_mandate$data_lag_rules_default,
+    cost_model_version = defaults$tier_soft_deployment$cost_model_version,
     current_portfolio = current_portfolio,
-    hard_constraints = list(
-      max_names = defaults$hard_constraints$max_names,
-      weight_bounds = defaults$hard_constraints$weight_bounds,
-      sector_active_weight_cap = defaults$hard_constraints$sector_active_weight_cap,
-      liquidity_min_won_20d_avg = defaults$hard_constraints$liquidity_min_won_20d_avg
+    hard_mandate = list(
+      pit_enforcement = "C1-C15 all enforced",
+      liquidity_floor_won_20d_avg = defaults$tier_hard_mandate$liquidity_floor_won_20d_avg,
+      mandate_restrictions = defaults$tier_hard_mandate$mandate_restrictions,
+      long_only_mandate = effective_long_only
     ),
-    soft_penalties = defaults$soft_penalties,
+    hard_constraints = list(
+      max_names = effective_max_names,
+      weight_bounds = effective_bounds,
+      sector_active_weight_cap = if (wt_type == "deployment") defaults$tier_soft_deployment$sector_active_weight_cap else NULL,
+      liquidity_min_won_20d_avg = liquidity_floor
+    ),
+    soft_penalties = if (wt_type == "deployment") list(
+      turnover_cap_annual = defaults$tier_soft_deployment$turnover_cap_annual,
+      beta_target = 1.0,
+      style_exposure_cap = 2.0
+    ) else list(),
     capacity_limits = list(
-      adv_multiplier = defaults$cost_model$capacity_adv_multiplier,
+      adv_multiplier = defaults$tier_soft_deployment$capacity_adv_multiplier,
       capacity_max_aum_won = 100e9
     )
   )
@@ -123,17 +165,90 @@ wt_create <- function(hypothesis_title = NULL,
              pretty = TRUE, auto_unbox = TRUE, null = "null")
 
   cat(sprintf("[wt_create] %s 생성 완료: %s\n", task_id, wt_dir))
+  cat(sprintf("  WT Type: %s\n", toupper(wt_type)))
   if (!is.null(hypothesis_title)) {
     cat(sprintf("  Hypothesis: %s (user_defined)\n", hypothesis_title))
   } else {
     cat(sprintf("  Theme: %s (alpha_agent_discovered mode)\n", theme))
     cat("  → Alpha Agent Step 0 Hypothesis Discovery 활성화\n")
   }
+  if (!is.null(discovery_of)) {
+    cat(sprintf("  Discovery parent: %s\n", discovery_of))
+  }
   cat(sprintf("  Universe: %s\n", universe))
+  cat(sprintf("  Constraints tier: %s\n",
+              if (wt_type == "discovery") "HARD mandate only (SOFT 면제, breadth 허용)" else "HARD + SOFT (20종/20%%/15bps 전부 강제)"))
   cat(sprintf("  Current phase: SPEC_APPROVED (Alpha Agent 대기)\n"))
 
   invisible(task_id)
 }
+
+# ─── Graduation 검증 (Discovery → Deployment 전환 조건) ──
+wt_check_graduation <- function(task_id) {
+  wt_dir <- file.path(WT_ROOT, task_id)
+  if (!dir.exists(wt_dir)) stop(sprintf("[graduation] %s 없음", task_id))
+
+  req_path <- file.path(wt_dir, "request.json")
+  req <- fromJSON(req_path, simplifyVector = FALSE)
+
+  if (req$wt_type != "discovery") {
+    cat("[graduation] Discovery WT만 해당\n")
+    return(invisible(list(pass = NA, reason = "not_discovery_wt")))
+  }
+
+  alpha_path <- file.path(wt_dir, "alpha_package.json")
+  if (!file.exists(alpha_path)) {
+    return(list(pass = FALSE, reason = "alpha_package missing"))
+  }
+
+  alpha_pkg <- fromJSON(alpha_path, simplifyVector = FALSE)
+  criteria <- req$graduation_criteria
+  diag <- alpha_pkg$diagnostics
+
+  checks <- list(
+    rank_ic = list(
+      actual = diag$rank_ic %||% 0,
+      threshold = criteria$min_rank_ic,
+      pass = (diag$rank_ic %||% 0) >= criteria$min_rank_ic
+    ),
+    icir = list(
+      actual = diag$icir %||% 0,
+      threshold = criteria$min_icir,
+      pass = (diag$icir %||% 0) >= criteria$min_icir
+    ),
+    subperiod_stability = list(
+      actual = diag$subperiod_stability %||% 0,
+      threshold = criteria$min_subperiod_stability,
+      pass = (diag$subperiod_stability %||% 0) >= criteria$min_subperiod_stability
+    ),
+    harvey_t = list(
+      actual = diag$harvey_t_stat %||% 0,
+      threshold = criteria$min_harvey_t_stat,
+      pass = (diag$harvey_t_stat %||% 0) >= criteria$min_harvey_t_stat
+    )
+  )
+
+  all_pass <- all(sapply(checks, function(x) isTRUE(x$pass)))
+
+  result <- list(
+    pass = all_pass,
+    task_id = task_id,
+    checks = checks
+  )
+
+  cat(sprintf("=== Graduation Check: %s ===\n", task_id))
+  for (nm in names(checks)) {
+    c <- checks[[nm]]
+    cat(sprintf("  %s: actual=%.4f / threshold=%.4f | %s\n",
+                nm, c$actual, c$threshold,
+                if (isTRUE(c$pass)) "PASS" else "FAIL"))
+  }
+  cat(sprintf("Overall: %s\n", if (all_pass) "GRADUATION PASS" else "NOT READY FOR DEPLOYMENT"))
+
+  invisible(result)
+}
+
+`%||%` <- function(a, b) if (!is.null(a) && !is.na(a)) a else b
 
 # ─── WT 상태 조회 ───────────────────────────────────────
 wt_status <- function(task_id) {

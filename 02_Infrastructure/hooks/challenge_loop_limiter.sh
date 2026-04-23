@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+# challenge_loop_limiter.sh — Challenge Loop round 제한 (Level 2)
+# v6.1 R3 P4
+#
+# 이벤트: PreToolUse[Write] on status.json (challenge_round 변경 시)
+# 목적: Challenge round > 2 시 Q-Lead 개입 요청 (강제 block 아님, warn + notify)
+#
+# 무한 루프 방지 + challenge 근거 투명성 유지
+
+set -euo pipefail
+trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+
+INPUT=$(cat)
+FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
+
+# status.json 또는 challenge_history 포함 파일만
+case "$FILE_PATH" in
+  */status.json|*/governance_log.json)
+    python3 <<PYEOF
+import json, os, sys
+
+content = '''$CONTENT'''
+fp = '''$FILE_PATH'''
+
+try:
+    data = json.loads(content)
+except Exception:
+    print(json.dumps({"decision":"allow","reason":"content_not_parseable"}))
+    sys.exit(0)
+
+round_n = data.get("challenge_round", 0)
+
+if round_n >= 3:
+    # Hard limit (policy 2 rounds + 1 for Q-Lead intervention)
+    print(json.dumps({
+      "decision": "block",
+      "reason": f"challenge_loop_limiter: round {round_n} >= 3 — Q-Lead 개입 필수. WT 수동 재검토 후 진행."
+    }))
+    sys.exit(0)
+elif round_n == 2:
+    # Warn + Telegram alert
+    wt_id = os.path.basename(os.path.dirname(fp))
+    alert_file = "/tmp/qvest_challenge_alert.log"
+    with open(alert_file, "a") as f:
+        import time
+        f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} | {wt_id} | challenge_round=2 | Q-Lead 개입 검토\n")
+    print(json.dumps({
+      "decision": "allow",
+      "reason": f"challenge_round {round_n} (warn: Q-Lead 개입 검토 권장)"
+    }))
+else:
+    print(json.dumps({"decision":"allow"}))
+PYEOF
+    ;;
+  *)
+    echo '{"decision":"allow"}'
+    ;;
+esac

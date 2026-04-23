@@ -1,46 +1,77 @@
 {
   "$schema": "qvest://worktask/schema/v1",
-  "description": "Work Task hard constraints 기본값 (사용자 지시 강제). 모든 신규 WT에 자동 주입.",
-  "version": "v1.0",
-  "effective_from": "2026-04-23",
+  "description": "Work Task 제약 기본값 — v6.1 3-tier 분리 (Hard Mandate / Soft Deployment / Graduation). R13 구현.",
+  "version": "v2.0",
+  "effective_from": "2026-04-24",
   "owner": "사용자 (Dohoon Kim)",
+  "_changelog": {
+    "v1.0": "2026-04-23 초기 (모든 제약 HARD)",
+    "v2.0": "2026-04-24 v6.1 R13 — Hard Mandate / Soft Deployment / Graduation tier 분리. Discovery WT는 Soft 제약 면제."
+  },
 
-  "hard_constraints": {
+  "tier_hard_mandate": {
+    "description": "불가항력 제약 (PIT + legal + scientific). Discovery + Deployment 모두 강제.",
+    "pit_enforcement": {
+      "c1_rolling_only": true,
+      "c2_t1_lag": true,
+      "c3_no_period_circular": true,
+      "c4_fs_lag": true,
+      "c5_overlay_t1": true,
+      "c10_liquidity_shift_1L": true,
+      "c11_external_t1_lag": true,
+      "c13_z_score_aligned_only": true,
+      "c14_usable_date_le_sig_date": true,
+      "c15_load_month_factors_only": true,
+      "c15_carve_out_ml_daily": "L-164 v1.1 ML 전략 + daily parquet 예외",
+      "pit_enforcement_r": "02_Infrastructure/validation/pit_enforcement.R",
+      "lookahead_detector_r": "02_Infrastructure/validation/lookahead_detector.R"
+    },
+
+    "liquidity_floor_won_20d_avg": 50000000,
+    "liquidity_floor_rationale": "5천만원 — 실행 가능성의 절대 하한. 더 낮으면 유동성 위험.",
+
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+
+    "universe_allowed": ["KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500", "KR_top1000"],
+
+    "data_lag_rules_default": {
+      "fundamental": "quarterly 45d (재무제표 발표 지연)",
+      "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+      "price": "t-1 close",
+      "investor_flow": "t-1 settlement (QuantiWise)",
+      "macro": "t-1 FRED (외부 매크로 lag)",
+      "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+    }
+  },
+
+  "tier_soft_deployment": {
+    "description": "Deployment WT 전용 제약. Discovery WT는 면제 (breadth 허용). R1+R13 구현.",
     "max_names": 20,
-    "max_names_rationale": "사용자 명시 — 최종 포트폴리오 20종 hard. 슬리브당이 아님.",
+    "max_names_rationale": "사용자 명시 — 최종 포트폴리오 20종 hard. 슬리브당이 아님. Deployment 전용.",
 
     "weight_bounds": [0.0, 0.20],
-    "weight_bounds_rationale": "Long-only, 종목별 20% 상한 (concentration 방지, 2026-04-23 10%→20% 확대)",
+    "weight_bounds_rationale": "Long-only, 종목별 20% 상한 (2026-04-23 10%→20% 확대). Deployment 전용.",
 
     "long_only": true,
-    "long_only_rationale": "KR 증권사 실무 long-only only",
+    "long_only_rationale": "KR 증권사 실무 long-only. Discovery WT는 configurable (market-neutral 가설 허용).",
 
     "sum_weights_absolute": 1.0,
     "sum_weights_active": 0.0,
     "sum_weights_rationale": "benchmark-relative active management. absolute는 1, active는 0.",
 
     "liquidity_min_won_20d_avg": 200000000,
-    "liquidity_rationale": "20일 평균 거래대금 >= 2억원 (실투 실행 가능성)",
-
-    "universe_allowed": ["KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500"],
-    "universe_rationale": "KR 국내 주식만. 글로벌 크로스마켓 금지.",
+    "liquidity_rationale": "20일 평균 거래대금 >= 2억원 (실투 실행 가능성). Discovery는 5천만 floor만 적용.",
 
     "sector_active_weight_cap": 0.10,
-    "sector_active_weight_cap_rationale": "단일 섹터 활성 비중 10% 이하 (분산 유지)"
-  },
+    "sector_active_weight_cap_rationale": "단일 섹터 활성 비중 10% 이하 (분산 유지)",
 
-  "soft_penalties": {
     "turnover_cap_annual": 3.0,
     "turnover_cap_rationale": "연 300% 초과 시 penalty. 600% 이상은 hard fail.",
 
-    "beta_target": 1.0,
-    "beta_target_rationale": "시장 베타 1.0 근처 (시장중립 아님, 시장 노출 유지)",
-
-    "style_exposure_cap": 2.0,
-    "style_exposure_cap_rationale": "스타일 z-score 2.0 이내"
-  },
-
-  "cost_model": {
     "cost_model_version": "v2.3_kr_retail_15bps",
     "transaction_cost_bps_one_way": 15,
     "market_impact_model": "linear_sqrt_ADV",
@@ -48,29 +79,43 @@
     "cost_rationale": "KR 리테일 증권사 평균 수수료 + 시장 충격 근사"
   },
 
-  "data_lag_rules_default": {
-    "fundamental": "quarterly 45d (재무제표 발표 지연)",
-    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
-    "price": "t-1 close",
-    "investor_flow": "t-1 settlement (QuantiWise)",
-    "macro": "t-1 FRED (외부 매크로 lag)",
-    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  "tier_graduation": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+
+    "min_icir": 0.20,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+
+    "min_subperiod_stability": 0.50,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+
+    "min_harvey_t_stat": 3.0,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
   },
 
-  "pit_enforcement": {
-    "c1_rolling_only": true,
-    "c2_t1_lag": true,
-    "c3_no_period_circular": true,
-    "c4_fs_lag": true,
-    "c5_overlay_t1": true,
-    "c10_liquidity_shift_1L": true,
-    "c13_z_score_aligned_only": true,
-    "c14_usable_date_le_sig_date": true,
-    "c15_load_month_factors_only": true,
-    "c15_carve_out_ml_daily": "L-164 v1.1 ML 전략 + daily parquet 예외",
-    "pit_validation_skill": "pit-validation",
-    "pit_enforcement_r": "02_Infrastructure/validation/pit_enforcement.R",
-    "lookahead_detector_r": "02_Infrastructure/validation/lookahead_detector.R"
+  "discovery_defaults": {
+    "description": "Discovery WT 전용 느슨한 기본값. schema validation의 max_names 등 면제.",
+    "max_names": null,
+    "weight_bounds": [0.0, 1.0],
+    "long_only": "configurable",
+    "liquidity_min_won_20d_avg": 50000000,
+    "universe_allowed_extended": true,
+    "soft_constraints_enforced": false
+  },
+
+  "deployment_defaults": {
+    "description": "Deployment WT 기본값. 모든 hard + soft 제약 강제.",
+    "inherits_hard": "tier_hard_mandate",
+    "inherits_soft": "tier_soft_deployment",
+    "requires_discovery_parent": false,
+    "requires_graduation_pass": "recommended_not_enforced"
   },
 
   "agent_role_boundaries": {
@@ -98,6 +143,7 @@
     "enforced_order": ["alpha", "risk", "optimizer", "forge", "judge", "governor"],
     "parallel_allowed_across_tasks": true,
     "parallel_forbidden_within_task": true,
-    "rationale": "1 WT 내부는 순차, WT 간은 병렬 (Q-Lead orchestration)"
+    "challenge_loop_max_rounds": 2,
+    "rationale": "1 WT 내부는 순차 + challenge loop 2회 허용. WT 간은 병렬."
   }
 }

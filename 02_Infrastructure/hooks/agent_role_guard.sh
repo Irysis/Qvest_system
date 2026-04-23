@@ -89,19 +89,19 @@ check_optimizer_agent() {
 }
 
 check_forge() {
-  # Forge는 3-agent 산출물 수정 금지 (통합만 해야 함)
+  # v6.1 R12: Forge Pure Function — 3-agent 산출물 완전 read-only
+  # Forge가 쓸 수 있는 것: run_all.R, output/*, backtest_result/*, stage_artifacts/WT_*/judge_ready/*
   case "$FP_LOWER" in
-    */alpha_package.json|*/alpha_scores*.parquet)
-      # 수정은 block, 생성은 allow (Forge가 legacy path에서 alpha 생성 시)
-      # 여기서는 수정 시도를 block으로 간주 (tool_name=Edit 기준)
+    */alpha_package.json|*/alpha_scores*.parquet|*/alpha_hypothesis.json|*/alpha_validation.json)
+      echo '{"decision":"block","reason":"R12 Forge Pure Function: Alpha package 수정 금지. Forge는 통합만 (재해석 엔진化 방지, P4 No Silent Override)."}'
+      exit 0
       ;;
-    */risk_package.json|*/covariance*.parquet|*/optimization_package.json|*/weights*.csv)
-      # Forge는 run_all.R만 작성. 3-agent 산출물 건드리면 block
-      if [[ "$FILE_PATH" == *"/run_all.R"* ]]; then
-        echo '{"decision":"allow"}'
-        exit 0
-      fi
-      echo '{"decision":"block","reason":"Forge는 3-agent 산출물 수정 금지 (run_all.R만 작성, 3-agent output 통합만)"}'
+    */risk_package.json|*/covariance*.parquet|*/tail_risk.json|*/regime_correlation*.parquet|*/exposure_matrix*)
+      echo '{"decision":"block","reason":"R12 Forge Pure Function: Risk package 수정 금지. Forge는 통합만."}'
+      exit 0
+      ;;
+    */optimization_package.json|*/weights*.csv|*/weight_method_selected*|*/optimizer_research*)
+      echo '{"decision":"block","reason":"R12 Forge Pure Function: Optimizer package 수정 금지. Forge는 통합만."}'
       exit 0
       ;;
   esac

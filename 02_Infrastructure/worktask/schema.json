@@ -8,13 +8,32 @@
     "work_task_request": {
       "type": "object",
       "required": [
-        "task_id", "as_of_date", "forecast_horizon", "rebalance_frequency",
+        "task_id", "wt_type", "as_of_date", "forecast_horizon", "rebalance_frequency",
         "universe_definition", "benchmark_definition",
         "data_lag_rules", "cost_model_version",
         "hard_constraints"
       ],
       "properties": {
-        "task_id": {"type": "string", "pattern": "^WT[0-9]{8}_[0-9]{3}$", "description": "WT{YYYYMMDD}_{seq}"},
+        "task_id": {"type": "string", "pattern": "^WT-[DP][0-9]{8}_[0-9]{3}$", "description": "WT-D{date}_{seq} = Discovery, WT-P{date}_{seq} = Deployment"},
+        "wt_type": {
+          "type": "string",
+          "enum": ["discovery", "deployment"],
+          "description": "discovery = alpha 존재 확인 (느슨한 제약). deployment = production 편성 (모든 제약 강제)."
+        },
+        "discovery_of": {
+          "type": ["string", "null"],
+          "description": "Deployment WT만: 어떤 Discovery WT의 결과를 채택하는지 back-ref (예: WT-D20260423_001)"
+        },
+        "graduation_criteria": {
+          "type": "object",
+          "description": "Discovery → Deployment 전환 조건. wt_type=discovery 의무.",
+          "properties": {
+            "min_rank_ic": {"type": "number", "minimum": 0},
+            "min_icir": {"type": "number", "minimum": 0},
+            "min_subperiod_stability": {"type": "number", "minimum": 0, "maximum": 1},
+            "max_drawdown_days": {"type": "integer"}
+          }
+        },
         "theme": {"type": "string", "maxLength": 200, "description": "주제 레벨 (예: 'Defense family 강화'). Alpha Agent가 Step 0에서 가설 자동 발굴 모드. hypothesis_title 있으면 무시."},
         "hypothesis_title": {"type": ["string", "null"], "maxLength": 200, "description": "구체 가설. null이면 Alpha Agent Step 0 Hypothesis Discovery 활성화."},
         "hypothesis_description": {"type": "string"},
@@ -22,6 +41,18 @@
         "as_of_date": {"type": "string", "format": "date"},
         "forecast_horizon": {"type": "string", "enum": ["1M", "3M", "6M", "12M"]},
         "rebalance_frequency": {"type": "string", "enum": ["weekly", "monthly", "quarterly"]},
+        "evaluation_windows": {
+          "type": "object",
+          "description": "R2 Nested Evaluation — 4단계 split. Alpha/Risk/Optimizer는 train+val만 접근, Judge는 lockbox만 접근.",
+          "required": ["train_window", "validation_window", "lockbox_window"],
+          "properties": {
+            "train_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}}},
+            "validation_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}}},
+            "lockbox_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}, "sealed": {"type":"boolean"}}},
+            "paper_trade_window": {"type": "object", "properties": {"start": {"type":"string","format":"date"}, "end": {"type":"string","format":"date"}}}
+          }
+        },
+        "method_shopping_log_ref": {"type": "string", "description": "path to method_shopping_log.json"},
         "universe_definition": {
           "type": "object",
           "required": ["label", "liquidity_min_won_20d_avg", "max_names_total"],
@@ -129,6 +160,11 @@
             "post_neutralization_ic": {"type": "number"}
           }
         },
+        "selection_objective": {
+          "type": "string",
+          "enum": ["rank_ic", "icir", "monotonicity", "subperiod_stability"],
+          "description": "R4 P3: Alpha Agent는 predictive power만 기준으로 선택. SR/CAGR/MDD 직접 금지."
+        },
         "challenge_flags": {
           "type": "array",
           "items": {"type": "string"}
@@ -184,6 +220,11 @@
             "regime_correlation_ref": {"type": "string"}
           }
         },
+        "selection_objective": {
+          "type": "string",
+          "enum": ["condition_number", "stress_robust", "crowding", "shrinkage_quality"],
+          "description": "R4 P3: Risk Agent는 estimation quality만 기준. alpha/return 기반 선택 금지."
+        },
         "challenge_flags": {"type": "array", "items": {"type": "string"}}
       }
     },
@@ -221,7 +262,7 @@
         "method_selected": {"type": "string", "description": "예: MVO_lambda_1.5_cost_phi_0.8"},
         "method_comparison": {
           "type": "object",
-          "description": "방법론별 SR/TE/IR 비교표",
+          "description": "방법론별 SR/TE/IR 비교표 (method_shopping_log와 연계)",
           "additionalProperties": {
             "type": "object",
             "properties": {
@@ -232,6 +273,11 @@
               "cost": {"type": "number"}
             }
           }
+        },
+        "selection_objective": {
+          "type": "string",
+          "enum": ["net_ir", "to_adj_ret", "uncertainty_penalty", "crowding_adj_ret"],
+          "description": "R4 P3: Optimizer Agent는 net_ir / turnover-adjusted 기준만. SR 단일 최대화 금지."
         },
         "explanation": {
           "type": "object",
@@ -277,13 +323,36 @@
           "enum": [
             "SPEC_DRAFT", "SPEC_APPROVED",
             "ALPHA_PENDING", "ALPHA_RUNNING", "ALPHA_DONE",
-            "RISK_PENDING", "RISK_RUNNING", "RISK_DONE",
-            "OPTIMIZER_PENDING", "OPTIMIZER_RUNNING", "OPTIMIZER_DONE",
+            "ALPHA_REVISE_REQUIRED",
+            "RISK_PENDING", "RISK_RUNNING", "RISK_REVIEW", "RISK_DONE",
+            "RISK_REVISE_REQUIRED",
+            "OPTIMIZER_PENDING", "OPTIMIZER_RUNNING", "OPT_REVIEW", "OPTIMIZER_DONE",
             "FORGE_PENDING", "FORGE_RUNNING", "FORGE_DONE",
             "JUDGE_PENDING", "JUDGE_RUNNING", "JUDGE_PASSED", "JUDGE_FAILED",
             "GOVERNOR_PENDING", "GOVERNOR_ADMITTED", "GOVERNOR_REJECTED",
             "COMPLETED", "ABORTED"
           ]
+        },
+        "challenge_round": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "R3 challenge loop 진행 round. 2회 초과 시 Q-Lead 개입."
+        },
+        "challenge_history": {
+          "type": "array",
+          "description": "R3 challenge loop 이력",
+          "items": {
+            "type": "object",
+            "properties": {
+              "round": {"type": "integer"},
+              "from_agent": {"type": "string", "enum": ["risk", "optimizer"]},
+              "to_agent": {"type": "string", "enum": ["alpha", "risk"]},
+              "timestamp": {"type": "string", "format": "date-time"},
+              "challenge_reason": {"type": "string"},
+              "resolution": {"type": ["string", "null"]}
+            }
+          }
         },
         "updated_at": {"type": "string", "format": "date-time"},
         "blocker": {"type": "string"}

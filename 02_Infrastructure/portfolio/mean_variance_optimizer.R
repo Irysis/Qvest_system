@@ -1,14 +1,17 @@
 #==============================================================================
-# QEPM Mean-Variance Optimizer — v1.0 (정통 MVO 복원)
-# 2026-04-23 Session 69 Day 1 — Optimizer Research Agent 전용
+# QEPM Mean-Variance Optimizer — v2.0 (v6.1 R4 Confidence-aware)
+# 2026-04-23 v1.0 정통 MVO 복원
+# 2026-04-24 v2.0 — Confidence-aware + ForecastUncertaintyPenalty
 #
-# 목적:
-#   max x'α̂ - (λ/2) x'Σx - φ·TC(x)
+# 목적함수 (v2.0):
+#   max x'α̃ - (λ/2) x'Σx - φ·TC(x) - ψ·FU(x, c)
+#   where α̃_i = c_i · α̂_i (confidence scaled)
+#         FU(x, c) = Σ_i x_i² (1-c_i)² (low confidence 집중 penalty)
 #   subject to 1'x = 1 (absolute) or 1'x = 0 (active)
-#              bounds, max_names, turnover_penalty
 #
-# 이전 calc_minvar_weights()는 μ 항 부재 → Alpha score가 weight에 미반영 (QEPM §8 위반).
-# 이 구현은 μ + Σ + λ 3-param 정통 Markowitz.
+# v6.1 R4 개선:
+#   - Alpha confidence가 weight 결정에 수학적 반영
+#   - 불안정 alpha (낮은 c)에는 집중 penalty
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -16,19 +19,25 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
-# ─── MVO 정통 구현 ────────────────────────────────────────
+# ─── MVO Confidence-aware 구현 (v2.0) ────────────────────
 # Inputs:
 #   alpha: named vector (Ticker → expected active return)
+#   confidence: named vector (Ticker → confidence [0,1]), optional
 #   cov_matrix: symmetric PD matrix (Ticker × Ticker)
 #   lambda: risk-aversion (default 1.0)
+#   psi: forecast uncertainty penalty (default 0.3; 0 = disable)
 #   bounds: c(min_w, max_w) = c(0, 0.20)
 #   max_names: hard cap (default 20)
 #   current_weights: named vector (for turnover penalty)
 #   turnover_penalty: φ (default 0.0)
 #   active: TRUE = active (Σw=0) / FALSE = absolute (Σw=1)
+#
+# v6.1 R4: confidence NULL이면 1.0으로 취급 (backward compat)
 mvo_weights <- function(alpha,
                          cov_matrix,
+                         confidence = NULL,
                          lambda = 1.0,
+                         psi = 0.3,
                          bounds = c(0, 0.20),
                          max_names = 20,
                          current_weights = NULL,
@@ -56,13 +65,30 @@ mvo_weights <- function(alpha,
   Sigma <- cov_matrix[common, common]
   D <- length(common)
 
+  # Confidence vector (v6.1 R4)
+  if (is.null(confidence)) {
+    c_vec <- rep(1.0, D)
+  } else {
+    c_vec <- confidence[common]
+    c_vec[is.na(c_vec)] <- 0.5  # missing → neutral
+    c_vec <- pmax(pmin(c_vec, 1.0), 0.0)  # [0, 1] clip
+  }
+  names(c_vec) <- common
+
+  # α̃_i = c_i · α̂_i (confidence-scaled alpha)
+  alpha_tilde <- c_vec * alpha_vec
+
+  # Forecast Uncertainty Penalty: FU(x, c) = Σ_i x_i² (1-c_i)²
+  # Quadratic form: x' diag((1-c)²) x
+  # → adds to Dmat: + 2·ψ·diag((1-c)²) (because 1/2 x'Dmat x convention)
+  fu_diag <- psi * (1 - c_vec)^2
+
   # quadprog formulation:
   #   min  (1/2) x'Dmat x - d_vec'x
-  # MVO: max x'α - (λ/2) x'Σx
-  #  ⇔ min (λ/2) x'Σx - x'α
-  #  ⇔ min (1/2) x'(λΣ)x - α'x
-  Dmat <- lambda * Sigma
-  dvec <- as.vector(alpha_vec)
+  # MVO v2: max x'α̃ - (λ/2) x'Σx - ψ·x' diag((1-c)²) x
+  #  ⇔ min (1/2) x'(λΣ + 2·ψ·diag((1-c)²))x - α̃'x
+  Dmat <- lambda * Sigma + diag(2 * fu_diag)
+  dvec <- as.vector(alpha_tilde)
 
   # Numerical stability: add small diagonal
   diag(Dmat) <- diag(Dmat) + 1e-8
@@ -133,13 +159,17 @@ mvo_weights <- function(alpha,
 
   list(
     weights = w_out,
-    method = sprintf("MVO_lambda_%.2f_phi_%.2f", lambda, turnover_penalty),
+    method = sprintf("MVO_lambda_%.2f_psi_%.2f_phi_%.2f",
+                     lambda, psi, turnover_penalty),
     expected_active_return = exp_ar,
     expected_tracking_error = exp_te,
     expected_information_ratio = if (exp_te > 1e-6) exp_ar / exp_te else NA,
     n_names = length(w_out),
+    confidence_used = !is.null(confidence),
+    mean_confidence = mean(c_vec[names(w_out)]),
     infeasible = FALSE,
-    reason = NULL
+    reason = NULL,
+    selection_objective = "net_ir"  # R4 P3: Optimizer는 net_ir로 선택
   )
 }
 
@@ -175,6 +205,6 @@ mvo_grid_search <- function(alpha, cov_matrix,
   )
 }
 
-cat("[mean_variance_optimizer.R] Loaded. Functions:\n")
-cat("  mvo_weights(alpha, cov_matrix, lambda=1.0, bounds=c(0,0.20), max_names=20)\n")
+cat("[mean_variance_optimizer.R] v2.0 Confidence-aware Loaded. Functions:\n")
+cat("  mvo_weights(alpha, cov_matrix, confidence=NULL, lambda=1.0, psi=0.3, bounds=c(0,0.20), max_names=20)\n")
 cat("  mvo_grid_search(alpha, cov_matrix, lambda_grid, phi_grid)\n")
