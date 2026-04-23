@@ -1,0 +1,100 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "risk_research",
+  "as_of_date": "2026-04-24",
+  "signal_reference_date": "2023-12-28",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_001/covariance.parquet",
+  "risk_summary": {
+    "n_tickers_analyzed": 100,
+    "top_common_risks": ["Market (48%)", "Factor_ESBR+SUE (0%)", "Sector (1%)", "Accrual (0%)"],
+    "crowding_flags": [
+      "PEAD (ESBR+SUE): strategy widely implemented — late-cycle crowding risk medium",
+      "Accrual: overlap with quality factor cluster (KOSPI200 quant funds)"
+    ],
+    "liquidity_flags": [
+      "Universe breadth 345 → capacity risk LOW",
+      "Small-cap tickers in top-100 may face 2억원 ADT constraint — verify"
+    ],
+    "stress_tests": {
+      "market_down_5": -0.063,
+      "value_crash": -0.09,
+      "momentum_rev": -0.0476,
+      "gfc_2008": -0.5268,
+      "eu_debt_2011": -0.231,
+      "covid_2020": -0.4097,
+      "rate_2022": -0.2755,
+      "kr_crisis_1997": -0.7272
+    }
+  },
+  "diagnostics": {
+    "condition_number": 1,
+    "condition_number_pre_shrinkage": 1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [],
+    "multicollinearity_vif": {
+      "ESBR": 1.006,
+      "SUE": 1.01,
+      "Accrual": 1.007
+    },
+    "factor_corr_ESBR_SUE": -0.0688,
+    "factor_corr_ESBR_Accrual": -0.0363,
+    "factor_corr_SUE_Accrual": 0.0748,
+    "tdc_summary": {
+      "ESBR_SUE": 0.0417,
+      "ESBR_Accrual": 0.125,
+      "SUE_Accrual": 0.1667
+    },
+    "factor_coverage_pct": 47.8,
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_001/regime_correlation.parquet",
+    "tail_risk_ref": "stage_artifacts/WT_D20260424_001/tail_risk.json",
+    "regime_corr_shift_ESBR_SUE": -0.4981,
+    "regime_corr_shift_ESBR_Accrual": 0.189
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 4,
+      "selection_objective": "condition_number",
+      "method_log": [
+        {
+          "name": "sample",
+          "condition_number": 13708.4,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition_number": 1,
+          "selected": true
+        },
+        {
+          "name": "gerber",
+          "condition_number": 9273.2,
+          "selected": false
+        },
+        {
+          "name": "gerber_rmt",
+          "condition_number": 92.2,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 48% > 40%"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "ESBR+SUE both earnings_surprise family — verify regime-conditional modulation reduces redundancy"
+    }
+  ],
+  "psd_verified": true,
+  "min_eigenvalue": 0.0009
+}
