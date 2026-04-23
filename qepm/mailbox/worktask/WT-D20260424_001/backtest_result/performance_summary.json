@@ -1,0 +1,186 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "forge",
+  "as_of_date": "2026-04-24",
+  "method": "MVO_lam2_psi0.3",
+  "period": {
+    "train": {
+      "start": "2012-01-21",
+      "end": "2022-01-21"
+    },
+    "validation": {
+      "start": "2022-01-22",
+      "end": "2024-01-22"
+    },
+    "combined": {
+      "start": "2012-01-21",
+      "end": "2024-01-22"
+    },
+    "lockbox": "SEALED (2024-01-23+)"
+  },
+  "portfolio": {
+    "n_names": 8,
+    "tickers": ["A140860", "A028050", "A058470", "A029780", "A005850", "A028260", "A041510", "A287410"],
+    "weights": {
+      "A140860": 0.2,
+      "A028050": 0.2,
+      "A058470": 0.2,
+      "A029780": 0.1974,
+      "A005850": 0.0645,
+      "A028260": 0.0543,
+      "A041510": 0.0486,
+      "A287410": 0.0352
+    },
+    "max_weight": 0.2,
+    "min_weight": 0.0352
+  },
+  "performance": {
+    "full": {
+      "Label": "FULL (2012~2024)",
+      "CAGR": 6,
+      "AnnVol": 21.29,
+      "Sharpe": 0.282,
+      "Sharpe_m": 0.381,
+      "Sortino": 0.402,
+      "MDD": 44.59,
+      "Calmar": 0.134,
+      "WinRate": 56.9,
+      "WorstMonth": -19.84,
+      "Worst3M": -25.32,
+      "ES99_d": 4.62,
+      "ES99_m": 15.85
+    },
+    "train": {
+      "Label": "TRAIN (2012~2022)",
+      "CAGR": 5.89,
+      "AnnVol": 21.43,
+      "Sharpe": 0.275,
+      "Sharpe_m": 0.383,
+      "Sortino": 0.39,
+      "MDD": 44.59,
+      "Calmar": 0.132,
+      "WinRate": 56.7,
+      "WorstMonth": -19.84,
+      "Worst3M": -25.32,
+      "ES99_d": 4.8,
+      "ES99_m": 15.64
+    },
+    "val": {
+      "Label": "VAL (2022~2024)",
+      "CAGR": 6.53,
+      "AnnVol": 20.59,
+      "Sharpe": 0.317,
+      "Sharpe_m": 0.366,
+      "Sortino": 0.469,
+      "MDD": 21.34,
+      "Calmar": 0.306,
+      "WinRate": 56,
+      "WorstMonth": -11.86,
+      "Worst3M": -19.48,
+      "ES99_d": 3.66,
+      "ES99_m": 11.86
+    }
+  },
+  "risk": {
+    "ann_turnover_pct": 46.9,
+    "hard_fail_mdd45": false,
+    "hard_fail_to600": false
+  },
+  "a140860_outlier": {
+    "alpha_score": 3,
+    "weight": 0.2,
+    "note": "Alpha outlier (z=3.0 vs ~0.4-0.6 typical). Confidence-aware MVO (psi=0.3) applied. Inspect attribution."
+  },
+  "alpha_diagnostics": {
+    "rank_ic": 0.0318,
+    "icir": 0.403,
+    "harvey_t_stat": 4.42,
+    "dsr_approx": 0.039,
+    "monotonicity": 0.556,
+    "subperiod_stability": 1,
+    "turnover_proxy_annual": 3.06,
+    "post_neutralization_ic": 0.0269,
+    "ic_retention_pct": 84.6,
+    "n_months_train": 120,
+    "val_rank_ic": 0.0386,
+    "val_icir": 0.521,
+    "val_harvey_t": 2.55,
+    "n_months_val": 24,
+    "mean_breadth": 345,
+    "regime_ic": {
+      "Normal": 0.0286,
+      "Transition_LR": 0.0584
+    },
+    "subperiod_ic": {
+      "S1_2012_2015": 0.0338,
+      "S2_2016_2019": 0.027,
+      "S3_2020_2022": 0.0375
+    }
+  },
+  "risk_diagnostics": {
+    "condition_number": 1,
+    "condition_number_pre_shrinkage": 1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [],
+    "multicollinearity_vif": {
+      "ESBR": 1.006,
+      "SUE": 1.01,
+      "Accrual": 1.007
+    },
+    "factor_corr_ESBR_SUE": -0.0688,
+    "factor_corr_ESBR_Accrual": -0.0363,
+    "factor_corr_SUE_Accrual": 0.0748,
+    "tdc_summary": {
+      "ESBR_SUE": 0.0417,
+      "ESBR_Accrual": 0.125,
+      "SUE_Accrual": 0.1667
+    },
+    "factor_coverage_pct": 47.8,
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_001/regime_correlation.parquet",
+    "tail_risk_ref": "stage_artifacts/WT_D20260424_001/tail_risk.json",
+    "regime_corr_shift_ESBR_SUE": -0.4981,
+    "regime_corr_shift_ESBR_Accrual": 0.189
+  },
+  "optimizer_ir": {
+    "exp_ir": 19.1793,
+    "net_ir": 19.1507,
+    "exp_te": 0.0526
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0318<0.04"
+    },
+    {
+      "flag": "RF-DSR",
+      "severity": "MEDIUM",
+      "note": "DSR=0.039<0.5"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "IC-weighted expanding composite (24M burn-in). Regime modulation: Crisis→accrual+30%, Normal→SUE+20%."
+    },
+    {
+      "flag": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 48% > 40%"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "ESBR+SUE both earnings_surprise family — verify regime-conditional modulation reduces redundancy"
+    }
+  ],
+  "v61_compliance": {
+    "R12_pure_function": "static weights from optimizer — no re-optimization in backtest",
+    "R11_lineage_gap2": "record_package_lineage() called below",
+    "lockbox_sealed": true,
+    "pit_c1": true,
+    "pit_c2": true,
+    "pit_c9": "DD/VT not used in static backtest",
+    "commission_applied": 0.0015
+  }
+}

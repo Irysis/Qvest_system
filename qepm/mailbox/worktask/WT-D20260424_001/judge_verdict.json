@@ -1,0 +1,113 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "judge",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 3 RAPC (ESBR+SUE+Accrual IC-weighted)",
+  "alpha_model": "RAPC (ESBR+SUE+Accrual IC-weighted expanding composite)",
+  "optimizer": "MVO_lam2_psi0.3",
+  "verdict": "GRADE_F",
+  "disposition": "DISCARD_WITH_IMPROVEMENTS",
+  "overall_pass": false,
+  "gates": [
+    {
+      "gate_id": "A",
+      "name": "PIT / Lookahead Compliance",
+      "metric": "C1~C15 + lockbox sealed + Forge audit",
+      "threshold": "all PASS",
+      "actual": "r12_pure_function=PASS(3/3 hash match), lockbox sealed 2024-01-23>backtest_end 2024-01-22, commission 15bps applied, C1/C2 PASS, C9 n/a (static weights)",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "name": "Package Isolation / Integrity",
+      "metric": "alpha/risk/optimization package hash match + Σw=1 + long-only + n<=20",
+      "threshold": "all match",
+      "actual": "alpha 5752e7 / risk 924a73 / opt d96518 all hash_match=true, Σw=1.0, min_w=0.0352, max_w=0.2, n=8, long-only",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "C",
+      "name": "Net Alpha After Cost",
+      "metric": "net_IR, SR_full, rank_ic, DSR",
+      "threshold": "SR>=0.5 OR (SR>=0.3 AND DSR>=0.1); rank_ic>=0.04",
+      "actual": "SR_full=0.282 (below 0.3), rank_ic=0.0318 (<0.04), DSR=0.039 (<0.1), net_IR(z-scale)=19.15 not SR-scale, Harvey t=4.42 OK",
+      "verdict": "FAIL",
+      "remediation": "rank_ic 경계 → multi-signal strengthening (가령 post-earnings drift window 조정, accrual QoQ 차분). DSR 개선 위해 composite stability 확보 + multiple testing correction (BH/BY)."
+    },
+    {
+      "gate_id": "D",
+      "name": "Crowding / Factor Saturation Stress",
+      "metric": "market_risk_pct, factor family overlap, TDC vs existing PG2",
+      "threshold": "market<40%, no saturated family",
+      "actual": "Market 48% (RF-R1 HIGH, 40% 상회), ESBR+SUE 모두 earnings_surprise family (regime modulation으로 완화 주장되나 empirical validation 부재), TDC 낮음(ESBR-SUE 0.0417) — pairwise 양호하나 family-level crowding 우려",
+      "verdict": "FAIL",
+      "remediation": "market neutralization 강화 (beta target 1.0→0.8 고려 or hedge overlay). Earnings-surprise family 양쪽 보유 시 regime-conditional empirical redundancy test 필수."
+    },
+    {
+      "gate_id": "E",
+      "name": "Concentration / Breadth",
+      "metric": "n_names, HHI, max_weight, effective N",
+      "threshold": "n>=15 권고 / HHI<=0.10 / max_w<=0.15 권고",
+      "actual": "n=8 (권고 15 미달), max_w=0.20 binding on 3 names (A140860/A028050/A058470), Σw²(HHI)≈0.1756 (0.10 상회), Grinold breadth 제약 재발 (Pilot 1/2 반복 패턴)",
+      "verdict": "FAIL",
+      "remediation": "Optimizer min_names>=15 제약 추가. HHI_cap<=0.10 추가. 개별 max_weight 0.20→0.10 하향. A140860 alpha=3.0 outlier는 winsorize (±2σ) 고려. [Task #26 별도]"
+    },
+    {
+      "gate_id": "F",
+      "name": "Drift / Regime Adaptation (L-191 avoidance)",
+      "metric": "Val SR vs Train SR + Val MDD + regime IC stability",
+      "threshold": "Val SR >= 0.8 * Train SR (no severe decay)",
+      "actual": "Val SR=0.317 > Train SR=0.275 (1.153x, 양호), Val MDD=21.34% << Train MDD=44.59%, regime IC Normal 0.0286 / Transition_LR 0.0584, subperiod IC 0.027~0.038 안정적, Val Sortino 0.469 > Train 0.39. L-191 메커니즘(Val<Train) 회피 실증.",
+      "verdict": "PASS",
+      "remediation": null
+    }
+  ],
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS",
+    "C_NET_ALPHA": "FAIL",
+    "D_CROWDING": "FAIL",
+    "E_CONCENTRATION": "FAIL",
+    "F_DRIFT": "PASS",
+    "pass_count": 3,
+    "fail_count": 3,
+    "overall": "FAIL (3 PASS / 3 FAIL)"
+  },
+  "ax_compliance": {
+    "AX-000": "N/A — exploratory Pilot, not admission decision",
+    "AX-001_v2": "N/A — non-defense role (core-earnings composite)",
+    "AX-002": "PASS — harness 내 성과 only, 우회 없음, lockbox sealed",
+    "AX-003": "PASS — market=KR family=value 아님 (family=earnings_surprise+accrual)",
+    "AX-004": "PARTIAL — quality 요소(accrual) 포함하나 multi-axis composite + regime-conditional modulation으로 exclusion 예외 지대",
+    "AX-005": "N/A — defense 아님",
+    "AX-007": "WARNING — structure=single_sleeve_long_only_top20(실질 top8), roles=[core_secondary]. Signal-to-portfolio translation 단절 재발. 예외 4종(multi-sleeve/long-short/50+분산/ML sizing) 미충족. **AX-007 실증 재확인**.",
+    "AX-008": "PASS — Forge(backtest) + Architect(integration_audit PASS) + Judge(본 심사) 3-source 중 2+ source PASS (Forge/Judge)"
+  },
+  "multi_objective_8axes": {
+    "sharpe": {"value": 0.282, "target": 2.0, "gap": -1.718, "status": "FAR_BELOW"},
+    "cagr_pct": {"value": 6.00, "target": 16.0, "gap": -10.0, "status": "FAR_BELOW"},
+    "mdd_pct": {"value": -44.59, "target": -25.0, "gap": -19.59, "status": "HARD_FAIL_BORDERLINE (hurdle -45% 경계)"},
+    "sortino": {"value": 0.402, "target": 1.5, "gap": -1.098, "status": "FAR_BELOW"},
+    "calmar": {"value": 0.134, "target": 0.6, "gap": -0.466, "status": "FAR_BELOW"},
+    "turnover_ann_pct": {"value": 46.9, "budget": 600, "status": "OK (낮음, cost 효율)"},
+    "rank_ic": {"value": 0.0318, "target": 0.04, "gap": -0.0082, "status": "BORDERLINE_FAIL"},
+    "dsr": {"value": 0.039, "target": 0.5, "gap": -0.461, "status": "FAR_BELOW"}
+  },
+  "pilot_cumulative_comparison": {
+    "pilot_1_L190_rate_hedge": {"CAGR": 8.72, "SR": 0.413, "MDD": -54.30, "result": "hard_fail (MDD>45%)"},
+    "pilot_2_L191_macro_residual": {"CAGR": 4.06, "SR": 0.289, "MDD": -44.03, "result": "Val<Train 하자"},
+    "pilot_3_RAPC": {"CAGR": 6.00, "SR": 0.282, "MDD": -44.59, "result": "Val>Train 성공 / breadth 한계 재발"},
+    "pattern_analysis": "3 Pilot 모두 MDD 40%+ 수준 유지. Optimizer 집중 패턴(8 names) 공통. Alpha 차원 개선은 있으나 portfolio construction 차원에서 structural 한계."
+  },
+  "l_code_contribution": "L-192",
+  "next_actions": [
+    "Task #26: Optimizer 제약 강화 (min_names>=15, HHI_cap<=0.10, bound[0,0.10], alpha winsorization ±2σ)",
+    "RAPC alpha 재사용 + Task #26 제약 하 재백테스트 (L-191 회피 + breadth 확보 동시)",
+    "Earnings-surprise family empirical redundancy test (ESBR+SUE regime-conditional validation)",
+    "Market exposure hedge overlay 고려 (RF-R1 완화)"
+  ],
+  "rationale_summary": "v6.1 자율 리서치 Step 0가 L-191(Val<Train) 회피 메커니즘을 validated한 점은 실질 진전. 그러나 Gate C(net alpha rank_ic<0.04+DSR<0.1), D(market 48% + family overlap), E(n=8 Grinold breadth 한계 Pilot 1/2 재발) 3개 동시 실패. MDD -44.59%는 hard_fail(-45%) 0.41pp 여유로 경계 통과. 근본 원인: Optimizer MVO 특성상 alpha outlier(A140860=3.0)에 과집중 + max_weight 0.20 binding + min_names 제약 부재. Gate F PASS + Gate A/B PASS는 향후 재사용 가능한 프로세스 자산. Disposition=DISCARD_WITH_IMPROVEMENTS (alpha 버리지 않고 optimizer 제약 업그레이드 후 재도전)."
+}

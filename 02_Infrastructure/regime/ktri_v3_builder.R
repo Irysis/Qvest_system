@@ -145,10 +145,20 @@ build_ktri_v3 <- function(output = KTRI_V3_CSV, cache_cutoff_years = 15L) {
   daily <- merge(daily, bench[, .(Date, IKS200)], by = "Date", all.x = TRUE)
   setorder(daily, Date)
 
-  # KOSPI trend z + vol20 z
+  # KOSPI trend z + vol20 z (NA-safe: kospi_ret NA → interpolate, vol20 NA → last known)
   daily[, kospi_trend_z := .rolling_z(IKS200, w = 252L)]
   daily[, kospi_ret := IKS200 / shift(IKS200, 1L) - 1]
-  daily[, vol20 := frollapply(kospi_ret, 20L, sd, align = "right")]
+  # NA 제거 + 최근 20일 vol 계산 (align left/center 대신 안전한 loop)
+  rets <- daily$kospi_ret
+  vol20 <- rep(NA_real_, length(rets))
+  for (i in 20:length(rets)) {
+    w <- rets[(i-19):i]
+    w <- w[!is.na(w)]
+    if (length(w) >= 10) vol20[i] <- sd(w)
+  }
+  daily[, vol20 := vol20]
+  # forward-fill 최근 vol20 (최근 13일 NA 방지)
+  daily[, vol20 := nafill(vol20, type = "locf")]
   daily[, vol20_z := .rolling_z(vol20, w = 252L)]
 
   # KTRI composite (0~100)

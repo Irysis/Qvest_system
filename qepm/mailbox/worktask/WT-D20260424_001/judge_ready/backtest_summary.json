@@ -1,0 +1,117 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "forge",
+  "stage": "stage4_backtest",
+  "as_of_date": "2026-04-24",
+  "method": "MVO_lam2_psi0.3",
+  "alpha_model": "RAPC (ESBR+SUE+Accrual IC-weighted expanding composite)",
+  "period": {
+    "combined_start": "2012-01-21",
+    "combined_end": "2024-01-22",
+    "lockbox_sealed": "2024-01-23"
+  },
+  "portfolio_snapshot": {
+    "n_names": 8,
+    "tickers": ["A140860", "A028050", "A058470", "A029780", "A005850", "A028260", "A041510", "A287410"],
+    "weights": {
+      "A140860": 0.2,
+      "A028050": 0.2,
+      "A058470": 0.2,
+      "A029780": 0.1974,
+      "A005850": 0.0645,
+      "A028260": 0.0543,
+      "A041510": 0.0486,
+      "A287410": 0.0352
+    }
+  },
+  "perf_full": {
+    "Label": "FULL (2012~2024)",
+    "CAGR": 6,
+    "AnnVol": 21.29,
+    "Sharpe": 0.282,
+    "Sharpe_m": 0.381,
+    "Sortino": 0.402,
+    "MDD": 44.59,
+    "Calmar": 0.134,
+    "WinRate": 56.9,
+    "WorstMonth": -19.84,
+    "Worst3M": -25.32,
+    "ES99_d": 4.62,
+    "ES99_m": 15.85
+  },
+  "perf_train": {
+    "Label": "TRAIN (2012~2022)",
+    "CAGR": 5.89,
+    "AnnVol": 21.43,
+    "Sharpe": 0.275,
+    "Sharpe_m": 0.383,
+    "Sortino": 0.39,
+    "MDD": 44.59,
+    "Calmar": 0.132,
+    "WinRate": 56.7,
+    "WorstMonth": -19.84,
+    "Worst3M": -25.32,
+    "ES99_d": 4.8,
+    "ES99_m": 15.64
+  },
+  "perf_val": {
+    "Label": "VAL (2022~2024)",
+    "CAGR": 6.53,
+    "AnnVol": 20.59,
+    "Sharpe": 0.317,
+    "Sharpe_m": 0.366,
+    "Sortino": 0.469,
+    "MDD": 21.34,
+    "Calmar": 0.306,
+    "WinRate": 56,
+    "WorstMonth": -11.86,
+    "Worst3M": -19.48,
+    "ES99_d": 3.66,
+    "ES99_m": 11.86
+  },
+  "risk_metrics": {
+    "ann_turnover_pct": 46.9,
+    "hard_fail_mdd45": false,
+    "hard_fail_to600": false
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0318<0.04"
+    },
+    {
+      "flag": "RF-DSR",
+      "severity": "MEDIUM",
+      "note": "DSR=0.039<0.5"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "IC-weighted expanding composite (24M burn-in). Regime modulation: Crisis→accrual+30%, Normal→SUE+20%."
+    },
+    {
+      "flag": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 48% > 40%"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "ESBR+SUE both earnings_surprise family — verify regime-conditional modulation reduces redundancy"
+    }
+  ],
+  "artifacts": {
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_001/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_001/backtest_result/annual_returns.png",
+    "performance_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_001/backtest_result/performance_summary.json",
+    "integration_audit": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_001/judge_ready/integration_audit.json"
+  },
+  "judge_notes": {
+    "a140860_outlier": "alpha=3.0 outlier (>>others ~0.4-0.6). Confidence-aware MVO applied psi=0.3. Attribution review needed.",
+    "rf_rank_ic": "IC=0.0318 < 0.04 threshold (CONDITIONAL graduation). Harvey t=4.42 > 3.0 OK.",
+    "rf_dsr": "DSR=0.039 < 0.5 (MEDIUM flag). Multi-testing correction needed.",
+    "rf_r1_market": "Market 48% exposure (HIGH). beta_target=1.0 maintained."
+  },
+  "status": "FORGE_COMPLETE"
+}
