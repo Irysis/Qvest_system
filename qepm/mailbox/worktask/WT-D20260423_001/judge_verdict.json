@@ -1,0 +1,257 @@
+{
+  "task_id": "WT-D20260423_001",
+  "wt_type": "discovery",
+  "hypothesis": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28)",
+  "judge_agent": "judge_v7_R7",
+  "evaluated_at": "2026-04-23",
+  "evaluation_basis": {
+    "alpha_package_hash": "b4c4724ddde3095ccfabc6c881bfd7eb",
+    "risk_package_hash": "bc09cfcfba439f5100b322e25b930713",
+    "optimization_package_hash": "b46ad5609b5b8b3b2834595abae70134",
+    "integration_audit": "PASS (3/3 match)",
+    "bt_window": "2012-01-20 ~ 2024-01-21 (145 months)",
+    "lockbox_window": "2024-01-22 ~ 2026-01-22 (SEALED)"
+  },
+  "gate_results": [
+    {
+      "gate_id": "A",
+      "gate_name": "PIT compliance (C1~C15)",
+      "hypothesis_tested": "Alpha/Risk/Optimizer 3-package 모두 look-ahead 0건",
+      "metric": "lookahead_count",
+      "threshold": 0,
+      "actual": 0,
+      "evidence": {
+        "C1_rolling_only": "PASS (signal_matrix monthly rolling)",
+        "C2_same_day_block": "PASS (month-end signal → next month execution)",
+        "C4_financials_lag": "PASS (Factor DB load_month_factors)",
+        "C9_overlay_lag": "PASS (no DD/VT overlay — pure factor backtest)",
+        "C13_z_score_aligned": "PASS (Z_Score_Aligned 사용 확인)",
+        "integration_audit_match": "3/3 hash match",
+        "forge_pit_flags": {"C1":"PASS","C2":"PASS","C4":"PASS","C9":"PASS"}
+      },
+      "verdict": "PASS",
+      "retry_possible": false,
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "gate_name": "Selection/Test Isolation",
+      "hypothesis_tested": "lockbox(2024-01-22 이후) 데이터가 selection/tuning에 누수되지 않음",
+      "metric": "lockbox_access_count_non_judge",
+      "threshold": 0,
+      "actual": 0,
+      "evidence": {
+        "lockbox_access_log": "/tmp/qvest_lockbox_access_WT-D20260423_001.log (absent — no access events)",
+        "integration_audit_lockbox_sealed": "PASS (BT_END=2024-01-21 < LOCKBOX_START=2024-01-22)",
+        "optimizer_window_access": "train 2012-01-20~2022-01-20, validation 2022-01-21~2024-01-21, lockbox SEALED not accessed"
+      },
+      "verdict": "PASS",
+      "retry_possible": false,
+      "remediation": null
+    },
+    {
+      "gate_id": "C",
+      "gate_name": "Net alpha > cost",
+      "hypothesis_tested": "15bps 비용 차감 후에도 realized IR > Discovery threshold(0.2)",
+      "metric": "realized_information_ratio_annual",
+      "threshold": 0.2,
+      "actual": 0.3983,
+      "evidence": {
+        "ir_realized": 0.3983,
+        "te_realized_pct_annual": 17.3933,
+        "estimated_cost_bps": 15,
+        "turnover_annual": 1.0,
+        "note": "Expected IR 4.20은 z-scale alpha 스케일링 산출물 (NOT achievable); realized 0.398 기준으로 판정"
+      },
+      "verdict": "PASS",
+      "retry_possible": false,
+      "remediation": null
+    },
+    {
+      "gate_id": "D",
+      "gate_name": "Crowding × Stress survival",
+      "hypothesis_tested": "factor crowding 조건 하에서 4대 stress 구간 중 3/4 이상 생존",
+      "metric": "stress_survival_count",
+      "threshold_numerator": 3,
+      "threshold_denominator": 4,
+      "actual_numerator": 1,
+      "actual_denominator": 4,
+      "evidence": {
+        "rate_2022_active_monthly": -0.0027,
+        "rate_2022_risk_stress": -0.2262,
+        "covid_2020_active_monthly": -0.0169,
+        "covid_2020_risk_stress": -0.3211,
+        "gfc_2008_risk_stress": -0.3836,
+        "eudebt_2011_risk_stress": -0.1818,
+        "market_down_5_risk_stress": -0.0425,
+        "survival_judgment": {
+          "rate_2022": "FAIL (active -0.27% — 핵심 가설 반증: 금리 급등 구간 BM 하회)",
+          "covid_2020": "FAIL (active -1.69%)",
+          "gfc_2008": "FAIL (-38.36% stress)",
+          "market_down_5": "PASS (-4.25% 완만)"
+        },
+        "tdc_q07_q32": 0.62,
+        "crowding_flag": "MEDIUM — TDC>0.6 rate shock 동반 해소"
+      },
+      "verdict": "FAIL",
+      "retry_possible": true,
+      "remediation": "Q14 제거 + Q07+Q32 2-factor 재구성 + multi-sleeve (defense + core_secondary) 구조 전환으로 crowding 희석"
+    },
+    {
+      "gate_id": "E",
+      "gate_name": "Concentration",
+      "hypothesis_tested": "max weight ≤ 0.20, HHI ≤ 0.15",
+      "metric": "max_weight, HHI",
+      "threshold_max_weight": 0.20,
+      "threshold_hhi": 0.15,
+      "actual_max_weight": 0.20,
+      "actual_hhi": 0.1888,
+      "evidence": {
+        "n_names": 6,
+        "weights": {"A002380":0.20,"A009770":0.20,"A013120":0.1522,"A026960":0.20,"A065710":0.0841,"A115610":0.1636},
+        "hhi_calc": "0.20^2 + 0.20^2 + 0.1522^2 + 0.20^2 + 0.0841^2 + 0.1636^2 = 0.1888",
+        "binding_constraints": ["weight_bound_upper_0.20 (3 names binding)"],
+        "note": "max_weight OK (=0.20 upper bound). HHI 0.1888 > 0.15 threshold"
+      },
+      "verdict": "FAIL",
+      "retry_possible": true,
+      "remediation": "Discovery WT 완화 가능(FAIL-SOFT) but 20종 multi-sleeve 구조 전환 필수 — 6종 집중은 single shock에 구조적으로 취약"
+    },
+    {
+      "gate_id": "F",
+      "gate_name": "Drift tolerance (IS → OOS)",
+      "hypothesis_tested": "validation OOS 성과가 train IS 대비 70% 이상 유지",
+      "metric": "oos_is_ratio (icir)",
+      "threshold": 0.7,
+      "actual": 1.236,
+      "evidence": {
+        "train_icir": 0.3059,
+        "val_icir": 0.3781,
+        "ratio_val_over_train": 1.236,
+        "subperiod_stability": 0.8667,
+        "note": "signal-level drift 양호. 그러나 portfolio 구현 후 stress 구간 active return 음수는 signal→portfolio translation 단절(AX-007)과 정합"
+      },
+      "verdict": "PASS",
+      "retry_possible": false,
+      "remediation": null
+    }
+  ],
+  "graduation_criteria": {
+    "rank_ic": {"value": 0.0258, "threshold": 0.04, "pass": false},
+    "icir": {"value": 0.3184, "threshold": 0.2, "pass": true},
+    "subperiod_stability": {"value": 0.8667, "threshold": 0.5, "pass": true},
+    "harvey_t": {"value": 3.8343, "threshold": 3.0, "pass": true},
+    "dsr_raw": {"value": 3.7915, "threshold": 0.5, "pass": true},
+    "dsr_penalized": {"value": 3.7915, "method_shopping_penalty": -0.65, "adjusted": 3.1415, "note": "Alpha 5 + Risk 3 + Opt 5 = 13 candidates × 0.05 = 0.65 penalty"},
+    "passed": "4/5",
+    "failed_criteria": ["rank_ic (0.0258 < 0.04)"]
+  },
+  "multi_objective": {
+    "expected_active_return": 1.0184,
+    "expected_tracking_error": 0.2424,
+    "expected_information_ratio": 4.2006,
+    "net_information_ratio": 0.3983,
+    "turnover_annual": 1.0,
+    "crowding_adjusted_return": -0.2262,
+    "capacity_adjusted_return": null,
+    "regime_robustness_score": 0.25,
+    "interpretability_score": 0.72,
+    "pass_count": "3/8",
+    "note": "Discovery pass rule: net_IR PASS but only 3/8 metric threshold — FAIL (요구 4/8)"
+  },
+  "hurdle_evaluation": {
+    "cagr": 8.72,
+    "sr": 0.413,
+    "mdd": -54.3,
+    "hard_fail": {
+      "mdd_over_45": true,
+      "turnover_over_600": false
+    },
+    "grade_conventional": "F (hard_fail: MDD -54.3% > -45%)",
+    "ax001_v2_defense_eval": {
+      "applicable": true,
+      "crisis_alpha_rate_2022": -0.27,
+      "crisis_alpha_covid_2020": -1.69,
+      "crisis_alpha_verdict": "FAIL (양쪽 음수)",
+      "bad_normal_ic_ratio": 1.53,
+      "bad_normal_ic_verdict": "PASS (>0.6)",
+      "core_mdd_mitigation": "N/A (standalone, not multi-sleeve)",
+      "ax001_v2_overall": "FAIL — crisis_alpha 실패로 Defense 조건부 평가 관문 미통과"
+    }
+  },
+  "axiom_findings": [
+    {
+      "axiom": "AX-001 v2",
+      "status": "FAIL",
+      "evidence": "crisis_alpha rate_2022=-0.27%, covid_2020=-1.69% 양쪽 음수. Defense 조건부 평가의 필수 조건(crisis_alpha positive) 미달"
+    },
+    {
+      "axiom": "AX-005 v1.2",
+      "status": "APPLIED (Discovery exception)",
+      "evidence": "roles=defense, universe=top20_long_only(6종 실질), structure=single_sleeve. EXCLUSION 미충족 → Discovery 탐색은 허용하되 Deployment 전환 불가"
+    },
+    {
+      "axiom": "AX-007",
+      "status": "STRUCTURAL FAIL",
+      "evidence": "signal-level ICIR 0.318 + Harvey t 3.83 양호 but portfolio 구현 후 MDD -54.3% + stress active -0.27%/-1.69%. signal→portfolio translation 메커니즘 단절. 6종 집중이 증폭 요인"
+    },
+    {
+      "axiom": "AX-008",
+      "status": "PARTIAL (2-source)",
+      "evidence": "Forge backtest + Integration audit 2-source PASS. Codex/Architect 검증 없음 but Discovery WT는 2-source 허용"
+    }
+  ],
+  "role_honesty_audit": {
+    "claimed_role": "defense (rate_hedge)",
+    "realized_role": "failed_defense",
+    "evidence": [
+      "rate_2022 active -0.27% — 핵심 가설(금리 급등 방어) 반증",
+      "covid_2020 active -1.69% — 위기 방어 실패",
+      "normal +0.61% — 평시 소폭 양수만 존재",
+      "stress_gfc_2008 -38.36% — 극단 위기 심각 손실"
+    ],
+    "verdict": "Role misrepresentation not malicious — 가설은 합리적이나 KR top20 long-only 구조에서 실증 FAIL"
+  },
+  "method_shopping_audit": {
+    "alpha_candidates": 5,
+    "risk_candidates": 3,
+    "optimizer_candidates": 5,
+    "total": 13,
+    "discovery_cap_per_agent": 5,
+    "per_agent_compliance": "PASS (all ≤5)",
+    "dsr_penalty": 0.65,
+    "note": "optimizer_agent key가 method_shopping_log.json에 3회 중복 직렬화(identical content) — 통합 카운트는 5. log 기록 중복 버그는 infra gap_mem"
+  },
+  "overall_verdict": "FAIL",
+  "grade": "F",
+  "graduation_pass_ready": false,
+  "deployment_recommended": false,
+  "remediation_priority": [
+    {
+      "priority": 1,
+      "action": "Q14_Current_Ratio 제거",
+      "rationale": "rank_ic 0.0064 + harvey_t 0.754 (alpha 기여 미미). Q07+Q32 2-factor 재구성으로 희석 제거"
+    },
+    {
+      "priority": 2,
+      "action": "20종 multi-sleeve 구조 전환 (Discovery 재실행)",
+      "rationale": "6종 집중 → single shock에 구조적 취약. AX-007 auto-reject 회피. defense(Q07+Q32) sleeve + core_secondary sleeve 병합"
+    },
+    {
+      "priority": 3,
+      "action": "rebalance 빈도 완화 (monthly → quarterly)",
+      "rationale": "turnover 100% → 40~50%로 축소. 15bps→6bps 비용 절감 + signal stability 활용"
+    },
+    {
+      "priority": 4,
+      "action": "crisis_alpha 필수 조건 Gate D 통과 후 Deployment 승인",
+      "rationale": "AX-001 v2 Defense 조건부 평가 관문 — rate_2022/covid_2020 active ≥ 0 재현 필요"
+    }
+  ],
+  "next_hop": "Governor REJECT — book_state 유지, Deployment 전환 차단. Discovery 재실행 시 remediation priority 1~3 반영 필수.",
+  "lockbox_post_judge_seal": {
+    "auto_trigger": true,
+    "sealed_at": "2026-04-23",
+    "note": "judge_verdict 저장 시 lockbox_post_judge_seal.sh 자동 발동 예정"
+  }
+}

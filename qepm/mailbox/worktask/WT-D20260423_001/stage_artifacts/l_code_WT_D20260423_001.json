@@ -1,0 +1,47 @@
+{
+  "l_code": "L-190",
+  "strategy_id": "WT-D20260423_001",
+  "grade": "F",
+  "wt_type": "discovery",
+  "hypothesis_title": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28+Q14+Q19)",
+  "core_reference": "AX-001 v2 Defense 조건부 평가 + AX-005 v1.2 Defense standalone long-only top20 EXCLUSION 미충족 + AX-007 signal→portfolio translation 단절 + Frazzini-Pedersen (2014) BAB weakening 정황 + L-121 Q07 stress ICIR 0.753",
+  "lesson_text": "Rate Hedge Defense 가설(Duration-neutral Quality 5팩터) Discovery WT 실패. signal-level 지표는 양호(Q07 IC 0.0302 / Harvey t 3.83 / DSR 3.79 / subperiod stability 0.87)했으나 portfolio 구현 후 MDD -54.3% hard fail + stress 구간 3/4 FAIL. 핵심 가설인 rate_2022 방어 active return -0.27%로 반증. 실패 메커니즘 세 층위: (1) Q14_Current_Ratio rank_ic 0.0064로 희석 기여(graduation rank_ic 0.0258<0.04), (2) MVO_lam5_psi0.3 최적화가 6종 집중 해(max 0.20 binding 3건, HHI 0.189)로 수렴해 single regime shock 증폭, (3) TDC(Q07,Q32)=0.62로 crowding 조건 하 동반 해소. AX-001 v2 Defense 조건부 평가에서 crisis_alpha 양쪽 음수로 관문 자체 미통과, AX-005 Discovery exception은 Deployment 전환 시 자동 auto-reject. 재실행 권고: (a) Q14 제거 후 Q07+Q32 2-factor 재구성, (b) 20종 multi-sleeve(defense+core_secondary) 구조 전환, (c) rebalance monthly→quarterly로 turnover 100%→40~50% 축소. signal 존재 ≠ portfolio 생존.",
+  "tags": [
+    "RATE_HEDGE_FAIL",
+    "DEFENSE_STANDALONE_STRUCTURE_FAIL",
+    "CONCENTRATION_RISK_6_NAMES",
+    "AX-001-v2-CRISIS-ALPHA-FAIL",
+    "AX-005-APPLIED",
+    "AX-007-SIGNAL-PORTFOLIO-TRANSLATION",
+    "SIGNAL_OK_PORTFOLIO_FAIL",
+    "Q14_DILUTION",
+    "TDC_CROWDING_0.62",
+    "DISCOVERY_WT"
+  ],
+  "stress_evidence": {
+    "rate_2022_active_monthly_pct": -0.27,
+    "covid_2020_active_monthly_pct": -1.69,
+    "normal_baseline_monthly_pct": 0.61,
+    "mdd_pct": -54.3,
+    "cagr_pct": 8.72,
+    "sr": 0.413,
+    "te_realized_pct": 17.39,
+    "ir_realized": 0.398,
+    "harvey_t": 3.83,
+    "dsr_raw": 3.79,
+    "dsr_penalized_method_shopping": 3.14
+  },
+  "remediation_next_discovery": [
+    "Q14_Current_Ratio 제거 (rank_ic 0.0064 희석 요인)",
+    "Q07_Earnings_Stability + Q32_Interest_Coverage 2-factor 재구성",
+    "20종 multi-sleeve 구조 (defense sleeve + core_secondary sleeve)",
+    "rebalance frequency monthly → quarterly",
+    "Q07-Q32 TDC empirical Kendall tau 재추정 (Deployment WT 전제)"
+  ],
+  "related_axioms": ["AX-001 v2", "AX-005 v1.2", "AX-007", "AX-008 (partial)"],
+  "related_l_codes": ["L-121 (Q07 stress ICIR)", "L-136 (defense top20 실패)", "L-140 (4-axis composite 실패)", "L-160 (signal-portfolio translation)", "L-165 (multi-sleeve exception)", "L-166 (EXCLUSION necessary not sufficient)"],
+  "category": "v6_1_work_task_lesson",
+  "severity": "HARD_FAIL",
+  "created_at": "2026-04-23",
+  "created_by": "judge_v7_R7"
+}
