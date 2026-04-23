@@ -1,0 +1,189 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "optimizer_research",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "selection_objective": "net_ir",
+  "target_weights": {
+    "A140860": 0.2,
+    "A287410": 0.0352,
+    "A028260": 0.0543,
+    "A028050": 0.2,
+    "A005850": 0.0645,
+    "A058470": 0.2,
+    "A029780": 0.1974,
+    "A041510": 0.0486
+  },
+  "active_weights": {
+    "A140860": 0.195,
+    "A287410": 0.0302,
+    "A028260": 0.0493,
+    "A028050": 0.195,
+    "A005850": 0.0595,
+    "A058470": 0.195,
+    "A029780": 0.1924,
+    "A041510": 0.0436
+  },
+  "expected_active_return": 1.0083,
+  "expected_tracking_error": 0.0526,
+  "expected_information_ratio": 19.1793,
+  "net_active_return_after_tc": 1.0068,
+  "net_information_ratio": 19.1507,
+  "turnover": 1,
+  "estimated_cost": 0.0015,
+  "method_selected": "MVO_lam2_psi0.3",
+  "method_family": "MVO",
+  "method_comparison": {
+    "MVO_lam2_psi0.3": {
+      "name": "MVO_lam2_psi0.3",
+      "net_ir": 19.1507,
+      "exp_ir": 19.1793,
+      "n_names": 8,
+      "selected": true,
+      "infeasible": false
+    },
+    "MVO_lam1_psi0.3": {
+      "name": "MVO_lam1_psi0.3",
+      "net_ir": 19.0935,
+      "exp_ir": 19.122,
+      "n_names": 8,
+      "selected": false,
+      "infeasible": false
+    },
+    "MVO_lam0.5_psi0.3": {
+      "name": "MVO_lam0.5_psi0.3",
+      "net_ir": 19.0636,
+      "exp_ir": 19.092,
+      "n_names": 8,
+      "selected": false,
+      "infeasible": false
+    },
+    "MVO_lam2_psi0.5": {
+      "name": "MVO_lam2_psi0.5",
+      "net_ir": 19.106,
+      "exp_ir": 19.1345,
+      "n_names": 8,
+      "selected": false,
+      "infeasible": false
+    },
+    "HRP": {
+      "name": "HRP",
+      "net_ir": 14.6067,
+      "exp_ir": 14.636,
+      "n_names": 20,
+      "selected": false,
+      "infeasible": false
+    },
+    "ERC": {
+      "name": "ERC",
+      "net_ir": 13.0149,
+      "exp_ir": 13.0425,
+      "n_names": 20,
+      "selected": false,
+      "infeasible": false
+    },
+    "ERC_confidence": {
+      "name": "ERC_confidence",
+      "net_ir": 7.2534,
+      "exp_ir": 7.282,
+      "n_names": 20,
+      "selected": false,
+      "infeasible": false
+    }
+  },
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 7,
+      "selection_objective": "net_ir",
+      "method_log": [
+        {
+          "name": "MVO_lam2_psi0.3",
+          "net_ir": 19.1507,
+          "selected": true,
+          "infeasible": false,
+          "note": "confidence-aware"
+        },
+        {
+          "name": "MVO_lam1_psi0.3",
+          "net_ir": 19.0935,
+          "selected": false,
+          "infeasible": false,
+          "note": "confidence-aware"
+        },
+        {
+          "name": "MVO_lam0.5_psi0.3",
+          "net_ir": 19.0636,
+          "selected": false,
+          "infeasible": false,
+          "note": "confidence-aware"
+        },
+        {
+          "name": "MVO_lam2_psi0.5",
+          "net_ir": 19.106,
+          "selected": false,
+          "infeasible": false,
+          "note": "confidence-aware"
+        },
+        {
+          "name": "HRP",
+          "net_ir": 14.6067,
+          "selected": false,
+          "infeasible": false,
+          "note": ""
+        },
+        {
+          "name": "ERC",
+          "net_ir": 13.0149,
+          "selected": false,
+          "infeasible": false,
+          "note": ""
+        },
+        {
+          "name": "ERC_confidence",
+          "net_ir": 7.2534,
+          "selected": false,
+          "infeasible": false,
+          "note": "confidence-aware"
+        }
+      ]
+    }
+  },
+  "binding_constraints": "weight_upper_bound (0.20): 3 names — A140860,A028050,A058470",
+  "n_names": 8,
+  "sum_weights": 1,
+  "max_weight": 0.2,
+  "min_weight": 0.0352,
+  "infeasibility_report": null,
+  "market_hedging": {
+    "ex_ante_beta": 1,
+    "beta_target": 1,
+    "market_risk_note": "RF-R1 HIGH: Market 48% exposure. Confidence-aware MVO (psi=0.3) penalizes low-confidence concentrations. beta_target=1.0 maintained.",
+    "rf_r1_status": "ACKNOWLEDGED"
+  },
+  "confidence_aware_mvo": {
+    "applied": true,
+    "psi": 0.3,
+    "mean_confidence": 0.5084,
+    "formula": "alpha_tilde = c * alpha_hat; FU(x,c) = psi * sum(x_i^2 * (1-c_i)^2)"
+  },
+  "explanation": {
+    "top_overweights": ["A140860", "A028050", "A058470", "A029780", "A005850"],
+    "top_underweights": ["A287410", "A041510", "A028260", "A005850", "A029780"],
+    "main_tradeoffs": ["Confidence-aware MVO (psi=0.3) reduces position in low-confidence tickers", "max_names=20 hard cap binding: concentrated portfolio", "Market beta=1.0 proxy (RF-R1 HIGH Market 48% acknowledged)", "Ledoit-Wolf cov (cond=1.0) ensures stable QP solution"],
+    "alpha_diagnostics": {
+      "rank_ic": 0.0318,
+      "icir": 0.403,
+      "harvey_t": 4.42,
+      "ic_flag": "rank_ic < 0.04 threshold (CONDITIONAL graduation)",
+      "note": "RAPC composite. Net IR after 15bps cost selected as objective."
+    }
+  },
+  "v61_compliance": {
+    "R4_P3_selection_objective": "net_ir (PASS)",
+    "R4_A_confidence_mvo": "applied psi=0.3 (PASS)",
+    "R2_C_method_shopping_log": "7 candidates, max 10 (PASS)",
+    "R12_infeasibility_report": "null (PASS)",
+    "R3_GAP1_challenge_review": "pending — wt_record_challenge_review() called below",
+    "R11_GAP2_lineage": "pending — record_package_lineage() called below"
+  }
+}
