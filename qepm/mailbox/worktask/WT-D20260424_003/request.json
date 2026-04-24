@@ -78,5 +78,30 @@
       "beta_target": 0.8,
       "rationale": "Pilot 4 Gate D FAIL (Market 48%). Pilot 5 targets KOSPI200 beta 0.8 via (a) long-only beta-neutralized MVO tilt OR (b) KOSPI200 index short 20% overlay (Risk Agent choice)."
     }
+  },
+  "evaluation_windows": {
+    "train_window": {
+      "start": "1990-01-04",
+      "end": "2022-01-21",
+      "years": 32.05,
+      "role": "factor_selection + signal_engineering (Alpha)"
+    },
+    "validation_window": {
+      "start": "2022-01-22",
+      "end": "2024-01-22",
+      "role": "model_selection + hyperparam tuning (Risk + Optimizer)"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "sealed": true,
+      "role": "final pass/fail judgment (Judge only)"
+    },
+    "paper_trade_window": {
+      "start": "2026-01-24",
+      "end": "2026-04-24",
+      "role": "pre-deployment validation (Execution)"
+    },
+    "judge_added_note": "Judge Agent appended evaluation_windows block (inherited from Pilot 4 WT-D20260424_002 request.json) to support judge_oos_helper. Alpha/Risk/Optimizer packages NOT redefined. Non-destructive augmentation only."
   }
 }
