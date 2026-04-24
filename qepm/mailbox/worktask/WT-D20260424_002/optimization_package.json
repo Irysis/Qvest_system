@@ -1,0 +1,130 @@
+{
+  "task_id": "WT-D20260424_002",
+  "as_of_date": "2026-04-24",
+  "agent": "optimizer_research",
+  "hypothesis": "RAPC Breadth-Constrained (Task#26 L-192 Remediation)",
+  "selection_objective": "net_ir",
+  "target_weights": {
+    "A140860": 0.08,
+    "A287410": 0.08,
+    "A218410": 0.0667,
+    "A028260": 0.08,
+    "A028050": 0.08,
+    "A014680": 0.0797,
+    "A005850": 0.08,
+    "A058470": 0.08,
+    "A365340": 0.0564,
+    "A029780": 0.08,
+    "A041510": 0.08,
+    "A006260": 0.0149,
+    "A000100": 0.0089,
+    "A005290": 0.0667,
+    "A001680": 0.0667
+  },
+  "active_weights": {
+    "A140860": 0.075,
+    "A287410": 0.075,
+    "A218410": 0.0617,
+    "A028260": 0.075,
+    "A028050": 0.075,
+    "A014680": 0.0747,
+    "A005850": 0.075,
+    "A058470": 0.075,
+    "A365340": 0.0514,
+    "A029780": 0.075,
+    "A041510": 0.075,
+    "A006260": 0.0099,
+    "A000100": 0.0039,
+    "A005290": 0.0617,
+    "A001680": 0.0617
+  },
+  "expected_active_return": 0.6933,
+  "expected_tracking_error": 0.0533,
+  "expected_information_ratio": 13.0183,
+  "turnover": 1,
+  "estimated_cost": 0.0015,
+  "cost_model": "v2.3_kr_retail_15bps",
+  "binding_constraints": [
+    "min_names_15_enforced",
+    "alpha_winsor_2sigma"
+  ],
+  "infeasibility_report": null,
+  "method_selected": "MVO_lam3_psi0.5",
+  "method_comparison": {
+    "MVO_lam2_psi0.3": {
+      "net_ir": 11.8533,
+      "n_names": 15,
+      "hhi": 0.0667,
+      "max_w": 0.0667,
+      "selected": false
+    },
+    "MVO_lam1_psi0.3": {
+      "net_ir": 11.8533,
+      "n_names": 15,
+      "hhi": 0.0667,
+      "max_w": 0.0667,
+      "selected": false
+    },
+    "MVO_lam3_psi0.5": {
+      "net_ir": 13.0183,
+      "n_names": 15,
+      "hhi": 0.0744,
+      "max_w": 0.08,
+      "selected": true
+    },
+    "HRP_bounds0.10": {
+      "net_ir": 2.8463,
+      "n_names": 20,
+      "hhi": 0.0509,
+      "max_w": 0.0659,
+      "selected": false
+    },
+    "ERC_confidence": {
+      "net_ir": 3.5874,
+      "n_names": 20,
+      "hhi": 0.0502,
+      "max_w": 0.0542,
+      "selected": false
+    }
+  },
+  "n_names": 15,
+  "hhi": 0.0744,
+  "min_names_enforced": true,
+  "hhi_enforced": false,
+  "winsor_applied": true,
+  "lambda_retries": 4,
+  "lambda_used": 0.1875,
+  "task26_constraints": {
+    "bounds": [0, 0.1],
+    "max_names": 20,
+    "min_names": 15,
+    "hhi_cap": 0.1,
+    "alpha_winsor": 2
+  },
+  "pilot3_baseline": {
+    "n_names": 8,
+    "hhi": 0.1697,
+    "max_w": 0.2,
+    "active_ir": -1.003
+  },
+  "candidates_tried": 5,
+  "explanation": {
+    "top_overweights": ["A140860", "A287410", "A028260", "A028050", "A005850"],
+    "top_underweights": "all_others (bm_w=0.005)",
+    "main_tradeoffs": [
+      "alpha_winsor: A140860 3.0 → clipped to 2sigma (집중 완화)",
+      "min_names=15: QP breadth 하한 강제 → Grinold IR 개선 기대",
+      "hhi_cap=0.10: 집중 포트폴리오 → 분산 포트폴리오 전환",
+      "bounds[0,0.10]: 최대 10% per-name (Pilot3 20% 대비)"
+    ]
+  },
+  "v61_compliance": {
+    "R4_selection_objective": "net_ir",
+    "R4A_confidence_vector": true,
+    "R2C_method_shopping_log": true,
+    "R12_infeasibility_report": true,
+    "GAP1_challenge_review": true,
+    "GAP2_lineage": true,
+    "Task26_breadth_constraints": true
+  }
+}

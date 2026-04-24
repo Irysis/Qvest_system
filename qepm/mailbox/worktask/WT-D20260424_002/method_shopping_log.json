@@ -10,7 +10,7 @@
         "name": "C04_ESBR_standalone",
         "family": "earnings_surprise",
         "rank_ic_train": 0.0294,
-        "icir_train": 0.360,
+        "icir_train": 0.36,
         "harvey_t": 3.95,
         "note": "Single factor. Good IC but composite improves stability.",
         "selected": false
@@ -35,5 +35,51 @@
       }
     ],
     "judge_dsr_penalty": "candidates_tried(3) * 0.05 = 0.15 DSR penalty noted"
+  },
+  "optimizer_agent": {
+    "candidates_tried": 5,
+    "selection_objective": "net_ir",
+    "method_log": [
+      {
+        "name": "MVO_lam2_psi0.3",
+        "net_ir": 11.8533,
+        "n_names": 15,
+        "hhi": 0.0667,
+        "max_w": 0.0667,
+        "selected": false
+      },
+      {
+        "name": "MVO_lam1_psi0.3",
+        "net_ir": 11.8533,
+        "n_names": 15,
+        "hhi": 0.0667,
+        "max_w": 0.0667,
+        "selected": false
+      },
+      {
+        "name": "MVO_lam3_psi0.5",
+        "net_ir": 13.0183,
+        "n_names": 15,
+        "hhi": 0.0744,
+        "max_w": 0.08,
+        "selected": true
+      },
+      {
+        "name": "HRP_bounds0.10",
+        "net_ir": 2.8463,
+        "n_names": 20,
+        "hhi": 0.0509,
+        "max_w": 0.0659,
+        "selected": false
+      },
+      {
+        "name": "ERC_confidence",
+        "net_ir": 3.5874,
+        "n_names": 20,
+        "hhi": 0.0502,
+        "max_w": 0.0542,
+        "selected": false
+      }
+    ]
   }
 }
