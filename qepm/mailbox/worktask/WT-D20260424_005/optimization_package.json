@@ -23,7 +23,6 @@
     "A036640": 0.0465,
     "A137310": 0.0841,
     "A054050": 0.0297,
-    "A047080": 0,
     "A140860": 0.0588,
     "A005850": 0.0559,
     "A166090": 0.0371,
@@ -45,7 +44,6 @@
     "A036640": 0.0415,
     "A137310": 0.0791,
     "A054050": 0.0247,
-    "A047080": -0.005,
     "A140860": 0.0538,
     "A005850": 0.0509,
     "A166090": 0.0321,
@@ -60,7 +58,7 @@
   "turnover_ann_pct": 600,
   "estimated_cost_bps_pa": 90,
   "cost_model_version": "v2.3_kr_retail_15bps",
-  "n_names": 20,
+  "n_names": 19,
   "hhi": 0.0598,
   "beta_port": 0.7485,
   "beta_target": 0.75,
@@ -75,7 +73,10 @@
   "gamma_beta_used": 1,
   "hedge_overlay_applied": "A_gamma1.0",
   "hedge_overlay_note": "Option A: static beta_target=0.75, gamma_beta=1.0 (Risk recommendation). PIT regime at signal_date (2023-12-28) = RISK_ON — Option A primary. Achieved beta=0.7485 vs target 0.75.",
-  "binding_constraints": ["beta_target_0.75_binding", "n_names_20_hard"],
+  "binding_constraints": [
+    "beta_target_0.75_binding",
+    "n_names_20_hard"
+  ],
   "infeasibility_report": null,
   "method_selected": "MinVar_BetaHard",
   "method_backup": "HRP_alpha_tilt",
@@ -192,7 +193,13 @@
     }
   },
   "explanation": {
-    "top_overweights": ["A093190", "A137310", "A030000", "A091970", "A028260"],
+    "top_overweights": [
+      "A093190",
+      "A137310",
+      "A030000",
+      "A091970",
+      "A028260"
+    ],
     "top_underweights": [],
     "main_tradeoffs": [
       "Pilot 7 alpha_std=0.1307 (+33.6% vs P6). 65% of top-40 at 3σ cap (0.5065) — cluster persists.",
@@ -347,7 +354,12 @@
     "challenge_review_complete": true,
     "objection": true,
     "round": 1,
-    "targets_reviewed": ["alpha_vector", "risk_sigma", "beta_vector", "confidence_vector"],
+    "targets_reviewed": [
+      "alpha_vector",
+      "risk_sigma",
+      "beta_vector",
+      "confidence_vector"
+    ],
     "challenges": [
       {
         "challenge_id": "CHALLENGE_ALPHA_CLUSTER_BIAS",
@@ -374,5 +386,6 @@
     "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_005/artifact_lineage.json",
     "seed": 20260424,
     "r_version": "4.5.2"
-  }
+  },
+  "n_names_note": "MinVar QP selected 20 names; 1 ticker (A047080) received zero weight from solver (QP numerical artifact, bounds[1]=0 allows zero). Effective active positions: 19. This is valid under hard_constraints weight_bounds=[0,0.15]."
 }

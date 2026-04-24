@@ -775,7 +775,7 @@ tg_agent_brief <- function(agent,
     list(ok = FALSE, bytes = msg_bytes, error = conditionMessage(e))
   })
 
-  # ── 5.5. 발송 성공 시 lock 파일 기록 (Single-Dispatch 강제) ───────────────────
+  # ── 5.5. 발송 성공 시 lock 파일 + full body 로깅 (깨짐 사후 추적) ────────────
   if (isTRUE(result$ok) && exists("lock_file")) {
     tryCatch({
       writeLines(c(format(Sys.time()),
@@ -783,6 +783,19 @@ tg_agent_brief <- function(agent,
                     sprintf("agent=%s", agent),
                     sprintf("title=%s", title)),
                   lock_file)
+    }, error = function(e) NULL)
+
+    # Full body 아카이브 (깨짐 발생 시 /tmp/qvest_tg_body_ARCHIVE/ 경유 조회 가능)
+    archive_dir <- "/tmp/qvest_tg_body_ARCHIVE"
+    tryCatch({
+      if (!dir.exists(archive_dir)) dir.create(archive_dir, recursive = TRUE)
+      scope_safe <- gsub("[^A-Za-z0-9_-]", "_",
+                          if (exists("scope_key")) scope_key else "unknown")
+      archive_file <- file.path(archive_dir,
+                                  sprintf("%s_%s.html",
+                                          format(Sys.time(), "%Y%m%d_%H%M%S"),
+                                          scope_safe))
+      writeLines(msg, archive_file)
     }, error = function(e) NULL)
   }
 
