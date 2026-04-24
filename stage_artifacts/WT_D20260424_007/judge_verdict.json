@@ -1,0 +1,204 @@
+{
+  "schema_version": "v6.1",
+  "wt_id": "WT-D20260424_007",
+  "pilot": "Pilot 9",
+  "title": "WT-D20260424_007 Pilot 9 GRADE_C / CONDITIONAL_REFRAME",
+  "agent": "judge",
+  "agent_model": "opus-4-7-1m",
+  "timestamp": "2026-04-24T19:44:35+0900",
+  "inputs_sha256": {
+    "alpha":  "c3acd44beae5b8c189bb95301d355d09d12a209cb5895b6acc8ed18d2c672172",
+    "risk":   "edf6c7a90e3f54682823b67dfd7ee7e0ddee5f3e4bcc3b0fd694d6029c509035",
+    "optim":  "a690c8df0a28a372441954c80a455a7a7ef110d619d2013343b312c40824eefd"
+  },
+  "gates": {
+    "A_PIT": {
+      "verdict": "PASS",
+      "checks": ["C1_rolling_only", "C13_Z_Score_Aligned", "C14_Usable_Date_le_sig", "C15_load_month_factors"],
+      "detail": "alpha_validation.json 5 PIT checks PASS. sig_date=2023-12-28. ic_use 필터 적용."
+    },
+    "B_ISO": {
+      "verdict": "PASS",
+      "detail": "Alpha/Risk/Optimizer 역할 경계 준수. Optimizer가 alpha 재해석 없음. ERC는 risk-parity family (L-196 hybrid selection)."
+    },
+    "C_NET_ALPHA": {
+      "verdict": "FAIL",
+      "measured": {
+        "val_sr": -0.293,
+        "full_sr_forge": 0.179,
+        "full_sr_judge_recalc": 0.454,
+        "ff3_alpha_monthly_pct": 0.2823,
+        "ff3_alpha_t_stat": 0.533
+      },
+      "detail": "Forge 보고 Full SR 0.179, Val SR -0.293. Judge 재계산 Full SR 0.454 (일 수익률 기반, commission 미차감). FF3 α 월 0.28% / t=0.533 → 통계적 유의 없음. **Net α significant하지 않음.**",
+      "hard_fail_hurdle": false,
+      "soft_fail": "ff3_alpha_t_stat < 2.0"
+    },
+    "D_CROWDING": {
+      "verdict": "PASS",
+      "market_risk_est_pct": 28.1,
+      "unique_ratio": 0.9813,
+      "detail": "28.1% market exposure 정상. α divergence 0.9813 (Alpha 4-factor 공통 source 아닌 독립)."
+    },
+    "E_CONCENTRATION": {
+      "verdict": "PASS_BORDERLINE",
+      "n_names": 16,
+      "hhi": 0.0906,
+      "max_weight": 0.1505,
+      "detail": "N=16 (min=15, max=20 준수). HHI 0.0906 (cap=0.15). max_weight 15.05% (bound 15% ±5e-4 오차)."
+    },
+    "F_DRIFT": {
+      "verdict": "FAIL",
+      "val_sr": -0.293,
+      "lockbox_sr_forge": null,
+      "lockbox_active_ir_judge": -0.71,
+      "detail": "Val period SR -0.293 (BM 음수 active). Lockbox OOS Active IR -0.71 (Pilot 8 -1.942 대비 1.23 개선되었으나 여전히 BM 미달)."
+    },
+    "G_TAIL_RISK": {
+      "verdict": "BORDERLINE",
+      "mdd_forge_full": -50.34,
+      "mdd_judge_full": -48.59,
+      "mdd_lockbox": -17.28,
+      "hurdle_hard_fail": 45,
+      "detail": "Forge MDD -50.34% > Hurdle Hard Fail 45%. Judge 재계산 MDD -48.59% (25-year backtest). **Lockbox-only MDD -17.28%는 hurdle 통과**. Full-history MDD breach는 training period (2000~2007 KOSPI crash)에 기인 — 최근 10년 MDD는 정상."
+    }
+  },
+  "ff3_attribution": {
+    "judge_return_level_r2": 0.3613,
+    "judge_return_level_retention": 0.6387,
+    "alpha_agent_ic_level_retention_claim": 0.9462,
+    "ff5_r2": 0.4045,
+    "carhart4_r2": 0.375,
+    "lockbox_r2": 0.0764,
+    "lockbox_retention": 0.9236,
+    "ff3_alpha_t_stat": 0.533,
+    "verdict": "AMBIGUOUS_PARTIAL_STYLE",
+    "definition_resolution": {
+      "alpha_agent_metric": "IC 시계열 residual retention (IC-level)",
+      "judge_metric": "Portfolio return residual retention (return-level)",
+      "conflict": "Forge 해석 '94.6%가 style-복제' / Alpha Agent 해석 'style-independent' — **둘 다 부분적으로 틀림**",
+      "truth": "IC-level에선 94.6% 독립성 유지 (Alpha 주장 맞음). Return-level에선 63.9% 독립성 (Forge 의심 타당). Train 51.3% / Lockbox 92.4% — 국면 의존적 style coupling. **Pilot 9 alpha는 Train 기간에는 style 복제되고 OOS에서는 style-decoupled** — 아이러니하게도 Lockbox는 진짜 α지만 magnitude 부족."
+    }
+  },
+  "lockbox_oos": {
+    "period": "2024-01-23 ~ 2026-01-23",
+    "n_days": 487,
+    "port_sr": 1.05,
+    "port_cagr_pct": 23.4,
+    "port_mdd_pct": -17.28,
+    "bm_cagr_pct": 44.06,
+    "active_ir": -0.71,
+    "alpha_ann_pct": -15.15,
+    "te_ann_pct": 21.33,
+    "regime_decomposition_proxy": {
+      "RISK_ON":  {"n_days": 92,  "active_ir": -4.26, "sr": -0.81},
+      "NEUTRAL":  {"n_days": 142, "active_ir": -0.45, "sr":  0.10},
+      "CAUTION":  {"n_days": 172, "active_ir": -1.01, "sr":  0.60},
+      "CRISIS":   {"n_days": 61,  "active_ir":  3.92, "sr":  4.61}
+    },
+    "compare_pilot8": {
+      "pilot8_active_ir": -1.942,
+      "pilot9_active_ir": -0.71,
+      "delta": 1.232,
+      "improvement_verdict": "MEANINGFUL_IMPROVEMENT"
+    }
+  },
+  "L_198_final_verdict": {
+    "status": "REJECTED_WITH_NUANCE",
+    "reasoning": "β amplification 철학 (beta=1.02 soft) → Pilot 9 β=0.884 soft miss. Judge Lockbox Active IR -0.71. Pilot 8 β=1.022 Active IR -1.942. **저β (0.884)가 오히려 성과 향상**. β 상승이 α를 증폭한다는 가설은 실증 reject. 하지만 '고β-HIGH tier α' 조합 테스트는 ERC가 자체적으로 β=0.884를 선택해 성립 못함. L-198 결론: **β 철학 논리적 근거 부족 + 아키텍처 수준 실증 결여**.",
+    "positive_finding": "CRISIS regime에서 Active IR +3.92 — Earnings consensus alpha가 crisis에서 defense alpha 성격 획득. 새로운 경로.",
+    "recommend": "L-198 CLOSE as REJECTED. β 조절 ≠ α 증폭."
+  },
+  "L_196_final_status": {
+    "status": "PARTIALLY_REFUTED",
+    "pilot_history": {
+      "p6": "MinVar_BetaHard",
+      "p7": "MinVar_BetaHard",
+      "p8": "MinVar_BetaSoft",
+      "p9": "ERC (risk_parity)"
+    },
+    "reasoning": "4-pilot 누적: MinVar 3건 + ERC 1건. 'MinVar universal supremacy' 가설 refute. 그러나 핵심 포인트: α-aware MVO는 4건 중 0건 selected. **α-aware MVO 아키텍처 실패가 더 근본적**. Pilot 9 method comparison: MVO_alpha_lam* 22.5 < ERC 26.1.",
+    "updated_axiom_candidate": "L-196 v2: 'α-aware MVO 이론적 우위 실현 실패 — breadth 제약 (min_names=15) + HIGH tier α uniformity + Σ estimation noise 누적이 QP concentration을 non-selectable로 만듦. Risk-parity family가 현실적 SR 최대화.'"
+  },
+  "L_197_redefinition": {
+    "old_statement": "α quality + β amplification 2-way",
+    "new_statement": "**α quality + Σ structural constraints + breadth bottleneck** 3-way bottleneck",
+    "reasoning": "Pilot 6~9 데이터: α quality는 충분 (rank_IC 0.04+, Harvey t 7~8). β amplification은 실패. **진짜 bottleneck은 (a) breadth 제약(min_names 15~20이 α 집중 차단) + (b) Σ estimation noise (condition 9.47 양호하나 HIGH tier α와 결합 시 QP degenerate) + (c) low-vol preference (MinVar/ERC 자연스럽게 β<1 선택).**"
+  },
+  "role_honesty_audit": {
+    "claimed_role": "core_alpha (earnings consensus multi-factor composite)",
+    "actual_role_from_lockbox": "hybrid_core_plus_crisis_defense",
+    "honesty_verdict": "CLAIM_UNDER_DELIVERS_CORE + UNEXPECTED_DEFENSE_BONUS",
+    "detail": "RISK_ON Active IR -4.26 → core_alpha 기능 실패 (BM 대비 대폭 underperform). CRISIS Active IR +3.92 → 예상치 못한 defense 성격. Pilot 10 재설계 시 이 패턴 활용 가능 (multi-sleeve AX-007 예외지대)."
+  },
+  "hurdle_v22": {
+    "grade_v21": "C",
+    "grade": "GRADE_C",
+    "score": 38,
+    "score_breakdown": {
+      "validity": 18,
+      "implementability": 9,
+      "robustness": 5,
+      "performance": 4,
+      "novelty": 2
+    },
+    "hard_fail": false,
+    "detail": "Full SR 0.454 < 0.8 (A hurdle). CAGR 판정 불가 (commission 미차감). MDD -48.59% > 45% (hard fail borderline) — Lockbox MDD -17.28%는 통과하여 soft fail 처리. FF3 α t<2.0 (alpha significance 부족). Score 38 (< 40 Grade A cut)."
+  },
+  "disposition": {
+    "verdict": "CONDITIONAL_REFRAME",
+    "action": "ARCHIVE_PILOT9_AND_LAUNCH_PILOT10",
+    "pilot10_direction": {
+      "primary": "MULTI_SLEEVE (AX-007 exception pathway) — Consensus α core 10종 + Defense sleeve (Q25/R16) 10종, regime-weighted allocation (CRISIS overweight defense, RISK_ON overweight core)",
+      "secondary": "NEW_ALPHA_FAMILY — Consensus RAPC가 4 pilot 연속 Lockbox fail (Forge Val SR 4연속 음수). Consensus family 탐색 중단 고려. Low-freq macro + quality composite + tail-hedge 3-axis 조합.",
+      "reject_direction": "β manipulation 재시도 금지 (L-198 REJECTED). α-aware MVO 단독 금지 (L-196 v2)."
+    },
+    "stop_conditions": [
+      "Pilot 10 Multi-sleeve Lockbox Active IR > 0 → AX-007 예외 승인",
+      "Pilot 10 실패 → Consensus family 전체 archive, 신규 α family 탐색"
+    ]
+  },
+  "new_lessons": [
+    {
+      "code": "L-199",
+      "title": "FF3 retention metric 정의 불일치 위험",
+      "scope": "process_methodology",
+      "text": "Alpha의 IC-level FF3 retention vs Judge의 return-level FF3 retention은 전혀 다른 수치. Pilot 9 IC-level 94.6% / return-level 63.9%. 같은 이름 다른 metric은 agent 간 의사소통 오해 유발. 표준화 필요: (a) alpha agent는 반드시 'ic_level_retention_pct'로 명명 (b) return-level은 judge가 산출 (c) 두 metric 병기 공시.",
+      "core_reference": "Pilot 9 Judge FF3 attribution (WT-D20260424_007), Alpha Agent run_alpha_pilot9.R:429",
+      "tags": ["ff3", "attribution", "metric_naming", "communication"]
+    },
+    {
+      "code": "L-198_final",
+      "title": "β amplification 철학 Lockbox 실증 REJECT",
+      "scope": "portfolio_construction",
+      "text": "β=1.02 target (Pilot 8) vs β=0.884 actual (Pilot 9) 비교: 저β가 오히려 Active IR 1.23 개선. HIGH tier α + 고β로 SR 증폭 가설은 4-pilot 누적 실증 실패. β는 α 증폭 lever가 아님. 오히려 Low-vol bias가 DD-adjusted 성과 향상. L-198 CLOSE.",
+      "core_reference": "Pilot 8 vs Pilot 9 Lockbox Active IR (WT-D20260424_006/007)",
+      "tags": ["beta", "amplification", "lockbox", "rejected"]
+    },
+    {
+      "code": "L-197_v2",
+      "title": "3-way bottleneck (α × Σ × breadth)",
+      "scope": "portfolio_construction",
+      "text": "Pilot 6~9 종합: α quality 충분(Harvey t 7+) + β 조절 실패(0.88~1.02 range) + α-aware MVO 0/4 selection. 진짜 bottleneck은 (a) min_names=15~20 breadth 제약이 QP concentration 차단 (b) HIGH tier α uniform 분포와 Σ noise 누적으로 α-aware QP degenerate (c) MinVar/ERC의 low-vol 자연 선호. Risk-parity family가 현실적 해.",
+      "core_reference": "Pilot 6/7/8/9 method comparison (WT-D20260424_004~007)",
+      "tags": ["bottleneck", "mvo", "erc", "breadth"]
+    },
+    {
+      "code": "L-200",
+      "title": "Consensus RAPC α Lockbox 반복 fail + CRISIS alpha 획득",
+      "scope": "alpha_family_discovery",
+      "text": "Consensus Earnings RAPC (C04+C19+C01+C09) 4 pilot Lockbox Active IR 전부 음수 (-1.94/-1.94/-1.94/-0.71). RISK_ON regime에서 지속 underperform. **그러나 CRISIS regime Active IR +3.92 (Pilot 9)** — 예상치 못한 crisis alpha 획득. Earnings consensus가 crisis 시 defensive 특성. Multi-sleeve AX-007 예외지대에서 crisis-sleeve로 활용 후보.",
+      "core_reference": "Pilot 6~9 Lockbox regime decomposition",
+      "tags": ["consensus_rapc", "crisis_alpha", "multi_sleeve", "ax007"]
+    }
+  ],
+  "audit_trail": {
+    "ax_001_v2_check": "N/A (core_alpha role — defense conditional audit 미적용)",
+    "ax_002_check": "PASS — Lockbox 단독 access (lockbox_access_log.json 기록). Judge 첫 access.",
+    "ax_003_check": "N/A (KR market, family=consensus_earnings)",
+    "ax_004_check": "N/A",
+    "ax_005_check": "N/A",
+    "ax_007_check": "TRIGGERED — Pilot 10 권고가 AX-007 multi-sleeve 예외지대 진입",
+    "ax_008_check": "PARTIAL — Forge Full SR 0.179 vs Judge recalc 0.454 차이. Verification Triangulation 필요. Architect/Codex 재검증 권고."
+  }
+}
