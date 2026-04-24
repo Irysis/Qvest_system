@@ -1143,6 +1143,72 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     ktri_latest$dir5 <- dir5
   }
 
+  # ── Chart 4 (신규 2026-04-24): Daily Regime Score 6M ──
+  # unified_regime_signal_daily.parquet 기반 최근 6개월 일간 Regime Score + smooth
+  daily_signal_path <- file.path(
+    ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
+    "unified_regime_signal_daily.parquet")
+  if (file.exists(daily_signal_path)) {
+    tryCatch({
+      daily_dt <- as.data.table(read_parquet(daily_signal_path))
+      daily_6m <- daily_dt[Date >= (Sys.Date() - 183)]
+      if (nrow(daily_6m) > 5) {
+        # Category 색상
+        cat_palette <- c(
+          "RISK_ON" = "#43A047",
+          "NEUTRAL" = "#9E9E9E",
+          "CAUTION" = "#FFB300",
+          "RISK_OFF" = "#E53935",
+          "CRISIS" = "#B71C1C"
+        )
+        daily_6m[, cat_color := cat_palette[Category]]
+        latest_d <- daily_6m[.N]
+
+        p4 <- ggplot(daily_6m, aes(x = Date)) +
+          geom_hline(yintercept = c(30, 50, 70),
+                     linetype = "dotted", color = "gray70") +
+          geom_line(aes(y = Regime_Score), color = "#78909C",
+                    linewidth = 0.5, alpha = 0.6) +
+          geom_line(aes(y = Regime_Score_smooth), color = "#1E88E5",
+                    linewidth = 1.1) +
+          geom_point(data = daily_6m[seq(1, .N, by = max(1, floor(.N/60)))],
+                     aes(y = Regime_Score_smooth, color = Category),
+                     size = 1.6, alpha = 0.85) +
+          scale_color_manual(values = cat_palette) +
+          annotate("label",
+                   x = latest_d$Date, y = latest_d$Regime_Score_smooth,
+                   label = sprintf("NOW\nScore %.1f\n%s\n%s",
+                                   latest_d$Regime_Score_smooth,
+                                   latest_d$Category,
+                                   latest_d$Active_Layers),
+                   hjust = 1.05, vjust = 0.5, size = 3.3, fontface = "bold",
+                   color = "#B71C1C",
+                   fill = scales::alpha("white", 0.9), linewidth = 0.3) +
+          labs(title = "Daily Regime Score (6M)",
+               subtitle = sprintf("Latest %.1f / %s | thin=raw, thick=EWMA smooth",
+                                   latest_d$Regime_Score_smooth, latest_d$Category),
+               x = "", y = "Regime Score 0~100", color = "Category") +
+          scale_y_continuous(limits = c(0, 100),
+                             breaks = c(0, 30, 50, 70, 100)) +
+          theme_minimal(base_size = 12) +
+          theme(plot.title = element_text(face = "bold", size = 14),
+                plot.subtitle = element_text(size = 10, color = "gray30"),
+                legend.position = "bottom",
+                panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
+                panel.grid.minor = element_blank())
+
+        ggsave(file.path(out_dir, "regime_score_daily_6m.png"),
+               p4, width = 10, height = 5.5, dpi = 140)
+      } else {
+        cat("[regime_briefing] daily 6m data insufficient (", nrow(daily_6m), "rows) — skip chart 4\n")
+      }
+    }, error = function(e) {
+      cat(sprintf("[regime_briefing] chart 4 daily 6M failed: %s\n", e$message))
+    })
+  } else {
+    cat("[regime_briefing] unified_regime_signal_daily.parquet not found — skip chart 4 (Step 5 선행 필요)\n")
+  }
+
   cat("[regime_briefing] Charts generated.\n")
 
   # ── Emoji text commentary ──
@@ -1224,6 +1290,11 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   tg_send(msg)
   Sys.sleep(3)
   tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Regime Score + Cash (24M)")
+  # 신규 2026-04-24: Daily 6M chart (unified_regime_signal_daily 기반)
+  daily_chart_path <- file.path(out_dir, "regime_score_daily_6m.png")
+  if (file.exists(daily_chart_path)) {
+    tg_send_photo(daily_chart_path, "Daily Regime Score (6M)")
+  }
   Sys.sleep(3)
   tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer: MSM / FRED / KTRI")
   Sys.sleep(3)
