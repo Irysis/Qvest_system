@@ -359,4 +359,106 @@ record_package_lineage(
 )
 ```
 → `artifact_lineage.json` append. P7 audit 통과 확보.
+
+### **CRITICAL: lineage 호출 순서** (L-194 fix, 2026-04-24)
+
+**반드시 `alpha_package.json write_json → record_package_lineage` 순서**. 역순 시 Judge Integration Audit WARN_SEQUENCE 발행.
+
+```r
+# Step 1: 먼저 alpha_package.json write
+write_json(alpha_package, ".../alpha_package.json", pretty = TRUE, auto_unbox = TRUE)
+
+# Step 2: 그 다음 lineage 기록 (file 실존 + hash 계산 가능)
+source("02_Infrastructure/worktask/lineage_utils.R")
+record_package_lineage(task_id = "WT-D...", ...)
+```
 </v61_lineage_obligation>
+
+<v61_parallel_rolling_regression>
+## R13 Rolling Regression / IC Calculation 병렬 처리 (v6.1, 2026-04-24)
+
+**Rolling window 계산 (β diagnosis / residualization / IC per period) 필수 R 내부 병렬화**.
+
+### 배경 (Pilot 5 실측 병목)
+- Alpha Opus 4.7 총 23분 소요 중 **rolling regression이 6~10분**
+- Ticker 348개 × rolling 252d OLS × 3000+ trading days (sequential)
+- Rolling residualization (24M monthly cross-section × 143 periods × CAPM/FF3)
+- **core 16개 중 1개만 사용** — 자원 낭비
+
+### 표준 패턴 1: Per-ticker Rolling β
+
+```r
+library(future)
+library(future.apply)
+n_workers <- min(8L, parallel::detectCores() - 1L)
+plan(multisession, workers = n_workers)
+
+# Main에서 returns matrix + benchmark 1회 로드 (worker 자동 공유 via globals)
+returns_wide <- load_returns(...)
+bm <- load_bm(...)
+
+# Per-ticker rolling 252d β 병렬 계산
+beta_list <- future_lapply(tickers, function(tk) {
+  r_stock <- returns_wide[, tk]
+  roll_beta(r_stock, bm, window = 252L)
+})
+plan(sequential)
+```
+
+### 표준 패턴 2: Per-period Cross-sectional Residualization
+
+```r
+plan(multisession, workers = n_workers)
+periods <- unique(monthly_returns$yearmonth)
+
+# Per-month CAPM/FF3 residualization 병렬
+residual_list <- future_lapply(periods, function(ym) {
+  subset_ym <- monthly_returns[yearmonth == ym]
+  fit <- lm(ret ~ beta + size + bm, data = subset_ym)
+  residuals(fit)
+})
+plan(sequential)
+```
+
+### 표준 패턴 3: Bootstrap CI
+
+```r
+plan(multisession, workers = n_workers)
+B <- 1000L
+boot_ic <- future_replicate(B, {
+  idx <- sample(nrow(data), replace = TRUE)
+  cor(data$alpha[idx], data$ret[idx], method = "spearman")
+})
+plan(sequential)
+ci95 <- quantile(boot_ic, c(0.025, 0.975))
+```
+
+### 이유
+- Rolling regression / IC / Bootstrap은 **독립 수치 계산** — 병렬화 완전 가능
+- Factor DB / returns matrix는 main에서 1회 로드 → worker 자동 globals 공유
+- **예상 효과**: rolling regression 6~10분 → 2~4분 (core 8개 활용 시 3~5× 속도)
+- Bootstrap 1~2분 → 20~30초
+
+### 제약
+- **workers ≤ `parallel::detectCores() - 1L`** (system 예비 1 core)
+- RAM: returns matrix T×N worker 복제 (일반적으로 <200MB)
+- **Claude sub-agent nested spawn 금지** (R 내부 병렬만)
+- `tryCatch` 개별 ticker/period 실패 격리
+- `plan(sequential)` 종료 복구 필수
+
+### 적용 대상
+- β diagnosis (rolling window per ticker)
+- Residualization (rolling OLS per period)
+- IC / ICIR (cross-section per period)
+- Bootstrap (SE / CI / DSR 계산)
+- Monte Carlo simulation
+
+### 제외 (sequential 유지)
+- Factor DB / RAWDATA 로드 자체 (I/O bound)
+- alpha_package.json write (순서 중요)
+- Telegram tg_agent_brief (I/O)
+- Claude API 호출 (agent level)
+
+### 기록
+method_shopping_log에 `parallel_exec = TRUE` + `n_workers` + `rolling_seconds` 기록.
+</v61_parallel_rolling_regression>

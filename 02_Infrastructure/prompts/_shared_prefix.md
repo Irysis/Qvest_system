@@ -155,19 +155,39 @@ tg_send_rich(msg)  # HTML parse_mode, 이모지 auto-validate
 위반 탐지: method_shopping_log가 Q-Lead 예시에 포함된 methods만 시도 + 구조적 대안(RL / Stochastic / Ensemble / 최신 논문 기반) 0건 = 편향 증거.
 </spawn_prompt_guidelines>
 
-<parallel_method_comparison version="v1.0" updated="2026-04-24">
-**Method 비교는 R 내부 병렬 처리 (R13, v6.1 공통 원칙)**
+<parallel_method_comparison version="v1.1" updated="2026-04-24">
+**R 내부 병렬 처리 공통 원칙 (R13, v6.1 — 3-Agent 전원 적용)**
 
-Risk / Optimizer Agent가 `method_shopping_log` 상에서 3건+ method 비교 시 `future::plan(multisession)` 필수.
+- **Alpha Agent**: rolling β / residualization / IC per period / Bootstrap (sequential 6~10분 → 병렬 2~4분)
+- **Risk Agent**: covariance estimator 3건+ 비교 (LW/Gerber/DCC/Block 등)
+- **Optimizer Agent**: method_shopping_log 3건+ (MVO/HRP/ERC/CVaR/Kelly 등)
 
-- Workers: `min(5L, parallel::detectCores() - 1L)`
-- Main에서 α/Σ/returns matrix 1회 계산 → worker 자동 공유 (globals)
-- `future_lapply(methods, ...)` 로 method 병렬 수행
-- `tryCatch` 로 개별 method 실패 격리
-- 종료 시 `plan(sequential)` 복구
-- Claude Agent tool nested spawn 금지 (오버헤드 ↑, 데이터 중복)
+### 공통 패턴
 
-상세: `risk_research_init.md` / `optimizer_research_init.md` 내 `<v61_parallel_*_comparison>` section.
+```r
+library(future); library(future.apply)
+n_workers <- min(8L, parallel::detectCores() - 1L)
+plan(multisession, workers = n_workers)
+
+# Main에서 α/Σ/returns/windows 1회 로드 → worker 자동 globals 공유
+tasks <- list(...)
+results <- future_lapply(tasks, function(t) {
+  tryCatch(do_task(t), error = function(e) list(ok = FALSE, err = conditionMessage(e)))
+})
+plan(sequential)  # 반드시 복구
+```
+
+### 제약 (공통)
+- Workers ≤ `parallel::detectCores() - 1L` (system 예비 1 core)
+- Data는 main 1회 로드 후 globals 공유 (중복 로드 금지)
+- `tryCatch` 개별 실패 격리
+- Claude Agent tool nested spawn 금지
+- `plan(sequential)` 종료 복구
+
+### 상세
+- `alpha_research_init.md` `<v61_parallel_rolling_regression>` (Pattern 1~3)
+- `risk_research_init.md` `<v61_parallel_covariance_comparison>`
+- `optimizer_research_init.md` `<v61_parallel_method_comparison>`
 </parallel_method_comparison>
 
 <parallel_tool_calls>

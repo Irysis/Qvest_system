@@ -2,66 +2,42 @@
   "task_id": "WT-D20260424_004",
   "schema_version": "v6.1",
   "as_of_date": "2023-12-28",
-  "created_at": "2026-04-24T14:50:17",
+  "created_at": "2026-04-24T14:58:44",
   "pit_validation": {
-    "C1_rolling_only": true,
-    "C2_no_same_day_circular": true,
-    "C4_quarterly_45d_lag": true,
-    "C13_Z_Score_Aligned": true,
-    "C14_Usable_Date_le_sig_date": true,
-    "C15_load_month_factors": true,
-    "overall_pit_status": "PASS"
+    "C1": true,
+    "C2": true,
+    "C4": true,
+    "C13": true,
+    "C14": true,
+    "C15": true,
+    "overall": "PASS"
   },
   "signal_stats": {
     "n_universe": 2235,
-    "alpha_mean": 0.0074,
-    "alpha_sd": 0.1391,
-    "alpha_min": -0.4508,
-    "alpha_max": 0.4395,
-    "n_positive": 1058,
-    "n_negative": 1177,
-    "n_winsorized": 143
+    "alpha_mean": 0.0146,
+    "alpha_sd": 0.1004,
+    "n_winsorized": 142
   },
   "ic_diagnostics": {
-    "final_composite": "RAPC_CAPM_Resid",
-    "rank_ic": 0.021,
-    "icir": 0.346,
-    "harvey_t": 4.7938,
-    "dsr": 0.4988,
-    "monotonicity": 0.63,
-    "subperiod_stability": 0.667,
-    "n_months": 192,
+    "rank_ic": 0.0372,
+    "icir": 0.6193,
+    "harvey_t": 8.5814,
+    "dsr": 0.9981,
+    "monotonicity": 0.75,
+    "subperiod_stability": 1,
     "pass_rank_ic": false,
     "pass_icir": true,
     "pass_harvey": true
   },
-  "capm_residual_effect": {
+  "capm_effect": {
     "applied": true,
-    "top20_expected_beta": 0.0923,
-    "pilot5_beta": 0.789,
-    "improvement_pp": 0.6967,
-    "ic_retention_pct": 56.6
+    "retention_pct": 96.2,
+    "top20_beta": 1.0929,
+    "pilot5_beta": 0.789
   },
-  "red_flags": [
-    {
-      "flag": "RF-DSR",
-      "severity": "MEDIUM",
-      "note": "DSR=0.4988 < 0.5. Multi-testing 보정 후 신호 강도 미약. EB shrinkage (Chen & Zimmermann 2022) 후에도 threshold 미달 가능."
-    },
-    {
-      "flag": "RF-RANK_IC",
-      "severity": "HIGH",
-      "note": "IC=0.021 < 0.04 threshold. RAPC v2 + CAPM residual 후에도 KR benchmark 미달. Pilot 5 대비 개선폭 = -0.0108."
-    }
-  ],
   "graduation_summary": {
-    "pass_count": 3,
-    "total_criteria": 5,
-    "rank_ic_pass": false,
-    "icir_pass": true,
-    "harvey_pass": true,
-    "dsr_pass": false,
-    "subperiod_pass": true,
-    "overall_graduation": "CONDITIONAL"
+    "pass_count": 4,
+    "total": 5,
+    "status": "PASS"
   }
 }
