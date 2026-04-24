@@ -52,11 +52,19 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
 </s0_debate_consensus>
 
-<telegram_protocol version="v2.1" updated="2026-04-24">
+<telegram_protocol version="v2.2" updated="2026-04-24">
 - 이모지 필수 + 에이전트 태그 ([Q-Lead]/[Alpha]/[Risk]/[Optimizer]/[Forge]/[Judge]/[Governor]/[Execution]/[Monitoring])
 - 성과 포맷: Grade/Score/SR/CAGR/MDD + 강점/약점 각 1줄
 - 백테스트 결과 = equity_curve.png + annual_returns.png 필수 (tg_send_photo())
 - 한글 기본. 줄바꿈·섹션·들여쓰기.
+
+**v2.2 — Single-Dispatch 원칙 (발송 빈도 영구 제약)**
+- **에이전트 1 spawn = 텔레그램 1 최종 발송** (`tg_send_rich` 1회). 중간 Step(1/2/3)별 발송 금지.
+- 발송 타이밍: 모든 산출물 write 완료 + `status.json` phase 전환 직전. 단일 집계 메시지로 통합.
+- **차트는 별건 아님**: text 1회 + 관련 사진 여러 장 허용 (단, 사진은 `tg_send_photo()`로 집계 직후 이어서 발송. text 자체는 1회 한정).
+- 재시도 로직: HTTP 에러 시 `tg_send_rich` retry 최대 1회 (exp backoff). 중복 발송 방지.
+- 예외: Judge 같이 text + photo ≥ 2가 필수인 경우에만 text 1회 + photo 1-N회. text 2회 이상은 절대 금지.
+- 위반 패턴: "Step 1 완료 알림 → Step 2 완료 알림 → 최종 알림" (Pilot 4 Optimizer + Pilot 5 Alpha 2회 반복). 사용자 명시 반대.
 
 **v2.1 필수 — 표 포맷 + 이모지 검증**
 - **3+ 지표 비교**는 `tg_format_table(df)` + `tg_send_rich(msg)` 사용 (고정폭 `<pre>` 렌더링)
