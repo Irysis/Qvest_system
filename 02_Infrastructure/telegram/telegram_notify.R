@@ -1143,17 +1143,27 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     ktri_latest$dir5 <- dir5
   }
 
-  # ── Chart 4 (신규 2026-04-24): Daily Regime Score 6M ──
+  # ── Chart 4 (v2.2 enhanced 2026-04-24): Daily Regime Score 6M (화려 버전) ──
   # unified_regime_signal_daily.parquet 기반 최근 6개월 일간 Regime Score + smooth
+  # Category 배경 색띠 + threshold band + gradient fill + Crisis_Prob subline + latest annotation
   daily_signal_path <- file.path(
     ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
     "unified_regime_signal_daily.parquet")
+  daily_dt_cached <- NULL  # 재사용 (message 본문 + chart 5에서 참조)
+  latest_daily <- NULL
+  prev5_daily <- NULL
   if (file.exists(daily_signal_path)) {
     tryCatch({
-      daily_dt <- as.data.table(read_parquet(daily_signal_path))
-      daily_6m <- daily_dt[Date >= (Sys.Date() - 183)]
+      daily_dt_cached <- as.data.table(read_parquet(daily_signal_path))
+      setorder(daily_dt_cached, Date)
+      latest_daily <- daily_dt_cached[.N]
+      # 5d 전 (weekday 기준이 아닌 index 기반; daily 파일은 calendar day 포함)
+      idx5 <- max(1, nrow(daily_dt_cached) - 5)
+      prev5_daily <- daily_dt_cached[idx5]
+
+      daily_6m <- daily_dt_cached[Date >= (Sys.Date() - 183)]
       if (nrow(daily_6m) > 5) {
-        # Category 색상
+        # Category 색상 (5종)
         cat_palette <- c(
           "RISK_ON" = "#43A047",
           "NEUTRAL" = "#9E9E9E",
@@ -1164,49 +1174,235 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
         daily_6m[, cat_color := cat_palette[Category]]
         latest_d <- daily_6m[.N]
 
+        # 5d delta (Score / Crisis_Prob)
+        d5_idx <- max(1, nrow(daily_6m) - 5)
+        d5_score <- latest_d$Regime_Score_smooth - daily_6m[d5_idx]$Regime_Score_smooth
+        d5_crisis <- latest_d$MSM_Crisis_Prob - daily_6m[d5_idx]$MSM_Crisis_Prob
+        d5_label <- sprintf("5d \xce\x94 Score %+.1f | Crisis %+.1f%%", d5_score, d5_crisis * 100)
+
+        # Category 배경 색띠 segmentation: 연속된 같은 Category 묶어서 xmin~xmax
+        daily_6m[, cat_grp := rleid(Category)]
+        cat_bands <- daily_6m[, .(xmin = min(Date), xmax = max(Date),
+                                   Category = Category[1]), by = cat_grp]
+
+        # Crisis_Prob 축 정규화: 0~1 → 0~100 scale (secondary axis)
+        daily_6m[, Crisis_Scaled := MSM_Crisis_Prob * 100]
+
         p4 <- ggplot(daily_6m, aes(x = Date)) +
+          # (1) Category 배경 색띠 (alpha 0.12)
+          geom_rect(data = cat_bands,
+                    aes(xmin = xmin, xmax = xmax,
+                        ymin = -Inf, ymax = Inf, fill = Category),
+                    alpha = 0.12, inherit.aes = FALSE) +
+          scale_fill_manual(values = cat_palette, name = "Category",
+                            guide = guide_legend(override.aes = list(alpha = 0.5))) +
+          # (2) Score threshold band (수평 구분선)
           geom_hline(yintercept = c(30, 50, 70),
-                     linetype = "dotted", color = "gray70") +
-          geom_line(aes(y = Regime_Score), color = "#78909C",
-                    linewidth = 0.5, alpha = 0.6) +
-          geom_line(aes(y = Regime_Score_smooth), color = "#1E88E5",
-                    linewidth = 1.1) +
-          geom_point(data = daily_6m[seq(1, .N, by = max(1, floor(.N/60)))],
-                     aes(y = Regime_Score_smooth, color = Category),
-                     size = 1.6, alpha = 0.85) +
-          scale_color_manual(values = cat_palette) +
+                     linetype = "dashed", color = "gray60", linewidth = 0.4) +
+          annotate("text", x = min(daily_6m$Date), y = 15, label = "RISK_ON",
+                   color = "#2E7D32", size = 3, hjust = 0, alpha = 0.6, fontface = "bold") +
+          annotate("text", x = min(daily_6m$Date), y = 40, label = "NEUTRAL",
+                   color = "#616161", size = 3, hjust = 0, alpha = 0.6, fontface = "bold") +
+          annotate("text", x = min(daily_6m$Date), y = 60, label = "CAUTION",
+                   color = "#EF6C00", size = 3, hjust = 0, alpha = 0.6, fontface = "bold") +
+          annotate("text", x = min(daily_6m$Date), y = 85, label = "RISK_OFF",
+                   color = "#C62828", size = 3, hjust = 0, alpha = 0.6, fontface = "bold") +
+          # (3) Crisis_Prob subline (얇은 빨강, secondary indicator)
+          geom_line(aes(y = Crisis_Scaled), color = "#D32F2F",
+                    linewidth = 0.4, alpha = 0.55, linetype = "dotdash") +
+          # (4) Raw Regime_Score 얇은 회색 line
+          geom_line(aes(y = Regime_Score), color = "#455A64",
+                    linewidth = 0.4, alpha = 0.45) +
+          # (5) EWMA smooth 굵은 colored line
+          geom_line(aes(y = Regime_Score_smooth), color = "#0D47A1",
+                    linewidth = 1.3) +
+          # (6) Area fill under smooth line (subtle depth)
+          geom_ribbon(aes(ymin = pmin(Regime_Score_smooth, 30),
+                          ymax = Regime_Score_smooth),
+                      fill = "#0D47A1", alpha = 0.08) +
+          # (7) Latest point 큰 도트
+          geom_point(data = latest_d,
+                     aes(y = Regime_Score_smooth),
+                     color = "#0D47A1", fill = "#FFEB3B",
+                     shape = 21, size = 5, stroke = 1.3) +
+          # (8) Latest annotation
           annotate("label",
                    x = latest_d$Date, y = latest_d$Regime_Score_smooth,
-                   label = sprintf("NOW\nScore %.1f\n%s\n%s",
+                   label = sprintf("NOW %.1f\n%s\n%s",
                                    latest_d$Regime_Score_smooth,
                                    latest_d$Category,
                                    latest_d$Active_Layers),
-                   hjust = 1.05, vjust = 0.5, size = 3.3, fontface = "bold",
-                   color = "#B71C1C",
-                   fill = scales::alpha("white", 0.9), linewidth = 0.3) +
-          labs(title = "Daily Regime Score (6M)",
-               subtitle = sprintf("Latest %.1f / %s | thin=raw, thick=EWMA smooth",
-                                   latest_d$Regime_Score_smooth, latest_d$Category),
-               x = "", y = "Regime Score 0~100", color = "Category") +
-          scale_y_continuous(limits = c(0, 100),
-                             breaks = c(0, 30, 50, 70, 100)) +
+                   hjust = 1.1, vjust = 0.5, size = 3.2, fontface = "bold",
+                   color = "#0D47A1",
+                   fill = scales::alpha("white", 0.92), linewidth = 0.3,
+                   label.padding = unit(0.25, "lines")) +
+          # (9) 5d delta annotation (top-right)
+          annotate("label",
+                   x = max(daily_6m$Date),
+                   y = 95,
+                   label = d5_label,
+                   hjust = 1, vjust = 1, size = 3.1, fontface = "bold",
+                   color = ifelse(d5_score >= 0, "#C62828", "#2E7D32"),
+                   fill = scales::alpha("white", 0.9), linewidth = 0.2) +
+          scale_y_continuous(
+            name = "Regime Score 0~100",
+            limits = c(0, 100),
+            breaks = c(0, 30, 50, 70, 100),
+            sec.axis = sec_axis(~ . / 100, name = "Crisis Prob",
+                                 breaks = c(0, 0.3, 0.5, 0.7, 1.0),
+                                 labels = percent)) +
+          labs(title = "Daily Regime Score \xe2\x80\x94 Active Layers (6M)",
+               subtitle = sprintf(
+                 "Latest: Score %.1f / %s / %s | Crisis_Prob %.1f%% | thin=raw, thick=EWMA smooth, dotdash=Crisis_Prob",
+                 latest_d$Regime_Score_smooth,
+                 latest_d$Category, latest_d$Active_Layers,
+                 latest_d$MSM_Crisis_Prob * 100),
+               x = "") +
           theme_minimal(base_size = 12) +
           theme(plot.title = element_text(face = "bold", size = 14),
-                plot.subtitle = element_text(size = 10, color = "gray30"),
+                plot.subtitle = element_text(size = 10, color = "gray25"),
                 legend.position = "bottom",
+                legend.title = element_text(face = "bold", size = 10),
                 panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
-                panel.grid.minor = element_blank())
+                panel.grid.minor = element_blank(),
+                axis.title.y.right = element_text(color = "#D32F2F", face = "bold"),
+                axis.text.y.right = element_text(color = "#D32F2F"))
 
         ggsave(file.path(out_dir, "regime_score_daily_6m.png"),
-               p4, width = 10, height = 5.5, dpi = 140)
+               p4, width = 11, height = 5.8, dpi = 150)
       } else {
-        cat("[regime_briefing] daily 6m data insufficient (", nrow(daily_6m), "rows) — skip chart 4\n")
+        cat("[regime_briefing] daily 6m data insufficient (", nrow(daily_6m), "rows) \xe2\x80\x94 skip chart 4\n")
       }
     }, error = function(e) {
       cat(sprintf("[regime_briefing] chart 4 daily 6M failed: %s\n", e$message))
     })
   } else {
-    cat("[regime_briefing] unified_regime_signal_daily.parquet not found — skip chart 4 (Step 5 선행 필요)\n")
+    cat("[regime_briefing] unified_regime_signal_daily.parquet not found \xe2\x80\x94 skip chart 4 (Step 5 \xec\x84\xa0\xed\x96\x89 \xed\x95\x84\xec\x9a\x94)\n")
+  }
+
+  # ── Chart 5 (v2.2 신규 2026-04-24): Daily MRS Macro 6M ──
+  # FRED 주요 macro 지표 (VIX / HY_Spread / US_10Y_Yield) 일간 차트
+  fred_wide_path <- file.path(
+    ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
+    "fred_macro_wide.parquet")
+  fred_latest_row <- NULL
+  fred_prev5_row <- NULL
+  if (file.exists(fred_wide_path)) {
+    tryCatch({
+      fred_dt <- as.data.table(read_parquet(fred_wide_path))
+      setorder(fred_dt, Date)
+      # 6M window
+      fred_6m <- fred_dt[Date >= (Sys.Date() - 183)]
+      # Latest non-NA row snapshot (필드별 최신값 각각)
+      get_latest <- function(col) {
+        v <- fred_dt[[col]]
+        d <- fred_dt$Date
+        ok <- !is.na(v)
+        if (any(ok)) list(val = tail(v[ok], 1), dt = tail(d[ok], 1)) else list(val = NA_real_, dt = NA)
+      }
+      # Simple prev5: current idx - 5 (calendar)
+      get_prev5 <- function(col) {
+        v <- fred_dt[[col]]
+        d <- fred_dt$Date
+        ok <- !is.na(v)
+        if (sum(ok) < 6) return(NA_real_)
+        # latest 날짜 기준 5일 전 이하의 가장 최신 유효 row
+        latest_d <- tail(d[ok], 1)
+        target <- latest_d - 5
+        idxs <- which(ok & d <= target)
+        if (length(idxs) == 0) return(NA_real_)
+        v[tail(idxs, 1)]
+      }
+      fred_latest_row <- list(
+        VIX = get_latest("VIX"),
+        HY_Spread = get_latest("HY_Spread"),
+        US_10Y_Yield = get_latest("US_10Y_Yield"),
+        KRW_USD = get_latest("KRW_USD")
+      )
+      fred_prev5_row <- list(
+        VIX = get_prev5("VIX"),
+        HY_Spread = get_prev5("HY_Spread"),
+        US_10Y_Yield = get_prev5("US_10Y_Yield"),
+        KRW_USD = get_prev5("KRW_USD")
+      )
+
+      if (nrow(fred_6m) > 20) {
+        # Melt for subpanels
+        mrs_long <- melt(fred_6m,
+                         id.vars = "Date",
+                         measure.vars = c("VIX", "HY_Spread", "US_10Y_Yield"),
+                         variable.name = "Series", value.name = "Value",
+                         na.rm = FALSE)
+        mrs_long <- mrs_long[!is.na(Value)]
+        # Facet pretty labels
+        mrs_long[, Panel := factor(Series,
+          levels = c("VIX", "HY_Spread", "US_10Y_Yield"),
+          labels = c("VIX (Volatility)",
+                     "HY Spread % (Credit)",
+                     "US 10Y Yield % (Rates)"))]
+
+        # Threshold line (VIX 20 / 30), spread zero, yield none — per-panel via data.frame
+        thresh_df <- data.frame(
+          Panel = factor(c("VIX (Volatility)", "VIX (Volatility)",
+                           "HY Spread % (Credit)", "HY Spread % (Credit)"),
+                         levels = c("VIX (Volatility)",
+                                    "HY Spread % (Credit)",
+                                    "US 10Y Yield % (Rates)")),
+          yint = c(20, 30, 3.0, 5.0),
+          lbl = c("20", "30", "3%", "5%"),
+          col = c("#66BB6A", "#E53935", "#66BB6A", "#E53935"))
+
+        # Latest point per panel
+        latest_pts <- mrs_long[, .SD[.N], by = Panel]
+        latest_pts[, lbl := sprintf("%.2f", Value)]
+
+        p5 <- ggplot(mrs_long, aes(x = Date, y = Value)) +
+          geom_hline(data = thresh_df,
+                     aes(yintercept = yint, color = col),
+                     linetype = "dashed", linewidth = 0.45, alpha = 0.7,
+                     show.legend = FALSE) +
+          scale_color_identity() +
+          geom_line(aes(group = Panel), color = "#1565C0",
+                    linewidth = 0.85) +
+          geom_point(data = latest_pts, aes(x = Date, y = Value),
+                     color = "#0D47A1", fill = "#FFEB3B",
+                     shape = 21, size = 4, stroke = 1.1) +
+          geom_label(data = latest_pts,
+                     aes(x = Date, y = Value, label = lbl),
+                     hjust = 1.15, vjust = 0.5, size = 3.1, fontface = "bold",
+                     color = "#0D47A1",
+                     fill = scales::alpha("white", 0.92), linewidth = 0.2,
+                     label.padding = unit(0.2, "lines")) +
+          facet_wrap(~ Panel, ncol = 1, scales = "free_y",
+                     strip.position = "left") +
+          labs(title = "Daily Macro Regime \xe2\x80\x94 FRED Layer (6M)",
+               subtitle = sprintf(
+                 "VIX %.1f | HY %.2f%% | US 10Y %.2f%% | KRW/USD %.0f",
+                 fred_latest_row$VIX$val, fred_latest_row$HY_Spread$val,
+                 fred_latest_row$US_10Y_Yield$val,
+                 ifelse(is.na(fred_latest_row$KRW_USD$val), 0,
+                        fred_latest_row$KRW_USD$val)),
+               x = "", y = "") +
+          theme_minimal(base_size = 12) +
+          theme(plot.title = element_text(face = "bold", size = 14),
+                plot.subtitle = element_text(size = 10, color = "gray25"),
+                strip.background = element_rect(fill = "#ECEFF1", color = NA),
+                strip.text = element_text(face = "bold", size = 10),
+                strip.placement = "outside",
+                legend.position = "none",
+                panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
+                panel.grid.minor = element_blank())
+
+        ggsave(file.path(out_dir, "regime_mrs_daily_6m.png"),
+               p5, width = 11, height = 7.2, dpi = 150)
+      } else {
+        cat("[regime_briefing] fred_macro_wide 6m insufficient \xe2\x80\x94 skip chart 5\n")
+      }
+    }, error = function(e) {
+      cat(sprintf("[regime_briefing] chart 5 MRS daily failed: %s\n", e$message))
+    })
+  } else {
+    cat("[regime_briefing] fred_macro_wide.parquet not found \xe2\x80\x94 skip chart 5\n")
   }
 
   cat("[regime_briefing] Charts generated.\n")
