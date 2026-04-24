@@ -1,0 +1,50 @@
+{
+  "from": "forge",
+  "to": "judge",
+  "task_id": "WT-D20260424_009",
+  "pilot": "Pilot_11",
+  "timestamp": "2026-04-24T21:00:00+0900",
+  "subject": "Pilot 11 FORGE_DONE — Lockbox breadth effect + L-196 재해석 공식화 요청",
+  "phase": "FORGE_DONE",
+  "forge_result": {
+    "full_sr": 1.064,
+    "train_sr": 0.962,
+    "val_sr": 1.354,
+    "full_cagr": 26.87,
+    "full_mdd": 57.47,
+    "turnover": 577.7,
+    "n_names": 20,
+    "hhi_avg": 0.0611,
+    "method": "HRP_0.6_Score_0.4_frozen_hybrid",
+    "overlay": false,
+    "verdict": "BREADTH_DECISIVE"
+  },
+  "breadth_ablation": {
+    "pilot9_full_sr": 0.179,
+    "pilot9_val_sr": -0.293,
+    "pilot11_full_sr": 1.064,
+    "pilot11_val_sr": 1.354,
+    "sr_delta": 0.885,
+    "val_sr_delta": 1.647,
+    "hhi_reduction_pct": -32.6,
+    "fundamental_law_pred_pct": 11.8,
+    "actual_vs_theoretical_ratio": 41.887
+  },
+  "judge_tasks": [
+    "1. Lockbox OOS 2024-01-23 ~ 2026-01-23 SR / Active IR / regime decomposition",
+    "2. Breadth effect 실증: n=20 HHI 0.0611이 Lockbox에서도 유지되는지",
+    "3. MDD 57.5% (전구간) vs Lockbox MDD 비교 (Pilot 9 Lockbox MDD -17.28%)",
+    "4. L-196 재해석 공식화: alpha-aware MVO 실패 + breadth bottleneck + HRP 우위",
+    "5. L-197_v2 3-way bottleneck 재확인: breadth decisive 시 bottleneck 중 breadth 제거 확인",
+    "6. Turnover 577.7% — Hard Fail 기준 600% 이하 (borderline) 확인"
+  ],
+  "lockbox_guard": "AX-002 — Forge Lockbox 접근 금지. Judge가 첫 Lockbox 접근.",
+  "artifacts": {
+    "run_all_r": "04_Research/strategies/WT_D20260424_009_pilot11/run_all.R",
+    "performance_summary": "04_Research/strategies/WT_D20260424_009_pilot11/backtest_result/performance_summary.json",
+    "breadth_ablation": "stage_artifacts/WT_D20260424_009/breadth_ablation.json",
+    "integration_audit": "stage_artifacts/WT_D20260424_009/integration_audit.json",
+    "daily_nav": "04_Research/strategies/WT_D20260424_009_pilot11/backtest_result/daily_nav.csv",
+    "status": "stage_artifacts/WT_D20260424_009/status.json"
+  }
+}

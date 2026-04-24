@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260424_009",
+  "agent": "forge",
+  "audit_stage": "R12_integration_audit",
+  "as_of_date": "2026-04-24",
+  "inheritance": {
+    "alpha_inherited_from": "WT-D20260424_007_Pilot9",
+    "risk_inherited_from": "WT-D20260424_007_Pilot9",
+    "changed_component": "optimizer_only"
+  },
+  "package_hashes": {
+    "alpha_sha256": "c3acd44beae5b8c189bb95301d355d09d12a209cb5895b6acc8ed18d2c672172",
+    "risk_sha256": "edf6c7a90e3f54682823b67dfd7ee7e0ddee5f3e4bcc3b0fd694d6029c509035",
+    "optim_sha256": "26bfc86efcfa3a1855c66cffebffb5d4d6f6076a21f545a6748f5b70175372ab"
+  },
+  "alpha_metrics": {
+    "rank_ic": 0.0449,
+    "icir": 0.5562,
+    "harvey_t": 8.379,
+    "dsr": 8.8287,
+    "ff3_retention": 0.9462,
+    "confidence_tier": "HIGH"
+  },
+  "risk_metrics": {
+    "method_selected": "ledoit_wolf_oracle",
+    "condition_number": 9.47,
+    "beta_target": 1.02,
+    "mkt_risk_est_pct": 28.1,
+    "unique_ratio": 0.9813
+  },
+  "optimizer_metrics": {
+    "method_selected": "HRP_0.6_Score_0.4_frozen_hybrid",
+    "method_family": "hrp_score_blend",
+    "net_ir": 80.0464,
+    "n_names": 20,
+    "hhi": 0.0611,
+    "beta_port": 1.055,
+    "beta_target": 1.02,
+    "beta_gap": 0.035,
+    "beta_soft_miss": false,
+    "max_w": 0.067
+  },
+  "v23_compliance": {
+    "min_names_ok": true,
+    "max_names_ok": true,
+    "hhi_ok": true,
+    "sum_weights_ok": true,
+    "long_only_ok": true,
+    "bounds_ok": true,
+    "beta_hard_ok": true,
+    "overall_pass": true
+  },
+  "breadth_change": {
+    "pilot9_n_names": 16,
+    "pilot11_n_names": 20,
+    "hhi_reduction_pct": -32.6,
+    "n_delta": 4
+  },
+  "ablation_design": {
+    "single_variable_changed": "weighting_method_and_n_names",
+    "overlay": "NONE",
+    "alpha_same": true,
+    "risk_same": true,
+    "pilot9_method": "ERC",
+    "pilot11_method": "HRP_0.6_Score_0.4_frozen_hybrid"
+  }
+}

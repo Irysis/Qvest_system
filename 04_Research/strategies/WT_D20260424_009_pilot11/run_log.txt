@@ -13,3 +13,93 @@
 [Step 1] Trimmed RAWDATA: 14,202,495 rows | 3898 tickers
 [Step 1b] Computing LIQ (20d avg trading value)...
 [Step 1c] Computing MAX21d (rolling 21d max |return|, t-1 lagged)...
+[Step 1d] Extracting signal-date snapshots...
+[Step 1] Signal dates: 430 (1990-07-31 ~ 2026-04-24)
+
+[Step 2] Loading Consensus parquets...
+  > sue.parquet: 1,541,720 rows
+  > esbr.parquet: 2,207,089 rows
+  > eps_chg_1m.parquet: 3,058,177 rows
+  > coverage.parquet: 2,732,549 rows
+  > target_price.parquet: 2,690,609 rows
+
+[Step 3] Building monthly C19 signals (4-factor: SUE+ESBR+EPS1M+TP_Gap)...
+[Step 3] FACTORS: 5580 rows | 279 signal months | 2003-01-30 ~ 2026-03-31
+[Step 3] Avg names per month: 20.0
+
+[Step 4] Computing HRP+Score hybrid weights (n=20 full breadth)...
+  HRP_BLEND=0.6 | SCORE_BLEND=0.4 | max_w=0.100
+[Step 4] HRP+Score computed: 279 success, 0 EW fallback
+[Step 4] HHI mean=0.0611 | min=0.0528 | max=0.0783
+[Step 4] Running monthly simulation (NO overlay — breadth ablation)...
+[simulation] Starting monthly simulation...
+  > 279 signal dates | 9373 trading days
+[simulation] Complete. Period: 2003-02-05 ~ 2026-04-24 | 279 rebalances
+
+=== Pilot 11 BASE PERFORMANCE (HRP+Score n=20, NO overlay) ===
+                   Label  CAGR AnnVol Sharpe Sharpe_m Sortino   MDD Calmar
+                  <char> <num>  <num>  <num>    <num>   <num> <num>  <num>
+1: P11_HRPScore_n20_Base 26.87  25.24  1.064    1.041   1.502 57.47  0.468
+2:              KOSPI200 11.00  20.72  0.531    0.591   0.745 54.54  0.202
+   WinRate WorstMonth Worst3M ES99_d ES99_m
+     <num>      <num>   <num>  <num>  <num>
+1:    61.6     -31.80  -33.12   6.61  21.63
+2:    57.3     -23.13  -30.20   5.27  18.86
+  Turnover (ann.): 577.7%
+
+[Step 5] Period decomposition (Train + Val only — AX-002 Lockbox sealed)...
+
+=== Period Decomposition ===
+       Label  CAGR AnnVol Sharpe Sharpe_m Sortino   MDD Calmar WinRate
+      <char> <num>  <num>  <num>    <num>   <num> <num>  <num>   <num>
+1: P11_Train 24.30  25.27  0.962    0.957   1.352 57.47  0.423    61.9
+2:  BM_Train  6.93  20.06  0.345    0.446   0.481 54.54  0.127    57.7
+3:   P11_Val 26.45  19.53  1.354    1.182   2.154 11.00  2.404    61.5
+4:    BM_Val  9.86  15.50  0.636    0.557   0.953 14.59  0.676    53.8
+   WorstMonth Worst3M ES99_d ES99_m
+        <num>   <num>  <num>  <num>
+1:     -31.80  -33.12   6.53  21.63
+2:     -23.13  -30.20   4.97  16.96
+3:      -5.49   -4.78   3.25     NA
+4:      -7.59  -13.47   2.58     NA
+
+[Result] Full SR=1.0640 | CAGR=26.87% | MDD=57.47% | TO=577.7%
+[Result] Train SR=0.9620 | Val SR=1.3540
+
+[Step 6] Breadth Effect Analysis...
+  n_delta: +4 | HHI_reduction: -32.6%
+  Full SR: Pilot9=0.179 → Pilot11=1.0640 (delta=0.8850)
+  Val SR:  Pilot9=-0.293 → Pilot11=1.3540 (delta=1.6470)
+  Theoretical breadth gain: +11.8% (Fundamental Law)
+  VERDICT: BREADTH_DECISIVE
+
+[Step 7] Generating charts...
+[charts] Generated.
+
+[Step 8] Saving artifacts...
+[Step 8] All artifacts saved.
+
+[Step 9] Sending Telegram brief...
+[telegram_notify] Loaded. Bot: @quant12323413245_bot | Channel: -1003850915447
+[telegram_notify] +tg_trigger_check(), +tg_regime_briefing()
+[Step 9] Telegram WARN (non-critical): unused argument (scope = "WT-D20260424_009")
+
+================================================================
+  WT-D20260424_009 Pilot 11 — HRP+Score Hybrid n=20 Breadth Ablation
+================================================================
+  Full SR:   1.0640  (Pilot 9: 0.179, delta: +0.8850)
+  CAGR:      26.87%
+  MDD:       57.47%
+  Turnover:  577.7%
+  Train SR:  0.9620
+  Val SR:    1.3540  (Pilot 9: -0.293, delta: +1.6470)
+  HHI avg:   0.0611  (Pilot 9: 0.0906, reduction: -32.6%)
+  n_names:   20    (Pilot 9: 16)
+----------------------------------------------------------------
+  BREADTH VERDICT: BREADTH_DECISIVE
+  n=20 breadth + HHI reduction drives real SR/val improvement. Weight method is secondary.
+----------------------------------------------------------------
+  Elapsed: 480.7 sec
+================================================================
+=== END WT-D20260424_009 Pilot 11 ===
+There were 50 or more warnings (use warnings() to see the first 50)
