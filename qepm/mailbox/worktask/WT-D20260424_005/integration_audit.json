@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260424_005",
+  "audit_time": "2026-04-24T16:49:06+0900",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 7 — L-195 Fix (confidence_floor=0 + winsor3sigma) + MinVar_BetaHard re-selection",
+  "r12_pure_function": {
+    "description": "3-package SHA256 start/end match — no re-optimization",
+    "all_pass": false,
+    "packages": {
+      "alpha_package": {
+        "package_type": "alpha_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_005/alpha_package.json",
+        "recorded_hash": "a2076b99799eac4238b18423267bba66bc76c68bf72aaee3c5e490b7ffec6552",
+        "current_hash": "a2076b99799eac4238b18423267bba66bc76c68bf72aaee3c5e490b7ffec6552",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "risk_package": {
+        "package_type": "risk_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_005/risk_package.json",
+        "recorded_hash": "2cf8e38bffa967d92ccbe276166e1274370f7f861f83048c91429de83cebd6d9",
+        "current_hash": "2cf8e38bffa967d92ccbe276166e1274370f7f861f83048c91429de83cebd6d9",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "optimization_package": {
+        "package_type": "optimization_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_005/optimization_package.json",
+        "recorded_hash": "a36b2fc3fa93a72dc7b3eb43bf38fc7599f5949fa30e6dd0fcbac14a46c1f693",
+        "current_hash": "4f4bc6f4506716bf460fd07d4f9ba0e552bac0bcda7181ad9ec104ed090cb075",
+        "hash_match": false,
+        "status": "FAIL"
+      }
+    }
+  },
+  "constraint_check": {
+    "n_names_ok": true,
+    "long_only_ok": true,
+    "sum_weights_ok": true,
+    "max_weight_ok": true,
+    "hhi_ok": true,
+    "beta_port_ok": true,
+    "n_names": 19,
+    "n_note": "n=19 실질 (A047080 QP zero-weight 제거). v2.2 10~20 범위 PASS.",
+    "sum_weights": 1,
+    "max_weight": 0.0906,
+    "hhi": 0.0598,
+    "beta_port": 0.7485,
+    "all_pass": true,
+    "constraint_version": "v2.2"
+  },
+  "l195_diagnosis": {
+    "l195_status": "RESOLVED (global) / WARN_CLUSTER_BIAS (sub-universe)",
+    "alpha_unique_count_universe": 1845,
+    "alpha_unique_count_risk40": 15,
+    "alpha_unique_count_selected": 5,
+    "cluster_cap_ratio": 0.65,
+    "l195_global_pass": true,
+    "l195_subuniverse_status": "WARN_CLUSTER_BIAS",
+    "alpha_uniform_flag": false,
+    "guard_ratio_alpha_package": 0.9716,
+    "pilot6_comparison": {
+      "pilot6_alpha_uniform_flag": true,
+      "pilot6_unique_alpha_count": 1,
+      "pilot6_cap_cluster_pct": 100,
+      "pilot7_improvement": "전체 universe L-195 RESOLVED (guard=0.9716). Risk 서브유니버스 cluster 65.0% (Pilot6 100% → 65%, 개선)."
+    },
+    "structural_implication": "Risk top-40 cluster_cap_ratio=65.0% → Risk 선발 서브유니버스에서 alpha cap 집적 잔존. MinVar_BetaHard 재선택 (L-196) 구조적 반복. MVO alpha sparse n=7 → alpha 차별화 전달 실패. Pilot 8 과제: Risk 선발 로직 개선 or alpha top-20 직접 선발."
+  },
+  "lockbox_sealed": {
+    "lockbox_start": "2024-01-23",
+    "backtest_end": "2024-01-22",
+    "sealed": true
+  },
+  "pilot6_vs_pilot7": {
+    "n_change": "20 (hard) -> 19 (A047080 zero-weight)",
+    "hhi_change": "0.0564 -> 0.0598",
+    "beta_change": "beta_port 0.750 -> 0.7485 (동일 gamma=1.0 hard)",
+    "cov_change": "NonlinShrink (cond=7.02) -> LW Oracle (cond=50.15) [P7 선택]",
+    "alpha_change": "confidence_floor=0.11+winsor2sigma -> floor=0+winsor3sigma+guard_ratio=0.9716",
+    "alpha_std_change": "alpha_std +33.6% (P6 대비)",
+    "key_finding": "L-195 전체 universe 해소. Risk 서브유니버스 cluster 65% 잔존 (P6 100% 대비 개선).",
+    "market_risk_change": "EW 95.8%→78.1% (Risk), OptA 50.3%→39.0% (Gate D 달성)"
+  }
+}
