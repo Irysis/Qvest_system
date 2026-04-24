@@ -1,14 +1,15 @@
 {
   "$schema": "qvest://worktask/schema/v1",
   "description": "Work Task 제약 기본값 — v6.1 3-tier 분리 (Hard Mandate / Soft Deployment / Graduation). R13 구현.",
-  "version": "v2.2",
-  "effective_from": "2026-04-24",
+  "version": "v2.3",
+  "effective_from": "2026-04-24 Pilot 8+",
   "owner": "사용자 (Dohoon Kim)",
   "_changelog": {
     "v1.0": "2026-04-23 초기 (모든 제약 HARD)",
     "v2.0": "2026-04-24 v6.1 R13 — Hard Mandate / Soft Deployment / Graduation tier 분리. Discovery WT는 Soft 제약 면제.",
     "v2.1": "2026-04-24 Task#26 (L-192 Remediation) — Grinold breadth 강화. weight_bounds 0.20→0.10, min_names 15, hhi_cap 0.10, alpha_winsor_sigma 2.0 추가.",
-    "v2.2": "2026-04-24 사용자 실전 운용 확정 — n=20 hard (min=max=20), max_w 0.10→0.15 완화. HHI cap 0.10→0.15 상향 (20종×max 15% = HHI 하한 0.0669 + 불균등 여유)."
+    "v2.2": "2026-04-24 사용자 실전 운용 확정 — n=20 hard (min=max=20), max_w 0.10→0.15 완화. HHI cap 0.10→0.15 상향 (20종×max 15% = HHI 하한 0.0669 + 불균등 여유).",
+    "v2.3": "2026-04-24 AX-007 Sprint 결과 반영 (Architect INFRA_CLEAN + Codex CONFIRM 0.87 + Replication 9/11) + 사용자 β 철학. β_target 0.75→0.90 default, confidence-weighted tier, alpha_divergence_filter 신규 (L-195a fix)."
   },
 
   "tier_hard_mandate": {
@@ -64,8 +65,29 @@
     "hhi_cap": 0.15,
     "hhi_cap_rationale": "v2.2 (2026-04-24) — n=20 + max_w=0.15 환경에 맞춰 HHI cap 0.10→0.15 상향. 20종 균등 → HHI=0.05 (하한), 단일 15% + 나머지 등가중 → HHI≈0.069. 0.15는 편향 허용 한계. 과집중 방지 여전 유지.",
 
-    "alpha_winsor_sigma": 2.0,
-    "alpha_winsor_rationale": "Task#26 (L-192) — Alpha vector ±2σ winsorization. Pilot 3 A140860 alpha=3.0 outlier 집중 사례. cross-section z-score clip으로 outlier 해소.",
+    "alpha_winsor_sigma": 3.0,
+    "alpha_winsor_rationale": "v2.3 (2026-04-24) — L-195 fix 계승. winsor 3σ로 완화 (2σ 이중 cap은 Alpha-Uniform Collapse 유발).",
+
+    "beta_target_baseline": 0.90,
+    "beta_target_baseline_rationale": "v2.3 (2026-04-24) — AX-007 Sprint + 사용자 철학. β=0.75 hard (Pilot 4~7)는 KOSPI 강세장 25% leverage loss. Codex 0.86 + Architect 확인 → baseline 0.90. Grinold-Kahn Ch.5 β는 α 자신감 함수.",
+
+    "beta_target_tier": {
+      "HIGH": [1.00, 1.05],
+      "MEDIUM": [0.90, 1.00],
+      "LOW": [0.80, 0.90]
+    },
+    "beta_target_tier_criteria": {
+      "HIGH": "DSR > 0.8 AND rank_IC > 0.04 AND ICIR > 0.5 AND FF3_retention > 0.30",
+      "MEDIUM": "DSR > 0.5 AND rank_IC > 0.03 AND ICIR > 0.3",
+      "LOW": "DSR > 0.2 AND rank_IC > 0.02",
+      "REJECT": "below LOW → 전략 재검토"
+    },
+
+    "gamma_beta_default": 0.5,
+    "gamma_beta_mode": "soft",
+
+    "alpha_divergence_filter": 0.80,
+    "alpha_divergence_filter_rationale": "v2.3 (2026-04-24) — L-195a fix. Risk universe 선발 후 unique_alpha/n ≥ 0.80 강제. Pilot 6/7 sub-universe cluster 50~65% 재발 방지. MinVar 후퇴 구조 해소.",
 
     "long_only": true,
     "long_only_rationale": "KR 증권사 실무 long-only. Discovery WT는 configurable (market-neutral 가설 허용).",
