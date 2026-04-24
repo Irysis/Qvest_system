@@ -1,0 +1,236 @@
+{
+  "task_id": "WT-D20260424_003",
+  "agent": "governor",
+  "model": "claude-sonnet-4-6",
+  "mode": "diagnosis_only",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 5 RAPC + Market Hedge Overlay (GRADE_C_PLUS)",
+  "mandate": "ADMISSION_PROHIBITED — Pilot 5 GRADE_C_PLUS CONDITIONAL_PROGRESS. PG1 admission 결정 금지. 진단 전용.",
+
+  "pg0_gap_vector": {
+    "reference_version": "v1.0.8 (2026-04-24)",
+    "current_pg2_profile": {
+      "strategy_ids": ["STR_1631_SYN_05 (80%)", "STR_1656_MLRA_M05 (20%)"],
+      "sr": 1.193,
+      "cagr": 0.1614,
+      "mdd": -0.2127
+    },
+    "target_profile": {
+      "sr": 2.0,
+      "cagr": 0.16,
+      "mdd": -0.25
+    },
+    "gap": {
+      "sr_gap": 0.807,
+      "cagr_gap": -0.0014,
+      "mdd_gap": -0.0373
+    },
+    "gap_interpretation": {
+      "sr_axis": "CRITICAL_OPEN — gap 0.807. 현 PG2의 유일 미달 축. 독립 alpha source 추가가 핵심 해결 경로.",
+      "cagr_axis": "ACHIEVED — 16.14% > 목표 16%. 여유 0.14pp. 새 전략 추가 시 희석 주의.",
+      "mdd_axis": "ACHIEVED — -21.27% vs 목표 -25%. 여유 3.73pp. Defense sleeve 추가로 더 견고화 가능."
+    },
+    "primary_bottleneck": "SR gap 0.807 단일 축. CAGR/MDD 모두 달성. PG0 레이더 상 SR만 열린 상태.",
+    "pilot5_relevance_to_gap": "Pilot 5 lockbox SR 0.844 — 3-sleeve 조합 시 diversification premium으로 PG2 SR 개선 가능하나 단독으로는 PG2 평균(1.193)에 미달. SR gap 해소의 partial contributor 역할."
+  },
+
+  "pilot5_profile_summary": {
+    "alpha_model": "RAPC (ESBR + SUE + AC21 IC-weighted expanding composite)",
+    "economic_family": "earnings_surprise + accrual_quality (cross-family, non-consensus)",
+    "lockbox_oos": {
+      "period": "2024-01-23 ~ 2026-01-23 (n_days=487)",
+      "cagr_pct": 18.70,
+      "sr": 0.844,
+      "mdd_pct": -27.65,
+      "calmar": 0.676,
+      "active_ir": -1.021,
+      "oos_is_ratio": 3.349
+    },
+    "full_period_forge": {
+      "period": "2012~2024",
+      "cagr_pct": 12.03,
+      "sr": 0.649,
+      "mdd_pct": -32.32
+    },
+    "role_honesty_verdict": "core_alpha_with_size_value_tilt (HONEST_WITH_CAVEAT)",
+    "ax_007_status": "WARNING — single_sleeve_long_only_top11. 예외 4종 미충족. Active IR -1.021 signal-portfolio translation 단절."
+  },
+
+  "marginal_contribution": {
+    "data_availability_note": "daily_returns.parquet 직접 접근 불가 (lockbox sealed). 하기 분석은 heuristic + factor-level TDC 기반. 완전 시뮬레이션 불가 명시.",
+    "factor_level_tdc": {
+      "source": "judge_verdict.json Gates B/D",
+      "esbr_sue": 0.0417,
+      "esbr_accrual": 0.125,
+      "sue_accrual": 0.167,
+      "threshold": 0.40,
+      "verdict": "PASS — Pilot 5 내부 factor TDC 모두 0.40 미만. cross-family 독립성 양호.",
+      "pg2_cross_strategy_tdc_note": "Pilot5 alpha factors(earnings_surprise) vs STR_1631(consensus C19) / STR_1656(ML) 계열 상이. strategy-level TDC 측정 필요하나 미측정. 추정 rho 0.20~0.30 (cross-family 설계)."
+    },
+    "correlation_with_pg2_estimated": {
+      "pilot5_vs_str1631": {
+        "method": "factor family 기반 추정",
+        "family_pilot5": "earnings_surprise + accrual_quality",
+        "family_str1631": "consensus C19 multi-factor synthesis",
+        "estimated_rho": "0.25~0.30",
+        "basis": "analyst-based earnings signal과 consensus revision은 일부 overlap. 잔차화(sector+size neutralization)로 상관 감소."
+      },
+      "pilot5_vs_str1656": {
+        "method": "factor family 기반 추정",
+        "family_pilot5": "earnings_surprise + accrual_quality",
+        "family_str1656": "ML complexity (MLRA multi-factor)",
+        "estimated_rho": "0.15~0.25",
+        "basis": "ML은 broad factor set 사용. earnings signal은 그 중 일부. 독립성 상대적으로 높음."
+      }
+    },
+    "individual_sr_assumptions": {
+      "str1631": 1.243,
+      "str1656": 1.212,
+      "pilot5_lockbox": 0.844,
+      "note": "STR_1631/1656 수치는 gap_vector_v1.2_projection 가정치. Pilot5는 Judge lockbox OOS 실측."
+    },
+    "scenarios": [
+      {
+        "label": "S1: Core70/MLRA10/Pilot5_20 (rho=0.25)",
+        "weights": {"str1631": 0.70, "str1656": 0.10, "pilot5": 0.20},
+        "rho_assumption": 0.25,
+        "heuristic_sr": 1.433,
+        "delta_vs_pg2": 0.044,
+        "note": "등vol 가정 heuristic. 실제 vol 차이로 편차 존재."
+      },
+      {
+        "label": "S2: Core65/MLRA15/Pilot5_20 (rho=0.25)",
+        "weights": {"str1631": 0.65, "str1656": 0.15, "pilot5": 0.20},
+        "rho_assumption": 0.25,
+        "heuristic_sr": 1.479,
+        "delta_vs_pg2": 0.089,
+        "note": "MLRA 비중 소폭 복원. Pilot5 20% 고정."
+      },
+      {
+        "label": "S3: Core60/MLRA15/Pilot5_25 (rho=0.25)",
+        "weights": {"str1631": 0.60, "str1656": 0.15, "pilot5": 0.25},
+        "rho_assumption": 0.25,
+        "heuristic_sr": 1.490,
+        "delta_vs_pg2": 0.100,
+        "note": "Pilot5 비중 최대(25%). Core 추가 하향 필요."
+      },
+      {
+        "label": "S4: Core70/MLRA10/Pilot5_20 (rho=0.30 보수적)",
+        "weights": {"str1631": 0.70, "str1656": 0.10, "pilot5": 0.20},
+        "rho_assumption": 0.30,
+        "heuristic_sr": 1.409,
+        "delta_vs_pg2": 0.019,
+        "note": "rho 상향 시 diversification 이익 감소. SR 개선 미미."
+      },
+      {
+        "label": "S5: Core60/MLRA20/Pilot5_20 (rho=0.25)",
+        "weights": {"str1631": 0.60, "str1656": 0.20, "pilot5": 0.20},
+        "rho_assumption": 0.25,
+        "heuristic_sr": 1.519,
+        "delta_vs_pg2": 0.129,
+        "note": "MLRA 현 비중 유지. Core 대폭 하향."
+      }
+    ],
+    "scenario_summary": {
+      "sr_improvement_range": "0.02 ~ 0.13 (rho=0.25~0.30 가정 heuristic)",
+      "sr_improvement_central_estimate": 0.08,
+      "sr_improvement_interpretation": "Pilot 5 추가 시 PG2 대비 SR +0.08 추정 (중앙값, rho=0.25). 실제 확인에는 strategy-level daily returns 상관 측정 필요.",
+      "caveats": [
+        "등vol 가정 — 실제 Pilot5 AnnVol(22%) vs STR_1631 vol 차이 미반영",
+        "lockbox SR 0.844는 2024-2026 특정 국면 실현치. 전기간 full SR 0.649와 괴리 큼",
+        "active IR -1.021 (PG2에 추가 시 book active IR 하락 요인 — 약 -0.20 at 20% weight)"
+      ]
+    },
+    "book_level_ir_delta_estimated": {
+      "pilot5_individual_lockbox_ir": -1.021,
+      "at_20pct_weight_contribution": -0.204,
+      "interpretation": "Pilot 5 편입 시 book active IR에 -0.20pp 수준 부정적 기여. PG2 active IR이 충분히 양이라면 희석 허용 가능하나, 현 PG2 active IR 미측정 상태에서 admission 불가.",
+      "caution": "Active IR -1.021은 개별 단독 산출치. 3-sleeve 맥락에서는 다른 전략이 상쇄하는 구조이나, AX-007 예외지대(multi-sleeve 구조) 자체가 구성되어야 의미 있음. 현 PG2는 2-sleeve 구조."
+    }
+  },
+
+  "admission_decision": "NOT_ISSUED_PILOT_6_PENDING",
+  "admission_prohibition_reason": [
+    "Pilot 5 GRADE_C_PLUS — Judge Gate D FAIL (market_risk 58.7% > 40%)",
+    "Active IR -1.021 — admission 기준 IR >= 0.3 미달 (gap 1.321)",
+    "AX-007 WARNING — single_sleeve_long_only_top11, 예외 4종 미충족",
+    "DSR 0.039 << 0.5 — 다중검정 신호 강도 미약",
+    "전략 자체 지속 개선(Pilot 6) 필요 — alpha-strengthening sprint 최우선"
+  ],
+
+  "verdict": "WEAK_CONTRIBUTION",
+  "verdict_rationale": {
+    "primary": "Pilot 5 lockbox SR 0.844가 현 PG2 SR 1.193에 단독으로 미달. 3-sleeve 조합 heuristic에서 SR +0.08 추정 개선이 있으나, 현 SR gap 0.807의 약 10%에 불과 (미약한 기여). Core 비중 하향(60~70%) 비용 대비 이익이 작음.",
+    "secondary": "Active IR -1.021 구조적 문제 미해소. book IR drag 약 -0.20 at 20% weight. AX-007 signal-portfolio translation 단절 미해결 (Gate D 40% 초과). Pilot 6에서 구조적 해결 먼저.",
+    "positive_signals": [
+      "Cross-family (earnings_surprise vs consensus C19): 독립 alpha channel로서 diversification 가치 존재",
+      "Lockbox CAGR 18.70% > 목표 16% — OOS 절대 성과 양호",
+      "TDC 모두 0.40 미만 — 팩터 레벨 독립성 확인",
+      "oos_is_ratio 3.349 >> 0.7 — signal decay 없음",
+      "Pilot 4→5 일관된 개선 trajectory (SR +32%, MDD 완화 +4.51pp, L-193 해소)"
+    ],
+    "negative_signals": [
+      "Gate D FAIL (market_risk 60.9%/58.7% >> 40%) — 미해결",
+      "Active IR -1.021 (target >=0.3 gap 1.321) — 구조적 한계",
+      "rank_ic 0.0318 < 0.04 — Pilot 3→5 변화 없음 (alpha signal 근본 약화)",
+      "DSR 0.039 << 0.5 — Harvey t>3 PASS이나 다중검정 조정 후 신호 약함",
+      "AX-007 예외지대 진입 불가 (long-short 불가, n=11<50, multi-sleeve 없음)"
+    ]
+  },
+
+  "pg0_gap_updated_assessment": {
+    "as_of": "2026-04-24",
+    "gap_unchanged_from_v1_0_8": true,
+    "change_rationale": "Pilot 5 GRADE_C_PLUS — admission 없음. PG2 구성 변화 없음. Gap vector v1.0.8 유효.",
+    "sleeve_needs_current": ["defense (23% H_1689 v3 확정, 목표 33% 대비 -10pp 갭)", "diversifier (sequential admission 조건부)"],
+    "pilot5_sleeve_addition_verdict": "NOT_APPLICABLE — Gate D FAIL + Active IR -1.021. 현 PG2에 편입 불가. Pilot 6 개선 후 재심사.",
+    "family_concentration_if_admitted_hypothetically": {
+      "earnings_surprise_family_at_20pct_weight": 0.20,
+      "current_family_concentration": {"consensus": 0.5, "ML_complexity": 0.5},
+      "hypothetical_3sleeve": {"consensus": 0.40, "ML_complexity": 0.40, "earnings_surprise": 0.20},
+      "max_family": 0.40,
+      "compliance_35pct": "FAIL (0.40 > 0.35) — consensus 재분류 없이 FAIL",
+      "note": "가상 시나리오. 실제 admission 아님."
+    }
+  },
+
+  "next_pilot_recommendation": {
+    "pilot6_priority_alpha_strengthening": {
+      "direction": "Option C-2 beta-neutral alpha pre-score (Alpha territory). D10_Blume_Adj_Beta Factor DB로 RAPC alpha pre-residualize. 예상 portfolio beta 0.65-0.70 natural reduction.",
+      "rationale": "Gate D market_risk 60.9%→40% 이하 달성 구조적 경로. Option A soft penalty 단독 부족 실증 (Pilot 5).",
+      "expected_gate_d_improvement": "beta 0.766→0.65-0.70 → market_risk 58.7%→40-45% 예상. Gate D CONDITIONAL 가능.",
+      "additional": [
+        "PEAD D1/D30/D60 window 세분화 (rank_ic 0.0318→0.04+ 목표)",
+        "Accrual QoQ 차분 추가 (signal 강화)",
+        "BH/BY multiple testing correction 적용 (DSR 개선)"
+      ]
+    },
+    "pilot6_structural": {
+      "option_a": "Multi-sleeve (core_alpha + defense_sleeve 연동) — AX-007 예외 1번 진입",
+      "option_b": "50+ 분산 prototype — AX-007 예외 2번 진입",
+      "rationale_ax007": "예외지대 진입이 active IR -1.021 구조적 해결 경로. 단순 alpha 강화만으로는 signal-portfolio translation 단절 미해결."
+    },
+    "pilot6_re_admission_trigger": {
+      "conditions": [
+        "Gate D PASS (market_risk < 40%)",
+        "Active IR > 0 (BM 대비 양의 알파)",
+        "rank_ic >= 0.04",
+        "AX-007 예외지대 진입 or 구조 변경"
+      ],
+      "expected_timeline": "Pilot 6 Option C-2 구현 + 백테스트: 1-2 sessions. Judge 심사 포함 총 2-3 sessions.",
+      "hold_classification": "PG1_CANDIDATE_HOLD — Pilot 5 trajectory 개선 확인. Pilot 6 개선 후 재심사 가치 있음."
+    }
+  },
+
+  "axiom_compliance": {
+    "AX_000": "N/A",
+    "AX_001_v2": "N/A — non-defense role",
+    "AX_002": "PASS — 진단만 수행, harness 외 판정 없음",
+    "AX_007": "ACKNOWLEDGED — diagnosis mode에서 WARNING 계승. 구조적 변경 전까지 admission 불가.",
+    "AX_008": "N/A — Governor 진단 단독 (2-source rule은 admission 시점 적용)"
+  },
+
+  "created_at": "2026-04-24T15:00:00+0900",
+  "next_action": "Pilot 6 알파 강화 sprint. Risk Agent lineage sequence 수정(record_package_lineage -> write_json 이후). Q-Lead에 보고."
+}

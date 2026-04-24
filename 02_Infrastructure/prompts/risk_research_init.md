@@ -245,22 +245,37 @@ round ≤ 2. 3회+ Hook block.
 </v61_challenge_authority>
 
 <v61_lineage_obligation>
-## R11 Lineage 직접 호출 (GAP-2 patch 2026-04-23)
+## R11 Lineage 직접 호출 (GAP-2 patch 2026-04-23; 순서 버그 fix 2026-04-24)
 
 Hook (lineage_recorder.sh)이 subagent Bash → Rscript → write_json 경로에서 발동 안 함.
-**Agent가 Rscript 내에서 직접 호출** 필요:
+**Agent가 Rscript 내에서 직접 호출** 필요.
+
+### **CRITICAL: 호출 순서** (L-194 Pilot 5 WARN_SEQUENCE fix)
+
+**반드시 아래 순서**:
+1. Covariance 계산 + Risk diagnostics 완료
+2. **`risk_package.json` write_json() 먼저**
+3. **그 다음 `record_package_lineage()` 호출**
 
 ```r
+# Step 1: 먼저 risk_package.json write
+write_json(risk_package, "qepm/mailbox/worktask/WT-D.../risk_package.json",
+           pretty = TRUE, auto_unbox = TRUE)
+
+# Step 2: 그 다음 lineage 기록 (file이 실제 존재 + hash 계산 가능)
 source("02_Infrastructure/worktask/lineage_utils.R")
 record_package_lineage(
   task_id = "WT-D...",
   package_type = "risk_package",
-  method_selected = "gerber_rmt",
-  input_file_paths = c("alpha_package.json 경로"),
+  method_selected = "ledoit_wolf_oracle",
+  input_file_paths = c("qepm/mailbox/worktask/WT-D.../alpha_package.json"),
   windows = list(train_window, validation_window)
 )
 ```
-→ `artifact_lineage.json` 자동 append. P7 audit 통과 확보.
+
+**배경**: Pilot 5 (WT-D20260424_003)에서 lineage가 write_json 전 호출되어 Judge Integration Audit가 **WARN_SEQUENCE** 발행. Forge/Judge 독립 검증으로 통과했으나 hash 일관성 이슈 재발 우려. 본 순서 엄수로 재발 방지.
+
+→ `artifact_lineage.json` 자동 append. P7 audit 통과 + Judge R12 pure function check 통과 확보.
 </v61_lineage_obligation>
 
 <v61_covariance_freshness>
