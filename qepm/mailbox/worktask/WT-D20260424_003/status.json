@@ -1,25 +1,44 @@
 {
   "task_id": "WT-D20260424_003",
   "current_phase": "ALPHA_DONE",
+  "phase": "ALPHA_DONE",
   "updated_at": "2026-04-24T00:00:00+0900",
+  "last_updated": "2026-04-24T14:00:00+0900",
   "challenge_round": 0,
   "challenge_history": [],
   "alpha_inheritance": true,
   "parent_wt": "WT-D20260424_002",
+  "model": "claude-opus-4-7",
   "beta_diagnosis_done": true,
   "residual_ic_done": true,
   "hedge_compatibility": "HEDGE_COMPATIBLE",
-  "hedge_retention_pct": 81.5,
+  "hedge_retention_pct_opus_actual": 97.4,
+  "hedge_retention_pct_sonnet_estimate": 81.5,
+  "market_risk_contribution_pct_opus_actual": 60.9,
+  "market_risk_contribution_pct_sonnet_estimate": 48.0,
   "next_phase": "RISK_RESEARCH",
   "risk_agent_handoff": {
-    "primary_instruction": "Option A: beta_constraint MVO (beta_port <= 0.85, soft penalty lambda=0.5)",
+    "primary_instruction": "Option A: beta_target=0.75, soft gamma=0.5. Option C-3: MRS-dynamic (CRISIS beta_target=0.60). Current MRS=63.1 CRISIS.",
     "blocked": "Option B (KOSPI200 short): no_short_legal_kr=true",
-    "portfolio_last_beta": 0.727,
-    "portfolio_mean_beta": 0.868
+    "portfolio_beta_full": 0.789,
+    "portfolio_beta_last_252d": 0.7674,
+    "portfolio_beta_60m_structural": 0.8341,
+    "market_risk_contribution_pct": 60.9,
+    "gate_d_gap_pp": 20.9,
+    "capm_retention_pct": 97.4,
+    "crisis_regime_capm_retention_pct": 52,
+    "key_distorters": ["A005290", "A028050", "A365340"],
+    "sonnet_corrections_applied": true
   },
-  "blocker": {},
-  "phase": "SPEC_APPROVED",
-  "alpha_status": "RETRY_OPUS_47",
-  "last_updated": "2026-04-24T12:38:18+0900",
-  "rollback_note": "2026-04-24 Q-Lead: sonnet Alpha 결과 품질 부족 → Opus 4.7 재실행. sonnet 산출물은 _archive_sonnet_attempt/에 보관."
+  "alpha_status": "OPUS_47_COMPLETE",
+  "rollback_note": "2026-04-24 Q-Lead: sonnet Alpha 결과 품질 부족 → Opus 4.7 재실행 완료. sonnet 산출물은 _archive_sonnet_attempt/에 보관.",
+  "artifacts": {
+    "alpha_package_json": "qepm/mailbox/worktask/WT-D20260424_003/alpha_package.json",
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260424_003/alpha_scores.parquet",
+    "alpha_validation_json": "stage_artifacts/WT_D20260424_003/alpha_validation.json",
+    "beta_diagnosis_json": "stage_artifacts/WT_D20260424_003/beta_diagnosis.json",
+    "residualization_results_json": "stage_artifacts/WT_D20260424_003/residualization_results.json",
+    "artifact_lineage_json": "qepm/mailbox/worktask/WT-D20260424_003/artifact_lineage.json"
+  },
+  "blocker": {}
 }

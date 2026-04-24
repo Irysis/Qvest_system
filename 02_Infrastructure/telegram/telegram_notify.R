@@ -245,7 +245,8 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
 
 tg_format_table <- function(df, separator = "-",
                               max_col_width = 20L,
-                              max_total_width = 40L) {
+                              max_total_width = 40L,
+                              auto_escape = TRUE) {
   if (!is.data.frame(df) || nrow(df) == 0) return("")
   cols <- names(df)
   char_df <- as.data.frame(lapply(df, function(x) as.character(x)),
@@ -255,6 +256,21 @@ tg_format_table <- function(df, separator = "-",
   char_df[] <- lapply(char_df, function(vals) {
     vapply(vals, .truncate_width, character(1), max_w = max_col_width)
   })
+
+  # 1.5) HTML auto-escape (2026-04-24 v3, raw <>& 로 HTML 파싱 깨짐 방지)
+  # Telegram HTML parse_mode는 <pre> 블록 내부도 escape 필요.
+  # 예: "Harvey t>3" → <pre> 안에서 "t<tag>3..." 오인 파싱.
+  # 너비 계산은 escape 전 기준 (시각적 너비 보존), escape는 최종 렌더 단계에서만.
+  if (isTRUE(auto_escape)) {
+    cols_escaped <- vapply(cols, tg_html_escape, character(1))
+    char_df_escaped <- as.data.frame(
+      lapply(char_df, function(vals) vapply(vals, tg_html_escape, character(1))),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    cols_escaped <- cols
+    char_df_escaped <- char_df
+  }
 
   # 2) CJK-aware 너비 계산 (header + truncated values)
   widths <- mapply(function(colname, vals) {
@@ -274,17 +290,23 @@ tg_format_table <- function(df, separator = "-",
              error = function(e) NULL)
   }
 
-  pad <- function(s, w) {
-    spc <- w - .cjk_width(s)
-    if (spc > 0) paste0(s, strrep(" ", spc)) else s
+  # pad: 시각적 너비 기준. escape된 entity(e.g. &gt;)는 pre 렌더 시 1자 보이므로
+  # pad용 width 계산은 "escape 해제 후" 기준 (원본 cjk width 사용).
+  pad <- function(s_escaped, s_original, w) {
+    spc <- w - .cjk_width(s_original)
+    if (spc > 0) paste0(s_escaped, strrep(" ", spc)) else s_escaped
   }
 
-  header <- paste(mapply(pad, cols, widths), collapse = "  ")
+  header <- paste(mapply(pad, cols_escaped, cols, widths), collapse = "  ")
   sep_line <- paste(sapply(widths, function(w) strrep(separator, w)),
                      collapse = "  ")
-  body_rows <- apply(char_df, 1, function(row_vals) {
-    paste(mapply(pad, as.character(row_vals), widths), collapse = "  ")
-  })
+  body_rows <- vapply(seq_len(nrow(char_df)), function(i) {
+    paste(mapply(pad,
+                 as.character(char_df_escaped[i, , drop = TRUE]),
+                 as.character(char_df[i, , drop = TRUE]),
+                 widths),
+          collapse = "  ")
+  }, character(1))
 
   paste0("<pre>",
          paste(c(header, sep_line, body_rows), collapse = "\n"),
@@ -294,8 +316,32 @@ tg_format_table <- function(df, separator = "-",
 # ─── Rich send (HTML parse_mode) ───────────────────────────────────────────
 # <pre> 표 / <b> 강조 등 HTML 허용. Message 내 &, <, > 는 caller가 escape 필수
 # (tg_format_table는 이미 plain 입력).
+#
+# 2026-04-24 v3 — &quot; guard: Telegram Bot API HTML parser 일부 버전에서
+# &quot; entity 거부 → 전체 메시지 plain text fallback → <pre> 태그 문자로 보임.
+# auto_sanitize=TRUE면 &quot; → " (U+0022), 그리고 지원 안 되는 다른 entity 경고.
 tg_send_rich <- function(msg, silent = FALSE,
-                          validate_emoji = TRUE, emoji_min = 1L) {
+                          validate_emoji = TRUE, emoji_min = 1L,
+                          auto_sanitize = TRUE) {
+  if (isTRUE(auto_sanitize)) {
+    original <- msg
+    # Telegram HTML는 &lt; / &gt; / &amp; 만 공식 지원. &quot;는 raw " 로 대체.
+    msg <- gsub("&quot;", '"', msg, fixed = TRUE)
+    # 기타 위험한 entity 경고 (예: &nbsp; &copy; 등)
+    risky <- regmatches(msg, gregexpr("&[a-zA-Z]+;", msg))[[1]]
+    risky <- setdiff(unique(risky), c("&lt;", "&gt;", "&amp;"))
+    if (length(risky) > 0) {
+      warn_msg <- sprintf("[tg_send_rich] WARN unsupported HTML entity: %s. Telegram may fallback to plain text.",
+                          paste(risky, collapse = ", "))
+      message(warn_msg)
+      log_f <- "/tmp/qvest_tg_entity_warn.log"
+      tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), warn_msg), file = log_f, append = TRUE),
+               error = function(e) NULL)
+    }
+    if (!identical(original, msg)) {
+      message("[tg_send_rich] INFO &quot; auto-replaced with raw \". See /tmp/qvest_tg_entity_warn.log")
+    }
+  }
   tg_send(msg, parse_mode = "HTML", silent = silent,
           validate_emoji = validate_emoji, emoji_min = emoji_min)
 }
