@@ -204,21 +204,78 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
   })
 }
 
-# ─── 표 포맷 헬퍼 (Step 6, 2026-04-24) ─────────────────────────────────────
+# ─── 표 포맷 헬퍼 (Step 6, 2026-04-24; v2 CJK-aware width guard 2026-04-24) ──
 # data.frame → <pre> HTML 블록. 고정폭 공백 정렬. tg_send_rich와 함께 사용.
-tg_format_table <- function(df, separator = "-") {
+#
+# 모바일 텔레그램 HTML <pre>는 가로폭 제한. 한글(CJK)은 font width 2칸 차지.
+# - max_col_width: 개별 column 상한 (default 20, 초과 시 "…" 축약)
+# - max_total_width: 표 전체 폭 상한 (default 40, 초과 시 stderr 경고)
+# - CJK 2-width 계산: han/kana/hangul 범위 U+1100~U+11FF, U+3040~U+30FF,
+#   U+3400~U+4DBF, U+4E00~U+9FFF, U+AC00~U+D7A3, U+F900~U+FAFF 등 2칸
+.cjk_width <- function(s) {
+  if (is.na(s) || length(s) == 0) return(0L)
+  s <- as.character(s)
+  cps <- utf8ToInt(s)
+  # ASCII + Latin + 기본 punctuation = 1, 그 외 CJK 블록 = 2
+  ranges <- list(
+    c(0x1100, 0x115F), c(0x2E80, 0x303E), c(0x3041, 0x33FF),
+    c(0x3400, 0x4DBF), c(0x4E00, 0x9FFF), c(0xA000, 0xA4CF),
+    c(0xAC00, 0xD7A3), c(0xF900, 0xFAFF), c(0xFE30, 0xFE4F),
+    c(0xFF00, 0xFF60), c(0xFFE0, 0xFFE6), c(0x20000, 0x2FFFD)
+  )
+  is_wide <- vapply(cps, function(cp) {
+    any(vapply(ranges, function(r) cp >= r[1] && cp <= r[2], logical(1)))
+  }, logical(1))
+  sum(ifelse(is_wide, 2L, 1L))
+}
+
+.truncate_width <- function(s, max_w) {
+  if (is.na(s)) return("")
+  s <- as.character(s)
+  if (.cjk_width(s) <= max_w) return(s)
+  # 뒤에서 1자씩 제거하며 "…" 포함 폭이 max_w 이내인지 확인
+  ellipsis <- "…"  # …
+  cps <- utf8ToInt(s)
+  for (k in seq(length(cps) - 1, 1, by = -1)) {
+    cand <- paste0(intToUtf8(cps[seq_len(k)]), ellipsis)
+    if (.cjk_width(cand) <= max_w) return(cand)
+  }
+  ellipsis
+}
+
+tg_format_table <- function(df, separator = "-",
+                              max_col_width = 20L,
+                              max_total_width = 40L) {
   if (!is.data.frame(df) || nrow(df) == 0) return("")
-  # 각 column 최대 너비 = max(header, values)
   cols <- names(df)
   char_df <- as.data.frame(lapply(df, function(x) as.character(x)),
                             stringsAsFactors = FALSE)
+
+  # 1) 값 truncate (max_col_width)
+  char_df[] <- lapply(char_df, function(vals) {
+    vapply(vals, .truncate_width, character(1), max_w = max_col_width)
+  })
+
+  # 2) CJK-aware 너비 계산 (header + truncated values)
   widths <- mapply(function(colname, vals) {
-    max(nchar(colname, type = "width"),
-        max(nchar(vals, type = "width"), na.rm = TRUE))
+    header_w <- .cjk_width(colname)
+    val_w <- if (length(vals) == 0) 0L else max(vapply(vals, .cjk_width, integer(1)))
+    as.integer(min(max(header_w, val_w), max_col_width))
   }, cols, char_df, USE.NAMES = FALSE)
 
+  # 3) 총 폭 체크 (모바일 guard) — column 간 2-space gap
+  total_w <- sum(widths) + 2L * (length(widths) - 1L)
+  if (total_w > max_total_width) {
+    msg <- sprintf("[tg_format_table] WARN mobile width %d > %d. consider fewer columns or tg_format_gate_block.",
+                   total_w, max_total_width)
+    message(msg)
+    log_f <- "/tmp/qvest_tg_table_width_warn.log"
+    tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), msg), file = log_f, append = TRUE),
+             error = function(e) NULL)
+  }
+
   pad <- function(s, w) {
-    spc <- w - nchar(s, type = "width")
+    spc <- w - .cjk_width(s)
     if (spc > 0) paste0(s, strrep(" ", spc)) else s
   }
 
