@@ -1,0 +1,278 @@
+{
+  "task_id": "WT-D20260424_003",
+  "agent": "forge",
+  "as_of_date": "2026-04-24",
+  "method": "MVO_lam1.0_psi0.3_betaA0.75_gamma0.5",
+  "period": {
+    "train": {
+      "start": "2012-01-01",
+      "end": "2022-12-31"
+    },
+    "validation": {
+      "start": "2023-01-01",
+      "end": "2024-01-22"
+    },
+    "combined": {
+      "start": "2012-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox": "SEALED (2024-01-23+)"
+  },
+  "portfolio": {
+    "n_names": 11,
+    "tickers": ["A140860", "A287410", "A005850", "A058470", "A029780", "A041510", "A014680", "A001680", "A000100", "A218410", "A028050"],
+    "weights": {
+      "A140860": 0.1,
+      "A287410": 0.1,
+      "A005850": 0.1,
+      "A058470": 0.1,
+      "A029780": 0.1,
+      "A041510": 0.1,
+      "A014680": 0.1,
+      "A001680": 0.1,
+      "A000100": 0.1,
+      "A218410": 0.0727,
+      "A028050": 0.0273
+    },
+    "max_weight": 0.1,
+    "min_weight": 0.0273,
+    "hhi": 0.096,
+    "beta_port": 0.7664,
+    "note": "n=11 자연 수렴 (Pilot4 n=15 forced fill 대비 구조적 개선)"
+  },
+  "performance": {
+    "full": {
+      "Label": "FULL (2012~2024)",
+      "CAGR": 12.03,
+      "AnnVol": 18.52,
+      "Sharpe": 0.649,
+      "Sharpe_m": 0.709,
+      "Sortino": 0.93,
+      "MDD": 32.32,
+      "Calmar": 0.372,
+      "WinRate": 63.9,
+      "WorstMonth": -13.84,
+      "Worst3M": -19.3,
+      "ES99_d": 3.88,
+      "ES99_m": 13.76
+    },
+    "train": {
+      "Label": "TRAIN (2012~2022)",
+      "CAGR": 11.69,
+      "AnnVol": 18.59,
+      "Sharpe": 0.629,
+      "Sharpe_m": 0.698,
+      "Sortino": 0.897,
+      "MDD": 32.32,
+      "Calmar": 0.362,
+      "WinRate": 64.1,
+      "WorstMonth": -13.84,
+      "Worst3M": -19.3,
+      "ES99_d": 3.95,
+      "ES99_m": 13.76
+    },
+    "val": {
+      "Label": "VAL (2023~2024)",
+      "CAGR": 15.62,
+      "AnnVol": 17.85,
+      "Sharpe": 0.875,
+      "Sharpe_m": 0.779,
+      "Sortino": 1.314,
+      "MDD": 16.75,
+      "Calmar": 0.932,
+      "WinRate": 61.5,
+      "WorstMonth": -10.83,
+      "Worst3M": -15.45,
+      "ES99_d": 3.05,
+      "ES99_m": "NA"
+    }
+  },
+  "risk": {
+    "ann_turnover_pct": 47.8,
+    "hard_fail_mdd45": false,
+    "hard_fail_to600": false
+  },
+  "pilot4_comparison": {
+    "pilot4_sr": 0.491,
+    "pilot4_cagr": 9.25,
+    "pilot4_mdd": 36.83,
+    "pilot4_n": 15,
+    "pilot4_hhi": 0.074,
+    "pilot5_sr": 0.649,
+    "pilot5_cagr": 12.03,
+    "pilot5_mdd": 32.32,
+    "pilot5_n": 11,
+    "pilot5_hhi": 0.096,
+    "note": "beta-constraint Option A (target=0.75) + LW Oracle 36M + 11 natural convergence"
+  },
+  "alpha_diagnostics": {
+    "rank_ic": 0.0318,
+    "icir": 0.403,
+    "harvey_t_stat": 4.42,
+    "dsr_approx": 0.039,
+    "monotonicity": 0.556,
+    "subperiod_stability": 1,
+    "turnover_proxy_annual": 3.06,
+    "post_neutralization_ic": 0.0269,
+    "ic_retention_pct": 84.6,
+    "n_months_train": 120,
+    "val_rank_ic": 0.0386,
+    "val_icir": 0.521,
+    "val_harvey_t": 2.55,
+    "n_months_val": 24,
+    "mean_breadth": 345,
+    "regime_ic": {
+      "Normal": 0.0286,
+      "Transition_LR": 0.0584
+    },
+    "subperiod_ic": {
+      "S1_2012_2015": 0.0338,
+      "S2_2016_2019": 0.027,
+      "S3_2020_2022": 0.0375
+    }
+  },
+  "risk_diagnostics": {
+    "condition_number": 11.0447,
+    "condition_number_bootstrap": {
+      "mean": 18.46,
+      "se": 8.33,
+      "ci95_lo": 6.54,
+      "ci95_hi": 38.24
+    },
+    "condition_number_warn": 100,
+    "condition_number_fail": 500,
+    "rf_r2_triggered": false,
+    "all_methods_cond": {
+      "sample_pairwise_408M": 34.73,
+      "gerber_rmt_vol_target": 127.7,
+      "lw_oracle_36M_primary": 11.04,
+      "constant_corr_lw": 59.09,
+      "sample_pairwise_ridge": 29.74
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "LW_Oracle_analytical_Ledoit_Wolf_2004",
+    "shrinkage_intensity": 0.3615,
+    "n_obs_used": 18,
+    "psd_verified": true,
+    "min_eigenvalue": 0.0054,
+    "factor_coverage_pct": 415.7,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.2013,
+      "max_pairwise": 0.5625,
+      "threshold": 0.4,
+      "pairs_above": 4,
+      "pg2_reference": {
+        "ESBR_SUE": 0.0417,
+        "ESBR_Accrual": 0.125,
+        "SUE_Accrual": 0.1667
+      }
+    },
+    "market_risk_contribution": {
+      "alpha_actual_pct": 60.9,
+      "source": "Alpha daily CAPM R2 (authoritative, Opus 4.7)",
+      "optA_estimated_pct": 42.9,
+      "optC3_neutral_pct": 48.8,
+      "optC3_caution_pct": 42.9,
+      "optC3_crisis_pct": 27.5,
+      "gate_d_threshold": 40,
+      "gate_d_gap_pp": 20.9
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": -0.1158,
+      "cvar_95_ann": -0.4012,
+      "cf_var_99_ann": -0.3993,
+      "skewness": -0.6676,
+      "excess_kurtosis": -0.8009,
+      "n_obs": 18,
+      "pilot4_reference_market_down5": -0.063
+    },
+    "family_overlap": {
+      "capm_retention_pct": 97.4,
+      "ff3_retention_pct": 10.5,
+      "size_value_channel": "ACTIVE (89.5% IC FF3-explained)",
+      "factor_corr_esbr_sue": -0.0688,
+      "factor_corr_esbr_accrual": -0.0363,
+      "factor_corr_sue_accrual": 0.0748,
+      "vif_max": 1.01,
+      "verdict": "No multicollinearity. FF3-neutral NOT recommended. Option A (CAPM-level) preserves 97.4% IC."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_003/regime_correlation.parquet",
+    "current_regime_today": {
+      "date": "2026-04-24",
+      "score": 42.9,
+      "cat": "NEUTRAL",
+      "alpha_memo_mrs": 63.1,
+      "alpha_memo_cat": "CRISIS",
+      "discrepancy_flagged": true
+    },
+    "pit_regime_signal_ref": {
+      "date": "2023-11-30",
+      "score": 18.27,
+      "cat": "RISK_ON"
+    }
+  },
+  "optimizer_ir": {
+    "exp_ir": 1.3366,
+    "exp_te": 18.831,
+    "beta_gap": 0.0164,
+    "hedge_overlay": "A"
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0318 < 0.04 threshold. Pilot 4 상속 불변. Hedge overlay로 해결 불가 — 알파 신호 근본 강화 필요 (PEAD window fine-tuning / accrual QoQ)."
+    },
+    {
+      "flag": "RF-DSR",
+      "severity": "MEDIUM",
+      "note": "DSR=0.039 < 0.5 threshold. Pilot 4 불변 상속."
+    },
+    {
+      "flag": "RF-BETA_DIAGNOSIS",
+      "severity": "HIGH",
+      "note": "Market risk contribution 60.9% (Pilot 4 judge 판단 48%보다 12.9pp 높음). Gate D gap=20.9pp (target 40%). Option A + C-3 (MRS-dynamic) 권고."
+    },
+    {
+      "flag": "INFO_RESIDUAL_IC",
+      "severity": "INFO",
+      "note": "CAPM retention 97.4% (HEDGE_COMPATIBLE 기준 80% 상회). FF3 retention 10.5% — size+value 설명력 강함. RAPC는 primary CAPM-orthogonal alpha 아님."
+    },
+    {
+      "flag": "INFO_CRISIS_RETENTION",
+      "severity": "INFO",
+      "note": "Crisis regime에서 CAPM retention 52%로 저하. Risk Agent는 위기시 beta constraint soft band 확대 권고."
+    },
+    {
+      "flag": "INFO_SONNET_CORRECTION",
+      "severity": "INFO",
+      "note": "Sonnet 1차 시도 추정 오류 수정: (1) market_risk 48%→60.9% (+12.9pp), (2) CAPM retention 81.5%→97.4% (+15.9pp). Sonnet은 heuristic 사용, Opus는 실제 data로 직접 계산."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 60.9% > Gate D threshold 40%. Gap=20.9pp. Option A reduces to ~54%; CAUTION C-3 reduces to ~54%; CRISIS C-3 to ~40%. Gate D pass requires CRISIS regime OR stronger alpha-beta decorrelation (Option C-2 pre-score)."
+    },
+    {
+      "id": "RF-R2",
+      "severity": "WARN",
+      "note": "Condition number 11.04 > 100 (warn); < 500 (fail). Acceptable but monitoring recommended."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "Crowding: PEAD+Accrual overlap with KOSPI200 quant consensus. Monitor factor crowding post-rebalance."
+    }
+  ],
+  "v61_compliance": {
+    "R12_pure_function": "static weights from optimizer — no re-optimization in backtest",
+    "R12_hash_audit": "integration_audit.json",
+    "R11_lineage_gap2": "record_package_lineage() called below",
+    "lockbox_sealed": true,
+    "pit_c1": true,
+    "pit_c2": "static weight no same-day circular",
+    "pit_c9": "DD/VT not used in static backtest",
+    "commission_applied": 0.0015
+  }
+}

@@ -576,12 +576,13 @@ lineage <- tryCatch(
   error = function(e) list(entries = list())
 )
 
-# lineage에서 기록된 hash 추출
+# lineage에서 기록된 hash 추출 (동일 package_type이 여러 번 있을 경우 마지막 non-NA 값 사용)
 recorded_hashes <- list()
 for (entry in lineage$entries) {
   pt <- entry$package_type %||% ""
-  if (nchar(pt) > 0) {
-    recorded_hashes[[pt]] <- entry$file_hash_sha256 %||% NA_character_
+  fh <- entry$file_hash_sha256 %||% NA_character_
+  if (nchar(pt) > 0 && !is.na(fh) && nchar(fh) > 0) {
+    recorded_hashes[[pt]] <- fh   # 마지막 non-NA entry가 최종 hash로 덮어씀
   }
 }
 

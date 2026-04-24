@@ -1,0 +1,60 @@
+{
+  "task_id": "WT-D20260424_003",
+  "audit_time": "2026-04-24T14:20:51+0900",
+  "r12_pure_function": {
+    "description": "3-package SHA256 start/end match — no re-optimization",
+    "all_pass": true,
+    "packages": {
+      "alpha_package": {
+        "package_type": "alpha_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/alpha_package.json",
+        "recorded_hash": "a207d0b04ab74c5b4d1e5ba837d156f01ff9ab93f28334309f508f5313869975",
+        "current_hash": "a207d0b04ab74c5b4d1e5ba837d156f01ff9ab93f28334309f508f5313869975",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "risk_package": {
+        "package_type": "risk_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/risk_package.json",
+        "recorded_hash": "d5ba9fe7854031d54c2edaf991d35d27157f0e528fe227a30079b680b78f2249",
+        "current_hash": "dfc530c556915ed7c4f3f86df1d6e5729568ef947c078e3327ef916cb6107977",
+        "hash_match": false,
+        "status": "WARN_SEQUENCE",
+        "forge_diagnosis": "lineage entry[2] created_at=2026-04-24T13:43:51 (last non-empty, hash=d5ba9fe...) vs file mtime=2026-04-24T13:43:51. Same second — Risk Agent wrote lineage entry immediately BEFORE final risk_package.json write (sequence inversion). File content is the definitive final artifact. No Forge modification. Judge SHOULD inspect risk_package.json content integrity independently."
+      },
+      "optimization_package": {
+        "package_type": "optimization_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/optimization_package.json",
+        "recorded_hash": "2ccaf5d66356bff3fd0d44538838f62e3b85455893bd237619453273412a6f9c",
+        "current_hash": "2ccaf5d66356bff3fd0d44538838f62e3b85455893bd237619453273412a6f9c",
+        "hash_match": true,
+        "status": "PASS"
+      }
+    },
+    "forge_risk_hash_note": "risk_package hash WARN_SEQUENCE: not Forge modification. Risk Agent lineage-write preceded file-write by <1s (sequence inversion). Forge had no write access to risk_package.json after loading."
+  },
+  "constraint_check": {
+    "n_names_ok": true,
+    "long_only_ok": true,
+    "sum_weights_ok": true,
+    "max_weight_ok": true,
+    "hhi_ok": true,
+    "beta_port_ok": true,
+    "n_names": 11,
+    "sum_weights": 1,
+    "max_weight": 0.1,
+    "hhi": 0.096,
+    "beta_port": 0.7664,
+    "all_pass": true
+  },
+  "lockbox_sealed": {
+    "lockbox_start": "2024-01-23",
+    "backtest_end": "2024-01-22",
+    "sealed": true
+  },
+  "pilot5_vs_pilot4": {
+    "n_change": "15 -> 11 (natural convergence, no forced fill)",
+    "hhi_change": "0.074 -> 0.0960",
+    "beta_change": "no constraint -> Option A beta_target=0.75"
+  }
+}

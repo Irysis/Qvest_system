@@ -589,7 +589,42 @@ tg_agent_brief <- function(agent,
                              charts = NULL,
                              footer = NULL,
                              emoji_min = 5L,
-                             dry_run = FALSE) {
+                             dry_run = FALSE,
+                             force = FALSE,
+                             lock_scope = NULL) {
+
+  # ── 0. Single-Dispatch lock (2026-04-24 v2, 물리적 강제) ─────────────────────
+  # 같은 agent + title prefix 중복 호출 차단. Forge 2번 발송 사례 방지.
+  # lock_scope가 NULL이면 "agent + title 첫 40자"로 scope 생성.
+  # force=TRUE로 override 가능 (수동 재전송 허용).
+  if (!isTRUE(dry_run)) {
+    scope_key <- if (!is.null(lock_scope)) lock_scope else {
+      # Extract WT-id or title prefix
+      wt_match <- regmatches(title, regexpr("WT-[DP]?[0-9]{8}_?[0-9]*", title))
+      if (length(wt_match) > 0 && nzchar(wt_match[1])) {
+        sprintf("%s_%s", agent, wt_match[1])
+      } else {
+        sprintf("%s_%s", agent,
+                 gsub("[^A-Za-z0-9]", "_", substr(title, 1, 40)))
+      }
+    }
+    lock_file <- file.path("/tmp",
+                            sprintf("qvest_tg_lock_%s.lock", scope_key))
+
+    if (file.exists(lock_file) && !isTRUE(force)) {
+      first_call <- tryCatch(readLines(lock_file, n = 2),
+                              error = function(e) c("unknown", "unknown"))
+      warn_msg <- sprintf("[tg_agent_brief] BLOCKED duplicate dispatch. agent=%s scope=%s first_call=%s. Use force=TRUE to override.",
+                           agent, scope_key, first_call[1])
+      message(warn_msg)
+      log_f <- "/tmp/qvest_tg_duplicate_dispatch.log"
+      tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), warn_msg),
+                    file = log_f, append = TRUE),
+                error = function(e) NULL)
+      return(invisible(list(ok = FALSE, error = "DUPLICATE_DISPATCH_BLOCKED",
+                             scope = scope_key, first_call = first_call[1])))
+    }
+  }
 
   # ── 1. Agent tag + header ────────────────────────────────────────────────────
   if (!agent %in% names(.AGENT_EMOJI_MAP)) {
@@ -706,6 +741,17 @@ tg_agent_brief <- function(agent,
               error = function(e2) NULL)
     list(ok = FALSE, bytes = msg_bytes, error = conditionMessage(e))
   })
+
+  # ── 5.5. 발송 성공 시 lock 파일 기록 (Single-Dispatch 강제) ───────────────────
+  if (isTRUE(result$ok) && exists("lock_file")) {
+    tryCatch({
+      writeLines(c(format(Sys.time()),
+                    sprintf("bytes=%d", msg_bytes),
+                    sprintf("agent=%s", agent),
+                    sprintf("title=%s", title)),
+                  lock_file)
+    }, error = function(e) NULL)
+  }
 
   # ── 6. Charts (text 발송 후 이어서) ──────────────────────────────────────────
   if (!is.null(charts) && length(charts) > 0) {
