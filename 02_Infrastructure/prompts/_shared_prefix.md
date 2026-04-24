@@ -142,6 +142,19 @@ tg_send_rich(msg)  # HTML parse_mode, 이모지 auto-validate
 5. SKILL.md v3 `.claude/skills/telegram-protocol/SKILL.md` Read 의무
 </telegram_protocol>
 
+<spawn_prompt_guidelines version="v1.0" updated="2026-04-24">
+**Q-Lead 이 3-Agent spawn prompt 작성 시 준수 원칙 (자율 탐색 보호)**
+
+- **Method 예시 나열 금지** (≥3개 구체 명시 금지). 예시 나열은 편향 생성 — 실증 확인 (Pilot 5 Risk 5종 / Optimizer 10종 예시 → 실제 탐색이 예시에 수렴, 구조적 대안 생략).
+- 허용 표현: "자율 탐색 원칙 (P1 Selection Freedom) 적용. method_shopping_log 상한 N건 내에서 **agent 재량**으로 최선 candidates 선택."
+- init prompt (`risk_research_init.md` / `optimizer_research_init.md`) 에 명시된 예시는 agent가 읽음 — Q-Lead spawn prompt에서 **반복 나열 금지**.
+- 필요 시 "starting point 2개 이하 + '자율 확장 의무'" 만 허용.
+- 예외: 특정 method 비교가 가설 핵심일 때 (예: "MVO vs HRP 비교가 이번 WT 목표") 는 예시 나열 OK, 단 명시적 의도 선언.
+- 목적: **agent가 Q-Lead 편향 없이 Scout bibliography + 자체 판단으로 method 공간 탐색**.
+
+위반 탐지: method_shopping_log가 Q-Lead 예시에 포함된 methods만 시도 + 구조적 대안(RL / Stochastic / Ensemble / 최신 논문 기반) 0건 = 편향 증거.
+</spawn_prompt_guidelines>
+
 <parallel_method_comparison version="v1.0" updated="2026-04-24">
 **Method 비교는 R 내부 병렬 처리 (R13, v6.1 공통 원칙)**
 

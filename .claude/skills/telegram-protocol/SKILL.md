@@ -155,6 +155,114 @@ tg_agent_brief(
 | Execution | 🎬 |
 | Monitoring | 📡 |
 
+## 이모지 규칙 v3.1 (2026-04-24, tg_agent_brief 통합)
+
+### 섹션 이모지 자동 추천 (heading keyword 기반)
+
+`sections[i]$emoji` 미지정 시 `tg_agent_brief` 가 heading 키워드로 자동 추론:
+
+| Heading keyword | 자동 이모지 | 용도 |
+|---|---|---|
+| risk / 리스크 / flag | 🚩 | Red flag 섹션 |
+| challenge / 반론 | ⚔️ | Challenge loop (P4) |
+| stress / 위기 / regime / crisis | 🌪️ | Stress test / regime 분석 |
+| alert / 경보 | 🚨 | 긴급 alert |
+| insight / 핵심 / 발견 | 💡 | Key insight |
+| method / 방법 / 비교 / estimator | 🔬 | Method shopping log / 비교 |
+| hedge / overlay / beta / β | 🛡️ | Hedge overlay |
+| config / 설정 / 제약 / constraint | 🎛️ | Configuration |
+| performance / 성과 / IR / SR / CAGR / MDD | 📈 | Performance metrics |
+| integration / 통합 / mapping | 🔗 | 통합/매핑 |
+| latest / 최신 / supplement | ✨ | 신규/최신 |
+| reference / 참조 / 논문 | 📚 | 문헌 |
+| shortlist / ranking / top | 🏆 | 순위 |
+| test / 검증 | 🧪 | 테스트 |
+| audit / 검사 | 🛠️ | 감사 |
+| next / action / 계획 | ➡️ | 다음 단계 |
+| compare / vs | 🔍 | 비교 |
+| gate / verdict / 판정 | ⚖️ | Judge gate |
+| lockbox / oos / seal | 🔒 | Lockbox OOS |
+| diagnosis / 진단 | 📊 | 진단 (default metrics) |
+
+### Status 이모지 (helper: `tg_emoji("status", key)`)
+
+| Key | Emoji | 의미 |
+|---|---|---|
+| pass | ✅ | Pass |
+| fail | ❌ | Fail |
+| warn | ⚠️ | Warning |
+| info | ℹ️ | Info |
+| progress | 🔄 | In progress |
+| pending | ⏳ | Pending |
+| block | 🚧 | Blocked |
+| cond | 🟡 | Conditional |
+| mixed | 🔵 | Mixed |
+
+### Verdict 자동 이모지 (helper: `tg_emoji_verdict(char_vector)`)
+
+문자열 내 keyword 매칭으로 자동 emoji 반환. **우선순위**: COND → MIXED → BLOCK → PASS → FAIL → WARN → INFO → PENDING.
+
+```r
+tg_emoji_verdict(c("PASS","FAIL","CONDITIONAL_FAIL","MIXED_PASS"))
+# → c("✅","❌","🟡","🔵")
+```
+
+표 내 Verdict column 자동 emoji 가공:
+```r
+df <- data.frame(Gate = c("A","B","C"), Verdict = c("PASS","FAIL","CONDITIONAL_FAIL"))
+df$E <- tg_emoji_verdict(df$Verdict)
+```
+
+### Performance Grade 자동 이모지 (helper: `tg_emoji_perf(sr, mdd, cagr)`)
+
+수치 → 이모지 자동 매핑. 기준:
+
+| Metric | Thresholds | Emojis |
+|---|---|---|
+| SR | ≥2.0 / ≥1.5 / ≥1.0 / <1.0 | 🚀 / ✨ / ✅ / ⚠️ |
+| MDD (abs) | <20% / <35% / ≥35% | ✅ / ⚠️ / ❌ |
+| CAGR | ≥16% / ≥10% / <10% | 🎯 / ✅ / ⚠️ |
+
+```r
+e <- tg_emoji_perf(sr = 1.337, mdd = -0.37, cagr = 0.09)
+# → list(sr="✅", mdd="❌", cagr="⚠️")
+```
+
+### Regime 자동 이모지 (helper: `tg_emoji_regime(score)`)
+
+MRS score (0~100) → 이모지:
+
+| Score | Emoji | 의미 |
+|---|---|---|
+| ≥60 | 🚨 | CRISIS |
+| 40~60 | 🔥 | STRESS |
+| 25~40 | 🟡 | CAUTION |
+| 15~25 | 🟢 | NORMAL |
+| <15 | 💚 | EASY |
+
+```r
+tg_emoji_regime(63.1)  # → "🚨"
+```
+
+### 표 Verdict column 패턴 (권장)
+
+Verdict 있는 표는 helper로 emoji 자동 추가:
+```r
+gates <- data.frame(
+  Gate    = c("A PIT","B ISO","C Alpha","D Crowd"),
+  Verdict = c("PASS","PASS","CONDITIONAL_FAIL","FAIL"),
+  stringsAsFactors = FALSE
+)
+gates$Mark <- tg_emoji_verdict(gates$Verdict)
+# tg_agent_brief 에 df로 전달
+```
+
+### Emoji 최소 개수 (검증)
+
+- `emoji_min = 5L` default (`tg_agent_brief`)
+- 다양성 권장: Agent 태그 1 + Section heading 3~5 + Status/Performance 1~3 = 5+ 자연스럽게 충족
+- 위반 시 `[tg_send_rich] WARN emoji count X < min 5` + `/tmp/qvest_tg_emoji_warn.log`
+
 ## 위반 시 조치
 
 1. agent 자체 Rscript에서 `tg_send_rich` 또는 `tg_format_table` 직접 호출 감지 시 → Q-Lead가 SendMessage로 시정 지시

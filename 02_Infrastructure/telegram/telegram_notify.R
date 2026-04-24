@@ -446,6 +446,142 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
   "Monitoring" = "📡"
 )
 
+# ─── Emoji Catalog v1 (2026-04-24) — SOT for tg_agent_brief sections ────────
+# 카테고리별 표준 이모지. Caller는 tg_emoji() 또는 tg_emoji_*() helper 사용.
+.EMOJI_CATALOG <- list(
+  # Status (verdict / gate / flag)
+  status = list(
+    pass = "✅", fail = "❌", warn = "⚠️", info = "ℹ️",
+    progress = "🔄", pending = "⏳", block = "🚧",
+    cond = "🟡", mixed = "🔵"
+  ),
+  # Section heading (의미별 권장)
+  section = list(
+    metrics = "📊",        # 수치/통계
+    up = "📈",              # 상승
+    down = "📉",            # 하락
+    target = "🎯",          # 목표
+    research = "🔬",        # 리서치/방법론
+    risk = "🛡️",           # 리스크
+    config = "🎛️",         # 구성/설정
+    alert = "🚨",           # 경보
+    flag = "🚩",            # red flag
+    insight = "💡",         # insight
+    integration = "🔗",     # 통합/매핑
+    stress = "🌪️",         # stress test
+    new = "✨",             # 신규/최신
+    reference = "📚",       # 참조/문헌
+    ranking = "🏆",         # 순위/shortlist
+    test = "🧪",            # test
+    challenge = "⚔️",       # challenge loop
+    next_step = "➡️",       # next step
+    date = "📅",            # date
+    folder = "📂",          # path
+    package = "📦",         # package
+    tool = "🛠️",           # tool/fix
+    sparkle = "✨",         # new feature
+    lock = "🔒",            # lockbox
+    trophy = "🏆",          # final
+    chart = "📈"            # chart
+  ),
+  # Performance grade (수치 → 이모지)
+  performance_sr = list(
+    superior = "🚀",    # SR >= 2.0
+    good = "✨",         # 1.5 <= SR < 2.0
+    acceptable = "✅",   # 1.0 <= SR < 1.5
+    weak = "⚠️"         # SR < 1.0
+  ),
+  performance_mdd = list(
+    low = "✅",          # MDD < 20%
+    medium = "⚠️",       # 20% <= MDD < 35%
+    high = "❌"          # MDD >= 35%
+  ),
+  performance_cagr = list(
+    target = "🎯",       # CAGR >= 16%
+    acceptable = "✅",   # 10% <= CAGR < 16%
+    weak = "⚠️"         # CAGR < 10%
+  ),
+  # Regime (MRS score)
+  regime = list(
+    crisis = "🚨",       # >= 60
+    stress = "🔥",       # 40~60
+    caution = "🟡",      # 25~40
+    normal = "🟢",       # 15~25
+    easy = "💚"          # < 15
+  )
+)
+
+# Helper: category + key → emoji
+# 예: tg_emoji("status", "pass") → "✅"
+tg_emoji <- function(category, key) {
+  if (!category %in% names(.EMOJI_CATALOG)) {
+    warning(sprintf("[tg_emoji] Unknown category '%s'. Available: %s",
+                    category, paste(names(.EMOJI_CATALOG), collapse = ", ")))
+    return("")
+  }
+  cat_map <- .EMOJI_CATALOG[[category]]
+  if (!key %in% names(cat_map)) {
+    warning(sprintf("[tg_emoji] Unknown key '%s' in '%s'. Available: %s",
+                    key, category, paste(names(cat_map), collapse = ", ")))
+    return("")
+  }
+  cat_map[[key]]
+}
+
+# Performance grade emoji (자동 계산)
+# 예: tg_emoji_perf(sr = 1.8, mdd = 0.22, cagr = 0.18) → list(sr="✨", mdd="⚠️", cagr="🎯")
+tg_emoji_perf <- function(sr = NULL, mdd = NULL, cagr = NULL) {
+  result <- list()
+  if (!is.null(sr) && !is.na(sr)) {
+    result$sr <- if (sr >= 2.0) "🚀"
+                 else if (sr >= 1.5) "✨"
+                 else if (sr >= 1.0) "✅"
+                 else "⚠️"
+  }
+  if (!is.null(mdd) && !is.na(mdd)) {
+    abs_mdd <- abs(mdd)  # allow -0.25 or 0.25 both
+    result$mdd <- if (abs_mdd < 0.20) "✅"
+                  else if (abs_mdd < 0.35) "⚠️"
+                  else "❌"
+  }
+  if (!is.null(cagr) && !is.na(cagr)) {
+    result$cagr <- if (cagr >= 0.16) "🎯"
+                   else if (cagr >= 0.10) "✅"
+                   else "⚠️"
+  }
+  result
+}
+
+# Regime emoji from MRS score (0~100)
+tg_emoji_regime <- function(score) {
+  if (is.null(score) || is.na(score)) return("")
+  if (score >= 60) return("🚨")
+  if (score >= 40) return("🔥")
+  if (score >= 25) return("🟡")
+  if (score >= 15) return("🟢")
+  "💚"
+}
+
+# Verdict emoji from string ("PASS"/"FAIL"/"WARN"/"COND"/etc)
+# 순서 중요: COND_FAIL → 🟡 / MIXED_PASS → 🔵 / 순수 FAIL → ❌
+tg_emoji_verdict <- function(verdicts) {
+  vapply(verdicts, function(v) {
+    v_up <- toupper(as.character(v))
+    # Compound verdict (우선순위 높음)
+    if (grepl("COND", v_up)) return("🟡")       # CONDITIONAL_*  → 🟡 (모든 COND 먼저)
+    if (grepl("MIXED", v_up)) return("🔵")      # MIXED_*
+    if (grepl("BLOCK", v_up)) return("🚧")
+    # Pure states
+    if (grepl("PASS", v_up)) return("✅")
+    if (grepl("FAIL", v_up)) return("❌")
+    if (grepl("WARN", v_up)) return("⚠️")
+    if (grepl("INFO", v_up)) return("ℹ️")
+    if (grepl("PROGRESS|PROG", v_up)) return("🔄")
+    if (grepl("PENDING", v_up)) return("⏳")
+    ""
+  }, character(1))
+}
+
 tg_agent_brief <- function(agent,
                              title,
                              sections = list(),
@@ -467,9 +603,42 @@ tg_agent_brief <- function(agent,
                  agent_emoji, agent, title, as_of)
 
   # ── 2. 섹션 렌더 ─────────────────────────────────────────────────────────────
+  # 이모지 자동 추천: emoji 미지정 시 heading keyword 기반 default 선택
+  .guess_section_emoji <- function(heading_str) {
+    if (is.null(heading_str) || !nzchar(heading_str)) return("📊")
+    h <- tolower(heading_str)
+    keyword_map <- list(
+      "risk|리스크|flag" = "🚩",
+      "challenge|반론|challenge" = "⚔️",
+      "stress|위기|regime|crisis" = "🌪️",
+      "alert|경보|alarm" = "🚨",
+      "insight|핵심|발견|finding" = "💡",
+      "method|방법|비교|covariance|estimator" = "🔬",
+      "hedge|overlay|beta|β" = "🛡️",
+      "config|설정|제약|constraint|option" = "🎛️",
+      "stress|regime|국면" = "🌪️",
+      "performance|성과|ir|sr|cagr|mdd" = "📈",
+      "integration|통합|mapping|매핑" = "🔗",
+      "new|latest|최신|supplement" = "✨",
+      "reference|참조|논문|paper" = "📚",
+      "shortlist|ranking|top|순위" = "🏆",
+      "test|검증|validation" = "🧪",
+      "audit|검사|verify" = "🛠️",
+      "next|action|계획" = "➡️",
+      "compare|vs|비교" = "🔍",
+      "gate|verdict|판정" = "⚖️",
+      "lockbox|oos|seal" = "🔒",
+      "diagnosis|진단|diagnostic" = "📊"
+    )
+    for (pattern in names(keyword_map)) {
+      if (grepl(pattern, h, perl = TRUE)) return(keyword_map[[pattern]])
+    }
+    "📊"  # default: metrics
+  }
+
   section_blocks <- vapply(sections, function(s) {
-    emoji <- s$emoji %||% "📊"
     heading <- s$heading %||% ""
+    emoji <- s$emoji %||% .guess_section_emoji(heading)
     type <- s$type %||% "text"
     head_line <- if (nzchar(heading)) sprintf("%s <b>%s</b>", emoji, heading) else ""
 
