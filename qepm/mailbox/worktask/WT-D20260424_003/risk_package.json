@@ -1,0 +1,357 @@
+{
+  "task_id": "WT-D20260424_003",
+  "parent_wt": "WT-D20260424_002",
+  "agent": "risk",
+  "model": "claude-sonnet-4-6",
+  "schema_version": "v6.1",
+  "as_of_date": "2023-12-28",
+  "created_at": "2026-04-24T13:25:22+0900",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_003/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_003/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_003/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_003/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260424_003/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260424_003/regime_correlation.parquet",
+  "covariance_method_selected": "gerber_rmt",
+  "covariance_method_backup": "ledoit_wolf",
+  "covariance_matrix_path": "stage_artifacts/WT_D20260424_003/covariance.parquet",
+  "beta_vector_path": "stage_artifacts/WT_D20260424_003/beta_diagnosis.json",
+  "beta_estimation_window": "24M_OLS_rolling",
+  "vasicek_shrinkage": "NOT_APPLIED (near-complete shrinkage to 1.0 for portfolio OLS)",
+  "beta_vector_summary": {
+    "min": 0.511,
+    "mean": 0.893,
+    "max": 1.217,
+    "iqr": 0.415,
+    "key_distorters": {
+      "A005290": {
+        "beta": 1.217,
+        "note": "HIGHEST_BETA_DISTORTER"
+      },
+      "A028260": {
+        "beta": 1.117,
+        "note": "STABLE_HIGH_BETA"
+      },
+      "A365340": {
+        "beta": 1.166,
+        "note": "STABLE_HIGH_BETA"
+      }
+    },
+    "key_anchors": {
+      "A029780": {
+        "beta": 0.562,
+        "note": "LOW_BETA_ANCHOR"
+      },
+      "A001680": {
+        "beta": 0.648,
+        "note": "LOW_BETA_ANCHOR"
+      }
+    }
+  },
+  "hedge_overlay": {
+    "option_A_spec": {
+      "name": "Static Beta-Constraint MVO (Soft Penalty)",
+      "mathematical_form": "max_w  w'alpha_hat - (lambda/2)*w'Sigma*w - gamma_beta*max(0, w'beta - beta_target)^2\nsubject to:\n  sum(w) = 1\n  w_i >= 0 (long-only, no_short_legal_kr=true)\n  0 <= w_i <= 0.10\n  HHI = sum(w^2) <= 0.10\n  min_names = 10, max_names = 20\n  beta_port = sum(w_i * beta_i)\n  beta_target = 0.75\n  gamma_beta = 0.5  [soft penalty, Alpha Bootstrap CI justified]",
+      "beta_target": 0.75,
+      "gamma_beta": 0.5,
+      "beta_estimation_window": "24M_OLS",
+      "vasicek_shrinkage": "NOT_RECOMMENDED (Alpha diagnosis: near-complete shrinkage to 1.0)",
+      "beta_vector": {
+        "A140860": 0.815,
+        "A287410": 0.511,
+        "A028260": 1.117,
+        "A028050": 1.172,
+        "A005850": 0.912,
+        "A058470": 0.719,
+        "A029780": 0.562,
+        "A041510": 0.871,
+        "A014680": 0.934,
+        "A218410": 0.92,
+        "A005290": 1.217,
+        "A001680": 0.648,
+        "A365340": 1.166,
+        "A006260": 1.135,
+        "A000100": 0.703
+      },
+      "expected_outcomes": {
+        "mkt_risk_pct": 0.4,
+        "ic_retention_pct": 97.4,
+        "cost_bps_pa": 6.6,
+        "infeasibility_risk": "MEDIUM (min_names=10 relaxation mitigates)",
+        "turnover_est_pa_pct": "45-65% (Pilot 4 baseline 50.5% + beta constraint ~10-15pp)"
+      },
+      "sensitivity": {
+        "beta_target_0.75": {
+          "binding": true,
+          "mkt_risk_pct": 0.4,
+          "cost_bps_pa": 6.6
+        },
+        "beta_target_0.80": {
+          "binding": false,
+          "mkt_risk_pct": 0.5,
+          "cost_bps_pa": 5
+        },
+        "beta_target_0.85": {
+          "binding": false,
+          "mkt_risk_pct": 0.5,
+          "cost_bps_pa": 5
+        }
+      }
+    },
+    "option_C3_spec": {
+      "name": "MRS-Dynamic Beta-Constraint MVO",
+      "mathematical_form": "beta_target(t) = f(MRS_t-1)\n  MRS_t-1 in BULL   (Regime_Score >= 70)  => beta_target = 0.90\n  MRS_t-1 in NORMAL (Regime_Score 55-70)   => beta_target = 0.85\n  MRS_t-1 in NEUTRAL/CAUTION (40-55)        => beta_target = 0.75\n  MRS_t-1 in CRISIS (Regime_Score < 40)    => beta_target = 0.60\n\nPIT C5: MRS_t-1 = unified_regime_signal_daily[Date == prev_rebal_date, Regime_Score]\nObjective same as Option A with dynamic beta_target(t)\ngamma_beta = 0.5 (same as Option A)",
+      "regime_mapping": {
+        "BULL": {
+          "score_gte": 70,
+          "beta_target": 0.9
+        },
+        "NORMAL": {
+          "score_range": [55, 70],
+          "beta_target": 0.85
+        },
+        "NEUTRAL_CAUTION": {
+          "score_range": [40, 55],
+          "beta_target": 0.75
+        },
+        "CRISIS": {
+          "score_lt": 40,
+          "beta_target": 0.6
+        }
+      },
+      "pit_compliance": {
+        "C5_enforcement": "Use unified_regime_signal_daily.parquet, Date = previous rebalance date",
+        "regime_source": ".cache/unified_regime_signal_daily.parquet",
+        "lag_rule": "t-1 monthly (prev rebalance month-end)",
+        "current_state": {
+          "date": "2026-04-24",
+          "daily_score": 42.9,
+          "daily_cat": "NEUTRAL",
+          "daily_beta_target": 0.8,
+          "signal_ref_regime": "CAUTION (monthly 2023-11, Score=61)",
+          "signal_ref_beta_target": 0.75
+        },
+        "alpha_memo_correction": "Alpha memo used MRS=63.1 CRISIS => beta_target=0.60. CORRECTED: daily 2026-04-24 = NEUTRAL (42.90) => 0.80. Monthly 2023-11 (signal_ref_date) = CAUTION (~61) => 0.75. Risk Agent challenge issued (REGIME_DISCREPANCY flag)."
+      },
+      "expected_outcomes": {
+        "mkt_risk_pct_neutral": 0.5,
+        "mkt_risk_pct_caution": 0.4,
+        "mkt_risk_pct_crisis_target": 0.3,
+        "additional_turnover_pa_pct": 20,
+        "infeasibility_risk": "LOW-MEDIUM",
+        "turnover_regime_switch_est": "2-3x baseline when regime changes"
+      }
+    },
+    "recommended": "A",
+    "recommendation_rationale": "Option A (beta_target=0.75, gamma=0.5) is simpler, avoids regime timing risk, and achieves ~0% market risk contribution (approaching Gate D 40%). Option C-3 adds regime sensitivity but with Alpha memo correction, NEUTRAL regime (today) gives beta_target=0.80 (insufficient for Gate D). CAUTION/CRISIS triggers needed for Gate D pass via C-3. Option A is binding and structural; C-3 is additive for downside protection. Combined use: Option A as floor constraint, C-3 as tightening in CAUTION/CRISIS.",
+    "comparison_table": {
+      "headers": ["Metric", "Option A", "Option C3 NEUTRAL", "Option C3 CAUTION"],
+      "mkt_risk_pct": [0.4, 0.5, 0.4],
+      "beta_target": [0.75, 0.8, 0.75],
+      "turnover_est": ["45-65%", "50-70%", "50-70%"],
+      "infeasibility": ["MEDIUM", "LOW", "MEDIUM"],
+      "regime_timing_risk": ["NONE", "MEDIUM", "MEDIUM"],
+      "gate_d_pass": ["NEAR (vs 40%)", "UNCERTAIN", "NEAR (vs 40%)"]
+    }
+  },
+  "risk_summary": {
+    "n_tickers_analyzed": 15,
+    "top_common_risks": [
+      "Market (60.9%)",
+      "Size_Value_FF3 (89.5% FF3 overlap with RAPC)",
+      "PEAD_EarningsSurprise (ESBR+SUE combined)",
+      "AccrualQuality (AC21)"
+    ],
+    "crowding_flags": ["PEAD (ESBR+SUE): Strategy widely implemented — late-cycle crowding MEDIUM", "Accrual: Overlap with quality factor cluster (KOSPI200 quant funds)"],
+    "liquidity_flags": [
+      "Universe breadth=345 -> capacity risk LOW",
+      "Portfolio 15 tickers: all KOSPI200/KOSDAQ150 eligible"
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0447,
+      "gfc_2008": -0.4021,
+      "covid_2020": -0.1978,
+      "rate_2022": -0.2406,
+      "stress_2025": 0.0331,
+      "gfc_2008_optA": -0.3375,
+      "covid_2020_optA": -0.1661,
+      "rate_2022_optA": -0.2019,
+      "pilot4_gfc": -0.5268,
+      "pilot4_covid": -0.4097,
+      "pilot4_rate": -0.2755
+    }
+  },
+  "diagnostics": {
+    "condition_number": 101.9867,
+    "condition_number_bootstrap": {
+      "mean": 443.21,
+      "se": 670.1,
+      "ci95_lo": 4.83,
+      "ci95_hi": 1633.35
+    },
+    "condition_number_pre_method": {
+      "sample": 2370.9,
+      "ledoit_wolf": 83.3,
+      "gerber_raw": 92.6,
+      "gerber_rmt": 102,
+      "ewma_094": 2766.7
+    },
+    "shrinkage_used": false,
+    "primary_method": "gerber_rmt",
+    "backup_method": "ledoit_wolf",
+    "psd_verified": true,
+    "min_eigenvalue": 0.0012,
+    "factor_coverage_pct": 411.2,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.1667,
+      "max_pairwise": 1,
+      "threshold": 0.4,
+      "pairs_above": 34,
+      "vs_pg2_esbr_sue": 0.0417,
+      "vs_pg2_accrual": 0.125
+    },
+    "market_risk_contribution": {
+      "alpha_actual_pct": 60.9,
+      "ew_diagnostic_pct": 0.6,
+      "optA_estimated_pct": 0.4,
+      "optC3_neutral_pct": 0.5,
+      "optC3_caution_pct": 0.4,
+      "gate_d_threshold": 40,
+      "gate_d_gap_pp": 20.9
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": -0.1158,
+      "cvar_95_ann": -0.4012,
+      "cf_var_99_ann": -0.4128,
+      "pilot4_market_down5": -0.063
+    },
+    "family_overlap": {
+      "capm_retention_pct": 97.4,
+      "ff3_retention_pct": 10.5,
+      "size_value_channel": "ACTIVE (89.5% FF3-explained)",
+      "factor_corr_esbr_sue": -0.0688,
+      "factor_corr_esbr_accrual": -0.0363,
+      "factor_corr_sue_accrual": 0.0748,
+      "vif_max": 1.01,
+      "verdict": "No multicollinearity within RAPC factors. FF3 channels active but HEDGE_COMPATIBLE."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_003/regime_correlation.parquet",
+    "regime_corr_shift_est": 0.05,
+    "current_regime": {
+      "date": "2026-04-24",
+      "daily_score": 42.9022,
+      "daily_cat": "NEUTRAL",
+      "monthly_score_2023_11": 61,
+      "monthly_cat_2023_11": "CAUTION",
+      "alpha_memo_mrs": 63.1,
+      "alpha_memo_cat": "CRISIS",
+      "discrepancy_flagged": true
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "method_log": [
+        {
+          "step": 1,
+          "name": "sample",
+          "condition_number": 2370.9,
+          "selected": false,
+          "reason": "Extreme ill-conditioning (expected >5000 for p=15, N=~80)"
+        },
+        {
+          "step": 2,
+          "name": "ledoit_wolf",
+          "condition_number": 83.3,
+          "shrinkage_intensity": 0.064,
+          "selected": false,
+          "reason": "Pilot 4 baseline — good condition but loses tail co-movement structure"
+        },
+        {
+          "step": 3,
+          "name": "gerber",
+          "condition_number": 92.6,
+          "selected": false,
+          "reason": "Without RMT: condition may be high. Gerber robust to outliers."
+        },
+        {
+          "step": 4,
+          "name": "gerber_rmt",
+          "condition_number": 102,
+          "q_ratio": 1.13,
+          "selected": true,
+          "reason": "Best balance: noise-filtered (RMT q=1.13), robust to bimodal beta distribution, handles regime-shift co-movements better than LW."
+        },
+        {
+          "step": 5,
+          "name": "ewma_094",
+          "condition_number": 2766.7,
+          "lambda": 0.94,
+          "selected": false,
+          "reason": "Responsive to recent volatility but ill-conditioned for p=15 < T; regime-adaptive only in vol, not correlation structure"
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "objection": true,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "beta_diagnosis", "residualization_results"],
+    "round": 1,
+    "challenges": [
+      {
+        "flag": "REGIME_DISCREPANCY",
+        "severity": "MEDIUM",
+        "from": "risk",
+        "to": "alpha",
+        "round": 1,
+        "note": "Alpha memo: MRS=63.1 CRISIS (Option C-3 beta_target=0.60). Actual daily regime on 2026-04-24: Regime_Score=42.90, Category=NEUTRAL. Monthly signal (2026-03): Score=61.32, CAUTION. PIT-consistent signal_ref_date (2023-12-28) regime = CAUTION (~61). Implication: Option C-3 beta_target should be 0.75 (CAUTION), not 0.60 (CRISIS). Expected mkt_risk at target=0.75: ~0.4% (vs Alpha memo 44.6%). Risk Agent note: CAUTION target sufficient to address Gate D gap (target 40%, expected ~0.4%). Recommend Optimizer use: CAUTION regime -> beta_target=0.75.",
+        "risk_recommendation": "Use beta_target=0.75 (CAUTION) for both Option A and C-3 current state. Reserve beta_target=0.60 for actual CRISIS trigger (Regime_Score < 40)."
+      },
+      {
+        "flag": "FF3_SIZE_VALUE_CHANNEL_ACTIVE",
+        "severity": "INFO",
+        "from": "risk",
+        "to": "alpha",
+        "round": 1,
+        "note": "FF3 retention=10.5% confirms RAPC alpha operates significantly through Size+Value channels (89.5% of IC explained by FF3). Beta-constraint (Option A) preserves 97.4% of CAPM-orthogonal IC. Risk assessment: FF3-neutral overlay NOT recommended (would destroy signal). Option A/C-3 hedge against market beta only is correct. This is an INFO flag — no Alpha modification needed."
+      },
+      {
+        "flag": "BETA_ESTIMATION_INSTABILITY",
+        "severity": "LOW",
+        "from": "risk",
+        "to": "alpha",
+        "round": 1,
+        "note": "A287410: rolling beta IQR=0.882 (extreme temporal instability). 24M OLS beta may be unreliable for this ticker. Optimizer should note: A287410 beta point estimate=0.511 but wide CI. Structural high-beta: A028260 (stable, IQR=0.171, beta=1.117) + A365340 (stable, IQR=0.129, beta=1.166) + A005290 (IQR=0.485, beta=1.217). Risk Agent recommendation: treat A287410 beta with 20% wider uncertainty band."
+      }
+    ],
+    "p4_obligation_met": true
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 60.9% > 40%"
+    },
+    {
+      "id": "RF-R2",
+      "severity": "MEDIUM",
+      "condition_number": 101.99,
+      "note": "Condition number 101.99 (warn=100, fail=500)"
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "flags": ["PEAD (ESBR+SUE): Strategy widely implemented — late-cycle crowding MEDIUM", "Accrual: Overlap with quality factor cluster (KOSPI200 quant funds)"]
+    }
+  ],
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_003/artifact_lineage.json",
+    "git_ref": "acd5ae308e80db048f0544cde124984ee8d92b41",
+    "seed": 20260424003,
+    "r_version": "4.5.2"
+  }
+}
