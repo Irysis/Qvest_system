@@ -1,0 +1,211 @@
+{
+  "task_id": "WT-D20260424_003",
+  "parent_wt": "WT-D20260424_002",
+  "agent": "judge",
+  "model": "claude-opus-4-7",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 5 RAPC + Market Hedge Overlay (Option A Beta-Constrained MVO)",
+  "alpha_model": "RAPC (ESBR+SUE+Accrual IC-weighted expanding composite) — inherited from Pilot 3/4. Opus 4.7 re-run: market risk 48%→60.9% / CAPM retention 81.5%→97.4% 실측 교정.",
+  "risk_model": "Ledoit-Wolf Oracle 36M Analytical (cond=11.04, PSD, min_eig=0.0054, shrink_intensity=0.3615). Self-directed 5-candidate method shopping.",
+  "optimizer": "MVO_lam1.0_psi0.3_betaA0.75_gamma0.5 (Option A static beta-constraint soft penalty). n=11 natural QP convergence (min_names_enforced=FALSE, lambda_retries=0). 10-candidate method shopping.",
+  "verdict": "GRADE_C_PLUS",
+  "disposition": "CONDITIONAL_PROGRESS — optimizer breadth 자연 수렴 + absolute performance 추가 개선. Active management 여전히 fail.",
+  "overall_pass": false,
+  "opus_authority_note": "Judge Opus 4.7. Risk WARN_SEQUENCE (lineage <1초 순서 역전) 독립 검증 결과: file content 정합적, Forge 수정 없음, reclassify PASS_WITH_NOTES. sonnet→Opus Alpha 교정(48%→60.9%, 81.5%→97.4%)은 PIT 진정성 강화 실증.",
+  "gates": [
+    {
+      "gate_id": "A",
+      "name": "PIT / Lookahead Compliance",
+      "metric": "C1~C15 + lockbox sealed + Forge audit + commission + cost_model lineage",
+      "threshold": "all PASS",
+      "actual": "integration_audit r12_pure_function: alpha hash_match=PASS (a207d0b0...), optimization hash_match=PASS (2ccaf5d6...), risk hash_match=WARN_SEQUENCE (recorded d5ba9fe vs current dfc530c — lineage 기록이 file write 직전 <1초 역전). lockbox sealed 2024-01-23 > backtest_end 2024-01-22 (SEALED). commission=0.0015 (15bps v2.3_kr_retail_15bps) 적용. C1 rolling/expanding PASS. C2 static weights 동일일 순환 없음 PASS. C4 fundamental quarterly 45d / annual May PASS. C5 t-1 lag PASS. C9 static weights DD/VT n/a. C13 Z_Score_Aligned only PASS. C14 IC Usable_Date <=sig_date PASS. C15 Factor DB load_month_factors() 경유 확인. Judge OOS helper lockbox_access_log 3-entry 생성 (benchmark.parquet + weights.csv + RAWDATA lockbox_slice).",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "name": "Package Isolation / Integrity",
+      "metric": "alpha/risk/opt hash + Σw=1 + long-only + n∈[10,20] + max_w≤0.10",
+      "threshold": "all match OR documented reclassification",
+      "actual": "alpha hash PASS (a207d0b0...), opt hash PASS (2ccaf5d6...), risk WARN_SEQUENCE (<1s inversion — not Forge modification, Risk Agent lineage-write preceded file-write). Σw=1.0000 (0.1×9 + 0.07272 + 0.02728 = 1.0), long-only true, n=11 ∈ [10,20], max_w=0.10 ≤ 0.10. Alpha winsor: A140860 3.0→1.964 (<2σ). Judge 독립 검증: risk_package.json 내용 hash 재계산 결과 dfc530c... = current (파일 content 자체는 definitive). AX-008 3-source rule: Forge(backtest) + Risk(post-WARN reclassify) + Judge(independent content check) = 3 PASS.",
+      "verdict": "PASS_WITH_NOTES",
+      "remediation": "Risk Agent lineage recording sequence (file write 전 lineage emit)은 Risk code에서 수정 필요. Pilot 6에서 record_package_lineage() 호출을 write_json() 이후로 재배치. 현 Pilot 5 판정은 file content integrity로 무결성 보장."
+    },
+    {
+      "gate_id": "C",
+      "name": "Net Alpha After Cost",
+      "metric": "SR_full, rank_ic, DSR, Harvey_t, lockbox_SR",
+      "threshold": "SR>=0.5 OR (SR>=0.3 AND DSR>=0.1); rank_ic>=0.04; Harvey_t>=3",
+      "actual": "Full SR=0.649 (P4 0.491 대비 +0.158 / +32%, **threshold 0.5 PASS with margin 0.149**). Val SR=0.875 (P4 0.130 대비 +0.745 / +573%, L-191 회피 실증). rank_ic=0.0318 (<0.04, Pilot 3→4→5 불변 — Alpha fundamental weakness 상속). DSR=0.039 (<0.5, P4 불변). Harvey t=4.42 (>3.0 PASS). val_harvey_t=2.55 (borderline, n_val=24). **Lockbox SR=0.844 (Judge OOS helper)** — OOS net-of-cost 절대 성과 PASS, threshold 0.5 대비 +0.344 margin.",
+      "verdict": "CONDITIONAL_PASS",
+      "remediation": "SR_full/Lockbox_SR 측면 PASS (Pilot 4 borderline 0.491 → Pilot 5 0.649 margin 확보). 그러나 (1) rank_ic=0.0318 여전 borderline fail (Pilot 3→5 구조적 상속) — alpha signal 근본 강화 필요 (PEAD D1/D30/D60 window 세분화, accrual QoQ 차분, BH/BY multiple testing), (2) DSR=0.039 << 0.5 — multi-testing penalty 적용 시 신호 강도 미약. (3) Val SR 0.875 > Train 0.629 (Pilot 4 대비 L-191 완화 실증). 차기 Pilot 6: alpha-strengthening sprint 최우선."
+    },
+    {
+      "gate_id": "D",
+      "name": "Crowding / Factor Saturation Stress",
+      "metric": "market_risk_pct, TDC vs PG2, family saturation",
+      "threshold": "market_risk<40%, TDC_PG2<0.40, no saturated family",
+      "actual": "market_risk contribution=58.7% (Optimizer estimate after Option A applied; Alpha authoritative raw=60.9%). **Gate D threshold 40% 초과 gap=18.7pp** (P4 gap 8pp 대비 12.9pp 악화 — 그러나 이는 Alpha Opus 실측 교정 반영, P4의 48%는 Sonnet heuristic 과소추정이었음). Option A (beta_target=0.75, gamma=0.5)는 beta 0.789→0.766 (-0.023pp)만 축소. TDC PG2: ESBR_SUE=0.0417 / ESBR_Accrual=0.125 / SUE_Accrual=0.167 — 모두 <0.40 PASS. Factor VIF_max=1.01 — 다중공선성 없음. ESBR+SUE earnings_surprise family saturation 상속: regime modulation empirical validation 여전히 부재. FF3 retention=10.5% — RAPC는 size+value channels 경유 (primary CAPM-orthogonal 아님).",
+      "verdict": "FAIL",
+      "remediation": "Option A (gamma=0.5 soft, target=0.75)은 beta 0.766까지만 감소, market_risk 58.7% 여전. 차기 Pilot 6 강화 방안: (1) **Option C-2: beta-neutral alpha pre-score** (Alpha 단계에서 D10_Blume_Adj_Beta로 pre-residualize, portfolio beta 0.65-0.70 예상) — Alpha territory 수정 필요. (2) **Option C-3 MRS-dynamic**: Risk agent의 regime discrepancy 수정 반영 (현재 실제 NEUTRAL 42.9 / RISK_ON 18.3 기준 → beta_target=0.80 or 0.75 유동). (3) gamma 0.5→2.0 hard-ish upgrade (infeasibility risk 증가 cost). (4) mandate revision 검토: no_short_legal_kr 완화 시 KOSPI200 futures short 20% (cost ~50bps pa) 가능. 현재 long-only mandate + Option A soft 조합은 구조적으로 Gate D 달성 불가."
+    },
+    {
+      "gate_id": "E",
+      "name": "Concentration / Breadth (Natural QP Convergence)",
+      "metric": "n_names, HHI, max_weight, min_names_enforced, lambda_retries",
+      "threshold": "n>=10 권고 / HHI<=0.10 / max_w<=0.10 / enforced=FALSE 선호",
+      "actual": "n=11 (✓ P4 15 forced → P5 11 자연 수렴), HHI=0.0960 (✓ <=0.10 margin 0.004), max_w=0.10 (✓ 10/11 종목 upper bound saturated, binding alpha spread), min_weight=0.0273 (A028050), A140860 winsor applied 3.0→1.964 (✓ 2σ). **min_names_enforced=FALSE (P4 TRUE → P5 FALSE L-193 개선 실증)**. **lambda_retries=0 (P4 4 → P5 0 — forced alpha-top filling 완전 해소)**. effective N = 1/HHI = 10.42. 4 high-beta distorters (A028260/A365340/A006260/A005290) Option A soft penalty로 weight=0 exclusion (beta range 1.117~1.217).",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "F",
+      "name": "Drift / Regime Adaptation (L-191 avoidance + Lockbox OOS)",
+      "metric": "oos_is_ratio + lockbox SR/CAGR/MDD + active IR + L-191 Val vs Train",
+      "threshold": "oos_is_ratio>=0.7 + lockbox SR 의미있는 양 + L-191 Val>=Train",
+      "actual": "**Judge OOS helper 실행 결과 (독립 측정)**: Lockbox (2024-01-23~2026-01-23, n_days=487) **CAGR=18.70% / SR=0.844 / MDD=-27.65% / Calmar=0.676** — 목표 CAGR 16% **달성 (OOS)**, SR threshold 0.5 대비 +0.344 margin. **oos_is_ratio=3.349** (threshold 0.7 대비 4.78× 초과 PASS). 그러나 **Lockbox active α=-19.06% / IR=-1.021 / TE=18.67%** — Pilot 4 -1.311 대비 +0.29 개선 but 여전히 심각한 BM 추적 실패. L-191 회피: Forge 측정 기준 Val SR 0.875 > Train SR 0.629 (Pilot 4 Val 0.130 << Train 0.576 역전 패턴 **회복**). Judge helper 기준 (1990~ train full): Train 0.347 < Val 0.157 < Lockbox 0.844 — lockbox가 전기간을 압도. Bootstrap window 의존성 확인 필요.",
+      "verdict": "MIXED_PASS",
+      "remediation": "절대 성과 OOS **정식 PASS** (lockbox SR 0.844, CAGR 18.70% — 목표 16% 초과 달성). L-191 회피 부분 PASS (Forge window 기준 Val>Train 회복). 그러나 Active IR=-1.021이 Pilot 4 -1.311 대비 +0.29 개선에 그침 — optimizer 제약 + beta constraint로 구조적 한계 도달. 핵심 진단: **CAPM retention 97.4%인 alpha가 BM 대비 underperform**하는 원인은 (a) RAPC signal이 market-cap weighted BM 대비 size/value tilt를 통해 up-market에서 beta<1 penalty 수반, (b) Pilot 5 lockbox는 2024~2025.12 정상 구간이라 KOSPI200 자체가 강세 → low-beta portfolio underperform. 구조적 해결: multi-sleeve (core_alpha + defense_sleeve) or 50+ 분산으로 BM 추적력 확보."
+    }
+  ],
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS_WITH_NOTES",
+    "C_NET_ALPHA": "CONDITIONAL_PASS",
+    "D_CROWDING": "FAIL",
+    "E_CONCENTRATION": "PASS",
+    "F_DRIFT": "MIXED_PASS",
+    "pass_count": 2,
+    "pass_with_notes_count": 1,
+    "conditional_pass_count": 1,
+    "mixed_pass_count": 1,
+    "fail_count": 1,
+    "overall": "GRADE_C_PLUS (2 PASS + 1 PASS_WITH_NOTES + 1 CONDITIONAL_PASS + 1 MIXED_PASS + 1 FAIL)"
+  },
+  "pilot4_vs_pilot5_comparison": {
+    "portfolio_construction": {
+      "n_names": {"p4": 15, "p5": 11, "delta": "-4 (natural QP)", "verdict": "PASS (structural improvement)"},
+      "HHI": {"p4": 0.0744, "p5": 0.0960, "delta": "+0.0216", "verdict": "PASS (<=0.10)"},
+      "max_weight": {"p4": 0.08, "p5": 0.10, "delta": "+0.02", "verdict": "PASS (<=0.10)"},
+      "min_names_enforced": {"p4": true, "p5": false, "verdict": "L-193_RESOLVED"},
+      "lambda_retries": {"p4": 4, "p5": 0, "verdict": "FORCED_FILLING_RESOLVED"},
+      "beta_port": {"p4": 0.789, "p5": 0.7664, "delta": "-0.023", "verdict": "MARGINAL_REDUCTION"}
+    },
+    "train_val_performance_forge_windows": {
+      "full_SR": {"p4": 0.491, "p5": 0.649, "delta": "+0.158 (+32%)", "verdict": "PASS"},
+      "full_CAGR_pct": {"p4": 9.25, "p5": 12.03, "delta": "+2.78pp (+30%)", "verdict": "PASS"},
+      "full_MDD_pct": {"p4": -36.83, "p5": -32.32, "delta": "+4.51pp (MDD 완화)", "verdict": "PASS"},
+      "train_SR": {"p4": 0.576, "p5": 0.629, "delta": "+0.053", "verdict": "PASS"},
+      "val_SR": {"p4": 0.130, "p5": 0.875, "delta": "+0.745 (+573%)", "verdict": "L-191_RECOVERED"}
+    },
+    "lockbox_OOS_judge_helper": {
+      "lockbox_SR": {"p4": 0.774, "p5": 0.844, "delta": "+0.070 (+9%)", "verdict": "P5_IMPROVED"},
+      "lockbox_CAGR_pct": {"p4": 17.14, "p5": 18.70, "delta": "+1.56pp", "verdict": "PASS (목표 16% 초과)"},
+      "lockbox_MDD_pct": {"p4": -34.17, "p5": -27.65, "delta": "+6.52pp 완화", "verdict": "IMPROVED"},
+      "lockbox_Calmar": {"p4": 0.502, "p5": 0.676, "delta": "+0.174 (+35%)", "verdict": "IMPROVED"},
+      "lockbox_active_IR": {"p4": -1.311, "p5": -1.021, "delta": "+0.29 (+22%)", "verdict": "IMPROVED_STILL_FAIL"},
+      "lockbox_alpha_vs_bm_pp": {"p4": -20.40, "p5": -19.06, "delta": "+1.34pp", "verdict": "MARGINAL_IMPROVEMENT"},
+      "oos_is_ratio": {"p4": 4.241, "p5": 3.349, "verdict": "BOTH_PASS (>=0.7)"}
+    },
+    "pattern_analysis": "Pilot 5는 Pilot 4 대비 3개 축에서 **동시 개선**을 달성함. (1) Portfolio construction: min_names forced 제거 → natural QP 수렴 n=11 (L-193 완전 해소, lambda_retries 4→0). (2) Absolute performance: Full SR +32% / Lockbox SR +9% / MDD 완화 +4.51pp / Calmar +35%. (3) Active management: active IR -1.311 → -1.021 (+22% 개선) — 그러나 여전히 심각한 BM 추적 실패 지속. 핵심 교훈: **beta constraint (Option A soft gamma=0.5)는 Gate D 40% 해결 불가** (market_risk 60.9%→58.7% 미미), 하지만 **natural QP 수렴 + breadth 자유화는 단독으로도 active IR 개선에 기여**. Pilot 5의 해결책은 L-193 소프트닝이며, Market hedge overlay 효과는 미미함. 구조적 Gate D 해결은 Option C-2 (beta-neutral alpha pre-score) or mandate revision (long-short) 필요."
+  },
+  "ax_compliance": {
+    "AX-000": "N/A — exploratory Pilot 5, not admission decision",
+    "AX-001_v2": "N/A — non-defense role (core_alpha earnings composite)",
+    "AX-002": "PASS — harness 내 성과 only, lockbox sealed 준수, Judge OOS helper lockbox 단일 access (3 log entries), sonnet→Opus 교정은 프로세스 우회 아닌 empirical 강화",
+    "AX-003": "PASS — family=earnings_surprise+accrual_quality (value 아님)",
+    "AX-004": "PARTIAL — accrual quality 요소 포함하나 multi-axis composite (ESBR+SUE+AC21) + breadth 11 + long-only 예외지대. 단일 Q-family 구조적 실패 아님.",
+    "AX-005": "N/A — defense 역할 아님",
+    "AX-007": "WARNING — structure=single_sleeve_long_only_top11, roles=[core_alpha_secondary]. 예외 4종 중 어느 것도 충족 불가: (a) long-short 불가 (no_short_legal_kr=true), (b) 50+ 분산 미달 (n=11), (c) multi-sleeve 없음 (single sleeve), (d) ML sizing 미적용. Active IR=-1.021이 signal-to-portfolio translation 구조적 단절 유지. Pilot 4 대비 +0.29 개선은 있으나 예외 지대 진입 불가.",
+    "AX-008": "PASS — Forge(backtest) + Risk(WARN_SEQUENCE post-judgment reclassify) + Judge(본 심사 + OOS helper independent lockbox access) 3-source 중 최소 2-source PASS. Risk WARN은 file content integrity 독립 검증으로 해소."
+  },
+  "multi_objective_8axes": {
+    "sharpe_full": {"value": 0.649, "target": 2.0, "gap": -1.351, "status": "BELOW", "vs_pilot4": "+0.158"},
+    "sharpe_lockbox": {"value": 0.844, "target": 2.0, "gap": -1.156, "status": "BELOW (OOS)", "vs_pilot4": "+0.070"},
+    "cagr_full_pct": {"value": 12.03, "target": 16.0, "gap": -3.97, "status": "BELOW", "vs_pilot4": "+2.78pp"},
+    "cagr_lockbox_pct": {"value": 18.70, "target": 16.0, "gap": 2.70, "status": "PASS (OOS 목표 초과)", "vs_pilot4": "+1.56pp"},
+    "mdd_full_pct": {"value": -32.32, "target": -25.0, "gap": -7.32, "status": "BELOW", "vs_pilot4": "+4.51pp 완화"},
+    "mdd_lockbox_pct": {"value": -27.65, "target": -25.0, "gap": -2.65, "status": "BELOW (marginal)", "vs_pilot4": "+6.52pp 완화"},
+    "sortino_full": {"value": 0.930, "target": 1.5, "gap": -0.570, "status": "BELOW", "vs_pilot4": "+0.234"},
+    "calmar_full": {"value": 0.372, "target": 0.6, "gap": -0.228, "status": "BELOW", "vs_pilot4": "+0.121"},
+    "calmar_lockbox": {"value": 0.676, "target": 0.6, "gap": 0.076, "status": "PASS (OOS)", "vs_pilot4": "+0.174"},
+    "turnover_ann_pct": {"value": 47.8, "budget": 600, "status": "OK", "vs_pilot4": "-2.7pp"},
+    "rank_ic": {"value": 0.0318, "target": 0.04, "gap": -0.0082, "status": "BORDERLINE_FAIL (Pilot 3→5 불변)"},
+    "dsr": {"value": 0.039, "target": 0.5, "gap": -0.461, "status": "FAR_BELOW (Pilot 3→5 불변)"},
+    "active_ir_lockbox": {"value": -1.021, "target": 0.3, "gap": -1.321, "status": "CRITICAL_FAIL", "vs_pilot4": "+0.29 (+22% 개선)"},
+    "expected_ir_grinold": {"value": 1.337, "formula": "ICIR(0.403)*sqrt(N=11)", "note": "theoretical vs realized active IR -1.021 gap 2.36 → optimizer translation efficiency 극단적 저하"}
+  },
+  "pilot_cumulative_history": {
+    "pilot_1_L190_rate_hedge": {"CAGR": 8.72, "SR": 0.413, "MDD": -54.30, "result": "hard_fail"},
+    "pilot_2_L191_macro_residual": {"CAGR": 4.06, "SR": 0.289, "MDD": -44.03, "result": "Val<Train drift"},
+    "pilot_3_RAPC": {"CAGR": 6.00, "SR": 0.282, "MDD": -44.59, "lockbox_IR": -1.003, "result": "DISCARD_WITH_IMPROVEMENTS (breadth 한계 n=8)"},
+    "pilot_4_RAPC_breadth_constrained": {"CAGR": 9.25, "SR": 0.491, "MDD": -36.83, "lockbox_SR": 0.774, "lockbox_IR": -1.311, "result": "GRADE_C CONDITIONAL_PROGRESS (Task #26 breadth 제약 structural improvement but active IR 악화)"},
+    "pilot_5_RAPC_hedge_overlay": {"CAGR": 12.03, "SR": 0.649, "MDD": -32.32, "lockbox_SR": 0.844, "lockbox_CAGR": 18.70, "lockbox_MDD": -27.65, "lockbox_IR": -1.021, "n_names": 11, "result": "GRADE_C_PLUS CONDITIONAL_PROGRESS"},
+    "pattern_evolution": "P1 hard_fail → P2 val drift → P3 breadth 한계 → P4 breadth 해결 but active IR 악화 → **P5 breadth 자연수렴 + absolute performance 개선 + active IR 소폭 회복 (-1.311→-1.021)**. 진전 축: (portfolio construction) ✓✓ / (absolute performance) ✓ / (active management) △ (여전히 critical fail). Alpha signal 근본 재설계는 여전히 최우선 과제 — rank_ic 0.0318 Pilot 3→5 동일 borderline fail 지속.",
+    "breadth_fix_empirical_effectiveness": "Pilot 5 실증 발견: **natural QP 수렴은 forced min_names보다 우월** (Pilot 4 n=15 forced vs Pilot 5 n=11 natural). L-193에서 경고한 'forced alpha-top filling'이 active IR 악화의 원인임을 Pilot 5 실험적 확인. 소프트닝 (min_names 15→10)으로 lambda_retries 4→0으로 해소. 이는 Pilot 5 핵심 기여."
+  },
+  "l_code_contribution": {
+    "l_code": "L-194",
+    "lesson_text": "Pilot 5 (WT-D20260424_003) 실증 결과: min_names floor 15→10 softening + bounds[0,0.10] + hhi_cap=0.10 조합으로 optimizer가 **n=11 자연 QP 수렴** (lambda_retries 4→0, min_names_enforced FALSE). Pilot 4 forced filling이 active IR 악화(-1.003→-1.311)의 proximate cause였음을 empirical 확인. Pilot 5에서 active IR -1.021 (+0.29 개선, +22%) 및 absolute SR +32% / CAGR +30% / MDD 완화 +4.51pp 동시 달성. 그러나 market_risk 58.7% (Option A beta_target=0.75 gamma=0.5 적용 후)는 Gate D 40% threshold 여전 초과 — **beta constraint soft penalty 단독으로는 Gate D 해결 불가**. 구조적 해결은 (1) Option C-2 beta-neutral alpha pre-score (Alpha territory), (2) multi-sleeve or 50+ 분산 (AX-007 예외지대), (3) long-short mandate revision 중 택일. 교훈: breadth는 natural convergence로, crowding은 alpha-level decorrelation으로 접근.",
+    "core_reference": "L-193 (Pilot 4 forced filling), AX-007 (structural exception 4 types), QEPM §10 (multi-testing), Grinold-Kahn (2000) Ch.5 factor residualization",
+    "tags": ["Pilot5", "breadth_natural_convergence", "beta_constraint_limitation", "active_IR_partial_recovery", "RAPC_inheritance", "Option_A_soft_penalty"]
+  },
+  "p4_challenge_review": {
+    "REGIME_DISCREPANCY_MEDIUM": {
+      "challenger": "Risk",
+      "target": "Alpha MRS=63.1 CRISIS assertion",
+      "judge_verdict": "RISK_CORRECT",
+      "rationale": "Alpha memo MRS=63.1 CRISIS는 PIT 위반. 실제 signal_reference_date 2023-11-30 unified_regime_signal_daily.parquet score=18.27 RISK_ON. Daily 2026-04-24 score=42.9 NEUTRAL. Risk가 PIT 기반으로 올바름. Alpha Opus 재실행에서도 MRS=63.1 표기는 '2026-04 현재' 혼동이며, 실제 portfolio construction 시점(2023-12-28) 기준으로는 RISK_ON. Option C-3 beta_target=0.60 (CRISIS) 제안은 incorrect, Risk의 beta_target=0.75 (RISK_ON) 또는 Option A 정적 0.75가 맞음. Optimizer는 Option A를 채택 — 적절."
+    },
+    "FF3_SIZE_VALUE_INFO": {
+      "challenger": "Risk",
+      "target": "Alpha FF3 retention 10.5% interpretation",
+      "judge_verdict": "CONFIRMED",
+      "rationale": "FF3 retention=10.5%는 RAPC alpha가 size+value channel을 통해 89.5% 설명됨을 의미. 이는 CAPM-orthogonal primary alpha가 아니라 size+value tilt. Gate D FF3_size_value_channel ACTIVE 상태. Risk의 'No multicollinearity, FF3-neutral NOT recommended, Option A CAPM-level preserves 97.4% IC' 판단 타당. Judge 수용."
+    },
+    "BETA_A287410_LOW": {
+      "challenger": "Risk",
+      "target": "A287410 rolling beta IQR=0.882 temporal instability",
+      "judge_verdict": "MONITORED",
+      "rationale": "A287410 rolling_mean=0.511 low-beta anchor로 사용되나 IQR=0.882 극심한 temporal variation. Pilot 5 포트폴리오에서 weight=0.10 upper bound. 향후 out-of-sample에서 beta 급변 시 portfolio beta_port=0.766 estimate 불안정 risk. 20% uncertainty band 적용 권고 — 실제 lockbox OOS에서도 문제 발생하지 않았으나(lockbox SR 0.844), 지속 모니터링 필요."
+    }
+  },
+  "role_honesty_audit": {
+    "declared_role": "core_alpha (earnings-surprise composite)",
+    "validated_role": "core_alpha_with_size_value_tilt",
+    "evidence": "FF3 retention 10.5% / CAPM retention 97.4% — size+value channel 89.5%. Pure CAPM-orthogonal alpha 아님. Market beta 0.766 (low-beta tilt).",
+    "defense_disguise_check": "NEGATIVE (MDD -32.32% / ES99_m -13.76% / WorstMonth -13.84% — defense 역할 미달). Lockbox CAGR 18.70% 강력 but Active IR -1.021 — defense가 아닌 core_alpha 실패.",
+    "core_adequacy": "PARTIAL — absolute performance OOS 목표 초과 (CAGR 18.70 > 16, Calmar 0.676 > 0.6) but Active IR critical fail로 BM 대비 alpha 생성 실패. Admission 불가.",
+    "verdict": "HONEST_WITH_CAVEAT — declared role accurate but size+value tilt disclosure 필요"
+  },
+  "next_actions": [
+    "즉시: Pilot 5 GRADE_C_PLUS disposition. STR_PILOT_5 별도 등록 금지 (active IR -1.021 admission 기준 미달).",
+    "차기 Pilot 6 최우선 (alpha-strengthening sprint): (a) RAPC composite strengthening — PEAD D1/D30/D60 window 세분화, accrual QoQ 차분, BH/BY multiple testing correction, (b) Option C-2 beta-neutral alpha pre-score (Alpha territory, expected portfolio beta 0.65-0.70 natural, Gate D 40% 해결 가능성).",
+    "구조 연구 (AX-007 예외지대): multi-sleeve (core_alpha + defense_sleeve 연동) or 50+ 분산 prototype. Long-short 예외는 no_short_legal_kr mandate revision 선결.",
+    "L-194 등재: natural QP convergence (min_names softening)의 empirical superiority vs forced min_names floor. methodology_active.md 업데이트.",
+    "Task #26 closure 확정: optimizer breadth 제약 structural improvement 실증 완료. min_names 강제 대신 **bounds[0,0.10] + hhi_cap=0.10 + min_names=10 soft floor** 조합을 production 패턴으로 승격 권고. STR_1631/1656 재구성 시 적용.",
+    "Risk Agent lineage sequence 수정 (Pilot 6): record_package_lineage() 호출을 write_json() 이후로 재배치. WARN_SEQUENCE 재발 방지.",
+    "Governor 체인: PG0 gap 재진단 필요. Pilot 5 lockbox CAGR 18.70% / SR 0.844는 current PG2 (STR_1631 80% + STR_1656 20% = SR 1.193 / CAGR 16.14%) 개별 성과보다 약함. PG1 admission 불가 but core_alpha sleeve 후보 검토 가치는 있음."
+  ],
+  "rationale_summary": "Pilot 5는 Pilot 4 (GRADE_C) 대비 3개 축에서 **동시 개선**을 달성함. (1) Portfolio construction 구조적 개선: min_names 15→10 softening으로 natural QP 수렴 n=11, lambda_retries 4→0, min_names_enforced=FALSE — Pilot 4 forced alpha-top filling 해소 실증 (L-193 완전 resolution). (2) Absolute performance: Full SR 0.491→0.649 (+32%), CAGR 9.25→12.03 (+30%), MDD -36.83→-32.32 (+4.51pp 완화). Lockbox OOS (Judge helper): CAGR 18.70% > 목표 16%, SR 0.844, MDD -27.65%, Calmar 0.676 > 0.6 — **OOS 절대 성과 정식 PASS**. oos_is_ratio 3.349 (threshold 0.7) — no signal decay. (3) Active management: lockbox active IR -1.311 → -1.021 (+0.29 / +22% 개선) — 그러나 여전히 critical fail 지속. Gate D market_risk 58.7% (Option A beta_target=0.75 gamma=0.5 적용 후)는 threshold 40% 초과 — **beta constraint soft penalty 단독으로는 Gate D 해결 불가 empirical 확인**. Gate A/E PASS + Gate B PASS_WITH_NOTES + Gate C CONDITIONAL_PASS + Gate F MIXED_PASS + Gate D FAIL. GRADE_C_PLUS CONDITIONAL_PROGRESS — Pilot 4의 structural improvements 누적 + absolute performance 추가 개선 + active management 소폭 회복. 그러나 admission 기준 (active IR ≥ 0.3) 미달, STR 별도 등록 불가. 차기 Pilot 6 방향: (a) alpha-strengthening sprint (rank_ic 0.0318 → 0.04+) 최우선, (b) Option C-2 beta-neutral alpha pre-score (Gate D 구조적 해결), (c) AX-007 예외지대 진입 (multi-sleeve or 50+ 분산).",
+  "judge_oos_helper_artifacts": {
+    "equity_curve_full_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/backtest_result/equity_curve_full.png",
+    "equity_curve_oos_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/backtest_result/equity_curve_oos.png",
+    "lockbox_oos_summary_json_copy": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_003/lockbox_oos_summary.json",
+    "oos_summary_original": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_003/backtest_result/oos_summary.json",
+    "lockbox_access_log": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_003/lockbox_access_log.json"
+  },
+  "v61_compliance": {
+    "R2B_judge_only_lockbox_access": true,
+    "R11_lineage_integrity": "PASS_WITH_NOTES (risk WARN_SEQUENCE reclassified by file content check)",
+    "R12_pure_function": "PASS (alpha + opt hash match, risk content-verified)",
+    "lockbox_sealed_verified": true,
+    "opus47_authority": true,
+    "gate_a_through_f_complete": true,
+    "ax_compliance_evaluated": true,
+    "role_honesty_audit_performed": true,
+    "p4_challenge_review_performed": true
+  },
+  "created_at": "2026-04-24T14:30:00+0900"
+}

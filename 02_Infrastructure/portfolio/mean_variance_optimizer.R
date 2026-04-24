@@ -47,8 +47,8 @@ suppressPackageStartupMessages({
 # 균등 재분배 → HHI 재계산. 수렴 혹은 max_iter 도달까지 반복.
 # long-only + bounds + 합=target_sum 유지.
 .project_hhi <- function(w,
-                          cap = 0.10,
-                          bounds = c(0, 0.10),
+                          cap = 0.15,
+                          bounds = c(0, 0.15),
                           target_sum = 1,
                           step = 0.01,
                           max_iter = 500,
@@ -145,10 +145,10 @@ mvo_weights <- function(alpha,
                          confidence = NULL,
                          lambda = 1.0,
                          psi = 0.3,
-                         bounds = c(0, 0.10),
+                         bounds = c(0, 0.15),
                          max_names = 20,
-                         min_names = 15L,
-                         hhi_cap = 0.10,
+                         min_names = 20L,
+                         hhi_cap = 0.15,
                          alpha_winsor = 2.0,
                          current_weights = NULL,
                          turnover_penalty = 0.0,
@@ -434,10 +434,10 @@ mvo_weights <- function(alpha,
 mvo_grid_search <- function(alpha, cov_matrix,
                              lambda_grid = c(0.5, 1.0, 2.0, 5.0),
                              phi_grid = c(0.0, 0.2, 0.5),
-                             bounds = c(0, 0.10),
+                             bounds = c(0, 0.15),
                              max_names = 20,
-                             min_names = 15L,
-                             hhi_cap = 0.10,
+                             min_names = 20L,
+                             hhi_cap = 0.15,
                              alpha_winsor = 2.0) {
   results <- list()
   i <- 0
@@ -467,7 +467,7 @@ mvo_grid_search <- function(alpha, cov_matrix,
   )
 }
 
-cat("[mean_variance_optimizer.R] v2.1 (Task#26 breadth + HHI + winsor) Loaded. Functions:\n")
+cat("[mean_variance_optimizer.R] v2.2 (n=20 hard + max_w 0.15) Loaded. Functions:\n")
 cat("  mvo_weights(alpha, cov, confidence=NULL, lambda=1.0, psi=0.3,\n")
-cat("              bounds=c(0,0.10), max_names=20, min_names=15, hhi_cap=0.10, alpha_winsor=2.0)\n")
+cat("              bounds=c(0,0.15), max_names=20, min_names=20, hhi_cap=0.15, alpha_winsor=2.0)\n")
 cat("  mvo_grid_search(alpha, cov, lambda_grid, phi_grid)\n")
