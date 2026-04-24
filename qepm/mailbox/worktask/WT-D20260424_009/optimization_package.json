@@ -1,0 +1,254 @@
+{
+  "task_id": "WT-D20260424_009",
+  "parent_wt": "WT-D20260424_007",
+  "agent": "optimizer",
+  "model": "claude-sonnet-4-6",
+  "schema_version": "v6.1",
+  "as_of_date": "2026-04-24",
+  "pilot_label": "Pilot 11 — HRP 0.6 + Score 0.4 Frozen Hybrid | STR_1631 Weight Ablation",
+  "created_at": "2026-04-24T20:30:33+0900",
+  "seed": 20260424,
+  "n_names": 20,
+  "sum_weights": 1,
+  "hhi": 0.0514,
+  "beta_port": 1.0547,
+  "max_weight": 0.0674,
+  "expected_active_return": 3.1872,
+  "expected_tracking_error": 0.0397,
+  "expected_information_ratio": 80.0464,
+  "expected_cost_ann": 0.009,
+  "selection_objective": "net_ir",
+  "method_selected": "HRP_0.6_Score_0.4_frozen_hybrid",
+  "selection_mode": "q_lead_override",
+  "selected_reason": "q_lead_override_hybrid_ablation",
+  "actually_best_method": {
+    "method": "ERC",
+    "net_ir": 80.804
+  },
+  "min_names_enforced": false,
+  "hhi_enforced": false,
+  "hhi_converged": true,
+  "winsor_applied": false,
+  "winsor_n_clipped": 0,
+  "lambda_used": 2,
+  "lambda_retries": 0,
+  "hrp_score_decomposition": {
+    "hrp_ratio": 0.6,
+    "score_ratio": 0.4,
+    "hrp_pure_alpha": 3.1507,
+    "hrp_pure_hhi": 0.0529,
+    "hrp_pure_beta": 1.0609,
+    "hrp_pure_te": 0.0395,
+    "score_pure_alpha": 3.2421,
+    "score_pure_hhi": 0.0517,
+    "score_pure_beta": 1.0454,
+    "score_pure_te": 0.0405,
+    "hybrid_alpha": 3.1872,
+    "hybrid_hhi": 0.0514,
+    "hybrid_beta": 1.0547,
+    "hybrid_te": 0.0397,
+    "score_contribution_pct": 40
+  },
+  "constraints_applied": {
+    "v_version": "v2.3",
+    "max_names": 20,
+    "min_names": 15,
+    "weight_bounds": [0, 0.15],
+    "hhi_cap": 0.15,
+    "alpha_winsor": 3,
+    "beta_target": 1.02,
+    "beta_range": [1, 1.05],
+    "gamma_beta": 0.5,
+    "cost_bps": 15
+  },
+  "binding_constraints": [],
+  "infeasibility_report": null,
+  "method_comparison": {
+    "HRP_0.6_Score_0.4": {
+      "family": "hybrid_hrp_score",
+      "net_ir": 80.0464,
+      "n_names": 20,
+      "hhi": 0.0514,
+      "beta_port": 1.0547,
+      "te": 0.0397,
+      "alpha_port": 3.1872,
+      "selected": true,
+      "ok": true,
+      "error": null
+    },
+    "ERC": {
+      "family": "risk_parity",
+      "net_ir": 80.804,
+      "n_names": 20,
+      "hhi": 0.052,
+      "beta_port": 1.0523,
+      "te": 0.0393,
+      "alpha_port": 3.1814,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "MinVar_BetaSoft": {
+      "family": "minvar",
+      "net_ir": 56.3383,
+      "n_names": 7,
+      "hhi": 0.145,
+      "beta_port": 0.8981,
+      "te": 0.0579,
+      "alpha_port": 3.2684,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "HRP_pure": {
+      "family": "hrp_pure",
+      "net_ir": 79.6322,
+      "n_names": 20,
+      "hhi": 0.0529,
+      "beta_port": 1.0609,
+      "te": 0.0395,
+      "alpha_port": 3.1507,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "Score_pure": {
+      "family": "score_pure",
+      "net_ir": 79.8934,
+      "n_names": 20,
+      "hhi": 0.0517,
+      "beta_port": 1.0454,
+      "te": 0.0405,
+      "alpha_port": 3.2421,
+      "selected": false,
+      "ok": true,
+      "error": null
+    }
+  },
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "net_ir",
+      "q_lead_override": true,
+      "parallel_exec": true,
+      "n_workers": 5,
+      "total_seconds": 0.4,
+      "autonomy_note": "Q-Lead override: HRP 0.6 + Score 0.4 hybrid mandated for STR_1631 ablation. Auto-selection suppressed. 5-method R13 parallel comparison retained for scientific rigor.",
+      "method_log": [
+        {
+          "name": "HRP_0.6_Score_0.4",
+          "net_ir": 80.0464,
+          "selected": true,
+          "ok": true,
+          "reason": "q_lead_override_primary"
+        },
+        {
+          "name": "ERC",
+          "net_ir": 80.804,
+          "selected": false,
+          "ok": true,
+          "reason": "control_ablation"
+        },
+        {
+          "name": "MinVar_BetaSoft",
+          "net_ir": 56.3383,
+          "selected": false,
+          "ok": true,
+          "reason": "control_ablation"
+        },
+        {
+          "name": "HRP_pure",
+          "net_ir": 79.6322,
+          "selected": false,
+          "ok": true,
+          "reason": "control_ablation"
+        },
+        {
+          "name": "Score_pure",
+          "net_ir": 79.8934,
+          "selected": false,
+          "ok": true,
+          "reason": "control_ablation"
+        }
+      ]
+    }
+  },
+  "target_weights": {
+    "A000070": 0.0593,
+    "A071320": 0.0674,
+    "A091970": 0.0624,
+    "A004800": 0.0518,
+    "A115480": 0.0571,
+    "A033790": 0.051,
+    "A001260": 0.0448,
+    "A042940": 0.0442,
+    "A218410": 0.042,
+    "A091810": 0.046,
+    "A098460": 0.0375,
+    "A330860": 0.0384,
+    "A185750": 0.0564,
+    "A363280": 0.0442,
+    "A083790": 0.0414,
+    "A066590": 0.0413,
+    "A029780": 0.061,
+    "A012690": 0.0464,
+    "A004150": 0.0555,
+    "A053030": 0.0521
+  },
+  "active_weights": {
+    "A000070": 0.0259,
+    "A071320": 0.034,
+    "A091970": 0.029,
+    "A004800": 0.0185,
+    "A115480": 0.0237,
+    "A033790": 0.0176,
+    "A001260": 0.0115,
+    "A042940": 0.0108,
+    "A218410": 0.0087,
+    "A091810": 0.0126,
+    "A098460": 0.0042,
+    "A330860": 0.0051,
+    "A185750": 0.0231,
+    "A363280": 0.0108,
+    "A083790": 0.0081,
+    "A066590": 0.008,
+    "A029780": 0.0277,
+    "A012690": 0.013,
+    "A004150": 0.0221,
+    "A053030": 0.0188
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "round": 1,
+    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "hrp_score_ratio", "c2_pit_compliance"],
+    "objection": false,
+    "challenges": [],
+    "p4_note": "No objections. alpha is HIGH tier (FF3_retention=94.6%). Sigma LW Oracle cond=9.47 PSD. Score uses t-1 frozen alpha_final (C2 compliant). HRP ratio 0.6 per Q-Lead override. Constraint: max_w=0.15 feasible with n=20."
+  },
+  "explanation": {
+    "top_overweights": ["A071320", "A091970", "A029780", "A000070", "A115480"],
+    "top_underweights": ["A098460", "A330860", "A066590", "A083790", "A218410"],
+    "main_tradeoffs": ["Q-Lead override: HRP 0.6 + Score 0.4 fixed ratio (STR_1631 SYN_05 pattern)", "ERC Pilot 9 net_ir=26.10 vs Hybrid net_ir=80.0464", "HRP pure contributes 3.15 alpha, Score pure 3.24 alpha → hybrid 3.19", "Beta_port=1.055 (target 1.02) — beta soft constraint implicit in HRP clustering"]
+  },
+  "pilot_comparison": {
+    "pilot_9": {
+      "method": "ERC",
+      "net_ir": 26.1003,
+      "n_names": 16,
+      "hhi": 0.0906,
+      "beta_port": 0.8842
+    },
+    "pilot_11": {
+      "method": "HRP_0.6_Score_0.4",
+      "net_ir": 80.0464,
+      "n_names": 20,
+      "hhi": 0.0514,
+      "beta_port": 1.0547
+    }
+  },
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_009/artifact_lineage.json",
+    "seed": 20260424,
+    "r_version": "4.5.2"
+  }
+}
