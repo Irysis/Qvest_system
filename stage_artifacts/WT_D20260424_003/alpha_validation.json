@@ -1,83 +1,98 @@
 {
-  "task_id": "WT-D20260424_001",
-  "validated_at": "2026-04-24T07:54:02+0900",
-  "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
-  "train_window": {
-    "start": "2012-01-21",
-    "end": "2022-01-21"
-  },
-  "val_window": {
-    "start": "2022-01-22",
-    "end": "2024-01-22"
-  },
-  "lockbox_sealed": true,
-  "train": {
+  "task_id": "WT-D20260424_003",
+  "parent_wt": "WT-D20260424_002",
+  "agent": "alpha",
+  "validated_at": "2026-04-24T00:00:00+0900",
+  "schema_version": "v6.1",
+  "validation_type": "inheritance_with_beta_diagnosis",
+  "hypothesis": "Pilot 5 RAPC + Market Hedge Overlay (inherited from Pilot 4)",
+
+  "alpha_signal_validation": {
+    "signal_name": "RAPC_3factor_expanding_IC_weighted",
+    "inherited_from": "WT-D20260424_002",
     "rank_ic": 0.0318,
     "icir": 0.403,
-    "harvey_t": 4.42,
-    "n_months": 120,
-    "dsr": 0.039
-  },
-  "validation": {
-    "rank_ic": 0.0386,
-    "icir": 0.521,
-    "harvey_t": 2.55,
-    "n_months": 24
-  },
-  "subperiod_stability": 1,
-  "subperiod_ic": {
-    "S1": 0.0338,
-    "S2": 0.027,
-    "S3": 0.0375
-  },
-  "regime_ic": {
-    "Normal": 0.0286,
-    "Transition_LR": 0.0584
-  },
-  "l191_sign_check": true,
-  "graduation_check": {
-    "rank_ic": false,
-    "icir": true,
-    "harvey_t": true,
-    "dsr": false,
-    "subperiod": true,
-    "breadth": true,
-    "l191_sign": true
-  },
-  "graduation_status": "CONDITIONAL",
-  "pit_compliance": {
-    "C1": true,
-    "C2": true,
-    "C3": true,
-    "C4": true,
-    "C5": true,
-    "C13": true,
-    "C14": true
-  },
-  "individual_factor_diag": {
-    "C04_ESBR": {
-      "rank_ic": 0.0294,
-      "icir": 0.3603,
-      "harvey_t": 3.9464,
-      "val_ic": 0.0223,
-      "val_icir": 0.3136,
-      "n_train": 120
-    },
-    "C01_SUE": {
-      "rank_ic": 0.0243,
-      "icir": 0.3137,
-      "harvey_t": 3.436,
-      "val_ic": 0.0108,
-      "val_icir": 0.2134,
-      "n_train": 120
-    },
-    "AC21_CF_to_Accrual_Ratio": {
-      "rank_ic": 0.0304,
-      "icir": 0.3239,
-      "harvey_t": 3.5481,
-      "val_ic": 0.0201,
-      "val_icir": 0.2239,
-      "n_train": 120
+    "harvey_t_stat": 4.42,
+    "dsr_approx": 0.039,
+    "monotonicity": 0.556,
+    "subperiod_stability": 1.0,
+    "turnover_proxy_annual": 3.06,
+    "post_neutralization_ic": 0.0269,
+    "ic_retention_pct": 84.6,
+    "graduation_gate": {
+      "rank_ic_pass": false,
+      "icir_pass": true,
+      "harvey_t_pass": true,
+      "dsr_pass": false,
+      "subperiod_pass": true,
+      "overall": "CONDITIONAL"
     }
-  }
+  },
+
+  "beta_diagnosis_validation": {
+    "method": "rolling_252d_daily_OLS",
+    "pilot4_n_tickers": 15,
+    "portfolio_weighted_mean_beta": 0.868,
+    "portfolio_weighted_last_beta": 0.727,
+    "beta_target": 0.8,
+    "hedge_fraction_required_mean_pct": 7.8,
+    "hedge_fraction_required_last_pct": 0.0,
+    "assessment": "Portfolio last beta 0.727 is ALREADY below 0.8 target at signal date 2024-01. Mean beta 0.868 confirms structural need for soft overlay constraint. Hard enforcement not critical at current slice.",
+    "individual_beta_range": {
+      "min_mean_beta": 0.511,
+      "max_mean_beta": 1.248,
+      "dispersion_note": "High cross-sectional dispersion (0.51~1.25). Beta-targeting via MVO constraint is more precise than flat short overlay."
+    }
+  },
+
+  "residual_alpha_validation": {
+    "method": "rolling_24M_monthly_CAPM",
+    "n_months": 120,
+    "window": "2014-01 to 2023-12",
+    "raw_ic_mean": 0.0136,
+    "raw_icir": 0.180,
+    "resid_ic_mean": 0.0111,
+    "resid_icir": 0.146,
+    "retention_pct": 81.5,
+    "threshold_pass": true,
+    "threshold_used_pct": 80.0,
+    "compatibility": "HEDGE_COMPATIBLE",
+    "risk_flag": "NONE",
+    "note": "Retention 81.5% above 80% threshold confirms RAPC alpha is NOT primarily market-beta exposure. Hedge overlay application will preserve approximately 81.5% of predictive power."
+  },
+
+  "hedge_option_assessment": {
+    "option_a_beta_constraint_mvo": {
+      "feasibility": "HIGH",
+      "alpha_retention_pct": 81.5,
+      "cost_bps_per_yr": 5,
+      "legal_compliant": true,
+      "risk_agent_action": "Add beta inequality constraint (beta_port <= 0.85) to QP. Soft penalty lambda_beta=0.5 recommended."
+    },
+    "option_b_kospi200_short_overlay": {
+      "feasibility": "BLOCKED",
+      "blocking_reason": "request.json hard_mandate no_short_legal_kr=true",
+      "alpha_retention_pct": 100.0,
+      "cost_bps_per_yr": 65,
+      "legal_compliant": false,
+      "risk_agent_action": "N/A — blocked by mandate unless user overrides no_short_legal_kr"
+    },
+    "recommendation": "option_a_beta_constraint_mvo",
+    "confidence": "HIGH"
+  },
+
+  "pit_compliance": {
+    "C1_no_full_sample": true,
+    "C2_no_same_day_circular": true,
+    "C4_fundamental_lag_45d": true,
+    "C13_z_score_aligned_only": true,
+    "C14_usable_date_enforced": true,
+    "beta_diagnosis_pit": "Rolling 252d OLS uses only data up to signal date. No lookahead.",
+    "residual_test_pit": "Rolling 24M monthly OLS: beta estimated from [t-24, t-1], applied to contemporaneous returns. PIT-safe."
+  },
+
+  "role_bias_tag": "RoleBias_Core",
+  "challenge_flags_count": 4,
+  "high_severity_flags": 1,
+  "status": "ALPHA_DONE"
 }
