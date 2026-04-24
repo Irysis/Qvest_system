@@ -1,0 +1,50 @@
+{
+  "mrs_regime_source": ".cache/unified_regime_signal.parquet",
+  "period": "2012-2022 train + 2023-2024.01 val (Lockbox 제외)",
+  "pilot_label": "Pilot 8 — MinVar_BetaSoft gamma=0.5 beta_target=0.90",
+  "regime_stats": {
+    "RISK_ON": {
+      "days": 2551,
+      "days_pct": 86.6,
+      "sr": 0.3146,
+      "cagr": 5.31,
+      "mdd": -36.6,
+      "n_months_approx": 121
+    },
+    "NEUTRAL": {
+      "days": 334,
+      "days_pct": 11.3,
+      "sr": 0.7709,
+      "cagr": 19.04,
+      "mdd": -33.13,
+      "n_months_approx": 16
+    },
+    "CAUTION": {
+      "days": 62,
+      "days_pct": 2.1,
+      "sr": 9.8402,
+      "cagr": 204.12,
+      "mdd": -4.38,
+      "n_months_approx": 3
+    },
+    "RISK_OFF": {
+      "days": 0,
+      "days_pct": 0,
+      "sr": null,
+      "cagr": null,
+      "mdd": null,
+      "n_months_approx": 0
+    },
+    "CRISIS": {
+      "days": 0,
+      "days_pct": 0,
+      "sr": null,
+      "cagr": null,
+      "mdd": null,
+      "n_months_approx": 0
+    }
+  },
+  "regime_lucky_candidate": "RISK_ON SR=0.315 / Full SR=0.510 = ratio 0.617 (>2.0 = regime-dependent)",
+  "interpretation": "L-196 candidate 근거 — Forge 단독으로는 Lockbox 판정 불가, train/val 분해만 수행. RISK_ON 비중=86.6%, NEUTRAL=11.3%. Lockbox(2024-01-23+) 분해는 Judge 단독 권한 (AX-002).",
+  "forge_note": "Forge는 train/val 구간만 수행. Lockbox regime 분해는 Judge 단독 (AX-002)."
+}

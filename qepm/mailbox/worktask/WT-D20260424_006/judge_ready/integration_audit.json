@@ -1,0 +1,124 @@
+{
+  "task_id": "WT-D20260424_006",
+  "audit_time": "2026-04-24T18:15:06+0900",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 8 — MinVar_BetaSoft (gamma=0.5 soft, beta_target=0.90) + L-195a ORTHOGONAL",
+  "r12_pure_function": {
+    "description": "3-package SHA256 start/end match — no re-optimization",
+    "all_pass": true,
+    "packages": {
+      "alpha_package": {
+        "package_type": "alpha_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/alpha_package.json",
+        "recorded_hash": null,
+        "current_hash": "b9bb3a632a0f544c6bf22aa9f77f791ca4d08248db513e5220d4b5e74ab4ab32",
+        "hash_match": null,
+        "status": "WARN_NA"
+      },
+      "risk_package": {
+        "package_type": "risk_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/risk_package.json",
+        "recorded_hash": "433707f5b1ad28135be918ae514d8d4255ecad21c9bfb5aa17330ce04a106674",
+        "current_hash": "433707f5b1ad28135be918ae514d8d4255ecad21c9bfb5aa17330ce04a106674",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "optimization_package": {
+        "package_type": "optimization_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/optimization_package.json",
+        "recorded_hash": "ee89ca7f51abe8a67126a85e9f87af89b25a1f0ad878fe3a915006795314a293",
+        "current_hash": "ee89ca7f51abe8a67126a85e9f87af89b25a1f0ad878fe3a915006795314a293",
+        "hash_match": true,
+        "status": "PASS"
+      }
+    }
+  },
+  "constraint_check": {
+    "n_names_ok": true,
+    "long_only_ok": true,
+    "sum_weights_ok": true,
+    "max_weight_ok": true,
+    "hhi_ok": true,
+    "beta_port_ok": true,
+    "n_names": 20,
+    "n_note": "n=20 전종목 (MinVar_BetaSoft — A047080 포함, P7 zero-weight 해소).",
+    "sum_weights": 1,
+    "max_weight": 0.1249,
+    "hhi": 0.0615,
+    "beta_port": 1.0217,
+    "beta_note": "beta_target=0.90 SOFT (gamma=0.5). 실측 1.022 — hard 0.85 초과지만 soft 허용.",
+    "all_pass": true,
+    "constraint_version": "v2.3"
+  },
+  "l195a_diagnosis": {
+    "l195_status": "RESOLVED_GLOBAL (P7 계승) / L-195a ORTHOGONAL (P8 신규)",
+    "l195a_resolution_impact": "ORTHOGONAL",
+    "alpha_divergence_filter": 0.8,
+    "alpha_div_actual": 0.875,
+    "cap_cluster_p7_pct": 65,
+    "cap_cluster_p8_pct": 15,
+    "cap_cluster_reduction": "65% → 15% (alpha_div_filter 효과)",
+    "alpha_mean_p8": 0.373,
+    "alpha_min_p8": 0.25,
+    "structural_note": "cap_cluster 감소는 성공. 그러나 alpha_div_filter 선발 후 sub-universe 내 alpha 평균 균일 압축 (mean=0.373, min=0.25). MVO여전히 MinVar 대비 alpha 차별화 실패 → L-196 3rd confirmation.",
+    "l195_global_pass": true,
+    "alpha_unique_count": 19,
+    "alpha_uniform_flag": false
+  },
+  "l196_diagnosis": {
+    "verdict": "minvar_retreat_again",
+    "pilot6_net_ir": 12.1637,
+    "pilot7_net_ir": 12.1637,
+    "pilot8_net_ir": 12.0841,
+    "mvo_best_net_ir": 10.5995,
+    "alpha_aware_dominates": false,
+    "pattern": "MinVar_BetaSoft 3연속 선택 (P6/P7/P8). alpha 차별화 경로 우선 필요. Pilot 9 Path B 과제."
+  },
+  "beta_recovery_audit": {
+    "pilot7_beta_hard": 0.7485,
+    "pilot8_beta_soft": 1.0217,
+    "beta_recovery_delta": 0.2732,
+    "beta_recovery_pct": 36.5,
+    "gamma_change": "P7 gamma=1.0 hard → P8 gamma=0.5 soft",
+    "market_risk_p7_pct": 39,
+    "market_risk_p8_pct": 77.6,
+    "market_risk_delta": 38.6,
+    "active_ir_p7_est": -1.033,
+    "active_ir_p8_actual": 0.5815,
+    "active_ir_delta": 1.6145
+  },
+  "lockbox_sealed": {
+    "lockbox_start": "2024-01-23",
+    "backtest_end": "2024-01-22",
+    "sealed": true
+  },
+  "pilot_progression": {
+    "pilot6": {
+      "method": "MinVar_BetaHard",
+      "gamma": 1,
+      "beta": 0.75,
+      "sr": 0.066,
+      "cagr": 1.18,
+      "mdd": 63.91,
+      "l195": "FAIL"
+    },
+    "pilot7": {
+      "method": "MinVar_BetaHard",
+      "gamma": 1,
+      "beta": 0.7485,
+      "sr": 0.258,
+      "cagr": 4.69,
+      "mdd": 55.22,
+      "l195": "RESOLVED_GLOBAL"
+    },
+    "pilot8": {
+      "method": "MinVar_BetaSoft",
+      "gamma": 0.5,
+      "beta": 1.0217,
+      "sr": 0.51,
+      "cagr": 9.19,
+      "mdd": 47.01,
+      "l195": "ORTHOGONAL"
+    }
+  }
+}

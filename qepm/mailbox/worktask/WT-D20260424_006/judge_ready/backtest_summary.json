@@ -1,0 +1,248 @@
+{
+  "task_id": "WT-D20260424_006",
+  "agent": "forge",
+  "stage": "stage4_backtest",
+  "as_of_date": "2026-04-24",
+  "pilot_label": "Pilot 8 — L-195a ORTHOGONAL + MinVar_BetaSoft (gamma=0.5, beta_target=0.90)",
+  "method": "MinVar_BetaSoft",
+  "alpha_model": "RAPC v2 (ESBR+SUE+AC21+AC17+Q35 IC-weighted) + CAPM Blume 36M rolling | L-195 Fix + L-195a alpha_div_filter=0.80",
+  "risk_model": "Ledoit-Wolf Oracle | cond=34.03 | cap_cluster=15% (P7 65%) | n=40 risk universe",
+  "hedge": "Option A: beta_target=0.90, gamma_beta=0.5 soft (P7=hard equality)",
+  "period": {
+    "train_start": "2012-01-01",
+    "train_end": "2022-12-31",
+    "val_start": "2023-01-01",
+    "val_end": "2024-01-22",
+    "lockbox_start": "2024-01-23"
+  },
+  "portfolio_snapshot": {
+    "n_names": 20,
+    "n_note": "20 전종목 (P7 A047080 zero-weight 해소. MinVar_BetaSoft 모두 포함)",
+    "tickers": ["A000070", "A000100", "A000140", "A007340", "A012690", "A018310", "A023960", "A025540", "A030000", "A030190", "A039420", "A041510", "A041830", "A047080", "A049720", "A066590", "A091970", "A230360", "A272450", "A287410"],
+    "weights": {
+      "A000070": 0.0237,
+      "A000100": 0.0336,
+      "A000140": 0.0403,
+      "A007340": 0.0917,
+      "A012690": 0.0526,
+      "A018310": 0.0366,
+      "A023960": 0.0266,
+      "A025540": 0.054,
+      "A030000": 0.0593,
+      "A030190": 0.054,
+      "A039420": 0.0286,
+      "A041510": 0.0497,
+      "A041830": 0.0463,
+      "A047080": 0.0346,
+      "A049720": 0.1249,
+      "A066590": 0.0407,
+      "A091970": 0.0716,
+      "A230360": 0.0258,
+      "A272450": 0.039,
+      "A287410": 0.0664
+    },
+    "hhi": 0.0615,
+    "beta_port": 1.0217,
+    "gamma_beta": 0.5,
+    "market_risk_opt_pct": 77.6
+  },
+  "perf_full": {
+    "Label": "FULL (2012~2024)",
+    "CAGR": 9.19,
+    "AnnVol": 18.04,
+    "Sharpe": 0.51,
+    "Sharpe_m": 0.546,
+    "Sortino": 0.706,
+    "MDD": 47.01,
+    "Calmar": 0.196,
+    "WinRate": 59,
+    "WorstMonth": -14.39,
+    "Worst3M": -19.4,
+    "ES99_d": 4.46,
+    "ES99_m": 14.2
+  },
+  "perf_train": {
+    "Label": "TRAIN (2012~2022)",
+    "CAGR": 10.16,
+    "AnnVol": 18.42,
+    "Sharpe": 0.551,
+    "Sharpe_m": 0.579,
+    "Sortino": 0.765,
+    "MDD": 47.01,
+    "Calmar": 0.216,
+    "WinRate": 59.5,
+    "WorstMonth": -14.39,
+    "Worst3M": -19.4,
+    "ES99_d": 4.61,
+    "ES99_m": 14.2
+  },
+  "perf_val": {
+    "Label": "VAL (2023~2024)",
+    "CAGR": -0.31,
+    "AnnVol": 13.42,
+    "Sharpe": -0.023,
+    "Sharpe_m": 0.015,
+    "Sortino": -0.032,
+    "MDD": 10.58,
+    "Calmar": -0.03,
+    "WinRate": 53.8,
+    "WorstMonth": -5.24,
+    "Worst3M": -5.27,
+    "ES99_d": 2.64,
+    "ES99_m": "NA"
+  },
+  "active_ir_decomp": {
+    "pilot8_beta_port": 1.0217,
+    "pilot7_beta_port": 0.7485,
+    "beta_delta": 0.2732,
+    "beta_delta_pct": 36.5,
+    "pilot8_active_ir_full": 0.5815,
+    "pilot8_active_ir_train": 0.697,
+    "pilot8_active_ir_val": -0.5866,
+    "pilot7_active_ir_est": -1.033,
+    "active_ir_delta": 1.6145,
+    "active_ret_mean_full": 8.58,
+    "active_ret_vol_full": 14.75,
+    "market_risk_p7_pct": 39,
+    "market_risk_p8_pct": 77.6,
+    "market_risk_delta_pp": 38.6,
+    "interpretation": "P7 beta=0.75 hard (gamma=1.0) → Active IR est=-1.033. P8 beta=1.022 soft (gamma=0.5) → Active IR measured=0.5815. Beta recovery +36% but market_risk 39%→77.6%. MinVar 3rd selection (L-196 CONFIRMED). alpha_div_filter structural (L-195a ORTHOGONAL)."
+  },
+  "risk_metrics": {
+    "ann_turnover_pct": 49.9,
+    "hard_fail_mdd45": true,
+    "hard_fail_to600": false
+  },
+  "l195a_diagnosis": {
+    "l195_status": "RESOLVED_GLOBAL (P7 계승) / L-195a ORTHOGONAL (P8 신규)",
+    "l195a_resolution_impact": "ORTHOGONAL",
+    "alpha_divergence_filter": 0.8,
+    "alpha_div_actual": 0.875,
+    "cap_cluster_p7_pct": 65,
+    "cap_cluster_p8_pct": 15,
+    "cap_cluster_reduction": "65% → 15% (alpha_div_filter 효과)",
+    "alpha_mean_p8": 0.373,
+    "alpha_min_p8": 0.25,
+    "structural_note": "cap_cluster 감소는 성공. 그러나 alpha_div_filter 선발 후 sub-universe 내 alpha 평균 균일 압축 (mean=0.373, min=0.25). MVO여전히 MinVar 대비 alpha 차별화 실패 → L-196 3rd confirmation.",
+    "l195_global_pass": true,
+    "alpha_unique_count": 19,
+    "alpha_uniform_flag": false
+  },
+  "l196_diagnosis": {
+    "verdict": "minvar_retreat_again",
+    "pilot6_net_ir": 12.1637,
+    "pilot7_net_ir": 12.1637,
+    "pilot8_net_ir": 12.0841,
+    "mvo_best_net_ir": 10.5995,
+    "alpha_aware_dominates": false,
+    "pattern": "MinVar_BetaSoft 3연속 선택 (P6/P7/P8). alpha 차별화 경로 우선 필요. Pilot 9 Path B 과제."
+  },
+  "beta_recovery_audit": {
+    "pilot7_beta_hard": 0.7485,
+    "pilot8_beta_soft": 1.0217,
+    "beta_recovery_delta": 0.2732,
+    "beta_recovery_pct": 36.5,
+    "gamma_change": "P7 gamma=1.0 hard → P8 gamma=0.5 soft",
+    "market_risk_p7_pct": 39,
+    "market_risk_p8_pct": 77.6,
+    "market_risk_delta": 38.6,
+    "active_ir_p7_est": -1.033,
+    "active_ir_p8_actual": 0.5815,
+    "active_ir_delta": 1.6145
+  },
+  "pilot_comparison_3": {
+    "pilot6": {
+      "sr": 0.066,
+      "cagr": 1.18,
+      "mdd": 63.91,
+      "beta": 0.75,
+      "method": "MinVar_BetaHard",
+      "active_ir": -1.5,
+      "market_risk_pct": 50.3
+    },
+    "pilot7": {
+      "sr": 0.258,
+      "cagr": 4.69,
+      "mdd": 55.22,
+      "beta": 0.7485,
+      "method": "MinVar_BetaHard",
+      "active_ir": -1.033,
+      "market_risk_pct": 39
+    },
+    "pilot8": {
+      "sr": 0.51,
+      "cagr": 9.19,
+      "mdd": 47.01,
+      "beta": 1.0217,
+      "method": "MinVar_BetaSoft",
+      "active_ir": 0.5815,
+      "market_risk_pct": 77.6
+    },
+    "trend": {
+      "sr_p6_p7": 0.192,
+      "sr_p7_p8": 0.252,
+      "mdd_p6_p7": -8.69,
+      "mdd_p7_p8": -8.21,
+      "beta_recovery_p7_p8": 0.2732,
+      "l197_verdict": "5-pilot structural dead-end check: MinVar 3rd select. alpha_div_filter ORTHOGONAL. Path B Multi-sleeve 필요."
+    }
+  },
+  "regime_decomp_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_006/regime_decomposition.json",
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.03807 < 0.04. P6=0.0372 대비 delta=0.00087. RAPC 재설계 또는 추가 팩터 필요."
+    },
+    {
+      "flag": "INFO_GATE_D_BETA",
+      "severity": "INFO",
+      "note": "Top-20 beta=1.0226 > 0.75. Optimizer에서 Option A γ=1.0 hard 유지 권고."
+    },
+    {
+      "flag": "L195_FIX_GUARD",
+      "severity": "INFO",
+      "note": "Alpha-Uniform Guard: unique/n=0.9716 PASS>= 0.70. P6=0.9454 → P7=0.9716 (delta=0.0262). Cap cluster: 51 (2.7%)."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 100.0% > 40% (EW). P8 Option A: beta_target=0.90 gamma=0.5 soft. Expected market risk post-opt: 77.6% (vs P7 39.0% with beta=0.75 hard)."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "PEAD+Accrual crowding. alpha_divergence_filter applied — monitor cluster shift."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "167 factor pairs with TDC > 0.4."
+    },
+    {
+      "id": "RF-BETA-090",
+      "severity": "INFO",
+      "note": "Top-20 EW beta=1.1206. P8: beta_target=0.90 soft (gamma=0.5). AX-007 Sprint: beta 0.75 hard was 25% leverage loss → 0.90 soft corrects. Expected market risk: P7 53.9% → P8 77.6%."
+    }
+  ],
+  "artifacts": {
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/annual_returns.png",
+    "drawdown_chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/drawdown_chart.png",
+    "performance_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/performance_summary.json",
+    "regime_decomposition": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/regime_decomposition.json",
+    "daily_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/daily_returns.parquet",
+    "weights_timeseries": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/backtest_result/weights_timeseries.parquet",
+    "integration_audit": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_006/integration_audit.json"
+  },
+  "judge_notes": {
+    "l195a_orthogonal": "alpha_div_filter 0.80 → cap_cluster 65%→15% 성공. but alpha mean=0.373 균일 압축 = structural. MVO alpha 차별화 여전히 실패.",
+    "l196_3rd": "MinVar_BetaSoft 3rd 선택 (P6/P7/P8 연속). Kelly_f025 10.60 < MinVar 12.08. L-196 CONFIRMED.",
+    "beta_recovery": "P7 beta=0.75 hard → P8 beta=1.022 soft (+36%). market_risk 39%→77.6%. Active IR delta 실측.",
+    "n20_note": "A047080 MinVar_BetaSoft에서 포함 (P7 zero-weight는 QP binding constraint 결과).",
+    "market_risk_note": "market_risk_p8=77.6% > Gate D threshold=40%. Market risk 증가 주의.",
+    "lockbox": "2024-01-23+ SEALED. Lockbox regime 분해는 Judge 단독 (AX-002).",
+    "structural_dead_end": "P6/P7/P8 모두 MinVar 후퇴. Pilot 9 Path B Multi-sleeve 또는 alpha 직접 top-20 선발 필요."
+  },
+  "status": "FORGE_DONE"
+}
