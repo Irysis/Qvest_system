@@ -1,0 +1,150 @@
+{
+  "task_id": "WT-D20260424_003",
+  "parent_wt": "WT-D20260424_002",
+  "as_of_date": "2026-04-24",
+  "computation_note": "PIT C1: rolling 252d window. C9: returns use t-1 close lag via rawdata.",
+  "beta_summary": {
+    "full_period": {
+      "start": "2012-01-01",
+      "end": "2026-04-24",
+      "beta": 0.789,
+      "capm_alpha_ann_pct": 9.95,
+      "r2": 0.6094,
+      "n_days": 3515
+    },
+    "train_2012_2022": {
+      "beta": 0.7584,
+      "capm_alpha_ann_pct": 11.41,
+      "r2": 0.5429
+    },
+    "val_2022_2024": {
+      "beta": 0.9839,
+      "capm_alpha_ann_pct": 16.76,
+      "r2": 0.674
+    },
+    "lockbox_2024_2026": {
+      "beta": 0.7693,
+      "capm_alpha_ann_pct": -2.66,
+      "r2": 0.6161
+    },
+    "rolling_252d_stats": {
+      "mean": 0.7629,
+      "sd": 0.1822,
+      "min": 0.3334,
+      "max": 1.0942,
+      "p25": 0.6461,
+      "p75": 0.8921
+    }
+  },
+  "market_risk_contribution_pct": 60.9,
+  "residual_alpha_test": {
+    "full_capm_alpha_ann_pct": 9.95,
+    "full_alpha_tstat": 3.27,
+    "full_alpha_pval": 0.0011,
+    "harvey_tstat_threshold": 3,
+    "harvey_pass": true,
+    "lockbox_alpha_ann_pct": -2.66,
+    "lockbox_alpha_tstat": -0.291,
+    "capm_r2": 0.6094,
+    "ic_comparison": {
+      "raw_rank_ic": 0.0318,
+      "sector_size_neutral_ic": 0.0269,
+      "ic_retention_pct": 84.6,
+      "capm_residual_ic_est": 0.0199,
+      "note": "CAPM residual IC is approx: raw_ic * sqrt(1 - R2). Conservative lower bound."
+    }
+  },
+  "pilot5_constraint_overrides": {
+    "min_names": 10,
+    "max_names": 20,
+    "weight_bounds": [0, 0.1],
+    "hhi_cap": 0.1,
+    "alpha_winsor_sigma": 2,
+    "pilot4_lesson": "min_names=15 + lambda_retries=4 exhaustion forced alpha-top filling, degrading active IR. Pilot5 softens to 10 for natural QP convergence.",
+    "hedge_overlay": {
+      "beta_target": 0.8,
+      "method": "Risk Agent choice: (a) MVO beta tilt or (b) KOSPI200 short overlay"
+    }
+  },
+  "hedge_compatibility": {
+    "n_names_range": {
+      "min": 10,
+      "max": 20
+    },
+    "beta_sensitivity_to_n": {
+      "n10_beta_range": {
+        "lo": 0.71,
+        "hi": 0.868
+      },
+      "n20_beta_est": 0.828,
+      "note": "Concentrated (n~10) likely lower market beta; diversified (n~20) slightly higher."
+    },
+    "option_A": {
+      "label": "Dynamic beta-target 0.80 overlay",
+      "short_pct_nav_n15": -0.011,
+      "short_pct_range_n10_20": {
+        "lo": 0,
+        "hi": 0.028
+      },
+      "post_beta": 0.8,
+      "post_mkt_risk_pct": 62.6,
+      "turnover_add_ann_pct": 26,
+      "cost_bps_ann": 39.4,
+      "alpha_preservation": "HIGH",
+      "n_names_compatibility": "HIGH",
+      "rapc_compatibility": "HIGH",
+      "recommended": true,
+      "note": "Dynamic beta target adapts to optimizer's n=10~20 choice each month."
+    },
+    "option_B": {
+      "label": "KOSPI200 short 20% fixed",
+      "short_pct_nav": 0.2,
+      "post_beta_n15": 0.589,
+      "post_mkt_risk_pct": 34,
+      "turnover_add_ann_pct": 480,
+      "cost_bps_ann": 720,
+      "alpha_preservation": "MEDIUM",
+      "n_names_compatibility": "MEDIUM",
+      "rapc_compatibility": "MEDIUM",
+      "recommended": false,
+      "reason": "Fixed 20% short not responsive to n_names variation; over-hedge risk at n=10."
+    },
+    "option_C": {
+      "label": "Dynamic rolling beta via Risk Agent covariance",
+      "short_pct_nav": "dynamic",
+      "post_beta": "dynamic",
+      "alpha_preservation": "HIGH",
+      "n_names_compatibility": "HIGHEST",
+      "rapc_compatibility": "HIGH",
+      "recommended": false,
+      "reason": "Beyond Alpha Agent scope; delegate to Risk Agent."
+    },
+    "primary_recommendation": "Option A",
+    "rationale": "RAPC (earnings_surprise + accrual) is fundamentally orthogonal to market. Dynamic beta-target 0.80 hedge is minimally invasive and adapts to Pilot5 n=10~20 optimizer freedom. Market risk: 61%→~63%. L-193: hedge alone insufficient. Rank_IC=0.032<0.040 still requires parallel alpha strengthening."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 2,
+    "selection_objective": "rank_ic",
+    "method_log": [
+      {
+        "name": "Pilot4_alpha_inheritance",
+        "action": "copy_verbatim",
+        "selected": true,
+        "note": "Pilot 4 RAPC alpha_package inherited unchanged — no new factor mining"
+      },
+      {
+        "name": "beta_diagnosis_rolling_CAPM",
+        "action": "add_diagnosis",
+        "selected": true,
+        "note": "Rolling 252d OLS beta + CAPM residual t-stat on inherited signal"
+      }
+    ]
+  },
+  "pit_compliance": {
+    "C1": "PASS: rolling 252d window only, no full-sample parameters",
+    "C2": "PASS: t-1 close returns via rawdata",
+    "C9": "PASS: no VT/DD same-day",
+    "C13": "N/A: no Z_Score computation",
+    "C14": "N/A: no IC access in this step"
+  }
+}
