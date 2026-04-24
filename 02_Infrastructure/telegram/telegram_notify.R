@@ -1185,30 +1185,25 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                  color = "#9E7C00", size = 3.2, fontface = "bold", hjust = 0) +
         annotate("text", x = x_right, y = 15, label = "Calm",
                  color = "#2E7D32", size = 3.2, fontface = "bold", hjust = 0) +
-        # Area fill (그라데이션 느낌 — 2겹)
-        geom_ribbon(aes(ymin = 0, ymax = FRED_MRS),
-                    fill = "#FF7043", alpha = 0.18) +
-        geom_ribbon(aes(ymin = 0, ymax = pmin(FRED_MRS, 30)),
-                    fill = "#66BB6A", alpha = 0.10) +
-        # Line (smooth feel)
-        geom_line(color = "#BF360C", linewidth = 1.4, alpha = 0.95,
+        # Line (Deep Purple — MSM 빨강/KTRI 파랑/VEA 녹색과 조화)
+        geom_line(color = "#5E35B1", linewidth = 1.4, alpha = 0.95,
                   lineend = "round") +
-        geom_point(color = "#BF360C", size = 2.3, alpha = 0.9) +
+        geom_point(color = "#5E35B1", size = 2.3, alpha = 0.9) +
         # Threshold dashed
         geom_hline(yintercept = c(30, 50, 70),
                    linetype = "dashed", color = "gray55", linewidth = 0.3,
                    alpha = 0.7) +
-        # Latest 2-tier halo (glow effect)
+        # Latest 2-tier halo (glow effect) — 동일 색상 계열
         geom_point(data = latest_mrs,
-                   color = "#BF360C", size = 7.2, alpha = 0.25) +
+                   color = "#5E35B1", size = 7.2, alpha = 0.25) +
         geom_point(data = latest_mrs,
-                   color = "#BF360C", size = 4.5, stroke = 0) +
+                   color = "#5E35B1", size = 4.5, stroke = 0) +
         # Latest value label (box)
         geom_label(data = latest_mrs,
                    aes(label = sprintf("NOW  %.1f\n%s  (5d %+.1f)",
                                        FRED_MRS, fred_band, mrs_delta)),
                    hjust = 1.08, vjust = -0.3, size = 3.6, fontface = "bold",
-                   color = "#BF360C",
+                   color = "#5E35B1",
                    fill = scales::alpha("white", 0.94),
                    label.size = 0.4, label.r = unit(0.15, "lines"),
                    label.padding = unit(0.3, "lines")) +
@@ -1223,7 +1218,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
         theme(plot.subtitle = element_text(size = 9, color = "gray35",
                                             margin = margin(b = 4)),
               legend.position = "none",
-              axis.title.y = element_text(face = "bold", color = "#BF360C",
+              axis.title.y = element_text(face = "bold", color = "#5E35B1",
                                           size = 11),
               panel.grid.major.y = element_line(color = "gray90", linewidth = 0.25),
               panel.grid.major.x = element_line(color = "gray95", linewidth = 0.2),
