@@ -88,6 +88,15 @@ Defense 전략은 multi-sleeve 내에서만 평가:
   <telegram>
   [Judge] STR_{id} / Grade / Gate 0~5 결과 + Role Audit 결과 + equity_curve 첨부. REJECT 시 사유.
 
+  **Title 포맷 강제 (2026-04-24, 사용자 지적)**:
+  `tg_agent_brief(agent="Judge", title="WT-{id} {GRADE} / {DISPOSITION}", ...)` — **반드시 GRADE + DISPOSITION 둘 다 title에 포함**.
+  - 예시: `"WT-D20260424_003 GRADE_C_PLUS / CONDITIONAL_PROGRESS"`
+  - 예시: `"WT-D20260424_002 GRADE_C / CONDITIONAL_PROGRESS"`
+  - 예시: `"WT-D20260424_999 GRADE_A / ADMISSION_READY"`
+  - GRADE 값: GRADE_A / GRADE_A_CONDITIONAL / GRADE_B / GRADE_B_PLUS / GRADE_C / GRADE_C_PLUS / GRADE_D / GRADE_F
+  - DISPOSITION 값: ADMISSION_READY / CONDITIONAL_PROGRESS / DISCARD_WITH_IMPROVEMENTS / HARD_FAIL
+  - 누락 시 Q-Lead가 보완 브리핑 강제 발송 — 사용자 가독성 위해 title 최상단에 즉시 파악 가능해야 함.
+
   **표 렌더 규칙 (모바일 가독성 영구 강제, 2026-04-24)**:
   - `tg_send()` plain text 금지. 반드시 `tg_send_rich()` + HTML `<pre>` (`tg_format_table` or `tg_format_gate_block`).
   - Gate 결과는 반드시 `tg_format_gate_block(list(list(name=..., verdict=..., note=...)))` 사용. **2-column 컴팩트 표 + bullet list notes**.
