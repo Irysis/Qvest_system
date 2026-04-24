@@ -973,9 +973,15 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
         d1[, Category_f := factor(Category,
              levels = c("RISK_ON", "NEUTRAL", "CAUTION", "RISK_OFF", "CRISIS"))]
         latest_d1 <- d1[.N]
-        # Cash area용
-        p1 <- ggplot(d1, aes(x = Date)) +
-          # (1) Category 배경 색띠 (연속 rleid)
+        # long-format: Regime_Score_smooth + Regime_Score raw → Line 범례용
+        d1_long <- rbind(
+          d1[, .(Date, Series = "EWMA smooth", Value = Regime_Score_smooth)],
+          d1[, .(Date, Series = "Raw", Value = Regime_Score)]
+        )
+        d1_long[, Series := factor(Series, levels = c("EWMA smooth", "Raw"))]
+
+        p1 <- ggplot() +
+          # (1) Category 배경 색띠
           {
             d1[, cat_grp := rleid(Category)]
             cat_bands <- d1[, .(xmin = min(Date), xmax = max(Date),
@@ -984,31 +990,33 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
                       aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf,
                           fill = Category), alpha = 0.12, inherit.aes = FALSE)
           } +
-          scale_fill_manual(values = cat_colors, name = "Regime",
-                            guide = guide_legend(override.aes = list(alpha = 0.5))) +
-          # (2) Cash_Pct area fill (secondary axis scale: Pct*100)
-          geom_area(aes(y = Cash_Pct * 100), fill = "#E53935",
-                    alpha = 0.18) +
-          geom_line(aes(y = Cash_Pct * 100), color = "#C62828",
-                    linewidth = 0.7, linetype = "dashed") +
-          # (3) Regime_Score_smooth 굵은 line
-          geom_line(aes(y = Regime_Score_smooth), color = "#0D47A1",
-                    linewidth = 1.2) +
-          geom_line(aes(y = Regime_Score), color = "#455A64",
-                    linewidth = 0.35, alpha = 0.45) +
-          # (4) Threshold 수평선
+          scale_fill_manual(values = cat_colors, name = "Regime (background)",
+                            guide = guide_legend(override.aes = list(alpha = 0.5),
+                                                 order = 2)) +
+          # (2) Regime_Score Raw + EWMA smooth 2 line (범례 포함)
+          geom_line(data = d1_long, aes(x = Date, y = Value, color = Series,
+                                         linewidth = Series, alpha = Series)) +
+          scale_color_manual(values = c("EWMA smooth" = "#0D47A1",
+                                         "Raw" = "#455A64"),
+                             name = "Score line",
+                             guide = guide_legend(order = 1)) +
+          scale_linewidth_manual(values = c("EWMA smooth" = 1.2, "Raw" = 0.35),
+                                  guide = "none") +
+          scale_alpha_manual(values = c("EWMA smooth" = 1.0, "Raw" = 0.5),
+                              guide = "none") +
+          # (3) Threshold 수평선
           geom_hline(yintercept = c(30, 50, 70),
                      linetype = "dashed", color = "gray60", linewidth = 0.35) +
-          # (5) Latest dot
-          geom_point(data = latest_d1, aes(y = Regime_Score_smooth),
+          # (4) Latest dot
+          geom_point(data = latest_d1, aes(x = Date, y = Regime_Score_smooth),
                      color = "#0D47A1", fill = "#FFEB3B",
-                     shape = 21, size = 5, stroke = 1.3) +
+                     shape = 21, size = 5, stroke = 1.3,
+                     inherit.aes = FALSE) +
           annotate("label",
                    x = latest_d1$Date, y = latest_d1$Regime_Score_smooth,
-                   label = sprintf("NOW %.1f\n%s\nCash %.1f%%",
+                   label = sprintf("NOW %.1f\n%s",
                                    latest_d1$Regime_Score_smooth,
-                                   latest_d1$Category,
-                                   latest_d1$Cash_Pct * 100),
+                                   latest_d1$Category),
                    hjust = 1.1, vjust = 0.5, size = 3.1, fontface = "bold",
                    color = "#0D47A1",
                    fill = scales::alpha("white", 0.92), linewidth = 0.3,
@@ -1016,21 +1024,19 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
           scale_y_continuous(
             name = "Regime Score 0~100",
             limits = c(0, 100),
-            breaks = c(0, 30, 50, 70, 100),
-            sec.axis = sec_axis(~ . / 100, name = "Cash %",
-                                 labels = percent)) +
-          labs(title = "Daily Regime Score + Cash (12M)",
+            breaks = c(0, 30, 50, 70, 100)) +
+          labs(title = "Daily Regime Score (12M)",
                subtitle = sprintf(
-                 "Data: %s | Score %.1f | %s | Cash %.1f%% | thin=raw, thick=EWMA smooth",
+                 "Data: %s | Score %.1f | %s",
                  format(latest_d1$Date),
                  latest_d1$Regime_Score_smooth,
-                 latest_d1$Category,
-                 latest_d1$Cash_Pct * 100)) +
+                 latest_d1$Category),
+               x = "") +
           theme_minimal(base_size = 13) +
           theme(plot.title = element_text(face = "bold", size = 15),
                 plot.subtitle = element_text(size = 10, color = "gray25"),
                 legend.position = "bottom",
-                axis.title.y.right = element_text(color = "#C62828"),
+                legend.box = "horizontal",
                 panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
                 panel.grid.minor = element_blank())
         ggsave(file.path(out_dir, "regime_score_24m.png"),
@@ -1062,55 +1068,79 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     ggsave(file.path(out_dir, "regime_score_24m.png"), p1, width = 10, height = 5.5, dpi = 150)
   }
 
-  # ── Chart 2 (v2.3 2026-04-24): Daily 3-Layer Signal Decomposition (12M) ──
+  # ── Chart 2 (v2.4 2026-04-24): 24M 월말 + 마지막 일간 붙여서 3-Layer ──
+  # 월말 기준 long-series + 최근 일간 row (월말 아니어도 붙임) hybrid
   chart2_ok <- FALSE
   if (file.exists(daily_signal_path_c1)) {
     tryCatch({
       d2_all <- as.data.table(read_parquet(daily_signal_path_c1))
       setorder(d2_all, Date)
-      d2 <- d2_all[Date >= (Sys.Date() - 365)]
-      if (nrow(d2) > 20) {
-        latest_d2 <- d2[.N]
-        d2_long <- melt(d2, id.vars = "Date",
-                        measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
-                        variable.name = "Layer", value.name = "Value")
-        d2_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
-        d2_long[, Layer := factor(Layer,
-          levels = c("MSM_Crisis_Prob", "KTRI_Score"),
-          labels = c("MSM Crisis %", "KTRI Score"))]
 
-        p2_top <- ggplot(d2_long, aes(x = Date, y = Value, color = Layer)) +
-          geom_line(linewidth = 0.9) +
-          geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
-          scale_color_manual(values = c("MSM Crisis %" = "#E53935",
-                                         "KTRI Score" = "#1E88E5")) +
-          labs(title = "3-Layer Signal Decomposition (Daily 12M)",
-               subtitle = sprintf(
-                 "MSM: %.1f%% | KTRI: %.1f | FRED MRS: %.1f  (data: %s)",
-                 latest_d2$MSM_Crisis_Prob * 100,
-                 latest_d2$KTRI_Score, latest_d2$FRED_MRS,
-                 format(latest_d2$Date)),
-               y = "Score / Prob") +
-          theme_minimal(base_size = 13) +
-          theme(plot.title = element_text(face = "bold", size = 15),
-                plot.subtitle = element_text(size = 10, color = "gray25"),
-                legend.position = "bottom")
+      # 월말 aggregate (24개월): 각 YM 마지막 거래일
+      d2_all[, YM := format(Date, "%Y-%m")]
+      d2_monthly <- d2_all[, .SD[which.max(Date)], by = YM]
+      d2_monthly <- tail(d2_monthly, 24)
 
-        # 하단: FRED_MRS daily bar (12M)
-        p2_bot <- ggplot(d2, aes(x = Date, y = FRED_MRS)) +
-          geom_col(fill = "#FF7043", alpha = 0.75, width = 1) +
-          geom_hline(yintercept = c(30, 50, 70),
-                     linetype = "dashed", color = "gray60", linewidth = 0.3) +
-          labs(y = "FRED MRS", x = "") +
-          theme_minimal(base_size = 11)
-
-        p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
-        ggsave(file.path(out_dir, "regime_3layer_24m.png"),
-               p2, width = 11, height = 6.8, dpi = 150)
-        chart2_ok <- TRUE
+      # 최신 일간 row (월말 아니어도 붙임)
+      latest_d2 <- d2_all[.N]
+      if (latest_d2$YM != d2_monthly[.N, YM]) {
+        # 다른 월이면 그대로 추가
+        d2_combined <- rbind(d2_monthly, latest_d2, fill = TRUE)
+      } else if (latest_d2$Date > d2_monthly[.N, Date]) {
+        # 같은 월인데 월말 이후 일간 data 있으면 마지막 monthly row를 daily로 교체
+        d2_combined <- rbind(d2_monthly[-.N], latest_d2, fill = TRUE)
+      } else {
+        d2_combined <- d2_monthly
       }
+      setorder(d2_combined, Date)
+
+      d2_long <- melt(d2_combined, id.vars = "Date",
+                      measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
+                      variable.name = "Layer", value.name = "Value")
+      d2_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
+      d2_long[, Layer := factor(Layer,
+        levels = c("MSM_Crisis_Prob", "KTRI_Score"),
+        labels = c("MSM Crisis %", "KTRI Score"))]
+
+      p2_top <- ggplot(d2_long, aes(x = Date, y = Value, color = Layer)) +
+        geom_line(linewidth = 1.0) +
+        geom_point(size = 1.8) +
+        # 마지막 일간 point 강조
+        geom_point(data = d2_long[Date == max(Date)],
+                   aes(color = Layer), fill = "#FFEB3B",
+                   shape = 21, size = 3.5, stroke = 1.2) +
+        geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
+        scale_color_manual(values = c("MSM Crisis %" = "#E53935",
+                                       "KTRI Score" = "#1E88E5")) +
+        labs(title = "3-Layer Signal Decomposition (Month-end + Latest Daily)",
+             subtitle = sprintf(
+               "MSM: %.1f%% | KTRI: %.1f | FRED MRS: %.1f  (latest: %s)",
+               latest_d2$MSM_Crisis_Prob * 100,
+               latest_d2$KTRI_Score, latest_d2$FRED_MRS,
+               format(latest_d2$Date)),
+             y = "Score / Prob", x = "") +
+        theme_minimal(base_size = 13) +
+        theme(plot.title = element_text(face = "bold", size = 15),
+              plot.subtitle = element_text(size = 10, color = "gray25"),
+              legend.position = "bottom")
+
+      # 하단: FRED_MRS bar (월말 + 마지막 일간)
+      p2_bot <- ggplot(d2_combined, aes(x = Date, y = FRED_MRS)) +
+        geom_col(fill = "#FF7043", alpha = 0.75, width = 18) +
+        geom_col(data = d2_combined[Date == max(Date)],
+                 fill = "#FFEB3B", color = "#E65100",
+                 alpha = 0.95, width = 12) +
+        geom_hline(yintercept = c(30, 50, 70),
+                   linetype = "dashed", color = "gray60", linewidth = 0.3) +
+        labs(y = "FRED MRS", x = "") +
+        theme_minimal(base_size = 11)
+
+      p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
+      ggsave(file.path(out_dir, "regime_3layer_24m.png"),
+             p2, width = 11, height = 6.8, dpi = 150)
+      chart2_ok <- TRUE
     }, error = function(e) {
-      cat(sprintf("[regime_briefing] chart 2 daily 12M failed: %s\n", e$message))
+      cat(sprintf("[regime_briefing] chart 2 monthly+latest failed: %s\n", e$message))
     })
   }
   if (!chart2_ok) {
@@ -1727,36 +1757,22 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     sentiment_str,
     verdict)
 
-  # ── Send: text + 5 charts ──
+  # ── Send: text + 3 charts (v2.4 — Chart 4/5 삭제, 핵심 3종만) ──
   tg_send(msg)
   Sys.sleep(3)
-  tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Daily Regime Score + Cash (12M)")
+  tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Daily Regime Score (12M)")
   Sys.sleep(2)
-  tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer Signal Decomposition (Daily 12M)")
+  tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer Signal (Month-end + Latest Daily)")
   Sys.sleep(2)
   ktri_chart <- file.path(out_dir, "ktri_9quad.png")
   if (file.exists(ktri_chart)) {
     tg_send_photo(ktri_chart, "KTRI 9-Quadrant Map (252d)")
-    Sys.sleep(2)
-  }
-  # Chart 4: Daily Regime Score (fancy)
-  daily_chart_path <- file.path(out_dir, "regime_score_daily_6m.png")
-  if (file.exists(daily_chart_path)) {
-    tg_send_photo(daily_chart_path, "Daily Regime Score \xe2\x80\x94 Active Layers (6M)")
-    Sys.sleep(2)
-  }
-  # Chart 5: Daily MRS macro
-  mrs_chart_path <- file.path(out_dir, "regime_mrs_daily_6m.png")
-  if (file.exists(mrs_chart_path)) {
-    tg_send_photo(mrs_chart_path, "Daily FRED_MRS \xe2\x80\x94 Macro Regime Composite (6M)")
   }
 
   n_charts_sent <- sum(file.exists(c(
     file.path(out_dir, "regime_score_24m.png"),
     file.path(out_dir, "regime_3layer_24m.png"),
-    file.path(out_dir, "ktri_9quad.png"),
-    daily_chart_path,
-    mrs_chart_path)))
+    file.path(out_dir, "ktri_9quad.png"))))
   cat(sprintf("[regime_briefing] Sent: text + %d charts\n", n_charts_sent))
   invisible(list(regime = latest, daily = latest_daily, ktri = ktri_latest,
                  fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir))
