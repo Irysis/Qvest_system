@@ -1,0 +1,119 @@
+{
+  "task_id": "WT-D20260425_005",
+  "as_of_date": "2023-11-30",
+  "pre_lb_end": "2024-01-22",
+  "window": {
+    "start": "2003-02-01",
+    "end": "2024-01-22"
+  },
+  "n_months": 92,
+  "n_tickers_total": 2983,
+  "n_tickers_last": 2435,
+  "selected_slot_C_candidate": "STR_1689_quality_aggregate_defense_V1_3axis",
+  "slot_C_selection_rationale": "STR_1683 dropped (hard_fail MDD 94.7%, stress 0/3 outperform). | STR_1689_V1 selected: ICIR 0.80, GFC alpha +12%, EuDebt +23%, COVID +1.7%, 4/6 crisis windows positive. | V1 (Q01+Q04+Q25) chosen over V2 (4-axis Q07) to avoid family overlap with Slot A SUE/earnings. | STR_1675/STR_1662 alternative: lower MDD (~11%) but ICIR weak (~0.6 SR full sample); 1689_V1 better as IC-driven defense. | STR_1687 (sector_neutral): ICIR 0.45 < 1689 0.80; weaker IC.",
+  "per_slot_diagnostics": {
+    "A_Core_Consensus": {
+      "strategy": "STR_1631_SYN_05_2002",
+      "family": "Consensus_4F (SUE+ESBR+EPS1M+TPGap)",
+      "role": "core_alpha",
+      "rank_ic": 0.069,
+      "icir": 0.295,
+      "ic_pos_ratio": 0.624,
+      "n_months": 125,
+      "subperiod_stability": 0,
+      "harvey_t": 3.3,
+      "monotonicity": 0.75,
+      "decile_spread": 0.0137
+    },
+    "B_Diversifier_MLRA": {
+      "strategy": "STR_1656_MLRA_S1_B",
+      "family": "ML_Risk_Adjusted (XGBoost ensemble, RE removed)",
+      "role": "diversifier",
+      "rank_ic": 0.0808,
+      "icir": 0.863,
+      "ic_pos_ratio": 0.773,
+      "n_months": 181,
+      "subperiod_stability": 0.679,
+      "harvey_t": 11.61,
+      "monotonicity": 1,
+      "decile_spread": 0.0221
+    },
+    "C_Defense_QualityAgg": {
+      "strategy": "STR_1689_quality_aggregate_defense_V1",
+      "family": "Quality_Distress (Q01_GPA + Q04_Piotroski + Q25_Ohlson)",
+      "role": "defense",
+      "rank_ic": 0.0519,
+      "icir": 0.735,
+      "ic_pos_ratio": 0.753,
+      "n_months": 251,
+      "subperiod_stability": 0.436,
+      "harvey_t": 11.64,
+      "monotonicity": 1,
+      "decile_spread": 0.0119
+    }
+  },
+  "cross_family_orthogonality": {
+    "score_xs_corr_mean": {
+      "A_B": -0.0644,
+      "A_C": -0.0194,
+      "B_C": -0.0871
+    },
+    "ic_ts_corr": {
+      "A_B": -0.184,
+      "A_C": 0.1011,
+      "B_C": -0.2562
+    },
+    "tdc_bottom_decile_p_y_given_x": {
+      "A_B": 0.0978,
+      "A_C": 0.1304,
+      "B_C": 0.1114,
+      "independence_baseline": 0.1,
+      "hard_threshold": 0.4,
+      "hard_threshold_pass": true
+    },
+    "tdc_top_decile_p_y_given_x": {
+      "A_B": 0.1467,
+      "A_C": 0.0326,
+      "B_C": 0.0217
+    },
+    "family_uniqueness_check": "PASS — A=Consensus_4F (Earnings+Consensus), B=ML_XGB_Residual (Nonlinear), C=Quality_Distress (GPA+F+O). No factor name overlap.",
+    "note": "TDC here = empirical bottom-decile P(Y|X). Risk Agent will compute formal copula TDC (different definition)."
+  },
+  "pit_compliance": {
+    "C1": "Cross-section Z + per-month winsorize (no full-sample). Slot A uses expanding IC; Slot C uses winsor_std per Date.",
+    "C2": "Score t-1 lag — Slot A SYN_05_2002 frozen; Slot B s5_scores_B already lagged; Slot C composite from monthly Factor DB.",
+    "C4": "Slot C: quarterly 45d via Factor DB Usable_Date; Q25 annual T+5M (May lag).",
+    "C9": "VT/DD lag enforced upstream in Slot A backtest harness.",
+    "C10": "LIQ_THRESHOLD 5e7 won shift(frollmean,1L). All slots filtered.",
+    "C13": "Z_Score_Aligned only (factor_db_connector). NO manual NEGATE_FACTORS.",
+    "C14": "Forward 1M return computed from t to t+1 (no future leak).",
+    "C15": "Slot C uses load_month_factors() per sig_date (not direct parquet)."
+  },
+  "red_flags": {
+    "rf_a1": {
+      "severity": "MEDIUM",
+      "triggered": false,
+      "rationale": "All 3 slots have multi-paper academic backing"
+    },
+    "rf_a2": {
+      "severity": "MEDIUM",
+      "triggered": false,
+      "rationale": "EW baseline; not composite optimization"
+    },
+    "rf_a3": {
+      "severity": "HIGH",
+      "triggered": null,
+      "rationale": "Recent 3Y vs full ICIR — see subperiod_stability"
+    },
+    "rf_a4": {
+      "severity": "HIGH",
+      "triggered": false,
+      "rationale": "Each slot independently validated. No neutralization in Alpha layer."
+    },
+    "rf_a5": {
+      "severity": "MEDIUM",
+      "triggered": false,
+      "rationale": "LIQ_THRESHOLD 5e7 enforced."
+    }
+  }
+}
