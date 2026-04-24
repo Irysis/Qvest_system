@@ -78,7 +78,7 @@
 - **메커니즘**: 13만 6천 개 롱숏 전략(회계비율+과거수익률+티커)에 Empirical Bayes 적용. "High-throughput" 방식이 top journal 수준 OOS 성과를 Look-ahead bias 없이 매칭. 예측력은 회계 전략, 소형주, 2004년 이전에 집중(제한적 주의 이론과 일치). 대중화된 다중검정 방법들이 OOS 성과자의 대부분을 식별 실패.
 - **한국 적용 가능성**: 소형주 + 회계 신호 집중이 한국 KOSPI 특성(소형주 비중 높음, 개인투자자 제한적 주의)과 부합. RAPC의 회계 기반 요소가 소형주에서 강화될 가능성.
 - **1차 shortlist 대비 추가 가치**: 회계 기반 신호(RAPC 핵심)의 OOS 우월성을 체계적으로 실증. "회계 전략이 소형주에서 OOS 강함"이라는 결론이 한국 Factor DB 설계에 직접 반영 가능.
-- **차기 Alpha handoff 포인트**: RAPC 구성 요소 선택 시 소형주 강화 효과 우선 검증. IC 계산을 시가총액 분위별로 분화.
+- **차기 Alpha handoff 포인트**: 차기 Discovery WT (WT-D)에서 Alpha Agent의 method_shopping_log에 소형주 IC vs 전체 IC 비교 variant 포함. Empirical Bayes 기반 요소 선별 후 alpha_signal_definition 확정.
 
 ---
 
@@ -93,7 +93,7 @@
 - **메커니즘**: ML 자산가격결정에서 포트폴리오 구성이 점 예측(point prediction)만 사용하는 관행 비판. 자산별 추정 불확실성 조정 예측 경계(uncertainty-adjusted prediction bounds)로 정렬 시 OOS 성과 개선. 이득이 변동성 감소에서 주로 발생. 유연한 ML 모델(Random Forest, XGBoost)에서 이득 가장 강함.
 - **한국 적용 가능성**: STR_1661 XGB V2(ICIR 1.029) 연장선상. 기존 점 예측 기반 XGBoost 정렬에 불확실성 경계 추가 시 추가 성과 개선 가능. 확장 없이 기존 코드에 conformal prediction 레이어 추가 가능.
 - **1차 shortlist 대비 추가 가치**: Gu et al.(2020)의 ML 자산가격결정을 "불확실성 인식" 방향으로 확장. QEPM STR_1661 V3 설계에 직접 적용 가능한 실용 기여.
-- **차기 Alpha handoff 포인트**: XGBoost 예측값에 conformal prediction interval 추가. 불확실성 높은 예측 종목의 포지션 자동 축소.
+- **차기 Alpha handoff 포인트**: 차기 Discovery WT (WT-D)에서 Alpha Agent가 alpha_signal_definition에 conformal prediction interval 레이어 추가. Pilot 6 Deployment WT (WT-P)에서 Optimizer Agent가 불확실성 높은 종목의 target_weight 자동 하한 적용.
 
 ---
 
@@ -104,7 +104,7 @@
 - **메커니즘**: 심층 편최소자승(DPLS) = PLS 잠재 팩터 + Deep Learning 비선형 맵. OLS 선형 팩터보다 비선형 리스크 구조 포착. Russell 1000, 1989-2018. LASSO 및 일반 DL 대비 IR 1.2배 향상. 파라미터 절약적 구조로 학습 시간 단축.
 - **한국 적용 가능성**: 한국 Factor DB 288팩터 × RAPC 4요소를 DPLS 입력으로 구성 가능. 비선형 팩터 상호작용 포착에 XGBoost보다 계산 효율적 가능성.
 - **1차 shortlist 대비 추가 가치**: Gu et al.(2020) NN의 계산 부담 없이 비선형 구조 포착. RAPC 4요소와 기존 Factor DB의 비선형 결합 설계 가능.
-- **차기 Alpha handoff 포인트**: RAPC 4요소(ESBR/SUE/Δaccrual/OCF surprise) + 상위 15 Factor DB 팩터를 DPLS 입력으로 구성. Expanding window 필수.
+- **차기 Alpha handoff 포인트**: 차기 Discovery WT (WT-D)에서 Alpha Agent가 method_shopping_log에 DPLS variant 포함. RAPC 4요소(ESBR/SUE/Δaccrual/OCF surprise) + 상위 15 Factor DB 팩터를 DPLS 입력으로 구성. Expanding window 필수. Judge Gate A(PIT C1 준수) 검증 필수.
 
 ---
 
@@ -115,7 +115,7 @@
 - **메커니즘**: 변분 오토인코더(VAE) + 계층적 잠재 공간으로 시장 국면과 종목별 잠재 팩터 간 관계 추정. Point-in-time 시장 정보만으로 현재 국면을 식별하고 팩터를 동적으로 추정. 4개 실제 주식 시장 벤치마크에서 능동 수익 우월 성과.
 - **한국 적용 가능성**: QEPM Regime Engine v7.1(4-Layer)과 연계 가능. MRS CRISIS(63.1, 2026-04) 국면 식별에 VAE 기반 잠재 국면 표현 활용 가능. 현재 국면엔진보다 자동화된 국면 탐지.
 - **1차 shortlist 대비 추가 가치**: Gu et al.(2020)의 정적 ML과 달리 온라인 적응형(Online Adaptive). 국면 전환 자동 감지 + 팩터 가중 동시 조정.
-- **차기 Alpha handoff 포인트**: RAPC 신호를 HireVAE 잠재 팩터에 포함. 국면별 RAPC 가중을 VAE가 자동 학습. STR_1661 V3 아키텍처 대안으로 검토.
+- **차기 Alpha handoff 포인트**: 차기 Discovery WT (WT-D)에서 Alpha Agent가 method_shopping_log에 HireVAE variant 포함. RAPC 신호를 잠재 팩터에 통합. 국면별 RAPC 가중 자동 학습. Judge Gate A(PIT C1 온라인 적응 검증) 필수.
 
 ---
 
@@ -128,7 +128,7 @@
 - **메커니즘**: Sparse Jump Model(SJM)으로 팩터별 국면(Bull/Bear) 식별 → 국면 추론을 Black-Litterman에 통합 → 롱온리 멀티팩터 포트폴리오. 7개 인덱스(시장 + 6 스타일 팩터: 가치/사이즈/모멘텀/퀄리티/저변동성/성장). IR이 EW 벤치마크 대비 0.05→0.4 향상. 팩터 간 상관 낮아 분산 효과.
 - **한국 적용 가능성**: QEPM 6-sleeve 아키텍처(v55)와 직접 연결. 한국 Factor DB 팩터별 국면 추론 → BL 통합 배분이 현 정적 배분 대비 개선 가능. Sparse Jump Model이 QEPM Expanding Percentile Regime Engine과 결합 가능.
 - **1차 shortlist 대비 추가 가치**: Multi-sleeve 이론(Grinold & Kahn)을 구체적 국면-팩터 연동 배분으로 실증화. 팩터 수준 국면 추론 → 슬리브 비중 동적 조정 메커니즘 제공.
-- **차기 Alpha handoff 포인트**: RAPC 슬리브의 국면별 활성화(CRISIS 국면 RAPC 비중 감소, NORMAL 증가) 설계에 SJM 활용.
+- **차기 Alpha handoff 포인트**: Pilot 6 Deployment WT (WT-P)에서 Optimizer Agent가 SJM 기반 국면 추론을 target_weights 조정에 통합. RAPC 슬리브의 CRISIS 국면 비중 감소·NORMAL 증가 자동화.
 
 ---
 
@@ -139,7 +139,7 @@
 - **메커니즘**: 추정 오류/비정상성/거래 제약에 강건한 포트폴리오 구성 프레임워크. 동적 자산 적격성(유동성/변동성/분산도 기준) + 유계 다중팩터 틸트(bounded multi-factor tilts)를 EW 기준에 적용. 공분산/기대수익률 추정 불필요. 완전 알고리즘적, 투명, 직접 구현 가능.
 - **한국 적용 가능성**: QEPM v53 hook(20종목 hard 제약 + 장기투자 틸트)과 철학적 일치. 추정 오류 없이 순위 기반 틸트로 유동성 2억원 필터 자동 통합 가능.
 - **1차 shortlist 대비 추가 가치**: DeMiguel et al.(2009) EW 우월성 결론을 "EW에 유계 틸트 추가" 방식으로 구체화. QEPM 현행 구조(EW 20종목)의 이론적 확장.
-- **차기 Alpha handoff 포인트**: RAPC IC-weighted composite를 EW 기준선에 bounded tilt로 구현. 최대 틸트 크기 = 1/N의 σ배(σ=0.5~1.5) 파라미터화.
+- **차기 Alpha handoff 포인트**: Pilot 6 Deployment WT (WT-P)에서 Optimizer Agent가 RAPC IC-weighted composite를 EW 기준선에 bounded tilt로 구현. 최대 틸트 크기 = 1/N의 σ배(σ=0.5~1.5)를 challenge_loop (P4)에서 검증.
 
 ---
 
