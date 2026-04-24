@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-D20260424_008",
+  "agent": "forge",
+  "pilot_label": "Pilot 10 — Monthly 3-Layer MRS Overlay Ablation",
+  "as_of_date": "2026-04-24",
+  "windows": {
+    "train": {
+      "start": "2012-01-01",
+      "end": "2022-12-31"
+    },
+    "val": {
+      "start": "2023-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox": {
+      "note": "JUDGE_ONLY — AX-002"
+    }
+  },
+  "performance": {
+    "pilot10_full": {
+      "label": "FULL (train+val) with overlay",
+      "n_days": 2969,
+      "CAGR": 2.74,
+      "CAGR_gross": 2.81,
+      "AnnVol": 21.24,
+      "Sharpe": 0.129,
+      "MDD": -47.33,
+      "Calmar": 0.058,
+      "WinRate": 50.6,
+      "alpha_pct": 1.278,
+      "TE_pct": 17.204,
+      "IR": 0.074
+    },
+    "pilot10_train": {
+      "label": "TRAIN (2012-2022) with overlay",
+      "n_days": 2709,
+      "CAGR": 3.58,
+      "CAGR_gross": 3.65,
+      "AnnVol": 21.43,
+      "Sharpe": 0.167,
+      "MDD": -47.33,
+      "Calmar": 0.076,
+      "WinRate": 50.9,
+      "alpha_pct": 2.791,
+      "TE_pct": 17.281,
+      "IR": 0.161
+    },
+    "pilot10_val": {
+      "label": "VAL (2023-2024.01) with overlay",
+      "n_days": 260,
+      "CAGR": -5.63,
+      "CAGR_gross": -5.55,
+      "AnnVol": 19.2,
+      "Sharpe": -0.293,
+      "MDD": -26.29,
+      "Calmar": -0.214,
+      "WinRate": 47.7,
+      "alpha_pct": -14.478,
+      "TE_pct": 16.389,
+      "IR": -0.883
+    },
+    "pilot9_full": {
+      "label": "FULL (train+val) no overlay",
+      "n_days": 2969,
+      "CAGR": 3.94,
+      "CAGR_gross": 4.02,
+      "AnnVol": 22.01,
+      "Sharpe": 0.179,
+      "MDD": -50.34,
+      "Calmar": 0.078,
+      "WinRate": 50.6,
+      "alpha_pct": 2.612,
+      "TE_pct": 17.439,
+      "IR": 0.15
+    },
+    "pilot9_train": {
+      "label": "TRAIN (2012-2022) no overlay",
+      "n_days": 2709,
+      "CAGR": 4.91,
+      "CAGR_gross": 4.99,
+      "AnnVol": 22.26,
+      "Sharpe": 0.221,
+      "MDD": -50.34,
+      "Calmar": 0.098,
+      "WinRate": 50.9,
+      "alpha_pct": 4.252,
+      "TE_pct": 17.536,
+      "IR": 0.242
+    },
+    "pilot9_val": {
+      "label": "VAL (2023-2024.01) no overlay",
+      "n_days": 260,
+      "CAGR": -5.63,
+      "CAGR_gross": -5.55,
+      "AnnVol": 19.2,
+      "Sharpe": -0.293,
+      "MDD": -26.29,
+      "Calmar": -0.214,
+      "WinRate": 47.7,
+      "alpha_pct": -14.478,
+      "TE_pct": 16.389,
+      "IR": -0.883
+    }
+  },
+  "delta": {
+    "full_sr": -0.05,
+    "val_sr": 0,
+    "cagr": -1.2,
+    "mdd": 3.01,
+    "verdict": "OVERLAY_MARGINAL"
+  },
+  "benchmark": "KOSPI200_TR",
+  "commission_bps": 15,
+  "overlay_spec": {
+    "layer1_rule": "MRS < 30 → fw = 1.0",
+    "layer2_rule": "30 <= MRS < 60 → fw = max(0.5, 1-(MRS-30)/60)",
+    "layer3_rule": "MRS >= 60 AND crisis_consec >= 3 → fw = 0.0",
+    "pit_compliance": "C5 — MRS_{prior month end, t-1 lag} used",
+    "switching_cost": "11 switches × 15 bps = 165 bps total",
+    "monthly_only": true,
+    "daily_switching": false
+  }
+}

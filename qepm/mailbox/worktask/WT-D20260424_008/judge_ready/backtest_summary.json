@@ -1,0 +1,48 @@
+{
+  "task_id": "WT-D20260424_008",
+  "pilot_label": "Pilot 10 — Monthly 3-Layer MRS Overlay Ablation",
+  "as_of_date": "2026-04-24",
+  "forge_agent": "claude-opus-4-7",
+  "handoff_to": "judge",
+  "ablation_verdict": "OVERLAY_MARGINAL",
+  "pilot9_vs_pilot10": {
+    "pilot9_full_sr": 0.179,
+    "pilot9_val_sr": -0.293,
+    "pilot10_full_sr": 0.129,
+    "pilot10_val_sr": -0.293,
+    "delta_full_sr": -0.05,
+    "delta_val_sr": 0,
+    "delta_mdd": 3.01
+  },
+  "audit": {
+    "min_names_ok": true,
+    "max_names_ok": true,
+    "hhi_ok": true,
+    "sum_weights_ok": true,
+    "long_only_ok": true,
+    "bounds_ok": true,
+    "beta_hard_ok": true,
+    "overall_pass": true
+  },
+  "layer_summary": {
+    "layer_1": 133,
+    "layer_2": 13
+  },
+  "judge_tasks": {
+    "J1": "Lockbox backtest (2024-01-23 ~ 2026-01-23) — JUDGE ONLY (AX-002)",
+    "J2": "Overlay 효과 Lockbox 검증: delta_Active_IR = Pilot 10 LB IR - Pilot 9 LB IR (-0.71)",
+    "J3": "overlay_verdict 확정 (DECISIVE/MARGINAL/NEUTRAL) — Lockbox 포함 최종 판정",
+    "J4": "Pilot 10 grade (A/B/C/REJECT)",
+    "J5": "CRISIS regime Active IR — overlay 후 +3.92 유지 여부",
+    "J6": "Layer 3 개월 검증 (MRS>=60 3개월 연속 발동 여부)",
+    "J7": "Pilot 11 direction 확정"
+  },
+  "pit_flags": {
+    "C1": "PASS — no full-sample statistics. Rolling/expanding only.",
+    "C2": "PASS — no same-day circular reference.",
+    "C5": "PASS — MRS lag applied: prior month end (t-1). Monthly overlay, not daily.",
+    "C9": "PASS — no DD/VT overlay. Regime overlay via monthly scalar only.",
+    "C14": "PASS — alpha from inherited Pilot 9 alpha_package.",
+    "C15": "PASS — weights from inherited Pilot 9 optimization_package."
+  }
+}

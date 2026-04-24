@@ -1,0 +1,217 @@
+{
+  "schema_version": "v6.1",
+  "task_id": "WT-D20260424_008",
+  "pilot_label": "Pilot 10 — Monthly 3-Layer MRS Overlay Ablation",
+  "as_of_date": "2026-04-24",
+  "ablation_design": {
+    "type": "single_variable_change",
+    "variable": "Forge-level monthly 3-Layer MRS Overlay",
+    "fixed_vars": ["alpha_package (Consensus RAPC v2)", "risk_package (LW Oracle)", "optimization_package (ERC n=16)"],
+    "inheritance_from": "WT-D20260424_007 (Pilot 9)"
+  },
+  "pilot9_baseline": {
+    "full_sr": 0.179,
+    "val_sr": -0.293,
+    "train_sr": 0.221,
+    "full_cagr": 3.94,
+    "full_mdd": -50.34,
+    "note": "Pilot 9 Lockbox Active IR=-0.71 (Judge WT-007 판정) — FORGE 재현값 train+val 한정"
+  },
+  "pilot10_with_overlay": {
+    "full_sr": 0.129,
+    "val_sr": -0.293,
+    "train_sr": 0.167,
+    "full_cagr": 2.74,
+    "full_mdd": -47.33
+  },
+  "delta_attributed_to_overlay": {
+    "full_sr": -0.05,
+    "val_sr": 0,
+    "full_cagr": -1.2,
+    "full_mdd": 3.01,
+    "interpretation": "SR_full delta=-0.050 | Val SR delta=0.000 | CAGR delta=-1.20% | MDD delta=3.01% (positive=MDD improvement)"
+  },
+  "layer_breakdown": {
+    "full_period": {
+      "layer_1": {
+        "layer": 1,
+        "n_days": 2700,
+        "days_pct": 90.9,
+        "mean_fw": 1,
+        "base_sr": 0.158,
+        "overlay_sr": 0.158,
+        "overlay_delta_sr": 0,
+        "base_return_contrib_ann_pct": 3.24,
+        "overlay_return_contrib_ann_pct": 3.24,
+        "cash_fraction_pct": 0
+      },
+      "layer_2": {
+        "layer": 2,
+        "n_days": 269,
+        "days_pct": 9.1,
+        "mean_fw": 0.806,
+        "base_sr": 0.839,
+        "overlay_sr": 0.839,
+        "overlay_delta_sr": 0,
+        "base_return_contrib_ann_pct": 23.11,
+        "overlay_return_contrib_ann_pct": 23.11,
+        "cash_fraction_pct": 19.4
+      },
+      "layer_3": {
+        "layer": 3,
+        "n_days": 0,
+        "days_pct": 0,
+        "mean_fw": null,
+        "base_sr": null,
+        "overlay_sr": null,
+        "overlay_delta_sr": null,
+        "base_contrib_pct": null,
+        "overlay_contrib_pct": null
+      }
+    },
+    "train_period": {
+      "layer_1": {
+        "layer": 1,
+        "n_days": 2440,
+        "days_pct": 90.1,
+        "mean_fw": 1,
+        "base_sr": 0.198,
+        "overlay_sr": 0.193,
+        "overlay_delta_sr": -0.004,
+        "base_return_contrib_ann_pct": 4.09,
+        "overlay_return_contrib_ann_pct": 4,
+        "cash_fraction_pct": 0
+      },
+      "layer_2": {
+        "layer": 2,
+        "n_days": 269,
+        "days_pct": 9.9,
+        "mean_fw": 0.806,
+        "base_sr": 1.105,
+        "overlay_sr": 0.839,
+        "overlay_delta_sr": -0.266,
+        "base_return_contrib_ann_pct": 36.98,
+        "overlay_return_contrib_ann_pct": 23.11,
+        "cash_fraction_pct": 19.4
+      },
+      "layer_3": {
+        "layer": 3,
+        "n_days": 0,
+        "days_pct": 0,
+        "mean_fw": null,
+        "base_sr": null,
+        "overlay_sr": null,
+        "overlay_delta_sr": null,
+        "base_contrib_pct": null,
+        "overlay_contrib_pct": null
+      }
+    },
+    "val_period": {
+      "layer_1": {
+        "layer": 1,
+        "n_days": 260,
+        "days_pct": 100,
+        "mean_fw": 1,
+        "base_sr": -0.202,
+        "overlay_sr": -0.202,
+        "overlay_delta_sr": 0,
+        "base_return_contrib_ann_pct": -3.88,
+        "overlay_return_contrib_ann_pct": -3.88,
+        "cash_fraction_pct": 0
+      },
+      "layer_2": {
+        "layer": 2,
+        "n_days": 0,
+        "days_pct": 0,
+        "mean_fw": null,
+        "base_sr": null,
+        "overlay_sr": null,
+        "overlay_delta_sr": null,
+        "base_contrib_pct": null,
+        "overlay_contrib_pct": null
+      },
+      "layer_3": {
+        "layer": 3,
+        "n_days": 0,
+        "days_pct": 0,
+        "mean_fw": null,
+        "base_sr": null,
+        "overlay_sr": null,
+        "overlay_delta_sr": null,
+        "base_contrib_pct": null,
+        "overlay_contrib_pct": null
+      }
+    },
+    "monthly_layer_counts": {
+      "layer_1": 133,
+      "layer_2": 13
+    },
+    "n_switches": 11,
+    "overlay_cost_bps": 165,
+    "layer3_months": {
+      "note": "No Layer 3 months in train+val period"
+    }
+  },
+  "regime_contribution": {
+    "period": "2012-2022 train + 2023-2024.01 val",
+    "pilot_label": "Pilot 10 — Monthly 3-Layer Overlay vs Pilot 9 Baseline",
+    "total_days": 2969,
+    "regime_stats": {
+      "RISK_ON": {
+        "n_days": 2774,
+        "days_pct": 93.4,
+        "sr_base": 0.597,
+        "sr_overlay": 0.57,
+        "delta_sr": -0.027,
+        "cagr_base": 10.17,
+        "cagr_overlay": 9.5,
+        "mdd_base": -26.15,
+        "mdd_overlay": -26.15
+      },
+      "NEUTRAL": {
+        "n_days": 84,
+        "days_pct": 2.8,
+        "sr_base": -1.832,
+        "sr_overlay": -1.778,
+        "delta_sr": 0.054,
+        "cagr_base": -47.13,
+        "cagr_overlay": -44.9,
+        "mdd_base": -28.73,
+        "mdd_overlay": -27.74
+      },
+      "CAUTION": {
+        "n_days": 86,
+        "days_pct": 2.9,
+        "sr_base": -1.428,
+        "sr_overlay": -2.291,
+        "delta_sr": -0.862,
+        "cagr_base": -50.69,
+        "cagr_overlay": -62.72,
+        "mdd_base": -29.23,
+        "mdd_overlay": -33.09
+      },
+      "RISK_OFF": {
+        "n_days": 25,
+        "days_pct": 0.8,
+        "sr_base": -1.501,
+        "sr_overlay": -1.762,
+        "delta_sr": -0.261,
+        "cagr_base": -77.63,
+        "cagr_overlay": -74.88,
+        "mdd_base": -33.33,
+        "mdd_overlay": -29.1
+      }
+    }
+  },
+  "overlay_spec": {
+    "layer1_rule": "MRS < 30 → fw = 1.0",
+    "layer2_rule": "30 <= MRS < 60 → fw = max(0.5, 1-(MRS-30)/60)",
+    "layer3_rule": "MRS >= 60 AND crisis_consec >= 3 → fw = 0.0",
+    "pit_compliance": "C5 — MRS_{prior month end, t-1 lag} used",
+    "switching_cost": "11 switches × 15 bps = 165 bps total",
+    "monthly_only": true,
+    "daily_switching": false
+  },
+  "verdict": "OVERLAY_MARGINAL",
+  "pilot11_recommendation": "HRP_SCORE_HYBRID — overlay marginal, try HRP+Score hybrid with overlay (Pilot 11A)"
+}
