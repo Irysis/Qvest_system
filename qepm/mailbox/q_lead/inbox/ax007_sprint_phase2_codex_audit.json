@@ -1,0 +1,65 @@
+{
+  "sprint_id": "AX-007-Verification-2026-04-24",
+  "phase": 2,
+  "agent": "codex",
+  "model": "gpt-5.5",
+  "as_of_date": "2026-04-24",
+  "invocation_timestamp": "2026-04-24T17:34:06+09:00",
+  "codex_invocation_successful": true,
+  "codex_companion_version": "1.0.4",
+  "prompt_file": "/tmp/ax007_codex_prompt.md",
+  "raw_result_path": "/tmp/ax007_codex_result.json",
+  "codex_verdict": {
+    "ax_007_status": "CONFIRM",
+    "confidence": 0.87,
+    "divergence_most_likely_hypothesis": "regime_dependency",
+    "minvar_retreat_structural": true,
+    "active_ir_inevitable": false,
+    "beta_philosophy_agree_with_user": false,
+    "beta_philosophy_note": "Codex recommends confidence/regime-adaptive beta (baseline 0.90, band 0.80-1.05) over fixed 0.75 hard constraint. Grinold-Kahn confidence-weighted superior per Q5."
+  },
+  "codex_5_answers_summary": [
+    {
+      "question": "Q1: AX-007 supporting evidence (L-160/L-165/L-166) dependence on backtest_harness.R implementation choices",
+      "answer_summary": "Evidence is mostly implementation-independent. L-160/165/166 and Pilots 4-7 share same signature: strong signal diagnostics but persistent portfolio translation failure (Active IR -1.311 to -1.033). t+1 execution or cost handling changes magnitude, not direction.",
+      "key_finding": "implementation_dependent=FALSE — AX-007 evidence robust across implementations"
+    },
+    {
+      "question": "Q2: 16× Forge-Lockbox SR divergence root cause (5 hypotheses)",
+      "answer_summary": "regime_dependency is primary (confidence 0.79). Lockbox 2024-2026 is 68.8% RISK_ON + 26.9% NEUTRAL — favorable for low-beta absolute returns. Forge 2012-2024 includes 2 bear markets unfavorable for under-beta strategy. Pilot 7 reducing divergence 16x→4x after L-195 fix confirms regime mix as dominant, not infra bug.",
+      "key_finding": "secondary_factor=signal_date_gap"
+    },
+    {
+      "question": "Q3: MinVar_BetaHard 2-consecutive selection — structural flaw vs rational choice",
+      "answer_summary": "Structural flaw confirmed (confidence 0.84). In Pilot 7 all 4 alpha-aware MVO variants collapsed to n=7 (<min_names=20 hard constraint) → disqualified. MinVar won by default (net_IR 12.16 vs best MVO 6.76). Hard min_names=20 boundary effect amplified by alpha compression in Risk40 cap-cluster subspace.",
+      "key_finding": "Recommendation: alpha-stratified Risk universe + soft min_names penalty + explicit infeasibility escalation (block automatic MinVar fallback)"
+    },
+    {
+      "question": "Q4: Active IR < -1.0 4-pilot consecutive — statistically inevitable vs deeper failure",
+      "answer_summary": "NOT inevitable (confidence 0.82). Benchmark/style mismatch (cap-weighted vs equal-weight top-20) contributes ~35-45% structural drag. But four consecutive sub-(-1.0) Active IR values plus BM dominance in ALL Pilot 7 regimes indicate 55-65% is deeper signal-to-portfolio translation failure beyond style mismatch.",
+      "key_finding": "active_ir_inevitable=FALSE — deeper failure confirmed, not just benchmark mismatch"
+    },
+    {
+      "question": "Q5: β=0.75 hard vs confidence-weighted β — Grinold-Kahn theory alignment",
+      "answer_summary": "Confidence-weighted β theoretically superior (confidence 0.86). Fixed β=0.75 underperformed BM in all 3 Pilot 7 regime states including CAUTION (SR -1.703 vs BM 6.600), consistent with persistent under-beta drag. Recommendation: baseline β=0.90, dynamic band 0.80-1.05, regime-adaptive.",
+      "key_finding": "beta_philosophy_agree_hardcoded=FALSE — pivot to confidence-weighted beta strongly recommended"
+    }
+  ],
+  "codex_overall_assessment": "AX-007 is supported by Pilot 4-7 evidence. Absolute lockbox Sharpe can be high (0.774 to 1.086), but active performance remains structurally broken (IR -1.311 to -1.033) and optimizer behavior repeatedly retreats to MinVar under hard constraints. Pilot 6's 16x Forge-lockbox split is primarily regime-window driven. The dominant issue is signal-to-portfolio translation under single-sleeve long-only top-20, not a backtest implementation bug.",
+  "codex_pilot8_recommendations": [
+    "Redesign Risk universe selection to alpha-stratified sampling (avoid cap-clustered top-40 subspace) and re-run MVO feasibility.",
+    "Replace hard min_names=20 and automatic MinVar fallback with constrained soft-penalty MVO plus explicit infeasibility escalation.",
+    "Move from fixed beta=0.75 to confidence/regime-adaptive beta (baseline 0.90, band 0.80-1.05) and judge by Active IR by regime, not absolute SR only."
+  ],
+  "phase1_vs_phase2_alignment": {
+    "note": "Q-Lead to assess alignment with Phase 1 Architect audit before Phase 3 Replication.",
+    "phase1_source": "qepm/mailbox/q_lead/inbox/ax007_sprint_phase1_architect_audit.json"
+  },
+  "caveats": [
+    "Codex GPT-5.5 inspected repository files directly (ripgrep + cat) in addition to prompt context — cross-verified with actual artifacts.",
+    "If cross-model disagreement persists on any point after Phase 1 vs Phase 2 comparison, Phase 3 Replication (R-based simulation) is mandatory before AX-007 final classification.",
+    "Codex Q2 assigns secondary factor as signal_date_gap — warrants verification in Phase 3 via timing audit.",
+    "Lockbox regime decomposition (Pilot 7) is 487-day single window — CAUTION regime only 21 days (4.3%), low statistical power for that regime bucket.",
+    "L-196 (minvar_superior) verdict is provisional — Phase 1+2 CONFIRM convergence strengthens but does not finalize AX-007 elevation."
+  ]
+}
