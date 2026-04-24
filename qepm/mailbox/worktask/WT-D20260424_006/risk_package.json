@@ -1,0 +1,357 @@
+{
+  "task_id": "WT-D20260424_006",
+  "parent_wt": "WT-D20260424_005",
+  "agent": "risk",
+  "model": "claude-opus-4-5",
+  "schema_version": "v6.1",
+  "as_of_date": "2026-04-24",
+  "created_at": "2026-04-24T17:53:02+0900",
+  "seed": 20260424,
+  "pilot_label": "Pilot 8 Path A — beta 0.90 soft + alpha_divergence_filter 0.80",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_006/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_006/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_006/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_006/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260424_006/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260424_006/regime_correlation.parquet",
+  "covariance_method_selected": "ledoit_wolf_oracle",
+  "covariance_structure": {
+    "formula": "Sigma = B*Omega*B' + D",
+    "n_factors": 3,
+    "factor_names": ["Market/PC1", "Style/PC2", "Sector/PC3"],
+    "n_tickers_cov": 40,
+    "T_obs": 37,
+    "q_ratio": 0.925,
+    "cov_method_rationale": "T/N=0.925 (< 1). P8 q=0.925. ledoit_wolf_oracle selected (cond=34.0286). P7 same selection — validated."
+  },
+  "beta_vector_summary": {
+    "source": "alpha_scores.parquet beta_blume (36M rolling Blume OLS, inherited P7)",
+    "port_mean_ew": 1.0217,
+    "top20_mean_ew": 1.1206,
+    "min_beta": 0.2,
+    "max_beta": 2.2688,
+    "pilot7_reference": {
+      "top20_beta_ew": 1.0226,
+      "note": "Alpha inherited from P7. beta_blume same source."
+    },
+    "beta_target_p8": 0.9,
+    "gamma_p8": 0.5,
+    "constraint_mode": "soft"
+  },
+  "hedge_overlay": {
+    "option_A_spec": {
+      "name": "Soft Beta-Constraint MVO (beta=0.90, gamma=0.5)",
+      "objective": "max_w  w'alpha - (lambda/2)*w'Sigma*w - gamma_beta*max(0, sum(w*beta) - beta_target)^2",
+      "constraints": {
+        "sum_w_eq_1": true,
+        "long_only": true,
+        "w_ub": 0.15,
+        "hhi_cap": 0.15,
+        "min_names": 20,
+        "max_names": 20,
+        "beta_target": 0.9,
+        "gamma_beta": 0.5,
+        "gamma_hhi": 0.5,
+        "constraint_mode": "soft"
+      },
+      "pilot8_changes": {
+        "beta_target_change": "0.75 hard (P7) → 0.90 soft (P8)",
+        "gamma_change": "1.0 hard (P7) → 0.5 soft (P8)",
+        "alpha_div_filter": 0.8,
+        "l195a_fix_status": "RESOLVED",
+        "rationale": "AX-007 Sprint 3-source CONFIRMED: Architect + Codex(0.87) + Replication(9/11). beta=0.75 hard = 25% leverage loss. Codex Q5(0.86): baseline 0.90 + gamma=0.5 soft enables alpha-aware MVO."
+      },
+      "expected_outcomes": {
+        "mkt_risk_pct": 77.6,
+        "mkt_risk_p7_ref_pct": 53.9,
+        "mkt_risk_increase_pp": 23.7,
+        "alpha_ir_expected": "improved vs Pilot 7 Active IR -1.033 (MinVar retreated). gamma=0.5 soft allows alpha utilization.",
+        "beta_target_binding": "soft — may allow beta slightly above 0.90 if alpha strong"
+      }
+    },
+    "option_C3_spec": {
+      "name": "MRS-Dynamic Beta-Constraint MVO (P8 v2.3)",
+      "regime_mapping": {
+        "RISK_ON": {
+          "beta_target": 1,
+          "note": "α confidence HIGH → beta tolerance MAX"
+        },
+        "NEUTRAL": {
+          "beta_target": 0.9,
+          "note": "MEDIUM tier baseline"
+        },
+        "CAUTION": {
+          "beta_target": 0.8,
+          "note": "Defensive shift"
+        },
+        "CRISIS": {
+          "beta_target": 0.7,
+          "note": "Full defensive"
+        }
+      },
+      "pit_regime_at_signal_date": {
+        "date": "2026-04-24",
+        "category": "RISK_ON",
+        "score": 8.29,
+        "source": "Pilot7_carryover"
+      },
+      "current_regime_today": {
+        "date": "2026-04-24",
+        "category": "NEUTRAL",
+        "score": 42.9,
+        "beta_target_active": 0.9
+      },
+      "gamma_beta": 0.5,
+      "note": "C-3 P8: current=NEUTRAL → beta_target=0.90. P8 baseline 0.90 matches NEUTRAL. Primary = Option A."
+    },
+    "recommended": "A",
+    "recommendation_rationale": "Option A (beta_target=0.90, gamma=0.5 soft): primary Pilot 8 Path A. Current regime=NEUTRAL → C-3 also beta=0.90. Both options aligned. Option A preferred for simplicity. Active IR improvement expected via alpha_divergence_filter (L-195a)."
+  },
+  "risk_summary": {
+    "n_tickers_cov": 40,
+    "n_obs_T": 37,
+    "q_ratio": 0.925,
+    "top_common_risks": [
+      "Market (100.0% EW — CAPM R2 channel + beta_ew=1.022)",
+      "Accrual_Quality (AC21+AC17+Q35, theta=0.67, IC=0.042 strongest individual)",
+      "PEAD_EarningsSurprise (ESBR+SUE combined theta=0.38)",
+      "Style_PC2 (PC2 var=19.4% — size+value active channel)"
+    ],
+    "crowding_flags": [
+      "Alpha-cap cluster: 6/40 (15.0%) — alpha_divergence_filter 0.80 REDUCED cluster vs P7 (65%)",
+      "PEAD (C04_ESBR + C01_SUE): KR institutional quant widely implemented — late-cycle crowding MEDIUM",
+      "Accrual Quality (AC21+AC17+Q35): quality factor cluster overlap with KOSPI200 quant funds"
+    ],
+    "liquidity_flags": [
+      "Universe breadth=1899 → capacity risk LOW",
+      "Top-20 portfolio: all within KOSPI200+KOSDAQ150, ADT > 5M KRW floor"
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0511,
+      "market_down_5_optA_p7": -0.0375,
+      "market_down_5_optA_p8": -0.045,
+      "market_down_10": -0.1022,
+      "market_down_10_optA_p7": -0.075,
+      "market_down_10_optA_p8": -0.09,
+      "value_crash": -0.0307,
+      "value_crash_optA_p7": -0.0225,
+      "value_crash_optA_p8": -0.027,
+      "gfc_2008": -0.3576,
+      "gfc_2008_optA_p7": -0.2625,
+      "gfc_2008_optA_p8": -0.315,
+      "eu_debt_2011": -0.1533,
+      "eu_debt_2011_optA_p7": -0.1125,
+      "eu_debt_2011_optA_p8": -0.135,
+      "covid_2020": -0.2043,
+      "covid_2020_optA_p7": -0.15,
+      "covid_2020_optA_p8": -0.18,
+      "rate_2022": -0.2248,
+      "rate_2022_optA_p7": -0.165,
+      "rate_2022_optA_p8": -0.198,
+      "stress_2025": -0.0613,
+      "stress_2025_optA_p7": -0.045,
+      "stress_2025_optA_p8": -0.054
+    }
+  },
+  "diagnostics": {
+    "condition_number": 34.0286,
+    "condition_number_warn": 100,
+    "condition_number_fail": 500,
+    "condition_number_all_methods": {
+      "sample_pairwise": 4.3251579302910674e+18,
+      "ledoit_wolf_oracle": 34.0286,
+      "gerber_rmt": 593.2857,
+      "lw_const_corr": 422.9035,
+      "nonlinear_shrinkage": 104.1245
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "n_obs_used": 37,
+    "psd_verified": true,
+    "min_eigenvalue": 0.0053,
+    "factor_coverage_pct": 32.88,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.3213,
+      "max_pairwise": 0.75,
+      "threshold": 0.4,
+      "pairs_above": 167,
+      "top20_mean": 0.3083,
+      "top20_pairs_above": 4,
+      "factor_level": {
+        "pc1_pc2": 0.25,
+        "pc1_pc3": 0.25,
+        "pc2_pc3": 0.25
+      }
+    },
+    "market_risk_contribution": {
+      "ew_port_pct": 100,
+      "optA_p7_est_pct": 53.89,
+      "optA_p8_est_pct": 77.6,
+      "mkt_risk_increase_pp": 23.71,
+      "gate_d_threshold": 40,
+      "source": "Factor model: beta^2 * sigma_mkt^2 / port_var"
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": 0.0844,
+      "cvar_95_ann": 0.2924,
+      "cf_var_99_ann": -0.4533,
+      "skewness": 0.5003,
+      "excess_kurtosis": 0.6204,
+      "n_obs": 37
+    },
+    "family_overlap": {
+      "esbr_sue_corr": -0.0688,
+      "esbr_accrual_corr": -0.0363,
+      "sue_accrual_corr": 0.0748,
+      "capm_retention_pct": 96.8,
+      "verdict": "No multicollinearity. CAPM-level hedge sufficient."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_006/regime_correlation.parquet",
+    "pit_regime_at_signal_date": {
+      "date": "2026-04-24",
+      "category": "RISK_ON",
+      "score": 8.29,
+      "source": "Pilot7_carryover"
+    },
+    "current_regime_today": {
+      "date": "2026-04-24",
+      "score": 42.9,
+      "category": "NEUTRAL",
+      "note": "Current NEUTRAL → Option A beta=0.90 = C-3 NEUTRAL beta. Both aligned."
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "autonomy_note": "P1 self-directed. R13 parallel. Selection: min condition_number among PSD-verified. Pilot 7 LW Oracle selected again — consistent.",
+      "method_log": [
+        {
+          "step": 1,
+          "name": "sample_pairwise",
+          "condition_number": 4.3251579302910674e+18,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=4325157930291067392.00"
+        },
+        {
+          "step": 2,
+          "name": "ledoit_wolf_oracle",
+          "condition_number": 34.0286,
+          "psd": true,
+          "ok": true,
+          "selected": true,
+          "reason": "SELECTED: min condition_number=34.0286 among PSD-verified"
+        },
+        {
+          "step": 3,
+          "name": "gerber_rmt",
+          "condition_number": 593.2857,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=593.29"
+        },
+        {
+          "step": 4,
+          "name": "lw_const_corr",
+          "condition_number": 422.9035,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=422.90"
+        },
+        {
+          "step": 5,
+          "name": "nonlinear_shrinkage",
+          "condition_number": 104.1245,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=104.12"
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "objection": false,
+    "round": 1,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "beta_blume_column", "alpha_uniform_guard"],
+    "challenges": [
+      {
+        "flag": "L_195A_ALPHA_DIV_FILTER_RESOLUTION",
+        "severity": "INFO",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": "alpha_divergence_filter=0.80 applied. Pilot 7 cap cluster: 65% → Pilot 8: 15.0%. unique/n ratio: 0.8750 (threshold=0.80).",
+        "implication": "L-195a status: RESOLVED. Cap cluster reduction from P7 65% → P8 15.0%. Optimizer now has more differentiated alpha universe → α-aware MVO feasible.",
+        "recommendation": "Optimizer: verify MVO lambda sweep shows alpha signal usage. Report α-aware vs MinVar Active IR difference. Key test for L-195a fix efficacy.",
+        "counter_evidence": "alpha_divergence_filter greedy selection may introduce anti-momentum bias (selecting high-deviation from median). Monitor sector concentration."
+      },
+      {
+        "flag": "INFO_BETA_TIER_MEDIUM_FF3_MISMATCH",
+        "severity": "INFO",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": [],
+        "implication": "FF3 retention 10.5% suggests style mismatch (momentum/quality not fully captured by FF3). MEDIUM tier = beta 0.90 soft (gamma=0.5). No hard constraint binding risk from beta channel.",
+        "recommendation": "INFO only (Path A no alpha change). Consider FF3-neutral pre-scoring in future Path B. Current: beta_target=0.90 gamma=0.5 soft.",
+        "counter_evidence": "FF3 retention may reflect alpha NOT captured by FF3 (i.e., genuine PEAD/Accrual alpha). Low FF3-R2 is acceptable if factor is independently valid."
+      }
+    ],
+    "p4_obligation_met": true,
+    "p4_note": "GAP-1 R3 P4: Both INFO challenges issued + P4 audit completed. No alpha objection (alpha re-definition forbidden, Path A)."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 100.0% > 40% (EW). P8 Option A: beta_target=0.90 gamma=0.5 soft. Expected market risk post-opt: 77.6% (vs P7 39.0% with beta=0.75 hard)."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "PEAD+Accrual crowding. alpha_divergence_filter applied — monitor cluster shift."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "167 factor pairs with TDC > 0.4."
+    },
+    {
+      "id": "RF-BETA-090",
+      "severity": "INFO",
+      "note": "Top-20 EW beta=1.1206. P8: beta_target=0.90 soft (gamma=0.5). AX-007 Sprint: beta 0.75 hard was 25% leverage loss → 0.90 soft corrects. Expected market risk: P7 53.9% → P8 77.6%."
+    }
+  ],
+  "pilot8_key_diagnostics": {
+    "alpha_divergence_filter_applied": true,
+    "alpha_div_threshold": 0.8,
+    "alpha_div_actual_ratio": 0.875,
+    "l195a_resolution_status": "RESOLVED",
+    "cap_cluster_p7_pct": 65,
+    "cap_cluster_p8_pct": 15,
+    "cap_cluster_change": "65.0% (P7) → 15.0% (P8) via divergence filter",
+    "beta_target_change": "0.75 hard (P7) → 0.90 soft (P8)",
+    "gamma_change": "1.0 hard (P7) → 0.5 soft (P8)",
+    "mkt_risk_change": "53.9% (P7 optA) → 77.6% (P8 optA)",
+    "optimizer_test_hypothesis": "With alpha_divergence_filter + beta 0.90 soft: Optimizer should choose alpha-aware MVO (not MinVar). Active IR improvement from -1.033 expected.",
+    "ax007_sprint_reference": "AX-007 3-source CONFIRMED (Architect INFRA_CLEAN + Codex 0.87 + Replication 9/11). Pilot 8 = Risk territory only."
+  },
+  "alpha_divergence_filter_applied": true,
+  "alpha_divergence_filter_threshold": 0.8,
+  "alpha_divergence_filter_actual": 0.875,
+  "l_195a_resolution_status": "RESOLVED",
+  "constraint_defaults_version": "v2.3",
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_006/artifact_lineage.json",
+    "seed": 20260424,
+    "r_version": "4.5.2"
+  }
+}
