@@ -251,6 +251,37 @@ tg_html_escape <- function(x) {
   x
 }
 
+# ─── Mobile-safe Gate 표 (2026-04-24, Telegram 모바일 가독성 영구 수정) ────
+# 긴 Note column이 모바일에서 줄바꿈 → 정렬 붕괴 원인.
+# Gate 결과는 2-column 컴팩트 표 + Note는 별도 bullet list(prose)로 분리.
+# 사용: gates <- list(list(name="A PIT", verdict="PASS", note="..."), ...)
+#       tg_format_gate_block(gates) → "<pre>표</pre>\n\n• A PIT: note..."
+tg_format_gate_block <- function(gates, max_note_chars = 46L) {
+  if (length(gates) == 0) return("")
+  # 2-column 컴팩트 표 (Gate / Verdict만)
+  df <- data.frame(
+    Gate    = vapply(gates, function(g) as.character(g$name), character(1)),
+    Verdict = vapply(gates, function(g) as.character(g$verdict), character(1)),
+    stringsAsFactors = FALSE
+  )
+  tbl <- tg_format_table(df)
+
+  # Note는 bullet list로 분리 (모바일에서 자연 줄바꿈 허용)
+  notes <- vapply(gates, function(g) {
+    n <- as.character(g$note %||% "")
+    if (nchar(n) == 0) return(NA_character_)
+    if (nchar(n) > max_note_chars) n <- paste0(substr(n, 1, max_note_chars - 1), "…")
+    sprintf("  • %s: %s", g$name, tg_html_escape(n))
+  }, character(1))
+  notes <- notes[!is.na(notes)]
+
+  if (length(notes) == 0) return(tbl)
+  paste0(tbl, "\n", paste(notes, collapse = "\n"))
+}
+
+# NULL-coalescing helper
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (is.character(a) && !nzchar(a))) b else a
+
 # ─── Photo / Document send ────────────────────────────────────────────────────
 tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
   if (!file.exists(image_path)) {

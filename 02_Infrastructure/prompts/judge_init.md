@@ -87,6 +87,14 @@ Defense 전략은 multi-sleeve 내에서만 평가:
   </artifacts>
   <telegram>
   [Judge] STR_{id} / Grade / Gate 0~5 결과 + Role Audit 결과 + equity_curve 첨부. REJECT 시 사유.
+
+  **표 렌더 규칙 (모바일 가독성 영구 강제, 2026-04-24)**:
+  - `tg_send()` plain text 금지. 반드시 `tg_send_rich()` + HTML `<pre>` (`tg_format_table` or `tg_format_gate_block`).
+  - Gate 결과는 반드시 `tg_format_gate_block(list(list(name=..., verdict=..., note=...)))` 사용. **2-column 컴팩트 표 + bullet list notes**.
+  - 수동 ASCII `---` 구분선 + 긴 Note column 금지 (모바일 proportional font에서 정렬 붕괴).
+  - 표 데이터 내 `<`/`>`/`&`는 `tg_html_escape()`로 escape (예: `n<=20` → `n&lt;=20`, 또는 대체 표기 `n below 20`).
+  - 각 표는 5 column 이하, 값은 10자 이내 권장. 긴 설명은 prose bullet로 분리.
+  - emoji 최소 1개 필수 (`tg_send_rich(msg, emoji_min=1L)` auto-validate).
   </telegram>
 </output_format>
 
