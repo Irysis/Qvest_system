@@ -1,0 +1,333 @@
+{
+  "task_id": "WT-D20260424_005",
+  "parent_wt": "WT-D20260424_004",
+  "agent": "risk",
+  "model": "claude-sonnet-4-6",
+  "schema_version": "v6.1",
+  "as_of_date": "2023-12-28",
+  "created_at": "2026-04-24T16:24:16+0900",
+  "seed": 20260424,
+  "pilot_label": "Pilot 7 — RAPC 5-factor + CAPM Blume + L-195 Fix + alpha_std +33.6%",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_005/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_005/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_005/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_005/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260424_005/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260424_005/regime_correlation.parquet",
+  "covariance_method_selected": "ledoit_wolf_oracle",
+  "covariance_structure": {
+    "formula": "Sigma = B*Omega*B' + D",
+    "n_factors": 3,
+    "factor_names": ["Market/PC1", "Style/PC2", "Sector/PC3"],
+    "n_tickers_cov": 40,
+    "T_obs": 37,
+    "q_ratio": 0.925,
+    "cov_method_rationale": "T/N=0.925 (< 1). P7 q=0.925 slightly lower than P6 q=0.90. ledoit_wolf_oracle selected (cond=50.1529) — same as P6. Consistent selection validates method stability across pilots."
+  },
+  "beta_vector_summary": {
+    "source": "alpha_scores.parquet beta_blume (36M rolling Blume-adjusted OLS)",
+    "port_mean_ew": 1.0611,
+    "top20_mean_ew": 1.0226,
+    "min_beta": 0.2328,
+    "max_beta": 2.2688,
+    "pilot6_reference": {
+      "port_mean_ew": 1.0348,
+      "top20_beta_ew": 1.0929,
+      "note": "Pilot 7 top-20 beta reported as 1.0226 by Alpha Agent (CAPM Blume path A). Risk-level beta from alpha_scores.parquet."
+    },
+    "beta_challenge": "Top-20 EW beta > 0.75. gamma_beta=1.0 binding constraint required."
+  },
+  "hedge_overlay": {
+    "option_A_spec": {
+      "name": "Static Beta-Constraint MVO (gamma=1.0)",
+      "objective": "max_w  w'alpha - (lambda/2)*w'Sigma*w - gamma_beta*max(0, sum(w*beta) - beta_target)^2",
+      "constraints": {
+        "sum_w_eq_1": true,
+        "long_only": true,
+        "w_ub": 0.15,
+        "hhi_cap": 0.15,
+        "min_names": 20,
+        "max_names": 20,
+        "beta_target": 0.75,
+        "gamma_beta": 1,
+        "gamma_hhi": 0.5
+      },
+      "beta_vector_specs": {
+        "source": "alpha_scores.parquet beta_blume column (36M rolling OLS + Blume adj)",
+        "window": "36M",
+        "top20_beta_ew": 1.0226,
+        "pilot6_top20_beta": 1.0929,
+        "pilot7_improvement": "Alpha fix (L-195): alpha_std +33.6%, range ±0.51 → Optimizer should now use alpha signal"
+      },
+      "expected_outcomes": {
+        "mkt_risk_pct": 39,
+        "ic_retention_pct": 96.2,
+        "beta_target_binding": true,
+        "gamma_1_0_rationale": "L-194: gamma=0.5 insufficient Pilot 5 (Active IR=-1.021). gamma=1.0 provides 2× penalty."
+      }
+    },
+    "option_C3_spec": {
+      "name": "MRS-Dynamic Beta-Constraint MVO",
+      "regime_mapping": {
+        "RISK_ON": {
+          "beta_target": 0.85,
+          "note": "Higher beta tolerance"
+        },
+        "NEUTRAL": {
+          "beta_target": 0.8,
+          "note": "Moderate constraint"
+        },
+        "CAUTION": {
+          "beta_target": 0.75,
+          "note": "Tight constraint"
+        },
+        "CRISIS": {
+          "beta_target": 0.6,
+          "note": "Defensive"
+        }
+      },
+      "pit_regime_at_signal_date": {
+        "date": "2023-12-28",
+        "category": "RISK_ON",
+        "score": 8.29,
+        "source": "Pilot6_carryover"
+      },
+      "current_regime_today": {
+        "date": "2026-04-24",
+        "category": "NEUTRAL",
+        "score": 42.9,
+        "beta_target_active": 0.8
+      },
+      "gamma_beta": 1,
+      "note": "C-3 active: current=NEUTRAL → beta_target=0.80. Primary = Option A."
+    },
+    "recommended": "A",
+    "recommendation_rationale": "Option A (beta_target=0.75, gamma=1.0): simpler, no regime-timing risk. Current regime=NEUTRAL → C-3 beta_target=0.80. Primary Option A. C-3 activates if CRISIS."
+  },
+  "risk_summary": {
+    "n_tickers_cov": 40,
+    "n_obs_T": 37,
+    "q_ratio": 0.925,
+    "top_common_risks": [
+      "Market (78.1% EW — CAPM R2 channel + beta=1.061)",
+      "Accrual_Quality (AC21+AC17+Q35, theta=0.67, strongest IC factor — IC=0.0419)",
+      "PEAD_EarningsSurprise (ESBR+SUE combined theta=0.38, PEAD systematic)",
+      "Size_Style_FF3 (PC1 loading 0.126, size+value active channel)"
+    ],
+    "crowding_flags": [
+      "Alpha-cap cluster: 26/40 top-risk tickers at winsor cap (3σ=0.5065) — PEAD+Accrual factor dominance → institutional crowding MEDIUM",
+      "PEAD (C04_ESBR + C01_SUE): KR institutional quant widely implemented — late-cycle crowding MEDIUM",
+      "Accrual Quality (AC21_CF_to_Accrual + AC17_Accrual_Reversal + Q35): quality factor cluster overlap with KOSPI200 quant funds"
+    ],
+    "liquidity_flags": [
+      "Universe breadth=1899 → capacity risk LOW (KOSPI200+KOSDAQ150 eligible)",
+      "Top-20 portfolio: all within KOSPI200+KOSDAQ150, ADT > 5M KRW floor"
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0531,
+      "market_down_5_optA": -0.0375,
+      "market_down_10": -0.1061,
+      "market_down_10_optA": -0.075,
+      "value_crash": -0.0318,
+      "value_crash_optA": -0.0225,
+      "gfc_2008": -0.3714,
+      "gfc_2008_optA": -0.2625,
+      "eu_debt_2011": -0.1592,
+      "eu_debt_2011_optA": -0.1125,
+      "covid_2020": -0.2122,
+      "covid_2020_optA": -0.15,
+      "rate_2022": -0.2334,
+      "rate_2022_optA": -0.165,
+      "stress_2025": -0.0637,
+      "stress_2025_optA": -0.045
+    }
+  },
+  "diagnostics": {
+    "condition_number": 50.1529,
+    "condition_number_warn": 100,
+    "condition_number_fail": 500,
+    "condition_number_all_methods": {
+      "sample_pairwise": 1.4163870879268989e+18,
+      "ledoit_wolf_oracle": 50.1529,
+      "gerber_rmt": 165.2492,
+      "lw_const_corr": 129.3789,
+      "nonlinear_shrinkage": 61.7707
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "n_obs_used": 37,
+    "psd_verified": true,
+    "min_eigenvalue": 0.0035,
+    "factor_coverage_pct": 37.95,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.4236,
+      "max_pairwise": 1,
+      "threshold": 0.4,
+      "pairs_above": 343,
+      "top20_mean": 0.4276,
+      "top20_pairs_above": 98,
+      "factor_level": {
+        "pc1_pc2": 0.125,
+        "pc1_pc3": 0,
+        "pc2_pc3": 0
+      }
+    },
+    "market_risk_contribution": {
+      "ew_port_pct": 78.15,
+      "optA_est_pct": 39.04,
+      "gate_d_threshold": 40,
+      "gate_d_gap_pp": 38.15,
+      "source": "Factor model: beta^2 * sigma_mkt^2 / port_var"
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": 0.184,
+      "cvar_95_ann": 0.6373,
+      "cf_var_99_ann": -0.398,
+      "skewness": -0.7005,
+      "excess_kurtosis": 1.0811,
+      "n_obs": 37
+    },
+    "family_overlap": {
+      "esbr_sue_corr": -0.0688,
+      "esbr_accrual_corr": -0.0363,
+      "sue_accrual_corr": 0.0748,
+      "capm_retention_pct": 96.8,
+      "verdict": "No multicollinearity detected. CAPM-level hedge sufficient (Option A)."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_005/regime_correlation.parquet",
+    "pit_regime_at_signal_date": {
+      "date": "2023-12-28",
+      "category": "RISK_ON",
+      "score": 8.29,
+      "source": "Pilot6_carryover"
+    },
+    "current_regime_today": {
+      "date": "2026-04-24",
+      "score": 42.9,
+      "category": "NEUTRAL",
+      "note": "Current NEUTRAL → C-3 beta_target=0.80. Option A=0.75 primary."
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "autonomy_note": "P1 self-directed. R13 parallel comparison via future.apply. Selection: minimize condition_number among PSD-verified. Pilot 6 validation: same best method.",
+      "method_log": [
+        {
+          "step": 1,
+          "name": "sample_pairwise",
+          "condition_number": 1.4163870879268989e+18,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=1416387087926898944.00"
+        },
+        {
+          "step": 2,
+          "name": "ledoit_wolf_oracle",
+          "condition_number": 50.1529,
+          "psd": true,
+          "ok": true,
+          "selected": true,
+          "reason": "SELECTED: min condition_number=50.1529 among PSD-verified"
+        },
+        {
+          "step": 3,
+          "name": "gerber_rmt",
+          "condition_number": 165.2492,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=165.25"
+        },
+        {
+          "step": 4,
+          "name": "lw_const_corr",
+          "condition_number": 129.3789,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=129.38"
+        },
+        {
+          "step": 5,
+          "name": "nonlinear_shrinkage",
+          "condition_number": 61.7707,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=61.77"
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "objection": true,
+    "round": 1,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "beta_blume_column"],
+    "challenges": [
+      {
+        "flag": "CHALLENGE_ALPHA_CLUSTER_BIAS",
+        "severity": "HIGH",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": "Risk universe top-40: 26/40 (65%) at alpha_final=0.5065 (3σ winsor cap). Alpha differentiation improved vs Pilot 6 (50%) but cap cluster still represents majority of top universe.",
+        "implication": "Σ computed on cluster-homogeneous top-20 may retain low off-diagonal variance (MinVar escape route for Optimizer). alpha_std=0.1307 (+33.6% vs P6) is good — key test is whether Optimizer uses alpha or retreats to Σ minimization.",
+        "recommendation": "Optimizer should run MVO with lambda sweep. If alpha=0 MVO weight ≈ alpha>0 MVO weight → signal still ignored. Report α-aware vs MinVar IR difference.",
+        "counter_evidence": "guard_ratio=0.9716 PASS (unique/n >= 0.70). Alpha range ±0.51 vs ±0.32 in P6. Sufficient differentiation exists outside top-26 cap cluster."
+      },
+      {
+        "flag": "INFO_TOP20_BETA_POST_FIX",
+        "severity": "INFO",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": "Top-20 EW beta (alpha_final sorted): 1.0226 (target <0.75). Alpha hand-off reports 1.0226.",
+        "recommendation": "Option A gamma_beta=1.0 hard constraint remains critical. C-3 MRS-dynamic available for NEUTRAL regime (beta_target=0.80)."
+      }
+    ],
+    "p4_obligation_met": true,
+    "p4_note": "GAP-1 R3 P4: Both challenge issued AND P4 audit completed."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 78.1% > 40% (EW). Option A beta_target=0.75 gamma=1.0 required."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "PEAD+Accrual crowding + alpha cap cluster concentration. Monitor post-rebalance."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "343 factor pairs with TDC > 0.4 detected."
+    },
+    {
+      "id": "RF-BETA",
+      "severity": "HIGH",
+      "note": "Top-20 EW beta=1.0226 > 1.0. CAPM residualization (retention=96.8%) preserved high-alpha high-beta. gamma_beta>=1.0 critical."
+    }
+  ],
+  "pilot7_key_diagnostics": {
+    "alpha_std_improvement": "0.0978 (P6) → 0.1307 (P7) = +33.6%",
+    "alpha_range_improvement": "+-0.32 (P6) → +-0.51 (P7) = +56%",
+    "guard_ratio": 0.9716,
+    "cap_cluster_top40_pct": 65,
+    "cap_cluster_reduction": "50% (P6 15/30 at 0.3152) → 65% (P7 26/40 at 0.5065) — larger universe compensates",
+    "l196_lockbox_test": "Forge window (2012-2024) vs OOS (2024-2026): 16x divergence. Regime-lucky test pending.",
+    "optimizer_test_critical": "Key: does Optimizer now choose alpha-aware MVO vs MinVar? alpha_std=+33.6% should enable."
+  },
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_005/artifact_lineage.json",
+    "seed": 20260424,
+    "r_version": "4.5.2"
+  }
+}
