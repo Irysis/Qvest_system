@@ -1,4 +1,4 @@
-# v53 Sprint 2 S2.3: PIT Intent Scanner (Codex GPT-5.4)
+# v53 Sprint 2 S2.3: PIT Intent Scanner (Codex GPT-5.5)
 # run_pit_intent_scan.sh 래퍼 호출 → JSON 결과 파싱.
 # Codex CLI 부재 시 skip (clean=TRUE, note="codex unavailable").
 # 월 예상 비용 ~$45 (전략당 ~$0.05, diff 기반).

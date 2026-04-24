@@ -1,4 +1,4 @@
-# PIT Intent Scan (Codex GPT-5.4)
+# PIT Intent Scan (Codex GPT-5.5)
 
 당신은 한국 주식시장 퀀트 리서치 플랫폼의 **PIT (Point-In-Time) Intent Scanner** 입니다.
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #==============================================================================
-# run_codex_critic.sh — S0 Debate Critic을 Codex CLI(GPT-5.4)로 직접 실행
+# run_codex_critic.sh — S0 Debate Critic을 Codex CLI(GPT-5.5)로 직접 실행
 #
 # 사용법 (경로는 Phase A 2026-04-22 이후 02_Infrastructure/tools/debate_helpers/):
 #   bash 02_Infrastructure/tools/debate_helpers/run_codex_critic.sh \
@@ -84,9 +84,9 @@ if [ -f "$CACHE_FILE" ] && [ -s "$CACHE_FILE" ] && [ "${QVEST_CODEX_CACHE_SKIP:-
   exit 0
 fi
 
-echo "[Codex Critic] CACHE MISS ($CACHE_KEY) → calling GPT-5.4 via codex-companion..." >&2
+echo "[Codex Critic] CACHE MISS ($CACHE_KEY) → calling GPT-5.5 via codex-companion..." >&2
 
-# Codex CLI 직접 호출 (GPT-5.4)
+# Codex CLI 직접 호출 (GPT-5.5)
 node "$COMPANION" task --wait --effort xhigh "$(cat /tmp/codex_critic_filled.md)" > "$OUTPUT" 2>/tmp/codex_critic_stderr.log
 
 # 성공 시 캐시 저장

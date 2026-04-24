@@ -26,7 +26,7 @@ Q-Lead(메인 세션)는 에이전트를 감독하고, **S0 토론 자동 체인
   Q-Lead가 debater 병렬 Agent 스폰. 각자 stance + veto_flag + critical_concerns + supporting_arguments + s1_gate_items 출력.
 
   Full 5인:
-    Codex Critic (Bash GPT-5.4):     cross-model + design PIT + kill scenario (veto 없음, flag만)
+    Codex Critic (Bash GPT-5.5):     cross-model + design PIT + kill scenario (veto 없음, flag만)
     Risk Manager (risk-manager):      L13 Risk Engine, EVT/GPD (veto: tail_risk)
     Governor (governor):              gap 정합 + admission + family saturation (veto: admission_rule, gap_misaligned)
     Quant (forge):                    ICIR/상관/data + KR empirical (veto: PIT, kr_empirical_hard_fail)

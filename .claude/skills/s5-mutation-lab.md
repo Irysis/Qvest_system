@@ -78,7 +78,7 @@ python3 02_Infrastructure/validation/mutation_tracker.py
 **Phase A: Scout 설계**
 - Scout → `s5_mutation_design_{n}.json` × 9건+ (instructions_for_forge 포함)
 
-**Phase B: Codex Mutation Review (GPT-5.4) — 신규**
+**Phase B: Codex Mutation Review (GPT-5.5) — 신규**
 - Scout 설계 완료 후, Q-Lead가 Codex task를 호출하여 mutation slate 전체를 비판적 평가
 - 프롬프트: `02_Infrastructure/prompts/codex_s5_review_prompt.md`
 - Placeholder 치환: `{{MUTATION_SLATE}}`, `{{BASE_STRATEGY}}`, `{{RESEARCH_SLATE_SLOTS}}`

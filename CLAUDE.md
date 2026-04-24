@@ -44,7 +44,7 @@ When ending a productive session (strategies run, infra changed, or significant 
 - **S0 가설 생성 시 반드시 /s0-debate 스킬 사용**. Scout 1인 다역할 시뮬레이션 금지.
 - **점수제 폐기 (v55, 2026-04-19)**: stance(APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) + veto_flag + critical_concerns/supporting_arguments + s1_gate_items + (R2) stance_change/unresolved 기반.
 - **Full 5인 독립 에이전트** (또는 Compact 3인 = Codex+Risk+(Judge or Governor), `QVEST_DEBATE_MODE=compact`):
-  1. **Codex Critic** (Bash 직접 호출, GPT-5.4): cross-model 다양성, 설계 PIT, weakest assumption — flag만 (veto 권한 없음)
+  1. **Codex Critic** (Bash 직접 호출, GPT-5.5): cross-model 다양성, 설계 PIT, weakest assumption — flag만 (veto 권한 없음)
   2. **Risk Manager** (agent): 통계적 리스크 — Harvey t>3.0, EVT/GPD, DCC, tail dependence — veto: `tail_risk`
   3. **Governor** (agent): 포트폴리오 적합 — PG0 gap, family saturation, role admission, MDD 기여 — veto: `admission_rule` / `gap_misaligned`
   4. **Quant** (agent): 정량 팩트체크 — ICIR, 상관, data 가용성, R 구현 — veto: `PIT` / `kr_empirical_hard_fail`
@@ -201,7 +201,7 @@ When ending a productive session (strategies run, infra changed, or significant 
 | **Governor** | TeamCreate teammate | PG0~PG3 포트폴리오 편입 판정, gap 진단, role admission, 배분 설계 |
 | **Risk Manager** | Agent tool (온디맨드) | L13 Risk Engine. tail_risk, CVaR/CDaR 검증, regime stress. S0 Debate/S5/PG2 teammate |
 | **Architect** | Agent tool (온디맨드) | Hook/Pipeline/Layer 구조 설계·진단·개선. 인프라 아키텍처 결정 |
-| **Codex Critic** | Bash GPT-5.4 (온디맨드) | S0 Debate cross-model 다양성, 설계 PIT, weakest assumption |
+| **Codex Critic** | Bash GPT-5.5 (온디맨드) | S0 Debate cross-model 다양성, 설계 PIT, weakest assumption |
 | Reporter | **미구현** | 프로덕션 승격 시 IB 스타일 레포트(EN+KR), report_agent_llm.R 연동 |
 | Briefing | **미구현** | 텔레그램 브리핑 9종 + 기억 건강 체크 |
 | Regime Scout | **미구현** | 국면엔진 모델 R&D(MRS/HMM/overlay 파라미터), 국면 트리 설계 |
@@ -262,7 +262,7 @@ cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm" && Rscri
 3. **Judge**: 허들 기준 하향 금지. Harvey t>3.0 인식. Gate 0~5 순차 보고. C1~C7 미래참조 체크리스트 전수 검증
 4. **Risk Manager**: L13 Risk Engine 전담. tail_risk 측정 → CVaR/CDaR 검증 → regime stress test. S0 Debate/S5/PG2에서 teammate로 참여
 5. **Architect**: Hook/Pipeline/Layer 구조 설계. 인프라 진단·개선. 에이전트 통신 구조 결정. Q-Lead와 토론하여 아키텍처 확정
-6. **Codex Critic**: S0 Debate에서 GPT-5.4 기반 cross-model 비평. 설계 PIT, weakest assumption 공격
+6. **Codex Critic**: S0 Debate에서 GPT-5.5 기반 cross-model 비평. 설계 PIT, weakest assumption 공격
 7. *(미구현)* **Reporter**: report_agent_llm.R 연동. prepare_report_bundle() → 서술 JSON(EN+KR) → render_report()
 8. *(미구현)* **Briefing**: 텔레그램 tg_send(). 수치 + 1~2줄 해석. 기억 건강 체크(memory_health_check.R)
 9. *(미구현)* **Regime Scout**: 국면엔진 코드(regime_signal.R, regime_engine.R)만 탐색. 실험 결과는 Q-Lead에 보고

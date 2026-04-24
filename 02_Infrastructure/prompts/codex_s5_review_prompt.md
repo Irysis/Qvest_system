@@ -1,5 +1,5 @@
 # Codex S5 Mutation Review Prompt Template
-# 용도: S5 mutation slate를 GPT-5.4가 비판적으로 평가
+# 용도: S5 mutation slate를 GPT-5.5가 비판적으로 평가
 # 호출: codex-companion.mjs task --wait --effort xhigh
 # Placeholder: {{MUTATION_SLATE}}, {{BASE_STRATEGY}}, {{RESEARCH_SLATE_SLOTS}}
 
@@ -8,7 +8,7 @@ You are reviewing a **mutation slate** for a quantitative strategy's S5 (Mutatio
 The Korean equity market research team designed these mutations to improve a base strategy.
 Your job is to **critically evaluate diversity, structural validity, and design-level PIT compliance**.
 
-You are GPT-5.4, brought in specifically to catch local-search bias that the designing agent (Claude) may have.
+You are GPT-5.5, brought in specifically to catch local-search bias that the designing agent (Claude) may have.
 
 ## Base Strategy Summary
 

@@ -2,7 +2,7 @@
 #==============================================================================
 # run_codex_critic_r2.sh — S0 Debate R2 Rebuttal용 Codex Critic 호출 (v55)
 #
-# R1 transcript를 주입하여 GPT-5.4가 다른 토론자들의 stance를 보고 자기 stance 갱신.
+# R1 transcript를 주입하여 GPT-5.5가 다른 토론자들의 stance를 보고 자기 stance 갱신.
 # 점수제 폐기 — stance_change / new_stance / addressed_concerns / unresolved 출력.
 #
 # 환경변수:
@@ -32,7 +32,7 @@ fi
 cat > /tmp/codex_critic_r2_prompt.md << 'PROMPT_END'
 # S0 Debate Round 2 — Rebuttal Phase (v55 Consensus)
 
-You are the **Codex Critic** (GPT-5.4) in Round 2 of a structured hypothesis debate.
+You are the **Codex Critic** (GPT-5.5) in Round 2 of a structured hypothesis debate.
 In Round 1, you and the other evaluators independently expressed a `stance` on a quant strategy hypothesis.
 Now you can see everyone's Round 1 arguments and stances.
 
@@ -90,7 +90,7 @@ Return ONLY valid JSON. No markdown, no commentary outside the JSON:
 ```
 PROMPT_END
 
-echo "[Codex Critic R2 v55] Calling GPT-5.4 with R1 transcript..." >&2
+echo "[Codex Critic R2 v55] Calling GPT-5.5 with R1 transcript..." >&2
 
 node "$COMPANION" task --wait --effort xhigh "$(cat /tmp/codex_critic_r2_prompt.md)" > "$OUTPUT" 2>/tmp/codex_critic_r2_stderr.log
 
