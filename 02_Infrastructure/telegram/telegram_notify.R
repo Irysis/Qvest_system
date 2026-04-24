@@ -1154,47 +1154,81 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
               panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
               panel.grid.minor = element_blank())
 
-      # 하단: FRED_MRS (월말 + Latest Daily hybrid — 상단과 동일 스타일)
-      # d2_combined는 이미 월말 24개 + 최근 일간 1개 hybrid. Line + point + area + latest 강조.
+      # 하단 FRED_MRS (v2.7 polish): month-end + latest daily hybrid, 세련된 스타일
       d2_combined[, fred_band := fifelse(FRED_MRS >= 70, "Stress",
                                    fifelse(FRED_MRS >= 50, "Caution",
                                      fifelse(FRED_MRS >= 30, "Normal", "Calm")))]
       latest_mrs <- d2_combined[.N]
+      prev_mrs <- if (nrow(d2_combined) >= 2) d2_combined[.N - 1] else latest_mrs
+      mrs_delta <- latest_mrs$FRED_MRS - prev_mrs$FRED_MRS
+
+      # Y 축 상한: latest 기준 탄력적 (최소 50, 최대 100)
+      y_max <- max(50, min(100, latest_mrs$FRED_MRS * 1.8))
+      x_right <- max(d2_combined$Date) + 15
 
       p2_bot <- ggplot(d2_combined, aes(x = Date, y = FRED_MRS)) +
-        # Background threshold zone
+        # Background threshold zone (subtle saturation)
         annotate("rect", xmin = -Inf, xmax = Inf, ymin = 70, ymax = 100,
-                 fill = "#FFCDD2", alpha = 0.35) +
+                 fill = "#EF5350", alpha = 0.12) +
         annotate("rect", xmin = -Inf, xmax = Inf, ymin = 50, ymax = 70,
-                 fill = "#FFE0B2", alpha = 0.35) +
+                 fill = "#FFA726", alpha = 0.12) +
         annotate("rect", xmin = -Inf, xmax = Inf, ymin = 30, ymax = 50,
-                 fill = "#FFF9C4", alpha = 0.35) +
+                 fill = "#FDD835", alpha = 0.12) +
         annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 30,
-                 fill = "#C8E6C9", alpha = 0.35) +
-        # Area fill under line (그라데이션 depth)
-        geom_area(fill = "#FF7043", alpha = 0.30) +
-        # Line + point (상단과 동일 스타일)
-        geom_line(color = "#BF360C", linewidth = 1.3) +
-        geom_point(color = "#BF360C", size = 2.4) +
+                 fill = "#66BB6A", alpha = 0.12) +
+        # Band labels 우측 (axis 밖)
+        annotate("text", x = x_right, y = 85, label = "Stress",
+                 color = "#C62828", size = 3.2, fontface = "bold", hjust = 0) +
+        annotate("text", x = x_right, y = 60, label = "Caution",
+                 color = "#E65100", size = 3.2, fontface = "bold", hjust = 0) +
+        annotate("text", x = x_right, y = 40, label = "Normal",
+                 color = "#9E7C00", size = 3.2, fontface = "bold", hjust = 0) +
+        annotate("text", x = x_right, y = 15, label = "Calm",
+                 color = "#2E7D32", size = 3.2, fontface = "bold", hjust = 0) +
+        # Area fill (그라데이션 느낌 — 2겹)
+        geom_ribbon(aes(ymin = 0, ymax = FRED_MRS),
+                    fill = "#FF7043", alpha = 0.18) +
+        geom_ribbon(aes(ymin = 0, ymax = pmin(FRED_MRS, 30)),
+                    fill = "#66BB6A", alpha = 0.10) +
+        # Line (smooth feel)
+        geom_line(color = "#BF360C", linewidth = 1.4, alpha = 0.95,
+                  lineend = "round") +
+        geom_point(color = "#BF360C", size = 2.3, alpha = 0.9) +
         # Threshold dashed
         geom_hline(yintercept = c(30, 50, 70),
-                   linetype = "dashed", color = "gray50", linewidth = 0.35) +
-        # Latest 강조 (yellow 없이 색상 유지 굵게)
+                   linetype = "dashed", color = "gray55", linewidth = 0.3,
+                   alpha = 0.7) +
+        # Latest 2-tier halo (glow effect)
         geom_point(data = latest_mrs,
-                   color = "#BF360C", size = 4.8, stroke = 1.3) +
-        geom_text(data = latest_mrs,
-                  aes(label = sprintf("%.1f  (%s)", FRED_MRS, fred_band)),
-                  hjust = 1.1, vjust = -0.9, size = 3.9, fontface = "bold",
-                  color = "#BF360C") +
-        scale_y_continuous(limits = c(0, max(100, latest_mrs$FRED_MRS * 1.15)),
-                           breaks = c(0, 30, 50, 70, 100)) +
-        labs(y = "FRED MRS", x = "",
-             subtitle = "Month-end + Latest Daily | Background: Calm <30 / Normal 30~50 / Caution 50~70 / Stress ≥70") +
+                   color = "#BF360C", size = 7.2, alpha = 0.25) +
+        geom_point(data = latest_mrs,
+                   color = "#BF360C", size = 4.5, stroke = 0) +
+        # Latest value label (box)
+        geom_label(data = latest_mrs,
+                   aes(label = sprintf("NOW  %.1f\n%s  (5d %+.1f)",
+                                       FRED_MRS, fred_band, mrs_delta)),
+                   hjust = 1.08, vjust = -0.3, size = 3.6, fontface = "bold",
+                   color = "#BF360C",
+                   fill = scales::alpha("white", 0.94),
+                   label.size = 0.4, label.r = unit(0.15, "lines"),
+                   label.padding = unit(0.3, "lines")) +
+        scale_y_continuous(name = "FRED MRS",
+                           limits = c(0, y_max),
+                           breaks = c(0, 30, 50, 70, 100),
+                           expand = c(0, 0)) +
+        scale_x_date(expand = expansion(mult = c(0.01, 0.08))) +
+        labs(x = "",
+             subtitle = "Month-end + Latest Daily — 0~100 composite (VIX/HY/Term/FFR/BBB/NFCI)") +
         theme_minimal(base_size = 12) +
-        theme(plot.subtitle = element_text(size = 9, color = "gray35"),
+        theme(plot.subtitle = element_text(size = 9, color = "gray35",
+                                            margin = margin(b = 4)),
               legend.position = "none",
-              panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
-              panel.grid.minor = element_blank())
+              axis.title.y = element_text(face = "bold", color = "#BF360C",
+                                          size = 11),
+              panel.grid.major.y = element_line(color = "gray90", linewidth = 0.25),
+              panel.grid.major.x = element_line(color = "gray95", linewidth = 0.2),
+              panel.grid.minor = element_blank(),
+              plot.margin = margin(t = 5, r = 35, b = 5, l = 5))
 
       p2 <- arrangeGrob(p2_top, p2_bot, heights = c(2.5, 1.3))
       ggsave(file.path(out_dir, "regime_3layer_24m.png"),
@@ -1794,7 +1828,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   msg <- sprintf(paste0(
     "%s Regime Briefing (%s)\n\n",
     "\xf0\x9f\x93\x8a [Regime Score]\n",
-    "Score: %.1f (5d %s) | Cash: %.1f%%\n",
+    "Score: %.1f (5d %s)\n",
     "Category: %s\n\n",
     "\xf0\x9f\x94\x8d [3-Layer Signal]\n",
     "%s L1 MSM Crisis: %.1f%%\n",
@@ -1807,7 +1841,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     "%s\n\n",
     "\xf0\x9f\x8e\xaf [Verdict]\n%s"),
     cat_emoji, format(msg_ref_date),
-    cur_score, score_trend, cur_cash,
+    cur_score, score_trend,
     cur_category,
     l1_icon, cur_msm,
     l2_icon, cur_fred,
