@@ -16,7 +16,7 @@
 
 | 모듈 | 파일 | 책임 |
 |------|------|------|
-| **regime_data_refresh** | `regime_data_refresh.R` | FRED + KTRI + MSM 일간 일괄 refresh orchestrator. cron이 호출. |
+| **regime_data_refresh** | `ops/regime_data_refresh.sh` (Step 8) | FRED + MSM + KTRI + signal + healthcheck 일괄 orchestrator. cron이 호출. |
 | **fred_robust** | `fred_robust.R` | 22 series fetch + retry + wide-format 저장. 개별 fail graceful. |
 | **ktri_v3_builder** | `ktri_v3_builder.R` | Market breadth + volatility → KTRI/VEA full schema signal |
 | **msm_daily_refit** | `msm_daily_refit.R` | benchmark daily → 2-state HMM fit → msm_daily_latest 갱신 |
@@ -166,20 +166,79 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 ## Orchestration (cron)
 
 ```
-30 6  * * *      regime_data_refresh.sh   # 데이터 일괄 갱신 (FRED + KTRI + MSM)
-30 7  * * 1-5    mrs_daily_briefing.sh     # MRS 브리핑 발송 (Claude agent 기반)
-35 7  * * *      regime_healthcheck.sh     # 상태 체크 + alert
+# 매일 아침 pipeline (※ 실제 crontab 등록은 사용자 승인 필요 — 문서만)
+30 6  * * *       regime_data_refresh.sh   # 일괄 데이터 갱신 (FRED+MSM+KTRI+signal+health)
+30 7  * * 1-5     mrs_daily_briefing.sh    # 평일 MRS 브리핑 발송 (Claude agent 기반)
+# Healthcheck 는 regime_data_refresh 내부 step 5 에서 자동 실행됨 — 별도 cron 불필요.
+# 단독 실행이 필요하면 regime_healthcheck.sh 를 별도 cron 등록 가능.
 ```
+
+### regime_data_refresh.sh 실행 순서 (Step 8 신규)
+
+1. **FRED robust fetch** (`fred_robust_fetch_all()`) — 22 series per-series retry + graceful degrade
+2. **MSM daily refit** (`refit_msm_daily()`) — benchmark → HMM Crisis_Prob
+3. **KTRI v3 builder** (`build_ktri_v3_safe()`) — market breadth + volatility signals
+4. **regime_signal v2** — `build_regime_signal_table(daily = TRUE)` + `daily = FALSE` 각각
+5. **regime_healthcheck** — staleness / schema 검증 + Telegram alert on fail
+
+각 단계는 독립 tryCatch. 하나 실패해도 다음 진행. 최종 healthcheck 에서 종합 alert.
 
 ---
 
 ## Test Strategy (`08_Tests/regime/`)
 
-- `test_ktri_v3_builder.R`: synthetic breadth → KTRI/VEA 계산 검증
-- `test_fred_robust.R`: mock fetch + schema 검증
-- `test_msm_daily_refit.R`: HMM convergence 테스트
-- `test_regime_signal_merge.R`: 3-layer gap handling 테스트
-- `test_briefing_partial.R`: Layer 일부 missing 시 발송 검증
+### Test files (5 units)
+- `test_ktri_v3_builder.R`: synthetic benchmark + RAWDATA → `build_ktri_v3()` 실행, KTRI/VEA 범위 + schema + VEA NA ≤10% 검증
+- `test_fred_robust.R`: mock long+wide parquet, `fred_robust_wide_load()` 1차 / fallback / backup path 패턴 검증 (실 API fetch 없음)
+- `test_msm_daily_refit.R`: 합성 2-regime daily returns → `.hmm_em()` 수렴, μ/σ 유한, γ ∈ [0,1], stress state 식별
+- `test_regime_signal_merge.R`: 3-layer 합성 fixture → `build_regime_signal_table_daily()` 전체 / L3 missing / L1-only 케이스별 `Active_Layers` + partial 동작
+- `test_briefing_partial.R`: `tg_format_table()` `<pre>` 블록 + 정렬, `tg_html_escape()` `<>&` 치환, `tg_send()` `emoji_min` warn 경로 (실 Telegram 발송 없음)
+
+### 실행 방법
+```bash
+# 전체 단위 테스트 (run_all.R 순차 실행 + summary)
+cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+Rscript 08_Tests/regime/run_all.R
+
+# 개별 테스트
+Rscript 08_Tests/regime/test_ktri_v3_builder.R
+Rscript 08_Tests/regime/test_fred_robust.R
+Rscript 08_Tests/regime/test_msm_daily_refit.R
+Rscript 08_Tests/regime/test_regime_signal_merge.R
+Rscript 08_Tests/regime/test_briefing_partial.R
+```
+
+5 파일 모두 합성 데이터 기반 — 실 cache / 실 API / 실 Telegram 무의존.
+
+---
+
+## Troubleshooting
+
+| 증상 | 원인 | 조치 |
+|------|------|------|
+| `fred_robust_health` 에서 월간 series STALE 다수 | 자연스러운 release lag (UNRATE/CPI 등) | monthly threshold 45d 유지. staleness 45d 이하면 OK. |
+| KTRI VEA NA 최근 며칠 | rolling 252 window 미충족 (benchmark.parquet BM_Close NA) | Step 2 fallback (min 20d window + LOCF) 이미 적용. BM_Close 원본 확인. |
+| Briefing 발송 실패 / HTML parse error | `tg_send()` `emoji_min` warn 또는 `<>&` escape 누락 | `tg_html_escape()` 로 escape 후 `tg_send_rich()`. 이모지 최소 1개 포함. |
+| MSM refit 오래 걸림 | `refit_freq_days = 30` 기본 → 많은 HMM fit | `refit_freq_days = 60` 으로 늘리면 빠름 (정확도 trade-off). |
+| `regime_data_refresh.sh` 한 step 실패 | 개별 tryCatch 로 격리 | 나머지 단계 그대로 진행. 최종 healthcheck Telegram alert 발송 여부 확인. |
+
+---
+
+## Public API 요약
+
+| Module | Function | 용도 |
+|--------|----------|------|
+| fred_robust | `fred_robust_fetch_all()` | 22 FRED series fetch + long/wide 저장 |
+| fred_robust | `fred_robust_wide_load()` | wide parquet 로드 (fallback: long → dcast) |
+| fred_robust | `fred_robust_health()` | cache staleness + schema 진단 |
+| msm_daily_refit | `refit_msm_daily()` | benchmark → 2-state HMM daily Crisis_Prob |
+| ktri_v3_builder | `build_ktri_v3()` | breadth + volatility → KTRI/VEA 신호 |
+| ktri_v3_builder | `build_ktri_v3_safe()` | error-safe wrapper |
+| regime_signal | `build_regime_signal_table(daily = TRUE)` | 3-layer daily merge + Active_Layers + Regime_Score |
+| regime_signal | `build_regime_signal_table(daily = FALSE)` | monthly cascade (기존 호환) |
+| regime_signal | `load_daily_regime_signal()` | daily cache 로드 (없으면 rebuild) |
+| regime_healthcheck | `regime_health_check(alert_on_fail, severity_threshold)` | 상태 검증 + Telegram alert |
+| regime_healthcheck | `regime_health_summary()` | 콘솔 요약 (이모지) |
 
 ---
 
@@ -192,7 +251,7 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 5. **[Step 5]** regime_signal v2 strong ✅ (2026-04-24 — `build_regime_signal_table(daily = TRUE)` + `load_daily_regime_signal()` 추가. 일간 3-layer merge + MSM/FRED/KTRI LOCF + Regime_Score_smooth(EWMA hl=5) + Active_Layers + Is_Month_End + last_updated. `.cache/unified_regime_signal_daily.parquet` 10,159행 (1990-01-05 ~ 2026-04-24). Backward compat: `daily = FALSE` default 유지)
 6. **[Step 6]** Briefing graceful fallback
 7. **[Step 7]** Healthcheck + alert ✅ (2026-04-24 — `regime_healthcheck.R` + `ops/regime_healthcheck.sh`. `regime_health_check(alert_on_fail, severity_threshold)` + `regime_health_summary()`. Frequency-aware threshold (daily 7d / weekly 14d / monthly 45d / quarterly 120d). FRED 22 series 개별 Frequency 기반 per-series staleness. Status = OK / STALE / BROKEN / MISSING. Schema 검증 (required_cols / min_rows / min_cols / date_col). 문제 감지 시 `tg_send_rich` + `tg_format_table` Telegram alert. Log: `/tmp/qvest_regime_health.log` + `/tmp/qvest_regime_health_alerts.log`. Smoke test 통과: primary 7 cache OK / FRED 8 series STALE 정상 감지 / BROKEN·MISSING 합성 테스트 PASS / 실 Telegram 발송 성공. crontab 등록은 사용자 승인 별도.)
-8. **[Step 8]** Test + orchestration 문서화
+8. **[Step 8]** Test + orchestration + docs ✅ (2026-04-24 — `08_Tests/regime/` 단위 테스트 5건 + `run_all.R` runner. 전체 5 passed / 0 failed. `ops/regime_data_refresh.sh` 일괄 orchestrator (FRED → MSM → KTRI → signal daily+monthly → healthcheck, 각 단계 독립 tryCatch). README: Orchestration 섹션 확장 + Test 실행 방법 + Troubleshooting 표 + Public API 요약. crontab 자동 등록 금지 — 사용자 승인 후 수동.)
 
 ---
 
@@ -206,3 +265,4 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 ## 변경 log
 
 - 2026-04-24 v1.0: 초안 설계 (사용자 "지속 사용 가능 인프라" 지시 반영)
+- 2026-04-24 v1.1 (Step 8): 단위 테스트 5건 + `run_all.R` + `regime_data_refresh.sh` orchestrator. README Orchestration/Test/Troubleshooting/Public API 섹션 추가.
