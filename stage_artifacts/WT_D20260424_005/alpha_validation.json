@@ -1,0 +1,72 @@
+{
+  "task_id": "WT-D20260424_005",
+  "as_of_date": "2023-12-28",
+  "schema_version": "v6.1",
+  "pit_validation": {
+    "C1_rolling_only": {
+      "pass": true,
+      "note": "36M rolling beta + expanding BM return. Full-sample 미사용."
+    },
+    "C2_no_same_day": {
+      "pass": true,
+      "note": "next_ret = lead(monthly_ret, 1) — forward return"
+    },
+    "C4_fundamental_lag": {
+      "pass": true,
+      "note": "Factor DB quarterly 45d lag 적용"
+    },
+    "C13_z_score_aligned": {
+      "pass": true,
+      "note": "Z_Score column: Z_Score 사용"
+    },
+    "C14_usable_date": {
+      "pass": true,
+      "note": "Usable_Date <= sig_date 필터 적용"
+    },
+    "C15_load_month": {
+      "pass": true,
+      "note": "factor_db_%Y%m.parquet 개별 로드 + Factor_Name 필터 (C15 준수)"
+    }
+  },
+  "alpha_uniform_guard": {
+    "enabled": true,
+    "guard_ratio": 0.9716,
+    "guard_pass": true,
+    "l195_fix_status": "RESOLVED"
+  },
+  "graduation": {
+    "status": "CONDITIONAL",
+    "pass_count": 4,
+    "checks": {
+      "rank_ic": {
+        "value": 0.0381,
+        "threshold": 0.04,
+        "pass": false
+      },
+      "icir": {
+        "value": 0.6273,
+        "threshold": 0.2,
+        "pass": true
+      },
+      "harvey": {
+        "value": 8.6928,
+        "threshold": 3,
+        "pass": true
+      },
+      "dsr": {
+        "value": 1.011,
+        "threshold": 0.5,
+        "pass": true
+      },
+      "subperiod": {
+        "value": 1,
+        "threshold": 0.5,
+        "pass": true
+      }
+    }
+  },
+  "n_tickers": 1899,
+  "mean_alpha": 0.0196,
+  "std_alpha": 0.1307,
+  "created_at": "2026-04-24T16:08:42+0900"
+}
