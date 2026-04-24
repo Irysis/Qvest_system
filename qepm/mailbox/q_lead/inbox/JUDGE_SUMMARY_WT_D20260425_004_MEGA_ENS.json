@@ -1,0 +1,36 @@
+{
+  "from": "Judge",
+  "to": "Q-Lead",
+  "task_id": "WT-D20260425_004",
+  "strategy_id": "STR_1631_MEGA_ENSEMBLE_60_40",
+  "timestamp": "2026-04-25T03:40:00+0900",
+  "message_type": "JUDGE_SUMMARY",
+  "headline": "Mega Sprint 최종 Ensemble DEFER — Harvey 3.082 Full은 Lockbox artifact",
+  "verdict": "DEFER",
+  "grade": "A_CONDITIONAL_LOCKBOX_DEPENDENT",
+  "score": 63.4,
+  "pg1_admission": "DEFER",
+  "key_findings": [
+    "Harvey Full 3.082 PASS vs Pre-LB 2.385 FAIL. gap 0.697pp. Lockbox 24m(22.4%)이 단독 주도.",
+    "Judge 독립 Lockbox 측정: SR 1.838 / 연수익 43.3% / MDD -21.6%. Pre-LB SR 1.137 대비 ratio 1.62 (overfitting MEDIUM-HIGH).",
+    "TDC lower 0.834 + Pearson 0.937 + Spearman 0.918 = same-family hyperparameter blend. True ensemble 부적격.",
+    "STR_1631 family saturation 경고: 현 PG2 active slot A(STR_1631_SYN_05_2002 80%)와 동일 family 7건 cluster.",
+    "AX-006 candidate CRITICAL — L-156 v2 retroactive audit 적용 시 다중 편입 금지.",
+    "Ratio sweep 50:50~80:20 어느 것도 Pre-LB Harvey 3.0 미달. Ratio 선택이 admission 결정을 바꾸지 않음."
+  ],
+  "ratio_recommendation": {
+    "primary": "60_40",
+    "rationale": "MDD 최소(-34.02%) + 역할 분리(Core 60 Tactical 40) 명확. 80:20은 Tactical 기여 희석, 50:50은 Harvey slight drop. 단 어느 선택도 PG1 admission을 변경하지 않음."
+  },
+  "l_code_new": ["L-225 Lockbox hyperwindow artifact", "L-248 TDC 0.80+ same-family kill", "L-249 Regime-cond ratio imbalance"],
+  "mega_sprint_closure_recommendation": "Mega Sprint를 'Harvey 3.0 상징적 돌파 + L-code 3건 적립'으로 공식 종결. PG1 admission은 이종 family blender sprint로 이관.",
+  "next_direction": [
+    "Direction_A: 이종 family 3-way (STR_1631_SYN_05 × STR_1656_MLRA × Defense). TDC ≤ 0.40 우선.",
+    "Direction_B: Barroso risk-managed overlay 단독 path.",
+    "Direction_C: STR_1661 XGB_GPU V2 합류 후 ensemble pool 확장.",
+    "Direction_D: STR_1679v3(H_1682 Slot A Defense) 편입 Pre-LB Harvey 3.0 재도전."
+  ],
+  "governor_flag_for_pg2": "현 PG2 (STR_1631_SYN_05_2002 80% + STR_1656_MLRA_M05 20%) 유지 권고. MEGA_ENS로 slot A 대체 반대 (family duplication + Pre-LB Harvey FAIL).",
+  "pit_status": "PASS_WITH_NOTES (신규 look-ahead 없음, Lockbox lookahead 직접 증거 없음)",
+  "artifact_path": "qepm/mailbox/worktask/WT-D20260425_004/judge_verdict.json"
+}

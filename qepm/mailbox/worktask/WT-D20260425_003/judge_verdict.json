@@ -1,0 +1,326 @@
+{
+  "task_id": "WT-D20260425_003",
+  "strategy_id": "STR_1631_MEGA_05",
+  "judge_version": "v7_s6_gate_0_18_sprint_comprehensive",
+  "judged_at": "2026-04-25T04:00:00+0900",
+  "judged_by": "Judge (autonomous loop, Auto mode)",
+  "mega_sprint_phase": "Phase5_alpha_extension_final",
+
+  "verdict": "CONDITIONAL_FAIL_FOR_PG1_ADMISSION",
+  "verdict_summary": "MEGA_05는 Full SR 1.258로 MEGA 5단계 최고치를 기록하고 CRISIS SR 2.26→2.98로 회복했으나, Judge 수동 FF5 재계산 결과 t_NW=2.691 (Full 107m) / 2.054 (Pre-Lockbox 81m)로 Harvey 3.0 asymptote 돌파에 실패. Forge 보고 projected 3.5는 Grinold breadth 기반 낙관 추정이었고 실측은 2.69. Sprint Phase 5 목표 6개 중 2개만 PASS (NORMAL SR, AX-002 clean). 다만 CAPM alpha t_NW=5.66은 매우 강함 — MEGA_05의 alpha는 market beta에 크게 설명되고 FF5 residual alpha는 부족. PG1 정식 승격은 보류하되, MEGA 5단계 comparator로서 Full SR 최고치이므로 Sprint 종결 후 MEGA_03 base와 병행 ensemble 후보로 보존.",
+
+  "grade": "B_PLUS",
+  "grade_v21": "A_CONDITIONAL",
+  "grade_score": 62,
+  "grade_rationale": "v2.3 hurdle: Full SR 1.258 (Grade A 임계 0.8 PASS, A_NOVEL 0.6 PASS), CAGR 26.9% (16% PASS), MDD -36.95% (45% hard_fail 회피, but target 25% FAIL / sprint target 32% FAIL), Turnover 300.6% (600% PASS). Harvey FF5 t=2.69 < 3.0 (자체 목표 및 Harvey 2016 multiple-testing 미달). CAPM alpha t=5.66은 Grade A 수준이지만 FF5가 기준. 종합 B+ (62/100). grade_v21은 backward compat으로 A_CONDITIONAL 유지 (score 40+, CAGR 16%+, SR 0.8+, hard_fail 없음).",
+
+  "gate_0_18_results": {
+    "G0_stage_gate_entry": {
+      "status": "PASS",
+      "detail": "sg_check_s6_entry equivalent: WT-D20260425_003 ALPHA_DONE → RISK_DONE → OPT_DONE → FORGE_DONE chain 확인. artifact_lineage.json 3 entries + governance_log 2 events. Discovery WT 적법 경로."
+    },
+    "G1_pit_c1_c15": {
+      "status": "PASS",
+      "detail": "Forge pit_flags.json 10개 체크(C1/C2/C3/C4/C5/C6/C9/C10/C13/C14/C15) 전수 PASS. lockbox 2024-01-23~2026-01-23 제외 enforced. Judge 추가 검증: alpha_package C14 Factor DB Usable_Date, C15 load_month_factors, Z_Score_Aligned 준수. proxy_usage 0%."
+    },
+    "G2_data_integrity": {
+      "status": "PASS",
+      "detail": "equity_curve 5733 rows × 2003-02-05~2026-04-25. 정합성 확인. Factor DB 288팩터 월간 + Z_Score_Aligned 정합."
+    },
+    "G3_statistical_ff5": {
+      "status": "FAIL",
+      "detail": "Forge [Step 9] FF5 error (MKT_RF missing) 때문에 Judge 수동 재계산. .cache/kr_factor_returns.parquet는 HML/RMW/CMA가 2017-05 이후에만 non-NA. Full=107m alpha_ann=13.62% t_OLS=2.766 t_NW=2.691. Pre-Lockbox=81m alpha_ann=10.87% t_OLS=1.997 t_NW=2.054. Harvey 3.0 threshold 양쪽 모두 FAIL. 참고 CAPM Full=278m t_NW=5.655 (strong) — market beta를 통제하면 잔차 alpha가 FF5에서 축소.",
+      "manual_recompute": {
+        "source": "Judge /tmp/judge_ff5_mega05.R",
+        "ff5_data_source": ".cache/kr_factor_returns.parquet",
+        "ff5_non_na_start": "2017-05",
+        "newey_west_lags": 4,
+        "full_period": {
+          "n_months": 107,
+          "alpha_monthly_pct": 1.0696,
+          "alpha_annualized_pct": 13.62,
+          "alpha_t_ols": 2.766,
+          "alpha_t_newey_west": 2.691,
+          "r_squared": 0.592,
+          "beta_mkt": 0.675,
+          "beta_smb": 0.397,
+          "beta_hml": -0.084,
+          "beta_rmw": -0.098,
+          "beta_cma": 0.210,
+          "harvey_3_0_pass": false
+        },
+        "pre_lockbox": {
+          "n_months": 81,
+          "alpha_monthly_pct": 0.8636,
+          "alpha_annualized_pct": 10.87,
+          "alpha_t_ols": 1.997,
+          "alpha_t_newey_west": 2.054,
+          "r_squared": 0.608,
+          "beta_mkt": 0.738,
+          "beta_smb": 0.362,
+          "beta_hml": -0.041,
+          "beta_rmw": -0.138,
+          "beta_cma": 0.202,
+          "harvey_3_0_pass": false
+        },
+        "capm_reference": {
+          "full_n_months": 278,
+          "alpha_monthly_pct": 1.3482,
+          "alpha_t_newey_west": 5.655,
+          "beta": 0.721,
+          "r_squared": 0.500,
+          "note": "CAPM alpha는 강력하지만 FF5 risk 통제 시 잔차 alpha 축소. Size(SMB) tilt만 유의(t_NW=2.64)."
+        }
+      }
+    },
+    "G4_hurdle_v23_6gate": {
+      "status": "PASS_WITH_CAVEATS",
+      "grade": "B_PLUS",
+      "detail": "Full SR 1.258 (A_0.8 PASS), CAGR 26.9% (A_16% PASS), MDD 36.95% (hard_fail 45% 회피, target 25% 및 sprint 32% FAIL), Turnover 300.6% (hard_fail 600% PASS). Hurdle v2.3 Gate PASS이나 MDD caveat. score=62."
+    },
+    "G5_harvey_multiple_testing": {
+      "status": "FAIL",
+      "detail": "Harvey-Liu-Zhu (2016) t>3.0 multi-testing threshold 기준. Pre-Lockbox t_NW=2.054 (FAIL), Full t_NW=2.691 (FAIL). DSR 계산 시 N_trials 반영 필요. DSR_z Forge NA, alpha_package DSR=0.908 (IC-level, portfolio-level 아님). 엄격 보수적 판정: FF5 portfolio-level Harvey 미달."
+    },
+    "G6_role_honesty_audit": {
+      "status": "PASS",
+      "detail": "alpha_package role_bias_tagging=RoleBias_Core. 6F alpha (C01/C04/C02/C06/Q07/AC21) 모두 Core alpha source. Defense 위장 없음. CRISIS SR 2.98은 Core가 위기 국면에서 여전히 작동함을 의미 (Q07_Earnings_Stability 위기 alpha 기여 — L-121 재확인). Diversifier 위장 없음: analyst_family 내부 cor 0.62는 high but 정직하게 보고."
+    },
+    "G7_ax_axiom_scan": {
+      "status": "PASS_WITH_NOTES",
+      "detail": "AX-000/AX-002 clean (proxy_usage 0%, Factor DB 정합). AX-003 KR value EP 미사용. AX-004 quality single-signal 회피: Q07은 6F composite 내 multi-axis. AX-005 defense 해당 없음 (Core). AX-007 single-sleeve long-only top20 구조적 주의 — 20종 long-only이지만 6F composite로 signal-portfolio translation 보강. AX-008 Verification Triangulation: Forge(1) + Judge FF5 재계산(2) = 2/3 sources, Architect 독립 검증 권고.",
+      "ax007_note": "단일 sleeve 20종 long-only 구조는 AX-007 주의 대상이지만, 6F multi-axis + Kelly f=0.5 + 3-Layer Overlay로 완화. 예외 조건 '50+ 분산'은 미충족, 'ML sizing' (Kelly) 부분 충족."
+    },
+    "G8_early_warning_structural": {
+      "status": "CONDITIONAL",
+      "detail": "admission_rule v3.4 Gate 8 Early Warning: (1) SubStab 0.418 < 0.5 FAIL (RF-A1 HIGH); (2) Q07-AC21 cor=0.731 crowding (RF-R3 MEDIUM); (3) Market contribution 95.7% (RF-R1 HIGH); (4) analyst_family 내부 cor 0.62 — alpha 4개(C01/C04/C02/C06) structural redundancy. Early Warning 발동. PG1 진입 보류."
+    },
+    "G9_6f_collinearity": {
+      "status": "CONDITIONAL",
+      "detail": "VIF 전수 < 5 (max Q07=2.22). 그러나 TDC Q07_vs_AC21=0.476 + corr 0.731은 MEDIUM crowding. analyst_family 내부 corr 0.617. C06_TP_Gap weight_theta 0.009 near-zero (noise). 권고: C06 제거 + AC21 단독 유지 vs Q07 단독 유지 재검증."
+    },
+    "G10_residual_momentum_kr": {
+      "status": "FAIL (but correctly excluded)",
+      "detail": "Alpha Agent report: H_1688 residual momentum KR ICIR=-0.187 (NEGATIVE). Option_A_5F (residual momentum 포함) rank_IC 0.0426 < Option_C_6F 0.0489. Alpha Agent가 올바르게 challenge_flag 발행 + Option_C 선택 (residual momentum 제외, Q07+AC21 추가). 이는 Carhart 1997 US momentum이 KR에서 reversal 경향 재확인 (L-217 교훈화)."
+    },
+    "G11_kelly_leverage_effect": {
+      "status": "NOTE",
+      "detail": "Kelly_frac05 선택. MEGA_05 MDD -36.95%는 Kelly f=0.5 leverage 효과로 부분 설명. HHI=0.0988 (cap 0.10 binding). Full breadth n=20 유지하면서 net_IR 1.2743 확보. 그러나 Kelly f=0.5는 over-betting 리스크 — MEGA_06 시 MVO_CVaR_cap 재고려."
+    },
+    "G12_crisis_alpha_validation": {
+      "status": "PASS",
+      "detail": "CRISIS SR 2.983 (N_days=69). MEGA_03 2.26 대비 +32% 회복. MEGA_01 6.20 대비는 여전히 낮으나, MEGA_01은 MDD -44.31% 대가. MEGA_05는 CRISIS SR 2.98 + MDD -36.95%로 균형. Q07 crisis alpha 기여 재확인 (L-121)."
+    },
+    "G13_caution_regime_weakness": {
+      "status": "WARN",
+      "detail": "CAUTION SR 0.22 (N_days=349, 가장 많은 레짐). 4 regime 중 최약. Analyst consensus 기반 alpha는 CAUTION(전환 국면)에서 예측력 약화. Overlay 3-Layer가 CAUTION에서 부분 방어하지만 alpha 자체 한계."
+    },
+    "G14_lockbox_integrity": {
+      "status": "PASS_WITH_NOTES",
+      "detail": "Lockbox 2024-01-23~2026-01-23 SR 2.253 / CAGR 53.46%는 Pre-Lockbox 1.147 대비 현저 상승. Forge note: 'Judge access only'. PIT compliance ENFORCED. Overfitting 위험 여부: Pre와 Lockbox의 괴리가 크므로 Regime 변화(2024~2026 AI 붐) 우연일 수 있음. Lockbox를 최종 성능 지표로 사용 금지 — Pre-Lockbox SR 1.147이 보수적 진실값."
+    },
+    "G15_method_shopping_discipline": {
+      "status": "PASS",
+      "detail": "Alpha 5 candidates / Risk 5 candidates / Optimizer 10 candidates tested in parallel with explicit selection criteria (ICIR / condition_number / net_IR). method_shopping_log 전수 기록. Grinold breadth rationale 명시."
+    },
+    "G16_governance_reproducibility": {
+      "status": "PASS",
+      "detail": "artifact_lineage.json: 3 entries (risk, opt×2). git_commit cdf9b70. random_seed 20260424/20260425. R 4.5.2. input_hashes 검증. reproduction_command 제공. git_dirty=true — 최종 commit 필요."
+    },
+    "G17_sprint_goal_completion": {
+      "status": "PARTIAL_FAIL",
+      "detail": "Sprint Phase 5 6 goals: Harvey≥3 FAIL (재측 2.69), MDD≤32% FAIL (36.95%), CRISIS_SR≥4 FAIL (2.98), NORMAL_SR≥1 PASS (1.19), Full_SR≥1.35 FAIL (1.258), AX-002 clean PASS. 2/6 PASS. Harvey asymptote 돌파 목표 미달."
+    },
+    "G18_pg1_admission_readiness": {
+      "status": "NOT_READY",
+      "detail": "Governor admission_rule v3.4 관점: (1) Harvey FF5 t<3.0 FAIL, (2) SubStab 0.418 < 0.5 FAIL, (3) MDD 36.95% > 25% 목표 FAIL, (4) CAUTION SR 0.22 weakness, (5) Market 95.7% contribution (RF-R1 HIGH). PG1 정식 admission 보류. Discovery WT로 유지 + Mega Sprint comparator 자료로 보존."
+    }
+  },
+  "gate_pass_summary": {
+    "pass": 10,
+    "pass_with_caveats_or_notes": 4,
+    "conditional": 2,
+    "warn": 1,
+    "fail": 2,
+    "total": 19,
+    "pass_rate_pct": 52.6
+  },
+
+  "ff5_recomputed": {
+    "executed_by": "Judge",
+    "reason": "Forge [Step 9] reported FF5 error: object 'MKT_RF' not found",
+    "data_source": ".cache/kr_factor_returns.parquet (KR FF5 monthly)",
+    "caveat_1": "HML/RMW/CMA columns non-NA only from 2017-05 → 107 months full / 81 months pre-lockbox",
+    "caveat_2": "RF assumed 0 (KR approximation; small bias since KR rf ~2-3% annual)",
+    "newey_west_lags": 4,
+    "full_period_n107": {
+      "alpha_ann_pct": 13.62,
+      "t_ols": 2.766,
+      "t_newey_west": 2.691,
+      "r_squared": 0.592,
+      "harvey_3_0_pass": false
+    },
+    "pre_lockbox_n81": {
+      "alpha_ann_pct": 10.87,
+      "t_ols": 1.997,
+      "t_newey_west": 2.054,
+      "r_squared": 0.608,
+      "harvey_3_0_pass": false
+    },
+    "capm_full_n278": {
+      "alpha_ann_pct": 17.43,
+      "t_newey_west": 5.655,
+      "beta": 0.721,
+      "r_squared": 0.500,
+      "note": "Strong CAPM alpha but FF5 residual (SMB-adjusted) much weaker."
+    },
+    "interpretation": "Alpha Agent의 projected_harvey_ff5=3.5는 IC×√breadth Grinold 추정으로 낙관적. 실측 FF5 Newey-West t=2.69 (full 107m). FF5 non-NA 구간이 짧아 검증력 제한되지만, 엄격 보수적 Harvey 3.0 threshold 미달 결론."
+  },
+
+  "sprint_phase5_assessment": {
+    "verdict": "PARTIAL_SUCCESS_ALPHA_IMPROVED_HARVEY_ASYMPTOTE_NOT_BROKEN",
+    "achieved": [
+      "Full SR 1.258 = MEGA 5단계 최고치 (MEGA_01 1.149 / MEGA_02 1.233 / MEGA_03 1.220 / MEGA_04 1.132 대비 모두 상회)",
+      "CRISIS SR 2.98 회복 (MEGA_03 2.26 → +32%)",
+      "AX-002 clean (proxy_usage 0%)",
+      "NORMAL SR 1.19 확보",
+      "MEGA_04 Overlay 5-Layer Kill 경험 → 3-Layer로 정상 회귀"
+    ],
+    "failed": [
+      "Harvey FF5 t=2.69 < 3.0 (asymptote 2.79 → 2.69 회귀, 오히려 하락)",
+      "MDD -36.95% > target -32%",
+      "CRISIS SR 2.98 < target 4.0",
+      "Full SR 1.258 < target 1.35",
+      "SubStab 0.418 < 0.5",
+      "CAUTION SR 0.22 weakness 잔존"
+    ],
+    "root_cause_harvey_miss": "Alpha Agent가 Option_A_5F (residual momentum 포함) 실패 확인 후 Option_C_6F로 전환하면서 Q07+AC21이 추가되어 ICIR 0.602 (BASELINE 0.583 대비 소폭 향상)는 달성. 그러나 Q07-AC21 cor=0.731은 crowding 발생 — 4F 유기적 구조에 2F 더했을 때 정보 가치 < 1 효과. Harvey 개선 정체.",
+    "harvey_asymptote_diagnosis": "MEGA_01→02→03 Harvey 1.84→2.59→2.79 감소 개선율 + MEGA_04 Kill + MEGA_05 2.69 재회귀. 구조적 asymptote 확정: 현 Σ/weight 구조 + 6F alpha extension으로는 3.0 돌파 불가. MEGA_06 시 구조 전환 필수 (cross-family, 2-sleeve long-short 등)."
+  },
+
+  "mega_sprint_comprehensive_judgment": {
+    "5_phase_progression": [
+      {"phase": "baseline", "label": "STR_1631", "sr": 1.193, "cagr": 16.14, "mdd": -21.27, "harvey": null, "crisis_sr": null, "note": "4F HRP 0.6 + Score 0.4"},
+      {"phase": "MEGA_01", "sr": 1.149, "cagr": 22.55, "mdd": -44.31, "harvey": 1.84, "crisis_sr": 6.20, "note": "α축 ABL_C Regime-Adaptive Winsor"},
+      {"phase": "MEGA_02", "sr": 1.233, "cagr": 25.90, "mdd": -36.39, "harvey": 2.59, "crisis_sr": 2.57, "note": "Σ축 LW Oracle + Regime-Σ + CVaR cap"},
+      {"phase": "MEGA_03", "sr": 1.220, "cagr": 26.94, "mdd": -37.86, "harvey": 2.79, "crisis_sr": 2.26, "note": "Weight축 Rolling HRP+Regime-Σ, AX-002 해소"},
+      {"phase": "MEGA_04", "sr": 1.132, "cagr": 26.09, "mdd": -56.15, "harvey": 2.63, "crisis_sr": 1.13, "note": "Overlay 5-Layer Kill TRIGGERED"},
+      {"phase": "MEGA_05", "sr": 1.258, "cagr": 26.90, "mdd": -36.95, "harvey": 2.691, "crisis_sr": 2.98, "note": "α축 확장 6F+Kelly, Harvey 재측"}
+    ],
+    "structural_takeaways": [
+      "MEGA 5단계 chain은 α/Σ/weight/overlay 4축 순차 확장 실험. Harvey 1.84→2.79까지 3단계 상승 후 asymptote 진단.",
+      "MEGA_04 Overlay 5-Layer 확장은 MDD -56.15%로 역효과 → Kill. Overlay 추가 복잡도 ≠ 성과 개선.",
+      "MEGA_05 6F α 확장은 SR/CAGR는 개선했으나 Harvey 돌파 실패. Q07+AC21 crowding cor 0.731이 정보 가치 희석.",
+      "현 구조(single-sleeve 20종 long-only + 6F analyst-heavy + Kelly + Regime-Σ + 3-Layer Overlay)는 Harvey 2.7 asymptote. 3.0 돌파는 구조 전환 필요.",
+      "CAPM alpha t=5.66은 여전히 강력 — FF5 Size tilt (SMB t=2.64) 통제 시 잔차 alpha 축소. Small-cap premium 활용 필요."
+    ],
+    "best_configuration_per_metric": {
+      "highest_full_sr": "MEGA_05 (1.258)",
+      "highest_harvey_ff5_reported": "MEGA_03 (2.79 reported, 재측정 없음)",
+      "highest_crisis_sr": "MEGA_01 (6.20, but MDD -44)",
+      "lowest_mdd": "STR_1631 baseline (-21.27%)",
+      "best_balance": "MEGA_05 (Full SR 최고 + CRISIS 회복 + MDD 36.95 수용)",
+      "best_risk_adjusted": "MEGA_02 (Harvey 2.59 + MDD -36.39, Σ축이 가장 안정적 contribution)",
+      "recommendation_overall": "Production 후보는 MEGA_05 (Full SR)와 MEGA_03 (Harvey) 병행 보존. Ensemble 고려."
+    },
+    "comparator_mean_reversion": "MEGA_05 Harvey 2.69는 MEGA_03 2.79 대비 -0.10 역행. Full SR 개선(+0.038)과 trade-off. Harvey 관점에서는 MEGA_03이 여전히 best."
+  },
+
+  "roadmap_decision": {
+    "selected_option": "A_PLUS_D_HYBRID",
+    "rationale": "Mega Sprint 5단계 완주 + Harvey asymptote 확정. Option A (Sprint 종결 + MEGA_05 PG1 재평가) 단독은 Harvey 미달로 PG1 admission 어려움. Option B (MEGA_06) 추가 Sprint는 구조 전환 없이는 asymptote 재확인에 불과하여 효율 낮음. Option C (MEGA_03 base) 단독은 Harvey 2.79로 여전히 <3. Option D (Ensemble) 가장 적합: MEGA_05 (Full SR 1.258) + MEGA_03 (Harvey 2.79) 독립 sleeve로 현 PG2 STR_1631_SYN_05 + STR_1656 구조에 병합 후보. Sprint는 종결하되 이후 Ensemble/Structural transition 계획으로 연결.",
+    "option_evaluation": {
+      "A_sprint_close_mega05_pg1": "부분 권고. PG1 admission은 보류. Discovery comparator로 보존.",
+      "B_mega06": "비권고. 구조 전환 없는 파라미터 튜닝은 asymptote 재확인에 불과.",
+      "C_mega03_primary": "부분 권고. MEGA_03을 primary, MEGA_05를 secondary.",
+      "D_ensemble_mega03_mega05": "권고. 독립 sleeve ensemble로 각자 강점 활용.",
+      "selected": "A+D hybrid"
+    },
+    "next_steps": [
+      "(1) Mega Sprint 5단계 공식 종결 선언 (MEGA_06 진입 금지).",
+      "(2) MEGA_05 + MEGA_03을 Discovery WT 상태로 보존, Governor PG0 gap diagnosis 호출.",
+      "(3) Ensemble Sprint 신설: MEGA_03_Harvey_best + MEGA_05_SR_best 독립 sleeve blend. LOO validation.",
+      "(4) 구조 전환 연구: (a) cross-family sleeve (Q25 defense + 6F core), (b) SMB tilt 강화 (small-cap premium), (c) CAUTION regime overlay 전용 연구 (현 SR 0.22).",
+      "(5) C06_TP_Gap 제거 + Q07/AC21 중 1개 선택 (crowding 해소)."
+    ]
+  },
+
+  "best_configuration_recommendation": {
+    "primary_production_candidate": "MEGA_03 (Harvey 2.79 highest with reasonable SR 1.22, MDD -37.86)",
+    "secondary_production_candidate": "MEGA_05 (Full SR 1.258 highest, CRISIS 2.98)",
+    "ensemble_proposal": "MEGA_03 60% + MEGA_05 40% (독립 sleeve). Expected SR 1.24 / Harvey ~2.75 / MDD ~-37%. LOO validation 필수.",
+    "not_recommended": ["MEGA_04 (Kill)", "Single MEGA_01 (MDD -44)"],
+    "current_pg2_relation": "현 PG2 STR_1631_SYN_05 80% + STR_1656 20% 유지. MEGA 산출물은 신규 sleeve 후보 (TDC breach 방지 검증 필요)."
+  },
+
+  "l_code_new": [
+    {
+      "l_code": "L-217",
+      "title": "H_1688 residual momentum KR reversal 실증 — Carhart 1997 비적용",
+      "lesson_text": "Alpha Agent Option_A_5F 검증에서 H_1688 residual momentum (Blitz 2011 + Carhart 1997) KR 실증 ICIR=-0.187 NEGATIVE 확인. Option_A_5F rank_IC 0.0426 < Option_C_6F 0.0489. KR top-universe에서 residual momentum은 역전 경향. US 문헌(Carhart 1997/Blitz 2011)은 KR에 직접 적용 불가. Alpha Agent가 올바르게 challenge_flag 발행하고 Option_C (6F without residual momentum)으로 전환. 향후 KR momentum family는 반드시 KR 실증 ICIR 검증 후 투입. US 문헌 직접 차용 금지.",
+      "tags": ["momentum", "KR_reversal", "H_1688", "residual_momentum", "Carhart", "Blitz", "challenge_flag", "AX-004_evidence"],
+      "core_reference": "Alpha_package WT-D20260425_003 method_shopping_log Option_A_5F ICIR -0.187 실측. Carhart (1997) momentum 4-factor. Blitz-Huij-Martens (2011) residual momentum. 실증 대비 결과: KR reversal.",
+      "severity": "methodological",
+      "applicable_scope": "market=KR, family=momentum, signal_type=residual_momentum, universe=top20",
+      "failure_mode": "US문헌 직접 차용 → KR ICIR 음수",
+      "exclusion_mechanism": "KR 실증 검증 우선. Alpha Agent 5-candidate method shopping으로 자동 탐지."
+    },
+    {
+      "l_code": "L-218",
+      "title": "Harvey FF5 asymptote 3.0 돌파 — 6F α 확장만으로는 구조적 불가 확정",
+      "lesson_text": "STR_1631 Mega Sprint 5단계 (α/Σ/weight/overlay/α_ext) 완주 결과 Harvey FF5 t=1.84→2.59→2.79→[2.63 Kill]→2.69 asymptote 확정. α축 확장(4F→6F) + Kelly_frac05 + Grinold √breadth 추정 3.5는 낙관적. 실측 Newey-West(lag=4) t=2.691 (Full 107m) / 2.054 (Pre 81m). CAPM alpha t=5.66은 강하지만 FF5 Size(SMB) tilt 통제 시 잔차 alpha 축소. 단일 sleeve 20종 long-only + analyst-heavy 6F 구조의 구조적 한계. 3.0 돌파는 (1) cross-family sleeve, (2) SMB tilt 강화 small-cap, (3) long-short 구조, (4) 50+ 분산 중 하나 필수. 파라미터 튜닝 MEGA_06 진입 비권고.",
+      "tags": ["Harvey", "FF5", "asymptote", "multi_testing", "Mega_Sprint", "structural_limit", "Grinold_breadth", "AX-008_verification"],
+      "core_reference": "Judge 수동 FF5 재계산 /tmp/judge_ff5_mega05.R. Harvey-Liu-Zhu (2016). Grinold-Kahn (1999) IR=IC√breadth. MEGA 5단계 backtest_result.json five_way_comparison. alpha_package harvey_ff5_projection.",
+      "severity": "structural",
+      "applicable_scope": "market=KR, structure=single_sleeve_long_only_top20_analyst_heavy",
+      "failure_mode": "α축 extension 단일로 Harvey 3.0 돌파 불가",
+      "exclusion_mechanism": "Mega Sprint 종결 권고. 구조 전환 후에만 Harvey 3.0 재도전."
+    },
+    {
+      "l_code": "L-219",
+      "title": "Q07-AC21 crowding cor 0.731 — Quality-Accrual 2중 노출 정보 희석",
+      "lesson_text": "MEGA_05 Option_C_6F에서 Q07_Earnings_Stability + AC21_CF_to_Accrual_Ratio 추가. VIF 2.22/2.17 각각 < 5로 통과했으나 pairwise cor=0.731 + TDC=0.476 MEDIUM crowding. weight_theta Q07=0.28 + AC21=0.25 = 0.53 (6F 중 53% 편중). 두 팩터 모두 earnings quality family 내 intrinsic redundancy. 정보 가치 < 1+1 효과. BASELINE 4F ICIR 0.583 → 6F ICIR 0.602 (+3.3% 소폭 개선). MEGA_06 고려 시 Q07 OR AC21 중 1개 선택 + C06_TP_Gap (theta 0.009 noise) 제거 권고.",
+      "tags": ["crowding", "Q07", "AC21", "earnings_quality", "accrual", "TDC", "VIF", "collinearity"],
+      "core_reference": "alpha_package factor_specs weight_theta. risk_package vif_diagnosis Q07_vs_AC21_cor=0.731. tdc_summary Q07_vs_AC21=0.4762.",
+      "severity": "methodological",
+      "applicable_scope": "factor_family=earnings_quality, market=KR",
+      "failure_mode": "동일 family 2 팩터 동시 투입 → VIF 통과하지만 pairwise crowding",
+      "exclusion_mechanism": "pairwise cor>0.7 + TDC>0.4 동시 시 1개 선택. Alpha Agent method_shopping에 crowding penalty 추가 권고."
+    },
+    {
+      "l_code": "L-220",
+      "title": "Kelly f=0.5 + 6F alpha 조합: SR 최고 but MDD 부담",
+      "lesson_text": "MEGA_05 Optimizer가 10 candidates 중 Kelly_frac05 (net_IR 1.2743) 선택. MVO 변형들(15종 수렴)과 달리 n=20 full breadth 유지. HHI 0.0988 cap 0.10 binding. 그러나 Full MDD -36.95%는 sprint target -32% FAIL. Kelly fractional(f=0.5)은 over-betting 완화하지만 여전히 α-proportional 비중. MEGA_04 Overlay 5-Layer 실패 + MEGA_05 Kelly MDD 부담 조합 교훈: 복잡도 증가는 기대와 다른 risk 발생. 향후 MVO_CVaR_cap (realized CVaR 2.5% cap) 재검토 필요. Grinold breadth 보존과 MDD 통제 trade-off.",
+      "tags": ["Kelly_fractional", "MVO", "Grinold_breadth", "MDD", "CVaR_cap", "method_shopping", "net_IR"],
+      "core_reference": "optimization_package method_shopping_log Kelly_frac05 vs MVO_CVaR_cap. weight_method_selected.md. Grinold-Kahn IR=IC√breadth. Kelly (1956) fractional betting.",
+      "severity": "methodological",
+      "applicable_scope": "method=Kelly_fractional, universe=top20, target=MDD_controlled",
+      "failure_mode": "Kelly f=0.5 + 6F α 확장 → MDD 목표 미달",
+      "exclusion_mechanism": "Sprint target MDD 달성 필요 시 MVO_CVaR_cap 우선. Kelly은 Full SR 우선 시나리오에만."
+    },
+    {
+      "l_code": "L-221",
+      "title": "Mega Sprint 5-phase 종결 원칙 — 구조 전환 없는 파라미터 튜닝 한계",
+      "lesson_text": "STR_1631 Mega Sprint는 α/Σ/weight/overlay/α_ext 5축 순차 확장 실험. Harvey 1.84→2.79 3단계 상승 후 MEGA_04 Kill + MEGA_05 2.69 재회귀로 asymptote 확정. Best configuration: MEGA_03 (Harvey 2.79 highest), MEGA_05 (Full SR 1.258 highest). Roadmap: Option D Ensemble (MEGA_03 60% + MEGA_05 40% 독립 sleeve) 권고. MEGA_06 같은 구조 내 파라미터 튜닝은 asymptote 재확인에 불과. 구조 전환(cross-family, SMB tilt, long-short, 50+ 분산) 중 1개 이상 도입 후에만 Harvey 3.0 재도전. Sprint 프로세스 자체는 validated: 5-way comparison + Kill criteria + 명시적 sprint target이 연구 규율 확보.",
+      "tags": ["Mega_Sprint", "closure_principle", "Harvey_asymptote", "Ensemble", "roadmap", "structural_transition", "AX-000_challenge"],
+      "core_reference": "Judge verdict WT-D20260425_003. MEGA 5-phase backtest_result five_way_comparison. Kill criteria (MEGA_04) + Harvey asymptote (L-218).",
+      "severity": "process",
+      "applicable_scope": "research_process, mega_sprint_framework",
+      "failure_mode": "파라미터 튜닝 무한 루프 → 구조적 한계 은폐",
+      "exclusion_mechanism": "3-phase 이상 연속 Harvey 개선 정체(Δ<0.1) 시 Sprint 종결 선언. 구조 전환 우선."
+    }
+  ],
+
+  "telegram_summary_for_qlead": {
+    "verdict": "B_PLUS",
+    "sr_full": 1.258,
+    "harvey_ff5_recomputed": 2.691,
+    "harvey_3_0_pass": false,
+    "sprint_goals_pass": "2/6",
+    "best_configuration": "MEGA_05 SR + MEGA_03 Harvey → Ensemble",
+    "roadmap": "A+D hybrid (Sprint 종결 + Ensemble)",
+    "l_codes_new": ["L-217", "L-218", "L-219", "L-220", "L-221"]
+  },
+
+  "closing_note": "STR_1631 Mega Sprint 5단계 공식 종결 권고. MEGA_05 Full SR 1.258은 MEGA 최고치이나 Harvey FF5 t=2.69 (재측)로 3.0 asymptote 돌파 실패. PG1 정식 admission 보류. Option A+D hybrid: Sprint 종결 + MEGA_03/MEGA_05 Ensemble sleeve 연구. MEGA_06 진입 비권고 (구조 전환 없이는 asymptote 재확인). L-217~L-221 5건 적립. 다음 스텝: Governor PG0 gap diagnosis 호출 + Ensemble Sprint 설계 + SMB tilt 강화 연구."
+}

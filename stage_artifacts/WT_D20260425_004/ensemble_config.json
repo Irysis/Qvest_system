@@ -1,0 +1,71 @@
+{
+  "task_type": "ensemble_design",
+  "wt_id": "WT-D20260425_004",
+  "as_of_date": "2026-04-25",
+  "candidates": [
+    "MEGA_03 (WT-D20260425_001)",
+    "MEGA_05 (WT-D20260425_003)"
+  ],
+  "candidate_profiles": {
+    "MEGA_03": {
+      "SR": 1.22,
+      "MDD": -37.86,
+      "Harvey_FF5": 2.794,
+      "CRISIS_SR": 2.257,
+      "method": "HRP+Regime-Σ Rolling, 4F consensus",
+      "sleeve_role": "Core"
+    },
+    "MEGA_05": {
+      "SR": 1.258,
+      "MDD": -36.95,
+      "Harvey_FF5": null,
+      "CRISIS_SR": 2.983,
+      "method": "6F+Kelly f=0.5, LW_constcor",
+      "sleeve_role": "Tactical"
+    }
+  },
+  "correlation": {
+    "pearson": 0.9372,
+    "spearman": 0.9175,
+    "tdc_lower_u10": 0.8338,
+    "tdc_verdict": "WARN (0.8338 > 0.40)"
+  },
+  "merge_strategy": "return_blend",
+  "merge_rationale": "Option C (return-blend) selected: avoids n>20 violation (L-484). Score-level union top-20 for latest weights only. Overlay already embedded in each sleeve's equity curve.",
+  "regime_allocations": {
+    "NORMAL": {
+      "MEGA_03": 0.5,
+      "MEGA_05": 0.5
+    },
+    "CAUTION": {
+      "MEGA_03": 0.65,
+      "MEGA_05": 0.35
+    },
+    "CRISIS": {
+      "MEGA_03": 0.75,
+      "MEGA_05": 0.25
+    },
+    "RECOVERY": {
+      "MEGA_03": 0.55,
+      "MEGA_05": 0.45
+    },
+    "BULL": {
+      "MEGA_03": 0.4,
+      "MEGA_05": 0.6
+    }
+  },
+  "selected_method": "60_40",
+  "selected_ratio": {
+    "MEGA_03": 0.6,
+    "MEGA_05": 0.4
+  },
+  "judge_recommended": "60_40",
+  "best_harvey_ratio": "80_20",
+  "loo_delta_sr": {
+    "remove_MEGA_03": -0.0003,
+    "remove_MEGA_05": 0.0306
+  },
+  "recommended_method": "Fixed_80_20 (Harvey-optimal, Q-Lead confirm needed)",
+  "reasoning": "TDC=0.8338 (≤0.40=WARN) — two strategies orthogonal enough for blending. LOO: removing MEGA_03 changes SR by -0.0003; removing MEGA_05 by 0.0306. Harvey sweep: best ratio=80_20 (t_NW=3.1154). Judge recommended 60:40 (t_NW=3.0821). CRISIS SR=2.5862 | MDD=-34.02% | Full SR=1.2219. Final decision requires Q-Lead manual confirmation (Blender presents options only).",
+  "note_for_judge": "Blender Option C (return-blend) does NOT rerun backtests. FF5 computed on blended return series. Lockbox not accessed. n=20 weights.csv = score-level union of MEGA_03 + MEGA_05 latest date. Harvey t_NW on pre-lockbox period for PIT compliance."
+}

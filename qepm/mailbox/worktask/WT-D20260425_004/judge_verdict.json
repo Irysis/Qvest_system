@@ -1,0 +1,382 @@
+{
+  "task_id": "WT-D20260425_004",
+  "strategy_id": "STR_1631_MEGA_ENSEMBLE_60_40",
+  "judge_timestamp": "2026-04-25T03:40:00+0900",
+  "judge_version": "S6_gate0_18_v3_0_strict_audit",
+  "verdict": "DEFER",
+  "grade": "A_CONDITIONAL_LOCKBOX_DEPENDENT",
+  "grade_v21": "A",
+  "score": 63.4,
+  "hurdle_v22_grade": "A",
+  "admission_decision": {
+    "pg1_admission": "DEFER",
+    "reason_summary": "Harvey 3.082 Full은 Lockbox 24m (SR 1.84, 연수익 43.3%) alpha 기여 의존. Pre-Lockbox 252m Harvey 2.385 FAIL → 통계 유의성이 2024-2026 2년 hyperwindow에 종속. TDC 0.834 + Pearson 0.937은 true ensemble 아닌 hyperparameter blend. Family saturation 경고 (STR_1631_SYN_05_2002 PG2 active + MEGA_03/05 + STR_1631 = 동일 ABL_C consensus family).",
+    "conditional_path": "MEGA 시리즈에서 PG1 편입 판단을 하려면 (1) Lockbox 제외 Pre-LB Harvey t_NW ≥ 3.0 달성 필수, (2) TDC ≤ 0.50 만족 (현재 sleeve 조합으로는 구조 불가능), (3) STR_1631 family cluster 내 duplicate 검증."
+  },
+  "blender_summary_received": {
+    "selected_method": "60_40",
+    "harvey_full": 3.0821,
+    "harvey_pre_lb": 2.3853,
+    "tdc_primary": 0.8338,
+    "pearson": 0.9372,
+    "spearman": 0.9175,
+    "full_sr": 1.2219,
+    "full_mdd": -34.016,
+    "crisis_sr": 2.5862,
+    "kill_verdict_from_blender": "TRIGGERED"
+  },
+  "gate_0_18_results": {
+    "gate_0_wt_entry_admission": {
+      "status": "PASS",
+      "note": "sg_check_s6_entry 등가. WT 자산: request/status/governance/backtest_result/ensemble_config/equity_curve/weights/charts 전수 존재. status=FORGE_DONE."
+    },
+    "gate_1_pit_c1_c15": {
+      "status": "PASS_WITH_NOTES",
+      "c1_expanding_ic": "PASS — return_blend는 inherited equity curve 사용. 신규 IC 계산 없음.",
+      "c2_score_lag": "PASS (inherited from MEGA_03/05)",
+      "c4_consensus_lag": "PASS (inherited)",
+      "c9_mrs_lag": "PASS (inherited)",
+      "c10_liq_lag": "PASS (inherited)",
+      "c11_regime_db_lag": "PASS (inherited)",
+      "c13_zscore_aligned": "PASS (inherited)",
+      "c14_ic_usable_date": "PASS (inherited)",
+      "c15_factor_db": "PASS (inherited)",
+      "ensemble_pit_audit": "PASS — return-blend 방식은 60:40 고정 weight 선정에 lockbox 데이터 사용 없음 (ensemble_config.json line 58~66 및 run_all.R 직접 점검). Judge recommended 60:40 vs Best Harvey 80:20 구분 명시 = Forge는 lockbox-aware 최적화 회피 증거.",
+      "notes": "신규 look-ahead 미발견. 단 Blender가 ratio sweep(50:50~80:20)을 Full period Harvey로 선정했다면 mild look-ahead 우려 있으나, 최종 선택은 60:40 (Harvey-suboptimal)이므로 데이터 드리븐 의혹 희박."
+    },
+    "gate_2_lockbox_independent_access": {
+      "status": "COMPLETED_AUDIT",
+      "access_method": "Judge equity_curve.parquet 독립 분석 (R arrow)",
+      "lockbox_window": "2024-01-23 ~ 2026-01-23",
+      "lockbox_daily_metrics": {
+        "N_days": 487,
+        "ann_return_pct": 43.3,
+        "ann_vol_pct": 23.56,
+        "SR": 1.8379,
+        "MDD_pct": -21.56
+      },
+      "pre_lockbox_metrics": {
+        "N_days": 5184,
+        "ann_return_pct": 23.45,
+        "ann_vol_pct": 20.62,
+        "SR": 1.137,
+        "MDD_pct": -34.02
+      },
+      "lockbox_monthly_intercept_t_naive": 3.113,
+      "pre_lb_monthly_intercept_t_naive": 4.998,
+      "ratio_sr_lockbox_vs_prelb": 1.616,
+      "ratio_cagr_lockbox_vs_prelb": 1.85,
+      "diagnosis": "Lockbox 2년 구간이 Pre-LB 21년 대비 SR 62% 초과, 연수익 85% 초과. 단일 2년 hyperwindow 현상. 이 구간을 포함하면 Harvey Full 3.082, 제외하면 Pre-LB 2.385. 구조적으로 Harvey 3.0 PASS는 **Lockbox 기간 alpha 기여에 전면 의존**.",
+      "overfitting_risk": "MEDIUM-HIGH — Lockbox 구간 MEGA_03 WT_D20260425_001 gate_10 기 CAUTION 발부. Lockbox SR 1.94 / PreLB 1.12 ratio 1.73 기록 남아 있음 → Ensemble Lockbox SR 1.84는 동일 overfitting window 계승.",
+      "lockbox_overlay_possibility": "LOW-MEDIUM — Blender ensemble_config.json `note_for_judge`에 'Lockbox not accessed' 선언. ratio sweep에서 60:40 Harvey Full=3.082 대비 80:20=3.115 (best) — best ratio 미선택은 Forge가 Pre-LB Harvey sweep(전수 FAIL) 기반으로 판단했을 가능성 높음. lockbox 정보 의존적 weight 최적화 직접 증거는 없음."
+    },
+    "gate_3_harvey_full_vs_prelb_structural_breach": {
+      "status": "FAIL_MUST",
+      "full_harvey_t_nw": 3.0821,
+      "prelb_harvey_t_nw": 2.3853,
+      "gap_pp": 0.697,
+      "gap_pct_of_full": 22.6,
+      "full_harvey_pass": true,
+      "prelb_harvey_pass": false,
+      "harvey_30_threshold": 3.0,
+      "diagnosis": "Harvey 3.0 PASS는 Full period에 국한. Pre-Lockbox 252m은 2.385로 유의성 FAIL. Harvey-Liu-Zhu (2016) 다중검정 보정 정신은 'robust across non-trivial subperiods'이지 'any subperiod'이 아님. Lockbox 2년이 Full Harvey를 +0.697pp 끌어올리는 구조는 정상적 in-sample alpha가 아니라 **최근 구간 regime-specific 편향** 의심.",
+      "structural_verdict": "Harvey 3.0 유의성 인정 불가. Pre-LB 2.385 FAIL을 기준 적용 권고. Harvey-Liu-Zhu rationale 위반 아님(기술적 통과)이나 **statistical defense 관점에서 artifact 가능성 우세**."
+    },
+    "gate_4_tdc_structural_interpretation": {
+      "status": "FAIL_MUST_KILL_TRIGGERED",
+      "tdc_lower_u10": 0.8338,
+      "tdc_lower_u05": 0.8407,
+      "pearson": 0.9372,
+      "spearman": 0.9175,
+      "threshold_kill_trigger": 0.5,
+      "threshold_warn": 0.4,
+      "breach_severity_vs_kill": "+0.3338 (67% 초과)",
+      "true_ensemble_yes_no": "NO",
+      "structural_diagnosis": "TDC 0.834 + Pearson 0.937 = 두 sleeve는 **동일 ABL_C consensus 4-factor base(MEGA_03) vs 6F+Kelly(MEGA_05)** 위 hyperparameter 변형. Sleeve Role 선언(Core vs Tactical)은 cosmetic — 실체는 동일 family 내 weighting scheme 블렌드.",
+      "same_family_blend_or_diversifier": "same_family_hyperparameter_blend",
+      "axiom_consistency": "AX-006 candidate (L-156 v2) pairwise TDC 조건부 cluster 원칙 적용 시 Ensemble ADMIT 불가. STR_1631 family 전체 (STR_1631_SYN_05_2002 PG2 + MEGA_03 + MEGA_04 + MEGA_05 + MEGA_ENS) = single cluster로 처리되어야.",
+      "ax_006_exposure": "CRITICAL"
+    },
+    "gate_5_loo_interpretation": {
+      "status": "ANALYZED",
+      "mega_03_removed": {
+        "SR": 1.1913,
+        "MDD": -37.859,
+        "Harvey_t_NW": 2.4633,
+        "delta_SR_vs_ensemble": -0.0306
+      },
+      "mega_05_removed": {
+        "SR": 1.2222,
+        "MDD": -36.953,
+        "Harvey_t_NW": 1.9779,
+        "delta_SR_vs_ensemble": +0.0003
+      },
+      "interpretation": "MEGA_05만 단독 실행 시 SR 1.22 (Ensemble 1.222와 거의 동일) + Harvey 1.98 (FAIL). MEGA_03만 단독 실행 시 SR 1.19 + Harvey 2.46 (FAIL). 두 sleeve 모두 단독으로는 Harvey 3.0 미달. Ensemble Harvey Full 3.082는 **correlated alpha 결합 효과라기보다 noise 소거 효과 + Lockbox 계승**. 진정한 diversification 효과라면 TDC가 0.83이 아니라 0.3~0.5대여야.",
+      "loo_vs_tdc_contradiction": "LOO delta 미미(-0.03/+0.0) + TDC 0.83 = 'SR 관점 LOO는 미미하나 tail co-movement 극도로 높음' 이중 증거. 즉 ensemble은 **평균 수익 기여가 아닌 variance averaging으로 SR 끌어올림**. Harvey 상승도 동일 원리 추정."
+    },
+    "gate_6_ratio_sweep_recommendation": {
+      "status": "ADVISORY",
+      "ratio_sweep_SR": {
+        "50_50": 1.2259,
+        "60_40": 1.2219,
+        "70_30": 1.2163,
+        "80_20": 1.2093
+      },
+      "ratio_sweep_Harvey_Full": {
+        "50_50": 3.0432,
+        "60_40": 3.0821,
+        "70_30": 3.1065,
+        "80_20": 3.1154
+      },
+      "ratio_sweep_Harvey_PreLB": {
+        "50_50": 2.335,
+        "60_40": 2.3853,
+        "70_30": 2.4244,
+        "80_20": 2.4508
+      },
+      "recommendation": "Q-Lead 최종 선택 시 기준별 상반:  (a) SR 최대 → 50:50 (1.2259)  (b) Harvey Full 최대 → 80:20 (3.1154)  (c) Pre-LB Harvey 가장 덜 FAIL → 80:20 (2.4508, 여전히 FAIL)  (d) MDD 최소 → 60:40 (-34.02). **Judge 권고: 60:40 이 balanced choice**. 80:20 은 MEGA_05 기여 희석(Tactical 역할 상실)으로 structural rationale 약화. 다만 어느 ratio도 Pre-LB Harvey 3.0 돌파 불가.",
+      "critical_insight": "ratio 선택이 Harvey 3.0 PASS/FAIL을 결정하지 않음. Lockbox 포함/제외가 결정."
+    },
+    "gate_7_family_saturation_check": {
+      "status": "WARN",
+      "str_1631_family_cluster": [
+        "STR_1631_SYN_05_2002 (PG2 active slot A, Harvey t=3.09 primary)",
+        "MEGA_01 (WT-D20260422 series)",
+        "MEGA_02 (동일)",
+        "MEGA_03 (WT-D20260425_001)",
+        "MEGA_04 (WT-D20260425_002)",
+        "MEGA_05 (WT-D20260425_003)",
+        "MEGA_ENSEMBLE (현재 WT-D20260425_004)"
+      ],
+      "common_alpha_base": "ABL_C consensus 4-factor (SUE/ESBR/EPS1M/COV/TP roll=7d) + C19_icw",
+      "family_saturation_diagnosis": "7건 모두 STR_1631 family. 현 PG2 active slot A가 이미 동일 family Harvey 3.09. Mega Ensemble PG1 admission은 'Family 1 near-clone 5건' 기록(Session 65 HARD EXPEL 3건 + STR_1417/1433/1071/1435/1060 corr 0.857~0.997)과 동일 패턴.",
+      "ax_006_candidate_trigger": "Pairwise TDC 0.5+ 관찰 시 Sequential Admission Rule 적용. STR_1631_SYN_05_2002 ↔ MEGA_ENS 독립 TDC 측정 필요 (추정 0.7+). Judge 추가 audit 불필요 — Blender 자체 측정 TDC 0.834 (MEGA_03 ↔ MEGA_05)로 이미 family 내 cluster 입증.",
+      "governor_pg2_impact": "현 PG2 (STR_1631_SYN_05_2002 80% + STR_1656_MLRA_M05 20%)에 MEGA_ENS 편입 시 슬롯 STR_1631_SYN_05_2002 대체 구도 검토 필요하나, MEGA_ENS가 동일 family 내 개선판인지 **noise 재조합**인지 Lockbox 의존 감안하면 대체 가치 불명확."
+    },
+    "gate_8_harvey_t_early_warning_v34": {
+      "status": "WARNING_SEVERE",
+      "prelb_harvey_t": 2.3853,
+      "full_harvey_t": 3.0821,
+      "warning_threshold": 2.5,
+      "breach_threshold": 3.0,
+      "admission_rule_v3_4_check": "Pre-Lockbox Harvey 2.385로 warning_threshold 2.5 미달. PG1 admission의 Harvey 요건은 **robust across subperiods** 해석 시 FAIL. Gate 8 Early Warning v3.4 매우 심각 상태."
+    },
+    "gate_9_dsr_tail_risk": {
+      "dsr_z_full": 8.6161,
+      "dsr_z_prelb": 5.3342,
+      "dsr_significant": true,
+      "note": "DSR은 Full/PreLB 모두 통과. 단 DSR은 Sharpe 변동성 기반이며 Harvey FF5 factor 흡수와 별개 지표. DSR PASS가 Harvey FAIL을 상쇄하지 않음.",
+      "tail_risk": "MDD -34.02 Pre-LB 동일. CRISIS SR 2.586은 MEGA_05 2.98 대비 희석.",
+      "status": "PASS_WITH_WARNING"
+    },
+    "gate_10_lockbox_vs_pre_lockbox_consistency": {
+      "status": "HIGH_OVERFITTING_RISK",
+      "pre_lockbox_sr": 1.137,
+      "lockbox_sr": 1.8379,
+      "ratio_sr": 1.616,
+      "pre_lockbox_cagr_pct": 23.45,
+      "lockbox_cagr_pct": 43.3,
+      "ratio_cagr": 1.847,
+      "pre_lockbox_mdd_pct": -34.02,
+      "lockbox_mdd_pct": -21.56,
+      "mdd_regression": "Lockbox 기간 MDD 37% 완화. 2024-2026 구간 drawdown 특이현상 추정.",
+      "comparison_with_mega_03_solo": "MEGA_03 단독 lockbox SR 1.941 (WT_D20260425_001 gate_10) vs Ensemble lockbox SR 1.838 — 거의 동일. Ensemble은 MEGA_03 lockbox 우위를 희석할 뿐 재생산 불가.",
+      "verdict": "Lockbox overfitting 증거 3중: (1) ratio 1.62 (50%+ breach), (2) MEGA_03 단독 대비 승계, (3) Harvey Full vs PreLB gap 0.697."
+    },
+    "gate_11_axiom_scan": {
+      "ax001_v2_defense": "NOT_APPLICABLE (core role)",
+      "ax002_harness_integrity": "PASS_INHERITED — MEGA_03 gate_2 25% structural EW caveat 승계. Ensemble도 2009-01 이전 initial 6yr EW 기여 포함.",
+      "ax003_kr_value_ep": "NOT_APPLICABLE",
+      "ax004_kr_quality_single_signal": "NOT_APPLICABLE (multi-axis C19)",
+      "ax005_kr_defense_top20": "NOT_APPLICABLE",
+      "ax006_candidate_tdc": "ACTIVATED — TDC 0.834 + Pearson 0.937은 AX-006 candidate 역으로 **확정 증거**. L-156 v2 retroactive audit 적용 시 STR_1631 family cluster 내 multi-member 동시 편입 금지 원칙 위반.",
+      "ax007_signal_portfolio_translation": "PASS (top20 long-only, n=20 hard)",
+      "ax008_triangulation": "PARTIAL — Forge(run_all.R Blender) + Judge(equity parquet 직접 감사) 2-source. Codex cross-model 미완.",
+      "status": "AX006_CANDIDATE_CRITICAL",
+      "note": "AX-006 공식 승격은 reviewer 2026-07-17 예정이나 이 증거는 pre-promotion empirical trigger."
+    },
+    "gate_12_hurdle_v22_axes": {
+      "return_axis_est": 62,
+      "risk_axis_est": 35,
+      "robustness_axis_est": 48,
+      "implementability_axis_est": 66,
+      "diversification_axis_est": 20,
+      "note": "Diversification 축 극저점 (TDC 0.83). Robustness는 Lockbox dependency로 하락. Risk는 MDD -34 유사.",
+      "status": "PASS_BUT_MARGINAL",
+      "overall_score_estimate": 63.4
+    },
+    "gate_13_constraint_satisfaction": {
+      "n20_hard": "PASS — weights.csv 20 tickers, Σw=1.0000 정확",
+      "long_only": "PASS — all w ≥ 0",
+      "weight_bounds": "PASS (max 0.104)",
+      "liquidity_2e8": "PASS (inherited)",
+      "universe": "PASS",
+      "status": "PASS"
+    },
+    "gate_14_cost_model": {
+      "commission": 0.0015,
+      "note": "v2.3 kr_retail 15bps inherited. Return-blend는 추가 turnover 생성 없음(daily return 가중평균).",
+      "turnover_concern": "Blender return-blend 방식은 실제 리밸 시 MEGA_03+MEGA_05 양쪽 턴오버 합산. 실제 turnover_ann 추정 ~400% (MEGA_03 300% + MEGA_05 추정 100% 고유). hard_fail 600 미달.",
+      "status": "PASS_WITH_NOTE"
+    },
+    "gate_15_survivorship": {
+      "note": "Historical universe 포함 (RAWDATA). inherited.",
+      "status": "PASS"
+    },
+    "gate_16_subperiod_stability": {
+      "pre_lockbox_sr": 1.137,
+      "lockbox_sr": 1.838,
+      "sr_cv_rough": 0.241,
+      "subperiod_stability_dichotomy": "pre-LB vs LB SR gap 1.62x = subperiod instability 시사. 3-way split (2003-14 / 2015-19 / 2020-26) 상세 분해는 Blender 미제공이나, MEGA_03 alpha_validation subperiod_ic_stability 0.825 inherited 추정.",
+      "status": "PASS_WITH_WARNING"
+    },
+    "gate_17_reproducibility": {
+      "artifact_lineage_entries_estimated": 7,
+      "random_seed": 20260425,
+      "r_version": "4.5.2",
+      "input_hashes_present": true,
+      "reproduction_command": "source('stage_artifacts/WT_D20260425_004/run_all.R')",
+      "status": "PASS"
+    },
+    "gate_18_role_admission_readiness": {
+      "pg1_admission_signal": "DEFER",
+      "reasons": [
+        "Pre-Lockbox Harvey 2.385 FAIL (Gate 3/8)",
+        "TDC 0.834 FAIL_MUST_KILL (Gate 4)",
+        "Lockbox overfitting MEDIUM-HIGH (Gate 10)",
+        "STR_1631 family saturation (Gate 7)",
+        "AX-006 candidate CRITICAL (Gate 11)"
+      ],
+      "recommended_next_step": "PG1 admission 보류. Q-Lead 결정: (1) MEGA_ENS를 '상징적 Harvey 3.0 돌파' 기록으로만 보존, (2) MEGA 시리즈 alpha 축 재설계(Barroso risk-managed overlay, 이종 family blender 투입) Phase 3로 이관, (3) STR_1631 family 추가 blend 중단.",
+      "status": "NOT_READY"
+    }
+  },
+  "gates_pass_count": "10 full PASS + 5 WARNING/CONDITIONAL + 3 FAIL (Gate 3 Harvey PreLB, Gate 4 TDC KILL, Gate 8 Early Warning Severe) + 0 HARD_BLOCK",
+  "ff5_harvey_full_vs_pre_lb_analysis": {
+    "harvey_full_t_nw": 3.0821,
+    "harvey_prelb_t_nw": 2.3853,
+    "gap_pp": 0.697,
+    "lockbox_months": 24,
+    "prelb_months": 81,
+    "full_months": 107,
+    "structural_explanation": "Lockbox 2년(24mo, 22.4% of total) 기간의 월평균 alpha contribution이 Pre-LB 대비 1.85배. 이 2년이 Full Harvey를 +0.697pp 끌어올림. 'Hyperwindow lift' 전형적 패턴.",
+    "artifact_vs_breakthrough_verdict": "ARTIFACT_DOMINANT",
+    "rationale": "정상적 alpha라면 Pre-LB 21년에서도 Harvey 3.0 방향으로 수렴해야. 2.385는 3.0에서 20% 미달. 2년 additional window가 gap의 대부분을 closure한 경우 '발견'보다 '2024-2026 market 편향'으로 해석이 더 보수적."
+  },
+  "lockbox_access_results_judge_independent": {
+    "access_method": "equity_curve.parquet 직접 분석 (R arrow + data.table)",
+    "lockbox_window": "2024-01-23 ~ 2026-01-23",
+    "lockbox_N_days": 487,
+    "lockbox_N_months": 24,
+    "lockbox_SR": 1.8379,
+    "lockbox_ann_return_pct": 43.3,
+    "lockbox_ann_vol_pct": 23.56,
+    "lockbox_MDD_pct": -21.56,
+    "lockbox_monthly_mean_pct": 3.667,
+    "lockbox_monthly_t_stat_naive": 3.113,
+    "pre_lockbox_SR": 1.137,
+    "pre_lockbox_ann_return_pct": 23.45,
+    "pre_lockbox_MDD_pct": -34.02,
+    "ratio_sr_lockbox_vs_prelb": 1.616,
+    "ratio_cagr_lockbox_vs_prelb": 1.847,
+    "overfitting_verdict": "MEDIUM-HIGH — SR ratio 1.62 + CAGR ratio 1.85 + Harvey gap 0.697. Lockbox 기간 alpha structural dominance 확정.",
+    "lookahead_contamination_direct_evidence": "NONE_FOUND — run_all.R + ensemble_config.json 감사 결과 Blender는 weights/ratio 결정에 Lockbox 정보 직접 사용 증거 없음. Judge recommended 60:40 (Harvey-suboptimal)을 선택한 점이 lookahead 부재 방증.",
+    "lookahead_indirect_risk": "LOW-MEDIUM — Mega Sprint 5-Phase 전체 design 과정에서 Forge/Scout가 Lockbox 기간 bull 성과를 암묵적으로 인식했을 가능성(survivorship-by-design)"
+  },
+  "tdc_interpretation_judge": {
+    "tdc_primary": 0.8338,
+    "tdc_kill_threshold": 0.5,
+    "breach_pp": 0.3338,
+    "true_ensemble_yes_no": "NO",
+    "interpretation": "TDC 0.834 + Pearson 0.937 + Spearman 0.918 = 두 sleeve 수익률이 극단적으로 공행진. MEGA_03(HRP rolling + Regime-Σ + 4F consensus) vs MEGA_05(6F+Kelly f=0.5 + LW_constcor)는 optimizer 차이만 있을 뿐 alpha source 동질.",
+    "structural_diagnosis": "Same-family hyperparameter blend. Independent diversification의 증거(TDC < 0.4)가 부재.",
+    "implications_for_pg1": "Diversifier 역할 부적격. Core_secondary 후보로도 cluster 밖 TDC < 0.3 만족 전략 대비 열등.",
+    "ax_006_linkage": "L-156 v2 retroactive audit 직접 타깃. AX-006 공식 승격 시 STR_1631 family 내 다중 편입 금지 규칙 즉시 적용."
+  },
+  "ratio_recommendation": {
+    "sr_optimal": {"ratio": "50_50", "SR": 1.2259, "Harvey_Full": 3.0432, "Harvey_PreLB": 2.335},
+    "harvey_full_optimal": {"ratio": "80_20", "SR": 1.2093, "Harvey_Full": 3.1154, "Harvey_PreLB": 2.4508},
+    "mdd_optimal": {"ratio": "60_40", "SR": 1.2219, "MDD": -34.016, "Harvey_Full": 3.0821},
+    "judge_primary_recommendation": "60_40",
+    "judge_rationale": "60:40은 MDD 최소 + 역할 분리 명확(Core 60 / Tactical 40). 80:20은 MEGA_05 Tactical 기여 희석으로 Blender 초기 설계 의도 위반. 50:50은 Harvey slight drop. Pre-LB Harvey는 어느 ratio도 3.0 미달이므로 **ratio 선택이 admission 결정을 바꾸지 않음**.",
+    "caveat": "Q-Lead가 '상징적 Harvey 3.0 기록'을 취한다면 80:20(3.1154 Full) 채택 가능. 단 PG1 admission 관점은 동일(DEFER)."
+  },
+  "pg1_admission_decision": "DEFER",
+  "pg1_admission_reasoning": [
+    "Harvey Full 3.082 PASS가 Lockbox 24m에 의존. Pre-LB 252m 기준 2.385 FAIL.",
+    "TDC 0.834 Kill trigger → True ensemble 부적격, same-family hyperparameter blend.",
+    "STR_1631 family saturation: 이미 PG2 active slot A가 동일 family Harvey 3.09.",
+    "Lockbox vs Pre-LB SR ratio 1.62, CAGR ratio 1.85 → MEDIUM-HIGH overfitting.",
+    "AX-006 candidate 확정 증거 (pairwise TDC 0.5+ conditional cluster 원칙)."
+  ],
+  "pg1_admission_alternative_paths": [
+    "PATH_A: MEGA_ENS는 '상징적 Harvey 3.0 돌파 기록'으로만 보존. PG1 미편입.",
+    "PATH_B: STR_1631 family 폐쇄 선언 + 이종 family(L13 risk, L14 axiom, XGB V2 등)와 blend 재설계. Pre-LB Harvey 3.0 달성까지 보류.",
+    "PATH_C: Governor가 현 PG2 active slot A (STR_1631_SYN_05_2002 80%)를 MEGA_ENS 60:40로 대체할지 독립 판단. Judge는 family duplication 근거로 대체 반대."
+  ],
+  "l_code_new": [
+    {
+      "l_code": "L-225",
+      "category": "ml_predictive_overfitting",
+      "title": "Lockbox 2년 hyperwindow alpha artifact detection",
+      "lesson_text": "Full period Harvey t가 Pre-Lockbox Harvey 대비 +0.5pp 이상 gap이고 Lockbox SR이 Pre-LB SR의 1.5배를 초과할 경우, Harvey PASS는 'Lockbox window artifact'로 분류하고 PG1 admission을 DEFER한다. 본 case: MEGA_ENS Full t=3.082 vs PreLB t=2.385 gap 0.697pp, Lockbox SR 1.838 vs PreLB SR 1.137 ratio 1.616. Lockbox 24m(22.4%)이 Harvey 3.0 돌파를 single-handedly 주도. 정상 alpha는 subperiod robust해야 하며 '최근 2년' 편향이 threshold pass의 주 요인이면 overfitting으로 간주. 권장 기준: Pre-Lockbox Harvey ≥ 3.0 필수 조건화.",
+      "trail": "ml_empirical_first + kr_statistical",
+      "scope": "PG1 admission, multi-period Harvey validation",
+      "core_reference": "Harvey, Liu, Zhu (2016) '...and the Cross-Section of Expected Returns' RFS + Bailey & Lopez de Prado (2014) 'Deflated Sharpe Ratio' JPM. QEPM §10 통계적 방어",
+      "tags": ["LOCKBOX_ARTIFACT", "HARVEY_T3_MULTIWINDOW", "HYPERWINDOW_LIFT", "PG1_DEFER"]
+    },
+    {
+      "l_code": "L-248",
+      "category": "portfolio_weighting_ensemble",
+      "title": "Same-family hyperparameter blend TDC 0.80+ 조기 kill",
+      "lesson_text": "두 candidate sleeve의 pairwise TDC(lower) > 0.80 + Pearson > 0.90 이면 조합 결과의 Harvey/SR 개선은 variance averaging 효과일 뿐 true diversification이 아니다. 본 case: MEGA_03(HRP+Regime-Σ+4F consensus) vs MEGA_05(6F+Kelly+LW_constcor) TDC 0.834 / Pearson 0.937. LOO SR delta 미미(-0.03/+0.0)이나 tail co-movement 극도로 높음 → 'SR 관점 중복+tail 관점 동일 dependency'. 이런 ensemble은 Blender 단계에서 조기 kill 권장. AX-006 pairwise TDC 조건부 cluster 원칙 적용: TDC ≥ 0.80 pair는 alpha source 동질로 간주, ensemble 후보 자격 박탈. Ensemble pool 구성 시 TDC ≤ 0.50 + Pearson ≤ 0.70 필터 선행.",
+      "trail": "standard",
+      "scope": "Blender ensemble pool pre-filter, AX-006 activation rule",
+      "core_reference": "Joe (1997) 'Multivariate Models and Dependence Concepts' Chapman&Hall + Embrechts et al. (2002) 'Correlation: Pitfalls and Alternatives' Quantitative Risk Management, Session 66 L-156 v2 retroactive audit + AX-006 candidate",
+      "tags": ["TDC_08_KILL", "SAME_FAMILY_BLEND", "AX_006_CANDIDATE", "VARIANCE_AVERAGING_PITFALL"]
+    },
+    {
+      "l_code": "L-249",
+      "category": "portfolio_weighting_ensemble",
+      "title": "Regime-conditional ratio potential vs fixed-ratio Harvey trade-off",
+      "lesson_text": "Return-blend ensemble에서 regime-conditional ratio(BULL 40/60, NORMAL 50/50, CAUTION 65/35, CRISIS 75/25)가 fixed ratio 대비 full SR 개선은 제한적(1.2306 vs 1.2219 = +0.7%), MDD 개선은 -1pp, CRISIS SR는 오히려 하락(2.460 vs 2.586). Harvey Full도 3.068 < 3.082. 본 case 이유: regime 구분 기간 비율(BULL 78.5% / NORMAL 14.2% / CAUTION 6.1% / CRISIS 1.2%)이 극도로 unbalanced → crisis-specific weight 변경이 Full 성과에 거의 영향 없음. 권장: regime-conditional ratio는 (1) regime 분포가 balanced (각 25% 이상), (2) regime sample 240m 이상, (3) within-regime alpha signature가 상이할 때만 활용. 본 case 모두 불만족.",
+      "trail": "standard",
+      "scope": "Blender regime-conditional allocation decision",
+      "core_reference": "Blitz & Van Vliet (2008) 'Tactical Asset Allocation' JPM + Ang & Timmermann (2012) 'Regime Changes and Financial Markets' Annu. Rev. Financ. Econ. + L-241 regime matrix design",
+      "tags": ["REGIME_COND_RATIO", "REGIME_IMBALANCE", "FIXED_VS_DYNAMIC", "BULL_DOMINANCE_EFFECT"]
+    }
+  ],
+  "mega_sprint_final_roadmap": {
+    "current_phase_verdict": "PhaseEnsemble_Blender 종결 — FAIL with artifact breakthrough",
+    "achievements_preserved": [
+      "Mega 시리즈 최초 Full period Harvey 3.0 돌파 기록 (3.0821)",
+      "7-way comparison table 완성 (STR_1631/MEGA_01~05/ENS)",
+      "L-225/L-248/L-249 방법론 적립",
+      "AX-006 candidate 확정 증거 누적",
+      "Lockbox overfitting 감별 프레임워크 구축"
+    ],
+    "admission_path_closure": "STR_1631 family 단독 sprint로는 PG1 admission 불가. Family saturation + TDC 구조적 제약.",
+    "recommended_next_sprint_direction": [
+      "Direction_A: 이종 family blender — STR_1631_SYN_05 (earnings consensus) × STR_1656_MLRA (ML residual) × Risk_Engine_Defense 3-way ensemble 설계. TDC ≤ 0.40 만족 우선.",
+      "Direction_B: Barroso & Santa-Clara (2015) risk-managed overlay 단독 path. MEGA_01 CRISIS SR 6.2 patient 유지하며 MDD 완화.",
+      "Direction_C: STR_1661 XGB_GPU V2(현 S2 profiling 중) 합류 후 ensemble pool 확장. ML residual family와 consensus family 간 TDC 측정 필수.",
+      "Direction_D: STR_1679v3 (H_1682 Slot A Defense Q25+R16) 편입 후 Defense axis 강화. Pre-LB Harvey 3.0 달성 재도전."
+    ],
+    "closure_recommendation": "Q-Lead는 MEGA Sprint를 'Harvey 3.0 상징적 돌파 + artifact 증거 축적 + L-225/248/249 적립'으로 공식 종결. PG1 admission은 이종 family blender 도전으로 이관.",
+    "symbolic_preservation": "MEGA_ENS 60:40 기록은 qepm registry에 'family_1_peak_attempt'로 보존하되 PG1 편입 아님 명시."
+  },
+  "statistical_defense_summary": {
+    "harvey_t_full": 3.0821,
+    "harvey_t_prelb": 2.3853,
+    "harvey_verdict_judge": "ARTIFACT — Pre-LB 기준 적용 시 FAIL",
+    "dsr_full": 8.6161,
+    "dsr_prelb": 5.3342,
+    "dsr_significant": true,
+    "dsr_caveat": "DSR은 SR 변동성 기반. Harvey FF5 factor adjustment와 교차 검증 필요. Harvey artifact 시 DSR 단독 PASS 의미 약화.",
+    "harvey_liu_zhu_multiwindow_judgment": "본 case는 Harvey-Liu-Zhu의 다중검정 보정 정신(robust signal across subperiods)에 정면으로 배치. Pre-LB 2.385 FAIL 기록 보존 필수.",
+    "rationalization_detection_scan": "Blender ensemble_config.json 및 backtest_result.json 전수 검토 결과 '영향 미미', '관행적 허용', '보수적이면 괜찮다' 표현 부재. 합리화 언어 미발견."
+  },
+  "pit_final_verdict": "PASS_WITH_NOTES — C1-C15 전수 PASS. 신규 look-ahead 없음. Lockbox lookahead 직접 증거 없으나 구조적 overfitting MEDIUM-HIGH.",
+  "judge_signature": "Judge Opus-4.7 — strict auditor mode, Lockbox independent access, AX-006 candidate activation",
+  "final_recommendation": "DEFER PG1 admission. Mega Sprint 공식 종결 + 이종 family blender sprint 이관."
+}
