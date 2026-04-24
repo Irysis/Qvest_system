@@ -576,32 +576,63 @@ load_fred_daily_wide <- function() {
 #------------------------------------------------------------------------------
 
 compute_fred_mrs_daily <- function(fred_dt) {
+  # v2.1 (2026-04-24): threshold → continuous normalized composite
+  # 이전 공식은 VIX>20/30 step → low-stress 환경에서 항상 0.
+  # continuous min-max 정규화 + weighted sum → 항상 non-zero signal.
   if (nrow(fred_dt) == 0) {
     return(data.table(Date = as.Date(character(0)), FRED_MRS = numeric(0)))
   }
   dt <- copy(fred_dt)
-  dt[, FRED_MRS := 0]
 
-  if ("VIX" %in% names(dt)) {
-    dt[, FRED_MRS := FRED_MRS +
-          fifelse(!is.na(VIX) & VIX > 30, 20,
-            fifelse(!is.na(VIX) & VIX > 20, 10, 0))]
+  # Normalizer: 값 → [0, 1] (pmin/pmax clip)
+  .norm <- function(x, low, high) {
+    pmax(0, pmin(1, (x - low) / (high - low)))
   }
-  if ("Term_Spread" %in% names(dt)) {
-    dt[, FRED_MRS := FRED_MRS +
-          fifelse(!is.na(Term_Spread) & Term_Spread < 0, 15, 0)]
-  }
-  if ("HY_Spread" %in% names(dt)) {
-    dt[, FRED_MRS := FRED_MRS +
-          fifelse(!is.na(HY_Spread) & HY_Spread > 5.0, 15, 0)]
-  }
-  # 전 series NA 행은 MRS NA 로 표식 (graceful degrade)
-  core <- intersect(c("VIX", "Term_Spread", "HY_Spread"), names(dt))
+
+  # 각 지표 component 0~1 (stress 방향)
+  dt[, vix_c    := if ("VIX" %in% names(dt))
+                      .norm(VIX, low = 12, high = 40) else NA_real_]
+  dt[, hy_c     := if ("HY_Spread" %in% names(dt))
+                      .norm(HY_Spread, low = 2.0, high = 8.0) else NA_real_]
+  dt[, term_c   := if ("Term_Spread" %in% names(dt))
+                      .norm(0.5 - Term_Spread, low = 0, high = 2) else NA_real_]
+  dt[, ffr_c    := if ("Fed_Funds_Rate" %in% names(dt))
+                      .norm(Fed_Funds_Rate, low = 2, high = 6) else NA_real_]
+  dt[, bbb_c    := if ("BBB_Spread" %in% names(dt))
+                      .norm(BBB_Spread, low = 1.0, high = 4.0) else NA_real_]
+  dt[, nfci_c   := if ("Chi_Fin_Cond" %in% names(dt))
+                      .norm(Chi_Fin_Cond, low = -0.5, high = 1.5) else NA_real_]
+
+  # 가중 합 (core 3 + aux 3 = max 100 scale)
+  # VIX 25 / HY 25 / Term 15 / FFR 10 / BBB 15 / NFCI 10
+  dt[, FRED_MRS := 0]
+  dt[!is.na(vix_c),  FRED_MRS := FRED_MRS + 25 * vix_c]
+  dt[!is.na(hy_c),   FRED_MRS := FRED_MRS + 25 * hy_c]
+  dt[!is.na(term_c), FRED_MRS := FRED_MRS + 15 * term_c]
+  dt[!is.na(ffr_c),  FRED_MRS := FRED_MRS + 10 * ffr_c]
+  dt[!is.na(bbb_c),  FRED_MRS := FRED_MRS + 15 * bbb_c]
+  dt[!is.na(nfci_c), FRED_MRS := FRED_MRS + 10 * nfci_c]
+
+  # Coverage scaling: available weight가 100 미만이면 비율 조정 (항상 0~100 scale)
+  dt[, avail_w := (!is.na(vix_c))*25 + (!is.na(hy_c))*25 + (!is.na(term_c))*15 +
+                   (!is.na(ffr_c))*10 + (!is.na(bbb_c))*15 + (!is.na(nfci_c))*10]
+  dt[avail_w > 0, FRED_MRS := FRED_MRS * (100 / avail_w)]
+  dt[avail_w == 0, FRED_MRS := NA_real_]
+  dt[, FRED_MRS := pmax(0, pmin(100, FRED_MRS))]
+
+  # 전 6 series NA면 NA 유지 (graceful degrade)
+  core <- intersect(c("VIX", "HY_Spread", "Term_Spread",
+                       "Fed_Funds_Rate", "BBB_Spread", "Chi_Fin_Cond"),
+                     names(dt))
   if (length(core) > 0) {
     dt[, .all_na := Reduce(`&`, lapply(.SD, is.na)), .SDcols = core]
     dt[.all_na == TRUE, FRED_MRS := NA_real_]
     dt[, .all_na := NULL]
   }
+
+  # 내부 helper 컬럼 cleanup
+  dt[, c("vix_c","hy_c","term_c","ffr_c","bbb_c","nfci_c","avail_w") := NULL]
+
   dt[, .(Date, FRED_MRS)]
 }
 
