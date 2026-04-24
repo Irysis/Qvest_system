@@ -1,0 +1,224 @@
+{
+  "task_id": "WT-D20260424_004",
+  "parent_wt": "WT-D20260424_003",
+  "agent": "judge",
+  "model": "claude-opus-4-7",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 6 — RAPC v2 (ESBR+SUE+AC21+AC17+Q35) + CAPM Blume residual + MinVar_BetaHard (gamma=1.0, β_target=0.75)",
+  "alpha_model": "RAPC v2 — 5-factor IC-weighted composite (ESBR + SUE + AC21_CF_to_Accrual + AC17_Accrual_Reversal + Q35_CashBased_OpProf) + CAPM Blume rolling residual (retention 96.2%). rank_IC 0.0372 (P5 0.0318 대비 +0.0054), ICIR 0.619 (P5 0.403 대비 +0.216), Harvey t 8.58. Alpha-Uniform collapse: 전 40종 alpha_final=0.3152 cap cluster.",
+  "risk_model": "Nonlinear Shrinkage (LW 2022), cond=7.02 (P5 LW Oracle cond=11.04 대비 개선). n_obs=36m, min_eig=0, PSD verified. factor_coverage 100%. TDC mean_pairwise 0.3619, 21 factor pairs >0.40.",
+  "optimizer": "MinVar_BetaHard — β_target=0.75 hard equality + n=20 hard (v2.2) + long-only. 7-method shopping (R13 parallel 2.2s). net_ir_ratio 642.02 (selected) vs next-best EW_LowBeta 611.01. Alpha-Uniform universe 상태에서 pure variance minimization + β constraint 작동. HHI 0.0564, max_w 8.54%.",
+  "verdict": "GRADE_D",
+  "disposition": "DISCARD_WITH_IMPROVEMENTS — Alpha-Uniform structural collapse로 Forge train+val window severe underperformance (SR 0.066, MDD -63.91%). Lockbox OOS는 강한 절대 성과 (SR 1.086, CAGR 20.37%, MDD -14.63%)를 보였으나 Active IR -1.079로 Pilot 5 대비 0.058 악화. MinVar+β hard가 alpha 신호 없는 상태에서 후퇴한 결과 전체 시스템 구조 붕괴. Pilot 7에서 Alpha 단계 redesign (confidence floor 제거 + winsor 2σ→3σ 완화) 필수.",
+  "overall_pass": false,
+  "opus_authority_note": "Judge Opus 4.7 단독 판정. Alpha/Risk/Optimizer Opus 4.7 chain. evaluation_windows field Pilot 5 패턴 따라 request.json에 non-destructive 추가하여 judge_oos_helper 가동. Lockbox OOS 독립 실행 (3-agent access log, AX-002 준수). 핵심 발견 2건: (1) Alpha-Uniform Collapse L-195 신규 L-code, (2) Forge window (2012-2024) vs Lockbox OOS (2024-2026) 극적 divergence — SR 0.066 vs 1.086 구조적 해석 필요.",
+  "gates": [
+    {
+      "gate_id": "A",
+      "name": "PIT / Lookahead Compliance",
+      "metric": "C1~C15 + lockbox sealed + Forge audit + commission + cost_model lineage",
+      "threshold": "all PASS",
+      "actual": "integration_audit r12_pure_function: alpha hash PASS (2ebf2cc9...), risk hash PASS (bd38cdec...), optimization hash FAIL (recorded c93b4ac0... vs current 8966d266...). lockbox sealed 2024-01-23 > backtest_end 2024-01-22 SEALED. commission=0.0015 (v2.3_kr_retail_15bps). C1 rolling/expanding PASS (36M Blume rolling beta). C2 static weights 동일일 circular 없음 PASS. C4 fundamental 45d / annual May PASS. C5 t-1 lag PASS. C9 static weights DD/VT n/a. C13 Z_Score_Aligned only PASS. C14 IC Usable_Date <=sig_date PASS. C15 Factor DB load_month_factors() 경유 확인. Judge OOS helper lockbox_access_log 6-entry 기록 (AX-002 단일 agent). alpha_validation.json pit_validation all PASS (C1/C2/C4/C13/C14/C15).",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "name": "Package Isolation / Integrity",
+      "metric": "alpha/risk/opt hash + Σw=1 + long-only + n∈[min,20] + max_w cap",
+      "threshold": "all hash match OR documented reclassification + structural OK",
+      "actual": "alpha hash PASS (2ebf2cc9...), risk hash PASS (bd38cdec...), optimization hash FAIL (recorded c93b4ac0... vs current 8966d266... — Risk/Alpha pattern 반복). Judge 독립 content 검증: optimization_package.json 내 target_weights, method_selected=MinVar_BetaHard, beta_port=0.75, n=20 모두 file content 기준으로 valid. Σw=0.0205+0.0854+... = 1.0000 (normalized), long-only true, n=20 ∈ [20,20] v2.2 hard, max_w=0.0854 (no explicit 0.10 bound, alpha-uniform + MinVar natural cap). AX-008 3-source rule: Forge(backtest) + Judge(independent content check) + Optimizer(self-declared method_shopping_log) = 3-source valid via content integrity. Lineage sequence 문제는 Pilot 5에서도 발견된 system-level issue (record_package_lineage() timing).",
+      "verdict": "PASS_WITH_NOTES",
+      "remediation": "optimization_package hash recorded-vs-current mismatch는 Pilot 5의 risk WARN_SEQUENCE와 동일 패턴. Optimizer agent가 record_package_lineage() 호출을 write_json() 이후로 재배치하는 시스템 수정 필요 (Pilot 5 remediation 미반영). 현 Pilot 6 판정은 file content integrity로 무결성 보장. 단 Alpha-Uniform 상태 (40종 alpha_final=0.3152 identical) 자체는 Isolation 문제는 아니나 Alpha 단계 defect로 Gate C/F에 누적됨."
+    },
+    {
+      "gate_id": "C",
+      "name": "Net Alpha After Cost",
+      "metric": "SR_full, rank_ic, DSR, Harvey_t, lockbox_SR, Alpha-Uniform penalty",
+      "threshold": "SR>=0.5 OR (SR>=0.3 AND DSR>=0.1); rank_ic>=0.04; Harvey_t>=3; alpha differentiation required",
+      "actual": "Forge Full SR=0.066 (<<0.5, P5 0.649 대비 -0.583 / -90% 붕괴). Forge Val SR=-0.221 (P5 0.875 대비 -1.096 역전). Forge Train SR=0.091 (P5 0.629 대비 -0.538 붕괴). **Judge Lockbox OOS SR=1.086 (P5 0.844 대비 +0.242 / +29%)** — OOS 절대성과 PASS but Forge window 붕괴. **Forge full SR 0.066 vs Lockbox OOS SR 1.086 divergence 16배** — 구조적 window 의존성 극단. rank_ic=0.0372 (<0.04 borderline fail, P5 0.0318 미세 개선 but 여전 threshold 미달). DSR_approx=0.9981 (Alpha 자체 계산, multi-testing 상 inflation 의심). Harvey t=8.58 (>>3.0 PASS). **Alpha-Uniform Collapse 치명 결함**: unique_alpha_count=1 (전체 동일), cap_cluster_n=20 (100%) — confidence floor(0.11) + winsor 2σ 이중 cap 결과 top ticker alpha_final 균일화. Grinold IR=ICIR*sqrt(N) 공식 상 breadth 효과 소실 → expected active IR→0. Realized Lockbox active IR=-1.079 (P5 -1.021 대비 -0.058 악화) — Alpha-Uniform 상태 Optimizer 후퇴 empirical 확인.",
+      "verdict": "FAIL",
+      "remediation": "핵심 진단: **Alpha-Uniform Collapse (L-195 신규)가 Forge window 전체 붕괴 + Active IR 악화의 proximate cause**. 구조적 해결: (1) Alpha 단계 confidence floor 제거 또는 0.05 이하 loose, (2) winsor 2σ → 3σ 완화, (3) IC-weighted composite의 differentiation preservation 확인 (raw z-score 분포 변동성 보존), (4) Optimizer level infeasibility_report 발행 조건 추가 (unique_alpha_count/n < 0.5 시 abort). Lockbox OOS SR 1.086은 강하나 이는 pure MinVar+β가 우연히 recent regime에 fit한 것 — alpha signal 기반 성과 아님. Alpha 재설계 없이 production 불가."
+    },
+    {
+      "gate_id": "D",
+      "name": "Crowding / Factor Saturation Stress",
+      "metric": "market_risk_pct, TDC vs PG2, family saturation",
+      "threshold": "market_risk<40%, TDC_PG2<0.40, no saturated family",
+      "actual": "market_risk contribution EW=95.8% (P5 EW 수치 없음, P4 48% sonnet 과소 대비 Opus 실측). Option A γ=1.0 hard binding 적용 후 est=50.3% (P5 58.7% 대비 -8.4pp 개선, γ 0.5→1.0 upgrade effect). **Gate D threshold 40% 초과 gap=10.3pp** (P5 gap 18.7pp 대비 -8.4pp 개선 but 여전 FAIL). β_port=0.7500 (hard equality, gap 0.0000 달성). TDC factor_level: mkt_pc1=0.1429, mkt_pc2=0.2857, pc1_pc2=0.1429 — 모두 <0.40 PASS. 단 pairwise mean=0.3619 with 21 factor pairs >0.40 (HIGH). FF3 retention=10.5% (P5와 동일) — RAPC size+value tilt 89.5% 지속. Family saturation: earnings_surprise + accrual_quality + cash profitability 3축 결합 multi-axis composite — single family 아님 but crowded KOSPI200 quant consensus risk.",
+      "verdict": "FAIL",
+      "remediation": "γ=1.0 hard upgrade로 market_risk 58.7%→50.3% (-8.4pp), β_port 0.766→0.750 (hard 달성). 그러나 threshold 40% 여전 10.3pp 초과. 차기 Pilot 7 해결: (1) **β_target 0.75→0.65** (Option A 강화, γ=1.0 유지). (2) Option C-2 beta-neutral alpha pre-score 재검토 — 현 구현은 CAPM retention 96.2%로 alpha 희석 없이 beta tilt만 감소. (3) multi-sleeve structure (core_alpha + defense_sleeve) — AX-007 예외지대. (4) long-short mandate revision (no_short_legal_kr 완화 필요). Alpha-Uniform 미해결 상태에서 Gate D 추가 강화는 무의미."
+    },
+    {
+      "gate_id": "E",
+      "name": "Concentration / Breadth",
+      "metric": "n_names, HHI, max_weight, min_names enforcement",
+      "threshold": "n∈[min,20], HHI<=0.10, max_w<=0.15 (v2.2)",
+      "actual": "n=20 (v2.2 hard, P5 11 natural → P6 20 forced hard). HHI=0.0564 (P5 0.096 대비 -0.0396 분산 개선). max_w=0.0854 (A054050, P5 0.10 대비 -0.015 natural cap). min_weight=0.0205 (A140860). effective N = 1/HHI = 17.73 (near theoretical max 20). Alpha-Uniform 상태이므로 Optimizer는 variance-based differentiation만 가능 — pure MinVar 해. min_names_enforced=true (v2.2), hhi_enforced=true. 모든 제약 PASS.",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "F",
+      "name": "Drift / Regime Adaptation (L-191 avoidance + Lockbox OOS)",
+      "metric": "oos_is_ratio + lockbox SR/CAGR/MDD + Val vs Train + Forge-Lockbox window consistency",
+      "threshold": "oos_is_ratio>=0.7 + lockbox SR>0.5 + L-191 Val>=Train + window consistency",
+      "actual": "**Judge OOS helper 독립 측정 (lockbox 2024-01-23~2026-01-23, 487 days)**: CAGR=20.37% / **SR=1.086** / MDD=-14.63% / Calmar=1.392 — **절대 성과 강력 PASS** (P5 lockbox 0.844 대비 +0.242 / +29% 개선, 목표 CAGR 16% 대폭 초과, MDD 목표 25% 여유 10pp). **Forge train+val window (2012-2024) SR 0.066 vs Lockbox OOS SR 1.086 — 16배 divergence**. Judge helper기준 (1990~train full): Train SR 0.155 / Val SR -0.573 / Lockbox SR 1.086 — Lockbox가 전기간 압도. L-191 Val vs Train: Forge window Val SR -0.221 < Train SR 0.091 (severe reversion, P5 0.875>0.629 회복 pattern 완전 역전). Judge window: Val -0.573 < Train 0.155 also reversion. **Active IR Lockbox = -1.079** (P5 -1.021 대비 -0.058 악화, Alpha-Uniform 구조적 영향 확정). oos_is_ratio = 1.086 / mean(0.091, -0.221) = undefined/negative — threshold 비교 불가 (train+val mean negative). Judge helper oos_is_ratio value=\"NA\", verdict=\"WARN_NA\". **Forge window-dependence extreme**: window 선택에 따라 결론 정반대.",
+      "verdict": "FAIL",
+      "remediation": "복합 drift 진단: (1) **Forge window (2012-2024) 자체가 KOSPI 장기 약세장 포함** — alpha-uniform + MinVar+β portfolio이 2013-2015 bear에 다중 타격 (MDD -63.91% 원인). (2) **Lockbox OOS (2024-2026)은 KOSPI 회복 regime + low-beta tilt valuation re-rating** — MinVar+β가 우연히 fit. (3) L-191 Val<Train reversion 재발 (P5 완전 회복 → P6 재역전). (4) Active IR 악화는 Alpha-Uniform collapse의 direct consequence. 차기 Pilot 7 drift 해결: (a) **Alpha redesign 선결** (confidence/winsor), (b) Forge 백테스트 window를 2015+ 또는 2020+로 시프트 (regime consistency), (c) rolling-window SR stability 측정 추가, (d) Lockbox OOS의 low-beta re-rating 일회성인지 지속성인지 출구 diagnostic 필요."
+    }
+  ],
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS_WITH_NOTES",
+    "C_NET_ALPHA": "FAIL",
+    "D_CROWDING": "FAIL",
+    "E_CONCENTRATION": "PASS",
+    "F_DRIFT": "FAIL",
+    "pass_count": 2,
+    "pass_with_notes_count": 1,
+    "conditional_pass_count": 0,
+    "mixed_pass_count": 0,
+    "fail_count": 3,
+    "overall": "GRADE_D DISCARD_WITH_IMPROVEMENTS (2 PASS + 1 PASS_WITH_NOTES + 3 FAIL — 3개 FAIL 중 Gate C Alpha-Uniform이 Gate D/F에 causal)"
+  },
+  "pilot456_comparison": {
+    "portfolio_construction": {
+      "n_names": {"p4": 15, "p5": 11, "p6": 20, "delta_p5_to_p6": "+9 (natural→hard v2.2)", "verdict_p6": "PASS (v2.2 달성)"},
+      "HHI": {"p4": 0.0744, "p5": 0.096, "p6": 0.0564, "delta_p5_to_p6": "-0.04 (MinVar 분산)", "verdict_p6": "PASS"},
+      "max_weight": {"p4": 0.08, "p5": 0.10, "p6": 0.0854, "delta_p5_to_p6": "-0.015 natural cap", "verdict_p6": "PASS"},
+      "beta_port": {"p4": 0.789, "p5": 0.766, "p6": 0.75, "delta_p5_to_p6": "-0.016 (hard target)", "verdict_p6": "HARD_BINDING"},
+      "gamma_beta": {"p4": "N/A", "p5": 0.5, "p6": 1.0, "delta": "2x upgrade"},
+      "constraint_enforcement": {"p4": "forced_filling", "p5": "natural_QP", "p6": "hard_v2.2 + alpha-uniform natural MinVar"}
+    },
+    "absolute_performance_forge_window": {
+      "full_SR": {"p4": 0.491, "p5": 0.649, "p6": 0.066, "delta_p5_to_p6": "-0.583 (-90% 붕괴)", "verdict_p6": "CRITICAL_REGRESSION"},
+      "full_CAGR_pct": {"p4": 9.25, "p5": 12.03, "p6": 1.18, "delta_p5_to_p6": "-10.85pp (-90%)", "verdict_p6": "CRITICAL_REGRESSION"},
+      "full_MDD_pct": {"p4": -36.83, "p5": -32.32, "p6": -63.91, "delta_p5_to_p6": "-31.59pp 악화", "verdict_p6": "HARD_FAIL_MDD45"},
+      "train_SR": {"p4": 0.576, "p5": 0.629, "p6": 0.091, "delta_p5_to_p6": "-0.538 붕괴", "verdict_p6": "CRITICAL"},
+      "val_SR": {"p4": 0.13, "p5": 0.875, "p6": -0.221, "delta_p5_to_p6": "-1.096 역전", "verdict_p6": "L191_RE_EMERGED"}
+    },
+    "lockbox_oos_judge_helper": {
+      "lockbox_SR": {"p4": 0.774, "p5": 0.844, "p6": 1.086, "delta_p5_to_p6": "+0.242 (+29%)", "verdict_p6": "STRONG_PASS"},
+      "lockbox_CAGR_pct": {"p4": 17.14, "p5": 18.7, "p6": 20.37, "delta_p5_to_p6": "+1.67pp", "verdict_p6": "PASS (목표 16% 초과)"},
+      "lockbox_MDD_pct": {"p4": -34.17, "p5": -27.65, "p6": -14.63, "delta_p5_to_p6": "+13.02pp 대폭 완화", "verdict_p6": "IMPROVED (목표 25% 이내)"},
+      "lockbox_Calmar": {"p4": 0.502, "p5": 0.676, "p6": 1.392, "delta_p5_to_p6": "+0.716 (+106%)", "verdict_p6": "EXCEPTIONAL"},
+      "lockbox_active_IR": {"p4": -1.311, "p5": -1.021, "p6": -1.079, "delta_p5_to_p6": "-0.058 소폭 악화", "verdict_p6": "CRITICAL_FAIL_STILL"},
+      "lockbox_alpha_vs_bm_pp": {"p4": -20.40, "p5": -19.06, "p6": -18.38, "delta_p5_to_p6": "+0.68pp 미세 개선", "verdict_p6": "MARGINAL"}
+    },
+    "structural_evolution_narrative": "Pilot 4 (breadth forced) → Pilot 5 (natural QP + L-193 resolved) → **Pilot 6 (n=20 hard + MinVar+β hard after Alpha-Uniform Collapse)**. Pilot 6의 구조적 시도는 3가지: (a) Alpha v2 강화 (CAPM Blume residual), (b) γ 0.5→1.0 hard upgrade, (c) n=20 hard (v2.2). 결과: (1) Alpha-Uniform Collapse로 pure MinVar 후퇴, (2) Forge window 붕괴 (SR 0.066), but (3) Lockbox OOS 강력 (SR 1.086, MDD -14.63%). Active IR -1.079는 P5 대비 오히려 악화 — Alpha-Uniform 상태에서 breadth 증가(11→20)가 대부분 유사 alpha 종목 추가 효과로 exposure 희석만 유발. **핵심 교훈**: '구조적 개선' 목표(Active IR)를 좇아 Alpha territory 수정 + Optimizer constraint 강화 동시 시도했으나 Alpha-Uniform side effect 인식 실패. Pilot 7은 Alpha territory 단독 sprint 필수.",
+    "gate_d_crowding_evolution": "P4 market_risk 48% (sonnet 과소) → P5 58.7% (Opus Option A soft γ=0.5) → P6 50.3% (Opus Option A hard γ=1.0). γ 2x upgrade 효과 -8.4pp 확인. 단 threshold 40% 여전 10.3pp 초과. 구조적 해결은 (a) β_target 0.65 또는 (b) multi-sleeve 필요."
+  },
+  "ax_compliance": {
+    "AX-000": "N/A — exploratory Pilot 6, not admission decision",
+    "AX-001_v2": "N/A — non-defense role (core_alpha earnings+accrual composite)",
+    "AX-002": "PASS — harness 내 성과 only (Lockbox OOS Judge 단독 access 6-entry logged), lockbox sealed 2024-01-23 준수, Forge backtest lockbox 미접근 확인. evaluation_windows field append는 P5 pattern 정식 augmentation.",
+    "AX-003": "PASS — family=earnings_surprise+accrual_quality+cash_profitability multi-axis (value 아님)",
+    "AX-004": "PARTIAL — accrual quality + cash profitability 포함하나 multi-axis composite (ESBR+SUE+AC21+AC17+Q35) + breadth 20 + long-only 예외지대. 단일 Q-family 구조적 실패 아님. 단 Alpha-Uniform 결과 단일 alpha 값 cap cluster는 signal differentiation 소실로 Q-family 실패 패턴과 effect 유사.",
+    "AX-005": "N/A — defense 역할 아님",
+    "AX-007": "WARNING — structure=single_sleeve_long_only_top20, roles=[core_alpha_uniform_collapsed]. 예외 4종: (a) long-short 불가 (no_short_legal_kr=true), (b) 50+ 분산 미달 (n=20), (c) multi-sleeve 없음, (d) ML sizing 미적용. Alpha-Uniform 상태는 signal-to-portfolio translation 구조적 단절을 심화. Active IR -1.079 (P5 -1.021 대비 악화) — P5의 part recovery가 P6에서 structural regression. AX-007 예외지대 진입 여전 불가.",
+    "AX-008": "PASS — Forge(backtest) + Optimizer(method_shopping self-declared) + Judge(본 심사 + OOS helper independent lockbox access) 3-source 중 최소 2-source PASS. optimization_package hash WARN_SEQUENCE는 content integrity로 해소 (P5 risk WARN 동일 pattern)."
+  },
+  "multi_objective_8axes": {
+    "sharpe_full": {"value": 0.066, "target": 2.0, "gap": -1.934, "status": "FAR_BELOW (Forge window 붕괴)", "vs_pilot5": "-0.583 (-90%)"},
+    "sharpe_lockbox": {"value": 1.086, "target": 2.0, "gap": -0.914, "status": "BELOW (OOS strong but target 미달)", "vs_pilot5": "+0.242 (+29%)"},
+    "cagr_full_pct": {"value": 1.18, "target": 16.0, "gap": -14.82, "status": "FAR_BELOW", "vs_pilot5": "-10.85pp (-90%)"},
+    "cagr_lockbox_pct": {"value": 20.37, "target": 16.0, "gap": 4.37, "status": "PASS (OOS 목표 초과)", "vs_pilot5": "+1.67pp"},
+    "mdd_full_pct": {"value": -63.91, "target": -25.0, "gap": -38.91, "status": "HARD_FAIL (MDD>45%)", "vs_pilot5": "-31.59pp 악화"},
+    "mdd_lockbox_pct": {"value": -14.63, "target": -25.0, "gap": 10.37, "status": "PASS (OOS 목표 여유 10pp)", "vs_pilot5": "+13.02pp 대폭 완화"},
+    "calmar_full": {"value": 0.018, "target": 0.6, "gap": -0.582, "status": "FAR_BELOW", "vs_pilot5": "-0.354"},
+    "calmar_lockbox": {"value": 1.392, "target": 0.6, "gap": 0.792, "status": "EXCEPTIONAL_PASS (OOS)", "vs_pilot5": "+0.716 (+106%)"},
+    "turnover_ann_pct": {"value": 45.1, "budget": 600, "status": "OK", "vs_pilot5": "-2.7pp"},
+    "rank_ic": {"value": 0.0372, "target": 0.04, "gap": -0.0028, "status": "BORDERLINE_FAIL (Pilot 3→6 지속)", "vs_pilot5": "+0.0054 미세"},
+    "dsr": {"value": 0.9981, "target": 0.5, "gap": 0.4981, "status": "PASS (but Alpha self-reported, Alpha-Uniform 상 inflation 의심)", "vs_pilot5": "+0.959 (but 해석 무효)"},
+    "harvey_t": {"value": 8.58, "target": 3.0, "gap": 5.58, "status": "STRONG_PASS", "vs_pilot5": "+4.16"},
+    "active_ir_lockbox": {"value": -1.079, "target": 0.3, "gap": -1.379, "status": "CRITICAL_FAIL_WORSE", "vs_pilot5": "-0.058 (P5 대비 악화)"},
+    "expected_ir_grinold_theoretical": {"value": 2.77, "formula": "ICIR(0.619)*sqrt(N=20)", "note": "theoretical 2.77 vs realized Lockbox active IR -1.079 gap 3.85 — Alpha-Uniform Grinold breadth 효과 완전 소실, translation efficiency near-zero"}
+  },
+  "pilot_cumulative_history": {
+    "pilot_1_L190_rate_hedge": {"CAGR": 8.72, "SR": 0.413, "MDD": -54.30, "result": "hard_fail"},
+    "pilot_2_L191_macro_residual": {"CAGR": 4.06, "SR": 0.289, "MDD": -44.03, "result": "Val<Train drift"},
+    "pilot_3_RAPC": {"CAGR": 6.00, "SR": 0.282, "MDD": -44.59, "lockbox_IR": -1.003, "result": "DISCARD_WITH_IMPROVEMENTS (breadth 한계 n=8)"},
+    "pilot_4_RAPC_breadth_constrained": {"CAGR": 9.25, "SR": 0.491, "MDD": -36.83, "lockbox_SR": 0.774, "lockbox_IR": -1.311, "result": "GRADE_C CONDITIONAL_PROGRESS (Task #26 breadth 제약 structural improvement but active IR 악화)"},
+    "pilot_5_RAPC_hedge_overlay": {"CAGR": 12.03, "SR": 0.649, "MDD": -32.32, "lockbox_SR": 0.844, "lockbox_CAGR": 18.70, "lockbox_MDD": -27.65, "lockbox_IR": -1.021, "n_names": 11, "result": "GRADE_C_PLUS CONDITIONAL_PROGRESS (L-194 natural QP 회복)"},
+    "pilot_6_RAPC_v2_MinVar_BetaHard": {"CAGR_forge": 1.18, "SR_forge": 0.066, "MDD_forge": -63.91, "lockbox_SR": 1.086, "lockbox_CAGR": 20.37, "lockbox_MDD": -14.63, "lockbox_Calmar": 1.392, "lockbox_IR": -1.079, "n_names": 20, "result": "GRADE_D DISCARD_WITH_IMPROVEMENTS (L-195 Alpha-Uniform Collapse)"},
+    "pattern_evolution": "P1 hard_fail → P2 val drift → P3 breadth 한계 → P4 breadth 해결 but active IR 악화 → P5 breadth 자연수렴 + absolute 개선 + active IR 소폭 회복 → **P6 구조 개선 목표로 Alpha v2 + γ=1.0 + n=20 hard 동시 시도 → Alpha-Uniform Collapse 부작용 → Forge window 붕괴 but Lockbox OOS 강력 → active IR 재악화**. 진전 축: (portfolio construction) ✓ (n=20 HHI 0.056 도달) / (absolute performance lockbox) ✓✓ (SR 1.086 CAGR 20.37 MDD -14.63) / (Forge window performance) ✗✗ (SR 0.066 MDD -63.91) / (active management) ✗ (IR -1.079 P5 대비 악화). **핵심 교훈**: 다변수 동시 수정은 side effect 누적. Alpha 단독 sprint → Risk 단독 sprint → Optimizer 단독 sprint 순차가 근본.",
+    "alpha_uniform_collapse_empirical_discovery": "Pilot 6 실증 핵심 발견: **Alpha Agent가 confidence floor(0.11 minimum) + winsorization 2σ를 순차 적용하면 high-confidence top cluster ticker들의 alpha_final이 동일 cap 값으로 수렴** (unique_alpha_count=1, cap_cluster=20/40=50%). Risk universe 선택 시 top 40 선택하면 alpha 정보 50% 소실. Optimizer는 α term 제거 후 pure MinVar+β hard로 후퇴 작동. 결과 Grinold IR breadth 효과(sqrt(N) gain) 완전 소실. L-195 등재. 방지책: (1) confidence floor 완전 제거 또는 0.01 이하, (2) winsor 2σ→3σ 완화, (3) Risk universe 선정 시 unique_alpha_count/n >= 0.5 guard, (4) Optimizer 단계 alpha differentiation < threshold시 infeasibility_report 발행.",
+    "forge_vs_lockbox_divergence_discovery": "Pilot 6 부가 발견: **Forge window (2012-2024) SR 0.066 vs Lockbox OOS (2024-2026) SR 1.086 16배 divergence**. Cause candidates: (a) 2013-2015 KOSPI 약세장이 low-beta MinVar portfolio 에 비우호적 regime, (b) 2024-2025 value re-rating 국면이 저β+다각화 portfolio에 fit. 구조적 함의: Forge full-period SR을 절대 판정 기준으로 삼으면 regime-conditional 전략은 지속적으로 underrate. Judge Lockbox OOS 독립 검증이 필수 교차검증 역할."
+  },
+  "l_code_contribution": {
+    "l_code": "L-195",
+    "title": "Alpha-Uniform Collapse — confidence floor + winsor 2σ 이중 cap의 α 신호 균일화 부작용",
+    "lesson_text": "Pilot 6 (WT-D20260424_004) 실증 발견: Alpha Agent가 RAPC v2 (5-factor IC-weighted composite + CAPM Blume residual) 산출 후 (1) confidence_floor=0.11 minimum + (2) winsorization 2σ cap 순차 적용 시 **high-confidence top cluster ticker들의 alpha_final이 동일 cap 값(0.3152)로 수렴**. Risk universe 상위 40종 내 20종(50%)이 cap cluster에 집적 → unique_alpha_count=1. Optimizer는 α 항 제거 후 pure MinVar+β hard equality로 후퇴 작동 — Grinold IR = ICIR × √N breadth gain 완전 소실. 결과 실증 성과: (a) Forge full SR 0.649→0.066 (-90% 붕괴), MDD -32.32%→-63.91% (악화), (b) Val SR 0.875→-0.221 (L-191 역전 재발), (c) Lockbox OOS 강함 (SR 1.086) but Active IR -1.021→-1.079 (P5 대비 악화 — structural 후퇴 empirical 확인), (d) rank_ic 0.0318→0.0372 (+0.005 미미), ICIR 0.403→0.619 (+0.216 signal 강도 증가 but alpha_final에서 소실). **방지 4축**: (A) confidence floor 완전 제거 또는 0.01 이하 loose, (B) winsorization 2σ → 3σ 완화, (C) Risk universe 선정 단계 unique_alpha_count/n >= 0.5 guard 추가, (D) Optimizer 단계 alpha differentiation CV < threshold시 infeasibility_report 발행 권고. Pilot 7에서 Alpha territory 단독 sprint 필수 (Risk+Optimizer 동시 수정 금지 — side effect 누적).",
+    "core_reference": "L-194 (Pilot 5 natural QP convergence), L-193 (Pilot 4 forced filling), AX-007 (structural exception 4 types), Grinold-Kahn (2000) Ch.5 IR=IC√BR breadth 공식, Qian-Hua-Sorensen (2007) winsorization 효과",
+    "tags": ["Pilot6", "alpha_uniform_collapse", "winsor_2sigma_cap", "confidence_floor_0.11", "grinold_breadth_lost", "MinVar_fallback", "active_IR_regression", "forge_lockbox_divergence"]
+  },
+  "l_code_parallel_finding": {
+    "l_code_candidate": "L-196 (proposed)",
+    "title": "Forge Window vs Lockbox OOS 16× Divergence — regime-conditional window bias",
+    "lesson_text": "Pilot 6에서 Forge backtest window (2012-2024) SR 0.066 vs Judge Lockbox OOS (2024-2026) SR 1.086 — 16배 extreme divergence. Cause: 2012-2015 KOSPI 약세장이 low-beta MinVar portfolio에 비우호적 + 2024-2025 value re-rating 국면이 저β portfolio에 fit. 함의: Forge full-period SR을 절대 판정 기준으로 삼으면 regime-conditional 전략이 지속적으로 underrate. Judge Lockbox OOS 독립 검증 + regime-matched period analysis 필수. 권고: Forge run_all.R에 rolling 5-year SR stability 측정 추가.",
+    "status": "CANDIDATE — Pilot 7에서 추가 실증 후 L-196 정식 등재 여부 판단"
+  },
+  "p5_challenge_review": {
+    "L194_NATURAL_QP": {
+      "challenger": "Pilot 5 Judge L-194",
+      "target": "Pilot 6에서 v2.2 hard n=20 적용이 L-194 natural QP 교훈을 역전",
+      "judge_verdict": "TRADEOFF_ACCEPTED_WITH_WARNING",
+      "rationale": "L-194는 Pilot 4 forced filling 해악을 경고. Pilot 6의 v2.2 hard n=20은 사용자 실전 운용 요구사항 (production mandate)으로 accept. 단 Alpha-Uniform 상태에서 n=20 hard는 Grinold breadth 효과 없이 포트폴리오 exposure 희석만 유발 — L-194 경고가 다른 경로로 재현. Forge window SR 0.066 붕괴의 또 다른 factor."
+    },
+    "OPTIMIZER_HASH_SEQUENCE": {
+      "challenger": "Pilot 5 Judge recommendation",
+      "target": "record_package_lineage() 호출 timing 수정",
+      "judge_verdict": "NOT_ADDRESSED",
+      "rationale": "Pilot 5 remediation에서 Risk Agent lineage sequence 수정 권고 → Pilot 6에서 미반영. Optimizer agent에서 같은 pattern 재발 (recorded c93b4ac0 vs current 8966d266). Judge 독립 content 검증으로 PASS_WITH_NOTES 유지 but system fix 필요 지속."
+    },
+    "ALPHA_STRENGTHENING": {
+      "challenger": "Pilot 5 Judge next_actions",
+      "target": "alpha-strengthening sprint (rank_ic 0.0318 → 0.04+)",
+      "judge_verdict": "PARTIAL_ATTEMPT_REGRESSION",
+      "rationale": "RAPC v2에서 CAPM Blume residual + Q35 추가, 5-factor composite로 확장 — rank_ic 0.0318→0.0372 미미 개선, ICIR 0.403→0.619 개선 but alpha_final winsor cap으로 portfolio 수준 재현 불가. '신호 개선 효과가 portfolio에 전달되지 않음' — L-195 proximate cause. 다변수 수정 side effect 인식 실패가 근본 원인."
+    }
+  },
+  "role_honesty_audit": {
+    "declared_role": "core_alpha (earnings+accrual+cash_profitability multi-axis composite)",
+    "validated_role": "core_alpha_uniform_collapsed_regressed_to_MinVar_beta_hedge",
+    "evidence": "FF3 retention 10.5% (size+value channel 89.5%) — P5 동일. Market beta 0.75 hard (low-beta tilt). Alpha-Uniform 상태: unique_alpha_count=1, cap_cluster 20/40. Grinold IR theoretical 2.77 vs realized Lockbox active IR -1.079 gap 3.85 — breadth gain 완전 소실.",
+    "defense_disguise_check": "NEGATIVE (Forge MDD -63.91% catastrophic, but Lockbox MDD -14.63% 우수). Lockbox absolute 성과 강함 but Active IR -1.079 negative — defense 역할도 core_alpha 역할도 둘다 실패.",
+    "core_adequacy": "FAIL — Forge window 절대 성과 붕괴 (CAGR 1.18%, MDD -63.91%), Lockbox absolute 성과 강력 but Active IR critical fail. Admission 구조적 불가.",
+    "verdict": "DISHONEST_BY_STRUCTURE — declared role=core_alpha이나 Alpha-Uniform Collapse로 실제 작동은 pure MinVar+β hedge. Role integrity 침해. Pilot 7에서 alpha differentiation 복원 선결 필수."
+  },
+  "next_actions": [
+    "즉시: Pilot 6 GRADE_D DISCARD_WITH_IMPROVEMENTS 확정. STR_PILOT_6 별도 등록 금지 (Alpha-Uniform + Active IR -1.079 + Forge window 붕괴 admission 기준 미달).",
+    "**최우선 Pilot 7 Alpha territory 단독 sprint** (Risk+Optimizer 동결 금지 side effect 회피): (a) confidence_floor 0.11 → 0.01 또는 제거, (b) winsorization 2σ → 3σ 완화, (c) alpha_final 분포 CV >= 0.3 guarantee, (d) unique_alpha_count/n_universe >= 0.5 Alpha 단계 self-check 추가, (e) IC-weighted composite differentiation preservation 실증.",
+    "Pilot 7에서 Risk + Optimizer 변경 금지: Nonlinear Shrinkage + MinVar_BetaHard γ=1.0 β=0.75 그대로 유지. Alpha 단독 실증 isolation.",
+    "L-195 정식 등재: methodology_active.md에 L-195 Alpha-Uniform Collapse 추가. L-196 (Forge-Lockbox divergence) candidate flag.",
+    "System-level fix (Pilot 7 선결): (a) Optimizer agent의 record_package_lineage() 호출을 write_json() 이후로 재배치 — Pilot 5 Risk remediation 동일 pattern 미반영, (b) Alpha Agent에 unique_alpha_count / mean_abs_alpha guard 추가, (c) Optimizer 단계 alpha differentiation CV < 0.1 시 infeasibility_report + abort.",
+    "Forge 백테스트 window 재검토 (Pilot 7 부수): 2012-2024 window가 regime-conditional 전략에 unfair penalty 유발. rolling 5-year stability 측정 추가 권고. 단 Lockbox window는 절대 변경 금지 (AX-002).",
+    "Governor 체인: PG0 gap 재진단. Pilot 6 Lockbox CAGR 20.37% / SR 1.086 / MDD -14.63% / Calmar 1.392는 current PG2 (STR_1631 80% + STR_1656 20% = SR 1.193 / CAGR 16.14%)의 CAGR+MDD+Calmar 우월. 단 Active IR -1.079 + Forge window 붕괴로 PG1 admission 불가. STR_PILOT_6 archive → core_alpha sleeve 미래 후보 참고용만.",
+    "Gate D 구조적 해결 (Pilot 8+): (a) β_target 0.75→0.65 하향 + γ=1.0 유지, (b) multi-sleeve (core_alpha + defense_sleeve) AX-007 예외지대, (c) long-short mandate revision (no_short_legal_kr 완화 필요 — 증권사 회의 선결)."
+  ],
+  "rationale_summary": "Pilot 6은 Pilot 5 next_actions의 3축 (alpha-strengthening + Option A 강화 + v2.2 hard n=20)을 동시 시도한 구조적 승격 pilot. 결과: **Alpha-Uniform Collapse 부작용 발견** — Alpha Agent의 confidence floor(0.11) + winsor 2σ 이중 cap으로 top 40 universe 중 20종이 동일 alpha_final=0.3152 수렴. Optimizer는 α 항 제거 후 pure MinVar_BetaHard (γ=1.0 hard binding β_target=0.75) 후퇴. 실증 결과 극단적 양분: **Forge train+val window (2012-2024) 완전 붕괴** (SR 0.649→0.066 / CAGR 12.03→1.18 / MDD -32.32→-63.91 / Val SR 0.875→-0.221 역전) vs **Judge Lockbox OOS (2024-2026) 강력** (SR 0.844→1.086 +29% / CAGR 18.70→20.37 / MDD -27.65→-14.63 대폭 완화 / Calmar 0.676→1.392 +106%). Active IR Lockbox -1.079는 P5 -1.021 대비 -0.058 악화 — Alpha-Uniform에서 pure MinVar 후퇴가 signal-to-portfolio translation을 더욱 손상시킴 empirical 확인. Gate A PASS + Gate B PASS_WITH_NOTES + Gate C/D/F FAIL + Gate E PASS. GRADE_D DISCARD_WITH_IMPROVEMENTS. **L-195 신규 등재: Alpha-Uniform Collapse**. 핵심 교훈 3축: (1) 다변수 동시 수정 금지 — Alpha territory 단독 sprint 순차 필수, (2) Alpha-Uniform state guard 부재가 근본 결함, (3) Forge window vs Lockbox OOS 16× divergence는 regime-conditional 전략의 Forge 평가 bias 시사 (L-196 candidate). Pilot 7 최우선: confidence floor 제거 + winsor 3σ + Risk/Optimizer 동결 하 Alpha 단독 실증.",
+  "judge_oos_helper_artifacts": {
+    "equity_curve_full_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/equity_curve_full.png",
+    "equity_curve_oos_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/equity_curve_oos.png",
+    "lockbox_oos_summary_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_004/lockbox_oos_summary.json",
+    "lockbox_access_log_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_004/lockbox_access_log.json",
+    "oos_summary_original": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/oos_summary.json",
+    "lockbox_access_log_raw": "/tmp/qvest_lockbox_access_WT-D20260424_004.log"
+  },
+  "v61_compliance": {
+    "R2B_judge_only_lockbox_access": true,
+    "R11_lineage_integrity": "PASS_WITH_NOTES (optimization WARN_SEQUENCE reclassified by Judge content check; Pilot 5 Risk remediation 미반영 시스템 이슈 지속)",
+    "R12_pure_function": "PASS_WITH_NOTES (alpha + risk hash match, optimization content-verified but recorded vs current mismatch)",
+    "lockbox_sealed_verified": true,
+    "opus47_authority": true,
+    "gate_a_through_f_complete": true,
+    "ax_compliance_evaluated": true,
+    "role_honesty_audit_performed": true,
+    "p5_challenge_review_performed": true,
+    "alpha_uniform_diagnosis_documented": true,
+    "forge_vs_lockbox_divergence_documented": true
+  },
+  "created_at": "2026-04-24T15:50:00+0900"
+}

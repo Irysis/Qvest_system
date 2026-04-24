@@ -1,14 +1,25 @@
 {
   "task_id": "WT-D20260424_004",
-  "phase": "FORGE_DONE",
-  "updated": "2026-04-24T15:24:27",
+  "phase": "JUDGE_FAILED",
+  "updated": "2026-04-24T15:50:00",
   "method": "MinVar_BetaHard",
   "n_names": 20,
   "beta_port": 0.75,
   "net_ir": 642.0189,
-  "current_phase": "FORGE_DONE",
-  "last_updated": "2026-04-24T15:37:31+0900",
-  "next_phase": "JUDGE",
+  "current_phase": "JUDGE_FAILED",
+  "last_updated": "2026-04-24T15:50:00+0900",
+  "next_phase": "PILOT_7_ALPHA_SPRINT",
+  "judge_verdict": "GRADE_D",
+  "judge_disposition": "DISCARD_WITH_IMPROVEMENTS",
+  "judge_overall_pass": false,
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS_WITH_NOTES",
+    "C_NET_ALPHA": "FAIL",
+    "D_CROWDING": "FAIL",
+    "E_CONCENTRATION": "PASS",
+    "F_DRIFT": "FAIL"
+  },
   "forge_artifacts": {
     "performance_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/performance_summary.json",
     "integration_audit": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/integration_audit.json",
@@ -16,6 +27,13 @@
     "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/annual_returns.png",
     "drawdown_chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/drawdown_chart.png",
     "backtest_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/judge_ready/backtest_summary.json"
+  },
+  "judge_artifacts": {
+    "judge_verdict": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/judge_verdict.json",
+    "equity_curve_full": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/equity_curve_full.png",
+    "equity_curve_oos": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/equity_curve_oos.png",
+    "lockbox_oos_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_004/lockbox_oos_summary.json",
+    "lockbox_access_log": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_004/lockbox_access_log.json"
   },
   "forge_perf_snapshot": {
     "full_sr": 0.066,
@@ -26,5 +44,17 @@
     "beta_port": 0.75,
     "ann_to": 45.1,
     "alpha_uniform": true
-  }
+  },
+  "lockbox_oos_snapshot": {
+    "sr": 1.086,
+    "cagr": 20.37,
+    "mdd": 14.63,
+    "calmar": 1.392,
+    "active_ir": -1.079,
+    "n_days": 487,
+    "window": "2024-01-23~2026-01-23"
+  },
+  "l_code_contribution": "L-195 (Alpha-Uniform Collapse)",
+  "l_code_candidate": "L-196 (Forge-Lockbox divergence, candidate)",
+  "next_action_summary": "Pilot 7 Alpha territory 단독 sprint — confidence floor 제거 + winsor 3σ + Risk/Optimizer 동결"
 }

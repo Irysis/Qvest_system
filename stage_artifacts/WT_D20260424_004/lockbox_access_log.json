@@ -1,0 +1,30 @@
+{
+  "wt_id": "WT-D20260424_004",
+  "pilot_label": "Pilot 6 — RAPC v2 + MinVar_BetaHard (gamma=1.0)",
+  "agent": "judge",
+  "model": "claude-opus-4-7",
+  "axiom_reference": "AX-002 (harness-only, Judge single lockbox access)",
+  "access_count": 6,
+  "access_events": [
+    {"seq": 1, "ts": "2026-04-24T15:46:49+0900", "agent": "judge", "target": ".cache/benchmark.parquet", "purpose": "KOSPI200_TR benchmark load for train+val+lockbox sim"},
+    {"seq": 2, "ts": "2026-04-24T15:46:49+0900", "agent": "judge", "target": "stage_artifacts/WT_D20260424_004/weights.csv", "purpose": "Optimizer fixed weights (20 tickers, Σw=1)"},
+    {"seq": 3, "ts": "2026-04-24T15:46:57+0900", "agent": "judge", "target": "RAWDATA.parquet[lockbox_slice]", "purpose": "Daily price/return data 1990~2026, lockbox slice 2024-01-23~2026-01-23"},
+    {"seq": 4, "ts": "2026-04-24T15:47:53+0900", "agent": "judge", "target": ".cache/benchmark.parquet", "purpose": "re-run after evaluation_windows injection"},
+    {"seq": 5, "ts": "2026-04-24T15:47:53+0900", "agent": "judge", "target": "stage_artifacts/WT_D20260424_004/weights.csv", "purpose": "re-run weights load"},
+    {"seq": 6, "ts": "2026-04-24T15:48:02+0900", "agent": "judge", "target": "RAWDATA.parquet[lockbox_slice]", "purpose": "re-run full sim for OOS verdict"}
+  ],
+  "lockbox_window": {
+    "start": "2024-01-23",
+    "end": "2026-01-23",
+    "n_trading_days": 487,
+    "sealed_at_request": true
+  },
+  "ax002_compliance": {
+    "single_agent_access": true,
+    "all_accesses_logged": true,
+    "forge_did_not_access": true,
+    "results_scope": "harness-only performance, OOS verdict",
+    "verdict": "PASS"
+  },
+  "note": "Judge Opus 4.7 only. Forge run_all.R did not access lockbox. evaluation_windows field was non-destructively appended to request.json to enable judge_oos_helper (same pattern as Pilot 5)."
+}
