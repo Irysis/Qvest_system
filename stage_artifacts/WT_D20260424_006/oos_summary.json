@@ -1,0 +1,130 @@
+{
+  "wt_id": "WT-D20260424_006",
+  "agent": "judge",
+  "as_of_date": "2026-04-24",
+  "benchmark": "KOSPI200_TR",
+  "commission": 0.0015,
+  "windows": {
+    "train": {
+      "start": "1990-01-04",
+      "end": "2022-01-21"
+    },
+    "val": {
+      "start": "2022-01-22",
+      "end": "2024-01-22"
+    },
+    "lockbox": {
+      "start": "2024-01-23",
+      "end": "2026-01-23"
+    }
+  },
+  "performance": {
+    "full": {
+      "label": "FULL (train+val+lockbox)",
+      "n_days": 9288,
+      "CAGR": 7.85,
+      "AnnVol": 24.64,
+      "Sharpe": 0.319,
+      "MDD": 76.48,
+      "Calmar": 0.103,
+      "WinRate": 52.9
+    },
+    "train": {
+      "label": "TRAIN",
+      "n_days": 8310,
+      "CAGR": 9.03,
+      "AnnVol": 25.45,
+      "Sharpe": 0.355,
+      "MDD": 76.48,
+      "Calmar": 0.118,
+      "WinRate": 53
+    },
+    "val": {
+      "label": "VAL",
+      "n_days": 491,
+      "CAGR": -4.35,
+      "AnnVol": 15.95,
+      "Sharpe": -0.273,
+      "MDD": 21.67,
+      "Calmar": -0.201,
+      "WinRate": 52.3
+    },
+    "lockbox": {
+      "label": "LOCKBOX (OOS)",
+      "n_days": 487,
+      "CAGR": 1.2,
+      "AnnVol": 16.41,
+      "Sharpe": 0.073,
+      "MDD": 17.91,
+      "Calmar": 0.067,
+      "WinRate": 52.2
+    }
+  },
+  "alpha_ir": {
+    "full": {
+      "alpha_ann_pct": 2.937,
+      "TE_ann_pct": 21.101,
+      "IR": 0.139
+    },
+    "train": {
+      "alpha_ann_pct": 5.252,
+      "TE_ann_pct": 21.578,
+      "IR": 0.243
+    },
+    "val": {
+      "alpha_ann_pct": 2.533,
+      "TE_ann_pct": 13.912,
+      "IR": 0.182
+    },
+    "lockbox": {
+      "alpha_ann_pct": -36.151,
+      "TE_ann_pct": 18.617,
+      "IR": -1.942
+    }
+  },
+  "gate_f": {
+    "metric": "oos_is_ratio",
+    "value": 1.78,
+    "threshold": 0.7,
+    "verdict": "PASS"
+  },
+  "comparison_table": [
+    {
+      "period": "train",
+      "n_days": 8310,
+      "CAGR": 9.03,
+      "Sharpe": 0.355,
+      "MDD": 76.48,
+      "alpha_pct": 5.252,
+      "IR": 0.243,
+      "TE_pct": 21.578
+    },
+    {
+      "period": "val",
+      "n_days": 491,
+      "CAGR": -4.35,
+      "Sharpe": -0.273,
+      "MDD": 21.67,
+      "alpha_pct": 2.533,
+      "IR": 0.182,
+      "TE_pct": 13.912
+    },
+    {
+      "period": "lockbox_oos",
+      "n_days": 487,
+      "CAGR": 1.2,
+      "Sharpe": 0.073,
+      "MDD": 17.91,
+      "alpha_pct": -36.151,
+      "IR": -1.942,
+      "TE_pct": 18.617
+    }
+  ],
+  "n_rebalances": 432,
+  "ann_turnover_pct": 55,
+  "artifacts": {
+    "equity_curve_full": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_006/equity_curve_full.png",
+    "equity_curve_oos": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_006/equity_curve_oos.png"
+  },
+  "lockbox_access_log": "/tmp/qvest_lockbox_access_WT-D20260424_006.log"
+}
