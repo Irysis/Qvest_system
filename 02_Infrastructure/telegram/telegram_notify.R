@@ -1094,50 +1094,116 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
       }
       setorder(d2_combined, Date)
 
+      # v2.5: MSM / KTRI / VEA 3-line + 화려한 MRS panel + latest value labels
       d2_long <- melt(d2_combined, id.vars = "Date",
-                      measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
+                      measure.vars = c("MSM_Crisis_Prob", "KTRI_Score", "VEA_Score"),
                       variable.name = "Layer", value.name = "Value")
       d2_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
       d2_long[, Layer := factor(Layer,
-        levels = c("MSM_Crisis_Prob", "KTRI_Score"),
-        labels = c("MSM Crisis %", "KTRI Score"))]
+        levels = c("MSM_Crisis_Prob", "KTRI_Score", "VEA_Score"),
+        labels = c("MSM Crisis %", "KTRI Score", "VEA Score"))]
+      d2_long <- d2_long[!is.na(Value)]
+
+      last_points <- d2_long[Date == max(Date)]
+      # 라벨 y-offset: MSM 상단, KTRI 중단, VEA 하단 (충돌 방지)
+      last_points[, y_offset := fifelse(Layer == "MSM Crisis %", 5,
+                               fifelse(Layer == "KTRI Score", -5, -12))]
+
+      layer_colors <- c("MSM Crisis %" = "#E53935",
+                        "KTRI Score"   = "#1E88E5",
+                        "VEA Score"    = "#43A047")
 
       p2_top <- ggplot(d2_long, aes(x = Date, y = Value, color = Layer)) +
-        geom_line(linewidth = 1.0) +
+        # Background threshold zone
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 70, ymax = 100,
+                 fill = "#FFCDD2", alpha = 0.25) +
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 30, ymax = 70,
+                 fill = "#FFF9C4", alpha = 0.15) +
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 30,
+                 fill = "#C8E6C9", alpha = 0.25) +
+        geom_line(linewidth = 1.1) +
         geom_point(size = 1.8) +
-        # 마지막 일간 point 강조
-        geom_point(data = d2_long[Date == max(Date)],
-                   aes(color = Layer), fill = "#FFEB3B",
-                   shape = 21, size = 3.5, stroke = 1.2) +
-        geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
-        scale_color_manual(values = c("MSM Crisis %" = "#E53935",
-                                       "KTRI Score" = "#1E88E5")) +
+        # 마지막 일간 point 강조 (각 layer)
+        geom_point(data = last_points, aes(color = Layer),
+                   fill = "#FFEB3B", shape = 21, size = 4.2, stroke = 1.3) +
+        # Value labels (점 옆)
+        geom_text(data = last_points,
+                  aes(x = Date, y = Value + y_offset,
+                      label = sprintf("%.1f", Value),
+                      color = Layer),
+                  hjust = 1.1, size = 3.7, fontface = "bold",
+                  show.legend = FALSE) +
+        geom_hline(yintercept = 50, linetype = "dotted", color = "gray40",
+                   linewidth = 0.4) +
+        scale_color_manual(values = layer_colors, name = "Layer") +
+        scale_y_continuous(name = "Score / Prob 0~100",
+                           limits = c(0, 105),
+                           breaks = c(0, 30, 50, 70, 100)) +
         labs(title = "3-Layer Signal Decomposition (Month-end + Latest Daily)",
              subtitle = sprintf(
-               "MSM: %.1f%% | KTRI: %.1f | FRED MRS: %.1f  (latest: %s)",
+               "MSM %.1f%% | KTRI %.1f | VEA %.1f | FRED MRS %.1f  (latest: %s)",
                latest_d2$MSM_Crisis_Prob * 100,
-               latest_d2$KTRI_Score, latest_d2$FRED_MRS,
+               latest_d2$KTRI_Score, latest_d2$VEA_Score,
+               latest_d2$FRED_MRS,
                format(latest_d2$Date)),
-             y = "Score / Prob", x = "") +
+             x = "") +
         theme_minimal(base_size = 13) +
         theme(plot.title = element_text(face = "bold", size = 15),
               plot.subtitle = element_text(size = 10, color = "gray25"),
-              legend.position = "bottom")
+              legend.position = "bottom",
+              panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
+              panel.grid.minor = element_blank())
 
-      # 하단: FRED_MRS bar (월말 + 마지막 일간)
+      # 하단: FRED_MRS 화려한 panel (area + threshold band + gradient bar + latest label)
+      d2_combined[, fred_band := fifelse(FRED_MRS >= 70, "Stress",
+                                   fifelse(FRED_MRS >= 50, "Caution",
+                                     fifelse(FRED_MRS >= 30, "Normal", "Calm")))]
+      latest_mrs <- d2_combined[.N]
+      band_colors <- c("Calm" = "#4CAF50", "Normal" = "#FFC107",
+                        "Caution" = "#FF9800", "Stress" = "#D32F2F")
+
       p2_bot <- ggplot(d2_combined, aes(x = Date, y = FRED_MRS)) +
-        geom_col(fill = "#FF7043", alpha = 0.75, width = 18) +
-        geom_col(data = d2_combined[Date == max(Date)],
-                 fill = "#FFEB3B", color = "#E65100",
-                 alpha = 0.95, width = 12) +
+        # Background threshold zone
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 70, ymax = 100,
+                 fill = "#FFCDD2", alpha = 0.30) +
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 50, ymax = 70,
+                 fill = "#FFE0B2", alpha = 0.30) +
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 30, ymax = 50,
+                 fill = "#FFF9C4", alpha = 0.30) +
+        annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0, ymax = 30,
+                 fill = "#C8E6C9", alpha = 0.30) +
+        # Area fill under line
+        geom_area(fill = "#FF7043", alpha = 0.25) +
+        # Bar colored by band
+        geom_col(aes(fill = fred_band), alpha = 0.85, width = 14) +
+        scale_fill_manual(values = band_colors, name = "MRS band") +
+        # Smooth line overlay
+        geom_line(color = "#BF360C", linewidth = 1.0, alpha = 0.8) +
+        geom_point(color = "#BF360C", size = 1.5) +
+        # Latest highlight + label
+        geom_point(data = latest_mrs,
+                   color = "#BF360C", fill = "#FFEB3B",
+                   shape = 21, size = 4.5, stroke = 1.3) +
+        geom_text(data = latest_mrs,
+                  aes(label = sprintf("%.1f  (%s)", FRED_MRS, fred_band)),
+                  hjust = 1.1, vjust = -0.8, size = 3.8, fontface = "bold",
+                  color = "#BF360C") +
+        # Threshold dashed lines
         geom_hline(yintercept = c(30, 50, 70),
-                   linetype = "dashed", color = "gray60", linewidth = 0.3) +
-        labs(y = "FRED MRS", x = "") +
-        theme_minimal(base_size = 11)
+                   linetype = "dashed", color = "gray50", linewidth = 0.35) +
+        scale_y_continuous(limits = c(0, max(100, latest_mrs$FRED_MRS * 1.15)),
+                           breaks = c(0, 30, 50, 70, 100)) +
+        labs(y = "FRED MRS", x = "",
+             subtitle = "Background: Calm <30 / Normal 30~50 / Caution 50~70 / Stress ≥70") +
+        theme_minimal(base_size = 12) +
+        theme(plot.subtitle = element_text(size = 9, color = "gray35"),
+              legend.position = "right",
+              panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
+              panel.grid.minor = element_blank())
 
-      p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
+      p2 <- arrangeGrob(p2_top, p2_bot, heights = c(2.5, 1.3))
       ggsave(file.path(out_dir, "regime_3layer_24m.png"),
-             p2, width = 11, height = 6.8, dpi = 150)
+             p2, width = 11, height = 8.0, dpi = 150)
       chart2_ok <- TRUE
     }, error = function(e) {
       cat(sprintf("[regime_briefing] chart 2 monthly+latest failed: %s\n", e$message))
