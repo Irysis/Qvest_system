@@ -1,0 +1,308 @@
+{
+  "task_id": "WT-D20260424_007",
+  "parent_wt": "WT-D20260424_006",
+  "agent": "risk",
+  "model": "claude-opus-4-7",
+  "schema_version": "v6.1",
+  "as_of_date": "2026-04-24",
+  "created_at": "2026-04-24T19:14:18+0900",
+  "seed": 20260424,
+  "pilot_label": "Pilot 9 — Consensus RAPC v2 HIGH tier | beta_target 1.00~1.05",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_007/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_007/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_007/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_007/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260424_007/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260424_007/regime_correlation.parquet",
+  "covariance_method_selected": "ledoit_wolf_oracle",
+  "covariance_structure": {
+    "formula": "Sigma = B*Omega*B' + D",
+    "n_factors": 7,
+    "factor_names": ["PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7"],
+    "factor_var_explained": [27.34, 11.25, 8.04, 7.31, 6.64, 5.4, 5.2],
+    "n_tickers_cov": 30,
+    "T_obs": 36,
+    "q_ratio": 1.2,
+    "train_window": {
+      "start": "2021-01-01",
+      "end": "2023-12-28",
+      "months": 36
+    },
+    "cov_method_rationale": "T/N=1.2 (<1). Pilot 9 N=30. ledoit_wolf_oracle selected (cond=9.4669). P8 same selection (cond=34.03) — consistent across pilots. R13 parallel comparison: 5 estimators compared."
+  },
+  "beta_vector_summary": {
+    "source": "PC1-based OLS regression (36M window to sig_date=2023-12-28)",
+    "port_mean_ew": 1,
+    "top20_mean_ew": 1.1121,
+    "top20_median": 1.098,
+    "top20_sd": 0.467,
+    "min_beta": 0.1055,
+    "max_beta": 1.7794,
+    "n_valid_top20": 15,
+    "pilot8_reference": {
+      "top20_beta_ew": 1.1206,
+      "beta_target_p8": 0.9,
+      "note": "P8 RAPC v1 (AC21+AC17+Q35+ESBR+SUE). P9 Consensus RAPC v2 beta comparison."
+    },
+    "beta_target_p9": 1.02,
+    "beta_range_p9": [1, 1.05],
+    "gamma_p9": 0.5,
+    "constraint_mode": "soft",
+    "l198_observation": "RAPC v2 top-20 beta_ew=1.1121 vs RAPC v1 1.1206. Consensus family (earnings surprise) beta characteristics: above-market exposure (growth-momentum tilt). HIGH tier target 1.00~1.05: soft constraint will guide"
+  },
+  "hedge_overlay": {
+    "option_A": {
+      "name": "Soft Beta-Constraint (HIGH tier beta=1.00~1.05, gamma=0.5)",
+      "objective": "max_w  w'alpha - (lambda/2)*w'Sigma*w - gamma_beta*max(0, |sum(w*beta) - beta_target|)^2",
+      "beta_target": 1.02,
+      "beta_range": [1, 1.05],
+      "gamma_beta": 0.5,
+      "constraint_mode": "soft",
+      "tier": "HIGH",
+      "rationale": "HIGH tier (rank_IC=0.0449, DSR=8.83, FF3_retention=94.6%) → alpha 독창성 94.6%. L-198 실증 대상: HIGH tier beta 1.02 → Lockbox 성과 관찰. Pilot 8 MEDIUM + beta 0.90 → Lockbox -1.942 실패. Pilot 9 HIGH tier → genuine alpha 증폭 기대. gamma=0.5 soft.",
+      "pilot9_changes": {
+        "beta_target_change": "0.90 soft (P8 MEDIUM) → 1.02 soft (P9 HIGH)",
+        "gamma_unchanged": "0.5 soft (P8) → 0.5 soft (P9)",
+        "tier_change": "MEDIUM (P8) → HIGH (P9)",
+        "expected_lockbox": "L-198 실증 목표: positive vs P8 -1.942"
+      }
+    },
+    "option_C3": {
+      "name": "MRS-Dynamic Beta (HIGH tier)",
+      "regime_mapping": {
+        "RISK_ON": {
+          "beta_target": 1.1,
+          "note": "HIGH tier maximum"
+        },
+        "NEUTRAL": {
+          "beta_target": 1,
+          "note": "Current regime"
+        },
+        "CAUTION": {
+          "beta_target": 0.9,
+          "note": "Defensive"
+        },
+        "CRISIS": {
+          "beta_target": 0.8,
+          "note": "Full defensive"
+        }
+      },
+      "current_regime": "NEUTRAL",
+      "active_beta_target": 1,
+      "gamma_beta": 0.5,
+      "note": "NEUTRAL regime → beta_target=1.00. Aligns with Option A lower bound."
+    },
+    "recommended": "A",
+    "recommendation_rationale": "Option A: HIGH tier beta 1.02 soft. L-198 Pilot 9 실증 설계. Option C-3 NEUTRAL=1.00 also appropriate. Option A preferred (mid of 1.00~1.05). Optimizer: alpha-aware MVO 선택 기대 (L-196 복귀 여부 관찰). HIGH tier FF3-independent 94.6% → genuine alpha amplification.",
+    "alpha_divergence_filter_applied": true,
+    "alpha_divergence_filter_threshold": 0.8,
+    "alpha_divergence_filter_actual": 0.9813,
+    "l_195a_status": "PASS"
+  },
+  "risk_summary": {
+    "n_tickers_cov": 30,
+    "n_obs_T": 36,
+    "q_ratio": 1.2,
+    "top_common_risks": [
+      "Market/PC1 (27.3% of systematic var)",
+      "Style/PC2 (11.2% — size+value channel)",
+      "Sector/PC3 (8%)",
+      "Consensus family (PEAD+Earnings revision): factor_coverage=62.91%"
+    ],
+    "crowding_flags": [
+      "C04_ESBR+C19_Composite_Earnings+C01_SUE+C09_Earnings_Surprise_Sq: KR institutional quant consensus family — PEAD late-cycle crowding risk MEDIUM. Pilot 8: cluster 15% (post alpha_div_filter). Pilot 9 FF3_retention=94.6% → style independent, but same factor family → crowding persistence.",
+      "Top-40 alpha_uniform_ratio=0.9813 (threshold=0.80). Cap cluster reduced via L-195a filter. Monitor for sector concentration."
+    ],
+    "liquidity_flags": [
+      "All 30 tickers above 50M KRW ADV. Universe breadth OK."
+    ],
+    "stress_tests": {
+      "market_down_5": -0.051,
+      "market_down_10": -0.102,
+      "value_crash": -0.0367,
+      "momentum_reversal": -0.0326,
+      "gfc_2008": -0.3779,
+      "eu_debt_2011": -0.153,
+      "covid_2020": -0.2011,
+      "rate_2022": -0.2189,
+      "stress_2025": -0.0612,
+      "pilot8_market_down_5": -0.045,
+      "beta_ratio_p9_vs_p8": 1.1333
+    }
+  },
+  "diagnostics": {
+    "condition_number": 9.4669,
+    "condition_number_warn": 100,
+    "condition_number_fail": 500,
+    "condition_number_all_methods": {
+      "sample_pairwise": 2980.528,
+      "ledoit_wolf_oracle": 9.4669,
+      "gerber_rmt": 249.1857,
+      "lw_const_corr": 20.2469,
+      "nonlinear_shrinkage": 6377.8417
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "n_obs_used": 36,
+    "psd_verified": true,
+    "min_eigenvalue": 0.0096,
+    "factor_coverage_pct": 62.91,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.2056,
+      "max_pairwise": 0.75,
+      "threshold": 0.4,
+      "pairs_above": 9,
+      "note": "Top-10 tickers pairwise TDC (lower tail 10th percentile)"
+    },
+    "market_risk_contribution": {
+      "beta_target_est_pct": 28.1,
+      "pc1_var_explained_pct": 27.3,
+      "gate_d_threshold": 40,
+      "note": "HIGH tier beta=1.02 → market risk > P8 77.6% expected. Intentional.",
+      "l198_context": "L-198 Pilot 9 실증: HIGH tier 94.6% FF3-independent alpha. beta 1.02 leverage는 genuine alpha 증폭 목적. P8 MEDIUM + beta 0.90 → Lockbox -1.942. P9 결과 관찰 대상."
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": -0.1351,
+      "cvar_95_ann": -0.4681,
+      "var_95_monthly": -0.1093,
+      "skewness": 0.102,
+      "excess_kurtosis": -0.3904,
+      "n_obs": 36
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_007/regime_correlation.parquet",
+    "current_regime": {
+      "date": "2026-04-24",
+      "score": 42.9,
+      "category": "NEUTRAL",
+      "note": "Pilot 8 carryover confirmed. C-3 NEUTRAL → beta_target=1.00 aligns with Option A."
+    },
+    "alpha_distribution": {
+      "top40_sd": 0.8547,
+      "top40_cv": 0.3089,
+      "unique_ratio": 0.9813,
+      "l195a_status": "PASS"
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "autonomy_note": "P1 self-directed. R13 parallel 5-estimator comparison. Selection: min condition_number among PSD-verified. Consistent with P8 LW Oracle selection.",
+      "method_log": [
+        {
+          "step": 1,
+          "name": "sample_pairwise",
+          "condition_number": 2980.528,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=2980.53"
+        },
+        {
+          "step": 2,
+          "name": "ledoit_wolf_oracle",
+          "condition_number": 9.4669,
+          "psd": true,
+          "ok": true,
+          "selected": true,
+          "reason": "SELECTED: min condition_number=9.4669 among PSD-verified"
+        },
+        {
+          "step": 3,
+          "name": "gerber_rmt",
+          "condition_number": 249.1857,
+          "psd": false,
+          "ok": true,
+          "selected": false,
+          "reason": "not PSD"
+        },
+        {
+          "step": 4,
+          "name": "lw_const_corr",
+          "condition_number": 20.2469,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=20.25"
+        },
+        {
+          "step": 5,
+          "name": "nonlinear_shrinkage",
+          "condition_number": 6377.8417,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "reason": "cond=6377.84"
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "round": 1,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "confidence_tier_HIGH", "ff3_retention_9462"],
+    "objection": false,
+    "challenges": [
+      {
+        "flag": "INFO_SUBPERIOD_P3_IC_DECAY",
+        "severity": "INFO",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": "Alpha subperiod IC: P1(2012-16)=0.0411, P2(2017-21)=0.0423, P3(2022-23)=0.0103. P3 IC decay (-75.7% vs P2). 근 2년 alpha 약화 패턴.",
+        "implication": "consensus family IC decay in recent period (post-2022) may indicate: 1) Crowding (more quants implementing PEAD), 2) Rate environment shift (2022+) penalizing earnings momentum, 3) Earnings forecast revision signal weakening post-COVID distortion. HIGH tier overall (5Y mean IC=0.0449), but recent 2Y caution warranted.",
+        "recommendation": "Optimizer: monitor trailing IC in 2022+ window. Consider regime-conditional IC weighting (NEUTRAL beta=1.00 vs RISK_ON 1.10). No alpha change — Risk 관찰만.",
+        "counter_evidence": "P3 IC=0.0103 still positive (not negative). Only 2Y window. DSR=8.83 full-period robust. subperiod_stability=1 (all positive). P3 IC decay may be sampling artifact (only ~24 months)."
+      },
+      {
+        "flag": "INFO_HIGH_TIER_BETA_AMPLIFICATION",
+        "severity": "INFO",
+        "round": 1,
+        "from_agent": "risk",
+        "to_agent": "alpha",
+        "observation": "HIGH tier -> beta_target 1.00~1.05 (vs P8 MEDIUM 0.90). Market risk ~28.1% expected (>P8 77.6%). stress_loss market_down_5=-0.051 (>P8 -0.045).",
+        "implication": "L-198 실증 핵심: HIGH tier alpha독창성 94.6%로 leverage 증폭 시 genuine alpha 활용. P8 MEDIUM + beta 0.90 Lockbox -1.942 실패는 alpha independence 부족이 원인. P9 FF3_retention 94.6% → alpha genuine. beta 1.02 는 정당화 가능.",
+        "recommendation": "Accept beta_target=1.02 for HIGH tier. Monitor Lockbox 결과. Risk reduction은 regime CRISIS 전환 시 C-3 option 활용.",
+        "counter_evidence": "GFC/COVID stress 시 beta 1.02 포트폴리오 최대 손실 증가. Stress 기간 alpha correlation 증가 (contagion). 미세 조정: Optimizer market_risk < 40% 경우 Option C-3 NEUTRAL=1.00 대안."
+      }
+    ],
+    "p4_obligation_met": true,
+    "p4_note": "GAP-1 R3 P4: 2건 INFO challenge issued. Alpha objection 없음. Beta 철학 L-198 실증 설계 승인."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "CONSENSUS_PEAD_CROWDING: KR quant implementation risk. alpha_div_filter applied."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "9 factor pairs with TDC > 0.4. Consensus family: same-family TDC higher expected."
+    }
+  ],
+  "pilot9_key_diagnostics": {
+    "alpha_divergence_filter_applied": true,
+    "alpha_div_threshold": 0.8,
+    "alpha_div_actual_ratio": 0.9813,
+    "l195a_status": "PASS",
+    "beta_target_upgrade": "0.90 (P8 MEDIUM) → 1.02 (P9 HIGH)",
+    "gamma_unchanged": "0.5 soft",
+    "mkt_risk_change_est": "77.6% (P8) → ~28.1% (P9, est.)",
+    "l198_test_design": "L-198 final 실증: HIGH tier + beta 1.02 → Lockbox 성과 관찰. P8 MEDIUM + beta 0.90 → Lockbox -1.942. P9 FF3_retention=94.6% (P8: 10.5%). Hypothesis: genuine alpha amplification.",
+    "l196_observation_point": "L-196 (MinVar_superior 3-pilot VALIDATED): HIGH tier + unique alpha → Optimizer α-aware MVO 선택 복귀 기대. IF Optimizer selects alpha-aware MVO → L-196 REFUTE candidate.",
+    "ax007_sprint_reference": "AX-007 3-source CONFIRMED (Architect + Codex 0.87 + Replication 9/11). beta 1.02 HIGH tier justified."
+  },
+  "alpha_divergence_filter_applied": true,
+  "alpha_divergence_filter_threshold": 0.8,
+  "alpha_divergence_filter_actual": 0.9813,
+  "l_195a_resolution_status": "PASS",
+  "constraint_defaults_version": "v2.3",
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_007/artifact_lineage.json",
+    "seed": 20260424,
+    "r_version": "4.5.2"
+  }
+}
