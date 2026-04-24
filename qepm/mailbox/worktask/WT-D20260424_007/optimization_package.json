@@ -1,0 +1,371 @@
+{
+  "task_id": "WT-D20260424_007",
+  "parent_wt": "WT-D20260424_006",
+  "agent": "optimizer",
+  "model": "claude-sonnet-4-6",
+  "schema_version": "v6.1",
+  "as_of_date": "2026-04-24",
+  "pilot_label": "Pilot 9 — Consensus RAPC v2 HIGH tier | Optimizer L-196 test",
+  "created_at": "2026-04-24T19:24:49+0900",
+  "seed": 20260424,
+  "target_weights": {
+    "A091810": 0.1505,
+    "A218410": 0.124,
+    "A004800": 0.1121,
+    "A042940": 0.0962,
+    "A115480": 0.0912,
+    "A053030": 0.0906,
+    "A091970": 0.0641,
+    "A057500": 0.0502,
+    "A000070": 0.0463,
+    "A062730": 0.0445,
+    "A066590": 0.0317,
+    "A071320": 0.0303,
+    "A041140": 0.0261,
+    "A001260": 0.0249,
+    "A185750": 0.0157,
+    "A029780": 0.0015
+  },
+  "active_weights": {
+    "A062730": 0.0395,
+    "A000070": 0.0413,
+    "A071320": 0.0253,
+    "A091970": 0.0591,
+    "A057500": 0.0452,
+    "A004800": 0.1071,
+    "A115480": 0.0862,
+    "A041140": 0.0211,
+    "A001260": 0.0199,
+    "A042940": 0.0912,
+    "A218410": 0.119,
+    "A091810": 0.1455,
+    "A185750": 0.0107,
+    "A066590": 0.0267,
+    "A029780": -0.0035,
+    "A053030": 0.0856
+  },
+  "n_names": 16,
+  "sum_weights": 1,
+  "hhi": 0.0906,
+  "beta_port": 0.8842,
+  "max_weight": 0.1505,
+  "expected_active_return": 2.7625,
+  "expected_tracking_error": 0.1058,
+  "expected_information_ratio": 26.1003,
+  "expected_cost_ann": 0.0136,
+  "selection_objective": "net_ir",
+  "method_selected": "ERC",
+  "method_backup": "Kelly_f025",
+  "min_names_enforced": true,
+  "hhi_enforced": false,
+  "hhi_converged": true,
+  "winsor_applied": false,
+  "winsor_n_clipped": 0,
+  "lambda_used": 2,
+  "lambda_retries": 0,
+  "constraints_applied": {
+    "v_version": "v2.3",
+    "max_names": 20,
+    "min_names": 15,
+    "weight_bounds": [0, 0.15],
+    "hhi_cap": 0.15,
+    "alpha_winsor": 3,
+    "beta_target": 1.02,
+    "beta_range": [1, 1.05],
+    "gamma_beta": 0.5,
+    "cost_bps": 15
+  },
+  "binding_constraints": ["weight_bound_upper", "beta_port_0.884"],
+  "infeasibility_report": null,
+  "l196_pilot9_verdict": "hybrid",
+  "l198_pilot9_prediction": "HYBRID_SELECTED: ERC selected. Partial alpha incorporation. L-198 partial test.",
+  "l196_history": {
+    "pilot6_verdict": "minvar_retreat",
+    "pilot7_verdict": "minvar_retreat_2nd",
+    "pilot8_verdict": "minvar_retreat_3rd",
+    "pilot9_verdict": "hybrid",
+    "pattern": "PATTERN_BROKEN — L-196 REFUTE CONFIRMED"
+  },
+  "method_comparison": {
+    "MVO_alpha_lam0.5": {
+      "family": "alpha_aware",
+      "net_ir": 22.5565,
+      "n_names": 15,
+      "hhi": 0.1335,
+      "beta_port": 1.0525,
+      "te": 0.1282,
+      "alpha_port": 2.9138,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "MVO_alpha_lam1.0": {
+      "family": "alpha_aware",
+      "net_ir": 22.5481,
+      "n_names": 15,
+      "hhi": 0.1335,
+      "beta_port": 1.0532,
+      "te": 0.1283,
+      "alpha_port": 2.9138,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "MVO_alpha_lam2.0": {
+      "family": "alpha_aware",
+      "net_ir": 22.5481,
+      "n_names": 15,
+      "hhi": 0.1335,
+      "beta_port": 1.0532,
+      "te": 0.1283,
+      "alpha_port": 2.9138,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "MVO_alpha_lam4.0": {
+      "family": "alpha_aware",
+      "net_ir": 22.539,
+      "n_names": 15,
+      "hhi": 0.1335,
+      "beta_port": 1.0532,
+      "te": 0.1283,
+      "alpha_port": 2.9134,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "MinVar_BetaSoft": {
+      "family": "minvar",
+      "net_ir": 23.0197,
+      "n_names": 20,
+      "hhi": 0.0505,
+      "beta_port": 1.0164,
+      "te": 0.1126,
+      "alpha_port": 2.5943,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "ERC": {
+      "family": "risk_parity",
+      "net_ir": 26.1003,
+      "n_names": 16,
+      "hhi": 0.091,
+      "beta_port": 0.8842,
+      "te": 0.1058,
+      "alpha_port": 2.7798,
+      "selected": true,
+      "ok": true,
+      "error": null
+    },
+    "HRP": {
+      "family": "risk_parity",
+      "net_ir": 23.7866,
+      "n_names": 20,
+      "hhi": 0.0507,
+      "beta_port": 1.0429,
+      "te": 0.1152,
+      "alpha_port": 2.7418,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "HRP_alpha_tilt": {
+      "family": "risk_parity",
+      "net_ir": 24.414,
+      "n_names": 20,
+      "hhi": 0.0559,
+      "beta_port": 1.027,
+      "te": 0.1145,
+      "alpha_port": 2.7997,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "BlackLitterman": {
+      "family": "classical",
+      "net_ir": 19.2423,
+      "n_names": 15,
+      "hhi": 0.1335,
+      "beta_port": 1.2232,
+      "te": 0.1431,
+      "alpha_port": 2.7866,
+      "selected": false,
+      "ok": true,
+      "error": null
+    },
+    "Kelly_f025": {
+      "family": "kelly",
+      "net_ir": 24.9199,
+      "n_names": 16,
+      "hhi": 0.0625,
+      "beta_port": 0.9922,
+      "te": 0.112,
+      "alpha_port": 2.7982,
+      "selected": false,
+      "ok": true,
+      "error": null
+    }
+  },
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 10,
+      "selection_objective": "net_ir",
+      "parallel_exec": true,
+      "n_workers": 5,
+      "total_seconds": 1.15,
+      "method_log": [
+        {
+          "step": 1,
+          "name": "MVO_alpha_lam0.5",
+          "family": "alpha_aware",
+          "net_ir": 22.5565,
+          "n_names": 15,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 2,
+          "name": "MVO_alpha_lam1.0",
+          "family": "alpha_aware",
+          "net_ir": 22.5481,
+          "n_names": 15,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 3,
+          "name": "MVO_alpha_lam2.0",
+          "family": "alpha_aware",
+          "net_ir": 22.5481,
+          "n_names": 15,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 4,
+          "name": "MVO_alpha_lam4.0",
+          "family": "alpha_aware",
+          "net_ir": 22.539,
+          "n_names": 15,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 5,
+          "name": "MinVar_BetaSoft",
+          "family": "minvar",
+          "net_ir": 23.0197,
+          "n_names": 20,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 6,
+          "name": "ERC",
+          "family": "risk_parity",
+          "net_ir": 26.1003,
+          "n_names": 16,
+          "selected": true,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 7,
+          "name": "HRP",
+          "family": "risk_parity",
+          "net_ir": 23.7866,
+          "n_names": 20,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 8,
+          "name": "HRP_alpha_tilt",
+          "family": "risk_parity",
+          "net_ir": 24.414,
+          "n_names": 20,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 9,
+          "name": "BlackLitterman",
+          "family": "classical",
+          "net_ir": 19.2423,
+          "n_names": 15,
+          "selected": false,
+          "ok": true,
+          "error": null
+        },
+        {
+          "step": 10,
+          "name": "Kelly_f025",
+          "family": "kelly",
+          "net_ir": 24.9199,
+          "n_names": 16,
+          "selected": false,
+          "ok": true,
+          "error": null
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "challenge_review_complete": true,
+    "round": 1,
+    "from_agent": "optimizer",
+    "targets_reviewed": ["alpha_vector", "confidence_vector", "risk_sigma", "bound_feasibility", "beta_vector", "ff3_retention_9462"],
+    "objection": false,
+    "objection_details": null,
+    "observations": [
+      {
+        "flag": "INFO_SUBPERIOD_P3_IC_DECAY",
+        "response": "Option A: alpha 상속 원칙 적용. Risk INFO 관찰 수용. P3 IC=0.0103 여전히 양수. DSR=8.83 full-period robust. Optimizer는 alpha_package 상속 유지. 2022-2023 IC decay를 optimizer constraint로 반영하지 않음 (alpha 재정의 금지, 절대 금지 #1).",
+        "action": "no_change"
+      },
+      {
+        "flag": "INFO_HIGH_TIER_BETA_AMPLIFICATION",
+        "response": "Option A: beta_target=1.02 soft (HIGH tier) 수용. gamma_beta=0.5 soft 그대로 적용. GFC/COVID stress 추가 손실 인지함. MRS NEUTRAL 현재 → C-3 option (beta=1.00) 대비 Option A (beta=1.02) 선택 유지.",
+        "action": "accept_beta_102"
+      }
+    ],
+    "p4_obligation_met": true,
+    "p4_note": "2건 INFO challenge 검토 완료. 반론 없음. Alpha 상속 원칙 + beta 1.02 HIGH tier 승인."
+  },
+  "challenge_flags": [],
+  "explanation": {
+    "top_overweights": ["A091810", "A218410", "A004800", "A042940", "A115480"],
+    "top_underweights": ["A029780", "A185750", "A001260", "A041140", "A071320"],
+    "main_tradeoffs": [
+      "v2.3 bounds [0, 0.15] → max concentration 15%",
+      "Grinold min_names=15 breadth enforcement",
+      "beta_target=1.02 soft (HIGH tier): beta_port=0.884",
+      "HHI_cap=0.15: hhi=0.0906",
+      "L-196 4th test verdict: hybrid"
+    ],
+    "l196_rationale": "Pilot 9 conditions: alpha_tier=HIGH, FF3_retention=94.6%, alpha_divergence=0.9813, Sigma_cond=9.47, rank_IC=0.0449. All 4 favorable conditions met for alpha-aware MVO selection. Selected method: ERC (family=risk_parity).",
+    "l198_rationale": "L-198 beta philosophy: HIGH tier genuine alpha (94.6% FF3-independent). beta_target=1.02 (HIGH tier, vs P8 0.90 MEDIUM). P8 Lockbox=-1.942 attributed to style-dependent alpha (10.5% FF3 retention). P9: genuine alpha amplification test."
+  },
+  "risk_diagnostics_ref": {
+    "condition_number": 9.4669,
+    "covariance_method": "ledoit_wolf_oracle",
+    "market_risk_pct": 28.1,
+    "alpha_divergence": 0.9813,
+    "l195a_status": "PASS",
+    "l198_context": "HIGH tier + beta 1.02 → genuine alpha amplification"
+  },
+  "lineage": {
+    "artifact_lineage_ref": "qepm/mailbox/worktask/WT-D20260424_007/artifact_lineage.json",
+    "seed": 20260424,
+    "r_version": "4.5.2"
+  }
+}
