@@ -1,0 +1,122 @@
+{
+  "task_id": "WT-D20260424_003",
+  "validated_at": "2026-04-24T00:00:00+0900",
+  "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
+  "train_window": {
+    "start": "2012-01-21",
+    "end": "2022-01-21"
+  },
+  "val_window": {
+    "start": "2022-01-22",
+    "end": "2024-01-22"
+  },
+  "lockbox_sealed": true,
+  "train": {
+    "rank_ic": 0.0318,
+    "icir": 0.403,
+    "harvey_t": 4.42,
+    "n_months": 120,
+    "dsr": 0.039
+  },
+  "validation": {
+    "rank_ic": 0.0386,
+    "icir": 0.521,
+    "harvey_t": 2.55,
+    "n_months": 24
+  },
+  "subperiod_stability": 1,
+  "subperiod_ic": {
+    "S1": 0.0338,
+    "S2": 0.027,
+    "S3": 0.0375
+  },
+  "regime_ic": {
+    "Normal": 0.0286,
+    "Transition_LR": 0.0584
+  },
+  "l191_sign_check": true,
+  "graduation_check": {
+    "rank_ic": false,
+    "icir": true,
+    "harvey_t": true,
+    "dsr": false,
+    "subperiod": true,
+    "breadth": true,
+    "l191_sign": true
+  },
+  "graduation_status": "CONDITIONAL",
+  "pit_compliance": {
+    "C1": true,
+    "C2": true,
+    "C3": true,
+    "C4": true,
+    "C5": true,
+    "C13": true,
+    "C14": true
+  },
+  "individual_factor_diag": {
+    "C04_ESBR": {
+      "rank_ic": 0.0294,
+      "icir": 0.3603,
+      "harvey_t": 3.9464,
+      "val_ic": 0.0223,
+      "val_icir": 0.3136,
+      "n_train": 120
+    },
+    "C01_SUE": {
+      "rank_ic": 0.0243,
+      "icir": 0.3137,
+      "harvey_t": 3.436,
+      "val_ic": 0.0108,
+      "val_icir": 0.2134,
+      "n_train": 120
+    },
+    "AC21_CF_to_Accrual_Ratio": {
+      "rank_ic": 0.0304,
+      "icir": 0.3239,
+      "harvey_t": 3.5481,
+      "val_ic": 0.0201,
+      "val_icir": 0.2239,
+      "n_train": 120
+    }
+  },
+  "parent_task_id": "WT-D20260424_002",
+  "agent": "alpha",
+  "model": "claude-opus-4-7",
+  "inheritance_mode": "FULL_SIGNAL_INHERIT",
+  "inheritance_rationale": "Pilot 4 RAPC signal (ESBR+SUE+Accrual IC-weighted expanding composite) inherited unchanged. Pilot 5 adds beta diagnosis + residual IC analysis for Risk Agent hedge design.",
+  "beta_diagnosis_summary": {
+    "portfolio_beta_full": 0.789,
+    "portfolio_beta_rolling_mean": 0.7629,
+    "portfolio_beta_last_252d": 0.7674,
+    "portfolio_beta_60m": 0.8341,
+    "market_risk_contribution_pct": 60.9,
+    "judge_gate_d_threshold_pct": 40,
+    "gate_d_gap_pp": 20.9,
+    "bimodality_detected": true,
+    "bimodal_modes": [0.7, 0.9],
+    "key_distorters": ["A028050", "A005290", "A365340"],
+    "key_anchors": ["A029780", "A001680"]
+  },
+  "residual_ic_summary": {
+    "method": "cross_sectional_rank_ic_monthly_2012_2023",
+    "raw_ic": 0.0325,
+    "raw_icir": 0.6514,
+    "raw_harvey_t": 7.79,
+    "capm_residual_ic": 0.0316,
+    "capm_residual_icir": 0.6362,
+    "capm_retention_pct": 97.4,
+    "ff3_residual_ic": 0.0034,
+    "ff3_retention_pct": 10.5,
+    "hedge_compatibility": "HEDGE_COMPATIBLE",
+    "note": "CAPM retention 97.4% (vs Sonnet estimate 81.5%). FF3 retention 10.5% means size+value explain most non-market signal."
+  },
+  "pit_compliance_extended": {
+    "C1": "PASS: rolling window + monthly cross-section only",
+    "C2": "PASS: t-1 close returns",
+    "C3": "PASS: signal-to-forward-return lag maintained",
+    "C13": "PASS: Z_Score_Aligned reproduced via direction negation",
+    "C14": "PASS: only Usable_Date <= sig_date factor data used",
+    "C15": "PASS: Factor DB accessed via load_month_factors() equivalent"
+  }
+}
