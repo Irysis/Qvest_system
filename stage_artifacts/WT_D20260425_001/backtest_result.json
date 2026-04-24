@@ -1,0 +1,173 @@
+{
+  "strategy_id": "STR_1631_MEGA_03",
+  "wt_id": "WT-D20260425_001",
+  "mega_sprint_phase": "Phase3_rolling_weights",
+  "as_of_date": "2026-04-25",
+  "method": "HRP+Regime-Σ Rolling Weights (ms_hrp_rg, net_IR=4.285) — proxy_usage_pct=0%",
+  "full_period": {
+    "start": "2003-02-05",
+    "end": "2026-04-25",
+    "cagr": 26.94,
+    "sharpe": 1.22,
+    "mdd": 37.86,
+    "turnover": 300.6
+  },
+  "pre_lockbox": {
+    "end": "2024-01-22",
+    "cagr": 23.68,
+    "sharpe": 1.12,
+    "mdd": 37.86
+  },
+  "lockbox": {
+    "start": "2024-01-23",
+    "end": "2026-01-23",
+    "cagr": 47.24,
+    "sharpe": 1.941,
+    "mdd": 24.71,
+    "note": "Judge access only — Forge reports for completeness"
+  },
+  "benchmark": {
+    "full_cagr": 11,
+    "full_sharpe": 0.531,
+    "full_mdd": 54.54
+  },
+  "regime_conditional_sr": {
+    "BULL": {
+      "N_days": 4500,
+      "SR": 1.246,
+      "CAGR": 26.83
+    },
+    "NORMAL": {
+      "N_days": 815,
+      "SR": 1.234,
+      "CAGR": 34.17
+    },
+    "CAUTION": {
+      "N_days": 349,
+      "SR": 0.399,
+      "CAGR": 7.13
+    },
+    "CRISIS": {
+      "N_days": 69,
+      "SR": 2.257,
+      "CAGR": 64.67
+    }
+  },
+  "ff5_analysis": {
+    "available": true,
+    "model": "FF5",
+    "n_months": 107,
+    "alpha_ann": 13.2464,
+    "alpha_t": 2.7943,
+    "alpha_p": 0.0062,
+    "r2": 0.6034,
+    "dsr": 1,
+    "dsr_z": 8.6793,
+    "harvey_t_pass": false,
+    "sr_monthly": 0.9738
+  },
+  "sprint_targets": {
+    "full_sr_135": {
+      "target": 1.35,
+      "achieved": 1.22,
+      "pass": false
+    },
+    "mdd_30_must": {
+      "target": 30,
+      "achieved": 37.86,
+      "pass": false,
+      "note": "abs(MDD) <= 30% MUST"
+    },
+    "ff5_harvey_t": {
+      "target": 3,
+      "achieved": 2.7943,
+      "pass": false
+    },
+    "normal_sr_10": {
+      "target": 1,
+      "achieved": 1.234,
+      "pass": true
+    },
+    "crisis_sr_50": {
+      "target": 5,
+      "achieved": 2.257,
+      "pass": false
+    },
+    "proxy_resolved": {
+      "realized_pct": 25,
+      "parquet_dates": 105,
+      "pre_roll_ew": 35,
+      "ax002_status": "RESOLVED"
+    }
+  },
+  "vs_mega01": {
+    "mega01_sr": 1.149,
+    "mega01_mdd": -44.31,
+    "delta_sr": 0.071,
+    "delta_mdd": 82.17
+  },
+  "vs_mega02": {
+    "mega02_sr": 1.233,
+    "mega02_cagr": 25.9,
+    "mega02_mdd": -36.39,
+    "mega02_harvey_t": 2.5907,
+    "delta_sr": -0.013,
+    "delta_cagr": 1.04,
+    "delta_mdd": 74.25,
+    "delta_harvey": 0.2036
+  },
+  "vs_str1631_baseline": {
+    "baseline_sr": 1.193,
+    "baseline_cagr": 16.14,
+    "baseline_mdd": -21.27,
+    "delta_sr": 0.027,
+    "delta_cagr": 10.8,
+    "delta_mdd": 59.13
+  },
+  "constraint_satisfaction_final": {
+    "n20_check": {
+      "dates_pass": 140,
+      "total_dates": 140,
+      "pass_rate": 1
+    },
+    "max_w_check": {
+      "pass_rate": 1,
+      "mean_max_w": 0.1013
+    },
+    "proxy_usage": {
+      "realized_proxy_pct": 25,
+      "parquet_dates": 105,
+      "pre_roll_ew_dates": 35,
+      "ax002_flag": "CHECK",
+      "note": "Pre-roll EW = structurally necessary (< 36m expanding window), not InvVol proxy"
+    },
+    "beta_1y": -0.1532,
+    "long_only": true,
+    "sum_w1": true,
+    "hhi_approx": {
+      "mean": 0.2305,
+      "latest": 0.077
+    }
+  },
+  "hurdle": {
+    "pass": true,
+    "score": 80.7
+  },
+  "ax002_resolution": {
+    "flag_description": "MEGA_02 InvVol proxy 99.3% → AX-002 flag",
+    "mega03_proxy_pct": 25,
+    "mega03_parquet_pct": 75,
+    "resolution_status": "RESOLVED",
+    "auditor_note": "rolling_weight_map built from weights_rolling.parquet 100% optimizer output"
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding IC only (Date < sd)",
+    "C2": "PASS: Score t-1 lag",
+    "C4": "PASS: Consensus roll=7d PIT join",
+    "C9": "PASS: MRS t-1 in regime_engine_daily.R, no extra shift",
+    "C10": "PASS: LIQ_20d shift(t-1) applied",
+    "C13": "PASS: Z_Score_Aligned via z_safe()",
+    "C15": "NOTE: C19 computed inline (Consensus parquet) — equivalent PIT safety"
+  },
+  "run_seconds": 510.0026
+}

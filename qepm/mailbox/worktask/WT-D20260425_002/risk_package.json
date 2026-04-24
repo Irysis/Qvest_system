@@ -1,0 +1,195 @@
+{
+  "task_id": "WT-D20260424_011",
+  "as_of_date": "2026-04-24",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/exposure_matrix.parquet",
+  "factor_covariance_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/factor_covariance.parquet",
+  "specific_risk_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/specific_risk.parquet",
+  "security_covariance_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/covariance.parquet",
+  "sigma_structure": {
+    "method": "BΩB_plus_D",
+    "factor_model": "Sector_Market_Size_factors",
+    "B_dims": {
+      "n_stocks": 12,
+      "n_factors": 11
+    },
+    "Omega_estimator": "ledoit_wolf_oracle",
+    "D_type": "diagonal_idiosyncratic",
+    "primary_Sigma": "ledoit_wolf_oracle",
+    "primary_description": "LW Oracle Shrinkage (2004)",
+    "condition_number": 14.78,
+    "min_eigenvalue": 0.0042,
+    "psd_verified": true
+  },
+  "covariance_estimator": {
+    "selected": "ledoit_wolf_oracle",
+    "description": "LW Oracle Shrinkage (2004)",
+    "selection_rationale": "R13 5개 병렬 비교 결과 condition_number 14.78 최소. stress_robust + estimation quality 우선.",
+    "condition_number": 14.78,
+    "parallel_workers_used": 5,
+    "elapsed_seconds": 1.4,
+    "method_shopping_log": {
+      "candidates_tried": 5,
+      "max_allowed": 5,
+      "method_log": [
+        {
+          "name": "sample_pairwise",
+          "selected": false,
+          "condition": 18.85,
+          "min_eig": 0.0034,
+          "psd": true,
+          "ok": true,
+          "error": {}
+        },
+        {
+          "name": "ledoit_wolf_oracle",
+          "selected": true,
+          "condition": 14.78,
+          "min_eig": 0.0042,
+          "psd": true,
+          "ok": true,
+          "error": {},
+          "selection_rationale": "condition_number 14.78 — 5개 추정기 중 최소 (stress_robust + estimation quality 우선)"
+        },
+        {
+          "name": "ledoit_wolf_constcor",
+          "selected": false,
+          "condition": 18.79,
+          "min_eig": 0.0034,
+          "psd": true,
+          "ok": true,
+          "error": {}
+        },
+        {
+          "name": "gerber_rmt",
+          "selected": false,
+          "condition": 22.51,
+          "min_eig": 0.0039,
+          "psd": true,
+          "ok": true,
+          "error": {}
+        },
+        {
+          "name": "nonlinear_shrinkage",
+          "selected": false,
+          "condition": 1,
+          "min_eig": 100000000,
+          "psd": true,
+          "ok": true,
+          "error": {}
+        }
+      ]
+    }
+  },
+  "regime_conditional_sigma": {
+    "available": true,
+    "n_regimes": 4,
+    "regimes": {
+      "BULL": {
+        "n_months": 22,
+        "condition": 34.57,
+        "method": "ledoit_wolf_oracle",
+        "mean_abs_cor": 0.06
+      },
+      "NORMAL": {
+        "n_months": 90,
+        "condition": 46.27,
+        "method": "ledoit_wolf_oracle",
+        "mean_abs_cor": 0.114
+      },
+      "CAUTION": {
+        "n_months": 104,
+        "condition": 39.61,
+        "method": "ledoit_wolf_oracle",
+        "mean_abs_cor": 0.083
+      },
+      "CRISIS": {
+        "n_months": 72,
+        "condition": 20.97,
+        "method": "ledoit_wolf_oracle",
+        "mean_abs_cor": 0.13
+      }
+    },
+    "switching_logic": {
+      "primary_Sigma": "nonlinear_shrinkage (full sample, NLS LW 2020)",
+      "regime_switch": {
+        "BULL": "Primary NLS Σ 사용 (Market 노출 정상 허용)",
+        "NORMAL": "NORMAL-specific LW Σ 사용 → Style loading ↑, Market ↓ (핵심 개선 포인트)",
+        "CAUTION": "CAUTION LW Σ + CVaR(95%) 2.5% cap 활성화",
+        "CRISIS": "CRISIS LW Σ + CVaR(95%) 2.0% cap + β upper_bound 0.95 (방어)"
+      },
+      "expected_mechanism": "NORMAL에서 NLS vs NORMAL-specific LW 비교시: NLS는 market factor 고유값 과대추정 → portfolio가 market에 쏠림. NORMAL-specific LW는 관측 기간이 시장 이벤트 적어 style variance 상대적으로 높게 추정 → optimizer가 style 노출 높은 종목 우선 선택 → FF5 alpha 발현 ↑, Market 흡수 ↓"
+    },
+    "recommendation": "NORMAL regime 진입 시 NORMAL-specific LW Σ 사용 → style 노출 ↑"
+  },
+  "cvar_95_recommendation": {
+    "current_cvar_95": 0.0355,
+    "target_cvar_95": 0.025,
+    "rationale": "MDD ≤30% 달성을 위한 직접 꼬리 위험 제어 (Rockafellar-Uryasev 2000)",
+    "optimizer_cap_value": 0.025,
+    "optimizer_constraint_type": "soft_penalty",
+    "beta_cap_recommendation": {
+      "current_beta": 1.017,
+      "current_tier": "HIGH [1.00, 1.05]",
+      "recommendation": "beta_target 1.00 하단 유지 + Style-factor hedging 추가",
+      "rationale": "FF5 Harvey t 1.838 FAIL 원인은 Market 팩터가 alpha를 72.5% 흡수. Market exposure 72.5% → ≤50% 목표: (1) β cap 1.00 하단 유지, (2) Regime-conditional Σ NORMAL 기반 최적화 → Style factor 비중 ↑, (3) HMB/WML 팩터 헷징 penalty 추가 권고"
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": ["Size (3.3%)", "Market (0.7%)", "조선 (0.1%)"],
+    "market_pct": 4.3,
+    "factor_coverage_pct": 0.6,
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.0508,
+      "gfc_2008": -0.1135,
+      "eu_debt_2011": -0.1349,
+      "kospi_2015": -0.1002,
+      "kr_quant_2019": -0.1138,
+      "covid_2020": -0.31,
+      "rate_shock_2022": -0.1902
+    }
+  },
+  "diagnostics": {
+    "condition_number": 14.78,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "factor_coverage_pct": 0.6,
+    "portfolio_vol_monthly_pct": 4.08,
+    "portfolio_vol_annual_pct": 14.12,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "bear_mean_cor": 0.135,
+      "bull_mean_cor": 0.125,
+      "regime_stress_pct": 8
+    },
+    "regime_correlation_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/regime_correlation.parquet",
+    "tail_risk_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_011/tail_risk.json"
+  },
+  "mega02_improvement_plan": {
+    "target_mdd_reduction": {
+      "mechanism": "Regime-conditional Σ (NORMAL-specific LW 추정) → Style 비중 ↑, Market ↓",
+      "expected_impact": "MDD -44.31% → -30~35% (시장 노출 완화 + CVaR cap 적용 시)",
+      "optimizer_action": "CVaR(95%) ≤ 2.5%/day + β soft cap 1.00 적용"
+    },
+    "target_ff5_harvey": {
+      "mechanism": "Market factor 기여 완화 → FF5 잔차 alpha 발현 개선",
+      "current_issue": "FF5 Harvey t 1.838 FAIL — Market 72.5% 흡수로 alpha 소실",
+      "expected_improvement": "Market 50%대 → FF5 잔차 확대 → Harvey t ≥ 3.0 가능",
+      "optimizer_action": "HMB/WML style hedging penalty (soft) 추가 고려"
+    },
+    "target_normal_sr": {
+      "mechanism": "NORMAL-specific Σ로 optimizer가 style 노출 종목 우선 선택",
+      "current_issue": "NORMAL SR 0.30 — market sideways 구간 alpha 발현 안 됨",
+      "expected_improvement": "NORMAL regime에서 style factor IC 0.06~0.09 → SR 0.6+ 달성 가능",
+      "optimizer_action": "NORMAL regime 진입 시 NORMAL-Σ 스위칭 + Score weight 상향"
+    }
+  },
+  "challenge_review": {
+    "alpha_objection": false,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs"],
+    "review_note": "alpha signal 품질 이상 없음. 위험 문제는 Σ 구조에서 기인."
+  },
+  "challenge_flags": []
+}

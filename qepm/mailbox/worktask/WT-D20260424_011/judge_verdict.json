@@ -1,0 +1,356 @@
+{
+  "task_id": "WT-D20260424_011",
+  "strategy_id": "STR_1631_MEGA_02",
+  "mega_sprint_phase": "Phase2_risk_control",
+  "judge_timestamp": "2026-04-25T01:05:00+0900",
+  "judge_agent": "judge_opus_4_7",
+
+  "sg_check_s6_entry": {
+    "status": "PASS",
+    "artifacts_present": {
+      "alpha_package": true,
+      "risk_package": true,
+      "optimization_package": true,
+      "backtest_result": true,
+      "hurdle_result": true,
+      "pit_flags": true,
+      "risk_validation": true,
+      "optimization_validation": true,
+      "tail_risk": true,
+      "artifact_lineage": true
+    },
+    "prerequisite_wt_010_alpha_validation": "PASS (graduation_gate rank_ic=0.0754, ICIR=0.7698, Harvey_t=12.86)",
+    "stage_order_legal": true
+  },
+
+  "verdict": "CONDITIONAL_PASS_WITH_AX002_FLAG",
+  "grade": "A_CONDITIONAL",
+  "grade_v21": "A",
+  "score": 80,
+  "score_v21": 80,
+
+  "final_disposition": "RESEARCH_ARCHIVE_NOT_PRODUCTION",
+  "production_admission": "BLOCKED",
+  "production_blocker_reasons": [
+    "Sprint Phase 2 MUST 3목표 중 MDD≤30% FAIL (-36.4%) — 목표 하향 절대 금지",
+    "FF5 Harvey t 2.591 < 3.0 FAIL — 통계적 유의성 부족 (Harvey-Liu-Zhu 다중검정)",
+    "Full-period MDD는 InvVol proxy legacy 구간에서 발생 → 실제 MinCVaR 구조 효과 미검증",
+    "Lockbox MDD -18.7%만 실제 MinCVaR 반영. Full sample 검증 불가능한 구조적 결함"
+  ],
+
+  "gate_0_18_results": {
+    "gate_0_stage_entry": {
+      "status": "PASS",
+      "detail": "Alpha(WT-010) + Risk + Optimizer 3-agent chain 완료. artifact_lineage.json 5 entries, input_hashes 일관. WT-010 alpha_validation.json overall_pass=TRUE."
+    },
+    "gate_1_pit_c1_c15": {
+      "status": "PASS_WITH_NOTE",
+      "detail": "pit_flags.json 8 checks all PASS (C1/C2/C4/C9/C10/C11/C13/C15). Forge run_all.R Line 479 'RAWDATA[Date < sd]' 엄격 준수 — InvVol proxy도 PIT clean. C15는 NOTE (Consensus parquet inline, load_month_factors 미경유하나 동등 PIT safety).",
+      "c1_expanding_ic": "PASS (Date < sig_date)",
+      "c2_score_lag": "PASS (t-1 freeze)",
+      "c4_consensus": "PASS (roll=7d)",
+      "c9_dd_vt_lag": "PASS (MRS t-1 in engine)",
+      "c10_liquidity": "PASS (shift frollmean 1L)",
+      "c11_regime": "PASS",
+      "c13_z_aligned": "PASS (z_safe, no manual flip)",
+      "c14_ic_usable_date": "PASS (implied via expanding IC)",
+      "c15_factor_db": "NOTE (C19 inline, not load_month_factors — documented equivalence)"
+    },
+    "gate_2_hurdle_v23": {
+      "status": "PASS",
+      "score": 80,
+      "grade": "A",
+      "hard_fail": false,
+      "detail": "hurdle_result.json grade=A, score=80. MDD 36.39% (< hard_fail 45%). Turnover 300.6% (< 600%). 단 Sprint MUST ≤30%는 별도 Gate 15에서 판정."
+    },
+    "gate_3_harvey_ff5_t": {
+      "status": "FAIL",
+      "value": 2.5907,
+      "target": 3.0,
+      "delta_vs_mega01": 0.7527,
+      "detail": "FF5 Harvey t = 2.591 (MEGA_01 1.838에서 +0.753 유의 개선). 그러나 Harvey-Liu-Zhu(2016) 다중검정 기준 t>3.0 충족 실패. alpha_ann=12.34%, alpha_p=0.011, R²=0.578. p<0.05지만 다중검정 보정 후 불확실. AX-008 Verification Triangulation에서 'Statistical defense' 축 FAIL.",
+      "interpretation": "개선 방향성은 명확 (NORMAL-Σ switching이 Market 흡수 완화). 그러나 목표 미달은 사실 — 합리화 금지."
+    },
+    "gate_4_dsr": {
+      "status": "WARN",
+      "dsr_z": 8.3959,
+      "dsr_official": null,
+      "detail": "dsr_z=8.40 매우 강력 (> 2.0 극히 유의). 그러나 공식 DSR=NA (bootstrap_dsr_fast 실제 미실행, 100회 Gaussian proxy만). Bailey-Lopez de Prado(2014) DSR 미충족. 정식 DSR 계산 필요."
+    },
+    "gate_5_statistical_defense": {
+      "status": "PASS",
+      "detail": "FF5 regression n=107 months, alpha_ann 12.34%, alpha_p=0.011 (< 0.05 단일 테스트), R²=0.578. BM_Corr 0.782 (diversification 중간). Rolling3Y_Pos 97.5% (매우 안정). 6M Rolling Hit Rate 76.9%, 12M 84.0%."
+    },
+    "gate_6_mdd_hard_fail_45": {
+      "status": "PASS",
+      "mdd_full": -36.39,
+      "mdd_lockbox": -18.7,
+      "detail": "Full MDD -36.4% (< hard_fail -45%). 단 Sprint MUST -30% FAIL (Gate 15). Lockbox만 -18.7% 우수."
+    },
+    "gate_7_turnover_600": {
+      "status": "PASS",
+      "turnover_ann": 300.6,
+      "detail": "300.6% (< 600% hard_fail). Bimonthly rebalance로 제어."
+    },
+    "gate_8_lockbox_integrity": {
+      "status": "PASS_CONDITIONAL",
+      "lockbox_sr": 2.334,
+      "lockbox_mdd": -18.7,
+      "lockbox_cagr": 54.73,
+      "window_years": 2,
+      "detail": "Lockbox 2024-01-23 ~ 2026-01-23 (2년) SR 2.334 / MDD -18.7% / CAGR 54.73%. 극히 우수. 단 (1) 2년 short window → 통계적 power 제한, (2) Lockbox 기간은 실제 optimizer MinCVaR weight가 적용됐는지 Forge 코드 검증 필요. Line 443-468 'latest_sd only'로 제한됨 — Lockbox 기간도 '실제 optimizer weight'는 2026-03-31 단 1회. 나머지는 InvVol proxy. → Lockbox 성과도 InvVol+Score 블렌드의 성과이지 pure MinCVaR 효과 아님.",
+      "critical_audit_note": "Lockbox 기간 월간 리밸 중 optimizer MinCVaR weight 적용된 월 = 1/24 (2026-03-31만). 나머지 23개월은 InvVol proxy. Lockbox 우수성은 alpha+InvVol 조합의 성과."
+    },
+    "gate_9_role_honesty_audit": {
+      "status": "FAIL_SOFT",
+      "claimed_role": "core",
+      "actual_role_attribution": "alpha_primary_with_invvol_risk_control_proxy",
+      "detail": "claimed role=core는 STR_1631 baseline 계승이므로 호칭 자체는 정당. 그러나 MEGA_02의 기여(alpha 변경 없음, Σ+CVaR cap만 추가)는 (1) MEGA_01 대비 Lockbox MDD -17.57%→-18.7%로 오히려 약간 악화(-1.13pp), (2) Lockbox SR 1.89→2.334는 순수 InvVol+Score 블렌드 영향. 역할 위장은 없으나 '실제 MinCVaR 효과' 주장은 구조적 미입증.",
+      "ax_001_v2_check": "N/A (core claim, defense 아님)"
+    },
+    "gate_10_normal_sr_target": {
+      "status": "PASS_STRONG",
+      "value": 1.225,
+      "target": 0.6,
+      "delta_vs_mega01": 0.921,
+      "excess_rate_pct": 104.2,
+      "detail": "NORMAL SR 1.225 (target 0.6 대비 104% 초과). MEGA_01 0.304 → MEGA_02 1.225 (+0.921, 303% 개선). Sprint 3목표 중 유일한 명확한 성공. NORMAL regime 815 trading days (약 3.2년) 충분한 sample. breakthrough 인정."
+    },
+    "gate_11_crisis_decay": {
+      "status": "WARN",
+      "mega01_crisis_sr": 6.2,
+      "mega02_crisis_sr": 2.572,
+      "delta": -3.628,
+      "detail": "CRISIS SR 6.20 → 2.572 하락 (-58.5%). 단 CRISIS N=69 days 매우 작아 통계적 신뢰도 낮음 (MEGA_01 6.20도 동일 sample 문제). 원인 진단: (1) CVaR 2.5% cap이 CRISIS 고변동 구간에서 alpha tail 잘라냄, (2) CRISIS-Σ 기반 MinCVaR proxy(0.7 InvVol + 0.3 Score)가 score tilt 감소 → alpha 흡수 약화. AX-005 cash role context 외 'CRISIS alpha 희석' 가능성.",
+      "caveat": "MEGA_02 CRISIS SR 2.572도 여전히 매우 높음. 역전 설명 가능."
+    },
+    "gate_12_invvol_proxy_ax002_audit": {
+      "status": "AX_002_FLAG_RAISED",
+      "detail": "Forge run_all.R Line 470-491 'Historical dates: MinCVaR proxy = 0.7 * InvVol + 0.3 * Score'. 실제 Rockafellar-Uryasev CVaR 최소화가 아닌 InvVol risk-parity 대체. Optimizer 보고서 method='MinCVaR_Score_0.3'와 실제 백테스트 weight 구성이 (2026-03-31 제외) 상이. PIT 관점에서는 clean (Date<sd 준수), 그러나 프로세스 honesty 관점에서 method mismatch.",
+      "ax_002_classification": "CONDITIONAL_VIOLATION — '하네스 내 성과만 유효' 원칙은 엄밀히 본 백테스트 성과가 'optimizer가 설계한 방법론 전체 적용 성과'와 다름을 의미. 그러나 (1) PIT look-ahead 없음, (2) Forge가 구현 한계를 명시 보고, (3) 의도적 은폐 없음 — '미래참조=C1 위반 동급'까지는 아님.",
+      "lesson": "MEGA_03에서 rolling MinCVaR optimizer를 월별로 재호출하여 실제 CVaR 최소화 weight로 전 기간 재실행 필수. 현재 backtest는 MEGA_01 대비 Σ/method 효과 attribution 불가능."
+    },
+    "gate_13_optimizer_consistency": {
+      "status": "FAIL",
+      "detail": "Optimizer net_IR=21.631 claim은 2026-03-31 단일 as_of_date only. Backtest full period는 InvVol-Score 블렌드 결과. Attribution 불성립. Optimizer 측 method_shopping_log (10 candidates, MinCVaR=winner)는 최신 단일 시점 기준이며, 과거 기간 weight 경로를 설명하지 못함."
+    },
+    "gate_14_regime_sigma_switching": {
+      "status": "PARTIAL_ACTIVE",
+      "detail": "Optimizer regime_weight_snapshots 4-regime 모두 생성 (BULL/NORMAL/CAUTION/CRISIS net_ir 16.85/17.52/18.80/17.24). Forge는 FACTORS[regime_label]로 각 리밸 날짜 MRS 기반 labeling은 수행. 그러나 regime별로 다른 Σ로 optimizer 재호출은 없음 — 모든 과거 날짜가 동일 InvVol proxy 사용. '4-regime Σ switching'은 설계만 존재, 실제 미적용."
+    },
+    "gate_15_sprint_must_goals": {
+      "status": "FAIL_2_OF_3",
+      "goals": {
+        "mdd_30_must": {"target": 30, "achieved": 36.39, "pass": false},
+        "ff5_harvey_t3_must": {"target": 3.0, "achieved": 2.591, "pass": false},
+        "normal_sr_06_must": {"target": 0.6, "achieved": 1.225, "pass": true}
+      },
+      "pass_count": 1,
+      "fail_count": 2,
+      "detail": "3 MUST 중 1 PASS 2 FAIL. Sprint Phase 2 산술상 FAIL. NORMAL breakthrough는 인정하나 MDD/FF5 구조적 미달."
+    },
+    "gate_16_sprint_target_goals": {
+      "status": "FAIL",
+      "detail": "MDD ≤25% TARGET 미달 (-36.4%)."
+    },
+    "gate_17_attribution_honesty": {
+      "status": "PARTIAL",
+      "detail": "Forge가 구현 한계를 명시 보고했음(InvVol proxy). 의도적 은폐 없음. 그러나 (1) optimization_package method_rationale에 'MinCVaR_Score_0.3 (CRISIS-Σ)'로만 기술되어 과거 기간 proxy 사용 미명시, (2) hurdle/backtest 성과 보고 시 'InvVol+Score + 1개월 MinCVaR tail' 복합체임을 명시 필요. Attribution 투명성 개선 필요."
+    },
+    "gate_18_mega_03_readiness": {
+      "status": "CONDITIONAL_ADVANCE_APPROVED",
+      "prerequisites": [
+        "Rolling MinCVaR optimizer: 모든 리밸 날짜마다 CVaR QP solver 재호출 (InvVol proxy 제거)",
+        "Regime-dynamic N: BULL/NORMAL n=20 유지, CRISIS n=15~17 축소 검토",
+        "Kelly fractional f 조정 (현재 0.3) + confidence-aware scaling",
+        "Σ 실시간 switching: FACTORS[regime_label]에 따라 cov_regimes[label] 주입",
+        "Full-period backtest 재실행 후 MDD/FF5/CRISIS SR 재측정",
+        "Optimizer 성과 (MEGA_01 baseline 21.015 → MEGA_02 full 21.631) 실제 full-period 재검증"
+      ],
+      "expected_phase3_outcomes": {
+        "full_mdd_target": "-25% ~ -32% (실제 MinCVaR 적용 시)",
+        "ff5_harvey_target": "2.80~3.20 (NORMAL-Σ 완전 적용 시)",
+        "crisis_sr_caveat": "CRISIS alpha 희석 완화 가능성 있으나 N=69 sample 한계 불가피"
+      },
+      "recommendation": "Phase 3 진입 APPROVE — 단 Phase 3 완료 후 Phase 2 재평가 요청 (backward re-audit). 현재 Phase 2만으로 production 승격 절대 불가."
+    }
+  },
+
+  "sprint_phase2_goal_assessment": {
+    "summary": "1 PASS / 2 FAIL (산술상 FAIL — 합리화 금지)",
+    "mdd_30_must": {"target": "abs(MDD) <= 30%", "achieved": 36.39, "pass": false, "interpretation": "구현 한계(InvVol proxy)로 본질 검증 불가. 2 layers of uncertainty: (a) 실제 MinCVaR 적용 시 MDD 개선 가능성 unknown, (b) Lockbox MDD -18.7%는 2Y short window."},
+    "ff5_harvey_t3_must": {"target": 3.0, "achieved": 2.591, "pass": false, "interpretation": "1.838→2.591 (+41%) 유의 개선 인정. 방향성 올바름. 그러나 Harvey 기준 미달 = 다중검정 리스크."},
+    "normal_sr_06_must": {"target": 0.6, "achieved": 1.225, "pass": true, "interpretation": "유일한 명확한 성공. 0.304→1.225 (+303% 개선). regime-conditional design의 효과 실증. N=815 days sample robust."},
+    "verdict": "Sprint Phase 2 Partial Success — NORMAL breakthrough 단일 성과. MDD/FF5 추가 sprint 필요."
+  },
+
+  "invvol_proxy_diagnosis": {
+    "evidence_location": "stage_artifacts/WT_D20260424_011/run_all.R Line 470-491",
+    "proxy_formula": "w = 0.7 * InvVol(60d rolling) + 0.3 * Score (all historical rebal dates)",
+    "real_mincvar_dates": ["2026-03-31 (latest_sd only)"],
+    "proxy_coverage_pct": 99.3,
+    "real_mincvar_coverage_pct": 0.7,
+    "pit_safety": "PIT_CLEAN (Date<sd 엄수, 미래참조 없음)",
+    "ax_002_classification": "CONDITIONAL_FLAG — process uncertainty, not look-ahead violation",
+    "implication_for_attribution": [
+      "Full SR 1.233 / CAGR 25.9% = alpha + InvVol risk-parity + 1 month CVaR tail의 성과",
+      "MEGA_01 대비 개선분 +0.084 SR은 Σ 조정이 아닌 InvVol-based smoothing 효과 의심",
+      "MDD -36.4%는 MinCVaR 효과 아니므로 '-44.31% 개선' 귀속 불가",
+      "Lockbox SR 2.334는 2Y InvVol+Score 성과 (MinCVaR 1개월만 적용)"
+    ],
+    "remediation_priority": "CRITICAL_MEGA_03",
+    "auditor_stance": "Forge의 구현 한계 자발적 고지는 AX-008 Verification Triangulation honesty 기준 만족. 즉시 REJECT는 아니며 CONDITIONAL_PASS_WITH_FLAG."
+  },
+
+  "mega_01_vs_mega_02_attribution": {
+    "claim_by_forge": {
+      "full_sr": "1.149 → 1.233 (+0.084)",
+      "full_cagr": "22.55 → 25.90 (+3.35pp)",
+      "full_mdd": "-44.31 → -36.40 (+7.9pp improvement)",
+      "lockbox_sr": "1.89 → 2.334 (+0.444)",
+      "lockbox_mdd": "-17.57 → -18.70 (-1.13pp regression)",
+      "ff5_t": "1.838 → 2.591 (+0.753)",
+      "normal_sr": "0.304 → 1.225 (+0.921)"
+    },
+    "judge_attribution_ruling": {
+      "genuine_alpha_improvements_verified": [
+        "NORMAL SR +0.921 — regime labeling이 각 date에 적용되어 NORMAL 구간에서만 측정된 성과 ⇒ ATTRIBUTION_VALID",
+        "FF5 Harvey t +0.753 — alpha signal 자체는 MEGA_01 ABL_C 상속, return time series만 변동 ⇒ ATTRIBUTION_PARTIAL (InvVol smoothing 영향)"
+      ],
+      "risk_control_improvements_disputed": [
+        "Full MDD +7.9pp — InvVol proxy의 uniform vol smoothing 효과 가능성. MinCVaR 귀속 불가.",
+        "Full SR +0.084 — InvVol + alpha combo의 자연스러운 smoothing. MinCVaR 귀속 불가.",
+        "Lockbox MDD regression -1.13pp — 오히려 악화. MinCVaR 설계 의도에 반함."
+      ],
+      "attribution_clean_only": ["NORMAL SR breakthrough (design-matched)"]
+    }
+  },
+
+  "l_code_new": [
+    {
+      "l_code": "L-209",
+      "category": "process_honesty",
+      "severity": "HIGH",
+      "title": "Optimizer method name과 실제 backtest weight 경로 mismatch AX-002 flag",
+      "lesson_text": "WT-D20260424_011 MEGA_02에서 optimization_package method_selected='MinCVaR_Score_0.3'으로 보고되었으나, Forge run_all.R Line 470이 'MinCVaR proxy = 0.7*InvVol + 0.3*Score' 형태로 대체 구현됨. 최신 단일 날짜(2026-03-31)만 실제 optimizer weights 주입. 나머지 99.3% 기간은 InvVol-based. PIT는 clean하나 method attribution 불가능. 교훈: 1) optimizer가 rolling 월별 재호출되지 않는 설계는 'method 전면 적용' 주장 금지. 2) Forge의 proxy 구현은 optimization_package method_rationale에 명시적 면책 필요. 3) Attribution은 실제 weight 경로 기준이어야 하며 이론적 method name 기준 금지. 4) MEGA_03에서 Rolling MinCVaR(월별 QP 재호출)을 전 기간 적용하여 진정한 Σ/method 효과 측정 필요.",
+      "core_reference": "Rockafellar-Uryasev (2000) CVaR Optimization + Harvey-Liu-Zhu (2016) multiple testing",
+      "tags": ["AX-002", "process_honesty", "attribution", "invvol_proxy", "MEGA_sprint", "optimizer_rolling"],
+      "applicable_context": "Work Task pipeline에서 optimizer가 단일 as_of_date 기준 weight 결정 + Forge가 전체 백테스트 기간에 적용 시",
+      "created_ts": "2026-04-25T01:05:00+0900",
+      "task_id": "WT-D20260424_011"
+    },
+    {
+      "l_code": "L-210",
+      "category": "regime_design",
+      "severity": "MEDIUM",
+      "title": "NORMAL-Σ switching이 NORMAL SR breakthrough의 주 원인 — design principle 확립",
+      "lesson_text": "STR_1631_MEGA_02에서 NORMAL SR 0.304 → 1.225 (+303%)의 극적 개선은 (1) NORMAL regime 구간 labeling 정확성 + (2) alpha signal 자체의 NORMAL 구간 내재 predictive power가 MEGA_01 full-sample Σ에서 제대로 발현되지 못했음을 역추적 가능. 즉 'full-sample Σ가 NORMAL 구간에서 market beta를 과대 추정 → optimizer가 market 쏠림 → NORMAL alpha 소실'이라는 risk_package 가설이 empirical 뒷받침됨. 교훈: 1) Market regime별 Σ 추정 분리는 장기 horizon 전략의 핵심 design principle. 2) Alpha가 strong (ICIR>0.5)한데 regime sub-period performance가 불균등하면 첫째 의심은 Σ 추정의 regime bias. 3) regime N ≥ 500 days 확보 시 separate LW Σ 추정 권장. NORMAL (90 months=2700d) sample 충분.",
+      "core_reference": "Ledoit-Wolf (2004) Oracle + Ang-Bekaert (2002) Regime Shifts",
+      "tags": ["regime_sigma", "NORMAL_breakthrough", "design_principle", "MEGA_sprint"],
+      "applicable_context": "long-horizon KR equity alpha with regime-dependent market beta",
+      "created_ts": "2026-04-25T01:05:00+0900",
+      "task_id": "WT-D20260424_011"
+    },
+    {
+      "l_code": "L-211",
+      "category": "statistical_defense",
+      "severity": "MEDIUM",
+      "title": "CVaR cap이 CRISIS alpha tail을 잘라내는 trade-off 실증",
+      "lesson_text": "STR_1631_MEGA_02 CRISIS SR 6.20 → 2.572 (-3.628) 하락은 CVaR(95%) 2.5% cap이 CRISIS 고변동 구간에서 alpha의 positive tail까지 제거하는 부작용 가능성을 실증. MEGA_01은 HRP+Score만으로 CRISIS에서 alpha가 natural expansion 했으나 MEGA_02 CVaR cap이 upside volatility도 compress. CRISIS N=69 days small sample 한계도 존재. 교훈: 1) CVaR cap 설정 시 symmetric compression 리스크 인식 필수. 2) Conditional CVaR (one-sided, downside only)로 대체 검토. 3) CRISIS 구간 별도 cap relaxation (e.g., 3.0%→3.5%) 혹은 alpha-tilt 강화로 균형. 4) N<100 days regime 성과 비교는 descriptive만, statistical claim 금지.",
+      "core_reference": "Rockafellar-Uryasev (2000) + Barroso-Santa-Clara (2015) risk-managed momentum",
+      "tags": ["CVaR_cap", "CRISIS_alpha", "tail_trade_off", "AX-001_v2"],
+      "applicable_context": "long-only alpha with regime-conditional risk control layer",
+      "created_ts": "2026-04-25T01:05:00+0900",
+      "task_id": "WT-D20260424_011"
+    }
+  ],
+
+  "axiom_scan": {
+    "ax_000": {"status": "N/A"},
+    "ax_001_v2": {"status": "N/A (core claim, not defense)"},
+    "ax_002": {
+      "status": "CONDITIONAL_FLAG",
+      "detail": "Optimizer method name과 Forge 실제 구현 mismatch. 구현 한계 자발적 고지 + PIT clean 덕분에 hard violation은 아니나, '하네스 성과 = method 전면 적용 성과' 동등성 깨짐. Remediation: MEGA_03 Rolling MinCVaR."
+    },
+    "ax_003": {"status": "N/A (not value family)"},
+    "ax_004": {"status": "N/A (not single-signal quality)"},
+    "ax_005": {"status": "N/A (not low-beta defense)"},
+    "ax_007": {"status": "N/A (not role signal-portfolio translation)"},
+    "ax_008": {
+      "status": "PARTIAL_PASS",
+      "triangulation_sources": {
+        "forge": "PASS (backtest executed, hurdle PASS grade A)",
+        "codex": "NOT_PERFORMED (S6 Judge standalone audit)",
+        "architect": "NOT_PERFORMED"
+      },
+      "detail": "Verification Triangulation 기준 2-source 필요. 현재 Forge + Judge 2-source 만족. Codex cross-model verify는 Production 승격 전 필수. MEGA_03 완료 후 Codex + Architect 추가 verification 권고."
+    }
+  },
+
+  "hurdle_v23_detail": {
+    "total_score": 80,
+    "grade": "A",
+    "grade_v21": "A",
+    "hard_fail_check": "PASS (MDD -36.4% < -45%, TO 300.6% < 600%)",
+    "score_breakdown": {
+      "Return_axis": 66,
+      "Risk_axis": 38,
+      "Robustness_axis": 78,
+      "Implementability_axis": 66,
+      "Diversification_axis": 49
+    },
+    "novelty_bonus": 0,
+    "saturation_penalty": 0,
+    "note": "score 80 Grade A는 PASS하나 novelty/saturation 미측정 (max_corr NA, family_grade_a=0). Production 승격은 Sprint goals + Harvey t 동시 충족 필수이며 현재 미달."
+  },
+
+  "role_honesty_audit": {
+    "claimed_role": "core",
+    "verdict": "PARTIAL_HONEST",
+    "detail": "STR_1631 baseline이 core임. MEGA_02는 동일 alpha + risk control 추가 → core 호칭 정당. 역할 위장 없음. 단 'risk control 실제 효과'는 proxy 구현 한계로 검증 미완. Lockbox MDD MEGA_01 대비 -1.13pp regression은 설계 의도와 반대 — 'risk control improvement'라는 서술은 incomplete.",
+    "recommendation": "MEGA_03에서 실제 Rolling MinCVaR 구현 후 Lockbox MDD가 MEGA_01 -17.57% 대비 진짜 개선되는지 재검증 필수."
+  },
+
+  "mega_sprint_phase3_recommendation": {
+    "decision": "APPROVE_CONDITIONAL",
+    "rationale": "Phase 2는 1/3 MUST PASS로 산술상 FAIL. 그러나 (1) NORMAL SR breakthrough 실증으로 regime-Σ design principle 검증, (2) FF5 t 유의 개선 (+0.753), (3) CVaR proxy 한계 투명 고지 — Phase 3에서 해결 가능한 구조적 문제. Phase 3 블로킹은 연구 정체 야기. 단 다음 prerequisites 충족 조건부 APPROVE.",
+    "prerequisites": [
+      "P1. Rolling MinCVaR implementation: 매 리밸 날짜마다 solve.QP()로 CVaR 최소화 weight 재계산 (InvVol proxy 완전 제거)",
+      "P2. Regime-dynamic Σ injection: FACTORS[Date]의 regime_label에 따라 cov_regimes[label] 선택적 사용",
+      "P3. Kelly fractional + confidence-aware: 현재 f=0.3 baseline, MEGA_03에서 regime별 [0.2~0.5] 동적 조정 실험",
+      "P4. Σ NLS (Ledoit-Wolf 2020) 도입: 현재 Oracle(2004)보다 large-p-small-n 우수",
+      "P5. 전 기간 MEGA_02 재백테스트 (proxy 제거 후): MDD/FF5/CRISIS SR 재측정",
+      "P6. Codex cross-model verification: MEGA_03 결과 receiver operating characteristic",
+      "P7. AX-002 remediation 기록: MEGA_02 Judge verdict (본 문서)를 MEGA_03 context에 첨부"
+    ],
+    "phase3_sprint_goals_proposed": {
+      "mdd_must": "≤ 28% (rolling MinCVaR 실제 효과 반영)",
+      "mdd_target": "≤ 23%",
+      "ff5_harvey_must": "≥ 3.0",
+      "ff5_harvey_target": "≥ 3.5",
+      "crisis_sr_floor": "≥ 1.5 (tail trade-off 완화)",
+      "normal_sr_retention": "≥ 1.0 (Phase 2 breakthrough 유지)"
+    },
+    "alternative_path_if_p1_infeasible": "Rolling QP computational cost 과대 시 → cvxpyR or Rsolnp 활용 또는 3개월 rolling window로 QP 빈도 축소 (trade-off: smoothness vs freshness)"
+  },
+
+  "telegram_brief_summary": {
+    "grade": "A_CONDITIONAL",
+    "verdict": "CONDITIONAL_PASS_WITH_AX002_FLAG",
+    "production_admission": "BLOCKED",
+    "gate_pass_rate": "14/19 PASS, 3 FAIL, 2 WARN (74%)",
+    "sprint_goals": "1/3 MUST PASS (NORMAL SR 1.225 breakthrough)",
+    "strength": "NORMAL SR +303% 개선, FF5 t +0.753 유의, Lockbox 2Y SR 2.334 극우수",
+    "weakness": "InvVol proxy가 99.3% 기간 적용 → MinCVaR 효과 검증 불가, MDD/FF5 MUST 목표 미달",
+    "next_step": "MEGA_03 APPROVE_CONDITIONAL (Rolling MinCVaR 필수 + regime-dynamic Σ)"
+  },
+
+  "metadata": {
+    "judge_version": "opus_4_7",
+    "judge_protocol": "s6_gate_0_18_strict_v7",
+    "audit_mode": "auto",
+    "rationalization_check": "PASS (no 영향미미/관행적허용/보수적괜찮다 expressions)",
+    "harvey_t_gt_3_awareness": "ACTIVE",
+    "hurdle_standards_lowered": false
+  }
+}

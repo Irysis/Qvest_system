@@ -1,0 +1,315 @@
+{
+  "task_id": "WT-D20260425_003",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-25",
+  "signal_as_of": "2024-01-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "STR_1631_MEGA_05 Alpha Extension — Harvey Asymptote 돌파",
+  "hypothesis_summary": "MEGA_01 ABL_C 4F consensus (rank_IC=0.0754, ICIR=0.7698, Harvey_IC=12.86) 상속. H_1688 residual momentum은 KR에서 NEGATIVE IC (ICIR=-0.187) 확인 — challenge_flag 발행. PRIMARY: Option_C_6F (C01_SUE+C04_ESBR+C02_EPS_Chg_1m+C06_TP_Gap+Q07_Earnings_Stability+AC21_CF_to_Accrual_Ratio). rank_IC=0.0489, ICIR=0.6020, Harvey_IC=9.3455.",
+  "primary_config": {
+    "label": "Option_C_6F",
+    "factors": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C06_TP_Gap", "Q07_Earnings_Stability", "AC21_CF_to_Accrual_Ratio"],
+    "n_factors": 6,
+    "selected_from": "C_6F",
+    "selection_rationale": "ICIR 기준 최고 성능 셀 자동 선택: C_6F (ICIR=0.602)"
+  },
+  "alpha_vector": {
+    "A058470": 3.3916,
+    "A131290": 3.3656,
+    "A025540": 3.3042,
+    "A166090": 3.205,
+    "A014680": 2.9597,
+    "A007340": 2.916,
+    "A047080": 2.7385,
+    "A028260": 2.6686,
+    "A192390": 2.6267,
+    "A005850": 2.5785,
+    "A033500": 2.5652,
+    "A064760": 2.555,
+    "A121600": 2.523,
+    "A017370": 2.5003,
+    "A036930": 2.4526,
+    "A230360": 2.3948,
+    "A028050": 2.2874,
+    "A218410": 2.284,
+    "A092730": 2.2754,
+    "A033640": 2.2573
+  },
+  "confidence_vector": {
+    "A005850": 0.4182,
+    "A007340": 0.4457,
+    "A014680": 0.4685,
+    "A017370": 0.3789,
+    "A025540": 0.4517,
+    "A028050": 0.5348,
+    "A028260": 0.5464,
+    "A033500": 0.4868,
+    "A033640": 0.4933,
+    "A036930": 0.4933,
+    "A047080": 0.5201,
+    "A058470": 0.5118,
+    "A064760": 0.4959,
+    "A092730": 0.2974,
+    "A121600": 0.4529,
+    "A131290": 0.2166,
+    "A166090": 0.5164,
+    "A192390": 0.5062,
+    "A218410": 0.4644,
+    "A230360": 0.4131
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260425_003/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C01_SUE",
+      "formula": "Z_Score_Aligned[C01_SUE] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings revision upside from analyst surprise (SUE=standardised_unexpected_earnings)",
+      "weight_theta": 0.145,
+      "references": "Chan-Jegadeesh-Lakonishok 1996; Ball-Brown 1968"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C04_ESBR",
+      "formula": "Z_Score_Aligned[C04_ESBR] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings surprise breadth ratio — fraction of analysts revising up",
+      "weight_theta": 0.2005,
+      "references": "Jegadeesh-Kim 2006; Loh-Mian 2006"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C02_EPS_Chg_1m",
+      "formula": "Z_Score_Aligned[C02_EPS_Chg_1m] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "1-month EPS estimate change — near-term revision momentum",
+      "weight_theta": 0.1119,
+      "references": "Womack 1996; Stickel 1992"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C06_TP_Gap",
+      "formula": "Z_Score_Aligned[C06_TP_Gap] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Analyst target-price gap — implied upside to consensus PT",
+      "weight_theta": 0.009,
+      "references": "Brav-Lehavy 2003; Asquith-Mikhail-Au 2005"
+    },
+    {
+      "factor_family": "Quality_Earnings",
+      "proxy": "Q07_Earnings_Stability",
+      "formula": "Z_Score_Aligned[Q07_Earnings_Stability] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings stability = low variance of earnings growth. Crisis-period ICIR +0.753 (L-121).",
+      "weight_theta": 0.2806,
+      "references": "Novy-Marx 2013; QEPM L-121"
+    },
+    {
+      "factor_family": "Accrual_Quality",
+      "proxy": "AC21_CF_to_Accrual_Ratio",
+      "formula": "Z_Score_Aligned[AC21_CF_to_Accrual_Ratio] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Cash flow to accrual ratio = earnings quality, reverses accrual manipulation premium",
+      "weight_theta": 0.2529,
+      "references": "Sloan 1996; Richardson et al 2005; QEPM AC21"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0489,
+    "icir": 0.602,
+    "harvey_t_stat": 9.3455,
+    "dsr": 0.9084,
+    "monotonicity": 0.52,
+    "subperiod_stability": 0.4183,
+    "subperiod_ics": {
+      "p1_2008_2014": 0.069,
+      "p2_2015_2019": 0.0369,
+      "p3_2020_2024": 0.0289
+    },
+    "ff3_retention": 1,
+    "post_neutralization_ic": 0.0489,
+    "turnover_proxy": 0.5,
+    "n_months": 241,
+    "n_tickers": 20,
+    "alpha_divergence": 1
+  },
+  "ablation_results": {
+    "BASELINE": {
+      "cell": "BASELINE",
+      "rank_ic": 0.0429,
+      "icir": 0.5831,
+      "harvey_ic": 9.052,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.054,
+      "subperiod_p2": 0.0338,
+      "subperiod_p3": 0.0148,
+      "sub_stability": 0.2734,
+      "n_months": 241
+    },
+    "A_5F": {
+      "cell": "A_5F",
+      "rank_ic": 0.0426,
+      "icir": 0.502,
+      "harvey_ic": 7.7936,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0551,
+      "subperiod_p2": 0.0335,
+      "subperiod_p3": 0.0062,
+      "sub_stability": 0.1128,
+      "n_months": 241
+    },
+    "B_2SLEEVE": {
+      "cell": "B_2SLEEVE",
+      "rank_ic": 0.0354,
+      "icir": 0.3623,
+      "harvey_ic": 5.624,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0508,
+      "subperiod_p2": 0.0308,
+      "subperiod_p3": -0.0059,
+      "sub_stability": 0.116,
+      "n_months": 241
+    },
+    "C_6F": {
+      "cell": "C_6F",
+      "rank_ic": 0.0489,
+      "icir": 0.602,
+      "harvey_ic": 9.3455,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.069,
+      "subperiod_p2": 0.0369,
+      "subperiod_p3": 0.0289,
+      "sub_stability": 0.4183,
+      "n_months": 241
+    },
+    "PRIMARY": {
+      "cell": "PRIMARY",
+      "rank_ic": 0.0489,
+      "icir": 0.602,
+      "harvey_ic": 9.3455,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.069,
+      "subperiod_p2": 0.0369,
+      "subperiod_p3": 0.0289,
+      "sub_stability": 0.4183,
+      "n_months": 241
+    }
+  },
+  "harvey_ff5_projection": {
+    "mega01_harvey_ff5": 2.79,
+    "mega02_harvey_ff5": 2.591,
+    "mega03_harvey_ff5": 2.794,
+    "mega04_killed": true,
+    "asymptote_diagnosed": "MEGA_01→03 improvement rate decelerating: +0.75→+0.20→regression",
+    "primary_harvey_ic": 9.3455,
+    "ff5_ic_ratio_empirical": 0.217,
+    "projected_harvey_ff5": 2.0275,
+    "target_harvey_ff5": 3,
+    "gap_to_target": 0.9725,
+    "projection_caveat": "FF5 t-stat at portfolio level depends on Optimizer/Overlay; IC-level Harvey is pure alpha signal quality."
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 5,
+      "parallel_exec": false,
+      "rcpp_used": true,
+      "rcpp_functions": "bootstrap_dsr_fast",
+      "rolling_seconds": 60.0131,
+      "method_log": {
+        "BASELINE": {
+          "name": "MEGA_01_ABL_C_4F",
+          "rank_ic": 0.0429,
+          "selected": false
+        },
+        "A_5F": {
+          "name": "Option_A_5F_IC_weighted",
+          "rank_ic": 0.0426,
+          "selected": false
+        },
+        "B_2SLEEVE": {
+          "name": "Option_B_2Sleeve_70_30",
+          "rank_ic": 0.0354,
+          "selected": false
+        },
+        "C_6F": {
+          "name": "Option_C_6F_Orthogonal",
+          "rank_ic": 0.0489,
+          "selected": false
+        },
+        "PRIMARY": {
+          "name": "PRIMARY_Option_C_6F",
+          "rank_ic": 0.0489,
+          "selected": true
+        }
+      }
+    }
+  },
+  "challenge_flags": {
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "Reference count or subperiod stability borderline",
+      "detail": "refs=3, sub_stab=0.418"
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding IC weights (no full-sample stats used)",
+    "C2": "PASS: signal at sig_date, applied at t+1",
+    "C10": "PASS: AvgTV20 >= 2e8 lagged filter",
+    "C13": "PASS: Z_Score_Aligned from Factor DB, no manual sign flip",
+    "C14": "PASS: Factor DB Usable_Date <= sig_date (parquet by month)",
+    "C15": "PASS: load via factor_db parquet, not raw RAWDATA",
+    "lockbox": "ENFORCED: 2024-01-23 ~ 2026-01-23 excluded from all computations"
+  },
+  "references": [
+    "Fama-French (1993) — FF3 factor model",
+    "Harvey-Liu-Zhu (2016) — multiple testing, t>3.0",
+    "Jegadeesh-Kim (2006) — analyst revision signals",
+    "Chan-Jegadeesh-Lakonishok (1996) — earnings momentum (C01_SUE)",
+    "Blitz-Huij-Martens (2011) — residual momentum (H_1688 reference)",
+    "Carhart (1997) — momentum factor",
+    "Sloan (1996) — accrual anomaly (AC21)",
+    "Novy-Marx (2013) — quality/profitability (Q07)"
+  ],
+  "role_bias_tagging": "RoleBias_Core",
+  "graduation_status": {
+    "rank_ic_gate": {
+      "value": 0.0489,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "icir_gate": {
+      "value": 0.602,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "harvey_gate": {
+      "value": 9.3455,
+      "threshold": 3,
+      "pass": true
+    },
+    "sub_stab_gate": {
+      "value": 0.4183,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "dsr_gate": {
+      "value": 0.9084,
+      "threshold": 0.5,
+      "pass": true
+    }
+  }
+}

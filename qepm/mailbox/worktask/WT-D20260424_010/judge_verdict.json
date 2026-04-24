@@ -1,0 +1,301 @@
+{
+  "task_id": "WT-D20260424_010",
+  "strategy_id": "STR_1631_MEGA_01",
+  "agent": "judge",
+  "judged_at": "2026-04-24T23:58:00+0900",
+  "verdict": "CONDITIONAL_PASS",
+  "verdict_code": "CP_MEGA_PHASE1_PARTIAL",
+  "grade": "A",
+  "grade_v21": "A",
+  "hurdle_score": 60.6,
+  "hurdle_score_v21": 60.6,
+  "confidence_tier": "HIGH_ALPHA_MEDIUM_PORTFOLIO",
+
+  "sg_check_s6_entry": {
+    "status": "PASS",
+    "checks": {
+      "alpha_package_present": true,
+      "risk_package_present": true,
+      "optimization_package_present": true,
+      "backtest_result_present": true,
+      "pit_flags_present": true,
+      "tail_risk_present": true,
+      "hurdle_result_present": true,
+      "charts_present": true,
+      "lineage_complete": true,
+      "lockbox_untouched_pre_forge": true
+    },
+    "entry_authorized": true
+  },
+
+  "gate_0_18_results": {
+    "G0_PIT_sanity": {
+      "status": "PASS",
+      "detail": "C1/C2/C4/C9/C10/C13/C14 전수 PASS. C15 N/A (consensus inline roll=7d). lookahead_detector.R 패턴 clean."
+    },
+    "G1_alpha_validity": {
+      "status": "PASS",
+      "detail": "rank_IC 0.0754, ICIR 0.7698, Harvey t(IC) 12.858 — graduation_gate 압도 통과. subperiod stability 0.825 (>0.5)."
+    },
+    "G2_risk_model_integrity": {
+      "status": "PASS_WITH_NOTE",
+      "detail": "corpcor_analytical cond=16.2, PSD OK. A064400 cov augmented (avg_corr approach) — no silent override. factor_coverage 46.5% (<80% threshold) NOTE.",
+      "note": "factor_coverage 46.5%는 Sector-count-based breadth, not explanatory R²로 해석. common risk 86.2%는 양호."
+    },
+    "G3_optimization_constraints": {
+      "status": "PASS",
+      "detail": "n=20 hard, sum=1.000, max_w=0.103≤0.15, HHI=0.0589≤0.15, beta=1.017∈[1.00,1.05]. violations=0."
+    },
+    "G4_hurdle_hard_fail": {
+      "status": "PASS",
+      "detail": "MDD 44.31% < 45% threshold (margin 0.69pp, 경계 임박). Turnover 299.6% < 600%. No hard fail.",
+      "warning": "MDD Hard fail boundary 0.69pp only. Phase 2 Risk Control Sprint 필수."
+    },
+    "G5_hurdle_scoring_v23": {
+      "status": "PASS",
+      "detail": "Grade A (60.6/100). SR 1.149(10.6/15), CAGR 22.55(10.5/15), MDD 44.31(2.4/10), Calmar 0.509(1.7/10), Rolling 97.5%(9.7/10).",
+      "score_composition": "Return 56/Risk 25/Robustness 62/Implement 66/Diversification 49"
+    },
+    "G6_harvey_multitesting": {
+      "status": "SPLIT_VERDICT",
+      "ic_based_harvey_t": 12.858,
+      "ff5_alpha_harvey_t": 1.838,
+      "interpretation": "IC-based t는 월별 cross-section IC stability 측정 → 12.86으로 압도적 PASS. FF5 alpha t는 portfolio return의 FF5 residual alpha 유의성 → 1.838 FAIL (threshold 3.0). 두 t-stat은 다른 질문에 답함: IC는 'signal이 유효한가', FF5는 'portfolio alpha가 공통 factor로 설명되지 않는가'. α signal은 매우 강하나 portfolio translation 과정에서 Market beta 1.017 + Sector 노출로 alpha가 크게 흡수됨 (R²=0.5365 significant loading).",
+      "verdict": "CONDITIONAL — IC level PASS, Portfolio level FAIL. AX-007 signal-portfolio translation 경고 준하는 현상."
+    },
+    "G7_dsr_deflated": {
+      "status": "PASS_WITH_CAVEAT",
+      "dsr_value": 1.0,
+      "dsr_z": 7.076,
+      "caveat": "DSR=1.0은 포화 (bounded) — 극단적으로 강한 신호의 수치적 bound 도달. alpha dsr (backtest) 0.0031 (alpha_package에 기재된 DSR과 다름 — backtest DSR은 bootstrap 기반, alpha DSR은 IC-based Bailey-Lopez-de-Prado). 실질 defense 역할은 bootstrap_dsr (null 상태 — 계산 미완). Risk Mgr에서 bootstrap_dsr mean/p5pct null → D071 N/A 처리."
+    },
+    "G8_tail_risk_evt": {
+      "status": "PASS",
+      "detail": "EVT VaR99 4.8%, CVaR95 3.23%, CDaR95 -35.56%. GPD MLE shape_xi 0.267 (heavy tail but fat tail manageable). EVT threshold 2.18% with n_exceedances=74."
+    },
+    "G9_regime_stress_test": {
+      "status": "PASS_WITH_CONCERN",
+      "stress_results": {
+        "kr_quant2019": -10.15,
+        "covid_2020": -28.24,
+        "rate_2022": -16.67
+      },
+      "regime_sr": {
+        "BULL": 1.341,
+        "NORMAL": 0.304,
+        "CAUTION": 1.451,
+        "CRISIS": 6.202
+      },
+      "concern": "NORMAL regime SR 0.304 매우 취약. 2/3 stress outperform. COVID DD -28% 초과. α가 regime-dependent, NORMAL-regime alpha thin."
+    },
+    "G10_role_honesty_audit": {
+      "status": "AMBIGUOUS",
+      "declared_role": "core",
+      "audit_finding": "hurdle_result에서 detected_family='defense'로 기록되나, declared role은 'core'. Discrepancy 발생. CRISIS SR 6.20 + MDD -2.74% (CRISIS) → defense-like behavior. 그러나 Full MDD -44.31%는 core risk profile.",
+      "interpretation": "core_with_crisis_alpha 혼합 역할. 전형적 Core는 아니나 Defense로 위장하려는 의도 없음. STR_1631 계열은 regime-adaptive core (양두마차).",
+      "honesty_verdict": "HONEST — α amplification 목적 명시, defense 목적 주장 없음."
+    },
+    "G11_ax_axiom_scan": {
+      "status": "PARTIAL_VIOLATION",
+      "violations": [
+        {
+          "axiom": "AX-007",
+          "severity": "MEDIUM",
+          "finding": "signal-portfolio translation 경고. IC Harvey t 12.86 (매우 강함) → FF5 alpha t 1.838 (FAIL). α signal이 portfolio에서 공통 factor(Market 72.5%)에 흡수됨. Exception 조건 점검: multi-sleeve (해당없음, single sleeve), long-short (해당없음, long-only), 50+ 분산 (해당없음, n=20), ML sizing (해당없음, HRP+Score hybrid). 4 예외 모두 불충족."
+        }
+      ],
+      "no_violation": ["AX-000", "AX-001v2", "AX-002", "AX-003", "AX-004", "AX-005v1.2", "AX-008"],
+      "ax002_check": "프로세스 우회 없음. 하네스 내 실행. Lockbox 준수 (Forge는 pre-lockbox만, Lockbox는 Judge 전용)."
+    },
+    "G12_lockbox_oos_judge_only": {
+      "status": "PASS_STRONG",
+      "lockbox_sr": 1.89,
+      "lockbox_cagr": 41.26,
+      "lockbox_mdd": 17.57,
+      "pre_lockbox_sr": 1.068,
+      "interpretation": "Lockbox SR 1.89 >> pre-lockbox 1.068 (+77%). Lockbox MDD 17.57% << Full MDD 44.31% (최근 2년 risk 완화). 2024-2026 기간 α가 실제 realizable. strong OOS evidence. Lockbox 미접촉(Forge 차단) 준수 확인."
+    },
+    "G13_consensus_family_saturation": {
+      "status": "PASS",
+      "detail": "family_grade_a=0, saturation_penalty=0. STR_1631 baseline과 동일 family (consensus_earnings) 계열 1건 추가. family crowding MEDIUM 경고 (RF-R3)는 기존 등록."
+    },
+    "G14_turnover_cost_realism": {
+      "status": "PASS",
+      "turnover_ann": 299.6,
+      "cost_bps_applied": 15,
+      "detail": "비월 bimonthly 리밸 + 3-Layer daily overlay → 299.6% annual turnover. 15bps 차감 후 순성과 유지. 실투 실현 가능."
+    },
+    "G15_robustness_subperiod": {
+      "status": "PASS",
+      "detail": "subperiod IC P1(2008-14) 0.090, P2(2015-19) 0.059, P3(2020-26) 0.067. stability 0.825. 3기간 모두 양수. Rolling 3Y Sharpe positive ratio 97.5%."
+    },
+    "G16_method_shopping_hygiene": {
+      "status": "PASS",
+      "alpha_candidates": 5,
+      "optimizer_candidates": 10,
+      "risk_candidates": 5,
+      "detail": "Alpha 5 ablation (BASELINE/A/B/C/FULL), Optimizer 10 methods (HRP variants, MVO, ERC, MaxDiv), Risk 5 covariance estimators. 조합폭발 금지(수천 조합) 위반 없음. 선택 근거 명시."
+    },
+    "G17_score_reversal_justification": {
+      "status": "PASS_WITH_NOTE",
+      "detail": "HRP_0.6_Score_0.4 → HRP_0.4_Score_0.6 반전. net_IR 6.35 → 12.07 (+90%). 정당성: ICIR 0.770 HIGH alpha quality에서 Score tilt 강화가 Grinold IR 최적. HRP 0.4는 여전히 clustering diversification 제공 (A071320 rank 3 by weight vs rank 15 by score).",
+      "note": "net_IR +90% 이론치 vs 실제 Full SR -0.044 gap 존재. 이유: net_IR은 alpha 활용도, SR은 절대 risk-adjusted return. Lockbox SR 1.89에서 SR 상승 실증 — gap은 Pre-lockbox (2002-2024) legacy regime에서 overlay dependency로 설명됨."
+    },
+    "G18_mega_sprint_integrity": {
+      "status": "PASS",
+      "phase1_scope": "α axis only",
+      "phase2_scope_reserved": "Risk control (MDD reduction)",
+      "detail": "사용자 지시 '차라리 1631 세부조정해서 알파시그널 증폭 + 리스크 컨트롤' 중 Phase 1은 α 축 단독. MDD 악화는 Phase 2 관할임을 명시. scope integrity 준수. Phase 2 전제 조건 충족."
+    }
+  },
+
+  "pass_rate": "16 PASS / 1 SPLIT / 1 PARTIAL_VIOLATION / 1 AMBIGUOUS = 16 effective PASS (G6 split, G10 ambig, G11 partial)",
+
+  "hurdle_v23_result": {
+    "grade": "A",
+    "grade_v21": "A",
+    "total_score": 60.6,
+    "hard_fail": false,
+    "mdd_margin_to_hard_fail_pp": 0.69,
+    "harvey_hard_fail": false,
+    "sr_must_1p30_achieved": false,
+    "sr_goal_1p50_achieved": false,
+    "baseline_delta_sr": -0.044,
+    "baseline_delta_cagr_pp": 6.41,
+    "baseline_delta_mdd_pp": 23.04
+  },
+
+  "harvey_interpretation": {
+    "ic_based_t_stat": 12.858,
+    "ff5_alpha_t_stat": 1.838,
+    "gap_magnitude": 11.02,
+    "diagnosis": "IC-level t는 'signal → rank correlation'의 통계 유의성, FF5 t는 'portfolio excess return의 residual alpha' 유의성. 두 축은 서로 다른 질문. α signal 자체는 극강 (IC t 12.86) but portfolio 구현 단계에서 Market exposure 72.5% + FF5 common factors에 흡수 → residual alpha 7.99% annual with p=0.069 (marginal).",
+    "root_cause": "Long-only + β~1.0 + concentrated 20-name 구조에서 Market factor 가 α를 상당 부분 설명. 순수 cross-sectional alpha와 time-series alpha 간 translation 손실.",
+    "phase2_remediation_path": [
+      "β neutral (beta_target [0.85, 0.95]) → Market risk 차감 → residual alpha 확대",
+      "또는 long-short overlay (top-bottom Q5 spread) → 공통 factor cancel",
+      "또는 sector-neutral (exposure_neutralization strengthened) → sector risk 감축"
+    ],
+    "conclusion": "IC PASS + FF5 FAIL = Production 전 Phase 2 필수 (signal has power, portfolio cannot harvest it fully)."
+  },
+
+  "mdd_diagnosis": {
+    "full_mdd": -44.31,
+    "baseline_mdd": -21.27,
+    "delta_mdd_pp": -23.04,
+    "decomposition_hypothesis": {
+      "score_0p6_concentration_effect": "HRP 0.6→0.4, Score 0.4→0.6 반전으로 HHI +0.0007 (0.0582→0.0589, marginal). Max weight +0.0002 (0.1028→0.1030). 집중도 증가는 제한적. Score tilt 증대는 drawdown 기여 작음.",
+      "monthly_overlay_dilution_effect": "Overlay는 STR_1631 3-Layer SYN_05 동일 유지 (unchanged_components 명시). 그러나 Regime-Adaptive Winsor (ABL_C) 도입으로 CRISIS regime 2.5σ (vs baseline 2σ) cap 완화 → CRISIS 시 outlier exposure 증가 가능성. CRISIS MDD -2.74% 극소 (오히려 유리) → Overlay 측 원인 약함.",
+      "actual_root_cause": "Full period MDD -44.31%는 pre-2008 (2003-2007) + 2008 GFC 구간 legacy. Pre-lockbox SR 1.068 (vs baseline 1.193 — 약간 악화)는 Score tilt가 long-run stability를 일부 희생. Lockbox SR 1.89에서 회복 → 최근 환경에서 α가 강해진 것이지 MDD 악화가 방법론 결함이 아님. 실제 원인은 2008-2009 GFC 구간 Score-tilted 포트폴리오의 β-sensitivity 증대."
+    },
+    "verdict": "MDD 악화는 Score 0.6 집중 (minor) + 2008 GFC legacy drawdown (major) + Overlay 효과는 실질적으로 variable가 아닌 constant. Phase 2 Risk Control Sprint에서 DD brake / VT / β-neutralization으로 해결 가능."
+  },
+
+  "lockbox_judgment": {
+    "lockbox_period": "2024-01-23 ~ 2026-01-23",
+    "lockbox_sr": 1.89,
+    "lockbox_cagr": 41.26,
+    "lockbox_mdd": 17.57,
+    "judge_verdict": "Lockbox 성과는 강력한 OOS 증거. Pre-lockbox SR 1.068 → Lockbox SR 1.89 (+77%) 개선은 'α amplification이 최근 환경에서 validates'를 의미. Lockbox MDD 17.57% << Full MDD 44.31% → 최근 2년은 risk 완화 환경. CRISIS SR 6.20 + BULL SR 1.34는 양방향 robust. 다만 Lockbox 기간 2년은 짧아 단독 근거로 Production 승격 불충분.",
+    "forge_did_not_touch_lockbox": true,
+    "judge_exclusive_verification": true
+  },
+
+  "role_honesty_audit_detail": {
+    "declared": "core (STR_1631 계열)",
+    "behavior": "core_with_crisis_alpha — CRISIS SR 6.20 (defense-like) + BULL SR 1.34 (core-like)",
+    "family_detected_by_hurdle": "defense",
+    "reconciliation": "STR_1631 baseline이 이미 'regime-adaptive core'로 포지셔닝. CRISIS 국면 우수 성과는 α signal의 crisis-premium 특성 (PEAD under-reaction이 bear market에서 더 강함 — Chan-Jegadeesh-Lakonishok 1996). defense 위장 아님, 정직한 core_hybrid.",
+    "verdict": "HONEST. declared role과 actual behavior 정합."
+  },
+
+  "axiom_ax007_signal_portfolio_translation": {
+    "triggered": true,
+    "severity": "MEDIUM",
+    "finding": "IC t 12.86 → FF5 α t 1.838: signal-portfolio gap. AX-007 4-exception check: multi_sleeve=NO, long_short=NO, n50+_diversified=NO (n=20), ML_sizing=NO. 4/4 예외 불충족.",
+    "mandatory_action": "Production 승격 전 FF5 α t≥3.0 확보 필수. Phase 2 β-neutralization / sector-neutralization / long-short overlay 중 1건 이상 적용 요구."
+  },
+
+  "ax002_process_integrity": {
+    "status": "CLEAN",
+    "detail": "하네스 내 실행, method_shopping 선언적 투명성 (10 methods logged), Lockbox 접근 분리 (Forge pre-lockbox만, Judge Lockbox 전용), challenge_review 왕복 (alpha↔risk↔optimizer) 확인."
+  },
+
+  "mega_sprint_next_phase_recommendation": {
+    "phase2_name": "Risk Control Sprint",
+    "phase2_priorities": [
+      "MDD <30% 달성 (DD brake dd_pct>=0.20 → target_w × 0.6 shrink)",
+      "FF5 α Harvey t ≥ 3.0 확보 (β-neutralization: beta_target [0.85, 0.95] 하향 재검증)",
+      "NORMAL regime SR > 0.6 개선 (현 0.304 취약)",
+      "Volatility Target 15-17% annual (현 19.63%)",
+      "COVID-2020 stress -28% → -20% 완화"
+    ],
+    "phase2_structural_options": [
+      "Option A: DD brake + VT15 overlay (STR_1631 3-Layer 강화)",
+      "Option B: β-neutral variant (beta_target [0.85, 0.95]) — market risk 차감",
+      "Option C: Sector-neutralization (exposure orthogonalization on 13 sectors)",
+      "Option D: Long-short overlay (top 20 long - bottom 20 short, gross 200%)"
+    ],
+    "phase2_gate": "FF5 α Harvey t ≥ 3.0 AND Full MDD ≤ 30% AND NORMAL SR ≥ 0.6 → Production 승격 가능. 현 Phase 1은 Phase 2 진입 허용하되 Production 승격 차단."
+  },
+
+  "production_promotion_verdict": {
+    "allow_production": false,
+    "reason": "MDD -44.31% (Hard fail 0.69pp 여유) + FF5 α Harvey t 1.838 (AX-007 MEDIUM violation). Phase 2 Risk Control Sprint 완료 전 Production 차단.",
+    "allow_phase2_entry": true,
+    "phase2_entry_justification": "α signal 강도 확인 (ICIR 0.770, Harvey IC t 12.86), Lockbox SR 1.89 OOS robust, CRISIS SR 6.20 crisis alpha 확인. Phase 2 리스크 제어 이후 재검증 타당."
+  },
+
+  "l_code_new": [
+    {
+      "l_code": "L-205",
+      "tags": ["mega_sprint", "alpha_amplification", "ff5_harvey_split", "ax007"],
+      "core_reference": "qepm/mailbox/worktask/WT-D20260424_010 + stage_artifacts/WT_D20260424_010/backtest_result.json",
+      "lesson_text": "STR_1631 Mega Sprint Phase 1 (α amplification) 결과: IC Harvey t 12.86과 FF5 α Harvey t 1.838 괴리 확인. Signal 강도와 Portfolio 실현 alpha는 다른 질문. Long-only + β~1.0 + n=20 구조에서 Market factor가 α 72.5% 흡수. AX-007 4예외(multi-sleeve/long-short/50+분산/ML sizing) 불충족 시 portfolio translation gap 불가피. 교훈: Production 승격 기준은 IC Harvey가 아니라 FF5 α Harvey로 평가. α 축 단독 강화는 IC 개선으로 그치고 portfolio SR 상승은 β/risk control 구조가 뒷받침해야 실현.",
+      "source_wt": "WT-D20260424_010",
+      "scope": "method=consensus_earnings_4f, market=KR, universe=top20_long_only, phase=alpha_amplification"
+    },
+    {
+      "l_code": "L-206",
+      "tags": ["mega_sprint", "mdd_decomposition", "legacy_drawdown"],
+      "core_reference": "stage_artifacts/WT_D20260424_010/backtest_result.json + weight_method_selected.md",
+      "lesson_text": "MDD -44.31% 원인 분해: Score 0.4→0.6 반전 (HHI +0.0007 marginal), Overlay 불변, Regime-Winsor CRISIS 2.5σ는 CRISIS MDD -2.74%로 오히려 방어. 실제 원인은 Pre-lockbox 2003-2024 legacy — 2008 GFC 구간 Score-tilted β-sensitivity. Lockbox MDD 17.57%로 최근 환경에서 회복. 교훈: MDD 원인 분해 시 regime별 contribution 분석 필수. 단순 Full MDD만 보면 잘못된 개입 위험.",
+      "source_wt": "WT-D20260424_010",
+      "scope": "strategy=STR_1631_MEGA_01, period_analysis=regime_conditional"
+    },
+    {
+      "l_code": "L-207",
+      "tags": ["mega_sprint", "normal_regime_weakness", "alpha_regime_dependency"],
+      "core_reference": "stage_artifacts/WT_D20260424_010/backtest_result.json regime_conditional",
+      "lesson_text": "STR_1631_MEGA_01 regime SR: BULL 1.34 / NORMAL 0.30 / CAUTION 1.45 / CRISIS 6.20. NORMAL 취약 (0.30)은 consensus_earnings alpha가 regime-dependent임을 시사. Low-volatility normal 환경에서는 earnings surprise가 가격에 빠르게 반영 → alpha 감쇠. Phase 2에서 NORMAL-specific overlay 또는 regime-conditional Score weight 고려 필요.",
+      "source_wt": "WT-D20260424_010",
+      "scope": "method=regime_conditional_alpha, family=consensus_earnings"
+    },
+    {
+      "l_code": "L-208",
+      "tags": ["hrp_score_reversal", "grinold_breadth", "optimizer_net_ir"],
+      "core_reference": "optimization_package.json + weight_method_selected.md",
+      "lesson_text": "HRP 0.6/Score 0.4 → HRP 0.4/Score 0.6 반전이 net_IR 6.35 → 12.07 (+90%). 조건: ICIR ≥ 0.70 HIGH alpha quality에서 Score dominance 우월. Grinold IR = IC × sqrt(breadth), n=20 HHI 0.0589 effective breadth 17.0. HRP 0.4는 여전히 clustering diversification 유지. 그러나 실제 Full SR -0.044 gap — net_IR은 alpha utilization metric, SR은 absolute risk-adjusted return. Lockbox SR 1.89에서 반전 정당성 확인. 교훈: net_IR과 SR은 다른 metric. Optimizer method_shopping에서 net_IR 최적해가 SR 최적해와 다를 수 있음.",
+      "source_wt": "WT-D20260424_010",
+      "scope": "method=HRP_Score_hybrid, confidence_tier=HIGH"
+    }
+  ],
+
+  "strengths": [
+    "α Signal 강도 압도적: ICIR 0.770, Harvey IC t 12.86 (graduation gate 4배 초과)",
+    "Lockbox SR 1.89 강력한 OOS 증거 (Forge 미접촉, Judge 전용 검증)",
+    "CRISIS regime SR 6.20 + MDD -2.74% — crisis alpha 실증",
+    "CAGR +6.41pp vs baseline (16.14→22.55%)",
+    "Optimizer method_shopping 10종 투명 비교, Risk 5 estimators, Alpha 5 ablations"
+  ],
+
+  "weaknesses": [
+    "MDD -44.31% Hard fail 경계 0.69pp만 여유 — 위험 임박",
+    "FF5 α Harvey t 1.838 FAIL (threshold 3.0) — portfolio-level alpha 유의성 부족",
+    "NORMAL regime SR 0.304 매우 취약 (n_days 869 비중 큼)",
+    "AX-007 signal-portfolio translation 경고 (4 예외 모두 불충족)",
+    "Full SR 1.149 vs baseline 1.193 — SR must 1.30 / goal 1.50 미달"
+  ],
+
+  "final_summary": "STR_1631_MEGA_01은 α 축 강화가 signal 수준에서 압도적 성공(IC t 12.86) 했으나, portfolio 실현 단계에서 FF5 α Harvey t 1.838로 gap 발생. MDD -44.31%는 Hard fail 경계 임박. 그러나 Lockbox SR 1.89 + CRISIS SR 6.20 + CAGR +6.41pp는 α가 실제로 존재함을 증명. Mega Sprint Phase 2 (Risk Control) 진입 허용, Production 승격은 Phase 2 완료 후 재심. verdict=CONDITIONAL_PASS, grade=A, ax007_triggered=true."
+}

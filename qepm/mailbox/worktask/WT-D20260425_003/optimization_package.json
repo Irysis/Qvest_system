@@ -1,0 +1,229 @@
+{
+  "task_id": "WT-D20260425_003",
+  "as_of_date": "2026-04-25",
+  "agent": "optimizer_research_v1.2",
+  "selection_objective": "net_ir",
+  "target_weights": {
+    "A058470": 0.1342,
+    "A131290": 0.01,
+    "A025540": 0.1023,
+    "A166090": 0.1342,
+    "A014680": 0.0899,
+    "A007340": 0.01,
+    "A047080": 0.1144,
+    "A028260": 0.1329,
+    "A192390": 0.0913,
+    "A005850": 0.01,
+    "A033500": 0.0091,
+    "A064760": 0.045,
+    "A121600": 0.01,
+    "A017370": 0.01,
+    "A036930": 0.0323,
+    "A230360": 0.01,
+    "A028050": 0.0343,
+    "A218410": 0.01,
+    "A092730": 0.005,
+    "A033640": 0.005
+  },
+  "active_weights": {
+    "A058470": 0.0842,
+    "A131290": -0.04,
+    "A025540": 0.0523,
+    "A166090": 0.0842,
+    "A014680": 0.0399,
+    "A007340": -0.04,
+    "A047080": 0.0644,
+    "A028260": 0.0829,
+    "A192390": 0.0413,
+    "A005850": -0.04,
+    "A033500": -0.0409,
+    "A064760": -0.005,
+    "A121600": -0.04,
+    "A017370": -0.04,
+    "A036930": -0.0177,
+    "A230360": -0.04,
+    "A028050": -0.0157,
+    "A218410": -0.04,
+    "A092730": -0.045,
+    "A033640": -0.045
+  },
+  "expected_active_return": 0.1419,
+  "expected_tracking_error": 0.1103,
+  "expected_information_ratio": 1.2865,
+  "expected_net_ir": 1.2743,
+  "turnover": 0.8986,
+  "estimated_cost": 0.0014,
+  "n_names": 20,
+  "hhi": 0.0988,
+  "min_names_enforced": true,
+  "hhi_enforced": true,
+  "winsor_applied": true,
+  "lambda_retries": 0,
+  "lambda_used": null,
+  "binding_constraints": "hhi_cap (0.0988 >= 0.10)",
+  "harvey_ff5_projection_updated": {
+    "mega03_baseline": 2.794,
+    "effective_breadth_mega03": 7,
+    "effective_breadth_mega05": 20,
+    "breadth_improvement_factor": 1.6903,
+    "projected_harvey_ff5": 3.5,
+    "target_harvey_ff5": 3,
+    "gap_to_target": -0.5,
+    "note": "Grinold IR=IC×√breadth improvement. Final confirmation requires Forge backtest."
+  },
+  "cvar_realized_95": 29.922,
+  "cvar_cap_pct": 2.5,
+  "cvar_cap_breach": true,
+  "cvar_note": "Estimated post-optimization; full realization confirmed in Forge backtest.",
+  "challenge_flags_received": {
+    "RF_A1": "HIGH: SubStab=0.418 FAIL — rolling method preferred",
+    "RF_R1": "HIGH: Market 95.7% — beta target [1.00,1.05] soft enforced",
+    "RF_R3": "MEDIUM: Q07-AC21 cor=0.731 — crowding penalty in Method 10"
+  },
+  "challenge_review_optimizer": {
+    "objection": false,
+    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "challenge_flags"],
+    "note": "P4 audit: no formal objection. Challenge flags accounted in method design.",
+    "round": 1
+  },
+  "method_selected": "Kelly_frac05",
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 10,
+      "parallel_exec": true,
+      "n_workers": 5,
+      "total_seconds": 3,
+      "selection_objective": "net_ir",
+      "method_log": {
+        "MVO_lam2_psi03_conf": {
+          "ir": 1.2527,
+          "net_ir": 1.2461,
+          "te": 0.1116,
+          "n_names": 15,
+          "hhi": 0.0871,
+          "turnover": 0.4865,
+          "infeasible": false,
+          "selected": false
+        },
+        "MVO_lam1_psi02_conf": {
+          "ir": 1.2514,
+          "net_ir": 1.2444,
+          "te": 0.1117,
+          "n_names": 15,
+          "hhi": 0.0875,
+          "turnover": 0.5212,
+          "infeasible": false,
+          "selected": false
+        },
+        "MVO_lam3_psi03_conf": {
+          "ir": 1.2526,
+          "net_ir": 1.2461,
+          "te": 0.1116,
+          "n_names": 15,
+          "hhi": 0.0871,
+          "turnover": 0.4863,
+          "infeasible": false,
+          "selected": false
+        },
+        "HRP_regime_sigma": {
+          "ir": 1.1849,
+          "net_ir": 1.1824,
+          "te": 0.1109,
+          "n_names": 20,
+          "hhi": 0.052,
+          "turnover": 0.1787,
+          "infeasible": false,
+          "selected": false
+        },
+        "ERC_lw": {
+          "ir": 1.1886,
+          "net_ir": 1.1882,
+          "te": 0.1108,
+          "n_names": 20,
+          "hhi": 0.0501,
+          "turnover": 0.0351,
+          "infeasible": false,
+          "selected": false
+        },
+        "alpha_tilt_hrp": {
+          "ir": 1.2285,
+          "net_ir": 1.2253,
+          "te": 0.111,
+          "n_names": 20,
+          "hhi": 0.054,
+          "turnover": 0.2387,
+          "infeasible": false,
+          "selected": false
+        },
+        "MaxDiv_lw": {
+          "ir": "NA",
+          "net_ir": "NA",
+          "te": 0,
+          "n_names": 18,
+          "hhi": 0.0668,
+          "turnover": 0,
+          "infeasible": false,
+          "selected": false
+        },
+        "CVaR_cap_MVO": {
+          "ir": 1.2523,
+          "net_ir": 1.2458,
+          "te": 0.1116,
+          "n_names": 15,
+          "hhi": 0.0869,
+          "turnover": 0.4846,
+          "infeasible": false,
+          "selected": false
+        },
+        "Kelly_frac05": {
+          "ir": 1.2865,
+          "net_ir": 1.2743,
+          "te": 0.1103,
+          "n_names": 20,
+          "hhi": 0.0988,
+          "turnover": 0.8986,
+          "infeasible": false,
+          "selected": true
+        },
+        "MVO_crowd_penalty": {
+          "ir": 1.2526,
+          "net_ir": 1.2461,
+          "te": 0.1116,
+          "n_names": 15,
+          "hhi": 0.0871,
+          "turnover": 0.4863,
+          "infeasible": false,
+          "selected": false
+        }
+      }
+    }
+  },
+  "infeasibility_report": null,
+  "explanation": {
+    "top_overweights": ["A058470", "A166090", "A028260", "A047080", "A025540"],
+    "top_underweights": ["A033500", "A092730", "A033640"],
+    "main_tradeoffs": ["HHI=0.0988 (cap=0.10)", "CVaR=0.2992 > cap=0.025", "Binding: hhi_cap (0.0988 >= 0.10)"],
+    "alpha_sensitivity": "medium",
+    "key_factors": {
+      "Q07_theta": 0.2806,
+      "AC21_theta": 0.2529,
+      "crowding_risk": "Q07-AC21 cor=0.731 MEDIUM",
+      "C06_TP_Gap_note": "weight_theta=0.009, near-zero IC contribution"
+    }
+  },
+  "breadth_diagnostics": {
+    "min_names_required": 15,
+    "n_names_achieved": 20,
+    "hhi_cap": 0.1,
+    "hhi_achieved": 0.0988,
+    "bounds": [0, 0.15],
+    "alpha_winsor_sigma": 2,
+    "grinold_breadth_note": "n=20 (≥15 req). Grinold IR=IC×√breadth. Effective breadth 20 vs MEGA_03 ~7."
+  },
+  "next_step": "Forge: integrate optimization_package.json + weights.csv → run_all.R backtest",
+  "pit_compliance": {
+    "C2": "PASS: alpha signal t-1 lag (from alpha_package, C2 inherited)",
+    "C9": "PASS: regime-Σ from prior period (risk_package, C9 inherited)",
+    "optimizer_scope": "Weight selection only. No alpha re-interpretation."
+  }
+}

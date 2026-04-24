@@ -1,0 +1,242 @@
+{
+  "task_id": "WT-D20260425_003",
+  "as_of_date": "2026-04-25",
+  "agent": "risk_research_v1.1",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260425_003/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260425_003/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260425_003/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260425_003/covariance.parquet",
+  "selection_objective": "condition_number",
+  "selected_estimator": {
+    "name": "ledoit_wolf_constcor",
+    "condition_before_structural": 38.6,
+    "condition_after_structural": 32.3,
+    "shrinkage_used": false,
+    "shrinkage_method": "none",
+    "rationale": "R4 기준: condition_number 최소 추정기 선택. alpha return 참조 없음."
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "method_log": {
+        "sample_pairwise": {
+          "name": "sample_pairwise",
+          "condition": 45.6,
+          "min_eig": 0.0052,
+          "psd": true,
+          "selected": false
+        },
+        "ledoit_wolf_oracle": {
+          "name": "ledoit_wolf_oracle",
+          "condition": 42.3,
+          "min_eig": 0.0055,
+          "psd": true,
+          "selected": false
+        },
+        "gerber_rmt": {
+          "name": "gerber_rmt",
+          "condition": 78.4,
+          "min_eig": 0.0039,
+          "psd": true,
+          "selected": false
+        },
+        "ledoit_wolf_constcor": {
+          "name": "ledoit_wolf_constcor",
+          "condition": 38.6,
+          "min_eig": 0.0061,
+          "psd": true,
+          "selected": true
+        },
+        "nonlinear_shrinkage": {
+          "name": "nonlinear_shrinkage",
+          "condition": 45.6,
+          "min_eig": 0.0047,
+          "psd": true,
+          "selected": false
+        }
+      }
+    }
+  },
+  "factor_exposure_summary": {
+    "n_factors": 6,
+    "factor_names": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C06_TP_Gap", "Q07_Earnings_Stability", "AC21_CF_to_Accrual_Ratio"],
+    "mean_exposures": {
+      "C01_SUE": 0.0348,
+      "C04_ESBR": 0.0522,
+      "C02_EPS_Chg_1m": 0.0267,
+      "C06_TP_Gap": 0.0021,
+      "Q07_Earnings_Stability": 0.0635,
+      "AC21_CF_to_Accrual_Ratio": 0.07
+    },
+    "weight_thetas": {
+      "C01_SUE": 0.145,
+      "C04_ESBR": 0.2005,
+      "C02_EPS_Chg_1m": 0.1119,
+      "C06_TP_Gap": 0.009,
+      "Q07_Earnings_Stability": 0.2806,
+      "AC21_CF_to_Accrual_Ratio": 0.2529
+    }
+  },
+  "vif_diagnosis": {
+    "C01_SUE": 2.07,
+    "C04_ESBR": 1.97,
+    "C02_EPS_Chg_1m": 1.79,
+    "C06_TP_Gap": 1.02,
+    "Q07_Earnings_Stability": 2.22,
+    "AC21_CF_to_Accrual_Ratio": 2.17,
+    "Q07_vs_AC21_cor": 0.731,
+    "high_vif_threshold": 5,
+    "high_cor_pairs_count": 0,
+    "analyst_family_internal_cor": 0.6167,
+    "note": "Q07-AC21 cor=0.731 crowding 위험. Analyst family 내부 상관 높음. alpha 수정 없음."
+  },
+  "sigma_structure": {
+    "method": "BΩB_plus_D",
+    "n_tickers": 20,
+    "n_factors": 9,
+    "factor_coverage_pct": 56,
+    "condition_number": 32.3,
+    "port_vol_ann_pct": 38.46,
+    "systematic_pct": 96.2,
+    "specific_pct": 3.8,
+    "market_contribution_pct": 95.7,
+    "alpha_6f_contribution_pct": 0.3
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "Market (96%)",
+      "Alpha_6F (0%)",
+      "Specific (4%)"
+    ],
+    "crowding_flags": {
+      "Q07_AC21_HIGH_COR": {
+        "severity": "MEDIUM",
+        "msg": "Q07_Earnings_Stability vs AC21_CF_to_Accrual_Ratio 상관 0.731 — Crowding 이중 노출",
+        "detail": "cor=0.7310; 두 팩터 동시 HIGH 신호 시 유사 종목 집중 위험"
+      }
+    },
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.0389,
+      "value_crash": -0.0689,
+      "gfc_2008": -0.3249,
+      "eu_debt_2011": -0.1787,
+      "covid_2020": -0.2604,
+      "rate_2022": -0.2452,
+      "momentum_reversal": -0.0346,
+      "kr_exchange_crisis": -0.2282
+    }
+  },
+  "tail_risk": {
+    "cvar_95_monthly": 0.2129,
+    "cvar_99_monthly": 0.2572,
+    "cdar_95": 0.9519,
+    "max_drawdown": 0.9574,
+    "evt_var_99": 0.2359,
+    "evt_es_99": 0.2572,
+    "evt_method": "empirical",
+    "cvar_cap_2pct5_breach": true
+  },
+  "beta_target": {
+    "tier": "HIGH",
+    "target_range": [1, 1.05],
+    "estimated_beta": 1,
+    "within_target": true
+  },
+  "regime_conditional": {
+    "BULL": {
+      "avg_cor": 0.1048,
+      "vol_ann": 38.44,
+      "n_obs": 53
+    },
+    "NORMAL": {
+      "avg_cor": 0.1458,
+      "vol_ann": 37.07,
+      "n_obs": 103
+    },
+    "CAUTION": {
+      "avg_cor": 0.0293,
+      "vol_ann": 35.65,
+      "n_obs": 47
+    },
+    "CRISIS": {
+      "avg_cor": 0.0732,
+      "vol_ann": 38.43,
+      "n_obs": 28
+    }
+  },
+  "tdc_summary": {
+    "Q07_vs_AC21": 0.4762,
+    "C01_vs_C04": 0.6061,
+    "Portfolio_vs_Mkt": 1.039
+  },
+  "diagnostics": {
+    "condition_number": 32.3,
+    "shrinkage_used": false,
+    "shrinkage_method": "none",
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "Q07_vs_AC21": 0.4762,
+      "C01_vs_C04": 0.6061,
+      "Portfolio_vs_Mkt": 1.039
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260425_003/regime_correlation.parquet"
+  },
+  "challenge_review": {
+    "objection": false,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs"],
+    "challenge_note": {
+      "type": "informational",
+      "from": "risk",
+      "to": "optimizer",
+      "items": [
+        {
+          "item": "Q07_AC21_collinearity",
+          "vif_q07": 2.22,
+          "vif_ac21": 2.17,
+          "cor": 0.731,
+          "recommendation": "Optimizer에서 Q07/AC21 joint exposure 모니터링 권고. alpha 수정 없음."
+        },
+        {
+          "item": "C06_TP_Gap_noise",
+          "weight_theta": 0.009,
+          "ic": 0.0015,
+          "recommendation": "C06 weight 매우 낮음 (0.9%) — risk decomposition에서 기여 무시 가능. alpha 수정 없음."
+        }
+      ]
+    },
+    "round": 1
+  },
+  "challenge_flags": {
+    "RF-R1": {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "msg": "Market 기여도 > 40%",
+      "detail": "Market=95.7%"
+    },
+    "RF-R3": {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "msg": "Crowding flag 존재",
+      "detail": "Q07_AC21_HIGH_COR"
+    }
+  },
+  "rf_summary": {
+    "total_flags": 2,
+    "high_severity": 1,
+    "medium_severity": 1
+  },
+  "optimizer_guidance": {
+    "note": "비중 결정은 Optimizer Agent 담당. Risk에서 비중 제안 없음.",
+    "cvar_cap": 0.025,
+    "beta_target_range": [1, 1.05],
+    "q07_ac21_joint_exposure_monitor": true,
+    "condition_number_ok": true
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding percentile for regime classification",
+    "C2": "PASS: factor returns t-1 lag",
+    "C9": "PASS: regime labels from prior period"
+  }
+}

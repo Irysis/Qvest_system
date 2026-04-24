@@ -1,0 +1,171 @@
+{
+  "strategy_id": "STR_1631_MEGA_04",
+  "wt_id": "WT-D20260425_002",
+  "mega_sprint_phase": "Phase4_overlay_precision",
+  "as_of_date": "2026-04-25",
+  "method": "5-Layer Monthly Overlay (MRS×0.35+Breadth×0.20+AD×0.15+KVol×0.20+Flow×0.10)",
+  "full_period": {
+    "start": "2003-02-05",
+    "end": "2026-04-25",
+    "cagr": 26.09,
+    "sharpe": 1.132,
+    "mdd": 56.15,
+    "turnover": 275.7
+  },
+  "pre_lockbox": {
+    "end": "2024-01-22",
+    "cagr": 22.62,
+    "sharpe": 1.015,
+    "mdd": 56.15
+  },
+  "lockbox": {
+    "start": "2024-01-23",
+    "end": "2026-01-23",
+    "cagr": 53.97,
+    "sharpe": 2.105,
+    "mdd": 21.87,
+    "note": "Judge access only — Forge reports for completeness"
+  },
+  "benchmark": {
+    "full_cagr": 11,
+    "full_sharpe": 0.531,
+    "full_mdd": 54.54
+  },
+  "regime_conditional_sr": {
+    "BULL": {
+      "N_days": 4500,
+      "SR": 1.246,
+      "CAGR": 26.64
+    },
+    "NORMAL": {
+      "N_days": 815,
+      "SR": 1.311,
+      "CAGR": 35.91
+    },
+    "CAUTION": {
+      "N_days": 349,
+      "SR": 0.033,
+      "CAGR": -4.32
+    },
+    "CRISIS": {
+      "N_days": 69,
+      "SR": 1.129,
+      "CAGR": 57.65
+    }
+  },
+  "ff5_analysis": {
+    "available": true,
+    "model": "FF5",
+    "n_months": 107,
+    "alpha_ann": 12.4228,
+    "alpha_t": 2.6267,
+    "alpha_p": 0.01,
+    "r2": 0.5961,
+    "dsr": 1,
+    "dsr_z": 8.3946,
+    "harvey_t_pass": false,
+    "sr_monthly": 0.923
+  },
+  "overlay_5layer_summary": {
+    "n_months_total": 279,
+    "crisis_0_1_months": 251,
+    "crisis_2_months": 23,
+    "crisis_3_months": 4,
+    "crisis_4plus_months": 1,
+    "mult_10_months": 251,
+    "mult_07_months": 23,
+    "mult_05_months": 4,
+    "mult_03_months": 1,
+    "layer_weights": {
+      "MRS": 0.35,
+      "KTRI_breadth": 0.2,
+      "AD_line": 0.15,
+      "kospi_vol": 0.2,
+      "foreign_flow": 0.1
+    },
+    "L1_crisis_pct": 1.1,
+    "L2_crisis_pct": 9,
+    "L3_crisis_pct": 10.8,
+    "L4_crisis_pct": 25.8,
+    "L5_crisis_pct": 1.4,
+    "L5_data_start": "2020-01-31",
+    "L5_data_note": "외국인 flow data 2020-01 이후. 이전 기간은 NORMAL 처리"
+  },
+  "kill_criteria": {
+    "mdd_kill_threshold": -35,
+    "harvey_kill_threshold": 2.95,
+    "kill_mdd_triggered": true,
+    "kill_harvey_triggered": true,
+    "kill_overall": true,
+    "mdd_achieved": -56.15,
+    "harvey_achieved": 2.6267,
+    "verdict": "TRIGGERED — PIVOT TO MEGA_05"
+  },
+  "sprint_targets": {
+    "full_sr_135": {
+      "target": 1.35,
+      "achieved": 1.132,
+      "pass": false
+    },
+    "mdd_30_must": {
+      "target": 30,
+      "achieved": 56.15,
+      "pass": false,
+      "note": "abs(MDD) <= 30% MUST"
+    },
+    "ff5_harvey_t": {
+      "target": 3,
+      "achieved": 2.6267,
+      "pass": false
+    },
+    "normal_sr_10": {
+      "target": 1,
+      "achieved": 1.311,
+      "pass": true
+    },
+    "crisis_sr_50": {
+      "target": 5,
+      "achieved": 1.129,
+      "pass": false
+    }
+  },
+  "vs_mega03": {
+    "mega03_sr": 1.22,
+    "mega03_cagr": 26.94,
+    "mega03_mdd": -37.86,
+    "mega03_harvey_t": 2.7943,
+    "delta_sr": -0.088,
+    "delta_cagr": -0.85,
+    "delta_mdd": 94.01,
+    "delta_harvey": -0.1676
+  },
+  "vs_mega02": {
+    "mega02_sr": 1.233,
+    "mega02_mdd": -36.39,
+    "delta_sr": -0.101,
+    "delta_mdd": 92.54
+  },
+  "vs_str1631_baseline": {
+    "baseline_sr": 1.193,
+    "baseline_mdd": -21.27,
+    "delta_sr": -0.061,
+    "delta_mdd": 77.42
+  },
+  "hurdle": {
+    "pass": false,
+    "score": 72.2
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding IC (Date < sd) + expanding vol/breadth percentile",
+    "C2": "PASS: Score t-1 lag in factor selection (bimonthly roll)",
+    "C3": "PASS: no same-period aggregation in IC",
+    "C4": "PASS: Consensus roll=7d, C4 lag embedded",
+    "C5": "PASS: overlay uses PRIOR MONTH-END multiplier (t-1 month basis)",
+    "C9": "PASS: MRS t-1 inside regime_engine_daily, no extra shift",
+    "C10": "PASS: LIQ_20d t-1 lag (shift n=1)",
+    "C11": "PASS: FRED series shifted inside regime engine (US→KRX calendar)",
+    "C13": "PASS: Z_Score_Aligned manual scoring used (no NEGATE_FACTORS)",
+    "C14": "N/A: IC computed on Usable_Date basis (expanding IC history)",
+    "C15": "N/A: no Factor DB parquet — direct consensus signals"
+  }
+}

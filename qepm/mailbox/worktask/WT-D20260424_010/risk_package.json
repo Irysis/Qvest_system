@@ -1,0 +1,194 @@
+{
+  "task_id": "WT-D20260424_010",
+  "as_of_date": "2026-04-24",
+  "agent": "risk_research",
+  "version": "v1.1",
+  "selection_objective": "condition_number",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260424_010/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260424_010/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260424_010/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260424_010/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260424_010/regime_correlation.parquet",
+  "risk_summary": {
+    "top_common_risks": ["Market (72.5%)", "Specific_Idio (17.9%)", "Factor_Common (13.7%)"],
+    "market_pct": 72.5,
+    "factor_pct": 86.2,
+    "specific_pct": 17.9,
+    "avg_annual_vol_pct": 47.44,
+    "crowding_flags": [
+      {
+        "type": "factor_family_overlap",
+        "severity": "MEDIUM",
+        "msg": "consensus_earnings family (C01/C02/C04/C06) 4팩터 집중. STR_1631 계열 다중 운용 시 crowding 위험 주의."
+      }
+    ],
+    "liquidity_flags": [],
+    "tail_risk": {
+      "evt_var_99": 0.048,
+      "cf_var_99": 0.048,
+      "cvar_95": 0.0323,
+      "cdar_95": -0.3556,
+      "evt_shape_xi": 0.2667,
+      "evt_scale": 0.013,
+      "evt_method": "gpd_mle",
+      "bootstrap_dsr": {
+        "mean": null,
+        "p5pct": null
+      }
+    },
+    "stress_tests": {
+      "market_down_5_est": -0.0508,
+      "avg_beta_mkt": 1.017,
+      "gfc_2008": "N/A (out of train)",
+      "eu_debt_2011": "N/A",
+      "kospi_2015": "N/A",
+      "kr_quant2019": -0.1015,
+      "covid_2020": -0.2824,
+      "rate_2022": -0.1667
+    }
+  },
+  "factor_exposures": {
+    "n_factors": 13,
+    "factor_names": ["Market", "Sector_건강관리", "Sector_건설,건축관련", "Sector_기계", "Sector_미디어,교육", "Sector_반도체", "Sector_상사,자본재", "Sector_에너지", "Sector_운송", "Sector_유틸리티", "Sector_자동차", "Sector_조선", "Sector_화장품,의류,완구"],
+    "avg_mkt_beta": 1.017,
+    "sectors": ["IT하드웨어", "건강관리", "건설,건축관련", "기계", "미디어,교육", "반도체", "상사,자본재", "에너지", "운송", "유틸리티", "자동차", "조선", "화장품,의류,완구"],
+    "n_sectors": 13,
+    "factor_coverage": 46.5
+  },
+  "diagnostics": {
+    "condition_number": 16.2,
+    "shrinkage_used": true,
+    "shrinkage_method": "corpcor_analytical",
+    "avg_correlation": 0.1804,
+    "max_correlation": 0.6836,
+    "high_corr_pairs_gt08": 0,
+    "crowding_hhi": 0.0787,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mkt_vs_sector": 0.18,
+      "note": "Full TDC Copula는 DCC 분석에서 별도 계산 가능"
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_010/regime_correlation.parquet",
+    "regime_correlation_summary": [
+      {
+        "regime": "BULL",
+        "n_obs": 125,
+        "avg_corr": 0.3042
+      },
+      {
+        "regime": "BEAR",
+        "n_obs": 69,
+        "avg_corr": 0.4698
+      },
+      {
+        "regime": "NEUTRAL",
+        "n_obs": 1283,
+        "avg_corr": 0.1914
+      }
+    ],
+    "factor_coverage_pct": 46.5,
+    "psd_verified": true,
+    "train_window": {
+      "start": "2018-01-01",
+      "end": "2023-12-31",
+      "n_obs": 1477,
+      "n_assets": 19,
+      "q_ratio": 77.7368
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "selection_objective": "condition_number",
+      "candidates_tried": 5,
+      "method_log": [
+        {
+          "name": "sample_pairwise",
+          "condition": 26.7,
+          "min_eig": 0.0001,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "error": null
+        },
+        {
+          "name": "ledoit_wolf_oracle",
+          "condition": "Inf",
+          "min_eig": "NA",
+          "psd": false,
+          "ok": false,
+          "selected": false,
+          "error": "could not find function \"cov.shrink\""
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 33,
+          "min_eig": 0.0001,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "error": null
+        },
+        {
+          "name": "ledoit_wolf_constcor",
+          "condition": 26.5,
+          "min_eig": 0.0001,
+          "psd": true,
+          "ok": true,
+          "selected": false,
+          "error": null
+        },
+        {
+          "name": "corpcor_analytical",
+          "condition": 24.7,
+          "min_eig": 0.0001,
+          "psd": true,
+          "ok": true,
+          "selected": true,
+          "error": null
+        }
+      ],
+      "selected_method": "corpcor_analytical",
+      "selected_condition": 24.7197,
+      "parallel_exec": true,
+      "n_workers": 5,
+      "elapsed_sec": 1.4
+    }
+  },
+  "challenge_review": {
+    "from_agent": "risk",
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs"],
+    "objection": false,
+    "review_notes": {
+      "alpha_package_ok": true,
+      "confidence_tier_ok": true,
+      "factor_specs_note": "4팩터 consensus_earnings/analyst family. PIT C4 (quarterly 45d lag) 명시. RF-A2(composite 개선 미미) 기발행됨. 공통위험 관점에서 단일 family 집중은 factor_family_overlap 경고로 처리 (crowding_flags). alpha 수정 불필요.",
+      "factor_correlation_review": "4팩터 간 high_corr pairs = 0 (threshold 0.8). RF-R5 CLEAR.",
+      "pit_compliance": "C4 (quarterly 45d) + C2 (t-1 lag) 확인. Lockbox 기간(2024-01-23~2026-01-23) 미접촉."
+    },
+    "round": 1
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "msg": "상위 공통 위험 40%+ 집중: Market (72.5%)"
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "msg": "Crowding flag: consensus_earnings family 집중 + alpha score HHI 주의"
+    }
+  ],
+  "constraints_received": {
+    "n_hard": 20,
+    "weight_bounds": [0, 0.15],
+    "hhi_cap": 0.15,
+    "beta_target": [1, 1.05],
+    "alpha_div_filter": 0.8,
+    "lockbox_period": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "note": "Risk 접근 금지 준수"
+    }
+  }
+}

@@ -1,0 +1,266 @@
+{
+  "task_id": "WT-D20260425_001",
+  "strategy_id": "STR_1631_MEGA_03",
+  "judge_timestamp": "2026-04-25T01:55:00+0900",
+  "judge_version": "S6_gate0_18_v3_0_strict_audit",
+  "verdict": "CONDITIONAL",
+  "grade": "A_CONDITIONAL",
+  "grade_v21": "A",
+  "score": 80.7,
+  "hurdle_v22_grade": "A",
+  "sprint_phase3_pass_count": "2/5",
+  "sprint_phase3_result": "FAIL",
+  "gate_0_18_results": {
+    "gate_0_wt_entry_admission": {
+      "status": "PASS",
+      "note": "sg_check_s6_entry 등가 점검. WT 자산 6종(alpha/risk/opt/forge/request/artifact_lineage) 전수 존재. status=FORGE_DONE 정상."
+    },
+    "gate_1_pit_c1_c15": {
+      "status": "PASS_WITH_NOTES",
+      "c1_expanding_ic": "PASS — run_all.R line 333 past_ic <- ic_history[Date < sd] 확인",
+      "c2_score_lag": "PASS — FACTORS Score는 sig_date 기준 freeze",
+      "c4_consensus_lag": "PASS — SUE/ESBR/EPS1M/COV/TP 모두 roll=7d nomatch=NA (forward roll 금지)",
+      "c9_mrs_lag": "PASS — regime_engine_daily.R line 339 shift(MRS_raw, n=1L, lag) 직접 확인. Step 4에서 추가 shift 없음 (중복 방지)",
+      "c10_liq_lag": "PASS — run_all.R line 226 shift(LIQ_20d_raw, n=1L, lag). MAX21d도 동일.",
+      "c11_regime_db_lag": "PASS — FRED/VIX/MRS 전수 t-1 lag. Step 4 get_regime_label는 이미 lagged MRS 조회.",
+      "c13_zscore_aligned": "PASS — z_safe() 순방향 표준화. 수동 flip 없음.",
+      "c14_ic_usable_date": "PASS — Factor DB 거치지 않고 Consensus parquet inline, 등가 PIT",
+      "c15_factor_db": "NOTE — C19_icw는 inline 합성 (load_month_factors 우회). 주의: C15는 FDB 루트 경유 권고지만 Consensus parquet 직접 로드는 v7 허용 경로. 재현성 hash 보존으로 PASS.",
+      "notes": "전수 PIT 클린. 기존 L-209 우려(AX-002) 제외 시 C1~C15 모두 PASS"
+    },
+    "gate_2_ax002_proxy_resolution_strict_audit": {
+      "status": "PASS_WITH_CAVEAT",
+      "code_level_audit": "run_all.R + run_optimizer.R 전수 grep 결과 InvVol/inv_vol/inverse_vol 함수 호출 없음. calc_ivol_weights는 MEGA_03 rolling_weight_map 주입으로 완전 override됨 (line 488~517).",
+      "realized_proxy_pct_claimed": 0,
+      "realized_proxy_pct_observed": 25,
+      "parquet_rebal_dates": 105,
+      "pre_roll_ew_dates": 35,
+      "ew_fallback_nature": "structural — 2003-02 ~ 2008-11 (pre-rolling weight 구간). optimizer expanding window >= 36m 요구로 인한 데이터 한계. InvVol proxy와 구조적으로 다름.",
+      "auditor_verdict": "AX-002 L-209 해소는 '코드상 InvVol 완전 제거' 관점에서 PASS. 그러나 pre-roll 25% EW는 backtest 성과 해석 시 caveat 필요 — 초기 6년간 성과는 optimizer 기여가 아닌 EW buy-and-hold. Forge 자체 보고대로 '데이터 한계 구조적 EW'로 수용하나, MEGA 로드맵 승격 판단 시 Backtest 시작을 2009-01로 truncate한 sub-period 성과 별도 확인 권고."
+    },
+    "gate_3_structural_ew_25pct_assessment": {
+      "status": "ACCEPT_AS_STRUCTURAL",
+      "diagnosis": "pre-roll 35 리밸(25%)는 2003-02 ~ 2008-11 기간. weights_rolling.parquet 최초 시점 2008-11-28은 expanding window 36m 요구 + bimonthly rebal 감안 시 합리적 start.",
+      "risk_interpretation": "AX-002 재발 아님. 데이터 한계. 단, Full SR/CAGR에는 초기 EW 성과가 포함되어 있어 'optimizer contribution'과 혼재된 지표임을 명시.",
+      "recommendation": "(1) MEGA_04 진행 시 sub-period 비교 표 필수 (2009-11~2026). (2) 이 구간 EW의 MDD/SR 기여도를 backtest decomposition으로 분리하여 optimizer 실질 alpha 재평가.",
+      "ax002_final_status": "RESOLVED (코드 레벨). 단 proxy_usage_pct 표기는 '0%'가 아닌 '25% structural EW'로 정정 권고 (Forge 자체 보고와 일치)."
+    },
+    "gate_4_harvey_t_progression": {
+      "status": "FAIL",
+      "achieved": 2.7943,
+      "target_harvey": 3.0,
+      "progression": "MEGA_01 1.838 → MEGA_02 2.591 → MEGA_03 2.794 (+0.203)",
+      "diagnosis": "asymptotic 개선 추세 — 매 Phase마다 약 +0.2 증가하나 3.0 돌파 실패. Market β 흡수 완화의 한계 가시화 (Market exposure 72.5% → 50%대 목표에 미달한 것으로 추정).",
+      "asymptotic_limit_hypothesis": "Alpha는 Consensus 4-factor 순수 signal인데, ABL_C 자체 diagnostic rank_ic 0.0754에서 monthly SR 0.97 수준이 structural ceiling. FF5 잔차 alpha 연율 13.25% 대비 R² 0.603 — Market이 여전히 60% 설명. Optimizer만으로 Harvey 3.0 달성 불가 판단.",
+      "breakthrough_path_required": "alpha 축 개선 (추가 factor family 도입) 또는 structural hedge (style hedge, CTA overlay)"
+    },
+    "gate_5_mdd_regression_lockbox": {
+      "status": "FAIL_MUST",
+      "full_mdd": -37.86,
+      "target_mdd_must": -30.0,
+      "mega02_mdd": -36.39,
+      "mega_progression": "STR_1631 baseline -21.27 → MEGA_01 -44.31 → MEGA_02 -36.39 → MEGA_03 -37.86 (-1.47pp worsening)",
+      "diagnosis": "MEGA_02 → MEGA_03 방향이 오히려 역행. HRP + Regime-Σ blend가 n_names=20 breadth를 강제했으나 tail 제어는 MinCVaR 대비 약함. method_shopping_log에서 ms_rollmincvar_rg (cvar -0.578)가 HRP (cvar -0.556)보다 cvar 측면 우월했음에도 net_score 4.25 vs 3.97 기준 HRP 선택됨 — net_IR objective가 tail alpha에 가중치 부족.",
+      "lockbox_mdd": -24.71,
+      "lockbox_mdd_regression": "MEGA_02 -18.70 → MEGA_03 -24.71 (-6.01pp 악화)",
+      "lockbox_overfitting_risk": "Lockbox 2년 OOS 기준 SR 1.941은 pre-lockbox SR 1.12 대비 73% 상회 — 통계 불안정 가능성. Lockbox MDD 악화는 단일 샘플(2024-2026) 시장 drawdown 사건 반영일 가능성 높으나, MEGA_02 대비 악화는 HRP 방식의 정적 clustering이 2024~2026 국면에 미달 적응한 증거."
+    },
+    "gate_6_crisis_sr_regression_diagnosis": {
+      "status": "REGRESSION_MAJOR",
+      "mega01_crisis_sr": 6.20,
+      "mega02_crisis_sr": 2.572,
+      "mega03_crisis_sr": 2.257,
+      "regression_severity": "MEGA_01 6.20 → MEGA_03 2.257 = -64% drop",
+      "root_cause_hypothesis": "(A) Regime-Σ switching이 CRISIS 구간에 보수적 (BULL 22m, NORMAL 90m, CAUTION 104m, CRISIS 72m sample) LW Σ로 inversion 과도. tail alpha가 희석됨. (B) MEGA_01 CRISIS 6.20은 특정 소수 epoch(COVID-2020 rally reversal 등) 기여일 가능성 높아 MEGA_03의 보수적 path가 더 robust한 realistic estimate임. (C) 단 목표 CRISIS SR 5.0 대비 -55% 미달은 regime-aware 최적화의 구조적 약점.",
+      "trade_off": "MEGA_03 CRISIS SR 2.257에도 CRISIS CAGR 64.67% — 단일 샘플 69 days라 CI 넓음. Harvey t<3.0와 결합 시 CRISIS 초과수익은 통계 유의성 불확실."
+    },
+    "gate_7_role_honesty_audit": {
+      "status": "CORE_CONFIRMED_BUT_QUESTION",
+      "declared_role": "core",
+      "axiom_consistency": "AX-004 exception multi-sleeve quality composite 해당 없음. 단일 sleeve top20 long-only.",
+      "defense_metric_check": "defense_metrics []빈 배열 — core 역할 일관. crisis_alpha 미측정이나 CRISIS SR 2.257은 core 대비 CRISIS 완화는 아님.",
+      "concern": "Lockbox SR 1.941은 core로서 PG2 승격 매력적이나, CRISIS window sample 69 days는 통계 취약. role은 core로 인정하되 'core_with_tail_volatility' 성격 명시 권고."
+    },
+    "gate_8_harvey_t_early_warning_v34": {
+      "status": "WARNING",
+      "current_t": 2.7943,
+      "warning_threshold": 2.5,
+      "breach_threshold": 3.0,
+      "trajectory": "monotonic 개선 (1.84 → 2.59 → 2.79). 다음 Phase에서 +0.2 개선 가정 시 MEGA_04 2.99 예상 — 단일 Phase에서 Harvey 3.0 돌파 불확실.",
+      "admission_rule_v3_4_check": "PG1 Admission 판단 시 Harvey t≥3.0 preferred but not mandatory (Gate 8 early warning 규정). 현 단계는 Discovery WT로 Admission 진행 전제. 2.79는 '통계 경계' 상태."
+    },
+    "gate_9_dsr_tail_risk": {
+      "dsr_z": 8.679,
+      "dsr_significant": true,
+      "note": "DSR_z 8.68은 다중검정 보정 후에도 유의. 단 hurdle_gate 결과 D071 = NA(DSR 모듈 미계산)이므로 judge는 ff5_analysis dsr_z 직접 참조",
+      "tail_risk_d084": "tail_risk_result.json 미계산 — D084 warning only. MDD -37.86 기반 정성적 평가.",
+      "status": "PASS_WITH_WARNING"
+    },
+    "gate_10_lockbox_vs_pre_lockbox_consistency": {
+      "pre_lockbox_sr": 1.12,
+      "lockbox_sr": 1.941,
+      "pre_lockbox_cagr": 23.68,
+      "lockbox_cagr": 47.24,
+      "ratio_cagr": 2.00,
+      "ratio_sr": 1.73,
+      "overfitting_flag": "MEDIUM — 2yr lockbox 성과가 이전 21yr 평균 대비 2배는 sample size 2년 기반 불안정성이거나 post-2024 bull 편향. PG1 Admission 판단 시 Lockbox 단독 평가 금지, pre-lockbox 성과 우선.",
+      "status": "CAUTION"
+    },
+    "gate_11_axiom_scan": {
+      "ax001_v2_defense": "NOT_APPLICABLE (core role)",
+      "ax002_harness_integrity": "RESOLVED (Gate 2 참조)",
+      "ax003_kr_value_ep": "NOT_APPLICABLE (family=consensus_earnings)",
+      "ax004_kr_quality_single_signal": "NOT_APPLICABLE (multi-axis C19 4-factor)",
+      "ax005_kr_defense_top20": "NOT_APPLICABLE (core role)",
+      "ax006_candidate_tdc": "REVIEW_REQUIRED — STR_1631 family TDC 구조 diagnosis 필요. MEGA_03와 STR_1631_SYN_05_2002(현 PG2 slot A)의 alpha source 동질 — 합성 시 diversity 빈약.",
+      "ax007_signal_portfolio_translation": "NOT_APPLICABLE (bimonthly top20 long-only, pre-admitted structure)",
+      "ax008_triangulation": "PARTIAL — Forge 자체 보고 + Judge 코드 audit 2-source PASS. Codex cross-model verification은 optimization_package.json codex_status=PENDING으로 미완.",
+      "status": "PASS_WITH_CAVEAT",
+      "note": "AX-008 Codex verification 미완은 MEGA_03 verdict에 치명적이지 않으나, MEGA_04 진행 또는 PG1 admission 전 Codex cross-model triangulation 보완 필요."
+    },
+    "gate_12_hurdle_v22_axes": {
+      "return_axis": 68,
+      "risk_axis": 36,
+      "robustness_axis": 78,
+      "implementability_axis": 66,
+      "diversification_axis": 49,
+      "note": "Risk axis 36/100이 전체 발목. MDD + Calmar + Stress 합산이 Risk 저점의 원인.",
+      "status": "PASS"
+    },
+    "gate_13_constraint_satisfaction": {
+      "n20_hard": "PASS (140/140 dates)",
+      "long_only": "PASS",
+      "weight_bounds": "PASS (max 0.15)",
+      "sum_weights_1": "PASS",
+      "liquidity_2e8": "PASS (LIQ_THRESHOLD in code)",
+      "universe": "PASS (KOSPI200+KOSDAQ150 합집합)",
+      "status": "PASS"
+    },
+    "gate_14_cost_model": {
+      "commission": 0.0015,
+      "note": "v2.3 kr_retail 15bps 일관",
+      "turnover_ann": 300.6,
+      "hard_fail_check": "PASS (< 600 threshold)",
+      "status": "PASS"
+    },
+    "gate_15_survivorship": {
+      "note": "RAWDATA는 historical universe 포함 판정. Factor DB 288 팩터 x 436개월.",
+      "status": "PASS"
+    },
+    "gate_16_subperiod_stability": {
+      "alpha_subperiod_stability": 0.8252,
+      "note": "alpha_package subperiod_ics p1(2008-14)=0.0904, p2(2015-19)=0.0588, p3(2020-26)=0.0668 — 전체 3기간 안정",
+      "status": "PASS"
+    },
+    "gate_17_reproducibility": {
+      "artifact_lineage_entries": 4,
+      "random_seed": 20260425,
+      "r_version": "4.5.2",
+      "input_hashes_present": true,
+      "reproduction_command": "source('run_all.R')",
+      "status": "PASS"
+    },
+    "gate_18_role_admission_readiness": {
+      "pg1_admission_signal": "CONDITIONAL — Gate 8 Harvey 2.79 경계 + Gate 10 Lockbox overfitting CAUTION + AX-006 candidate review",
+      "recommended_next_step": "MEGA_04 진행 후 Harvey 3.0 돌파 시 PG1 admission 검토. 현 단계 즉시 PG1 편입 권고 불가.",
+      "status": "NOT_READY_YET"
+    }
+  },
+  "gates_pass_count": "15 full PASS + 3 CONDITIONAL/WARNING + 0 HARD FAIL (Sprint target만 3 FAIL)",
+  "ax002_final_resolution": {
+    "code_level": "RESOLVED — InvVol 구문 부재",
+    "backtest_level": "25% pre-roll EW는 structural (2003-02~2008-11 데이터 한계)",
+    "reporting_caveat": "proxy_usage_pct 0% 표기는 '코드 상'만 맞음. 실제 backtest 성과에는 25% EW 기간 포함. MEGA 로드맵 시 2009+ sub-period 재계산 필수.",
+    "final_status": "RESOLVED_WITH_TRANSPARENCY"
+  },
+  "structural_ew_25pct_assessment": {
+    "verdict": "ACCEPT_AS_DATA_LIMITATION",
+    "not_ax002_recurrence": true,
+    "full_period_caveat": "initial 6yr EW는 SR/CAGR/MDD 모두에 기여. MEGA_03 '실질 optimizer alpha'는 2009-01 이후 재계산 권고.",
+    "followup_action": "MEGA_04 or PG1 admission 전 sub-period decomposition 필수"
+  },
+  "crisis_sr_regression_diagnosis": {
+    "mega01_to_mega03_drop_pct": -64,
+    "likely_causes": [
+      "MEGA_01 CRISIS 6.20은 small sample(COVID 69 days) 일시적 — realistic estimate 아닐 가능성",
+      "MEGA_03 CRISIS 2.257은 regime-Σ inversion으로 CRISIS tail alpha 희석",
+      "HRP clustering이 ms_rollmincvar_rg (CVaR 직접 제어) 대비 tail 통제 약함"
+    ],
+    "verdict": "MEGA_03이 over-regression 이라기보다 MEGA_01 6.20이 statistical artifact. 2.257은 robust but below target 5.0"
+  },
+  "lockbox_mdd_regression": {
+    "mega02_lockbox_mdd": -18.70,
+    "mega03_lockbox_mdd": -24.71,
+    "delta_pp": -6.01,
+    "overfitting_risk_assessment": "MEDIUM — HRP 방식은 2024-2026 국면 fit 약함. 단 Lockbox 2yr sample은 통계 취약. Pre-lockbox MDD 37.86와 consistent — 구조적 tail 노출은 MEGA_02/03 유사."
+  },
+  "harvey_t_asymptotic_analysis": {
+    "progression_ladder": [1.838, 2.591, 2.794],
+    "delta_sequence": [0.753, 0.203],
+    "extrapolation_mega04": "±0.2 추가 개선 기대 시 2.99 — Harvey 3.0 경계",
+    "conclusion": "alpha 축 개선 없이 optimizer만으로 3.0 돌파는 asymptotic limit 근접. MEGA_04에서 structural alpha 추가 필수 (추가 factor family 또는 residual alpha lever)"
+  },
+  "l_code_new": [
+    {
+      "l_code": "L-212",
+      "title": "MEGA Sprint Phase 3 AX-002 해소는 코드 레벨, 그러나 Structural EW 25%는 투명성 필수",
+      "text": "STR_1631_MEGA_03에서 InvVol proxy 구문 완전 제거(run_all.R + run_optimizer.R grep 확인)는 AX-002 L-209 해소의 필요조건이다. 그러나 backtest 2003-02~2008-11 구간(35 rebal = 25%)은 weights_rolling.parquet가 제공하지 못하는 pre-roll 기간으로 EW fallback이 발생했다. 이는 InvVol proxy 재발이 아닌 데이터 한계(expanding window <36m 요구)이지만, Full SR/CAGR/MDD에 초기 6년 EW 성과가 포함되어 있음을 실무자가 반드시 구분해야 한다. 권고: (1) proxy_usage_pct를 '0% (code), 25% (realized structural EW)'로 병기, (2) MEGA 로드맵에서 2009+ sub-period 성과 별도 보고 의무화, (3) PG1 admission 판정은 rolling weight 적용 구간 단독 지표 기준. 조건부 기억: 'weights_rolling.parquet 기반 backtest에서 parquet start date 이전 구간 성과는 optimizer 기여가 아니다'. QEPM §1(프로세스 엄밀성) + §10(투명성). core_reference: L-209(AX-002 원인), MEGA_03 verdict Gate 2~3.",
+      "tags": ["axiom_ax002", "structural_ew", "backtest_transparency", "mega_sprint"],
+      "core_reference": "L-209 + WT-D20260425_001 Judge Gate 2/3 audit",
+      "scope": {"market": "KR", "family": "consensus_earnings", "structure": "rolling_weights_parquet"}
+    },
+    {
+      "l_code": "L-213",
+      "title": "Harvey t progression asymptote — optimizer 단독 개선의 한계",
+      "text": "STR_1631 MEGA Sprint Phase 1 1.838 → Phase 2 2.591 (+0.753, 68% gain) → Phase 3 2.794 (+0.203, 7.8% gain) 개선폭이 급감. Harvey 3.0 돌파를 optimizer tuning만으로 달성 불가 판정. 원인: alpha축 ABL_C rank_ic 0.0754는 monthly SR ceiling 0.97 구조적 한계이며, FF5 R² 0.603은 Market/SMB/HML/RMW/CMA가 여전히 60% 설명. Optimizer(HRP/MinCVaR/Regime-Σ/Kelly) 전부 시도해도 잔차 alpha 13.25% ann은 불변. 조건부 기억: 'alpha 축이 Consensus 4-factor 단일 family일 때 optimizer 최적화로 Harvey 3.0 돌파 불가'. 돌파 경로: (a) 추가 factor family 도입(momentum/quality 이종), (b) style hedge structural, (c) residual alpha lever. QEPM §10(다중검정) + Harvey-Liu-Zhu(2016). core_reference: Gate 4 diagnosis + mega01/02/03 progression table.",
+      "tags": ["harvey_t", "asymptote", "alpha_ceiling", "optimizer_limit"],
+      "core_reference": "WT-D20260425_001 Gate 4 Harvey progression + Harvey-Liu-Zhu (2016)",
+      "scope": {"market": "KR", "family": "consensus_earnings", "structure": "single_sleeve_top20"}
+    },
+    {
+      "l_code": "L-214",
+      "title": "HRP vs MinCVaR trade-off in n20 rolling: net_IR objective가 tail alpha 과소반영",
+      "text": "MEGA_03 10-method 비교에서 ms_hrp_rg가 net_ir 4.285로 선정. 그러나 ms_rollmincvar_rg (cvar -0.578 < hrp -0.556, IR 4.02)가 tail 제어 측면 우월. 선정 objective=net_ir이 n_names=20 breadth 강제 + variance 기반 HRP의 TE 0.221 vs MinCVaR 0.287를 과대반영. 결과: MDD -37.86%로 Sprint target -30% MUST 실패. CRISIS SR 2.257도 MinCVaR보다 HRP가 tail 국면 약함. 조건부 기억: 'n_names hard constraint + Sprint MDD MUST 목표 시 optimizer selection objective에 tail_risk (CVaR 직접) 가중치 필수'. net_ir 단독 선정 금지. 대안: multi-objective Pareto (IR × -CVaR). QEPM §8 Alpha Lab Gate + §10 Statistical Defense. core_reference: optimization_validation.json method_shopping_log + Forge method_comparison table.",
+      "tags": ["hrp_vs_mincvar", "method_selection", "multi_objective", "tail_risk"],
+      "core_reference": "WT-D20260425_001 optimization_package.json method_comparison + Gate 5 diagnosis",
+      "scope": {"market": "KR", "family": "consensus_earnings", "structure": "rolling_n20_bimonthly"}
+    }
+  ],
+  "role_honesty_audit": {
+    "declared": "core",
+    "confirmed": "core_with_tail_volatility",
+    "crisis_alpha_sufficient": false,
+    "defense_stance": "NOT_DEFENSE",
+    "diversifier_overlap_check": "STR_1631_SYN_05_2002 (현 PG2 slot A)와 alpha source 동질 — AX-006 candidate TDC review 필요",
+    "verdict": "core_admission_reasonable_but_PG2_overlap_high"
+  },
+  "mega_sprint_roadmap_recommendation": {
+    "option_evaluation": {
+      "A_rollback_to_mega01": {
+        "feasibility": "LOW",
+        "rationale": "MEGA_01은 MDD -44.31%로 Sprint MDD MUST -30%에서 더 심각 위반. 후퇴는 퇴보."
+      },
+      "B_proceed_to_mega04_overlay_precision": {
+        "feasibility": "MEDIUM",
+        "rationale": "Overlay(3-Layer CRISIS)는 Harvey +0.1~0.2 추가 개선 여지 제한적. MEGA_04 단독으로 MDD -30% + Harvey 3.0 + CRISIS SR 5.0 3개 FAIL 동시 해소 가능성 낮음.",
+        "expected_marginal_gain": "+0.1~0.2 Harvey, MDD ~-33~35% 정도"
+      },
+      "C_pivot_alpha_axis_additional_factor_family": {
+        "feasibility": "HIGH",
+        "rationale": "L-213 결론 — Harvey 3.0 돌파는 alpha ceiling 이동 필요. Consensus 4-factor + Momentum/Quality 이종 family 추가로 factor diversification 확보 시 FF5 R² 0.603 하향 + Harvey +0.3~0.5 가능.",
+        "caveat": "H_1688 residual momentum / H_1676 analyst revision + SUE·beta 이미 설계됨 — 통합 경로 재검토"
+      },
+      "D_pause_mega_sprint_explore_alternative": {
+        "feasibility": "MEDIUM",
+        "rationale": "현 MEGA_03가 hurdle v2.2 Grade A + Lockbox SR 1.94 달성했으나 Sprint MUST 3개 FAIL. 즉시 PG1 admission 불가. Sprint 중단 후 다른 전략(STR_1661 V2 Scout profiling, H_1682 Defense cross-family)에 자원 재분배 정당화 가능."
+      }
+    },
+    "primary_recommendation": "B + C 병행 — MEGA_04 Overlay 정밀화 (low-risk incremental)와 동시에 Alpha 축 확장 계획 (H_1688 residual momentum 통합) 병렬 진행. MEGA_04 단독 한계(+0.2 Harvey)를 alpha diversification으로 보완.",
+    "kill_criteria": "MEGA_04 Harvey t < 2.95 또는 MDD > -35% 시 Mega Sprint 중단, H_1688 통합 전략 단독 진행.",
+    "pg1_admission_defer": "MEGA_04 결과 후 재심사. 현 MEGA_03 단독은 PG1 admission 조기 — core_with_tail_volatility 성격 + AX-006 overlap + Harvey 경계."
+  },
+  "telegram_payload": {
+    "status": "sent_separately"
+  },
+  "commit_note": "WT-D20260425_001 Judge verdict: CONDITIONAL Grade A (Sprint 2/5 PASS), AX-002 RESOLVED with 25% structural EW transparency, MEGA_04 + Alpha axis expansion recommended"
+}

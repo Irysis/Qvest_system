@@ -35,7 +35,8 @@ cat("[1] Loading data (lean mode)...\n"); flush(stdout())
 res <- load_rawdata(use_cache=TRUE)
 RAWDATA <- res$RAWDATA; rm(res); gc(verbose=FALSE)
 RAWDATA[, Date := as.Date(Date)]
-RAWDATA <- RAWDATA[Date >= ANALYSIS_START_DATE]
+# Use consensus start (2002-01-01) instead of full ANALYSIS_START_DATE (1990) — saves RAM + 3x speed
+RAWDATA <- RAWDATA[Date >= as.Date("2001-12-01")]  # extra month for LIQ_20d warmup
 setorder(RAWDATA, Ticker, Date)
 # LIQ_20d only (skip MAX21d — too slow for full 14M dataset)
 RAWDATA[, TradVal := Close * Vol]
@@ -43,7 +44,9 @@ RAWDATA[, LIQ_20d := shift(frollmean(TradVal, n=20L, align="right", na.rm=TRUE),
 RAWDATA[, TradVal := NULL]
 RAWDATA[, YM := format(Date, "%Y-%m")]
 sd_dt <- RAWDATA[, .(sig_date=max(Date)), by=YM]; setorder(sd_dt, sig_date)
-sd_dt <- sd_dt[sig_date >= ANALYSIS_START_DATE]
+# Trim to consensus data start (2002-01-01) — consensus files empty before this
+CONSENSUS_START <- as.Date("2002-01-01")
+sd_dt <- sd_dt[sig_date >= CONSENSUS_START]
 ALL_SD <- sd_dt$sig_date
 SIG_SD <- ALL_SD[seq(1, length(ALL_SD), by=REBAL_MONTHS)]
 cat(sprintf("[1] Monthly: %d | Bimonthly: %d\n", length(ALL_SD), length(SIG_SD))); flush(stdout())
@@ -232,17 +235,25 @@ run_cell <- function(cell, cfg, fwd) {
   icsd <- if(length(ic_s)>1) sd(ic_s,na.rm=TRUE) else NA_real_
   icir <- if(!is.na(icsd)&&icsd>1e-8) ric/icsd else NA_real_
   ht   <- if(!is.na(icir)&&length(ic_s)>1) icir*sqrt(length(ic_s)) else NA_real_
-  dsr  <- if(rcpp_ok&&length(ic_s)>=20) tryCatch(bootstrap_dsr_fast(ic_s,5L,200L,42L),error=function(e) NA_real_) else NA_real_
+  dsr_raw  <- if(rcpp_ok&&length(ic_s)>=20) tryCatch(bootstrap_dsr_fast(ic_s,5L,200L,42L),error=function(e) NA_real_) else NA_real_
+  # bootstrap_dsr_fast R fallback returns a list; Rcpp version returns scalar. Handle both.
+  dsr  <- if(is.list(dsr_raw)) {
+    if(!is.null(dsr_raw$dsr)) as.numeric(dsr_raw$dsr) else NA_real_
+  } else if(length(dsr_raw)>1) {
+    mean(dsr_raw[is.finite(dsr_raw)], na.rm=TRUE)
+  } else dsr_raw
 
-  # Subperiod
+  # Subperiod — use index-based loop to preserve Date type (not numeric coercion)
   spics <- list()
   for(spn in names(SP)) {
     sv <- c()
-    for(sd in ALL_SD[ALL_SD>=SP[[spn]][1]&ALL_SD<=SP[[spn]][2]]) {
-      fr <- fwd[[as.character(sd)]]; if(is.null(fr)||nrow(fr)==0) next
-      sc <- RS[Date==sd]; if(nrow(sc)==0) next
+    sp_idx <- which(ALL_SD>=SP[[spn]][1] & ALL_SD<=SP[[spn]][2])
+    for(i2 in sp_idx) {
+      sd2 <- ALL_SD[i2]
+      fr <- FWD[[as.character(sd2)]]; if(is.null(fr)||nrow(fr)==0) next
+      sc <- RS[Date==sd2]; if(nrow(sc)==0) next
       mg <- merge(sc,fr,by="Ticker"); if(nrow(mg)<10L) next
-      w <- ew_fn(ic_h,facs,sd); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
+      w <- ew_fn(ic_h,facs,sd2); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
       iv <- tryCatch(cor(comp,mg$fwd_ret,method="spearman",use="complete.obs"),error=function(e) NA_real_)
       if(!is.na(iv)) sv <- c(sv,iv)
     }
@@ -251,31 +262,35 @@ run_cell <- function(cell, cfg, fwd) {
   sv2 <- unlist(spics)[!is.na(unlist(spics))]
   sst <- if(length(sv2)>=2) (mean(sv2>0)+pmax(min(sv2)/max(sv2),0))/2 else 0.5
 
-  # Monotonicity
+  # Monotonicity — index-based loop
   mono <- tryCatch({
     ms <- c()
-    for(sd in tail(sort(unique(RS$Date)),36)) {
-      fr <- fwd[[as.character(sd)]]; if(is.null(fr)||nrow(fr)==0) next
-      sc <- RS[Date==sd]; mg <- merge(sc,fr,by="Ticker"); if(nrow(mg)<20L) next
-      w <- ew_fn(ic_h,facs,sd); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
-      mg[,composite:=comp]; mg[,dec:=ntil(composite,10)]
-      dr <- mg[,.(dr=mean(fwd_ret,na.rm=TRUE)),by=dec]; setorder(dr,dec)
+    recent_idx <- tail(seq_along(ALL_SD)[ALL_SD %in% unique(RS$Date)], 36)
+    for(i2 in recent_idx) {
+      sd2 <- ALL_SD[i2]
+      fr <- FWD[[as.character(sd2)]]; if(is.null(fr)||nrow(fr)==0) next
+      sc <- RS[Date==sd2]; mg <- merge(sc,fr,by="Ticker"); if(nrow(mg)<20L) next
+      w <- ew_fn(ic_h,facs,sd2); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
+      mg2 <- copy(mg); mg2[,composite:=comp]; mg2[,dec:=ntil(composite,10)]
+      dr <- mg2[,.(dr=mean(fwd_ret,na.rm=TRUE)),by=dec]; setorder(dr,dec)
       if(nrow(dr)>=8) ms <- c(ms, mean(diff(dr$dr)>0))
     }
     if(length(ms)>0) mean(ms) else NA_real_
   }, error=function(e) NA_real_)
 
-  # FF3 retention (market-adj IC ratio)
+  # FF3 retention (market-adj IC ratio) — index-based loop
   ff3r <- tryCatch({
     rv <- c(); av <- c()
-    for(sd in tail(sort(unique(RS$Date)),48)) {
-      fr <- fwd[[as.character(sd)]]; if(is.null(fr)||nrow(fr)==0) next
-      sc <- RS[Date==sd]; mg <- merge(sc,fr,by="Ticker"); if(nrow(mg)<15L) next
-      w <- ew_fn(ic_h,facs,sd); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
-      mg[,composite:=comp]
-      ri <- tryCatch(cor(comp,mg$fwd_ret,method="spearman",use="complete.obs"),error=function(e) NA_real_)
-      mg[,rr:=fwd_ret-mean(fwd_ret,na.rm=TRUE)]
-      ai <- tryCatch(cor(comp,mg$rr,method="spearman",use="complete.obs"),error=function(e) NA_real_)
+    recent_idx <- tail(seq_along(ALL_SD)[ALL_SD %in% unique(RS$Date)], 48)
+    for(i2 in recent_idx) {
+      sd2 <- ALL_SD[i2]
+      fr <- FWD[[as.character(sd2)]]; if(is.null(fr)||nrow(fr)==0) next
+      sc <- RS[Date==sd2]; mg <- merge(sc,fr,by="Ticker"); if(nrow(mg)<15L) next
+      w <- ew_fn(ic_h,facs,sd2); comp <- make_comp(mg,facs,as.list(w)); if(is.null(comp)) next
+      mg2 <- copy(mg); mg2[,composite:=comp]
+      ri <- tryCatch(cor(comp,mg2$fwd_ret,method="spearman",use="complete.obs"),error=function(e) NA_real_)
+      mg2[,rr:=fwd_ret-mean(fwd_ret,na.rm=TRUE)]
+      ai <- tryCatch(cor(comp,mg2$rr,method="spearman",use="complete.obs"),error=function(e) NA_real_)
       if(!is.na(ri)) rv <- c(rv,ri)
       if(!is.na(ai)) av <- c(av,ai)
     }
@@ -316,8 +331,10 @@ sc_fn <- function(r){ if(is.null(r)) return(-Inf)
   s <- 0; if(!is.na(r$ric)) s<-s+r$ric*100; if(!is.na(r$icir)) s<-s+r$icir*5
   if(!is.na(r$sst)) s<-s+r$sst*10; if(!is.na(r$ht)&&r$ht>3) s<-s+5; if(!is.na(r$dsr)&&r$dsr>0.8) s<-s+3; s }
 vc <- names(RES)[!sapply(RES,is.null)]
+if(length(vc)==0) stop("All cells failed — no results to select from")
 sc_v <- sapply(RES[vc], sc_fn)
 BEST <- vc[which.max(sc_v)]
+if(length(BEST)==0) BEST <- vc[1]
 P <- RES[[BEST]]
 cat(sprintf("[4] PRIMARY: %s\n", BEST)); flush(stdout())
 
