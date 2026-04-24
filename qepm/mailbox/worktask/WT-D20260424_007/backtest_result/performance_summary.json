@@ -1,0 +1,221 @@
+{
+  "task_id": "WT-D20260424_007",
+  "agent": "forge",
+  "pilot_label": "Pilot 9 — Consensus RAPC v2 + ERC β=0.884",
+  "as_of_date": "2026-04-24",
+  "windows": {
+    "train": {
+      "start": "2012-01-01",
+      "end": "2022-12-31"
+    },
+    "val": {
+      "start": "2023-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox": {
+      "note": "JUDGE_ONLY — AX-002 Lockbox access forbidden to Forge"
+    }
+  },
+  "performance": {
+    "full": {
+      "label": "FULL (train+val)",
+      "n_days": 2969,
+      "CAGR": 3.94,
+      "CAGR_gross": 4.02,
+      "AnnVol": 22.01,
+      "Sharpe": 0.179,
+      "MDD": -50.34,
+      "Calmar": 0.078,
+      "WinRate": 50.6,
+      "alpha_pct": 2.612,
+      "TE_pct": 17.439,
+      "IR": 0.15
+    },
+    "train": {
+      "label": "TRAIN (2012-2022)",
+      "n_days": 2709,
+      "CAGR": 4.91,
+      "CAGR_gross": 4.99,
+      "AnnVol": 22.26,
+      "Sharpe": 0.221,
+      "MDD": -50.34,
+      "Calmar": 0.098,
+      "WinRate": 50.9,
+      "alpha_pct": 4.252,
+      "TE_pct": 17.536,
+      "IR": 0.242
+    },
+    "val": {
+      "label": "VAL (2023-2024.01)",
+      "n_days": 260,
+      "CAGR": -5.63,
+      "CAGR_gross": -5.55,
+      "AnnVol": 19.2,
+      "Sharpe": -0.293,
+      "MDD": -26.29,
+      "Calmar": -0.214,
+      "WinRate": 47.7,
+      "alpha_pct": -14.478,
+      "TE_pct": 16.389,
+      "IR": -0.883
+    }
+  },
+  "benchmark": "KOSPI200_TR",
+  "commission_bps": 15,
+  "portfolio": {
+    "n_names": 16,
+    "method": "ERC",
+    "beta_port": 0.8842,
+    "beta_target": 1.02,
+    "hhi": 0.0906,
+    "sum_weights": 1
+  },
+  "pilot_comparison": [
+    {
+      "pilot": "P6 (WT_004)",
+      "wt_id": "WT-D20260424_004",
+      "alpha_tier": "LOW(initial)",
+      "ff3_ret": "10.5%",
+      "method": "MinVar_BetaHard",
+      "beta_port": 1.043,
+      "n_names": 20,
+      "train_sr": 0.155,
+      "val_sr": -0.573,
+      "val_cagr": -9.84,
+      "lockbox_sr": 0.159,
+      "lockbox_ir": -1.079,
+      "l196_status": "L-195 dead-end (CONFIRM MinVar)",
+      "l197_status": "Trajectory start"
+    },
+    {
+      "pilot": "P7 (WT_005)",
+      "wt_id": "WT-D20260424_005",
+      "alpha_tier": "LOW",
+      "ff3_ret": "10.5%",
+      "method": "MinVar_BetaHard",
+      "beta_port": 1.006,
+      "n_names": 20,
+      "train_sr": 0.191,
+      "val_sr": -0.386,
+      "val_cagr": -7.1,
+      "lockbox_sr": 0.2,
+      "lockbox_ir": -1.033,
+      "l196_status": "L-195 dead-end (CONFIRM MinVar)",
+      "l197_status": "Trajectory -2"
+    },
+    {
+      "pilot": "P8 (WT_006)",
+      "wt_id": "WT-D20260424_006",
+      "alpha_tier": "MEDIUM",
+      "ff3_ret": "10.5%",
+      "method": "MinVar_BetaSoft",
+      "beta_port": 1.022,
+      "n_names": 20,
+      "train_sr": 0.355,
+      "val_sr": -0.273,
+      "val_cagr": -4.35,
+      "lockbox_sr": 0.319,
+      "lockbox_ir": -1.942,
+      "l196_status": "L-195a fix → MinVar_BetaSoft (still MinVar)",
+      "l197_status": "Trajectory L-198 candidate"
+    },
+    {
+      "pilot": "P9 (WT_007)",
+      "wt_id": "WT-D20260424_007",
+      "alpha_tier": "HIGH",
+      "ff3_ret": "94.6%",
+      "method": "ERC",
+      "beta_port": 0.8842,
+      "n_names": 16,
+      "train_sr": 0.221,
+      "val_sr": -0.293,
+      "val_cagr": -5.63,
+      "lockbox_sr": "NA",
+      "lockbox_ir": "NA",
+      "l196_status": "L-196 PARTIAL REFUTE — ERC beats MinVar",
+      "l197_status": "Consensus α redesign; L-198 partial"
+    }
+  ],
+  "l196_verdict": {},
+  "l198_analysis": {
+    "hypothesis": "L-198: β amplification is regime-dependent. Higher β amplifies gains in RISK_ON but reverses in CRISIS.",
+    "pilot8_evidence": {
+      "beta_port": 1.022,
+      "alpha_tier": "MEDIUM",
+      "ff3_retention": "10.5%",
+      "val_sr": -0.273,
+      "val_ir": 0.182,
+      "lockbox_ir": -1.942,
+      "interpretation": "Forge val +0.182 IR but Lockbox -1.942 IR. Style exposure (Size/Value 89.5%) reversed in CRISIS regime (MRS=63.1 2026-04)."
+    },
+    "pilot9_evidence": {
+      "beta_port": 0.8842,
+      "alpha_tier": "HIGH",
+      "ff3_retention": "94.6%",
+      "val_sr": -0.293,
+      "train_ir": 0.242,
+      "lockbox_ir": "JUDGE_ONLY (AX-002)",
+      "interpretation": "ERC β=0.884 < Pilot 8 β=1.022. Lower leverage = lower market risk in CRISIS. But FF3_retention=94.6% means alpha IS FF3 style exposure (not independent). Structural question: Is HIGH tier consensus alpha FF3-independent or FF3-embedded?"
+    },
+    "beta_delta": -0.1378,
+    "beta_design_target": 1.02,
+    "beta_gap_pilot9": -0.1358,
+    "train_val_conclusion": {
+      "p9_vs_p8_train_delta_sr": -0.134,
+      "p9_vs_p8_val_delta_sr": -0.02,
+      "verdict": "PENDING_LOCKBOX — Train/Val β comparison inconclusive without CRISIS regime data. Judge required for final L-198 verdict."
+    },
+    "final_verdict": "TBD — Judge Lockbox analysis required for L-198 final verdict"
+  },
+  "regime_decomposition": {
+    "mrs_regime_source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/unified_regime_signal.parquet",
+    "period": "2012-2022 train + 2023-2024.01 val (Lockbox 제외)",
+    "pilot_label": "Pilot 9 — Consensus RAPC v2 ERC beta=0.884",
+    "total_days": 2969,
+    "regime_col": "Category",
+    "regime_stats": {
+      "RISK_ON": {
+        "days": 2585,
+        "days_pct": 87.1,
+        "sr": 0.3662,
+        "cagr": 7.19,
+        "mdd": -32.59,
+        "n_months_approx": 123
+      },
+      "NEUTRAL": {
+        "days": 320,
+        "days_pct": 10.8,
+        "sr": -1.082,
+        "cagr": -29.69,
+        "mdd": -43.13,
+        "n_months_approx": 15
+      },
+      "CAUTION": {
+        "days": 64,
+        "days_pct": 2.2,
+        "sr": 2.13,
+        "cagr": 119.55,
+        "mdd": -30.6,
+        "n_months_approx": 3
+      },
+      "RISK_OFF": {
+        "days": 0,
+        "days_pct": 0,
+        "sr": {},
+        "cagr": {},
+        "mdd": {},
+        "n_months_approx": 0
+      },
+      "CRISIS": {
+        "days": 0,
+        "days_pct": 0,
+        "sr": {},
+        "cagr": {},
+        "mdd": {},
+        "n_months_approx": 0
+      }
+    },
+    "interpretation": "Pilot 9 월간 MRS Category 기반 일간 수익률 집계. ERC beta=0.884 (Pilot 8 1.022 대비 낮은 leverage). Lockbox(2024-01-23+) 분해는 Judge 단독 권한(AX-002). 현재 MRS=63.1 CRISIS 상황.",
+    "forge_note": "Forge는 train/val 구간만 수행. Lockbox regime 분해는 Judge 단독 (AX-002)."
+  }
+}
