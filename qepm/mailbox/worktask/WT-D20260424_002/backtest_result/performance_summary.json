@@ -1,0 +1,193 @@
+{
+  "task_id": "WT-D20260424_002",
+  "agent": "forge",
+  "as_of_date": "2026-04-24",
+  "method": "MVO_lam3_psi0.5",
+  "period": {
+    "train": {
+      "start": "2012-01-21",
+      "end": "2022-01-21"
+    },
+    "validation": {
+      "start": "2022-01-22",
+      "end": "2024-01-22"
+    },
+    "combined": {
+      "start": "2012-01-21",
+      "end": "2024-01-22"
+    },
+    "lockbox": "SEALED (2024-01-23+)"
+  },
+  "portfolio": {
+    "n_names": 15,
+    "tickers": ["A140860", "A287410", "A028260", "A028050", "A005850", "A058470", "A029780", "A041510", "A014680", "A218410", "A005290", "A001680", "A365340", "A006260", "A000100"],
+    "weights": {
+      "A140860": 0.08,
+      "A287410": 0.08,
+      "A028260": 0.08,
+      "A028050": 0.08,
+      "A005850": 0.08,
+      "A058470": 0.08,
+      "A029780": 0.08,
+      "A041510": 0.08,
+      "A014680": 0.0797,
+      "A218410": 0.0667,
+      "A005290": 0.0667,
+      "A001680": 0.0667,
+      "A365340": 0.0564,
+      "A006260": 0.0149,
+      "A000100": 0.0089
+    },
+    "max_weight": 0.08,
+    "min_weight": 0.0089
+  },
+  "performance": {
+    "full": {
+      "Label": "FULL (2012~2024)",
+      "CAGR": 9.25,
+      "AnnVol": 18.85,
+      "Sharpe": 0.491,
+      "Sharpe_m": 0.575,
+      "Sortino": 0.696,
+      "MDD": 36.83,
+      "Calmar": 0.251,
+      "WinRate": 61.8,
+      "WorstMonth": -14.33,
+      "Worst3M": -22.88,
+      "ES99_d": 4.09,
+      "ES99_m": 14.08
+    },
+    "train": {
+      "Label": "TRAIN (2012~2022)",
+      "CAGR": 10.6,
+      "AnnVol": 18.4,
+      "Sharpe": 0.576,
+      "Sharpe_m": 0.683,
+      "Sortino": 0.816,
+      "MDD": 36.83,
+      "Calmar": 0.288,
+      "WinRate": 61.7,
+      "WorstMonth": -13.52,
+      "Worst3M": -22.88,
+      "ES99_d": 4.07,
+      "ES99_m": 12.81
+    },
+    "val": {
+      "Label": "VAL (2022~2024)",
+      "CAGR": 2.73,
+      "AnnVol": 20.98,
+      "Sharpe": 0.13,
+      "Sharpe_m": 0.222,
+      "Sortino": 0.185,
+      "MDD": 18.84,
+      "Calmar": 0.145,
+      "WinRate": 60,
+      "WorstMonth": -13.83,
+      "Worst3M": -18.2,
+      "ES99_d": 4.06,
+      "ES99_m": 13.83
+    }
+  },
+  "risk": {
+    "ann_turnover_pct": 50.5,
+    "hard_fail_mdd45": false,
+    "hard_fail_to600": false
+  },
+  "a140860_outlier": {
+    "alpha_score": 3,
+    "weight": 0.08,
+    "note": "Alpha outlier (z=3.0 vs ~0.4-0.6 typical). Confidence-aware MVO (psi=0.3) applied. Inspect attribution."
+  },
+  "alpha_diagnostics": {
+    "rank_ic": 0.0318,
+    "icir": 0.403,
+    "harvey_t_stat": 4.42,
+    "dsr_approx": 0.039,
+    "monotonicity": 0.556,
+    "subperiod_stability": 1,
+    "turnover_proxy_annual": 3.06,
+    "post_neutralization_ic": 0.0269,
+    "ic_retention_pct": 84.6,
+    "n_months_train": 120,
+    "val_rank_ic": 0.0386,
+    "val_icir": 0.521,
+    "val_harvey_t": 2.55,
+    "n_months_val": 24,
+    "mean_breadth": 345,
+    "regime_ic": {
+      "Normal": 0.0286,
+      "Transition_LR": 0.0584
+    },
+    "subperiod_ic": {
+      "S1_2012_2015": 0.0338,
+      "S2_2016_2019": 0.027,
+      "S3_2020_2022": 0.0375
+    }
+  },
+  "risk_diagnostics": {
+    "condition_number": 1,
+    "condition_number_pre_shrinkage": 1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [],
+    "multicollinearity_vif": {
+      "ESBR": 1.006,
+      "SUE": 1.01,
+      "Accrual": 1.007
+    },
+    "factor_corr_ESBR_SUE": -0.0688,
+    "factor_corr_ESBR_Accrual": -0.0363,
+    "factor_corr_SUE_Accrual": 0.0748,
+    "tdc_summary": {
+      "ESBR_SUE": 0.0417,
+      "ESBR_Accrual": 0.125,
+      "SUE_Accrual": 0.1667
+    },
+    "factor_coverage_pct": 47.8,
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_001/regime_correlation.parquet",
+    "tail_risk_ref": "stage_artifacts/WT_D20260424_001/tail_risk.json",
+    "regime_corr_shift_ESBR_SUE": -0.4981,
+    "regime_corr_shift_ESBR_Accrual": 0.189
+  },
+  "optimizer_ir": {
+    "exp_ir": 13.0183,
+    "net_ir": null,
+    "exp_te": 0.0533
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0318<0.04"
+    },
+    {
+      "flag": "RF-DSR",
+      "severity": "MEDIUM",
+      "note": "DSR=0.039<0.5"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "IC-weighted expanding composite (24M burn-in). Regime modulation: Crisis→accrual+30%, Normal→SUE+20%."
+    },
+    {
+      "flag": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 48% > 40%"
+    },
+    {
+      "flag": "INFO",
+      "severity": "INFO",
+      "note": "ESBR+SUE both earnings_surprise family — verify regime-conditional modulation reduces redundancy"
+    }
+  ],
+  "v61_compliance": {
+    "R12_pure_function": "static weights from optimizer — no re-optimization in backtest",
+    "R11_lineage_gap2": "record_package_lineage() called below",
+    "lockbox_sealed": true,
+    "pit_c1": true,
+    "pit_c2": true,
+    "pit_c9": "DD/VT not used in static backtest",
+    "commission_applied": 0.0015
+  }
+}
