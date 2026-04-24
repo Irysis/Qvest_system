@@ -1,0 +1,39 @@
+{
+  "task_id": "WT-D20260424_001",
+  "agent": "alpha_research",
+  "selection_objective": "rank_ic",
+  "r2c_rule": "max 5 candidates",
+  "alpha_agent": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "C04_ESBR_standalone",
+        "family": "earnings_surprise",
+        "rank_ic_train": 0.0294,
+        "icir_train": 0.360,
+        "harvey_t": 3.95,
+        "note": "Single factor. Good IC but composite improves stability.",
+        "selected": false
+      },
+      {
+        "name": "C01_SUE_standalone",
+        "family": "earnings_surprise",
+        "rank_ic_train": 0.0243,
+        "icir_train": 0.314,
+        "harvey_t": 3.44,
+        "note": "Single factor. Lower IC than ESBR. Val IC positive (L-191 PASS).",
+        "selected": false
+      },
+      {
+        "name": "RAPC_3factor_expanding_IC_weighted",
+        "family": "earnings_surprise + accrual_quality",
+        "rank_ic_train": 0.0318,
+        "icir_train": 0.403,
+        "harvey_t": 4.42,
+        "note": "3-factor IC-weighted composite. Best ICIR and Harvey-t. Subperiod stab=1.00.",
+        "selected": true
+      }
+    ],
+    "judge_dsr_penalty": "candidates_tried(3) * 0.05 = 0.15 DSR penalty noted"
+  }
+}

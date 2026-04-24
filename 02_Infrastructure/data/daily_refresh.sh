@@ -35,34 +35,39 @@ Rscript --no-save -e '
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [1] KRX API gap-fill (항상 실행 — xlsx 리빌드 여부 무관)
-#     수정주가 xlsx + 원주가 KRX gap-fill = 최신 RAWDATA
+# [1] Naver T+0 (PRIMARY — KRX T+1 lag 회피, 2026-04-24 변경)
+#     Naver가 장중/장마감 직후 전일 종가 즉시 반영. RAWDATA 최신화 주력.
 # ──────────────────────────────────────────────────────────────────────────────
-echo "[1/7] KRX Data Pipeline (always run)..."
+echo "[1/7] Naver T+0 Primary Pipeline..."
+cd "$INFRA"
+Rscript --no-save -e '
+  source("config.R")
+  source("data/naver_data_collector.R")
+  tryCatch(naver_run_pipeline(),
+    error = function(e) cat(sprintf("Naver pipeline failed: %s\n", e$message)))
+'
+
+# ──────────────────────────────────────────────────────────────────────────────
+# [2] KRX gap-fill (FALLBACK — Naver 미처리 gap만 보충)
+#     KRX API는 T+1 lag 있으므로 Naver 이후 남은 gap만 채움.
+# ──────────────────────────────────────────────────────────────────────────────
+echo "[2/7] KRX gap-fill (fallback)..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
   source("data/krx_data_collector.R")
   source("data/krx_build_rawdata.R")
   gap <- krx_detect_gap()
-  cat(sprintf("Gap: %s → %s (%d days)\n", gap$last_rawdata_date, gap$end, gap$n_calendar_days))
-  if (gap$n_calendar_days > 0) {
-    krx_run_pipeline()
+  cat(sprintf("Post-Naver gap: %s → %s (%d days)\n",
+              gap$last_rawdata_date, gap$end, gap$n_calendar_days))
+  if (gap$n_calendar_days > 1) {
+    # Naver가 전날까지 채웠으면 gap 0~1일. 2일 이상 gap일 때만 KRX fallback.
+    cat("Gap > 1 day — KRX fallback 실행\n")
+    tryCatch(krx_run_pipeline(),
+             error = function(e) cat(sprintf("KRX skipped: %s\n", e$message)))
   } else {
-    cat("RAWDATA already up to date.\n")
+    cat("Naver로 gap 충분 해소 — KRX skip\n")
   }
-'
-
-# ──────────────────────────────────────────────────────────────────────────────
-# [2] Naver T+0 보완 (항상 실행)
-# ──────────────────────────────────────────────────────────────────────────────
-echo "[2/7] Naver T+0 Supplement..."
-cd "$INFRA"
-Rscript --no-save -e '
-  source("config.R")
-  source("data/naver_data_collector.R")
-  tryCatch(naver_run_pipeline(),
-    error = function(e) cat(sprintf("Naver skipped: %s\n", e$message)))
 '
 
 # ──────────────────────────────────────────────────────────────────────────────

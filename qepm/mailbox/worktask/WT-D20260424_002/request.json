@@ -1,0 +1,91 @@
+{
+  "task_id": "WT-D20260424_002",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "RAPC Breadth-Constrained (Remediation of Pilot 3)",
+  "hypothesis_description": "Pilot 3 RAPC alpha (ESBR+SUE+Accrual, Val>Train 검증, L-191 회피) 재사용 + Task #26 Optimizer 제약 (min_names=15, HHI<=0.10, bound[0,0.10], winsor 2σ) 적용. 가설: Grinold breadth 제약이 MDD -44% → <30% + Active IR -1 → positive로 개선.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-24",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  },
+  "evaluation_windows": {
+    "train_window": {
+      "start": "1990-01-04",
+      "end": "2022-01-21",
+      "years": 32.05,
+      "role": "factor_selection + signal_engineering (Alpha)"
+    },
+    "validation_window": {
+      "start": "2022-01-22",
+      "end": "2024-01-22",
+      "role": "model_selection + hyperparam tuning (Risk + Optimizer)"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "sealed": true,
+      "role": "final pass/fail judgment (Judge only)"
+    },
+    "paper_trade_window": {
+      "start": "2026-01-24",
+      "end": "2026-04-24",
+      "role": "pre-deployment validation (Execution)"
+    }
+  }
+}
