@@ -328,9 +328,16 @@ get_factor_adjustments <- function(category) {
 #==============================================================================
 # 8. build_regime_signal_table() — 전체 파이프라인
 #    load → merge → score → classify → save
+#
+#    v2 (2026-04-24): daily mode 추가.
+#    - daily = FALSE (default): 기존 월간 로직 그대로 (backward compatible)
+#    - daily = TRUE: 3-layer 일간 merge → unified_regime_signal_daily.parquet
 #==============================================================================
 
-build_regime_signal_table <- function(save_path = NULL) {
+build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
+  if (isTRUE(daily)) {
+    return(build_regime_signal_table_daily(save_path = save_path, ...))
+  }
   cat("═══════════════════════════════════════════════════\n")
   cat("[regime_signal] Building Unified 3-Layer Cascade\n")
   cat("═══════════════════════════════════════════════════\n\n")
@@ -481,6 +488,385 @@ load_regime_signal <- function() {
 
   cat(sprintf("[regime_signal] Loaded: %d months | %s ~ %s\n",
               nrow(dt), min(dt$Date), max(dt$Date)))
+  dt
+}
+
+
+#==============================================================================
+# 9b. DAILY MODE (v2, 2026-04-24) — 3-layer 일간 통합
+#==============================================================================
+# Step 5 (v6.1 Regime Infra):
+#   - MSM daily (.cache/msm_daily_latest.parquet) — Date/Crisis_Prob 그대로
+#   - FRED wide (.cache/fred_macro_wide.parquet) — 월간 시리즈는 LOCF, 일간은 그대로
+#     → FRED_MRS 를 compute_fred_mrs_daily() 공식으로 매 영업일 계산
+#   - KTRI daily (ktri_v3_signals.csv) — KTRI/VEA 그대로
+#   - Gap handling: 1~2 layer 누락 시 neutral default + layer_flags 기록
+#   - Regime_Score 는 compute_regime_score() 재사용 (backward compat)
+#   - Regime_Score_smooth: ewma (halflife = 5) — 일간 진동 완화
+#   - Schema: Date, YM, MSM_Crisis_Prob, FRED_MRS, KTRI_Score, VEA_Score,
+#            Regime_Score, Regime_Score_smooth, Category, Cash_Pct,
+#            Active_Layers, Is_Month_End, last_updated
+#==============================================================================
+
+
+#------------------------------------------------------------------------------
+# 9b.1 load_msm_daily() — .cache/msm_daily_latest.parquet → daily Crisis_Prob
+#------------------------------------------------------------------------------
+
+load_msm_daily <- function() {
+  msm_path <- file.path(CACHE_DIR, "msm_daily_latest.parquet")
+  if (!file.exists(msm_path)) {
+    warning("[regime_signal/daily] MSM daily cache missing: ", msm_path)
+    return(data.table(Date = as.Date(character(0)),
+                      MSM_Crisis_Prob = numeric(0)))
+  }
+
+  dt <- as.data.table(read_parquet(msm_path))
+  dt[, Date := as.Date(Date)]
+  setnames(dt, "Crisis_Prob", "MSM_Crisis_Prob", skip_absent = TRUE)
+  dt <- dt[!is.na(Date) & !is.na(MSM_Crisis_Prob), .(Date, MSM_Crisis_Prob)]
+  setorder(dt, Date)
+
+  cat(sprintf("[regime_signal/daily] MSM daily loaded: %d rows | %s ~ %s\n",
+              nrow(dt), format(min(dt$Date)), format(max(dt$Date))))
+  dt
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.2 load_fred_daily_wide() — .cache/fred_macro_wide.parquet → daily wide
+#      월간 지표(UNRATE, CPI 등) LOCF 처리. Daily 지표 그대로.
+#------------------------------------------------------------------------------
+
+load_fred_daily_wide <- function() {
+  wide_path <- file.path(CACHE_DIR, "fred_macro_wide.parquet")
+  if (!file.exists(wide_path)) {
+    warning("[regime_signal/daily] FRED wide missing: ", wide_path)
+    return(data.table(Date = as.Date(character(0))))
+  }
+
+  dt <- as.data.table(read_parquet(wide_path))
+  date_col <- intersect(c("Date", "date"), names(dt))[1]
+  if (is.na(date_col)) {
+    warning("[regime_signal/daily] FRED wide has no Date column.")
+    return(data.table(Date = as.Date(character(0))))
+  }
+  if (date_col != "Date") setnames(dt, date_col, "Date")
+  dt[, Date := as.Date(Date)]
+  setorder(dt, Date)
+
+  # LOCF 일괄 (월간 지표의 일간 forward-fill)
+  fill_cols <- setdiff(names(dt), "Date")
+  for (col in fill_cols) {
+    if (is.numeric(dt[[col]])) setnafill(dt, type = "locf", cols = col)
+  }
+
+  cat(sprintf("[regime_signal/daily] FRED wide loaded: %d rows × %d cols | %s ~ %s\n",
+              nrow(dt), ncol(dt), format(min(dt$Date)), format(max(dt$Date))))
+  dt
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.3 compute_fred_mrs_daily() — FRED wide row 기반 MRS (0~50)
+#      기존 load_fred_signal() 내 simplified 공식 재사용:
+#        VIX > 30 : +20, VIX > 20 : +10
+#        Term_Spread < 0 : +15
+#        HY_Spread > 5.0 : +15
+#------------------------------------------------------------------------------
+
+compute_fred_mrs_daily <- function(fred_dt) {
+  if (nrow(fred_dt) == 0) {
+    return(data.table(Date = as.Date(character(0)), FRED_MRS = numeric(0)))
+  }
+  dt <- copy(fred_dt)
+  dt[, FRED_MRS := 0]
+
+  if ("VIX" %in% names(dt)) {
+    dt[, FRED_MRS := FRED_MRS +
+          fifelse(!is.na(VIX) & VIX > 30, 20,
+            fifelse(!is.na(VIX) & VIX > 20, 10, 0))]
+  }
+  if ("Term_Spread" %in% names(dt)) {
+    dt[, FRED_MRS := FRED_MRS +
+          fifelse(!is.na(Term_Spread) & Term_Spread < 0, 15, 0)]
+  }
+  if ("HY_Spread" %in% names(dt)) {
+    dt[, FRED_MRS := FRED_MRS +
+          fifelse(!is.na(HY_Spread) & HY_Spread > 5.0, 15, 0)]
+  }
+  # 전 series NA 행은 MRS NA 로 표식 (graceful degrade)
+  core <- intersect(c("VIX", "Term_Spread", "HY_Spread"), names(dt))
+  if (length(core) > 0) {
+    dt[, .all_na := Reduce(`&`, lapply(.SD, is.na)), .SDcols = core]
+    dt[.all_na == TRUE, FRED_MRS := NA_real_]
+    dt[, .all_na := NULL]
+  }
+  dt[, .(Date, FRED_MRS)]
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.4 load_ktri_daily() — ktri_v3_signals.csv → daily KTRI/VEA
+#------------------------------------------------------------------------------
+
+load_ktri_daily <- function() {
+  ktri_paths <- c(
+    file.path(PROJECT_ROOT, "04_Regime_Engine/output/ktri_v3_signals.csv"),
+    file.path(RESEARCH_OUTPUT, "regime_comparison/output/ktri_v3_signals.csv")
+  )
+  ktri_path <- ktri_paths[file.exists(ktri_paths)]
+  if (length(ktri_path) == 0) {
+    warning("[regime_signal/daily] KTRI v3 csv missing.")
+    return(data.table(Date = as.Date(character(0)),
+                      KTRI_Score = numeric(0), VEA_Score = numeric(0)))
+  }
+
+  dt <- fread(ktri_path[1])
+  dt[, Date := as.Date(DATE)]
+  dt <- dt[!is.na(Date) & !is.na(KTRI),
+           .(Date, KTRI_Score = KTRI, VEA_Score = VEA)]
+  setorder(dt, Date)
+
+  cat(sprintf("[regime_signal/daily] KTRI daily loaded: %d rows | %s ~ %s\n",
+              nrow(dt), format(min(dt$Date)), format(max(dt$Date))))
+  dt
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.5 .ewma_halflife() — exponentially weighted moving average, halflife-based
+#      alpha = 1 - exp(-ln(2)/halflife)
+#      stats::filter 사용, NA 에 대해 recursive 안전 처리.
+#------------------------------------------------------------------------------
+
+.ewma_halflife <- function(x, halflife = 5) {
+  x <- as.numeric(x)
+  n <- length(x)
+  if (n == 0) return(x)
+  alpha <- 1 - exp(-log(2) / halflife)
+  out <- rep(NA_real_, n)
+  last <- NA_real_
+  for (i in seq_len(n)) {
+    v <- x[i]
+    if (is.na(v)) {
+      out[i] <- last
+    } else if (is.na(last)) {
+      last <- v
+      out[i] <- v
+    } else {
+      last <- alpha * v + (1 - alpha) * last
+      out[i] <- last
+    }
+  }
+  out
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.6 build_regime_signal_table_daily() — 일간 통합 파이프라인
+#------------------------------------------------------------------------------
+
+build_regime_signal_table_daily <- function(save_path = NULL,
+                                            halflife = 5,
+                                            allow_partial = TRUE,
+                                            verbose = TRUE) {
+  if (verbose) {
+    cat("═══════════════════════════════════════════════════\n")
+    cat("[regime_signal/daily] Building v2 Daily 3-Layer Cascade\n")
+    cat("═══════════════════════════════════════════════════\n\n")
+  }
+
+  # ── Load all 3 layers ────────────────────────────────────────
+  msm_dt  <- load_msm_daily()
+  fred_wd <- load_fred_daily_wide()
+  fred_dt <- compute_fred_mrs_daily(fred_wd)
+  ktri_dt <- load_ktri_daily()
+
+  l1_ok <- nrow(msm_dt) > 0
+  l2_ok <- nrow(fred_dt) > 0 && any(!is.na(fred_dt$FRED_MRS))
+  l3_ok <- nrow(ktri_dt) > 0
+
+  if (!l1_ok && !l2_ok && !l3_ok) {
+    stop("[regime_signal/daily] All 3 layers missing — cannot build.")
+  }
+  if ((!l1_ok || !l2_ok || !l3_ok) && !allow_partial) {
+    stop(sprintf("[regime_signal/daily] Partial layers (L1=%s L2=%s L3=%s) and allow_partial=FALSE",
+                 l1_ok, l2_ok, l3_ok))
+  }
+
+  # ── Build base Date spine (union of all layers) ──────────────
+  all_dates <- sort(unique(c(
+    if (l1_ok) msm_dt$Date else as.Date(character(0)),
+    if (l2_ok) fred_dt$Date else as.Date(character(0)),
+    if (l3_ok) ktri_dt$Date else as.Date(character(0))
+  )))
+  if (length(all_dates) == 0) stop("[regime_signal/daily] Empty date spine.")
+
+  base <- data.table(Date = all_dates)
+  base[, YM := format(Date, "%Y-%m")]
+
+  # ── Merge MSM ─────────────────────────────────────────────────
+  # LOCF: 휴일/비거래일 → 직전 trading day 값 유지 (Active_Layers 는 post-LOCF
+  # 기준으로 "해당 layer 이미 시작됨"을 표시)
+  if (l1_ok) {
+    base <- merge(base, msm_dt, by = "Date", all.x = TRUE)
+    setnafill(base, type = "locf", cols = "MSM_Crisis_Prob")
+  } else {
+    base[, MSM_Crisis_Prob := NA_real_]
+  }
+
+  # ── Merge FRED MRS ───────────────────────────────────────────
+  if (l2_ok) {
+    base <- merge(base, fred_dt, by = "Date", all.x = TRUE)
+    # FRED 일부 결측 (휴일 등) LOCF
+    setnafill(base, type = "locf", cols = "FRED_MRS")
+  } else {
+    base[, FRED_MRS := NA_real_]
+  }
+
+  # ── Merge KTRI ───────────────────────────────────────────────
+  if (l3_ok) {
+    base <- merge(base, ktri_dt, by = "Date", all.x = TRUE)
+    setnafill(base, type = "locf", cols = c("KTRI_Score", "VEA_Score"))
+  } else {
+    base[, KTRI_Score := NA_real_]
+    base[, VEA_Score := NA_real_]
+  }
+  setorder(base, Date)
+
+  # ── Active layers flag (per-row) ─────────────────────────────
+  base[, L1_active := !is.na(MSM_Crisis_Prob)]
+  base[, L2_active := !is.na(FRED_MRS)]
+  base[, L3_active := !is.na(KTRI_Score) & !is.na(VEA_Score)]
+  base[, Active_Layers := {
+    parts <- character(.N)
+    for (i in seq_len(.N)) {
+      a <- c()
+      if (L1_active[i]) a <- c(a, "L1")
+      if (L2_active[i]) a <- c(a, "L2")
+      if (L3_active[i]) a <- c(a, "L3")
+      parts[i] <- if (length(a) == 0) "NONE" else paste(a, collapse = "+")
+    }
+    parts
+  }]
+
+  # ── Gap handling: neutral defaults for downstream score ──────
+  # MSM missing → treat as 0 (compute_regime_score already handles)
+  # FRED missing → neutral 0 (base contribution = 0)
+  # KTRI/VEA missing → 50 neutral
+  # compute_regime_score already handles NA → defaults; 2-layer reweighting
+  # is an optional enhancement but current scoring is additive with natural
+  # zero-contribution from missing → equivalent to "skip and lose max".
+  # To keep partial-mode parity, we renormalize when exactly one layer is out.
+
+  base[, Regime_Score := compute_regime_score(
+    MSM_Crisis_Prob, FRED_MRS, KTRI_Score, VEA_Score)]
+
+  # 2-layer renormalization (maintain max 100 budget)
+  # L1 max 40 / L2 max 35 / L3 max 15 → total 90. Partial:
+  #   no L1 → scale by 90/50  (L2+L3)
+  #   no L2 → scale by 90/55  (L1+L3)
+  #   no L3 → scale by 90/75  (L1+L2)
+  base[!L1_active & L2_active & L3_active,
+       Regime_Score := pmin(100, Regime_Score * (90 / 50))]
+  base[L1_active & !L2_active & L3_active,
+       Regime_Score := pmin(100, Regime_Score * (90 / 55))]
+  base[L1_active & L2_active & !L3_active,
+       Regime_Score := pmin(100, Regime_Score * (90 / 75))]
+
+  # ── Smooth (EWMA halflife=5) ─────────────────────────────────
+  base[, Regime_Score_smooth := .ewma_halflife(Regime_Score,
+                                               halflife = halflife)]
+
+  # ── Category / Cash_Pct (reuse existing classifiers) ─────────
+  base[, Category := classify_regime_category(Regime_Score)]
+  base[, Cash_Pct := get_cash_allocation(Regime_Score)]
+
+  # ── Month-end flag ──────────────────────────────────────────
+  base[, Is_Month_End := (Date == max(Date)), by = YM]
+
+  # ── last_updated column ──────────────────────────────────────
+  now_ts <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+  base[, last_updated := now_ts]
+
+  # ── Final column order (13 fields per spec) ──────────────────
+  final_cols <- c("Date", "YM",
+                  "MSM_Crisis_Prob", "FRED_MRS", "KTRI_Score", "VEA_Score",
+                  "Regime_Score", "Regime_Score_smooth", "Category", "Cash_Pct",
+                  "Active_Layers", "Is_Month_End", "last_updated")
+  signal_dt <- base[, ..final_cols]
+
+  # ── Summary ──────────────────────────────────────────────────
+  if (verbose) {
+    cat("\n[regime_signal/daily] ═══ Layer Coverage ═══\n")
+    cat(sprintf("  L1 MSM  non-NA: %d / %d (%.1f%%) | range %s ~ %s\n",
+                sum(!is.na(signal_dt$MSM_Crisis_Prob)), nrow(signal_dt),
+                100 * mean(!is.na(signal_dt$MSM_Crisis_Prob)),
+                if (l1_ok) format(min(msm_dt$Date)) else "NA",
+                if (l1_ok) format(max(msm_dt$Date)) else "NA"))
+    cat(sprintf("  L2 FRED non-NA: %d / %d (%.1f%%) | range %s ~ %s\n",
+                sum(!is.na(signal_dt$FRED_MRS)), nrow(signal_dt),
+                100 * mean(!is.na(signal_dt$FRED_MRS)),
+                if (l2_ok) format(min(fred_dt$Date)) else "NA",
+                if (l2_ok) format(max(fred_dt$Date)) else "NA"))
+    cat(sprintf("  L3 KTRI non-NA: %d / %d (%.1f%%) | range %s ~ %s\n",
+                sum(!is.na(signal_dt$KTRI_Score)), nrow(signal_dt),
+                100 * mean(!is.na(signal_dt$KTRI_Score)),
+                if (l3_ok) format(min(ktri_dt$Date)) else "NA",
+                if (l3_ok) format(max(ktri_dt$Date)) else "NA"))
+
+    cat("\n[regime_signal/daily] ═══ Distribution ═══\n")
+    cat_summary <- signal_dt[, .N, by = Category]
+    cat_summary[, Pct := round(N / sum(N) * 100, 1)]
+    print(cat_summary)
+
+    cat(sprintf("\n[regime_signal/daily] Score: mean=%.1f med=%.1f max=%.1f | smooth: mean=%.1f\n",
+                mean(signal_dt$Regime_Score, na.rm = TRUE),
+                median(signal_dt$Regime_Score, na.rm = TRUE),
+                max(signal_dt$Regime_Score, na.rm = TRUE),
+                mean(signal_dt$Regime_Score_smooth, na.rm = TRUE)))
+
+    active_tbl <- signal_dt[, .N, by = Active_Layers][order(-N)]
+    cat("[regime_signal/daily] Active_Layers mix:\n")
+    print(active_tbl)
+  }
+
+  # ── Save (DO NOT overwrite existing monthly parquet) ────────
+  if (is.null(save_path)) {
+    save_path <- file.path(CACHE_DIR, "unified_regime_signal_daily.parquet")
+  }
+  dir.create(dirname(save_path), recursive = TRUE, showWarnings = FALSE)
+  write_parquet(signal_dt, save_path)
+  if (verbose) {
+    cat(sprintf("\n[regime_signal/daily] Saved: %s (%d rows)\n",
+                save_path, nrow(signal_dt)))
+    cat("═══════════════════════════════════════════════════\n")
+  }
+
+  invisible(signal_dt)
+}
+
+
+#------------------------------------------------------------------------------
+# 9b.7 load_daily_regime_signal() — daily cache load helper
+#------------------------------------------------------------------------------
+
+load_daily_regime_signal <- function(rebuild_if_missing = TRUE) {
+  cache_path <- file.path(CACHE_DIR, "unified_regime_signal_daily.parquet")
+  if (!file.exists(cache_path)) {
+    if (isTRUE(rebuild_if_missing)) {
+      cat("[regime_signal/daily] Cache not found. Building...\n")
+      return(build_regime_signal_table_daily())
+    } else {
+      stop("[regime_signal/daily] Cache missing: ", cache_path)
+    }
+  }
+  dt <- as.data.table(read_parquet(cache_path))
+  dt[, Date := as.Date(Date)]
+  setorder(dt, Date)
+  cat(sprintf("[regime_signal/daily] Loaded: %d rows | %s ~ %s\n",
+              nrow(dt), format(min(dt$Date)), format(max(dt$Date))))
   dt
 }
 
@@ -804,13 +1190,15 @@ merge_regime_with_bcs <- function(FACTORS, signal_dt = NULL, bcs_dt = NULL) {
 }
 
 
-cat("[regime_signal] Loaded (v1.1). Functions:\n")
-cat("  build_regime_signal_table()     — full cascade pipeline → parquet\n")
-cat("  load_regime_signal()            — load cascade cache\n")
-cat("  get_regime_at_date(date)        — single date lookup\n")
-cat("  merge_regime_signal(FACTORS)    — cascade rolling join\n")
-cat("  spot_check_stress_periods()     — GFC/COVID/Rate stress test\n")
-cat("  compute_bcs_daily()             — build BCS daily signal\n")
-cat("  load_bcs_signal()               — load BCS daily cache\n")
-cat("  get_bcs_cash_overlay(bcs_q)     — BCS Q → cash overlay\n")
-cat("  merge_regime_with_bcs(FACTORS)  — cascade + BCS combined\n")
+cat("[regime_signal] Loaded (v2.0). Functions:\n")
+cat("  build_regime_signal_table()               — monthly cascade → parquet (daily=FALSE)\n")
+cat("  build_regime_signal_table(daily = TRUE)   — daily 3-layer → unified_regime_signal_daily.parquet\n")
+cat("  build_regime_signal_table_daily()         — explicit daily builder\n")
+cat("  load_regime_signal()                      — load monthly cache\n")
+cat("  load_daily_regime_signal()                — load daily cache\n")
+cat("  get_regime_at_date(date)                  — single date lookup (monthly)\n")
+cat("  merge_regime_signal(FACTORS)              — cascade rolling join\n")
+cat("  spot_check_stress_periods()               — GFC/COVID/Rate stress test\n")
+cat("  compute_bcs_daily()                       — build BCS daily signal\n")
+cat("  load_bcs_signal()                         — load BCS daily cache\n")
+cat("  merge_regime_with_bcs(FACTORS)            — cascade + BCS combined\n")

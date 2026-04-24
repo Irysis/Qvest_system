@@ -189,7 +189,7 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 2. **[Step 2]** ktri_v3_builder full schema + VEA NA fix
 3. **[Step 3]** msm_daily_refit
 4. **[Step 4]** fred_robust ✅ (2026-04-24 — `fred_robust.R` 22 series retry/graceful + long+wide 병행 저장. `load_fred_signal()` wide 우선 호환 갱신)
-5. **[Step 5]** regime_signal v2 strong
+5. **[Step 5]** regime_signal v2 strong ✅ (2026-04-24 — `build_regime_signal_table(daily = TRUE)` + `load_daily_regime_signal()` 추가. 일간 3-layer merge + MSM/FRED/KTRI LOCF + Regime_Score_smooth(EWMA hl=5) + Active_Layers + Is_Month_End + last_updated. `.cache/unified_regime_signal_daily.parquet` 10,159행 (1990-01-05 ~ 2026-04-24). Backward compat: `daily = FALSE` default 유지)
 6. **[Step 6]** Briefing graceful fallback
 7. **[Step 7]** Healthcheck + alert
 8. **[Step 8]** Test + orchestration 문서화
