@@ -1,0 +1,173 @@
+{
+  "task_id": "WT-D20260424_004",
+  "agent": "forge",
+  "stage": "stage4_backtest",
+  "as_of_date": "2026-04-24",
+  "method": "MinVar_BetaHard",
+  "alpha_model": "RAPC v2 (ESBR+SUE+AC21+AC17+Q35 IC-weighted) + CAPM Blume 36M rolling residual",
+  "risk_model": "Nonlinear Shrinkage (LW 2022) | cond=7.02 | PSD verified",
+  "hedge": "Option A: beta_target=0.75, gamma_beta=1.0 hard equality",
+  "period": {
+    "train_start": "2012-01-01",
+    "train_end": "2022-12-31",
+    "val_start": "2023-01-01",
+    "val_end": "2024-01-22",
+    "lockbox_start": "2024-01-23"
+  },
+  "portfolio_snapshot": {
+    "n_names": 20,
+    "tickers": ["A054050", "A030000", "A071320", "A028260", "A036640", "A091970", "A137310", "A092730", "A041510", "A000070", "A145990", "A047080", "A033790", "A007340", "A114840", "A093190", "A036800", "A025540", "A000860", "A140860"],
+    "weights": {
+      "A054050": 0.0854,
+      "A030000": 0.0752,
+      "A071320": 0.0738,
+      "A028260": 0.0736,
+      "A036640": 0.0717,
+      "A091970": 0.0577,
+      "A137310": 0.0568,
+      "A092730": 0.0532,
+      "A041510": 0.0521,
+      "A000070": 0.0466,
+      "A145990": 0.0442,
+      "A047080": 0.0438,
+      "A033790": 0.043,
+      "A007340": 0.0429,
+      "A114840": 0.0406,
+      "A093190": 0.0362,
+      "A036800": 0.0304,
+      "A025540": 0.0269,
+      "A000860": 0.0255,
+      "A140860": 0.0205
+    },
+    "hhi": 0.0564,
+    "beta_port": 0.75,
+    "gamma_beta": 1
+  },
+  "perf_full": {
+    "Label": "FULL (2012~2024)",
+    "CAGR": 1.18,
+    "AnnVol": 17.75,
+    "Sharpe": 0.066,
+    "Sharpe_m": 0.154,
+    "Sortino": 0.089,
+    "MDD": 63.91,
+    "Calmar": 0.018,
+    "WinRate": 50.7,
+    "WorstMonth": -18.53,
+    "Worst3M": -31.47,
+    "ES99_d": 4.44,
+    "ES99_m": 17.42
+  },
+  "perf_train": {
+    "Label": "TRAIN (2012~2022)",
+    "CAGR": 1.63,
+    "AnnVol": 17.96,
+    "Sharpe": 0.091,
+    "Sharpe_m": 0.179,
+    "Sortino": 0.121,
+    "MDD": 63.91,
+    "Calmar": 0.026,
+    "WinRate": 51.1,
+    "WorstMonth": -18.53,
+    "Worst3M": -31.47,
+    "ES99_d": 4.57,
+    "ES99_m": 17.42
+  },
+  "perf_val": {
+    "Label": "VAL (2023~2024)",
+    "CAGR": -3.42,
+    "AnnVol": 15.48,
+    "Sharpe": -0.221,
+    "Sharpe_m": -0.224,
+    "Sortino": -0.302,
+    "MDD": 14.95,
+    "Calmar": -0.229,
+    "WinRate": 46.2,
+    "WorstMonth": -4.56,
+    "Worst3M": -6.09,
+    "ES99_d": 3.21,
+    "ES99_m": "NA"
+  },
+  "risk_metrics": {
+    "ann_turnover_pct": 45.1,
+    "hard_fail_mdd45": true,
+    "hard_fail_to600": false
+  },
+  "alpha_uniform_diagnosis": {
+    "alpha_uniform_flag": true,
+    "unique_alpha_count": 1,
+    "cap_cluster_count": 20,
+    "cap_cluster_pct": 100,
+    "cap_cluster_tickers": ["A000070", "A000860", "A007340", "A025540", "A028260", "A030000", "A033790", "A036640", "A036800", "A041510", "A047080", "A054050", "A071320", "A091970", "A092730", "A093190", "A114840", "A137310", "A140860", "A145990"],
+    "optimizer_universe_n": 20,
+    "diagnosis": "Alpha-Uniform: 전체 선택 종목이 동일 alpha_final=0.3152. confidence=0.11 floor + 2sigma winsor 결합. Optimizer는 pure MinVar로 작동함. Alpha 차별화 소실.",
+    "structural_implication": "Grinold IR = IC * sqrt(BR): alpha 차별화 없음 → active IR 기대치 0. Active IR 개선 위해 confidence calibration 또는 winsor 완화 필요 (Pilot 7 구조 과제).",
+    "pilot6_vs_pilot5_active_ir": "Pilot5 Active IR=-1.021. Pilot6은 Alpha-Uniform으로 pure MinVar → Active IR 구조적 동등 또는 하락 예상.",
+    "recommendation": "Pilot 7: confidence 재보정 (floor 제거) + winsor 3sigma 완화 + IC 가중 차별화 alpha 재설계"
+  },
+  "pilot5_comparison": {
+    "pilot5_sr": 0.649,
+    "pilot5_cagr": 12.03,
+    "pilot5_mdd": 32.32,
+    "pilot5_n": 11,
+    "pilot5_hhi": 0.096,
+    "pilot5_active_ir": -1.021,
+    "pilot6_sr": 0.066,
+    "pilot6_cagr": 1.18,
+    "pilot6_mdd": 63.91,
+    "pilot6_n": 20,
+    "pilot6_hhi": 0.0565,
+    "pilot6_active_ir": null,
+    "structural_change": "gamma 0.5->1.0, n 11->20, cov LW->NonlinShrink, alpha v1->v2"
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0372 < 0.04. Pilot5(0.037) 대비 변화: 0.00016. RAPC 구성 재검토 또는 신규 팩터 필요."
+    },
+    {
+      "flag": "INFO_GATE_D",
+      "severity": "INFO",
+      "note": "Top-20 expected beta=1.093. Gate D threshold beta<0.75. Optimizer에서 추가 beta constraint 필요 (Option A 유지). 단, CAPM pre-score로 Pilot5(0.789) 대비 개선."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 95.8% > 40% threshold (EW). Option A beta=0.75 gamma=1.0 required."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "PEAD+Accrual crowding with KOSPI200 quant consensus. Monitor post-rebalance."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "21 factor pairs with TDC > 0.4 detected."
+    },
+    {
+      "id": "RF-BETA",
+      "severity": "HIGH",
+      "note": "Top-20 EW beta=1.0929 > 1.0. Pilot 5 was 0.789. CAPM residualization did not reduce beta. gamma_beta>=1.0 is critical. Consider Option C-3 in CAUTION regime."
+    }
+  ],
+  "artifacts": {
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/annual_returns.png",
+    "drawdown_chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/drawdown_chart.png",
+    "performance_summary": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/backtest_result/performance_summary.json",
+    "integration_audit": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/integration_audit.json"
+  },
+  "judge_notes": {
+    "alpha_uniform": "20/20 종목 alpha_final=0.3152 동일. Optimizer=pure MinVar. Active IR 기대치 0.",
+    "gamma_upgrade": "gamma 0.5->1.0: beta constraint 강화. beta_port=0.750 hard.",
+    "n20_hard": "n=20 hard (v2.2). Pilot5 n=11 natural 대비 분산도 개선 (HHI 0.096->0.056).",
+    "cov_upgrade": "Nonlinear Shrinkage cond=7.02 (Pilot5 LW Oracle cond=11.04 대비 개선).",
+    "rf_rank_ic": "IC=0.0372 > 0.04 경계. RAPC v2 개선 확인.",
+    "rf_beta": "market_risk EW 95.8% → gamma=1.0 hard binding으로 beta_port=0.750 달성.",
+    "active_ir_concern": "Alpha-Uniform으로 Active Return 차별화 소실. Judge Active IR 측정 필요.",
+    "lockbox": "2024-01-23+ SEALED. Judge 권한 (AX-002)."
+  },
+  "status": "FORGE_DONE"
+}

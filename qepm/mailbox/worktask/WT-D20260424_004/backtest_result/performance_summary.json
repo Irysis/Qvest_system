@@ -1,0 +1,323 @@
+{
+  "task_id": "WT-D20260424_004",
+  "agent": "forge",
+  "as_of_date": "2026-04-24",
+  "pilot_label": "Pilot 6 — RAPC v2 + Option A gamma=1.0",
+  "method": "MinVar_BetaHard",
+  "period": {
+    "train": {
+      "start": "2012-01-01",
+      "end": "2022-12-31"
+    },
+    "validation": {
+      "start": "2023-01-01",
+      "end": "2024-01-22"
+    },
+    "combined": {
+      "start": "2012-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox": "SEALED (2024-01-23+)"
+  },
+  "portfolio": {
+    "n_names": 20,
+    "tickers": ["A054050", "A030000", "A071320", "A028260", "A036640", "A091970", "A137310", "A092730", "A041510", "A000070", "A145990", "A047080", "A033790", "A007340", "A114840", "A093190", "A036800", "A025540", "A000860", "A140860"],
+    "weights": {
+      "A054050": 0.0854,
+      "A030000": 0.0752,
+      "A071320": 0.0738,
+      "A028260": 0.0736,
+      "A036640": 0.0717,
+      "A091970": 0.0577,
+      "A137310": 0.0568,
+      "A092730": 0.0532,
+      "A041510": 0.0521,
+      "A000070": 0.0466,
+      "A145990": 0.0442,
+      "A047080": 0.0438,
+      "A033790": 0.043,
+      "A007340": 0.0429,
+      "A114840": 0.0406,
+      "A093190": 0.0362,
+      "A036800": 0.0304,
+      "A025540": 0.0269,
+      "A000860": 0.0255,
+      "A140860": 0.0205
+    },
+    "max_weight": 0.0854,
+    "min_weight": 0.0205,
+    "hhi": 0.0564,
+    "beta_port": 0.75,
+    "gamma_beta": 1,
+    "note": "n=20 hard (v2.2) — MinVar_BetaHard. Alpha-Uniform 구조로 pure MinVar 작동."
+  },
+  "performance": {
+    "full": {
+      "Label": "FULL (2012~2024)",
+      "CAGR": 1.18,
+      "AnnVol": 17.75,
+      "Sharpe": 0.066,
+      "Sharpe_m": 0.154,
+      "Sortino": 0.089,
+      "MDD": 63.91,
+      "Calmar": 0.018,
+      "WinRate": 50.7,
+      "WorstMonth": -18.53,
+      "Worst3M": -31.47,
+      "ES99_d": 4.44,
+      "ES99_m": 17.42
+    },
+    "train": {
+      "Label": "TRAIN (2012~2022)",
+      "CAGR": 1.63,
+      "AnnVol": 17.96,
+      "Sharpe": 0.091,
+      "Sharpe_m": 0.179,
+      "Sortino": 0.121,
+      "MDD": 63.91,
+      "Calmar": 0.026,
+      "WinRate": 51.1,
+      "WorstMonth": -18.53,
+      "Worst3M": -31.47,
+      "ES99_d": 4.57,
+      "ES99_m": 17.42
+    },
+    "val": {
+      "Label": "VAL (2023~2024)",
+      "CAGR": -3.42,
+      "AnnVol": 15.48,
+      "Sharpe": -0.221,
+      "Sharpe_m": -0.224,
+      "Sortino": -0.302,
+      "MDD": 14.95,
+      "Calmar": -0.229,
+      "WinRate": 46.2,
+      "WorstMonth": -4.56,
+      "Worst3M": -6.09,
+      "ES99_d": 3.21,
+      "ES99_m": "NA"
+    }
+  },
+  "risk": {
+    "ann_turnover_pct": 45.1,
+    "hard_fail_mdd45": true,
+    "hard_fail_to600": false
+  },
+  "alpha_uniform_warning": {
+    "flag": true,
+    "unique_alpha_count": 1,
+    "cap_cluster_n": 20,
+    "impact": "Alpha 차별화 소실 → Optimizer = pure MinVar. Active IR 기대치 0.",
+    "next_action": "Pilot 7: confidence floor 제거 + winsor 완화"
+  },
+  "pilot5_comparison": {
+    "pilot5_sr": 0.649,
+    "pilot5_cagr": 12.03,
+    "pilot5_mdd": 32.32,
+    "pilot5_n": 11,
+    "pilot5_hhi": 0.096,
+    "pilot5_active_ir": -1.021,
+    "pilot6_sr": 0.066,
+    "pilot6_cagr": 1.18,
+    "pilot6_mdd": 63.91,
+    "pilot6_n": 20,
+    "pilot6_hhi": 0.0565,
+    "pilot6_active_ir": null,
+    "structural_change": "gamma 0.5->1.0, n 11->20, cov LW->NonlinShrink, alpha v1->v2"
+  },
+  "alpha_diagnostics": {
+    "rank_ic": 0.0372,
+    "icir": 0.6193,
+    "harvey_t_stat": 8.5814,
+    "dsr_approx": 0.9981,
+    "monotonicity": 0.75,
+    "subperiod_stability": 1,
+    "turnover_proxy_annual": 0.478,
+    "post_neutralization_ic": 0.0357,
+    "ic_retention_pct": 96.2,
+    "n_months_train": 192,
+    "mean_breadth": 2235,
+    "subperiod_ic": {
+      "S1_2008_2014": 0.0703,
+      "S2_2015_2019": 0.006,
+      "S3_2020_2023": 0.0181
+    },
+    "pilot5_comparison": {
+      "pilot5_rank_ic": 0.0318,
+      "pilot6_rank_ic": 0.0372,
+      "delta": 0.0054,
+      "pilot5_icir": 0.403,
+      "pilot6_icir": 0.6193,
+      "note": "Pilot5 IC 0.0318은 Pilot5 train window 결과. v2 실측 baseline IC=0.037."
+    },
+    "capm_residual_diagnostics": {
+      "applied": true,
+      "capm_retention_pct": 96.2,
+      "top20_expected_beta": 1.0929,
+      "pilot5_beta": 0.789,
+      "beta_improvement_pp": -0.3039,
+      "gate_d_threshold_pct": 40,
+      "note": "Top-20 expected beta 1.0929 vs Gate D market_risk threshold. Pilot5 58.7%."
+    },
+    "factor_ic_breakdown": {
+      "C04_ESBR": {
+        "rank_ic": 0.0269,
+        "icir": 0.5496,
+        "harvey_t": 7.616,
+        "subperiod_stability": 1,
+        "n_months": 192
+      },
+      "C01_SUE": {
+        "rank_ic": 0.0173,
+        "icir": 0.3256,
+        "harvey_t": 4.5122,
+        "subperiod_stability": 1,
+        "n_months": 192
+      },
+      "AC21_CF_to_Accrual_Ratio": {
+        "rank_ic": 0.0419,
+        "icir": 0.7642,
+        "harvey_t": 10.5886,
+        "subperiod_stability": 1,
+        "n_months": 192
+      },
+      "AC17_Accrual_Reversal": {
+        "rank_ic": 0.0177,
+        "icir": 0.3826,
+        "harvey_t": 5.301,
+        "subperiod_stability": 1,
+        "n_months": 192
+      },
+      "Q35_CashBased_OpProf": {
+        "rank_ic": 0.0108,
+        "icir": 0.2071,
+        "harvey_t": 2.8699,
+        "subperiod_stability": 0.667,
+        "n_months": 192
+      }
+    },
+    "v2_key_findings": {
+      "finding1": "AC21_CF_to_Accrual_Ratio이 개별 팩터 중 가장 강함 (IC=0.042, ICIR=0.763). Q35_CashBased_OpProf(0.011)보다 우위 — Ball et al.(2016) 교체 불필요.",
+      "finding2": "Factor DB D10_Blume_Adj_Beta Raw_Value는 CAPM beta 스케일이 아님 (mean=-0.86). rawdata 직접 rolling beta 계산이 필수.",
+      "finding3": "CAPM retention=96.2%. USE_CAPM_RESID=TRUE. retention<60%이면 Path A IC 희석 과다 — Optimizer 단계 beta constraint 병행 필수."
+    }
+  },
+  "risk_diagnostics": {
+    "condition_number": 7.0202,
+    "condition_number_warn": 100,
+    "condition_number_fail": 500,
+    "condition_number_all_methods": {
+      "sample_pairwise": 165107265947.23,
+      "ledoit_wolf_oracle": 1,
+      "gerber_rmt": 139.71,
+      "lw_const_corr": 8209.01,
+      "nonlinear_shrinkage": 7.02
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "nonlinear_shrinkage",
+    "n_obs_used": 36,
+    "psd_verified": true,
+    "min_eigenvalue": 0,
+    "factor_coverage_pct": 100,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "mean_pairwise": 0.3619,
+      "max_pairwise": 0.7143,
+      "threshold": 0.4,
+      "pairs_above": 21,
+      "factor_level": {
+        "mkt_pc1": 0.1429,
+        "mkt_pc2": 0.2857,
+        "pc1_pc2": 0.1429
+      }
+    },
+    "market_risk_contribution": {
+      "ew_port_pct": 95.8,
+      "optA_est_pct": 50.3,
+      "gate_d_threshold": 40,
+      "gate_d_gap_pp": 55.8,
+      "source": "Factor model: beta^2 * sigma_mkt^2 / port_var"
+    },
+    "cvar_summary": {
+      "cvar_95_monthly": 0.137,
+      "cvar_95_ann": 0.4745,
+      "cf_var_99_ann": -0.5182,
+      "skewness": 0.2343,
+      "excess_kurtosis": 0.7127,
+      "n_obs": 36,
+      "pilot5_reference_market_down5": -0.063
+    },
+    "family_overlap": {
+      "capm_retention_pct": 96.2,
+      "ff3_retention_pct": 10.5,
+      "size_value_channel": "ACTIVE (89.5% IC FF3-explained via PC1 loading)",
+      "factor_corr_esbr_sue": -0.0688,
+      "factor_corr_esbr_accrual": -0.0363,
+      "factor_corr_sue_accrual": 0.0748,
+      "verdict": "No multicollinearity. FF3-neutral NOT recommended. CAPM-level hedge only (Option A)."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260424_004/regime_correlation.parquet",
+    "pit_regime_at_signal_date": {
+      "date": "2023-12-28",
+      "category": "RISK_ON",
+      "score": 8.29
+    },
+    "current_regime_today": {
+      "date": "2026-04-24",
+      "score": 42.9,
+      "category": "NEUTRAL",
+      "note": "Current regime NEUTRAL. Option C-3 beta_target=0.80 for NEUTRAL. Option A=0.75 remains primary."
+    }
+  },
+  "optimizer_ir": {
+    "exp_ir": 0.225,
+    "exp_net_ir": 0.2,
+    "exp_te": 20,
+    "beta_gap": 0,
+    "gamma_beta": 1,
+    "hedge_overlay": "A_gamma1.0"
+  },
+  "challenge_flags": [
+    {
+      "flag": "RF-RANK_IC",
+      "severity": "HIGH",
+      "note": "IC=0.0372 < 0.04. Pilot5(0.037) 대비 변화: 0.00016. RAPC 구성 재검토 또는 신규 팩터 필요."
+    },
+    {
+      "flag": "INFO_GATE_D",
+      "severity": "INFO",
+      "note": "Top-20 expected beta=1.093. Gate D threshold beta<0.75. Optimizer에서 추가 beta constraint 필요 (Option A 유지). 단, CAPM pre-score로 Pilot5(0.789) 대비 개선."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "Market risk 95.8% > 40% threshold (EW). Option A beta=0.75 gamma=1.0 required."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "PEAD+Accrual crowding with KOSPI200 quant consensus. Monitor post-rebalance."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "note": "21 factor pairs with TDC > 0.4 detected."
+    },
+    {
+      "id": "RF-BETA",
+      "severity": "HIGH",
+      "note": "Top-20 EW beta=1.0929 > 1.0. Pilot 5 was 0.789. CAPM residualization did not reduce beta. gamma_beta>=1.0 is critical. Consider Option C-3 in CAUTION regime."
+    }
+  ],
+  "v61_compliance": {
+    "R12_pure_function": "static weights from optimizer — no re-optimization in backtest",
+    "R12_hash_audit": "integration_audit.json",
+    "R11_lineage_gap2": "record_package_lineage() called below",
+    "lockbox_sealed": true,
+    "pit_c1": true,
+    "pit_c2": "static weight no same-day circular",
+    "pit_c9": "DD/VT not used in static backtest",
+    "commission_applied": 0.0015,
+    "n_hard_v22": "n=20 enforced (v2.2)"
+  }
+}

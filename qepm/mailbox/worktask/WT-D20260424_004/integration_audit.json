@@ -1,0 +1,75 @@
+{
+  "task_id": "WT-D20260424_004",
+  "audit_time": "2026-04-24T15:37:29+0900",
+  "schema_version": "v6.1",
+  "r12_pure_function": {
+    "description": "3-package SHA256 start/end match — no re-optimization",
+    "all_pass": false,
+    "packages": {
+      "alpha_package": {
+        "package_type": "alpha_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/alpha_package.json",
+        "recorded_hash": "2ebf2cc94155c406f478d742ad578b256d1b2d475b5e0e6afa3fc133a906bc2d",
+        "current_hash": "2ebf2cc94155c406f478d742ad578b256d1b2d475b5e0e6afa3fc133a906bc2d",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "risk_package": {
+        "package_type": "risk_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/risk_package.json",
+        "recorded_hash": "bd38cdecf77fde7af39e29f2d0092d4c5227a7b0dfcccba3461f29b2f8b3924f",
+        "current_hash": "bd38cdecf77fde7af39e29f2d0092d4c5227a7b0dfcccba3461f29b2f8b3924f",
+        "hash_match": true,
+        "status": "PASS"
+      },
+      "optimization_package": {
+        "package_type": "optimization_package",
+        "file_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260424_004/optimization_package.json",
+        "recorded_hash": "c93b4ac0ecb55d0c277f7964b54f8197aad422e6e07c4d5559428960c27be88b",
+        "current_hash": "8966d266afb8ed6bd83228993701d6dc3f956d6fd4aada43cbc7026d66117198",
+        "hash_match": false,
+        "status": "FAIL"
+      }
+    }
+  },
+  "constraint_check": {
+    "n_names_ok": true,
+    "long_only_ok": true,
+    "sum_weights_ok": true,
+    "max_weight_ok": true,
+    "hhi_ok": true,
+    "beta_port_ok": true,
+    "n_names": 20,
+    "sum_weights": 1,
+    "max_weight": 0.0854,
+    "hhi": 0.0564,
+    "beta_port": 0.75,
+    "all_pass": true,
+    "constraint_version": "v2.2"
+  },
+  "alpha_uniform_diagnosis": {
+    "alpha_uniform_flag": true,
+    "unique_alpha_count": 1,
+    "cap_cluster_count": 20,
+    "cap_cluster_pct": 100,
+    "cap_cluster_tickers": ["A000070", "A000860", "A007340", "A025540", "A028260", "A030000", "A033790", "A036640", "A036800", "A041510", "A047080", "A054050", "A071320", "A091970", "A092730", "A093190", "A114840", "A137310", "A140860", "A145990"],
+    "optimizer_universe_n": 20,
+    "diagnosis": "Alpha-Uniform: 전체 선택 종목이 동일 alpha_final=0.3152. confidence=0.11 floor + 2sigma winsor 결합. Optimizer는 pure MinVar로 작동함. Alpha 차별화 소실.",
+    "structural_implication": "Grinold IR = IC * sqrt(BR): alpha 차별화 없음 → active IR 기대치 0. Active IR 개선 위해 confidence calibration 또는 winsor 완화 필요 (Pilot 7 구조 과제).",
+    "pilot6_vs_pilot5_active_ir": "Pilot5 Active IR=-1.021. Pilot6은 Alpha-Uniform으로 pure MinVar → Active IR 구조적 동등 또는 하락 예상.",
+    "recommendation": "Pilot 7: confidence 재보정 (floor 제거) + winsor 3sigma 완화 + IC 가중 차별화 alpha 재설계"
+  },
+  "lockbox_sealed": {
+    "lockbox_start": "2024-01-23",
+    "backtest_end": "2024-01-22",
+    "sealed": true
+  },
+  "pilot5_vs_pilot6": {
+    "n_change": "11 (natural) -> 20 (hard v2.2)",
+    "hhi_change": "0.096 -> 0.0565 (MinVar 분산 효과)",
+    "beta_change": "gamma0.5 soft -> gamma1.0 hard equality",
+    "cov_change": "LW Oracle (cond=11.04) -> Nonlinear Shrinkage (cond=7.02)",
+    "alpha_change": "RAPC v1 IC=0.032 -> RAPC v2 IC=0.037 (CAPM residual 적용)",
+    "key_finding": "Alpha-Uniform 증상으로 Optimizer pure MinVar 작동. Beta 제약이 실질적 유일 차별화."
+  }
+}
