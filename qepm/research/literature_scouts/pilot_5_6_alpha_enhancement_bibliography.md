@@ -430,7 +430,7 @@
 RAPC의 rank_IC 0.0318 한계는 구성요소의 중복(ESBR·SUE 고상관)과 accrual의 낮은 독립 신호에서 기인한다. 개선 방향은 3가지다: (1) Accrual을 QoQ 차분 또는 재고변동 집중으로 교체하여 signal specificity 향상, (2) SUE를 D30/D60 drift window로 분화하여 시의성 개선, (3) Ball et al.(2016) cash-based OP surprise를 4번째 요소로 추가하여 이익관리 노이즈 제거. Harvey t>3.0 필터링이 각 요소 추가의 필수 관문이다.
 
 ### 축 2 — AX-007 예외지대
-한국 규제 현실(공매도 제약)에서 예외 (B) 롱숏은 사실상 불가. 예외 (C) N=50+은 현 hook 위반. 현실적 최선은 (A) multi-sleeve 내 신규 RAPC 슬리브 추가(TDC < 0.4)와 (D) ML sizing 통합(STR_1661 XGB 확장)이다. 두 경로를 동시에 탐색하는 S5 mutation 설계가 최적이며, (A)와 (D)는 독립적으로 구현 가능하다.
+한국 규제 현실(공매도 제약)에서 예외 (B) 롱숏은 사실상 불가. 예외 (C) N=50+은 현 hook 위반. 현실적 최선은 (A) multi-sleeve 내 신규 RAPC 슬리브 추가(TDC < 0.4)와 (D) ML sizing 통합(STR_1661 XGB 확장)이다. 두 경로를 동시에 탐색하는 **v6.1 Discovery WT 병렬 설계**(A경로 WT-D 1개 + D경로 WT-D 1개)가 최적이며, (A)와 (D)는 독립적으로 구현 가능하다. [용어 교정: v5.x "S5 mutation" → v6.1 "병렬 Discovery WT" 또는 "WT 내 method_shopping_log variants (P1 상한 5건)"로 매핑.]
 
 ### 축 3 — Market Hedge Overlay
 Risk Agent 담당이지만 Alpha Agent가 alpha_package에 명시해야 할 항목: `beta_target`, `vol_target`, `crisis_alpha_expectation`. Moreira-Muir(2017) vol-scaling과 Barroso-Santa-Clara(2015) momentum risk management가 핵심 이론이다. KODEX200 inverse는 단기(1~3개월) hedge에만 유효하며 장기 volatility drag를 주의해야 한다.
