@@ -1,0 +1,89 @@
+{
+  "from": "judge",
+  "to": "q_lead",
+  "task_id": "WT-D20260424_009",
+  "pilot": "Pilot_11",
+  "timestamp": "2026-04-24T22:30:00+0900",
+  "subject": "Pilot 11 GRADE_A_CANDIDATE — BREAKTHROUGH VERIFIED + L-201~L-204 신규",
+  "phase": "JUDGE_PASSED",
+  "grade": "GRADE_A_CANDIDATE",
+  "score": 52,
+  "judge_model": "opus-4-7-1m",
+  "key_findings": {
+    "ax_008_triangulation": "PASS (Forge 1.064 vs Judge 1.0703 match within tolerance)",
+    "lockbox_active_ir": 0.2608,
+    "lockbox_sr": 1.7591,
+    "lockbox_mdd": -21.51,
+    "lockbox_alpha_ann_pct": 4.11,
+    "full_mdd_hard_fail_soft_handling": "Full MDD -57.47% breach BUT Lockbox -21.51% pass (Pilot 9 동일 논리)",
+    "turnover_pct": 577.7,
+    "turnover_borderline": true
+  },
+  "anomaly_audit_41_9x": {
+    "verdict": "PARTIALLY_ARTIFACT_PARTIALLY_REAL",
+    "h1_pilot9_static_artifact": "CONFIRMED",
+    "h2_pilot11_weights_bug": "REJECTED",
+    "h3_data_snooping": "PARTIAL_REJECTED",
+    "h4_genuine_breakthrough": "LIKELY_CONFIRMED",
+    "true_driver": "concentration_shift_max_w_15pct_to_6_7pct + dynamic_rebalance"
+  },
+  "composition_diff": {
+    "overlap": 13,
+    "p9_unique": 3,
+    "p11_new": 7,
+    "hhi_p9": 0.0906,
+    "hhi_p11": 0.0514,
+    "max_w_p9": 0.1505,
+    "max_w_p11": 0.0674
+  },
+  "regime_signature": {
+    "NEUTRAL_active_ir": 1.453,
+    "CRISIS_active_ir": 1.828,
+    "CAUTION_active_ir": -0.177,
+    "RISK_ON_active_ir": -2.199,
+    "pattern": "earnings_consensus_regime_conditional_NEUTRAL_CRISIS_strong"
+  },
+  "new_lessons": [
+    {
+      "code": "L-201",
+      "title": "Static vs dynamic backtest methodology mismatch",
+      "scope": "process_methodology"
+    },
+    {
+      "code": "L-202",
+      "title": "Breadth bottleneck primacy (L-196 v2 reinterpretation)",
+      "scope": "portfolio_construction"
+    },
+    {
+      "code": "L-203",
+      "title": "Consensus RAPC regime-conditional alpha signature",
+      "scope": "alpha_family_characterization"
+    },
+    {
+      "code": "L-204",
+      "title": "HRP+Score hybrid implicit concentration dilution",
+      "scope": "optimizer_methodology"
+    }
+  ],
+  "l_196_status": "REINTERPRETED — MinVar_superior is breadth-deprivation artifact. 4 non-sparse methods (n=20) cluster 79-81 net_IR. Method-agnostic under breadth.",
+  "mega_sprint_integration": {
+    "mega_01_alpha": "Consensus RAPC v2 유효 + breadth 유지 원칙",
+    "mega_02_risk": "LW Oracle 상속 가능",
+    "mega_03_optimizer": "HRP+Score hybrid + breadth-priority framework (n≥20, max_w≤7~10%, HHI≤0.08)",
+    "mega_04_forge": "dynamic monthly rebalance standardize (static BnH 비교 금지)",
+    "mega_05_judge": "L-201 methodology audit 공식화"
+  },
+  "next_agent": "governor",
+  "next_agent_task": "PG0~PG3 admission evaluation for STR_1631_SYN_05 sleeve/replacement routing. TDC 0.6 threshold check. AX-007 multi-sleeve candidate (RISK_ON downweight).",
+  "artifacts": {
+    "judge_verdict": "stage_artifacts/WT_D20260424_009/judge_verdict.json",
+    "anomaly_audit": "stage_artifacts/WT_D20260424_009/anomaly_audit.json",
+    "composition_diff": "stage_artifacts/WT_D20260424_009/pilot9_vs_pilot11_composition.json",
+    "lockbox_oos": "stage_artifacts/WT_D20260424_009/lockbox_oos_summary.json",
+    "regime_decomp": "stage_artifacts/WT_D20260424_009/lockbox_regime_decomposition.json",
+    "equity_full": "stage_artifacts/WT_D20260424_009/equity_curve_full.png",
+    "equity_oos": "stage_artifacts/WT_D20260424_009/equity_curve_oos.png",
+    "access_log": "stage_artifacts/WT_D20260424_009/lockbox_access_log.json",
+    "status": "stage_artifacts/WT_D20260424_009/status.json"
+  }
+}

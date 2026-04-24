@@ -1,0 +1,258 @@
+{
+  "task_id": "WT-D20260424_010",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-24",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "hypothesis_title": "STR_1631_MEGA_01 -- α Signal Amplification (4F→6F + EB Shrinkage + Regime-Adaptive Winsor)",
+  "references": [
+    "Chen & Zimmermann (2022) Publication Bias in Asset Pricing",
+    "Bernard & Thomas (1989) Post-Earnings Announcement Drift",
+    "Chan, Jegadeesh & Lakonishok (1996) Momentum Strategies",
+    "Womack (1996) Analyst Recommendations",
+    "Barber et al. (2001) Analyst Consensus"
+  ],
+  "primary_cell": "BASELINE",
+  "confidence_tier": "LOW",
+  "alpha_vector": [1, 0.4443, 0.4164, 0.2078, 0.1611, 0.1498, 0.1447, 0.1432, 0.1068, 0.1036, 0.0951, 0.0946, 0.0745, 0.072, 0.06, 0.0539, 0.0384, 0.0204, 0.0135, 0],
+  "confidence_vector": [1, 0.975, 0.95, 0.925, 0.9, 0.875, 0.85, 0.825, 0.8, 0.775, 0.75, 0.725, 0.7, 0.675, 0.65, 0.625, 0.6, 0.575, 0.55, 0.525],
+  "signal_matrix_ref": "stage_artifacts://WT_D20260424_010/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "consensus_earnings",
+      "proxy": "C01_SUE",
+      "formula": "consensus/sue.parquet::sue, roll=7d PIT join",
+      "lag_rule": "C4: roll=7d consensus only",
+      "winsorization": "regime-adaptive (2.0/2.5/3.0 sigma)",
+      "neutralization": "none (IC-weighted composite)",
+      "economic_rationale": "Standardized Unexpected Earnings — post-earnings drift (Bernard-Thomas 1989)",
+      "weight_theta": 0.25,
+      "references": ["Bernard & Thomas (1989) PEAD", "Chan-Jegadeesh-Lakonishok (1996)"]
+    },
+    {
+      "factor_family": "consensus_earnings",
+      "proxy": "C04_ESBR",
+      "formula": "consensus/esbr.parquet::esbr, roll=7d PIT join",
+      "lag_rule": "C4: roll=7d",
+      "winsorization": "regime-adaptive",
+      "neutralization": "none",
+      "economic_rationale": "Earnings Surprise Beat Ratio — consensus surprise persistence",
+      "weight_theta": 0.25,
+      "references": ["Jegadeesh & Titman (1993)", "Barber et al. (2001)"]
+    },
+    {
+      "factor_family": "consensus_earnings",
+      "proxy": "C02_EPS_Chg_1m",
+      "formula": "consensus/eps_chg_1m.parquet::eps_chg_1m, roll=7d",
+      "lag_rule": "C4: roll=7d",
+      "winsorization": "regime-adaptive",
+      "neutralization": "none",
+      "economic_rationale": "EPS 1M change — analyst revision momentum (Womack 1996)",
+      "weight_theta": 0.25,
+      "references": "Womack (1996) Analyst recommendations"
+    },
+    {
+      "factor_family": "consensus_analyst",
+      "proxy": "C06_TP_Gap",
+      "formula": "(target_price - Close) / Close from consensus/target_price.parquet",
+      "lag_rule": "C4: roll=7d, t-1 Close",
+      "winsorization": "regime-adaptive",
+      "neutralization": "none",
+      "economic_rationale": "Target Price Gap — analyst upside expectation (Bradshaw 2002)",
+      "weight_theta": 0.25,
+      "references": "Bradshaw (2002) TP Gap persistence"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": "NA",
+    "icir": "NA",
+    "harvey_t_stat": "NA",
+    "dsr": "NA",
+    "monotonicity": "NA",
+    "subperiod_stability": 0.5,
+    "subperiod_ics": {
+      "p1_2008_2014": "NA",
+      "p2_2015_2019": "NA",
+      "p3_2020_2026": "NA"
+    },
+    "ff3_retention": "NA",
+    "post_neutralization_ic": null,
+    "turnover_proxy": 0.5,
+    "n_months": 0,
+    "n_tickers": 20,
+    "pilot9_comparison": {
+      "p9_rank_ic": 0.0449,
+      "p9_icir": 0.5562,
+      "p9_harvey_t": 8.379,
+      "mega01_rank_ic": "NA",
+      "mega01_icir": "NA",
+      "delta_rank_ic": null
+    }
+  },
+  "ablation_results": [
+    {
+      "cell": "BASELINE",
+      "config": {
+        "use_6f": false,
+        "use_eb": false,
+        "use_regime_winsor": false
+      },
+      "rank_ic": "NA",
+      "icir": "NA",
+      "harvey_t": "NA",
+      "dsr": "NA",
+      "monotonicity": "NA",
+      "subperiod_stability": 0.5,
+      "ff3_retention": "NA",
+      "elapsed_sec": 11.0291
+    },
+    {
+      "cell": "ABL_A",
+      "config": {
+        "use_6f": true,
+        "use_eb": false,
+        "use_regime_winsor": false
+      },
+      "rank_ic": "NA",
+      "icir": "NA",
+      "harvey_t": "NA",
+      "dsr": "NA",
+      "monotonicity": "NA",
+      "subperiod_stability": 0.5,
+      "ff3_retention": "NA",
+      "elapsed_sec": 68.4072
+    },
+    {
+      "cell": "ABL_B",
+      "config": {
+        "use_6f": false,
+        "use_eb": true,
+        "use_regime_winsor": false
+      },
+      "rank_ic": "NA",
+      "icir": "NA",
+      "harvey_t": "NA",
+      "dsr": "NA",
+      "monotonicity": "NA",
+      "subperiod_stability": 0.5,
+      "ff3_retention": "NA",
+      "elapsed_sec": 9.6626
+    },
+    {
+      "cell": "ABL_C",
+      "config": {
+        "use_6f": false,
+        "use_eb": false,
+        "use_regime_winsor": true
+      },
+      "rank_ic": "NA",
+      "icir": "NA",
+      "harvey_t": "NA",
+      "dsr": "NA",
+      "monotonicity": "NA",
+      "subperiod_stability": 0.5,
+      "ff3_retention": "NA",
+      "elapsed_sec": 9.6061
+    },
+    {
+      "cell": "FULL",
+      "config": {
+        "use_6f": true,
+        "use_eb": true,
+        "use_regime_winsor": true
+      },
+      "rank_ic": "NA",
+      "icir": "NA",
+      "harvey_t": "NA",
+      "dsr": "NA",
+      "monotonicity": "NA",
+      "subperiod_stability": 0.5,
+      "ff3_retention": "NA",
+      "elapsed_sec": 70.1879
+    }
+  ],
+  "axis_contribution": {
+    "baseline_rank_ic": "NA",
+    "axis_a_6f_delta": "NA",
+    "axis_b_eb_delta": "NA",
+    "axis_c_winsor_delta": "NA",
+    "full_delta": "NA"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "method_log": [
+      {
+        "name": "BASELINE",
+        "description": "BASELINE | 6F=NO | EB=NO | RegWinsor=NO",
+        "selected": true,
+        "rank_ic": "NA",
+        "icir": "NA",
+        "harvey_t": "NA",
+        "dsr": "NA",
+        "subperiod_stability": 0.5,
+        "rationale": "highest composite score (rank_ic + icir + stability + harvey_t)"
+      },
+      {
+        "name": "ABL_A",
+        "description": "ABL_A | 6F=YES | EB=NO | RegWinsor=NO",
+        "selected": false,
+        "rank_ic": "NA",
+        "icir": "NA",
+        "harvey_t": "NA",
+        "dsr": "NA",
+        "subperiod_stability": 0.5,
+        "rationale": "rank_ic NA — not selected"
+      },
+      {
+        "name": "ABL_B",
+        "description": "ABL_B | 6F=NO | EB=YES | RegWinsor=NO",
+        "selected": false,
+        "rank_ic": "NA",
+        "icir": "NA",
+        "harvey_t": "NA",
+        "dsr": "NA",
+        "subperiod_stability": 0.5,
+        "rationale": "rank_ic NA — not selected"
+      },
+      {
+        "name": "ABL_C",
+        "description": "ABL_C | 6F=NO | EB=NO | RegWinsor=YES",
+        "selected": false,
+        "rank_ic": "NA",
+        "icir": "NA",
+        "harvey_t": "NA",
+        "dsr": "NA",
+        "subperiod_stability": 0.5,
+        "rationale": "rank_ic NA — not selected"
+      },
+      {
+        "name": "FULL",
+        "description": "FULL | 6F=YES | EB=YES | RegWinsor=YES",
+        "selected": false,
+        "rank_ic": "NA",
+        "icir": "NA",
+        "harvey_t": "NA",
+        "dsr": "NA",
+        "subperiod_stability": 0.5,
+        "rationale": "rank_ic NA — not selected"
+      }
+    ],
+    "parallel_exec": true,
+    "n_workers": 6,
+    "rcpp_used": true,
+    "rcpp_functions": "bootstrap_dsr_fast",
+    "rolling_seconds": 520.6096
+  },
+  "challenge_flags": [],
+  "mega_sprint_phase": "Phase1_alpha_amplification",
+  "unchanged_components": [
+    "HRP_TILT_W=0.6 + SCORE_TILT_W=0.4",
+    "bimonthly rebalancing",
+    "3-Layer daily overlay",
+    "SYN_05 filter",
+    "n=20 holdings",
+    "liquidity 2e8 KRW"
+  ],
+  "constraint_status": "discovery_wt_no_weight_bounds",
+  "status_note": "Discovery WT — alpha signal only. Weight/covariance unchanged."
+}

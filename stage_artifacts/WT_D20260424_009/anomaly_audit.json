@@ -1,0 +1,46 @@
+{
+  "task_id": "WT-D20260424_009",
+  "agent": "judge",
+  "anomaly": "Forge Val SR +1.354 (Pilot 11) vs -0.293 (Pilot 9) = +1.647 delta, Grinold theoretical +11.8% only. Ratio 41.9x.",
+  "hypotheses_tested": {
+    "a_pilot9_underestimate": {
+      "hypothesis": "Pilot 9 baseline used STATIC weights buy-and-hold from sig_date 2023-12-28",
+      "evidence": "Pilot 9 run_judge_pilot9.R line 49: 'port_ret = sum(Ret * w_map[Ticker])' with single w_map from weights.csv. No monthly rebalance.",
+      "verdict": "CONFIRMED — Pilot 9 methodology = static buy-and-hold. Pilot 9 Full SR 0.179 / Val SR -0.293 are ARTIFACTS of static buy-and-hold treatment, NOT comparable to Pilot 11 dynamic monthly rebalance.",
+      "impact": "CRITICAL — the '+1.647 delta' claim compares apples to oranges. Pilot 11 Forge breadth_ablation.json comparing dynamic-P11 vs static-P9 is methodologically invalid."
+    },
+    "b_pilot11_weights_error": {
+      "hypothesis": "Pilot 11 weights.csv or HRP lag bug",
+      "evidence": "run_all.R line 395: 'all_dates <- sort(unique(RAWDATA[Date < sd, Date]))' = strictly < sig_date → PIT C2 OK. HRP lookback 60d t-1.",
+      "verdict": "REJECTED — HRP uses proper t-1 lag. FACTORS top-20 monthly rebalance clean."
+    },
+    "c_data_snooping": {
+      "hypothesis": "Pilot 9 alpha optimized to P8 MinVar; P11 HRP coincidentally matched",
+      "evidence": "Pilot 9 ran_ic 0.0449 HIGH tier, invariant to optimizer choice. Pilot 11 alpha hash identical (c3acd44...). Alpha package same.",
+      "verdict": "PARTIAL — alpha stable but Pilot 11 HRP+Score is NOT the 'P9 ERC reweighted'. P11 = dynamic monthly FACTORS top-20 → HRP+Score reweight. P9 judge lockbox_oos was single-snapshot static ERC from 2023-12-28."
+    },
+    "d_genuine_breakthrough": {
+      "hypothesis": "breadth n=20 + HRP+Score method enables proper α harvesting vs n=16 ERC",
+      "evidence": "Pilot 11 dynamic monthly backtest 2003~2026 shows SR 1.064 consistent. Train SR 0.962 + Val SR 1.354 shape matches α mean-reversion pattern. Method-agnostic ablation (ERC 80.80 / HRP+Score 80.05 / Score 79.89 / HRP 79.63 all cluster) = BREADTH-driven not method-driven.",
+      "verdict": "LIKELY TRUE — true breakthrough if Pilot 11 dynamic Lockbox matches. BUT Pilot 9 static comparison masks true magnitude."
+    }
+  },
+  "key_finding": "PILOT_9_STATIC_VS_PILOT_11_DYNAMIC_METHODOLOGICAL_MISMATCH — Forge breadth_ablation.json 'Val SR delta 1.647' is INVALID comparison. Pilot 9 Val SR -0.293 = static buy-and-hold artifact. True Pilot 11 progress must be judged against its own Lockbox OOS, not against Pilot 9 static.",
+  "grinold_ratio_explanation": "41.9x ratio is artifact — denominator (Pilot 9 Full SR 0.179) is static buy-and-hold that doesn't reflect dynamic rebalancing power. Pilot 9 dynamic counterfactual unknown (never computed).",
+  "recommendation": "Judge must evaluate Pilot 11 on its OWN merits: Pilot 11 Lockbox Active IR + MDD + regime decomp. 'Pilot 11 vs Pilot 9' comparison is NOT a clean ablation. L-201 MUST document this methodological trap.",
+  "ax_002_check": "PASS — Judge first Lockbox access (no prior Pilot 11 Lockbox query recorded)",
+  "ax_008_verification_triangulation": {
+    "source_1_forge": {
+      "full_sr": 1.064,
+      "val_sr": 1.354,
+      "mdd": -57.47
+    },
+    "source_2_judge_recalc": {
+      "full_sr": 1.0703,
+      "val_sr": 1.2986,
+      "mdd": -57.47
+    },
+    "match": true,
+    "source_3_architect": "PENDING — Architect independent recompute optional"
+  }
+}
