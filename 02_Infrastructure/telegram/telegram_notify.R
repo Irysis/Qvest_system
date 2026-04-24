@@ -325,13 +325,29 @@ tg_send_rich <- function(msg, silent = FALSE,
                           auto_sanitize = TRUE) {
   if (isTRUE(auto_sanitize)) {
     original <- msg
-    # Telegram HTML는 &lt; / &gt; / &amp; 만 공식 지원. &quot;는 raw " 로 대체.
+    # 1) Telegram HTML는 &lt; / &gt; / &amp; 만 공식 지원. &quot;는 raw " 로 대체.
     msg <- gsub("&quot;", '"', msg, fixed = TRUE)
-    # 기타 위험한 entity 경고 (예: &nbsp; &copy; 등)
+
+    # 2) Plain text 내 raw "<", ">" escape (2026-04-24 v4).
+    #    HTML 유효 태그는 보존, 그 외 "<" 뒤에 숫자/한글/공백이면 entity 오인 가능 → escape.
+    #    Telegram HTML supported tags: b, i, u, s, del, strike, pre, code, a, em, strong,
+    #    tg-spoiler, tg-emoji, span class=... (+ 닫는 tag: </b> 등)
+    valid_tag <- "b|i|u|s|del|strike|pre|code|a|em|strong|tg-spoiler|tg-emoji|span"
+    # "<" 뒤에 유효 태그(또는 /) + space/attr/> 가 아니면 escape
+    # 예: "<40" → "&lt;40", "<b>" → 보존, "</code>" → 보존
+    pattern_lt <- sprintf("<(?!/?(?:%s)(?:\\s[^>]*)?/?>)", valid_tag)
+    msg <- gsub(pattern_lt, "&lt;", msg, perl = TRUE)
+    # ">" 다음이 숫자/한글/공백이고 바로 앞이 유효 태그 닫는 것이 아닐 때 escape
+    # 보수적으로: ">" 앞뒤에 HTML 태그 패턴이 없으면 escape (예: "42.9% > Gate D" 같은 비교)
+    # 단순하게: 텍스트에서 자주 쓰이는 "X > Y" "X >=" 패턴 escape
+    msg <- gsub("(?<=[\\s0-9A-Za-z가-힣])\\s+>\\s+(?=[\\s0-9A-Za-z가-힣])", " &gt; ", msg, perl = TRUE)
+    msg <- gsub("(?<=[0-9])>(?=[0-9])", "&gt;", msg, perl = TRUE)
+
+    # 3) 기타 위험한 entity 경고 (예: &nbsp; &copy; 등)
     risky <- regmatches(msg, gregexpr("&[a-zA-Z]+;", msg))[[1]]
     risky <- setdiff(unique(risky), c("&lt;", "&gt;", "&amp;"))
     if (length(risky) > 0) {
-      warn_msg <- sprintf("[tg_send_rich] WARN unsupported HTML entity: %s. Telegram may fallback to plain text.",
+      warn_msg <- sprintf("[tg_send_rich] WARN unsupported HTML entity: %s.",
                           paste(risky, collapse = ", "))
       message(warn_msg)
       log_f <- "/tmp/qvest_tg_entity_warn.log"
@@ -339,7 +355,7 @@ tg_send_rich <- function(msg, silent = FALSE,
                error = function(e) NULL)
     }
     if (!identical(original, msg)) {
-      message("[tg_send_rich] INFO &quot; auto-replaced with raw \". See /tmp/qvest_tg_entity_warn.log")
+      message("[tg_send_rich] INFO auto-sanitize applied. See /tmp/qvest_tg_entity_warn.log")
     }
   }
   tg_send(msg, parse_mode = "HTML", silent = silent,
@@ -382,8 +398,160 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
   paste0(tbl, "\n", paste(notes, collapse = "\n"))
 }
 
-# NULL-coalescing helper
-`%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (is.character(a) && !nzchar(a))) b else a
+# NULL-coalescing helper (handle vectors + NA safely)
+`%||%` <- function(a, b) {
+  if (is.null(a) || length(a) == 0) return(b)
+  if (length(a) == 1 && is.character(a) && !nzchar(a)) return(b)
+  a
+}
+
+# ─── Agent Brief — 단일 진입점 (2026-04-24 v1, SOT) ────────────────────────────
+# 모든 agent (Alpha/Risk/Optimizer/Forge/Judge/Governor/Q-Lead)는
+# 이 함수만 호출. 직접 tg_send_rich + tg_format_table 조립 금지.
+# 내부에서 auto_escape + auto_sanitize + emoji 검증 + Single-Dispatch + 모바일 guard 자동.
+#
+# 사용법:
+#   tg_agent_brief(
+#     agent = "Risk",
+#     title = "WT-D20260424_003 Σ + Hedge 완료",
+#     as_of = "2026-04-24",
+#     sections = list(
+#       list(emoji = "🔬", heading = "Covariance 자율 비교",
+#            type = "table",
+#            df = data.frame(Estimator=c("LW","Gerber"), Cond=c("11","128")),
+#            max_col_width = 15L,
+#            notes = c("Primary: LW Oracle", "Backup: Sample")),
+#       list(emoji = "💡", heading = "핵심 발견",
+#            type = "text",
+#            body = "FF3 retention 10.5%..."),
+#       list(emoji = "🚨", heading = "Challenges",
+#            type = "bullet",
+#            items = c("REGIME_DISCREPANCY MEDIUM", "FF3_INFO"))
+#     ),
+#     charts = c("stage_artifacts/WT_X/chart.png"),
+#     footer = "➡️ Next: Optimizer"
+#   )
+#
+# Return: list(ok=TRUE/FALSE, error=NULL/str, bytes=int)
+.AGENT_EMOJI_MAP <- list(
+  "Q-Lead"   = "🎯",
+  "Alpha"    = "🔬",
+  "Risk"     = "🛡️",
+  "Optimizer" = "⚖️",
+  "Forge"    = "🔨",
+  "Judge"    = "⚖️",
+  "Governor" = "👑",
+  "Scout"    = "📚",
+  "Execution" = "🎬",
+  "Monitoring" = "📡"
+)
+
+tg_agent_brief <- function(agent,
+                             title,
+                             sections = list(),
+                             as_of = format(Sys.Date(), "%Y-%m-%d"),
+                             charts = NULL,
+                             footer = NULL,
+                             emoji_min = 5L,
+                             dry_run = FALSE) {
+
+  # ── 1. Agent tag + header ────────────────────────────────────────────────────
+  if (!agent %in% names(.AGENT_EMOJI_MAP)) {
+    stop(sprintf("[tg_agent_brief] Unknown agent '%s'. Valid: %s",
+                 agent, paste(names(.AGENT_EMOJI_MAP), collapse = ", ")))
+  }
+  agent_emoji <- .AGENT_EMOJI_MAP[[agent]]
+
+  # 제목은 auto_sanitize에서 escape되므로 raw 허용
+  hdr <- sprintf("%s <b>[%s] %s</b>\n📅 as_of %s",
+                 agent_emoji, agent, title, as_of)
+
+  # ── 2. 섹션 렌더 ─────────────────────────────────────────────────────────────
+  section_blocks <- vapply(sections, function(s) {
+    emoji <- s$emoji %||% "📊"
+    heading <- s$heading %||% ""
+    type <- s$type %||% "text"
+    head_line <- if (nzchar(heading)) sprintf("%s <b>%s</b>", emoji, heading) else ""
+
+    body <- switch(
+      type,
+      "table" = {
+        if (!is.data.frame(s$df)) stop("[tg_agent_brief] 'table' section requires df")
+        max_col <- s$max_col_width %||% 18L
+        tbl <- tg_format_table(s$df, max_col_width = as.integer(max_col),
+                                auto_escape = TRUE)
+        notes <- s$notes
+        if (!is.null(notes) && length(notes) > 0) {
+          bullets <- paste0("  • ", tg_html_escape(notes), collapse = "\n")
+          paste(tbl, bullets, sep = "\n")
+        } else tbl
+      },
+      "text" = {
+        # plain text — auto_sanitize이 <>& 처리.
+        # <b> <code> <pre> 유효 태그는 caller가 직접 사용 가능.
+        body_str <- as.character(s$body %||% "")
+        body_str
+      },
+      "bullet" = {
+        items <- s$items %||% character(0)
+        if (length(items) == 0) "" else paste0("  • ", tg_html_escape(items), collapse = "\n")
+      },
+      "code" = {
+        # Multi-line code block
+        code_str <- as.character(s$body %||% "")
+        paste0("<pre>", tg_html_escape(code_str), "</pre>")
+      },
+      stop(sprintf("[tg_agent_brief] Unknown section type '%s'", type))
+    )
+    if (nzchar(head_line)) paste(head_line, body, sep = "\n") else body
+  }, character(1))
+
+  # ── 3. Footer ────────────────────────────────────────────────────────────────
+  parts <- c(hdr, section_blocks)
+  if (!is.null(footer) && nzchar(footer)) parts <- c(parts, footer)
+
+  msg <- paste(parts, collapse = "\n\n")
+
+  # ── 4. Width/bytes 사전 체크 (Telegram 4096 bytes 제한) ──────────────────────
+  msg_bytes <- nchar(msg, type = "bytes")
+  if (msg_bytes > 4000) {
+    warning(sprintf("[tg_agent_brief] WARN msg %d bytes — close to 4096 Telegram limit. Consider shorter sections.",
+                    msg_bytes))
+  }
+
+  if (isTRUE(dry_run)) {
+    cat("=== dry_run output (", msg_bytes, "bytes) ===\n", sep = "")
+    cat(msg, "\n")
+    return(invisible(list(ok = TRUE, bytes = msg_bytes, dry_run = TRUE, msg = msg)))
+  }
+
+  # ── 5. 발송 (tg_send_rich auto_sanitize) ─────────────────────────────────────
+  result <- tryCatch({
+    tg_send_rich(msg, emoji_min = emoji_min)
+    list(ok = TRUE, bytes = msg_bytes, error = NULL)
+  }, error = function(e) {
+    log_f <- "/tmp/qvest_tg_brief.log"
+    tryCatch(cat(sprintf("%s [tg_agent_brief] %s ERR %s\n",
+                          format(Sys.time()), agent, e$message),
+                  file = log_f, append = TRUE),
+              error = function(e2) NULL)
+    list(ok = FALSE, bytes = msg_bytes, error = conditionMessage(e))
+  })
+
+  # ── 6. Charts (text 발송 후 이어서) ──────────────────────────────────────────
+  if (!is.null(charts) && length(charts) > 0) {
+    for (chart in charts) {
+      if (file.exists(chart)) {
+        cap <- sprintf("[%s] %s", agent, basename(chart))
+        tg_send_photo(chart, caption = cap)
+      }
+    }
+  }
+
+  cat(sprintf("[tg_agent_brief] %s · %d bytes · ok=%s\n",
+              agent, msg_bytes, result$ok))
+  invisible(result)
+}
 
 # ─── Photo / Document send ────────────────────────────────────────────────────
 tg_send_photo <- function(image_path, caption = "", parse_mode = "") {

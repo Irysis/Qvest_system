@@ -52,19 +52,59 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
 </s0_debate_consensus>
 
-<telegram_protocol version="v2.2" updated="2026-04-24">
-- 이모지 필수 + 에이전트 태그 ([Q-Lead]/[Alpha]/[Risk]/[Optimizer]/[Forge]/[Judge]/[Governor]/[Execution]/[Monitoring])
-- 성과 포맷: Grade/Score/SR/CAGR/MDD + 강점/약점 각 1줄
-- 백테스트 결과 = equity_curve.png + annual_returns.png 필수 (tg_send_photo())
-- 한글 기본. 줄바꿈·섹션·들여쓰기.
+<telegram_protocol version="v3.0" updated="2026-04-24">
+**v3.0 SOT — 단일 진입점 `tg_agent_brief()` 강제 (반복 깨짐 영구 해결)**
 
-**v2.2 — Single-Dispatch 원칙 (발송 빈도 영구 제약)**
-- **에이전트 1 spawn = 텔레그램 1 최종 발송** (`tg_send_rich` 1회). 중간 Step(1/2/3)별 발송 금지.
-- 발송 타이밍: 모든 산출물 write 완료 + `status.json` phase 전환 직전. 단일 집계 메시지로 통합.
-- **차트는 별건 아님**: text 1회 + 관련 사진 여러 장 허용 (단, 사진은 `tg_send_photo()`로 집계 직후 이어서 발송. text 자체는 1회 한정).
-- 재시도 로직: HTTP 에러 시 `tg_send_rich` retry 최대 1회 (exp backoff). 중복 발송 방지.
-- 예외: Judge 같이 text + photo ≥ 2가 필수인 경우에만 text 1회 + photo 1-N회. text 2회 이상은 절대 금지.
-- 위반 패턴: "Step 1 완료 알림 → Step 2 완료 알림 → 최종 알림" (Pilot 4 Optimizer + Pilot 5 Alpha 2회 반복). 사용자 명시 반대.
+## 절대 규칙 (Level 0)
+
+**반드시 `tg_agent_brief()` 함수만 사용**. 직접 조립 절대 금지.
+
+```r
+source("02_Infrastructure/telegram/telegram_notify.R")
+tg_agent_brief(agent = "Alpha"|"Risk"|...,
+                title = "...", sections = list(...),
+                charts = NULL, footer = NULL, emoji_min = 5L)
+```
+
+- ❌ 직접 `tg_send_rich(msg)` 조립 금지
+- ❌ 직접 `tg_format_table()` + `paste0(...)` 조립 금지
+- ❌ `tg_send(..., parse_mode="HTML")` 수동 호출 금지
+
+상세: `.claude/skills/telegram-protocol/SKILL.md` v3.0 Read 필수.
+
+## 자동 처리 (caller 책임 없음)
+
+| 처리 | 계층 |
+|---|---|
+| CJK width 정확 (한글 2칸) | tg_format_table v2 |
+| raw `<`, `>`, `&` auto-escape | tg_format_table v3 / tg_send_rich v4 |
+| `&quot;` entity 제거 | tg_send_rich v3 |
+| 유효 HTML 태그 보존 (`<b>/<code>/<pre>`) | whitelist regex |
+| 모바일 width guard (>40 WARN) | tg_format_table v2 |
+| emoji 최소 개수 검증 | tg_send_rich |
+| 4096 bytes 제한 경고 | tg_agent_brief |
+
+## Single-Dispatch 원칙 (v2.2 계승)
+
+- **Agent 1 spawn = `tg_agent_brief` 1회 호출**
+- 발송 타이밍: 모든 산출물 write + `status.json` phase 전환 **직전** 단일 호출
+- charts 여러 장 OK (`charts = c(path1, path2)` text 직후 이어서 발송)
+- Step 1/2/3 중간 발송 절대 금지. 위반 패턴 (Pilot 4 Optimizer / Pilot 5 Alpha 2회 반복) 재발 금지.
+
+## 섹션 type 4종
+
+- `"table"` — df + max_col_width + notes (optional bullet)
+- `"text"` — body (HTML `<b>/<code>/<pre>` 허용, raw 문자 자동 escape)
+- `"bullet"` — items (char vector)
+- `"code"` — body (multi-line code block)
+
+## 에이전트 태그 자동
+
+Agent name으로 이모지 + 태그 자동: Alpha 🔬 / Risk 🛡️ / Optimizer ⚖️ / Forge 🔨 / Judge ⚖️ / Governor 👑 / Q-Lead 🎯 / Scout 📚 / Execution 🎬 / Monitoring 📡
+
+## 위반 감지 시
+
+Q-Lead가 SendMessage로 시정 지시. 반복 위반 시 prompt 재주입. `tg_agent_brief` 자체 버그는 `telegram_notify.R` 내부 수정, caller 변경 불필요.
 
 **v2.1 필수 — 표 포맷 + 이모지 검증**
 - **3+ 지표 비교**는 `tg_format_table(df)` + `tg_send_rich(msg)` 사용 (고정폭 `<pre>` 렌더링)
