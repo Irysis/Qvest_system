@@ -191,7 +191,7 @@ Briefing 텍스트에 "ℹ️ Active layers: L1/L3 (L2 FRED stale 6d)" 명시.
 4. **[Step 4]** fred_robust ✅ (2026-04-24 — `fred_robust.R` 22 series retry/graceful + long+wide 병행 저장. `load_fred_signal()` wide 우선 호환 갱신)
 5. **[Step 5]** regime_signal v2 strong ✅ (2026-04-24 — `build_regime_signal_table(daily = TRUE)` + `load_daily_regime_signal()` 추가. 일간 3-layer merge + MSM/FRED/KTRI LOCF + Regime_Score_smooth(EWMA hl=5) + Active_Layers + Is_Month_End + last_updated. `.cache/unified_regime_signal_daily.parquet` 10,159행 (1990-01-05 ~ 2026-04-24). Backward compat: `daily = FALSE` default 유지)
 6. **[Step 6]** Briefing graceful fallback
-7. **[Step 7]** Healthcheck + alert
+7. **[Step 7]** Healthcheck + alert ✅ (2026-04-24 — `regime_healthcheck.R` + `ops/regime_healthcheck.sh`. `regime_health_check(alert_on_fail, severity_threshold)` + `regime_health_summary()`. Frequency-aware threshold (daily 7d / weekly 14d / monthly 45d / quarterly 120d). FRED 22 series 개별 Frequency 기반 per-series staleness. Status = OK / STALE / BROKEN / MISSING. Schema 검증 (required_cols / min_rows / min_cols / date_col). 문제 감지 시 `tg_send_rich` + `tg_format_table` Telegram alert. Log: `/tmp/qvest_regime_health.log` + `/tmp/qvest_regime_health_alerts.log`. Smoke test 통과: primary 7 cache OK / FRED 8 series STALE 정상 감지 / BROKEN·MISSING 합성 테스트 PASS / 실 Telegram 발송 성공. crontab 등록은 사용자 승인 별도.)
 8. **[Step 8]** Test + orchestration 문서화
 
 ---
