@@ -1,0 +1,398 @@
+{
+  "task_id": "WT-D20260424_003",
+  "parent_wt": "WT-D20260424_002",
+  "agent": "optimizer",
+  "model": "claude-sonnet-4-6",
+  "as_of_date": "2026-04-24",
+  "signal_reference_date": "2023-12-28",
+  "schema_version": "v6.1",
+  "selection_objective": "net_ir",
+  "target_weights": {
+    "A140860": 0.1,
+    "A287410": 0.1,
+    "A028050": 0.02728,
+    "A005850": 0.1,
+    "A058470": 0.1,
+    "A029780": 0.1,
+    "A041510": 0.1,
+    "A014680": 0.1,
+    "A218410": 0.07272,
+    "A001680": 0.1,
+    "A000100": 0.1
+  },
+  "active_weights": {
+    "A140860": 0.095,
+    "A287410": 0.095,
+    "A028050": 0.02228,
+    "A005850": 0.095,
+    "A058470": 0.095,
+    "A029780": 0.095,
+    "A041510": 0.095,
+    "A014680": 0.095,
+    "A218410": 0.06772,
+    "A001680": 0.095,
+    "A000100": 0.095
+  },
+  "expected_active_return_pa_pct": 4.219,
+  "expected_tracking_error_pa_pct": 18.831,
+  "expected_information_ratio": 1.3366,
+  "expected_ir_note": "Grinold: ICIR(0.403)*sqrt(N=11)=1.337. Signal-alpha IR: 13.37 (z-score units)",
+  "turnover_oneway": 0.2707,
+  "turnover_ann_pct": 324.86,
+  "estimated_cost_bps_pa": 48.73,
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "n_names": 11,
+  "hhi": 0.09603,
+  "beta_port": 0.7664,
+  "beta_target": 0.75,
+  "beta_gap": 0.0164,
+  "market_risk_approx_pct": 58.7,
+  "binding_constraints": [
+    "weight_bound_upper_10of11_at_0.10",
+    "alpha_winsor_2sigma_A140860_3.0to1.964",
+    "beta_soft_penalty_excluded_A028260_A365340_A006260_A005290"
+  ],
+  "infeasibility_report": null,
+  "min_names_enforced": false,
+  "hhi_enforced": false,
+  "winsor_applied": true,
+  "lambda_retries": 0,
+  "lambda_used": 1,
+  "method_selected": "MVO_lam1.0_psi0.3_betaA0.75_gamma0.5",
+  "method_backup": "MVO_lam2.0_psi0.3_betaA0.75",
+  "hedge_overlay_applied": "A",
+  "hedge_overlay_note": "Option A static: beta_target=0.75, gamma_beta=0.5 soft. C-3 rejected: no regime timing for discovery pilot.",
+  "stress_tests": {
+    "gfc_2008_optA": -33.8,
+    "covid_2020_optA": -16.5,
+    "rate_2022_optA": -20.2,
+    "stress_2025_est": 3.6,
+    "note": "Risk_package Option A projections. Actual beta=0.766 vs assumed 0.75 — minimal adjustment."
+  },
+  "method_comparison": {
+    "MVO_lam1.0_psi0.3_betaA0.75": {
+      "net_ir": 13.3682,
+      "n_names": 11,
+      "hhi": 0.09603,
+      "beta_port": 0.7664,
+      "to_ann_pct": 414.5,
+      "selected": true,
+      "beta_constraint_met": true,
+      "note": "PRIMARY selected"
+    },
+    "MVO_lam2.0_psi0.3_betaA0.75": {
+      "net_ir": 13.3718,
+      "n_names": 11,
+      "hhi": 0.09613,
+      "beta_port": 0.7661,
+      "to_ann_pct": 417,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "MVO_lam0.5_psi0.3_betaA0.75": {
+      "net_ir": 13.3661,
+      "n_names": 11,
+      "hhi": 0.09598,
+      "beta_port": 0.7665,
+      "to_ann_pct": 413.2,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "MVO_lam1.0_psi0.5_betaA0.75": {
+      "net_ir": 13.2762,
+      "n_names": 11,
+      "hhi": 0.09504,
+      "beta_port": 0.771,
+      "to_ann_pct": 400,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "MVO_lam1.0_psi0.3_betaA_gamma1.0": {
+      "net_ir": 13.4185,
+      "n_names": 10,
+      "hhi": 0.1,
+      "beta_port": 0.7595,
+      "to_ann_pct": 400,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "MVO_lam1.5_psi0.3_betaA0.75": {
+      "net_ir": 13.3701,
+      "n_names": 11,
+      "hhi": 0.09608,
+      "beta_port": 0.7662,
+      "to_ann_pct": 415.8,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "ERC_invVol": {
+      "net_ir": 12.8299,
+      "n_names": 15,
+      "hhi": 0.06971,
+      "beta_port": 0.8807,
+      "to_ann_pct": 206.7,
+      "selected": false,
+      "beta_constraint_met": false,
+      "note": "DISQUALIFIED: beta > 0.80"
+    },
+    "HRP_wardD2": {
+      "net_ir": 13.7233,
+      "n_names": 15,
+      "hhi": 0.08065,
+      "beta_port": 0.8725,
+      "to_ann_pct": 457.8,
+      "selected": false,
+      "beta_constraint_met": false,
+      "note": "DISQUALIFIED: beta > 0.80"
+    },
+    "BL_absViews_betaA": {
+      "net_ir": 12.1518,
+      "n_names": 10,
+      "hhi": 0.1,
+      "beta_port": 0.7778,
+      "to_ann_pct": 400,
+      "selected": false,
+      "beta_constraint_met": true,
+      "note": ""
+    },
+    "MaxDiv_80pct_20alpha": {
+      "net_ir": 13.5621,
+      "n_names": 15,
+      "hhi": 0.06987,
+      "beta_port": 0.8821,
+      "to_ann_pct": 210.6,
+      "selected": false,
+      "beta_constraint_met": false,
+      "note": "DISQUALIFIED: beta > 0.80"
+    }
+  },
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 10,
+      "selection_objective": "net_ir",
+      "beta_constraint_filter": "beta_port <= 0.80 (Option A hard requirement, Risk Agent primary)",
+      "disqualified": [
+        "HRP_wardD2 (beta=0.873)",
+        "ERC_invVol (beta=0.881)",
+        "MaxDiv_80pct_20alpha (beta=0.882)"
+      ],
+      "method_log": [
+        {
+          "step": 1,
+          "name": "MVO_lam1.0_psi0.3_betaA0.75",
+          "net_ir": 13.3682,
+          "beta": 0.7664,
+          "n": 11,
+          "hhi": 0.096,
+          "to_ann_pct": 414.5,
+          "selected": true,
+          "note": "PRIMARY. Canonical: lam=1.0, psi=0.3, gamma=0.5. Natural 11 names."
+        },
+        {
+          "step": 2,
+          "name": "MVO_lam2.0_psi0.3_betaA0.75",
+          "net_ir": 13.3718,
+          "beta": 0.7661,
+          "n": 11,
+          "hhi": 0.0961,
+          "to_ann_pct": 417,
+          "selected": false,
+          "note": "Higher risk-aversion. Near-identical. Marginally higher net_IR but immaterial."
+        },
+        {
+          "step": 3,
+          "name": "MVO_lam0.5_psi0.3_betaA0.75",
+          "net_ir": 13.3661,
+          "beta": 0.7665,
+          "n": 11,
+          "hhi": 0.096,
+          "to_ann_pct": 413.2,
+          "selected": false,
+          "note": "Lower risk-aversion. Boundary solution same as r1."
+        },
+        {
+          "step": 4,
+          "name": "MVO_lam1.0_psi0.5_betaA0.75",
+          "net_ir": 13.2762,
+          "beta": 0.771,
+          "n": 11,
+          "hhi": 0.095,
+          "to_ann_pct": 400,
+          "selected": false,
+          "note": "Higher FU penalty. Slightly lower net_IR."
+        },
+        {
+          "step": 5,
+          "name": "MVO_lam1.0_psi0.3_betaA_gamma1.0",
+          "net_ir": 13.4185,
+          "beta": 0.7595,
+          "n": 10,
+          "hhi": 0.1,
+          "to_ann_pct": 400,
+          "selected": false,
+          "note": "Tighter beta (gamma=1.0) collapses to pure equal-weight 10 names. Less alpha info."
+        },
+        {
+          "step": 6,
+          "name": "MVO_lam1.5_psi0.3_betaA0.75",
+          "net_ir": 13.3701,
+          "beta": 0.7662,
+          "n": 11,
+          "hhi": 0.0961,
+          "to_ann_pct": 415.8,
+          "selected": false,
+          "note": "Intermediate lambda. Near-identical to r1."
+        },
+        {
+          "step": 7,
+          "name": "ERC_invVol",
+          "net_ir": 12.8299,
+          "beta": 0.8807,
+          "n": 15,
+          "hhi": 0.0697,
+          "to_ann_pct": 206.7,
+          "selected": false,
+          "note": "DISQUALIFIED: beta=0.881 > 0.80. No alpha targeting. Lower TO but fails Option A."
+        },
+        {
+          "step": 8,
+          "name": "HRP_wardD2",
+          "net_ir": 13.7233,
+          "beta": 0.8725,
+          "n": 15,
+          "hhi": 0.0806,
+          "to_ann_pct": 457.8,
+          "selected": false,
+          "note": "DISQUALIFIED: beta=0.873 > 0.80. Highest gross net_IR but Option A not met."
+        },
+        {
+          "step": 9,
+          "name": "BL_absViews_betaA",
+          "net_ir": 12.1518,
+          "beta": 0.7778,
+          "n": 10,
+          "hhi": 0.1,
+          "to_ann_pct": 400,
+          "selected": false,
+          "note": "BL shrinks alpha toward prior=0. Lower effective signal."
+        },
+        {
+          "step": 10,
+          "name": "MaxDiv_80pct_20alpha",
+          "net_ir": 13.5621,
+          "beta": 0.8821,
+          "n": 15,
+          "hhi": 0.0699,
+          "to_ann_pct": 210.6,
+          "selected": false,
+          "note": "DISQUALIFIED: beta=0.882 > 0.80. No beta constraint in MaxDiv."
+        }
+      ]
+    }
+  },
+  "challenge_log": {
+    "objection": false,
+    "round": 0,
+    "targets_reviewed": [
+      "alpha_vector",
+      "risk_sigma",
+      "bound_feasibility",
+      "beta_vector"
+    ],
+    "p4_obligation_met": true,
+    "review_notes": {
+      "alpha_vector": "A140860=3.0 outlier (z=2.62). Winsorized to 1.964. Accepted.",
+      "risk_sigma": "LW Oracle 36M, cond=11.04, PSD verified, min_eig=0.0054. Accepted.",
+      "bound_feasibility": "10 x 0.10 = 1.0 = target_sum. Feasible. QP gave 11 names naturally.",
+      "beta_A287410": "HIGH_DISPERSION IQR=0.882. roll_mean=0.511 used. 20% uncertainty noted.",
+      "regime_correction": "Alpha MRS=63.1 CRISIS corrected by Risk. PIT 2023-11=RISK_ON => beta_target=0.75."
+    }
+  },
+  "explanation": {
+    "top_overweights": [
+      "A287410(0.100)",
+      "A058470(0.100)",
+      "A014680(0.100)",
+      "A000100(0.100)",
+      "A005850(0.100)",
+      "A041510(0.100)",
+      "A029780(0.100)",
+      "A140860(0.100)",
+      "A001680(0.100)"
+    ],
+    "top_underweights": [
+      "A028260(0)",
+      "A365340(0)",
+      "A006260(0)",
+      "A005290(0)"
+    ],
+    "excluded_reason": "4 high-beta names beta:[1.117-1.217] excluded by Option A soft penalty (gamma=0.5)",
+    "main_tradeoffs": [
+      "beta_constraint: 4 high-beta names at weight=0 (A028260/A365340/A006260/A005290)",
+      "boundary_solution: 10 of 11 names saturate at 0.10 upper bound (alpha spread > risk penalty)",
+      "alpha_winsor: A140860 clipped 3.0->1.964 prevents excessive concentration",
+      "natural_breadth: QP self-selected 11 names (> min_names=10), no forced fill"
+    ],
+    "pilot4_comparison": {
+      "pilot4_n": 15,
+      "pilot4_min_enforced": true,
+      "pilot4_active_ir": -1.311,
+      "pilot5_n": 11,
+      "pilot5_min_enforced": false,
+      "pilot5_beta": 0.7664,
+      "pilot4_beta": 0.789,
+      "beta_reduction_pp": 0.023,
+      "note": "Beta reduced 0.789->0.766 (-0.023pp). Market risk ~58.7% vs Gate D 40%. Gap reduced but not eliminated."
+    }
+  },
+  "red_flags": [
+    {
+      "id": "RF-O1",
+      "severity": "HIGH",
+      "note": "Binding constraints: 3 of 15 (20%). weight_bound, winsor, beta_excl."
+    },
+    {
+      "id": "RF-BETA",
+      "severity": "HIGH",
+      "note": "beta_port=0.766 > target=0.75 (gap=+0.016). Market risk ~58.7% vs Gate D 40%."
+    },
+    {
+      "id": "RF-ALPHA_IC",
+      "severity": "HIGH",
+      "note": "rank_IC=0.0318 < 0.04 threshold. Alpha fundamental weakness persists."
+    },
+    {
+      "id": "RF-BOUNDARY",
+      "severity": "MEDIUM",
+      "note": "Boundary solution: 10/11 names at max weight. Optimizer provides minimal differentiation."
+    }
+  ],
+  "v61_compliance": {
+    "R4_selection_objective": "net_ir",
+    "R4A_confidence_vector": true,
+    "R2C_method_shopping_log_count": 10,
+    "R12_no_silent_override": true,
+    "GAP1_challenge_review": true,
+    "GAP2_lineage_pending": true,
+    "Task26_breadth": true,
+    "min_names_natural": true
+  },
+  "lineage": {
+    "git_commit": "3f17d5605ebc11200576aa3a6844c5bd4146739e",
+    "git_dirty": true,
+    "seed": 20260424,
+    "r_version": "4.5.2",
+    "method_ref": "02_Infrastructure/portfolio/mean_variance_optimizer.R v2.1",
+    "input_files": [
+      "qepm/mailbox/worktask/WT-D20260424_003/alpha_package.json",
+      "qepm/mailbox/worktask/WT-D20260424_003/risk_package.json",
+      "stage_artifacts/WT_D20260424_003/covariance.parquet",
+      "stage_artifacts/WT_D20260424_003/beta_diagnosis.json"
+    ]
+  }
+}

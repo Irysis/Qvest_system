@@ -135,12 +135,27 @@ tg_send_rich(msg)  # HTML parse_mode, 이모지 auto-validate
 ```
 
 **자가 체크리스트** (종료 전 필수):
-1. script 내 `tg_send()` 또는 `tg_send_rich()` **실제 호출 코드** 존재
-2. Rscript 실행 시 `[telegram_notify] ...` 출력 로그 확인
-3. **이모지 최소 3개 이상** (헤더 + 섹션별)
-4. 3+ 지표 나열 시 **반드시 `tg_format_table()` 사용** (raw sprintf 금지)
-5. 섹션 구분선 `━━━━━━━━━━━━━━━━━━━━━━━━━`
+1. script 내 `tg_agent_brief()` **단일 호출 코드** 존재 (tg_send_rich 직접 조립 금지)
+2. Rscript 실행 시 `[tg_agent_brief] <agent> · <bytes> · ok=TRUE` 출력 확인
+3. emoji_min ≥ 5 (`tg_agent_brief(..., emoji_min = 5L)`)
+4. 지표 나열은 `type = "table"` 섹션 (df) 사용, `type = "text"` 내 raw sprintf 금지
+5. SKILL.md v3 `.claude/skills/telegram-protocol/SKILL.md` Read 의무
 </telegram_protocol>
+
+<parallel_method_comparison version="v1.0" updated="2026-04-24">
+**Method 비교는 R 내부 병렬 처리 (R13, v6.1 공통 원칙)**
+
+Risk / Optimizer Agent가 `method_shopping_log` 상에서 3건+ method 비교 시 `future::plan(multisession)` 필수.
+
+- Workers: `min(5L, parallel::detectCores() - 1L)`
+- Main에서 α/Σ/returns matrix 1회 계산 → worker 자동 공유 (globals)
+- `future_lapply(methods, ...)` 로 method 병렬 수행
+- `tryCatch` 로 개별 method 실패 격리
+- 종료 시 `plan(sequential)` 복구
+- Claude Agent tool nested spawn 금지 (오버헤드 ↑, 데이터 중복)
+
+상세: `risk_research_init.md` / `optimizer_research_init.md` 내 `<v61_parallel_*_comparison>` section.
+</parallel_method_comparison>
 
 <parallel_tool_calls>
 독립 작업 2건 이상이면 Agent 도구로 병렬 스폰. RAM 80% 이하일 때만 추가 스폰.

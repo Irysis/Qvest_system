@@ -284,3 +284,56 @@ Covariance estimator 탐색 전수 기록. 상한 5. 초과 시 block.
 ]}}
 ```
 </v61_method_shopping_log>
+
+<v61_parallel_covariance_comparison>
+## R13 Covariance Estimator 병렬 비교 (v6.1, 2026-04-24)
+
+**covariance estimator 3건 이상 비교** 시 R 내부 병렬 실행 필수.
+
+### 표준 패턴
+```r
+library(future)
+library(future.apply)
+n_workers <- min(5L, parallel::detectCores() - 1L)
+plan(multisession, workers = n_workers)
+
+# Returns matrix는 main에서 1회 로드 (worker 자동 공유)
+returns_mat <- load_returns(...)
+
+estimators <- list(
+  list(name = "sample_pairwise",     fn = function(r) cov_sample(r)),
+  list(name = "ledoit_wolf_oracle",  fn = function(r) cov_lw_oracle(r)),
+  list(name = "gerber_rmt",          fn = function(r) cov_gerber_rmt(r)),
+  list(name = "ledoit_wolf_constcor", fn = function(r) cov_lw_constcor(r)),
+  list(name = "nonlinear_shrinkage", fn = function(r) cov_nls(r))
+)
+
+results <- future_lapply(estimators, function(e) {
+  tryCatch({
+    Sigma <- e$fn(returns_mat)
+    list(ok = TRUE, name = e$name, Sigma = Sigma,
+         condition = kappa(Sigma),
+         min_eig = min(eigen(Sigma, only.values = TRUE)$values))
+  }, error = function(err) list(ok = FALSE, name = e$name, error = conditionMessage(err)))
+})
+plan(sequential)
+```
+
+### 이유
+- Covariance 추정은 **독립적 수치 계산** — estimator 간 의존성 없음
+- Returns matrix는 main에서 1회 로드 → workers 자동 공유 (globals)
+- 5 estimator × 평균 30~60초 sequential → 병렬 60~90초 (core 5개)
+- condition/PSD/eigenvalue 계산도 worker 내부에서 병렬화
+
+### 제약
+- **workers ≤ `parallel::detectCores() - 1`**
+- RAM: returns matrix T×N worker 복제 고려 (일반적으로 <100MB)
+- **Claude sub-agent spawn 금지** (Agent tool nested 호출 비권장)
+- stress test / TDC / CVaR 등 downstream 진단은 **primary Σ 선택 후** sequential 수행
+- `plan(sequential)` 로 종료 복구
+
+### 제외
+- Returns matrix 로드 자체 (Factor DB 의존, sequential)
+- PG2 TDC 비교 (primary Σ 1개 선택 후 단일 계산)
+- Challenge loop (대화 흐름, parallel 부적합)
+</v61_parallel_covariance_comparison>

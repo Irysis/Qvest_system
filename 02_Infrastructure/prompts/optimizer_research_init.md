@@ -357,3 +357,61 @@ mvo_weights(
 - `length(target_weights) < 15` 또는 `HHI > 0.10` → block.
 - `max(weights) > 0.10` → block (기존 0.20 완화 rollback).
 </v61_breadth_constraints>
+
+<v61_parallel_method_comparison>
+## R13 Method Comparison 병렬 실행 (v6.1, 2026-04-24)
+
+**method_shopping_log ≥ 3건** 비교 시 **R 내부 병렬 처리 필수** (Rscript 수행 시간 3~5× 단축).
+
+### 표준 패턴
+```r
+library(future)
+library(future.apply)
+n_workers <- min(5L, parallel::detectCores() - 1L)
+plan(multisession, workers = n_workers)
+
+methods <- list(
+  list(name = "MVO_beta",    fn = do_mvo_beta),
+  list(name = "HRP",         fn = do_hrp),
+  list(name = "ERC",         fn = do_erc),
+  list(name = "CVaR_LP",     fn = do_cvar_lp),
+  list(name = "Kelly",       fn = do_kelly),
+  list(name = "BL",          fn = do_black_litterman),
+  list(name = "Genetic_SR",  fn = do_genetic)
+)
+
+# α̂, Σ, β_i, constraints는 main 프로세스에서 1회 계산 후 자동 글로벌 전달
+results <- future_lapply(methods, function(m) {
+  tryCatch(m$fn(alpha_vec, cov_mat, beta_vec, constraints),
+           error = function(e) list(ok = FALSE, error = conditionMessage(e)))
+})
+
+plan(sequential)  # 종료 후 sequential 복구
+```
+
+### 이유
+- Weight method 비교는 **독립적 작업** — method 간 데이터 의존성 없음
+- Σ (N×N) + α̂ + β_i는 main에서 1회 계산 → worker 자동 공유
+- 7~10 method 평균 15초 sequential → 병렬 30초 이내 (core 5개 활용 시)
+- Claude API call은 worker 내부에서 발생하지 않음 → 순수 R 수치 계산만 병렬화
+
+### 제약
+- **workers ≤ `parallel::detectCores() - 1`** (시스템 예비 1 core 유지)
+- RAM: worker 당 Σ + α 복제 → N=500 기준 ~20MB × workers
+- **Claude API agent 내 nested Agent tool spawn 금지** (오버헤드 ↑, 데이터 중복)
+- `future::plan(sequential)` 로 종료 (R 세션 정리)
+- 실패 method는 `tryCatch`로 격리 (1 method fail이 전체 블록 X)
+
+### 적용 대상
+- QP solve (MVO / MVO+β / CVaR LP / ERC / Kelly)
+- Tree-based (HRP)
+- Stochastic (Genetic / PPO RL warm-up)
+- 자연스럽게 병렬 가능한 모든 method
+
+### 제외 (sequential 유지)
+- α̂ / Σ / β_i **생성 자체** (데이터 로드 + Factor DB 의존 heavy)
+- Cost model / stress test 등 downstream 공통 처리
+
+### 결과
+method_shopping_log에 `parallel_exec = TRUE` + `n_workers` + `total_seconds` 기록 권장.
+</v61_parallel_method_comparison>
