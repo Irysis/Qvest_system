@@ -1,0 +1,309 @@
+{
+  "task_id": "WT-D20260424_005",
+  "parent_wt": "WT-D20260424_004",
+  "agent": "judge",
+  "model": "claude-opus-4-7",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 7 — RAPC v2 L-195 Fix (confidence_floor=0 + winsor3sigma, guard=0.9716) + LW Oracle + MinVar_BetaHard (γ=1.0, β_target=0.75)",
+  "alpha_model": "RAPC v2 — 5-factor IC-weighted composite (ESBR + SUE + AC21_CF_to_Accrual + AC17_Accrual_Reversal + Q35_CashBased_OpProf) + CAPM Blume rolling residual (retention 96.8%). L-195 fix: confidence_floor=0 + winsor 3σ + Alpha-Uniform Guard 0.9716 (universe 기준). rank_IC 0.0381 (P6 0.0372 +0.0009 미미), ICIR 0.6273 (P6 0.619 +0.008), Harvey t 8.69. Risk 서브유니버스 top-40 내 cap_cluster 65% 잔존 (P6 100% 대비 35pp 개선).",
+  "risk_model": "Ledoit-Wolf Oracle (P6 NonlinShrink 대체), cond=50.15, n_obs=36m, min_eig>0, PSD verified, factor_coverage 100%. TDC mean_pairwise 0.4236 (P6 0.3619 +0.06 악화), 343 factor pairs >0.40 (P6 21 pairs 대비 대폭 증가). market_risk EW 78.1% (P6 95.8% 대비 -17.7pp).",
+  "optimizer": "MinVar_BetaHard 재선택 (L-196 pattern 반복) — β_target=0.75 hard equality + γ=1.0 + n=20 hard (v2.2, A047080 QP zero→실질 19) + long-only. MVO alpha 4 variants 전부 n=7 sparse (min_names=20 제약 미달). MinVar net_IR 12.164 vs MVO best 6.762 (MinVar 44% 우위). HHI 0.0598, max_w 9.06%. market_risk Option A 39.0% (P6 50.3% 대비 -11.3pp 개선, Gate D 달성).",
+  "verdict": "GRADE_D_MINUS",
+  "disposition": "DISCARD_WITH_STRUCTURAL_PIVOT — Pilot 7 L-195 global fix 성공(guard 0.9716)했으나 Risk 서브유니버스 cluster 65% 잔존으로 MVO α-aware path 무력화 (n=7 sparse < min_names 20). MinVar_BetaHard 재선택 L-196 minvar_superior 패턴 구조적 반복 확정. Forge window full SR 0.258 (P6 0.066 대비 +0.192 개선, 여전 threshold 0.5 미달). Judge Lockbox OOS SR 1.020 / CAGR 21.31% / MDD -21.81% (P6 SR 1.086 / CAGR 20.37% / MDD -14.63% 대비 SR -0.066 약화, MDD 7pp 악화), **Active IR -1.033 (P6 -1.079 미미 개선, but 구조적 negative 여전)**. Lockbox regime 분해: RISK_ON 68.8% SR 1.274 / NEUTRAL 26.9% SR 0.735 / CAUTION 4.3% SR -1.703 — **BM이 모든 regime에서 전략 압도** (BM RISK_ON SR 1.98 vs Strat 1.27, BM NEUT SR 1.94 vs Strat 0.74). L-196 verdict: **minvar_superior** (regime_lucky 아님, strategy_essence 아님). AX-007 예외지대 candidate 아님.",
+  "overall_pass": false,
+  "opus_authority_note": "Judge Opus 4.7 단독 판정. Alpha/Risk/Optimizer/Forge Opus 4.7 chain. evaluation_windows field Pilot 5/6 pattern 따라 request.json에 non-destructive append하여 judge_oos_helper 가동. Lockbox OOS 독립 실행 (lockbox_access_log 4-entry, AX-002 준수). 신규 실행: Lockbox 487일 4-regime decomposition — AX-002 Judge 단독 권한 행사. 핵심 발견 3건: (1) L-195 global fix 성공했으나 Risk 서브유니버스 subclustering 잔존이 α-aware optimizer 재후퇴 유발 (L-195a 확장 candidate), (2) Lockbox Active IR -1.033 (P6 -1.079 대비 미미 개선) — MinVar+β 후퇴 구조가 2 consecutive pilot 지속, (3) Lockbox 모든 regime에서 benchmark 압도 — regime-independent underperformance 구조 확정.",
+  "gates": [
+    {
+      "gate_id": "A",
+      "name": "PIT / Lookahead Compliance",
+      "metric": "C1~C15 + lockbox sealed + Forge audit + commission + cost_model lineage",
+      "threshold": "all PASS",
+      "actual": "integration_audit r12_pure_function: alpha hash PASS (a2076b99...), risk hash PASS (2cf8e38b...), optimization hash FAIL (recorded a36b2fc3... vs current 4f4bc6f4... — Optimizer Agent append 추정, content integrity VERIFIED_SAME by Forge). lockbox sealed 2024-01-23 > backtest_end 2024-01-22 SEALED. commission=0.0015 (v2.3_kr_retail_15bps). C1 rolling/expanding PASS (36M Blume rolling beta, RAPC IC-weighted 전기간 rolling). C2 static weights 동일일 circular 없음 PASS. C4 fundamental 45d / annual May PASS. C5 t-1 lag PASS. C9 static weights DD/VT n/a. C13 Z_Score_Aligned only PASS. C14 IC Usable_Date <=sig_date PASS. C15 Factor DB load_month_factors() 경유 확인. Judge OOS helper lockbox_access_log 4-entry 기록 (AX-002 단일 agent). alpha_validation.json pit_validation all PASS (C1/C2/C4/C13/C14/C15).",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "name": "Package Isolation / Integrity",
+      "metric": "alpha/risk/opt hash + Σw=1 + long-only + n∈[min,20] + max_w cap + optimization_package append integrity",
+      "threshold": "all hash match OR documented reclassification + content identity verified + structural OK",
+      "actual": "alpha hash PASS (a2076b99...), risk hash PASS (2cf8e38b...), optimization hash FAIL (recorded a36b2fc3... vs current 4f4bc6f4...). Forge integration_audit 독립 content 검증 기록: method_selected=MinVar_BetaHard / n_names=19 / beta_port=0.7485 / target_weights 모두 lineage 기록 당시와 동일, R12 Pure Function 위반 아님, 'content_integrity: VERIFIED_SAME'. Judge 재검증: optimization_package.json 내 target_weights sum=1.0, long-only true, n=19 (A047080 QP zero-weight → 실질 19, v2.2 10~20 범위 PASS), max_w=0.0906, hhi=0.0598. AX-008 3-source rule: Forge(backtest + content check) + Optimizer(self-declared method_shopping_log) + Judge(independent content check + lockbox OOS) = 3-source valid. Pilot 5/6 동일 패턴 (Risk WARN_SEQUENCE → Optimizer WARN_APPEND). record_package_lineage() timing 재배치는 시스템 수정 2 pilot 연속 미반영.",
+      "verdict": "PASS_WITH_NOTES",
+      "remediation": "optimization_package recorded-vs-current hash mismatch가 3 pilot 연속 재발 (P5 risk, P6 opt, P7 opt). record_package_lineage() 호출을 write_json() 이후로 재배치하는 시스템 수정이 2 pilot 연속 미반영. Pilot 8 필수 system fix. 현 Pilot 7 판정은 Forge+Judge 2-source content integrity 검증으로 무결성 보장."
+    },
+    {
+      "gate_id": "C",
+      "name": "Net Alpha After Cost",
+      "metric": "SR_full, rank_ic, DSR, Harvey_t, lockbox_SR, Alpha-Uniform resolution, Active_IR",
+      "threshold": "SR>=0.5 OR (SR>=0.3 AND DSR>=0.1); rank_ic>=0.04; Harvey_t>=3; alpha differentiation universe>=0.7; Active IR_lockbox>=0.3",
+      "actual": "**Forge Full SR=0.258** (<<0.5, P6 0.066 대비 +0.192 3.9x 개선 but 여전 threshold 미달). **Forge Val SR=-0.222** (P6 -0.221 flat, L-191 역전 2 pilot 연속 잔존). **Forge Train SR=0.303** (P6 0.091 대비 +0.212 3.3x 개선). **Judge Lockbox OOS SR=1.020** (P6 1.086 대비 -0.066 미미 약화, absolute 절대 PASS but P6 대비 회귀). **Judge Lockbox CAGR=21.31%** (P6 20.37 +0.94pp 개선), **MDD=-21.81%** (P6 -14.63 -7.18pp 악화). rank_ic=0.0381 (<0.04 borderline fail, P6 0.0372 +0.0009 미미). ICIR 0.6273 (P6 0.619 +0.008). DSR_approx=1.011 (P6 0.9981 +0.013, Alpha self-reported inflation 의심 지속). Harvey t=8.69 (>>3.0 PASS). **L-195 Alpha-Uniform universe 기준 PASS (guard 0.9716)** — P6 100% cluster → P7 Risk sub-universe 65% 잔존. **Active IR Lockbox = -1.033** (P6 -1.079 대비 +0.046 미미 개선 but 구조적 negative 2 consecutive pilot). 실증 핵심: Lockbox 모든 regime에서 BM 압도 — Strat RISK_ON SR 1.27 vs BM 1.98 (-0.71), Strat NEUT SR 0.74 vs BM 1.94 (-1.20), Strat CAUT SR -1.70 vs BM 6.60 (-8.30). regime-independent underperformance.",
+      "verdict": "CONDITIONAL_FAIL",
+      "remediation": "L-195 global 해소 성공했으나 L-195a 확장 진단: **Risk 서브유니버스 subclustering (top-40 cluster 65%)**가 α-aware MVO path를 무력화 (MVO n=7 sparse). MinVar+β 재후퇴 L-196 minvar_superior 패턴 2 pilot 확정. 구조적 해결 선결: (1) **Risk 선발 로직 개선** — top-40을 alpha_final 기준 stratified sampling으로 변경 (cap cluster ticker 대체 non-cap ticker 포함), (2) **alpha top-20 직접 선발 mode** (Risk universe 필터 생략) — Alpha Agent가 α_final 기준 top-20 사전 반환 → Risk는 Σ만 공급, (3) confidence_floor=0 + winsor 3σ가 충분치 않음 — winsor 4σ 또는 quantile-based clipping 검토, (4) Alpha composite 방법론 재설계 (IC-weighted → rank-based mean 또는 latent factor extraction). Pilot 8은 Risk universe 개편 sprint 필수."
+    },
+    {
+      "gate_id": "D",
+      "name": "Crowding / Factor Saturation Stress",
+      "metric": "market_risk_pct, TDC vs PG2, family saturation",
+      "threshold": "market_risk<40%, TDC_PG2<0.40, no saturated family",
+      "actual": "market_risk contribution Option A (γ=1.0 hard, β_target=0.75) 적용 후 Optimizer 측 **39.0%** (P6 50.3% 대비 -11.3pp 추가 개선). **Gate D threshold 40% 미달 gap 1.0pp 달성** (P5 gap 18.7pp → P6 10.3pp → P7 ~0pp). β_port=0.7485 (hard equality, gap 0.0015 근사 달성). TDC factor_level mean_pairwise=0.4236 (P6 0.3619 +0.06 악화, 343 pairs >0.40). FF3 retention 11.5% — RAPC size+value tilt 88.5% 지속. Family saturation: earnings_surprise + accrual_quality + cash_profitability 3축 + CAPM residual multi-axis composite — single family 아님. **Lockbox regime breakdown (Strat vs BM)**: RISK_ON 1.274 vs 1.979 / NEUTRAL 0.735 vs 1.943 / CAUTION -1.703 vs 6.600 — 모든 regime에서 β_port=0.75 under-beta가 KOSPI 상승장 leverage 상실 → Active IR -1.033 직접 cause.",
+      "verdict": "PASS",
+      "remediation": "Gate D market_risk 39.0% 달성으로 3 pilot만에 threshold 통과 (P5 58.7 → P6 50.3 → P7 39.0, -20pp). 그러나 **β_port 0.75 under-beta가 regime-independent underperformance proximate cause로 재정의**: KOSPI 2024-2026 강세장 (BM RISK_ON CAGR 40.68%) 에서 0.75 beta는 25% leverage loss 직결. 구조적 trade-off: market_risk 통제 ↔ beta-loss penalty. Pilot 8 검토: (a) β_target 0.75 → 0.90 또는 floating (gamma_beta soft penalty로 전환), (b) market_risk 40% 제약을 50%까지 완화 (TE_pct 16.6 대비), (c) factor_risk loading 증가로 market 의존도 감소 (but TDC 0.42 이미 경고)."
+    },
+    {
+      "gate_id": "E",
+      "name": "Concentration / Breadth",
+      "metric": "n_names, HHI, max_weight, min_names enforcement",
+      "threshold": "n∈[min,20], HHI<=0.10, max_w<=0.15 (v2.2)",
+      "actual": "n=19 (A047080 QP zero-weight 제거, 실질 19. v2.2 10~20 PASS). HHI=0.0598 (P6 0.0564 +0.003 미미 증가). max_w=0.0906 (A093190, P6 0.0854 +0.005, 0.15 cap 여유). min_weight=0.0217 (A071320). effective N = 1/HHI = 16.72 (P6 17.73 소폭 감소). min_names_enforced=true (v2.2 유지), hhi_enforced=true. A047080 zero-weight는 QP 해에서 자연 탈락 — n=19 acceptable.",
+      "verdict": "CONDITIONAL_PASS",
+      "remediation": "n=19 (min 20 대비 1 미달)은 QP 자연 탈락 결과로 admission 범위 (10~20) 내이나 hard 20 strict 기준에서는 CONDITIONAL. Pilot 8 시 (a) QP solver post-processing에서 zero-weight ticker 제거 후 나머지 재정규화 명시화 or (b) min_names 19로 relax. 구조 PASS, cosmetic CONDITIONAL."
+    },
+    {
+      "gate_id": "F",
+      "name": "Drift / Regime Adaptation (L-191 avoidance + Lockbox OOS + Regime decomposition)",
+      "metric": "oos_is_ratio + lockbox SR/CAGR/MDD + Val vs Train + Regime-balanced performance + regime_lucky_candidate",
+      "threshold": "oos_is_ratio>=0.7 + lockbox SR>0.5 + L-191 Val>=Train + 3+ regime positive SR + regime_lucky_candidate<0.2",
+      "actual": "**Judge OOS helper 독립 측정 (lockbox 2024-01-23~2026-01-23, 487 days)**: CAGR=21.31% / **SR=1.020** / MDD=-21.81% / Calmar=0.977 / Active IR=-1.033. **Forge window SR 0.258 vs Lockbox SR 1.020 — 3.95x divergence** (P6 16x 대비 개선 but 지속). Judge 1990-2026 full window: Train SR 0.191 / Val SR -0.386 / Lockbox SR 1.020. L-191 Val vs Train: Forge window Val SR -0.222 < Train 0.303 reversion 2 pilot 연속. Judge window Val -0.386 < Train 0.191 동일 reversion. **Lockbox regime decomposition (NEW)**: RISK_ON 68.79% (335일) SR 1.274 CAGR 27.84% MDD -17.21% / NEUTRAL 26.90% (131일) SR 0.735 CAGR 13.91% MDD -14.98% / CAUTION 4.31% (21일) SR -1.703 CAGR -28.57% MDD -6.79% / RISK_OFF+CRISIS 0일. 2 regime positive (>0.5 SR) / 1 regime negative (소표본 21일). **Benchmark regime SR 모두 전략 압도**: RISK_ON 1.979 / NEUT 1.943 / CAUT 6.600 — strategy가 regime-independent underperformance. oos_is_ratio = 1.020 / mean(0.191, -0.386) = negative → WARN_NA. regime_lucky_candidate ratio 1.020 / 1.274 = 0.801 < 1.0 suggests no single regime dominates — **regime_lucky NOT confirmed**, but strategy_essence도 NOT confirmed (BM 압도). **L-196 final: minvar_superior** (MinVar+β 구조 반복 우위 + BM 전면 underperform).",
+      "verdict": "FAIL",
+      "remediation": "복합 drift 진단 (P7 최종): (1) **Lockbox regime 3종 중 2종 positive SR**은 regime_lucky 제거했으나, **모든 regime에서 BM 압도** → Active IR -1.033 root cause = β_port 0.75 under-beta. (2) L-191 Val<Train reversion 2 pilot 연속 (P6 재발 → P7 잔존) — Forge window 2012-2024가 strategy에 불리한 regime mix (약세장 포함). (3) Lockbox 2024-2026은 KOSPI 강세 + value re-rating regime이나, under-beta로 leverage loss → absolute SR 1.020은 강하나 relative -1.033 부진. (4) Forge-Lockbox divergence P6 16x → P7 4x 완화 (L-195 fix 효과 확인) but 구조적 잔존. 차기 Pilot 8 drift 해결: (a) β_target 0.90+ 또는 beta-floating으로 leverage loss 해소, (b) Risk universe 개편 (alpha stratified) L-195a, (c) Forge backtest window 2020+ 시프트 (regime consistency), (d) rolling 5-year SR + active IR stability tracking 필수."
+    }
+  ],
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS_WITH_NOTES",
+    "C_NET_ALPHA": "CONDITIONAL_FAIL",
+    "D_CROWDING": "PASS",
+    "E_CONCENTRATION": "CONDITIONAL_PASS",
+    "F_DRIFT": "FAIL",
+    "pass_count": 2,
+    "pass_with_notes_count": 1,
+    "conditional_pass_count": 1,
+    "conditional_fail_count": 1,
+    "fail_count": 1,
+    "overall": "GRADE_D_MINUS DISCARD_WITH_STRUCTURAL_PIVOT (2 PASS + 1 PASS_WITH_NOTES + 1 CONDITIONAL_PASS + 1 CONDITIONAL_FAIL + 1 FAIL — Gate C/F structural fail via L-196 minvar_superior 2 consecutive + BM regime-wide dominance)"
+  },
+  "pilot4567_comparison": {
+    "portfolio_construction": {
+      "n_names":    {"p4": 15,     "p5": 11,     "p6": 20,     "p7": 19,    "verdict_p7": "CONDITIONAL (QP natural 19)"},
+      "HHI":        {"p4": 0.0744, "p5": 0.096,  "p6": 0.0564, "p7": 0.0598,"verdict_p7": "PASS"},
+      "max_weight": {"p4": 0.08,   "p5": 0.10,   "p6": 0.0854, "p7": 0.0906,"verdict_p7": "PASS"},
+      "beta_port":  {"p4": 0.789,  "p5": 0.766,  "p6": 0.750,  "p7": 0.7485,"verdict_p7": "HARD_BINDING"},
+      "gamma_beta": {"p4": "N/A",  "p5": 0.5,    "p6": 1.0,    "p7": 1.0,   "delta_p6_to_p7": "same"},
+      "opt_method": {"p4": "MVO",  "p5": "MVO",  "p6": "MinVar_BetaHard", "p7": "MinVar_BetaHard", "note_p7": "L-196 minvar_superior 2 consecutive"}
+    },
+    "absolute_performance_forge_window": {
+      "full_SR":      {"p4": 0.491, "p5": 0.649, "p6": 0.066, "p7": 0.258, "delta_p6_to_p7": "+0.192 (3.9x 개선)", "verdict_p7": "BELOW_THRESHOLD"},
+      "full_CAGR_pct":{"p4": 9.25,  "p5": 12.03, "p6": 1.18,  "p7": 4.69,  "delta_p6_to_p7": "+3.51pp (4.0x)", "verdict_p7": "BELOW_TARGET"},
+      "full_MDD_pct": {"p4": -36.83,"p5": -32.32,"p6": -63.91,"p7": -55.22,"delta_p6_to_p7": "+8.69pp 완화", "verdict_p7": "HARD_FAIL_MDD45"},
+      "train_SR":     {"p4": 0.576, "p5": 0.629, "p6": 0.091, "p7": 0.303, "delta_p6_to_p7": "+0.212 (3.3x)"},
+      "val_SR":       {"p4": 0.130, "p5": 0.875, "p6": -0.221,"p7": -0.222,"delta_p6_to_p7": "-0.001 flat (L-191 2 pilot 지속)"}
+    },
+    "lockbox_oos_judge_helper": {
+      "lockbox_SR":       {"p4": 0.774,  "p5": 0.844,  "p6": 1.086,  "p7": 1.020, "delta_p6_to_p7": "-0.066 (P6 peak 회귀)", "verdict_p7": "STRONG_PASS absolute"},
+      "lockbox_CAGR_pct": {"p4": 17.14,  "p5": 18.70,  "p6": 20.37,  "p7": 21.31, "delta_p6_to_p7": "+0.94pp", "verdict_p7": "PASS 목표 16% 초과"},
+      "lockbox_MDD_pct":  {"p4": -34.17, "p5": -27.65, "p6": -14.63, "p7": -21.81,"delta_p6_to_p7": "-7.18pp 악화", "verdict_p7": "PASS but P6 peak 회귀"},
+      "lockbox_Calmar":   {"p4": 0.502,  "p5": 0.676,  "p6": 1.392,  "p7": 0.977, "delta_p6_to_p7": "-0.415"},
+      "lockbox_active_IR":{"p4": -1.311, "p5": -1.021, "p6": -1.079, "p7": -1.033,"delta_p6_to_p7": "+0.046 미미", "verdict_p7": "STRUCTURAL_FAIL_WORST 4 pilot"},
+      "lockbox_alpha_pp": {"p4": -20.40, "p5": -19.06, "p6": -18.38, "p7": -17.17,"delta_p6_to_p7": "+1.21pp 완화"}
+    },
+    "l195_alpha_uniform_resolution": {
+      "p6_unique_alpha_count": 1,
+      "p6_cap_cluster_pct_universe": 100,
+      "p6_alpha_uniform_flag": true,
+      "p7_unique_alpha_count_universe": 1845,
+      "p7_cap_cluster_pct_universe": 2.7,
+      "p7_cap_cluster_pct_risk40": 65.0,
+      "p7_alpha_uniform_flag": false,
+      "p7_guard_ratio_universe": 0.9716,
+      "p7_alpha_std_vs_p6": "+33.6%",
+      "global_fix": "RESOLVED",
+      "subuniverse_status": "WARN_CLUSTER_BIAS (L-195a candidate)",
+      "mvo_alpha_path_impact": "MVO 4 variants n=7 sparse → min_names 20 미달 → Optimizer MinVar_BetaHard 재후퇴 (L-196 minvar_superior 2 consecutive 확정)"
+    },
+    "structural_evolution_narrative": "Pilot 4 (breadth forced) → Pilot 5 (natural QP) → Pilot 6 (n=20 hard + MinVar+β hard after Alpha-Uniform Collapse) → **Pilot 7 (L-195 Alpha fix sprint)**. Pilot 7 구조 수정 3축 (P6 next_actions 이행): (a) confidence_floor 0.11→0, (b) winsor 2σ→3σ, (c) Alpha-Uniform Guard 추가 (0.7 threshold). 결과: (1) L-195 global RESOLVED (guard 0.9716), (2) Forge window SR 0.066→0.258 (3.9x 개선) + MDD -63.91→-55.22 (+8.69pp 완화), (3) 그러나 Risk 서브유니버스 subclustering (65%) 잔존으로 MVO α-aware n=7 sparse → MinVar_BetaHard 재후퇴, (4) Lockbox SR 1.086→1.020 회귀 + Active IR -1.079→-1.033 미미 개선 but 구조적 negative 4 pilot 연속 확정, (5) **Lockbox 모든 regime에서 BM 압도** regime-independent underperformance 확정. **핵심 교훈**: Alpha territory 단독 sprint는 부분 성공했으나 Risk universe subclustering이 structural bottleneck로 재정의. Pilot 8은 Risk universe 개편 또는 alpha top-20 직접 선발 mode 필요.",
+    "gate_d_crowding_evolution": "P4 48% sonnet → P5 58.7% (γ=0.5) → P6 50.3% (γ=1.0) → **P7 39.0%** (γ=1.0 유지 + L-195 fix + Option A). threshold 40% 3 pilot만에 달성. 단 β_port 0.75 under-beta가 regime-wide underperformance proximate cause로 재정의 — market_risk 통제와 beta-loss penalty trade-off 구조적."
+  },
+  "ax_compliance": {
+    "AX-000": "N/A — exploratory Pilot 7, not admission decision",
+    "AX-001_v2": "N/A — non-defense role (core_alpha earnings+accrual+cash_profitability composite)",
+    "AX-002": "PASS — harness 내 성과 only (Lockbox OOS Judge 단독 access 4-entry logged), lockbox sealed 2024-01-23 준수, Forge backtest lockbox 미접근 확인. evaluation_windows field append는 P5/P6 pattern 정식 augmentation. 본 Pilot 7 Judge가 Lockbox regime decomposition 단독 수행 (AX-002 Judge-only 권한 행사).",
+    "AX-003": "PASS — family=earnings_surprise+accrual_quality+cash_profitability multi-axis (value 아님)",
+    "AX-004": "PARTIAL — accrual quality + cash profitability 포함하나 multi-axis composite + breadth 19 + long-only 예외지대. 단일 Q-family 구조적 실패 아님. 단 Risk 서브유니버스 cluster 65%는 signal-to-portfolio translation 부분 실패 — Q-family 실패 패턴과 effect 유사.",
+    "AX-005": "N/A — defense 역할 아님",
+    "AX-007": "WARNING — structure=single_sleeve_long_only_top20, roles=[core_alpha_L195_fixed_but_MVO_sparse]. 예외 4종: (a) long-short 불가 (no_short_legal_kr=true), (b) 50+ 분산 미달 (n=19), (c) multi-sleeve 없음, (d) ML sizing 미적용. L-195 global fix 후에도 Risk 서브유니버스 subclustering + MVO sparse로 signal-to-portfolio translation 구조적 단절 잔존. Lockbox regime 분해 결과 strategy_essence NOT confirmed (BM regime-wide 압도). AX-007 예외지대 candidate 아님 — 4 pilot 연속 Active IR negative 확정.",
+    "AX-008": "PASS — Forge(backtest + content check) + Optimizer(method_shopping self-declared) + Judge(본 심사 + OOS helper independent lockbox access + regime decomposition) 3-source 중 최소 2-source PASS. optimization_package hash WARN_APPEND는 Forge+Judge 2-source content integrity로 해소 (P5/P6 동일 pattern 3 pilot 연속)."
+  },
+  "multi_objective_8axes": {
+    "sharpe_full":         {"value": 0.258,   "target": 2.0,  "gap": -1.742, "status": "FAR_BELOW (P6 0.066 대비 3.9x 개선)", "vs_pilot6": "+0.192"},
+    "sharpe_lockbox":      {"value": 1.020,   "target": 2.0,  "gap": -0.980, "status": "BELOW (OOS strong but P6 peak 1.086 회귀)", "vs_pilot6": "-0.066"},
+    "cagr_full_pct":       {"value": 4.69,    "target": 16.0, "gap": -11.31, "status": "FAR_BELOW", "vs_pilot6": "+3.51pp (4.0x)"},
+    "cagr_lockbox_pct":    {"value": 21.31,   "target": 16.0, "gap": 5.31,   "status": "PASS 목표 초과", "vs_pilot6": "+0.94pp"},
+    "mdd_full_pct":        {"value": -55.22,  "target": -25.0,"gap": -30.22, "status": "HARD_FAIL (MDD>45%)", "vs_pilot6": "+8.69pp 완화"},
+    "mdd_lockbox_pct":     {"value": -21.81,  "target": -25.0,"gap": 3.19,   "status": "PASS but P6 peak 회귀", "vs_pilot6": "-7.18pp 악화"},
+    "calmar_full":         {"value": 0.085,   "target": 0.6,  "gap": -0.515, "status": "FAR_BELOW", "vs_pilot6": "+0.067"},
+    "calmar_lockbox":      {"value": 0.977,   "target": 0.6,  "gap": 0.377,  "status": "PASS", "vs_pilot6": "-0.415"},
+    "turnover_ann_pct":    {"value": 49.9,    "budget": 600,  "status": "OK", "vs_pilot6": "+4.8pp"},
+    "rank_ic":             {"value": 0.0381,  "target": 0.04, "gap": -0.0019,"status": "BORDERLINE_FAIL (P3→P7 지속)", "vs_pilot6": "+0.0009 미미"},
+    "dsr":                 {"value": 1.011,   "target": 0.5,  "gap": 0.511,  "status": "PASS (self-reported inflation 의심)", "vs_pilot6": "+0.013"},
+    "harvey_t":            {"value": 8.69,    "target": 3.0,  "gap": 5.69,   "status": "STRONG_PASS", "vs_pilot6": "+0.11"},
+    "active_ir_lockbox":   {"value": -1.033,  "target": 0.3,  "gap": -1.333, "status": "STRUCTURAL_FAIL 4 pilot 연속 worst", "vs_pilot6": "+0.046 미미"},
+    "alpha_uniform_guard": {"value": 0.9716,  "target": 0.70, "gap": 0.2716, "status": "PASS_GLOBAL (L-195 fix 성공)", "vs_pilot6_universe": "0.0→0.9716"},
+    "cluster_pct_risk40":  {"value": 65.0,    "target": 50.0, "gap": 15.0,   "status": "WARN (L-195a subuniverse)", "vs_pilot6": "-35pp 개선"},
+    "expected_ir_grinold": {"value": 2.81,    "formula": "ICIR(0.6273)*sqrt(N=20)", "realized_lb_active_ir": -1.033, "gap": 3.84, "note": "theoretical 2.81 vs realized -1.033 gap 3.84 — breadth 효과 Alpha-level 복원되었으나 Risk subclustering으로 portfolio 전달 실패. Grinold translation efficiency <0."}
+  },
+  "pilot_cumulative_history": {
+    "pilot_1_L190_rate_hedge":           {"CAGR": 8.72,  "SR": 0.413, "MDD": -54.30, "result": "hard_fail"},
+    "pilot_2_L191_macro_residual":       {"CAGR": 4.06,  "SR": 0.289, "MDD": -44.03, "result": "Val<Train drift"},
+    "pilot_3_RAPC":                      {"CAGR": 6.00,  "SR": 0.282, "MDD": -44.59, "lockbox_IR": -1.003, "result": "DISCARD_WITH_IMPROVEMENTS"},
+    "pilot_4_RAPC_breadth_constrained":  {"CAGR": 9.25,  "SR": 0.491, "MDD": -36.83, "lockbox_SR": 0.774, "lockbox_IR": -1.311, "result": "GRADE_C CONDITIONAL_PROGRESS"},
+    "pilot_5_RAPC_hedge_overlay":        {"CAGR": 12.03, "SR": 0.649, "MDD": -32.32, "lockbox_SR": 0.844, "lockbox_CAGR": 18.70, "lockbox_MDD": -27.65, "lockbox_IR": -1.021, "n_names": 11, "result": "GRADE_C_PLUS CONDITIONAL_PROGRESS"},
+    "pilot_6_RAPC_v2_MinVar_BetaHard":   {"CAGR_forge": 1.18, "SR_forge": 0.066, "MDD_forge": -63.91, "lockbox_SR": 1.086, "lockbox_CAGR": 20.37, "lockbox_MDD": -14.63, "lockbox_Calmar": 1.392, "lockbox_IR": -1.079, "n_names": 20, "result": "GRADE_D DISCARD_WITH_IMPROVEMENTS (L-195 Alpha-Uniform Collapse)"},
+    "pilot_7_RAPC_v2_L195_fix":          {"CAGR_forge": 4.69, "SR_forge": 0.258, "MDD_forge": -55.22, "lockbox_SR": 1.020, "lockbox_CAGR": 21.31, "lockbox_MDD": -21.81, "lockbox_Calmar": 0.977, "lockbox_IR": -1.033, "n_names": 19, "l195_guard": 0.9716, "cluster_risk40": 0.65, "l196_verdict": "minvar_superior", "result": "GRADE_D_MINUS DISCARD_WITH_STRUCTURAL_PIVOT"},
+    "pattern_evolution": "P1 hard_fail → P2 val drift → P3 breadth → P4 forced filling → P5 natural QP → P6 L-195 collapse → **P7 L-195 global fix but Risk sub-universe subclustering + MinVar_BetaHard 2 consecutive + regime-wide BM dominance**. Active IR history: P4 -1.311 → P5 -1.021 → P6 -1.079 → P7 -1.033. **4 pilot 연속 Active IR < -1.0** — 구조적 underperformance 확정. 진전 축: (portfolio construction) ✓ (n=19 HHI 0.06 β 0.75 달성) / (Gate D crowding) ✓ (39% threshold 통과) / (L-195 alpha uniform) ✓ (global 해소) / (absolute Lockbox CAGR) ✓✓ (21.31 > 16 target) / (Forge window absolute) ✗ (SR 0.258 threshold 미달) / (active management) ✗✗✗✗ (4 pilot IR < -1). **핵심 교훈**: Alpha level 신호 개선(L-195 fix)이 Risk universe subclustering에서 소실 — '신호 복원 → portfolio 전달 실패' 경로 지속. Pilot 8은 Risk universe 개편 또는 alpha top-20 직접 선발 모드 필수.",
+    "l196_final_structural_verdict": "**L-196 minvar_superior 확정** (regime_lucky 아님, strategy_essence 아님). Lockbox 487일 regime 분해: RISK_ON 68.79% 지배 but SR 1.274 (BM 1.979 대비 -0.71) / NEUTRAL 26.90% SR 0.735 (BM 1.943 대비 -1.21) / CAUTION 4.31% SR -1.703 (BM 6.600 대비 -8.30). 모든 regime에서 BM 압도 — regime-independent underperformance. MinVar+β hard가 alpha 신호 없는 상태에서 pure variance minimization으로 수렴한 결과 KOSPI 2024-2026 강세장 leverage loss (β 0.75 vs market 1.0 = 25% upside 상실). **AX-007 예외지대 candidate 아님** — 4 pilot 연속 Active IR < -1.0 + regime-wide BM dominance.",
+    "forge_vs_lockbox_divergence_update": "Pilot 6 16x → Pilot 7 3.95x (1.020/0.258) 완화 but 구조적 잔존. Cause candidates 2 pilot 재확인: (a) Forge window 2012-2024가 2013-2015 KOSPI 약세 포함 → low-beta MinVar에 비우호적, (b) Lockbox 2024-2026은 KOSPI 회복 + value re-rating → 저β 전략에 부분 적합 (under-beta 25% leverage loss 제외). L-196 candidate → **L-196 minvar_superior 정식 등재** (L-191 Val<Train reversion + L-195 fix residual + L-196 minvar 2 consecutive 3개 교훈 체인 확정)."
+  },
+  "l196_final_verdict": {
+    "verdict": "minvar_superior",
+    "confidence": "HIGH",
+    "rationale_detail": "Lockbox 487일 4-regime decomposition 기준 판정 3단계: (1) regime_lucky 테스트: RISK_ON dominance 68.79% < 80% threshold → regime_lucky 기각. (2) strategy_essence 테스트: 2 regime positive SR (RISK_ON 1.274, NEUTRAL 0.735) + 1 regime negative (CAUTION -1.703 소표본 21일). 3+ regime 양의 SR 기준 미달. BM 모든 regime 압도 (RISK_ON 1.98 vs 1.27, NEUT 1.94 vs 0.74, CAUT 6.60 vs -1.70). strategy_essence 기각. (3) minvar_superior 확정: MinVar_BetaHard 재선택 (P6 동일) + Lockbox regime 분포 중간 + 모든 regime BM 압도 = MinVar+β 구조가 alpha 신호 없는 상태에서 pure variance minimization으로 retreat. Lockbox absolute 성과 강함(SR 1.02, CAGR 21.31%) but regime-relative 지속 underperform.",
+    "evidence": {
+      "risk_on_dominance_pct": 68.79,
+      "risk_on_sr": 1.2743,
+      "risk_on_cagr_pct": 27.84,
+      "risk_on_bm_sr": 1.9787,
+      "risk_on_bm_cagr_pct": 40.68,
+      "neutral_pct": 26.90,
+      "neutral_sr": 0.735,
+      "neutral_bm_sr": 1.9434,
+      "caution_pct": 4.31,
+      "caution_sr": -1.7027,
+      "caution_bm_sr": 6.60,
+      "total_lockbox_sr": 0.9991,
+      "total_lockbox_cagr_pct": 20.86,
+      "total_active_ir": -1.033,
+      "regime_positive_count": 2,
+      "regime_bm_dominance_count": 3,
+      "minvar_reselection_consecutive": 2
+    },
+    "implication": "Pilot 7 L-195 Alpha-level fix 성공했으나 Risk universe subclustering + MVO sparse 경로로 MinVar_BetaHard 재후퇴 2 consecutive pilot 확정. Lockbox regime-relative 판정상 strategy_essence 아니며 AX-007 예외지대 candidate 아님. 다음 sprint 방향: **Risk universe 개편 (L-195a subclustering 해소)** 또는 **alpha top-20 직접 선발 mode (Risk 필터 생략)**.",
+    "next_action_recommendation": "L-196 정식 등재 + Pilot 8 Risk Universe Redesign Sprint 진입 (Alpha/Optimizer 동결, Risk territory 단독 수정)"
+  },
+  "lockbox_regime_decomposition": {
+    "period": "2024-01-23 ~ 2026-01-23 (487 days)",
+    "source": ".cache/unified_regime_signal.parquet (monthly forward-filled to daily, PIT preserved)",
+    "regime_stats": {
+      "RISK_ON":  {"days": 335, "days_pct": 68.79, "sr": 1.2743,  "cagr": 27.84,  "mdd": -17.21, "calmar": 1.617,  "bm_sr": 1.9787, "bm_cagr": 40.68, "bm_mdd": -20.82, "alpha_gap_sr": -0.7044},
+      "NEUTRAL":  {"days": 131, "days_pct": 26.90, "sr": 0.735,   "cagr": 13.91,  "mdd": -14.98, "calmar": 0.929,  "bm_sr": 1.9434, "bm_cagr": 41.67, "bm_mdd": -8.90,  "alpha_gap_sr": -1.2084},
+      "CAUTION":  {"days": 21,  "days_pct": 4.31,  "sr": -1.7027, "cagr": -28.57, "mdd": -6.79,  "calmar": -4.206, "bm_sr": 6.60,   "bm_cagr": 133.54,"bm_mdd": -4.14,  "alpha_gap_sr": -8.3027, "small_sample_warning": true},
+      "RISK_OFF": {"days": 0,   "days_pct": 0,     "sr": null,    "cagr": null,   "mdd": null,   "bm_sr": null},
+      "CRISIS":   {"days": 0,   "days_pct": 0,     "sr": null,    "cagr": null,   "mdd": null,   "bm_sr": null}
+    },
+    "total_lockbox": {"sr": 0.9991, "cagr": 20.86, "mdd": -21.81, "calmar": 0.977, "n_days": 487, "active_ir": -1.033},
+    "bm_dominance_check": "BM beats strategy in all 3 non-zero regimes (RISK_ON -0.70 / NEUTRAL -1.21 / CAUTION -8.30). regime-independent underperformance confirmed.",
+    "regime_lucky_check": {
+      "threshold": "single regime >=80% dominance + regime SR > total SR ratio > 1.2",
+      "risk_on_dominance": 68.79,
+      "dominance_pass": false,
+      "risk_on_sr_to_total_ratio": 1.275,
+      "verdict": "NOT_REGIME_LUCKY"
+    },
+    "strategy_essence_check": {
+      "threshold": "3+ regimes balanced (>=15%) + all positive SR + total SR > BM relative",
+      "regime_count_15pct": 2,
+      "regime_positive_sr": 2,
+      "bm_outperform_regime_count": 0,
+      "verdict": "NOT_STRATEGY_ESSENCE"
+    },
+    "ax007_exception_candidate": false,
+    "l196_verdict": "minvar_superior"
+  },
+  "role_honesty_audit": {
+    "declared_role": "core_alpha (earnings+accrual+cash_profitability multi-axis composite with L-195 fix)",
+    "validated_role": "core_alpha_L195_resolved_but_Risk_subcluster_degraded_to_MinVar_beta_hedge",
+    "evidence": "FF3 retention 11.5% (size+value channel 88.5%) — P6 동일. Market beta 0.7485 hard (low-beta tilt). L-195 global: unique_alpha_count=1845, guard_ratio=0.9716 (fix 성공). Risk 서브유니버스: alpha_unique_count=15 (sub-optimal), cluster_cap_ratio=65% (sub-universe WARN). MVO alpha path n=7 sparse → MinVar_BetaHard fallback 2 consecutive. Grinold IR theoretical 2.81 vs realized Lockbox Active IR -1.033 gap 3.84 — breadth 효과 Alpha 복원되었으나 Risk subclustering에서 소실.",
+    "defense_disguise_check": "NEGATIVE (Forge MDD -55.22% not defense-grade, Lockbox MDD -21.81% acceptable but P6 -14.63 peak 대비 -7pp 악화). Lockbox absolute 성과 강함(SR 1.020) but Active IR -1.033 → core_alpha 역할 실패. defense 역할도 substitute 아님.",
+    "core_adequacy": "FAIL — Forge window SR 0.258 (threshold 0.5 미달), Active IR -1.033 4 pilot 연속 structural fail. Admission 구조적 불가.",
+    "verdict": "DISHONEST_BY_STRUCTURE_PERSISTENT — declared role=core_alpha이나 L-195 global fix 성공 후에도 Risk subclustering + MVO sparse로 실제 작동은 pure MinVar+β hedge 2 consecutive pilot. Role integrity 침해 + Pilot 6 동일 패턴 재현. Pilot 8에서 Risk universe 개편 또는 alpha top-20 직접 선발 구조 변경 선결 필수."
+  },
+  "p6_challenge_review": {
+    "L195_ALPHA_UNIFORM_FIX": {
+      "challenger": "Pilot 6 Judge L-195",
+      "target": "confidence_floor 0.11 제거 + winsor 2σ→3σ + Alpha-Uniform Guard",
+      "judge_verdict": "PARTIAL_SUCCESS_GLOBAL_FAIL_SUBUNIVERSE",
+      "rationale": "Pilot 7 implementation: floor=0 + winsor 3σ + guard 0.7 threshold 모두 집행. 결과: (a) universe 전체 unique_alpha 1→1845 (1845x), guard_ratio 0→0.9716 (global PASS), alpha_std +33.6%, rank_IC 0.0372→0.0381 미미. (b) 그러나 Risk 서브유니버스 선발 시 top-40 기준 cluster 65% 잔존 (P6 100% 대비 35pp 개선). MVO α-aware 4 variants 모두 n=7 sparse → min_names 20 제약 미달 → MinVar_BetaHard 재선택. L-195 global PASS, L-195a subuniverse candidate 발견."
+    },
+    "RISK_OPTIMIZER_FREEZE": {
+      "challenger": "Pilot 6 Judge next_actions",
+      "target": "Pilot 7에서 Risk + Optimizer 동결 Alpha 단독 sprint isolation",
+      "judge_verdict": "PARTIAL_COMPLIANCE",
+      "rationale": "Risk Agent cov method 변경 (NonlinShrink → LW Oracle) — spec에는 'LW 2022 Nonlinear Shrinkage 패턴 참고 가능하나 자율 재선택'으로 한정. Risk 자율 선택으로 LW Oracle 선택함. Optimizer MinVar_BetaHard 동일 유지 (자율 재선택 결과 동일). Alpha territory 단독 sprint 의도 부분 achieved — but Risk cov method 변경이 cond=7.02→50.15 condition number 악화 유발. Pilot 8은 Risk+Optimizer 완전 동결 + Alpha differentiation 강화 가능할지 재검토."
+    },
+    "L196_CANDIDATE_RESOLUTION": {
+      "challenger": "Pilot 6 Judge L-196 candidate",
+      "target": "Forge-Lockbox divergence 재현성 확인 + regime-conditional bias 진단",
+      "judge_verdict": "CANDIDATE_TO_VALIDATED",
+      "rationale": "P6 16x divergence → P7 3.95x (완화 but 지속). Lockbox regime 분해 결과 minvar_superior 확정 (regime_lucky 아님, strategy_essence 아님). **L-196 정식 등재**: minvar_superior under Risk subclustering + regime-wide BM dominance. P6 L-196 candidate → P7 FINAL."
+    },
+    "SYSTEM_FIX_LINEAGE_SEQUENCE": {
+      "challenger": "Pilot 5+6 Judge recommendations",
+      "target": "record_package_lineage() → write_json() 순서 재배치",
+      "judge_verdict": "NOT_ADDRESSED_3_CONSECUTIVE",
+      "rationale": "Pilot 5 Risk WARN_SEQUENCE → Pilot 6 Optimizer WARN_APPEND → Pilot 7 Optimizer 재발. 3 pilot 연속 시스템 수정 미반영. 현 Forge+Judge content integrity로 PASS_WITH_NOTES 유지 but Pilot 8 system fix 필수."
+    }
+  },
+  "next_actions": [
+    "즉시: Pilot 7 GRADE_D_MINUS DISCARD_WITH_STRUCTURAL_PIVOT 확정. STR_PILOT_7 별도 등록 금지 (Active IR -1.033 4 pilot 연속 + Forge SR 0.258 threshold 미달 + 모든 regime BM 압도 admission 기준 미달).",
+    "**L-196 정식 등재 (minvar_superior)**: methodology_active.md L-196 신설. '4-Regime Lockbox Decomposition 기준 strategy_essence 검증 프로토콜 + MinVar_BetaHard 2 consecutive re-selection 구조적 패턴'. core_reference: L-195, L-191, AX-007 예외지대 4종. tags: Pilot6, Pilot7, regime_decomposition, minvar_superior, active_ir_structural_fail, bm_regime_dominance.",
+    "**L-195a candidate flag**: Risk universe subclustering — top-40 선발 시 alpha cap cluster 65% 잔존으로 MVO α-aware path n=7 sparse 유발. Pilot 8 추가 실증 후 L-195a 정식 등재 여부 판단.",
+    "**Pilot 8 Risk Universe Redesign Sprint** (Alpha+Optimizer 동결, Risk territory 단독 수정): (a) top-40 선발을 alpha_final 기준 stratified sampling으로 변경 (cap ticker 대체 non-cap 포함), (b) alpha top-20 직접 선발 mode 추가 (Alpha Agent α_final 기준 top-20 사전 반환 → Risk Σ만 공급, Optimizer MinVar penalty-free), (c) top-N을 40→60 확대로 cap dilution 효과 측정.",
+    "Pilot 8 대안 경로 검토: (a) β_target 0.75→0.90 upgrade (under-beta leverage loss 해소, market_risk 제약 완화), (b) γ=1.0 hard → soft penalty 전환으로 alpha-beta balance, (c) factor_risk loading 증가 시 TDC 0.4236 경고 감안 필요.",
+    "System-level fix (Pilot 8 선결, 3 pilot 연속 미반영): Optimizer agent의 record_package_lineage() 호출을 write_json() 이후로 재배치. Python dispatcher 또는 R agent 코드 수정. 현 content integrity로 2-source 검증 유지 중이나 하네스 신뢰성 저해.",
+    "Forge 백테스트 window 재검토 (Pilot 8 부수): 2012-2024 window가 regime-conditional 전략에 unfair penalty 지속 유발. rolling 5-year SR + Active IR stability 측정 추가. 단 Lockbox window는 절대 변경 금지 (AX-002).",
+    "Governor 체인: PG0 gap 재진단. Pilot 7 Lockbox CAGR 21.31% / SR 1.020 / MDD -21.81% / Calmar 0.977는 current PG2 (STR_1631 80% + STR_1656 20% = SR 1.193 / CAGR 16.14%)의 CAGR 비교 우월 (+5.17pp) but SR 비교 열위 (-0.173) + Active IR -1.033 fatal. STR_PILOT_7 archive → core_alpha sleeve 미래 후보 참고용만. PG1 admission 구조적 불가.",
+    "AX-007 예외지대 Verification Sprint 직결 판단: Pilot 7 L-196 minvar_superior로 AX-007 예외 candidate 아님 확정. long-short mandate revision (증권사 회의), multi-sleeve 설계, 50+ 분산 확장 중 하나 선결 필수. Pilot 8 Risk redesign이 예외지대 진입 전 전제."
+  ],
+  "rationale_summary": "Pilot 7은 Pilot 6 Judge next_actions의 Alpha territory 단독 sprint 집행 (confidence_floor=0 + winsor 3σ + Alpha-Uniform Guard). 결과 3단 요약: (1) **L-195 global RESOLVED** (guard 0.9716, unique_alpha 1→1845) — Alpha 신호 복원 성공. (2) **Forge window 부분 회복**: SR 0.066→0.258 (3.9x), CAGR 1.18→4.69 (4.0x), MDD -63.91→-55.22 (+8.7pp 완화) — 여전 threshold 미달 but 실질 개선. (3) **구조적 bottleneck 재정의**: Risk 서브유니버스 subclustering 65% 잔존 → MVO α-aware n=7 sparse → MinVar_BetaHard 재후퇴 (L-196 minvar_superior 2 consecutive). Lockbox OOS SR 1.020 / CAGR 21.31% / MDD -21.81% / Active IR -1.033 — absolute 강함 but regime-relative 4 pilot 연속 fail. **Lockbox regime decomposition (신규)**: RISK_ON 68.8% SR 1.27 / NEUTRAL 26.9% SR 0.74 / CAUTION 4.3% SR -1.70. BM 모든 regime 압도 (RISK_ON 1.98 / NEUT 1.94 / CAUT 6.60) — regime-independent underperformance 확정. **L-196 FINAL verdict: minvar_superior** (regime_lucky 아님, strategy_essence 아님, AX-007 예외지대 candidate 아님). Gate A PASS + B PASS_WITH_NOTES + C CONDITIONAL_FAIL + D PASS + E CONDITIONAL_PASS + F FAIL. **GRADE_D_MINUS DISCARD_WITH_STRUCTURAL_PIVOT**. 핵심 교훈 4축: (i) Alpha level 신호 복원이 Risk universe subclustering에서 소실 (Grinold translation efficiency <0), (ii) MinVar_BetaHard 구조 2 pilot 연속 + Active IR 4 pilot 연속 negative = structural dead-end, (iii) β_port 0.75 under-beta가 regime-wide underperformance proximate cause (BM 1.0 대비 25% leverage loss), (iv) L-196 정식 등재로 향후 Risk universe 개편 또는 alpha top-20 직접 선발 mode 필수. Pilot 8은 Risk territory 단독 sprint.",
+  "judge_oos_helper_artifacts": {
+    "equity_curve_full_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/equity_curve_full.png",
+    "equity_curve_oos_png":  "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/equity_curve_oos.png",
+    "lockbox_oos_summary_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/lockbox_oos_summary.json",
+    "lockbox_regime_decomposition_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/lockbox_regime_decomposition.json",
+    "lockbox_access_log_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/lockbox_access_log.json",
+    "oos_summary_original": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260424_005/oos_summary.json",
+    "lockbox_access_log_raw": "/tmp/qvest_lockbox_access_WT-D20260424_005.log"
+  },
+  "l_code_contribution": {
+    "l_code": "L-196",
+    "title": "MinVar_BetaHard Structural Re-selection — 4-Regime Lockbox Decomposition 기준 strategy_essence 검증 프로토콜",
+    "lesson_text": "Pilot 6/7 (WT-D20260424_004/005) 2 consecutive 실증 발견: Alpha Agent가 core_alpha 선언 (RAPC v2 5-factor IC-weighted + CAPM Blume residual)에도 불구하고 Risk universe subclustering (top-40 cluster_cap 50~100%) 또는 MVO min_names 제약 (20) 위반으로 α-aware path 무력화 시 **MinVar_BetaHard (γ=1.0 hard + β_target=0.75)로 구조적 후퇴**. Pilot 6: L-195 Alpha-Uniform Collapse (cluster 100%) → MinVar 선택. Pilot 7: L-195 global 해소 (guard 0.9716) but Risk subcluster 65% → MVO 4 variants n=7 sparse → MinVar 재선택 (net_IR 12.16 vs MVO 6.76 44% 우위 재현). 실증 핵심: Lockbox OOS absolute 강함 (P6 SR 1.086 / CAGR 20.37, P7 SR 1.020 / CAGR 21.31) but Active IR P6 -1.079 / P7 -1.033 = 4 pilot 연속 < -1.0 structural. Lockbox 487일 4-regime decomposition 기준 strategy_essence 검증 3단계: (A) regime_lucky 테스트 (single regime >=80% dominance → P7 RISK_ON 68.79% 기각), (B) strategy_essence 테스트 (3+ regime balanced + 모두 positive SR + BM 대비 우위 → P7 2 regime positive + 0 BM-outperform 기각), (C) minvar_superior 확정 조건 (MinVar re-selection + regime 분포 중간 + BM 전 regime 압도 → P7 모두 충족). **방지 5축**: (i) Risk universe 선발을 alpha stratified sampling으로 변경 (cap cluster 분산), (ii) alpha top-20 직접 선발 mode (Risk 필터 생략), (iii) Optimizer MVO infeasibility 시 abort + 재설계 (MinVar 자동 fallback 금지), (iv) β_target 0.75 under-beta가 regime-wide leverage loss proximate cause — 0.90 또는 soft penalty 전환 검토, (v) AX-007 예외지대 (long-short/multi-sleeve/50+분산/ML sizing) 중 하나 선결. Pilot 8은 Risk territory 단독 sprint.",
+    "core_reference": "L-195 (Pilot 6 Alpha-Uniform Collapse), L-194 (Pilot 5 natural QP), L-191 (Val<Train reversion 2 pilot 연속), AX-007 (structural exception 4 types: long-short / 50+ 분산 / multi-sleeve / ML sizing), Grinold-Kahn (2000) Ch.5 IR=IC√BR, Jagannathan-Ma (2003) constrained MinVar shrinkage, Clarke-deSilva-Thorley (2011) MinVar structural bias",
+    "tags": ["Pilot6", "Pilot7", "minvar_superior", "4regime_lockbox_decomposition", "strategy_essence_check", "risk_subclustering", "mvo_sparse_fallback", "active_ir_4pilot_structural", "bm_regime_dominance", "under_beta_leverage_loss"]
+  },
+  "l_code_parallel_finding": {
+    "l_code_candidate": "L-195a (Risk Sub-Universe Subclustering)",
+    "title": "Risk top-40 Subclustering — L-195 global fix 후에도 Risk universe 선발 시 alpha cap cluster 잔존",
+    "lesson_text": "Pilot 7 L-195 global fix 성공 (universe 전체 guard 0.9716) 후에도 Risk Agent가 top-40 선발 시 alpha cap cluster 26/40 = 65% 잔존. Optimizer MVO α-aware 4 variants 전부 n=7 sparse (min_names 20 제약 미달) → MinVar_BetaHard 재후퇴. Root cause: Risk 선발이 ex-ante risk 기준 (covariance structure, factor exposure)인데 alpha 고득점 ticker들이 같은 factor family에 몰려 있을 경우 cap cluster가 subset에서 재발생. 방지책 3축: (i) Risk universe 선발을 alpha stratified sampling (cap/non-cap mix), (ii) alpha_winsor 3σ→4σ 추가 완화 또는 quantile clipping, (iii) alpha top-N 직접 선발 mode (Risk filter 우회). Pilot 8 Risk territory sprint 추가 실증 후 L-195a 정식 등재 여부 판단.",
+    "status": "CANDIDATE — Pilot 8 Risk Universe Redesign 실증 후 L-195a 정식 등재 여부 판단"
+  },
+  "v61_compliance": {
+    "R2B_judge_only_lockbox_access": true,
+    "R11_lineage_integrity": "PASS_WITH_NOTES (optimization WARN_APPEND reclassified by Judge+Forge content check; Pilot 5→6→7 3 consecutive system fix 미반영)",
+    "R12_pure_function": "PASS_WITH_NOTES (alpha + risk hash match, optimization content-verified but recorded vs current mismatch)",
+    "lockbox_sealed_verified": true,
+    "opus47_authority": true,
+    "gate_a_through_f_complete": true,
+    "ax_compliance_evaluated": true,
+    "role_honesty_audit_performed": true,
+    "p6_challenge_review_performed": true,
+    "l195_global_fix_diagnosis_documented": true,
+    "l195a_subuniverse_candidate_flagged": true,
+    "l196_final_verdict_documented": true,
+    "lockbox_regime_decomposition_completed": true,
+    "regime_lucky_check_performed": true,
+    "strategy_essence_check_performed": true,
+    "forge_vs_lockbox_divergence_updated": true
+  },
+  "created_at": "2026-04-24T17:00:00+0900"
+}
