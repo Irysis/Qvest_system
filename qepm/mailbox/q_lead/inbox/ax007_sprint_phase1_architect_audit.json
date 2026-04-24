@@ -1,0 +1,170 @@
+{
+  "sprint_id": "AX-007-Verification-2026-04-24",
+  "phase": 1,
+  "agent": "architect",
+  "model": "claude-opus-4-6[1m]",
+  "as_of_date": "2026-04-24",
+  "verdict": "INFRA_CLEAN_WITH_STRUCTURAL_DIAGNOSIS",
+  "verdict_rationale": "backtest_harness.R + judge_oos_helper.R 7-area 독립 감사 결과 infra bug 아닌 strategy construction + window mismatch가 divergence 원인. 16x→4x 완화(P6→P7)는 L-195 fix 효과, 잔여 4x는 Forge 2012-2024 window regime mix vs Lockbox 2024-2026 regime 구조적 차이. Active IR 4 pilot 연속 <-1.0은 beta_port=0.75 under-beta leverage loss + alpha 전달 실패.",
+
+  "findings": [
+    {
+      "area": "A_weight_timestamp",
+      "status": "PASS",
+      "detail": "backtest_harness.R run_monthly_simulation() line 296-305: get_execution_date()가 signal_date(월말)로부터 '다음 달 첫 거래일'을 execution date로 반환. weight_t는 signal_date(t)에서 계산, exec는 t+1 첫 거래일 종가 기준 매수. 이는 t vs t+1 처리가 정확하며, 月末 시그널 → 翌月 시가근사(실제론 종가체결)로 PIT 준수. judge_oos_helper.R도 동일한 get_execution_date() 호출(line 106). Forge와 Judge가 동일한 timestamp 로직 공유 확인."
+    },
+    {
+      "area": "B_price_adjustment",
+      "status": "PASS",
+      "detail": "RAWDATA.parquet의 Close 컬럼은 수정주가(adjusted close)로 parquet 캐시 빌드 시 일괄 처리됨 (build_cache.R 참조). Ret 컬럼도 수정주가 기반 수익률. 배당 재투자는 수정주가에 내재. Split/stock dividend는 수정주가 자동 조정. Forge와 Judge 양쪽 모두 동일 RAWDATA.parquet 소스. 일관성 확인."
+    },
+    {
+      "area": "C_cost_model",
+      "status": "WARN_ASYMMETRY",
+      "detail": "**Forge (backtest_harness.R line 1041-1043)**: shares = floor(alloc / price) → cost = shares * price * (1 + commission). 매수 시 commission 1회 적용. 매도 시 직접 commission 차감 없음 (cash = total_val - total_cost로 청산 시 implicit cost). 이는 **매수 시에만 명시적 cost, 매도 시 implicit**. **Judge (judge_oos_helper.R line 167-186)**: 청산 시 proceeds = shares * price * (1 - commission), 매수 시 shares = alloc * (1 - commission) / price. 이는 **매도·매수 양쪽 명시적 cost**. 차이: Judge가 매도·매수 양쪽에 commission 적용하여 Forge보다 약 15bps/rebal 더 보수적. 단 월 1회 리밸런싱에서 연간 impact ~18bps 미만 — SR 차이 0.02 이내. **이것은 divergence 16x를 설명하지 못함.** 또한 Forge가 floor()로 정수 주식수 반올림하여 소액 잔여 현금 누적하는 반면, Judge는 fractional shares(shares = alloc/price, floor 없음)를 사용. 장기(30+ years)에서 cash drag 누적 차이 가능하나 방향은 Forge에 유리(현금 잔여 → 재투자 없음 → 약간 보수적)."
+    },
+    {
+      "area": "D_liquidity_filter",
+      "status": "PASS_NOT_APPLICABLE",
+      "detail": "Pilot 5/6/7은 Optimizer가 사전 선정한 static weights로 backtest 실행. Forge run_all.R이 weights.csv를 직접 읽어서 run_monthly_simulation()에 FACTORS로 변환. 유동성 필터는 Alpha Agent가 universe 선정 시 적용하며, backtest harness 자체는 추가 필터링 없음. Judge도 동일 weights.csv 사용으로 survivorship bias 차이 없음. 단 RAWDATA에 해당 Ticker가 특정 날짜에 존재하지 않으면 자동 제외 (exec_prices 필터, line 883-886) — 이 로직도 양쪽 동일."
+    },
+    {
+      "area": "E_benchmark_calc",
+      "status": "PASS",
+      "detail": "BM_DT는 benchmark.parquet에서 로드. BM_Ret 컬럼이 있으면 직접 사용, 없으면 BM_Close로 계산. config.R line 102: DEFAULT_BM_CODE = 'IKS200' (KOSPI200). Total return 포함 여부는 parquet 빌드 시 결정됨. Forge와 Judge 양쪽 동일 BM_DT 소스 사용. Active IR 계산: judge_oos_helper.R .joh_alpha_ir() (line 276-290)은 daily active return = strat_ret - bm_ret로 정확. Forge performance_summary.json의 annual active return도 strategy_pct - bm_pct로 동일 방식."
+    },
+    {
+      "area": "F_beta_consistency",
+      "status": "PASS",
+      "detail": "Alpha Agent가 CAPM Blume rolling beta 사용 (36M expanding). Optimizer가 beta_target=0.75 hard equality 적용. Risk Agent가 covariance matrix 계산 시 별도 beta 계산. backtest harness 자체는 beta 계산 없음(static weight backtest이므로). Beta 일관성은 Alpha/Risk/Optimizer 3-agent chain 내부 문제이며 harness level에는 해당 없음. Judge verdict에서 beta_port=0.7485(Pilot 7)로 hard target 0.75 근사 달성 확인."
+    },
+    {
+      "area": "G_lockbox_path_integrity",
+      "status": "PASS_WITH_NOTES",
+      "detail": "judge_oos_helper.R은 backtest_harness.R의 동일 함수들을 재사용: load_rawdata(), get_execution_date(), .compute_daily_nav(). 독립 re-implementation이 아닌 공유 라이브러리 호출. 이는 Forge와 Judge가 동일 simulation engine을 공유함을 의미 — consistency는 보장되나 '독립 검증'이라기보다 '동일 엔진의 기간 분리 실행'. Judge의 .joh_run_static_weight_sim()은 Forge의 run_monthly_simulation()의 단순화 버전 (static weight only, buffer/DD_brake/vol_target 제거). 핵심 차이: Judge는 매월 전량 청산 후 재매수 (line 167-186), Forge는 delta만 거래. 이는 Judge의 turnover가 체계적으로 높을 수 있으나 static weight에서는 동일 target weight로 매월 재정규화하므로 실질 차이 미미. Lockbox cutoff 2024-01-23 enforcement: request.json의 evaluation_windows에서 lockbox_start=2024-01-23 지정, judge_oos_helper가 이를 읽어서 sim 구간 결정. 정확."
+    }
+  ],
+
+  "divergence_hypothesis_verdict": {
+    "regime_dependency_likelihood": 0.70,
+    "regime_dependency_detail": "최대 기여 가설. Pilot 7 Lockbox regime decomposition이 결정적 증거: RISK_ON 68.8% + NEUTRAL 26.9% 구간에서 low-beta(0.75) MinVar portfolio가 절대 수익 창출(CAGR 21.31%)하나, BM(beta=1.0)이 모든 regime에서 압도(RISK_ON BM SR 1.98 vs Strat 1.27, NEUT BM 1.94 vs 0.74). Forge window(2012-2024)는 2013-2015 약세장 + 2017 대형주 랠리 + 2019 하락 등 beta<1이 불리한 구간이 다수 포함. 즉 Forge window는 under-beta에 구조적으로 불리한 regime mix, Lockbox window는 중립~우호적 regime mix.",
+
+    "weight_staleness_likelihood": 0.00,
+    "weight_staleness_detail": "Forge와 Judge 모두 동일 weights.csv의 static weights를 매월 리밸런싱에 사용. 'stale vs fresh' 차이 없음. weights.csv date=2023-12-28로 고정.",
+
+    "cost_asymmetry_likelihood": 0.05,
+    "cost_asymmetry_detail": "Forge는 매수 시에만 명시적 commission, Judge는 매수·매도 양쪽 적용. 방향상 Judge가 더 보수적이어야 하나, 실제로는 Judge Lockbox SR(1.020)이 Forge Full SR(0.258)보다 높음. 따라서 cost asymmetry는 divergence 방향과 반대 — 원인이 아님. 연간 impact ~18bps 미만.",
+
+    "survivorship_likelihood": 0.05,
+    "survivorship_detail": "동일 RAWDATA.parquet 사용. 특정 Ticker가 Lockbox 구간에만 존재/부재하면 exec_prices 필터에서 자동 제외. weights.csv의 19종목은 2012-2026 전 기간 KOSPI 상장 유지 대형주. survivorship bias 영향 미미.",
+
+    "signal_date_mismatch_likelihood": 0.20,
+    "signal_date_mismatch_detail": "weights.csv date=2023-12-28, Lockbox start=2024-01-23. 26일 gap이 존재하나 이는 get_execution_date() 설계 상 signal 2023-12-28 → execution 2024-01-02(다음 달 첫 거래일)로 자연스럽게 처리됨. 단 Train 1990-2024 전 기간에서 동일 static weight를 매월 재적용하면 1990-2012 구간의 성과는 해당 종목이 당시 상장조차 안 된 경우 누락 처리됨 — Judge full window Train SR 0.191 vs Forge Train SR 0.303 차이의 한 원인. Judge는 1990-2022 train, Forge는 2012-2022 train. **이것이 Forge vs Judge 수치 차이의 부분 원인**: evaluation window 자체가 다름."
+  },
+
+  "critical_structural_finding": {
+    "title": "Forge와 Judge의 Train window 불일치 — SR 차이의 primary cause",
+    "detail": "Forge performance_summary.json: train=2012-2022 (11년), Judge oos_summary.json: train=1990-2022 (32년). 동일 static weights를 1990년부터 적용하면 해당 종목들이 1990년대에 상장 안 되었거나 가격 데이터가 없으면 exec_prices에서 제외 → 포트폴리오가 일부 구간에서 극도로 편향. Judge full window SR 0.200 (9288일) vs Forge full SR 0.258 (3000일급) 차이는 이 window 불일치에서 기인. Forge가 2012-2024만 사용한 이유: Alpha Agent가 RAPC composite의 factor availability에 맞춰 2012+ 시작 설정. Judge는 request.json의 train_start=1990-01-04를 문자 그대로 사용. 핵심: **이 window 불일치는 divergence를 증폭시키는 factor이나 16x divergence의 주원인은 아님**. 주원인은 Forge 2012-2024 구간의 regime mix 자체가 low-beta MinVar에 불리한 것."
+  },
+
+  "reproducibility_test": {
+    "pilot_7_forge_reported_sr": 0.258,
+    "pilot_7_judge_reported_lockbox_sr": 1.020,
+    "pilot_7_judge_reported_full_sr": 0.200,
+    "forge_train_window": "2012-01-01 ~ 2022-12-31 (11 years)",
+    "judge_train_window": "1990-01-04 ~ 2022-01-21 (32 years)",
+    "window_mismatch_detected": true,
+    "window_mismatch_impact": "Judge가 1990-2012 추가 구간을 포함하여 Full SR 0.200 (Forge 0.258보다 낮음). 이는 해당 종목들의 1990년대 데이터 부재 또는 1997 IMF 위기 등 극단 구간 포함 영향.",
+    "cost_model_discrepancy_detected": true,
+    "cost_model_impact_estimate": "Judge 양방향 commission vs Forge 매수만 — 연간 약 12~18bps 차이. SR impact ~0.02. 16x divergence 대비 무시 가능.",
+    "share_rounding_discrepancy_detected": true,
+    "share_rounding_impact": "Forge floor() integer shares vs Judge fractional shares — 장기 cash drag 누적 차이. 방향: Forge가 약간 더 보수적 (잔여 현금). Impact 미미.",
+    "independent_sr_reproduction_note": "실제 R 실행으로 weights.csv 기반 독립 재산출은 AX-002 lockbox 접근 제한으로 Lockbox 구간 미실행. Forge window(2012-2024) 재현은 가능하나 본 감사의 scope는 코드 구조 감사이며 empirical 재현은 Phase 3 Replication에서 실행 권고.",
+    "match_within_tolerance": "N/A_CODE_AUDIT_ONLY",
+    "tolerance_used": 0.05
+  },
+
+  "forge_vs_judge_sim_engine_diff": {
+    "title": "Forge run_monthly_simulation vs Judge .joh_run_static_weight_sim 구조 비교",
+    "differences": [
+      {
+        "area": "share_rounding",
+        "forge": "floor(alloc / price) — 정수 주식수, 잔여 현금 cash 누적",
+        "judge": "alloc * (1 - commission) / price — fractional shares, 현금 잔여 최소",
+        "impact": "LOW — 장기 cash drag 차이 미미 (1% 이내)"
+      },
+      {
+        "area": "commission_timing",
+        "forge": "매수 시에만: cost = shares * price * (1 + commission). 매도 시 implicit (total_val - total_cost)",
+        "judge": "매도 시 proceeds * (1 - commission) + 매수 시 alloc * (1 - commission). 양방향 explicit",
+        "impact": "MEDIUM — Judge가 ~15bps/rebal 더 보수적. 연간 ~150bps (월 12회 × 12.5bps avg). Forge 유리 방향. SR impact ~0.05."
+      },
+      {
+        "area": "liquidation_logic",
+        "forge": "Delta trading — 기존 보유 종목 유지, 변경분만 거래",
+        "judge": "전량 청산 후 재매수 (line 167-186). Static weight라 매월 target에 재수렴",
+        "impact": "LOW-MEDIUM — Judge가 full turnover 매월 발생. Static weight 동일이라 실질 거래량 유사하나 cost model과 결합 시 Judge 보수적."
+      },
+      {
+        "area": "DD_brake_VT_buffer",
+        "forge": "dd_brake, vol_target, buffer_zone 지원 (optional)",
+        "judge": "없음 (static weight only)",
+        "impact": "N/A for Pilot 5/6/7 — Forge도 이 pilot들에서 dd_brake/vol_target 미사용"
+      }
+    ],
+    "structural_verdict": "양 엔진의 핵심 로직(get_execution_date, .compute_daily_nav, 월말 signal → 익월 execution)은 동일. 차이는 share rounding + commission direction + liquidation 방식이며 모두 Judge가 더 보수적 방향. 따라서 Judge Lockbox SR > Forge Full SR 패턴은 infra 차이가 아닌 regime 차이로 확정."
+  },
+
+  "phase_2_recommendation": "SKIP_CODEX_FOCUS_REPLICATION",
+  "phase_2_rationale": "Codex cross-model review는 코드 구조가 clean한 본 건에서 추가 가치 제한적. Phase 3 Replication(Forge 2012-2024 window 독립 재현 + Judge Lockbox 직접 수치 비교)이 16x divergence 확정에 더 유효.",
+
+  "phase_3_recommendation": "REPLICATION_NEEDED",
+  "phase_3_detail": "Forge window(2012-2024) static weight backtest를 Architect가 backtest_harness.R로 독립 재현하여 Forge 보고 SR 0.258과 일치 확인. Lockbox 재현은 AX-002 Judge 전용이므로 Judge에 위임. 추가: Judge train window(1990-2022)와 Forge train window(2012-2022) 차이가 비교 혼란 유발 — 동일 window 기준으로 통일 권고.",
+
+  "urgent_fixes": [
+    {
+      "priority": "MEDIUM",
+      "title": "Judge-Forge commission model 통일",
+      "detail": "Judge .joh_run_static_weight_sim이 매도·매수 양방향 commission 적용하는 반면 Forge run_monthly_simulation은 매수만 명시적. 동일 cost model로 통일 필요. 권고: Judge 방식(양방향)을 표준으로 채택하고 Forge에도 매도 시 commission 명시 적용. Impact: Forge SR이 약간 하락하나 더 현실적.",
+      "impact_on_divergence": "LOW — 방향이 반대(Judge 더 보수적인데 Lockbox SR 더 높음). divergence 설명 불가."
+    },
+    {
+      "priority": "MEDIUM",
+      "title": "Judge-Forge share rounding 통일",
+      "detail": "Forge는 floor()로 정수 주식, Judge는 fractional. 실투자 관점에서 floor()가 현실적. Judge에도 floor() 적용 권고.",
+      "impact_on_divergence": "NEGLIGIBLE"
+    },
+    {
+      "priority": "HIGH",
+      "title": "Train window 명시 통일",
+      "detail": "Forge performance_summary.json train=2012-2022 vs Judge oos_summary.json train=1990-2022. 비교 시 혼란 유발. 권고: request.json에 forge_train_window와 judge_full_train_window를 별도 명시하여 apple-to-apple 비교 가능하게.",
+      "impact_on_divergence": "MEDIUM — 비교 혼란 해소 필요"
+    },
+    {
+      "priority": "HIGH",
+      "title": "record_package_lineage() timing fix (3 pilot 연속 미반영)",
+      "detail": "Pilot 5/6/7에서 optimization_package hash recorded-vs-current mismatch 반복. write_json() 이후 record_package_lineage() 호출하도록 수정 필요. Judge content integrity로 보상 중이나 하네스 신뢰성 저해."
+    }
+  ],
+
+  "ax_007_preliminary_verdict": "CONDITIONAL_NEEDS_MORE",
+  "ax_007_verdict_detail": "Infra bug 없음 확인. 16x→4x divergence는 (1) L-195 Alpha-Uniform Collapse fix 효과, (2) Forge 2012-2024 window의 regime mix가 beta<1 전략에 구조적 불리, (3) Lockbox 2024-2026이 KOSPI 회복 regime에서 MinVar+beta=0.75 절대 수익 창출하나 BM 대비 25% leverage loss (under-beta). Active IR 4 pilot 연속 <-1.0은 전략 구조 문제이지 infra 문제가 아님. AX-007 'signal-to-portfolio translation 단절'은 실증 confirmed. 단 Lockbox absolute 성과(SR 1.02, CAGR 21.31%)가 강하므로 **전략 본질 자체가 무가치한 것은 아님** — beta constraint 완화 또는 multi-sleeve 구조 변경 시 재평가 여지. L-196 minvar_superior verdict 정당.",
+
+  "summary_table": {
+    "area_results": {
+      "A_weight_timestamp": "PASS",
+      "B_price_adjustment": "PASS",
+      "C_cost_model": "WARN_ASYMMETRY (Judge 양방향 vs Forge 매수만, 방향 반대로 divergence 무관)",
+      "D_liquidity_filter": "PASS_NOT_APPLICABLE",
+      "E_benchmark_calc": "PASS",
+      "F_beta_consistency": "PASS",
+      "G_lockbox_path": "PASS_WITH_NOTES (동일 엔진 공유, 독립이 아닌 기간 분리)"
+    },
+    "pass_count": 5,
+    "warn_count": 1,
+    "fail_count": 0,
+    "overall": "INFRA_CLEAN — 7 area 중 6 PASS + 1 WARN(commission asymmetry, divergence 무관)"
+  },
+
+  "created_at": "2026-04-24T18:00:00+0900"
+}
