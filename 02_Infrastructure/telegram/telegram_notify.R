@@ -1407,53 +1407,128 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
 
   cat("[regime_briefing] Charts generated.\n")
 
-  # ── Emoji text commentary ──
-  cat_emoji <- switch(latest$Category,
+  # ── v2.2 Emoji text commentary (일간 최신 기준으로 전면 교체) ──
+  # 기본: daily 파일이 있으면 latest_daily 사용, 없으면 legacy (월간 latest) fallback
+  use_daily <- !is.null(latest_daily)
+  msg_latest <- if (use_daily) latest_daily else latest
+  msg_ref_date <- if (use_daily) latest_daily$Date else ref_date
+
+  cat_emoji <- switch(as.character(msg_latest$Category),
     RISK_ON  = "\xf0\x9f\x9f\xa2",   # green circle
     NEUTRAL  = "\xe2\x9a\xaa",        # white circle
     CAUTION  = "\xf0\x9f\x9f\xa1",    # yellow circle
     RISK_OFF = "\xf0\x9f\x94\xb4",    # red circle
+    CRISIS   = "\xf0\x9f\x94\xb4",    # red circle
     "\xe2\x9d\x93")
 
-  l1_icon <- if (isTRUE(latest$Layer1_Alert)) "\xf0\x9f\x9a\xa8" else "\xe2\x9c\x85"
-  l2_icon <- if (isTRUE(latest$Layer2_Alert)) "\xf0\x9f\x9a\xa8" else "\xe2\x9c\x85"
-  l3_icon <- if (isTRUE(latest$Layer3_Alert)) "\xf0\x9f\x9a\xa8" else "\xe2\x9c\x85"
-
-  ktri_arrow <- ""
-  if (!is.null(ktri_latest)) {
-    ktri_arrow <- if (ktri_latest$Delta_KTRI > 1) "\xe2\xac\x86\xef\xb8\x8f"
-                  else if (ktri_latest$Delta_KTRI < -1) "\xe2\xac\x87\xef\xb8\x8f"
-                  else "\xe2\x9e\xa1\xef\xb8\x8f"
+  # Daily 5d delta — unified_regime_signal_daily 기반
+  score_delta_5d <- 0
+  crisis_delta_5d <- 0
+  ktri_delta_5d <- 0
+  if (use_daily && !is.null(prev5_daily)) {
+    score_delta_5d <- msg_latest$Regime_Score_smooth - prev5_daily$Regime_Score_smooth
+    crisis_delta_5d <- (msg_latest$MSM_Crisis_Prob - prev5_daily$MSM_Crisis_Prob) * 100
+    ktri_delta_5d <- msg_latest$KTRI_Score - prev5_daily$KTRI_Score
   }
 
-  prev <- if (nrow(regime_dt) >= 2) regime_dt[.N - 1] else latest
-  score_delta <- latest$Regime_Score - prev$Regime_Score
-  score_trend <- if (score_delta > 2) sprintf("\xe2\xac\x86\xef\xb8\x8f +%.1f", score_delta)
-                 else if (score_delta < -2) sprintf("\xe2\xac\x87\xef\xb8\x8f %.1f", score_delta)
-                 else sprintf("\xe2\x9e\xa1\xef\xb8\x8f %+.1f", score_delta)
-  cash_trend <- sprintf("%+.1f%%p", (latest$Cash_Pct - prev$Cash_Pct) * 100)
+  arrow_fn <- function(d, eps = 2) {
+    if (is.na(d)) return("\xe2\x9e\xa1\xef\xb8\x8f")
+    if (d > eps) "\xe2\xac\x86\xef\xb8\x8f"
+    else if (d < -eps) "\xe2\xac\x87\xef\xb8\x8f"
+    else "\xe2\x9e\xa1\xef\xb8\x8f"
+  }
 
-  fw_str <- sprintf(
-    "\xf0\x9f\x93\x89 Mom %+.0f%% | \xf0\x9f\x9b\xa1 LowVol %+.0f%%\n\xf0\x9f\x92\x8e Quality %+.0f%% | \xf0\x9f\x92\xb0 Value %+.0f%%",
-    latest$fw_Mom * 100, latest$fw_LowVol * 100,
-    latest$fw_Quality * 100, latest$fw_Value * 100)
+  score_trend <- sprintf("%s %+.1f", arrow_fn(score_delta_5d, 2), score_delta_5d)
+  crisis_trend <- sprintf("%s %+.1f%%p", arrow_fn(crisis_delta_5d, 3), crisis_delta_5d)
+  ktri_trend <- sprintf("%s %+.1f", arrow_fn(ktri_delta_5d, 2), ktri_delta_5d)
 
+  # 3-Layer icons (daily Active_Layers 기반)
+  active_layers_str <- if (use_daily) as.character(msg_latest$Active_Layers) else "L1+L2+L3"
+  has_l1 <- grepl("L1", active_layers_str)
+  has_l2 <- grepl("L2", active_layers_str)
+  has_l3 <- grepl("L3", active_layers_str)
+  l1_icon <- if (has_l1) "\xe2\x9c\x85" else "\xe2\x9a\xaa"
+  l2_icon <- if (has_l2) "\xe2\x9c\x85" else "\xe2\x9a\xaa"
+  l3_icon <- if (has_l3) "\xe2\x9c\x85" else "\xe2\x9a\xaa"
+
+  # Current values (daily)
+  cur_score <- if (use_daily) msg_latest$Regime_Score_smooth else msg_latest$Regime_Score
+  cur_cash <- msg_latest$Cash_Pct * 100
+  cur_category <- as.character(msg_latest$Category)
+  cur_msm <- msg_latest$MSM_Crisis_Prob * 100
+  cur_fred <- msg_latest$FRED_MRS
+  cur_ktri <- msg_latest$KTRI_Score
+  cur_vea <- msg_latest$VEA_Score
+
+  # KTRI 9-quad 섹션 (9-quad 차트 데이터가 있으면 유지)
   ktri_str <- ""
   if (!is.null(ktri_latest)) {
     qzone <- if (!is.null(ktri_latest$zone) && length(ktri_latest$zone) > 0) ktri_latest$zone else "N/A"
     dir_label <- if (!is.null(ktri_latest$dir5)) ktri_latest$dir5 else ""
+    ktri_arrow <- arrow_fn(ktri_latest$Delta_KTRI, 1)
     ktri_str <- sprintf(
       "\n\n\xf0\x9f\x93\x8d [KTRI-VEA 9-Quad]\nKTRI: %.1f %s | VEA: %.1f\nZone: %s | Action: %s\n5D: %s",
       ktri_latest$KTRI, ktri_arrow, ktri_latest$VEA,
       qzone, ktri_latest$Action_v3, dir_label)
   }
 
-  n_alerts <- sum(c(latest$Layer1_Alert, latest$Layer2_Alert, latest$Layer3_Alert), na.rm = TRUE)
-  verdict <- if (latest$Category == "RISK_OFF") {
+  # ── Market Sentiment Review (Factor Tilt 대체) ──
+  sentiment_str <- ""
+  if (!is.null(fred_latest_row)) {
+    # Helper: val + arrow + trend
+    fred_line <- function(label, latest_val, prev_val, icon, unit = "", fmt = "%.2f",
+                          up_is_bad = TRUE, eps = 0.1) {
+      if (is.na(latest_val)) return(sprintf("%s %s: N/A", icon, label))
+      delta <- if (!is.na(prev_val)) latest_val - prev_val else NA_real_
+      arrow_txt <- if (is.na(delta)) "\xe2\x9e\xa1\xef\xb8\x8f"
+                   else if (delta > eps) "\xe2\xac\x86\xef\xb8\x8f"
+                   else if (delta < -eps) "\xe2\xac\x87\xef\xb8\x8f"
+                   else "\xe2\x9e\xa1\xef\xb8\x8f"
+      delta_txt <- if (is.na(delta)) "" else sprintf(" (5d %+.2f)", delta)
+      sprintf(paste0("%s %s: ", fmt, "%s %s%s"),
+              icon, label, latest_val, unit, arrow_txt, delta_txt)
+    }
+
+    vix_line <- fred_line("VIX", fred_latest_row$VIX$val, fred_prev5_row$VIX,
+                          "\xf0\x9f\x8c\x8a", "", "%.1f", up_is_bad = TRUE, eps = 0.5)
+    hy_line  <- fred_line("HY Spread", fred_latest_row$HY_Spread$val,
+                          fred_prev5_row$HY_Spread,
+                          "\xf0\x9f\x92\xb3", "%", "%.2f", up_is_bad = TRUE, eps = 0.05)
+    y10_line <- fred_line("10Y Yield", fred_latest_row$US_10Y_Yield$val,
+                          fred_prev5_row$US_10Y_Yield,
+                          "\xf0\x9f\x93\x8f", "%", "%.2f", up_is_bad = FALSE, eps = 0.05)
+    krw_line <- fred_line("KRW/USD", fred_latest_row$KRW_USD$val,
+                          fred_prev5_row$KRW_USD,
+                          "\xf0\x9f\x87\xb0\xf0\x9f\x87\xb7", "", "%.0f",
+                          up_is_bad = TRUE, eps = 5)
+
+    # Overall sentiment — VIX + HY 기반 heuristic
+    overall_tag <- tryCatch({
+      v <- fred_latest_row$VIX$val
+      h <- fred_latest_row$HY_Spread$val
+      if (is.na(v) || is.na(h)) "Mixed \xe2\x80\x94 data gap"
+      else if (v >= 28 || h >= 5.0) "Risk-Off \xe2\x80\x94 stress elevated"
+      else if (v >= 22 || h >= 4.0) "Cautious \xe2\x80\x94 macro tension rising"
+      else if (v <= 15 && h <= 3.0) "Calm \xe2\x80\x94 macro benign"
+      else "Neutral \xe2\x80\x94 mixed signals"
+    }, error = function(e) "Mixed")
+
+    sentiment_str <- sprintf(paste0(
+      "\xf0\x9f\x92\xa1 [Market Sentiment Review]\n",
+      "%s\n%s\n%s\n%s\n",
+      "Overall: %s"),
+      vix_line, hy_line, y10_line, krw_line, overall_tag)
+  } else {
+    sentiment_str <- "\xf0\x9f\x92\xa1 [Market Sentiment Review]\nFRED macro data unavailable"
+  }
+
+  # Verdict
+  n_alerts <- sum(c(has_l1, has_l2, has_l3))
+  verdict <- if (cur_category %in% c("RISK_OFF", "CRISIS")) {
     "\xf0\x9f\x94\xb4 RISK_OFF \xe2\x80\x94 \xec\xb5\x9c\xeb\x8c\x80 \xed\x97\xa4\xec\xa7\x80 \xea\xb6\x8c\xea\xb3\xa0"
-  } else if (latest$Category == "CAUTION") {
-    sprintf("\xe2\x9a\xa0\xef\xb8\x8f CAUTION \xe2\x80\x94 %d/3 Alert. Score 70 \xe2\x86\x92 RISK_OFF", n_alerts)
-  } else if (latest$Category == "NEUTRAL") {
+  } else if (cur_category == "CAUTION") {
+    sprintf("\xe2\x9a\xa0\xef\xb8\x8f CAUTION \xe2\x80\x94 %d/3 Active. Score 70 \xe2\x86\x92 RISK_OFF", n_alerts)
+  } else if (cur_category == "NEUTRAL") {
     "\xf0\x9f\x94\x8d NEUTRAL \xe2\x80\x94 \xec\xa3\xbc\xec\x9d\x98 \xea\xb4\x80\xec\xb0\xb0"
   } else {
     "\xf0\x9f\x9f\xa2 RISK_ON \xe2\x80\x94 \xec\xa0\x95\xec\x83\x81 \xec\x9a\xb4\xec\x9a\xa9"
@@ -1462,45 +1537,63 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   msg <- sprintf(paste0(
     "%s Regime Briefing (%s)\n\n",
     "\xf0\x9f\x93\x8a [Regime Score]\n",
-    "Score: %.1f (%s) | Cash: %.1f%% (%s)\n",
+    "Score: %.1f (5d %s) | Cash: %.1f%%\n",
     "Category: %s\n\n",
     "\xf0\x9f\x94\x8d [3-Layer Signal]\n",
     "%s L1 MSM Crisis: %.1f%%\n",
     "%s L2 FRED MRS: %.1f\n",
-    "%s L3 KTRI: %.1f | VEA: %.1f",
+    "%s L3 KTRI: %.1f | VEA: %.1f\n",
+    "Active: %s",
     "%s\n\n",
-    "\xf0\x9f\x93\x88 [Factor Tilt]\n",
+    "\xf0\x9f\x93\x85 [Trend 5d]\n",
+    "Score: %s | Crisis: %s | KTRI: %s\n\n",
     "%s\n\n",
     "\xf0\x9f\x8e\xaf [Verdict]\n%s"),
-    cat_emoji, ref_date,
-    latest$Regime_Score, score_trend, latest$Cash_Pct * 100, cash_trend,
-    latest$Category,
-    l1_icon, latest$MSM_Crisis_Prob * 100,
-    l2_icon, latest$FRED_MRS,
-    l3_icon, latest$KTRI_Score, latest$VEA_Score,
+    cat_emoji, format(msg_ref_date),
+    cur_score, score_trend, cur_cash,
+    cur_category,
+    l1_icon, cur_msm,
+    l2_icon, cur_fred,
+    l3_icon, cur_ktri, cur_vea,
+    active_layers_str,
     ktri_str,
-    fw_str,
+    score_trend, crisis_trend, ktri_trend,
+    sentiment_str,
     verdict)
 
-  # ── Send ──
+  # ── Send: text + 5 charts ──
   tg_send(msg)
   Sys.sleep(3)
   tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Regime Score + Cash (24M)")
-  # 신규 2026-04-24: Daily 6M chart (unified_regime_signal_daily 기반)
-  daily_chart_path <- file.path(out_dir, "regime_score_daily_6m.png")
-  if (file.exists(daily_chart_path)) {
-    tg_send_photo(daily_chart_path, "Daily Regime Score (6M)")
-  }
-  Sys.sleep(3)
+  Sys.sleep(2)
   tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer: MSM / FRED / KTRI")
-  Sys.sleep(3)
+  Sys.sleep(2)
   ktri_chart <- file.path(out_dir, "ktri_9quad.png")
   if (file.exists(ktri_chart)) {
-    tg_send_photo(ktri_chart, "KTRI 9-Quadrant Map")
+    tg_send_photo(ktri_chart, "KTRI 9-Quadrant Map (252d)")
+    Sys.sleep(2)
+  }
+  # Chart 4: Daily Regime Score (fancy)
+  daily_chart_path <- file.path(out_dir, "regime_score_daily_6m.png")
+  if (file.exists(daily_chart_path)) {
+    tg_send_photo(daily_chart_path, "Daily Regime Score \xe2\x80\x94 Active Layers (6M)")
+    Sys.sleep(2)
+  }
+  # Chart 5: Daily MRS macro
+  mrs_chart_path <- file.path(out_dir, "regime_mrs_daily_6m.png")
+  if (file.exists(mrs_chart_path)) {
+    tg_send_photo(mrs_chart_path, "Daily Macro Regime \xe2\x80\x94 FRED Layer (6M)")
   }
 
-  cat("[regime_briefing] Sent: text + 3 charts\n")
-  invisible(list(regime = latest, ktri = ktri_latest, ref_date = ref_date, charts = out_dir))
+  n_charts_sent <- sum(file.exists(c(
+    file.path(out_dir, "regime_score_24m.png"),
+    file.path(out_dir, "regime_3layer_24m.png"),
+    file.path(out_dir, "ktri_9quad.png"),
+    daily_chart_path,
+    mrs_chart_path)))
+  cat(sprintf("[regime_briefing] Sent: text + %d charts\n", n_charts_sent))
+  invisible(list(regime = latest, daily = latest_daily, ktri = ktri_latest,
+                 fred = fred_latest_row, ref_date = msg_ref_date, charts = out_dir))
 }
 
 cat("[telegram_notify] Loaded. Bot: @quant12323413245_bot | Channel: -1003850915447\n")
