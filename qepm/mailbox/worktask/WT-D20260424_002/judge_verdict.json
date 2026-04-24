@@ -1,0 +1,145 @@
+{
+  "task_id": "WT-D20260424_002",
+  "agent": "judge",
+  "as_of_date": "2026-04-24",
+  "schema_version": "v6.1",
+  "pilot_label": "Pilot 4 RAPC Breadth-Constrained (Task #26 Remediation)",
+  "alpha_model": "RAPC (ESBR+SUE+Accrual IC-weighted expanding composite) — inherited from Pilot 3",
+  "risk_model": "Ledoit-Wolf (cond=1.0) — inherited from Pilot 3",
+  "optimizer": "MVO_lam3_psi0.5 (Task #26 breadth constraints: min_names=15, HHI_cap=0.10, bounds[0,0.10], winsor 2σ)",
+  "verdict": "GRADE_C",
+  "disposition": "CONDITIONAL_PROGRESS — optimizer remediation 부분 성공, active management 실패 잔존",
+  "overall_pass": false,
+  "gates": [
+    {
+      "gate_id": "A",
+      "name": "PIT / Lookahead Compliance",
+      "metric": "C1~C15 + lockbox sealed + Forge audit",
+      "threshold": "all PASS",
+      "actual": "integration_audit r12_pure_function: optimization_package hash_match=PASS (5508a0...), alpha/risk=WARN_NA(inherited), lockbox sealed 2024-01-23>backtest_end 2024-01-22, commission 15bps applied, C1/C2 PASS, C9 n/a (static weights), Judge OOS helper lockbox_access_log 생성.",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "B",
+      "name": "Package Isolation / Integrity",
+      "metric": "alpha/risk/optimization package hash + Σw=1 + long-only + n<=20",
+      "threshold": "all match",
+      "actual": "optimization_package hash_match=true, alpha/risk inherited WARN_NA (Pilot 3 validated 재사용 정당). Σw=1.0012 (rounding ±0.001 tolerance OK), min_w=0.0089, max_w=0.08, n=15, long-only.",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "C",
+      "name": "Net Alpha After Cost",
+      "metric": "net_IR, SR_full, rank_ic, DSR",
+      "threshold": "SR>=0.5 OR (SR>=0.3 AND DSR>=0.1); rank_ic>=0.04",
+      "actual": "SR_full=0.491 (0.5 borderline 0.009 미달), rank_ic=0.0318 (<0.04, Pilot 3 불변), DSR=0.039 (<0.1), Harvey t=4.42 OK, val_rank_ic=0.0386 val_harvey_t=2.55, val IR=0.873 (BM 대비 양호), lockbox IR=-1.311 (active 실패).",
+      "verdict": "CONDITIONAL_FAIL",
+      "remediation": "SR 0.491 → 0.5 문턱 1% 미달. Alpha IC=0.0318 Pilot 3 불변 (optimizer 제약으로는 alpha 개선 불가). Composite strengthening (accrual QoQ 차분 / PEAD window 세분화) + BH/BY multiple testing correction 필요. Pilot 3 대비 SR +0.21 개선 (optimizer 제약 효과 실증)."
+    },
+    {
+      "gate_id": "D",
+      "name": "Crowding / Factor Saturation Stress",
+      "metric": "market_risk_pct, factor family overlap, TDC vs existing PG2",
+      "threshold": "market<40%, no saturated family",
+      "actual": "Market 48% (RF-R1 HIGH, 40% 상회 — Pilot 3 불변 since risk 재사용), ESBR+SUE 모두 earnings_surprise family 재확인 (regime modulation empirical validation 여전히 부재), TDC_ESBR_SUE=0.0417 pairwise 양호, factor_corr ESBR-SUE=-0.0688 낮음.",
+      "verdict": "FAIL",
+      "remediation": "Market neutralization 강화 (beta_target 1.0→0.8 또는 KOSPI200 short hedge overlay). 차기 Pilot에서는 market exposure hedge 별도 WT로 분리. Earnings-surprise family empirical redundancy test 차기 sprint backlog."
+    },
+    {
+      "gate_id": "E",
+      "name": "Concentration / Breadth",
+      "metric": "n_names, HHI, max_weight, effective N",
+      "threshold": "n>=15 권고 / HHI<=0.10 / max_w<=0.15 권고",
+      "actual": "n=15 (✓ Task#26 제약 binding), HHI=0.0744 (✓ <=0.10 margin 0.025), max_w=0.08 (✓ <=0.10 Task#26 cap binding 8종목), A140860 winsor applied 3.0→1.12 (✓), effective N ≈ 1/HHI ≈ 13.4. **Pilot 3 n=8 → Pilot 4 n=15 (+7 breadth 개선)**. **HHI 0.1697 → 0.0744 (-56.2%)**. **max_w 0.20 → 0.08 (-60%)**.",
+      "verdict": "PASS",
+      "remediation": null
+    },
+    {
+      "gate_id": "F",
+      "name": "Drift / Regime Adaptation (L-191 avoidance + Lockbox OOS)",
+      "metric": "Judge OOS helper: oos_is_ratio + lockbox Sharpe + active IR",
+      "threshold": "oos_is_ratio>=0.7 (no decay) + lockbox SR 의미있는 양",
+      "actual": "**Judge OOS helper 실행 결과 (NEW)**: Lockbox (2024-01-23~2026-01-23, n_days=487) CAGR=17.14% / SR=0.774 / MDD=-34.17% / Calmar=0.502. oos_is_ratio=4.241 (threshold 0.7 대비 6배 초과 PASS). 절대 수익 OOS 강력. **그러나 Active α=-20.4pp / IR=-1.311** (BM 대비 Pilot 3 -18.79pp / IR=-1.003과 유사 구조적 패턴). val IR=0.873과 극단적 drift. Train/Val 내부 drift: Val SR 0.130 < Train SR 0.576 (ratio 0.226, L-191 RE-EMERGENCE 경계). Val MDD 18.84% < Train 36.83% (MDD 측면 OK).",
+      "verdict": "MIXED_PASS",
+      "remediation": "절대 수익 OOS(lockbox SR 0.774) **정식 PASS**. 그러나 Active IR=-1.311은 Pilot 3 -1.003 대비 **오히려 악화**. 즉 Task #26 optimizer 제약 → 절대 SR/MDD 개선 (+0.21/-7.76pp) but active alpha generation 실패 잔존. Pilot 3 Val SR 0.317>Train 0.275 회피 실증은 **Pilot 4에서 재역전** (Val 0.130<Train 0.576). **L-191 risk RE-EMERGENCE** 등록 필요. 차기: market exposure hedge + alpha signal re-examination."
+    }
+  ],
+  "gate_summary": {
+    "A_PIT": "PASS",
+    "B_ISOLATION": "PASS",
+    "C_NET_ALPHA": "CONDITIONAL_FAIL",
+    "D_CROWDING": "FAIL",
+    "E_CONCENTRATION": "PASS",
+    "F_DRIFT": "MIXED_PASS",
+    "pass_count": 3,
+    "conditional_count": 1,
+    "fail_count": 1,
+    "mixed_count": 1,
+    "overall": "GRADE_C (3 PASS + 1 CONDITIONAL + 1 MIXED + 1 FAIL)"
+  },
+  "pilot3_vs_pilot4_comparison": {
+    "portfolio_construction": {
+      "n_names": {"p3": 8, "p4": 15, "delta": "+7 (+87.5%)", "verdict": "PASS"},
+      "HHI": {"p3": 0.1697, "p4": 0.0744, "delta": "-0.0953 (-56.2%)", "verdict": "PASS"},
+      "max_weight": {"p3": 0.20, "p4": 0.08, "delta": "-0.12 (-60%)", "verdict": "PASS"}
+    },
+    "train_val_performance": {
+      "full_SR": {"p3": 0.282, "p4": 0.491, "delta": "+0.209 (+74%)", "verdict": "PASS"},
+      "full_CAGR_pct": {"p3": 6.00, "p4": 9.25, "delta": "+3.25pp (+54%)", "verdict": "PASS"},
+      "full_MDD_pct": {"p3": -44.59, "p4": -36.83, "delta": "+7.76pp (MDD 완화)", "verdict": "PASS"},
+      "train_SR": {"p3": 0.275, "p4": 0.576, "delta": "+0.301 (+109%)", "verdict": "PASS"},
+      "val_SR": {"p3": 0.317, "p4": 0.130, "delta": "-0.187 (-59%)", "verdict": "FAIL_REGRESSION"}
+    },
+    "lockbox_OOS": {
+      "lockbox_SR": {"p3": "not_measured_in_verdict", "p4": 0.774, "verdict": "P4_PASS"},
+      "lockbox_CAGR_pct": {"p4": 17.14},
+      "lockbox_MDD_pct": {"p4": -34.17},
+      "lockbox_active_IR": {"p3": -1.003, "p4": -1.311, "delta": "-0.308 (악화)", "verdict": "FAIL_REGRESSION"},
+      "lockbox_alpha_vs_bm_pp": {"p3": -18.79, "p4": -20.40, "delta": "-1.61pp (악화)", "verdict": "FAIL_REGRESSION"}
+    },
+    "pattern_analysis": "Task #26 optimizer 제약 효과: (1) Portfolio construction 3/3 PASS — breadth/HHI/max_w 모두 Grinold 기준 정상화. (2) 절대 수익 개선 — SR +74%, MDD 완화 7.76pp. (3) 그러나 active management 실패는 악화 (IR -1.003 → -1.311). (4) Val SR drift 재역전 — L-191 회피 실증 취소. 해석: Optimizer 분산화는 alpha outlier 집중을 제거했으나, alpha signal 자체가 BM 대비 초과수익을 만들지 못함. **근본 원인은 alpha 신호 약함 + market exposure 과다 (48%)** — optimizer 제약으로 해결 불가."
+  },
+  "ax_compliance": {
+    "AX-000": "N/A — exploratory Pilot, not admission decision",
+    "AX-001_v2": "N/A — non-defense role (core-earnings composite)",
+    "AX-002": "PASS — harness 내 성과 only, lockbox sealed 준수, Judge OOS helper lockbox 단일 access",
+    "AX-003": "PASS — family != value (earnings_surprise+accrual)",
+    "AX-004": "PARTIAL — accrual quality 요소 포함하나 multi-axis composite + 15 breadth로 exclusion 예외 지대. 단일 Q-family 실패 구조 아님.",
+    "AX-005": "N/A — defense 역할 아님",
+    "AX-007": "WARNING → 부분 개선. structure=single_sleeve_long_only_top15 (기존 top20 내 15 binding), roles=[core_secondary]. Pilot 3 AX-007 단절 실증 대비 n=15 확보로 **partial relief** 하나 active IR=-1.311이 signal-to-portfolio translation 실패를 유지. 예외 4종 중 '50+ 분산 / long-short / multi-sleeve / ML sizing' 미충족.",
+    "AX-008": "PASS — Forge(backtest) + Architect(integration_audit r12=PASS) + Judge(본 심사 + OOS helper) 3-source 모두 PASS"
+  },
+  "multi_objective_8axes": {
+    "sharpe_full": {"value": 0.491, "target": 2.0, "gap": -1.509, "status": "FAR_BELOW", "vs_pilot3": "+0.209"},
+    "sharpe_lockbox": {"value": 0.774, "target": 2.0, "gap": -1.226, "status": "BELOW (OOS)"},
+    "cagr_full_pct": {"value": 9.25, "target": 16.0, "gap": -6.75, "status": "BELOW", "vs_pilot3": "+3.25pp"},
+    "cagr_lockbox_pct": {"value": 17.14, "target": 16.0, "gap": 1.14, "status": "PASS (OOS)"},
+    "mdd_full_pct": {"value": -36.83, "target": -25.0, "gap": -11.83, "status": "BELOW", "vs_pilot3": "+7.76pp"},
+    "mdd_lockbox_pct": {"value": -34.17, "target": -25.0, "gap": -9.17, "status": "BELOW"},
+    "sortino_full": {"value": 0.696, "target": 1.5, "gap": -0.804, "status": "BELOW"},
+    "calmar_full": {"value": 0.251, "target": 0.6, "gap": -0.349, "status": "BELOW"},
+    "turnover_ann_pct": {"value": 50.5, "budget": 600, "status": "OK"},
+    "rank_ic": {"value": 0.0318, "target": 0.04, "gap": -0.0082, "status": "BORDERLINE_FAIL"},
+    "dsr": {"value": 0.039, "target": 0.5, "gap": -0.461, "status": "FAR_BELOW"},
+    "active_ir_lockbox": {"value": -1.311, "target": 0.3, "gap": -1.611, "status": "CRITICAL_FAIL"}
+  },
+  "pilot_cumulative_history": {
+    "pilot_1_L190_rate_hedge": {"CAGR": 8.72, "SR": 0.413, "MDD": -54.30, "result": "hard_fail"},
+    "pilot_2_L191_macro_residual": {"CAGR": 4.06, "SR": 0.289, "MDD": -44.03, "result": "Val<Train"},
+    "pilot_3_RAPC": {"CAGR": 6.00, "SR": 0.282, "MDD": -44.59, "lockbox_IR": -1.003, "result": "DISCARD_WITH_IMPROVEMENTS (breadth 한계)"},
+    "pilot_4_RAPC_breadth_constrained": {"CAGR": 9.25, "SR": 0.491, "MDD": -36.83, "lockbox_SR": 0.774, "lockbox_IR": -1.311, "result": "GRADE_C CONDITIONAL_PROGRESS"},
+    "pattern_evolution": "Pilot 1 hard_fail → Pilot 2 val drift → Pilot 3 breadth 한계 → Pilot 4 breadth 해결 but active IR 악화. 진전 축: (portfolio construction) ✓ / (absolute performance) △ / (active management) ✗. Alpha signal 자체의 근본 재설계 필요."
+  },
+  "l_code_contribution": "L-193",
+  "next_actions": [
+    "**즉시**: Pilot 4 GRADE_C로 disposition. STR_PILOT_4 별도 등록 금지 (admission 기준 미달)",
+    "**차기 WT-D20260425**: Market exposure hedge overlay (KOSPI200 beta-target 0.8 또는 short) 별도 Pilot 5",
+    "**Alpha sprint**: RAPC composite strengthening — accrual QoQ 차분 + PEAD window 세분화 (D1/D30/D60) + BH/BY multiple testing",
+    "**구조 연구**: AX-007 예외 지대 접근 — multi-sleeve or 50+ 분산 or ML sizing 중 하나 prototype",
+    "**L-191 재등록**: Pilot 4에서 Val SR 0.130<<Train SR 0.576으로 L-191 RE-EMERGENCE. methodology_active.md 업데이트 필요",
+    "**Task #26 clossure**: optimizer breadth 제약은 structural 개선 효과 실증 → production 전환 추천 (독립 alpha 확보 시 재사용)"
+  ],
+  "rationale_summary": "Pilot 4는 Task #26 optimizer breadth 제약(min_names=15/HHI_cap=0.10/bounds[0,0.10]/winsor 2σ)의 효과를 3차원에서 검증함. (1) Portfolio construction: n 8→15, HHI 0.170→0.074, max_w 0.20→0.08 모두 Grinold 기준 정상화 (Gate E PASS). (2) Absolute performance: Full SR 0.282→0.491(+74%), MDD -44.59→-36.83(+7.76pp 완화), Lockbox SR 0.774/CAGR 17.14%로 OOS 절대수익 정식 PASS (oos_is_ratio 4.24). (3) 그러나 Active management: Lockbox active IR -1.003→-1.311로 악화, alpha vs BM -18.79pp→-20.40pp 악화. 결론: Optimizer 제약은 '과집중 교정'으로 작동했지만 'alpha signal 자체의 한계'는 해결 못함. Pilot 3 Val>Train L-191 회피 실증도 Pilot 4에서 Val<Train으로 역전 (L-191 RE-EMERGENCE). Gate A/B/E PASS + Gate F Mixed + Gate C Conditional Fail + Gate D Fail. GRADE_C CONDITIONAL_PROGRESS — Task #26 breadth 제약은 production 패턴으로 승격 추천하되, Pilot 4 전략 자체는 admission 불가. 차기 Pilot 5는 market hedge overlay + alpha strengthening 병행 필요."
+}

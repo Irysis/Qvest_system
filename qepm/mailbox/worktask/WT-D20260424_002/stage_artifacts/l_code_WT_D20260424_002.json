@@ -1,0 +1,51 @@
+{
+  "l_code": "L-193",
+  "title": "Optimizer breadth constraints solve portfolio construction but cannot repair weak alpha",
+  "lesson_text": "Task #26 optimizer breadth 제약(min_names=15 / HHI_cap=0.10 / bounds[0,0.10] / alpha winsor 2σ)을 Pilot 3 RAPC 재사용 alpha+risk에 적용한 Pilot 4 결과, portfolio construction 3지표(n 8→15, HHI 0.170→0.074, max_w 0.20→0.08) 전원 정상화 + Full SR 0.282→0.491(+74%) + MDD -44.59→-36.83pp 완화 + Lockbox OOS SR 0.774/CAGR 17.14% 달성. 그러나 Lockbox active IR는 -1.003→-1.311로 오히려 악화, alpha vs BM -18.79pp→-20.40pp 악화. 조건부 교훈: 'KR top-20 long-only universe에서 optimizer breadth 제약은 과집중 교정 효과는 확실하나 alpha signal의 BM-대비 초과수익 생성 능력을 증폭할 수는 없다. Breadth가 weak alpha를 구할 수 없다.' 추가로 Pilot 3 Val SR 0.317>Train 0.275(L-191 회피)가 Pilot 4에서 Val 0.130<Train 0.576으로 재역전 — optimizer 제약 자체가 L-191 drift를 유발할 수 있음 (집중 해제 시 idiosyncratic tail 소실 가능성). 실무 함의: Task #26 breadth 패턴은 독립적 production 패턴으로 승격 가능하나, 반드시 별도 sprint에서 (1) alpha signal strengthening과 (2) market hedge overlay를 병행해야 함.",
+  "core_reference": "QEPM §10 Grinold Fundamental Law of Active Management (IR = IC × √Breadth), QEPM §13 Cost-Aware Portfolio Construction. Task #26 사양: optimizer min_names/HHI_cap/bounds/winsor. Pilot 3 baseline: WT-D20260424_001 judge_verdict (GRADE_F DISCARD_WITH_IMPROVEMENTS, L-192). Harvey et al. (2016) multiple testing t>3.0 (Harvey t=4.42 train OK).",
+  "tags": [
+    "Pilot_4",
+    "Task_26",
+    "optimizer_breadth_constraints",
+    "RAPC",
+    "RoleBias_Core",
+    "conditional_progress",
+    "L_191_RE_EMERGENCE",
+    "active_ir_failure",
+    "absolute_vs_active_dichotomy",
+    "Grinold_breadth",
+    "KR_top20_long_only",
+    "AX-007_partial_relief",
+    "AX-008_PASS"
+  ],
+  "market": "KR",
+  "universe": "top20_long_only",
+  "family": "earnings_surprise+accrual_quality",
+  "role": "core_secondary",
+  "structure": "single_sleeve_long_only_n15_HHI074",
+  "status": "VALIDATED_CONDITIONAL",
+  "superseded_by": null,
+  "successor_candidate": "Pilot_5_market_hedge_overlay OR alpha_strengthening_sprint",
+  "metric_evidence": {
+    "n_names": {"pilot3": 8, "pilot4": 15},
+    "HHI": {"pilot3": 0.1697, "pilot4": 0.0744},
+    "max_w": {"pilot3": 0.20, "pilot4": 0.08},
+    "full_SR": {"pilot3": 0.282, "pilot4": 0.491},
+    "full_MDD_pct": {"pilot3": -44.59, "pilot4": -36.83},
+    "lockbox_SR": {"pilot4": 0.774},
+    "lockbox_CAGR_pct": {"pilot4": 17.14},
+    "lockbox_active_IR": {"pilot3": -1.003, "pilot4": -1.311},
+    "lockbox_alpha_vs_bm_pp": {"pilot3": -18.79, "pilot4": -20.40},
+    "val_train_SR_ratio": {"pilot3": 1.153, "pilot4": 0.226},
+    "oos_is_ratio": {"pilot4": 4.241}
+  },
+  "exceptions": [
+    "Pilot 4 알파 BM-대비 실패 원인이 market exposure 48% 과다 + alpha signal 약함 2중 문제이므로, 단일 alpha strengthening만으로는 불충분. market hedge와 병행 필수.",
+    "Task #26 optimizer 패턴은 독립적 자산으로 재사용 가능 — 다른 alpha에 적용 시 breadth/HHI 효과는 기대 가능. 단 alpha의 BM-초과수익 능력은 별도 검증."
+  ],
+  "linked_l_codes": ["L-190", "L-191", "L-192"],
+  "wt_id": "WT-D20260424_002",
+  "judge_verdict_ref": "qepm/mailbox/worktask/WT-D20260424_002/judge_verdict.json",
+  "created_at": "2026-04-24T12:05:00+0900",
+  "agent": "judge"
+}
