@@ -1,0 +1,60 @@
+{
+  "agent": "governor",
+  "agent_model": "opus-4-7-1m",
+  "phase": "PILOT11_ADMISSION_ISSUED",
+  "wt_id": "WT-D20260424_009",
+  "pilot": "Pilot_11",
+  "timestamp": "2026-04-24T22:55:00+0900",
+
+  "verdict": "CONDITIONAL_ADMIT_DIVERSIFIER_PROBE",
+  "immediate_action": "HOLD_PHASE_1",
+  "phase_2_target_scenario": "S1_sleeve_15pct",
+  "phase_2_target_weight": 0.15,
+
+  "artifacts_issued": {
+    "pg0_gap": "qepm/mailbox/governor/pg0_gap_vector_updated.json (v1.1.0)",
+    "pg1_admission": "qepm/mailbox/governor/pilot11_pg_admission.json",
+    "tdc_analysis": "qepm/mailbox/governor/pilot11_tdc_analysis.json",
+    "status": "qepm/mailbox/governor/status.json (this file)"
+  },
+
+  "key_findings": {
+    "tdc_proxy": 0.65,
+    "tdc_empirical_measured": false,
+    "factor_family_overlap_pct": 100,
+    "factor_level_overlap_pct": 50,
+    "book_sr_projection_S1_range": [1.22, 1.28],
+    "book_cagr_projection_S1_pct_range": [16.6, 18.1],
+    "book_mdd_projection_S1_pct_range": [-22.8, -20.3]
+  },
+
+  "red_flags_summary": {
+    "critical": ["flag_1_mdd_full_hard_fail_-57.47pct"],
+    "high": ["flag_2_risk_on_drag_-2.20", "flag_3_harvey_t_unconfirmed"],
+    "low_medium": ["flag_4_methodology_novelty_audit"],
+    "all_mitigations_mandatory_before_phase_2": true
+  },
+
+  "phase_2_triggers_pending": [
+    "trigger_1_empirical_tdc_lt_0.55",
+    "trigger_2_risk_on_weight_rule",
+    "trigger_3_harvey_t_gte_3.0",
+    "trigger_4_family_concentration_mitigation_cross_family_diversifier"
+  ],
+
+  "pg2_status": "UNCHANGED — STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20% 유지. Pilot 11 즉시 편입 없음.",
+
+  "next_steps": {
+    "forge": "daily NAV parquet export for STR_1631_SYN_05_2002 + Pilot 11 (2024-01-23 ~ 2026-01-23)",
+    "governor": "compute_tdc() empirical pairwise + regime-conditional 측정 (after daily NAV 수신)",
+    "judge": "returns-based Harvey t 계산 + DSR adjusted",
+    "risk_manager": "regime-conditional weight rule 설계 (RISK_ON 0.5x)",
+    "scout": "Pilot 12 cross-family diversifier alpha design (momentum_residual / value / quality) — direction only, Governor 간섭 금지",
+    "q_lead": "사용자에 CONDITIONAL_ADMIT_DIVERSIFIER_PROBE verdict 보고 + Phase 2 trigger plan 승인 요청"
+  },
+
+  "mega_sprint_impact": "CONTINUE_WITH_MEGA_02_PRIORITY_UP — Pilot 11 consensus saturation. MEGA_02 Risk (regime-aware) + Pilot 12 cross-family 병행 필수.",
+
+  "telegram_brief_issued": false,
+  "telegram_brief_pending_reason": "tg_agent_brief() invocation — pending next step (brief script 발행)"
+}

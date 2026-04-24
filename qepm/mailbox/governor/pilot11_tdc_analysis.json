@@ -1,0 +1,104 @@
+{
+  "schema_version": "v6.1",
+  "artifact_type": "tdc_analysis_proxy",
+  "wt_id": "WT-D20260424_009",
+  "pilot": "Pilot 11",
+  "agent": "governor",
+  "agent_model": "opus-4-7-1m",
+  "timestamp": "2026-04-24T22:50:00+0900",
+
+  "reference_strategy": {
+    "strategy_id": "STR_1631_SYN_05_2002",
+    "role": "PG2_CORE_ACTIVE",
+    "weight_in_pg2": 0.80,
+    "factors_4F": ["C01_SUE", "C04_ESBR", "C02_EPS_Chg_1m", "C06_TP_Gap"],
+    "factor_family": "consensus_earnings",
+    "full_sr": 1.193,
+    "full_cagr_pct": 21.65,
+    "full_mdd_pct": -33.13,
+    "harvey_t": 3.09,
+    "rebalance": "bimonthly"
+  },
+
+  "pilot11_strategy": {
+    "wt_id": "WT-D20260424_009",
+    "factors_4F": ["C04_ESBR", "C19_Composite_Earnings", "C01_SUE", "C09_Earnings_Surprise_Sq"],
+    "factor_family": "consensus_earnings",
+    "full_sr": 1.0703,
+    "lockbox_sr": 1.7591,
+    "lockbox_active_ir": 0.2608,
+    "rebalance": "monthly_dynamic_HRP_Score_hybrid"
+  },
+
+  "factor_overlap_analysis": {
+    "common_factors": ["C01_SUE", "C04_ESBR"],
+    "common_count": 2,
+    "total_4F_per_strategy": 4,
+    "overlap_ratio_factor_level": 0.50,
+    "family_overlap_ratio": 1.00,
+    "interpretation": "STR_1631과 Pilot 11은 **동일 consensus_earnings family** (family_overlap 100%). Factor level 50% 중복 — SUE + ESBR 2F 공통, 비공통은 (STR_1631) EPS_Chg_1m + TP_Gap vs (Pilot 11) Composite_Earnings + Earnings_Surprise_Sq. 비공통 2F조차 earnings-adjacent signals — 실질 family cousin, not cross-family diversifier.",
+    "diversifier_potential": "LIMITED — same family, high signal correlation expected"
+  },
+
+  "composition_overlap_proxy": {
+    "pilot11_tickers_n": 20,
+    "pilot11_tickers": ["A071320","A091970","A029780","A000070","A115480","A185750","A004150","A053030","A004800","A033790","A012690","A091810","A001260","A042940","A363280","A218410","A083790","A066590","A330860","A098460"],
+    "pilot9_tickers_n": 16,
+    "overlap_p9_p11_n": 13,
+    "note": "Pilot 9 universe 는 동일 Consensus RAPC alpha를 상속 — STR_1631 (SUE+ESBR+EPS_Chg_1m+TP_Gap) 대비 ticker level overlap 측정 불가 (STR_1631_SYN_05_2002 daily ticker snapshot 미보관). Proxy: 동일 family + KOSPI200 top alpha universe 가정 시 **overlap 50~70% 추정**."
+  },
+
+  "tdc_empirical_measurement": {
+    "measured": false,
+    "reason": "STR_1631_SYN_05_2002 daily NAV series 미접근 (output/performance.csv은 aggregate metrics only). Pilot 11 daily NAV는 run_judge_pilot11.R 내 일시적 recalc — 저장 필요.",
+    "measurement_plan": {
+      "step_1": "Forge에 STR_1631_SYN_05_2002 daily_nav.parquet 산출 요청 (2024-01-23 ~ 2026-01-23 Lockbox 기간 정렬)",
+      "step_2": "Pilot 11 daily_nav.parquet를 stage_artifacts/WT_D20260424_009/에서 export",
+      "step_3": "02_Infrastructure/pipeline/blender_scaffold_v55.R::compute_tdc() 활용 — pairwise + regime-conditional (CAUTION/CRISIS/NEUTRAL/RISK_ON)",
+      "step_4": "TDC threshold: <0.4 sleeve ADMIT, 0.4~0.7 CONDITIONAL, >0.7 CORE_REPLACE_EVAL",
+      "expected_turnaround": "WT Pilot 12 형태로 발주, 1 cycle 내 측정 가능"
+    }
+  },
+
+  "proxy_tdc_estimation": {
+    "method": "family_overlap + composition_overlap + regime_signature 3축 heuristic",
+    "axis_1_family_overlap_score": 1.00,
+    "axis_2_composition_overlap_score": 0.65,
+    "axis_3_regime_signature_score": 0.85,
+    "axis_3_detail": "STR_1631 (earnings consensus family) = NEUTRAL/CRISIS strong 예상 (family 특성상), Pilot 11 Lockbox regime = NEUTRAL +1.45 / CRISIS +1.83 / CAUTION -0.18 / RISK_ON -2.20. 동일 regime signature → 상보성 거의 없음. (L-203 참조)",
+    "proxy_tdc_range": [0.55, 0.75],
+    "proxy_tdc_point_estimate": 0.65,
+    "confidence": "MEDIUM — empirical 측정 전 추정치. family + regime signature 기반 lower bound 0.55로 추정. 실측 시 0.45~0.70 분포 가능성 높음.",
+    "interpretation": "**Proxy TDC 0.65 = 0.4~0.7 CONDITIONAL 구간** → 부분 의존, 조건부 편입. Core 대체 불가 (family concentration 금지), sleeve 편입 시 규모 제한 필요."
+  },
+
+  "conditional_tdc_by_regime": {
+    "note": "empirical 미측정 — L-203 기반 proxy",
+    "CRISIS": {
+      "proxy_tdc": 0.80,
+      "reasoning": "Pilot 11 CRISIS Active IR +1.83, STR_1631도 CRISIS 강세 예상 (consensus earnings의 crisis alpha). 동반 상승 → high tail dependence"
+    },
+    "RISK_ON": {
+      "proxy_tdc": 0.70,
+      "reasoning": "Pilot 11 RISK_ON Active IR -2.20, STR_1631도 RISK_ON weak 예상. 동반 drag — high left-tail dependence (risk-off 동시 발동 위험)"
+    },
+    "NEUTRAL": {
+      "proxy_tdc": 0.60,
+      "reasoning": "공통 alpha 창출 국면. 정점은 아니지만 동반 상승"
+    },
+    "CAUTION": {
+      "proxy_tdc": 0.50,
+      "reasoning": "가장 낮은 상관 가능성 — consensus earnings signal이 CAUTION에서 차별화 가능"
+    },
+    "worst_regime_for_diversification": "CRISIS, RISK_ON (동반 변동성 가장 큼)"
+  },
+
+  "independence_verdict": {
+    "alpha_independence": "FALSE — 동일 consensus_earnings family",
+    "methodology_independence": "PARTIAL — 4F vs 4F (2F 공통), but optimizer/rebalance 방식 차이",
+    "true_diversifier": false,
+    "true_clone": false,
+    "classification": "FAMILY_COUSIN_WITH_OPTIMIZER_DIFFERENTIATION",
+    "implication": "Pilot 11은 STR_1631 대비 **독립 alpha source가 아님**. 동일 earnings family 내 optimizer/rebalance 방식 차이로 성과 상승. Breadth + HRP+Score + dynamic rebalance가 primary driver (L-202 실증). Core 대체 고려 시 STR_1631 기존 position을 제거하는 의미가 약함 — 같은 family 재분배."
+  }
+}
