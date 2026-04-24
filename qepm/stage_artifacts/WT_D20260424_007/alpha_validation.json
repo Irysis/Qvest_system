@@ -1,0 +1,182 @@
+{
+  "task_id": "WT-D20260424_007",
+  "as_of_date": "2026-04-24",
+  "validation_checks": {
+    "pit_c1": {
+      "check": "rolling/expanding only",
+      "result": "PASS",
+      "detail": "IC 이력 Usable_Date <= sig_date (C14). Factor DB load_month_factors() 경유 (C15)."
+    },
+    "pit_c2": {
+      "check": "no same-day circular",
+      "result": "PASS",
+      "detail": "Static IC-weighted composite. No same-day feedback."
+    },
+    "pit_c13": {
+      "check": "Z_Score_Aligned only",
+      "result": "PASS",
+      "detail": "load_month_factors() → align_factor_direction() 경유. 수동 부호반전 없음."
+    },
+    "pit_c14": {
+      "check": "Usable_Date <= sig_date",
+      "result": "PASS",
+      "detail": "sig_date=2023-12-28. ic_use 필터 적용."
+    },
+    "pit_c15": {
+      "check": "Factor DB via load_month_factors()",
+      "result": "PASS",
+      "detail": "factor_db_connector.R load_month_factors() 경유."
+    },
+    "alpha_uniform_guard": {
+      "check": "unique_alpha/n >= 0.7",
+      "result": "PASS",
+      "detail": "unique_alpha_ratio=0.9813"
+    },
+    "red_flags": {
+      "check": "0 flags",
+      "result": "PASS",
+      "detail": ""
+    },
+    "graduation_criteria": {
+      "rank_ic_target": 0.04,
+      "rank_ic_actual": 0.0449,
+      "rank_ic_pass": true,
+      "icir_target": 0.2,
+      "icir_actual": 0.5562,
+      "icir_pass": true,
+      "harvey_t_target": 3,
+      "harvey_t_actual": 8.379,
+      "harvey_t_pass": true,
+      "dsr_target": 0.5,
+      "dsr_actual": 8.8287,
+      "dsr_pass": true,
+      "ff3_target": 0.3,
+      "ff3_actual": 0.9462,
+      "ff3_pass": true
+    }
+  },
+  "factor_screening_table": [
+    {
+      "Factor_Name": "C04_ESBR",
+      "mean_ic": 0.0472,
+      "icir": 0.4827,
+      "harvey_t": 7.273,
+      "ff3_retention": 0.9197,
+      "selected": true
+    },
+    {
+      "Factor_Name": "C19_Composite_Earnings",
+      "mean_ic": 0.0443,
+      "icir": 0.5608,
+      "harvey_t": 8.449,
+      "ff3_retention": 0.9756,
+      "selected": true
+    },
+    {
+      "Factor_Name": "C01_SUE",
+      "mean_ic": 0.0439,
+      "icir": 0.4592,
+      "harvey_t": 6.919,
+      "ff3_retention": 0.9638,
+      "selected": true
+    },
+    {
+      "Factor_Name": "C09_Earnings_Surprise_Sq",
+      "mean_ic": 0.0439,
+      "icir": 0.4592,
+      "harvey_t": 6.919,
+      "ff3_retention": 0.9638,
+      "selected": true
+    },
+    {
+      "Factor_Name": "C02_EPS_Chg_1m",
+      "mean_ic": 0.0244,
+      "icir": 0.3209,
+      "harvey_t": 4.835,
+      "ff3_retention": 0.8216,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C06_TP_Gap",
+      "mean_ic": 0.0232,
+      "icir": 0.1759,
+      "harvey_t": 2.649,
+      "ff3_retention": 0.5997,
+      "selected": false
+    },
+    {
+      "Factor_Name": "M27_Analyst_Rev_Mom",
+      "mean_ic": 0.0223,
+      "icir": 0.3117,
+      "harvey_t": 4.696,
+      "ff3_retention": 0.829,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C03_EPS_Chg_3m",
+      "mean_ic": 0.022,
+      "icir": 0.2383,
+      "harvey_t": 3.59,
+      "ff3_retention": 0.6556,
+      "selected": false
+    },
+    {
+      "Factor_Name": "SE02_Consensus_Revision",
+      "mean_ic": 0.0174,
+      "icir": 0.2828,
+      "harvey_t": 4.165,
+      "ff3_retention": 0.9163,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C05_ESCR",
+      "mean_ic": 0.0162,
+      "icir": 0.1056,
+      "harvey_t": 1.591,
+      "ff3_retention": 0.9453,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C08_Coverage",
+      "mean_ic": 0.0139,
+      "icir": 0.1044,
+      "harvey_t": 1.574,
+      "ff3_retention": 0.7918,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C07_TP_Mom",
+      "mean_ic": 0.008,
+      "icir": 0.0641,
+      "harvey_t": 0.966,
+      "ff3_retention": 0.4963,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C16_EPS_Acceleration",
+      "mean_ic": 0.0066,
+      "icir": 0.0922,
+      "harvey_t": 1.39,
+      "ff3_retention": 0.9299,
+      "selected": false
+    },
+    {
+      "Factor_Name": "C12_Estimate_Dispersion_Proxy",
+      "mean_ic": 0.0021,
+      "icir": 0.0219,
+      "harvey_t": 0.33,
+      "ff3_retention": 0.7839,
+      "selected": false
+    }
+  ],
+  "pilot9_vs_pilot8": {
+    "rank_ic_p8": 0.0381,
+    "rank_ic_p9": 0.0449,
+    "ff3_ret_p8": 0.105,
+    "ff3_ret_p9": 0.9462,
+    "icir_p8": 0.6273,
+    "icir_p9": 0.5562,
+    "harvey_p8": 8.69,
+    "harvey_p9": 8.379
+  }
+}
