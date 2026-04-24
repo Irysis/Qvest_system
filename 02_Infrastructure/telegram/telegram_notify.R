@@ -723,6 +723,35 @@ tg_agent_brief <- function(agent,
                     msg_bytes))
   }
 
+  # ── 4.5. Empty / Skeleton guard (2026-04-24 v2, Pilot 6 Alpha 115 bytes 사례) ──
+  # sections 없거나 sections 모두 empty or 전체 msg < 300 bytes면 brief 실격.
+  # Agent가 실수로 sections=list() 또는 sections=list(list(body=""))로 호출 방지.
+  n_sections_nonempty <- sum(vapply(sections, function(s) {
+    if (length(s) == 0) return(FALSE)
+    body <- s$body %||% ""
+    items <- s$items %||% character(0)
+    has_df <- is.data.frame(s$df) && nrow(s$df) > 0
+    has_body <- is.character(body) && length(body) == 1 && nzchar(body)
+    has_items <- length(items) > 0
+    has_df || has_body || has_items
+  }, logical(1)))
+
+  if (msg_bytes < 300 || n_sections_nonempty == 0) {
+    err_msg <- sprintf("[tg_agent_brief] BLOCKED skeleton brief. agent=%s bytes=%d nonempty_sections=%d. Provide ≥1 section with df/body/items.",
+                        agent, msg_bytes, n_sections_nonempty)
+    message(err_msg)
+    log_f <- "/tmp/qvest_tg_skeleton_warn.log"
+    tryCatch(cat(sprintf("%s %s\n%s\n---\n", format(Sys.time()), err_msg, msg),
+                  file = log_f, append = TRUE),
+              error = function(e) NULL)
+    if (!isTRUE(force)) {
+      return(invisible(list(ok = FALSE,
+                             error = "SKELETON_BRIEF_BLOCKED",
+                             bytes = msg_bytes,
+                             nonempty_sections = n_sections_nonempty)))
+    }
+  }
+
   if (isTRUE(dry_run)) {
     cat("=== dry_run output (", msg_bytes, "bytes) ===\n", sep = "")
     cat(msg, "\n")
