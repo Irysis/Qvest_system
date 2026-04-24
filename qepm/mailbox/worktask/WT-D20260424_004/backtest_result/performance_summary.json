@@ -21,7 +21,28 @@
   },
   "portfolio": {
     "n_names": 20,
-    "tickers": ["A054050", "A030000", "A071320", "A028260", "A036640", "A091970", "A137310", "A092730", "A041510", "A000070", "A145990", "A047080", "A033790", "A007340", "A114840", "A093190", "A036800", "A025540", "A000860", "A140860"],
+    "tickers": [
+      "A054050",
+      "A030000",
+      "A071320",
+      "A028260",
+      "A036640",
+      "A091970",
+      "A137310",
+      "A092730",
+      "A041510",
+      "A000070",
+      "A145990",
+      "A047080",
+      "A033790",
+      "A007340",
+      "A114840",
+      "A093190",
+      "A036800",
+      "A025540",
+      "A000860",
+      "A140860"
+    ],
     "weights": {
       "A054050": 0.0854,
       "A030000": 0.0752,
@@ -319,5 +340,98 @@
     "pit_c9": "DD/VT not used in static backtest",
     "commission_applied": 0.0015,
     "n_hard_v22": "n=20 enforced (v2.2)"
+  },
+  "annual_returns": [
+    {
+      "year": "2012",
+      "strategy_pct": 5.19,
+      "bm_pct": -0.4,
+      "active_pct": 5.59
+    },
+    {
+      "year": "2013",
+      "strategy_pct": 14.32,
+      "bm_pct": -0.03,
+      "active_pct": 14.35
+    },
+    {
+      "year": "2014",
+      "strategy_pct": 10.57,
+      "bm_pct": -5.24,
+      "active_pct": 15.81
+    },
+    {
+      "year": "2015",
+      "strategy_pct": 25.57,
+      "bm_pct": 1.58,
+      "active_pct": 23.99
+    },
+    {
+      "year": "2016",
+      "strategy_pct": -3.18,
+      "bm_pct": 2.57,
+      "active_pct": -5.75
+    },
+    {
+      "year": "2017",
+      "strategy_pct": 4.74,
+      "bm_pct": 21.25,
+      "active_pct": -16.51
+    },
+    {
+      "year": "2018",
+      "strategy_pct": -17.18,
+      "bm_pct": -18.12,
+      "active_pct": 0.94
+    },
+    {
+      "year": "2019",
+      "strategy_pct": -12.71,
+      "bm_pct": 6.85,
+      "active_pct": -19.56
+    },
+    {
+      "year": "2020",
+      "strategy_pct": -0.07,
+      "bm_pct": 25.69,
+      "active_pct": -25.76
+    },
+    {
+      "year": "2021",
+      "strategy_pct": 18.55,
+      "bm_pct": 2.27,
+      "active_pct": 16.28
+    },
+    {
+      "year": "2022",
+      "strategy_pct": -18.04,
+      "bm_pct": -26.17,
+      "active_pct": 8.13
+    },
+    {
+      "year": "2023",
+      "strategy_pct": -1.03,
+      "bm_pct": 17.38,
+      "active_pct": -18.41
+    },
+    {
+      "year": "2024",
+      "strategy_pct": -2.53,
+      "bm_pct": -7.27,
+      "active_pct": 4.74
+    }
+  ],
+  "performance_analysis": {
+    "cagr_note": "NAV 1억 → 1.39억 (12년). CAGR=1.18% 원인: (1) 초기 4종목 상장전 cash_drag 19%, (2) 2018~2020 3년 연속 손실 (-17%/-13%/-0.07%), (3) 2022년 -18% 추가 손실. MinVar 방어력 불충분.",
+    "structural_issues": ["Cash drag: A028260(2015+), A140860(2016+), A137310(2021+), A114840(2021+) 초기 미보유", "Alpha-Uniform으로 MinVar 순수 작동 → 고베타 종목이 beta constraint 후 진입", "2018~2020 하락장에서 MinVar 방어 실패 (market_risk 50.3% 잔존)"],
+    "pilot5_vs_pilot6_active_ir": {
+      "pilot5_cagr": 12.03,
+      "pilot5_sr": 0.649,
+      "pilot6_cagr": 1.18,
+      "pilot6_sr": 0.066,
+      "cagr_gap": 10.85,
+      "sr_gap": 0.583,
+      "explanation": "Pilot5 11종목 all-available 2012+ vs Pilot6 20종목 4개 신규상장. Static weight 고정 방식의 survivorship 편향 역방향 효과 (선택된 종목이 2012년 당시 미상장이었음)."
+    }
   }
 }

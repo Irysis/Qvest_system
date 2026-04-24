@@ -63,5 +63,30 @@
   "capacity_limits": {
     "adv_multiplier": 0.1,
     "capacity_max_aum_won": 100000000000
+  },
+  "evaluation_windows": {
+    "train_window": {
+      "start": "1990-01-04",
+      "end": "2022-01-21",
+      "years": 32.05,
+      "role": "factor_selection + signal_engineering (Alpha)"
+    },
+    "validation_window": {
+      "start": "2022-01-22",
+      "end": "2024-01-22",
+      "role": "model_selection + hyperparam tuning (Risk + Optimizer)"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "sealed": true,
+      "role": "final pass/fail judgment (Judge only)"
+    },
+    "paper_trade_window": {
+      "start": "2026-01-24",
+      "end": "2026-04-24",
+      "role": "pre-deployment validation (Execution)"
+    },
+    "judge_added_note": "Judge Agent appended evaluation_windows block (inherited from Pilot 5 WT-D20260424_003) to support judge_oos_helper. Alpha/Risk/Optimizer packages NOT redefined. Non-destructive augmentation only."
   }
 }
