@@ -1,0 +1,83 @@
+{
+  "task_id": "WT-D20260424_005",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Pilot 7 — Alpha Territory Sprint (winsorization 완화, L-195 fix)",
+  "hypothesis_description": "Pilot 6 (WT-D20260424_004, GRADE_D / DISCARD_WITH_IMPROVEMENTS) L-195 Alpha-Uniform Collapse 실증: confidence_floor(0.11) + winsor 2σ 이중 cap → top 15+ ticker alpha_final=0.3152 cap 집적 → Risk universe 40종 중 20종(50%) 동일 alpha 수렴 → Optimizer α 버리고 pure MinVar 후퇴 → SR 0.066 / CAGR 1.18% / MDD -63.91% 붕괴. 단 Lockbox OOS (2024-2026) CAGR 20.37% / SR 1.086 / Calmar 1.392 강력 (16× divergence, L-196 candidate). 본 Pilot 7은 Judge 권고대로 Alpha territory 단독 sprint: (1) confidence_floor=0 (또는 제거), (2) alpha_winsor_sigma 2.0→3.0 완화, (3) RAPC 5-factor signal 계승 (ESBR+SUE+AC21+AC17+Q35), (4) CAPM Blume rolling residualization 계승, (5) Risk/Optimizer는 자율 재실행 (Pilot 6 Nonlinear Shrinkage LW 2022 + Option A γ=1.0 hard 패턴 참고만). 핵심 검증: α 차별화 복원 시 (i) rank_IC 0.0372 유지/개선 여부, (ii) Optimizer가 α-aware MVO 선택 복귀 여부, (iii) Lockbox 성과가 regime-lucky(L-196)인지 전략 본질인지 재판정. Pilot 6 대비 Alpha만 수정, Risk/Optimizer framework 동결.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-24",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  },
+  "constraint_overrides": {
+    "alpha_winsor_sigma": 3.0,
+    "alpha_winsor_rationale_override": "Pilot 7 (L-195 fix) — 이중 cap 완화. Pilot 6 confidence_floor 0.11 + winsor 2σ 이중 적용으로 top cluster 50% 균일화 → Alpha-Uniform Collapse. 3σ로 완화해 α 차별화 복원.",
+    "confidence_floor": 0.0,
+    "confidence_floor_rationale": "Pilot 7 — confidence floor 제거. Pilot 6 floor 0.11이 winsor와 이중 cap 유발. floor 0으로 raw confidence 보존.",
+    "alpha_uniform_guard": true,
+    "alpha_uniform_guard_rule": "unique_alpha_count/n_names >= 0.7 (70%+ 차별화). 미만 시 Alpha Agent infeasibility_report 발행.",
+    "min_names": 20,
+    "max_names": 20,
+    "weight_bounds": [
+      0.0,
+      0.15
+    ],
+    "hhi_cap": 0.15,
+    "risk_optimizer_inheritance_hint": "Pilot 6 Nonlinear Shrinkage LW 2022 + Option A γ=1.0 hard pattern 참고 가능하나, Risk/Optimizer 자율 재선택 유지 (P1 Selection Freedom)."
+  }
+}
