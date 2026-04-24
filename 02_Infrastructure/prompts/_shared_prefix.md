@@ -190,6 +190,27 @@ plan(sequential)  # 반드시 복구
 - `optimizer_research_init.md` `<v61_parallel_method_comparison>`
 </parallel_method_comparison>
 
+<rcpp_hotspots version="v1.0" updated="2026-04-24">
+**Rcpp Hot-spots — Alpha 필수, Risk/Optimizer 선택적 (R14)**
+
+`02_Infrastructure/cpp/rcpp_hotspots.R` — 4 함수 (lazy build + R fallback):
+- `roll_beta_batch_fast(Y, x, window)` — 350+ ticker batch. **Alpha 필수**.
+- `roll_beta_fast(y, x, window)` — single ticker. 대규모만.
+- `bootstrap_ic_fast(alpha, ret, B)` — Spearman IC CI. B >= 1000 권장.
+- `bootstrap_dsr_fast(returns, n_trials, B)` — Deflated SR. DSR 있으면 **Alpha 필수**.
+
+실측 (2026-04-24):
+- batch rolling beta: **330x 빠름** (0.167s vs 55s)
+- DSR: **20x 빠름** (0.025s)
+- method_shopping_log에 `rcpp_used = TRUE` + 사용 함수 기록.
+
+v2 대기 (Risk/Optimizer용):
+- cov estimator (LW2020 NLS / Gerber / RMT-denoise)
+- stress simulation / HRP cluster / CVaR LP / PPO RL forward
+
+상세: `alpha_research_init.md` `<v61_rcpp_hotspots>`, `risk_research_init.md` `<v61_rcpp_hotspots_risk>`, `optimizer_research_init.md` `<v61_rcpp_hotspots_opt>`.
+</rcpp_hotspots>
+
 <parallel_tool_calls>
 독립 작업 2건 이상이면 Agent 도구로 병렬 스폰. RAM 80% 이하일 때만 추가 스폰.
 코드 작성과 실행 분리: 메인이 코드 작성, Agent로 실행을 백그라운드 스폰, 메인은 즉시 다음 작업.

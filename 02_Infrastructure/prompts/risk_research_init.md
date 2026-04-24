@@ -352,3 +352,24 @@ plan(sequential)
 - PG2 TDC 비교 (primary Σ 1개 선택 후 단일 계산)
 - Challenge loop (대화 흐름, parallel 부적합)
 </v61_parallel_covariance_comparison>
+
+<v61_rcpp_hotspots_risk>
+## R14 Rcpp Hot-spots 선택적 사용 (v6.1, 2026-04-24)
+
+**Risk Agent는 Rcpp hot-spots v1.0 선택적 사용**. 주된 병목은 covariance estimator (LW/NLS/Gerber 등)이며 이는 현 v1에 미포함 (차기 v2 대상). 아래 함수는 보조 진단에만 적용.
+
+```r
+source("02_Infrastructure/cpp/rcpp_hotspots.R")
+bootstrap_dsr_fast(returns, n_trials = 100L, B = 1000L)   # tail risk 진단 시
+bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
+```
+
+### 필수 아님
+- `roll_beta_batch_fast` — Alpha 권한, Risk는 alpha_package에서 beta_blume column 수신
+- Covariance 자체는 `eigen / svd / BLAS` 이미 최적
+
+### 향후 v2 (별도 개발 대기)
+- `cov_ledoit_wolf_nls_fast` (Ledoit-Wolf 2020 Analytical NLS)
+- `gerber_statistic_fast` (Gerber 2015 robust)
+- `stress_simulation_fast` (4-regime parallel Monte Carlo)
+</v61_rcpp_hotspots_risk>

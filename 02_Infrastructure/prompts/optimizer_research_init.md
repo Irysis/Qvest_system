@@ -415,3 +415,27 @@ plan(sequential)  # 종료 후 sequential 복구
 ### 결과
 method_shopping_log에 `parallel_exec = TRUE` + `n_workers` + `total_seconds` 기록 권장.
 </v61_parallel_method_comparison>
+
+<v61_rcpp_hotspots_opt>
+## R14 Rcpp Hot-spots 선택적 사용 (v6.1, 2026-04-24)
+
+**Optimizer Agent는 Rcpp hot-spots v1.0 선택적 사용**. 주된 작업은 QP solve (quadprog Fortran 이미 최적) + method 비교 (R13 parallel로 충분). Rcpp는 아래 보조 진단 영역만.
+
+```r
+source("02_Infrastructure/cpp/rcpp_hotspots.R")
+# Method 간 bootstrap IR 비교 (net_IR 신뢰구간 추정)
+bi <- bootstrap_ic_fast(alpha_vec, expected_ret_vec, B = 1000L)
+# DSR 계산 (method 선택 후 post-hoc)
+dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
+```
+
+### 필수 아님
+- QP solve: `quadprog::solve.QP` Fortran NNLS 이미 최적 (μs 단위)
+- Method 병렬 비교: R13 `future_lapply` 충분
+- 가중치 계산: BLAS (`%*%` / `crossprod`) 이미 최적
+
+### 향후 v2 (별도 개발 대기)
+- `hrp_cluster_fast` (Hierarchical clustering + quasi-diag allocation)
+- `cvar_lp_fast` (custom CVaR linear programming)
+- `ppo_rl_forward_fast` (deep portfolio forward pass)
+</v61_rcpp_hotspots_opt>

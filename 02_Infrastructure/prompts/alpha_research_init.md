@@ -462,3 +462,50 @@ ci95 <- quantile(boot_ic, c(0.025, 0.975))
 ### 기록
 method_shopping_log에 `parallel_exec = TRUE` + `n_workers` + `rolling_seconds` 기록.
 </v61_parallel_rolling_regression>
+
+<v61_rcpp_hotspots>
+## R14 Rcpp Hot-spots 필수 사용 (v6.1, 2026-04-24 신설)
+
+**Alpha Agent는 대규모 rolling β / bootstrap 작업 시 Rcpp hot-spots v1.0 사용 필수.**
+
+### 활용 가능 함수 (`02_Infrastructure/cpp/rcpp_hotspots.R`)
+
+```r
+source("02_Infrastructure/cpp/rcpp_hotspots.R")
+# 1. Batch rolling β (350+ ticker × 3000 × 252d)
+beta_mat <- roll_beta_batch_fast(Y_matrix, x_mkt, window = 252L)
+# 2. Single rolling β (per-ticker)
+r <- roll_beta_fast(y_vec, x_vec, window = 252L)
+# 3. Spearman IC bootstrap (B=1000)
+bi <- bootstrap_ic_fast(alpha, ret, B = 1000L, seed = 42L)
+# 4. Deflated Sharpe Ratio
+dsr <- bootstrap_dsr_fast(returns, n_trials = 100L, B = 1000L)
+```
+
+### 실측 속도 이득 (벤치마크 2026-04-24)
+
+| 함수 | Rcpp | R native | 적용 권장 |
+|---|---|---|---|
+| `roll_beta_batch_fast` (50T×3000×252d) | **0.167s** | ~55s (fallback) | ⭐⭐⭐ **필수** |
+| `bootstrap_dsr_fast` | 0.025s | ~0.5s | ⭐⭐ **필수** (DSR 있으면) |
+| `roll_beta_fast` (single) | 2.2s (compile) / <0.01s (cached) | 0.057s | ⚠️ 대규모 batch만 |
+| `bootstrap_ic_fast` | 2.8s (compile) / 0.1s (cached) | 0.12s | ⚠️ 소규모는 R OK |
+
+### 의무 사항
+
+- **350+ ticker β diagnosis** → 반드시 `roll_beta_batch_fast` 사용
+- **DSR 계산** → 반드시 `bootstrap_dsr_fast` 사용
+- method_shopping_log에 `rcpp_used = TRUE` + 사용 함수 목록 기록
+- 컴파일 캐시: 첫 호출 ~2s (컴파일), 이후 세션 즉시. Lazy build 자동.
+- 빌드 실패 시 `rcpp_hotspots.R`이 R fallback으로 graceful degrade (에러 없이 진행)
+
+### 선택 사항
+
+- `roll_beta_fast` single: 수십 ticker 이하면 R native가 충분. 수백 이상이면 batch 사용.
+- `bootstrap_ic_fast`: B=1000 이하 소규모는 R native OK. B=10000+ 대규모에서 Rcpp 우위.
+
+### 제외
+- Covariance estimator 계산 (LW/Gerber/NLS 등): Risk 전용 → 현 v1에 없음. v2 개발 시 추가.
+- QP solve: `quadprog::solve.QP` (Fortran) 이미 최적.
+- Factor DB 로드: `arrow::read_parquet` (C++) 이미 최적.
+</v61_rcpp_hotspots>
