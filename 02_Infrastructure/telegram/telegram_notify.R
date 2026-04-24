@@ -955,53 +955,189 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   ref_date <- max(c(raw_date, ktri_date), na.rm = TRUE)
   if (is.na(ref_date) || length(ref_date) == 0) ref_date <- latest$Date
 
-  # ── Chart 1: Regime Score + Cash (24M) ──
-  r24 <- tail(regime_dt, 24)
-  r24[, Category_f := factor(Category, levels = c("RISK_ON", "NEUTRAL", "CAUTION", "RISK_OFF"))]
-  cat_colors <- c(RISK_ON = "#2196F3", NEUTRAL = "#9E9E9E", CAUTION = "#FF9800", RISK_OFF = "#F44336")
+  # ── Chart 1 (v2.3 2026-04-24): Daily Regime Score + Cash (12M) ──
+  # unified_regime_signal_daily.parquet 기반 최근 12개월 일간 — 월간 24M block을 완전 대체
+  daily_signal_path_c1 <- file.path(
+    ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
+    "unified_regime_signal_daily.parquet")
+  cat_colors <- c(RISK_ON = "#43A047", NEUTRAL = "#9E9E9E",
+                  CAUTION = "#FFB300", RISK_OFF = "#E53935", CRISIS = "#B71C1C")
 
-  p1 <- ggplot(r24, aes(x = Date)) +
-    geom_col(aes(y = Regime_Score, fill = Category_f), width = 25, alpha = 0.85) +
-    geom_line(aes(y = Cash_Pct * 100), color = "red", linewidth = 1.2, linetype = "dashed") +
-    geom_point(aes(y = Cash_Pct * 100), color = "red", size = 2) +
-    scale_fill_manual(values = cat_colors, name = "Regime") +
-    scale_y_continuous(name = "Regime Score",
-      sec.axis = sec_axis(~ . / 100, name = "Cash %", labels = percent)) +
-    labs(title = "Regime Score & Cash Allocation (24M)",
-         subtitle = sprintf("Data: %s | Score %.1f | %s | Cash %.1f%%",
-                            ref_date, latest$Regime_Score, latest$Category, latest$Cash_Pct * 100)) +
-    theme_minimal(base_size = 13) +
-    theme(plot.title = element_text(face = "bold", size = 15),
-          legend.position = "bottom",
-          axis.title.y.right = element_text(color = "red"))
-  ggsave(file.path(out_dir, "regime_score_24m.png"), p1, width = 10, height = 5.5, dpi = 150)
+  chart1_ok <- FALSE
+  if (file.exists(daily_signal_path_c1)) {
+    tryCatch({
+      d1_all <- as.data.table(read_parquet(daily_signal_path_c1))
+      setorder(d1_all, Date)
+      d1 <- d1_all[Date >= (Sys.Date() - 365)]
+      if (nrow(d1) > 20) {
+        d1[, Category_f := factor(Category,
+             levels = c("RISK_ON", "NEUTRAL", "CAUTION", "RISK_OFF", "CRISIS"))]
+        latest_d1 <- d1[.N]
+        # Cash area용
+        p1 <- ggplot(d1, aes(x = Date)) +
+          # (1) Category 배경 색띠 (연속 rleid)
+          {
+            d1[, cat_grp := rleid(Category)]
+            cat_bands <- d1[, .(xmin = min(Date), xmax = max(Date),
+                                 Category = Category[1]), by = cat_grp]
+            geom_rect(data = cat_bands,
+                      aes(xmin = xmin, xmax = xmax, ymin = -Inf, ymax = Inf,
+                          fill = Category), alpha = 0.12, inherit.aes = FALSE)
+          } +
+          scale_fill_manual(values = cat_colors, name = "Regime",
+                            guide = guide_legend(override.aes = list(alpha = 0.5))) +
+          # (2) Cash_Pct area fill (secondary axis scale: Pct*100)
+          geom_area(aes(y = Cash_Pct * 100), fill = "#E53935",
+                    alpha = 0.18) +
+          geom_line(aes(y = Cash_Pct * 100), color = "#C62828",
+                    linewidth = 0.7, linetype = "dashed") +
+          # (3) Regime_Score_smooth 굵은 line
+          geom_line(aes(y = Regime_Score_smooth), color = "#0D47A1",
+                    linewidth = 1.2) +
+          geom_line(aes(y = Regime_Score), color = "#455A64",
+                    linewidth = 0.35, alpha = 0.45) +
+          # (4) Threshold 수평선
+          geom_hline(yintercept = c(30, 50, 70),
+                     linetype = "dashed", color = "gray60", linewidth = 0.35) +
+          # (5) Latest dot
+          geom_point(data = latest_d1, aes(y = Regime_Score_smooth),
+                     color = "#0D47A1", fill = "#FFEB3B",
+                     shape = 21, size = 5, stroke = 1.3) +
+          annotate("label",
+                   x = latest_d1$Date, y = latest_d1$Regime_Score_smooth,
+                   label = sprintf("NOW %.1f\n%s\nCash %.1f%%",
+                                   latest_d1$Regime_Score_smooth,
+                                   latest_d1$Category,
+                                   latest_d1$Cash_Pct * 100),
+                   hjust = 1.1, vjust = 0.5, size = 3.1, fontface = "bold",
+                   color = "#0D47A1",
+                   fill = scales::alpha("white", 0.92), linewidth = 0.3,
+                   label.padding = unit(0.25, "lines")) +
+          scale_y_continuous(
+            name = "Regime Score 0~100",
+            limits = c(0, 100),
+            breaks = c(0, 30, 50, 70, 100),
+            sec.axis = sec_axis(~ . / 100, name = "Cash %",
+                                 labels = percent)) +
+          labs(title = "Daily Regime Score + Cash (12M)",
+               subtitle = sprintf(
+                 "Data: %s | Score %.1f | %s | Cash %.1f%% | thin=raw, thick=EWMA smooth",
+                 format(latest_d1$Date),
+                 latest_d1$Regime_Score_smooth,
+                 latest_d1$Category,
+                 latest_d1$Cash_Pct * 100)) +
+          theme_minimal(base_size = 13) +
+          theme(plot.title = element_text(face = "bold", size = 15),
+                plot.subtitle = element_text(size = 10, color = "gray25"),
+                legend.position = "bottom",
+                axis.title.y.right = element_text(color = "#C62828"),
+                panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
+                panel.grid.minor = element_blank())
+        ggsave(file.path(out_dir, "regime_score_24m.png"),
+               p1, width = 11, height = 5.8, dpi = 150)
+        chart1_ok <- TRUE
+      }
+    }, error = function(e) {
+      cat(sprintf("[regime_briefing] chart 1 daily 12M failed: %s\n", e$message))
+    })
+  }
+  if (!chart1_ok) {
+    # Legacy fallback (월간 24M) — daily 파일 없을 때만
+    r24 <- tail(regime_dt, 24)
+    r24[, Category_f := factor(Category, levels = c("RISK_ON", "NEUTRAL", "CAUTION", "RISK_OFF"))]
+    p1 <- ggplot(r24, aes(x = Date)) +
+      geom_col(aes(y = Regime_Score, fill = Category_f), width = 25, alpha = 0.85) +
+      geom_line(aes(y = Cash_Pct * 100), color = "red", linewidth = 1.2, linetype = "dashed") +
+      geom_point(aes(y = Cash_Pct * 100), color = "red", size = 2) +
+      scale_fill_manual(values = cat_colors, name = "Regime") +
+      scale_y_continuous(name = "Regime Score",
+        sec.axis = sec_axis(~ . / 100, name = "Cash %", labels = percent)) +
+      labs(title = "Regime Score & Cash Allocation (24M) [Monthly Fallback]",
+           subtitle = sprintf("Data: %s | Score %.1f | %s | Cash %.1f%%",
+                              ref_date, latest$Regime_Score, latest$Category, latest$Cash_Pct * 100)) +
+      theme_minimal(base_size = 13) +
+      theme(plot.title = element_text(face = "bold", size = 15),
+            legend.position = "bottom",
+            axis.title.y.right = element_text(color = "red"))
+    ggsave(file.path(out_dir, "regime_score_24m.png"), p1, width = 10, height = 5.5, dpi = 150)
+  }
 
-  # ── Chart 2: 3-Layer Decomposition ──
-  r24_long <- melt(r24, id.vars = "Date",
-                   measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
-                   variable.name = "Layer", value.name = "Value")
-  r24_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
-  r24_long[, Layer := factor(Layer,
-    levels = c("MSM_Crisis_Prob", "KTRI_Score"),
-    labels = c("MSM Crisis %", "KTRI Score"))]
+  # ── Chart 2 (v2.3 2026-04-24): Daily 3-Layer Signal Decomposition (12M) ──
+  chart2_ok <- FALSE
+  if (file.exists(daily_signal_path_c1)) {
+    tryCatch({
+      d2_all <- as.data.table(read_parquet(daily_signal_path_c1))
+      setorder(d2_all, Date)
+      d2 <- d2_all[Date >= (Sys.Date() - 365)]
+      if (nrow(d2) > 20) {
+        latest_d2 <- d2[.N]
+        d2_long <- melt(d2, id.vars = "Date",
+                        measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
+                        variable.name = "Layer", value.name = "Value")
+        d2_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
+        d2_long[, Layer := factor(Layer,
+          levels = c("MSM_Crisis_Prob", "KTRI_Score"),
+          labels = c("MSM Crisis %", "KTRI Score"))]
 
-  p2_top <- ggplot(r24_long, aes(x = Date, y = Value, color = Layer)) +
-    geom_line(linewidth = 1.1) + geom_point(size = 1.5) +
-    geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
-    scale_color_manual(values = c("MSM Crisis %" = "#E53935", "KTRI Score" = "#1E88E5")) +
-    labs(title = "3-Layer Signal Decomposition",
-         subtitle = sprintf("MSM: %.1f%% | KTRI: %.1f | FRED MRS: %.1f  (data: %s)",
-                            latest$MSM_Crisis_Prob * 100, latest$KTRI_Score, latest$FRED_MRS, ref_date),
-         y = "Score / Prob") +
-    theme_minimal(base_size = 13) +
-    theme(plot.title = element_text(face = "bold", size = 15), legend.position = "bottom")
+        p2_top <- ggplot(d2_long, aes(x = Date, y = Value, color = Layer)) +
+          geom_line(linewidth = 0.9) +
+          geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
+          scale_color_manual(values = c("MSM Crisis %" = "#E53935",
+                                         "KTRI Score" = "#1E88E5")) +
+          labs(title = "3-Layer Signal Decomposition (Daily 12M)",
+               subtitle = sprintf(
+                 "MSM: %.1f%% | KTRI: %.1f | FRED MRS: %.1f  (data: %s)",
+                 latest_d2$MSM_Crisis_Prob * 100,
+                 latest_d2$KTRI_Score, latest_d2$FRED_MRS,
+                 format(latest_d2$Date)),
+               y = "Score / Prob") +
+          theme_minimal(base_size = 13) +
+          theme(plot.title = element_text(face = "bold", size = 15),
+                plot.subtitle = element_text(size = 10, color = "gray25"),
+                legend.position = "bottom")
 
-  p2_bot <- ggplot(r24, aes(x = Date, y = FRED_MRS)) +
-    geom_col(fill = "#FF7043", alpha = 0.7, width = 25) +
-    labs(y = "FRED MRS", x = "") + theme_minimal(base_size = 11)
+        # 하단: FRED_MRS daily bar (12M)
+        p2_bot <- ggplot(d2, aes(x = Date, y = FRED_MRS)) +
+          geom_col(fill = "#FF7043", alpha = 0.75, width = 1) +
+          geom_hline(yintercept = c(30, 50, 70),
+                     linetype = "dashed", color = "gray60", linewidth = 0.3) +
+          labs(y = "FRED MRS", x = "") +
+          theme_minimal(base_size = 11)
 
-  p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
-  ggsave(file.path(out_dir, "regime_3layer_24m.png"), p2, width = 10, height = 6.5, dpi = 150)
+        p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
+        ggsave(file.path(out_dir, "regime_3layer_24m.png"),
+               p2, width = 11, height = 6.8, dpi = 150)
+        chart2_ok <- TRUE
+      }
+    }, error = function(e) {
+      cat(sprintf("[regime_briefing] chart 2 daily 12M failed: %s\n", e$message))
+    })
+  }
+  if (!chart2_ok) {
+    # Legacy fallback (월간 24M)
+    r24 <- tail(regime_dt, 24)
+    r24_long <- melt(r24, id.vars = "Date",
+                     measure.vars = c("MSM_Crisis_Prob", "KTRI_Score"),
+                     variable.name = "Layer", value.name = "Value")
+    r24_long[Layer == "MSM_Crisis_Prob", Value := Value * 100]
+    r24_long[, Layer := factor(Layer,
+      levels = c("MSM_Crisis_Prob", "KTRI_Score"),
+      labels = c("MSM Crisis %", "KTRI Score"))]
+    p2_top <- ggplot(r24_long, aes(x = Date, y = Value, color = Layer)) +
+      geom_line(linewidth = 1.1) + geom_point(size = 1.5) +
+      geom_hline(yintercept = 50, linetype = "dotted", color = "gray40") +
+      scale_color_manual(values = c("MSM Crisis %" = "#E53935", "KTRI Score" = "#1E88E5")) +
+      labs(title = "3-Layer Signal Decomposition [Monthly Fallback]",
+           y = "Score / Prob") +
+      theme_minimal(base_size = 13) +
+      theme(plot.title = element_text(face = "bold", size = 15), legend.position = "bottom")
+    p2_bot <- ggplot(r24, aes(x = Date, y = FRED_MRS)) +
+      geom_col(fill = "#FF7043", alpha = 0.7, width = 25) +
+      labs(y = "FRED MRS", x = "") + theme_minimal(base_size = 11)
+    p2 <- arrangeGrob(p2_top, p2_bot, heights = c(3, 1))
+    ggsave(file.path(out_dir, "regime_3layer_24m.png"),
+           p2, width = 10, height = 6.5, dpi = 150)
+  }
 
   # ── Chart 3: KTRI x VEA 9-Quadrant (from KTRI_breadth_9grid.R) ──
   ktri_latest <- NULL
@@ -1280,35 +1416,29 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
     cat("[regime_briefing] unified_regime_signal_daily.parquet not found \xe2\x80\x94 skip chart 4 (Step 5 \xec\x84\xa0\xed\x96\x89 \xed\x95\x84\xec\x9a\x94)\n")
   }
 
-  # ── Chart 5 (v2.2 신규 2026-04-24): Daily MRS Macro 6M ──
-  # FRED 주요 macro 지표 (VIX / HY_Spread / US_10Y_Yield) 일간 차트
+  # ── Chart 5 (v2.3 2026-04-24): FRED_MRS Composite Single Line (6M Daily) ──
+  # unified_regime_signal_daily.parquet 기반 FRED_MRS 0~100 단독 composite line
+  # Color band (녹/연황/황/적) + area fill + latest dot + 5d delta annotation
+  # 6 series (VIX/HY/Term/FFR/BBB/NFCI) 합성된 composite score만 표시 — 분해 X
   fred_wide_path <- file.path(
     ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
     "fred_macro_wide.parquet")
   fred_latest_row <- NULL
   fred_prev5_row <- NULL
+  # Sentiment 섹션용 raw FRED snapshot (기존 유지)
   if (file.exists(fred_wide_path)) {
     tryCatch({
       fred_dt <- as.data.table(read_parquet(fred_wide_path))
       setorder(fred_dt, Date)
-      # 6M window
-      fred_6m <- fred_dt[Date >= (Sys.Date() - 183)]
-      # Latest non-NA row snapshot (필드별 최신값 각각)
       get_latest <- function(col) {
-        v <- fred_dt[[col]]
-        d <- fred_dt$Date
-        ok <- !is.na(v)
-        if (any(ok)) list(val = tail(v[ok], 1), dt = tail(d[ok], 1)) else list(val = NA_real_, dt = NA)
+        v <- fred_dt[[col]]; d <- fred_dt$Date; ok <- !is.na(v)
+        if (any(ok)) list(val = tail(v[ok], 1), dt = tail(d[ok], 1))
+        else list(val = NA_real_, dt = NA)
       }
-      # Simple prev5: current idx - 5 (calendar)
       get_prev5 <- function(col) {
-        v <- fred_dt[[col]]
-        d <- fred_dt$Date
-        ok <- !is.na(v)
+        v <- fred_dt[[col]]; d <- fred_dt$Date; ok <- !is.na(v)
         if (sum(ok) < 6) return(NA_real_)
-        # latest 날짜 기준 5일 전 이하의 가장 최신 유효 row
-        latest_d <- tail(d[ok], 1)
-        target <- latest_d - 5
+        latest_d_x <- tail(d[ok], 1); target <- latest_d_x - 5
         idxs <- which(ok & d <= target)
         if (length(idxs) == 0) return(NA_real_)
         v[tail(idxs, 1)]
@@ -1317,92 +1447,128 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
         VIX = get_latest("VIX"),
         HY_Spread = get_latest("HY_Spread"),
         US_10Y_Yield = get_latest("US_10Y_Yield"),
-        KRW_USD = get_latest("KRW_USD")
-      )
+        KRW_USD = get_latest("KRW_USD"))
       fred_prev5_row <- list(
         VIX = get_prev5("VIX"),
         HY_Spread = get_prev5("HY_Spread"),
         US_10Y_Yield = get_prev5("US_10Y_Yield"),
-        KRW_USD = get_prev5("KRW_USD")
-      )
+        KRW_USD = get_prev5("KRW_USD"))
+    }, error = function(e) {
+      cat(sprintf("[regime_briefing] fred snapshot read failed: %s\n", e$message))
+    })
+  }
 
-      if (nrow(fred_6m) > 20) {
-        # Melt for subpanels
-        mrs_long <- melt(fred_6m,
-                         id.vars = "Date",
-                         measure.vars = c("VIX", "HY_Spread", "US_10Y_Yield"),
-                         variable.name = "Series", value.name = "Value",
-                         na.rm = FALSE)
-        mrs_long <- mrs_long[!is.na(Value)]
-        # Facet pretty labels
-        mrs_long[, Panel := factor(Series,
-          levels = c("VIX", "HY_Spread", "US_10Y_Yield"),
-          labels = c("VIX (Volatility)",
-                     "HY Spread % (Credit)",
-                     "US 10Y Yield % (Rates)"))]
+  # Chart 5 본체: daily composite FRED_MRS 단독
+  daily_signal_path_c5 <- file.path(
+    ifelse(exists("CACHE_DIR"), CACHE_DIR, file.path(PROJECT_ROOT, ".cache")),
+    "unified_regime_signal_daily.parquet")
+  if (file.exists(daily_signal_path_c5)) {
+    tryCatch({
+      d5_all <- as.data.table(read_parquet(daily_signal_path_c5))
+      setorder(d5_all, Date)
+      d5 <- d5_all[Date >= (Sys.Date() - 183) & !is.na(FRED_MRS)]
+      if (nrow(d5) > 20) {
+        latest_d5 <- d5[.N]
+        # 5d delta
+        idx5_c5 <- max(1, nrow(d5) - 5)
+        prev_d5 <- d5[idx5_c5]
+        mrs_d5 <- latest_d5$FRED_MRS - prev_d5$FRED_MRS
 
-        # Threshold line (VIX 20 / 30), spread zero, yield none — per-panel via data.frame
-        thresh_df <- data.frame(
-          Panel = factor(c("VIX (Volatility)", "VIX (Volatility)",
-                           "HY Spread % (Credit)", "HY Spread % (Credit)"),
-                         levels = c("VIX (Volatility)",
-                                    "HY Spread % (Credit)",
-                                    "US 10Y Yield % (Rates)")),
-          yint = c(20, 30, 3.0, 5.0),
-          lbl = c("20", "30", "3%", "5%"),
-          col = c("#66BB6A", "#E53935", "#66BB6A", "#E53935"))
+        # Color band segments (0~30 / 30~50 / 50~70 / 70~100)
+        band_df <- data.frame(
+          xmin = min(d5$Date), xmax = max(d5$Date),
+          ymin = c(0, 30, 50, 70),
+          ymax = c(30, 50, 70, 100),
+          band = c("Calm", "Normal", "Caution", "Stress"),
+          fill = c("#66BB6A", "#FFF59D", "#FFB74D", "#E57373"))
 
-        # Latest point per panel
-        latest_pts <- mrs_long[, .SD[.N], by = Panel]
-        latest_pts[, lbl := sprintf("%.2f", Value)]
+        # FRED raw sub-component latest snapshot (VIX/HY/Term 3종 — 주요만)
+        vix_txt <- if (!is.null(fred_latest_row) && !is.na(fred_latest_row$VIX$val))
+          sprintf("VIX %.1f", fred_latest_row$VIX$val) else "VIX N/A"
+        hy_txt <- if (!is.null(fred_latest_row) && !is.na(fred_latest_row$HY_Spread$val))
+          sprintf("HY %.2f%%", fred_latest_row$HY_Spread$val) else "HY N/A"
+        y10_txt <- if (!is.null(fred_latest_row) && !is.na(fred_latest_row$US_10Y_Yield$val))
+          sprintf("Term(10Y) %.2f%%", fred_latest_row$US_10Y_Yield$val) else "Term N/A"
+        comp_breakdown <- paste(vix_txt, hy_txt, y10_txt, sep = " \xe2\x80\xa2 ")
 
-        p5 <- ggplot(mrs_long, aes(x = Date, y = Value)) +
-          geom_hline(data = thresh_df,
-                     aes(yintercept = yint, color = col),
-                     linetype = "dashed", linewidth = 0.45, alpha = 0.7,
-                     show.legend = FALSE) +
-          scale_color_identity() +
-          geom_line(aes(group = Panel), color = "#1565C0",
-                    linewidth = 0.85) +
-          geom_point(data = latest_pts, aes(x = Date, y = Value),
+        delta_color <- if (mrs_d5 >= 0) "#C62828" else "#2E7D32"
+        delta_txt <- sprintf("5d \xce\x94 %+.2f", mrs_d5)
+
+        p5 <- ggplot(d5, aes(x = Date, y = FRED_MRS)) +
+          # (1) Color band (수평 배경, alpha 0.12)
+          geom_rect(data = band_df,
+                    aes(xmin = xmin, xmax = xmax,
+                        ymin = ymin, ymax = ymax, fill = band),
+                    alpha = 0.12, inherit.aes = FALSE) +
+          scale_fill_manual(
+            values = c("Calm" = "#66BB6A", "Normal" = "#FFF59D",
+                       "Caution" = "#FFB74D", "Stress" = "#E57373"),
+            breaks = c("Calm", "Normal", "Caution", "Stress"),
+            name = "Regime Band",
+            guide = guide_legend(override.aes = list(alpha = 0.5))) +
+          # (2) Threshold 수평선
+          geom_hline(yintercept = c(30, 50, 70),
+                     linetype = "dashed", color = "gray55", linewidth = 0.4) +
+          # (3) Area fill 아래 (gradient depth)
+          geom_area(aes(y = FRED_MRS), fill = "#1565C0", alpha = 0.18) +
+          # (4) Single composite line (굵은 파랑)
+          geom_line(color = "#0D47A1", linewidth = 1.15) +
+          # (5) Latest yellow dot
+          geom_point(data = latest_d5,
+                     aes(y = FRED_MRS),
                      color = "#0D47A1", fill = "#FFEB3B",
-                     shape = 21, size = 4, stroke = 1.1) +
-          geom_label(data = latest_pts,
-                     aes(x = Date, y = Value, label = lbl),
-                     hjust = 1.15, vjust = 0.5, size = 3.1, fontface = "bold",
-                     color = "#0D47A1",
-                     fill = scales::alpha("white", 0.92), linewidth = 0.2,
-                     label.padding = unit(0.2, "lines")) +
-          facet_wrap(~ Panel, ncol = 1, scales = "free_y",
-                     strip.position = "left") +
-          labs(title = "Daily Macro Regime \xe2\x80\x94 FRED Layer (6M)",
+                     shape = 21, size = 5, stroke = 1.3) +
+          # (6) Latest annotation — score + 5d delta + component
+          annotate("label",
+                   x = latest_d5$Date, y = latest_d5$FRED_MRS,
+                   label = sprintf("NOW %.1f\n%s", latest_d5$FRED_MRS, delta_txt),
+                   hjust = 1.1, vjust = 0.5, size = 3.3, fontface = "bold",
+                   color = "#0D47A1",
+                   fill = scales::alpha("white", 0.92), linewidth = 0.3,
+                   label.padding = unit(0.25, "lines")) +
+          # (7) 5d delta annotation (top-right)
+          annotate("label",
+                   x = max(d5$Date), y = 95,
+                   label = sprintf("MRS %s", delta_txt),
+                   hjust = 1, vjust = 1, size = 3.1, fontface = "bold",
+                   color = delta_color,
+                   fill = scales::alpha("white", 0.9), linewidth = 0.2) +
+          # (8) Band labels (left margin)
+          annotate("text", x = min(d5$Date), y = 15, label = "Calm",
+                   color = "#2E7D32", size = 3, hjust = 0, alpha = 0.7, fontface = "bold") +
+          annotate("text", x = min(d5$Date), y = 40, label = "Normal",
+                   color = "#9E8A00", size = 3, hjust = 0, alpha = 0.7, fontface = "bold") +
+          annotate("text", x = min(d5$Date), y = 60, label = "Caution",
+                   color = "#EF6C00", size = 3, hjust = 0, alpha = 0.7, fontface = "bold") +
+          annotate("text", x = min(d5$Date), y = 85, label = "Stress",
+                   color = "#C62828", size = 3, hjust = 0, alpha = 0.7, fontface = "bold") +
+          scale_y_continuous(
+            name = "FRED_MRS 0~100 (Composite)",
+            limits = c(0, 100),
+            breaks = c(0, 30, 50, 70, 100)) +
+          labs(title = "Daily FRED_MRS \xe2\x80\x94 Macro Regime Composite (6M)",
                subtitle = sprintf(
-                 "VIX %.1f | HY %.2f%% | US 10Y %.2f%% | KRW/USD %.0f",
-                 fred_latest_row$VIX$val, fred_latest_row$HY_Spread$val,
-                 fred_latest_row$US_10Y_Yield$val,
-                 ifelse(is.na(fred_latest_row$KRW_USD$val), 0,
-                        fred_latest_row$KRW_USD$val)),
-               x = "", y = "") +
+                 "FRED MRS \xe2\x80\x94 6 series composite (VIX/HY/Term/FFR/BBB/NFCI)  |  NOW %.1f  |  %s",
+                 latest_d5$FRED_MRS, comp_breakdown),
+               x = "") +
           theme_minimal(base_size = 12) +
           theme(plot.title = element_text(face = "bold", size = 14),
                 plot.subtitle = element_text(size = 10, color = "gray25"),
-                strip.background = element_rect(fill = "#ECEFF1", color = NA),
-                strip.text = element_text(face = "bold", size = 10),
-                strip.placement = "outside",
-                legend.position = "none",
+                legend.position = "bottom",
+                legend.title = element_text(face = "bold", size = 10),
                 panel.grid.major = element_line(color = "gray92", linewidth = 0.3),
                 panel.grid.minor = element_blank())
 
         ggsave(file.path(out_dir, "regime_mrs_daily_6m.png"),
-               p5, width = 11, height = 7.2, dpi = 150)
+               p5, width = 11, height = 5.8, dpi = 150)
       } else {
-        cat("[regime_briefing] fred_macro_wide 6m insufficient \xe2\x80\x94 skip chart 5\n")
+        cat("[regime_briefing] daily MRS 6m insufficient \xe2\x80\x94 skip chart 5\n")
       }
     }, error = function(e) {
-      cat(sprintf("[regime_briefing] chart 5 MRS daily failed: %s\n", e$message))
+      cat(sprintf("[regime_briefing] chart 5 MRS composite failed: %s\n", e$message))
     })
   } else {
-    cat("[regime_briefing] fred_macro_wide.parquet not found \xe2\x80\x94 skip chart 5\n")
+    cat("[regime_briefing] unified_regime_signal_daily.parquet not found \xe2\x80\x94 skip chart 5\n")
   }
 
   cat("[regime_briefing] Charts generated.\n")
@@ -1564,9 +1730,9 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   # ── Send: text + 5 charts ──
   tg_send(msg)
   Sys.sleep(3)
-  tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Regime Score + Cash (24M)")
+  tg_send_photo(file.path(out_dir, "regime_score_24m.png"), "Daily Regime Score + Cash (12M)")
   Sys.sleep(2)
-  tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer: MSM / FRED / KTRI")
+  tg_send_photo(file.path(out_dir, "regime_3layer_24m.png"), "3-Layer Signal Decomposition (Daily 12M)")
   Sys.sleep(2)
   ktri_chart <- file.path(out_dir, "ktri_9quad.png")
   if (file.exists(ktri_chart)) {
@@ -1582,7 +1748,7 @@ tg_regime_briefing <- function(regime_dt = NULL, ktri_daily = NULL) {
   # Chart 5: Daily MRS macro
   mrs_chart_path <- file.path(out_dir, "regime_mrs_daily_6m.png")
   if (file.exists(mrs_chart_path)) {
-    tg_send_photo(mrs_chart_path, "Daily Macro Regime \xe2\x80\x94 FRED Layer (6M)")
+    tg_send_photo(mrs_chart_path, "Daily FRED_MRS \xe2\x80\x94 Macro Regime Composite (6M)")
   }
 
   n_charts_sent <- sum(file.exists(c(
