@@ -334,16 +334,28 @@ cat("\n[Step 6] Overlay signal construction (PIT C9: BM t-1 lag)...\n")
 
 # ── BM daily returns ──
 setorder(BM_DT, Date)
-BM_DT[, Ret_BM := Close / shift(Close, 1L, type = "lag") - 1]
+# BM_DT uses BM_Close / BM_Ret (not Close/Ret)
+if ("BM_Close" %in% names(BM_DT)) {
+  BM_DT[, Ret_BM := BM_Ret]
+} else if ("Close" %in% names(BM_DT)) {
+  BM_DT[, Ret_BM := Close / shift(Close, 1L, type = "lag") - 1]
+} else {
+  stop("[ERROR] BM_DT has no recognized price column")
+}
 BM_DT[is.na(Ret_BM), Ret_BM := 0]
 setkey(BM_DT, Date)
 
+# Ensure BM_Close alias for code below
+if (!"BM_Close" %in% names(BM_DT) && "Close" %in% names(BM_DT)) {
+  BM_DT[, BM_Close := Close]
+}
+
 # ── DD Brake signal (C9: drawdown from t-1 data) ──
 # Drawdown from rolling peak over lookback_days
-BM_DT[, BM_Peak_20 := frollapply(Close, n = OVERLAY_DD_LB, FUN = max,
+BM_DT[, BM_Peak_20 := frollapply(BM_Close, n = OVERLAY_DD_LB, FUN = max,
                                    fill = NA, align = "right")]
-BM_DT[is.na(BM_Peak_20), BM_Peak_20 := Close]
-BM_DT[, BM_DD_20 := (Close - BM_Peak_20) / BM_Peak_20]
+BM_DT[is.na(BM_Peak_20), BM_Peak_20 := BM_Close]
+BM_DT[, BM_DD_20 := (BM_Close - BM_Peak_20) / BM_Peak_20]
 
 # C9: lag by 1 day → dd_state known at t-1
 BM_DT[, dd_lag  := shift(BM_DD_20, 1L, type = "lag")]

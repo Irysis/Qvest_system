@@ -1,7 +1,7 @@
 ---
 name: forge
 description: QEPM Forge Agent — Work Task 모드에서 3-agent 산출물(alpha/risk/optimization package) 통합해 run_all.R + backtest 실행. Pure function 강제 (3-package read-only). Legacy STR 백테스트 호환. target_weights/alpha_vector/cov 수정 절대 금지.
-model: sonnet
+model: opus
 allowed-tools: Bash(Rscript*) Read Write Edit Grep Glob
 ---
 
