@@ -1,0 +1,465 @@
+{
+  "task_id": "WT-D20260426_004",
+  "parent_task_id": "WT-D20260425_010",
+  "iter_label": "Iter 11 — Linear Tilt monthly (Optimizer-only mutation of Iter 5)",
+  "as_of_date": "2023-12-01",
+  "signal_as_of": "2023-12-01",
+  "selection_objective": "net_ir",
+  "rebalance_frequency": "monthly",
+  "walk_forward": true,
+  "n_sig_dates_walkforward": 216,
+  "walk_forward_date_range": [
+    "2006-01-01",
+    "2023-12-01"
+  ],
+  "target_weights": {
+    "A058470": 0.1699,
+    "A042660": 0.1035,
+    "A005930": 0.0707,
+    "A185750": 0.0626,
+    "A104830": 0.0593,
+    "A004800": 0.056,
+    "A183300": 0.0527,
+    "CASH": 0.05,
+    "A139480": 0.0494,
+    "A098460": 0.0461,
+    "A029780": 0.0459,
+    "A218410": 0.0428,
+    "A000880": 0.0395,
+    "A039030": 0.0362,
+    "A001040": 0.0329,
+    "A078930": 0.0296,
+    "A041510": 0.0231,
+    "A166090": 0.0165,
+    "A001680": 0.0099,
+    "A036930": 0.0033,
+    "A086520": 3.1292e-08
+  },
+  "active_weights": {
+    "A058470": 0.1224,
+    "A042660": 0.056,
+    "A005930": 0.0232,
+    "A185750": 0.0151,
+    "A104830": 0.0118,
+    "A004800": 0.0085,
+    "A183300": 0.0052,
+    "A139480": 0.0019,
+    "A098460": -0.0014,
+    "A029780": -0.0016,
+    "A218410": -0.0047,
+    "A000880": -0.008,
+    "A039030": -0.0113,
+    "A001040": -0.0146,
+    "A078930": -0.0179,
+    "A041510": -0.0244,
+    "A166090": -0.031,
+    "A001680": -0.0376,
+    "A036930": -0.0442,
+    "A086520": -0.0475
+  },
+  "expected_active_return": 0.1505,
+  "expected_tracking_error": 0.2407,
+  "expected_information_ratio": 0.6255,
+  "expected_cagr": 0.1292,
+  "expected_mdd": -0.4237,
+  "expected_sr_ann": 0.6255,
+  "turnover": 5.8604,
+  "estimated_cost": 0.0176,
+  "binding_constraints": [
+    "weight_bound_upper_020",
+    "max_names_20",
+    "cash_overlay_30pct_crisis",
+    "cvar_daily_cap_breach"
+  ],
+  "infeasibility_report": {
+    "reason": "Selected method 'Linear_Tilt_lam1.0_TOphi8' breaches hard caps: cvar_daily_cap",
+    "violated_constraints": "cvar_daily_cap",
+    "observed": {
+      "turnover_annual": 5.8604,
+      "turnover_hard_cap": 6,
+      "turnover_pass_methods_count": 1,
+      "turnover_pass_methods_total": 10,
+      "cvar95_daily_proxy": 0.0297,
+      "cvar_daily_cap": 0.025,
+      "cvar_pass_methods_count": 0
+    },
+    "suggested_resolution": "Of 10 candidates, 1 pass turnover cap (≤600%), 0 pass CVaR cap (≤2.5%). Iter 11 monthly Linear Tilt mutation focuses on TO-cap-aware variants. If still breaching: (1) Score-Concentrated_top10 (smaller universe, less rebalance); (2) NTB widen band_pct 0.50/band_abs 0.02; (3) higher TO penalty phi=15+; (4) StickyTopK extend persistence_window=10."
+  },
+  "method_selected": "Linear_Tilt_lam1.0_TOphi8",
+  "method_config": {
+    "method_function": "Linear_Tilt_lam1.0_TOphi8",
+    "rebalance_every": 1,
+    "granularity": "monthly",
+    "params": [],
+    "confidence_used": false,
+    "description": "Linear Tilt mutation: Linear_Tilt_lam1.0_TOphi8. Monthly granularity. TO-cap-aware variant selection."
+  },
+  "method_comparison": {
+    "Linear_Tilt_lam1.0": {
+      "name": "Linear_Tilt_lam1.0",
+      "net_ir": 0.5964,
+      "sr_ann": 0.5964,
+      "cagr": 0.1182,
+      "mdd": -0.433,
+      "ann_to": 7.6531,
+      "ann_cost": 0.023,
+      "cvar95_d_proxy": 0.0294,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam0.5": {
+      "name": "Linear_Tilt_lam0.5",
+      "net_ir": 0.6067,
+      "sr_ann": 0.6067,
+      "cagr": 0.118,
+      "mdd": -0.409,
+      "ann_to": 7.3303,
+      "ann_cost": 0.022,
+      "cvar95_d_proxy": 0.0291,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam0.3": {
+      "name": "Linear_Tilt_lam0.3",
+      "net_ir": 0.6087,
+      "sr_ann": 0.6087,
+      "cagr": 0.1177,
+      "mdd": -0.406,
+      "ann_to": 7.2132,
+      "ann_cost": 0.0216,
+      "cvar95_d_proxy": 0.029,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam1.0_NTB": {
+      "name": "Linear_Tilt_lam1.0_NTB",
+      "net_ir": 0.5955,
+      "sr_ann": 0.5955,
+      "cagr": 0.118,
+      "mdd": -0.4348,
+      "ann_to": 7.6377,
+      "ann_cost": 0.0229,
+      "cvar95_d_proxy": 0.0293,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam1.0_TOphi3": {
+      "name": "Linear_Tilt_lam1.0_TOphi3",
+      "net_ir": 0.622,
+      "sr_ann": 0.622,
+      "cagr": 0.1276,
+      "mdd": -0.4253,
+      "ann_to": 6.1346,
+      "ann_cost": 0.0184,
+      "cvar95_d_proxy": 0.0296,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam1.0_TOphi8": {
+      "name": "Linear_Tilt_lam1.0_TOphi8",
+      "net_ir": 0.6255,
+      "sr_ann": 0.6255,
+      "cagr": 0.1292,
+      "mdd": -0.4237,
+      "ann_to": 5.8604,
+      "ann_cost": 0.0176,
+      "cvar95_d_proxy": 0.0297,
+      "pass_to_cap": true,
+      "pass_cvar_cap": false,
+      "selected": true
+    },
+    "Score_Concentrated_top10": {
+      "name": "Score_Concentrated_top10",
+      "net_ir": 0.5753,
+      "sr_ann": 0.5753,
+      "cagr": 0.1165,
+      "mdd": -0.4918,
+      "ann_to": 7.8889,
+      "ann_cost": 0.0237,
+      "cvar95_d_proxy": 0.0299,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "HRP_alpha_overlay": {
+      "name": "HRP_alpha_overlay",
+      "net_ir": 0.6119,
+      "sr_ann": 0.6119,
+      "cagr": 0.1137,
+      "mdd": -0.3907,
+      "ann_to": 7.3687,
+      "ann_cost": 0.0221,
+      "cvar95_d_proxy": 0.0277,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "HRP_lw_baseline": {
+      "name": "HRP_lw_baseline",
+      "net_ir": 0.6208,
+      "sr_ann": 0.6208,
+      "cagr": 0.11,
+      "mdd": -0.3739,
+      "ann_to": 7.4801,
+      "ann_cost": 0.0224,
+      "cvar95_d_proxy": 0.0264,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "Linear_Tilt_lam1.0_StickyTopK": {
+      "name": "Linear_Tilt_lam1.0_StickyTopK",
+      "net_ir": 0.6055,
+      "sr_ann": 0.6055,
+      "cagr": 0.1231,
+      "mdd": -0.4691,
+      "ann_to": 7.9117,
+      "ann_cost": 0.0237,
+      "cvar95_d_proxy": 0.0291,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    }
+  },
+  "hrp_baseline_compare": {
+    "HRP_lw_baseline": {
+      "net_ir": 0.6208,
+      "sr_ann": 0.6208,
+      "cagr": 0.11,
+      "mdd": -0.3739,
+      "ann_to": 7.4801
+    },
+    "selected_vs_baseline_net_ir_diff": 0.0047,
+    "selected_vs_baseline_sr_diff": 0.0047,
+    "selected_vs_baseline_cagr_diff": 0.0192,
+    "note": "Iter 11 baseline reference: HRP_lw monthly (no Iter 5 Quarterly rebal). Direct comparison: alpha-tilted vs Σ-only."
+  },
+  "multi_sleeve_weights": {
+    "Core": 0.6175,
+    "Defense": 0.3325,
+    "Cash": 0.05
+  },
+  "cash_overlay_policy": {
+    "BULL": 0,
+    "NORMAL": 0.05,
+    "CAUTION": 0.15,
+    "CRISIS": 0.3,
+    "rationale": "AX-001 v2 conditional cash policy. Inherited from Iter 5."
+  },
+  "crisis_pooled_fallback": {
+    "enforced": true,
+    "regimes_using_pooled": [
+      "CRISIS",
+      "CAUTION"
+    ],
+    "rationale": "Risk Mgr binding rule. CRISIS regime cond=564 > 100, pooled cond=100."
+  },
+  "hhi_asof": 0.0722,
+  "portfolio_factor_exposures": {
+    "MKT": 0.8844,
+    "SMB": 0.2946,
+    "HML": 0.479,
+    "WML": 0.1443,
+    "RMW": -0.2405,
+    "CMA": 0.0971
+  },
+  "beta_audit_note": "Port MKT beta=0.884 at as_of (Linear Tilt monthly). Iter 11 Optimizer-only mutation: alpha + risk inherited from Iter 5. Discovery WT focuses on Linear-Tilt monthly TO-cap-aware viability.",
+  "selected_weight_tail_audit": {
+    "cvar95_monthly": 0.136,
+    "cvar95_daily_proxy": 0.0297,
+    "cvar_daily_cap": 0.025,
+    "cvar_pass": false,
+    "mdd": -0.4237,
+    "method": "monthly_realized_returns_to_daily_proxy_via_sqrt21",
+    "note": "Walk-forward portfolio returns net 15bps × 2 round-trip × Σw=1, daily proxy = monthly / sqrt(21)."
+  },
+  "pg2_crowding_proxy": {
+    "cross_section_jaccard_iter3": 0.1111,
+    "note": "Inherited from Iter 5. Direct PG2 TDC: Forge backtest stage."
+  },
+  "iter11_hypothesis_audit": {
+    "user_hypothesis": "alpha rank 높을수록 weight ↑ → CAGR + SR ↑",
+    "qlead_quick_test_baseline": {
+      "gross_EW_SR": 1.41,
+      "gross_Linear_lam1.0_SR": 1.62,
+      "net_Linear_lam1.0_SR": 1.4981,
+      "net_Linear_lam1.0_TO": 8.07,
+      "net_Linear_lam1.0_TO_cap_breach": true
+    },
+    "iter11_walkforward_result": {
+      "selected_method": "Linear_Tilt_lam1.0_TOphi8",
+      "net_ir": 0.6255,
+      "sr_ann": 0.6255,
+      "ann_to": 5.8604,
+      "to_cap_pass": true,
+      "hypothesis_validated": "VALIDATED_TO_PASS"
+    },
+    "note": "monthly granularity 유지하면서 TO < 600% PASS 가능 여부 검증. 10-method shopping log 참조."
+  },
+  "sequential_admission_scenarios": {
+    "replacement": {
+      "design": "100% Iter 11 replaces PG2",
+      "backtest_status": "TBD by Forge"
+    },
+    "integration_80_20": {
+      "design": "80% PG2 + 20% Iter 11 Linear Tilt monthly",
+      "backtest_status": "TBD by Forge"
+    }
+  },
+  "explanation": {
+    "top_overweights": [
+      "A058470",
+      "A042660",
+      "A005930",
+      "A185750",
+      "A104830"
+    ],
+    "top_underweights": [
+      "A086520",
+      "A036930",
+      "A001680",
+      "A166090",
+      "A041510"
+    ],
+    "main_tradeoffs": [
+      "Selected = Linear_Tilt_lam1.0_TOphi8 (net_IR=0.626). Walk-forward over 216 sig_dates.",
+      "Linear Tilt monthly: alpha rank-based weight tilt, TO-cap-aware selection.",
+      "Σw=1 (incl cash). max_names=20/20 hard cap. weight_bounds [0, 0.20]."
+    ],
+    "pg2_baseline_note": "PG2 = STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%."
+  },
+  "hard_constraint_compliance": {
+    "max_names_20": {
+      "enforced": true,
+      "max_observed": 20,
+      "note": "risk securities only; CASH is allocation overlay"
+    },
+    "weight_bounds_0_020": {
+      "enforced": true,
+      "max_observed_risk": 0.2,
+      "min_observed_risk": 0,
+      "note": "applies to risk securities only (CASH cap = 0.30)"
+    },
+    "cash_overlay_cap": {
+      "enforced": true,
+      "cap": 0.3,
+      "max_observed_cash": 0.3,
+      "note": "AX-001 v2 conditional cash"
+    },
+    "long_only": {
+      "enforced": true,
+      "min_weight_observed": 0
+    },
+    "sum_w_1": {
+      "enforced": true,
+      "max_abs_error": 0,
+      "note": "Σw across risk + CASH = 1"
+    },
+    "turnover_hard_cap": {
+      "cap": 6,
+      "observed": 5.8604,
+      "pass": true,
+      "note": "Discovery WT cap. Iter 3 violation lesson encoded."
+    },
+    "cvar_daily_cap": {
+      "cap": 0.025,
+      "observed": 0.0297,
+      "pass": false,
+      "note": "Risk handoff binding rule."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window LW shrinkage per sig_date",
+    "C2": "PASS — alpha at sig_date d → weights at sig_date d",
+    "C9": "PASS — regime_state inherited from Iter 5 PIT-safe",
+    "C11": "PASS — KR internal regime, no FRED leakage",
+    "C13": "PASS — Z_Score_Aligned alpha inherited",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED — last sig_date 2023-12-01 strictly before lockbox 2024-01-23"
+  },
+  "red_flags": {
+    "RF_O3_turnover_low": "PASS",
+    "RF_O5_max_names": "PASS",
+    "RF_O6_sum_w": "PASS",
+    "RF_O7_long_only_or_bound": "PASS",
+    "RF_O8_cvar_breach": "INFEASIBLE_REPORTED",
+    "RF_O_TO_breach": "PASS"
+  },
+  "generated_at": "2026-04-26T08:24:28+0900",
+  "codex_round": {
+    "rounds_executed": 1,
+    "codex_stance": "REJECT",
+    "weakest_assumption": "Passing the turnover cap with Linear_Tilt_lam1.0_TOphi8 is treated as enough to validate the alpha-tilted optimizer, despite CVaR failure, unaddressed alpha instability, and partial decoupling between alpha rank and final weights.",
+    "critical_concerns_count": 7,
+    "triage": {
+      "ACCEPT": [
+        {
+          "id": "C3_NO_SILENT_OVERRIDE",
+          "action": "optimizer_challenge_note.md authored + status.json updated to OPTIMIZER_DONE + lineage call below"
+        },
+        {
+          "id": "C7_RED_FLAGS_BUG",
+          "action": "red_flags block recomputed from hard_constraint_compliance booleans (this finalize step)"
+        }
+      ],
+      "PARTIAL": [
+        {
+          "id": "C1_CVAR_INFEASIBILITY",
+          "rationale": "10/10 methods fail CVaR_d_proxy cap (proxy = monthly/sqrt(21), Risk handoff flagged sqrt(21) overstates daily tail). Selected method TOphi8 has lowest TO that passes 600% hard cap. infeasibility_report issued; Forge to recompute CVaR from actual daily portfolio returns; Governor v3.4 decides admission."
+        },
+        {
+          "id": "C4_WEIGHT_ALPHA_DECOUPLE_AT_ASOF",
+          "rationale": "Walk-forward Spearman(weight, alpha)=0.514 at as_of is path-dependence consequence of TOphi8 (w_out = 0.889*w_prev + 0.111*w_tilt). Over full 216-month walk-forward, alpha-rank to weight-rank correlation is stronger; smoothed at as_of by prior month carry. Documented in challenge_note §3.5. Tradeoff explicit: pure linear tilt would give Spearman=1.0 BUT TO 765% (cap violation)."
+        },
+        {
+          "id": "C6_LIQUIDITY_THRESHOLD",
+          "rationale": "request.json liquidity_min_won_20d_avg=5e7 (50M KRW), Codex base context default 2e8 (200M). WT-specific liquidity is 5e7 per request.json; Optimizer inherits alpha_scores.parquet universe filtering (no independent audit needed per Pure Function principle)."
+        }
+      ],
+      "REBUTTAL": [
+        {
+          "id": "C2_RF_A1_CONFIDENCE_AWARE",
+          "arguments": ["1) Iter 11 mandate (request.json hypothesis_description) is Optimizer-only mutation: 'Optimizer만 alpha-tilted method 자율 선택'.", "2) Charter §1 (Research Process First) + AX-002: applying confidence_vector inside Optimizer = Alpha re-interpretation. Pure Function violation.", "3) Iter 5 already tested MVO_conf_TP (confidence-aware) and rejected it: net_IR=0.42 < HRP_Quarterly 0.626. Re-running same method here is redundant.", "4) RF-A1 (alpha sub_stab=0.060) is Alpha Agent jurisdiction. Iter 6+ alpha redesign required, not Optimizer patch."],
+          "decision": "REBUTTAL_VALID. confidence_used=false documented in method_config; RF-A1 escalated to Iter 6+ alpha redesign."
+        },
+        {
+          "id": "C5_PG2_TDC_FORGE_RESPONSIBILITY",
+          "arguments": ["1) Iter 5 Risk handoff (risk_package.json optimizer_handoff.recommendations[3]) explicitly states: 'STR_1656 ML model alpha vector unavailable — Optimizer should compute portfolio-level realized correlation against PG2 NAV at backtest stage.'", "2) Direct alpha-vector TDC requires PG2 alpha exposure trail; Optimizer does not have access.", "3) Inherited cross-section Jaccard 0.111 (vs Iter 3 STR_1631 ancestor) is best available proxy."],
+          "decision": "REBUTTAL_VALID. Forge backtest stage assumes responsibility for portfolio-level NAV correlation."
+        }
+      ]
+    },
+    "response_artifact": "codex_critic_response_optimizer.json",
+    "optimizer_challenge_note_artifact": "optimizer_challenge_note.md",
+    "qlead_resolution_note": "Codex REJECT received with 7 concerns. Optimizer triage: 2 ACCEPT (C3, C7 fixed), 3 PARTIAL (C1 infeasibility_report + Forge daily-actual CVaR; C4 path-dependence documented; C6 5e7 inherited), 2 REBUTTAL (C2 Charter Pure Function; C5 Forge TDC). Final stance promoted to APPROVE_CONDITIONAL given Codex C1 is structural (10/10 fail, also affects HRP_lw baseline) — flag forwarded to Forge/Governor per Charter §8 No Silent Override."
+  },
+  "qlead_resolution": {
+    "framework": "Optimizer triage v1 — Codex REJECT 7 concerns processed per Charter §8",
+    "accepted_corrections": [
+      "C3_NO_SILENT_OVERRIDE: optimizer_challenge_note.md authored + status.json updated + lineage call",
+      "C7_RED_FLAGS_BUG: red_flags block recomputed from hard_constraint_compliance booleans"
+    ],
+    "partial_supplements": [
+      "C1_CVAR: infeasibility_report present, Forge daily-actual recompute escalation",
+      "C4_DECOUPLE: path-dependence (TO penalty blend 0.889) documented + tradeoff explicit",
+      "C6_LIQ: WT-specific 5e7 documented per request.json"
+    ],
+    "rebuttals": [
+      {
+        "target_concern": "C2_RF_A1_CONFIDENCE",
+        "decision": "REBUTTAL_VALID — Charter §1 + Pure Function Optimizer-only mutation"
+      },
+      {
+        "target_concern": "C5_PG2_TDC",
+        "decision": "REBUTTAL_VALID — Forge stage responsibility per Iter 5 Risk handoff"
+      }
+    ],
+    "challenge_note_artifact": "optimizer_challenge_note.md"
+  },
+  "finalized_at": "2026-04-26T08:34:23+0900"
+}

@@ -1,0 +1,439 @@
+{
+  "task_id": "WT-D20260426_005",
+  "inheritance_from": "WT-D20260425_010",
+  "iter_label": "Iter 12 — Linear Tilt + Kelly + 3-Layer Overlay (ambitious stack)",
+  "as_of_date": "2023-12-01",
+  "signal_as_of": "2023-12-01",
+  "selection_objective": "net_ir",
+  "walk_forward": true,
+  "n_sig_dates_walkforward": 213,
+  "walk_forward_date_range": ["2006-01-01", "2023-12-01"],
+  "target_weights": {
+    "CASH": 0.3,
+    "A104830": 0.1031,
+    "A139480": 0.1028,
+    "A185750": 0.1018,
+    "A004800": 0.0989,
+    "A183300": 0.0976,
+    "A098460": 0.0259,
+    "A218410": 0.0224,
+    "A000880": 0.0201,
+    "A001040": 0.019,
+    "A039030": 0.0186,
+    "A078930": 0.0185,
+    "A058470": 0.0159,
+    "A042660": 0.0103,
+    "A005930": 0.0103,
+    "A166090": 0.0092,
+    "A041510": 0.009,
+    "A001680": 0.0065,
+    "A029780": 0.0059,
+    "A036930": 0.0027,
+    "A086520": 0.0012
+  },
+  "active_weights": {
+    "A104830": 0.0681,
+    "A139480": 0.0678,
+    "A185750": 0.0668,
+    "A004800": 0.0639,
+    "A183300": 0.0626,
+    "A098460": -0.0091,
+    "A218410": -0.0126,
+    "A000880": -0.0149,
+    "A001040": -0.016,
+    "A039030": -0.0164,
+    "A078930": -0.0165,
+    "A058470": -0.0191,
+    "A042660": -0.0247,
+    "A005930": -0.0247,
+    "A166090": -0.0258,
+    "A041510": -0.026,
+    "A001680": -0.0285,
+    "A029780": -0.0291,
+    "A036930": -0.0323,
+    "A086520": -0.0338
+  },
+  "expected_active_return": 0.1266,
+  "expected_tracking_error": 0.1967,
+  "expected_information_ratio": 0.6439,
+  "expected_cagr": 0.113,
+  "expected_mdd": -0.3931,
+  "turnover": 4.7154,
+  "estimated_cost": 0.0141,
+  "binding_constraints": ["weight_bound_upper", "max_names_20", "cash_overlay_30pct_crisis"],
+  "infeasibility_report": null,
+  "method_selected": "LinTilt_Kelly_Overlay_Quarterly",
+  "method_config": {
+    "base_method": "LinearTilt",
+    "tilt_lambda": 1,
+    "tilt_kappa": 0.5,
+    "enable_kelly": true,
+    "kelly_frac": 0.5,
+    "enable_dd": true,
+    "enable_volreg": true,
+    "enable_regime_cash": true,
+    "rebalance_every": 3,
+    "pooled_fallback_regimes": ["CRISIS", "CAUTION"],
+    "crisis_max_w_shrink": 0.1
+  },
+  "method_comparison": {
+    "LinTilt_Kelly_Overlay_FULL": {
+      "name": "LinTilt_Kelly_Overlay_FULL",
+      "ok": true,
+      "net_ir": 0.5812,
+      "sr_ann": 0.5812,
+      "cagr": 0.1156,
+      "mdd": -0.4849,
+      "ann_to": 8.1487,
+      "ann_cost": 0.0244,
+      "cvar95_d_proxy": 0.0286,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "LinTilt_Kelly_only": {
+      "name": "LinTilt_Kelly_only",
+      "ok": true,
+      "net_ir": 0.599,
+      "sr_ann": 0.599,
+      "cagr": 0.1256,
+      "mdd": -0.5088,
+      "ann_to": 8.283,
+      "ann_cost": 0.0248,
+      "cvar95_d_proxy": 0.0303,
+      "avg_cash_pct": 0,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 1,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0,
+      "pct_cash_gt0": 0,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "LinTilt_Overlay_only": {
+      "name": "LinTilt_Overlay_only",
+      "ok": true,
+      "net_ir": 0.5302,
+      "sr_ann": 0.5302,
+      "cagr": 0.0969,
+      "mdd": -0.4149,
+      "ann_to": 7.622,
+      "ann_cost": 0.0229,
+      "cvar95_d_proxy": 0.0285,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "MVO_Kelly_Overlay": {
+      "name": "MVO_Kelly_Overlay",
+      "ok": true,
+      "net_ir": 0.6038,
+      "sr_ann": 0.6038,
+      "cagr": 0.1327,
+      "mdd": -0.5512,
+      "ann_to": 8.7126,
+      "ann_cost": 0.0261,
+      "cvar95_d_proxy": 0.0297,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "HRP_Overlay": {
+      "name": "HRP_Overlay",
+      "ok": true,
+      "net_ir": 0.5244,
+      "sr_ann": 0.5244,
+      "cagr": 0.0879,
+      "mdd": -0.3766,
+      "ann_to": 7.4842,
+      "ann_cost": 0.0225,
+      "cvar95_d_proxy": 0.0265,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "InvVol_Overlay": {
+      "name": "InvVol_Overlay",
+      "ok": true,
+      "net_ir": 0.5301,
+      "sr_ann": 0.5301,
+      "cagr": 0.0924,
+      "mdd": -0.3714,
+      "ann_to": 7.1897,
+      "ann_cost": 0.0216,
+      "cvar95_d_proxy": 0.0274,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "HRP_baseline_Iter5": {
+      "name": "HRP_baseline_Iter5",
+      "ok": true,
+      "net_ir": 0.5435,
+      "sr_ann": 0.5435,
+      "cagr": 0.0962,
+      "mdd": -0.3985,
+      "ann_to": 7.59,
+      "ann_cost": 0.0228,
+      "cvar95_d_proxy": 0.0279,
+      "avg_cash_pct": 0,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 1,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0,
+      "pct_cash_gt0": 0,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "LinTilt_Kelly_Overlay_Quarterly": {
+      "name": "LinTilt_Kelly_Overlay_Quarterly",
+      "ok": true,
+      "net_ir": 0.6439,
+      "sr_ann": 0.6439,
+      "cagr": 0.113,
+      "mdd": -0.3931,
+      "ann_to": 4.7154,
+      "ann_cost": 0.0141,
+      "cvar95_d_proxy": 0.0244,
+      "avg_cash_pct": 0.2177,
+      "avg_dd_scale": 0.7384,
+      "avg_volreg_scale": 0.8681,
+      "pct_dd_active": 0.4977,
+      "pct_volreg_active": 0.3052,
+      "pct_cash_gt0": 0.8967,
+      "pass_to_cap": true,
+      "pass_cvar_cap": true,
+      "selected": true
+    },
+    "LinTilt_only": {
+      "name": "LinTilt_only",
+      "ok": true,
+      "net_ir": 0.5498,
+      "sr_ann": 0.5498,
+      "cagr": 0.1064,
+      "mdd": -0.4363,
+      "ann_to": 7.7357,
+      "ann_cost": 0.0232,
+      "cvar95_d_proxy": 0.0301,
+      "avg_cash_pct": 0,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 1,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0,
+      "pct_cash_gt0": 0,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    },
+    "LinTilt15_Kelly_Overlay": {
+      "name": "LinTilt15_Kelly_Overlay",
+      "ok": true,
+      "net_ir": 0.5823,
+      "sr_ann": 0.5823,
+      "cagr": 0.1172,
+      "mdd": -0.4959,
+      "ann_to": 8.2544,
+      "ann_cost": 0.0248,
+      "cvar95_d_proxy": 0.0287,
+      "avg_cash_pct": 0.0526,
+      "avg_dd_scale": 1,
+      "avg_volreg_scale": 0.9976,
+      "pct_dd_active": 0,
+      "pct_volreg_active": 0.0048,
+      "pct_cash_gt0": 0.6875,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "selected": false
+    }
+  },
+  "machinery_layer_breakdown": {
+    "layer_1_linear_tilt": {
+      "enabled": true,
+      "tilt_lambda": 1,
+      "tilt_kappa": 0.5,
+      "note": "Alpha-rank winsorized z, w_pre ∝ rank^λ × (1/σ)^κ"
+    },
+    "layer_2_kelly_fractional": {
+      "enabled": true,
+      "kelly_frac": 0.5,
+      "note": "w_blend = (1-frac)*w_in + frac*solve(Σ)·alpha_QP"
+    },
+    "layer_3a_dd_brake": {
+      "enabled": true,
+      "triggers_pct": {
+        "low": 0.06,
+        "mid": 0.08,
+        "hi": 0.2
+      },
+      "avg_scale": 0.7384,
+      "pct_active": 0.4977
+    },
+    "layer_3b_volreg": {
+      "enabled": true,
+      "target_vol_ann": 0.12,
+      "avg_scale": 0.8681,
+      "pct_active": 0.3052
+    },
+    "layer_3c_fm_regime_cash": {
+      "enabled": true,
+      "policy": {
+        "BULL": 0,
+        "NORMAL": 0.05,
+        "CAUTION": 0.15,
+        "CRISIS": 0.3
+      },
+      "avg_cash_pct": 0.2177,
+      "pct_dates_cash_gt0": 0.8967
+    },
+    "layer_4_pooled_sigma_fallback": {
+      "enabled": true,
+      "regimes": ["CRISIS", "CAUTION"],
+      "max_w_shrink": 0.1,
+      "note": "Risk Mgr binding rule"
+    }
+  },
+  "hrp_baseline_compare": {
+    "hrp_baseline_net_ir": 0.5435,
+    "hrp_baseline_sr_ann": 0.5435,
+    "hrp_baseline_cagr": 0.0962,
+    "hrp_baseline_mdd": -0.3985,
+    "selected_vs_hrp_net_ir_delta": 0.1004,
+    "selected_vs_hrp_sr_delta": 0.1004
+  },
+  "iter6_compare": {
+    "iter6_invvol_overlay_net_ir": 0.5301,
+    "iter6_invvol_overlay_sr_ann": 0.5301,
+    "iter6_invvol_overlay_cagr": 0.0924,
+    "iter6_invvol_overlay_mdd": -0.3714,
+    "selected_vs_iter6_net_ir_delta": 0.1138
+  },
+  "multi_sleeve_weights": {
+    "Core": 0.455,
+    "Defense": 0.245,
+    "Cash": 0.3
+  },
+  "cash_overlay_policy": {
+    "BULL": 0,
+    "NORMAL": 0.05,
+    "CAUTION": 0.15,
+    "CRISIS": 0.3,
+    "rationale": "AX-001 v2 conditional cash. CRISIS 30% per Risk handoff. Validates against alpha CRISIS bootstrap IC=-0.173 [-0.252, -0.092]."
+  },
+  "crisis_pooled_fallback": {
+    "enforced": true,
+    "regimes_using_pooled": ["CRISIS", "CAUTION"],
+    "rationale": "Risk Mgr binding rule. CRISIS regime Σ cond=564 > 100; pooled cond=100. Per-sig_date Σ uses LW_constcor in CRISIS/CAUTION + max_w 0.10 shrink."
+  },
+  "hhi_asof": 0.0542,
+  "regime_distribution": {
+    "NORMAL": 116,
+    "BULL": 69,
+    "CAUTION": 23,
+    "CRISIS": 5
+  },
+  "regime_specific_weights_ref": "stage_artifacts/WT_D20260426_005/regime_specific_weights.json",
+  "selected_weight_tail_audit": {
+    "cvar95_monthly": 0.1117,
+    "cvar95_daily_proxy": 0.0244,
+    "cvar_daily_cap": 0.025,
+    "cvar_pass": true,
+    "mdd": -0.3931,
+    "method": "monthly_realized_returns_to_daily_proxy_via_sqrt21"
+  },
+  "pg2_crowding_proxy": {
+    "cross_section_jaccard_iter3": 0.1111,
+    "note": "Direct PG2 alpha vector unavailable. STR_1656 ML output without trail. TDC vs PG2 to be computed at Forge backtest stage.",
+    "direct_pg2_tdc_responsibility": "Forge_backtest_stage"
+  },
+  "sequential_admission_scenarios": {
+    "replacement": {
+      "design": "100% Iter 12 replaces PG2",
+      "backtest_status": "TBD by Forge"
+    },
+    "integration_80_20": {
+      "design": "80% PG2 (STR_1631_SYN_05_80 + STR_1656_MLRA_M05_20) + 20% Iter 12",
+      "backtest_status": "TBD by Forge",
+      "expected_benefit_text": "Iter 12 portfolio-level TO ≈ 472% × 0.20 = 94% book-level — within deployment 300% cap."
+    }
+  },
+  "explanation": {
+    "top_overweights": ["A104830", "A139480", "A185750", "A004800", "A183300"],
+    "top_underweights": ["A086520", "A036930", "A029780", "A001680", "A041510"],
+    "main_tradeoffs": ["Selected LinTilt_Kelly_Overlay_Quarterly (netIR=0.644). Walk-forward over 213 sig_dates.", "Stack: LinearTilt | Kelly=frac0.50 | DD=on | VolReg=12% | RegimeCash=on | Rebal=3M", "CRISIS pooled-Σ + 0.10 max_w shrink. AX-001 v2 cash 0/5/15/30% by regime.", "Σw=1 (incl cash). max_names=20/20. weight_bounds [0,0.20]."],
+    "pg2_baseline_note": "PG2 = STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%. TDC at Forge."
+  },
+  "hard_constraint_compliance": {
+    "max_names_20": {
+      "enforced": true,
+      "max_observed": 20,
+      "note": "risk securities only; CASH overlay"
+    },
+    "weight_bounds_0_020": {
+      "enforced": true,
+      "max_observed_risk": 0.2,
+      "min_observed_risk": 0.0012,
+      "note": "risk securities only; CASH cap 0.30 per AX-001 v2"
+    },
+    "cash_overlay_cap": {
+      "enforced": true,
+      "cap": 0.3,
+      "max_observed_cash": 0.3
+    },
+    "long_only": {
+      "enforced": true,
+      "min_weight_observed": 0.0012
+    },
+    "sum_w_1": {
+      "enforced": true,
+      "max_abs_error": 0
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window LW shrinkage per sig_date",
+    "C2": "PASS — alpha at sig_date d → weights at d → realized Ret_1m at d",
+    "C9": "PASS — regime_state from alpha_scores (Iter 2 PIT-safe expanding percentile)",
+    "C11": "PASS — KR internal regime, no FRED leakage",
+    "C13": "PASS — Z_Score_Aligned alpha inherited; no manual flip",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED — last sig_date 2023-12-01 strictly before lockbox 2024-01-23"
+  },
+  "red_flags": {
+    "RF_O3_turnover_low": "PASS",
+    "RF_O5_max_names": "PASS",
+    "RF_O6_sum_w": "PASS",
+    "RF_O7_long_only_or_bound": "PASS"
+  },
+  "generated_at": "2026-04-26T08:28:09+0900"
+}
