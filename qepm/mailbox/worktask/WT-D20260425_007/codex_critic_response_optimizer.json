@@ -1,0 +1,141 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "optimizer_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:35:00+09:00",
+  "task_id": "WT-D20260425_007",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "Hard constraints on the snapshot weights pass, but optimizer audit fails on walk-forward artifact integrity, method-shopping governance, and RF-A1 alignment. The package is not process-defensible under AX-002/AX-008 without remediation.",
+  "hard_constraints_audit": {
+    "n_names": 15,
+    "n_names_pass": true,
+    "max_w": 0.106666666666667,
+    "max_w_pass": true,
+    "sigma_w": 1.000000000000001,
+    "sigma_w_pass": true,
+    "long_only_pass": true,
+    "turnover_annual": 141.77,
+    "turnover_pass": true,
+    "any_critical_block": false
+  },
+  "method_shopping_audit": {
+    "candidates_tried": 12,
+    "selection_objective": "to_adj_ret (declared) vs cost_adj_sr ranking (implemented)",
+    "selection_method": "RegimeSigma_MinCVaR",
+    "cherry_pick_risk": "HIGH",
+    "rf_o10_flag": true,
+    "heavy_tail_tiebreaker_applied": true
+  },
+  "walk_forward_audit": {
+    "n_sig_dates_in_weights_csv": 1,
+    "single_snapshot_risk": "HIGH",
+    "rf_o9_flag": true,
+    "forge_handoff_walkforward_explicit": false
+  },
+  "cost_audit": {
+    "turnover": 1.4177,
+    "estimated_cost": 0.0043,
+    "regime_switch_cost_internalized": true,
+    "cost_proportionality_check": "Internal formula is consistent (1.4177 x 15bps x 2 = 0.004253), but realized regime-switch dynamics in Forge diverge materially from optimizer assumptions."
+  },
+  "iter_specific_method_alignment": {
+    "alpha_rf_a1_addressed": false,
+    "risk_rf_r6_addressed": true,
+    "regime_per_weight_schedule": true,
+    "crisis_fallback_explicit": true
+  },
+  "infeasibility_handling": {
+    "cvar_breach": false,
+    "infeasibility_report_issued": false,
+    "hard_constraint_violations": []
+  },
+  "sequential_admission_audit": {
+    "tdc_vs_pg2": 0.2756,
+    "replacement_scenario_reported": true,
+    "integration_scenario_reported": false,
+    "integration_weight_breakdown": "Not reported; no explicit blended (e.g., 80/20) SR/MDD/IR table versus current PG2 active book."
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "PASS",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "CRITICAL",
+      "description": "weights.csv is snapshot-only (Ticker, weight, regime_at_decision) and omits required walk-forward keys (as_of_date, method_selected), so replay-grade time-series weight schedule is absent.",
+      "ax_cite": "RF-O9|AX-002|L-119"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Method-shopping governance is violated: candidates_tried=12 exceeds the role cap (<=10), and declared selection_objective differs from the implemented ranking metric, increasing cherry-pick risk.",
+      "ax_cite": "RF-O10|AX-002|AX-008"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "RF-A1 (sub_stab=0.4183) is not fully addressed by the selected optimizer method; confidence-aware attenuation is not clearly applied in NORMAL/CAUTION for the chosen schedule.",
+      "ax_cite": "RF-O11|RF-A1|AX-001"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "regime_specific_weights artifacts are not numerically sum-to-1 under strict tolerance (1.0001~1.0004 after rounding), creating downstream constraint drift risk if consumed directly.",
+      "ax_cite": "RF-O7|AX-002"
+    },
+    {
+      "id": "C5",
+      "severity": "HIGH",
+      "description": "Sequential admission evidence is incomplete: no explicit TDC-vs-current active-book metric and no integration scenario performance table, despite PG2 admission dependency.",
+      "ax_cite": "AX-008|L-219"
+    },
+    {
+      "id": "C6",
+      "severity": "HIGH",
+      "description": "Optimizer ex-ante claims are fragile against integrated outcomes (Forge combined Sharpe 0.593, Harvey t 2.769, MDD 77.6, NORMAL Sharpe 0.046), indicating regime-switch/cost assumptions are under-specified.",
+      "ax_cite": "RF-O2|AX-002|L-122"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Requested stage artifact root A is missing, leaving reproducibility/path lineage ambiguous across artifact roots.",
+      "ax_cite": "AX-008|AX-002"
+    }
+  ],
+  "supporting_arguments": [
+    "Snapshot hard constraints pass numerically on weights.csv: n_nonzero=15, max_w=0.1067, nonnegative, and sum(w)=1.000000000000001.",
+    "Top-decile alpha realization is not the blocker: top 2 alpha names both receive positive weight.",
+    "Risk matrix quality is numerically adequate (covariance PSD true; condition number about 24.91 <= 100).",
+    "Cost internalization arithmetic is coherent within optimizer package (turnover-derived 0.43% annual cost).",
+    "CRISIS fallback is explicitly encoded (alpha shrink to 0, pooled Sigma fallback, bounds [0,0.10])."
+  ],
+  "unresolved_disputes": [
+    "Canonical stage root mismatch: requested qepm/stage_artifacts/WT_WT-D20260425_007 is absent while stage_artifacts/WT_D20260425_007 exists.",
+    "Liquidity governance is inconsistent across artifacts (base-context 2e8 vs request 5e7), and risk-side liquidity_flags semantics are unclear.",
+    "Whether to_adj_ret is an accepted alias for the implemented cost_adj_sr ranking in governance checks.",
+    "Whether snapshot weights plus regime_specific_weights are acceptable substitute artifacts for explicit per-sig_date weights schedule.",
+    "Turnover unit consistency is unresolved (optimizer 141.77% vs downstream field ann_turnover_optimizer=14177)."
+  ],
+  "weakest_assumption": "A static 4-regime weight map plus estimated 3.934 switches/year is assumed sufficient for robust walk-forward execution without hysteresis, but realized switch dynamics and drawdown behavior show that assumption is fragile.",
+  "rebuttal_required": [
+    "Emit a replay-grade walk-forward weights artifact with schema as_of_date,ticker,weight,method_selected across all sig_dates (>=60).",
+    "Re-run method shopping under candidate cap <=10 and one explicit objective metric, then publish full ranking and tie-break rationale.",
+    "Provide explicit RF-A1 mitigation for the selected method (confidence-aware scaling in NORMAL/CAUTION or quantified reason for non-use).",
+    "Publish sequential-admission evidence versus current PG2 active book: TDC definition, replacement and integration scenarios, blended SR/MDD/IR.",
+    "Reconcile ex-ante and realized turnover/cost units and add hysteresis sensitivity analysis."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Alpha time-series and Sigma numerics are not the primary failure point; optimizer governance artifacts and method-selection discipline are."
+  },
+  "optimizer_specific_questions": [
+    "weights.csv without as_of_date/method_selected can be replayed by Forge/Judge without hidden assumptions?",
+    "If candidates are capped at 10 and objective is unified, does RegimeSigma_MinCVaR still remain rank-1?",
+    "How is RF-A1 handled quantitatively in NORMAL/CAUTION for the selected schedule, not only in CRISIS fallback?",
+    "Where is TDC vs current PG2 active book and the integration (e.g., 80/20) performance table?"
+  ]
+}
