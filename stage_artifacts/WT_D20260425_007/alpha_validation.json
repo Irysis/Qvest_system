@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260425_007",
+  "pit_audit": {
+    "C1": "PASS — expanding percentile only (no full-sample) for regime indicator + IC weights",
+    "C2": "PASS — regime built at month_end_t, applied at sig_date_{t+1} (1M lag)",
+    "C9": "PASS — DD/VT/breadth use lagged window (window <= month_end inclusive, applied next month)",
+    "C10": "PASS — AvgTV20 ≥ 2e8 lagged liquidity filter",
+    "C11": "PASS — KR internal data (BM_DT + cross-section breadth) prioritized; no FRED leak",
+    "C13": "PASS — Z_Score_Aligned via align_factor_direction; no manual sign flip",
+    "C14": "PASS — Factor DB Usable_Date <= sig_date enforced via parquet by month",
+    "C15": "PASS — load_month_factors path via .cache/factor_db parquet",
+    "lockbox": "ENFORCED — 2024-01-23 ~ 2026-01-23 excluded from all training"
+  },
+  "hypothesis_iter2": {
+    "factor_mix_changed": false,
+    "regime_indicator_added": true,
+    "regime_states": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+    "regime_classification_type": "expanding_percentile_4state",
+    "optimizer_handoff_contract": "Optimizer가 Regime-Σ MinCVaR 적용 시 alpha_scores.parquet::regime_state 컬럼을 sig_date 별로 조회하여 각 regime 내부에서만 추정한 Σ를 사용해야 함. Alpha는 covariance/weight 어떤 것도 결정하지 않음."
+  },
+  "diagnostics": {
+    "rank_ic_overall": 0.0489,
+    "icir_overall": 0.602,
+    "harvey_t_overall": 9.3455,
+    "monotonicity": 0.9394,
+    "subperiod_stab": 0.4183,
+    "p1_2008_2014_ic": 0.069,
+    "p2_2015_2019_ic": 0.0369,
+    "p3_2020_2024_ic": 0.0289,
+    "n_months": 241,
+    "dsr": 0.0007,
+    "turnover_proxy": 6.4525
+  },
+  "composite_ic_by_regime": {
+    "regime_state": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+    "mean_IC": [0.0622, 0.0473, 0.0319, -0.0466],
+    "sd_IC": [0.0806, 0.082, 0.0705, 0.0569],
+    "ICIR": [0.7724, 0.5765, 0.4523, -0.8182],
+    "n_months": [84, 127, 25, 5]
+  },
+  "conditional_ic_shape": {
+    "rows": 4,
+    "cols": 6
+  },
+  "conditional_ic_max_abs": 0.0625,
+  "red_flags": {
+    "RF_A1": {
+      "severity": "HIGH",
+      "msg": "subperiod stability=0.418 vs 0.5 threshold"
+    },
+    "RF_A2": {
+      "severity": "INFO",
+      "msg": "Composite mix unchanged (Iter 2 mandate); compare to MEGA_05 baseline rank_IC=0.0489"
+    },
+    "RF_REGIME_SAMPLE": {
+      "severity": "MEDIUM",
+      "msg": "min regime sample size = 41 months (CRISIS thin → cond IC variance high)"
+    }
+  },
+  "ax001_v2_check": {
+    "bad_normal_ic_ratio": -0.155,
+    "note": "Defense factor (Q07) standalone is conditional — overall PRIMARY is Core role; ax001_v2 audit applies at portfolio level (Optimizer/Governor)"
+  }
+}

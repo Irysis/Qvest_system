@@ -1,0 +1,108 @@
+{
+  "task_id": "WT-D20260425_006",
+  "as_of": "2024-01-22",
+  "pre_lb_window": {
+    "start": "2003-02-01",
+    "end": "2024-01-22"
+  },
+  "baseline_inherited_from": "WT-D20260425_003",
+  "overlay_design": {
+    "dd_brake": {
+      "entry_pct": 0.06,
+      "exit_pct": 0.08,
+      "lookback_d": 20,
+      "lag": "t-1 (C9)",
+      "brake_mult_on": 0.5,
+      "brake_mult_off": 1
+    },
+    "volreg": {
+      "target_vol_ann": 0.12,
+      "lookback_d": 60,
+      "cap": [0, 1.5],
+      "lag": "t-1 (C9)"
+    }
+  },
+  "diagnostics_off": {
+    "rank_ic": 0.0708,
+    "icir": 0.9378,
+    "ic_t": 14.8577,
+    "n_periods": 251
+  },
+  "diagnostics_on": {
+    "rank_ic": 0.0708,
+    "icir": 0.9378,
+    "ic_t": 14.8577,
+    "n_periods": 251
+  },
+  "diagnostics_delta": {
+    "rank_ic_delta": 0,
+    "icir_delta": 0,
+    "harvey_t_delta": 0
+  },
+  "subperiod_off": {
+    "p_ics": [
+      {
+        "seg": "p1_2008_2014",
+        "ic": 0.096,
+        "n": 143
+      },
+      {
+        "seg": "p2_2015_2019",
+        "ic": 0.0332,
+        "n": 60
+      },
+      {
+        "seg": "p3_2020_2024",
+        "ic": 0.043,
+        "n": 48
+      }
+    ],
+    "sub_stab": 0.3453
+  },
+  "subperiod_on": {
+    "p_ics": [
+      {
+        "seg": "p1_2008_2014",
+        "ic": 0.096,
+        "n": 143
+      },
+      {
+        "seg": "p2_2015_2019",
+        "ic": 0.0332,
+        "n": 60
+      },
+      {
+        "seg": "p3_2020_2024",
+        "ic": 0.043,
+        "n": 48
+      }
+    ],
+    "sub_stab": 0.3453
+  },
+  "monotonicity_on": 0.9636,
+  "turnover_proxy": 0.1227,
+  "overlay_state_at_target": {
+    "date": "2024-01-22",
+    "brake_state": "ON",
+    "overlay_mult": 0.2985,
+    "vol_60d_lag": 0.201
+  },
+  "brake_on_proportion_full_window": 0.3889,
+  "vol_60d_summary": {
+    "mean": 0.1787,
+    "median": 0.1619,
+    "p10": 0.104,
+    "p90": 0.2798
+  },
+  "pit_compliance": {
+    "C1": "PASS — rolling/expanding stats only (no full-sample)",
+    "C2": "PASS — sig_date = month-end; signal applied at next rebalance",
+    "C5": "PASS — overlay computed from BM[t-1]",
+    "C9": "PASS — DD/Vol use shift(.,1L) lag explicitly",
+    "C10": "PASS — TV20_lag >= 200,000,000 KRW filter",
+    "C13": "PASS — Z_Score_Aligned via load_month_factors only",
+    "C14": "PASS — Factor DB enforces Usable_Date <= sig_date",
+    "C15": "PASS — load via load_month_factors() (no raw RAWDATA factor synthesis)",
+    "lockbox": "ENFORCED — Pre-LB end 2024-01-22; Lockbox 2024-01-23+ untouched"
+  }
+}

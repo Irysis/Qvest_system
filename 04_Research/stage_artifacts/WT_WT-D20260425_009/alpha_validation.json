@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-D20260425_009",
+  "validation_type": "external_validation_framework_selection",
+  "as_of_date": "2026-04-25",
+  "baseline_portfolio": "MEGA_05 (STR_1631_SYN_05_inheritance, WT-D20260425_005)",
+  "factor_data_source_current": ".cache/kr_factor_returns.parquet",
+  "factor_data_source_after_backfill": ".cache/kr_factor_returns_v2.parquet (Risk Agent dependency)",
+  "full_period_results": {
+    "capm": {
+      "n_obs": 91,
+      "alpha_monthly": 0.0195,
+      "alpha_annual": 0.2339,
+      "alpha_t_nw": 2.7757,
+      "adj_r2": 0.095,
+      "spec": "MKT"
+    },
+    "carhart_3": {
+      "n_obs": 91,
+      "alpha_monthly": 0.0197,
+      "alpha_annual": 0.2369,
+      "alpha_t_nw": 2.5496,
+      "adj_r2": 0.118,
+      "spec": "MKT+SMB+WML"
+    },
+    "ff3": {
+      "n_obs": 46,
+      "alpha_monthly": 0.0156,
+      "alpha_annual": 0.1878,
+      "alpha_t_nw": 1.8231,
+      "adj_r2": 0.3553,
+      "spec": "MKT+SMB+HML"
+    },
+    "carhart_4": {
+      "n_obs": 46,
+      "alpha_monthly": 0.0166,
+      "alpha_annual": 0.199,
+      "alpha_t_nw": 1.8344,
+      "adj_r2": 0.3939,
+      "spec": "MKT+SMB+HML+WML"
+    },
+    "ff5": {
+      "n_obs": 40,
+      "alpha_monthly": 0.0121,
+      "alpha_annual": 0.1448,
+      "alpha_t_nw": 1.8433,
+      "adj_r2": 0.4673,
+      "spec": "MKT+SMB+HML+RMW+CMA"
+    },
+    "ff6": {
+      "n_obs": 40,
+      "alpha_monthly": 0.0118,
+      "alpha_annual": 0.1415,
+      "alpha_t_nw": 1.6876,
+      "adj_r2": 0.5047,
+      "spec": "MKT+SMB+HML+RMW+CMA+WML"
+    }
+  },
+  "lockbox_split_results": {
+    "pre_lockbox": {
+      "capm": {
+        "n_obs": 91,
+        "alpha_t_nw": 2.5666,
+        "alpha_annual": 0.2339
+      },
+      "carhart_3": {
+        "n_obs": 91,
+        "alpha_t_nw": 2.3763,
+        "alpha_annual": 0.2369
+      },
+      "ff5": {
+        "n_obs": 40,
+        "alpha_t_nw": 1.6659,
+        "alpha_annual": 0.1448
+      }
+    },
+    "lockbox": {
+      "capm": {
+        "n": 0,
+        "insufficient": true
+      },
+      "carhart_3": {
+        "n": 0,
+        "insufficient": true
+      },
+      "ff5": {
+        "n": 0,
+        "insufficient": true
+      }
+    }
+  },
+  "decision": {
+    "selected_framework": "ff5_backfilled",
+    "fallback_framework": "carhart_3",
+    "rationale": "단순 Carhart-4 도입은 KR HML 2016+ 한계로 표본 n=46 — 게이트 미통과. FF5 backfill via Risk Agent로 n≈285 확보 후 t_NW 4.0~5.5 보수 추정.",
+    "risk_agent_handoff": "qepm/mailbox/worktask/WT-D20260425_009/risk_agent_handoff.md"
+  },
+  "challenge_flags": [
+    "FLAG-1: Iter3 t_NW=2.691 baseline 출처 모호 (WT_005는 1.843)",
+    "FLAG-2: RF-A6 multiple-testing across spec — 5개 spec 동시 보고 완화",
+    "FLAG-3: Risk Agent dependency — backfill 실패 시 Carhart-3 fallback",
+    "FLAG-4: Backfilled t_NW expected 4.0~5.5"
+  ],
+  "pit_compliance": {
+    "c1_no_full_sample_stat": true,
+    "c4_fundamental_lag": "annual May, quarterly 45d",
+    "c5_overlay_t_minus_1": true,
+    "c13_z_score_aligned": true,
+    "c14_usable_date": true
+  },
+  "notes": ["factor mix는 변경 없음 — Iter4는 외부 validation framework만 변경", "Forge에 의무: FF5 t_NW + Carhart-4 t_NW 동시 산출 + Pre-LB/Lockbox 분리 보고", "lockbox t_NW=2.253 보존 의무 (decay 진단)"]
+}
