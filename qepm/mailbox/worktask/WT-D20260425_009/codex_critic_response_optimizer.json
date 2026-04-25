@@ -1,0 +1,142 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "optimizer_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:29:53+09:00",
+  "task_id": "WT-D20260425_009",
+  "stance": "REJECT",
+  "veto_flag": false,
+  "stance_rationale": "Hard bounds are numerically satisfied, but the optimizer deliverable is still a single-date snapshot and fails walk-forward schedule requirements (RF-O9). Cost internalization, conditioning claims, and ex-post triangulation with Forge are inconsistent enough that optimizer sign-off is not defensible.",
+  "hard_constraints_audit": {
+    "n_names": 20,
+    "n_names_pass": true,
+    "max_w": 0.1089,
+    "max_w_pass": true,
+    "sigma_w": 1.0,
+    "sigma_w_pass": true,
+    "long_only_pass": true,
+    "turnover_annual": 3.3732,
+    "turnover_pass": true,
+    "any_critical_block": false
+  },
+  "method_shopping_audit": {
+    "candidates_tried": 10,
+    "selection_objective": "net_ir",
+    "selection_method": "MVO_lam5_psi03",
+    "cherry_pick_risk": "MEDIUM",
+    "rf_o10_flag": true,
+    "heavy_tail_tiebreaker_applied": false
+  },
+  "walk_forward_audit": {
+    "n_sig_dates_in_weights_csv": 1,
+    "single_snapshot_risk": "HIGH",
+    "rf_o9_flag": true,
+    "forge_handoff_walkforward_explicit": false
+  },
+  "cost_audit": {
+    "turnover": 0.2811,
+    "estimated_cost": 0.0004,
+    "regime_switch_cost_internalized": false,
+    "cost_proportionality_check": "Package uses one-way TC (~0.2811*15bps=0.00042) while checklist requires round-trip (~0.00084); cost drag is understated."
+  },
+  "iter_specific_method_alignment": {
+    "alpha_rf_a1_addressed": true,
+    "risk_rf_r6_addressed": false,
+    "regime_per_weight_schedule": false,
+    "crisis_fallback_explicit": false
+  },
+  "infeasibility_handling": {
+    "cvar_breach": false,
+    "infeasibility_report_issued": false,
+    "hard_constraint_violations": []
+  },
+  "sequential_admission_audit": {
+    "tdc_vs_pg2": null,
+    "replacement_scenario_reported": false,
+    "integration_scenario_reported": false,
+    "integration_weight_breakdown": "Not reported"
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "RF-O9 triggered: optimizer weights are single-snapshot (weights.csv has one as_of_date=2026-04-25), and alpha_scores.parquet also has one as_of_date, so walk-forward re-optimization is not delivered by this package.",
+      "ax_cite": "RF-O9|PIT-C1|AX-002|L-119"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Cost modeling is inconsistent with the role checklist: estimated_cost is computed as one-way turnover cost, not round-trip; this biases net_IR selection in a close-method regime.",
+      "ax_cite": "RF-O2|AX-002|L-122"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "Conditioning claim is internally inconsistent for optimizer usability: factor-cov cond~96.8 is cited, but the actual security covariance artifact used by optimizer is cond~500 (PSD true but far above ≤100 target).",
+      "ax_cite": "RF-O4|AX-002|AX-008"
+    },
+    {
+      "id": "C4",
+      "severity": "HIGH",
+      "description": "Method selection rationale is overconfident and ex-post contradicted: optimizer projected all methods pass Harvey gate, but Forge FF5 v2 t_NW remains below gate; cherry-pick/optimism control is insufficient.",
+      "ax_cite": "RF-O10|AX-002|AX-008"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Iter-specific risk alignment is incomplete: no explicit heavy-tail (Hill alpha) tie-break evidence and no CRISIS small-sample fallback (max_w tightening/cash sleeve) despite regime caveats.",
+      "ax_cite": "RF-O12|AX-001|AX-002"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "Top-alpha realization gap exists in delivered candidate set (e.g., top-decile candidate with zero weight), and justification is mostly narrative instead of explicit signal-loss control.",
+      "ax_cite": "RF-O1|AX-002|L-484"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Sequential Admission evidence is missing (TDC vs PG2, replacement/integration scenario metrics), so admission risk versus active book cannot be validated.",
+      "ax_cite": "RF-O10|L-219|AX-008"
+    }
+  ],
+  "supporting_arguments": [
+    "Core hard bounds are satisfied in the package payload: n_names=20, max_w=0.1089, long-only, and target_weights sum to 1.0.",
+    "Method shopping log is present with candidates_tried=10 and explicit net_ir objective.",
+    "No direct hard-block violations (RF-O5/6/7/13) were found in the optimizer package fields."
+  ],
+  "unresolved_disputes": [
+    "Canonical artifact paths are split (04_Research/stage_artifacts/WT_WT-D20260425_009 vs stage_artifacts/WT-D20260425_009), while qepm/stage_artifacts path requested in task is absent for WT_009.",
+    "Optimizer package says Forge should consume current weights.csv, but Forge reports using parent WT_005 weights_rolling.parquet (92 dates); canonical schedule source is ambiguous.",
+    "Post-shrink cond threshold interpretation is inconsistent (factor-cov vs security-cov gate).",
+    "Liquidity mandate is documented at multiple thresholds (50M vs 200M), but optimizer evidence for applied threshold at selection-time is not fully explicit."
+  ],
+  "weakest_assumption": "Naive net_IR scaling implies Harvey gate pass (t_NW ~4-5+) for selected weights, despite actual Forge FF5 v2 results staying far below 2.95.",
+  "rebuttal_required": [
+    "Submit true walk-forward optimizer output for WT-D20260425_009 (>=60 sig_dates, as_of_date×ticker×weight×method_selected), not a single-date snapshot.",
+    "Recompute cost with round-trip turnover convention and re-rank methods on corrected net_ir.",
+    "Provide security-cov stabilization evidence meeting the declared conditioning gate (or formally revise gate definition).",
+    "Document heavy-tail and CRISIS fallback policy explicitly (Hill alpha decision rule, bound tightening, cash sleeve).",
+    "Add Sequential Admission diagnostics: TDC vs PG2, replacement vs integration metrics, and integration weight breakdown."
+  ],
+  "rationalization_red_flags": [
+    "alpha 손실 미미",
+    "사실상 동률",
+    "미세 우위"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Optimizer package-level claims do not triangulate with Forge outcome or delivered schedule artifacts; 2-source PASS quality is not established."
+  },
+  "optimizer_specific_questions": [
+    "현재 제출된 weights.csv(1 sig_date)만으로 WT-D20260425_009의 시계열 백테스트를 어떻게 재현할 것인가?",
+    "selection_objective가 net_ir라면 왜 비용을 round-trip이 아닌 one-way로 계산했는가?",
+    "security covariance cond~500 상태에서 MVO 수치안정성 gate를 어떤 기준으로 PASS 처리했는가?",
+    "Forge가 WT_005 rolling weights를 사용한 이유와, WT_009 optimizer 산출물의 canonical status는 무엇인가?"
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "optimizer_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:29:27+09:00",
+  "task_id": "WT-D20260425_008",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "Optimizer 산출물의 핵심 하자 3개가 동시 발생했습니다: single-snapshot weights(RF-O9), turnover/cost 단위 불일치로 인한 hard-cap 검증 붕괴(RF-O13), CVaR breach 대비 infeasibility_report 누락(RF-O8). Forge가 후단에서 walk-forward를 재구축했더라도 Optimizer handoff 자체는 Charter §8/AX-002 기준을 충족하지 못합니다.",
+  "hard_constraints_audit": {
+    "n_names": 20,
+    "n_names_pass": true,
+    "max_w": 0.15,
+    "max_w_pass": true,
+    "sigma_w": 1.000002,
+    "sigma_w_pass": false,
+    "long_only_pass": true,
+    "turnover_annual": 7.569684,
+    "turnover_pass": false,
+    "any_critical_block": true
+  },
+  "method_shopping_audit": {
+    "candidates_tried": 13,
+    "selection_objective": "net_ir",
+    "selection_method": "HRP_lw (heavy-tail tie-breaker over MinVar)",
+    "cherry_pick_risk": "HIGH",
+    "rf_o10_flag": true,
+    "heavy_tail_tiebreaker_applied": true
+  },
+  "walk_forward_audit": {
+    "n_sig_dates_in_weights_csv": 1,
+    "single_snapshot_risk": "HIGH",
+    "rf_o9_flag": true,
+    "forge_handoff_walkforward_explicit": false
+  },
+  "cost_audit": {
+    "turnover": 0.630807,
+    "estimated_cost": 0.011355,
+    "regime_switch_cost_internalized": false,
+    "cost_proportionality_check": "제출값은 turnover*15bps*12(월간 annualization)로 계산되어 role prompt의 round-trip 공식(turnover*15bps*2)과 불일치하며, RF-O13 연환산 판정을 불투명하게 만듭니다."
+  },
+  "iter_specific_method_alignment": {
+    "alpha_rf_a1_addressed": false,
+    "risk_rf_r6_addressed": true,
+    "regime_per_weight_schedule": false,
+    "crisis_fallback_explicit": false
+  },
+  "infeasibility_handling": {
+    "cvar_breach": true,
+    "infeasibility_report_issued": false,
+    "hard_constraint_violations": [
+      "RF-O13: 코드 기준 annual turnover = 0.630807*12 = 7.569684 (756.97%)로 600% hard cap 초과",
+      "Sigma_w handoff 정밀도 위반: |1.000002-1.0| = 2e-6 (>1e-6)"
+    ]
+  },
+  "sequential_admission_audit": {
+    "tdc_vs_pg2": 0.1667,
+    "replacement_scenario_reported": true,
+    "integration_scenario_reported": false,
+    "integration_weight_breakdown": "Not reported"
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "CRITICAL",
+      "description": "weights.csv가 `as_of_date × ticker × weight × method_selected` 스키마를 충족하지 못하고 단일 20행 snapshot만 제공되어 walk-forward 설계를 무력화합니다. alpha_scores.parquet도 단일 sig_date(2024-01-01)라 RF-O9 재발 조건과 일치합니다.",
+      "ax_cite": "AX-002|PIT-C1|RF-O9"
+    },
+    {
+      "id": "C2",
+      "severity": "CRITICAL",
+      "description": "turnover/cost 산식이 역할 프롬프트와 불일치합니다(패키지: *12 annualization, 요구: *2 round-trip). 코드 해석대로면 annual turnover 756.97%로 hard cap 600%를 초과하는데 위반 처리/차단이 없습니다.",
+      "ax_cite": "AX-002|RF-O13"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "`cvar_cap_breach=true`인데 `infeasibility_report=null`로 제출되어 Charter §8 No Silent Override를 위반합니다. risk cap breach를 인지하고도 공식 불능 보고를 생략했습니다.",
+      "ax_cite": "AX-002|RF-O8"
+    },
+    {
+      "id": "C4",
+      "severity": "HIGH",
+      "description": "method shopping이 13개 후보로 R2-C HARD cap(≤10)을 초과했습니다. heavy-tail tie-breaker 자체는 명시됐지만, cap 위반 상태의 선택은 사후 최적화/선택편향 리스크를 높입니다.",
+      "ax_cite": "AX-002|RF-O10"
+    },
+    {
+      "id": "C5",
+      "severity": "HIGH",
+      "description": "beta_port=0.7576으로 risk가 제시한 목표 [1.00, 1.05]에서 크게 이탈했는데 보정 경로(overlay-OFF 대비 보고/제약 재조정/waiver)가 없습니다.",
+      "ax_cite": "AX-002|L-122"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "요청된 stage 경로(`qepm/stage_artifacts/WT_WT-D20260425_008`)가 실제로 부재하고, 제출물 간 아티팩트 참조 체계가 혼재되어 재현성/삼각검증 신뢰도가 저하됩니다.",
+      "ax_cite": "AX-008|PIT-C1"
+    }
+  ],
+  "supporting_arguments": [
+    "weights.csv(메인/메일박스 stage 모두 동일)는 날짜 축 없이 20개 ticker snapshot만 포함합니다.",
+    "optimizer 코드에서 cost_ann은 `turnover * 15bps * 12`로 계산되며, turnover hard-cap 600% 검증 로직이 없습니다.",
+    "optimization_package는 `cvar_cap_breach=true`를 기록하면서 `infeasibility_report`를 null로 남깁니다.",
+    "method_shopping_log에 `candidates_tried=13`이 명시되어 cap 위반이 데이터로 확정됩니다.",
+    "covariance.parquet는 PSD이나 condition number≈197.47로 사용자 지정 점검선(cond≤100)에는 미달합니다."
+  ],
+  "unresolved_disputes": [
+    "turnover 변수의 공식 단위(월간 one-way vs 연간 round-trip)와 hard cap 판정 기준을 어떤 값으로 고정할지 정책 확정이 필요합니다.",
+    "Forge의 313-date walk-forward 재구축을 Optimizer 산출물 스키마 위반(RF-O9) 면책 사유로 인정할지 거버넌스 합의가 필요합니다.",
+    "cond 기준을 100으로 볼지(요청 기준) 500으로 볼지(risk 내부 완화 기준) 단일 규약이 필요합니다."
+  ],
+  "weakest_assumption": "단일 시점 weights snapshot(날짜 축 없음)만으로도 22년 구간의 walk-forward 최적화 정책을 대체할 수 있다는 가정.",
+  "rebuttal_required": [
+    "weights.csv를 `as_of_date,ticker,weight,method_selected` 시계열 스케줄(권장 60+ sig_dates)로 재제출하고 Forge handoff 노트에 재계산 절차를 명시할 것.",
+    "turnover/cost 공식을 role prompt와 일치시키고, annual turnover < 600% 하드 게이트를 코드 레벨에서 강제할 것.",
+    "CVaR breach에 대한 정식 infeasibility_report를 발행하고, cap을 recommendation으로 둘 경우 정책 근거를 문서화할 것.",
+    "method shopping 후보를 10개 이내로 축소한 사전 등록형 로그(객관식 selection rule 포함)를 제출할 것.",
+    "beta_port 목표 이탈(0.7576)에 대한 제약 재설계 또는 명시적 waiver를 추가할 것."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Forge의 후단 개선 신호(313 walk-forward)는 확인되지만, Optimizer 제출물 자체가 RF-O9/O13/O8을 동시에 만족하지 못해 2-source PASS 조건을 충족하지 못합니다."
+  },
+  "optimizer_specific_questions": [
+    "현재 weights.csv는 왜 `as_of_date`와 `method_selected`를 포함하지 않으며, 어떤 근거로 walk-forward 호환을 주장합니까?",
+    "turnover=0.630807을 annual로 해석하면 cost 공식이 어긋나고, monthly로 해석하면 annual turnover 756.97%인데 어떤 해석이 공식입니까?",
+    "cvar_cap_breach=true 상태에서 infeasibility_report를 null로 둔 거버넌스 승인 기록이 있습니까?",
+    "risk가 제시한 beta target [1.00,1.05] 대비 0.7576 이탈을 어떤 optimizer 제약 조정으로 복구할 계획입니까?"
+  ]
+}
