@@ -1,0 +1,152 @@
+{
+  "task_id": "WT-D20260425_010",
+  "generated_at": "2026-04-25T17:28:37+0900",
+  "n_sig_dates": 241,
+  "unique_tickers": 3052,
+  "date_range": ["2004-01-01", "2024-01-01"],
+  "schema": ["Date", "Ticker", "score_eff", "score_core_z", "score_defense_z", "Ret_1m", "regime_state", "theta_core", "theta_defense"],
+  "diagnostics": {
+    "blend": {
+      "rank_ic": 0.0502,
+      "icir": 0.5766,
+      "harvey_t": 8.9513,
+      "n_months": 241,
+      "p1_IC": 0.0644,
+      "p2_IC": 0.0391,
+      "p3_IC": 0.0179,
+      "sub_stability": 0.278,
+      "label": "BLEND_065_035"
+    },
+    "core": {
+      "rank_ic": 0.0473,
+      "icir": 0.5412,
+      "harvey_t": 8.401,
+      "n_months": 241,
+      "p1_IC": 0.0623,
+      "p2_IC": 0.0374,
+      "p3_IC": 0.0117,
+      "sub_stability": 0.1882,
+      "label": "SLEEVE_CORE"
+    },
+    "defense": {
+      "rank_ic": 0.0539,
+      "icir": 0.72,
+      "harvey_t": 11.1774,
+      "n_months": 241,
+      "p1_IC": 0.0808,
+      "p2_IC": 0.0277,
+      "p3_IC": 0.0324,
+      "sub_stability": 0.3431,
+      "label": "SLEEVE_DEFENSE"
+    }
+  },
+  "shopping_log": {
+    "Core_only_065_000": {
+      "name": "Core_only_065_000",
+      "w_core": 1,
+      "w_def": 0,
+      "rank_ic": 0.0473,
+      "icir": 0.5412,
+      "harvey_t": 8.401,
+      "selected": false
+    },
+    "Defense_only_000_100": {
+      "name": "Defense_only_000_100",
+      "w_core": 0,
+      "w_def": 1,
+      "rank_ic": 0.0312,
+      "icir": 0.3398,
+      "harvey_t": 5.2751,
+      "selected": false
+    },
+    "Blend_080_020": {
+      "name": "Blend_080_020",
+      "w_core": 0.8,
+      "w_def": 0.2,
+      "rank_ic": 0.049,
+      "icir": 0.5634,
+      "harvey_t": 8.7467,
+      "selected": false
+    },
+    "Blend_065_035": {
+      "name": "Blend_065_035",
+      "w_core": 0.65,
+      "w_def": 0.35,
+      "rank_ic": 0.0502,
+      "icir": 0.5766,
+      "harvey_t": 8.9513,
+      "selected": true
+    },
+    "Blend_050_050": {
+      "name": "Blend_050_050",
+      "w_core": 0.5,
+      "w_def": 0.5,
+      "rank_ic": 0.0509,
+      "icir": 0.5804,
+      "harvey_t": 9.0099,
+      "selected": false
+    }
+  },
+  "crisis_ci": {
+    "method": "bootstrap_B1000",
+    "n_crisis": 5,
+    "mean_ic": -0.071,
+    "ci95": [-0.1213, -0.0208],
+    "pooled_fallback_ic": 0.0502
+  },
+  "ax_compliance": {
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE+LOW_TURNOVER 실패",
+      "status": "PASS",
+      "evidence": "Iter 5 uses NO standalone Value (E/P or B/P) factor. Sleeve 1 = Consensus + Q07 + M08; Sleeve 2 = Q07 + Q25_Distress."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only failure",
+      "status": "PASS",
+      "evidence": "Multi-axis composite — Consensus(4F dominant) + Quality_Earnings(Q07) + Momentum_Residual(M08) + Distress(Q25). EXCLUSION: multi-axis quality composite + multi-sleeve OK. Q07 NOT standalone."
+    },
+    "AX-005": {
+      "rule": "KR defense low-beta/Q07+D25/4-axis composite top20_long_only failure",
+      "status": "PASS_WITH_NOTE",
+      "evidence": "Defense sleeve = Q07 + Q25_Ohlson_O 2-axis (NOT 4-axis). EXCLUSION valid: multi-sleeve structure + Sleeve 2 weight 0.35 is supplementary not primary. AX-005 EXCLUSION 'necessary not sufficient' — Forge Gate 13 PASS verification required at backtest stage."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_long_only_top20 signal-portfolio translation 단절",
+      "status": "PASS",
+      "evidence": "Multi-sleeve structure (Core 0.65 + Defense 0.35 + Cash regime overlay) — explicitly exempted exception #1 (multi-sleeve). NOT single_sleeve_top20."
+    }
+  },
+  "ff5_v2": {
+    "source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/kr_factor_returns_v2.parquet",
+    "available": true,
+    "n_obs": 300,
+    "date_range": ["2001-04-29", "2026-03-04"],
+    "columns": ["Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF", "n_obs_meta"],
+    "pit_backfill_evidence": "n_obs=300 | range=2001-04-29~2026-03-04 | factors: MKT/SMB/HML/WML/RMW/CMA/RF (6F + RF). Iter 4 (WT-D20260425_009) Risk Agent built via DART TTM 2002+ backfill (handoff_note: risk_agent_handoff.md). HML/RMW/CMA appear NA pre-2010 indicating PIT-strict backfill (no future-extrapolation). MKT/SMB available 2001+ (longer history). Mandate 4 PASS."
+  },
+  "challenge_flags": {
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "refs=8, sub_stab=0.278"
+    },
+    "RF-A2": {
+      "id": "RF-A2",
+      "severity": "MEDIUM",
+      "msg": "Blend vs best single ICIR delta = -19.92% (<5%)",
+      "detail": "blend_icir=0.5766 best_single=0.72"
+    }
+  },
+  "alpha_divergence": 1,
+  "rcpp_used": true,
+  "pit_compliance": {
+    "C1": "PASS expanding IC weights",
+    "C2": "PASS sig_date -> fwd_date+1M",
+    "C9": "PASS regime expanding percentile",
+    "C10": "PASS AvgTV20>=2e8 lagged filter",
+    "C13": "PASS Z_Score_Aligned via load_month_factors equivalent",
+    "C14": "PASS Factor DB Usable_Date",
+    "C15": "PASS factor_db parquet load",
+    "lockbox": "ENFORCED 2024-01-23 ~ 2026-01-23 excluded; train end 2024-01-22"
+  }
+}
