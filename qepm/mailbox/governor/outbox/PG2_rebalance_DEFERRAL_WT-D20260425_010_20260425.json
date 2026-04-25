@@ -1,0 +1,82 @@
+{
+  "rebalance_id": "PG2_DEFERRAL_WT-D20260425_010_20260425",
+  "decision_type": "DEFERRAL_NO_TRADE_ORDERS",
+  "decided_at": "2026-04-25T20:35:00+0900",
+  "decided_by": "Governor v6.1 R5 Sonnet 4.6",
+  "wt_id": "WT-D20260425_010",
+  "str_id": "STR_1699",
+
+  "verdict": "GOVERNOR_DEFERRED",
+  "trade_orders": [],
+  "trade_orders_count": 0,
+  "reason_no_trades": "PG2 active book 변화 없음 — MEGA_05 80% + STR_1656_M05 20% 유지. Iter5 STR_1699 신규 admission GOVERNOR_DEFERRED.",
+
+  "current_pg2_book_unchanged": {
+    "anchor": {
+      "id": "WT-D20260425_003",
+      "strategy": "STR_1631_MEGA_05",
+      "weight": 0.80
+    },
+    "diversifier": {
+      "id": "STR_1656_MLRA_M05",
+      "strategy": "STR_1656_MLRA_M05",
+      "weight": 0.20
+    },
+    "scheduled_execution": "2026-04-28 (Session 71 user-mandated MEGA_05 admit)"
+  },
+
+  "deferral_reasoning": {
+    "primary": "STR_1699 ↔ MEGA_05 factor family overlap 83% (5/6 factors shared: 4× Analyst_Consensus + Q07). PG2 anchor와 near-clone — diversification add-value 입증 부족.",
+    "secondary": "integration_80_20 SR 1.232 ≈ MEGA_05 baseline 1.258 -0.026 noise band 내. closed-form cor=0.8 approximation only.",
+    "tertiary": "v6.1 R10 multi-objective 8지표 weighted_score 0.553 < 0.65 threshold + Pareto 3/8 < 4/8 minimum.",
+    "fourth": "NAV-level direct TDC 측정 미실행 (Forge layer limitation). PG2 active 편입 결정에 필요한 empirical TDC 부재."
+  },
+
+  "follow_up_orders": [
+    {
+      "agent": "Forge",
+      "order": "PG2 NAV history access + STR_1699 NAV-level direct TDC measurement",
+      "priority": "HIGH",
+      "blocking": "Iter5 PG2 active admission re-evaluation"
+    },
+    {
+      "agent": "Scout",
+      "order": "Iter6 WT 발주 — economic_family NOT IN [Analyst_Consensus, Quality_Earnings] 강제. Cross-family diversifier 탐색.",
+      "priority": "HIGH",
+      "rationale": "STR_1699 cross-family extension은 Q25(Distress) + M08(Momentum_Residual) ~33% 한정 — 별도 WT로 정직 분리 발주가 우월"
+    },
+    {
+      "agent": "Q-Lead",
+      "order": "2026-Q3 lockbox re-evaluation schedule + KR FF5 v2 v3 backfill 진행 모니터링",
+      "priority": "MEDIUM",
+      "trigger": "post-2024 backfill data availability ≥ 12 months"
+    },
+    {
+      "agent": "QEPM_memory",
+      "order": "L-205 'Family overlap 83% near-clone admission DEFERRED 패턴' 적립 + strategy_registry STR_1699 'Core_Alpha + Defense_Ballast' 라벨 등록",
+      "priority": "HIGH"
+    }
+  ],
+
+  "probe_phase_status": {
+    "iter5_admitted_to_probe": true,
+    "pg2_active_admitted": false,
+    "sunset_clause": "6_month_review_post_NAV_TDC_measurement",
+    "monitoring_triggers": [
+      "monthly realized α/TE drift",
+      "quarterly NAV-level TDC remeasure",
+      "semi-annual regime SR/ICIR audit",
+      "annual PG2 admission re-review"
+    ]
+  },
+
+  "audit_trail": {
+    "judge_verdict_received": "JUDGE_PASSED_WITH_NOTE (2026-04-25T19:55:00+0900)",
+    "judge_recommended_scenario": "INTEGRATION_80_20",
+    "governor_decision_overrides_judge_recommendation": true,
+    "governor_override_rationale": "Judge 권장 integration_80_20 SR 1.232은 closed-form cor=0.8 approx만 존재. NAV-level direct TDC + post-2024 lockbox 미충족 시 PG2 active 편입은 silent 합리화. Common Charter §4 sequential admission TDC threshold 0.30 BREACH (estimated 0.75 vs MEGA_05).",
+    "governor_authority": "Common Charter §3 Governor 권한 — book-level admission 최종 결정. Judge는 individual hurdle 평가, Governor는 portfolio fit 평가.",
+    "user_override_available": true,
+    "user_override_path": "도훈 (Dohoon Kim) 명시적 결정 시 PG2 active 편입 가능 (user_override_log 기록 필요)"
+  }
+}

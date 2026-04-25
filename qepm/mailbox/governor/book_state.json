@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-04-25T06:00:00+0900",
-  "updated_by": "Governor v8.0 R5 (Session 71 — MEGA_05 user-mandated PG2 admission)",
-  "schema_version": "v1.2",
+  "updated_at": "2026-04-25T20:35:00+0900",
+  "updated_by": "Governor v6.1 R5 Sonnet 4.6 (Session 71 — WT-D20260425_010 Iter5 STR_1699 admission decision)",
+  "schema_version": "v1.3",
 
   "n_admitted": 2,
   "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
@@ -12,11 +12,13 @@
   },
 
   "book_composition_rationale": {
-    "decision": "MEGA_05_80_STR1656_20",
-    "governor_rationale": "MEGA_05 100% 단독 vs 80/20 blended — Governor 자율 결정: 80/20 권장. MEGA_05 MDD -36.95% 수용 하에서 STR_1656_M05(DD Brake, GFC 0% 손실)의 crisis decorrelation 역할이 실질 tail risk 완화에 기여. TDC cross-family(Core analyst × ML DD Brake)는 낮을 것으로 예상 — 이질적 alpha source. 단순성 대 tail protection 가중 시 80/20이 우월.",
+    "decision": "MEGA_05_80_STR1656_20_UNCHANGED",
+    "governor_rationale": "Session 71 사용자 결정 유지. Iter5 STR_1699 (WT-D20260425_010) 신규 admission 평가 결과 GOVERNOR_DEFERRED — PG2 active book 변화 없음. Iter5는 (a) MEGA_05와 factor family 83% overlap, (b) integration_80_20 SR 1.232 ≈ baseline 1.258 noise band 내, (c) NAV-level direct TDC 미측정 (closed-form cor=0.8 가정만), (d) v6.1 R10 multi-objective 8지표 weighted_score 0.553 < 0.65 admission FAIL.",
     "alternative_rejected": {
-      "MEGA_05_100_pct": "단순성 이점 있으나 tail risk 무방비. MDD -36.95% 단독 노출 과도.",
-      "equal_weight_50_50": "SR 목표 SR gap 축소 효율 저하. MEGA_05 SR 우위 충분히 활용 못함."
+      "scenario_A_replacement": "REJECT — Iter5 SR 0.914 < blended 1.22 (-0.306). Hard reject.",
+      "scenario_B_70_10_20_gradual": "MARGINAL_HOLD — SR delta -0.015 noise. Probe value만 존재. NAV-level TDC 측정 후 재검토.",
+      "scenario_C_60_20_20_active": "REJECT — SR delta -0.04 negative + family overlap 83% 동일.",
+      "scenario_D_keep_current": "RECOMMENDED — Add-value 입증 부족 + NAV-level uncertainty 시 baseline 유지가 정직."
     }
   },
 
@@ -25,7 +27,7 @@
       "mega05_contribution": 0.215,
       "str1656_contribution": 0.018,
       "blended_cagr_pct": 23.1,
-      "note": "MEGA_05 CAGR 26.9% × 0.8 + STR_1656 ~9% × 0.2 (estimate; STR_1656 GFC 방어 우선 전략)"
+      "note": "MEGA_05 CAGR 26.9% × 0.8 + STR_1656 ~9% × 0.2 (estimate)"
     },
     "tracking_error": {
       "estimated": 0.105,
@@ -33,18 +35,18 @@
     },
     "information_ratio": {
       "estimated": 1.18,
-      "note": "blended IR estimate: MEGA_05 net_IR 1.274 × 0.8 + diversification benefit"
+      "note": "blended IR estimate"
     },
     "expected_sr_full": {
       "value": 1.22,
       "range": [1.15, 1.30],
-      "note": "MEGA_05 SR 1.258 × 0.8 + STR_1656 SR ~0.9 × 0.2 (MDD 완화 편익 포함) — 기존 PG2 SR 1.193 대비 +0.027"
+      "note": "MEGA_05 SR 1.258 × 0.8 + STR_1656 SR ~0.9 × 0.2"
     },
     "lockbox_sr_mega05": 2.253,
     "expected_mdd": {
       "value": -33.5,
       "range": [-32.0, -36.0],
-      "note": "MEGA_05 MDD -36.95% × 0.8 + STR_1656 MDD ~-12% × 0.2 + crisis decorrelation 편익. 현 PG2 -21.27% 대비 악화 (사용자 수용)"
+      "note": "MEGA_05 MDD -36.95% × 0.8 + STR_1656 MDD ~-12% × 0.2 + crisis decorrelation 편익"
     },
     "crisis_decorrelation": {
       "str1656_gfc_loss": 0.0,
@@ -57,12 +59,12 @@
   "crowding_per_wt": {
     "WT-D20260425_003": {
       "strategy_id": "STR_1631_MEGA_05",
-      "family": "Analyst_Consensus + Quality_Earnings",
+      "family": "Analyst_Consensus + Quality_Earnings + Accrual_Quality",
       "hhi": 0.0988,
       "q07_ac21_cor": 0.731,
       "crowding_flag": "MEDIUM (L-219)",
       "intra_book_family_weight": 0.80,
-      "note": "analyst + quality earnings 80% book exposure. family concentration 주의 (35% max rule: single strategy로는 적용 불가이나 80% 편중 주의 사항)"
+      "note": "analyst + quality earnings 80% book exposure. family concentration 주의 (35% max rule advisory). Iter5 admission 시 saturation +5pp 추가 (REJECTED)"
     },
     "STR_1656_MLRA_M05": {
       "strategy_id": "STR_1656_MLRA_M05",
@@ -73,6 +75,46 @@
       "note": "ML DD Brake는 MEGA_05와 alpha source 완전 이질. Cross-family TDC 예상치 < 0.30."
     }
   },
+
+  "deferred_admissions": [
+    {
+      "wt_id": "WT-D20260425_010",
+      "str_id": "STR_1699",
+      "iter_label": "Iter5_CrossFamily_MultiSleeve",
+      "deferred_at": "2026-04-25T20:35:00+0900",
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE",
+      "governor_verdict": "GOVERNOR_DEFERRED",
+      "reason_codes": [
+        "FAMILY_OVERLAP_83PCT_VS_MEGA05",
+        "ADD_VALUE_NOISE_BAND_INTEGRATION_80_20_SR_DELTA_-0.026",
+        "NAV_LEVEL_TDC_NOT_MEASURED_CLOSED_FORM_COR0.8_PROXY_ONLY",
+        "MULTI_OBJ_WEIGHTED_SCORE_0.553_LT_0.65",
+        "PARETO_3_OF_8_LT_4_OF_8_MINIMUM"
+      ],
+      "performance": {
+        "sr": 0.914,
+        "cagr_pct": 17.58,
+        "mdd_pct": -34.93,
+        "harvey_t_FF5_NW": 3.690,
+        "dsr_forge": 3.7721
+      },
+      "tdc_estimated": {
+        "vs_mega05": 0.75,
+        "vs_str1656": 0.20,
+        "method": "factor_family_overlap_proxy + Forge cor=0.8 assumption"
+      },
+      "registry_role": "Core_Alpha + Defense_Ballast",
+      "follow_up": [
+        "Forge: PG2 NAV history access + STR_1699 NAV-level direct TDC 측정",
+        "Scout: Iter6 cross-family WT 발주 (family NOT IN [Analyst_Consensus, Quality_Earnings])",
+        "2026-Q3: lockbox re-evaluation (post-2024 KR FF5 v2 v3 backfill 후)",
+        "L-205 methodology_active.md 적립"
+      ],
+      "probe_phase_admit": true,
+      "pg2_active_admit": false,
+      "sunset_clause": "6_month_review_post_NAV_TDC_measurement"
+    }
+  ],
 
   "previous_pg2": {
     "strategy_ids": ["STR_1631_SYN_05_2002", "STR_1656_MLRA_M05"],
@@ -135,14 +177,15 @@
 
   "gap_update": {
     "sr_gap_before": 0.807,
-    "sr_gap_after_estimate": 0.549,
-    "sr_gap_reduction": 0.258,
+    "sr_gap_after_mega05_admit": 0.78,
+    "sr_gap_after_iter5_DEFERRED": 0.78,
     "cagr_gap_before": -0.0014,
-    "cagr_gap_after": "OPEN_SURPLUS (+6.9pp 예상)",
+    "cagr_gap_after": "+7.1pp surplus (MEGA_05 23.1% blended)",
     "mdd_gap_before": -0.0373,
-    "mdd_gap_after": "REOPEN (MEGA_05 -36.95% 수용 결정)"
+    "mdd_gap_after": "-8.5pp REOPENED (MEGA_05 -33.5% blended)",
+    "iter5_contribution_to_gap_closure": "ZERO_AFTER_DEFER — STR_1699 PG2 active 편입 보류로 gap 변화 없음. Probe phase에서 6-month NAV-level TDC 측정 후 재평가."
   },
 
-  "method": "user_override_admission_v8_r5",
-  "notes": "Session 71 사용자 명시 결정: MEGA_05를 신규 PG2 Core Primary로 admit. STR_1631_SYN_05_2002 대체. STR_1656_M05 Defense diversifier 유지 (Governor 자율 판단). Mega Sprint 5단계 공식 종결. L-217~L-221 5건 적립. 다음 단계: Ensemble Sprint (MEGA_03 + MEGA_05) + cross-family diversifier 연구. CAUTION regime SR 0.22 약점 → CAUTION 전용 overlay 연구 우선."
+  "method": "v6.1_R5_book_level_admission_iter5_DEFERRED_v8_R5_continuity",
+  "notes": "Session 71 Iter5 STR_1699 admission 평가 종결. JUDGE_PASSED_WITH_NOTE 수용 + Hurdle Grade A 수용에도 (a) family overlap 83% vs MEGA_05, (b) integration_80_20 SR delta -0.026 noise, (c) NAV-level TDC 미측정 closed-form approx 한계, (d) v6.1 R10 multi-objective weighted_score 0.553 < 0.65 admission FAIL → GOVERNOR_DEFERRED. PG2 active book 변화 없음 (MEGA_05 80% + STR_1656 20% 유지). Probe phase admission + 6-month sunset + NAV-level TDC measurement gating. L-205 적립. 다음: Iter6 cross-family WT (family NOT IN [Analyst_Consensus, Quality_Earnings]) 발주 + Q-Lead lockbox 2026-Q3 schedule."
 }

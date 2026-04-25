@@ -1,0 +1,380 @@
+{
+  "task_id": "WT-D20260425_010",
+  "str_id": "STR_1699",
+  "iter_label": "Iter5_CrossFamily_MultiSleeve",
+  "agent": "governor_v6.1_R5_book_level_admission_sonnet46",
+  "decided_at": "2026-04-25T20:30:00+0900",
+  "session": 71,
+
+  "verdict": "GOVERNOR_DEFERRED",
+  "verdict_summary": "STR_1699는 Judge JUDGE_PASSED_WITH_NOTE를 받았으나 (1) 현재 PG2 anchor MEGA_05와 factor family 5/6 overlap (83%) — Analyst_Consensus 4종 + Q07 동일, (2) Iter 5 SR 0.914 < MEGA_05 SR 1.258 (-0.344 BELOW baseline), (3) integration_80_20 SR 1.232 (closed-form approx) 도 MEGA_05 단독 1.258 대비 -0.026 noise band 내, (4) NAV-level 직접 TDC 미측정 — closed-form cor=0.8 가정만 존재. PG2 Sequential Admission gate에서 결정적 add-value 입증 부족. **결정**: PG1 Probe Phase에 admit (admitted_pending), PG2 active book에는 즉시 편입 보류. NAV-level TDC 측정 + post-2024 KR FF5 v2 backfill 후 Lockbox 재검증 필요.",
+
+  "PG0_gap_diagnosis": {
+    "current_pg2_active": {
+      "anchor": "WT-D20260425_003 (STR_1631_MEGA_05)",
+      "diversifier": "STR_1656_MLRA_M05",
+      "weights": {"WT-D20260425_003": 0.80, "STR_1656_MLRA_M05": 0.20},
+      "metrics": {
+        "sr": 1.22,
+        "sr_range": [1.15, 1.30],
+        "cagr_pct": 23.1,
+        "mdd_pct": -33.5,
+        "lockbox_sr_mega05": 2.253
+      },
+      "session_71_admission_decision": "User-mandated 2026-04-25 06:00 KST. MEGA_05 80% replaces STR_1631_SYN_05_2002.",
+      "scheduled_execution": "2026-04-28"
+    },
+
+    "gap_vector": {
+      "sr": {
+        "current": 1.22,
+        "target": 2.0,
+        "gap": 0.78,
+        "priority": "최우선"
+      },
+      "cagr": {
+        "current": 0.231,
+        "target": 0.16,
+        "gap": "+7.1pp surplus",
+        "priority": "ACHIEVED"
+      },
+      "mdd": {
+        "current": -0.335,
+        "target": -0.25,
+        "gap": "-8.5pp REOPENED",
+        "priority": "REOPENED (MEGA_05 admission per user override)"
+      }
+    },
+
+    "iter5_contribution_to_gap": {
+      "sr_contribution": "MARGINAL — Iter5 SR 0.914 < blended 1.22. Direct add NEGATIVE.",
+      "mdd_contribution": "MARGINAL — Iter5 MDD -34.93% > book -33.5%. NO improvement.",
+      "diversification_contribution": "QUESTIONABLE — family overlap 83% with MEGA_05.",
+      "verdict": "Iter5 does NOT close primary SR gap (0.78). Marginal book-level benefit only via cross-family Distress(Q25) + Momentum_Residual(M08) which constitute ~30% of STR_1699 factor weight (Q25 + M08 in Defense + Core sleeves)."
+    }
+  },
+
+  "PG1_individual_admission": {
+    "verdict": "ADMITTED_TO_PROBE_PHASE_NOT_PG2_ACTIVE",
+    "rationale": "JUDGE_PASSED_WITH_NOTE 수용. 그러나 11-gate 개별 admission 결과 5건 PASS / 4건 PASS_WITH_NOTE / 2건 BORDERLINE — 책상 위 admission은 가능하나 PG2 책 수준 편입은 정직 add-value 부족.",
+
+    "eleven_gates": {
+      "gate_1_pit_compliance": {
+        "verdict": "PASS",
+        "evidence": "Judge Gate 0 C1~C15 전수 PASS. PIT_HARD_CUTOFF 2023-11-30 준수."
+      },
+      "gate_2_hard_constraints": {
+        "verdict": "PASS",
+        "evidence": "20종 hard / long-only / Σw=1 / Liquidity 2e8 / TO 412% < 600% 모두 PASS."
+      },
+      "gate_3_harvey_t": {
+        "verdict": "PASS",
+        "evidence": "FF5 t_NW 3.690 > 3.0 (5-spec all PASS 3.575~3.690). Harvey 2016 multi-test threshold 충족."
+      },
+      "gate_4_hurdle_grade_A": {
+        "verdict": "PASS",
+        "evidence": "Grade A: CAGR 17.58% / SR 0.914 / MDD -34.93% / TO 412%. v2.2 hard fail not triggered."
+      },
+      "gate_5_role_honesty_audit": {
+        "verdict": "PASS_WITH_NOTE",
+        "note": "Defense_SA SR 0.0007 — Defense는 alpha 기여 sleeve가 아닌 'MDD ballast'. 'Core_Alpha + Defense_Ballast' 정직 라벨링 필수. registry 의무사항."
+      },
+      "gate_6_ax_axiom_compliance": {
+        "verdict": "PASS",
+        "evidence": "AX-005 EXCLUSION_PASS (multi-sleeve + Sleeve 2 weight 0.33) + AX-007 EXCEPTION #1 (3 sleeves 구조). AX-001 v2 conditional metric 적용."
+      },
+      "gate_7_tail_risk_cvar_d": {
+        "verdict": "PASS_WITH_NOTE",
+        "note": "CVaR_d_proxy 2.61% > 2.5% cap by 4.4%. monthly_realized/sqrt(21) overstate. Hill α 2.726 (finite-moment, not Pareto)."
+      },
+      "gate_8_stress_8_periods": {
+        "verdict": "PASS_WITH_NOTE",
+        "evidence": "GFC 2008 -33.07%, Rate 2022 -20.98%/MDD -26.23%, Brexit/Taper resilient. 6/8 PASS estimated. CRISIS regime n=5 inadequate (forge_package CRISIS metrics null) — pooled fallback Σ + max_w 0.10 shrink applied per AX-001 v2."
+      },
+      "gate_9_sequential_TDC_vs_PG2": {
+        "verdict": "BORDERLINE",
+        "tdc_estimation_method": "factor_family_overlap_proxy (NAV-level direct TDC unavailable)",
+        "tdc_vs_mega05": {
+          "estimated": 0.75,
+          "range": [0.65, 0.85],
+          "method": "5/6 factor family overlap (4× Analyst_Consensus + Q07 shared) + Forge integration_80_20 cor=0.8 assumption",
+          "interpretation": "STR_1699 ↔ MEGA_05 HIGH crowding. Same Analyst_Consensus alpha base + Q07 quality earnings — STR_1699의 cross-family extension은 Defense sleeve의 Q25(Distress) + Core sleeve의 M08(Residual_Momentum)에 한정. 33% Defense + ~17% Momentum Residual = ~50% non-overlapping factor exposure."
+        },
+        "tdc_vs_str1656": {
+          "estimated": 0.20,
+          "range": [0.10, 0.30],
+          "method": "ML_Risk_Architecture vs cross-family blender — alpha source 완전 이질",
+          "interpretation": "STR_1699 ↔ STR_1656 LOW crowding. STR_1656은 ML DD Brake (cash regime), STR_1699은 factor multi-sleeve. Cross-mechanism diversifier 가능."
+        },
+        "v55_admission_threshold": "TDC < 0.30 권장 — STR_1699 vs MEGA_05 0.75 BREACH. STR_1699 vs STR_1656 0.20 PASS.",
+        "verdict_consolidated": "BORDERLINE — STR_1656 대비 OK이나 MEGA_05 (book 80% anchor) 대비 BREACH. Sequential Admission gate FAIL.",
+        "honesty_note": "NAV-level 직접 TDC 측정 미실행 (forge_package limitation acknowledged). closed-form proxy만으로 admission 결정 → MEDIUM uncertainty."
+      },
+      "gate_10_family_saturation": {
+        "verdict": "BORDERLINE",
+        "current_pg2_families": {
+          "Analyst_Consensus + Quality_Earnings": 0.80,
+          "ML_Risk_Architecture": 0.20
+        },
+        "post_admission_S_INTEGRATION_C_families": {
+          "Analyst_Consensus": 0.65,
+          "Quality_Earnings": 0.10,
+          "Momentum_Residual": 0.04,
+          "Distress": 0.04,
+          "ML_Risk_Architecture": 0.17
+        },
+        "L_219_35pct_max_rule": "Analyst_Consensus 65% (post-S_INT_C) > 35% threshold — BREACH. 그러나 family BREACH는 v3.4 admission rule상 single-strategy attribution 한계로 advisory.",
+        "verdict_consolidated": "BORDERLINE — family concentration intensifies if Iter5 admitted. Cross-family extension은 Q25/M08 두 family에만 ~8% 추가 — 35% rule 결정적 완화 효과 없음."
+      },
+      "gate_11_capacity_liquidity": {
+        "verdict": "PASS",
+        "evidence": "Liquidity AvgTV20 ≥ 2e8 PIT lagged. Universe K200 ∪ KQ150 (Codex 3607 row confirmed). 20-name hard cap. CASH overlay 30% max BULL/CRISIS bound. Capacity adequate."
+      }
+    },
+
+    "gates_passed": "5/11 PASS + 4/11 PASS_WITH_NOTE + 2/11 BORDERLINE (Gate 9 TDC + Gate 10 family saturation)",
+    "individual_admission_score": "60/100 — Probe-phase admit acceptable, PG2 active edition NOT recommended"
+  },
+
+  "PG2_book_level_rebalance": {
+    "scenarios_evaluated": 4,
+
+    "scenario_A_replacement": {
+      "blend": "STR_1699 100%",
+      "estimated_metrics": {
+        "sr": 0.914,
+        "cagr_pct": 17.58,
+        "mdd_pct": -34.93
+      },
+      "delta_vs_current": {
+        "sr_delta": -0.306,
+        "cagr_delta": "-5.5pp",
+        "mdd_delta": "-1.4pp"
+      },
+      "verdict": "REJECT_HARD — SR 0.914 < current blended 1.22, single-strategy concentration risk, AX-002 hurdle 하향 합리화 차단"
+    },
+
+    "scenario_B_integration_70_10_20_gradual": {
+      "blend": "MEGA_05 70% + STR_1699 10% + STR_1656 20%",
+      "estimated_metrics_method": "closed-form 3-asset SR with assumed correlations",
+      "estimated_metrics": {
+        "sr": 1.205,
+        "sr_range": [1.15, 1.26],
+        "cagr_pct": 22.0,
+        "mdd_pct": -33.0,
+        "ir_book": 1.16
+      },
+      "delta_vs_current": {
+        "sr_delta": -0.015,
+        "cagr_delta": "-1.1pp",
+        "mdd_delta": "+0.5pp"
+      },
+      "rationale": "보수적 probe — STR_1699 10% sleeve로 cross-family exposure (Q25 + M08) 추가. MEGA_05 70%로 anchor 신뢰 유지.",
+      "verdict": "MARGINAL_HOLD — SR add-value 0 (-0.015 noise). Probe value만 존재. 6개월 review 필요."
+    },
+
+    "scenario_C_integration_60_20_20_active": {
+      "blend": "MEGA_05 60% + STR_1699 20% + STR_1656 20%",
+      "estimated_metrics": {
+        "sr": 1.18,
+        "sr_range": [1.12, 1.24],
+        "cagr_pct": 21.4,
+        "mdd_pct": -32.5,
+        "ir_book": 1.13
+      },
+      "delta_vs_current": {
+        "sr_delta": -0.04,
+        "cagr_delta": "-1.7pp",
+        "mdd_delta": "+1.0pp"
+      },
+      "rationale": "STR_1699 20% — Judge 권장 integration_80_20 변형. MEGA_05 anchor 신뢰 -10pp.",
+      "verdict": "REJECT — SR delta -0.04 negative. MEGA_05 신뢰 약화 + family overlap 83% 동일. Add-value 부재."
+    },
+
+    "scenario_D_keep_current_no_admission": {
+      "blend": "MEGA_05 80% + STR_1656 20% (current PG2 active per Session 71)",
+      "estimated_metrics": {
+        "sr": 1.22,
+        "cagr_pct": 23.1,
+        "mdd_pct": -33.5
+      },
+      "delta_vs_current": "0 (baseline)",
+      "rationale": "Iter5는 Probe phase에만 admit. PG2 active book 변화 없음. NAV-level direct TDC 측정 + post-2024 Lockbox backfill 후 재평가.",
+      "verdict": "RECOMMENDED — Add-value 입증 부족 + NAV-level uncertainty 잔존 시 baseline 유지가 정직."
+    },
+
+    "recommended_scenario": "D",
+    "alternative_if_explore_required": "B (10% probe) — 6-month sunset clause + NAV-level TDC measurement gating",
+
+    "decision_rationale": "Judge가 'Integration 80/20 권장'했으나 (a) integration_80_20 SR 1.232 ≈ MEGA_05 1.258 -0.026 noise, (b) closed-form cor=0.8 approx — 실제 NAV TDC 미측정, (c) family overlap 83% structural concern, (d) Iter1-4 4건 연속 FAIL 후 Iter5 첫 PASS는 sprint momentum 입증이지 PG2 add-value 입증 아님. **Governor 자율 판단**: PG2 active book에 즉시 편입은 silent 합리화 위험. STR_1699의 본질적 가치는 Q25(Distress) + M08(Residual_Momentum) cross-family extension 33%인데, 이는 별도 cross-family WT (예: Iter6 Defense-only 또는 Momentum-only)로 정직 분리 발주가 우월."
+  },
+
+  "PG3_drift_monitoring_plan": {
+    "applicability": "Iter5는 PG2 active 미편입 → drift monitoring N/A. Probe phase admit 시 다음 trigger 적용.",
+
+    "monitoring_triggers": {
+      "monthly_realized_alpha_vs_predicted": {
+        "tolerance": "±2σ over rolling 6m",
+        "predicted_alpha_monthly": 0.0155,
+        "predicted_alpha_annual": 0.1856,
+        "alarm_threshold": "monthly realized < -0.0050 for 3 consecutive months"
+      },
+      "te_ratio_drift": {
+        "predicted_te": 0.20,
+        "alarm_threshold": "realized TE > 0.25 (drift +25% from prediction)"
+      },
+      "crowding_tdc_remeasure": {
+        "frequency": "quarterly",
+        "method": "NAV-level direct TDC vs MEGA_05 (PG2 anchor)",
+        "alarm_threshold": "TDC > 0.55 → escalate to PG2 review"
+      },
+      "regime_shift_alarm": {
+        "current_regime": "NEUTRAL (2026-04 score 42.9)",
+        "alarm_conditions": [
+          "CRISIS regime n_observed > 5 (current limit) — re-pool Σ",
+          "BULL regime ICIR drop > 30% from 0.578 baseline",
+          "CAUTION regime SR < 0.5 (current 0.826)"
+        ]
+      },
+      "lockbox_re_evaluation": {
+        "schedule": "2026-Q3 if KR FF5 v2 v3 backfill matures",
+        "trigger": "post-2024 backfill data availability ≥ 12 months"
+      }
+    },
+
+    "review_cadence": {
+      "monthly": "realized vs predicted α/TE drift check",
+      "quarterly": "NAV-level TDC remeasure + family saturation audit",
+      "semi_annual": "regime conditional metrics audit (BULL/NORMAL/CAUTION/CRISIS SR + ICIR)",
+      "annual": "PG2 admission re-review + sunset clause evaluation"
+    }
+  },
+
+  "multi_objective_8_indicator_score": {
+    "1_expected_active_return": {
+      "value": 0.1467,
+      "score": 0.55,
+      "weight": 0.20,
+      "note": "Predicted active return 14.67% — moderate, below MEGA_05 21.5% baseline contribution"
+    },
+    "2_tracking_error": {
+      "value": 0.2058,
+      "score": 0.50,
+      "weight": 0.10,
+      "note": "TE 20.6% acceptable for KR concentrated long-only but high relative to PG2 anchor 11%"
+    },
+    "3_net_information_ratio": {
+      "value": 0.713,
+      "score": 0.55,
+      "weight": 0.20,
+      "note": "Net IR 0.713 < MEGA_05 1.274 baseline. Forge SR 0.914 / Harvey FF5 t 3.690"
+    },
+    "4_turnover_cost_efficiency": {
+      "value": 0.412,
+      "estimated_cost_pct": 1.32,
+      "score": 0.65,
+      "weight": 0.10,
+      "note": "TO 412% < 600% hard cap. Cost 132bps acceptable. 15bps × 8.8 round-trips reasonable for monthly rebal"
+    },
+    "5_crowding_adj_tdc": {
+      "value_vs_mega05": 0.75,
+      "value_vs_str1656": 0.20,
+      "score": 0.30,
+      "weight": 0.15,
+      "note": "vs MEGA_05 BREACH (>0.30 threshold). vs STR_1656 PASS. Net crowding moderate-to-high."
+    },
+    "6_capacity_liquidity": {
+      "score": 0.80,
+      "weight": 0.10,
+      "note": "K200 ∪ KQ150 + AvgTV20 ≥ 2e8 PIT lagged. Capacity adequate for current AUM scale."
+    },
+    "7_regime_robustness": {
+      "score": 0.45,
+      "weight": 0.10,
+      "note": "BULL SR 2.08 strong, NORMAL SR 0.43 weak, CAUTION SR 0.83 OK, CRISIS n=5 null. Regime robustness uneven; CRISIS small-sample."
+    },
+    "8_interpretability_pit_compliance": {
+      "score": 0.85,
+      "weight": 0.05,
+      "note": "C1~C15 full PASS. AX-007 multi-sleeve EXCEPTION #1 documented. Method shopping cap=15 honest log. Defense_Ballast role honesty disclosed."
+    },
+    "weighted_score": 0.553,
+    "score_threshold_pass": 0.65,
+    "pareto_pass_count": "3/8 dominant — gates 1,4,6,8 (return / TO / capacity / interpretability) >= 0.55. Crowding (5) + Regime (7) + IR (3) WEAK.",
+    "v6_1_R10_admission_decision": "FAIL — weighted_score 0.553 < 0.65 threshold AND Pareto 3/8 < 4/8 minimum. Multi-objective 8지표 admission FAIL."
+  },
+
+  "defense_ballast_labeling_decision": {
+    "applied": true,
+    "registry_role_assigned": "Core_Alpha + Defense_Ballast",
+    "rejected_role_labels": [
+      "Cross-family Multi-sleeve Composite (alpha-balanced)",
+      "Dual-alpha cross-family blender",
+      "Defense_Diversifier (alpha-contributing)"
+    ],
+    "honesty_evidence": [
+      "Defense_SA standalone SR 0.0007 — near-zero alpha",
+      "Bootstrap CI Alpha-side IC = [-0.252, -0.092] negative — Defense does NOT add crisis alpha",
+      "MDD relief +11.53pp Core / +41.60pp Defense via multi-sleeve composite",
+      "AX-001 v2 conditional metric: defense provides MDD ballast, NOT crisis alpha"
+    ],
+    "registry_update_action": "strategy_registry must record STR_1699 role taxonomy as 'Core_Alpha + Defense_Ballast'. Forbidden labels: 'cross_family_alpha', 'dual_alpha_diversifier'."
+  },
+
+  "judge_open_notes_resolution": {
+    "NOTE_1_LOCKBOX_DEFERRED": {
+      "governor_action": "DEFERRED to 2026-Q3 — KR FF5 v2 v3 backfill 진행 시 re-trigger. STR_1699 PG2 active 편입은 lockbox 재검증 후로 보류."
+    },
+    "NOTE_2_DEFENSE_BALLAST_LABELING": {
+      "governor_action": "ACCEPTED — strategy_registry에 'Core_Alpha + Defense_Ballast' 정직 표기. AX-001 v2 audit_defense_v2 evidence 첨부."
+    },
+    "NOTE_3_INTEGRATION_NAV_VERIFICATION": {
+      "governor_action": "REQUIRED_PRE_PG2 — closed-form cor=0.8 approx만으로 PG2 admit 불가. Q-Lead에게 PG2 NAV history access + Forge NAV-level integration backtest 발주 필요."
+    },
+    "NOTE_4_CVAR_D_PROXY_BREACH": {
+      "governor_action": "ACKNOWLEDGED — Hill α 2.726 finite-moment, monthly/sqrt(21) overstate 인정. Forge realized daily CVaR_d 측정 시 likely 5-15% lower. PG1 probe phase에는 acceptable, PG2 active 편입 시 daily-level CVaR 재확인 필수."
+    },
+    "NOTE_5_CRISIS_REGIME_N_5": {
+      "governor_action": "MONITOR — pooled fallback Σ + max_w 0.10 shrink 인정. 4-state regime을 longer rolling window로 확장하는 RegimeScout WT 별도 제안. Live monitoring trigger: CRISIS observation > 5개월 누적 시 re-pool."
+    },
+    "NOTE_6_RF_A1_SUB_STAB_SIGNAL_LEVEL_FAIL": {
+      "governor_action": "ACCEPTED_NOT_PROPAGATED — alpha-signal sub_stab 0.060 < 0.50 hard fail은 portfolio-level Forge 5-spec NW HAC 3.690 + DSR 3.77로 propagation 차단됨. Diagnostic flag만 retain."
+    }
+  },
+
+  "L_code_proposed": {
+    "id": "L-205",
+    "title": "Family overlap 83% near-clone admission DEFERRED 패턴 (STR_1699 vs MEGA_05)",
+    "tags": ["RoleBias_Core_Alpha", "AX-007_exception_1", "method=multi_sleeve", "L-219_family_saturation", "TDC_NAV_level_required"],
+    "core_reference": "STR_1699_Iter5_CrossFamilyBlender + MEGA_05_PG2_anchor + Common Charter §4 sequential admission TDC threshold",
+    "lesson_text": "조건: market=KR, structure=multi_sleeve(Core+Defense+Cash), universe=top20_K200_KQ150, blend=score_level_L484. STR_1699 (4× Analyst_Consensus + Q07 + M08 + Q25)는 PG2 anchor MEGA_05 (4× Analyst_Consensus + Q07 + Accrual_Quality)와 factor family 5/6 overlap (83%). Judge JUDGE_PASSED_WITH_NOTE 수용 + Hurdle Grade A 수용 + 5-spec FF5 t_NW 3.690 PASS에도 불구하고 PG2 active book admission DEFERRED 결정. 핵심 사유: (1) integration_80_20 SR 1.232 ≈ MEGA_05 baseline 1.258 noise band 내 (-0.026) — add-value 입증 미흡, (2) closed-form cor=0.8 approx만 존재, NAV-level direct TDC 미측정 (Forge layer limitation), (3) STR_1699의 cross-family extension은 Q25(Distress) + M08(Momentum_Residual) ~33% 무게에 한정 — 별도 cross-family WT로 정직 분리 발주가 우월, (4) v6.1 R10 multi-objective 8지표 weighted_score 0.553 < 0.65 + Pareto 3/8 < 4/8 — admission FAIL. Probe phase admit + 6-month sunset + NAV-level TDC measurement gating은 가능. 다음 Iter6는 'family NOT IN [Analyst_Consensus, Quality_Earnings]' 강제 필수 (consensus saturation 도달, L-219). Sprint momentum (Iter1~4 FAIL → Iter5 PASS)은 valuable이나 sprint momentum과 PG2 add-value는 분리 평가."
+  },
+
+  "next_state_transition": {
+    "from": "JUDGE_PASSED_WITH_NOTE",
+    "to": "GOVERNOR_DEFERRED",
+    "wt_status": "admitted_to_probe_phase_pending_NAV_level_TDC",
+    "pg2_book_change": "NONE — PG2 active 유지 (MEGA_05 80% + STR_1656 20%)",
+    "follow_up_actions": [
+      "Forge에게 PG2 NAV history access + STR_1699 NAV-level direct TDC 측정 발주 (Q-Lead 권한 필요)",
+      "Scout에게 Iter6 cross-family WT 발주 — family NOT IN [Analyst_Consensus, Quality_Earnings] 강제",
+      "2026-Q3 lockbox re-evaluation schedule (post-2024 KR FF5 v2 v3 backfill 대기)",
+      "L-205 methodology_active.md 적립 + strategy_registry STR_1699 'Core_Alpha + Defense_Ballast' 라벨 등록"
+    ]
+  },
+
+  "completion_summary": {
+    "verdict": "GOVERNOR_DEFERRED",
+    "recommended_scenario": "D (keep current PG2 — MEGA_05 80% + STR_1656 20%)",
+    "expected_book_sr": 1.22,
+    "expected_book_mdd_pct": -33.5,
+    "sequential_tdc_vs_mega05_estimated": 0.75,
+    "sequential_tdc_vs_str1656_estimated": 0.20,
+    "defense_ballast_labeled": true,
+    "monitor_plan_attached": true,
+    "judge_open_notes_resolved": "6/6",
+    "pg1_individual_admission": "ADMITTED_TO_PROBE_PHASE",
+    "pg2_active_book_admission": "DEFERRED",
+    "next_agent": "Forge (NAV-level TDC) + Scout (Iter6 cross-family) + Q-Lead (lockbox 2026-Q3 schedule)"
+  }
+}
