@@ -1,10 +1,12 @@
 {
   "task_id": "WT-D20260425_008",
-  "strategy_id": "STR_1696",
+  "strategy_id": "STR_1698",
   "agent": "forge",
+  "model": "claude-opus-4-7",
   "schema_version": "v6.1",
   "as_of_date": "2026-04-25",
   "phase": "FORGE_DONE",
+  "rebuild_note": "Opus 4.7 walk-forward REBUILD. Sonnet STR_1696 archived (ID collision with Iter 2).",
   "backtest_summary": {
     "prelb": {
       "period": "1990-07-01 ~ 2024-01-22",
@@ -22,22 +24,32 @@
       "p1": {
         "period": "2008-2014",
         "sr": 1.168,
-        "cagr": 30.77
+        "cagr": 30.77,
+        "mdd": 49.95
       },
       "p2": {
         "period": "2015-2019",
         "sr": 0.811,
-        "cagr": 14.79
+        "cagr": 14.79,
+        "mdd": 26.48
       },
       "p3": {
         "period": "2020-2024",
         "sr": 0.507,
-        "cagr": 12.59
+        "cagr": 12.59,
+        "mdd": 40.31
       }
     },
-    "method": "HRP_lw",
+    "method": "HRP_lw_walkforward",
     "n_names": 20,
     "commission_bps": 15
+  },
+  "walkforward_integrity": {
+    "pure_walkforward_dates": 313,
+    "opt_frozen_dates": 0,
+    "total_sig_dates": 313,
+    "pure_walkforward_pct": 100,
+    "note": "Mode A pure walk-forward HRP_lw (cov ≤ t-1). Mode B OPT_WEIGHTS only at sig_date >= 2024-01-01 (PIT-correct since optimizer trained on data ≤ 2024-01-01)."
   },
   "m08_oos_performance": {
     "p3_ic_mean": -0.0198,
@@ -64,7 +76,7 @@
     "portfolio_level_note": "L-219: top-20 portfolio cor Q07-M08 = -0.29 (genuinely resolved)"
   },
   "momentum_crash_resilience": {
-    "reference": "Daniel-Moskowitz 2016 — momentum crash periods",
+    "reference": "Daniel-Moskowitz 2016",
     "periods": {
       "momentum_2009_reversal": {
         "cagr": 145.83,
@@ -83,8 +95,8 @@
       "momentum_2009_pred": 0.4969,
       "momentum_2020_pred": 0.4671
     },
-    "m08_role": "cross-family diversifier (theta=0.04). Heavy tail hill_alpha=0.46.",
-    "interpretation": "M08 SubStab 0.188 (5.3x decay P1→P3). Momentum crash exposure moderate (weight 4.01%)."
+    "m08_role": "cross-family diversifier (theta=0.04). Heavy tail Hill α=0.46.",
+    "interpretation": "M08 SubStab 0.188 (5.3x decay P1->P3). Crash exposure moderate (weight 4.01%)."
   },
   "stress_periods": {
     "Terror_9_11": {
@@ -149,7 +161,7 @@
     "cvar_95_optimizer_sim": 0.0895,
     "cvar_cap": 0.025,
     "cvar_cap_breach": true,
-    "note": "CVaR cap breach expected (baseline same as optimizer). Forge confirms."
+    "note": "CVaR cap breach expected (top20 long-only on 22yr KR universe)."
   },
   "m08_decay_overlay": {
     "status": "TRIGGERED",
@@ -165,6 +177,11 @@
       "sr": 1.024,
       "cagr": 21.15,
       "mdd": 39.8
+    },
+    "decay_effect": {
+      "sr_delta": 0.051,
+      "mdd_delta": -10.15,
+      "cagr_delta": -2.72
     }
   },
   "q07_m08_joint_monitor": {
@@ -193,19 +210,23 @@
     "note": "AX-004 EXCLUSION clause satisfied: multi-axis + cross-family"
   },
   "pit_compliance": {
-    "C1": "PASS: no full-sample stats. Rolling/expanding only.",
-    "C2": "PASS: HRP uses t-1 60d lookback. OPT weights from sig_date 2024-01-01 (pre-LB).",
+    "C1": "PASS: no full-sample stats. Walk-forward HRP only.",
+    "C2": "PASS: HRP cov from 60d ending strictly < sig_date. OPT weights frozen at 2024-01-01.",
     "C9": "PASS: regime labels from regime_v7 (PIT pre-computed).",
     "C10": "PASS: LIQ_20d lagged filter at sig_date.",
-    "C13": "PASS: Z_Score_Aligned from Factor DB only. No sign flip.",
-    "C14": "PASS: load_month_factors() Usable_Date <= sig_date enforced.",
-    "C15": "PASS: Factor DB connector load_month_factors(). No raw RAWDATA factor extract."
+    "C13": "PASS: Z_Score_Aligned only.",
+    "C14": "PASS: load_month_factors() Usable_Date <= sig_date.",
+    "C15": "PASS: Factor DB connector load_month_factors()."
   },
   "package_hashes": {
-    "alpha_md5": "f648d2d3e370b34fb4c3a56e97cef4b7",
-    "risk_md5": "dc8ebd7c6a52820125520ba6f728d237",
-    "optim_md5": "63de76f97ad8756327f33e4c44da7e94",
-    "verified_at": "2026-04-25 14:56:53.227786"
+    "alpha_md5_start": "f648d2d3e370b34fb4c3a56e97cef4b7",
+    "risk_md5_start": "dc8ebd7c6a52820125520ba6f728d237",
+    "opt_md5_start": "63de76f97ad8756327f33e4c44da7e94",
+    "alpha_md5_end": "f648d2d3e370b34fb4c3a56e97cef4b7",
+    "risk_md5_end": "dc8ebd7c6a52820125520ba6f728d237",
+    "opt_md5_end": "63de76f97ad8756327f33e4c44da7e94",
+    "immutable": true,
+    "verified_at": "2026-04-25 15:24:13.779703"
   },
   "next_step": "judge_s6"
 }

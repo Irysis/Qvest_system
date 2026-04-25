@@ -1,32 +1,36 @@
 {
   "task_id": "WT-D20260425_006",
   "strategy_id": "STR_1690_WT006_CrisisOverlay",
-  "agent": "forge_v6.1_opus_4_7_walkforward",
-  "rebuild_status": "OPUS_4_7_WALKFORWARD_REBUILD",
+  "rebuild_note": "Opus 4.7 walk-forward rebuild — 이전 sonnet 4.6 결과 무효 (single-snapshot 22년 정적 적용)",
   "prev_invalidated": true,
-  "prev_invalidation_reason": "sonnet 4.6 result used single-snapshot weights (sig_date 2024-01-22) applied statically across 22 years — invalid, AX-002 violation",
   "as_of_date": "2026-04-25",
-  "inherits_from": {
-    "alpha": "da02876394bc6e70c8b1c5c6bd1e59f5",
-    "risk": "5864c61ad358ce12f2d308d4bd957605",
-    "opt": "8d7dcdf73bc4de05b1067c47553e968c"
+  "n_sig_dates_walkforward": 252,
+  "walkforward_design": {
+    "score_source": "alpha_scores.parquet (252 sig_dates × 3033 tickers)",
+    "overlay_source": "overlay_signals.parquet (252 monthly multipliers, t-1 lag)",
+    "selection": "top-N by score_eff after liquidity filter (LIQ_20d >= 2e8)",
+    "weight_method": "score_tilt (HRP × score blend, Ensemble_Top3 proxy)",
+    "cov_method": "ledoit_wolf (rolling, PIT)",
+    "overlay_application": "Option_A_post_multiplication (cash sleeve = 1 - mult)",
+    "n_holdings": 20,
+    "weight_cap": 0.2,
+    "commission_one_way": 0.0015
   },
-  "pure_function_audit_pass": true,
+  "pure_function_audit": {
+    "alpha_md5_start": "da02876394bc6e70c8b1c5c6bd1e59f5",
+    "risk_md5_start": "5864c61ad358ce12f2d308d4bd957605",
+    "opt_md5_start": "8d7dcdf73bc4de05b1067c47553e968c",
+    "alpha_md5_end": "da02876394bc6e70c8b1c5c6bd1e59f5",
+    "risk_md5_end": "5864c61ad358ce12f2d308d4bd957605",
+    "opt_md5_end": "8d7dcdf73bc4de05b1067c47553e968c",
+    "audit_pass": true
+  },
   "pit_compliance": {
     "C2": "PASS",
     "C9": "PASS",
     "C13": "PASS",
     "C15": "PASS",
     "lockbox": "ENFORCED"
-  },
-  "walkforward": {
-    "n_sig_dates": 252,
-    "sig_date_range": ["2003-02-28", "2024-01-22"],
-    "selection_method": "top-20 by alpha_scores.score_eff (walk-forward)",
-    "weight_method": "score_tilt (HRP × score, ledoit_wolf cov)",
-    "overlay_application": "Option_A_post_multiplication via cash sleeve",
-    "overlay_cap_kr": 1,
-    "overlay_cap_alpha": 1.5
   },
   "scenarios": {
     "A_baseline_no_overlay": {
@@ -112,23 +116,5 @@
       "primary_scenario": "B (KR cap [0,1.0]) — Optimizer confirmed deduce-only mandate",
       "reference": "C (Alpha [0,1.5]) — comparison only"
     }
-  },
-  "charts": {
-    "equity_curve_png": "./backtest_result/equity_curve.png",
-    "annual_returns_png": "./backtest_result/annual_returns.png",
-    "drawdown_png": "./backtest_result/drawdown.png"
-  },
-  "artifacts": {
-    "performance_summary": "./backtest_result/performance_summary.json",
-    "daily_nav": "./backtest_result/daily_nav.csv",
-    "monthly_returns": "./backtest_result/monthly_returns.parquet",
-    "stress_test": "./backtest_result/stress_test_results.json",
-    "mega05_comparison_json": "./backtest_result/mega05_comparison.json"
-  },
-  "status": {
-    "boundary_pass": true,
-    "forge_done": true,
-    "judge_ready": true,
-    "rebuild_invalidated_prev": true
   }
 }

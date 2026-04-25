@@ -1,99 +1,13 @@
 {
-  "mega05_baseline": {
-    "strategy_id": "STR_1631_MEGA_05",
-    "SR_full": 1.258,
-    "SR_prelb": 1.147,
-    "CAGR": 26.9,
-    "MDD": -36.95,
-    "harvey_t_prelb": 2.691
-  },
-  "iter1_primary": {
-    "strategy_id": "STR_1690_WT006_CrisisOverlay",
-    "scenario": "B_cap10",
-    "SR_full": 0.6,
-    "SR_prelb": 0.511,
-    "CAGR": 7.38,
-    "MDD": 39.32,
-    "t_NW_prelb": 8.195
-  },
-  "replacement_scenario": {
-    "description": "100% Iter1 replacing MEGA_05",
-    "SR": 0.6,
-    "CAGR": 7.38,
-    "MDD": 39.32,
-    "SR_delta_vs_mega05": -0.658,
-    "milestone_target_180": false
-  },
-  "integration_scenarios": {
-    "w8020_iter1_mega05": {
-      "weights": {
-        "iter1": 0.2,
-        "mega05": 0.8
-      },
-      "SR_estimate": 1.126,
-      "milestone_180": false
-    },
-    "w7030_iter1_mega05": {
-      "weights": {
-        "iter1": 0.3,
-        "mega05": 0.7
-      },
-      "SR_estimate": 1.061,
-      "milestone_180": false
-    },
-    "w6040_iter1_mega05": {
-      "weights": {
-        "iter1": 0.4,
-        "mega05": 0.6
-      },
-      "SR_estimate": 0.995,
-      "milestone_180": false
-    }
-  },
-  "pg2_current": {
-    "composition": "STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%",
-    "SR": 1.193,
-    "CAGR": 16.14,
-    "MDD": -21.27,
-    "milestone_target_180": false
-  },
-  "mdd_goal_achievement": {
-    "target_pct": -25,
-    "mega05_mdd": -36.95,
-    "iter1_mdd": 39.32,
-    "mdd_improvement": 76.27,
-    "goal_achieved": true
-  },
-  "open_questions_resolved": {
-    "OQ1_cvar_cap": {
-      "question": "CVaR cap은 sleeve인지 book인지",
-      "sleeve_cvar": 0.1618,
-      "book_blended_cvar": 0.0777,
-      "cvar_cap": 0.025,
-      "verdict": "FAIL_book_3.11x"
-    },
-    "OQ2_beta_target": {
-      "question": "beta target overlay-OFF vs blended",
-      "beta_overlay_off": 1.08,
-      "beta_blended": 0.6294,
-      "target_range": [1, 1.05],
-      "verdict_off": "within_target",
-      "verdict_blended": "below_target_by_design",
-      "design_intent": "Overlay reduces market beta as crisis protection per AX-001v2"
-    },
-    "OQ3_cvar_infeasibility": {
-      "question": "CVaR breach RF-O8 해결 방안",
-      "ratio_sleeve": 6.472,
-      "ratio_book": 3.763,
-      "verdict": "UNRESOLVED",
-      "recommendation": "Cap 자체는 sleeve-level 설계가 맞음. Book-level 측정 추가 보고 필요."
-    },
-    "OQ4_mult_cap": {
-      "question": "mult cap [0,1.0] vs [0,1.5]",
-      "adopted": "cap10 (KR mandate primary)",
-      "rationale": "Optimizer confirmed KR long-only deduce-only. cap10 = Scenario B primary.",
-      "cap15_ref": "Scenario C reference (Alpha spec baseline)",
-      "verdict": "cap10 primary + cap15 reference both reported"
-    }
-  }
+  "mega05_sr_full": 1.258,
+  "mega05_cagr": 26.9,
+  "mega05_mdd": -36.95,
+  "pg2_target_sr": 1.8,
+  "replacement_sr": 0.462,
+  "integration_80_20_sr": 1.0988,
+  "integration_70_30_sr": 1.0192,
+  "integration_60_40_sr": 0.9396,
+  "replacement_milestone": false,
+  "int8020_milestone": false,
+  "int7030_milestone": false
 }

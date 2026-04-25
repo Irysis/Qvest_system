@@ -1146,7 +1146,7 @@ tryCatch({
   )
 
   result <- tg_agent_brief(
-    agent = "forge",
+    agent = "Forge",
     title = sprintf("STR_1698 WT008 M08 Swap REBUILD (Opus 4.7) -- %s", swap_verdict),
     sections = list(
       list(type = "header",
@@ -1184,7 +1184,7 @@ tryCatch({
            ))
     ),
     charts = c(
-      file.path(OUT_DIR, "equity_curve_full.png"),
+      file.path(OUT_DIR, "equity_curve.png"),
       file.path(OUT_DIR, "annual_returns.png")
     )
   )
