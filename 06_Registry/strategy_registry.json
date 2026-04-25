@@ -8334,5 +8334,84 @@
     "lockbox_audit_evidence": "qepm/mailbox/worktask/WT-D20260425_010/judge_lockbox_audit.json",
     "registered_at": "2026-04-25",
     "registered_by": "Q-Lead (Phase E task)"
+  },
+  {
+    "id": "STR_1700",
+    "name": "WT011 MEGA_06 — Multi-sleeve + Kelly + 3-Layer Overlay (Iter 6)",
+    "dir": "STR_1700_WT011_MEGA_06",
+    "wt_id": "WT-D20260425_011",
+    "role_label": "core_with_machinery_overlay",
+    "status": "pg1_probe_phase_admit_phased_replacement",
+    "scenario_decision": "A_replacement_phased_30_90_days",
+    "structure": {
+      "type": "multi_sleeve",
+      "ax_007_exception": "#1_multi_sleeve",
+      "core_sleeve": "65% 4F Consensus (C01/C02/C04/C06)",
+      "defense_sleeve": "35% 3-axis (Q07_Earnings_Stability + M08_Residual_Mom + Q25_Ohlson_O)",
+      "cash_overlay": "regime-conditional FM (BULL 0% / NORMAL 5% / CAUTION 15% / CRISIS 30%)",
+      "method_optimizer": "InvVol_Quarterly_KO + Kelly_frac05 + 3-Layer Overlay (DD Brake 6/8/20 + VolReg 12% + FM regime)"
+    },
+    "metrics_pre_lockbox": {
+      "period": "2006-02 ~ 2023-11",
+      "n_months": 215,
+      "sr": 0.998,
+      "cagr": 13.79,
+      "mdd": -22.98,
+      "harvey_ff5_t_nw": 3.716,
+      "harvey_5_spec_all_pass": true
+    },
+    "metrics_full_period_oos": {
+      "period": "2006-02 ~ 2026-04 (243m)",
+      "sr": 1.079,
+      "cagr": 15.27,
+      "mdd": -22.98,
+      "harvey_ff5_t_nw": 4.552,
+      "dsr_post_penalty_1.00": 4.05
+    },
+    "metrics_oos_24_26_frozen": {
+      "period": "2024-01-23 ~ 2026-04 (30 months)",
+      "forge_sr_monthly": 1.746,
+      "judge_harness_sr_daily": 1.6927,
+      "delta_within_tolerance": 0.053,
+      "cagr_oos": 29.09,
+      "mdd_oos": -7.41,
+      "hit_rate": 73.3
+    },
+    "fair_baseline_comparison_243m": {
+      "vs_mega_05": {
+        "sr_delta": 0.113,
+        "cagr_delta": 0.9,
+        "mdd_delta": 1.84,
+        "tff5_delta": 1.3,
+        "verdict": "Pareto_dominant"
+      },
+      "vs_str_1699": {
+        "sr_delta": 0.084,
+        "cagr_delta": -4.76,
+        "mdd_delta": 11.95,
+        "tff5_delta": 0.251,
+        "verdict": "vol_reduction_tradeoff"
+      },
+      "cor_mega_06_str_1699": 0.903,
+      "cor_mega_06_mega_05": 0.098
+    },
+    "judge_verdict": "JUDGE_PASSED_WITH_NOTE (5/7 PASS + 2 PASS_WITH_NOTE)",
+    "governor_verdict": "ADMITTED_WITH_NOTE (Scenario A Phased Replacement T+30~90)",
+    "codex_round_history": {
+      "alpha": "REJECT 7 concerns → 4 ACCEPT + 2 PARTIAL + 1 REBUTTAL",
+      "risk": "REJECT 8 concerns → 3 ACCEPT + 1 PARTIAL + 5 REBUTTAL",
+      "optimizer": "REVISE 9 concerns → 4 ACCEPT + 4 PARTIAL + 1 REBUTTAL",
+      "judge": "REVISE 7 concerns → ALL ACCEPTED",
+      "governor": "timeout_skipped (OVERRIDE_003, replay T+30)"
+    },
+    "ax_008_triangulation": "PASS_WITH_SUBSTITUTE (Forge + Judge harness + Iter 5 Architect)",
+    "registered_at": "2026-04-26",
+    "next_steps_t_plus": {
+      "T+19_architect_spawn": "G1 closure",
+      "T+24_forge_extension": "G2/G3/G4 closure (LMF rebuild + liquidity verify + daily CVaR)",
+      "T+30_codex_replay_split": "4× 600s",
+      "T+30_milestone_review": "phased Replacement decision",
+      "T+90_full_replacement": "MEGA_05 80% + STR_1656 20% → STR_1700 100% (or 80/20 with STR_1656)"
+    }
   }
 ]

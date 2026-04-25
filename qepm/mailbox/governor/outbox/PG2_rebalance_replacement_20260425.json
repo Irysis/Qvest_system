@@ -1,0 +1,106 @@
+{
+  "order_id": "PG2_PROBE_ADMIT_20260426_STR_1700",
+  "issued_by": "governor_sonnet46_v6.1_R5",
+  "issued_at": "2026-04-26T01:05:00+0900",
+  "task_id": "WT-D20260425_011",
+  "str_id": "STR_1700",
+  "iter_label": "Iter6_MEGA_06_Kelly_Overlay",
+  "scenario": "A_replacement_phased",
+  "pathway": "phased_30_90_days",
+  "current_milestone": "T_plus_0",
+  "current_action": "ADMIT_PG1_PROBE_PHASE_BOOK_UNCHANGED",
+  "execution_required_at_T_plus_0": false,
+  "rationale_T_plus_0_no_execution": "PG1 admit + Probe Phase only. Book weights unchanged. 5 admission-gate conditions deferred to T+30 milestone (G1 Architect spawn + G2 load_month_factors rebuild + G3 PIT all-date + G4 daily CVaR/CDaR). G5 role reclassification ACCEPTED_NOW (registry update). G6 monitoring agent active T+0 (separate setup order).",
+
+  "current_book_T_plus_0_unchanged": {
+    "n_admitted_pg2_active": 2,
+    "weights": {
+      "WT-D20260425_003": 0.80,
+      "STR_1656_MLRA_M05": 0.20
+    },
+    "underlying_strategies": {
+      "WT-D20260425_003": "STR_1631_MEGA_05",
+      "STR_1656_MLRA_M05": "STR_1656_MLRA_M05"
+    }
+  },
+
+  "probe_phase_admission_T_plus_0": {
+    "wt_id": "WT-D20260425_011",
+    "str_id": "STR_1700",
+    "weight_in_book": 0.0,
+    "registry_role": "core_with_machinery_overlay",
+    "admit_basis_summary": "Pareto-dominant on same-period 243m vs MEGA_05 baseline (5/5 axis): SR 1.0789 / CAGR 15.27 / MDD -22.98 / Harvey 4.5516 / DSR_post 4.0499. Score 1.464 vs Scenario D 1.127 (+30%)."
+  },
+
+  "phased_milestone_schedule": {
+    "T_plus_0_2026_04_26_admit_probe_phase": {
+      "action": "ADMIT_PG1_PROBE_PHASE",
+      "weights_change": "NO_CHANGE",
+      "execution_orders": [],
+      "preconditions_met": ["Judge JUDGE_PASSED_WITH_NOTE", "Governor ADMITTED_WITH_NOTE", "G5 role reclassification ACCEPTED", "G6 monitoring setup order issued"]
+    },
+    "T_plus_30_target_2026_05_26_partial_50pct": {
+      "action": "PARTIAL_REPLACEMENT_50PCT",
+      "target_weights": {"WT-D20260425_011": 0.50, "WT-D20260425_003": 0.40, "STR_1656_MLRA_M05": 0.10},
+      "execution_orders_planned": ["BUY STR_1700 50pct", "SELL STR_1631 40pct", "SELL STR_1656 10pct"],
+      "preconditions_required": [
+        "G1 Architect on-demand spawn PASS or PASS_WITH_NOTE",
+        "G2 fresh load_month_factors() rebuild PASS hash-verified",
+        "G3 all-date 2e8 KRW PIT liquidity verification PASS",
+        "G4 daily portfolio CVaR/CDaR/stress path PASS",
+        "G6 monitoring agent active 30 days T+0..T+30 with no ESCALATE_HARD alerts"
+      ],
+      "fail_handling": "Stay at T+0 weights. Reschedule T+30 → T+60. If 2nd attempt fails, downgrade to AB fallback (STR_1700 80% + STR_1656 20%) or revoke probe phase admit."
+    },
+    "T_plus_60_target_2026_06_25_partial_75pct": {
+      "action": "PARTIAL_REPLACEMENT_75PCT",
+      "target_weights": {"WT-D20260425_011": 0.75, "WT-D20260425_003": 0.20, "STR_1656_MLRA_M05": 0.05},
+      "execution_orders_planned": ["BUY STR_1700 25pct", "SELL STR_1631 20pct", "SELL STR_1656 5pct"],
+      "preconditions_required": [
+        "T+30 monitoring KPIs PASS (realized SR > 0.6, MDD < 25%, IC 3m > 0.005)",
+        "Codex critic round replay PASS or PARTIAL_ACCEPT (4× 600s split)"
+      ],
+      "fail_handling": "Stay at T+30 weights. Trigger Q-Lead review."
+    },
+    "T_plus_90_target_2026_07_25_full_100pct": {
+      "action": "FULL_REPLACEMENT_100PCT",
+      "target_weights": {"WT-D20260425_011": 1.00},
+      "execution_orders_planned": ["BUY STR_1700 25pct", "SELL STR_1631 20pct", "SELL STR_1656 5pct"],
+      "preconditions_required": [
+        "T+60 monitoring KPIs PASS (realized 90-day SR > 0.8, MDD < 25%, alpha-decay alert NONE)",
+        "AX-008 formal triangulation closed (Forge + Codex replay + Architect all PASS or PASS_WITH_NOTE)"
+      ],
+      "fail_handling": "Revert to T+60 weights. Trigger re-admission review."
+    }
+  },
+
+  "execution_constraints": {
+    "n_names_max": 20,
+    "weight_bounds": [0.0, 0.20],
+    "long_only": true,
+    "sigma_w_eq_1": true,
+    "liquidity_2e8_KRW_per_name": true,
+    "commission_15bps": true,
+    "execution_window_per_milestone": "3-day TWAP",
+    "expected_one_way_turnover_ann": "2.99 (Iter6 walk-forward avg)"
+  },
+
+  "monitoring_agent_setup_order_ref": "qepm/mailbox/monitoring/STR_1700_monthly_drift_config.json (separate order, see governor outbox)",
+
+  "ax_violations_acknowledged": {
+    "AX_001_v2_defense_alpha_FAIL": "G5 role reclassification = core_with_machinery_overlay applied at T+0",
+    "AX_008_triangulation_FAIL_FORMAL": "Substitute evidence accepted at T+0 (Forge + Judge harness Lockbox + Iter5 lineage MD5). Formal closure required pre-T+90 (G1 Architect spawn + Codex replay)."
+  },
+
+  "codex_round_status": "TIMEOUT_2X_1200S_SKIPPED_PER_QLEAD_OVERRIDE_003",
+  "codex_replay_scheduled_at_T_plus_30": true,
+
+  "next_step_action_for_qlead": [
+    "1. Issue monitoring agent setup order (qepm/mailbox/monitoring/STR_1700_monthly_drift_config.json)",
+    "2. Issue Architect on-demand spawn order (T+19 = 2026-05-15) for G1 closure",
+    "3. Issue Forge re-extension order (T+24 = 2026-05-20) for G2 + G3 + G4 closure",
+    "4. Issue Codex replay order (T+30 milestone, 4× 600s split)",
+    "5. T+30 milestone review: collect G1+G2+G3+G4 + monitoring KPIs → trigger PARTIAL_REPLACEMENT_50PCT or DEFER",
+    "6. Update strategy registry with role 'core_with_machinery_overlay' for STR_1700"
+  ]
+}

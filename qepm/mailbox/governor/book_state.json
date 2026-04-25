@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-04-25T21:18:00+0900",
-  "updated_by": "Governor v6.1 R5 Sonnet 4.6 rev2 (Session 71 — WT-D20260425_010 Iter5 STR_1699 Replacement scenario re-evaluation post-Codex)",
-  "schema_version": "v1.4",
+  "updated_at": "2026-04-26T01:05:00+0900",
+  "updated_by": "Governor v6.1 R5 Sonnet 4.6 (Session 71 — WT-D20260425_011 Iter6 STR_1700 MEGA_06 Replacement scenario FINAL post-Codex-timeout)",
+  "schema_version": "v1.5",
 
   "n_admitted": 2,
   "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
@@ -73,6 +73,72 @@
   },
 
   "probe_phase_admissions": [
+    {
+      "wt_id": "WT-D20260425_011",
+      "str_id": "STR_1700",
+      "iter_label": "Iter6_MEGA_06_Kelly_Overlay",
+      "admitted_to_probe_at": "2026-04-26T01:05:00+0900",
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE",
+      "governor_verdict": "GOVERNOR_ADMITTED_WITH_NOTE",
+      "scenario_identified": "replacement",
+      "selected_scenario": "A",
+      "pathway": "phased_30_90_days",
+      "admit_basis": [
+        "Pareto-dominant on same-period 243m vs MEGA_05 baseline (5/5 axis)",
+        "Harvey 5-spec all PASS (3.65~3.74) full-period FF5 t=4.55",
+        "DSR post-method-shopping-penalty 4.05 (max in 3-way comparison)",
+        "OOS 24-26 SR 1.7459 Forge / 1.6927 Judge harness independent triangulation (within 0.053 tolerance)",
+        "AX-007 exception #1 multi-sleeve PASS",
+        "Multi-objective weighted_score 0.77 + Pareto 4/8 PASS",
+        "Score 1.464 vs Scenario D 1.127 (+30% improvement)"
+      ],
+      "evidence_gaps_pre_T_plus_30": [
+        "G1 AX-008 formal 3-source: Architect absent + Codex DISSENT — substitute evidence Forge + Judge harness Lockbox + Iter5 lineage MD5",
+        "G2 load_month_factors() fresh rebuild: alpha lineage inheritance from STR_1699 (hash-verified MD5 identical)",
+        "G3 all-date 2e8 KRW PIT liquidity: declared but not all-date independently re-verified",
+        "G4 daily-holdings CVaR/CDaR/stress: monthly/sqrt(21) proxy (1.66%) only"
+      ],
+      "evidence_gaps_pre_T_plus_90": [
+        "Codex round 2× 1200s timeout SKIPPED — replay scheduled at T+30 (4× 600s split)",
+        "T+60 realized KPIs PASS required",
+        "AX-008 formal closure (Architect + Codex replay both PASS) required"
+      ],
+      "performance": {
+        "sr_full_period_243m": 1.0789,
+        "cagr_pct_full_period_243m": 15.27,
+        "mdd_pct_full_period_243m": -22.98,
+        "harvey_t_FF5_full_period_243m": 4.5516,
+        "harvey_5_spec_pre_LB_214m": [3.7431, 3.6536, 3.6829, 3.7155, 3.7190],
+        "harvey_5_spec_pass_count": 5,
+        "dsr_post_full_period_243m": 4.0499,
+        "dsr_post_pre_LB_214m": 3.3326,
+        "oos_24_26_sr_forge": 1.7459,
+        "oos_24_26_sr_judge_harness_independent": 1.6927,
+        "turnover_ann_2way": 5.937,
+        "cvar_d_proxy": 0.0166,
+        "rank_ic": 0.0441,
+        "icir": 0.3442,
+        "ax_001_v2_bad_normal_ic_ratio": -1.8355
+      },
+      "registry_role": "core_with_machinery_overlay",
+      "phased_milestones": {
+        "T_plus_0_2026_04_26": "PG1 admit + Probe Phase. Book unchanged. Monitoring agent active.",
+        "T_plus_30_target_2026_05_26": "Partial replacement 50%. Preconditions: G1+G2+G3+G4 PASS.",
+        "T_plus_60_target_2026_06_25": "Partial replacement 75%. Preconditions: T+30 KPIs PASS + Codex replay.",
+        "T_plus_90_target_2026_07_25": "Full replacement 100%. Preconditions: T+60 KPIs PASS + AX-008 formal closure."
+      },
+      "codex_round_summary": {
+        "stance": "TIMEOUT_2X_SKIPPED",
+        "scheduled_attempts": 2,
+        "result": "1200s timeout each",
+        "skip_authority": "Q_Lead_directive_시간한계_인정",
+        "compensating_evidence": "Forge + Judge harness Lockbox + Iter5 lineage MD5 hash AX-008 substitute triangulation",
+        "replay_scheduled": "T+30 milestone with 4× 600s split"
+      },
+      "pg2_active_admit_now": false,
+      "pg2_active_admit_at_T_plus_30_pending_preconditions": "partial_50pct",
+      "pg2_active_admit_at_T_plus_90_pending_preconditions": "full_100pct"
+    },
     {
       "wt_id": "WT-D20260425_010",
       "str_id": "STR_1699",
@@ -155,6 +221,15 @@
       "lawbook_ref": "agent definition .claude/agents/governor.md §62~68 + §53",
       "directive": "Iter 5 본질 = MEGA_05 upgrade research = Replacement scenario. Sequential Admission TDC threshold 적용 거부. 직접 SR/CAGR/MDD/Harvey/DSR 비교 + multi-testing penalty가 정확한 평가.",
       "governor_response": "rev1 GOVERNOR_DEFERRED invalidate → rev2 Replacement 룰 적용 → Codex Round PARTIAL ACCEPT → ADMITTED_TO_PROBE_PHASE_WITH_NOTE final"
+    },
+    {
+      "event_id": "OVERRIDE_003_CODEX_TIMEOUT_SKIP_AUTHORITY",
+      "decision": "CODEX_ROUND_TIMEOUT_2X_SKIP_PROCEED_WITH_SUBSTITUTE_EVIDENCE",
+      "user": "Q-Lead (도훈 위임)",
+      "decided_at": "2026-04-26T00:55:00+0900",
+      "lawbook_ref": "agent definition governor.md §53 + AX-008 substitute evidence clause",
+      "directive": "Iter 6 STR_1700 governor admission FINAL. Codex round 2× 1200s timeout 인정. 재시도 금지. AX-008 substitute evidence (Forge + Judge harness Lockbox + Iter5 lineage MD5 hash) 충분. Phased pathway adoption으로 Codex replay T+30 milestone에 deferral. 직접 finalize 진행.",
+      "governor_response": "Phased pathway 30/60/90 days adopted. ADMITTED_WITH_NOTE Scenario A. PG1 admit T+0 + Probe Phase + 5 admission-gate conditions deferred to T+30 + 1 ACCEPTED_NOW (G5) + 1 REQUIRED_AT_T_PLUS_0 (G6) + Codex replay scheduled T+30."
     }
   ],
 
@@ -175,6 +250,6 @@
     "iter5_contribution_to_gap_closure": "PHASE_4_PENDING — Probe Phase admit 확정. PG2 active 편입은 Forge NAV-level Scenario A vs B backtest + baseline DSR + Architect 보강 후 결정. Robustness axis (Harvey/DSR) 우월 입증으로 baseline robustness deficit closing 후보."
   },
 
-  "method": "v6.1_R5_book_level_admission_iter5_PROBE_PHASE_post_codex",
-  "notes": "Session 71 Iter5 STR_1699 admission 재평가 (rev2 final post-Codex). rev1 GOVERNOR_DEFERRED (Sequential Admission TDC misapplication) invalidate. 사용자 명시 Replacement scenario 룰 적용 + Codex Round (gpt-5.5 xhigh REVISE) 자율 5 ACCEPT + 2 PARTIAL 적용. ADMITTED_TO_PROBE_PHASE_WITH_NOTE 결정: PG1 admit + PG2 active 편입은 (1) Forge NAV-level Scenario A 80/20 + B 60_20_20 backtest, (2) baseline MEGA_05 DSR same penalty basis 산출, (3) Architect on-demand spawn (AX-008 2 source PASS), (4) Phase 4 Decision 후 결정. PG2 active book MEGA_05 80% + STR_1656 20% UNCHANGED until Phase 4. L-205 적립."
+  "method": "v6.1_R5_book_level_admission_iter6_PROBE_PHASE_phased_30_90_post_codex_timeout",
+  "notes": "Session 71 Iter6 STR_1700 (MEGA_06 Kelly+Overlay) admission FINAL post-Codex-timeout. Codex round 2× 1200s timeout SKIP per Q-Lead directive (OVERRIDE_003). AX-008 substitute evidence: (1) Forge PASS walk-forward 215 dates + (2) Judge harness Lockbox PASS daily-NAV 1.6927 vs Forge monthly 1.7459 within 0.053 tolerance + (3) Iter5 lineage shared alpha_scores.parquet MD5 hash-identical. ADMITTED_WITH_NOTE Scenario A phased_30_90_days pathway. T+0 PG1 admit + Probe Phase + Book unchanged + Monitoring agent active. T+30 partial replacement 50% (preconditions: G1 Architect spawn + G2 fresh load_month_factors() rebuild + G3 all-date 2e8 KRW PIT + G4 daily-holdings CVaR/CDaR PASS). T+60 75% (preconditions: T+30 KPIs + Codex replay PASS). T+90 100% full replacement (preconditions: T+60 KPIs + AX-008 formal closure PASS). 6 admission-gate conditions disposition: 1 ACCEPTED_NOW (G5 role reclassification = core_with_machinery_overlay) + 1 REQUIRED_AT_T_PLUS_0 (G6 monitoring) + 4 DEFERRED_TO_T_PLUS_30 (G1/G2/G3/G4) + 0 blocking PG1 admit. Pareto-dominant on same-period 243m: SR 1.0789 / CAGR 15.27 / MDD -22.98 / Harvey 4.5516 / DSR_post 4.0499. Replacement vs Scenario D Pareto-dominance +0.292 SR / +3.48pp CAGR / +8.99pp MDD. Score 1.464 vs 1.127 (+30% improvement). PG2 active book MEGA_05 80% + STR_1656 20% UNCHANGED at T+0; partial replacement T+30 contingent on preconditions. L-203 audit ongoing."
 }
