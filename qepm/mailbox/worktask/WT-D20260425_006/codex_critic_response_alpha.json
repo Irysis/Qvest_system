@@ -1,0 +1,144 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:11:16+09:00",
+  "task_id": "WT-D20260425_006",
+  "stance": "REVISE",
+  "veto_flag": false,
+  "stance_rationale": "Time-series alpha dimension (RF-A7) is present, but mandatory alpha robustness gates remain unmet: subperiod stability and DSR both fail, and the reported Harvey statistic is not HAC/Newey-West validated. AX-007 exception proof is also not established for the current single-sleeve top-20 style construction.",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": 0.0708,
+      "pass": true
+    },
+    "icir": {
+      "value": 0.9378,
+      "pass": true
+    },
+    "harvey_t": {
+      "value": 14.8577,
+      "pass": false
+    },
+    "sub_stability": {
+      "value": 0.345,
+      "pass": false,
+      "rf_a1_flag": true
+    },
+    "dsr": {
+      "value": 0.0592,
+      "pass": false
+    }
+  },
+  "time_series_alpha_audit": {
+    "n_sig_dates": 252,
+    "date_range": [
+      "2003-02-28",
+      "2024-01-22"
+    ],
+    "single_snapshot_risk": "LOW",
+    "rf_a7_flag": false,
+    "comment": "alpha_scores.parquet is multi-date and monthly-consistent; however, weights.csv is single-sig_date only, so walk-forward weight schedule evidence is still required to fully rule out static application in downstream execution."
+  },
+  "ax_axiom_compliance": {
+    "ax_003_check": "N/A",
+    "ax_004_check": "PASS",
+    "ax_005_check": "N/A",
+    "ax_007_check": "FAIL"
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C13",
+      "status": "PASS",
+      "evidence": "run_alpha_research.R uses Factor_Name -> Z_Score_Aligned path via load_month_factors(); no NEGATE_FACTORS/FLIP_SIGN usage found."
+    },
+    {
+      "check": "C14",
+      "status": "PASS",
+      "evidence": "C14 is asserted through load_month_factors()/Factor DB connector usage; no explicit violation artifact observed in provided files."
+    },
+    {
+      "check": "C15",
+      "status": "PASS",
+      "evidence": "Signal build loop calls load_month_factors(sig_date, coverage_min=0.05); direct monthly parquet factor loading not used in alpha script."
+    },
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "Overlay path explicitly uses lagged BM inputs: dd_20d_lag/vol_60d_lag/shift(.,1L)."
+    },
+    {
+      "check": "C4",
+      "status": "FAIL",
+      "evidence": "No per-factor release-lag audit table (annual->May, quarterly->45d) is emitted; only narrative assertion is provided."
+    }
+  ],
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "Mandatory robustness gates are failed (subperiod_stability=0.345 < 0.50; DSR=0.0592 < 0.50). This prevents alpha graduation confidence even with strong point estimates.",
+      "ax_cite": "RF-A1|AX-002|L-119"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Reported Harvey statistic is computed as simple IC t-stat (mean/sd/sqrt(n)) without Newey-West HAC treatment, so RF-A6 multi-testing defense is incomplete.",
+      "ax_cite": "RF-A6|AX-002|PIT-C1"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "Overlay is a BM-shared scalar per date (single overlay_mult each date; score_z vs score_eff rank-correlation=1 across all dates), so cross-sectional alpha mechanism is unchanged and IC equality is by construction.",
+      "ax_cite": "RF-A2|AX-007|L-484"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "AX-007 exception proof is missing: package remains single-sleeve long-only top-20/18 style without explicit evidence for allowed exception routes (multi-sleeve, long-short, 50+ diversification, ML sizing exception criteria).",
+      "ax_cite": "AX-007|RF-A2|L-219"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "PIT C4 is not artifact-verifiable from outputs; fundamental lag discipline is asserted but not demonstrated with factor-level usable-date audit evidence.",
+      "ax_cite": "PIT-C4|AX-002|RF-A6"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "weights.csv contains one sig_date (2024-01-22) only. While alpha_scores is time-series, downstream walk-forward weight scheduling proof is needed to fully eliminate Iter-4-style static schedule risk.",
+      "ax_cite": "RF-A7|AX-002|PIT-C1"
+    }
+  ],
+  "supporting_arguments": [
+    "alpha_scores.parquet passes core RF-A7 structure checks: Date x Ticker x score fields with 252 sig_dates (2003-02-28 to 2024-01-22), no future dates.",
+    "Covariance artifact is PSD with condition number approximately 11.058 (<=100 post-shrink expectation) when reconstructed from ticker_i/ticker_j triangular storage.",
+    "No banned rationalization phrases from the base-context auto-flag list were detected in reviewed package/challenge artifacts."
+  ],
+  "unresolved_disputes": [
+    "Requested stage artifact path `stage_artifacts/WT_D20260425_006` is missing; `stage_artifacts/WT_WT-D20260425_006` exists but is empty, so duplicate-location cross-check cannot be completed.",
+    "Need explicit HAC/Newey-West t_NW and 5-spec regression bundle (CAPM/Carhart3/Carhart4/FF5/FF6) for RF-A6 closure.",
+    "Need factor-level C4 audit output proving annual May / quarterly 45-day lag enforcement at usable-date granularity.",
+    "Need explicit walk-forward weight schedule artifact to verify no static weight reuse in execution/backtest pipeline."
+  ],
+  "weakest_assumption": "That a portfolio-level BM scalar overlay can be treated as an alpha enhancement despite leaving cross-sectional ranking unchanged and therefore not improving the alpha mechanism itself.",
+  "rebuttal_required": [
+    "Recompute and report Harvey-Liu-Zhu gate with Newey-West HAC t-stat (t_NW) and provide full multi-spec regression evidence.",
+    "Provide a concrete stabilization plan that raises subperiod_stability from 0.345 to >=0.50 without violating PIT.",
+    "Demonstrate AX-007 exception compliance (or redesign out of single-sleeve top-20 mechanism).",
+    "Publish factor-level C4 lag audit table (usable_date vs sig_date) for all fundamental-linked factors.",
+    "Provide walk-forward weights schedule (multi-sig_date) used by Forge/execution to close RF-A7 residual risk."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Cross-model audit confirms the time-series alpha artifact exists, but robustness/statistical validation and AX-007 mechanism compliance are not yet sufficient for PASS-level triangulation."
+  },
+  "alpha_specific_questions": [
+    "Harvey gate를 Newey-West HAC(t_NW) 기준으로 다시 계산하면 여전히 2.95 이상을 유지하는가?",
+    "overlay가 BM-shared scalar인 현재 설계에서 AX-007 예외를 어떤 근거로 충족한다고 주장할 수 있는가?",
+    "weights 시계열 스케줄을 Forge가 실제로 어떻게 소비했는지(단일 snapshot 미사용)를 어떤 아티팩트로 증명할 수 있는가?"
+  ]
+}
