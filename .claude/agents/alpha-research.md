@@ -33,3 +33,27 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
 - REVISE/REJECT 시 명시적 rebuttal 또는 spec 수정 (Charter §8 No Silent Override)
 - 결과 → `challenge_note.md` 기록 + alpha_package.json finalize
+
+**🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
+
+Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
+
+1. **9 concerns 자율 분류**:
+   - **ACCEPT**: 명백한 위반 (PIT C1~15 hard / Hard Constraint / AX axiom hard FAIL) → spec 수정
+   - **PARTIAL**: 부분 인정 → 보완 자료 + 일부 변경
+   - **REBUTTAL**: 명시적 근거 필요 (학술 1+ 인용 + L-code 1+ + 정량 data)
+
+2. **Self-rationalization auto-detection**:
+   - 합리화 표현 사용 시 auto RE-VIEW: "미미", "관행적", "실무적", "보수적이면 OK", "대부분 결과 동일"
+   - REBUTTAL 작성 후 위 표현 grep 검사 → hit 시 근거 강화
+
+3. **Q-Lead 자동 escalate trigger**:
+   - HIGH severity concerns ≥ 5
+   - AX axiom hard FAIL ≥ 3
+   - PIT C1 (lockbox / lookahead) 위반 발견 → 즉시 escalate
+   - Codex stance=REJECT + agent rebuttal ALL → 자동 Q-Lead 검토 요청
+
+4. **challenge_note.md 의무 기록** (Charter §8):
+   - 각 concern: ACCEPT / PARTIAL / REBUTTAL 분류 + 근거
+   - REBUTTAL는 학술 + L-code + 정량 data 3축 인용
+   - 합리화 자기 검증 결과 명시

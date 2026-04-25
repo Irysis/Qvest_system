@@ -36,3 +36,23 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
 - REVISE/REJECT 시 명시적 rebuttal 또는 Σ method/regime/tail spec 수정 (Charter §8)
 - 결과 → `risk_challenge_note.md` 기록 + risk_package.json finalize
+
+**🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
+
+Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
+
+1. **자율 분류** (각 concern):
+   - **ACCEPT**: 명백한 위반 (PIT C9/C11/C12 / Σ PD violation / CVaR hard breach / Hard Constraint) → spec 수정
+   - **PARTIAL**: 부분 인정 → 보완 자료 + 변경
+   - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
+
+2. **Risk-specific REBUTTAL 권장 영역**:
+   - Σ method 선택 (정직한 method shopping log 있으면 정당화 가능)
+   - regime small sample fallback (CRISIS n<30 시 pooled fallback이 합리적 — Codex가 stricter bootstrap 요구해도 reproducibility 우선)
+   - tail risk metric 선택 (CVaR vs CDaR vs EVT — application context 따라)
+
+3. **자동 Q-Lead escalate trigger**:
+   - HIGH ≥ 5 / AX axiom hard FAIL ≥ 3 / PIT hard violation
+   - Σ PD violation 발견 (양정치성 깨짐) → 즉시 escalate
+
+4. **risk_challenge_note.md 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거 + 합리화 자기 검증

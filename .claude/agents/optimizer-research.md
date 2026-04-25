@@ -43,3 +43,27 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - **walk-forward 검증 (RF-O9)**: weights.csv는 다중 as_of_date 시계열 schedule 의무
 - **turnover round-trip 식 ×2** (×12 annualization 금지 — Iter 3 violation 사례)
 - 결과 → `optimizer_challenge_note.md` 기록 + optimization_package.json finalize
+
+**🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
+
+Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
+
+1. **자율 분류** (각 concern):
+   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>20, max_w>0.20, Σw≠1), turnover>600%, RF-O9 single-snapshot, infeasibility silent override
+   - **PARTIAL**: 부분 인정 + 보완
+   - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
+
+2. **Optimizer-specific REBUTTAL 권장 영역**:
+   - Method selection (heavy-tail tie-breaker가 net_IR 1위를 누르면 합리적)
+   - β drift (overlay-OFF 1.08 vs blended 0.629 같은 design intent 명시 시)
+   - CVaR breach 인정 + book-level mitigation 제안 (silent override 아닌 명시적 infeasibility_report)
+
+3. **자동 Q-Lead escalate trigger**:
+   - Hard Constraint 위반 (max_names/max_w/Σw/turnover) 발견 → 즉시 escalate (Hook block 보강)
+   - HIGH ≥ 5 / AX axiom hard FAIL ≥ 3 / RF-O9 single-snapshot
+
+4. **walk-forward 검증 절대 ACCEPT** (Iter 1-4 systemic 결함):
+   - weights.csv as_of_date column 누락 = RF-O9 hard violation
+   - REBUTTAL 불가능. 무조건 spec 수정 (시계열 schedule 작성)
+
+5. **optimizer_challenge_note.md 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거
