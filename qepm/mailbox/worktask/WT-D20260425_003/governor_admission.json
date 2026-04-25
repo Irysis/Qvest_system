@@ -1,0 +1,150 @@
+{
+  "task_id": "WT-D20260425_003",
+  "strategy_id": "STR_1631_MEGA_05",
+  "governor_version": "v8.0_r5_book_level",
+  "admission_rule_version": "v3.5.2",
+  "admitted_at": "2026-04-25T06:00:00+0900",
+  "admitted_by": "Governor (Session 71 — user-mandated override)",
+
+  "verdict": "ADMIT",
+  "verdict_class": "USER_OVERRIDE_JUDGE_DEFER",
+  "admission_tier": "PG2_CORE_PRIMARY",
+  "role_assigned": "core_alpha",
+  "role_bias_tag": "RoleBias_Core",
+
+  "user_override": {
+    "override_invoked": true,
+    "lawbook_ref": "Lawbook §5 — user-mandated override of Governor/Judge DEFER",
+    "user": "도훈 (Dohoon Kim)",
+    "decided_at": "2026-04-25",
+    "user_rationale": "MEGA_05 SR 1.258 (Mega 최고) + Lockbox SR 2.253 독립 검증 + Pre-LB SR 1.147 확인 + AX-002 RESOLVED (proxy_usage 0%) + 20종 hard 준수. SR gap 축소 목적 적합성 인정.",
+    "risks_accepted": [
+      {
+        "risk": "MDD -36.95%",
+        "detail": "현 PG2 -21.27% 대비 -15.68pp 악화. 목표 -25% 대비 -11.95pp 초과",
+        "user_decision": "ACCEPT"
+      },
+      {
+        "risk": "Harvey FF5 Pre-LB t_NW 2.054 < 3.0",
+        "detail": "Full t_NW=2.691도 Harvey 2016 multiple-testing threshold 3.0 미달. KR FF5 RMW/CMA 2017-05 이후 107m 한정 — 표본 한계 인지",
+        "user_decision": "ACCEPT"
+      },
+      {
+        "risk": "Lockbox/Pre-LB SR ratio 1.98",
+        "detail": "Lockbox SR 2.253 / Pre-LB SR 1.147 = 1.96배. 2024~2026 AI붐 regime 우연 가능성 인지",
+        "user_decision": "ACCEPT"
+      },
+      {
+        "risk": "CAUTION regime SR 0.22",
+        "detail": "4 regime 중 최약. 전환 국면 349일 간 성과 열위",
+        "user_decision": "NOTED"
+      },
+      {
+        "risk": "Q07-AC21 crowding cor=0.731",
+        "detail": "pairwise cor 0.731 + TDC 0.476 MEDIUM crowding. 정보 가치 희석 (L-219)",
+        "user_decision": "NOTED"
+      }
+    ],
+    "override_scope": "Judge DEFER 판정 → ADMIT 전환. Governor 자체 override 아님 (Lawbook §5 user-only 권한 행사)."
+  },
+
+  "pg0_gap_alignment": {
+    "sr_gap_current": 0.807,
+    "sr_gap_expected_after_mega05_admit": 0.549,
+    "sr_improvement_rationale": "MEGA_05 Full SR 1.258 (현 PG2 1.193 대비 +0.065). 100% 편입 시 book SR 1.258로 gap 0.549로 축소",
+    "cagr_gap_current": -0.0014,
+    "cagr_impact": "MEGA_05 CAGR 26.9% (현 PG2 16.14% 대비 +10.76pp). CAGR gap CLOSED + 여유",
+    "mdd_gap_current": -0.0373,
+    "mdd_impact": "MEGA_05 MDD -36.95% → book MDD 악화. MDD gap 재개방 (-11.95pp). 사용자 수용 결정."
+  },
+
+  "pg1_gate_check": {
+    "gate_pit_c1_c15": {
+      "status": "PASS",
+      "source": "Judge Gate G1 PASS. Forge pit_flags.json 10건 전수 PASS. C13/C14/C15 準 Z_Score_Aligned + load_month_factors + Usable_Date 준수."
+    },
+    "gate_20_stocks_hard": {
+      "status": "PASS",
+      "n_names": 20,
+      "detail": "optimization_package n_names=20. 20종 hard constraint Hook 강제 확인."
+    },
+    "gate_long_only": {
+      "status": "PASS",
+      "detail": "target_weights 전원 양수 (min 0.005 A092730/A033640). Short 없음."
+    },
+    "gate_sum_weights": {
+      "status": "PASS",
+      "sigma_w": 1.0,
+      "detail": "target_weights 합계 = 1.00 (Kelly_frac05 정규화 확인)."
+    },
+    "gate_liquidity_2e8": {
+      "status": "PASS",
+      "detail": "alpha_package neutralization C10: 20d AvgTV >= 2e8 필터 적용. Top 20 종목 유동성 충족."
+    },
+    "gate_role_honesty": {
+      "status": "PASS",
+      "detail": "Judge G6 PASS. RoleBias_Core 판정. 6F alpha (C01/C04/C02/C06/Q07/AC21) 전원 Core alpha source. Defense/Diversifier 위장 없음."
+    },
+    "gate_ax_compliance": {
+      "status": "PASS_WITH_NOTES",
+      "detail": "AX-002 RESOLVED (proxy_usage 0%). AX-004 Q07 multi-axis composite. AX-007 single-sleeve 주의 (Kelly+6F 완화). AX-008 2/3 source PASS (Forge + Judge FF5). Architect 독립 검증 미확보 — override 하에서 수용."
+    },
+    "gate_judge_s6": {
+      "status": "OVERRIDE",
+      "judge_verdict": "CONDITIONAL_FAIL_FOR_PG1_ADMISSION",
+      "judge_grade_v21": "A_CONDITIONAL",
+      "override_authority": "사용자 명시 결정 (도훈, 2026-04-25)",
+      "override_rationale": "grade_v21=A_CONDITIONAL + SR 1.258 최고 + Lockbox 2.253 검증 + user risk acceptance 5건 documented"
+    }
+  },
+
+  "book_level_ir_improvement": {
+    "current_book_sr": 1.193,
+    "admitted_strategy_sr": 1.258,
+    "projected_book_sr": 1.258,
+    "ir_improvement_delta": 0.065,
+    "admission_threshold_v61_r5": 0.05,
+    "threshold_met": true,
+    "note": "v6.1 R5 admission 기준 IR improvement >= 0.05. Delta 0.065 >= 0.05 충족. book_optimizer.R cross-WT cov 적용 시 상이할 수 있으나 단일 전략 100% 시나리오에서 직접 비교."
+  },
+
+  "top_holdings_20": [
+    {"ticker": "A058470", "weight": 0.1342},
+    {"ticker": "A166090", "weight": 0.1342},
+    {"ticker": "A028260", "weight": 0.1329},
+    {"ticker": "A047080", "weight": 0.1144},
+    {"ticker": "A025540", "weight": 0.1023},
+    {"ticker": "A192390", "weight": 0.0913},
+    {"ticker": "A014680", "weight": 0.0899},
+    {"ticker": "A064760", "weight": 0.0450},
+    {"ticker": "A036930", "weight": 0.0323},
+    {"ticker": "A028050", "weight": 0.0343},
+    {"ticker": "A131290", "weight": 0.0100},
+    {"ticker": "A007340", "weight": 0.0100},
+    {"ticker": "A005850", "weight": 0.0100},
+    {"ticker": "A121600", "weight": 0.0100},
+    {"ticker": "A017370", "weight": 0.0100},
+    {"ticker": "A230360", "weight": 0.0100},
+    {"ticker": "A218410", "weight": 0.0100},
+    {"ticker": "A033500", "weight": 0.0091},
+    {"ticker": "A092730", "weight": 0.0050},
+    {"ticker": "A033640", "weight": 0.0050}
+  ],
+  "top_weight": 0.1342,
+  "hhi": 0.0988,
+
+  "monitoring_triggers": {
+    "reopen_trigger_mdd": "realized MDD > 40% (현 36.95%에서 -3.05pp 여유. PG3 조기 경보)",
+    "reopen_trigger_caution_sr": "CAUTION regime rolling 6m SR < 0.0 (현 0.22 → 음전환 시)",
+    "reopen_trigger_crowding": "Q07 또는 AC21 시장 crowding 지수 > 0.85 (TDC 상향 시)",
+    "review_schedule": "분기 1회 (2026-07 첫 리뷰). Judge L-218 구조 전환 연구 병행."
+  },
+
+  "roadmap_link": {
+    "mega_sprint_closure": "CONFIRMED — Mega Sprint 5단계 공식 종결 (MEGA_06 진입 금지)",
+    "next_research": "Ensemble Sprint (MEGA_03 60% + MEGA_05 40%) 독립 sleeve 설계",
+    "structural_transition": "cross-family sleeve / SMB tilt 강화 / CAUTION overlay 전용 연구 (L-218 기반)"
+  },
+
+  "schema_version": "v1.1"
+}

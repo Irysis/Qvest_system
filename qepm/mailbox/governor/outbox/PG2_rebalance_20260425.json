@@ -1,0 +1,216 @@
+{
+  "order_id": "PG2_REBALANCE_20260425_001",
+  "generated_at": "2026-04-25T06:00:00+0900",
+  "generated_by": "Governor v8.0 R5",
+  "event_type": "PG2_CORE_REPLACE_USER_OVERRIDE",
+  "lawbook_ref": "Lawbook §5 user-mandated admission",
+
+  "transition_summary": {
+    "from_pg2": {
+      "core_primary": "STR_1631_SYN_05_2002",
+      "defense_diversifier": "STR_1656_MLRA_M05",
+      "weights": {"STR_1631_SYN_05_2002": 0.80, "STR_1656_MLRA_M05": 0.20}
+    },
+    "to_pg2": {
+      "core_primary": "STR_1631_MEGA_05 (WT-D20260425_003)",
+      "defense_diversifier": "STR_1656_MLRA_M05",
+      "weights": {"WT-D20260425_003": 0.80, "STR_1656_MLRA_M05": 0.20}
+    },
+    "change_type": "CORE_PRIMARY_SWAP_ONLY",
+    "str1656_status": "RETAINED (no change to defense diversifier sleeve)"
+  },
+
+  "mega05_target_weights": {
+    "A058470": 0.1342,
+    "A131290": 0.0100,
+    "A025540": 0.1023,
+    "A166090": 0.1342,
+    "A014680": 0.0899,
+    "A007340": 0.0100,
+    "A047080": 0.1144,
+    "A028260": 0.1329,
+    "A192390": 0.0913,
+    "A005850": 0.0100,
+    "A033500": 0.0091,
+    "A064760": 0.0450,
+    "A121600": 0.0100,
+    "A017370": 0.0100,
+    "A036930": 0.0323,
+    "A230360": 0.0100,
+    "A028050": 0.0343,
+    "A218410": 0.0100,
+    "A092730": 0.0050,
+    "A033640": 0.0050
+  },
+  "mega05_book_weights": {
+    "note": "MEGA_05 sleeve = 80% of total book. Individual ticker book weight = target_weight × 0.80",
+    "A058470": 0.10736,
+    "A166090": 0.10736,
+    "A028260": 0.10632,
+    "A047080": 0.09152,
+    "A025540": 0.08184,
+    "A192390": 0.07304,
+    "A014680": 0.07192,
+    "A064760": 0.03600,
+    "A028050": 0.02744,
+    "A036930": 0.02584,
+    "A131290": 0.00800,
+    "A007340": 0.00800,
+    "A005850": 0.00800,
+    "A121600": 0.00800,
+    "A017370": 0.00800,
+    "A230360": 0.00800,
+    "A218410": 0.00800,
+    "A033500": 0.00728,
+    "A092730": 0.00400,
+    "A033640": 0.00400
+  },
+
+  "str1631_syn05_prev_weights": {
+    "note": "STR_1631_SYN_05_2002의 이전 top-20 종목 추정. 실제 weights.csv 필요 (Forge artifact 참조). 하단 trade_action은 overlap/non-overlap 기반 추정.",
+    "source_ref": "stage_artifacts/STR_1631_SYN_05_2002/weights.csv (Forge 조회 필요)",
+    "assumption": "STR_1631 기반 4F HRP 전략 — 상당 부분 analyst_consensus 종목 overlap 예상 (C01/C04/C02 공통)"
+  },
+
+  "trade_list": {
+    "methodology": "MEGA_05 target_weights × 0.80 (book weight). 기존 STR_1631_SYN_05_2002 보유 종목과 net change 기준. STR_1656_M05 sleeve(20%)는 unchanged.",
+    "execution_note": "STR_1631 이전 보유 분 실측치 없어 gross 매수/매도 리스트로 작성. 실제 집행 전 현 보유 포트 대조 필수.",
+
+    "buys": [
+      {
+        "ticker": "A058470", "target_book_weight": 0.10736,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 12,
+        "twap_window": "10:00-14:00 KST",
+        "priority": 1,
+        "note": "Top weight 10.74%. 대형주 — 충분한 유동성"
+      },
+      {
+        "ticker": "A166090", "target_book_weight": 0.10736,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 12,
+        "twap_window": "10:00-14:00 KST",
+        "priority": 1
+      },
+      {
+        "ticker": "A028260", "target_book_weight": 0.10632,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 11,
+        "twap_window": "10:00-14:00 KST",
+        "priority": 1
+      },
+      {
+        "ticker": "A047080", "target_book_weight": 0.09152,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 9,
+        "twap_window": "10:00-14:00 KST",
+        "priority": 2
+      },
+      {
+        "ticker": "A025540", "target_book_weight": 0.08184,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 8,
+        "twap_window": "10:30-14:00 KST",
+        "priority": 2
+      },
+      {
+        "ticker": "A192390", "target_book_weight": 0.07304,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 7,
+        "twap_window": "10:30-14:00 KST",
+        "priority": 2
+      },
+      {
+        "ticker": "A014680", "target_book_weight": 0.07192,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 7,
+        "twap_window": "10:30-14:00 KST",
+        "priority": 2
+      },
+      {
+        "ticker": "A064760", "target_book_weight": 0.03600,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 4,
+        "twap_window": "11:00-14:00 KST",
+        "priority": 3
+      },
+      {
+        "ticker": "A028050", "target_book_weight": 0.02744,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 3,
+        "twap_window": "11:00-14:00 KST",
+        "priority": 3
+      },
+      {
+        "ticker": "A036930", "target_book_weight": 0.02584,
+        "action": "BUY_OR_INCREASE",
+        "estimated_impact_bps": 3,
+        "twap_window": "11:00-14:00 KST",
+        "priority": 3
+      }
+    ],
+
+    "small_positions": {
+      "note": "하단 10종목 book weight 0.8% 이하. 집행 비용 대비 효익 미미 — EW 1% 또는 최소 수량만 집행 권고",
+      "tickers": [
+        {"ticker": "A131290", "target_book_weight": 0.00800},
+        {"ticker": "A007340", "target_book_weight": 0.00800},
+        {"ticker": "A005850", "target_book_weight": 0.00800},
+        {"ticker": "A121600", "target_book_weight": 0.00800},
+        {"ticker": "A017370", "target_book_weight": 0.00800},
+        {"ticker": "A230360", "target_book_weight": 0.00800},
+        {"ticker": "A218410", "target_book_weight": 0.00800},
+        {"ticker": "A033500", "target_book_weight": 0.00728},
+        {"ticker": "A092730", "target_book_weight": 0.00400},
+        {"ticker": "A033640", "target_book_weight": 0.00400}
+      ]
+    },
+
+    "sells": {
+      "note": "STR_1631_SYN_05_2002 보유 종목 중 MEGA_05 target_weights에 없는 종목 전량 매도. 실제 목록은 STR_1631_SYN_05_2002 weights.csv 조회 후 차집합 산출 필요.",
+      "instruction": "Forge → `stage_artifacts/STR_1631_SYN_05_2002/weights.csv` 파일 조회 → setdiff(prev_tickers, mega05_tickers) → SELL 목록 확정",
+      "estimated_overlap_ratio": "60~70% (analyst_consensus family 공유 예상)",
+      "twap_window": "09:10-10:00 KST (매도 선행 후 매수 집행 권장)"
+    }
+  },
+
+  "execution_schedule": {
+    "recommended_date": "2026-04-28 (월요일 — 주말 후 첫 거래일)",
+    "rationale": "금요일 2026-04-25 결정 발행. 주말 내 trade_list 확정 (STR_1631 보유분 확인). 월요일 오전 집행.",
+    "sequence": [
+      "T-1 (일요일): STR_1631_SYN_05 현 보유 포트 vs MEGA_05 target net change 계산",
+      "T+0 09:10 KST: STR_1631 비중복 종목 SELL (TWAP, 09:10~10:00)",
+      "T+0 10:00 KST: MEGA_05 신규/증가 종목 BUY (TWAP, 10:00~14:00, priority 1→2→3 순)",
+      "T+0 14:30 KST: STR_1656_M05 sleeve 20% — UNCHANGED 확인",
+      "T+0 15:00 KST: 체결 내역 확인 + realized_slippage logging"
+    ],
+    "impact_estimate": {
+      "total_estimated_impact_bps": 65,
+      "note": "15bps 기본 commission + 50bps market impact (MEGA_05 turnover 300.6% → 월간 재조정 비용 반영). 집중 종목 상위 3개는 10~12bps 개별 impact.",
+      "twap_recommendation": "일중 가격 안정 시간대 10:00~14:00. 시가 및 장마감 30분 회피."
+    }
+  },
+
+  "str1656_sleeve": {
+    "status": "UNCHANGED",
+    "book_weight": 0.20,
+    "action": "HOLD",
+    "note": "STR_1656_MLRA_M05 Defense diversifier sleeve 20% 유지. 신규 매매 없음. DD Brake 자체 메커니즘에 의한 자동 현금화는 strategy 내부 로직."
+  },
+
+  "risk_warnings": [
+    "MDD -36.95% 수용 결정 — 실투 시 극단 drawdown 구간(2008 GFC 재현 등) 모니터링 필수",
+    "CAUTION regime SR 0.22 약점 — 전환 국면 장기화 시 성과 부진 예상. PG3 모니터링 trigger 설정 권고",
+    "Q07-AC21 crowding (L-219) — analyst/quality earnings family 집중 80%. MEGA_06 이전 C06 제거 + Q07 또는 AC21 선택 연구",
+    "Lockbox 의존성 (ratio 1.98) — Pre-LB SR 1.147이 보수적 현실값. Lockbox SR 2.253을 기대치로 설정 금지",
+    "월간 재조정 (turnover 300.6%) — 실질 집행 비용 15bps 기준 연간 ~45bps. 소규모 포트에서는 성과 희석 주의"
+  ],
+
+  "next_actions": [
+    "Execution Agent: trade_list 확정 + realized slippage logging",
+    "Monitoring Agent: MEGA_05 월간 drift 감지 시작 (2026-05 첫 점검)",
+    "Governor: CAUTION regime SR overlay 연구 착수 지시 (Scout에 Task 발행)",
+    "Governor: Ensemble Sprint 착수 (MEGA_03 60% + MEGA_05 40%) LOO 검증 설계",
+    "Judge: L-217~L-221 5건 methodology_active.md 등록 확인"
+  ]
+}

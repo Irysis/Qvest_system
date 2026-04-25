@@ -1,25 +1,119 @@
 {
-  "updated_at": "2026-04-24T08:45:00+0900",
-  "n_admitted": 0,
-  "admitted_ids": [],
-  "book_weights": {},
-  "book_metrics": {
-    "expected_return": null,
-    "tracking_error": null,
-    "information_ratio": null
+  "updated_at": "2026-04-25T06:00:00+0900",
+  "updated_by": "Governor v8.0 R5 (Session 71 — MEGA_05 user-mandated PG2 admission)",
+  "schema_version": "v1.2",
+
+  "n_admitted": 2,
+  "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
+
+  "book_weights": {
+    "WT-D20260425_003": 0.80,
+    "STR_1656_MLRA_M05": 0.20
   },
-  "crowding_per_wt": {},
+
+  "book_composition_rationale": {
+    "decision": "MEGA_05_80_STR1656_20",
+    "governor_rationale": "MEGA_05 100% 단독 vs 80/20 blended — Governor 자율 결정: 80/20 권장. MEGA_05 MDD -36.95% 수용 하에서 STR_1656_M05(DD Brake, GFC 0% 손실)의 crisis decorrelation 역할이 실질 tail risk 완화에 기여. TDC cross-family(Core analyst × ML DD Brake)는 낮을 것으로 예상 — 이질적 alpha source. 단순성 대 tail protection 가중 시 80/20이 우월.",
+    "alternative_rejected": {
+      "MEGA_05_100_pct": "단순성 이점 있으나 tail risk 무방비. MDD -36.95% 단독 노출 과도.",
+      "equal_weight_50_50": "SR 목표 SR gap 축소 효율 저하. MEGA_05 SR 우위 충분히 활용 못함."
+    }
+  },
+
+  "book_metrics": {
+    "expected_return": {
+      "mega05_contribution": 0.215,
+      "str1656_contribution": 0.018,
+      "blended_cagr_pct": 23.1,
+      "note": "MEGA_05 CAGR 26.9% × 0.8 + STR_1656 ~9% × 0.2 (estimate; STR_1656 GFC 방어 우선 전략)"
+    },
+    "tracking_error": {
+      "estimated": 0.105,
+      "note": "MEGA_05 TE ~11% × 0.8 (cross-family 분산 효과 일부 반영)"
+    },
+    "information_ratio": {
+      "estimated": 1.18,
+      "note": "blended IR estimate: MEGA_05 net_IR 1.274 × 0.8 + diversification benefit"
+    },
+    "expected_sr_full": {
+      "value": 1.22,
+      "range": [1.15, 1.30],
+      "note": "MEGA_05 SR 1.258 × 0.8 + STR_1656 SR ~0.9 × 0.2 (MDD 완화 편익 포함) — 기존 PG2 SR 1.193 대비 +0.027"
+    },
+    "lockbox_sr_mega05": 2.253,
+    "expected_mdd": {
+      "value": -33.5,
+      "range": [-32.0, -36.0],
+      "note": "MEGA_05 MDD -36.95% × 0.8 + STR_1656 MDD ~-12% × 0.2 + crisis decorrelation 편익. 현 PG2 -21.27% 대비 악화 (사용자 수용)"
+    },
+    "crisis_decorrelation": {
+      "str1656_gfc_loss": 0.0,
+      "str1656_crisis_sr": "positive (DD Brake 발동)",
+      "mega05_crisis_sr": 2.983,
+      "blended_crisis_benefit": "MEGA_05 Crisis alpha + STR_1656 0% GFC 보호 — dual mechanism"
+    }
+  },
+
+  "crowding_per_wt": {
+    "WT-D20260425_003": {
+      "strategy_id": "STR_1631_MEGA_05",
+      "family": "Analyst_Consensus + Quality_Earnings",
+      "hhi": 0.0988,
+      "q07_ac21_cor": 0.731,
+      "crowding_flag": "MEDIUM (L-219)",
+      "intra_book_family_weight": 0.80,
+      "note": "analyst + quality earnings 80% book exposure. family concentration 주의 (35% max rule: single strategy로는 적용 불가이나 80% 편중 주의 사항)"
+    },
+    "STR_1656_MLRA_M05": {
+      "strategy_id": "STR_1656_MLRA_M05",
+      "family": "ML_Risk_Architecture",
+      "hhi": "N/A (DD Brake cash-based)",
+      "crowding_flag": "LOW (ML 독립 alpha, DD Brake mechanism)",
+      "intra_book_family_weight": 0.20,
+      "note": "ML DD Brake는 MEGA_05와 alpha source 완전 이질. Cross-family TDC 예상치 < 0.30."
+    }
+  },
+
+  "previous_pg2": {
+    "strategy_ids": ["STR_1631_SYN_05_2002", "STR_1656_MLRA_M05"],
+    "weights": {"STR_1631_SYN_05_2002": 0.80, "STR_1656_MLRA_M05": 0.20},
+    "sr": 1.193,
+    "cagr": 16.14,
+    "mdd": -21.27,
+    "replaced_at": "2026-04-25T06:00:00+0900",
+    "replaced_by": "MEGA_05 admission (user-mandated)",
+    "replacement_delta": {
+      "sr_delta": "+0.027 (estimated blended)",
+      "cagr_delta": "+7.0pp (blended)",
+      "mdd_delta": "-12.2pp (book MDD 악화, 사용자 수용)"
+    }
+  },
+
+  "user_override_log": [
+    {
+      "event_id": "OVERRIDE_001",
+      "decision": "ADMIT_MEGA_05_OVERRIDE_JUDGE_DEFER",
+      "user": "도훈 (Dohoon Kim)",
+      "decided_at": "2026-04-25",
+      "lawbook_ref": "Lawbook §5 — user-mandated override",
+      "admission_tier": "PG2_CORE_PRIMARY",
+      "rationale": "SR 1.258 (Mega 최고) + Lockbox SR 2.253 + AX-002 RESOLVED + 20종 hard. SR gap 0.807 → 0.549 축소 목적.",
+      "risks_accepted": [
+        "MDD -36.95% (현 -21.27% 대비 -15.68pp)",
+        "Harvey FF5 t_NW 2.691 < 3.0",
+        "Lockbox/Pre-LB ratio 1.98 overfitting risk"
+      ],
+      "governor_book_decision": "MEGA_05 80% + STR_1656_M05 20% (Governor 자율 결정: tail protection 유지)"
+    }
+  ],
+
   "recent_rejections": [
     {
       "wt_id": "WT-D20260423_001",
       "rejected_at": "2026-04-23",
       "hypothesis": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28)",
       "reason_code": "JUDGE_FAIL_AX001V2_AX007",
-      "grade": "F",
-      "gate_fail": ["D_crowding_stress", "E_concentration"],
-      "ax_fail": ["AX-001_v2", "AX-007"],
-      "verdict_ref": "qepm/mailbox/worktask/WT-D20260423_001/judge_verdict.json",
-      "admission_ref": "qepm/mailbox/worktask/WT-D20260423_001/governor_admission.json"
+      "grade": "F"
     },
     {
       "wt_id": "WT-D20260423_002",
@@ -27,28 +121,28 @@
       "hypothesis": "Macro-Neutral Residual Alpha Discovery (Residual_Reversal_5d + Residual_Momentum_15d)",
       "reason_code": "JUDGE_FAIL_GATE_CDF_VAL_IC_SIGN_REVERSAL",
       "grade": "F",
-      "gate_fail": ["C_Net_Alpha", "D_Crowding_Stress", "F_Drift_Tolerance"],
-      "ax_fail": ["AX-007_PARTIAL"],
-      "verdict_ref": "qepm/mailbox/worktask/WT-D20260423_002/judge_verdict.json",
-      "admission_ref": "qepm/mailbox/worktask/WT-D20260423_002/governor_admission.json",
-      "l_code_recorded": "L-191"
+      "l_code": "L-191"
     },
     {
       "wt_id": "WT-D20260424_001",
       "rejected_at": "2026-04-24",
-      "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC) — ESBR + SUE + Accrual IC-weighted expanding",
+      "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
       "reason_code": "JUDGE_GRADE_F_GATE_CDE_BREADTH_BORDERLINE_MDD",
       "grade": "F",
-      "gate_fail": ["C_Net_Alpha", "D_Crowding_Saturation", "E_Concentration_Breadth"],
-      "gate_pass": ["A_PIT", "B_Package_Isolation", "F_Drift_Regime"],
-      "ax_fail": ["AX-007_WARNING"],
-      "positive_findings": ["L-191_AVOIDED_VAL_GT_TRAIN", "RAPC_SIGNAL_VALIDATED"],
-      "verdict_ref": "qepm/mailbox/worktask/WT-D20260424_001/judge_verdict.json",
-      "admission_ref": "qepm/mailbox/worktask/WT-D20260424_001/governor_admission.json",
-      "l_code_recorded": "L-192"
+      "l_code": "L-192"
     }
   ],
-  "method": "initial_empty_state_with_rejection_log",
-  "notes": "book_state placeholder — book_update() 호출 후 갱신됨. v6.1 R5 Book-level Governor. Pilot 1 (WT-D20260423_001) + Pilot 2 (WT-D20260423_002) + Pilot 3 (WT-D20260424_001) 3연속 REJECT로 book 여전히 empty. Pilot 3은 Gate F PASS (L-191 회피 실증) + Alpha 통계 유효 (Harvey t=4.42, ICIR 0.403) — DISCARD_WITH_IMPROVEMENTS로 RAPC alpha 재사용 가능 자산. Task #26 (Optimizer 제약 강화 min_names>=15 + HHI_cap<=0.10 + bound[0,0.10] + winsorize) 하 재도전 경로 확립.",
-  "schema_version": "v1.1"
+
+  "gap_update": {
+    "sr_gap_before": 0.807,
+    "sr_gap_after_estimate": 0.549,
+    "sr_gap_reduction": 0.258,
+    "cagr_gap_before": -0.0014,
+    "cagr_gap_after": "OPEN_SURPLUS (+6.9pp 예상)",
+    "mdd_gap_before": -0.0373,
+    "mdd_gap_after": "REOPEN (MEGA_05 -36.95% 수용 결정)"
+  },
+
+  "method": "user_override_admission_v8_r5",
+  "notes": "Session 71 사용자 명시 결정: MEGA_05를 신규 PG2 Core Primary로 admit. STR_1631_SYN_05_2002 대체. STR_1656_M05 Defense diversifier 유지 (Governor 자율 판단). Mega Sprint 5단계 공식 종결. L-217~L-221 5건 적립. 다음 단계: Ensemble Sprint (MEGA_03 + MEGA_05) + cross-family diversifier 연구. CAUTION regime SR 0.22 약점 → CAUTION 전용 overlay 연구 우선."
 }
