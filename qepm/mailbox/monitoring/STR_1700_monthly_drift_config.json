@@ -1,0 +1,105 @@
+{
+  "strategy_id": "STR_1700",
+  "wt_id": "WT-D20260425_011",
+  "role_label": "core_with_machinery_overlay",
+  "admission_status": "PG1_PROBE_PHASE_ADMIT_PHASED_REPLACEMENT",
+  "monitoring_setup_date": "2026-04-26",
+  "monitoring_setup_by": "Q-Lead (Session 72 자율 진행)",
+
+  "frequency": "monthly",
+  "next_check_date": "2026-05-26",
+  "responsible_agent": "monitoring",
+
+  "drift_detection_metrics": {
+    "realized_alpha_vs_predicted": {
+      "predicted_monthly_alpha_pct": 1.27,
+      "tolerance_pct": 0.5,
+      "alert_if_deviation_gt": 1.0,
+      "source": "forge_phase45_package full-period CAGR 15.27% / 12"
+    },
+    "tracking_error_drift": {
+      "baseline_te_pct": 6.5,
+      "tolerance_pct": 1.5,
+      "alert_if_drift_gt": 3.0
+    },
+    "ic_decay_p3_pattern": {
+      "baseline_p3_ic": 0.0025,
+      "alert_if_ic_negative_consecutive_months": 2,
+      "rf_a1_decay_warning": "RF-A1 P3 IC 96% decay observed in Iter 5/6 — closely watch"
+    },
+    "regime_shift_alert": {
+      "current_regime_2026_04": "CRISIS (MRS 63.1)",
+      "regime_panel_source": "stage_artifacts/WT_D20260425_007/regime_panel.parquet",
+      "alert_on_regime_change": true,
+      "machinery_load_regime_dependency": "BULL alpha source / CRISIS machinery (Kelly+Overlay) load-bearing"
+    },
+    "tdc_crowding_drift": {
+      "baseline_tdc_vs_mega_05": 0.098,
+      "tolerance_drift": 0.10,
+      "alert_if_tdc_gt": 0.30
+    },
+    "harvey_5spec_persistence": {
+      "baseline_t_nw": [3.575, 3.608, 3.601, 3.690, 3.686],
+      "alert_if_any_below_2.95_consecutive_months": 2
+    }
+  },
+
+  "phased_replacement_milestones": {
+    "T_plus_19_2026_05_15": {
+      "task": "Architect spawn — G1 AX-008 formal source closure",
+      "trigger_agent": "architect",
+      "automated": true
+    },
+    "T_plus_24_2026_05_20": {
+      "task": "Forge re-extension — G2/G3/G4 closure (LMF rebuild + liquidity verify + daily CVaR)",
+      "trigger_agent": "forge",
+      "automated": true
+    },
+    "T_plus_30_2026_05_26": {
+      "task": "Codex replay split (4× 600s) + milestone review",
+      "trigger_agent": "codex",
+      "automated": true
+    },
+    "T_plus_90_2026_07_25": {
+      "task": "Full Replacement decision (Q-Lead + 사용자 final)",
+      "trigger_agent": "user_decision_required",
+      "automated": false
+    }
+  },
+
+  "expected_book_metrics_post_replacement": {
+    "T_plus_90_full_replacement_target": {
+      "book_sr": 1.0789,
+      "book_cagr_pct": 15.27,
+      "book_mdd_pct": -22.98,
+      "weights": {"STR_1700": 1.0}
+    },
+    "T_plus_90_alternate_80_20": {
+      "book_sr_estimate": 1.04,
+      "weights": {"STR_1700": 0.8, "STR_1656_MLRA_M05": 0.2}
+    }
+  },
+
+  "rollback_conditions": {
+    "auto_rollback_if": [
+      "P3 IC < -0.01 for 3 consecutive months",
+      "5-spec Harvey any below 2.0 for 2 consecutive months",
+      "TDC vs PG2 active > 0.40",
+      "MDD breach -35%",
+      "regime CRISIS persistence > 6 months with negative alpha"
+    ],
+    "rollback_action": "revert to previous PG2 (MEGA_05 80% + STR_1656 20%)",
+    "rollback_governor": "governor agent re-spawn with rollback verdict"
+  },
+
+  "telegram_alerts": {
+    "channel": "default qvest channel",
+    "agent_brief_format": "tg_agent_brief(agent='Monitoring', ...)",
+    "trigger_severity": "any drift detection metric breach"
+  },
+
+  "memory_updates_required": {
+    "L_code_proposed": "L-210 (post-Probe phase outcome) — auto-create at T+90 milestone",
+    "registry_update": "strategy_registry.json STR_1700 status field"
+  }
+}

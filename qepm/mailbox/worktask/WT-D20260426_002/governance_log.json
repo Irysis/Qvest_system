@@ -6,6 +6,92 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: Iter 8 — L01_Amihud Regime-Conditional Sleeve (cross-family diversifier pivot) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-04-26T02:30:00+0900",
+      "agent": "alpha",
+      "action": "FACTOR_ENGINE_RUN",
+      "summary": "factor_engine_proposal.R 실행 — L01_Amihud single-axis regime-conditional alpha 생성 (173 sig_dates × 평균 ~1800 tickers, BULL/NORMAL active 70% / CAUTION/CRISIS cash 100%)",
+      "details": {
+        "n_sig_dates": 173,
+        "n_unique_tickers": 3064,
+        "regime_split": {"BULL": 144843, "NORMAL": 113830, "CAUTION": 45084, "CRISIS": 10553},
+        "elapsed_secs": 71.6
+      }
+    },
+    {
+      "timestamp": "2026-04-26T02:35:00+0900",
+      "agent": "alpha",
+      "action": "DIAGNOSTICS_RUN",
+      "summary": "diagnostics_iter8.R — regime-conditional IC + subperiod + Harvey + DSR + TDC + 5-spec robustness + monotonicity + turnover 측정",
+      "details": {
+        "overall_rank_ic": 0.0036,
+        "overall_icir": 0.026,
+        "active_BULLNORMAL_icir": 0.026,
+        "harvey_t_active": 0.317,
+        "dsr_n5": 0.190,
+        "tdc_avg_vs_str1700": 0.173,
+        "monotonicity": -0.418,
+        "n_specs_harvey_pass": 0
+      }
+    },
+    {
+      "timestamp": "2026-04-26T02:40:00+0900",
+      "agent": "alpha",
+      "action": "DRAFT_PACKAGE_BUILT",
+      "summary": "alpha_package_draft.json 작성 (Codex round용)"
+    },
+    {
+      "timestamp": "2026-04-26T02:45:00+0900",
+      "agent": "codex",
+      "action": "CODEX_ROUND_INVOKED",
+      "summary": "run_codex_qepm_critic.sh --role=alpha — REJECT, veto_flag=FALSE",
+      "details": {
+        "stance": "REJECT",
+        "veto_flag": false,
+        "n_critical_concerns": 7,
+        "weakest_assumption": "70% L01_Amihud + zero-alpha cash overlay does not qualify as AX-007 multi-sleeve alpha and cannot preserve tradable KR liquidity premium given active rank_IC=0.0036 and negative BULL/early-period evidence.",
+        "concerns_summary": [
+          "C1 HIGH: graduation metrics all FAIL",
+          "C2 HIGH: universe 3064 tickers exceeds KOSPI200∪KOSDAQ150 mandate",
+          "C3 HIGH: AX-007 cash overlay overclaim",
+          "C4 HIGH: RF-A3 recent-bias 9x ratio",
+          "C5 HIGH: challenge_note missing",
+          "C6 MEDIUM: DSR n_trials=5 understated",
+          "C7 MEDIUM: post-neutralization未test"
+        ]
+      }
+    },
+    {
+      "timestamp": "2026-04-26T02:50:00+0900",
+      "agent": "alpha",
+      "action": "CODEX_RESPONSE_INTEGRATED",
+      "summary": "finalize_alpha_iter8.R — Codex 7개 concerns 전부 반영하여 최종 alpha_package 작성. universe restricted (773 tickers), post-neutralization (mom12-orthogonal), DSR n_trials=10 strict, AX-007 honest classification.",
+      "details": {
+        "universe_restricted_active_rank_ic": -0.0051,
+        "universe_restricted_active_icir": -0.044,
+        "universe_restricted_harvey_t": -0.526,
+        "dsr_n_trials_10_strict": 0.018,
+        "post_neutralization_ic": -0.0091,
+        "graduation_overall": false,
+        "regime_BULL_icir": -0.116,
+        "regime_NORMAL_icir": 0.062,
+        "ax_007_classification": "EXCEPTION#1_DECLARED_BUT_INSUFFICIENT"
+      }
+    },
+    {
+      "timestamp": "2026-04-26T02:55:00+0900",
+      "agent": "alpha",
+      "action": "ALPHA_PACKAGE_FINALIZED",
+      "summary": "alpha_package.json 저장 + lineage 기록 + challenge_note.md + alpha_validation.json 업데이트. Status: SPEC_APPROVED → ALPHA_DONE (graduation=FAIL, sprint_termination_recommended=TRUE)",
+      "details": {
+        "honest_verdict": "ALPHA_NOT_GRADUATING",
+        "n_sig_dates_active": 145,
+        "tdc_vs_str1700": 0.173,
+        "tdc_pass": true,
+        "lessons_proposed": "L-209 — KR Liquidity_Risk family unconditional fail + regime-conditional partial fail; single-axis regime overlay rescue insufficient",
+        "next_pivot_options": ["A: Sprint termination + L-209", "B: WT-D20260427_001 Growth × Investor_Flow", "C: Skewness Forensics × CFO accrual"]
+      }
     }
   ]
 }
