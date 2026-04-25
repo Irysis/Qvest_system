@@ -156,7 +156,7 @@ fi
 echo "[Codex] companion: $COMPANION" | tee -a "$AUDIT_LOG"
 echo "[Codex] invoking node companion ..." | tee -a "$AUDIT_LOG"
 
-timeout "${CODEX_TIMEOUT:-1200}" node "$COMPANION" task --wait --effort xhigh "$PROMPT_PAYLOAD" > "$OUTPUT" 2>>"$AUDIT_LOG" || {
+timeout "${CODEX_TIMEOUT:-1200}" node "$COMPANION" task --wait --model gpt-5.5 --effort xhigh "$PROMPT_PAYLOAD" > "$OUTPUT" 2>>"$AUDIT_LOG" || {
   echo "[WARN] Codex returned non-zero or timed out." | tee -a "$AUDIT_LOG"
 }
 
