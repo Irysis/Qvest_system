@@ -1,0 +1,150 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "risk_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:21:29+09:00",
+  "task_id": "WT-D20260425_007",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "The covariance stack is numerically stable, but core risk-governance checks are materially incomplete or failed (thin-sample regime reliability, tail-risk gate coverage, and incomplete crowding comparators). Under AX-002 process honesty and RF-R8/R4 expectations, this package is not approval-ready.",
+  "sigma_audit": {
+    "method_selected": "regime-conditional_ledoit_wolf_constcor",
+    "cond_post_shrink": 24.9091,
+    "pd_verified": true,
+    "shrinkage_intensity": 0.9075,
+    "factor_coverage_r2": 0.4804,
+    "method_shopping_count": 2,
+    "rf_r2_flag": false
+  },
+  "regime_sigma_audit": {
+    "regime_n": {
+      "BULL": 84,
+      "NORMAL": 61,
+      "CAUTION": 25,
+      "CRISIS": 5
+    },
+    "crisis_fallback_method": "pooled",
+    "rf_r8_flag": true,
+    "regime_switch_rate_estimated": 3.934,
+    "regime_switch_rate_realized": 5.2,
+    "comment": "CAUTION/CRISIS sample adequacy is below role-guide thresholds; realized switch rate (26 switches over ~60 months) is ~32% above estimate."
+  },
+  "tail_risk_audit": {
+    "cvar_95": 0.0615,
+    "cvar_cap": 0.025,
+    "cvar_breach": true,
+    "hill_alpha": 3.0687,
+    "rf_r6_flag": false,
+    "stress_8_pass": false,
+    "worst_stress_period": "GFC_2008",
+    "worst_stress_loss": -0.435
+  },
+  "crowding_audit": {
+    "tdc_vs_pg2": 0.2756,
+    "hhi": 0.0771,
+    "rf_r3_flag": true,
+    "family_saturation_check": "Not closed: TDC reported is intra-basket, not vs existing PG2 active book; style correlation vs existing active is missing, and L-219 saturation check is not explicit."
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "Daily returns are mapped to monthly regime labels via month-floor join; no same-day VT/DD loop in risk step."
+    },
+    {
+      "check": "C11",
+      "status": "PASS",
+      "evidence": "Risk computation uses KR benchmark/RAWDATA path and does not import FRED in this task flow."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "Risk covariance is return-based in this stage; no direct fundamental factor ingestion in Sigma estimation."
+    },
+    {
+      "check": "C12",
+      "status": "FAIL",
+      "evidence": "No explicit PIT validation for factor-return construction against KR FF5 v2 backfill guard; risk factor layer is PCA proxy without a C12 audit artifact."
+    }
+  ],
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "PASS",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "Regime-sample adequacy is not defensible for decision use: BULL=84, NORMAL=61, CAUTION=25, CRISIS=5 (top-20 panel), with bootstrap CI only recommended but not delivered.",
+      "ax_cite": "RF-R8|AX-002|PIT-C1"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Tail-risk gates are incomplete and breached in reported metrics: worst stress cum loss is -43.5%, CVaR95 is above default cap, and CDaR gate handling/infeasibility escalation is absent.",
+      "ax_cite": "RF-R4|AX-001|L-129"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "C12 control is unproven: risk package claims PIT safety, but factor-return validation against KR FF5 v2/backfill discipline is not evidenced in produced artifacts.",
+      "ax_cite": "PIT-C12|AX-002|RF-R7"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "Crowding diagnostics do not satisfy role requirements: TDC is computed within the candidate basket, not versus existing PG2 active, and style correlation vs active book is missing.",
+      "ax_cite": "RF-R3|RF-R5|L-219|AX-008"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Method-shopping breadth is too narrow for heavy-tail regimes: only sample vs LW const-correlation were compared; Gerber/RMT and DCC-Copula candidates were not audited.",
+      "ax_cite": "RF-R6|AX-002|L-122"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "Artifact contract is ambiguous: security_covariance_ref points to legacy pooled Sigma (equal to CRISIS fallback) while decision regime is CAUTION; misuse risk remains for downstream consumers.",
+      "ax_cite": "RF-R2|AX-002|PIT-C2"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Reproducibility pathing is inconsistent with requested staging convention: expected stage dir A is missing, creating AX-008 triangulation friction and audit ambiguity.",
+      "ax_cite": "AX-008|AX-002|RF-R9"
+    }
+  ],
+  "supporting_arguments": [
+    "RF-R1 is not triggered: PC1 systematic share is ~25.9%, below 40% concentration threshold.",
+    "RF-R2 and RF-R9 pass numerically on produced Sigma: min eigenvalue > 0 and condition number <= 100 post-shrinkage.",
+    "Factor coverage is above the KR minimum expectation: factor_explained_share_mean ~0.4804 (>0.30).",
+    "Weight concentration is moderate in selected schedule (HHI ~0.0771, max weight ~10.67%).",
+    "RF-R7 decay is not 3x+ in provided alpha subperiod IC path (0.069 -> 0.0289, ~2.39x), so that specific decay flag is not the blocker."
+  ],
+  "unresolved_disputes": [
+    "Whether EW20 proxy tail metrics are acceptable substitutes for strategy-level post-optimization CVaR/CDaR gates.",
+    "Which artifact root is canonical for this WT (requested qepm stage path vs produced root stage_artifacts path).",
+    "Whether CAUTION regime (n=25) should also receive pooled/bootstrap fallback, not only CRISIS.",
+    "Liquidity-rule governance is inconsistent across artifacts (5e7 request handling vs base-context 2e8 hard mandate)."
+  ],
+  "weakest_assumption": "The CAUTION regime covariance (n=25 with full shrinkage delta=1.0) is assumed to contain robust regime-specific information beyond pooled Sigma, yet that edge is statistically fragile and weakly evidenced.",
+  "rebuttal_required": [
+    "Publish bootstrap confidence intervals for CAUTION/CRISIS Sigma and document fallback policy for all regimes below adequacy thresholds.",
+    "Add CDaR95, EVT-GPD outputs (including Hill alpha in package JSON), and explicit cap-breach escalation logic.",
+    "Provide crowding metrics versus current PG2 active book (TDC and style correlation) rather than intra-basket proxies only.",
+    "Disambiguate covariance references by labeling pooled legacy Sigma explicitly and enforcing regime-specific Sigma selection contract.",
+    "Emit walk-forward weight schedule artifact with sig_date,ticker,weight,regime to close replay/audit gaps."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Numerical PSD/conditioning quality is adequate, but triangulation is not met: no 2-source PASS evidence, and downstream forge summary reports failure-level outcomes (e.g., severe drawdown and sub-threshold Harvey t)."
+  },
+  "risk_specific_questions": [
+    "If CAUTION has n=25 and delta=1.0, what incremental information remains versus pooled Sigma, and where is that uncertainty quantified?",
+    "Why is CDaR95 absent despite L-129 context and explicit tail-gate requirements in this role prompt?",
+    "How is TDC against the existing active book computed in production (cross-sectional overlap vs time-series co-tail), and where is that artifact persisted?"
+  ]
+}
