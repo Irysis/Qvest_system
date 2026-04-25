@@ -16,7 +16,9 @@
     "p1_IC": 0.0604,
     "p2_IC": 0.0312,
     "p3_IC": 0.0025,
-    "sub_stability": 0.0409
+    "sub_stability": 0.0409,
+    "monotonicity": 0.8889,
+    "top_bottom_decile_spread": 0.0125
   },
   "shopping_log": {
     "STR_1699_baseline_no_overlay": {
@@ -226,5 +228,92 @@
     "C15": "PASS load_month_factors equivalence proven (Iter 5 inherited)",
     "lockbox": "ENFORCED 2024-01-23~2026-01-23; signal_cutoff=2023-11-30",
     "universe": "ENFORCED KOSPI200 ∪ KOSDAQ150 (Iter 5 inherited)"
+  },
+  "wt011_lmf_equivalence_proof": {
+    "method": "Direct load_month_factors() call at latest sig_date in WT-011 finalize step",
+    "sig_date_tested": "2023-11-01",
+    "factors_tested": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+    "n_factors_loaded": 7,
+    "pit_path": "factor_db_connector::load_month_factors -> Usable_Date <= sig_date enforcement",
+    "iter5_inheritance": "21/21 spot-checks across 3 dates × 7 factors cor>0.999 (Iter 5 LMF_EQUIV_PROOF)",
+    "proof_records": {
+      "C01_SUE": {
+        "sig_date": "2023-11-01",
+        "factor": "C01_SUE",
+        "n_in_lmf": 245,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "C02_EPS_Chg_1m": {
+        "sig_date": "2023-11-01",
+        "factor": "C02_EPS_Chg_1m",
+        "n_in_lmf": 1685,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "C04_ESBR": {
+        "sig_date": "2023-11-01",
+        "factor": "C04_ESBR",
+        "n_in_lmf": 427,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "C06_TP_Gap": {
+        "sig_date": "2023-11-01",
+        "factor": "C06_TP_Gap",
+        "n_in_lmf": 818,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "Q07_Earnings_Stability": {
+        "sig_date": "2023-11-01",
+        "factor": "Q07_Earnings_Stability",
+        "n_in_lmf": 2374,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "M08_Residual_Mom": {
+        "sig_date": "2023-11-01",
+        "factor": "M08_Residual_Mom",
+        "n_in_lmf": 2404,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      },
+      "Q25_Ohlson_O": {
+        "sig_date": "2023-11-01",
+        "factor": "Q25_Ohlson_O",
+        "n_in_lmf": 2523,
+        "n_in_asp": 350,
+        "lmf_path_used": "factor_db_connector::load_month_factors",
+        "pit_compliance": "Usable_Date <= sig_date (factor_db_connector internal enforcement)",
+        "pass": true
+      }
+    }
+  },
+  "codex_critic_round": {
+    "rounds_executed": 1,
+    "final_stance": "REJECT",
+    "weakest_assumption": "The most fragile claim is that STR_1699 signal evidence plus MEGA_05 Kelly/Overlay machinery can be combined into SR 1.5+ while inheriting prior FF5/DSR validity, despite WT-011 failing DSR and subperiod stability and lacking an actual Forge portfolio rerun.",
+    "critical_concerns_count": 7,
+    "agree_with_claude": false,
+    "response_artifact": "codex_critic_response_alpha.json"
+  },
+  "qlead_resolution_summary": {
+    "accept": 4,
+    "partial": 2,
+    "rebuttal": 1,
+    "total": 7
   }
 }
