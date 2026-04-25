@@ -78,7 +78,11 @@ rm(res); gc(verbose = FALSE)
 setkey(RAWDATA, Date, Ticker)
 
 RAWDATA[, TradingValue := Close * Vol]
-RAWDATA[order(Date), AvgTV20 := frollmean(TradingValue, n = 20L, align = "right"), by = Ticker]
+# C10 fix (Codex critique): use t-1 AvgTV20 to avoid same-day liquidity leakage.
+# right-aligned rolling mean ending at t includes Vol[t]; we shift by 1 day per ticker.
+RAWDATA[order(Date), AvgTV20_t := frollmean(TradingValue, n = 20L, align = "right"), by = Ticker]
+RAWDATA[order(Date), AvgTV20 := shift(AvgTV20_t, n = 1L, type = "lag"), by = Ticker]
+RAWDATA[, AvgTV20_t := NULL]
 RAWDATA[, LiqPass := !is.na(AvgTV20) & AvgTV20 >= 2e8]
 
 monthly_ret <- RAWDATA[, .(
@@ -102,12 +106,12 @@ SLEEVE_DEFENSE  <- c("Q07_Earnings_Stability", "Q25_Ohlson_O")
 
 NEEDED_FACTORS <- unique(c(SLEEVE_CORE, SLEEVE_DEFENSE))
 
-# Use Factor DB direct parquet bulk read (consistent with Iter 3 pattern, still
-# load_month_factors-compatible: same files, same Z_Score column. After load,
-# we run align_factor_direction() centrally — equivalent to load_month_factors().
-# This is "load_month_factors() 경유" in spirit (Mandate 3): we use the Factor DB
-# connector's helpers + same parquet schema, just bulk-load all months at once
-# for efficiency. Per-month load_month_factors() called for verification below.
+# Honest disclosure (Codex critique fix): bulk parquet read for performance,
+# THEN per-sig_date PIT-safe align_factor_direction() with Usable_Date<=sig_d
+# (matching load_month_factors internal behavior). For the latest sig_date
+# we call load_month_factors() directly to verify equivalence.
+# Per-month load_month_factors() in a 241-month loop = ~5-10 min I/O overhead.
+# Bulk read + per-sig_date alignment achieves identical PIT result in <60s.
 fdb_dir   <- file.path(CACHE_DIR, "factor_db")
 fdb_files <- sort(list.files(fdb_dir, pattern = "^factor_db_\\d{6}\\.parquet$",
                               full.names = TRUE))
@@ -141,8 +145,15 @@ cat(sprintf("[Step 3] Raw FDB: %s rows | %d months | %d factors\n",
             uniqueN(FDB_ALL$Factor_Name)))
 cat("[Step 3] Factors loaded:", paste(sort(unique(FDB_ALL$Factor_Name)), collapse=", "), "\n")
 
-# Direction alignment (C13 / Mandate 3 / load_month_factors() equivalent)
-FDB_ALL <- align_factor_direction(FDB_ALL, .load_registry())
+# Direction alignment per sig_date (C13 + C14 PIT-safe — Codex critique fix).
+# Use sig_date-aware alignment: Usable_Date <= sig_d expanding window IC for direction.
+# This explicitly removes the registry-only mode and enforces C14.
+FDB_ALL_LIST <- split(FDB_ALL, by = "sig_date")
+FDB_ALL <- rbindlist(lapply(FDB_ALL_LIST, function(sub) {
+  sd <- as.Date(sub$sig_date[1])
+  align_factor_direction(sub, .load_registry(), sig_date = sd, min_ic_months = 12L)
+}), fill = TRUE)
+rm(FDB_ALL_LIST); gc(verbose = FALSE)
 if ("Z_Score_Aligned" %in% names(FDB_ALL)) {
   FDB_ALL[, Z_Score := Z_Score_Aligned]
   FDB_ALL[, Z_Score_Aligned := NULL]
@@ -336,8 +347,34 @@ cat(sprintf("[SLEEVE_CORE] rank_IC=%.4f ICIR=%.4f Harvey=%.3f SubStab=%.3f n=%d\
     diag_core$harvey_t %||% NA, diag_core$sub_stability %||% NA, diag_core$n_months))
 
 # Sleeve 2: Defense (Q07 + Q25_Ohlson_O multi-axis quality_distress)
-defense_scores <- build_composite(SLEEVE_DEFENSE, label="SLEEVE_DEFENSE")
-diag_defense   <- compute_ic_diag(defense_scores, "SLEEVE_DEFENSE")
+# Codex critique fix: IC-weighted composite collapses to Q07-only when Q25 ICIR<0.
+# Use equal-weighted (50/50) blend explicitly to enforce true multi-axis representation.
+build_composite_ew <- function(fac_names, dt = FDB_WITH_RET, sigma_winsor = 2.5, label = "ew") {
+  fac_names <- intersect(fac_names, names(dt))
+  if (length(fac_names) == 0) stop("No factors available: ", label)
+  all_dates <- sort(unique(dt$sig_date))
+  score_list <- lapply(seq_along(all_dates), function(i) {
+    sig_d <- all_dates[i]
+    sub   <- dt[sig_date == sig_d]
+    if (nrow(sub) < 10L) return(NULL)
+    theta <- setNames(rep(1/length(fac_names), length(fac_names)), fac_names)
+    score_vec <- rep(0, nrow(sub))
+    for (fn in fac_names) {
+      if (!fn %in% names(sub)) next
+      col_vals <- sub[[fn]]
+      if (all(is.na(col_vals))) next
+      col_w <- winsor_z(col_vals, sigma = sigma_winsor)
+      score_vec <- score_vec + theta[fn] * col_w
+    }
+    sub_out <- sub[, .(sig_date, Ticker, Ret_1m)]
+    sub_out[, Score := score_vec]
+    sub_out[, theta_json := toJSON(as.list(round(theta, 4)), auto_unbox=TRUE)]
+    sub_out
+  })
+  rbindlist(score_list[!sapply(score_list, is.null)], fill = TRUE)
+}
+defense_scores <- build_composite_ew(SLEEVE_DEFENSE, label="SLEEVE_DEFENSE_EW")
+diag_defense   <- compute_ic_diag(defense_scores, "SLEEVE_DEFENSE_EW")
 cat(sprintf("[SLEEVE_DEFENSE] rank_IC=%.4f ICIR=%.4f Harvey=%.3f SubStab=%.3f n=%d\n",
     diag_defense$rank_ic %||% NA, diag_defense$icir %||% NA,
     diag_defense$harvey_t %||% NA, diag_defense$sub_stability %||% NA, diag_defense$n_months))

@@ -1,43 +1,43 @@
 {
   "task_id": "WT-D20260425_010",
-  "generated_at": "2026-04-25T17:28:37+0900",
+  "generated_at": "2026-04-25T17:38:28+0900",
   "n_sig_dates": 241,
-  "unique_tickers": 3052,
+  "unique_tickers": 3053,
   "date_range": ["2004-01-01", "2024-01-01"],
   "schema": ["Date", "Ticker", "score_eff", "score_core_z", "score_defense_z", "Ret_1m", "regime_state", "theta_core", "theta_defense"],
   "diagnostics": {
     "blend": {
-      "rank_ic": 0.0502,
-      "icir": 0.5766,
-      "harvey_t": 8.9513,
+      "rank_ic": 0.0546,
+      "icir": 0.5654,
+      "harvey_t": 8.7768,
       "n_months": 241,
-      "p1_IC": 0.0644,
-      "p2_IC": 0.0391,
-      "p3_IC": 0.0179,
-      "sub_stability": 0.278,
+      "p1_IC": 0.072,
+      "p2_IC": 0.0421,
+      "p3_IC": 0.0236,
+      "sub_stability": 0.3285,
       "label": "BLEND_065_035"
     },
     "core": {
-      "rank_ic": 0.0473,
-      "icir": 0.5412,
-      "harvey_t": 8.401,
+      "rank_ic": 0.0499,
+      "icir": 0.566,
+      "harvey_t": 8.7863,
       "n_months": 241,
-      "p1_IC": 0.0623,
-      "p2_IC": 0.0374,
-      "p3_IC": 0.0117,
-      "sub_stability": 0.1882,
+      "p1_IC": 0.0666,
+      "p2_IC": 0.0382,
+      "p3_IC": 0.0133,
+      "sub_stability": 0.2002,
       "label": "SLEEVE_CORE"
     },
     "defense": {
-      "rank_ic": 0.0539,
-      "icir": 0.72,
-      "harvey_t": 11.1774,
+      "rank_ic": 0.0401,
+      "icir": 0.5092,
+      "harvey_t": 7.9046,
       "n_months": 241,
-      "p1_IC": 0.0808,
-      "p2_IC": 0.0277,
-      "p3_IC": 0.0324,
-      "sub_stability": 0.3431,
-      "label": "SLEEVE_DEFENSE"
+      "p1_IC": 0.0727,
+      "p2_IC": 0.0309,
+      "p3_IC": 0.0343,
+      "sub_stability": 0.4254,
+      "label": "SLEEVE_DEFENSE_EW"
     }
   },
   "shopping_log": {
@@ -45,54 +45,54 @@
       "name": "Core_only_065_000",
       "w_core": 1,
       "w_def": 0,
-      "rank_ic": 0.0473,
-      "icir": 0.5412,
-      "harvey_t": 8.401,
+      "rank_ic": 0.0499,
+      "icir": 0.566,
+      "harvey_t": 8.7863,
       "selected": false
     },
     "Defense_only_000_100": {
       "name": "Defense_only_000_100",
       "w_core": 0,
       "w_def": 1,
-      "rank_ic": 0.0312,
-      "icir": 0.3398,
-      "harvey_t": 5.2751,
+      "rank_ic": 0.031,
+      "icir": 0.3264,
+      "harvey_t": 5.0676,
       "selected": false
     },
     "Blend_080_020": {
       "name": "Blend_080_020",
       "w_core": 0.8,
       "w_def": 0.2,
-      "rank_ic": 0.049,
-      "icir": 0.5634,
-      "harvey_t": 8.7467,
+      "rank_ic": 0.0543,
+      "icir": 0.5849,
+      "harvey_t": 9.0801,
       "selected": false
     },
     "Blend_065_035": {
       "name": "Blend_065_035",
       "w_core": 0.65,
       "w_def": 0.35,
-      "rank_ic": 0.0502,
-      "icir": 0.5766,
-      "harvey_t": 8.9513,
+      "rank_ic": 0.0546,
+      "icir": 0.5654,
+      "harvey_t": 8.7768,
       "selected": true
     },
     "Blend_050_050": {
       "name": "Blend_050_050",
       "w_core": 0.5,
       "w_def": 0.5,
-      "rank_ic": 0.0509,
-      "icir": 0.5804,
-      "harvey_t": 9.0099,
+      "rank_ic": 0.0524,
+      "icir": 0.5294,
+      "harvey_t": 8.218,
       "selected": false
     }
   },
   "crisis_ci": {
     "method": "bootstrap_B1000",
     "n_crisis": 5,
-    "mean_ic": -0.071,
-    "ci95": [-0.1213, -0.0208],
-    "pooled_fallback_ic": 0.0502
+    "mean_ic": -0.0864,
+    "ci95": [-0.1241, -0.0438],
+    "pooled_fallback_ic": 0.0546
   },
   "ax_compliance": {
     "AX-003": {
@@ -128,13 +128,13 @@
     "RF-A1": {
       "id": "RF-A1",
       "severity": "HIGH",
-      "msg": "refs=8, sub_stab=0.278"
+      "msg": "refs=8, sub_stab=0.329"
     },
     "RF-A2": {
       "id": "RF-A2",
       "severity": "MEDIUM",
-      "msg": "Blend vs best single ICIR delta = -19.92% (<5%)",
-      "detail": "blend_icir=0.5766 best_single=0.72"
+      "msg": "Blend vs best single ICIR delta = -0.11% (<5%)",
+      "detail": "blend_icir=0.56536 best_single=0.566"
     }
   },
   "alpha_divergence": 1,
