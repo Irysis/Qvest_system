@@ -287,13 +287,19 @@ for (i in seq_along(SIG_DATES)) {
 
   # Wide: one column per factor
   fw <- dcast(fdb_sub, Ticker ~ Factor_Name, value.var = "Z_Score_Aligned")
-  # Only tickers with all 6 factors available
-  fw <- fw[complete.cases(fw)]
+  # Only keep rows/cols where all 6 factors present in this month's DB
+  avail_factors <- intersect(FACTORS_6F, names(fw))
+  if (length(avail_factors) < 4L) next  # need at least 4 of 6
+  # Only tickers with all available factors non-NA
+  fw <- fw[complete.cases(fw[, avail_factors, with = FALSE])]
   if (nrow(fw) < 20L) next
 
   # Composite score = weighted sum of Z_Score_Aligned (C13: Z_Score_Aligned only)
-  score_mat <- as.matrix(fw[, FACTORS_6F, with = FALSE])
-  composite  <- score_mat %*% THETA_NORM[FACTORS_6F]
+  # Use only factors available in this month
+  theta_avail <- THETA_NORM[avail_factors]
+  theta_avail <- theta_avail / sum(theta_avail)  # renormalize to available factors
+  score_mat <- as.matrix(fw[, avail_factors, with = FALSE])
+  composite  <- score_mat %*% theta_avail
   fw[, Composite := as.numeric(composite)]
 
   # Winsorize composite at 2.5 sigma (cross-section)
