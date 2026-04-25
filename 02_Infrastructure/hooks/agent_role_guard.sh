@@ -151,6 +151,64 @@ check_monitoring_agent() {
   echo '{"decision":"allow"}'
 }
 
+check_judge_agent() {
+  # v6.2: Judge Agent boundary
+  # 허용 쓰기: judge_verdict.json, judge_lockbox_audit.json (harness 전용), judge_challenge_note.md
+  # 금지: alpha/risk/optimization/forge package 수정, weights.csv, governor 산출물
+  case "$FP_LOWER" in
+    */alpha_package.json|*/alpha_scores*.parquet|*/alpha_validation.json)
+      echo '{"decision":"block","reason":"v6.2 Judge: Alpha package 수정 금지 (audit 권한만, 수정은 alpha agent 영역)."}'
+      exit 0
+      ;;
+    */risk_package.json|*/covariance*.parquet|*/tail_risk.json)
+      echo '{"decision":"block","reason":"v6.2 Judge: Risk package 수정 금지 (audit 권한만)."}'
+      exit 0
+      ;;
+    */optimization_package.json|*/weights*.csv|*/weight_method_*)
+      echo '{"decision":"block","reason":"v6.2 Judge: Optimizer package + weights 수정 금지 (audit 권한만)."}'
+      exit 0
+      ;;
+    */forge_package.json|*/forge_phase4_package.json|*/run_all.R)
+      echo '{"decision":"block","reason":"v6.2 Judge: Forge 산출물 수정 금지 (audit 권한만, Lockbox harness는 별도 sub만)."}'
+      exit 0
+      ;;
+    */governor_admission*|*/book_state.json|*/pg*_*.json)
+      echo '{"decision":"block","reason":"v6.2 Judge: Governor 영역 수정 금지."}'
+      exit 0
+      ;;
+  esac
+  echo '{"decision":"allow"}'
+}
+
+check_governor_agent() {
+  # v6.2: Governor Agent boundary
+  # 허용: governor_admission.json, book_state.json, governor_challenge_note.md, PG_rebalance_*.json
+  # 금지: alpha/risk/optimization/forge/judge 산출물 수정
+  case "$FP_LOWER" in
+    */alpha_package.json|*/alpha_scores*.parquet|*/alpha_validation.json)
+      echo '{"decision":"block","reason":"v6.2 Governor: Alpha package 수정 금지 (admission 권한만)."}'
+      exit 0
+      ;;
+    */risk_package.json|*/covariance*.parquet|*/tail_risk.json)
+      echo '{"decision":"block","reason":"v6.2 Governor: Risk package 수정 금지."}'
+      exit 0
+      ;;
+    */optimization_package.json|*/weights*.csv)
+      echo '{"decision":"block","reason":"v6.2 Governor: Optimizer package + weights 수정 금지."}'
+      exit 0
+      ;;
+    */forge_package.json|*/forge_phase4_package.json|*/run_all.R|*/backtest_result/*)
+      echo '{"decision":"block","reason":"v6.2 Governor: Forge 산출물 수정 금지."}'
+      exit 0
+      ;;
+    */judge_verdict*|*/judge_lockbox_audit*|*/judge_ready/*|*/judge_challenge_note*)
+      echo '{"decision":"block","reason":"v6.2 Governor: Judge 산출물 수정 금지 (audit 권한 침범)."}'
+      exit 0
+      ;;
+  esac
+  echo '{"decision":"allow"}'
+}
+
 case "$AGENT_NAME" in
   alpha*)
     check_alpha_agent
@@ -170,8 +228,14 @@ case "$AGENT_NAME" in
   monitoring*)
     check_monitoring_agent
     ;;
+  judge*)
+    check_judge_agent
+    ;;
+  governor*)
+    check_governor_agent
+    ;;
   *)
-    # Q-Lead / Judge / Governor / Codex 등은 allow (orchestration 권한)
+    # Q-Lead / Codex 등은 allow (orchestration 권한)
     echo '{"decision":"allow"}'
     ;;
 esac

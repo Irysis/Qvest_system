@@ -69,16 +69,18 @@ judge_lockbox_nav <- function(weights_csv,
 
   rd <- as.data.table(read_parquet(rawdata_path))
   setnames(rd, tolower(names(rd)))
-  rd <- rd[Date >= as.Date(lockbox_start) & Date <= as.Date(lockbox_end) &
-            Ticker %in% frozen$ticker]
+  # After tolower: columns are date, ticker, ret etc.
+  rd <- rd[date >= as.Date(lockbox_start) & date <= as.Date(lockbox_end) &
+            ticker %in% frozen$ticker]
 
   if (nrow(rd) == 0) stop("[judge_lockbox_nav] no rawdata in lockbox period")
 
-  rd <- rd[, .(Date, Ticker, Ret = ret)]
-  rd <- merge(rd, frozen[, .(Ticker = ticker, weight)], by = "Ticker")
+  rd <- rd[, .(date, ticker, ret)]
+  rd <- merge(rd, frozen[, .(ticker, weight)], by = "ticker")
 
-  port_daily <- rd[, .(port_ret = sum(weight * Ret, na.rm = TRUE)), by = Date]
-  setorder(port_daily, Date)
+  port_daily <- rd[, .(port_ret = sum(weight * ret, na.rm = TRUE)), by = date]
+  setorder(port_daily, date)
+  setnames(port_daily, "date", "Date")
 
   cost_per_period <- cost_bps / 1e4
   port_daily[1, port_ret := port_ret - cost_per_period]
@@ -123,8 +125,8 @@ judge_baseline_recompute <- function(baseline_weights_csv,
 
   rd <- as.data.table(read_parquet(rawdata_path))
   setnames(rd, tolower(names(rd)))
-  rd <- rd[Date >= as.Date(period_start) & Date <= as.Date(period_end)]
-  rd <- rd[, .(Date, Ticker, Ret = ret)]
+  rd <- rd[date >= as.Date(period_start) & date <= as.Date(period_end)]
+  rd <- rd[, .(date, ticker, ret)]
 
   sig_dates <- sort(unique(bw[[date_col]]))
   port_returns <- list()
@@ -132,14 +134,15 @@ judge_baseline_recompute <- function(baseline_weights_csv,
   for (i in seq_along(sig_dates)) {
     sd_i <- sig_dates[i]
     sd_next <- if (i < length(sig_dates)) sig_dates[i + 1] else as.Date(period_end)
-    weights_at_sd <- bw[bw[[date_col]] == sd_i, .(Ticker = ticker, weight)]
-    rd_period <- rd[Date > sd_i & Date <= sd_next]
-    rd_period <- merge(rd_period, weights_at_sd, by = "Ticker")
-    pr <- rd_period[, .(port_ret = sum(weight * Ret, na.rm = TRUE)), by = Date]
+    weights_at_sd <- bw[bw[[date_col]] == sd_i, .(ticker, weight)]
+    rd_period <- rd[date > sd_i & date <= sd_next]
+    rd_period <- merge(rd_period, weights_at_sd, by = "ticker")
+    pr <- rd_period[, .(port_ret = sum(weight * ret, na.rm = TRUE)), by = date]
     port_returns[[i]] <- pr
   }
   port_daily <- rbindlist(port_returns)
-  setorder(port_daily, Date)
+  setorder(port_daily, date)
+  setnames(port_daily, "date", "Date")
 
   port_daily[, cum_nav := cumprod(1 + port_ret)]
 

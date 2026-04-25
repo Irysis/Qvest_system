@@ -41,8 +41,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validation
-if [[ ! "$ROLE" =~ ^(alpha|risk|optimizer|judge|governor)$ ]]; then
-  echo "[ERR] --role must be one of: alpha, risk, optimizer, judge, governor (got: $ROLE)" >&2
+if [[ ! "$ROLE" =~ ^(alpha|risk|optimizer|judge|governor|forge)$ ]]; then
+  echo "[ERR] --role must be one of: alpha, risk, optimizer, judge, governor, forge (got: $ROLE)" >&2
   exit 2
 fi
 
