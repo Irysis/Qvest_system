@@ -451,21 +451,26 @@ compute_weights_at_date <- function(sig_date, alpha_scores,
   alpha_t  <- alpha_t[sigma_tickers]
   tickers_t <- sigma_tickers
 
+  # CRISIS small-sample weight shrinkage (Codex Concern #4 ACCEPT, AX-001 v2):
+  # In CRISIS regime, tighten max-weight per name to 0.10 (vs 0.20 default)
+  # because crisis IC is -0.173 (small sample n=5) — concentrate-bet caution.
+  ub_use <- if (regime == "CRISIS") min(ub, 0.10) else ub
+
   # Apply method
   N <- length(tickers_t)
   names(alpha_t) <- tickers_t
   w <- switch(method,
-    "MVO_lam2"        = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub),
-    "MVO_lam5"        = mvo_qp(alpha_t, Sigma_t, lambda = 5.0, lb = 0, ub = ub),
-    "MVO_lam1"        = mvo_qp(alpha_t, Sigma_t, lambda = 1.0, lb = 0, ub = ub),
-    "MVO_conf_TP"     = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub,
+    "MVO_lam2"        = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub_use),
+    "MVO_lam5"        = mvo_qp(alpha_t, Sigma_t, lambda = 5.0, lb = 0, ub = ub_use),
+    "MVO_lam1"        = mvo_qp(alpha_t, Sigma_t, lambda = 1.0, lb = 0, ub = ub_use),
+    "MVO_conf_TP"     = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub_use,
                                   confidence = confidence, w_prev = w_prev_risk,
                                   turnover_phi = turnover_phi, psi = 0.3),
-    "MVO_TP_high"     = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub,
+    "MVO_TP_high"     = mvo_qp(alpha_t, Sigma_t, lambda = 2.0, lb = 0, ub = ub_use,
                                   w_prev = w_prev_risk, turnover_phi = 5.0),
     "HRP"             = hrp_qd(Sigma_t),
     "ERC"             = erc_qd(Sigma_t),
-    "MaxDiv"          = maxdiv_qd(Sigma_t, ub = ub),
+    "MaxDiv"          = maxdiv_qd(Sigma_t, ub = ub_use),
     "EqualWeight"     = rep(1 / N, N),
     "AlphaProp"       = {
       a <- pmax(alpha_t, 0)
@@ -488,7 +493,7 @@ compute_weights_at_date <- function(sig_date, alpha_scores,
                               band_pct = no_trade_band$band_pct %||% 0.20,
                               band_abs = no_trade_band$band_abs %||% 0.005)
   }
-  w <- normalize_long_only(w, lb = 0, ub = ub, target_sum = 1)
+  w <- normalize_long_only(w, lb = 0, ub = ub_use, target_sum = 1)
 
   # Cash overlay (AX-001 v2)
   cash_pct <- cash_overlay_pct(regime)
@@ -877,22 +882,24 @@ asof_Sigma <- if (asof_use_pooled) Sigma_pooled_asof else Sigma_asof
 asof_sigma_method <- if (asof_use_pooled) "lw_constcor_pooled_fallback_risk_artifact" else "lw_oracle_risk_artifact"
 
 # Apply selected method (HRP/MaxDiv/InvVol/etc) to Risk's full 20-ticker Σ
+# CRISIS small-sample shrink: max-weight 0.10 in CRISIS regime (AX-001 v2 boundary)
+asof_ub <- if (asof_regime == "CRISIS") 0.10 else 0.20
 asof_w <- switch(selected_cfg$method,
   "HRP"     = hrp_qd(asof_Sigma),
-  "MaxDiv"  = maxdiv_qd(asof_Sigma, ub = 0.20),
+  "MaxDiv"  = maxdiv_qd(asof_Sigma, ub = asof_ub),
   "ERC"     = erc_qd(asof_Sigma),
   "InvVol"  = { iv <- 1 / sqrt(diag(asof_Sigma)); iv / sum(iv) },
   "MVO_lam2"     = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
-                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20),
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = asof_ub),
   "MVO_conf_TP"  = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
-                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20,
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = asof_ub,
                             confidence = setNames(unlist(alpha_pkg$confidence_vector)[SIG_TICKERS], SIG_TICKERS),
                             turnover_phi = 2.0, psi = 0.3),
   "MVO_TP_high"  = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
-                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20, turnover_phi = 5.0),
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = asof_ub, turnover_phi = 5.0),
   rep(1 / length(SIG_TICKERS), length(SIG_TICKERS))  # EW fallback
 )
-asof_w <- normalize_long_only(asof_w, lb = 0, ub = 0.20, target_sum = 1)
+asof_w <- normalize_long_only(asof_w, lb = 0, ub = asof_ub, target_sum = 1)
 names(asof_w) <- SIG_TICKERS
 asof_cash <- cash_overlay_pct(asof_regime)
 asof_w_risk <- asof_w * (1 - asof_cash)
@@ -1009,6 +1016,12 @@ hard_violations <- character(0)
 if (selected_eval$ann_to > TURNOVER_HARD_CAP) hard_violations <- c(hard_violations, "turnover_cap_annual")
 if (selected_eval$cvar95_daily_proxy > CVAR_DAILY_CAP) hard_violations <- c(hard_violations, "cvar_daily_cap")
 if (length(hard_violations) > 0) {
+  to_pass_count <- sum(sapply(eval_results, function(r) {
+    isTRUE(r$ok) && r$ann_to <= TURNOVER_HARD_CAP
+  }))
+  cvar_pass_count <- sum(sapply(eval_results, function(r) {
+    isTRUE(r$ok) && (r$cvar95_daily_proxy %||% 1) <= CVAR_DAILY_CAP
+  }))
   infeas_report <- list(
     reason = sprintf("Selected method '%s' breaches hard caps: %s",
                       selected_name, paste(hard_violations, collapse = ", ")),
@@ -1016,15 +1029,21 @@ if (length(hard_violations) > 0) {
     observed = list(
       turnover_annual = round(selected_eval$ann_to, 4),
       turnover_hard_cap = TURNOVER_HARD_CAP,
+      turnover_pass_methods_count = to_pass_count,
+      turnover_pass_methods_total = length(eval_results),
       cvar95_daily_proxy = round(selected_eval$cvar95_daily_proxy, 5),
-      cvar_daily_cap = CVAR_DAILY_CAP
+      cvar_daily_cap = CVAR_DAILY_CAP,
+      cvar_pass_methods_count = cvar_pass_count
     ),
     suggested_resolution = paste(
-      "All 10 candidate methods exceed turnover cap (structural — KR top-20 monthly rebalance with",
-      "per-sig_date universe pick produces 700%+ TO regardless of method). Realistic resolutions:",
-      "(1) reduce rebalance frequency to semi-annual (rebal=6); (2) widen universe to top-30",
-      "with FM-weighted allocation; (3) impose explicit ADV-anchored turnover budget via Forge backtest.",
-      "Recommended: pass to Forge for weight_inertia + ADV pacing to determine implementable turnover."
+      sprintf("Of 10 candidates, %d pass turnover cap (≤%.0f%%), %d pass CVaR cap (≤%.1f%%).",
+              to_pass_count, TURNOVER_HARD_CAP * 100, cvar_pass_count, CVAR_DAILY_CAP * 100),
+      "All quarterly variants pass turnover but none pass the daily-CVaR-proxy cap.",
+      "CVaR daily proxy is monthly-realized / sqrt(21) — likely overstates daily tail (heavy fat-tail inflation).",
+      "Realistic resolutions: (1) Forge to verify CVaR using actual daily portfolio returns;",
+      "(2) reduce rebalance to semi-annual (TO further); (3) widen universe to top-30 + FM allocation;",
+      "(4) ADV-anchored turnover budget via Forge backtest;",
+      "(5) integration_80_20 scenario blends 20% Iter 5 (TO ≈ 88%) into 80% PG2 — Forge admission."
     )
   )
 }
@@ -1145,7 +1164,7 @@ opt_pkg_draft <- list(
     integration_80_20 = list(
       design = "80% PG2 (STR_1631_SYN_05_80 + STR_1656_MLRA_M05_20) + 20% Iter 5 multi-sleeve",
       backtest_status = "TBD by Forge",
-      expected_benefit = "Reduces Iter 5 turnover footprint to ~152% (20% × 762%) at portfolio-level"
+      expected_benefit_text = "Reduces Iter 5 turnover footprint to ~88% portfolio-level (20% × 439%) at book level — well within deployment turnover_cap_annual=3.0 (300%) when combined with PG2 anchored at typical low TO."
     )
   ),
   explanation = list(
