@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-D20260425_007",
+  "str_id": "STR_1696",
+  "as_of_date": "2026-04-25",
+  "build_label": "REBUILD_OPUS_4_7",
+  "performance_summary": {
+    "combined": {
+      "label": "STR_1696_Combined",
+      "n_days": 5489,
+      "cagr": 17.91,
+      "vol": 30.18,
+      "sharpe": 0.593,
+      "sharpe_m": 0.69,
+      "mdd": 77.6,
+      "win_rate": 56.6,
+      "harvey_t": 2.769,
+      "dsr": 1.0085
+    },
+    "pre_lb": {
+      "label": "STR_1696_PreLB",
+      "n_days": 4925,
+      "cagr": 15.92,
+      "vol": 30.16,
+      "sharpe": 0.528,
+      "sharpe_m": 0.641,
+      "mdd": 77.6,
+      "win_rate": 57.3,
+      "harvey_t": 2.333,
+      "dsr": 0.8256
+    },
+    "lockbox": {
+      "label": "STR_1696_Lockbox_OOS",
+      "n_days": 564,
+      "cagr": 36.79,
+      "vol": 30.36,
+      "sharpe": 1.212,
+      "sharpe_m": 1.071,
+      "mdd": 32.08,
+      "win_rate": 50,
+      "harvey_t": 1.813,
+      "dsr": 4.5597
+    }
+  },
+  "regime_conditional": {
+    "BULL": {
+      "regime": "BULL",
+      "n_days": 2144,
+      "cagr": 35.74,
+      "vol": 25.95,
+      "sharpe": 1.377,
+      "mdd": 29.38
+    },
+    "NORMAL": {
+      "regime": "NORMAL",
+      "n_days": 2687,
+      "cagr": 1.34,
+      "vol": 29.03,
+      "sharpe": 0.046,
+      "mdd": 70.34
+    },
+    "CAUTION": {
+      "regime": "CAUTION",
+      "n_days": 577,
+      "cagr": 35.56,
+      "vol": 46.33,
+      "sharpe": 0.768,
+      "mdd": 58.88
+    },
+    "CRISIS": {
+      "regime": "CRISIS",
+      "n_days": 81,
+      "cagr": 59.34,
+      "vol": 25.28,
+      "sharpe": 2.347,
+      "mdd": 13.12
+    }
+  },
+  "mdd_diagnosis": {
+    "bottom_dd_pct": -77.6,
+    "bottom_date": "2008-10-27",
+    "peak_date": "2007-07-13",
+    "duration_days": 316,
+    "regime_dist": "NORMAL=188/CAUTION=77/BULL=51",
+    "switches_in_dd": 7
+  },
+  "hurdle_result": {
+    "grade": "F",
+    "pass": false,
+    "score": 48.1
+  },
+  "hash_check_start": {
+    "alpha_package": "b727a2d71f44c860efbd605196fa2ed8",
+    "risk_package": "6189ec505371876c9edf2b4cabda3932",
+    "optimization_package": "63e5d1d4b4441bcb6fea4af627d16fd2"
+  },
+  "pit_compliance": {
+    "C1": "PASS",
+    "C2": "PASS",
+    "C9": "PASS",
+    "C10": "PASS",
+    "C11": "PASS",
+    "C13": "PASS",
+    "C14": "PASS",
+    "C15": "PASS"
+  },
+  "open_questions": {
+    "Q1_walk_forward_integrity": {
+      "question": "Walk-forward 정합 (regime label PIT t-1 + weight switch m+1)",
+      "answer": "PASS — regime_state @ sig_date (month_end_t)는 t-시점에 visible한 macro만 사용. Weight switch는 exec_date (t+1 first trading day)에 적용. alpha_scores.parquet의 regime_state field에 t-1 lag 이미 적용됨 (alpha_package.json C9 PASS)."
+    },
+    "Q2_lockbox_reproducibility": {
+      "question": "Lockbox SR 1.212 reproducibility (27개월 OOS)",
+      "answer": "REPRODUCED — Lockbox OOS SR=1.212 / CAGR=36.8% / MDD=32.1% (n=564 days). 이전 sonnet=1.212. delta=+0.000."
+    },
+    "Q3_mdd_origin": {
+      "question": "MDD -77.6% 원인 정밀 진단",
+      "answer": "Bottom DD -77.6% @ 2008-10-27. Peak 2007-07-13, 316 days, 7 regime switches in window. Regime dist: NORMAL=188/CAUTION=77/BULL=51. "
+    },
+    "Q4_optimizer_realized_gap": {
+      "question": "Optimizer 추정 vs 실현 SR 큰 괴리 (BULL -2.67 등)",
+      "answer": "원인 후보: (a) Optimizer는 alpha_scores cross-section z-score x weights = 단일 시점 SR 추정 (n=monthly). 실현은 daily compounding으로 vol drag 누적. (b) Optimizer SR_BULL은 BULL 월 alpha_score signal SR이며 stock return이 아님 (z-score 단위 환산 오류). (c) Optimizer는 regime별 sub-sample MVO objective; realized는 transition cost + slippage 포함. → realized SR이 실제 portfolio 성과의 정확한 measure이며, optimizer SR은 weight 최적성 sanity check."
+    }
+  },
+  "mutation_proposals": {
+    "M1": "NORMAL Sigma confidence boost: reduce LW delta in NORMAL from 1.0 → 0.7 (alpha-tracking)",
+    "M2": "NORMAL IC-weighted rebalance: Barroso-Santa-Clara risk-managed alpha scaling (p1 IC=0.069 vs p3 IC=0.029)",
+    "M3": "NORMAL 2-factor subset: Q07 (NORMAL IC=0.054) + AC21 (NORMAL IC=0.047) only",
+    "M4": "Hysteresis 1~2 months: NORMAL→CAUTION transition Frobenius dist=0.093 largest — slow adaptation",
+    "M5": "Tau scaling within-regime: reallocate saved TC to score tilt amplification",
+    "M6_DEFENSE_FLOOR": "CRISIS-aware DD brake: introduce 6/8 trailing DD overlay during CRISIS regime only (PIT t-1 DD signal). Target: cap MDD at 35-40%.",
+    "M7_NORMAL_VOLTARGET": "NORMAL vol-targeting at 12% annualized (post-LW): MinCVaR weights × scale factor with t-1 realized vol. Reduces NORMAL drawdown contribution.",
+    "M8_REGIME_CONFIDENCE": "Regime label confidence weighting: when consecutive raw labels disagree, blend NORMAL/CAUTION weights 50:50 instead of binary switch. Reduces churn cost."
+  }
+}

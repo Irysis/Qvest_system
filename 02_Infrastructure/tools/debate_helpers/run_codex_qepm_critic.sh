@@ -88,97 +88,54 @@ echo "  output:  $OUTPUT" | tee -a "$AUDIT_LOG"
 echo "  base:    $BASE_CONTEXT" | tee -a "$AUDIT_LOG"
 echo "  role:    $ROLE_PROMPT" | tee -a "$AUDIT_LOG"
 
-# Compose Codex prompt (base + role + package payload)
-PROMPT_FILE=$(mktemp /tmp/codex_qepm_prompt_XXXXXX.md)
-trap "rm -f $PROMPT_FILE" EXIT
+# Compact prompt: codex agent reads the context files itself (avoids argv limit)
+WT_PKG_DIR=$(dirname "$PACKAGE")
+STAGE_DIR_A="$PROJECT_ROOT/qepm/stage_artifacts/WT_${TASK_ID}"
+STAGE_DIR_B="$PROJECT_ROOT/stage_artifacts/WT_${TASK_ID#WT-}"
 
-{
-  cat "$BASE_CONTEXT"
-  echo ""
-  echo "---"
-  echo ""
-  cat "$ROLE_PROMPT"
-  echo ""
-  echo "---"
-  echo ""
-  echo "## Critique Target Package (task: $TASK_ID, role: $ROLE)"
-  echo ""
-  echo '```json'
-  cat "$PACKAGE"
-  echo ""
-  echo '```'
-  echo ""
-  echo "## Stage Artifacts (시계열 / Σ structure / weights schedule)"
-  echo ""
+PROMPT_PAYLOAD=$(cat <<EOF
+You are QEPM Devil's Advocate (GPT-5.5 cross-model critic). External perspective on Claude's output. Echo chamber 회피 + KR market QEPM 도메인 전문가.
 
-  # Add relevant stage artifacts based on role
-  STAGE_DIR="$PROJECT_ROOT/qepm/stage_artifacts/WT_${TASK_ID}"
-  STAGE_DIR2="$PROJECT_ROOT/stage_artifacts/WT_${TASK_ID#WT-}"
+REQUIRED READS (in order):
+1. ${BASE_CONTEXT}
+   (QEPM domain base context — PIT C1~C15, AX-000~008, Hard Constraints, L-codes, Charter 8 principles)
+2. ${ROLE_PROMPT}
+   (role-specific RF flags + verification matrix + JSON output schema)
 
-  for D in "$STAGE_DIR" "$STAGE_DIR2"; do
-    if [[ -d "$D" ]]; then
-      echo "### Stage artifacts dir: \`$D\`"
-      ls -la "$D" 2>/dev/null | head -20
-      echo ""
-    fi
-  done
+CRITIQUE TARGET (task=${TASK_ID}, role=${ROLE}):
+- Primary package: ${PACKAGE}
+- Other 3-agent context: ${WT_PKG_DIR}/{alpha_package,risk_package,optimization_package,*_challenge_note}.{json,md}
+- Stage artifacts dir A: ${STAGE_DIR_A}
+- Stage artifacts dir B: ${STAGE_DIR_B}
+- weights.csv: ${WT_PKG_DIR}/weights.csv (시계열 schedule 검증)
+- alpha_scores.parquet: ${STAGE_DIR_A}/alpha_scores.parquet (시계열 차원 검증, Iter 4 RF-A7 사례)
+- covariance.parquet: ${STAGE_DIR_A}/covariance.parquet (PSD + cond ≤ 100 post-shrink)
 
-  # Role-specific schema hints
-  case "$ROLE" in
-    alpha)
-      echo "### Verify alpha_scores.parquet time-series structure"
-      echo "Expected schema: \`Date × Ticker × score_*\` (multi sig_dates)"
-      echo "Single-snapshot risk: RF-A7 critical (Iter 4 사례)"
-      ;;
-    risk)
-      echo "### Verify covariance.parquet PD + cond + factor coverage"
-      echo "Expected: BΩB' + D decomposition. cond ≤ 100 post-shrink."
-      ;;
-    optimizer)
-      WT_DIR=$(dirname "$PACKAGE")
-      WEIGHTS_CSV="$WT_DIR/weights.csv"
-      if [[ -f "$WEIGHTS_CSV" ]]; then
-        echo "### weights.csv (head 5 lines)"
-        echo '```'
-        head -5 "$WEIGHTS_CSV"
-        echo '```'
-        echo ""
-        echo "n_sig_dates_in_weights: $(awk -F',' 'NR>1 {print $1}' "$WEIGHTS_CSV" | sort -u | wc -l)"
-      fi
-      ;;
-  esac
+CRITIQUE STEPS:
+1. Read all required files (base + role + target package + stage artifacts).
+2. Verify every checklist item in role prompt (RF-${ROLE^^}1~N).
+3. Identify weakest_assumption (single most fragile claim).
+4. Detect rationalization phrases per base context auto-flag list.
+5. Cite AX-axiom / PIT-CXX / L-XXX / RF-XX in EVERY critical_concern.
+6. Output ONLY valid JSON matching the role prompt's JSON schema. No prose, no markdown, no commentary outside the JSON object.
 
-  echo ""
-  echo "---"
-  echo ""
-  echo "## Critique Instructions"
-  echo ""
-  echo "1. **Read** package + stage artifacts."
-  echo "2. **Verify** all checklist items in role prompt."
-  echo "3. **Identify** weakest_assumption (single most fragile claim)."
-  echo "4. **Detect** rationalization phrases (auto-flag list in base context)."
-  echo "5. **Cite** AX-axiom + PIT-CXX + L-XXX + RF-XX in every critical_concern."
-  echo "6. **Output** valid JSON matching the role prompt schema. No prose outside JSON."
-  echo ""
-  echo "Begin critique:"
-} > "$PROMPT_FILE"
+stance must be one of: APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT.
+veto_flag must be false (no veto권한).
 
-# Token estimate
-TOKEN_EST=$(wc -w < "$PROMPT_FILE")
-echo "  prompt_words: $TOKEN_EST" | tee -a "$AUDIT_LOG"
+Begin critique now.
+EOF
+)
 
-# Codex CLI invocation (uses codex-companion runtime per project convention)
-CODEX_CMD="codex"
-if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
-  # Fallback: try project's local codex helper
-  if [[ -x "$PROJECT_ROOT/02_Infrastructure/tools/codex/codex" ]]; then
-    CODEX_CMD="$PROJECT_ROOT/02_Infrastructure/tools/codex/codex"
-  else
-    echo "[ERR] codex CLI not found. Install or check codex-companion runtime." >&2
-    echo "[FALLBACK] Stub response written to $OUTPUT" >&2
+# Token estimate (compact prompt only — codex reads files itself)
+TOKEN_EST=$(echo "$PROMPT_PAYLOAD" | wc -w)
+echo "  prompt_words: $TOKEN_EST (compact — files read by codex agent)" | tee -a "$AUDIT_LOG"
 
-    # Stub response (so pipeline doesn't break in dev environments)
-    cat > "$OUTPUT" <<JSON
+# Codex companion (legacy proven pattern from run_codex_critic.sh)
+COMPANION=$(ls -t "$HOME/.claude/plugins/cache/openai-codex/codex/"*/scripts/codex-companion.mjs 2>/dev/null | head -1)
+
+if [[ -z "$COMPANION" || ! -f "$COMPANION" ]]; then
+  echo "[ERR] codex-companion.mjs not found. Install codex plugin." >&2
+  cat > "$OUTPUT" <<JSON
 {
   "agent_id": "codex_qepm_critic",
   "role": "${ROLE}_critic",
@@ -186,21 +143,21 @@ if ! command -v "$CODEX_CMD" >/dev/null 2>&1; then
   "timestamp": "$(date -Iseconds)",
   "task_id": "$TASK_ID",
   "stance": "STUB",
-  "stance_rationale": "codex CLI unavailable — stub response. Real critique requires codex-companion runtime.",
+  "stance_rationale": "codex-companion runtime unavailable.",
   "critical_concerns": [{"id": "STUB-1", "severity": "INFO", "description": "Codex unavailable", "ax_cite": "AX-008"}],
   "weakest_assumption": "stub",
   "rationalization_red_flags": [],
   "verification_triangulation": {"ax_008_status": "FAIL", "agree_with_claude": false, "additional_perspective": "stub"}
 }
 JSON
-    exit 0
-  fi
+  exit 0
 fi
 
-# Execute Codex (with timeout safeguard)
-echo "[Codex] invoking $CODEX_CMD ..." | tee -a "$AUDIT_LOG"
-timeout 600 "$CODEX_CMD" exec --model gpt-5.5 --output-format json < "$PROMPT_FILE" > "$OUTPUT" 2>>"$AUDIT_LOG" || {
-  echo "[WARN] Codex returned non-zero or timed out. Output: $OUTPUT" | tee -a "$AUDIT_LOG"
+echo "[Codex] companion: $COMPANION" | tee -a "$AUDIT_LOG"
+echo "[Codex] invoking node companion ..." | tee -a "$AUDIT_LOG"
+
+timeout 600 node "$COMPANION" task --wait --effort xhigh "$PROMPT_PAYLOAD" > "$OUTPUT" 2>>"$AUDIT_LOG" || {
+  echo "[WARN] Codex returned non-zero or timed out." | tee -a "$AUDIT_LOG"
 }
 
 # Validate output is valid JSON

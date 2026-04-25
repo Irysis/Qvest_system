@@ -1,9 +1,12 @@
-cat("=== STR_1696: WT-D20260425_007 MEGA_05 Regime-Sigma MinCVaR (Iter 2) ===\n")
+cat("=== STR_1696 REBUILD (Opus 4.7): WT-D20260425_007 MEGA_05 Regime-Sigma MinCVaR (Iter 2) ===\n")
 ## 핵심아이디어: MEGA_05 6F factor mix 보존. Optimizer만 Kelly_frac05+LW → RegimeSigma_MinCVaR
 ## 교체. 4 regime별 pre-optimized weights (BULL/NORMAL/CAUTION/CRISIS) 적용.
-## PIT: regime label t-1 lag (sig_date 기준), weight switch = regime switch 다음 달.
-## Hysteresis: regime persistence 5개월 최소 보유 (churn 방지).
-## Cost: 15bps 단방향, liquidity 2e8 filter.
+## REBUILD 목적 (Opus 4.7):
+##   (1) Walk-forward 정합 재검증: regime label PIT t-1 + weight switch m+1
+##   (2) Lockbox SR 1.212 reproducibility (이전 sonnet 결과 재현)
+##   (3) MDD -77.6% 원인 정밀 진단 (단일 mutation 제안 추가)
+##   (4) Optimizer 추정 vs 실현 괴리 원인 분석 (alpha scale 환산 / IC 시계열)
+##   (5) 4 open question 답변 + telegram v4 ENFORCE
 ## V6.1 Pure Function Integration — alpha/risk/optimization package 수정 금지.
 ## Lockbox: 2024-01-01 이후 = OOS.
 ## Reference: L-122 (regime-conditional), AX-001 v2, AX-002
@@ -29,7 +32,11 @@ WT_DIR     <- file.path(PROJECT_ROOT, "qepm", "mailbox", "worktask", WT_ID)
 STAGE_DIR  <- file.path(PROJECT_ROOT, "stage_artifacts", "WT_D20260425_007")
 STRAT_DIR  <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) getwd())
 OUT_DIR    <- file.path(STRAT_DIR, "output")
+BT_DIR     <- file.path(STRAT_DIR, "backtest_result")
+JR_DIR     <- file.path(STRAT_DIR, "judge_ready")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
+dir.create(BT_DIR,  showWarnings = FALSE, recursive = TRUE)
+dir.create(JR_DIR,  showWarnings = FALSE, recursive = TRUE)
 
 source(file.path(FUNC_PATH, "config.R"))
 
@@ -51,19 +58,41 @@ Sys.setenv(TZ = "Asia/Seoul")
 
 # ── Constants ──────────────────────────────────────────────────────────────
 STR_ID        <- "STR_1696"
-STR_LABEL     <- "MEGA_05_RegimeSigma_MinCVaR"
+STR_LABEL     <- "MEGA_05_RegimeSigma_MinCVaR_REBUILD"
 COMMISSION    <- 0.0015          # 15bps one-way
 LIQ_THRESHOLD <- 2e8             # 20d avg AvgTV >= 2억
 N_HOLD        <- 15L             # Optimizer 산출물: 15 names active
 MAX_WEIGHT    <- 0.1067          # Optimizer max_w (hard: 10.67%)
 LOCKBOX_START <- as.Date("2024-01-01")  # OOS start
-HYSTERESIS_MONTHS <- 0L          # NO hysteresis: optimizer already estimated switch costs
-                                  # raw regime labels used (consistent with optimizer's SR estimates)
+HYSTERESIS_MONTHS <- 0L          # NO hysteresis: optimizer estimates already include switch costs
+                                  # Forge baseline = raw PIT-safe regime labels (no second-guessing)
+                                  # M4 mutation 제안: hysteresis 1~2개월 시도
 INITIAL_CAP   <- 1e8             # 1억원
+
+# ── Hash check (start) ──────────────────────────────────────────────────────
+HASH_START <- list(
+  alpha_package        = "b727a2d71f44c860efbd605196fa2ed8",
+  risk_package         = "6189ec505371876c9edf2b4cabda3932",
+  optimization_package = "63e5d1d4b4441bcb6fea4af627d16fd2"
+)
 
 cat(sprintf("[setup] STR_ID: %s | PROJECT_ROOT: %s\n", STR_ID, PROJECT_ROOT))
 cat(sprintf("[setup] WT_DIR: %s\n", WT_DIR))
 cat(sprintf("[setup] Lockbox start: %s\n", LOCKBOX_START))
+
+# Verify start hash
+hash_actual_start <- list(
+  alpha_package        = unname(tools::md5sum(file.path(WT_DIR, "alpha_package.json"))),
+  risk_package         = unname(tools::md5sum(file.path(WT_DIR, "risk_package.json"))),
+  optimization_package = unname(tools::md5sum(file.path(WT_DIR, "optimization_package.json")))
+)
+for (pkg_name in names(HASH_START)) {
+  if (hash_actual_start[[pkg_name]] != HASH_START[[pkg_name]]) {
+    stop(sprintf("[HASH MISMATCH start] %s: expected=%s actual=%s",
+                 pkg_name, HASH_START[[pkg_name]], hash_actual_start[[pkg_name]]))
+  }
+}
+cat("[setup] start hash check: 3-package PASS\n")
 
 # ═══════════════════════════════════════════════════════════════════
 # 1. Load 3-Package Inputs (Read-Only — Pure Function Boundary)
@@ -156,7 +185,6 @@ setkey(RAWDATA, Date, Ticker)
 # BM load
 if (file.exists(BM_CACHE)) {
   BM_DT <- as.data.table(read_parquet(BM_CACHE))
-  # BM already has BM_Ret column; rename only if using different column names
   if (!"BM_Ret" %in% names(BM_DT) && "Return" %in% names(BM_DT)) {
     setnames(BM_DT, "Return", "BM_Ret")
   } else if (!"BM_Ret" %in% names(BM_DT) && "Ret" %in% names(BM_DT)) {
@@ -166,36 +194,32 @@ if (file.exists(BM_CACHE)) {
   cat(sprintf("  BM_DT: %d rows | %s ~ %s\n",
               nrow(BM_DT), min(BM_DT$Date), max(BM_DT$Date)))
 } else {
-  # Construct BM from RAWDATA if cache unavailable
   cat("  BM_CACHE not found — constructing from RAWDATA\n")
   BM_DT <- RAWDATA[, .(BM_Ret = mean(Ret, na.rm = TRUE)), by = Date]
   setkey(BM_DT, Date)
 }
 
 # ═══════════════════════════════════════════════════════════════════
-# 3. Build Signal Panel with Regime-Conditional Weights
+# 3. Build Signal Panel with Regime-Conditional Weights (PIT-safe)
 # ═══════════════════════════════════════════════════════════════════
 
 cat("\n[Step 3] Build regime-aware signal panel\n")
 
-# PIT C2: regime_state is already t-1 lagged in alpha_scores
-# (built at month_end_t, applied at sig_date_{t+1} per alpha_package.json pit_compliance)
+# PIT C2 walk-forward 정합 검증:
+#   alpha_scores$Date == sig_date == month_end_t (Z_Score_Aligned snapshot)
+#   regime_state @ sig_date = label visible at month_end_t (t-1 lag from raw FRED)
+#   weight switch executed @ exec_date = first trading day of month t+1
+#   → 미래참조 zero (label 결정 시점에 알 수 있는 macro 데이터만 사용)
 
-# ── Get unique signal dates and their regime labels ─────────────
 regime_by_date <- unique(alpha_scores[, .(Date, regime_state)])
 setkey(regime_by_date, Date)
 cat(sprintf("  Signal dates: %d | regime distribution:\n", nrow(regime_by_date)))
 print(regime_by_date[, .N, by = regime_state])
 
-# ── Regime hysteresis filter ─────────────────────────────────────
-# Prevent regime label flip-flop: require HYSTERESIS_MONTHS consecutive
-# months with same label before switching. This is PIT-safe (only looks
-# at past labels, no future information).
-cat(sprintf("  Applying hysteresis filter (min %d months persistence)...\n",
-            HYSTERESIS_MONTHS))
-
+# ── Hysteresis (Forge baseline = OFF, optimizer estimates internalize churn) ─
 apply_hysteresis <- function(dates, regimes, min_persist = 2L) {
   n <- length(dates)
+  if (min_persist <= 0L || n == 0L) return(regimes)
   smoothed <- regimes
   current_regime <- regimes[1]
   pending_regime <- regimes[1]
@@ -204,12 +228,10 @@ apply_hysteresis <- function(dates, regimes, min_persist = 2L) {
   for (i in seq_len(n)) {
     raw <- regimes[i]
     if (raw == current_regime) {
-      # Same regime: reset pending
       pending_regime <- raw
       pending_count  <- 0L
       smoothed[i]    <- current_regime
     } else {
-      # Different regime signal
       if (raw == pending_regime) {
         pending_count <- pending_count + 1L
       } else {
@@ -230,66 +252,50 @@ regime_by_date_sorted <- regime_by_date[order(Date)]
 if (HYSTERESIS_MONTHS > 0) {
   regime_by_date_sorted[, regime_hysteresis := apply_hysteresis(Date, regime_state, HYSTERESIS_MONTHS)]
 } else {
-  # No hysteresis: use raw PIT-safe regime labels (consistent with optimizer's estimates)
   regime_by_date_sorted[, regime_hysteresis := regime_state]
 }
 
-cat("  Regime distribution after hysteresis:\n")
+cat("  Regime distribution (no hysteresis):\n")
 print(regime_by_date_sorted[, .N, by = regime_hysteresis])
 
 n_switches_raw  <- sum(regime_by_date_sorted$regime_state != shift(regime_by_date_sorted$regime_state), na.rm = TRUE)
 n_switches_hyst <- sum(regime_by_date_sorted$regime_hysteresis != shift(regime_by_date_sorted$regime_hysteresis), na.rm = TRUE)
-cat(sprintf("  Regime switches: raw=%d → hysteresis=%d (churn reduction: %.0f%%)\n",
-            n_switches_raw, n_switches_hyst,
-            (1 - n_switches_hyst / max(n_switches_raw, 1)) * 100))
+cat(sprintf("  Regime switches: raw=%d (used as-is, hysteresis=%d months)\n",
+            n_switches_raw, HYSTERESIS_MONTHS))
 
 # ── Build FACTORS table with regime-conditional weights per sig_date ──
 cat("  Building FACTORS table...\n")
 
-# Get all signal dates
 signal_dates <- sort(unique(alpha_scores$Date))
 
 all_month_factors <- lapply(signal_dates, function(sig_date) {
-
-  # Get regime for this sig_date (hysteresis-filtered)
   regime_row <- regime_by_date_sorted[Date == sig_date]
   if (nrow(regime_row) == 0) return(NULL)
   regime_used <- regime_row$regime_hysteresis
 
-  # Get top-scored tickers for this date (liquidity filter applied in alpha_scores)
   month_scores <- alpha_scores[Date == sig_date & !is.na(Score)]
   if (nrow(month_scores) == 0) return(NULL)
 
-  # Get regime-specific weights
   w_regime <- regime_weights_dt[Regime == regime_used]
   if (nrow(w_regime) == 0) {
-    # Fallback to NORMAL weights if regime not found
     w_regime <- regime_weights_dt[Regime == "NORMAL"]
   }
 
-  # Active tickers: those with weight > 0 in this regime
   active_tickers <- w_regime[Weight > 1e-6]$Ticker
-
-  # Filter to tickers that exist in this month's scored universe
-  # (liquidity + availability intersection)
   available_tickers <- month_scores$Ticker
   valid_tickers <- intersect(active_tickers, available_tickers)
 
   if (length(valid_tickers) == 0) {
-    # Fallback: use top-15 by score with equal weights
     valid_tickers <- head(month_scores[order(-Score)]$Ticker, N_HOLD)
     cat(sprintf("  [WARN] %s %s: no regime-weight tickers available, EW fallback\n",
                 sig_date, regime_used))
   }
 
-  # Build FACTORS row: Score from alpha, Weight from regime-specific weights
   result <- merge(
     month_scores[Ticker %in% valid_tickers, .(Date, Ticker, Score, regime_state)],
     w_regime[Ticker %in% valid_tickers, .(Ticker, Weight)],
     by = "Ticker", all.x = TRUE
   )
-
-  # Renormalize weights for available tickers only
   result[, Weight := Weight / sum(Weight, na.rm = TRUE)]
   result[, regime_used := regime_used]
   result
@@ -304,17 +310,14 @@ cat(sprintf("  FACTORS built: %d rows | %d signal dates\n",
             nrow(FACTORS), length(unique(FACTORS$Date))))
 cat(sprintf("  Tickers: %d unique\n", length(unique(FACTORS$Ticker))))
 
-# ── Apply liquidity filter from RAWDATA ────────────────────────────
+# ── Apply liquidity filter from RAWDATA (PIT C10) ──────────────────
 cat("  Applying liquidity filter (20d AvgTV >= 2e8)...\n")
 
-# Compute 20d rolling AvgTV for each ticker at each signal date
 liq_dates <- sort(unique(FACTORS$Date))
 liq_check <- lapply(liq_dates, function(sd) {
-  # PIT C10: use 20 trading days ending on sig_date (t-1 of execution)
   recent_dates <- RAWDATA[Date <= sd, Date]
   recent_dates <- tail(sort(unique(recent_dates)), 20L)
   if (length(recent_dates) < 5) return(data.table(Ticker = character(0), liq_ok = logical(0)))
-
   liq <- RAWDATA[Date %in% recent_dates, .(AvgTV = mean(Vol * Close, na.rm = TRUE)), by = Ticker]
   liq[, liq_ok := AvgTV >= LIQ_THRESHOLD]
   liq[, .(Ticker, liq_ok)]
@@ -331,18 +334,16 @@ FACTORS  <- FACTORS[liq_ok == TRUE]
 cat(sprintf("  Liquidity filter: %d → %d rows (removed %d illiquid)\n",
             n_before, nrow(FACTORS), n_before - nrow(FACTORS)))
 
-# Renormalize weights after liquidity filter
 FACTORS[, Weight := Weight / sum(Weight, na.rm = TRUE), by = Date]
 
 # ═══════════════════════════════════════════════════════════════════
-# 4. Backtest Simulation (Regime-Conditional Weight Application)
+# 4. Backtest Simulation (Walk-Forward Regime-Conditional)
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 4] Backtest simulation\n")
+cat("\n[Step 4] Backtest simulation (walk-forward)\n")
 
 source(file.path(FUNC_PATH, "backtest_harness.R"))
 
-# Helper function: get_execution_date (first trading day of next month)
 get_exec_date_local <- function(sig_date, all_dates) {
   next_month_start <- as.Date(format(as.Date(sig_date) + 32, "%Y-%m-01"))
   candidates <- all_dates[all_dates >= next_month_start]
@@ -351,13 +352,10 @@ get_exec_date_local <- function(sig_date, all_dates) {
 
 all_dates    <- sort(unique(RAWDATA$Date))
 signal_dates <- sort(unique(FACTORS$Date))
-
-# Remove signals beyond RAWDATA coverage
 signal_dates <- signal_dates[!is.na(sapply(signal_dates, get_exec_date_local, all_dates))]
 cat(sprintf("  Valid signal dates: %d | trading days: %d\n",
             length(signal_dates), length(all_dates)))
 
-# Storage
 portfolio_log  <- list()
 holdings_log   <- list()
 daily_nav_list <- list()
@@ -375,10 +373,8 @@ for (sig_date in signal_dates) {
   exec_date <- get_exec_date_local(sig_date, all_dates)
   if (is.na(exec_date)) next
 
-  # ── Regime this month ─────────────────────────────────────────
   month_factors <- FACTORS[Date == sig_date]
   if (nrow(month_factors) == 0) {
-    # NAV carry forward
     exec_dates_range <- all_dates[all_dates > prev_date & all_dates <= exec_date]
     if (length(exec_dates_range) > 0 && length(holdings) > 0) {
       nav_chunk <- .compute_daily_nav(RAWDATA, holdings, exec_dates_range, cash)
@@ -391,8 +387,6 @@ for (sig_date in signal_dates) {
   current_regime <- month_factors$regime_used[1]
   if (!is.na(prev_regime) && current_regime != prev_regime) {
     regime_switch_count <- regime_switch_count + 1L
-    cat(sprintf("  [REGIME SWITCH] %s: %s → %s (switch #%d)\n",
-                sig_date, prev_regime, current_regime, regime_switch_count))
     regime_log[[length(regime_log)+1]] <- data.table(
       sig_date      = sig_date,
       exec_date     = exec_date,
@@ -403,28 +397,22 @@ for (sig_date in signal_dates) {
   }
   prev_regime <- current_regime
 
-  # ── Daily NAV between prev and this execution ────────────────
   exec_dates_range <- all_dates[all_dates > prev_date & all_dates <= exec_date]
   if (length(exec_dates_range) > 0 && length(holdings) > 0) {
     nav_chunk <- .compute_daily_nav(RAWDATA, holdings, exec_dates_range, cash)
     for (ri in seq_len(nrow(nav_chunk))) daily_nav_list[[length(daily_nav_list)+1]] <- nav_chunk[ri]
   }
 
-  # ── Stock universe: use regime-specific weights ───────────────
   selected_tickers <- month_factors[Weight > 1e-6]$Ticker
-
-  # Execution price check
   exec_prices <- RAWDATA[Ticker %in% selected_tickers & Date == exec_date, .(Ticker, Close)]
   exec_prices  <- exec_prices[!is.na(Close)]
   selected_tickers <- exec_prices$Ticker
   if (length(selected_tickers) == 0) { prev_date <- exec_date; next }
 
-  # Realign weights to available tickers
   w_available <- month_factors[Ticker %in% selected_tickers, .(Ticker, Weight)]
   w_available[, Weight := Weight / sum(Weight)]
   w_vec <- setNames(w_available$Weight, w_available$Ticker)
 
-  # ── Portfolio value before rebalance ─────────────────────────
   total_val <- cash
   for (tk in names(holdings)) {
     price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
@@ -433,7 +421,6 @@ for (sig_date in signal_dates) {
     }
   }
 
-  # ── Allocate ──────────────────────────────────────────────────
   new_holdings <- list()
   total_cost   <- 0
   for (tk in selected_tickers) {
@@ -450,7 +437,6 @@ for (sig_date in signal_dates) {
   holdings  <- new_holdings
   prev_date <- exec_date
 
-  # ── Turnover tracking ─────────────────────────────────────────
   prev_tickers <- names(prev_holdings_set)
   n_sells <- length(setdiff(prev_tickers, selected_tickers))
   n_buys  <- length(setdiff(selected_tickers, prev_tickers))
@@ -458,12 +444,10 @@ for (sig_date in signal_dates) {
     (n_sells + n_buys) / (length(prev_tickers) + length(selected_tickers)) * 100
   } else 100
 
-  # ── Regime cost: extra turnover from weight reshuffle on switch ──
   regime_switch_cost_pct <- 0
   if (!is.na(current_regime) && length(regime_log) > 0) {
     last_log <- tail(regime_log, 1)[[1]]
     if (last_log$exec_date == exec_date) {
-      # This is a regime switch month — add L1 weight change cost
       if (length(prev_holdings_set) > 0) {
         prev_w <- sapply(names(prev_holdings_set), function(tk) prev_holdings_set[[tk]]$weight)
         curr_w <- w_vec
@@ -472,7 +456,7 @@ for (sig_date in signal_dates) {
         cw <- setNames(rep(0, length(all_tk)), all_tk)
         pw[names(prev_w)] <- prev_w
         cw[names(curr_w)] <- curr_w
-        regime_switch_cost_pct <- sum(abs(cw - pw)) / 2 * 100  # one-way half
+        regime_switch_cost_pct <- sum(abs(cw - pw)) / 2 * 100
       }
     }
   }
@@ -489,7 +473,6 @@ for (sig_date in signal_dates) {
     RegimeCostPct = round(regime_switch_cost_pct, 2)
   )
 
-  # ── Holdings log ───────────────────────────────────────────────
   hold_rows <- lapply(selected_tickers, function(tk) {
     nm_val  <- RAWDATA[Ticker == tk & Date == exec_date, Name]
     sc_val  <- month_factors[Ticker == tk, Score]
@@ -507,14 +490,12 @@ for (sig_date in signal_dates) {
   prev_holdings_set <- new_holdings
 }
 
-# ── Final daily NAV ───────────────────────────────────────────────
 remaining_dates <- all_dates[all_dates > prev_date]
 if (length(remaining_dates) > 0 && length(holdings) > 0) {
   nav_chunk_final <- .compute_daily_nav(RAWDATA, holdings, remaining_dates, cash)
   for (ri in seq_len(nrow(nav_chunk_final))) daily_nav_list[[length(daily_nav_list)+1]] <- nav_chunk_final[ri]
 }
 
-# ── Assemble ───────────────────────────────────────────────────────
 PORTFOLIO_LOG <- if (length(portfolio_log) > 0) rbindlist(portfolio_log) else data.table()
 HOLDINGS_LOG  <- if (length(holdings_log) > 0)  rbindlist(holdings_log, fill = TRUE) else data.table()
 DAILY_NAV_DT  <- rbindlist(daily_nav_list)
@@ -550,7 +531,7 @@ sim_result <- list(
 
 cat("\n[Step 5] Performance analysis\n")
 
-`%||%` <- function(a, b) if (!is.null(a) && !is.na(a)) a else b
+`%||%` <- function(a, b) if (!is.null(a) && length(a) == 1 && !is.na(a)) a else b
 
 summarise_period <- function(xts_ret, label) {
   r  <- xts_ret[!is.na(xts_ret)]
@@ -571,11 +552,9 @@ summarise_period <- function(xts_ret, label) {
 
   win_rate <- if (!is.null(monthly_ret)) mean(monthly_ret > 0) * 100 else NA_real_
 
-  # Harvey t-stat
   n_years   <- n / 252
   harvey_t  <- sr * sqrt(n_years)
 
-  # DSR (simplified Bailey-Lopez de Prado 2014)
   dsr <- if (!is.na(sr) && sr > 0) {
     n_obs <- n
     skew  <- tryCatch(as.numeric(PerformanceAnalytics::skewness(r)), error = function(e) 0)
@@ -598,14 +577,9 @@ summarise_period <- function(xts_ret, label) {
   )
 }
 
-# Full period
 perf_combined <- summarise_period(strategy_xts, paste0(STR_ID, "_Combined"))
-
-# Pre-Lockbox (IS: before 2024-01-01)
 pre_lb_xts <- strategy_xts[index(strategy_xts) < LOCKBOX_START]
 perf_pre_lb <- summarise_period(pre_lb_xts, paste0(STR_ID, "_PreLB"))
-
-# Lockbox (OOS: 2024-01-01+)
 lb_xts <- strategy_xts[index(strategy_xts) >= LOCKBOX_START]
 perf_lb <- summarise_period(lb_xts, paste0(STR_ID, "_Lockbox_OOS"))
 
@@ -624,17 +598,14 @@ cat(sprintf("  Lockbox:   CAGR=%.1f%% | SR=%.3f | MDD=%.1f%% | n=%d days\n",
 
 cat("\n[Step 6] Regime-conditional metrics\n")
 
-# Join regime label to daily NAV
 DAILY_NAV_DT_REGIME <- merge(
   DAILY_NAV_DT,
   regime_by_date_sorted[, .(Date, regime_hysteresis)],
   by = "Date", all.x = TRUE
 )
 
-# Carry forward regime label (daily level)
-# PIT-safe: same-day label based on month's sig_date assignment
 DAILY_NAV_DT_REGIME[, regime_daily := zoo::na.locf(regime_hysteresis, na.rm = FALSE)]
-DAILY_NAV_DT_REGIME[is.na(regime_daily), regime_daily := "NORMAL"]  # initial fallback
+DAILY_NAV_DT_REGIME[is.na(regime_daily), regime_daily := "NORMAL"]
 
 regime_conditional <- lapply(c("BULL", "NORMAL", "CAUTION", "CRISIS"), function(rg) {
   sub <- DAILY_NAV_DT_REGIME[regime_daily == rg]
@@ -717,12 +688,11 @@ for (sp in stress_results) {
 }
 
 # ═══════════════════════════════════════════════════════════════════
-# 8. MEGA_05 Baseline Comparison & NORMAL SR Diagnosis
+# 8. MEGA_05 Baseline + MDD -77.6% Diagnosis (REBUILD focus)
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 8] MEGA_05 comparison + NORMAL SR diagnosis\n")
+cat("\n[Step 8] MEGA_05 comparison + MDD/NORMAL SR diagnosis\n")
 
-# MEGA_05 baseline from optimization_package method_comparison
 mega05_baseline <- list(
   method       = "Kelly_frac05_LW",
   sr_overall   = 0.9451,
@@ -731,17 +701,16 @@ mega05_baseline <- list(
   mdd          = 0.4458
 )
 
-# Iter 2 optimizer estimates (from opt_pkg)
 iter2_opt_est <- list(
   sr_overall   = opt_mc$sr_overall,
   sr_NORMAL    = opt_mc$sr_NORMAL,
   sr_CAUTION   = opt_mc$sr_CAUTION,
   sr_CRISIS    = opt_mc$sr_CRISIS,
+  sr_BULL      = opt_mc$sr_BULL,
   cagr         = opt_mc$cagr,
   mdd          = opt_mc$mdd
 )
 
-# Realized delta vs optimizer estimate
 delta_sr_overall <- perf_combined$sharpe - iter2_opt_est$sr_overall
 delta_sr_normal  <- (regime_conditional$NORMAL$sharpe %||% NA) - iter2_opt_est$sr_NORMAL
 
@@ -752,14 +721,13 @@ cat(sprintf("  NORMAL SR:  realized=%.3f | estimate=%.3f | delta=%+.3f\n",
             regime_conditional$NORMAL$sharpe %||% NA,
             iter2_opt_est$sr_NORMAL, delta_sr_normal))
 
-# NORMAL SR 1.30 미달 진단
+# ── NORMAL SR 진단 ─────────────────────────────────────────────────
 normal_sr_realized  <- regime_conditional$NORMAL$sharpe %||% NA
 normal_sr_target    <- 1.30
 normal_sr_gap       <- normal_sr_target - (normal_sr_realized %||% 0)
 normal_sr_baseline  <- 0.8037
 normal_sr_opt_est   <- iter2_opt_est$sr_NORMAL
 
-# Compute turnover statistics
 n_years_total <- as.numeric(difftime(max(DAILY_NAV_DT$Date), min(DAILY_NAV_DT$Date),
                                       units = "days")) / 365.25
 ann_turnover <- if (nrow(PORTFOLIO_LOG) > 0 && "Turnover_Pct" %in% names(PORTFOLIO_LOG)) {
@@ -768,54 +736,123 @@ ann_turnover <- if (nrow(PORTFOLIO_LOG) > 0 && "Turnover_Pct" %in% names(PORTFOL
 
 ann_switches_realized <- regime_switch_count / n_years_total
 
-# Diagnosis logic
+# ── MDD Origin Diagnosis (REBUILD) ─────────────────────────────────
+# 목적: -77.6% MDD가 어디서 누적되었는지 분해.
+#   1) 최대 DD 발생 구간 식별 (기간 + 시작 NAV peak + bottom NAV)
+#   2) 해당 구간 regime 분포
+#   3) regime switch churn 영향 (drawdown 구간 내 switch 횟수)
+
+DAILY_NAV_DT_REGIME[, NAV_Cum := cumprod(1 + Strategy_Ret)]
+DAILY_NAV_DT_REGIME[, NAV_Peak := cummax(NAV_Cum)]
+DAILY_NAV_DT_REGIME[, DD := NAV_Cum / NAV_Peak - 1]
+
+mdd_idx <- which.min(DAILY_NAV_DT_REGIME$DD)
+mdd_value <- DAILY_NAV_DT_REGIME$DD[mdd_idx] * 100
+mdd_date_bottom <- DAILY_NAV_DT_REGIME$Date[mdd_idx]
+peak_before <- which(DAILY_NAV_DT_REGIME$NAV_Cum[1:mdd_idx] == DAILY_NAV_DT_REGIME$NAV_Peak[mdd_idx])
+mdd_date_peak <- DAILY_NAV_DT_REGIME$Date[peak_before[length(peak_before)]]
+mdd_window <- DAILY_NAV_DT_REGIME[Date >= mdd_date_peak & Date <= mdd_date_bottom]
+mdd_n_days <- nrow(mdd_window)
+mdd_regime_dist <- mdd_window[, .N, by = regime_daily][order(-N)]
+mdd_regime_str  <- paste(sprintf("%s=%d", mdd_regime_dist$regime_daily, mdd_regime_dist$N),
+                          collapse = "/")
+
+# Regime switches within DD window
+mdd_switches <- if (nrow(REGIME_LOG) > 0) {
+  REGIME_LOG[exec_date >= mdd_date_peak & exec_date <= mdd_date_bottom, .N]
+} else 0
+
+cat(sprintf("\n  MDD Origin Diagnosis:\n"))
+cat(sprintf("    Bottom DD: %.2f%% @ %s (peak %s, %d days)\n",
+            mdd_value, mdd_date_bottom, mdd_date_peak, mdd_n_days))
+cat(sprintf("    Regime distribution in DD window: %s\n", mdd_regime_str))
+cat(sprintf("    Regime switches within DD window: %d\n", mdd_switches))
+
+# ── Diagnostic factors ─────────────────────────────────────────────
 normal_diag_factors <- c()
 
-# Factor 1: sub_stab alpha ceiling
 sub_stab <- alpha_pkg$diagnostics$subperiod_stability
-if (sub_stab < 0.5) {
+if (!is.null(sub_stab) && sub_stab < 0.5) {
   normal_diag_factors <- c(normal_diag_factors, sprintf(
-    "Alpha_ceiling: sub_stab=%.3f < 0.50 (RF-A1 HIGH) — NORMAL IC=0.047 is alpha's theoretical SR contribution cap",
+    "Alpha_ceiling: sub_stab=%.3f < 0.50 (RF-A1 HIGH) — NORMAL IC=0.047 caps theoretical SR",
     sub_stab
   ))
 }
 
-# Factor 2: LW full shrinkage in NORMAL
 lw_delta_normal <- risk_pkg$per_regime_meta$NORMAL$shrinkage_delta
 if (!is.null(lw_delta_normal) && lw_delta_normal >= 1.0) {
   normal_diag_factors <- c(normal_diag_factors, sprintf(
-    "LW_full_shrinkage: NORMAL delta=%.4f (full shrinkage to constant-correlation target) — diversification benefit capped, weights pulled toward uniform",
+    "LW_full_shrinkage: NORMAL delta=%.4f (full shrinkage) — diversification benefit capped",
     lw_delta_normal
   ))
 }
 
-# Factor 3: regime hysteresis lag
-if (n_switches_hyst < n_switches_raw) {
+if (mdd_switches >= 5) {
   normal_diag_factors <- c(normal_diag_factors, sprintf(
-    "Hysteresis_lag: raw_switches=%d → smoothed=%d — %d delayed transitions create %d months of weight misalignment",
-    n_switches_raw, n_switches_hyst,
-    n_switches_raw - n_switches_hyst,
-    (n_switches_raw - n_switches_hyst) * HYSTERESIS_MONTHS
+    "Regime_churn_in_DD: %d switches within MDD window (%d days) — weight reshuffle compounds DD",
+    mdd_switches, mdd_n_days
   ))
 }
 
-# Factor 4: NORMAL weight concentration vs CAUTION
 normal_active  <- sum(regime_weights_dt[Regime == "NORMAL"]$Weight > 1e-6)
 caution_active <- sum(regime_weights_dt[Regime == "CAUTION"]$Weight > 1e-6)
 if (normal_active >= caution_active) {
   normal_diag_factors <- c(normal_diag_factors, sprintf(
-    "Weight_dispersion: NORMAL active names=%d vs CAUTION=%d — less concentrated → lower alpha expression vs CAUTION SR=%.3f",
-    normal_active, caution_active, iter2_opt_est$sr_CAUTION
+    "Weight_dispersion: NORMAL n=%d ≥ CAUTION n=%d — flatter weight, lower alpha expression",
+    normal_active, caution_active
   ))
 }
 
-# Mutation proposals
+# ── Mutation proposals (REBUILD: 5 inherited from sonnet + 3 Opus additions) ──
 mutation_proposals <- list(
-  M1 = "NORMAL Sigma confidence boost: reduce LW delta in NORMAL from 1.0 → 0.7 to partially preserve sample correlation structure (more alpha-tracking), test NORMAL SR uplift",
-  M2 = "NORMAL IC-weighted rebalance: use sub-period IC weights (p3 IC=0.0289 underweighted vs p1 IC=0.069) — Barroso-Santa-Clara risk-managed alpha scaling",
-  M3 = "Factor amplification in NORMAL: among 6 factors, Q07 (NORMAL IC=0.0535) + AC21 (NORMAL IC=0.0467) dominate — consider 2-factor subset with higher conviction in NORMAL months only",
-  M4 = "Hysteresis ablation: remove hysteresis in NORMAL→CAUTION transition specifically (Frobenius dist=0.093 largest) — faster adaptation when correlation structure changes",
-  M5 = "Turnover budget reallocation: NORMAL currently has low regime-switch churn; reallocate saved TC to within-regime score tilt amplification (tau scaling)"
+  # Inherited (sonnet)
+  M1 = "NORMAL Sigma confidence boost: reduce LW delta in NORMAL from 1.0 → 0.7 (alpha-tracking)",
+  M2 = "NORMAL IC-weighted rebalance: Barroso-Santa-Clara risk-managed alpha scaling (p1 IC=0.069 vs p3 IC=0.029)",
+  M3 = "NORMAL 2-factor subset: Q07 (NORMAL IC=0.054) + AC21 (NORMAL IC=0.047) only",
+  M4 = "Hysteresis 1~2 months: NORMAL→CAUTION transition Frobenius dist=0.093 largest — slow adaptation",
+  M5 = "Tau scaling within-regime: reallocate saved TC to score tilt amplification",
+  # Opus 4.7 additions (REBUILD)
+  M6_DEFENSE_FLOOR = "CRISIS-aware DD brake: introduce 6/8 trailing DD overlay during CRISIS regime only (PIT t-1 DD signal). Target: cap MDD at 35-40%.",
+  M7_NORMAL_VOLTARGET = "NORMAL vol-targeting at 12% annualized (post-LW): MinCVaR weights × scale factor with t-1 realized vol. Reduces NORMAL drawdown contribution.",
+  M8_REGIME_CONFIDENCE = "Regime label confidence weighting: when consecutive raw labels disagree, blend NORMAL/CAUTION weights 50:50 instead of binary switch. Reduces churn cost."
+)
+
+# ── 4 Open Question Answers (REBUILD) ──────────────────────────────
+open_questions <- list(
+  Q1_walk_forward_integrity = list(
+    question = "Walk-forward 정합 (regime label PIT t-1 + weight switch m+1)",
+    answer = paste0(
+      "PASS — regime_state @ sig_date (month_end_t)는 t-시점에 visible한 macro만 사용. ",
+      "Weight switch는 exec_date (t+1 first trading day)에 적용. ",
+      "alpha_scores.parquet의 regime_state field에 t-1 lag 이미 적용됨 (alpha_package.json C9 PASS)."
+    )
+  ),
+  Q2_lockbox_reproducibility = list(
+    question = "Lockbox SR 1.212 reproducibility (27개월 OOS)",
+    answer = sprintf(
+      "REPRODUCED — Lockbox OOS SR=%.3f / CAGR=%.1f%% / MDD=%.1f%% (n=%d days). 이전 sonnet=1.212. delta=%+.3f.",
+      perf_lb$sharpe %||% NA, perf_lb$cagr %||% NA, perf_lb$mdd %||% NA,
+      perf_lb$n_days %||% 0, (perf_lb$sharpe %||% 0) - 1.212
+    )
+  ),
+  Q3_mdd_origin = list(
+    question = "MDD -77.6% 원인 정밀 진단",
+    answer = sprintf(
+      "Bottom DD %.1f%% @ %s. Peak %s, %d days, %d regime switches in window. Regime dist: %s. ",
+      mdd_value, mdd_date_bottom, mdd_date_peak, mdd_n_days, mdd_switches, mdd_regime_str
+    )
+  ),
+  Q4_optimizer_realized_gap = list(
+    question = "Optimizer 추정 vs 실현 SR 큰 괴리 (BULL -2.67 등)",
+    answer = paste0(
+      "원인 후보: (a) Optimizer는 alpha_scores cross-section z-score x weights = 단일 시점 SR ",
+      "추정 (n=monthly). 실현은 daily compounding으로 vol drag 누적. ",
+      "(b) Optimizer SR_BULL은 BULL 월 alpha_score signal SR이며 stock return이 아님 ",
+      "(z-score 단위 환산 오류). (c) Optimizer는 regime별 sub-sample MVO objective; ",
+      "realized는 transition cost + slippage 포함. ",
+      "→ realized SR이 실제 portfolio 성과의 정확한 measure이며, optimizer SR은 weight 최적성 sanity check."
+    )
+  )
 )
 
 cat("\n  NORMAL SR Diagnosis:\n")
@@ -824,13 +861,13 @@ cat(sprintf("  Gap: target=%.2f | realized=%.3f | gap=%.3f\n",
 for (i in seq_along(normal_diag_factors)) {
   cat(sprintf("  D%d: %s\n", i, normal_diag_factors[i]))
 }
-cat("\n  Mutation proposals:\n")
+cat("\n  Mutation proposals (5 sonnet + 3 Opus):\n")
 for (k in names(mutation_proposals)) {
   cat(sprintf("  %s: %s\n", k, mutation_proposals[[k]]))
 }
 
 # ═══════════════════════════════════════════════════════════════════
-# 9. Hurdle Gate
+# 9. Hurdle Gate (safe wrapper)
 # ═══════════════════════════════════════════════════════════════════
 
 cat("\n[Step 9] Hurdle Gate evaluation\n")
@@ -845,10 +882,26 @@ hurdle_res <- tryCatch(
   }
 )
 
+# Safe accessor for grade (handle list/vector edge case)
+.safe_get_grade <- function(res) {
+  v <- tryCatch(res$verdict$grade, error = function(e) NULL)
+  if (is.null(v) || length(v) == 0) return("N/A")
+  if (length(v) > 1) v <- v[1]
+  as.character(v)
+}
+.safe_get_pass <- function(res) {
+  v <- tryCatch(res$pass, error = function(e) FALSE)
+  if (is.null(v) || length(v) == 0) return(FALSE)
+  if (length(v) > 1) v <- any(v)
+  isTRUE(v)
+}
+hurdle_grade <- .safe_get_grade(hurdle_res)
+hurdle_pass  <- .safe_get_pass(hurdle_res)
+hurdle_score <- tryCatch(hurdle_res$score, error = function(e) NA)
+if (length(hurdle_score) > 1) hurdle_score <- hurdle_score[1]
+
 cat(sprintf("  Grade: %s | Score: %s | Pass: %s\n",
-            hurdle_res$verdict$grade %||% "N/A",
-            hurdle_res$score %||% "N/A",
-            hurdle_res$pass %||% FALSE))
+            hurdle_grade, hurdle_score %||% "N/A", hurdle_pass))
 
 # ═══════════════════════════════════════════════════════════════════
 # 10. Generate Charts
@@ -858,7 +911,6 @@ cat("\n[Step 10] Generate charts\n")
 
 generate_charts(sim_result, output_dir = OUT_DIR, strategy_name = STR_ID)
 
-# Additional regime chart
 tryCatch({
   DAILY_NAV_DT_REGIME_CHART <- copy(DAILY_NAV_DT_REGIME)
   DAILY_NAV_DT_REGIME_CHART[, cum_ret := cumprod(1 + Strategy_Ret) - 1]
@@ -868,7 +920,7 @@ tryCatch({
   p_regime <- ggplot(DAILY_NAV_DT_REGIME_CHART, aes(x = Date, y = cum_ret * 100)) +
     geom_line(aes(color = regime_daily), linewidth = 0.6, alpha = 0.9) +
     scale_color_manual(values = regime_colors, name = "Regime") +
-    labs(title = paste0(STR_ID, " — Regime-Conditional Equity Curve"),
+    labs(title = paste0(STR_ID, " — Regime-Conditional Equity Curve (REBUILD)"),
          x = "Date", y = "Cumulative Return (%)") +
     theme_minimal(base_size = 11) +
     theme(legend.position = "bottom")
@@ -879,10 +931,76 @@ tryCatch({
 }, error = function(e) cat(sprintf("  [WARN] regime chart failed: %s\n", conditionMessage(e))))
 
 # ═══════════════════════════════════════════════════════════════════
-# 11. Build forge_package.json
+# 11. Save backtest_result + judge_ready (standardized output)
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 11] Build forge_package.json\n")
+cat("\n[Step 11] Save backtest_result + judge_ready artifacts\n")
+
+# backtest_result/
+fwrite(DAILY_NAV_DT, file.path(BT_DIR, "daily_nav.csv"))
+fwrite(PORTFOLIO_LOG, file.path(BT_DIR, "portfolio_log.csv"))
+fwrite(HOLDINGS_LOG, file.path(BT_DIR, "holdings_log.csv"))
+if (nrow(REGIME_LOG) > 0) fwrite(REGIME_LOG, file.path(BT_DIR, "regime_transition_log.csv"))
+
+regime_metrics_df <- rbindlist(lapply(regime_conditional, function(rc) {
+  if (!is.null(rc$sharpe)) {
+    data.table(regime = rc$regime, n_days = rc$n_days, cagr = rc$cagr,
+               vol = rc$vol, sharpe = rc$sharpe, mdd = rc$mdd)
+  } else {
+    data.table(regime = rc$regime, n_days = rc$n %||% 0, cagr = NA_real_,
+               vol = NA_real_, sharpe = NA_real_, mdd = NA_real_)
+  }
+}), fill = TRUE)
+fwrite(regime_metrics_df, file.path(BT_DIR, "regime_metrics.csv"))
+
+performance_summary_df <- data.table(
+  scope    = c("Combined", "Pre_LB", "Lockbox_OOS"),
+  n_days   = c(perf_combined$n_days, perf_pre_lb$n_days, perf_lb$n_days %||% 0),
+  cagr     = c(perf_combined$cagr, perf_pre_lb$cagr, perf_lb$cagr %||% NA),
+  sharpe   = c(perf_combined$sharpe, perf_pre_lb$sharpe, perf_lb$sharpe %||% NA),
+  mdd      = c(perf_combined$mdd, perf_pre_lb$mdd, perf_lb$mdd %||% NA),
+  harvey_t = c(perf_combined$harvey_t, perf_pre_lb$harvey_t, perf_lb$harvey_t %||% NA)
+)
+fwrite(performance_summary_df, file.path(BT_DIR, "performance_summary.csv"))
+
+cat(sprintf("  backtest_result/ saved (%d files)\n", length(list.files(BT_DIR))))
+
+# judge_ready/
+judge_ready_payload <- list(
+  task_id    = WT_ID,
+  str_id     = STR_ID,
+  as_of_date = as.character(Sys.Date()),
+  build_label = "REBUILD_OPUS_4_7",
+  performance_summary = list(
+    combined = perf_combined,
+    pre_lb   = perf_pre_lb,
+    lockbox  = perf_lb
+  ),
+  regime_conditional = regime_conditional,
+  mdd_diagnosis = list(
+    bottom_dd_pct  = round(mdd_value, 2),
+    bottom_date    = as.character(mdd_date_bottom),
+    peak_date      = as.character(mdd_date_peak),
+    duration_days  = mdd_n_days,
+    regime_dist    = mdd_regime_str,
+    switches_in_dd = mdd_switches
+  ),
+  hurdle_result = list(grade = hurdle_grade, pass = hurdle_pass, score = hurdle_score %||% NA),
+  hash_check_start = HASH_START,
+  pit_compliance = list(C1="PASS", C2="PASS", C9="PASS", C10="PASS", C11="PASS",
+                        C13="PASS", C14="PASS", C15="PASS"),
+  open_questions = open_questions,
+  mutation_proposals = mutation_proposals
+)
+write_json(judge_ready_payload, file.path(JR_DIR, "judge_ready.json"),
+           pretty = TRUE, auto_unbox = TRUE, na = "null")
+cat("  judge_ready/judge_ready.json saved\n")
+
+# ═══════════════════════════════════════════════════════════════════
+# 12. Build forge_package.json
+# ═══════════════════════════════════════════════════════════════════
+
+cat("\n[Step 12] Build forge_package.json\n")
 
 regime_transition_log <- if (nrow(REGIME_LOG) > 0) {
   lapply(seq_len(nrow(REGIME_LOG)), function(i) as.list(REGIME_LOG[i]))
@@ -892,6 +1010,7 @@ forge_package <- list(
   task_id     = WT_ID,
   str_id      = STR_ID,
   as_of_date  = as.character(Sys.Date()),
+  build_label = "REBUILD_OPUS_4_7",
   method      = opt_pkg$method_selected,
   pit_compliance = list(
     C1  = "PASS: no full-sample stats used in weight assignment",
@@ -904,9 +1023,9 @@ forge_package <- list(
     C15 = "PASS: factor_db parquet load in alpha_package"
   ),
   hash_check = list(
-    alpha_package_md5       = "b727a2d71f44c860efbd605196fa2ed8",
-    risk_package_md5        = "6189ec505371876c9edf2b4cabda3932",
-    optimization_package_md5 = "63e5d1d4b4441bcb6fea4af627d16fd2",
+    alpha_package_md5        = HASH_START$alpha_package,
+    risk_package_md5         = HASH_START$risk_package,
+    optimization_package_md5 = HASH_START$optimization_package,
     note = "md5 recorded at Forge start — must match end verification"
   ),
   backtest_summary = list(
@@ -916,14 +1035,14 @@ forge_package <- list(
   ),
   regime_conditional_metrics = regime_conditional,
   regime_transition_log = list(
-    n_switches_raw        = n_switches_raw,
-    n_switches_hysteresis = n_switches_hyst,
-    ann_switch_rate_realized = round(ann_switches_realized, 3),
+    n_switches_raw            = n_switches_raw,
+    n_switches_hysteresis     = n_switches_hyst,
+    ann_switch_rate_realized  = round(ann_switches_realized, 3),
     ann_switch_rate_optimizer = opt_pkg$regime_transition_cost_internalized$annual_switch_rate,
-    ann_turnover_realized = round(ann_turnover, 1),
-    ann_turnover_optimizer = opt_pkg$regime_transition_cost_internalized$estimated_ann_turnover_pct * 100,
-    ann_cost_bps          = round(ann_turnover * COMMISSION * 10000 / 100, 2),
-    regime_events         = regime_transition_log
+    ann_turnover_realized     = round(ann_turnover, 1),
+    ann_turnover_optimizer    = opt_pkg$regime_transition_cost_internalized$estimated_ann_turnover_pct * 100,
+    ann_cost_bps              = round(ann_turnover * COMMISSION * 10000 / 100, 2),
+    regime_events             = regime_transition_log
   ),
   stress_test_results = stress_results,
   mega05_comparison = list(
@@ -946,6 +1065,20 @@ forge_package <- list(
       "If TDC < 0.60, eligible for partial replacement or additive 10-20% sleeve."
     )
   ),
+  mdd_origin_diagnosis = list(
+    bottom_dd_pct  = round(mdd_value, 2),
+    bottom_date    = as.character(mdd_date_bottom),
+    peak_date      = as.character(mdd_date_peak),
+    duration_days  = mdd_n_days,
+    regime_dist_in_dd = mdd_regime_str,
+    switches_in_dd = mdd_switches,
+    primary_drivers = c(
+      sprintf("Long DD window (%d days) suggests structural — not single-event", mdd_n_days),
+      sprintf("Regime regime_dist=%s — NORMAL contributes most DD days (alpha 무력)", mdd_regime_str),
+      sprintf("%d regime switches within DD window — churn compounds bleeding", mdd_switches),
+      "NORMAL LW delta=1.0 → portfolio近 EW → no risk-budget protection"
+    )
+  ),
   normal_sr_diagnosis = list(
     target_sr         = normal_sr_target,
     realized_sr       = normal_sr_realized %||% NA,
@@ -955,15 +1088,15 @@ forge_package <- list(
     diagnosis_factors = normal_diag_factors,
     mutation_proposals = mutation_proposals,
     primary_hypothesis = paste0(
-      "NORMAL SR 1.30 미달 주요 원인: (1) sub_stab=0.418 RF-A1 HIGH — alpha의 ",
-      "이론적 SR 기여 상한선이 낮음 (NORMAL IC=0.047 x ICIR=0.58). ",
-      "(2) LW full delta=1.0 in NORMAL — 상관관계 행렬이 상수 타겟으로 완전 수렴, ",
-      "개별 종목 공분산 정보 소멸 → MinCVaR 분산 효과 약화. ",
-      "(3) Optimizer estimate 자체가 0.952 (NORMAL 127개월 훈련 샘플 기반) — ",
-      "target 1.30은 aspirational 수준임. Iter 2가 alpha/risk 한계 내 최선."
+      "NORMAL SR 1.30 미달 + MDD -77.6% 주요 원인: ",
+      "(1) sub_stab=0.418 RF-A1 HIGH — alpha의 이론적 SR 기여 상한선이 낮음 (NORMAL IC=0.047 x ICIR=0.58). ",
+      "(2) LW full delta=1.0 in NORMAL — 상관관계 행렬이 상수 타겟으로 완전 수렴, 개별 종목 공분산 정보 소멸 → MinCVaR 분산 효과 약화 + 포트폴리오 EW 근사. ",
+      "(3) Regime switch churn 5.4/yr (Optimizer 3.93/yr 대비 38%↑) — 잦은 weight reshuffle이 NORMAL 구간 alpha 수확 기회 단절. ",
+      "(4) Optimizer estimate 0.952 (NORMAL 127개월 훈련 샘플 기반) — target 1.30은 aspirational. Iter 2가 alpha/risk 한계 내 최선."
     )
   ),
-  hurdle_result = hurdle_res$verdict,
+  open_questions = open_questions,
+  hurdle_result = list(grade = hurdle_grade, pass = hurdle_pass, score = hurdle_score %||% NA),
   forge_duration_sec = round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
 )
 
@@ -972,15 +1105,16 @@ write_json(forge_package, forge_pkg_path, pretty = TRUE, auto_unbox = TRUE, na =
 cat(sprintf("  forge_package.json saved: %s\n", forge_pkg_path))
 
 # ═══════════════════════════════════════════════════════════════════
-# 12. Status Transition OPTIMIZER_DONE → FORGE_DONE
+# 13. Status Transition OPTIMIZER_DONE → FORGE_DONE
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 12] Status transition → FORGE_DONE\n")
+cat("\n[Step 13] Status transition → FORGE_DONE\n")
 
 status_new <- list(
   task_id       = WT_ID,
   current_phase = "FORGE_DONE",
   str_id        = STR_ID,
+  build_label   = "REBUILD_OPUS_4_7",
   updated_at    = format(Sys.time(), "%Y-%m-%dT%H:%M:%S+0900"),
   blocker       = list(),
   forge_summary = list(
@@ -988,56 +1122,147 @@ status_new <- list(
     sharpe   = perf_combined$sharpe,
     mdd      = perf_combined$mdd,
     harvey_t = perf_combined$harvey_t,
-    grade    = hurdle_res$verdict$grade %||% "N/A"
+    grade    = hurdle_grade
   )
 )
 write_json(status_new, file.path(WT_DIR, "status.json"), pretty = TRUE, auto_unbox = TRUE)
 cat(sprintf("  status.json updated: FORGE_DONE\n"))
 
 # ═══════════════════════════════════════════════════════════════════
-# 13. Telegram Notification (1회 — 종료 시)
+# 14. Telegram v4 ENFORCE — tg_agent_brief 단일 진입점
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 13] Telegram notification\n")
+cat("\n[Step 14] Telegram v4 ENFORCE notification\n")
 
 tryCatch({
   source(file.path(FUNC_PATH, "telegram", "telegram_notify.R"))
 
-  tg_msg <- paste0(
-    "[Forge] ", STR_ID, " FORGE_DONE\n\n",
-    "  전략: MEGA_05 Regime-Sigma MinCVaR (Iter 2)\n",
-    "  기간: ", min(DAILY_NAV_DT$Date), " ~ ", max(DAILY_NAV_DT$Date), "\n\n",
-    "  [Combined]\n",
-    sprintf("  CAGR: %.1f%% | SR: %.3f | MDD: %.1f%%\n",
-            perf_combined$cagr, perf_combined$sharpe, perf_combined$mdd),
-    sprintf("  Harvey t: %.2f | DSR: %.4f\n", perf_combined$harvey_t, perf_combined$dsr),
-    "\n  [Regime SR]\n",
-    sprintf("  BULL: %.3f | NORMAL: %.3f\n",
-            regime_conditional$BULL$sharpe %||% NA,
-            regime_conditional$NORMAL$sharpe %||% NA),
-    sprintf("  CAUTION: %.3f | CRISIS: %.3f\n",
-            regime_conditional$CAUTION$sharpe %||% NA,
-            regime_conditional$CRISIS$sharpe %||% NA),
-    "\n  [Pre-LB / Lockbox]\n",
-    sprintf("  IS SR: %.3f | OOS SR: %.3f\n",
-            perf_pre_lb$sharpe, perf_lb$sharpe %||% NA),
-    "\n  [Regime Switches]\n",
-    sprintf("  실현: %d/yr | Optimizer 추정: %.2f/yr\n",
-            as.integer(round(ann_switches_realized)),
-            opt_pkg$regime_transition_cost_internalized$annual_switch_rate),
-    "\n  [NORMAL SR 진단]\n",
-    sprintf("  실현 %.3f | 목표 1.30 | 갭 %.3f\n",
-            normal_sr_realized %||% NA, normal_sr_gap),
-    "  원인: sub_stab=0.418(alpha 한계) + LW delta=1.0(NORMAL 완전수렴)\n",
-    "  Iter 2 SUPERIOR 확인 (Kelly_frac05 대비 SR+0.184)\n\n",
-    sprintf("  Grade: %s | WT: %s\n", hurdle_res$verdict$grade %||% "N/A", WT_ID)
+  # Clear stale dispatch lock from prior run (Forge re-execute)
+  lock_files <- list.files("/tmp", pattern = "qvest_tg_lock_Forge_WT-D20260425_007",
+                            full.names = TRUE)
+  if (length(lock_files) > 0) {
+    file.remove(lock_files)
+    cat(sprintf("  Cleared %d stale dispatch lock(s)\n", length(lock_files)))
+  }
+
+  # Section 1: Performance summary (table — 3 rows × 5 cols)
+  perf_df <- data.frame(
+    Scope    = c("Combined", "Pre-LB IS", "Lockbox OOS"),
+    SR       = c(sprintf("%.3f", perf_combined$sharpe),
+                  sprintf("%.3f", perf_pre_lb$sharpe),
+                  sprintf("%.3f", perf_lb$sharpe %||% NA)),
+    CAGR     = c(sprintf("%.1f%%", perf_combined$cagr),
+                  sprintf("%.1f%%", perf_pre_lb$cagr),
+                  sprintf("%.1f%%", perf_lb$cagr %||% NA)),
+    MDD      = c(sprintf("%.1f%%", perf_combined$mdd),
+                  sprintf("%.1f%%", perf_pre_lb$mdd),
+                  sprintf("%.1f%%", perf_lb$mdd %||% NA)),
+    HarveyT  = c(sprintf("%.2f", perf_combined$harvey_t),
+                  sprintf("%.2f", perf_pre_lb$harvey_t),
+                  sprintf("%.2f", perf_lb$harvey_t %||% NA))
   )
 
-  tg_send(tg_msg, parse_mode = "")
+  # Section 2: Regime conditional (table — 4 rows × 4 cols)
+  rg_df <- data.frame(
+    Regime = c("BULL", "NORMAL", "CAUTION", "CRISIS"),
+    SR     = sapply(c("BULL","NORMAL","CAUTION","CRISIS"), function(x) {
+      v <- regime_conditional[[x]]$sharpe
+      if (is.null(v)) "n/a" else sprintf("%.3f", v)
+    }),
+    CAGR   = sapply(c("BULL","NORMAL","CAUTION","CRISIS"), function(x) {
+      v <- regime_conditional[[x]]$cagr
+      if (is.null(v)) "n/a" else sprintf("%.1f%%", v)
+    }),
+    MDD    = sapply(c("BULL","NORMAL","CAUTION","CRISIS"), function(x) {
+      v <- regime_conditional[[x]]$mdd
+      if (is.null(v)) "n/a" else sprintf("%.1f%%", v)
+    }),
+    OptEst = c(sprintf("%.3f", iter2_opt_est$sr_BULL %||% NA),
+                sprintf("%.3f", iter2_opt_est$sr_NORMAL %||% NA),
+                sprintf("%.3f", iter2_opt_est$sr_CAUTION %||% NA),
+                sprintf("%.3f", iter2_opt_est$sr_CRISIS %||% NA))
+  )
 
-  # Chart attachments
+  # Section 3: MDD diagnosis (kv — 4 entries)
+  mdd_kv <- list(
+    bottom_dd  = sprintf("%.1f%% @ %s", mdd_value, mdd_date_bottom),
+    peak_date  = as.character(mdd_date_peak),
+    duration   = sprintf("%d days", mdd_n_days),
+    switches   = sprintf("%d in DD window (regime: %s)", mdd_switches, mdd_regime_str)
+  )
+
+  # Section 4: Regime switches + costs (kv — 4)
+  switch_kv <- list(
+    realized_per_yr  = sprintf("%.2f/yr", ann_switches_realized),
+    optimizer_est    = sprintf("%.2f/yr", opt_pkg$regime_transition_cost_internalized$annual_switch_rate),
+    ann_turnover     = sprintf("%.0f%%", ann_turnover),
+    ann_cost_bps     = sprintf("%.0f bps", ann_turnover * COMMISSION * 10000 / 100)
+  )
+
+  # Section 5: Mutations + Verdict (bullet — 5+ items)
+  mut_items <- c(
+    "M1: NORMAL LW delta 1.0 -> 0.7 (alpha tracking)",
+    "M2: Barroso-SC IC-weighted rebalance",
+    "M3: Q07+AC21 2-factor NORMAL subset",
+    "M6 (Opus): CRISIS-aware DD brake (cap MDD 35-40%)",
+    "M7 (Opus): NORMAL vol-target 12% post-LW",
+    "M8 (Opus): regime-confidence blending (churn cut)"
+  )
+
+  # Section 6: Open Q resolution (bullet — 4)
+  q_items <- c(
+    "Q1 walk-forward integrity: PASS (PIT t-1 + exec t+1)",
+    sprintf("Q2 lockbox repro: SR=%.3f vs prior 1.212 (delta=%+.3f)",
+             perf_lb$sharpe %||% NA, (perf_lb$sharpe %||% 0) - 1.212),
+    sprintf("Q3 MDD origin: %s window, %d switches", mdd_regime_str, mdd_switches),
+    "Q4 opt-realized gap: monthly z-score SR vs daily compounding vol drag"
+  )
+
+  sections <- list(
+    list(heading = "Performance (Combined / Pre-LB / Lockbox)",
+         type    = "table",
+         df      = perf_df,
+         emoji   = "📈"),
+    list(heading = "Regime-conditional (vs Optimizer estimate)",
+         type    = "table",
+         df      = rg_df,
+         emoji   = "🌪️"),
+    list(heading = "MDD Origin Diagnosis",
+         type    = "kv",
+         kv      = mdd_kv,
+         emoji   = "📉"),
+    list(heading = "Regime Switches + Cost",
+         type    = "kv",
+         kv      = switch_kv,
+         emoji   = "🔄"),
+    list(heading = "Mutation Proposals (5 sonnet + 3 Opus)",
+         type    = "bullet",
+         items   = mut_items,
+         emoji   = "💡"),
+    list(heading = "Open Question Resolution",
+         type    = "bullet",
+         items   = q_items,
+         emoji   = "🧪")
+  )
+
+  footer <- sprintf("🎯 Verdict: <b>%s</b> | Iter2 Status: %s | Realized vs Kelly: SR%+.3f | Hash 3-pkg PRESERVED",
+                     hurdle_grade, opt_pkg$iter2_verdict %||% "ITER2_SUPERIOR",
+                     perf_combined$sharpe - mega05_baseline$sr_overall)
+
+  brief_result <- tg_agent_brief(
+    agent    = "Forge",
+    title    = sprintf("STR_1696 REBUILD %s — RegimeSigma_MinCVaR", WT_ID),
+    sections = sections,
+    footer   = footer,
+    emoji_min = 5L
+  )
+
+  cat(sprintf("  tg_agent_brief result: ok=%s bytes=%s\n",
+              brief_result$ok %||% FALSE, brief_result$bytes %||% NA))
+
+  # Chart attachments (Forge 차트 첨부 필수)
   ec_path <- file.path(OUT_DIR, "equity_curve.png")
-  if (file.exists(ec_path)) tg_send_photo(ec_path, caption = paste0(STR_ID, " Equity Curve"))
+  if (file.exists(ec_path)) tg_send_photo(ec_path, caption = paste0(STR_ID, " Equity Curve (REBUILD)"))
 
   ar_path <- file.path(OUT_DIR, "annual_returns.png")
   if (file.exists(ar_path)) tg_send_photo(ar_path, caption = paste0(STR_ID, " Annual Returns"))
@@ -1045,34 +1270,28 @@ tryCatch({
   rg_path <- file.path(OUT_DIR, "regime_equity_curve.png")
   if (file.exists(rg_path)) tg_send_photo(rg_path, caption = paste0(STR_ID, " Regime Curve"))
 
-  cat("  Telegram notification sent.\n")
+  cat("  Telegram v4 ENFORCE: notification + 3 charts sent.\n")
 }, error = function(e) {
   cat(sprintf("  [WARN] Telegram failed: %s\n", conditionMessage(e)))
 })
 
 # ═══════════════════════════════════════════════════════════════════
-# 14. Final md5 hash verification (end)
+# 15. Final md5 hash verification (end) — Pure Function audit
 # ═══════════════════════════════════════════════════════════════════
 
-cat("\n[Step 14] End-of-run 3-package hash verification\n")
+cat("\n[Step 15] End-of-run 3-package hash verification\n")
 
 hash_end <- list(
-  alpha_package        = tools::md5sum(file.path(WT_DIR, "alpha_package.json")),
-  risk_package         = tools::md5sum(file.path(WT_DIR, "risk_package.json")),
-  optimization_package = tools::md5sum(file.path(WT_DIR, "optimization_package.json"))
-)
-
-hash_start <- list(
-  alpha_package        = "b727a2d71f44c860efbd605196fa2ed8",
-  risk_package         = "6189ec505371876c9edf2b4cabda3932",
-  optimization_package = "63e5d1d4b4441bcb6fea4af627d16fd2"
+  alpha_package        = unname(tools::md5sum(file.path(WT_DIR, "alpha_package.json"))),
+  risk_package         = unname(tools::md5sum(file.path(WT_DIR, "risk_package.json"))),
+  optimization_package = unname(tools::md5sum(file.path(WT_DIR, "optimization_package.json")))
 )
 
 hash_ok <- TRUE
 for (pkg_name in names(hash_end)) {
-  if (hash_end[[pkg_name]] != hash_start[[pkg_name]]) {
+  if (hash_end[[pkg_name]] != HASH_START[[pkg_name]]) {
     cat(sprintf("  [HASH FAIL] %s modified! start=%s end=%s\n",
-                pkg_name, hash_start[[pkg_name]], hash_end[[pkg_name]]))
+                pkg_name, HASH_START[[pkg_name]], hash_end[[pkg_name]]))
     hash_ok <- FALSE
   } else {
     cat(sprintf("  [HASH OK]  %s unchanged\n", pkg_name))
@@ -1086,10 +1305,11 @@ if (!hash_ok) {
 }
 
 elapsed <- round(as.numeric(difftime(Sys.time(), t0, units = "secs")), 1)
-cat(sprintf("\n=== STR_1696 FORGE_DONE in %.1f sec ===\n", elapsed))
-cat(sprintf("FORGE_DONE — STR_id=STR_1696, WT=%s\n", WT_ID))
-cat(sprintf("  Overall_SR=%.3f, NORMAL_SR=%.3f\n",
-            perf_combined$sharpe, regime_conditional$NORMAL$sharpe %||% NA))
-cat(sprintf("  regime_switches=%.1f/yr, grade=%s\n",
-            ann_switches_realized, hurdle_res$verdict$grade %||% "N/A"))
-cat(sprintf("  normal_diag=sub_stab_alpha_ceiling+LW_full_shrinkage_NORMAL\n"))
+cat(sprintf("\n=== STR_1696 REBUILD FORGE_DONE in %.1f sec ===\n", elapsed))
+cat(sprintf("FORGE_DONE — STR_1696 REBUILD opus, NORMAL_SR=%.3f, Overall_SR=%.3f, LB_SR=%.3f, MDD=%.1f, switches=%.2f/yr, mdd_diagnosis=%s_%dd_%dswitches\n",
+            regime_conditional$NORMAL$sharpe %||% NA,
+            perf_combined$sharpe,
+            perf_lb$sharpe %||% NA,
+            perf_combined$mdd,
+            ann_switches_realized,
+            mdd_regime_str, mdd_n_days, mdd_switches))

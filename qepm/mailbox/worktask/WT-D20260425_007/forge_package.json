@@ -2,6 +2,7 @@
   "task_id": "WT-D20260425_007",
   "str_id": "STR_1696",
   "as_of_date": "2026-04-25",
+  "build_label": "REBUILD_OPUS_4_7",
   "method": "RegimeSigma_MinCVaR",
   "pit_compliance": {
     "C1": "PASS: no full-sample stats used in weight assignment",
@@ -1022,25 +1023,56 @@
     "replacement_scenario": "RegimeSigma_MinCVaR replaces MEGA_05 baseline Kelly_frac05_LW",
     "pg2_integration_note": "Current PG2: STR_1631 80% + STR_1656 20% (SR 1.193). STR_1696 replacement scenario: assess TDC vs STR_1631 (threshold 0.60 hard cap). If TDC < 0.60, eligible for partial replacement or additive 10-20% sleeve."
   },
+  "mdd_origin_diagnosis": {
+    "bottom_dd_pct": -77.6,
+    "bottom_date": "2008-10-27",
+    "peak_date": "2007-07-13",
+    "duration_days": 316,
+    "regime_dist_in_dd": "NORMAL=188/CAUTION=77/BULL=51",
+    "switches_in_dd": 7,
+    "primary_drivers": ["Long DD window (316 days) suggests structural — not single-event", "Regime regime_dist=NORMAL=188/CAUTION=77/BULL=51 — NORMAL contributes most DD days (alpha 무력)", "7 regime switches within DD window — churn compounds bleeding", "NORMAL LW delta=1.0 → portfolio近 EW → no risk-budget protection"]
+  },
   "normal_sr_diagnosis": {
     "target_sr": 1.3,
     "realized_sr": 0.046,
     "optimizer_est_sr": 0.9523,
     "gap_to_target": 1.254,
     "iter2_superiority": "CONFIRMED — realized above Kelly baseline",
-    "diagnosis_factors": ["Alpha_ceiling: sub_stab=0.418 < 0.50 (RF-A1 HIGH) — NORMAL IC=0.047 is alpha's theoretical SR contribution cap", "LW_full_shrinkage: NORMAL delta=1.0000 (full shrinkage to constant-correlation target) — diversification benefit capped, weights pulled toward uniform", "Weight_dispersion: NORMAL active names=15 vs CAUTION=15 — less concentrated → lower alpha expression vs CAUTION SR=2.242"],
+    "diagnosis_factors": ["Alpha_ceiling: sub_stab=0.418 < 0.50 (RF-A1 HIGH) — NORMAL IC=0.047 caps theoretical SR", "LW_full_shrinkage: NORMAL delta=1.0000 (full shrinkage) — diversification benefit capped", "Regime_churn_in_DD: 7 switches within MDD window (316 days) — weight reshuffle compounds DD", "Weight_dispersion: NORMAL n=15 ≥ CAUTION n=15 — flatter weight, lower alpha expression"],
     "mutation_proposals": {
-      "M1": "NORMAL Sigma confidence boost: reduce LW delta in NORMAL from 1.0 → 0.7 to partially preserve sample correlation structure (more alpha-tracking), test NORMAL SR uplift",
-      "M2": "NORMAL IC-weighted rebalance: use sub-period IC weights (p3 IC=0.0289 underweighted vs p1 IC=0.069) — Barroso-Santa-Clara risk-managed alpha scaling",
-      "M3": "Factor amplification in NORMAL: among 6 factors, Q07 (NORMAL IC=0.0535) + AC21 (NORMAL IC=0.0467) dominate — consider 2-factor subset with higher conviction in NORMAL months only",
-      "M4": "Hysteresis ablation: remove hysteresis in NORMAL→CAUTION transition specifically (Frobenius dist=0.093 largest) — faster adaptation when correlation structure changes",
-      "M5": "Turnover budget reallocation: NORMAL currently has low regime-switch churn; reallocate saved TC to within-regime score tilt amplification (tau scaling)"
+      "M1": "NORMAL Sigma confidence boost: reduce LW delta in NORMAL from 1.0 → 0.7 (alpha-tracking)",
+      "M2": "NORMAL IC-weighted rebalance: Barroso-Santa-Clara risk-managed alpha scaling (p1 IC=0.069 vs p3 IC=0.029)",
+      "M3": "NORMAL 2-factor subset: Q07 (NORMAL IC=0.054) + AC21 (NORMAL IC=0.047) only",
+      "M4": "Hysteresis 1~2 months: NORMAL→CAUTION transition Frobenius dist=0.093 largest — slow adaptation",
+      "M5": "Tau scaling within-regime: reallocate saved TC to score tilt amplification",
+      "M6_DEFENSE_FLOOR": "CRISIS-aware DD brake: introduce 6/8 trailing DD overlay during CRISIS regime only (PIT t-1 DD signal). Target: cap MDD at 35-40%.",
+      "M7_NORMAL_VOLTARGET": "NORMAL vol-targeting at 12% annualized (post-LW): MinCVaR weights × scale factor with t-1 realized vol. Reduces NORMAL drawdown contribution.",
+      "M8_REGIME_CONFIDENCE": "Regime label confidence weighting: when consecutive raw labels disagree, blend NORMAL/CAUTION weights 50:50 instead of binary switch. Reduces churn cost."
     },
-    "primary_hypothesis": "NORMAL SR 1.30 미달 주요 원인: (1) sub_stab=0.418 RF-A1 HIGH — alpha의 이론적 SR 기여 상한선이 낮음 (NORMAL IC=0.047 x ICIR=0.58). (2) LW full delta=1.0 in NORMAL — 상관관계 행렬이 상수 타겟으로 완전 수렴, 개별 종목 공분산 정보 소멸 → MinCVaR 분산 효과 약화. (3) Optimizer estimate 자체가 0.952 (NORMAL 127개월 훈련 샘플 기반) — target 1.30은 aspirational 수준임. Iter 2가 alpha/risk 한계 내 최선."
+    "primary_hypothesis": "NORMAL SR 1.30 미달 + MDD -77.6% 주요 원인: (1) sub_stab=0.418 RF-A1 HIGH — alpha의 이론적 SR 기여 상한선이 낮음 (NORMAL IC=0.047 x ICIR=0.58). (2) LW full delta=1.0 in NORMAL — 상관관계 행렬이 상수 타겟으로 완전 수렴, 개별 종목 공분산 정보 소멸 → MinCVaR 분산 효과 약화 + 포트폴리오 EW 근사. (3) Regime switch churn 5.4/yr (Optimizer 3.93/yr 대비 38%↑) — 잦은 weight reshuffle이 NORMAL 구간 alpha 수확 기회 단절. (4) Optimizer estimate 0.952 (NORMAL 127개월 훈련 샘플 기반) — target 1.30은 aspirational. Iter 2가 alpha/risk 한계 내 최선."
+  },
+  "open_questions": {
+    "Q1_walk_forward_integrity": {
+      "question": "Walk-forward 정합 (regime label PIT t-1 + weight switch m+1)",
+      "answer": "PASS — regime_state @ sig_date (month_end_t)는 t-시점에 visible한 macro만 사용. Weight switch는 exec_date (t+1 first trading day)에 적용. alpha_scores.parquet의 regime_state field에 t-1 lag 이미 적용됨 (alpha_package.json C9 PASS)."
+    },
+    "Q2_lockbox_reproducibility": {
+      "question": "Lockbox SR 1.212 reproducibility (27개월 OOS)",
+      "answer": "REPRODUCED — Lockbox OOS SR=1.212 / CAGR=36.8% / MDD=32.1% (n=564 days). 이전 sonnet=1.212. delta=+0.000."
+    },
+    "Q3_mdd_origin": {
+      "question": "MDD -77.6% 원인 정밀 진단",
+      "answer": "Bottom DD -77.6% @ 2008-10-27. Peak 2007-07-13, 316 days, 7 regime switches in window. Regime dist: NORMAL=188/CAUTION=77/BULL=51. "
+    },
+    "Q4_optimizer_realized_gap": {
+      "question": "Optimizer 추정 vs 실현 SR 큰 괴리 (BULL -2.67 등)",
+      "answer": "원인 후보: (a) Optimizer는 alpha_scores cross-section z-score x weights = 단일 시점 SR 추정 (n=monthly). 실현은 daily compounding으로 vol drag 누적. (b) Optimizer SR_BULL은 BULL 월 alpha_score signal SR이며 stock return이 아님 (z-score 단위 환산 오류). (c) Optimizer는 regime별 sub-sample MVO objective; realized는 transition cost + slippage 포함. → realized SR이 실제 portfolio 성과의 정확한 measure이며, optimizer SR은 weight 최적성 sanity check."
+    }
   },
   "hurdle_result": {
-    "grade": "ERROR",
-    "error": "'length = 4' in coercion to 'logical(1)'"
+    "grade": "F",
+    "pass": false,
+    "score": 48.1
   },
-  "forge_duration_sec": 95.6
+  "forge_duration_sec": 103.5
 }
