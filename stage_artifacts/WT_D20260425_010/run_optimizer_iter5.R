@@ -521,7 +521,9 @@ walk_forward_method_eval <- function(method_name, alpha_scores, ret_panel,
                                       no_trade_band = NULL,
                                       rebalance_every = 1L,   # 1 = monthly, 3 = quarterly, 6 = semi
                                       collect_weights = FALSE,
-                                      compute_port_returns_daily = FALSE) {
+                                      compute_port_returns_daily = FALSE,
+                                      force_rebal_on_regime_change = TRUE,
+                                      force_rebal_at_dates = NULL) {
   W_prev <- NULL
   port_ret <- numeric(length(sig_dates))
   port_to  <- numeric(length(sig_dates))
@@ -531,10 +533,26 @@ walk_forward_method_eval <- function(method_name, alpha_scores, ret_panel,
   weights_collected <- list()
   n_used <- 0L
   last_res <- NULL
+  prev_regime <- NULL
   for (i in seq_along(sig_dates)) {
     d <- sig_dates[i]
     # Decide whether to rebalance this period
     do_rebalance <- (i == 1L) || ((i - 1L) %% rebalance_every == 0L)
+    # Force rebalance at specified dates (e.g., as_of)
+    if (!is.null(force_rebal_at_dates) && d %in% force_rebal_at_dates) {
+      do_rebalance <- TRUE
+    }
+    # Force rebalance on regime transition (CAUTION/CRISIS Σ change)
+    if (force_rebal_on_regime_change && !is.null(prev_regime)) {
+      panel_t <- alpha_scores[Date == d & !is.na(score_eff)]
+      if (nrow(panel_t) > 0) {
+        cur_regime <- panel_t$regime_state[1]
+        # Trigger rebal when entering or leaving a pooled-fallback regime
+        cur_in_pool <- cur_regime %in% c("CRISIS", "CAUTION")
+        prev_in_pool <- prev_regime %in% c("CRISIS", "CAUTION")
+        if (cur_in_pool != prev_in_pool) do_rebalance <- TRUE
+      }
+    }
     if (do_rebalance) {
       w_prev_risk_named <- NULL
       if (!is.null(W_prev)) {
@@ -554,28 +572,67 @@ walk_forward_method_eval <- function(method_name, alpha_scores, ret_panel,
       if (is.null(res) || any(is.na(res$weight))) next
       last_res <- res
     } else {
-      # Hold previous weights but re-apply cash overlay based on current regime
-      if (is.null(last_res)) next
+      # Held month: refresh universe + cash overlay + sigma_method labels.
+      # NOT a stale-hold — universe at sig_date d is intersected with last_res tickers
+      # and any name no longer in same-date eligible universe is dropped (proceeds → cash or remaining).
       panel_t <- alpha_scores[Date == d & !is.na(score_eff)]
-      if (nrow(panel_t) == 0) next
+      if (nrow(panel_t) == 0 || is.null(last_res)) next
       regime <- panel_t$regime_state[1]
       cash_pct_t <- cash_overlay_pct(regime)
-      # Rescale risk weights to (1 - cash_pct_t)
-      risk_rows <- last_res[ticker != "CASH"]
-      risk_w_norm <- risk_rows$weight / sum(risk_rows$weight)  # renormalize to 1
-      risk_rows$weight <- risk_w_norm * (1 - cash_pct_t)
-      res <- rbindlist(list(
-        risk_rows[, .(as_of_date = d, ticker, weight, method_selected,
-                       sleeve_id, regime, n_names, sigma_method, cash_pct = cash_pct_t)],
-        if (cash_pct_t > 0) data.table(as_of_date = d, ticker = "CASH",
-                                         weight = cash_pct_t,
-                                         method_selected = last_res$method_selected[1],
-                                         sleeve_id = "cash_overlay",
-                                         regime = regime,
-                                         n_names = last_res$n_names[1],
-                                         sigma_method = last_res$sigma_method[1],
-                                         cash_pct = cash_pct_t) else NULL
-      ))
+      eligible_t <- panel_t$Ticker
+
+      held_risk <- last_res[ticker != "CASH"]
+      keep_names <- intersect(held_risk$ticker, eligible_t)
+      drop_names <- setdiff(held_risk$ticker, eligible_t)
+      n_dropped <- length(drop_names)
+
+      if (length(keep_names) < 5) {
+        # Universe collapsed → trigger rebalance at this date
+        w_prev_risk_named <- setNames(held_risk$weight, held_risk$ticker)
+        res <- tryCatch(
+          compute_weights_at_date(d, alpha_scores, ret_panel,
+                                   method = method_name, ub = ub,
+                                   max_names = max_names, min_names = min_names,
+                                   w_prev_risk = w_prev_risk_named,
+                                   confidence = confidence,
+                                   turnover_phi = turnover_phi,
+                                   no_trade_band = no_trade_band),
+          error = function(e) NULL
+        )
+        if (is.null(res) || any(is.na(res$weight))) next
+        last_res <- res
+      } else {
+        # Reallocate dropped names' weight proportionally to keep_names
+        kept_dt <- held_risk[ticker %in% keep_names]
+        dropped_w <- sum(held_risk[ticker %in% drop_names]$weight)
+        kept_w_sum <- sum(kept_dt$weight)
+        if (kept_w_sum > 0) {
+          kept_dt$weight <- kept_dt$weight + dropped_w * (kept_dt$weight / kept_w_sum)
+        }
+        # Enforce 0.20 cap after reallocation (per-name) before applying cash overlay
+        kept_w <- kept_dt$weight / sum(kept_dt$weight)
+        kept_w <- normalize_long_only(kept_w, lb = 0, ub = ub, target_sum = 1)
+        kept_dt$weight <- kept_w * (1 - cash_pct_t)
+        res <- rbindlist(list(
+          data.table(as_of_date = d, ticker = kept_dt$ticker, weight = kept_dt$weight,
+                      method_selected = last_res$method_selected[1],
+                      sleeve_id = "multi_sleeve_blend",
+                      regime = regime,
+                      n_names = length(keep_names),
+                      sigma_method = paste0("held_", last_res$sigma_method[1]),
+                      cash_pct = cash_pct_t),
+          if (cash_pct_t > 0) data.table(as_of_date = d, ticker = "CASH",
+                                          weight = cash_pct_t,
+                                          method_selected = last_res$method_selected[1],
+                                          sleeve_id = "cash_overlay",
+                                          regime = regime,
+                                          n_names = length(keep_names),
+                                          sigma_method = paste0("held_", last_res$sigma_method[1]),
+                                          cash_pct = cash_pct_t) else NULL
+        ))
+        # Update last_res so next held month also drops further
+        last_res <- res
+      }
     }
     n_used <- n_used + 1L
     if (collect_weights) weights_collected[[length(weights_collected) + 1L]] <- res
@@ -612,6 +669,7 @@ walk_forward_method_eval <- function(method_name, alpha_scores, ret_panel,
     cash_pct_seq[i] <- cash_pct_t
     realized_risk_seq[i] <- realized_risk
     W_prev <- res[, .(ticker, weight)]
+    prev_regime <- res$regime[1]
   }
   used <- which(port_ret != 0 | port_to != 0)
   if (length(used) < 12) {
@@ -700,16 +758,16 @@ conf_vec_all <- unlist(alpha_pkg$confidence_vector)
 # 10-candidate method shopping (cap = 10, R2-C):
 # Includes baseline, MVO variants, RP family, MaxDiv, turnover-aware variants.
 CAND_CONFIG <- list(
-  list(name = "MVO_lam2",        method = "MVO_lam2",        rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "MVO_conf_TP",     method = "MVO_conf_TP",     rebal = 1L, ntb = NULL,                                    phi = 2.0, conf = conf_vec_all),
-  list(name = "MVO_TP_high",     method = "MVO_TP_high",     rebal = 1L, ntb = NULL,                                    phi = 5.0, conf = NULL),
-  list(name = "HRP",             method = "HRP",             rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "HRP_NoTradeBand", method = "HRP",             rebal = 1L, ntb = list(band_pct = 0.30, band_abs = 0.01), phi = 0,   conf = NULL),
-  list(name = "ERC",             method = "ERC",             rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "MaxDiv",          method = "MaxDiv",          rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "MaxDiv_Quarterly",method = "MaxDiv",          rebal = 3L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "InvVol",          method = "InvVol",          rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
-  list(name = "InvVol_Quarterly",method = "InvVol",          rebal = 3L, ntb = NULL,                                    phi = 0,   conf = NULL)
+  list(name = "MVO_lam2",                 method = "MVO_lam2",        rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "MVO_conf_TP",              method = "MVO_conf_TP",     rebal = 1L, ntb = NULL,                                    phi = 2.0, conf = conf_vec_all),
+  list(name = "MVO_conf_TP_Quarterly",    method = "MVO_conf_TP",     rebal = 3L, ntb = NULL,                                    phi = 2.0, conf = conf_vec_all),
+  list(name = "MVO_TP_high",              method = "MVO_TP_high",     rebal = 1L, ntb = NULL,                                    phi = 5.0, conf = NULL),
+  list(name = "HRP",                      method = "HRP",             rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "HRP_Quarterly",            method = "HRP",             rebal = 3L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "ERC",                      method = "ERC",             rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "MaxDiv_Quarterly",         method = "MaxDiv",          rebal = 3L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "InvVol",                   method = "InvVol",          rebal = 1L, ntb = NULL,                                    phi = 0,   conf = NULL),
+  list(name = "InvVol_Quarterly",         method = "InvVol",          rebal = 3L, ntb = NULL,                                    phi = 0,   conf = NULL)
 )
 stopifnot(length(CAND_CONFIG) <= 10L)
 
@@ -723,7 +781,9 @@ for (cfg in CAND_CONFIG) {
                                   confidence = cfg$conf,
                                   turnover_phi = cfg$phi,
                                   no_trade_band = cfg$ntb,
-                                  rebalance_every = cfg$rebal)
+                                  rebalance_every = cfg$rebal,
+                                  force_rebal_on_regime_change = TRUE,
+                                  force_rebal_at_dates = c(SIGNAL_AS_OF))
   dt <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
   r$config_name <- cfg$name
   eval_results[[cfg$name]] <- r
@@ -795,13 +855,67 @@ gen_eval <- walk_forward_method_eval(selected_cfg$method,
                                        turnover_phi = selected_cfg$phi,
                                        no_trade_band = selected_cfg$ntb,
                                        rebalance_every = selected_cfg$rebal,
-                                       collect_weights = TRUE)
+                                       collect_weights = TRUE,
+                                       force_rebal_on_regime_change = TRUE,
+                                       force_rebal_at_dates = c(SIGNAL_AS_OF))
 all_rows <- gen_eval$weights_collected
 weights_dt <- rbindlist(all_rows, fill = TRUE)
+
+# ── At as_of_date specifically: rebuild target_weights using Risk's exact Σ artifact ──
+# Per Codex Concern 1 (SIGMA_HANDOFF_BYPASS_TARGET_MISMATCH): the as_of target_weights
+# must use Risk's covariance.parquet 20-ticker set, not per-date re-estimated Σ.
+cat("[Optimizer Iter5] Aligning as_of weights with Risk's covariance artifact ...\n")
+asof_panel <- alpha_scores[Date == SIGNAL_AS_OF & !is.na(score_eff)]
+asof_regime <- asof_panel$regime_state[1]
+asof_eligible <- intersect(asof_panel$Ticker, SIG_TICKERS)
+cat(sprintf("  as_of regime=%s, Risk 20 tickers, eligible from alpha=%d, intersection=%d\n",
+            asof_regime, length(SIG_TICKERS), length(asof_eligible)))
+
+# Use full Risk Σ for the 20 risk-handoff tickers (or pooled if regime in CRISIS/CAUTION)
+asof_use_pooled <- asof_regime %in% c("CRISIS", "CAUTION")
+asof_Sigma <- if (asof_use_pooled) Sigma_pooled_asof else Sigma_asof
+asof_sigma_method <- if (asof_use_pooled) "lw_constcor_pooled_fallback_risk_artifact" else "lw_oracle_risk_artifact"
+
+# Apply selected method (HRP/MaxDiv/InvVol/etc) to Risk's full 20-ticker Σ
+asof_w <- switch(selected_cfg$method,
+  "HRP"     = hrp_qd(asof_Sigma),
+  "MaxDiv"  = maxdiv_qd(asof_Sigma, ub = 0.20),
+  "ERC"     = erc_qd(asof_Sigma),
+  "InvVol"  = { iv <- 1 / sqrt(diag(asof_Sigma)); iv / sum(iv) },
+  "MVO_lam2"     = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20),
+  "MVO_conf_TP"  = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20,
+                            confidence = setNames(unlist(alpha_pkg$confidence_vector)[SIG_TICKERS], SIG_TICKERS),
+                            turnover_phi = 2.0, psi = 0.3),
+  "MVO_TP_high"  = mvo_qp(setNames(unlist(alpha_pkg$alpha_vector)[SIG_TICKERS], SIG_TICKERS),
+                            asof_Sigma, lambda = 2.0, lb = 0, ub = 0.20, turnover_phi = 5.0),
+  rep(1 / length(SIG_TICKERS), length(SIG_TICKERS))  # EW fallback
+)
+asof_w <- normalize_long_only(asof_w, lb = 0, ub = 0.20, target_sum = 1)
+names(asof_w) <- SIG_TICKERS
+asof_cash <- cash_overlay_pct(asof_regime)
+asof_w_risk <- asof_w * (1 - asof_cash)
+
+# Replace as_of rows in weights_dt
+weights_dt <- weights_dt[as_of_date != SIGNAL_AS_OF]
+asof_rows_new <- rbindlist(list(
+  data.table(as_of_date = SIGNAL_AS_OF, ticker = SIG_TICKERS, weight = as.numeric(asof_w_risk),
+              method_selected = selected_name, sleeve_id = "multi_sleeve_blend",
+              regime = asof_regime, n_names = length(SIG_TICKERS),
+              sigma_method = asof_sigma_method, cash_pct = asof_cash),
+  if (asof_cash > 0) data.table(as_of_date = SIGNAL_AS_OF, ticker = "CASH", weight = asof_cash,
+                                  method_selected = selected_name, sleeve_id = "cash_overlay",
+                                  regime = asof_regime, n_names = length(SIG_TICKERS),
+                                  sigma_method = asof_sigma_method, cash_pct = asof_cash) else NULL
+))
+weights_dt <- rbindlist(list(weights_dt, asof_rows_new), fill = TRUE)
+setorder(weights_dt, as_of_date, -weight)
+
 # Tag method_selected with config name (descriptive)
 weights_dt[, method_selected := selected_name]
 n_sig_dates_walkforward <- length(unique(weights_dt$as_of_date))
-cat(sprintf("[Optimizer Iter5] weights_dt: %d rows × %d sig_dates\n",
+cat(sprintf("[Optimizer Iter5] weights_dt: %d rows × %d sig_dates (as_of replaced via Risk Σ artifact)\n",
             nrow(weights_dt), n_sig_dates_walkforward))
 stopifnot(n_sig_dates_walkforward >= 60L)
 
