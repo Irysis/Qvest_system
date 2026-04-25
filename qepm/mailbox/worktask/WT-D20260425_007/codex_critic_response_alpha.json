@@ -1,0 +1,146 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:01:54+09:00",
+  "task_id": "WT-D20260425_007",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "Alpha time-series artifact quality is acceptable, but PIT process integrity is not defensible: C15 is violated in executable code and C4/C14 controls are asserted but not enforced. Combined with failed robustness gates (sub_stability, DSR), the package cannot be approved.",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": 0.0489,
+      "pass": true
+    },
+    "icir": {
+      "value": 0.602,
+      "pass": true
+    },
+    "harvey_t": {
+      "value": 9.3455,
+      "pass": true
+    },
+    "sub_stability": {
+      "value": 0.4183,
+      "pass": false,
+      "rf_a1_flag": true
+    },
+    "dsr": {
+      "value": 0.0007,
+      "pass": false
+    }
+  },
+  "time_series_alpha_audit": {
+    "n_sig_dates": 241,
+    "date_range": [
+      "2004-01-01",
+      "2024-01-01"
+    ],
+    "single_snapshot_risk": "LOW",
+    "rf_a7_flag": false,
+    "comment": "alpha_scores.parquet is true monthly time-series (241 sig_dates, no future dates, regular 28-31 day spacing, variable ticker count). Separate integration risk remains: weights.csv is snapshot-only without sig_date."
+  },
+  "ax_axiom_compliance": {
+    "ax_003_check": "PASS",
+    "ax_004_check": "FAIL",
+    "ax_005_check": "N/A",
+    "ax_007_check": "FAIL"
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C13",
+      "status": "PASS",
+      "evidence": "run_alpha_regime.R uses align_factor_direction() before scoring (line 113), with no explicit manual sign flip path."
+    },
+    {
+      "check": "C14",
+      "status": "FAIL",
+      "evidence": "No executable Usable_Date<=sig_date guard is implemented; only self-declared text claims C14 PASS."
+    },
+    {
+      "check": "C15",
+      "status": "FAIL",
+      "evidence": "run_alpha_regime.R directly enumerates factor_db_YYYYMM parquet files and read_parquet() (lines 81-99) instead of mandated load_month_factors() route."
+    },
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "Regime label is built at month_end and shifted to next-month sig_date (lines 257-264), satisfying t-1 application."
+    },
+    {
+      "check": "C4",
+      "status": "FAIL",
+      "evidence": "No explicit annual->May / quarterly->45d financial statement lag enforcement is visible in executable alpha construction."
+    }
+  ],
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "PIT-C15 hard violation: implementation directly loads factor_db parquet files (run_alpha_regime.R lines 81-99) while package claims C15 PASS, creating process/audit inconsistency.",
+      "ax_cite": "PIT-C15|AX-002|RF-A6"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "C4/C14 are asserted but not code-enforced; no executable checks for statement-lag policy or explicit Usable_Date gating were found, so future-reference risk is unresolved.",
+      "ax_cite": "PIT-C4|PIT-C14|AX-002"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "Robustness gates materially fail (sub_stability=0.4183<0.50, DSR=0.0007<0.50), yet handoff narrative still leans on optimizer uplift; alpha reliability is fragile.",
+      "ax_cite": "RF-A1|RF-A6|AX-002"
+    },
+    {
+      "id": "C4",
+      "severity": "HIGH",
+      "description": "Single-sleeve long-only top-20 mechanism remains (alpha_vector has 20 names) with no AX-007 exception structure (multi-sleeve/LS/50+/ML sizing), while CRISIS composite IC is negative.",
+      "ax_cite": "AX-007|AX-004|L-219"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Reproducibility lineage is weak: required stage path A (/qepm/stage_artifacts/WT_WT-D20260425_007) is missing, and artifact_lineage reproduction_command references run_all.R that is absent.",
+      "ax_cite": "AX-002|AX-008|RF-A7"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "weights.csv has no sig_date column and stores one CAUTION snapshot only, so independent walk-forward weight replay artifact is missing despite RF-A7 history risk.",
+      "ax_cite": "RF-A7|AX-002|L-119"
+    }
+  ],
+  "supporting_arguments": [
+    "Independent recomputation from alpha_scores.parquet reproduces full-sample rank_IC=0.048943 and ICIR=0.601994, matching package diagnostics.",
+    "Recent 3Y ICIR is 0.407793 (ratio 0.677x of full ICIR), so RF-A3 overfit pattern is not triggered.",
+    "Covariance matrix audit passes numerically (PSD true, min_eigen=0.002572299, condition_number=24.90906 <= 100), indicating risk-side matrix conditioning is not the blocking issue.",
+    "Alpha time-series dimension is valid (241 monthly sig_dates, 322623 rows, duplicate sig_date-ticker pairs = 0)."
+  ],
+  "unresolved_disputes": [
+    "Whether upstream factor_db generation already enforces C4/C14 strictly enough to compensate for missing runtime guards in this alpha script.",
+    "Whether direct parquet loading can be accepted as a C15 exception under current charter (text says no direct parquet load).",
+    "Whether snapshot-only weights artifact is acceptable for judge-level replay, given Iter-4 RF-A7 precedent.",
+    "Which canonical stage artifact root is authoritative for WT-D20260425_007: qepm/stage_artifacts/WT_WT-* or stage_artifacts/WT_D*."
+  ],
+  "weakest_assumption": "Self-declared PIT compliance (especially C4/C14/C15) is assumed valid without enforceable runtime controls, despite direct factor parquet loading in the executable path.",
+  "rebuttal_required": [
+    "Patch alpha build path to use mandated load_month_factors() only, and provide diff + rerun hashes proving C15 compliance.",
+    "Provide executable C4/C14 assertions (statement lag and Usable_Date checks) with failing unit tests on injected counterexamples.",
+    "Submit full walk-forward weight schedule artifact (sig_date,ticker,weight,regime) instead of snapshot-only weights.csv.",
+    "Re-run robustness with explicit multiple-testing accounting and show how DSR/sub_stability failures are resolved or downgraded with evidence."
+  ],
+  "rationalization_red_flags": [
+    "near-match to banned minimization framing: \"BULL/NORMAL에선 미미; ρ 차이 0.001\""
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Cross-checks confirm strong headline IC metrics and valid time-series alpha shape, but PIT implementation integrity and robustness failures dominate; this is a process-validity rejection, not a performance-metric rejection."
+  },
+  "alpha_specific_questions": [
+    "C15 금지사항(직접 parquet 로드) 위반 없이 동일 성능을 재현할 수 있는가?",
+    "C4/C14를 코드 레벨 assert로 강제했을 때 rank_IC/ICIR/Harvey_t가 유지되는가?",
+    "AX-007 예외 구조(예: multi-sleeve 또는 50+ 분산) 없이 top-20 single-sleeve를 유지해야 할 근거가 무엇인가?"
+  ]
+}
