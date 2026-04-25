@@ -1,0 +1,222 @@
+{
+  "task_id": "WT-D20260425_010",
+  "as_of_date": "2023-12-01",
+  "signal_as_of": "2023-12-01",
+  "selection_objective": "net_ir",
+  "walk_forward": true,
+  "n_sig_dates_walkforward": 216,
+  "walk_forward_date_range": ["2006-01-01", "2023-12-01"],
+  "target_weights": {
+    "A185750": 0.0411,
+    "A104830": 0.0748,
+    "A004800": 0.0604,
+    "A139480": 0.0766,
+    "A098460": 0.016,
+    "A218410": 0.0815,
+    "A000880": 0,
+    "A039030": 0.0453,
+    "A001040": 0.0177,
+    "A078930": 0.0598,
+    "A058470": 0.0896,
+    "A041510": 0.0886,
+    "A042660": 0.0226,
+    "A166090": 2.7872e-18,
+    "A005930": 0.0731,
+    "A001680": 0.0674,
+    "A029780": 0.1041,
+    "A036930": 0,
+    "A086520": 0.0313,
+    "CASH": 0.05
+  },
+  "active_weights": {
+    "A185750": -0.0089,
+    "A104830": 0.0248,
+    "A004800": 0.0104,
+    "A139480": 0.0266,
+    "A098460": -0.034,
+    "A218410": 0.0315,
+    "A000880": -0.05,
+    "A039030": -0.0047,
+    "A001040": -0.0323,
+    "A078930": 0.0098,
+    "A058470": 0.0396,
+    "A041510": 0.0386,
+    "A042660": -0.0274,
+    "A166090": -0.05,
+    "A005930": 0.0231,
+    "A001680": 0.0174,
+    "A029780": 0.0541,
+    "A036930": -0.05,
+    "A086520": -0.0187
+  },
+  "expected_active_return": 0.134,
+  "expected_tracking_error": 0.2046,
+  "expected_information_ratio": 0.6552,
+  "expected_cagr": 0.1195,
+  "expected_mdd": -0.4173,
+  "turnover": 7.619,
+  "estimated_cost": 0.0229,
+  "binding_constraints": ["max_names_20", "cash_overlay_30pct_crisis"],
+  "infeasibility_report": null,
+  "method_selected": "MaxDiv",
+  "method_comparison": {
+    "MVO_lam2": {
+      "name": "MVO_lam2",
+      "net_ir": 0.5955,
+      "sr_ann": 0.5955,
+      "cagr": 0.1286,
+      "mdd": -0.5147,
+      "ann_to": 8.4807,
+      "ann_cost": 0.0254,
+      "selected": false
+    },
+    "MVO_lam5": {
+      "name": "MVO_lam5",
+      "net_ir": 0.6094,
+      "sr_ann": 0.6094,
+      "cagr": 0.1323,
+      "mdd": -0.5212,
+      "ann_to": 8.4663,
+      "ann_cost": 0.0254,
+      "selected": false
+    },
+    "MVO_lam1": {
+      "name": "MVO_lam1",
+      "net_ir": 0.5883,
+      "sr_ann": 0.5883,
+      "cagr": 0.1263,
+      "mdd": -0.5101,
+      "ann_to": 8.4855,
+      "ann_cost": 0.0255,
+      "selected": false
+    },
+    "HRP": {
+      "name": "HRP",
+      "net_ir": 0.6027,
+      "sr_ann": 0.6027,
+      "cagr": 0.102,
+      "mdd": -0.3547,
+      "ann_to": 7.4738,
+      "ann_cost": 0.0224,
+      "selected": false
+    },
+    "ERC": {
+      "name": "ERC",
+      "net_ir": 0.5978,
+      "sr_ann": 0.5978,
+      "cagr": 0.1096,
+      "mdd": -0.4023,
+      "ann_to": 7.1352,
+      "ann_cost": 0.0214,
+      "selected": false
+    },
+    "MaxDiv": {
+      "name": "MaxDiv",
+      "net_ir": 0.6552,
+      "sr_ann": 0.6552,
+      "cagr": 0.1195,
+      "mdd": -0.4173,
+      "ann_to": 7.619,
+      "ann_cost": 0.0229,
+      "selected": true
+    },
+    "EqualWeight": {
+      "name": "EqualWeight",
+      "net_ir": 0.5967,
+      "sr_ann": 0.5967,
+      "cagr": 0.1096,
+      "mdd": -0.4037,
+      "ann_to": 7.1324,
+      "ann_cost": 0.0214,
+      "selected": false
+    },
+    "AlphaProp": {
+      "name": "AlphaProp",
+      "net_ir": 0.6201,
+      "sr_ann": 0.6201,
+      "cagr": 0.1177,
+      "mdd": -0.4148,
+      "ann_to": 7.3346,
+      "ann_cost": 0.022,
+      "selected": false
+    },
+    "InvVol": {
+      "name": "InvVol",
+      "net_ir": 0.6036,
+      "sr_ann": 0.6036,
+      "cagr": 0.1063,
+      "mdd": -0.3586,
+      "ann_to": 7.212,
+      "ann_cost": 0.0216,
+      "selected": false
+    }
+  },
+  "multi_sleeve_weights": {
+    "Core": 0.6175,
+    "Defense": 0.3325,
+    "Cash": 0.05
+  },
+  "cash_overlay_policy": {
+    "BULL": 0,
+    "NORMAL": 0.05,
+    "CAUTION": 0.15,
+    "CRISIS": 0.3,
+    "rationale": "AX-001 v2 conditional cash policy. CRISIS 30% per Risk handoff. Validates against alpha CRISIS bootstrap IC=-0.173 [-0.252, -0.092]."
+  },
+  "crisis_pooled_fallback": {
+    "enforced": true,
+    "regimes_using_pooled": ["CRISIS", "CAUTION"],
+    "rationale": "Risk Mgr binding rule (risk_package.optimizer_handoff.recommendations[2]). CRISIS regime Σ cond=564 > 100, pooled Σ cond=100. Per-sig_date Σ uses LW_constcor in CRISIS/CAUTION, LW_oracle otherwise."
+  },
+  "hhi_asof": 0.0677,
+  "explanation": {
+    "top_overweights": ["A029780", "A058470", "A041510", "A218410", "A139480"],
+    "top_underweights": ["A000880", "A036930", "A166090", "A098460", "A001040"],
+    "main_tradeoffs": ["Method selected = MaxDiv (net_IR=0.655). Walk-forward over 216 sig_dates.", "CRISIS pooled-Σ fallback enforced. AX-001 v2 cash 0/5/15/30% by regime.", "Σw=1 (incl cash). max_names=20/20 hard cap. weight_bounds [0, 0.20]."],
+    "pg2_baseline_note": "PG2 baseline = STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%. TDC vs PG2 to be computed at Forge backtest stage."
+  },
+  "hard_constraint_compliance": {
+    "max_names_20": {
+      "enforced": true,
+      "max_observed": 20,
+      "note": "risk securities only; CASH is allocation overlay"
+    },
+    "weight_bounds_0_020": {
+      "enforced": true,
+      "max_observed_risk": 0.1667,
+      "min_observed_risk": 0,
+      "note": "applies to risk securities only (CASH cap = 0.30 per AX-001 v2)"
+    },
+    "cash_overlay_cap": {
+      "enforced": true,
+      "cap": 0.3,
+      "max_observed_cash": 0.3,
+      "note": "AX-001 v2 conditional cash policy"
+    },
+    "long_only": {
+      "enforced": true,
+      "min_weight_observed": 0
+    },
+    "sum_w_1": {
+      "enforced": true,
+      "max_abs_error": 0,
+      "note": "Σw across risk + CASH = 1"
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window LW shrinkage (lw_oracle / lw_constcor) per sig_date",
+    "C2": "PASS — alpha at sig_date d → weights at sig_date d → realized Ret_1m at d",
+    "C9": "PASS — regime_state from alpha_scores (Iter 2 PIT-safe expanding percentile inherited)",
+    "C11": "PASS — KR internal regime, no FRED leakage",
+    "C13": "PASS — Z_Score_Aligned alpha inherited from Alpha agent, no manual flip",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED — last sig_date 2023-12-01 strictly before lockbox 2024-01-23"
+  },
+  "red_flags": {
+    "RF_O3_turnover_low": "PASS",
+    "RF_O5_max_names": "PASS",
+    "RF_O6_sum_w": "PASS",
+    "RF_O7_long_only_or_bound": "PASS"
+  },
+  "generated_at": "2026-04-25T18:37:48+0900"
+}
