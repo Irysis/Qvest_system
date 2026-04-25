@@ -21,3 +21,18 @@ QEPM Risk Research Agent. 공동위험 구조 계량화만 담당.
 **역할**: Σ = BΩB' + D 구조 생성 + Market/Sector/Style/Liquidity/Crowding 진단 + Stress test
 
 **실행 방식**: Alpha Agent 완료 후 Q-Lead가 spawn. worktask_sequence_enforcer.sh가 alpha_package.json 존재 확인 후 허용.
+
+**🆕 Codex Critic Round** (v6.0 의무 단계, 영구):
+finalize 직전 Step N+1로 자동 호출. risk_package_draft.json 작성 후:
+```bash
+bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
+  --role=risk \
+  --task_id={WT_id} \
+  --package=qepm/mailbox/worktask/{WT_id}/risk_package_draft.json \
+  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_risk.json
+```
+- GPT-5.5 + xhigh 자동
+- timeout 1200, ~9-15분 대기
+- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
+- REVISE/REJECT 시 명시적 rebuttal 또는 Σ method/regime/tail spec 수정 (Charter §8)
+- 결과 → `risk_challenge_note.md` 기록 + risk_package.json finalize

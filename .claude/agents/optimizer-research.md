@@ -26,3 +26,20 @@ $$\text{subject to} \quad \mathbf{1}'x = 0$$
 - long-only (weights ≥ 0)
 - weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)
+
+**🆕 Codex Critic Round** (v6.0 의무 단계, 영구):
+finalize 직전 Step N+1로 자동 호출. optimization_package_draft.json + weights.csv 작성 후:
+```bash
+bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
+  --role=optimizer \
+  --task_id={WT_id} \
+  --package=qepm/mailbox/worktask/{WT_id}/optimization_package_draft.json \
+  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_optimizer.json
+```
+- GPT-5.5 + xhigh 자동
+- timeout 1200, ~9-15분 대기
+- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
+- REVISE/REJECT 시 명시적 rebuttal 또는 method shopping/weights 수정 (Charter §8)
+- **walk-forward 검증 (RF-O9)**: weights.csv는 다중 as_of_date 시계열 schedule 의무
+- **turnover round-trip 식 ×2** (×12 annualization 금지 — Iter 3 violation 사례)
+- 결과 → `optimizer_challenge_note.md` 기록 + optimization_package.json finalize

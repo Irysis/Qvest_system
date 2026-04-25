@@ -18,3 +18,18 @@ QEPM Alpha Research Agent. 기대초과수익 생성만 담당.
 - Silent override (challenge_note 의무)
 
 **실행 방식**: SendMessage 또는 Agent tool spawn. inbox/TODO_ALPHA_{WT_id}.json 트리거.
+
+**🆕 Codex Critic Round** (v6.0 의무 단계, 영구):
+finalize 직전 Step N+1로 자동 호출. alpha_package_draft.json 작성 후:
+```bash
+bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
+  --role=alpha \
+  --task_id={WT_id} \
+  --package=qepm/mailbox/worktask/{WT_id}/alpha_package_draft.json \
+  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_alpha.json
+```
+- GPT-5.5 + xhigh 자동 (helper script default)
+- timeout 1200 (default), ~9-15분 대기
+- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
+- REVISE/REJECT 시 명시적 rebuttal 또는 spec 수정 (Charter §8 No Silent Override)
+- 결과 → `challenge_note.md` 기록 + alpha_package.json finalize
