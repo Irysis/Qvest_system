@@ -1,0 +1,122 @@
+{
+  "task_id": "WT-D20260425_005",
+  "as_of_date": "2023-11-30",
+  "target_weights": {
+    "A005010": 0.0452,
+    "A005930": 0.0339,
+    "A009150": 0.0365,
+    "A009270": 0.0635,
+    "A011070": 0.0432,
+    "A020000": 0.0449,
+    "A029780": 0.0461,
+    "A031430": 0.0438,
+    "A036930": 0.0401,
+    "A084870": 0.0981,
+    "A121600": 0.041,
+    "A185750": 0.1102,
+    "A192440": 0.0395,
+    "A205470": 0.0478,
+    "A217620": 0.0382,
+    "A245620": 0.0525,
+    "A254120": 0.0368,
+    "A272290": 0.0513,
+    "A900120": 0.0566,
+    "A900270": 0.0309
+  },
+  "active_weights": {},
+  "expected_active_return": 0.398,
+  "expected_tracking_error": 0.1896,
+  "expected_information_ratio": 2.0985,
+  "selection_objective": "net_ir",
+  "net_ir": 2.0906,
+  "turnover": 1,
+  "estimated_cost": 0.0015,
+  "binding_constraints": [
+    "max_names_hard"
+  ],
+  "infeasibility_report": {},
+  "n_names": 20,
+  "hhi": 0.0577,
+  "min_names_enforced": true,
+  "hhi_enforced": true,
+  "winsor_applied": true,
+  "lambda_retries": 0,
+  "lambda_used": 2,
+  "method_selected": "ScoreMerged_MVO_lam2_psi03",
+  "method_comparison": {
+    "Sleeve_MVO_50_30_20": {
+      "ir": 1.147,
+      "te": 0.1692,
+      "ar": 0.1941,
+      "net_ir": 1.1381,
+      "hhi": 0.0672,
+      "n_names": 20,
+      "gate_pass": true
+    },
+    "ScoreMerged_MVO_lam2_psi03": {
+      "ir": 2.0985,
+      "te": 0.1896,
+      "ar": 0.398,
+      "net_ir": 2.0906,
+      "hhi": 0.0577,
+      "n_names": 20,
+      "gate_pass": true
+    },
+    "HRP_AlphaTilt": {
+      "ir": 1.6135,
+      "te": 0.1651,
+      "ar": 0.2665,
+      "net_ir": 1.6044,
+      "hhi": 0.0552,
+      "n_names": 20,
+      "gate_pass": true
+    },
+    "ERC_AlphaTilt": {
+      "ir": 1.7549,
+      "te": 0.2327,
+      "ar": 0.4084,
+      "net_ir": 1.7485,
+      "hhi": 0.0548,
+      "n_names": 20,
+      "gate_pass": true
+    },
+    "MinVol_AlphaTilt_CVaRproxy": {
+      "ir": 1.867,
+      "te": 0.2147,
+      "ar": 0.4008,
+      "net_ir": 1.8601,
+      "hhi": 0.0584,
+      "n_names": 20,
+      "gate_pass": true
+    }
+  },
+  "explanation": {
+    "top_overweights": [
+      "A185750",
+      "A084870",
+      "A009270",
+      "A900120",
+      "A245620"
+    ],
+    "top_underweights_excluded": [
+      "A205500",
+      "A220260",
+      "A900280",
+      "A083640",
+      "A230360"
+    ],
+    "main_tradeoffs": [
+      "weight cap 0.15 limits max position to 3× EW baseline (Top-5 mcap 69.1% hedge)",
+      "HHI cap 0.15 enforces breadth — avoids MEGA_05 26.84% Top-2 concentration",
+      "Cross-family sleeve structure preserves alpha-side TDC 0.10~0.13 diversity",
+      "Slot C sleeve weight 0.20 contains Inflation_2022 -24.3% impact to < 5% portfolio level",
+      "AX-002 RESOLVED via LW-Oracle proxy 0.40% (under 5% hard cap)"
+    ]
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "rebalance_frequency": "monthly",
+  "universe_size": 160,
+  "monthly_weights_ref": "stage_artifacts/WT_WT-D20260425_005/weights_rolling.parquet",
+  "method_shopping_log_ref": "stage_artifacts/WT_WT-D20260425_005/optimizer_research.json",
+  "emitted_at": "2026-04-25T09:09:55+0900"
+}

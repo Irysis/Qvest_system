@@ -680,7 +680,11 @@ tg_agent_brief <- function(agent,
     body <- switch(
       type,
       "table" = {
-        if (!is.data.frame(s$df)) stop("[tg_agent_brief] 'table' section requires df")
+        if (!is.data.frame(s$df)) stop("[tg_agent_brief] 'table' section requires df (data.frame)")
+        if (nrow(s$df) < 2L) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires nrow >= 2 (got %d). Single-row tables look broken on mobile.",
+                                            heading, nrow(s$df)))
+        if (ncol(s$df) < 2L) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires ncol >= 2 (got %d). Single-col tables = bullet list (use type='bullet' instead).",
+                                            heading, ncol(s$df)))
         max_col <- s$max_col_width %||% 18L
         tbl <- tg_format_table(s$df, max_col_width = as.integer(max_col),
                                 auto_escape = TRUE)
@@ -694,18 +698,48 @@ tg_agent_brief <- function(agent,
         # plain text — auto_sanitize이 <>& 처리.
         # <b> <code> <pre> 유효 태그는 caller가 직접 사용 가능.
         body_str <- as.character(s$body %||% "")
+        if (nchar(body_str) < 50L) {
+          stop(sprintf("[tg_agent_brief] 'text' section heading='%s' requires body >= 50 chars (got %d). Use bullet/table for short content.",
+                        heading, nchar(body_str)))
+        }
         body_str
       },
       "bullet" = {
         items <- s$items %||% character(0)
-        if (length(items) == 0) "" else paste0("  • ", tg_html_escape(items), collapse = "\n")
+        if (length(items) < 3L) {
+          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' requires items >= 3 (got %d). Use text type for 1-2 items.",
+                        heading, length(items)))
+        }
+        paste0("  • ", tg_html_escape(items), collapse = "\n")
+      },
+      "kv" = {
+        # Key-value pairs (new in v3.1, 2026-04-25 enforce strengthening)
+        kv <- s$kv
+        if (!is.list(kv) || is.null(names(kv)) || any(!nzchar(names(kv)))) {
+          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires named list (kv = list(key1='val1', ...)).",
+                        heading))
+        }
+        if (length(kv) < 3L) {
+          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires length(kv) >= 3 (got %d).",
+                        heading, length(kv)))
+        }
+        kv_lines <- vapply(seq_along(kv), function(i) {
+          sprintf("  • <b>%s</b>: %s",
+                  tg_html_escape(names(kv)[i]),
+                  tg_html_escape(as.character(kv[[i]])))
+        }, character(1))
+        paste(kv_lines, collapse = "\n")
       },
       "code" = {
         # Multi-line code block
         code_str <- as.character(s$body %||% "")
+        if (nchar(code_str) < 20L) {
+          stop(sprintf("[tg_agent_brief] 'code' section heading='%s' requires body >= 20 chars (got %d).",
+                        heading, nchar(code_str)))
+        }
         paste0("<pre>", tg_html_escape(code_str), "</pre>")
       },
-      stop(sprintf("[tg_agent_brief] Unknown section type '%s'", type))
+      stop(sprintf("[tg_agent_brief] Unknown section type '%s'. Allowed: table / text / bullet / kv / code.", type))
     )
     if (nzchar(head_line)) paste(head_line, body, sep = "\n") else body
   }, character(1))
@@ -723,36 +757,35 @@ tg_agent_brief <- function(agent,
                     msg_bytes))
   }
 
-  # ── 4.5. Empty / Skeleton guard (2026-04-24 v3, threshold 상향) ───────────────
-  # Pilot 6 Alpha 115 bytes + Pilot 6 Risk 475 bytes 모두 발송은 됐으나 content 부실 사례.
-  # Threshold: bytes >= 800, nonempty_sections >= 3. Agent가 의미 있는 brief 강제.
+  # ── 4.5. Empty / Skeleton guard (2026-04-25 v4, ENFORCE-ONLY threshold 상향) ──
+  # Pilot 6 Alpha 115 bytes + Pilot 6 Risk 475 bytes + WT-005 Optimizer 477 bytes 사례.
+  # v4 변경 (2026-04-25): MIN_BYTES 800→1200, MIN_SECTIONS 3→4, 검증 fail = stop()
+  #                        (silent return 제거, force=TRUE만 우회 허용).
   n_sections_nonempty <- sum(vapply(sections, function(s) {
     if (length(s) == 0) return(FALSE)
     body <- s$body %||% ""
     items <- s$items %||% character(0)
-    has_df <- is.data.frame(s$df) && nrow(s$df) > 0
-    has_body <- is.character(body) && length(body) == 1 && nchar(body) >= 20
-    has_items <- length(items) >= 2
-    has_df || has_body || has_items
+    kv <- s$kv
+    has_df <- is.data.frame(s$df) && nrow(s$df) >= 2L && ncol(s$df) >= 2L
+    has_body <- is.character(body) && length(body) == 1 && nchar(body) >= 50L
+    has_items <- length(items) >= 3L
+    has_kv <- is.list(kv) && length(kv) >= 3L && !is.null(names(kv))
+    has_df || has_body || has_items || has_kv
   }, logical(1)))
 
-  MIN_BYTES <- 800L
-  MIN_SECTIONS <- 3L
+  MIN_BYTES <- 1200L
+  MIN_SECTIONS <- 4L
   if (msg_bytes < MIN_BYTES || n_sections_nonempty < MIN_SECTIONS) {
-    err_msg <- sprintf("[tg_agent_brief] BLOCKED skeleton brief. agent=%s bytes=%d (min %d) nonempty_sections=%d (min %d). Provide >=%d sections with df/body(>=20 chars)/items(>=2).",
+    err_msg <- sprintf("[tg_agent_brief] BLOCKED skeleton brief. agent=%s bytes=%d (min %d) nonempty_sections=%d (min %d). Provide >=%d sections with df(nrow>=2,ncol>=2) / body(>=50 chars) / items(>=3) / kv(>=3 named).",
                         agent, msg_bytes, MIN_BYTES, n_sections_nonempty, MIN_SECTIONS, MIN_SECTIONS)
-    message(err_msg)
     log_f <- "/tmp/qvest_tg_skeleton_warn.log"
     tryCatch(cat(sprintf("%s %s\n%s\n---\n", format(Sys.time()), err_msg, msg),
                   file = log_f, append = TRUE),
               error = function(e) NULL)
     if (!isTRUE(force)) {
-      return(invisible(list(ok = FALSE,
-                             error = "SKELETON_BRIEF_BLOCKED",
-                             bytes = msg_bytes,
-                             nonempty_sections = n_sections_nonempty,
-                             min_bytes = MIN_BYTES,
-                             min_sections = MIN_SECTIONS)))
+      stop(err_msg)
+    } else {
+      message(sprintf("[tg_agent_brief] WARN force=TRUE override: %s", err_msg))
     }
   }
 

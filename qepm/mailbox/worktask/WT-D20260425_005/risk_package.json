@@ -1,0 +1,94 @@
+{
+  "task_id": "WT-D20260425_005",
+  "as_of_date": "2023-11-30",
+  "exposure_matrix_ref": "stage_artifacts/WT_WT-D20260425_005/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_WT-D20260425_005/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_WT-D20260425_005/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_WT-D20260425_005/covariance.parquet",
+  "slot_covariance_ref": "stage_artifacts/WT_WT-D20260425_005/covariance_slot.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_WT-D20260425_005/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_WT-D20260425_005/regime_correlation.parquet",
+  "regime_stress_ref": "stage_artifacts/WT_WT-D20260425_005/regime_stress.json",
+  "method_shopping_log_ref": "stage_artifacts/WT_WT-D20260425_005/method_shopping_log_risk.json",
+  "covariance_cache_ref": ".cache/covariance/WT-D20260425_005_ledoit_wolf_oracle_20231130.parquet",
+  "selection_objective": "condition_number",
+  "risk_summary": {
+    "top_common_risks": ["Market (90.2%)", "Sector_화학 (8.8%)", "Size (7.3%)", "Momentum (0.1%)"],
+    "market_variance_share_pct": 90.2489,
+    "size_variance_share_pct": 7.3363,
+    "momentum_variance_share_pct": 0.0874,
+    "factor_coverage_pct": 21.0116,
+    "crowding_flags": [
+      "Top-5 market cap = 69.1% of candidate pool (high concentration — KR top-20 mandate may amplify)"
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5_monthly": -0.0401,
+      "GFC_2008_slot_A": -0.1829,
+      "GFC_2008_slot_B": -0.1332,
+      "GFC_2008_slot_C": 0.0557,
+      "COVID_2020_slot_A": 0.15,
+      "COVID_2020_slot_B": 0.2719,
+      "COVID_2020_slot_C": 0.0474,
+      "Inflation_2022_slot_A": -0.0684,
+      "Inflation_2022_slot_B": -0.0739,
+      "Inflation_2022_slot_C": -0.2428
+    },
+    "slot_covariance_matrix": {
+      "A_A": 0.0051,
+      "A_B": 0.0049,
+      "A_C": 0.004,
+      "B_B": 0.0071,
+      "B_C": 0.0044,
+      "C_C": 0.0046
+    },
+    "slot_correlation_matrix": {
+      "A_B": 0.8047,
+      "A_C": 0.8146,
+      "B_C": 0.7735
+    }
+  },
+  "diagnostics": {
+    "condition_number": 182.5525,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "blend_structured_pct": 0,
+    "factor_correlation_warnings": [],
+    "tdc_summary_return_based": {
+      "A_B_bottom_decile": 0.6667,
+      "A_C_bottom_decile": 0.7778,
+      "B_C_bottom_decile": 0.5556,
+      "max": 0.7778,
+      "alpha_side_from_alpha_pkg": {
+        "A_B": 0.0978,
+        "A_C": 0.1304,
+        "B_C": 0.1114
+      },
+      "note": "Alpha-side TDC (signal diversity) ≤ 0.40 hard threshold — PASS. Return-based TDC (Risk side, long-only KR equity EW-top20) structurally elevated due to shared market beta (~90% of variance). Operative diversity metric for ensemble validity = alpha-side TDC."
+    },
+    "tdc_summary_copula_lambda": {
+      "A_B_lambda": 0.6522,
+      "A_C_lambda": 0.7609,
+      "B_C_lambda": 0.5435
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_WT-D20260425_005/regime_correlation.parquet",
+    "regime_state_current": "Normal",
+    "proxy_usage_pct": 0.3958,
+    "ax002_proxy_check": "PASS",
+    "estimation_window_months": 60,
+    "universe_size": 160,
+    "candidate_universe_source": {
+      "top_A": 20,
+      "top_B": 80,
+      "top_C": 80,
+      "union_deduped": 176,
+      "eligible_after_data_filter": 160
+    }
+  },
+  "challenge_flags": [
+    "RF-R1 HIGH: Market factor 90.2% > 40%",
+    "Top-5 market cap = 69.1% of candidate pool (high concentration — KR top-20 mandate may amplify)",
+    "RF-R3 LOW: Return-based TDC max 0.778 > 0.60 (shared market beta — alpha-side TDC 0.10-0.13 remains primary diversity test)",
+    "RF-R1 MEDIUM: Market factor accounts for 90.2% variance (>70%) — systemic exposure high"
+  ]
+}

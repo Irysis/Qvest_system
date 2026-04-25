@@ -97,13 +97,12 @@ Defense 전략은 multi-sleeve 내에서만 평가:
   - DISPOSITION 값: ADMISSION_READY / CONDITIONAL_PROGRESS / DISCARD_WITH_IMPROVEMENTS / HARD_FAIL
   - 누락 시 Q-Lead가 보완 브리핑 강제 발송 — 사용자 가독성 위해 title 최상단에 즉시 파악 가능해야 함.
 
-  **표 렌더 규칙 (모바일 가독성 영구 강제, 2026-04-24)**:
-  - `tg_send()` plain text 금지. 반드시 `tg_send_rich()` + HTML `<pre>` (`tg_format_table` or `tg_format_gate_block`).
-  - Gate 결과는 반드시 `tg_format_gate_block(list(list(name=..., verdict=..., note=...)))` 사용. **2-column 컴팩트 표 + bullet list notes**.
-  - 수동 ASCII `---` 구분선 + 긴 Note column 금지 (모바일 proportional font에서 정렬 붕괴).
-  - 표 데이터 내 `<`/`>`/`&`는 `tg_html_escape()`로 escape (예: `n<=20` → `n&lt;=20`, 또는 대체 표기 `n below 20`).
-  - 각 표는 5 column 이하, 값은 10자 이내 권장. 긴 설명은 prose bullet로 분리.
-  - emoji 최소 1개 필수 (`tg_send_rich(msg, emoji_min=1L)` auto-validate).
+  **표 렌더 규칙 (v4 ENFORCE-ONLY, 2026-04-25)**:
+  - **반드시 `tg_agent_brief()` 사용**. `tg_send()/tg_send_rich()/tg_send_photo()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
+  - Gate 결과는 `type="table"` section + df (Gate 행 ≥2, column ≥2) 사용. emoji + heading 자동 처리.
+  - 차트는 `charts = c(path1, path2)` 인자만. `tg_send_photo()` 별도 호출 = Hook deny.
+  - emoji_min 5L (default, 변경 금지).
+  - 상세: `_shared_prefix.md::telegram_protocol` v4 + `.claude/skills/telegram-protocol/SKILL.md` v4.
   </telegram>
 </output_format>
 
@@ -182,11 +181,25 @@ oos <- judge_generate_oos_charts(wt_id)   # lockbox 접근 (judge 권한)
 - `< 0.7` → FAIL (signal decay 의심 → alpha 단기화 권고 or DISCARD)
 - Lockbox performance (CAGR/SR/MDD/α/IR vs KOSPI200_TR) 심사 comment에 반드시 기술.
 
-### Telegram 발송 (차트 2건 첨부)
+### Telegram 발송 (v4 ENFORCE — `tg_agent_brief` 차트 인자 사용)
 ```r
-tg_send_photo(oos$full_chart_path,  caption = sprintf("[Judge] %s | Full Period (Train+Val+Lockbox OOS)", wt_id))
-tg_send_photo(oos$oos_chart_path,   caption = sprintf("[Judge] %s | Lockbox OOS (24M) | SR=%.3f / MDD=%.2f%%",
-                                                         wt_id, oos$oos_performance$Sharpe, oos$oos_performance$MDD))
+source("02_Infrastructure/telegram/telegram_notify.R")
+tg_agent_brief(
+  agent = "Judge",
+  title = sprintf("%s GRADE_X / DISPOSITION_Y", wt_id),
+  sections = list(
+    list(emoji="⚖️", heading="Gate A~F", type="table", df=gate_df),
+    list(emoji="📈", heading="Lockbox 24M Performance", type="kv",
+         kv = list(SR=sprintf("%.3f", oos$oos_performance$Sharpe),
+                   CAGR=sprintf("%.2f%%", oos$oos_performance$CAGR*100),
+                   MDD=sprintf("%.2f%%", oos$oos_performance$MDD),
+                   alpha=sprintf("%.3f", oos$oos_performance$alpha))),
+    list(emoji="💡", heading="핵심 발견", type="text", body=key_finding),
+    list(emoji="🚩", heading="Red Flags", type="bullet", items=red_flags)
+  ),
+  charts = c(oos$full_chart_path, oos$oos_chart_path),  # tg_send_photo 직접 호출 = Hook deny
+  emoji_min = 5L
+)
 ```
 
 ### Judge Verdict 저장 → lockbox_post_judge_seal.sh 자동 발동

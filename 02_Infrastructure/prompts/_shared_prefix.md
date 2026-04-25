@@ -52,94 +52,122 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
 </s0_debate_consensus>
 
-<telegram_protocol version="v3.0" updated="2026-04-24">
-**v3.0 SOT — 단일 진입점 `tg_agent_brief()` 강제 (반복 깨짐 영구 해결)**
+<telegram_protocol version="v4.0" updated="2026-04-25" enforce="HOOK+STOP+SKILL">
+**v4.0 ENFORCE-ONLY — 3중 강제 (Hook deny + R stop() + skill description)**
 
-## 절대 규칙 (Level 0)
+## 절대 규칙 (Level 0, v4 우회 불가)
 
-**반드시 `tg_agent_brief()` 함수만 사용**. 직접 조립 절대 금지.
+**반드시 `tg_agent_brief()` 함수만 사용**. 직접 조립 = Hook 차단 + R stop().
 
 ```r
 source("02_Infrastructure/telegram/telegram_notify.R")
-tg_agent_brief(agent = "Alpha"|"Risk"|...,
-                title = "...", sections = list(...),
-                charts = NULL, footer = NULL, emoji_min = 5L)
+tg_agent_brief(
+  agent    = "Alpha"|"Risk"|"Optimizer"|"Forge"|"Judge"|"Governor"|"Q-Lead"|"Scout"|"Execution"|"Monitoring",
+  title    = "WT-{id} {status}",
+  sections = list(...),                # ≥4 nonempty (Hard validation)
+  charts   = NULL,                     # optional c(path1, path2)
+  footer   = NULL,
+  emoji_min = 5L
+)
 ```
 
-- ❌ 직접 `tg_send_rich(msg)` 조립 금지
-- ❌ 직접 `tg_format_table()` + `paste0(...)` 조립 금지
-- ❌ `tg_send(..., parse_mode="HTML")` 수동 호출 금지
+- ❌ 직접 `tg_send_rich(msg)` 호출 → **PreToolUse[Bash] Hook deny**
+- ❌ 직접 `tg_send_photo(path)` 단독 호출 → **Hook deny** (차트는 `charts=` 인자만)
+- ❌ 직접 `tg_format_table()` + `paste0(...)` 조립 금지 (caller 수동 escape 누락 사례 100%)
+- ❌ `tg_send(..., parse_mode="HTML")` 수동 호출 → **Hook deny**
 
-상세: `.claude/skills/telegram-protocol/SKILL.md` v3.0 Read 필수.
+상세: `.claude/skills/telegram-protocol/SKILL.md` v4 ENFORCE Read 필수.
+
+## Hard Validation (v4, fail = stop())
+
+| 검증 | 기준 | 위반 시 |
+|------|------|---------|
+| `bytes` | ≥ 1200 (substantial brief) | `stop()` |
+| `sections` | ≥ 4 nonempty | `stop()` |
+| `emoji` | ≥ 5 (다양성) | warning + log |
+| `type="table"` | `nrow ≥ 2 && ncol ≥ 2` | `stop()` |
+| `type="text"` | `nchar(body) ≥ 50` | `stop()` |
+| `type="bullet"` | `length(items) ≥ 3` | `stop()` |
+| `type="kv"` (v4 신규) | named list, `length ≥ 3` | `stop()` |
+| `type="code"` | `nchar(body) ≥ 20` | `stop()` |
+
+## 섹션 type 5종 (v4)
+
+- `"table"` — `df` (data.frame, 다행 다열) + `max_col_width` (default 18) + `notes` (optional bullet)
+- `"text"` — `body` (≥50 chars; `<b>/<code>/<pre>` 허용, raw 문자 자동 escape)
+- `"bullet"` — `items` (≥3 char vector)
+- `"kv"` (신규 v4) — `kv` (named list, ≥3개; key-value 쌍)
+- `"code"` — `body` (≥20 chars, multi-line 코드 블록)
+
+## Single-Dispatch 원칙 (v2.2~v4 계승)
+
+- **Agent 1 spawn = `tg_agent_brief` 1회 호출**
+- 발송 타이밍: 모든 산출물 write + `status.json` phase 전환 **직전** 단일 호출
+- charts 여러 장은 `charts = c(path1, path2)` 인자로만. 별도 `tg_send_photo()` 호출 = Hook deny.
+- Step 1/2/3 중간 발송 절대 금지.
 
 ## 자동 처리 (caller 책임 없음)
 
 | 처리 | 계층 |
 |---|---|
-| CJK width 정확 (한글 2칸) | tg_format_table v2 |
-| raw `<`, `>`, `&` auto-escape | tg_format_table v3 / tg_send_rich v4 |
-| `&quot;` entity 제거 | tg_send_rich v3 |
+| CJK width 정확 (한글 2칸) | `tg_format_table` v2 |
+| raw `<`, `>`, `&` auto-escape | 내부 sanitize |
+| `&quot;` entity 제거 | 내부 sanitize |
 | 유효 HTML 태그 보존 (`<b>/<code>/<pre>`) | whitelist regex |
-| 모바일 width guard (>40 WARN) | tg_format_table v2 |
-| emoji 최소 개수 검증 | tg_send_rich |
-| 4096 bytes 제한 경고 | tg_agent_brief |
-
-## Single-Dispatch 원칙 (v2.2 계승)
-
-- **Agent 1 spawn = `tg_agent_brief` 1회 호출**
-- 발송 타이밍: 모든 산출물 write + `status.json` phase 전환 **직전** 단일 호출
-- charts 여러 장 OK (`charts = c(path1, path2)` text 직후 이어서 발송)
-- Step 1/2/3 중간 발송 절대 금지. 위반 패턴 (Pilot 4 Optimizer / Pilot 5 Alpha 2회 반복) 재발 금지.
-
-## 섹션 type 4종
-
-- `"table"` — df + max_col_width + notes (optional bullet)
-- `"text"` — body (HTML `<b>/<code>/<pre>` 허용, raw 문자 자동 escape)
-- `"bullet"` — items (char vector)
-- `"code"` — body (multi-line code block)
+| 모바일 width guard (>40 WARN) | 내부 |
+| emoji 최소 개수 검증 (≥5) | `tg_agent_brief` |
+| 4096 bytes 제한 경고 | `tg_agent_brief` |
+| Skeleton brief 차단 (bytes/sections 미달) | v4 `stop()` |
+| Duplicate dispatch 차단 | v2 lock_file |
 
 ## 에이전트 태그 자동
 
 Agent name으로 이모지 + 태그 자동: Alpha 🔬 / Risk 🛡️ / Optimizer ⚖️ / Forge 🔨 / Judge ⚖️ / Governor 👑 / Q-Lead 🎯 / Scout 📚 / Execution 🎬 / Monitoring 📡
 
-## 위반 감지 시
+## 표준 Brief 예시 (모든 agent 공통, 위반 시 Hook + stop)
 
-Q-Lead가 SendMessage로 시정 지시. 반복 위반 시 prompt 재주입. `tg_agent_brief` 자체 버그는 `telegram_notify.R` 내부 수정, caller 변경 불필요.
-
-**v2.1 필수 — 표 포맷 + 이모지 검증**
-- **3+ 지표 비교**는 `tg_format_table(df)` + `tg_send_rich(msg)` 사용 (고정폭 `<pre>` 렌더링)
-- `tg_send()` 기본값에 **이모지 0개 감지 warning** 포함. 최소 1개 이모지 권장 (⚠️ 제외 시 `/tmp/qvest_tg_emoji_warn.log` append)
-- HTML parse mode (`tg_send_rich`) 사용 시 표 외 일반 텍스트의 `<`, `>`, `&` 는 `tg_html_escape()` 적용
-
-**표준 Agent Telegram 템플릿**:
 ```r
 source("02_Infrastructure/telegram/telegram_notify.R")
 
-metrics <- data.frame(
-  Metric  = c("rank_ic", "ICIR", "Harvey_t", "DSR", "subperiod"),
-  Value   = c("0.032", "0.403", "4.42", "0.039", "3/3"),
-  Verdict = c("⚠️", "✅", "✅", "❌", "✅")
+res <- tg_agent_brief(
+  agent = "Optimizer",
+  title = "WT-D20260425_006 OPTIMIZER_DONE",
+  sections = list(
+    list(emoji = "📊", heading = "Hard Gates", type = "table",
+         df = data.frame(
+           Gate=c("Pre-LB SR","Pre-LB MDD","Harvey FF5","TDC","NORMAL SR"),
+           Target=c(">=1.137","<=-25%",">=2.95","<=0.40",">=1.20"),
+           Measured=c("1.45","-22.10%","3.12","0.13","1.34"),
+           Pass=c("PASS","PASS","PASS","PASS","PASS"),
+           stringsAsFactors = FALSE)),
+    list(emoji = "💡", heading = "핵심 발견", type = "text",
+         body = "Regime-Σ MinCVaR 도입으로 NORMAL SR 0.30→1.34 breakthrough. CRISIS regime은 LW Oracle 대비 tail VaR 18% 감소 — Mega Sprint 회귀 없이 동시 개선 달성."),
+    list(emoji = "✅", heading = "강점", type = "bullet",
+         items = c("AX-002 proxy 0.32% (≤5% PASS 4x margin)",
+                   "Cross-family TDC 0.10-0.13 alpha-side 유지",
+                   "20종 hard / weight cap 0.13 / HHI 0.073 모두 mandate 준수")),
+    list(emoji = "🎛️", heading = "Method Shopping", type = "kv",
+         kv = list(
+           "Selected"="Regime_Sigma_MinCVaR",
+           "Net IR forecast"="2.41",
+           "Candidates"="6 (1 신규: Regime-Σ)",
+           "Confidence"="0.51 weighted")),
+    list(emoji = "➡️", heading = "다음", type = "text",
+         body = "Forge walk-forward backtest spawn. 정확 monthly rebalance + 15bps × monthly turnover로 forecast/realized 시간대 일치 검증.")
+  ),
+  emoji_min = 5L
 )
-
-msg <- paste0(
-  "[Agent] 🎯 Stage X 완료 — WT-D...\n",
-  "━━━━━━━━━━━━━━━━━━━━━━━━━\n",
-  "⏱️ 소요 X분\n\n",
-  "📊 핵심 지표\n",
-  tg_format_table(metrics),
-  "\n\n🚩 Challenge Flags\n  • ...\n\n",
-  "🛡️ v6.1 Compliance\n  ✓ R4 / R2-C / GAP-1 / GAP-2\n\n",
-  "➡️ Next: ..."
-)
-tg_send_rich(msg)  # HTML parse_mode, 이모지 auto-validate
+stopifnot(isTRUE(res$ok))  # silent fail 방지
 ```
 
-**자가 체크리스트** (종료 전 필수):
-1. script 내 `tg_agent_brief()` **단일 호출 코드** 존재 (tg_send_rich 직접 조립 금지)
-2. Rscript 실행 시 `[tg_agent_brief] <agent> · <bytes> · ok=TRUE` 출력 확인
-3. emoji_min ≥ 5 (`tg_agent_brief(..., emoji_min = 5L)`)
-4. 지표 나열은 `type = "table"` 섹션 (df) 사용, `type = "text"` 내 raw sprintf 금지
-5. SKILL.md v3 `.claude/skills/telegram-protocol/SKILL.md` Read 의무
+## 자가 체크리스트 (종료 전 필수)
+
+1. **`tg_agent_brief()` 단일 호출만**. tg_send_rich/tg_send_photo/tg_send 직접 호출 = Hook deny + stop()
+2. **sections ≥4** nonempty (df 다행다열 / body≥50자 / items≥3 / kv≥3 named)
+3. **bytes ≥1200** (sections 4건 이상이면 자연스럽게 충족)
+4. **emoji_min ≥5** (default, 변경 금지)
+5. SKILL.md v4 `.claude/skills/telegram-protocol/SKILL.md` Read 의무
+6. 차트 첨부는 `charts = c(path1, path2)` 인자로만. `tg_send_photo()` 별도 호출 금지.
 </telegram_protocol>
 
 <spawn_prompt_guidelines version="v1.0" updated="2026-04-24">

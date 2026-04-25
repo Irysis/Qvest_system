@@ -64,7 +64,10 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
   - `hurdle_result.json` (백테스트 후)
   </artifacts>
   <telegram>
-  [Forge] STR_{id} 결과 + Grade/Score/SR/CAGR/MDD + 강점 1줄 + 약점 1줄 + tg_send_photo(equity_curve.png, annual_returns.png)
+  v4 ENFORCE — `tg_agent_brief(agent="Forge", ...)` 단일 호출만. 차트는 `charts = c("equity_curve.png", "annual_returns.png")` 인자 사용.
+  Sections (≥4): table(Grade/Score/SR/CAGR/MDD/IR) + text(강점 ≥50자) + bullet(약점 ≥3건) + kv(메타 ≥3개).
+  `tg_send_photo()` / `tg_send_rich()` / `tg_send()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
+  상세: `_shared_prefix.md::telegram_protocol` v4 + `.claude/skills/telegram-protocol/SKILL.md`.
   </telegram>
 </output_format>
 

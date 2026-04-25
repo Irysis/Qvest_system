@@ -1,0 +1,135 @@
+{
+  "wt_id": "WT-D20260425_005",
+  "backtest_run_at": "2026-04-25T09:23:16+0900",
+  "method_used": "ScoreMerged_MVO_lam2_psi03",
+  "full_sample_metrics": {
+    "CAGR": 12.1853,
+    "Vol": 19.2561,
+    "SR": 0.5418,
+    "MDD": -33.2965,
+    "IR": 0.5627,
+    "Harvey_t_NW": 0.8964,
+    "DSR": 0.982,
+    "n_periods": 91
+  },
+  "prelb_metrics": {
+    "CAGR": 12.1853,
+    "Vol": 19.2561,
+    "SR": 0.5418,
+    "MDD": -33.2965,
+    "IR": 0.5627,
+    "Harvey_t_NW": 0.8964,
+    "DSR": 0.982,
+    "NW_t_stat": 1.9591,
+    "n_periods": 91
+  },
+  "lockbox_metrics": {
+    "note": "Lockbox 미측정: weights_rolling 최대 2023-11-30. LB 2024-01-23~2026-01-23 범위 초과.",
+    "lb_prelb_ratio": {},
+    "status": "JUDGE_REQUIRED"
+  },
+  "regime_decomp": {
+    "SR_normal": 0.7013,
+    "SR_crisis": "NA",
+    "SR_transition": -0.9165,
+    "crisis_alpha_ann_pct": "NA",
+    "bad_normal_ic_ratio": 0.7168
+  },
+  "mega_baseline_comparison": {
+    "pg2_sr_delta": -0.6512,
+    "mega05_sr_delta": -0.7162,
+    "harvey_vs_mega03": -1.8976
+  },
+  "milestone_gates": {
+    "pre_lb_sr": {
+      "value": 0.5418,
+      "target": ">= 1.137",
+      "pass": false,
+      "note": "MEGA_ENS Pre-LB SR 갱신 목표"
+    },
+    "pre_lb_harvey_t_nw": {
+      "value": 0.8964,
+      "target": ">= 2.95",
+      "pass": false,
+      "note": "Harvey FF5 Newey-West t-stat 미돌파 gate",
+      "note_ff3": "FF3 t_NW=1.012 | CAPM t_NW=1.910",
+      "data_coverage": "FF5 2017+ only (44% of period)"
+    },
+    "pre_lb_mdd": {
+      "value": -33.3,
+      "target": ">= -25 (less severe)",
+      "pass": false,
+      "note": "Mega 전략 모두 -30% 초과 — MDD 개선 목표"
+    },
+    "pre_lb_ir": {
+      "value": 0.5627,
+      "target": ">= 0.50",
+      "pass": true,
+      "note": "Information Ratio vs KOSPI200"
+    },
+    "tdc_pairwise": {
+      "value": 0.1304,
+      "target": "<= 0.40",
+      "pass": true,
+      "note": "Alpha-side TDC PASS (risk 단계 이미 통과)"
+    },
+    "lb_prelb_ratio": {
+      "value": {},
+      "target": "<= 1.30",
+      "pass": {},
+      "note": "Lockbox 미측정 (weights_rolling 2023-11-30까지) — Judge 영역"
+    },
+    "normal_sr": {
+      "value": 0.7013,
+      "target": ">= 1.20",
+      "pass": false,
+      "note": "NORMAL regime SR (AX-001 강제)"
+    },
+    "crisis_sr": {
+      "value": "NA",
+      "target": ">= 4.0",
+      "pass": false,
+      "note": "CRISIS regime SR (AX-001 강제)"
+    },
+    "harvey_hard_cap": {
+      "value": 0.8964,
+      "target": ">= 2.0 (Harvey et al. 2016 t>3.0 ideal)",
+      "pass": false,
+      "note": "FF5 alpha t-stat (multiple testing awareness)"
+    }
+  },
+  "hard_pass_summary": {
+    "all_hard_pass": false,
+    "gates_checked": [
+      "pre_lb_sr",
+      "pre_lb_harvey_t_nw",
+      "pre_lb_mdd",
+      "pre_lb_ir",
+      "tdc_pairwise",
+      "normal_sr"
+    ],
+    "verdict": "MILESTONE_PARTIAL"
+  },
+  "start_hashes": {
+    "weights_rolling.parquet": "5533aad4fe916e3aa587278f1e55380f",
+    "alpha_scores_slotA.parquet": "0848bdddce7b2a7d12d48847890df607",
+    "alpha_scores_slotB.parquet": "d9dc1f6a706ef2c08b19a526c11cd179",
+    "alpha_scores_slotC.parquet": "b40575e3cfc7edb341580e4f2272bfde",
+    "covariance.parquet": "a90f754b4df58948665a5477e691b57c",
+    "alpha_package.json": "6ffa40c4ec14bca8d9720d59ff813d68",
+    "risk_package.json": "047a1cbcb5a3ad0229aefca68b7f7089",
+    "optimization_package.json": "6ac244cb8a4e4af0da2b4626188db918"
+  },
+  "ff5_data_coverage_note": "FF5(RMW/CMA): 2017-05~2023-11 40 obs only (44% of backtest). t_NW=0.896 FF3(MKT+SMB+HML): 2016-04~2023-11 46 obs. t_NW=1.012 CAPM(MKT only): 전체기간 91 obs. t_NW=1.910 FF5 데이터 부족으로 마일스톤 Harvey >= 2.95 측정 불가 (Judge 판단)",
+  "harvey_by_model": {
+    "FF5_t_NW": 0.8964,
+    "FF5_n_obs": 40,
+    "FF5_period": "2017-05 ~ 2023-11",
+    "FF3_t_NW": 1.0117,
+    "FF3_n_obs": 46,
+    "FF3_period": "2016-04 ~ 2023-11",
+    "CAPM_t_NW": 1.9097,
+    "CAPM_n_obs": 91,
+    "CAPM_period": "2008-01 ~ 2023-11"
+  }
+}

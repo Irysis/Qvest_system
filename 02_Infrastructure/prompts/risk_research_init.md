@@ -373,3 +373,35 @@ bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
 - `gerber_statistic_fast` (Gerber 2015 robust)
 - `stress_simulation_fast` (4-regime parallel Monte Carlo)
 </v61_rcpp_hotspots_risk>
+
+<telegram_protocol_v4 enforce="HOOK+STOP+SKILL" updated="2026-04-25">
+## Telegram Brief — v4 ENFORCE (반드시 준수)
+
+**완료 시 단일 호출**:
+```r
+source("02_Infrastructure/telegram/telegram_notify.R")
+res <- tg_agent_brief(
+  agent = "Risk",
+  title = "WT-{id} RISK_DONE — Σ {estimator} cond {n}",
+  sections = list(  # ≥4 nonempty (Hard validation, fail = stop())
+    list(emoji="🔬", heading="Σ Estimator 비교", type="table",
+         df=data.frame(Estimator=c(...), Cond=c(...), PSD=c(...),
+                       stringsAsFactors=FALSE)),  # nrow≥2 ncol≥2
+    list(emoji="🌪️", heading="Tail Risk + Stress", type="text",
+         body="..."),  # ≥50 chars
+    list(emoji="🚩", heading="Risk Flags", type="bullet",
+         items=c("...","...","...")),  # ≥3 items
+    list(emoji="🎛️", heading="AX-002 Compliance", type="kv",
+         kv=list(proxy_pct="...", min_eig="...", PSD="..."))  # ≥3 named
+  ),
+  emoji_min = 5L
+)
+stopifnot(isTRUE(res$ok))
+```
+
+**위반 차단** (3중 강제):
+- ❌ `tg_send_rich()` / `tg_send_photo()` / `tg_send()` 직접 호출 → **PreToolUse[Bash] Hook deny**
+- ❌ `bytes < 1200` / `sections < 4` → **R `stop()`**
+
+**상세**: `.claude/skills/telegram-protocol/SKILL.md` v4 ENFORCE + `02_Infrastructure/prompts/_shared_prefix.md::telegram_protocol`.
+</telegram_protocol_v4>

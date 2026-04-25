@@ -1,22 +1,42 @@
 ---
 name: telegram-protocol
-description: "QEPM Telegram 브리핑 v3 — 단일 진입점 tg_agent_brief() 강제. 모든 agent (Alpha/Risk/Optimizer/Forge/Judge/Governor/Q-Lead)는 이 함수 외 직접 조립 금지. auto_escape + auto_sanitize + emoji + Single-Dispatch + 모바일 guard 자동."
+description: "[ENFORCE-ONLY v4 2026-04-25] QEPM Telegram 브리핑 — 모든 agent는 tg_agent_brief() 외 직접 조립 금지 (PreToolUse[Bash] Hook 차단). 표 nrow≥2 ncol≥2 + emoji 5+ + sections 4+ + bytes ≥1200 hard validation. 직접 호출 시 stop() 발생 + Hook deny. 표/text/bullet/kv/code 5종 type 강제. Single-Dispatch + auto_escape + 모바일 guard 자동."
 ---
 
-# Telegram Protocol v3 — Single Entry Point SOT
+# Telegram Protocol v4 — ENFORCE-ONLY Single Entry Point
 
-**2026-04-24 전면 재작성**. 반복 발생한 렌더 깨짐 (HTML entity / CJK width / raw 부등호 / Single-Dispatch 위반)을 **단일 함수로 수렴** 시켜 영구 해결.
+**2026-04-25 v4 ENFORCE 강화** (사용자 불만 반복: 표 양식 누락 / emoji 빠짐 / 가독성 부족). v3 description-only 한계를 극복하여 **3중 강제** 도입:
 
-## 절대 규칙 (Level 0)
+1. **Hook 차단** (`02_Infrastructure/hooks/telegram_direct_call_guard.sh` PreToolUse[Bash]): tg_send/tg_send_rich/tg_send_photo 직접 Rscript 호출 즉시 deny.
+2. **함수 시그니처 stop()** (`tg_agent_brief()` v4): MIN_BYTES 1200 / MIN_SECTIONS 4 / type별 hard validation 실패 시 silent return → loud `stop()` 변환.
+3. **Skill description ENFORCE-ONLY**: 본 skill 전면 차단 정책 명시.
+
+**v3 (2026-04-24)**: 반복 발생한 렌더 깨짐 (HTML entity / CJK width / raw 부등호 / Single-Dispatch 위반)을 단일 함수로 수렴.
+
+## 절대 규칙 (Level 0, v4 ENFORCE)
 
 **모든 agent + Q-Lead + Scout은 `tg_agent_brief()` 함수만 사용한다.**
 
-- ❌ 직접 `tg_send_rich(msg)` 조립 금지
+- ❌ 직접 `tg_send_rich(msg)` 조립 금지 → **Hook deny + R stop()**
+- ❌ 직접 `tg_send_photo(path)` 단독 호출 금지 → 차트는 `charts=c(path1, path2)` 인자
 - ❌ 직접 `tg_format_table()` + `paste0(...)` 조립 금지
 - ❌ `tg_send(msg, parse_mode="HTML")` 수동 호출 금지
 - ✅ `source("02_Infrastructure/telegram/telegram_notify.R")` → `tg_agent_brief(...)`만
 
-이유: 반복 오류의 공통 근원은 caller가 sanitize/escape를 놓치는 것. 단일 함수가 전부 자동 처리.
+### Hard Validation (v4, fail = stop())
+
+| 검증 | 기준 | 위반 시 |
+|------|------|---------|
+| `bytes ≥ 1200` | 메시지 크기 (substantial brief 강제) | `stop()` |
+| `sections ≥ 4` | section 개수 (다양성 강제) | `stop()` |
+| `emoji ≥ 5` | emoji 다양성 (가독성) | warning + log |
+| `type="table"`: `nrow ≥ 2 && ncol ≥ 2` | 단행/단열 표 금지 | `stop()` |
+| `type="text"`: `nchar(body) ≥ 50` | 짧은 text는 bullet/table 사용 | `stop()` |
+| `type="bullet"`: `length(items) ≥ 3` | 1-2 items는 text 사용 | `stop()` |
+| `type="kv"`: named list, `length ≥ 3` | 키-값 쌍 (신규 v4) | `stop()` |
+| `type="code"`: `nchar(body) ≥ 20` | 너무 짧은 code 금지 | `stop()` |
+
+이유: 반복 오류의 공통 근원은 caller가 sanitize/escape를 놓치는 것. 단일 함수가 전부 자동 처리. v4부터는 silent skip을 loud stop으로 전환하여 caller가 즉시 인지 + 수정 강제.
 
 ## 함수 시그니처
 

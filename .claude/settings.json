@@ -165,6 +165,16 @@
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/covariance_freshness_gate.sh\" 2>>/tmp/cov_freshness.log || true"
           }
         ]
+      },
+      {
+        "_doc_telegram": "Block direct tg_send/tg_send_rich/tg_send_photo. Force tg_agent_brief() single entry point.",
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
+          }
+        ]
       }
     ],
     "PostToolUse": [

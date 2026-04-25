@@ -773,17 +773,26 @@ ic_comb_stats <- icir_calc(ic_combined_per_month)
 harvey_comb <- harvey_t(ic_combined_per_month)
 mono_comb <- mono_calc(ALL, "alpha_combined")
 
-# DSR estimate (Bailey-Lopez de Prado): Deflated SR with n_trials = 5 candidates × 3 slots ≈ 15
-n_trials <- 15L
-sr_estimate <- sqrt(12) * ic_comb_stats$rank_ic / sd(ic_combined_per_month$ic, na.rm = TRUE)
-# Approximation: DSR ~ (SR - E[SR_max]) / sigma_SR
-# E[SR_max(n)] under H0 (no skill): sqrt(2 * log(n)) (extreme value theory)
+# DSR estimate (Bailey-Lopez de Prado): Deflated SR with n_trials = 6 candidates (5 Slot C + 1 baseline)
+# IC monthly → annualized SR via sqrt(12); SR sigma per-month via 1/sqrt(T) for IID assumption
+# DSR formula (simplified Gaussian, no skew/kurt correction):
+#   DSR_z = (SR_obs - E[SR_max | n_trials, no_skill]) * sqrt(T - 1)
+#   E[SR_max | N] under H0 ≈ sqrt(2*log(N)) - 0.5*log(log(N))  (Mertens 2002; Bailey-Lopez de Prado 2014)
+n_trials <- 6L  # Slot C: 5 candidates considered + 1 EW baseline
+T_obs <- nrow(ic_combined_per_month)
+ic_sd <- sd(ic_combined_per_month$ic, na.rm = TRUE)
+sr_monthly <- ic_comb_stats$rank_ic / ic_sd  # monthly IR-style SR (Sharpe of IC time-series)
+sr_annualized <- sqrt(12) * sr_monthly
+# E[SR_max] = sqrt(2*log(N))
 e_sr_max <- sqrt(2 * log(n_trials))
-sigma_sr <- 1 / sqrt(nrow(ic_combined_per_month) - 1)
-dsr <- (sr_estimate - e_sr_max * sigma_sr) / sigma_sr
+# DSR-z = sqrt(T) * (sr_monthly - e_sr_max)  [where IC time-series SR is the test statistic]
+# But we want PROBABILITY DSR; report sr_monthly + e_sr_max gap directly (no Phi^-1 transform here)
+# Simplified Gaussian DSR (probability):
+dsr_z <- sqrt(T_obs - 1) * (sr_monthly - e_sr_max / sqrt(T_obs))
+dsr <- pnorm(dsr_z)  # Gaussian CDF approximation
 
-cat(sprintf("  Combined: IC %.4f / ICIR %.3f / Harvey t %.2f / SR_est %.3f / DSR %.3f\n",
-            ic_comb_stats$rank_ic, ic_comb_stats$icir, harvey_comb, sr_estimate, dsr))
+cat(sprintf("  Combined: IC %.4f / ICIR %.3f / Harvey t %.2f / SR_monthly %.3f / SR_ann %.3f / DSR_p %.3f / DSR_z %.2f\n",
+            ic_comb_stats$rank_ic, ic_comb_stats$icir, harvey_comb, sr_monthly, sr_annualized, dsr, dsr_z))
 
 # Challenge flags
 challenge_flags <- character(0)

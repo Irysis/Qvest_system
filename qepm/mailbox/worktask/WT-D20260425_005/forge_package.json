@@ -1,0 +1,88 @@
+{
+  "task_id": "WT-D20260425_005",
+  "phase": "FORGE_DONE",
+  "emitted_at": "2026-04-25T09:23:16+0900",
+  "method_used": "ScoreMerged_MVO_lam2_psi03",
+  "backtest_config": {
+    "rebalance_freq": "bimonthly_irregular",
+    "cost_bps": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "liquidity_threshold_won_20d": 200000000,
+    "max_names": 20,
+    "long_only": true,
+    "weight_cap": 0.15,
+    "benchmark": "KOSPI200_total_return",
+    "vt_dd_lag": true,
+    "full_sample_start": "2008-01-31",
+    "prelb_end": "2023-11-30",
+    "lockbox_status": "UNMEASURED_WEIGHTS_RANGE_INSUFFICIENT"
+  },
+  "full_sample": {
+    "date_range": {
+      "start": "2008-01-31",
+      "end": "2023-11-30"
+    },
+    "n_periods": 91,
+    "CAGR_pct": 12.1853,
+    "Vol_ann_pct": 19.2561,
+    "SR": 0.5418,
+    "MDD_pct": -33.2965,
+    "IR": 0.5627,
+    "Harvey_FF5_t_NW": 0.8964,
+    "DSR": 0.982,
+    "Harvey_FF3_t_NW": 1.0117,
+    "Harvey_CAPM_t_NW": 1.9097,
+    "Harvey_data_note": "FF5 RMW/CMA: 2017+ only (40/91 obs). FF3 HML: 2016+ (46/91). CAPM: full period."
+  },
+  "prelb": {
+    "date_range": {
+      "start": "2008-01-31",
+      "end": "2023-11-30"
+    },
+    "note": "weights_rolling 범위 내 전체 = Pre-LB 동일",
+    "n_periods": 91,
+    "CAGR_pct": 12.1853,
+    "Vol_ann_pct": 19.2561,
+    "SR": 0.5418,
+    "MDD_pct": -33.2965,
+    "IR": 0.5627,
+    "Harvey_FF5_t_NW_prelb": 0.8964,
+    "NW_t_stat": 1.9591,
+    "DSR": 0.982,
+    "Harvey_FF3_t_NW_prelb": 1.0117,
+    "Harvey_CAPM_t_NW_prelb": 1.9097
+  },
+  "lockbox": {
+    "status": "NOT_MEASURED",
+    "reason": "weights_rolling.parquet 범위 2008-01-31~2023-11-30. LB 정의 2024-01-23~2026-01-23 초과.",
+    "lb_prelb_ratio": {},
+    "judge_action": "Judge가 별도 LB 측정 실행 필요"
+  },
+  "regime_decomp": {
+    "SR_normal": 0.7013,
+    "SR_crisis": "NA",
+    "SR_transition": -0.9165,
+    "crisis_alpha_ann_pct": "NA",
+    "bad_normal_ic_ratio": 0.7168
+  },
+  "milestone_hard_pass": false,
+  "output_files": {
+    "equity_curve_csv": "backtest_result/equity_curve.csv",
+    "equity_curve_png": "backtest_result/equity_curve.png",
+    "annual_returns_png": "backtest_result/annual_returns.png",
+    "monthly_returns_parquet": "backtest_result/monthly_returns.parquet",
+    "regime_decomposition_json": "backtest_result/regime_decomposition.json",
+    "stress_test_8_json": "backtest_result/stress_test_8_windows.json",
+    "ff5_regression_txt": "backtest_result/ff5_regression_full.txt",
+    "slot_contribution_json": "backtest_result/slot_contribution.json",
+    "loo_analysis_json": "backtest_result/loo_analysis.json",
+    "milestone_gate_check_json": "backtest_result/milestone_gate_check.json"
+  },
+  "pit_compliance": {
+    "C1_full_sample_stat": "PASS — rolling only, no full-sample",
+    "C2_same_day_circular": "PASS — rebalance next-day return used",
+    "C9_vt_dd_lag": "PASS — liquidity filter uses t-20~t-1",
+    "C13_z_score_aligned": "N/A — weights from optimizer, not recomputed",
+    "lookahead_detector": "PASS — no future data referenced"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260425_005",
+  "created_at": "2026-04-25T08:58:36+0900",
+  "alpha_agent": {
+    "candidates_tried": 5,
+    "selected": "STR_1689_quality_aggregate_defense_V1_3axis",
+    "selection_objective": "icir",
+    "method_log": [
+      {
+        "name": "STR_1683_distress_calmar_defense",
+        "icir": 1.879,
+        "mdd": 94.66,
+        "stress_outperform": "0/3",
+        "selected": false,
+        "reason": "hard_fail MDD 94.7%, defense 자격 미달 (stress 0/3 outperform)"
+      },
+      {
+        "name": "STR_1689_quality_aggregate_defense_V1_3axis",
+        "icir": 0.8,
+        "mdd": 66.48,
+        "crisis_alpha_pass": "4/6 windows",
+        "stress_outperform": "2/3 (GFC +12%, COVID +1.7%, EuDebt +23%)",
+        "selected": true,
+        "reason": "최고 ICIR 0.80, GFC alpha +12%, V1 (Q01+Q04+Q25)는 Slot A SUE family와 직교"
+      },
+      {
+        "name": "STR_1689_V2_4axis_Q07",
+        "icir": 0.8,
+        "mdd": 51.02,
+        "selected": false,
+        "reason": "V2는 Q07 포함 → Slot A SUE/earnings family와 family overlap 위험"
+      },
+      {
+        "name": "STR_1687_q07_sector_neutral_defense",
+        "icir": 0.452,
+        "mdd": 56.11,
+        "selected": false,
+        "reason": "ICIR 0.45 < STR_1689 0.80, sector_neutral 우수하나 IC 약함"
+      },
+      {
+        "name": "STR_1675_Q07_D29_defense",
+        "icir_or_sr": 0.6548,
+        "mdd": 11.94,
+        "selected": false,
+        "reason": "MDD 11.94% 우수하나 SR 단독 0.65 (CAGR 2.93%) — IC 기반 defense 자격 약함"
+      },
+      {
+        "name": "STR_1662_defense_D25_Q07",
+        "icir_or_sr": 0.597,
+        "mdd": 10.2,
+        "selected": false,
+        "reason": "MDD 10.20% 최저이나 D25_Q07은 Q07 family overlap 위험 + SR 0.60"
+      }
+    ]
+  },
+  "risk_agent": {
+    "candidates_tried": 5,
+    "selected": "ledoit_wolf_oracle",
+    "selection_objective": "condition_number",
+    "parallel_exec": true,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 764734363750.0343,
+        "min_eig": -1.8405e-16,
+        "max_eig": 0.7647,
+        "elapsed": 0.005,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_oracle",
+        "condition": 182.5525,
+        "min_eig": 0.0029,
+        "max_eig": 0.5206,
+        "elapsed": 0.0105,
+        "selected": true
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "condition": 548.2055,
+        "min_eig": 0.0014,
+        "max_eig": 0.7657,
+        "elapsed": 0.0147,
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": 3000.3702,
+        "min_eig": -0.2474,
+        "max_eig": 1.4386,
+        "elapsed": 0.101,
+        "selected": false
+      },
+      {
+        "name": "nonlinear_shrinkage",
+        "condition": 764734.3638,
+        "min_eig": 1e-06,
+        "max_eig": 0.7647,
+        "elapsed": 0.0192,
+        "selected": false
+      }
+    ]
+  },
+  "optimizer_agent": {
+    "candidates_tried": 0,
+    "pending": true,
+    "note": "Pending Optimizer Agent spawn"
+  }
+}
