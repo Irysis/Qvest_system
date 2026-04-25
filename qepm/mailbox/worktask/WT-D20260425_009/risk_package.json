@@ -25,19 +25,21 @@
     }
   },
   "risk_summary": {
-    "top_common_risks": ["Idiosyncratic (82%)", "SMB (3.7%)", "RMW (3.7%)", "MKT (3.4%)", "HML (2.7%)", "WML (2.3%)", "CMA (2.3%)"],
+    "top_common_risks": ["Idiosyncratic (70.7%)", "MKT (12.8%)", "SMB (6.9%)", "HML (2.7%)", "RMW (2.5%)", "WML (2.3%)", "CMA (2.1%)"],
     "crowding_flags": [
-      "Top-10 alpha names HHI = 0.48 (>0.20 concentration)"
+      "Top-10 alpha names HHI = 0.47 (>0.20 concentration)"
     ],
     "liquidity_flags": [
       "Top-alpha low-liquidity (<1B daily): A084870,A205470,A254120"
     ],
     "stress_tests": {
-      "market_down_5": -0.0014,
-      "market_down_10": -0.0028,
-      "value_crash": "NA",
-      "momentum_rev": "NA",
-      "size_squeeze": "NA",
+      "market_down_5": -0.0344,
+      "market_down_10": -0.0688,
+      "value_crash": 0.0117,
+      "momentum_rev": 0.0036,
+      "size_squeeze": -0.062,
+      "quality_rotate": -0.0151,
+      "invest_squeeze": -0.0049,
       "Terror_9_11": 0.2726,
       "GFC_2008": -0.3803,
       "EuDebt_2011": -0.1309,
@@ -49,14 +51,14 @@
     }
   },
   "diagnostics": {
-    "condition_number": 498.8,
-    "min_eigenvalue": 0.0002,
+    "condition_number": 500,
+    "min_eigenvalue": 0.0172,
     "psd": true,
     "shrinkage_used": true,
     "shrinkage_method": "ledoit_wolf",
     "factor_cov_estimator": "ledoit_wolf_constcor",
-    "ridge_lambda": 0.0002,
-    "n_tickers_in_sigma": 2299,
+    "ridge_lambda": 0.0164,
+    "n_tickers_in_sigma": 2300,
     "factor_correlation_warnings": [],
     "tdc_summary": {
       "MKT_vs_SMB": 0,
@@ -76,8 +78,8 @@
       "RMW_vs_CMA": 0
     },
     "regime_correlation_ref": "stage_artifacts/WT-D20260425_009/regime_correlation.parquet",
-    "systematic_variance_share": 0.126,
-    "idiosyncratic_variance_share": 0.874
+    "systematic_variance_share": 0.154,
+    "idiosyncratic_variance_share": 0.846
   },
   "selection_objective": "shrinkage_quality",
   "method_shopping_log": {
@@ -112,12 +114,12 @@
     {
       "id": "RF-R1",
       "severity": "HIGH",
-      "description": "Top common risk Idiosyncratic = 82.0% (>40% concentration)."
+      "description": "Top common risk Idiosyncratic = 70.7% (>40% concentration)."
     },
     {
       "id": "RF-R3",
       "severity": "MEDIUM",
-      "description": "Top-10 alpha names HHI = 0.48 (>0.20 concentration)"
+      "description": "Top-10 alpha names HHI = 0.47 (>0.20 concentration)"
     }
   ]
 }

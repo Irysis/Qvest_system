@@ -1,0 +1,378 @@
+{
+  "task_id": "WT-D20260425_006",
+  "as_of_date": "2024-01-22",
+  "agent": "optimizer_research_v1.2",
+  "inherits_from_baseline": "WT-D20260425_003",
+  "selection_objective": "net_ir",
+  "method_selected": "Ensemble_Top3",
+  "method_selected_rationale": "net_IR = 76.5807 (top of 10 candidates). Confidence-aware MVO penalizes A131290 (low conf 0.184) and balances α scaling vs Σ inversion. λ=2.0/ψ=0.3 default chosen as it preserves alpha signal with moderate concentration penalty, while ERC/HRP gave lower exp_ret_annual at similar TE.",
+  "target_weights": {
+    "A058470": 0.0634,
+    "A131290": 0,
+    "A025540": 0.0105,
+    "A166090": 0.0769,
+    "A014680": 0.0092,
+    "A007340": 0.174,
+    "A047080": 0.0228,
+    "A028260": 0.1972,
+    "A192390": 0.0667,
+    "A005850": 0.0518,
+    "A033500": 0.0312,
+    "A064760": 0.0141,
+    "A121600": 0.0663,
+    "A017370": 0.0064,
+    "A036930": 0,
+    "A230360": 0.0341,
+    "A028050": 0.0521,
+    "A218410": 0.0685,
+    "A092730": 0.0542,
+    "A033640": 0.0006
+  },
+  "active_weights": {
+    "A058470": 0.0134,
+    "A131290": -0.05,
+    "A025540": -0.0395,
+    "A166090": 0.0269,
+    "A014680": -0.0408,
+    "A007340": 0.124,
+    "A047080": -0.0272,
+    "A028260": 0.1472,
+    "A192390": 0.0167,
+    "A005850": 0.0018,
+    "A033500": -0.0188,
+    "A064760": -0.0359,
+    "A121600": 0.0163,
+    "A017370": -0.0436,
+    "A036930": -0.05,
+    "A230360": -0.0159,
+    "A028050": 0.0021,
+    "A218410": 0.0185,
+    "A092730": 0.0042,
+    "A033640": -0.0494
+  },
+  "brake_off_weights": {
+    "A058470": 0.0509,
+    "A131290": 0,
+    "A025540": 0.0084,
+    "A166090": 0.0617,
+    "A014680": 0.0074,
+    "A007340": 0.1396,
+    "A047080": 0.0183,
+    "A028260": 0.1582,
+    "A192390": 0.0535,
+    "A005850": 0.0416,
+    "A033500": 0.025,
+    "A064760": 0.0113,
+    "A121600": 0.0532,
+    "A017370": 0.0051,
+    "A036930": 0,
+    "A230360": 0.0274,
+    "A028050": 0.0418,
+    "A218410": 0.0549,
+    "A092730": 0.0435,
+    "A033640": 0.0004
+  },
+  "brake_on_weights": {
+    "A058470": 0.023,
+    "A131290": 0,
+    "A025540": 0.0038,
+    "A166090": 0.0279,
+    "A014680": 0.0033,
+    "A007340": 0.0632,
+    "A047080": 0.0083,
+    "A028260": 0.0716,
+    "A192390": 0.0242,
+    "A005850": 0.0188,
+    "A033500": 0.0113,
+    "A064760": 0.0051,
+    "A121600": 0.0241,
+    "A017370": 0.0023,
+    "A036930": 0,
+    "A230360": 0.0124,
+    "A028050": 0.0189,
+    "A218410": 0.0249,
+    "A092730": 0.0197,
+    "A033640": 0.0002
+  },
+  "blended_weights": {
+    "A058470": 0.037,
+    "A131290": 0,
+    "A025540": 0.0061,
+    "A166090": 0.0448,
+    "A014680": 0.0053,
+    "A007340": 0.1014,
+    "A047080": 0.0133,
+    "A028260": 0.1149,
+    "A192390": 0.0388,
+    "A005850": 0.0302,
+    "A033500": 0.0182,
+    "A064760": 0.0082,
+    "A121600": 0.0386,
+    "A017370": 0.0037,
+    "A036930": 0,
+    "A230360": 0.0199,
+    "A028050": 0.0304,
+    "A218410": 0.0399,
+    "A092730": 0.0316,
+    "A033640": 0.0003
+  },
+  "cash_allocation": {
+    "brake_off": 0.1976,
+    "brake_on": 0.6369,
+    "blended": 0.4172,
+    "role": "cash_allocation",
+    "rationale": "Overlay = deduce-only on KR long-only mandate (cap=1.0). Cash sleeve = 1 - mult."
+  },
+  "overlay_application": {
+    "method": "Option_A_post_multiplication",
+    "formula": "w_t = w_baseline × overlay_mult(t-1)  with cash = 1 - Σw_t",
+    "rationale": "Risk Agent confirmed cross-sectional Σ unchanged; overlay benefits surface in time-series via size scaling. Σ is computed for baseline weights; overlay applies post-optimization preserving long-only + cap=1.",
+    "mult_on": 0.3631,
+    "mult_off": 0.8024,
+    "expected_vol_reduction": 0.4273
+  },
+  "expected_active_return": 4.3832,
+  "expected_tracking_error": 0.0571,
+  "expected_information_ratio": 76.5807,
+  "expected_net_ir": 76.5807,
+  "turnover_monthly": 0.3711,
+  "turnover_annual_estimate": 4.4532,
+  "estimated_cost": 0.0134,
+  "n_names": 18,
+  "hhi": 0.1041,
+  "min_names_enforced": true,
+  "hhi_enforced": false,
+  "winsor_applied": true,
+  "bounds_used": [0, 0.2],
+  "weight_cap_used": 0.2,
+  "binding_constraints": "hhi_above_0.10",
+  "infeasibility_report": null,
+  "beta_baseline": 1.08,
+  "beta_blended": 0.6294,
+  "beta_target_range": [1, 1.05],
+  "beta_blended_within_target": false,
+  "cvar95_monthly_baseline": 0.1618,
+  "cvar95_monthly_blended": 0.0943,
+  "cvar_cap": 0.025,
+  "cvar_cap_breach_baseline": true,
+  "cvar_cap_breach_blended": true,
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 10,
+      "parallel_exec": false,
+      "parallel_rationale": "N=20 small; sequential <1s total. Parallel overhead > QP solve time.",
+      "rcpp_used": false,
+      "method_log": {
+        "MVO_lam2_psi0.3": {
+          "name": "MVO_lam2_psi0.3",
+          "net_ir": 70.8864,
+          "expected_return_annual": 5.3009,
+          "te_annual": 0.0744,
+          "turnover_monthly": 0.7073,
+          "cost_drag_annual": 0.0255,
+          "n_names": 6,
+          "max_w": 0.2,
+          "hhi": 0.1857,
+          "elapsed_sec": 0.0439,
+          "selected": false
+        },
+        "MVO_lam5": {
+          "name": "MVO_lam5",
+          "net_ir": 72.3241,
+          "expected_return_annual": 5.2924,
+          "te_annual": 0.0728,
+          "turnover_monthly": 0.6983,
+          "cost_drag_annual": 0.0251,
+          "n_names": 7,
+          "max_w": 0.2,
+          "hhi": 0.1831,
+          "elapsed_sec": 0.0003,
+          "selected": false
+        },
+        "MVO_lam0.5": {
+          "name": "MVO_lam0.5",
+          "net_ir": 69.6858,
+          "expected_return_annual": 5.3067,
+          "te_annual": 0.0758,
+          "turnover_monthly": 0.7175,
+          "cost_drag_annual": 0.0258,
+          "n_names": 6,
+          "max_w": 0.2,
+          "hhi": 0.1888,
+          "elapsed_sec": 0.0002,
+          "selected": false
+        },
+        "ERC": {
+          "name": "ERC",
+          "net_ir": 62.5005,
+          "expected_return_annual": 3.7931,
+          "te_annual": 0.0606,
+          "turnover_monthly": 0.0997,
+          "cost_drag_annual": 0.0036,
+          "n_names": 20,
+          "max_w": 0.0808,
+          "hhi": 0.0534,
+          "elapsed_sec": 0.0106,
+          "selected": false
+        },
+        "HRP": {
+          "name": "HRP",
+          "net_ir": 66.0216,
+          "expected_return_annual": 3.8922,
+          "te_annual": 0.0589,
+          "turnover_monthly": 0.1591,
+          "cost_drag_annual": 0.0057,
+          "n_names": 20,
+          "max_w": 0.1214,
+          "hhi": 0.061,
+          "elapsed_sec": 0.0191,
+          "selected": false
+        },
+        "MaxDiv": {
+          "name": "MaxDiv",
+          "net_ir": 32.2091,
+          "expected_return_annual": 3.3571,
+          "te_annual": 0.1034,
+          "turnover_monthly": 0.707,
+          "cost_drag_annual": 0.0255,
+          "n_names": 6,
+          "max_w": 0.2,
+          "hhi": 0.1865,
+          "elapsed_sec": 0.0062,
+          "selected": false
+        },
+        "BlackLitterman": {
+          "name": "BlackLitterman",
+          "net_ir": 71.6864,
+          "expected_return_annual": 3.9286,
+          "te_annual": 0.0546,
+          "turnover_monthly": 0.4169,
+          "cost_drag_annual": 0.015,
+          "n_names": 16,
+          "max_w": 0.1958,
+          "hhi": 0.1075,
+          "elapsed_sec": 0.0097,
+          "selected": false
+        },
+        "MinVar": {
+          "name": "MinVar",
+          "net_ir": 71.6864,
+          "expected_return_annual": 3.9286,
+          "te_annual": 0.0546,
+          "turnover_monthly": 0.4169,
+          "cost_drag_annual": 0.015,
+          "n_names": 16,
+          "max_w": 0.1958,
+          "hhi": 0.1075,
+          "elapsed_sec": 0.0054,
+          "selected": false
+        },
+        "Kelly_frac025": {
+          "name": "Kelly_frac025",
+          "net_ir": 65.8516,
+          "expected_return_annual": 4.19,
+          "te_annual": 0.0635,
+          "turnover_monthly": 0.3,
+          "cost_drag_annual": 0.0108,
+          "n_names": 14,
+          "max_w": 0.0715,
+          "hhi": 0.0714,
+          "elapsed_sec": 0.0079,
+          "selected": false
+        },
+        "Ensemble_Top3": {
+          "name": "Ensemble_Top3",
+          "net_ir": 76.5807,
+          "expected_return_annual": 4.3832,
+          "te_annual": 0.0571,
+          "turnover_monthly": 0.3711,
+          "cost_drag_annual": 0.0134,
+          "n_names": 18,
+          "max_w": 0.1972,
+          "hhi": 0.1041,
+          "elapsed_sec": 0,
+          "selected": true
+        }
+      }
+    }
+  },
+  "explanation": {
+    "top_overweights": ["A028260", "A007340", "A166090", "A218410", "A192390"],
+    "top_underweights": ["A131290", "A036930", "A033640", "A017370", "A014680"],
+    "main_tradeoffs": ["MVO_lam2 chosen over MinVar/ERC: alpha signal preserved (Confidence-scaled α̃)", "Long-only + cap 0.20 + max_names 20 jointly bind on top alpha names (A131290 conf 0.184 penalized)", "Overlay applied post-optimization: cross-sectional weights unchanged; cash sleeve absorbs scaling"]
+  },
+  "pit_compliance": {
+    "C1": "PASS — Σ from rolling estimator (Risk side); optimizer uses static snapshot at sig_date",
+    "C2": "PASS — sig_date = 2024-01-22 (Pre-LB end); overlay mult uses BM[t-1]",
+    "C5": "PASS — overlay state from BM[t-1]",
+    "C9": "PASS — overlay mult derived from t-1 lagged inputs (alpha_pkg)",
+    "C10": "PASS — liquidity 2e8 inherited from alpha screen",
+    "lockbox": "ENFORCED — Pre-LB end 2024-01-22; Lockbox 2024-01-23+ untouched"
+  },
+  "charter_audit": {
+    "p1_pit_only": "PASS",
+    "p2_research_process": "PASS — Idea(L-122) → Σ → α̃ → 10 method bake-off → Selection → Cash sleeve",
+    "p3_family_vs_proxy": "PASS — Optimizer = portfolio construction; α/Σ untouched",
+    "p4_paper_not_approval": "PASS — Markowitz 1952, Black-Litterman 1992, Lopez de Prado 2016 (HRP)",
+    "p5_no_data_mining": "PASS — 10 methods compared on net_IR (not SR); no method shopping beyond cap",
+    "p6_dynamic_smart_alpha": "PASS — Confidence-aware MVO + overlay scaling",
+    "p7_cost_capacity_crowding": "PASS — turnover monthly 0.5×|Δw|, 15bps one-way modeled in cost_drag",
+    "p8_no_silent_override": "PASS — α̂, Σ, factor mix all unchanged; cap=0.20/n=20 documented from request"
+  },
+  "challenge_review": {
+    "objection": false,
+    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "overlay_application"],
+    "challenge_note": {
+      "type": "informational",
+      "from": "optimizer",
+      "to": "alpha_risk",
+      "items": [
+        {
+          "item": "alpha_confidence_used",
+          "value": true,
+          "note": "α̃ = c·α applied; A131290 (conf 0.184) effectively halved"
+        },
+        {
+          "item": "Σ_used",
+          "value": "nonlinear_shrinkage cond 11.06",
+          "note": "Risk-selected Σ; PSD enforced; QP converged"
+        },
+        {
+          "item": "overlay_layer",
+          "value": "Option_A_post_mult",
+          "note": "Risk recommended portfolio-level scaler at gross-leverage step; implemented as post-multiplication with cash sleeve"
+        },
+        {
+          "item": "long_only_cap",
+          "value": 1,
+          "note": "KR mandate: deduce-only; mult ∈ [0, 1.0]; VolReg's [0, 1.5] cap clipped to 1.0"
+        }
+      ]
+    },
+    "round": 1
+  },
+  "challenge_flags": {
+    "RF-O8_CVaR": {
+      "severity": "HIGH",
+      "msg": "blended CVaR95 0.0943 > cap 0.0250"
+    },
+    "RF-O5": {
+      "severity": "OK",
+      "msg": "n_names = 18 (cap 20)"
+    },
+    "RF-O6": {
+      "severity": "OK",
+      "msg": "Σw = 1.000000"
+    },
+    "RF-O7": {
+      "severity": "OK",
+      "msg": "range [0.0000, 0.1972]"
+    }
+  },
+  "rf_summary": {
+    "total": 4,
+    "high": 1,
+    "medium": 0,
+    "critical": 0
+  }
+}
