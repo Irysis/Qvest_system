@@ -51,23 +51,27 @@ setkey(RAW_ME, Date, Ticker)
 
 cat("  RAWDATA: ", nrow(RAW_ME), "월말 obs, ", uniqueN(RAW_ME$Ticker), "tickers\n")
 
-# ============ 2. DART TTM 로드 (fundamentals long format) ============
-cat("[2] DART TTM 로드...\n")
-TTM <- as.data.table(read_parquet(".cache/fundamental_xlsx_ttm.parquet"))
-TTM[, Period_Date := as.Date(Period_Date)]
-TTM[, Factor_Date := as.Date(Factor_Date)]
-TTM[, Period := as.character(Period)]
+# ============ 2. Fundamentals 로드 (merged: XLSX 2000-2014 + DART 2015+) ============
+cat("[2] Fundamentals 로드 (XLSX + DART merged)...\n")
+FM <- as.data.table(read_parquet(".cache/fundamental_merged.parquet"))
+FM[, Period_Date := as.Date(Period_Date)]
+FM[, Factor_Date := as.Date(Factor_Date)]
+FM[, Period := as.character(Period)]
 
 # 연간 (12월 결산)만 추출 — Period 끝자리 12 (예: 200312, 200412)
-TTM[, FiscalMonth := substr(Period, 5, 6)]
-TTM_ANN <- TTM[FiscalMonth == "12"]
-cat("  TTM annual: ", nrow(TTM_ANN), "obs\n")
+FM[, FiscalMonth := substr(Period, 5, 6)]
+FM_ANN <- FM[FiscalMonth == "12"]
+cat("  Annual obs: ", nrow(FM_ANN), "(XLSX:", sum(FM_ANN$Source == "XLSX"), ", DART:", sum(FM_ANN$Source == "DART"), ")\n")
 
-# Wide cast — Item별 분리
+# Wide cast — Item별 분리 (Value만 사용; merged는 TTM_Value 컬럼 부재)
 get_item_wide <- function(item) {
-  d <- TTM_ANN[Item == item, .(Ticker, Period_Date, use_val = ifelse(!is.na(TTM_Value), TTM_Value, Value))]
-  setnames(d, "use_val", item)
-  d
+  d <- FM_ANN[Item == item, .(Ticker, Period_Date, Source, val = Value)]
+  # 동일 Ticker-Period 중 DART 우선 (priority: DART > XLSX, 단 XLSX는 2014까지만 가용)
+  setorder(d, Ticker, Period_Date, -Source)  # DART 알파벳상 D > X
+  d_uniq <- d[, .SD[1], by = .(Ticker, Period_Date)]
+  d_uniq[, Source := NULL]
+  setnames(d_uniq, "val", item)
+  d_uniq
 }
 
 ASSETS <- get_item_wide("TotalAssets")
@@ -263,6 +267,10 @@ for (i in seq_along(sig_dates)) {
                                  i, length(sig_dates), as.character(sd), fy, nrow(port_uni)))
 }
 
+# Align Date to existing kr_factor_returns.parquet's month-end (last trading date per month)
+# (필요시) — 우선 직접 비교용으로 v2 그대로 두고, merge 시 month-mapping 적용
+# Existing kr_factor_returns.parquet의 Date도 RAW_ME 기반이므로 일치해야 정상.
+
 ff5_v2 <- rbindlist(results, fill = TRUE)
 cat("[4] 6-portfolio formation 완료: ", nrow(ff5_v2), "월 산출\n")
 cat("    HML  range: ", as.character(min(ff5_v2$Date)), "~", as.character(max(ff5_v2$Date)), "\n")
@@ -270,15 +278,19 @@ cat("    HML  mean : ", round(mean(ff5_v2$HML, na.rm=TRUE)*100, 4), "% / sd: ", 
 cat("    RMW  mean : ", round(mean(ff5_v2$RMW, na.rm=TRUE)*100, 4), "% / sd: ", round(sd(ff5_v2$RMW, na.rm=TRUE)*100, 4), "%\n")
 cat("    CMA  mean : ", round(mean(ff5_v2$CMA, na.rm=TRUE)*100, 4), "% / sd: ", round(sd(ff5_v2$CMA, na.rm=TRUE)*100, 4), "%\n")
 
-# ============ 5. 기존 MKT/SMB/WML 병합 ============
+# ============ 5. 기존 MKT/SMB/WML 병합 (Date를 calendar month-end로 정규화) ============
 cat("[5] 기존 MKT/SMB/WML 병합...\n")
 ex <- as.data.table(read_parquet(".cache/kr_factor_returns.parquet"))
 ex[, Date := as.Date(Date)]
+ex[, YM := format(Date, "%Y-%m")]
+# v2의 ret_date도 YM 기반 매칭
+ff5_v2[, YM := format(Date, "%Y-%m")]
 
-# 합치기: ff5_v2의 Date는 ret_date (월말). ex와 같은 grain.
-combined <- merge(ex[, .(Date, MKT, SMB, WML)],
-                  ff5_v2[, .(Date, HML_v2 = HML, RMW_v2 = RMW, CMA_v2 = CMA, n_obs_meta = n_uni)],
-                  by = "Date", all.x = TRUE)
+# 합치기: YM 기반 inner-join 후 ex의 Date를 보존 (canonical)
+combined <- merge(ex[, .(YM, Date, MKT, SMB, WML)],
+                  ff5_v2[, .(YM, HML_v2 = HML, RMW_v2 = RMW, CMA_v2 = CMA, n_obs_meta = n_uni)],
+                  by = "YM", all.x = TRUE)
+combined[, YM := NULL]
 
 # 결과: HML/RMW/CMA는 v2로 대체, MKT/SMB/WML은 기존 사용
 combined[, HML := HML_v2]

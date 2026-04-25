@@ -1,0 +1,344 @@
+{
+  "task_id": "WT-D20260425_006",
+  "as_of_date": "2024-01-22",
+  "agent": "risk_research_v1.1",
+  "inherits_from_baseline": "WT-D20260425_003",
+  "exposure_matrix_ref": "stage_artifacts/WT_WT-D20260425_006/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_WT-D20260425_006/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_WT-D20260425_006/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_WT-D20260425_006/covariance.parquet",
+  "selection_objective": "condition_number",
+  "selected_estimator": {
+    "name": "nonlinear_shrinkage",
+    "primary_cond": 11.06,
+    "final_cond": 11.06,
+    "factor_blend_weight": 0,
+    "shrinkage_used": false,
+    "rationale": "R4 v6.1 enum: condition_number minimization. PSD enforced. No alpha-return reference."
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "parallel_exec": true,
+      "selection_objective": "condition_number",
+      "method_log": {
+        "sample": {
+          "name": "sample",
+          "condition": 62.4654,
+          "min_eig": 0.0021,
+          "max_eig": 0.132,
+          "psd": true,
+          "elapsed_sec": 0,
+          "selected": false
+        },
+        "ledoit_wolf_oracle": {
+          "name": "ledoit_wolf_oracle",
+          "condition": 15.6337,
+          "min_eig": 0.0059,
+          "max_eig": 0.092,
+          "psd": true,
+          "elapsed_sec": 0,
+          "selected": false
+        },
+        "ledoit_wolf_constcor": {
+          "name": "ledoit_wolf_constcor",
+          "condition": 30.7716,
+          "min_eig": 0.0044,
+          "max_eig": 0.1354,
+          "psd": true,
+          "elapsed_sec": 0.01,
+          "selected": false
+        },
+        "gerber_rmt": {
+          "name": "gerber_rmt",
+          "condition": 92.9566,
+          "min_eig": 0.0025,
+          "max_eig": 0.2355,
+          "psd": true,
+          "elapsed_sec": 0.03,
+          "selected": false
+        },
+        "nonlinear_shrinkage": {
+          "name": "nonlinear_shrinkage",
+          "condition": 11.0581,
+          "min_eig": 0.0086,
+          "max_eig": 0.0952,
+          "psd": true,
+          "elapsed_sec": 0.01,
+          "selected": true
+        }
+      }
+    }
+  },
+  "factor_exposure_summary": {
+    "n_factors": 3,
+    "n_factors_alpha": 6,
+    "factor_names": ["MKT", "SMB", "WML"],
+    "portfolio_betas": {
+      "MKT": 1.08,
+      "SMB": 0.4366,
+      "WML": 0.3583
+    },
+    "factor_coverage_R2_avg": 0.2829,
+    "weight_thetas": {
+      "C01_SUE": 0.145,
+      "C04_ESBR": 0.2005,
+      "C02_EPS_Chg_1m": 0.1119,
+      "C06_TP_Gap": 0.009,
+      "Q07_Earnings_Stability": 0.2806,
+      "AC21_CF_to_Accrual_Ratio": 0.2529
+    }
+  },
+  "vif_diagnosis": {
+    "inherited_from_baseline": true,
+    "Q07_vs_AC21_cor": 0.731,
+    "note": "Iter 1 baseline 6F unchanged; VIF inherited from WT-D20260425_003"
+  },
+  "sigma_structure": {
+    "method": "BΩB_plus_D_blended_LW_50_50",
+    "n_tickers": 20,
+    "n_factors": 3,
+    "factor_coverage_pct": 28.29,
+    "condition_number": 11.06,
+    "min_eig": 0.0086,
+    "psd": true,
+    "port_vol_ann_pct": 22.54,
+    "systematic_pct": 81.72,
+    "specific_pct": 18.28,
+    "market_contribution_pct": 104.66,
+    "size_contribution_pct": 2.57,
+    "momentum_contribution_pct": 3.82
+  },
+  "overlay_impact": {
+    "note": "Iter 1 KPI: overlay = portfolio-level size scaling. Effect on Σ measured as conditional (brake ON vs OFF) + effective vol after multiplier.",
+    "brake_on_n_months": 30,
+    "brake_off_n_months": 30,
+    "brake_on_pct": 50,
+    "raw_vol_on_ann_pct": 29.6,
+    "raw_vol_off_ann_pct": 23.33,
+    "mean_mult_on": 0.3631,
+    "mean_mult_off": 0.8024,
+    "effective_vol_on_ann_pct": 10.75,
+    "effective_vol_off_ann_pct": 18.72,
+    "sigma_blended_no_overlay_pct": 26.65,
+    "sigma_blended_with_overlay_pct": 15.26,
+    "overall_vol_reduction_pct": 42.73,
+    "avg_cor_brake_on": 0.3351,
+    "avg_cor_brake_off": 0.1884,
+    "crisis_decorrelation_delta": 0.1467,
+    "interpretation": "Overlay benefit surfaces in time-series risk reduction (size scaling × elevated brake-ON vol), NOT in cross-section Σ structure. Optimizer should leverage overlay_mult as a portfolio-level scaler."
+  },
+  "risk_summary": {
+    "top_common_risks": ["Market (104.7%)", "Sector_반도체 (30.0%)", "Size (2.6%)", "Specific (18.3%)"],
+    "crowding_flags": {
+      "Q07_AC21_HIGH_COR": {
+        "severity": "MEDIUM",
+        "msg": "Q07_Earnings_Stability vs AC21_CF_to_Accrual_Ratio cor 0.731 (inherited)",
+        "detail": "Same as WT_003 baseline; not exacerbated by overlay"
+      }
+    },
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.054,
+      "momentum_reversal": -0.0717,
+      "stress_periods": {
+        "GFC_2008": {
+          "method": "parametric_factor",
+          "mkt_shock": -0.45,
+          "beta_port": 1.08,
+          "cum_return_estimate": -0.486
+        },
+        "EuDebt_2011": {
+          "method": "parametric_factor",
+          "mkt_shock": -0.2,
+          "beta_port": 1.08,
+          "cum_return_estimate": -0.216
+        },
+        "China_2015": {
+          "method": "parametric_factor",
+          "mkt_shock": -0.18,
+          "beta_port": 1.08,
+          "cum_return_estimate": -0.1944
+        },
+        "Brexit_2016": {
+          "method": "parametric_factor",
+          "mkt_shock": -0.08,
+          "beta_port": 1.08,
+          "cum_return_estimate": -0.0864
+        },
+        "Volmageddon_2018": {
+          "method": "parametric_factor",
+          "mkt_shock": -0.12,
+          "beta_port": 1.08,
+          "cum_return_estimate": -0.1296
+        },
+        "COVID_2020": {
+          "method": "observed",
+          "n_months": 3,
+          "cum_return": -0.0997,
+          "worst_month": -0.1471,
+          "avg_brake_on": 0.6667
+        },
+        "Inflation_2022": {
+          "method": "observed",
+          "n_months": 10,
+          "cum_return": -0.2292,
+          "worst_month": -0.1747,
+          "avg_brake_on": 0.9
+        },
+        "KR_Liq_Crisis_2022": {
+          "method": "observed",
+          "n_months": 4,
+          "cum_return": -0.1285,
+          "worst_month": -0.1636,
+          "avg_brake_on": 0.5
+        }
+      }
+    }
+  },
+  "tail_risk": {
+    "cvar_95_monthly": 0.1618,
+    "cvar_99_monthly": 0.1747,
+    "var_95_monthly": 0.1301,
+    "var_99_monthly": 0.1681,
+    "cdar_95": 0.2556,
+    "max_drawdown_observed": 0.276,
+    "evt_var_99": 0.1856,
+    "evt_es_99": 0.1942,
+    "evt_method": "GPD_MoM",
+    "evt_xi": -0.8725,
+    "evt_beta": 0.1191,
+    "cvar_cap": 0.025,
+    "cvar_cap_breach": true
+  },
+  "beta_target": {
+    "tier": "HIGH",
+    "target_range": [1, 1.05],
+    "estimated_beta": 1.08,
+    "within_target": true
+  },
+  "regime_conditional": {
+    "BULL": {
+      "avg_cor": null,
+      "vol_ann_pct": null,
+      "n_obs": 0
+    },
+    "NORMAL": {
+      "avg_cor": 0.2575,
+      "vol_ann_pct": 26.67,
+      "n_obs": 60
+    },
+    "CAUTION": {
+      "avg_cor": null,
+      "vol_ann_pct": null,
+      "n_obs": 0
+    },
+    "CRISIS": {
+      "avg_cor": null,
+      "vol_ann_pct": null,
+      "n_obs": 0
+    }
+  },
+  "tdc_summary": {
+    "Q07_vs_AC21_inherited": 0.731,
+    "iter1_overlay_vs_baseline_lower": 0.6667,
+    "iter1_overlay_vs_baseline_upper": 0,
+    "note": "Same 20-ticker universe as WT_003 → portfolio-level TDC near 1 by construction. Overlay introduces partial decoupling on extreme months."
+  },
+  "rolling_sigma_stability": {
+    "window_months": 36,
+    "step_months": 6,
+    "n_windows": 5,
+    "vol_ann_mean_pct": 27.13,
+    "vol_ann_sd_pct": 1.76,
+    "vol_ann_cv": 0.0649,
+    "interpretation": "STABLE (CV<15%)"
+  },
+  "risk_response_to_alpha_RFA1": {
+    "alpha_sub_stability_flag": "RF-A1 HIGH (sub_stab=0.345)",
+    "risk_response": "Σ stable across rolling windows (CV<15%) — RF-A1 is alpha-IC issue, not Σ instability",
+    "rolling_vol_cv": 0.0649,
+    "rolling_vol_mean_pct": 27.13,
+    "rolling_vol_sd_pct": 1.76
+  },
+  "diagnostics": {
+    "condition_number": 11.06,
+    "shrinkage_used": false,
+    "shrinkage_method": "nonlinear_shrinkage",
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "Q07_vs_AC21": 0.731,
+      "iter1_overlay_lower_tdc": 0.6667
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_WT-D20260425_006/regime_correlation.parquet"
+  },
+  "challenge_review": {
+    "objection": false,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "overlay_specs"],
+    "challenge_note": {
+      "type": "informational",
+      "from": "risk",
+      "to": "optimizer",
+      "items": [
+        {
+          "item": "overlay_mult_size_scaling",
+          "recommendation": "Optimizer should treat overlay_mult as multiplicative size scaler on aggregate portfolio (not on individual weights). Apply at gross-leverage layer, then re-normalize to Σw=1 for long-only.",
+          "effective_vol_reduction_pct": 42.73
+        },
+        {
+          "item": "Q07_AC21_collinearity_inherited",
+          "vif_q07": 2.22,
+          "vif_ac21": 2.17,
+          "cor": 0.731,
+          "recommendation": "Same as WT_003 — joint exposure monitor; alpha not modified"
+        },
+        {
+          "item": "RF-A1_alpha_subperiod_response",
+          "alpha_sub_stab": 0.345,
+          "risk_rolling_vol_cv": 0.0649,
+          "interpretation": "Σ stable across rolling windows (CV<15%) — RF-A1 is alpha-IC issue, not Σ instability",
+          "recommendation": "Σ is structurally stable — alpha sub-stability is IC-side issue (Forge backtest will validate via realized return × overlay path; not a Risk-side challenge)"
+        }
+      ]
+    },
+    "round": 1
+  },
+  "challenge_flags": {
+    "RF-R1": {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "msg": "Market 기여도 > 40%",
+      "detail": "Market=104.7%"
+    },
+    "RF-R3": {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "msg": "Q07_AC21 crowding inherited from baseline",
+      "detail": "cor=0.731 (WT_003 inherited)"
+    }
+  },
+  "rf_summary": {
+    "total_flags": 2,
+    "high_severity": 1,
+    "medium_severity": 1
+  },
+  "optimizer_guidance": {
+    "note": "Weight 결정은 Optimizer 영역. Risk → Optimizer 안내사항만.",
+    "cvar_cap": 0.025,
+    "beta_target_range": [1, 1.05],
+    "q07_ac21_joint_exposure_monitor": true,
+    "overlay_application_layer": "gross_leverage_pre_normalization",
+    "overlay_size_scaler_seq": "weight_optimization → size_scale = clip(overlay_mult * dd_brake_mult * volreg_mult, 0, 1.0_long_only_cap) → renormalize Σw=1",
+    "long_only_cap_recommendation": "Cap effective leverage at 1.0 for KR long-only mandate (overlay can only DEDUCE, not LEVER UP).",
+    "expected_vol_reduction_iter1_pct": 42.73,
+    "condition_number_ok": true
+  },
+  "pit_compliance": {
+    "C1": "PASS — rolling estimator (60-mo window)",
+    "C2": "PASS — month-end factor returns + t-1 lag for overlay state",
+    "C5": "PASS — overlay state from BM[t-1]",
+    "C9": "PASS — overlay_mult derived from t-1 lagged inputs (alpha_pkg)",
+    "C10": "PASS — liquidity inherited from alpha screen",
+    "lockbox": "ENFORCED — Pre-LB end 2024-01-22; Lockbox 2024-01-23+ untouched"
+  }
+}

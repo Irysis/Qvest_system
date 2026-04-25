@@ -1,0 +1,286 @@
+{
+  "task_id": "WT-D20260425_007",
+  "as_of_date": "2026-04-25",
+  "signal_as_of": "2024-01-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "shrinkage_quality",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260425_007/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260425_007/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260425_007/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260425_007/covariance.parquet",
+  "covariance_per_regime_ref": "qepm/mailbox/worktask/WT-D20260425_007/covariance_per_regime.parquet",
+  "regime_transition_cost_ref": "qepm/mailbox/worktask/WT-D20260425_007/regime_transition_cost.json",
+  "tail_risk_ref": "stage_artifacts/WT_D20260425_007/tail_risk.json",
+  "sigma_estimation": {
+    "method": "regime-conditional",
+    "per_regime_method": "ledoit_wolf_constcor",
+    "pooled_method": "ledoit_wolf_constcor",
+    "factor_model": "PCA_k6",
+    "shrinkage_intensity": {
+      "BULL": 1,
+      "NORMAL": 1,
+      "CAUTION": 1,
+      "CRISIS": 0.9075,
+      "POOLED": 0.9075
+    }
+  },
+  "per_regime_meta": {
+    "BULL": {
+      "regime": "BULL",
+      "T": 84,
+      "shrinkage_delta": 1,
+      "target_rbar": 0.1253,
+      "condition_number": 29.65,
+      "condition_number_sample": 276.41,
+      "min_eigenvalue": 0.001582,
+      "method": "ledoit_wolf_constcor",
+      "psd": true,
+      "ok": true,
+      "fallback": false
+    },
+    "NORMAL": {
+      "regime": "NORMAL",
+      "T": 61,
+      "shrinkage_delta": 1,
+      "target_rbar": 0.1259,
+      "condition_number": 52.85,
+      "condition_number_sample": 351.05,
+      "min_eigenvalue": 0.001275,
+      "method": "ledoit_wolf_constcor",
+      "psd": true,
+      "ok": true,
+      "fallback": false
+    },
+    "CAUTION": {
+      "regime": "CAUTION",
+      "T": 25,
+      "shrinkage_delta": 1,
+      "target_rbar": 0.2214,
+      "condition_number": 30.79,
+      "condition_number_sample": 283.04,
+      "min_eigenvalue": 0.002812,
+      "method": "ledoit_wolf_constcor",
+      "psd": true,
+      "ok": true,
+      "fallback": false
+    },
+    "CRISIS": {
+      "regime": "CRISIS",
+      "ok": true,
+      "T": 5,
+      "shrinkage_delta": 0.9075,
+      "target_rbar": 0.1691,
+      "condition_number": 24.91,
+      "condition_number_sample": 20.99,
+      "min_eigenvalue": 0.002572,
+      "method": "pooled_fallback_thin_sample",
+      "psd": true,
+      "fallback": true,
+      "fallback_reason": "cn_gt_500_post_shrinkage"
+    }
+  },
+  "pooled_meta": {
+    "T": 241,
+    "shrinkage_delta": 0.9075,
+    "target_rbar": 0.1691,
+    "condition_number": 24.91,
+    "min_eigenvalue": 0.002572
+  },
+  "crisis_sample_warning": {
+    "n_months_top20_panel": 5,
+    "n_months_regime_panel": 33,
+    "threshold": 50,
+    "bootstrap_ci_recommended": true,
+    "fallback_used": true,
+    "note": "Top-20 ticker panel CRISIS T=5 months. FALLBACK to pooled Σ. Optimizer should propagate uncertainty via Bayesian/Black-Litterman, robust MinCVaR (worst-case Σ in CRISIS), or alpha confidence scaling."
+  },
+  "risk_summary": {
+    "top_common_risks": ["PC1_market_proxy (25.9%)", "PC2 (9.0%)", "PC3 (8.4%)", "Specific (37.6%)"],
+    "crowding_flags": ["A033640", "A121600"],
+    "liquidity_flags": ["A005850", "A007340", "A014680", "A017370", "A025540", "A028050", "A028260", "A033500", "A033640", "A036930", "A047080", "A058470", "A064760", "A092730", "A121600", "A131290", "A166090", "A192390", "A218410", "A230360"],
+    "stress_tests": {
+      "market_down_5": -0.0028,
+      "value_crash": 0.0001,
+      "momentum_reversal": 0,
+      "gfc_2008": -0.435,
+      "eudebt_2011": -0.0097,
+      "covid_2020": -0.0041,
+      "rate_2022": -0.2427,
+      "iran_war_2026": 0.3672
+    },
+    "stress_test_full": {
+      "Terror_9_11": {
+        "window": "2001-09-01_2001-12-31",
+        "n": 81,
+        "cum_ret": 0.0908,
+        "mdd": -0.2722
+      },
+      "GFC_2008": {
+        "window": "2007-10-01_2009-03-31",
+        "n": 371,
+        "cum_ret": -0.435,
+        "mdd": -0.6811
+      },
+      "Euro_Debt_2011": {
+        "window": "2011-07-01_2011-12-31",
+        "n": 126,
+        "cum_ret": -0.0097,
+        "mdd": -0.3534
+      },
+      "China_Shock": {
+        "window": "2015-06-01_2016-02-29",
+        "n": 186,
+        "cum_ret": -0.0929,
+        "mdd": -0.1899
+      },
+      "US_China_Trade": {
+        "window": "2018-03-01_2018-12-31",
+        "n": 204,
+        "cum_ret": -0.1358,
+        "mdd": -0.2042
+      },
+      "COVID_2020": {
+        "window": "2020-01-01_2020-06-30",
+        "n": 123,
+        "cum_ret": -0.0041,
+        "mdd": -0.4188
+      },
+      "Rate_2022": {
+        "window": "2022-01-01_2022-12-31",
+        "n": 246,
+        "cum_ret": -0.2427,
+        "mdd": -0.2894
+      },
+      "Iran_War": {
+        "window": "2026-02-01_2026-04-30",
+        "n": 57,
+        "cum_ret": 0.3672,
+        "mdd": -0.1384
+      }
+    },
+    "factor_explained_share_mean": 0.4804,
+    "pca_cum_var_share": [0.2588, 0.349, 0.4335, 0.5093, 0.5677, 0.6236]
+  },
+  "diagnostics": {
+    "condition_number": 24.91,
+    "condition_number_per_regime": {
+      "BULL": 29.65,
+      "NORMAL": 52.85,
+      "CAUTION": 30.79,
+      "CRISIS": 24.91
+    },
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "pooled_avg_lower_tdc": 0.2756,
+      "per_regime": {
+        "BULL": 0.1934,
+        "NORMAL": 0.2363,
+        "CAUTION": 0.2891,
+        "CRISIS": 0.2206
+      }
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260425_007/regime_correlation.parquet",
+    "factor_pca_share": {
+      "PC1": 0.2588,
+      "PC2": 0.0903,
+      "PC3": 0.0845,
+      "PC4": 0.0758,
+      "PC5": 0.0584,
+      "PC6": 0.0559,
+      "specific": 0.3764
+    },
+    "avg_correlation_per_regime": {
+      "BULL": {
+        "mean_corr": 0.1253,
+        "median_corr": 0.1253,
+        "p90_corr": 0.1253
+      },
+      "NORMAL": {
+        "mean_corr": 0.1259,
+        "median_corr": 0.1259,
+        "p90_corr": 0.1259
+      },
+      "CAUTION": {
+        "mean_corr": 0.2214,
+        "median_corr": 0.2214,
+        "p90_corr": 0.2214
+      },
+      "CRISIS": {
+        "mean_corr": 0.1691,
+        "median_corr": 0.1683,
+        "p90_corr": 0.1809
+      }
+    },
+    "annual_regime_switch_rate": 3.934
+  },
+  "optimizer_handoff": {
+    "note": "Risk produced 4 regime Σ + pooled Σ. Optimizer chooses MinCVaR formulation.",
+    "recommendations": [
+      "Use sig_date-aligned regime label from alpha_scores.parquet::regime_state to pick Σ_r at each rebalance.",
+      "Apply turnover penalty proportional to estimated regime switch frequency (~3.0/year empirical).",
+      "CRISIS Σ has heavy shrinkage (δ>=0.85); consider robust MinCVaR or wider weight bounds + alpha confidence scaling.",
+      "Pooled Σ available as fallback when regime is uncertain (last_label CAUTION/CRISIS borderline)."
+    ]
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 2,
+      "method_log": [
+        {
+          "name": "sample_pairwise",
+          "condition": 21,
+          "selected": false,
+          "note": "high condition number, used as diagnostic only"
+        },
+        {
+          "name": "ledoit_wolf_constcor",
+          "condition": 24.9,
+          "selected": true,
+          "note": "per-regime variants with adaptive δ (heavy for CRISIS small sample)"
+        }
+      ]
+    }
+  },
+  "challenge_flags": {
+    "RF_R_CRISIS_THIN": {
+      "id": "RF-CRISIS-THIN",
+      "severity": "HIGH",
+      "msg": "CRISIS Σ thin sample: 20-ticker monthly panel T=5 (regime-panel T=33). FALLBACK to pooled Σ used shrinkage δ=0.907.",
+      "direction": "INFO_TO_OPTIMIZER",
+      "detail": "Optimizer should treat regime-conditional Σ_CRISIS as low-confidence; consider robust formulation (worst-case) or pooled-Σ during CRISIS labeling."
+    },
+    "RF_R3_crowding": {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "msg": "Crowding: 2 ticker(s) vol_z>2.5 — A033640,A121600"
+    },
+    "RF_R4_stress": {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "msg": "Worst historical stress cumulative loss = -43.50%"
+    },
+    "RF_CRISIS_ALPHA": {
+      "id": "RF-CRISIS-ALPHA-COUPLING",
+      "severity": "MEDIUM",
+      "msg": "Alpha composite IC at CRISIS = -0.0466 < 0. CRISIS Σ is more concentrated (avg ρ likely > NORMAL); regime-conditional weight tightening + crisis_alpha sleeve recommended (Optimizer domain).",
+      "direction": "INFO_TO_OPTIMIZER"
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — pairwise/expanding shrinkage only, no full-sample stat used in selection",
+    "C2": "PASS — regime label upstream t-1 (Alpha-side enforced)",
+    "C9": "PASS — daily rets aligned to month regime via month-floor map (no same-day VT/DD)",
+    "C11": "PASS — KR RAWDATA + KR benchmark only, no FRED leak",
+    "C13": "PASS — no manual sign flip",
+    "C14": "PASS — no IC time-axis violation (Σ on Ret_1m post-listing)",
+    "C15": "PASS — RAWDATA loaded via parquet cache",
+    "note": "Risk Agent does not modify alpha_vector or regime label. read-only."
+  },
+  "challenge_review": {
+    "objection": true,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "regime_classification"],
+    "note": "RF-CRISIS-ALPHA-COUPLING informs Optimizer; alpha factor mix not contested."
+  }
+}

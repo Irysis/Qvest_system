@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-D20260425_009",
+  "as_of_date": "2026-03-31",
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260425_009/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260425_009/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260425_009/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260425_009/covariance.parquet",
+  "external_factor_data": {
+    "version": "kr_factor_returns_v2",
+    "path": ".cache/kr_factor_returns_v2.parquet",
+    "n_obs_full": 284,
+    "date_range": [
+      "2002-09-30",
+      "2026-03-04"
+    ],
+    "schema": ["Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF", "n_obs_meta"],
+    "pit_compliance": "C1 (rolling), C4 (annual May lag), C5 (t-1 weight × t return) verified",
+    "factor_construction_notes": "Fama-French 1993/2015 + Novy-Marx 2013, fundamental_merged.parquet (XLSX 2000-2014 + DART 2015+), 2x3 sort, value-weighted",
+    "overlap_validation": {
+      "n_overlap_2017_plus": 42,
+      "cor_hml": 0.473,
+      "cor_rmw": -0.168,
+      "cor_cma": -0.004,
+      "caveat": "Existing kr_factor_returns.parquet builder unavailable; v2 vs old likely differs in universe/breakpoints. Mean signs aligned with academic expectations (HML+, RMW+, CMA+)."
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": ["Idiosyncratic (82%)", "SMB (3.7%)", "RMW (3.7%)", "MKT (3.4%)", "HML (2.7%)", "WML (2.3%)", "CMA (2.3%)"],
+    "crowding_flags": [
+      "Top-10 alpha names HHI = 0.48 (>0.20 concentration)"
+    ],
+    "liquidity_flags": [
+      "Top-alpha low-liquidity (<1B daily): A084870,A205470,A254120"
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0014,
+      "market_down_10": -0.0028,
+      "value_crash": "NA",
+      "momentum_rev": "NA",
+      "size_squeeze": "NA",
+      "Terror_9_11": 0.2726,
+      "GFC_2008": -0.3803,
+      "EuDebt_2011": -0.1309,
+      "ChinaShock_2015": -0.0937,
+      "TradeWar_2018": -0.1592,
+      "COVID_2020": -0.0407,
+      "RateHike_2022": -0.2489,
+      "IranWar_2026": 0.2395
+    }
+  },
+  "diagnostics": {
+    "condition_number": 498.8,
+    "min_eigenvalue": 0.0002,
+    "psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_cov_estimator": "ledoit_wolf_constcor",
+    "ridge_lambda": 0.0002,
+    "n_tickers_in_sigma": 2299,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "MKT_vs_SMB": 0,
+      "MKT_vs_HML": 0,
+      "MKT_vs_WML": 0.333,
+      "MKT_vs_RMW": 0.333,
+      "MKT_vs_CMA": 0,
+      "SMB_vs_HML": 0,
+      "SMB_vs_WML": 0,
+      "SMB_vs_RMW": 0,
+      "SMB_vs_CMA": 0.333,
+      "HML_vs_WML": 0,
+      "HML_vs_RMW": 0,
+      "HML_vs_CMA": 0.333,
+      "WML_vs_RMW": 0,
+      "WML_vs_CMA": 0,
+      "RMW_vs_CMA": 0
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260425_009/regime_correlation.parquet",
+    "systematic_variance_share": 0.126,
+    "idiosyncratic_variance_share": 0.874
+  },
+  "selection_objective": "shrinkage_quality",
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 144.2,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "condition": 96.8,
+        "psd": true,
+        "selected": true
+      },
+      {
+        "name": "ledoit_wolf_oracle",
+        "condition": 123.6,
+        "psd": true,
+        "selected": false
+      }
+    ]
+  },
+  "challenge_flags": [
+    {
+      "id": "FLAG-R1",
+      "severity": "MEDIUM",
+      "description": "FF5 v2 backfill: overlap correlation with existing 2017+ parquet weak (HML=0.47, RMW=-0.17, CMA=-0.00). 본 v2는 fundamental_merged.parquet (XLSX 2000-2014 + DART 2015+) 기반 textbook FF1993/2015 + Novy-Marx 2013 reconstruction. 기존 parquet의 정확한 builder 부재로 직접 재현 불가; 기존 본은 다른 universe/breakpoint 가능성. 다만 v2의 평균 부호 (HML +0.16%, RMW +0.03%, CMA +0.03%) 학술 기대 일치."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "description": "Top common risk Idiosyncratic = 82.0% (>40% concentration)."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "description": "Top-10 alpha names HHI = 0.48 (>0.20 concentration)"
+    }
+  ]
+}

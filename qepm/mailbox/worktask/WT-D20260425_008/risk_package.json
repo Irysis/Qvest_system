@@ -1,0 +1,336 @@
+{
+  "task_id": "WT-D20260425_008",
+  "as_of_date": "2026-04-25",
+  "agent": "risk_research_v1.1_iter3",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260425_008/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260425_008/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260425_008/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260425_008/covariance.parquet",
+  "selection_objective": "condition_number",
+  "selected_estimator": {
+    "name": "ledoit_wolf_oracle",
+    "rationale": "R4: condition_number minimal among PSD factor-cov estimators. alpha return 참조 없음."
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "selection_objective": "condition_number",
+      "method_log": {
+        "sample_pairwise": {
+          "name": "sample_pairwise",
+          "condition": 885652128.8,
+          "min_eig": 0,
+          "psd": true,
+          "selected": false
+        },
+        "ledoit_wolf_oracle": {
+          "name": "ledoit_wolf_oracle",
+          "condition": 82.48,
+          "min_eig": 290.9781,
+          "psd": true,
+          "selected": true
+        },
+        "gerber_rmt": {
+          "name": "gerber_rmt",
+          "condition": 1509179168.63,
+          "min_eig": -0.2299,
+          "psd": false,
+          "selected": false
+        },
+        "ledoit_wolf_constcor": {
+          "name": "ledoit_wolf_constcor",
+          "condition": 874130457.58,
+          "min_eig": 0,
+          "psd": true,
+          "selected": false
+        },
+        "nonlinear_shrinkage": {
+          "name": "nonlinear_shrinkage",
+          "condition": 820399867.9,
+          "min_eig": 0,
+          "psd": true,
+          "selected": false
+        }
+      }
+    }
+  },
+  "factor_exposure_summary": {
+    "n_factors": 6,
+    "factor_names": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom"],
+    "mean_exposures": {
+      "C01_SUE": 1.3668,
+      "C02_EPS_Chg_1m": 1.5196,
+      "C04_ESBR": 0.9425,
+      "C06_TP_Gap": -0.327,
+      "Q07_Earnings_Stability": 0.2878,
+      "M08_Residual_Mom": 0.061
+    },
+    "weight_thetas": {
+      "C01_SUE": 0.1863,
+      "C02_EPS_Chg_1m": 0.1438,
+      "C04_ESBR": 0.2576,
+      "C06_TP_Gap": 0.0116,
+      "Q07_Earnings_Stability": 0.3606,
+      "M08_Residual_Mom": 0.0401
+    },
+    "family_distribution": {
+      "iter3": {
+        "Analyst_Consensus": 4,
+        "Quality_Earnings": 1,
+        "Momentum_Residual": 1
+      },
+      "baseline_005": {
+        "Analyst_Consensus": 4,
+        "Quality_Earnings": 1,
+        "Accrual_Quality": 1
+      },
+      "family_change": "Accrual_Quality (Q sub-axis) → Momentum_Residual (cross-family) — diversification ↑"
+    },
+    "hhi_theta": 0.2535
+  },
+  "vif_diagnosis": {
+    "vif_per_factor": {
+      "C01_SUE": 1.06,
+      "C02_EPS_Chg_1m": 1,
+      "C04_ESBR": 1.08,
+      "C06_TP_Gap": 1.02,
+      "Q07_Earnings_Stability": 1.03,
+      "M08_Residual_Mom": 1
+    },
+    "high_vif_threshold": 5,
+    "panel_cor_matrix": [
+      1,
+      0.0085,
+      0.2305,
+      0.0105,
+      -0.0078,
+      -0.0098,
+      0.0085,
+      1,
+      0.0132,
+      0.0097,
+      -0.006,
+      0.0226,
+      0.2305,
+      0.0132,
+      1,
+      -0.0537,
+      0.1323,
+      0.0133,
+      0.0105,
+      0.0097,
+      -0.0537,
+      1,
+      -0.3374,
+      -0.0143,
+      -0.0078,
+      -0.006,
+      0.1323,
+      -0.3374,
+      1,
+      0.0021,
+      -0.0098,
+      0.0226,
+      0.0133,
+      -0.0143,
+      0.0021,
+      1
+    ]
+  },
+  "sigma_structure": {
+    "method": "BΩB_plus_D",
+    "n_tickers": 20,
+    "n_factors": 7,
+    "factor_coverage_pct": 32.8,
+    "condition_number": 197.47,
+    "psd": true,
+    "min_eig": 0,
+    "port_vol_ann_pct": 19.72,
+    "systematic_pct": 82.6,
+    "specific_pct": 17.4,
+    "market_contribution_pct": 70.4,
+    "alpha_6f_contribution_pct": 12.2
+  },
+  "risk_summary": {
+    "top_common_risks": ["Market (70.4%)", "Alpha_6F (12.2%)", "Specific (17.4%)"],
+    "crowding_flags": {
+      "Analyst_Family_Saturation": {
+        "severity": "MEDIUM",
+        "msg": "Analyst_Consensus family weight = 4/6 factors (67%)",
+        "detail": "Multi-axis composite still consensus-heavy"
+      }
+    },
+    "liquidity_flags": [],
+    "stress_tests": {
+      "Terror_9_11": 0.0999,
+      "GFC_2008": -0.4295,
+      "Euro_Debt_2011": 0.014,
+      "China_Shock_2015": 0.042,
+      "US_China_Trade": -0.1319,
+      "COVID_2020": 0.0227,
+      "Rate_Hike_2022": -0.2291,
+      "Momentum_2009_Reversal": 0.4969,
+      "Momentum_2020_COVID_Rally": 0.4671,
+      "Meme_Stocks_2021": 0.1802,
+      "market_down_5": -0.05,
+      "value_crash_3sd_monthly": -0.0649,
+      "momentum_reversal_3sd_monthly": -0.0011
+    }
+  },
+  "tail_risk": {
+    "cvar_95_daily": 0.0255,
+    "cvar_99_daily": 0.0368,
+    "cvar_95_monthly_proxy": 0.1167,
+    "max_drawdown": 0.187,
+    "hill_alpha_M08": 0.4579,
+    "evt_method": "empirical_quantile + hill_estimator",
+    "momentum_crash_risk": {
+      "factor": "M08_Residual_Mom",
+      "sub_stab": 0.1882,
+      "p1_ic": 0.0623,
+      "p3_ic": 0.0117,
+      "note": "M08 ICIR decay P1→P3 (5.3x). Hill heavy tail risk + Daniel-Moskowitz 2016 residual momentum crash"
+    }
+  },
+  "regime_conditional": {
+    "Normal": {
+      "avg_cor": 0.1391,
+      "vol_ann_pct": 45.5,
+      "n_obs": 252
+    }
+  },
+  "tdc_summary": {
+    "Q07_vs_M08_iter3": 0.1667,
+    "Q07_vs_AC21_baseline": 0.4762,
+    "delta_vs_baseline": -0.3095,
+    "panel_cor_q07_m08": 0.0021,
+    "panel_cor_q07_ac21": 0.0496,
+    "top20_cor_q07_m08": -0.2902,
+    "top20_cor_q07_ac21_L219": 0.2325
+  },
+  "diagnostics": {
+    "condition_number": 197.47,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "Q07_vs_M08_iter3": 0.1667,
+      "Q07_vs_AC21_baseline": 0.4762,
+      "delta_vs_baseline": -0.3095,
+      "panel_cor_q07_m08": 0.0021,
+      "panel_cor_q07_ac21": 0.0496,
+      "top20_cor_q07_m08": -0.2902,
+      "top20_cor_q07_ac21_L219": 0.2325
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260425_008/regime_correlation.parquet",
+    "iter3_caveat_resolution": {
+      "L_219_source": "WT-D20260425_003 baseline risk_package.json L88: Q07_vs_AC21_cor=0.731 — portfolio-level top-20 universe cor (NOT panel cor; NOT IC time-series)",
+      "metric_taxonomy": {
+        "panel_cor": "full universe, all months pooled (Alpha measured 0.0099 for M08, 0.0399 for AC21)",
+        "cs_avg_cor": "per-month cross-section cor → averaged",
+        "top20_portfolio": "top-20 selected universe latest snapshot (L-219 0.731 was this metric for AC21)",
+        "ic_time_series_cor": "factor IC time-series correlation (different concept)"
+      },
+      "measured": {
+        "panel_q07_m08": 0.0021,
+        "cs_avg_q07_m08": 0.0062,
+        "top20_q07_m08": -0.2902,
+        "panel_q07_ac21": 0.0496,
+        "top20_q07_ac21": 0.2325,
+        "L_219_reference": 0.731
+      },
+      "m08_sampling": {
+        "icir_monthly": -0.0426,
+        "icir_bimonthly": -0.1199,
+        "alpha_panel_icir": 0.0821,
+        "memory_bimonthly_icir": -0.187
+      },
+      "verdict": "L-219 0.731 = TOP-20 portfolio-level metric (NOT panel cor). Panel cor 0.0099 (Alpha) vs portfolio-level top-20: difference is by metric type, NOT measurement error. M08 panel cor with Q07 = 0.0021 → top-20 cor = -0.2902 — both <0.50 → crowding genuinely resolved. M08 ICIR sampling: monthly -0.0426 vs bimonthly -0.1199 → cadence affects sign convention; full panel positive, sparse bimonthly noisy.",
+      "resolved": true
+    }
+  },
+  "challenge_review": {
+    "objection": true,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "iter3_caveats"],
+    "challenge_note": {
+      "type": "informational",
+      "from": "risk",
+      "to": "alpha+optimizer",
+      "items": [
+        {
+          "item": "L_219_metric_clarification",
+          "panel_q07_m08": 0.0021,
+          "top20_q07_m08": -0.2902,
+          "L_219_reference_0731": "WT-D20260425_003 risk_package L88 portfolio-level top-20 metric (NOT panel)",
+          "recommendation": "Optimizer should monitor top-20 universe Q07/M08 joint exposure post-weighting"
+        },
+        {
+          "item": "M08_substab_decay",
+          "p1_ic": 0.0623,
+          "p3_ic": 0.0117,
+          "hill_alpha": 0.4579,
+          "recommendation": "Risk_Management overlay or reduced theta_M08 if Forge backtest P3 IC < 0 in OOS"
+        },
+        {
+          "item": "ICIR_sampling_sensitivity",
+          "monthly_alpha": 0.0821,
+          "monthly_risk_recompute": -0.0426,
+          "bimonthly": -0.1199,
+          "memory_bimonthly": -0.187,
+          "recommendation": "Memory bimonthly ICIR -0.187 is sparse-sample artifact; monthly panel positive"
+        }
+      ]
+    },
+    "round": 1
+  },
+  "challenge_flags": {
+    "RF_R1": {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "msg": "Market 기여도 70.4% > 40%",
+      "detail": "Top-20 KR equity portfolio inherent market-dominant structure"
+    },
+    "RF_R3": {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "msg": "Crowding flag 존재",
+      "detail": "Analyst_Family_Saturation"
+    },
+    "RF_R6_M08_TAIL": {
+      "id": "RF-R6",
+      "severity": "MEDIUM",
+      "msg": "M08 Hill α=0.46 < 3 (heavy tail) — momentum crash exposure",
+      "detail": "Daniel-Moskowitz 2016 — residual momentum crash 직접 노출"
+    },
+    "RF_R7_SUBSTAB": {
+      "id": "RF-R7",
+      "severity": "MEDIUM",
+      "msg": "M08 SubStab 0.1882 << 0.50 — recent 5Y decay",
+      "detail": "Forge backtest 시 P3 (2020-2024) IC drop 0.0623→0.0117 모니터링 필수"
+    }
+  },
+  "rf_summary": {
+    "total_flags": 4,
+    "high_severity": 1,
+    "medium_severity": 3
+  },
+  "optimizer_guidance": {
+    "note": "비중 결정은 Optimizer Agent 담당. Risk에서 비중 제안 없음.",
+    "cvar_cap_recommendation": 0.025,
+    "beta_target_range": [1, 1.05],
+    "q07_m08_joint_exposure_monitor": true,
+    "m08_decay_overlay_recommendation": "Risk_Management overlay (DD-Brake / Vol-Target) consideration if Forge OOS P3 < baseline",
+    "condition_number_ok": true,
+    "family_diversification_change": "Accrual_Quality → Momentum_Residual: improved cross-family diversification"
+  },
+  "pit_compliance": {
+    "C1": "PASS: panel cor + factor returns from Factor DB Z_Score_Aligned (no full-sample stats)",
+    "C2": "PASS: monthly factor signal at sig_date, applied at next rebalance",
+    "C9": "PASS: regime labels from regime_v7.parquet (regime engine v7.1 pre-computed PIT)",
+    "C10": "PASS: top-20 alpha tickers respected liquidity floor (alpha pre-filtered)",
+    "C13": "PASS: Z_Score_Aligned only (no manual sign flip)",
+    "C14": "PASS: Factor DB Usable_Date <= sig_date enforced via load_month_factors",
+    "C15": "PASS: load_month_factors() — no raw RAWDATA factor extract",
+    "M08_lag_check": "PASS: M08 monthly t-1 lag (sig_date = month-start, applied at t+1 rebalance) confirmed in factor_specs"
+  }
+}
