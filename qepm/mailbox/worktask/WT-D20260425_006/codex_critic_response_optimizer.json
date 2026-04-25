@@ -1,0 +1,132 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "optimizer_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:27:47+09:00",
+  "task_id": "WT-D20260425_006",
+  "veto_flag": false,
+  "stance": "REVISE",
+  "stance_rationale": "Hard constraints are mostly satisfied, but optimizer evidence is not process-honest enough for approval: the submitted weights are single-snapshot and the selection objective uses non-economic alpha units, making method ranking fragile.",
+  "hard_constraints_audit": {
+    "n_names": 18,
+    "n_names_pass": true,
+    "max_w": 0.1972,
+    "max_w_pass": true,
+    "sigma_w": 1.0,
+    "sigma_w_pass": true,
+    "long_only_pass": true,
+    "turnover_annual": 4.4532,
+    "turnover_pass": true,
+    "any_critical_block": false
+  },
+  "method_shopping_audit": {
+    "candidates_tried": 10,
+    "selection_objective": "net_ir",
+    "selection_method": "Ensemble_Top3",
+    "cherry_pick_risk": "HIGH",
+    "rf_o10_flag": true,
+    "heavy_tail_tiebreaker_applied": false
+  },
+  "walk_forward_audit": {
+    "n_sig_dates_in_weights_csv": 1,
+    "single_snapshot_risk": "HIGH",
+    "rf_o9_flag": true,
+    "forge_handoff_walkforward_explicit": false
+  },
+  "cost_audit": {
+    "turnover": 0.3711,
+    "estimated_cost": 0.0134,
+    "regime_switch_cost_internalized": false,
+    "cost_proportionality_check": "Turnover-to-cost formula is internally consistent, but net_IR scale is inflated because alpha_z is treated as expected return units."
+  },
+  "iter_specific_method_alignment": {
+    "alpha_rf_a1_addressed": true,
+    "risk_rf_r6_addressed": false,
+    "regime_per_weight_schedule": false,
+    "crisis_fallback_explicit": false
+  },
+  "infeasibility_handling": {
+    "cvar_breach": true,
+    "infeasibility_report_issued": true,
+    "hard_constraint_violations": []
+  },
+  "sequential_admission_audit": {
+    "tdc_vs_pg2": 0.6667,
+    "replacement_scenario_reported": true,
+    "integration_scenario_reported": true,
+    "integration_weight_breakdown": "Forge reports replacement and 80/20, 70/30, 60/40 integrations; explicit TDC vs PG2 metric is not provided in optimizer artifact."
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "CRITICAL",
+      "description": "weights.csv has only one sig_date (2024-01-22), and run_optimizer_research.R hard-codes that single date; this is a single-snapshot deliverable and violates walk-forward optimizer schedule expectations.",
+      "ax_cite": "AX-002|RF-O9|PIT-C1"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Method ranking is based on net_IR computed from confidence-scaled alpha z-scores treated as return units, producing implausible figures (expected_return_annual 4.3832, net_IR 76.5807); selection robustness is not economically grounded.",
+      "ax_cite": "AX-002|RF-O10|RF-O2"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "CVaR95 monthly remains 0.0943 versus cap 0.025 after blending (3.77x breach). Infeasibility is reported, but no executable within-mandate mitigation is embedded in the submitted weight schedule.",
+      "ax_cite": "RF-O8|AX-002|L-129"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "Heavy-tail tie-breaker governance is not verifiable: no Hill alpha diagnostic is provided, yet selected ensemble is dominated by MVO/BL/MinVar family methods rather than an explicit tail-priority rule.",
+      "ax_cite": "RF-O12|RF-O11|AX-008"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "challenge_flags semantics are swapped (RF-O6 used for Σw and RF-O7 used for weight range), which breaks role-spec traceability and can cause governance mis-audit.",
+      "ax_cite": "AX-002|RF-O6|RF-O7"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "Triangulation evidence is incomplete for this optimizer artifact: requested stage artifacts dir B is missing and optimizer package lacks explicit sequential-admission TDC vs PG2 reporting.",
+      "ax_cite": "AX-008|L-219|RF-O1"
+    }
+  ],
+  "supporting_arguments": [
+    "Parquet validation confirms alpha_scores has 252 dates (2003-02-28 to 2024-01-22), but optimizer weights schedule has only 1 date.",
+    "Covariance artifact is PSD with min eigenvalue 0.0086078658 and condition number 11.058078, so risk matrix quality is not the blocking issue.",
+    "Hard constraints n<=20, max_w<=0.20, long-only, and sum_w=1 are satisfied in target weights.",
+    "turnover_annual_estimate=4.4532 (<6.0 equivalent to 600% cap) passes, but regime-switch cost accounting is not explicitly internalized.",
+    "Optimizer correctly issued infeasibility_report for CVaR breach instead of silently relaxing constraints."
+  ],
+  "unresolved_disputes": [
+    "Whether CVaR cap 2.5% is sleeve-level or book-level remains unresolved despite documented breach under both interpretations.",
+    "Whether beta target [1.00,1.05] should apply pre-overlay or post-overlay remains unresolved across artifacts.",
+    "TDC value reported is not explicitly PG2-comparable in optimizer outputs, so sequential admission risk remains open."
+  ],
+  "weakest_assumption": "The weakest assumption is that confidence-scaled alpha z-scores can be treated as cardinal expected returns, making net_IR-based method selection economically valid.",
+  "rebuttal_required": [
+    "Provide a re-run of optimizer selection using a return-calibrated alpha scale (or realized pre-LB mapping), then show method ranking stability.",
+    "Submit walk-forward weights schedule with multi-date schema (as_of_date x ticker x weight x method_selected), not single-snapshot output.",
+    "Add explicit heavy-tail decision rule evidence (Hill alpha or equivalent) and justify non-HRP/CVaR selection under that rule.",
+    "Correct RF-O6/RF-O7 labeling to match role prompt and re-issue challenge_flags."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Forge rebuilt walk-forward performance separately, but optimizer artifact contract itself remains single-snapshot and objective-scale fragile; process-level validity is still not closed."
+  },
+  "optimizer_specific_questions": [
+    "이 weights를 22년 시계열에 직접 적용 가능한가, 아니면 단일 시점 설명용 산출물인가?",
+    "net_IR 76.58의 단위 정합성은 어떻게 보장했는가 (alpha_z -> expected return 변환 근거)?",
+    "Hill alpha 또는 동등 tail 지표 없이 RF-O12 tie-break를 어떤 규칙으로 처리했는가?",
+    "PG2 active book 대비 TDC를 optimizer 산출물에서 어떤 정의/수치로 보고할 것인가?"
+  ]
+}
