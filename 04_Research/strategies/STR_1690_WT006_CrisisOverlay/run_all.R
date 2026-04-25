@@ -1389,7 +1389,6 @@ tryCatch({
   result <- tg_agent_brief(
     agent = "forge",
     title = sprintf("FORGE_DONE STR_1690 WT006 Crisis Overlay (Iter 1)"),
-    scope = WK_ID,
     sections = list(
       list(type = "header",
            body = sprintf("STR_1690 DD Brake 6/8/20 + VolReg (12pct/60d) | MEGA_05 overlay 통합")),

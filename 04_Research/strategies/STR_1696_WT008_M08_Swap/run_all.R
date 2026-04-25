@@ -1139,7 +1139,6 @@ tryCatch({
   result <- tg_agent_brief(
     agent = "forge",
     title = sprintf("STR_1696 WT008 M08 Swap Backtest -- %s", swap_verdict),
-    scope = WT_ID,
     sections = list(
       list(type = "header",
            body = "6F Consensus+Q07+M08_Residual_Mom | HRP_lw | n=20 | 15bps | Pre-LB"),

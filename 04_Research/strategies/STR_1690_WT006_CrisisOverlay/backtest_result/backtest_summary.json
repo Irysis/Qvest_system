@@ -1,0 +1,97 @@
+{
+  "task_id": "WT-D20260425_006",
+  "strategy_id": "STR_1690_WT006_CrisisOverlay",
+  "as_of_date": "2026-04-25",
+  "pure_function_audit": {
+    "alpha_md5_start": "da02876394bc6e70c8b1c5c6bd1e59f5",
+    "risk_md5_start": "5864c61ad358ce12f2d308d4bd957605",
+    "opt_md5_start": "8d7dcdf73bc4de05b1067c47553e968c",
+    "audit_pass": true
+  },
+  "pit_compliance": {
+    "C2": "PASS",
+    "C9": "PASS",
+    "C13": "PASS",
+    "C15": "PASS",
+    "lockbox": "ENFORCED"
+  },
+  "overlay_params": {
+    "dd_brake_entry": 0.06,
+    "dd_brake_exit": 0.08,
+    "dd_brake_lb_days": 20,
+    "dd_brake_mult_on": 0.5,
+    "volreg_target": 0.12,
+    "volreg_lb_days": 60,
+    "alpha_spec_cap": 1.5,
+    "kr_mandate_cap": 1
+  },
+  "scenarios": {
+    "A_overlay_off": {
+      "label": "Overlay_OFF_Baseline",
+      "cap": null,
+      "full": {
+        "SR": 0.799,
+        "CAGR": 18.61,
+        "MDD": 55.42,
+        "turnover": 484
+      },
+      "pre_lb": {
+        "SR": 0.708,
+        "CAGR": 16.22,
+        "MDD": 55.42,
+        "t_NW": 11.624
+      },
+      "lockbox": {
+        "SR": 1.652,
+        "CAGR": 44.1,
+        "MDD": 21.4
+      }
+    },
+    "B_overlay_cap10": {
+      "label": "Overlay_ON_KR_mandate_cap10",
+      "cap": 1,
+      "full": {
+        "SR": 0.6,
+        "CAGR": 7.38,
+        "MDD": 39.32,
+        "turnover": 484
+      },
+      "pre_lb": {
+        "SR": 0.511,
+        "CAGR": 6.28,
+        "MDD": 39.32,
+        "t_NW": 8.195,
+        "harvey_3_0_pass": true
+      },
+      "lockbox": {
+        "SR": 1.467,
+        "CAGR": 18.54,
+        "MDD": 12.59
+      },
+      "cvar_book_95": 0.0777,
+      "cvar_book_prelb_95": 0.0807,
+      "beta_blended": 0.6294
+    },
+    "C_overlay_cap15": {
+      "label": "Overlay_ON_AlphaSpec_cap15",
+      "cap": 1.5,
+      "full": {
+        "SR": 0.578,
+        "CAGR": 7.35,
+        "MDD": 41.16,
+        "turnover": 484
+      },
+      "pre_lb": {
+        "SR": 0.491,
+        "CAGR": 6.24,
+        "MDD": 41.16,
+        "t_NW": 7.983
+      },
+      "lockbox": {
+        "SR": 1.472,
+        "CAGR": 18.56,
+        "MDD": 12.58
+      }
+    }
+  }
+}
