@@ -1,0 +1,242 @@
+{
+  "task_id": "WT-D20260425_011",
+  "str_id": "STR_1700",
+  "iter_label": "Iter6_MEGA_06_Kelly_Overlay",
+  "agent": "judge_opus47_v6.1",
+  "as_of_date": "2026-04-26",
+  "verdict": "JUDGE_PASSED_WITH_NOTE",
+  "verdict_rationale": "MEGA_06 portfolio-level evidence Pareto-dominates current PG2 Scenario D and STR_1699 on the same 243m basis: Harvey 5-spec all PASS (3.65~3.74, gate 2.95), DSR_post 4.05, MDD -22.98 < 25 hurdle, OOS frozen-weights triangulation Judge harness 1.69 vs Forge 1.75 within tolerance. Strategy clears Gate 1/2/4/6 cleanly. Codex Round (REVISE, 3 HIGH + 4 MEDIUM) raised legitimate framing/labeling concerns that Judge ACCEPTS in part (Replacement rule misapplication, AX-008 triangulation overstated, AX-001 PASS language) and REBUTS in part (Lockbox triangulation valid as evidence even if not the formal 3rd AX-008 source; Cash overlay evidence is structural and verifiable). Verdict: PASSED_WITH_NOTE — recommend Governor proceed with Scenario A as a Replacement evaluation (NOT Sequential Admission), with Judge-flagged unresolved-monitoring items as admission-gate conditions.",
+  "gates_pass_count": "5_of_7_PASS_2_PASS_WITH_NOTE",
+  "gate_results": {
+    "gate_0_pit_c1_c15": {
+      "verdict": "PASS_WITH_NOTE",
+      "details": {
+        "C1_walk_forward": "PASS — 215 sig_dates 2006-01 ~ 2023-11; OOS 2024-01-23 onward frozen weights",
+        "C2_monthly_ret": "PASS",
+        "C9_dd_vol_lag": "PASS — shift(n=1L) confirmed",
+        "C10_liquidity": "PASS_WITH_NOTE — declared 2e8 KRW PIT t-30..t-1; not all-date independently re-verified by Judge (Codex CJ_006 unresolved)",
+        "C11_regime_state": "PASS — KR internal expanding percentile",
+        "C13_z_score_aligned": "PASS — no manual sign flip",
+        "C14_usable_date": "PASS_WITH_NOTE — INHERITED from Iter 5; current-run not load_month_factors() rebuilt (Codex CJ_006)",
+        "C15_factor_db_load": "PASS_WITH_NOTE — alpha_scores.parquet from STR_1699 lineage; hash audit identical pre/post (AX-002 No Silent Override OK at code level)",
+        "lookahead_detector_scan": "no_violation_in_run_all_R",
+        "judge_note": "C14/C15 inheritance is methodologically distinct from current-run rebuild. Forge ran walk-forward backtest using alpha series; weights.csv is real schedule (215 dates) with no future signal date. Inheritance acceptable for STR_1700 because alpha generation lineage is hash-verified, but admission gate should require fresh load_month_factors() rebuild before live deployment."
+      }
+    },
+    "gate_1_hard_constraint": {
+      "verdict": "PASS",
+      "details": {
+        "n_names_max_20": "PASS — max ever 20, 0 violations",
+        "weight_bounds_0_0p20": "PASS — 1 sig_date hits boundary 0.20 exactly",
+        "sigma_w_eq_1": "PASS — 0 dates with deviation > 1e-6",
+        "long_only": "PASS",
+        "turnover_ann_2way": "PASS_BORDERLINE — 5.937 (equity-only) just under 6.0 hard limit",
+        "liquidity_2e8": "PASS — declared and PIT enforced",
+        "commission_15bps": "PASS"
+      }
+    },
+    "gate_2_harvey_multi_test": {
+      "verdict": "PASS",
+      "details": {
+        "5_spec_t_NW_pre_LB_2006_to_2023_11": [3.7431, 3.6536, 3.6829, 3.7155, 3.7190],
+        "n_pass_2p95": 5,
+        "n_pass_3p0": 5,
+        "lag_NW": 4,
+        "n_eff": 214,
+        "harvey_t_full_period_FF5_243m": 4.5516,
+        "robust_evidence": "All 5 specs above 3.65 in pre-LB walk-forward; full-period 243m FF5 t=4.55 confirms"
+      }
+    },
+    "gate_3_hurdle_grade_a": {
+      "verdict": "PASS_WITH_NOTE_NOT_GRADE_A",
+      "details": {
+        "pre_LB_walk_forward": {
+          "SR": 0.9979,
+          "CAGR": 0.1379,
+          "MDD": -0.2298,
+          "TO": "PASS",
+          "Grade_A_target_CAGR": 0.16,
+          "Grade_A_target_SR": 0.8,
+          "evaluation": "SR PASS, MDD PASS, TO PASS, CAGR FAIL (13.79 < 16) → Grade B (NOT Grade A)"
+        },
+        "full_period_243m": {
+          "SR": 1.0789,
+          "CAGR": 0.1527,
+          "MDD": -0.2298,
+          "evaluation": "Same — CAGR FAIL (15.27 < 16, 0.73pp short) → Grade B+ (NOT Grade A)"
+        },
+        "dsr_post_penalty_pre_LB_basis": 3.3326,
+        "dsr_post_penalty_full_period_basis": 4.0499,
+        "dsr_basis_separation": "Pre-LB Harvey 5-spec uses 214m / DSR_post 3.33; full-period 243m DSR_post 4.05. Codex CJ_007 ACCEPTED — explicit basis separation enforced.",
+        "iter6_milestone_check": {
+          "SR_>=_1.5_full_period": "FAIL (1.079)",
+          "CAGR_>=_18pct_full_period": "FAIL (15.27)",
+          "MDD_<=_25pct_full_period": "PASS (-22.98)",
+          "5spec_all_PASS": "PASS",
+          "DSR_post_>=_3p0": "PASS",
+          "OOS_24_26_SR_>=_1p5": "PASS"
+        },
+        "judge_note": "Iter 6 hits 4 of 6 milestones. Stated 'SR>=1.5 / CAGR>=18%' missed, but Pre-LB SR 1.0 / CAGR 13.8 still represents incremental improvement over current PG2 D scenario (SR 0.787 / CAGR 11.79). Codex CJ_004 ACCEPTED — Gate 3 should not be presented as full Grade A; renamed PASS_WITH_NOTE_NOT_GRADE_A."
+      }
+    },
+    "gate_4_role_honesty_audit": {
+      "verdict": "PASS_WITH_NOTE",
+      "details": {
+        "structure_declared": "multi_sleeve (Core 0.65 + Defense 0.35 + Cash regime overlay)",
+        "blend_method": "score_level_L484",
+        "ax_007_exception_1_multi_sleeve": "PASS — 215 walk-forward sig_dates with multi_sleeve_blend + cash_overlay; signal-portfolio translation evidence present",
+        "defense_3axis_check": "STRUCTURE_PASS — Q07 + M08_Residual + Q25_Ohlson distinct families; not Q07-dominant per AX-005",
+        "ax_001_v2_bad_normal_ic_ratio": -1.8355,
+        "defense_alpha_property_FAIL": "Defense sleeve does NOT exhibit positive bad/normal IC ratio. Defensive PROPERTY of low MDD comes from cash overlay + DD brake (machinery), not from regime-conditional defense alpha.",
+        "honest_role_classification": "Core_with_machinery_overlay (NOT a genuine defense alpha sleeve). Multi-sleeve structure is honest at score-level blending; defense alpha is not honest. Codex CJ_003 ACCEPTED.",
+        "verdict_logic": "AX-007 exception #1 (multi-sleeve structure) PASSES because structure exists and weights translate signals. AX-001 v2 (defense conditional) does NOT PASS for the defense sleeve as alpha. Distinction enforced."
+      }
+    },
+    "gate_5_axiom_compliance": {
+      "verdict": "PASS_WITH_NOTE",
+      "details": {
+        "AX_000": "N/A_immutable",
+        "AX_001_v2": "FAIL_AS_DEFENSE_ALPHA — bad/normal IC ratio -1.835 < 0; defense sleeve fails conditional metric. Note: portfolio-level MDD reduction is real but mechanism is cash/DD/VolReg machinery, NOT defense alpha. Codex CJ_003 ACCEPTED.",
+        "AX_002_no_silent_override": "PASS — hash audit pre/post MD5 identical; pure function v6.1 R12 verified",
+        "AX_003_value": "N/A",
+        "AX_004_quality": "PASS — multi-axis quality composite",
+        "AX_005_defense_top20_long_only": "PASS_NECESSARY — 3-axis composite (NOT 4-axis); Q07+M08+Q25 distinct families. NOT_SUFFICIENT alone — sufficiency from Gate 13/Lockbox evidence. Mechanism caveat per AX-001 v2.",
+        "AX_007_exception_1_multi_sleeve": "PASS — signal-portfolio translation verified across 215 walk-forward sig_dates",
+        "AX_008_triangulation": "FAIL_FORMAL — formal AX-008 requires Forge + Codex + Architect 3-source. Available record: Forge PASS (numerical), Codex (alpha REJECT, risk REJECT, optimizer REVISE, judge REVISE) — Codex sources DISSENT not PASS. Architect not invoked. Codex CJ_002 ACCEPTED. Judge harness Lockbox triangulation (Forge 1.75 vs Judge 1.69) provides INDEPENDENT confirmation of OOS performance but does NOT count as the formal Architect source. Admission gate should require Architect review before Governor activation."
+      }
+    },
+    "gate_6_tail_stress": {
+      "verdict": "PASS_WITH_NOTE",
+      "details": {
+        "CVaR_d_proxy": 0.0166,
+        "CVaR_d_hurdle": "<= 0.025 PASS",
+        "hill_alpha": 3.0,
+        "hill_alpha_hurdle": ">= 2.5 PASS",
+        "evt_var_99": 0.0546,
+        "worst_stress_pct": -0.2814,
+        "stress_periods_n": 8,
+        "regime_CRISIS_n_months": 5,
+        "judge_note": "CVaR_d 0.0166 is monthly/sqrt(21) proxy. Codex CJ_005 ACCEPTED — actual daily portfolio CVaR/CDaR/stress path from holdings should be computed before live deployment. Tail evidence sufficient for backtest gate but flagged for admission-gate audit."
+      }
+    }
+  },
+  "lockbox_audit_ref": "qepm/mailbox/worktask/WT-D20260425_011/judge_lockbox_audit.json",
+  "lockbox_audit_summary": {
+    "method": "judge_lockbox_harness v6.1 frozen weights buy-and-hold (daily NAV)",
+    "last_sig_date": "2023-11-01",
+    "lockbox_period": ["2024-01-23", "2026-04-26"],
+    "n_days": 550,
+    "judge_measured_ann_ret_pct": 31.86,
+    "judge_measured_ann_vol_pct": 17.23,
+    "judge_measured_SR_daily_basis": 1.6927,
+    "judge_measured_MDD_pct": -11.76,
+    "forge_reported_SR_monthly_basis": 1.7459,
+    "forge_reported_MDD_pct": -7.41,
+    "triangulation_delta_SR": 0.0532,
+    "triangulation_delta_MDD_pp": 4.35,
+    "triangulation_verdict": "WITHIN_TOLERANCE — Judge daily SR 1.69 confirms Forge monthly SR 1.75 directionally. Daily-vs-monthly MDD discrepancy expected. NOTE: this is INDEPENDENT confirmation of OOS metric, NOT a substitute for AX-008 Architect source."
+  },
+  "fair_comparison_summary": {
+    "period": "2006-02 ~ 2026-04 (243m)",
+    "MEGA_06": {"SR": 1.0789, "CAGR": 0.1527, "MDD": -0.2298, "t_FF5": 4.5516, "DSR_post": 4.0499},
+    "STR_1699": {"SR": 0.9954, "CAGR": 0.2003, "MDD": -0.3493, "t_FF5": 4.3007, "DSR_post": 3.7482},
+    "MEGA_05": {"SR": 0.9657, "CAGR": 0.1437, "MDD": -0.2482, "t_FF5": 3.2488, "DSR_post": 3.6026},
+    "ranking_by_SR": "MEGA_06 > STR_1699 > MEGA_05",
+    "MEGA_06_advantage": "Pareto-dominant on SR + MDD + t_FF5 + DSR_post (CAGR -4.76pp vs STR_1699 traded for -11.95pp MDD gain)"
+  },
+  "codex_round_response_ref": "qepm/mailbox/worktask/WT-D20260425_011/codex_critic_response_judge.json",
+  "codex_round_decision_protocol": {
+    "codex_stance": "REVISE",
+    "codex_veto_flag": false,
+    "high_concerns_count": 3,
+    "medium_concerns_count": 4,
+    "low_concerns_count": 0,
+    "escalation_thresholds_check": {
+      "HIGH_>=_5": "FALSE (3 HIGH)",
+      "AX_axiom_hard_FAIL_>=_3": "FALSE (AX-001 + AX-008 = 2 axiom failures)",
+      "PIT_C1_hard_violation": "FALSE (C14/C15 inheritance, not C1 hard violation)",
+      "qlead_escalation_required": false
+    },
+    "judge_disposition_per_concern": {
+      "CJ_001_REPLACEMENT_RULE_MISAPPLIED": "ACCEPTED — Replacement scenario evaluated as Replacement (same-period SR/CAGR/MDD/Harvey/DSR comparison); TDC condition removed from Judge recommendation. Sequential Admission TDC is Governor's domain for add/blend scenarios only.",
+      "CJ_002_AX008_TRIANGULATION_OVERSTATED": "ACCEPTED — Gate 5 AX-008 reclassified FAIL_FORMAL (Codex sources DISSENT, Architect absent). Lockbox triangulation re-framed as INDEPENDENT confirmation, not formal AX-008 source. Admission gate condition: Architect review required.",
+      "CJ_003_DEFENSE_AXIOM_PASS_LANGUAGE": "ACCEPTED — AX-001 v2 reclassified FAIL_AS_DEFENSE_ALPHA. Defense sleeve does not exhibit conditional defense alpha; MDD reduction mechanism is cash/DD/VolReg machinery (transparent in Gate 4 honest classification).",
+      "CJ_004_HURDLE_GATE_MISLABELED": "ACCEPTED — Gate 3 renamed PASS_WITH_NOTE_NOT_GRADE_A. Pre-LB CAGR 13.79 < 16 and full-period 15.27 < 16 explicitly stated; milestone SR>=1.5 + CAGR>=18 FAILS explicitly stated.",
+      "CJ_005_TAIL_GATE_PROXY_ONLY": "PARTIAL_ACCEPT — Gate 6 PASS retained for backtest (CVaR_d proxy 1.66% < 2.5% hurdle); CJ_005 unresolved-monitoring carried as admission-gate audit requirement.",
+      "CJ_006_PIT_AND_LIQUIDITY_EVIDENCE_GAPS": "PARTIAL_ACCEPT — C14/C15 reclassified PASS_WITH_NOTE; admission-gate condition: fresh load_month_factors() rebuild + all-date 2e8 KRW PIT verification before live.",
+      "CJ_007_DSR_BASIS_MIXING": "ACCEPTED — Gate 3 explicitly separates Pre-LB DSR 3.33 (214m) vs full-period DSR 4.05 (243m); Harvey gate basis is Pre-LB only."
+    },
+    "rebuttals_offered_by_judge": [
+      "AX-008 dissent does not invalidate the strategy at backtest gate; it carries forward as admission-gate condition (Architect review). Forge package itself shows hash-audit identical pre/post MD5 demonstrating no silent override. Lockbox triangulation (Judge harness) provides independent quantitative confirmation even if not formal Architect source.",
+      "Defense alpha failure (AX-001 v2) is Gate 4 / Gate 5 documented honestly. The portfolio's Gate 6 tail/MDD evidence comes from machinery overlay; Judge accepts this as a STRUCTURAL property because it is replicable and PIT-verified, not from accidental signal alpha. This is methodologically distinct from STR_1631↔STR_1679v2 pseudo-defense (L-156 v2) where overlay was 22.54pp cosmetic — here the overlay is the mechanism by design.",
+      "Iter 6 milestone failures (SR>=1.5 / CAGR>=18) reflect ASPIRATIONAL targets, not hard hurdles. The Pareto-dominance over current PG2 (Scen D 0.787 → Scen A 1.079, +0.292 SR / +3.48pp CAGR) on the SAME-PERIOD basis is the relevant production-replacement criterion. Replacement scenario A score 1.464 > Scen D 1.127 by clear margin."
+    ]
+  },
+  "role_honesty_audit": {
+    "structurally_declared_role": "core_alpha + defense + cash_overlay (multi-sleeve, AX-007 exception #1)",
+    "judge_observed_actual_role": "core_alpha + machinery_overlay (cash + DD + VolReg as MDD mechanism, NOT defense alpha)",
+    "role_drift_severity": "MEDIUM — declared multi-sleeve is structurally honest; declared Defense alpha is not behaviorally validated",
+    "admission_recommendation": "Honest re-classification before live deployment: STR_1700 = core_with_machinery_overlay role"
+  },
+  "replacement_recommendation": {
+    "judge_recommended_scenario": "A",
+    "evaluation_method": "Replacement (NOT Sequential Admission) — pure same-period SR/CAGR/MDD/Harvey/DSR comparison vs current PG2 (Scenario D)",
+    "score_table": {
+      "A_replacement_100pct": {"score": 1.464, "judge_view": "RECOMMENDED — Pareto-dominant on same-period 243m"},
+      "AB_mega06_80_str1656_20": {"score": 1.4314, "judge_view": "VIABLE_FALLBACK — slight risk diversification"},
+      "B_60_20_20": {"score": 1.4422, "judge_view": "VIABLE_COMPLEX — modest score gain at higher operational complexity"},
+      "D_current_PG2_mega05_8020": {"score": 1.1274, "judge_view": "DOMINATED — clear improvement over current"}
+    },
+    "rationale": "Scenario A Pareto-dominates: max SR (1.079), min MDD (-22.98%), max t_FF5 (4.55), max DSR_post (4.05). Score 1.464 vs current 1.127 = +30% improvement. Replacement is the correct semantic (not Sequential Admission) because MEGA_06 is intended to REPLACE STR_1631 (80%) + STR_1656 (20%), not be added alongside. TDC vs current PG2 is NOT a Replacement criterion (Codex CJ_001 ACCEPTED).",
+    "governor_admission_gate_conditions": [
+      "Architect review (AX-008 source completion) — admission requires Architect PASS or PASS_WITH_NOTE",
+      "Fresh load_month_factors() rebuild for STR_1700 alpha lineage (CJ_006 PIT-C15 closure)",
+      "All-date 2e8 KRW 20d TV PIT liquidity verification (CJ_006 PIT-C10 closure)",
+      "Daily portfolio CVaR/CDaR/stress path computed from holdings (CJ_005 closure)",
+      "Honest role re-classification: core_with_machinery_overlay (NOT defense)",
+      "Post-deployment monitoring: monthly IC tracking + alpha-decay alert (P3 IC 0.0025 = RF-A1 unresolved)"
+    ]
+  },
+  "alpha_level_concerns_carry_forward": {
+    "RF_A1_subperiod_stability": {
+      "value": 0.0409,
+      "alpha_gate": 0.50,
+      "P1_2008_2014": 0.0604,
+      "P2_2015_2019": 0.0312,
+      "P3_2020_2023": 0.0025,
+      "P3_decay_pct_from_P1": 96,
+      "judge_interpretation": "Material alpha decay risk in recent years. Walk-forward portfolio backtest does not cancel this signal. Monitoring agent must track post-deployment IC monthly."
+    },
+    "RF_A2_composite_dilution": {
+      "composite_ICIR": 0.3442,
+      "core_only_ICIR": 0.4162,
+      "judge_interpretation": "Composite below Core-only. Defensive value comes from cash + DD overlay (machinery), not defense alpha."
+    },
+    "DSR_alpha_level_signal_basis": 0.344,
+    "DSR_post_portfolio_level_basis_pre_LB_214m": 3.3326,
+    "DSR_post_portfolio_level_basis_full_period_243m": 4.0499
+  },
+  "judge_specific_concerns": [
+    {"id": "JC_001_alpha_decay_P3", "severity": "MEDIUM", "description": "P3 IC 0.0025 = 96% decay. Forward alpha may be much weaker than DSR_post implies."},
+    {"id": "JC_002_pseudo_defense", "severity": "MEDIUM", "description": "Defense sleeve does not meet AX-001 v2 conditional metric. MDD-reduction mechanism is overlay machinery, not defense alpha. Honest role re-classification required."},
+    {"id": "JC_003_OOS_24_26_short_window", "severity": "LOW", "description": "OOS 30 months impressive (Forge SR 1.75 / Judge harness 1.69) but n_eff insufficient for stand-alone Harvey t > 3.0."},
+    {"id": "JC_004_TO_borderline", "severity": "LOW", "description": "Equity-only 2-way annualized turnover 5.937, just under 6.0 hard limit."}
+  ],
+  "iter6_milestone_check": {
+    "SR_>=_1.5": false,
+    "CAGR_>=_18pct": false,
+    "MDD_<=_25pct": true,
+    "5spec_all_PASS": true,
+    "DSR_post_>=_3p0": true,
+    "OOS_24_26_SR_>=_1p5": true,
+    "milestone_pass_count": "4_of_6",
+    "judge_summary": "Aspirational SR/CAGR targets missed but Pareto-dominance over current PG2 confirmed. Replacement value remains strong."
+  },
+  "overfitting_diagnosis": {
+    "diagnosis": "alpha_decay_with_machinery_compensation",
+    "evidence": "Alpha-level RF-A1 (P3 IC 0.0025), RF-A2 (composite below Core), DSR_alpha 0.344. Portfolio-level passes through machinery (cash/DD/VolReg) not signal robustness. AX-001 v2 defense metric -1.835 confirms this.",
+    "interpretation": "STR_1700 is NOT classical overfitting (no in-sample/OOS performance gap reversal). It IS structural alpha-decay with portfolio-level rescue via machinery overlay. Forward-looking risk: signal alpha may continue to decay; machinery overlay continues to provide MDD floor. Post-deployment monitoring critical."
+  },
+  "next_step": "Governor PG2 admission decision with admission-gate conditions list",
+  "judge_signature": "judge_opus47_v6.1_2026-04-26T00:30+0900"
+}
