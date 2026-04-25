@@ -1,0 +1,152 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "risk_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:18:13+09:00",
+  "task_id": "WT-D20260425_009",
+  "stance": "REJECT",
+  "veto_flag": false,
+  "stance_rationale": "Sigma is PSD but fails the post-shrink conditioning gate at the security-covariance level (cond ~500 > 100). Tail, regime, and crowding controls are incomplete or breached, so RF-R2/R4/R8 remain open.",
+  "sigma_audit": {
+    "method_selected": "ledoit_wolf_constcor (factor covariance) + ridge-adjusted security covariance",
+    "cond_post_shrink": 499.9729,
+    "pd_verified": true,
+    "shrinkage_intensity": null,
+    "factor_coverage_r2": 0.154,
+    "method_shopping_count": 3,
+    "rf_r2_flag": true
+  },
+  "regime_sigma_audit": {
+    "regime_n": {
+      "BULL": 20,
+      "NORMAL": 20,
+      "CAUTION": 0,
+      "CRISIS": 3
+    },
+    "crisis_fallback_method": "not_declared",
+    "rf_r8_flag": true,
+    "regime_switch_rate_estimated": null,
+    "regime_switch_rate_realized": null,
+    "comment": "Regime table reports Bull=20, Bear=17, Normal=20, Crisis=3; no bootstrap CI or explicit CRISIS fallback bounds despite n=3."
+  },
+  "tail_risk_audit": {
+    "cvar_95": 0.104,
+    "cvar_cap": 0.025,
+    "cvar_breach": true,
+    "hill_alpha": null,
+    "rf_r6_flag": true,
+    "stress_8_pass": false,
+    "worst_stress_period": "GFC_2008",
+    "worst_stress_loss": -0.3803
+  },
+  "crowding_audit": {
+    "tdc_vs_pg2": null,
+    "hhi": 0.47,
+    "rf_r3_flag": true,
+    "family_saturation_check": "L-219 style saturation vs existing PG2 active book not evidenced; style correlation vs existing active is missing."
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C9",
+      "status": "FAIL",
+      "evidence": "Risk package does not provide direct vol_lag/dd_lag implementation proof; only downstream Forge text claims lag compliance."
+    },
+    {
+      "check": "C11",
+      "status": "FAIL",
+      "evidence": "No explicit external-series lag audit evidence (FRED/KR internals lag handling) in risk artifacts."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "external_factor_data.pit_compliance documents annual May lag and quarterly 45d lag."
+    },
+    {
+      "check": "C12",
+      "status": "FAIL",
+      "evidence": "Factor-return PIT calculation is asserted but not fully verified; v1-v2 overlap correlations are weak and legacy builder is unavailable."
+    }
+  ],
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "Post-shrink security covariance fails numerical-stability gate: cond ~499.97 (>100) even though factor covariance cond is ~96.8, so the reported stability signal is internally inconsistent for optimizer use.",
+      "ax_cite": "RF-R2|AX-002|AX-008"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Tail risk breaches hard cap: CVaR95 magnitude 10.4% vs cap 2.5%, and there is no risk infeasibility escalation despite stress loss -38.03% in GFC scenario.",
+      "ax_cite": "RF-R4|AX-002|L-129"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "Regime CRISIS sample is n=3 with no bootstrap CI and no documented pooled fallback/bounds tightening, violating small-sample safeguards.",
+      "ax_cite": "RF-R8|AX-002|PIT-C1"
+    },
+    {
+      "id": "C4",
+      "severity": "HIGH",
+      "description": "EVT control is incomplete: Hill alpha and CDaR are missing, and VaR/ES are not reported in both parametric and EVT forms as required.",
+      "ax_cite": "RF-R6|RF-R4|L-129"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Crowding diagnostics are mis-specified/incomplete: HHI=0.47 is computed on top-alpha market-cap concentration (not PG2 active-book overlap), while TDC-vs-PG2 and style correlation are absent.",
+      "ax_cite": "RF-R3|L-219|AX-002"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "PIT evidence gaps remain for C11/C12 and partially C9; process claims are not backed by direct risk-side audit traces.",
+      "ax_cite": "PIT-C11|PIT-C12|AX-002"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Key estimator transparency is missing: shrinkage intensity delta is absent, factor-coverage interpretation is inconsistent across artifacts, and selection objective 'shrinkage_quality' is not operationally defined.",
+      "ax_cite": "RF-R2|AX-002|AX-008"
+    }
+  ],
+  "supporting_arguments": [
+    "Security covariance is symmetric and PSD with min eigenvalue 0.017234 (>0).",
+    "Method shopping was executed (sample, LW const-correlation, LW oracle) and selection log is present.",
+    "No-silent-override artifact exists (risk_challenge_note.md) and challenge review was recorded."
+  ],
+  "unresolved_disputes": [
+    "Requested path set includes qepm/stage_artifacts/WT_WT-D20260425_009, but task artifacts are split across stage_artifacts/WT-D20260425_009 and 04_Research/stage_artifacts/WT_WT-D20260425_009.",
+    "Risk narratives are inconsistent on variance decomposition (diagnostics systematic 15.4% vs narrative idiosyncratic 70.7% implying 29.3% systematic).",
+    "weights.csv and alpha_scores.parquet are single-date snapshots (2026-04-25), while Forge claims walk-forward from an external rolling file (WT_005); canonical schedule source is ambiguous.",
+    "Regime naming mismatch (Bear reported, schema expects Caution) prevents clean regime-policy mapping."
+  ],
+  "weakest_assumption": "Assuming factor-covariance conditioning (~96.8) is sufficient proof of full security-covariance usability, despite actual security Sigma condition ~500 and unresolved tail/regime breaches.",
+  "rebuttal_required": [
+    "Provide security-covariance stabilization that achieves cond <= 100 (or formally justified alternative) and disclose shrinkage intensity delta.",
+    "Submit full tail package: CVaR/CDaR caps, EVT-GPD with Hill alpha, and explicit infeasibility handling for CVaR breach.",
+    "For CRISIS regime (n=3), add bootstrap CI plus documented pooled fallback and tightened optimizer bounds.",
+    "Report crowding relative to existing PG2 active book: TDC, style correlation, and active-weight HHI on a consistent basis.",
+    "Deliver direct PIT audit traces for C9/C11/C12 rather than inherited narrative claims.",
+    "Resolve artifact-location and schedule-lineage ambiguity with one canonical WT-D20260425_009 artifact map."
+  ],
+  "rationalization_red_flags": [
+    "표본 확장 효과 미미",
+    "alpha 손실 미미"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Risk package passes PSD but fails core stability/tail/regime completeness checks; no clear 2-source PASS triangulation is demonstrated for this risk sign-off."
+  },
+  "risk_specific_questions": [
+    "CVaR95 magnitude is 10.4% vs cap 2.5%; why is cvar_breach treated as false/no-escalation downstream?",
+    "What is the exact shrinkage intensity delta for LW, and what post-shrink security-covariance metric is your formal optimizer gate?",
+    "With CRISIS n=3, what bootstrap/fallback rule will govern bounds and turnover under regime switching?"
+  ]
+}

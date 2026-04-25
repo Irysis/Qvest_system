@@ -1,0 +1,136 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "risk_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:18:00+09:00",
+  "task_id": "WT-D20260425_008",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "핵심 리스크 게이트(RF-R2, RF-R4, RF-R8)가 미충족인데도 패키지는 이를 통과로 처리하고 있습니다. 특히 최종 security Σ 조건수, 스트레스 손실, CVaR cap 처리, regime fallback 증빙이 역할 프롬프트 기준과 충돌합니다.",
+  "sigma_audit": {
+    "method_selected": "ledoit_wolf_oracle",
+    "cond_post_shrink": 197.47,
+    "pd_verified": true,
+    "shrinkage_intensity": null,
+    "factor_coverage_r2": 0.328,
+    "method_shopping_count": 5,
+    "rf_r2_flag": true
+  },
+  "regime_sigma_audit": {
+    "regime_n": {
+      "BULL": 0,
+      "NORMAL": 252,
+      "CAUTION": 0,
+      "CRISIS": 0
+    },
+    "crisis_fallback_method": "none_documented",
+    "rf_r8_flag": true,
+    "regime_switch_rate_estimated": null,
+    "regime_switch_rate_realized": null,
+    "comment": "regime_correlation.parquet에는 Normal만 존재하며 CRISIS bootstrap CI/pooled fallback 명시가 없습니다."
+  },
+  "tail_risk_audit": {
+    "cvar_95": 0.1167,
+    "cvar_cap": 0.025,
+    "cvar_breach": true,
+    "hill_alpha": 0.4579,
+    "rf_r6_flag": true,
+    "stress_8_pass": false,
+    "worst_stress_period": "GFC_2008",
+    "worst_stress_loss": -0.4295
+  },
+  "crowding_audit": {
+    "tdc_vs_pg2": 0.1667,
+    "hhi": 0.2535,
+    "rf_r3_flag": false,
+    "family_saturation_check": "Analyst_Consensus 4/6 factors (67%); saturation warning remains."
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C9",
+      "status": "FAIL",
+      "evidence": "run_risk_iter3.R는 regime_v7를 병합해 사용하지만 dd_lag/vol_lag 구현 증거를 직접 제시하지 않습니다."
+    },
+    {
+      "check": "C11",
+      "status": "FAIL",
+      "evidence": "외부 시계열(FRED/KR internals) lag 검증 로직 또는 산출물 증빙이 없습니다."
+    },
+    {
+      "check": "C12",
+      "status": "FAIL",
+      "evidence": "factor return PIT 검증이 6개월 샘플(32점) 기반 근사치이며 KR FF5 v2 backfill 검증 로그가 없습니다."
+    }
+  ],
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "FAIL",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "최종 security covariance의 cond가 197.47로 100 초과인데 RF-R2 미발행입니다. 코드도 RF-R2 기준을 cond>500으로 완화해 역할 프롬프트 기준을 우회합니다.",
+      "ax_cite": "AX-002|RF-R2|PIT-C1"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "stress test에서 GFC_2008=-42.95%로 단일 구간 손실 25% 초과(RF-R4)인데, 경고 로직은 market_down_5<-8%만 검사해 tail gate를 놓칩니다.",
+      "ax_cite": "AX-002|RF-R4|L-129"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "CVaR cap(0.025) 위반이 명백합니다(cvar_95_monthly_proxy=0.1167, optimizer cvar_cap_breach=true)인데 infeasibility_report가 null이며 CDaR_95 산출도 없습니다.",
+      "ax_cite": "AX-002|RF-R4|RF-R6"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "regime audit이 Normal(n=252) 단일 상태에 머물러 CRISIS/BULL/CAUTION 추정, bootstrap CI, fallback 정의가 누락되어 RF-R8 통제가 비어 있습니다.",
+      "ax_cite": "RF-R8|PIT-C9|AX-001"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "요청된 stage path `qepm/stage_artifacts/WT_WT-D20260425_008`가 부재하고, risk refs는 루트 기준으로는 미해결(작업 디렉터리 상대일 때만 존재)이며 `tail_risk.json`도 없습니다.",
+      "ax_cite": "AX-008|PIT-C1"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "`alpha_scores.parquet`가 단일 sig_date(2024-01-01)이고 `weights.csv`에 날짜 축이 없어, walk-forward 주장(313 dates)을 리스크 아티팩트만으로 재현 검증할 수 없습니다.",
+      "ax_cite": "AX-008|PIT-C1|L-119"
+    }
+  ],
+  "supporting_arguments": [
+    "PD 자체는 유지됩니다(min_eig≈1.85e-05, negative eigenvalue 없음).",
+    "방법 비교 로그(5 estimators)와 selection_objective=condition_number는 문서화되어 있습니다.",
+    "crowding 측면에서 TDC(0.1667)는 baseline(0.4762) 대비 개선되었지만, 이는 핵심 tail/conditioning 실패를 상쇄하지 못합니다."
+  ],
+  "unresolved_disputes": [
+    "cond 기준을 factor Ω(≈82.6)로 볼지, 최종 security Σ(≈197.5)로 볼지의 공식 기준 확정이 필요합니다.",
+    "Forge의 313 walk-forward 주장과 현재 제출된 단일-date alpha/weights 아티팩트 간 불일치의 정식 해명이 필요합니다.",
+    "CVaR cap 0.025가 hard gate인지 recommendation인지(패키지 간 표현 충돌) 정책 명확화가 필요합니다."
+  ],
+  "weakest_assumption": "factor-level Ω 조건수(82.48)가 양호하므로 security-level Σ 조건수(197.47)와 tail loss 초과를 실무적으로 허용해도 된다는 가정.",
+  "rebuttal_required": [
+    "security Σ 기준 cond≤100을 충족하도록 shrinkage/regularization 재설계 후 재산출 로그 제출.",
+    "RF-R4 규칙을 실제 stress period 손실(>25%) 기준으로 재구현하고 challenge_flags 재발행.",
+    "CVaR_95/CDaR_95를 동일 horizon(monthly)으로 재계산하고 cap breach 시 infeasibility_report를 필수 첨부.",
+    "CRISIS/BULL/CAUTION regime에 대한 bootstrap CI 또는 pooled fallback(명시적 방법) 제출.",
+    "walk-forward 시계열 `Date×Ticker` alpha/weights 아티팩트(다중 sig_date)와 경로 일관성(root-resolvable refs) 보완."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "문서 서술은 방어적이지만, 실제 아티팩트 수치(cond/stress/CVaR/regime coverage)와 규칙 임계치가 불일치합니다."
+  },
+  "risk_specific_questions": [
+    "security Σ cond>100인데도 RF-R2를 cond>500로 완화한 근거(공식 규정 변경 기록)는 어디에 있습니까?",
+    "CVaR cap breach를 인정하면서 infeasibility_report를 비워둔 이유와 승인 절차는 무엇입니까?",
+    "CRISIS regime 부재 상황에서 optimizer에 전달할 pooled/bootstrapped fallback Σ를 왜 정의하지 않았습니까?"
+  ]
+}
