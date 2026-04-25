@@ -403,18 +403,33 @@ for (rg in regimes) {
   W <- dcast(sub, ym ~ Ticker, value.var = "Ret_M")
   R_mat <- as.matrix(W[, -1, with = FALSE])
   T_obs <- nrow(R_mat)
-  cat(sprintf("Regime %s: T=%d\n", rg, T_obs))
+  cat(sprintf("Regime %s: T=%d (raw)\n", rg, T_obs))
   if (T_obs < 5) {
     regime_meta[[rg]] <- list(regime = rg, T = T_obs,
                               method = "pooled_fallback_thin", fallback = TRUE)
     next
   }
+  # Filter rows with too many NA (require at least 50% non-NA tickers per row)
+  row_na_share <- rowMeans(is.na(R_mat))
+  R_mat_keep <- R_mat[row_na_share <= 0.5, , drop = FALSE]
+  # Drop tickers (cols) with more than 50% NA in this regime
+  col_na_share <- colMeans(is.na(R_mat_keep))
+  cols_keep <- col_na_share <= 0.5
+  R_mat_keep <- R_mat_keep[, cols_keep, drop = FALSE]
+  # Replace remaining NA with 0 (small concession; mostly applies to never-listed tickers)
+  R_mat_keep[is.na(R_mat_keep)] <- 0
+  T_eff <- nrow(R_mat_keep); P_eff <- ncol(R_mat_keep)
+  cat(sprintf("  T_eff=%d P_eff=%d after NA filter\n", T_eff, P_eff))
+  if (T_eff < 5 || P_eff < 3) {
+    regime_meta[[rg]] <- list(regime = rg, T = T_obs, T_eff = T_eff, P_eff = P_eff,
+                              method = "fallback_thin_post_na", fallback = TRUE)
+    next
+  }
   cor_r <- tryCatch({
-    if (T_obs >= 12) cov_lw_constcor(R_mat[complete.cases(R_mat), , drop = FALSE])
-    else cov_lw_oracle(R_mat[complete.cases(R_mat), , drop = FALSE])
+    if (T_eff >= 12) cov_lw_constcor(R_mat_keep) else cov_lw_oracle(R_mat_keep)
   }, error = function(e) NULL)
-  if (is.null(cor_r) || nrow(cor_r) == 0) {
-    regime_meta[[rg]] <- list(regime = rg, T = T_obs,
+  if (is.null(cor_r) || nrow(cor_r) == 0 || any(!is.finite(cor_r))) {
+    regime_meta[[rg]] <- list(regime = rg, T = T_obs, T_eff = T_eff,
                               method = "fallback_failed", fallback = TRUE)
     next
   }
@@ -424,10 +439,11 @@ for (rg in regimes) {
   eig_r <- eigen(cor_r, symmetric = TRUE, only.values = TRUE)$values
   cn_r <- max(eig_r) / max(min(eig_r), 1e-12)
   regime_meta[[rg]] <- list(
-    regime = rg, T = T_obs, mean_correlation = mean_corr,
+    regime = rg, T = T_obs, T_eff = T_eff, P_eff = P_eff,
+    mean_correlation = mean_corr,
     condition_number = cn_r, min_eig = min(eig_r),
     psd = all(eig_r > 1e-12),
-    method = if (T_obs >= 12) "ledoit_wolf_constcor" else "ledoit_wolf_oracle",
+    method = if (T_eff >= 12) "ledoit_wolf_constcor" else "ledoit_wolf_oracle",
     fallback = FALSE
   )
   cat(sprintf("  cond=%.2f mean_corr=%.3f PSD=%s\n", cn_r, mean_corr,
