@@ -1,0 +1,462 @@
+{
+  "task_id": "WT-D20260425_007",
+  "as_of_date": "2026-04-25",
+  "signal_as_of": "2024-01-01",
+  "selection_objective": "to_adj_ret",
+  "method_selected": "RegimeSigma_MinCVaR",
+  "method_selected_rationale": "Selected by cost_adj_sr ranking across 12 methods. Iter2 verdict=ITER2_SUPERIOR. RegimeSigma_MinCVaR cost_adj_sr=1.112 vs baseline Kelly_frac05_LW 0.945. NORMAL SR (target 1.30+): selected=0.952, baseline=0.804. Regime-Σ heterogeneity (CAUTION ρ=0.221 vs NORMAL 0.125) provides dispersion benefit; CRISIS fallback to MinVar/pooled-Σ + alpha_shrinkage=0 mitigates RF-CRISIS-ALPHA-COUPLING + RF-CRISIS-THIN.",
+  "target_weights": {
+    "A058470": 0.1067,
+    "A131290": 0.0231,
+    "A025540": 0.1067,
+    "A166090": 0.0795,
+    "A014680": 0.0537,
+    "A007340": 0.1067,
+    "A047080": 0.0667,
+    "A028260": 0.0438,
+    "A192390": 0.0132,
+    "A005850": 0.0667,
+    "A033500": 0.0667,
+    "A064760": 0.0667,
+    "A121600": 0.0667,
+    "A017370": 0.0667,
+    "A036930": 0.0667,
+    "A230360": 0,
+    "A028050": 0,
+    "A218410": 0,
+    "A092730": 0,
+    "A033640": 0
+  },
+  "active_weights": null,
+  "regime_specific_weights": {
+    "BULL": {
+      "A058470": 0.08,
+      "A131290": 0.08,
+      "A025540": 0.08,
+      "A166090": 0.0603,
+      "A014680": 0.0667,
+      "A007340": 0.08,
+      "A047080": 0.0197,
+      "A028260": 0.0667,
+      "A192390": 0.0667,
+      "A005850": 0,
+      "A033500": 0.0667,
+      "A064760": 0.0667,
+      "A121600": 0.0667,
+      "A017370": 0.0667,
+      "A036930": 0.0667,
+      "A230360": 0,
+      "A028050": 0,
+      "A218410": 0,
+      "A092730": 0.0667,
+      "A033640": 0
+    },
+    "NORMAL": {
+      "A058470": 0.1067,
+      "A131290": 0.0613,
+      "A025540": 0.1067,
+      "A166090": 0.0509,
+      "A014680": 0.0385,
+      "A007340": 0.1067,
+      "A047080": 0.0025,
+      "A028260": 0.0601,
+      "A192390": 0.0667,
+      "A005850": 0.0667,
+      "A033500": 0.0667,
+      "A064760": 0.0667,
+      "A121600": 0.0667,
+      "A017370": 0.0667,
+      "A036930": 0.0667,
+      "A230360": 0,
+      "A028050": 0,
+      "A218410": 0,
+      "A092730": 0,
+      "A033640": 0
+    },
+    "CAUTION": {
+      "A058470": 0.1067,
+      "A131290": 0.0231,
+      "A025540": 0.1067,
+      "A166090": 0.0795,
+      "A014680": 0.0537,
+      "A007340": 0.1067,
+      "A047080": 0.0667,
+      "A028260": 0.0438,
+      "A192390": 0.0132,
+      "A005850": 0.0667,
+      "A033500": 0.0667,
+      "A064760": 0.0667,
+      "A121600": 0.0667,
+      "A017370": 0.0667,
+      "A036930": 0.0667,
+      "A230360": 0,
+      "A028050": 0,
+      "A218410": 0,
+      "A092730": 0,
+      "A033640": 0
+    },
+    "CRISIS": {
+      "A058470": 0.0463,
+      "A131290": 0.1,
+      "A025540": 0.0535,
+      "A166090": 0.0048,
+      "A014680": 0.0636,
+      "A007340": 0.0183,
+      "A047080": 0.1,
+      "A028260": 0.0112,
+      "A192390": 0,
+      "A005850": 0,
+      "A033500": 0,
+      "A064760": 0.1,
+      "A121600": 0,
+      "A017370": 0.073,
+      "A036930": 0.005,
+      "A230360": 0.0244,
+      "A028050": 0.1,
+      "A218410": 0.1,
+      "A092730": 0.1,
+      "A033640": 0.1
+    }
+  },
+  "crisis_fallback_strategy": {
+    "spec": "alpha_shrinkage_to_zero + MinVar on pooled Σ + tighter bounds [0, 0.10]",
+    "alpha_scale": 0,
+    "sigma_source": "POOLED",
+    "bounds_override": [0, 0.1],
+    "rationale": "CRISIS regime alpha IC = -0.0466 (negative; alpha is contra-indicator) AND Σ_CRISIS T=5 thin → pooled fallback (δ=0.907). Both signal and risk model unreliable. Optimizer minimizes variance with no alpha tilt + dispersion (10% cap) — defensive posture.",
+    "references": ["AX-001 v2 defense conditional", "RF-CRISIS-THIN", "RF-CRISIS-ALPHA-COUPLING", "Risk Mgr handoff recommendation"]
+  },
+  "regime_transition_cost_internalized": {
+    "annual_switch_rate": 3.934,
+    "estimated_ann_turnover_pct": 141.77,
+    "estimated_ann_cost_pct": 0.4253,
+    "cost_per_switch_bps": 30,
+    "note": "3.93 regime switches/yr × Δw L1/2 × 30bps round-trip. Total ann_cost = 0.43% of NAV."
+  },
+  "expected_active_return": 2.8626,
+  "expected_tracking_error": 0.0615,
+  "expected_information_ratio": 46.5116,
+  "turnover": 1.4177,
+  "estimated_cost": 0.0043,
+  "binding_constraints": "none",
+  "infeasibility_report": null,
+  "hard_constraints_check": {
+    "max_names": 20,
+    "n_names": 15,
+    "pass": true,
+    "weight_bounds": [0, 0.2],
+    "max_w": 0.1067,
+    "min_w": 0,
+    "pass_bounds": true,
+    "sigma_w": 1,
+    "pass_sum": true,
+    "hhi": 0.0771,
+    "hhi_cap": 0.1,
+    "pass_hhi": true,
+    "long_only": true
+  },
+  "n_names": 15,
+  "hhi": 0.0771,
+  "min_names_enforced": true,
+  "hhi_enforced": true,
+  "winsor_applied": true,
+  "lambda_used": 2,
+  "lambda_retries": 0,
+  "method_comparison": {
+    "RegimeSigma_MinCVaR": {
+      "sr_overall": 1.1287,
+      "sr_BULL": 4.0442,
+      "sr_NORMAL": 0.9523,
+      "sr_CAUTION": 2.2424,
+      "sr_CRISIS": -1.3074,
+      "cagr": 0.296,
+      "mdd": -0.4183,
+      "ann_turnover": 1.4177,
+      "ann_cost": 0.0043,
+      "cost_adj_sr": 1.1123,
+      "n_switches": 26
+    },
+    "Regime_MVO": {
+      "sr_overall": 1.0892,
+      "sr_BULL": 4.0338,
+      "sr_NORMAL": 0.8977,
+      "sr_CAUTION": 2.2294,
+      "sr_CRISIS": -1.2948,
+      "cagr": 0.2896,
+      "mdd": -0.4347,
+      "ann_turnover": 0.8531,
+      "ann_cost": 0.0026,
+      "cost_adj_sr": 1.0796,
+      "n_switches": 26
+    },
+    "Pooled_MVO": {
+      "sr_overall": 1.0917,
+      "sr_BULL": 4.1296,
+      "sr_NORMAL": 0.8546,
+      "sr_CAUTION": 2.2853,
+      "sr_CRISIS": -1.2548,
+      "cagr": 0.2851,
+      "mdd": -0.435,
+      "ann_turnover": 0,
+      "ann_cost": 0,
+      "cost_adj_sr": 1.0917,
+      "n_switches": 26
+    },
+    "Kelly_frac05_LW": {
+      "sr_overall": 0.9451,
+      "sr_BULL": 3.1677,
+      "sr_NORMAL": 0.8037,
+      "sr_CAUTION": 1.9694,
+      "sr_CRISIS": -1.3842,
+      "cagr": 0.2562,
+      "mdd": -0.4458,
+      "ann_turnover": 0,
+      "ann_cost": 0,
+      "cost_adj_sr": 0.9451,
+      "n_switches": 26
+    },
+    "Regime_HRP": {
+      "sr_overall": 0.7027,
+      "sr_BULL": 3.6657,
+      "sr_NORMAL": 0.5224,
+      "sr_CAUTION": 1.8355,
+      "sr_CRISIS": -2.0049,
+      "cagr": 0.1655,
+      "mdd": -0.4233,
+      "ann_turnover": 2.4819,
+      "ann_cost": 0.0074,
+      "cost_adj_sr": 0.6751,
+      "n_switches": 26
+    },
+    "Regime_ERC": {
+      "sr_overall": 1.0241,
+      "sr_BULL": 4.5618,
+      "sr_NORMAL": 0.8882,
+      "sr_CAUTION": 1.9215,
+      "sr_CRISIS": -1.3486,
+      "cagr": 0.2594,
+      "mdd": -0.4187,
+      "ann_turnover": 0.0056,
+      "ann_cost": 0,
+      "cost_adj_sr": 1.0241,
+      "n_switches": 26
+    },
+    "Regime_MaxDiv": {
+      "sr_overall": 1.0247,
+      "sr_BULL": 4.5622,
+      "sr_NORMAL": 0.8891,
+      "sr_CAUTION": 1.9214,
+      "sr_CRISIS": -1.3489,
+      "cagr": 0.2596,
+      "mdd": -0.4188,
+      "ann_turnover": 0,
+      "ann_cost": 0,
+      "cost_adj_sr": 1.0247,
+      "n_switches": 26
+    },
+    "Regime_MinVar": {
+      "sr_overall": 0.7342,
+      "sr_BULL": 2.555,
+      "sr_NORMAL": 0.5195,
+      "sr_CAUTION": 1.7641,
+      "sr_CRISIS": -1.2839,
+      "cagr": 0.1883,
+      "mdd": -0.4747,
+      "ann_turnover": 2.0306,
+      "ann_cost": 0.0061,
+      "cost_adj_sr": 0.7135,
+      "n_switches": 26
+    },
+    "EqualWeight": {
+      "sr_overall": 1.0247,
+      "sr_BULL": 4.5622,
+      "sr_NORMAL": 0.8891,
+      "sr_CAUTION": 1.9214,
+      "sr_CRISIS": -1.3489,
+      "cagr": 0.2596,
+      "mdd": -0.4188,
+      "ann_turnover": 0,
+      "ann_cost": 0,
+      "cost_adj_sr": 1.0247,
+      "n_switches": 26
+    },
+    "Blended_Sigma_MVO": {
+      "sr_overall": 1.0998,
+      "sr_BULL": 4.1092,
+      "sr_NORMAL": 0.8706,
+      "sr_CAUTION": 2.2621,
+      "sr_CRISIS": -1.2396,
+      "cagr": 0.2886,
+      "mdd": -0.4349,
+      "ann_turnover": 0,
+      "ann_cost": 0,
+      "cost_adj_sr": 1.0998,
+      "n_switches": 26
+    },
+    "RegimeSigma_MinCVaR_Cautious": {
+      "sr_overall": 1.1286,
+      "sr_BULL": 4.0442,
+      "sr_NORMAL": 0.9525,
+      "sr_CAUTION": 2.2646,
+      "sr_CRISIS": -1.3148,
+      "cagr": 0.2946,
+      "mdd": -0.4161,
+      "ann_turnover": 1.4386,
+      "ann_cost": 0.0043,
+      "cost_adj_sr": 1.1119,
+      "n_switches": 26
+    },
+    "Ensemble_3x": {
+      "sr_overall": 1.0905,
+      "sr_BULL": 4.2548,
+      "sr_NORMAL": 0.921,
+      "sr_CAUTION": 2.1497,
+      "sr_CRISIS": -1.3235,
+      "cagr": 0.2824,
+      "mdd": -0.4239,
+      "ann_turnover": 0.7435,
+      "ann_cost": 0.0022,
+      "cost_adj_sr": 1.0819,
+      "n_switches": 26
+    }
+  },
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 12,
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "method_log": [
+        {
+          "name": "RegimeSigma_MinCVaR",
+          "cost_adj_sr": 1.1123,
+          "sr_NORMAL": 0.9523,
+          "selected": true
+        },
+        {
+          "name": "Regime_MVO",
+          "cost_adj_sr": 1.0796,
+          "sr_NORMAL": 0.8977,
+          "selected": false
+        },
+        {
+          "name": "Pooled_MVO",
+          "cost_adj_sr": 1.0917,
+          "sr_NORMAL": 0.8546,
+          "selected": false
+        },
+        {
+          "name": "Kelly_frac05_LW",
+          "cost_adj_sr": 0.9451,
+          "sr_NORMAL": 0.8037,
+          "selected": false
+        },
+        {
+          "name": "Regime_HRP",
+          "cost_adj_sr": 0.6751,
+          "sr_NORMAL": 0.5224,
+          "selected": false
+        },
+        {
+          "name": "Regime_ERC",
+          "cost_adj_sr": 1.0241,
+          "sr_NORMAL": 0.8882,
+          "selected": false
+        },
+        {
+          "name": "Regime_MaxDiv",
+          "cost_adj_sr": 1.0247,
+          "sr_NORMAL": 0.8891,
+          "selected": false
+        },
+        {
+          "name": "Regime_MinVar",
+          "cost_adj_sr": 0.7135,
+          "sr_NORMAL": 0.5195,
+          "selected": false
+        },
+        {
+          "name": "EqualWeight",
+          "cost_adj_sr": 1.0247,
+          "sr_NORMAL": 0.8891,
+          "selected": false
+        },
+        {
+          "name": "Blended_Sigma_MVO",
+          "cost_adj_sr": 1.0998,
+          "sr_NORMAL": 0.8706,
+          "selected": false
+        },
+        {
+          "name": "RegimeSigma_MinCVaR_Cautious",
+          "cost_adj_sr": 1.1119,
+          "sr_NORMAL": 0.9525,
+          "selected": false
+        },
+        {
+          "name": "Ensemble_3x",
+          "cost_adj_sr": 1.0819,
+          "sr_NORMAL": 0.921,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "iter2_verdict": "ITER2_SUPERIOR",
+  "iter2_specific": {
+    "iter2_method": "RegimeSigma_MinCVaR",
+    "baseline_method": "Kelly_frac05_LW",
+    "delta_overall_sr": 0.1836,
+    "delta_normal_sr": 0.1486,
+    "delta_cost_adj_sr": 0.1672,
+    "target_normal_sr": 1.3,
+    "iter2_normal_sr_achieved": 0.9523,
+    "target_met": false
+  },
+  "explanation": {
+    "top_overweights": ["A058470", "A025540", "A007340", "A166090", "A047080"],
+    "main_tradeoffs": ["RegimeSigma_MinCVaR exploits CAUTION ρ=0.221 (76% above BULL/NORMAL) for dispersion", "CRISIS: alpha shrinkage to zero + MinVar on pooled Σ — defensive posture (alpha contra-indicator)", "Regime switch turnover 141.8%/yr × 30bps = 0.43%/yr cost"]
+  },
+  "challenge_flags": {
+    "ITER2_VERDICT": {
+      "id": "ITER2-VERDICT",
+      "severity": "INFO",
+      "msg": "Iter 2 (RegimeSigma_MinCVaR) vs Baseline (Kelly_frac05_LW): ITER2_SUPERIOR",
+      "detail": "Iter2 cost_adj_sr=1.112 vs Baseline 0.945. Iter2 NORMAL_SR=0.952 vs Baseline 0.804. Best method: RegimeSigma_MinCVaR."
+    },
+    "CRISIS_FALLBACK": {
+      "id": "CRISIS-FALLBACK",
+      "severity": "HIGH",
+      "msg": "CRISIS regime: alpha IC=-0.0466 + Σ pooled fallback (T=5, δ=0.907)",
+      "detail": "Optimizer policy: alpha_scale=0.0 (full shrinkage to zero) + MinVar on pooled Σ + tighter bounds [0, 0.10]. CRISIS weights are dispersion-maximizing, not alpha-following."
+    },
+    "REGIME_SWITCH_COST": {
+      "id": "REGIME-SWITCH-COST",
+      "severity": "MEDIUM",
+      "msg": "Regime switch cost internalized: 3.93 switches/yr × Δw → ann_to=141.8%, ann_cost=0.4%",
+      "detail": "Annual turnover 141.8% < 600% hard cap. Frobenius distance NORMAL→CAUTION = 0.093 (largest); switching this transition incurs largest weight reset."
+    },
+    "HARD_CONSTRAINTS": {
+      "id": "HARD-CONSTRAINTS-PASS",
+      "severity": "INFO",
+      "msg": "Hard constraints check passed",
+      "detail": "n_names=15 (<=20), Σw=1.0000, max_w=0.1067 (<=0.20), min_w=0.0000 (>=0), HHI=0.0771"
+    }
+  },
+  "challenge_review": {
+    "objection": false,
+    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "crisis_fallback_compatibility", "regime_label_validity"],
+    "note": "Alpha factor mix (6F MEGA_05) + regime label (expanding pct 4-state) + Σ shrinkage choices accepted as-is. CRISIS fallback policy is Optimizer's domain (per Common Charter §8). No silent constraint relaxation."
+  },
+  "pit_compliance": {
+    "C1": "PASS: regime label expanding pct + Σ from train window only",
+    "C2": "PASS: regime t-1 lag enforced upstream by Alpha; weights applied at sig_date_{t+1}",
+    "C9": "PASS: daily ret-to-monthly regime via month-floor join (no same-day VT/DD)",
+    "C10": "PASS: liquidity 2e8 floor inherited from Risk universe",
+    "C11": "PASS: KR internals only",
+    "C13": "PASS: no manual sign flip",
+    "C14": "PASS: no IC time-axis violation",
+    "C15": "PASS: parquet load via factor_db / RAWDATA cache",
+    "note": "Optimizer reads alpha_package + risk_package (read-only). No regime/Σ re-estimation."
+  },
+  "references": ["Rockafellar-Uryasev (2000) — CVaR LP", "Ang-Bekaert (2002) — regime conditional", "Ledoit-Wolf (2004) — shrinkage covariance", "QEPM L-122 — factor timing risk-managed (Barroso&Santa-Clara 2015)", "QEPM L-454 — KR internals dominance", "AX-001 v2 — defense conditional crisis_alpha + MDD ratio + IC ratio", "AX-002 — process honesty (no silent override)"]
+}

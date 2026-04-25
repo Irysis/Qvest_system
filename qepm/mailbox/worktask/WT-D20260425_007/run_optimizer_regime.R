@@ -156,22 +156,98 @@ project_to_feasible <- function(w, bounds = HARD_BOUNDS, target_sum = HARD_TARGE
   w
 }
 
-# ── 4.1 MVO (per Σ) ────────────────────────────────────────────────
+# ── 4.1 MVO (per Σ) — with min_names enforcement + HHI projection ──
 solve_mvo <- function(alpha, Sigma, lambda = 2.0, psi = 0.3, conf = NULL,
-                       bounds = HARD_BOUNDS) {
+                       bounds = HARD_BOUNDS, min_names = 15L, hhi_cap = 0.10,
+                       alpha_winsor = 2.0) {
   D <- length(alpha)
   if (is.null(conf)) conf <- rep(1, D)
+  # Alpha winsorize
+  if (!is.null(alpha_winsor) && alpha_winsor > 0) {
+    mu <- mean(alpha); sdv <- stats::sd(alpha)
+    if (sdv > 1e-12) {
+      z <- (alpha - mu) / sdv
+      over <- abs(z) > alpha_winsor
+      alpha[over] <- sign(z[over]) * alpha_winsor * sdv + mu
+    }
+  }
   alpha_tilde <- alpha * conf
   fu_diag <- psi * (1 - conf)^2
-  Dmat <- lambda * Sigma + diag(2 * fu_diag)
-  diag(Dmat) <- diag(Dmat) + 1e-8
-  dvec <- as.vector(alpha_tilde)
-  Amat <- cbind(rep(1, D), diag(D), -diag(D))
-  bvec <- c(1, rep(bounds[1], D), rep(-bounds[2], D))
-  sol <- tryCatch(solve.QP(Dmat, dvec, Amat, bvec, meq = 1),
-                  error = function(e) NULL)
-  if (is.null(sol)) return(rep(1/D, D))  # fallback EW
+
+  mvo_solve_internal <- function(lam_val) {
+    Dmat <- lam_val * Sigma + diag(2 * fu_diag)
+    diag(Dmat) <- diag(Dmat) + 1e-8
+    dvec <- as.vector(alpha_tilde)
+    Amat <- cbind(rep(1, D), diag(D), -diag(D))
+    bvec <- c(1, rep(bounds[1], D), rep(-bounds[2], D))
+    tryCatch(solve.QP(Dmat, dvec, Amat, bvec, meq = 1), error = function(e) NULL)
+  }
+  sol <- mvo_solve_internal(lambda)
+  if (is.null(sol)) return(rep(1/D, D))
   w <- sol$solution
+  names(w) <- names(alpha)
+
+  # Lambda retry to enforce min_names
+  retries <- 0
+  active_count <- function(w) sum(w > 1e-6)
+  lam_used <- lambda
+  while (active_count(w) < min_names && retries < 5) {
+    retries <- retries + 1
+    lam_used <- lam_used * 2  # increase risk-aversion → diversify more
+    sol2 <- mvo_solve_internal(lam_used)
+    if (is.null(sol2)) break
+    w_new <- sol2$solution; names(w_new) <- names(alpha)
+    if (active_count(w_new) > active_count(w)) w <- w_new
+  }
+
+  # If still under min_names, top-K alpha boost
+  if (active_count(w) < min_names) {
+    inactive <- which(w <= 1e-6)
+    n_need <- min_names - active_count(w)
+    if (length(inactive) > 0) {
+      ord <- inactive[order(alpha_tilde[inactive], decreasing = TRUE)]
+      add_idx <- head(ord, n_need)
+      baseline <- min(1 / min_names, bounds[2])
+      w[add_idx] <- baseline
+      # Rescale others
+      existing <- setdiff(which(w > 1e-6), add_idx)
+      excess <- sum(w) - 1
+      if (excess > 0 && length(existing) > 0) {
+        scale <- max(0, (sum(w[existing]) - excess) / sum(w[existing]))
+        w[existing] <- w[existing] * scale
+      }
+      w <- pmax(pmin(w, bounds[2]), bounds[1])
+      if (sum(w) > 0) w <- w / sum(w)
+    }
+  }
+
+  # HHI projection
+  if (!is.null(hhi_cap) && hhi_cap > 0 && sum(w^2) > hhi_cap + 1e-6) {
+    iter <- 0
+    step <- 0.005
+    while (sum(w^2) > hhi_cap + 1e-6 && iter < 500) {
+      iter <- iter + 1
+      reducible <- which(w > bounds[1] + 1e-6)
+      if (length(reducible) == 0) break
+      top_idx <- reducible[which.max(w[reducible])]
+      dec <- min(step, w[top_idx] - bounds[1])
+      if (dec <= 1e-9) break
+      w[top_idx] <- w[top_idx] - dec
+      absorbers <- which(w < bounds[2] - 1e-6 & seq_along(w) != top_idx)
+      if (length(absorbers) == 0) break
+      put <- dec / length(absorbers)
+      for (i in absorbers) {
+        room <- bounds[2] - w[i]
+        actual <- min(room, put)
+        w[i] <- w[i] + actual
+      }
+      # Renorm
+      if (sum(w) > 0) w <- w * (1 / sum(w))
+      w <- pmax(pmin(w, bounds[2]), bounds[1])
+      if (sum(w) > 0) w <- w / sum(w)
+    }
+  }
+
   w[w < 1e-7] <- 0
   if (sum(w) > 0) w <- w / sum(w)
   names(w) <- names(alpha)
@@ -730,8 +806,10 @@ hhi_final <- sum(target_weights^2)
 
 cat(sprintf("  Target weights: n_names=%d / 20, Σw=%.4f, HHI=%.4f\n",
             n_names_final, sum(target_weights), hhi_final))
-cat(sprintf("  Max weight: %.4f, Min weight: %.4f\n",
-            max(target_weights), min(target_weights[target_weights > 0] %||% 0)))
+tw_pos <- target_weights[target_weights > 0]
+min_pos_w <- if (length(tw_pos) > 0) min(tw_pos) else 0
+cat(sprintf("  Max weight: %.4f, Min positive weight: %.4f\n",
+            max(target_weights), min_pos_w))
 
 # Top 5 overweights
 top5 <- names(sort(target_weights, decreasing = TRUE)[1:5])
