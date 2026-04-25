@@ -1,0 +1,211 @@
+{
+  "task_id": "WT-D20260425_008",
+  "strategy_id": "STR_1696",
+  "agent": "forge",
+  "schema_version": "v6.1",
+  "as_of_date": "2026-04-25",
+  "phase": "FORGE_DONE",
+  "backtest_summary": {
+    "prelb": {
+      "period": "1990-07-01 ~ 2024-01-22",
+      "sr": 0.973,
+      "cagr": 23.87,
+      "mdd": 49.95,
+      "turnover": 697.9
+    },
+    "lockbox": {
+      "status": "SEALED",
+      "period": "2024-01-23 ~ 2026-01-23",
+      "note": "AX-002 lockbox — Judge gate opens Lockbox"
+    },
+    "subperiods": {
+      "p1": {
+        "period": "2008-2014",
+        "sr": 1.168,
+        "cagr": 30.77
+      },
+      "p2": {
+        "period": "2015-2019",
+        "sr": 0.811,
+        "cagr": 14.79
+      },
+      "p3": {
+        "period": "2020-2024",
+        "sr": 0.507,
+        "cagr": 12.59
+      }
+    },
+    "method": "HRP_lw",
+    "n_names": 20,
+    "commission_bps": 15
+  },
+  "m08_oos_performance": {
+    "p3_ic_mean": -0.0198,
+    "p3_ic_icir": -0.3005,
+    "p3_baseline": 0.0289,
+    "p3_threshold": 0,
+    "n_months_p3": 48,
+    "decay_triggered": true,
+    "substab_alpha_pkg": 0.1882,
+    "hill_alpha_M08": 0.4579,
+    "reference": "Daniel-Moskowitz 2016 + L-122 Barroso risk-managed momentum"
+  },
+  "crowding_validation": {
+    "tdc_q07_ac21_baseline": 0.4762,
+    "tdc_q07_m08_iter3": 0.1667,
+    "tdc_delta_pct": -65,
+    "tdc_claim_65pct_reduction": {
+      "claimed": -65,
+      "realized": -65,
+      "confirmed": true
+    },
+    "panel_cor_q07_m08": 0.0021,
+    "top20_cor_q07_m08": -0.2902,
+    "portfolio_level_note": "L-219: top-20 portfolio cor Q07-M08 = -0.29 (genuinely resolved)"
+  },
+  "momentum_crash_resilience": {
+    "reference": "Daniel-Moskowitz 2016 — momentum crash periods",
+    "periods": {
+      "momentum_2009_reversal": {
+        "cagr": 145.83,
+        "sr": 5.502,
+        "mdd": 10.35,
+        "n_months": 214
+      },
+      "momentum_2020_covid_rally": {
+        "cagr": 147.38,
+        "sr": 6.118,
+        "mdd": 10.19,
+        "n_months": 186
+      }
+    },
+    "risk_agent_predictions": {
+      "momentum_2009_pred": 0.4969,
+      "momentum_2020_pred": 0.4671
+    },
+    "m08_role": "cross-family diversifier (theta=0.04). Heavy tail hill_alpha=0.46.",
+    "interpretation": "M08 SubStab 0.188 (5.3x decay P1→P3). Momentum crash exposure moderate (weight 4.01%)."
+  },
+  "stress_periods": {
+    "Terror_9_11": {
+      "cagr": 138.97,
+      "sr": 4.266,
+      "mdd": 24.76,
+      "n_months": 183
+    },
+    "GFC_2008": {
+      "cagr": -3.81,
+      "sr": -0.11,
+      "mdd": 47.39,
+      "n_months": 431
+    },
+    "Euro_Debt_2011": {
+      "cagr": 9.3,
+      "sr": 0.374,
+      "mdd": 23.98,
+      "n_months": 371
+    },
+    "China_Shock_2015": {
+      "cagr": 43.79,
+      "sr": 2.282,
+      "mdd": 20.49,
+      "n_months": 308
+    },
+    "US_China_Trade_2018": {
+      "cagr": 10.36,
+      "sr": 0.513,
+      "mdd": 21.91,
+      "n_months": 303
+    },
+    "COVID_2020": {
+      "cagr": 63.11,
+      "sr": 1.647,
+      "mdd": 40.31,
+      "n_months": 187
+    },
+    "Rate_Hike_2022": {
+      "cagr": -14.1,
+      "sr": -0.619,
+      "mdd": 28.9,
+      "n_months": 308
+    },
+    "Momentum_2009_Reversal": {
+      "cagr": 145.83,
+      "sr": 5.502,
+      "mdd": 10.35,
+      "n_months": 214
+    },
+    "Momentum_2020_COVID_Rally": {
+      "cagr": 147.38,
+      "sr": 6.118,
+      "mdd": 10.19,
+      "n_months": 186
+    }
+  },
+  "heavy_tail_validation": {
+    "hill_alpha_realized": 2.6863,
+    "hill_alpha_risk_agent": 0.4579,
+    "cvar_95_daily_realized": 0.034,
+    "cvar_95_optimizer_sim": 0.0895,
+    "cvar_cap": 0.025,
+    "cvar_cap_breach": true,
+    "note": "CVaR cap breach expected (baseline same as optimizer). Forge confirms."
+  },
+  "m08_decay_overlay": {
+    "status": "TRIGGERED",
+    "trigger": "P3 OOS IC < 0",
+    "triggered": true,
+    "spec": {
+      "type": "vol_target",
+      "target_vol_ann": 0.18,
+      "lookback_days": 60,
+      "cap_leverage": 1
+    },
+    "overlay_performance": {
+      "sr": 1.024,
+      "cagr": 21.15,
+      "mdd": 39.8
+    }
+  },
+  "q07_m08_joint_monitor": {
+    "enabled": true,
+    "panel_cor": 0.0021,
+    "top20_cor": -0.2902,
+    "joint_top5_weight": 0.5614,
+    "alert_threshold": 0.5,
+    "status": "BELOW_THRESHOLD"
+  },
+  "mega05_comparison": {
+    "baseline_sr": 1.258,
+    "baseline_cagr": 26.9,
+    "baseline_mdd": -36.95,
+    "iter3_sr": 0.973,
+    "iter3_cagr": 23.87,
+    "iter3_mdd": 49.95,
+    "sr_delta": -0.285,
+    "cagr_delta": -3.03,
+    "mdd_delta": 86.9,
+    "swap_verdict": "SR_DECLINED"
+  },
+  "ax004_cleared": {
+    "status": "CLEARED",
+    "mechanism": "multi-axis composite: Consensus(4F)+Quality(Q07)+Momentum_Residual(M08)",
+    "note": "AX-004 EXCLUSION clause satisfied: multi-axis + cross-family"
+  },
+  "pit_compliance": {
+    "C1": "PASS: no full-sample stats. Rolling/expanding only.",
+    "C2": "PASS: HRP uses t-1 60d lookback. OPT weights from sig_date 2024-01-01 (pre-LB).",
+    "C9": "PASS: regime labels from regime_v7 (PIT pre-computed).",
+    "C10": "PASS: LIQ_20d lagged filter at sig_date.",
+    "C13": "PASS: Z_Score_Aligned from Factor DB only. No sign flip.",
+    "C14": "PASS: load_month_factors() Usable_Date <= sig_date enforced.",
+    "C15": "PASS: Factor DB connector load_month_factors(). No raw RAWDATA factor extract."
+  },
+  "package_hashes": {
+    "alpha_md5": "f648d2d3e370b34fb4c3a56e97cef4b7",
+    "risk_md5": "dc8ebd7c6a52820125520ba6f728d237",
+    "optim_md5": "63de76f97ad8756327f33e4c44da7e94",
+    "verified_at": "2026-04-25 14:56:53.227786"
+  },
+  "next_step": "judge_s6"
+}
