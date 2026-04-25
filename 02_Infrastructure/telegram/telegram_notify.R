@@ -443,7 +443,8 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
   "Governor" = "👑",
   "Scout"    = "📚",
   "Execution" = "🎬",
-  "Monitoring" = "📡"
+  "Monitoring" = "📡",
+  "Architect" = "🏛️"
 )
 
 # ─── Emoji Catalog v1 (2026-04-24) — SOT for tg_agent_brief sections ────────
