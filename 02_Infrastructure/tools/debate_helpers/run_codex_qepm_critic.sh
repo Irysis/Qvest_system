@@ -130,11 +130,9 @@ EOF
 TOKEN_EST=$(echo "$PROMPT_PAYLOAD" | wc -w)
 echo "  prompt_words: $TOKEN_EST (compact — files read by codex agent)" | tee -a "$AUDIT_LOG"
 
-# Codex companion (legacy proven pattern from run_codex_critic.sh)
-COMPANION=$(ls -t "$HOME/.claude/plugins/cache/openai-codex/codex/"*/scripts/codex-companion.mjs 2>/dev/null | head -1)
-
-if [[ -z "$COMPANION" || ! -f "$COMPANION" ]]; then
-  echo "[ERR] codex-companion.mjs not found. Install codex plugin." >&2
+# Codex CLI direct invocation (companion 1.0.4 미지원 우회 — GPT-5.5 + xhigh)
+if ! command -v codex >/dev/null 2>&1; then
+  echo "[ERR] codex CLI not found. Install via: npm install -g @openai/codex@latest" >&2
   cat > "$OUTPUT" <<JSON
 {
   "agent_id": "codex_qepm_critic",
@@ -143,7 +141,7 @@ if [[ -z "$COMPANION" || ! -f "$COMPANION" ]]; then
   "timestamp": "$(date -Iseconds)",
   "task_id": "$TASK_ID",
   "stance": "STUB",
-  "stance_rationale": "codex-companion runtime unavailable.",
+  "stance_rationale": "codex CLI unavailable.",
   "critical_concerns": [{"id": "STUB-1", "severity": "INFO", "description": "Codex unavailable", "ax_cite": "AX-008"}],
   "weakest_assumption": "stub",
   "rationalization_red_flags": [],
@@ -153,12 +151,58 @@ JSON
   exit 0
 fi
 
-echo "[Codex] companion: $COMPANION" | tee -a "$AUDIT_LOG"
-echo "[Codex] invoking node companion ..." | tee -a "$AUDIT_LOG"
+CODEX_VER=$(codex --version 2>&1 | head -1)
+echo "[Codex] CLI: $CODEX_VER" | tee -a "$AUDIT_LOG"
+echo "[Codex] invoking codex exec --model gpt-5.5 -c reasoning.effort=\"xhigh\" ..." | tee -a "$AUDIT_LOG"
 
-timeout "${CODEX_TIMEOUT:-1200}" node "$COMPANION" task --wait --model gpt-5.5 --effort xhigh "$PROMPT_PAYLOAD" > "$OUTPUT" 2>>"$AUDIT_LOG" || {
-  echo "[WARN] Codex returned non-zero or timed out." | tee -a "$AUDIT_LOG"
+RAW_OUTPUT=$(mktemp /tmp/codex_raw_XXXXXX.txt)
+trap "rm -f $RAW_OUTPUT" EXIT
+
+timeout "${CODEX_TIMEOUT:-1200}" codex exec \
+  --model gpt-5.5 \
+  -c reasoning.effort='"xhigh"' \
+  --skip-git-repo-check \
+  --color never \
+  "$PROMPT_PAYLOAD" > "$RAW_OUTPUT" 2>>"$AUDIT_LOG" || {
+  echo "[WARN] codex exec returned non-zero or timed out." | tee -a "$AUDIT_LOG"
 }
+
+# Extract JSON object from codex stdout (codex output has metadata noise: --------, user, codex, tokens used, etc.)
+python3 <<PYEOF > "$OUTPUT"
+import re, json, sys
+try:
+    text = open("$RAW_OUTPUT", encoding="utf-8").read()
+except Exception as e:
+    print(json.dumps({"stance":"ERROR","error":f"read fail: {e}"}, ensure_ascii=False))
+    sys.exit(0)
+
+# Find largest JSON object (greedy)
+matches = re.findall(r'\{[\s\S]*\}', text)
+parsed = None
+for m in sorted(matches, key=len, reverse=True):
+    try:
+        obj = json.loads(m)
+        if isinstance(obj, dict) and ("stance" in obj or "agent_id" in obj):
+            parsed = obj
+            break
+    except Exception:
+        continue
+
+if parsed is None:
+    print(json.dumps({
+        "agent_id": "codex_qepm_critic",
+        "role": "${ROLE}_critic",
+        "model": "gpt-5.5",
+        "timestamp": "$(date -Iseconds)",
+        "task_id": "$TASK_ID",
+        "stance": "ERROR",
+        "stance_rationale": "Could not extract valid JSON from codex stdout.",
+        "raw_output_excerpt": text[:1000],
+        "audit_log": "$AUDIT_LOG"
+    }, ensure_ascii=False))
+else:
+    print(json.dumps(parsed, ensure_ascii=False))
+PYEOF
 
 # Validate output is valid JSON
 if ! python3 -c "import json; json.load(open('$OUTPUT'))" 2>/dev/null; then
