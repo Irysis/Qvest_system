@@ -7,7 +7,10 @@
   "selection_objective": "net_ir",
   "walk_forward": true,
   "n_sig_dates_walkforward": 213,
-  "walk_forward_date_range": ["2006-01-01", "2023-12-01"],
+  "walk_forward_date_range": [
+    "2006-01-01",
+    "2023-12-01"
+  ],
   "target_weights": {
     "CASH": 0.3,
     "A104830": 0.1031,
@@ -60,7 +63,11 @@
   "expected_mdd": -0.3931,
   "turnover": 4.7154,
   "estimated_cost": 0.0141,
-  "binding_constraints": ["weight_bound_upper", "max_names_20", "cash_overlay_30pct_crisis"],
+  "binding_constraints": [
+    "weight_bound_upper",
+    "max_names_20",
+    "cash_overlay_30pct_crisis"
+  ],
   "infeasibility_report": null,
   "method_selected": "LinTilt_Kelly_Overlay_Quarterly",
   "method_config": {
@@ -73,7 +80,10 @@
     "enable_volreg": true,
     "enable_regime_cash": true,
     "rebalance_every": 3,
-    "pooled_fallback_regimes": ["CRISIS", "CAUTION"],
+    "pooled_fallback_regimes": [
+      "CRISIS",
+      "CAUTION"
+    ],
     "crisis_max_w_shrink": 0.1
   },
   "method_comparison": {
@@ -319,7 +329,10 @@
     },
     "layer_4_pooled_sigma_fallback": {
       "enabled": true,
-      "regimes": ["CRISIS", "CAUTION"],
+      "regimes": [
+        "CRISIS",
+        "CAUTION"
+      ],
       "max_w_shrink": 0.1,
       "note": "Risk Mgr binding rule"
     }
@@ -353,7 +366,10 @@
   },
   "crisis_pooled_fallback": {
     "enforced": true,
-    "regimes_using_pooled": ["CRISIS", "CAUTION"],
+    "regimes_using_pooled": [
+      "CRISIS",
+      "CAUTION"
+    ],
     "rationale": "Risk Mgr binding rule. CRISIS regime Σ cond=564 > 100; pooled cond=100. Per-sig_date Σ uses LW_constcor in CRISIS/CAUTION + max_w 0.10 shrink."
   },
   "hhi_asof": 0.0542,
@@ -389,9 +405,26 @@
     }
   },
   "explanation": {
-    "top_overweights": ["A104830", "A139480", "A185750", "A004800", "A183300"],
-    "top_underweights": ["A086520", "A036930", "A029780", "A001680", "A041510"],
-    "main_tradeoffs": ["Selected LinTilt_Kelly_Overlay_Quarterly (netIR=0.644). Walk-forward over 213 sig_dates.", "Stack: LinearTilt | Kelly=frac0.50 | DD=on | VolReg=12% | RegimeCash=on | Rebal=3M", "CRISIS pooled-Σ + 0.10 max_w shrink. AX-001 v2 cash 0/5/15/30% by regime.", "Σw=1 (incl cash). max_names=20/20. weight_bounds [0,0.20]."],
+    "top_overweights": [
+      "A104830",
+      "A139480",
+      "A185750",
+      "A004800",
+      "A183300"
+    ],
+    "top_underweights": [
+      "A086520",
+      "A036930",
+      "A029780",
+      "A001680",
+      "A041510"
+    ],
+    "main_tradeoffs": [
+      "Selected LinTilt_Kelly_Overlay_Quarterly (netIR=0.644). Walk-forward over 213 sig_dates.",
+      "Stack: LinearTilt | Kelly=frac0.50 | DD=on | VolReg=12% | RegimeCash=on | Rebal=3M",
+      "CRISIS pooled-Σ + 0.10 max_w shrink. AX-001 v2 cash 0/5/15/30% by regime.",
+      "Σw=1 (incl cash). max_names=20/20. weight_bounds [0,0.20]."
+    ],
     "pg2_baseline_note": "PG2 = STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%. TDC at Forge."
   },
   "hard_constraint_compliance": {
@@ -435,5 +468,88 @@
     "RF_O6_sum_w": "PASS",
     "RF_O7_long_only_or_bound": "PASS"
   },
-  "generated_at": "2026-04-26T08:28:09+0900"
+  "generated_at": "2026-04-26T08:40:40+0900",
+  "codex_round": {
+    "rounds_executed": 1,
+    "codex_stance_r1": "REVISE",
+    "weakest_assumption": "The weakest assumption is that cvar95_daily_proxy=0.0244, derived from monthly returns via sqrt(21), proves the selected daily walk-forward portfolio satisfies CVaR and MDD gates.",
+    "critical_concerns_count": 8,
+    "triage_summary": "4 ACCEPT + 3 PARTIAL + 1 REBUTTAL = 8 total concerns",
+    "triage": {
+      "ACCEPT": [
+        {
+          "id": "C3_NO_OPTIMIZER_CHALLENGE_NOTE",
+          "severity": "HIGH",
+          "fix": "optimizer_challenge_note.md authored — R12 No Silent Override compliance"
+        },
+        {
+          "id": "C2_RF_O11_CONFIDENCE_NOT_USED",
+          "severity": "MEDIUM",
+          "fix": "Honest disclosure: LinTilt+Kelly does not directly consume confidence_vector. MVO_Kelly_Overlay variant tested (netIR 0.604 < selected 0.644). RF-A1 mitigation: max_w 0.10 in CRISIS/CAUTION + 30% cash + DD Brake. Confidence-aware variant deferred to Iter 13 enhancement."
+        },
+        {
+          "id": "C5_TASK_LEVEL_COVARIANCE_MISSING",
+          "severity": "MEDIUM",
+          "fix": "Iter 12 is Discovery WT inheriting alpha+risk from WT-D20260425_010. Optimizer applies Risk's lw_oracle / lw_constcor estimator class per-sig_date (not redefining method). Inherited covariance.parquet (cond=24) + pooled fallback (cond=100) both PSD-validated."
+        },
+        {
+          "id": "C6_RF_O4_CONSTRAINT_SENSITIVITY",
+          "severity": "MEDIUM",
+          "fix": "Sensitivity from method_shopping log: λ=1.5 tilt → -9.6% IR, no Kelly → -17.7% IR, no overlay → +0.045 IR but +12pp MDD. Binding: weight_bound_upper, max_names_20, cash_overlay_30pct_crisis."
+        }
+      ],
+      "PARTIAL": [
+        {
+          "id": "C1_DAILY_CVAR_DIRECT",
+          "severity": "HIGH",
+          "rationale": "Optimizer has only monthly Ret_1m. Daily CVaR computation requires daily KR returns (Factor DB / RAWDATA) — Forge's domain via pm_run(). Proxy 2.44% is QEPM convention (Risk handoff explicit). Selected method passes TO + CVaR-proxy caps; Forge daily verification is downstream gate."
+        },
+        {
+          "id": "C4_PG2_TDC_SEQUENTIAL",
+          "severity": "HIGH",
+          "rationale": "Inherited from Risk handoff: STR_1656 ML model has no alpha trail; STR_1631 SYN_05 alpha vector not exposed. Cross-section Jaccard vs Iter 3 ancestor = 0.111 is best proxy. Portfolio-level TDC vs PG2 NAV requires NAV history — Forge backtest layer."
+        },
+        {
+          "id": "C8_LIQUIDITY_PER_NAME",
+          "severity": "MEDIUM",
+          "rationale": "Liquidity filter (20d TV >= 2e8) enforced at Alpha agent (factor_specs[].neutralization = 'liquidity filter'). All 20 tickers + walk-forward universe pre-filtered. Optimizer inherits eligible universe; per-name TV evidence is structural property of alpha_scores.parquet."
+        }
+      ],
+      "REBUTTAL": [
+        {
+          "id": "C7_BETA_DRIFT",
+          "severity": "MEDIUM",
+          "arguments": [
+            "Discovery WT scope (request.json wt_type='discovery') — beta-banding is Deployment WT concern.",
+            "request.json has no explicit beta target; benchmark_definition only specifies regression baseline.",
+            "Iter 12 inherits from Iter 5 pattern which deliberately omitted active beta target.",
+            "Portfolio MKT exposure (20.5%) already documented at Risk layer (risk_summary.top_common_risks)."
+          ],
+          "decision": "REBUTTAL_VALID. Beta hedging/banding is Forge + Governor admission concern."
+        }
+      ]
+    },
+    "response_artifact": "codex_critic_response_optimizer.json",
+    "challenge_note_artifact": "optimizer_challenge_note.md"
+  },
+  "ax_compliance_statement": {
+    "AX_002_process_honesty": {
+      "status": "PASS",
+      "evidence": ["optimizer_challenge_note.md authored with 8 concerns triaged", "Method shopping log full (10 candidates with metrics) preserved", "Selected method binding rule (only candidate passing both TO and CVaR caps) explicitly documented", "RF-O11 honest disclosure (confidence_vector not directly used by Linear Tilt) — not silently waived", "Discovery vs Deployment scope clarification (beta drift, daily CVaR, PG2 TDC deferred to Forge/Governor with named owners)"]
+    },
+    "AX_008_verification_triangulation": {
+      "status": "PARTIAL",
+      "sources": {
+        "optimizer_self": "PASS (10 candidates evaluated, hard constraints all green, infeasibility=null)",
+        "codex": "REVISE r1 → ACCEPT/PARTIAL/REBUTTAL r1 triage complete; r2 expected after this finalize",
+        "architect": "N/A (no infrastructure change)",
+        "forge": "TBD (backtest stage)"
+      },
+      "note": "AX-008 2-of-3 verification: Optimizer self-PASS + Codex post-triage = 2-of-3 minimum once R2 confirms. Forge backtest provides 3rd source at downstream stage."
+    },
+    "AX_001_v2_defense_conditional": {
+      "status": "PASS",
+      "evidence": ["Multi-sleeve structure inherited (Core 0.65 + Defense 0.35 + Cash overlay)", "Conditional cash policy 0/5/15/30% by regime (BULL/NORMAL/CAUTION/CRISIS)", "CRISIS small-sample shrink: max_w 0.10 enforced via pooled fallback Σ branch", "Cash 30% at as_of (CRISIS regime active)"]
+    }
+  }
 }
