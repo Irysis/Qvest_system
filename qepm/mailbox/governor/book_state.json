@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-04-25T20:35:00+0900",
-  "updated_by": "Governor v6.1 R5 Sonnet 4.6 (Session 71 — WT-D20260425_010 Iter5 STR_1699 admission decision)",
-  "schema_version": "v1.3",
+  "updated_at": "2026-04-25T21:18:00+0900",
+  "updated_by": "Governor v6.1 R5 Sonnet 4.6 rev2 (Session 71 — WT-D20260425_010 Iter5 STR_1699 Replacement scenario re-evaluation post-Codex)",
+  "schema_version": "v1.4",
 
   "n_admitted": 2,
   "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
@@ -12,13 +12,20 @@
   },
 
   "book_composition_rationale": {
-    "decision": "MEGA_05_80_STR1656_20_UNCHANGED",
-    "governor_rationale": "Session 71 사용자 결정 유지. Iter5 STR_1699 (WT-D20260425_010) 신규 admission 평가 결과 GOVERNOR_DEFERRED — PG2 active book 변화 없음. Iter5는 (a) MEGA_05와 factor family 83% overlap, (b) integration_80_20 SR 1.232 ≈ baseline 1.258 noise band 내, (c) NAV-level direct TDC 미측정 (closed-form cor=0.8 가정만), (d) v6.1 R10 multi-objective 8지표 weighted_score 0.553 < 0.65 admission FAIL.",
-    "alternative_rejected": {
-      "scenario_A_replacement": "REJECT — Iter5 SR 0.914 < blended 1.22 (-0.306). Hard reject.",
-      "scenario_B_70_10_20_gradual": "MARGINAL_HOLD — SR delta -0.015 noise. Probe value만 존재. NAV-level TDC 측정 후 재검토.",
-      "scenario_C_60_20_20_active": "REJECT — SR delta -0.04 negative + family overlap 83% 동일.",
-      "scenario_D_keep_current": "RECOMMENDED — Add-value 입증 부족 + NAV-level uncertainty 시 baseline 유지가 정직."
+    "decision": "MEGA_05_80_STR1656_20_UNCHANGED_PENDING_NAV_BACKTEST",
+    "governor_rationale": "Session 71 사용자 결정 (MEGA_05 80% + STR_1656 20%) 즉시 변화 없음. Iter5 STR_1699 (WT-D20260425_010) 재평가 결과 ADMITTED_TO_PROBE_PHASE_WITH_NOTE: Replacement scenario 식별 정당 (사용자 명시 'MEGA_05 성과개선'), single-axis robust compensation 정당 (Harvey 3.690 + DSR 3.022 + 5-spec all PASS), but Codex Round (gpt-5.5 xhigh REVISE)에서 4 evidence gaps 정당 지적: (1) Scenario A 80/20 NAV-level direct backtest 미실행, (2) Scenario B 60_20_20는 Integration이며 Sequential 룰 + NAV-level direct TDC 선행 필수, (3) baseline MEGA_05 DSR same penalty basis 미산출, (4) AX-008 1 source PASS only (Architect on-demand 미호출). Phase 4 Decision: Forge NAV-level Scenario A+B backtest + baseline DSR + Architect spawn 후 사용자 또는 Q-Lead 최종 결정.",
+
+    "rule_misapplication_correction_history": {
+      "rev1_GOVERNOR_DEFERRED": "Sequential Admission TDC 0.75 threshold breach 사유 — Replacement scenario에 부적절 적용한 룰 misapplication. 사용자 명시 거부.",
+      "rev2_draft_ADMITTED_WITH_NOTE_Scenario_B": "Replacement 룰 적용 정당 + single-axis robust compensation 정당. 그러나 Replacement으로 식별 후 60_20_20 Integration 권장은 또 다른 룰 misapplication (Codex C1 정당 지적).",
+      "rev2_final_ADMITTED_TO_PROBE_PHASE": "Replacement 룰 식별 유지 + single-axis robust 인정 유지 + Scenario A만이 진정한 Replacement 인식 + PG1 Probe Phase admit + PG2 active 편입은 NAV-level evidence 후 결정. Codex 5 ACCEPT + 2 PARTIAL 자율 토론 결과."
+    },
+
+    "alternative_evaluation_post_codex": {
+      "scenario_A_full_replacement": "VALID_REPLACEMENT_OPTION_PENDING_NAV_BACKTEST — STR_1699 80% + STR_1656 20%. Replacement 룰. Robustness boost (Harvey 3.45) but point estimate SR -0.35.",
+      "scenario_B_60_20_20_integration": "REVISED_TO_NOT_RECOMMENDED — Codex C1 ACCEPT. Integration이며 Sequential 룰 적용 시 TDC 0.75 BREACH. NAV-level direct TDC 측정 후 재평가.",
+      "scenario_C_70_10_20_integration": "NOT_RECOMMENDED — Sequential 룰 fail + robustness boost 미흡",
+      "scenario_D_keep_current_unchanged": "TEMPORARY_HOLD — Phase 4 Decision까지 PG2 active 유지. 사용자 명시 Replacement 본질 reject 아님 — Phase 4 evidence 후 결정."
     }
   },
 
@@ -27,32 +34,23 @@
       "mega05_contribution": 0.215,
       "str1656_contribution": 0.018,
       "blended_cagr_pct": 23.1,
-      "note": "MEGA_05 CAGR 26.9% × 0.8 + STR_1656 ~9% × 0.2 (estimate)"
+      "note": "MEGA_05 CAGR 26.9% × 0.8 + STR_1656 ~9% × 0.2"
     },
-    "tracking_error": {
-      "estimated": 0.105,
-      "note": "MEGA_05 TE ~11% × 0.8 (cross-family 분산 효과 일부 반영)"
-    },
-    "information_ratio": {
-      "estimated": 1.18,
-      "note": "blended IR estimate"
-    },
-    "expected_sr_full": {
-      "value": 1.22,
-      "range": [1.15, 1.30],
-      "note": "MEGA_05 SR 1.258 × 0.8 + STR_1656 SR ~0.9 × 0.2"
-    },
+    "tracking_error": {"estimated": 0.105, "note": "MEGA_05 TE ~11% × 0.8"},
+    "information_ratio": {"estimated": 1.18},
+    "expected_sr_full": {"value": 1.22, "range": [1.15, 1.30]},
     "lockbox_sr_mega05": 2.253,
-    "expected_mdd": {
-      "value": -33.5,
-      "range": [-32.0, -36.0],
-      "note": "MEGA_05 MDD -36.95% × 0.8 + STR_1656 MDD ~-12% × 0.2 + crisis decorrelation 편익"
+    "expected_mdd": {"value": -33.5, "range": [-32.0, -36.0]},
+    "robustness_audit": {
+      "harvey_t_ff5_pre_lb_mega05": 2.691,
+      "harvey_gate_pass": false,
+      "dsr_baseline_unverified": "Codex C4 정당 — same method-shopping penalty basis 산출 필요",
+      "interpretation": "현 PG2 anchor MEGA_05 robustness deficit 시그널. Phase 4 Decision에서 baseline DSR 산출 후 fragility 정도 확정."
     },
     "crisis_decorrelation": {
       "str1656_gfc_loss": 0.0,
-      "str1656_crisis_sr": "positive (DD Brake 발동)",
       "mega05_crisis_sr": 2.983,
-      "blended_crisis_benefit": "MEGA_05 Crisis alpha + STR_1656 0% GFC 보호 — dual mechanism"
+      "blended_crisis_benefit": "MEGA_05 Crisis alpha + STR_1656 0% GFC 보호"
     }
   },
 
@@ -60,59 +58,67 @@
     "WT-D20260425_003": {
       "strategy_id": "STR_1631_MEGA_05",
       "family": "Analyst_Consensus + Quality_Earnings + Accrual_Quality",
-      "hhi": 0.0988,
-      "q07_ac21_cor": 0.731,
-      "crowding_flag": "MEDIUM (L-219)",
-      "intra_book_family_weight": 0.80,
-      "note": "analyst + quality earnings 80% book exposure. family concentration 주의 (35% max rule advisory). Iter5 admission 시 saturation +5pp 추가 (REJECTED)"
+      "structure": "single_sleeve 6F + Kelly_frac05",
+      "ax_007_evaluation": "single_sleeve_top20 BREACH RISK",
+      "harvey_t_ff5": 2.691,
+      "harvey_gate_status": "FAIL",
+      "intra_book_family_weight": 0.80
     },
     "STR_1656_MLRA_M05": {
       "strategy_id": "STR_1656_MLRA_M05",
       "family": "ML_Risk_Architecture",
-      "hhi": "N/A (DD Brake cash-based)",
-      "crowding_flag": "LOW (ML 독립 alpha, DD Brake mechanism)",
-      "intra_book_family_weight": 0.20,
-      "note": "ML DD Brake는 MEGA_05와 alpha source 완전 이질. Cross-family TDC 예상치 < 0.30."
+      "structure": "ML DD Brake (cash regime)",
+      "intra_book_family_weight": 0.20
     }
   },
 
-  "deferred_admissions": [
+  "probe_phase_admissions": [
     {
       "wt_id": "WT-D20260425_010",
       "str_id": "STR_1699",
       "iter_label": "Iter5_CrossFamily_MultiSleeve",
-      "deferred_at": "2026-04-25T20:35:00+0900",
+      "admitted_to_probe_at": "2026-04-25T21:18:00+0900",
       "judge_verdict": "JUDGE_PASSED_WITH_NOTE",
-      "governor_verdict": "GOVERNOR_DEFERRED",
-      "reason_codes": [
-        "FAMILY_OVERLAP_83PCT_VS_MEGA05",
-        "ADD_VALUE_NOISE_BAND_INTEGRATION_80_20_SR_DELTA_-0.026",
-        "NAV_LEVEL_TDC_NOT_MEASURED_CLOSED_FORM_COR0.8_PROXY_ONLY",
-        "MULTI_OBJ_WEIGHTED_SCORE_0.553_LT_0.65",
-        "PARETO_3_OF_8_LT_4_OF_8_MINIMUM"
+      "governor_verdict": "GOVERNOR_ADMITTED_TO_PROBE_PHASE_WITH_NOTE",
+      "scenario_identified": "replacement",
+      "admit_basis": [
+        "Hurdle Grade A (CAGR 17.58% / SR 0.914 / MDD -34.93%)",
+        "Harvey 5-spec all PASS (3.575~3.690 — DOMINANT vs MEGA_05 baseline 2.691)",
+        "DSR post-method-shopping-penalty 3.022 > 3.0 robust",
+        "PIT C1~C15 전수 PASS",
+        "AX-005 EXCLUSION + AX-007 EXCEPTION #1 + AX-001 v2 conditional metric",
+        "Single-axis robust compensation (agent definition v6.1 §53)"
+      ],
+      "evidence_gaps_pre_pg2": [
+        "Scenario A (STR_1699 80% + STR_1656 20%) NAV-level direct backtest 미실행",
+        "Scenario B (60_20_20) NAV-level direct TDC 미측정 (factor-family overlap proxy 0.75만)",
+        "MEGA_05 / current PG2 DSR same method-shopping penalty basis (15 × 0.05) 미산출",
+        "AX-008 triangulation 1 source PASS only (Forge) — Architect on-demand 미호출"
       ],
       "performance": {
         "sr": 0.914,
         "cagr_pct": 17.58,
         "mdd_pct": -34.93,
         "harvey_t_FF5_NW": 3.690,
-        "dsr_forge": 3.7721
-      },
-      "tdc_estimated": {
-        "vs_mega05": 0.75,
-        "vs_str1656": 0.20,
-        "method": "factor_family_overlap_proxy + Forge cor=0.8 assumption"
+        "harvey_t_5_spec_all_pass": true,
+        "dsr_forge": 3.7721,
+        "dsr_post_method_shopping_penalty": 3.0221
       },
       "registry_role": "Core_Alpha + Defense_Ballast",
-      "follow_up": [
-        "Forge: PG2 NAV history access + STR_1699 NAV-level direct TDC 측정",
-        "Scout: Iter6 cross-family WT 발주 (family NOT IN [Analyst_Consensus, Quality_Earnings])",
-        "2026-Q3: lockbox re-evaluation (post-2024 KR FF5 v2 v3 backfill 후)",
-        "L-205 methodology_active.md 적립"
+      "phase_4_decision_required": [
+        "Forge NAV-level Scenario A + B backtest 발주",
+        "Forge baseline MEGA_05 DSR same penalty basis 산출",
+        "Architect agent on-demand spawn (AX-008 보강)",
+        "Phase 4 Decision: Scenario A vs B vs D 최종 결정 (사용자 또는 Q-Lead)"
       ],
-      "probe_phase_admit": true,
+      "codex_round_summary": {
+        "stance": "REVISE",
+        "concerns_total": 7,
+        "auto_classification": "5 ACCEPT + 2 PARTIAL + 0 REBUTTAL",
+        "weakest_assumption": "Scenario B integration allocation을 Replacement 룰로 정당화하는 것 — Codex C1 ACCEPT, Scenario A만이 진정한 Replacement"
+      },
       "pg2_active_admit": false,
-      "sunset_clause": "6_month_review_post_NAV_TDC_measurement"
+      "pg2_active_admit_pending_phase_4_decision": true
     }
   ],
 
@@ -123,12 +129,7 @@
     "cagr": 16.14,
     "mdd": -21.27,
     "replaced_at": "2026-04-25T06:00:00+0900",
-    "replaced_by": "MEGA_05 admission (user-mandated)",
-    "replacement_delta": {
-      "sr_delta": "+0.027 (estimated blended)",
-      "cagr_delta": "+7.0pp (blended)",
-      "mdd_delta": "-12.2pp (book MDD 악화, 사용자 수용)"
-    }
+    "replaced_by": "MEGA_05 admission (user-mandated)"
   },
 
   "user_override_log": [
@@ -142,50 +143,38 @@
       "rationale": "SR 1.258 (Mega 최고) + Lockbox SR 2.253 + AX-002 RESOLVED + 20종 hard. SR gap 0.807 → 0.549 축소 목적.",
       "risks_accepted": [
         "MDD -36.95% (현 -21.27% 대비 -15.68pp)",
-        "Harvey FF5 t_NW 2.691 < 3.0",
+        "Harvey FF5 t_NW 2.691 < 3.0 (multi-testing FAIL)",
         "Lockbox/Pre-LB ratio 1.98 overfitting risk"
-      ],
-      "governor_book_decision": "MEGA_05 80% + STR_1656_M05 20% (Governor 자율 결정: tail protection 유지)"
+      ]
+    },
+    {
+      "event_id": "OVERRIDE_002_REPLACEMENT_RULE_CORRECTION",
+      "decision": "REPLACEMENT_SCENARIO_RULE_CORRECTION_DIRECTIVE",
+      "user": "도훈 (Dohoon Kim)",
+      "decided_at": "2026-04-25T20:55:00+0900",
+      "lawbook_ref": "agent definition .claude/agents/governor.md §62~68 + §53",
+      "directive": "Iter 5 본질 = MEGA_05 upgrade research = Replacement scenario. Sequential Admission TDC threshold 적용 거부. 직접 SR/CAGR/MDD/Harvey/DSR 비교 + multi-testing penalty가 정확한 평가.",
+      "governor_response": "rev1 GOVERNOR_DEFERRED invalidate → rev2 Replacement 룰 적용 → Codex Round PARTIAL ACCEPT → ADMITTED_TO_PROBE_PHASE_WITH_NOTE final"
     }
   ],
 
   "recent_rejections": [
-    {
-      "wt_id": "WT-D20260423_001",
-      "rejected_at": "2026-04-23",
-      "hypothesis": "Rate Hedge Defense — Duration-neutral Quality (Q07+Q32+Q28)",
-      "reason_code": "JUDGE_FAIL_AX001V2_AX007",
-      "grade": "F"
-    },
-    {
-      "wt_id": "WT-D20260423_002",
-      "rejected_at": "2026-04-23",
-      "hypothesis": "Macro-Neutral Residual Alpha Discovery (Residual_Reversal_5d + Residual_Momentum_15d)",
-      "reason_code": "JUDGE_FAIL_GATE_CDF_VAL_IC_SIGN_REVERSAL",
-      "grade": "F",
-      "l_code": "L-191"
-    },
-    {
-      "wt_id": "WT-D20260424_001",
-      "rejected_at": "2026-04-24",
-      "hypothesis": "Regime-Adaptive PEAD-Accrual Composite (RAPC)",
-      "reason_code": "JUDGE_GRADE_F_GATE_CDE_BREADTH_BORDERLINE_MDD",
-      "grade": "F",
-      "l_code": "L-192"
-    }
+    {"wt_id": "WT-D20260423_001", "rejected_at": "2026-04-23", "reason_code": "JUDGE_FAIL_AX001V2_AX007", "grade": "F"},
+    {"wt_id": "WT-D20260423_002", "rejected_at": "2026-04-23", "reason_code": "JUDGE_FAIL_GATE_CDF_VAL_IC_SIGN_REVERSAL", "grade": "F", "l_code": "L-191"},
+    {"wt_id": "WT-D20260424_001", "rejected_at": "2026-04-24", "reason_code": "JUDGE_GRADE_F_GATE_CDE_BREADTH_BORDERLINE_MDD", "grade": "F", "l_code": "L-192"}
   ],
 
   "gap_update": {
     "sr_gap_before": 0.807,
     "sr_gap_after_mega05_admit": 0.78,
-    "sr_gap_after_iter5_DEFERRED": 0.78,
+    "sr_gap_after_iter5_PROBE_PHASE": 0.78,
     "cagr_gap_before": -0.0014,
     "cagr_gap_after": "+7.1pp surplus (MEGA_05 23.1% blended)",
     "mdd_gap_before": -0.0373,
-    "mdd_gap_after": "-8.5pp REOPENED (MEGA_05 -33.5% blended)",
-    "iter5_contribution_to_gap_closure": "ZERO_AFTER_DEFER — STR_1699 PG2 active 편입 보류로 gap 변화 없음. Probe phase에서 6-month NAV-level TDC 측정 후 재평가."
+    "mdd_gap_after": "-8.5pp REOPENED",
+    "iter5_contribution_to_gap_closure": "PHASE_4_PENDING — Probe Phase admit 확정. PG2 active 편입은 Forge NAV-level Scenario A vs B backtest + baseline DSR + Architect 보강 후 결정. Robustness axis (Harvey/DSR) 우월 입증으로 baseline robustness deficit closing 후보."
   },
 
-  "method": "v6.1_R5_book_level_admission_iter5_DEFERRED_v8_R5_continuity",
-  "notes": "Session 71 Iter5 STR_1699 admission 평가 종결. JUDGE_PASSED_WITH_NOTE 수용 + Hurdle Grade A 수용에도 (a) family overlap 83% vs MEGA_05, (b) integration_80_20 SR delta -0.026 noise, (c) NAV-level TDC 미측정 closed-form approx 한계, (d) v6.1 R10 multi-objective weighted_score 0.553 < 0.65 admission FAIL → GOVERNOR_DEFERRED. PG2 active book 변화 없음 (MEGA_05 80% + STR_1656 20% 유지). Probe phase admission + 6-month sunset + NAV-level TDC measurement gating. L-205 적립. 다음: Iter6 cross-family WT (family NOT IN [Analyst_Consensus, Quality_Earnings]) 발주 + Q-Lead lockbox 2026-Q3 schedule."
+  "method": "v6.1_R5_book_level_admission_iter5_PROBE_PHASE_post_codex",
+  "notes": "Session 71 Iter5 STR_1699 admission 재평가 (rev2 final post-Codex). rev1 GOVERNOR_DEFERRED (Sequential Admission TDC misapplication) invalidate. 사용자 명시 Replacement scenario 룰 적용 + Codex Round (gpt-5.5 xhigh REVISE) 자율 5 ACCEPT + 2 PARTIAL 적용. ADMITTED_TO_PROBE_PHASE_WITH_NOTE 결정: PG1 admit + PG2 active 편입은 (1) Forge NAV-level Scenario A 80/20 + B 60_20_20 backtest, (2) baseline MEGA_05 DSR same penalty basis 산출, (3) Architect on-demand spawn (AX-008 2 source PASS), (4) Phase 4 Decision 후 결정. PG2 active book MEGA_05 80% + STR_1656 20% UNCHANGED until Phase 4. L-205 적립."
 }
