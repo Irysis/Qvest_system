@@ -1,0 +1,144 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T15:26:12+09:00",
+  "task_id": "WT-D20260425_009",
+  "stance": "REJECT",
+  "veto_flag": false,
+  "stance_rationale": "핵심 가정(FF5 backfill만으로 Harvey gate 돌파)이 실측 산출물에서 반증되었고, alpha 시계열 검증(RF-A7)과 PIT C15 증빙이 구조적으로 부족하다. 현재 패키지는 Alpha 승인 기준(특히 Harvey t/시계열 재산출)을 충족하지 못한다.",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": 0.0962,
+      "pass": true
+    },
+    "icir": {
+      "value": 1.375,
+      "pass": true
+    },
+    "harvey_t": {
+      "value": 1.4679,
+      "pass": false
+    },
+    "sub_stability": {
+      "value": 0.726,
+      "pass": true,
+      "rf_a1_flag": false
+    },
+    "dsr": {
+      "value": 2.3936,
+      "pass": true
+    }
+  },
+  "time_series_alpha_audit": {
+    "n_sig_dates": 1,
+    "date_range": [
+      "2026-04-25",
+      "2026-04-25"
+    ],
+    "single_snapshot_risk": "HIGH",
+    "rf_a7_flag": true,
+    "comment": "alpha_scores.parquet(04_Research/stage_artifacts/WT_WT-D20260425_009)와 weights.csv 모두 단일 날짜(2026-04-25)만 존재하여 Date×Ticker×score의 다중 sig_date walk-forward 요건을 충족하지 못함."
+  },
+  "ax_axiom_compliance": {
+    "ax_003_check": "PASS",
+    "ax_004_check": "PASS",
+    "ax_005_check": "N/A",
+    "ax_007_check": "FAIL"
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C13",
+      "status": "PASS",
+      "evidence": "factor_specs에 Z_Score_Aligned 명시(예: Q01/Q04/Q25), 패키지 내 NEGATE/FLIP_SIGN 문자열 미검출."
+    },
+    {
+      "check": "C14",
+      "status": "PASS",
+      "evidence": "lag_rule 및 후속 패키지(optimizer/forge)에서 Usable_Date <= sig_date 상속 PASS 명시."
+    },
+    {
+      "check": "C15",
+      "status": "FAIL",
+      "evidence": "factor_engine_proposal.R 부재 및 load_month_factors() 사용 증거 없음; signal_matrix_ref가 feature_store parquet 직접 참조."
+    },
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "forge/optimizer 산출물에 weight t-1 lag 적용(C9 PASS) 명시."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "alpha factor lag_rule에 annual May, quarterly 45d 명시."
+    }
+  ],
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "RF-A7 발동: alpha/weight 스케줄이 단일 snapshot(1 sig_date)이며, Iter4 핵심 결함 사례(정적 스냅샷 적용) 재발 위험이 높다.",
+      "ax_cite": "RF-A7|PIT-C1|AX-002"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "가장 중요한 주장인 \"backfill 후 t_NW 4.0~5.5, gate pass HIGH\"가 Forge 실측 FF5 t_NW=1.4679(full), 1.5603(pre-LB)로 반증되었다.",
+      "ax_cite": "RF-A6|AX-002"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "PIT C15 검증 불가: role prompt 필수 검토 대상인 factor_engine_proposal.R가 없고, load_month_factors() 경유 증빙이 패키지/아티팩트에 없다.",
+      "ax_cite": "PIT-C15|AX-002"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "RF-A5 신호: Risk 측에서 top-alpha 저유동성 종목 3개(A084870/A205470/A254120) 배제가 필요했다고 명시되어 alpha 상위 신호의 실투성에 의문이 남는다.",
+      "ax_cite": "RF-A5|PIT-C10|AX-002"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "covariance conditioning 진술 불일치: factor_cov는 cond≈96.8이나 security covariance는 risk_pkg 500, 실측 kappa_est≈308으로 cond≤100 요구를 충족하지 못한다.",
+      "ax_cite": "AX-002|AX-008"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "AX-008 Triangulation 미충족: 현재 컨텍스트에서 Forge 결과가 gate FAIL이고, 2-source PASS 증거(Forge+Architect 또는 동등)가 제시되지 않았다.",
+      "ax_cite": "AX-008|RF-A7"
+    }
+  ],
+  "supporting_arguments": [
+    "기초 알파 품질 지표(rank_IC 0.0962, ICIR 1.375, sub_stability 0.726, monotonicity 1.0)는 임계치를 넘는다.",
+    "C4/C14 관련 문서화(annual May, quarterly 45d, usable_date 제약)는 명시되어 있다.",
+    "challenge_note와 method_shopping_log는 존재하며 multiple-spec 보고 의도는 기록되어 있다."
+  ],
+  "unresolved_disputes": [
+    "Iter3 baseline t_NW=2.691의 원천 불일치(문서 claim vs WT_005 실측 1.843).",
+    "요청된 qepm/stage_artifacts/WT_WT-D20260425_009 경로 부재 및 실제 alpha_scores 위치(04_Research 경로) 불일치.",
+    "v1 vs v2 factor return overlap 상관(HML 0.47, RMW -0.17, CMA ~0) 약세에 대한 방법론적 정합성 해소 미완료."
+  ],
+  "weakest_assumption": "표본 수 확대(sqrt(n) scaling)만으로 FF5 Harvey t_NW가 2.95를 넘는 4.0~5.5 구간으로 안정 상승한다는 가정.",
+  "rebuttal_required": [
+    "alpha_scores를 최소 60개 이상 sig_date의 시계열(Date×Ticker×score)로 재산출하고, weights schedule도 동일 축으로 제출할 것.",
+    "FF5 v2 회귀를 재현 가능한 코드/로그로 제시해 예상치(4.0~5.5)와 실측치(1.4679) 괴리 원인을 분해할 것.",
+    "factor_engine_proposal.R(또는 동등 소스)와 load_month_factors() 호출 증거를 제시해 PIT C15를 실증할 것.",
+    "security covariance의 cond 기준(≤100) 충족 여부를 명시적으로 재검증하고, factor_cov cond와 혼용한 보고를 정정할 것."
+  ],
+  "rationalization_red_flags": [
+    "표본 확장 효과 미미"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Alpha 패키지의 power-analysis 낙관치는 후속 Forge 산출물에서 반증되었고, 시계열 alpha 차원(RF-A7)과 PIT C15 증빙 공백이 성과 해석보다 우선 수정 대상이다."
+  },
+  "alpha_specific_questions": [
+    "FF5 v2로도 t_NW가 1.4679에 머문 이유를 factor return 변경효과와 alpha decay 중 어느 쪽이 지배했는지 분해했는가?",
+    "single-snapshot이 아닌 월별 재산출 alpha vector(>=60 sig_dates)에서 동일 결론이 재현되는가?",
+    "C15(load_month_factors 경유) 증빙 없이 parquet 참조를 허용한 근거가 AX-002 하에서 정당화되는가?"
+  ]
+}
