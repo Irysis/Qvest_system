@@ -535,27 +535,54 @@
       "REBUTTAL": [
         {
           "id": "TAIL_AND_MDD_CAP_BREACH_DEFERRAL",
-          "arguments": ["Iter 5 (WT-D20260425_010) Codex precedent: REBUTTAL_VALID. Hard caps (CVaR<2.5%, MDD<45%) are Optimizer/Forge gates per agent definition.", "EW top-20 21-year proxy MDD=-56.2% reflects unhedged concentrated equity over 2002-2023 (incl. GFC peak-to-trough). This is Σ INPUT, not portfolio metric.", "Iter 6 alpha_package handoff_to_optimizer specifies Kelly_frac05 (per-name cap 10%) + VolReg target 12% (scale 0.59 predicted) + DD Brake 6/8/20% + FM Regime cash 0/5/15/30%. Σ-implied vol ratio 1.69 → VolReg cuts realized to 12%.", "Risk DOES flag breaches: RF-R4 stress=-28.14% HIGH, RF-CRISIS-COUPLING MEDIUM, RF-R8 regime small sample MEDIUM. Risk MEASURES + ESCALATES; Optimizer/Forge enforces caps.", "L-129 cite (CDaR LP standalone failure) misapplied — concerns Optimizer methodology choice, not Risk diagnostic."],
+          "arguments": [
+            "Iter 5 (WT-D20260425_010) Codex precedent: REBUTTAL_VALID. Hard caps (CVaR<2.5%, MDD<45%) are Optimizer/Forge gates per agent definition.",
+            "EW top-20 21-year proxy MDD=-56.2% reflects unhedged concentrated equity over 2002-2023 (incl. GFC peak-to-trough). This is Σ INPUT, not portfolio metric.",
+            "Iter 6 alpha_package handoff_to_optimizer specifies Kelly_frac05 (per-name cap 10%) + VolReg target 12% (scale 0.59 predicted) + DD Brake 6/8/20% + FM Regime cash 0/5/15/30%. Σ-implied vol ratio 1.69 → VolReg cuts realized to 12%.",
+            "Risk DOES flag breaches: RF-R4 stress=-28.14% HIGH, RF-CRISIS-COUPLING MEDIUM, RF-R8 regime small sample MEDIUM. Risk MEASURES + ESCALATES; Optimizer/Forge enforces caps.",
+            "L-129 cite (CDaR LP standalone failure) misapplied — concerns Optimizer methodology choice, not Risk diagnostic."
+          ],
           "decision": "REBUTTAL_VALID (Iter 5 precedent; Risk-vs-Optimizer role boundary)"
         },
         {
           "id": "FACTOR_COVERAGE_BELOW_GATE",
-          "arguments": ["Iter 5 Codex precedent: PARTIAL_ACCEPT for this exact concern. KR top-20 long-only is structurally idio-dominant.", "B_DT R² range 0.089~0.522 (mean 0.230). Σ remains PSD with cond=19.14, factor model + diagonal D structure intact.", "Higher LW shrinkage to identity would REDUCE structural information further (rho already 0.0001 — minimal). Stronger D treatment risks inflating idio var, breaking Σ = BΩB' + D fidelity.", "Iter 4-5 lineage establishes this as KR concentrated equity property, NOT estimation flaw."],
+          "arguments": [
+            "Iter 5 Codex precedent: PARTIAL_ACCEPT for this exact concern. KR top-20 long-only is structurally idio-dominant.",
+            "B_DT R² range 0.089~0.522 (mean 0.230). Σ remains PSD with cond=19.14, factor model + diagonal D structure intact.",
+            "Higher LW shrinkage to identity would REDUCE structural information further (rho already 0.0001 — minimal). Stronger D treatment risks inflating idio var, breaking Σ = BΩB' + D fidelity.",
+            "Iter 4-5 lineage establishes this as KR concentrated equity property, NOT estimation flaw."
+          ],
           "decision": "REBUTTAL_VALID (KR structural property, not flaw)"
         },
         {
           "id": "PG2_CROWDING_NOT_MEASURED",
-          "arguments": ["Direct PG2 alpha vector unavailable: STR_1656 is ML-model output without trail; STR_1631 SYN_05 alpha vector not exposed in mailbox.", "Q-Lead just provided (2026-04-25 fair_comparison_note.md) STR_1699 vs MEGA_05 fair-period (243m) pairwise NAV cor=0.10 — strongest direct comparison currently available; very low.", "Iter 6 = STR_1699 alpha + MEGA_05 machinery (Optimizer-domain handoff). The 0.10 cor refers to STR_1699 vs MEGA_05 NAV, NOT Iter 6 itself.", "Risk's Jaccard=0.111 vs Iter 5 (intentional inheritance) and HHI=0.054 are alpha-vector level proxies. Portfolio-level realized correlation against PG2 NAV is FORGE backtest deliverable (post-Kelly-Overlay weights).", "AX-008 verification triangulation: Risk + Codex + Architect = 2/3 minimum; portfolio-level evidence at downstream stages."],
+          "arguments": [
+            "Direct PG2 alpha vector unavailable: STR_1656 is ML-model output without trail; STR_1631 SYN_05 alpha vector not exposed in mailbox.",
+            "Q-Lead just provided (2026-04-25 fair_comparison_note.md) STR_1699 vs MEGA_05 fair-period (243m) pairwise NAV cor=0.10 — strongest direct comparison currently available; very low.",
+            "Iter 6 = STR_1699 alpha + MEGA_05 machinery (Optimizer-domain handoff). The 0.10 cor refers to STR_1699 vs MEGA_05 NAV, NOT Iter 6 itself.",
+            "Risk's Jaccard=0.111 vs Iter 5 (intentional inheritance) and HHI=0.054 are alpha-vector level proxies. Portfolio-level realized correlation against PG2 NAV is FORGE backtest deliverable (post-Kelly-Overlay weights).",
+            "AX-008 verification triangulation: Risk + Codex + Architect = 2/3 minimum; portfolio-level evidence at downstream stages."
+          ],
           "decision": "REBUTTAL_VALID (data unavailability + boundary)"
         },
         {
           "id": "WALK_FORWARD_WEIGHTS_ABSENT",
-          "arguments": ["weights.csv is OPTIMIZER artifact (Charter §8 boundary). Risk Agent does NOT produce weights.", "Risk Agent produces Σ + tail risk + regime correlation + PG2 crowding proxies. Optimizer reads risk_package + alpha_package and computes target weights.", "Iter 5 Codex precedent: same boundary acknowledged; weights produced at Optimizer stage (optimization_package.json).", "alpha_scores.parquet 69715 rows × 239 sig_dates × 773 tickers verified — full Date×Ticker panel. Optimizer consumes per-sig_date selection."],
+          "arguments": [
+            "weights.csv is OPTIMIZER artifact (Charter §8 boundary). Risk Agent does NOT produce weights.",
+            "Risk Agent produces Σ + tail risk + regime correlation + PG2 crowding proxies. Optimizer reads risk_package + alpha_package and computes target weights.",
+            "Iter 5 Codex precedent: same boundary acknowledged; weights produced at Optimizer stage (optimization_package.json).",
+            "alpha_scores.parquet 69715 rows × 239 sig_dates × 773 tickers verified — full Date×Ticker panel. Optimizer consumes per-sig_date selection."
+          ],
           "decision": "REBUTTAL_VALID (Charter §8 boundary; Optimizer domain)"
         },
         {
           "id": "AX001_DEFENSE_CLAIM_NOT_VALIDATED",
-          "arguments": ["Risk MEASURES bad/normal IC ratio (-1.8355 from Alpha agent CRISIS bootstrap n=5).", "Risk MEASURES per-regime CVaR_95: BULL -2.28%, NORMAL -2.51%, CAUTION -5.09%, CRISIS -3.75% (top-20 EW proxy).", "AX-001 v2 conditional defense (multi-sleeve + crisis_alpha + bad/normal IC ratio + core MDD mitigation) is FORGE backtest deliverable on Kelly+Overlay portfolio returns.", "Iter 6 enhancement: FM_Regime overlay forces cash 30% in CRISIS — Optimizer-domain machinery. Risk pre-flight check: vol_ratio 1.69 → VolReg compresses to 12%."],
+          "arguments": [
+            "Risk MEASURES bad/normal IC ratio (-1.8355 from Alpha agent CRISIS bootstrap n=5).",
+            "Risk MEASURES per-regime CVaR_95: BULL -2.28%, NORMAL -2.51%, CAUTION -5.09%, CRISIS -3.75% (top-20 EW proxy).",
+            "AX-001 v2 conditional defense (multi-sleeve + crisis_alpha + bad/normal IC ratio + core MDD mitigation) is FORGE backtest deliverable on Kelly+Overlay portfolio returns.",
+            "Iter 6 enhancement: FM_Regime overlay forces cash 30% in CRISIS — Optimizer-domain machinery. Risk pre-flight check: vol_ratio 1.69 → VolReg compresses to 12%."
+          ],
           "decision": "REBUTTAL_VALID (Forge backtest delivers AX-001 v2 conditional metrics)"
         }
       ]
