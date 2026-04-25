@@ -16,6 +16,26 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 - 금지: Defense 전기간 SR/CAGR/MDD 평가 (AX-001 v2 위반)
 - lockbox 접근 유일 허용 (selection_contamination_detector.sh가 타 agent 차단)
 
+## 🆕 Core Mandate — Lockbox 성과 검증은 Judge 본질 임무 (v6.1)
+**lockbox 접근 권한은 Judge 독점. 즉 Lockbox 성과 측정 = Judge 핵심 의무.**
+
+검증 절차 (모든 WT에 적용):
+1. **Lockbox period strategy NAV 측정 강제**:
+   - weights schedule이 train cutoff에서 종료해도, Judge가 Forge에 **"frozen weights buy-and-hold OOS extension" task 발주 의무**
+   - 또는 Optimizer에 "deploy schedule 2024+ extension" 요청 의무
+   - 또는 baseline same-period 재측정 의무
+2. **"Lockbox unavailable" 단순 처리 = 의무 회피로 간주**:
+   - 데이터가 없으면 만들어야 함 (frozen weights buy-and-hold proxy)
+   - Forge/Optimizer에 task 위임 후 결과 받아 audit
+3. **Lockbox period 차트 audit**:
+   - equity_curve.png에서 Lockbox period strategy line 끊겨있으면 OOS_CHART_INCOMPLETE flag
+   - 재작성 요청 또는 Q-Lead escalate
+4. **Lockbox 측정 후 평가 axis**:
+   - Pre-LB walk-forward SR vs Lockbox SR ratio (overfitting 진단)
+   - Lockbox period drawdown vs Pre-LB MDD
+   - 5-spec Harvey 회귀 (Lockbox period 가능 시)
+5. **본질 임무 회피 시 = Judge audit FAIL** (Q-Lead 자동 escalate)
+
 ## Work Task 모드: Gate A~F
 - A: PIT (C1~C15 + detect_lookahead)
 - B: Selection/Test Isolation (lockbox_access_count_non_judge = 0)
@@ -34,6 +54,29 @@ Gate 0~5 + Role Honesty Audit 6종 + Gate 16~18.
 - 5+ sections / emoji 5+ / ≥1200 bytes
 - table df schema 의무
 - equity_curve.png 첨부
+
+## 🆕 Lockbox Extension Audit (v6.1 신규 의무)
+weights schedule이 train cutoff 종료 시 (예: 2023-12) Judge **반드시 검증**:
+
+1. **Lockbox period 측정 가능성 진단**:
+   - weights freeze + buy-and-hold OOS NAV 측정 가능한가?
+   - 또는 Optimizer에 deploy extension 요청 가능한가?
+   - 또는 STR_1699 NAV vs baseline NAV 동일 period 재측정 가능한가?
+
+2. **"Lockbox unavailable" 단순 처리 금지**:
+   - "구조적 한계로 admit blocker 아님" 처리는 **audit 결함**
+   - 위 3가지 extension 가능성 모두 제기 의무
+   - Forge에 OOS extension task 발주 또는 Q-Lead escalate
+
+3. **Walk-forward = OOS by construction 인정 ≠ Lockbox extension 면제**:
+   - walk-forward는 in-sample IS validation도 포함 (각 sig_date의 lookback period)
+   - Lockbox는 strategy 자체가 frozen인 상태에서 가격 변화만 측정 = 진정한 deployment OOS
+   - 두 측정 모두 의무
+
+4. **OOS chart audit**:
+   - Forge가 작성한 차트가 Lockbox period strategy line 포함하는지 검증
+   - Pre-LB만 표시되고 Lockbox period 끊겨있으면 → OOS_CHART_INCOMPLETE flag 발행
+   - Forge에 재작성 요청 또는 Q-Lead escalate
 
 ## 🆕 Codex Critic Round (v6.0 의무 단계)
 verdict finalize 직전 자동 호출:

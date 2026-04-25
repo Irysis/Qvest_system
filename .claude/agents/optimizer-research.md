@@ -44,6 +44,12 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - **turnover round-trip 식 ×2** (×12 annualization 금지 — Iter 3 violation 사례)
 - 결과 → `optimizer_challenge_note.md` 기록 + optimization_package.json finalize
 
+**🆕 Deploy Extension Mandate** (v6.1 신규):
+- alpha agent의 PIT cutoff (train end)을 deploy cutoff와 **반드시 구분**
+- weights.csv는 train cutoff까지의 sig_dates만이 아닌, **deploy schedule today까지 frozen extension** 옵션 제공
+- 또는 explicit `deploy_cutoff` field에 "today" 또는 "open-ended" 명시
+- Forge가 train cutoff 이후 OOS 측정 가능하도록 weights handoff 명시
+
 **🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
 
 Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
