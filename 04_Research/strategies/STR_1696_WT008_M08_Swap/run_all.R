@@ -736,9 +736,9 @@ for (sp_name in names(stress_periods)) {
   sp_perf <- tryCatch(summarise_perf(sp_xts, sp_name), error = function(e) NULL)
   if (!is.null(sp_perf)) {
     stress_results[[sp_name]] <- list(
-      cagr     = round(as.numeric(sp_perf["CAGR"]), 2),
-      sr       = round(as.numeric(sp_perf["Sharpe"]), 3),
-      mdd      = round(as.numeric(sp_perf["MDD"]), 2),
+      cagr     = round(as.numeric(sp_perf$CAGR), 2),
+      sr       = round(as.numeric(sp_perf$Sharpe), 3),
+      mdd      = round(as.numeric(sp_perf$MDD), 2),
       n_months = length(sp_xts)
     )
   } else {
