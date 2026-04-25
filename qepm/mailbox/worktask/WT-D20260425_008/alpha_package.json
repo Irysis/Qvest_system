@@ -1,0 +1,419 @@
+{
+  "task_id": "WT-D20260425_008",
+  "wt_type": "discovery",
+  "iter": 3,
+  "iter_name": "AC21_orthogonal_replacement",
+  "baseline_wt": "WT-D20260425_003",
+  "as_of_date": "2026-04-25",
+  "signal_as_of": "2024-01-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "MEGA_05 AC21 직교 factor 교체 (Iter 3) — Q07-AC21 crowding 해소",
+  "hypothesis_summary": "Iter 1 PRIMARY (5F+AC21): rank_IC=0.0489 ICIR=0.602. Q07-AC21 panel cor=0.04 (L-219 family saturation). AC21 → M08_Residual_Mom (cross-family) replacement. PRIMARY (5F+M08_Residual_Mom): rank_IC=0.0473 ICIR=0.5412 Harvey=8.401. Q07 cor: 0.04 → 0.01 (target <0.5). AX-004 evasion via multi-axis composite (clear).",
+  "primary_config": {
+    "label": "6F_M08_Residual_Mom",
+    "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom"],
+    "n_factors": 6,
+    "selected_candidate": "M08_Residual_Mom",
+    "selected_candidate_family": "Momentum_Residual",
+    "replaced_factor": "AC21_CF_to_Accrual_Ratio",
+    "replaced_factor_family": "Accrual_Quality (subset of Quality_Earnings axis)",
+    "selection_basis": "multi_criteria_pass",
+    "selection_rationale": "Multi-criteria: (a) cor_Q07 < 0.50, (b) standalone_ICIR > 0, (c) combined_ICIR ≥ 0.20, (d) max combined_ICIR among qualifiers. Selected: M08_Residual_Mom — best ICIR among qualifying candidates."
+  },
+  "candidate_comparison": [
+    {
+      "candidate": "M08_Residual_Mom",
+      "family": "Momentum_Residual",
+      "cor_Q07": 0.0099,
+      "cor_axis5": 0.0157,
+      "standalone_ICIR": 0.0821,
+      "standalone_meanIC": 0.0067,
+      "standalone_HarveyT": 1.2742,
+      "combined_6F_rank_IC": 0.0473,
+      "combined_6F_ICIR": 0.5412,
+      "combined_6F_HarveyT": 8.401,
+      "combined_6F_SubStab": 0.1882,
+      "qualifies": true,
+      "selected": true
+    },
+    {
+      "candidate": "Q25_Ohlson_O",
+      "family": "Distress",
+      "cor_Q07": -0.2079,
+      "cor_axis5": -0.1022,
+      "standalone_ICIR": -0.6147,
+      "standalone_meanIC": -0.046,
+      "standalone_HarveyT": -9.5421,
+      "combined_6F_rank_IC": 0.0477,
+      "combined_6F_ICIR": 0.5873,
+      "combined_6F_HarveyT": 9.1172,
+      "combined_6F_SubStab": 0.3353,
+      "qualifies": false,
+      "selected": false
+    },
+    {
+      "candidate": "L11_Kyle_Lambda",
+      "family": "Liquidity_Risk",
+      "cor_Q07": -0.1006,
+      "cor_axis5": -0.0151,
+      "standalone_ICIR": -0.5465,
+      "standalone_meanIC": -0.0359,
+      "standalone_HarveyT": -8.4843,
+      "combined_6F_rank_IC": 0.0467,
+      "combined_6F_ICIR": 0.582,
+      "combined_6F_HarveyT": 9.0346,
+      "combined_6F_SubStab": 0.3358,
+      "qualifies": false,
+      "selected": false
+    },
+    {
+      "candidate": "R13_NCSKEW",
+      "family": "Tail_Risk",
+      "cor_Q07": -0.0046,
+      "cor_axis5": 0.0227,
+      "standalone_ICIR": -0.0375,
+      "standalone_meanIC": -0.003,
+      "standalone_HarveyT": -0.5818,
+      "combined_6F_rank_IC": 0.0374,
+      "combined_6F_ICIR": 0.4882,
+      "combined_6F_HarveyT": 7.5785,
+      "combined_6F_SubStab": 0.3453,
+      "qualifies": false,
+      "selected": false
+    }
+  ],
+  "selected_factor": {
+    "proxy": "M08_Residual_Mom",
+    "family": "Momentum_Residual",
+    "rationale": "Replaces AC21_CF_to_Accrual_Ratio. cor_Q07 = 0.0099 < 0.50 (vs AC21 baseline 0.0399). Standalone ICIR = 0.0821 (positive). Combined 6F ICIR = 0.5412 (≥0.20 AlphaLab gate).",
+    "references": "Carhart 1997; Blitz-Huij-Martens 2011; Daniel-Moskowitz 2016"
+  },
+  "alpha_vector": {
+    "A042000": 2.9038,
+    "A066590": 2.6682,
+    "A041510": 2.4516,
+    "A000070": 2.4308,
+    "A218410": 2.3831,
+    "A267260": 2.358,
+    "A033500": 2.2014,
+    "A039290": 1.8784,
+    "A025540": 1.8694,
+    "A042660": 1.8426,
+    "A095700": 1.8281,
+    "A027740": 1.8228,
+    "A029780": 1.7199,
+    "A007700": 1.6966,
+    "A051370": 1.6237,
+    "A004980": 1.6157,
+    "A133820": 1.6075,
+    "A064520": 1.606,
+    "A004990": 1.5826,
+    "A005290": 1.5059
+  },
+  "confidence_vector": {
+    "A000070": 0.4075,
+    "A004980": 0.4075,
+    "A004990": 0.4094,
+    "A005290": 0.3828,
+    "A007700": 0.3946,
+    "A025540": 0.3711,
+    "A027740": 0.3516,
+    "A029780": 0.4315,
+    "A033500": 0.4063,
+    "A039290": 0.3398,
+    "A041510": 0.3766,
+    "A042000": 0.3632,
+    "A042660": 0.4271,
+    "A051370": 0.4148,
+    "A064520": 0.4605,
+    "A066590": 0.3741,
+    "A095700": 0.238,
+    "A133820": 0.5231,
+    "A218410": 0.2659,
+    "A267260": 0.2431
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260425_008/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C01_SUE",
+      "formula": "Z_Score_Aligned[C01_SUE] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings revision upside (SUE = standardised unexpected earnings)",
+      "weight_theta": 0.1863,
+      "references": "Chan-Jegadeesh-Lakonishok 1996; Ball-Brown 1968"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C02_EPS_Chg_1m",
+      "formula": "Z_Score_Aligned[C02_EPS_Chg_1m] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "1-month EPS estimate change — near-term revision momentum",
+      "weight_theta": 0.1438,
+      "references": "Womack 1996; Stickel 1992"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C04_ESBR",
+      "formula": "Z_Score_Aligned[C04_ESBR] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings surprise breadth ratio — fraction of analysts revising up",
+      "weight_theta": 0.2576,
+      "references": "Jegadeesh-Kim 2006; Loh-Mian 2006"
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C06_TP_Gap",
+      "formula": "Z_Score_Aligned[C06_TP_Gap] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Analyst target-price gap — implied upside to consensus PT",
+      "weight_theta": 0.0116,
+      "references": "Brav-Lehavy 2003; Asquith-Mikhail-Au 2005"
+    },
+    {
+      "factor_family": "Quality_Earnings",
+      "proxy": "Q07_Earnings_Stability",
+      "formula": "Z_Score_Aligned[Q07_Earnings_Stability] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "Earnings stability = low variance of earnings growth (L-121 stress ICIR +0.753)",
+      "weight_theta": 0.3606,
+      "references": "Novy-Marx 2013; QEPM L-121"
+    },
+    {
+      "factor_family": "Momentum_Residual",
+      "proxy": "M08_Residual_Mom",
+      "formula": "Z_Score_Aligned[M08_Residual_Mom] (Factor DB via load_month_factors, C15)",
+      "lag_rule": "monthly t-1 (sig_date = month-start, applied at next rebalance, C2)",
+      "winsorization": "2.5σ cross-section (NORMAL regime baseline, C13)",
+      "neutralization": "liquidity filter only (20d AvgTV ≥ 2e8, C10)",
+      "economic_rationale": "12-1M residual momentum (CAPM/FF residualized)",
+      "weight_theta": 0.0401,
+      "references": "Carhart 1997; Blitz-Huij-Martens 2011; Daniel-Moskowitz 2016"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0473,
+    "icir": 0.5412,
+    "harvey_t_stat": 8.401,
+    "dsr": 0.9899,
+    "monotonicity": 0.52,
+    "subperiod_stability": 0.1882,
+    "subperiod_ics": {
+      "p1_2008_2014": 0.0623,
+      "p2_2015_2019": 0.0374,
+      "p3_2020_2024": 0.0117
+    },
+    "ff3_retention": 1,
+    "post_neutralization_ic": 0.0473,
+    "turnover_proxy": 0.5,
+    "n_months": 241,
+    "n_tickers": 20,
+    "alpha_divergence": 1
+  },
+  "crowding_check": {
+    "before_q07_AC21_cor": 0.0399,
+    "after_q07_replaced_cor": 0.0099,
+    "delta": 0.03,
+    "target": 0.5,
+    "pass": true
+  },
+  "ax004_evasion": {
+    "rule": "AX-004 (KR quality_profitability single-signal long-only structural failure)",
+    "evasion_mechanism": "Multi-axis composite: Consensus(4F) + Quality_Earnings(Q07) + M08_Residual_Mom (cross-family). EXCLUSION clause: multi-axis quality composite + multi-sleeve OK. Single-signal Q failure pattern not applicable: alpha is Consensus(0.47)-dominant + Q07 supplemental + M08_Residual_Mom orthogonal diversifier.",
+    "cleared": true,
+    "family_distribution": {
+      "Analyst_Consensus": 4,
+      "Quality_Earnings": 1,
+      "cross_family": 1
+    }
+  },
+  "ablation_results": {
+    "BASELINE_6F": {
+      "cell": "BASELINE_6F",
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "AC21_CF_to_Accrual_Ratio"],
+      "replaced": "AC21_CF_to_Accrual_Ratio",
+      "rank_ic": 0.0489,
+      "icir": 0.602,
+      "harvey_ic": 9.3455,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.069,
+      "subperiod_p2": 0.0369,
+      "subperiod_p3": 0.0289,
+      "sub_stability": 0.4183,
+      "n_months": 241,
+      "q07_cor": 0.0399,
+      "axis5_cor": 0.0102
+    },
+    "6F_M08_Residual_Mom": {
+      "cell": "6F_M08_Residual_Mom",
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom"],
+      "replaced": "M08_Residual_Mom",
+      "rank_ic": 0.0473,
+      "icir": 0.5412,
+      "harvey_ic": 8.401,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0623,
+      "subperiod_p2": 0.0374,
+      "subperiod_p3": 0.0117,
+      "sub_stability": 0.1882,
+      "n_months": 241,
+      "q07_cor": 0.0099,
+      "axis5_cor": 0.0157
+    },
+    "6F_Q25_Ohlson_O": {
+      "cell": "6F_Q25_Ohlson_O",
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "Q25_Ohlson_O"],
+      "replaced": "Q25_Ohlson_O",
+      "rank_ic": 0.0477,
+      "icir": 0.5873,
+      "harvey_ic": 9.1172,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0624,
+      "subperiod_p2": 0.0372,
+      "subperiod_p3": 0.0209,
+      "sub_stability": 0.3353,
+      "n_months": 241,
+      "q07_cor": -0.2079,
+      "axis5_cor": -0.1022
+    },
+    "6F_L11_Kyle_Lambda": {
+      "cell": "6F_L11_Kyle_Lambda",
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "L11_Kyle_Lambda"],
+      "replaced": "L11_Kyle_Lambda",
+      "rank_ic": 0.0467,
+      "icir": 0.582,
+      "harvey_ic": 9.0346,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0622,
+      "subperiod_p2": 0.0373,
+      "subperiod_p3": 0.0209,
+      "sub_stability": 0.3358,
+      "n_months": 241,
+      "q07_cor": -0.1006,
+      "axis5_cor": -0.0151
+    },
+    "6F_R13_NCSKEW": {
+      "cell": "6F_R13_NCSKEW",
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "R13_NCSKEW"],
+      "replaced": "R13_NCSKEW",
+      "rank_ic": 0.0374,
+      "icir": 0.4882,
+      "harvey_ic": 7.5785,
+      "ff3_retention": 1,
+      "subperiod_p1": 0.0491,
+      "subperiod_p2": 0.029,
+      "subperiod_p3": 0.017,
+      "sub_stability": 0.3453,
+      "n_months": 241,
+      "q07_cor": -0.0046,
+      "axis5_cor": 0.0227
+    }
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 5,
+      "parallel_exec": false,
+      "rcpp_used": true,
+      "rcpp_functions": "bootstrap_dsr_fast",
+      "rolling_seconds": 69.8316,
+      "method_log": {
+        "BASELINE_6F": {
+          "name": "MEGA_05_5F+AC21 baseline (Iter 1 PRIMARY)",
+          "rank_ic": 0.0489,
+          "selected": false
+        },
+        "6F_M08_Residual_Mom": {
+          "name": "5F + M08_Residual_Mom",
+          "rank_ic": 0.0473,
+          "selected": true
+        },
+        "6F_Q25_Ohlson_O": {
+          "name": "5F + Q25_Ohlson_O",
+          "rank_ic": 0.0477,
+          "selected": false
+        },
+        "6F_L11_Kyle_Lambda": {
+          "name": "5F + L11_Kyle_Lambda",
+          "rank_ic": 0.0467,
+          "selected": false
+        },
+        "6F_R13_NCSKEW": {
+          "name": "5F + R13_NCSKEW",
+          "rank_ic": 0.0374,
+          "selected": false
+        }
+      }
+    }
+  },
+  "challenge_flags": {
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "Reference count or subperiod stability borderline",
+      "detail": "refs=5, sub_stab=0.188"
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding IC weights (no full-sample stats used)",
+    "C2": "PASS: signal at sig_date, applied at t+1",
+    "C4": "PASS: fundamental quarterly 45d / annual May lag enforced via Factor DB",
+    "C10": "PASS: AvgTV20 >= 2e8 lagged filter",
+    "C13": "PASS: Z_Score_Aligned from Factor DB, no manual sign flip",
+    "C14": "PASS: Factor DB Usable_Date <= sig_date",
+    "C15": "PASS: load via factor_db parquet, not raw RAWDATA",
+    "lockbox": "ENFORCED: 2024-01-23 ~ 2026-01-23 excluded from all computations"
+  },
+  "references": [
+    "Fama-French (1993) — FF3 factor model",
+    "Harvey-Liu-Zhu (2016) — multiple testing, t>3.0",
+    "Sloan (1996) — accrual anomaly (replaced AC21 baseline)",
+    "Carhart (1997) — momentum factor (M08 candidate ref)",
+    "Blitz-Huij-Martens (2011) — residual momentum (M08 candidate)",
+    "Ohlson (1980) — O-score distress (Q25 candidate)",
+    "Campbell-Hilscher-Szilagyi (2008) — distress risk (Q25)",
+    "Pastor-Stambaugh (2003) — liquidity risk premium (L11)",
+    "Kyle (1985) — Kyle's Lambda price impact (L11)",
+    "Chen-Hong-Stein (2001) — crash risk / NCSKEW (R13)",
+    "QEPM L-219 — Q07-AC21 quality_earnings family saturation",
+    "QEPM AX-004 — KR quality_profitability single-signal long-only failure"
+  ],
+  "role_bias_tagging": "RoleBias_Core",
+  "graduation_status": {
+    "rank_ic_gate": {
+      "value": 0.0473,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "icir_gate": {
+      "value": 0.5412,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "harvey_gate": {
+      "value": 8.401,
+      "threshold": 3,
+      "pass": true
+    },
+    "sub_stab_gate": {
+      "value": 0.1882,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "dsr_gate": {
+      "value": 0.9899,
+      "threshold": 0.5,
+      "pass": true
+    }
+  }
+}
