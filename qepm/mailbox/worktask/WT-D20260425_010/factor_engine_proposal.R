@@ -106,14 +106,14 @@ cat(sprintf("[Step 2] RAWDATA: %s ~ %s | %d tickers\n",
 cat("\n[Step 3] Factor DB bulk load — Iter 5 7-factor pool...\n")
 
 CONSENSUS_4F <- c("C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap")
-# Codex ACCEPT #3 + Q-Lead Option B: redesign sleeves so each is genuinely
-# multi-axis cross-family WITHOUT shared signals collapsing.
-#   Core    = 4F Consensus + Q07 (5F, Quality_Earnings + Analyst_Consensus axes)
-#   Defense = M08_Residual_Mom + Q25_Ohlson_O (2 cross-family axes)
-# This removes Defense sleeve dependence on Q07 (no shared signal with Core)
-# and ensures genuine multi-axis composition under EW blending.
-SLEEVE_CORE     <- c(CONSENSUS_4F, "Q07_Earnings_Stability")
-SLEEVE_DEFENSE  <- c("M08_Residual_Mom", "Q25_Ohlson_O")
+# Codex ACCEPT #3 fix v2: 3-axis Defense sleeve.
+#   Core    = 4F Consensus (analyst revision axis only)
+#   Defense = Q07 + M08_Residual_Mom + Q25_Ohlson_O (3 cross-family axes:
+#             Quality_Earnings + Momentum_Residual + Distress)
+# Removes single-signal-collapse risk under EW blending; genuine multi-axis;
+# preserves Q07 (KR strongest) without making Core-Defense identical.
+SLEEVE_CORE     <- CONSENSUS_4F
+SLEEVE_DEFENSE  <- c("Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O")
 
 NEEDED_FACTORS <- unique(c(SLEEVE_CORE, SLEEVE_DEFENSE))
 
