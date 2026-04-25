@@ -1,0 +1,141 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "risk_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-04-25T16:21:45+09:00",
+  "task_id": "WT-D20260425_006",
+  "stance": "REJECT",
+  "veto_flag": false,
+  "stance_rationale": "핵심 수치(PSD/cond)는 통과했지만, CRISIS 표본 부재(regime n=0), CVaR cap 중대 위반, PIT-C12 검증 공백, crowding 정의 불명확이 동시에 남아 Risk handoff 품질이 부족합니다.",
+  "sigma_audit": {
+    "method_selected": "nonlinear_shrinkage (factor_blend_weight=0; full reliance inferred)",
+    "cond_post_shrink": 11.0581,
+    "pd_verified": true,
+    "shrinkage_intensity": 1.0,
+    "factor_coverage_r2": 0.2829,
+    "method_shopping_count": 5,
+    "rf_r2_flag": false
+  },
+  "regime_sigma_audit": {
+    "regime_n": {
+      "BULL": 0,
+      "NORMAL": 60,
+      "CAUTION": 0,
+      "CRISIS": 0
+    },
+    "crisis_fallback_method": "none_declared",
+    "rf_r8_flag": true,
+    "regime_switch_rate_estimated": 0.0,
+    "regime_switch_rate_realized": null,
+    "comment": "regime_correlation.parquet는 NORMAL만 생성(210 rows)되었고 CRISIS thin-sample fallback(bootstrap/pooled) 근거가 없습니다."
+  },
+  "tail_risk_audit": {
+    "cvar_95": 0.1618,
+    "cvar_cap": 0.025,
+    "cvar_breach": true,
+    "hill_alpha": null,
+    "rf_r6_flag": true,
+    "stress_8_pass": false,
+    "worst_stress_period": "GFC_2008",
+    "worst_stress_loss": 0.486
+  },
+  "crowding_audit": {
+    "tdc_vs_pg2": 0.6667,
+    "hhi": 0.1041,
+    "rf_r3_flag": true,
+    "family_saturation_check": "Q07-AC21 cor=0.731 (inherited); style cor vs existing PG2 active book is not explicitly measured."
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "run_alpha_research.R에서 dd_20d_lag/vol_60d_lag를 shift(...,1L)로 계산하고 risk_package에도 t-1 lag 명시."
+    },
+    {
+      "check": "C11",
+      "status": "FAIL",
+      "evidence": "risk 단계에서 외부 시계열(regime_v7 등) lag audit 증거가 패키지/아티팩트에 명시되지 않음."
+    },
+    {
+      "check": "C12",
+      "status": "FAIL",
+      "evidence": "run_risk_research.R가 .cache/kr_factor_returns.parquet를 사용하며 KR FF5 v2/backfill PIT 검증 산출이 없음."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "본 Σ 구성은 FF 계열 수익률 기반이며 재무제표 release-lag 직접 입력은 확인되지 않음."
+    }
+  ],
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "Regime-conditional Σ가 CRISIS/BULL/CAUTION 표본 0 상태에서 산출되어 위기 국면 리스크를 추정하지 못함. bootstrap CI 또는 pooled fallback 부재.",
+      "ax_cite": "RF-R8|AX-002|PIT-C1"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "Tail hard-constraint 위반: CVaR95=0.1618 > cap=0.025(6.47x)이며 stress worst(GFC_2008 parametric)=-48.6%로 25% 한계 초과.",
+      "ax_cite": "RF-R4|AX-001|AX-002"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "PIT-C12 증거 부족: factor return PIT/backfill 검증 없이 kr_factor_returns.parquet를 사용하여 리스크 추정의 시점정합성 확증이 약함.",
+      "ax_cite": "PIT-C12|AX-002"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "Crowding 진단이 proxy 중심: TDC proxy 0.6667(권고 0.30 초과), Q07-AC21 cor 0.731, 실제 PG2 active 대비 style cor/HHI 정의가 불완전.",
+      "ax_cite": "RF-R3|RF-R5|L-219|AX-002"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Σ 방법 설명 불일치: selected_estimator=nonlinear_shrinkage, factor_blend_weight=0인데 sigma_structure.method는 'BΩB_plus_D_blended_LW_50_50'로 기재됨.",
+      "ax_cite": "AX-002|RF-R2"
+    },
+    {
+      "id": "C6",
+      "severity": "LOW",
+      "description": "요청된 mirror artifact 경로(/stage_artifacts/WT_WT-D20260425_006)가 비어 있어 독립 재검증 체인(2nd path)이 약함.",
+      "ax_cite": "AX-008|AX-002"
+    }
+  ],
+  "supporting_arguments": [
+    "covariance.parquet 실측: 20x20 복원 후 min_eig=0.0086079, cond=11.0581, PSD=true.",
+    "alpha_scores.parquet 실측: 252 sig_dates(2003-02-28~2024-01-22), 568788 rows로 시계열 차원은 확보됨.",
+    "weights.csv는 sig_date 1개(2024-01-22) 스냅샷이며 CASH 행 포함 21행; 히스토리컬 재생용으로 쓰이면 Iter4류 오류 재발 가능."
+  ],
+  "unresolved_disputes": [
+    "CVaR cap 2.5%는 sleeve-level hard인지, book-level(hedge/cash 포함) 기준인지 거버넌스 정의가 미확정.",
+    "PG2 active 대비 crowding의 표준 정의(TDC vs style-correlation vs holdings overlap)가 합의되지 않음.",
+    "sigma_structure.method 문구를 실제 산출(비선형 shrinkage 중심)과 어떻게 일치시킬지 미정."
+  ],
+  "weakest_assumption": "NORMAL 60개월만으로(다른 regime 표본 0) 위기 국면 리스크까지 대리 추정 가능하다는 가정.",
+  "rebuttal_required": [
+    "CRISIS thin-sample 대체 절차(bootstrap CI 또는 pooled Σ + bounds tightening)와 수치 결과를 제출.",
+    "PIT-C12 검증 로그(FF factor return v2/backfill 포함)를 별도 artifact로 제출.",
+    "PG2 active 대비 crowding 3종(TDC, style cor, overlap HHI)을 동일 표본/동일 기간으로 재측정 제출.",
+    "Risk 패키지 자체 infeasibility_report( CVaR/stress breach )를 명시해 Optimizer 전가를 해소.",
+    "sigma_structure.method 텍스트와 실제 covariance 생성 경로를 정합화하고 shrinkage intensity δ를 명시."
+  ],
+  "rationalization_red_flags": [],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "핵심 수치 자체는 package-artefact 간 일치하지만, CRISIS/PIT/crowding 핵심 검증이 proxy 또는 공백이라 2-source 수준의 신뢰 triangulation에 미달합니다."
+  },
+  "risk_specific_questions": [
+    "CRISIS regime n=0에서 optimizer로 넘기는 Σ에 대해 왜 pooled/bootstrapped fallback을 risk_package 본문에 명문화하지 않았는가?",
+    "CVaR95 cap breach(0.1618 vs 0.025) 상태에서 risk 단계의 공식 infeasibility_report 부재는 Charter §8과 어떻게 정합되는가?",
+    "tdc_vs_pg2=0.6667은 baseline proxy인데, 실제 PG2 active book의 style correlation/overlap HHI와 어떤 매핑 규칙을 사용하는가?"
+  ]
+}
