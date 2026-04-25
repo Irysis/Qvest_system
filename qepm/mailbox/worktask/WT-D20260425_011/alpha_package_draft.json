@@ -1,0 +1,517 @@
+{
+  "task_id": "WT-D20260425_011",
+  "wt_type": "discovery",
+  "iter": 6,
+  "iter_name": "MEGA_06_STR1699_Kelly_Overlay",
+  "parent_iters": ["WT-D20260425_006", "WT-D20260425_007", "WT-D20260425_008", "WT-D20260425_009", "WT-D20260425_010"],
+  "baseline_pg2": "STR_1631_SYN_05_80 + STR_1656_MLRA_M05_20",
+  "parent_components": {
+    "str_1699_iter5_alpha": {
+      "ref": "qepm/mailbox/worktask/WT-D20260425_010/alpha_package.json",
+      "role": "alpha_signal_base",
+      "role_evidence": "STR_1699 multi-sleeve composite (Core 0.65 + Defense 0.35), AX-007 EXCEPTION #1 satisfied, full-period SR 0.995 (244 months), Harvey FF5 5-spec PASS (3.575~3.690), DSR_post 3.748"
+    },
+    "mega_05_kelly_overlay": {
+      "ref": "05_Production STR_1631_PG2_MDD_OPT (Kelly_frac05 + 3-Layer Overlay)",
+      "role": "optimizer_machinery_handoff",
+      "role_evidence": "MEGA_05 PG2 active, SR 1.110 (Forge Phase 4.5 re-measurement), DSR_post 4.622, 3-Layer Overlay (DD Brake 6/8/20 + VolReg 12% target + FM regime), Kelly_frac05 sizing"
+    }
+  },
+  "as_of_date": "2026-04-25",
+  "signal_as_of": "2023-11-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "Iter 6 MEGA_06 — STR_1699 multi-sleeve + Kelly_frac05 + 3-Layer Overlay (Sprint 자산 통합 v2)",
+  "hypothesis_summary": "두 입증된 component 결합: (1) STR_1699 (Iter 5) multi-sleeve framework — SR 0.995 full-period 244 months, Harvey FF5 5-spec all PASS (3.575~3.690), DSR_post 3.748, AX-007 EXCEPTION #1 충족. (2) MEGA_05 (PG2 active) Kelly_frac05 sizing + 3-Layer Overlay (DD Brake 6/8/20 + VolReg 12% target + FM regime) — SR 1.110, DSR_post 4.622 robust. 가설: STR_1699 alpha base × MEGA_05 machinery boost → SR 1.5+ 잠재 (aspirational 2.0+). Alpha agent (이 패키지)는 STR_1699 alpha 시계열 그대로 + regime_state column + Kelly_fraction/vol_target/dd_trigger spec metadata 산출. Kelly+Overlay 적용은 Optimizer 영역 (handoff_to_optimizer block). AX-002 process honesty: alpha 수정 없음, Optimizer SPEC 전달만.",
+  "multi_sleeve_structure": {
+    "sleeve_1_core": {
+      "label": "Core_4F (STR_1699 inherited)",
+      "weight": 0.65,
+      "factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap"],
+      "rationale": "STR_1699 (Iter 5) 4F Consensus validated; Iter 5 SR 0.995 full-period",
+      "diagnostics_inherited_iter5": {
+        "rank_ic": 0.0428,
+        "icir": 0.4162,
+        "harvey_t": 6.4479,
+        "n_months": 240
+      }
+    },
+    "sleeve_2_defense": {
+      "label": "Defense_3axis (STR_1699 inherited)",
+      "weight": 0.35,
+      "factors": ["Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+      "rationale": "Q07 (L-121 stress ICIR +0.753) + M08_Residual_Mom (cross-family) + Q25_Ohlson_O (distress, Campbell-Hilscher-Szilagyi 2008). 3-axis EW (NOT 4-axis, AX-005 EXCLUSION).",
+      "diagnostics_inherited_iter5": {
+        "rank_ic": 0.0272,
+        "icir": 0.2001,
+        "harvey_t": 3.1001,
+        "n_months": 240
+      }
+    },
+    "sleeve_3_cash_overlay": {
+      "label": "Cash_Regime_Overlay (Iter 6 enhanced)",
+      "weight": "decided_by_optimizer (5-30% regime-conditional)",
+      "mechanism": "regime_state column attached to alpha_scores.parquet. Optimizer reads sig_date -> regime_state and applies cash policy: BULL 0%, NORMAL 5%, CAUTION 15%, CRISIS 30%. Iter 6 enhancement: cash policy combined with DD Brake (heavy DD also forces cash 30-50%).",
+      "regime_levels": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+      "data_source": "Iter 2 regime_panel.parquet (PIT-safe expanding percentile, C1+C2+C9+C11)"
+    },
+    "blend_method": "score_level_L484",
+    "note": "AX-007 exception #1 (multi-sleeve) explicitly satisfied. STR_1699 (Iter 5) already validated this exception with 5-spec Harvey FF5 PASS."
+  },
+  "alpha_vector": {
+    "A005930": 2.1534,
+    "A000990": 1.9952,
+    "A145020": 1.7099,
+    "A042660": 1.4381,
+    "A058470": 1.3977,
+    "A012750": 1.3547,
+    "A029780": 1.3521,
+    "A002790": 1.2444,
+    "A005300": 1.2022,
+    "A069260": 1.1278,
+    "A105630": 1.0771,
+    "A084370": 1.0759,
+    "A051600": 1.0336,
+    "A047050": 1.03,
+    "A035250": 0.9505,
+    "A035420": 0.937,
+    "A192080": 0.9276,
+    "A272210": 0.9253,
+    "A251270": 0.9126,
+    "A161390": 0.907
+  },
+  "confidence_vector": {
+    "A000990": 0.1,
+    "A002790": 0.379,
+    "A005300": 0.38,
+    "A005930": 0.3976,
+    "A012750": 0.3976,
+    "A029780": 0.3935,
+    "A035250": 0.4023,
+    "A035420": 0.4007,
+    "A042660": 0.3774,
+    "A047050": 0.389,
+    "A051600": 0.4143,
+    "A058470": 0.3854,
+    "A069260": 0.3598,
+    "A084370": 0.3468,
+    "A105630": 0.3559,
+    "A145020": 0.293,
+    "A161390": 0.3931,
+    "A192080": 0.2193,
+    "A251270": 0.3052,
+    "A272210": 0.2543
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260425_011/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C01_SUE",
+      "formula": "Z_Score_Aligned[C01_SUE] (load_month_factors equivalent, Mandate 3 — Iter 5 spot-check cor>0.999 inherited)",
+      "lag_rule": "monthly t-1, C2",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Earnings revision upside (SUE)",
+      "sleeve": "Core",
+      "source": "db_existing",
+      "references": ["Chan-Jegadeesh-Lakonishok 1996", "Ball-Brown 1968"]
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C02_EPS_Chg_1m",
+      "formula": "Z_Score_Aligned[C02_EPS_Chg_1m]",
+      "lag_rule": "monthly t-1, C2",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "1-month EPS estimate change",
+      "sleeve": "Core",
+      "source": "db_existing",
+      "references": ["Womack 1996", "Stickel 1992"]
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C04_ESBR",
+      "formula": "Z_Score_Aligned[C04_ESBR]",
+      "lag_rule": "monthly t-1, C2",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Earnings surprise breadth ratio",
+      "sleeve": "Core",
+      "source": "db_existing",
+      "references": ["Jegadeesh-Kim 2006", "Loh-Mian 2006"]
+    },
+    {
+      "factor_family": "Analyst_Consensus",
+      "proxy": "C06_TP_Gap",
+      "formula": "Z_Score_Aligned[C06_TP_Gap]",
+      "lag_rule": "monthly t-1, C2",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Analyst target-price gap",
+      "sleeve": "Core",
+      "source": "db_existing",
+      "references": ["Brav-Lehavy 2003", "Asquith-Mikhail-Au 2005"]
+    },
+    {
+      "factor_family": "Quality_Earnings",
+      "proxy": "Q07_Earnings_Stability",
+      "formula": "Z_Score_Aligned[Q07_Earnings_Stability]",
+      "lag_rule": "monthly t-1, C2 + C4 (quarterly 45d)",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Earnings stability (low variance of growth) — L-121 stress ICIR +0.753",
+      "sleeve": "Defense",
+      "source": "db_existing",
+      "references": ["Novy-Marx 2013", "QEPM L-121"]
+    },
+    {
+      "factor_family": "Momentum_Residual",
+      "proxy": "M08_Residual_Mom",
+      "formula": "Z_Score_Aligned[M08_Residual_Mom] (12-1M residual)",
+      "lag_rule": "monthly t-1, C2",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Cross-family diversifier (Q07-M08 panel cor=0.0099)",
+      "sleeve": "Defense",
+      "source": "db_existing",
+      "references": ["Carhart 1997", "Blitz-Huij-Martens 2011", "Daniel-Moskowitz 2016"]
+    },
+    {
+      "factor_family": "Distress",
+      "proxy": "Q25_Ohlson_O",
+      "formula": "Z_Score_Aligned[Q25_Ohlson_O]",
+      "lag_rule": "annual May (C4)",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity",
+      "economic_rationale": "Distress factor (lower O-score = lower distress)",
+      "sleeve": "Defense",
+      "source": "db_existing",
+      "references": ["Ohlson 1980", "Campbell-Hilscher-Szilagyi 2008"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0441,
+    "icir": 0.3442,
+    "harvey_t_stat": 5.3205,
+    "dsr": 0.344,
+    "monotonicity": "NA",
+    "subperiod_stability": 0.0409,
+    "subperiod_ics": {
+      "p1_2008_2014": 0.0604,
+      "p2_2015_2019": 0.0312,
+      "p3_2020_2023": 0.0025
+    },
+    "post_neutralization_ic": 0.0441,
+    "turnover_proxy": 0.5,
+    "n_months": 239,
+    "n_sig_dates": 239,
+    "n_tickers": 20,
+    "alpha_divergence": 1,
+    "ax_001_v2_bad_normal_ic_ratio": -1.8355
+  },
+  "time_series_audit_record": {
+    "n_sig_dates": 239,
+    "date_range": ["2003-12-01", "2023-11-01"],
+    "unique_tickers_panel": 773,
+    "schema": ["Date", "Ticker", "score_eff", "score_core_z", "score_defense_z", "Ret_1m", "regime_state", "theta_core", "theta_defense", "kelly_fraction", "vol_target_ann", "dd_brake_light", "dd_brake_medium", "dd_brake_heavy"],
+    "file_path": "stage_artifacts/WT_D20260425_011/alpha_scores.parquet"
+  },
+  "ax_axiom_compliance": {
+    "AX-002": {
+      "rule": "Process honesty — no silent override / no rationalization",
+      "status": "PASS",
+      "evidence": "Kelly+Overlay handoff explicitly framed as Optimizer SPEC (handoff_to_optimizer block), NOT alpha modification. Alpha vector = STR_1699 base unchanged. challenge_note.md records Codex round outcome."
+    },
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE+LOW_TURNOVER 실패",
+      "status": "PASS",
+      "evidence": "Iter 6 inherits Iter 5 Sleeve composition: NO standalone Value (E/P or B/P). Sleeve 1 = Consensus 4F + Sleeve 2 = Q07+M08+Q25."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only failure",
+      "status": "PASS",
+      "evidence": "Multi-axis composite — Consensus(4F dominant) + Quality_Earnings(Q07) + Momentum_Residual(M08) + Distress(Q25). EXCLUSION: multi-axis quality + multi-sleeve."
+    },
+    "AX-005": {
+      "rule": "KR defense low-beta/Q07+D25/4-axis composite top20_long_only failure",
+      "status": "PASS_WITH_NOTE",
+      "evidence": "Defense sleeve = Q07 + M08 + Q25 3-axis (NOT 4-axis). Multi-sleeve structure + Sleeve 2 weight 0.35 supplementary. Iter 5 Q-Lead resolution accepted (3-axis EW). EXCLUSION 'necessary not sufficient' — Forge Gate 13 PASS verification at backtest stage."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_long_only_top20 signal-portfolio translation 단절",
+      "status": "PASS",
+      "evidence": "Multi-sleeve structure (Core 0.65 + Defense 0.35 + Cash regime overlay) — explicitly exempted exception #1 (multi-sleeve). NOT single_sleeve_top20. STR_1699 (Iter 5) already validated this exception with 5-spec Harvey FF5 PASS."
+    },
+    "AX-008": {
+      "rule": "Verification Triangulation — Forge + Codex + Architect 3-source ≥2 PASS",
+      "status": "DEFERRED_TO_FORGE_JUDGE",
+      "evidence": "Codex round executed within Alpha agent (Step 16). Forge + Architect verification at downstream stages."
+    }
+  },
+  "handoff_to_optimizer": {
+    "explanation": "Iter 6 MEGA_06 = STR_1699 alpha (this package) + MEGA_05 machinery (Optimizer applies). Alpha agent provides 4 SPECS as metadata for Optimizer to honor. AX-002 process honesty: alpha vector = STR_1699 base unchanged. Kelly+Overlay are WEIGHTING decisions (Optimizer domain), NOT alpha modifications.",
+    "kelly_sizing_spec": {
+      "layer": "Kelly_Fractional_Sizing",
+      "source": "MEGA_05 Kelly_frac05 (PG2 active machinery)",
+      "fraction": 0.5,
+      "kelly_proxy": {
+        "method": "IC-based Kelly proxy: f* ∝ mu_IC / sigma_IC^2",
+        "full_kelly": 2.6857,
+        "frac_kelly": 1.3429,
+        "note": "Optimizer applies fraction to compute per-name weight ceiling"
+      },
+      "weight_ceiling": {
+        "formula": "w_max = min(0.10, alpha_hat * fraction / sigma_i^2)",
+        "base_cap": 0.1,
+        "interpretation": "Higher conviction (alpha) gets larger weight, bounded by 10%"
+      },
+      "references": ["Kelly (1956) A New Interpretation of Information Rate", "Thorp (1969) Optimal Gambling Systems for Favorable Games", "MacLean-Thorp-Ziemba (2010) The Kelly Capital Growth Investment Criterion"]
+    },
+    "dd_trigger_spec": {
+      "layer": "DD_Brake",
+      "source": "MEGA_05 reference + PIT-safe BM rolling 12M DD",
+      "thresholds": {
+        "light": 0.06,
+        "medium": 0.08,
+        "heavy": 0.2
+      },
+      "brake_actions": {
+        "light": "Reduce gross exposure to 90% (cash 10%)",
+        "medium": "Reduce gross exposure to 70% (cash 30%)",
+        "heavy": "Reduce gross exposure to 50% (cash 50%; Iter 1 Crisis CVaR -42%)"
+      },
+      "pit_compliance": {
+        "C9": "PASS: dd_lag = shift(dd_pct, n=1L) one-month lag",
+        "C11": "PASS: BM-only computation, no FRED leakage"
+      },
+      "empirical_calibration": {
+        "bm_dd_q50": 0.1819,
+        "bm_dd_q75": 0.292,
+        "bm_dd_q90": 0.4348,
+        "bm_dd_q95": 0.5094,
+        "n_months": 407
+      }
+    },
+    "vol_target_spec": {
+      "layer": "VolReg",
+      "source": "MEGA_05 reference + Barroso-Santa-Clara 2015 risk-managed approach",
+      "vol_target_annualized": 0.12,
+      "vol_window_months": 12,
+      "vol_lag_months": 1,
+      "scaling_rule": "scale_factor = min(1.0, vol_target / max(vol_lag, eps))",
+      "pit_compliance": {
+        "C9": "PASS: vol_lag = shift(vol_12m_ann, n=1L) one-month lag",
+        "C11": "PASS: BM-only computation"
+      },
+      "empirical_calibration": {
+        "bm_vol_q50": 0.2011,
+        "bm_vol_q75": 0.2799,
+        "bm_vol_q90": 0.376,
+        "n_months": 407
+      },
+      "references": ["Barroso-Santa-Clara 2015 risk-managed momentum", "Moreira-Muir 2017 volatility-managed portfolios"]
+    },
+    "fm_regime_spec": {
+      "layer": "FM_Regime",
+      "source": "Iter 2 regime_panel (PIT expanding percentile, C1+C2+C9+C11)",
+      "regime_levels": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+      "regime_actions": {
+        "BULL": "Full deployment (cash 0%); base allocation",
+        "NORMAL": "Standard deployment (cash 5%)",
+        "CAUTION": "Reduce risk (cash 15%; defense sleeve emphasis)",
+        "CRISIS": "Maximum defense (cash 30%; AX-001 v2 conditional Defense activation)"
+      },
+      "data_source": "alpha_scores.parquet::regime_state column (per-sig_date)",
+      "pit_compliance": {
+        "C1": "PASS: expanding percentile, no lookahead",
+        "C2": "PASS: t-1 regime applied at t",
+        "C9": "PASS: BM-internal lag enforced",
+        "C11": "PASS: KR internals only (BM_DT), no FRED leakage"
+      }
+    },
+    "integration_pattern": {
+      "step_1": "Optimizer reads alpha_vector + confidence_vector (this package)",
+      "step_2": "Optimizer reads regime_state column (per-sig_date) from alpha_scores.parquet",
+      "step_3": "Optimizer applies Kelly_frac05 sizing: w_max = 0.5 * f_kelly per name (cap 10%)",
+      "step_4": "Optimizer applies VolReg layer: scale = min(1.0, 0.12 / max(vol_lag, eps))",
+      "step_5": "Optimizer applies DD Brake layer: cash override on dd_lag thresholds (6/8/20%)",
+      "step_6": "Optimizer applies FM Regime layer: regime_state determines base cash level",
+      "step_7": "Final weights = max-of (DD Brake, FM Regime cash) honored; sum_w = 1; long-only; 20 hard cap"
+    },
+    "optimizer_constraints": {
+      "hard_max_names": 20,
+      "long_only": true,
+      "sum_weights": 1,
+      "max_per_name": 0.1,
+      "cash_range_pct": [0, 50]
+    },
+    "deploy_cutoff": "2023-11-01"
+  },
+  "crowding_check": {
+    "cross_section_jaccard_iter5": 0.111,
+    "time_series_tdc_iter5": 1,
+    "pg2_active_book": "STR_1631_SYN_05 80% + STR_1656_MLRA_M05 20%",
+    "note": "Iter 6 inherits Iter 5 base; Jaccard vs Iter 5 expected near 1.0 (intentional). TDC vs PG2 measured at Forge backtest stage (this is alpha-level metric, not portfolio-level)."
+  },
+  "sequential_admission_scenarios": {
+    "replacement": {
+      "design": "100% Iter 6 (STR_1699 + Kelly + 3-Layer Overlay) Replaces PG2",
+      "backtest_status": "TBD by Forge",
+      "expected_benefit": "Combined alpha robustness (STR_1699 5-spec FF5 PASS) + machinery boost (MEGA_05 SR 1.110)"
+    },
+    "integration_80_20": {
+      "design": "80% MEGA_05 + 20% Iter 6 (score-level blend, L-484)",
+      "backtest_status": "TBD by Forge",
+      "expected_benefit": "Conservative incremental — but Iter 6 IS MEGA_05 machinery layer; may be redundant"
+    },
+    "integration_50_50": {
+      "design": "50% Iter 6 STR_1699+Kelly+Overlay / 50% STR_1656_MLRA_M05",
+      "backtest_status": "TBD by Forge",
+      "expected_benefit": "Maintain ML diversifier (STR_1656) while introducing Iter 6 robust alpha base"
+    }
+  },
+  "external_validation_framework": {
+    "framework": "KR_FF5_v2",
+    "asset": {
+      "source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/kr_factor_returns_v2.parquet",
+      "available": true,
+      "n_obs": 300,
+      "date_range": ["2001-04-29", "2026-03-04"],
+      "columns": ["Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF"],
+      "pit_backfill_evidence": "Iter 4 (WT-D20260425_009) Risk Agent built via DART TTM 2002+ backfill. HML/RMW/CMA NA pre-2010 (PIT-strict). MKT/SMB available 2001+ (longer history). Mandate 4 PASS."
+    },
+    "purpose": "STR_1699 (Iter 5) already passed Harvey FF5 5-spec all PASS (3.575~3.690). Iter 6 expected to inherit at portfolio level; Forge will re-run on Kelly+Overlay portfolio returns."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "parallel_exec": false,
+    "rcpp_used": true,
+    "method_log": {
+      "STR_1699_baseline_no_overlay": {
+        "name": "STR_1699_baseline_no_overlay",
+        "sleeve_weight": "0.65/0.35",
+        "overlay": "none",
+        "kelly": "off",
+        "expected_sr": 0.995,
+        "source": "Iter 5 reference",
+        "selected": false
+      },
+      "STR_1699_kelly_only": {
+        "name": "STR_1699_kelly_only",
+        "sleeve_weight": "0.65/0.35",
+        "overlay": "none",
+        "kelly": "frac05",
+        "expected_sr": 1.1,
+        "source": "MEGA_05 component A",
+        "selected": false
+      },
+      "STR_1699_overlay_only_3layer": {
+        "name": "STR_1699_overlay_only_3layer",
+        "sleeve_weight": "0.65/0.35",
+        "overlay": "DD+VolReg+FM",
+        "kelly": "off",
+        "expected_sr": 1.05,
+        "source": "MEGA_05 component B",
+        "selected": false
+      },
+      "STR_1699_kelly_overlay_combined_SELECTED": {
+        "name": "STR_1699_kelly_overlay_combined_SELECTED",
+        "sleeve_weight": "0.65/0.35",
+        "overlay": "DD+VolReg+FM",
+        "kelly": "frac05",
+        "expected_sr": "1.5+ aspirational",
+        "source": "Iter 6 MEGA_06 hypothesis",
+        "selected": true
+      },
+      "STR_1699_full_kelly_overlay": {
+        "name": "STR_1699_full_kelly_overlay",
+        "sleeve_weight": "0.65/0.35",
+        "overlay": "DD+VolReg+FM",
+        "kelly": "full",
+        "expected_sr": "high but lever risk",
+        "source": "Aggressive variant — REJECTED",
+        "selected": false
+      }
+    }
+  },
+  "crisis_bootstrap_ci": {
+    "method": "bootstrap_B1000",
+    "n_crisis": 5,
+    "mean_ic": -0.1727,
+    "ci95": [-0.2515, -0.0924],
+    "pooled_fallback_ic": 0.0441
+  },
+  "challenge_flags": {
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "refs=12, sub_stab=0.041 (Iter 5 inherited issue, Q-Lead accepted)"
+    },
+    "RF-Iter6-A": {
+      "id": "RF-Iter6-A",
+      "severity": "INFO",
+      "msg": "Kelly_frac05 + 3-Layer Overlay handed to Optimizer as SPEC (handoff_to_optimizer block). Alpha agent does NOT apply weights/overlays. Optimizer must honor all 3 specs."
+    },
+    "RF-Iter6-B": {
+      "id": "RF-Iter6-B",
+      "severity": "MEDIUM",
+      "msg": "Iter 6 inherits Iter 5 sub_stab=0.041. Kelly+Overlay machinery may compensate at portfolio level (Forge backtest required)."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS: expanding IC weights (inherited Iter 5)",
+    "C2": "PASS: signal at sig_date applied at fwd_date = sig_date+1M",
+    "C4": "PASS: Factor DB enforces quarterly 45d / annual May lag",
+    "C9": "PASS: regime expanding percentile + Iter 6 dd_lag/vol_lag explicitly enforced",
+    "C10": "PASS: AvgTV20 t-1 lagged filter (inherited Iter 5)",
+    "C11": "PASS: regime indicator BM_DT (KR internals, no FRED leakage)",
+    "C13": "PASS: Z_Score_Aligned via per-sig_date align_factor_direction",
+    "C14": "PASS: Factor DB Usable_Date <= sig_date enforced",
+    "C15": "PASS: Iter 5 spot-check inherited (3 sig_dates × 7 factors cor>0.999)",
+    "lockbox": "ENFORCED 2024-01-23~2026-01-23 sealed; signal_cutoff=2023-11-30 (one month tighter than Iter 5)"
+  },
+  "references": ["Fama-French (1993) FF3 factor model", "Harvey-Liu-Zhu (2016) multiple testing t>3.0", "Carhart (1997) momentum factor", "Blitz-Huij-Martens (2011) residual momentum", "Novy-Marx (2013) gross profitability / earnings quality", "Ohlson (1980) O-score distress", "Campbell-Hilscher-Szilagyi (2008) distress risk", "Asness-Moskowitz-Pedersen (2013) value & momentum everywhere", "DeMiguel-Garlappi-Uppal (2009) 1/N — diversification benefit", "Barroso-Santa-Clara (2015) risk-managed momentum (VolReg basis)", "Moreira-Muir (2017) volatility-managed portfolios", "Kelly (1956) information rate (Kelly criterion)", "Thorp (1969) optimal gambling systems", "MacLean-Thorp-Ziemba (2010) Kelly capital growth", "Bailey-Lopez de Prado (2014) Deflated Sharpe Ratio", "QEPM L-484 score-level composite", "QEPM L-121 Q07 stress alpha", "QEPM L-204 STR_1699 first 5-spec PASS", "QEPM L-205 Replacement vs Sequential admission rule", "QEPM AX-007 multi-sleeve exception #1", "QEPM AX-005 EXCLUSION 'necessary not sufficient'", "QEPM AX-002 process honesty"],
+  "role_bias_tagging": "RoleBias_Core_with_Defense_Diversifier",
+  "graduation_status": {
+    "rank_ic_gate": {
+      "value": 0.0441,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "icir_gate": {
+      "value": 0.3442,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "subperiod_gate": {
+      "value": 0.0409,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "harvey_t_gate": {
+      "value": 5.3205,
+      "threshold": 3,
+      "pass": true
+    },
+    "dsr_gate": {
+      "value": 0.344,
+      "threshold": 0.5,
+      "pass": false
+    }
+  },
+  "window_isolation": {
+    "train_validation_window": {
+      "start": "2004-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "sealed": true
+    },
+    "lockbox_access": false,
+    "lockbox_isolation_certified": true
+  },
+  "generated_at": "2026-04-25T22:58:36+0900"
+}
