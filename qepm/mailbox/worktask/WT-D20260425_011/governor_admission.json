@@ -10,14 +10,12 @@
   "selected_scenario": "A",
   "pathway": "phased_30_90_days",
   "pathway_rationale": "AX-008 FAIL_FORMAL (Architect absent) + C14/C15 inheritance + C10 all-date PIT not re-verified + CVaR_d daily-holdings deferred + RF-A1 P3 IC 0.0025 (96% alpha decay) = 5 admission-gate conditions require pre-deployment closure. Immediate replacement-with-monitoring would expose book to unverified machinery overlay during the very period (2026-04 ~ 2026-07) where MRS=63.1 CRISIS makes machinery the load-bearing alpha source. Phased pathway: Probe-Phase admit (PG1) at T+0 → 6 admission-gate conditions closure during T+0..T+30 → PG2 partial activation 50/50 STR_1700 vs current at T+30 → full Replacement to STR_1700 100% at T+90 contingent on monitoring KPIs. Codex round timeout (2× 1200s) skipped per Q-Lead directive — AX-008 substitute evidence: Forge PASS + Judge harness Lockbox triangulation + Iter5 STR_1699 Architect spawn (lineage-shared alpha_scores.parquet hash-verified MD5 identical pre/post per Judge Gate 0 audit).",
-
   "rule_misapplication_check": {
     "result": "PASS",
     "rule_applied": "Replacement (직접 same-period 243m SR/CAGR/MDD/Harvey/DSR 비교)",
     "tdc_threshold_used": false,
     "rationale": "Iter5 OVERRIDE_002 directive 적용 (사용자 명시: MEGA_05 upgrade research = Replacement scenario). agent definition .claude/agents/governor.md §62~68 + §53 준수. Sequential Admission TDC 0.30 threshold는 add 시나리오 전용 — 본 안건은 Replacement로 동일 룰 misapplication 발생 없음."
   },
-
   "fair_comparison_basis_check": {
     "documented_mega05_sr_1258_cited": false,
     "documented_mega05_cagr_269_cited": false,
@@ -25,7 +23,6 @@
     "same_period_basis": "243m (2006-02 ~ 2026-04, NAV-level intersection)",
     "dsr_penalty_basis": "MEGA_06 = 20×0.05 = 1.00 / STR_1699 = 15×0.05 = 0.75 / MEGA_05 = 15×0.05 = 0.75 (documented basis per Judge Gate 3)"
   },
-
   "ax_008_triangulation_dispossition_governor": {
     "judge_call": "FAIL_FORMAL — Architect absent + Codex sources DISSENT",
     "governor_view": "PARTIAL_ACCEPT — backtest-gate-valid via 3-source independent triangulation: (1) Forge PASS (forge_package.json walk-forward 215 dates), (2) Judge harness Lockbox PASS (1.6927 daily-NAV vs Forge 1.7459 monthly = 0.053 within tolerance), (3) Iter5 STR_1699 lineage Architect spawn (shared alpha_scores.parquet MD5 hash-verified pre/post identical per Judge Gate 0 C14/C15 audit). AX-008 strict 3-source = (Forge + Codex + Architect); Codex DISSENT and pure-Architect-source missing for STR_1700, so Judge FAIL_FORMAL stands at gate-language level. Governor accepts substitute evidence sufficient for PG2 admit + PG1 probe phase, but live-deployment to 100% replacement requires fresh Architect spawn at T+30 milestone. Codex round 2× 1200s timeout skipped per Q-Lead directive (시간 한계 인정).",
@@ -33,7 +30,6 @@
     "blocker_to_full_replacement_t90": true,
     "post_admit_action": "Architect on-demand spawn at T+30 milestone (G1 closure)"
   },
-
   "codex_round_status": {
     "scheduled_attempts": 2,
     "result": "timeout_2x_1200s",
@@ -45,7 +41,6 @@
     ],
     "post_admit_codex_replay": "OPTIONAL — at T+30 milestone, Architect spawn 결과와 함께 Codex critic 재시도 (timeout 4× 600s 분할 권장)"
   },
-
   "pg0_gap_diagnosis": {
     "current_pg2_active": "MEGA_05 (STR_1631) 80% + STR_1656_MLRA 20%",
     "current_book_metrics_estimated": {
@@ -61,7 +56,11 @@
       "dsr_post": 2.51,
       "note": "Forge fair-basis Scenario D (243m NAV-intersection) — TRUE comparison basis"
     },
-    "target_metrics": {"SR": 2.0, "CAGR_pct": 16, "MDD_pct": -25},
+    "target_metrics": {
+      "SR": 2.0,
+      "CAGR_pct": 16,
+      "MDD_pct": -25
+    },
     "gap_vs_target_same_period": {
       "sr_gap": 1.213,
       "cagr_gap_pp": -4.21,
@@ -69,28 +68,56 @@
     },
     "interpretation": "현 PG2 active의 same-period 243m fair metric은 estimated보다 약함. Replacement closing 우선순위: SR axis (1.213 under-performance) + MDD floor (-31.97% machinery 부재 시 35%+).",
     "post_admit_phase_a_t30_book_metrics_projected": {
-      "weights": {"STR_1700": 0.50, "STR_1631_MEGA_05": 0.40, "STR_1656_MLRA_M05": 0.10},
+      "weights": {
+        "STR_1700": 0.5,
+        "STR_1631_MEGA_05": 0.4,
+        "STR_1656_MLRA_M05": 0.1
+      },
       "sr_projected": 0.94,
       "cagr_pct_projected": 13.5,
       "mdd_pct_projected": -27.5,
       "rationale": "50/50 partial replacement during probe phase"
     },
     "post_admit_phase_b_t90_book_metrics_projected": {
-      "weights": {"STR_1700": 1.00},
+      "weights": {
+        "STR_1700": 1.0
+      },
       "sr_projected": 1.0789,
       "cagr_pct_projected": 15.27,
       "mdd_pct_projected": -22.98,
       "rationale": "Full replacement contingent on monitoring KPIs PASS at T+30 and T+60 milestones"
     }
   },
-
   "pg1_individual_admission_replacement_rule": {
     "rule": "Replacement (NOT Sequential Admission)",
     "comparison_basis": "same-period 243m 직접 비교",
     "metrics_table": {
-      "MEGA_06_STR_1700": {"SR": 1.0789, "CAGR_pct": 15.27, "MDD_pct": -22.98, "harvey_t_FF5": 4.5516, "harvey_5_spec_pass": "5/5", "DSR_post": 4.0499, "OOS_24_26_SR_forge": 1.7459, "OOS_24_26_SR_judge_harness": 1.6927},
-      "MEGA_05_baseline_same_period": {"SR": 0.9657, "CAGR_pct": 14.37, "MDD_pct": -24.82, "harvey_t_FF5": 3.2488, "harvey_5_spec_pass": "marginal_3.05", "DSR_post": 3.6026},
-      "STR_1699_iter5_same_period": {"SR": 0.9954, "CAGR_pct": 20.03, "MDD_pct": -34.93, "harvey_t_FF5": 4.3007, "harvey_5_spec_pass": "5/5", "DSR_post": 3.7482}
+      "MEGA_06_STR_1700": {
+        "SR": 1.0789,
+        "CAGR_pct": 15.27,
+        "MDD_pct": -22.98,
+        "harvey_t_FF5": 4.5516,
+        "harvey_5_spec_pass": "5/5",
+        "DSR_post": 4.0499,
+        "OOS_24_26_SR_forge": 1.7459,
+        "OOS_24_26_SR_judge_harness": 1.6927
+      },
+      "MEGA_05_baseline_same_period": {
+        "SR": 0.9657,
+        "CAGR_pct": 14.37,
+        "MDD_pct": -24.82,
+        "harvey_t_FF5": 3.2488,
+        "harvey_5_spec_pass": "marginal_3.05",
+        "DSR_post": 3.6026
+      },
+      "STR_1699_iter5_same_period": {
+        "SR": 0.9954,
+        "CAGR_pct": 20.03,
+        "MDD_pct": -34.93,
+        "harvey_t_FF5": 4.3007,
+        "harvey_5_spec_pass": "5/5",
+        "DSR_post": 3.7482
+      }
     },
     "delta_mega06_vs_mega05": {
       "delta_sr": "+0.1132",
@@ -109,13 +136,14 @@
     "pareto_dominance_vs_str1699": "PARTIAL — SR/MDD/Harvey/DSR 우월 / CAGR -4.76pp 양보 (Kelly+Overlay drag).",
     "pg1_verdict": "PG1_ADMITTED — Replacement 룰 정합. MEGA_05 baseline 대비 5/5 axis 우월."
   },
-
   "pg2_book_level_rebalance": {
     "selected_scenario": "A",
     "selected_pathway": "phased_30_90_days",
     "scenarios_evaluated": {
       "A_replacement_100": {
-        "weights": {"STR_1700": 1.00},
+        "weights": {
+          "STR_1700": 1.0
+        },
         "score": 1.464,
         "sr": 1.0789,
         "cagr_pct": 15.27,
@@ -123,7 +151,10 @@
         "verdict": "RECOMMENDED — Pareto-dominant on SR + MDD + Harvey + DSR vs Scenario D"
       },
       "AB_mega06_80_str1656_20": {
-        "weights": {"STR_1700": 0.80, "STR_1656_MLRA_M05": 0.20},
+        "weights": {
+          "STR_1700": 0.8,
+          "STR_1656_MLRA_M05": 0.2
+        },
         "score": 1.4314,
         "sr": 1.0738,
         "cagr_pct": 13.46,
@@ -131,7 +162,11 @@
         "verdict": "VIABLE_FALLBACK — STR_1656 20% retain (DD brake protection)"
       },
       "B_60_20_20": {
-        "weights": {"STR_1700": 0.60, "STR_1699": 0.20, "STR_1656_MLRA_M05": 0.20},
+        "weights": {
+          "STR_1700": 0.6,
+          "STR_1699": 0.2,
+          "STR_1656_MLRA_M05": 0.2
+        },
         "score": 1.4422,
         "sr": 1.1003,
         "cagr_pct": 14.68,
@@ -139,7 +174,10 @@
         "verdict": "NOT_RECOMMENDED_REPLACEMENT — STR_1699 add는 Sequential Admission 영역. Replacement 시나리오 외부."
       },
       "D_current_PG2_unchanged": {
-        "weights": {"STR_1631_MEGA_05": 0.80, "STR_1656_MLRA_M05": 0.20},
+        "weights": {
+          "STR_1631_MEGA_05": 0.8,
+          "STR_1656_MLRA_M05": 0.2
+        },
         "score": 1.1274,
         "sr": 0.787,
         "cagr_pct": 11.79,
@@ -157,30 +195,57 @@
     "phased_pathway_milestones": {
       "T_plus_0_admit_to_probe": {
         "date": "2026-04-26",
-        "weights": {"STR_1700": 0.0, "STR_1631_MEGA_05": 0.80, "STR_1656_MLRA_M05": 0.20},
+        "weights": {
+          "STR_1700": 0.0,
+          "STR_1631_MEGA_05": 0.8,
+          "STR_1656_MLRA_M05": 0.2
+        },
         "action": "PG1 admit only — book unchanged. Setup monitoring agent."
       },
       "T_plus_30_partial_replacement_50pct": {
         "target_date": "2026-05-26",
-        "weights": {"STR_1700": 0.50, "STR_1631_MEGA_05": 0.40, "STR_1656_MLRA_M05": 0.10},
-        "preconditions_to_proceed": ["G1 Architect PASS or PASS_WITH_NOTE", "G2 fresh load_month_factors() rebuild PASS hash-verified", "G3 all-date 2e8 KRW PIT liquidity PASS", "G4 daily-holdings CVaR/CDaR/stress PASS", "G6 monitoring agent active 30 days T_plus_0..T_plus_30"],
+        "weights": {
+          "STR_1700": 0.5,
+          "STR_1631_MEGA_05": 0.4,
+          "STR_1656_MLRA_M05": 0.1
+        },
+        "preconditions_to_proceed": [
+          "G1 Architect PASS or PASS_WITH_NOTE",
+          "G2 fresh load_month_factors() rebuild PASS hash-verified",
+          "G3 all-date 2e8 KRW PIT liquidity PASS",
+          "G4 daily-holdings CVaR/CDaR/stress PASS",
+          "G6 monitoring agent active 30 days T_plus_0..T_plus_30"
+        ],
         "fail_handling": "If 1+ precondition FAILS → stay at T+0 weights; reschedule T+30 → T+60"
       },
       "T_plus_60_partial_replacement_75pct": {
         "target_date": "2026-06-25",
-        "weights": {"STR_1700": 0.75, "STR_1631_MEGA_05": 0.20, "STR_1656_MLRA_M05": 0.05},
-        "preconditions_to_proceed": ["T_plus_30 monitoring KPIs PASS (realized SR > 0.6, MDD < 25%, IC 3m > 0.005)", "Codex round replay PASS or PARTIAL_ACCEPT"],
+        "weights": {
+          "STR_1700": 0.75,
+          "STR_1631_MEGA_05": 0.2,
+          "STR_1656_MLRA_M05": 0.05
+        },
+        "preconditions_to_proceed": [
+          "T_plus_30 monitoring KPIs PASS (realized SR > 0.6, MDD < 25%, IC 3m > 0.005)",
+          "Codex round replay PASS or PARTIAL_ACCEPT"
+        ],
         "fail_handling": "If KPIs FAIL → stay at T+30 weights"
       },
       "T_plus_90_full_replacement_100pct": {
         "target_date": "2026-07-25",
-        "weights": {"STR_1700": 1.00},
-        "preconditions_to_proceed": ["T_plus_60 monitoring KPIs PASS", "AX-008 formal triangulation closed (Forge + Codex replay + Architect)", "Realized 90-day SR > 0.8, MDD < 25%, alpha-decay alert NONE"],
+        "weights": {
+          "STR_1700": 1.0
+        },
+        "preconditions_to_proceed": [
+          "T_plus_60 monitoring KPIs PASS",
+          "AX-008 formal triangulation closed (Forge + Codex replay + Architect)",
+          "Realized 90-day SR > 0.8, MDD < 25%, alpha-decay alert NONE"
+        ],
         "fail_handling": "If KPIs FAIL → revert to T+60 weights and trigger re-admission review"
       }
     },
     "expected_book_state_post_t90_full_admit": {
-      "WT_D20260425_011_STR_1700": 1.00,
+      "WT_D20260425_011_STR_1700": 1.0,
       "n_admitted": 1,
       "expected_book_sr": 1.0789,
       "expected_book_cagr_pct": 15.27,
@@ -189,21 +254,55 @@
       "dsr_post": 4.0499
     }
   },
-
   "multi_objective_8_scoring": {
-    "expected_active_return": {"value": 0.1527, "weight": 0.15, "score": 0.85},
-    "tracking_error": {"value": 0.1415, "weight": 0.10, "score": 0.65, "note": "vs MEGA_05 0.1514 작음"},
-    "net_IR": {"value": 1.0789, "weight": 0.20, "score": 0.95},
-    "turnover_ann_2way": {"value": 5.937, "weight": 0.10, "score": 0.55, "note": "borderline 6.0 hard cap"},
-    "crowding_adj": {"value": "single_book_post_T90", "weight": 0.10, "score": 0.70, "note": "100% replacement → 단일 alpha source. 다양화 trade-off"},
-    "capacity_adj": {"value": "20종 hard + 2e8 KRW PIT", "weight": 0.10, "score": 0.80},
-    "regime_robustness": {"value": "BULL 1.97 / NORMAL 0.55 / CAUTION 0.73 / CRISIS n=5_too_short", "weight": 0.15, "score": 0.65, "note": "CRISIS sample 부족"},
-    "interpretability": {"value": "InvVol_Quarterly_KO + Kelly + 3-Layer Overlay", "weight": 0.10, "score": 0.85},
+    "expected_active_return": {
+      "value": 0.1527,
+      "weight": 0.15,
+      "score": 0.85
+    },
+    "tracking_error": {
+      "value": 0.1415,
+      "weight": 0.1,
+      "score": 0.65,
+      "note": "vs MEGA_05 0.1514 작음"
+    },
+    "net_IR": {
+      "value": 1.0789,
+      "weight": 0.2,
+      "score": 0.95
+    },
+    "turnover_ann_2way": {
+      "value": 5.937,
+      "weight": 0.1,
+      "score": 0.55,
+      "note": "borderline 6.0 hard cap"
+    },
+    "crowding_adj": {
+      "value": "single_book_post_T90",
+      "weight": 0.1,
+      "score": 0.7,
+      "note": "100% replacement → 단일 alpha source. 다양화 trade-off"
+    },
+    "capacity_adj": {
+      "value": "20종 hard + 2e8 KRW PIT",
+      "weight": 0.1,
+      "score": 0.8
+    },
+    "regime_robustness": {
+      "value": "BULL 1.97 / NORMAL 0.55 / CAUTION 0.73 / CRISIS n=5_too_short",
+      "weight": 0.15,
+      "score": 0.65,
+      "note": "CRISIS sample 부족"
+    },
+    "interpretability": {
+      "value": "InvVol_Quarterly_KO + Kelly + 3-Layer Overlay",
+      "weight": 0.1,
+      "score": 0.85
+    },
     "weighted_score": 0.7665,
     "pareto_4of8_check": "PASS — net_IR + interpretability + capacity_adj + expected_active_return 4축 우월",
     "admission_threshold_check": "PASS (weighted 0.77 ≥ 0.65 AND Pareto 4/8 충족)"
   },
-
   "six_admission_gate_conditions_disposition": {
     "G1_architect_review_AX008": {
       "condition": "Architect spawn for AX-008 formal 3rd source PASS",
@@ -248,7 +347,16 @@
       "governor_action": "monitoring agent setup at 2026-04-26 (T+0). qepm/mailbox/monitoring/STR_1700_monthly_drift_config.json 생성 (별도 outbox order로 발주).",
       "monitoring_agent_spec": {
         "trigger_freq": "monthly",
-        "metrics_tracked": ["realized_IC_3m", "realized_IC_6m", "realized_SR_rolling_12m", "TE_realized", "TDC_vs_book", "regime_shift_FM_PG", "MDD_drawdown", "turnover_ann_realized"],
+        "metrics_tracked": [
+          "realized_IC_3m",
+          "realized_IC_6m",
+          "realized_SR_rolling_12m",
+          "TE_realized",
+          "TDC_vs_book",
+          "regime_shift_FM_PG",
+          "MDD_drawdown",
+          "turnover_ann_realized"
+        ],
         "alert_thresholds": {
           "IC_3m_rolling_below_0_005": "WARN",
           "IC_6m_rolling_below_0": "ESCALATE",
@@ -271,7 +379,6 @@
       "interpretation": "PG1 admit + Probe Phase 즉시 가능. Book unchanged at T+0. T+30 partial replacement은 G1/G2/G3/G4 closure 후 trigger. T+90 full replacement은 G1 + Codex replay 모두 PASS 후 trigger."
     }
   },
-
   "pg3_live_drift_monitoring_plan": {
     "monitoring_freq": "monthly",
     "primary_kpis": [
@@ -297,35 +404,62 @@
     ],
     "monitoring_agent_setup_path": "qepm/mailbox/monitoring/STR_1700_monthly_drift_config.json (별도 governor outbox 발주)"
   },
-
   "book_state_delta_proposed": {
     "before_T_plus_0": {
       "n_admitted": 2,
-      "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
-      "weights": {"WT-D20260425_003": 0.80, "STR_1656_MLRA_M05": 0.20}
+      "admitted_ids": [
+        "WT-D20260425_003",
+        "STR_1656_MLRA_M05"
+      ],
+      "weights": {
+        "WT-D20260425_003": 0.8,
+        "STR_1656_MLRA_M05": 0.2
+      }
     },
     "after_T_plus_0_probe_phase_admit": {
       "n_admitted": 2,
-      "admitted_ids": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
-      "weights": {"WT-D20260425_003": 0.80, "STR_1656_MLRA_M05": 0.20},
-      "probe_phase_admissions": ["WT-D20260425_011 (STR_1700) — admitted_to_probe at T+0, partial replacement scheduled T+30"],
+      "admitted_ids": [
+        "WT-D20260425_003",
+        "STR_1656_MLRA_M05"
+      ],
+      "weights": {
+        "WT-D20260425_003": 0.8,
+        "STR_1656_MLRA_M05": 0.2
+      },
+      "probe_phase_admissions": [
+        "WT-D20260425_011 (STR_1700) — admitted_to_probe at T+0, partial replacement scheduled T+30"
+      ],
       "note": "Book weights unchanged at T+0. PG1 admit only."
     },
     "after_T_plus_30_partial_replacement_50pct_PROJECTED": {
       "n_admitted": 3,
-      "admitted_ids": ["WT-D20260425_011", "WT-D20260425_003", "STR_1656_MLRA_M05"],
-      "weights": {"WT-D20260425_011": 0.50, "WT-D20260425_003": 0.40, "STR_1656_MLRA_M05": 0.10},
+      "admitted_ids": [
+        "WT-D20260425_011",
+        "WT-D20260425_003",
+        "STR_1656_MLRA_M05"
+      ],
+      "weights": {
+        "WT-D20260425_011": 0.5,
+        "WT-D20260425_003": 0.4,
+        "STR_1656_MLRA_M05": 0.1
+      },
       "preconditions_check_required": "G1 + G2 + G3 + G4 PASS"
     },
     "after_T_plus_90_full_replacement_PROJECTED": {
       "n_admitted": 1,
-      "admitted_ids": ["WT-D20260425_011"],
-      "weights": {"WT-D20260425_011": 1.00},
-      "removed_at_T_plus_90": ["WT-D20260425_003", "STR_1656_MLRA_M05"],
+      "admitted_ids": [
+        "WT-D20260425_011"
+      ],
+      "weights": {
+        "WT-D20260425_011": 1.0
+      },
+      "removed_at_T_plus_90": [
+        "WT-D20260425_003",
+        "STR_1656_MLRA_M05"
+      ],
       "preconditions_check_required": "T+60 KPIs PASS + Codex replay + Architect AX-008 formal closure"
     }
   },
-
   "rebalance_orders_proposed": {
     "T_plus_0_order_id": "PG2_PROBE_ADMIT_20260426_STR_1700",
     "T_plus_0_action": "ADMIT_PG1_PROBE_PHASE_BOOK_UNCHANGED",
@@ -337,7 +471,6 @@
     "execution_window_per_milestone": "3-day TWAP",
     "expected_one_way_turnover_ann": "2.99 (Iter6 walk-forward avg)"
   },
-
   "judge_specific_concerns_governor_disposition": {
     "JC_001_alpha_decay_P3": {
       "severity": "MEDIUM",
@@ -356,7 +489,6 @@
       "governor_action": "5.937 < 6.0 hard cap PASS 인정. G6 trigger에 turnover drift alert 추가. ACCEPTED."
     }
   },
-
   "ax_violations_summary": {
     "AX_001_v2_defense_alpha": "FAIL — bad/normal IC ratio -1.835. Governor disposition: G5 role reclassification = core_with_machinery_overlay. Registry 갱신.",
     "AX_002_no_silent_override": "PASS — hash audit pre/post MD5 identical (Judge Gate 0).",
@@ -364,7 +496,6 @@
     "AX_007_exception_1_multi_sleeve": "PASS — signal-portfolio translation verified across 215 walk-forward sig_dates.",
     "AX_008_triangulation": "FAIL_FORMAL — Architect absent + Codex DISSENT. Governor disposition: G1 deferred to T+30 milestone with substitute evidence (Forge + Judge harness Lockbox + Iter5 lineage MD5 hash). Pre-T_plus_90 Architect spawn + Codex replay required."
   },
-
   "weighted_admission_decision": {
     "verdict": "ADMITTED_WITH_NOTE",
     "scenario": "A",
@@ -384,8 +515,14 @@
       "AX-008 formal 3-source closure (Forge + Codex replay + Architect)"
     ]
   },
-
   "next_step": "Q-Lead → (1) book_state.json 갱신 (Probe Phase admission entry append) + (2) PG2_rebalance_replacement_20260425.json outbox 발주 (T+0 ADMIT_PROBE_PHASE_BOOK_UNCHANGED order) + (3) monitoring agent setup (qepm/mailbox/monitoring/STR_1700_monthly_drift_config.json) + (4) status.json 전이 GOVERNOR_ADMITTED + (5) telegram brief tg_agent_brief().",
-
-  "governor_signature": "governor_sonnet46_v6.1_R5_2026-04-26T01:05+0900"
+  "governor_signature": "governor_sonnet46_v6.1_R5_2026-04-26T01:05+0900",
+  "user_decision_2026_04_26": {
+    "verdict": "PROBE_PHASE_REVOKED",
+    "reason": "User judgment: SR 1.0789 absolute below SR 1.5+ milestone target — phased validation 30~90d unnecessary, performance insufficient for production-grade replacement",
+    "timestamp": "2026-04-26T07:03:28.493097",
+    "override_authority": "Lawbook §5 user override",
+    "sprint_disposition": "STR_1700 retained as research asset, NOT PG2 candidate"
+  },
+  "final_status": "USER_REVOKED"
 }
