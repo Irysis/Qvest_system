@@ -146,7 +146,15 @@
   "bounds_used": [0, 0.2],
   "weight_cap_used": 0.2,
   "binding_constraints": "hhi_above_0.10",
-  "infeasibility_report": null,
+  "infeasibility_report": {
+    "reason": "CVaR95 monthly cap 2.5% breach inherited from Risk; overlay scaling alone cannot reduce monthly CVaR for 20-ticker KR long-only universe.",
+    "violated_constraints": "cvar_cap_2.5pct_monthly",
+    "current_blended_cvar95": 0.0943,
+    "cap_required": 0.025,
+    "ratio_breach": 3.7716,
+    "suggested_resolution": ["Q-Lead/Governor: cap 자체 재검토 (sleeve vs book level)", "cash sleeve 영구 확대 (mult_max < 1.0 정책)", "hedge instrument 도입 (mandate 확장 필요)"],
+    "optimizer_action": "REPORT (not relax)"
+  },
   "beta_baseline": 1.08,
   "beta_blended": 0.6294,
   "beta_target_range": [1, 1.05],
@@ -173,7 +181,7 @@
           "n_names": 6,
           "max_w": 0.2,
           "hhi": 0.1857,
-          "elapsed_sec": 0.0439,
+          "elapsed_sec": 0.0442,
           "selected": false
         },
         "MVO_lam5": {
@@ -199,7 +207,7 @@
           "n_names": 6,
           "max_w": 0.2,
           "hhi": 0.1888,
-          "elapsed_sec": 0.0002,
+          "elapsed_sec": 0.0001,
           "selected": false
         },
         "ERC": {
@@ -212,7 +220,7 @@
           "n_names": 20,
           "max_w": 0.0808,
           "hhi": 0.0534,
-          "elapsed_sec": 0.0106,
+          "elapsed_sec": 0.0104,
           "selected": false
         },
         "HRP": {
@@ -225,7 +233,7 @@
           "n_names": 20,
           "max_w": 0.1214,
           "hhi": 0.061,
-          "elapsed_sec": 0.0191,
+          "elapsed_sec": 0.0162,
           "selected": false
         },
         "MaxDiv": {
@@ -238,7 +246,7 @@
           "n_names": 6,
           "max_w": 0.2,
           "hhi": 0.1865,
-          "elapsed_sec": 0.0062,
+          "elapsed_sec": 0.0065,
           "selected": false
         },
         "BlackLitterman": {
@@ -264,7 +272,7 @@
           "n_names": 16,
           "max_w": 0.1958,
           "hhi": 0.1075,
-          "elapsed_sec": 0.0054,
+          "elapsed_sec": 0.0064,
           "selected": false
         },
         "Kelly_frac025": {

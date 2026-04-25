@@ -642,7 +642,22 @@ opt_pkg <- list(
   bounds_used = HC$bounds,
   weight_cap_used = HC$bounds[2],
   binding_constraints = binding,
-  infeasibility_report = NULL,
+  # Infeasibility (R12 No Silent Override): CVaR breach inherited from Risk
+  infeasibility_report = if (cvar_cap_breach_blended) {
+    list(
+      reason = "CVaR95 monthly cap 2.5% breach inherited from Risk; overlay scaling alone cannot reduce monthly CVaR for 20-ticker KR long-only universe.",
+      violated_constraints = c("cvar_cap_2.5pct_monthly"),
+      current_blended_cvar95 = unname(cvar95_blended),
+      cap_required = unname(cvar_cap),
+      ratio_breach = unname(cvar95_blended / cvar_cap),
+      suggested_resolution = c(
+        "Q-Lead/Governor: cap 자체 재검토 (sleeve vs book level)",
+        "cash sleeve 영구 확대 (mult_max < 1.0 정책)",
+        "hedge instrument 도입 (mandate 확장 필요)"
+      ),
+      optimizer_action = "REPORT (not relax)"
+    )
+  } else NULL,
 
   # Beta + CVaR
   beta_baseline = unname(beta_port_baseline),
