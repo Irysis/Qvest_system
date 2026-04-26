@@ -1,0 +1,79 @@
+{
+  "agent_id": "judge_v6.1_multi_gate",
+  "round": "R2_judge_response_to_codex_r1_forge_critic",
+  "task_id": "WT-D20260426_005",
+  "model": "claude-opus-4.7",
+  "timestamp": "2026-04-26T09:33:00+0900",
+  "responding_to": {
+    "codex_round": "R1_forge_critic",
+    "codex_stance": "REJECT",
+    "codex_concerns_count": 6,
+    "codex_veto_flag": false
+  },
+  "judge_decision_matrix": {
+    "C1_DAILY_TAIL_GATE_FAIL": {
+      "codex_severity": "HIGH",
+      "codex_decision_proposed": "PARTIAL → Forge requested Judge validation",
+      "judge_decision": "CONFIRMED",
+      "judge_evidence": "Direct daily reconstruction (judge_audit_iter12.R) using weights × Ret_t aggregation: pre-LB CVaR_d=0.0290 (BREACH cap 0.025 by 40bps); lockbox CVaR_d=0.0307 (BREACH); full daily CVaR_d=0.0292. Forge monthly/sqrt(21) proxy 0.0243 systematically under-estimates daily tail by ~20-25%. The 6.8bps margin claimed by Forge is illusory. Daily MDD pre-LB = -0.4553, perilously close to -0.45 hard fail.",
+      "gate_impact": "Gate 6 FAIL"
+    },
+    "C2_LOCKBOX_OOS_ALIGNMENT_ERROR": {
+      "codex_severity": "HIGH",
+      "judge_decision": "REBUTTAL_VALID",
+      "judge_evidence": "Forge's Ret_1m alignment convention: 2023-12 sig_date row corresponds to return REALIZED in Dec 2023 (not next-month Jan-2024). The OOS frozen series starts at 2024-01 stocks separately. nav_panel_5way mapping uses report_ym=next_month consistently across all 5 strategies including Iter11 baseline. No double-counting verified via judge_lockbox_nav() — daily LB starts cleanly 2024-01-23.",
+      "gate_impact": "Gate 0 PASS preserved"
+    },
+    "C3_TURNOVER_COST_UNDERCHARGED": {
+      "codex_severity": "HIGH",
+      "judge_decision": "PARTIAL_ACCEPTED",
+      "judge_evidence": "Codex correctly identifies CASH overlay turnover and held-month drift not fully charged. ann_to_full=4.71 vs Forge 3.79; estimated SR drag ~5bps/yr. This nudges DSR_post slightly lower (1.89→~1.85) but does not change Gate 3 verdict (already FAIL). Honest disclosure noted; not gate-flipping.",
+      "gate_impact": "Gate 1 PASS preserved (TO 471% < 600 cap regardless); Gate 3 FAIL reinforced"
+    },
+    "C4_HARVEY_GATE_FAILS_ALL_SPECS": {
+      "codex_severity": "HIGH",
+      "codex_decision_proposed": "ACCEPT",
+      "judge_decision": "CONFIRMED_DOMINANT",
+      "judge_evidence": "0/5 specs t_NW>=2.95: max=2.6248 (CAPM), min=2.3335 (FF6). Harvey-Liu-Zhu 3.0 multi-testing threshold breached on every spec. The 3-Layer Overlay (vol target + DD brake + regime cash) suppresses measured factor alpha while not removing tail risk — worst possible trade-off. Real alpha (12-13% annual) exists but is statistically weak. Gate 2 FAIL is the dominant verdict driver.",
+      "gate_impact": "Gate 2 FAIL"
+    },
+    "C5_TASK_ARTIFACT_GAP": {
+      "codex_severity": "MEDIUM",
+      "judge_decision": "REBUTTAL_VALID",
+      "judge_evidence": "v6.1 R12 Discovery WT pattern: WT-D20260426_005 inherits alpha+risk from WT-D20260425_010. Inherited covariance.parquet (LW_oracle, cond=24.34, PSD) + covariance_pooled_fallback.parquet (cond=100, PSD) verified. Per-sig-date Sigma audit not duplicated for child WT by design. Codex Optimizer R2 also confirmed REBUTTAL_VALID for this point.",
+      "gate_impact": "Gate 0 PASS preserved"
+    },
+    "C6_BASELINE_PROXY_RATIONALIZATION": {
+      "codex_severity": "MEDIUM",
+      "judge_decision": "PARTIAL_ACCEPTED",
+      "judge_evidence": "STR_1656 (ML XGB GPU V1) genuinely lacks alpha trail (no factor signal panel). STR_1699 (HRP Iter5) used as proxy with explicit labeling in scenario_metrics. For Mix Scenario B admission, Governor must (a) attempt actual STR_1656 NAV reconstruction, (b) compute TDC vs current PG2_v3.0, (c) apply Sequential Admission rule per L-219. Marked UNRESOLVED for Governor stage.",
+      "gate_impact": "Mix Scenario B PROVISIONAL_PASS pending Governor"
+    }
+  },
+  "codex_r1_judge_critic_status": {
+    "spawn_attempted": true,
+    "completion": "PENDING_AT_R2_AUTHORING",
+    "rationale_for_proceeding": "Codex R1 forge_critic already provides comprehensive audit covering all 6 substantive concerns (PIT/lockbox/TO/Harvey/Sigma/baseline). Judge harness daily reconstruction is independent verification. Codex R1 judge_critic (if/when it returns) will be appended as supplementary evidence; verdict is robust to its outcome given:\n- Gate 2 Harvey 0/5 = empirical fact (Codex C4 ACCEPT)\n- Gate 6 daily CVaR 0.0290 = direct measurement (judge harness)\n- Gate 3 Hurdle FAIL = SR 0.64 < 0.8 + DSR_post 1.89 < 3.0 floor",
+    "deferred_appendix": "If codex_critic_response_judge.json arrives, append to verdict.appendix_codex_r1_judge"
+  },
+  "consensus_summary": {
+    "agreement_count": 4,
+    "rebuttal_count": 2,
+    "gates_at_fail_per_codex": ["Gate 1 (TO undercharge — Judge: PASS preserved despite)", "Gate 2 (Harvey)", "Gate 3 (implied)", "Gate 6 (CVaR)"],
+    "gates_at_fail_per_judge": ["Gate 2", "Gate 3", "Gate 4 (role relabel)", "Gate 6"],
+    "convergent_verdict": "REJECT for standalone admission; Mix Scenario B PROVISIONAL_PASS",
+    "ax_008_triangulation": "Forge_self + Codex + Judge = 3-source REJECT convergence — STR_1702 Replacement A admission denied"
+  },
+  "stance_change": {
+    "judge_r1_stance": "PROVISIONAL_REVISE_PENDING_DAILY_AUDIT",
+    "judge_r2_stance": "REJECT (standalone) + PROVISIONAL_PASS (Mix B)",
+    "stance_change_reason": "Daily reconstruction confirmed Codex C1 — moved from REVISE to REJECT for standalone. Mix B retains provisional admission pathway."
+  },
+  "unresolved_disputes": [
+    "Whether Mix Scenario B (60/20/20) Sequential Admission can proceed with STR_1699 proxy or requires actual STR_1656 NAV reconstruction first",
+    "Whether daily MDD -0.4553 (vs hard fail -0.45) should trigger STRICT or SOFT failure (currently SOFT — within 0.5pp of hard threshold)",
+    "Whether vol-reduction overlay strategies should have a separate Hurdle Grade (lower SR cap but higher CVaR strictness)",
+    "Whether Harvey gate t threshold should be relaxed to 2.5 for high-overlay strategies (NO — Harvey-Liu-Zhu 3.0 is non-negotiable per Statistical Defense)"
+  ],
+  "final_judge_stance_for_verdict": "REJECT_STANDALONE_PROVISIONAL_PASS_MIX_B"
+}

@@ -1,0 +1,190 @@
+{
+  "agent_id": "judge_v6.1_multi_gate",
+  "model": "claude-opus-4.7",
+  "task_id": "WT-D20260426_005",
+  "str_id": "STR_1702",
+  "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+  "as_of": "2026-04-26",
+  "verdict": "JUDGE_FAILED",
+  "verdict_summary": "Iter12 Replacement A REJECT (Gate 2 Harvey 0/5 + Gate 6 daily CVaR breach 0.0290 vs cap 0.025); Mix Scenario B (60/20/20) PROVISIONAL_PASS pending PG2 Sequential Admission; standalone admission denied",
+  "stance": "REJECT",
+  "stance_rationale": "STR_1702 standalone fails Gate 2 (Harvey 0/5 specs, max t_NW=2.62 < 2.95) AND Gate 6 daily CVaR cap (Judge harness daily reconstruction = 0.0290, breach by 17 bps). Forge's monthly/sqrt(21) proxy 0.0243 understates daily tail risk — Codex C1 PARTIAL upgraded to CONFIRMED via Judge direct measurement. The vol-reduction overlay machinery dampens measured Harvey alpha below threshold while failing to suppress daily tail. As Replacement A vs Iter11 (SR 1.36 vs 0.64), Iter12 is dominated. Mix Scenario B (60% Iter12 + 20% Iter11 + 20% STR_1699) shows SR 1.20 with PG2-baseline +28% lift but requires PG2 Sequential Admission separately.",
+
+  "gate_verdict": {
+    "gate_0_pit": {
+      "verdict": "PASS",
+      "evidence": "Hash audit pure_function_intact=TRUE (alpha 30dabd25, risk a2e2bce, weights 382d770, opt 19f6e31 unchanged). 213 walk-forward sig_dates 2006-01 ~ 2023-12. C9 weight t-1 / C10 liquidity t-1 / C13 Z_Score_Aligned / C15 load_month_factors all confirmed in inherited alpha + risk packages. Codex C2 lockbox alignment REBUTTAL accepted — 2023-12 sig_date Ret_1m realized in Dec-2023 before LB 2024-01-23, no double-counting."
+    },
+    "gate_1_hard_constraint": {
+      "verdict": "PASS",
+      "evidence": "max_w 0.20 enforced (weights.csv max=0.165 at 2006-01-01 frozen, ≤0.20 throughout). long_only TRUE. n_names 13~20. Σw=1 (max sum-error 2e-15). TO 471% (cap 600). Liquidity threshold 5e7 inherited. Codex C3 PARTIAL accepted — TC undercharged by ~5bps/yr (overlay+CASH turnover not fully charged); honest disclosure but not gate-breaking."
+    },
+    "gate_2_harvey_5spec": {
+      "verdict": "FAIL",
+      "evidence": "0/5 specs pass t_NW>=2.95: CAPM 2.6248 / Carhart-3 2.4582 / Carhart-4 2.4164 / FF5 2.3632 / FF6 2.3335 (n=213, NW lag=4). alpha_annual 12.13~13.48% real but statistically weak. Codex C4 ACCEPT (Forge self-disclosed). Harvey-Liu-Zhu 3.0 multi-testing threshold breached on every spec. Gate 2 is dominant constraint.",
+      "best_spec_t": 2.6248,
+      "harvey_threshold": 2.95,
+      "harvey_lz_threshold": 3.0
+    },
+    "gate_3_hurdle_grade_a": {
+      "verdict": "FAIL_GRADE_A_BUT_AX_GRADE_A_NOVEL_DENIED",
+      "evidence": "Same-period 240m: SR 0.6448 (cap 0.8 FAIL) / CAGR 12.64% (cap 16% FAIL) / MDD -38.81% (cap 45% PASS by 6.2pp). MDD>45% NO + TO>600% NO ⇒ no hard fail at monthly level. Grade A_NOVEL eligibility check: max_corr<0.3 (Iter11 0.1994, MEGA 0.5674) → corr criterion borderline; CAGR≥12% PASS; SR≥0.6 PASS; novelty_bonus 0.3<corr<0.5 = +5~8 (NOT +15 since Iter11 corr 0.20 IS <0.3 but MEGA 0.57 fails). Gate 2 Harvey FAIL is overriding — A_NOVEL requires statistical significance. **A_NOVEL DENIED** because Harvey 0/5 + DSR_post 1.89 (Grade A floor 3.0).",
+      "grade_a_v22": "FAIL",
+      "grade_a_novel": "DENIED",
+      "grade_v21": "FAIL",
+      "dsr_post_penalty": 1.8946,
+      "dsr_floor": 3.0
+    },
+    "gate_4_role_honesty": {
+      "verdict": "ROLE_RELABEL_REQUIRED",
+      "claimed_role": "core_with_machinery_overlay",
+      "audited_role": "vol_reduction_diversifier_low_alpha",
+      "evidence": "Iter12 stack = Iter5 multi-sleeve composite (BULL value/profit / NORMAL/CAUTION quality/safety / CRISIS quality/safety) + Linear Tilt + Kelly proportional + 3-Layer Overlay (vol target + DD brake + regime cash). Cash overlay 21.8% avg. CAGR 12.64% < 16% threshold defining 'core'. SR 0.64 < 0.8. The machinery overlay reduces vol & MDD but at heavy cost to alpha. Cor with Iter11 0.1994 + low SR ⇒ functions as diversifier with cash-overlay vol management, not core. AX-001 v2 conditional check (regime-conditional) BULL SR 0.87 / NORMAL SR 0.29 / CAUTION SR 0.66 / CRISIS n=5 insufficient — does not meet defense profile (CRISIS sample too small)."
+    },
+    "gate_5_ax_axioms": {
+      "verdict": "PASS",
+      "ax_001_v2": "CONDITIONAL — cash regime [0/5/15/30%] applied; bad/normal IC ratio not measurable (insufficient CRISIS sample n=5). Crisis_alpha test n/a.",
+      "ax_005": "EXCEPTION SATISFIED — multi-sleeve + 3-Layer Overlay structural exemption from defense single-signal failure pattern (L-136/140/165/166).",
+      "ax_007": "EXCEPTION #1 multi_sleeve confirmed.",
+      "ax_008": "VERIFICATION TRIANGULATION — Forge (REJECT-self-disclosed Harvey FAIL) + Codex (REJECT 6 concerns) + Judge harness (FAIL daily CVaR + Harvey) = 3/3 FAIL convergence. Triangulation confirms reject."
+    },
+    "gate_6_tail_stress": {
+      "verdict": "FAIL",
+      "evidence": "Forge proxy CVaR_d 0.0243 (margin 6.8bps from cap 0.025). Judge harness DIRECT DAILY reconstruction CVaR_d=0.0290 (BREACH +40bps). Codex C1 PARTIAL upgraded to CONFIRMED. Daily MDD pre-LB -0.4553 (perilously close to -0.45 hard fail, BREACH if hard fail strict). Daily MDD full -0.4553. Stress 8 periods: 4 favourable (GFC_recovery SR 4.78, Korea_2020_lockdown SR 3.57, Brexit SR 0.51, Taper SR 0.59) / 4 unfavourable (China_Trade_2018 SR -2.79 ann_ret -58%, Inflation_2022 SR -0.09, COVID_2020 SR 0.21 MDD -31.4%, Korea_2025 SR 0.15 MDD -19.7%).",
+      "judge_daily_cvar_d": 0.029,
+      "forge_proxy_cvar_d": 0.0243,
+      "cvar_cap": 0.025,
+      "judge_daily_mdd_pre_lb": -0.4553,
+      "mdd_hard_fail_threshold": -0.45
+    }
+  },
+
+  "lockbox_audit": {
+    "method": "judge_lockbox_harness.R v6.1 + Codex C1 daily reconstruction",
+    "frozen_at": "2023-12-01",
+    "lockbox_period": ["2024-01-23", "2026-04-25"],
+    "judge_daily_lockbox_sr": 1.5404,
+    "judge_daily_lockbox_cagr": 0.3492,
+    "judge_daily_lockbox_mdd": -0.2361,
+    "judge_daily_lockbox_cvar_d": 0.0307,
+    "forge_oos_monthly_sr": 1.3461,
+    "forge_oos_monthly_cagr": 0.2926,
+    "triangulation_sr_diff": 0.1943,
+    "triangulation_within_tolerance_0.30": true,
+    "interpretation": "Lockbox period 24-26 strong OOS performance confirmed by direct daily measurement. SR 1.54 daily / 1.35 monthly converge within tolerance. However lockbox CVaR_d 0.0307 also breaches cap — vol-reduction overlay does not save tail in lockbox period either."
+  },
+
+  "scenario_evaluation": {
+    "A_Replacement_Iter12_100pct": {
+      "decision": "REJECT",
+      "rationale": "SR 0.6448 dominated by Iter11 1.3638 (-72bps) on same period. Replacement reduces PG2 SR — strictly inferior.",
+      "metrics": {"sr": 0.6448, "cagr": 0.1264, "mdd": -0.3881, "harvey_pass_count": 0}
+    },
+    "B_Mix_60_20_20": {
+      "decision": "PROVISIONAL_PASS_PENDING_SEQUENTIAL_ADMISSION",
+      "rationale": "60% Iter12 + 20% Iter11 + 20% STR_1699 yields SR 1.1995 / CAGR 19.27% / MDD -28.84% / Harvey t 5.29 / DSR_post 4.47. Significant +28.5% SR lift over current PG2 (0.9345). Cross-strategy correlation Iter12-Iter11 0.20 (low, complementary). HOWEVER STR_1699 used as STR_1656 proxy (Codex C6 PARTIAL). Sequential Admission TDC vs current PG2 unmeasured — must run TDC analysis at Governor stage before admission.",
+      "metrics": {"sr": 1.1995, "cagr": 0.1927, "mdd": -0.2884, "harvey_t": 5.2906, "dsr_post": 4.4658},
+      "blockers": ["STR_1656 trail unavailable → STR_1699 proxy used", "Sequential Admission TDC vs PG2_v3.0 not computed", "Governor approval required separately"]
+    },
+    "AB_80_20_Replacement_with_diversifier": {
+      "decision": "WEAK_REJECT",
+      "rationale": "SR 0.8731 < current PG2 0.9345. Underperforms baseline.",
+      "metrics": {"sr": 0.8731, "cagr": 0.1479, "mdd": -0.3452}
+    },
+    "D_PG2_Current": {
+      "decision": "BASELINE",
+      "rationale": "Current MEGA_05 + STR_1656 80/20 proxy. SR 0.9345 / CAGR 14.23% / MDD -24.82%. Sets bar for any replacement/admission decision.",
+      "metrics": {"sr": 0.9345, "cagr": 0.1423, "mdd": -0.2482}
+    }
+  },
+
+  "codex_round_summary": {
+    "codex_r1_forge_critic": {
+      "stance": "REJECT",
+      "veto_flag": false,
+      "concerns_count": 6,
+      "decisions": {"C1": "PARTIAL", "C2": "REBUTTAL", "C3": "PARTIAL", "C4": "ACCEPT", "C5": "REBUTTAL", "C6": "PARTIAL"},
+      "judge_response_to_codex": {
+        "C1_DAILY_TAIL_GATE_FAIL": "CONFIRMED — Judge direct daily reconstruction yields CVaR_d=0.0290 vs cap 0.025 (BREACH). Codex was correct; Forge proxy 0.0243 is monthly/sqrt(21) approximation that under-estimates daily tail. Gate 6 FAIL.",
+        "C2_LOCKBOX_OOS_ALIGNMENT_ERROR": "REBUTTAL_ACCEPTED — 2023-12 Ret_1m fully realized within Dec 2023, OOS series starts Jan 2024 separately. Forge alignment confirmed correct.",
+        "C3_TURNOVER_COST_UNDERCHARGED": "PARTIAL_ACCEPTED — full-schedule TO ~4.71 vs Forge 3.79; ~5bps/yr SR reduction. Honest disclosure noted; not gate-breaking but DSR/SR slightly optimistic.",
+        "C4_HARVEY_GATE_FAILS_ALL_SPECS": "ACCEPTED — Gate 2 FAIL is the dominant verdict driver.",
+        "C5_TASK_ARTIFACT_GAP": "REBUTTAL_ACCEPTED — Discovery WT inheritance per v6.1 R12, Sigma artifacts not duplicated.",
+        "C6_BASELINE_PROXY_RATIONALIZATION": "PARTIAL_ACCEPTED — STR_1699 proxy clearly labeled; Sequential Admission deferred to Governor."
+      }
+    },
+    "codex_r1_judge_critic": "PENDING — see codex_critic_response_judge.json (separate file, may post-arrive)"
+  },
+
+  "ax_005_l151_violations_check": {
+    "ax_005_defense_single_signal": "EXCEPTION_SATISFIED (multi-sleeve + overlay)",
+    "ax_007_signal_portfolio_break": "EXCEPTION_1_multi_sleeve",
+    "l_151_triplicate_archive": "N/A (not applicable to STR_1702)"
+  },
+
+  "ax_001_v2_conditional_audit": {
+    "applicable": false,
+    "rationale": "STR_1702 audited role 'vol_reduction_diversifier_low_alpha' is NOT a defense factor — Q07/D25 type single-signal not present. AX-001 v2 conditional metric (crisis_alpha + bad/normal IC ratio + Core MDD relief) does not apply. Standard SR/CAGR evaluation appropriate.",
+    "regime_conditional_metrics": {
+      "BULL_n69_sr": 0.8679,
+      "NORMAL_n116_sr": 0.294,
+      "CAUTION_n23_sr": 0.659,
+      "CRISIS_n5_sr": null,
+      "crisis_sample_insufficient": true
+    }
+  },
+
+  "novelty_assessment": {
+    "max_corr_with_pg2_strategies": 0.5674,
+    "max_corr_iter11": 0.1994,
+    "novelty_bonus_eligible": false,
+    "novelty_bonus_rationale": "Iter11 corr 0.20 satisfies <0.3 threshold (+15) but MEGA_05 corr 0.57 fails <0.5 (+0). Mixed evidence; effective novelty +5~8. Not enough to rescue Gate 2 Harvey FAIL."
+  },
+
+  "harvey_dsr_summary": {
+    "harvey_t_max": 2.6248,
+    "harvey_threshold": 2.95,
+    "harvey_lz_threshold": 3.0,
+    "harvey_pass_count": 0,
+    "dsr_raw": 2.4799,
+    "candidates_tried": 20,
+    "dsr_penalty": 1.0,
+    "dsr_post_penalty": 1.4799,
+    "dsr_post_penalty_240m": 1.8946,
+    "method_shopping_log_candidates_x_0.05": 1.0,
+    "dsr_floor_grade_a": 3.0,
+    "dsr_grade_a_pass": false
+  },
+
+  "stress_8_period_daily": {
+    "GFC_recovery_2009": {"n": 129, "sr": 4.778, "mdd": -0.0454},
+    "Brexit_2016": {"n": 64, "sr": 0.507, "mdd": -0.0454},
+    "Taper_2013": {"n": 102, "sr": 0.589, "mdd": -0.0792},
+    "Korea_2020_lockdown": {"n": 92, "sr": 3.573, "mdd": -0.0797},
+    "COVID_2020": {"n": 50, "sr": 0.209, "mdd": -0.3144},
+    "Inflation_2022": {"n": 203, "sr": -0.092, "mdd": -0.1533},
+    "Korea_2025_recent": {"n": 180, "sr": 0.152, "mdd": -0.1968},
+    "China_Trade_2018": {"n": 62, "sr": -2.789, "mdd": -0.1491}
+  },
+
+  "decision_matrix": {
+    "iter12_standalone_admission": "REJECT",
+    "iter12_replacement_a_iter11": "REJECT (dominated)",
+    "iter12_in_mix_scenario_b": "PROVISIONAL_PASS — Governor PG2 Sequential Admission required",
+    "iter12_role_label_finalize": "vol_reduction_diversifier_low_alpha",
+    "next_step": "Governor evaluates Mix Scenario B with: (1) actual STR_1656 NAV (not proxy), (2) TDC vs current PG2_v3.0, (3) Sequential Admission rule check, (4) max_w cap on Iter12 sleeve",
+    "alternative": "If STR_1656 trail remains unavailable, Q-Lead may proceed with B variant (60% Iter12 + 40% Iter11) as 2-strategy alternative; SR ~1.10 expected (linear approximation)."
+  },
+
+  "final_grade": "FAIL",
+  "final_l_code_proposed": "L-220",
+  "l_code_text": "Iter 12 LinTilt+Kelly+3-Layer Overlay Quarterly stack: vol-reduction machinery suppresses Harvey alpha (0/5 spec t<2.95) while failing to suppress daily CVaR (0.0290 > 0.025 cap). Daily reconstruction is mandatory — monthly/sqrt(21) proxy under-estimates tail risk. Lockbox 24-26 OOS strong (SR 1.54 daily) but pre-LB walk-forward Harvey FAIL is binding. Replacement of Iter11 strictly inferior; Mix Scenario B (60/20/20) provides +28.5% SR lift but requires actual STR_1656 trail + Sequential Admission. RoleBias_Diversifier — not Core. Conditional rule: high-machinery overlay strategies require pre-LB Harvey gate before admission consideration; daily CVaR mandatory not monthly proxy.",
+  "tags": ["Iter12", "STR_1702", "machinery_overlay", "harvey_fail", "cvar_breach_daily", "vol_reduction_low_alpha", "RoleBias_Diversifier", "L-220", "Codex_C1_confirmed", "Mix_Scenario_B_provisional"],
+  "core_reference": "Forge cascade Iter12 forge_package.json + Codex critic_response_forge.json + judge_lockbox_audit.json daily reconstruction",
+  "lesson_check": "L-122 Factor timing != risk management (Barroso&Santa-Clara); L-219 Sequential Admission TDC threshold; L-156 v2 PG2 structural breach detection",
+
+  "telegram_dispatched": true,
+  "telegram_bytes": 3481,
+  "next_status": "JUDGE_FAILED",
+  "generated_at": "2026-04-26T09:32:00+0900"
+}

@@ -1,32 +1,58 @@
 {
   "task_id": "WT-D20260426_005",
-  "current_phase": "OPTIMIZER_DONE",
-  "updated_at": "2026-04-26T11:50:00+0900",
+  "current_phase": "JUDGE_FAILED",
+  "updated_at": "2026-04-26T09:35:00+0900",
   "inheritance": "alpha+risk from WT-D20260425_010 (Iter 5 STR_1699)",
-  "iter_label": "Iter 12 — Linear Tilt + Kelly + 3-Layer Overlay",
+  "iter_label": "Iter 12 — Linear Tilt + Kelly + 3-Layer Overlay Quarterly",
   "method_selected": "LinTilt_Kelly_Overlay_Quarterly",
+  "judge_verdict": "JUDGE_FAILED",
+  "judge_stance": "REJECT_STANDALONE_PROVISIONAL_PASS_MIX_B",
+  "judge_gates": {
+    "gate_0_pit": "PASS",
+    "gate_1_hard": "PASS",
+    "gate_2_harvey": "FAIL (0/5 specs t<2.95, max 2.6248)",
+    "gate_3_hurdle": "FAIL (SR 0.6448 < 0.8, DSR_post 1.89 < 3.0)",
+    "gate_4_role_honesty": "ROLE_RELABEL (vol_reduction_diversifier_low_alpha)",
+    "gate_5_ax": "PASS (AX-005 EXC + AX-008 3/3 triangulation)",
+    "gate_6_tail": "FAIL (daily CVaR_d 0.0290 > cap 0.025, Codex C1 confirmed)"
+  },
   "selected_metrics": {
-    "net_ir": 0.644,
-    "sr_ann": 0.644,
-    "cagr": 0.113,
-    "mdd": -0.3931,
-    "turnover_ann": 4.7154,
-    "cvar95_d_proxy": 0.0244,
-    "n_sig_dates_walkforward": 213
+    "sr_240m": 0.6448,
+    "cagr_240m": 0.1264,
+    "mdd_240m": -0.3881,
+    "harvey_pass_count": 0,
+    "harvey_t_max": 2.6248,
+    "dsr_post_penalty": 1.8946,
+    "judge_daily_cvar_d_pre_lb": 0.0290,
+    "judge_daily_cvar_d_lockbox": 0.0307,
+    "judge_daily_lockbox_sr": 1.5404,
+    "forge_oos_monthly_sr": 1.3461,
+    "lockbox_triangulation_within_tol": true
   },
   "codex_round": {
-    "rounds_executed": 2,
-    "stance_r1": "REVISE",
-    "stance_r2": "REVISE",
-    "veto_flag": false,
-    "concerns_r1": 8,
-    "concerns_r2": 4,
-    "triage_r1": "4 ACCEPT + 3 PARTIAL + 1 REBUTTAL",
-    "triage_r2": "1 ACCEPT (as_of regime narrative fixed) + 4 PARTIAL + 1 REBUTTAL",
-    "asof_state_correction": "regime=NORMAL at 2023-12-01 (NOT CRISIS); 30% cash from DD Brake floor + VolReg + NORMAL baseline overlay, capped at 0.30"
+    "r1_forge_critic": "REJECT (6 concerns, veto=false)",
+    "r1_judge_critic": "PENDING_TIMEOUT (verdict robust without — Forge critic + Judge harness sufficient)",
+    "judge_r2_decision_matrix": "C1 CONFIRMED / C2 REBUTTAL_VALID / C3 PARTIAL / C4 CONFIRMED_DOMINANT / C5 REBUTTAL_VALID / C6 PARTIAL"
   },
-  "honest_disclosures": [
-    "Codex R2 stance is REVISE — not ACCEPT. Open issues: daily CVaR proxy tight (6bps margin), confidence-aware sizing deferred to Iter 13, PG2 TDC null (Forge layer), per-sig_date Sigma artifact not persisted (Discovery WT design choice).",
-    "Selected method's empirical metrics are below user-stated 'SR 1.7+ ambitious target' — actual SR 0.644 in walk-forward. This reflects ICIR 0.345 ceiling of inherited STR_1699 alpha (Sleeve-blend ICIR 0.345 sub_stab 0.060)."
+  "scenario_decisions": {
+    "A_replacement_iter12_100": "REJECT (dominated by Iter11)",
+    "AB_80_20": "WEAK_REJECT (SR 0.87 < PG2 0.93)",
+    "B_60_20_20": "PROVISIONAL_PASS (Governor PG2 Sequential Admission required)",
+    "D_pg2_baseline": "BASELINE"
+  },
+  "next_step": "Governor evaluates Mix Scenario B with actual STR_1656 NAV + TDC vs PG2_v3.0",
+  "telegram_dispatched": true,
+  "telegram_bytes": 3481,
+  "l_code_proposed": "L-220",
+  "artifacts": [
+    "judge_verdict.json",
+    "judge_lockbox_audit.json",
+    "judge_codex_r2_response.json",
+    "judge_audit_iter12.R",
+    "judge_send_tg.R",
+    "judge_ready/daily_pre_LB.csv",
+    "judge_ready/daily_lockbox.csv",
+    "judge_ready/daily_full.csv",
+    "judge_stress_8period.json"
   ]
 }
