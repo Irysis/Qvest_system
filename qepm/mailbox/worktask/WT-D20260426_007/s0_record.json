@@ -1,0 +1,118 @@
+{
+  "task_id": "WT-D20260426_007",
+  "iteration": 14,
+  "hypothesis_title": "STR_1701_V2 Confidence-Aware Linear Tilt — RF-A1 sub_stab 직접 해소",
+  "hypothesis_path": "B",
+  "expected_role": "core_with_alpha_amplification + confidence_aware_sizing",
+  "why_now": "STR_1701 PG2 promotion 직후 SR gap 0.5375 잔존. RF-A1 ex-post override 우려를 ex-ante confidence-weighted sizing으로 해소. base alpha 변경 X — confidence layer만 추가.",
+  "core_reference": [
+    {
+      "ref": "Black-Litterman 1992",
+      "title": "Global Portfolio Optimization (Financial Analysts Journal)",
+      "relevance": "Confidence-weighted Bayesian portfolio construction의 기원. View confidence Ω matrix 형태로 per-asset uncertainty 정량화. 본 sprint의 confidence vector c_i 가 BL의 Ω에 대응."
+    },
+    {
+      "ref": "Lopez de Prado 2018",
+      "title": "Advances in Financial Machine Learning, Ch. 11",
+      "relevance": "ML uncertainty quantification — bootstrap CV residual std 등으로 per-name forecast uncertainty 측정. 본 sprint의 12M residual std component 근거."
+    },
+    {
+      "ref": "Avramov-Cheng-Metzker 2023 RFS",
+      "title": "Machine Learning vs Economic Restrictions: Evidence from Stock Return Predictability (Review of Financial Studies)",
+      "relevance": "ML 모델 ensemble disagreement 기반 confidence sizing이 long-only 위험조정 수익률 개선. 본 sprint의 multi-component composite confidence 직접 근거."
+    },
+    {
+      "ref": "Grinold-Kahn 1999",
+      "title": "Active Portfolio Management 2nd Ed., Ch. 7-8",
+      "relevance": "IR = IC × sqrt(breadth). Per-name confidence를 적용하면 effective breadth 증가. 본 sprint의 sub_stab 강화 메커니즘 근거."
+    },
+    {
+      "ref": "Pastor-Stambaugh 2003 JF",
+      "title": "Liquidity Risk and Expected Stock Returns (Journal of Finance)",
+      "relevance": "Model uncertainty in cross-section premia. Per-name posterior variance가 weight shrinkage 기준."
+    }
+  ],
+  "lesson_check": {
+    "L-221": {
+      "code": "L-221",
+      "summary": "Iter 11 STR_1701 PG2 active SR 1.4625 (AB blend) — RF-A1 sub_stab 0.060 ex-post override only. ex-ante 강화 필요.",
+      "applied_in_iter14": "Confidence-aware tilt가 ex-ante per-name sub_stab 강화 → 본 sprint 핵심 mandate."
+    },
+    "L-222": {
+      "code": "L-222",
+      "summary": "Iter 13 V14 v1 silent omission — universe 0/20 in K200∪KQ150, AvgTV20 = Size proxy.",
+      "applied_in_iter14": "Mandate #1: universe enforce BEFORE diagnostics (Step 3에서 K200∪KQ150 필터 적용) / Mandate #2: AvgTV20 = Close × Vol (Step 4)"
+    },
+    "L-223": {
+      "code": "L-223",
+      "summary": "KR top universe 내 단순 ML feature ensemble 한계 입증 (Codex REJECT, 0/5 gates).",
+      "applied_in_iter14": "본 sprint는 ML 신규 학습 X. STR_1701 multi-sleeve base 그대로 inherit + confidence layer만 추가. 가짜 ensemble 표기 금지."
+    }
+  },
+  "kr_inverse_pattern_search": {
+    "queried_lcodes": ["L-221", "L-222", "L-223", "L-153", "L-155", "L-156"],
+    "inverse_signal_found": "L-153 v3-variant 학습: Iter 11 ex-post sub_stab override 메커니즘은 작동하지만 ex-ante 강화가 더 robust. confidence-aware sizing이 inverse 메커니즘.",
+    "L-156_v2_audit_compliance": "STR_1701 alpha base 그대로 → TDC 0.621 cluster issue 없음 (다른 base 도입하지 않음)"
+  },
+  "alternative_hypotheses": [
+    {
+      "id": "ALT-1",
+      "title": "Bootstrap-based confidence (CI 폭)",
+      "why_not_chosen": "단일 component. Multi-component composite보다 robust 떨어짐. residual std + coverage가 더 직접적인 signal."
+    },
+    {
+      "id": "ALT-2",
+      "title": "ML uncertainty (XGB ensemble disagreement)",
+      "why_not_chosen": "Iter 13 학습 — ML 신규 학습은 KR top universe에서 단순 ensemble 한계 입증됨. 본 sprint base alpha 변경 X mandate와 충돌."
+    },
+    {
+      "id": "ALT-3",
+      "title": "정보 이론 SNR (per-name signal-to-noise)",
+      "why_not_chosen": "신호 정의 자체가 모호. residual std와 정보적 중복."
+    }
+  ],
+  "selected_method": {
+    "name": "3-component composite confidence",
+    "components": [
+      {"name": "sub_stab_36M", "weight": 0.4, "rationale": "RF-A1 직접 해소 target과 mechanism alignment"},
+      {"name": "residual_std_12M_inverted", "weight": 0.3, "rationale": "Lopez de Prado ML uncertainty 직접 근거"},
+      {"name": "coverage_frac_3slot", "weight": 0.3, "rationale": "Multi-sleeve agreement 강도 — Avramov ensemble 근거"}
+    ],
+    "tilt_formula": "alpha_v2 = rank(score)^lambda × confidence^kappa",
+    "grid_sweep": "lambda in {0.5, 1.0, 1.5, 2.0} × kappa in {0.5, 1.0, 1.5}"
+  },
+  "common_charter_compliance": {
+    "principle_1_PIT": "C1~C15 enforced (rolling lookback only, t-1 lag, expanding window)",
+    "principle_2_research_first": "Idea (BL 1992) → Data (STR_1701 base + Factor DB) → Model (composite confidence) → Backtest (signal level: IC/ICIR/sub_stab)",
+    "principle_3_factor_proxy": "factor_family=Confidence_Aware_Sizing, proxy=Multi-component composite, formula 명시",
+    "principle_4_paper_starting": "5개 references inherited but not authority — 실증 검증 (Step 6 grid sweep + Step 7 5-spec) 우선",
+    "principle_5_data_mining": "Grid sweep 12 trials only (lambda 4 × kappa 3), DSR_post conservative penalty 적용",
+    "principle_6_dynamic_smart": "Per-name + per-month confidence — fully dynamic",
+    "principle_7_cost_capacity": "Turnover proxy reported, 350-name top-decile capacity check",
+    "principle_8_no_silent_override": "Codex Round R1 mandatory + challenge_flags 자동 발행"
+  },
+  "axiom_compliance": {
+    "AX-000": "SR gap 0.5375 채울 가능성 — base STR_1701 SR 1.4625 + confidence-aware uplift",
+    "AX-001_v2": "본 sprint는 core_secondary 강화. defense conditional metric 별도.",
+    "AX-002": "harness 내 성과만 — alpha agent는 signal-level metric (IC/ICIR/sub_stab), PG2 NAV는 Optimizer/Forge 영역",
+    "AX-005": "L-164 v1.1 carve-out 미적용 (alpha_scores parquet inheritance, 신규 ML feature engineering 없음)",
+    "AX-007": "structure=multi_sleeve_50A_30B_20C, role=core_with_alpha_amplification, confidence_aware_sizing은 4종 예외 中 ML sizing 변형이 아니라 단순 product weighting",
+    "AX-008": "triangulation: Forge (PG2 NAV) + Codex (R1 critic) + Architect (downstream gate)"
+  },
+  "as_of_date": "2026-04-26",
+  "iter13_lessons_applied": {
+    "universe_enforce_before_diagnostics": true,
+    "avgtv20_close_times_vol": true,
+    "nw_hac_harvey": true,
+    "codex_resolution_9_of_9": "to be filled after R1",
+    "no_fake_ensemble_label": true,
+    "method_honest_disclosure": "STR_1701 base re-used (slot z-scores) + per-name confidence sigmoid composite + rank tilt. NO new ML training. NO fake ensemble. NO simple Harvey only."
+  },
+  "graduation_gate_target": {
+    "rank_ic_target": 0.04,
+    "icir_target": 0.20,
+    "sub_stab_target": 0.50,
+    "harvey_t_nw_hac_target": 3.0,
+    "dsr_target": 0.5
+  }
+}
