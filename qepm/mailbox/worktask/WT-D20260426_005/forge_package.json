@@ -1,0 +1,341 @@
+{
+  "task_id": "WT-D20260426_005",
+  "str_id": "STR_1702",
+  "agent": "forge_integration_v6.1_pure_function_iter12",
+  "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+  "role_label": "core_with_machinery_overlay",
+  "as_of_date": "2026-04-26",
+  "method_weights": "LinTilt_Kelly_Overlay_Quarterly",
+  "optimizer_expected": {
+    "ir": 0.6439,
+    "cagr": 0.113,
+    "mdd": -0.3931,
+    "cvar_d": 0.0244
+  },
+  "hash_audit": {
+    "pure_function_intact": true,
+    "start_hashes": {
+      "alpha_package.json": "30dabd25f67660f1a12fcded61005783",
+      "risk_package.json": "a2e2bceab5b076f3fc943f07388e8e5b",
+      "weights.csv": "382d770957d4149ed88e6cf928027c68",
+      "optimization_package.json": "19f6e318434ed3a195b4b17c91f0e051"
+    },
+    "end_hashes": {
+      "alpha_package.json": "30dabd25f67660f1a12fcded61005783",
+      "risk_package.json": "a2e2bceab5b076f3fc943f07388e8e5b",
+      "weights.csv": "382d770957d4149ed88e6cf928027c68",
+      "optimization_package.json": "19f6e318434ed3a195b4b17c91f0e051"
+    }
+  },
+  "backtest_summary": {
+    "combined": {
+      "period": "2006-01-01 ~ 2023-12-01",
+      "n_months": 213,
+      "cagr": 0.1159,
+      "vol": 0.1967,
+      "sr": 0.5893,
+      "mdd": -0.3881,
+      "hit_rate": 0.5822,
+      "harvey_t": 2.7685,
+      "dsr_raw": 2.4799,
+      "dsr_post_penalty": 1.4799
+    },
+    "oos_frozen": {
+      "period": "2024-01-01 ~ 2026-04-01",
+      "n_months": 28,
+      "cagr": 0.2926,
+      "vol": 0.2174,
+      "sr": 1.3461,
+      "mdd": -0.1955,
+      "hit_rate": 0.6071
+    },
+    "full_period": {
+      "period": "2006-02 ~ 2026-04",
+      "n_months": 240,
+      "sr_iter12": 0.6448,
+      "cagr_iter12": 0.1264,
+      "mdd_iter12": -0.3881
+    }
+  },
+  "regime_conditional_metrics": {
+    "BULL": {
+      "n_months": 69,
+      "cagr": 0.1754,
+      "sr": 0.8679,
+      "mdd": -0.1777
+    },
+    "NORMAL": {
+      "n_months": 116,
+      "cagr": 0.0552,
+      "sr": 0.294,
+      "mdd": -0.3554
+    },
+    "CAUTION": {
+      "n_months": 23,
+      "cagr": 0.1488,
+      "sr": 0.659,
+      "mdd": -0.1525
+    },
+    "CRISIS": {
+      "n_months": 5,
+      "cagr": null,
+      "sr": null,
+      "mdd": null
+    }
+  },
+  "factor_regression_5_specs": {
+    "method": "LinTilt_Kelly_Overlay_Quarterly",
+    "sample": "Pre-LB walk-forward 2006-01 ~ 2023-12",
+    "se_method": "Newey-West HAC",
+    "n_pass_t295": 0,
+    "CAPM": {
+      "spec": "CAPM",
+      "n": 213,
+      "alpha_monthly": 0.0106,
+      "alpha_annual": 0.1348,
+      "t_nw": 2.6248,
+      "p_nw": 0.0093,
+      "nw_lag": 4,
+      "r2": 0.0014,
+      "adj_r2": -0.0034,
+      "gate_pass": false
+    },
+    "Carhart_3": {
+      "spec": "Carhart_3",
+      "n": 213,
+      "alpha_monthly": 0.01,
+      "alpha_annual": 0.1268,
+      "t_nw": 2.4582,
+      "p_nw": 0.0148,
+      "nw_lag": 4,
+      "r2": 0.0084,
+      "adj_r2": -0.0058,
+      "gate_pass": false
+    },
+    "Carhart_4": {
+      "spec": "Carhart_4",
+      "n": 213,
+      "alpha_monthly": 0.01,
+      "alpha_annual": 0.1263,
+      "t_nw": 2.4164,
+      "p_nw": 0.0165,
+      "nw_lag": 4,
+      "r2": 0.0084,
+      "adj_r2": -0.0107,
+      "gate_pass": false
+    },
+    "FF5": {
+      "spec": "FF5",
+      "n": 213,
+      "alpha_monthly": 0.0096,
+      "alpha_annual": 0.122,
+      "t_nw": 2.3632,
+      "p_nw": 0.019,
+      "nw_lag": 4,
+      "r2": 0.0113,
+      "adj_r2": -0.0126,
+      "gate_pass": false
+    },
+    "FF6": {
+      "spec": "FF6",
+      "n": 213,
+      "alpha_monthly": 0.0096,
+      "alpha_annual": 0.1213,
+      "t_nw": 2.3335,
+      "p_nw": 0.0206,
+      "nw_lag": 4,
+      "r2": 0.0113,
+      "adj_r2": -0.0175,
+      "gate_pass": false
+    }
+  },
+  "dsr": {
+    "candidates_tried": 20,
+    "penalty": 1,
+    "dsr_raw": 2.4799,
+    "dsr_post": 1.4799
+  },
+  "cvar_realized": {
+    "cvar_95_monthly": 0.1114,
+    "cvar_95_d_proxy": 0.0243,
+    "cap_threshold": 0.025,
+    "pass_cvar_cap": true,
+    "margin_to_cap": 0.0007,
+    "iter11_cvar_d": 0.0259,
+    "iter11_cap_breach": true,
+    "improvement_vs_iter11": 0.0016
+  },
+  "rebalance_stats": {
+    "n_rebalance": 101,
+    "n_hold": 112,
+    "total_tc": 0.2019,
+    "ann_to_approx": 3.7921
+  },
+  "same_period_comparison": {
+    "period": "2006-02 ~ 2026-04",
+    "n_months": 240,
+    "strategies": {
+      "STR_1701_Iter11": {
+        "label": "STR_1701_Iter11",
+        "n_months": 240,
+        "cagr": 0.339,
+        "vol": 0.2485,
+        "sr": 1.3638,
+        "mdd": -0.4077,
+        "hit": 0.6792,
+        "harvey_t": 5.851,
+        "dsr_raw": 6.0989,
+        "dsr_post": 5.0989
+      },
+      "STR_1699_Iter5_HRP": {
+        "label": "STR_1699_Iter5_HRP",
+        "n_months": 240,
+        "cagr": 0.2064,
+        "vol": 0.2053,
+        "sr": 1.0052,
+        "mdd": -0.3493,
+        "hit": 0.625,
+        "harvey_t": 4.5661,
+        "dsr_raw": 4.521,
+        "dsr_post": 3.521
+      },
+      "STR_1700_Iter6_Kelly": {
+        "label": "STR_1700_Iter6_Kelly",
+        "n_months": 240,
+        "cagr": 0.1561,
+        "vol": 0.1419,
+        "sr": 1.1,
+        "mdd": -0.2298,
+        "hit": 0.6625,
+        "harvey_t": 4.9075,
+        "dsr_raw": 5.1202,
+        "dsr_post": 4.1202
+      },
+      "MEGA_05_PG2": {
+        "label": "MEGA_05_PG2",
+        "n_months": 240,
+        "cagr": 0.1423,
+        "vol": 0.1523,
+        "sr": 0.9345,
+        "mdd": -0.2482,
+        "hit": 0.5833,
+        "harvey_t": 4.2626,
+        "dsr_raw": 4.2032,
+        "dsr_post": 3.2032
+      },
+      "STR_1702_Iter12_Quarterly": {
+        "label": "STR_1702_Iter12_Quarterly",
+        "n_months": 240,
+        "cagr": 0.1264,
+        "vol": 0.1961,
+        "sr": 0.6448,
+        "mdd": -0.3881,
+        "hit": 0.5833,
+        "harvey_t": 3.1598,
+        "dsr_raw": 2.8946,
+        "dsr_post": 1.8946
+      }
+    },
+    "pairwise_correlation": [
+      {
+        "iter11": 1,
+        "str1699": 0.9046,
+        "str1700": 0.8271,
+        "mega05": 0.1478,
+        "str1702": 0.1994
+      },
+      {
+        "iter11": 0.9046,
+        "str1699": 1,
+        "str1700": 0.9024,
+        "mega05": 0.1014,
+        "str1702": 0.1857
+      },
+      {
+        "iter11": 0.8271,
+        "str1699": 0.9024,
+        "str1700": 1,
+        "mega05": 0.0987,
+        "str1702": 0.1566
+      },
+      {
+        "iter11": 0.1478,
+        "str1699": 0.1014,
+        "str1700": 0.0987,
+        "mega05": 1,
+        "str1702": 0.5674
+      },
+      {
+        "iter11": 0.1994,
+        "str1699": 0.1857,
+        "str1700": 0.1566,
+        "mega05": 0.5674,
+        "str1702": 1
+      }
+    ]
+  },
+  "scenario_metrics": {
+    "A_Replacement": {
+      "label": "A_Replacement",
+      "n_months": 240,
+      "cagr": 0.1264,
+      "vol": 0.1961,
+      "sr": 0.6448,
+      "mdd": -0.3881,
+      "hit": 0.5833,
+      "harvey_t": 3.1598,
+      "dsr_raw": 2.8946,
+      "dsr_post": 1.8946
+    },
+    "AB_80pct_20pct": {
+      "label": "AB_80pct_20pct",
+      "n_months": 240,
+      "cagr": 0.1479,
+      "vol": 0.1694,
+      "sr": 0.8731,
+      "mdd": -0.3452,
+      "hit": 0.6208,
+      "harvey_t": 4.0336,
+      "dsr_raw": 3.9338,
+      "dsr_post": 2.9338
+    },
+    "B_60_20_20": {
+      "label": "B_60_20_20",
+      "n_months": 240,
+      "cagr": 0.1927,
+      "vol": 0.1607,
+      "sr": 1.1995,
+      "mdd": -0.2884,
+      "hit": 0.65,
+      "harvey_t": 5.2906,
+      "dsr_raw": 5.4658,
+      "dsr_post": 4.4658
+    },
+    "D_PG2_Current": {
+      "label": "D_PG2_Current",
+      "n_months": 240,
+      "cagr": 0.1423,
+      "vol": 0.1523,
+      "sr": 0.9345,
+      "mdd": -0.2482,
+      "hit": 0.5833,
+      "harvey_t": 4.2626,
+      "dsr_raw": 4.2032,
+      "dsr_post": 3.2032
+    }
+  },
+  "scenario_note": "AB/B use STR_1699 as STR_1656 proxy (STR_1656 ML trail not available)",
+  "charts_generated": ["equity_curve.png", "annual_returns.png", "oos_zoom.png", "scenario_comparison.png"],
+  "iter11_vs_iter12_comparison": {
+    "iter11_sr": 1.3638,
+    "iter11_cagr": 0.339,
+    "iter11_mdd": -0.4077,
+    "iter12_sr": 0.6448,
+    "iter12_cagr": 0.1264,
+    "iter12_mdd": -0.3881,
+    "delta_sr": -0.719,
+    "delta_mdd": 0.0196,
+    "honest_assessment": "Iter12 machinery overlay reduces risk (MDD improvement, CVaR below cap) but CAGR significantly lower. Iter11 dominates on SR in common period. Risk-return trade-off: Iter12 preferred only if CVaR constraint is binding."
+  },
+  "generated_at": "2026-04-26T09:10:39+0900"
+}

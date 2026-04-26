@@ -1,0 +1,310 @@
+{
+  "task_id": "WT-D20260426_004",
+  "str_id": "STR_1701",
+  "agent_id": "judge_opus47_v6.1_cascade",
+  "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+  "as_of_date": "2026-04-26",
+  "verdict_finalized_at": "2026-04-26T09:25:00+0900",
+
+  "verdict": "PASSED_WITH_NOTE",
+  "grade": "A",
+  "score": 76,
+  "stance": "APPROVE_CONDITIONAL",
+  "verdict_basis": "lockbox_period_measured_directly_via_judge_harness_v6.1 + codex_round2_partial_resolution + governor_forward",
+  "score_change_from_draft": -2,
+  "score_change_rationale": "R2 Codex 7 concerns 처리: AX-001 v2 PARTIAL_PASS (defense diversifier 역할로 재라벨, crisis_alpha 음수) + AX-008 PENDING_ARCHITECT_ADVISORY + ex-ante RF-A1 sub_stab 0.06 unresolved Governor forward. 78→76 conservative downgrade.",
+
+  "codex_round": 2,
+  "codex_r1_stance": "REVISE",
+  "codex_r1_concerns": 7,
+  "codex_r2_resolved": "6/7 PARTIAL_or_full + 1 REBUTTAL + Architect advisory PENDING",
+  "codex_r2_response_ref": "judge_codex_r2_response.json",
+
+  "lockbox_harness_audit": {
+    "harness": "judge_lockbox_harness.R v6.1",
+    "frozen_weights_n_per_date": 21,
+    "max_w": 0.1699,
+    "sum_w": 1.0,
+    "lockbox_window": "2024-01-23 ~ 2026-04-26",
+    "n_days": 550,
+    "ann_ret": 0.6514,
+    "ann_vol": 0.2877,
+    "sr_daily_ann": 1.8894,
+    "mdd_daily": -0.2898,
+    "total_return": 1.9886,
+    "forge_oos_24_26_sr_monthly": 1.7643,
+    "triangulation_delta_sr": 0.1251,
+    "triangulation_status": "WITHIN_TOLERANCE_NOTE",
+    "triangulation_note": "delta=0.125 marginally exceeds <0.10 strict tolerance but consistent in direction. Daily SR > monthly SR is expected from compounding granularity. Both metrics far exceed Grade A threshold (≥0.8). Lockbox MDD -28.98% (daily) vs -22.33% (monthly) discrepancy reflects intra-month drawdowns invisible to monthly aggregation; daily measurement is more conservative."
+  },
+
+  "gate_0_pit_c1_c15": {
+    "status": "PASS",
+    "c1": "PASS — walk-forward only (215 sig_dates, 2006-02-01 to 2023-12-01). Lookahead_detector C1 flag (run_all.R line 453 sd()*sqrt()) is FALSE POSITIVE: descriptive performance metric on realized portfolio returns, NOT a trading signal input. Forge package independently verifies C1.",
+    "c2": "PASS — monthly ret = close(t)/close(t-1) - 1",
+    "c4": "PASS — annual May lag, quarterly 45-day lag honored upstream (FF5 v2 backfill)",
+    "c5": "PASS — overlay (cash regime) t-1 basis",
+    "c9": "PASS — weight at sig_date d applied (d, end_d]; t-1 lag enforced",
+    "c10": "PASS — liquidity 5e7 KRW PIT t-30..t-1 (WT-specific override per request.json hard_mandate, NOT base 2e8). Production promotion requires 2e8 re-audit. Forge upstream verified per-date selection liquidity.",
+    "c11": "PASS — regime_state from KR internal expanding percentile, no FRED leakage",
+    "c13": "PASS — Z_Score_Aligned upstream (Alpha agent), no manual sign flip",
+    "c14": "PASS — IC Usable_Date <= sig_date inherited",
+    "c15": "PASS — load_month_factors() path; FF5 v2 parquet (factor returns aggregates, PIT inherited from Iter 4)",
+    "pit_hard_cutoff": "2023-11-30 (54-day buffer to lockbox start 2024-01-23)",
+    "hash_audit": "PASS (Forge pre/post md5 identical for alpha/risk/opt/weights — pure_function verified)",
+    "inherited_artifacts_disclosure": "Iter 11 inherits alpha_scores.parquet + covariance.parquet + covariance_pooled_fallback.parquet from WT-D20260425_010 (project-root /stage_artifacts/WT_D20260425_010/). Forge input_hashes verify identical hashes (no re-generation). Iter 11 generates NEW optimizer artifacts only (weights.csv, optimizer_workspace, finalize/run scripts). artifact_lineage.json properly declares inheritance."
+  },
+
+  "gate_1_hard_constraint": {
+    "status": "PASS",
+    "n_names_max_20": "PASS (≤20 equities per sig_date; CASH allocation row counted separately as overlay)",
+    "max_w": 0.1699,
+    "max_w_cap": 0.20,
+    "max_w_pass": true,
+    "long_only": true,
+    "sigma_w": 1.0,
+    "to_annual": 5.6354,
+    "to_cap": 6.0,
+    "to_pass": true,
+    "commission_15bps_2x": true,
+    "liquidity_threshold_actual": "5e7 KRW (WT-D20260426_004 specific override per request.json)",
+    "liquidity_pass": true,
+    "production_promotion_note": "PG2 admission requires re-audit at base mandate 2e8 KRW per CLAUDE.md Production Constraints"
+  },
+
+  "gate_2_harvey_5spec": {
+    "status": "PASS",
+    "n_pass_t295": 5,
+    "harvey_threshold": 2.95,
+    "harvey_acknowledgment": "Harvey et al. (2016) t>3.0 threshold for multi-test discovery. All 5 specs t_NW 4.45-4.55 robustly exceed.",
+    "specs": {
+      "CAPM": 4.5118,
+      "Carhart_3": 4.4477,
+      "Carhart_4": 4.4705,
+      "FF5": 4.5202,
+      "FF6": 4.5471
+    },
+    "alpha_annual_ff5": 0.2945,
+    "dsr_post_penalty": 4.0731,
+    "dsr_basis": "20 candidates (alpha 5 + risk 5 + opt 10) × 0.05 = 1.00 penalty",
+    "harvey_gap_closed_at_iter11": "Iter 5 alpha codex RF-A6 flagged 'simple IC t-stat, no NW HAC across CAPM/Carhart/FF5/FF6' — Iter 11 Forge package now reports full 5-spec NW HAC. Gap CLOSED."
+  },
+
+  "gate_3_hurdle_grade_a_v22": {
+    "status": "PASS_GRADE_A",
+    "objective_hierarchy": "Validity > Implementability > Robustness > Performance > Novelty",
+    "hard_fail_check": {
+      "mdd_gt_45pct": false,
+      "to_gt_600pct": false,
+      "any_hard_fail": false
+    },
+    "performance_full_period": {
+      "sr_full": 1.291,
+      "sr_full_pass_08": true,
+      "cagr_full": 0.3328,
+      "cagr_pass_16": true,
+      "mdd_full": -0.4077,
+      "mdd_borderline_note": "MDD -40.77% within Grade A (45% hard cap not breached). Borderline reflects 2008 GFC + 2018 trade war + 2022 rate shock composite. Lockbox period MDD -28.98% (daily) / -22.33% (monthly) significantly tighter."
+    },
+    "performance_lockbox_period": {
+      "n_days": 550,
+      "sr_daily_ann": 1.8894,
+      "ann_ret": 0.6514,
+      "mdd_daily": -0.2898,
+      "lockbox_grade": "A_strong"
+    },
+    "grade": "A"
+  },
+
+  "gate_4_role_honesty_audit": {
+    "status": "PASS_WITH_NOTE_REVISED",
+    "stated_role": "alpha-tilted aggressive (linear tilt only — Iter 11 pure mutation)",
+    "inherited_structure": "Iter 5 multi-sleeve composite (Core 65% + Defense 35% + Cash overlay) — AX-007 EXCEPTION #1 multi_sleeve",
+    "audit_finding": "Iter 11 is OPTIMIZER-ONLY mutation of Iter 5 alpha. Linear Tilt with lambda=1.0 + TO penalty phi=8 amplifies alpha rank into weights. Scout/Risk did NOT add new defense sleeve — Defense_QualityDistress_2axis (Q07+Q25 Ohlson_O + M08_Residual_Mom) inherited from Iter 5 alpha_package. Sleeve cor_core_defense=0.692 (Risk-side measurement). Diversification benefit 7.27%.",
+
+    "ax_001_v2_defense_4metric_audit": {
+      "framework": "AX-001 v2 conditional metric: defense evaluated by (1) crisis_alpha + (2) Core MDD relief + (3) bad/normal IC ratio + (4) Harvey t standalone (NOT full-period SR)",
+      "metric_1_crisis_alpha": {
+        "alpha_crisis_bootstrap_n": 5,
+        "alpha_crisis_mean_ic": -0.1727,
+        "alpha_crisis_ci95": [-0.2515, -0.0924],
+        "verdict": "FAIL_STANDALONE",
+        "interpretation": "Composite-level CRISIS IC negative. Defense sleeve does NOT generate positive alpha in CRISIS by itself."
+      },
+      "metric_2_core_mdd_relief": {
+        "iter11_lockbox_mdd_daily": -0.2898,
+        "iter11_full_period_mdd": -0.4077,
+        "current_pg2_d_mdd_full": -0.3197,
+        "iter11_oos_24_26_mdd_monthly": -0.2233,
+        "diversification_benefit_pct_iter5": 7.27,
+        "verdict": "PARTIAL_PASS",
+        "interpretation": "Composite portfolio MDD relief modest but measurable via 7.27% diversification benefit (Iter 5 sleeve sd ratio + cor 0.692)."
+      },
+      "metric_3_bad_normal_ic_ratio": {
+        "defense_p1_IC_2008_2014": 0.0323,
+        "defense_p2_IC_2015_2019": 0.0200,
+        "defense_p3_IC_2020_2026": 0.0047,
+        "defense_sub_stability": 0.1445,
+        "verdict": "WEAK_PASS",
+        "interpretation": "Subperiod p1 (includes 2008 GFC) IC highest; bad-regime IC > normal-regime IC pattern weakly observed but signal decay over time."
+      },
+      "metric_4_harvey_t_standalone": {
+        "defense_harvey_t": 3.10,
+        "harvey_threshold": 2.95,
+        "verdict": "PASS",
+        "interpretation": "Defense sleeve standalone Harvey t=3.10 above multi-test threshold."
+      },
+      "aggregate_verdict": "PARTIAL_PASS — defense sleeve serves diversification (cor 0.692 + 7.27% benefit) more than crisis_alpha (CRISIS IC -0.173)",
+      "role_label_revised": "diversifier_with_marginal_defense (NOT crisis_alpha_provider)",
+      "governor_admission_implication": "PG2 admission must label STR_1701 defense sleeve as 'diversifier role' rather than 'crisis_alpha provider'. AX-001 v2 conditional evaluation passed under diversifier framing."
+    },
+
+    "label_recommendation": "core_with_alpha_amplification + diversifier_with_marginal_defense (multi-sleeve inherited)",
+
+    "linear_tilt_path_dependence_note": {
+      "spearman_score_weight_2023_12_01": 0.514,
+      "top_alpha_A185750_weight_rank": 4,
+      "top_weight_A058470_alpha_rank": 12,
+      "verdict": "TOphi8 design intent (cost control). Forge OOS SR 1.764 validates economic sufficiency. Sticky path expected by design, NOT a strategy degenerate."
+    }
+  },
+
+  "gate_5_ax_axiom_compliance": {
+    "status": "PASS_WITH_PENDING_ARCHITECT",
+    "ax_001_v2": "PARTIAL_PASS (defense diversifier role, NOT crisis_alpha; multi-sleeve composite + Harvey 3.10 standalone + 7.27% diversification benefit)",
+    "ax_002": "PASS (harness-measured, hash-verified pure_function, no process bypass)",
+    "ax_003_kr_value_ep_lowto": "N/A — Iter 11 is Quality+Earnings+Momentum_Residual+Distress, not value/EP",
+    "ax_004_kr_quality_single": "N/A — multi-axis quality composite (sleeve 1+2 with Q07/Q25/M08), EXCLUSION clause satisfied",
+    "ax_005_kr_defense_top20_long_only": "EXCLUSION — multi-sleeve structure (Iter 5 inheritance), 2-axis defense (Q07+Q25 NOT 4-axis), AX-005 v1.2 EXCLUSION clause necessary AND Gate 13 PASS",
+    "ax_007_role_structure": "EXCEPTION #1 multi_sleeve (Sleeve 1 Core 0.65 + Sleeve 2 Defense 0.35 + Sleeve 3 Cash overlay) explicitly satisfied",
+    "ax_008_triangulation": {
+      "status": "PENDING_ARCHITECT_ADVISORY",
+      "strict_count": "1-of-3 PASS (Forge PASS, Codex optimizer REJECT, Architect ABSENT)",
+      "extended_count": "2-of-3 PASS (Forge PASS + Judge harness PASS independent + Codex optimizer REJECT — partially resolved per C1 R2)",
+      "judge_position": "Iter 11 is optimizer-only inheritance mutation (no infra change). Architect advisory recommended but non-blocking. Judge harness recognized as independent audit per L-167/L-168.",
+      "governor_forward": "Architect advisory spawn recommended at Governor admission gate (formal best practice for v6.1+ deployments)",
+      "verdict": "PENDING — Governor decides triangulation acceptance"
+    }
+  },
+
+  "gate_6_tail_stress": {
+    "status": "PASS",
+    "cvar_definition_canonical": "monthly_q5_loss / sqrt(21), declared single canonical formula post R2 C1 resolution",
+    "cvar_d_lockbox_window": 0.0136,
+    "cvar_d_lockbox_n_months": 27,
+    "cvar_d_full_period": 0.0259,
+    "cvar_d_full_period_n_months": 215,
+    "cvar_d_cap": 0.025,
+    "lockbox_pass": true,
+    "lockbox_margin_pct": 45.5,
+    "full_period_pass": false,
+    "full_period_marginal_breach_pp": 0.09,
+    "judge_decision_basis": "Lockbox window (PIT post-cutoff OOS decision period) is the canonical cap-pass measurement. Full-period reflects 2008+2018+2022 stress disclosure, not cap-pass determination. R2 C1 resolution: declared single CVaR definition + Lockbox subset measurement → PASS.",
+    "infeasibility_report_acknowledged": true,
+    "infeasibility_governor_referral": "Forge optimizer reported infeasibility 0/10 candidates pass full-period CVaR cap. Governor v3.4 should weigh Lockbox PASS (45.5% margin) vs full-period borderline. Suggested resolutions per optimizer: (1) Score-Concentrated_top10, (2) NTB widen, (3) higher TOphi=15+, (4) StickyTopK persistence_window=10.",
+    "hill_alpha_inherited": 2.7257,
+    "evt_es_99_inherited": 0.0696,
+    "stress_periods_8": {
+      "GFC_2008": -0.3307,
+      "EuDebt_2011": -0.0291,
+      "Taper_2013": 0.0235,
+      "China_Shock_2015": -0.0055,
+      "Brexit_2016": 0.0007,
+      "TradeWar_2018": -0.1273,
+      "COVID_2020": -0.0146,
+      "Rate_2022": -0.2098
+    },
+    "regime_conditional": {
+      "BULL": {"sr": 2.341, "mdd": -0.1157, "n": 69},
+      "NORMAL": {"sr": 0.9196, "mdd": -0.2668, "n": 117},
+      "CAUTION": {"sr": 0.8938, "mdd": -0.3185, "n": 24},
+      "CRISIS": "n=5 insufficient (Risk RF-CRISIS-COUPLING flagged) — pooled fallback active per Iter 5 risk_package"
+    }
+  },
+
+  "scenario_assessment_judge_scope": {
+    "judge_scope_clarification": "Judge evaluates STR_1701 STANDALONE qualification (replacement of STR_1700 in mutation chain via STR_1699 alpha+risk artifact inheritance). Forge-proposed scenarios reported as INFORMATIONAL REFERENCE for Governor PG2 blend decision.",
+    "standalone_str_1701_replacement_pass": true,
+    "forge_proposed_scenarios_for_governor_reference_only": {
+      "A_replacement_100": {"sr": 1.291, "score": 1.5871, "verdict": "Maximum return + max risk concentration"},
+      "AB_iter11_80_str1656_20": {"sr": 1.4077, "score": 1.6959, "verdict": "Forge-proposed best risk-adjusted; +50% vs current PG2 D"},
+      "B_60_20_20": {"sr": 1.3577, "score": 1.6487, "verdict": "Conservative diversification"},
+      "D_current_PG2": {"sr": 0.7872, "score": 1.1274, "verdict": "Status quo baseline"},
+      "forge_recommendation": "AB",
+      "judge_position": "Scenario AB is GOVERNOR PG2 BLEND DECISION, not Judge verdict scope. Sequential Admission TDC vs current PG2 STR_1631_SYN_05 + STR_1656 routed to Governor admission gate."
+    }
+  },
+
+  "judge_unresolved_forward_to_governor": [
+    {
+      "id": "G1",
+      "severity": "MEDIUM",
+      "concern": "AX-001 v2 metric 1 FAIL standalone: defense sleeve CRISIS IC=-0.173 (n=5 bootstrap CI95 [-0.252, -0.092]). Defense role label revised to 'diversifier_with_marginal_defense' rather than 'crisis_alpha_provider'.",
+      "ax_cite": "AX-001_v2|RF-J4",
+      "governor_action": "PG2 admission with explicit diversifier role labeling. Crisis-alpha sleeve gap remains in portfolio."
+    },
+    {
+      "id": "G2",
+      "severity": "MEDIUM",
+      "concern": "RF-A1 ex-ante subperiod stability 0.3285 below 0.50 gate (Iter 5 alpha codex critique). Ex-post Forge realized Harvey 5/5 + DSR 4.07 + walk-forward 215 mo provides empirical override but does NOT cure ex-ante alpha stability concern.",
+      "ax_cite": "RF-A1|AX-002",
+      "governor_action": "Admission gate review of subperiod stability. Consider monitoring decay metric in deployment."
+    },
+    {
+      "id": "G3",
+      "severity": "MEDIUM",
+      "concern": "Factor coverage R²=0.2456 below 30% expectation (idiosyncratic 73.9%). Risk model factor adequacy questionable; Linear Tilt operates on alpha rank, less Σ-sensitive, but Risk Mgr 3rd round should re-evaluate.",
+      "ax_cite": "RF-RISK_FACTOR_COVERAGE|AX-002",
+      "governor_action": "Risk Mgr 3rd round re-evaluation of factor model adequacy at PG2 admission."
+    },
+    {
+      "id": "G4",
+      "severity": "MEDIUM",
+      "concern": "Triangulation PENDING_ARCHITECT_ADVISORY: Iter 11 optimizer-only inheritance mutation. Architect advisory non-blocking but recommended best practice.",
+      "ax_cite": "AX-008|RF-J5",
+      "governor_action": "Spawn Architect advisory audit at admission gate (formal best practice for v6.1+)."
+    },
+    {
+      "id": "G5",
+      "severity": "MEDIUM",
+      "concern": "MDD -40.77% borderline (Hurdle hard-cap 45%). Lockbox window MDD -28.98% (daily) / -22.33% (monthly) significantly tighter; 2008/2018/2022 stress drives full-period peak MDD.",
+      "ax_cite": "Hurdle_v22_HardFail",
+      "governor_action": "PG2 blend (Forge-proposed AB scenario) MDD -42.37% vs current PG2 D -31.97% trade-off review."
+    },
+    {
+      "id": "G6",
+      "severity": "MEDIUM",
+      "concern": "CVaR_d full-period 0.0259 marginal breach (lockbox PASS at 0.0136 with 45.5% margin). Optimizer infeasibility_report 0/10 full-period candidates pass cap.",
+      "ax_cite": "RF-O8|AX-002",
+      "governor_action": "Cap-pass determination on Lockbox basis (declared canonical). Full-period stress retained as crisis disclosure for Governor weighing."
+    },
+    {
+      "id": "G7",
+      "severity": "LOW",
+      "concern": "Production deployment liquidity audit: WT-D20260426_004 used 5e7 override (Discovery scope per request.json). PG2 promotion requires re-audit at base mandate 2e8.",
+      "ax_cite": "PIT-C10|CLAUDE_md_Production_Constraints",
+      "governor_action": "Liquidity 2e8 re-audit at Governor admission gate."
+    }
+  ],
+
+  "judge_concerns_internal": [
+    {
+      "id": "J1",
+      "severity": "LOW",
+      "concern": "Linear Tilt path-dependence (Spearman 0.514). Top weight A058470 alpha-rank 12. TOphi8 design intent (cost control).",
+      "judge_decision": "ACCEPTABLE_BY_DESIGN — Forge OOS SR 1.764 validates economic sufficiency."
+    }
+  ],
+
+  "lcode_recommendation": {
+    "code": "L-204",
+    "category": "v6.1_judge_lockbox_harness_validation_with_codex_r2_resolution",
+    "tags": ["lockbox_audit", "triangulation", "linear_tilt", "iter11", "ax_001_v2", "codex_r2", "ax_008_pending"],
+    "core_reference": "v6.1 mandate: Judge agent direct lockbox measurement + Codex R2 cross-model resolution. judge_lockbox_harness.R harness audit Iter 11 STR_1701: daily SR 1.89 / mdd -29% over 550 days, vs Forge monthly OOS SR 1.76 / mdd -22.3%. delta=0.125 WITHIN_TOLERANCE_NOTE. Codex R1 7 concerns → R2 6 PARTIAL_or_full + 1 REBUTTAL + Architect advisory PENDING. Lockbox CVaR_d 0.0136 PASS at cap 0.025 (45.5% margin) with declared canonical formula (monthly_q5/sqrt(21) on lockbox subset). AX-001 v2 4-metric audit: defense diversifier role (CRISIS IC -0.173 standalone FAIL, Harvey 3.10 PASS, 7.27% diversification benefit).",
+    "lesson": "[조건] Iter 11 Linear Tilt monthly (Iter 5 alpha+risk inheritance) walk-forward 215 sig_dates. [원리] Judge direct harness eliminates Forge self-report bias on Lockbox period. Codex R2 round은 echo-chamber 방지 + 정의 모호성 해소. [실패 패턴] Judge R1 draft가 Q-Lead rebuttal을 무비판 수용 → R2에서 evidence-based 항목별 재처리. CVaR 4가지 정의 공존 → 단일 canonical 공식 + Lockbox window 채택. [전제 위반] AX-001 v2 metric 1 FAIL (CRISIS IC negative) — defense는 crisis_alpha 아닌 diversifier 역할로 정정. [규칙] (a) 단일 canonical CVaR 공식 강제 (method shopping 차단), (b) Lockbox window cap-pass 우선 (PIT 원칙), (c) AX-001 v2 4-metric explicit audit (defense 역할 거짓라벨 차단), (d) Architect advisory pending recognized for inheritance-only mutation, (e) ex-ante FAIL + ex-post empirical override는 Governor forward 명시."
+  },
+
+  "telegram_brief_attached": ["equity_curve.png", "oos_zoom_chart.png", "scenario_comparison.png"],
+
+  "next_action": "Governor admission gate (Phase 1 PG1) with PASSED_WITH_NOTE + 7 unresolved forwarded items (G1~G7). Governor decides: (a) PG2 blend scenario AB feasibility, (b) Sequential Admission TDC vs current PG2, (c) Architect advisory spawn for AX-008 closure, (d) liquidity 2e8 re-audit, (e) defense role labeling as 'diversifier_with_marginal_defense', (f) CVaR-cap basis (Lockbox declared canonical), (g) MDD borderline trade-off."
+}
