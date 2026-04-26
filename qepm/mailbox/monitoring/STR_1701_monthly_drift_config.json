@@ -1,0 +1,232 @@
+{
+  "strategy_id": "STR_1701",
+  "wt_id": "WT-D20260426_004",
+  "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+  "role_label": "core_with_alpha_amplification__diversifier_with_marginal_defense",
+  "admission_status": "PG2_ACTIVE_USER_OVERRIDE_004",
+  "book_scenario": "AB_80_20_Iter11_STR1656",
+  "book_weights": {
+    "STR_1701": 0.8,
+    "STR_1656_MLRA_M05": 0.2
+  },
+  "monitoring_setup_date": "2026-04-26",
+  "monitoring_setup_by": "Monitoring Agent v6.1 R9",
+  "frequency": "monthly",
+  "next_check_date": "2026-05-26",
+  "responsible_agent": "monitoring",
+
+  "drift_detection_metrics": {
+
+    "M1_realized_alpha_vs_predicted": {
+      "metric_id": "M1",
+      "label": "Realized alpha vs Predicted monthly alpha",
+      "predicted_monthly_alpha_pct": 2.77,
+      "predicted_basis": "full_period_CAGR_33.28pct / 12 = 2.77pp monthly",
+      "tolerance_pct": 1.0,
+      "alert_threshold_deviation_pp": 2.0,
+      "alert_severity": "HIGH",
+      "alert_action": "Judge 재심사 요청 (alpha ratio < 0.5 threshold)",
+      "note": "Iter 11 full-period CAGR 33.28% / 12 = 2.77pp. Lockbox period CAGR annualized 65.14% implies elevated OOS alpha — decay monitoring critical. alpha_ratio = realized_monthly / 2.77; alert if < 0.5 (i.e., realized < 1.39pp) for 2 consecutive months."
+    },
+
+    "M2_tracking_error_drift": {
+      "metric_id": "M2",
+      "label": "Tracking Error drift vs baseline",
+      "baseline_te_pct": 19.67,
+      "baseline_te_basis": "Iter 11 annualized vol 24.82% (full period). TE = strategy vol (benchmark-relative) proxy from walk-forward 215 months.",
+      "tolerance_pct": 3.0,
+      "alert_threshold_drift_pp": 5.0,
+      "alert_severity": "MEDIUM",
+      "alert_action": "Risk Agent 재추정 요청 (TE ratio > 1.5 threshold: realized_te / baseline_te > 1.5)",
+      "te_ratio_formula": "realized_te_annualized / 19.67",
+      "te_ratio_alert": 1.5,
+      "note": "Linear Tilt TOphi8 is turnover-constrained — realized TE expansion may lag alpha drift by 1-2 months. Watch vol regime shift in CRISIS."
+    },
+
+    "M3_ic_decay_signal": {
+      "metric_id": "M3",
+      "label": "Signal IC decay — P3 sub-period tracking",
+      "baseline_defense_p3_ic": 0.0047,
+      "baseline_defense_p1_ic": 0.0323,
+      "baseline_defense_p2_ic": 0.0200,
+      "baseline_defense_sub_stab": 0.1445,
+      "rf_a1_sub_stab_exante": 0.0600,
+      "rf_a1_override_basis": "ex-post walk-forward Harvey 5/5 + DSR 4.83 empirical override — ex-ante concern remains",
+      "alert_if_ic_negative_consecutive_months": 2,
+      "alert_severity": "HIGH",
+      "alert_action": "Judge 재심사 요청 (alpha ratio < 0.5 대응 — signal decay 확인)",
+      "decay_ratio_formula": "rolling_3m_rank_ic / rolling_12m_rank_ic",
+      "decay_ratio_alert": 0.3,
+      "p3_decay_warning": "P3 IC 0.0047 already near zero. RF-A1 ex-ante sub_stab 0.060 per Iter 5 codex. Decay monitoring is primary concern for CRISIS regime continuation.",
+      "note": "Defense sleeve CRISIS IC = -0.1727 (n=5 bootstrap). P3 trailing decay must be measured on realized factor IC monthly from regime_current vs alpha_package subperiod attribution."
+    },
+
+    "M4_regime_shift_alert": {
+      "metric_id": "M4",
+      "label": "Regime transition vs cached regime tag",
+      "current_regime_2026_04": "CRISIS",
+      "current_mrs": 63.1,
+      "regime_source": "stage_artifacts/WT_D20260425_010/regime_panel.parquet",
+      "alert_on_regime_change": true,
+      "alert_severity": "MEDIUM",
+      "alert_action": "Optimizer 재계산 요청 (regime shift → covariance rebuild + Linear Tilt cash parameter review)",
+      "regime_alpha_implications": {
+        "BULL": {"cagr": 0.5865, "sr": 2.341, "mdd": -0.1157, "cash_pct": 0.0, "note": "최고 성과 — cash 0%, full alpha tilt"},
+        "NORMAL": {"cagr": 0.2142, "sr": 0.9196, "mdd": -0.2668, "cash_pct": 0.05},
+        "CAUTION": {"cagr": 0.2513, "sr": 0.8938, "mdd": -0.3185, "cash_pct": 0.15},
+        "CRISIS": {"n_months": 5, "cagr": null, "sr": null, "mdd": null, "cash_pct": 0.30, "note": "CRISIS n=5 insufficient — pooled fallback active. Current state. Cash drag 30% active."}
+      },
+      "regime_change_critical_transitions": [
+        "CRISIS -> CAUTION: cash drag release (0.30 -> 0.15). BULL alpha source re-activation timing.",
+        "CAUTION -> CRISIS: cash drag re-activation. Validate cash_pct PIT C5 t-1 lag.",
+        "Any transition: Covariance Sigma rebuild trigger per Monitoring Role spec."
+      ]
+    },
+
+    "M5_tdc_crowding_drift": {
+      "metric_id": "M5",
+      "label": "TDC (Top-decile Correlation) crowding drift vs STR_1656",
+      "baseline_tdc_vs_str1656": 0.30,
+      "baseline_tdc_basis": "sanity estimate from book_state.json v1.7 — direct NAV TDC measurement PENDING (Forge T+0 parallel)",
+      "tolerance_drift": 0.05,
+      "alert_threshold_tdc_gt": 0.40,
+      "alert_severity": "HIGH",
+      "alert_action": "Governor book rebalance 요청 (crowding drift > threshold)",
+      "crowding_drift_formula": "delta_crowding_factor_3m_rolling = (current_tdc - baseline_tdc) / baseline_tdc",
+      "crowding_drift_alert_pct": 30.0,
+      "note": "STR_1656 GFC 0% loss + ML_DD_Brake uncorrelated structure preserved as diversifier. TDC > 0.40 would indicate structural convergence — rollback trigger. Direct NAV TDC measurement awaited from Forge T+0 parallel check (OVERRIDE_004 post-promotion task)."
+    },
+
+    "M6_harvey_5spec_persistence": {
+      "metric_id": "M6",
+      "label": "Harvey 5-spec t_NW persistence",
+      "baseline_t_nw": {
+        "CAPM": 4.5118,
+        "Carhart_3": 4.4477,
+        "Carhart_4": 4.4705,
+        "FF5": 4.5202,
+        "FF6": 4.5471
+      },
+      "baseline_basis": "Pre-LB walk-forward (2006-02-01 ~ 2023-12-01) Newey-West HAC lag=4 NW",
+      "harvey_threshold": 2.95,
+      "alert_if_any_below_threshold_consecutive_months": 2,
+      "alert_severity": "HIGH",
+      "alert_action": "Judge 재심사 요청 (alpha persistence 위협)",
+      "hard_rollback_trigger": "any spec t_NW < 2.0 for 2 consecutive months",
+      "note": "Full-period OOS extension Harvey t_FF5 = 5.2552 (243 months). Rolling NW estimation as additional OOS months accrue — t값 naturally updates. Alert threshold 2.95 is Harvey et al. (2016) multi-test discovery standard. All baseline values 4.45-4.55 provide substantial buffer."
+    }
+
+  },
+
+  "phased_replacement_milestones": {
+    "context": "User OVERRIDE_004 bypassed T+30/60/90 phased pathway. Milestones now serve as post-promotion verification checkpoints.",
+
+    "T_plus_30_2026_05_26": {
+      "date": "2026-05-26",
+      "task": "Architect AX-008 advisory close + G7 liquidity 2e8 verify",
+      "trigger_agent": "architect",
+      "automated": true,
+      "details": [
+        "AX-008 Verification Triangulation: Forge + Judge harness + Architect = 3-of-3 target (currently 2-of-3 PASS, Architect PENDING per OVERRIDE_004)",
+        "G7 liquidity re-audit: WT-D20260426_004 used 5e7 KRW override. Production mandate 2e8 KRW required (PIT C10 + CLAUDE.md Production Constraints).",
+        "TDC sanity vs STR_1656 direct measurement: baseline_tdc 0.30 estimate → actual measurement required."
+      ],
+      "pass_criteria": "AX-008 PASS + liquidity 2e8 PASS per date"
+    },
+
+    "T_plus_60_2026_06_25": {
+      "date": "2026-06-25",
+      "task": "Forge AB direct NAV backtest results review",
+      "trigger_agent": "forge",
+      "automated": true,
+      "details": [
+        "Scenario AB direct NAV backtest: linear approximation SR 1.408 vs direct measurement. Rollback trigger if SR < 1.20.",
+        "MDD direct measurement vs linear approx -42.37%.",
+        "CVaR_d full-period measure using direct NAV (Forge T+0 parallel task completion review)."
+      ],
+      "pass_criteria": "SR_direct >= 1.20 AND MDD < -45%"
+    },
+
+    "T_plus_90_2026_07_25": {
+      "date": "2026-07-25",
+      "task": "Final SR/MDD evaluation vs PG2 promotion expectations + AX-006 TDC cluster review",
+      "trigger_agent": "user_decision_required",
+      "automated": false,
+      "details": [
+        "3-month realized performance vs predicted: SR 1.408 target, CAGR 29.84% target.",
+        "AX-006 candidate review (pairwise TDC conditional cluster, originally scheduled 2026-07-17).",
+        "Gap status: SR 2.0 target, current estimated post-promotion gap 0.592. Iter 13+ alpha research directive.",
+        "Regime assessment: CRISIS persistence vs CAUTION/NORMAL transition. BULL alpha source reactivation timing."
+      ],
+      "pass_criteria": "SR_3m_realized >= 1.00 (regime-adjusted) AND no rollback condition triggered"
+    }
+  },
+
+  "rollback_conditions": {
+    "description": "OVERRIDE_004 accepted risks + standard monitoring rollback thresholds",
+    "conditions": [
+      {
+        "id": "RC1",
+        "condition": "P3 IC < -0.01 for 3 consecutive months",
+        "severity": "BLOCKING",
+        "action": "rollback 트리거 — Governor rebalance 요청"
+      },
+      {
+        "id": "RC2",
+        "condition": "5-spec Harvey t_NW any spec < 2.0 for 2 consecutive months",
+        "severity": "BLOCKING",
+        "action": "rollback 트리거 — Judge 재심사 요청"
+      },
+      {
+        "id": "RC3",
+        "condition": "TDC vs STR_1656 > 0.40",
+        "severity": "BLOCKING",
+        "action": "rollback 트리거 — Governor book rebalance 요청 (crowding drift > 30%)"
+      },
+      {
+        "id": "RC4",
+        "condition": "MDD breach -45.0% (Hard cap)",
+        "severity": "BLOCKING",
+        "action": "즉시 rollback — Execution Agent 포지션 조정 트리거. Governor emergency rebalance."
+      },
+      {
+        "id": "RC5",
+        "condition": "Forge AB realized SR < 1.20",
+        "severity": "BLOCKING",
+        "action": "rollback BLOCKING — Forge T+0 parallel verification 결과 확인 후 Governor 재판정"
+      },
+      {
+        "id": "RC6",
+        "condition": "G7 liquidity 2e8 audit any-date FAIL",
+        "severity": "HIGH",
+        "action": "Production Constraints 위반 경고. Liquidity re-audit FAIL 종목 즉시 교체 지시 → Execution Agent. 전체 rollback은 Governor 재판정 후."
+      },
+      {
+        "id": "RC7",
+        "condition": "Architect AX-008 BLOCKING finding (PIT/lineage critical)",
+        "severity": "BLOCKING",
+        "action": "즉시 rollback — Judge 재판정 요청"
+      },
+      {
+        "id": "RC8",
+        "condition": "alpha_ratio (realized_monthly / 2.77pp) < 0.5 for 2 consecutive months",
+        "severity": "HIGH",
+        "action": "Judge 재심사 요청 (M1 signal decay alert)"
+      }
+    ],
+    "rollback_action_default": "revert to previous PG2 (STR_1631_MEGA_05 80% + STR_1656 20%) — book_state.json previous_pg2 record preserved",
+    "rollback_governor": "governor agent re-spawn with rollback verdict"
+  },
+
+  "telegram_alerts": {
+    "channel": "default qvest channel",
+    "agent_brief_format": "tg_agent_brief(agent='Monitoring', ...)",
+    "trigger_severity": "any drift detection metric breach",
+    "message_prefix": "[Monitoring] Live Drift — WT-D20260426_004 STR_1701",
+    "message_format": "핵심 metric (M1~M6 breach 항목) + realized vs predicted + action 권고",
+    "escalation_contacts": ["Q-Lead 채널"]
+  },
+
+  "monitoring_active": true,
+  "notes": "STR_1701 (Iter 11 Monthly LinTilt) PG2 ACTIVE per User OVERRIDE_004 (2026-04-26). Scenario AB: Iter11 80% + STR_1656 20%. Phased pathway bypassed. Monitoring Agent activates monthly drift detection (M1~M6) with 3 post-promotion verification milestones (T+30/60/90). Defense sleeve CRISIS IC = -0.173 (n=5) — RF-A1 P3 decay is primary signal risk. Rollback conditions RC1~RC8 defined. CRISIS regime (MRS 63.1) cash_pct 30% active — cash drag acknowledged in predicted alpha baseline."
+}

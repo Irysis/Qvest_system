@@ -1,0 +1,213 @@
+{
+  "strategy_id": "STR_1701",
+  "wt_id": "WT-D20260426_004",
+  "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+  "snapshot_date": "2026-04-26",
+  "snapshot_type": "PG2_ADMISSION_BASELINE",
+  "admission_event": "USER_OVERRIDE_004",
+  "book_scenario": "AB_80_20_Iter11_STR1656",
+
+  "baseline_performance": {
+    "full_period": {
+      "period": "2006-02 ~ 2026-04",
+      "n_months": 243,
+      "cagr": 0.3328,
+      "vol": 0.2482,
+      "sr": 1.291,
+      "mdd": -0.4077,
+      "hit_rate": 0.6749,
+      "harvey_t_ff5": 5.2552,
+      "dsr_raw": 5.8267,
+      "dsr_post_penalty": 4.8267
+    },
+    "pre_lockbox_walkforward": {
+      "period": "2006-02-01 ~ 2023-12-01",
+      "n_months": 215,
+      "cagr": 0.3089,
+      "vol": 0.2426,
+      "sr": 1.2404,
+      "mdd": -0.4077,
+      "hit_rate": 0.6791,
+      "dsr_post_penalty": 4.0731
+    },
+    "lockbox_oos_daily": {
+      "period": "2024-01-23 ~ 2026-04-26",
+      "n_days": 550,
+      "ann_ret": 0.6514,
+      "ann_vol": 0.2877,
+      "sr": 1.8894,
+      "mdd": -0.2898,
+      "total_return": 1.9886,
+      "source": "judge_lockbox_harness.R v6.1 direct measurement"
+    },
+    "oos_frozen_weights_monthly": {
+      "period": "2024-01-01 ~ 2026-04-26",
+      "n_months": 29,
+      "cagr": 0.5992,
+      "sr": 1.7643,
+      "mdd": -0.2233,
+      "hit_rate": 0.6552,
+      "method": "Frozen weights buy-and-hold — no re-optimization (PIT C1 strict)"
+    },
+    "scenario_AB_book_estimate": {
+      "label": "Scen_AB_Iter11_80_STR1656_20",
+      "period": "intersecting",
+      "n_months": 218,
+      "cagr": 0.2984,
+      "vol": 0.2014,
+      "sr": 1.4077,
+      "mdd": -0.4237,
+      "hit_rate": 0.6881,
+      "dsr_post_penalty": 5.1321,
+      "basis": "linear_approximation — Forge direct NAV backtest PENDING (T+0 parallel)"
+    }
+  },
+
+  "baseline_regime_conditional": {
+    "BULL":    {"n_months": 69,  "cagr": 0.5865, "sr": 2.341,  "mdd": -0.1157, "cash_pct": 0.00},
+    "NORMAL":  {"n_months": 117, "cagr": 0.2142, "sr": 0.9196, "mdd": -0.2668, "cash_pct": 0.05},
+    "CAUTION": {"n_months": 24,  "cagr": 0.2513, "sr": 0.8938, "mdd": -0.3185, "cash_pct": 0.15},
+    "CRISIS":  {"n_months": 5,   "cagr": null,   "sr": null,   "mdd": null,    "cash_pct": 0.30, "note": "n=5 insufficient. Pooled fallback active."}
+  },
+
+  "baseline_harvey_5spec": {
+    "framework": "KR FF5 v2 backfill (Iter 4 asset), Newey-West HAC lag=4",
+    "sample": "Pre-LB walk-forward 2006-02-01 ~ 2023-12-01 (n_eff=215)",
+    "CAPM":     {"t_nw": 4.5118, "alpha_annual": 0.3016, "gate_pass": true},
+    "Carhart_3":{"t_nw": 4.4477, "alpha_annual": 0.2921, "gate_pass": true},
+    "Carhart_4":{"t_nw": 4.4705, "alpha_annual": 0.2743, "gate_pass": true},
+    "FF5":      {"t_nw": 4.5202, "alpha_annual": 0.2945, "gate_pass": true, "dsr": 5.0731},
+    "FF6":      {"t_nw": 4.5471, "alpha_annual": 0.2763, "gate_pass": true},
+    "n_pass_t295": 5,
+    "harvey_threshold": 2.95,
+    "full_period_harvey_t_ff5": 5.2552
+  },
+
+  "baseline_cvar": {
+    "canonical_formula": "monthly_q5_loss / sqrt(21)",
+    "cvar_d_lockbox_window": 0.0136,
+    "cvar_d_lockbox_n_months": 27,
+    "cvar_d_full_period": 0.0259,
+    "cvar_d_cap": 0.025,
+    "lockbox_pass": true,
+    "lockbox_margin_pct": 45.5,
+    "full_period_marginal_breach_pp": 0.09,
+    "cap_pass_basis": "lockbox_window (PIT post-cutoff OOS decision period)"
+  },
+
+  "baseline_tail_stress_periods": {
+    "GFC_2008":       -0.3307,
+    "EuDebt_2011":    -0.0291,
+    "Taper_2013":      0.0235,
+    "China_Shock_2015":-0.0055,
+    "Brexit_2016":     0.0007,
+    "TradeWar_2018":  -0.1273,
+    "COVID_2020":     -0.0146,
+    "Rate_2022":      -0.2098
+  },
+
+  "baseline_defense_ax001_v2": {
+    "framework": "AX-001 v2 4-metric conditional evaluation",
+    "metric_1_crisis_alpha": {
+      "mean_ic_crisis": -0.1727,
+      "ci95": [-0.2515, -0.0924],
+      "n_bootstrap": 5,
+      "verdict": "FAIL_STANDALONE"
+    },
+    "metric_2_core_mdd_relief": {
+      "diversification_benefit_pct": 7.27,
+      "sleeve_cor_core_defense": 0.692,
+      "verdict": "PARTIAL_PASS"
+    },
+    "metric_3_bad_normal_ic_ratio": {
+      "p1_2008_2014_ic": 0.0323,
+      "p2_2015_2019_ic": 0.0200,
+      "p3_2020_2026_ic": 0.0047,
+      "sub_stab": 0.1445,
+      "verdict": "WEAK_PASS"
+    },
+    "metric_4_harvey_t_standalone": {
+      "defense_harvey_t": 3.10,
+      "threshold": 2.95,
+      "verdict": "PASS"
+    },
+    "aggregate_verdict": "PARTIAL_PASS",
+    "role_label_official": "diversifier_with_marginal_defense (NOT crisis_alpha_provider)"
+  },
+
+  "baseline_rf_a1_concern": {
+    "rf_a1_sub_stab_exante": 0.060,
+    "rf_a1_threshold": 0.50,
+    "override_basis": "ex-post Harvey 5/5 + DSR 4.83 + walk-forward 215 months empirical evidence",
+    "override_type": "Governor_forward_G2 — ex-ante concern acknowledged, ex-post empirical override accepted",
+    "monitoring_implication": "P3 IC decay is primary monitoring signal for RF-A1 materialization"
+  },
+
+  "baseline_optimizer_params": {
+    "method": "Linear_Tilt_lam1.0_TOphi8",
+    "lambda": 1.0,
+    "turnover_phi": 8,
+    "blend_formula": "w_out = 0.889 * w_prev + 0.111 * w_tilt",
+    "granularity": "monthly",
+    "fm_regime_cash": {"BULL": 0.00, "NORMAL": 0.05, "CAUTION": 0.15, "CRISIS": 0.30},
+    "avg_cash_pct_overall": 0.0509,
+    "avg_n_held": 17.75,
+    "annualized_turnover": 5.6354,
+    "to_cap": 6.0,
+    "confidence_used": false
+  },
+
+  "baseline_pit_compliance": {
+    "C1": "PASS — walk-forward only (215 sig_dates). No full-sample re-optimization.",
+    "C2": "PASS — monthly ret = close(t)/close(t-1) - 1",
+    "C5": "PASS — cash regime overlay t-1 basis",
+    "C9": "PASS — weight at sig_date d applied (d, end_d]",
+    "C10": "WT_OVERRIDE_5e7 — Production re-audit at 2e8 KRW REQUIRED (G7 milestone T+30)",
+    "C11": "PASS — KR internal expanding percentile, no FRED leakage",
+    "C13": "PASS — Z_Score_Aligned only",
+    "C14": "PASS — Usable_Date <= sig_date inherited",
+    "C15": "PASS — load_month_factors() path"
+  },
+
+  "baseline_hash_audit": {
+    "pre_md5_alpha":   "30dabd25f67660f1a12fcded61005783",
+    "pre_md5_risk":    "a2e2bceab5b076f3fc943f07388e8e5b",
+    "pre_md5_opt":     "9e49f8fb908f10869d282db391587887",
+    "pre_md5_weights": "65a5c9751275ac23ef5a9d6d209b72ea",
+    "audit_status": "PASS",
+    "pure_function_pass": true
+  },
+
+  "baseline_intra_book_comparison": {
+    "tdc_vs_str1656_estimate": 0.30,
+    "tdc_basis": "sanity estimate — Forge T+0 direct NAV measurement PENDING",
+    "pairwise_correlation_iter11_str1699": 0.9055,
+    "pairwise_correlation_iter11_str1700": 0.8283,
+    "pairwise_correlation_iter11_mega05": 0.1470
+  },
+
+  "current_regime_at_snapshot": {
+    "regime": "CRISIS",
+    "mrs_score": 63.1,
+    "date": "2026-04",
+    "cash_pct_active": 0.30,
+    "implication": "Cash drag 30% active. CRISIS n=5 insufficient for standalone regime performance. Pooled fallback active per Iter 5 risk_package."
+  },
+
+  "judge_grade_at_snapshot": {
+    "verdict": "PASSED_WITH_NOTE",
+    "grade": "A",
+    "score": 76,
+    "stance": "APPROVE_CONDITIONAL",
+    "n_unresolved_forward": 7,
+    "forward_items": ["G1_defense_crisis_alpha", "G2_rf_a1_sub_stab", "G3_factor_coverage_r2", "G4_ax008_triangulation", "G5_mdd_borderline", "G6_cvar_full_period", "G7_liquidity_2e8"]
+  },
+
+  "pending_parallel_checks": [
+    "Forge: AB direct NAV backtest + G7 liquidity 2e8 re-audit + TDC sanity check vs STR_1656",
+    "Architect: AX-008 advisory close (Iter11 triangulation 3-source)",
+    "Q-Lead: L-204/220/221 memory + strategy_registry STR_1701 PG2_ACTIVE update"
+  ],
+
+  "notes": "Baseline snapshot at PG2 ACTIVE promotion (User OVERRIDE_004, 2026-04-26). Scenario AB: Iter11 80% + STR_1656 20%. Replaces previous PG2 (MEGA_05 80% + STR_1656 20%). SR improvement +38% (1.291 vs 0.9345). MDD deterioration -17.55pp (-42.37% vs -24.82%). CRISIS regime active; cash drag 30%. Defense sleeve role = diversifier_with_marginal_defense (AX-001 v2 PARTIAL_PASS). All metrics recorded as of 2026-04-26 for drift comparison."
+}
