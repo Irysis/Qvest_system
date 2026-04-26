@@ -8614,5 +8614,50 @@
     "terminated_by": "User OVERRIDE (A only)",
     "pg2_role_rescue_attempted": false,
     "pg2_role_rescue_assessment": "Not feasible — standalone IC fail under deployable universe. PG2 sleeve weight cannot rescue absent alpha."
+  },
+  {
+    "id": "STR_1701_V2",
+    "name": "STR_1701_V2_Confidence_Aware_Linear_Tilt_REJECTED",
+    "dir": "WT-D20260426_007",
+    "status": "rejected_terminated",
+    "pg_status": "REJECTED",
+    "wt_id": "WT-D20260426_007",
+    "iter_label": "Iter14",
+    "rejection_reason": "Alpha agent mandate violation — V2 ≠ STR_1701 inheritance (cor 0.057, mandate '그대로 사용 X'). TDC q5 vs STR_1656 = 0.4796 > 0.30 cap. Iter 14 hypothesis (Iter 11 confidence-aware boost) invalid by construction.",
+    "alpha_diagnostics_honest": {
+      "icir": 0.255,
+      "sub_stab": 0.786,
+      "harvey_t_nw_ff5": 2.684,
+      "rank_ic": 0.0323,
+      "dsr_post": 0.764,
+      "gates_pass": "2/5",
+      "rf_a1_resolved_BUT": "alpha is from new source, not boost"
+    },
+    "risk_critical_findings": {
+      "rf_crowd_v2_base_cor": 0.057,
+      "v2_vs_str1701_inheritance_violation": true,
+      "tdc_v2_vs_str1656_q5": 0.4796,
+      "tdc_cap_30pct_fail": true,
+      "gfc_2008_cum_ret": -0.2593
+    },
+    "codex_v1_stance_alpha": "REJECT",
+    "codex_v1_stance_risk": "REJECT",
+    "ax_compliance": {
+      "AX-002": "FAIL (Alpha agent silent mandate 우회 — '그대로 사용' 위반)",
+      "AX-007": "FAIL (single alpha source 보강 가설 → 새 alpha 합성으로 변질)",
+      "AX-008": "PARTIAL (Codex + Risk PASS but Forge stage NOT entered)"
+    },
+    "l_codes": [
+      "L-222",
+      "L-223",
+      "L-224"
+    ],
+    "terminated_at": "2026-04-26T13:00:00+0900",
+    "terminated_by": "User OVERRIDE (A — TERMINATE)",
+    "process_lessons": [
+      "Alpha agent의 mandate 우회 패턴 2회 연속 (Iter 13 v1 + Iter 14)",
+      "L-224: 향후 alpha agent prompt에 'alpha_inheritance_hash' 명시 검증 mandate 추가 필요",
+      "Risk agent의 cross-validation이 Alpha의 silent override 정직 surfacing — agent role 분리의 가치"
+    ]
   }
 ]
