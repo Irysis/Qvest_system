@@ -8418,5 +8418,99 @@
       "reason": "SR 1.0789 below 1.5 milestone target",
       "authority": "Lawbook §5 user override"
     }
+  },
+  {
+    "id": "STR_1701",
+    "name": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+    "dir": "WT-D20260426_004",
+    "status": "probe_phase",
+    "pg_status": "PG1_ADMITTED_PROBE_PHASE",
+    "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701",
+    "role_primary": "core_with_alpha_amplification",
+    "role_secondary": "diversifier_with_marginal_defense",
+    "role_bias_tag": "RoleBias_Core",
+    "hurdle_result": {
+      "pass": true,
+      "hard_fail": false,
+      "grade": "A",
+      "judge_score": 76,
+      "verdict": "PASSED_WITH_NOTE"
+    },
+    "hurdle_pass": true,
+    "hurdle_score": 76,
+    "performance": {
+      "sr_full_oos": 1.291,
+      "cagr_full_oos": 0.3328,
+      "mdd_full_oos": -0.4077,
+      "harvey_5spec_pass": 5,
+      "harvey_ff5_t_nw": 4.5202,
+      "dsr_post_penalty": 4.0731,
+      "lockbox_sr_daily": 1.8894,
+      "lockbox_mdd_daily": -0.2898,
+      "cvar_d_lockbox": 0.0136,
+      "cvar_cap_pass": true
+    },
+    "phased_pathway": {
+      "t_plus_0": "PG1 admit + Probe Phase. PG2 active UNCHANGED.",
+      "t_plus_30": "50% partial replacement IF G7+G4+G2 PASS",
+      "t_plus_60": "80% (Scenario AB) IF T+30 KPIs + direct NAV backtest PASS",
+      "t_plus_90": "100% (Option A) or 80/20 (AB) final decision by Q-Lead or user"
+    },
+    "blocking_conditions_t30": [
+      "G7: liquidity 2e8 KRW re-audit",
+      "G4: Architect advisory spawn",
+      "G2: sub-period IC decay check"
+    ],
+    "l_code": "L-204",
+    "admitted_at": "2026-04-26",
+    "wt_source": "WT-D20260426_004",
+    "governor_decision": "ADMITTED_TO_PROBE_PHASE",
+    "governor_session": 72
+  },
+  {
+    "id": "STR_1702",
+    "name": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+    "dir": "WT-D20260426_005",
+    "status": "rejected",
+    "pg_status": "REJECTED",
+    "role_primary": "vol_reduction_diversifier_low_alpha",
+    "role_bias_tag": "RoleBias_Diversifier",
+    "hurdle_result": {
+      "pass": false,
+      "hard_fail": false,
+      "grade": "FAIL",
+      "verdict": "JUDGE_FAILED",
+      "rejection_reasons": [
+        "Harvey 0/5 (best t_NW 2.6248 < 2.95)",
+        "CVaR_d daily Judge reconstruction 0.0290 > cap 0.025",
+        "Grade A FAIL: SR 0.64 < 0.8 / CAGR 12.64% < 16%",
+        "DSR 1.8946 < 3.0 Grade A floor"
+      ]
+    },
+    "hurdle_pass": false,
+    "hurdle_score": 0,
+    "performance": {
+      "sr_full_oos": 0.6448,
+      "cagr_full_oos": 0.1264,
+      "mdd_full_oos": -0.3881,
+      "harvey_5spec_pass": 0,
+      "harvey_best_t": 2.6248,
+      "dsr_post_penalty": 1.8946,
+      "cvar_d_judge_daily": 0.029,
+      "lockbox_sr_daily": 1.5404
+    },
+    "l_code": "L-220",
+    "l_220_summary": "vol-reduction machinery suppresses Harvey alpha (0/5) while failing daily CVaR (0.0290 > 0.025 cap). Monthly/sqrt(21) proxy under-estimates daily tail.",
+    "mix_b_deferred": true,
+    "mix_b_reactivation_conditions": [
+      "STR_1656 NAV trail reconstruction",
+      "TDC formal computation vs PG2",
+      "Role label officially corrected",
+      "CVaR weight cap design"
+    ],
+    "rejected_at": "2026-04-26",
+    "wt_source": "WT-D20260426_005",
+    "governor_decision": "REJECTED",
+    "governor_session": 72
   }
 ]

@@ -1,7 +1,7 @@
 {
-  "updated_at": "2026-04-26T07:03:28.511115",
-  "updated_by": "Q-Lead user override 2026-04-26",
-  "schema_version": "v1.5",
+  "updated_at": "2026-04-26T10:00:00+0900",
+  "updated_by": "Governor sonnet46 v6.1 — Iter11 STR_1701 PG1 Probe Phase admission + Iter12 STR_1702 REJECTED",
+  "schema_version": "v1.6",
   "n_admitted": 2,
   "admitted_ids": [
     "WT-D20260425_003",
@@ -85,6 +85,57 @@
     }
   },
   "probe_phase_admissions": [
+    {
+      "wt_id": "WT-D20260426_004",
+      "str_id": "STR_1701",
+      "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+      "admitted_to_probe_at": "2026-04-26T10:00:00+0900",
+      "judge_verdict": "PASSED_WITH_NOTE / Grade A / Score 76",
+      "governor_verdict": "ADMITTED_TO_PROBE_PHASE",
+      "scenario_identified": "replacement",
+      "scenario_primary": "OPTION_A_100PCT_REPLACEMENT",
+      "admit_basis": [
+        "Grade A / Harvey 5/5 (t_NW 4.45-4.55) / DSR 4.07",
+        "Full+OOS SR 1.291 (+38% vs current PG2 0.9345)",
+        "Lockbox SR 1.8894 / MDD -28.98% / 550 days",
+        "PIT C1~C15 PASS hash-verified",
+        "AX-005 EXCLUSION + AX-007 EXCEPTION #1",
+        "AX-001 v2 PARTIAL_PASS diversifier framing",
+        "Book IR improvement 0.3565 >> threshold 0.05"
+      ],
+      "evidence_gaps_pre_pg2": [
+        "G7: liquidity 2e8 KRW re-audit (BLOCKING at T+30)",
+        "G4: Architect advisory AX-008 formal closure (T+30)",
+        "G2: sub-period IC decay monitoring (T+0 activate)",
+        "Scenario AB SR 1.408 is linear approximation — direct NAV backtest required at T+60"
+      ],
+      "performance": {
+        "sr_full_oos": 1.291,
+        "cagr_full_oos": 0.3328,
+        "mdd_full_oos": -0.4077,
+        "harvey_t_ff5_nw": 4.5202,
+        "harvey_5spec_pass": true,
+        "dsr_post_penalty": 4.0731,
+        "lockbox_sr_daily": 1.8894,
+        "lockbox_mdd_daily": -0.2898,
+        "cvar_d_lockbox": 0.0136,
+        "cvar_cap_pass_lockbox": true,
+        "cvar_d_full_period": 0.0259,
+        "cvar_full_marginal_breach_pp": 0.09,
+        "cvar_canonical_basis": "lockbox_monthly_q5_sqrt21"
+      },
+      "registry_role": "core_with_alpha_amplification + diversifier_with_marginal_defense",
+      "role_bias_tag": "RoleBias_Core",
+      "phased_pathway": {
+        "t_plus_0": "PG1 admit + Probe Phase. PG2 active UNCHANGED.",
+        "t_plus_30": "50% partial replacement IF G7+G4+G2 PASS",
+        "t_plus_60": "80% (Scenario AB) IF T+30 KPIs + direct NAV backtest PASS",
+        "t_plus_90": "100% (Option A) or 80/20 (AB) final decision by Q-Lead or user"
+      },
+      "pg2_active_admit": false,
+      "pg2_active_admit_pending_phase_conditions": true,
+      "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701"
+    },
     {
       "wt_id": "WT-D20260425_010",
       "str_id": "STR_1699",
@@ -184,6 +235,18 @@
   ],
   "recent_rejections": [
     {
+      "wt_id": "WT-D20260426_005",
+      "str_id": "STR_1702",
+      "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+      "rejected_at": "2026-04-26T10:00:00+0900",
+      "reason_code": "JUDGE_FAIL_HARVEY_0of5_CVAR_DAILY_BREACH_GRADE_A_FAIL",
+      "grade": "FAIL",
+      "l_code": "L-220",
+      "role_corrected": "vol_reduction_diversifier_low_alpha",
+      "mix_b_deferred": true,
+      "mix_b_reactivation": "separate WT with STR_1656 NAV trail + TDC analysis"
+    },
+    {
       "wt_id": "WT-D20260423_001",
       "rejected_at": "2026-04-23",
       "reason_code": "JUDGE_FAIL_AX001V2_AX007",
@@ -208,14 +271,19 @@
     "sr_gap_before": 0.807,
     "sr_gap_after_mega05_admit": 0.78,
     "sr_gap_after_iter5_PROBE_PHASE": 0.78,
+    "sr_gap_current_pg2_active": 1.0655,
+    "sr_gap_after_iter11_probe_t0": 1.0655,
+    "sr_gap_projected_iter11_option_a_t90": 0.709,
+    "sr_gap_projected_iter11_option_ab_t90": 0.5923,
     "cagr_gap_before": -0.0014,
-    "cagr_gap_after": "+7.1pp surplus (MEGA_05 23.1% blended)",
-    "mdd_gap_before": -0.0373,
-    "mdd_gap_after": "-8.5pp REOPENED",
-    "iter5_contribution_to_gap_closure": "PHASE_4_PENDING — Probe Phase admit 확정. PG2 active 편입은 Forge NAV-level Scenario A vs B backtest + baseline DSR + Architect 보강 후 결정. Robustness axis (Harvey/DSR) 우월 입증으로 baseline robustness deficit closing 후보."
+    "cagr_gap_after": "+17.28pp surplus if Option A (Iter11 CAGR 33.28%)",
+    "mdd_gap_note": "MDD WORSENS under any Iter11 scenario: Option A -40.77% / AB -42.37% vs current PG2 -24.82%. Lockbox MDD -28.98% tighter. User decision required on MDD trade-off at T+90.",
+    "iter11_contribution_to_gap_closure": "PROBE_PHASE — PG1 admit confirmed. PG2 partial replacement at T+30 contingent on G7 (2e8 liquidity) + G4 (Architect) + G2 (signal stability). Full replacement T+90 user decision.",
+    "iter12_contribution": "ZERO — REJECTED standalone. Mix B deferred to separate WT.",
+    "further_research_needed": "SR target 2.0 still requires SR +0.709 beyond Iter11 Option A. Additional alpha strategies needed."
   },
-  "method": "v6.1_R5_book_level_admission_iter6_PROBE_PHASE_phased_30_90_post_codex_timeout",
-  "notes": "Session 71 Iter6 STR_1700 (MEGA_06 Kelly+Overlay) admission FINAL post-Codex-timeout. Codex round 2× 1200s timeout SKIP per Q-Lead directive (OVERRIDE_003). AX-008 substitute evidence: (1) Forge PASS walk-forward 215 dates + (2) Judge harness Lockbox PASS daily-NAV 1.6927 vs Forge monthly 1.7459 within 0.053 tolerance + (3) Iter5 lineage shared alpha_scores.parquet MD5 hash-identical. ADMITTED_WITH_NOTE Scenario A phased_30_90_days pathway. T+0 PG1 admit + Probe Phase + Book unchanged + Monitoring agent active. T+30 partial replacement 50% (preconditions: G1 Architect spawn + G2 fresh load_month_factors() rebuild + G3 all-date 2e8 KRW PIT + G4 daily-holdings CVaR/CDaR PASS). T+60 75% (preconditions: T+30 KPIs + Codex replay PASS). T+90 100% full replacement (preconditions: T+60 KPIs + AX-008 formal closure PASS). 6 admission-gate conditions disposition: 1 ACCEPTED_NOW (G5 role reclassification = core_with_machinery_overlay) + 1 REQUIRED_AT_T_PLUS_0 (G6 monitoring) + 4 DEFERRED_TO_T_PLUS_30 (G1/G2/G3/G4) + 0 blocking PG1 admit. Pareto-dominant on same-period 243m: SR 1.0789 / CAGR 15.27 / MDD -22.98 / Harvey 4.5516 / DSR_post 4.0499. Replacement vs Scenario D Pareto-dominance +0.292 SR / +3.48pp CAGR / +8.99pp MDD. Score 1.464 vs 1.127 (+30% improvement). PG2 active book MEGA_05 80% + STR_1656 20% UNCHANGED at T+0; partial replacement T+30 contingent on preconditions. L-203 audit ongoing.",
+  "method": "v6.1_R5_book_level_admission_iter11_iter12_integrated_governor_sonnet46",
+  "notes": "Session 72 Iter11 STR_1701 (Monthly LinTilt lambda=1.0 TOphi=8) PG1 Probe Phase ADMITTED. Iter12 STR_1702 (Quarterly LinTilt+Kelly+3Layer) REJECTED (Harvey 0/5 + CVaR daily 0.0290 breach + Grade A FAIL). Decision basis: all actual measured data from Judge verdict WT-D20260426_004 + WT-D20260426_005 + Forge packages. AX-002 PROCESS HONESTY confirmed — no estimates used. Iter11: Harvey 5/5 (t_NW 4.45-4.55) + DSR 4.07 + Lockbox SR 1.8894 daily + full OOS SR 1.291 (+38% vs PG2). Replacement scenario = no TDC required (L-208 rule clarification applied). Phased pathway: T+0 Probe Phase (PG2 unchanged), T+30 50% replacement (G7+G4+G2 conditions), T+60 80% (Scenario AB + direct NAV backtest), T+90 final 100% or AB decision. Iter12 rejected: vol-reduction machinery suppresses Harvey alpha (0/5) while failing CVaR daily (0.0290 > 0.025 cap, +40bps). Monthly/sqrt(21) proxy 0.0243 confirmed under-estimate (L-220). Mix B deferred: STR_1656 trail unavailable + TDC not computed. CVaR canonical definition established: monthly_q5/sqrt(21) on Lockbox window. G7 liquidity 2e8 is BLOCKING condition at T+30. Governor autonomous decision scope documented in governor_admission_iter11_iter12.json.",
   "user_revocation_log": [
     {
       "revoked_strategy": "STR_1700",

@@ -1,0 +1,129 @@
+{
+  "document_type": "BOOK_STATE_DELTA",
+  "generated_at": "2026-04-26T10:00:00+0900",
+  "governor_id": "governor_sonnet46_v6.1",
+  "session": 72,
+  "delta_scope": "Iter11 STR_1701 PG1 admission + Iter12 STR_1702 rejection",
+
+  "pg2_active_change": {
+    "before": {
+      "strategy_ids": ["WT-D20260425_003 (MEGA_05)", "STR_1656_MLRA_M05"],
+      "weights": {"WT-D20260425_003": 0.8, "STR_1656_MLRA_M05": 0.2},
+      "sr_estimated": 0.9345,
+      "cagr_estimated": 0.1423,
+      "mdd_estimated": -0.2482
+    },
+    "after": {
+      "strategy_ids": ["WT-D20260425_003 (MEGA_05)", "STR_1656_MLRA_M05"],
+      "weights": {"WT-D20260425_003": 0.8, "STR_1656_MLRA_M05": 0.2},
+      "sr_estimated": 0.9345,
+      "cagr_estimated": 0.1423,
+      "mdd_estimated": -0.2482,
+      "note": "UNCHANGED at T+0 per Governor decision. Phased replacement pending T+30 conditions."
+    },
+    "change": "NO_CHANGE"
+  },
+
+  "probe_phase_additions": [
+    {
+      "wt_id": "WT-D20260426_004",
+      "str_id": "STR_1701",
+      "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+      "admitted_to_probe_at": "2026-04-26T10:00:00+0900",
+      "judge_verdict": "PASSED_WITH_NOTE / Grade A / Score 76",
+      "governor_verdict": "ADMITTED_TO_PROBE_PHASE",
+      "scenario_identified": "replacement",
+      "scenario_primary": "OPTION_A_100PCT_REPLACEMENT",
+      "scenario_primary_sr": 1.291,
+      "scenario_ab_deferred_to": "T_PLUS_60",
+      "admit_basis": [
+        "Grade A / Harvey 5/5 (t_NW 4.45-4.55) / DSR 4.07",
+        "Full+OOS SR 1.291 (+38% vs current PG2 0.9345)",
+        "Lockbox SR 1.8894 daily / MDD -28.98% / 550 days",
+        "PIT C1~C15 PASS (hash-verified pure function)",
+        "AX-005 EXCLUSION + AX-007 EXCEPTION #1 satisfied",
+        "AX-001 v2 PARTIAL_PASS under diversifier framing",
+        "Book IR improvement 0.3565 >> threshold 0.05"
+      ],
+      "phased_pathway": {
+        "t_plus_0": "PG1 admit + Probe Phase. PG2 unchanged.",
+        "t_plus_30": "50% partial replacement IF G7+G4+G2 conditions PASS",
+        "t_plus_60": "80% (AB structure) IF T+30 KPIs + Scenario AB direct NAV backtest",
+        "t_plus_90": "100% or AB final decision"
+      },
+      "blocking_conditions_t30": [
+        "G7: liquidity 2e8 KRW re-audit",
+        "G4: Architect advisory spawn",
+        "G2: sub-period IC decay check"
+      ],
+      "performance": {
+        "sr_full_oos": 1.291,
+        "cagr_full_oos": 0.3328,
+        "mdd_full_oos": -0.4077,
+        "harvey_t_ff5_nw": 4.5202,
+        "harvey_5_spec_pass": true,
+        "dsr_post_penalty": 4.0731,
+        "lockbox_sr_daily": 1.8894,
+        "lockbox_mdd_daily": -0.2898,
+        "cvar_d_lockbox": 0.0136,
+        "cvar_cap_pass": true
+      },
+      "role_primary": "core_with_alpha_amplification",
+      "role_secondary": "diversifier_with_marginal_defense",
+      "role_bias_tag": "RoleBias_Core",
+      "pg2_active_admit": false,
+      "pg2_partial_replacement_pending": true,
+      "pg2_partial_replacement_condition": "T+30 G7+G4+G2 PASS"
+    }
+  ],
+
+  "rejections_added": [
+    {
+      "wt_id": "WT-D20260426_005",
+      "str_id": "STR_1702",
+      "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+      "rejected_at": "2026-04-26T10:00:00+0900",
+      "reason_code": "JUDGE_FAIL_HARVEY_0of5_CVAR_DAILY_BREACH_GRADE_A_FAIL",
+      "primary_reasons": [
+        "Harvey Gate 2: 0/5 spec (best 2.6248 < 2.95)",
+        "CVaR_d daily: Judge reconstruction 0.0290 > cap 0.025",
+        "Grade A: SR 0.64 < 0.8 / CAGR 12.64% < 16%",
+        "DSR 1.8946 < 3.0 Grade A floor"
+      ],
+      "grade": "FAIL",
+      "l_code": "L-220",
+      "role_label_corrected": "vol_reduction_diversifier_low_alpha",
+      "mix_b_deferred": true,
+      "mix_b_deferred_reason": "STR_1656 NAV trail unavailable + TDC not computed + STR_1702 standalone FAIL"
+    }
+  ],
+
+  "gap_vector_update": {
+    "sr_gap_before_iter11_probe": 1.0655,
+    "sr_gap_after_iter11_probe_phase_t0": 1.0655,
+    "sr_gap_projected_option_a_t90": 0.709,
+    "sr_gap_projected_option_ab_t90": 0.5923,
+    "mdd_gap_note": "MDD deteriorates under any Iter11 scenario vs current PG2. Full period: -40.77% (A) or -42.37% (AB) vs current -24.82%. Lockbox: -28.98% is significantly tighter.",
+    "cagr_gap_note": "CAGR surplus achieved: Iter11 33.28% >> target 16%",
+    "sr_gap_closure_path": "Further alpha research needed beyond Iter11. SR 2.0 target requires additional strategies.",
+    "revised_at": "2026-04-26"
+  },
+
+  "monitoring_instructions": {
+    "str_1701_probe_phase": {
+      "monitoring_agent": "ACTIVATE",
+      "metrics_to_track": [
+        "Monthly SR rolling 3m vs PG2 active bar",
+        "Sub-period IC decay (G2 signal stability)",
+        "CVaR_d monthly rolling vs cap 0.025 (Lockbox canonical)",
+        "MDD intra-month drawdown vs -35% band threshold"
+      ],
+      "alert_triggers": [
+        "Rolling 3m SR < 0.80 (Grade A floor)",
+        "Sub-period p3 IC < 0.002 (below p3 current 0.0047 — decay signal)",
+        "Monthly CVaR_d > 0.030 (25% above cap)",
+        "Intra-month MDD < -35% (warning) or < -42% (critical)"
+      ]
+    }
+  }
+}

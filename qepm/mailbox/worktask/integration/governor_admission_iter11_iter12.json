@@ -1,0 +1,433 @@
+{
+  "document_type": "GOVERNOR_ADMISSION_INTEGRATED",
+  "governor_version": "v6.1_R5_book_level",
+  "agent_id": "governor_sonnet46_v6.1",
+  "generated_at": "2026-04-26T10:00:00+0900",
+  "session": 72,
+  "scope": "Iter11_STR_1701 + Iter12_STR_1702 통합 PG2 결정",
+  "ax_002_declaration": "AX-002 PROCESS HONESTY — 실측 수치만 사용. 추정치 없음. 실측 출처 명시.",
+
+  "input_summary": {
+    "iter11_str_id": "STR_1701",
+    "iter11_wt": "WT-D20260426_004",
+    "iter11_judge_verdict": "PASSED_WITH_NOTE / Grade A / Score 76",
+    "iter11_pre_lb_sr": 1.2404,
+    "iter11_full_plus_oos_sr": 1.291,
+    "iter11_full_plus_oos_cagr": 0.3328,
+    "iter11_full_plus_oos_mdd": -0.4077,
+    "iter11_harvey_5spec_pass_count": 5,
+    "iter11_harvey_ff5_t_nw": 4.5202,
+    "iter11_dsr_post_penalty": 4.0731,
+    "iter11_lockbox_sr_daily": 1.8894,
+    "iter11_lockbox_mdd_daily": -0.2898,
+    "iter11_cvar_d_lockbox": 0.0136,
+    "iter11_cvar_d_full_period": 0.0259,
+    "iter11_cvar_cap": 0.025,
+    "iter11_cvar_lockbox_pass": true,
+    "iter11_cvar_full_marginal_breach_pp": 0.09,
+    "iter11_role_audited": "core_with_alpha_amplification + diversifier_with_marginal_defense",
+    "iter11_defense_crisis_ic": -0.1727,
+    "iter11_ax001_v2_verdict": "PARTIAL_PASS (diversifier role — crisis_alpha FAIL)",
+    "iter11_ax008_triangulation": "PENDING_ARCHITECT_ADVISORY (non-blocking)",
+    "iter11_liquidity_threshold_used": "5e7_KRW (Discovery override — 2e8 re-audit required for PG2)",
+    "iter11_sub_stability_rf_a1": 0.3285,
+    "iter11_r2_factor_coverage": 0.2456,
+    "iter11_24_26_oos_monthly_sr": 1.7643,
+    "iter11_24_26_oos_monthly_mdd": -0.2233,
+    "iter12_str_id": "STR_1702",
+    "iter12_wt": "WT-D20260426_005",
+    "iter12_judge_verdict": "JUDGE_FAILED standalone / PROVISIONAL_PASS Mix B",
+    "iter12_pre_lb_sr": 0.5893,
+    "iter12_full_plus_oos_sr": 0.6448,
+    "iter12_full_plus_oos_cagr": 0.1264,
+    "iter12_full_plus_oos_mdd": -0.3881,
+    "iter12_harvey_5spec_pass_count": 0,
+    "iter12_harvey_best_t": 2.6248,
+    "iter12_dsr_post_penalty": 1.8946,
+    "iter12_lockbox_sr_daily": 1.5404,
+    "iter12_lockbox_mdd_daily": -0.2361,
+    "iter12_cvar_d_forge_proxy": 0.0243,
+    "iter12_cvar_d_judge_daily": 0.029,
+    "iter12_cvar_d_judge_lockbox": 0.0307,
+    "iter12_cvar_cap": 0.025,
+    "iter12_judge_gate6_verdict": "FAIL (daily reconstruction breach +40bps)",
+    "iter12_role_audited": "vol_reduction_diversifier_low_alpha",
+    "iter12_grade": "FAIL",
+    "iter11_iter12_corr_240m": 0.1994,
+    "current_pg2_bar_sr": 0.9345,
+    "current_pg2_bar_cagr": 0.1423,
+    "current_pg2_bar_mdd": -0.2482
+  },
+
+  "section_1_sequential_admission_rule_scope_clarification": {
+    "principle": "Replacement scenario vs Mix scenario는 다른 룰이 적용된다. L-208 재발 방지.",
+    "iter11_scenario_type": "REPLACEMENT",
+    "iter11_replacement_rationale": "STR_1701은 STR_1631 → STR_1699 → STR_1700 → STR_1701 mutation chain의 latest optimizer iteration. MEGA_05 upgrade research의 직접 후계자. Replacement scenario = PG2 전체 구성 교체 또는 core sleeve 단순 교체. Sequential Admission TDC threshold는 Replacement에 적용하지 않는다.",
+    "mix_scenario_b_type": "INTEGRATION",
+    "mix_scenario_b_tdc_applicability": "STR_1702 60% + STR_1701 20% + STR_1699 20% 조합은 Integration scenario. Sequential Admission rule (v3.0+ TDC < 0.30 threshold) 적용 대상. 단, STR_1702-STR_1701 corr 0.1994 (실측) = 낮은 TDC 예상 — 별도 TDC 측정 없이 corr 대리 사용 불가. 공식 TDC 분석 필요.",
+    "ab_scenario_type": "PARTIAL_REPLACEMENT",
+    "ab_replacement_rationale": "STR_1701 80% = core 교체. STR_1656 20% = 기존 diversifier 유지. STR_1701과 STR_1656은 독립 family (ML_Risk_Arch vs Quality+Earnings+Momentum). TDC 측정 없이 진행 가능 (기존 STR_1656 유지이므로 신규 admission 아님)."
+  },
+
+  "section_2_pg0_gap_vector_update": {
+    "current_pg2_active_sr": 0.9345,
+    "current_pg2_active_cagr": 0.1423,
+    "current_pg2_active_mdd": -0.2482,
+    "target_sr": 2.0,
+    "target_cagr": 0.16,
+    "target_mdd": 0.25,
+    "gap_current_sr": 1.0655,
+    "gap_current_cagr": -0.0177,
+    "gap_current_mdd": 0.0018,
+    "scenario_projections": {
+      "A_replacement_iter11_100pct": {
+        "projected_sr": 1.291,
+        "projected_cagr": 0.3328,
+        "projected_mdd": -0.4077,
+        "sr_gap_after": 0.709,
+        "sr_gap_closure_pp": 0.3565,
+        "cagr_gap_closure": "+17.28pp surplus",
+        "mdd_gap_change": "MDD -40.77% (WORSENED vs PG2 -24.82%) — +15.95pp deeper drawdown",
+        "mdd_breach_note": "Hard fail cap -45% NOT breached. But -40.77% is 15.95pp worse than current PG2 active.",
+        "data_source": "Judge verdict WT-D20260426_004 gate_3 full_period + Forge forge_package.json full_period"
+      },
+      "AB_iter11_80_str1656_20": {
+        "projected_sr": 1.4077,
+        "projected_cagr": 0.2984,
+        "projected_mdd": -0.4237,
+        "sr_gap_after": 0.5923,
+        "sr_gap_closure_pp": 0.4732,
+        "cagr_gap_closure": "+13.24pp surplus",
+        "mdd_gap_change": "MDD -42.37% — WORSE than standalone A (optimizer blended)",
+        "mdd_breach_note": "Hard fail cap -45% NOT breached. But deepest MDD of all scenarios.",
+        "data_source": "Judge scenario_assessment forge_proposed_scenarios A_replacement_100 + STR_1656 linear blend. NOTE: linear blend SR approximation — direct NAV backtest not performed. AX-002 disclosure.",
+        "nav_backtest_status": "NOT_PERFORMED_DIRECT — linear weight approximation from Forge-proposed scenario. Same evidence gap as Iter5 Probe Phase (OVERRIDE_002 history).",
+        "str1656_nav_trail_status": "UNAVAILABLE — STR_1656 NAV trail not reconstructed in WT-D20260426_004"
+      },
+      "B_mix_60_20_20": {
+        "projected_sr": 1.1995,
+        "projected_cagr": 0.1927,
+        "projected_mdd": -0.2884,
+        "sr_gap_after": 0.8005,
+        "sr_gap_closure_pp": 0.265,
+        "cagr_gap_closure": "+2.67pp surplus",
+        "mdd_gap_change": "MDD -28.84% — BEST MDD of improvement scenarios",
+        "data_source": "Judge verdict WT-D20260426_005 scenario_evaluation B_Mix_60_20_20",
+        "sequential_admission_status": "BLOCKERS ACTIVE — (1) STR_1656 trail unavailable, STR_1699 used as proxy (Codex C6 PARTIAL), (2) Sequential Admission TDC vs PG2_v3.0 not computed"
+      },
+      "D_current_pg2_unchanged": {
+        "projected_sr": 0.9345,
+        "projected_cagr": 0.1423,
+        "projected_mdd": -0.2482,
+        "sr_gap_after": 1.0655,
+        "data_source": "book_state.json current active + Judge verdict WT-D20260426_005 scenario D baseline"
+      }
+    }
+  },
+
+  "section_3_iter12_admission_decision": {
+    "standalone_verdict": "REJECT",
+    "standalone_rationale": [
+      "Harvey Gate 2: 0/5 spec pass (best t_NW 2.6248 < 2.95 threshold)",
+      "DSR post-penalty: 1.8946 (Grade A floor 3.0)",
+      "Hurdle Gate 3: Grade A FAIL (SR 0.64 < 0.8 / CAGR 12.64% < 16%)",
+      "Gate 6 CVaR daily: Judge harness reconstruction 0.0290 > cap 0.025 (BREACH +40bps)",
+      "Role re-label required: vol_reduction_diversifier_low_alpha (NOT core_with_machinery_overlay)"
+    ],
+    "replacement_a_iter11_verdict": "REJECT",
+    "replacement_a_rationale": "STR_1702 SR 0.6448 vs STR_1701 SR 1.3638 (same 240m period) — strictly dominated. Any replacement with Iter12 reduces PG2 SR.",
+    "mix_b_provisional_verdict": "PROVISIONAL_PASS_BLOCKED",
+    "mix_b_provisional_conditions": [
+      "Sequential Admission TDC vs current PG2 not computed (STR_1656 proxy = STR_1699 — Codex C6 confirmed partial)",
+      "STR_1656 NAV trail unavailable for direct NAV-level backtest",
+      "STR_1702 role label must be corrected to vol_reduction_diversifier_low_alpha before any admission",
+      "Judge daily CVaR constraint binding — mix weight on STR_1702 must be capped to prevent portfolio CVaR breach"
+    ],
+    "l_code_proposed": "L-220",
+    "l_code_summary": "vol-reduction machinery STR_1702: Harvey 0/5 + daily CVaR 0.0290 breach. Monthly proxy 0.0243 under-estimates daily tail (mandatory daily reconstruction lesson).",
+    "role_bias_tag": "RoleBias_Diversifier",
+    "iter12_final_disposition": "GOVERNOR_REJECTED_STANDALONE. Mix B deferred to separate WT with proper STR_1656 trail + TDC analysis."
+  },
+
+  "section_4_iter11_decision_matrix_evaluation": {
+    "codex_round_governor_persona": {
+      "method": "Governor Codex round — self-challenge (AX-002 process honesty, not external GPT call)",
+      "concern_1_mdd_borderline": {
+        "concern": "Iter11 full-period MDD -40.77% vs current PG2 -24.82% (+15.95pp worse). PG2 target MDD <25%.",
+        "assessment": "MDD deterioration is REAL and material. Lockbox window MDD -28.98% (daily) / -22.33% (monthly) significantly tighter — suggests full-period MDD driven by 2008/2018/2022 historic stress, not structural. BUT: Governor's PG2 mandate includes MDD target <25%. Option A (100%) and AB (80/20) BOTH push portfolio beyond that target.",
+        "governor_position": "MDD trade-off is the key admission constraint. Not a veto — but any scenario that pushes blended MDD beyond -35% requires explicit user approval."
+      },
+      "concern_2_nav_backtest_ab_not_done": {
+        "concern": "Scenario AB SR 1.408 is linear approximation, not direct NAV-level backtest. Same evidence gap flagged in Iter5 Probe Phase (book_state.json OVERRIDE_002 + Iter5 evidence_gaps_pre_pg2 item 1).",
+        "assessment": "CONFIRMED gap. Iter5 was admitted to Probe Phase precisely because direct NAV-level Scenario A backtest had not been done. The same gap exists here for Scenario AB.",
+        "governor_position": "AB scenario CANNOT receive full PG2 admission without direct NAV-level backtest. Same standard applied to Iter5."
+      },
+      "concern_3_ax008_pending_architect": {
+        "concern": "AX-008 triangulation: Forge PASS + Judge harness PASS + Codex optimizer REJECT. 2-of-3 counts as PASS under extended count, but Architect advisory formally pending.",
+        "assessment": "Iter11 is optimizer-only mutation (no new alpha/risk infra). Architect advisory is best practice, not blocking. Extended 2-of-3 PASS acceptable under L-167/L-168 precedent.",
+        "governor_position": "Non-blocking. Architect spawn recommended at T+30 milestone alongside liquidity re-audit."
+      },
+      "concern_4_liquidity_5e7": {
+        "concern": "WT-D20260426_004 used 5e7 KRW liquidity override (Discovery). PG2 promotion mandate is 2e8 KRW.",
+        "assessment": "BLOCKING for full PG2 active admission. C10 PIT compliance at production threshold must be verified.",
+        "governor_position": "2e8 liquidity re-audit is REQUIRED before PG2 active promotion. This is Gate G7 from Judge forward list."
+      },
+      "concern_5_sub_stability_decay": {
+        "concern": "RF-A1 ex-ante sub_stab 0.3285 < 0.50 gate. Sub-period IC analysis shows p3 (2020-2026) IC 0.0047 — signal decay over time.",
+        "assessment": "REAL concern. Ex-post empirical Harvey 5/5 + DSR 4.07 provides strong override but decay pattern warrants monitoring.",
+        "governor_position": "Monitoring agent must track sub-period IC and Harvey rolling decay from T+0. Not blocking admission but mandatory monitoring condition."
+      },
+      "concern_6_cvar_full_period_breach": {
+        "concern": "CVaR_d full-period 0.0259 marginally breaches cap 0.025 (0.09pp). Lockbox 0.0136 PASS.",
+        "assessment": "Judge declared Lockbox window as canonical cap-pass measurement (monthly_q5/sqrt(21) on lockbox subset, 45.5% margin). Governor accepts this canonical definition. Full-period disclosure retained as crisis stress signal.",
+        "governor_position": "Cap-pass on Lockbox basis. Full-period 0.0259 is CRISIS stress disclosure. Not blocking."
+      },
+      "net_governor_assessment": "Iter11 STR_1701 merits PG1 admission and Probe Phase. PG2 active full promotion requires: (1) 2e8 KRW liquidity re-audit, (2) direct NAV-level Scenario AB backtest (if AB chosen), (3) Architect advisory spawn. Option A (100% replacement) can proceed to limited Probe Phase immediately pending liquidity re-audit."
+    }
+  },
+
+  "section_5_final_admission_decision": {
+    "iter11_pg1_decision": "ADMITTED",
+    "iter11_pg1_basis": [
+      "Grade A / Score 76 / Harvey 5/5 / DSR 4.07",
+      "Lockbox SR 1.8894 / MDD -28.98% (daily, 550 days)",
+      "Full+OOS SR 1.291 > current PG2 0.9345 (+38%)",
+      "PIT C1~C15 PASS (hash-verified pure function)",
+      "AX-005/007 EXCEPTION satisfied (multi-sleeve inheritance)",
+      "AX-001 v2 PARTIAL_PASS accepted under diversifier framing",
+      "Role label corrected: core_with_alpha_amplification + diversifier_with_marginal_defense"
+    ],
+    "iter11_pg2_scenario_selected": "OPTION_A_PROBE_PHASE",
+    "iter11_pg2_decision": "ADMITTED_TO_PROBE_PHASE_PENDING_CONDITIONS",
+    "iter11_pg2_rationale": [
+      "Option A (100% Replacement) selected as Probe Phase scenario: highest SR 1.291, cleanest rule application (no STR_1656 NAV dependency), Replacement scenario does not require TDC",
+      "Option AB SR 1.408 is NOT selected as primary: SR advantage is linear approximation (not NAV-level direct), MDD -42.37% is worse than Option A -40.77%, and requires STR_1656 NAV trail",
+      "Option B (Mix 60/20/20) is DEFERRED: Sequential Admission TDC not computed, STR_1702 standalone FAIL makes weighting rationalization difficult",
+      "Option D (unchanged) rejected: SR gap 1.0655 — no progress when superior option available"
+    ],
+    "iter11_pg2_phased_pathway": {
+      "t_plus_0": {
+        "action": "PG1 admit + Probe Phase. PG2 active book UNCHANGED (MEGA_05 80% + STR_1656 20%).",
+        "monitoring": "Monitoring agent activated for STR_1701 Probe Phase"
+      },
+      "t_plus_30_conditions": [
+        "G7: Liquidity 2e8 KRW re-audit PASS",
+        "G4: Architect advisory spawn + AX-008 formal closure PASS",
+        "Monitoring: sub-period IC decay check (G2 RF-A1 signal stability)",
+        "Probe Phase KPI: rolling 3-month SR trend vs PG2 active bar"
+      ],
+      "t_plus_30_action": "If all T+30 conditions PASS: partial replacement 50% (PG2 active 50% STR_1701 + 50% STR_1631). Direct NAV-level 50/50 backtest required before execution.",
+      "t_plus_60_conditions": [
+        "T+30 KPIs confirmed PASS",
+        "MDD monitoring — blended MDD trend within -35% band",
+        "Signal stability IC rolling not deteriorating"
+      ],
+      "t_plus_60_action": "80% replacement (STR_1701 80% + STR_1656 20% = Scenario AB structure). At T+60 direct NAV backtest for Scenario AB required.",
+      "t_plus_90_conditions": [
+        "T+60 KPIs confirmed PASS",
+        "Scenario AB direct NAV backtest SR delta within ±0.10 of linear estimate",
+        "CVaR_d monitoring Lockbox cumulative PASS",
+        "No sub-period IC decay signal"
+      ],
+      "t_plus_90_action": "Full replacement decision: 100% STR_1701 (Option A) OR 80/20 AB (Option AB). Decision authority: Q-Lead or user."
+    },
+    "iter12_decision": "REJECTED",
+    "iter12_final_role": "vol_reduction_diversifier_low_alpha",
+    "iter12_l_code": "L-220",
+    "iter12_mix_b_status": "DEFERRED_TO_SEPARATE_WT",
+    "iter12_mix_b_conditions_for_reactivation": [
+      "STR_1656 NAV trail reconstruction (full period parquet)",
+      "Formal TDC computation STR_1702 vs current PG2 strategies",
+      "STR_1702 role label officially corrected in registry",
+      "Weight cap on STR_1702 sleeve to keep blended CVaR < 0.025"
+    ]
+  },
+
+  "section_6_book_ir_improvement_check": {
+    "v6.1_r5_admission_threshold": "judge_pass AND book_level_IR_improvement >= 0.05",
+    "judge_pass_iter11": true,
+    "current_book_ir_estimated": 1.18,
+    "probe_phase_expected_ir_improvement": {
+      "option_a_100pct_sr_delta": 0.3565,
+      "option_ab_80_20_sr_delta": 0.4732,
+      "note": "SR delta is proxy for IR improvement (single-strategy book). Improvement 0.357~0.473 >> threshold 0.05",
+      "threshold_pass": true
+    },
+    "admission_verdict": "ADMITTED — book-level IR improvement threshold satisfied by substantial margin"
+  },
+
+  "section_7_governor_forward_items_disposition": {
+    "G1_defense_role_label": {
+      "disposition": "RESOLVED",
+      "action": "Defense sleeve re-labeled 'diversifier_with_marginal_defense' (NOT crisis_alpha_provider). AX-001 v2 conditional evaluation PARTIAL_PASS under diversifier framing. Registry update pending."
+    },
+    "G2_rf_a1_sub_stability": {
+      "disposition": "MONITORING_REQUIRED",
+      "action": "Monitoring agent tracks sub-period IC decay from T+0. Ex-post empirical (Harvey 5/5 + DSR 4.07) accepted as override for admission gate. Non-blocking."
+    },
+    "G3_factor_coverage_r2_0.24": {
+      "disposition": "ACKNOWLEDGED",
+      "action": "R² 0.2456 below 0.30 expectation. Linear Tilt is alpha-rank based, less Sigma-sensitive. Risk Mgr 3rd round re-evaluation recommended at T+30 alongside liquidity re-audit. Non-blocking for Probe Phase."
+    },
+    "G4_architect_advisory": {
+      "disposition": "DEFERRED_T_PLUS_30",
+      "action": "Architect advisory spawn at T+30 milestone. Non-blocking for Probe Phase (optimizer-only mutation, no infra change)."
+    },
+    "G5_mdd_borderline": {
+      "disposition": "ACCEPTED_WITH_DISCLOSURE",
+      "action": "MDD -40.77% full period, -28.98% lockbox daily. Phased pathway MDD monitoring condition at T+30/T+60. Governor acknowledges MDD trade-off: full-period stress driven by 2008/2018/2022. Lockbox evidence suggests operational MDD is significantly tighter."
+    },
+    "G6_cvar_canonical": {
+      "disposition": "RESOLVED",
+      "action": "Canonical CVaR definition: monthly_q5_loss / sqrt(21) on Lockbox window. Cap-pass: Lockbox 0.0136 (margin 45.5%). Full-period 0.0259 = crisis stress disclosure only. This definition applies to all future Iter assessments."
+    },
+    "G7_liquidity_2e8": {
+      "disposition": "REQUIRED_AT_T_PLUS_30",
+      "action": "2e8 KRW liquidity re-audit REQUIRED before PG2 partial replacement at T+30. BLOCKING for PG2 active promotion."
+    }
+  },
+
+  "section_8_five_strategy_comparison_reference": {
+    "period": "240m_same_period",
+    "data_source": "Forge WT-D20260426_005 5-strategy comparison block (실측)",
+    "strategies": [
+      {
+        "label": "Iter11_STR_1701_Monthly_LinTilt",
+        "sr": 1.3638,
+        "cagr": 0.339,
+        "mdd": -0.4077,
+        "harvey_t": 5.85,
+        "harvey_spec_pass": 5,
+        "dsr_post": 5.10,
+        "role": "core_alpha_amplified"
+      },
+      {
+        "label": "Iter6_STR_1700_Kelly_Overlay",
+        "sr": 1.1,
+        "cagr": 0.1561,
+        "mdd": -0.2298,
+        "harvey_t": 4.91,
+        "harvey_spec_pass": 5,
+        "dsr_post": 4.12,
+        "role": "core_with_machinery"
+      },
+      {
+        "label": "Iter5_STR_1699_HRP",
+        "sr": 1.0052,
+        "cagr": 0.2064,
+        "mdd": -0.3493,
+        "harvey_t": 4.57,
+        "harvey_spec_pass": 5,
+        "dsr_post": 3.52,
+        "role": "core_alpha"
+      },
+      {
+        "label": "MEGA_05_PG2_Active",
+        "sr": 0.9345,
+        "cagr": 0.1423,
+        "mdd": -0.2482,
+        "harvey_t": 4.26,
+        "harvey_spec_pass": 5,
+        "dsr_post": 3.20,
+        "role": "production"
+      },
+      {
+        "label": "Iter12_STR_1702_Quarterly_Stack",
+        "sr": 0.6448,
+        "cagr": 0.1264,
+        "mdd": -0.3881,
+        "harvey_t": 3.16,
+        "harvey_spec_pass": 1,
+        "dsr_post": 1.89,
+        "role": "diversifier_low_alpha"
+      }
+    ],
+    "ranking_by_sr": ["Iter11 1.36", "Iter6 1.10", "Iter5 1.01", "MEGA_05 0.93", "Iter12 0.64"],
+    "governor_note": "Iter11 dominates all predecessors on SR and Harvey robustness. MDD is the only adverse trade-off vs Iter6/MEGA_05. Iter12 is weakest on all standalone metrics."
+  },
+
+  "section_9_registry_update_instructions": {
+    "str_1701_registry_action": "ADD",
+    "str_1701_registry_fields": {
+      "str_id": "STR_1701",
+      "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+      "grade": "A",
+      "judge_score": 76,
+      "pg_status": "PG1_ADMITTED_PROBE_PHASE",
+      "role_primary": "core_with_alpha_amplification",
+      "role_secondary": "diversifier_with_marginal_defense",
+      "role_bias_tag": "RoleBias_Core",
+      "sr_full_oos": 1.291,
+      "cagr_full_oos": 0.3328,
+      "mdd_full_oos": -0.4077,
+      "harvey_5spec_pass": 5,
+      "dsr_post_penalty": 4.0731,
+      "lockbox_sr_daily": 1.8894,
+      "admitted_at": "2026-04-26",
+      "phased_pathway_active": true,
+      "t_plus_30_conditions": ["G7_liquidity_2e8_reaudit", "G4_architect_advisory", "G2_signal_stability_check"],
+      "wt_source": "WT-D20260426_004",
+      "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701"
+    },
+    "str_1702_registry_action": "ADD",
+    "str_1702_registry_fields": {
+      "str_id": "STR_1702",
+      "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+      "grade": "FAIL",
+      "judge_verdict": "JUDGE_FAILED",
+      "pg_status": "REJECTED",
+      "role_primary": "vol_reduction_diversifier_low_alpha",
+      "role_bias_tag": "RoleBias_Diversifier",
+      "sr_full_oos": 0.6448,
+      "harvey_5spec_pass": 0,
+      "dsr_post_penalty": 1.8946,
+      "rejection_reasons": ["Harvey 0/5", "CVaR_d daily 0.0290 > cap 0.025", "Grade A FAIL (SR 0.64 < 0.8 / CAGR 12.64% < 16%)"],
+      "l_code": "L-220",
+      "mix_b_reactivation_conditions_pending": true,
+      "wt_source": "WT-D20260426_005",
+      "rejected_at": "2026-04-26"
+    }
+  },
+
+  "section_10_user_decision_scope": {
+    "governor_autonomous_decisions_made": [
+      "STR_1702 REJECT standalone (hard Gate 2+6 failure — no governor discretion)",
+      "STR_1701 PG1 ADMITTED (Grade A / Harvey 5/5 — clear pass)",
+      "Scenario AB deferred to T+60 (NAV backtest evidence gap — same standard as Iter5 Probe Phase)",
+      "Mix B deferred to separate WT (STR_1656 trail + TDC required)",
+      "Phased pathway T+0/30/60/90 structure adopted",
+      "G7 liquidity 2e8 = blocking condition at T+30",
+      "G6 CVaR canonical: Lockbox window = cap-pass basis (declared)"
+    ],
+    "user_decision_required": [
+      {
+        "decision_id": "UD-1",
+        "scope": "PG2 active book: maintain MEGA_05 80% + STR_1656 20% at T+0 (Governor default) OR immediate partial replacement with STR_1701 if 2e8 liquidity re-audit passes sooner.",
+        "governor_default": "MAINTAIN_PG2_UNCHANGED at T+0. Earliest partial replacement T+30 pending G7.",
+        "rationale": "Book stability while G7 liquidity re-audit executes. Probe Phase monitoring begins immediately."
+      },
+      {
+        "decision_id": "UD-2",
+        "scope": "T+90 final selection: Option A (100% STR_1701) vs Option AB (80% STR_1701 + 20% STR_1656). SR difference linear estimate: A 1.291 vs AB 1.408 (+9%). MDD: A -40.77% vs AB -42.37% (AB WORSE). Direct NAV backtest required at T+60 to confirm AB estimate.",
+        "governor_recommendation": "DEFER to T+60 when direct NAV backtest data available. Premature to choose now.",
+        "rationale": "AB SR advantage (+0.117) is approximation only. AB MDD is worse. AX-002 mandates evidence-based decision."
+      },
+      {
+        "decision_id": "UD-3",
+        "scope": "Mix B (60% STR_1702 + 20% STR_1701 + 20% STR_1699) reactivation: authorize separate WT for STR_1656 NAV reconstruction + TDC analysis, OR permanently archive Mix B.",
+        "governor_recommendation": "LOW PRIORITY. Iter11 path provides superior SR with simpler structure. Mix B SR 1.1995 < Option A 1.291 < Option AB 1.408 — Mix B provides lower SR than Options A/AB while adding complexity.",
+        "rationale": "Mix B's main benefit was MDD control via STR_1702 vol-reduction (MDD -28.84%). But STR_1702 Harvey 0/5 + daily CVaR breach makes it a weak portfolio contributor. The MDD benefit does not compensate for alpha dilution."
+      }
+    ]
+  },
+
+  "verdict_summary": {
+    "iter11_str_1701": "ADMITTED — PG1 + Probe Phase. Phased pathway T+0/30/60/90. PG2 active book unchanged at T+0.",
+    "iter12_str_1702": "REJECTED — Harvey 0/5 + CVaR daily breach. Mix B deferred to separate WT.",
+    "pg2_active_book_change": "NONE at T+0. MEGA_05 80% + STR_1656 20% maintained.",
+    "next_milestone": "T+30 — G7 liquidity 2e8 re-audit + G4 Architect + G2 signal stability check",
+    "sr_gap_trajectory": "Current PG2 SR 0.9345. Iter11 Probe Phase SR 1.291. Gap 1.0655 → 0.709 if Option A fully replaces at T+90. Target SR 2.0 — still 0.709 short. Further alpha research needed.",
+    "generated_at": "2026-04-26T10:00:00+0900",
+    "governor_id": "governor_sonnet46_v6.1_iter11_iter12_integrated"
+  }
+}
