@@ -1,30 +1,26 @@
 {
   "task_id": "WT-D20260426_008",
-  "current_phase": "RISK_DONE",
-  "version": "v1_REVISE_FORWARD",
-  "updated_at": "2026-04-26T20:55:00+0900",
+  "current_phase": "OPTIMIZER_DONE",
+  "version": "v1_FORWARD_TO_FORGE",
+  "updated_at": "2026-04-26T21:25:00+0900",
   "blocker": null,
-  "risk_summary": {
-    "sigma_method": "factor_model_BOmegaB_plus_D",
-    "omega_estimator": "ledoit_wolf_oracle",
-    "cond_post_shrink": 22.8331,
-    "min_eigenvalue": 0.0034267,
-    "factor_coverage_r2": 0.2173,
-    "systematic_share": 0.2389,
-    "tdc_v3_vs_pg2": 0.1,
-    "tdc_v3_vs_str1656_q5": 0.0,
-    "v3_score_vs_str1701_cor": 0.9319,
-    "rf_flags_active": [
-      "RF-R1",
-      "RF-R2",
-      "RF-R4",
-      "RF-R5",
-      "RF-R7",
-      "RF-R8"
-    ],
-    "codex_stance": "REVISE",
-    "qlead_override": "OVERRIDE_005",
-    "resolution_count": "9/9"
+  "optimizer_summary": {
+    "selected_method": "ERC",
+    "net_ir": 0.9066,
+    "sr_net": 0.9066,
+    "cagr_net": 0.2097,
+    "mdd": -0.4035,
+    "cvar_d": -0.0308,
+    "turnover": 4.97,
+    "cost": 0.0075,
+    "pass_to_cap": true,
+    "pass_mdd_cap": true,
+    "pass_cvar_cap": false,
+    "infeasibility_reported": true,
+    "weights_csv_rows": 4800,
+    "n_sig_dates": 240,
+    "qlead_override": "OVERRIDE_005 (Codex stall)",
+    "concern": "V3 net_IR 0.91 < STR_1701 standalone 1.29; PG2 blend likely underperform baseline 1.4625"
   },
-  "next_step": "Optimizer agent spawn (BIND pooled Sigma + max_w 0.10 CRISIS + tail caps weight-applied)"
+  "next_step": "Forge agent spawn (PG2 V3+STR_1656 blend NAV vs baseline 1.4625 decisive)"
 }

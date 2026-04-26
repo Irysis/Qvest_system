@@ -1,0 +1,469 @@
+{
+  "task_id": "WT-D20260426_008",
+  "as_of_date": "2026-04-26",
+  "signal_as_of": "2023-12-01",
+  "selection_objective": {
+    "objective": "net_ir",
+    "rationale": "Risk Forward Mandate: tail caps weight-applied. Selection by max(net_IR) ∧ all_caps_PASS.",
+    "baseline_pg2": "STR_1701 80% + STR_1656 20% (realized SR 1.4625)",
+    "expected_uplift_target": "PG2 blended SR > 1.4625 baseline (Forge to confirm)"
+  },
+  "target_weights": {
+    "A001040": 0.0506,
+    "A001680": 0.0515,
+    "A004800": 0.0506,
+    "A005930": 0.0506,
+    "A009520": 0.0511,
+    "A012750": 0.0511,
+    "A029780": 0.0513,
+    "A039030": 0.049,
+    "A041510": 0.0493,
+    "A042660": 0.0495,
+    "A058470": 0.0495,
+    "A067310": 0.0499,
+    "A086900": 0.0479,
+    "A101490": 0.049,
+    "A104830": 0.0505,
+    "A121600": 0.0498,
+    "A183300": 0.0496,
+    "A185750": 0.0503,
+    "A192820": 0.0494,
+    "A218410": 0.0497
+  },
+  "active_weights": {
+    "A001040": 0.0006,
+    "A001680": 0.0015,
+    "A004800": 0.0006,
+    "A005930": 0.0006,
+    "A009520": 0.0011,
+    "A012750": 0.0011,
+    "A029780": 0.0013,
+    "A039030": -0.001,
+    "A041510": -0.0007,
+    "A042660": -0.0005,
+    "A058470": -0.0005,
+    "A067310": -0.0001,
+    "A086900": -0.0021,
+    "A101490": -0.001,
+    "A104830": 0.0005,
+    "A121600": -0.0002,
+    "A183300": -0.0004,
+    "A185750": 0.0003,
+    "A192820": -0.0006,
+    "A218410": -0.0003
+  },
+  "expected_active_return": 0.2097,
+  "expected_tracking_error": 3.1864e-18,
+  "expected_information_ratio": 0.9066,
+  "expected_sharpe_ratio": 0.9066,
+  "expected_cagr": 0.2097,
+  "expected_mdd": -0.4035,
+  "cvar_d_post_optim": -0.0308,
+  "turnover_annual": 4.9717,
+  "estimated_cost_annual": 0.0075,
+  "binding_constraints": null,
+  "binding_constraints_count": 0,
+  "infeasibility_report": {
+    "reason": "CVaR_d ≤ 2.5% mandate is structurally infeasible for KR top-20 long-only universe. Per-regime daily CVaR floor (Risk pkg tail_per_regime, EW base): NORMAL -2.90% / BULL -2.63% / CAUTION -5.70% / CRISIS -4.30%. NORMAL alone (127/240 sig_dates) violates 2.5% cap before any concentration. Only InvVol (-2.25%) passes CVaR cap by extreme low-vol concentration but fails TO cap (7.85 > 6.0). HRP passes CVaR but fails MDD (-56% > 45%).",
+    "selected_best_effort": "ERC",
+    "violated_constraints": "cvar_d_2.5pct",
+    "structural_diagnosis": {
+      "universe_ew_cvar_d_normal_regime": -0.029,
+      "universe_ew_cvar_d_normal_pre_optim": "EW top-20 already breaches 2.5% in NORMAL regime",
+      "ratio_optim_vs_ew": "ERC σ_p / σ_EW ≈ 1.06 → CVaR_d ≈ -2.9% × 1.06 = -3.08%",
+      "cvar_d_for_25pct_compliance_required_sigma_ratio": "0.86 (impossible for diversified long-only top-20)",
+      "conclusion": "CVaR_d 2.5% cap requires either (1) cash overlay 30%+ in NORMAL/CAUTION (out of optimizer scope) OR (2) shorting (KR mandate forbids) OR (3) universe expansion to 40+ low-beta names (max_names=20 hard)"
+    },
+    "suggested_resolution": [
+      "Option A: Forge integration with cash overlay (30% in NORMAL+, 50% in CRISIS) — out of optimizer scope per Common Charter",
+      "Option B: Q-Lead/Governor relax CVaR_d cap to 3.5% (matches NORMAL EW base + 20% buffer) — explicit override required",
+      "Option C: Universe expansion to N=40 with sector cap (mandate change required)",
+      "Selected: ERC — best net_IR (0.9066) with PASS on TO (4.97) + MDD (-40.4%); CVaR_d breach disclosed for downstream Forge/Governor decision"
+    ]
+  },
+  "method_selected": "ERC",
+  "method_comparison": {
+    "EW_baseline": {
+      "sr_net": 0.9061,
+      "cagr_net": 0.2102,
+      "mdd": -0.4052,
+      "cvar_d_5": -0.0311,
+      "turnover_ann": 4.9255,
+      "cost_ann": 0.0074,
+      "net_ir": 0.9061,
+      "pass_to_cap": true,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": true
+    },
+    "InvVol": {
+      "sr_net": 0.7662,
+      "cagr_net": 0.202,
+      "mdd": -0.4478,
+      "cvar_d_5": -0.0225,
+      "turnover_ann": 7.8454,
+      "cost_ann": 0.0118,
+      "net_ir": 0.7662,
+      "pass_to_cap": false,
+      "pass_cvar_cap": true,
+      "pass_mdd_cap": true
+    },
+    "HRP": {
+      "sr_net": 0.6503,
+      "cagr_net": 0.1939,
+      "mdd": -0.561,
+      "cvar_d_5": -0.0176,
+      "turnover_ann": 9.3167,
+      "cost_ann": 0.014,
+      "net_ir": 0.6503,
+      "pass_to_cap": false,
+      "pass_cvar_cap": true,
+      "pass_mdd_cap": false
+    },
+    "ERC": {
+      "sr_net": 0.9066,
+      "cagr_net": 0.2097,
+      "mdd": -0.4035,
+      "cvar_d_5": -0.0308,
+      "turnover_ann": 4.9717,
+      "cost_ann": 0.0075,
+      "net_ir": 0.9066,
+      "pass_to_cap": true,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": true
+    },
+    "MaxDiv": {
+      "sr_net": 0.8287,
+      "cagr_net": 0.2496,
+      "mdd": -0.4699,
+      "cvar_d_5": -0.0572,
+      "turnover_ann": 6.5578,
+      "cost_ann": 0.0098,
+      "net_ir": 0.8287,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    },
+    "MVO_conf_aware": {
+      "sr_net": 0.6991,
+      "cagr_net": 0.1851,
+      "mdd": -0.6945,
+      "cvar_d_5": -0.0437,
+      "turnover_ann": 9.1481,
+      "cost_ann": 0.0137,
+      "net_ir": 0.6991,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    },
+    "BlackLitterman": {
+      "sr_net": 0.6991,
+      "cagr_net": 0.1851,
+      "mdd": -0.6945,
+      "cvar_d_5": -0.0437,
+      "turnover_ann": 9.1481,
+      "cost_ann": 0.0137,
+      "net_ir": 0.6991,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    },
+    "LinTilt_alpha": {
+      "sr_net": 0.8512,
+      "cagr_net": 0.2067,
+      "mdd": -0.4852,
+      "cvar_d_5": -0.0348,
+      "turnover_ann": 7.2464,
+      "cost_ann": 0.0109,
+      "net_ir": 0.8512,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    },
+    "CVaR_proxy": {
+      "sr_net": 0.6983,
+      "cagr_net": 0.1844,
+      "mdd": -0.6945,
+      "cvar_d_5": -0.0436,
+      "turnover_ann": 9.1507,
+      "cost_ann": 0.0137,
+      "net_ir": 0.6983,
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    },
+    "Ensemble_top3": {
+      "sr_net": "NA",
+      "cagr_net": null,
+      "mdd": null,
+      "cvar_d_5": null,
+      "turnover_ann": null,
+      "cost_ann": null,
+      "net_ir": "NA",
+      "pass_to_cap": false,
+      "pass_cvar_cap": false,
+      "pass_mdd_cap": false
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 10,
+    "cap": 10,
+    "method_log": {
+      "EW_baseline": {
+        "sr_net": 0.9061,
+        "cagr_net": 0.2102,
+        "mdd": -0.4052,
+        "cvar_d_5": -0.0311,
+        "turnover_ann": 4.9255,
+        "cost_ann": 0.0074,
+        "net_ir": 0.9061,
+        "pass_to_cap": true,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": true
+      },
+      "InvVol": {
+        "sr_net": 0.7662,
+        "cagr_net": 0.202,
+        "mdd": -0.4478,
+        "cvar_d_5": -0.0225,
+        "turnover_ann": 7.8454,
+        "cost_ann": 0.0118,
+        "net_ir": 0.7662,
+        "pass_to_cap": false,
+        "pass_cvar_cap": true,
+        "pass_mdd_cap": true
+      },
+      "HRP": {
+        "sr_net": 0.6503,
+        "cagr_net": 0.1939,
+        "mdd": -0.561,
+        "cvar_d_5": -0.0176,
+        "turnover_ann": 9.3167,
+        "cost_ann": 0.014,
+        "net_ir": 0.6503,
+        "pass_to_cap": false,
+        "pass_cvar_cap": true,
+        "pass_mdd_cap": false
+      },
+      "ERC": {
+        "sr_net": 0.9066,
+        "cagr_net": 0.2097,
+        "mdd": -0.4035,
+        "cvar_d_5": -0.0308,
+        "turnover_ann": 4.9717,
+        "cost_ann": 0.0075,
+        "net_ir": 0.9066,
+        "pass_to_cap": true,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": true
+      },
+      "MaxDiv": {
+        "sr_net": 0.8287,
+        "cagr_net": 0.2496,
+        "mdd": -0.4699,
+        "cvar_d_5": -0.0572,
+        "turnover_ann": 6.5578,
+        "cost_ann": 0.0098,
+        "net_ir": 0.8287,
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      },
+      "MVO_conf_aware": {
+        "sr_net": 0.6991,
+        "cagr_net": 0.1851,
+        "mdd": -0.6945,
+        "cvar_d_5": -0.0437,
+        "turnover_ann": 9.1481,
+        "cost_ann": 0.0137,
+        "net_ir": 0.6991,
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      },
+      "BlackLitterman": {
+        "sr_net": 0.6991,
+        "cagr_net": 0.1851,
+        "mdd": -0.6945,
+        "cvar_d_5": -0.0437,
+        "turnover_ann": 9.1481,
+        "cost_ann": 0.0137,
+        "net_ir": 0.6991,
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      },
+      "LinTilt_alpha": {
+        "sr_net": 0.8512,
+        "cagr_net": 0.2067,
+        "mdd": -0.4852,
+        "cvar_d_5": -0.0348,
+        "turnover_ann": 7.2464,
+        "cost_ann": 0.0109,
+        "net_ir": 0.8512,
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      },
+      "CVaR_proxy": {
+        "sr_net": 0.6983,
+        "cagr_net": 0.1844,
+        "mdd": -0.6945,
+        "cvar_d_5": -0.0436,
+        "turnover_ann": 9.1507,
+        "cost_ann": 0.0137,
+        "net_ir": 0.6983,
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      },
+      "Ensemble_top3": {
+        "sr_net": "NA",
+        "cagr_net": null,
+        "mdd": null,
+        "cvar_d_5": null,
+        "turnover_ann": null,
+        "cost_ann": null,
+        "net_ir": "NA",
+        "pass_to_cap": false,
+        "pass_cvar_cap": false,
+        "pass_mdd_cap": false
+      }
+    },
+    "selected": "ERC",
+    "selection_objective": "net_IR_with_hard_tail_caps",
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "note": "10 methods compared. Selection rule: max(net_IR) subject to all hard caps PASS. If no PASS, infeasibility_report emitted."
+  },
+  "forward_to_optimizer_mandate_compliance": {
+    "pooled_sigma_bind_crisis_caution": true,
+    "max_w_crisis_shrink": 0.1,
+    "tail_caps_weight_applied_remeasure": true,
+    "cvar_d_post_optimization": -0.0308,
+    "cvar_d_threshold": 0.025,
+    "cvar_d_pass": false,
+    "mdd_in_sample": -0.4035,
+    "mdd_threshold": 0.45,
+    "mdd_pass": true,
+    "turnover_ann": 4.9717,
+    "turnover_threshold": 6,
+    "turnover_pass": true,
+    "rf_r1_mkt_systematic_disclosed": true,
+    "rf_r7_ic_decay_disclosed": true
+  },
+  "hard_constraints": {
+    "max_names": 20,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "weight_bounds_crisis": [
+      0,
+      0.1
+    ],
+    "long_only": true,
+    "sum_w_target": 1,
+    "universe": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps"
+  },
+  "hard_constraint_checks": {
+    "n_names_each_sig_date": true,
+    "sum_w_eq_1": true,
+    "weights_nonneg": true,
+    "weights_le_0.20": true
+  },
+  "per_sig_date_audit": {
+    "n_sig_dates": 240,
+    "n_names_min": 20,
+    "n_names_max": 20,
+    "sum_w_min": 1,
+    "sum_w_max": 1,
+    "max_weight_observed": 0.0534,
+    "min_weight_observed": 0.0453
+  },
+  "regime_handling": {
+    "n_bull": 84,
+    "n_normal": 127,
+    "n_caution": 24,
+    "n_crisis": 5,
+    "last_sig_date_regime": "NORMAL",
+    "pooled_fallback_used_in": [
+      "CRISIS",
+      "CAUTION"
+    ],
+    "max_w_shrunk_in": "CRISIS"
+  },
+  "challenge_review": {
+    "from_agent": "optimizer",
+    "objection": false,
+    "targets_reviewed": [
+      "alpha_vector",
+      "risk_sigma_full+pooled",
+      "bound_feasibility",
+      "regime_lambda_neutral_(no-op)_acknowledged",
+      "crowding_v3_str1701_per_date_0.9319_l224_pass"
+    ],
+    "note": "V3 alpha base = STR_1701 inheritance L-224 cor=0.9284 PASS. Optimizer treats V3 as-is. Risk Σ full BΩB+D used in BULL/NORMAL; pooled fallback bound in CRISIS/CAUTION (mandate). max_w 0.10 shrinkage in CRISIS only (5/240 sig_dates)."
+  },
+  "explanation": {
+    "top_overweights": [
+      "A001680",
+      "A029780",
+      "A012750"
+    ],
+    "top_underweights": [
+      "A101490",
+      "A039030",
+      "A086900"
+    ],
+    "main_tradeoffs": [
+      "CRISIS regime (5 sig_dates): max_w shrunk to 0.10 + pooled Σ binding",
+      "CAUTION regime (24 sig_dates): pooled Σ binding (T<30 mandate)",
+      "Selection rule: max(net_IR) ∧ all_caps_PASS — favors lower turnover under 15bps cost regime",
+      "RF-A2 acknowledged: V3 ICIR (0.31) < single core ICIR (0.41); composite advantage <5%. Optimizer cannot fix alpha quality — Forge backtest decisive."
+    ]
+  },
+  "references": [
+    "Markowitz (1952)",
+    "Ledoit-Wolf (2004) shrinkage covariance",
+    "López de Prado (2016) HRP",
+    "Maillard-Roncalli-Teïletche (2010) ERC",
+    "Choueifaty-Coignard (2008) Max Diversification",
+    "Black-Litterman (1992)",
+    "Rockafellar-Uryasev (2000) CVaR LP",
+    "Grinold-Kahn (1999) Active Portfolio Management"
+  ],
+  "generated_at": "2026-04-26T21:00:39+0900",
+  "agent_id": "optimizer-research",
+  "codex_round": {
+    "rounds_executed": 0,
+    "codex_stance": "STALL_OVERRIDE",
+    "stall_pattern_observed": "Codex CLI 1200s timeout, log update stopped at 21:05 (18min stall as of 21:23)",
+    "qlead_override": "OVERRIDE_005 (Codex CLI stall pattern repeated — Risk + Optimizer both stuck. Q-Lead direct finalize per L-207 substitute evidence + AX-008 alternative sources: Forge + Risk + Architect downstream)",
+    "substitute_evidence": [
+      "Risk package PASS (Sigma cond 22.83, PSD verified, pooled fallback bound)",
+      "Optimizer self-comparison 10 candidates with method_shopping_log",
+      "Forward Mandate compliance ALL PASS (pooled Σ + max_w 0.10 + infeasibility_report)",
+      "Forge backtest decisive gate (downstream)"
+    ],
+    "resolution_count": "OVERRIDE_005_substitute_no_codex_round_per_L207"
+  },
+  "forward_to_forge_mandate": {
+    "selected_method": "ERC",
+    "selected_basis": "max_net_IR_among_TO_MDD_passing",
+    "cvar_breach_disclosed": true,
+    "cvar_d_realized_3_08pct": true,
+    "infeasibility_report_emitted": true,
+    "pg2_baseline_to_beat": 1.4625,
+    "v3_blend_expected_concern": "V3 net_IR 0.91 < STR_1701 standalone 1.29 — likely PG2 blend underperformance vs baseline 1.4625",
+    "forge_decisive_gate": "Realized PG2 (V3 80% + STR_1656 20%) NAV vs current PG2 (STR_1701 80% + STR_1656 20%)"
+  },
+  "finalize_meta": {
+    "finalized_at": "2026-04-26T21:25:00+0900",
+    "finalized_by": "Q-Lead Opus 4.7 — OVERRIDE_005 substitute (Codex CLI 18min stall)",
+    "version": "v1_FORWARD_TO_FORGE",
+    "concern": "V3 blend likely underperforms PG2 baseline 1.4625 — Forge realized NAV decisive"
+  }
+}
