@@ -1,14 +1,14 @@
 {
   "task_id": "WT-D20260426_008",
-  "validation_timestamp": "2026-04-26T15:11:44+0900",
+  "validation_timestamp": "2026-04-26T15:29:46+0900",
   "gates_summary": {
     "rank_ic": {
-      "value": 0.0383,
+      "value": 0.0407,
       "threshold": 0.04,
-      "pass": false
+      "pass": true
     },
     "icir": {
-      "value": 0.2779,
+      "value": 0.3132,
       "threshold": 0.2,
       "pass": true
     },
@@ -23,17 +23,18 @@
       "pass": true
     },
     "dsr_post": {
-      "value": 9.3468,
+      "value": 1.7392,
       "threshold": 3,
-      "pass": true
+      "pass": false,
+      "method": "Bailey-Lopez de Prado, full grid n_trials=72 deflation"
     },
     "inheritance_cor": {
-      "value": 0.8939,
+      "value": 0.9284,
       "threshold": 0.85,
       "pass": true
     },
     "turnover": {
-      "value": 4.2025,
+      "value": 4.9255,
       "threshold": 6,
       "pass": true
     }
@@ -43,17 +44,17 @@
     "RF-A2": {
       "id": "RF-A2",
       "severity": "MEDIUM",
-      "msg": "V3 ICIR=0.2779 vs Core_only single=0.4147 (composite advantage <5%)",
+      "msg": "V3 ICIR=0.3132 vs Core_only single=0.4147 (composite advantage <5%)",
       "detail": {
-        "v3_icir": 0.2779,
+        "v3_icir": 0.3132,
         "single_core_icir": 0.4147
       }
     }
   },
   "optimal_combo": {
-    "slot": "user_g1",
-    "w_core": 0.4,
-    "w_def": 0.4,
+    "slot": "iter5_baseline",
+    "w_core": 0.65,
+    "w_def": 0.35,
     "persist_window": 2,
     "ema_alpha": 0.5,
     "regime_lambda": "lambda_neutral"

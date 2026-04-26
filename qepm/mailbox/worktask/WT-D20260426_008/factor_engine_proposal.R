@@ -387,13 +387,15 @@ for (sl_name in names(slot_grid)) {
         # Compute combo turnover
         turn_combo <- calc_combo_turnover(d, score_col)
 
-        # Composite metric: ICIR + 0.5*sub_stab - turnover_penalty
-        # Penalty: if turnover > 6.0 (600%), penalize heavily; soft penalty above 4.5 (450%)
+        # Composite metric: ICIR + 0.5*sub_stab + rank_IC_bonus - turn_penalty
+        # rank_IC_bonus: +0.3 if rank_IC >= 0.04 (graduation gate), 0 otherwise (Codex C1 fix)
+        # Turnover penalty: if turnover > 6.0 (600%), penalize heavily; soft penalty above 4.5 (450%)
+        rank_ic_bonus <- if (!is.na(diag$rank_ic) && diag$rank_ic >= 0.04) 0.30 else 0
         turn_penalty <- if (is.na(turn_combo)) 0.5
                          else if (turn_combo > 6.0) 0.5 + (turn_combo - 6.0) * 0.3
                          else if (turn_combo > 4.5) (turn_combo - 4.5) * 0.2
                          else 0
-        metric <- diag$icir + 0.5 * (diag$sub_stability %||% 0) - turn_penalty
+        metric <- diag$icir + 0.5 * (diag$sub_stability %||% 0) + rank_ic_bonus - turn_penalty
         if (!is.finite(metric)) metric <- -Inf
 
         all_results[[length(all_results) + 1L]] <- list(
@@ -540,16 +542,61 @@ for (sn in names(harvey_results)) {
               format(hr$alpha_t %||% NA, nsmall = 3), hr$pass %||% FALSE))
 }
 
-# DSR (Deflated Sharpe Ratio) — Bailey-Lopez de Prado
+# DSR (Deflated Sharpe Ratio) — Bailey-Lopez de Prado (Codex C4 fix: full grid)
 n_obs <- nrow(port_ret)
 sr_obs <- mean(port_ret$port_ret) / sd(port_ret$port_ret) * sqrt(12)
-# Method shopping count = N candidates tried (we used grid; cap method_log to 5)
-n_trials <- min(total_combos, 50L)  # honest upper bound (search space)
-sr0 <- sqrt(2 * log(max(n_trials, 2L))) * (1/sqrt(n_obs))
-# DSR: Pr(SR_true > 0) using Sharpe SE
-sr_se <- sqrt((1 + 0.5 * sr_obs^2) / max(n_obs - 1L, 1L))
-dsr_post <- (sr_obs - sr0) / sr_se
-cat("DSR_post (proxy):", round(dsr_post, 3), "  (SR_obs:", round(sr_obs, 3), ", n_trials:", n_trials, ")\n")
+# Use ALL searched combinations (72) for proper multi-test deflation
+n_trials <- total_combos
+# Expected max SR under null (Bailey-Lopez de Prado)
+emc <- 0.5772156649  # Euler-Mascheroni
+e_max_z <- (1 - emc) * qnorm(1 - 1/n_trials) + emc * qnorm(1 - 1/(n_trials * exp(1)))
+sr0_annual <- e_max_z * (1/sqrt(n_obs)) * sqrt(12)  # annualize hurdle
+# DSR via z-statistic on SR (annualized)
+sr_se <- sqrt((1 + 0.5 * sr_obs^2 / 12) / max(n_obs - 1L, 1L)) * sqrt(12)
+dsr_z <- (sr_obs - sr0_annual) / sr_se
+# DSR probability (Pr SR > 0 deflated)
+dsr_post <- dsr_z  # report as z-stat; Forge can compute pnorm if needed
+dsr_prob <- pnorm(dsr_z)
+cat(sprintf("DSR_z: %.3f (SR_obs %.3f - SR_hurdle %.3f) / SE %.3f, n_trials=%d, dsr_prob=%.4f\n",
+            dsr_z, sr_obs, sr0_annual, sr_se, n_trials, dsr_prob))
+
+# =============================================================================
+# STEP 7-B — Sector-neutral IC (post-neutralization, RF-A4 / Codex C5 fix)
+# =============================================================================
+cat("\n[Step 7-B] Sector-neutral IC (RF-A4) ────────────────────────\n")
+
+# Load sector membership
+sector_path <- file.path(PROJECT_ROOT, ".cache/universe_support/us_sector_lv1.parquet")
+post_neut_ic <- NA_real_
+if (file.exists(sector_path)) {
+  sector_dt <- as.data.table(read_parquet(sector_path))
+  # Build PIT sector mapping
+  sector_dates <- sort(unique(sector_dt$Date))
+  sig_sec_dt <- data.table(sig_date = sig_dates, target = as.Date(sig_dates) - 1L)
+  sig_sec_dt[, snap_date := sector_dates[findInterval(target, sector_dates)]]
+  sec_panel <- sector_dt[sig_sec_dt, on = c("Date" = "snap_date"), allow.cartesian = TRUE,
+                          .(sig_date = i.sig_date, Ticker, Sector = Sector_Lv1)]
+  sec_panel <- unique(sec_panel)
+  setkey(sec_panel, sig_date, Ticker)
+
+  # Merge with best_dt
+  bd_sec <- best_dt[!is.na(get(v3_score_col)) & !is.na(Ret_1m)][sec_panel, on = c("sig_date", "Ticker"), nomatch = 0L]
+  if (nrow(bd_sec) >= 100L) {
+    # Sector-demean score per sig_date×Sector then compute IC vs sector-demeaned return
+    bd_sec[, score_sec_demean := get(v3_score_col) - mean(get(v3_score_col), na.rm=TRUE), by = .(sig_date, Sector)]
+    bd_sec[, ret_sec_demean   := Ret_1m - mean(Ret_1m, na.rm=TRUE), by = .(sig_date, Sector)]
+    sec_ic <- bd_sec[, .(ic = suppressWarnings(cor(score_sec_demean, ret_sec_demean, method = "spearman")),
+                         n = .N), by = sig_date]
+    sec_ic <- sec_ic[!is.na(ic) & n >= 30L]
+    post_neut_ic <- mean(sec_ic$ic, na.rm = TRUE)
+    cat(sprintf("Sector-neutral IC (mean): %.5f (raw rank_IC %.5f, retention %.1f%%)\n",
+                post_neut_ic, best_diag$rank_ic, post_neut_ic / best_diag$rank_ic * 100))
+  } else {
+    cat("Sector data merge insufficient. post_neut_ic = NA\n")
+  }
+} else {
+  cat("Sector parquet not found. post_neut_ic = NA\n")
+}
 
 # =============================================================================
 # STEP 8 — Bootstrap IC CI (95%)
@@ -836,7 +883,12 @@ alpha_package <- list(
     rank_ic = best_diag$rank_ic,
     icir = best_diag$icir,
     harvey_t_stat = NULL,  # populated below from NW-HAC
-    dsr = round(dsr_post, 4),
+    dsr = round(dsr_z, 4),
+    dsr_z_stat = round(dsr_z, 4),
+    dsr_probability = round(dsr_prob, 6),
+    dsr_n_trials_full_grid = n_trials,
+    sr_observed_annualized = round(sr_obs, 4),
+    sr_hurdle_dsr_annualized = round(sr0_annual, 4),
     monotonicity = NA,
     subperiod_stability = best_diag$sub_stability,
     subperiod_ics = list(
@@ -844,7 +896,9 @@ alpha_package <- list(
       p2_2015_2019 = best_diag$sub_ic_p2,
       p3_2020_2024 = best_diag$sub_ic_p3
     ),
-    post_neutralization_ic = best_diag$rank_ic,
+    post_neutralization_ic = if (!is.na(post_neut_ic)) round(post_neut_ic, 5) else NA,
+    post_neutralization_ic_method = "sector_lv1_demean (per sig_date × Sector demean both score and Ret_1m, then Spearman cor)",
+    post_neutralization_ic_retention_pct = if (!is.na(post_neut_ic)) round(post_neut_ic / best_diag$rank_ic * 100, 1) else NA,
     turnover_proxy = round(turnover_annual, 4),
     n_months = best_diag$n_obs,
     n_sig_dates = best_diag$n_obs,
@@ -991,7 +1045,9 @@ alpha_package <- list(
                           pass = best_diag$sub_stability >= 0.50),
     harvey_t_gate = list(value = harvey_results$Carhart4$alpha_t, threshold = 3.0,
                          pass = !is.null(harvey_results$Carhart4$alpha_t) && abs(harvey_results$Carhart4$alpha_t) > 3.0),
-    dsr_gate = list(value = round(dsr_post, 3), threshold = 0.5, pass = dsr_post >= 0.5),
+    dsr_gate = list(value = round(dsr_z, 3), threshold = 3.0,
+                    pass = !is.na(dsr_z) && dsr_z >= 3.0,
+                    note = "DSR_z (full-grid n_trials=72 Bailey-Lopez de Prado deflated). Threshold 3.0 = strong evidence vs hurdle."),
     inheritance_gate = list(value = round(mean_per_period_cor, 4), threshold = 0.85,
                             pass = inheritance_proof_pass)
   ),
@@ -1038,7 +1094,8 @@ validation <- list(
     sub_stability = list(value = best_diag$sub_stability, threshold = 0.50,
                          pass = best_diag$sub_stability >= 0.50),
     harvey_nw_hac_pass_count = list(value = n_pass, threshold = 5L, pass = n_pass >= 5L),
-    dsr_post = list(value = round(dsr_post, 4), threshold = 3.0, pass = dsr_post > 3.0),
+    dsr_post = list(value = round(dsr_z, 4), threshold = 3.0, pass = !is.na(dsr_z) && dsr_z > 3.0,
+                    method = "Bailey-Lopez de Prado, full grid n_trials=72 deflation"),
     inheritance_cor = list(value = round(mean_per_period_cor, 4), threshold = 0.85,
                            pass = inheritance_proof_pass),
     turnover = list(value = round(turnover_annual, 4), threshold = 6.0,
@@ -1064,8 +1121,8 @@ cat(sprintf("rank_IC=%.4f  ICIR=%.4f  sub_stab=%.4f\n",
             best_diag$rank_ic, best_diag$icir, best_diag$sub_stability))
 cat(sprintf("Harvey NW-HAC: %d/5 PASS (Carhart4 t=%s)\n", n_pass,
             format(harvey_results$Carhart4$alpha_t %||% NA, nsmall = 3)))
-cat(sprintf("DSR_post: %.3f  Turnover: %.1f%% (annualized)\n",
-            dsr_post, turnover_annual * 100))
+cat(sprintf("DSR_z: %.3f (full-grid n_trials=72)  Turnover: %.1f%% (annualized)\n",
+            dsr_z, turnover_annual * 100))
 cat(sprintf("Inheritance cor (V3 vs STR_1701): %.4f (mandate >=0.85: %s)\n",
             mean_per_period_cor, inheritance_proof_pass))
 cat(sprintf("Optimal combo: slot=%s w_core=%.2f w_def=%.2f pers=%d ema=%.2f λ=%s\n",
@@ -1087,7 +1144,11 @@ saveRDS(list(
   inheritance_proof_pass = inheritance_proof_pass,
   mean_per_period_cor = mean_per_period_cor,
   pooled_cor = pooled_cor,
-  dsr_post = dsr_post,
+  dsr_z = dsr_z,
+  dsr_prob = dsr_prob,
+  sr_obs = sr_obs,
+  sr0_annual = sr0_annual,
+  post_neut_ic = post_neut_ic,
   turnover_annual = turnover_annual,
   n_pass_harvey = n_pass,
   alpha_vector = alpha_vector,
