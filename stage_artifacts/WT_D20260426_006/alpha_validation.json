@@ -1,0 +1,46 @@
+{
+  "task_id": "WT-D20260426_006",
+  "n_sig_dates": 182,
+  "n_unique_tickers": 2983,
+  "date_range": ["2008-01-31", "2023-12-28"],
+  "schema": ["Date", "Ticker", "AvgTV20", "score_xgb", "score_lgbm", "score_ens", "regime_state", "Ret_1m"],
+  "alpha_lab_gate_60_sig_dates": {
+    "threshold": 60,
+    "value": 182,
+    "pass": true
+  },
+  "ic_validation": {
+    "overall_ic": 0.0649,
+    "overall_icir": 0.6551,
+    "n_months": 182,
+    "harvey_t": 8.8378,
+    "dsr_proxy": 7.6452,
+    "recent_3y_icir": 1.5908,
+    "sub_stab": 0.3993,
+    "sub_ics": {
+      "p1_2008_2014": 0.0354,
+      "p2_2015_2019": 0.0618,
+      "p3_2020_2026": 0.1207
+    },
+    "sub_icirs": {
+      "p1_2008_2014": 0.399,
+      "p2_2015_2019": 0.6118,
+      "p3_2020_2026": 1.3143
+    }
+  },
+  "liquidity_filter": {
+    "threshold_KRW": 200000000,
+    "survivors_pct_avg": 1
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding only walk-forward",
+    "C2": "PASS — fwd_ret_21d strictly future-only",
+    "C9": "PASS — regime expanding pct (252d t-1)",
+    "C10": "PASS — AvgTV20 t-1 lag",
+    "C11": "PASS — KR internals (BM 12M vol). FF5 v2 lagged t-1.",
+    "C13": "N_A — L-164 v1.1 ML carve-out (raw read)",
+    "C14": "N_A — load_month_factors() 미경유. Walk-forward expanding 보장.",
+    "C15": "L-164 v1.1 ML carve-out 적용",
+    "R2_P2_lockbox": "ENFORCED: TRAIN_VAL_END=2024-01-22, lockbox 2024-01-23 ~ 2026-01-23 sealed"
+  }
+}
