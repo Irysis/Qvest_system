@@ -1,0 +1,29 @@
+{
+  "task_id": "WT-D20260426_008",
+  "override_code": "OVERRIDE_005",
+  "trigger": "Codex CLI stall pattern — Risk + Optimizer both flagged structural infeasibility",
+  "substitute_evidence": {
+    "source_1_forge_self_disclosure": {
+      "finding": "ERC near-EW range 0.048~0.052. Alpha tilt effectively zero.",
+      "implication": "Net IR 0.91 < STR_1701 standalone 1.29 (Iter 11). Multi-mutation upgrade did not improve alpha utilization.",
+      "code": "FORGE_SELF_DISCLOSED"
+    },
+    "source_2_risk_structural": {
+      "finding": "CVaR_d structural infeasibility: KR top-20 long-only universe EW floor -2.90% in NORMAL regime",
+      "implication": "No long-only optimizer can satisfy -2.5% cap without 30%+ cash overlay (out of scope)",
+      "code": "RISK_PKG_STRUCTURAL_DIAGNOSIS"
+    },
+    "source_3_optimizer_selection": {
+      "finding": "ERC selected as best-effort among [ERC/HRP/InvVol/MVO]. HRP fails MDD (-56%). InvVol fails TO (7.85 > 6.0 cap).",
+      "implication": "ERC is least-bad but CVaR constraint remains violated.",
+      "code": "OPT_PKG_INFEASIBILITY_REPORT"
+    }
+  },
+  "verdict": "PROCEED_WITH_CAVEATS",
+  "caveats": [
+    "CVaR_d -3.08% (cap: -2.5%) structural breach — Governor/Q-Lead must decide on cap relaxation",
+    "Alpha utilization near-zero (ERC ≈ EW) — PG2 upgrade benefit minimal",
+    "V3 net_IR 0.91 < baseline 1.29 confirms mutation did not improve raw IR"
+  ],
+  "recommendation": "Run full backtest for honest measurement. Let realized SR decide PG2 fate."
+}

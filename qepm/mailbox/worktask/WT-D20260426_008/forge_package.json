@@ -1,0 +1,167 @@
+{
+  "task_id": "WT-D20260426_008",
+  "agent": "Forge",
+  "forge_version": "v6.1",
+  "timestamp": "2026-04-26T21:37:24+0900",
+  "iter": 15,
+  "strategy_name": "V3_ERC_Iter15",
+  "pit_cutoff": "2023-11-30",
+  "hash_audit": {
+    "start": {
+      "alpha_package": "40b99b7f30c95a879a0aed21591571b6",
+      "risk_package": "4c3dfe0c981c1c104a3d92f81f100fce",
+      "optimization_pkg": "9f7b026fbd6ca68000d8ef3d19db4be1",
+      "weights_csv": "1bab3f481fad431dd32632a373509a9a"
+    },
+    "end": {
+      "alpha_package": "40b99b7f30c95a879a0aed21591571b6",
+      "risk_package": "4c3dfe0c981c1c104a3d92f81f100fce",
+      "optimization_pkg": "9f7b026fbd6ca68000d8ef3d19db4be1",
+      "weights_csv": "1bab3f481fad431dd32632a373509a9a"
+    },
+    "pure_function_verified": true,
+    "note": "Alpha/Risk/Optimization packages read-only. No recomputation."
+  },
+  "performance": {
+    "V3_IS_full": {
+      "sr": 1.1,
+      "cagr": 26.07,
+      "mdd": -50.03,
+      "vol": 23.7
+    },
+    "V3_blend_full": {
+      "sr": 0.996,
+      "cagr": 21.93,
+      "mdd": -57.31,
+      "baseline_pg2": 1.4625,
+      "delta_vs_baseline": -0.4665,
+      "pg2_upgrade": false
+    },
+    "V3_blend_IS": {
+      "sr": 0.998,
+      "cagr": 21.33,
+      "mdd": -57.31
+    },
+    "V3_OOS_24_26": {
+      "sr": 1.473,
+      "cagr": 41.48,
+      "mdd": -29.6
+    }
+  },
+  "tail_risk": {
+    "cvar_d_5pct_realized": -0.0363,
+    "cvar_d_cap_breach": true,
+    "mdd_realized": -0.5003,
+    "cvar_optimizer_flagged": -0.0308,
+    "structural_infeasibility": "ERC chosen as best-effort; CVaR_d -3.08% structural breach in NORMAL regime"
+  },
+  "harvey_ff5": {
+    "specs_tested": 5,
+    "pass_count": 5,
+    "results": {
+      "CAPM": {
+        "alpha": 0.0196,
+        "t": 3.9977,
+        "pass_harvey": true
+      },
+      "FF3": {
+        "alpha": 0.0191,
+        "t": 3.8781,
+        "pass_harvey": true
+      },
+      "Carhart4": {
+        "alpha": 0.0157,
+        "t": 3.8015,
+        "pass_harvey": true
+      },
+      "FF5": {
+        "alpha": 0.0201,
+        "t": 3.9363,
+        "pass_harvey": true
+      },
+      "FF6": {
+        "alpha": 0.0158,
+        "t": 3.6779,
+        "pass_harvey": true
+      }
+    }
+  },
+  "dsr": {
+    "sr_is": 1.1,
+    "n_trials": 15,
+    "t_months": 240,
+    "sr_dsr": 0.3268,
+    "method": "Bailey-LopezdePrado 2012 haircut"
+  },
+  "turnover": {
+    "annual_pct": 497.5
+  },
+  "stress_periods": [
+    {
+      "period": "GFC_2008",
+      "ret": -18.39,
+      "mdd": -38.9,
+      "n": 145
+    },
+    {
+      "period": "EU_Debt_2011",
+      "ret": 5.54,
+      "mdd": -19.15,
+      "n": 126
+    },
+    {
+      "period": "China_2015",
+      "ret": 19.34,
+      "mdd": -15.96,
+      "n": 186
+    },
+    {
+      "period": "KOSPI_2018",
+      "ret": -14.89,
+      "mdd": -16.43,
+      "n": 62
+    },
+    {
+      "period": "COVID_2020",
+      "ret": -20.96,
+      "mdd": -36.64,
+      "n": 62
+    },
+    {
+      "period": "Rate_Hike_2022",
+      "ret": -18.75,
+      "mdd": -25.36,
+      "n": 246
+    },
+    {
+      "period": "KR_Semi_2023",
+      "ret": 13.3,
+      "mdd": -6.45,
+      "n": 123
+    },
+    {
+      "period": "MRS_CRISIS_2024",
+      "ret": -18,
+      "mdd": -29.6,
+      "n": 244
+    }
+  ],
+  "pg2_decision": {
+    "baseline_sr": 1.4625,
+    "v3_blend_sr": 0.996,
+    "delta": -0.4665,
+    "recommend": "MAINTAIN_BASELINE",
+    "notes": "ERC near-EW (alpha tilt minimal). CVaR structural breach. Net_IR 0.91 < STR_1701 standalone 1.29."
+  },
+  "codex_stance": "OVERRIDE_005",
+  "codex_note": "Codex CLI stall risk acknowledged per WT mandate. Self-disclosed infeasibility + Risk pkg structural diagnosis as substitute evidence.",
+  "outputs": {
+    "nav_d_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/judge_ready/ret_d_v3.csv",
+    "nav_monthly_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/judge_ready/nav_monthly_v3.csv",
+    "blend_monthly": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/judge_ready/nav_monthly_blend.csv",
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/backtest_result/annual_returns.png",
+    "oos_zoom": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/backtest_result/oos_zoom.png",
+    "scenario_cmp": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_008/backtest_result/scenario_comparison.png"
+  }
+}
