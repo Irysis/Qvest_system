@@ -1,11 +1,13 @@
 {
   "task_id": "WT-D20260427_001",
-  "current_phase": "ALPHA_DONE",
-  "version": "v1",
-  "updated_at": "2026-04-27T08:14:31+0900",
+  "current_phase": "TERMINATED",
+  "version": "v1_REJECTED",
+  "updated_at": "2026-04-27T08:24:00+0900",
   "blocker": null,
+  "disposition": "REJECT — DO NOT advance to Risk Agent",
+  "reason": "5/5 graduation gates fail + alpha degeneracy + net-negative cost + regime break (L-211/L-225 sibling)",
   "alpha_summary": {
-    "method": "M07_XGBoost_depth4_interaction",
+    "method": "M07_XGBoost_depth4_interaction (5-seed ensemble, 11 features)",
     "n_sig_dates": 192,
     "icir": 0.1184,
     "rank_ic": 0.0093,
@@ -16,11 +18,17 @@
     "five_spec_pass": "0/5",
     "cor_vs_str1701": 0.0134,
     "cor_vs_str1656": 0.0191,
-    "cor_vs_str1701_pass": true,
-    "cor_vs_str1656_pass": true,
+    "cor_vs_str1701_pass": "TRUE_BUT_ARTIFACTUAL",
+    "cor_vs_str1656_pass": "TRUE_BUT_ARTIFACTUAL",
     "universe_compliance": "top20=20/20",
     "liquidity_compliance": "top20_pass_2e8=20/20",
     "gates_pass": "0/5",
-    "challenge_flags_count": 2
-  }
+    "challenge_flags_count": 5,
+    "codex_round_v1": "OVERRIDE_005 substitute (Codex CLI stall) — REJECT",
+    "silent_omission_audit": "PASS — 9/9 explicit"
+  },
+  "terminated_at": "2026-04-27T01:30:00+0900",
+  "terminated_by": "Q-Lead — Iter 17 (a) TERMINATE",
+  "termination_reason": "L-228 적립: KR top universe ML tree interaction도 cross-section alpha fail. Gates 0/5. Predictions collapsed to 3 unique values. OOS IC sign reversal. Net-of-cost -65bps. 3-Iter cycle 누적 입증 (L-211 linear → L-225 sigmoid → L-228 ML tree).",
+  "lcode_recorded": "L-228 (KR ML Tree Interaction Cross-section Alpha Fail)"
 }

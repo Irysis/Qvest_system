@@ -289,6 +289,24 @@
       "severity": "MEDIUM",
       "msg": "Multitest count: 4 factors × 18 OOS years × 5 specs = 360 trials. DSR_post=-1.5368.",
       "detail": "Bailey-Lopez de Prado conservative DSR. Harvey_t NW-HAC=1.1337 (lag=4), simple=1.4156. 5-spec PASS=0/5."
+    },
+    "RF-A_Degenerate": {
+      "id": "RF-A_Degenerate",
+      "severity": "HIGH",
+      "msg": "Alpha vector at LATEST_ME 2023-12-28 has only 3 unique score_ens values across 350 universe-filtered tickers (mode 0.183, 18 tied at 0.591, 2 at 0.183 minimum). XGBoost 5-seed rank-mean ensemble + heavy regularization collapsed predictions. Cross-family cor < 0.30 satisfaction is artifactual — measured against near-constant alpha.",
+      "detail": "Top20 = first 20 tickers by score_z within tied 0.591 cluster (alphabetical Ticker order tiebreaker). Optimizer cannot produce meaningful weight differentiation from this vector. Charter principle 6 (Dynamic Smart Alpha) violated — no smart differentiation."
+    },
+    "RF-A_NetNegativeCost": {
+      "id": "RF-A_NetNegativeCost",
+      "severity": "HIGH",
+      "msg": "Net alpha = -65.0 bps (gross 11.2 - tcost 76.2). Charter principle 7 hard fail.",
+      "detail": "rank_IC × 12 = 11.16 bps gross annual / 15bps × 5.08 turns × 12 / 12 = 76.20bps tcost = -65bps net. Strategy cannot survive realistic transaction cost."
+    },
+    "RF-A_RegimeBreak": {
+      "id": "RF-A_RegimeBreak",
+      "severity": "HIGH",
+      "msg": "OOS-year IC sign reversal post-2014 (P1+0.045, P2+0.024, P3-0.001 mean). Same KR ML decay pattern as L-211 / L-225 / Avramov 2023.",
+      "detail": "Iter 17 nonlinear ML interaction repeats the cross-family alpha decay documented in L-211 (linear) and L-225 (sigmoid joint). Confirms KR top universe structural limit, not model-spec issue."
     }
   },
   "graduation_status": {
@@ -322,10 +340,10 @@
     "gates_pass": 0,
     "gates_total": 5,
     "overall_pass": false,
-    "honest_disclosure": "Discovery WT graduation: 0/5 gates passed. rank_IC=0.0093 ICIR=0.1184 Harvey_NW=1.1337 sub_stab=0.0000 turnover=508.27%. Universe K200∪KQ150 PIT-restricted. Forge backtest required for PG2 trio realized SR validation."
+    "honest_disclosure": "Discovery WT REJECT: 0/5 gates passed. rank_IC=0.0093 (gate 0.04 fail by 76%), ICIR=0.1184 (gate 0.20 fail by 41%), sub_stab=0.0000 (gate 0.50 fail by 100%), Harvey_NW=1.1337 (gate 3.0 fail by 62%), DSR_post=-1.5368 (gate 0.5 fail). Plus alpha vector degeneracy (3 unique values across 350 tickers) and net-negative cost (-65bps). Iter 17 confirms KR ML cross-family alpha decay (L-211/L-225 sibling). DO NOT promote to Risk Agent."
   },
   "method_shopping_log": {
-    "candidates_tried": 5,
+    "candidates_tried": 1,
     "cap": 5,
     "parallel_exec": false,
     "rcpp_used": false,
@@ -370,7 +388,14 @@
       }
     },
     "n_workers": 1,
-    "method_actually_implemented": "M07_xgb_d4_8feat (XGBoost depth=4 interaction-only, 5-seed ensemble, 11 features)"
+    "method_actually_implemented": "M07_xgb_d4_8feat (XGBoost depth=4 interaction-only, 5-seed ensemble, 11 features)",
+    "methods_planned_not_executed": [
+      "M07_xgb_d4_no_ff5 — ablation control (not executed)",
+      "M07_xgb_d3_baseline — depth=3 control (not executed)",
+      "M07_linear_lasso — linear LASSO baseline (not executed; would replicate L-211 known fail)",
+      "M07_xgb_d6_overfit — depth=6 control (not executed)"
+    ],
+    "honesty_fix": "v6.1 R2-C compliance: candidates_tried reflects ACTUAL experimentation (1), not aspirational candidates (5)."
   },
   "alpha_factor_formula_hash": "219336bb18b4abeeb7b79605ccca7aa15a7efd0777e2a6a79a381db2e4f385aa",
   "window_isolation": {
@@ -424,5 +449,31 @@
     "QEPM L-227 — universe expansion learning",
     "QEPM L-454 — KR internals dominance"
   ],
-  "generated_at": "2026-04-27 08:13:26.152741"
+  "generated_at": "2026-04-27 08:13:26.152741",
+  "codex_critic_round": {
+    "rounds_executed": 1,
+    "v1_stance": "REJECT",
+    "v1_critical_concerns_count": 9,
+    "v1_artifact": "codex_critic_response_alpha.json",
+    "v1_resolution_artifact": "alpha_codex_resolution.json",
+    "v1_silent_omission_audit": "PASS — 9/9 explicit decisions",
+    "override_005_applied": true,
+    "override_005_reason": "Codex CLI gpt-5.5 stalled past 5min wrapper timeout; OVERRIDE_005 substitute per L-207"
+  },
+  "qlead_resolution": {
+    "framework": "Q-Lead Decision Protocol — 9/9 explicit (no silent omission)",
+    "verdict": "REJECT",
+    "alignment_with_codex_substitute": "FULL_ALIGNMENT",
+    "hard_fails_count": 5,
+    "hard_fails_list": ["RF-A1 sub_stab=0.0000<<0.50", "RF-A4 rank_IC=0.0093<<0.04", "RF-A6 Harvey_NW=1.13<<3.0 + DSR_post=-1.54<<0.5", "RF-A_Degenerate alpha vector saturation (3 unique values across 350 tickers)", "RF-A_StatNonStat OOS post-2014 sign reversal"],
+    "cost_efficiency_diagnostic": {
+      "gross_alpha_bps": 11.16,
+      "transaction_cost_bps": 76.2,
+      "net_alpha_bps": -65.04,
+      "decision": "NET_NEGATIVE — strategy cannot survive 15bps × 5.08 turns annual"
+    },
+    "next_action_recommended": "Archive Iter 17 as documented fail in L-code series (L-211/L-225/L-227 sibling). Do NOT promote to Risk Agent. Iter 18 should pivot to structurally different alpha class (NOT another ML regularization tweak)."
+  },
+  "final_disposition": "REJECT",
+  "final_disposition_reason": "5/5 graduation gates FAIL + alpha vector degeneracy + net-negative cost + regime break + thin economic mechanism. 9/9 critical_concerns received explicit ACCEPT decisions per Charter principle 8. Recommend archive into L-code series."
 }
