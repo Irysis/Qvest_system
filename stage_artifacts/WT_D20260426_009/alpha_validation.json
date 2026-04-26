@@ -1,0 +1,143 @@
+{
+  "task_id": "WT-D20260426_009",
+  "as_of_date": "2023-12-28",
+  "n_sig_dates": 192,
+  "n_total_obs": 60447,
+  "diagnostics": {
+    "joint": {
+      "icir": 0.1313,
+      "ic_mean": 0.0112,
+      "ic_std": 0.0846,
+      "pos_pct": 0.5625,
+      "n_periods": 192,
+      "sub_stab": 0.67,
+      "sub_periods_pos": 2,
+      "nw_hac_t": 1.6958,
+      "nw_hac_5spec_pass": 0,
+      "nw_hac_5spec_details": {
+        "CAPM": 1.7573,
+        "C3": 2.413,
+        "Carhart4": 2.4357,
+        "FF5": 2.4532,
+        "FF6": 2.4752
+      },
+      "monotonicity": 0.444,
+      "top_minus_bottom": -0.0038,
+      "dsr": 0.7271,
+      "annualized_sr": 0.455
+    },
+    "linear": {
+      "icir": 0.1329,
+      "sub_stab": 0.6667,
+      "nw_hac_t": 1.7216,
+      "nw_hac_5spec_pass": 0
+    },
+    "skew_only": {
+      "icir": 0.1486,
+      "sub_stab": 0.6667,
+      "nw_hac_t": 1.9058,
+      "nw_hac_5spec_pass": 0
+    },
+    "accrual_only": {
+      "icir": -0.1116,
+      "sub_stab": 0.3333,
+      "nw_hac_t": -1.3323,
+      "nw_hac_5spec_pass": 0
+    }
+  },
+  "sigmoid_sweep": {
+    "1": {
+      "icir": 0.1313,
+      "ic_mean": 0.0112,
+      "sub_stab": 0.6667,
+      "nw_t": 1.6958
+    },
+    "2": {
+      "icir": 0.1247,
+      "ic_mean": 0.0105,
+      "sub_stab": 0.6667,
+      "nw_t": 1.6069
+    },
+    "3": {
+      "icir": 0.1149,
+      "ic_mean": 0.0097,
+      "sub_stab": 0.6667,
+      "nw_t": 1.4733
+    }
+  },
+  "optimal_sigmoid_k": 1,
+  "cross_corr": {
+    "vs_str1701": -0.0194,
+    "vs_str1656": 0.0025,
+    "target": "<0.30 (cross-family diversifier mandate)",
+    "ym_alignment_used": true,
+    "str1701_n_periods": 192,
+    "str1656_n_periods": 187
+  },
+  "tdc_q5": {
+    "vs_pg2_str1701": 0.1706,
+    "vs_str1656": 0.1899,
+    "independence_baseline": 0.2,
+    "target": "<0.30"
+  },
+  "regime_conditional": {
+    "regime": [
+      "NORMAL",
+      "CAUTION",
+      "BULL"
+    ],
+    "n_periods": [
+      51,
+      10,
+      131
+    ],
+    "icir": [
+      0.0975,
+      -0.0983,
+      0.157
+    ],
+    "ic_mean": [
+      0.0088,
+      -0.01,
+      0.0128
+    ],
+    "pos_pct": [
+      0.5098,
+      0.5,
+      0.5878
+    ]
+  },
+  "best_regime": "BULL",
+  "ablation_summary": {
+    "joint_vs_linear_icir_lift": -0.0082,
+    "joint_vs_linear_lift_pct": -6.1833,
+    "interpretation": "Sigmoid ≤ linear — L-211 not avoided"
+  },
+  "graduation_check": {
+    "rank_ic_pass": false,
+    "icir_pass": false,
+    "sub_stab_pass": true,
+    "harvey_t_pass": false,
+    "harvey_5spec_pass": false,
+    "cross_family_pass_str1701": true,
+    "cross_family_pass_str1656": true,
+    "tdc_pg2_pass": true,
+    "dsr_pass": true,
+    "monotonicity_pass": false,
+    "overall_verdict": "REJECTED",
+    "gates_passed": 1
+  },
+  "pit_compliance": {
+    "z_score_aligned_only": true,
+    "factor_db_loaded_via_load_month_factors": true,
+    "universe_pit_membership": true,
+    "avgTV20_close_x_vol_lagged": true,
+    "fwd_return_21d_purged": true
+  },
+  "selected_k": 1,
+  "alpha_scores_columns": {
+    "primary": "alpha_final_k1_z",
+    "ablation": ["alpha_joint_z (k=2)", "alpha_linear_z", "alpha_skew_only_z", "alpha_accrual_only_z"],
+    "rationale": "k=1 selected as optimal via ICIR sweep. C1 fix: persisted score now matches package alpha_vector."
+  }
+}

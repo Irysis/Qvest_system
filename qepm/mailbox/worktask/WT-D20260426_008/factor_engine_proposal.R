@@ -98,19 +98,18 @@ universe_dt[is.na(KQ150), KQ150 := 0L]
 universe_dt[, in_K200_or_KQ150 := as.integer(K200 + KQ150 > 0L)]
 universe_dt <- universe_dt[in_K200_or_KQ150 == 1L, .(Date, Ticker, in_K200_or_KQ150)]
 
-# Build PIT mapping: for sig_date = month_start, use last month-end membership (t-1)
+# Build PIT mapping efficient: for each sig_date find the latest membership snapshot Date <= sd-1
 sig_dates <- sort(unique(base_dt$Date))
-build_universe_panel <- function(sig_dates_vec, univ_dt) {
-  rbindlist(lapply(sig_dates_vec, function(sd) {
-    target <- as.Date(sd) - 1L  # t-1 lag
-    snap <- univ_dt[Date <= target]
-    if (nrow(snap) == 0) return(NULL)
-    last_d <- max(snap$Date)
-    snap2 <- snap[Date == last_d, .(sig_date = sd, Ticker)]
-    snap2
-  }), fill = TRUE)
-}
-universe_panel <- build_universe_panel(sig_dates, universe_dt)
+sig_dt <- data.table(sig_date = sig_dates, target = as.Date(sig_dates) - 1L)
+# Get unique snapshot dates available
+snap_dates <- sort(unique(universe_dt$Date))
+# For each sig_date, find latest snap_date <= target via findInterval
+sig_dt[, snap_date := snap_dates[findInterval(target, snap_dates)]]
+sig_dt <- sig_dt[!is.na(snap_date)]
+# Join: each (sig_date, snap_date) → all members at that snap_date
+universe_panel <- universe_dt[sig_dt, on = c("Date" = "snap_date"), allow.cartesian = TRUE,
+                              .(sig_date = i.sig_date, Ticker)]
+universe_panel <- unique(universe_panel)
 setkey(universe_panel, sig_date, Ticker)
 cat("Universe panel rows (PIT t-1):", nrow(universe_panel), "\n")
 cat("Avg eligible tickers per sig_date:", round(nrow(universe_panel)/length(sig_dates), 1), "\n")
@@ -136,34 +135,20 @@ raw[, AvgTV20 := frollmean(AvgTV, n = 20L, align = "right"), by = Ticker]
 
 # Efficient PIT t-1 liquidity panel via rolling join
 # For each sig_date sd: find latest Date < sd per Ticker, take that AvgTV20
-sig_dates_dt <- data.table(sig_date = sig_dates)
-
-# Restrict raw to candidate tickers (universe set) first to speed up
 candidate_tickers <- unique(base_dt_uni$Ticker)
 raw_sub <- raw[Ticker %in% candidate_tickers, .(Ticker, Date, AvgTV20)][!is.na(AvgTV20)]
 setkey(raw_sub, Ticker, Date)
 
-# For each (Ticker × sig_date), find max Date < sig_date and take AvgTV20
-# Build cross panel using non-equi join
+# Rolling join: for each (Ticker, sig_date - 1), find latest Date <= that
 sig_x_ticker <- CJ(sig_date = sig_dates, Ticker = candidate_tickers)
-# rolling join: for each row in sig_x_ticker, find raw_sub row with Date <= sig_date - 1
 sig_x_ticker[, target_date := as.Date(sig_date) - 1L]
 setkey(sig_x_ticker, Ticker, target_date)
 
-# rolling join: roll = -Inf carries last available <= target
-liq_panel <- raw_sub[sig_x_ticker, on = c("Ticker", "Date" = "target_date"), roll = +Inf,
+# data.table rolling join (roll = "nearest_below"): join key = Ticker+Date,
+# i = sig_x_ticker key Ticker+target_date. For each i row, find x row with Ticker matched
+# and largest Date <= target_date.
+liq_panel <- raw_sub[sig_x_ticker, on = .(Ticker, Date = target_date), roll = TRUE,
                      .(sig_date = i.sig_date, Ticker, AvgTV20 = x.AvgTV20)]
-# arrow has odd join semantics; safer alternative below
-# Re-implement deterministically:
-liq_panel <- rbindlist(lapply(sig_dates, function(sd) {
-  target <- as.Date(sd) - 1L
-  # for each ticker: take last observation <= target
-  snap <- raw_sub[Date <= target]
-  if (nrow(snap) == 0) return(NULL)
-  out <- snap[, .SD[.N], by = Ticker, .SDcols = "AvgTV20"]  # last by ticker (already sorted by Date)
-  out[, sig_date := sd]
-  out[]
-}), fill = TRUE)
 liq_panel <- liq_panel[!is.na(AvgTV20) & AvgTV20 >= 2e8]
 cat("Liquidity panel rows (>=2e8):", nrow(liq_panel), "\n")
 
@@ -361,6 +346,23 @@ cat("Total combos:", total_combos, "\n")
 
 t_start <- Sys.time()
 all_results <- list()
+
+# Helper: per-combo turnover (computed on top20 names from this combo)
+calc_combo_turnover <- function(d, score_col) {
+  port_d <- d[top_flag == 1L, .(sig_date, Ticker)]
+  sd_seq <- sort(unique(port_d$sig_date))
+  if (length(sd_seq) < 2L) return(NA_real_)
+  prev_names <- port_d[sig_date == sd_seq[1], Ticker]
+  to_vec <- numeric(length(sd_seq) - 1L)
+  for (i in 2:length(sd_seq)) {
+    cur <- port_d[sig_date == sd_seq[i], Ticker]
+    n_changed <- length(setdiff(cur, prev_names))
+    to_vec[i-1] <- 2 * n_changed / max(1L, length(cur))
+    prev_names <- cur
+  }
+  mean(to_vec) * 12  # annualize
+}
+
 for (sl_name in names(slot_grid)) {
   sl <- slot_grid[[sl_name]]
   comp <- build_composite(base_dt_final, sl["w_core"], sl["w_def"])
@@ -382,8 +384,16 @@ for (sl_name in names(slot_grid)) {
         diag <- compute_diagnostics(ic_dt)
         if (is.null(diag)) next
 
-        # Composite metric: ICIR + 0.5 * sub_stab (penalize unstable)
-        metric <- diag$icir + 0.5 * (diag$sub_stability %||% 0)
+        # Compute combo turnover
+        turn_combo <- calc_combo_turnover(d, score_col)
+
+        # Composite metric: ICIR + 0.5*sub_stab - turnover_penalty
+        # Penalty: if turnover > 6.0 (600%), penalize heavily; soft penalty above 4.5 (450%)
+        turn_penalty <- if (is.na(turn_combo)) 0.5
+                         else if (turn_combo > 6.0) 0.5 + (turn_combo - 6.0) * 0.3
+                         else if (turn_combo > 4.5) (turn_combo - 4.5) * 0.2
+                         else 0
+        metric <- diag$icir + 0.5 * (diag$sub_stability %||% 0) - turn_penalty
         if (!is.finite(metric)) metric <- -Inf
 
         all_results[[length(all_results) + 1L]] <- list(
@@ -402,6 +412,8 @@ for (sl_name in names(slot_grid)) {
           sub_ic_p3 = diag$sub_ic_p3,
           n_obs = diag$n_obs,
           harvey_t_simple = diag$harvey_t_simple,
+          turnover_annual = turn_combo,
+          turn_penalty = turn_penalty,
           metric = metric
         )
 
@@ -711,10 +723,11 @@ top5_list <- list()
 for (i in seq_len(nrow(top5_methods))) {
   top5_list[[top5_methods$name[i]]] <- as.list(top5_methods[i, .(name, slot, w_core, w_def,
                                                                  persist_window, ema_alpha, regime_lambda,
-                                                                 rank_ic, icir, sub_stab, n_obs, metric, selected)])
+                                                                 rank_ic, icir, sub_stab, turnover_annual,
+                                                                 n_obs, metric, selected)])
 }
 cat("Top 5 methods (selected first):\n")
-print(top5_methods[, .(name, rank_ic, icir, sub_stab, metric, selected)])
+print(top5_methods[, .(name, rank_ic, icir, sub_stab, turnover_annual, metric, selected)])
 
 # =============================================================================
 # STEP 14 — Build alpha_package.json
@@ -992,9 +1005,10 @@ alpha_package <- list(
 
   selection_objective_log = list(
     objective = "icir",
-    composite_metric = "icir + 0.5 * sub_stability",
+    composite_metric = "icir + 0.5*sub_stability - turn_penalty (penalty: 0 if turn<=4.5, 0.2*(turn-4.5) if 4.5<turn<=6.0, 0.5+0.3*(turn-6.0) if turn>6.0)",
     grid_total_combos = total_combos,
-    final_metric_value = round(best_metric, 4)
+    final_metric_value = round(best_metric, 4),
+    turnover_target = "<=600% (annualized 2-sided), preferred <=450%"
   ),
 
   generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")

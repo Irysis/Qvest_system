@@ -1,0 +1,138 @@
+{
+  "task_id": "WT-D20260426_009",
+  "round": "R1",
+  "codex_stance": "REJECT",
+  "alpha_agent_response": "ACCEPT_WITH_HONEST_DISCLOSURE",
+  "resolution_count": "9/9",
+  "rebuilt_artifacts": [
+    "stage_artifacts/WT_D20260426_009/alpha_scores.parquet (added alpha_final_k1_z column)",
+    "qepm/mailbox/worktask/WT-D20260426_009/alpha_package.json (k=1 consistent)",
+    "stage_artifacts/WT_D20260426_009/alpha_validation.json (k=1 final)"
+  ],
+  "resolutions": [
+    {
+      "id": "C1",
+      "codex_severity": "HIGH",
+      "codex_concern": "Selected-signal lineage inconsistent: factor_specs and alpha_vector use sigmoid k=1, but diagnostics.icir=0.1247 and alpha_scores$alpha_joint_z are from k=2; 2023-12-28 top20 differs.",
+      "alpha_resolution": "FIXED. alpha_scores.parquet rebuilt with alpha_final_k1 + alpha_final_k1_z columns. Package alpha_vector top20 re-derived from alpha_final_k1_z at as_of=2023-12-28. Diagnostics rerun on k=1: ICIR=0.1313, Rank_IC=0.0112, NW-t=1.70. method_shopping_log explicitly marks k=1 selected. factor_formula_hash includes alpha_scores_col=alpha_final_k1_z.",
+      "verification": "alpha_scores$alpha_final_k1_z at Date=2023-12-28 sorted desc → top20 matches alpha_vector. ICIR(k=1)=0.1313 reflected in diagnostics.icir.",
+      "status": "RESOLVED"
+    },
+    {
+      "id": "C2",
+      "codex_severity": "HIGH",
+      "codex_concern": "Core statistical gates fail: rank_IC 0.0105 < 0.04, ICIR 0.1247 < 0.20, NW-HAC t 1.61 < 3.0, Harvey 5-spec 0/5, DSR missing.",
+      "alpha_resolution": "ACKNOWLEDGED — gates fail (k=1 final): ICIR 0.1313<0.20 FAIL, IC 0.0112<0.04 FAIL, NW-t 1.70<3.0 FAIL, 5-spec 0/5 FAIL. DSR computed = 0.7271 (Bailey-Lopez de Prado approx with N_trials=5, g3=-0.09, g4=2.80). NO claim of graduation. challenge_flags lists all 4 as severity=HIGH. hypothesis_status = REJECTED_BY_GATES. Discovery WT does NOT graduate to Deployment.",
+      "verification": "alpha_validation.json::graduation_check.overall_verdict = REJECTED. gates_passed = 1/5 (sub_stab only).",
+      "status": "RESOLVED_HONEST_DISCLOSURE"
+    },
+    {
+      "id": "C3",
+      "codex_severity": "HIGH",
+      "codex_concern": "Composite value negative: joint ICIR 0.1247 < linear 0.1329 < skew_only 0.1486; accrual_only -0.1116. Nonlinear joint does not avoid L-211.",
+      "alpha_resolution": "ACKNOWLEDGED. L-211 KR top-universe linear composite fail pattern REPRODUCED via nonlinear path. Joint(k=1)=0.1313 < Linear=0.1329 < Skew_only=0.1486. Accrual_only ICIR=-0.1116 (negative — accrual quality alone counterproductive in KR top universe top-100~350 names). Sigmoid steepness sweep (k=1,2,3) all FAIL to beat single-axis. hypothesis_summary explicitly states L-211 reproduced via different mechanism. challenge_flag L211_NOT_AVOIDED severity=HIGH. The nonlinear interaction did NOT bypass the structural pattern.",
+      "verification": "diagnostics.sigmoid_sweep_icir: k1=0.1313, k2=0.1247, k3=0.1149 — all below skew_only=0.1486. Single-axis dominates joint at every k.",
+      "status": "RESOLVED_HONEST_DISCLOSURE"
+    },
+    {
+      "id": "C4",
+      "codex_severity": "HIGH",
+      "codex_concern": "Recent-period dependence: 2008-14 ICIR=-0.041, 2020-26=+0.392, recent_3Y/full ratio 2.85>1.5.",
+      "alpha_resolution": "ACKNOWLEDGED. Sub-period ICIR (k=1): 2008-14=-0.0371 (NEG), 2015-19=+0.2540, 2020-26=+0.3629. Recent/full ratio = 0.3629/0.1313 = 2.76 > 1.5 RF-A3 threshold. challenge_flag RF-A3_RECENT_OVERFIT severity=MEDIUM added with explicit ratio. Sub_stab=0.67 (2/3 positive) is technically PASS but driven entirely by post-2014 data. Possible regime-specific or recent period structural shift (KR market post-COVID flow dynamics + Sloan-effect attenuation in early KR period).",
+      "verification": "alpha_validation.json::diagnostics.joint.sub_stab_periods 2008-14=-0.0371, 2015-19=0.2540, 2020-26=0.3629.",
+      "status": "RESOLVED_HONEST_DISCLOSURE"
+    },
+    {
+      "id": "C5",
+      "codex_severity": "MEDIUM",
+      "codex_concern": "Monotonicity not reported, fails by recompute: adj-decile ordering ~0.509 vs 0.80 threshold; top decile mean < bottom decile.",
+      "alpha_resolution": "FIXED + ACKNOWLEDGED. Computed explicitly: 10-decile mean fwd_ret_21d, monotonicity = adj-pair-increasing fraction = 0.444 (FAIL <0.7 target). Top-Bottom decile diff = -0.0038 (top decile actually LOWER mean return than bottom). Per-decile means added to log: D1=0.013 (highest!), D5=0.002, D10=0.006. The signal has weak/inverted ordering at extremes — strongest single failure mode beyond ICIR. challenge_flag MONOTONICITY_FAIL severity=MEDIUM added. Reflected in diagnostics.monotonicity=0.444 + diagnostics.top_minus_bottom_decile=-0.0038.",
+      "verification": "diagnostics.monotonicity=0.444; print of decile_ret in finalize_alpha_v2.R log shows D1>D10.",
+      "status": "RESOLVED_HONEST_DISCLOSURE"
+    },
+    {
+      "id": "C6",
+      "codex_severity": "MEDIUM",
+      "codex_concern": "No challenge_note.md or RF-A1~A7 challenge matrix; reproduction_command points to missing run_all.R.",
+      "alpha_resolution": "PARTIALLY ADDRESSED. (a) challenge_flags array in alpha_package.json populated with 7 explicit flags (ALPHA_LAB_GATE_FAIL, RANK_IC_FAIL, HARVEY_T_FAIL, HARVEY_5SPEC_FAIL, L211_NOT_AVOIDED, RF-A3_RECENT_OVERFIT, MONOTONICITY_FAIL) + 1 INFO (CROSS_FAMILY_LOW_CORR). All have explicit detail and severity. (b) reproduction_command in lineage points to factor_engine_proposal.R (which exists, NOT run_all.R). The lineage_utils default reproduction_command template uses run_all.R but our pipeline driver is factor_engine_proposal.R + finalize_alpha_v2.R. Updated lineage extra includes both file paths. NO separate challenge_note.md created — challenge_flags array serves this role per alpha_package schema v1.",
+      "verification": "alpha_package.json::challenge_flags has 8 entries (7 HIGH/MEDIUM + 1 INFO). artifact_lineage.json entries extra.method_selected references both R files.",
+      "status": "RESOLVED_PARTIAL"
+    },
+    {
+      "id": "C7",
+      "codex_severity": "MEDIUM",
+      "codex_concern": "weights.csv, covariance.parquet, risk_package, optimization_package absent — schedule + PSD checks not triangulated.",
+      "alpha_resolution": "OUT_OF_SCOPE for Alpha Agent. Per alpha_research_init.md::strict_prohibitions: covariance and weights are Risk/Optimizer Agent territory. Common Charter principle 8 (No Silent Override) prohibits Alpha from producing those artifacts. Alpha Agent only produces alpha_package.json + alpha_scores.parquet + alpha_validation.json. Q-Lead orchestrates Risk Agent spawn AFTER Alpha completes. If Q-Lead chooses to proceed despite REJECTED verdict, Risk Agent will produce risk_package.json + covariance, then Optimizer produces weights.csv. Alpha Agent does NOT silently override that boundary.",
+      "verification": "alpha_research_init.md::strict_prohibitions lines 70-76 explicitly forbid covariance/weights from Alpha. Charter principle 8.",
+      "status": "RESOLVED_BOUNDARY"
+    },
+    {
+      "id": "Q1",
+      "codex_severity": "ALPHA_SPECIFIC",
+      "codex_concern": "Can this factor maintain t_NW > 2.95 after k=1 score is persisted and retested in fund-of-fund environment?",
+      "alpha_resolution": "NO. Persisted k=1 NW-t = 1.70 (after rebuild). Even with k=1 (best k), NW-t still <2.0. Fund-of-fund retest would require ICIR ≥0.20 + NW-t ≥3.0 and the alpha fails both. Not deployable. The cross-family diversification finding (corr<0.05 vs STR_1701, STR_1656) is interesting structurally but cannot rescue an alpha source that itself fails statistical validity. RECOMMENDATION: TERMINATE this hypothesis path. Future Track B exploration should consider: (1) ML nonlinear (XGBoost depth interactions) instead of sigmoid product, (2) longer history factors (D43_Skewness, R09_Coskewness) as alternatives, (3) regime-conditional sub-strategy isolated to BULL only (where ICIR is 0.36).",
+      "verification": "diagnostics.harvey_t_stat=1.70 < 2.95. graduation_check.harvey_t_pass=FALSE.",
+      "status": "RESOLVED_TERMINATE_RECOMMENDATION"
+    },
+    {
+      "id": "Q2",
+      "codex_severity": "ALPHA_SPECIFIC",
+      "codex_concern": "Is alpha vector free of future leakage after retaining Usable_Date evidence for AC18 and R13?",
+      "alpha_resolution": "PIT-COMPLIANT BY CONSTRUCTION. (a) AC18_Accrual_Quality + R13_NCSKEW are loaded via factor_db_connector::load_month_factors(sig_date), which enforces Usable_Date<=sig_date (C14). (b) Z_Score_Aligned column is direction-aligned PIT-safe (C13: no NEGATE/FLIP_SIGN). (c) align_factor_direction in connector logs PIT-safe sig_date inference + IC fallback. (d) AvgTV20 = Close*Vol with shift(frollmean(...20...), 1L) — explicit 1d lag (C10). (e) Forward returns fwd_ret_21d use cumsum from Date+1 to Date+22, no contamination of sig_date. (f) Regime indicator vol_252_lag = shift(vol_252, 1L) before expanding percentile (C9). (g) sub-period split by year(Date) — not future-looking. NO Usable_Date column in alpha_scores because it's inherited via load_month_factors interface (factor_db_connector embeds the check internally). Codex pit_c1_c15_audit confirms C13/C14/C15/C9/C4 all PASS.",
+      "verification": "factor_db_connector.R log [align_factor_direction] PIT-safe sig_date=... IC-inferred=268. Codex audit pit_c1_c15_audit C13=PASS, C14=PASS, C15=PASS, C9=PASS, C4=PASS.",
+      "status": "RESOLVED_PIT_PASS"
+    }
+  ],
+  "additional_disputes_resolution": [
+    {
+      "dispute": "Stage artifacts dir qepm/stage_artifacts/WT_WT-D20260426_009 absent",
+      "resolution": "False alarm. The WT-D template uses stage_artifacts/WT_D20260426_009 (no qepm/ prefix, no double WT_ prefix). Confirmed by alpha_research_init.md::pipeline Step 7 (`stage_artifacts/WT_{id}/`) where `{id}` = D20260426_009 with WT_ prefix added. Path stage_artifacts/WT_D20260426_009/ exists with alpha_scores.parquet + alpha_validation.json. Per output_contract."
+    },
+    {
+      "dispute": "Sector-neutral IC degradation not reported",
+      "resolution": "Sector neutralization not applied because Z_Score_Aligned from load_month_factors is already cross-sectional (per-Date) z-scored — partial size/sector implicit through the universe restriction (K200∪KQ150 = mostly KOSPI mid/large-cap + KOSDAQ 150). Explicit sector residualization NOT done — would need additional rolling regression per ME. Given alpha already FAILS at non-neutralized level (ICIR 0.1313<0.20), sector-neutral IC would only be lower or equal (post-neutralization typically reduces IC magnitude). Skipped to avoid false rescue narrative. Future iter: if hypothesis revived, must add sector-neutral diagnostic."
+    },
+    {
+      "dispute": "Page-level academic references + KR-specific mechanism validation missing",
+      "resolution": "References cited at section level (Chen-Hong-Stein 2001 §3 NCSKEW formula derivation; Sloan 1996 §IV.A accrual quality definition; Hong-Stein 1999 §III differential information aggregation). KR-specific Sloan replication: AC18 factor IS the KR replication built into Factor DB (AC family v6.1). KR Lee-Liu 2014 (post-2008 flow reversal) cited in request.json hypothesis_description but NOT directly tested as a feature in this alpha — it provided the directional intuition for cross-family diversifier mandate (which DID succeed: corr<0.01)."
+    }
+  ],
+  "rationalization_red_flags_addressed": [
+    {
+      "phrase_codex_flagged": "L-211 avoidance via nonlinear interaction",
+      "resolution": "RETRACTED. Joint sigmoid did NOT avoid L-211 — same failure pattern reproduced via nonlinear path. hypothesis_summary updated to acknowledge this explicitly: 'L-211 reproduced via nonlinear path (different mechanism, same failure)'."
+    },
+    {
+      "phrase_codex_flagged": "cross-family라 5/5는 어려워",
+      "resolution": "DROPPED from hypothesis_summary. The 5/5 difficulty claim was a request.json mandate hedge, not justification. Final result is 0/5 (worse than the relaxed 3/5 target), so any difficulty-discount narrative is removed."
+    },
+    {
+      "phrase_codex_flagged": "분산 효과로 SR 2.0 도달 가능",
+      "resolution": "INVALID PREMISE. SR 2.0 reachability requires the diversifier alpha source itself to be valid. Since alpha source fails 4/5 gates, the SR 2.0 path through this hypothesis is closed. Future PG2 trio scenario (STR_1701 60% + V3 20% + STR_1656 20%) does NOT improve via V3 because V3 has near-zero IC mean. Removed from hypothesis_summary."
+    }
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "PASS",
+    "agree_with_claude": "PARTIAL_AGREE",
+    "alpha_position": "Codex is correct on C1 (k=1 vs k=2 inconsistency — fixed by rebuild). Codex is correct on C2-C5 gate failures — Alpha agrees and discloses honestly. C7 is out-of-scope per role boundary. Q1 leads to TERMINATE recommendation. Q2 PIT verified.",
+    "two_source_pass": "Alpha self-audit + Codex independent audit both flag the same failures (4 statistical gate FAIL + L-211 reproduced + RF-A3 recent overfit). Triangulation achieved on the failure verdict."
+  },
+  "final_verdict": {
+    "alpha_agent_status": "ALPHA_DONE_REJECTED",
+    "deployment_recommendation": "DO_NOT_DEPLOY",
+    "track_b_iter_16_outcome": "FAILED (alpha source ICIR/IC/Harvey-t/5-spec all FAIL)",
+    "useful_finding_for_future_iters": [
+      "AC18_Accrual_Quality alone has NEGATIVE ICIR (-0.1116) in KR top universe — Sloan accrual effect attenuated/inverted in KR large-cap names",
+      "R13_NCSKEW alone has best ICIR (0.1486) among the 4 variants — single-factor would be the path forward, not joint",
+      "Cross-family diversification mandate DOES work structurally: corr(joint, STR_1701)=-0.0194, corr(joint, STR_1656)=0.0025, TDC q5=0.17 (below independence baseline 0.20)",
+      "2008-14 negative ICIR vs 2020-26 +0.36 suggests regime-conditional alpha possibility — BULL-only sub-strategy is the highest-ICIR isolated subset",
+      "L-211 KR top universe linear composite fail extends to nonlinear sigmoid joint (same structural pattern via different mechanism)"
+    ],
+    "next_iter_suggestions": [
+      "Iter 17: regime-conditional NCSKEW_only BULL-only sub-strategy (single-factor, not joint)",
+      "Iter 18: ML interaction (XGBoost depth=4 with NCSKEW + Accrual + interaction terms) instead of sigmoid product",
+      "Iter 19: Different cross-family pair — momentum-volatility joint (M family + R family) with same nonlinear approach",
+      "TERMINATE: avoid further variants of NCSKEW × Accrual joint structure"
+    ]
+  }
+}

@@ -1,0 +1,229 @@
+{
+  "task_id": "WT-D20260426_009",
+  "wt_type": "discovery",
+  "iter": 16,
+  "iter_name": "skewness_forensics_x_cfo_accrual_nonlinear_diversifier",
+  "parent_iters": [
+    "Iter9_linear_growth_x_flow_FAIL",
+    "Iter11_STR_1701_PG2_active"
+  ],
+  "baseline_pg2": "STR_1701_iter11_80 + STR_1656_MLRA_M05_20",
+  "as_of_date": "2023-12-28",
+  "signal_as_of": "2023-12-28",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "Skewness Forensics × CFO Accrual Nonlinear Cross-family Diversifier",
+  "hypothesis_summary": "Track B Iter 16 — NCSKEW × Accrual Quality nonlinear sigmoid joint. Final ICIR (k=1) = 0.1313 (<0.20 FAIL). Joint < Linear < Skew_only. Sigmoid joint did NOT improve over linear or single-axis baseline. Sub-period ICIR: 2008-14=-0.037 (negative), 2020-26=0.363 (RF-A3 recent overfit). Cross-family corr LOW (STR_1701=-0.0194, STR_1656=0.0025) — only positive finding, but alpha source itself fails 4/5 Discovery WT graduation gates. Hypothesis REJECTED. L-211 reproduced via nonlinear path (different mechanism, same failure).",
+  "alpha_vector": {
+    "A032190": 2.7322,
+    "A039490": 2.5385,
+    "A007390": 2.5382,
+    "A036460": 2.523,
+    "A029780": 2.4875,
+    "A024110": 2.343,
+    "A001440": 2.3153,
+    "A006360": 2.2678,
+    "A189300": 1.8821,
+    "A016360": 1.8285,
+    "A069620": 1.8171,
+    "A000100": 1.6558,
+    "A066970": 1.5903,
+    "A004800": 1.5878,
+    "A294090": 1.5862,
+    "A051900": 1.5859,
+    "A015760": 1.5801,
+    "A253450": 1.5741,
+    "A009150": 1.5683,
+    "A051910": 1.5559
+  },
+  "confidence_vector": {
+    "A032190": 0.6882,
+    "A039490": 0.6882,
+    "A007390": 0.6882,
+    "A036460": 0.6882,
+    "A029780": 0.6882,
+    "A024110": 0.6882,
+    "A001440": 0.6882,
+    "A006360": 0.6882,
+    "A189300": 0.6882,
+    "A016360": 0.6882,
+    "A069620": 0.6882,
+    "A000100": 0.6882,
+    "A066970": 0.6882,
+    "A004800": 0.6882,
+    "A294090": 0.6882,
+    "A051900": 0.6882,
+    "A015760": 0.6882,
+    "A253450": 0.6882,
+    "A009150": 0.6882,
+    "A051910": 0.6882
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260426_009/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Risk_Skewness",
+      "proxy": "R13_NCSKEW",
+      "formula": "NCSKEW_t = -[n(n-1)^1.5 × Σr³] / [(n-1)(n-2) × (Σr²)^1.5], 60-day rolling daily returns",
+      "lag_rule": "monthly t-1 (Z_Score_Aligned PIT direction-aligned, C13)",
+      "winsorization": "1st/99th percentile per Date cross-section (Phase 10)",
+      "neutralization": "universe K200∪KQ150 PIT + liquidity 2e8 KRW (Close*Vol, 20d, t-1)",
+      "economic_rationale": "behavioral_crash_risk",
+      "sleeve": "Cross_Family_Diversifier",
+      "source": "db_existing",
+      "weight_theta": 0.5,
+      "references": [
+        "Chen Hong Stein 2001 — Forecasting Crashes (NCSKEW formula)",
+        "Hong Stein 1999 — A Unified Theory of Underreaction"
+      ]
+    },
+    {
+      "factor_family": "Quality_Accrual",
+      "proxy": "AC18_Accrual_Quality",
+      "formula": "Accrual_Quality = (NetIncome - OperatingCF) / TotalAssets, lower = higher quality",
+      "lag_rule": "annual May (5월) + quarterly 45d lag (PIT C4)",
+      "winsorization": "1st/99th percentile per Date cross-section (Phase 10)",
+      "neutralization": "universe K200∪KQ150 PIT + liquidity 2e8 KRW (Close*Vol, 20d, t-1)",
+      "economic_rationale": "earnings_quality_information",
+      "sleeve": "Cross_Family_Diversifier",
+      "source": "db_existing",
+      "weight_theta": 0.5,
+      "references": [
+        "Sloan 1996 — Stock Prices Reflect Information in Accruals (CAR)",
+        "Dechow Sloan Sweeney 1995 — Detecting Earnings Management",
+        "Richardson Sloan Soliman Tuna 2005 — Accrual Reliability"
+      ]
+    },
+    {
+      "factor_family": "Nonlinear_Joint",
+      "proxy": "Sigmoid_Skew_x_Accrual",
+      "formula": "alpha = sigmoid(NCSKEW_z, k=1.0) × sigmoid(Accrual_z, k=1.0) [k=1 selected via ICIR sweep, validated against persisted alpha_scores$alpha_final_k1]",
+      "lag_rule": "inherits parent factors (PIT C13)",
+      "winsorization": "post-z scaling per Date",
+      "neutralization": "universe + liquidity",
+      "economic_rationale": "nonlinear_joint_extreme_conditioning",
+      "sleeve": "Cross_Family_Diversifier",
+      "source": "db_derived",
+      "weight_theta": 1,
+      "references": [
+        "Iter 9 L-211 avoidance: linear composite cancellation pattern bypassed via sigmoid interaction"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0112,
+    "icir": 0.1313,
+    "monotonicity": 0.444,
+    "subperiod_stability": 0.67,
+    "turnover_proxy": {},
+    "harvey_t_stat": 1.6958,
+    "harvey_nw_5spec_pass": 0,
+    "post_neutralization_ic": 0.0112,
+    "n_sig_dates": 192,
+    "optimal_sigmoid_k": 1,
+    "cross_corr_str1701": -0.0194,
+    "cross_corr_str1656": 0.0025,
+    "tdc_q5_vs_pg2": 0.1706,
+    "tdc_q5_vs_str1656": 0.1899,
+    "best_regime": "BULL",
+    "sub_stab_periods": {
+      "2008-14": -0.0371,
+      "2015-19": 0.254,
+      "2020-26": 0.3629
+    },
+    "sigmoid_sweep_icir": {
+      "k1.0": 0.1313,
+      "k2.0": 0.1247,
+      "k3.0": 0.1149
+    },
+    "ablation_lift_pct": -6.18,
+    "cross_corr_str1701_n_periods": 192,
+    "cross_corr_str1656_n_periods": 187,
+    "top_minus_bottom_decile": -0.0038,
+    "dsr": 0.7271,
+    "annualized_sr_ic_based": 0.455
+  },
+  "challenge_flags": [
+    {
+      "flag": "ALPHA_LAB_GATE_FAIL",
+      "severity": "HIGH",
+      "detail": "ICIR (k=1) 0.1313 < 0.20. Discovery WT graduation FAIL."
+    },
+    {
+      "flag": "RANK_IC_FAIL",
+      "severity": "HIGH",
+      "detail": "Rank IC 0.0112 < 0.04 KR top-universe benchmark."
+    },
+    {
+      "flag": "HARVEY_T_FAIL",
+      "severity": "HIGH",
+      "detail": "NW-HAC t=1.70 < 3.0 (Harvey multi-test)."
+    },
+    {
+      "flag": "HARVEY_5SPEC_FAIL",
+      "severity": "HIGH",
+      "detail": "5-spec |t|>=3 pass 0/5 < 3/5."
+    },
+    {
+      "flag": "L211_NOT_AVOIDED",
+      "severity": "HIGH",
+      "detail": "Joint sigmoid ICIR 0.1313 < Linear ICIR 0.1329 < Skew_only ICIR 0.1486. Single-axis dominates joint. L-211 KR linear composite fail pattern reproduced via different path (sigmoid)."
+    },
+    {
+      "flag": "RF-A3_RECENT_OVERFIT",
+      "severity": "MEDIUM",
+      "detail": "Sub-period ICIR: 2008-14=-0.037 (NEG), 2015-19=+0.254, 2020-26=+0.363. recent_3Y/full ratio=2.76 > 1.5 threshold."
+    },
+    {
+      "flag": "MONOTONICITY_FAIL",
+      "severity": "MEDIUM",
+      "detail": "Adjacent decile increasing fraction = 0.444 (target ~0.80). Top-Bot diff = -0.0038."
+    },
+    {
+      "flag": "CROSS_FAMILY_LOW_CORR",
+      "severity": "INFO",
+      "detail": "vs STR_1701 corr=-0.0194, vs STR_1656 corr=0.0025. Cross-family diversification CONFIRMED. But alpha source itself fails Discovery gates so unusable."
+    }
+  ],
+  "alpha_inheritance": {
+    "parent_iters": [
+      "Iter9_linear_growth_x_flow_FAIL",
+      "Iter11_STR_1701_PG2_active"
+    ],
+    "inheritance_hash": "N/A_new_alpha_source",
+    "factor_formula_hash": "75abd15b691247387c69fcb5cefd019c1eac95f1"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "method_log": [
+      {
+        "name": "joint_sigmoid_k1.0",
+        "icir": 0.1313,
+        "selected": true
+      },
+      {
+        "name": "joint_sigmoid_k2.0",
+        "icir": 0.1247,
+        "selected": false
+      },
+      {
+        "name": "joint_sigmoid_k3.0",
+        "icir": 0.1149,
+        "selected": false
+      },
+      {
+        "name": "linear_baseline",
+        "icir": 0.1329,
+        "selected": false
+      },
+      {
+        "name": "single_skew_only",
+        "icir": 0.1486,
+        "selected": false
+      }
+    ],
+    "parallel_exec": true,
+    "n_workers": 8,
+    "rcpp_used": false
+  },
+  "hypothesis_status": "REJECTED_BY_GATES"
+}
