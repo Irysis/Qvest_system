@@ -328,16 +328,11 @@ if (length(raw_file) == 0) {
 cat("Raw data files:", paste(raw_file, collapse=", "), "\n")
 
 if (length(raw_file) > 0) {
-  raw <- readRDS(raw_file[1])
+  # RAWDATA is parquet format
+  raw <- as.data.table(read_parquet(raw_file[1]))
   cat("RAWDATA loaded. Rows:", nrow(raw), "Cols:", ncol(raw), "\n")
   cat("Columns:", paste(head(colnames(raw), 15), collapse=", "), "\n")
-  setDT(raw)
   raw[, Date := as.Date(Date)]
-  # Compute monthly return: Ret column
-  if ("Ret" %in% colnames(raw)) {
-    raw_m <- raw[Date >= as.Date("2024-01-01"), .(sig_date = floor_date_to_month(Date), Ticker, Ret)]
-    # Use as month return approximation
-  }
 } else {
   raw <- NULL
   cat("RAWDATA not found — using Iter11 OOS monthly returns as proxy\n")
@@ -366,7 +361,7 @@ if (nrow(alpha_ext) == 0) {
   if (!is.null(raw)) {
     if ("Ret" %in% colnames(raw)) {
       # Use daily close returns to compute monthly
-      raw_oos <- raw[Date >= as.Date("2023-12-01") & Date <= as.Date("2026-04-30")]
+      raw_oos <- raw[Date >= as.Date("2024-01-01") & Date <= as.Date("2026-04-30")]
       raw_oos[, YM := format(Date, "%Y-%m")]
       # Monthly return = product of daily returns
       raw_monthly_oos <- raw_oos[, .(Ret_1m = prod(1 + Ret, na.rm=TRUE) - 1,
