@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260426_006",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "STR_1656_M06 PG2-conditional ML diversifier reinforcement",
+  "hypothesis_description": "PG2 책 성과 개선 목적 — Iter 11 STR_1701 (80%) FIXED + STR_1656_MLRA_M05 (20%) 보강.\n\n## 동기 (PG2-conditional)\n- 2026-04-26 User OVERRIDE_004로 STR_1701 PG2 promotion. AB realized SR 1.4625 / MDD -33.95%.\n- 잔여 SR gap 0.5375 (목표 2.0). 단독 alpha로는 불충분.\n- STR_1701 단독 강화 (Iter 11 mutation)는 alpha source 단일성 위험.\n- STR_1656 ML diversifier 보강 (M05 → M06)으로 PG2 complementarity 향상이 본질.\n\n## 핵심 mandate (PG2 관점)\n- STR_1701 그대로 유지 (수정 X). 80% slot 고정.\n- STR_1656 → M06 신버전 design — 20% slot.\n- 평가 기준: PG2 blended (M06 20% + STR_1701 80%) Realized SR > 1.4625 baseline.\n- Single-strategy SR 비교 X — PG2 incremental SR 개선만 측정.\n\n## STR_1656 보강 영역 (Alpha agent 자율)\n1. Feature engineering 후보:\n   - KR FF5 v2 백필 (Iter 4 적립, HML/RMW/CMA monthly returns) — load_month_factors() 경유\n   - Iter 11 Linear Tilt alpha rank score (외부 input)\n   - Iter 5 multi-sleeve sleeve scores (Core/Defense/Cash overlay)\n   - 일간 309팩터 × 436개월 raw data (L-164 v1.1 carve-out 유지)\n2. 알고리즘 sweep:\n   - XGBoost (M05 baseline)\n   - LightGBM / CatBoost / TabNet / LSTM 비교\n   - ensemble averaging (multi-model)\n3. ML overfit 방지:\n   - walk-forward expanding (L-164 v1.1 mandate)\n   - cross-validation k=5\n   - regularization (early stopping + L1/L2)\n\n## Common Charter 8원칙 준수\n- PIT only (C1~C15) + L-164 v1.1 daily_factor_db_ml carve-out\n- 논문 출발점 — Gu Kelly Xiu 2020 / López de Prado 2018 / Avramov 2023\n- Factor Family vs Proxy 구분\n- Data Mining 방지 (Harvey 5-spec t > 2.95 + DSR_post > 3.0)\n- 비용 · 용량 · 군집 (15bps + 2e8 KRW + cor vs Iter 11 < 0.30)\n- No Silent Override (challenge_note 작성 의무)\n\n## Red Flag 자동 감지\n- RF-A1 sub_stab: STR_1701 0.060 미해결 → M06 sub_stab > 0.20 mandate\n- RF-A2 composite 개선 명확화\n- RF-A3 recent 3Y 과적합 → walk-forward 218m 검증\n- RF-A5 top decile illiquid → 2e8 KRW PIT enforced\n\n## expected_role + why_now (V6 Gap-Directed)\n- expected_role: ML_diversifier_with_pg2_complementarity\n- why_now: STR_1701 PG2 promotion 직후 잔여 SR gap 0.5375 — STR_1656 보강이 가성비 최고 (Iter 11 ↔ M05 cor 0.147 매우 독립적, 추가 ML feature engineering으로 +0.1~0.2 SR 개선 가능 typical).\n\n## 핵심 평가지표\n- PG2 blended SR realized > 1.4625 (baseline)\n- M06 단독 ICIR > 0.20 (Alpha Lab Gate)\n- Iter 11 ↔ M06 cor < 0.30\n- TDC q5 < 0.30 (꼬리 독립성)\n- M06 GFC-style crisis 0% loss 보호 유지 (M05 특성 보존)\n- Harvey 5-spec t > 2.95 (5/5 PASS 또는 ≥ 3/5)\n- DSR_post > 3.0",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-26",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
