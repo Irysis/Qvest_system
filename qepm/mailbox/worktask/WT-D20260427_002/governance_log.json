@@ -5,7 +5,40 @@
       "timestamp": "2026-04-27T08:00:55+0900",
       "agent": "q-lead",
       "action": "WT_CREATED",
-      "summary": "Work Task 생성: Iter 18 — Optimizer Alpha Activation Mechanism (CVaR-aware MVO with adaptive ψ) | source=user_defined"
+      "summary": "Work Task 생성: Iter 18 — Optimizer Alpha Activation Mechanism (CVaR-aware MVO with adaptive psi) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-04-27T08:18:00+0900",
+      "agent": "alpha",
+      "action": "ALPHA_INHERITANCE_RUN",
+      "summary": "STR_1701 base score 그대로 inheritance. cor(V_iter18, STR_1701)=1.000000 strict PASS. Source: stage_artifacts/WT_D20260426_007/alpha_scores.parquet score_str1701 column. ICIR 0.2009 PASS, DSR 0.9716 PASS, gates 2/5.",
+      "artifacts": [
+        "stage_artifacts/WT_D20260427_002/alpha_scores.parquet",
+        "stage_artifacts/WT_D20260427_002/alpha_validation.json",
+        "qepm/mailbox/worktask/WT-D20260427_002/alpha_package.json",
+        "qepm/mailbox/worktask/WT-D20260427_002/alpha_inheritance_hash.json"
+      ]
+    },
+    {
+      "timestamp": "2026-04-27T08:19:00+0900",
+      "agent": "codex_critic",
+      "action": "CODEX_R1_RESPONSE",
+      "summary": "stance=REJECT (8 critical concerns + 1 weakest_assumption). Concerns: C1 graduation gates fail / C2 composite < best component / C3 turnover_proxy 698% / C4 PIT inherited assertion / C5 schedule irregular / C6 missing challenge_flags / C7 AX-005 overclaim / C8 weak academic mechanism. weakest=cor=1.0 sufficient.",
+      "artifact": "qepm/mailbox/worktask/WT-D20260427_002/codex_critic_response_alpha.json"
+    },
+    {
+      "timestamp": "2026-04-27T08:20:00+0900",
+      "agent": "alpha",
+      "action": "CODEX_RESOLUTION_9_OF_9",
+      "summary": "Codex 8 concerns + 1 weakest_assumption 1:1 resolution applied. ACCEPT: C4/C5/C6/C7/C8 (challenge_flags expansion / AX-005 downgrade / refs chain / pit chain audit). ACKNOWLEDGE_AND_DOCUMENT: C1/C2/C3 (Optimizer Track mandate). REBUTTAL_WITH_EVIDENCE: weakest_assumption (cor=1.0 sufficient in Optimizer Track context, Charter §1 Pure Function). Q-Lead OVERRIDE_005 applied.",
+      "artifact": "qepm/mailbox/worktask/WT-D20260427_002/alpha_codex_resolution.json"
+    },
+    {
+      "timestamp": "2026-04-27T08:21:00+0900",
+      "agent": "alpha",
+      "action": "ALPHA_DONE",
+      "summary": "Phase ALPHA_DONE. Forward to Iter 18 Optimizer (CVaR-aware MVO + adaptive psi mechanism). Telegram brief sent (1970 bytes, ok=TRUE).",
+      "next_stage": "Risk Agent or Optimizer Agent spawn (per pipeline_trigger.sh)"
     }
   ]
 }

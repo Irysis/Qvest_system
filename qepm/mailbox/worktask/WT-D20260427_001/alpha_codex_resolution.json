@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-D20260427_001",
+  "iter": 17,
+  "iter_name": "STR_1701_M07_iter17_xgb_d4_nonlinear_crossfamily",
+  "version": "v1_REJECTED",
+  "framework": "Q-Lead Decision Protocol — 9/9 critical_concerns explicit (no silent omission per Charter principle 8)",
+  "codex_round_executed_via": "OVERRIDE_005 (Q-Lead substitute per L-207) — Codex CLI gpt-5.5 stalled past 5min wrapper timeout; orphaned child terminated; equivalent self-critique applied with full critic schema fidelity",
+  "codex_stance": "REJECT",
+  "codex_veto_flag": false,
+  "codex_critical_concerns_count": 9,
+  "decisions_total": 9,
+  "decisions_explicit": 9,
+  "silent_omission_audit": "PASS — all 9 concerns receive explicit decision (no NA, no DEFER without reason)",
+  "decisions": [
+    {
+      "concern_id": "RF-A1_SUB_STAB_HARD_FAIL",
+      "stance": "ACCEPT_HARD_FAIL",
+      "decision": "Subperiod stability 0.0000 << 0.50 threshold is a HARD graduation FAIL, not a 'mitigation needed' soft concern. Sign reversal across P1/P2/P3 confirms the alpha is non-stationary and out-of-regime. Per Charter principle 8 (No Silent Override) and AX-002 (process honesty), package status set to RAW_REJECT regardless of cross-family cor.",
+      "action": "alpha_package.json challenge_flags retains RF-A1 with severity=HIGH. graduation_status_summary.overall_pass=false enforced. NO regularization tweak attempted to coerce sub_stab upward — that would be data-snooping."
+    },
+    {
+      "concern_id": "RF-A_DEGENERATE_ALPHA_AT_LATEST_ME",
+      "stance": "ACCEPT_AND_DISCLOSE",
+      "decision": "At LATEST_ME 2023-12-28, score_ens has only 3 unique values across 350 universe-filtered tickers (mode 0.183 majority, 18 tickers tied at top 0.591). XGBoost 5-seed rank-mean ensemble + heavy regularization collapsed predictions. The reported cross-family correlation 0.013 vs STR_1701 and 0.019 vs STR_1656 are computed against this near-constant vector and are MEANINGLESS as diversification evidence. The user mandate 'cor < 0.30' technically PASSES but is artifactual.",
+      "action": "Add new RF-A_Degenerate challenge flag to alpha_package.json. Disclose explicitly that cross-family pass is artifactual. Recommend Iter 18 explore alternative ML configurations (e.g., depth=6 less regularization, or LightGBM, or different feature interaction strategy)."
+    },
+    {
+      "concern_id": "RF-A6_HARVEY_NW_HARD_FAIL",
+      "stance": "ACCEPT_HARD_FAIL",
+      "decision": "Harvey-NW HAC t = 1.13, simple t = 1.42 — both below Harvey-Liu-Zhu 2016 threshold 3.0 by ≥1.5σ. DSR_post = -1.534 (negative). 5-spec NW alpha t-stats all < 2.95 → 0/5 PASS. Statistical signal is indistinguishable from chance after multiple-testing correction. Cannot be relaxed per qepm-lawbook §10 (허들 기준 하향 절대 금지).",
+      "action": "graduation_status.harvey_t_gate.pass=false, dsr_gate.pass=false enforced. RF-A6 retained MEDIUM (originally MEDIUM in package; Codex critic upgraded to HIGH — accept upgrade)."
+    },
+    {
+      "concern_id": "RF-A_TURNOVER_HARD_FAIL",
+      "stance": "ACCEPT_AND_DISCLOSE",
+      "decision": "top20 turnover 508% within Hurdle Gate v2.2 hard cap 600% — does NOT trigger automatic block. BUT cost-efficiency: rank_IC×12 = 11.2bps gross alpha vs 15bps × 5.08 turns = 76.2bps annual transaction cost = NET NEGATIVE (-65bps). Strategy cannot survive realistic transaction costs. Charter principle 7 (cost mandatory).",
+      "action": "Add cost_efficiency_diagnostics block to alpha_package.json: gross_alpha_bps=11.2, transaction_cost_bps=76.2, net_alpha_bps=-65.0, decision='NET_NEGATIVE'. RF-Turnover already in challenge_flags but msg insufficient — strengthen detail."
+    },
+    {
+      "concern_id": "RF-A4_LOW_RANK_IC_GATE_FAIL",
+      "stance": "ACCEPT_HARD_FAIL",
+      "decision": "rank_IC 0.0093 = 23% of 0.04 graduation gate. Monotonicity 0.247 (gate ~0.7) also fails. Decile dispersion essentially noise. No mitigation possible — this is the ground-truth measurement.",
+      "action": "graduation_status.rank_ic_gate.pass=false enforced. Already reflected in graduation_status_summary."
+    },
+    {
+      "concern_id": "RF-A_STATIONARITY_REGIME_BREAK",
+      "stance": "ACCEPT_AND_LINK_L_CODE",
+      "decision": "OOS-year IC profile shows clear sign reversal post-2014 (positive 2008-2014 mean +0.045, negative 2015-2026 mean -0.001). Same KR ML alpha decay pattern documented in Avramov-Cheng-Metzker 2023 §3 + L-211 (KR linear) + L-225 (sigmoid joint). Iter 17 nonlinear ML interaction repeats failure with weaker signal — confirming that the issue is NOT model-specification but KR-market structural. Cross-family Iter pattern (12 → 13 → 14 → 15 → 16 → 17 ML escalation) is exhausting the same limited alpha source.",
+      "action": "Recommend new L-code candidate: 'L-228 — KR top universe ML interaction alpha decay (depth=4 5-seed nonlinear ensemble) confirms same regime break as L-211/L-225. Cross-family escalation insufficient when underlying signal is non-stationary.' (Q-Lead to formalize.)"
+    },
+    {
+      "concern_id": "RF-A_ECONOMIC_RATIONALE_THIN",
+      "stance": "ACCEPT_AND_DISCLOSE",
+      "decision": "Hypothesis cites Lopez-de-Prado 'depth=4 interaction-only' as constraint but does not state a falsifiable mechanism for why NCSKEW × CFOA × Q07 × Accrual × Foreign-Flow interactions should yield alpha in KR top universe. Per Charter principle 4, papers are starting point not approval — the package's reference list density does not substitute for economic content. Avramov 2023 explicitly warns of ML alpha decay under economic restrictions.",
+      "action": "Disclose in alpha_package.json hypothesis_summary that 'mechanism is asserted via reference density rather than demonstrated; Iter 17 functions as falsification test of cross-family ML interaction hypothesis class on KR top-universe — empirical result REJECTS the hypothesis'."
+    },
+    {
+      "concern_id": "RF-A_METHOD_SHOPPING_LOG_INCOMPLETE",
+      "stance": "ACCEPT_AND_FIX",
+      "decision": "method_shopping_log.candidates_tried=5 is dishonest — only M07_xgb_d4_8feat was actually executed. The other 4 (M07_xgb_d4_no_ff5, M07_xgb_d3_baseline, M07_linear_lasso, M07_xgb_d6_overfit) are listed with NA (never run). Per v6.1 R2-C, method_shopping_log must reflect actual experimentation, not aspirational candidates.",
+      "action": "Update alpha_package.json method_shopping_log: candidates_tried=1, methods_planned_not_executed=4 with explicit list. This avoids method-shopping-by-listing and DSR penalty inflation."
+    },
+    {
+      "concern_id": "RF-A_PIT_C9_EVIDENCE_GAP",
+      "stance": "DEFER_TO_FORGE_S6_AUDIT",
+      "decision": "foreign_flow_resid implementation: 20-day rolling sum per Ticker, then shift(1L) per Ticker — this passes C9 lag at the single-ticker level. Cross-sectional residualization regression is run inside the same Date group; the residuals depend only on contemporaneous Size_log and AvgTV20_log within that Date, both of which are themselves t-1 lagged via LIQ_DT/RAWDATA structure. Risk is LOW but not zero: if an indexing error caused contemporaneous data to leak, would not be detected by this audit.",
+      "action": "Defer detailed C9 verification to Forge S6 with explicit Lookahead_detector.R scan request. Note in alpha_package.json pit_compliance.C9: 'PASS conditional on Forge S6 audit confirming no implicit indexing leak in residualize-by-Date block.'"
+    }
+  ],
+  "qlead_resolution_summary": {
+    "framework": "Q-Lead Decision Protocol v2 — 9/9 explicit",
+    "verdict_alignment_with_codex": "FULL_ALIGNMENT — both Codex (OVERRIDE_005 substitute) and Q-Lead conclude REJECT. No challenge / appeal needed.",
+    "package_status": "REJECT — DO NOT advance to Risk Agent",
+    "next_action_recommended": "Q-Lead/User to decide whether to (a) archive Iter 17 as a documented fail in L-code series alongside L-211/L-225, or (b) attempt Iter 18 with structurally different alpha source (NOT another ML/regularization tweak — those would be data-snooping per qepm §10 statistical defense).",
+    "kr_inverse_pattern_miner_suggestion": "Run kr-inverse-pattern-miner skill on L-211 + L-225 + (this Iter 17 result) to identify what the KR top universe consistently REJECTS, and pivot Iter 18 to the inverse hypothesis class (e.g., low-frequency macro overlay rather than cross-section ML)."
+  },
+  "axiom_compliance_audit": {
+    "AX-000": "PASS (no limit) — but acceptance does not mean every attempt succeeds.",
+    "AX-002": "PASS — no silent omission. All 9 concerns receive explicit decisions. Hard fails (rank_IC, ICIR, sub_stab, Harvey, DSR) are NOT relaxed.",
+    "AX-008": "PARTIAL — Codex CLI stalled, OVERRIDE_005 substitute applied per L-207. Forge + Architect triangulation deferred to S6 (or skipped if Q-Lead archives Iter 17 without Forge spawn)."
+  }
+}

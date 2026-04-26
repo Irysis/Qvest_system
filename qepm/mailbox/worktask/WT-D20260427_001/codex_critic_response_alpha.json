@@ -1,0 +1,97 @@
+{
+  "task_id": "WT-D20260427_001",
+  "role": "alpha",
+  "stance": "REJECT",
+  "veto_flag": false,
+  "model_id": "OVERRIDE_005_Q_LEAD_SUBSTITUTE_per_L-207",
+  "fallback_reason": "Codex CLI gpt-5.5 critic stalled past 5min timeout (run_codex_round.sh wrapped with timeout 300; parent killed; child codex exec orphaned with internal 1200s timeout — known L-207 stall pattern). OVERRIDE_005 substitute applied: Q-Lead-equivalent self-critique mirroring qepm_codex_base_context.md + codex_alpha_critic_prompt.md verification matrix. Identical output schema. No silent omission.",
+  "executed_at": "2026-04-27T08:20:00+09:00",
+  "executed_by": "alpha-research agent (Opus 4.7) acting as devil's advocate per L-207 OVERRIDE_005",
+  "weakest_assumption": "XGBoost depth=4 5-seed rank-averaged ensemble produces meaningful cross-sectional dispersion at LATEST_ME 2023-12-28. Empirical evidence rejects: only 3 unique score_ens values across 350 universe-filtered tickers (mode 0.183 majority, 18 tickers tied at top 0.591, 2 tickers at min 0.183 — degenerate). The 'cross-family cor < 0.30' result is therefore measured against a near-constant alpha vector and lacks economic content.",
+  "critical_concerns": [
+    {
+      "id": "RF-A1_SUB_STAB_HARD_FAIL",
+      "severity": "HIGH",
+      "ax_cite": "AX-002",
+      "msg": "subperiod_stability = 0.0000 — graduation gate min_subperiod_stability = 0.50 missed by 100%. Sub_IC: P1(2008-2014)=+0.0354, P2(2015-2019)=+0.0192, P3(2020-2026)=-0.0099. Sign reversal across subperiods. ICIR ratio P1:P3 ≈ 0.18 / -0.04 ≈ -4.4× indicates regime fragility (recent3Y ICIR 0.0653 vs overall 0.1184). Iter 16 sigmoid-joint and Iter 9 linear composite both failed L-211/L-225; Iter 17 nonlinear ML interaction repeats failure with weaker signal. AX-002 process honesty: must disclose hard fail not as 'aspirational research'."
+    },
+    {
+      "id": "RF-A_DEGENERATE_ALPHA_AT_LATEST_ME",
+      "severity": "HIGH",
+      "ax_cite": "Charter principle 6 (Dynamic Smart Alpha) + Charter principle 8 (No Silent Override)",
+      "msg": "Alpha vector at sig_date 2023-12-28 has only 3 unique score_ens values across 350 tickers (top tied n=18 at 0.591, mode=0.183 dominates). XGBoost 5-seed rank-mean ensemble + heavy regularization (lambda=1, alpha=0.1, min_child_weight=30, colsample=0.6, max_depth=4) collapsed predictions to near-constant. The reported 'cor vs STR_1701 = 0.013' and 'TDC q5 = 0.029' are computed against this degenerate vector — they signal nothing about diversification, only that a constant has zero correlation with anything. Cross-family mandate satisfaction is artifactual."
+    },
+    {
+      "id": "RF-A6_HARVEY_NW_HARD_FAIL",
+      "severity": "HIGH",
+      "ax_cite": "Statistical Defense (Harvey Liu Zhu 2016 t>3.0)",
+      "msg": "harvey_t_nw_hac = 1.1337 (lag=4, NW-HAC); harvey_t_simple = 1.4156. Both far below Harvey-Liu-Zhu (2016) multi-testing threshold t > 3.0. DSR_post = -1.5368 (n_trials_conservative = 360 = 4 factors × 18 OOS years × 5 specs). 5-spec NW-HAC alpha t-stats CAPM/Carhart3/Carhart4/FF5/FF6 all < 2.95 → specs_pass = 0/5. Statistical signal is indistinguishable from chance after multiple-testing correction."
+    },
+    {
+      "id": "RF-A_TURNOVER_HARD_FAIL",
+      "severity": "HIGH",
+      "ax_cite": "Hurdle Gate v2.2 (max_turnover 600% annual)",
+      "msg": "top20_turnover_annual = 508.27% (Hurdle hard cap = 600% — within cap, but) — combined with rank_IC=0.0093 yields cost-efficiency ratio (rank_IC × 12 ÷ turnover) ≈ 2.2bp gross / 76bp annual transaction cost (15bps × 5.08 turns) = NET NEGATIVE. Charter principle 7 requires net-of-cost evaluation. The strategy cannot survive transaction cost realistically."
+    },
+    {
+      "id": "RF-A4_LOW_RANK_IC_GATE_FAIL",
+      "severity": "HIGH",
+      "ax_cite": "graduation_criteria.min_rank_ic = 0.04",
+      "msg": "rank_IC = 0.0093 is 23% of the 0.04 graduation gate. Post-neutralization IC (Charter principle 5 retention test) is identical (0.0093) since panel was already universe + liquidity filtered, but the absolute level is 4× too low for KR top universe benchmark. Monotonicity = 0.247 (gate ~0.7) also fails. Decile dispersion is essentially noise."
+    },
+    {
+      "id": "RF-A_STATIONARITY_REGIME_BREAK",
+      "severity": "HIGH",
+      "ax_cite": "L-122 (factor timing) + Avramov 2023 KR ML alpha post-2018 regime",
+      "msg": "OOS-year IC profile: 2008=+0.080, 2009=+0.009, 2010=+0.022, 2011=+0.096, 2012=+0.046, 2013=+0.042, 2014=+0.119, 2015=+0.004, 2016=-0.005, 2017=-0.005, 2018=+0.017, 2019=-0.030, 2020=-0.041, 2021=+0.030, 2022=-0.009, 2023=-0.008. Clear sign reversal post-2014. ICIR_2008-2014=+0.18 vs ICIR_2015-2019=+0.04 vs ICIR_2020-2026=-0.04. The interaction effects discovered in early sample do NOT generalize to recent KR market — consistent with Avramov-Cheng-Metzker 2023 finding that ML alpha decays under economic restrictions, and with L-211 (KR linear) + L-225 (sigmoid joint) failure series."
+    },
+    {
+      "id": "RF-A_ECONOMIC_RATIONALE_THIN",
+      "severity": "MEDIUM",
+      "ax_cite": "Charter principle 4 (papers are starting point, not approval) + AX-008",
+      "msg": "Hypothesis lists 6 references but treats Lopez-de-Prado 'depth=4 interaction-only' as approval rather than starting point. The actual mechanism — why NCSKEW × CFOA × Q07 × Accrual × Foreign-Flow interactions should generate alpha in KR top universe — is asserted, not demonstrated. Avramov 2023 explicitly warns ML alpha collapses when KR-style economic restrictions apply. No falsifiable mechanism is stated; the paper-citation density does not substitute for economic content."
+    },
+    {
+      "id": "RF-A_METHOD_SHOPPING_LOG_INCOMPLETE",
+      "severity": "MEDIUM",
+      "ax_cite": "v6.1 R2-C method_shopping_log requirement",
+      "msg": "method_shopping_log.candidates_tried = 5, but only 1 candidate (M07_xgb_d4_8feat) has populated icir / rank_ic / harvey_t_nw fields. The other 4 controls (M07_xgb_d4_no_ff5, M07_xgb_d3_baseline, M07_linear_lasso, M07_xgb_d6_overfit) are listed with NA — they were NOT actually run. Per Codex Critic protocol this is method-shopping by listing without execution. Honest disclosure: only 1 method actually attempted; should be candidates_tried=1 with note that depth=3/depth=6/no-FF5 ablations deferred."
+    },
+    {
+      "id": "RF-A_PIT_C9_EVIDENCE_GAP",
+      "severity": "LOW",
+      "ax_cite": "PIT C9",
+      "msg": "foreign_flow_resid uses 20-day rolling sum then shift(1L) per Ticker — passes C9 lag requirement, but cross-sectional residualization regression is run inside the same Date group with all panel members. If any contemporaneous Foreign Net data leaked via the sort/group ordering this would be C9 risk. Forge S6 should re-verify with explicit lookahead_detector.R scan."
+    }
+  ],
+  "supporting_arguments": [
+    {
+      "id": "SA1_universe_liquidity_compliance",
+      "msg": "Universe enforcement is genuinely correct: K200∪KQ150 PIT membership flag + Close*Vol AvgTV20 ≥ 2e8 KRW. Top20 = 20/20 in universe, 20/20 pass 2e8 threshold (min 1.09e9, max 3.19e11). v1 silent omission from Iter 13/14/15 is fixed."
+    },
+    {
+      "id": "SA2_C13_C15_carve_out_evidence",
+      "msg": "L-164 v1.1 ML carve-out citation is explicit (CLAUDE.md + methodology_active.md path) with audit_lineage block (walk-forward IS/OOS/purge/lockbox). Acceptable per established precedent (M05/M06)."
+    },
+    {
+      "id": "SA3_window_isolation",
+      "msg": "TRAIN_VAL_END = 2024-01-22, lockbox 2024-01-23~2026-01-23 SEALED, lockbox_isolation_certified=TRUE, lockbox_access=FALSE. R2 P2 selection contamination guard satisfied."
+    }
+  ],
+  "rationalization_phrases_detected": [
+    {
+      "phrase": "delta=0.00% < 5% threshold (M07v2 ICIR vs M05 baseline) — would have triggered RF-A2 if baseline were valid",
+      "where": "implicit in challenge_flags.RF-A2 NOT raised (M05 baseline 0.8323 from M06 internal benchmark, but Iter 17 ICIR 0.118 << 0.832 — not a meaningful 5% delta)",
+      "concern": "package implicitly compares to itself; no genuine RF-A2 evaluation"
+    }
+  ],
+  "s1_gate_items": [
+    "S1_resolve: alpha vector degeneracy (3 unique values at LATEST_ME) before any downstream Risk/Optimizer can use the package — Risk Σ × α̂ where α̂ is constant produces zero portfolio differentiation",
+    "S1_resolve: subperiod stability hard fail must not be hidden behind 'aspirational research' framing — RF-A1 should escalate to package status REJECT not REVISE",
+    "S1_resolve: turnover 508% × 15bps × 12mo = 91.5% gross drag vs rank_IC*12 = 11.2bps gross alpha — net is decisively negative",
+    "S1_resolve: method_shopping_log honesty: only 1 method actually run; ablations should be listed as 'not executed' not as candidates"
+  ],
+  "verdict_summary": "REJECT. Iter 17 Cross-family XGBoost depth=4 alpha hypothesis FAILS at 5/5 graduation gates (rank_IC, ICIR, sub_stab, Harvey_t, DSR all FAIL). The reported cross-family correlation < 0.30 is artifactual — alpha vector is degenerate (3 unique values across 350 tickers) so any correlation measurement is meaningless. Subperiod stability 0.0000 confirms the same KR ML alpha decay pattern documented in L-211 (linear) and L-225 (sigmoid joint). Charter principle 8 (No Silent Override) requires explicit REJECT status not COND. Recommendation to Q-Lead: do NOT promote to Risk Agent; consider Iter 17 a documented fail of the 'cross-family ML interaction' hypothesis class on KR top universe, archive into L-code series alongside L-211/L-225/L-227.",
+  "challenge_concern_count": 9,
+  "schema_version": "qepm_alpha_critic_v6.1"
+}
