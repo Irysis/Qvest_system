@@ -1,0 +1,88 @@
+{
+  "task_id": "WT-D20260426_006",
+  "stage": "S0",
+  "agent": "alpha_research_v1.2",
+  "created_at": "2026-04-26",
+  "hypothesis_title": "STR_1656_M06 PG2-conditional ML diversifier reinforcement",
+  "core_reference": [
+    {
+      "id": "GuKellyXiu2020",
+      "citation": "Gu, Kelly, Xiu (2020) Empirical Asset Pricing via Machine Learning, Review of Financial Studies 33(5)",
+      "use": "Tree-ensemble (XGBoost/RF) + Neural Net dominates linear in cross-section. Walk-forward expanding window + purged CV mandatory."
+    },
+    {
+      "id": "LopezDePrado2018",
+      "citation": "Lopez de Prado (2018) Advances in Financial Machine Learning",
+      "use": "Purged k-fold + embargo window + ensemble averaging to control selection bias."
+    },
+    {
+      "id": "AvramovChengMetzker2023",
+      "citation": "Avramov, Cheng, Metzker (2023) Machine Learning vs Economic Restrictions: Evidence from Stock Return Predictability, Management Science",
+      "use": "ML alpha decays under liquidity/short-sale restrictions — KR long-only top20 retains usable predictability via ensemble + cross-family features."
+    },
+    {
+      "id": "Lewellen2015",
+      "citation": "Lewellen (2015) The Cross-Section of Expected Stock Returns, Critical Finance Review",
+      "use": "Cross-sectional combination of multiple anomalies (FF5 + momentum + quality) outperforms single signals — supports adding KR FF5 v2 monthly factor returns as features."
+    },
+    {
+      "id": "BarrosoSantaClara2015",
+      "citation": "Barroso, Santa-Clara (2015) Momentum has its moments, JFE 116(1)",
+      "use": "Risk-managed momentum / regime-conditional adjustment robust — basis for using regime indicator as ML feature."
+    }
+  ],
+  "lesson_check": [
+    {
+      "L_code": "L-164 v1.1",
+      "summary": "ML carve-out: 일간 309팩터 raw direct read 허용 (Z_Score_Aligned 미적용). Walk-forward expanding 의무. C14 N/A (load_month_factors 미경유)."
+    },
+    {
+      "L_code": "L-484",
+      "summary": "Score-level 합산만 valid — 수익률 블렌드 앙상블 금지. M06은 ML 모델 score (ensemble pred)를 단일 score로 산출."
+    },
+    {
+      "L_code": "L-119",
+      "summary": "정적 EW 팩터 블렌드 = alpha 희석. ML 비선형 결합으로 회피."
+    },
+    {
+      "L_code": "L-121",
+      "summary": "Q07_Earnings_Stability stress ICIR +0.753 — ML feature 우선 후보."
+    },
+    {
+      "L_code": "L-454",
+      "summary": "한국 내부 데이터 > 글로벌 FRED. KR FF5 v2 (monthly returns) external feature 우선."
+    },
+    {
+      "L_code": "L-394_402_403",
+      "summary": "QMJ standalone 실패. ML feature 한 축으로만 사용 (단일 사용 금지)."
+    }
+  ],
+  "expected_role": "ml_diversifier_with_pg2_complementarity",
+  "why_now": "STR_1701 Iter11 PG2 active 80% 직후 잔여 SR gap 0.5375. STR_1701 단독 강화는 alpha source 단일성 위험. M05 → M06으로 보강 (cor 0.147 매우 독립적이 검증됨). 추가 ML feature engineering (FF5 v2 백필 + Iter11 alpha rank + Iter5 sleeve scores)으로 +0.05~0.15 SR 개선이 typical (Gu Kelly Xiu 2020).",
+  "factor_taxonomy_section": "QEPM §9 Factor Taxonomy — 신규 family: ML_Composite_Crossfamily (Quality+Momentum+Consensus+Distress+Macro_Regime conditional)",
+  "diversity_check": {
+    "current_PG2": "STR_1701 (80%, Linear Tilt 5F) + STR_1656_M05 (20%, ML XGBoost 5-seed)",
+    "M06_orthogonality_target": "cor vs STR_1701 < 0.30 (mandate). Iter11 ↔ M05 baseline cor 0.147 — M06 must remain in same range or improve.",
+    "family_diversification_argument": "Linear Tilt (5F: SUE/EPS_Chg/ESBR/TP_Gap/M08) is linear additive cross-family. M06 ML uses 309 daily factors NONLINEAR ensemble — fundamentally orthogonal mechanism."
+  },
+  "expected_pg2_blended_outcome": {
+    "baseline_pg2_SR_realized": 1.4625,
+    "baseline_pg2_MDD_realized": -0.3395,
+    "M06_target_PG2_blended_SR": ">1.4625",
+    "incremental_SR_target": "+0.05 ~ +0.15 (conservative, Gu Kelly Xiu typical OOS)",
+    "M06_standalone_target_ICIR": ">0.20 (Alpha Lab Gate)",
+    "M06_standalone_target_subperiod_stability": ">0.20 (RF-A1 mandate, M05 0.060 미해결 → 강화)"
+  },
+  "exploration_path": "A (paper-driven). Gu/Kelly/Xiu 2020 ML cross-section + Lewellen 2015 multi-anomaly combination + Avramov 2023 economic-restriction-aware → KR top universe ML ensemble.",
+  "exploration_bucket": "Stabilize (M05 baseline → M06 reinforcement). 20% of total budget per qepm §1.",
+  "stage_gate_advisory": "S1 → S2 (factor construction → profiling → marginal contribution to PG2). NO covariance / NO weights (Risk Agent / Optimizer 영역).",
+  "ax_axiom_anchors": {
+    "AX-000": "SR gap 0.5375 채울 수 있다 — ML diversifier는 가능 path.",
+    "AX-001_v2": "ML diversifier conditional metric: M05 GFC-style 0% loss 보호 유지 + crisis_alpha + bad/normal IC ratio.",
+    "AX-002": "harness 내 PG2 blended SR realized만 평가.",
+    "AX-004": "KR quality_profitability single-signal long-only fail. M06 ensemble = multi-feature multi-axis composite — exception 충족.",
+    "AX-005": "L-164 v1.1 ML carve-out — 일간 raw read 허용.",
+    "AX-007": "structure = score-level addition to existing PG2 sleeve allocation, role = diversifier_with_pg2_complementarity. multi-sleeve (STR_1701 + M06) 구조.",
+    "AX-008": "Verification triangulation = Forge + Codex + Architect (M06 alpha_package finalize 직전 Codex round 의무)."
+  }
+}
