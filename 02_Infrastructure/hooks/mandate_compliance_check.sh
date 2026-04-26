@@ -72,6 +72,21 @@ if [[ "$FILE_PATH" =~ forge_package(_phase4)?\.json$ ]]; then
   done
 fi
 
+# Branch 6: request.json — universe v2 cost mandate (L-227, 2026-04-26)
+# v2 universe 사용 시 cost_model_version이 universe별 권고 bps와 일치하는지 검증
+if [[ "$FILE_PATH" =~ /worktask/WT[^/]+/request\.json$ ]]; then
+  if echo "$CONTENT" | grep -qE '"label"\s*:\s*"KR_TOP500_FREEFLOAT"'; then
+    if ! echo "$CONTENT" | grep -qE 'cost_model_version.*(20bps|25bps)'; then
+      WARN_MSGS+=("UNIVERSE_V2_COST_MISMATCH (L-227): KR_TOP500_FREEFLOAT requires cost_model_version >= 20bps (mid-cap impact buffer).")
+    fi
+  fi
+  if echo "$CONTENT" | grep -qE '"label"\s*:\s*"KR_TOP500_LIQ1E8"'; then
+    if ! echo "$CONTENT" | grep -qE 'cost_model_version.*25bps'; then
+      WARN_MSGS+=("UNIVERSE_V2_COST_MISMATCH (L-227): KR_TOP500_LIQ1E8 requires cost_model_version 25bps (1e8 floor concession, mandate 2e8 위반).")
+    fi
+  fi
+fi
+
 # Retry counter — 무한 warn 방지 (challenge_loop_limiter pattern)
 if [[ ${#WARN_MSGS[@]} -gt 0 ]]; then
   COUNTER_FILE="/tmp/mandate_warn_count_$(basename "$FILE_PATH").txt"

@@ -57,3 +57,28 @@ Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지.
    - 각 concern: ACCEPT / PARTIAL / REBUTTAL 분류 + 근거
    - REBUTTAL는 학술 + L-code + 정량 data 3축 인용
    - 합리화 자기 검증 결과 명시
+
+**🆕 Universe v2 옵션** (L-227 architect advisory, 2026-04-26):
+
+기본 universe = `KR_top342` (KOSPI200 ∪ KOSDAQ150 + 2e8 KRW). 단,
+**ICIR attenuation 진단 (universe-restricted) 시 v2 비교 mandate**:
+
+| Label | Size | Cost | When |
+|-------|------|------|------|
+| `KR_top342` | 342 | 15bps | default, backward-compat |
+| `KR_TOP500_FREEFLOAT` | 500 | 20bps | v2 권고 default. ICIR < 0.15 / Iter 13~16 같은 universe 한계 의심 시 |
+| `KR_KOSPI300_KOSDAQ150` | 450 | 18bps | 시장별 분리 ranking이 의미 있을 때 |
+| `KR_TOP500_LIQ1E8` | 500~700 | 25bps | mid-cap residual 신호 강할 때만, mandate 2e8 위반 → conditional |
+
+**API**:
+```r
+source("02_Infrastructure/factor_db/universe_expanded_v2.R")
+factors <- load_month_factors_v2(sig_date, universe = "KR_TOP500_FREEFLOAT")
+```
+
+**Mandate (L-227 진단 시)**:
+- `KR_top342` 결과만으로 alpha 판정 금지 — `KR_TOP500_FREEFLOAT`에서도 평가
+- ICIR / DSR / Harvey-t 양쪽 비교를 `alpha_validation.json`의 `universe_comparison` 필드에 기록
+- v2 universe 사용 시 `request.json`의 `cost_model_version`은 위 표의 권고 bps와 일치 (mandate_compliance_check Hook 검증)
+
+**자세한 advisory**: `qepm/mailbox/architect/universe_expansion_v2_advisory.json`

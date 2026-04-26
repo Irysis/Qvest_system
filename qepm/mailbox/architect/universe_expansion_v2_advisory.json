@@ -1,0 +1,205 @@
+{
+  "advisory_id": "universe_expansion_v2_advisory",
+  "agent": "architect_v1.0",
+  "audited_at": "2026-04-26T13:30:00+0900",
+  "session": 71,
+  "mandate_origin": "L-227 (universe restriction → ICIR attenuation diagnosed)",
+  "advisory_purpose": "KR top universe (KOSPI200 ∪ KOSDAQ150 + 2e8 KRW, ~342 names) 한계 누적 입증 (Iter 13 v2 ICIR 0.086, Iter 15 V3 alpha 부재, Iter 16 KR linear/sigmoid fail). Universe v2 인프라 정식 노출 + opt-in 옵션 제공.",
+
+  "diagnosis_summary": {
+    "evidence": [
+      {"iter": "13_v2", "metric": "ICIR=0.086 (universe restricted)"},
+      {"iter": "15_V3_ERC", "finding": "near-EW alpha activation absent"},
+      {"iter": "16_KR_linear_sigmoid", "finding": "composite fail under tight universe"}
+    ],
+    "root_cause_hypothesis": "342 names × top-20 portfolio → effective rank IC saturation. 신호 단조성·subperiod stability가 mid-cap residual 결여로 약화.",
+    "structural_alternative": "universe 500+ → top-20 portfolio 동일 size 유지하면서 cross-section 신호 변별력 회복."
+  },
+
+  "options_evaluated": [
+    {
+      "option": "A",
+      "label": "KR_TOP500_FREEFLOAT",
+      "definition": "FreeFloat MktCap PIT ranking 상위 500 (KOSPI ∪ KOSDAQ 통합)",
+      "approx_size": 500,
+      "pros": [
+        "단일 ranking 기준 → 재현성·해석성 최고",
+        "FreeFloat 가중 → 실투 가능 universe와 일치",
+        "정기변경 의존 X (sig_date별 자율 결정)"
+      ],
+      "cons": [
+        "FreeFloat 데이터 PIT 정합성 검증 필요 (KRX shareholder filing 또는 DART 공시 lag 30~45일)",
+        "현재 freefloat_history.parquet 미구축 → Phase 1에서는 FreeFloat=1.0 conservative fallback"
+      ],
+      "verdict": "RECOMMENDED_DEFAULT_V2"
+    },
+    {
+      "option": "B",
+      "label": "KR_KOSPI300_KOSDAQ150",
+      "definition": "KOSPI 시총 top 300 + KOSDAQ 시총 top 150 (~450)",
+      "approx_size": 450,
+      "pros": [
+        "시장별 분리 → 시장 특성 차이 반영 (KOSPI 대형주 vs KOSDAQ 성장주)"
+      ],
+      "cons": [
+        "KOSPI300은 KRX 정식 지수 아님 → 자체 정의 필요",
+        "시총 ranking이 실투 가능성과 직결 X (FreeFloat 미반영)"
+      ],
+      "verdict": "SECONDARY"
+    },
+    {
+      "option": "C",
+      "label": "KR_TOP500_LIQ1E8",
+      "definition": "거래대금 1e8+ 종목 중 시총 top 500 (mid-cap 포함)",
+      "approx_size": 500,
+      "pros": [
+        "Universe 가장 폭넓음 → mid-cap residual 신호 노출 최대"
+      ],
+      "cons": [
+        "거래대금 1e8 < 사용자 mandate 2e8 → cost 가정 25bps 권고 (15bps → 25bps 상향)",
+        "Slippage·impact cost 누적 시 alpha 잠식 가능",
+        "Backtest cost model 변경 필요 (cost_model_version v6.2.5_kr_25bps)"
+      ],
+      "verdict": "OPT_IN_ONLY (mandate 충돌, ICIR signal 강할 때만)"
+    },
+    {
+      "option": "D",
+      "label": "KR_SECTOR_BAL_TOP500",
+      "definition": "섹터별 균형 top 500 (sector_max 30%)",
+      "approx_size": 500,
+      "pros": [
+        "Sector imbalance 자동 방어 → IT/2차전지 편중 최소화"
+      ],
+      "cons": [
+        "Sector taxonomy 안정성 의존 (KRX 업종분류 vs FICS vs GICS 혼재)",
+        "Implementation 복잡 → Phase 2 보류"
+      ],
+      "verdict": "RESERVED_PHASE2"
+    }
+  ],
+
+  "recommended_decision": {
+    "primary": "KR_TOP500_FREEFLOAT (Option A)",
+    "secondary_optional": "KR_TOP500_LIQ1E8 (Option C, ICIR 강한 alpha에서만)",
+    "default_unchanged": "KR_top342 (backward-compat, opt-in 시에만 v2 활성화)",
+    "rationale": "Option A는 단일 ranking·재현성·실투정합성 3축 균형. Option C는 universe 확장 효과 가장 크나 cost 가정 충돌 → conditional opt-in."
+  },
+
+  "infrastructure_files_created": [
+    {
+      "path": "02_Infrastructure/factor_db/universe_expanded_v2.R",
+      "purpose": "build_universe_v2() + load_month_factors_v2() + 5 universe label specs",
+      "lines": 280,
+      "phase": 1
+    },
+    {
+      "path": "qepm/mailbox/architect/universe_expansion_v2_advisory.json",
+      "purpose": "본 advisory (decision log)",
+      "phase": 1
+    }
+  ],
+
+  "infrastructure_files_to_modify": [
+    {
+      "path": ".cache/factor_db_daily/factor_db_daily_registry.json",
+      "change": "universe_options 필드 추가 (메타데이터 only, 팩터 데이터 동일)",
+      "phase": 2,
+      "rebuild_required": false
+    },
+    {
+      "path": ".claude/agents/alpha-research.md",
+      "change": "universe_v2 옵션 명시 + KR_top342 vs v2 비교 mandate (ICIR attenuation 진단 시)",
+      "phase": 3
+    },
+    {
+      "path": "02_Infrastructure/prompts/alpha_research_init.md",
+      "change": "<hard_constraints_awareness> Universe 항목에 v2 opt-in 절차 추가",
+      "phase": 3
+    },
+    {
+      "path": "02_Infrastructure/hooks/worktask_spec_validator.sh",
+      "change": "allowed_univs += [\"KR_TOP500_FREEFLOAT\", \"KR_KOSPI300_KOSDAQ150\", \"KR_TOP500_LIQ1E8\"]",
+      "phase": 4
+    },
+    {
+      "path": "02_Infrastructure/hooks/mandate_compliance_check.sh",
+      "change": "universe v2 사용 시 cost_model_version mandate (15bps → 20bps for FREEFLOAT, 25bps for LIQ1E8)",
+      "phase": 4
+    }
+  ],
+
+  "factor_db_rebuild_required": false,
+  "factor_db_rebuild_rationale": "factor parquet은 universe-agnostic (전종목 × 309 factors). Universe 필터링은 load_month_factors() consumer 레이어에서 수행. v2 도입 시 신규 파일 생성 X, 신규 함수만 추가.",
+
+  "expanded_universe_size_estimates": {
+    "KR_top342": "342 (current default)",
+    "KR_TOP500_FREEFLOAT": "500 (target, exact = top 500 by FreeFloatMktCap)",
+    "KR_KOSPI300_KOSDAQ150": "450 (300 + 150)",
+    "KR_TOP500_LIQ1E8": "500~700 (LIQ1E8 floor가 KR_top342 + mid-cap 일부 포함)"
+  },
+
+  "risk_assessment": {
+    "R1_sector_balance": {
+      "severity": "MEDIUM",
+      "concern": "Top 500 확대 시 IT/2차전지/바이오 sector 편중 가능",
+      "mitigation": "Phase 2에서 KR_SECTOR_BAL_TOP500 옵션 제공. Phase 1에서는 alpha-research가 sector_max 30% guardrail 자체 적용 권고",
+      "measurement": "build_universe_v2() 실행 후 Market × Sector cross-tab 분석 → 30% 초과 시 challenge_flag"
+    },
+    "R2_megacap_correlation": {
+      "severity": "HIGH",
+      "concern": "v2 universe + 기존 STR_1701 alpha apply 시 cor / TDC 변화 측정 필요. STR_1701 등액 KOSPI200 중심 → universe 확장 시 mid-cap weight 증가로 cor 하락 가능 (이는 의도된 효과일 수도 있음)",
+      "mitigation": "Iter 17 (가칭) 또는 별도 audit WT에서 STR_1701 alpha를 KR_TOP500_FREEFLOAT universe에 적용 → daily corr / TDC 재계산. 변화량 ≥0.10 시 governor 검토",
+      "measurement": "validate_universe_v2_correlation_impact(str_id=STR_1701) 함수 추가 (Phase 2 todo)"
+    },
+    "R3_liquidity_floor": {
+      "severity": "MEDIUM",
+      "concern": "Option C (LIQ1E8)는 mandate 2e8 위반. 슬리피지·impact cost 15bps 가정 부족",
+      "mitigation": "Option C 사용 시 cost_model_version v6.2.5_kr_25bps mandate 강제. mandate_compliance_check Hook 검증",
+      "measurement": "forge_package backtest_summary에 cost_model_version 명시 검증"
+    },
+    "R4_survivorship": {
+      "severity": "LOW",
+      "concern": "상장폐지 종목 처리",
+      "mitigation": "build_universe_v2() PIT-safe (sig_date 시점 RAWDATA 존재 종목만). Dead ticker auto-drop. 기존 krx_update_universe.R 로직 carry-forward",
+      "measurement": "기 검증된 패턴 (universe.parquet 대비 일치성 unit test)"
+    },
+    "R5_coverage_drift": {
+      "severity": "MEDIUM",
+      "concern": "Mid-cap 종목에서 fundamental factor 결측 증가 (DART 공시 timing, consensus coverage 부족)",
+      "mitigation": "load_month_factors_v2() default coverage_min 상향: KR_top342=0.05, v2=0.10. Alpha-research가 missing factor 명시적 처리",
+      "measurement": "load_month_factors_v2() return 시 coverage_report attribute 첨부"
+    },
+    "R6_freefloat_data_pit": {
+      "severity": "MEDIUM",
+      "concern": "FreeFloat 데이터 PIT 정합성 (KRX shareholder filing lag 30~45일)",
+      "mitigation": "Phase 1: FreeFloat=1.0 conservative fallback (lookahead 위험 0). Phase 2: KRX filing 기반 PIT FreeFloat 캐시 구축",
+      "measurement": "freefloat_history.parquet 구축 시 Date_Filed >= Date_Effective + 30 days 검증"
+    }
+  },
+
+  "validation_protocol_for_adoption": {
+    "step_1_pilot": "Iter 17 (가칭) WT 1건 — 동일 alpha를 KR_top342와 KR_TOP500_FREEFLOAT 양쪽에서 실행. ICIR / DSR / Harvey-t 비교.",
+    "step_2_correlation_audit": "STR_1701 + 기존 PG2 active 전략들 cor / TDC v2 universe에서 재측정.",
+    "step_3_sector_audit": "v2 universe sector cross-tab. IT/Bio/2차전지 30% 초과 시 challenge.",
+    "step_4_cost_sensitivity": "20bps vs 15bps backtest 비교. Net alpha drop ≥0.5% 시 cost mandate 재검토.",
+    "step_5_governor_admission": "Iter 17 PASS 시 universe v2를 default 옵션으로 승격 가능. 그 전까지는 opt-in."
+  },
+
+  "decision_for_qlead": {
+    "phase_1_immediate": "universe_expanded_v2.R 코드 수용 → load_month_factors_v2() 사용 가능",
+    "phase_2_recommended": "factor_db_daily_registry.json universe_options 메타데이터 추가 (rebuild 불필요)",
+    "phase_3_recommended": "alpha-research.md prompt 갱신 (KR_top342 vs v2 비교 mandate)",
+    "phase_4_recommended": "Hook 2건 갱신 (worktask_spec_validator + mandate_compliance_check)",
+    "blocking_decision": "Iter 17 pilot 어떤 alpha로 실행할지 — 권고: 이미 KR_top342에서 결과 있는 STR_1701 또는 Iter 13 alpha 재실행 (controlled comparison)"
+  },
+
+  "completion_summary": {
+    "recommended_option": "KR_TOP500_FREEFLOAT (Option A)",
+    "expanded_universe_size": 500,
+    "sector_balance_check": "MEDIUM_RISK_PHASE2_GUARD",
+    "mega_cap_cor_impact": "HIGH_RISK_REQUIRES_PILOT_AUDIT",
+    "factor_db_rebuild_required": "N",
+    "infrastructure_files_created": 2,
+    "risk_assessment_overall": "ACCEPTABLE_WITH_PILOT_VALIDATION"
+  }
+}

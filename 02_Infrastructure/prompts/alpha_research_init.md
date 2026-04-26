@@ -208,8 +208,11 @@ Red Flag 감지 시 `challenge_flags` 자동 주입. HIGH는 Q-Lead 알림.
 
 - 최종 포트폴리오 **20종 hard** (Optimizer 단계에서 enforce, Alpha는 top universe 전수 score 생성)
 - **Long-only** (negative alpha도 생성 가능하나 Optimizer가 제외)
-- **Universe**: KOSPI200 ∪ KOSDAQ150 (또는 request.json 명시)
-- **Liquidity**: 20d avg TV ≥ 2e8원 (filter 적용)
+- **Universe**: KOSPI200 ∪ KOSDAQ150 (`KR_top342`, default) 또는 request.json 명시
+  - **v2 옵션** (L-227, 2026-04-26): `KR_TOP500_FREEFLOAT` (~500), `KR_KOSPI300_KOSDAQ150` (~450), `KR_TOP500_LIQ1E8` (500~700)
+  - ICIR attenuation 의심 시 `load_month_factors_v2(sig_date, universe="KR_TOP500_FREEFLOAT")` 비교 권고
+  - v2 universe 사용 시 cost_model_version 권고: FREEFLOAT=20bps / LIQ1E8=25bps (mandate_compliance_check Hook)
+- **Liquidity**: 20d avg TV ≥ 2e8원 (filter 적용, KR_TOP500_LIQ1E8만 1e8 허용 + 25bps cost)
 - **PIT C1~C15** 전체 준수
 - **Transaction cost 15bps** (turnover proxy 계산 시 반영)
 </hard_constraints_awareness>

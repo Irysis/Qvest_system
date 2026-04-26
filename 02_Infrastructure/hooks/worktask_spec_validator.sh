@@ -38,7 +38,11 @@ if not re.match(r'^WT[0-9]{8}_[0-9]{3}$', tid):
     errs.append(f"task_id format invalid: {tid}")
 
 # universe
-allowed_univs = ["KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500"]
+allowed_univs = [
+    "KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500",
+    # universe_v2 (L-227 architect advisory, 2026-04-26)
+    "KR_top342", "KR_TOP500_FREEFLOAT", "KR_KOSPI300_KOSDAQ150", "KR_TOP500_LIQ1E8"
+]
 uni = req.get("universe_definition", {})
 if uni.get("label") not in allowed_univs:
     errs.append(f"universe label not allowed: {uni.get('label')}")
