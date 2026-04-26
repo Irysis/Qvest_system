@@ -131,6 +131,8 @@ res <- tg_agent_brief(
   agent = "Alpha",
   title = sprintf("WT-%s ALPHA_DONE_V2 — STR_1656_M06 universe+liquidity FIX",
                   sub("WT-", "", WT_ID)),
+  force = TRUE,
+  lock_scope = "Alpha_WT-D20260426_006_v2",
   sections = list(
     list(emoji = "📊", heading = "Alpha Diagnostics v2 (NW-HAC)",
          type = "table", df = diag_df),
