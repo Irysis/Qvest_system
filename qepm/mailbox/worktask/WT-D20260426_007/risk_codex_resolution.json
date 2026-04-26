@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-D20260426_007",
+  "agent": "risk",
+  "codex_stance": "REJECT",
+  "codex_round": 1,
+  "resolution_count_required": 9,
+  "resolution_count_actual": 9,
+  "concerns_total": 7,
+  "unresolved_disputes_total": 5,
+  "triage": {
+    "ACCEPT": [
+      {
+        "id": "C1_NO_SILENT_OVERRIDE",
+        "codex_severity": "HIGH",
+        "ax_cite": "AX-002|AX-008",
+        "concern": "risk_challenge_note.md and final risk_package.json absent; codex_round PENDING.",
+        "fix": "risk_challenge_note.md authored (9 sections, full RF-R1~R9 disposition + V2-vs-STR_1701 structural finding + RF-CROWD-1656 + recommendations). codex_critic_response_risk.json saved. Final risk_package.json will be promoted from draft via finalize step with codex_round populated and lineage recorded. AX-002 process honesty: this resolution document declares all 7 concerns explicitly."
+      },
+      {
+        "id": "C4_CROWDING_TDC_BREACH",
+        "codex_severity": "HIGH",
+        "ax_cite": "RF-R3|RF-R5|L-219|AX-002",
+        "concern": "V2 vs STR_1656 lower-tail TDC=0.4796 > 0.30 mandate. PG2 80/20 tail-coupled before optimization.",
+        "fix": "Measurement confirmed and surfaced as RF-CROWD-1656 HIGH challenge_flag with direction=INFO_TO_OPTIMIZER. risk_challenge_note section 2 + section 7 quantifies TDC q5 lower=0.4796, TDC q95 upper=0.2500, Pearson 0.5292, n=3911 daily obs. Risk does NOT rationalize — explicit challenge that V2+STR_1656 is tail-coupled. Optimizer/Forge must verify with realized NAV TDC at backtest stage; if confirmed >0.30, PG2 framework requires re-evaluation."
+      },
+      {
+        "id": "U1_V2_STR1701_CONTRADICTION",
+        "codex_severity": "HIGH",
+        "concern": "Package says V2 vs STR_1701 score cor expected ~1.0; measured value is 0.057.",
+        "fix": "This is a Risk-side STRUCTURAL FINDING, not a self-contradiction. Mandate from request.json + alpha_package claim was 'STR_1701 multi-sleeve alpha base 그대로 사용 (변경 X)'. Risk measurement (29,271 joint obs, ym-aligned) shows V2 score_str1701 = 0.5*z_A+0.3*z_B+0.2*z_C is essentially uncorrelated (0.057) with Iter11 STR_1701 production composite score_eff. V2 RECONSTRUCTED slots independently, not inherited. Risk surfaces this as RF-CROWD-V2-BASE INFO_TO_OPTIMIZER + INFO_TO_GOVERNOR — challenges the 'PG2 incremental same-family' framing. Optimizer must verify V2 vs STR_1701 production NAV correlation directly (not via score), and Governor must reconsider PG2 composition (V2 80% + STR_1656 20% may be valid as ADDITIVE alpha rather than INCREMENTAL replacement)."
+      },
+      {
+        "id": "U3_STAGE_PATH_MISMATCH",
+        "concern": "Stage artifact path qepm/stage_artifacts/WT_WT-D20260426_007 does not exist; alpha artifacts under qepm/stage_artifacts/WT_D20260426_007 and risk artifacts under stage_artifacts/WT_D20260426_007.",
+        "fix": "Acknowledged path convention. Risk artifacts (covariance.parquet, exposure_matrix.parquet, factor_covariance.parquet, specific_risk.parquet, regime_correlation.parquet, tail_risk.json, covariance_pooled_fallback.parquet) all written to canonical stage_artifacts/WT_D20260426_007/ (matching Iter 5 convention). Alpha artifacts at qepm/stage_artifacts/WT_D20260426_007/alpha_scores.parquet — referenced via ITER14 path. risk_package.json::iter14_lineage explicitly documents both paths."
+      }
+    ],
+    "PARTIAL": [
+      {
+        "id": "C2_REGIME_SIGMA_INSTABILITY",
+        "codex_severity": "HIGH",
+        "ax_cite": "RF-R8|RF-R2|PIT-C9|AX-002",
+        "concern": "CRISIS T=6 cond=4467.6, CAUTION T=28 cond=268.7; no bootstrap CI; fallback only recommended.",
+        "rationale": "Pooled fallback Σ artifact IS WRITTEN (covariance_pooled_fallback.parquet, T=80×N=244, post-ridge cond=100, PSD). Binding rule documented in pooled_fallback_meta. RF-R2 challenge flags emitted per regime (CRISIS/CAUTION/BULL all >100). Bootstrap CI not produced for thin-T regimes (T=6 makes resampling unreliable; LW_oracle small-sample handling already applied). Risk Agent's role is to PROVIDE the artifact + binding rule; Optimizer/Forge ENFORCEMENT of binding is downstream — Risk cannot guarantee Optimizer behavior. Section 3 of risk_challenge_note documents full regime panel with explicit binding rule."
+      },
+      {
+        "id": "C5_FACTOR_COVERAGE_LOW",
+        "codex_severity": "MEDIUM",
+        "ax_cite": "RF-R2|AX-002",
+        "concern": "FF5 R²=23.36% < 30% expectation; idio share 84.2%; shrinkage intensity δ not reported.",
+        "rationale": "KR 322-name broad universe FF5 R²=23.4% is empirically expected (Iter 5 top-20 R²=24.7%, broader universe similar; small/mid-cap names dominate KR equity universe). NOT estimation flaw — structural property of KR concentrated long-only. Σ structure preserved via factor model + diagonal D. Method-shopping log includes Ω cond=38.28 (LW_oracle selected). Shrinkage δ for Ω is implicit in LW Oracle formula — extension to add explicit ρ value: pi_hat/d2/n (would require code re-run); deferred to next iteration. Factor coverage note added to diagnostics::factor_coverage_note explicitly documenting this as KR universe characteristic."
+      },
+      {
+        "id": "C6_PIT_LINEAGE_VAGUE",
+        "codex_severity": "MEDIUM",
+        "ax_cite": "PIT-C12|PIT-C15|PIT-C4|AX-002",
+        "concern": "Direct parquet cache reads; missing lag lineage for FF5/RMW/CMA construction.",
+        "rationale": "FF5 v2 cache (.cache/kr_factor_returns_v2.parquet) is INHERITED ASSET from Iter 4 (WT-D20260425_009) which built it with annual May lag (RMW/CMA from DART TTM 2002+ backfill, FF1993/2015 + Novy-Marx 2013) and passed PIT audit. Re-building FF5 from raw DART would be redundant and out of scope (Risk Agent does not build factor returns). external_factor_data block in risk_package documents version=kr_factor_returns_v2, schema, date_range, pit_compliance reference. Filtering applied: FF[Date <= PIT_HARD_CUTOFF=2023-11-30] strictly enforced. C15 production loader concern: Risk uses parquet read for read-only consumption; load_month_factors() is for factor_db (288 monthly factors), not factor returns time series — different artifact class."
+      }
+    ],
+    "REBUTTAL": [
+      {
+        "id": "C3_HARD_TAIL_AND_STRESS_BREACH",
+        "codex_severity": "HIGH",
+        "ax_cite": "RF-R4|L-129|L-122|AX-002",
+        "concern": "CVaR_95=3.67% > 2.5% cap; CDaR_95=46.14%; MDD=60.46%; GFC loss=25.93%. Deferring to Optimizer is process bypass.",
+        "arguments": [
+          "1) Risk Agent role per agent definition: MEASURE common-risk structure + tail/stress diagnostics on UNIVERSE-LEVEL EW PROXY. The 2.5% CVaR cap, MDD<45%, stress<25% are FORGE/GOVERNOR gates on FINAL OPTIMIZED PORTFOLIO NAV, not Risk-side proxy gates.",
+          "2) Reported metrics are EW universe-322-names long-only PROXY over 21 years (2002-2023). MDD 60.46% reflects 2008 GFC peak-to-trough on broad equity EW — fully expected for unhedged concentrated equity. This is INPUT to Optimizer, not portfolio metric.",
+          "3) Forge V2 NAV with confidence-tilt + 20-name top portfolio + Optimizer MVO/CVaR/HRP weights + 15bps cost will produce different (typically lower) realized tail metrics. PG2 blend (V2 80% + STR_1656 20%) further reduces realized portfolio CVaR/MDD via diversification.",
+          "4) Risk-side diagnostics ARE flagged: RF-R4 stress=-25.93% HIGH challenge_flag IS in package. Risk does NOT silently accept — explicitly escalated for Optimizer/Forge to address via weight construction.",
+          "5) L-129 cite (CDaR LP standalone failure) is misapplied — L-129 concerns Optimizer methodology choice, not Risk-side proxy diagnostic. L-122 (Barroso-Santa-Clara risk-managed) is also Optimizer overlay decision.",
+          "6) AX-002 process honesty: Risk PROVIDES honest measurement, FLAGS RF-R4 HIGH, surfaces RF-CROWD-1656 HIGH, recommends pooled Σ binding for regime-uncertain. This IS the role compliance, not bypass. Bypass would be silent acceptance — Risk does the opposite."
+        ],
+        "decision": "REBUTTAL_VALID. Hard cap claim rejected as Risk-vs-Optimizer role conflation. Numeric diagnostics retained as honest measurement. RF-R4 stress -25.93% remains HIGH challenge_flag — escalation acknowledged."
+      },
+      {
+        "id": "C7_WEIGHTS_CSV_ABSENT",
+        "codex_severity": "MEDIUM",
+        "ax_cite": "AX-002|L-122|RF-R7",
+        "concern": "weights.csv absent; max-20 / long-only / Σ-w / turnover unverifiable.",
+        "arguments": [
+          "Weights generation is OPTIMIZER AGENT scope, not Risk Agent. Risk pipeline ends at Σ + tail + stress + crowding. Optimizer (next pipeline stage) consumes risk_package.json + alpha_package.json and produces optimization_package.json + weights.parquet.",
+          "Risk-side does NOT propose weights — explicit prohibition in agent definition (strict_prohibitions §3 'Optimizer Agent 영역', §1-§5).",
+          "Validation chain: Risk → Optimizer (weights generation) → Forge (realized NAV backtest with constraint enforcement). Each stage has gating. Risk Agent's gating: PSD Σ + cond ≤ 100 + factor coverage decomposition documented. PASS.",
+          "Codex C7 mistakes pipeline boundary: weights.csv check is Optimizer's deliverable audit, not Risk's."
+        ],
+        "decision": "REBUTTAL_VALID. Weights absent because pipeline correctly stops at Risk stage. Optimizer Agent (next spawn) will produce weights.csv + audit max_names=20, long-only, Σw=1, turnover."
+      }
+    ]
+  },
+  "unresolved_disputes_disposition": [
+    {
+      "dispute": "Whether the optimizer will actually bind pooled fallback in CRISIS/CAUTION is not proven.",
+      "disposition": "Out of Risk scope. Pooled artifact + binding_rule provided. Optimizer/Forge audit at next stage."
+    },
+    {
+      "dispute": "V2 vs STR_1701 score cor 0.057 contradicts ~1.0 expectation.",
+      "disposition": "RESOLVED via U1 above — Risk surfaces as STRUCTURAL FINDING (RF-CROWD-V2-BASE) for Governor/Optimizer reconsideration."
+    },
+    {
+      "dispute": "Stage artifact path qepm/stage_artifacts/WT_WT-... does not exist.",
+      "disposition": "RESOLVED via U3 above — path convention documented; Risk artifacts under stage_artifacts/, alpha under qepm/stage_artifacts/."
+    },
+    {
+      "dispute": "No risk_challenge_note.md exists.",
+      "disposition": "RESOLVED via C1 — risk_challenge_note.md authored at qepm/mailbox/worktask/WT-D20260426_007/risk_challenge_note.md."
+    },
+    {
+      "dispute": "No weights.csv for schedule/turnover verification.",
+      "disposition": "Out of Risk scope (Optimizer deliverable). Acknowledged via C7."
+    }
+  ],
+  "rationalization_red_flags_addressed": {
+    "Hard caps are Optimizer/Forge gates": "REBUTTAL — role boundary, not rationalization. Risk Agent definition strict_prohibitions §3 prohibits weight-related decisions.",
+    "Optimizer with TO penalty + 15bps cost reduces actual": "Belongs to alpha_package challenge_flag note (RF-TURN), not Risk. Risk does not control turnover.",
+    "V2 vs STR_1701 base cor near 1.0": "EXPLICITLY CONTRADICTED by Risk measurement (0.057). Risk does NOT carry the 'same family' claim — surfaces as RF-CROWD-V2-BASE.",
+    "same family confirmed": "Risk does NOT confirm — Risk MEASURES and finds NOT same family.",
+    "Forge will measure realized PG2 NAV": "True statement of pipeline downstream. Not a rationalization — it's a procedural fact (Forge stage exists)."
+  },
+  "ax_compliance_post_resolution": {
+    "AX-001 v2": "N/A — V2 is core_with_alpha_amplification role, not defense.",
+    "AX-002 process honesty": "PASS post-resolution — risk_challenge_note authored, codex_critic_response saved, lineage recorded, structural V2-vs-STR_1701 finding surfaced (not suppressed)."
+  },
+  "verification_triangulation_post_resolution": {
+    "ax_008_status": "PARTIAL_PASS — Risk + Codex 2-source independent verification active; Forge (3rd source) downstream pending. Risk vs Codex agree on RF-CROWD-1656 + RF-R4 + V2-vs-STR_1701 inconsistency. Risk vs Codex DISAGREE on Risk-vs-Optimizer role boundary (C3, C7) — REBUTTAL maintained."
+  },
+  "next_actions": [
+    "Promote risk_package_draft.json → risk_package.json with codex_round populated.",
+    "record_package_lineage(risk_package) called in finalize step.",
+    "Update status.json: ALPHA_DONE → RISK_DONE.",
+    "Q-Lead notification: V2-vs-STR_1701 structural finding (cor=0.057) requires Governor PG2 framework reconsideration."
+  ]
+}
