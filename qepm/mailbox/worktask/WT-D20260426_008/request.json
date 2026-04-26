@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260426_008",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Track A — STR_1701 Direct Upgrade (Slot+Persistence+Regime-λ)",
+  "hypothesis_description": "Iter 15 — STR_1701 (PG2 active 80%, AB realized SR 1.4625) 직접 업그레이드. Multi-mutation 3종 동시.\n\n## 동기 (PG0 SR gap 0.5375 잔존, point upgrade)\n- 검증된 STR_1701 base 유지 (Forge realized SR 1.4625 / 5/5 Harvey / DSR 4.83)\n- Single alpha source 단일성 유지 (분산 X)\n- Incremental SR +0.05~0.15 expected\n- 빠른 sprint (1-2주)\n\n## 핵심 가설 (3 mutation 동시)\n1. **Slot weighting 재최적화**: Iter 5 default 0.5z_A + 0.3z_B + 0.2z_C → grid search optimize\n   - z_A (Consensus_4F), z_B (XGB ML), z_C (Quality aggregate)\n   - 후보: (0.4/0.4/0.2), (0.3/0.5/0.2), (0.5/0.2/0.3) etc\n   - 평가: Pre-LB ICIR + sub_stab + Harvey NW-HAC PASS 동시\n2. **Top-N persistence + EMA smoothing**: Iter 12 학습 (turnover 줄이고 alpha 보존)\n   - persistence_window=2 (top20 → 60% retention 강제)\n   - 3M EMA score smoothing (alpha=0.5)\n   - turnover 563% (Iter 11) → ≤450% target\n3. **Regime-conditional λ tilt**: BULL/NORMAL/CRISIS 별 λ 조정\n   - BULL: λ=1.5 (alpha 강화)\n   - NORMAL: λ=1.0 (Iter 11 baseline)\n   - CAUTION: λ=0.7 (변동성 증가 시)\n   - CRISIS: λ=0.5 (alpha 약화 + cash overlay 30%)\n   - L-220 학습 회피: monthly NOT quarterly\n\n## 핵심 mandate (PG2 incremental)\n- alpha_inheritance_hash verification (L-224 적용)\n- STR_1701 multi-sleeve alpha base **그대로** 사용 — slot scores read inheritance\n- alpha_unchanged_proof: 새 score ↔ STR_1701 production score_eff cor ≥ 0.85 (mandate)\n- 평가: PG2 blended (V3 80% + STR_1656 20%) realized SR > 1.4625\n\n## Iter 13/14 학습 BLOCKING\n- Universe enforce (KOSPI200∪KOSDAQ150) BEFORE training\n- AvgTV20 = Close × Vol (production 2e8 KRW)\n- Codex resolution 9/9 mandatory (no silent omission)\n- NW-HAC Harvey + 5-spec\n- sub_stab ≥ 0.50 (RF-A1)\n- inheritance_hash 명시 (L-224)\n- 합리화 phrase 금지\n\n## expected_role + why_now\n- expected_role: core_with_alpha_amplification_optimized (PG2 80% slot 유지)\n- why_now: STR_1701 PG2 promotion 직후 incremental upgrade. SR 1.46 → 1.55+ 빠른 fix.\n\n## 핵심 평가지표\n- PG2 blended SR realized > 1.4625 (baseline)\n- V3 단독 ICIR ≥ 0.20\n- sub_stab ≥ 0.50\n- Harvey NW-HAC ≥ 5/5\n- DSR_post > 3.0\n- Turnover ≤ 600% (Iter 11 563% → V3 ≤ 450% target)\n- alpha_unchanged_proof cor with source ≥ 0.85\n\n## 학술 references\n- Grinold-Kahn 1999 — IR optimization with slot weighting\n- Barroso-Santa-Clara 2015 — risk-managed momentum (regime λ)\n- Lopez de Prado 2018 — turnover dampening + persistence_window\n- Iter 5/11/12 sprint experience",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-26",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

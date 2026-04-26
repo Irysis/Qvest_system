@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260426_009",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Track B — Skewness Forensics × CFO Accrual Nonlinear Cross-family Diversifier",
+  "hypothesis_description": "Iter 16 — 새 alpha source 탐색. Cross-family low-corr diversifier. Iter 9 nonlinear refinement.\n\n## 동기 (진정한 분산, Track B)\n- STR_1701 (PG2 active 80%) cor < 0.30 진정한 diversifier\n- Iter 9 (Growth × Investor_Flow) linear composite fail 학습 (L-211)\n- Iter 13 ML 실패 학습 — KR top universe 단순 ML 회피\n- Sharpe upside +0.20~0.40 (분산 효과로 SR 2.0 도달 가능)\n\n## 핵심 가설 (Iter 9 nonlinear refinement)\n- Skewness Forensics (Chen-Hong-Stein 2001 NCSKEW + Hong-Stein 1999 disagreement)\n- × CFO accrual quality (Sloan 1996, Dechow-Sloan-Sweeney 1995)\n- **Nonlinear sigmoid interaction** (Iter 9 linear composite cancellation 회피)\n- 가설: skewness-extreme + accrual-quality 동시 충족 시 alpha (sigmoid intersection)\n\n## Factor design\n1. **NCSKEW** (Chen-Hong-Stein 2001):\n   - NCSKEW_t = -[n(n-1)^1.5 × Σr³] / [(n-1)(n-2) × (Σr²)^1.5]\n   - 60-day rolling, t-1 lag\n   - Higher NCSKEW = more crash risk\n2. **CFO Accrual Quality** (Sloan 1996):\n   - Accrual = (NI - CFO) / Total Assets\n   - DART data PIT (annual May 5월 lag, quarterly 45-day)\n   - Lower accrual = higher quality (less earnings management)\n3. **Nonlinear Sigmoid Interaction**:\n   - alpha = sigmoid(-NCSKEW_z × 2) × sigmoid(-Accrual_z × 2)\n   - both extreme low → high alpha (joint condition)\n   - 단순 평균 -0.014 vs -0.015 (Iter 9 cancellation 패턴) 회피\n\n## L-211 회피 mandate (KR linear composite fail)\n- Linear composite 금지\n- Sigmoid joint conditioning\n- Regime-conditional 가능 (BULL only sub-strategy 검토)\n- Single-axis 회피 (multi-feature joint)\n\n## 핵심 mandate (Track B 진정한 diversifier)\n- STR_1701 ↔ V3 cor < 0.30 mandate (cross-family)\n- TDC q5 vs PG2 (STR_1701) < 0.30\n- TDC q5 vs STR_1656 < 0.30 (이미 PG2 diversifier 있음)\n- 평가: PG2 trio (STR_1701 60% + V3 20% + STR_1656 20%) realized SR > 1.4625\n  또는 alternative blend (V3 부분 추가 + STR_1656 보존 또는 교체)\n\n## Iter 13/14 학습 BLOCKING\n- Universe enforce (KOSPI200∪KOSDAQ150) BEFORE training\n- AvgTV20 = Close × Vol (production 2e8 KRW)\n- Codex resolution 9/9 mandatory\n- NW-HAC Harvey + 5-spec\n- sub_stab ≥ 0.50 (RF-A1)\n- alpha_inheritance: 신규 alpha source라 L-224 hash 검증 N/A\n- 합리화 phrase 금지\n\n## Common Charter 8원칙\n- PIT only (C1~C15) — DART CFO 5월 lag + 45-day lag 의무\n- 학술 출발점 (Hong-Stein 1999, Sloan 1996, Chen-Hong-Stein 2001)\n- Factor Family vs Proxy 구분\n- Data Mining 방지 (Harvey + DSR)\n- Dynamic Smart Alpha (regime conditional)\n- 비용 · 용량 · 군집 (15bps + 2e8 + cor < 0.30)\n- No Silent Override\n\n## Red Flag\n- RF-A1 sub_stab\n- RF-A2 composite 개선 명확\n- RF-A3 recent over-fit\n- RF-A6 multi-test (Iter 9 ICIR 0.027 baseline → V3 ≥ 0.20 mandate)\n\n## expected_role + why_now\n- expected_role: cross_family_diversifier_with_pg2_complementarity\n- why_now: STR_1701 PG2 promotion 후 진정한 분산 필요 (SR gap 0.5375 → 0.30대 도달엔 단일 alpha 한계). Iter 9 linear fail → nonlinear interaction refinement (L-211 회피).\n\n## 핵심 평가지표\n- V3 단독 ICIR ≥ 0.20\n- V3 sub_stab ≥ 0.50\n- V3 Harvey NW-HAC ≥ 3/5 (cross-family라 5/5는 어려움)\n- V3 DSR_post > 1.5 (Discovery WT)\n- V3 ↔ STR_1701 cor < 0.30 (진정한 분산)\n- TDC q5 vs PG2 < 0.30\n- PG2 trio blended SR > 1.4625\n\n## 학술 references\n- Chen Hong Stein 2001 — Forecasting Crashes (NCSKEW)\n- Hong Stein 1999 — A Unified Theory of Underreaction\n- Sloan 1996 — Stock Prices Reflect Information in Accruals (CAR)\n- Dechow Sloan Sweeney 1995 — Detecting Earnings Management\n- Lou Polk Sahdev 2014 — Cross-section asymmetric flow reversal\n- KR Lee Liu 2014 — KR investor flow reversal post-2008",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-26",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
