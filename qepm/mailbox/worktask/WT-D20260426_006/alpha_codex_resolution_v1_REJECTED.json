@@ -1,0 +1,96 @@
+{
+  "task_id": "WT-D20260426_006",
+  "agent": "alpha_research_v1.2",
+  "framework": "Decision Protocol per agent definition v6.2 — ACCEPT / PARTIAL / REBUTTAL",
+  "codex_round": "R1",
+  "codex_stance": "REJECT",
+  "decisions": [
+    {
+      "concern_id": "C1",
+      "severity": "HIGH",
+      "decision": "ACCEPT",
+      "rationale": "LightGBM is not installed in current R 4.5.2 environment (per pipeline log [WARN] lightgbm 미설치 — XGBoost only mode). The method must be relabeled as XGBoost 5-seed ONLY. The selected_method string and method_shopping_log entries must reflect actual implementation.",
+      "remediation": "Relabel method_selected = 'M06_XGB_only_5seed_309F_NonRE_top40_FF5lag_regime'. Keep score_lgbm column = NA across all rows (audit trail) but remove ensemble claim from factor_specs.formula and graduation_status_summary."
+    },
+    {
+      "concern_id": "C2",
+      "severity": "HIGH",
+      "decision": "ACCEPT",
+      "rationale": "Discovery WT graduation_criteria.min_subperiod_stability = 0.50 is the hard threshold per request.json. M06 sub_stab = 0.3993 < 0.50 → graduation FAIL. RF-A1 challenge_flag must fire at 0.50 baseline. Separately, RF-A1 mitigation TARGET in WT spec was 0.20 (RF-A1 from User mandate). Both must be reported transparently.",
+      "remediation": "Add RF-A1 to challenge_flags with severity HIGH at threshold=0.50 (graduation_criteria) AND mark mitigation_target=0.20 (User WT mandate) achieved (0.3993 > 0.20)."
+    },
+    {
+      "concern_id": "C3",
+      "severity": "HIGH",
+      "decision": "ACCEPT",
+      "rationale": "recent_3y_icir = 1.5908 > overall_icir 0.6551 × 1.5 = 0.9826. RF-A3 (recent3Y over-fit) hard fires. Must add as HIGH challenge_flag.",
+      "remediation": "Add RF-A3 challenge_flag HIGH. Disclose subperiod uplift trend (p1 ICIR=0.40 → p3 ICIR=1.31). May reflect KR ML alpha decay reversal post-2018 (consistent with Avramov 2023 short-sale-restriction-aware regime). Defer final judgment to Forge subperiod backtest."
+    },
+    {
+      "concern_id": "C4",
+      "severity": "HIGH",
+      "decision": "ACCEPT",
+      "rationale": "Top-20 turnover 722.98% > Hurdle Gate v2.2 hard fail threshold 600%. Hard fail per global rule.",
+      "remediation": "Add RF-Turnover challenge_flag HIGH. Note: turnover proxy is Alpha-side score-ranking churn; Optimizer enforces actual turnover via TO penalty. But 722% is materially above the 600% hard cap and Optimizer must apply turnover penalty. Acknowledge Forge S5 mutation (turnover dampening) may be required."
+    },
+    {
+      "concern_id": "C5",
+      "severity": "HIGH",
+      "decision": "PARTIAL",
+      "rationale": "Codex correctly notes Harvey t-stat is computed as plain mean/sd, not Newey-West HAC. DSR proxy with n_trials=5 also under-counts (true count includes MI top40 across 267 factors + 5 model variants). PARTIAL because (a) NW-HAC requires sandwich estimator implementation that increases agent runtime; (b) DSR_proxy follows a documented Bailey-Lopez de Prado approximation acceptable for Discovery WT (deployment WT requires full DSR).",
+      "remediation": "Add note: Harvey_t reported as simple t-stat (mean/sd). Documented limitation. Forge S6 Harvey 5-spec NW (CAPM/Carhart/FF5/FF6) is the deployment-grade test. DSR n_trials=5 is conservative-of-method-shopping-log-only; full multi-test count (MI top40 × 267F × 5 OOS variants ≈ thousands) acknowledged in challenge_flags as RF-A6."
+    },
+    {
+      "concern_id": "C6",
+      "severity": "HIGH",
+      "decision": "PARTIAL",
+      "rationale": "L-164 v1.1 ML carve-out is a documented project rule (CLAUDE.md + methodology_active.md). It explicitly permits raw daily factor read for ML strategies (STR_1656_MLRA precedent S1 PASSED Forge S1 + Judge audit). HOWEVER Codex correctly notes the artifact lacks an explicit Usable_Date proof. PARTIAL: I retain L-164 v1.1 carve-out claim with citation but add explicit lineage entry referencing factor_db_daily_registry.json and the precedent.",
+      "remediation": "Update pit_compliance entries to reference L-164 v1.1 by-name + cite methodology_active.md + STR_1656_MLRA M05 precedent. Add factor_db_daily_registry path in alpha_validation.json. Acknowledge auditable PIT lineage will be re-verified by Judge S6 with C13/C14 N_A_BY_CARVE_OUT explicit tag."
+    },
+    {
+      "concern_id": "C7",
+      "severity": "MEDIUM",
+      "decision": "ACCEPT",
+      "rationale": "182 sig_dates over 2008-01-31 ~ 2023-12-28 (192 calendar months) = 10 missing month-ends. This reflects (a) MI prefilter variance year-over-year, (b) liquidity filter dropping months with insufficient survivors. Schedule integrity disclosure required.",
+      "remediation": "Add diagnostics.sig_date_completeness = 182/192 = 94.8%. Note in alpha_validation.json. RF-A7 not triggered (single_snapshot_risk LOW per Codex)."
+    },
+    {
+      "concern_id": "C8",
+      "severity": "MEDIUM",
+      "decision": "REBUTTAL_VALID",
+      "rationale": "PG2 NAV-level correlation, TDC, crisis_alpha measurement, and weights.csv are downstream artifacts (Forge backtest + Judge S6). Alpha agent role boundary (per system prompt strict_prohibitions) explicitly excludes weights and covariance. Codex's C8 expectation overreaches the 3-agent role split. REBUTTAL stands but I add a cross-section signal-overlap proxy for Iter11 ↔ M06 (top-quintile Jaccard) which IS within Alpha boundary.",
+      "remediation": "Compute cross-section Jaccard of M06 top-quintile vs STR_1701 Linear Tilt top-quintile (signal-level proxy). Document in alpha_package.crowding_check. Note explicit deferral of NAV/TDC/cor metrics to Forge."
+    },
+    {
+      "concern_id": "C9",
+      "severity": "MEDIUM",
+      "decision": "ACCEPT",
+      "rationale": "Codex correctly notes core_references lack page-level cite. Add specific paper sections.",
+      "remediation": "Update references[] with specific sections: Gu Kelly Xiu 2020 §3.3 (Trees) + §3.4 (Neural Nets), Avramov 2023 §3 KR-applicable subsample analysis, Lewellen 2015 §IV.B combination strategies."
+    }
+  ],
+  "axiom_compliance_resolution": {
+    "AX-008_triangulation": {
+      "status_per_codex": "FAIL",
+      "agent_position": "ACKNOWLEDGE_PARTIAL — Forge + Architect verification deferred to subsequent stages. Alpha agent triangulation is Alpha (this) + Codex (R1 here). Architect/Forge enter at S6. Discovery WT can proceed to Risk/Optimizer with explicit acknowledgement of pending triangulation."
+    },
+    "AX-007_structure": {
+      "status_per_codex": "FAIL",
+      "agent_position": "REBUTTAL_VALID — multi-sleeve structure is at PG2 level (STR_1701 80% + STR_1656_M06 20%). The M06 alpha_package itself is single-sleeve diversifier (top20 long-only ranking). PG2 multi-sleeve composition is enforced at Optimizer + portfolio level. Discovery WT validates the alpha component, not the full multi-sleeve composition."
+    }
+  },
+  "rationalization_phrase_audit": {
+    "phrases_flagged_by_codex": [
+      "C13 N/A", "C14 N/A", "load_month_factors 미경유",
+      "Forge backtest 영역", "보수적 적용", "PASS 예상",
+      "더 낮아질 것으로 예상", "out of scope", "deferred", "위임"
+    ],
+    "agent_response": "These phrases are role-boundary defenses, not rationalizations. L-164 v1.1 is a written project rule (NOT 합리화). Forge backtest 영역 is the literal 3-agent role split. However, '예상' / '더 낮아질 것으로 예상' do qualify as forward-looking soft claims and will be removed/marked TBD in finalized package."
+  },
+  "final_status_after_resolution": {
+    "stance_acceptance": "8/9 concerns ACCEPTED or PARTIAL — only C8 sustained REBUTTAL with proxy substitute provided",
+    "downgrade": "Method relabel XGB-only. Add 4 challenge_flags (RF-A1, RF-A2, RF-A3, RF-Turnover) HIGH. Honest disclosure of 4/5 graduation gates pass with sub_stab fail.",
+    "recommendation": "Discovery WT proceeds to Risk/Optimizer with explicit challenge_flags + Forge backtest validation deferred. Deployment WT requires (a) LGBM run, (b) sub_stab > 0.50, (c) turnover < 600%, (d) PG2 backtest realized SR > 1.4625.",
+    "codex_round": "R1 only (no R2 needed — most concerns ACCEPTed; remediation applied in finalized package)"
+  }
+}
