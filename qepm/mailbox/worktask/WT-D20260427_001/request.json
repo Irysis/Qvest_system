@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_001",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 17 — Cross-family alpha discovery (XGBoost depth=4 nonlinear interaction)",
+  "hypothesis_description": "Iter 17 — Track B 학습 누적 + KR top universe 한계 회피. ML interaction (XGBoost depth=4) cross-family diversifier.\n\n## 동기 (PG2 baseline 1.4625 maintain, additional alpha discovery)\n- Iter 16 sigmoid joint fail 학습 (L-225, L-211 nonlinear path) — single axis dominates joint\n- Track B finding: V3 ↔ STR_1701 cor -0.019 cross-family 분산은 진짜 (TDC q5 0.17)\n- 단 alpha source 자체 statistical 무효 — sigmoid 한계\n- 대안: **XGBoost depth=4 nonlinear interaction** (Avramov 2023 + Gu Kelly Xiu 2020)\n\n## 핵심 가설 (ML nonlinear interaction)\n- Features: NCSKEW + CFO Accrual + Quality (Q07) + Investor Flow (residualized) + KR FF5 v2 lagged\n- ML: **XGBoost depth=4 max_depth limit** (interaction-only, Lopez de Prado AFML Ch. 11)\n- L1/L2 regularization, early stopping, 5-fold CV\n- Walk-forward expanding monthly\n- Cross-family: V3 ↔ STR_1701 cor < 0.30 mandate\n\n## 회피 사항 (학습 누적)\n- L-211: KR linear composite fail (Iter 9)\n- L-225: Sigmoid joint도 fail (Iter 16) — single axis dominate\n- Iter 13: Universe restriction → alpha vanishing (KR top 342 names binding)\n- L-226 ERC near-EW: Optimizer alpha activation 부재 — 본 sprint Optimizer는 LinTilt\n\n## L-227 Universe Expansion 보강 (병렬 인프라 의존)\n- 본 sprint는 KOSPI200∪KOSDAQ150 (현재 universe) 기본 + universe_v2 가능 시 비교\n- Architect (c) 인프라 작업 완료 시 universe_v2 (KOSPI300+KOSDAQ150 ~450) 적용\n\n## 핵심 mandate\n- alpha_inheritance_hash N/A (새 alpha source)\n- Universe enforce (현 K200∪KQ150 또는 universe_v2)\n- AvgTV20 = Close × Vol (production 2e8 KRW)\n- NW-HAC Harvey + 5-spec\n- Codex resolution 9/9 mandatory\n- sub_stab ≥ 0.50 (RF-A1)\n- Cross-family cor < 0.30 mandate\n\n## 평가\n- alpha 단독: ICIR ≥ 0.20, sub_stab ≥ 0.50, Harvey ≥ 3/5\n- V3 ↔ STR_1701 cor < 0.30 (진정한 분산)\n- TDC q5 vs PG2 < 0.30\n- PG2 trio (STR_1701 60% + V3 20% + STR_1656 20%) realized SR > 1.4625\n\n## 학술 references\n- Gu Kelly Xiu 2020 — Empirical Asset Pricing via ML (XGBoost in finance)\n- Avramov Cheng Metzker 2023 — ML vs Economic Restrictions\n- Lopez de Prado 2018 AFML Ch. 11 — Nonlinear interaction depth limit\n- Iter 9/13/16 학습 누적",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

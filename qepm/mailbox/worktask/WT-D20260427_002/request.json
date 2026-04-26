@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_002",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 18 — Optimizer Alpha Activation Mechanism (CVaR-aware MVO with adaptive ψ)",
+  "hypothesis_description": "Iter 18 — STR_1701 base alpha 그대로 + Optimizer mechanism 보강. ERC near-EW 한계 (L-226) 직접 해소.\n\n## 동기 (Optimizer alpha activation 부재 진단)\n- L-226: Iter 15 V3 ERC near-EW (0.048~0.052) → alpha tilt 활용 X → realized PG2 0.996 << 1.4625\n- Optimizer self-flag: MVO/BL/CVaR-LP MDD blow-out (>45%) — caps 위반\n- 현 PG2: STR_1701 LinTilt λ=1.0 TOphi=8 (Iter 11) 이미 검증\n- 본 sprint 가설: **Optimizer mechanism 변경만으로 incremental SR 가능**\n\n## 핵심 가설 (Optimizer Track)\n- Alpha base: STR_1701 (Iter 11 PG2 active 80%, multi-sleeve composite, slot 0.65/0.35)\n- **변경**: Optimizer mechanism만 (Alpha 변경 X)\n- 후보:\n  1. **CVaR-aware MVO with adaptive ψ**: ψ_t = ψ_base × (CVaR_t / CVaR_target) — caps soft penalty\n  2. **Black-Litterman with informative posterior**: alpha_post = (Σ⁻¹ + Ω⁻¹)⁻¹ × (Σ⁻¹×μ_eq + Ω⁻¹×alpha)\n  3. **LinTilt with persistence_window=2 + EMA + CVaR penalty**: Iter 11 + tail control\n  4. **Risk Parity with Alpha Tilt**: w ∝ alpha / (Σ × σ_i)\n  5. **Concentrated MVO** (top-N=10, 30+ names mandate 완화 검토)\n\n## 핵심 mandate (Optimizer focus)\n- Alpha base: STR_1701 (변경 X) — alpha_inheritance_hash mandate ≥ 0.95 (strict)\n- Universe: KOSPI200∪KOSDAQ150 (현재) 또는 universe_v2 (Architect (c) 완료 시)\n- weight_bounds [0, 0.20], max_names 20, Σw=1, long-only\n- Liquidity 2e8 KRW, cost 15bps\n- **CVaR_d cap**: 2.5% target (단, infeasibility 시 honest disclosure + Governor cap relaxation 검토)\n- Turnover ≤ 600%\n\n## 평가\n- net_IR > 1.0 (V3 ERC 0.91 → 본 sprint 1.0+)\n- expected SR > 1.291 (STR_1701 standalone)\n- PG2 blended (V_opt 80% + STR_1656 20%) realized SR > **1.4625 baseline**\n- MDD ≤ 45%\n- Turnover ≤ 600%\n\n## 회피 사항 (L-220/L-226)\n- L-220: vol-reduction machinery Harvey 격하 (Iter 12 quarterly fail)\n- L-226: ERC near-EW alpha activation 부재\n- Cash drag 21.8% 회피 (monthly NOT quarterly)\n- Caps 너무 strict 시 alpha activation 부재 — adaptive ψ가 핵심\n\n## 학술 references\n- Black-Litterman 1992 — Bayesian portfolio with views\n- Rockafellar-Uryasev 2000 — CVaR optimization\n- Lopez de Prado 2018 — adaptive ψ regularization\n- Maillard-Roncalli-Teïletche 2010 — Risk Parity (ERC baseline)\n- Iter 11 LinTilt + Iter 15 V3 ERC 학습",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

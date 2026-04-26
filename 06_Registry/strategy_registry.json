@@ -8710,5 +8710,69 @@
       "Cross-family 분산 구조 valid but alpha source 자체 statistical 무효",
       "권장 alternative: NCSKEW BULL-only single-factor / XGBoost interaction / KR universe 확장"
     ]
+  },
+  {
+    "id": "STR_1701_V3",
+    "name": "STR_1701_V3_Multi_Mutation_ERC_REJECTED",
+    "dir": "WT-D20260426_008",
+    "status": "rejected_terminated",
+    "pg_status": "REJECTED_BY_FORGE",
+    "wt_id": "WT-D20260426_008",
+    "iter_label": "Iter15_TrackA",
+    "rejection_reason": "Process integrity ALL PASS (L-224 cor 0.93) but realized PG2 blend SR 0.996 << baseline 1.4625 (-0.4665). MDD -50.03% Hard fail. CVaR -3.63% infeasible. ERC near-EW alpha activation 부재.",
+    "alpha_diagnostics_honest": {
+      "icir": 0.3132,
+      "sub_stab": 0.6667,
+      "harvey_5spec": "5/5_PASS",
+      "harvey_t_nw_ff5": 3.8,
+      "rank_ic": 0.0407,
+      "dsr_post": 1.739,
+      "v3_vs_str1701_cor": 0.9319,
+      "gates_pass": "4/5"
+    },
+    "optimizer_diagnostics": {
+      "selected_method": "ERC",
+      "net_ir": 0.9066,
+      "weights_range": "0.048~0.052 (near-EW)",
+      "alpha_activation_failure": "ERC ignores V3 alpha tilt"
+    },
+    "forge_realized_diagnostics": {
+      "v3_standalone_sr_full": 1.14,
+      "v3_blend_realized_sr": 0.996,
+      "baseline_pg2_sr": 1.4625,
+      "delta_v3_vs_baseline": -0.4665,
+      "mdd_in_sample": -0.5003,
+      "mdd_hard_fail_45pct": true,
+      "cvar_d_realized": -0.0363,
+      "cvar_breach": true,
+      "harvey_5spec_realized": "5/5_PASS",
+      "dsr_post_realized": 0.3268,
+      "oos_24_26_sr": 1.473,
+      "oos_24_26_cagr": 0.415,
+      "oos_24_26_mdd": -0.296,
+      "pg2_recommend": "MAINTAIN_BASELINE"
+    },
+    "ax_compliance": {
+      "AX-002": "PASS (process integrity, Iter 13/14 학습 적용)",
+      "AX-005": "EXCLUSION_INVOKED",
+      "AX-007": "EXCEPTION_1_multi_sleeve",
+      "AX-008": "PARTIAL (Codex CLI stall × 2, OVERRIDE_005 substitute, Forge + Risk PASS, Architect downstream pending)"
+    },
+    "l_codes": [
+      "L-224",
+      "L-226",
+      "L-227"
+    ],
+    "terminated_at": "2026-04-27T00:30:00+0900",
+    "process_lessons": [
+      "Iter 13/14 silent override 학습 ALL applied — process integrity 회복",
+      "BUT Composite dilution + ERC near-EW + KR top universe CVaR infeasible 누적 → realized fail",
+      "L-227 mandate: Universe expansion 인프라 + L-226 mandate: Optimizer alpha activation mechanism 보강 필요"
+    ],
+    "next_sprint_directions": [
+      "Iter 17 (a) cross-family",
+      "Iter 18 (b) Optimizer alpha activation",
+      "(c) Universe expansion 인프라"
+    ]
   }
 ]
