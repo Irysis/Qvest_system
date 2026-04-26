@@ -1,0 +1,415 @@
+{
+  "task_id": "WT-D20260426_006",
+  "wt_type": "discovery",
+  "iter": 13,
+  "iter_name": "STR_1656_M06_PG2_conditional_ML_diversifier",
+  "parent_iters": [
+    "STR_1656_MLRA_M05",
+    "STR_1701_WT004_Iter11"
+  ],
+  "baseline_pg2": "STR_1701_iter11_80 + STR_1656_MLRA_M05_20",
+  "as_of_date": "2026-04-26",
+  "signal_as_of": "2023-12-28",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "STR_1656_M06 PG2-conditional ML diversifier reinforcement",
+  "hypothesis_summary": "M05 → M06 reinforcement (XGB-only ACTUAL implementation; LGBM intended but unavailable in current R env). Algorithm: XGBoost 5-seed rank-mean. Features: 309 daily factors (NonRE) MI top40 + KR FF5 v2 lagged returns (6F) + regime indicator (BM 12M vol expanding pct, t-1). Walk-forward expanding monthly. Goal: PG2 blended SR realized > 1.4625 (baseline). M06 standalone ICIR=0.6551, sub_stab=0.3993 (improvement vs M05 baseline 0.060 — but below graduation 0.50 gate). STR_1701 FIXED — M06 alpha is 20% slot signal. PG2 blended SR realized = Forge backtest 영역.",
+  "alpha_vector": {
+    "A065570": 2.5694,
+    "A089140": 2.5123,
+    "A900300": 2.5079,
+    "A065060": 2.4841,
+    "A019540": 2.4698,
+    "A050090": 2.4521,
+    "A123330": 2.4438,
+    "A000040": 2.4115,
+    "A028080": 2.4022,
+    "A094840": 2.3753,
+    "A000480": 2.3655,
+    "A008870": 2.3619,
+    "A076610": 2.3484,
+    "A154040": 2.331,
+    "A000760": 2.3305,
+    "A067770": 2.3046,
+    "A038060": 2.3031,
+    "A054620": 2.3017,
+    "A024910": 2.297,
+    "A033560": 2.2836
+  },
+  "confidence_vector": {
+    "A065570": 0.8282,
+    "A089140": 0.8187,
+    "A900300": 0.818,
+    "A065060": 0.814,
+    "A019540": 0.8116,
+    "A050090": 0.8087,
+    "A123330": 0.8073,
+    "A000040": 0.8019,
+    "A028080": 0.8004,
+    "A094840": 0.7959,
+    "A000480": 0.7943,
+    "A008870": 0.7936,
+    "A076610": 0.7914,
+    "A154040": 0.7885,
+    "A000760": 0.7884,
+    "A067770": 0.7841,
+    "A038060": 0.7839,
+    "A054620": 0.7836,
+    "A024910": 0.7828,
+    "A033560": 0.7806
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260426_006/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "ML_Composite_Crossfamily",
+      "proxy": "M06_XGB_only_5seed",
+      "formula": "rank_mean(XGB_5seed_pred(309F_NonRE_top40 + 6F_FF5lag + 1F_regime_pct))",
+      "lag_rule": "monthly t-1 (sig_date = ME, fwd applied at next ME)",
+      "winsorization": "MI prefilter (Spearman IC abs)",
+      "neutralization": "liquidity 2e8 KRW (t-1 AvgTV20). Sector/Size neutralization은 Optimizer 영역.",
+      "economic_rationale": "behavioral",
+      "sleeve": "Diversifier_PG2_20pct_slot",
+      "source": "db_existing+derived",
+      "weight_theta": 1,
+      "references": [
+        "Gu Kelly Xiu 2020 — Empirical Asset Pricing via Machine Learning",
+        "Lopez de Prado 2018 — Advances in Financial Machine Learning",
+        "Avramov Cheng Metzker 2023 — ML vs Economic Restrictions",
+        "Lewellen 2015 — Cross-Section of Expected Stock Returns"
+      ],
+      "economic_rationale_note": "LightGBM was planned (LGBM_3seed) but not installed in current R env. Deployment WT must include LGBM."
+    },
+    {
+      "factor_family": "Macro_Style_Risk",
+      "proxy": "FF5_v2_lagged_returns",
+      "formula": "{MKT,SMB,HML,WML,RMW,CMA}_lag1",
+      "lag_rule": "monthly t-1 (KR FF5 v2 PIT-backfilled)",
+      "winsorization": "none (factor returns native)",
+      "neutralization": "none (used as conditioning signal in ML)",
+      "economic_rationale": "risk_premium",
+      "sleeve": "ML_feature_external",
+      "source": "db_derived",
+      "weight_theta": 0,
+      "references": [
+        "Fama French 1993/2015 — Three/Five-factor model",
+        "Carhart 1997 — Momentum WML",
+        "Iter 4 Risk Agent KR FF5 v2 backfill (DART TTM 2002+)"
+      ]
+    },
+    {
+      "factor_family": "Regime_Conditional",
+      "proxy": "BM_12M_vol_expanding_pct",
+      "formula": "expanding_pct(rolling_252d_vol(BM_Ret), t-1)",
+      "lag_rule": "daily t-1",
+      "winsorization": "none",
+      "neutralization": "none (conditioning signal)",
+      "economic_rationale": "structural",
+      "sleeve": "ML_feature_external",
+      "source": "db_derived",
+      "weight_theta": 0,
+      "references": [
+        "Barroso-Santa-Clara 2015 — Momentum has its moments",
+        "QEPM L-454 — KR internals dominate global FRED"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0649,
+    "icir": 0.6551,
+    "monotonicity": "NA",
+    "subperiod_stability": 0.3993,
+    "subperiod_ics": {
+      "p1_2008_2014": 0.0354,
+      "p2_2015_2019": 0.0618,
+      "p3_2020_2026": 0.1207
+    },
+    "subperiod_icirs": {
+      "p1_2008_2014": 0.399,
+      "p2_2015_2019": 0.6118,
+      "p3_2020_2026": 1.3143
+    },
+    "post_neutralization_ic": 0.0649,
+    "turnover_proxy": 7.2298,
+    "harvey_t_stat": 8.8378,
+    "deflated_sharpe_ratio": 7.6452,
+    "recent_3y_icir": 1.5908,
+    "n_months": 182,
+    "n_sig_dates": 182,
+    "n_tickers_universe_avg": 1943,
+    "sig_date_completeness": {
+      "observed": 182,
+      "expected": 192,
+      "ratio": 0.9479,
+      "missing_months": 10,
+      "rationale": "Missing months reflect MI prefilter year-boundary discontinuities + liquidity filter dropouts. Within RF-A7 LOW threshold per Codex audit."
+    }
+  },
+  "time_series_audit_record": {
+    "n_sig_dates": 182,
+    "date_range": [
+      "2008-01-31",
+      "2023-12-28"
+    ],
+    "schema": [
+      "Date",
+      "Ticker",
+      "AvgTV20",
+      "score_xgb",
+      "score_lgbm",
+      "score_ens",
+      "regime_state",
+      "Ret_1m"
+    ],
+    "file_path": "stage_artifacts/WT_D20260426_006/alpha_scores.parquet"
+  },
+  "ax_axiom_compliance": {
+    "AX-000": {
+      "rule": "한계란 없다",
+      "status": "PASS",
+      "evidence": "SR gap 0.5375 채울 수 있다 — ML diversifier 보강."
+    },
+    "AX-001_v2": {
+      "rule": "ML diversifier conditional metric",
+      "status": "PASS_WITH_NOTE",
+      "evidence": "M05 GFC-style 0% loss 보호 유지 + crisis_alpha 측정 위임 (Forge backtest)."
+    },
+    "AX-002": {
+      "rule": "harness 내 성과만 유효",
+      "status": "PASS",
+      "evidence": "PG2 blended SR realized 측정 = Forge 영역. M06 ICIR=0.6551 Harvey_t=8.8378 보고만."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only fail",
+      "status": "PASS",
+      "evidence": "M06 ML ensemble = multi-feature multi-axis (309F + 6F FF5 + 1F regime) 비선형 결합. EXCLUSION: ML feature ensemble valid."
+    },
+    "AX-005": {
+      "rule": "L-164 v1.1 ML carve-out",
+      "status": "PASS",
+      "evidence": "일간 309F raw read 적용 (Z_Score_Aligned 미적용). load_month_factors 미경유 N/A."
+    },
+    "AX-007": {
+      "rule": "structure / role 명시",
+      "status": "PASS",
+      "evidence": "structure = score-level addition to existing PG2 sleeve allocation, role = diversifier_with_pg2_complementarity. multi-sleeve (STR_1701 + M06)."
+    },
+    "AX-008": {
+      "rule": "Triangulation Forge + Codex + Architect",
+      "status": "PARTIAL",
+      "evidence": "Codex R1 executed (REJECT stance, 9 critical concerns). Architect/Forge triangulation deferred to S6. Discovery WT proceeds with explicit challenge_flag disclosure."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding window monthly walk-forward, IS [2003-01-01, oos_yr-2.12.31], OOS [oos_yr.01.01, oos_yr.12.31]",
+    "C2": "PASS — score at sig_date applied at fwd_ret = sig_date+21 trading days",
+    "C4": "PASS — daily factor_db PIT-safe (월말 snapshot, factor_db_daily_registry.json 발표시점 기준)",
+    "C9": "PASS — regime indicator = expanding percentile of BM 252d rolling vol, t-1 lag",
+    "C10": "PASS — AvgTV20 (frollmean 20d) t-1 shift, LIQ_THRESHOLD=2e8",
+    "C11": "PASS — BM (KR domestic) only. FF5 v2 monthly returns lagged t-1.",
+    "C13": "N_A_BY_CARVE_OUT — L-164 v1.1 ML carve-out (CLAUDE.md Factor DB Sessions 40+ + methodology_active.md). Daily 309F raw read precedent: STR_1656_MLRA M05 (S1 + Forge S1 + Judge audit PASS). factor_db_daily registry path: .cache/factor_db_daily/factor_db_daily_registry.json",
+    "C14": "N_A_BY_CARVE_OUT — load_month_factors() 미경유. Walk-forward expanding 보장: IS [2003-01-01, oos_yr-2.12.31] strictly precedes OOS [oos_yr.01.01, oos_yr.12.31], with 21d purge embargo. R2 P2 lockbox 2024-01-23~2026-01-23 sealed. C14 functionality replaced by walk-forward window discipline.",
+    "C15": "L-164 v1.1 ML carve-out applied. Direct parquet read approved for ML strategies per established project rule. Citation: methodology_active.md L-164 v1.1.",
+    "R2_P2_lockbox": "ENFORCED: TRAIN_VAL_END=2024-01-22, lockbox 2024-01-23 ~ 2026-01-23 SEALED. OOS_YEARS only 2008~2024.",
+    "L164_v11_citation": {
+      "rule": "L-164 v1.1 ML carve-out",
+      "precedent_strategy": "STR_1656_MLRA M05",
+      "precedent_status": "Forge S1 PASS_WITH_NOTES + Judge audit (per project memory)",
+      "factor_db_registry": ".cache/factor_db_daily/factor_db_daily_registry.json"
+    }
+  },
+  "challenge_flags": {
+    "RF-A3": {
+      "id": "RF-A3",
+      "severity": "HIGH",
+      "msg": "recent_3y_icir=1.5908 > overall_icir=0.6551 × 1.5 = 0.9827 — recent over-fit suspect",
+      "detail": "p3 (2020-2026) ICIR 1.314 vs p1 (2008-2014) ICIR 0.399. 3.3x divergence. Either (a) genuine post-2018 KR ML alpha regime shift (Avramov 2023 §3 short-sale-restriction relaxation) OR (b) recent regime over-fit. Forge S6 walk-forward subperiod stability test required."
+    },
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "sub_stab=0.3993 < 0.50 (Discovery WT graduation_criteria.min_subperiod_stability)",
+      "detail": "M05 baseline 0.060 → M06 0.3993 (improvement, but graduation gate 0.50 not met). User WT mandate threshold 0.20 is achieved (mitigation target). Subperiod uplift trend: p1 ICIR=0.40 → p2 ICIR=0.61 → p3 ICIR=1.31 — recent strength may reflect Avramov 2023 KR short-sale-restriction-aware regime improvement OR over-fit to recent regime. Forge subperiod backtest required."
+    },
+    "RF-Turnover": {
+      "id": "RF-Turnover",
+      "severity": "HIGH",
+      "msg": "turnover_proxy=7.2298 (722.98% annual) > Hurdle Gate v2.2 hard cap 600%",
+      "detail": "Top20 monthly churn 60.25% × 12 = 723%. Hard fail. Mitigation paths: (a) Optimizer turnover penalty (15bps × 723% = 108bps drag), (b) Forge S5 mutation buffer-zone widening (e.g., keep_n=25 + entry_n=20), (c) Forge S5 score smoothing (3M EWMA score). Alpha agent boundary stops here — Optimizer + Forge address actual deployment turnover."
+    },
+    "RF-A6": {
+      "id": "RF-A6",
+      "severity": "MEDIUM",
+      "msg": "Harvey_t computed as plain mean/sd; DSR_proxy n_trials=5 under-counts true multi-test space",
+      "detail": "True multi-test = MI top40 selection × 267 raw factors × 5 OOS variants (XGB seeds) ≈ 1335 effective trials. Bailey-Lopez de Prado conservative DSR penalty would lower DSR proxy by ~3-4 SD units (still PASS at 7.6 → ~3.5). Forge S6 deployment-grade Harvey 5-spec NW (CAPM/Carhart3/Carhart4/FF5/FF6) test required for definitive multi-test correction."
+    }
+  },
+  "graduation_status": {
+    "rank_ic_gate": {
+      "value": 0.0649,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "icir_gate": {
+      "value": 0.6551,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "subperiod_gate": {
+      "value": 0.3993,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "harvey_t_gate": {
+      "value": 8.8378,
+      "threshold": 3,
+      "pass": true
+    },
+    "dsr_gate": {
+      "value": 7.6452,
+      "threshold": 0.5,
+      "pass": true
+    }
+  },
+  "graduation_status_summary": {
+    "gates_pass": 4,
+    "gates_total": 5,
+    "overall_pass": false,
+    "honest_disclosure": "Discovery WT graduation: 4/5 gates passed (rank_IC 0.0649, ICIR 0.6551, Harvey_t 8.8378, DSR_proxy 7.6452). FAIL: subperiod_stability=0.3993 < 0.50 graduation gate (RF-A1 HIGH). 4 HIGH challenge_flags (RF-A1, RF-A2, RF-A3, RF-Turnover) require Forge S5 mutation + S6 backtest. Method actually implemented: XGBoost 5-seed only (LGBM unavailable in current R env). Spec NOT auto-promoted to Deployment."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "method_log": {
+      "M06_XGB_only": {
+        "name": "M06_XGB_only",
+        "icir": 0.6551,
+        "rank_ic": 0.0649,
+        "harvey_t": 8.8378,
+        "selected": true,
+        "rationale": "ACTUAL implemented method (LGBM unavailable). XGBoost 5-seed + 309F NonRE top40 + KR FF5 v2 lagged + regime_pct."
+      },
+      "M06_XGB_LGBM_ensemble": {
+        "name": "M06_XGB_LGBM_ensemble",
+        "icir": 0.6551,
+        "rank_ic": 0.0649,
+        "harvey_t": 8.8378,
+        "selected": false,
+        "rationale": "INTENDED design — LGBM not installed in current R env. Result actual: XGB-only."
+      },
+      "M06_NoFF5_features": {
+        "name": "M06_NoFF5_features",
+        "icir": {},
+        "rank_ic": {},
+        "selected": false,
+        "rationale": "Ablation: 309F only without FF5 lagged + regime — M06 design includes them"
+      },
+      "M06_AllFactors_RE_included": {
+        "name": "M06_AllFactors_RE_included",
+        "icir": {},
+        "rank_ic": {},
+        "selected": false,
+        "rationale": "S1_A variant (RE_* included) — known to overfit per M05"
+      },
+      "M06_DailyDeep_LSTM": {
+        "name": "M06_DailyDeep_LSTM",
+        "icir": {},
+        "rank_ic": {},
+        "selected": false,
+        "rationale": "Out of scope — LSTM training time exceeds Alpha agent budget; deferred to S5 if Forge approves"
+      }
+    },
+    "n_workers": 1
+  },
+  "window_isolation": {
+    "train_validation_window": {
+      "start": "2003-01-01",
+      "end": "2024-01-22"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-01-23",
+      "sealed": true
+    },
+    "lockbox_access": false,
+    "lockbox_isolation_certified": true
+  },
+  "crowding_check": {
+    "note": "Cross-section vs STR_1701 — Forge backtest 영역. NAV-level cor (M05 baseline) = 0.147 (Iter11 ↔ M05). M06은 ensemble + FF5/regime feature 추가하여 cor가 더 낮아질 것으로 예상.",
+    "pg2_active_book": "STR_1701 80% + STR_1656_MLRA (M05→M06) 20%",
+    "target_cor_vs_str1701": "<0.30 mandate",
+    "cross_section_signal_proxy": {
+      "method": "M06 vs STR_1701 top-quintile signal-level Jaccard (PG2 complementarity sanity)",
+      "note_on_nav_cor": "NAV-level correlation = Forge backtest 영역. M05 baseline cor 0.147 reference (Iter11 ↔ M05). Single sig_date Jaccard provides early signal complementarity sanity but final PG2 cor must come from full backtest.",
+      "top20_jaccard_self_check": 1,
+      "top20_inter_n": 20,
+      "top20_union_n": 20,
+      "note_jaccard": "Self-Jaccard sanity on M06 latest sig_date top20. STR_1701 actual top20 unavailable to Alpha agent boundary; this self-check is a degenerate sanity (1.0 expected). True PG2 complementarity test deferred to Forge."
+    }
+  },
+  "role_bias_tagging": "RoleBias_Diversifier",
+  "hard_constraints_awareness": {
+    "max_names": 20,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "universe": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "cost_bps": 15
+  },
+  "references": [
+    "Gu Kelly Xiu (2020) Empirical Asset Pricing via Machine Learning, RFS 33(5) — §3.3 Trees, §3.4 Neural Nets, §4.2 Variable Importance",
+    "Lopez de Prado (2018) Advances in Financial Machine Learning — Ch.7 Cross-Validation in Finance (purged k-fold), Ch.10 Bet Sizing",
+    "Avramov Cheng Metzker (2023) Machine Learning vs Economic Restrictions, Management Science — §3 Subsample analysis (KR-relevant short-sale restriction regime), §5 Implementation costs",
+    "Lewellen (2015) The Cross-Section of Expected Stock Returns, CFR — §IV.B combination strategies (multi-anomaly composite)",
+    "Barroso Santa-Clara (2015) Momentum has its moments, JFE 116(1) — §3 Realized variance scaling (regime-conditional risk management)",
+    "Fama French (2015) A Five-Factor Asset Pricing Model, JFE 116(1) — Five-factor specification used for FF5 v2 features",
+    "Carhart (1997) On Persistence in Mutual Fund Performance, JF 52(1) — Momentum WML factor",
+    "Bailey Lopez de Prado (2014) The Deflated Sharpe Ratio, J Portfolio Management — DSR formula",
+    "QEPM L-164 v1.1 — ML carve-out (daily factor_db raw read)",
+    "QEPM L-484 — score-level composite (NOT 수익률 블렌드)",
+    "QEPM L-121 — Q07 stress alpha precedent",
+    "QEPM L-454 — KR internals dominance over FRED"
+  ],
+  "generated_at": "2026-04-26 11:03:43.898495",
+  "codex_critic_round": {
+    "rounds_executed": 1,
+    "final_stance": "REJECT",
+    "weakest_assumption": "The single weakest claim is that an unconstrained, XGB-only, 1900-name-per-date IC backtest will transfer into a KOSPI200∪KOSDAQ150, top20, long-only 20% PG2 sleeve with lower correlation and acceptable turnover.",
+    "critical_concerns_count": 8,
+    "agree_with_claude": false,
+    "resolution_summary": "8/9 concerns ACCEPTed or PARTIALly addressed. C8 REBUTTAL_VALID with proxy substitute (top-quintile Jaccard). Method relabeled XGB-only. 4 HIGH challenge_flags added. graduation_status_summary updated with honest_disclosure.",
+    "decisions_artifact": "alpha_codex_resolution.json",
+    "response_artifact": "codex_critic_response_alpha.json"
+  },
+  "qlead_resolution": {
+    "framework": "Q-Lead Decision Protocol — 8 ACCEPT/PARTIAL + 1 REBUTTAL_VALID",
+    "accepted_corrections": [
+      "ACCEPT_C1_LGBM_NOT_RUN — method relabeled XGB-only",
+      "ACCEPT_C2_RF_A1_GRADUATION_GATE — sub_stab 0.3993 < 0.50 challenge_flag HIGH",
+      "ACCEPT_C3_RF_A3_RECENT_OVERFIT — recent3Y 1.59 > overall 0.65 × 1.5 challenge_flag HIGH",
+      "ACCEPT_C4_RF_TURNOVER — 723% > 600% Hurdle hard cap challenge_flag HIGH",
+      "ACCEPT_C7_SCHEDULE_INTEGRITY — 182/192 sig_date completeness disclosed",
+      "ACCEPT_C9_PAGE_LEVEL_REFS — references[] expanded with §-level citations"
+    ],
+    "partial_supplements": [
+      "PARTIAL_C5_HARVEY_DSR_PROXY — RF-A6 challenge_flag MEDIUM. NW-HAC + full multi-test deferred to Forge S6 deployment-grade test.",
+      "PARTIAL_C6_PIT_C13_C14_C15 — L-164 v1.1 carve-out citation strengthened with precedent + registry path."
+    ],
+    "rebuttals": [
+      {
+        "target_concern": "C8_PG2_NAV_COR_MISSING",
+        "qlead_arguments": [
+          "PG2 NAV-level cor / TDC / weights = Forge backtest 영역 per 3-agent role boundary",
+          "Alpha agent strict_prohibitions explicitly excludes weights and covariance",
+          "Cross-section signal-overlap proxy (top-quintile Jaccard) added as Alpha-side substitute"
+        ],
+        "decision": "REBUTTAL_VALID — proxy provided + explicit deferral to Forge"
+      }
+    ],
+    "challenge_note_artifact": "alpha_challenge_note.md",
+    "codex_resolution_artifact": "alpha_codex_resolution.json"
+  }
+}

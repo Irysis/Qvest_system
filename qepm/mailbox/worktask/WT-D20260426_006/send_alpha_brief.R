@@ -20,19 +20,27 @@ source(file.path(PROJECT_ROOT, "02_Infrastructure/telegram/telegram_notify.R"))
 
 # Diagnostics 표
 diag <- ap$diagnostics
+safe_num <- function(x) {
+  v <- suppressWarnings(as.numeric(x))
+  if (length(v) == 0 || is.na(v)) NA_real_ else v
+}
+fmtnum <- function(x, fmt = "%.4f") {
+  v <- safe_num(x)
+  if (is.na(v)) "NA" else sprintf(fmt, v)
+}
 diag_df <- data.frame(
   Metric = c("rank_IC", "ICIR", "Harvey_t",
              "Sub_stab", "Recent_3Y_ICIR",
              "Monotonicity", "Turnover", "DSR_proxy"),
   Value = c(
-    sprintf("%.4f", diag$rank_ic %||% NA_real_),
-    sprintf("%.4f", diag$icir %||% NA_real_),
-    sprintf("%.4f", diag$harvey_t_stat %||% NA_real_),
-    sprintf("%.4f", diag$subperiod_stability %||% NA_real_),
-    sprintf("%.4f", diag$recent_3y_icir %||% NA_real_),
-    sprintf("%.4f", diag$monotonicity %||% NA_real_),
-    sprintf("%.2f%%", (diag$turnover_proxy %||% 0) * 100),
-    sprintf("%.4f", diag$deflated_sharpe_ratio %||% NA_real_)
+    fmtnum(diag$rank_ic),
+    fmtnum(diag$icir),
+    fmtnum(diag$harvey_t_stat),
+    fmtnum(diag$subperiod_stability),
+    fmtnum(diag$recent_3y_icir),
+    fmtnum(diag$monotonicity),
+    paste0(fmtnum(safe_num(diag$turnover_proxy) * 100, "%.2f"), "%"),
+    fmtnum(diag$deflated_sharpe_ratio)
   ),
   stringsAsFactors = FALSE
 )
@@ -42,12 +50,12 @@ sub_ic <- diag$subperiod_ics %||% list()
 sub_icir <- diag$subperiod_icirs %||% list()
 sub_df <- data.frame(
   Period = c("p1_2008_2014", "p2_2015_2019", "p3_2020_2026"),
-  IC = c(sprintf("%.4f", sub_ic$p1_2008_2014 %||% NA_real_),
-         sprintf("%.4f", sub_ic$p2_2015_2019 %||% NA_real_),
-         sprintf("%.4f", sub_ic$p3_2020_2026 %||% NA_real_)),
-  ICIR = c(sprintf("%.4f", sub_icir$p1_2008_2014 %||% NA_real_),
-           sprintf("%.4f", sub_icir$p2_2015_2019 %||% NA_real_),
-           sprintf("%.4f", sub_icir$p3_2020_2026 %||% NA_real_)),
+  IC = c(fmtnum(sub_ic$p1_2008_2014),
+         fmtnum(sub_ic$p2_2015_2019),
+         fmtnum(sub_ic$p3_2020_2026)),
+  ICIR = c(fmtnum(sub_icir$p1_2008_2014),
+           fmtnum(sub_icir$p2_2015_2019),
+           fmtnum(sub_icir$p3_2020_2026)),
   stringsAsFactors = FALSE
 )
 
