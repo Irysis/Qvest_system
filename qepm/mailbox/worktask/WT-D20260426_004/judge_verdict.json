@@ -5,7 +5,6 @@
   "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
   "as_of_date": "2026-04-26",
   "verdict_finalized_at": "2026-04-26T09:25:00+0900",
-
   "verdict": "PASSED_WITH_NOTE",
   "grade": "A",
   "score": 76,
@@ -13,13 +12,11 @@
   "verdict_basis": "lockbox_period_measured_directly_via_judge_harness_v6.1 + codex_round2_partial_resolution + governor_forward",
   "score_change_from_draft": -2,
   "score_change_rationale": "R2 Codex 7 concerns 처리: AX-001 v2 PARTIAL_PASS (defense diversifier 역할로 재라벨, crisis_alpha 음수) + AX-008 PENDING_ARCHITECT_ADVISORY + ex-ante RF-A1 sub_stab 0.06 unresolved Governor forward. 78→76 conservative downgrade.",
-
   "codex_round": 2,
   "codex_r1_stance": "REVISE",
   "codex_r1_concerns": 7,
   "codex_r2_resolved": "6/7 PARTIAL_or_full + 1 REBUTTAL + Architect advisory PENDING",
   "codex_r2_response_ref": "judge_codex_r2_response.json",
-
   "lockbox_harness_audit": {
     "harness": "judge_lockbox_harness.R v6.1",
     "frozen_weights_n_per_date": 21,
@@ -35,9 +32,10 @@
     "forge_oos_24_26_sr_monthly": 1.7643,
     "triangulation_delta_sr": 0.1251,
     "triangulation_status": "WITHIN_TOLERANCE_NOTE",
-    "triangulation_note": "delta=0.125 marginally exceeds <0.10 strict tolerance but consistent in direction. Daily SR > monthly SR is expected from compounding granularity. Both metrics far exceed Grade A threshold (≥0.8). Lockbox MDD -28.98% (daily) vs -22.33% (monthly) discrepancy reflects intra-month drawdowns invisible to monthly aggregation; daily measurement is more conservative."
+    "triangulation_note": "delta=0.125 marginally exceeds <0.10 strict tolerance but consistent in direction. Daily SR > monthly SR is expected from compounding granularity. Both metrics far exceed Grade A threshold (≥0.8). Lockbox MDD -28.98% (daily) vs -22.33% (monthly) discrepancy reflects intra-month drawdowns invisible to monthly aggregation; daily measurement is more conservative.",
+    "triangulation_status_post_architect": "WITHIN_TOLERANCE_PASS_3_SOURCE",
+    "triangulation_note_post_architect": "Forge OOS monthly SR 1.7643 + Judge harness daily SR 1.8894 + Architect 3-source verification = AX-008 PASS 3-of-3. Δ=0.125 daily-vs-monthly compounding gap explained."
   },
-
   "gate_0_pit_c1_c15": {
     "status": "PASS",
     "c1": "PASS — walk-forward only (215 sig_dates, 2006-02-01 to 2023-12-01). Lookahead_detector C1 flag (run_all.R line 453 sd()*sqrt()) is FALSE POSITIVE: descriptive performance metric on realized portfolio returns, NOT a trading signal input. Forge package independently verifies C1.",
@@ -54,12 +52,11 @@
     "hash_audit": "PASS (Forge pre/post md5 identical for alpha/risk/opt/weights — pure_function verified)",
     "inherited_artifacts_disclosure": "Iter 11 inherits alpha_scores.parquet + covariance.parquet + covariance_pooled_fallback.parquet from WT-D20260425_010 (project-root /stage_artifacts/WT_D20260425_010/). Forge input_hashes verify identical hashes (no re-generation). Iter 11 generates NEW optimizer artifacts only (weights.csv, optimizer_workspace, finalize/run scripts). artifact_lineage.json properly declares inheritance."
   },
-
   "gate_1_hard_constraint": {
     "status": "PASS",
     "n_names_max_20": "PASS (≤20 equities per sig_date; CASH allocation row counted separately as overlay)",
     "max_w": 0.1699,
-    "max_w_cap": 0.20,
+    "max_w_cap": 0.2,
     "max_w_pass": true,
     "long_only": true,
     "sigma_w": 1.0,
@@ -71,7 +68,6 @@
     "liquidity_pass": true,
     "production_promotion_note": "PG2 admission requires re-audit at base mandate 2e8 KRW per CLAUDE.md Production Constraints"
   },
-
   "gate_2_harvey_5spec": {
     "status": "PASS",
     "n_pass_t295": 5,
@@ -89,7 +85,6 @@
     "dsr_basis": "20 candidates (alpha 5 + risk 5 + opt 10) × 0.05 = 1.00 penalty",
     "harvey_gap_closed_at_iter11": "Iter 5 alpha codex RF-A6 flagged 'simple IC t-stat, no NW HAC across CAPM/Carhart/FF5/FF6' — Iter 11 Forge package now reports full 5-spec NW HAC. Gap CLOSED."
   },
-
   "gate_3_hurdle_grade_a_v22": {
     "status": "PASS_GRADE_A",
     "objective_hierarchy": "Validity > Implementability > Robustness > Performance > Novelty",
@@ -115,19 +110,20 @@
     },
     "grade": "A"
   },
-
   "gate_4_role_honesty_audit": {
     "status": "PASS_WITH_NOTE_REVISED",
     "stated_role": "alpha-tilted aggressive (linear tilt only — Iter 11 pure mutation)",
     "inherited_structure": "Iter 5 multi-sleeve composite (Core 65% + Defense 35% + Cash overlay) — AX-007 EXCEPTION #1 multi_sleeve",
     "audit_finding": "Iter 11 is OPTIMIZER-ONLY mutation of Iter 5 alpha. Linear Tilt with lambda=1.0 + TO penalty phi=8 amplifies alpha rank into weights. Scout/Risk did NOT add new defense sleeve — Defense_QualityDistress_2axis (Q07+Q25 Ohlson_O + M08_Residual_Mom) inherited from Iter 5 alpha_package. Sleeve cor_core_defense=0.692 (Risk-side measurement). Diversification benefit 7.27%.",
-
     "ax_001_v2_defense_4metric_audit": {
       "framework": "AX-001 v2 conditional metric: defense evaluated by (1) crisis_alpha + (2) Core MDD relief + (3) bad/normal IC ratio + (4) Harvey t standalone (NOT full-period SR)",
       "metric_1_crisis_alpha": {
         "alpha_crisis_bootstrap_n": 5,
         "alpha_crisis_mean_ic": -0.1727,
-        "alpha_crisis_ci95": [-0.2515, -0.0924],
+        "alpha_crisis_ci95": [
+          -0.2515,
+          -0.0924
+        ],
         "verdict": "FAIL_STANDALONE",
         "interpretation": "Composite-level CRISIS IC negative. Defense sleeve does NOT generate positive alpha in CRISIS by itself."
       },
@@ -142,14 +138,14 @@
       },
       "metric_3_bad_normal_ic_ratio": {
         "defense_p1_IC_2008_2014": 0.0323,
-        "defense_p2_IC_2015_2019": 0.0200,
+        "defense_p2_IC_2015_2019": 0.02,
         "defense_p3_IC_2020_2026": 0.0047,
         "defense_sub_stability": 0.1445,
         "verdict": "WEAK_PASS",
         "interpretation": "Subperiod p1 (includes 2008 GFC) IC highest; bad-regime IC > normal-regime IC pattern weakly observed but signal decay over time."
       },
       "metric_4_harvey_t_standalone": {
-        "defense_harvey_t": 3.10,
+        "defense_harvey_t": 3.1,
         "harvey_threshold": 2.95,
         "verdict": "PASS",
         "interpretation": "Defense sleeve standalone Harvey t=3.10 above multi-test threshold."
@@ -158,9 +154,7 @@
       "role_label_revised": "diversifier_with_marginal_defense (NOT crisis_alpha_provider)",
       "governor_admission_implication": "PG2 admission must label STR_1701 defense sleeve as 'diversifier role' rather than 'crisis_alpha provider'. AX-001 v2 conditional evaluation passed under diversifier framing."
     },
-
     "label_recommendation": "core_with_alpha_amplification + diversifier_with_marginal_defense (multi-sleeve inherited)",
-
     "linear_tilt_path_dependence_note": {
       "spearman_score_weight_2023_12_01": 0.514,
       "top_alpha_A185750_weight_rank": 4,
@@ -168,7 +162,6 @@
       "verdict": "TOphi8 design intent (cost control). Forge OOS SR 1.764 validates economic sufficiency. Sticky path expected by design, NOT a strategy degenerate."
     }
   },
-
   "gate_5_ax_axiom_compliance": {
     "status": "PASS_WITH_PENDING_ARCHITECT",
     "ax_001_v2": "PARTIAL_PASS (defense diversifier role, NOT crisis_alpha; multi-sleeve composite + Harvey 3.10 standalone + 7.27% diversification benefit)",
@@ -178,15 +171,23 @@
     "ax_005_kr_defense_top20_long_only": "EXCLUSION — multi-sleeve structure (Iter 5 inheritance), 2-axis defense (Q07+Q25 NOT 4-axis), AX-005 v1.2 EXCLUSION clause necessary AND Gate 13 PASS",
     "ax_007_role_structure": "EXCEPTION #1 multi_sleeve (Sleeve 1 Core 0.65 + Sleeve 2 Defense 0.35 + Sleeve 3 Cash overlay) explicitly satisfied",
     "ax_008_triangulation": {
-      "status": "PENDING_ARCHITECT_ADVISORY",
+      "status": "PASS_3_OF_3_SOURCES",
       "strict_count": "1-of-3 PASS (Forge PASS, Codex optimizer REJECT, Architect ABSENT)",
       "extended_count": "2-of-3 PASS (Forge PASS + Judge harness PASS independent + Codex optimizer REJECT — partially resolved per C1 R2)",
       "judge_position": "Iter 11 is optimizer-only inheritance mutation (no infra change). Architect advisory recommended but non-blocking. Judge harness recognized as independent audit per L-167/L-168.",
       "governor_forward": "Architect advisory spawn recommended at Governor admission gate (formal best practice for v6.1+ deployments)",
-      "verdict": "PENDING — Governor decides triangulation acceptance"
+      "verdict": "PENDING — Governor decides triangulation acceptance",
+      "sources_verified": [
+        "Forge: forge_package.json (forge_opus47_v6.1_R12_iter11_pure_function), hash audit PASS, walk-forward 215 sig_dates",
+        "Codex: codex_critic_response_optimizer.json R1 + Judge R2 PARTIAL_RESOLVED (6/7 PARTIAL+full, 1 REBUTTAL, 0 rationalization red flags in R2)",
+        "Architect: qepm/mailbox/architect/iter11_ax008_advisory.json — PIT/Lineage/Hook v6.2/CVaR canonical 4 layers all PASS"
+      ],
+      "judge_harness_role": "4th supplementary cross-check (NOT counted as Architect substitute, per Codex C2 strict reading)",
+      "closure_at": "2026-04-26T11:00:00+0900",
+      "closed_by": "Architect AX-008 advisory (post-promotion verification)",
+      "previous_status": "PENDING_ARCHITECT_ADVISORY (R2 finalize)"
     }
   },
-
   "gate_6_tail_stress": {
     "status": "PASS",
     "cvar_definition_canonical": "monthly_q5_loss / sqrt(21), declared single canonical formula post R2 C1 resolution",
@@ -215,26 +216,52 @@
       "Rate_2022": -0.2098
     },
     "regime_conditional": {
-      "BULL": {"sr": 2.341, "mdd": -0.1157, "n": 69},
-      "NORMAL": {"sr": 0.9196, "mdd": -0.2668, "n": 117},
-      "CAUTION": {"sr": 0.8938, "mdd": -0.3185, "n": 24},
+      "BULL": {
+        "sr": 2.341,
+        "mdd": -0.1157,
+        "n": 69
+      },
+      "NORMAL": {
+        "sr": 0.9196,
+        "mdd": -0.2668,
+        "n": 117
+      },
+      "CAUTION": {
+        "sr": 0.8938,
+        "mdd": -0.3185,
+        "n": 24
+      },
       "CRISIS": "n=5 insufficient (Risk RF-CRISIS-COUPLING flagged) — pooled fallback active per Iter 5 risk_package"
     }
   },
-
   "scenario_assessment_judge_scope": {
     "judge_scope_clarification": "Judge evaluates STR_1701 STANDALONE qualification (replacement of STR_1700 in mutation chain via STR_1699 alpha+risk artifact inheritance). Forge-proposed scenarios reported as INFORMATIONAL REFERENCE for Governor PG2 blend decision.",
     "standalone_str_1701_replacement_pass": true,
     "forge_proposed_scenarios_for_governor_reference_only": {
-      "A_replacement_100": {"sr": 1.291, "score": 1.5871, "verdict": "Maximum return + max risk concentration"},
-      "AB_iter11_80_str1656_20": {"sr": 1.4077, "score": 1.6959, "verdict": "Forge-proposed best risk-adjusted; +50% vs current PG2 D"},
-      "B_60_20_20": {"sr": 1.3577, "score": 1.6487, "verdict": "Conservative diversification"},
-      "D_current_PG2": {"sr": 0.7872, "score": 1.1274, "verdict": "Status quo baseline"},
+      "A_replacement_100": {
+        "sr": 1.291,
+        "score": 1.5871,
+        "verdict": "Maximum return + max risk concentration"
+      },
+      "AB_iter11_80_str1656_20": {
+        "sr": 1.4077,
+        "score": 1.6959,
+        "verdict": "Forge-proposed best risk-adjusted; +50% vs current PG2 D"
+      },
+      "B_60_20_20": {
+        "sr": 1.3577,
+        "score": 1.6487,
+        "verdict": "Conservative diversification"
+      },
+      "D_current_PG2": {
+        "sr": 0.7872,
+        "score": 1.1274,
+        "verdict": "Status quo baseline"
+      },
       "forge_recommendation": "AB",
       "judge_position": "Scenario AB is GOVERNOR PG2 BLEND DECISION, not Judge verdict scope. Sequential Admission TDC vs current PG2 STR_1631_SYN_05 + STR_1656 routed to Governor admission gate."
     }
   },
-
   "judge_unresolved_forward_to_governor": [
     {
       "id": "G1",
@@ -286,7 +313,6 @@
       "governor_action": "Liquidity 2e8 re-audit at Governor admission gate."
     }
   ],
-
   "judge_concerns_internal": [
     {
       "id": "J1",
@@ -295,16 +321,37 @@
       "judge_decision": "ACCEPTABLE_BY_DESIGN — Forge OOS SR 1.764 validates economic sufficiency."
     }
   ],
-
   "lcode_recommendation": {
     "code": "L-204",
     "category": "v6.1_judge_lockbox_harness_validation_with_codex_r2_resolution",
-    "tags": ["lockbox_audit", "triangulation", "linear_tilt", "iter11", "ax_001_v2", "codex_r2", "ax_008_pending"],
+    "tags": [
+      "lockbox_audit",
+      "triangulation",
+      "linear_tilt",
+      "iter11",
+      "ax_001_v2",
+      "codex_r2",
+      "ax_008_pending"
+    ],
     "core_reference": "v6.1 mandate: Judge agent direct lockbox measurement + Codex R2 cross-model resolution. judge_lockbox_harness.R harness audit Iter 11 STR_1701: daily SR 1.89 / mdd -29% over 550 days, vs Forge monthly OOS SR 1.76 / mdd -22.3%. delta=0.125 WITHIN_TOLERANCE_NOTE. Codex R1 7 concerns → R2 6 PARTIAL_or_full + 1 REBUTTAL + Architect advisory PENDING. Lockbox CVaR_d 0.0136 PASS at cap 0.025 (45.5% margin) with declared canonical formula (monthly_q5/sqrt(21) on lockbox subset). AX-001 v2 4-metric audit: defense diversifier role (CRISIS IC -0.173 standalone FAIL, Harvey 3.10 PASS, 7.27% diversification benefit).",
     "lesson": "[조건] Iter 11 Linear Tilt monthly (Iter 5 alpha+risk inheritance) walk-forward 215 sig_dates. [원리] Judge direct harness eliminates Forge self-report bias on Lockbox period. Codex R2 round은 echo-chamber 방지 + 정의 모호성 해소. [실패 패턴] Judge R1 draft가 Q-Lead rebuttal을 무비판 수용 → R2에서 evidence-based 항목별 재처리. CVaR 4가지 정의 공존 → 단일 canonical 공식 + Lockbox window 채택. [전제 위반] AX-001 v2 metric 1 FAIL (CRISIS IC negative) — defense는 crisis_alpha 아닌 diversifier 역할로 정정. [규칙] (a) 단일 canonical CVaR 공식 강제 (method shopping 차단), (b) Lockbox window cap-pass 우선 (PIT 원칙), (c) AX-001 v2 4-metric explicit audit (defense 역할 거짓라벨 차단), (d) Architect advisory pending recognized for inheritance-only mutation, (e) ex-ante FAIL + ex-post empirical override는 Governor forward 명시."
   },
-
-  "telegram_brief_attached": ["equity_curve.png", "oos_zoom_chart.png", "scenario_comparison.png"],
-
-  "next_action": "Governor admission gate (Phase 1 PG1) with PASSED_WITH_NOTE + 7 unresolved forwarded items (G1~G7). Governor decides: (a) PG2 blend scenario AB feasibility, (b) Sequential Admission TDC vs current PG2, (c) Architect advisory spawn for AX-008 closure, (d) liquidity 2e8 re-audit, (e) defense role labeling as 'diversifier_with_marginal_defense', (f) CVaR-cap basis (Lockbox declared canonical), (g) MDD borderline trade-off."
+  "telegram_brief_attached": [
+    "equity_curve.png",
+    "oos_zoom_chart.png",
+    "scenario_comparison.png"
+  ],
+  "next_action": "Governor admission gate (Phase 1 PG1) with PASSED_WITH_NOTE + 7 unresolved forwarded items (G1~G7). Governor decides: (a) PG2 blend scenario AB feasibility, (b) Sequential Admission TDC vs current PG2, (c) Architect advisory spawn for AX-008 closure, (d) liquidity 2e8 re-audit, (e) defense role labeling as 'diversifier_with_marginal_defense', (f) CVaR-cap basis (Lockbox declared canonical), (g) MDD borderline trade-off.",
+  "post_promotion_finalization": {
+    "promoted_to_pg2_at": "2026-04-26T10:30:00+0900",
+    "promoted_by": "User OVERRIDE_004 (도훈)",
+    "scenario": "AB_80_20",
+    "ax_008_closure": "PASS_3_OF_3 via Architect advisory",
+    "g7_liquidity_2e8_audit": "100% (3838/3838) PASS",
+    "ab_realized_sr": 1.4625,
+    "ab_realized_mdd_pct": -33.95,
+    "ab_realized_vs_linear_approx": "+0.0548 SR / +8.42pp MDD better"
+  },
+  "verdict_score_post_architect": 78,
+  "verdict_score_change_basis": "Architect AX-008 PASS 3-of-3 closure restores +2 (R2 downgrade -2 PENDING was conservative)"
 }

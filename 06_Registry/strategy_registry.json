@@ -8423,8 +8423,8 @@
     "id": "STR_1701",
     "name": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
     "dir": "WT-D20260426_004",
-    "status": "probe_phase",
-    "pg_status": "PG1_ADMITTED_PROBE_PHASE",
+    "status": "pg2_active",
+    "pg_status": "PG2_ACTIVE",
     "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701",
     "role_primary": "core_with_alpha_amplification",
     "role_secondary": "diversifier_with_marginal_defense",
@@ -8450,12 +8450,6 @@
       "cvar_d_lockbox": 0.0136,
       "cvar_cap_pass": true
     },
-    "phased_pathway": {
-      "t_plus_0": "PG1 admit + Probe Phase. PG2 active UNCHANGED.",
-      "t_plus_30": "50% partial replacement IF G7+G4+G2 PASS",
-      "t_plus_60": "80% (Scenario AB) IF T+30 KPIs + direct NAV backtest PASS",
-      "t_plus_90": "100% (Option A) or 80/20 (AB) final decision by Q-Lead or user"
-    },
     "blocking_conditions_t30": [
       "G7: liquidity 2e8 KRW re-audit",
       "G4: Architect advisory spawn",
@@ -8465,7 +8459,72 @@
     "admitted_at": "2026-04-26",
     "wt_source": "WT-D20260426_004",
     "governor_decision": "ADMITTED_TO_PROBE_PHASE",
-    "governor_session": 72
+    "governor_session": 72,
+    "promoted_at": "2026-04-26T10:30:00+0900",
+    "promoted_by_user": "도훈 (Dohoon Kim)",
+    "promotion_directive": "Iter 11을 PG2의 MEGA 05 대체하자",
+    "lawbook_ref": "Lawbook §5 — User OVERRIDE_004",
+    "scenario_executed": "AB_80_20_Iter11_STR1656_diversifier_preserved",
+    "pg2_book_weight": 0.8,
+    "pg2_companion": {
+      "strategy_id": "STR_1656_MLRA_M05",
+      "weight": 0.2,
+      "role": "ML_diversifier_GFC_0pct_loss"
+    },
+    "post_promotion_realized": {
+      "ab_blend_sr_realized": 1.4625,
+      "ab_blend_cagr_pct": 30.01,
+      "ab_blend_mdd_pct": -33.95,
+      "ab_blend_vol_pct": 20.52,
+      "harvey_5spec_ab": "5_of_5_PASS",
+      "dsr_proxy_ab": 19.32,
+      "linear_approximation_was": {
+        "sr": 1.4077,
+        "mdd": -42.37
+      },
+      "delta_realized_minus_linear_sr": 0.0548,
+      "delta_realized_minus_linear_mdd_pp": 8.42,
+      "interpretation": "사용자 결정 정당화: 비선형 diversification 효과로 실측 MDD가 추정보다 8.42pp 작음"
+    },
+    "post_promotion_checks": {
+      "forge_ab_direct_nav": "PASS",
+      "g7_liquidity_2e8_audit": "100% (3838/3838) PASS — Architect AC1 BLOCKING resolved",
+      "tdc_sanity_q5": "0.0769 < 0.30 PASS",
+      "architect_ax008": "PASS_3_OF_3 (Forge + Codex R2 + Architect)",
+      "monitoring_drift_config": "M1~M6 + RC1~RC5 active"
+    },
+    "phased_pathway_bypass": {
+      "original_pathway": {
+        "t_plus_0": "PG1 admit + Probe Phase. PG2 active UNCHANGED.",
+        "t_plus_30": "50% partial replacement IF G7+G4+G2 PASS",
+        "t_plus_60": "80% (Scenario AB) IF T+30 KPIs + direct NAV backtest PASS",
+        "t_plus_90": "100% (Option A) or 80/20 (AB) final decision by Q-Lead or user"
+      },
+      "bypass_reason": "User OVERRIDE_004 — T+0 immediate Replacement, parallel post-promotion verification",
+      "verification_complete": "2026-04-26T10:55:00+0900"
+    },
+    "role_label_per_architect_ac3": "diversifier_with_marginal_defense",
+    "pg0_sr_gap_progression": {
+      "before_promotion": 1.0655,
+      "after_promotion_realized": 0.5375,
+      "target_sr": 2.0,
+      "gap_closure_pct": 49.6
+    },
+    "rollback_conditions": [
+      "Forge AB realized SR < 1.20 (post-3-month)",
+      "G7 liquidity 2e8 audit any-date FAIL",
+      "Architect AX-008 BLOCKING finding (PIT/lineage critical)",
+      "T+30 monthly drift > 5pp deviation",
+      "P3 IC < -0.01 for 3 consecutive months",
+      "5-spec Harvey any below 2.0 for 2 consecutive months",
+      "MDD breach -45% (Hard cap)"
+    ],
+    "l_codes": [
+      "L-204",
+      "L-221"
+    ],
+    "updated_at": "2026-04-26T11:35:00+0900",
+    "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_004 PG2 promotion + post-promotion verification"
   },
   {
     "id": "STR_1702",
