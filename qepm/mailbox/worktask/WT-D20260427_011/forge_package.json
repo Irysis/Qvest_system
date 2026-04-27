@@ -1,0 +1,238 @@
+{
+  "task_id": "WT-D20260427_011",
+  "str_id": "STR_1701",
+  "agent": "forge_sonnet46_v6.1_R12_pure_function_iter26",
+  "iter_label": "Iter26_Binary_DD_Threshold_8_18_28_discrete",
+  "as_of_date": "2026-04-27",
+  "method_weights": "Iter11_LinTilt_lam1_plus_Threshold_8_18_28_BinaryDiscrete",
+  "optimizer_method": "Iter11_LinTilt_lam1_plus_Threshold_8_18_28_BinaryDiscrete",
+  "optimizer_expected_ir": 0.0945,
+  "optimizer_expected_cagr": 0.0037,
+  "optimizer_expected_mdd": -0.298,
+  "optimizer_expected_to": 5.3254,
+  "threshold_config": {
+    "t1": -0.08,
+    "t2": -0.18,
+    "t3": -0.28,
+    "cash_c1": 0.3,
+    "cash_c2": 0.5,
+    "cash_c3": 1,
+    "state_set": "{0%, 30%, 50%, 100%}",
+    "type": "binary_discrete"
+  },
+  "backtest_summary": {
+    "combined": {
+      "period": "2008-03-31 ~ 2023-05-31",
+      "n_months": 87,
+      "cagr": 0.1489,
+      "vol": 0.2824,
+      "sr": 0.6322,
+      "mdd": -0.3496,
+      "hit_rate": 0.6207,
+      "harvey_t_simple": 1.7021,
+      "dsr_post_penalty": 0.698
+    },
+    "pre_lockbox": {
+      "period": "2008-03-31 ~ 2023-05-31",
+      "n_months": 87,
+      "cagr": 0.1489,
+      "sr": 0.6322,
+      "mdd": -0.3496,
+      "hit_rate": 0.6207,
+      "dsr_post_penalty": 0.698
+    },
+    "lockbox": {
+      "period": "no_lockbox_data",
+      "n_months": 0,
+      "cagr": null,
+      "sr": null,
+      "mdd": null
+    },
+    "full_period": {
+      "period": "2008-03 ~ 2026-04",
+      "n_months": 115,
+      "cagr": 0.1107,
+      "vol": 0.2463,
+      "sr": 0.5484,
+      "mdd": -0.3496,
+      "hit_rate": 0.4696,
+      "harvey_t_ff5": 1.6391,
+      "dsr_raw": 1.7145,
+      "dsr_post_penalty": 0.7145
+    }
+  },
+  "ax001_v2_realized": {
+    "pass_count": 2,
+    "crisis_alpha_pass": true,
+    "mdd_relief_pass": true,
+    "bad_normal_pass": false,
+    "harvey_cond_pass": false,
+    "crisis_alpha_m": 0.0096,
+    "realized_mdd_relief_pp": 7.41,
+    "bad_normal_ratio": -2.7708,
+    "harvey_cond_t": -0.1066,
+    "optimizer_self_report_pass_count": 2,
+    "forge_vs_optimizer_note": "Optimizer self-report 2/4; Forge measures realized values from RAWDATA"
+  },
+  "pg2_blend_analysis": {
+    "v26_standalone_sr": 0.5484,
+    "v26_blend_sr": 0.627,
+    "iter11_blend_sr": 1.4077,
+    "baseline_pg2_sr": 1.4625,
+    "delta_vs_baseline": -0.8355,
+    "delta_vs_iter11_blend": -0.7807,
+    "pg2_admission_pass": false,
+    "v26_blend_mdd": -0.3147,
+    "iter11_blend_mdd": -0.4237,
+    "mdd_relief_blend_pp": -10.9,
+    "optimizer_expected_mdd_relief_pp": 10.38,
+    "iter21_22_gap_pp": {
+      "iter21": -19.98,
+      "iter22": -21.28
+    },
+    "binary_vs_continuous_verdict": "DISCRETE_NEGATIVE_L235_TRIGGER"
+  },
+  "factor_regression_5specs": {
+    "method": "Iter11_LinTilt_lam1_plus_Threshold_8_18_28_BinaryDiscrete",
+    "sample": "Combined 92-period walk-forward (2008-03-31 ~ 2023-05-31)",
+    "se_method": "Newey-West HAC",
+    "CAPM": {
+      "spec": "CAPM",
+      "alpha_monthly": 0.0092,
+      "alpha_annual": 0.111,
+      "t_nw": 1.1882,
+      "p_nw": 0.2381,
+      "lag_nw": 3,
+      "n_eff": 87,
+      "r2": 0.1183,
+      "adj_r2": 0.1079,
+      "dsr": null,
+      "sr_ann": null,
+      "gate_pass": false,
+      "gate_target": 2.95
+    },
+    "Carhart_3": {
+      "spec": "Carhart_3",
+      "alpha_monthly": 0.0064,
+      "alpha_annual": 0.0772,
+      "t_nw": 0.7951,
+      "p_nw": 0.4288,
+      "lag_nw": 3,
+      "n_eff": 87,
+      "r2": 0.1812,
+      "adj_r2": 0.1516,
+      "dsr": null,
+      "sr_ann": null,
+      "gate_pass": false,
+      "gate_target": 2.95
+    },
+    "Carhart_4": {
+      "spec": "Carhart_4",
+      "alpha_monthly": 0.0033,
+      "alpha_annual": 0.0395,
+      "t_nw": 0.431,
+      "p_nw": 0.6676,
+      "lag_nw": 3,
+      "n_eff": 87,
+      "r2": 0.2253,
+      "adj_r2": 0.1875,
+      "dsr": null,
+      "sr_ann": null,
+      "gate_pass": false,
+      "gate_target": 2.95
+    },
+    "FF5": {
+      "spec": "FF5",
+      "alpha_monthly": 0.0044,
+      "alpha_annual": 0.0528,
+      "t_nw": 0.5302,
+      "p_nw": 0.5974,
+      "lag_nw": 3,
+      "n_eff": 87,
+      "r2": 0.2002,
+      "adj_r2": 0.1509,
+      "dsr": 1.698,
+      "sr_ann": 0.6322,
+      "gate_pass": false,
+      "gate_target": 2.95
+    },
+    "FF6": {
+      "spec": "FF6",
+      "alpha_monthly": 0.0015,
+      "alpha_annual": 0.0185,
+      "t_nw": 0.1899,
+      "p_nw": 0.8498,
+      "lag_nw": 3,
+      "n_eff": 87,
+      "r2": 0.2418,
+      "adj_r2": 0.1849,
+      "dsr": null,
+      "sr_ann": null,
+      "gate_pass": false,
+      "gate_target": 2.95
+    },
+    "n_pass_t295": 0
+  },
+  "cash_state_conditional": {
+    "0": {
+      "n_months": 61,
+      "sr": 0.6643,
+      "cagr": 0.1709,
+      "mdd": -0.3066
+    },
+    "30": {
+      "n_months": 15,
+      "sr": 1.0641,
+      "cagr": 0.1629,
+      "mdd": -0.1249
+    },
+    "50": {
+      "n_months": 11,
+      "sr": 0.1853,
+      "cagr": 0.0172,
+      "mdd": -0.1583
+    },
+    "100": {
+      "n_months": 0,
+      "sr": null,
+      "cagr": null,
+      "mdd": null
+    }
+  },
+  "oos_24_26_frozen_weights": {
+    "last_sig_date": "2023-11-30",
+    "last_cash_pct": 1,
+    "n_names": 20,
+    "period": "2024-01-01 ~ 2026-04-27",
+    "n_months": 29,
+    "cagr": 0,
+    "sr": "NaN",
+    "mdd": 0,
+    "hit": 0,
+    "method": "Frozen weights buy-and-hold (no re-optimization)"
+  },
+  "walk_forward_validation": {
+    "walk_forward_active": true,
+    "weights_source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_011/weights.csv",
+    "n_sig_dates": 92,
+    "n_walk_periods": 87,
+    "rebal_signal_freq": "monthly_base_threshold_discrete",
+    "period_start": "2008-03-31",
+    "period_end": "2023-05-31",
+    "avg_n_held": 19.99,
+    "avg_turnover": 0.4458,
+    "annualized_turnover": 5.349,
+    "cash_active_n": 31,
+    "cash_active_pct": 33.7,
+    "pit_lag_c9": true,
+    "pit_liquidity_c10": "20-day avg >= 2e8 KRW (PIT t-30..t-1)"
+  },
+  "hash_audit": {
+    "pre_audit_recorded": true,
+    "pre_md5_alpha": "20f77b02ec490591d601bcc4afa7b7cf",
+    "pre_md5_risk": "6bad2a1b6da84eecc00c21616e95305e",
+    "pre_md5_opt": "cba0d3a3d9dd7c42aac6721c1b29c099",
+    "pre_md5_weights": "0e5ca3dc45b147cbe65a098920ceb01d",
+    "audit_status": "verified_at_start"
+  }
+}
