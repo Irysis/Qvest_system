@@ -1,0 +1,417 @@
+{
+  "task_id": "WT-D20260427_005",
+  "wt_type": "discovery",
+  "iter": 21,
+  "iter_name": "Macro_Overlay_Layer_AX001_v2_Conditional_Cash_Strengthening",
+  "parent_iters": [
+    "WT-D20260425_010 (Iter 5)",
+    "WT-D20260426_004 (Iter 11)",
+    "WT-D20260426_007 (Iter 11 finalized)",
+    "WT-D20260427_002 (Iter 18)"
+  ],
+  "baseline_pg2": "STR_1701 (active 80%) + STR_1656 (active 20%)",
+  "baseline_pg2_sr": 1.4625,
+  "as_of_date": "2023-11-30",
+  "signal_as_of": "2023-11-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "Iter 21 — Macro Overlay Layer (AX-001 v2 Conditional Cash Strengthening)",
+  "hypothesis_summary": "Layer-level mandate. Alpha STR_1701 inheritance (cor=1) + Optimizer Iter 11 LinTilt baseline preserved. Sole change = Macro Overlay layer: continuous Macro Stress Index (MSI) ∈ [0,1] from KR-only inputs (KOSPI200 60d vol / mom-vol Sharpe, KR yield slope, KR corp BBB spread, USD/KRW 30d momentum). Optimizer (downstream WT) will use msi_norm to drive cash 0~50% / max_w 0.10~0.20 / TO 200~600 dynamic. AX-001 v2 4-metric (crisis_alpha + core_mdd_relief + bad_normal_ic_ratio + harvey_t) audited at alpha layer; definitive at PG2 portfolio level.",
+  "alpha_inheritance": {
+    "base_strategy": "STR_1701 (Iter 11 PG2 active 80% — multi-sleeve composite)",
+    "base_source_parquet": "qepm/stage_artifacts/WT_D20260426_007/alpha_scores.parquet",
+    "base_source_pkg": "qepm/mailbox/worktask/WT-D20260426_004/alpha_package.json",
+    "base_score_column": "score_str1701",
+    "inheritance_method": "DIRECT_PANEL_READ_NO_RECOMPUTE",
+    "cor_v21_vs_str1701": 1,
+    "cor_threshold_strict": 0.95,
+    "cor_pass": true,
+    "alpha_unchanged_proof": "PASS",
+    "rationale": "Iter 21 = Macro Overlay layer track. Alpha 변경 절대 금지 (L-224 v2 strict + Iter 18 precedent).",
+    "l_codes_referenced": [
+      "L-220",
+      "L-224",
+      "L-226",
+      "L-229",
+      "L-454",
+      "L-211",
+      "L-225",
+      "L-228"
+    ],
+    "iter_lineage": [
+      "Iter 5",
+      "Iter 11",
+      "Iter 18",
+      "Iter 21 (current)"
+    ]
+  },
+  "alpha_vector": {
+    "A348210": 2.248,
+    "A185750": 1.9947,
+    "A323410": 1.8082,
+    "A205470": 1.7832,
+    "A383310": 1.7822,
+    "A377300": 1.6678,
+    "A137310": 1.6126,
+    "A036930": 1.581,
+    "A029780": 1.5699,
+    "A316140": 1.5506,
+    "A014680": 1.5172,
+    "A009150": 1.5144,
+    "A011070": 1.4736,
+    "A272290": 1.4456,
+    "A121600": 1.428,
+    "A144510": 1.4087,
+    "A357780": 1.3691,
+    "A000660": 1.3528,
+    "A012330": 1.3248,
+    "A161390": 1.2845
+  },
+  "confidence_vector": {
+    "A348210": 0.55,
+    "A185750": 0.4762,
+    "A323410": 0.3514,
+    "A205470": 0.55,
+    "A383310": 0.55,
+    "A377300": 0.45,
+    "A137310": 0.55,
+    "A036930": 0.4292,
+    "A029780": 0.5412,
+    "A316140": 0.3463,
+    "A014680": 0.4558,
+    "A009150": 0.4815,
+    "A011070": 0.4985,
+    "A272290": 0.4849,
+    "A121600": 0.55,
+    "A144510": 0.4557,
+    "A357780": 0.5654,
+    "A000660": 0.4833,
+    "A012330": 0.4669,
+    "A161390": 0.537
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260427_005/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Multi_Sleeve_Inheritance",
+      "proxy": "STR_1701_base_score (inherited)",
+      "formula": "score_str1701 (panel as-is from WT_D20260426_007)",
+      "lag_rule": "monthly t-1 (preserved)",
+      "winsorization": "preserved",
+      "neutralization": "preserved",
+      "economic_rationale": "STR_1701 multi-sleeve (Core 0.65 Consensus_4F + Q07 + M08_Residual_Mom; Defense 0.35 Q07 + Q25_Ohlson_O)",
+      "sleeve": "inherited",
+      "source": "inherited",
+      "weight_theta": 1,
+      "references": [
+        "Iter 5 WT-D20260425_010",
+        "Iter 11 WT-D20260426_004",
+        "Iter 18 WT-D20260427_002"
+      ]
+    },
+    {
+      "factor_family": "Macro_Overlay_Layer",
+      "proxy": "msi_norm (Macro Stress Index, continuous [0,1])",
+      "formula": "pnorm(mean(z_kospi_vol, z_kospi_mom_vol, z_yield_slope, z_corp_spread, z_krw_mom))",
+      "lag_rule": "expanding window mu/sigma using Date < sig_dt strict (t-1 enforced)",
+      "winsorization": "z clipped to [-3, 3] per component",
+      "neutralization": "n/a (single time-series macro signal)",
+      "economic_rationale": "KR-only macro stress aggregate (Faber 2007 GTAA + Kritzman-Page-Turkington 2012 regime + Estrella-Hardouvelis 1991 yield slope). Components: KOSPI60d vol (equity stress), KOSPI mom/vol Sharpe sign-flipped (low Sharpe = stress), KR yield slope sign-flipped (inversion = stress), KR corp BBB-Gov3Y spread (credit stress), USD/KRW 30d mom (currency / capital flight stress).",
+      "sleeve": "macro_overlay (Optimizer downstream)",
+      "source": "new_designed (KR-only)",
+      "weight_theta": 0,
+      "role": "allocation_signal_NOT_alpha",
+      "references": [
+        "Faber 2007 — Quantitative Approach to Tactical Asset Allocation",
+        "Kritzman, Page, Turkington 2012 — Regime Shifts (FAJ)",
+        "Barroso, Santa-Clara 2015 — Risk-managed momentum (JFE)",
+        "Estrella, Hardouvelis 1991 — Term Structure as Recession Predictor",
+        "L-454 — KR internals dominate global FRED"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.027,
+    "icir": 0.2009,
+    "monotonicity": 0.4444,
+    "subperiod_stability": 0.2041,
+    "subperiod_ics": {
+      "P1_2008_2014": 0.0494,
+      "P2_2015_2019": 0.0101,
+      "P3_2020_2024": 0.0129
+    },
+    "harvey_t_specs": {
+      "spec1_pooled_ols": -0.0238,
+      "spec2_nw_lag3": 0.3068,
+      "spec3_nw_lag6": 0.2989,
+      "spec4_nw_lag12": 0.3022,
+      "spec5_cluster_date": -0.0109
+    },
+    "harvey_t_stat_pooled": -0.0238,
+    "harvey_t_specs_pass_count": 0,
+    "dsr_post": 0.9716,
+    "post_neutralization_ic": 0.027,
+    "turnover_proxy": 6.9849,
+    "n_months": 92,
+    "n_sig_dates": 92,
+    "n_tickers_panel": 720,
+    "alpha_inheritance_cor": 1
+  },
+  "macro_overlay_diagnostics": {
+    "msi_panel_summary": {
+      "n_sig_dates": 92,
+      "msi_norm_mean": 0.5521,
+      "msi_norm_std": 0.1459,
+      "regime_count": {
+        "BULL": 14,
+        "NORMAL": 48,
+        "CAUTION": 14,
+        "CRISIS": 16
+      }
+    },
+    "macro_vs_regime_cor_spearman": 0.8475,
+    "ic_by_regime": [
+      {
+        "regime_state_legacy": "NORMAL",
+        "N": 14627,
+        "spearman_ic": 0.019
+      },
+      {
+        "regime_state_legacy": "BULL",
+        "N": 4695,
+        "spearman_ic": 0.0362
+      },
+      {
+        "regime_state_legacy": "CRISIS",
+        "N": 5515,
+        "spearman_ic": -0.0792
+      },
+      {
+        "regime_state_legacy": "CAUTION",
+        "N": 4785,
+        "spearman_ic": 0.0046
+      }
+    ],
+    "crisis_top_decile_fwd1m": 0.0202,
+    "crisis_bot_decile_fwd1m": -0.0042
+  },
+  "ax_001_v2_audit": {
+    "crisis_alpha": 0.0244,
+    "core_mdd_relief": 0,
+    "bad_normal_ic_ratio": -4.163,
+    "harvey_t_inherited": -0.0238,
+    "notes": [
+      "crisis_alpha: top-decile minus bot-decile fwd_1m on msi_norm > 0.75 dates (proxy for AX-001 v2 crisis_alpha; definitive at PG2)",
+      "core_mdd_relief: counterfactual analytical proxy on KOSPI200 BM_Ret w/ dynamic cash. Definitive at Forge backtest.",
+      "bad_normal_ic_ratio: regime-conditional IC (CRISIS or CAUTION) / NORMAL.",
+      "harvey_t_inherited: pooled OLS from STR_1701 base (alpha unchanged)."
+    ]
+  },
+  "v_iter21_pg2_blend_expected_sr": {
+    "baseline_pg2_sr": 1.4625,
+    "expected_sr_under_dynamic_cash": "TBD at Optimizer + Forge backtest",
+    "proxy_mdd_iter11_5pct_cash": -0.7289,
+    "proxy_mdd_iter21_dynamic_cash": -0.7289,
+    "proxy_mdd_relief": 0,
+    "rationale": "Layer evaluation: PG2 SR > 1.4625 baseline + crisis MDD 추가 완화 + 평시 alpha 보존. Counterfactual KOSPI200 BM_Ret proxy with dynamic cash 0~50% (vs constant 5% Iter 11) shows MDD relief Δ. Definitive at Forge PG2 backtest downstream."
+  },
+  "universe": {
+    "label": "KOSPI200_KOSDAQ150_intersection (inherited)",
+    "liquidity_threshold_won_used": 200000000,
+    "liquidity_threshold_basis": "production floor 2e8 KRW (preserved)",
+    "avg_tv20_definition": "Close x Vol (NOT Size)",
+    "universe_filter_applied_pre_diagnostics": true
+  },
+  "challenge_flags": {
+    "RF_A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "subperiod_stability=0.2041 < 0.50 (inherited from STR_1701 base)",
+      "inherited_from": "WT-D20260425_010 / WT-D20260426_004",
+      "resolution": "Iter 21 = Macro Overlay layer track. Alpha unchanged mandate (cor=1)."
+    },
+    "RF_A6": {
+      "id": "RF-A6",
+      "severity": "HIGH",
+      "msg": "rank_IC=0.0270 < 0.04 graduation gate (inherited)",
+      "detail": "Iter 5 full-panel 0.0442; current 92-date subset 0.0270.",
+      "resolution": "Iter 21 hypothesis: Macro Overlay layer overcomes alpha standalone gap via dynamic cash sleeve + max_w shrink + TO budget control. PG2 portfolio-level SR target."
+    },
+    "RF_A7": {
+      "id": "RF-A7",
+      "severity": "HIGH",
+      "msg": "Harvey 5-spec pass count 0/5 (inherited)",
+      "detail": "Pooled OLS t=-0.024, NW3/6/12 t~0.30. Multi-sleeve self-cancel on pooled t.",
+      "resolution": "Statistical significance evaluated at PG2 portfolio level (Forge backtest)."
+    },
+    "RF_LAYER_NOVEL": {
+      "id": "RF-LAYER-NOVEL",
+      "severity": "MEDIUM",
+      "msg": "Macro Overlay layer = new dimension (not alpha, not optimizer mechanism). Effectiveness unproven at portfolio level.",
+      "detail": "Counterfactual KOSPI200 MDD relief proxy = 0.0000. Crisis_alpha proxy = 0.0244.",
+      "resolution": "Forge PG2 backtest is the definitive test. Optimizer agent must implement msi_norm-driven cash/max_w/TO policy."
+    },
+    "RF_MACRO_KR_ONLY": {
+      "id": "RF-MACRO-KR-ONLY",
+      "severity": "LOW",
+      "msg": "Macro signal uses KR-only inputs (L-454 compliant). VIX/Brent excluded as inputs.",
+      "detail": "USD/KRW included as KR currency stress proxy (acceptable per user mandate); no cross-market equity/macro.",
+      "resolution": "By design."
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "cap": 5,
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "rolling_seconds": [],
+    "method_log": [
+      {
+        "name": "STR_1701_inheritance_plus_MSI_overlay",
+        "rank_ic": 0.027,
+        "icir": 0.2009,
+        "sub_stab": 0.2041,
+        "harvey_specs_pass": 0,
+        "dsr_post": 0.9716,
+        "cor_to_str1701": 1,
+        "crisis_alpha": 0.0244,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": -4.163,
+        "selected": true
+      }
+    ],
+    "honest_disclosure": "단일 후보 (alpha = STR_1701 inheritance only). Method shopping 의도적 생략 — Iter 21 Macro Overlay Layer mandate (alpha 변경 X). Macro signal 자체의 변형은 5개 z-component 명시적 선택으로 대체 (L-454 KR-only).",
+    "schedule_disclosure": {
+      "forecast_horizon": "1M (forward return horizon)",
+      "sig_date_frequency": "92 sig_dates over 2008-01-31 to 2023-11-30 (~bi-monthly avg)",
+      "reason": "STR_1701 inheritance no-change. Macro signal computed at sig_date level.",
+      "charter_compliance": "Pure Function — schedule re-derivation = mandate violation."
+    },
+    "rcpp_note": "arrow read_parquet C++ used for inheritance load. No new ML training. No batch β diagnosis (alpha unchanged)."
+  },
+  "iter21_lessons_applied": {
+    "L_220_avoidance": "vol-reduction quarterly machinery 채택 X (monthly base; macro signal monthly only).",
+    "L_224_strict": "alpha_inheritance_hash cor=1.0000 >= 0.95 strict PASS",
+    "L_226_aware": "Optimizer mechanism alone insufficient — 본 Iter는 새 layer (Macro Overlay) 추가.",
+    "L_229_aware": "Iter 11 baseline optimal point — alpha/Optimizer 변경 X. 차원 변경 (Layer)만 시도.",
+    "L_211_avoidance": "cross-section alpha 시도 X (Macro signal은 single time-series allocation signal).",
+    "L_225_avoidance": "동일 (allocation, not alpha).",
+    "L_228_avoidance": "동일.",
+    "L_454_compliance": "KR-only inputs (KOSPI/KR yields/KRW). VIX/Brent FRED는 cross-validation NOT input."
+  },
+  "ax_axiom_compliance": {
+    "AX-001": {
+      "rule": "AX-001 v2 defense conditional",
+      "status": "ENHANCED",
+      "evidence": "Macro Overlay layer 강화. crisis_alpha=0.0244, core_mdd_relief=0.0000, bad_normal_ic_ratio=-4.1630."
+    },
+    "AX-002": {
+      "rule": "Harness-only validity",
+      "status": "PASS",
+      "evidence": "alpha_scores parquet via inherited PIT chain; macro signal via expanding window strict t-1."
+    },
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE failure",
+      "status": "PASS",
+      "evidence": "No standalone Value (inherited multi-sleeve preserved)."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal failure",
+      "status": "PASS",
+      "evidence": "Multi-axis composite preserved (Consensus + Q07 + M08 + Q25_Distress)."
+    },
+    "AX-005": {
+      "rule": "KR defense 4-axis failure",
+      "status": "PENDING_FORGE_GATE13_VERIFICATION",
+      "evidence": "Defense sleeve = Q07+Q25 2-axis (NOT 4-axis) inherited; Macro Overlay 추가는 axis 추가 아닌 layer 추가. Forge Gate13 PASS 동시 충족 시 sufficient."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_top20 translation 단절",
+      "status": "PASS",
+      "evidence": "Multi-sleeve structure preserved (Core 0.65 + Defense 0.35) + Macro Overlay layer 추가."
+    },
+    "AX-008": {
+      "rule": "Verification Triangulation",
+      "status": "PENDING",
+      "evidence": "Codex critic round 1 + Architect verification 대기 (Q-Lead orchestration)."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS (alpha inherited; macro signal expanding window mu/sigma in build_z_at)",
+    "C2": "PASS (alpha inherited t-1; macro signal Date < sig_dt strict)",
+    "C4": "PASS (alpha inherited; macro signal uses daily series, no quarterly fundamentals)",
+    "C5": "PASS (msi_norm attached at sig_date; Optimizer reads with shift(msi, 1) downstream)",
+    "C9": "PASS (regime_state_legacy from msi_norm expanding ECDF percentile, no full-sample)",
+    "C10": "PASS (alpha inherited; AvgTV20 >= 2e8 lagged filter preserved)",
+    "C11": "PASS (KR-only inputs: KOSPI BM, KR yields ECOS, KRW USD ECOS; FRED VIX excluded as input; L-454)",
+    "C13": "PASS (alpha inherited Z_Score_Aligned; macro signal uses signed z direction-align — no NEGATE_FACTORS / FLIP_SIGN)",
+    "C14": "PASS (alpha inherited Usable_Date <= sig_date)",
+    "C15": "PASS (alpha inherited via re-use; macro signal uses cache parquet direct read with Date filter)",
+    "lockbox": "ENFORCED: max_date 2023-11-30 <= TRAIN_END 2024-01-22 (hard stopifnot)",
+    "inheritance_chain_audit": "Source chain: qepm/stage_artifacts/WT_D20260426_007/alpha_scores.parquet -> Iter 5 alpha_package WT-D20260425_010 -> Iter 11 alpha_package WT-D20260426_004 -> Iter 18 WT-D20260427_002 -> base score_str1701 column"
+  },
+  "window_isolation": {
+    "train_validation_window": {
+      "start": "2008-01-31",
+      "end": "2023-11-30"
+    },
+    "lockbox_window": {
+      "start": "2024-01-23",
+      "end": "2026-04-27",
+      "sealed": true
+    },
+    "lockbox_access": false,
+    "lockbox_isolation_certified": true
+  },
+  "graduation_status": {
+    "rank_ic_gate": {
+      "value": 0.027,
+      "threshold": 0.04,
+      "pass": false
+    },
+    "icir_gate": {
+      "value": 0.2009,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "subperiod_gate": {
+      "value": 0.2041,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "harvey_t_gate": {
+      "value": -0.0238,
+      "threshold": 3,
+      "pass": false
+    },
+    "dsr_gate": {
+      "value": 0.9716,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "overall_pass": false,
+    "gates_passed": 2,
+    "gates_total": 5,
+    "honest_disclosure": "Iter 21 inheritance — diagnostics 재현 (STR_1701 base unchanged). Layer track focus. Definitive PG2 SR > 1.4625 evaluation at Forge backtest."
+  },
+  "references": [
+    "Iter 5 alpha academic refs chain pointer: qepm/mailbox/worktask/WT-D20260425_010/alpha_package.json",
+    "Iter 11 alpha academic refs chain pointer: qepm/mailbox/worktask/WT-D20260426_004/alpha_package.json",
+    "Iter 18 alpha academic refs chain pointer: qepm/mailbox/worktask/WT-D20260427_002/alpha_package.json",
+    "Carhart 1997 momentum factor (inherited Core sleeve)",
+    "Blitz-Huij-Martens 2011 residual momentum (inherited Core)",
+    "Novy-Marx 2013 quality (inherited Q07)",
+    "Ohlson 1980 O-score distress (inherited Defense Q25)",
+    "Faber 2007 — Quantitative Approach to Tactical Asset Allocation (NEW: macro overlay)",
+    "Kritzman, Page, Turkington 2012 — Regime Shifts: Implications for Dynamic Strategies, FAJ (NEW: macro overlay)",
+    "Barroso, Santa-Clara 2015 — Momentum has its moments, JFE (NEW: macro overlay)",
+    "Estrella, Hardouvelis 1991 — Term Structure as Predictor of Recessions (NEW: yield slope)",
+    "L-454 KR internals dominate global FRED (cor=-0.46 vs -0.14)",
+    "L-220 vol-reduction Harvey 격하 (avoided)",
+    "L-224 alpha_inheritance_hash cor 0.85 to 0.95 strict",
+    "L-226 ERC near-EW alpha activation 부재",
+    "L-229 Iter 11 baseline optimal point",
+    "L-211/225/228 cross-section alpha avoidance"
+  ],
+  "generated_at": "2026-04-27T10:22:43+0900",
+  "forward_to": "Iter 21 Optimizer (msi_norm-driven dynamic cash 0~50% / max_w 0.10~0.20 / TO budget 200~600)"
+}

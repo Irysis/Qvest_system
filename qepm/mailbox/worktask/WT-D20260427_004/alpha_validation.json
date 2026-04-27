@@ -1,0 +1,102 @@
+{
+  "task_id": "WT-D20260427_004",
+  "iter": 20,
+  "iter_name": "Time_Dimension_Diversity_BiWeekly_IntraMonth",
+  "validation_run_at": "2026-04-27T10:21:53+0900",
+  "selected_variant": "V20-M",
+  "rebalance_frequency_optimal": "monthly",
+  "variant_diagnostics": [
+    {
+      "name": "V20-M",
+      "icir": 0.3551,
+      "sr_gross": 1.4554,
+      "sr_net": 1.3519,
+      "harvey_5spec_pass": 5,
+      "sub_stab": 1,
+      "cor_str1701": 1,
+      "ann_turnover": 16.8,
+      "ann_cost_decimal": 0.0252,
+      "dsr": 1
+    },
+    {
+      "name": "V20-BW",
+      "icir": 0.2593,
+      "sr_gross": 1.2459,
+      "sr_net": 1.0268,
+      "harvey_5spec_pass": 5,
+      "sub_stab": 1,
+      "cor_str1701": 1,
+      "ann_turnover": 35.28,
+      "ann_cost_decimal": 0.0529,
+      "dsr": 1
+    },
+    {
+      "name": "V20-OVR",
+      "icir": 0.3551,
+      "sr_gross": 1.4554,
+      "sr_net": 1.3519,
+      "harvey_5spec_pass": 5,
+      "sub_stab": 1,
+      "cor_str1701": 1,
+      "ann_turnover": 16.8,
+      "ann_cost_decimal": 0.0252,
+      "dsr": 1
+    }
+  ],
+  "graduation_gates": {
+    "rank_ic_gate": {
+      "value": 0.0507,
+      "threshold": 0.04,
+      "pass": true
+    },
+    "icir_gate": {
+      "value": 0.3551,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "subperiod_gate": {
+      "value": 1,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "harvey_t_gate": {
+      "value": 3.977,
+      "threshold": 3,
+      "pass": true,
+      "n_specs_pass": 5,
+      "n_specs_total": 5
+    },
+    "dsr_gate": {
+      "value": 1,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "cor_str1701_gate": {
+      "value": 1,
+      "threshold": 0.85,
+      "pass": true
+    },
+    "net_sr_vs_pg2_baseline": {
+      "value": 1.3519,
+      "threshold": 1.4625,
+      "pass": false
+    }
+  },
+  "gates_passed": 6,
+  "gates_total": 7,
+  "intra_month_effect_observed": false,
+  "intra_month_phase_returns": {
+    "early_5d_mean": 0.0022,
+    "mid_5d_mean": 0.0016,
+    "late_5d_mean": 0.0024
+  },
+  "pit_compliance": {
+    "C1_expanding": "PASS (rolling/expanding only; no full-sample fit)",
+    "C2_t1_lag": "PASS (STR_1701 inheritance preserves t-1 lag)",
+    "C9_weight_lag": "PASS (rebal at sig_date applied to (sig_date, end])",
+    "C10_liquidity": "PASS (AvgTV20_lag >= 2e+08, one-sided shift)",
+    "C13_zscore_aligned": "PASS (Z_Score_Aligned via STR_1701 inheritance)",
+    "C14_usable_date": "PASS (inherited factor_db Usable_Date)",
+    "lockbox": "ENFORCED: max_date 2023-12-01 <= TRAIN_END 2023-12-31"
+  }
+}
