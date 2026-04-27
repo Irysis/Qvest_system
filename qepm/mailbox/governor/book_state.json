@@ -1,15 +1,34 @@
 {
-  "updated_at": "2026-04-27T20:30:00+0900",
-  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_005 STR_1715 Replacement (Option A 80%, hyperparameter optimization)",
-  "schema_version": "v1.9",
-  "n_admitted": 2,
+  "updated_at": "2026-04-27T21:00:00+0900",
+  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_006 STR_1715 100% Single-Sleeve (mandate strict 20종목 hard cap)",
+  "schema_version": "v2.0",
+  "n_admitted": 1,
   "admitted_ids": [
-    "STR_1715",
-    "STR_1656_MLRA_M05"
+    "STR_1715"
   ],
   "book_weights": {
-    "STR_1715": 0.80,
-    "STR_1656_MLRA_M05": 0.20
+    "STR_1715": 1.00
+  },
+  "user_override_006_mandate_strict_20names": {
+    "decision": "STR_1715_100PCT_SINGLE_SLEEVE_REMOVE_STR_1656",
+    "promoted_at": "2026-04-27T21:00:00+0900",
+    "user": "도훈 (Dohoon Kim)",
+    "directive_quote": "뭔 말이 많아 무조건 전기간 20종목이어야지",
+    "rationale": "Mandate 'sleeve 조합 시에도 최종 20종목 이하' strict 준수. STR_1715 + STR_1656 blend = portfolio-level union 종목수 20 초과 가능성 → 단일 sleeve STR_1715 100% (자체 20 equity + CASH overlay)로 mandate 정확 준수.",
+    "previous_pg2_admit": "STR_1715 80% + STR_1656 20% (User OVERRIDE_005, 2026-04-27T20:30:00+0900) → archived after 30분 운영",
+    "trade_off_accepted_by_user": [
+      "STR_1656 GFC 0% loss 보호 forfeit",
+      "ML diversifier diversification benefit forfeit",
+      "Standalone SR 1.4522 (vs blend 1.9222 walk-forward integrated, -0.47)",
+      "MDD -35.26% (vs blend -28.84%, +6.42pp 위험)"
+    ],
+    "user_logic_strict_mandate": "20종목 hard cap이 risk trade-off보다 우선",
+    "rollback_conditions": [
+      "T+30 realized SR < 1.10",
+      "MDD > -45%",
+      "TO > 595%",
+      "Lockbox SR drift > 30%"
+    ]
   },
   "user_override_005_replacement": {
     "decision": "STR_1715_80PCT_REPLACEMENT_NOT_PROBE",
