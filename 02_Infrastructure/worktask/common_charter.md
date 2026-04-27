@@ -97,7 +97,48 @@ APT 실무: 거시요인 접근보다 **기업특성(fundamental) 접근**이 OO
 - Optimizer가 alpha 재해석 → **Hook block**
 - 수정 필요 시 반드시 **`challenge_note`** 또는 **`infeasibility_report`** 반환
 
+**Measurement Basis Disclosure Mandate (v1.1)**:
+모든 SR 인용은 **source_label**과 함께 발표한다. label 누락 = silent override 동급.
+
+| label | 의미 | PG2 admission 등급 |
+|---|---|---|
+| `forge_realized_share_based` | weights.csv → daily share-based NAV | ✅ admission grade |
+| `factor_engine_continuous` | continuous return aggregation (idealized) | ❌ alpha signal meta only |
+| `optimizer_walk_forward_simulation` | Optimizer 자체 grid simulation | ❌ research only |
+| `lockbox_daily_harness` | judge_lockbox_harness.R 측정 | ✅ cross-validation |
+
 **위반 = AX-002 프로세스 우회 = 판단의 미래참조 동급**.
+
+### 9. Single Source of Truth for SR (v1.1)
+
+**PG2 admission grade SR = `forge_package.json.sr_realized_share_based` only.**
+
+- weights.csv → daily share-based NAV reconstruction → 15bps cost → daily NAV time series → SR 측정
+- `hurdle_result.json` 내 `factor_engine_*` SR = **alpha signal strength meta** (PG2 admission 부적격)
+- factor_engine continuous return은 idealized monthly refresh 가정 — 실제 production schedule 미반영
+- 두 측정 동시 보고 의무 (둘 중 하나만 보고 시 §8 violation)
+
+**Schedule Fidelity Mandate**:
+- Optimizer weights.csv `unique_dates ≥ alpha_package.sig_dates_count × 0.95`
+- TOphi penalty가 schedule skip 만들면 `infeasibility_report` 의무 (silent skip = §8 violation)
+- Forge `run_all.R`은 weights.csv를 **as-is** 사용. alpha_scores top-N selection 금지.
+
+**Divergence Diagnosis 의무**:
+factor_engine 측정과 forge_realized 측정 동시 존재 시:
+
+| |divergence_pp| | diagnosis | 처분 |
+|---|---|---|---|
+| < 0.1 | NEGLIGIBLE | factor_engine 신뢰 가능 |
+| 0.1 ≤ · < 0.3 | MINOR_DRIFT | dual report 의무 |
+| 0.3 ≤ · < 0.6 | SIGNIFICANT_DRAG | Q-Lead escalate |
+| ≥ 0.6 | FABRICATION_SUSPECTED | 즉시 PG2 expel review |
+
+**Violation Example (STR_1715 Iter 31, 2026-04-27)**:
+- factor_engine SR = 1.4522 (240 monthly fabricated schedule)
+- forge_realized SR = 0.6149 (weights.csv 92 bi-monthly)
+- divergence = -0.8373pp → **FABRICATION_SUSPECTED**
+- 원인: run_all.R이 weights.csv 무시 + alpha_scores 직접 top-N selection
+- 결과: STR_1715 PG2 admission OVERRIDE_006 결정 무효화
 
 ---
 
@@ -114,6 +155,9 @@ APT 실무: 거시요인 접근보다 **기업특성(fundamental) 접근**이 OO
 | Transaction cost | 15bps one-way | cost_model_version 고정 |
 | PIT C1~C15 | 전체 준수 | `pit-validation` skill |
 | Work Task 순서 | Alpha → Risk → Optimizer | `worktask_sequence_enforcer.sh` |
+| **Backtest SR provenance** | **source_label 의무** | **`sr_provenance_check.sh`** |
+| **Schedule fidelity** | **weights/sig_dates ≥ 0.95** | **`schedule_fidelity_check.sh`** |
+| **Forge pure function** | **weights.csv as-is + share-based NAV** | **`forge_pure_function_strict.sh`** |
 
 ---
 
@@ -144,4 +188,5 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 ## Version
 
 - **v1.0** — 2026-04-23 Session 69 Day 1 — 초기 헌장 (사용자 설계도 기반)
+- **v1.1** — 2026-04-27 — Iter 31 STR_1715 fabrication 사후 조치. §8 Measurement Basis Disclosure Mandate + 신규 §9 Single Source of Truth for SR. Schedule Fidelity + Divergence Diagnosis 의무화.
 - 변경 시 major bump + L-code 발행 필수

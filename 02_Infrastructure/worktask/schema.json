@@ -290,6 +290,128 @@
       }
     },
 
+    "forge_package": {
+      "type": "object",
+      "description": "Forge Agent 산출물. weights.csv → daily share-based NAV reconstruction. Charter §9 SoT — PG2 admission grade SR 유일 source.",
+      "required": [
+        "task_id", "as_of_date", "method",
+        "sr_realized_share_based",
+        "measurement_basis_primary",
+        "weights_csv_unique_dates_count",
+        "alpha_sig_dates_count",
+        "schedule_density_ratio",
+        "schedule_density_pass",
+        "pure_function_violation"
+      ],
+      "properties": {
+        "task_id": {"type": "string"},
+        "as_of_date": {"type": "string", "format": "date"},
+        "method": {
+          "type": "string",
+          "pattern": "weights\\.csv.*NAV.*",
+          "description": "예: 'weights.csv_direct_NAV_reconstruction' — Charter §9 위반 표현 (ProductionSchedule[N]m 등) 금지"
+        },
+        "sr_realized_share_based": {
+          "type": "number",
+          "description": "PG2 admission grade SR (weights.csv → daily share-based NAV → 15bps cost)"
+        },
+        "sr_factor_engine_continuous": {
+          "type": ["number", "null"],
+          "description": "alpha signal strength meta only. PG2 admission 부적격."
+        },
+        "sr_lockbox_daily_harness": {
+          "type": ["number", "null"],
+          "description": "judge_lockbox_harness.R cross-validation"
+        },
+        "measurement_basis_primary": {
+          "type": "string",
+          "enum": ["forge_realized_share_based"],
+          "description": "Charter §9 SoT — primary는 항상 forge_realized_share_based"
+        },
+        "weights_csv_unique_dates_count": {"type": "integer", "minimum": 1},
+        "alpha_sig_dates_count": {"type": "integer", "minimum": 1},
+        "schedule_density_ratio": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1.05,
+          "description": "weights_csv_unique_dates_count / alpha_sig_dates_count"
+        },
+        "schedule_density_pass": {
+          "type": "boolean",
+          "description": "schedule_density_ratio ≥ 0.95"
+        },
+        "pure_function_violation": {
+          "type": "boolean",
+          "description": "true 시 run_all.R이 alpha_scores 직접 top-N selection 사용 — Charter §9 violation"
+        },
+        "divergence_factor_engine_vs_realized_pp": {
+          "type": ["number", "null"],
+          "description": "sr_factor_engine_continuous - sr_realized_share_based (양수 = factor_engine inflate)"
+        },
+        "vs_factor_engine": {
+          "type": "object",
+          "description": "factor_engine claim vs forge realized 정직 비교 — Charter §8/§9 mandatory disclosure",
+          "properties": {
+            "factor_engine_claimed_sr_is": {"type": "number"},
+            "forge_v3_realized_sr_is": {"type": "number"},
+            "divergence_pp": {"type": "number"},
+            "diagnosis": {
+              "type": "string",
+              "enum": ["NEGLIGIBLE", "MINOR_DRIFT", "SIGNIFICANT_DRAG", "FABRICATION_SUSPECTED"],
+              "description": "auto rule: |·|<0.1 NEGLIGIBLE / 0.1-0.3 MINOR_DRIFT / 0.3-0.6 SIGNIFICANT_DRAG / ≥0.6 FABRICATION_SUSPECTED"
+            }
+          }
+        },
+        "backtest_summary": {
+          "type": "object",
+          "properties": {
+            "full_period": {"type": "object"},
+            "pre_lockbox": {"type": "object"},
+            "lockbox": {"type": "object"}
+          }
+        },
+        "factor_regression_5_specs": {
+          "type": "object",
+          "description": "CAPM / FF3 / FF5 / Carhart4 / FF5+Mom Harvey NW-HAC t-stats"
+        },
+        "hard_caps": {
+          "type": "object",
+          "properties": {
+            "mdd_pass": {"type": "boolean"},
+            "to_pass": {"type": "boolean"},
+            "cvar_d_pass": {"type": "boolean"},
+            "all_pass": {"type": "boolean"}
+          }
+        },
+        "hash_audit_pass": {"type": "boolean"}
+      }
+    },
+
+    "hurdle_result": {
+      "type": "object",
+      "description": "Optimizer/Forge intermediate result. Charter §9 — production_grade=true는 forge_realized_share_based만.",
+      "required": ["task_id", "method", "method_basis_label", "production_grade"],
+      "properties": {
+        "task_id": {"type": "string"},
+        "method": {
+          "type": "string",
+          "description": "Charter §9: 'ProductionSchedule[N]m' 표현 금지 (fabrication label)"
+        },
+        "method_basis_label": {
+          "type": "string",
+          "enum": [
+            "optimizer_walk_forward_simulation",
+            "factor_engine_continuous",
+            "forge_realized_share_based"
+          ]
+        },
+        "production_grade": {
+          "type": "boolean",
+          "description": "true는 forge_realized_share_based만. factor_engine_continuous = false."
+        }
+      }
+    },
+
     "execution_package": {
       "type": "object",
       "description": "R8 Execution Agent 산출물. Deployment WT의 target_weights → 주문 분할 + impact 추정.",

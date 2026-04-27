@@ -30,6 +30,10 @@ Hook 자동 발동을 신뢰하고 감독만 수행. Stage Gate 상태머신 모
   - 세션 시작: `bash 02_Infrastructure/start_listener.sh` + `memory_health_check.R` + `sg_get_dashboard()` + `hybrid_mode.R`
   - hybrid_commit()으로 실험 결과 적립 (Forge 완료 후 Q-Lead 확인)
   - L-code 작성 책임 (Judge 판정 후)
+  - **Reporting Integrity (v6.3, Charter §8/§9)**: SR 인용 시 항상 `source_label` 동반. 4 enum: `forge_realized_share_based` / `factor_engine_continuous` / `optimizer_walk_forward_simulation` / `lockbox_daily_harness`. 단일 SR만 보고 시 challenge_note 발동 + Forge 재발송 요청.
+  - **tg_send_strategy_result / tg_agent_brief 호출 시 `measurement_basis` 인자 필수** (v6.3). 미지정 시 Hook block (`sr_provenance_check.sh`).
+  - factor_engine SR과 forge_realized SR divergence ≥ 0.3pp 시 dual report (예: `SR(realized) 0.6149 | SR(factor_engine_meta) 1.4522 | divergence -0.8373pp | SIGNIFICANT_DRAG`).
+  - PG2 admission 결정은 **`forge_package.json.sr_realized_share_based`만 근거로 사용**. factor_engine SR은 alpha signal meta로만 인용.
   </required>
 </constraints>
 

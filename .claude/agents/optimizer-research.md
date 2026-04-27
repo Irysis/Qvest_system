@@ -44,6 +44,33 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - **turnover round-trip 식 ×2** (×12 annualization 금지 — Iter 3 violation 사례)
 - 결과 → `optimizer_challenge_note.md` 기록 + optimization_package.json finalize
 
+**🚨 Schedule Density Mandate** (v6.3 HARD — Charter §9):
+
+`weights.csv` `unique_dates ≥ alpha_package.diagnostics.sig_dates_count × 0.95` 의무.
+
+- TOphi turnover penalty가 schedule skip 만들면 **`infeasibility_report` 발동 의무** (silent skip = §8 violation)
+- weights.csv 상에서 일부 sig_date를 누락하면 Forge run_all.R이 그 dates의 holdings를 갖지 못해 fabrication 유도 가능
+- TOphi=3 같은 강제 turnover penalty 사용 시 monthly schedule 유지 + skip 시 infeasibility_report로 명시
+
+**Violation Example (STR_1715 Iter 31)**:
+- alpha_package sig_dates 240, weights.csv unique_dates 92 (38%)
+- ratio 0.38 << 0.95 → §9 violation
+- run_all.R이 240 monthly 가상 schedule 재생성 → factor_engine SR 1.4522 (fabricated)
+
+**Hook 강제**: `schedule_fidelity_check.sh` (PostToolUse) — schedule_density_ratio < 0.95 시 warn.
+
+**🚨 Hurdle Result Provenance Mandate** (v6.3 HARD — Charter §9):
+
+`hurdle_result.json` mandatory fields:
+
+| field | 값 | 의무 |
+|---|---|---|
+| `method_basis_label` | enum: optimizer_walk_forward_simulation / factor_engine_continuous / forge_realized_share_based | **필수** |
+| `production_grade` | boolean (factor_engine_continuous → false) | **필수** |
+| `method` | "ProductionSchedule[N]m" 표현 **금지** | format check |
+
+**production_grade=false인 SR은 PG2 admission 부적격**임을 hurdle_result.json 헤더에 명시.
+
 **🆕 Deploy Extension Mandate** (v6.1 신규):
 - alpha agent의 PIT cutoff (train end)을 deploy cutoff와 **반드시 구분**
 - weights.csv는 train cutoff까지의 sig_dates만이 아닌, **deploy schedule today까지 frozen extension** 옵션 제공

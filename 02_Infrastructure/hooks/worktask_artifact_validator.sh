@@ -63,8 +63,22 @@ elif "forge_phase4_package" in fp_lower or "phase4_decision" in pkg:
     optional_v62 = ["same_period_baseline", "oos_24_26", "dsr_penalty_basis"]
     pkg_type = "forge_phase4_package"
 elif "forge_package" in fp_lower or "backtest_summary" in pkg:
-    required = ["task_id", "backtest_summary"]
-    optional_v62 = ["factor_regression_5_specs", "mega_baseline_same_period_ref", "regime_conditional_metrics"]
+    # v6.3 Charter §9 SoT — 8 mandatory fields for PG2 admission grade
+    required = [
+        "task_id", "backtest_summary",
+        "sr_realized_share_based",
+        "measurement_basis_primary",
+        "weights_csv_unique_dates_count",
+        "alpha_sig_dates_count",
+        "schedule_density_ratio",
+        "schedule_density_pass",
+        "pure_function_violation"
+    ]
+    optional_v62 = [
+        "factor_regression_5_specs", "mega_baseline_same_period_ref", "regime_conditional_metrics",
+        "sr_factor_engine_continuous", "sr_lockbox_daily_harness",
+        "divergence_factor_engine_vs_realized_pp", "vs_factor_engine"
+    ]
     pkg_type = "forge_package"
 elif "judge_lockbox_audit" in fp_lower:
     required = ["wt_id", "lockbox_period", "lockbox_measurement_attempted"]
