@@ -1,0 +1,114 @@
+{
+  "task_id": "WT-D20260427_014",
+  "hybrid_design": {
+    "BULL": {
+      "method": "Iter11_LinTilt_lam1_baseline",
+      "cash": 0,
+      "max_w": 0.2,
+      "sleeve_w": {
+        "core": 1,
+        "hedge": 0,
+        "defml": 0
+      },
+      "source": "Iter 11 baseline (proven walk-forward optimal)"
+    },
+    "NORMAL": {
+      "method": "Iter11_LinTilt_lam1_baseline",
+      "cash": 0.05,
+      "max_w": 0.2,
+      "sleeve_w": {
+        "core": 1,
+        "hedge": 0,
+        "defml": 0
+      },
+      "source": "Iter 11 baseline (5% cash hedge against minor sell-offs)"
+    },
+    "CAUTION": {
+      "method": "Iter27_ERC50_LinTilt50_EWshrink30",
+      "cash": 0.2,
+      "max_w": 0.15,
+      "sleeve_w": {
+        "core": 0.6,
+        "hedge": 0.15,
+        "defml": 0.25
+      },
+      "source": "Iter 27 ERC+LinTilt+EW shrink (CAUTION SR 3.97 inheritance)"
+    },
+    "CRISIS": {
+      "method": "Iter27_RiskParity_HedgeDominant",
+      "cash": 0.5,
+      "max_w": 0.1,
+      "sleeve_w": {
+        "core": 0.2,
+        "hedge": 0.3,
+        "defml": 0.5
+      },
+      "source": "Iter 27 Risk Parity + Hedge dominant (forward encoded; panel CRISIS=0)"
+    }
+  },
+  "walk_forward": {
+    "n_dates": 92,
+    "n_rows": 1840,
+    "overall_sr_annual": 0.2184,
+    "overall_mean_ret": 0.004,
+    "mdd": -0.3879,
+    "cagr": 0.0236,
+    "turnover_sum_oneway": 42.857
+  },
+  "per_regime": [
+    {
+      "regime": "CAUTION",
+      "n": 8,
+      "mean_ret": 0.0245,
+      "sd_ret": 0.0811,
+      "sr_annual": 1.0479
+    },
+    {
+      "regime": "NORMAL",
+      "n": 12,
+      "mean_ret": -0.0022,
+      "sd_ret": 0.1151,
+      "sr_annual": -0.0659
+    },
+    {
+      "regime": "BULL",
+      "n": 72,
+      "mean_ret": 0.0027,
+      "sd_ret": 0.0488,
+      "sr_annual": 0.1945
+    }
+  ],
+  "baseline_iter11": {
+    "sr_annual": 0.3009,
+    "mdd": -0.3935
+  },
+  "ax_001_v2_audit": {
+    "crisis_alpha": 0.0245,
+    "crisis_alpha_target": 0,
+    "crisis_alpha_pass": true,
+    "core_mdd_relief": 0.0056,
+    "core_mdd_relief_target": 0.05,
+    "core_mdd_relief_pass": false,
+    "bad_normal_ratio": 3.122,
+    "bad_normal_target": 1.5,
+    "bad_normal_pass": true,
+    "harvey_t": 0.605,
+    "harvey_target": 2,
+    "harvey_pass": false,
+    "pass_count": 2
+  },
+  "l_code_blocking": {
+    "L-237": "Iter 27 BULL dominance한계 → BULL을 Iter 11 LinTilt λ=1.0으로 대체 (FIX)",
+    "L-235": "Iter 26 binary discrete cash overlay → multi-sleeve regime-conditional 차별",
+    "L-231": "continuous overlay 회피 — discrete 4-state",
+    "L-232": "long-only single-overlay realized inversion 회피 — Hedge V22b 직접 inheritance",
+    "L-233": "Hedge sleeve drawdown_cor=-0.1907 PASS (Alpha pkg)",
+    "L-220": "monthly base preserved",
+    "L-226": "ERC alone insufficient → CAUTION만 ERC(50%)+LinTilt(50%)+EW(30%)",
+    "L-229": "Optimizer alone insufficient → multi-sleeve + multi-regime",
+    "L-211": "no cross-section alpha modification (sleeve composite from inheritance)",
+    "L-224": "Core sleeve cor=1.0 STR_1701 strict (BULL/NORMAL)"
+  },
+  "codex_stance": "OVERRIDE_005",
+  "codex_rationale": "User-defined Iter 29 Hybrid (Best-of-both: Iter 11 walk-forward optimal + Iter 27 CAUTION 위기 특화). Codex empirical R1 expected REJECT on walk-forward panel SR (proxy <2.0). OVERRIDE_005 fallback applied per task mandate; Forge realized backtest is final arbiter (15+ instances precedent)."
+}
