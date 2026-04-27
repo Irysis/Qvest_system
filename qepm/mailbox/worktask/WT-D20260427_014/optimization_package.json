@@ -1,0 +1,92 @@
+{
+  "task_id": "WT-D20260427_014",
+  "as_of_date": "2023-11-30",
+  "selection_objective": "to_adj_ret",
+  "method_selected": "Simple_Hybrid_Switch_BULLNORMAL_Iter11_CAUTIONCRISIS_Iter27",
+  "method_logic": "Simple weight-matrix copy by regime_state. NO self-implemented MVO/ERC/HRP/RL. Pure inheritance switch.",
+  "target_weights": {
+    "A058470": 0.17,
+    "CASH": 0.15,
+    "A042660": 0.0991,
+    "A005930": 0.0681,
+    "A000990": 0.0645,
+    "A145020": 0.061,
+    "A012750": 0.0502,
+    "A029780": 0.0466,
+    "A002790": 0.043,
+    "A005300": 0.0394,
+    "A069260": 0.0359,
+    "A105630": 0.0323,
+    "A047050": 0.0323,
+    "A084370": 0.0287,
+    "A051600": 0.0251,
+    "A035250": 0.0179,
+    "A035420": 0.0143,
+    "A192080": 0.0108,
+    "A272210": 0.0072,
+    "A251270": 0.0036,
+    "A161390": 3.4063e-08
+  },
+  "active_weights": null,
+  "expected_active_return": 0.0716,
+  "expected_tracking_error": 0.05,
+  "expected_information_ratio": 1.432,
+  "expected_standalone_sr": 1.432,
+  "expected_blend_sr": 1.325,
+  "turnover": null,
+  "estimated_cost": 0.003,
+  "binding_constraints": ["max_names_21_cash_overlay", "long_only", "sum_w_eq_1", "cash_overlay_max_0.30_v55_exempt"],
+  "infeasibility_report": null,
+  "cash_overlay_note": "CASH ticker max weight 0.30 inherited from Iter 11 BULL CRISIS-month overlay (e.g. 2022-01-28). Per v55 cash_allocation role exemption (CLAUDE.md Session 67 Day 2): cash_sleeve_validator.sh treats CASH as overlay role, not subject to standard 0.20 weight bound. All non-CASH tickers ≤ 0.20.",
+  "hybrid_switch": {
+    "n_BULL_NORMAL_dates": 84,
+    "n_CAUTION_CRISIS_dates": 8,
+    "bull_normal_source": "Iter 11 LinTilt λ=1.0 (WT-D20260426_004)",
+    "caution_crisis_source": "Iter 27 4-state adaptive (WT-D20260427_012)",
+    "bull_normal_weight_share": 0.913,
+    "caution_crisis_weight_share": 0.087
+  },
+  "method_comparison": {
+    "Iter11_only": {
+      "sr": 1.19,
+      "note": "BULL/NORMAL dominant proven"
+    },
+    "Iter27_only": {
+      "sr_caution": 3.97,
+      "sr_overall": null,
+      "note": "CAUTION crisis specialist"
+    },
+    "Hybrid_Switch": {
+      "sr_estimate": 1.432,
+      "selected": true
+    }
+  },
+  "selection_method_log": {
+    "candidates_tried": 1,
+    "method_log": [
+      {
+        "name": "Simple_Hybrid_Switch",
+        "net_ir": 1.432,
+        "selected": true,
+        "note": "User mandate: simple regime-based switch only. ERC/MVO/HRP self-impl forbidden."
+      }
+    ]
+  },
+  "explanation": {
+    "top_overweights": ["A058470", "CASH", "A042660", "A005930", "A000990"],
+    "top_underweights": null,
+    "main_tradeoffs": ["BULL/NORMAL: Iter 11 LinTilt baseline (proven realized SR 1.291 walk-forward)", "CAUTION/CRISIS: Iter 27 multi-sleeve adaptive (realized CAUTION SR 3.97)", "Logic 단순화 — 이전 attempt ERC self-impl bug 회피"]
+  },
+  "inheritance_sources": {
+    "iter11_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260426_004/weights.csv",
+    "iter27_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_012/weights.csv"
+  },
+  "hard_constraints_passed": {
+    "max_names_le_21": true,
+    "long_only": true,
+    "weight_bounds_0_20_non_cash": true,
+    "weight_bounds_0_20_incl_cash": false,
+    "cash_overlay_v55_exempt": true,
+    "sum_w_eq_1": true
+  }
+}
