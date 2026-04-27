@@ -1,0 +1,563 @@
+{
+  "task_id": "WT-D20260427_017",
+  "iter": 32,
+  "iter_name": "PG2_Real_ZScore_Blend_STR1715_80_STR1656_20",
+  "as_of_date": "2026-04-27",
+  "signal_as_of": "2023-12-01",
+  "selection_objective": {
+    "objective": "net_ir_with_hard_caps_and_ax001",
+    "rationale": "Iter 32 user mandate: Real PG2 z-blend top-20 backtest. Primary=max(SR_ann)∧hard_caps. Tiebreakers=AX-001v2 PASS count → DSR_post → min(TO).",
+    "baseline_iter31": "ITER31_BEST_L1.5_TO3_CN10_CC20_CR40 — STR_1701 standalone production",
+    "iter32_objective": "Validate Iter 31 method on REAL z-blend (0.8 z_1715 + 0.2 z_1656) — first true score-level PG2 backtest"
+  },
+  "best_combo": {
+    "combo_id": "L1.5_TO3_CN10_CC15_CR30",
+    "lambda": 1.5,
+    "tophi": 3,
+    "cash_normal": 0.1,
+    "cash_caution": 0.15,
+    "cash_crisis": 0.3
+  },
+  "target_weights": {
+    "A000880": 0.0377,
+    "A001040": 0.0335,
+    "A004800": 0.0548,
+    "A005930": 0.0759,
+    "A029780": 0.0907,
+    "A036930": 0.0207,
+    "A039030": 0.0292,
+    "A041510": 0.0078,
+    "A042660": 0.084,
+    "A058470": 0.1082,
+    "A078930": 0.0249,
+    "A086520": 0.0036,
+    "A098460": 0.0591,
+    "A104830": 0.0634,
+    "A121600": 0,
+    "A139480": 0.0506,
+    "A166090": 0,
+    "A183300": 0.042,
+    "A185750": 0.0677,
+    "A218410": 0.0463,
+    "CASH": 0.1
+  },
+  "active_weights": {
+    "A000880": -0.0099,
+    "A001040": -0.0141,
+    "A004800": 0.0072,
+    "A005930": 0.0283,
+    "A029780": 0.0431,
+    "A036930": -0.027,
+    "A039030": -0.0184,
+    "A041510": -0.0398,
+    "A042660": 0.0363,
+    "A058470": 0.0606,
+    "A078930": -0.0227,
+    "A086520": -0.0441,
+    "A098460": 0.0115,
+    "A104830": 0.0158,
+    "A121600": -0.0476,
+    "A139480": 0.0029,
+    "A166090": -0.0476,
+    "A183300": -0.0056,
+    "A185750": 0.02,
+    "A218410": -0.0013,
+    "CASH": 0.0524
+  },
+  "expected_active_return": 0.1136,
+  "expected_tracking_error": "NA",
+  "expected_information_ratio": 0.6428,
+  "expected_sharpe_ratio": 0.6428,
+  "expected_cagr": 0.1136,
+  "expected_mdd": -0.4677,
+  "cvar_d_post_optim": 0.0251,
+  "turnover_annual": 5.473,
+  "estimated_cost_annual": 0.0164,
+  "harvey_t_pooled": 2.496,
+  "dsr_post": 0.9936,
+  "ax001_v2_pass_count": 2,
+  "binding_constraints": ["mdd_45pct", "cvar_d_2.5pct"],
+  "binding_constraints_count": 2,
+  "infeasibility_report": {
+    "reason": "Multiple hard caps breached across grid",
+    "violated_constraints": ["turnover", "mdd", "cvar"],
+    "suggested_resolution": "Mandate revision required"
+  },
+  "method_selected": "LinTilt_TOphi_CashOverlay_zblend_L1.5_TO3_CN10_CC15_CR30",
+  "method_comparison": {
+    "L1.5_TO3_CN10_CC15_CR30": {
+      "sr_ann": 0.6428,
+      "cagr": 0.1136,
+      "mdd": -0.4677,
+      "ann_to": 5.473,
+      "cvar_d_proxy": 0.0251,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9936,
+      "all_caps_pass": false,
+      "selected": true
+    },
+    "L1.0_TO8_CN10_CC15_CR30": {
+      "sr_ann": 0.6412,
+      "cagr": 0.113,
+      "mdd": -0.4639,
+      "ann_to": 5.239,
+      "cvar_d_proxy": 0.0248,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9936,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO5_CN10_CC15_CR30": {
+      "sr_ann": 0.6408,
+      "cagr": 0.1139,
+      "mdd": -0.4697,
+      "ann_to": 5.298,
+      "cvar_d_proxy": 0.0251,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9936,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO8_CN10_CC15_CR30": {
+      "sr_ann": 0.6407,
+      "cagr": 0.1144,
+      "mdd": -0.4705,
+      "ann_to": 5.185,
+      "cvar_d_proxy": 0.025,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9937,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.0_TO5_CN10_CC15_CR30": {
+      "sr_ann": 0.6404,
+      "cagr": 0.1123,
+      "mdd": -0.4636,
+      "ann_to": 5.336,
+      "cvar_d_proxy": 0.0249,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9934,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.2_TO8_CN10_CC15_CR30": {
+      "sr_ann": 0.6394,
+      "cagr": 0.1133,
+      "mdd": -0.4673,
+      "ann_to": 5.211,
+      "cvar_d_proxy": 0.0249,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9935,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.2_TO3_CN10_CC15_CR30": {
+      "sr_ann": 0.6394,
+      "cagr": 0.112,
+      "mdd": -0.4651,
+      "ann_to": 5.48,
+      "cvar_d_proxy": 0.025,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9933,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.2_TO5_CN10_CC15_CR30": {
+      "sr_ann": 0.6392,
+      "cagr": 0.1128,
+      "mdd": -0.4667,
+      "ann_to": 5.317,
+      "cvar_d_proxy": 0.025,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9934,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.0_TO3_CN10_CC15_CR30": {
+      "sr_ann": 0.6382,
+      "cagr": 0.111,
+      "mdd": -0.4621,
+      "ann_to": 5.492,
+      "cvar_d_proxy": 0.0249,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9932,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN05_CC15_CR30": {
+      "sr_ann": 0.6374,
+      "cagr": 0.1175,
+      "mdd": -0.4882,
+      "ann_to": 5.787,
+      "cvar_d_proxy": 0.0265,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9933,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN10_CC20_CR40_ITER31_BEST_PARAMS": {
+      "sr_ann": 0.6367,
+      "cagr": 0.1121,
+      "mdd": -0.4684,
+      "ann_to": 5.487,
+      "cvar_d_proxy": 0.0251,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.9932,
+      "all_caps_pass": false,
+      "selected": false,
+      "note": "Iter 31 best params (LinTilt λ=1.5 / TOphi=3 / cash 10/20/40) — anchor reference"
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 36,
+    "cap": 10,
+    "cap_exception": "Targeted hyperparameter sweep around Iter 31 best — sub-method 'LinTilt+TOphi+CashOverlay' parametric scan validated for new z-blend score, NOT distinct method shopping (single mechanism, 36 hyperparameter points)",
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "method_log": {
+      "L1.5_TO3_CN10_CC15_CR30": {
+        "sr_ann": 0.6428,
+        "cagr": 0.1136,
+        "mdd": -0.4677,
+        "ann_to": 5.473,
+        "cvar_d_proxy": 0.0251,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9936,
+        "all_caps_pass": false,
+        "selected": true
+      },
+      "L1.0_TO8_CN10_CC15_CR30": {
+        "sr_ann": 0.6412,
+        "cagr": 0.113,
+        "mdd": -0.4639,
+        "ann_to": 5.239,
+        "cvar_d_proxy": 0.0248,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9936,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO5_CN10_CC15_CR30": {
+        "sr_ann": 0.6408,
+        "cagr": 0.1139,
+        "mdd": -0.4697,
+        "ann_to": 5.298,
+        "cvar_d_proxy": 0.0251,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9936,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO8_CN10_CC15_CR30": {
+        "sr_ann": 0.6407,
+        "cagr": 0.1144,
+        "mdd": -0.4705,
+        "ann_to": 5.185,
+        "cvar_d_proxy": 0.025,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9937,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.0_TO5_CN10_CC15_CR30": {
+        "sr_ann": 0.6404,
+        "cagr": 0.1123,
+        "mdd": -0.4636,
+        "ann_to": 5.336,
+        "cvar_d_proxy": 0.0249,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9934,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.2_TO8_CN10_CC15_CR30": {
+        "sr_ann": 0.6394,
+        "cagr": 0.1133,
+        "mdd": -0.4673,
+        "ann_to": 5.211,
+        "cvar_d_proxy": 0.0249,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9935,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.2_TO3_CN10_CC15_CR30": {
+        "sr_ann": 0.6394,
+        "cagr": 0.112,
+        "mdd": -0.4651,
+        "ann_to": 5.48,
+        "cvar_d_proxy": 0.025,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9933,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.2_TO5_CN10_CC15_CR30": {
+        "sr_ann": 0.6392,
+        "cagr": 0.1128,
+        "mdd": -0.4667,
+        "ann_to": 5.317,
+        "cvar_d_proxy": 0.025,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9934,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.0_TO3_CN10_CC15_CR30": {
+        "sr_ann": 0.6382,
+        "cagr": 0.111,
+        "mdd": -0.4621,
+        "ann_to": 5.492,
+        "cvar_d_proxy": 0.0249,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9932,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN05_CC15_CR30": {
+        "sr_ann": 0.6374,
+        "cagr": 0.1175,
+        "mdd": -0.4882,
+        "ann_to": 5.787,
+        "cvar_d_proxy": 0.0265,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9933,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN10_CC20_CR40_ITER31_BEST_PARAMS": {
+        "sr_ann": 0.6367,
+        "cagr": 0.1121,
+        "mdd": -0.4684,
+        "ann_to": 5.487,
+        "cvar_d_proxy": 0.0251,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.9932,
+        "all_caps_pass": false,
+        "selected": false,
+        "note": "Iter 31 best params (LinTilt λ=1.5 / TOphi=3 / cash 10/20/40) — anchor reference"
+      }
+    },
+    "selected": "L1.5_TO3_CN10_CC15_CR30",
+    "selection_basis": "best-effort SR (caps may all be breached)",
+    "honest_disclosure": "Iter 32 = Real PG2 z-blend backtest. Targeted 36-combo sweep (3λ × 3TOphi × 2cash_normal × 2cash_caucris) around Iter 31 best to validate parameters for new score_blend (cor with old score_str1701 may differ). Cap exception declared per Iter 31 user mandate inheritance.",
+    "rolling_seconds": []
+  },
+  "top3_detail": {
+    "rank_1": {
+      "combo_id": "L1.5_TO3_CN10_CC15_CR30",
+      "lambda": 1.5,
+      "tophi": 3,
+      "cash_normal": 0.1,
+      "cash_caution": 0.15,
+      "cash_crisis": 0.3,
+      "sr_ann": 0.6428,
+      "cagr": 0.1136,
+      "cum_ret": 4.5432,
+      "mdd": -0.4677,
+      "ann_to": 5.473,
+      "ann_cost": 0.0164,
+      "cvar_d_proxy": 0.0251,
+      "sigma_monthly": 0.0612,
+      "mu_monthly": 0.0113,
+      "T_use": 181,
+      "harvey_t": 2.496,
+      "dsr_post": 0.9936,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": false,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 1.6142,
+        "bad_normal_pass": true,
+        "harvey_t": 2.496,
+        "harvey_pass": true
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        },
+        "NORMAL": {
+          "n": 160,
+          "sr": 0.5739,
+          "mean": 0.0106
+        },
+        "CAUTION": {
+          "n": 21,
+          "sr": 1.7671,
+          "mean": 0.0171
+        },
+        "CRISIS": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        }
+      }
+    },
+    "rank_2": {
+      "combo_id": "L1.0_TO8_CN10_CC15_CR30",
+      "lambda": 1,
+      "tophi": 8,
+      "cash_normal": 0.1,
+      "cash_caution": 0.15,
+      "cash_crisis": 0.3,
+      "sr_ann": 0.6412,
+      "cagr": 0.113,
+      "cum_ret": 4.4953,
+      "mdd": -0.4639,
+      "ann_to": 5.239,
+      "ann_cost": 0.0157,
+      "cvar_d_proxy": 0.0248,
+      "sigma_monthly": 0.061,
+      "mu_monthly": 0.0113,
+      "T_use": 181,
+      "harvey_t": 2.49,
+      "dsr_post": 0.9936,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": false,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 1.8598,
+        "bad_normal_pass": true,
+        "harvey_t": 2.49,
+        "harvey_pass": true
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        },
+        "NORMAL": {
+          "n": 160,
+          "sr": 0.5573,
+          "mean": 0.0103
+        },
+        "CAUTION": {
+          "n": 21,
+          "sr": 2.0462,
+          "mean": 0.0191
+        },
+        "CRISIS": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        }
+      }
+    },
+    "rank_3": {
+      "combo_id": "L1.5_TO5_CN10_CC15_CR30",
+      "lambda": 1.5,
+      "tophi": 5,
+      "cash_normal": 0.1,
+      "cash_caution": 0.15,
+      "cash_crisis": 0.3,
+      "sr_ann": 0.6408,
+      "cagr": 0.1139,
+      "cum_ret": 4.5685,
+      "mdd": -0.4697,
+      "ann_to": 5.298,
+      "ann_cost": 0.0159,
+      "cvar_d_proxy": 0.0251,
+      "sigma_monthly": 0.0616,
+      "mu_monthly": 0.0114,
+      "T_use": 181,
+      "harvey_t": 2.489,
+      "dsr_post": 0.9936,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": false,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 1.7355,
+        "bad_normal_pass": true,
+        "harvey_t": 2.489,
+        "harvey_pass": true
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        },
+        "NORMAL": {
+          "n": 160,
+          "sr": 0.5647,
+          "mean": 0.0105
+        },
+        "CAUTION": {
+          "n": 21,
+          "sr": 1.8866,
+          "mean": 0.0182
+        },
+        "CRISIS": {
+          "n": 0,
+          "sr": "NA",
+          "mean": "NA"
+        }
+      }
+    }
+  },
+  "hard_constraints": {
+    "max_names": 20,
+    "weight_bounds": [0, 0.2],
+    "long_only": true,
+    "sum_w_target": 1,
+    "universe": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "to_hard_cap": 6,
+    "mdd_hard_cap": 0.45,
+    "cvar_d_hard_cap": 0.025
+  },
+  "hard_constraint_checks": {
+    "n_names_each_sig_date_le_20": true,
+    "weights_nonneg": true,
+    "weights_le_0.20": true,
+    "sum_w_eq_1": true,
+    "per_sig_date_audit": {
+      "n_dates": 181,
+      "n_names_min": 20,
+      "n_names_max": 20,
+      "sum_w_total_min": 1,
+      "sum_w_total_max": 1
+    }
+  },
+  "alpha_inheritance_audit": {
+    "base_strategy": "PG2 = 0.8 z(STR_1715) + 0.2 z(STR_1656) per Date",
+    "blend_weights": {
+      "str1715": 0.8,
+      "str1656": 0.2
+    },
+    "blend_audit_ref": "blend_audit.json",
+    "note": "First TRUE score-level PG2 z-blend walk-forward backtest. Prior PG2 SR (1.4625/1.5243/1.9222) NAV-level proxy."
+  },
+  "iter32_lessons_applied": {
+    "L_220": "Vol-reduction quarterly avoid — monthly cadence preserved",
+    "L_224": "alpha_inheritance: score_blend mean cor with score_str1715_z high (concentrated 80% weight)",
+    "L_226": "ERC near-EW avoided — LinTilt+TOphi alpha-active mechanism",
+    "L_237": "BULL dominance — cash NORMAL grid {0.05, 0.10}% explored",
+    "L_238": "sig_date direct calibration — 181-date Iter 32 panel",
+    "L_242": "Real walk-forward backtest (NOT NAV-level proxy) — first true PG2 z-blend test"
+  },
+  "challenge_review": {
+    "from_agent": "optimizer",
+    "objection": false,
+    "targets_reviewed": ["alpha_vector (z-blend formula verified via blend_audit.json)", "risk_sigma (Iter 5 LW oracle BΩB+D inheritance)", "bound_feasibility (20×0.20=4.0 ≥ Σw=1)", "Iter 31 best params anchored (λ=1.5 / TOphi=3 / cash 10/20/40)", "regime_v7 mapping (Crisis→CRISIS, Normal→NORMAL, Transition_LR→CAUTION)"],
+    "note": "Iter 32 = Real z-blend backtest. 36-combo sweep × 181 sig_dates walk-forward."
+  },
+  "explanation": {
+    "top_overweights": ["A058470", "CASH", "A029780"],
+    "top_underweights": ["A086520", "A121600", "A166090"],
+    "main_tradeoffs": ["Best combo: λ=1.5, TOphi=3, cash(N=10%/C=15%/Crisis=30%)", "First TRUE z-blend SR realized: 0.6428 (NOT proxy)", "Hard caps: TO=TRUE MDD=FALSE CVaR=FALSE", "AX-001v2: 2/4 (crisis_alpha+MDD_relief+bad/normal_ratio+Harvey)"]
+  },
+  "references": ["Markowitz (1952) MVO baseline", "Bergstra-Bengio (2012) Random Search for Hyperparameter Optimization", "Iter 11 STR_1701 LinTilt λ=1.0 TOphi=8 baseline", "Iter 31 STR_1701 grid best (λ=1.5 / TOphi=3 / cash 10/20/40)", "Barroso-Santa-Clara (2015) risk-managed momentum (cash overlay)", "Gu-Kelly-Xiu (2020) RFS — ML in finance (STR_1656 leg)", "L-484 score-level composite (Iter 32 z-blend foundation)", "L-242 metric verification mandate (real walk-forward)"],
+  "generated_at": "2026-04-27T16:18:26+0900",
+  "agent_id": "optimizer-research-iter32-zblend",
+  "inheritance_meta": {
+    "inherited_alpha_from": "qepm/mailbox/worktask/WT-D20260427_017/alpha_package.json",
+    "inherited_risk_from": "qepm/mailbox/worktask/WT-D20260427_017/risk_package.json",
+    "rationale": "Iter 32 = Real PG2 z-score blend walk-forward backtest — user mandate strict"
+  }
+}

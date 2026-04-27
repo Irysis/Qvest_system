@@ -1,0 +1,201 @@
+{
+  "task_id": "WT-D20260427_017",
+  "audit_purpose": "Verify z-blend logic: 0.8 × z(STR_1715) + 0.2 × z(STR_1656) per Date matches stored score_blend",
+  "panel": {
+    "source": "stage_artifacts/WT_D20260427_017/alpha_scores_combined.parquet",
+    "n_dates": 181,
+    "n_rows": 40359,
+    "n_unique_tickers": 507
+  },
+  "blend_formula": "score_blend = 0.8 × ((score_str1715_raw - mean) / sd) + 0.2 × ((score_str1656_raw - mean) / sd) per Date",
+  "audit_sample_size": 10,
+  "audit_records": {
+    "14488": {
+      "date": "14488",
+      "n_tickers": 158,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": -0,
+      "z1715_sd": 1,
+      "z1656_mean": 0,
+      "z1656_sd": 1
+    },
+    "18597": {
+      "date": "18597",
+      "n_tickers": 143,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    },
+    "16040": {
+      "date": "16040",
+      "n_tickers": 273,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": -0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    },
+    "18567": {
+      "date": "18567",
+      "n_tickers": 278,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": 0,
+      "z1656_sd": 1
+    },
+    "18506": {
+      "date": "18506",
+      "n_tickers": 278,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": 0,
+      "z1656_sd": 1
+    },
+    "17379": {
+      "date": "17379",
+      "n_tickers": 139,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    },
+    "18231": {
+      "date": "18231",
+      "n_tickers": 261,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    },
+    "17287": {
+      "date": "17287",
+      "n_tickers": 280,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": 0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    },
+    "17563": {
+      "date": "17563",
+      "n_tickers": 269,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": -0,
+      "z1715_sd": 1,
+      "z1656_mean": 0,
+      "z1656_sd": 1
+    },
+    "16801": {
+      "date": "16801",
+      "n_tickers": 286,
+      "cor_recomputed_vs_stored": 1,
+      "diff_max_abs": 0,
+      "z1715_mean": -0,
+      "z1715_sd": 1,
+      "z1656_mean": -0,
+      "z1656_sd": 1
+    }
+  },
+  "recomputation_check": {
+    "mean_cor_recomputed_vs_stored": 1,
+    "mean_diff_max_abs": 0,
+    "pass_recomputation": true
+  },
+  "top20_overlap": {
+    "sample_records": {
+      "14488": {
+        "date": "14488",
+        "overlap_blend_vs_1715": 15,
+        "overlap_blend_vs_1656": 2,
+        "overlap_pct_blend_vs_1715": 0.75,
+        "overlap_pct_blend_vs_1656": 0.1
+      },
+      "18597": {
+        "date": "18597",
+        "overlap_blend_vs_1715": 14,
+        "overlap_blend_vs_1656": 3,
+        "overlap_pct_blend_vs_1715": 0.7,
+        "overlap_pct_blend_vs_1656": 0.15
+      },
+      "16040": {
+        "date": "16040",
+        "overlap_blend_vs_1715": 15,
+        "overlap_blend_vs_1656": 2,
+        "overlap_pct_blend_vs_1715": 0.75,
+        "overlap_pct_blend_vs_1656": 0.1
+      },
+      "18567": {
+        "date": "18567",
+        "overlap_blend_vs_1715": 16,
+        "overlap_blend_vs_1656": 5,
+        "overlap_pct_blend_vs_1715": 0.8,
+        "overlap_pct_blend_vs_1656": 0.25
+      },
+      "18506": {
+        "date": "18506",
+        "overlap_blend_vs_1715": 17,
+        "overlap_blend_vs_1656": 3,
+        "overlap_pct_blend_vs_1715": 0.85,
+        "overlap_pct_blend_vs_1656": 0.15
+      },
+      "17379": {
+        "date": "17379",
+        "overlap_blend_vs_1715": 16,
+        "overlap_blend_vs_1656": 1,
+        "overlap_pct_blend_vs_1715": 0.8,
+        "overlap_pct_blend_vs_1656": 0.05
+      },
+      "18231": {
+        "date": "18231",
+        "overlap_blend_vs_1715": 17,
+        "overlap_blend_vs_1656": 3,
+        "overlap_pct_blend_vs_1715": 0.85,
+        "overlap_pct_blend_vs_1656": 0.15
+      },
+      "17287": {
+        "date": "17287",
+        "overlap_blend_vs_1715": 18,
+        "overlap_blend_vs_1656": 3,
+        "overlap_pct_blend_vs_1715": 0.9,
+        "overlap_pct_blend_vs_1656": 0.15
+      },
+      "17563": {
+        "date": "17563",
+        "overlap_blend_vs_1715": 15,
+        "overlap_blend_vs_1656": 3,
+        "overlap_pct_blend_vs_1715": 0.75,
+        "overlap_pct_blend_vs_1656": 0.15
+      },
+      "16801": {
+        "date": "16801",
+        "overlap_blend_vs_1715": 15,
+        "overlap_blend_vs_1656": 4,
+        "overlap_pct_blend_vs_1715": 0.75,
+        "overlap_pct_blend_vs_1656": 0.2
+      }
+    },
+    "mean_overlap_pct_blend_vs_1715": 0.79,
+    "mean_overlap_pct_blend_vs_1656": 0.145,
+    "interpretation": "If overlap_blend_vs_1715 ≈ 0.95+, blend ≈ STR_1715-dominant. Lower overlap = STR_1656 contributes diversification."
+  },
+  "blend_weights": {
+    "str1715": 0.8,
+    "str1656": 0.2,
+    "rationale": "User mandate strict: 80/20 z-score weighting"
+  }
+}
