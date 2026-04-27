@@ -1,0 +1,158 @@
+{
+  "task_id": "WT-D20260427_017",
+  "str_id": "STR_1715_zBlend_Iter32",
+  "agent": "forge_integration_v6.1_pure_function_iter32",
+  "iter": 32,
+  "iter_name": "PG2_Real_ZScore_Blend_STR1715_80_STR1656_20",
+  "as_of_date": "2026-04-27",
+  "method": "weights.csv_direct_NAV_reconstruction",
+  "optimizer_method": "LinTilt_TOphi_CashOverlay_zblend_L1.5_TO3_CN10_CC15_CR30",
+  "optimizer_expected_sr": 0.6428,
+  "optimizer_expected_mdd": -0.4677,
+  "optimizer_expected_to": 5.473,
+  "optimizer_expected_cagr": 0.1136,
+  "backtest_summary": {
+    "full_period": {
+      "period": "2008-02-05 ~ 2026-04-27",
+      "n_days": 4496,
+      "n_months": 214,
+      "cagr": 0.1492,
+      "vol": 0.2208,
+      "sr_daily_ann": 0.6757,
+      "sr_monthly_ann": 0.7006,
+      "mdd": 0.5425,
+      "cvar_d": 0.0324
+    },
+    "pre_lockbox": {
+      "period": "2008-02 ~ 2023-12",
+      "n_days": 3930,
+      "n_months": 191,
+      "cagr": 0.1012,
+      "vol": 0.2096,
+      "sr_daily_ann": 0.4831,
+      "sr_monthly_ann": 0.5482,
+      "mdd_daily": 0.5425,
+      "mdd_monthly": 0.4657,
+      "cvar_d": 0.0311,
+      "note": "sr_monthly_ann = Lawbook Sharpe_m_ann (mu_m/sig_m*sqrt(12)) matching optimizer method"
+    },
+    "lockbox": {
+      "period": "2024-01 ~ 2026-04 (frozen weights buy-and-hold)",
+      "sr": 1.8937,
+      "ann_ret": 0.5781,
+      "mdd": -0.2496,
+      "n_days": 564
+    }
+  },
+  "annual_turnover_weight_diff": 5.6965,
+  "factor_regression_5_specs": {
+    "method": "Monthly Excess Returns, NW-HAC",
+    "sample": "Pre-LB 2008-01 ~ 2023-12",
+    "se_method": "Newey-West HAC",
+    "framework": "KR FF5 v2",
+    "CAPM": {
+      "spec": "CAPM",
+      "alpha_m": 0.006,
+      "alpha_a": 0.0741,
+      "t_nw": 2.11,
+      "p_nw": 0.0362,
+      "lag_nw": 5,
+      "n_eff": 191,
+      "r2": 0.6047,
+      "gate_pass": false
+    },
+    "Carhart_3": {
+      "spec": "Carhart_3",
+      "alpha_m": 0.0033,
+      "alpha_a": 0.0402,
+      "t_nw": 1.1793,
+      "p_nw": 0.2398,
+      "lag_nw": 5,
+      "n_eff": 191,
+      "r2": 0.649,
+      "gate_pass": false
+    },
+    "Carhart_4": {
+      "spec": "Carhart_4",
+      "alpha_m": 0.0025,
+      "alpha_a": 0.0301,
+      "t_nw": 0.9915,
+      "p_nw": 0.3227,
+      "lag_nw": 5,
+      "n_eff": 191,
+      "r2": 0.6602,
+      "gate_pass": false
+    },
+    "FF5": {
+      "spec": "FF5",
+      "alpha_m": 0.0031,
+      "alpha_a": 0.0376,
+      "t_nw": 1.1007,
+      "p_nw": 0.2724,
+      "lag_nw": 5,
+      "n_eff": 191,
+      "r2": 0.6494,
+      "gate_pass": false
+    },
+    "FF6": {
+      "spec": "FF6",
+      "alpha_m": 0.0023,
+      "alpha_a": 0.0277,
+      "t_nw": 0.8933,
+      "p_nw": 0.3729,
+      "lag_nw": 5,
+      "n_eff": 191,
+      "r2": 0.6606,
+      "gate_pass": false
+    },
+    "n_pass_t295": 0
+  },
+  "dsr_post_penalty": 0.2913,
+  "mega_baseline_same_period_ref": {
+    "baseline_strategy": "STR_1715 (Iter 31 standalone)",
+    "overlap_period": ["2008-01-31", "2023-11-30"],
+    "sr_baseline": 0.2387,
+    "cagr_baseline": 0.0494,
+    "mdd_baseline": 0.5799,
+    "n_days_baseline": 3913,
+    "sr_iter32": 0.4831,
+    "delta_sr": 0.2444,
+    "note": "Same-period fair Δ: Iter32_zblend vs Iter31_STR_1715_standalone"
+  },
+  "hard_caps": {
+    "mdd_pass": false,
+    "to_pass": true,
+    "cvar_pass": false,
+    "all_pass": false,
+    "mdd_realized": 0.5425,
+    "to_realized": 5.6965,
+    "cvar_realized": 0.0311
+  },
+  "optimizer_divergence": {
+    "sr_estimate_monthly": 0.6428,
+    "sr_realized_daily_ann": 0.4831,
+    "sr_realized_monthly_ann": 0.5482,
+    "sr_divergence_daily_pp": -0.1597,
+    "sr_divergence_monthly_pp": -0.0946,
+    "mdd_estimate": -0.4677,
+    "mdd_realized_daily": 0.5425,
+    "mdd_realized_monthly": 0.4657,
+    "mdd_divergence_monthly_pp": -0.002,
+    "to_realized": 5.6965,
+    "to_estimate": 5.473,
+    "to_divergence": 0.2235,
+    "note": "positive Δ = optimizer underestimated (worse realized). negative = optimizer overestimated (better realized). SR comparison: monthly-basis (Sharpe_m_ann) is apples-to-apples vs optimizer. MDD: daily captures intra-month lows; monthly is comparable to optimizer estimate. Realized monthly SR=0.5482 vs optimizer 0.6396 → -0.091pp gap: driven by discrete share rounding + cash drag (~1.8pp/yr CAGR gap). Pattern: optimizer overestimates SR by ~14% (consistent with Iter 21/22b/26 -20~40% documented)."
+  },
+  "hash_audit": {
+    "alpha_hash_start": "cc91e94a4dd950770828a7fa819e4ad7",
+    "risk_hash_start": "a244464babdb9e8a4bfad0d15d4ac2d7",
+    "opt_hash_start": "78b93fa67589b56e89a8211299355f4c",
+    "hash_time_start": "2026-04-27T17:01:30"
+  },
+  "output_paths": {
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_017/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_017/backtest_result/annual_returns.png",
+    "monthly_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_017/backtest_result/monthly_returns.csv",
+    "daily_nav": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_017/backtest_result/daily_nav.csv"
+  }
+}
