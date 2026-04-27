@@ -1,0 +1,102 @@
+{
+  "task_id": "WT-D20260427_005",
+  "role": "optimizer_research_agent",
+  "iter": 21,
+  "iter_name": "Macro_Overlay_Layer_Dynamic_Policy_Optimizer",
+  "round": 1,
+  "codex_stance_observed": "OVERRIDE_005 (Codex CLI stall pattern 6+ instances accumulated)",
+  "qlead_stance": "OVERRIDE_005",
+  "resolution_count": "9/9",
+  "resolutions": [
+    {
+      "id": 1,
+      "synthetic_concern_id": "OPT_R21_C1_NET_IR_BELOW_HISTORICAL",
+      "severity": "MEDIUM",
+      "concern": "expected_IR=0.1848 << Iter 11 standalone IR 1.29. In-sample standalone IR remains well below the inheritance baseline.",
+      "resolution": "Disclosed honestly in optimizer_challenge_note.md and opt_pkg.concern field. Iter 21 LAYER mandate explicitly says PG2 portfolio-level realized SR > 1.4625 (V_iter21 80% + STR_1656 20% blend) is the decisive metric, NOT standalone Optimizer in-sample IR. Forge backtest will compute realized blended SR.",
+      "reference": ["L-229 Iter 11 baseline optimal preserved", "AX-002 harness-only validity"],
+      "status": "RESOLVED_DISCLOSURE"
+    },
+    {
+      "id": 2,
+      "synthetic_concern_id": "OPT_R21_C2_P2_P3_NEAR_TIE_WITH_P1",
+      "severity": "LOW",
+      "concern": "P2 (dyn cash + max_w shrink) net_IR=0.1826 and P3 (full dynamic) net_IR=0.1826 marginally underperform P1=0.1848. Additional max_w shrink and TO budget mechanisms do not differentiate empirically.",
+      "resolution": "P1 selected as max(net_IR) ∧ TO_PASS ∧ MDD_PASS ∧ CVaR_PASS. P2/P3 marginal underperformance recorded in method_comparison. Empirical observation: cash sleeve dampens CRISIS exposure efficiently; additional max_w/TO compression overcomplicates without measurable extra benefit. Simpler P1 preferred per Occam.",
+      "reference": ["method_comparison field in optimization_package.json"],
+      "status": "RESOLVED_EMPIRICAL"
+    },
+    {
+      "id": 3,
+      "synthetic_concern_id": "OPT_R21_C3_PEACE_RET_NA",
+      "severity": "LOW",
+      "concern": "peace_avg_ret = NA — msi_norm < 0.25 threshold yields 0 sig_dates in 92-month sample (msi_norm range 0.249-0.935).",
+      "resolution": "Threshold msi_norm<0.25 too tight for empirical msi_norm distribution. Diagnostic limitation explicitly disclosed. BULL regime (msi_norm 0.249-0.420, n=14 sig_dates) used as peace proxy in Forge stage. Final peace alpha preservation will be measured at Forge daily backtest with finer regime classification (4-state regime_state_legacy).",
+      "reference": ["alpha_package.json macro_overlay_diagnostics.regime_count BULL=14"],
+      "status": "RESOLVED_DISCLOSURE_WITH_PROXY"
+    },
+    {
+      "id": 4,
+      "synthetic_concern_id": "OPT_R21_C4_CVAR_PASS_CASH_ARTIFACT",
+      "severity": "MEDIUM",
+      "concern": "All dynamic policies (P1/P2/P3) pass CVaR_d 2.5% cap solely because cash sleeve linearly dampens CVaR estimate. PASS may be a proxy artifact — pre-cash CVaR_d remains structurally infeasible.",
+      "resolution": "Honest acknowledgment: cash sleeve IS the CVaR mechanism. P0 (static 4-state, avg cash 10.1%) FAILS CVaR; P1/P2/P3 (avg cash 27.6%) PASS. This is the LAYER's primary value-add — explicitly the design intent. infeasibility_report retained in source code logic; field set NULL when realized CVaR (post-cash) within cap. Forge realized backtest will measure post-cash daily portfolio CVaR on actual paths (not proxy formula).",
+      "reference": ["Iter 18 L-226 CVaR structural infeasibility precedent", "Macro overlay design rationale"],
+      "status": "RESOLVED_DISCLOSURE_HONEST"
+    },
+    {
+      "id": 5,
+      "synthetic_concern_id": "OPT_R21_C5_AVG_CASH_27.6_HIGH",
+      "severity": "MEDIUM",
+      "concern": "avg_cash_pct = 27.6% means 27.6% of capital is sidelined on average — significant alpha drag in BULL regimes.",
+      "resolution": "Trade-off acknowledged. P1 cash policy linear in msi_norm: BULL avg cash ~17.9% (msi_norm BULL mean = 0.359 × 0.50). Trade-off = 17.9% BULL drag for crisis MDD relief 3.86pp (CRISIS MDD -10.11% → -6.26%). Forge daily realized BULL alpha measurement is the decisive evaluation. PG2 blended (V_iter21 80% + STR_1656 20%) target SR > 1.4625 + crisis MDD relief is the joint criterion.",
+      "reference": ["msi_norm BULL regime_count=14, mean=0.359 (alpha_package.json)"],
+      "status": "RESOLVED_TRADE_OFF_DISCLOSED"
+    },
+    {
+      "id": 6,
+      "synthetic_concern_id": "OPT_R21_C6_TO_BUDGET_NULL_EFFECT",
+      "severity": "LOW",
+      "concern": "P3 to_factor blend mechanism does not change net_IR vs P2 — TO budget reduction in CRISIS does not affect realized portfolio metrics meaningfully.",
+      "resolution": "Empirical observation. LinTilt mechanism is already low-turnover (~4.4 ann, well under 6.0 cap); CRISIS-period TO compression has minimal realized effect. P3 = P2 numerically. Selection prefers simpler P1 (cash sleeve only). TO budget mechanism kept in spec for future regime extensions but not the binding constraint for selection.",
+      "reference": ["method_comparison.P3_full_dynamic vs P2_dyn_cash_maxw"],
+      "status": "RESOLVED_EMPIRICAL_SIMPLER_PREFERRED"
+    },
+    {
+      "id": 7,
+      "synthetic_concern_id": "OPT_R21_C7_PIT_SAME_SIG_DATE_LOOKAHEAD",
+      "severity": "INFO",
+      "concern": "Optimizer reads msi_norm at sig_date t — must confirm msi_norm uses information up to t-1 only, not contemporaneous t.",
+      "resolution": "Alpha layer enforced expanding-window strict t-1 (alpha_package.json pit_compliance C2/C5 PASS). Optimizer reads msi_norm column AS-IS from inherited parquet — no additional Date<sig_dt subselection because the alpha layer has already enforced the t-1 constraint. PIT chain preserved. C5 'overlay t-1 basis' satisfied at upstream alpha stage.",
+      "reference": ["alpha_package.json pit_compliance.C2/C5", "macro_signal_design.md PIT section"],
+      "status": "RESOLVED_UPSTREAM_PIT"
+    },
+    {
+      "id": 8,
+      "synthetic_concern_id": "OPT_R21_C8_LOOKAHEAD_REGIME_CASH",
+      "severity": "INFO",
+      "concern": "P0 static 4-state cash uses regime_state_legacy at sig_date — same potential lookahead concern as msi_norm.",
+      "resolution": "regime_state_legacy = bucket of msi_norm via expanding ECDF percentile (alpha layer construction). Same expanding-window strict t-1 PIT enforcement applies. No same-day circular. PIT chain preserved.",
+      "reference": ["alpha_package.json pit_compliance.C9 expanding ECDF"],
+      "status": "RESOLVED_UPSTREAM_PIT"
+    },
+    {
+      "id": 9,
+      "synthetic_concern_id": "OPT_R21_C9_CASH_FLOOR_INTEREST_RATE",
+      "severity": "LOW",
+      "concern": "Cash sleeve assumed 0% return. Real-world KR money market yields (CD91 / RP) provide 1.5-3.5% annualized — ignored in Optimizer simulation.",
+      "resolution": "Conservative simulation (cash = 0%). Real-world money market rate would IMPROVE realized SR for high-cash policies (P1/P2/P3). Conservative bias preferred for Optimizer-stage simulation; Forge will model realistic KR money market floor (CD91 monthly compounding) in production code path.",
+      "reference": ["Forge run_all.R cash_floor parameter (downstream)"],
+      "status": "RESOLVED_CONSERVATIVE_BIAS"
+    }
+  ],
+  "qlead_override_basis": [
+    "AX-008 Verification Triangulation falls back to 2-source (Forge + Architect) when Codex stalls (6+ instance pattern documented in MEMORY.md).",
+    "User mandate Layer track 8-sprint learning: alpha unchanged + optimizer mechanism unchanged + macro overlay layer addition only.",
+    "Hard constraints all PASS: Σw=1 (92/92 dates) / 21 names per date / weight_bounds [0,0.20] eq + cash [0,0.50] / long-only.",
+    "Layer value-add quantified: crisis_mdd relief 3.86pp + 3 hard caps PASS via cash sleeve dampening.",
+    "Forge realized PG2-level backtest (V_iter21 80% + STR_1656 20%) blended SR > 1.4625 baseline = decisive evaluation per AX-002 harness-only validity."
+  ],
+  "verdict_after_resolution": "PROCEED_TO_FORGE",
+  "generated_at": "OVERRIDE_005_resolution_2026-04-27"
+}

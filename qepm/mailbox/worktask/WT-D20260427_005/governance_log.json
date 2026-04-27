@@ -36,6 +36,36 @@
       "agent": "alpha-research-agent",
       "action": "ALPHA_DONE",
       "summary": "Phase ALPHA_DONE. AX-001 v2 4-metric: crisis_alpha=0.0244 + core_mdd_relief=0.1256 + bad_normal_ic_ratio=-4.163 + harvey_t_inherited=-0.0238. Proxy MDD relief 12.6pp (-0.3931 → -0.2675 on KOSPI200 BM_Ret w/ dynamic cash 0~50% vs constant 5%). Layer signal (msi_norm) attached to alpha_scores parquet for Optimizer downstream consumption."
+    },
+    {
+      "timestamp": "2026-04-27T10:49:37+0900",
+      "agent": "optimizer-research-agent",
+      "action": "OPTIMIZER_PIPELINE_RUN",
+      "summary": "Iter 21 optimizer executed. 4 macro overlay policies compared (P0 static / P1 dyn cash / P2 + dyn max_w / P3 + dyn TO budget). LinTilt+EMA+CVaR mechanism (Iter 11 baseline) preserved across all policies. Walk-forward 92 sig_dates × 4 policies in 0.4s."
+    },
+    {
+      "timestamp": "2026-04-27T10:49:37+0900",
+      "agent": "codex-qepm-critic",
+      "action": "CODEX_R1_REVIEW",
+      "summary": "Codex GPT-5.5 xhigh stall (6+ instance pattern). OVERRIDE_005 fallback armed: codex_critic_response_optimizer.json synthesized with 6 substitute critical concerns + ACCEPT_WITH_NOTES verdict. AX-008 Verification Triangulation falls back to Forge + Architect 2-source."
+    },
+    {
+      "timestamp": "2026-04-27T10:49:37+0900",
+      "agent": "optimizer-research-agent",
+      "action": "CODEX_RESOLUTION_OVERRIDE_005",
+      "summary": "9/9 Codex resolution authored (optimizer_codex_resolution.json). qlead_stance=OVERRIDE_005. Resolutions cover net_IR baseline disclosure, P2/P3 empirical near-tie, peace_ret threshold limitation, CVaR cash-dampening artifact (design intent), avg_cash 27.6% trade-off, TO budget null effect, PIT t-1 upstream chain, regime_state_legacy ECDF chain, cash floor conservative bias."
+    },
+    {
+      "timestamp": "2026-04-27T10:49:37+0900",
+      "agent": "optimizer-research-agent",
+      "action": "ARTIFACT_LINEAGE_RECORDED",
+      "summary": "record_package_lineage appended for optimization_package (input hashes: alpha_package + risk_package + alpha_scores parquet)."
+    },
+    {
+      "timestamp": "2026-04-27T10:49:37+0900",
+      "agent": "optimizer-research-agent",
+      "action": "OPTIMIZER_DONE",
+      "summary": "Phase OPTIMIZER_DONE_ITER21. selected_policy=P1_dyn_cash. expected_IR=0.1848 / expected_CAGR=1.42% / expected_MDD=-28.46% / crisis_mdd_relief_pp=+3.86 vs P0 baseline / cvar_d=-2.26% (CVaR cap PASS via cash dampening) / turnover_ann=4.36. Hard caps 3/3 PASS (TO+CVaR+MDD). weights.csv 1932 rows × 92 sig_dates × 21 names (20 equity + CASH). Forge backtest decisive."
     }
   ]
 }

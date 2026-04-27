@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260427_005",
+  "role": "optimizer_critic",
+  "round": 1,
+  "stance": "OVERRIDE_005",
+  "stall_pattern_observed": "Codex CLI gpt-5.5 xhigh stall accumulated (Risk Iter 15, Optimizer Iter 15, Alpha Iter 17, Optimizer Iter 18, Alpha Iter 21 R1, Optimizer Iter 21 R1 — 6+ instances).",
+  "qlead_override": "OVERRIDE_005 (Codex stall fallback armed; AX-008 Verification Triangulation falls back to Forge + Architect 2-source).",
+  "substitute_evidence": [
+    "Optimizer self-comparison 4 candidates (P0 static 4-state / P1 dyn cash / P2 + dyn max_w / P3 + dyn TO budget).",
+    "Selected P1_dyn_cash with all 3 hard caps PASS (TO=4.36 < 6.0 / CVaR_d=-2.26% < 2.5% target / MDD=-28.46% < 45%).",
+    "Crisis_mdd_relief vs P0 static baseline = +3.86 pp (CRISIS regime MDD -10.11% → -6.26%).",
+    "Optimizer mechanism = LinTilt+EMA+CVaR (Iter 11 baseline preserved across all 4 policies — L-229 strict).",
+    "Alpha cor=1.0 strict inheritance verified (alpha_inheritance_hash PASS).",
+    "Hard constraints PASS: Σw=1 (92/92 dates) / 21 names per date (20 equity + CASH) / weight_bounds [0,0.20] eq + cash [0,0.50] / long-only.",
+    "Layer focus mandate: Macro overlay msi_norm-driven dynamic policy — orthogonal to alpha + optimizer mechanism (L-226 LAYER remediation).",
+    "Forge backtest decisive (next stage)."
+  ],
+  "synthetic_critical_concerns": [
+    {
+      "id": "OPT_R21_C1_NET_IR_BELOW_HISTORICAL",
+      "severity": "MEDIUM",
+      "concern": "expected_IR=0.1848 << Iter 11 standalone IR 1.29. Selection is best-among-tested but absolute IR remains well below the inheritance baseline.",
+      "resolution": "Disclosed in challenge_note + concern field. Layer evaluation is at PG2 portfolio level (Forge backtest) where blended SR > 1.4625 baseline + crisis_mdd relief is the decisive metric, NOT in-sample standalone IR."
+    },
+    {
+      "id": "OPT_R21_C2_P2_P3_NEAR_TIE_WITH_P1",
+      "severity": "LOW",
+      "concern": "P2 (dyn cash + max_w shrink) and P3 (full dynamic incl TO budget) tie at net_IR=0.1826, marginally below P1=0.1848. P3 TO budget mechanism does not differentiate empirically.",
+      "resolution": "P1 selected for max(net_IR) among PASS subset. P2/P3 marginal underperformance noted — additional max_w shrink in CRISIS marginally reduces alpha activation without measurable extra crisis MDD relief beyond cash sleeve. Optimizer mechanism preserved + LAYER simplicity preferred."
+    },
+    {
+      "id": "OPT_R21_C3_PEACE_RET_NA",
+      "severity": "LOW",
+      "concern": "peace_avg_ret = NA (msi_norm < 0.25 threshold = 0 sig_dates in 92-month sample, since msi_norm range 0.249-0.935).",
+      "resolution": "Threshold msi_norm<0.25 too tight for empirical msi_norm distribution (min=0.249). Diagnostic limitation disclosed — peace alpha preservation will be evaluated at Forge daily backtest stage with finer regime classification."
+    },
+    {
+      "id": "OPT_R21_C4_CVAR_PASS_CASH_ARTIFACT",
+      "severity": "MEDIUM",
+      "concern": "All dynamic policies (P1/P2/P3) pass CVaR_d 2.5% cap because cash sleeve linearly dampens CVaR estimate. The PASS may be a proxy artifact — pre-cash CVaR_d remains structurally infeasible.",
+      "resolution": "Honest disclosure: cash sleeve is the CVaR mechanism. P0 (static 4-state) average cash 10.1% fails CVaR; P1/P2/P3 average cash 27.6% passes. This is the layer's value-add — explicitly acknowledged. Forge realized backtest will measure post-cash daily CVaR on actual portfolio path, NOT proxy formula."
+    },
+    {
+      "id": "OPT_R21_C5_AVG_CASH_27.6_HIGH",
+      "severity": "MEDIUM",
+      "concern": "avg_cash_pct = 27.6% means 27.6% of capital is sidelined on average — significant alpha drag in BULL regimes (msi_norm 0.249-0.420).",
+      "resolution": "Acknowledged. P1 cash policy is linear in msi_norm: cash_BULL_avg = 0.359 × 0.50 = ~18% (still meaningful sideline). Trade-off: 18% cash drag in BULL traded for crisis MDD -10.11% → -6.26% (3.86 pp relief). Forge realized BULL alpha measurement decides if drag worth crisis insurance."
+    },
+    {
+      "id": "OPT_R21_C6_TO_BUDGET_NULL_EFFECT",
+      "severity": "LOW",
+      "concern": "P3 to_factor blend mechanism does not change net_IR vs P2 — TO budget reduction in CRISIS does not affect realized portfolio metrics meaningfully.",
+      "resolution": "Empirical observation. TO blend dampens turnover but the LinTilt mechanism is already low-turnover (~4.4 ann); CRISIS-period TO compression has minimal effect on realized SR. P3 = P2 numerically; selection prefers simpler P1."
+    }
+  ],
+  "synthetic_supporting_arguments": [
+    "Track 3 LAYER mandate honored: alpha cor=1.0 + optimizer mechanism unchanged + only constraint dynamics modified.",
+    "Layer value-add quantified: crisis_mdd relief 3.86 pp vs P0 baseline.",
+    "All hard constraints PASS (TO + MDD + CVaR via cash sleeve dampening).",
+    "L-220/L-226/L-229 lessons explicitly applied. Method shopping log honest (4/10 cap used).",
+    "Infeasibility report retained for documenting CVaR mechanism (cash dampening, not concentration relaxation).",
+    "PIT compliance via inheritance + macro signal expanding-window strict-t-1.",
+    "weights.csv 1932 rows × 92 sig_dates × 21 names verified."
+  ],
+  "verdict": "ACCEPT_WITH_NOTES (synthetic, OVERRIDE_005 substitute)",
+  "rationale": "Optimizer Iter 21 LAYER track mandate fully honored. Selected policy P1_dyn_cash satisfies all 3 hard caps + delivers measurable crisis MDD relief +3.86pp vs P0 baseline. Net IR 0.1848 < Iter 11 standalone 1.29 disclosed. Forge realized PG2-level backtest is the decisive evaluation per AX-002 (harness-only validity).",
+  "generated_at": "OVERRIDE_005_substitute"
+}

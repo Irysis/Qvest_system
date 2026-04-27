@@ -1,13 +1,13 @@
 {
   "task_id": "WT-D20260427_005",
-  "current_phase": "RISK_DONE",
+  "current_phase": "OPTIMIZER_DONE",
   "updated_at": "2026-04-27T10:00:00+0900",
   "blocker": null,
   "alpha_summary": {
     "iter": 21,
     "iter_name": "Macro_Overlay_Layer_AX001_v2_Conditional_Cash_Strengthening",
     "alpha_unchanged_proof": "PASS",
-    "alpha_inheritance_cor": 1.0,
+    "alpha_inheritance_cor": 1,
     "macro_signal_design": "PASS (5 KR-only z-components, expanding window, t-1 lag)",
     "macro_signal_ic_by_regime": {
       "BULL": 0.0362,
@@ -29,5 +29,19 @@
     "challenge_flags_count": 5,
     "next_stage": "Risk Agent (Σ + tail risk) → Optimizer (msi_norm-driven dynamic cash 0~50% / max_w / TO budget)"
   },
-  "risk_inheritance": "Iter 15 V3 risk_package + Iter 21 Macro Overlay extension"
+  "risk_inheritance": "Iter 15 V3 risk_package + Iter 21 Macro Overlay extension",
+  "optimizer_done_at": "2026-04-27T10:49:37+0900",
+  "optimizer_selected_policy": "P1_dyn_cash",
+  "optimizer_method_selected": "P1_dyn_cash_LinTilt_EMA_CVaR_macro_overlay",
+  "expected_information_ratio": 0.1848,
+  "expected_sharpe_ratio": 0.1848,
+  "expected_cagr": 0.0142,
+  "expected_mdd": -0.2846,
+  "crisis_mdd_relief_pp": 0.0386,
+  "cvar_d_post_optim": -0.0226,
+  "turnover_annual": 4.364,
+  "codex_round_optimizer": "OVERRIDE_005",
+  "resolution_count_optimizer": "9/9",
+  "next_phase": "FORGE_INTEGRATION",
+  "forward_to": "Forge — run_all.R integration with optimization_package + weights.csv → backtest"
 }
