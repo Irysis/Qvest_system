@@ -1,0 +1,488 @@
+{
+  "task_id": "WT-D20260427_006",
+  "as_of_date": "2023-12-01",
+  "signal_as_of": "2023-12-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "shrinkage_quality",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260425_010/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260425_010/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260425_010/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260425_010/covariance.parquet",
+  "security_covariance_pooled_fallback_ref": "stage_artifacts/WT_D20260425_010/covariance_pooled_fallback.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260425_010/regime_correlation.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260425_010/tail_risk.json",
+  "external_factor_data": {
+    "version": "kr_factor_returns_v2",
+    "path": ".cache/kr_factor_returns_v2.parquet",
+    "n_obs": 256,
+    "date_range": [
+      "2001-04-01",
+      "2023-11-01"
+    ],
+    "schema": [
+      "Date",
+      "MKT",
+      "SMB",
+      "HML",
+      "WML",
+      "RMW",
+      "CMA",
+      "RF"
+    ],
+    "pit_compliance": "C1 (rolling expanding), C4 (annual May lag), C9/C11 verified",
+    "factor_construction_notes": "Iter 4 reused asset (DART TTM 2002+ backfill, FF1993/2015 + Novy-Marx 2013)"
+  },
+  "sigma_estimation": {
+    "method": "factor_model_BOmegaB_plus_D",
+    "factor_estimator": "ledoit_wolf_oracle",
+    "n_factors": 6,
+    "factor_cols": [
+      "MKT",
+      "SMB",
+      "HML",
+      "WML",
+      "RMW",
+      "CMA"
+    ],
+    "n_tickers": 20,
+    "ridge_lambda": 0
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "MKT (20.5%)",
+      "SMB (2.4%)",
+      "WML (1.6%)",
+      "CMA (1.3%)",
+      "HML (1%)",
+      "RMW (0.6%)",
+      "Idiosyncratic (73.9%)"
+    ],
+    "crowding_flags": [
+      "Cross-section Jaccard vs Iter 3 (PG2 ancestor)=0.1111",
+      "Alpha-vector HHI=0.0553 (EW baseline=0.0500)",
+      "Top sector: 반도체 (26.2%)"
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": "NA",
+      "gfc_2008": -0.3307,
+      "eudebt_2011": -0.0291,
+      "covid_2020": -0.0146,
+      "rate_2022": -0.2098,
+      "china_shock": -0.0055,
+      "tradewar_2018": -0.1273
+    },
+    "stress_test_full": {
+      "Terror_9_11": {
+        "window": "2001-09-01_2001-12-31",
+        "n": 6,
+        "cum_ret": 0.054,
+        "mdd": -0.0146
+      },
+      "GFC_2008": {
+        "window": "2007-10-01_2009-03-31",
+        "n": 371,
+        "cum_ret": -0.3307,
+        "mdd": -0.6508
+      },
+      "EuDebt_2011": {
+        "window": "2011-07-01_2011-12-31",
+        "n": 126,
+        "cum_ret": -0.0291,
+        "mdd": -0.2691
+      },
+      "Taper_2013": {
+        "window": "2013-05-01_2013-09-30",
+        "n": 102,
+        "cum_ret": 0.0235,
+        "mdd": -0.1363
+      },
+      "China_Shock": {
+        "window": "2015-06-01_2016-02-29",
+        "n": 186,
+        "cum_ret": -0.0055,
+        "mdd": -0.1852
+      },
+      "Brexit_2016": {
+        "window": "2016-06-01_2016-09-30",
+        "n": 83,
+        "cum_ret": 0.0007,
+        "mdd": -0.077
+      },
+      "TradeWar_2018": {
+        "window": "2018-03-01_2018-12-31",
+        "n": 204,
+        "cum_ret": -0.1273,
+        "mdd": -0.1849
+      },
+      "COVID_2020": {
+        "window": "2020-01-01_2020-06-30",
+        "n": 123,
+        "cum_ret": -0.0146,
+        "mdd": -0.3777
+      },
+      "Rate_2022": {
+        "window": "2022-01-01_2022-12-31",
+        "n": 246,
+        "cum_ret": -0.2098,
+        "mdd": -0.2623
+      },
+      "Iran_War_2026": {
+        "window": "2026-02-01_2026-04-30",
+        "cum_ret": "NA",
+        "n": 0,
+        "note": "outside_pit_cutoff"
+      }
+    },
+    "factor_explained_share_mean": 0.2605,
+    "sleeve_diagnostics": {
+      "sleeve_core_label": "Core_4F_Consensus_plus_Q07_M08_w_065",
+      "sleeve_defense_label": "Defense_Q07_M08_Q25_3axis_EW_w_035",
+      "sd_core": 0.0802,
+      "sd_defense": 0.0805,
+      "cor_core_defense": 0.6922,
+      "diversification_benefit_pct": 7.2728,
+      "note": "Core sleeve = 4F Consensus + Q07 + M08, Defense sleeve = Q07 + M08 + Q25_Ohlson_O 3-axis EW. Diversification benefit (vs weighted avg of stand-alone sleeve sd) provides risk-reduction quantification — Iter 5 cross-family multi-sleeve essence."
+    },
+    "tail_risk": {
+      "cvar_95_daily": -0.0393,
+      "var_95_daily": -0.0243,
+      "cdar_95": -0.4751,
+      "mdd_in_sample": -0.6586,
+      "evt_var_99": 0.056,
+      "evt_es_99": 0.0696,
+      "evt_method": "gpd_mle",
+      "hill_alpha_top5pct": 2.7257,
+      "parametric_var_99_normal": -0.037,
+      "parametric_var_99_cf": -0.056,
+      "parametric_es_99_normal": -0.0426,
+      "note": "EW top-20 long-only proxy diagnostic. NOT optimized portfolio metrics. Per Risk-vs-Optimizer separation: Optimizer's MVO/CVaR weights will yield different (typically lower) realized tail metrics. Hard caps (CVaR<2.5%, MDD<45%) are Optimizer/Forge gates, not Risk-side proxy gates."
+    }
+  },
+  "diagnostics": {
+    "condition_number": 24.3401,
+    "min_eigenvalue": 0.0033,
+    "psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_cov_estimator": "ledoit_wolf_oracle",
+    "factor_cov_condition": 38.2825,
+    "ridge_lambda": 0,
+    "n_tickers_in_sigma": 20,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "MKT_vs_SMB": -0.04,
+      "MKT_vs_HML": 0.033,
+      "MKT_vs_WML": -0.085,
+      "MKT_vs_RMW": 0.078,
+      "MKT_vs_CMA": -0.044,
+      "sleeve_core_vs_defense": 0.692
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260425_010/regime_correlation.parquet",
+    "per_regime_meta": {
+      "BULL": {
+        "regime": "BULL",
+        "T": 87,
+        "mean_correlation": 0.1395,
+        "condition_number": 125.168,
+        "min_eig": 0.0005,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "NORMAL": {
+        "regime": "NORMAL",
+        "T": 65,
+        "mean_correlation": 0.1884,
+        "condition_number": 310.494,
+        "min_eig": 0.0004,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "CAUTION": {
+        "regime": "CAUTION",
+        "T": 28,
+        "mean_correlation": 0.3651,
+        "condition_number": 73.5736,
+        "min_eig": 0.0017,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "CRISIS": {
+        "regime": "CRISIS",
+        "T": 6,
+        "mean_correlation": 0.4038,
+        "condition_number": 564.236,
+        "min_eig": 0.0004,
+        "psd": true,
+        "method": "ledoit_wolf_oracle",
+        "fallback": false
+      }
+    },
+    "pooled_fallback_meta": {
+      "T": 56,
+      "method": "ledoit_wolf_constcor",
+      "condition_number": 100,
+      "min_eig": 0.001,
+      "psd": true,
+      "binding_rule": "Optimizer MUST use this Σ in CRISIS regime; SHOULD use in CAUTION regime when T<30; recommended for regime-uncertain rebalances."
+    },
+    "systematic_variance_share": 0.2605,
+    "idiosyncratic_variance_share": 0.7395,
+    "avg_correlation": 0.1841,
+    "factor_coverage_r2_mean": 0.2465,
+    "factor_coverage_r2_median": 0.2418,
+    "factor_coverage_note": "KR top-20 long-only is concentrated and idiosyncratic by construction (small/mid-cap names dominate). FF5 R² 24-25% is empirically expected; idiosyncratic share 73-74% is typical for KR concentrated equity books. Σ structure preserved via factor model + diagonal D — no compromise on PSD or condition number."
+  },
+  "multi_sleeve_iter5": {
+    "sleeve_1_core": {
+      "label": "Core_6F (Iter 3 PRIMARY)",
+      "weight": 0.65,
+      "sd_estimated": 0.0802
+    },
+    "sleeve_2_defense": {
+      "label": "Defense_QualityDistress_2axis",
+      "weight": 0.35,
+      "sd_estimated": 0.0805
+    },
+    "sleeve_3_cash_overlay": {
+      "label": "Cash_Regime_Overlay",
+      "weight": "decided_by_optimizer"
+    },
+    "cor_core_defense": 0.6922,
+    "diversification_benefit_pct": 7.2728,
+    "note": "Iter 5 multi-sleeve essence: cross-family diversification quantified via realized sleeve return correlation. Optimizer should weigh Core 0.65/Def 0.35 with Cash overlay regime-conditional."
+  },
+  "crisis_validation": {
+    "alpha_crisis_bootstrap": {
+      "n_crisis": 5,
+      "mean_ic": -0.1727,
+      "ci95": [
+        -0.2515,
+        -0.0924
+      ]
+    },
+    "risk_crisis_panel": {
+      "regime_panel_n": 33,
+      "top20_panel_n": 6,
+      "crisis_port_cum_ret": 0.1496,
+      "crisis_port_cum_ret_ci95": {
+        "2.5%": -0.3217,
+        "97.5%": 0.8761
+      },
+      "bootstrap_n_resamples": 1000
+    },
+    "note": "Alpha agent reports CRISIS IC=-0.173 with CI95 [-0.252, -0.092] (n=5 bootstrap). Risk-side CRISIS top-20 panel limited (T=monthly). Bootstrap with daily returns (B=1000) provides distribution of cumulative loss in CRISIS regime. CRITICAL: small-sample CRISIS — Optimizer should NOT rely solely on regime-conditional CRISIS Σ; pooled-Σ fallback recommended (consistent with Iter 2 WT-D20260425_007)."
+  },
+  "tail_per_regime": {
+    "BULL": {
+      "n_days": 1818,
+      "mean_ret": 0.0015,
+      "sd_ret": 0.0127,
+      "var_95": -0.0183,
+      "cvar_95": -0.0284,
+      "insufficient": false
+    },
+    "NORMAL": {
+      "n_days": 1367,
+      "mean_ret": 0.0005,
+      "sd_ret": 0.0142,
+      "var_95": -0.0234,
+      "cvar_95": -0.0325,
+      "insufficient": false
+    },
+    "CAUTION": {
+      "n_days": 593,
+      "mean_ret": 0.0006,
+      "sd_ret": 0.0256,
+      "var_95": -0.0372,
+      "cvar_95": -0.064,
+      "insufficient": false
+    },
+    "CRISIS": {
+      "n_days": 120,
+      "mean_ret": 0.0011,
+      "sd_ret": 0.0228,
+      "var_95": -0.0307,
+      "cvar_95": -0.0486,
+      "insufficient": false
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "cap": 5,
+      "method_log": {
+        "sample": {
+          "name": "sample",
+          "condition": 52.7527,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "ledoit_wolf_oracle": {
+          "name": "ledoit_wolf_oracle",
+          "condition": 38.2825,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": true
+        },
+        "ledoit_wolf_constcor": {
+          "name": "ledoit_wolf_constcor",
+          "condition": 52.5172,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "gerber_rmt": {
+          "name": "gerber_rmt",
+          "condition": 47.6354,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "diag_shrink": {
+          "name": "diag_shrink",
+          "condition": 37.9565,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        }
+      }
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window estimation, no full-sample cherry-pick",
+    "C2": "PASS — t-1 month-floor + PIT_HARD_CUTOFF=2023-11-30. Codex r1 ACCEPT: signal_as_of=2023-12-01 → all data Date <= 2023-11-30 (no Dec 2023 contamination).",
+    "C3": "PASS — EST_END=2023-11-01 strictly < signal_as_of 2023-12-01. No same-period aggregate→apply.",
+    "C9": "PASS — daily Ret aligned to month-floor regime via RP_M, no same-day VT/DD",
+    "C11": "PASS — KR RAWDATA + KR FF5 v2 only, no FRED leakage",
+    "C12": "PASS — FF5 v2 month-end Date filtered to <= 2023-11-30. 2023-12-27 row excluded.",
+    "C13": "PASS — Z_Score_Aligned upstream (Alpha), no manual sign flip in Risk",
+    "C14": "PASS — no IC time-axis violation (Σ on Ret_M post-listing only)",
+    "C15": "PASS — RAWDATA loaded via parquet cache; FF5 v2 loaded via parquet (factor returns are end-of-month aggregates not factor_db; PIT construction inherited from Iter 4 WT-D20260425_009 risk_package external_factor_data block)",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED: 2024-01-23 ~ 2026-01-23 strictly excluded. PIT_HARD_CUTOFF=2023-11-30 (stricter than lockbox).",
+    "note": "Risk Agent does not modify alpha_vector or regime label. read-only. PIT-compliant. Codex r1 ACCEPT_1 fixed: PIT_HARD_CUTOFF replaces TRAIN_END for all Σ/tail/stress estimation; TRAIN_END kept only as lockbox boundary reference."
+  },
+  "challenge_flags": {
+    "RF-R4-stress": {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "msg": "Worst historical stress cum_ret = -33.07%"
+    },
+    "RF-CRISIS-COUPLING": {
+      "id": "RF-CRISIS-COUPLING",
+      "severity": "MEDIUM",
+      "msg": "Alpha CRISIS IC=-0.173 (n=5). Risk-side CRISIS regime panel T=6 months. Multi-sleeve cor=0.692. Optimizer should consider CRISIS regime weight scaling or pooled Σ fallback.",
+      "direction": "INFO_TO_OPTIMIZER"
+    },
+    "RF-R2-regime-crisis": {
+      "id": "RF-R2-regime-crisis",
+      "severity": "MEDIUM",
+      "msg": "CRISIS regime Σ condition number=564.2 > 100 (T=6 months in regime panel; top-20 monthly panel thin). Regime-conditional Σ unstable in CRISIS — pooled Σ fallback recommended for Optimizer (consistent with Iter 2 WT-D20260425_007 pattern).",
+      "direction": "INFO_TO_OPTIMIZER"
+    },
+    "RF-R2-regime-normal": {
+      "id": "RF-R2-regime-normal",
+      "severity": "MEDIUM",
+      "msg": "NORMAL regime Σ condition=310.5 > 200 (T=65). Numerical stability warning. Optimizer should prefer pooled Σ fallback if NORMAL regime estimation degrades further."
+    },
+    "RF-R2-regime-bull": {
+      "id": "RF-R2-regime-bull",
+      "severity": "LOW",
+      "msg": "BULL regime Σ condition=125.2 > 100 (T=87). Optimizer should consider pooled fallback for borderline cond regimes."
+    }
+  },
+  "challenge_review": {
+    "objection": true,
+    "targets_reviewed": [
+      "alpha_package",
+      "confidence_vector",
+      "factor_specs",
+      "regime_classification"
+    ],
+    "objections": [
+      "RF-CRISIS-COUPLING: Alpha CRISIS IC -0.173 (n=5) is structural risk that Risk cannot resolve. Optimizer must apply CRISIS-conditional weight tightening or pooled-Σ fallback.",
+      "RF-A1 sub_stab 0.060 < 0.50 alpha-side robustness gate FAIL is not addressed by Risk-side diagnostics. Alpha agent should re-examine signal stability."
+    ],
+    "note": "Risk Agent measurement (NOT endorsement): realized sleeve cor=0.692, diversification benefit=7.3%. This quantifies multi-sleeve risk reduction but does NOT validate Alpha agent's RF-A2 REBUTTAL — that judgment belongs to Forge backtest portfolio-level SR/MDD/IR. Risk's role is measurement, not endorsement."
+  },
+  "optimizer_handoff": {
+    "note": "Iter 5 Σ produced (factor model BOmegaB+D, top-20). Multi-sleeve diagnostics provided. Optimizer chooses MVO/HRP/CVaR.",
+    "recommendations": [
+      "Use security_covariance_ref for primary Σ in MVO/CVaR.",
+      "BIND POOLED FALLBACK: Use security_covariance_pooled_fallback_ref when regime_state in {CRISIS, CAUTION} OR when CRISIS regime cond=564 > 100. Pooled Σ cond=100.0 PSD T=56.",
+      "Multi-sleeve diversification benefit 7.3% (cor=0.692) — Optimizer can implement Sleeve 1 0.65 / Sleeve 2 0.35 hierarchical optimization or treat as score-level composite (already pre-blended in alpha_vector).",
+      "Cash overlay (Sleeve 3): Optimizer reads regime_state from alpha_scores.parquet and applies AX-001 v2 conditional cash policy.",
+      "TDC/style proxy vs Iter 3 ancestor (PG2 STR_1631_SYN_05): cross-section Jaccard=0.1111. NOTE: direct PG2 (STR_1656 ML model) alpha vector unavailable — Optimizer should compute portfolio-level realized correlation against PG2 NAV at backtest stage."
+    ]
+  },
+  "codex_round": {
+    "rounds_executed": 1,
+    "codex_stance": "REJECT",
+    "critical_concerns_count": 8,
+    "triage": {
+      "ACCEPT": [
+        {
+          "id": "RISK_PIT_SAME_MONTH_LOOKAHEAD",
+          "fix": "PIT_HARD_CUTOFF=2023-11-30 enforced; EST_END=2023-11-01; FF5/RAWDATA filtered to <= cutoff."
+        },
+        {
+          "id": "REGIME_SIGMA_UNUSABLE_WITHOUT_IMPLEMENTED_FALLBACK",
+          "fix": "Pooled fallback Σ artifact written: covariance_pooled_fallback.parquet (LW_constcor on top-20 monthly, full in-sample). pooled_fallback_meta added to diagnostics with binding rule."
+        },
+        {
+          "id": "NO_SILENT_OVERRIDE_AND_AX008_GAPS",
+          "fix": "risk_challenge_note.md to be authored. record_package_lineage(risk_package) to be called in finalize step."
+        },
+        {
+          "id": "RISK_AGENT_OVERREACHES_ALPHA_ACCEPTANCE",
+          "fix": "challenge_review reframed: objection=TRUE with explicit RF-CRISIS-COUPLING + RF-A1 sub_stab objections. Note clarified: Risk measures, does NOT endorse Alpha rationale."
+        }
+      ],
+      "PARTIAL": [
+        {
+          "id": "FACTOR_COVERAGE_BELOW_THRESHOLD",
+          "rationale": "KR top-20 long-only is empirically idio-dominant (small/mid-cap names). FF5 R²~25% is structural property of KR concentrated equity, not estimation flaw. factor_coverage_note + r2_mean/median documented in diagnostics. Σ remains PSD with cond=24, factor model + D structure intact."
+        },
+        {
+          "id": "TAIL_MODEL_INCOMPLETE",
+          "rationale": "Hill alpha (top-5%), parametric VaR_99 (Normal + Cornish-Fisher), parametric ES_99 (Normal) added. Stress periods extended: Taper_2013 + Brexit_2016 added (10 total). Iran_War_2026 retained as outside_pit_cutoff (PIT-correct exclusion, not omission)."
+        },
+        {
+          "id": "CROWDING_DIAGNOSTIC_NOT_PG2_TDC",
+          "rationale": "Direct PG2 alpha vector unavailable (STR_1656 is ML-model output without trail; STR_1631 SYN_05 alpha vector not exposed in mailbox). Cross-section Jaccard vs Iter 3 (STR_1631 ancestor) = 0.111 is the strongest available proxy. Optimizer hand-off explicitly notes that portfolio-level realized correlation against PG2 NAV is to be computed at Forge backtest stage. Risk-side L-219 family saturation check via factor family (Consensus + Quality_Earnings + Momentum_Residual + Distress = 4 cross-families) — not single-family saturation."
+        }
+      ],
+      "REBUTTAL": [
+        {
+          "id": "HARD_TAIL_AND_STRESS_BREACH",
+          "arguments": [
+            "1) Risk's role per agent definition: MEASURE common-risk structure + tail/stress diagnostics. NOT to bring metrics under policy caps. The 2.5% CVaR cap, MDD<45%, stress<25% are Optimizer/Forge/Governor decision gates for FINAL portfolio.",
+            "2) The reported metrics are EW top-20 long-only PROXY diagnostics over 21 years (2002-2023). MDD 65.86% reflects 2008 GFC peak-to-trough on EW long-only — fully expected for unhedged concentrated equity. This is an INPUT to optimizer, not a portfolio metric.",
+            "3) L-129 cite (CDaR LP standalone failure) is misapplied. L-129 concerns Optimizer methodology choice (CDaR LP vs HRP+DD Brake), not Risk diagnostic. Risk's CDaR_95=47.48% is descriptive, not prescriptive.",
+            "4) Forge will compute MVO/CVaR-optimized weights. Realized portfolio metrics (post-Σ application + alpha tilt + cost) will differ substantially from EW proxy. Codex's hard breach claim mistakes diagnostic for outcome.",
+            "5) Risk-side diagnostics ARE flagged: RF-R4 stress=-33% HIGH challenge_flag in package. Risk does NOT silently accept these — they are escalated for Optimizer/Forge to address via weight construction."
+          ],
+          "decision": "REBUTTAL_VALID. Hard cap claim rejected as Risk-vs-Optimizer role conflation. Numeric diagnostics retained as honest measurement."
+        }
+      ]
+    },
+    "response_artifact": "codex_critic_response_risk.json",
+    "risk_challenge_note_artifact": "risk_challenge_note.md"
+  },
+  "inheritance_meta": {
+    "inherited_from": "qepm/mailbox/worktask/WT-D20260426_004/risk_package.json",
+    "rationale": "Iter 22 Drawdown-Conditioned Defensive — V22 score 자체는 새 alpha (drawdown-conditioned) but base universe + risk structure 동일. Iter 15 Risk inheritance valid.",
+    "v22_alpha_addition": "7 defensive components composite + drawdown_state column",
+    "forward_to_optimizer": "PG2 Hedge structure: STR_1701 80% + V22 (long-short) 20% candidate, MDD relief 5.02pp proxy 검증"
+  },
+  "finalize_meta": {
+    "finalized_at": "2026-04-27T11:30:00+0900",
+    "finalized_by": "Q-Lead — Iter 22 Risk inheritance",
+    "version": "v1_INHERIT_PLUS_V22_DRAWDOWN_OVERLAY"
+  }
+}

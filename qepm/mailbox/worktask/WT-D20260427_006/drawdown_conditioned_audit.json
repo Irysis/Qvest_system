@@ -1,0 +1,45 @@
+{
+  "drawdown_threshold": "rolling_6m < -5% OR dd_pct < -10%",
+  "drawdown_periods_n": 30,
+  "normal_periods_n": 62,
+  "v22_vs_str1701_normal_cor": 0.1894,
+  "v22_vs_str1701_drawdown_cor": 0.1777,
+  "drawdown_cor_mandate": "< -0.20",
+  "drawdown_cor_pass": false,
+  "ax_001_v2_audit": {
+    "crisis_alpha": 0.0054,
+    "crisis_alpha_target": 0.1,
+    "crisis_alpha_pass": false,
+    "core_mdd_relief": 0.0502,
+    "core_mdd_relief_blend": "hedge",
+    "core_mdd_relief_target": 0.05,
+    "core_mdd_relief_pass": true,
+    "core_mdd_relief_trio": 0.015,
+    "core_mdd_relief_hedge": 0.0502,
+    "bad_normal_ic_ratio": 3.8364,
+    "bad_normal_ic_ratio_target": 1.5,
+    "bad_normal_ic_ratio_pass": true,
+    "harvey_conditional_t": 0.2836,
+    "harvey_conditional_t_target": 2,
+    "harvey_conditional_pass": false,
+    "pg2_blend_perf": {
+      "baseline": {
+        "sr": 1.2706,
+        "mdd": -0.3319,
+        "cagr": 0.3024
+      },
+      "trio_long_only": {
+        "sr": 1.3067,
+        "mdd": -0.3169,
+        "cagr": 0.2498
+      },
+      "hedge_long_short": {
+        "sr": 1.2869,
+        "mdd": -0.2817,
+        "cagr": 0.2457
+      }
+    }
+  },
+  "ax_001_v2_pass_count": 2,
+  "recompute_fix": "ym join key (sig_date 2008-01-31 vs bt_1701 2008-01-01 mismatch corrected)"
+}
