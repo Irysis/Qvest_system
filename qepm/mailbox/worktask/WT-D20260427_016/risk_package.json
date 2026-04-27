@@ -1,0 +1,490 @@
+{
+  "task_id": "WT-D20260427_016",
+  "as_of_date": "2023-12-01",
+  "signal_as_of": "2023-12-01",
+  "forecast_horizon": "1M",
+  "selection_objective": "shrinkage_quality",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260426_008/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260426_008/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260426_008/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260426_008/covariance.parquet",
+  "security_covariance_pooled_fallback_ref": "stage_artifacts/WT_D20260426_008/covariance_pooled_fallback.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260426_008/regime_correlation.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260426_008/tail_risk.json",
+  "external_factor_data": {
+    "version": "kr_factor_returns_v2",
+    "path": ".cache/kr_factor_returns_v2.parquet",
+    "n_obs": 256,
+    "date_range": [
+      "2001-04-01",
+      "2023-11-01"
+    ],
+    "schema": [
+      "Date",
+      "MKT",
+      "SMB",
+      "HML",
+      "WML",
+      "RMW",
+      "CMA",
+      "RF"
+    ],
+    "pit_compliance": "C1 (rolling expanding), C4 (annual May lag), C9/C11 verified",
+    "factor_construction_notes": "Iter 4 reused asset (DART TTM 2002+ backfill, FF1993/2015 + Novy-Marx 2013)"
+  },
+  "sigma_estimation": {
+    "method": "factor_model_BOmegaB_plus_D",
+    "factor_estimator": "ledoit_wolf_oracle",
+    "n_factors": 6,
+    "factor_cols": [
+      "MKT",
+      "SMB",
+      "HML",
+      "WML",
+      "RMW",
+      "CMA"
+    ],
+    "n_tickers": 20,
+    "ridge_lambda": 0
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "MKT (18.6%)",
+      "SMB (3.3%)",
+      "WML (1.6%)",
+      "HML (1%)",
+      "CMA (1%)",
+      "RMW (0.8%)",
+      "Idiosyncratic (76.1%)"
+    ],
+    "crowding_flags": [
+      "V3 score ↔ STR_1701 production score per_date_mean cor=0.9319 (alpha L-224 PASS, EXPECTED for direct upgrade)",
+      "V3 top-20 ↔ STR_1701 top-20 (latest) Jaccard=0.4815",
+      "V3 NAV proxy ↔ STR_1701 monthly NAV cor=0.0463 TDC_q5=0.0909",
+      "V3 NAV proxy ↔ STR_1656 M05 NAV cor=-0.0905 TDC_q5=0.0000 (cross-family diversifier check)",
+      "PG2 blend(V3 80+STR_1656 20) ↔ PG2 active(STR_1701 80+STR_1656 20) cor=0.0247 TDC_q5=0.1000",
+      "Alpha-vector HHI=0.0532 (EW=0.0500)",
+      "Top sector: 반도체 (30.8%)"
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": "NA",
+      "gfc_2008": -0.2981,
+      "eudebt_2011": 0.0576,
+      "covid_2020": 0.066,
+      "rate_2022": -0.1611,
+      "china_shock": -0.0515,
+      "tradewar_2018": -0.0149
+    },
+    "stress_test_full": {
+      "Terror_9_11": {
+        "window": "2001-09-01_2001-12-31",
+        "n": 6,
+        "cum_ret": 0.0503,
+        "mdd": -0.0129
+      },
+      "GFC_2008": {
+        "window": "2007-10-01_2009-03-31",
+        "n": 371,
+        "cum_ret": -0.2981,
+        "mdd": -0.6102
+      },
+      "EuDebt_2011": {
+        "window": "2011-07-01_2011-12-31",
+        "n": 126,
+        "cum_ret": 0.0576,
+        "mdd": -0.2502
+      },
+      "Taper_2013": {
+        "window": "2013-05-01_2013-09-30",
+        "n": 102,
+        "cum_ret": 0.0046,
+        "mdd": -0.1605
+      },
+      "China_Shock": {
+        "window": "2015-06-01_2016-02-29",
+        "n": 186,
+        "cum_ret": -0.0515,
+        "mdd": -0.17
+      },
+      "Brexit_2016": {
+        "window": "2016-06-01_2016-09-30",
+        "n": 83,
+        "cum_ret": 0.0186,
+        "mdd": -0.074
+      },
+      "TradeWar_2018": {
+        "window": "2018-03-01_2018-12-31",
+        "n": 204,
+        "cum_ret": -0.0149,
+        "mdd": -0.2084
+      },
+      "COVID_2020": {
+        "window": "2020-01-01_2020-06-30",
+        "n": 123,
+        "cum_ret": 0.066,
+        "mdd": -0.3867
+      },
+      "Rate_2022": {
+        "window": "2022-01-01_2022-12-31",
+        "n": 246,
+        "cum_ret": -0.1611,
+        "mdd": -0.2576
+      },
+      "Iran_War_2026": {
+        "window": "2026-02-01_2026-04-30",
+        "cum_ret": "NA",
+        "n": 0,
+        "note": "outside_pit_cutoff"
+      }
+    },
+    "factor_explained_share_mean": 0.2389,
+    "sleeve_diagnostics": {
+      "sleeve_core_label": "V3_Core_Consensus_4F (inherited Iter 11 score_core_z; w_core=0.65)",
+      "sleeve_defense_label": "V3_Defense_Q07_M08_Q25_3axis (inherited score_defense_z; w_def=0.35)",
+      "sd_core": 0.0794,
+      "sd_defense": 0.0737,
+      "cor_core_defense": 0.6106,
+      "diversification_benefit_pct": 9.0585,
+      "note": "V3 retains Iter 11 multi-sleeve base (z_A/z_B byte-equivalent, alpha pkg inheritance_proof). Mutations operate on slot weighting + persistence + regime λ tilt — base alpha unchanged."
+    },
+    "tail_risk": {
+      "cvar_95_daily": -0.0357,
+      "var_95_daily": -0.0226,
+      "cdar_95": -0.4159,
+      "mdd_in_sample": -0.6298,
+      "evt_var_99": 0.0544,
+      "evt_es_99": 0.0713,
+      "evt_method": "gpd_mle",
+      "hill_alpha_top5pct": 2.9674,
+      "parametric_var_99_normal": -0.0341,
+      "parametric_var_99_cf": -0.0492,
+      "parametric_es_99_normal": -0.0392,
+      "note": "EW top-20 long-only proxy. Risk diagnostic NOT optimized portfolio metric. CVaR<2.5%/MDD<45%/stress<25% caps belong to Optimizer/Forge/Governor."
+    }
+  },
+  "diagnostics": {
+    "condition_number": 22.8331,
+    "min_eigenvalue": 0.0034,
+    "psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_cov_estimator": "ledoit_wolf_oracle",
+    "factor_cov_condition": 38.2825,
+    "ridge_lambda": 0,
+    "n_tickers_in_sigma": 20,
+    "factor_correlation_warnings": [],
+    "tdc_summary": {
+      "MKT_vs_SMB": -0.04,
+      "MKT_vs_HML": 0.033,
+      "MKT_vs_WML": -0.085,
+      "MKT_vs_RMW": 0.078,
+      "MKT_vs_CMA": -0.044,
+      "sleeve_core_vs_defense": 0.611,
+      "v3_score_vs_str1701_score_perdate_mean": 0.9319,
+      "v3_nav_proxy_vs_str1701_nav_pearson": 0.0463,
+      "v3_nav_proxy_vs_str1701_nav_tdc_q5": 0.0909,
+      "v3_nav_proxy_vs_str1656_nav_pearson": -0.0905,
+      "v3_nav_proxy_vs_str1656_nav_tdc_q5": 0,
+      "pg2_blend_v3_vs_pg2_active_cor": 0.0247,
+      "pg2_blend_v3_vs_pg2_active_tdc_q5": 0.1
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260426_008/regime_correlation.parquet",
+    "per_regime_meta": {
+      "BULL": {
+        "regime": "BULL",
+        "T": 87,
+        "mean_correlation": 0.1522,
+        "condition_number": 215.775,
+        "min_eig": 0.0003,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "NORMAL": {
+        "regime": "NORMAL",
+        "T": 65,
+        "mean_correlation": 0.1489,
+        "condition_number": 189.5172,
+        "min_eig": 0.0007,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "CAUTION": {
+        "regime": "CAUTION",
+        "T": 28,
+        "mean_correlation": 0.3528,
+        "condition_number": 118.3556,
+        "min_eig": 0.0014,
+        "psd": true,
+        "method": "ledoit_wolf_constcor",
+        "fallback": false
+      },
+      "CRISIS": {
+        "regime": "CRISIS",
+        "T": 6,
+        "mean_correlation": 0.3935,
+        "condition_number": 218.2049,
+        "min_eig": 0.0012,
+        "psd": true,
+        "method": "ledoit_wolf_oracle",
+        "fallback": false
+      }
+    },
+    "pooled_fallback_meta": {
+      "T": 57,
+      "method": "ledoit_wolf_constcor",
+      "condition_number": 100,
+      "min_eig": 0.0011,
+      "psd": true,
+      "binding_rule": "Optimizer MUST use this Σ in CRISIS regime; SHOULD use in CAUTION when T<30; recommended for regime-uncertain rebalances."
+    },
+    "systematic_variance_share": 0.2389,
+    "idiosyncratic_variance_share": 0.7611,
+    "avg_correlation": 0.1678,
+    "factor_coverage_r2_mean": 0.2173,
+    "factor_coverage_r2_median": 0.2207,
+    "factor_coverage_note": "KR top-20 long-only is concentrated/idiosyncratic. FF5 R²~25% empirically expected. Σ structure preserved via factor model + diagonal D."
+  },
+  "multi_sleeve_v3": {
+    "sleeve_1_core": {
+      "label": "Core_Consensus_4F (inherited from Iter 5/11)",
+      "weight": 0.65,
+      "sd_estimated": 0.0794
+    },
+    "sleeve_2_defense": {
+      "label": "Defense_Multi-axis (Q07+M08+Q25, inherited)",
+      "weight": 0.35,
+      "sd_estimated": 0.0737
+    },
+    "mutations": {
+      "mutation_1_slot_weight": {
+        "slot_name": "iter5_baseline",
+        "w_core": 0.65,
+        "w_def": 0.35
+      },
+      "mutation_2_persistence": {
+        "persistence_window_optimal": 2,
+        "ema_alpha_optimal": 0.5,
+        "rationale": "Lopez de Prado 2018 Ch.10 turnover dampening + persistence buffer band (top20+5 carryover). 3M EMA smoothing α=0.5 default."
+      },
+      "mutation_3_regime_lambda": {
+        "regime_lambda_name": "lambda_neutral",
+        "lambda_vec": {
+          "BULL": 1,
+          "NORMAL": 1,
+          "CAUTION": 1,
+          "CRISIS": 1
+        },
+        "rationale": "Barroso-Santa-Clara 2015 risk-managed momentum applied to alpha tilt. Monthly NOT quarterly (L-220)."
+      }
+    },
+    "cor_core_defense": 0.6106,
+    "diversification_benefit_pct": 9.0585,
+    "note": "V3 = STR_1701 direct upgrade. Score-level inheritance + 3 mutations (slot/persistence/regime-λ neutral). Optimizer applies Σ for weight derivation."
+  },
+  "crowding_diagnostics_explicit": {
+    "v3_vs_str1701_score_pearson": 0.9318,
+    "v3_vs_str1701_score_spearman": 0.9314,
+    "v3_vs_str1701_score_perdate_mean": 0.9319,
+    "jaccard_v3_str1701_top20": 0.4815,
+    "top20_intersection_count": 13,
+    "v3_nav_vs_str1701_cor_pearson": 0.0463,
+    "v3_nav_vs_str1701_cor_spearman": -0.0337,
+    "v3_nav_vs_str1701_tdc_q5": 0.0909,
+    "v3_nav_vs_str1656_cor_pearson": -0.0905,
+    "v3_nav_vs_str1656_cor_spearman": -0.0828,
+    "v3_nav_vs_str1656_tdc_q5": 0,
+    "pg2_blend_v3_vs_pg2_active_cor": 0.0247,
+    "pg2_blend_v3_vs_pg2_active_tdc_q5": 0.1,
+    "alpha_hhi": 0.0532,
+    "top_sector": {
+      "name": "반도체",
+      "pct": 0.3081
+    }
+  },
+  "crisis_validation": {
+    "alpha_crisis_bootstrap": {
+      "n_crisis": 5,
+      "mean_ic": -0.1945,
+      "ci95": [
+        -0.2827,
+        -0.0834
+      ]
+    },
+    "risk_crisis_panel": {
+      "regime_panel_n": 33,
+      "top20_panel_n": 6,
+      "crisis_port_cum_ret": 0.1393,
+      "crisis_port_cum_ret_ci95": {
+        "2.5%": -0.2709,
+        "97.5%": 0.7407
+      },
+      "bootstrap_n_resamples": 1000
+    },
+    "note": "Alpha CRISIS IC=-0.195 CI95=[-0.283,-0.083] (n=5). Risk-side CRISIS top-20 panel T=6. Optimizer pool fallback recommended."
+  },
+  "tail_per_regime": {
+    "BULL": {
+      "n_days": 1818,
+      "mean_ret": 0.0015,
+      "sd_ret": 0.0119,
+      "var_95": -0.0176,
+      "cvar_95": -0.0263,
+      "insufficient": false
+    },
+    "NORMAL": {
+      "n_days": 1367,
+      "mean_ret": 0.0007,
+      "sd_ret": 0.0131,
+      "var_95": -0.0215,
+      "cvar_95": -0.029,
+      "insufficient": false
+    },
+    "CAUTION": {
+      "n_days": 593,
+      "mean_ret": 0.0008,
+      "sd_ret": 0.023,
+      "var_95": -0.0334,
+      "cvar_95": -0.057,
+      "insufficient": false
+    },
+    "CRISIS": {
+      "n_days": 120,
+      "mean_ret": 0.0011,
+      "sd_ret": 0.0204,
+      "var_95": -0.0288,
+      "cvar_95": -0.043,
+      "insufficient": false
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 5,
+      "cap": 5,
+      "method_log": {
+        "sample": {
+          "name": "sample",
+          "condition": 52.7527,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "ledoit_wolf_oracle": {
+          "name": "ledoit_wolf_oracle",
+          "condition": 38.2825,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": true
+        },
+        "ledoit_wolf_constcor": {
+          "name": "ledoit_wolf_constcor",
+          "condition": 52.5172,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "gerber_rmt": {
+          "name": "gerber_rmt",
+          "condition": 47.6354,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        },
+        "diag_shrink": {
+          "name": "diag_shrink",
+          "condition": 37.9565,
+          "min_eig": 0.0001,
+          "psd": true,
+          "selected": false
+        }
+      }
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window estimation, no full-sample cherry-pick",
+    "C2": "PASS — t-1 month-floor + PIT_HARD_CUTOFF=2023-11-30",
+    "C3": "PASS — EST_END=2023-11-01 strictly < signal_as_of 2023-12-01.",
+    "C9": "PASS — daily Ret aligned to month-floor regime via RP_M, no same-day VT/DD",
+    "C11": "PASS — KR RAWDATA + KR FF5 v2 only, no FRED leakage",
+    "C12": "PASS — FF5 v2 month-end Date <= 2023-11-30",
+    "C13": "PASS — Z_Score_Aligned upstream (Alpha), no manual sign flip in Risk",
+    "C14": "PASS — no IC time-axis violation (Σ on Ret_M post-listing only)",
+    "C15": "PASS — RAWDATA + FF5 v2 loaded via parquet cache",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED: 2024-01-23 ~ 2026-01-23 strictly excluded. PIT_HARD_CUTOFF=2023-11-30",
+    "note": "Risk Agent is read-only on alpha_vector and regime label. Inheritance-based V3 alpha base preserved untouched."
+  },
+  "challenge_flags": {
+    "RF-R4-stress": {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "msg": "Worst stress cum_ret = -29.81%"
+    },
+    "RF-CRISIS-COUPLING": {
+      "id": "RF-CRISIS-COUPLING",
+      "severity": "MEDIUM",
+      "msg": "Alpha CRISIS IC=-0.195 (n=5). Risk-side CRISIS T=6. Multi-sleeve cor=0.611. Optimizer should consider regime weight scaling or pooled Σ.",
+      "direction": "INFO_TO_OPTIMIZER"
+    },
+    "RF-R2-regime-crisis": {
+      "id": "RF-R2-regime-crisis",
+      "severity": "MEDIUM",
+      "msg": "CRISIS regime Σ cond=218.2 > 100 (T=6). Pooled fallback recommended.",
+      "direction": "INFO_TO_OPTIMIZER"
+    },
+    "RF-R2-regime-bull": {
+      "id": "RF-R2-regime-bull",
+      "severity": "LOW",
+      "msg": "BULL regime Σ cond=215.8 > 100 (T=87). Borderline."
+    },
+    "RF-CROWD-V3-STR1701": {
+      "id": "RF-CROWD-V3-STR1701",
+      "severity": "INFO",
+      "msg": "V3 ↔ STR_1701 score per_date cor=0.9319 >= 0.85 (alpha pkg L-224 mandate). EXPECTED — V3 is direct upgrade. Optimizer must not double-count: PG2 'V3 80% + STR_1656 20%' REPLACES current 'STR_1701 80% + STR_1656 20%' (not additive blend).",
+      "direction": "INFO_TO_OPTIMIZER+FORGE"
+    }
+  },
+  "optimizer_handoff": {
+    "note": "V3 Σ produced (factor model BOmegaB+D, top-20 V3 panel). Multi-sleeve diagnostics provided. Optimizer chooses MVO/HRP/CVaR.",
+    "recommendations": [
+      "Use security_covariance_ref for primary Σ in MVO/CVaR.",
+      "BIND POOLED FALLBACK: Use security_covariance_pooled_fallback_ref when regime_state in {CRISIS, CAUTION} OR when CRISIS regime cond=218 > 100. Pooled Σ cond=100.0 PSD T=57.",
+      "Multi-sleeve diversification benefit 9.1% (cor=0.611) — Optimizer can implement Sleeve Core 0.65 / Defense 0.35 hierarchical or treat as score-level composite (already pre-blended in alpha_vector).",
+      "V3 ↔ STR_1701 production score per_date cor=0.9319 (L-224 PASS). PG2 'V3 80% + STR_1656 20%' is REPLACEMENT of current 'STR_1701 80% + STR_1656 20%' (NOT additive blend). Forge backtest should compare the two PG2 configurations on realized SR/MDD/Turnover.",
+      "PG2 blend cor with active=0.0247 → marginal incremental risk reduction. Realized SR uplift expected from turnover dampening + slot re-weighting + regime-λ neutral, NOT from cross-source diversification.",
+      "V3 ↔ STR_1656 cross-family cor=-0.0905 (preserved diversifier). 20% STR_1656 slot retains independent alpha source."
+    ]
+  },
+  "codex_round": {
+    "rounds_executed": 1,
+    "codex_stance_r1": "REVISE",
+    "veto_flag_r1": false,
+    "weakest_assumption": "The single weakest Sigma assumption is that the full-period FF5 BΩB'+D covariance with cond=22.83 is optimizer-sufficient even though regime-specific covariances are ill-conditioned, CRISIS/CAUTION samples are thin, and the fallback is only a handoff recommendation.",
+    "critical_concerns_count": 7,
+    "resolution_count": "9/9_mandatory",
+    "qlead_override": "OVERRIDE_005 (Codex CLI 4hr stall, 600s retry PASS, Q-Lead direct finalize since Risk agent did not generate finalize script)",
+    "response_artifact_r1": "codex_critic_response_risk.json",
+    "resolution_artifact": "risk_codex_resolution.json",
+    "challenge_note_artifact": "risk_challenge_note.md"
+  },
+  "forward_to_optimizer_mandate": {
+    "pooled_sigma_bind_crisis_caution": true,
+    "max_w_crisis_shrink": 0.1,
+    "tail_caps_weight_applied_remeasure": true,
+    "infeasibility_report_if_cvar_d_gt_2_5pct": true,
+    "rf_r1_mkt_systematic_77_8pct_disclosed": true,
+    "rf_r7_ic_decay_subperiod_accommodation": true,
+    "rationale": "Risk agent diagnoses EW proxy; Optimizer enforces caps weight-applied; Forge backtest decisive."
+  },
+  "finalize_meta": {
+    "finalized_at": "2026-04-27T01:00:00+0900",
+    "finalized_by": "Q-Lead Opus 4.7 — Iter 18 Optimizer Track Risk inheritance",
+    "version": "v1_INHERIT_FROM_ITER15"
+  },
+  "inheritance_meta": {
+    "inherited_from": "qepm/mailbox/worktask/WT-D20260427_002/risk_package.json",
+    "rationale": "Iter 31 Grid Search — STR_1701 cor 1.0 strict + 4-dim hyperparameter sweep"
+  }
+}
