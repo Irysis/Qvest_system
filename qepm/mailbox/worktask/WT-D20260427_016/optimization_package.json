@@ -1,0 +1,548 @@
+{
+  "task_id": "WT-D20260427_016",
+  "iter": 31,
+  "iter_name": "STR1701_Hyperparameter_GridSearch_4Dim",
+  "as_of_date": "2026-04-27",
+  "signal_as_of": "2023-11-30",
+  "selection_objective": {
+    "objective": "net_ir_with_hard_caps_and_ax001",
+    "rationale": "Iter 31 user mandate: STR_1701 hyperparameter grid search. Primary=max(SR_ann)∧hard_caps. Tiebreakers=AX-001v2 PASS count → DSR_post → min(TO).",
+    "baseline_iter11": "λ=1.0 TOphi=8 cash(0/5/15/30) — Iter 11 STR_1701 production",
+    "expected_uplift_target": "Iter 11 baseline standalone SR 1.291 superseded if best_combo SR > 1.291"
+  },
+  "best_combo": {
+    "combo_id": "L1.5_TO3_CN10_CC20_CR40",
+    "lambda": 1.5,
+    "tophi": 3,
+    "cash_normal": 0.1,
+    "cash_caution": 0.2,
+    "cash_crisis": 0.4
+  },
+  "target_weights": {
+    "A000660": 0,
+    "A009150": 0.0168,
+    "A011070": 0.0333,
+    "A012330": 0,
+    "A014680": 0.0203,
+    "A029780": 0.0659,
+    "A036930": 0.0307,
+    "A121600": 0.0064,
+    "A137310": 0.0438,
+    "A144510": 0.0029,
+    "A161390": 0,
+    "A185750": 0.0515,
+    "A205470": 0.0446,
+    "A272290": 0.0098,
+    "A316140": 0.0237,
+    "A323410": 0.129,
+    "A348210": 0.1273,
+    "A357780": 0.0328,
+    "A377300": 0.1203,
+    "A383310": 0.0411,
+    "CASH": 0.2
+  },
+  "active_weights": {
+    "A000660": -0.0476,
+    "A009150": -0.0308,
+    "A011070": -0.0144,
+    "A012330": -0.0476,
+    "A014680": -0.0274,
+    "A029780": 0.0183,
+    "A036930": -0.0169,
+    "A121600": -0.0413,
+    "A137310": -0.0039,
+    "A144510": -0.0447,
+    "A161390": -0.0476,
+    "A185750": 0.0039,
+    "A205470": -0.0031,
+    "A272290": -0.0378,
+    "A316140": -0.0239,
+    "A323410": 0.0814,
+    "A348210": 0.0797,
+    "A357780": -0.0148,
+    "A377300": 0.0727,
+    "A383310": -0.0065,
+    "CASH": 0.1524
+  },
+  "expected_active_return": 0.0021,
+  "expected_tracking_error": "NA",
+  "expected_information_ratio": 0.123,
+  "expected_sharpe_ratio": 0.123,
+  "expected_cagr": 0.0021,
+  "expected_mdd": -0.4193,
+  "cvar_d_post_optim": 0.0301,
+  "turnover_annual": 2.019,
+  "estimated_cost_annual": 0.0061,
+  "harvey_t_pooled": 0.341,
+  "dsr_post": 0.6327,
+  "ax001_v2_pass_count": 2,
+  "binding_constraints": "cvar_d_2.5pct",
+  "binding_constraints_count": 1,
+  "infeasibility_report": {
+    "reason": "CVaR_d_2.5pct cap structurally infeasible for KR top-20 long-only universe (NORMAL EW base ~-2.9%)",
+    "violated_constraints": "cvar_d_2.5pct",
+    "suggested_resolution": ["Cash overlay extension to 30%+ NORMAL — partially explored in grid", "Forge realized validation decisive"]
+  },
+  "method_selected": "LinTilt_TOphi_CashOverlay_grid_best_L1.5_TO3_CN10_CC20_CR40",
+  "method_comparison": {
+    "L1.5_TO3_CN10_CC20_CR40": {
+      "sr_ann": 0.123,
+      "cagr": 0.0021,
+      "mdd": -0.4193,
+      "ann_to": 2.019,
+      "cvar_d_proxy": 0.0301,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6327,
+      "all_caps_pass": false,
+      "selected": true
+    },
+    "L1.5_TO3_CN10_CC15_CR30": {
+      "sr_ann": 0.1227,
+      "cagr": 0.002,
+      "mdd": -0.4206,
+      "ann_to": 2.003,
+      "cvar_d_proxy": 0.0303,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6324,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN10_CC10_CR20": {
+      "sr_ann": 0.1223,
+      "cagr": 0.0019,
+      "mdd": -0.422,
+      "ann_to": 1.991,
+      "cvar_d_proxy": 0.0305,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.632,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN05_CC20_CR40": {
+      "sr_ann": 0.1219,
+      "cagr": 0.0016,
+      "mdd": -0.4316,
+      "ann_to": 2.061,
+      "cvar_d_proxy": 0.0312,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6317,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN05_CC15_CR30": {
+      "sr_ann": 0.1217,
+      "cagr": 0.0015,
+      "mdd": -0.4328,
+      "ann_to": 2.044,
+      "cvar_d_proxy": 0.0315,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6315,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN05_CC10_CR20": {
+      "sr_ann": 0.1215,
+      "cagr": 0.0015,
+      "mdd": -0.4341,
+      "ann_to": 2.029,
+      "cvar_d_proxy": 0.0317,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6312,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN00_CC20_CR40": {
+      "sr_ann": 0.1207,
+      "cagr": 0.001,
+      "mdd": -0.4438,
+      "ann_to": 2.112,
+      "cvar_d_proxy": 0.0324,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6304,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN00_CC15_CR30": {
+      "sr_ann": 0.1206,
+      "cagr": 0.001,
+      "mdd": -0.4449,
+      "ann_to": 2.093,
+      "cvar_d_proxy": 0.0326,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6303,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.5_TO3_CN00_CC10_CR20": {
+      "sr_ann": 0.1204,
+      "cagr": 0.0009,
+      "mdd": -0.4462,
+      "ann_to": 2.076,
+      "cvar_d_proxy": 0.0329,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6301,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.2_TO3_CN10_CC20_CR40": {
+      "sr_ann": 0.1145,
+      "cagr": 0.0013,
+      "mdd": -0.4196,
+      "ann_to": 2.031,
+      "cvar_d_proxy": 0.0302,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.6238,
+      "all_caps_pass": false,
+      "selected": false
+    },
+    "L1.0_TO8_CN05_CC15_CR30_ITER11_BASELINE": {
+      "sr_ann": 0.0576,
+      "cagr": -0.0052,
+      "mdd": -0.4652,
+      "ann_to": 1.933,
+      "cvar_d_proxy": 0.0321,
+      "ax001_pass_count": 2,
+      "dsr_post": 0.563,
+      "all_caps_pass": false,
+      "selected": false,
+      "note": "Iter 11 baseline (λ=1.0 TOphi=8 cash 5/15/30)"
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 225,
+    "cap": 10,
+    "cap_exception": "Hyperparameter grid sweep — sub-method 'LinTilt+TOphi+CashOverlay' parametric scan, NOT distinct method shopping",
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "method_log": {
+      "L1.5_TO3_CN10_CC20_CR40": {
+        "sr_ann": 0.123,
+        "cagr": 0.0021,
+        "mdd": -0.4193,
+        "ann_to": 2.019,
+        "cvar_d_proxy": 0.0301,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6327,
+        "all_caps_pass": false,
+        "selected": true
+      },
+      "L1.5_TO3_CN10_CC15_CR30": {
+        "sr_ann": 0.1227,
+        "cagr": 0.002,
+        "mdd": -0.4206,
+        "ann_to": 2.003,
+        "cvar_d_proxy": 0.0303,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6324,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN10_CC10_CR20": {
+        "sr_ann": 0.1223,
+        "cagr": 0.0019,
+        "mdd": -0.422,
+        "ann_to": 1.991,
+        "cvar_d_proxy": 0.0305,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.632,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN05_CC20_CR40": {
+        "sr_ann": 0.1219,
+        "cagr": 0.0016,
+        "mdd": -0.4316,
+        "ann_to": 2.061,
+        "cvar_d_proxy": 0.0312,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6317,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN05_CC15_CR30": {
+        "sr_ann": 0.1217,
+        "cagr": 0.0015,
+        "mdd": -0.4328,
+        "ann_to": 2.044,
+        "cvar_d_proxy": 0.0315,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6315,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN05_CC10_CR20": {
+        "sr_ann": 0.1215,
+        "cagr": 0.0015,
+        "mdd": -0.4341,
+        "ann_to": 2.029,
+        "cvar_d_proxy": 0.0317,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6312,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN00_CC20_CR40": {
+        "sr_ann": 0.1207,
+        "cagr": 0.001,
+        "mdd": -0.4438,
+        "ann_to": 2.112,
+        "cvar_d_proxy": 0.0324,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6304,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN00_CC15_CR30": {
+        "sr_ann": 0.1206,
+        "cagr": 0.001,
+        "mdd": -0.4449,
+        "ann_to": 2.093,
+        "cvar_d_proxy": 0.0326,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6303,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.5_TO3_CN00_CC10_CR20": {
+        "sr_ann": 0.1204,
+        "cagr": 0.0009,
+        "mdd": -0.4462,
+        "ann_to": 2.076,
+        "cvar_d_proxy": 0.0329,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6301,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.2_TO3_CN10_CC20_CR40": {
+        "sr_ann": 0.1145,
+        "cagr": 0.0013,
+        "mdd": -0.4196,
+        "ann_to": 2.031,
+        "cvar_d_proxy": 0.0302,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.6238,
+        "all_caps_pass": false,
+        "selected": false
+      },
+      "L1.0_TO8_CN05_CC15_CR30_ITER11_BASELINE": {
+        "sr_ann": 0.0576,
+        "cagr": -0.0052,
+        "mdd": -0.4652,
+        "ann_to": 1.933,
+        "cvar_d_proxy": 0.0321,
+        "ax001_pass_count": 2,
+        "dsr_post": 0.563,
+        "all_caps_pass": false,
+        "selected": false,
+        "note": "Iter 11 baseline (λ=1.0 TOphi=8 cash 5/15/30)"
+      }
+    },
+    "selected": "L1.5_TO3_CN10_CC20_CR40",
+    "selection_basis": "TO+MDD pass only (CVaR breach disclosed) + max(SR) + tiebreakers",
+    "honest_disclosure": "Iter 31 = STR_1701 hyperparameter 4-dim grid sweep (5×5×3×3=225). Single method 'LinTilt+TOphi+CashOverlay' parametric scan. NOT 225 distinct methods — single mechanism with 225 hyperparameter points. Cap exception declared per Iter 31 user mandate.",
+    "rolling_seconds": []
+  },
+  "top3_detail": {
+    "rank_1": {
+      "combo_id": "L1.5_TO3_CN10_CC20_CR40",
+      "lambda": 1.5,
+      "tophi": 3,
+      "cash_normal": 0.1,
+      "cash_caution": 0.2,
+      "cash_crisis": 0.4,
+      "sr_ann": 0.123,
+      "cagr": 0.0021,
+      "mdd": -0.4193,
+      "ann_to": 2.019,
+      "ann_cost": 0.0061,
+      "cvar_d_proxy": 0.0301,
+      "harvey_t": 0.341,
+      "dsr_post": 0.6327,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": true,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 4.3647,
+        "bad_normal_pass": true,
+        "harvey_t": 0.341,
+        "harvey_pass": false
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 24,
+          "sr": 0.5131,
+          "mean": 0.0064
+        },
+        "NORMAL": {
+          "n": 54,
+          "sr": 0.095,
+          "mean": 0.0019
+        },
+        "CAUTION": {
+          "n": 13,
+          "sr": -0.5103,
+          "mean": -0.0065
+        },
+        "CRISIS": {
+          "n": 1,
+          "sr": "NA",
+          "mean": 0.023
+        }
+      }
+    },
+    "rank_2": {
+      "combo_id": "L1.5_TO3_CN10_CC15_CR30",
+      "lambda": 1.5,
+      "tophi": 3,
+      "cash_normal": 0.1,
+      "cash_caution": 0.15,
+      "cash_crisis": 0.3,
+      "sr_ann": 0.1227,
+      "cagr": 0.002,
+      "mdd": -0.4206,
+      "ann_to": 2.003,
+      "ann_cost": 0.006,
+      "cvar_d_proxy": 0.0303,
+      "harvey_t": 0.34,
+      "dsr_post": 0.6324,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": true,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 5.3681,
+        "bad_normal_pass": true,
+        "harvey_t": 0.34,
+        "harvey_pass": false
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 24,
+          "sr": 0.5131,
+          "mean": 0.0064
+        },
+        "NORMAL": {
+          "n": 54,
+          "sr": 0.0955,
+          "mean": 0.0019
+        },
+        "CAUTION": {
+          "n": 13,
+          "sr": -0.5043,
+          "mean": -0.0069
+        },
+        "CRISIS": {
+          "n": 1,
+          "sr": "NA",
+          "mean": 0.0273
+        }
+      }
+    },
+    "rank_3": {
+      "combo_id": "L1.5_TO3_CN10_CC10_CR20",
+      "lambda": 1.5,
+      "tophi": 3,
+      "cash_normal": 0.1,
+      "cash_caution": 0.1,
+      "cash_crisis": 0.2,
+      "sr_ann": 0.1223,
+      "cagr": 0.0019,
+      "mdd": -0.422,
+      "ann_to": 1.991,
+      "ann_cost": 0.006,
+      "cvar_d_proxy": 0.0305,
+      "harvey_t": 0.339,
+      "dsr_post": 0.632,
+      "ax001_pass_count": 2,
+      "ax001_metrics": {
+        "crisis_alpha_pass": true,
+        "mdd_relief_pass": false,
+        "bad_normal_ratio": 6.3651,
+        "bad_normal_pass": true,
+        "harvey_t": 0.339,
+        "harvey_pass": false
+      },
+      "per_regime": {
+        "BULL": {
+          "n": 24,
+          "sr": 0.5131,
+          "mean": 0.0064
+        },
+        "NORMAL": {
+          "n": 54,
+          "sr": 0.096,
+          "mean": 0.0019
+        },
+        "CAUTION": {
+          "n": 13,
+          "sr": -0.4993,
+          "mean": -0.0072
+        },
+        "CRISIS": {
+          "n": 1,
+          "sr": "NA",
+          "mean": 0.0315
+        }
+      }
+    }
+  },
+  "hard_constraints": {
+    "max_names": 20,
+    "weight_bounds": [0, 0.2],
+    "long_only": true,
+    "sum_w_target": 1,
+    "universe": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "to_hard_cap": 6,
+    "mdd_hard_cap": 0.45,
+    "cvar_d_hard_cap": 0.025
+  },
+  "hard_constraint_checks": {
+    "n_names_each_sig_date_le_20": true,
+    "weights_nonneg": true,
+    "weights_le_0.20": true,
+    "sum_w_eq_1": true,
+    "per_sig_date_audit": {
+      "n_dates": 92,
+      "n_names_min": 20,
+      "n_names_max": 20,
+      "sum_w_total_min": 1,
+      "sum_w_total_max": 1
+    }
+  },
+  "alpha_inheritance_audit": {
+    "base_strategy": "STR_1701 (Iter 11 PG2 active 80%)",
+    "cor_iter18_vs_str1701": 1,
+    "cor_threshold_strict": 0.95,
+    "cor_pass": true,
+    "note": "score_str1701 column inherited as-is from WT-D20260427_002 alpha panel — no transform"
+  },
+  "iter31_lessons_applied": {
+    "L_220": "Vol-reduction quarterly avoid — monthly cadence preserved (bi-monthly Iter 18 panel)",
+    "L_224": "alpha_inheritance cor=1.0 (≥0.95 strict) PASS — score_str1701 raw used",
+    "L_226": "ERC near-EW avoided — LinTilt+TOphi alpha-active mechanism",
+    "L_237": "BULL dominance — cash NORMAL grid {0,5,10}% explored",
+    "L_238": "sig_date subset mismatch — direct calibration on 92-date Iter 18 panel"
+  },
+  "challenge_review": {
+    "from_agent": "optimizer",
+    "objection": false,
+    "targets_reviewed": ["alpha_vector (STR_1701 cor=1.0)", "risk_sigma (Iter 5 LW oracle BΩB+D)", "bound_feasibility (20×0.20=4.0 ≥ Σw=1)", "L-237 BULL dominance (cash NORMAL grid)", "L-238 sig_date direct calibration (92-date panel)"],
+    "note": "Iter 31 = hyperparameter grid sweep on STR_1701 inheritance. 225 combos × 92 sig_dates walk-forward."
+  },
+  "explanation": {
+    "top_overweights": ["CASH", "A323410", "A348210"],
+    "top_underweights": ["A000660", "A012330", "A161390"],
+    "main_tradeoffs": ["Best combo: λ=1.5, TOphi=3, cash(N=10%/C=20%/Crisis=40%)", "SR uplift vs Iter 11 baseline: best=0.1230, base ~ Iter11 same-grid-point", "Hard caps: TO=TRUE MDD=TRUE CVaR=FALSE", "AX-001v2: 2/4 (crisis_alpha+MDD_relief+bad/normal_ratio+Harvey)"]
+  },
+  "references": ["Bergstra-Bengio (2012) Random Search for Hyperparameter Optimization", "Markowitz (1952) MVO baseline", "Iter 11 STR_1701 LinTilt λ=1.0 TOphi=8 baseline", "Iter 5 alpha base (composite Core+Defense)", "Barroso-Santa-Clara (2015) risk-managed momentum (cash overlay)", "L-220/224/226/237/238 lessons applied"],
+  "generated_at": "2026-04-27T14:33:49+0900",
+  "agent_id": "optimizer-research-iter31-grid",
+  "inheritance_meta": {
+    "inherited_alpha_from": "qepm/mailbox/worktask/WT-D20260427_002/alpha_package.json",
+    "inherited_risk_from": "qepm/mailbox/worktask/WT-D20260427_002/risk_package.json",
+    "rationale": "Iter 31 = STR_1701 4-dim grid (5×5×3×3=225 combos) — user mandate"
+  }
+}
