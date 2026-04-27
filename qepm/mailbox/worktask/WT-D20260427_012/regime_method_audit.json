@@ -1,0 +1,122 @@
+{
+  "task_id": "WT-D20260427_012",
+  "iter_label": "Iter 27 — Multi-Regime Adaptive Optimizer",
+  "generated_at": "2026-04-27T13:30:38+0900",
+  "regime_matrix_design": {
+    "BULL": {
+      "method": "LinTilt_aggressive",
+      "lambda": 1.5,
+      "cash_pct": 0,
+      "max_w": 0.2,
+      "sleeve_w_core": 0.8,
+      "sleeve_w_hedge": 0,
+      "sleeve_w_defml": 0.2,
+      "rationale": "Alpha activation strong; full LinTilt λ=1.5 (L-226 alpha activation 강하게)"
+    },
+    "NORMAL": {
+      "method": "LinTilt_baseline",
+      "lambda": 1,
+      "cash_pct": 0.05,
+      "max_w": 0.2,
+      "sleeve_w_core": 0.75,
+      "sleeve_w_hedge": 0.05,
+      "sleeve_w_defml": 0.15,
+      "rationale": "Iter 11 baseline preserved (L-220 monthly base)"
+    },
+    "CAUTION": {
+      "method": "ERC_plus_EW_shrink",
+      "lambda": 0.7,
+      "cash_pct": 0.2,
+      "max_w": 0.15,
+      "sleeve_w_core": 0.4,
+      "sleeve_w_hedge": 0.15,
+      "sleeve_w_defml": 0.25,
+      "rationale": "Risk control 강화; ERC near-EW with mild shrink (L-226 caveat: ERC alone insufficient → keep alpha tilt 0.7)"
+    },
+    "CRISIS": {
+      "method": "Risk_Parity_Hedge_Dominant",
+      "lambda": 0.5,
+      "cash_pct": 0.5,
+      "max_w": 0.1,
+      "sleeve_w_core": 0.2,
+      "sleeve_w_hedge": 0.3,
+      "sleeve_w_defml": 0.5,
+      "rationale": "위기 특화 배분: Cash 50%, max_w 0.10, Hedge dominant V22b/V25 inheritance"
+    }
+  },
+  "per_regime_realized": {
+    "BULL": {
+      "regime": "BULL",
+      "n_sig_dates": 72,
+      "mean_port_ret": 0.003,
+      "sd_port_ret": 0.0502,
+      "sr_ann": 0.142,
+      "method_used": "LinTilt_aggressive",
+      "lambda": 1.5,
+      "cash_pct": 0,
+      "max_w": 0.2,
+      "sleeve_w_core": 0.8,
+      "sleeve_w_hedge": 0,
+      "sleeve_w_defml": 0.2,
+      "rationale": "Alpha activation strong; full LinTilt λ=1.5 (L-226 alpha activation 강하게)"
+    },
+    "NORMAL": {
+      "regime": "NORMAL",
+      "n_sig_dates": 12,
+      "mean_port_ret": -0.0046,
+      "sd_port_ret": 0.1221,
+      "sr_ann": -0.091,
+      "method_used": "LinTilt_baseline",
+      "lambda": 1,
+      "cash_pct": 0.05,
+      "max_w": 0.2,
+      "sleeve_w_core": 0.75,
+      "sleeve_w_hedge": 0.05,
+      "sleeve_w_defml": 0.15,
+      "rationale": "Iter 11 baseline preserved (L-220 monthly base)"
+    },
+    "CAUTION": {
+      "regime": "CAUTION",
+      "n_sig_dates": 8,
+      "mean_port_ret": 0.0257,
+      "sd_port_ret": 0.0847,
+      "sr_ann": 0.731,
+      "method_used": "ERC_plus_EW_shrink",
+      "lambda": 0.7,
+      "cash_pct": 0.2,
+      "max_w": 0.15,
+      "sleeve_w_core": 0.4,
+      "sleeve_w_hedge": 0.15,
+      "sleeve_w_defml": 0.25,
+      "rationale": "Risk control 강화; ERC near-EW with mild shrink (L-226 caveat: ERC alone insufficient → keep alpha tilt 0.7)"
+    },
+    "CRISIS": {
+      "regime": "CRISIS",
+      "n_sig_dates": 0,
+      "mean_port_ret": null,
+      "sd_port_ret": null,
+      "sr_ann": null,
+      "method_used": "Risk_Parity_Hedge_Dominant",
+      "lambda": 0.5,
+      "cash_pct": 0.5,
+      "max_w": 0.1,
+      "sleeve_w_core": 0.2,
+      "sleeve_w_hedge": 0.3,
+      "sleeve_w_defml": 0.5,
+      "note": "no observations in panel"
+    }
+  },
+  "panel_regime_distribution": {
+    "BULL": 72,
+    "CAUTION": 8,
+    "NORMAL": 12
+  },
+  "bull_normal_alpha_activation_pct": 0.0639,
+  "crisis_subsample": {
+    "n_dates": 8,
+    "mean_port_ret": 0.0257,
+    "bad_normal_ratio": 13.667,
+    "harvey_cond_t": 0.857
+  },
+  "notes": ["Panel does NOT contain CRISIS dates (regime panel scope = BULL/NORMAL/CAUTION). CRISIS rule encoded for forward-state activation when regime engine emits CRISIS.", "CAUTION + CRISIS treated as joint crisis subsample for AX-001 v2 metric computation.", "BULL aggressive λ=1.5 (alpha activation); NORMAL baseline λ=1.0 (Iter 11 inheritance preserved).", "CAUTION uses ERC 50% + LinTilt(λ=0.7) 50% + EW shrink 30% (alpha activation retained per L-226 caveat).", "CRISIS uses Risk Parity invvol + 5% mild alpha tilt; cash 50%, max_w 0.10 (사용자 위기 특화 mandate)."]
+}

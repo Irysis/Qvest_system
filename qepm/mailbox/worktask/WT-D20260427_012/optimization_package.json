@@ -1,0 +1,254 @@
+{
+  "task_id": "WT-D20260427_012",
+  "parent_task_id": ["WT-D20260427_006", "WT-D20260427_007", "STR_1656_MLRA"],
+  "iter_label": "Iter 27 — Multi-Regime Adaptive Optimizer (위기 특화 배분 초고도화)",
+  "as_of_date": "2023-11-30",
+  "signal_as_of": "2023-11-30",
+  "selection_objective": "net_ir_with_mdd_relief_floor_and_crisis_special",
+  "rebalance_frequency": "monthly_base_bimonthly_panel",
+  "walk_forward": true,
+  "n_sig_dates_walkforward": 92,
+  "walk_forward_date_range": ["2008-01-31", "2023-11-30"],
+  "target_weights": {
+    "A348210": 0.1838,
+    "A185750": 0.1714,
+    "A323410": 0.1168,
+    "A383310": 0.1126,
+    "A205470": 0.0901,
+    "A377300": 0.0761,
+    "A036930": 0.0562,
+    "A137310": 0.0482,
+    "A316140": 0.0414,
+    "A009150": 0.0352,
+    "A014680": 0.0308,
+    "A011070": 0.0228,
+    "A029780": 0.009,
+    "A144510": 0.0057
+  },
+  "active_weights": {
+    "A348210": 0.1124,
+    "A185750": 0.1,
+    "A323410": 0.0454,
+    "A383310": 0.0412,
+    "A205470": 0.0187,
+    "A377300": 0.0047,
+    "A036930": -0.0152,
+    "A137310": -0.0232,
+    "A316140": -0.03,
+    "A009150": -0.0362,
+    "A014680": -0.0406,
+    "A011070": -0.0486,
+    "A029780": -0.0624,
+    "A144510": -0.0657
+  },
+  "expected_active_return": 0.0142,
+  "expected_tracking_error": 0.1594,
+  "expected_information_ratio": 0.0889,
+  "expected_cagr": 0.001,
+  "expected_mdd": -0.4004,
+  "expected_sr_ann": 0.0889,
+  "turnover": 5.851,
+  "estimated_cost": 0.0088,
+  "binding_constraints": ["weight_bound_upper_0.20_BULL", "max_names_20", "regime_state_lookup_t_minus_1", "regime_conditional_cash_overlay", "long_only_inc_cash", "sleeve_composite_alpha"],
+  "infeasibility_report": {},
+  "method_selected": "Iter27_4state_Adaptive_BULL_LinTilt15_NORM_LinTilt10_CAUTION_ERC_LinTilt_EW_CRISIS_RiskParity_HedgeDominant",
+  "method_config": {
+    "method_function": "iter27_4state_adaptive",
+    "rebalance_every": 1,
+    "granularity": "monthly_base",
+    "regime_matrix": {
+      "BULL": {
+        "method": "LinTilt_aggressive",
+        "lambda": 1.5,
+        "cash_pct": 0,
+        "max_w": 0.2,
+        "sleeve_w_core": 0.8,
+        "sleeve_w_hedge": 0,
+        "sleeve_w_defml": 0.2,
+        "rationale": "Alpha activation strong; full LinTilt λ=1.5 (L-226 alpha activation 강하게)"
+      },
+      "NORMAL": {
+        "method": "LinTilt_baseline",
+        "lambda": 1,
+        "cash_pct": 0.05,
+        "max_w": 0.2,
+        "sleeve_w_core": 0.75,
+        "sleeve_w_hedge": 0.05,
+        "sleeve_w_defml": 0.15,
+        "rationale": "Iter 11 baseline preserved (L-220 monthly base)"
+      },
+      "CAUTION": {
+        "method": "ERC_plus_EW_shrink",
+        "lambda": 0.7,
+        "cash_pct": 0.2,
+        "max_w": 0.15,
+        "sleeve_w_core": 0.4,
+        "sleeve_w_hedge": 0.15,
+        "sleeve_w_defml": 0.25,
+        "rationale": "Risk control 강화; ERC near-EW with mild shrink (L-226 caveat: ERC alone insufficient → keep alpha tilt 0.7)"
+      },
+      "CRISIS": {
+        "method": "Risk_Parity_Hedge_Dominant",
+        "lambda": 0.5,
+        "cash_pct": 0.5,
+        "max_w": 0.1,
+        "sleeve_w_core": 0.2,
+        "sleeve_w_hedge": 0.3,
+        "sleeve_w_defml": 0.5,
+        "rationale": "위기 특화 배분: Cash 50%, max_w 0.10, Hedge dominant V22b/V25 inheritance"
+      }
+    },
+    "sigma_method": "ledoit_wolf_local_36m_with_50pct_pooled_blend_for_CAUTION_CRISIS",
+    "confidence_used": false,
+    "confidence_use_note": "Alpha pkg confidence_vector available; this Optimizer uses sleeve composite alpha derived from 3 sleeves (Core+Hedge+Defense_ML). Confidence will be wired in Iter 28+ via regime-conditional MVO.",
+    "description": "4-state adaptive: BULL=LinTilt λ=1.5 aggressive, NORMAL=LinTilt λ=1.0 baseline, CAUTION=ERC 50% + LinTilt λ=0.7 50% + EW shrink 30%, CRISIS=Risk Parity invvol + 5% mild alpha tilt. Cash overlay regime-conditional 0/5/20/50%. Max_w regime-conditional 0.20/0.20/0.15/0.10. Sleeve composite alpha (Core+Hedge+Defense_ML) regime-weighted."
+  },
+  "method_comparison": [
+    {
+      "name": "Baseline_LinTilt_lam1_STR1701_NoCash",
+      "sr": 0.1547,
+      "cagr": 0.0122,
+      "mdd": -0.402,
+      "to": 5.6634,
+      "selected": false
+    },
+    {
+      "name": "ERC_pure_top20_NoCash",
+      "sr": 0.0693,
+      "cagr": -0.0016,
+      "mdd": -0.4249,
+      "to": 5.086,
+      "selected": false
+    },
+    {
+      "name": "RiskParity_invvol_pure_NoCash",
+      "sr": 0.126,
+      "cagr": 0.0074,
+      "mdd": -0.3814,
+      "to": 6.6051,
+      "selected": false
+    },
+    {
+      "name": "Iter27_4state_Adaptive_LinTilt_BULL15_NORM10_ERC_CAUTION_RP_CRISIS",
+      "sr": 0.0889,
+      "cagr": 0.001,
+      "mdd": -0.4004,
+      "to": 5.851,
+      "selected": true
+    },
+    {
+      "name": "EW_top20_str1701_sanity",
+      "sr": 0.0691,
+      "cagr": -0.0017,
+      "mdd": -0.4251,
+      "to": 5.0836,
+      "selected": false
+    }
+  ],
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 5,
+      "cap": 10,
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "selection_objective_used": "net_ir_with_mdd_relief_floor_and_crisis_special",
+      "honest_disclosure": "5 candidates compared: (C1) LinTilt λ=1 baseline / (C2) ERC pure / (C3) Risk Parity invvol pure / (C4) Iter 27 4-state adaptive SELECTED (사용자 mandate) / (C5) EW sanity. Selection per 사용자 위기 특화 배분 mandate, NOT pure SR maximization. Iter 27 SR vs C1 baseline: dominance evaluated jointly with MDD relief + crisis_alpha. Allocation-mechanism + regime-adaptive composite, NOT factor selection.",
+      "method_log": [
+        {
+          "name": "Baseline_LinTilt_lam1_STR1701_NoCash",
+          "sr": 0.1547,
+          "cagr": 0.0122,
+          "mdd": -0.402,
+          "to": 5.6634,
+          "selected": false
+        },
+        {
+          "name": "ERC_pure_top20_NoCash",
+          "sr": 0.0693,
+          "cagr": -0.0016,
+          "mdd": -0.4249,
+          "to": 5.086,
+          "selected": false
+        },
+        {
+          "name": "RiskParity_invvol_pure_NoCash",
+          "sr": 0.126,
+          "cagr": 0.0074,
+          "mdd": -0.3814,
+          "to": 6.6051,
+          "selected": false
+        },
+        {
+          "name": "Iter27_4state_Adaptive_LinTilt_BULL15_NORM10_ERC_CAUTION_RP_CRISIS",
+          "sr": 0.0889,
+          "cagr": 0.001,
+          "mdd": -0.4004,
+          "to": 5.851,
+          "selected": true
+        },
+        {
+          "name": "EW_top20_str1701_sanity",
+          "sr": 0.0691,
+          "cagr": -0.0017,
+          "mdd": -0.4251,
+          "to": 5.0836,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "ax_001_v2_audit": {
+    "crisis_alpha": 0.0257,
+    "crisis_alpha_target": 0,
+    "crisis_alpha_pass": true,
+    "core_mdd_relief_pp": 0.0017,
+    "core_mdd_relief_target_pp": 0.05,
+    "core_mdd_relief_pass": false,
+    "bad_normal_ret_ratio": 13.667,
+    "bad_normal_target": 1.5,
+    "bad_normal_pass": true,
+    "harvey_conditional_t": 0.857,
+    "harvey_conditional_target": 2,
+    "harvey_conditional_pass": false,
+    "pass_count": 2,
+    "inheritance_alpha_pkg_2_of_4": true
+  },
+  "regime_diagnostics": {
+    "panel_distribution": {
+      "BULL": 72,
+      "CAUTION": 8,
+      "NORMAL": 12
+    },
+    "bull_normal_alpha_activation_monthly_pct": 0.0639,
+    "crisis_subsample_n": 8,
+    "crisis_subsample_definition": "CAUTION ∪ CRISIS regimes (CRISIS not observed in 92-date panel)",
+    "cash_active_dates": 20,
+    "cash_active_pct": 21.74,
+    "notes": "CRISIS encoded for forward-state engine emission; CAUTION subsample serves as proxy for AX-001 v2 metric audit."
+  },
+  "l_code_blocking": {
+    "L_220": "monthly base preserved",
+    "L_226": "alpha activation BULL/NORMAL strong (LinTilt λ=1.5/1.0); ERC alone insufficient avoided via CAUTION 50/50 ERC+LinTilt blend",
+    "L_229": "Optimizer mechanism alone insufficient — multi-sleeve (Core+Hedge+Defense_ML) + multi-regime (4-state) integrated",
+    "L_231": "continuous overlay AVOIDED — discrete 4-state matrix",
+    "L_232_233": "long-only defensive inversion AVOIDED — Hedge sleeve is direct V22b inheritance (drawdown_cor -0.1907 PASS)",
+    "L_234": "single-component AVOIDED — multi-sleeve composite alpha"
+  },
+  "challenge_review": {
+    "objection": false,
+    "targets_reviewed": ["alpha_vector_3_sleeve_composite", "risk_sigma_local_pooled_blend", "bound_feasibility_per_regime", "regime_state_PIT", "ax_007_multi_sleeve_exception", "ax_005_necessary_not_sufficient"],
+    "note": "Iter 27 honors 사용자 위기 특화 mandate. AX-007 multi-sleeve exception confirmed (3 sleeves). AX-005 necessary_not_sufficient via portfolio-level drawdown_cor. Risk Σ local 36m + pooled 50/50 blend in CAUTION/CRISIS as Risk pkg recommended. No structural objection — discrete 4-state encoded; CRISIS rule active when regime engine emits CRISIS forward."
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding NAV trail; rolling 36m local Σ",
+    "C2": "PASS — t-1 month-floor regime_state (alpha pkg merged via YM_next)",
+    "C3": "PASS — peak-to-trough at d strictly < apply at d+1 (cash overlay lag)",
+    "C9": "PASS — no same-day VT/DD",
+    "C11": "PASS — KR-internal NAV only (no FRED dependency)",
+    "C13": "PASS — Z_Score_Aligned upstream",
+    "C14": "PASS — Usable_Date <= sig_date",
+    "note": "Regime state from alpha_scores.parquet (alpha pkg PIT-validated t-1 lag). Cash overlay piggybacks on regime."
+  },
+  "generated_at": "2026-04-27T13:30:38+0900",
+  "forward_to": "judge_or_forge_pilot"
+}
