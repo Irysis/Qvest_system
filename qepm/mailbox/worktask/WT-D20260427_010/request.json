@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_010",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 25 — Explicit Anti-Correlation Construction (Mathematical Negative Beta)",
+  "hypothesis_description": "Iter 25 — explicit mathematical inverse via rolling Pearson with STR_1701. literal negative beta stocks.\n\n## 동기 (12 sprint long-only 한계 확인)\n- Iter 22/22b/23: cross-section ranking factors는 같은 panel 동조 → cor positive\n- L-232/233: long-only defensive overlay realized inversion systemic\n- 본 sprint: **explicit anti-correlation construction** — direct rolling regression\n- 사용자 mandate: 비선형 + 재무 X — return-only based\n\n## 핵심 가설 — Mathematical Negative Beta\n- 각 stock_i monthly returns vs STR_1701 returns rolling 24M regression\n- β_i = cov(R_i, R_str1701) / var(R_str1701)\n- **β_i bottom 10% (가장 negative beta)** stocks 선별\n- 평시 cor < 0 by construction (mathematically guaranteed)\n- 재무 X (returns만)\n\n## 11 sprint + Iter 22/22b/23 학습 BLOCKING\n- L-211/225/228 cross-section rank 회피 — 본 sprint는 time-series regression\n- L-232/233 long-only defensive — 본 sprint는 direct mathematical inverse\n- AX-005 EXCLUSION: low-beta single-sleeve fail BUT 본 sprint는 **negative beta** (low beta 다름)\n\n## 핵심 mandate (mathematical guarantee)\n- V25 ↔ STR_1701 평시 cor < -0.10 (by construction expected)\n- V25 ↔ STR_1701 drawdown cor < -0.20\n- AX-001 v2 4-metric strict\n- 평시 cost 측정 (negative beta = 평시 underperform — insurance premium)\n\n## 평시 cost 보완\n- PG2 trio (STR_1701 70% + V25 10% + STR_1656 20%) — V25 비중 작게\n- top decile only (most extreme negative beta)\n\n## 학술 references\n- Black Jensen Scholes 1972 — Low Beta\n- Frazzini Pedersen 2014 — BAB\n- Bryzgalova Pelger Zhu 2023 — Forest through trees\n- Iter 22b Q32 cor_dd -0.33 (per-component evidence)",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

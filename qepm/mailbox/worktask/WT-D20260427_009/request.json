@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_009",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 24 — V23-COSKEW-only Single Defensive Component (Pure Return Moment)",
+  "hypothesis_description": "Iter 24 — Iter 23 후속. Co-skewness 단독 ICIR 0.213 (Alpha Lab Gate PASS) 입증된 component portfolio NAV 검증.\n\n## 동기 (Iter 23 숨은 발견)\n- Iter 23 EW composite Gates 0/5 fail BUT z_coskew 단독 ICIR 0.213 PASS\n- EW composite가 가장 강한 component dilute (lambda_L 0.04 + MI -0.05이 coskew 0.213 희석)\n- 사용자 mandate: 재무팩터 회피 + 비선형\n- Coskew = pure return moment (재무 X) + 3rd-order nonlinear (비선형)\n\n## 핵심 가설 — Coskew Pure Defense\n- Coskewness_i = E[(R_i - μ_i)(R_str1701 - μ_str1701)²] / (σ_i × σ_str1701²)\n- negative coskewness stocks 우선 (STR_1701 extreme volatility 시 stock outperform 비대칭)\n- AX-005 EXCLUSION: single-component but **pure return moment** (재무 X) — Q07/D25 sleeve fail와 본질 다름\n\n## 11 sprint + Iter 22/22b/23 학습 BLOCKING\n- L-220/223/225/228/229/230/231/232/233 모두 회피\n- L-232/233: long-only defensive overlay realized inversion — 본 sprint도 같은 위험\n- BUT coskew는 직접 inverse 메커니즘 (3rd-order moment 비대칭 활용)\n\n## 핵심 mandate\n- alpha = z_coskew_only (single component, pure return)\n- 재무팩터 (Q/D family) 사용 X\n- Universe: KR_top342 또는 KR_TOP500 옵션 (Iter 19 결과 따라)\n- AX-001 v2 4-metric strict\n\n## 평가 (PG2 incremental)\n- Coskew alpha standalone ICIR ≥ 0.20 (Iter 23 0.213 baseline)\n- V24 drawdown cor < -0.10 (mandate)\n- AX-001 v2 ≥ 2/4 PASS\n- PG2 trio (STR_1701 70% + V24 15% + STR_1656 15%) realized SR > 1.4625\n\n## 학술 references\n- Harvey Siddique 2000 — Coskewness Premium\n- Christoffersen Errunza Jacobs Langlois 2018 — Asymmetric Tail Dependence\n- Iter 23 self-reported coskew ICIR 0.213",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
