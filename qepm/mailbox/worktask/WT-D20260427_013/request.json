@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_013",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 28 — SOTA Optimizer Race (7 SOTA Methods × STR_1701 Base)",
+  "hypothesis_description": "Iter 28 — 사용자 mandate 직접 반영: 2026년 SOTA 비중결정 방법론 7종을 STR_1701 base에 모두 적용 + 비교.\n\n## 동기 (사용자 mandate)\n- 본 sprint cycle (Iter 11~22b) Optimizer는 모두 2010s 이전 methodology\n- LinTilt (1990s) / ERC (2010) / MVO (1952) / BL (1992) / LinTilt+EMA+CVaR (2010s combo)\n- 2024-2026 SOTA 미적용 — 본 sprint = SOTA 7 method race\n\n## 핵심 가설 — 7 SOTA Method Comparison\n\n### 1. DRO Wasserstein (Blanchet-Murthy 2024)\n- min_w max_{Q ∈ Bε(P)} E_Q[loss(w, R)]\n- ε = ambiguity radius (자율 sweep)\n- 추정 오차 자체를 set으로 모델링\n- L-229 Optimizer mechanism alone 한계 직접 해결 영역\n\n### 2. HERC (Raffinot 2018)\n- Hierarchical Equal Risk Contribution\n- single-linkage clustering + recursive bisection (HRP) + ERC within hierarchy\n- ERC near-EW 한계 (L-226) 보강\n\n### 3. HRP + Tail-aware Clustering (Bourgeron 2024)\n- HRP base + tail-dependence based distance metric\n- Patton 2006 copula distance\n- Iter 21/22/22b L-231/232/233 학습 활용\n\n### 4. Confidence-aware Bayesian MVO (Kolm-Ritter 2024)\n- alpha posterior = (Σ⁻¹ + Ω⁻¹)⁻¹ × (Σ⁻¹×μ_eq + Ω⁻¹×alpha_view)\n- per-name confidence vector (Iter 14 학습)\n- shrinkage intensity 동적\n\n### 5. DiffOpt End-to-End (Chow-Zhang 2023)\n- CVXPY + DiffOpt → loss = portfolio metric (Sharpe / CVaR)\n- alpha + optimizer joint gradient\n- (구현 복잡도 높음, Phase 1 simple proxy 가능)\n\n### 6. MaxDiv (Choueifaty 2008)\n- max (w'σ) / sqrt(w'Σw) — diversification ratio\n- weights orthogonal in σ space\n- ERC variant 비교 baseline\n\n### 7. Tail-conditioned Risk Parity (Bourgeron 2024)\n- ERC base + CVaR contribution equal\n- 위기 시 자동 redistribution\n- AX-001 v2 conditional 강화 영역\n\n## 평가 (PG2 incremental)\n- 7 method × net_IR / SR / CAGR / MDD / CVaR / TO 정량 비교\n- AX-001 v2 4-metric 측정\n- PG2 blended (best 80% + STR_1656 20%) realized SR > 1.4625\n- Best 1-2 method → Forge realized backtest\n\n## 13 sprint 학습 BLOCKING\n- L-220 monthly base\n- L-226 alpha activation 강화 (DRO/HERC/Bayesian가 ERC near-EW 한계 해결)\n- L-229 Optimizer alone insufficient — DRO가 직접 해결\n- L-231 continuous overlay 회피\n- L-232/233 long-only defensive — SOTA method는 mathematical robust\n- L-234 single-component defense — 7 method ensemble candidate\n\n## 핵심 mandate\n- alpha base: STR_1701 그대로 (cor ≥ 0.95 strict)\n- Optimizer: 7 SOTA method 동시 비교 + best selection\n- Hard caps: max_names 20 / weight bounds [0, 0.20] / Σw=1 / long-only\n- AX-001 v2 4-metric primary\n- Codex resolution 9/9 (OVERRIDE_005 fallback)\n\n## 학술 references\n- Blanchet Murthy 2024 — Wasserstein DRO\n- Esfahani Kuhn 2018 — DRO Convergence\n- Raffinot 2018 — HERC\n- Bourgeron 2024 — Tail-aware HRP / Risk Parity\n- Kolm Ritter 2024 — Modern Bayesian Portfolio\n- Chow Zhang 2023 — Differentiable Optimizer\n- Choueifaty 2008 — MaxDiv\n- Iter 11/15/18 baseline 비교",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

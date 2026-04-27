@@ -1,0 +1,342 @@
+{
+  "task_id": "WT-D20260427_011",
+  "wt_type": "discovery",
+  "iter": 26,
+  "iter_name": "STR_1701 Drawdown Trigger Regime Switch (Threshold Cash Hedge)",
+  "parent_iters": ["Iter 11 STR_1701 (baseline)", "Iter 21 continuous overlay (L-231 fail recovery)"],
+  "baseline_pg2": "STR_1631_80_STR_1656_20",
+  "baseline_pg2_sr": 1.193,
+  "as_of_date": "2023-11-30",
+  "signal_as_of": "2023-11-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "hypothesis_title": "Iter 26 STR_1701 Drawdown Trigger Regime Switch",
+  "hypothesis_summary": "Binary threshold cash overlay (-10/-20/-30 → 30/50/100% cash) on STR_1701 alpha. L-231 continuous fail recovery via discrete state machine + peak-condition recovery rule.",
+  "alpha_inheritance": {
+    "base_score": "score_str1701",
+    "base_source": "qepm/stage_artifacts/WT_D20260426_007/alpha_scores.parquet",
+    "cor_to_str1701": 1,
+    "new_layer": "drawdown_trigger_cash_overlay (allocation, not factor)"
+  },
+  "alpha_vector": {
+    "A348210": 2.248,
+    "A185750": 1.9947,
+    "A323410": 1.8082,
+    "A205470": 1.7832,
+    "A383310": 1.7822,
+    "A377300": 1.6678,
+    "A137310": 1.6126,
+    "A036930": 1.581,
+    "A029780": 1.5699,
+    "A316140": 1.5506,
+    "A014680": 1.5172,
+    "A009150": 1.5144,
+    "A011070": 1.4736,
+    "A272290": 1.4456,
+    "A121600": 1.428,
+    "A144510": 1.4087,
+    "A357780": 1.3691,
+    "A000660": 1.3528,
+    "A012330": 1.3248,
+    "A161390": 1.2845
+  },
+  "confidence_vector": {
+    "A348210": 0.37,
+    "A185750": 0.312,
+    "A323410": 0.112,
+    "A205470": 0.37,
+    "A383310": 0.37,
+    "A377300": 0.148,
+    "A137310": 0.37,
+    "A036930": 0.287,
+    "A029780": 0.549,
+    "A316140": 0.11,
+    "A014680": 0.307,
+    "A009150": 0.324,
+    "A011070": 0.326,
+    "A272290": 0.322,
+    "A121600": 0.37,
+    "A144510": 0.301,
+    "A357780": 0.382,
+    "A000660": 0.329,
+    "A012330": 0.309,
+    "A161390": 0.35
+  },
+  "signal_matrix_ref": "file://qepm/stage_artifacts/WT_D20260427_011/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "STR_1701_Inheritance",
+      "proxy": "score_str1701 (panel as-is)",
+      "formula": "Multi-sleeve composite: Core 0.65 (Consensus_4F + Q07 + M08_Residual_Mom) + Defense 0.35 (Q07 + Q25_Ohlson_O)",
+      "lag_rule": "monthly t-1 (preserved from STR_1701)",
+      "winsorization": "preserved (3std cross-sectional)",
+      "neutralization": "preserved",
+      "economic_rationale": "STR_1701 alpha unchanged — cor=1.0 mandate per Iter 26 spec. Allocation overlay (cash) is the new dimension, not the alpha factor.",
+      "weight_theta": 1,
+      "references": ["Iter 5 WT-D20260425_010", "Iter 11 WT-D20260426_004", "Iter 18 WT-D20260427_002"],
+      "source": "inherited"
+    },
+    {
+      "factor_family": "Drawdown_Trigger_Cash_Allocation",
+      "proxy": "cash_state_lag (binary discrete state)",
+      "formula": "cash_state(d+1) = I(dd ≤ -8%) × 30% + I(dd ≤ -18%) × 20% + I(dd ≤ -28%) × 50%; Recovery: cash_state = 0 when NAV(d) ≥ peak(d-1).",
+      "lag_rule": "PIT: dd computed at d (NAV through d realized); state applied to d+1 (shift +1 lag).",
+      "winsorization": "n/a (discrete state)",
+      "neutralization": "n/a (allocation, not factor)",
+      "economic_rationale": "Faber 2007 / Estrada 2008 — drawdown-conditional cash allocation. Binary discrete state replaces continuous overlay (L-231 fail recovery via objective peak-condition trigger).",
+      "weight_theta": "allocation_layer",
+      "references": ["Faber 2007 Tactical Asset Allocation", "Estrada 2008 Drawdown Strategies"],
+      "source": "new_designed_allocation_layer"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.027,
+    "icir": 0.2009,
+    "monotonicity": 0.0424,
+    "subperiod_stability": -0.1186,
+    "subperiod_ics": {
+      "P1_2008_2014": 0.0268,
+      "P2_2015_2019": 0.0012,
+      "P3_2020_2026": -0.0032
+    },
+    "harvey_t_specs": {
+      "spec1_pooled_ols": -2.8742,
+      "spec2_nw_lag3": -2.5595,
+      "spec3_nw_lag6": -2.4575,
+      "spec4_nw_lag12": -2.2828
+    },
+    "harvey_t_specs_pass_count": 0,
+    "harvey_conditional_t_drawdown": null,
+    "post_neutralization_ic": 0.027,
+    "turnover_proxy": null,
+    "n_months": 92,
+    "n_sig_dates": 92,
+    "n_tickers_panel": 720,
+    "alpha_inheritance_cor": 1
+  },
+  "threshold_overlay_diagnostics": {
+    "threshold_sweep": {
+      "set_default_10_20_30": {
+        "mdd_base_pct": -40.77,
+        "mdd_overlay_pct": -28.04,
+        "mdd_relief_pp": 12.73,
+        "sr_base": 1.291,
+        "sr_overlay": 1.304,
+        "sr_delta": 0.013,
+        "n_active": 72,
+        "crisis_alpha_ann": -0.0989,
+        "crisis_overlay_avg_m": 0.0051,
+        "crisis_base_avg_m": 0.0133
+      },
+      "set_alt_5_15_25": {
+        "mdd_base_pct": -40.77,
+        "mdd_overlay_pct": -29.1,
+        "mdd_relief_pp": 11.67,
+        "sr_base": 1.291,
+        "sr_overlay": 1.273,
+        "sr_delta": -0.018,
+        "n_active": 98,
+        "crisis_alpha_ann": -0.1108,
+        "crisis_overlay_avg_m": 0.0035,
+        "crisis_base_avg_m": 0.0127
+      },
+      "set_alt_8_18_28": {
+        "mdd_base_pct": -40.77,
+        "mdd_overlay_pct": -27.43,
+        "mdd_relief_pp": 13.34,
+        "sr_base": 1.291,
+        "sr_overlay": 1.293,
+        "sr_delta": 0.002,
+        "n_active": 84,
+        "crisis_alpha_ann": -0.0988,
+        "crisis_overlay_avg_m": 0.0051,
+        "crisis_base_avg_m": 0.0133
+      },
+      "set_alt_12_22_32": {
+        "mdd_base_pct": -40.77,
+        "mdd_overlay_pct": -32.83,
+        "mdd_relief_pp": 7.93,
+        "sr_base": 1.291,
+        "sr_overlay": 1.285,
+        "sr_delta": -0.006,
+        "n_active": 63,
+        "crisis_alpha_ann": -0.1065,
+        "crisis_overlay_avg_m": 0.0102,
+        "crisis_base_avg_m": 0.019
+      }
+    },
+    "optimal_threshold_name": "set_alt_8_18_28",
+    "optimal_thresholds_pct": [-8, -18, -28],
+    "optimal_cash_pct": [30, 50, 100],
+    "cash_active_dates": 84,
+    "cash_active_total": 243,
+    "cash_active_pct": 34.57,
+    "recovery_avg_months": 7.64,
+    "recovery_max_months": 26,
+    "state_set": "{0%, 30%, 50%, 100%}",
+    "transition_type": "step_function_discrete"
+  },
+  "ax_001_v2_audit": {
+    "crisis_alpha": -0.0988,
+    "crisis_alpha_target": 0.1,
+    "crisis_alpha_pass": false,
+    "core_mdd_relief": 0.1334,
+    "core_mdd_relief_target": 0.05,
+    "core_mdd_relief_pass": true,
+    "bad_normal_ic_ratio": null,
+    "bad_normal_ratio_target": 1.5,
+    "bad_normal_ic_ratio_pass": false,
+    "harvey_conditional_t": null,
+    "harvey_conditional_target": 2,
+    "harvey_conditional_pass": false
+  },
+  "ax_001_v2_pass_count": 1,
+  "iter26_lessons_applied": {
+    "L_231_avoidance": "discrete state {0,30%,50%,100%} replaces continuous overlay (Iter 21 fail).",
+    "L_220_compliance": "monthly base — drawdown trail computed monthly, no quarterly machinery.",
+    "L_224_strict": "alpha_inheritance_hash cor=1.0000 strict PASS",
+    "L_226_aware": "Optimizer mechanism + Allocation overlay together — Iter 11 baseline + new layer.",
+    "L_229_aware": "Iter 11 baseline preserved; only allocation layer changed.",
+    "L_211_avoidance": "no cross-section alpha modification; allocation signal is single time series.",
+    "L_454_compliance": "no FRED dependency — drawdown trigger uses STR_1701 own NAV (KR-internal)."
+  },
+  "ax_axiom_compliance": {
+    "AX_001_v2": {
+      "active": true,
+      "pass_count": 1,
+      "target": 3,
+      "status": "PARTIAL"
+    },
+    "AX_002": {
+      "active": true,
+      "harness_only": true,
+      "status": "PASS"
+    },
+    "AX_005": {
+      "active": true,
+      "no_defense_factor": true,
+      "status": "PASS — allocation layer, not defense factor"
+    },
+    "AX_007": {
+      "active": true,
+      "multi_sleeve_inherited": true,
+      "status": "PASS — STR_1701 multi-sleeve preserved"
+    },
+    "AX_008": {
+      "active": true,
+      "verification_triangulation_pending": true,
+      "status": "PENDING_FORGE_CODEX"
+    }
+  },
+  "pit_compliance": {
+    "C1": true,
+    "C2": true,
+    "C9": true,
+    "C11": true,
+    "C13": true,
+    "C14": true,
+    "notes": "Drawdown trail uses NAV(d) realized at sig_date d. Cash state applied to d+1 (lag enforced). No look-ahead in peak/trough/threshold."
+  },
+  "window_isolation": {
+    "train_window": "2008-01 to 2023-11 (panel period)",
+    "validation_window": "inherited from STR_1701 split",
+    "lockbox_access": false,
+    "note": "Alpha unchanged (cor=1.0). Threshold sweep on training window NAV only."
+  },
+  "graduation_status": {
+    "rank_ic_target": 0.04,
+    "rank_ic_actual": 0.027,
+    "rank_ic_pass": false,
+    "icir_target": 0.2,
+    "icir_actual": 0.2009,
+    "icir_pass": true,
+    "sub_stability_target": 0.5,
+    "sub_stability_actual": -0.1186,
+    "sub_stability_pass": false,
+    "harvey_target": 3,
+    "harvey_pass_count": 0,
+    "note": "Iter 26 graduation evaluated at PG2 blend level (allocation overlay), not alpha-only level."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF_A6",
+      "severity": "HIGH",
+      "msg": "rank_IC_pooled=0.0270 < 0.04 graduation gate (inherited from STR_1701 base)",
+      "inherited_from": "STR_1701 base panel",
+      "resolution": "Iter 26 = Allocation Overlay layer (alpha unchanged, cor=1.0). Not gated on alpha-side IC; gated on AX-001 v2 4-metric."
+    },
+    {
+      "id": "RF_A1",
+      "severity": "HIGH",
+      "msg": "subperiod_stability=-0.1186 < 0.50 (inherited)",
+      "inherited_from": "STR_1701 base panel",
+      "resolution": "Iter 26 not changing alpha — resolved at PG2 blend level."
+    },
+    {
+      "id": "AX001v2_partial",
+      "severity": "HIGH",
+      "msg": "AX-001 v2 4-metric pass 1/4 (target ≥3)",
+      "detail": {
+        "crisis_alpha_pass": false,
+        "mdd_relief_pass": true,
+        "bad_normal_pass": false,
+        "harvey_cond_pass": false
+      }
+    },
+    {
+      "id": "L_231_distinction",
+      "severity": "INFO",
+      "msg": "Binary threshold mechanism distinct from Iter 21 continuous overlay (L-231).",
+      "detail": "Iter 26 cash_state ∈ {0, 0.30, 0.50, 1.0} discrete. Iter 21 used continuous c(msi_norm)∈[0, 0.5]. State transitions are step functions on absolute peak-to-trough conditions."
+    }
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "cap": 5,
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "selection_objective_used": "mdd_relief_pp_with_sr_floor_85pct",
+    "honest_disclosure": "4 threshold sets swept (-10/-20/-30, -5/-15/-25, -8/-18/-28, -12/-22/-32). Selection by max mdd_relief_pp subject to SR_overlay >= 0.85 * SR_base. Allocation-mechanism selection, NOT factor selection. Alpha unchanged (cor=1.0).",
+    "method_log": [
+      {
+        "name": "set_default_10_20_30",
+        "mdd_relief_pp": 12.73,
+        "sr_delta": 0.013,
+        "n_active": 72,
+        "selected": false
+      },
+      {
+        "name": "set_alt_5_15_25",
+        "mdd_relief_pp": 11.67,
+        "sr_delta": -0.018,
+        "n_active": 98,
+        "selected": false
+      },
+      {
+        "name": "set_alt_8_18_28",
+        "mdd_relief_pp": 13.34,
+        "sr_delta": 0.002,
+        "n_active": 84,
+        "selected": true
+      },
+      {
+        "name": "set_alt_12_22_32",
+        "mdd_relief_pp": 7.93,
+        "sr_delta": -0.006,
+        "n_active": 63,
+        "selected": false
+      }
+    ]
+  },
+  "hypothesis_source": "user_defined",
+  "l_code_blocking": {
+    "L_220": "monthly base preserved",
+    "L_231": "continuous overlay AVOIDED — binary threshold only",
+    "L_224": "cor=1.0 inheritance strict",
+    "L_211": "no cross-section alpha modification"
+  },
+  "codex_stance": "OVERRIDE_005",
+  "references": ["Faber, M. T. (2007). A Quantitative Approach to Tactical Asset Allocation. Journal of Wealth Management.", "Estrada, J. (2008). Black Swans and Market Timing: How Not To Generate Alpha. Journal of Investing.", "Iter 11 STR_1701 baseline — multi-sleeve cash overlay (4-state regime)", "Iter 21 WT-D20260427_005 — continuous msi_norm overlay (L-231 fail, distinction reference)"],
+  "generated_at": "2026-04-27T13:13:37+0900",
+  "forward_to": "risk_research"
+}
