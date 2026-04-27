@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_006",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 22 — STR_1701 Drawdown-Conditioned Defensive Factor Discovery",
+  "hypothesis_description": "Iter 22 — 사용자 핵심 제안. STR_1701이 무너지는 구간 정확히 방어하는 factor 발견.\n\n## 동기 (사용자 인사이트, 9 sprint fail 본질 진단)\n- 9 sprint 모두 unconditional cross-section alpha discovery → fail (L-211/225/228)\n- Universe expansion / Time / Layer 모두 fail (L-227/230/231)\n- 본질: STR_1701 drawdown 구간을 *조건부로* 방어하는 factor만 진정한 hedge\n- AX-001 v2 conditional metric의 본질 — 위기 alpha + bad/normal IC ratio\n\n## 핵심 가설 (Drawdown-Conditioned Alpha)\n1. STR_1701 walk-forward NAV → drawdown periods 식별\n   - threshold: rolling 6m return < -5% 또는 NAV from peak < -10%\n2. 그 기간 cross-section alpha discovery (defensive characteristics)\n3. 진정한 hedge: 평시 STR_1701 cor > 0 OR neutral, drawdown cor < -0.2\n4. AX-001 v2 conditional metric mandatory: crisis_alpha + bad/normal IC ratio + Core MDD relief\n\n## Defensive Factor 후보 (Alpha 자율 선택)\n1. **Q07 Earnings Stability + Q25 Ohlson_O** (PG2 STR_1656 inheritance 강화)\n2. **Low beta** (rolling 60d β vs KOSPI200, t-1)\n3. **High dividend yield** (DPS/Price 12m forward, DART CFO 5월 lag)\n4. **Defensive sector tilt** (utilities/telecom/consumer staples 비중)\n5. **Cash flow stability** (DART CFO 5y std / 5y mean)\n6. **Earnings revision positive** (consensus revision momentum)\n7. **Tail-conditioned momentum reversal** (drawdown 시 mean-reversion)\n\n## 9 Sprint 학습 BLOCKING (모두 회피)\n- L-211: KR linear composite fail\n- L-220: vol-reduction Harvey 격하\n- L-223: universe restriction alpha vanishing\n- L-225: sigmoid joint fail\n- L-226: ERC near-EW alpha activation\n- L-228: ML tree interaction collapsed\n- L-229: Optimizer mechanism alone insufficient\n- L-230: Time dimension net negative\n- L-231: Macro Overlay layer realized fail\n\n## 본 sprint 차별성 (vs 8 sprint cycle)\n- 차원: **Conditional regime** (STR_1701 NAV drawdown = specific subsample)\n- alpha: defensive factors only — drawdown 구간에서 positive return\n- 비교: 평시 STR_1701과 무관 또는 약한 cor BUT drawdown 구간 -0.2 이하\n- AX-001 v2 4-metric 본질 평가 (Iter 11 R2 finalize precedent)\n\n## 핵심 mandate\n- alpha_inheritance_hash N/A (새 alpha source)\n- Universe: KR_top342 (현재) — drawdown conditioning이 새 dimension (universe v2 후속 옵션)\n- AvgTV20 = Close × Vol (production 2e8 KRW)\n- NW-HAC Harvey + 5-spec\n- AX-001 v2 4-metric MANDATORY (crisis_alpha + Core MDD relief + bad/normal IC ratio + Harvey conditional)\n- Conditional cor mandate: STR_1701 drawdown periods cor < -0.2\n- Codex resolution 9/9 (OVERRIDE_005 fallback)\n\n## 평가 (PG2 incremental)\n- V22 standalone: 평시 SR > 0.5 acceptable (defensive raison d'etre is NOT raw SR)\n- V22 ↔ STR_1701 평시 cor: -0.30 ≤ cor ≤ 0.30 (지장 없음)\n- V22 ↔ STR_1701 drawdown cor: < -0.20 (진정한 hedge)\n- AX-001 v2 4-metric:\n  - crisis_alpha: > 0.10 (drawdown 구간 alpha)\n  - Core MDD relief: V22 추가 시 PG2 MDD 완화 ≥ 5pp\n  - bad/normal IC ratio: bad regime IC / normal regime IC > 1.5\n  - Harvey conditional: drawdown subsample t > 2.0\n- PG2 trio (STR_1701 60% + V22 20% + STR_1656 20%) realized SR > 1.4625\n- 또는 STR_1701 80% + V22 20% (STR_1656 대체 가능성)\n\n## 학술 references\n- Asness Frazzini Pedersen 2014 — Quality Minus Junk (defensive quality)\n- Black Jensen Scholes 1972 — Low Beta anomaly\n- Frazzini Pedersen 2014 — Betting Against Beta\n- Lou Polk Sahdev 2014 — Cross-section asymmetric flow reversal\n- DeMiguel Garlappi Uppal 2009 — Defensive 1/N\n- Iter 11 R2 finalize — AX-001 v2 4-metric audit precedent",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
