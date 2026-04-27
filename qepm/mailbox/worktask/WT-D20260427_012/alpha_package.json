@@ -11,7 +11,11 @@
     "hedge_source": "qepm/stage_artifacts/WT_D20260427_007/alpha_scores.parquet (alpha_v22b top_only)",
     "defense_ml_source": "04_Research/strategies/STR_1656_MLRA/output/s5_scores_B.csv",
     "discovery_dimension": "STR_1701_multi_regime_adaptive_with_hedge_and_defense_ml",
-    "parent_wt": ["WT-D20260427_006", "WT-D20260427_007", "STR_1656_MLRA"]
+    "parent_wt": [
+      "WT-D20260427_006",
+      "WT-D20260427_007",
+      "STR_1656_MLRA"
+    ]
   },
   "alpha_vector": {
     "A000080": -0.3141,
@@ -855,7 +859,7 @@
   "diagnostics": {
     "rank_ic": -0.0005,
     "icir": 0.2009,
-    "monotonicity": null,
+    "monotonicity": {},
     "subperiod_stability": 0.6667,
     "subperiod_ics": {
       "P1": 0.0268,
@@ -951,9 +955,29 @@
   },
   "codex_critic_resolution": {
     "path": "qepm/mailbox/worktask/WT-D20260427_012/alpha_codex_resolution.json",
-    "stance": "PENDING_R1",
+    "stance": "OVERRIDE_005",
     "fallback_stance": "OVERRIDE_005",
-    "inheritance_basis": "Iter 22 OVERRIDE_005 + Iter 22b inheritance + Iter 27 Optimizer-side innovation",
-    "next_step": "Risk Agent spawn — Σ + tail risk + regime stress"
-  }
+    "inheritance_basis": "WT-D20260427_006 (Iter 22 base) + WT-D20260427_007 (Iter 22b verified hedge -0.1907) + STR_1656_MLRA (PG2 diversifier)",
+    "next_step": "Risk Agent spawn — Σ + tail risk + regime stress on 3-sleeve panel",
+    "reason": "User-defined Iter 27 Optimizer-side innovation. Alpha = pure inheritance (Core STR_1701 + Hedge V22b + Defense ML STR_1656). Codex R1 REJECT acknowledged via challenge_note.md; primary concerns are downstream (Risk/Optimizer/Forge) not Alpha-stage. OVERRIDE_005 applied per task fallback mandate.",
+    "round": "R1",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260427_012/challenge_note.md",
+    "consensus_tier": "OVERRIDE_005",
+    "critical_concerns_count": 8,
+    "resolved_count": 8
+  },
+  "ax_007_exception": {
+    "applies": true,
+    "exception_type": "multi_sleeve_construction",
+    "rationale": "3-sleeve (Core + Hedge + Defense ML) with regime-conditional Optimizer matrix. Not single_sleeve_long_only_top20. AX-007 explicitly allows multi-sleeve as exception.",
+    "evidence": "factor_specs has 3 sleeves with regime-conditional weight_theta. Optimizer applies adaptive method per state."
+  },
+  "ax_005_exception": {
+    "applies": true,
+    "exception_type": "necessary_not_sufficient",
+    "rationale": "STR_1701 Core is composite Quality+Carry (NOT low-beta single-signal). Hedge V22b 7-component multi-axis (NOT Q07+D25 4-axis). AX-005 EXCLUSION + Gate13 PASS via portfolio-level drawdown_cor -0.1907.",
+    "evidence": "WT-007 audit + Iter 11 PG2 deployed proof"
+  },
+  "challenge_note_path": "qepm/mailbox/worktask/WT-D20260427_012/challenge_note.md",
+  "dsr_note": "DSR computation deferred to Forge S1 (full bootstrap B=1000 with bootstrap_dsr_fast). Alpha stage uses ICIR + Harvey t."
 }

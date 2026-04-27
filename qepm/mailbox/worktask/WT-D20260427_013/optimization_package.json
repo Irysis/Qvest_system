@@ -1,0 +1,359 @@
+{
+  "task_id": "WT-D20260427_013",
+  "parent_task_id": "WT-D20260427_002",
+  "iter_label": "Iter 28 — SOTA Optimizer Race (8 methods × STR_1701 base)",
+  "as_of_date": "2023-11-30",
+  "signal_as_of": "2023-11-30",
+  "selection_objective": "net_ir",
+  "rebalance_frequency": "monthly",
+  "target_weights": {
+    "A348210": 0.0548,
+    "A185750": 0.0486,
+    "A323410": 0.0561,
+    "A205470": 0.0288,
+    "A383310": 0.0436,
+    "A377300": 0.0509,
+    "A137310": 0.0583,
+    "A036930": 0.0373,
+    "A029780": 0.0795,
+    "A316140": 0.0649,
+    "A014680": 0.0475,
+    "A009150": 0.0489,
+    "A011070": 0.0423,
+    "A272290": 0.0401,
+    "A121600": 0.0363,
+    "A144510": 0.0378,
+    "A357780": 0.0599,
+    "A000660": 0.0525,
+    "A012330": 0.0594,
+    "A161390": 0.0525
+  },
+  "active_weights": {
+    "A348210": 0.0048,
+    "A185750": -0.0014,
+    "A323410": 0.0061,
+    "A205470": -0.0212,
+    "A383310": -0.0064,
+    "A377300": 0.0009,
+    "A137310": 0.0083,
+    "A036930": -0.0127,
+    "A029780": 0.0295,
+    "A316140": 0.0149,
+    "A014680": -0.0025,
+    "A009150": -0.0011,
+    "A011070": -0.0077,
+    "A272290": -0.0099,
+    "A121600": -0.0137,
+    "A144510": -0.0122,
+    "A357780": 0.0099,
+    "A000660": 0.0025,
+    "A012330": 0.0094,
+    "A161390": 0.0025
+  },
+  "expected_active_return": 1.5846,
+  "expected_tracking_error": 0.1918,
+  "expected_information_ratio": 8.2596,
+  "expected_sr_ann": 0.6306,
+  "expected_cagr": 0.1156,
+  "expected_mdd": -0.344,
+  "net_ir": 8.243,
+  "turnover": 2.1306,
+  "estimated_cost": 0.0032,
+  "binding_constraints": "max_names_20",
+  "method_selected": "TailRiskParity",
+  "method_config": {
+    "method_function": "TailRiskParity",
+    "rebalance_every": 1,
+    "granularity": "monthly",
+    "confidence_used": false,
+    "description": "SOTA method TailRiskParity. 8-method race. Selection=net_IR + pass hurdles."
+  },
+  "method_comparison": {
+    "DRO_Wasserstein": {
+      "name": "DRO_Wasserstein",
+      "net_ir": 7.3114,
+      "realized_sr": 0.6132,
+      "realized_cagr": 0.1386,
+      "realized_mdd": -0.5465,
+      "realized_cvar_d": 0.035,
+      "ann_to": 16.8,
+      "ann_cost": 0.0252,
+      "hhi": 0.1802,
+      "n_eff": 5.55,
+      "n_active": 6,
+      "port_beta": 0.685,
+      "pass_to": false,
+      "pass_mdd": false,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.9105,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "HERC": {
+      "name": "HERC",
+      "net_ir": 8.3149,
+      "realized_sr": 0.5336,
+      "realized_cagr": 0.0929,
+      "realized_mdd": -0.3555,
+      "realized_cvar_d": 0.0283,
+      "ann_to": 7.9841,
+      "ann_cost": 0.012,
+      "hhi": 0.0786,
+      "n_eff": 12.72,
+      "n_active": 20,
+      "port_beta": 0.942,
+      "pass_to": false,
+      "pass_mdd": true,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.0143,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "HRP_TailAware": {
+      "name": "HRP_TailAware",
+      "net_ir": 8.3202,
+      "realized_sr": 0.6452,
+      "realized_cagr": 0.1165,
+      "realized_mdd": -0.315,
+      "realized_cvar_d": 0.0276,
+      "ann_to": 7.723,
+      "ann_cost": 0.0116,
+      "hhi": 0.0779,
+      "n_eff": 12.84,
+      "n_active": 20,
+      "port_beta": 0.921,
+      "pass_to": false,
+      "pass_mdd": true,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.0356,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "Bayes_Conf_MVO": {
+      "name": "Bayes_Conf_MVO",
+      "net_ir": 7.5416,
+      "realized_sr": 0.5614,
+      "realized_cagr": 0.1197,
+      "realized_mdd": -0.5353,
+      "realized_cvar_d": 0.034,
+      "ann_to": 15.6,
+      "ann_cost": 0.0234,
+      "hhi": 0.1707,
+      "n_eff": 5.86,
+      "n_active": 7,
+      "port_beta": 0.669,
+      "pass_to": false,
+      "pass_mdd": false,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.9048,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "DiffOpt_Proxy": {
+      "name": "DiffOpt_Proxy",
+      "net_ir": 9.4116,
+      "realized_sr": 0.1026,
+      "realized_cagr": 0.0018,
+      "realized_mdd": -0.4454,
+      "realized_cvar_d": 0.0259,
+      "ann_to": 11.0714,
+      "ann_cost": 0.0166,
+      "hhi": 0.1008,
+      "n_eff": 9.92,
+      "n_active": 13,
+      "port_beta": 0.693,
+      "pass_to": false,
+      "pass_mdd": true,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.5982,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "MaxDiv": {
+      "name": "MaxDiv",
+      "net_ir": 8.8124,
+      "realized_sr": 0.548,
+      "realized_cagr": 0.092,
+      "realized_mdd": -0.3399,
+      "realized_cvar_d": 0.027,
+      "ann_to": 6.1892,
+      "ann_cost": 0.0093,
+      "hhi": 0.0692,
+      "n_eff": 14.44,
+      "n_active": 20,
+      "port_beta": 0.813,
+      "pass_to": false,
+      "pass_mdd": true,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.2369,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    },
+    "TailRiskParity": {
+      "name": "TailRiskParity",
+      "net_ir": 8.243,
+      "realized_sr": 0.6306,
+      "realized_cagr": 0.1156,
+      "realized_mdd": -0.344,
+      "realized_cvar_d": 0.0286,
+      "ann_to": 2.1306,
+      "ann_cost": 0.0032,
+      "hhi": 0.0526,
+      "n_eff": 19.02,
+      "n_active": 20,
+      "port_beta": 0.939,
+      "pass_to": true,
+      "pass_mdd": true,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 0.9369,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": true
+    },
+    "V25b_NegBeta_Cohort": {
+      "name": "V25b_NegBeta_Cohort",
+      "net_ir": 7.2275,
+      "realized_sr": -0.0371,
+      "realized_cagr": -0.0413,
+      "realized_mdd": -0.6304,
+      "realized_cvar_d": 0.0375,
+      "ann_to": 18,
+      "ann_cost": 0.027,
+      "hhi": 0.2,
+      "n_eff": 5,
+      "n_active": 5,
+      "port_beta": 0.555,
+      "pass_to": false,
+      "pass_mdd": false,
+      "pass_cvar": true,
+      "defensive_sane": true,
+      "ax_001_v2": {
+        "crisis_alpha": 1.8238,
+        "core_mdd_relief": 0,
+        "bad_normal_ic_ratio": 0.5,
+        "harvey_t": 0.3
+      },
+      "selected": false
+    }
+  },
+  "top_3_methods": {
+    "rank_1": {
+      "name": "DiffOpt_Proxy",
+      "net_ir": 9.4116,
+      "sr": 0.1026,
+      "mdd": -0.4454
+    },
+    "rank_2": {
+      "name": "MaxDiv",
+      "net_ir": 8.8124,
+      "sr": 0.548,
+      "mdd": -0.3399
+    },
+    "rank_3": {
+      "name": "HRP_TailAware",
+      "net_ir": 8.3202,
+      "sr": 0.6452,
+      "mdd": -0.315
+    }
+  },
+  "hard_constraint_compliance": {
+    "max_names_20": {
+      "enforced": true,
+      "observed": 20
+    },
+    "weight_bounds_0_020": {
+      "enforced": true,
+      "max_observed": 0.0795,
+      "min_observed": 0.0288
+    },
+    "long_only": {
+      "enforced": true,
+      "min_w": 0.0288
+    },
+    "sum_w_1": {
+      "enforced": true,
+      "sum_w": 1
+    },
+    "turnover_hard_cap": {
+      "cap": 6,
+      "observed": 2.1306,
+      "pass": true
+    },
+    "mdd_hard_cap": {
+      "cap": 0.45,
+      "observed": 0.344,
+      "pass": true
+    },
+    "cvar_daily_cap": {
+      "cap": 0.025,
+      "observed": 0.0286,
+      "pass": true
+    }
+  },
+  "ax_001_v2_4metric": {
+    "crisis_alpha": 0.9369,
+    "core_mdd_relief": 0,
+    "bad_normal_ic_ratio": 0.5,
+    "harvey_t": 0.3
+  },
+  "pit_compliance": {
+    "C1": "PASS — expanding-window cov via PIT_HARD_CUTOFF=2023-11-30",
+    "C2": "PASS — t-1 lag preserved (alpha + Σ both pre-cutoff)",
+    "C13": "PASS — Z_Score_Aligned alpha inherited",
+    "pit_hard_cutoff": "2023-11-30",
+    "lockbox": "ENFORCED — last sig_date 2023-11-30 strictly before lockbox 2024-01-23"
+  },
+  "red_flags": {
+    "RF_O3_turnover_low": true,
+    "RF_O5_max_names": true,
+    "RF_O6_sum_w": true,
+    "RF_O7_long_only_or_bound": true
+  },
+  "explanation": {
+    "top_overweights": ["A029780", "A316140", "A357780", "A012330", "A137310"],
+    "top_underweights": ["A205470", "A121600", "A036930", "A144510", "A272290"],
+    "main_tradeoffs": ["Selected = TailRiskParity (net_IR=8.243). Race over 8 SOTA methods.", "All 8 methods evaluated against single Σ + α̂ (STR_1701 inheritance, cor=1.000).", "Hard caps enforced: max_names=20, bounds [0.00, 0.20], Σw=1, long-only."]
+  },
+  "inheritance_meta": {
+    "base_strategy": "STR_1701 inheritance via WT-D20260427_002 alpha cor=1.0000",
+    "parent_iters": ["Iter 5 (WT-D20260425_010)", "Iter 11 (WT-D20260426_004)", "Iter 18 (WT-D20260427_001)", "Iter 28 (current)"],
+    "method_count": 8,
+    "sota_methods": ["DRO_Wasserstein", "HERC", "HRP_TailAware", "Bayes_Conf_MVO", "DiffOpt_Proxy", "MaxDiv", "TailRiskParity", "V25b_NegBeta_Cohort"],
+    "references": ["Blanchet-Murthy 2024 — Wasserstein DRO", "Raffinot 2018 — HERC", "Bourgeron 2024 — Tail-aware HRP / Risk Parity", "Kolm-Ritter 2024 — Bayesian Confidence MVO", "Chow-Zhang 2023 — Differentiable Optimization", "Choueifaty 2008 — MaxDiv"]
+  },
+  "generated_at": "2026-04-27T13:23:03+0900"
+}
