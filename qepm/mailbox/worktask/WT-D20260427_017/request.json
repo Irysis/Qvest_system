@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_017",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 32 — PG2 Real Z-Score Blend Top-20 Backtest (STR_1656 score 재구성 + 진짜 mandate)",
+  "hypothesis_description": "Iter 32 — 사용자 mandate strict 정확 준수. STR_1656 alpha score 재구성 후 진짜 PG2 정의로 walk-forward backtest.\n\n## 동기 (사용자 직접 지적)\n- 그동안 PG2 SR 1.4625 / 1.5243 / 1.9222 모두 NAV-level proxy 측정 (검증 부족)\n- 사용자 mandate 정확 정의: 'z-score 합산 후 top-20 종목 → portfolio → walk-forward backtest → 실측 SR'\n- 현재 STR_1656 alpha score 직접 가용 X (ML 모델 메타만 있고 ticker-level score 없음)\n- 진정한 PG2 SR 실측은 STR_1656 score 재구성 후 가능\n\n## 핵심 작업\n\n### Phase 1: STR_1656 alpha score 재구성\n- `04_Research/strategies/STR_1656_MLRA/run_all.R` ML model 재실행\n- XGBoost (daily 309팩터 raw, L-164 v1.1 carve-out)\n- monthly walk-forward expanding 재학습\n- ticker-level alpha score 추출 → parquet (Date × Ticker × score_str1656)\n\n### Phase 2: PG2 Z-Score Blend\n- score_blend = 0.8 × z(score_str1715) + 0.2 × z(score_str1656)\n- per-Date z-score 정규화\n- top-20 by score_blend 선택\n- weight allocation (LinTilt λ=1.5 inheritance)\n\n### Phase 3: Walk-forward Backtest\n- monthly rebalance\n- 15bps cost\n- 전기간 (STR_1715/STR_1656 가용 공통 기간)\n- Hash audit\n\n## 평가 (PG2 mandate strict)\n- 종목수 20 hard cap (per-Date)\n- monthly rebal\n- weight_bounds [0, 0.20]\n- Σw = 1, long-only\n- liquidity 2e8 KRW, cost 15bps\n- AX-001 v2 4-metric\n- Harvey 5-spec NW-HAC + DSR\n- 24-26 OOS extension\n- 8 stress periods\n\n## 핵심 mandate\n- 추정치 절대 X — 진짜 walk-forward 실측\n- z-score 합산 → top-20 portfolio (NAV-level blend X)\n- STR_1656 score 재구성 + 검증\n- 결과는 진짜 PG2 SR (이전 1.4625/1.5243/1.9222 모두 proxy)\n\n## 학술 references\n- L-484 score-level composite\n- Iter 11 baseline / Iter 31 Grid Best\n- L-242 metric verification mandate",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
