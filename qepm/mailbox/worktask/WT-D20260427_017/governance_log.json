@@ -6,6 +6,24 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: Iter 32 — PG2 Real Z-Score Blend Top-20 Backtest (STR_1656 score 재구성 + 진짜 mandate) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-04-27T16:02:22+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PIPELINE_RUN",
+      "summary": "STR_1656 ticker-level score 재구성 완료. s5_scores_B.csv (XGBoost S1-B ML 산출물, walk-forward expanding monthly + 21d purge) 활용. yearmonth-level alignment + per-Date z-score + 0.8/0.2 blend. 181 sig_dates × 507 tickers (KOSPI200∪KOSDAQ150 inheritance from STR_1715 panel)."
+    },
+    {
+      "timestamp": "2026-04-27T16:05:00+0900",
+      "agent": "alpha-research",
+      "action": "CODEX_R1_OVERRIDE_005",
+      "summary": "Codex CLI timeout 300s. OVERRIDE_005 자체 audit 적용 (mandate explicit fallback). 9/9 concerns 응답. APPROVE_CONDITIONAL — Forge가 본 panel로 진짜 score-level top-20 walk-forward backtest 수행 시 PG2 admission 가능."
+    },
+    {
+      "timestamp": "2026-04-27T16:08:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_DONE",
+      "summary": "alpha_package.json + alpha_scores.parquet (40,359 rows × 8 cols) + str1656/combined 변형 + alpha_validation.json + alpha_codex_resolution.json 모두 생성. Telegram brief 1847 bytes ok=TRUE 발송. Risk Agent spawn 가능. Blend ICIR=0.4856 / rank_IC=0.0465 / cross z-cor=-0.1121."
     }
   ]
 }
