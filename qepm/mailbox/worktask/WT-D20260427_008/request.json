@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_008",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 23 — Nonlinear Tail-Conditional Defense (Market Dynamics, NOT Financial)",
+  "hypothesis_description": "Iter 23 — 사용자 핵심 인사이트 두 개 통합: (1) 재무팩터 회피, (2) 비선형 관계.\n\n## 동기 (사용자 인사이트)\n- Iter 22 7 components (Q07/Q25/Q33/Q14/Q32/M11/D25) 모두 재무/cross-section ranking → 같은 panel 동조 (cor 0.18 fail)\n- 사용자: '재무에서 답 찾지 말고 비선형 접근'\n- 본 sprint: market dynamics + nonlinear relationship via tail dependence + regime-conditional\n\n## 핵심 가설 — 4 비선형 차원\n1. **Lower Tail Dependence (Clayton copula)**:\n   - λ_L_i = lim_{u→0} P(F_i ≤ u | F_str1701 ≤ u)\n   - mandate: λ_L < 0.10 (tail-independent OR inverse)\n   - 평시 cor 무관, 꼬리에서만 inverse\n2. **Time-varying Conditional Beta (Vol Regime)**:\n   - VKOSPI 또는 KR realized vol top 25% (high stress) periods 식별\n   - β_high = stocks vs STR_1701 in high-vol periods\n   - β_low = stocks in low-vol periods\n   - 후보: β_high < -0.2 AND β_low > 0 (regime-switching response)\n3. **Mutual Information Score** (linear vs nonlinear decomposition):\n   - MI(stock_i, STR_1701) - I(linear cor)\n   - 비선형 정보량 > 0.05 (linear hedge 못 잡는 dependence)\n4. **Higher-order Moment Defense**:\n   - co-skewness (negative — STR_1701 down 시 stock up 비대칭)\n   - co-kurtosis (extreme regions)\n   - 재무 X — pure return moments\n\n## Universe Features (재무 X, Market Dynamics)\n- 일간 Returns (Close/Close.shift(1) - 1) — daily 309F raw 활용 (L-164 v1.1)\n- Vol regimes (VKOSPI 또는 KR realized vol)\n- Tail returns (lower 5% / upper 5%)\n- Higher-order moments (rolling 60d/120d skew/kurt)\n\n## Alpha Composite\n- 4 nonlinear scores 결합 → V23 alpha vector\n- 각 stock 가중: λ_L_score + β_regime_score + MI_score + skew_score\n- AX-005 EXCLUSION: multi-axis (4 차원) — single-sleeve fail 회피\n\n## 핵심 mandate — STRICT (mathematical inverse)\n- V23 ↔ STR_1701 **lower tail dependence** < 0.10\n- V23 ↔ STR_1701 **drawdown cor** < -0.20 (Iter 22 mandate)\n- V23 high-vol regime cor < -0.10\n- AX-001 v2 4/4 PASS strict\n\n## 11 sprint 학습 BLOCKING\n- L-211/225/228: cross-section linear/sigmoid/ML 회피\n- L-220: monthly base\n- L-226 ERC near-EW\n- L-229 Optimizer mechanism alone\n- L-230 Time dimension cost-negative\n- L-231 Macro overlay realized fail\n- **L-232 Defensive overlay long-only KR top fail** — 본 sprint는 nonlinear (linear 회피)\n\n## 학술 references\n- Patton 2006 — Modelling Asymmetric Exchange Rate Dependence (copula)\n- Christoffersen Errunza Jacobs Langlois 2018 — Asymmetric Tail Dependence\n- Frazzini Pedersen 2014 — Betting Against Beta (regime-conditional)\n- Cover Thomas 2006 — Mutual Information\n- Harvey Siddique 2000 — Coskewness Premium\n- Avramov 2023 — KR-relevant nonlinear ML\n\n## 평가 (PG2 incremental)\n- V23 standalone 평시 SR 무관 (defensive insurance)\n- V23 lower tail dep < 0.10 PASS\n- V23 ↔ STR_1701 high-vol regime cor < -0.10 PASS\n- AX-001 v2 4/4 PASS\n- PG2 trio (STR_1701 70% + V23 15% + STR_1656 15%) realized SR > 1.4625 + crisis MDD 추가 완화",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
