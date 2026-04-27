@@ -1,17 +1,39 @@
 {
-  "updated_at": "2026-04-27T16:30:00+0900",
-  "updated_by": "Governor (Sonnet 4.6) — WT-D20260427_016 Iter 31 STR_1715 Probe Admission 10pct (Option B Sequential)",
-  "schema_version": "v1.8",
-  "n_admitted": 3,
+  "updated_at": "2026-04-27T20:30:00+0900",
+  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_005 STR_1715 Replacement (Option A 80%, hyperparameter optimization)",
+  "schema_version": "v1.9",
+  "n_admitted": 2,
   "admitted_ids": [
-    "STR_1701",
-    "STR_1656_MLRA_M05",
-    "STR_1715"
+    "STR_1715",
+    "STR_1656_MLRA_M05"
   ],
   "book_weights": {
-    "STR_1701": 0.7,
-    "STR_1656_MLRA_M05": 0.2,
-    "STR_1715": 0.1
+    "STR_1715": 0.80,
+    "STR_1656_MLRA_M05": 0.20
+  },
+  "user_override_005_replacement": {
+    "decision": "STR_1715_80PCT_REPLACEMENT_NOT_PROBE",
+    "promoted_at": "2026-04-27T20:30:00+0900",
+    "user": "도훈 (Dohoon Kim)",
+    "directive_quote": "A 즉시교체하고, 전기간 SR 실측해줘",
+    "rationale_user_inferred": "STR_1715 = STR_1701 hyperparameter 변형 (cor 1.0, same alpha). 10% probe는 averaging effect 의미 작음. Better hyperparameter 즉시 적용이 합리적.",
+    "previous_pg2_admit": "STR_1701 80% (User OVERRIDE_004) → archived",
+    "scenario_executed": "AB_80_20_STR1715_STR1656_REPLACEMENT",
+    "judge_concerns_acknowledged": [
+      "Stress periods NEGATIVE (GFC -1.73 / COVID -7.06)",
+      "Walk-forward 1.68 vs Lockbox 0.64 divergence",
+      "TO 570% margin 작음 (cap 600 29pp)",
+      "FF5 R² 0.0148 anomaly",
+      "AX-008 2/3 Codex OVERRIDE"
+    ],
+    "rollback_conditions": [
+      "T+30 realized SR < 1.20",
+      "MDD > -45%",
+      "TO > 595%",
+      "Lockbox SR drift > 30%",
+      "Crisis 진입 시 stress profile worse than expected"
+    ],
+    "user_logic": "STR_1701 hyperparameter 변형이라 stress profile 동일 — STR_1701 80% 운영 중인 risk와 동일. Better calibrated version으로 즉시 교체가 본질."
   },
   "probe_phase_admissions": [
     {

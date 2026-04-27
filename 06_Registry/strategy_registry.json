@@ -8423,8 +8423,8 @@
     "id": "STR_1701",
     "name": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
     "dir": "WT-D20260426_004",
-    "status": "pg2_active",
-    "pg_status": "PG2_ACTIVE",
+    "status": "archived_replaced",
+    "pg_status": "ARCHIVED_BY_STR_1715",
     "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701",
     "role_primary": "core_with_alpha_amplification",
     "role_secondary": "diversifier_with_marginal_defense",
@@ -8524,7 +8524,10 @@
       "L-221"
     ],
     "updated_at": "2026-04-26T11:35:00+0900",
-    "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_004 PG2 promotion + post-promotion verification"
+    "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_004 PG2 promotion + post-promotion verification",
+    "archived_at": "2026-04-27T20:30:00+0900",
+    "archived_reason": "STR_1715 (Iter 31 hyperparameter optimization) Replacement per User OVERRIDE_005",
+    "successor": "STR_1715"
   },
   {
     "id": "STR_1702",
@@ -8828,5 +8831,64 @@
     ],
     "terminated_at": "2026-04-27T08:50:00+0900",
     "forge_recommend": "MAINTAIN_BASELINE"
+  },
+  {
+    "id": "STR_1715",
+    "name": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay (User OVERRIDE_005 PG2 active)",
+    "dir": "WT-D20260427_016",
+    "status": "pg2_active",
+    "pg_status": "PG2_ACTIVE",
+    "wt_id": "WT-D20260427_016",
+    "iter_label": "Iter31_GridSearch_Best",
+    "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700 -> STR_1701 -> STR_1715 (hyperparameter optimization)",
+    "role_primary": "core_with_alpha_amplification_optimized",
+    "role_bias_tag": "RoleBias_Core",
+    "best_params": {
+      "lambda": 1.5,
+      "TOphi": 3,
+      "cash_NORMAL": 0.1,
+      "cash_CAUTION": 0.2,
+      "cash_CRISIS": 0.4
+    },
+    "hurdle_result": {
+      "pass": true,
+      "hard_fail": false,
+      "grade": "A",
+      "judge_score": 78,
+      "verdict": "PASSED_WITH_NOTE"
+    },
+    "forge_realized": {
+      "pre_lb_sr_n239": 1.4522,
+      "cagr_pct": 35.11,
+      "mdd_pct": -35.26,
+      "oos_24_26_sr": 1.6827,
+      "monthly_240m_sr": 1.4633,
+      "lockbox_sr_551d": 0.6422,
+      "lockbox_mdd_pct": -22.2,
+      "harvey_5spec_pass": "5/5_PASS",
+      "harvey_t_ff5_nw_forge": 5.6027,
+      "harvey_t_ff5_nw_judge_recompute": 6.2519,
+      "dsr_raw": 6.18,
+      "dsr_post_n30": 4.684,
+      "turnover_annual_pct": 570.78,
+      "pg2_blend_sr_realized": 1.5243
+    },
+    "concerns": [
+      "Stress periods NEGATIVE (GFC -1.73 / COVID -7.06)",
+      "Walk-forward / Lockbox divergence 2.62x",
+      "TO 570% (cap 600 29pp 여유)",
+      "FF5 R² 0.0148 factor-orthogonal anomaly",
+      "AX-008 2/3 Codex OVERRIDE"
+    ],
+    "pg2_blend_partner": "STR_1656_MLRA_M05 20%",
+    "previous_pg2_replaced": "STR_1701 80% archived (User OVERRIDE_005)",
+    "l_codes": [
+      "L-220",
+      "L-221",
+      "L-237",
+      "L-239"
+    ],
+    "admitted_at": "2026-04-27T20:30:00+0900",
+    "admitted_by_user": "OVERRIDE_005 — Replacement direct (10% Probe rejected as averaging-only)"
   }
 ]
