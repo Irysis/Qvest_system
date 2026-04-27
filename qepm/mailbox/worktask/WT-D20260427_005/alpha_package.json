@@ -196,7 +196,7 @@
   },
   "ax_001_v2_audit": {
     "crisis_alpha": 0.0244,
-    "core_mdd_relief": 0,
+    "core_mdd_relief": 0.1256,
     "bad_normal_ic_ratio": -4.163,
     "harvey_t_inherited": -0.0238,
     "notes": [
@@ -209,10 +209,12 @@
   "v_iter21_pg2_blend_expected_sr": {
     "baseline_pg2_sr": 1.4625,
     "expected_sr_under_dynamic_cash": "TBD at Optimizer + Forge backtest",
-    "proxy_mdd_iter11_5pct_cash": -0.7289,
-    "proxy_mdd_iter21_dynamic_cash": -0.7289,
-    "proxy_mdd_relief": 0,
-    "rationale": "Layer evaluation: PG2 SR > 1.4625 baseline + crisis MDD 추가 완화 + 평시 alpha 보존. Counterfactual KOSPI200 BM_Ret proxy with dynamic cash 0~50% (vs constant 5% Iter 11) shows MDD relief Δ. Definitive at Forge PG2 backtest downstream."
+    "proxy_mdd_iter11_5pct_cash": -0.3931,
+    "proxy_mdd_iter21_dynamic_cash": -0.2675,
+    "proxy_mdd_relief": 0.1256,
+    "proxy_sr_iter11_constant_cash": 0.2164,
+    "proxy_sr_iter21_dynamic_cash": 0.2032,
+    "rationale": "Layer evaluation: PG2 SR > 1.4625 baseline + crisis MDD 추가 완화 + 평시 alpha 보존. Counterfactual KOSPI200 BM_Ret proxy with dynamic cash 0~50% (vs constant 5% Iter 11) shows MDD relief Δ. Sample restricted to 2008-01-01 ~ TRAIN_END to match alpha panel. Definitive at Forge PG2 backtest downstream — STR_1701 active alpha + Optimizer LinTilt + dynamic cash."
   },
   "universe": {
     "label": "KOSPI200_KOSDAQ150_intersection (inherited)",
@@ -247,7 +249,7 @@
       "id": "RF-LAYER-NOVEL",
       "severity": "MEDIUM",
       "msg": "Macro Overlay layer = new dimension (not alpha, not optimizer mechanism). Effectiveness unproven at portfolio level.",
-      "detail": "Counterfactual KOSPI200 MDD relief proxy = 0.0000. Crisis_alpha proxy = 0.0244.",
+      "detail": "Counterfactual KOSPI200 MDD relief proxy = 0.1256. Crisis_alpha proxy = 0.0244.",
       "resolution": "Forge PG2 backtest is the definitive test. Optimizer agent must implement msi_norm-driven cash/max_w/TO policy."
     },
     "RF_MACRO_KR_ONLY": {
@@ -274,7 +276,7 @@
         "dsr_post": 0.9716,
         "cor_to_str1701": 1,
         "crisis_alpha": 0.0244,
-        "core_mdd_relief": 0,
+        "core_mdd_relief": 0.1256,
         "bad_normal_ic_ratio": -4.163,
         "selected": true
       }
@@ -302,7 +304,7 @@
     "AX-001": {
       "rule": "AX-001 v2 defense conditional",
       "status": "ENHANCED",
-      "evidence": "Macro Overlay layer 강화. crisis_alpha=0.0244, core_mdd_relief=0.0000, bad_normal_ic_ratio=-4.1630."
+      "evidence": "Macro Overlay layer 강화. crisis_alpha=0.0244, core_mdd_relief=0.1256, bad_normal_ic_ratio=-4.1630."
     },
     "AX-002": {
       "rule": "Harness-only validity",
@@ -412,6 +414,6 @@
     "L-229 Iter 11 baseline optimal point",
     "L-211/225/228 cross-section alpha avoidance"
   ],
-  "generated_at": "2026-04-27T10:22:43+0900",
+  "generated_at": "2026-04-27T10:24:47+0900",
   "forward_to": "Iter 21 Optimizer (msi_norm-driven dynamic cash 0~50% / max_w 0.10~0.20 / TO budget 200~600)"
 }

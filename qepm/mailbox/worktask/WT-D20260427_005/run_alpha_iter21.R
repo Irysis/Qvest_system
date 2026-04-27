@@ -233,17 +233,24 @@ bm_monthly[, msi_lag := msi_monthly$msi_norm[idx]]
 bm_monthly[, msi_lag := shift(msi_lag, 1L)]
 bm_monthly[, msi_lag := fifelse(is.na(msi_lag), 0.1, msi_lag)]
 
+# Restrict to alpha sample period (2008-01-01 to TRAIN_END) for fair comparison
+bm_monthly <- bm_monthly[Date >= as.Date("2008-01-01") & Date <= TRAIN_END]
+
 # Counterfactual: dynamic cash policy
-bm_monthly[, cash_iter11 := 0.05]  # constant baseline
+bm_monthly[, cash_iter11 := 0.05]  # constant baseline (Iter 11 NORMAL state default)
 bm_monthly[, cash_iter21 := pmin(pmax(0, msi_lag * 0.5), 0.5)]
 bm_monthly[, ret_iter11 := monthly_ret * (1 - cash_iter11)]
 bm_monthly[, ret_iter21 := monthly_ret * (1 - cash_iter21)]
-bm_monthly[, cum_iter11 := cumprod(1 + ret_iter11) - 1]
-bm_monthly[, cum_iter21 := cumprod(1 + ret_iter21) - 1]
+bm_monthly[, cum_iter11 := cumprod(1 + ret_iter11)]
+bm_monthly[, cum_iter21 := cumprod(1 + ret_iter21)]
 
-mdd_iter11 <- min((1 + bm_monthly$cum_iter11) / cummax(1 + bm_monthly$cum_iter11) - 1, na.rm = TRUE)
-mdd_iter21 <- min((1 + bm_monthly$cum_iter21) / cummax(1 + bm_monthly$cum_iter21) - 1, na.rm = TRUE)
-core_mdd_relief <- mdd_iter21 - mdd_iter11   # less negative is better
+mdd_iter11 <- min(bm_monthly$cum_iter11 / cummax(bm_monthly$cum_iter11) - 1, na.rm = TRUE)
+mdd_iter21 <- min(bm_monthly$cum_iter21 / cummax(bm_monthly$cum_iter21) - 1, na.rm = TRUE)
+core_mdd_relief <- mdd_iter21 - mdd_iter11   # less negative (closer to 0) is better
+sr_iter11 <- mean(bm_monthly$ret_iter11) / sd(bm_monthly$ret_iter11) * sqrt(12)
+sr_iter21 <- mean(bm_monthly$ret_iter21) / sd(bm_monthly$ret_iter21) * sqrt(12)
+cat("\nProxy Sharpe (BM_Ret w/ cash overlay): Iter11=", round(sr_iter11, 4),
+    "Iter21=", round(sr_iter21, 4), "\n")
 cat("\nProxy MDD (Iter 11 5% cash):", round(mdd_iter11, 4),
     "| Proxy MDD (Iter 21 dynamic):", round(mdd_iter21, 4),
     "| relief (Δ):", round(core_mdd_relief, 4), "\n")
@@ -476,10 +483,13 @@ alpha_package <- list(
     proxy_mdd_iter11_5pct_cash = round(mdd_iter11, 4),
     proxy_mdd_iter21_dynamic_cash = round(mdd_iter21, 4),
     proxy_mdd_relief = round(core_mdd_relief, 4),
+    proxy_sr_iter11_constant_cash = round(sr_iter11, 4),
+    proxy_sr_iter21_dynamic_cash = round(sr_iter21, 4),
     rationale = paste(
       "Layer evaluation: PG2 SR > 1.4625 baseline + crisis MDD 추가 완화 + 평시 alpha 보존.",
       "Counterfactual KOSPI200 BM_Ret proxy with dynamic cash 0~50% (vs constant 5% Iter 11) shows MDD relief Δ.",
-      "Definitive at Forge PG2 backtest downstream."
+      "Sample restricted to 2008-01-01 ~ TRAIN_END to match alpha panel.",
+      "Definitive at Forge PG2 backtest downstream — STR_1701 active alpha + Optimizer LinTilt + dynamic cash."
     )
   ),
   universe = list(

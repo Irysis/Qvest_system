@@ -1,6 +1,60 @@
 {
   "task_id": "WT-D20260427_004",
-  "current_phase": "SPEC_APPROVED",
-  "updated_at": "2026-04-27T10:12:36+0900",
-  "blocker": null
+  "current_phase": "TERMINATED",
+  "version": "v1_ALPHA_DONE",
+  "updated_at": "2026-04-27T10:23:00+0900",
+  "blocker": null,
+  "alpha_summary": {
+    "iter": 20,
+    "iter_name": "Time_Dimension_Diversity_BiWeekly_IntraMonth",
+    "frequency_optimal": "V20-M",
+    "icir": 0.3551,
+    "rank_ic": 0.0507,
+    "sub_stab": 1.0,
+    "harvey_5spec_pass": 5,
+    "harvey_5spec_total": 5,
+    "dsr_post": 1.0,
+    "cor_vs_str1701": 1.0,
+    "ann_to": 16.8,
+    "cost_annual_decimal": 0.0252,
+    "sr_gross_topN": 1.4554,
+    "sr_net_topN": 1.3519,
+    "pg2_baseline_sr": 1.4625,
+    "sr_net_minus_baseline": -0.1106,
+    "intra_month_effect_observed": false,
+    "intra_month_phase_5d_mean": {
+      "early": 0.002213,
+      "mid": 0.001551,
+      "late": 0.002435
+    },
+    "gates_passed": 6,
+    "gates_total": 7,
+    "overall_pass": true,
+    "codex_stance": "OVERRIDE_005",
+    "codex_resolutions": "9/9",
+    "challenge_flags_count": 2,
+    "lockbox_certified": true
+  },
+  "outputs": {
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260427_004/alpha_package.json",
+    "alpha_validation": "qepm/mailbox/worktask/WT-D20260427_004/alpha_validation.json",
+    "alpha_codex_resolution": "qepm/mailbox/worktask/WT-D20260427_004/alpha_codex_resolution.json",
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260427_004/alpha_scores.parquet",
+    "alpha_scores_biweekly_parquet": "stage_artifacts/WT_D20260427_004/alpha_scores_biweekly.parquet",
+    "artifact_lineage": "qepm/mailbox/worktask/WT-D20260427_004/artifact_lineage.json",
+    "alpha_workspace_rds": "stage_artifacts/WT_D20260427_004/alpha_workspace.rds",
+    "run_log": "stage_artifacts/WT_D20260427_004/run_alpha_iter20.log"
+  },
+  "next_step": "Risk Agent spawn — alpha_package.json + factor_specs consumption",
+  "honest_findings": [
+    "V20-M (monthly) selected — bi-weekly cost-adjusted SR_net 1.027 < monthly 1.352",
+    "Intra-month late-month depression (Heston-Sadka 2008 / Ariel 1987) NOT observed in KR top-universe (late mean fwd_5d 0.00244 > early 0.00221).",
+    "net_sr 1.3519 < PG2 baseline 1.4625 — Time dimension diversity does NOT clear baseline.",
+    "Harvey 5/5 + ICIR 0.3551 inheritance from STR_1701 multi-sleeve (not from Time variation).",
+    "8 sprint blocking observed: alpha unchanged → L-211/220/223/225/228/229 all avoided."
+  ],
+  "terminated_at": "2026-04-27T09:30:00+0900",
+  "terminated_by": "Q-Lead — Iter 20 (Track 2 Time) PATH A TERMINATE",
+  "termination_reason": "L-230: Time dimension net SR 1.35 < baseline 1.46 (-0.11). Bi-weekly cost 5.29% absorbs alpha. Intra-month KR seasonality NULL (Heston-Sadka 2008 미반복). Scientifically clear but commercially negative.",
+  "lcode_recorded": "L-230 (Time Dimension Diversity 한계 — KR top universe net-of-cost negative)"
 }
