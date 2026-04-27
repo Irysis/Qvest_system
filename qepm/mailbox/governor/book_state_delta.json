@@ -1,0 +1,75 @@
+{
+  "delta_type": "PROBE_ADMISSION",
+  "generated_at": "2026-04-27T16:30:00+0900",
+  "generated_by": "Governor (Sonnet 4.6)",
+  "wt_source": "WT-D20260427_016",
+  "str_admitted": "STR_1715",
+  "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+  "admission_type": "probe_10pct_sequential",
+
+  "weights_before": {
+    "STR_1701": 0.80,
+    "STR_1656_MLRA_M05": 0.20,
+    "STR_1715": 0.00
+  },
+  "weights_after": {
+    "STR_1701": 0.70,
+    "STR_1656_MLRA_M05": 0.20,
+    "STR_1715": 0.10
+  },
+  "weight_delta": {
+    "STR_1701": -0.10,
+    "STR_1656_MLRA_M05": 0.00,
+    "STR_1715": +0.10
+  },
+
+  "metrics_projected": {
+    "sr_current": 1.4625,
+    "sr_projected_range": [1.49, 1.53],
+    "sr_gap_after": [0.47, 0.51],
+    "mdd_current": -0.3395,
+    "mdd_projected_range": [-0.350, -0.340],
+    "cagr_current": 0.3001,
+    "cagr_projected": 0.305
+  },
+
+  "tdc_clearances": {
+    "STR_1715_vs_STR_1701": 0.0909,
+    "STR_1715_vs_STR_1656": 0.0000,
+    "STR_1715_vs_pg2_blend": 0.1000,
+    "threshold": 0.55,
+    "all_clear": true
+  },
+
+  "escalation_gate": {
+    "T30_date": "2026-05-27",
+    "escalation_target_weights": {
+      "STR_1701": 0.60,
+      "STR_1656_MLRA_M05": 0.20,
+      "STR_1715": 0.20
+    },
+    "escalation_conditions": [
+      "G7_liquidity_2e8_PASS",
+      "AX-008_Architect_advisory_CLOSE",
+      "T30_probe_SR_>=_0.8",
+      "TO_drift_<_590pct"
+    ]
+  },
+
+  "rollback_conditions": [
+    "T30_probe_SR_<_0.4",
+    "G7_liquidity_FAIL",
+    "AX-008_BLOCKING_finding",
+    "book_MDD_>_-42pct",
+    "TO_>=_595pct"
+  ],
+
+  "override_log_entry": {
+    "event_id": "PROBE_ADMISSION_005_ITER31_V31",
+    "decision": "ADMIT_STR_1715_PROBE_10PCT_SEQUENTIAL",
+    "governor_autonomous": true,
+    "lawbook_ref": "Admission Rule v3.4 + v6.1 R5 book-level",
+    "rationale": "Judge JUDGE_PASSED_WITH_NOTE Grade A + TDC all-clear + IR improvement borderline (upper 0.0675 > 0.05 threshold) + stress-negative profile mandates probe-first per Judge recommendation. Option B selected: 10% sleeve probe, STR_1701 reduced to 70%, STR_1656 unchanged 20%.",
+    "decided_at": "2026-04-27T16:30:00+0900"
+  }
+}

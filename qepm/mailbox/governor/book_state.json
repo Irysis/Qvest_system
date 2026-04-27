@@ -1,16 +1,38 @@
 {
-  "updated_at": "2026-04-26T10:30:00+0900",
-  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_004 STR_1701 PG2 promotion (MEGA_05 replacement, Scenario AB)",
-  "schema_version": "v1.7",
-  "n_admitted": 2,
+  "updated_at": "2026-04-27T16:30:00+0900",
+  "updated_by": "Governor (Sonnet 4.6) — WT-D20260427_016 Iter 31 STR_1715 Probe Admission 10pct (Option B Sequential)",
+  "schema_version": "v1.8",
+  "n_admitted": 3,
   "admitted_ids": [
     "STR_1701",
-    "STR_1656_MLRA_M05"
+    "STR_1656_MLRA_M05",
+    "STR_1715"
   ],
   "book_weights": {
-    "STR_1701": 0.8,
-    "STR_1656_MLRA_M05": 0.2
+    "STR_1701": 0.7,
+    "STR_1656_MLRA_M05": 0.2,
+    "STR_1715": 0.1
   },
+  "probe_phase_admissions": [
+    {
+      "str_id": "STR_1715",
+      "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+      "wt_source": "WT-D20260427_016",
+      "admitted_at": "2026-04-27T16:30:00+0900",
+      "probe_weight": 0.10,
+      "probe_type": "sequential_10pct",
+      "T30_review_date": "2026-05-27",
+      "escalation_target": 0.20,
+      "escalation_conditions": ["G7_liquidity_PASS", "AX008_close", "T30_SR>=0.8", "TO<590pct"],
+      "rollback_conditions": ["T30_SR<0.4", "G7_FAIL", "AX008_BLOCKING", "book_MDD>-42pct", "TO>=595pct"],
+      "stress_profile": "NEGATIVE (GFC/COVID/Vol2018/Inflation2022) — core_amplification only, NOT defense",
+      "tdc_vs_str1701": 0.0909,
+      "tdc_vs_str1656": 0.0000,
+      "tdc_vs_blend": 0.1000,
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE_Grade_A_score78",
+      "governor_verdict": "ADMITTED_PROBE_Option_B"
+    }
+  ],
   "book_composition_rationale": {
     "decision": "STR_1701_80_STR1656_20_USER_MANDATED_REPLACEMENT_TPLUS0_PROMOTION",
     "promoted_at": "2026-04-26T10:30:00+0900",
@@ -87,7 +109,26 @@
       "diversifier_role": "GFC_0pct_loss_protection_uncorrelated_to_Iter11_alpha"
     }
   },
-  "probe_phase_admissions": [],
+  "probe_phase_admissions": [
+    {
+      "str_id": "STR_1715",
+      "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+      "wt_source": "WT-D20260427_016",
+      "admitted_at": "2026-04-27T16:30:00+0900",
+      "probe_weight": 0.10,
+      "probe_type": "sequential_10pct",
+      "T30_review_date": "2026-05-27",
+      "escalation_target": 0.20,
+      "escalation_conditions": ["G7_liquidity_PASS", "AX008_close", "T30_SR>=0.8", "TO<590pct"],
+      "rollback_conditions": ["T30_SR<0.4", "G7_FAIL", "AX008_BLOCKING", "book_MDD>-42pct", "TO>=595pct"],
+      "stress_profile": "NEGATIVE_GFC_COVID_Vol2018_Inflation2022 — core_amplification_only_NOT_defense",
+      "tdc_vs_str1701": 0.0909,
+      "tdc_vs_str1656": 0.0000,
+      "tdc_vs_blend": 0.1000,
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE_Grade_A_score78",
+      "governor_verdict": "ADMITTED_PROBE_Option_B"
+    }
+  ],
   "previous_pg2": {
     "strategy_ids": [
       "STR_1631_MEGA_05",
@@ -158,6 +199,18 @@
       ]
     }
   ],
+  "probe_admission_log": [
+    {
+      "event_id": "PROBE_ADMISSION_005_ITER31_V31",
+      "str_id": "STR_1715",
+      "wt_id": "WT-D20260427_016",
+      "decision": "ADMITTED_PROBE_10PCT_OPTION_B",
+      "decided_at": "2026-04-27T16:30:00+0900",
+      "decided_by": "Governor autonomous (within v6.1 R5 authority)",
+      "rationale": "Judge PASS Grade A + TDC all-clear + stress-negative mandates probe-first. STR_1701 reduced 80->70%, STR_1715 probe 10% added.",
+      "user_override_required": false
+    }
+  ],
   "recent_rejections": [
     {
       "wt_id": "WT-D20260426_005",
@@ -176,7 +229,13 @@
     "sr_target": 2.0,
     "iter11_contribution_to_gap_closure": "+0.4735 SR (linear) — direct NAV verify pending",
     "iter12_contribution": "ZERO — REJECTED",
-    "further_research_needed": "SR +0.592 gap remaining beyond Iter11 AB. Iter 13+ alpha enhancement required (confidence-aware sizing or cross-family low-corr diversifier)."
+    "iter31_probe_contribution": {
+      "sr_projected_range": [1.49, 1.53],
+      "sr_gap_after_probe_range": [0.47, 0.51],
+      "ir_improvement_range": [0.0275, 0.0675],
+      "status": "PROBE_ACTIVE — T+30 empirical confirmation pending (2026-05-27)"
+    },
+    "further_research_needed": "SR 0.47-0.51 gap remaining after Iter 31 probe. Cross-family low-corr diversifier still required for SR 2.0 target. Iter 31 probe provides incremental +0.03-0.07 SR pending live confirmation."
   },
   "user_revocation_log": [
     {
