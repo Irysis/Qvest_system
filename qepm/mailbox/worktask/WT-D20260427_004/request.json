@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_004",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 20 — Time Dimension Diversity (Bi-weekly + Intra-month Signal)",
+  "hypothesis_description": "Iter 20 — 8 sprint 학습 후 Time 차원 변경. 현 monthly only → bi-weekly rebalance + intra-month tactical signal.\n\n## 동기 (차원 변경: Time)\n- 8 sprint (Iter 11-18) 모두 monthly rebalance 동일\n- KR market 현 PG2 baseline (monthly STR_1701) 외에 시간 frequency 다양성 미탐색\n- Bi-weekly 또는 weekly signal이 monthly에서 capture 못하는 alpha 가능\n- Intra-month tactical overlay (예: month-end pressure, 3rd Friday options expiry)\n\n## 핵심 가설\n1. **Bi-weekly rebalance** + 같은 alpha source (STR_1701 base) → SR 향상 가능?\n   - 가설: monthly→bi-weekly가 alpha decay 절반에서 capture\n   - 위험: TO 2x → cost 30bps annual (+15bps cost)\n2. **Intra-month tactical signal** (weekly momentum 또는 reversal)\n   - 학술: Heston-Sadka 2008 (US monthly seasonality), Kim-Choi 2019 (KR monthly effect)\n   - 가설: month-end 4 days가 month-start 4 days 대비 different beta exposure\n3. **Time-of-month effect overlay**\n   - 가설: 매월 21~23일 (futures expiry 영향) underperformance\n   - cash hedge 1주 적용 시 MDD 완화\n\n## 8 sprint 학습 BLOCKING\n- L-211 KR linear composite fail\n- L-220 vol-reduction Harvey 격하\n- L-223 universe restriction alpha vanishing\n- L-228 ML tree fail\n- L-229 Optimizer mechanism alone insufficient\n\n## 평가 (PG2 baseline 1.4625)\n- Bi-weekly variant: SR / cost 30bps 차감 후 net SR > 1.4625?\n- Intra-month overlay: month-end cash hedge MDD 완화 효과 + 기회비용\n- Net incremental: time-frequency diversification benefit\n\n## 핵심 mandate\n- alpha base: STR_1701 multi-sleeve (cor ≥ 0.85 inheritance)\n- Universe: KR_top342 (현재 baseline) + KR_TOP500_FREEFLOAT 옵션 (L-227 비교)\n- 빈도: monthly (baseline) / bi-weekly / weekly 비교\n- Hard caps: max_names 20 / weight [0, 0.20] / Σw=1 / long-only / 2e8 KRW\n- cost: 15bps × TO (bi-weekly TO ≈ 12 → cost 1.8% annual!)\n\n## 학술 references\n- Heston-Sadka 2008 — Monthly Seasonality in Stock Returns\n- Kim-Choi 2019 — KR monthly effect\n- Ariel 1987 — Monthly effect in stock returns\n- Cooper-Gulen-Schill 2008 — Frequency robustness",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
