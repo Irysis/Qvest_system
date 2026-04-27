@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260427_015",
+  "wt_type": "discovery",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": null,
+  "hypothesis_title": "Iter 30 — Recalibrated Hybrid (Iter 11 LinTilt mechanism + Iter 27 CAUTION, 92-date直接 calibration)",
+  "hypothesis_description": "Iter 30 — Iter 29 L-238 sig_date subset mismatch 직접 fix.\n\n## 동기 (Iter 29 본질 진단)\n- Iter 29 BULL/NORMAL 0.69 << Iter 11 same-period 1.19 (-0.51 격차)\n- 원인: Iter 11 weights (216 dates calibrate) vs 92-date subset 활용 시 calibration 이탈\n- Fix: Iter 11 LinTilt λ=1.0 mechanism을 92-date subset에 직접 적용\n\n## 핵심 가설 (Recalibrated Hybrid)\n- BULL/NORMAL (84 dates): STR_1701 alpha + LinTilt λ=1.0 directly recalculated on 92-date subset (NOT inheritance copy)\n- CAUTION (8 dates): Iter 27 sleeve adaptive (Core 60% / Hedge 15% / Defense 25% + cash 20%)\n- CRISIS: encoded only (panel 미관찰)\n\n## 평가\n- BULL/NORMAL recalibrated SR ≥ 1.10 (Iter 11 standalone target)\n- CAUTION SR ≥ 3.5 (Iter 27 inheritance 보존)\n- PG2 blend SR > 1.4625 (decisive)\n- AX-001 v2 4/4 PASS strict\n\n## 19 sprint 학습 BLOCKING\n- L-220~238 모두 적용\n- L-238 직접 fix (sig_date subset recalibration)\n\n## 학술 references\n- Iter 29 진단 + L-238\n- Iter 11 LinTilt baseline + Iter 27 CAUTION realized SR 3.97",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-04-27",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
