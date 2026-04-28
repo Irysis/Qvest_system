@@ -1,0 +1,140 @@
+{
+  "task_id": "WT-D20260428_002",
+  "iter": 10,
+  "iter_name": "V2_FIAPAS_Redesign_pre_registered",
+  "parent_task_id": "WT-D20260428_001",
+  "as_of_date": "2023-12-28",
+  "pipeline_version": "alpha_research_v1.2 + v6.31_charter + Iter10_pre_reg",
+  "measurement_setup": {
+    "sig_dates_attempted": 240,
+    "sig_dates_with_data": 240,
+    "liquidity_floor_krw": 200000000,
+    "winsorization_sd": 2.5,
+    "F3_dropped_pre_measurement": true,
+    "sign_F1_pre_registered": -1,
+    "n_candidates_committed": 3
+  },
+  "diagnostics_KR_top342": {
+    "rank_ic": 0.029308,
+    "ic_sd": 0.08847,
+    "icir": 0.331273,
+    "nw_t": 4.363945,
+    "monotonicity": 0.69697,
+    "subperiod_stability": 1,
+    "subperiod_metrics": {
+      "p1_2008_2014": {
+        "rank_ic": 0.015379,
+        "icir": 0.17473,
+        "n_months": 132
+      },
+      "p2_2015_2019": {
+        "rank_ic": 0.050713,
+        "icir": 0.691624,
+        "n_months": 60
+      },
+      "p3_2020_2024": {
+        "rank_ic": 0.040855,
+        "icir": 0.404655,
+        "n_months": 48
+      }
+    },
+    "inheritance_cor": 0.08138,
+    "inheritance_cor_signed": 0.045942,
+    "turnover_monthly": 0.685356,
+    "turnover_annual": 8.224268,
+    "dsr_pre": 13.776028,
+    "dsr_post": 13.626028,
+    "n_candidates_tried": 3,
+    "rolling_3yr_icir": {
+      "min": -0.046171,
+      "max": 0.829404,
+      "recent_3yr": 0.557396,
+      "full_icir_ratio_recent": 1.68259
+    },
+    "n_panel_rows": 66580,
+    "n_unique_tickers": 720
+  },
+  "per_spec_t_KR_top342": {
+    "F1_only": {
+      "t": 4.531684,
+      "ic": 0.02638,
+      "n_months": 240,
+      "pass": true
+    },
+    "F2_only": {
+      "t": 2.217377,
+      "ic": 0.015036,
+      "n_months": 240,
+      "pass": false
+    },
+    "FIAPAS_2spec": {
+      "t": 4.363945,
+      "ic": 0.029308,
+      "n_months": 240,
+      "pass": true
+    }
+  },
+  "harvey_t_specs_pass_count_KR_top342": 2,
+  "preregistration_check_KR_top342": {
+    "F1_pre_registered_sign": -1,
+    "F1_observed_sign": 1,
+    "pre_registration_pass": true,
+    "note": "F1z is constructed with sign mandate -1 already applied. After sign-flip, F1 t-stat is expected POSITIVE if herding-reversal mechanism holds. NEGATIVE t = pre-reg fail."
+  },
+  "diagnostics_KR_TOP500_FREEFLOAT": {
+    "rank_ic": 0.008022,
+    "ic_sd": 0.076077,
+    "icir": 0.105447,
+    "nw_t": 0.456657,
+    "monotonicity": -0.006061,
+    "subperiod_stability": 0.666667,
+    "inheritance_cor": 0.076189,
+    "dsr_post": 1.391627,
+    "n_panel_rows": 8815,
+    "n_unique_tickers": 1262
+  },
+  "per_spec_t_KR_TOP500_FREEFLOAT": {
+    "F1_only": {
+      "t": 1.209376,
+      "ic": 0.025692,
+      "n_months": 20,
+      "pass": false
+    },
+    "F2_only": {
+      "t": -3.009743,
+      "ic": -0.036281,
+      "n_months": 20,
+      "pass": true
+    },
+    "FIAPAS_2spec": {
+      "t": 0.456657,
+      "ic": 0.008022,
+      "n_months": 20,
+      "pass": false
+    }
+  },
+  "harvey_t_specs_pass_count_KR_TOP500_FREEFLOAT": 1,
+  "universe_comparison": {
+    "primary": "KR_top342",
+    "secondary": "KR_TOP500_FREEFLOAT",
+    "rationale": "L-227 architect advisory: Iter 10 mandate diagnostic for ICIR attenuation. Both universes measured; primary = KR_top342 (parent comparable); secondary = KR_TOP500_FREEFLOAT (deployment v2)."
+  },
+  "graduation_check": {
+    "rank_ic_pass": false,
+    "icir_pass": true,
+    "subperiod_pass": true,
+    "harvey_t_pass": true,
+    "dsr_post_pass": true,
+    "monotonicity_pass": false
+  },
+  "certificate_4cond": {
+    "cond1_inheritance_cor_lt_095": true,
+    "cond2_factor_specs_ge_1": true,
+    "cond3_mechanism_ge_50chars": true,
+    "cond4_harvey_pass_ge_3": false
+  },
+  "parent_factors_used": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+  "rcpp_used": false,
+  "parallel_exec": false,
+  "generated_at": "2026-04-28T06:13:33Z"
+}
