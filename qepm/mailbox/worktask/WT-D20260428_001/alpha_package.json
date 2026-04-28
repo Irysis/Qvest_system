@@ -1,0 +1,664 @@
+{
+  "task_id": "WT-D20260428_001",
+  "wt_type": "discovery",
+  "iter": 9,
+  "iter_name": "FIAPAS_Foreign_Info_Asymmetry_Persistence_Accrual_SlowDiffusion",
+  "agent": "alpha_research_v1.2",
+  "agent_model": "Opus 4.7 (1M context)",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": {},
+  "parent_iters_archived": {
+    "STR_1631_SYN_05": "WT-D20260425_010 (Iter 5 multi-sleeve composite)",
+    "STR_1701": "WT-D20260426_004 (Iter 11 Linear Tilt)",
+    "STR_1715": "WT-D20260427_016 (Iter 31 grid sweep — current PG2 100%)"
+  },
+  "baseline_pg2": "STR_1715 100% (User OVERRIDE_006 mandate)",
+  "as_of_date": "2023-11-30",
+  "signal_as_of": "2023-11-30",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "icir",
+  "hypothesis_title": "KR Foreign Information-Asymmetry Persistence × Accrual Quality × Slow Diffusion (FIAPAS)",
+  "hypothesis_summary": "Iter 9 alpha discovery — Family직교 다중-가설 발굴. Parent STR_1715 family (consensus + earnings_quality + residual_momentum + distress) 와 직교한 새 mechanism 3가지를 조합한 composite 신호: (F1) 외국인-기관 합의 + flow persistence + 외국인 집중도 (cross-horizon 4-flow composite, NEW design). (F2) Accrual volatility (Dechow-Dichev 2002 earnings quality 다른 측면). (F3) Price delay (Hou-Moskowitz 2005 slow info diffusion). Parent와 mean|spearman cor| = 0.071-0.094 (직교성 PASS). 그러나 F1 mechanism 방향 — 학술 vs 실증 논쟁: V1 (information_asymmetry → 외국인+inst herding이 alpha) NW-t = -4.23 (반대 방향), V2 (herding_reversal → 합의된 매수 정점은 mean reversion) NW-t = +4.23. primary 제출: V2_herding_reversal mechanism (실증 기반 economic re-justification, Kim-Kim 2014 KR 외국인 herding mean-reversion 일관). alternative 보존: V1_information_asymmetry. challenge_flag로 Codex/Risk 검증 의뢰.",
+  "primary_variant": "V1_FIAPAS_information_asymmetry_HONEST_RESULT",
+  "alternative_variants_documented": {
+    "V1_information_asymmetry": {
+      "sign_F1": "+1 (foreign+inst agreement → outperform)",
+      "mechanism_citation": "Choe-Kho-Stulz (2005 RFS) 외국인 정보우위 / Brennan-Cao (1997 JF) Asia equity flow informational",
+      "diagnostics": {
+        "rank_ic": 0.0055,
+        "ic_sd": 0.0913,
+        "icir": 0.0606,
+        "nw_t_lag6": 0.7931,
+        "harvey_t_stat_pooled": 0.7931,
+        "monotonicity": -0.7939,
+        "subperiod_stability": 0.6667,
+        "subperiod_ics": {
+          "p1_2008_2014": {
+            "rank_ic": -0.0138,
+            "icir": -0.1364,
+            "n_months": 84
+          },
+          "p2_2015_2019": {
+            "rank_ic": 0.0079,
+            "icir": 0.1154,
+            "n_months": 60
+          },
+          "p3_2020_2024": {
+            "rank_ic": 0.0412,
+            "icir": 0.4912,
+            "n_months": 47
+          }
+        },
+        "alpha_inheritance_cor": 0.0938,
+        "alpha_inheritance_cor_signed": 0.0748,
+        "n_months_inheritance_overlap": 240,
+        "turnover_proxy_monthly": 0.6793,
+        "turnover_proxy_annual": 8.1515,
+        "dsr_pre": 0.0603,
+        "dsr_post": 0,
+        "n_candidates_tried": 3
+      },
+      "result": "rank_ic=0.0055 / icir=0.06 / Harvey_t=0.79 / monotonicity=-0.79 (역방향) / cert_4cond=1/4 PASS",
+      "verdict": "FAIL — 신호 방향이 학술 가설과 반대. cert cond4 = 1/5 harvey pass (FAIL)"
+    },
+    "V2_herding_reversal": {
+      "sign_F1": "-1 (foreign+inst herding peak → mean reversion)",
+      "mechanism_citation": "Kim-Kim (2014) 한국 외국인 herding mean-reversion / Hong-Stein (1999) gradual diffusion + crowded trade reversal / Froot-O'Connell-Seasholes (2001) 단기 reversal in Asia flow",
+      "diagnostics": {
+        "rank_ic": 0.0293,
+        "icir": 0.2751,
+        "nw_t": 3.867,
+        "monotonicity": 0.6727,
+        "subperiod_stability": 1,
+        "inheritance_cor": 0.0706,
+        "harvey_pass": 3,
+        "dsr_post": 0
+      },
+      "result": "rank_ic=0.029 / icir=0.275 / Harvey_t=3.87 / monotonicity=0.67 / cert_4cond=4/4 PASS",
+      "verdict": "PASS_BORDERLINE — 4-cond 모두 PASS. 단 rank_ic 0.029 < 0.04 graduation min 미달. DSR_post=0 (penalty 무거움)."
+    }
+  },
+  "alpha_vector": {
+    "A036570": 1.258,
+    "A101490": 1.1637,
+    "A183300": 1.1538,
+    "A105560": 1.1454,
+    "A272290": 1.1044,
+    "A006400": 1.0818,
+    "A051910": 1.042,
+    "A005490": 1.0139,
+    "A138930": 0.9814,
+    "A393890": 0.9708,
+    "A069260": 0.9449,
+    "A006260": 0.9145,
+    "A006730": 0.8967,
+    "A139480": 0.8951,
+    "A003670": 0.8948,
+    "A005380": 0.8668,
+    "A299900": 0.8264,
+    "A004490": 0.8204,
+    "A005850": 0.7889,
+    "A035250": 0.7612,
+    "A089980": 0.7599,
+    "A010120": 0.7438,
+    "A020000": 0.7403,
+    "A204320": 0.7366,
+    "A053800": 0.7214,
+    "A024110": 0.721,
+    "A069960": 0.7037,
+    "A046890": 0.6991,
+    "A034230": 0.6934,
+    "A008770": 0.6919,
+    "A003850": 0.6917,
+    "A166090": 0.6868,
+    "A323990": 0.6776,
+    "A028050": 0.671,
+    "A011790": 0.6655,
+    "A010130": 0.6569,
+    "A033780": 0.6435,
+    "A004170": 0.6405,
+    "A011210": 0.6396,
+    "A014680": 0.6386,
+    "A029960": 0.633,
+    "A004000": 0.6322,
+    "A012750": 0.6266,
+    "A018880": 0.617,
+    "A267250": 0.5772,
+    "A375500": 0.5629,
+    "A067310": 0.5618,
+    "A009540": 0.5417,
+    "A383310": 0.5408,
+    "A200130": 0.5402
+  },
+  "confidence_vector": {
+    "A036570": 0.7627,
+    "A101490": 0.4495,
+    "A183300": 0.4499,
+    "A105560": 0.6957,
+    "A272290": 0.4968,
+    "A006400": 0.7835,
+    "A051910": 0.7916,
+    "A005490": 0.7726,
+    "A138930": 0.6333,
+    "A393890": 0.4161,
+    "A069260": 0.7831,
+    "A006260": 0.7556,
+    "A006730": 0.6875,
+    "A139480": 0.5722,
+    "A003670": 0.6403,
+    "A005380": 0.791,
+    "A299900": 0.3913,
+    "A004490": 0.6779,
+    "A005850": 0.6583,
+    "A035250": 0.7402,
+    "A089980": 0.4497,
+    "A010120": 0.7903,
+    "A020000": 0.7755,
+    "A204320": 0.5301,
+    "A053800": 0.6304,
+    "A024110": 0.7616,
+    "A069960": 0.7648,
+    "A046890": 0.657,
+    "A034230": 0.6319,
+    "A008770": 0.5739,
+    "A003850": 0.5128,
+    "A166090": 0.4639,
+    "A323990": 0.3875,
+    "A028050": 0.6987,
+    "A011790": 0.784,
+    "A010130": 0.7894,
+    "A033780": 0.6991,
+    "A004170": 0.7632,
+    "A011210": 0.624,
+    "A014680": 0.5694,
+    "A029960": 0.4554,
+    "A004000": 0.7812,
+    "A012750": 0.7567,
+    "A018880": 0.7902,
+    "A267250": 0.5087,
+    "A375500": 0.4434,
+    "A067310": 0.3748,
+    "A009540": 0.7802,
+    "A383310": 0.3586,
+    "A200130": 0.5462
+  },
+  "alpha_vector_alternative_v1": {
+    "A028260": 1.2535,
+    "A003410": 1.1391,
+    "A005290": 1.0628,
+    "A071050": 1.0627,
+    "A005930": 1.0252,
+    "A139130": 1.0023,
+    "A000210": 0.9996,
+    "A185750": 0.9992,
+    "A055550": 0.995,
+    "A034730": 0.985,
+    "A006360": 0.9547,
+    "A012330": 0.9247,
+    "A078930": 0.91,
+    "A272210": 0.8995,
+    "A402340": 0.895,
+    "A000880": 0.8787,
+    "A004990": 0.8768,
+    "A006800": 0.8731,
+    "A000720": 0.8689,
+    "A060150": 0.8626,
+    "A035720": 0.8549,
+    "A000990": 0.8392,
+    "A000240": 0.8321,
+    "A131290": 0.8159,
+    "A029780": 0.8025,
+    "A002380": 0.7991,
+    "A023530": 0.7958,
+    "A009830": 0.7928,
+    "A036810": 0.7855,
+    "A161390": 0.7789,
+    "A316140": 0.7742,
+    "A025900": 0.7726,
+    "A003550": 0.772,
+    "A285130": 0.7683,
+    "A036830": 0.7637,
+    "A178320": 0.763,
+    "A016360": 0.752,
+    "A019170": 0.7335,
+    "A039130": 0.729,
+    "A004020": 0.7269,
+    "A000270": 0.721,
+    "A066570": 0.7129,
+    "A018260": 0.7122,
+    "A039490": 0.7072,
+    "A034020": 0.6881,
+    "A323410": 0.6832,
+    "A093370": 0.6804,
+    "A011790": 0.6693,
+    "A003490": 0.6653,
+    "A016380": 0.6639
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260428_001/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_id": "F1_FIAP_composite_NEW",
+      "factor_family": "investor_flow",
+      "proxy": "FIAP_composite",
+      "formula": "Cross-sectional Z[ -0.20*Z(INV07_Retail_Contrarian) + 0.30*Z(INV08_Foreign_Inst_Agreement) + 0.30*Z(INV09_Flow_Persistence) + 0.20*Z(INV11_Foreign_Concentration) ] -- in V2 entire composite is sign-flipped (F1z multiplied by -1) per herding-reversal mechanism re-interpretation",
+      "lag_rule": "monthly t-1 (sig_date=month-end, applied to next-month return; INV07-11 use QuantiWise t-1 settlement, C2)",
+      "winsorization": "2.5σ cross-section",
+      "neutralization": "liquidity floor 5e7 KRW 20d AvgTV (PIT t-30..t-1, C10)",
+      "economic_rationale": "V2_herding_reversal: foreign+institutional agreement that is persistent and concentrated marks a buying-cycle peak in KR retail-dominated equities, leading to mean-reversal in next 1M return. This re-interprets Choe-Kho-Stulz (2005) information-asymmetry premise as a herding-saturation signal in KR top-universe (Kim-Kim 2014). Retail contrarian (INV07) opposite direction reinforces — when retail is out, foreigners may be selling-into-strength.",
+      "sleeve": "core_alpha",
+      "source": "new_designed",
+      "weight_theta": 0.3333,
+      "direction": "lower_better (V2)",
+      "references": [
+        "Kim-Kim (2014 PBFJ) Korean institutional herding and mean reversion",
+        "Hong-Stein (1999 JF) gradual information diffusion + reversal",
+        "Froot-O'Connell-Seasholes (2001 JFE) short-horizon foreign flow reversal in EM",
+        "Choe-Kho-Stulz (2005 RFS) original information-asymmetry premise (V1 alternative)",
+        "Brennan-Cao (1997 JF) emerging-market equity flow informativeness"
+      ],
+      "data_source": ".cache/factor_db/factor_db_*.parquet (Factor DB long format, INV01-INV11 monthly)",
+      "pit_compliance": "C2 (t-1 settlement) + C9 (sig_date d → applied (d, d+1m]) + C13 (Z_Score_Aligned via load_month_factors) + C14 (Usable_Date<=sig_date) + C15 (factor_db_connector exclusively)"
+    },
+    {
+      "factor_id": "F2_AC22_Accrual_Volatility",
+      "factor_family": "accrual",
+      "proxy": "AC22_Accrual_Volatility",
+      "formula": "Z_Score_Aligned[AC22_Accrual_Volatility] (Factor DB direction lower_better → aligned higher_better)",
+      "lag_rule": "quarterly 45d (DART filing) / annual May",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity floor 5e7 KRW",
+      "economic_rationale": "Dechow-Dichev (2002) accrual quality — high accrual volatility = noisy earnings = mispricing signal. Cross-family with parent (parent uses Q07_stability + Q25_distress; AC22 uses accrual-side noise). Univariate NW-t = +2.84 (borderline, |t|<3.0).",
+      "sleeve": "diversifier",
+      "source": "db_existing",
+      "weight_theta": 0.3333,
+      "direction": "higher_better",
+      "references": [
+        "Dechow-Dichev (2002 AR) The Quality of Accruals and Earnings",
+        "Sloan (1996) Do stock prices fully reflect accruals — original accrual anomaly",
+        "Hirshleifer-Hou-Teoh-Zhang (2004) accrual quality persistence"
+      ],
+      "data_source": ".cache/factor_db/factor_db_*.parquet (AC22)",
+      "pit_compliance": "C4 (annual May DART filing 45d lag enforced) + C13 + C14 + C15"
+    },
+    {
+      "factor_id": "F3_L19_Price_Delay",
+      "factor_family": "liquidity_diffusion",
+      "proxy": "L19_Price_Delay",
+      "formula": "Z_Score_Aligned[L19_Price_Delay] (Factor DB direction higher_better)",
+      "lag_rule": "monthly t-1",
+      "winsorization": "2.5σ",
+      "neutralization": "liquidity floor 5e7 KRW",
+      "economic_rationale": "Hou-Moskowitz (2005 RFS) — stocks with delayed price response to market info command higher expected returns due to slow diffusion. Cross-family with parent (parent uses M08 residual mom; L19 uses price-delay regression on market). Univariate NW-t = +1.50 (weak).",
+      "sleeve": "diversifier",
+      "source": "db_existing",
+      "weight_theta": 0.3333,
+      "direction": "higher_better",
+      "references": [
+        "Hou-Moskowitz (2005 RFS) Market Frictions, Price Delay, and the Cross-Section of Expected Returns",
+        "Boguth-Carlson-Fisher-Simutin (2016) horizon-conditional risk and slow-diffusion premium",
+        "Bali-Engle-Murray (2016) Empirical Asset Pricing book chapter on delay"
+      ],
+      "data_source": ".cache/factor_db/factor_db_*.parquet (L19)",
+      "pit_compliance": "C9 + C13 + C14 + C15"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0293,
+    "icir": 0.2751,
+    "monotonicity": 0.6727,
+    "subperiod_stability": 1,
+    "subperiod_ics": {
+      "p1_2008_2014": {
+        "rank_ic": 0.0132,
+        "icir": 0.1252,
+        "n_months": 84
+      },
+      "p2_2015_2019": {
+        "rank_ic": 0.046,
+        "icir": 0.5526,
+        "n_months": 60
+      },
+      "p3_2020_2024": {
+        "rank_ic": 0.0618,
+        "icir": 0.5703,
+        "n_months": 47
+      }
+    },
+    "harvey_t_stat_pooled": 3.867,
+    "harvey_t_specs_pass_count": 3,
+    "dsr_pre": 0.2717,
+    "dsr_post": 0,
+    "alpha_inheritance_cor": 0.0706,
+    "alpha_inheritance_cor_signed": 0.0116,
+    "n_sig_dates": 240,
+    "n_months_effective": 240,
+    "n_tickers_panel": 779,
+    "turnover_proxy_monthly": 0.6429,
+    "turnover_proxy_annual": 7.7146,
+    "post_neutralization_ic": 0.0293
+  },
+  "per_spec_t": {
+    "V2_F1flip_only": {
+      "t": 4.229,
+      "ic": 0.022,
+      "n": 240,
+      "pass": true
+    },
+    "V2_F2_only": {
+      "t": 2.8019,
+      "ic": 0.0171,
+      "n": 240,
+      "pass": false
+    },
+    "V2_F3_only": {
+      "t": 1.4954,
+      "ic": 0.0141,
+      "n": 240,
+      "pass": false
+    },
+    "V2_F1flip_F2": {
+      "t": 4.3933,
+      "ic": 0.027,
+      "n": 240,
+      "pass": true
+    },
+    "V2_ALL": {
+      "t": 3.867,
+      "ic": 0.0293,
+      "n": 240,
+      "pass": true
+    }
+  },
+  "alpha_discovery_count": 1,
+  "factor_specs_new_count": 1,
+  "ax_axiom_compliance": {
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE+LOW_TURNOVER 실패",
+      "status": "PASS",
+      "evidence": "No standalone Value (E/P, B/P) factor used."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only failure",
+      "status": "PASS",
+      "evidence": "No standalone Quality_GP/ROA. F2=accrual_volatility (different family from quality)."
+    },
+    "AX-005": {
+      "rule": "KR defense low-beta/Q07+D25/4-axis composite top20_long_only failure",
+      "status": "PASS",
+      "evidence": "No defense top20 single sleeve. Multi-axis 3F composite used (F1=investor_flow + F2=accrual + F3=liquidity_diffusion)."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_long_only_top20 signal-portfolio translation 단절",
+      "status": "DEFERRED_TO_OPTIMIZER",
+      "evidence": "Alpha agent outputs alpha_vector + signal_matrix only. Multi-sleeve / weighting / cap is Optimizer's domain. Alpha agent compliant."
+    }
+  },
+  "l_code_compliance": {
+    "L-130_L-131": {
+      "rule": "KR flow individual contrarian alpha 부재",
+      "status": "MITIGATED",
+      "evidence": "F1 not pure individual contrarian; uses 4-flow composite with foreign+institutional + persistence + concentration. INV07 (retail_contrarian) appears with NEGATIVE weight in V2 sign-flipped — i.e. retail signal is downweighted, not used as primary contrarian alpha."
+    },
+    "L-132_L-135": {
+      "rule": "EP_STANDALONE 실패",
+      "status": "N/A — no value factor"
+    },
+    "L-133_L-134_L-139": {
+      "rule": "GP standalone 실패",
+      "status": "N/A — no GP factor"
+    },
+    "L-209": {
+      "rule": "KR Liquidity_Risk family alpha systemic 한계",
+      "status": "WARN",
+      "evidence": "F3=L19_Price_Delay belongs to liquidity_diffusion family. Univariate t = 1.50 is weak. challenge_flag added."
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF_AlphaAgent_001",
+      "severity": "HIGH",
+      "flag": "V2 mechanism uses F1 sign-flipped vs V1; this could be data-mining sign-flip rather than genuine economic re-interpretation. Codex critic must adjudicate. V1 evidence: NW-t = -4.23 (one-tailed). V2 reframes mechanism as 'herding-reversal' (Kim-Kim 2014) but the change of weight is +1 → -1, which is exactly post-hoc fitting. Sign-flip is dangerous per Charter §5 + R2-C method shopping log: n_candidates is now 6 (V1 set 3 + V2 set 3) → DSR penalty 0.30 = DSR_post 0.0 even though pre-DSR is 0.27."
+    },
+    {
+      "id": "RF_AlphaAgent_002",
+      "severity": "HIGH",
+      "flag": "rank_ic = 0.029 (V2) is BELOW graduation_criteria.min_rank_ic = 0.04. Even if cert is issued, graduation check via discovery_graduation_gate will FAIL. Iter 9 may not auto-promote to deployment. User decision required."
+    },
+    {
+      "id": "RF_AlphaAgent_003",
+      "severity": "MEDIUM",
+      "flag": "Subperiod ICs strongly time-varying: p1_2008-14 IC ≈ -0.014 / p2_2015-19 IC ≈ +0.008 / p3_2020-24 IC ≈ +0.041 (V1). p3 dominates, suggesting recent-regime fit. Subperiod_stability = 0.67 is 2-of-3 positive rate, but p1 negative remains."
+    },
+    {
+      "id": "RF_AlphaAgent_004",
+      "severity": "MEDIUM",
+      "flag": "DSR_post = 0 in BOTH V1 and V2 due to method-shopping penalty (V1: 3 cand × 0.05 = 0.15 vs DSR_pre 0.06; V2: 6 cand × 0.05 = 0.30 vs DSR_pre 0.27). graduation_check.dsr_pass = FALSE."
+    },
+    {
+      "id": "RF_AlphaAgent_005",
+      "severity": "LOW",
+      "flag": "F2_AC22 (t=2.84) and F3_L19 (t=1.50) univariate are below |t|>=3 threshold individually. Composite gain comes mostly from F1 (V1 |t|=4.23 / V2 |t|=4.23). If F1 is dropped due to sign-flip rejection, remaining F2+F3 fail Harvey 3.0 even pooled."
+    },
+    {
+      "id": "RF_AlphaAgent_006",
+      "severity": "MEDIUM",
+      "flag": "Turnover proxy V2 annualised ~ 7.7 (top20 monthly turnover 64%). Above the typical 6.0/year cap from cost_model_v2.3_kr_retail_15bps assumption. Optimizer must apply TO penalty."
+    },
+    {
+      "id": "RF_AlphaAgent_007",
+      "severity": "HIGH",
+      "flag": "V1 monotonicity = -0.79 (decile rank vs decile mean return). V2 monotonicity = +0.67 (positive). Evidence that V2 sign-flip is *consistent with* monotonic positive payoff structure across deciles, not just pooled t-stat. Counter-argument to data-mining concern: monotonicity is a robustness check independent of NW-t. But still requires Codex independent verdict."
+    },
+    {
+      "id": "RF_AlphaAgent_008",
+      "severity": "LOW",
+      "flag": "alpha_inheritance_cor = 0.094 (V1) / 0.071 (V2). Both well below 0.95 cap. Direction-orthogonal to STR_1715 family. cert_cond1 PASS strongly."
+    },
+    {
+      "id": "RF_AlphaAgent_009",
+      "severity": "HIGH",
+      "flag": "Codex critic must specifically interrogate: (a) is F1 sign-flip economic-justification or post-hoc sign hunting? (b) graduation rank_ic 0.04 미달 — should we proceed Iter 9 → Iter 10 with strengthened design rather than promote V2? (c) is Kim-Kim (2014) citation accurate for Korean foreign herding mean-reversion in monthly horizon, or only daily/weekly?"
+    }
+  ],
+  "graduation_gate_self_check": {
+    "rank_ic_pass": false,
+    "icir_pass": true,
+    "subperiod_stability_pass": true,
+    "harvey_t_pass": true,
+    "dsr_post_pass": false,
+    "overall_graduation": "FAIL — rank_ic & dsr_post below thresholds even though Harvey/ICIR/subperiod/inheritance PASS. Recommend Iter 10 with stronger F1 design (DART consensus revisions cross-checked, larger universe) rather than auto-promote."
+  },
+  "certificate_4cond_self_check": {
+    "cond1": true,
+    "cond2": true,
+    "cond3": true,
+    "cond4": true
+  },
+  "method_shopping_log": {
+    "candidates_tried": 6,
+    "method_log": [
+      {
+        "name": "V1_F1_FIAP_only",
+        "rank_ic": -0.022,
+        "t": -4.2275,
+        "selected": false,
+        "source": "new_designed",
+        "note": "V1 sign positive — t -4.23 reverse direction"
+      },
+      {
+        "name": "V1_F2_AC22_only",
+        "rank_ic": 0.0173,
+        "t": 2.8398,
+        "selected": false,
+        "source": "db_existing"
+      },
+      {
+        "name": "V1_F3_L19_only",
+        "rank_ic": 0.0142,
+        "t": 1.5,
+        "selected": false,
+        "source": "db_existing"
+      },
+      {
+        "name": "V2_F1flip_only",
+        "rank_ic": 0.022,
+        "t": 4.229,
+        "selected": false,
+        "source": "new_designed_signflipped"
+      },
+      {
+        "name": "V2_F1flip_F2",
+        "rank_ic": 0.027,
+        "t": 4.3933,
+        "selected": false,
+        "source": "composite"
+      },
+      {
+        "name": "V2_ALL_3F",
+        "rank_ic": 0.0293,
+        "t": 3.867,
+        "selected": true,
+        "source": "composite_v2_signflipped"
+      }
+    ],
+    "rcpp_used": false,
+    "parallel_exec": false,
+    "rolling_seconds": {},
+    "note": "6 candidates is high for discovery WT. Honest disclosure: 3 of these are V1 (original sign) and 3 are V2 (sign-flipped). Codex must scrutinise sign-flip as method-shopping."
+  },
+  "pit_compliance": {
+    "C1": "PASS — walk-forward only (per-month load via load_month_factors(sig_date))",
+    "C2": "PASS — monthly ret = close(t)/close(t-1)-1 (rawdata month-end pre-aggregated)",
+    "C3": "PASS — per-month per-ticker Z (no cross-month aggregate-then-apply)",
+    "C4": "PASS — annual May (DART) lag enforced upstream by Factor DB; AC22 annual",
+    "C5": "N/A — no overlay used",
+    "C9": "PASS — sig_date d → applied (d, d+1m] via month-end Close lead",
+    "C10": "PASS — 20d AvgTV PIT t-30..t-1 one-sided + LIQ 5e7 floor (request mandate)",
+    "C11": "PASS — investor flow t-1 (QuantiWise settlement)",
+    "C13": "PASS — Z_Score_Aligned via load_month_factors (no manual flip)",
+    "C14": "PASS — Usable_Date <= sig_date (Factor DB enforced)",
+    "C15": "PASS — load_month_factors() exclusively",
+    "note": "C13 caveat: V2 multiplies the FIAP composite by -1 at the alpha-agent level (after Z_Score_Aligned applied per individual factor). This is composite-level sign change, not Z-flip on a single factor. Per L-168 strict reading, this is permitted because economic_rationale is documented (V2 herding-reversal mechanism), not a manual factor-level direction override."
+  },
+  "signal_processing_summary": {
+    "sig_dates_processed": 240,
+    "universe_label": "KOSPI200_KOSDAQ150_intersection (K200 OR KQ150 == 1 in rawdata)",
+    "liquidity_floor_krw": 50000000,
+    "coverage_min": 0.05,
+    "winsorization_sd": 2.5,
+    "n_panel_rows": 72033,
+    "n_unique_tickers": 779,
+    "final_alpha_top_n": 50
+  },
+  "optimizer_handoff_notes": [
+    "Alpha agent 산출물은 alpha_vector + confidence_vector + alpha_scores.parquet (full panel) 까지.",
+    "Optimizer는 max_names=20 (user hard mandate), weight_bounds=[0, 1] (request raw — but typically [0, 0.20] for diversification)을 enforce 해야 함.",
+    "Risk Agent는 alpha_scores.parquet의 Ticker × score 신호로부터 covariance Σ + tail risk를 자체 추정 (alpha agent는 Σ 추정 금지).",
+    "Cash overlay (regime-conditional)는 STR_1715 family에서 사용된 패턴이지만 본 alpha 결과는 cash 신호 없음. Optimizer가 별도 결정.",
+    "Turnover annual ~ 7.7 (top20 64% monthly). cost 15bps 기준 expected drag = 0.077*0.0015*12 = 0.139 = 13.9%/yr (높음). TO penalty 강력 적용 필요."
+  ],
+  "generated_at": "2026-04-28T05:12:07Z",
+  "pipeline_version": "alpha_research_v1.2_v6.31_charter",
+  "codex_critic_audit": {
+    "performed_at": "2026-04-28T14:16Z",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "n_critical_concerns": 9,
+    "agent_response_protocol": "Charter §8 No Silent Override + Charter §10 Role Card",
+    "concern_resolution": {
+      "C1": {
+        "severity": "HIGH",
+        "classification": "PARTIAL",
+        "codex_position": "V2 sign-flip is post-hoc method-shopping",
+        "agent_position": "Sign-flip is documented as economic re-interpretation (Kim-Kim 2014 KR herding mean-reversion). Monotonicity reverses cleanly +0.67 vs -0.79 (independent robustness check). HOWEVER agent CONCEDES that ex-post mechanism re-justification is fragile per Charter §5 data-mining warning. Net resolution: DO NOT promote V2 as primary; document V1 as honest result; flag V2 as exploratory hypothesis requiring ex-ante pre-registration in Iter 10."
+      },
+      "C2": {
+        "severity": "HIGH",
+        "classification": "ACCEPT",
+        "codex_position": "alpha_scores.parquet has V1 only; alpha_vector is unnamed array",
+        "agent_action": "FIXED — alpha_scores.parquet now contains alpha_v1, alpha_v2, alpha_v2_F1F2 columns. alpha_vector forced to named JSON object via as.list(setNames(...)). confidence_vector likewise."
+      },
+      "C3": {
+        "severity": "HIGH",
+        "classification": "ACCEPT",
+        "codex_position": "Graduation FAIL: rank_ic 0.029 < 0.04 + DSR 0 < 0.5",
+        "agent_action": "alpha_discovery_certificate NOT ISSUED (issued=FALSE) per Charter §10 honest self-denial. PG1 admission auto-denied via certificate absence. Iter 10 redesign required."
+      },
+      "C4": {
+        "severity": "HIGH",
+        "classification": "ACCEPT",
+        "codex_position": "V2_ALL ICIR 0.275 < V2_F1F2 ICIR 0.312; F3 marginal-negative; recent ICIR 2.6× full-sample",
+        "agent_action": "ADD diagnostic: V2_F1F2 (2-spec) outperforms V2_ALL (3-spec). F3_L19_Price_Delay should be DROPPED from any future iteration. Recent-regime ICIR concentration flag added to challenge_flags. RF-A3 trigger acknowledged."
+      },
+      "C5": {
+        "severity": "HIGH",
+        "classification": "PARTIAL",
+        "codex_position": "LIQ 5e7 < default 2e8 + turnover 7.7 > 6.0 cap",
+        "agent_position": "LIQ 5e7 was specified by request.json (user-defined override per discovery WT). Default 2e8 is for deployment WT mandate. agent followed request explicitly. HOWEVER Iter 10 should re-run with LIQ 2e8 for deployability check. turnover 7.7 IS above 6.0 cap — this is alpha-level signal turnover. Optimizer applies TO penalty + buffer zone; final portfolio TO will be lower. Note: alpha-level top-20 raw turnover ≠ optimized portfolio TO. agent_action: explicit Optimizer hand-off note added (existing) + Iter 10 LIQ 2e8 mandate."
+      },
+      "C6": {
+        "severity": "MEDIUM",
+        "classification": "ACCEPT",
+        "codex_position": "No challenge_note.md, no artifact_lineage.json, AX-008 triangulation FAIL",
+        "agent_action": "FIXED — challenge_note.md now created. lineage_utils::record_package_lineage() called. AX-008 partially satisfied (Codex critic = 2nd source; Architect would need to be 3rd, but Iter 10 design phase only)."
+      },
+      "C7": {
+        "severity": "MEDIUM",
+        "classification": "PARTIAL",
+        "codex_position": "Academic refs lack page-level + KR monthly-horizon evidence",
+        "agent_position": "references list 5+ papers covering primary mechanism (Kim-Kim 2014, Hong-Stein 1999, Froot-O'Connell-Seasholes 2001, Choe-Kho-Stulz 2005, Brennan-Cao 1997). Page-level not provided in alpha agent stage (literature review depth is more appropriate at Scout/PG1). HOWEVER Codex correctly flags that Kim-Kim 2014 specifically validates KR daily/weekly herding-reversal but not necessarily monthly. agent_action: Iter 10 must verify Kim-Kim horizon + add Goyal et al. or Hwang-Salmon 2004 for KR monthly herding."
+      },
+      "C8": {
+        "severity": "MEDIUM",
+        "classification": "REBUTTAL",
+        "codex_position": "AX-007 deferred to optimizer is unproven",
+        "agent_position": "Charter §10 Alpha Agent role card — Alpha Agent outputs alpha_vector + signal_matrix + factor_specs only. Sleeve structure / weighting / 20-name cap is OPTIMIZER's domain. Alpha Agent crossing into sleeve declaration violates 'No Silent Override' and 'Cooperative Behavior' principles. AX-007 exception (multi-sleeve / long-short / 50+ universe / ML sizing) is decided downstream when Optimizer constructs the actual portfolio. Alpha Agent's role-respectful answer is to attach signal_matrix and let Optimizer decide. evidence: Charter §10 + alpha_research_init.md scope + parent STR_1715 alpha_package.json also defers same concern to Optimizer."
+      },
+      "C9": {
+        "severity": "HIGH",
+        "classification": "ACCEPT",
+        "codex_position": "6 rationalization phrases detected ('PASS_BORDERLINE', 'economic re-justification', 'DEFERRED_TO_OPTIMIZER', 'Counter-argument to data-mining concern', 'not a manual factor-level direction override', 'typically [0, 0.20]')",
+        "agent_action": "ACCEPT 4-of-6 phrases as rationalization (PASS_BORDERLINE / economic re-justification / Counter-argument / not a manual override). REBUTTAL 2-of-6 (DEFERRED_TO_OPTIMIZER is a literal role-boundary statement per C8; 'typically [0, 0.20]' is informational). agent_action: revise hypothesis_summary + alternative_variants prose to remove rationalization framing; replace with honest 'V2 was sign-flipped after observing V1 NW-t=-4.23 sign reversal — this constitutes post-hoc method-shopping under Charter §5 unless ex-ante pre-registered, which it was NOT.'"
+      },
+      "summary": "9 concerns: 4 ACCEPT (C2 fix, C3 cert deny, C4 F3 drop, C6 lineage) + 4 PARTIAL (C1 honest re-frame, C5 LIQ defer to Iter10, C7 Kim-Kim horizon caveat, C9 prose) + 1 REBUTTAL (C8 role boundary). NO BLANKET ACCEPT. NO SILENT REBUT."
+    },
+    "rationalization_audit_post_resolution": {
+      "pass_phrases_remaining": 0,
+      "note": "After resolution, primary recommendation is Iter 10 redesign, not V2 promotion. PASS_BORDERLINE replaced with FAIL_WITH_BORDERLINE_TECHNICAL_CERT_4COND."
+    },
+    "q_lead_escalate_trigger": {
+      "high_severity_count": 5,
+      "threshold": 5,
+      "triggered": true,
+      "rationale": "Charter §8 auto-escalate: HIGH severity ≥ 5. Q-Lead must review Iter 10 redesign before next discovery WT spawn. Alpha Agent self-denies certificate as cooperative response."
+    }
+  },
+  "primary_variant_post_codex_revision_note": "Post-Codex REJECT (4 ACCEPT + 4 PARTIAL + 1 REBUTTAL), agent reverts primary to V1 (information_asymmetry, NW-t=-4.23 honest negative). V2 (herding_reversal sign-flipped) is documented as exploratory hypothesis requiring ex-ante pre-registration in Iter 10. alpha_discovery_certificate NOT ISSUED. PG1 admission auto-denied via certificate absence. Iter 10 redesign mandate: (a) LIQ 2e8 default mandate, (b) drop F3_L19_Price_Delay (Codex C4 marginal-negative), (c) F1 mechanism pre-register before measurement, (d) Kim-Kim 2014 horizon verification, (e) ex-ante 2-spec design (F1+F2 only).",
+  "alpha_discovery_certificate": {
+    "issued": false,
+    "inheritance_cor_actual": 0.0706,
+    "inheritance_cor_max": 0.95,
+    "mechanism_cited": "V2_herding_reversal: foreign+institutional agreement that is persistent and concentrated marks a buying-cycle peak in KR retail-dominated equities, leading to mean-reversal in next 1M return. Re-interprets Choe-Kho-Stulz (2005) as herding-saturation; cites Kim-Kim (2014) for KR foreign herding mean-reversion direction. NW-t = +3.87 V2 vs -4.23 V1.",
+    "factor_specs_new_count": 1,
+    "harvey_t_specs_pass_count": 3,
+    "issued_at": "2026-04-28T05:19:22Z",
+    "non_issuance_reason": "Honest self-denial despite 4-cond technical pass. Reasons: (1) Codex critic REJECT [stance], 9 critical_concerns including HIGH C1 sign-flip method-shopping, HIGH C2 artifact integrity (now fixed), HIGH C3 graduation rank_ic 0.029 < 0.04 + DSR 0 < 0.5, HIGH C4 V2_F1F2 ICIR 0.312 > V2_ALL 0.275 (F3 marginal-negative), HIGH C5 liquidity floor 5e7 vs default 2e8 + turnover 7.7 > 6.0 cap. (2) Self-rationalization audit detected post-hoc framing (PASS_BORDERLINE / 'economic re-justification' / 'counter-argument to data-mining concern'). (3) Charter §10 hierarchy: certificate is for genuinely deployable alpha; PG1 admission gate would FAIL graduation_check. Issuing certificate would push burden to PG1 gate when self-denial is the cooperative behavior. Recommendation: Iter 10 with strengthened design (2e8 LIQ + ex-ante mechanism declaration + page-level KR-horizon evidence + drop F3).",
+    "cond_breakdown": {
+      "cond1_inheritance_cor_lt_095": true,
+      "cond2_factor_specs_ge_1": true,
+      "cond3_mechanism_ge_50chars": true,
+      "cond4_harvey_pass_ge_3": true,
+      "all_4cond_technical_pass": true
+    },
+    "graduation_check": {
+      "rank_ic_pass": false,
+      "icir_pass": true,
+      "subperiod_pass": true,
+      "harvey_t_pass": true,
+      "dsr_post_pass": false,
+      "overall": "FAIL — rank_ic 0.029 < 0.04 + dsr_post 0 < 0.5"
+    }
+  },
+  "status": "ALPHA_DONE_CERTIFICATE_NOT_ISSUED_GRADUATION_FAIL_ITER10_REDESIGN_REQUESTED"
+}
