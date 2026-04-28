@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
-# sr_provenance_check.sh — v6.3 SR Provenance Label verifier (L2 soft gate)
+# sr_provenance_check.sh — v1.2 SR Provenance Certifier (Positive Hook + 1 Hard Block)
 #
-# Charter §8 Measurement Basis Disclosure Mandate 강제.
+# Charter §8/§9/§10 Measurement Basis Disclosure + SoT for SR + Certification.
 # 이벤트: PostToolUse[Write|Edit]
-# 무한루프 회피: read-only, file_path regex 분기, retry counter
-# Reference violation: STR_1715 Iter 31 — hurdle_result method "ProductionSchedule240m" + tg_*.R label 누락
+#
+# Positive certifier 동작:
+#   - forge_package.json에 4-field 모두 존재 (sr_realized_share_based / measurement_basis_primary='forge_realized_share_based' /
+#     weights_csv_unique_dates_count / schedule_density_ratio) → sr_provenance_certificate.json 자동 발급
+#
+# Hard block 1건 (Charter §10 system integrity):
+#   - hurdle_result.json 또는 forge_package.json에 'ProductionSchedule[N]m' fabrication label 존재 시 → decision:"block"
+#
+# Reference violation: STR_1715 Iter 31 — hurdle_result method "ProductionSchedule240m" 잔존 사고.
 
 set -euo pipefail
 trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
@@ -20,26 +27,66 @@ CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.st
 
 WARN_MSGS=()
 
-# Branch 1: forge_package.json — 4 SR fields enum 검증
+# v1.2 Charter §10: HARD BLOCK 1건 — fabrication label (system integrity 위협)
+# hurdle_result.json 또는 forge_package.json에 ProductionSchedule[N]m 패턴 매치 시 즉시 차단
+if [[ "$FILE_PATH" =~ (hurdle_result\.json$|forge_package(_phase[0-9]+)?\.json$) ]]; then
+  if echo "$CONTENT" | grep -qE '"method"\s*:\s*"[^"]*ProductionSchedule[0-9]+m'; then
+    BLOCK_REASON="FABRICATION_LABEL_DETECTED (Charter §9/§10 hard block): method 필드에 'ProductionSchedule[N]m' fabrication label. STR_1715 Iter 31 violation 패턴 재발. 라벨 변경 후 재시도."
+    echo "{\"decision\":\"block\",\"reason\":\"$BLOCK_REASON\"}"
+    exit 0
+  fi
+fi
+
+# Branch 1: forge_package.json — 4 SR fields enum 검증 + sr_provenance_certificate 발급
 if [[ "$FILE_PATH" =~ forge_package(_phase[0-9]+)?\.json$ ]]; then
   if echo "$CONTENT" | grep -qE '"measurement_basis_primary"\s*:'; then
     if ! echo "$CONTENT" | grep -qE '"measurement_basis_primary"\s*:\s*"forge_realized_share_based"'; then
       WARN_MSGS+=("MEASUREMENT_BASIS_INVALID (Charter §9): measurement_basis_primary enum 강제 = 'forge_realized_share_based' only.")
     fi
   fi
+
+  # Positive certifier (v1.2 Charter §10): 4-field 모두 존재 → sr_provenance_certificate.json 발급
+  if [[ -f "$FILE_PATH" ]]; then
+    WT_DIR=$(dirname "$FILE_PATH")
+    CERT_PATH="$WT_DIR/sr_provenance_certificate.json"
+    if [[ ! -f "$CERT_PATH" ]]; then
+      python3 <<PYEOF 2>>/tmp/sr_provenance_certifier.log || true
+import json, datetime
+try:
+    with open("$FILE_PATH") as f:
+        pkg = json.load(f)
+except Exception:
+    raise SystemExit(0)
+required = ["sr_realized_share_based", "measurement_basis_primary",
+            "weights_csv_unique_dates_count", "schedule_density_ratio"]
+missing = [k for k in required if k not in pkg]
+basis_ok = pkg.get("measurement_basis_primary") == "forge_realized_share_based"
+if not missing and basis_ok:
+    cert = {
+        "issued": True,
+        "wt_id": pkg.get("task_id", ""),
+        "sr_realized_share_based": pkg.get("sr_realized_share_based"),
+        "measurement_basis_primary": pkg.get("measurement_basis_primary"),
+        "weights_csv_unique_dates_count": pkg.get("weights_csv_unique_dates_count"),
+        "schedule_density_ratio": pkg.get("schedule_density_ratio"),
+        "issued_at": datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
+        "issued_by": "sr_provenance_check.sh v1.2",
+        "charter_ref": "v1.2 §9/§10 SR Provenance Certificate"
+    }
+    with open("$CERT_PATH", "w") as f:
+        json.dump(cert, f, indent=2, ensure_ascii=False)
+PYEOF
+    fi
+  fi
 fi
 
-# Branch 2: hurdle_result.json — method_basis_label + ProductionSchedule pattern
+# Branch 2: hurdle_result.json — method_basis_label + production_grade 검증 (warn only)
 if [[ "$FILE_PATH" =~ hurdle_result\.json$ ]]; then
   if ! echo "$CONTENT" | grep -qE '"method_basis_label"\s*:'; then
     WARN_MSGS+=("HURDLE_METHOD_BASIS_MISSING (Charter §9): hurdle_result.json missing method_basis_label field. enum: optimizer_walk_forward_simulation / factor_engine_continuous / forge_realized_share_based.")
   fi
   if ! echo "$CONTENT" | grep -qE '"production_grade"\s*:'; then
     WARN_MSGS+=("PRODUCTION_GRADE_MISSING (Charter §9): hurdle_result.json missing production_grade boolean.")
-  fi
-  # Fabrication label detection
-  if echo "$CONTENT" | grep -qE '"method"\s*:\s*"[^"]*ProductionSchedule[0-9]+m'; then
-    WARN_MSGS+=("FABRICATION_LABEL_FOUND (Charter §9): method contains 'ProductionSchedule[N]m' — fabrication label 금지. STR_1715 Iter 31 violation 패턴.")
   fi
 fi
 

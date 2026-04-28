@@ -142,6 +142,51 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 
 ---
 
+### 10. Alpha Discovery Certification System (v1.2)
+
+**Positive Hook 패러다임 (Opus 4.7 정합)**:
+
+> Negative hook ("block on violation")은 LLM이 차단을 회피 trigger로 인식 → defensive rationalization 발동.
+> Positive hook ("certify on compliance")은 certificate 발급을 reward signal로 인식 → cooperative goal frame 획득.
+> 차단 책임은 Hook이 아니라 **admission gate**가 *certificate 부재 시 effective deny*.
+
+**5 Certificate + 1 Health Score + 1 Role Card System**:
+
+| Certificate | 발급 조건 | 발급 Hook | 검증 Layer (passive deny) |
+|---|---|---|---|
+| `alpha_discovery_certificate` | alpha_inheritance_cor < 0.95 + mechanism ≥ 50 chars + factor_specs ≥ 1 + harvey t pass ≥ 3 | `alpha_discovery_certifier.sh` | `wt_check_graduation()` PG1 admission gate |
+| `sr_provenance_certificate` | forge_package에 4-field 존재 (sr_realized_share_based / measurement_basis_primary='forge_realized_share_based' / weights_csv_unique_dates_count / schedule_density_ratio) | `sr_provenance_check.sh` (수정) | PG2 admission grade |
+| `schedule_fidelity_certificate` | schedule_density_ratio ≥ 0.95 OR infeasibility_report 명시 | `schedule_fidelity_check.sh` (수정) | PG2 admission grade |
+| `governor_concord_certificate` | book_state 변경이 latest governor_admission verdict과 match | `governor_concord_certifier.sh` | PG3 monitoring effective admit |
+| `governor_concord_with_waiver_certificate` | mismatch + risk waiver 5-row checklist 명시 | same | same |
+| `forge_package_validated_certificate` | forge_package 8 mandatory field 모두 존재 | `worktask_artifact_validator.sh` (수정) | PG2 admission grade |
+
+**Health Score**:
+
+| Score | 계산식 | 표시 |
+|---|---|---|
+| `measurement_coherence_health_score` (0-100) | sr_provenance(+30) + basis_primary(+20) + schedule_density(+20) + divergence<0.3pp(+20) + governor_concord(+10) | bootstrap.sh + monitoring agent |
+
+**Role Cards by wt_type** (`alpha_research_init.md` 신규 섹션):
+
+| wt_type | Expected Output | Certificate 자동 발급 |
+|---|---|---|
+| `discovery` | 신규 alpha mechanism + factor_specs ≥ 1 + cor < 0.95 | alpha_discovery_certificate |
+| `deployment` | 검증된 alpha 직접 편성 | (graduation 통과 전제) |
+| `sizing_only` | parent inheritance audit + sizing rationale (alpha 0건이 정상) | 미발급 (정상) |
+| `hyperparameter_sweep` | parent alpha 동일 + grid sweep 결과만 | 미발급 (정상) |
+
+**Hard Block 2건만 (System Integrity 위협)**:
+
+| Hard Block | 패턴 | Hook | 근거 |
+|---|---|---|---|
+| Fabrication label | method 필드에 `ProductionSchedule[N]m` | `sr_provenance_check.sh` + `schedule_fidelity_check.sh` | Charter §9 violation example (line 137) |
+| Admission graduation 우회 | governor_admission.json 전무한 STR을 book_state.json admit | `governor_concord_certifier.sh` | PG admission gate 자체 우회 |
+
+외 모든 enforcement는 **certificate 부재 → admission 자격 박탈 (passive deny)**. Hook은 차단하지 않는다.
+
+---
+
 ## 공통 제약 (전 agent 적용)
 
 | 항목 | 값 | Hook 강제 |
@@ -158,6 +203,10 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 | **Backtest SR provenance** | **source_label 의무** | **`sr_provenance_check.sh`** |
 | **Schedule fidelity** | **weights/sig_dates ≥ 0.95** | **`schedule_fidelity_check.sh`** |
 | **Forge pure function** | **weights.csv as-is + share-based NAV** | **`forge_pure_function_strict.sh`** |
+| **Alpha Discovery Certificate** | **wt_type 4-way + cor < 0.95** | **`alpha_discovery_certifier.sh`** (v1.2) |
+| **Governor Concord Certificate** | **book_state ↔ admission alignment** | **`governor_concord_certifier.sh`** (v1.2) |
+| **Measurement Coherence Health** | **bootstrap audit (0-100 score)** | **`measurement_basis_audit.R`** (v1.2) |
+| **Role Cards by wt_type** | **alpha agent expected output 4종** | **`alpha_research_init.md`** §Role Cards (v1.2) |
 
 ---
 
@@ -189,4 +238,5 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 
 - **v1.0** — 2026-04-23 Session 69 Day 1 — 초기 헌장 (사용자 설계도 기반)
 - **v1.1** — 2026-04-27 — Iter 31 STR_1715 fabrication 사후 조치. §8 Measurement Basis Disclosure Mandate + 신규 §9 Single Source of Truth for SR. Schedule Fidelity + Divergence Diagnosis 의무화.
+- **v1.2** — 2026-04-28 — STR_1715 OVERRIDE_006 사후 조치. §10 Certification System 신규 명문화 (5 certificate + 1 health score + 4 role cards). Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. v6.31 atomic patch.
 - 변경 시 major bump + L-code 발행 필수

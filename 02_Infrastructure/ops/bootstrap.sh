@@ -68,6 +68,19 @@ HH_OUT=$(bash "$PROJECT/02_Infrastructure/hooks/harness_health.sh" 2>&1)
 HH_SUMMARY=$(echo "$HH_OUT" | grep -E "Result:" | head -1)
 echo "[boot] $HH_SUMMARY"
 
+# 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
+BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
+MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"
+if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
+  MBA_OUT=$(Rscript "$MBA_R" "$BS_PATH" "$PROJECT/qepm/mailbox/worktask" 2>/dev/null \
+            | grep -E "(Book score:|Tier:)" | head -2 | tr '\n' ' ')
+  if [ -n "$MBA_OUT" ]; then
+    echo "[boot] Measurement coherence: $MBA_OUT"
+  else
+    echo "[boot] Measurement coherence: SKIP (no admitted_ids or audit error)"
+  fi
+fi
+
 # 8. 상태 보고 (v6 — 3-agent Work Task)
 ALPHA_T=$(ls "$PROJECT"/qepm/mailbox/alpha/inbox/TODO_*.json 2>/dev/null | wc -l)
 RISK_T=$(ls "$PROJECT"/qepm/mailbox/risk/inbox/TODO_*.json 2>/dev/null | wc -l)

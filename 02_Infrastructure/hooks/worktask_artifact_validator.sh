@@ -113,6 +113,26 @@ elif missing_v62:
         f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} | {pkg_type} | {fp} | missing_v62_mandate={missing_v62}\n")
 else:
     print(f"[OK] {fp} ({pkg_type}) schema + v6.2 mandate PASS", file=sys.stderr)
+
+# v1.2 Charter §10 Positive Certifier — forge_package 8-field PASS 시 forge_package_validated_certificate 발급
+if pkg_type == "forge_package" and not missing:
+    import os, datetime
+    wt_dir = os.path.dirname(fp)
+    cert_path = os.path.join(wt_dir, "forge_package_validated_certificate.json")
+    if not os.path.exists(cert_path):
+        cert = {
+            "issued": True,
+            "wt_id": pkg.get("task_id", ""),
+            "validated_fields_count": 8,
+            "issued_at": datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
+            "issued_by": "worktask_artifact_validator.sh v1.2",
+            "charter_ref": "v1.2 §10 forge_package_validated_certificate"
+        }
+        try:
+            with open(cert_path, "w") as f:
+                json.dump(cert, f, indent=2, ensure_ascii=False)
+        except Exception:
+            pass
 PYEOF
 
 exit 0

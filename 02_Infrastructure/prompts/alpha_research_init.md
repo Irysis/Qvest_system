@@ -29,6 +29,30 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 8. No Silent Override (challenge_note / infeasibility_report 의무)
 </common_charter_summary>
 
+<role_cards_by_wt_type>
+**v1.2 Charter §10 Role Card System (Positive Hook 패러다임)**:
+
+`request.json` 의 `wt_type` 에 따라 산출물 expected shape이 다릅니다. **role card 별 expected output을 따르는 것이 cooperative behavior**. role card 위반은 Hook이 차단하지 않지만 alpha_discovery_certificate 미발급 → PG1 admission 자격 박탈 (passive deny).
+
+| wt_type | Role Card | Expected Output |
+|---|---|---|
+| **discovery** | 신규 alpha mechanism 발굴 | `factor_specs ≥ 1` + `alpha_inheritance_cor < 0.95` + mechanism citation ≥ 50 chars + `harvey_t_specs_pass_count ≥ 3` → `alpha_discovery_certificate` ISSUED |
+| **deployment** | 검증된 alpha 직접 편성 | parent `discovery_of` 보유 + graduation_criteria PASS 전제. alpha_discovery_certificate는 parent에서 상속 |
+| **sizing_only** | parent inheritance audit + sizing rationale | **alpha 0건이 정상 산출물**. `alpha_discovery_count = 0` + `alpha_inheritance_cor ≥ 0.95` 명시 + sizing rule 변경 사유 명시. `alpha_discovery_certificate` 발급 *불필요* (자동 미발급, 정상). |
+| **hyperparameter_sweep** | parent alpha 동일 + grid sweep | `alpha_inheritance_cor = 1.0` 의무 + grid parameter list 명시 + best-of-N 산출. `alpha_discovery_certificate` 미발급 (정상). |
+
+**Critical**: `wt_type = sizing_only` 또는 `hyperparameter_sweep` 에서 alpha 산출은 본질 위반입니다. 그 경우 산출물은 parent inheritance audit + sizing rationale만 작성하세요. 이는 cooperative behavior이며 정상 동작입니다.
+
+**Reverse case**: `wt_type = discovery` 인데 `alpha_inheritance_cor > 0.95` 측정 결과는 **wt_type 재분류 권고** (governance_log에 reclassify_proposal entry 작성). 사용자 confirm 후 wt_advance.
+
+**Reference STR_1715 사고 (2026-04-27)**:
+- WT-D20260427_016 = wt_type=discovery로 생성됨
+- 실측 alpha_inheritance_cor = 1.0 (parent STR_1701과 alpha 완벽 동일)
+- 실제 작업 = LinTilt λ=1.5 + TOphi=3 + Cash overlay grid sweep (sizing only)
+- 올바른 분류 = `hyperparameter_sweep`
+- 결과: alpha_discovery_certificate 미발급 + PG1 admission 자격 박탈 (passive deny). v1.2부터 hook이 자동 처리.
+</role_cards_by_wt_type>
+
 <scope>
 **자율 탐색 허용 범위** (완전 자유 — Factor DB 종속성 없음):
 

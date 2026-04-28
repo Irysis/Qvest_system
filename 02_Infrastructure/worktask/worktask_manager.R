@@ -20,10 +20,17 @@ WT_ROOT <- "qepm/mailbox/worktask"
 WT_SCHEMA <- "02_Infrastructure/worktask/schema.json"
 WT_CONSTRAINT_DEFAULTS <- "02_Infrastructure/worktask/constraint_defaults.json"
 
-# ─── WT ID 생성 (v6.1 wt_type 접두사) ───────────────────
+# ─── WT ID 생성 (v1.2 wt_type 4-prefix Charter §10) ───────────────────
+# WT-D = Discovery, WT-P = Deployment, WT-S = Sizing-only, WT-H = Hyperparameter-sweep
 wt_generate_id <- function(wt_type = "discovery") {
   today <- format(Sys.Date(), "%Y%m%d")
-  prefix <- if (wt_type == "discovery") "WT-D" else "WT-P"
+  prefix <- switch(wt_type,
+    "discovery" = "WT-D",
+    "deployment" = "WT-P",
+    "sizing_only" = "WT-S",
+    "hyperparameter_sweep" = "WT-H",
+    stop(sprintf("[wt_generate_id] Unknown wt_type: %s. Charter §10 enum: discovery/deployment/sizing_only/hyperparameter_sweep", wt_type))
+  )
   existing <- list.files(WT_ROOT, pattern = sprintf("^%s%s_", prefix, today))
   seq <- length(existing) + 1
   sprintf("%s%s_%03d", prefix, today, seq)
@@ -52,11 +59,16 @@ wt_create <- function(hypothesis_title = NULL,
   if (is.null(hypothesis_title) && is.null(theme)) {
     stop("[wt_create] hypothesis_title 또는 theme 중 최소 하나 필요")
   }
-  if (!wt_type %in% c("discovery", "deployment")) {
-    stop("[wt_create] wt_type must be 'discovery' or 'deployment'")
+  # v1.2 Charter §10: wt_type 4-way enum
+  if (!wt_type %in% c("discovery", "deployment", "sizing_only", "hyperparameter_sweep")) {
+    stop("[wt_create] wt_type must be one of: 'discovery', 'deployment', 'sizing_only', 'hyperparameter_sweep' (Charter §10)")
   }
   if (wt_type == "deployment" && is.null(discovery_of)) {
     warning("[wt_create] Deployment WT without discovery_of — graduation_criteria 우회 허용 (검증 완료된 alpha 직접 편성 목적).")
+  }
+  # v1.2 Charter §10: sizing_only / hyperparameter_sweep은 parent inheritance 필수
+  if (wt_type %in% c("sizing_only", "hyperparameter_sweep") && is.null(discovery_of)) {
+    warning(sprintf("[wt_create] %s WT는 parent inheritance (discovery_of) 명시 권장. alpha_discovery_certificate 미발급 → PG1 admission 자격 없음 (정상 동작).", wt_type))
   }
 
   task_id <- wt_generate_id(wt_type = wt_type)
@@ -70,24 +82,35 @@ wt_create <- function(hypothesis_title = NULL,
   hyp_source <- if (!is.null(hypothesis_title)) "user_defined" else "alpha_agent_discovered"
 
   # v6.1 R1+R13: wt_type별 제약 분기
+  # v1.2 Charter §10: 4-way wt_type branching + pg1_eligibility
   if (wt_type == "discovery") {
     # Discovery: HARD만, SOFT는 null (breadth 허용)
     liquidity_floor <- defaults$tier_hard_mandate$liquidity_floor_won_20d_avg
     effective_max_names <- if (!is.null(max_names)) max_names else NULL
     effective_long_only <- if (!is.null(long_only)) long_only else "configurable"
     effective_bounds <- defaults$discovery_defaults$weight_bounds
-  } else {
+    pg1_eligibility <- "certificate_required"  # alpha_discovery_certificate 발급 받아야 진행
+  } else if (wt_type == "deployment") {
     # Deployment: HARD + SOFT 모두 강제
     liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
     effective_max_names <- 20L
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
+    pg1_eligibility <- "deployment_track"  # 검증 alpha 직접 편성
+  } else {
+    # sizing_only / hyperparameter_sweep: parent inheritance만, alpha 0건이 정상
+    liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
+    effective_max_names <- 20L
+    effective_long_only <- TRUE
+    effective_bounds <- defaults$tier_soft_deployment$weight_bounds
+    pg1_eligibility <- "certificate_required"  # alpha_discovery_certificate 미발급 → passive deny
   }
 
   # Request 조립
   request <- list(
     task_id = task_id,
     wt_type = wt_type,
+    pg1_eligibility = pg1_eligibility,  # v1.2 Charter §10 Certification System
     discovery_of = discovery_of,
     graduation_criteria = defaults$tier_graduation,
     theme = theme,
@@ -191,6 +214,18 @@ wt_check_graduation <- function(task_id) {
   req_path <- file.path(wt_dir, "request.json")
   req <- fromJSON(req_path, simplifyVector = FALSE)
 
+  # v1.2 Charter §10: sizing_only / hyperparameter_sweep은 graduation 자격 없음 (passive deny)
+  if (req$wt_type %in% c("sizing_only", "hyperparameter_sweep")) {
+    cat(sprintf("[graduation] %s WT — alpha_discovery_certificate 발급 불필요 (정상). PG1 admission 자격 없음.\n", req$wt_type))
+    return(invisible(list(
+      pass = FALSE,
+      reason = "wt_type_not_eligible_for_pg1_admission",
+      wt_type = req$wt_type,
+      pg1_eligibility = req$pg1_eligibility,
+      charter_ref = "v1.2 §10 Role Card"
+    )))
+  }
+
   if (req$wt_type != "discovery") {
     cat("[graduation] Discovery WT만 해당\n")
     return(invisible(list(pass = NA, reason = "not_discovery_wt")))
@@ -204,6 +239,32 @@ wt_check_graduation <- function(task_id) {
   alpha_pkg <- fromJSON(alpha_path, simplifyVector = FALSE)
   criteria <- req$graduation_criteria
   diag <- alpha_pkg$diagnostics
+
+  # v1.2 Charter §10: alpha_discovery_certificate 보유 확인 (PG1 admission 자격 게이트)
+  # Hook이 sibling file에 발급한 경우 우선 확인
+  cert <- alpha_pkg$alpha_discovery_certificate
+  sibling_cert_path <- file.path(wt_dir, "alpha_discovery_certificate.json")
+  if ((is.null(cert) || !isTRUE(cert$issued)) && file.exists(sibling_cert_path)) {
+    cert <- fromJSON(sibling_cert_path, simplifyVector = FALSE)
+  }
+  certificate_check <- list(
+    actual = if (!is.null(cert) && isTRUE(cert$issued)) "ISSUED" else "NOT_ISSUED",
+    threshold = "ISSUED",
+    pass = (!is.null(cert) && isTRUE(cert$issued))
+  )
+  if (!isTRUE(certificate_check$pass)) {
+    cat(sprintf("[graduation] %s — alpha_discovery_certificate NOT_ISSUED. PG1 admission 자격 박탈 (Charter §10 passive deny).\n", task_id))
+    if (!is.null(cert) && !is.null(cert$non_issuance_reason)) {
+      cat(sprintf("  미발급 사유: %s\n", cert$non_issuance_reason))
+    }
+    return(invisible(list(
+      pass = FALSE,
+      reason = "certificate_not_issued",
+      task_id = task_id,
+      certificate_check = certificate_check,
+      remediation = "alpha agent rerun + mechanism citation ≥ 50 chars + factor_specs ≥ 1 + harvey_t pass ≥ 3 + alpha_inheritance_cor < 0.95"
+    )))
+  }
 
   checks <- list(
     rank_ic = list(
@@ -300,21 +361,78 @@ wt_advance <- function(task_id, new_phase, blocker = NULL) {
   if (is.null(status$challenge_round)) status$challenge_round <- 0L
   if (is.null(status$challenge_history)) status$challenge_history <- list()
 
+  # v1.2 Charter §10: GOVERNOR_REJECTED → GOVERNOR_ADMITTED 직접 전이 시 challenge_round + 1 + flag
+  override_event <- FALSE
+  if (isTRUE(old_phase == "GOVERNOR_REJECTED") && isTRUE(new_phase == "GOVERNOR_ADMITTED")) {
+    status$challenge_round <- as.integer(status$challenge_round) + 1L
+    status$last_governor_override_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+    override_event <- TRUE
+    cat(sprintf("[wt_advance] ⚠ GOVERNOR_REJECTED → GOVERNOR_ADMITTED user override. challenge_round=%d. wt_log_user_override() 호출 권장 (waiver 5-row 명시).\n",
+                status$challenge_round))
+  }
+
   write_json(status, status_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 
   # governance_log 업데이트
   gov_path <- file.path(wt_dir, "governance_log.json")
   gov <- fromJSON(gov_path, simplifyVector = FALSE)
+  action_label <- if (override_event) "PHASE_ADVANCE_VIA_GOVERNOR_OVERRIDE" else "PHASE_ADVANCE"
   gov$events[[length(gov$events) + 1]] <- list(
     timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
     agent = "q-lead",
-    action = "PHASE_ADVANCE",
-    summary = sprintf("%s -> %s", old_phase, new_phase)
+    action = action_label,
+    summary = sprintf("%s -> %s%s", old_phase, new_phase,
+                      if (override_event) sprintf(" (challenge_round=%d, waiver 5-row 명시 의무)",
+                                                   status$challenge_round) else "")
   )
   write_json(gov, gov_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 
   cat(sprintf("[wt_advance] %s: %s -> %s\n", task_id, old_phase, new_phase))
   invisible(new_phase)
+}
+
+# ─── wt_log_user_override (v1.2 Charter §10 Governor Concord Waiver) ──
+# Governor REJECTED scenario를 user override로 진행 시 challenge entry 강제.
+# book_state.json 변경과 별도로 governance_log에 risk waiver 5-row 명시.
+# Reference: STR_1715 OVERRIDE_005/006 — Governor Option B Probe 10pct REJECTED 우회 사고.
+wt_log_user_override <- function(task_id, override_id, directive,
+                                 waiver_checklist = list(),
+                                 schedule_review_days = c(1, 7)) {
+  wt_dir <- file.path(WT_ROOT, task_id)
+  if (!dir.exists(wt_dir)) stop(sprintf("[wt_log_user_override] %s 없음", task_id))
+
+  required_keys <- c("stress_negative_acknowledged", "lockbox_divergence_acknowledged",
+                     "ax_triangulation_2of3_acknowledged",
+                     "tdc_diversification_forfeit_acknowledged",
+                     "to_marginal_acknowledged")
+  missing_keys <- setdiff(required_keys, names(waiver_checklist))
+  if (length(missing_keys) > 0) {
+    warning(sprintf("[wt_log_user_override] waiver_checklist 5-row 누락: %s. governor_concord_with_waiver_certificate 발급 불가.",
+                    paste(missing_keys, collapse = ", ")))
+  }
+
+  gov_path <- file.path(wt_dir, "governance_log.json")
+  gov <- fromJSON(gov_path, simplifyVector = FALSE)
+  gov$events[[length(gov$events) + 1]] <- list(
+    timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    agent = "user",
+    action = "USER_OVERRIDE_WITH_WAIVER",
+    override_id = override_id,
+    directive_quote = directive,
+    waiver_5row = waiver_checklist,
+    schedule_review_days = schedule_review_days,
+    charter_ref = "v1.2 §10 Governor Concord Waiver"
+  )
+  write_json(gov, gov_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+
+  cat(sprintf("[wt_log_user_override] %s | override=%s | waiver_5row keys=%d/5\n",
+              task_id, override_id, length(intersect(names(waiver_checklist), required_keys))))
+  if (length(missing_keys) == 0) {
+    cat("  ✓ waiver 5-row 완전. governor_concord_with_waiver_certificate 발급 자격.\n")
+  } else {
+    cat(sprintf("  ⚠ 누락 %d종 — concord_pending. 추가 명시 후 재호출.\n", length(missing_keys)))
+  }
+  invisible(missing_keys)
 }
 
 # ─── Challenge Loop (R3) ────────────────────────────────

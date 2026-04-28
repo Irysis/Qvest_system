@@ -14,15 +14,34 @@
         "hard_constraints"
       ],
       "properties": {
-        "task_id": {"type": "string", "pattern": "^WT-[DP][0-9]{8}_[0-9]{3}$", "description": "WT-D{date}_{seq} = Discovery, WT-P{date}_{seq} = Deployment"},
+        "task_id": {"type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$", "description": "WT-D = Discovery, WT-P = Deployment, WT-S = Sizing-only, WT-H = Hyperparameter-sweep (v1.2)"},
         "wt_type": {
           "type": "string",
-          "enum": ["discovery", "deployment"],
-          "description": "discovery = alpha 존재 확인 (느슨한 제약). deployment = production 편성 (모든 제약 강제)."
+          "enum": ["discovery", "deployment", "sizing_only", "hyperparameter_sweep"],
+          "description": "v1.2 Charter §10: discovery=신규 alpha 발굴 / deployment=검증 alpha 편성 / sizing_only=parent inheritance audit + sizing rationale (alpha 0건 정상) / hyperparameter_sweep=parent alpha 동일 + grid sweep만. sizing_only/hyperparameter_sweep은 alpha_discovery_certificate 미발급 → PG1 admission 자격 없음."
+        },
+        "pg1_eligibility": {
+          "type": "string",
+          "enum": ["certificate_required", "eligible", "deployment_track"],
+          "description": "v1.2 Charter §10: certificate_required = alpha_discovery_certificate 발급 필요 (sizing_only/hyperparameter_sweep), eligible = certificate 발급 받음, deployment_track = 검증된 alpha 직접 편성"
         },
         "discovery_of": {
           "type": ["string", "null"],
           "description": "Deployment WT만: 어떤 Discovery WT의 결과를 채택하는지 back-ref (예: WT-D20260423_001)"
+        },
+        "alpha_discovery_certificate": {
+          "type": "object",
+          "description": "v1.2 Charter §10: alpha_discovery_certifier.sh 발급. 미발급이면 PG1 admission 자격 박탈.",
+          "properties": {
+            "issued": {"type": "boolean"},
+            "inheritance_cor_actual": {"type": "number", "minimum": 0, "maximum": 1.001},
+            "inheritance_cor_max": {"type": "number", "default": 0.95},
+            "mechanism_cited": {"type": "string", "minLength": 50},
+            "factor_specs_new_count": {"type": "integer", "minimum": 0},
+            "harvey_t_specs_pass_count": {"type": "integer", "minimum": 0},
+            "issued_at": {"type": "string", "format": "date-time"},
+            "non_issuance_reason": {"type": ["string", "null"], "description": "미발급 사유 (cor>=0.95 / mechanism<50chars / factor_specs=0 / harvey_t pass<3)"}
+          }
         },
         "graduation_criteria": {
           "type": "object",
@@ -148,7 +167,7 @@
         },
         "diagnostics": {
           "type": "object",
-          "required": ["rank_ic"],
+          "required": ["rank_ic", "alpha_inheritance_cor"],
           "properties": {
             "rank_ic": {"type": "number"},
             "icir": {"type": "number"},
@@ -156,9 +175,17 @@
             "subperiod_stability": {"type": "number"},
             "turnover_proxy": {"type": "number"},
             "harvey_t_stat": {"type": "number"},
+            "harvey_t_specs_pass_count": {"type": "integer", "minimum": 0, "description": "v1.2 Charter §10: 5-spec FF/Carhart/CAPM Harvey t > 3.0 통과 갯수"},
             "deflated_sharpe_ratio": {"type": "number"},
-            "post_neutralization_ic": {"type": "number"}
+            "post_neutralization_ic": {"type": "number"},
+            "alpha_inheritance_cor": {"type": "number", "minimum": 0, "maximum": 1.001, "description": "v1.2 Charter §10: parent strategy alpha와의 cosine/correlation. 0 = 완전 신규, 1 = 완벽 동일. > 0.95이면 alpha_discovery_certificate 미발급."}
           }
+        },
+        "alpha_discovery_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "v1.2 Charter §10 Role Card: 본 WT가 발견한 신규 alpha 개수. wt_type=sizing_only/hyperparameter_sweep 시 0 expected."
         },
         "selection_objective": {
           "type": "string",

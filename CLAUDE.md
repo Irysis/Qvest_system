@@ -324,6 +324,21 @@ Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버
 
 ---
 
+## Positive Hook 패러다임 (v6.31 — Charter v1.2 §10, Opus 4.7 정합)
+
+**원칙**: LLM은 자기합리화 엔진이라 negative hook ("block on violation")은 defensive rationalization 발동 + bypass 시도 (file_path 변형 등). Positive hook ("certify on compliance")은 cooperative goal frame 획득.
+
+**v6.31 Certification System** (Charter v1.2 §10):
+- **5 Certificate**: alpha_discovery / sr_provenance / schedule_fidelity / forge_package_validated / governor_concord (or `_with_waiver`)
+- **1 Health Score**: measurement_coherence_health_score (0-100, Healthy/Warning/Drifted) — bootstrap 매 세션 자동 산출
+- **4 Role Cards by wt_type**: discovery / deployment / sizing_only / hyperparameter_sweep — alpha agent expected output 명시
+- **Hard Block 2건만** (system integrity 위협): (1) `ProductionSchedule[N]m` fabrication label, (2) governor_admission.json 전무한 STR을 book_state에 admit
+- **차단은 Hook이 아니라 admission gate**: certificate 부재 시 PG1/wt_advance가 *passive deny* (예: alpha_discovery_certificate 미발급 → wt_check_graduation FAIL)
+
+**Reference**: STR_1715 OVERRIDE_006 사후 (2026-04-27) → v6.31 atomic patch (2026-04-28). L-223~L-227 5건. Charter v1.2 명문화.
+
+---
+
 ## Axioms (Level 0 공리 — 요약; 상세는 `_shared_prefix.md` SOT)
 모든 에이전트는 아래 공리를 전제로 작동한다. AX-code 위반 = 즉시 중단.
 

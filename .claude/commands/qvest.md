@@ -51,11 +51,18 @@ bash 02_Infrastructure/ops/bootstrap.sh
 - 유지: `pit-validation` / `factor-db-access` / `axiom-io` / `kr-inverse-pattern-miner` / `commit-commands` / `codex` 등
 - 폐기: `s0-idea-sourcing` / `s0-debate` / `s1~s5` stage skill (archive)
 
-**Hooks 4-Tier 방어선**:
-- Tier 1 (전역): `safety_guard`, `axiom_enforcement_hook`
-- Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서)
-- Tier 3 (Write/Edit): `worktask_constraint_enforcer` (20종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
-- Tier 4 (Post): `worktask_artifact_validator`, `red_flag_detector`, `pipeline_trigger`, `auto_commit_on_stop`
+**Hooks 5-Tier 방어선 (v6.31 Charter v1.2 Positive Hook 패러다임)**:
+- Tier 1 (전역 hard block — system integrity 위협 영역만): `safety_guard`, `axiom_enforcement_hook`, `sr_provenance_check` (`ProductionSchedule[N]m` fabrication label hard block), `schedule_fidelity_check` (run_all.R fabrication hard block), `governor_concord_certifier` (admission graduation 우회 hard block)
+- Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서), `unified_agent_guard`
+- Tier 3 (Write/Edit hard mandate): `worktask_constraint_enforcer` (20종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
+- Tier 4 (Post artifact validation): `worktask_artifact_validator`, `red_flag_detector`, `pipeline_trigger`, `auto_commit_on_stop`
+- **Tier 5 (Positive Certifier — v6.31 신규)**: `alpha_discovery_certifier` (cor<0.95 + mechanism + factor_specs + harvey_t pass), `sr_provenance_check` (forge_package 4-field), `schedule_fidelity_check` (density≥0.95 또는 infeasibility), `worktask_artifact_validator` (forge_package 8-field), `governor_concord_certifier` (book_state↔admission match 또는 waiver 5-row), `sr_provenance_pre_certifier` (PreToolUse 안내)
+
+**Charter v1.2 Certification System** (5 certificate + 1 health score + 4 role card):
+- `alpha_discovery_certificate` / `sr_provenance_certificate` / `schedule_fidelity_certificate` / `forge_package_validated_certificate` / `governor_concord_certificate` (or `_with_waiver`)
+- `measurement_coherence_health_score` (0-100, Healthy/Warning/Drifted)
+- Role Cards by `wt_type`: discovery / deployment / sizing_only / hyperparameter_sweep
+- 차단은 *certificate 부재 → admission 자격 박탈* (passive deny). Hard block은 위 2건만.
 
 ### 4. Work Task 상태 확인
 
@@ -212,17 +219,24 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 부팅 직후 체크리스트
+## 부팅 직후 체크리스트 (v6.31 갱신)
 
 1. ✅ `02_Infrastructure/worktask/` 존재 확인
 2. ✅ Agent registry에 `alpha-research`, `risk-research`, `optimizer-research` 등록 확인
 3. ✅ Skill 목록에 `worktask`, `alpha-research`, `risk-research`, `optimizer-research` 확인
 4. ✅ `qepm/mailbox/{worktask,alpha,risk,optimizer}/` 디렉토리 존재
-5. ✅ Hook 신규 6종 `settings.json` 등록 확인
-6. ✅ `02_Infrastructure/hooks/_archive_v55/` 폐기 Hook 6종 archive 확인
-7. ✅ Git tag `pre-qepm-3agent-migration` 존재 (rollback 지점)
+5. ✅ Hook **신규 9종** `settings.json` 등록 확인 (v6.31: alpha_discovery_certifier / sr_provenance_pre_certifier / governor_concord_certifier 신규 + sr_provenance_check / schedule_fidelity_check 강화)
+6. ✅ Charter `v1.2` 인용 확인 (`grep "v1.2" 02_Infrastructure/worktask/common_charter.md`)
+7. ✅ **Measurement Coherence Health Score** 부트 메시지 확인 (`[boot] Measurement coherence: ... Tier: HEALTHY/WARNING/DRIFTED`)
+8. ✅ `02_Infrastructure/hooks/_archive_v55/` 폐기 Hook 6종 archive 확인
+9. ✅ Git tag `pre-qepm-3agent-migration` 존재 (rollback 지점)
 
 체크 실패 시 → `next_session_task.md` 참조 + 복구.
+
+**v6.31 Health Score Tier 의미**:
+- **Healthy ≥ 90**: 모든 active book strategy가 5 certificate 보유 + divergence < 0.3pp
+- **Warning 70~89**: 일부 certificate 누락 또는 divergence 0.3~0.6pp
+- **Drifted < 70**: certificate 다수 부재 또는 fabrication 의심 (Charter §9 SIGNIFICANT_DRAG / FABRICATION_SUSPECTED)
 
 ---
 
@@ -265,6 +279,8 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ## Version
 
-- **v6.0** — 2026-04-23 Session 69 — QEPM 3-Agent Work Task 아키텍처 도입
+- **v6.31** — 2026-04-28 — **Alpha Discovery Certification + Research Process Coherence System**. Charter v1.2 §10 (5 certificate + 1 health score + 4 role card) + Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. STR_1715 OVERRIDE_006 사후 atomic patch.
+- v6.3 — 2026-04-27 — Charter §8/§9 + sr_provenance/schedule_fidelity (L2 soft passed 한계 노출, v6.31에서 격상)
+- v6.0 — 2026-04-23 Session 69 — QEPM 3-Agent Work Task 아키텍처 도입
 - v5.5 — 2026-04-19 Session 67 v55 strict
 - v5.3 — 2026-04-13 v53 TeamCreate + Hook 17종
