@@ -1,0 +1,61 @@
+{
+  "as_of": "2026-04-29T07:38:24+0900",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "harness_version": "compare_strategies_standardized_v1.0",
+  "plan_version": "v1.0_2026-04-29",
+  "enforcement": {
+    "no_self_synthesis": true,
+    "performance_analytics_only": true,
+    "forge_realized_share_based_only": true
+  },
+  "rebalance_on": "months",
+  "strategies_meta": {
+    "STR_1631_SYN_05_baseline": {
+      "path": "/tmp/str_1631_syn05_holdings_log.csv",
+      "n_unique_dates": 140,
+      "date_range": ["2003-01-30", "2026-03-31"]
+    },
+    "STR_1631_SYN_05_variant_A": {
+      "path": "/tmp/str_1631_syn05_variant_A_holdings_log.csv",
+      "n_unique_dates": 140,
+      "date_range": ["2003-01-30", "2026-03-31"]
+    }
+  },
+  "blends": {
+    "baseline_MAX21d_trim": {
+      "blend_label": "baseline_MAX21d_trim",
+      "measurement_basis_primary": "forge_realized_share_based",
+      "n_periods": 435,
+      "weights_csv_unique_dates_count": 140,
+      "schedule_density_ratio": 1,
+      "annualized_return": 0.149,
+      "annualized_vol": 0.1681,
+      "sharpe_annualized": 0.8863,
+      "max_drawdown": 0.4214,
+      "calmar_ratio": 0.3535,
+      "sortino_ratio": 0.4747,
+      "semi_deviation": 0.0324,
+      "historical_var_95": -0.0538,
+      "historical_es_95": -0.1007,
+      "loss_deviation": 0.0424
+    },
+    "variant_A_winsorize_1_99": {
+      "blend_label": "variant_A_winsorize_1_99",
+      "measurement_basis_primary": "forge_realized_share_based",
+      "n_periods": 435,
+      "weights_csv_unique_dates_count": 140,
+      "schedule_density_ratio": 1,
+      "annualized_return": 0.1674,
+      "annualized_vol": 0.1729,
+      "sharpe_annualized": 0.9683,
+      "max_drawdown": 0.3839,
+      "calmar_ratio": 0.4361,
+      "sortino_ratio": 0.5438,
+      "semi_deviation": 0.0322,
+      "historical_var_95": -0.0624,
+      "historical_es_95": -0.0988,
+      "loss_deviation": 0.0409
+    }
+  },
+  "ranked_by_sr_desc": ["variant_A_winsorize_1_99", "baseline_MAX21d_trim"]
+}
