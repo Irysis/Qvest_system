@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260428_003",
+  "iter": 10,
+  "iter_track": "B",
+  "iter_name": "MAQGC_Multi_Axis_Growth_Quality_Composite",
+  "issued": false,
+  "issued_at": null,
+  "non_issuance_reason": "Honest non-promotion. cert_4cond cond4 FAIL (0/3 specs reach Harvey-t 3.0 threshold) AND graduation_check FAIL on rank_ic 0.019 < 0.04 + Harvey-t 1.78 < 3.0 + monotonicity 0.346 (D10-D1 spread NEGATIVE). Despite AX-004 EXCLUSION eligibility (multi-axis quality composite permitted) and family-orthogonal design vs FIAPAS, empirical predictive power in KR top342 is weak. Issuing certificate would push burden to PG1 admission gate where graduation_check would FAIL. Self-denial is the cooperative behavior per Charter §5 (Data Mining 방지) + §10 (Role Boundary).",
+
+  "inheritance_cor_actual_vs_Q08": 0.7155,
+  "inheritance_cor_max": 0.95,
+  "mechanism_cited": "Asness-Frazzini-Pedersen (2019 RAS) Quality Minus Junk multi-axis composite — 4 axes: Profitability + Growth + Safety + CashFlowQuality. KR-adapted via Lakonishok-Shleifer-Vishny (1994 JF) growth quality contrarian + Sloan (1996 AR) accrual reliability inverse + Dechow-Dichev (2002 AR) earnings quality. AX-004 named EXCLUSION clause invoked (multi-axis quality composite permitted; single-signal long-only forbidden). Ex-ante 4-axis sign +1 declared in script comments BEFORE measurement (no method-shopping per Charter §5).",
+
+  "factor_specs_new_count": 3,
+  "factor_specs_selected": 1,
+
+  "harvey_t_specs_pass_count": 0,
+  "harvey_t_breakdown": {
+    "S1_MAQGC_4axes_ALL": 1.7821,
+    "S2_Prof_Safety": 0.7739,
+    "S3_Prof_Growth": 1.2079
+  },
+  "harvey_t_threshold": 3.0,
+
+  "cond_breakdown": {
+    "cond1_inheritance_cor_lt_095": true,
+    "cond2_factor_specs_ge_1": true,
+    "cond3_mechanism_ge_50chars": true,
+    "cond4_harvey_pass_ge_3": false,
+    "all_4cond_technical_pass": false
+  },
+
+  "graduation_check": {
+    "rank_ic_pass": false,
+    "rank_ic_actual": 0.01883,
+    "rank_ic_target": 0.04,
+    "icir_pass": true,
+    "icir_actual": 0.6561,
+    "subperiod_pass": true,
+    "subperiod_actual": 1.0,
+    "harvey_t_pass": false,
+    "harvey_t_actual": 1.7821,
+    "harvey_t_target": 3.0,
+    "dsr_post_pass": true,
+    "dsr_post_actual": 0.5872,
+    "monotonicity_pass": false,
+    "monotonicity_actual": 0.3455,
+    "monotonicity_target": 0.80,
+    "overall": "FAIL — 3/6 graduation criteria FAIL (rank_ic, harvey_t, monotonicity)"
+  },
+
+  "deployment_recommendation": {
+    "primary_alpha_status": "NOT_RECOMMENDED",
+    "soft_tilt_status": "POSSIBLE_WITH_CAUTION",
+    "max_sleeve_size_recommendation": 0.05,
+    "rationale": "D10-D1 spread NEGATIVE (-0.00106) is a deployment red flag for long-only top20. ICIR + DSR_post + subperiod stability pass individually, suggesting MAQGC has *some* signal in KR (especially p1 2008-14 ICIR 1.39), but post-2015 decay severe (p2 ICIR 0.07). If used, recommend ≤ 5% sleeve allocation paired with FIAPAS V2 (Iter 10 A) or STR_1715 incumbent.",
+    "alternative_recommendation": "Proceed with FIAPAS V2 alone if Iter 10 A's certificate issued; else trigger Iter 11 with: (1) lower-leverage axis pairings (e.g., RoIC + EarningsStab residualized vs Q08), (2) regime-conditional MAQGC (only deploy in p1-like regimes), or (3) cross-family exploration (Skewness × CFO accrual residual was deferred — pursue next)."
+  },
+
+  "lesson_pending": {
+    "L_code_proposed": "L-223_MAQGC_KR_AFP2019_does_not_transfer",
+    "lesson_text": "AX-004 EXCLUSION (multi-axis quality composite permitted) confers eligibility, not predictive power. KR top342 universe 2008-2023, MAQGC 4-axis composite (AFP 2019 QMJ) yields rank_ic 0.019 / Harvey-t 1.78 / D10-D1 NEGATIVE spread. Strong p1 (2008-14 ICIR 1.39) but post-2015 decay severe (p2 0.07, p3 0.32). Cor 0.716 vs Q08_Composite_Quality (FactorDB existing composite) suggests no orthogonal contribution beyond incumbent quality factor. Eligibility ≠ profitability.",
+    "tags": ["AX-004", "AFP2019", "KR_factor_decay", "multi_axis_quality", "long_only_top20_negative_d10_d1"],
+    "core_reference": "AFP 2019 RAS QMJ; Sloan 1996 AR; LSV 1994 JF",
+    "register_after": "codex_round_complete + Q-Lead approval"
+  }
+}

