@@ -171,6 +171,29 @@ Rscript --no-save -e '
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
+# [6.5] Forward Weights Orchestrator (월말/리밸런싱 sig_date)
+#   - 매월 1일에 3 마일스톤 admitted 전략의 forward production weights 자동 산출
+#   - cap_0.20 mandate 강제 + capacity check
+#   - measurement_basis_primary = "forge_realized_share_based"
+#   - Plan v1.0 2026-04-29 (도훈 정도 회복 명령)
+# ──────────────────────────────────────────────────────────────────────────────
+DAY_OF_MONTH=$(date +%d)
+if [ "$DAY_OF_MONTH" = "01" ] || [ "$DAY_OF_MONTH" = "15" ]; then
+  echo "[6.5/7] Forward Weights Orchestrator (DAY_OF_MONTH=$DAY_OF_MONTH)..."
+  cd "$INFRA"
+  Rscript --no-save -e '
+    tryCatch({
+      source("portfolio/forward_weights_orchestrator.R")
+      orchestrate_forward_weights(
+        as_of_date = NULL,           # default = max schedule date
+        apply_mandate_cap = "cap_0.20",
+        send_telegram = TRUE
+      )
+    }, error = function(e) cat(sprintf("Forward weights orchestrator skipped: %s\n", e$message)))
+  '
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
 # [7] Telegram + NAV Tracking + Memory
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[7/7] Telegram + NAV + Memory..."

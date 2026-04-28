@@ -1,0 +1,22 @@
+{
+  "strategy_id": "STR_1656_MLRA_M05",
+  "method": "XGBoost_ML_DD_brake_cash_regime",
+  "as_of_date": "PENDING",
+  "mandate": "cap_0.20",
+  "status": "STUB_NOT_IMPLEMENTED",
+  "available_artifacts": {
+    "nav_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1656_MLRA/output/s5_mutations/M05/nav.csv",
+    "nav_csv_exists": true,
+    "ic_timeseries_A": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1656_MLRA/output/ic_timeseries_A.csv",
+    "ic_timeseries_B": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1656_MLRA/output/ic_timeseries_B.csv"
+  },
+  "blocker": "weights.csv schedule 자체 미저장. ML predict 결과에서 ticker × score 추출 patch 필요.",
+  "todo_phase_1_6": {
+    "step_1": "s5_phase1_3.R XGBoost predict 산출물에서 ticker × score 추출",
+    "step_2": "Top-N EW + DD brake regime + cash overlay 적용",
+    "step_3": "production_weights/{as_of_date}_weights.csv 저장",
+    "step_4": "daily_refresh.sh에서 매월 ML retrain + production"
+  },
+  "measurement_basis_primary": "forge_realized_share_based",
+  "notes": "Phase 1 STUB. 실 구현은 Phase 1.6 별도 진행 필요."
+}
