@@ -234,9 +234,47 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 
 ---
 
+### 11. Outlier Handling 표준 (v1.3, 도훈 채택 2026-04-29)
+
+**근거**: STR_1631_SYN_05 outlier handling 4-way 비교 backtest (PerformanceAnalytics standard + 본 simulation 양면 측정).
+
+**Variant A 채택** — 모든 long-window robustness + 거래비용 명확 우위:
+
+| Outlier Variant | SR (본 sim) | SR (PA) | MDD (본) | TO/yr |
+|---|---:|---:|---:|---:|
+| baseline (MAX21d 80% trim) | 1.134 | 0.886 | -52.0% | 300.5% |
+| **Variant A (winsorize 1%/99% + corp action)** | **1.286** | 0.968 | **-48.0%** | **283.9%** |
+| Variant B (robust median/MAD) | 1.230 | 0.957 | -47.3% | 310.2% |
+| Variant C (winsorize + robust hybrid) | 1.254 | **0.971** | -48.3% | 310.0% |
+
+**적용 표준** (`02_Infrastructure/factor_db/factor_z_standard.R`):
+
+1. **Universe filter — corporate action 명확 식별 (range trim 폐기)**:
+   ```r
+   univ <- universe_corp_action_filter(SIG_SNAP, sig_date, liq_threshold = 2e8)
+   # AdminStock == 0 & TradingHalt == 0 & UnfaithfulDisc == 0 + LIQ_20d >= 2e8
+   ```
+2. **Cross-sectional z-score — winsorize 1%/99% + (x_w - mean) / sd**:
+   ```r
+   z_safe_winsorize(x)
+   # 1. winsorize_1_99(x): quantile(0.01, 0.99) cap
+   # 2. (x_w - mean(x_w, na.rm=TRUE)) / sd(x_w, na.rm=TRUE)
+   ```
+
+**적용 범위**: 모든 신규 / 기존 strategy 의 factor 처리 (alpha_research / forge / 신규 family). 학계 표준 (Fama-French 1992/2015, Asness QMJ 2019, MSCI/S&P 인덱스).
+
+**예외 사유** (별도 backtest 검증 후만 허용):
+- Variant B (robust median/MAD): heavy fat-tail factor (e.g. distress/skewness)
+- 다른 percentile (1%/99% 외): backtest로 우월성 입증 후
+
+**적용 1호**: STR_1631_SYN_06 (`04_Research/strategies/STR_1631_SYN_06/run_all.R`)
+
+---
+
 ## Version
 
 - **v1.0** — 2026-04-23 Session 69 Day 1 — 초기 헌장 (사용자 설계도 기반)
 - **v1.1** — 2026-04-27 — Iter 31 STR_1715 fabrication 사후 조치. §8 Measurement Basis Disclosure Mandate + 신규 §9 Single Source of Truth for SR. Schedule Fidelity + Divergence Diagnosis 의무화.
 - **v1.2** — 2026-04-28 — STR_1715 OVERRIDE_006 사후 조치. §10 Certification System 신규 명문화 (5 certificate + 1 health score + 4 role cards). Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. v6.31 atomic patch.
+- **v1.3** — 2026-04-29 — STR_1631_SYN_05 outlier handling 4-way 검증 후 §11 Outlier Handling 표준 명문화. Variant A (winsorize 1%/99% + corp action filter) 채택. `factor_z_standard.R` single source of truth. STR_1631_SYN_06 신규 등록 (1호 적용).
 - 변경 시 major bump + L-code 발행 필수

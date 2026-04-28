@@ -2,7 +2,7 @@
 ##
 ## Goal: 3 마일스톤 admitted 전략의 forward production weights 통합 entry-point
 ##   - STR_1715 (현 PG2 100%)
-##   - STR_1631_SYN_05 (이전 PG2 80% diversifier 기반)
+##   - STR_1631_SYN_06 (이전 PG2 80% diversifier 기반)
 ##   - STR_1656_MLRA_M05 (ML diversifier; STUB Phase 1)
 ##
 ## 도훈 명령 enforcement:
@@ -18,7 +18,7 @@ options(scipen = 999)
 orchestrate_forward_weights <- function(
   as_of_date         = NULL,
   apply_mandate_cap  = "cap_0.20",
-  strategies         = c("STR_1715", "STR_1631_SYN_05", "STR_1656_MLRA"),
+  strategies         = c("STR_1715", "STR_1631_SYN_06", "STR_1656_MLRA"),
   send_telegram      = FALSE,
   manifest_root      = NULL
 ) {
@@ -43,19 +43,19 @@ orchestrate_forward_weights <- function(
     }
   }
 
-  if ("STR_1631_SYN_05" %in% strategies) {
-    cat("\n========== STR_1631_SYN_05 ==========\n")
+  if ("STR_1631_SYN_06" %in% strategies) {
+    cat("\n========== STR_1631_SYN_06 ==========\n")
     src_path <- file.path(
       PROJECT_ROOT,
-      "04_Research/strategies/STR_1631_SYN_05/forward_weights.R")
+      "04_Research/strategies/STR_1631_SYN_06/forward_weights.R")
     if (file.exists(src_path)) {
       source(src_path, local = TRUE, chdir = TRUE)
-      res <- generate_forward_weights_str1631_syn05(
+      res <- generate_forward_weights_str1631_syn06(
         as_of_date = as_of_date, apply_mandate_cap = apply_mandate_cap)
-      results[["STR_1631_SYN_05"]] <- res$manifest
+      results[["STR_1631_SYN_06"]] <- res$manifest
     } else {
-      cat("[orchestrator] STR_1631_SYN_05 forward_weights.R not found\n")
-      results[["STR_1631_SYN_05"]] <- list(status = "MISSING_WRAPPER")
+      cat("[orchestrator] STR_1631_SYN_06 forward_weights.R not found\n")
+      results[["STR_1631_SYN_06"]] <- list(status = "MISSING_WRAPPER")
     }
   }
 
@@ -111,8 +111,8 @@ orchestrate_forward_weights <- function(
           "",
           sprintf("STR_1715: %s",
                   results[["STR_1715"]]$status %||% "ok"),
-          sprintf("STR_1631_SYN_05: %s",
-                  results[["STR_1631_SYN_05"]]$status %||% "ok"),
+          sprintf("STR_1631_SYN_06: %s",
+                  results[["STR_1631_SYN_06"]]$status %||% "ok"),
           sprintf("STR_1656_MLRA: %s",
                   results[["STR_1656_MLRA"]]$status %||% "STUB"),
           "",
