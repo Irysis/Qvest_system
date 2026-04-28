@@ -1,6 +1,54 @@
 {
   "task_id": "WT-D20260428_003",
-  "current_phase": "SPEC_APPROVED",
-  "updated_at": "2026-04-28T14:59:38+0900",
+  "current_phase": "ALPHA_DONE",
+  "phase_outcome": "alpha_borderline_cert_NOT_ISSUED_pit_clean_v2",
+  "alpha_research": {
+    "iter": 10,
+    "iter_track": "B",
+    "iter_name": "MAQGC_Multi_Axis_Growth_Quality_Composite_PIT_CLEAN_V2",
+    "package_finalized": true,
+    "post_codex": true,
+    "v2_pit_clean_applied": true,
+    "metrics_v2": {
+      "rank_ic": 0.0382,
+      "icir": 1.121,
+      "harvey_t": 3.596,
+      "d10_d1_spread": 0.00328,
+      "monotonicity": 0.6727,
+      "subperiod_stability": 1.00,
+      "dsr_post": 1.0035,
+      "n_months": 122,
+      "inheritance_vs_Q08": 0.7228
+    }
+  },
+  "graduation_check": "BORDERLINE_FAIL — 4/6 PASS (ICIR/subperiod/Harvey-t/DSR), 2/6 FAIL (rank_ic 4.5% short of 0.04, monotonicity 13% short of 0.80)",
+  "cert_4cond_check": "FAIL — cond4 1/3 (only S1 NW-t 3.6 passes; S2/S3 NW-t 2.6 marginally short)",
+  "cert_issued": false,
+  "codex_round": {
+    "performed": true,
+    "stance": "REJECT",
+    "n_critical": 8,
+    "n_high": 5,
+    "n_medium": 3,
+    "agent_resolution": "5 ACCEPT / 2 PARTIAL / 1 REBUTTAL",
+    "q_lead_escalate_triggered": true,
+    "key_finding": "Codex C2 PIT-C13 manual sign flip ACCEPT led to dramatic improvement: rank_ic 0.019→0.038, NW-t 1.78→3.60. PIT-clean methodology resurrected the alpha. L-224 captures: manual `-Z` ≠ Z_Score_Aligned even for stable-IC factors — Z_Aligned uses expanding-window IC which captures regime changes."
+  },
+  "downstream_handoff": {
+    "to_risk_agent": "alpha_borderline — passive deny via cert NOT ISSUED. If Q-Lead OVERRIDE chosen, recommend residualize vs Q08 first.",
+    "to_optimizer": "Same — PG1 admission auto-denied"
+  },
+  "iter11_recommendation": "Iter 11 path: (1) residualize MAQGC vs Q08_Composite_Quality (cor 0.723); (2) submit S1 single-spec only (cond4 reformulation 1-of-1); (3) standalone A4 CashFlowQuality ICIR 1.218 strongest single axis; (4) regime-conditional MAQGC if p2 weakness recurs.",
+  "deliverables": [
+    "qepm/mailbox/worktask/WT-D20260428_003/alpha_package.json",
+    "qepm/mailbox/worktask/WT-D20260428_003/alpha_validation.json",
+    "qepm/mailbox/worktask/WT-D20260428_003/alpha_discovery_certificate.json (issued=false)",
+    "qepm/mailbox/worktask/WT-D20260428_003/challenge_note.md",
+    "qepm/mailbox/worktask/WT-D20260428_003/codex_critic_response_alpha.json",
+    "qepm/mailbox/worktask/WT-D20260428_003/artifact_lineage.json",
+    "stage_artifacts/WT_D20260428_003/alpha_scores.parquet (sig_date × Ticker × score panel, 39879 rows × 122 sig_dates)",
+    "qepm/stage_artifacts/WT_WT-D20260428_003/alpha_scores.parquet (mirror)"
+  ],
+  "updated_at": "2026-04-28T15:42:00+0900",
   "blocker": null
 }

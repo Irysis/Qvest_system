@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-D20260428_003",
+  "iter": 10,
+  "iter_track": "B",
+  "lineage_generated_at": "2026-04-28T15:30:00Z",
+  "agent": "alpha_research_v1.2",
+
+  "input_artifacts": [
+    {
+      "type": "request",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/request.json",
+      "role": "Work Task specification (theme + universe + LIQ + horizon + costs)",
+      "consumed": true
+    },
+    {
+      "type": "factor_db",
+      "path": ".cache/factor_db/factor_db_YYYYMM.parquet (multi-month)",
+      "role": "Factor cross-section per sig_date (Z_Score, Z_Score_Aligned, IC history)",
+      "loader": "load_month_factors() in v2 (PIT-safe)",
+      "consumed": true,
+      "n_months_loaded": 66
+    },
+    {
+      "type": "rawdata",
+      "path": ".cache/rawdata.parquet",
+      "role": "Universe membership (K200, KQ150) + price/volume + forward returns",
+      "consumed": true
+    },
+    {
+      "type": "fiapas_v2_alpha",
+      "path": "qepm/mailbox/worktask/WT-D20260428_001/alpha_package.json",
+      "role": "Iter 10 A FIAPAS V2 alpha for cross-WT family-orthogonality reference",
+      "consumed": true,
+      "purpose": "family-level orthogonality declaration (no direct cor measured at as-of)"
+    }
+  ],
+
+  "internal_artifacts": [
+    {
+      "type": "evaluation_script",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/evaluate_iter10b.R",
+      "role": "v1 — initial 4-axis evaluation (PIT issue: direct parquet read + manual sign flip)",
+      "status": "DEPRECATED post-Codex C2/C3"
+    },
+    {
+      "type": "evaluation_script_v2",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/evaluate_iter10b_v2_pit_clean.R",
+      "role": "v2 — PIT-clean re-evaluation via load_month_factors() + Z_Score_Aligned only",
+      "status": "PRIMARY"
+    },
+    {
+      "type": "panel_v2",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/alpha_panel_v2_pit_clean.rds",
+      "role": "PIT-clean alpha panel (sig_date × Ticker × axis Z + composite alpha)"
+    },
+    {
+      "type": "ic_dt",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/ic_dt.rds",
+      "role": "Per-month IC time-series for diagnostics"
+    }
+  ],
+
+  "output_artifacts": [
+    {
+      "type": "alpha_package_draft",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/alpha_package_draft.json",
+      "role": "Pre-Codex draft (will be finalized to alpha_package.json after Codex round)"
+    },
+    {
+      "type": "alpha_package_final",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/alpha_package.json",
+      "role": "Post-Codex finalized alpha_package",
+      "status": "TO_BE_WRITTEN_AFTER_PIT_CLEAN_V2"
+    },
+    {
+      "type": "alpha_validation",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/alpha_validation.json",
+      "role": "Validation report (axiom + PIT + spec + universe + role + graduation + cert)"
+    },
+    {
+      "type": "alpha_discovery_certificate",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/alpha_discovery_certificate.json",
+      "role": "Certificate (issued = false: graduation + cond4 FAIL)"
+    },
+    {
+      "type": "alpha_scores_panel",
+      "path_a": "stage_artifacts/WT_D20260428_003/alpha_scores.parquet",
+      "path_b": "qepm/stage_artifacts/WT_WT-D20260428_003/alpha_scores.parquet",
+      "role": "Date × Ticker × score panel (RF-A7 compliant time-series, 21650 rows × 66 sig_dates)",
+      "schema": ["sig_date", "Ticker", "score", "Z_A1", "Z_A2", "Z_A3", "Z_A4", "score_S2", "score_S3"]
+    },
+    {
+      "type": "challenge_note",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/challenge_note.md",
+      "role": "Codex round per-concern resolution (8 concerns: 5 HIGH + 3 MEDIUM)"
+    },
+    {
+      "type": "codex_critic_response",
+      "path": "qepm/mailbox/worktask/WT-D20260428_003/codex_critic_response_alpha.json",
+      "role": "Codex GPT-5.5 xhigh stance=REJECT, 8 critical_concerns, weakest_assumption flagged"
+    }
+  ],
+
+  "downstream_handoff": {
+    "to_risk_agent": {
+      "input": "qepm/stage_artifacts/WT_WT-D20260428_003/alpha_scores.parquet",
+      "alpha_package": "qepm/mailbox/worktask/WT-D20260428_003/alpha_package.json",
+      "blocked": "alpha_discovery_certificate.issued = false → PG1 admission auto-denied",
+      "advisory": "If sleeve allocation considered, recommend ≤ 5% paired with FIAPAS or STR_1715 incumbent"
+    },
+    "to_optimizer_agent": {
+      "blocked": "Same as Risk — passive deny via certificate absence"
+    }
+  },
+
+  "artifacts_NOT_produced": [
+    {
+      "artifact": "weights.csv",
+      "reason": "Alpha agent does not produce weights per Charter §10 Role Card"
+    },
+    {
+      "artifact": "covariance.parquet",
+      "reason": "Alpha agent does not produce covariance per Charter §10 Role Card"
+    },
+    {
+      "artifact": "risk_package.json",
+      "reason": "Risk agent scope (downstream)"
+    },
+    {
+      "artifact": "optimization_package.json",
+      "reason": "Optimizer agent scope (downstream)"
+    }
+  ]
+}

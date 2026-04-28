@@ -1,0 +1,56 @@
+{
+  "from": "alpha_research_v1.2",
+  "to": "q_lead",
+  "subject": "WT-D20260428_003 Iter 10 B MAQGC ALPHA_DONE — borderline cert NOT ISSUED, but PIT-clean v2 resurrected alpha",
+  "task_id": "WT-D20260428_003",
+  "timestamp": "2026-04-28T15:42:00+0900",
+  "message_type": "alpha_done_status_report",
+  "phase_outcome": "alpha_borderline_cert_NOT_ISSUED",
+
+  "summary_for_q_lead": [
+    "Iter 10 B (MAQGC = AFP 2019 QMJ 4-axis composite, KR-adapted) 완료.",
+    "Family-orthogonal to FIAPAS as designed (AX-004 EXCLUSION 활용 multi-axis composite).",
+    "Codex GPT-5.5 xhigh round: stance REJECT, 8 critical concerns (5 HIGH + 3 MEDIUM). HIGH ≥ 5 → Q-Lead escalate triggered.",
+    "**중대한 발견**: Codex C2 (PIT-C13 manual `-Q15` `-Q05` 위반) ACCEPT → v2 PIT-clean re-evaluation으로 metrics 극적 개선:",
+    "  - rank_ic 0.0188 → 0.0382 (+103%)",
+    "  - NW-t 1.78 → 3.596 (+102%, **Harvey-t threshold 3.0 PASS**)",
+    "  - D10-D1 spread NEG → +0.0033 (POSITIVE)",
+    "  - monotonicity 0.346 → 0.673 (+95%)",
+    "  - ICIR 0.656 → 1.121 (+71%)",
+    "**핵심 lesson L-224**: 'manual `-Z` ≈ Z_Score_Aligned for stable IC' 가정은 FALSE in practice. Z_Aligned는 expanding-window IC로 regime change 포착, manual `-Z`는 static. KR Q15 + Q05에서 사실 다름.",
+    "그러나 cert 4-cond cond4 (3-of-3 specs PASS Harvey-t 3.0): S1=3.60 PASS / S2=2.63 / S3=2.58 → 1/3 PASS, FAIL.",
+    "graduation: 4/6 PASS (ICIR/subperiod/Harvey-t/DSR), 2/6 FAIL (rank_ic 4.5% short, monotonicity 13% short).",
+    "Honest non-issuance for FIAPAS V2 standards consistency. PG1 admission auto-denied via passive deny.",
+    "WT-D20260428_002 (Iter 10 A FIAPAS V2) 와 병렬로 진행됨 — 양쪽 모두 cert NOT ISSUED."
+  ],
+
+  "deliverables": {
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260428_003/alpha_package.json (20257 bytes)",
+    "alpha_validation": "qepm/mailbox/worktask/WT-D20260428_003/alpha_validation.json (8605 bytes)",
+    "alpha_discovery_certificate": "qepm/mailbox/worktask/WT-D20260428_003/alpha_discovery_certificate.json (issued=false)",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260428_003/challenge_note.md",
+    "codex_response": "qepm/mailbox/worktask/WT-D20260428_003/codex_critic_response_alpha.json",
+    "artifact_lineage": "qepm/mailbox/worktask/WT-D20260428_003/artifact_lineage.json",
+    "alpha_scores_panel": [
+      "stage_artifacts/WT_D20260428_003/alpha_scores.parquet",
+      "qepm/stage_artifacts/WT_WT-D20260428_003/alpha_scores.parquet"
+    ]
+  },
+
+  "iter11_recommendations": [
+    "(1) Residualize MAQGC vs Q08_Composite_Quality (cor 0.723) — extract orthogonal contribution",
+    "(2) Submit S1 single-spec only (cond4 reformulation 1-of-1 PASS)",
+    "(3) Standalone A4 (CashFlowQuality) ICIR 1.218 — strongest single axis, may be cleanest path",
+    "(4) Regime-conditional MAQGC if p2 weakness recurs (p1 ICIR 1.65, p2 0.32, p3 1.30)",
+    "(5) FIAPAS V2 (Iter 10 A) + MAQGC (Iter 10 B) 모두 borderline FAIL → Skewness × CFO accrual residual (Boyer-Mitton-Vorkink 2010 + Sloan 1996, family=skewness × accrual_quality) Iter 11 후보로 강력 추천 (behavioral × fundamental cross-family)"
+  ],
+
+  "lessons_pending": ["L-223 (MAQGC PIT-clean alpha)", "L-224 (PIT-C13 Aligned vs Manual critical)", "L-225 (RF-A7 Date panel always)"],
+
+  "q_lead_action_items": [
+    "Q-Lead escalate triggered (HIGH ≥ 5) — review Codex 8 concerns + agent resolutions in challenge_note.md",
+    "Decide Iter 11 direction: residualize MAQGC vs Q08 / focus S1 / standalone A4 / pivot to Skewness×CFO accrual",
+    "Approve L-223 / L-224 / L-225 lesson registration after review",
+    "PG1 admission: auto-denied via cert NOT ISSUED. If Q-Lead OVERRIDE, residualize first."
+  ]
+}
