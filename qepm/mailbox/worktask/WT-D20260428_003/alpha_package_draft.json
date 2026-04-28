@@ -1,0 +1,360 @@
+{
+  "task_id": "WT-D20260428_003",
+  "wt_type": "discovery",
+  "iter": 10,
+  "iter_track": "B",
+  "iter_name": "MAQGC_Multi_Axis_Growth_Quality_Composite",
+  "agent": "alpha_research_v1.2",
+  "agent_model": "Opus 4.7 (1M context)",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": {},
+  "parent_iters_archived": {
+    "STR_1631_SYN_05": "WT-D20260425_010 (Iter 5 multi-sleeve composite)",
+    "STR_1701": "WT-D20260426_004 (Iter 11 Linear Tilt)",
+    "STR_1715": "WT-D20260427_016 (Iter 31 grid sweep — current PG2 100%)"
+  },
+  "baseline_pg2": "STR_1715 100% (User OVERRIDE_006 mandate)",
+  "signal_as_of": "2023-10-31",
+  "signal_as_of_note": "Originally requested 2023-11-30; pipeline month-end mapping resulted in 2023-10-31 fallback (1M shift). Forward 1M return ends 2023-11-30 — PIT-safe.",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "icir",
+  "hypothesis_title": "KR Multi-Axis Growth Quality Composite (MAQGC) — AFP 2019 QMJ KR-adapted",
+  "hypothesis_summary": "Iter 10 B-track parallel discovery — family-orthogonal to FIAPAS (investor_flow / liquidity_diffusion / accrual). MAQGC family = quality_multi_axis × growth. AX-004 named EXCLUSION (multi-axis quality composite + multi-sleeve permitted) honored via 4-axis composite. Ex-ante 4 axes pre-registered with sign +1 each: (A1) Profitability = z(GPA + ROIC + NetMargin), (A2) Growth = z(RevenueGrowth + EarningsGrowth + SustainableGrowth), (A3) Safety = z(-DebtToEquity + EarningsStability), (A4) CashFlowQuality = z(CFOA - Accrual). Composite = mean(A1..A4) equal-weight, no tuning. n_candidates_tried=3 (S1 ALL, S2 Prof+Safe, S3 Prof+Grow as alternative spec sweeps).",
+  "primary_variant": "S1_ALL_4axes_HONEST_RESULT_FAIL",
+  "alternative_variants_documented": {
+    "S1_ALL_4axes": {
+      "sign_axis": "all +1 ex-ante",
+      "mechanism_citation": "Asness-Frazzini-Pedersen (2019 RAS) Quality Minus Junk multi-axis composite / Lakonishok-Shleifer-Vishny (1994 JF) growth quality contrarian / Sloan (1996 AR) accrual reliability inverse / Dechow-Dichev (2002 AR) earnings quality",
+      "diagnostics": {
+        "rank_ic": 0.0188,
+        "ic_sd": 0.0994,
+        "icir": 0.6561,
+        "nw_t_lag3": 1.7821,
+        "harvey_t_stat_pooled": 1.7821,
+        "monotonicity_rank_cor": 0.3455,
+        "d10_d1_spread": -0.0011,
+        "decile_max_at": 9,
+        "subperiod_stability": 1,
+        "subperiod_ics": {
+          "p1_2008_2014": {
+            "rank_ic": 0.0392,
+            "icir": 1.387,
+            "n_months": 27
+          },
+          "p2_2015_2019": {
+            "rank_ic": 0.0023,
+            "icir": 0.071,
+            "n_months": 22
+          },
+          "p3_2020_2023": {
+            "rank_ic": 0.0079,
+            "icir": 0.318,
+            "n_months": 17
+          }
+        },
+        "alpha_inheritance_cor_vs_Q08_proxy": 0.7155,
+        "n_months_evaluated": 66,
+        "turnover_proxy_monthly": null,
+        "dsr_pre": 0.656,
+        "dsr_post": 0.5872,
+        "n_candidates_tried": 3
+      },
+      "result": "rank_ic=0.0188 / icir=0.656 / Harvey_t=1.78 / D10-D1 spread NEGATIVE / cert_4cond=3/4 PASS",
+      "verdict": "FAIL — rank_ic 0.0188 < 0.04 graduation min, Harvey_t 1.78 < 3.0 graduation min, D10-D1 spread NEGATIVE (decile 9=max, decile 10 reversion), subperiod severe decay (p1 ICIR 1.39 → p2 0.07 → p3 0.32). Multi-axis composite alpha exists in p1 but underwhelming since 2015 in KR; long-only top20 deployment risk HIGH (negative D10-D1 spread)."
+    },
+    "S2_Prof_Safety": {
+      "mechanism": "Drop Growth + CFQ axes; pure Profitability + Safety (AFP 2019 narrowed)",
+      "diagnostics": {
+        "rank_ic": 0.007,
+        "icir": 0.255,
+        "nw_t": 0.774
+      },
+      "result": "FAIL — IC essentially zero. Safety axis (low D/E + earnings stability) dilutes profitability signal in KR."
+    },
+    "S3_Prof_Growth": {
+      "mechanism": "Profitability + Growth only (omit Safety + CFQ)",
+      "diagnostics": {
+        "rank_ic": 0.0157,
+        "icir": 0.466,
+        "nw_t": 1.208
+      },
+      "result": "FAIL — Harvey_t 1.21 < 3.0 (closest spec to S1). Suggests profitability dominates, growth/CFQ marginally additive."
+    }
+  },
+  "alpha_vector": {
+    "A348210": 3,
+    "A137310": 2.9879,
+    "A403870": 2.9343,
+    "A205470": 2.6741,
+    "A383220": 2.4672,
+    "A000990": 2.4625,
+    "A215000": 2.4405,
+    "A214150": 2.4077,
+    "A230240": 2.2839,
+    "A011200": 2.254,
+    "A287410": 2.227,
+    "A222800": 2.134,
+    "A140860": 1.9776,
+    "A031430": 1.8397,
+    "A215200": 1.8033,
+    "A282330": 1.5981,
+    "A029960": 1.5465,
+    "A319660": 1.5184,
+    "A058470": 1.47,
+    "A021240": 1.4081,
+    "A032640": 1.4019,
+    "A020000": 1.3957,
+    "A272290": 1.3909,
+    "A357780": 1.3483,
+    "A043150": 1.3135,
+    "A185750": 1.3095,
+    "A035900": 1.3068,
+    "A053800": 1.2742,
+    "A086450": 1.244,
+    "A098460": 1.244,
+    "A036570": 1.233,
+    "A183300": 1.2211,
+    "A051900": 1.2203,
+    "A073570": 1.2093,
+    "A096530": 1.2077,
+    "A111770": 1.2056,
+    "A271560": 1.2043,
+    "A064760": 1.1599,
+    "A166090": 1.1285,
+    "A383310": 1.0728,
+    "A064550": 1.0659,
+    "A180640": 1.0614,
+    "A049070": 1.0527,
+    "A009150": 1.0481,
+    "A001120": 1.0054,
+    "A005290": 0.9618,
+    "A011070": 0.9499,
+    "A084370": 0.9485,
+    "A090430": 0.9405,
+    "A036930": 0.937
+  },
+  "confidence_vector": {
+    "A348210": 0.989,
+    "A137310": 0.9888,
+    "A403870": 0.9879,
+    "A205470": 0.9822,
+    "A383220": 0.9759,
+    "A000990": 0.9757,
+    "A215000": 0.9749,
+    "A214150": 0.9737,
+    "A230240": 0.9685,
+    "A011200": 0.9671,
+    "A287410": 0.9658,
+    "A222800": 0.9609,
+    "A140860": 0.951,
+    "A031430": 0.9405,
+    "A215200": 0.9373,
+    "A282330": 0.9166,
+    "A029960": 0.9105,
+    "A319660": 0.907,
+    "A058470": 0.9007,
+    "A021240": 0.8921,
+    "A032640": 0.8912,
+    "A020000": 0.8903,
+    "A272290": 0.8896,
+    "A357780": 0.8831,
+    "A043150": 0.8776,
+    "A185750": 0.877,
+    "A035900": 0.8765,
+    "A053800": 0.8712,
+    "A086450": 0.866,
+    "A098460": 0.866,
+    "A036570": 0.8641,
+    "A183300": 0.862,
+    "A051900": 0.8618,
+    "A073570": 0.8598,
+    "A096530": 0.8595,
+    "A111770": 0.8592,
+    "A271560": 0.8589,
+    "A064760": 0.8507,
+    "A166090": 0.8446,
+    "A383310": 0.8333,
+    "A064550": 0.8318,
+    "A180640": 0.8309,
+    "A049070": 0.8291,
+    "A009150": 0.8281,
+    "A001120": 0.8188,
+    "A005290": 0.8089,
+    "A011070": 0.8061,
+    "A084370": 0.8058,
+    "A090430": 0.8039,
+    "A036930": 0.8031
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_D20260428_003/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "name": "S1_MAQGC_4axes_ALL",
+      "family": "quality_multi_axis × growth",
+      "axis_definitions": {
+        "A1_Profitability": {
+          "formula": "z(GPA + ROIC + NetMargin)/3",
+          "sign": "+1",
+          "citation": "AFP 2019 QMJ profitability axis"
+        },
+        "A2_Growth": {
+          "formula": "z(RevenueG + EarningsG + SustainableG)/3",
+          "sign": "+1",
+          "citation": "Lakonishok-Shleifer-Vishny 1994 contrarian growth quality"
+        },
+        "A3_Safety": {
+          "formula": "z(-D/E + EarningsStab)/2",
+          "sign": "+1",
+          "citation": "AFP 2019 safety axis (low leverage + stable earnings)"
+        },
+        "A4_CashFlowQuality": {
+          "formula": "z(CFOA - Accrual)/2",
+          "sign": "+1",
+          "citation": "Sloan 1996 accrual inverse / Dechow-Dichev 2002 earnings quality"
+        }
+      },
+      "composite": "mean(A1, A2, A3, A4) equal-weight ex-ante",
+      "rank_ic": 0.0188,
+      "icir": 0.6561,
+      "harvey_t": 1.7821,
+      "selected": true
+    },
+    {
+      "name": "S2_Prof_Safety",
+      "family": "quality_multi_axis (narrow QMJ)",
+      "composite": "mean(A1, A3)",
+      "rank_ic": 0.007,
+      "icir": 0.255,
+      "harvey_t": 0.774,
+      "selected": false,
+      "source": "axis_pruning_alternative"
+    },
+    {
+      "name": "S3_Prof_Growth",
+      "family": "quality × growth (LSV1994 contrarian)",
+      "composite": "mean(A1, A2)",
+      "rank_ic": 0.0157,
+      "icir": 0.466,
+      "harvey_t": 1.208,
+      "selected": false,
+      "source": "axis_pruning_alternative"
+    }
+  ],
+  "candidates_tried": [
+    {
+      "name": "S1_MAQGC_4axes_ALL",
+      "rank_ic": 0.0188,
+      "t": 1.7821,
+      "selected": true,
+      "source": "ex_ante_pre_registered"
+    },
+    {
+      "name": "S2_Prof_Safety",
+      "rank_ic": 0.007,
+      "t": 0.774,
+      "selected": false,
+      "source": "axis_pruning"
+    },
+    {
+      "name": "S3_Prof_Growth",
+      "rank_ic": 0.0157,
+      "t": 1.208,
+      "selected": false,
+      "source": "axis_pruning"
+    }
+  ],
+  "pit_compliance": {
+    "C1": "PASS — walk-forward only (per-month load via load_month_factors(sig_date))",
+    "C2": "PASS — monthly forward return = close(month_end+1) / close(month_end) - 1",
+    "C3": "PASS — per-month cross-sectional Z (no aggregate-then-apply)",
+    "C4": "PASS — quarterly 45d / annual May enforced upstream by FactorDB",
+    "C5": "N/A — no overlay used at alpha layer",
+    "C9": "PASS — sig_date d → applied (d, d+1m] via month-end Close lead",
+    "C10": "PASS — 20d AvgTV PIT t-30..t-1 one-sided + LIQ 5e7 floor (mandate)",
+    "C11": "PASS — fundamental data lag enforced by FactorDB",
+    "C13": "PASS — Z_Score_Aligned via FactorDB align_factor_direction (no manual flip)",
+    "C14": "PASS — Usable_Date <= sig_date (FactorDB enforced)",
+    "C15": "PASS — load_month_factors() / direct parquet via FactorDB pattern",
+    "note": "All 4 axes signs declared ex-ante BEFORE measurement (no method-shopping). Single primary spec S1 selected. S2/S3 retained as transparent alternative pruning record. n_candidates_tried=3 (DSR penalty budget ≤0.15 satisfied)."
+  },
+  "signal_processing_summary": {
+    "sig_dates_processed_unique": 66,
+    "sig_dates_processed_total_target": 191,
+    "sig_dates_skipped_reason": "Insufficient factor coverage (< 7/10 axes available) for 125 months. Pre-2010 quarterly fundamental coverage thin in FactorDB.",
+    "universe_label": "KOSPI200_KOSDAQ150_intersection (K200 OR KQ150 == TRUE)",
+    "liquidity_floor_krw": 50000000,
+    "coverage_min": 0.05,
+    "final_alpha_top_n": 50,
+    "n_panel_rows_unique": 21650,
+    "n_unique_tickers": 688,
+    "asof_alpha_names": 50,
+    "asof_alpha_universe_size_at_2023_10_31": 344
+  },
+  "optimizer_handoff_notes": [
+    "Alpha agent 산출물은 alpha_vector + confidence_vector + alpha_scores.parquet (full panel) 까지.",
+    "Optimizer는 max_names=20 (user hard mandate), weight_bounds=[0, 1] enforce 해야 함.",
+    "Risk Agent는 alpha_scores.parquet의 Ticker × score 신호로부터 covariance Σ + tail risk를 자체 추정 (alpha agent는 Σ 추정 금지).",
+    "**WARNING**: D10-D1 spread NEGATIVE (-0.00106) — long-only top20 deployment carries risk of negative differential return. Optimizer should consider this signal as quality-tilt only, NOT as primary alpha source. Pairing with FIAPAS V2 (Iter 10 A) or STR_1701 incumbent recommended.",
+    "Subperiod decay (p1 1.39 → p3 0.32 ICIR) suggests regime sensitivity; regime-conditional weighting at optimizer or risk layer recommended.",
+    "Multi-axis quality 신호는 STR_1715 incumbent와 Q08_Composite_Quality 0.716 cor — 신규 alpha contribution 미미. Sizing 권고는 신호 보유 5-10% 이하."
+  ],
+  "family_orthogonality": {
+    "fiapas_family_avoided": ["investor_flow", "liquidity_diffusion", "accrual"],
+    "maqgc_family": ["quality_multi_axis", "growth"],
+    "cross_family_overlap": "minimal vs FIAPAS (accrual axis A4 uses Q05_Accrual fundamental quality, not flow-based; orthogonal to FIAPAS V2_F3 retail-accrual-MTC). HOWEVER vs Q08_Composite_Quality (parent quality proxy) cor 0.716 — quality-axis overlap with incumbent.",
+    "ax004_exclusion": "MULTI-AXIS COMPOSITE permitted by AX-004 EXCLUSION clause. 4-axis ex-ante pre-registered. Despite EXCLUSION, empirical IC remains weak in KR top342 universe — suggests EXCLUSION applies *eligibility* not *predictive power*."
+  },
+  "graduation_check": {
+    "rank_ic_target": 0.04,
+    "rank_ic_actual": 0.0188,
+    "rank_ic_pass": false,
+    "icir_target": 0.2,
+    "icir_actual": 0.656,
+    "icir_pass": true,
+    "subperiod_target": 0.5,
+    "subperiod_actual": 1,
+    "subperiod_pass": true,
+    "harvey_t_target": 3,
+    "harvey_t_actual": 1.7821,
+    "harvey_t_pass": false,
+    "dsr_post_target": 0.5,
+    "dsr_post_actual": 0.5872,
+    "dsr_post_pass": true,
+    "monotonicity_target": 0.8,
+    "monotonicity_actual": 0.3455,
+    "monotonicity_pass": false,
+    "overall": "FAIL — rank_ic 0.019 < 0.04, Harvey_t 1.78 < 3.0, monotonicity 0.346 < 0.80 (D10-D1 negative spread). ICIR + subperiod + DSR PASS individually but composite graduation FAIL."
+  },
+  "cert_4cond_check": {
+    "cond1_inheritance_cor_lt_095": {
+      "actual": 0.7155,
+      "target": 0.95,
+      "pass": true,
+      "note": "vs Q08_Composite_Quality parent proxy. High but < 0.95 — composite shares quality-axis signal but distinct combination."
+    },
+    "cond2_factor_specs_ge_1": {
+      "actual": 3,
+      "target": 1,
+      "pass": true
+    },
+    "cond3_mechanism_ge_50chars": {
+      "actual_chars": 250,
+      "target": 50,
+      "pass": true
+    },
+    "cond4_harvey_pass_ge_3": {
+      "actual_count": 0,
+      "target": 3,
+      "pass": false,
+      "breakdown": {
+        "S1": 1.78,
+        "S2": 0.77,
+        "S3": 1.21
+      },
+      "note": "ALL 3 specs FAIL Harvey-t 3.0 threshold. Cannot certify multi-axis QMJ alpha in KR with current factor combination."
+    },
+    "all_4cond_technical_pass": false
+  },
+  "generated_at": "2026-04-28T06:23:20Z",
+  "pipeline_version": "alpha_research_v1.2_v6.31_charter"
+}

@@ -6,6 +6,16 @@
   "agent": "forge_integration_v6.1_pure_function",
   "as_of_date": "2026-04-27",
   "method": "weights.csv_direct_NAV_reconstruction_IS_plus_OOS",
+  "method_basis_label": "forge_realized_share_based",
+  "production_grade": true,
+  "sr_realized_share_based": 0.6161,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 92,
+  "alpha_sig_dates_count": 92,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "v1_2_r4_patch_note": "R4 patch 2026-04-28: Charter §9/§10 4-field 명시 추가. sr_realized_share_based=0.6161 (Full 120 periods, weights.csv_direct_NAV). hurdle_result.json 측 SR 1.4522는 walk-forward simulation (production_grade=false). divergence -0.8373 → FABRICATION_SUSPECTED tier (Charter §9 정의 ≥0.6, 본 file 기존 'SIGNIFICANT_DRAG' 표기는 오기 — 정정).",
   "backtest_summary": {
     "IS": {
       "period": "2008-01-31 ~ 2024-01-23",
@@ -74,8 +84,10 @@
     "divergence_pp": -0.8373,
     "factor_engine_claimed_oos_sr": 1.6827,
     "forge_v3_oos_sr": 0.6141,
-    "diagnosis": "SIGNIFICANT_DRAG"
+    "diagnosis": "FABRICATION_SUSPECTED",
+    "diagnosis_basis": "Charter §9 v1.2: |divergence_pp| 0.8373 >= 0.6 threshold → FABRICATION_SUSPECTED tier. R4 patch 정정 (기존 'SIGNIFICANT_DRAG' 0.3-0.6 tier는 오기)."
   },
+  "divergence_factor_engine_vs_realized_pp": -0.8373,
   "iter11_comparison": {
     "iter11_stated_pg2_sr": 1.4625,
     "iter11_re_measured_sr": 1.3691,
