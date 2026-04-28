@@ -64,8 +64,10 @@ load_weights_xts <- function(weights_path, returns_panel_cols) {
 # 2. Build blended weights via xts matrix sum
 #    (NOT via row-wise return合성 — 도훈 명령)
 # ─────────────────────────────────────────────────────────
-build_blended_weights_xts <- function(weights_xts_list, blend_ratios) {
+build_blended_weights_xts <- function(weights_xts_list, blend_ratios,
+                                        returns_panel_index = NULL) {
   # blend_ratios: named numeric (sum to 1.0)
+  # returns_panel_index: target monthly grid (returns_panel index) for forward-fill
   if (abs(sum(blend_ratios) - 1.0) > 1e-6) {
     stop(sprintf("[build_blended_weights] blend_ratios sum %.6f != 1.0",
                  sum(blend_ratios)))
@@ -76,28 +78,51 @@ build_blended_weights_xts <- function(weights_xts_list, blend_ratios) {
                        collapse = ", ")))
   }
 
-  # Find common date grid (intersection of all weights_xts dates)
-  date_grids <- lapply(names(blend_ratios), function(s) index(weights_xts_list[[s]]))
-  common_dates <- Reduce(intersect, date_grids)
-  if (length(common_dates) == 0) {
-    # Use union, forward-fill weights
-    common_dates <- sort(unique(Reduce(c, date_grids)))
+  # Determine target grid:
+  #   - if returns_panel_index provided → snap weights to that monthly grid (correct path)
+  #   - otherwise → fallback to union of weights_xts dates (legacy)
+  if (!is.null(returns_panel_index)) {
+    target_grid <- as.Date(returns_panel_index)
+  } else {
+    date_grids <- lapply(names(blend_ratios), function(s) index(weights_xts_list[[s]]))
+    target_grid <- sort(unique(do.call(c, date_grids)))
+    target_grid <- as.Date(target_grid)
   }
-  common_dates <- as.Date(common_dates)
 
-  # Initialize blended weights
   cols <- colnames(weights_xts_list[[names(blend_ratios)[1]]])
-  blended <- xts(matrix(0, nrow = length(common_dates), ncol = length(cols),
+  blended <- xts(matrix(0, nrow = length(target_grid), ncol = length(cols),
                         dimnames = list(NULL, cols)),
-                 order.by = common_dates)
+                 order.by = target_grid)
 
   for (s in names(blend_ratios)) {
     W_s <- weights_xts_list[[s]]
-    # Align W_s to common_dates with forward-fill (last sig_date weight carries forward)
-    W_aligned <- na.locf(merge(W_s, xts(, common_dates), all = TRUE),
-                         na.rm = FALSE)[common_dates]
-    W_aligned[is.na(W_aligned)] <- 0
-    blended <- blended + W_aligned * blend_ratios[s]
+    # Snap W_s rows to target_grid: for each YM in target_grid, find nearest
+    # weights date <= target_grid date (forward-fill semantics).
+    if (!is.null(returns_panel_index)) {
+      ws_dt <- as.data.table(W_s, keep.rownames = "Date")
+      ws_dt[, Date := as.Date(Date)]
+      ws_dt[, YM := format(Date, "%Y-%m")]
+      grid_dt <- data.table(Date = target_grid,
+                            YM = format(target_grid, "%Y-%m"))
+      # For each grid YM, attach weights row (latest sig_date in same YM); else NA.
+      ws_latest_by_ym <- ws_dt[, .SD[which.max(Date)], by = YM]
+      merged <- merge(grid_dt, ws_latest_by_ym, by = "YM",
+                       all.x = TRUE, suffixes = c(".grid", ".w"))
+      setorder(merged, Date.grid)
+      mat_cols <- setdiff(names(merged),
+                           c("Date.grid", "Date.w", "YM"))
+      mat <- as.matrix(merged[, ..mat_cols])
+      W_snapped <- xts(mat, order.by = merged$Date.grid)
+      # Forward-fill (carry last weight forward across months without rebal)
+      W_snapped <- zoo::na.locf(W_snapped, na.rm = FALSE)
+      W_snapped[is.na(W_snapped)] <- 0
+      W_snapped <- W_snapped[, cols]
+    } else {
+      W_snapped <- zoo::na.locf(merge(W_s, xts(, target_grid), all = TRUE),
+                                 na.rm = FALSE)[target_grid]
+      W_snapped[is.na(W_snapped)] <- 0
+    }
+    blended <- blended + W_snapped * blend_ratios[s]
   }
   blended
 }
@@ -197,7 +222,8 @@ compare_strategies_standardized <- function(
     n_dates_blend <- min(sapply(names(blend_ratios),
                                  function(s) weights_meta[[s]]$n_unique_dates))
 
-    blended_W <- build_blended_weights_xts(weights_xts_list, blend_ratios)
+    blended_W <- build_blended_weights_xts(weights_xts_list, blend_ratios,
+                                            returns_panel_index = index(returns_panel))
     rp <- run_blend_return_portfolio(returns_panel, blended_W, rebalance_on)
     metrics <- extract_metrics(rp$returns, blend_label, n_dates_blend)
 
@@ -286,12 +312,11 @@ build_monthly_returns_panel <- function(rawdata_path) {
   raw <- raw[!is.na(Ret) & !is.na(Date)]
   raw[, Date := as.Date(Date)]
   raw[, YM := format(Date, "%Y-%m")]
-  # Monthly compound: PerformanceAnalytics 표준 — 자체 prod 합성으로 보일 수 있으나
-  # 이는 daily→monthly aggregation이지 portfolio 측정이 아님. PerformanceAnalytics는
-  # daily.frame을 받아도 처리 가능하지만 실 운용은 monthly rebalance라 monthly panel 필요.
-  ret_monthly <- raw[, .(Ret_1m = prod(1 + Ret, na.rm = TRUE) - 1,
-                         Date = max(Date)),
+  # Daily→monthly aggregation per ticker. Date는 month-start 통일 (ticker마다
+  # 다른 max(Date)가 dcast row를 dense하게 만드는 것을 방지).
+  ret_monthly <- raw[, .(Ret_1m = prod(1 + Ret, na.rm = TRUE) - 1),
                      by = .(Ticker, YM)]
+  ret_monthly[, Date := as.Date(paste0(YM, "-01"))]
   ret_monthly <- ret_monthly[!is.na(Date)]
   setorder(ret_monthly, Date, Ticker)
 
