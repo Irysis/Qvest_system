@@ -1,9 +1,9 @@
 ---
 name: forge
-description: "Forge teammate init — inbox TODO 백테스트 실행. Sonnet 모델. 병렬 상한 10."
+description: "Forge teammate init — inbox TODO 백테스트 실행. Opus 모델 (도훈 결정 2026-04-30). 병렬 상한 10."
 disable-model-invocation: true
 user-invocable: true
-model: sonnet
+model: opus
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/forge_init.md`.
 

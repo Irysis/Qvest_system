@@ -3,7 +3,7 @@ name: governor
 description: "Governor teammate init — PG0~PG3 포트폴리오 심사. Q-Lead 수동 호출만."
 disable-model-invocation: true
 user-invocable: true
-model: sonnet
+model: opus
 ---
 Read and follow the instructions in `02_Infrastructure/prompts/governor_init.md`.
 

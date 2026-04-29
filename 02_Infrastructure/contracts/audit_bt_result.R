@@ -1,7 +1,12 @@
 ## ============================================================================
-## audit_bt_result.R — Backtest Result Contract v1.0 audit (10 checks)
+## audit_bt_result.R — Backtest Result Contract v1.0 audit (11 checks)
 ## L3 hard block trigger: Critical FAIL 시 metrics is_official=FALSE 강제
 ## Lawbook §20
+## L-249 enforcement (2026-04-29): Check 11 frequency-cadence mismatch detection
+##   — Charter v1.5 §13: frequency/annualization_factor vs actual data spacing
+##   — Frequency mislabel inflates Sharpe by sqrt(N_declared/N_actual)
+##   — Bi-monthly inner-join + 'daily' annotation = AX-002 fabrication
+##   — Trigger: median(diff(date)) outside declared-frequency tolerance band
 ## ============================================================================
 
 suppressMessages({library(data.table)})
@@ -152,6 +157,86 @@ audit_bt_result <- function(bt_result) {
     }
   }
 
+  # Check 11 (L-249 enforcement): frequency-vs-cadence consistency
+  # Charter v1.5 §13: declared frequency/annualization_factor must match actual data spacing
+  # Mislabel (e.g. bi-monthly inner-join declared as 'daily') inflates Sharpe by sqrt(N_declared/N_actual)
+  declared_freq <- tryCatch(bt_result$manifest$frequency[1], error = function(e) NA_character_)
+  declared_ann  <- tryCatch({
+    # annualization_factor stored in metrics or manifest
+    ann_from_metrics <- if (!is.null(bt_result$metrics) && "annualization_factor" %in% names(bt_result$metrics)) {
+      unique(bt_result$metrics$annualization_factor[!is.na(bt_result$metrics$annualization_factor)])
+    } else numeric(0)
+    if (length(ann_from_metrics) > 0) ann_from_metrics[1] else NA_real_
+  }, error = function(e) NA_real_)
+
+  pr_for_cadence <- bt_result$period_returns
+  freq_mislabel_detected <- FALSE
+
+  if (!is.null(pr_for_cadence) && nrow(pr_for_cadence) >= 3 &&
+      "date" %in% names(pr_for_cadence)) {
+    date_seq <- sort(as.Date(pr_for_cadence$date))
+    date_diffs <- as.numeric(diff(date_seq))
+    med_diff <- median(date_diffs, na.rm = TRUE)
+
+    # Tolerance bands per declared frequency
+    # daily:     1-5 days (trading days)
+    # weekly:    5-10 days
+    # monthly:   28-31 days
+    # quarterly: 88-95 days
+    # bi-monthly/semi-monthly: ~55-65 days (NO valid declared frequency → mislabel if declared daily/monthly)
+    declared_band_ok <- if (!is.na(declared_freq)) {
+      switch(tolower(declared_freq),
+        "daily"     = (med_diff >= 1  && med_diff <= 5),
+        "weekly"    = (med_diff >= 5  && med_diff <= 10),
+        "monthly"   = (med_diff >= 28 && med_diff <= 31),
+        "quarterly" = (med_diff >= 88 && med_diff <= 95),
+        TRUE  # unknown frequency label — do not block
+      )
+    } else {
+      TRUE  # no declared frequency — skip this check
+    }
+
+    if (!is.na(declared_freq) && !declared_band_ok) {
+      freq_mislabel_detected <- TRUE
+      # Compute inflation factor vs declared annualization
+      actual_ann_implied <- if (med_diff >= 1 && med_diff <= 5) 252 else
+                            if (med_diff >= 5 && med_diff <= 10) 52 else
+                            if (med_diff >= 28 && med_diff <= 31) 12 else
+                            if (med_diff >= 88 && med_diff <= 95) 4 else
+                            round(365 / med_diff, 1)
+      inflation_sqrt <- if (!is.na(declared_ann) && declared_ann > 0 && actual_ann_implied > 0) {
+        round(sqrt(declared_ann / actual_ann_implied), 3)
+      } else NA_real_
+
+      add_check("frequency",
+                "frequency_cadence_consistency",
+                "FAIL",
+                sprintf(
+                  "L-249 VIOLATION: declared freq='%s' ann=%s but median(diff(date))=%.1f days (implies ~%sx ann). Sharpe inflation ~%.2fx. Charter v1.5 §13 + AX-002.",
+                  declared_freq %||% "?",
+                  ifelse(is.na(declared_ann), "?", as.character(declared_ann)),
+                  med_diff,
+                  actual_ann_implied,
+                  inflation_sqrt %||% NA_real_
+                ),
+                "Sharpe,Sortino,Calmar,CAGR",
+                "critical")
+    } else {
+      add_check("frequency",
+                "frequency_cadence_consistency",
+                "PASS",
+                sprintf("declared freq='%s' consistent with median date_diff=%.1f days",
+                        declared_freq %||% "?", med_diff),
+                "", "low")
+    }
+  } else {
+    add_check("frequency",
+              "frequency_cadence_consistency",
+              "WARN",
+              "period_returns < 3 obs or missing date column — cadence check skipped",
+              "", "medium")
+  }
+
   audit_tbl <- rbindlist(audit_rows, use.names = TRUE, fill = TRUE)
   bt_result$audit <- audit_tbl
 
@@ -178,14 +263,18 @@ audit_bt_result <- function(bt_result) {
     bt_result$manifest[, integrity_status := "PASS"]
   }
 
-  cat(sprintf("[audit_bt_result] Audit complete — %d checks | PASS=%d FAIL=%d WARN=%d | integrity=%s\n",
+  # Attach L-249 flag to manifest for downstream consumption
+  bt_result$manifest[, frequency_mislabel_detected := freq_mislabel_detected]
+
+  cat(sprintf("[audit_bt_result] Audit complete — %d checks | PASS=%d FAIL=%d WARN=%d | integrity=%s | L249_freq_mislabel=%s\n",
               nrow(audit_tbl),
               nrow(audit_tbl[status == "PASS"]),
               nrow(audit_tbl[status == "FAIL"]),
               nrow(audit_tbl[status == "WARN"]),
-              bt_result$manifest$integrity_status[1]))
+              bt_result$manifest$integrity_status[1],
+              freq_mislabel_detected))
 
   bt_result
 }
 
-cat("[audit_bt_result.R] Loaded — audit_bt_result() (10 checks, L3 trigger)\n")
+cat("[audit_bt_result.R] Loaded — audit_bt_result() (11 checks, L3 trigger, L-249 frequency_cadence_consistency)\n")

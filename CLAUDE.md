@@ -331,9 +331,10 @@ regime-classification, axiom-io, telegram-protocol, risk-modeling-advanced
 ## Caching Discipline (Block D — 토큰 절감, Session 68 Day 2)
 Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버.
 
-### 모델 라우팅 (Block A 적용)
-- **Opus 4.7 유지**: Q-Lead (메인), Judge (PIT 최종 판결), Risk Manager R3 Closing
-- **Sonnet 4.6 다운그레이드**: Scout, Forge, Governor, Academic(scout타입), Quant(forge타입)
+### 모델 라우팅 (Block A 도훈 결정 2026-04-30)
+- **Opus 4.7 (전 모델 통일)**: Q-Lead / Judge / Risk Manager R3 Closing / Scout / Forge / Governor / Alpha-Research / Risk-Research / Optimizer-Research / Architect / Blender / Execution / Monitoring / Academic / Quant — **모든 agent Opus 격상**
+- **격상 사유**: WT-D20260429_001 첫 정식 lifecycle에서 Forge Sonnet이 frequency mislabel fabrication (Sharpe 6.94× inflate) 산출 → Charter v1.4 §9 FABRICATION_SUSPECTED 첫 발동 (L-249). 비용 증가 감수, 정합성 우선.
+- **이전 정책 (deprecated 2026-04-30)**: Sonnet downgrade → Scout/Forge/Governor 등은 Opus로 환원
 - Agent tool 호출 시 `model: "sonnet"` parameter 명시. `.claude/commands/{scout,forge,governor}.md` frontmatter에도 명시.
 
 ### 캐시 히트 최대화
