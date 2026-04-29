@@ -282,11 +282,25 @@ build_holdings <- function(sim_result, run_id, strategy_id) {
     h_dt <- as.data.table(sim_result$HOLDINGS_LOG)
   }
 
-  setnames(h_dt, c("Date", "Ticker", "Name", "Sector", "Weight"),
-           c("date", "ticker", "name", "sector", "actual_weight"),
+  # backtest_harness.R schema (Signal_Date/Exec_Date) → contract schema (date)
+  if (!"date" %in% names(h_dt)) {
+    if ("Exec_Date" %in% names(h_dt)) {
+      setnames(h_dt, "Exec_Date", "date")
+    } else if ("Signal_Date" %in% names(h_dt)) {
+      setnames(h_dt, "Signal_Date", "date")
+    } else if ("Date" %in% names(h_dt)) {
+      setnames(h_dt, "Date", "date")
+    }
+  }
+  if ("date" %in% names(h_dt)) h_dt[, date := as.Date(date)]
+
+  setnames(h_dt, c("Ticker", "Name", "Sector", "Weight", "Score", "Price"),
+           c("ticker", "name", "sector", "actual_weight", "signal_score", "price"),
            skip_absent = TRUE)
 
-  if (!"target_weight" %in% names(h_dt)) h_dt[, target_weight := actual_weight]
+  if (!"target_weight" %in% names(h_dt) && "actual_weight" %in% names(h_dt)) {
+    h_dt[, target_weight := actual_weight]
+  }
   if (!"price" %in% names(h_dt)) h_dt[, price := NA_real_]
   if (!"shares" %in% names(h_dt)) h_dt[, shares := NA_real_]
   if (!"market_value" %in% names(h_dt)) h_dt[, market_value := NA_real_]
@@ -435,13 +449,24 @@ build_metrics <- function(nav_tbl, period_returns_tbl, holdings_tbl,
   if (!is.null(holdings_tbl) && nrow(holdings_tbl) > 0 &&
       "turnover" %in% names(period_returns_tbl)) {
     avg_to <- mean(period_returns_tbl$turnover, na.rm = TRUE)
-    add_metric("exposure", "Average_Turnover", avg_to, "ratio",
-               "period_returns", "mean(turnover) — turnover from holdings L1/2")
-    add_metric("exposure", "Annualized_Turnover", avg_to * annualization_factor,
-               "ratio", "period_returns", "mean(turnover) * annualization_factor")
-    add_metric("exposure", "Average_N_Holdings",
-               mean(holdings_tbl[, .N, by = date]$N, na.rm = TRUE),
-               "count", "holdings", "mean(N per date)")
+    if (!is.na(avg_to)) {
+      add_metric("exposure", "Average_Turnover", avg_to, "ratio",
+                 "period_returns", "mean(turnover) — turnover from holdings L1/2")
+      add_metric("exposure", "Annualized_Turnover", avg_to * annualization_factor,
+                 "ratio", "period_returns", "mean(turnover) * annualization_factor")
+    }
+  }
+  if (!is.null(holdings_tbl) && nrow(holdings_tbl) > 0 &&
+      "date" %in% names(holdings_tbl)) {
+    n_per_date <- tryCatch(
+      holdings_tbl[, .N, by = date],
+      error = function(e) NULL
+    )
+    if (!is.null(n_per_date) && nrow(n_per_date) > 0 && "N" %in% names(n_per_date)) {
+      add_metric("exposure", "Average_N_Holdings",
+                 as.numeric(mean(n_per_date$N, na.rm = TRUE)),
+                 "count", "holdings", "mean(N per date)")
+    }
   }
   if ("cash_weight" %in% names(period_returns_tbl)) {
     add_metric("exposure", "Average_Cash_Weight",
