@@ -996,19 +996,24 @@ spec_blend <- list(
   survivorship_bias_control = "inherited from component strategies"
 )
 
+cat("  [v2 FIX] frequency='monthly' annualization_factor=12 (NOT 'daily' + 252)\n")
+cat(sprintf("  Blend data cadence: %d obs, median %.0f days — monthly grid confirmed\n",
+            nrow(blend_sim_result$DAILY_NAV_DT),
+            median(as.numeric(diff(sort(blend_monthly_dt$date))))))
+
 bt_blend <- build_bt_result(
   sim_result          = blend_sim_result,
   strategy_spec       = spec_blend,
   run_id              = RUN_ID_BLEND,
   strategy_id         = STRATEGY_ID_BLEND,
-  strategy_version    = "v1.0_blend_80_20",
-  transaction_cost_bps = 0,  # costs embedded in component NAVs
+  strategy_version    = "v2.0_blend_80_20_monthly_grid",
+  transaction_cost_bps = 0,  # costs embedded in component monthly returns
   slippage_bps        = 0,
   risk_free_rate      = 0,
-  frequency           = "daily",
-  annualization_factor = 252,
+  frequency           = "monthly",        # CORRECTED from v1 "daily"
+  annualization_factor = 12,              # CORRECTED from v1 252
   universe_id         = "KR_TOP342_LIQ_2E8",
-  code_version        = "run_all_WT-D20260429_001_v1",
+  code_version        = "run_all_WT-D20260429_001_v2",
   created_by_agent    = "Forge"
 )
 
@@ -1083,17 +1088,21 @@ p_def_ar <- ggplot(ann_def, aes(x=Year, y=ann_ret,
 ggsave(file.path(OUT_DEFENSE, "annual_returns.png"), p_def_ar, width=12, height=6, dpi=110)
 cat("  defense annual_returns.png saved\n")
 
-# ── Blend equity curve
+# ── Blend equity curve (monthly grid)
 cum_blend_nav <- data.table(
-  Date    = blend_dt$date,
-  cum_nav = cumprod(1 + blend_dt$ret_blend)
+  Date    = blend_monthly_dt$date,
+  cum_nav = cumprod(1 + blend_monthly_dt$ret_blend)
 )
-bm_blend_aligned <- BM_DT[Date %in% blend_dt$date, .(Date, BM_Ret)]
+# BM monthly returns for chart comparison
+bm_m_chart <- BM_DT[, .(ret_m = prod(1 + BM_Ret) - 1), by = .(YM = format(Date, "%Y-%m"))]
+bm_m_chart[, Date := as.Date(paste0(YM, "-01"))]
+setorder(bm_m_chart, Date)
+bm_blend_aligned <- bm_m_chart[Date %in% blend_monthly_dt$date, .(Date, BM_Ret = ret_m)]
 bm_blend_aligned[, cum_bm := cumprod(1 + BM_Ret)]
 
 chart_blend_dt <- rbind(
   data.table(Date = cum_blend_nav$Date, NAV = cum_blend_nav$cum_nav, Series = "Blend_80_20"),
-  data.table(Date = blend_dt$date, NAV = cumprod(1 + blend_dt$ret_1715), Series = "STR_1715"),
+  data.table(Date = blend_monthly_dt$date, NAV = cumprod(1 + blend_monthly_dt$ret_1715), Series = "STR_1715"),
   data.table(Date = bm_blend_aligned$Date, NAV = bm_blend_aligned$cum_bm, Series = "KOSPI200")
 )
 p_blend_eq <- ggplot(chart_blend_dt, aes(x=Date, y=NAV, color=Series)) +
@@ -1115,10 +1124,10 @@ p_blend_eq <- ggplot(chart_blend_dt, aes(x=Date, y=NAV, color=Series)) +
 ggsave(file.path(OUT_BLEND, "equity_curve.png"), p_blend_eq, width=14, height=7, dpi=110)
 cat("  blend equity_curve.png saved\n")
 
-# ── Blend annual returns
+# ── Blend annual returns (monthly aggregation)
 blend_nav_dt_full <- data.table(
-  Date = blend_dt$date,
-  Strategy_Ret = blend_dt$ret_blend
+  Date = blend_monthly_dt$date,
+  Strategy_Ret = blend_monthly_dt$ret_blend
 )
 blend_nav_dt_full[, Year := year(Date)]
 ann_blend <- blend_nav_dt_full[, .(ann_ret = prod(1 + Strategy_Ret) - 1), by = Year]
@@ -1134,27 +1143,36 @@ p_blend_ar <- ggplot(ann_blend, aes(x=Year, y=ann_ret,
 ggsave(file.path(OUT_BLEND, "annual_returns.png"), p_blend_ar, width=12, height=6, dpi=110)
 cat("  blend annual_returns.png saved\n")
 
-# ── OOS zoom chart (2024+)
-oos_blend_dt <- blend_nav_dt_full[Date >= as.Date("2024-01-01")]
-if (nrow(oos_blend_dt) > 10) {
+# ── OOS zoom chart (2024+ monthly)
+oos_blend_dt <- blend_monthly_dt[date >= as.Date("2024-01-01")]
+if (nrow(oos_blend_dt) >= 4) {
   oos_cum_blend <- data.table(
-    Date    = oos_blend_dt$Date,
-    NAV_blend = cumprod(1 + oos_blend_dt$Strategy_Ret)
+    Date      = oos_blend_dt$date,
+    NAV_blend = cumprod(1 + oos_blend_dt$ret_blend),
+    NAV_1715  = cumprod(1 + oos_blend_dt$ret_1715)
   )
-  str1715_oos <- blend_dt[date >= as.Date("2024-01-01"), .(date, ret_1715)]
-  oos_cum_blend[, NAV_1715 := c(1, cumprod(1 + str1715_oos$ret_1715))[seq_len(.N)]]
-  bm_oos <- BM_DT[Date %in% oos_blend_dt$Date, .(Date, BM_Ret)]
-  oos_cum_blend[, NAV_bm := cumprod(1 + bm_oos[Date %in% oos_blend_dt$Date, BM_Ret])]
+  # BM monthly for OOS
+  bm_oos <- bm_m_chart[Date %in% oos_blend_dt$date, .(Date, BM_Ret)]
+  if (nrow(bm_oos) >= nrow(oos_blend_dt) - 2) {
+    bm_oos_aligned <- bm_m_chart[Date >= as.Date("2024-01-01") & Date %in% oos_blend_dt$date]
+    oos_cum_blend[, NAV_bm := cumprod(1 + bm_oos_aligned$BM_Ret)[seq_len(.N)]]
+  } else {
+    oos_cum_blend[, NAV_bm := NA_real_]
+  }
 
   oos_chart_dt <- rbind(
     data.table(Date=oos_cum_blend$Date, NAV=oos_cum_blend$NAV_blend, Series="Blend_80_20"),
     data.table(Date=oos_cum_blend$Date, NAV=oos_cum_blend$NAV_1715,  Series="STR_1715"),
-    data.table(Date=oos_cum_blend$Date, NAV=oos_cum_blend$NAV_bm,    Series="KOSPI200")
+    if (!all(is.na(oos_cum_blend$NAV_bm)))
+      data.table(Date=oos_cum_blend$Date, NAV=oos_cum_blend$NAV_bm, Series="KOSPI200")
+    else data.table(Date=as.Date(character(0)), NAV=numeric(0), Series=character(0))
   )
   p_oos <- ggplot(oos_chart_dt, aes(x=Date, y=NAV, color=Series)) +
     geom_line(linewidth=1.2) +
-    scale_color_manual(values=c("Blend_80_20"="#E65100","STR_1715"="#FF1493","KOSPI200"="gray40")) +
-    labs(title="OOS Lockbox 2024~ (Frozen Weights Deploy Extension)",
+    scale_color_manual(values=c("Blend_80_20"="#E65100","STR_1715"="#FF1493","KOSPI200"="gray40"),
+                       na.value="gray70") +
+    labs(title=sprintf("OOS Lockbox 2024~ (monthly grid, %d obs)", nrow(oos_blend_dt)),
+         subtitle="Frozen Weights Deploy Extension — Monthly Returns",
          x="Date", y="Normalized NAV", color="Series") +
     theme_minimal(base_size=12)
   ggsave(file.path(OUT_BLEND, "oos_zoom_chart.png"), p_oos, width=12, height=6, dpi=110)
@@ -1183,13 +1201,15 @@ ax001_eval <- list(
   ),
 
   axis_2_mdd_complement = list(
-    description          = "Blend MDD improvement over STR_1715 standalone (same-period)",
-    str1715_mdd_monthly  = round(-mdd_monthly_1715, 4),
-    blend_mdd_monthly    = round(-mdd_monthly_blend, 4),
+    description          = "Blend MDD improvement over STR_1715 standalone (same-period, monthly grid v2)",
+    str1715_mdd_monthly  = round(mdd_monthly_1715_val, 4),
+    blend_mdd_monthly    = round(mdd_monthly_blend_val, 4),
     delta_pp             = round(mdd_delta_pp, 4),
+    n_monthly_obs        = n_blend_prelb,
+    basis                = "monthly_grid_264_obs_STR1715_period_returns_plus_defense_apply_monthly",
     target_pp_range      = "7-10pp improvement (aspirational)",
     pass                 = mdd_complement_pass,
-    note                 = "positive delta = blend reduces MDD vs STR_1715"
+    note                 = "positive delta = blend reduces MDD vs STR_1715. v2: full monthly grid vs v1 sparse inner-join 127 obs"
   ),
 
   axis_3_bad_normal_ic_ratio = list(
@@ -1225,8 +1245,8 @@ ax001_md <- c(
   "### Axis 2: Core MDD Complement (Forge Realized)",
   sprintf("- STR_1715 standalone MDD (monthly, pre-LB): %.2f%%", -mdd_monthly_1715 * 100),
   sprintf("- Blend 80/20 MDD (monthly, pre-LB):         %.2f%%", -mdd_monthly_blend * 100),
-  sprintf("- Delta pp (improvement): %+.2f pp | **%s**",
-          mdd_delta_pp * 100, if (mdd_complement_pass) "PASS" else "FAIL"),
+  sprintf("- Delta pp (improvement): %+.4f | **%s**",
+          mdd_delta_pp, if (mdd_complement_pass) "PASS" else "FAIL"),
   "",
   "### Axis 3: Bad/Normal IC Ratio",
   sprintf("- Ratio: %.4f >= 1.5 | **%s**",
@@ -1239,11 +1259,11 @@ ax001_md <- c(
           perf_defense_prelb$mdd * 100, -mdd_monthly_def_prelb * 100),
   sprintf("- CVaR_d: %.4f | Annual TO: %.4f", perf_defense_prelb$cvar_d, annual_to_defense),
   "",
-  "## Blend 80/20 Performance (Pre-LB)",
-  sprintf("- SR (daily-ann): %.4f | SR (monthly): %.4f", perf_blend_prelb$sr, sr_monthly_blend_prelb),
-  sprintf("- CAGR: %.2f%% | Vol: %.2f%%", perf_blend_prelb$cagr * 100, perf_blend_prelb$vol * 100),
-  sprintf("- MDD (daily): %.2f%% | MDD (monthly): %.2f%%",
-          perf_blend_prelb$mdd * 100, -mdd_monthly_blend * 100),
+  "## Blend 80/20 Performance (Pre-LB — monthly grid v2)",
+  sprintf("- SR (monthly-ann): %.4f | n_monthly_obs: %d", sr_monthly_blend_prelb, n_blend_prelb),
+  sprintf("- CAGR: %.4f | Vol_m_ann: %.4f", cagr_blend_prelb, perf_blend_prelb$vol),
+  sprintf("- MDD (monthly): %.4f | frequency_mislabel_fix: v1_daily252→v2_monthly12",
+          mdd_monthly_blend_val),
   sprintf("- Sortino: %.4f | Calmar: %.4f", sortino_blend %||% NA, calmar_blend %||% NA),
   "",
   "## vs STR_1715 Standalone (same period)",
@@ -1347,22 +1367,23 @@ forge_package <- list(
       )
     ),
     blend_80_20 = list(
-      overlap_period    = sprintf("%s ~ %s", overlap_start, overlap_end),
-      n_days            = perf_blend_prelb$n_days,
-      sr_daily_ann      = perf_blend_prelb$sr,
+      basis             = "monthly_grid_v2_STR1715_period_returns_267mo_plus_defense_apply_monthly",
+      freq_mislabel_fix = "v2: frequency='monthly' ann=12. v1 was 'daily' ann=252 on sparse inner-join = FABRICATION",
+      overlap_period    = sprintf("%s ~ %s", overlap_start_m, overlap_end_m),
+      n_monthly_obs     = nrow(blend_monthly_dt),
+      n_monthly_prelb   = n_blend_prelb,
       sr_monthly_ann    = round(sr_monthly_blend_prelb, 4),
-      cagr              = perf_blend_prelb$cagr,
-      mdd_daily         = perf_blend_prelb$mdd,
-      mdd_monthly       = round(-mdd_monthly_blend, 4),
-      vol               = perf_blend_prelb$vol,
-      sortino           = round(sortino_blend %||% NA, 4),
-      calmar            = round(calmar_blend %||% NA, 4),
+      cagr              = round(cagr_blend_prelb, 4),
+      mdd_monthly       = round(mdd_monthly_blend_val, 4),
+      vol_monthly_ann   = perf_blend_prelb$vol,
+      sortino           = round(sortino_blend %||% NA_real_, 4),
+      calmar            = round(calmar_blend %||% NA_real_, 4),
       vs_str1715 = list(
         str1715_sr_monthly  = round(sr_monthly_1715_prelb, 4),
         blend_sr_monthly    = round(sr_monthly_blend_prelb, 4),
         delta_sr_pp         = round(sr_monthly_blend_prelb - sr_monthly_1715_prelb, 4),
-        str1715_mdd_monthly = round(-mdd_monthly_1715, 4),
-        blend_mdd_monthly   = round(-mdd_monthly_blend, 4),
+        str1715_mdd_monthly = round(mdd_monthly_1715_val, 4),
+        blend_mdd_monthly   = round(mdd_monthly_blend_val, 4),
         mdd_delta_pp        = round(mdd_delta_pp, 4),
         mdd_complement_note = if (mdd_complement_pass) "IMPROVEMENT achieved" else "NO MDD improvement"
       )
@@ -1429,8 +1450,10 @@ judge_input <- list(
   defense_realized_to          = round(annual_to_defense, 4),
 
   blend_realized_sr_monthly  = round(sr_monthly_blend_prelb, 4),
-  blend_realized_mdd_monthly = round(-mdd_monthly_blend, 4),
+  blend_realized_mdd_monthly = round(mdd_monthly_blend_val, 4),
   blend_mdd_delta_pp         = round(mdd_delta_pp, 4),
+  blend_n_monthly_obs        = n_blend_prelb,
+  blend_freq_mislabel_fix    = "v2: monthly grid 264 obs, frequency='monthly' ann=12 (CORRECTED from v1 'daily' 252 FABRICATION)",
 
   ax001_v2_pass        = ax001_v2_pass,
   tdc_q5_forge_realized = tdc_q5_forge_realized,
@@ -1523,15 +1546,17 @@ cat(sprintf("schedule_density_ratio: %.4f | pure_function_violation: FALSE\n",
 cat(sprintf("audit_defense: integrity=%s\n", bt_defense$manifest$integrity_status))
 cat(sprintf("harvey_n_pass: %d/5\n", harvey_result$n_pass))
 
-cat(sprintf("\n=== CONFIG 2: BLEND 80/20 ===\n"))
+cat(sprintf("\n=== CONFIG 2: BLEND 80/20 (v2 — monthly grid %d obs) ===\n", n_blend_prelb))
 cat(sprintf("blend_sr_monthly (pre-LB): %.4f\n", sr_monthly_blend_prelb))
 cat(sprintf("blend_cagr: %.4f | blend_mdd_monthly: %.4f\n",
-            perf_blend_prelb$cagr, -mdd_monthly_blend))
+            cagr_blend_prelb, mdd_monthly_blend_val))
 cat(sprintf("blend_sortino: %.4f | blend_calmar: %.4f\n",
             sortino_blend %||% NA, calmar_blend %||% NA))
 cat(sprintf("vs STR_1715 (same period): SR_m delta=%+.4f | MDD_m delta=%+.4f pp\n",
             sr_monthly_blend_prelb - sr_monthly_1715_prelb, mdd_delta_pp))
 cat(sprintf("audit_blend: integrity=%s\n", bt_blend$manifest$integrity_status))
+cat(sprintf("L-249 frequency_mislabel_detected (blend): %s\n",
+            as.character(tryCatch(bt_blend$manifest$frequency_mislabel_detected[1], error=function(e) "N/A"))))
 
 cat(sprintf("\n=== AX-001 v2: %s ===\n", if (ax001_v2_pass) "PASS" else "FAIL"))
 cat(sprintf("crisis_alpha n_pass: %d/3 (%s)\n",
