@@ -1,0 +1,427 @@
+{
+  "task_id": "WT-D20260429_001",
+  "agent": "judge_opus_4_7",
+  "as_of_date": "2026-04-30",
+  "judge_phase_completed_at": "2026-04-30T08:30:00+09:00",
+  "schema_version": "judge_verdict_v6.1",
+  "verdict": "FAIL",
+  "verdict_severity": "HARD_FAIL_FABRICATED_METRICS",
+  "grade": "F",
+  "score": 24,
+  "score_max": 100,
+  "score_components": {
+    "alpha_quality_at_signal_layer": 18,
+    "risk_diagnostics": 4,
+    "optimizer_diligence": 2,
+    "forge_integrity": 0,
+    "blend_metric_validity": 0,
+    "documentation": 0
+  },
+  "summary_one_line": "Defense alpha graduation 7-of-7 PASS at signal level, BUT Blend 80/20 06_metrics.csv `is_official=TRUE` rows fabricated through frequency mislabel (declared 'daily' annualization_factor=252 on actual bi-monthly inner-join 138-obs series). Charter v1.4 §9 FABRICATION_SUSPECTED + AX-002 process bypass + Harvey NW HAC n_pass=0/5 independent Gate 2 FAIL + Defense standalone daily MDD 52.94% > 45% hard cap.",
+  "summary_three_line": [
+    "(1) PIT FACTOR ENGINE CLEAN — lookahead_detector self-execution found 3 hits, all ex-post diagnostics (DSR / TDC measurement), zero in production signal flow. Alpha generation pipeline (rolling 252d + Usable_Date<=sig_date + load_month_factors) compliant.",
+    "(2) BLEND METRIC FABRICATION — run_all.R line 882-883 builds bt_result with frequency='daily' / annualization_factor=252 on a 138-obs bi-monthly inner-join (median date diff 61 days), inflating Sharpe from true 0.484 per-period to mislabeled 8.218 daily-annualized, and CAGR from true geometric 18.4%/yr to mislabeled 799%/yr. Charter v1.4 §9 |divergence|=6.55pp = FABRICATION_SUSPECTED.",
+    "(3) HARVEY NW HAC INDEPENDENT FAIL — forge_package.harvey_nw_hac n_pass=0 across CAPM/Carhart3/Carhart4/FF5/FF6 (max t_nw=1.29 CAPM, FF6 t_nw=0.30), but alpha_package uses plain Harvey t=5.475 / DSR=18.50. Per request.json graduation_criteria min_harvey_t=3 mandates HAC-corrected. Defense alpha fails Gate 2 statistical defense independent of fabrication."
+  ],
+  "gates_a_to_f": {
+    "gate_a_pit": {
+      "verdict": "PASS",
+      "lookahead_detector_executed": true,
+      "files_scanned": 7,
+      "raw_violations": 3,
+      "production_violations": 0,
+      "diagnostic_violations": 3,
+      "violations_detail": [
+        {
+          "file": "stage_artifacts/WT-D20260429_001/factor_engine_v2.R",
+          "line": 182,
+          "code": "SR_ic <- mean_ic / sd(valid_ic) * sqrt(12)",
+          "check": "C1",
+          "classification": "FALSE_POSITIVE_DSR_DIAGNOSTIC",
+          "judgement": "Computes IC's annualized Sharpe-equivalent over already-filtered IC vector for DSR penalty; aggregate diagnostic, not signal lookahead."
+        },
+        {
+          "file": "qepm/mailbox/worktask/WT-D20260429_001/run_optimizer_research.R",
+          "lines": [336, 337],
+          "code": "threshold_p <- quantile(joined$port, q, na.rm=TRUE) / threshold_s <- quantile(joined$ret_str1715, q, na.rm=TRUE)",
+          "check": "C1b",
+          "classification": "EX_POST_DIAGNOSTIC_TDC_MEASUREMENT",
+          "judgement": "Empirical lower-tail dependence measurement uses full-sample quantile threshold for joint-tail count (standard copula practice). Not signal-construction lookahead."
+        }
+      ],
+      "factor_engine_audit": "factor_engine.R + factor_engine_v3.R CLEAN. v2 SR_ic line is diagnostic-only.",
+      "production_pit_pattern_audit": {
+        "C1": "PASS — production code uses rolling 252d windows for D47/D01/D04",
+        "C2": "PASS — exec_date = next_month_first_trading_day from sig_date",
+        "C9": "PASS — no overlay applied at alpha layer",
+        "C13": "PASS — Z_Score_Aligned negation only (Lower IVOL = higher Z), no individual-stock NEGATE_FACTORS",
+        "C14": "PASS — load_month_factors enforces Usable_Date <= sig_date",
+        "C15": "PASS — load_month_factors used"
+      },
+      "judgement": "PIT alpha generation pipeline CLEAN. Detector hits all ex-post measurement / DSR diagnostic, not signal-construction lookahead. C1-C15 production patterns compliant."
+    },
+    "gate_b_isolation": {
+      "verdict": "PASS",
+      "alpha_family_single": true,
+      "alpha_family": "Low_Volatility (D47 CVaR 5pct + D01 IdioVol + D04 Downside_Beta)",
+      "judgement": "Composite is internally Low_Vol family. Mechanism distinction CVaR / IVOL / Downside Beta acceptable per AHXZ 2006 / Baker-Bradley-Wurgler 2011 / Ang-Chen-Xing 2006."
+    },
+    "gate_c_net_alpha_vs_cost": {
+      "verdict": "FAIL",
+      "net_ir_realized": 0.7331,
+      "gross_ir": 0.8351,
+      "cost_drag_bps_yr": 192.9,
+      "turnover_realized_yr_round_trip": 6.4259,
+      "turnover_hard_cap": 6.0,
+      "turnover_breach_bool": true,
+      "infeasibility_report_issued": true,
+      "infeasibility_remediation": "NOT_APPLIED_option_a_accept",
+      "judgement": "TO=6.43 > 6.0 Hurdle Gate v2.2 HARD FAIL. Optimizer correctly issued infeasibility_report (Charter §8 compliance), but Forge accepted option (a) without remediation. Buffer-zone / EWMA / TC-penalty all not applied — schedule has 192.9bps/yr cost drag absorbed in NAV. Independent Gate C FAIL."
+    },
+    "gate_d_crowding": {
+      "verdict": "PASS_AT_DEPLOYMENT_PARTIAL_AT_ALPHA",
+      "tdc_q5_walk_forward": 0.0,
+      "tdc_q5_static_60m_top20_HRP": 0.2143,
+      "tdc_pearson": 0.1106,
+      "tdc_kendall_tau": 0.3403,
+      "alpha_top60_panel_q5_pre_optimization": 0.4494,
+      "judgement": "Walk-forward TDC q5=0 PASS gate, static 60m TDC q5=0.2143 PASS gate. HRP top-20 deployment-grade weighting orthogonalizes vs static panel. CAVEAT: alpha-side Top60 EW panel q5=0.4494 FAIL pre-optimization (Risk CF-RISK-01 HIGH) — alpha exposure has tail correlation with STR_1715 that only optimizer compensates for."
+    },
+    "gate_e_concentration": {
+      "verdict": "PASS",
+      "max_w": 0.0906,
+      "max_w_cap": 0.20,
+      "hhi": 0.0542,
+      "hhi_cap": 0.15,
+      "n_names": 20,
+      "n_names_required": 20,
+      "judgement": "All concentration constraints satisfied with margin."
+    },
+    "gate_f_drift": {
+      "verdict": "PASS_PARTIAL",
+      "subperiod_stability": 1.0,
+      "alpha_decay": "stable across 2008-14 / 2015-19 / 2020-26 buckets",
+      "judgement": "Alpha-side stability strong. Caveat: no Defense-favorable regime shock since 2022 RateHike. Lockbox period (2024+) Defense SR=1.197 suggests recovery — possibly favorable Korean LowVol regime, not necessarily generalizable to next stress."
+    }
+  },
+  "additional_independent_gates": {
+    "gate_g_harvey_nw_hac_statistical_defense": {
+      "verdict": "FAIL",
+      "n_pass_5_specs": 0,
+      "specs_summary": {
+        "CAPM": {"t_nw": 1.2914, "p_nw": 0.1978, "alpha_a": 0.0381, "pass": false},
+        "Carhart_3": {"t_nw": 0.8711, "p_nw": 0.3845, "alpha_a": 0.0260, "pass": false},
+        "Carhart_4": {"t_nw": 0.2926, "p_nw": 0.7701, "alpha_a": 0.0077, "pass": false},
+        "FF5": {"t_nw": 0.8616, "p_nw": 0.3898, "alpha_a": 0.0261, "pass": false},
+        "FF6": {"t_nw": 0.2986, "p_nw": 0.7655, "alpha_a": 0.0080, "pass": false}
+      },
+      "alpha_package_plain_harvey_t": 5.4753,
+      "alpha_package_estimated_nw_t_range": "4.2-5.0 (claimed but not verified)",
+      "alpha_package_dsr": 18.4956,
+      "discrepancy": "Forge realized 5-spec NW HAC max t = 1.29 vs Alpha-side estimated NW t = 4.2-5.0 (CF-06 estimate). Realized HAC consistently fails t > 3.0 across all 5 specifications.",
+      "judgement": "PER request.json graduation_criteria min_harvey_t_stat=3 (HAC-corrected per Harvey-Liu-Zhu 2016) — Defense alpha FAILS independent of fabrication issue. Carhart_4 + FF6 (richest models) show alpha_a < 1%/yr with t_nw < 0.3 — alpha is largely captured by existing factors (Mkt + SMB + HML + WML + RMW + CMA). Plain Harvey 5.475 inflated by serial correlation. Independent Gate G FAIL on Statistical Defense (qepm §10)."
+    },
+    "gate_h_hard_caps_unified_basis": {
+      "verdict": "FAIL",
+      "mdd_daily_pre_lb": 0.5294,
+      "mdd_monthly_pre_lb": 0.4498,
+      "mdd_hard_cap_per_hurdle_v22": 0.45,
+      "mdd_breach_daily": true,
+      "mdd_breach_monthly": false,
+      "to_realized_yr_rt": 6.4259,
+      "to_hard_cap_per_hurdle_v22": 6.0,
+      "to_breach": true,
+      "judgement": "Defense standalone daily MDD = 52.94% > 45% hard cap (prohibitions.md / hurdle-rules.md MDD>45% hard fail). Forge hard_caps.mdd_pass=true uses MONTHLY MDD basis (44.98% < 45%). Daily basis is the correct measurement (PerformanceAnalytics standard, intraday peak-to-trough reflects realized investor pain). Charter requires unified basis — daily is more conservative and aligns with realized retail trading. Independent Gate H FAIL combined with TO breach."
+    },
+    "gate_i_tail_risk_explicit": {
+      "verdict": "FAIL",
+      "cvar_5_monthly_walk_forward": -0.0994,
+      "cvar_5_monthly_cap": 0.025,
+      "cvar_d_realized": 0.0276,
+      "hill_alpha_panel_top60": 1.4516,
+      "hill_alpha_strategy_realized": 2.91,
+      "kurtosis_defense_pre_lb": 8.28,
+      "skewness_defense_pre_lb": -0.483,
+      "judgement": "Walk-forward monthly CVaR(5%) = -0.0994 vs cap 0.025 — 4x breach. Forge cvar_pass=false explicit. Daily CVaR-equivalent under sqrt(20) iid 0.0222 PASS but iid breaks under heavy tail. Hill alpha at panel level 1.45 (Risk RF-R6 caution); strategy realized portfolio Hill 2.91 better but kurtosis 8.28 indicates fat tails. CVaR breach + heavy tail = explicit Gate I FAIL not PASS_PARTIAL."
+    }
+  },
+  "multi_objective_8": {
+    "n_total": 8,
+    "n_pass": 0,
+    "n_marginal": 4,
+    "n_fail": 4,
+    "indicators": {
+      "sr_pre_lb_defense": {"value": 0.6015, "basis": "daily_annualized", "vs_target_2.0": "FAIL", "rating": "WEAK"},
+      "ir_walkforward": {"value": 0.5864, "basis": "optimizer_walk_forward", "rating": "MARGINAL"},
+      "mdd_defense_pre_lb_d": {"value": 0.5294, "basis": "daily", "vs_target_25pct": "FAIL_severe", "rating": "VERY_POOR"},
+      "calmar_defense_pre_lb": {"value": 0.2055, "basis": "CAGR_0.107_div_MDD_0.529", "rating": "POOR"},
+      "sortino_defense_pre_lb": {"value": 0.919, "basis": "PA_annualized_daily", "rating": "MARGINAL"},
+      "var_5_daily_defense": {"value": -0.0168, "rating": "ACCEPTABLE"},
+      "cvar_5_daily_defense": {"value": -0.0276, "rating": "MARGINAL_kurtosis_8.28"},
+      "hit_ratio_defense": {"value": 0.5416, "rating": "MARGINAL"}
+    },
+    "blend_official_metrics_status": "EXCLUDED FROM EVALUATION (frequency mislabel fabrication — Sharpe=8.22 / CAGR=799% / Sortino=18.37 / Calmar=4049 invalid)",
+    "blend_corrected_metrics_for_reference_only": {
+      "sr_per_period": 0.4837,
+      "true_annualized_sr_bi_monthly": 1.1837,
+      "geometric_cagr_19_67yr": 0.1705,
+      "mdd_pre_lb": 0.1974,
+      "true_basis": "bi-monthly inner-join with STR_1715 sparse schedule, 127 obs / 19.67 years",
+      "validity_grade": "RESEARCH_REFERENCE_ONLY_NOT_PG2_ADMISSION_GRADE"
+    }
+  },
+  "pit_audit_result": {
+    "lookahead_detector_executed": true,
+    "files_scanned": 7,
+    "raw_violations": 3,
+    "production_violations": 0,
+    "diagnostic_violations": 3,
+    "verdict": "PIT alpha generation pipeline CLEAN. detector hits are all ex-post measurement / DSR diagnostic, not signal-construction lookahead.",
+    "c1_c15_summary": {
+      "C1_full_sample": "PASS",
+      "C2_same_day_circular": "PASS",
+      "C9_vt_dd_same_day": "PASS",
+      "C13_manual_flip": "PASS",
+      "C14_ic_usable_date": "PASS",
+      "C15_factor_db_load": "PASS"
+    }
+  },
+  "role_honesty_audit_result": {
+    "claimed_role": "defense_factor_for_str1715_mdd_complement",
+    "audit_classification": "defense_with_overlay_dependency_AND_mdd_complement_only_on_sparse_sample",
+    "evidence_against_pure_defense": [
+      "Defense standalone Pre-LB MDD = 52.94% (single deployment infeasible)",
+      "Risk pkg CF-RISK-01: alpha-side static Top60 panel TDC q5 vs STR_1715 = 0.4494 FAIL",
+      "Risk pkg risk_summary: net systematic exposure MKT=0.595 + LVOL=0.558 — top-20 sleeve is high-beta low-vol-tilted long-only equity, NOT zero-beta defense",
+      "MDD complement claim +4.60pp computed only on 127 inner-join sparse pre-LB obs (vs full 22yr STR_1715 264-month grid)"
+    ],
+    "evidence_for_defense_role": [
+      "AX-001 v2 axis 1 (crisis_alpha 3/3 GFC 0.161 / Trade 0.035 / Rate 0.133) PASS — independent of fabrication",
+      "AX-001 v2 axis 3 (bad/normal IC ratio 1.6942 >= 1.5) PASS — independent of fabrication",
+      "GFC-specific IC ratio 3.077 >> 1.5 (strong crisis signal at alpha layer)",
+      "Defense Lockbox period (2024+) SR=1.197 / MDD=15.41% — recovery in stress year"
+    ],
+    "honest_role_classification_v6_1": "defense_with_overlay_dependency_partial",
+    "judgement": "Alpha SIGNAL exhibits genuine tail-risk-aversion mechanism (AX-001 v2 axis 1+3 PASS). However, DEPLOYMENT layer (top-20 long-only HRP) is NOT pure defense — carries 60% MKT beta + 56% LVOL. Multi-sleeve 80/20 blend with STR_1715 (proposed AX-007 EXCEPTION_1 remedy) is the structural fix, but blend's official metrics are FABRICATED, so EXCEPTION evidence is invalidated until remediation."
+  },
+  "axiom_compliance_v6_1": {
+    "ax_000_no_limits": "N/A",
+    "ax_001_v2_defense_conditional": {
+      "axis_1_crisis_alpha": "PASS_3_of_3 (independent of fabrication)",
+      "axis_2_mdd_complement": "PARTIAL_PASS_PENDING_REMEDIATION (delta 4.60pp on 127 sparse obs)",
+      "axis_3_bad_normal_ic_ratio": "PASS (1.6942 >= 1.5)",
+      "overall_status": "PARTIAL_PASS_AXIS_2_REQUIRES_MONTHLY_FORWARD_FILL_RERUN",
+      "reasoning_per_codex_critic_C2": "Cannot accept axis 2 as PASS while same sparse 138-obs blend is rejected for fabricated official metrics. Axis 2 evidence layer must be re-validated on full monthly grid."
+    },
+    "ax_002_no_process_bypass": {
+      "verdict": "FAIL",
+      "evidence": "06_metrics.csv blend rows with is_official=TRUE are mathematically fabricated through frequency mislabel. Charter v1.4 §9 |divergence|=6.55pp = FABRICATION_SUSPECTED.",
+      "treatment_per_charter_v1_4_section_9": "Immediate PG2 expel review (here: PG admission blocked at Judge gate)"
+    },
+    "ax_005_v1_2_excluded_combos": "PASS — no leverage/short, no Q07+D25 single-sleeve combo. AX-005 EXCLUSION not triggered.",
+    "ax_007_signal_portfolio_translation": {
+      "verdict": "AT_RISK_PENDING_BLEND_REMEDIATION",
+      "reasoning": "Single-sleeve long-only top-20 deployment is exactly the AX-007 structural concern (cf. L-160/165/166). EXCEPTION_1 (multi-sleeve via 80/20 blend) is proposed remedy, but fabrication invalidates EXCEPTION evidence. Pending remediation."
+    },
+    "ax_008_triangulation": {
+      "verdict": "FAIL",
+      "sources": {
+        "forge": "FAIL — produced fabricated blend metrics",
+        "codex": "PARTIAL — verified PIT in alpha (PASS), did not catch frequency mislabel in own R1/R2 alpha review",
+        "architect": "NOT_ENGAGED — no Architect consultation this WT"
+      },
+      "n_unequivocal_pass": 1,
+      "minimum_required": 2,
+      "judgement": "AX-008 2-of-3 minimum NOT MET. Architect engagement required for re-verification post-remediation."
+    }
+  },
+  "charter_compliance_v1_5": {
+    "v1_5_section_13_backtest_contract": {
+      "10_component_present": true,
+      "audit_10_checks_defense": "10/10 PASS",
+      "audit_10_checks_blend": "7/10 PASS, 3 WARN",
+      "metric_type_published_blend": "backtested (is_official=TRUE)",
+      "metric_type_actual_blend": "should_be_unavailable_due_to_frequency_mislabel",
+      "verdict": "BLEND VIOLATES §13 — audit_bt_result must be enhanced to detect frequency-vs-cadence mismatch (median date_diff vs declared annualization_factor). Current audit only checks metric_type label set, not data integrity."
+    },
+    "v1_4_section_9_sr_provenance": {
+      "forge_package_sr_realized_share_based": 0.6015,
+      "06_metrics_csv_sharpe_blend": 8.2177,
+      "divergence_pp": 6.55,
+      "diagnosis": "FABRICATION_SUSPECTED",
+      "treatment_per_charter": "Immediate PG2 expel review (here: PG admission blocked at Judge gate)"
+    },
+    "v1_4_section_12_sharpe_standard": {
+      "defense_sharpe_formula": "mean(ER)/sd(ER)*sqrt(252) — formula correct, basis correct (5715 daily obs)",
+      "blend_sharpe_formula": "mean(ER)/sd(ER)*sqrt(252) on 138 BI-MONTHLY series — formula correct, BASIS WRONG",
+      "verdict": "Formula compliance PASS; basis label FAIL (blend data is bi-monthly, labeled daily)"
+    },
+    "v1_2_section_10_5_certificates": {
+      "alpha_discovery_certificate": {
+        "eligible": "BLOCKED_PENDING_HARVEY_REMEDIATION",
+        "block_reason": "alpha_inheritance_cor=0.273 + mechanism > 50 chars + factor_specs=3 PASS, BUT Harvey NW HAC n_pass=0/5 < 3 (per Codex critic C1 + Forge realized harvey_nw_hac n_pass=0). Plain Harvey t=5.475 / DSR=18.50 used in alpha_package — not HAC-corrected per request.json graduation_criteria. Codex CF-06 estimated NW t 4.2-5.0 unverified; Forge realized 5-spec HAC max t=1.29 contradicts."
+      },
+      "sr_provenance_certificate": {
+        "eligible": "BLOCKED_PENDING_FABRICATION_REMEDIATION",
+        "block_reason": "forge_package has 4 mandatory fields PASS, BUT divergence between forge_package SR_m=1.6757 and 06_metrics.csv Sharpe=8.22 = 6.55pp = FABRICATION_SUSPECTED severity. Cannot certify SR provenance when blend SR is fabricated."
+      },
+      "schedule_fidelity_certificate": {
+        "eligible": "PASS (defense weights schedule density 1.0)",
+        "note": "Defense schedule_density_ratio=1.0 / 279 unique dates = alpha sig_dates count. Schedule fidelity only governs Optimizer→Forge handoff for defense, blend is separate concern."
+      },
+      "forge_package_validated_certificate": {
+        "eligible": "BLOCKED",
+        "block_reason": "8 mandatory fields present BUT companion blend bt_result has FABRICATION_SUSPECTED severity. Cannot certify forge_package as validated when blend artifact integrity FAIL."
+      },
+      "governor_concord_certificate": {
+        "eligible": "DEFER",
+        "defer_reason": "Governor PG admission not reached. Judge verdict FAIL blocks PG admission anyway."
+      }
+    }
+  },
+  "lockbox_audit": {
+    "judge_lockbox_harness_executed": "NO",
+    "rationale_for_skip": "Defense bt_result already covers full 2003-03-05 ~ 2026-04-30 (5715 daily obs). Lockbox period (2024-01 ~ 2026-04) is naturally embedded — 566 daily obs.",
+    "defense_lockbox_period_metrics": {
+      "n_days": 566,
+      "sr_d_annualized": 1.1971,
+      "mdd_d": 0.1541,
+      "judgement": "Pre-LB SR 0.602 → Lockbox SR 1.197 = 1.99x ratio is anomalously strong. Possibly favorable KR LowVol regime in 2024+ (post rate-hike normalization)."
+    },
+    "blend_lockbox_period_metrics": {
+      "n_obs_in_lockbox": 11,
+      "judgement": "Insufficient (11 obs over 2024-01 ~ 2025-12) for lockbox SR/MDD computation. Blend is bi-monthly inner-join with STR_1715 sparse schedule — natural data scarcity in lockbox window."
+    },
+    "lockbox_extension_recommendation": "DEFER — Defense alpha+blend fabrication issue must be remediated first. Once fixed, Forge should rerun with proper monthly cadence and audit lockbox separately. Judge does not request Forge OOS extension at this verdict (FAIL prevents PG admission anyway)."
+  },
+  "138_month_sparse_limitation_assessment": {
+    "claimed_138_months": false,
+    "actual_obs": 138,
+    "actual_basis": "BI_MONTHLY_INNER_JOIN_with_STR_1715_sparse_schedule",
+    "actual_period_years": 21.67,
+    "expected_monthly_obs_22yr": 264,
+    "obs_ratio_pct_vs_monthly_grid": 52.3,
+    "limitation_severity": "HIGH",
+    "mdd_complement_claim_validity": "MEDIUM_LOW",
+    "rationale": "Inner-join with STR_1715 bi-monthly schedule loses ~half of monthly observations. MDD on sparse subset (19.74% on 127 pre-LB obs) is not directly comparable to STR_1715 full 22yr MDD claim (35.56%). Forge's '+4.60pp improvement' is on like-for-like sparse subset (24.34% subset STR_1715 vs 19.74% subset Blend) but does not validate full-deployment MDD complement.",
+    "recommendation_for_future_remediation": [
+      "Forge rerun blend with STR_1715 weights forward-fill to monthly grid (last-known weights carried forward between bi-monthly rebalances)",
+      "Build bt_result with frequency='monthly' / annualization_factor=12",
+      "Recompute audit_bt_result with monthly cadence — must PASS 10/10 not 7/10",
+      "Re-evaluate AX-001 v2 axis 2 (MDD complement) with full monthly basis",
+      "Re-evaluate Charter v1.4 §9 SR provenance with monthly basis"
+    ]
+  },
+  "challenge_flags": [
+    {
+      "flag_id": "JUDGE-FAIL-01",
+      "severity": "CRITICAL",
+      "description": "Blend 06_metrics.csv `is_official=TRUE` for Sharpe=8.22 / CAGR=799% / Sortino=18.37 / Calmar=4049 — mathematically fabricated through frequency mislabel. run_all.R line 882-883 uses frequency='daily' and annualization_factor=252 on bi-monthly 138-obs series (median date_diff 61 days). Charter v1.4 §9 |divergence|=6.55pp = FABRICATION_SUSPECTED + AX-002 process bypass.",
+      "remediation_path": "Forge rerun blend with: (a) proper monthly grid via STR_1715 weights forward-fill, (b) frequency='monthly' + annualization_factor=12 in build_bt_result, (c) audit_bt_result enhanced to detect frequency-vs-cadence mismatch.",
+      "ax_violated": ["AX-002"],
+      "charter_violated": ["v1.5 §13", "v1.4 §9"]
+    },
+    {
+      "flag_id": "JUDGE-FAIL-02",
+      "severity": "CRITICAL",
+      "description": "Harvey-Liu-Zhu Statistical Defense FAIL — forge_package.harvey_nw_hac n_pass=0/5 across CAPM (t_nw=1.29), Carhart_3 (0.87), Carhart_4 (0.29), FF5 (0.86), FF6 (0.30). All p_nw > 0.19. Per request.json graduation_criteria min_harvey_t_stat=3 (HAC-corrected per Harvey-Liu-Zhu 2016) — Defense alpha FAILS. Plain Harvey t=5.475 in alpha_package is uncorrected for serial correlation.",
+      "remediation_path": "Alpha agent must address: (a) Why does HAC-corrected t collapse from estimated 4.2-5.0 to realized 0.29-1.29 across richer factor models? (b) FF6 alpha_a=0.80%/yr with t_nw=0.30 means alpha is largely captured by Mkt+SMB+HML+WML+RMW+CMA — Defense factor is not delivering incremental alpha vs richer benchmarks. (c) DSR penalty re-computation with realistic n_trials.",
+      "ax_violated": ["AX-002 (statistical robustness)"],
+      "charter_violated": ["request.json graduation_criteria"]
+    },
+    {
+      "flag_id": "JUDGE-FAIL-03",
+      "severity": "HIGH",
+      "description": "Turnover Hard Fail TO=6.43/yr round-trip > 6.0 cap (Hurdle Gate v2.2). Forge accepted infeasibility_report option (a) without remediation. 192.9bps/yr cost drag absorbed in NAV. Net IR=0.7331 still positive but breaches independent gate.",
+      "remediation_path": "Optimizer rerun with buffer-zone (rank<=30 keep) targeting TO < 4.0/yr. EWMA alpha smoothing lambda 0.6-0.8 secondary.",
+      "ax_violated": [],
+      "charter_violated": ["§7 Cost Mandatory", "Hurdle Gate v2.2"]
+    },
+    {
+      "flag_id": "JUDGE-FAIL-04",
+      "severity": "HIGH",
+      "description": "Defense standalone Pre-LB daily MDD = 52.94% > 45% hard cap (Hurdle Gate v2.2 / prohibitions.md). Forge hard_caps.mdd_pass=true uses MONTHLY MDD basis (44.98% < 45%) which is inappropriate — daily MDD reflects realized investor pain (intraday peak-to-trough). Single-deployment infeasibility confirmed.",
+      "remediation_path": "Defense single-sleeve deployment is structurally infeasible. AX-007 EXCEPTION_1 (multi-sleeve blend with STR_1715) is mandatory remedy. Once blend fabrication remediated, re-evaluate deployment-grade MDD on full monthly grid.",
+      "ax_violated": ["AX-007 (potential)"],
+      "charter_violated": ["Hurdle Gate v2.2"]
+    },
+    {
+      "flag_id": "JUDGE-FAIL-05",
+      "severity": "HIGH",
+      "description": "Tail Risk Explicit FAIL — walk-forward monthly CVaR(5%) = -0.0994 vs cap 0.025 = 4x breach. Forge cvar_pass=false. Hill alpha 1.45 (Risk panel) heavy-tail caution. Daily kurtosis 8.28 + skewness -0.483 indicate fat left tail.",
+      "remediation_path": "Optimizer add explicit CVaR-budget constraint (Σw_i × CVaR_i ≤ -0.025/mo) to MVO objective. CVaR_LP method tested has tdc_q5=0.357 FAIL gate — Robust_Resid (TO 18%) preferred fallback.",
+      "ax_violated": [],
+      "charter_violated": ["risk pkg CF-RISK-02"]
+    },
+    {
+      "flag_id": "JUDGE-WARN-06",
+      "severity": "MEDIUM",
+      "description": "AX-001 v2 axis 2 (MDD complement) cannot pass while same sparse 138-obs blend is rejected for fabricated official metrics. axis 1 (crisis_alpha 3/3) and axis 3 (bad/normal IC ratio) are independent of fabrication — those PASS. Treat AX-001 v2 overall as PARTIAL_PASS_PENDING_AXIS_2_REMEDIATION.",
+      "remediation_path": "After JUDGE-FAIL-01 remediation, re-run AX-001 v2 axis 2 with monthly forward-filled blend.",
+      "ax_violated": ["AX-001 v2 axis 2 partial"],
+      "charter_violated": []
+    },
+    {
+      "flag_id": "JUDGE-WARN-07",
+      "severity": "MEDIUM",
+      "description": "Echo chamber risk on alpha R2 REJECT — 2e8 vs 5e7 liquidity (CF-05), AX-007 EXCEPTION_1 (CF-07), L-219 overlap not fully revalidated before Judge granted alpha_discovery_certificate eligibility (now BLOCKED per Codex C3).",
+      "remediation_path": "Alpha agent must close 4 R2 REJECT items: (1) confirm 2e8 floor for deployment (CF-05), (2) NW Harvey t verification per Forge realized 5-spec (CF-06 contradicted by Forge), (3) AX-007 EXCEPTION_1 multi-sleeve evidence post-blend remediation (CF-07), (4) document overlap with L-219 family-3.",
+      "ax_violated": ["AX-008 verification triangulation"],
+      "charter_violated": []
+    },
+    {
+      "flag_id": "JUDGE-NOTE-08",
+      "severity": "LOW",
+      "description": "Defense Pre-LB Hill alpha = 2.91 (strategy realized) vs Risk pkg claim 1.45 (panel basis). Documentation gap not contradiction. Strategy portfolio Hill 2.91 indicates finite second moment OK at deployment level even if panel has heavier tail.",
+      "remediation_path": "Risk pkg should disclose Hill alpha basis (panel vs portfolio) explicitly.",
+      "ax_violated": [],
+      "charter_violated": []
+    },
+    {
+      "flag_id": "JUDGE-NOTE-09",
+      "severity": "LOW",
+      "description": "AX-008 triangulation 1-of-3 PASS (Codex PIT alpha verified, Forge produced fabrication, Architect not engaged). Below 2-of-3 minimum.",
+      "remediation_path": "Architect engagement post-remediation for re-verification (factor_engine PIT + run_all.R blend logic + audit_bt_result enhancement).",
+      "ax_violated": ["AX-008"],
+      "charter_violated": []
+    }
+  ],
+  "rollback_trigger_recommendation": {
+    "applicable": false,
+    "reason": "WT-D20260429_001 has not yet reached PG2 admission. Verdict FAIL prevents PG admission, so no rollback needed. STR_1715 PG2 active state unchanged."
+  },
+  "codex_critic_round_record": {
+    "stance": "REVISE",
+    "veto_flag": false,
+    "concerns_raised": 6,
+    "concerns_accepted_by_judge": 6,
+    "concerns_partial_accepted": 0,
+    "concerns_rebutted": 0,
+    "rebuttal_required_actions_completed": 5,
+    "rebuttal_required_actions_remaining": 0,
+    "echo_chamber_risk_codex": "MEDIUM",
+    "judge_response_summary": "All 6 Codex critical concerns ACCEPTED. C1 Harvey Gate added as independent FAIL Gate G. C2 AX-001 v2 axis 2 reclassified as PARTIAL_PASS_PENDING. C3 echo chamber flagged JUDGE-WARN-07. C4 daily vs monthly MDD reconciled — daily 52.94% > 45% hard cap = JUDGE-FAIL-04. C5 path canonicalization noted in artifact_lineage. C6 tail risk Gate I explicit FAIL added.",
+    "verdict_change": "Score lowered from 28 to 24 to reflect 4 Gate FAILS (C, G, H, I) + 1 axiom FAIL (AX-002) + 1 axiom AT_RISK (AX-007) + 1 axiom triangulation FAIL (AX-008). Grade unchanged at F.",
+    "rationalization_red_flags_acknowledged": ["NEGLIGIBLE in forge_package.vs_factor_engine.diagnosis", "NW t ~ 4.2-5.0 추정 안전마진 충분", "monthly_CVaR / sqrt(20) PASS under iid assumption", "Bootstrap CI deferred to Optimizer phase does not affect Σ structure"],
+    "rationalization_red_flag_treatment": "All flagged in challenge_flags JUDGE-FAIL-02 (NW t inflation) + JUDGE-FAIL-05 (CVaR iid breaks under heavy tail) + JUDGE-WARN-07 (alpha R2 echo chamber)."
+  },
+  "lessons_learned": {
+    "primary_finding": "Backtest Result Contract v1.0 audit_bt_result must validate frequency-vs-data-cadence consistency. Currently audit passes if 'frequency' field is set, regardless of actual data spacing. Frequency mislabel (declared 'daily' on bi-monthly inner-join 138-obs series) inflates Sharpe by sqrt(252/12)=4.58x and CAGR exponentially.",
+    "secondary_finding": "Inner-join blending of two strategies with different rebalance schedules is mathematically equivalent to sub-sampling. Blend operations across strategies with different schedules require explicit forward-fill to common grid OR explicit relabeling to LCM frequency.",
+    "tertiary_finding": "Defense alpha at SIGNAL level (AX-001 v2 axis 1 + 3 PASS) ≠ defense alpha at PORTFOLIO level (top-20 long-only HRP carries +60% MKT beta + +56% LVOL). The signal-vs-portfolio honesty gap is the structural AX-007 concern. Multi-sleeve blend is mandatory but must use proper monthly grid.",
+    "quaternary_finding": "Plain Harvey t-stat = 5.475 inflates by serial correlation; HAC-corrected NW t (forge realized) = 0.29-1.29 across 5 specs. Statistical defense Gate (Harvey 2016 t > 3.0) FAILS independent of fabrication. Alpha-side 'estimated NW t 4.2-5.0' (CF-06) was unverified self-assertion.",
+    "proposed_l_code": "L-249",
+    "proposed_l_code_text": "Backtest Result Contract v1.0 audit_bt_result must validate frequency-vs-cadence consistency (median(diff(date)) vs declared annualization_factor). Frequency mislabel inflates Sharpe by sqrt(N_declared/N_actual). Charter v1.5 §13 enhancement: blend operations across strategies with different rebalance schedules require explicit forward-fill to common grid OR explicit relabeling to LCM frequency. Pattern: bi-monthly inner-join + 'daily' annotation = AX-002 fabrication. WT-D20260429_001 Defense factor blend exemplar (06_metrics.csv Sharpe 8.22 / CAGR 799% / Sortino 18.37 / Calmar 4049). Companion finding: Plain Harvey t inflates vs HAC-corrected NW (Defense alpha plain t=5.475 → HAC t_nw 0.29-1.29 across 5 specs)."
+  },
+  "deliverables_status": {
+    "judge_verdict_json_saved": true,
+    "judge_verdict_path": "qepm/mailbox/worktask/WT-D20260429_001/judge_ready/judge_verdict.json",
+    "l_code_recommendation_for_q_lead": {
+      "l_code": "L-249",
+      "category": "axiom_violation_fabrication",
+      "core_reference": "Charter v1.5 §13 audit_bt_result enhancement + Charter v1.4 §9 SR provenance",
+      "tags": ["RoleBias_Defense", "AX-002", "AX-007", "AX-008", "Charter_v1_5", "fabrication", "frequency_mislabel"],
+      "approval_action_for_q_lead": "Q-Lead reviews + appends to 04_Research/methodology_active.md (Judge does not directly write to active L-code file per v6.1 boundary)"
+    }
+  }
+}
