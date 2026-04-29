@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-D20260429_001",
+  "as_of_date": "2026-04-29",
+  "hypothesis_title": "Regime-Conditional Low Idiosyncratic Volatility Defense Factor",
+  "hypothesis_source": "alpha_agent_discovered",
+  "economic_family": "Low_Volatility",
+  "mechanism": "IVOL anomaly (Ang-Hodrick-Xing-Zhang 2006 J.Finance): low-idiosyncratic-vol stocks earn excess returns due to limits-to-arbitrage and lottery-preference. In crisis regimes (MRS>=60), lottery demand collapses and low-IVOL provides downside protection. Regime-conditional gating (AX-007 EXCEPTION_1) amplifies defense during crisis while attenuating in bull markets to reduce drag.",
+  "primary_factor": "D47_CVaR_5pct",
+  "secondary_factor": "D01_IdioVol",
+  "regime_engine": "KR_MRS_v7_expanding_percentile_PIT_safe",
+  "references": [
+    "Ang, Hodrick, Xing, Zhang (2006). Cross-Section of Volatility and Expected Returns. J.Finance 61(1) 259-299.",
+    "Blitz, van Vliet (2007). Volatility Effect. J.Portfolio Management 34(1) 102-113.",
+    "Baker, Bradley, Wurgler (2011). Benchmarks as Limits to Arbitrage. Financial Analysts Journal 67(1) 40-54.",
+    "Li, Sullivan, Garcia-Feijoo (2014). Limits to Arbitrage and Low-Volatility Anomaly. Financial Analysts Journal 70(1) 52-63.",
+    "NOTE: BAB (Frazzini-Pedersen 2014) mechanism DIFFERS — no leverage/short — AX-005 EXCLUSION AVOIDED."
+  ],
+  "ax001_v2": "crisis_alpha + bad/normal IC ratio + Core MDD complement evaluation. NOT full-period SR.",
+  "ax005": "Low IVOL != BAB. No leverage, no short. Mechanism: limits-to-arbitrage. EXCLUSION AVOIDED.",
+  "ax007": "EXCEPTION_1: regime-conditional weighting (CRISIS 1.5x, NORMAL 1.0x, BULL 0.5x).",
+  "diagnostics": {
+    "factor_name": "D47_CVaR_5pct",
+    "rank_ic": 0.0923,
+    "icir": 0.6365,
+    "harvey_t": 10.6311,
+    "dsr": 33.0351,
+    "subperiod_stability": 1,
+    "crisis_ic_GFC": 0.1872,
+    "crisis_ic_TradeWar": 0.0654,
+    "crisis_ic_RateHike": 0.0923,
+    "n_crisis_pass": 3,
+    "bad_ic": 0.1011,
+    "normal_ic": 0.0904,
+    "bad_normal_ratio": 1.1186,
+    "n_months": 279,
+    "n_crisis_months": 50
+  },
+  "crisis_alpha": {
+    "ic_2008_GFC_mean": 0.1872,
+    "ic_2018_2020_mean": 0.0654,
+    "ic_2022_RateHike_mean": 0.0923,
+    "bad_ic_overall": 0.1011,
+    "normal_ic_overall": 0.0904,
+    "bad_normal_ratio": 1.1186,
+    "crisis_pass_count": 3
+  },
+  "graduation_check": {
+    "rank_ic_pass": true,
+    "icir_pass": true,
+    "subperiod_pass": true,
+    "harvey_t_pass": true,
+    "dsr_pass": true,
+    "crisis_alpha_pass": true,
+    "bad_normal_ratio_pass": false
+  },
+  "graduation_n_pass": 6,
+  "method_log": {
+    "candidates_tried": 5,
+    "method_log": {
+      "D01_IdioVol": {
+        "name": "D01_IdioVol",
+        "rank_ic": 0.0558,
+        "icir": 0.4047,
+        "harvey_t": 6.7599,
+        "selected": false,
+        "parallel_exec": true,
+        "n_workers": 6,
+        "rcpp_used": false
+      },
+      "D03_RealVol": {
+        "name": "D03_RealVol",
+        "rank_ic": 0.0583,
+        "icir": 0.3983,
+        "harvey_t": 6.6524,
+        "selected": false,
+        "parallel_exec": true,
+        "n_workers": 6,
+        "rcpp_used": false
+      },
+      "D04_Downside_Beta": {
+        "name": "D04_Downside_Beta",
+        "rank_ic": 0.0292,
+        "icir": 0.1704,
+        "harvey_t": 2.847,
+        "selected": false,
+        "parallel_exec": true,
+        "n_workers": 6,
+        "rcpp_used": false
+      },
+      "D34_RealVol_21d": {
+        "name": "D34_RealVol_21d",
+        "rank_ic": -0.0661,
+        "icir": -0.3934,
+        "harvey_t": -6.5703,
+        "selected": false,
+        "parallel_exec": true,
+        "n_workers": 6,
+        "rcpp_used": false
+      },
+      "D47_CVaR_5pct": {
+        "name": "D47_CVaR_5pct",
+        "rank_ic": 0.0923,
+        "icir": 0.6365,
+        "harvey_t": 10.6311,
+        "selected": true,
+        "parallel_exec": true,
+        "n_workers": 6,
+        "rcpp_used": false
+      }
+    },
+    "selection_objective": "icir"
+  },
+  "alpha_inheritance_cor": 0.2729,
+  "cor_vs_str1715": {
+    "C01_SUE": 0.1002,
+    "C02_EPS_Chg_1m": -0.0793,
+    "C04_ESBR": 0.252,
+    "C06_TP_Gap": -0.2372,
+    "Q07_Earnings_Stability": 0.7372,
+    "Q25_Ohlson_O": 0.4868,
+    "M08_Residual_Mom": 0.0179
+  }
+}
