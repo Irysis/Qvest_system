@@ -50,8 +50,18 @@
   "expected_information_ratio": 0.8351,
   "turnover": 6.4259,
   "estimated_cost": 0.0096,
-  "binding_constraints": ["max_names_20", "turnover_cap_annual_3.0_realized_breach_6.43", "turnover_cap_annual_6.0_HARD_FAIL"],
-  "infeasibility_report": {},
+  "binding_constraints": [
+    "max_names_20",
+    "weight_bound_upper_0.15_per_iterative_cap",
+    "turnover_cap_annual_3.0_realized_breach_6.43",
+    "turnover_cap_annual_6.0_HARD_FAIL_infeasibility_issued",
+    "Σw_eq_1_long_only_pass"
+  ],
+  "infeasibility_report": {
+    "reason": "Walk-forward realized turnover round-trip = 6.426/yr exceeds hard fail threshold 6.0/yr (Hurdle Gate v2.2). Per-date alpha ranking induces high name churn (avg 6.7/20 names changed monthly). Buffer-zone (rank ≤ 30 keep) experiment was prepared but did not complete in time budget. Without buffer zone, current schedule generates ~268% one-way annual turnover = 535% round-trip excluding the as-of anchor jump. With anchor included, round-trip ≈ 642%. TDC q5 = 0 (PASS) and CVaR(5%) = -0.099 (within tail-adjusted cap) suggest portfolio-level orthogonality is achieved, but at cost of high churn.",
+    "violated_constraints": ["turnover_cap_annual_6.0_HARD_FAIL", "turnover_cap_annual_3.0_soft_breach"],
+    "suggested_resolution": "Three options for downstream remediation: (1) Buffer zone (keep rank ≤ 30) — expected turnover ~3-4/yr, requires re-run (15+ min). (2) EWMA smoothing of alpha_z (lambda 0.6-0.8) before ranking — reduces ranking volatility. (3) Add explicit transaction cost penalty φ to MVO objective + retest. Forge phase MUST acknowledge this turnover and either accept hard fail (NAV with 15bps cost will erode 96bps/yr) or trigger Optimizer re-run with mitigation (1)/(2)/(3). Not a silent override per Charter §8."
+  },
   "method_selected": "HRP_lambda_2.0_psi_0.3_bounds_0.15",
   "method_comparison": {
     "MVO": {
@@ -60,7 +70,7 @@
       "te": 0.1201,
       "ir": 0.7568,
       "net_ir": 0.7487,
-      "sr": null,
+      "sr": {},
       "turnover": 0.6435,
       "cost": 0.001,
       "tdc_q5": 0.4286,
@@ -74,7 +84,7 @@
       "te": 0.0945,
       "ir": 0.8351,
       "net_ir": 0.7331,
-      "sr": null,
+      "sr": {},
       "turnover": 6.4259,
       "cost": 0.0096,
       "tdc_q5": 0.2143,
@@ -88,7 +98,7 @@
       "te": 0.1088,
       "ir": 0.8145,
       "net_ir": 0.7569,
-      "sr": null,
+      "sr": {},
       "turnover": 4.1748,
       "cost": 0.0063,
       "tdc_q5": 0.3571,
@@ -102,7 +112,7 @@
       "te": 0.1204,
       "ir": 0.6936,
       "net_ir": 0.6914,
-      "sr": null,
+      "sr": {},
       "turnover": 0.18,
       "cost": 0.0003,
       "tdc_q5": 0.3571,
@@ -113,22 +123,54 @@
   },
   "selection_objective": "crowding_adj_ret",
   "explanation": {
-    "top_overweights": ["A002840", "A268280", "A007310", "A012750", "A000080"],
-    "top_underweights": ["A030200", "A002030", "A005250", "A271560", "A215200"],
-    "main_tradeoffs": ["Walk-forward TDC q5 vs STR_1715 = 0.0000 (gate 0.30, PASS)", "Walk-forward Pearson cor vs STR_1715 = 0.0729", "Walk-forward CVaR(5%) monthly = -0.0994", "Walk-forward CAGR = 0.0954 / sd_ann = 0.1844 / Sharpe(std) = 0.5864", "Walk-forward turnover annual round-trip = 6.426", "As-of (2026-03) static TDC q5 = 0.2143 (60m panel)", "As-of net systematic exposure: MKT=0.595 LVOL=0.558 SMB=-0.056 WML=0.170"]
+    "top_overweights": [
+      "A002840",
+      "A268280",
+      "A007310",
+      "A012750",
+      "A000080"
+    ],
+    "top_underweights": [
+      "A030200",
+      "A002030",
+      "A005250",
+      "A271560",
+      "A215200"
+    ],
+    "main_tradeoffs": [
+      "Walk-forward TDC q5 vs STR_1715 = 0.0000 (gate 0.30, PASS)",
+      "Walk-forward Pearson cor vs STR_1715 = 0.0729",
+      "Walk-forward CVaR(5%) monthly = -0.0994",
+      "Walk-forward CAGR = 0.0954 / sd_ann = 0.1844 / Sharpe(std) = 0.5864",
+      "Walk-forward turnover annual round-trip = 6.426",
+      "As-of (2026-03) static TDC q5 = 0.2143 (60m panel)",
+      "As-of net systematic exposure: MKT=0.595 LVOL=0.558 SMB=-0.056 WML=0.170"
+    ]
   },
   "challenge_flags": [
     {
       "flag_id": "CF-OPT-03",
       "severity": "HIGH",
-      "description": "Walk-forward turnover 6.426/yr > 6.0 hard fail (Hurdle Gate v2.2)",
-      "mitigation": "Add turnover penalty φ to MVO method; reduce sig_dates frequency; or relax 20-name churn."
+      "description": "Walk-forward turnover 6.426/yr > 6.0 hard fail (Hurdle Gate v2.2). infeasibility_report issued per Charter §8 No Silent Override.",
+      "mitigation": "Buffer zone / EWMA smoothing / TC penalty experiments noted in suggested_resolution. Forge must acknowledge or Optimizer re-run."
     },
     {
       "flag_id": "CF-OPT-04",
       "severity": "INFO",
       "description": "Walk-forward design: as-of (2026-03-31) row anchored to HRP target_weights (Charter §9). Other dates use per-date top-20 by alpha + rolling HRP/inverse_vol. Fallback distribution: anchor_as_of=1, EW=6, HRP_60m=248, inverse_vol=24",
       "mitigation": "Forge will reconstruct daily NAV from this exact weights.csv. Optimizer-Forge consistency guaranteed."
+    },
+    {
+      "flag_id": "CF-OPT-05",
+      "severity": "INFO",
+      "description": "MDD walk-forward simulation = -42.36% — exceeds 25% target but is optimizer_walk_forward_simulation (production_grade=false). Forge daily share-based NAV will give the production-grade MDD measurement.",
+      "mitigation": "Forge must report sr_realized_share_based + lockbox MDD as PG2-grade. Optimizer measurement is alpha signal strength meta only."
+    },
+    {
+      "flag_id": "CF-OPT-06",
+      "severity": "MEDIUM",
+      "description": "Walk-forward TDC q5 = 0.000 — empirically zero co-occurrence in 5% lower-tail across 266 obs. Static panel TDC q5 = 0.214 (n=267). Discrepancy is consistent with per-date selection differing from static 60-name panel. As-of metric is the design point; walk-forward path is stress test.",
+      "mitigation": "Both metrics PASS gate 0.30. Risk Agent CF-RISK-01 (Top-60 EW q5=0.4494) was based on static EW universe — deployment top-20 alpha-weighted with HRP risk parity successfully orthogonalizes lower-tail vs STR_1715."
     }
   ],
   "n_names": 20,
@@ -219,5 +261,11 @@
       "A271560": 0.035,
       "A215200": 0.0337
     }
+  },
+  "challenge_review": {
+    "from_agent": "optimizer",
+    "objection": false,
+    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "tdc_q5_walk_forward"],
+    "rationale": "Alpha CF-RISK-01 raised TDC q5=0.4494 on Top-60 EW panel. After deployment-grade weighting (HRP top-20), walk-forward TDC q5=0 and static panel TDC q5=0.214 — both PASS 0.30 gate. No objection to alpha or risk packages. Optimizer raises own CF-OPT-03 (turnover hard fail) for downstream remediation."
   }
 }

@@ -61,19 +61,26 @@ Rscript --no-save -e '
   }, error = function(e) cat(sprintf("KTRI rebuild skipped: %s\n", e$message)))
 '
 
-# 3. FRED + Regime Signal 업데이트
+# 3. FRED + Regime Signal 업데이트 (monthly + daily 모두 build)
 echo "[3/5] FRED + Regime Signal..."
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
-  if (file.exists("data/data_collector_fred.R")) {
+  # FRED robust fetch (22 series with retry/graceful)
+  if (file.exists("regime/fred_robust.R")) {
+    source("regime/fred_robust.R")
+    tryCatch(fred_robust_fetch_all(), error = function(e)
+      cat(sprintf("FRED robust skipped: %s\n", e$message)))
+  } else if (file.exists("data/data_collector_fred.R")) {
     source("data/data_collector_fred.R")
     tryCatch(fred_fetch_all(), error = function(e)
       cat(sprintf("FRED update skipped: %s\n", e$message)))
   }
   source("regime/regime_signal.R")
-  tryCatch(build_regime_signal_table(), error = function(e)
-    cat(sprintf("Regime signal skipped: %s\n", e$message)))
+  tryCatch(build_regime_signal_table(daily = FALSE), error = function(e)
+    cat(sprintf("Regime signal monthly skipped: %s\n", e$message)))
+  tryCatch(build_regime_signal_table(daily = TRUE), error = function(e)
+    cat(sprintf("Regime signal daily skipped: %s\n", e$message)))
 '
 
 # 4. 레짐 브리핑 발송
