@@ -1,0 +1,28 @@
+{
+  "l_code": "L-248",
+  "category": "backtest_infrastructure",
+  "title": "Backtest Result Contract v1.0 도입 (Charter v1.5 §13, 2 retrofit PASS)",
+  "comparison": "기존 180개 전략 schema 미정합 (Old/New 2가지 + monthly returns 2/180) vs 표준화된 10-component bt_result list",
+  "conditions": "도훈 Session 73 명시 23-section Contract 도입. 9번 trades + 10번 costs 제외 (Qvest 리서치 시스템). 신규 의무 + STR_1631_SYN_06 + STR_1715만 retrofit. Audit L3 hard block. XLSX 의무.",
+  "result": "10-component (manifest/strategy_spec/nav/period_returns/holdings/benchmark_returns/metrics/benchmark_compare/rolling_metrics/drawdowns/audit) bt_result 표준 작성. 9건 인프라 신설 (Lawbook v1.0 + 5 R modules + Hook L3 + Registry + Charter v1.5 §13 + _shared_prefix + CLAUDE.md). 2 retrofit 모두 audit 10/10 PASS / integrity=PASS: STR_1715 (CAGR 40.95% / Sharpe 1.5989 / MDD 35.26% / Sortino 3.46 / 23 official metrics / 33 drawdown episodes / 2030 rolling obs) + STR_1631_SYN_06 (CAGR 25.71% / Sharpe 1.2932 / MDD 39.93% / IR 0.8933).",
+  "rationale": "L-247 Q-Lead 3회 회피의 근본 원인 = 표준 부재. 도훈 명시: 'Qvest는 리서치 시스템'. AX-002 (프로세스 우회 = 미래참조 동급) 직접 enforcement. Charter v1.4 §12 학술 표준 Sharpe + Plan §'백테스트 자체 합성 금지' 정합 (PerformanceAnalytics 표준 함수만).",
+  "scope": "전체 에이전트 + 모든 신규 전략 의무. 기존 178개 전략은 사용 시점 wave-by-wave.",
+  "strategy": "STR_1631_SYN_06, STR_1715_WT016_Iter31_GridBestProd, system_wide",
+  "lesson_text": "Backtest Result Contract v1.0 — 모든 전략 동일한 10-component bt_result list 산출. 추정 vs 백테스트 분리 (metric_type ∈ {backtested, estimated, proxy, unavailable}, official 성과표는 backtested만). PerformanceAnalytics 표준 함수만 (자체 prod/cumprod 합성 금지). Audit 10 checks Critical FAIL 시 L3 hard block (registry / methodology L-code 등재 차단). Holdings 부재 회피 시정 입증 — 옵션 제시 ❌ → 코드 수정 (HOLDINGS_LOG_FULL list 추가) → 산출물 기준 PASS까지.",
+  "core_reference": "도훈 Session 73 Backtest Result Contract v1.0 명시 + 00_Lawbook/Multi_Agent/backtest_result_contract.md v1.0 + 02_Infrastructure/contracts/{backtest_result_contract,save_bt_result,audit_bt_result,excel_report_writer,registry_writer}.R + 02_Infrastructure/hooks/backtest_contract_audit.sh + qepm/registry/backtest_registry.csv (2 entries) + Charter v1.5 §13",
+  "tags": [
+    "BACKTEST_CONTRACT_V1_0_INTRODUCTION",
+    "10_COMPONENT_BT_RESULT_LIST",
+    "TRADES_COSTS_EXCLUDED_RESEARCH_SYSTEM",
+    "AUDIT_L3_HARD_BLOCK_INTEGRITY",
+    "MASTER_REGISTRY_QEPM_BACKTEST",
+    "CHARTER_V1_5_SECTION_13",
+    "RETROFIT_STR_1715_INTEGRITY_PASS",
+    "RETROFIT_STR_1631_SYN_06_INTEGRITY_PASS",
+    "HOLDINGS_TIMESERIES_PATCH_RUN_ALL_FULL_PERIOD",
+    "AX_002_DIRECT_ENFORCEMENT",
+    "OPTION_PROPOSAL_EVASION_REPENTED"
+  ],
+  "grade": "VALIDATED_INFRA_TIGHTENING_CHARTER_V1_5",
+  "timestamp": "2026-04-29T14:25:00+09:00"
+}
