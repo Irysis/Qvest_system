@@ -76,6 +76,13 @@ Rscript --no-save -e '
     tryCatch(fred_fetch_all(), error = function(e)
       cat(sprintf("FRED update skipped: %s\n", e$message)))
   }
+  # yfinance supplement — FRED 우선 정책 (NA cell 만 yfinance 로 채움)
+  # 다음 cron 에서 FRED publish 되면 자동으로 FRED 값으로 교체
+  if (file.exists("regime/fred_supplement_yfinance.R")) {
+    source("regime/fred_supplement_yfinance.R")
+    tryCatch(supplement_fred_with_yfinance(lookback_days = 7L), error = function(e)
+      cat(sprintf("FRED yfinance supplement skipped: %s\n", e$message)))
+  }
   source("regime/regime_signal.R")
   tryCatch(build_regime_signal_table(daily = FALSE), error = function(e)
     cat(sprintf("Regime signal monthly skipped: %s\n", e$message)))
