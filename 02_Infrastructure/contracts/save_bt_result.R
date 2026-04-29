@@ -79,6 +79,11 @@ save_bt_result <- function(bt_result, output_dir, save_xlsx = TRUE) {
   invisible(saved_files)
 }
 
-`%||%` <- function(a, b) if (!is.null(a)) a else b
+if (!exists("%||%", mode = "function")) {
+  `%||%` <- function(a, b) {
+    if (is.null(a) || length(a) == 0) return(b)
+    a
+  }
+}
 
 cat("[save_bt_result.R] Loaded — save_bt_result()\n")

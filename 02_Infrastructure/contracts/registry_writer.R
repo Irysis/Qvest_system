@@ -122,7 +122,17 @@ read_registry_summary <- function(path = REGISTRY_PATH, top_n = NULL) {
   dt
 }
 
-`%||%` <- function(a, b) if (!is.null(a) && !is.na(a) && a != "") a else b
+# vector-safe %||% (override 시 build_bt_result vector input 보호)
+`%||%` <- function(a, b) {
+  if (is.null(a) || length(a) == 0) return(b)
+  if (length(a) == 1) {
+    if (is.na(a)) return(b)
+    if (is.character(a) && a == "") return(b)
+  } else {
+    if (all(is.na(a))) return(b)
+  }
+  a
+}
 
 cat("[registry_writer.R] Loaded — register_bt_result() / read_registry_summary()\n")
 cat(sprintf("  Registry path: %s\n", REGISTRY_PATH))
