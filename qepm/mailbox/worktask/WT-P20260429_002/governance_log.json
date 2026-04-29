@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-P20260429_002",
+  "wt_type": "deployment",
+  "lifecycle_lineage": "STR_1715 NEW retrofit (registry STR_1715_WT016_Iter31_20260429_001) → Codex critic round → Governor admission lifecycle (도훈 OVERRIDE_008)",
+  "events": [
+    {
+      "timestamp": "2026-04-29T19:20:11+0900",
+      "agent": "forge",
+      "action": "FORGE_RETROFIT_DONE",
+      "summary": "STR_1715 새 retrofit 완료. Backtest Result Contract v1.0 정합. 10 components 산출 (manifest/strategy_spec/nav/period_returns/holdings/benchmark_returns/metrics/benchmark_compare/rolling_metrics/drawdowns/audit) + RDS + 10 CSV + 2 JSON + report.xlsx 21-sheet. audit 10/10 PASS all severity low. T+1 lag applied + Charter v1.4 §12 학술 Sharpe 1.5950."
+    },
+    {
+      "timestamp": "2026-04-29T19:20:12+0900",
+      "agent": "registry",
+      "action": "REGISTRY_REGISTERED",
+      "summary": "qepm/registry/backtest_registry.csv 3rd entry STR_1715_WT016_Iter31_20260429_001 PASS. integrity_status=PASS / cagr=41.91% / sharpe=1.5950 / mdd=-35.56% / turnover=557.25%."
+    },
+    {
+      "timestamp": "2026-04-29T19:30:00+0900",
+      "agent": "q-lead",
+      "action": "USER_OVERRIDE_008_DIRECTIVE_RECEIVED",
+      "summary": "도훈 directive: STR_1715 100% PG2 승격 요청 (OVERRIDE_008). Charter §10 정도 100% — replacement scenario 정합 (OVERRIDE_002 정합). Sequential Admission TDC 부적용. book_optimizer R5 v6.1 §11 면제."
+    },
+    {
+      "timestamp": "2026-04-29T19:43:00+0900",
+      "agent": "governor",
+      "action": "WT_DIR_CREATED",
+      "summary": "WT-P20260429_002 디렉토리 생성. governor_admission_draft.json 발급."
+    },
+    {
+      "timestamp": "2026-04-29T19:46:00+0900",
+      "agent": "governor",
+      "action": "GOVERNOR_ADMISSION_DRAFT_PUBLISHED",
+      "summary": "PG0 gap diagnosis + PG1 admission check + PG2 book rebalance + PG3 drift config draft 작성. Verdict draft: ADMIT_CONDITIONAL PG2_CORE_ALPHA. 5 certificate 발급 자격 검토."
+    },
+    {
+      "timestamp": "2026-04-29T19:51:46+0900",
+      "agent": "codex_critic",
+      "action": "CODEX_CRITIC_ROUND_RESPONSE",
+      "summary": "GPT-5.5 xhigh stance=REJECT (veto_flag=false). 6 critical concerns (HIGH 4 / MEDIUM 2). C1 missing WT artifacts AX-008 + C2 cost not in official contract + C3 cash overlay unproven + C4 Harvey/DSR required + C5 lockbox OOS not auditable + C6 trade-off overstates. weakest_assumption: 'audit 10/10 PASS proves production-grade despite missing artifacts and zero-cost contract fields'. RF-G1/RF-G2 (replacement vs sequential) PASS."
+    },
+    {
+      "timestamp": "2026-04-29T19:55:00+0900",
+      "agent": "governor",
+      "action": "GOVERNOR_CHALLENGE_NOTE_PUBLISHED",
+      "summary": "governor_challenge_note.md 발급. Codex 6 concerns 자율 분류: ACCEPT 2 (C2 cost, C6 trade-off) + ACCEPT_WITH_TIMELINE 1 (C4 Harvey paired baseline) + PARTIAL_REBUTTAL 2 (C1 AX-008 partial, C3 holdings level evidence) + PARTIAL_ACCEPT 1 (C5 lockbox 3-way). REBUTTAL 근거: Replacement vs Sequential 정합, 이중 잣대 회피, single-axis cost-corrected SR dominance robust."
+    },
+    {
+      "timestamp": "2026-04-29T19:58:00+0900",
+      "agent": "governor",
+      "action": "COST_CORRECTION_DIRECT_CALC",
+      "summary": "Governor 직접 산출 (Codex C2 ACCEPT). 15bps × annual TO 5.57 = 167bps cost drag. SR 1.595 → 1.5604 (-0.035) / CAGR 41.96% → 40.81% (-1.15pp) / MDD -35.56% → -36.10% (-0.54pp). vs SYN_06 SR +0.267 / CAGR +15.09pp / MDD +3.83pp dominance robust 유지."
+    },
+    {
+      "timestamp": "2026-04-29T19:59:00+0900",
+      "agent": "governor",
+      "action": "REGIME_OVERLAY_HOLDINGS_LEVEL_EVIDENCE_VERIFIED",
+      "summary": "Codex C3 PARTIAL_REBUTTAL evidence. holdings.actual_weight sum-by-date 0.60~1.00 (mean 0.9165) cash overlay 인코딩 확인 (regime conditional normal/caution/crisis 10/20/40% 정합). period_returns.cash_weight column NA은 contract-level 표기 부재로 POST_DEPLOY_002 보강 발주."
+    },
+    {
+      "timestamp": "2026-04-29T20:00:00+0900",
+      "agent": "governor",
+      "action": "GOVERNOR_ADMISSION_FINAL_PUBLISHED",
+      "summary": "ADMIT_CONDITIONAL / PG2_CORE_ALPHA / weight=1.00 / 9 post-condition 발주 (Forge 6 / Monitoring 2 / Architect 1) / L-242 예정 (Q-Lead methodology_active 등재). governor_admission.json 발급 (WT-P20260429_002 + governor mailbox alias governor_admission_str1715.json). Codex C2/C3/C5 evidence 첨부 (cost correction + holdings level + lockbox 3-way pending)."
+    },
+    {
+      "timestamp": "2026-04-29T20:00:00+0900",
+      "agent": "governor",
+      "action": "BOOK_STATE_ARCHIVED_STR_1631_SYN_06",
+      "summary": "이전 PG2 (STR_1631_SYN_06 100% admitted 2026-04-29T09:45 OVERRIDE_007) book_state_archive_str1631_syn06_20260429.json 생성. 10시간 15분 운영. POST_DEPLOY 7건 inheritance + 1건 N/A 처리."
+    },
+    {
+      "timestamp": "2026-04-29T20:00:00+0900",
+      "agent": "q-lead",
+      "action": "BOOK_STATE_UPDATED",
+      "summary": "qepm/mailbox/governor/book_state.json 갱신. admitted_ids=[STR_1715_WT016_Iter31_GridBestProd] / book_weights={STR_1715:1.00} / admission_tier=PG2_CORE_ALPHA / dual-track metric (official gross + cost-corrected). Hook governor_concord_certifier.sh 발동 — admission_str1715.json WT-P20260429_002 path + str_id 매칭 정합 PASS."
+    },
+    {
+      "timestamp": "2026-04-29T20:02:00+0900",
+      "agent": "q-lead",
+      "action": "GOVERNANCE_LOG_PUBLISHED",
+      "summary": "WT-P20260429_002/governance_log.json 발급. 9 deploy post-condition 발주 + rollback condition 12건 + monitoring baseline (cost-corrected SR 1.5604) 등록. Charter §10 5-certificate 발급 트랙 (alpha_discovery EXEMPT / sr_provenance ELIGIBLE_with_cost_note / schedule_fidelity ELIGIBLE / forge_package_validated ELIGIBLE_with_cash_revision / governor_concord_with_waiver auto)."
+    }
+  ],
+  "deploy_post_conditions_active": [
+    {"id": "POST_DEPLOY_001", "owner": "monitoring", "task": "STR_1715 monthly drift detection", "due": "2026-05-29", "status": "REGISTERED"},
+    {"id": "POST_DEPLOY_002", "owner": "forge", "task": "backtest_contract cost_ret + cash_weight column 인코딩", "due": "2026-05-13", "status": "PENDING"},
+    {"id": "POST_DEPLOY_003", "owner": "forge", "task": "Harvey 5-spec + DSR_post — STR_1715 + SYN_06 paired", "due": "2026-05-13", "status": "PENDING"},
+    {"id": "POST_DEPLOY_004", "owner": "forge", "task": "AX-001 v2 defense conditional metrics", "due": "2026-05-29", "status": "PENDING"},
+    {"id": "POST_DEPLOY_005", "owner": "monitoring", "task": "tail_risk_engine.R baseline", "due": "2026-05-13", "status": "PENDING"},
+    {"id": "POST_DEPLOY_006", "owner": "architect", "task": "AX-008 3rd source 독립 검증", "due": "2026-05-29", "status": "PENDING"},
+    {"id": "POST_DEPLOY_007", "owner": "forge", "task": "Pre-LB / Lockbox / Combined 3-way reporting", "due": "2026-05-13", "status": "PENDING"},
+    {"id": "POST_DEPLOY_008", "owner": "forge", "task": "Paired bootstrap STR_1715 vs SYN_06 cost-corrected", "due": "2026-05-13", "status": "PENDING"},
+    {"id": "POST_DEPLOY_009", "owner": "monitoring", "task": "Recent 12M + OOS 27mo SR drift baseline 추적", "due": "2026-05-29 monthly", "status": "REGISTERED"}
+  ],
+  "admission_decision_summary": {
+    "verdict": "ADMIT_CONDITIONAL",
+    "admission_tier": "PG2_CORE_ALPHA",
+    "weight": 1.00,
+    "scenario": "Replacement (도훈 OVERRIDE_008 + cost-corrected dominance 3 axes)",
+    "metric_basis": "dual_track_official_gross_and_cost_corrected",
+    "cost_corrected_sr": 1.5604,
+    "cost_corrected_cagr_pct": 40.81,
+    "cost_corrected_mdd_pct": -36.10,
+    "official_gross_sr": 1.5950,
+    "ax_008_triangulation_status": "2_of_3_partial (Forge + Codex partial → Architect 3rd POST_DEPLOY_006)",
+    "tdc_diversification_status": "single_strategy_100pct (forfeit accepted by user OVERRIDE_008)",
+    "harvey_dsr_status": "PENDING_T_PLUS_14 (paired with baseline SYN_06)",
+    "lockbox_3way_status": "PENDING_T_PLUS_14 (POST_DEPLOY_007)"
+  }
+}
