@@ -1152,10 +1152,10 @@ if (nrow(oos_blend_dt) >= 4) {
     NAV_1715  = cumprod(1 + oos_blend_dt$ret_1715)
   )
   # BM monthly for OOS
-  bm_oos <- bm_m_chart[Date %in% oos_blend_dt$date, .(Date, BM_Ret)]
+  bm_oos <- bm_m_chart[Date %in% oos_blend_dt$date, .(Date, ret_m)]
   if (nrow(bm_oos) >= nrow(oos_blend_dt) - 2) {
     bm_oos_aligned <- bm_m_chart[Date >= as.Date("2024-01-01") & Date %in% oos_blend_dt$date]
-    oos_cum_blend[, NAV_bm := cumprod(1 + bm_oos_aligned$BM_Ret)[seq_len(.N)]]
+    oos_cum_blend[, NAV_bm := cumprod(1 + bm_oos_aligned$ret_m)[seq_len(.N)]]
   } else {
     oos_cum_blend[, NAV_bm := NA_real_]
   }
@@ -1243,8 +1243,8 @@ ax001_md <- c(
   sprintf("- n_pass: %d/3 | Gate: >=2 | **%s**", n_crisis_pass, if (n_crisis_pass >= 2) "PASS" else "FAIL"),
   "",
   "### Axis 2: Core MDD Complement (Forge Realized)",
-  sprintf("- STR_1715 standalone MDD (monthly, pre-LB): %.2f%%", -mdd_monthly_1715 * 100),
-  sprintf("- Blend 80/20 MDD (monthly, pre-LB):         %.2f%%", -mdd_monthly_blend * 100),
+  sprintf("- STR_1715 standalone MDD (monthly, pre-LB): %.4f", mdd_monthly_1715_val),
+  sprintf("- Blend 80/20 MDD (monthly, pre-LB):         %.4f", mdd_monthly_blend_val),
   sprintf("- Delta pp (improvement): %+.4f | **%s**",
           mdd_delta_pp, if (mdd_complement_pass) "PASS" else "FAIL"),
   "",
@@ -1266,12 +1266,12 @@ ax001_md <- c(
           mdd_monthly_blend_val),
   sprintf("- Sortino: %.4f | Calmar: %.4f", sortino_blend %||% NA, calmar_blend %||% NA),
   "",
-  "## vs STR_1715 Standalone (same period)",
+  "## vs STR_1715 Standalone (same monthly grid)",
   sprintf("- STR_1715 SR_m: %.4f | Blend SR_m: %.4f | Delta: %+.4f",
           sr_monthly_1715_prelb, sr_monthly_blend_prelb,
           sr_monthly_blend_prelb - sr_monthly_1715_prelb),
-  sprintf("- STR_1715 MDD_m: %.2f%% | Blend MDD_m: %.2f%% | Delta: %+.2f pp",
-          -mdd_monthly_1715 * 100, -mdd_monthly_blend * 100, mdd_delta_pp * 100),
+  sprintf("- STR_1715 MDD_m: %.4f | Blend MDD_m: %.4f | Delta: %+.4f pp",
+          mdd_monthly_1715_val, mdd_monthly_blend_val, mdd_delta_pp),
   "",
   "## Hard Constraints",
   sprintf("- TO hard fail: annual_to=%.4f > 6.0 **FAIL** (Optimizer acknowledged per Charter §8)", annual_to_defense),
@@ -1317,10 +1317,10 @@ forge_package <- list(
   pure_function_violation = FALSE,
 
   hard_caps = list(
-    to_hard_fail        = TRUE,  # acknowledged: 6.43 > 6.0
+    to_hard_fail        = (annual_to_defense > 6.0),  # forge realized: 3.2083 PASS
     to_realized         = round(annual_to_defense, 4),
     to_cap              = 6.0,
-    to_cost_drag_note   = "TO=6.43 → 15bps*2*6.43 = 192.9bps/yr cost drag embedded in realized NAV",
+    to_cost_drag_note   = "Forge realized TO=3.2083 PASS (< 6.0). Optimizer WF TO=6.43 was infeasibility source. Cost drag from actual rebalancing embedded in NAV.",
     mdd_monthly_realized = round(-mdd_monthly_def_prelb, 4),
     mdd_pass            = hard_mdd_pass_def,
     cvar_d_realized     = round(perf_defense_prelb$cvar_d, 4),
@@ -1539,8 +1539,11 @@ cat(sprintf("optimizer_wf_sr_estimated: %.4f | divergence: %+.4f\n",
 cat(sprintf("divergence_diagnosis: %s\n", divergence_diagnosis))
 cat(sprintf("cagr: %.4f | mdd_monthly: %.4f | vol: %.4f\n",
             perf_defense_prelb$cagr, -mdd_monthly_def_prelb, perf_defense_prelb$vol))
-cat(sprintf("annual_to (weight-diff): %.4f | TO_hard_fail: TRUE (%.4f > 6.0)\n",
-            annual_to_defense, annual_to_defense))
+cat(sprintf("annual_to (weight-diff): %.4f | TO_hard_fail: %s (%.4f %s 6.0)\n",
+            annual_to_defense,
+            if (annual_to_defense > 6.0) "TRUE" else "FALSE",
+            annual_to_defense,
+            if (annual_to_defense > 6.0) ">" else "<="))
 cat(sprintf("schedule_density_ratio: %.4f | pure_function_violation: FALSE\n",
             sched_density_ratio))
 cat(sprintf("audit_defense: integrity=%s\n", bt_defense$manifest$integrity_status))

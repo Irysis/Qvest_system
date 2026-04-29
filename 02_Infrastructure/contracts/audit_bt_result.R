@@ -160,7 +160,15 @@ audit_bt_result <- function(bt_result) {
   # Check 11 (L-249 enforcement): frequency-vs-cadence consistency
   # Charter v1.5 §13: declared frequency/annualization_factor must match actual data spacing
   # Mislabel (e.g. bi-monthly inner-join declared as 'daily') inflates Sharpe by sqrt(N_declared/N_actual)
-  declared_freq <- tryCatch(bt_result$manifest$frequency[1], error = function(e) NA_character_)
+  # Use period_returns$frequency (data-level label) NOT manifest$frequency (strategy signal cadence)
+  declared_freq <- tryCatch({
+    if (!is.null(pr) && nrow(pr) > 0 && "frequency" %in% names(pr)) {
+      # period_returns frequency is most authoritative (set during build_period_returns)
+      unique(pr$frequency[!is.na(pr$frequency)])[1]
+    } else {
+      bt_result$manifest$frequency[1]
+    }
+  }, error = function(e) NA_character_)
   declared_ann  <- tryCatch({
     # annualization_factor stored in metrics or manifest
     ann_from_metrics <- if (!is.null(bt_result$metrics) && "annualization_factor" %in% names(bt_result$metrics)) {

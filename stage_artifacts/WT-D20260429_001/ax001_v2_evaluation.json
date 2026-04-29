@@ -1,6 +1,6 @@
 {
   "task_id": "WT-D20260429_001",
-  "generated_at": "2026-04-30T07:59:21+09:00",
+  "generated_at": "2026-04-30T08:52:54+09:00",
   "evaluation_basis": "Config 2 Blend 80/20 — forge realized share-based NAV",
   "axis_1_crisis_alpha": {
     "description": "8 stress periods positive IC (using alpha_package diagnostics)",
@@ -12,13 +12,15 @@
     "pass": true
   },
   "axis_2_mdd_complement": {
-    "description": "Blend MDD improvement over STR_1715 standalone (same-period)",
-    "str1715_mdd_monthly": 0.2434,
-    "blend_mdd_monthly": 0.1974,
-    "delta_pp": 0.046,
+    "description": "Blend MDD improvement over STR_1715 standalone (same-period, monthly grid v2)",
+    "str1715_mdd_monthly": 0.3556,
+    "blend_mdd_monthly": 0.3686,
+    "delta_pp": -0.013,
+    "n_monthly_obs": 240,
+    "basis": "monthly_grid_264_obs_STR1715_period_returns_plus_defense_apply_monthly",
     "target_pp_range": "7-10pp improvement (aspirational)",
-    "pass": true,
-    "note": "positive delta = blend reduces MDD vs STR_1715"
+    "pass": false,
+    "note": "positive delta = blend reduces MDD vs STR_1715. v2: full monthly grid vs v1 sparse inner-join 127 obs"
   },
   "axis_3_bad_normal_ic_ratio": {
     "description": "bad/normal IC ratio from alpha_package (proxy for defense quality)",
@@ -26,6 +28,6 @@
     "threshold": 1.5,
     "pass": true
   },
-  "overall_ax001_v2_pass": true,
+  "overall_ax001_v2_pass": false,
   "note": "AX-001 v2 defense评価: 전기간 SR/MDD 대신 (1) crisis_alpha + (2) Core MDD complement + (3) bad/normal IC ratio 3축 평가."
 }

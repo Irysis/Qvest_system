@@ -12,10 +12,10 @@
   "schedule_density_pass": true,
   "pure_function_violation": false,
   "hard_caps": {
-    "to_hard_fail": true,
+    "to_hard_fail": false,
     "to_realized": 3.2083,
     "to_cap": 6,
-    "to_cost_drag_note": "TO=6.43 → 15bps*2*6.43 = 192.9bps/yr cost drag embedded in realized NAV",
+    "to_cost_drag_note": "Forge realized TO=3.2083 PASS (< 6.0). Optimizer WF TO=6.43 was infeasibility source. Cost drag from actual rebalancing embedded in NAV.",
     "mdd_monthly_realized": 0.4498,
     "mdd_pass": true,
     "cvar_d_realized": 0.0276,
@@ -58,40 +58,41 @@
       }
     },
     "blend_80_20": {
-      "overlap_period": "2004-02-01 ~ 2026-03-01",
-      "n_days": 127,
-      "sr_daily_ann": 7.6789,
-      "sr_monthly_ann": 1.6757,
-      "cagr": 464.0493,
-      "mdd_daily": 0.1974,
-      "mdd_monthly": 0.1974,
-      "vol": 0.856,
-      "sortino": 16.2349,
-      "calmar": 2350.807,
+      "basis": "monthly_grid_v2_STR1715_period_returns_267mo_plus_defense_apply_monthly",
+      "freq_mislabel_fix": "v2: frequency='monthly' ann=12. v1 was 'daily' ann=252 on sparse inner-join = FABRICATION",
+      "overlap_period": "2004-01-01 ~ 2026-03-01",
+      "n_monthly_obs": 267,
+      "n_monthly_prelb": 240,
+      "sr_monthly_ann": 1.3281,
+      "cagr": 0.2942,
+      "mdd_monthly": 0.3686,
+      "vol_monthly_ann": 0.213,
+      "sortino": 2.5609,
+      "calmar": 0.7983,
       "vs_str1715": {
-        "str1715_sr_monthly": 1.6581,
-        "blend_sr_monthly": 1.6757,
-        "delta_sr_pp": 0.0176,
-        "str1715_mdd_monthly": 0.2434,
-        "blend_mdd_monthly": 0.1974,
-        "mdd_delta_pp": 0.046,
-        "mdd_complement_note": "IMPROVEMENT achieved"
+        "str1715_sr_monthly": 1.4359,
+        "blend_sr_monthly": 1.3281,
+        "delta_sr_pp": -0.1079,
+        "str1715_mdd_monthly": 0.3556,
+        "blend_mdd_monthly": 0.3686,
+        "mdd_delta_pp": -0.013,
+        "mdd_complement_note": "NO MDD improvement"
       }
     }
   },
   "ax001_v2": {
-    "overall_pass": true,
+    "overall_pass": false,
     "crisis_alpha_n_pass": 3,
-    "mdd_complement_pass": true,
-    "mdd_complement_delta_pp": 0.046,
+    "mdd_complement_pass": false,
+    "mdd_complement_delta_pp": -0.013,
     "bad_normal_ratio_pass": true,
     "bad_normal_ratio": 1.6942
   },
   "tdc_q5_verification": {
-    "forge_realized_monthly": 0,
+    "forge_realized_monthly": 0.5,
     "optimizer_static_60m": 0.2143,
     "optimizer_wf_walkfwd": 0,
-    "gate_0.30_pass_realized": true
+    "gate_0.30_pass_realized": false
   },
   "harvey_nw_hac": {
     "n_pass": 0,
@@ -154,8 +155,8 @@
     }
   },
   "run_ids": {
-    "defense_standalone": "WT-D20260429_001_DEFENSE_HRP_20260430075904",
-    "blend_80_20": "WT-D20260429_001_BLEND_80_20_20260430075919"
+    "defense_standalone": "WT-D20260429_001_DEFENSE_HRP_20260430085238",
+    "blend_80_20": "WT-D20260429_001_BLEND_80_20_20260430085252"
   },
   "output_paths": {
     "defense_bt_result": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260429_001/backtest_result/output_defense",
