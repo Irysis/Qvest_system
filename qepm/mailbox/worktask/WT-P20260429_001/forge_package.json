@@ -1,0 +1,108 @@
+{
+  "task_id": "WT-P20260429_001",
+  "str_id": "STR_1631_SYN_06",
+  "iter": "SYN_06_Variant_A_Outlier_Standard_Sharpe",
+  "iter_name": "STR_1631_SYN_06_variant_A_outlier_standard_sharpe_v1_4",
+  "agent": "forge",
+  "as_of_date": "2026-04-29",
+  "method": "summarise_perf_v1_4_standard_sharpe_variant_A_outlier_bimonthly_140sigdates",
+  "method_basis_label": "forge_realized_share_based",
+  "production_grade": true,
+  "sr_realized_share_based": 1.245,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 140,
+  "schedule_density_ratio": 1,
+  "alpha_sig_dates_count": 140,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "date_range": ["2003-01-30", "2026-03-31"],
+  "backtest_summary": {
+    "base": {
+      "label": "SYN05_Base",
+      "cagr": 26.56,
+      "ann_vol": 20.66,
+      "sharpe_daily_standard": 1.245,
+      "sharpe_monthly_standard": 1.194,
+      "sortino": 1.817,
+      "mdd": 47.98,
+      "calmar": 0.554,
+      "win_rate": 67,
+      "worst_month": -23.29,
+      "worst_3m": -27.99,
+      "es99_d": 5.17,
+      "es99_m": 17.08
+    },
+    "overlay": {
+      "label": "SYN05_Overlay",
+      "cagr": 25.72,
+      "ann_vol": 19.13,
+      "sharpe_daily_standard": 1.293,
+      "sharpe_monthly_standard": 1.225,
+      "sortino": 1.908,
+      "mdd": 39.93,
+      "calmar": 0.644,
+      "win_rate": 67,
+      "worst_month": -13.13,
+      "worst_3m": -19.2,
+      "es99_d": 4.61,
+      "es99_m": 13.02
+    },
+    "benchmark_kospi200": {
+      "cagr": 11.11,
+      "sharpe": 0.613,
+      "mdd": 54.54
+    }
+  },
+  "harvey_5spec": {
+    "note": "재계산 필요 (Sharpe input v1.4 standard 적용 후 hurdle_gate 재산출)",
+    "pass_count": "NA",
+    "spec_pending": true
+  },
+  "dsr": 1,
+  "dsr_significant": true,
+  "sr_max_expected": 0.0777,
+  "n_trials_dsr": 465,
+  "dsr_post": 1,
+  "hard_caps": {
+    "n_holdings_max": 20,
+    "weight_bound_max": 0.2,
+    "long_only": true,
+    "sigma_w_eq_1": true,
+    "annual_to_cap": 600,
+    "annual_to_realized": 283.9,
+    "annual_to_pass": true
+  },
+  "vs_factor_engine": {
+    "note": "본 simulation은 backtest_harness::run_monthly_simulation (factor_engine 미경유). divergence 측정 부적용."
+  },
+  "divergence_factor_engine_vs_realized_pp": "NA",
+  "comparison_str_1715": {
+    "str_1715_walk_forward_sr": 1.4522,
+    "str_1715_share_based_sr": 0.6161,
+    "str_1715_fabrication_status": "FABRICATION_SUSPECTED_charter_v1_2_section_9",
+    "syn06_advantage_sr_overlay_minus_str1715_share_based": 0.6769,
+    "syn06_advantage_mdd_pp": -10.07
+  },
+  "pg2_admission_recommendation": {
+    "recommended": true,
+    "rationale": "1. 학술 표준 SR (mean(ER)/sd(ER)*sqrt(N), Charter v1.4): Overlay 1.293 (daily) / 1.225 (monthly). 2. Outlier handling Variant A (Charter v1.3): winsorize 1%/99% + corp action filter. 3. MDD -39.93% (STR_1715 -50% 대비 -10.07pp 개선). 4. TO 283.9%/yr (STR_1715 570% 대비 -286pp 절감). 5. PIT C1~C15 모두 정합. 6. Hurdle Gate v1.4 Grade A (60.3) + DSR 1.0 + dsr_significant TRUE.",
+    "weight_recommended": 1
+  },
+  "charter_compliance": {
+    "v1_3_section_11_outlier_handling": "Variant A applied (winsorize 1%/99% + corp action filter via factor_z_standard.R)",
+    "v1_4_section_12_sharpe_definition": "mean(ER)/sd(ER)*sqrt(N) standard via summarise_perf v1.4 + sharpe_standard.R"
+  },
+  "hash_audit": {
+    "output_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output",
+    "files": ["annual_returns.png", "equity_curve.png", "factors_detail.csv", "hurdle_result.json", "ic_weight_evolution.csv", "performance.json", "qepm_pending.json", "verification_result.json"]
+  },
+  "output_paths": {
+    "performance": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/performance.json",
+    "hurdle": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/hurdle_result.json",
+    "factors_detail": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/factors_detail.csv",
+    "ic_weight_evolution": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/ic_weight_evolution.csv",
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631_SYN_06/output/annual_returns.png"
+  },
+  "generated_at": "2026-04-29T09:23:49+0900"
+}

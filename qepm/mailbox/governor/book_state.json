@@ -1,119 +1,190 @@
 {
-  "updated_at": "2026-04-29T09:15:00+0900",
-  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_007 STR_1631_SYN_06 100% Single-Sleeve PG2 promotion (Variant A outlier + Sharpe 표준)",
-  "schema_version": "v2.1",
+  "updated_at": "2026-04-27T21:00:00+0900",
+  "updated_by": "Q-Lead Opus 4.7 — User OVERRIDE_006 STR_1715 100% Single-Sleeve (mandate strict 20종목 hard cap)",
+  "schema_version": "v2.0",
   "n_admitted": 1,
   "admitted_ids": [
-    "STR_1631_SYN_06"
+    "STR_1715"
   ],
   "book_weights": {
-    "STR_1631_SYN_06": 1.00
+    "STR_1715": 1.00
   },
-  "user_override_007_str1631_syn06_promotion": {
-    "decision": "STR_1631_SYN_06_100PCT_REPLACE_STR_1715_VARIANT_A_OUTLIER_STANDARD_SHARPE",
-    "promoted_at": "2026-04-29T09:15:00+0900",
+  "user_override_006_mandate_strict_20names": {
+    "decision": "STR_1715_100PCT_SINGLE_SLEEVE_REMOVE_STR_1656",
+    "promoted_at": "2026-04-27T21:00:00+0900",
     "user": "도훈 (Dohoon Kim)",
-    "directive_quote": "PG2를 1631_SYN06 100%로 대체하고, MEGA_05 → 1715까지 발전 히스토리 정리해서 재검증해보자. 당시에는 아키텍처 이슈도 있어서 수치가 왜곡된거 같거든.",
-    "rationale": "STR_1715 fabrication 의심 (forge_realized_share_based 0.6161 vs walk-forward simulation 1.4522 divergence -0.84). STR_1631_SYN_06 = baseline SYN_05 + Variant A outlier handling (winsorize 1%/99% + corp action filter, Charter v1.3 §11) + 표준 Sharpe (Charter v1.4 §12) 적용. 검증된 metric: Base SR 1.245 / Overlay SR 1.293 / MDD -39.93% (모든 표준 정합).",
-    "previous_pg2_admit": "STR_1715 100% (User OVERRIDE_006, 2026-04-27T21:00:00+0900) → archived",
-    "replaced_strategy": "STR_1715",
-    "replacement_strategy": "STR_1631_SYN_06",
-    "improvement_summary": [
-      "STR_1715 share_based SR 0.6161 → STR_1631_SYN_06 표준 SR 1.245 (Base) / 1.293 (Overlay)",
-      "STR_1715 MDD -50% → STR_1631_SYN_06 MDD -39.93% (Overlay)",
-      "STR_1715 fabrication 의심 → STR_1631_SYN_06 PIT_CLEAN audit 통과 + 표준 정합",
-      "STR_1715 TO 570% → STR_1631_SYN_06 TO 283.9% (거래비용 절감)"
+    "directive_quote": "뭔 말이 많아 무조건 전기간 20종목이어야지",
+    "rationale": "Mandate 'sleeve 조합 시에도 최종 20종목 이하' strict 준수. STR_1715 + STR_1656 blend = portfolio-level union 종목수 20 초과 가능성 → 단일 sleeve STR_1715 100% (자체 20 equity + CASH overlay)로 mandate 정확 준수.",
+    "previous_pg2_admit": "STR_1715 80% + STR_1656 20% (User OVERRIDE_005, 2026-04-27T20:30:00+0900) → archived after 30분 운영",
+    "trade_off_accepted_by_user": [
+      "STR_1656 GFC 0% loss 보호 forfeit",
+      "ML diversifier diversification benefit forfeit",
+      "Standalone SR 1.4522 (vs blend 1.9222 walk-forward integrated, -0.47)",
+      "MDD -35.26% (vs blend -28.84%, +6.42pp 위험)"
     ],
+    "user_logic_strict_mandate": "20종목 hard cap이 risk trade-off보다 우선",
     "rollback_conditions": [
-      "T+30 realized SR < 0.80",
+      "T+30 realized SR < 1.10",
       "MDD > -45%",
-      "TO > 320%",
-      "Hurdle Gate v1.4 6-Gate 재검증 FAIL"
-    ],
-    "post_promotion_parallel_checks": [
-      "Forge: SYN_06 standard Sharpe re-measurement complete (output/performance.json 산출됨)",
-      "Charter v1.4 §12 Sharpe 표준화 검증 PASS",
-      "Charter v1.3 §11 Outlier handling Variant A 적용 PASS",
-      "L-238 (Outlier 표준) + L-239 (Sharpe 표준) commit"
+      "TO > 595%",
+      "Lockbox SR drift > 30%"
     ]
   },
-  "book_metrics_realized_share_based_standard": {
-    "measurement_basis_primary": "forge_realized_share_based",
-    "harness_version": "summarise_perf_v1.4_standard_sharpe",
-    "outlier_handling": "Variant_A_winsorize_1_99_corp_action_filter_charter_v1_3",
-    "sharpe_definition": "mean(ER)/sd(ER)*sqrt(N)_charter_v1_4",
-    "sr_base_daily": 1.245,
-    "sr_base_monthly": 1.194,
-    "sr_overlay_daily": 1.293,
-    "sr_overlay_monthly": 1.225,
-    "cagr_base": 0.2656,
-    "cagr_overlay": 0.2572,
-    "mdd_base": -0.4798,
-    "mdd_overlay": -0.3993,
-    "ann_vol_base": 0.2066,
-    "ann_vol_overlay": 0.1913,
-    "sortino_base": 1.817,
-    "sortino_overlay": 1.908,
-    "calmar_overlay": 0.644,
-    "win_rate_overlay": 0.67,
-    "worst_month_overlay": -0.1313,
-    "worst_3m_overlay": -0.1920,
-    "es99_d_overlay": 0.0461,
-    "es99_m_overlay": 0.1302,
-    "annual_to": 2.839,
-    "ir_overlay_vs_kospi200": 1.083,
-    "rolling3y_pos": 0.988,
-    "rolling12m_hit": 0.824,
-    "harvey_t_pending": "재산출 필요 (sharpe input v1.4 patch 후)",
-    "dsr": 1.0,
-    "dsr_significant": true,
-    "n_trials": 465,
-    "rf": "default_0_KR_Gov3Y_optional_via_sharpe_standard_R"
+  "user_override_005_replacement": {
+    "decision": "STR_1715_80PCT_REPLACEMENT_NOT_PROBE",
+    "promoted_at": "2026-04-27T20:30:00+0900",
+    "user": "도훈 (Dohoon Kim)",
+    "directive_quote": "A 즉시교체하고, 전기간 SR 실측해줘",
+    "rationale_user_inferred": "STR_1715 = STR_1701 hyperparameter 변형 (cor 1.0, same alpha). 10% probe는 averaging effect 의미 작음. Better hyperparameter 즉시 적용이 합리적.",
+    "previous_pg2_admit": "STR_1701 80% (User OVERRIDE_004) → archived",
+    "scenario_executed": "AB_80_20_STR1715_STR1656_REPLACEMENT",
+    "judge_concerns_acknowledged": [
+      "Stress periods NEGATIVE (GFC -1.73 / COVID -7.06)",
+      "Walk-forward 1.68 vs Lockbox 0.64 divergence",
+      "TO 570% margin 작음 (cap 600 29pp)",
+      "FF5 R² 0.0148 anomaly",
+      "AX-008 2/3 Codex OVERRIDE"
+    ],
+    "rollback_conditions": [
+      "T+30 realized SR < 1.20",
+      "MDD > -45%",
+      "TO > 595%",
+      "Lockbox SR drift > 30%",
+      "Crisis 진입 시 stress profile worse than expected"
+    ],
+    "user_logic": "STR_1701 hyperparameter 변형이라 stress profile 동일 — STR_1701 80% 운영 중인 risk와 동일. Better calibrated version으로 즉시 교체가 본질."
   },
-  "crowding_per_wt": {
-    "STR_1631_SYN_06": {
-      "strategy_id": "STR_1631_SYN_06",
-      "iter_label": "SYN_04_IC_weighted_M23_score_tilt_M19_bimonthly_VariantA_outlier_StandardSharpe",
-      "family": "Earnings_Expectations_4factor_HRP_Gerber_RMT_ScoreTilt_Bimonthly",
-      "structure": "single_sleeve_top20_bimonthly_buffer_zone_keep35_entry20_regime_overlay_3layer",
-      "ax_007_evaluation": "EXCEPTION_1_multi_sleeve_via_regime_overlay",
-      "harvey_t_ff5": "재산출 필요",
-      "harvey_gate_status": "PENDING_RECOMPUTE",
-      "intra_book_family_weight": 1.0,
-      "mutation_chain": "STR_1631_SYN_05_baseline -> STR_1631_SYN_06_variant_A",
-      "outlier_standard": "Charter v1.3 §11 Variant A (winsorize 1%/99% + corp action filter)",
-      "sharpe_standard": "Charter v1.4 §12 mean(ER)/sd(ER)*sqrt(N)"
+  "probe_phase_admissions": [
+    {
+      "str_id": "STR_1715",
+      "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+      "wt_source": "WT-D20260427_016",
+      "admitted_at": "2026-04-27T16:30:00+0900",
+      "probe_weight": 0.10,
+      "probe_type": "sequential_10pct",
+      "T30_review_date": "2026-05-27",
+      "escalation_target": 0.20,
+      "escalation_conditions": ["G7_liquidity_PASS", "AX008_close", "T30_SR>=0.8", "TO<590pct"],
+      "rollback_conditions": ["T30_SR<0.4", "G7_FAIL", "AX008_BLOCKING", "book_MDD>-42pct", "TO>=595pct"],
+      "stress_profile": "NEGATIVE (GFC/COVID/Vol2018/Inflation2022) — core_amplification only, NOT defense",
+      "tdc_vs_str1701": 0.0909,
+      "tdc_vs_str1656": 0.0000,
+      "tdc_vs_blend": 0.1000,
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE_Grade_A_score78",
+      "governor_verdict": "ADMITTED_PROBE_Option_B"
+    }
+  ],
+  "book_composition_rationale": {
+    "decision": "STR_1701_80_STR1656_20_USER_MANDATED_REPLACEMENT_TPLUS0_PROMOTION",
+    "promoted_at": "2026-04-26T10:30:00+0900",
+    "promoted_by_user": "도훈 (Dohoon Kim)",
+    "user_directive_quote": "Iter 11을 PG2의 MEGA 05 대체하자",
+    "scenario_executed": "AB_80_20_Iter11_STR1656_diversifier_preserved",
+    "phased_pathway_bypassed": "User OVERRIDE_004 — T+30/60/90 phased pathway shortcut to T+0 immediate promotion. Sequential validation deferred to post-promotion parallel checks (Forge AB direct NAV + Architect AX-008 + Monitoring drift config).",
+    "alternative_scenarios_evaluated_pre_user_decision": {
+      "A_iter11_100": "rejected — STR_1656 ML diversifier loss + GFC 0% protection forfeit",
+      "AB_80_20": "SELECTED — Judge recommended (R2 finalize score 1.696) + STR_1656 ML diversifier preserved",
+      "B_mix_60_20_20": "deferred — Mix B requires STR_1656 NAV trail + Sequential Admission TDC measurement",
+      "D_keep_pg2": "rejected by user — MEGA_05 SR 0.9345 < Iter11 SR 1.291 + Harvey 5/5 robustness dominant"
     }
   },
+  "book_metrics": {
+    "realized_sr_full_oos": {
+      "value": 1.4625,
+      "basis": "forge_direct_nav_backtest_243m_2026_04_26",
+      "linear_approximation_was": 1.4077,
+      "delta_realized_minus_linear": 0.0548,
+      "note": "Direct NAV backtest exceeds linear approximation by +0.055 SR — nonlinear diversification benefit realized."
+    },
+    "realized_cagr_pct": 30.01,
+    "realized_mdd_pct": -33.95,
+    "realized_mdd_basis": "forge_direct_nav_backtest_243m",
+    "linear_approximation_mdd_was": -42.37,
+    "delta_realized_minus_linear_mdd_pp": 8.42,
+    "realized_vol_pct": 20.52,
+    "realized_information_ratio": 1.4625,
+    "harvey_5spec_ab_realized": "5_of_5_PASS",
+    "dsr_proxy_ab_realized": 19.32,
+    "harvey_t_ff5_iter11_pre_lb": 4.5202,
+    "harvey_t_ff5_iter11_full_oos": 5.255,
+    "dsr_post_penalty_iter11": 4.83,
+    "lockbox_sr_iter11_daily_550d": 1.8894,
+    "lockbox_mdd_iter11_daily": -0.2898,
+    "cvar_d_canonical_basis": "monthly_q5_sqrt21_lockbox_window",
+    "cvar_d_lockbox_iter11": 0.0136,
+    "cvar_d_full_period_iter11": 0.0259,
+    "cvar_d_full_marginal_breach_pp": 0.09,
+    "robustness_audit": {
+      "harvey_5_of_5_pre_lb": true,
+      "harvey_5_of_5_full_oos": true,
+      "dsr_post_above_3": true,
+      "ax_001_v2_pass": "PARTIAL_PASS_diversifier",
+      "ax_005_status": "EXCLUSION",
+      "ax_007_status": "EXCEPTION_1_multi_sleeve",
+      "ax_008_status": "PENDING_ARCHITECT_ADVISORY",
+      "interpretation": "Iter11 dominant on all robustness axes vs MEGA_05. Architect spawn parallel (T+0) to close AX-008."
+    },
+    "crisis_decorrelation": {
+      "str1656_gfc_loss": 0.0,
+      "iter11_lockbox_mdd": -0.2898,
+      "blended_crisis_benefit": "STR_1656 0% GFC + Iter11 lockbox MDD relief vs full period -40.77%"
+    }
+  },
+  "crowding_per_wt": {
+    "STR_1701": {
+      "strategy_id": "STR_1701",
+      "iter_label": "Iter11_LinearTilt_lam1.0_TOphi8_monthly",
+      "family": "Cross_Family_Multi_Sleeve_Composite (Quality + Earnings + Momentum_Residual + Distress)",
+      "structure": "multi_sleeve_core_65_defense_35_alpha_amplified_via_LinTilt",
+      "ax_007_evaluation": "EXCEPTION_1_multi_sleeve_PASS",
+      "harvey_t_ff5": 4.5202,
+      "harvey_gate_status": "PASS",
+      "intra_book_family_weight": 0.8,
+      "mutation_chain": "STR_1631 -> STR_1699 -> STR_1700_REVOKED -> STR_1701_PG2_ACTIVE"
+    },
+    "STR_1656_MLRA_M05": {
+      "strategy_id": "STR_1656_MLRA_M05",
+      "family": "ML_Risk_Architecture",
+      "structure": "ML_DD_Brake_cash_regime",
+      "intra_book_family_weight": 0.2,
+      "diversifier_role": "GFC_0pct_loss_protection_uncorrelated_to_Iter11_alpha"
+    }
+  },
+  "probe_phase_admissions": [
+    {
+      "str_id": "STR_1715",
+      "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+      "wt_source": "WT-D20260427_016",
+      "admitted_at": "2026-04-27T16:30:00+0900",
+      "probe_weight": 0.10,
+      "probe_type": "sequential_10pct",
+      "T30_review_date": "2026-05-27",
+      "escalation_target": 0.20,
+      "escalation_conditions": ["G7_liquidity_PASS", "AX008_close", "T30_SR>=0.8", "TO<590pct"],
+      "rollback_conditions": ["T30_SR<0.4", "G7_FAIL", "AX008_BLOCKING", "book_MDD>-42pct", "TO>=595pct"],
+      "stress_profile": "NEGATIVE_GFC_COVID_Vol2018_Inflation2022 — core_amplification_only_NOT_defense",
+      "tdc_vs_str1701": 0.0909,
+      "tdc_vs_str1656": 0.0000,
+      "tdc_vs_blend": 0.1000,
+      "judge_verdict": "JUDGE_PASSED_WITH_NOTE_Grade_A_score78",
+      "governor_verdict": "ADMITTED_PROBE_Option_B"
+    }
+  ],
   "previous_pg2": {
     "strategy_ids": [
-      "STR_1715"
+      "STR_1631_MEGA_05",
+      "STR_1656_MLRA_M05"
     ],
     "weights": {
-      "STR_1715": 1.0
+      "STR_1631_MEGA_05": 0.8,
+      "STR_1656_MLRA_M05": 0.2
     },
-    "sr_realized_share_based_full_oos_walk_forward_sim": 1.4625,
-    "sr_realized_share_based_forge_actual": 0.6161,
-    "fabrication_status": "FABRICATION_SUSPECTED_R4_patch_charter_v1_2_section_9",
-    "cagr": 30.01,
-    "mdd": -33.95,
-    "harvey_t_ff5": 5.255,
-    "promoted_at": "2026-04-27T21:00:00+0900",
-    "promoted_by_override": "User OVERRIDE_006",
-    "replaced_at": "2026-04-29T09:15:00+0900",
-    "replaced_by": "STR_1631_SYN_06 user OVERRIDE_007 promotion (Variant A outlier + Sharpe 표준 적용)",
-    "archived_to": "qepm/mailbox/governor/book_state_archive_str1715_20260429.json"
-  },
-  "previous_pg2_chain_history_pre_str1715": {
-    "note": "STR_1631_MEGA_05 80% + STR_1656_MLRA_M05 20% (PG2 active until 2026-04-26 OVERRIDE_004). sr 0.9345 / cagr 14.23 / mdd -24.82. 도훈 reference (2026-04-29): '1631 0.9대로 보고했었지' — MEGA_05 blend stated SR 0.9345 정합. measurement_basis_primary 당시 미명시 (Charter §9 v1.1 이전).",
-    "strategy_ids": ["STR_1631_MEGA_05", "STR_1656_MLRA_M05"],
-    "blend_weights": {"STR_1631_MEGA_05": 0.8, "STR_1656_MLRA_M05": 0.2},
-    "sr_stated": 0.9345,
-    "cagr_stated": 14.23,
-    "mdd_stated": -24.82,
-    "harvey_t_ff5_stated": 2.691,
+    "sr": 0.9345,
+    "cagr": 14.23,
+    "mdd": -24.82,
+    "harvey_t_ff5": 2.691,
     "replaced_at": "2026-04-26T10:30:00+0900",
-    "replaced_by": "STR_1701 user OVERRIDE_004 promotion"
+    "replaced_by": "STR_1701 user OVERRIDE_004 promotion (Iter11 80% + STR_1656 20%)"
   },
   "user_override_log": [
     {
@@ -144,38 +215,69 @@
       "decision": "PROMOTE_STR_1701_TO_PG2_ACTIVE_SCENARIO_AB_80_20_USER_MANDATED",
       "user": "도훈 (Dohoon Kim)",
       "decided_at": "2026-04-26T10:30:00+0900",
-      "directive": "Iter 11을 PG2의 MEGA 05 대체하자"
-    },
-    {
-      "event_id": "OVERRIDE_005_REPLACEMENT_NOT_PROBE",
-      "decision": "STR_1715_80PCT_REPLACEMENT_NOT_PROBE",
-      "user": "도훈 (Dohoon Kim)",
-      "decided_at": "2026-04-27T20:30:00+0900",
-      "directive": "A 즉시교체하고, 전기간 SR 실측해줘"
-    },
-    {
-      "event_id": "OVERRIDE_006_MANDATE_STRICT_20_NAMES",
-      "decision": "STR_1715_100PCT_SINGLE_SLEEVE_REMOVE_STR_1656",
-      "user": "도훈 (Dohoon Kim)",
-      "decided_at": "2026-04-27T21:00:00+0900",
-      "directive": "뭔 말이 많아 무조건 전기간 20종목이어야지"
-    },
-    {
-      "event_id": "OVERRIDE_007_STR_1631_SYN_06_PROMOTION_VARIANT_A_STANDARD_SHARPE",
-      "decision": "PROMOTE_STR_1631_SYN_06_100PCT_REPLACE_STR_1715",
-      "user": "도훈 (Dohoon Kim)",
-      "decided_at": "2026-04-29T09:15:00+0900",
-      "lawbook_ref": "Charter v1.3 §11 + v1.4 §12",
-      "user_directive_quote": "PG2를 1631_SYN06 100%로 대체하고, MEGA_05 → 1715까지 발전 히스토리 정리해서 재검증해보자. 당시에는 아키텍처 이슈도 있어서 수치가 왜곡된거 같거든.",
-      "rationale": "STR_1715 fabrication 의심 + STR_1631_SYN_06 표준 정합 (Variant A outlier + 학술 Sharpe). 모든 risk-adjusted metric 우월: SR 0.62 (1715 share_based) → 1.245 (SYN_06 standard daily) / 1.293 (Overlay). MDD -50% → -39.93%. TO 570% → 283.9%.",
+      "lawbook_ref": "Lawbook §5 — user-mandated override of Governor phased pathway",
+      "user_directive_quote": "Iter 11을 PG2의 MEGA 05 대체하자",
+      "directive": "Replace MEGA_05 with STR_1701 immediately (T+0). Maintain STR_1656 20% diversifier. Skip phased T+30/60/90 sequential validation — execute parallel post-promotion checks (Forge AB direct NAV backtest + Architect AX-008 advisory + Monitoring drift config).",
+      "rationale_user_inferred": "Iter11 dominant on all robustness axes (5/5 Harvey + DSR 4.83 + Lockbox SR 1.89 + +38% SR vs MEGA_05). MDD trade-off (-42.37% vs -24.82%) accepted. STR_1656 ML diversifier preservation valued over Option A 100% replacement.",
+      "risks_accepted": [
+        "MDD -42.37% (current PG2 -24.82% 대비 -17.55pp deeper)",
+        "Architect AX-008 advisory PENDING (parallel spawn)",
+        "Linear approximation SR 1.408 not yet validated by direct NAV backtest (Forge parallel)",
+        "G7 liquidity 2e8 vs WT 5e7 override pending re-audit (Forge parallel)",
+        "RF-A1 sub_stab 0.060 ex-post empirical override (Iter11 R2 finalize G2)"
+      ],
       "post_promotion_parallel_checks": [
-        "Forge SYN_06 본 simulation 재산출 완료 (Sharpe v1.4 표준)",
-        "MEGA_05 → 1715 chain history 재검증 진행 중",
-        "L-238 (Outlier 표준) + L-239 (Sharpe 표준) commit 완료",
-        "Charter v1.3 §11 + v1.4 §12 명문화 완료"
+        "Forge: AB direct NAV backtest + G7 liquidity re-audit + TDC sanity check vs STR_1656",
+        "Architect: AX-008 advisory close (Iter11 triangulation 3-source achieve)",
+        "Monitoring: STR_1701 monthly drift config (frequency=monthly, next_check=2026-05-26)",
+        "Q-Lead: L-204/220/221 memory + strategy_registry STR_1701 PG2_ACTIVE update"
+      ],
+      "rollback_conditions": [
+        "Forge AB realized SR < 1.20 (linear approx SR 1.408 fail margin > 15%)",
+        "G7 liquidity 2e8 audit any-date FAIL",
+        "Architect AX-008 BLOCKING finding (PIT/lineage critical)",
+        "T+30 monthly drift > 5pp deviation"
       ]
     }
   ],
+  "probe_admission_log": [
+    {
+      "event_id": "PROBE_ADMISSION_005_ITER31_V31",
+      "str_id": "STR_1715",
+      "wt_id": "WT-D20260427_016",
+      "decision": "ADMITTED_PROBE_10PCT_OPTION_B",
+      "decided_at": "2026-04-27T16:30:00+0900",
+      "decided_by": "Governor autonomous (within v6.1 R5 authority)",
+      "rationale": "Judge PASS Grade A + TDC all-clear + stress-negative mandates probe-first. STR_1701 reduced 80->70%, STR_1715 probe 10% added.",
+      "user_override_required": false
+    }
+  ],
+  "recent_rejections": [
+    {
+      "wt_id": "WT-D20260426_005",
+      "str_id": "STR_1702",
+      "iter_label": "Iter12_LinTilt_Kelly_3Layer_Quarterly",
+      "rejected_at": "2026-04-26T10:00:00+0900",
+      "reason_code": "JUDGE_FAIL_HARVEY_0of5_CVAR_DAILY_BREACH_GRADE_A_FAIL",
+      "grade": "FAIL",
+      "l_code": "L-220"
+    }
+  ],
+  "gap_update": {
+    "sr_gap_before_promotion": 1.0655,
+    "sr_gap_after_promotion_linear_approx": 0.592,
+    "sr_gap_after_promotion_direct_nav_pending": "Forge T+0 parallel verification",
+    "sr_target": 2.0,
+    "iter11_contribution_to_gap_closure": "+0.4735 SR (linear) — direct NAV verify pending",
+    "iter12_contribution": "ZERO — REJECTED",
+    "iter31_probe_contribution": {
+      "sr_projected_range": [1.49, 1.53],
+      "sr_gap_after_probe_range": [0.47, 0.51],
+      "ir_improvement_range": [0.0275, 0.0675],
+      "status": "PROBE_ACTIVE — T+30 empirical confirmation pending (2026-05-27)"
+    },
+    "further_research_needed": "SR 0.47-0.51 gap remaining after Iter 31 probe. Cross-family low-corr diversifier still required for SR 2.0 target. Iter 31 probe provides incremental +0.03-0.07 SR pending live confirmation."
+  },
   "user_revocation_log": [
     {
       "revoked_strategy": "STR_1700",
@@ -188,14 +290,8 @@
       "reason": "Replaced by STR_1701 (Iter 11) per user OVERRIDE_004 — MEGA_05 SR 0.9345 dominated by Iter11 SR 1.291 (+38%)",
       "timestamp": "2026-04-26T10:30:00+0900",
       "replaced_by": "STR_1701 PG2_ACTIVE 80%"
-    },
-    {
-      "revoked_strategy": "STR_1715",
-      "reason": "Replaced by STR_1631_SYN_06 per user OVERRIDE_007 — STR_1715 fabrication 의심 + STR_1631_SYN_06 표준 (Variant A outlier + 학술 Sharpe) 모든 metric 우월",
-      "timestamp": "2026-04-29T09:15:00+0900",
-      "replaced_by": "STR_1631_SYN_06 PG2_ACTIVE 100%"
     }
   ],
-  "method": "v6.1_R5_book_level_admission_user_override_007_str1631_syn06_charter_v1_4",
-  "notes": "Session 73 Day 2 STR_1631_SYN_06 PROMOTED to PG2 100% per user OVERRIDE_007 (2026-04-29). Charter v1.3 §11 (Outlier Variant A 표준) + v1.4 §12 (Sharpe 학술 표준 mean(ER)/sd(ER)*sqrt(N)) 함께 적용. STR_1715 archived (fabrication 의심). chain history (MEGA_05 → 1697 → 1699 → 1700 → 1701 → 1715) 재검증 진행 중. Charter v1.0~v1.4 발전 단계마다 metric 측정 framework가 변화 — 도훈 reference 정합 표준으로 모든 chain 재검증 필요."
+  "method": "v6.1_R5_book_level_admission_user_override_004_iter11_promotion",
+  "notes": "Session 72 STR_1701 (Iter 11 Monthly LinTilt) PROMOTED to PG2 active per user OVERRIDE_004. Scenario AB executed (Iter11 80% + STR_1656 20%). Phased T+30/60/90 pathway bypassed by user mandate; replaced with T+0 promotion + parallel post-promotion verification (Forge AB direct NAV + Architect AX-008 + Monitoring drift). Previous PG2 (MEGA_05 80% + STR_1656 20%) archived. SR gap closure: 1.0655 -> 0.592 (linear approximation; direct NAV pending). Rollback conditions defined. Iter 13+ alpha research required for SR 2.0 final target."
 }
