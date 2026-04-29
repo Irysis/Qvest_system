@@ -40,6 +40,15 @@
   "hooks": {
     "PreToolUse": [
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/\ubc14\ud0d5\\ \ud654\uba74/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/backtest_contract_audit.sh\" 2>>/tmp/backtest_contract_audit.log || true"
+          }
+        ]
+      },
+      {
         "_doc_phase_c3": "fast\u2192slow \uc21c\uc11c: safety_guard <50ms \u2192 axiom <300ms \u2192 forge_code_guard <100ms (Phase C1 daemon \ubd84\ub9ac \ud6c4)",
         "matcher": "Write|Edit|Bash",
         "hooks": [

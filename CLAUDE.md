@@ -47,6 +47,26 @@ When ending a productive session (strategies run, infra changed, or significant 
 
 상세: `00_Lawbook/Multi_Agent/qvest_answer_principles.md` + `_shared_prefix.md::<answer_principles>` + L-247 사례
 
+## Backtest Result Contract v1.0 (Level 0 — 2026-04-29 발효)
+
+모든 전략 백테스트는 동일한 **10-component bt_result list** 산출. 추정 vs 백테스트 분리. 위반 = AX-002 동급.
+
+**10 components**: manifest / strategy_spec / nav / period_returns / holdings / benchmark_returns / metrics / benchmark_compare / rolling_metrics / drawdowns / audit (**trades + costs 제외** — Qvest 리서치 시스템, commission=0.0015 입력 단계 차감)
+
+**핵심 함수** (`02_Infrastructure/contracts/`):
+- `build_bt_result(sim_result, strategy_spec, ...)` — 10-component 빌드 (PerformanceAnalytics 표준 함수만)
+- `audit_bt_result(bt_result)` — 10 checks. Critical FAIL 시 metric_type='unavailable' + integrity='FAIL'
+- `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
+- `register_bt_result(bt_result)` — `qepm/registry/backtest_registry.csv` append (audit FAIL 차단)
+
+**metric_type**: backtested (official) / estimated / proxy / unavailable (official 제외)
+
+**L3 hard block**: `02_Infrastructure/hooks/backtest_contract_audit.sh` PreToolUse[Write]. backtest_registry.csv / methodology_active.md L-code 등재 시 audit_status=FAIL 차단.
+
+**적용**: 신규 전략 의무 / STR_1631_SYN_06 + STR_1715 retrofit / 나머지 178개 사용 시점.
+
+상세: `00_Lawbook/Multi_Agent/backtest_result_contract.md` v1.0 + `_shared_prefix.md::<backtest_contract>` + L-248 등재 예정
+
 ## V6.0 Stage Gate 강제 규칙 (Level 0 — 모든 에이전트 적용)
 - **Forge는 Scout의 가설(s0_record) 없이 전략을 자체 생성할 수 없다.**
 - Stage 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) → S5/S6 → S7 → PG0~PG3

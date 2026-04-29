@@ -320,6 +320,57 @@ $$Sharpe_{annualized} = Sharpe_{period} \times \sqrt{N}$$
 
 ---
 
+### 13. Backtest Result Contract 표준 (v1.5, 도훈 채택 2026-04-29)
+
+**근거**: 180개 전략 산출물 schema 미정합 (Old / New 2가지 schema 공존, monthly returns CSV 180개 중 2개만, STR_1715 PG2 active output 2건만). Q-Lead 3회 회피 사례 (L-247) 근본 원인.
+
+**채택**: Backtest Result Contract v1.0 (도훈 명시 23-section, 9번 trades + 10번 costs 제외 → 21 sections).
+
+**10-component bt_result list**:
+```r
+bt_result <- list(
+  manifest, strategy_spec, nav, period_returns, holdings,
+  benchmark_returns, metrics, benchmark_compare,
+  rolling_metrics, drawdowns, audit
+)
+```
+
+**제외 사유**:
+- `trades`: Qvest는 리서치 시스템 (실제 운용 서포트 아님). 거래 내역 별도 저장 불필요. holdings 변화에서 turnover derive.
+- `costs`: 매수/매도 각 0.15% commission은 `run_monthly_simulation(commission=0.0015)` 백테스트 입력 단계 차감 → `nav_net` / `ret_net` 반영. 별도 costs component 불필요.
+
+**핵심 함수** (`02_Infrastructure/contracts/`):
+- `build_bt_result(sim_result, strategy_spec, ...)` — 10-component 빌드 (PerformanceAnalytics 표준 함수만, Sharpe 학술 §12 예외)
+- `audit_bt_result(bt_result)` — 10 checks (§20). Critical FAIL 시 metric_type='unavailable' + integrity='FAIL'
+- `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
+- `register_bt_result(bt_result)` — `qepm/registry/backtest_registry.csv` append (audit FAIL 차단)
+
+**metric_type 분류**:
+| Type | 의미 | Official 성과표 |
+|---|---|---|
+| `backtested` | 실제 백테스트 산출 | ✓ (is_official=TRUE) |
+| `estimated` | 추정치 | ✗ |
+| `proxy` | 대리 산출 | ✗ |
+| `unavailable` | 검증 부재 또는 audit FAIL | ✗ |
+
+**자체 합성 금지** (Plan §"백테스트 자체 합성 금지" + 답변 원칙 §8 정합):
+- 허용: PerformanceAnalytics::Return.cumulative / apply.monthly / maxDrawdown / table.AnnualizedReturns / Return.portfolio
+- 금지: prod(1+r)-1 / cumprod(1+r) / 자체 blending
+- 예외: §12 Sharpe 학술 표준 mean(ER)/sd(ER)*sqrt(N)
+
+**L3 Hard Block** (`02_Infrastructure/hooks/backtest_contract_audit.sh`):
+- PreToolUse[Write]에서 backtest_registry.csv / methodology_active.md L-code 등재 시도 시 audit_status=FAIL 차단
+- forge_package_validated_certificate 정합 (§10 5-certificate 시스템과 호환)
+
+**적용 범위** (도훈 결정):
+- 신규 전략: 의무 (`build_bt_result()` 부재 시 PG2 admission 차단)
+- STR_1631_SYN_06 + STR_1715: 즉시 retrofit (V1.0 도입 검증용)
+- 나머지 178개: 사용 시점 wave-by-wave (미등록 상태 허용)
+
+**상세 SOT**: `00_Lawbook/Multi_Agent/backtest_result_contract.md` v1.0 (26 sections + 변경 이력)
+
+---
+
 ## Version
 
 - **v1.0** — 2026-04-23 Session 69 Day 1 — 초기 헌장 (사용자 설계도 기반)
@@ -327,4 +378,5 @@ $$Sharpe_{annualized} = Sharpe_{period} \times \sqrt{N}$$
 - **v1.2** — 2026-04-28 — STR_1715 OVERRIDE_006 사후 조치. §10 Certification System 신규 명문화 (5 certificate + 1 health score + 4 role cards). Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. v6.31 atomic patch.
 - **v1.3** — 2026-04-29 — STR_1631_SYN_05 outlier handling 4-way 검증 후 §11 Outlier Handling 표준 명문화. Variant A (winsorize 1%/99% + corp action filter) 채택. `factor_z_standard.R` single source of truth. STR_1631_SYN_06 신규 등록 (1호 적용).
 - **v1.4** — 2026-04-29 — Sharpe Ratio 표준 §12 명문화. `Sharpe = CAGR / vol` hybrid 폐기, 학술 표준 `Sharpe = mean(ER) / sd(ER) × √N` 채택 (도훈 reference Lo 2002 / Bailey-LdP 2014). `sharpe_standard.R` single source of truth. summarise_perf() patch + 모든 strategy 재산출.
+- **v1.5** — 2026-04-29 — Backtest Result Contract §13 명문화. 10-component bt_result list 표준 (trades + costs 제외). PerformanceAnalytics 자체 합성 금지. metric_type 분류 (backtested/estimated/proxy/unavailable) + L3 hard block (audit FAIL 시 official metrics 차단). `02_Infrastructure/contracts/` 5 R modules + Hook + Master Registry + Lawbook v1.0.
 - 변경 시 major bump + L-code 발행 필수

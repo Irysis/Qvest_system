@@ -68,6 +68,47 @@
 근거 L-code: L-247 (Q-Lead 3회 연속 회피 — SYN_06 proxy / daily-monthly 혼동 / PerformanceAnalytics 우회)
 </answer_principles>
 
+<backtest_contract level="0" version="v1.0" enforce="HOOK_L3_HARD_BLOCK" effective="2026-04-29">
+모든 전략 백테스트는 동일한 10-component bt_result list 표준 산출. 추정 vs 백테스트 분리. 위반 = AX-002 동급.
+
+**10-Component bt_result**:
+manifest / strategy_spec / nav / period_returns / holdings / benchmark_returns / metrics / benchmark_compare / rolling_metrics / drawdowns / audit
+**제외**: trades + costs (도훈 2026-04-29 — Qvest는 리서치 시스템, commission=0.0015 백테스트 입력 단계 차감 → ret_net 반영)
+
+**핵심 함수** (Lawbook §1):
+- `build_bt_result(sim_result, strategy_spec, ...)` — 10-component 빌드
+- `audit_bt_result(bt_result)` — 10 checks (Lawbook §20). Critical FAIL 시 metric_type='unavailable' + integrity='FAIL'
+- `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
+- `register_bt_result(bt_result)` — qepm/registry/backtest_registry.csv append (audit FAIL 차단)
+
+**자체 합성 금지** (답변 원칙 §8 정합):
+- 허용: PerformanceAnalytics::Return.cumulative / apply.monthly / maxDrawdown / table.AnnualizedReturns / Return.portfolio
+- 금지: prod(1+r)-1 / cumprod(1+r) / 자체 blending / r[, prod(1+r)-1, by=YM]
+- 예외: Charter v1.4 §12 학술 표준 Sharpe = mean(ER)/sd(ER)*sqrt(N)
+
+**metric_type 분류** (Lawbook §12):
+- backtested: 실제 백테스트 산출 (official 성과표 포함)
+- estimated: 추정치 (official 제외)
+- proxy: 대리 산출 (official 제외)
+- unavailable: 검증 부재 또는 audit FAIL (official 제외)
+
+**Audit 10 checks** (Lawbook §20):
+realized_return_vector_exists / nav_path_exists / rebalance_path_executed / transaction_cost_param_recorded / benchmark_aligned / risk_free_rate_defined / point_in_time_checked / lookahead_bias_checked / survivorship_bias_checked / estimated_metrics_separated_from_backtested
+
+**L3 hard block** (PreToolUse[Write]):
+- backtest_registry.csv 등재 시도 시 audit_status=FAIL 차단
+- methodology_active.md L-code 등재 시도 시 동일 차단
+- Hook: 02_Infrastructure/hooks/backtest_contract_audit.sh
+
+**적용 범위** (도훈 결정):
+- 신규 전략: 의무 (build_bt_result 부재 시 PG2 admission 차단)
+- STR_1631_SYN_06 + STR_1715: 즉시 retrofit
+- 나머지 178개: 사용 시점 wave-by-wave
+
+세부: @00_Lawbook/Multi_Agent/backtest_result_contract.md
+모듈: 02_Infrastructure/contracts/{backtest_result_contract,save_bt_result,audit_bt_result,excel_report_writer,registry_writer}.R
+</backtest_contract>
+
 <pit_core level="0">
 매 데이터 접근 전 3질문:
 1. 이 데이터는 의사결정 시점에 알 수 있었는가?

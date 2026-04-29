@@ -443,4 +443,64 @@ write_json(list(
   turnover = to_base, hurdle_pass = hr$pass, hurdle_score = hr$score,
   run_time = as.numeric(difftime(Sys.time(), t0, units = "secs"))
 ), file.path(OUT_DIR, "performance.json"), pretty = TRUE, auto_unbox = TRUE)
-cat(sprintf("\n[DONE] SYN_05 complete in %.1f sec\n", difftime(Sys.time(), t0, units = "secs")))
+
+# ===================================================================
+# 7. Backtest Result Contract v1.0 등재 (Charter v1.5 §13, 2026-04-29)
+# ===================================================================
+cat("\n[7] Backtest Result Contract v1.0 빌드 + audit + save + register\n")
+PROJECT_ROOT <- BASE_DIR
+source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/backtest_result_contract.R"))
+source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/audit_bt_result.R"))
+source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/excel_report_writer.R"))
+source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/save_bt_result.R"))
+source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/registry_writer.R"))
+
+sim_overlay <- list(
+  DAILY_NAV_DT = nd[, .(Date, NAV = NAV_overlay, Strategy_Ret = Ret_overlay)],
+  PORTFOLIO_LOG = sim_base$PORTFOLIO_LOG,
+  HOLDINGS_LOG = sim_base$HOLDINGS_LOG,
+  strategy_xts = ov_xts,
+  bm_xts = sim_base$bm_xts
+)
+
+strategy_spec_list <- list(
+  strategy_id = "STR_1631_SYN_06",
+  strategy_name = "STR_1631_SYN_06_Variant_A_Outlier",
+  strategy_family = "Multi-factor (4F Consensus + IC-weighted + Score Tilt + Bimonthly)",
+  signal_description = "C01_SUE + C02_EPS_Chg_1m + C04_ESBR + C06_TP_Gap IC-weighted composite",
+  universe_rule = "KR top342 + LIQ_20d >= 2e8 + corp_action_filter",
+  rebalance_frequency = "bimonthly",
+  signal_date_rule = "month-start label / prior month underlying",
+  execution_date_rule = "t+1 lag",
+  weighting_method = sprintf("HRP(%.1f) + Score Tilt(%.1f) + buffer_zone(35,20)", HRP_TILT_W, SCORE_TILT_W),
+  max_position_weight = 0.20,
+  max_leverage = 1.0,
+  cash_rule = "Regime 3-Layer overlay (Layer1 0% / Layer2 0-50% scaled / Layer3 50% strategy + 20% inv_KOSPI + 30% cash)",
+  cost_model = "commission=0.0015 (15bps each side)",
+  missing_data_rule = "winsorize 1%/99% (Variant A factor_z_standard.R)",
+  risk_controls = "buffer_zone keep_n=35 entry_n=20",
+  lookahead_prevention = "C1 expanding IC + C2 t-1 lag + C13 Z_Score_Aligned + C14 Usable_Date <= sig_date",
+  survivorship_bias_control = "RAWDATA includes delisted full universe"
+)
+
+run_id_v <- sprintf("STR_1631_SYN_06_%s_001", format(Sys.time(), "%Y%m%d"))
+
+bt <- build_bt_result(
+  sim_result = sim_overlay, strategy_spec = strategy_spec_list,
+  run_id = run_id_v, strategy_id = "STR_1631_SYN_06",
+  strategy_version = "v1.0_variant_A_outlier",
+  benchmark_id = "KOSPI200", transaction_cost_bps = 15, slippage_bps = 15,
+  risk_free_rate = 0, frequency = "daily", annualization_factor = 252,
+  universe_id = "KR_TOP342_LIQ_2E8",
+  code_version = "STR_1631_SYN_06_run_all_v1",
+  created_by_agent = "Q-Lead_retrofit"
+)
+
+bt <- audit_bt_result(bt)
+saved_files <- save_bt_result(bt, OUT_DIR, save_xlsx = TRUE)
+register_bt_result(bt)
+
+cat(sprintf("[Contract v1.0] STR_1631_SYN_06 | integrity=%s | files=%d\n",
+            bt$manifest$integrity_status[1], length(saved_files)))
+
+cat(sprintf("\n[DONE] SYN_06 complete in %.1f sec\n", difftime(Sys.time(), t0, units = "secs")))
