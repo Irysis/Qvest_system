@@ -59,8 +59,25 @@
   ],
   "infeasibility_report": {
     "reason": "Walk-forward realized turnover round-trip = 6.426/yr exceeds hard fail threshold 6.0/yr (Hurdle Gate v2.2). Per-date alpha ranking induces high name churn (avg 6.7/20 names changed monthly). Buffer-zone (rank ≤ 30 keep) experiment was prepared but did not complete in time budget. Without buffer zone, current schedule generates ~268% one-way annual turnover = 535% round-trip excluding the as-of anchor jump. With anchor included, round-trip ≈ 642%. TDC q5 = 0 (PASS) and CVaR(5%) = -0.099 (within tail-adjusted cap) suggest portfolio-level orthogonality is achieved, but at cost of high churn.",
-    "violated_constraints": ["turnover_cap_annual_6.0_HARD_FAIL", "turnover_cap_annual_3.0_soft_breach"],
-    "suggested_resolution": "Three options for downstream remediation: (1) Buffer zone (keep rank ≤ 30) — expected turnover ~3-4/yr, requires re-run (15+ min). (2) EWMA smoothing of alpha_z (lambda 0.6-0.8) before ranking — reduces ranking volatility. (3) Add explicit transaction cost penalty φ to MVO objective + retest. Forge phase MUST acknowledge this turnover and either accept hard fail (NAV with 15bps cost will erode 96bps/yr) or trigger Optimizer re-run with mitigation (1)/(2)/(3). Not a silent override per Charter §8."
+    "violated_constraints": ["turnover_cap_annual_6.0_HARD_FAIL", "turnover_cap_annual_3.0_soft_breach", "CVaR_5_monthly_cap_0.025_breach_walk_forward_-0.0994"],
+    "suggested_resolution": "Three-pronged remediation required for downstream admission: (1) Re-run with buffer zone (rank ≤ 30 keep) to bring turnover < 3-4/yr; (2) Add explicit CVaR-budget constraint (Σ w_i CVaR_i ≤ -0.025/mo) to MVO objective; (3) EWMA alpha smoothing (lambda 0.6-0.8) to dampen ranking volatility. Forge can either: (a) accept current schedule with documented hard fail (NAV will erode 96bps/yr in costs + tail-risk uncovered), or (b) trigger Optimizer re-run with above mitigation. Per Charter §8: NOT a silent override.",
+    "cvar_breach_note": {
+      "description": "Walk-forward CVaR(5%) monthly = -0.0994 exceeds risk_package CF-RISK-02 default monthly cap 0.025 (codex_risk_critic_prompt.md L50). Daily-equiv (sqrt(20) iid) = -0.0222 <= 0.025 PASS, but iid assumption breaks under heavy-tail (Hill α=1.4516 < 1.5, RF-R6).",
+      "status": "FLAGGED",
+      "treatment": "Optimizer applied no explicit CVaR-budget constraint. CVaR-LP method was tested (method_comparison.CVaR_LP shows tdc_q5=0.357 FAIL gate), and HRP was selected on crowding_adj_ret. CVaR breach is downstream Forge concern: applied 15bps cost gives daily NAV which Forge measures realized CVaR + lockbox MDD. Optimizer scope ends at weights.csv hand-off.",
+      "alternative_methods_tested": {
+        "CVaR_LP": {
+          "tdc_q5": 0.3571,
+          "cvar_5_monthly": -0.0653,
+          "status": "FAIL_TDC_GATE"
+        },
+        "HRP_anchor": {
+          "tdc_q5": 0.2143,
+          "cvar_5_monthly": -0.0699,
+          "status": "PASS_TDC_GATE"
+        }
+      }
+    }
   },
   "method_selected": "HRP_lambda_2.0_psi_0.3_bounds_0.15",
   "method_comparison": {
@@ -90,7 +107,12 @@
       "tdc_q5": 0.2143,
       "tdc_q10": 0.4815,
       "cvar_5_monthly": -0.0699,
-      "selected": true
+      "selected": true,
+      "net_ir_heuristic_to_1.32yr": 0.8142,
+      "net_ir_realized_walkforward_to_6.43yr": 0.7331,
+      "turnover_heuristic_static": 1.32,
+      "turnover_realized_walkforward_rt": 6.4259,
+      "net_ir_label": "primary=net_ir_realized_walkforward_to_6.43yr (used for selection_objective). heuristic_turnover_1.32yr was sigma_w-deviation proxy from method_shopping_log_optimizer.json (deprecated)"
     },
     "CVaR_LP": {
       "n_names": 20,
@@ -265,7 +287,48 @@
   "challenge_review": {
     "from_agent": "optimizer",
     "objection": false,
-    "targets_reviewed": ["alpha_vector", "risk_sigma", "bound_feasibility", "tdc_q5_walk_forward"],
+    "targets_reviewed": [
+      "alpha_vector",
+      "risk_sigma",
+      "bound_feasibility",
+      "tdc_q5_walk_forward"
+    ],
     "rationale": "Alpha CF-RISK-01 raised TDC q5=0.4494 on Top-60 EW panel. After deployment-grade weighting (HRP top-20), walk-forward TDC q5=0 and static panel TDC q5=0.214 — both PASS 0.30 gate. No objection to alpha or risk packages. Optimizer raises own CF-OPT-03 (turnover hard fail) for downstream remediation."
+  },
+  "regime_conditional_design": {
+    "status": "FLAT_SCHEDULE_BY_OPTIMIZER_DESIGN",
+    "rationale": "Hypothesis is regime-conditional defense COMPLEMENT for STR_1715 (which has its own regime cash overlay 10/20/40%). Optimizer scope is portfolio weight determination GIVEN alpha + Σ. Regime-conditional weight allocation (e.g. crisis cash sleeve) is AX-007 EXCEPTION_1 multi-sleeve domain — Governor decides whether to overlay regime engine on Optimizer schedule. Alpha agent already provided regime-conditional alpha weighting (D47=0.55/0.50/0.45 across CRISIS/NORMAL/BULL via KR_MRS_v7 t-1 lag, alpha_package.regime_conditioning).",
+    "optimizer_choice": "Ship flat-rule schedule with as-of CRISIS regime alpha weighting; Governor decides per-regime book overlay (cash sleeve, MDD-trigger drawdown brake, etc).",
+    "alternative_per_regime_schedule_not_implemented_reason": "Time budget. Buffer-zone walk-forward HRP estimated 15+ min, regime-stratified would require 3x compute (one schedule per regime state). Codex C5 acknowledged."
+  },
+  "consistency_audit": {
+    "target_weights_match_weights_csv_last_date": true,
+    "weights_csv_last_date": "2026-03-31",
+    "weights_csv_unique_dates": 279,
+    "alpha_sig_dates_count": 279,
+    "schedule_density_ratio": 1,
+    "schedule_density_pass": true,
+    "sigma_w_max_abs_err": 4.44e-16,
+    "sigma_w_eq_1_pass": true,
+    "bounds_max_w": 0.15,
+    "bounds_pass": true,
+    "n_names_per_date": 20,
+    "n_names_pass": true
+  },
+  "codex_critic_rounds": {
+    "round1": {
+      "stance": "REJECT",
+      "timestamp": "2026-04-30T07:36:46+09:00",
+      "concerns_accept": ["C1_turnover_RF-O13", "C2_CVaR_RF-O8", "C3_sigma_w_RF-O7", "C6_net_ir_inconsistency_RF-O10"],
+      "concerns_partial": ["C4_walk_forward_anchor_design", "C5_regime_conditional_scope", "C7_HRP_first_alpha_loss", "C8_sequential_admission_governor_scope"],
+      "concerns_rebuttal": [],
+      "response_version": "v3_finalized_round1",
+      "fixes_applied": ["C3 fix: weights.csv abs(Σw-1) reduced to 4.44e-16 across all 279 dates", "C6 fix: method_comparison.HRP shows both heuristic 0.8142 and realized 0.7331 with explicit labels", "C2 fix: infeasibility_report.cvar_breach_note added with status=FLAGGED + alternative methods context", "infeasibility_report violated_constraints expanded to include CVaR breach", "regime_conditional_design section added: clarifies AX-007 EXCEPTION_1 scope (Governor)"],
+      "response_to_C1_turnover": "ACCEPT — infeasibility_report explicitly issued, NOT silent. Forge phase MUST acknowledge and choose mitigation path. Charter §8 compliance.",
+      "response_to_C4_method_alignment": "PARTIAL — anchor/non-anchor difference is intentional design (Charter §9 anchor + walk-forward stress test of per-date selection). NOT a silent override; flagged in CF-OPT-04.",
+      "response_to_C5_regime": "PARTIAL — Optimizer ships flat schedule; regime overlay is Governor scope (AX-007 EXCEPTION_1). Documented in regime_conditional_design.",
+      "response_to_C7_alpha_loss": "PARTIAL — HRP-first design intentionally trades alpha capture for variance parity (selection_objective=crowding_adj_ret penalizes TDC>0.30 but does not directly maximize alpha). 10/20 top-alpha overlap is by design.",
+      "response_to_C8_sequential": "DEFER — Replacement vs Integration scenarios are Governor PG2 admission scope. Optimizer ships single-portfolio target."
+    }
   }
 }
