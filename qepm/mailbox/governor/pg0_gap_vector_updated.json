@@ -1,204 +1,129 @@
 {
   "stage": "PG0",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "portfolio_id": "V7_ALLWEATHER_001",
-  "timestamp": "2026-04-24T22:55:00+0900",
-  "session": 71,
-  "updated_by": "Governor (Session 71 — WT-D20260424_009 Pilot 11 admission evaluation 반영)",
-  "notes": "v1.1.0 업데이트 사유: Pilot 11 (WT-D20260424_009) GRADE_A_CANDIDATE + Lockbox Active IR +0.2608 (5-pilot fail 후 첫 positive) 수신. Governor admission 분석: 1) Factor family overlap 100% (consensus_earnings) — independent diversifier 아님. 2) Proxy TDC 0.65 (0.4~0.7 conditional). 3) Red flag 4건 (Full MDD -57.47%, RISK_ON IR -2.20, Harvey t 미확정, breadth shift artifact 위험). 4) Verdict: CONDITIONAL_ADMIT_DIVERSIFIER_PROBE. 5) Gap 축 변화: SR gap은 Pilot 11 편입 시 book-level +0.08~+0.18 개선 예상 (sleeve 15~25% scenario), RISK_ON drag이 CAGR gap 악화 방향. 6) 현 PG2 blend(STR_1631 80 + STR_1656 20) 유지 권고 — Phase 2 admission(empirical TDC + RISK_ON mitigation 완료 후).",
-
-  "cold_start_phase": 2,
-  "n_strategies": 2,
-  "admitted_ids": ["STR_1631_SYN_05", "STR_1656_MLRA_M05"],
-  "pilot11_admission_status": "CONDITIONAL_ADMIT_DIVERSIFIER_PROBE_PHASE_1_HOLD",
-  "anchor_strategy": "STR_1631_SYN_05_VDplus",
-  "diversifier_strategy": "STR_1656_MLRA_M05",
-
-  "current_profile": {
-    "cagr": 0.1614,
-    "sharpe": 1.193,
-    "mdd": -0.2127,
-    "blend": "80/20"
+  "timestamp": "2026-04-29T11:00:00+0900",
+  "session": 73,
+  "day": 2,
+  "updated_by": "Q-Lead Opus 4.7 (정도 회복 lifecycle 완주 후 사실 기반 재계산 + 8 post-conditions 반영)",
+  "notes": "v1.2.0 — User OVERRIDE_007 + Forge → Judge → Governor 정식 lifecycle + 8 deploy post-conditions 모두 산출 결과 반영. v1.1.0 archive: pg0_gap_vector_v1_1_0_archived_20260429.json. Charter v1.3 §11 (Outlier Variant A) + v1.4 §12 (학술 Sharpe) 표준 적용. STR_1715 fabrication 입증 (전기간 0.83 vs walk-forward 1.45 divergence -0.62). Single Source of Truth: forge_realized_share_based + Charter v1.4 §12 학술 Sharpe.",
+  "admitted_ids": ["STR_1631_SYN_06"],
+  "current_pg2_book": {
+    "n_admitted": 1,
+    "weights": {"STR_1631_SYN_06": 1.00},
+    "admission_tier": "PG2_CORE_SECONDARY",
+    "wt_id": "WT-P20260429_001",
+    "judge_l_code": "L-240",
+    "governor_l_code": "L-241",
+    "deploy_post_conditions_inherited": 8
   },
-
+  "current_profile_realized_share_based_charter_v1_4": {
+    "measurement_basis_primary": "forge_realized_share_based",
+    "harness_version": "summarise_perf_v1.4_standard_sharpe",
+    "outlier_handling": "Variant_A_winsorize_1_99_corp_action_filter_charter_v1_3",
+    "sharpe_definition": "mean(ER)/sd(ER)*sqrt(N)_charter_v1_4_section_12",
+    "sharpe_overlay_daily_standard": 1.293,
+    "sharpe_overlay_monthly": 1.225,
+    "sharpe_base_daily_standard": 1.245,
+    "sharpe_base_monthly": 1.194,
+    "cagr_overlay": 0.2572,
+    "cagr_base": 0.2656,
+    "mdd_overlay": -0.3993,
+    "mdd_base": -0.4798,
+    "ann_vol_overlay": 0.1913,
+    "ann_vol_base": 0.2066,
+    "sortino_overlay": 1.908,
+    "calmar_overlay": 0.644,
+    "win_rate_overlay": 0.67,
+    "annual_to": 2.839,
+    "ir_overlay_vs_kospi200": 1.083,
+    "rolling3y_pos": 0.988,
+    "rolling12m_hit": 0.824,
+    "dsr": 1.0,
+    "dsr_significant": true,
+    "harvey_5spec_monthly_redo_t_NW12": "5/5 PASS (5.10 ~ 5.95)",
+    "harvey_5spec_r_squared": "0.50 ~ 0.54"
+  },
   "target_profile": {
-    "cagr": 0.16,
     "sharpe": 2.0,
+    "cagr": 0.16,
     "mdd": -0.25
   },
-
-  "gap": {
-    "cagr_gap": -0.0014,
-    "sharpe_gap": 0.807,
-    "mdd_gap": -0.0373
+  "gap_realized": {
+    "sharpe_gap_to_target": 0.707,
+    "sharpe_gap_priority": "최우선 (목표까지 +0.71 SR 부족)",
+    "cagr_overshoot_pp": 9.72,
+    "cagr_status": "ACHIEVED (목표 16% 대비 25.72% 초과 달성)",
+    "mdd_gap_pp_loose": -14.93,
+    "mdd_status": "LOOSE (defense_ensemble 감내, MDD -39.93% 대비 목표 -25%)"
   },
-
-  "pilot11_contribution_estimated": {
-    "scenario_S1_sleeve_15pct": {
-      "blend": "STR_1631 70% + STR_1656 15% + Pilot11 15%",
-      "proxy_sr_delta_range": [0.03, 0.09],
-      "proxy_cagr_delta_pct_range": [0.5, 2.0],
-      "proxy_mdd_delta_pct_range": [-1.0, 1.5],
-      "heuristic_basis": "Pilot 11 Lockbox SR 1.76, proxy TDC 0.65, rho 0.55~0.65, Markowitz 2-asset 공식. RISK_ON drag -2.20 weighted 15% = -0.33bps/day = -0.8~-1.2% CAGR 희석 가능",
-      "book_level_projection": {
-        "sr": [1.22, 1.28],
-        "cagr_pct": [16.6, 18.1],
-        "mdd_pct": [-22.8, -20.3]
-      }
-    },
-    "scenario_S2_sleeve_25pct": {
-      "blend": "STR_1631 60% + STR_1656 15% + Pilot11 25%",
-      "proxy_sr_delta_range": [0.05, 0.13],
-      "proxy_cagr_delta_pct_range": [0.8, 3.2],
-      "proxy_mdd_delta_pct_range": [-2.0, 2.5],
-      "book_level_projection": {
-        "sr": [1.24, 1.32],
-        "cagr_pct": [16.9, 19.3],
-        "mdd_pct": [-23.8, -19.3]
-      },
-      "risk_on_drag_alert": "25% 편입 시 RISK_ON 국면 book level Active IR -0.55 예상 — 강세장 drag 현저"
-    },
-    "scenario_S3_sleeve_30pct": {
-      "blend": "STR_1631 50% + STR_1656 20% + Pilot11 30%",
-      "proxy_sr_delta_range": [0.05, 0.15],
-      "proxy_mdd_delta_pct_range": [-2.5, 3.0],
-      "book_level_projection": {
-        "sr": [1.24, 1.34],
-        "cagr_pct": [17.1, 20.0],
-        "mdd_pct": [-24.3, -18.3]
-      },
-      "warning": "STR_1631 weight 50%로 감소 — Harvey t=3.09 anchor 신뢰도 희석. family concentration 100% consensus로 고정 (core+pilot11 모두 consensus)."
-    },
-    "scenario_S4_core_replace": {
-      "blend": "Pilot11 60% + STR_1631 20% + STR_1656 20%",
-      "reject_reason": "REJECTED — STR_1631 Harvey t 3.09 유일, Pilot 11 Harvey t 미확정. MDD Full -57.47% hard fail 잔존. 동일 family 내 core 대체는 idiosyncratic risk를 높일 뿐 family diversification 기여 없음. L-202 breadth primacy는 optimizer 변경으로 STR_1631에도 적용 가능."
-    }
-  },
-
-  "gap_status_v110": {
-    "sr_gap": {
-      "value": 0.807,
-      "value_projected_after_pilot11_S1": 0.73,
-      "value_projected_after_pilot11_S2": 0.68,
-      "priority": "최우선",
-      "status": "OPEN — Pilot 11 sleeve 편입 시 0.08~0.13 단축 가능하나 still 0.68+ 갭 잔존",
-      "addressed_by": "Pilot 11 diversifier probe + 추후 cross-family alpha 확장 필요 (momentum/value/quality residual)",
-      "key_insight": "Pilot 11만으로 SR 2.0 달성 불가 — same family 한계. Cross-family diversifier 추가 탐색 필요"
-    },
-    "cagr_gap": {
-      "value": -0.0014,
-      "value_projected_after_pilot11_S1": 0.0046,
-      "priority": "ACHIEVED — 유지",
-      "status": "CLOSED — Pilot 11 편입 시 0.5~3.2%pp 개선 예상",
-      "caution": "RISK_ON 국면 집중 기간이 길어지면 CAGR 희석 가능 (book-level -0.8~-1.2%)"
-    },
-    "mdd_gap": {
-      "value": -0.0373,
-      "value_projected_after_pilot11_S1": -0.030,
-      "priority": "ACHIEVED — 유지",
-      "status": "CLOSED — Pilot 11 book-level MDD -22~-20% 예상. 25% target 여유 유지",
-      "caveat": "Pilot 11 Full MDD -57.47% hard fail은 2008 GFC 재현 시 위험 — historical worst-case scenario 별도 stress test 권고"
-    }
-  },
-
-  "sleeve_needs_v110": {
-    "P0_defense": {
-      "status": "PARTIAL — H_1689 v3 variant_1 23% 확정 (v1.0.9 유지). 목표 33% 대비 -10pp",
-      "next": "H_1689 v3 Judge S6 PASS 후 재검토"
-    },
-    "P1_diversifier": {
-      "status": "PENDING — Pilot 11 CONDITIONAL_ADMIT_PROBE. STR_1679v3 Sequential Admission 별도 진행",
-      "pilot11_phase_2_trigger": [
-        "empirical TDC vs STR_1631_SYN_05 측정 (daily NAV 추출 후 compute_tdc 실행)",
-        "RISK_ON drag mitigation plan (regime overlay/cash allocation/sleeve scaling)",
-        "Harvey t 확정 (alpha package t-stat 산출)",
-        "Val/Full MDD soft-handling policy Judge 확인"
+  "sleeve_needs_priority_post_override_007": {
+    "rank_1_critical": {
+      "family": "cross_family_low_corr_diversifier",
+      "candidates": [
+        "Lottery_Skewness_Inverse (Bali-Cakici-Whitelaw 2011 MAX5 RFS, Boyer-Mitton-Vorkink 2010 idio skewness JFE)",
+        "Liquidity_conditioned_Reversal (Pastor-Stambaugh 2003 JPE, Avramov-Chordia 2006 RFS)",
+        "Information_Asymmetry (Diether-Malloy-Scherbina 2002 JF + DART 공시 빈도 + analyst dispersion)"
       ],
-      "pilot11_phase_2_target": "scenario S1 (15%) sleeve admission 승인 조건 충족 후 book 편입"
+      "rationale": "현 PG2 = STR_1631_SYN_06 100% (Earnings Expectations family 단독). Cross-family low-corr 알파 + multi-sleeve 합류 시 SR 분산효과로 +0.3~0.5 가능. AX-003/004/005 회피.",
+      "priority_score": 0.95,
+      "expected_blend_sr_target": 1.6
     },
-    "P2_core_secondary": {
-      "status": "BORDERLINE — H_1692 v2 61점 REVISE. S1 결과 수신 후 재평가",
-      "next": "S1 결과 대기"
+    "rank_2": {
+      "family": "STR_1715_grid_alpha_decay_recovery",
+      "candidates": ["STR_1715 buffer zone 확장 (keep_n=50, longer holding period)", "Quarterly grid 재최적화 (월간 대신)"],
+      "rationale": "STR_1715 frozen 27M SR 1.95 vs 매월rebal 0.62 발산 — 매월 grid 재최적화가 alpha decay. 운용 frequency 줄여 alpha 활용 회복 가능. POST_DEPLOY_002 결과 입증.",
+      "priority_score": 0.65,
+      "expected_recovery_sr": "0.62 → 1.0+ 가능"
     },
-    "PILOT_SERIES": {
-      "status": "Pilot 5 GRADE_C_PLUS / Pilot 11 GRADE_A_CANDIDATE. Pilot 6 alpha-strengthening 진행 중",
-      "next": "Pilot 11 Phase 2 trigger 4건 진행 + MEGA_02 Risk Control sprint 병행"
+    "rank_3": {
+      "family": "regime_overlay_optimization",
+      "candidates": ["MRS threshold 재조정", "Layer 2/3 cash 비율 재최적화"],
+      "rationale": "현 SYN_06 Overlay (3-Layer cash) MDD -39.93% → -25% 목표 갭 -14.93pp. Layer 3 cash 비율 30% → 50% 등 보수 조정 시 MDD 개선 가능 (CAGR trade-off).",
+      "priority_score": 0.45,
+      "expected_mdd_reduction_pp": "+5 ~ +10"
     }
   },
-
-  "regime_state": {
-    "date": "2026-04-23",
-    "category": "NEUTRAL",
-    "score": 42.9,
-    "lag": "t-1 day",
-    "pilot11_expected_regime_performance": "strong (NEUTRAL Active IR +1.45) — 현재 국면에서 Pilot 11 유리"
-  },
-
-  "family_concentration_current_active": {
-    "consensus": 0.5,
-    "ML_complexity": 0.5
-  },
-
-  "family_concentration_projected_pilot11_S1": {
-    "consensus": 0.85,
-    "ML_complexity": 0.15,
-    "warning": "Pilot 11 편입 시 consensus family concentration 85%로 치솟음 — 35% max 규정 초과. **family concentration 관점 Pilot 11 편입 전 cross-family diversifier 추가 필수**"
-  },
-
-  "pilot11_admission_verdict_summary": {
-    "classification": "CONDITIONAL_ADMIT_DIVERSIFIER_PROBE",
-    "immediate_action": "HOLD_PHASE_1 (즉시 편입 불가)",
-    "phase_2_path": "4 trigger 완료 후 S1 scenario (15%) probe admission",
-    "rejected_paths": [
-      "REJECT_PG1: Lockbox breakthrough는 확인됨, 전면 reject 부적절",
-      "ADMIT_CORE_REPLACE: family 내 idio risk만 증가, diversification 없음"
-    ],
-    "ultimate_admission_trigger": "empirical TDC < 0.55 + RISK_ON mitigation 구현 + Harvey t > 3.0 + family concentration 방안"
-  },
-
-  "pg1_gate_status": {
-    "gate_2_l168_prereq": "PASS",
-    "gate_3_m31_audit": "PASS",
-    "gate_4_v354_amendment": "PENDING",
-    "pg1_open_condition": "Gate 4 완료 + Pilot 11 Phase 2 trigger 4건 완료 시 PG1 정식 개시 가능",
-    "pg2_soft_freeze": "MAINTAINED (Pilot 11 즉시 편입 없음)"
-  },
-
-  "mega_sprint_recommendation": {
-    "mega_01_alpha": "CONTINUE — Pilot 11 consensus earnings saturation 도달. 다음 pilot은 cross-family (momentum/value/quality residual) 필수. Pilot 12 목표: factor_family NOT IN ('consensus_earnings')",
-    "mega_02_risk": "PRIORITY_UP — Pilot 11 RISK_ON drag -2.20 해결 필요. regime-aware risk control (LW Oracle confidence-aware + regime overlay)",
-    "mega_03_optimizer": "CONTINUE — HRP+Score hybrid 정식 편입 확정. breadth-priority framework (min_n=20, max_w≤7~10%, HHI≤0.08) 표준화",
-    "mega_04_forge": "CONTINUE — dynamic monthly rebalance 표준화 (static 비교 금지 L-201)",
-    "mega_05_judge": "CONTINUE — L-201 methodology-mismatch audit 공식화"
-  },
-
-  "pending_verdicts": {
-    "judge_s6_queue": [
-      "H_1692 v2 S1 (Core_Secondary)",
-      "H_1689 v3 S1 (Defense Q24-exclude)",
-      "H_1685 v2 S1 (Diversifier conditional)",
-      "H_1693 S1 (S0 debate 완료 후)"
-    ],
-    "governor_pending": [
-      "Pilot 11 Phase 2 trigger 4건 추적",
-      "Pilot 12 (cross-family diversifier) WT 발주 방향 Scout에 전달",
-      "empirical TDC 측정 Forge 요청 발주",
-      "H_1689 v3 Judge S6 PASS 시 Defense 23%→33% 복구 검토",
-      "STR_1679v3 Sequential Admission TDC precheck"
+  "alternative_blends_evaluated_phase2_4way": {
+    "evaluated_at": "2026-04-29 Phase 2 4-way comparison",
+    "data_source": "qepm/mailbox/governor/4way_comparison/20260429/4way_summary.json",
+    "ranked": [
+      {"label": "STR_1631_SYN_06_standalone", "sr_overlay_daily": 1.293, "mdd_overlay": -0.3993, "selected": true, "rationale": "정도 회복 + Charter v1.4 표준 + Hurdle Grade A_CONDITIONAL"},
+      {"label": "STR_1631_SYN_05_baseline", "sr": 1.134, "note": "outlier handling baseline, replaced by SYN_06"},
+      {"label": "STR_1715_walk_forward_stated", "sr": 1.4522, "note": "FABRICATION_SUSPECTED Charter §9 R4"},
+      {"label": "STR_1715_full_reassessment_charter_v1_4", "sr_monthly": 0.8285, "note": "전기간 학술 표준, fabrication divergence -0.62 입증"}
     ]
   },
-
-  "v1_0_9_to_v1_1_0_delta": {
-    "changed": true,
-    "delta_items": [
-      "pilot11_admission_status 신규",
-      "pilot11_contribution_estimated 4 scenario 추가",
-      "gap_status_v110: SR gap projection 추가",
-      "sleeve_needs.P1_diversifier pilot11_phase_2_trigger 4건",
-      "family_concentration_projected_pilot11_S1 신규 (35% breach warning)",
-      "mega_sprint_recommendation 5종 전면 업데이트"
-    ],
-    "gap_numbers": "변경 없음 (Pilot 11 편입 없음 — 즉시 book_state 불변)",
-    "regime_state": "NEUTRAL 유지"
-  }
+  "regime_state": {
+    "date": "2026-04-29",
+    "category": "NORMAL_to_CAUTION_transition",
+    "score": 35,
+    "lag": "t-1 month",
+    "note": "현재 SYN_06 Overlay Layer 1~2 보호 작동 가능 영역"
+  },
+  "ax_compliance_post_promotion": {
+    "ax_001_v2": "SYN_06 7/8 stress periods crisis_alpha > 0 (POST_003 결과). conditional metrics PASS",
+    "ax_002": "정식 Forge → Judge → Governor lifecycle, 프로세스 우회 0건",
+    "ax_003": "current book = Earnings Expectations family (value-fail 회피)",
+    "ax_004": "multi-axis composite (SUE+ESBR+EPS_CHG_1M+TP_Gap), single-signal 회피",
+    "ax_005": "EXCLUSION 1 multi-sleeve via regime overlay 정합",
+    "ax_007": "EXCEPTION_1_multi_sleeve_via_regime_overlay 정합",
+    "ax_008": "Forge + Codex + Architect 3-source triangulation 中 1+1 (Forge+Codex 자율 분류) PASS_PARTIAL",
+    "candidate_ax_grid_reoptimization_alpha_decay": {
+      "supporting_evidence": "STR_1715 매월rebal 0.62 vs frozen 1.95 divergence 1.33 SR — POST_DEPLOY_002 입증",
+      "promotion_status": "CANDIDATE_FOR_AX_009 (D 분석 후 review)"
+    }
+  },
+  "recursive_loop_status": {
+    "memory_to_gap_vector": "v1.2.0 갱신 완료 (현 시점)",
+    "gap_vector_to_priority": "rank_1 cross-family diversifier 명시",
+    "priority_to_iter_trigger": "PENDING (hybrid_commit + Iter trigger 자동화 필요 — Phase 3a B2)",
+    "iter_to_admission": "STR_1631_SYN_06 정식 admit 완료 (정도 회복)",
+    "admission_to_memory": "L-238/239/240/241/242/243 commit 완료"
+  },
+  "next_steps_recommended": [
+    {"step": "Phase 3a B2", "action": "hybrid_mode.R 정의 (R0~R4 pipeline + safeguard)", "estimated_hours": 2},
+    {"step": "STR_1715 D analysis", "action": "매월 grid 재최적화 alpha decay 메커니즘 정량 분석", "estimated_hours": 1.5},
+    {"step": "Phase 4 cross-family WT", "action": "rank_1 priority alpha 발굴 (lottery/skewness inverse 또는 liquidity reversal)", "estimated_hours": 7}
+  ]
 }
