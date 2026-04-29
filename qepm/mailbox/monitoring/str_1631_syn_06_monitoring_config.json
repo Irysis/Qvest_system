@@ -1,0 +1,39 @@
+{
+  "strategy_id": "STR_1631_SYN_06",
+  "wt_id": "WT-P20260429_001",
+  "monitoring_active": true,
+  "frequency": "monthly",
+  "config_created_at": "2026-04-29T10:00:00+0900",
+  "next_check_date": "2026-05-29",
+  "active_period_start": "2026-04-29",
+  "post_deploy_005_satisfied": true,
+  "kpi_8": {
+    "realized_sharpe_overlay_daily_standard": {"target": 1.293, "tolerance_pp": 0.30, "rollback_below": 1.00},
+    "realized_sharpe_overlay_monthly": {"target": 1.225, "tolerance_pp": 0.30},
+    "realized_cagr_overlay": {"target": 0.2572, "tolerance_pp": 0.05},
+    "realized_mdd_overlay": {"target": -0.3993, "rollback_threshold": -0.45},
+    "annual_to": {"target": 2.839, "rollback_threshold": 3.20},
+    "n_holdings": {"target": 20, "tolerance": 1},
+    "max_weight": {"target": 0.20, "rollback_threshold": 0.25},
+    "win_rate_overlay": {"target": 0.67, "tolerance_pp": 0.10}
+  },
+  "rollback_conditions_6": [
+    "T+30 realized SR (daily standard) < 1.00",
+    "MDD > -45%",
+    "TO > 320%",
+    "Hurdle Gate v1.4 6-Gate 재검증 FAIL",
+    "POST_DEPLOY_008 mandate cap re-run SR < 1.00",
+    "Charter §10 governor_concord_with_waiver_certificate revoked"
+  ],
+  "tail_risk_engine_call_required_t14": true,
+  "drift_detection_method": "realized_vs_expected_8_kpi",
+  "alert_channels": ["telegram", "governance_log"],
+  "monitoring_owner": "Monitoring agent / Q-Lead manual fallback",
+  "post_deploy_005_l_code": "POST_DEPLOY_005_satisfied_via_monitoring_config_2026-04-29",
+  "expected_baseline_metrics": {
+    "source": "WT-P20260429_001 forge_package.json + Judge L-240 + Governor L-241",
+    "measurement_basis_primary": "forge_realized_share_based",
+    "harness_version": "summarise_perf_v1.4_standard_sharpe",
+    "outlier_handling": "Charter v1.3 §11 Variant A"
+  }
+}
