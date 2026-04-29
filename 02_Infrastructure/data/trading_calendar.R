@@ -35,44 +35,142 @@ CALENDAR_CACHE <- file.path(CACHE_DIR, "trading_calendar.parquet")
 }
 
 # ─── Build / Load 캘린더 ─────────────────────────────────────────────────────
-build_trading_calendar <- function(force = FALSE) {
+# ─── Internal: Naver T+0 거래일 추출 (RAWDATA의 unique Date) ─────────────────
+.extract_naver_dates <- function(start_after = NULL) {
+  rawdata_path <- file.path(CACHE_DIR, "rawdata.parquet")
+  if (!file.exists(rawdata_path)) return(as.Date(character(0)))
+
+  rd <- as.data.table(read_parquet(rawdata_path, col_select = "Date"))
+  rd[, Date := as.Date(Date)]
+  dates <- sort(unique(rd$Date))
+
+  # weekday only (토일은 anomaly로 간주)
+  wday <- as.POSIXlt(dates)$wday
+  dates <- dates[wday >= 1 & wday <= 5]
+
+  if (!is.null(start_after)) {
+    dates <- dates[dates > as.Date(start_after)]
+  }
+  dates
+}
+
+# ─── Internal: KRX OpenAPI 거래일 (T+1 lag 감안 — 보조 검증용) ───────────────
+.extract_krx_dates <- function(start = NULL, end = NULL) {
+  krx_holidays_file <- file.path(CACHE_DIR, "krx", "known_holidays.rds")
+  if (!file.exists(krx_holidays_file)) return(as.Date(character(0)))
+  # KRX는 휴일 cache만 존재 — 거래일은 weekday minus holidays
+  hol <- tryCatch(readRDS(krx_holidays_file), error = function(e) as.Date(character(0)))
+  if (length(hol) == 0) return(as.Date(character(0)))
+
+  if (is.null(start) || is.null(end)) {
+    start <- min(hol) - 365
+    end   <- max(hol) + 365
+  }
+  all_d <- seq.Date(as.Date(start), as.Date(end), by = "day")
+  wday  <- as.POSIXlt(all_d)$wday
+  trading <- all_d[wday >= 1 & wday <= 5 & !(all_d %in% hol)]
+  trading
+}
+
+# ─── Internal: 한국 공휴일 manual list (KRX 임시 휴장 + 대체 휴일) ───────────
+.korean_market_closures_manual <- function() {
+  as.Date(c(
+    # 2024 KRX 임시 휴장
+    "2024-12-30",
+    # 향후 추가 시 여기에
+    NULL
+  ))
+}
+
+# ─── Layer-priority 통합 캘린더 빌드 ─────────────────────────────────────────
+# Layer 1: QuantiWise (있으면 ground truth)
+# Layer 2: Naver T+0 (QW max(date) 이후 구간만 보충)
+# Layer 3: KRX OpenAPI (T+1 lag, cross-check 검증용)
+# Layer 4: 한국 공휴일 manual list (KRX 임시 휴장 등)
+build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
   if (file.exists(CALENDAR_CACHE) && !force) {
-    cat("[calendar] 캐시 로드:", CALENDAR_CACHE, "\n")
+    if (verbose) cat("[calendar] 캐시 로드:", CALENDAR_CACHE, "\n")
     cal <- as.data.table(read_parquet(CALENDAR_CACHE))
     return(invisible(cal))
   }
 
-  cat("[calendar] QuantiWise에서 거래일 추출 중...\n")
+  if (verbose) cat("[calendar] Layer-priority build 시작\n")
 
-  # 1. Base OHLCVS.xlsx (1990~)
-  base_path <- file.path(PROJECT_ROOT, "03_Universe", "OHLCVS.xlsx")
-  base_dates <- .extract_qw_dates(base_path)
-  cat(sprintf("  base: %d일 (%s ~ %s)\n", length(base_dates),
-              min(base_dates), max(base_dates)))
-
-  # 2. Update_File OHLCVS_update.xlsx (증분)
+  # ─── Layer 1: QuantiWise (1차 ground truth) ────────────────────────────
+  base_path   <- file.path(PROJECT_ROOT, "03_Universe", "OHLCVS.xlsx")
   update_path <- file.path(PROJECT_ROOT, "03_Universe", "Update_File", "OHLCVS_update.xlsx")
-  update_dates <- .extract_qw_dates(update_path)
-  if (length(update_dates) > 0) {
-    cat(sprintf("  update: %d일 (%s ~ %s)\n", length(update_dates),
-                min(update_dates), max(update_dates)))
+  qw_base_dates   <- .extract_qw_dates(base_path)
+  qw_update_dates <- .extract_qw_dates(update_path)
+  qw_dates <- sort(unique(c(qw_base_dates, qw_update_dates)))
+  qw_max <- if (length(qw_dates) > 0) max(qw_dates) else NA
+  if (verbose) {
+    cat(sprintf("  [Layer 1] QuantiWise: %d일", length(qw_dates)))
+    if (length(qw_dates) > 0) cat(sprintf(" (%s ~ %s)", min(qw_dates), qw_max))
+    cat("\n")
   }
 
-  # 3. 병합 (중복 제거)
-  all_dates <- sort(unique(c(base_dates, update_dates)))
-
-  cal <- data.table(
-    Date = all_dates,
-    source = fifelse(all_dates <= max(base_dates), "quantiwise", "quantiwise_update")
-  )
-  # Update_File 범위 내 날짜는 quantiwise_update로 마킹
-  if (length(update_dates) > 0) {
-    cal[Date %in% update_dates & Date > max(base_dates), source := "quantiwise_update"]
+  # ─── Layer 2: Naver T+0 — QW max 이후 구간만 보충 ────────────────────────
+  naver_supplement <- if (!is.na(qw_max)) {
+    .extract_naver_dates(start_after = qw_max)
+  } else {
+    .extract_naver_dates()
   }
+  if (verbose && length(naver_supplement) > 0) {
+    cat(sprintf("  [Layer 2] Naver 보충: %d일 (%s ~ %s)\n",
+                length(naver_supplement), min(naver_supplement), max(naver_supplement)))
+  } else if (verbose) {
+    cat(sprintf("  [Layer 2] Naver 보충: 0일 (QW가 최신)\n"))
+  }
+
+  # ─── Layer 3: KRX OpenAPI (T+1 lag 감안 cross-check) ─────────────────────
+  if (length(qw_dates) > 0 && length(naver_supplement) > 0) {
+    krx_check_dates <- .extract_krx_dates(start = qw_max, end = max(naver_supplement))
+    # T+1 lag 감안: KRX max(Date) ≤ Naver max(Date) - 1
+    naver_only_recent_2d <- tail(sort(naver_supplement), 2)
+    krx_supports <- intersect(krx_check_dates, naver_supplement)
+    krx_missing  <- setdiff(naver_supplement, krx_check_dates)
+    krx_missing  <- as.Date(krx_missing[!krx_missing %in% naver_only_recent_2d])  # T+1/T+2는 lag로 정상
+    if (verbose) {
+      cat(sprintf("  [Layer 3] KRX cross-check: %d 일치 / %d 비일치 (T+1 lag 제외)\n",
+                  length(krx_supports), length(krx_missing)))
+      if (length(krx_missing) > 0) {
+        cat(sprintf("    [WARN] Naver-only (KRX 부재): %s\n",
+                    paste(head(krx_missing, 5), collapse=", ")))
+      }
+    }
+  }
+
+  # ─── Layer 4: 공휴일 manual 제외 ─────────────────────────────────────────
+  closures <- .korean_market_closures_manual()
+  qw_dates <- setdiff(qw_dates, closures)
+  naver_supplement <- setdiff(naver_supplement, closures)
+
+  # ─── 통합 + 우선순위 source 라벨링 ───────────────────────────────────────
+  if (length(qw_dates) > 0) {
+    cal_qw <- data.table(Date = as.Date(qw_dates), source = "quantiwise")
+    cal_qw[Date %in% as.Date(qw_update_dates) & Date > max(as.Date(qw_base_dates), na.rm = TRUE),
+           source := "quantiwise_update"]
+  } else {
+    cal_qw <- data.table(Date = as.Date(character(0)), source = character(0))
+  }
+  cal_naver <- if (length(naver_supplement) > 0) {
+    data.table(Date = as.Date(naver_supplement), source = "naver_t0")
+  } else {
+    data.table(Date = as.Date(character(0)), source = character(0))
+  }
+
+  cal <- rbind(cal_qw, cal_naver)
+  setorder(cal, Date)
+  cal <- unique(cal, by = "Date")  # QW가 우선 (rbind 순서)
 
   write_parquet(cal, CALENDAR_CACHE)
-  cat(sprintf("[calendar] 저장 완료: %d 거래일 (%s ~ %s)\n",
-              nrow(cal), min(cal$Date), max(cal$Date)))
+  if (verbose) {
+    cat(sprintf("[calendar] 저장 완료: %d 거래일 (%s ~ %s)\n",
+                nrow(cal), min(cal$Date), max(cal$Date)))
+    src_dist <- cal[, .N, by = source]
+    cat(sprintf("  Source 분포: %s\n",
+                paste(src_dist[, sprintf("%s=%d", source, N)], collapse = ", ")))
+  }
   invisible(cal)
 }
 
