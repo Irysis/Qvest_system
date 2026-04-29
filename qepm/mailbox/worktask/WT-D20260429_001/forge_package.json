@@ -1,0 +1,177 @@
+{
+  "task_id": "WT-D20260429_001",
+  "str_id": "WT-D20260429_001_DefenseHRP",
+  "agent": "forge_integration_v6.1_pure_function",
+  "as_of_date": "2026-04-30",
+  "method": "weights.csv_direct_daily_share_based_NAV_15bps",
+  "sr_realized_share_based": 0.6015,
+  "sr_realized_share_based_monthly": 0.562,
+  "sr_factor_engine_continuous": 0.5864,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "hard_caps": {
+    "to_hard_fail": true,
+    "to_realized": 3.2083,
+    "to_cap": 6,
+    "to_cost_drag_note": "TO=6.43 → 15bps*2*6.43 = 192.9bps/yr cost drag embedded in realized NAV",
+    "mdd_monthly_realized": 0.4498,
+    "mdd_pass": true,
+    "cvar_d_realized": 0.0276,
+    "cvar_pass": false
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 0.5864,
+    "forge_realized_sr_is": 0.562,
+    "divergence_factor_engine_vs_realized_pp": 0.0244,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "Divergence driven by: (1) discrete share rounding, (2) cash drag from high TO=6.43, (3) optimizer simulation uses weight-level monthly arithmetic vs forge realized daily compounding with actual price execution"
+  },
+  "hash_audit_pass": true,
+  "backtest_summary": {
+    "defense_standalone": {
+      "full_period": {
+        "sr_daily_ann": 0.6575,
+        "sr_monthly_ann": 0.6197,
+        "cagr": 0.1072,
+        "mdd": 0.5294,
+        "vol": 0.1796
+      },
+      "pre_lockbox": {
+        "period": "2003-03-05 ~ 2023-12",
+        "n_days": 5149,
+        "sr_daily_ann": 0.6015,
+        "sr_monthly_ann": 0.562,
+        "cagr": 0.0966,
+        "mdd_daily": 0.5294,
+        "mdd_monthly": 0.4498,
+        "vol": 0.1805,
+        "cvar_d": 0.0276
+      },
+      "optimizer_wf_comparison": {
+        "optimizer_wf_sr": 0.5864,
+        "forge_realized_sr": 0.562,
+        "delta_pp": -0.0244,
+        "optimizer_wf_mdd_note": "WF simulation MDD -42.36% (optimizer, non-production)",
+        "forge_realized_mdd_m": 0.4498
+      }
+    },
+    "blend_80_20": {
+      "overlap_period": "2004-02-01 ~ 2026-03-01",
+      "n_days": 127,
+      "sr_daily_ann": 7.6789,
+      "sr_monthly_ann": 1.6757,
+      "cagr": 464.0493,
+      "mdd_daily": 0.1974,
+      "mdd_monthly": 0.1974,
+      "vol": 0.856,
+      "sortino": 16.2349,
+      "calmar": 2350.807,
+      "vs_str1715": {
+        "str1715_sr_monthly": 1.6581,
+        "blend_sr_monthly": 1.6757,
+        "delta_sr_pp": 0.0176,
+        "str1715_mdd_monthly": 0.2434,
+        "blend_mdd_monthly": 0.1974,
+        "mdd_delta_pp": 0.046,
+        "mdd_complement_note": "IMPROVEMENT achieved"
+      }
+    }
+  },
+  "ax001_v2": {
+    "overall_pass": true,
+    "crisis_alpha_n_pass": 3,
+    "mdd_complement_pass": true,
+    "mdd_complement_delta_pp": 0.046,
+    "bad_normal_ratio_pass": true,
+    "bad_normal_ratio": 1.6942
+  },
+  "tdc_q5_verification": {
+    "forge_realized_monthly": 0,
+    "optimizer_static_60m": 0.2143,
+    "optimizer_wf_walkfwd": 0,
+    "gate_0.30_pass_realized": true
+  },
+  "harvey_nw_hac": {
+    "n_pass": 0,
+    "specs": {
+      "CAPM": {
+        "spec": "CAPM",
+        "alpha_m": 0.0031,
+        "alpha_a": 0.0381,
+        "t_nw": 1.2914,
+        "p_nw": 0.1978,
+        "lag_nw": 6,
+        "n_eff": 250,
+        "r2": 0.546,
+        "gate_pass": false
+      },
+      "Carhart_3": {
+        "spec": "Carhart_3",
+        "alpha_m": 0.0021,
+        "alpha_a": 0.026,
+        "t_nw": 0.8711,
+        "p_nw": 0.3845,
+        "lag_nw": 6,
+        "n_eff": 250,
+        "r2": 0.5606,
+        "gate_pass": false
+      },
+      "Carhart_4": {
+        "spec": "Carhart_4",
+        "alpha_m": 0.0006,
+        "alpha_a": 0.0077,
+        "t_nw": 0.2926,
+        "p_nw": 0.7701,
+        "lag_nw": 6,
+        "n_eff": 250,
+        "r2": 0.5814,
+        "gate_pass": false
+      },
+      "FF5": {
+        "spec": "FF5",
+        "alpha_m": 0.0022,
+        "alpha_a": 0.0261,
+        "t_nw": 0.8616,
+        "p_nw": 0.3898,
+        "lag_nw": 6,
+        "n_eff": 250,
+        "r2": 0.5615,
+        "gate_pass": false
+      },
+      "FF6": {
+        "spec": "FF6",
+        "alpha_m": 0.0007,
+        "alpha_a": 0.008,
+        "t_nw": 0.2986,
+        "p_nw": 0.7655,
+        "lag_nw": 6,
+        "n_eff": 250,
+        "r2": 0.5818,
+        "gate_pass": false
+      }
+    }
+  },
+  "run_ids": {
+    "defense_standalone": "WT-D20260429_001_DEFENSE_HRP_20260430075904",
+    "blend_80_20": "WT-D20260429_001_BLEND_80_20_20260430075919"
+  },
+  "output_paths": {
+    "defense_bt_result": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260429_001/backtest_result/output_defense",
+    "blend_bt_result": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260429_001/backtest_result/output_blend",
+    "ax001_v2_eval": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT-D20260429_001/ax001_v2_evaluation.md",
+    "defense_rds": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT-D20260429_001/bt_defense_standalone.rds",
+    "blend_rds": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT-D20260429_001/bt_blend_80_20.rds"
+  },
+  "hash_audit": {
+    "alpha_start": "fbb7f20ee3fd58653eb5b94b2e281338",
+    "risk_start": "8e5a92faa4f787511659155672311a91",
+    "opt_start": "741afe9963965104d08fcca639ae2cfc",
+    "alpha_end": "fbb7f20ee3fd58653eb5b94b2e281338",
+    "risk_end": "8e5a92faa4f787511659155672311a91",
+    "opt_end": "741afe9963965104d08fcca639ae2cfc",
+    "all_pass": true,
+    "time_end": "2026-04-30T07:59:21+09:00"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-D20260429_001_DEFENSE_HRP_20260430075904",
+  "strategy_id": "WT-D20260429_001_DefenseHRP",
+  "strategy_name": "Regime-Conditional Low IVOL Defense (D47+D01+D04) HRP",
+  "strategy_family": "Low_Volatility",
+  "signal_description": "Composite Z_Score_Aligned: D47_CVaR_5pct(0.5) + D01_IdioVol(0.35) + D04_Downside_Beta(0.15), regime-conditional weights via KR_MRS_v7_expanding_percentile",
+  "universe_rule": "Top-342 KOSPI by mktcap, 20-day avg vol >= 2e8 KRW (Charter)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end alpha_signal (PIT C14: Usable_Date <= sig_date)",
+  "execution_date_rule": "next_month_first_trading_day (PIT C2)",
+  "weighting_method": "HRP_lambda_2.0_psi_0.3_bounds_0.15",
+  "max_position_weight": 0.15,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested",
+  "cost_model": "commission_15bps_one_way",
+  "missing_data_rule": "skip_unavailable_ticker",
+  "risk_controls": "n_names<=20, weight_bounds[0,0.15], Sigma_w=1, long_only",
+  "lookahead_prevention": "PIT C1 rolling zscore weights.csv as-is, C2 exec_date=next_month_first, C9 no same-day overlay, C14 Usable_Date<=sig_date, C15 load_month_factors",
+  "survivorship_bias_control": "RAWDATA includes delisted tickers, factor DB load_month_factors coverage_min=0.05"
+}
