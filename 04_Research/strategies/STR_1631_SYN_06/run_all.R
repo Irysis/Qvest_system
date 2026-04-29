@@ -448,7 +448,7 @@ write_json(list(
 # 7. Backtest Result Contract v1.0 등재 (Charter v1.5 §13, 2026-04-29)
 # ===================================================================
 cat("\n[7] Backtest Result Contract v1.0 빌드 + audit + save + register\n")
-PROJECT_ROOT <- BASE_DIR
+# PROJECT_ROOT 이미 line 36에서 정의됨
 source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/backtest_result_contract.R"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/audit_bt_result.R"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure/contracts/excel_report_writer.R"))
