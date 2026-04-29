@@ -1,50 +1,68 @@
 {
   "task_id": "WT-D20260429_001",
   "method_selected": "HRP_lambda_2.0_psi_0.3_bounds_0.15",
+  "selection_objective": "crowding_adj_ret",
   "method_metrics": {
-    "HRP_anchor": {
+    "MVO": {
       "n_names": 20,
-      "sum_w": 1,
-      "max_w": 0.0906,
-      "min_w": 0.0337,
-      "hhi": 0.0542,
+      "expected_alpha": 0.0909,
+      "te": 0.1201,
+      "ir": 0.7568,
+      "net_ir": 0.7487,
+      "sr": {},
+      "turnover": 0.6435,
+      "cost": 0.001,
+      "tdc_q5": 0.4286,
+      "tdc_q10": 0.4444,
+      "cvar_5_monthly": -0.0811,
+      "selected": false
+    },
+    "HRP": {
+      "n_names": 20,
       "expected_alpha": 0.0789,
-      "expected_te": 0.0945,
-      "expected_ir": 0.8351,
-      "expected_net_ir": 0.7331,
-      "expected_turnover_annual": 6.4259,
-      "estimated_cost": 0.0096,
+      "te": 0.0945,
+      "ir": 0.8351,
+      "net_ir": 0.7331,
+      "sr": {},
+      "turnover": 6.4259,
+      "cost": 0.0096,
       "tdc_q5": 0.2143,
       "tdc_q10": 0.4815,
       "cvar_5_monthly": -0.0699,
-      "net_systematic": {
-        "MKT": 0.5954,
-        "SMB": -0.0564,
-        "WML": 0.1705,
-        "LVOL": 0.5576
-      },
-      "weights": {
-        "A002840": 0.0906,
-        "A268280": 0.077,
-        "A007310": 0.0688,
-        "A012750": 0.0581,
-        "A000080": 0.0571,
-        "A192080": 0.0541,
-        "A006040": 0.0539,
-        "A033780": 0.0501,
-        "A030000": 0.0491,
-        "A026960": 0.0489,
-        "A069260": 0.047,
-        "A086450": 0.0455,
-        "A032640": 0.0411,
-        "A004370": 0.0405,
-        "A001800": 0.04,
-        "A030200": 0.0372,
-        "A002030": 0.0363,
-        "A005250": 0.036,
-        "A271560": 0.035,
-        "A215200": 0.0337
-      }
+      "selected": true,
+      "net_ir_heuristic_to_1.32yr": 0.8142,
+      "net_ir_realized_walkforward_to_6.43yr": 0.7331,
+      "turnover_heuristic_static": 1.32,
+      "turnover_realized_walkforward_rt": 6.4259,
+      "net_ir_label": "primary=net_ir_realized_walkforward_to_6.43yr (used for selection_objective). heuristic_turnover_1.32yr was sigma_w-deviation proxy from method_shopping_log_optimizer.json (deprecated)"
+    },
+    "CVaR_LP": {
+      "n_names": 20,
+      "expected_alpha": 0.0886,
+      "te": 0.1088,
+      "ir": 0.8145,
+      "net_ir": 0.7569,
+      "sr": {},
+      "turnover": 4.1748,
+      "cost": 0.0063,
+      "tdc_q5": 0.3571,
+      "tdc_q10": 0.3704,
+      "cvar_5_monthly": -0.0653,
+      "selected": false
+    },
+    "Robust_Resid": {
+      "n_names": 20,
+      "expected_alpha": 0.0835,
+      "te": 0.1204,
+      "ir": 0.6936,
+      "net_ir": 0.6914,
+      "sr": {},
+      "turnover": 0.18,
+      "cost": 0.0003,
+      "tdc_q5": 0.3571,
+      "tdc_q10": 0.4815,
+      "cvar_5_monthly": -0.0747,
+      "selected": false
     }
   },
   "walk_forward_realized": {
@@ -83,6 +101,67 @@
     "HRP_60m": 248,
     "inverse_vol": 24
   },
-  "infeasibility_issued": false,
-  "v2_changelog": "v2 fix: target_weights anchored to weights.csv[as_of_date] (Charter §9). Walk-forward HRP rebuilt with per-date 60m/36m fallback chain. v1 weights.csv had EW collapse bug."
+  "infeasibility_issued": true,
+  "hard_constraints_audit": {
+    "n_names": 20,
+    "max_w": 0.15,
+    "sigma_w_max_err": 4.44e-16,
+    "long_only": true,
+    "schedule_density": 1,
+    "turnover_hard_fail": true,
+    "cvar_breach": true
+  },
+  "consistency_audit": {
+    "target_weights_match_weights_csv_last_date": true,
+    "weights_csv_last_date": "2026-03-31",
+    "weights_csv_unique_dates": 279,
+    "alpha_sig_dates_count": 279,
+    "schedule_density_ratio": 1,
+    "schedule_density_pass": true,
+    "sigma_w_max_abs_err": 4.44e-16,
+    "sigma_w_eq_1_pass": true,
+    "bounds_max_w": 0.15,
+    "bounds_pass": true,
+    "n_names_per_date": 20,
+    "n_names_pass": true
+  },
+  "regime_conditional_design": {
+    "status": "FLAT_SCHEDULE_BY_OPTIMIZER_DESIGN",
+    "rationale": "Hypothesis is regime-conditional defense COMPLEMENT for STR_1715 (which has its own regime cash overlay 10/20/40%). Optimizer scope is portfolio weight determination GIVEN alpha + Σ. Regime-conditional weight allocation (e.g. crisis cash sleeve) is AX-007 EXCEPTION_1 multi-sleeve domain — Governor decides whether to overlay regime engine on Optimizer schedule. Alpha agent already provided regime-conditional alpha weighting (D47=0.55/0.50/0.45 across CRISIS/NORMAL/BULL via KR_MRS_v7 t-1 lag, alpha_package.regime_conditioning).",
+    "optimizer_choice": "Ship flat-rule schedule with as-of CRISIS regime alpha weighting; Governor decides per-regime book overlay (cash sleeve, MDD-trigger drawdown brake, etc).",
+    "alternative_per_regime_schedule_not_implemented_reason": "Time budget. Buffer-zone walk-forward HRP estimated 15+ min, regime-stratified would require 3x compute (one schedule per regime state). Codex C5 acknowledged."
+  },
+  "codex_critic_rounds": {
+    "round1": {
+      "stance": "REJECT",
+      "timestamp": "2026-04-30T07:36:46+09:00",
+      "concerns_accept": [
+        "C1_turnover_RF-O13",
+        "C2_CVaR_RF-O8",
+        "C3_sigma_w_RF-O7",
+        "C6_net_ir_inconsistency_RF-O10"
+      ],
+      "concerns_partial": [
+        "C4_walk_forward_anchor_design",
+        "C5_regime_conditional_scope",
+        "C7_HRP_first_alpha_loss",
+        "C8_sequential_admission_governor_scope"
+      ],
+      "concerns_rebuttal": [],
+      "response_version": "v3_finalized_round1",
+      "fixes_applied": [
+        "C3 fix: weights.csv abs(Σw-1) reduced to 4.44e-16 across all 279 dates",
+        "C6 fix: method_comparison.HRP shows both heuristic 0.8142 and realized 0.7331 with explicit labels",
+        "C2 fix: infeasibility_report.cvar_breach_note added with status=FLAGGED + alternative methods context",
+        "infeasibility_report violated_constraints expanded to include CVaR breach",
+        "regime_conditional_design section added: clarifies AX-007 EXCEPTION_1 scope (Governor)"
+      ],
+      "response_to_C1_turnover": "ACCEPT — infeasibility_report explicitly issued, NOT silent. Forge phase MUST acknowledge and choose mitigation path. Charter §8 compliance.",
+      "response_to_C4_method_alignment": "PARTIAL — anchor/non-anchor difference is intentional design (Charter §9 anchor + walk-forward stress test of per-date selection). NOT a silent override; flagged in CF-OPT-04.",
+      "response_to_C5_regime": "PARTIAL — Optimizer ships flat schedule; regime overlay is Governor scope (AX-007 EXCEPTION_1). Documented in regime_conditional_design.",
+      "response_to_C7_alpha_loss": "PARTIAL — HRP-first design intentionally trades alpha capture for variance parity (selection_objective=crowding_adj_ret penalizes TDC>0.30 but does not directly maximize alpha). 10/20 top-alpha overlap is by design.",
+      "response_to_C8_sequential": "DEFER — Replacement vs Integration scenarios are Governor PG2 admission scope. Optimizer ships single-portfolio target."
+    }
+  },
+  "changelog": ["v3_finalized_round1: applied Codex Round 1 fixes", "  C3 fix: weights.csv abs(Σw-1) reduced to 4.44e-16 across all 279 dates", "  C6 fix: method_comparison.HRP shows both heuristic (0.8142) and realized (0.7331) net_ir labels", "  C2 fix: infeasibility_report.cvar_breach_note added", "  C5 partial: regime_conditional_design clarification added (AX-007 EXCEPTION_1 = Governor scope)", "  C4/C7/C8 partial/defer: documented in optimizer_challenge_note.md"]
 }

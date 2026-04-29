@@ -4,42 +4,55 @@
   "parallel_exec": false,
   "n_workers": 1,
   "rcpp_used": false,
+  "net_ir_label_note": "Two net_ir tracked: (a) heuristic_to_static_TO uses static-panel sigma_w-deviation × 12 turnover proxy; (b) realized_walkforward_to_RT uses 22Y walk-forward realized round-trip turnover. Selection used (b) realized for HRP after walk-forward gen.",
   "method_log": [
     {
       "name": "MVO",
       "family": "classical",
-      "net_ir": 0.7487,
+      "net_ir_heuristic_to": 0.7487,
+      "net_ir_realized_walkforward_rt": null,
       "tdc_q5": 0.4286,
       "tdc_pass": false,
       "crowding_adj_ret": 0.5562,
-      "selected": false
+      "selected": false,
+      "note": "MVO produces 6/20 names with weight=0.06, others smaller. Concentrates on top alpha. TDC FAIL = MVO and STR_1715 share top alpha names."
     },
     {
       "name": "HRP",
       "family": "risk_parity",
-      "net_ir": 0.8142,
-      "tdc_q5": 0.2143,
+      "net_ir_heuristic_to": 0.8142,
+      "net_ir_realized_walkforward_rt": 0.7331,
+      "tdc_q5_static": 0.2143,
+      "tdc_q5_walkforward": 0,
       "tdc_pass": true,
       "crowding_adj_ret": 0.8142,
-      "selected": true
+      "crowding_adj_ret_realized": 0.7331,
+      "selected": true,
+      "note": "Selected on TDC PASS gate. Walk-forward TDC q5=0 confirms variance parity gives lower-tail orthogonality. Walk-forward turnover 6.43/yr is HARD FAIL (infeasibility issued)."
     },
     {
       "name": "CVaR_LP",
       "family": "tail_aware",
-      "net_ir": 0.7569,
+      "net_ir_heuristic_to": 0.7569,
+      "net_ir_realized_walkforward_rt": null,
       "tdc_q5": 0.3571,
       "tdc_pass": false,
       "crowding_adj_ret": 0.6704,
-      "selected": false
+      "selected": false,
+      "note": "CVaR LP optimizes own portfolio tail, not joint tail with STR_1715. TDC FAIL despite tail control objective."
     },
     {
       "name": "Robust_Resid",
       "family": "robust",
-      "net_ir": 0.6914,
+      "net_ir_heuristic_to": 0.6914,
+      "net_ir_realized_walkforward_rt": null,
       "tdc_q5": 0.3571,
       "tdc_pass": false,
       "crowding_adj_ret": 0.6124,
-      "selected": false
+      "selected": false,
+      "note": "Alpha residualized on STR_1715 ret_net (β-correction at alpha-level). Portfolio TDC still FAILs because REALIZED returns of selected names co-tail. β-correction does not propagate to portfolio tails."
     }
-  ]
+  ],
+  "selection_decision_path": "1) Filter to TDC q5 < 0.30 PASS methods → only HRP. 2) HRP selected uniquely. 3) Walk-forward stress test confirms HRP TDC q5 = 0 (decisively orthogonal). 4) HRP turnover = 6.43/yr realized = HARD FAIL → infeasibility_report issued (Charter §8 No Silent Override).",
+  "codex_round1_reconciliation": "Codex C6 flagged HRP net_ir 0.8142 (log heuristic) vs 0.7331 (package realized). Both reported here with explicit labels. Selection used 0.8142 (heuristic) initially; package realized post walk-forward = 0.7331."
 }
