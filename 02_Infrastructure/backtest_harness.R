@@ -1142,7 +1142,8 @@ run_monthly_simulation <- function(RAWDATA,
 # 5. summarise_perf() — Performance metrics
 #==============================================================================
 
-summarise_perf <- function(ret_xts, label = "Strategy") {
+summarise_perf <- function(ret_xts, label = "Strategy",
+                            rf_daily = 0, rf_monthly = 0) {
   r   <- ret_xts[!is.na(ret_xts)]
   n   <- length(r)
   if (n < 10) {
@@ -1153,11 +1154,24 @@ summarise_perf <- function(ret_xts, label = "Strategy") {
       ES99_d = NA, ES99_m = NA
     ))
   }
+  # CAGR (compound annual growth rate) — 별도 metric, Sharpe 분자 아님
   ann <- (prod(1 + r))^(252 / n) - 1
+  # Annualized vol (daily sd × √252)
   vol <- sd(r) * sqrt(252)
-  sr  <- ann / vol
   mdd <- maxDrawdown(r)
   cal <- if (mdd > 0) ann / mdd else NA_real_
+
+  # Sharpe (daily, 학술 표준 — Lo 2002 / Bailey-LdP 2014 / 도훈 reference 2026-04-29):
+  #   ER_t = R_t - Rf_t
+  #   Sharpe = mean(ER) / sd(ER) × sqrt(252)
+  # ※ 비표준 hybrid (CAGR / vol) 사용 금지 (도훈 reference 4번 흔한 실수).
+  rf_d_vec <- if (length(rf_daily) == 1) rep(rf_daily, n) else rf_daily
+  if (length(rf_d_vec) != n) rf_d_vec <- rep(0, n)
+  er_d <- as.numeric(r) - rf_d_vec
+  sd_er_d <- sd(er_d, na.rm = TRUE)
+  sr  <- if (!is.na(sd_er_d) && sd_er_d > 1e-12) {
+    mean(er_d, na.rm = TRUE) / sd_er_d * sqrt(252)
+  } else NA_real_
 
   # Sharpe_m: monthly-basis annualized Sharpe (Lawbook v1.4.2 Sharpe0_m_ann)
   monthly_ret <- tryCatch({
@@ -1165,7 +1179,13 @@ summarise_perf <- function(ret_xts, label = "Strategy") {
   }, error = function(e) NULL)
 
   sharpe_m <- if (!is.null(monthly_ret) && length(monthly_ret) >= 12) {
-    mean(monthly_ret) / sd(monthly_ret) * sqrt(12)
+    rf_m_vec <- if (length(rf_monthly) == 1) rep(rf_monthly, length(monthly_ret)) else rf_monthly
+    if (length(rf_m_vec) != length(monthly_ret)) rf_m_vec <- rep(0, length(monthly_ret))
+    er_m <- monthly_ret - rf_m_vec
+    sd_er_m <- sd(er_m, na.rm = TRUE)
+    if (!is.na(sd_er_m) && sd_er_m > 1e-12) {
+      mean(er_m, na.rm = TRUE) / sd_er_m * sqrt(12)
+    } else NA_real_
   } else {
     NA_real_
   }

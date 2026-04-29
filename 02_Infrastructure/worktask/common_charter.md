@@ -234,6 +234,55 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 
 ---
 
+### 12. Sharpe Ratio 표준 (v1.4, 도훈 채택 2026-04-29)
+
+**근거**: STR_1631_SYN_06 fabrication 의심 검증 중 본 코드 `Sharpe = CAGR / vol` hybrid 정의 발견. 도훈 reference (2026-04-29) 학술 표준 채택.
+
+**표준 정의** (Lo 2002 / Bailey-Lopez de Prado 2014):
+
+$$ER_t = R_{p,t} - R_{f,t}$$
+$$Sharpe_{period} = \frac{\bar{ER}}{\sigma(ER)}$$
+$$Sharpe_{annualized} = Sharpe_{period} \times \sqrt{N}$$
+
+- **N = 252** (daily) / **N = 12** (monthly)
+- **분자 = arithmetic mean of excess returns** (per period)
+- **분모 = standard deviation of excess returns** (per period)
+
+**금지 (도훈 reference 4번 흔한 실수)**:
+
+| ❌ 비표준 (사용 금지) | ✅ 표준 |
+|---|---|
+| `CAGR / (sd × √252)` (geometric / arithmetic hybrid) | `mean(ER) / sd(ER) × √252` |
+| `(prod(1+r))^(252/n) - 1 / (sd × √252)` | `mean(R - Rf) / sd(R - Rf) × √N` |
+
+**R_f 처리**:
+- **default**: `Rf = 0` (1990 이전 데이터 부재 시 simplification)
+- **권고**: `KR_Gov3Y` (`02_Infrastructure/validation/sharpe_standard.R::load_kr_riskfree()`) per-period 환산 차감
+- 36년 backtest는 금리 regime 큰 변동 → R_f 차감 권장 (도훈 reference 3번)
+
+**Single Source of Truth**: `02_Infrastructure/validation/sharpe_standard.R`
+- `compute_sharpe_standard(ret_xts, basis, rf)` — 학술 표준 직접 산출
+- `sharpe_via_perfanalytics(ret_xts, rf, basis)` — PerformanceAnalytics::SharpeRatio.annualized 호출 (검증용, geometric=FALSE)
+- `load_kr_riskfree(basis)` — KR_Gov3Y 일별/월별 환산
+
+**summarise_perf() patch (`02_Infrastructure/backtest_harness.R` line 1145+)**:
+- 기존 `Sharpe = CAGR / vol` 제거
+- 표준 `Sharpe = mean(ER) / sd(ER) × √252` 적용
+- Sharpe_m (월간)은 이미 표준 — 유지
+- CAGR은 별도 metric으로 보존 (compound annual growth rate, Sharpe 분자 아님)
+- `rf_daily`, `rf_monthly` 인자 추가 (default 0)
+
+**의무 적용**: 모든 신규 / 기존 strategy의 SR 산출 (alpha_research / forge / hurdle_gate). v1.3 §11 (Outlier) + v1.4 §12 (Sharpe) 함께 표준 단일 적용.
+
+**적용 1호**: STR_1631_SYN_06 재산출 (Variant A outlier + 표준 Sharpe).
+
+**검증 권고**:
+- Sharpe (standard) ≥ Sharpe (CAGR/vol hybrid) 약 0.05~0.15 SR (Jensen's inequality, 변동성 클수록 차이 ↑)
+- Sharpe (standard, daily basis) ≈ Sharpe_m × correction (auto-correlation 영향)
+- 두 값이 크게 다르면 (>0.2 SR) 측정 frequency 또는 자체 합성 의심
+
+---
+
 ### 11. Outlier Handling 표준 (v1.3, 도훈 채택 2026-04-29)
 
 **근거**: STR_1631_SYN_05 outlier handling 4-way 비교 backtest (PerformanceAnalytics standard + 본 simulation 양면 측정).
@@ -277,4 +326,5 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 - **v1.1** — 2026-04-27 — Iter 31 STR_1715 fabrication 사후 조치. §8 Measurement Basis Disclosure Mandate + 신규 §9 Single Source of Truth for SR. Schedule Fidelity + Divergence Diagnosis 의무화.
 - **v1.2** — 2026-04-28 — STR_1715 OVERRIDE_006 사후 조치. §10 Certification System 신규 명문화 (5 certificate + 1 health score + 4 role cards). Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. v6.31 atomic patch.
 - **v1.3** — 2026-04-29 — STR_1631_SYN_05 outlier handling 4-way 검증 후 §11 Outlier Handling 표준 명문화. Variant A (winsorize 1%/99% + corp action filter) 채택. `factor_z_standard.R` single source of truth. STR_1631_SYN_06 신규 등록 (1호 적용).
+- **v1.4** — 2026-04-29 — Sharpe Ratio 표준 §12 명문화. `Sharpe = CAGR / vol` hybrid 폐기, 학술 표준 `Sharpe = mean(ER) / sd(ER) × √N` 채택 (도훈 reference Lo 2002 / Bailey-LdP 2014). `sharpe_standard.R` single source of truth. summarise_perf() patch + 모든 strategy 재산출.
 - 변경 시 major bump + L-code 발행 필수
