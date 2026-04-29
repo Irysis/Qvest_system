@@ -234,13 +234,21 @@ build_period_returns <- function(sim_result, run_id, strategy_id,
   ret_dt[, excess_ret_net := ret_net - risk_free_ret]
   ret_dt[, cost_ret := ret_gross - ret_net]
 
-  # turnover from holdings (if provided)
-  if (!is.null(holdings_for_turnover) && nrow(holdings_for_turnover) > 0) {
-    h_wide <- dcast(holdings_for_turnover, date ~ ticker, value.var = "actual_weight",
-                    fill = 0)
-    h_dates <- h_wide$date
-    h_mat <- as.matrix(h_wide[, !"date"])
-    if (nrow(h_mat) > 1) {
+  # turnover from holdings (if provided + 컬럼명 검증)
+  required_h_cols <- c("date", "ticker", "actual_weight")
+  if (!is.null(holdings_for_turnover) && nrow(holdings_for_turnover) > 0 &&
+      all(required_h_cols %in% names(holdings_for_turnover))) {
+    h_wide <- tryCatch({
+      dcast(holdings_for_turnover, date ~ ticker,
+            value.var = "actual_weight", fill = 0)
+    }, error = function(e) {
+      message(sprintf("[build_period_returns] holdings dcast skip: %s",
+                      conditionMessage(e)))
+      NULL
+    })
+    if (!is.null(h_wide) && nrow(h_wide) > 1) {
+      h_dates <- h_wide$date
+      h_mat <- as.matrix(h_wide[, !"date"])
       to_vec <- c(NA, sapply(2:nrow(h_mat), function(i) {
         sum(abs(h_mat[i, ] - h_mat[i - 1, ])) / 2
       }))
