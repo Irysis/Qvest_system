@@ -70,18 +70,27 @@ EVIDENCE_PATTERNS='(\.R:[0-9]+|\.json::|\.csv::|\.parquet::|line [0-9]+|forge_re
 # 명시 라벨 (회피 카운트에서 제외)
 HONEST_LABELS='(검증 안 됨|미실행|honest 표시|task #[0-9]+ 처리 예정|task #[0-9]+ 후속)'
 
-EVASION_COUNT=$(grep -ocE "$EVASION_PATTERNS" "$FILE_PATH" 2>/dev/null || echo 0)
-EVIDENCE_COUNT=$(grep -ocE "$EVIDENCE_PATTERNS" "$FILE_PATH" 2>/dev/null || echo 0)
-HONEST_COUNT=$(grep -ocE "$HONEST_LABELS" "$FILE_PATH" 2>/dev/null || echo 0)
+# grep -c (line count, single integer) + numeric-only 강제 (set -u 호환)
+to_int() {
+  local raw="$1"
+  local n
+  n=$(printf '%s' "$raw" | tr -dc '0-9' | head -c 10)
+  if [ -z "$n" ]; then echo 0; else echo "$n"; fi
+}
 
-# 정수 보정
-EVASION_COUNT=${EVASION_COUNT:-0}
-EVIDENCE_COUNT=${EVIDENCE_COUNT:-0}
-HONEST_COUNT=${HONEST_COUNT:-0}
+EVASION_RAW=$(grep -cE "$EVASION_PATTERNS" "$FILE_PATH" 2>/dev/null || echo 0)
+EVIDENCE_RAW=$(grep -cE "$EVIDENCE_PATTERNS" "$FILE_PATH" 2>/dev/null || echo 0)
+HONEST_RAW=$(grep -cE "$HONEST_LABELS" "$FILE_PATH" 2>/dev/null || echo 0)
 
-# Adjusted evasion (명시 라벨 차감)
+EVASION_COUNT=$(to_int "$EVASION_RAW")
+EVIDENCE_COUNT=$(to_int "$EVIDENCE_RAW")
+HONEST_COUNT=$(to_int "$HONEST_RAW")
+
+# Adjusted evasion (명시 라벨 차감) — 항상 정의 보장
 ADJ_EVASION=$((EVASION_COUNT - HONEST_COUNT))
-[ $ADJ_EVASION -lt 0 ] && ADJ_EVASION=0
+if [ "$ADJ_EVASION" -lt 0 ] 2>/dev/null; then
+  ADJ_EVASION=0
+fi
 
 # Log all checks (audit trail)
 echo "[$TS] file=$FILE_PATH evasion=$EVASION_COUNT honest=$HONEST_COUNT adj_evasion=$ADJ_EVASION evidence=$EVIDENCE_COUNT" >> "$LOG"
