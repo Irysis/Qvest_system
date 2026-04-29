@@ -17,6 +17,57 @@
 계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변). 위반 = 즉시 중단.
 </axioms>
 
+<answer_principles level="0" version="v1.0" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29">
+모든 에이전트의 모든 비단순 작업에 적용. 위반 = AX-002 동급 (프로세스 우회 = 미래참조).
+
+**목표**: 쉬운/빠른/그럴듯한 답변 ❌ → 정확/완결/실행가능 답변 ✓
+
+**8원칙**:
+1. 표면 질문 아닌 실제 목적 파악
+2. 문제를 필요한 하위 과제로 분해
+3. 각 하위 과제 명시적 처리 (skip 시 사유 명시)
+4. 일반론 회피, 구체적 (파일경로 + line + 수치 + 출처)
+5. 핵심 가정/예외/실패가능성/리스크 점검 (≥1건 명시)
+6. 복잡/어려운 부분 생략 ❌ (TBD/추상화 대체 ❌)
+7. 불확실 부분 명확히 표시 ("검증 안 됨"/"미실행" 라벨)
+8. 실행 가능한 결론 또는 다음 행동으로 마무리
+
+**5금지**: 조용한 단순화 ❌ / TODO·추상화 대체 ❌ / hallucination(없는 사실/함수/근거) ❌ / 검증 없이 완료 보고 ❌ / 얕고 그럴듯한 마무리 ❌
+
+**자가체크 (제출 전 필수)**: "나는 실제 문제를 해결했는가, 아니면 쉬운 답변을 만든 것인가?" → 쉬운 답변에 가까우면 수정 후 제출.
+
+**비단순 작업 boundary** (8원칙 강제 대상):
+- 다중 검증 / 의사결정 영향 / 메모리 commit (L-code, methodology, gap_vector, book_state)
+- 백테스트 결과 보고 (특히 metric 인용)
+- 팀 공유 파일 수정 (lawbook, _shared_prefix, prompts/*)
+- 비교/회귀/분해 분석 / WT 단계 전이 / 사용자 비판·정정 응답
+- **경계 모호 시 비단순으로 분류** (보수적 판단)
+
+단순 작업 (면제): trivial query, 단일 파일 1줄 확인, 명백한 즉시 계산.
+
+**회피 표현 grep 대상** (검증 증거 없이 사용 시 위반):
+- 가정 회피: "유사하므로/동일하므로/거의 같다/대략/근사" / "similar/approximately/roughly"
+- 추정 회피: "추정/예상/기대/아마/보통" / "estimated/likely/probably/expected"
+- 보류 회피: "추후 검증/다음 step/TBD/나중에" / "TBD/to be verified/later"
+- 단순화 회피: "이 정도면/충분/관행적/관례상" / "good enough/conventional"
+- 합리화 회피: "영향 미미/보수적이면/이미 반영/상쇄" / "negligible/conservative enough"
+
+명시 라벨링은 허용: "검증 안 됨 (가정 사용)", "추정치 — 본 simulation 미실행", "TBD — task #N 처리 예정".
+
+**백테스트 자체 합성 금지** (Plan §"백테스트 자체 합성 금지" + Charter v1.4 §9 정합):
+- 허용: `PerformanceAnalytics::Return.portfolio(R, weights, rebalance_on, verbose=TRUE)` / `Return.cumulative` / `apply.monthly(R, Return.cumulative)` / `table.AnnualizedReturns` / `maxDrawdown` / `SharpeRatio.annualized`
+- 금지: `prod(1+r)-1` / `cumprod(1+r)` / `0.8*str1 + 0.2*str2` / `r[, .(prod(1+r)-1), by=YM]` 자체 합성
+- 예외: Charter v1.4 §12 ER-based `mean(ER)/sd(ER)*sqrt(N)` (학술 표준)
+
+위반 시 절차:
+- L1 자가 발견: 즉시 정정 + 회피 부분 명시
+- L2 사용자 지적: 즉시 인정 + 시정 path + 시정 + L-code 등재
+- L3 3회 반복: Hook L3 hard block 검토
+
+세부: @00_Lawbook/Multi_Agent/qvest_answer_principles.md
+근거 L-code: L-247 (Q-Lead 3회 연속 회피 — SYN_06 proxy / daily-monthly 혼동 / PerformanceAnalytics 우회)
+</answer_principles>
+
 <pit_core level="0">
 매 데이터 접근 전 3질문:
 1. 이 데이터는 의사결정 시점에 알 수 있었는가?
