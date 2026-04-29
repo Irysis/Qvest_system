@@ -1,0 +1,25 @@
+{
+  "l_code": "L-247",
+  "category": "process_integrity",
+  "title": "Q-Lead 3회 연속 회피 → 8원칙 시스템 도입 (옵션 B+, AX-002 매핑)",
+  "comparison": "기존 회피 패턴 (proxy / TBD / 자체 합성) vs 도훈 명시 8원칙 + 5금지 + 1자가체크 강제 시스템",
+  "conditions": "2026-04-29 Session 73 도훈 명시 지침. Q-Lead 3회 연속 회피 사례 trigger: (1) SYN_06 vs SYN_05 proxy 비검증 가정 (2) daily/monthly 혼동 잘못 추출 (3) PerformanceAnalytics 우회 자체 prod() 합성.",
+  "result": "옵션 B+ 적용 6건: (1) 00_Lawbook/Multi_Agent/qvest_answer_principles.md v1.0 신규 (13 sections, 8원칙+5금지+1체크+boundary+AX-002+회피사전+탐지+PA표준+실패모드+위반절차+관련+이력) (2) _shared_prefix.md <answer_principles> 추가 (axioms 직후) (3) CLAUDE.md Level 0 section 추가 (4) hooks/answer_principles_grep.sh PostToolUse[Write|Edit] Level 2 soft alert + settings.json 등록 (5) methodology_active.md L-246 + L-247 commit (6) qepm/memory/lessons/L-246.json + L-247.json parallel storage. Hook 작동 검증 통과 (evasion=9 / honest=4 / adj=5 / evidence=52, alert 미발동 정상).",
+  "rationale": "도훈 명시: '쉬운/빠른/그럴듯한 답변 ❌ → 정확/완결/실행가능 답변 ✓'. AX-002 매핑 (프로세스 우회 = 미래참조 동급). Plan §'백테스트 자체 합성 금지' + Charter v1.4 §9 정합. 8원칙 자체 한계 4건 (LLM 자가 합리화 / Hook 표면 grep / boundary 모호 / 시간 압박) 명시.",
+  "scope": "전체 에이전트 (Q-Lead/Scout/Forge/Judge/Governor/Risk/Architect/Codex/Reporter/Briefing) + 모든 비단순 작업",
+  "strategy": "system_wide_governance",
+  "lesson_text": "LLM은 자기합리화 엔진이라 시간 압박/모호성 앞에서 회피 경로 선택 본능. 8원칙 + 5금지 + 1자가체크 + 회피 표현 사전 + Hook L2 soft alert로 다층 방어. AX-002 매핑으로 위반 시 미래참조 동급 처리. 1주 후 review 시 회피 재발 빈도 따라 옵션 C (Hook L3 hard block) 검토.",
+  "core_reference": "도훈 Session 73 명시 지침 + 00_Lawbook/Multi_Agent/qvest_answer_principles.md v1.0 + _shared_prefix.md <answer_principles> + CLAUDE.md '## Qvest 답변 원칙 (Level 0)' + 02_Infrastructure/hooks/answer_principles_grep.sh + .claude/settings.json PostToolUse 등록",
+  "tags": [
+    "ANSWER_PRINCIPLES_8RULES_5BANS_1CHECK",
+    "QLEAD_3X_EVASION_TRIGGER",
+    "OPTION_B_PLUS_APPLIED",
+    "AX_002_MAPPING_PROCESS_BYPASS",
+    "BACKTEST_SELF_SYNTHESIS_BAN",
+    "PERFORMANCEANALYTICS_STANDARD_FUNCTIONS_ONLY",
+    "BOUNDARY_SIMPLE_VS_NONSIMPLE_OPERATIONAL_DEF",
+    "HOOK_L2_SOFT_GREP_ALERT"
+  ],
+  "grade": "VALIDATED_PROCESS_INTEGRITY_TIGHTENING",
+  "timestamp": "2026-04-29T12:48:00+09:00"
+}

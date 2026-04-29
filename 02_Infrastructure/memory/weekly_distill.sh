@@ -1,6 +1,7 @@
 #!/bin/bash
 # Weekly Memory Distillation — 매주 일요일 12:00
-source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+# PATCH 2026-04-29 (L-247 trigger): resolve_project.sh path + memory_logger.R path 정정
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/resolve_project.sh"
 cd "$PROJECT"
 
 echo "[weekly_distill] $(date '+%Y-%m-%d %H:%M') Starting..."
@@ -9,7 +10,7 @@ Rscript --no-save -e '
 suppressMessages({
   source("02_Infrastructure/config.R")
   source("02_Infrastructure/stage_gate_engine.R")
-  source("02_Infrastructure/memory_logger.R")
+  source("02_Infrastructure/memory/memory_logger.R")
 })
 
 cat("=== Weekly Distillation ===\n")

@@ -1,0 +1,22 @@
+{
+  "l_code": "L-246",
+  "category": "lookahead_diagnosis",
+  "title": "STR_1715 정식 전기간 백테스트 + 시장 베타 분리 (Iter5 lockbox 해제)",
+  "comparison": "Walk-forward stated 1.4522 vs 본 logic 정식 백테스트 (267 monthly obs) + KOSPI 시장 베타 분리",
+  "conditions": "Iter5 alpha_scores SIGNAL_CUTOFF lockbox 2023-12-22 → 2026-04-30 해제 후 재컴퓨팅. STR_1715 본 logic 직접 실행 (linear_tilt_to_penalty_qd + cash_overlay_pct_iter31 + raw stock returns aggregate). IS bt_dt (line 340-385) WF 240mo + OOS oos_dt (line 633-651) frozen weights 28mo.",
+  "result": "Full 267mo SR 1.5989 / CAGR 40.92% / MDD -35.26%. IS (192mo) SR 1.4572 vs stated 1.4522 divergence 0.005 → IS 미래참조 없음 입증. OOS (28mo) SR 2.8240 / CAGR 101.91%. CAPM 분해: STR_1715 Beta 0.022 / Alpha 74.40% / cor(KOSPI) 0.029 (market-neutral massive alpha). STR_1631_SYN_06 Beta 0.421 / Alpha 19.79% / cor 0.733. 두 전략 cor 0.075. KOSPI OOS CAGR 48.12% (역대급 상승장, IS 2.12% 대비 23배). KOSPI 46.00pp가 STR_1715 overshoot 69.34pp의 66% 설명.",
+  "rationale": "STR_1715 OOS 우월성은 (1) 시장 베타 ~3% (2) Alpha ~74%/yr 조합. 미래참조보다 시장 베타 + alpha. Caveat: OOS oos_dt last sig_date frozen weights — 매월 alpha 갱신 schedule 부재 한계 (L-244/L-245 동일 caveat).",
+  "scope": "STR_1715 standalone 전기간 평가 + cross-family diversification 검증",
+  "strategy": "STR_1715, STR_1631_SYN_06",
+  "lesson_text": "STR_1715 정식 전기간 백테스트 결과 IS 미래참조 없음 입증 (divergence 0.005). OOS 우월성은 시장 베타(0.022)보다 alpha(74.40%/yr) 기여 — KOSPI 자체가 역대급 상승장이라 시장 베타가 적어도 cumulative 큰 효과. Cross-family diversification 확인 (cor 0.075).",
+  "core_reference": "/tmp/iter5_full_period_artifacts/alpha_scores.parquet + qepm/mailbox/worktask/WT-D20260427_016/backtest_result/v31_monthly_returns.csv + qepm/mailbox/governor/lookahead_market_diag/lookahead_market_diag.json + .cache/benchmark.parquet",
+  "tags": [
+    "STR_1715_FULL_BACKTEST_SR_1_60",
+    "IS_NO_LOOKAHEAD_DIVERGENCE_0_005",
+    "OOS_BETA_0_02_ALPHA_74_PCT",
+    "KOSPI_BULL_MARKET_46PP_EXPLAIN_66PCT",
+    "CROSS_FAMILY_COR_0_075_DIVERSIFICATION"
+  ],
+  "grade": "VALIDATED_LOOKAHEAD_DIAGNOSIS",
+  "timestamp": "2026-04-29T12:48:00+09:00"
+}

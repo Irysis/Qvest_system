@@ -214,21 +214,39 @@ log_experiment <- function(category,
 
 # ─── update_memory_summary() ────────────────────────────────────────────────
 #' Update MEMORY.md with current L-code count from methodology_memory.md
+#' PATCH 2026-04-29 (L-247): active + archive split 후 정합화
+#' methodology_active.md + methodology_archive.md + experiment_log.md 합산.
 #' @return invisible(list(max_l, count))
 update_memory_summary <- function() {
-  if (!file.exists(METHODOLOGY_PATH)) {
-    stop("[memory_logger] methodology_memory.md not found: ", METHODOLOGY_PATH)
-  }
   if (!file.exists(MEMORY_MD_PATH)) {
     stop("[memory_logger] MEMORY.md not found: ", MEMORY_MD_PATH)
   }
 
-  # ── Count unique L-codes in methodology_memory.md ──
-  meth_lines <- readLines(METHODOLOGY_PATH, warn = FALSE)
-  l_matches <- str_extract_all(meth_lines, "L-\\d+")
-  all_codes <- unique(unlist(l_matches))
-  all_nums  <- sort(as.integer(str_extract(all_codes, "\\d+")))
+  # ── Count unique L-codes from active + archive + experiment_log ──
+  paths_to_scan <- c(
+    file.path(MEMORY_DIR, "methodology_active.md"),
+    file.path(MEMORY_DIR, "methodology_archive.md"),
+    file.path(MEMORY_DIR, "methodology_memory.md"),
+    file.path(MEMORY_DIR, "experiment_log.md")
+  )
+  paths_to_scan <- paths_to_scan[file.exists(paths_to_scan)]
 
+  if (length(paths_to_scan) == 0) {
+    message("[memory_logger] No methodology file found in: ", MEMORY_DIR)
+    return(invisible(list(max_l = 0L, count = 0L)))
+  }
+
+  all_codes <- unique(unlist(lapply(paths_to_scan, function(p) {
+    lines <- readLines(p, warn = FALSE)
+    unlist(str_extract_all(lines, "L-\\d+"))
+  })))
+
+  if (length(all_codes) == 0) {
+    message("[memory_logger] No L-codes found across: ", paste(basename(paths_to_scan), collapse=", "))
+    return(invisible(list(max_l = 0L, count = 0L)))
+  }
+
+  all_nums  <- sort(as.integer(str_extract(all_codes, "\\d+")))
   max_l  <- max(all_nums, na.rm = TRUE)
   count  <- length(all_nums)
 
