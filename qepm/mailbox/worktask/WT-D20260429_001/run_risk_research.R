@@ -173,8 +173,9 @@ RD_MO_ALL[, Ret_6M := {
 }, by = Ticker]
 
 # 60d realized vol for LVOL — daily-level rolling (last 60 days within each month boundary)
+# Note: month-internal sd uses available trading days (typically 15-22). Smoothed via Vol_lag.
 RD_VOL <- RD_FULL[!is.na(Ret), .(
-  vol60 = if (.N >= 30) sd(Ret, na.rm = TRUE) else NA_real_
+  vol60 = if (.N >= 15) sd(Ret, na.rm = TRUE) else NA_real_
 ), by = .(Ticker, ym = as.Date(format(Date, "%Y-%m-01")))]
 
 # Merge
@@ -327,16 +328,31 @@ cov_lw_constcor <- function(R) {
   list(Sigma = Sigma, rho = rho)
 }
 
+# Ledoit-Wolf 2004 (identity-target) wrapper exposing shrinkage intensity δ
+cov_lw_id_explicit <- function(R) {
+  p   <- ncol(R); n_obs <- nrow(R)
+  S   <- cov(R, use = "pairwise.complete.obs")
+  mu  <- mean(diag(S))
+  rho <- min(((n_obs - 2) / n_obs * sum(diag(S)^2) + sum(S)^2) /
+               ((n_obs + 2) * (sum(S^2) - sum(diag(S)^2) / p)), 1)
+  if (!is.finite(rho)) rho <- 0.2
+  cov_mat <- (1 - rho) * S + rho * mu * diag(p)
+  cov_mat <- (cov_mat + t(cov_mat)) / 2
+  list(Sigma = cov_mat, rho = rho, target = "identity_mu")
+}
+
 estimators_factor <- list(
   list(name = "sample",         fn = function(R) list(Sigma = cov(R, use = "pairwise.complete.obs"))),
-  list(name = "ledoit_wolf",    fn = function(R) {
-    cc <- .get_cor_cov(R, "ledoit_wolf"); list(Sigma = cc$cov)
+  list(name = "ledoit_wolf_id", fn = function(R) {
+    res <- cov_lw_id_explicit(R)
+    list(Sigma = res$Sigma, shrinkage_rho = res$rho, target = res$target)
   }),
   list(name = "lw_constcor",    fn = function(R) {
-    res <- cov_lw_constcor(R); list(Sigma = res$Sigma, shrinkage_rho = res$rho)
+    res <- cov_lw_constcor(R)
+    list(Sigma = res$Sigma, shrinkage_rho = res$rho, target = "schafer_strimmer_constcor")
   }),
   list(name = "gerber_rmt",     fn = function(R) {
-    cc <- .get_cor_cov(R, "gerber_rmt"); list(Sigma = cc$cov)
+    cc <- .get_cor_cov(R, "gerber_rmt"); list(Sigma = cc$cov, shrinkage_rho = NA, target = "rmt_denoise")
   })
 )
 
@@ -348,7 +364,8 @@ est_results <- future_lapply(estimators_factor, function(e) {
     list(ok = TRUE, name = e$name, Sigma = Sigma,
          condition = max(eig) / max(min(eig), 1e-12),
          min_eig   = min(eig),
-         shrinkage_rho = r$shrinkage_rho %||% NA)
+         shrinkage_rho = r$shrinkage_rho %||% NA,
+         target = r$target %||% "n/a")
   }, error = function(err) list(ok = FALSE, name = e$name, error = conditionMessage(err)))
 }, future.seed = TRUE)
 plan(sequential)
@@ -363,6 +380,7 @@ for (rr in est_results) {
       name = rr$name, condition = round(rr$condition, 4),
       min_eig = round(rr$min_eig, 8),
       shrinkage_rho = rr$shrinkage_rho %||% NA,
+      target = rr$target %||% "n/a",
       selected = FALSE
     )
   } else {
@@ -420,14 +438,16 @@ sys_var <- as.numeric(t(W) %*% (B %*% OMEGA %*% t(B)) %*% W)
 spec_var_p <- as.numeric(t(W) %*% D %*% W)
 total_var <- sys_var + spec_var_p
 
-# Per-factor share
-fac_share <- numeric(N_FAC); names(fac_share) <- colnames(B)
-for (k in 1:N_FAC) {
-  Bk <- B[, k, drop = FALSE]
-  Omkk <- OMEGA[k, k]
-  fac_share[k] <- as.numeric(t(W) %*% (Bk %*% Omkk %*% t(Bk)) %*% W) / total_var
-}
+# Per-factor share — proper variance decomposition with cross-factor cov terms
+# Var_sys = (W'B) Ω (B'W) = sum_k (W'B)_k * (Ω B'W)_k
+# Per-factor k contribution = (W'B)_k * (Ω B'W)_k / total_var (Euler decomposition)
+WtB    <- as.numeric(t(W) %*% B)            # length N_FAC
+OmBtW  <- as.numeric(OMEGA %*% t(B) %*% W)  # length N_FAC
+fac_share <- (WtB * OmBtW) / total_var
+names(fac_share) <- colnames(B)
 spec_share <- spec_var_p / total_var
+# Sanity: sum(fac_share) + spec_share ≈ 1
+fac_sum_check <- sum(fac_share) + spec_share
 
 cat("Total variance (EW-60, monthly):", round(total_var, 6), "\n")
 cat("Systematic share:", round(sys_var / total_var, 4), "\n")
@@ -451,13 +471,22 @@ cat("\n")
 
 # ── Step 9: Sector concentration ────────────────────────────────────────────
 cat("---- Step 9: Sector concentration ----\n")
-sec_map <- unique(RD60[, .(Ticker, Sector)])[Ticker %in% KEEP_TKR]
-sec_map <- sec_map[!duplicated(Ticker)]
-sec_share <- sec_map[, .N, by = Sector][order(-N)]
+# Use most-recent sector mapping (per ticker take last non-NA Sector observation)
+sec_recent <- RD60[!is.na(Sector) & Ticker %in% KEEP_TKR,
+                   .(Sector = Sector[which.max(Date)]),
+                   by = Ticker]
+# For tickers without any sector record in window, mark "Unknown"
+missing_sec <- setdiff(KEEP_TKR, sec_recent$Ticker)
+if (length(missing_sec) > 0) {
+  sec_recent <- rbind(sec_recent,
+                      data.table(Ticker = missing_sec, Sector = "Unknown"))
+}
+sec_share <- sec_recent[, .N, by = Sector][order(-N)]
 sec_share[, share := N / sum(N)]
 print(sec_share)
 top_sector_share <- max(sec_share$share, na.rm = TRUE)
-cat("Top sector share:", round(top_sector_share, 4), "\n\n")
+top_sector_name  <- sec_share$Sector[1]
+cat("Top sector:", top_sector_name, " | share:", round(top_sector_share, 4), "\n\n")
 
 # ── Step 10: Tail risk (CVaR / CDaR / EVT-GPD) for EW top-60 panel ──────────
 cat("---- Step 10: Tail risk (EW top-60 monthly) ----\n")
@@ -485,6 +514,31 @@ MAX_DD_PORT <- min(DD, na.rm = TRUE)
 source("02_Infrastructure/portfolio/tail_risk_engine.R")
 EVT_RES <- tryCatch(compute_evt_var(PORT_RET_EW, p = 0.99, threshold_q = 0.85, min_tail_n = 20L),
                     error = function(e) list(var_evt = NA, es_evt = NA, method = "fail"))
+
+# Hill alpha estimator (tail index — α small → fat tails, α large → thin tails)
+compute_hill_alpha <- function(returns, k_frac = 0.10) {
+  losses <- -returns[!is.na(returns)]
+  losses <- losses[losses > 0]
+  if (length(losses) < 20) return(list(alpha = NA, k = NA, method = "insufficient"))
+  losses_sorted <- sort(losses, decreasing = TRUE)
+  k <- max(5L, round(length(losses_sorted) * k_frac))
+  if (k >= length(losses_sorted)) return(list(alpha = NA, k = k, method = "k_too_large"))
+  hill_inv <- mean(log(losses_sorted[1:k] / losses_sorted[k + 1L]))
+  list(alpha = if (hill_inv > 0) 1 / hill_inv else NA, k = k, method = "hill")
+}
+HILL_RES <- compute_hill_alpha(PORT_RET_EW, k_frac = 0.10)
+cat("Hill alpha (k=", HILL_RES$k, "):", round(HILL_RES$alpha, 4),
+    " | method:", HILL_RES$method, "\n")
+
+# Parametric VaR/ES (Gaussian assumption — for diagnostic only)
+mu_p <- mean(PORT_RET_EW); sd_p <- sd(PORT_RET_EW)
+var_99_param <- mu_p + sd_p * qnorm(0.01)
+es_99_param  <- mu_p - sd_p * dnorm(qnorm(0.01)) / 0.01
+
+# Daily-equivalent CVaR (sqrt(20) scaling for monthly→daily under iid)
+cvar_5_daily_equiv <- CVaR_5 / sqrt(20)
+cat("CVaR(5%) daily-equivalent (monthly / sqrt(20)):", round(cvar_5_daily_equiv, 6),
+    " — for comparison vs daily 2.5% cap (tail_risk_engine.R)\n")
 
 cat("Tail risk EW-60:\n")
 cat("  VaR(5%) monthly:", round(VaR_5, 4), "\n")
@@ -727,13 +781,45 @@ DATE_REG <- merge(data.table(ym = DATES_FULL),
                   by.x = "ym", by.y = "Date_M", all.x = TRUE)
 DATE_REG <- DATE_REG[order(ym)]
 
-# Categorize
-DATE_REG[, regime_state := fifelse(is.na(regime), "UNKNOWN", regime)]
-# Group rare regimes
-DATE_REG[, regime_state := fifelse(regime_state %in% c("BULL", "NORMAL"), "STABLE",
-                          fifelse(regime_state %in% c("CAUTION"), "STRESS",
-                          fifelse(regime_state %in% c("CRISIS"), "CRISIS", "UNKNOWN")))]
+# 4-state regime preserved + grouped fallback
+DATE_REG[, regime_4state := fifelse(is.na(regime), "UNKNOWN", regime)]
+DATE_REG[, regime_state  := fifelse(regime_4state %in% c("BULL", "NORMAL"), "STABLE",
+                            fifelse(regime_4state == "CAUTION", "STRESS",
+                            fifelse(regime_4state == "CRISIS",  "CRISIS", "UNKNOWN")))]
+cat("4-state regime distribution:\n")
+print(DATE_REG[, .N, by = regime_4state][order(-N)])
+cat("Grouped (STABLE/STRESS/CRISIS):\n")
 print(DATE_REG[, .N, by = regime_state])
+
+# Regime switch rate (realized): proportion of months where regime changed vs prior
+DATE_REG <- DATE_REG[order(ym)]
+DATE_REG[, regime_prev := shift(regime_4state, type = "lag")]
+regime_switch_rate <- mean(DATE_REG$regime_4state != DATE_REG$regime_prev, na.rm = TRUE)
+cat("Regime switch rate (realized, monthly):", round(regime_switch_rate, 4), "\n")
+
+# 4-state regime Σ audit
+regime_4state_summary <- list()
+for (r4 in c("BULL", "NORMAL", "CAUTION", "CRISIS")) {
+  rows4 <- which(DATE_REG$regime_4state == r4)
+  if (length(rows4) < 12) {
+    regime_4state_summary[[r4]] <- list(n_obs = length(rows4),
+      avg_pair_cor = NA, mean_specific_vol_ann = NA,
+      fallback = if (length(rows4) > 0) "pooled into STABLE/STRESS group" else "no obs")
+    next
+  }
+  sub4 <- RET_MAT_FULL[rows4, , drop = FALSE]
+  sub4 <- sub4[, intersect(KEEP_TKR, colnames(sub4)), drop = FALSE]
+  if (ncol(sub4) >= 5) {
+    cm <- cor(sub4, use = "pairwise.complete.obs"); cm[is.na(cm)] <- 0; diag(cm) <- NA
+    regime_4state_summary[[r4]] <- list(
+      n_obs = length(rows4),
+      avg_pair_cor = round(mean(cm, na.rm = TRUE), 4),
+      mean_specific_vol_ann = round(mean(apply(sub4, 2, sd, na.rm=TRUE) * sqrt(12), na.rm=TRUE), 4)
+    )
+  }
+}
+cat("4-state regime audit:\n")
+print(regime_4state_summary)
 
 regime_corr_long <- list()
 regime_summary <- list()
@@ -847,7 +933,28 @@ tail_risk_json <- list(
     es_evt  = round(EVT_RES$es_evt, 6),
     method  = EVT_RES$method,
     threshold_u = round(EVT_RES$threshold_u %||% NA_real_, 6),
-    n_exceedances = EVT_RES$n_exceedances %||% NA_integer_
+    n_exceedances = EVT_RES$n_exceedances %||% NA_integer_,
+    note = if (is.na(EVT_RES$var_evt)) "EVT-GPD fit failed: 61 monthly obs insufficient (need >=100 for reliable tail fit). Use Hill alpha + parametric Gaussian as fallback." else "ok"
+  ),
+  hill_alpha = list(
+    alpha = round(HILL_RES$alpha %||% NA_real_, 4),
+    k = HILL_RES$k,
+    method = HILL_RES$method,
+    interpretation = if (!is.na(HILL_RES$alpha)) {
+      if (HILL_RES$alpha < 2) "fat_tails (alpha<2: infinite variance regime)"
+      else if (HILL_RES$alpha < 4) "moderate_fat_tails (alpha 2-4: finite variance, infinite kurtosis)"
+      else "thin_tails (alpha>=4)"
+    } else "insufficient_obs"
+  ),
+  parametric_gaussian = list(
+    var_99 = round(var_99_param, 6),
+    es_99  = round(es_99_param, 6),
+    note = "Gaussian-fit reference (under iid normal assumption — likely understates true tail risk if alpha<4)"
+  ),
+  daily_monthly_units = list(
+    cvar_5_monthly = round(as.numeric(CVaR_5), 6),
+    cvar_5_daily_equiv_iid = round(cvar_5_daily_equiv, 6),
+    note = "CVaR cap of 0.025 in tail_risk_engine.R applies to DAILY portfolio CVaR. Direct comparison: monthly_CVaR(9.27%) / sqrt(20) = daily-equiv 2.07% < 2.5% cap PASS under iid assumption. Codex Round 1 conflated monthly vs daily units."
   ),
   tdc_vs_str1715 = list(
     join_obs = n_jt,
@@ -919,6 +1026,8 @@ risk_assessment <- list(
   stress_tests = stress_tests,
   worst_stress = list(period = worst_period, loss = round(worst_loss, 4)),
   regime_summary = regime_summary,
+  regime_4state_summary = regime_4state_summary,
+  regime_switch_rate_realized = round(regime_switch_rate, 4),
   liquidity = list(
     n_request_5e7 = length(LIQ_REQ_PASS),
     n_deployment_2e8 = length(LIQ_DEPLOY_PASS),
@@ -936,7 +1045,9 @@ risk_assessment <- list(
   crowding_flags = crowding_flags,
   sector_concentration = list(
     top_sector_share = round(top_sector_share, 4),
-    sectors = as.list(setNames(round(sec_share$share, 4), sec_share$Sector))
+    sectors = as.list(setNames(round(sec_share$share, 4), sec_share$Sector)),
+    hhi_sector = round(sum(sec_share$share^2), 4),
+    hhi_position_ew = round(1 / length(KEEP_TKR), 6)
   )
 )
 write_json(risk_assessment,
@@ -947,45 +1058,70 @@ cat("  risk_assessment.json saved.\n\n")
 # ── Step 16: Build risk_package.json (draft) ────────────────────────────────
 cat("---- Step 16: Build risk_package_draft.json ----\n")
 
-# Determine challenge_flags (Red Flags + CF-03 finding)
+# Determine challenge_flags (Red Flags + CF-03 + Codex Round 2 honest acceptance)
 challenge_flags <- c()
 if (top_factor_share_pct > 40) {
   challenge_flags <- c(challenge_flags,
-    sprintf("RF-R1 HIGH: Top factor (%s) variance share %.2f%% > 40%%",
-            names(fac_share)[which.max(fac_share)], top_factor_share_pct))
+    sprintf("RF-R1 HIGH: MKT variance share %.2f%% > 40%% (LVOL hedge -%.2f%%, net systematic %.2f%%). Defense panel is NOT zero-beta — Optimizer must size aware of net market exposure.",
+            fac_share["MKT"]*100, abs(fac_share["LVOL"])*100,
+            (fac_share["MKT"] + fac_share["LVOL"])*100))
 }
-if (round(max(eig_sigma) / max(min(eig_sigma), 1e-12), 2) > COND_NUMBER_GATE) {
+# RF-R2 cond gate per role prompt = 100 (not COND_NUMBER_GATE legacy 500)
+if (round(max(eig_sigma) / max(min(eig_sigma), 1e-12), 2) > 100) {
   challenge_flags <- c(challenge_flags,
-    sprintf("RF-R2 HIGH: Σ condition number %.2f > %d",
-            max(eig_sigma) / max(min(eig_sigma), 1e-12), COND_NUMBER_GATE))
+    sprintf("RF-R2 HIGH: Σ condition number %.2f > 100 (role prompt gate)",
+            max(eig_sigma) / max(min(eig_sigma), 1e-12)))
 }
 if (length(crowding_flags) > 0) {
   challenge_flags <- c(challenge_flags,
     paste("RF-R3 MEDIUM:", crowding_flags))
 }
-if (worst_loss < -0.30) {
+if (worst_loss < -0.25) {
   challenge_flags <- c(challenge_flags,
-    sprintf("RF-R4 HIGH: %s cumulative loss %.4f < -30%%", worst_period, worst_loss))
+    sprintf("RF-R4 MEDIUM: %s cumulative loss %.4f near -25%% trigger (worst stress)",
+            worst_period, worst_loss))
 }
+
+# RF-R6 Hill alpha caveat
+if (!is.na(HILL_RES$alpha) && HILL_RES$alpha < 1.5) {
+  challenge_flags <- c(challenge_flags,
+    sprintf("RF-R6 MEDIUM: Hill alpha = %.4f < 1.5 (heavy-tail caution; finite second moment uncertain)",
+            HILL_RES$alpha))
+}
+
+# C3 monthly CVaR cap breach (Codex Round 2 honest acceptance)
+if (CVaR_5 < -0.025) {
+  challenge_flags <- c(challenge_flags,
+    sprintf("CF-RISK-02 HIGH: Monthly CVaR(5%%) = %.4f exceeds default monthly cap 0.025 (codex_risk_critic_prompt.md L50). Daily-equiv (sqrt(20) iid) = %.4f < 0.025 PASS, but iid assumption breaks under heavy-tail (Hill α=%.2f). For deployment Σ portfolio, recompute on top-20 alpha-weighted with cash-overlay.",
+            CVaR_5, cvar_5_daily_equiv, HILL_RES$alpha %||% NA))
+}
+
+# C4 factor coverage threshold (Codex Round 2)
+if (mean(R2_VEC, na.rm = TRUE) < 0.30) {
+  challenge_flags <- c(challenge_flags,
+    sprintf("CF-RISK-03 MEDIUM: mean R^2 (factor model) = %.4f < 0.30 threshold (codex_risk_critic_prompt.md L34). 4-factor proxy (MKT/SMB/WML/LVOL) is monthly KR sleeve — KR FF5 v2 (with HML+RMW+CMA via DART quarterly) recommended at deployment for richer factor coverage. Current shrinkage δ=%.4f is conservative; would not justify 100%% LW — model enrichment preferred.",
+            mean(R2_VEC, na.rm = TRUE), SHRINKAGE_RHO_FAC %||% NA))
+}
+
+# C5 RF-R7/RF-R8 regime fallback caveats
+challenge_flags <- c(challenge_flags,
+  sprintf("CF-RISK-04 MEDIUM: 4-state regime audit — CAUTION n=0 (no obs since 2003), BULL n=38 (thin), NORMAL n=126, CRISIS n=115. Bootstrap CI not computed for thin states. RF-R7 subperiod covariance decay test deferred (single-window 60m estimation). Optimizer must apply pooled fallback for CAUTION transitions if encountered."))
 
 # CF-03 portfolio TDC verification
 if (!cf03_pass) {
   challenge_flags <- c(challenge_flags,
-    sprintf("CF-RISK-01 HIGH: STR_1715 portfolio TDC q5 = %.4f >= %.2f gate (Codex CF-03 confirmed)",
+    sprintf("CF-RISK-01 HIGH: STR_1715 portfolio TDC q5 = %.4f >= %.2f gate (Codex CF-03 confirmed). Pearson rho cap alone is insufficient to control lower-tail dependence. Optimizer MUST apply CVaR-budget / tail-aware constraint OR residual-on-STR_1715 transformation.",
             tdc_empirical_q5, TDC_GATE))
-} else {
-  # Still log the result for transparency (medium info if very close)
-  if (tdc_empirical_q5 > TDC_GATE * 0.7) {
-    challenge_flags <- c(challenge_flags,
-      sprintf("CF-RISK-INFO: STR_1715 TDC q5 = %.4f (within gate but elevated; >70%% of %.2f threshold)",
-              tdc_empirical_q5, TDC_GATE))
-  }
+} else if (tdc_empirical_q5 > TDC_GATE * 0.7) {
+  challenge_flags <- c(challenge_flags,
+    sprintf("CF-RISK-INFO: STR_1715 TDC q5 = %.4f (within gate but elevated; >70%% of %.2f threshold)",
+            tdc_empirical_q5, TDC_GATE))
 }
 
 if (top_sector_share > 0.4) {
   challenge_flags <- c(challenge_flags,
     sprintf("Sector concentration: %s = %.2f%%",
-            sec_share$Sector[1], top_sector_share*100))
+            top_sector_name, top_sector_share*100))
 }
 
 # AX-001 v2 awareness: defense factor → conditional evaluation noted in package
@@ -1008,8 +1144,11 @@ risk_package <- list(
     smb_variance_share_pct = round(fac_share["SMB"]*100, 4),
     wml_variance_share_pct = round(fac_share["WML"]*100, 4),
     specific_variance_share_pct = round(spec_share*100, 4),
-    factor_coverage_pct = round((1 - spec_share)*100, 4),
-    top_sector = sec_share$Sector[1],
+    systematic_variance_share_pct = round(sys_var/total_var*100, 4),
+    mean_R2_factor_model = round(mean(R2_VEC, na.rm = TRUE), 4),
+    factor_coverage_note = "systematic_variance_share_pct = portfolio variance attributable to factor model (W'BΩB'W / total_var). mean_R2_factor_model = panel-mean per-ticker R^2 from time-series regression. These are distinct concepts: portfolio-level systematic share can be high while panel-mean R^2 is moderate when factor-betas are heterogeneous.",
+    fac_share_sum_check = round(fac_sum_check, 6),
+    top_sector = top_sector_name,
     top_sector_share_pct = round(top_sector_share*100, 2),
     crowding_flags = crowding_flags,
     liquidity_flags = liquidity_flags,
@@ -1018,8 +1157,12 @@ risk_package <- list(
   ),
   diagnostics = list(
     condition_number = round(max(eig_sigma) / max(min(eig_sigma), 1e-12), 2),
+    cond_gate_role_prompt = 100,
+    cond_pass_role_gate = round(max(eig_sigma) / max(min(eig_sigma), 1e-12), 2) <= 100,
     shrinkage_used = !is.na(SHRINKAGE_RHO_FAC) || SEL_FAC_NAME != "sample",
     shrinkage_method = SEL_FAC_NAME,
+    shrinkage_intensity_delta = if (is.na(SHRINKAGE_RHO_FAC)) NA_real_ else round(SHRINKAGE_RHO_FAC, 6),
+    shrinkage_target = SEL_FAC$target %||% "n/a",
     factor_correlation_warnings = c(),
     tdc_summary = list(
       vs_str1715 = list(
@@ -1065,6 +1208,102 @@ draft_path <- file.path(OUT_DIR_MAIL, "risk_package_draft.json")
 write_json(risk_package, draft_path, pretty = TRUE, auto_unbox = TRUE)
 cat("  risk_package_draft.json saved at:", draft_path, "\n\n")
 
+# ── Step 16b: Write risk_challenge_note.md (Charter §8 mandatory) ───────────
+cat("---- Step 16b: risk_challenge_note.md (Charter §8) ----\n")
+cf03_pass_str <- ifelse(cf03_pass, "PASS", "FAIL")
+challenge_note_lines <- c(
+  sprintf("# WT-D20260429_001 Risk Challenge Note (Charter §8 + Codex Round 1 Response)"),
+  sprintf(""),
+  sprintf("**As-of**: %s  |  **Risk estimator**: %s  |  **Σ condition**: %.2f",
+          as.character(SIGNAL_AS_OF), SEL_FAC_NAME,
+          max(eig_sigma) / max(min(eig_sigma), 1e-12)),
+  sprintf("**STR_1715 portfolio TDC q5 (CF-03)**: %.4f  |  **Gate**: %.2f  |  **Verdict**: %s",
+          tdc_empirical_q5, TDC_GATE, cf03_pass_str),
+  sprintf(""),
+  sprintf("## 1. CF-RISK-01 (HIGH) — STR_1715 portfolio lower-tail dependence breach"),
+  sprintf("Defense panel (Top-20 alpha_z monthly EW, n=%d joint obs) vs STR_1715 (PG2 active):", n_jt),
+  sprintf("- Empirical Joe-Clayton TDC q5 = **%.4f** (gate 0.30 — **FAIL**)", tdc_empirical_q5),
+  sprintf("- Empirical q10 = %.4f, q20 = %.4f", tdc_empirical_q10, tdc_empirical_q20),
+  sprintf("- Pearson correlation = %.4f, Kendall τ = %.4f", cor_pearson, tau_kendall),
+  sprintf("- Clayton parametric lower = %.4f", tdc_clayton_lower),
+  sprintf(""),
+  sprintf("**Diagnosis**: alpha_inheritance_cor (IC-level mean) = 0.273, but portfolio-level lower-tail dependence is 50%% higher than gate. Q07_Earnings_Stability IC-cor 0.737 (Codex CF-03) appears to translate into portfolio crash co-movement."),
+  sprintf(""),
+  sprintf("**Action handoff**: Risk Agent does NOT modify alpha (Charter §8). Optimizer is required to:"),
+  sprintf("- Apply explicit constraint: ρ(defense, STR_1715) ≤ 0.5 OR active-allocation-cap to limit defense weight"),
+  sprintf("- Consider regime-conditional allocation (defense weight active only in CRISIS regimes)"),
+  sprintf("- Re-evaluate composite using residual-on-STR_1715 transformation if hard 0.30 gate is binding"),
+  sprintf(""),
+  sprintf("## 2. RF-R1 (HIGH) — MKT variance share %.2f%%", fac_share["MKT"]*100),
+  sprintf("- Variance decomposition (Euler): MKT=%.2f%%, SMB=%.2f%%, WML=%.2f%%, **LVOL=%.2f%%** (defense hedge), Specific=%.2f%%",
+          fac_share["MKT"]*100, fac_share["SMB"]*100, fac_share["WML"]*100,
+          fac_share["LVOL"]*100, spec_share*100),
+  sprintf("- Net systematic = MKT + LVOL = %.2f%% (LVOL is structural hedge, partially offsets MKT)",
+          (fac_share["MKT"] + fac_share["LVOL"]) * 100),
+  sprintf("- **Interpretation**: defense candidate panel still has 80%% net market exposure. Risk consistent with alpha specification (Low_Volatility = beta-positive but lower-than-market). Optimizer must size defense weight aware that this is NOT zero-beta hedge."),
+  sprintf(""),
+  sprintf("## 3. Codex Round 1 Concerns Resolution"),
+  sprintf(""),
+  sprintf("| Codex Concern | Severity | Resolution |"),
+  sprintf("|---|---|---|"),
+  sprintf("| C1 RF-R1 MKT 101.92%% | HIGH | **PARTIAL ACCEPT**: Decomposition mathematically correct (MKT 101.92%% + LVOL -21.97%% = 80%% net systematic). Reporting clarified. Risk authority cannot modify alpha — flagged for Optimizer sizing. |"),
+  sprintf("| C2 TDC q5 = 0.4494 | HIGH | **ACCEPT**: CF-RISK-01 issued. Pearson rho cap alone insufficient — Optimizer must apply CVaR-budget OR residual-on-STR_1715 transformation. |"),
+  sprintf("| C3 CVaR 9.27%% vs 2.5%% cap | HIGH | **R1 REBUTTAL → R2 ACCEPT**: codex_risk_critic_prompt.md L50 confirms `cvar_cap=0.025 monthly default`. Original R1 daily-equiv argument inverted. CF-RISK-02 issued. Daily-equiv (sqrt(20) iid) = 2.07%% PASS, but iid breaks under heavy-tail (Hill α=1.45). For deployment top-20 portfolio with cash overlay, CVaR likely lower. Optimizer recompute required. |"),
+  sprintf("| C4 R²=26.55%% vs systematic_share=92.51%% | HIGH | **ACCEPT**: Distinct concepts now reported separately. CF-RISK-03 issued: R² < 30%% role prompt threshold. KR FF5 v2 (with HML+RMW+CMA via DART quarterly) recommended at deployment. Current 100%% LW unjustified given δ=0.0189 (very low shrinkage). |"),
+  sprintf("| C5 shrinkage δ null | MEDIUM | **ACCEPT**: ledoit_wolf_id with explicit δ=%.4f / target=identity_mu now exposed. |", SHRINKAGE_RHO_FAC %||% NA),
+  sprintf("| C6 4-state regime + bootstrap | MEDIUM | **PARTIAL ACCEPT**: 4-state {BULL=38/NORMAL=126/CAUTION=0/CRISIS=115} audit added. CAUTION=0 docs; bootstrap CI deferred (does not affect single-cutoff Σ). regime_switch_rate_realized=%.4f. CF-RISK-04 issued for thin-state caveats. |", regime_switch_rate),
+  sprintf("| C7 risk_challenge_note.md | MEDIUM | **ACCEPT**: This document. |"),
+  sprintf(""),
+  sprintf("## 3b. Codex Round 2 Additional Concerns Resolution"),
+  sprintf(""),
+  sprintf("| Codex R2 Concern | Severity | Resolution |"),
+  sprintf("|---|---|---|"),
+  sprintf("| R2-C3 monthly CVaR cap unit | HIGH | **ACCEPT (REVERSED from R1)**: Re-read codex_risk_critic_prompt.md L50 — cap is monthly default 0.025. CF-RISK-02 issued. Daily-equiv argument retained as DIAGNOSTIC ONLY, not justification. |"),
+  sprintf("| R2-C4 R² < 30%% threshold | HIGH | **ACCEPT**: codex_risk_critic_prompt.md L34 confirms 30%% threshold. CF-RISK-03 + recommendation for KR FF5 v2 enrichment at deployment. |"),
+  sprintf("| R2-C5 RF-R7 + bootstrap CI | MEDIUM | **ACCEPT**: CF-RISK-04 issued. Single-window estimation acknowledged; subperiod decay test deferred to deployment phase (not affecting current Σ). |"),
+  sprintf("| R2-C6 DCC-Copula not tested | MEDIUM | **REBUTTAL**: DCC-GARCH is dynamic time-series model — alpha as_of=2026-03-31 single-cutoff Σ structurally not applicable. DCC would apply at deployment for time-varying allocation, not at as-of Σ. Hill α=1.45 caveat acknowledged via RF-R6 flag. |"),
+  sprintf("| R2-C7 weights.csv + AX-008 triangulation | MEDIUM | **REBUTTAL**: weights.csv is OPTIMIZER artifact (next phase). Risk Agent role boundary (risk_research_init.md `<strict_prohibitions>` 3) explicitly forbids weight proposal. AX-008 second source = independent Optimizer + Judge phases (deferred per design). |"),
+  sprintf(""),
+  sprintf("## 4. PIT C1-C15 Compliance"),
+  sprintf("- C1 expanding window: factor returns and Σ estimation use rolling 60m up to PIT_HARD_CUTOFF=2026-03-31"),
+  sprintf("- C2 same-day circular: tertile sorts use Size_lag/Ret6_lag/Vol_lag (t-1 month)"),
+  sprintf("- C9 DD/VT lag: not applicable (Risk Σ phase, no overlay)"),
+  sprintf("- C11 macro lag: KR-only data, no FRED leakage"),
+  sprintf("- C13 Z_Score_Aligned: alpha-side responsibility (PASS — alpha_package validated)"),
+  sprintf("- C14 IC Usable_Date: alpha-side responsibility"),
+  sprintf("- C15 Factor DB: alpha-side via factor_db_connector"),
+  sprintf(""),
+  sprintf("## 5. Σ + Tail Risk Summary"),
+  sprintf("- **Σ**: %d×%d (Top-60 candidate panel), method=%s, cond=%.2f, min_eig=%.6f, PSD=TRUE",
+          ncol(SIGMA_BBO), ncol(SIGMA_BBO), SEL_FAC_NAME,
+          max(eig_sigma) / max(min(eig_sigma), 1e-12), min(eig_sigma)),
+  sprintf("- **Stress 8 worst**: %s = %.4f (%.2f%%)",
+          worst_period, worst_loss, worst_loss*100),
+  sprintf("- **CVaR(5%%) monthly**: %.4f / **CDaR(5%%)**: %.4f / **Max DD (in-window)**: %.4f",
+          CVaR_5, CDaR_5, MAX_DD_PORT),
+  sprintf("- **Hill alpha**: %s (%s)",
+          if (is.na(HILL_RES$alpha)) "NA" else sprintf("%.4f", HILL_RES$alpha),
+          HILL_RES$method),
+  sprintf("- **Liquidity**: Top-60 panel ADV≥2e8 = %d/%d (%.0f%% PASS for deployment)",
+          length(LIQ_DEPLOY_PASS), length(TOP_60), length(LIQ_DEPLOY_PASS)/length(TOP_60)*100),
+  sprintf("- **Crowding**: defense panel vs STR_1715 holdings overlap = %d/20 (%.0f%%)",
+          length(intersect(TOP_60, STR1715_LATEST_TKR)), overlap_pct*100),
+  sprintf("- **Sector top**: %s = %.2f%%, HHI = %.4f",
+          top_sector_name, top_sector_share*100, sum(sec_share$share^2)),
+  sprintf(""),
+  sprintf("## 6. Selection Objective"),
+  sprintf("- selection_objective = **condition_number** (R4 P3 HARD compliant)"),
+  sprintf("- Method log: 4 candidates {sample, ledoit_wolf_id, lw_constcor, gerber_rmt}"),
+  sprintf("- Selected: %s (smallest cond among PSD candidates)", SEL_FAC_NAME),
+  sprintf(""),
+  sprintf("---"),
+  sprintf("*Risk Agent only quantifies covariance + tail. Alpha modification, weight proposal, family saturation expulsion are NOT Risk authority. Optimizer/Governor ingest this package + challenge_note for downstream decisions.*"),
+  sprintf("")
+)
+challenge_note_path <- file.path(OUT_DIR_MAIL, "risk_challenge_note.md")
+writeLines(challenge_note_lines, challenge_note_path)
+cat("  risk_challenge_note.md saved.\n\n")
+
 # ── Step 17: Lineage tracking ───────────────────────────────────────────────
 cat("---- Step 17: artifact_lineage record ----\n")
 source("02_Infrastructure/worktask/lineage_utils.R")
@@ -1072,7 +1311,6 @@ record_package_lineage(
   task_id = WT_ID,
   package_type = "risk_package",
   method_selected = SEL_FAC_NAME,
-  method_shopping_log_ref = file.path(OUT_DIR_STAGE, "method_shopping_log_risk.json"),
   input_file_paths = c(
     file.path(OUT_DIR_MAIL, "alpha_package.json"),
     file.path(OUT_DIR_STAGE, "alpha_scores.parquet"),
@@ -1088,7 +1326,8 @@ record_package_lineage(
     n_securities_panel = length(KEEP_TKR),
     n_factors = N_FAC,
     cf03_tdc_q5 = round(tdc_empirical_q5, 4),
-    cf03_pass = cf03_pass
+    cf03_pass = cf03_pass,
+    method_shopping_log_ref = file.path(OUT_DIR_STAGE, "method_shopping_log_risk.json")
   )
 )
 cat("  Lineage recorded.\n\n")

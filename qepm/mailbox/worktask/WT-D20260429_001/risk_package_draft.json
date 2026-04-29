@@ -1,0 +1,93 @@
+{
+  "task_id": "WT-D20260429_001",
+  "as_of_date": "2026-03-31",
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260429_001/factor_exposure.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260429_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260429_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260429_001/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT-D20260429_001/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT-D20260429_001/regime_correlation.parquet",
+  "risk_assessment_ref": "stage_artifacts/WT-D20260429_001/risk_assessment.json",
+  "method_shopping_log_ref": "stage_artifacts/WT-D20260429_001/method_shopping_log_risk.json",
+  "selection_objective": "condition_number",
+  "risk_summary": {
+    "top_common_risks": ["MKT (101.9%)", "LVOL (-22.0%)", "SMB (12.2%)", "WML (0.3%)", "Specific (7.5%)"],
+    "market_variance_share_pct": 101.9228,
+    "lvol_variance_share_pct": -21.965,
+    "smb_variance_share_pct": 12.2414,
+    "wml_variance_share_pct": 0.3094,
+    "specific_variance_share_pct": 7.4915,
+    "systematic_variance_share_pct": 92.5085,
+    "mean_R2_factor_model": 0.2655,
+    "factor_coverage_note": "systematic_variance_share_pct = portfolio variance attributable to factor model (W'BΩB'W / total_var). mean_R2_factor_model = panel-mean per-ticker R^2 from time-series regression. These are distinct concepts: portfolio-level systematic share can be high while panel-mean R^2 is moderate when factor-betas are heterogeneous.",
+    "fac_share_sum_check": 1,
+    "top_sector": "필수소비재",
+    "top_sector_share_pct": 20,
+    "crowding_flags": {},
+    "liquidity_flags": {},
+    "stress_tests": {
+      "GFC_2008": -0.1576,
+      "EuroDebt_2011": -0.0578,
+      "China_Slowdown_2015": -0.0672,
+      "COVID_2020": -0.0071,
+      "TradeWar_2018": -0.1087,
+      "RateHike_2022": -0.2192,
+      "YenCarry_2024": -0.0199,
+      "KOSPI_2024H2": -0.0506,
+      "market_down_5": -0.048,
+      "value_crash": -0.0306,
+      "momentum_reversal": 0.0038
+    },
+    "worst_stress": {
+      "period": "RateHike_2022",
+      "loss": -0.2192
+    }
+  },
+  "diagnostics": {
+    "condition_number": 59.41,
+    "cond_gate_role_prompt": 100,
+    "cond_pass_role_gate": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_id",
+    "shrinkage_intensity_delta": 0.0189,
+    "shrinkage_target": "identity_mu",
+    "factor_correlation_warnings": {},
+    "tdc_summary": {
+      "vs_str1715": {
+        "join_obs": 267,
+        "empirical_q5": 0.4494,
+        "empirical_q10": 0.412,
+        "clayton_lower": 0.6179,
+        "pearson": 0.6142,
+        "kendall_tau": 0.4186,
+        "cf03_gate": 0.3,
+        "cf03_pass": false,
+        "note": "CF-03 portfolio TDC verification (Codex Round 1/2 deferred to Risk). Empirical Joe-Clayton lower-tail q5 against STR_1715 (PG2 active). Defense panel = Top-20 alpha_z monthly EW."
+      }
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260429_001/regime_correlation.parquet",
+    "regime_state_current": "NORMAL",
+    "proxy_usage_pct": 0,
+    "ax002_proxy_check": "PASS",
+    "estimation_window_months": 60,
+    "universe_size": 60,
+    "candidate_universe_source": {
+      "top_60_alpha": 60,
+      "with_24m_history": 60
+    },
+    "ax001_v2_awareness": {
+      "defense_factor_role": true,
+      "crisis_alpha_validated_alpha_side": true,
+      "conditional_evaluation_required": true,
+      "note": "Risk Σ does not evaluate defense alpha quality (Alpha territory). Risk only verifies covariance structure + TDC vs reference. AX-001 v2 conditional eval is Judge/Governor responsibility."
+    },
+    "pit_compliance": {
+      "hard_cutoff": "2026-03-31",
+      "C1": "expanding window",
+      "C9": "monthly t-1 lag in factor sorting (Size_lag, Ret6_lag, Vol_lag)",
+      "C11": "no FRED leakage (KR-only data)",
+      "C13": "Z_Score_Aligned via factor_db_connector (alpha-side)"
+    }
+  },
+  "challenge_flags": ["RF-R1 HIGH: MKT variance share 101.92% > 40% (LVOL hedge -21.97%, net systematic 79.96%). Defense panel is NOT zero-beta — Optimizer must size aware of net market exposure.", "RF-R6 MEDIUM: Hill alpha = 1.4516 < 1.5 (heavy-tail caution; finite second moment uncertain)", "CF-RISK-02 HIGH: Monthly CVaR(5%) = -0.0927 exceeds default monthly cap 0.025 (codex_risk_critic_prompt.md L50). Daily-equiv (sqrt(20) iid) = -0.0207 < 0.025 PASS, but iid assumption breaks under heavy-tail (Hill α=1.45). For deployment Σ portfolio, recompute on top-20 alpha-weighted with cash-overlay.", "CF-RISK-03 MEDIUM: mean R^2 (factor model) = 0.2655 < 0.30 threshold (codex_risk_critic_prompt.md L34). 4-factor proxy (MKT/SMB/WML/LVOL) is monthly KR sleeve — KR FF5 v2 (with HML+RMW+CMA via DART quarterly) recommended at deployment for richer factor coverage. Current shrinkage δ=0.0189 is conservative; would not justify 100% LW — model enrichment preferred.", "CF-RISK-04 MEDIUM: 4-state regime audit — CAUTION n=0 (no obs since 2003), BULL n=38 (thin), NORMAL n=126, CRISIS n=115. Bootstrap CI not computed for thin states. RF-R7 subperiod covariance decay test deferred (single-window 60m estimation). Optimizer must apply pooled fallback for CAUTION transitions if encountered.", "CF-RISK-01 HIGH: STR_1715 portfolio TDC q5 = 0.4494 >= 0.30 gate (Codex CF-03 confirmed). Pearson rho cap alone is insufficient to control lower-tail dependence. Optimizer MUST apply CVaR-budget / tail-aware constraint OR residual-on-STR_1715 transformation."]
+}
