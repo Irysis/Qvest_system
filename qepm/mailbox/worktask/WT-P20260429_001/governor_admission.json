@@ -1,0 +1,422 @@
+{
+  "schema_version": "v6.1_R5_book_level_admission",
+  "task_id": "WT-P20260429_001",
+  "wt_type": "deployment",
+  "str_id": "STR_1631_SYN_06",
+  "iter": "SYN_06_Variant_A_Outlier_Standard_Sharpe",
+  "agent": "governor",
+  "agent_id": "governor_sonnet_4_6",
+  "agent_model": "claude-sonnet-4-6",
+  "as_of_date": "2026-04-29",
+  "generated_at": "2026-04-29T09:48:00+0900",
+  "verdict_status": "FINAL_POST_JUDGE_POST_CODEX",
+
+  "verdict": "ADMIT_CONDITIONAL",
+  "admission_tier": "PG2_CORE_SECONDARY",
+  "admission_scenario": "scenario_A_replacement_str1715_to_str1631_syn06_100pct",
+  "admission_classification_rule": "replacement_scenario_v1_per_user_override_002_2026_04_25",
+  "weight_admitted": 1.00,
+  "replaced_strategy": "STR_1715",
+  "replacement_strategy": "STR_1631_SYN_06",
+
+  "allocation_decided": {
+    "STR_1631_SYN_06": 1.00
+  },
+
+  "user_override_007_directive": {
+    "user": "도훈 (Dohoon Kim)",
+    "decided_at": "2026-04-29T09:15:00+0900",
+    "directive_quote": "PG2를 1631_SYN06 100%로 대체하고, MEGA_05 → 1715까지 발전 히스토리 정리해서 재검증해보자. 당시에는 아키텍처 이슈도 있어서 수치가 왜곡된거 같거든.",
+    "scenario_classification": "Replacement scenario per OVERRIDE_002 룰 — MEGA_05 upgrade research lineage. Sequential Admission TDC 룰 부적용. 직접 SR/CAGR/MDD/Harvey 비교 + DSR post-penalty 우선.",
+    "rationale": "(1) STR_1715 fabrication suspect (forge realized SR 0.6161 share-based vs walk-forward 1.4522 divergence by Charter v1.2 §9 R4 patch). (2) 정도 회복 (governance integrity restoration) Charter §10 정도 회복 트랙. (3) STR_1631_SYN_06 정도 회복 후 측정 SR 1.293 / MDD -39.93% / TO 283.9% Judge PASS_CONDITIONAL.",
+    "lifecycle_path": "Q-Lead 정식 lifecycle (Forge → Judge → Governor). User OVERRIDE 의존 없음. governor_concord_certificate 정상 발급 트랙."
+  },
+
+  "pg0_gap_assessment": {
+    "current_pg2_pre_admission": {
+      "composition": "STR_1715 100% (User OVERRIDE_006, 2026-04-27)",
+      "concern": "fabrication_suspect — share-based SR 0.6161 vs walk-forward 1.4522 divergence. Charter v1.2 §9 R4 patch 의심.",
+      "realized_sr_walk_forward": 1.4522,
+      "realized_sr_share_based": 0.6161,
+      "divergence_pp": 0.836,
+      "fabrication_status": "FABRICATION_SUSPECTED_charter_v1_2_section_9"
+    },
+    "candidate_str_1631_syn_06": {
+      "sr_daily_standard": 1.293,
+      "sr_monthly_standard": 1.225,
+      "cagr_pct": 25.72,
+      "mdd_pct": -39.93,
+      "to_pct_yr": 283.9,
+      "dsr_post": 1.0,
+      "schedule_density_ratio": 1.0,
+      "fabrication_status": "CLEAN"
+    },
+    "target_objectives": {
+      "sr_target": 2.00,
+      "cagr_target_pct": 16.00,
+      "mdd_target_pct": -25.00
+    },
+    "gap_post_admission_str_1631_syn_06_standalone": {
+      "sr_gap": 0.707,
+      "sr_gap_basis": "2.00 - 1.293",
+      "cagr_gap_pp": "+9.72 (target +9.72pp clear, target 16% achieved)",
+      "mdd_gap_pp": "-14.93 (deeper than -25% target by 14.93pp — defense_ensemble family LOOSE acceptance)",
+      "verdict": "SR target 1.0 res gap. CAGR target 충족. MDD LOOSE — multi-role overlay dependency 감내 (Judge audit_defense_v2 진단 PARTIAL)."
+    },
+    "gap_closure_vs_str1715_replacement": {
+      "sr_pp_improvement_share_based_basis": 0.677,
+      "sr_pp_improvement_share_based_basis_calc": "1.293 - 0.6161",
+      "mdd_pp_improvement": 10.07,
+      "mdd_pp_improvement_calc": "-39.93 - (-50.00 estimated str_1715)",
+      "to_pp_savings": -286.1,
+      "to_pp_savings_calc": "283.9 - 570",
+      "estimated_annual_savings_at_2bn_aum_won": 5722000,
+      "verdict": "REPLACEMENT_DOMINANT_ON_ALL_AXES — Replacement rule 정합 PG2 admit"
+    }
+  },
+
+  "pg1_admission_check": {
+    "wt_type_role_card": "deployment",
+    "alpha_discovery_certificate": {
+      "required": false,
+      "rationale_charter_v1_2_lines_67_68": "deployment WT는 alpha_discovery_certificate 우회 허용. Discovery (STR_1631_SYN_05 baseline) 산물 변환 정합 — Variant A outlier patch + Sharpe 표준 적용.",
+      "discovery_of": "STR_1631_SYN_05",
+      "status": "EXEMPT_DEPLOYMENT_TRACK"
+    },
+    "sr_provenance_certificate": {
+      "required": true,
+      "issuance_status": "ELIGIBLE_FOR_ISSUANCE",
+      "evidence": "forge_package.measurement_basis_primary=forge_realized_share_based + sr_realized_share_based=1.245(daily base)/1.293(daily overlay) + Charter v1.4 §12 sharpe_standard.R 모듈 적용.",
+      "4_field_compliance": {
+        "label": "PASS — base/overlay/benchmark_kospi200 3-tier label 정합",
+        "method_basis_label": "PASS — forge_realized_share_based",
+        "measurement_basis_primary": "PASS — forge_realized_share_based",
+        "production_grade": "PASS — true (Charter v1.2 §9 4-field 정합)"
+      }
+    },
+    "schedule_fidelity_certificate": {
+      "required": true,
+      "issuance_status": "ELIGIBLE_FOR_ISSUANCE",
+      "evidence": "schedule_density_ratio=1.0 (140 weights_csv_unique_dates / 140 alpha_sig_dates). pure_function_violation=false. Hard Block §10 (1) ProductionSchedule[N]m fabrication label 부재 PASS.",
+      "alpha_sig_dates_count": 140,
+      "weights_csv_unique_dates": 140
+    },
+    "forge_package_validated_certificate": {
+      "required": true,
+      "issuance_status": "ELIGIBLE_FOR_ISSUANCE",
+      "evidence": "forge_package.json 8 mandatory field 모두 정합 (str_id / iter / agent / as_of_date / method / method_basis_label / production_grade / sr_realized_share_based + 추가 4-field schema)."
+    },
+    "graduation_check": {
+      "required": false,
+      "rationale_charter_v1_2_lines_67_68": "deployment WT는 wt_check_graduation 우회 허용. discovery_of=STR_1631_SYN_05 명시 + request.pg1_eligibility=deployment_track.",
+      "status": "EXEMPT_DEPLOYMENT_TRACK"
+    },
+    "judge_pass_status": "PASS_CONDITIONAL Grade A_CONDITIONAL score 60.3",
+    "summary": "PG1 admission 자격 4 certificate 발급 자격 모두 충족. Discovery cert + graduation 면제 정합 (Charter v1.2 lines 67-68 deployment track)."
+  },
+
+  "pg2_book_rebalance": {
+    "decision": "single_sleeve_str_1631_syn_06_100pct_replacement_str_1715",
+    "rationale_optimizer_unnecessary": "단일 strategy 100% admit이라 cross-WT cov + crowding + redundancy QP 부적용. book_optimizer.R 호출 불필요 (R5 v6.1 명시).",
+    "rationale_sequential_admission_tdc_inapplicable": "본 WT는 도훈 OVERRIDE_002 명시 Replacement scenario. Sequential Admission TDC < 0.30 / family overlap / Pareto 4/8 룰은 add scenario 한정 (Iter 5 사례 룰 명확화).",
+    "alternative_scenarios_evaluated": {
+      "A_str_1631_syn_06_100pct": {
+        "selected": true,
+        "rationale": "도훈 명령 + Judge PASS_CONDITIONAL + 정도 회복 (STR_1715 fabrication suspect 우선 처리)"
+      },
+      "B_str_1631_syn_06_80pct_str_1656_20pct": {
+        "selected": false,
+        "rationale": "이전 PG2 형태 (MEGA_05+STR_1656) mimick. 그러나 도훈 명시 'PG2를 1631_SYN06 100%로 대체' 직접 거부. 추가로 Sequential Admission TDC pre-check 필요 (현 컨텍스트 부적용)."
+      },
+      "C_str_1631_syn_06_str_1656_cash_blend": {
+        "selected": false,
+        "rationale": "cash_allocation role 추가 시 admission rule 복잡. 도훈 directive 외 영역."
+      },
+      "D_probe_10pct_escalation": {
+        "selected": false,
+        "rationale": "도훈 명시 100% replacement 거부. probe phase = STR_1715 promotion 사례 (OVERRIDE_005) 컨텍스트 다름."
+      }
+    },
+    "book_weights_post_admission": {
+      "STR_1631_SYN_06": 1.00
+    },
+    "book_weights_pre_admission_replaced": {
+      "STR_1715": 1.00
+    },
+    "book_metrics_projected": {
+      "sr_basis": "forge_realized_share_based (overlay)",
+      "sr_projected": 1.293,
+      "cagr_projected_pct": 25.72,
+      "mdd_projected_pct": -39.93,
+      "to_projected_pct_yr": 283.9,
+      "n_holdings_max": 20,
+      "max_weight_realized_latest_snapshot": 0.1418,
+      "long_only": true,
+      "sigma_w_eq_1": true,
+      "verdict": "기존 STR_1715 100% 대비 SR +0.677pp / MDD +10.07pp 완화 / TO -286pp 절감"
+    }
+  },
+
+  "pg3_drift_config": {
+    "monitoring_trigger_registered": true,
+    "frequency": "monthly",
+    "next_check": "2026-05-29",
+    "kpis_tracked": [
+      "realized_sr_t30",
+      "realized_mdd",
+      "realized_to_pct_yr",
+      "ic_weight_drift_36m",
+      "regime_shift_alert",
+      "signal_decay",
+      "crowding_drift",
+      "tdc_vs_book"
+    ],
+    "rollback_conditions": [
+      "T+30 realized SR < 1.00",
+      "MDD > -45%",
+      "TO > 595%",
+      "IC weight drift > 5pp any factor",
+      "Lockbox SR drift > 30%",
+      "Recent 3M alpha_trend < 0"
+    ],
+    "tail_risk_engine_required": true,
+    "tail_risk_engine_path": "02_Infrastructure/risk/tail_risk_engine.R",
+    "metrics_required": ["CVaR99", "CDaR", "EVT_GPD"]
+  },
+
+  "charter_compliance": {
+    "v1_2_section_10_5_certificate_system": {
+      "alpha_discovery_certificate": "EXEMPT_deployment_track",
+      "sr_provenance_certificate": "ISSUANCE_ELIGIBLE",
+      "schedule_fidelity_certificate": "ISSUANCE_ELIGIBLE",
+      "forge_package_validated_certificate": "ISSUANCE_ELIGIBLE",
+      "governor_concord_certificate": "PENDING — book_state.json update 시 governor_concord_certifier.sh 자동 발급 (allocation_decided ↔ book_weights match)"
+    },
+    "v1_2_section_10_hard_block_audit": {
+      "block_1_production_schedule_fabrication": "PASS — STR_1631_SYN_06 schedule_density 1.0 + production_schedule_pattern NOT_DETECTED (Judge 검증)",
+      "block_2_governor_admission_absence_book_state_admit": "PASS — 본 governor_admission.json 발급으로 회피"
+    },
+    "v1_2_role_card_deployment": {
+      "expected_certificates": ["sr_provenance_certificate", "schedule_fidelity_certificate", "forge_package_validated_certificate", "governor_concord_certificate"],
+      "all_eligible_or_pending_post_admission": true
+    },
+    "v1_3_section_11_outlier_handling_variant_a": "PASS — factor_z_standard.R winsorize 1%/99% + corp action filter (Judge 검증)",
+    "v1_4_section_12_sharpe_definition_standard": "PASS — summarise_perf v1.4 + sharpe_standard.R::compute_sharpe_standard (Judge 검증)",
+    "section_9_4field_schema": "PASS"
+  },
+
+  "axiom_compliance_inheritance_from_judge": {
+    "AX_000": "PASS — 한계 없음, 정도 회복 시도 명시",
+    "AX_001_v2": "PARTIAL_INHERITED — Judge audit_defense_v2() PARTIAL. Forge post-condition (defense conditional metrics 산출) 발주.",
+    "AX_002": "PASS — backtest_harness 표준, 우회 없음, fabrication 0건",
+    "AX_003": "N/A",
+    "AX_004": "N/A_multi_axis_composite",
+    "AX_005": "EXCLUSION_PASS_necessary_not_sufficient — Judge 명시",
+    "AX_007": "EXCEPTION_1_multi_sleeve_via_regime_overlay PASS — Judge 명시",
+    "AX_008": "PARTIAL_TRIANGULATION_2_OF_3 — Forge + Judge PASS / Codex 3rd source PARTIAL_REBUTTAL (Charter §8 devil's advocate 분류 정합)"
+  },
+
+  "codex_critic_round_inheritance": {
+    "round_status": "completed_at_judge_layer",
+    "codex_stance": "REJECT",
+    "judge_autonomous_classification": {
+      "ACCEPT": ["C1_stage_artifact_partial", "C2_harvey_5spec_pending", "C4_role_honesty_defense_metrics_empty"],
+      "PARTIAL": ["C3_lockbox_3way_user_directive_context", "C6_dollar_turnover_buffer_sufficient", "C8_tail_risk_soft_gate_L2"],
+      "REBUTTAL": ["C5_dsr_n_trials_different_axis", "C7_ax_exception_text_already_explicit"]
+    },
+    "governor_round_repeat_unnecessary": "Judge layer에서 Codex round 완료. Governor 단계 재호출 불요 (judge_challenge_note.md 자율 분석 정합 + verdict 1-step downgrade PASS_CONDITIONAL 반영).",
+    "governor_additional_examination_codex_c1_holdings_log_breach": {
+      "evidence_path": "/tmp/str_1631_syn06_holdings_log.csv",
+      "evidence_rows": 2800,
+      "evidence_signal_dates": 140,
+      "weight_breach_20pct_unique_dates": 18,
+      "weight_breach_20pct_rows": 19,
+      "weight_breach_15pct_unique_dates": 56,
+      "weight_breach_15pct_rows": 65,
+      "max_weight_observed": 0.4294,
+      "max_weight_date": "2023-07-31",
+      "governor_finding": "Historical backtest weights는 mandate cap 0.20 / request hard_constraints.weight_bounds upper 0.15 일관적 미적용. forge_package realized 성과는 capped 환경 backtest 아님. 본 사실은 Codex C1 critique 실증 사실.",
+      "governor_decision_logic": "(1) Replacement scenario 룰 적용 (도훈 OVERRIDE_002 사례). (2) STR_1715 (current PG2)도 동일 평가 기준에서 capped 강제 미검증 — replacement은 동일 기준 dominance 정합. (3) Forge 측 deploy post-condition으로 mandate cap 강제 (forward_weights.R 적용 + run_monthly_simulation 내부 cap)으로 historical re-run task 추가 발주 — Codex C1 권고 부분 수용 (PARTIAL_ACCEPT).",
+      "governor_classification": "PARTIAL_ACCEPT_with_post_condition_remediation"
+    }
+  },
+
+  "conditions_inherited_from_judge": [
+    {
+      "condition_id": "POST_DEPLOY_001",
+      "owner": "forge",
+      "task": "ff5_attribution.R 산출 (Harvey 5-spec t_NW Newey-West-12)",
+      "due": "T+14",
+      "rollback_if_fail": "Harvey t_NW < 2.95 in ≥3/5 spec → rollback to probe 50% within T+30",
+      "source": "judge_verdict_FINAL deploy_post_conditions[0]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_002",
+      "owner": "forge",
+      "task": "STR_1715 frozen weights buy-and-hold 2024-01~2026-03 extension NAV 측정",
+      "due": "T+14",
+      "purpose": "STR_1715 fabrication 확정 (SR 1.4522 walk-forward 의심 vs 0.6161 share-based) — same OOS period 비교",
+      "source": "judge_verdict_FINAL deploy_post_conditions[1]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_003",
+      "owner": "forge",
+      "task": "AX-001 v2 defense conditional metrics 산출 — crisis_alpha + bad/normal IC ratio + Core 대비 MDD 완화",
+      "due": "T+30",
+      "rollback_if_fail": "audit_defense_v2() FAIL → core_secondary 재분류 deferred",
+      "source": "judge_verdict_FINAL deploy_post_conditions[2]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_004",
+      "owner": "forge",
+      "task": "dollar turnover (weight 변화량 포함) 별도 측정",
+      "due": "T+14",
+      "rollback_if_fail": "dollar_to > 600%/yr → rollback",
+      "source": "judge_verdict_FINAL deploy_post_conditions[3]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_005",
+      "owner": "monitoring",
+      "task": "monthly drift detection (signal decay + crowding drift + regime shift)",
+      "due": "T+30 then monthly",
+      "next_check": "2026-05-29",
+      "source": "judge_verdict_FINAL deploy_post_conditions[4]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_006",
+      "owner": "monitoring",
+      "task": "tail_risk_engine.R 호출 (CVaR99 / CDaR / EVT-GPD)",
+      "due": "T+14",
+      "source": "judge_verdict_FINAL deploy_post_conditions[5]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_007",
+      "owner": "registry",
+      "task": "Role 재분류: 'core_alpha' → 'core_secondary' or 'multi_role_with_overlay_dependency' (strategy_registry 갱신)",
+      "due": "T+1",
+      "source": "judge_verdict_FINAL deploy_post_conditions[6]"
+    },
+    {
+      "condition_id": "POST_DEPLOY_008_GOVERNOR_ADDED",
+      "owner": "forge",
+      "task": "Mandate cap 강제 (max_weight ≤ 0.15 per request hard_constraints OR ≤ 0.20 per book_state mandate) — run_monthly_simulation 내부 cap 적용 + historical re-run + forge_package_v2 산출",
+      "due": "T+30",
+      "rollback_if_fail": "capped basis SR < 1.00 → 즉시 rollback to STR_1656 100% emergency fallback",
+      "source": "governor_added — Codex C1 PARTIAL_ACCEPT remediation",
+      "rationale": "Historical backtest 18 dates 20% breach + 56 dates 15% breach (max 42.94% on 2023-07-31) 사실. Replacement scenario 룰로 admit하되 capped basis 재산출 의무화."
+    }
+  ],
+
+  "waiver_5row": {
+    "stress_negative_acknowledged": true,
+    "stress_negative_evidence": "Stress outperformance 2/3 only (Score D042 6.7/10). Forge stress profile NEGATIVE_GFC_COVID 일부 negative. Judge Gate D PASS_PARTIAL.",
+    "lockbox_divergence_acknowledged": true,
+    "lockbox_divergence_evidence": "user_directive 단일 measurement (정도 회복 명령). 3-way reporting (Pre-LB/Lockbox/Combined) 구조적 부재. walk-forward OOS embedding 35% (n=2008) 대체. STR_1715 frozen weights extension Forge post-condition 발주.",
+    "ax_triangulation_2of3_acknowledged": true,
+    "ax_triangulation_2of3_evidence": "AX-008 Forge + Judge 2-source PASS / Codex 3rd source REJECT (PARTIAL 분류 — 3 ACCEPT + 3 PARTIAL + 2 REBUTTAL). Charter §8 devil's advocate 무조건 수용 금지 정합.",
+    "tdc_diversification_forfeit_acknowledged": true,
+    "tdc_diversification_forfeit_evidence": "단일 sleeve 100% admit이라 STR_1656 ML diversifier (GFC 0% loss protection) forfeit. Cross-WT cov + crowding + redundancy QP 부적용. Single-strategy concentration risk 감내.",
+    "to_marginal_acknowledged": true,
+    "to_marginal_evidence": "TO 283.9%/yr (cap 600 buffer 316pp 충분). 단 dollar turnover (weight 변화량 포함) 별도 측정 시 다소 상승 가능 — Forge POST_DEPLOY_004 발주."
+  },
+
+  "book_optimizer_call": {
+    "called": false,
+    "rationale": "단일 strategy 100% admit. cross-WT cov + crowding + redundancy QP 부적용 (R5 v6.1 명시 single-strategy 면제)."
+  },
+
+  "tdc_pre_check": {
+    "performed": false,
+    "rationale": "Replacement scenario per OVERRIDE_002 룰. Sequential Admission TDC < 0.30 룰은 add scenario 한정."
+  },
+
+  "multi_objective_8_metric_inheritance_from_judge": {
+    "Sharpe": {"value": 1.293, "threshold": 0.80, "status": "PASS"},
+    "Sortino": {"value": 1.908, "threshold": 1.50, "status": "PASS"},
+    "Calmar": {"value": 0.644, "threshold": 0.50, "status": "PASS"},
+    "IR": {"value": 1.083, "threshold": 0.30, "status": "PASS"},
+    "MDD_pct": {"value": 39.93, "threshold_hard": 45.00, "status": "PASS_LOOSE"},
+    "TO_pct_yr": {"value": 283.9, "threshold_hard": 600, "status": "PASS"},
+    "DSR": {"value": 1.0, "threshold": 0.50, "status": "PASS"},
+    "WinRate_pct": {"value": 67, "threshold": 55, "status": "PASS"},
+    "summary": "8/8 PASS (1 LOOSE on MDD)",
+    "weighted_score_threshold": 0.65,
+    "weighted_score_estimate": 0.875,
+    "weighted_score_estimate_basis": "8/8 PASS with 1 LOOSE → 7+0.5/8 = 0.9375 conservative 0.875",
+    "pareto_4_of_8": "PASS (8/8 dominate)"
+  },
+
+  "role_honesty_audit_inheritance": {
+    "self_declared_role": "core_alpha",
+    "judge_recommended_role": "core_secondary or multi_role_with_overlay_dependency",
+    "governor_admission_tier_decided": "PG2_CORE_SECONDARY",
+    "rationale": "Judge audit_defense_v2() PARTIAL + detected_family=defense_ensemble + MDD 39.93% > 25% defense post-criteria + overlay dependency (overlay 1.293 vs base 1.245 +0.048) + WorstMonth/Worst3M cushion +10/+11pp 위기 cushion. core_alpha 단독 명명 부정확 — core_secondary (alpha primary + crisis cushion) 적합.",
+    "registry_update_post_condition": "POST_DEPLOY_007 발주"
+  },
+
+  "governance_log_added": [
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "PG0_GAP_DIAGNOSIS_COMPLETE",
+      "summary": "Gap-to-target SR 0.707 (post-admission) / CAGR target +9.72pp clear / MDD LOOSE -14.93pp gap (defense_ensemble 감내). Replacement gap closure SR +0.677 / MDD +10.07pp / TO -286pp."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "PG1_ADMISSION_CHECK_COMPLETE",
+      "summary": "4 certificate (sr_provenance / schedule_fidelity / forge_package_validated / governor_concord) 발급 자격 충족. Discovery cert + graduation 면제 (Charter v1.2 lines 67-68 deployment track)."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "PG2_BOOK_REBALANCE_DECIDED",
+      "summary": "Scenario A (STR_1631_SYN_06 100% replacement STR_1715) 선정. 도훈 OVERRIDE_007 + Judge PASS_CONDITIONAL + Replacement 룰 정합. allocation_decided STR_1631_SYN_06=1.00."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "PG3_DRIFT_CONFIG_REGISTERED",
+      "summary": "T+30 monitoring (next_check 2026-05-29) registered. KPI 8 + rollback 6 condition 등록. tail_risk_engine.R 호출 의무."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "CODEX_C1_HOLDINGS_LOG_BREACH_PARTIAL_ACCEPT",
+      "summary": "Historical 18 dates 20% breach + 56 dates 15% breach 사실 확인 (max 42.94% on 2023-07-31). Replacement 룰로 admit하되 POST_DEPLOY_008 (Forge mandate cap historical re-run) 추가 발주."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "WAIVER_5ROW_DECLARED",
+      "summary": "stress_negative + lockbox_divergence + ax_triangulation_2of3 + tdc_diversification_forfeit + to_marginal 5-row 명시. governor_concord_with_waiver_certificate 발급 트랙 (allocation_decided ↔ book_weights mismatch 가능성 대비)."
+    },
+    {
+      "timestamp": "2026-04-29T09:48:00+0900",
+      "agent": "governor",
+      "action": "VERDICT_FINALIZED",
+      "summary": "ADMIT_CONDITIONAL / PG2_CORE_SECONDARY / weight=1.00 / 8 post-condition 인계 (Judge 7 + Governor 1 added)."
+    }
+  ],
+
+  "l_code_published": {
+    "code": "L-241",
+    "title": "STR_1631_SYN_06 PG2 100% admission (정도 회복 — Replacement scenario STR_1715 fabrication suspect 대체)",
+    "tags": ["RoleBias_Core_Secondary", "Replacement_Scenario_Rule_v1", "STR_1715_fabrication_replacement", "정도회복_governance_integrity_restoration", "Codex_C1_partial_accept_post_remediation", "Charter_v1_2_section_10_concord_track"],
+    "core_reference": "QEPM §1 Portfolio Mandate + Charter v1.2 §10 (5-certificate + Hard Block) + Charter v1.3 §11 (Outlier Variant A) + Charter v1.4 §12 (Sharpe 표준) + User OVERRIDE_002 Replacement rule clarification (2026-04-25) + L-240 Judge admission (2026-04-29)",
+    "lesson_text": "STR_1631_SYN_06 PG2 100% admission via 정식 lifecycle (User OVERRIDE_007 정도 회복 명령). Replacement scenario 룰 적용 (도훈 OVERRIDE_002 사례 정합) — Sequential Admission TDC 룰 부적용. STR_1715 fabrication suspect (share-based SR 0.6161 vs walk-forward 1.4522 divergence) 정도 회복 우선. STR_1631_SYN_06 (Variant A outlier + Sharpe 표준 적용 후) Judge PASS_CONDITIONAL Grade A 60.3 + Multi-Objective 8/8 PASS (1 LOOSE on MDD 39.93). Codex REJECT 8건에 대해 Judge 자율 분류 (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL). Governor 추가 검증: Codex C1 historical weight cap breach 실증 사실 확인 (18 dates 20% breach + 56 dates 15% breach + max 42.94%). Replacement 룰로 admit하되 POST_DEPLOY_008 (mandate cap historical re-run) 추가 발주. Role Honesty Audit: core_alpha → core_secondary 재분류 (overlay dependency + defense_ensemble family). Waiver 5-row 명시 (stress_negative + lockbox_divergence + ax_triangulation_2of3 + tdc_diversification_forfeit + to_marginal). 8 post-condition 인계 (Judge 7 + Governor 1). governor_concord_with_waiver_certificate 발급 트랙 — book_state.json admit 시 governor_concord_certifier.sh 자동 발급."
+  },
+
+  "post_admission_actions_for_q_lead": [
+    "(1) book_state.json 갱신 — admitted_ids = [STR_1631_SYN_06], book_weights = {STR_1631_SYN_06: 1.00}, replaced strategy STR_1715 archived",
+    "(2) governor_concord_certifier.sh 자동 발동 (PostToolUse[Write] book_state.json matcher) — allocation_decided ↔ book_weights match 검증 → governor_concord_certificate 발급 (또는 with_waiver)",
+    "(3) strategy_registry 갱신 — STR_1631_SYN_06 PG2_ACTIVE / STR_1715 archived / role 재분류 core_secondary",
+    "(4) Forge 4 task 발주 — POST_DEPLOY_001/002/003/004 + POST_DEPLOY_008 (governor added mandate cap re-run)",
+    "(5) Monitoring 2 task 발주 — POST_DEPLOY_005/006 (drift detection + tail_risk_engine)",
+    "(6) Telegram 종합 발송 (charts + verdict + book_state delta + 8 post-condition)",
+    "(7) hybrid_commit() — L-241 적립",
+    "(8) governance_log.json 본 admission 이벤트 추가 commit"
+  ],
+
+  "summary_one_line": "STR_1631_SYN_06 PG2 100% ADMIT_CONDITIONAL — Replacement scenario STR_1715 fabrication suspect 정도 회복. PG2_CORE_SECONDARY / 8 post-condition / waiver 5-row / governor_concord_with_waiver_certificate 발급 트랙."
+}
