@@ -1,0 +1,304 @@
+{
+  "task_id": "WT-D20260429_001",
+  "agent": "judge_opus_4_7",
+  "as_of_date": "2026-04-30",
+  "verdict": "FAIL",
+  "verdict_severity": "HARD_FAIL_FABRICATED_METRICS",
+  "grade": "F",
+  "score": 28,
+  "score_components": {
+    "alpha_quality": 18,
+    "risk_diagnostics": 5,
+    "optimizer_diligence": 4,
+    "forge_integrity": 0,
+    "blend_metric_validity": 0,
+    "documentation": 1
+  },
+  "score_max": 100,
+  "summary_one_line": "Defense alpha 자체는 graduation 7/7 PASS이지만, Blend 80/20의 06_metrics.csv `is_official=TRUE` 행 15건이 frequency mislabel(daily 252 vs actual bi-monthly 6)로 fabrication. AX-002 + Charter v1.4 §9 FABRICATION_SUSPECTED + Charter v1.5 §13 metric_type='backtested' integrity 위반.",
+  "gates_a_to_f": {
+    "gate_a_pit": {
+      "verdict": "PASS_WITH_NOTES",
+      "lookahead_detector_violations": 3,
+      "violations_detail": [
+        {
+          "file": "stage_artifacts/WT-D20260429_001/factor_engine_v2.R",
+          "line": 182,
+          "code": "SR_ic <- mean_ic / sd(valid_ic) * sqrt(12)",
+          "check": "C1",
+          "severity": "FALSE_POSITIVE",
+          "judgement": "DSR aggregate diagnostic on already-filtered IC vector. Not a signal-construction lookahead."
+        },
+        {
+          "file": "qepm/mailbox/worktask/WT-D20260429_001/run_optimizer_research.R",
+          "line": 336,
+          "code": "threshold_p <- quantile(joined$port, q, na.rm = TRUE)",
+          "check": "C1b",
+          "severity": "EX_POST_DIAGNOSTIC",
+          "judgement": "Empirical TDC q5 measurement uses full-sample quantile threshold. Standard copula practice ex-post; not a signal lookahead. Note: TDC reported as PASS gate is ex-post measurement, not in-sample selection."
+        },
+        {
+          "file": "qepm/mailbox/worktask/WT-D20260429_001/run_optimizer_research.R",
+          "line": 337,
+          "code": "threshold_s <- quantile(joined$ret_str1715, q, na.rm = TRUE)",
+          "check": "C1b",
+          "severity": "EX_POST_DIAGNOSTIC",
+          "judgement": "Same as line 336. STR_1715 quantile threshold for joint-tail count."
+        }
+      ],
+      "factor_engine_audit": "factor_engine.R + factor_engine_v3.R CLEAN. v2 SR_ic line is diagnostic-only.",
+      "production_pit_pattern_audit": "PASS — alpha_scores.parquet generation uses rolling 252d windows + Date <= sig_date + load_month_factors enforcing Usable_Date <= sig_date. C1/C2/C9/C13/C14/C15 all clean in production code.",
+      "judgement": "PIT in alpha generation pipeline is clean. Detector hits are all ex-post diagnostics, not signal lookahead."
+    },
+    "gate_b_isolation": {
+      "verdict": "PASS",
+      "alpha_family_single": true,
+      "alpha_family": "Low_Volatility (D47 CVaR 5pct + D01 IdioVol + D04 Downside_Beta)",
+      "judgement": "Composite is internally Low_Vol family — clean isolation. Mechanism distinction CVaR (tail loss) vs IVOL (residual vol) vs Downside Beta (asymmetric beta) acceptable per AHXZ 2006 / Baker-Bradley-Wurgler 2011 / Ang-Chen-Xing 2006."
+    },
+    "gate_c_net_alpha_vs_cost": {
+      "verdict": "FAIL",
+      "net_ir": 0.7331,
+      "gross_ir": 0.8351,
+      "cost_drag_bps_yr": 192.9,
+      "turnover_realized_yr_round_trip": 6.4259,
+      "turnover_hard_cap": 6.0,
+      "turnover_breach_bool": true,
+      "infeasibility_report_issued": true,
+      "judgement": "TO=6.43 > 6.0 HARD FAIL per Hurdle Gate v2.2. Optimizer correctly issued infeasibility_report (Charter §8 compliance), but Forge accepted without remediation (option a — accept hard fail with documented cost drag). Net IR positive but TO breach is independent FAIL signal. Buffer-zone / EWMA / TC-penalty all not applied."
+    },
+    "gate_d_crowding": {
+      "verdict": "PASS_PARTIAL",
+      "tdc_q5_walk_forward": 0.0,
+      "tdc_q5_static_60m": 0.2143,
+      "tdc_pearson": 0.1106,
+      "tdc_kendall_tau": 0.3403,
+      "static_top60_panel_q5_at_alpha": 0.4494,
+      "judgement": "Walk-forward TDC q5=0 PASS gate, static 60m TDC q5=0.2143 PASS gate. However, alpha-side Top60 EW panel q5=0.4494 FAIL (Risk pkg CF-RISK-01 HIGH). HRP top-20 deployment-grade weighting successfully orthogonalizes vs static panel. PASS gate but underlying alpha exposure has tail correlation with STR_1715."
+    },
+    "gate_e_concentration": {
+      "verdict": "PASS",
+      "max_w": 0.0906,
+      "max_w_cap": 0.20,
+      "hhi": 0.0542,
+      "hhi_cap": 0.15,
+      "n_names": 20,
+      "n_names_required": 20,
+      "judgement": "All concentration constraints satisfied with margin."
+    },
+    "gate_f_drift": {
+      "verdict": "PASS_PARTIAL",
+      "subperiod_stability": 1.0,
+      "ic_recent_vs_historical": "stable",
+      "alpha_decay_diagnostics": "subperiod_stability=1 (3 buckets all pass) per alpha_package",
+      "judgement": "Alpha-side stability strong. Caveat: recent regime is NORMAL — no Defense-favorable regime since 2022 RateHike. Lockbox period (2024+) Defense SR=1.197 / MDD=15.41% suggests recovery, but limited 566 daily obs."
+    }
+  },
+  "multi_objective_8": {
+    "sr_pre_lb_defense": {
+      "value": 0.6015,
+      "basis": "daily annualized sqrt(252)",
+      "vs_target_2_0": "FAIL",
+      "rating": "WEAK"
+    },
+    "ir_walkforward": {
+      "value": 0.5864,
+      "basis": "optimizer walk-forward simulation",
+      "rating": "MARGINAL"
+    },
+    "mdd_defense_pre_lb_d": {
+      "value": 0.5294,
+      "basis": "daily",
+      "vs_target_25pct": "FAIL_severe",
+      "rating": "VERY_POOR"
+    },
+    "calmar_defense_pre_lb": {
+      "value": 0.205536,
+      "basis": "CAGR 0.107 / |MDD| 0.529",
+      "rating": "POOR"
+    },
+    "sortino_defense_pre_lb": {
+      "value": 0.919,
+      "basis": "PerformanceAnalytics annualized daily",
+      "rating": "MARGINAL"
+    },
+    "var_5_daily_defense": {
+      "value": -0.0168,
+      "rating": "ACCEPTABLE"
+    },
+    "cvar_5_daily_defense": {
+      "value": -0.0276,
+      "rating": "MARGINAL_high_kurtosis_8.28"
+    },
+    "hit_ratio_defense": {
+      "value": 0.5416,
+      "rating": "MARGINAL"
+    },
+    "blend_official_metrics_excluded": "06_metrics.csv blend Sharpe=8.22 / CAGR=799% / Sortino=18.37 / Calmar=4049 EXCLUDED FROM EVALUATION (frequency mislabel fabrication)",
+    "blend_corrected_metrics": {
+      "sr_per_period": 0.4837,
+      "true_annualized_sr_bi_monthly": 1.1837,
+      "geometric_cagr_19_67yr": 0.1705,
+      "mdd_pre_lb": 0.1974,
+      "true_basis": "bi-monthly inner-join with STR_1715 sparse schedule, 127 obs over 19.67 years"
+    },
+    "n_pass_target": 0,
+    "n_marginal": 4,
+    "n_fail": 4
+  },
+  "pit_audit_result": {
+    "lookahead_detector_executed": true,
+    "files_scanned": 7,
+    "raw_violations": 3,
+    "production_violations": 0,
+    "diagnostic_violations": 3,
+    "verdict": "PIT alpha generation pipeline CLEAN. detector hits are all ex-post measurement / DSR diagnostic, not signal-construction lookahead.",
+    "c1_full_sample": "PASS — production code uses rolling 252d windows",
+    "c2_same_day_circular": "PASS — exec_date = next_month_first_trading_day",
+    "c9_vt_dd_same_day": "PASS — no overlay applied at alpha layer",
+    "c13_manual_flip": "PASS — Z_Score_Aligned negation only (Lower IVOL = higher Z) per factor_engine, no individual-stock NEGATE_FACTORS",
+    "c14_ic_usable_date": "PASS — load_month_factors enforces Usable_Date <= sig_date",
+    "c15_factor_db_load": "PASS — load_month_factors used"
+  },
+  "role_honesty_audit_result": {
+    "claimed_role": "defense_factor",
+    "audit_classification": "defense_with_overlay_dependency_partial",
+    "evidence_against_pure_defense": [
+      "Defense standalone Pre-LB MDD = 52.94% (single deployment infeasible — defense MDD complement requires multi-sleeve blending)",
+      "Defense standalone Lockbox period (2024-2026) SR = 1.197 — strong RECENT but small sample (566 daily obs)",
+      "Risk pkg CF-RISK-01: alpha-side static Top60 panel TDC q5 vs STR_1715 = 0.4494 FAIL — defense alpha exposure is NOT zero-correlation with Core in tail",
+      "Risk pkg risk_summary: net systematic exposure MKT=0.595 + LVOL=0.558 — indicates the optimizer-deployed top-20 sleeve is NOT zero-beta defense; it is high-beta low-vol-tilted long-only equity"
+    ],
+    "evidence_for_defense_role": [
+      "AX-001 v2 3-axis PASS: crisis_alpha 3/3 (GFC 0.161 / Trade 0.035 / Rate 0.133)",
+      "bad/normal IC ratio 1.6942 >= 1.5 PASS",
+      "GFC-specific IC ratio 3.077 >> 1.5 (strong crisis signal)",
+      "Forge MDD complement +4.60pp on inner-join 138 obs"
+    ],
+    "honest_role_classification": "defense_with_overlay_dependency_AND_mdd_complement_only_on_sparse_sample",
+    "judgement": "Alpha signal exhibits genuine tail-risk-aversion mechanism (crisis IC 3-of-3 PASS + bad/normal ratio 1.69 PASS). However, DEPLOYMENT layer (Optimizer top-20 HRP) is NOT pure defense — it carries 60% market beta + 56% LVOL exposure, behaving as low-vol-tilted long-equity sleeve. The role label 'defense' is empirically supported at alpha-signal level but not at deployment-portfolio level. Multi-sleeve structure (AX-007 EXCEPTION_1) is essential — single-sleeve top-20 long-only is structural mismatch with defense mandate (cf. AX-005 v1.2 / AX-007 EXCEPTION_1)."
+  },
+  "axiom_compliance": {
+    "ax_000_no_limits": "N/A",
+    "ax_001_v2_defense_conditional": "PASS at alpha-signal level (3-axis 3/3); CAVEAT at portfolio level due to 138-obs sparse subset MDD claim",
+    "ax_002_no_process_bypass": "FAIL — 06_metrics.csv blend metrics with is_official=TRUE are mathematically fabricated through frequency mislabel (daily 252 annualization on bi-monthly 138-obs series). This is exactly Charter v1.4 §9 FABRICATION_SUSPECTED severity (>0.6pp divergence, here 6.55pp Sharpe gap between forge_package SR_m=1.6757 and 06_metrics.csv Sharpe=8.22).",
+    "ax_005_v1_2_excluded_combos": "PASS — D47+D01+D04 composite has no leverage/short, no Q07+D25 single-sleeve combo. AX-005 EXCLUSION conditions not triggered.",
+    "ax_007_signal_portfolio_translation": "AT_RISK — single-sleeve long-only top-20 deployment is exactly the AX-007 structural concern. EXCEPTION_1 (multi-sleeve via 80/20 blend with STR_1715) is the proposed remedy, but blend's 'official' metrics are fabricated, so the EXCEPTION evidence is not validated.",
+    "ax_008_triangulation": "PARTIAL — Forge + Codex + Architect 3-source: Forge produced fabricated blend metrics (FAIL one source); Codex verified PIT in alpha (PASS); Architect not engaged this WT. 1-of-3 unequivocal PASS, below 2-of-3 minimum."
+  },
+  "charter_compliance": {
+    "v1_5_section_13_backtest_contract": {
+      "10_component_present": true,
+      "audit_10_checks": "PASS for defense (10/10), WARN for blend (3 WARN — holdings absent, transaction_cost_bps=0, lookahead reference vague)",
+      "metric_type": "PUBLISHED AS 'backtested' BUT ACTUALLY UNAVAILABLE due to fabrication",
+      "verdict": "BLEND VIOLATES §13 — metric_type should be 'unavailable' / integrity='FAIL' due to frequency mislabel"
+    },
+    "v1_4_section_9_sr_provenance": {
+      "forge_package_sr_realized_share_based": 0.6015,
+      "06_metrics_csv_sharpe": 8.2177,
+      "divergence_pp": 6.55,
+      "diagnosis": "FABRICATION_SUSPECTED",
+      "treatment": "Charter v1.4 §9 mandates immediate PG2 expel review"
+    },
+    "v1_4_section_12_sharpe_standard": {
+      "defense_sharpe_formula": "mean(ER)/sd(ER)*sqrt(252) — formula correct",
+      "blend_sharpe_formula": "mean(ER)/sd(ER)*sqrt(252) on 138 BI-MONTHLY series — formula correct, BASIS WRONG",
+      "verdict": "Formula compliance PASS; basis label FAIL (data is bi-monthly, labeled daily)"
+    },
+    "v1_2_section_10_5_certificates": {
+      "alpha_discovery_certificate_eligible": true,
+      "alpha_discovery_certificate_eligibility_reason": "alpha_inheritance_cor=0.273 < 0.95 + mechanism > 50 chars + factor_specs=3 + harvey_t=5.475 >= 3",
+      "sr_provenance_certificate_eligible": true,
+      "sr_provenance_certificate_eligibility_reason": "forge_package has 4 fields (sr_realized_share_based 0.6015 / measurement_basis_primary='forge_realized_share_based' / weights_csv_unique_dates_count 279 / schedule_density_ratio 1.0)",
+      "schedule_fidelity_certificate_eligible": true,
+      "schedule_fidelity_certificate_eligibility_reason": "schedule_density_ratio=1.0 >= 0.95",
+      "forge_package_validated_certificate_eligible": "BLOCKED",
+      "forge_package_validated_certificate_block_reason": "forge_package 8 mandatory fields present BUT blend bt_result fabricated metrics violate §13 audit integrity. Cannot certify forge_package as validated when companion artifact has FABRICATION_SUSPECTED severity.",
+      "governor_concord_certificate_eligible": "DEFER",
+      "governor_concord_certificate_defer_reason": "Governor PG admission not yet reached. Judge verdict FAIL blocks PG admission anyway."
+    }
+  },
+  "lockbox_audit": {
+    "judge_lockbox_harness_executed": "NO — backtest already covers lockbox period (2024-01 ~ 2026-04 in defense bt_result) so direct measurement available",
+    "defense_lockbox_period_n_days": 566,
+    "defense_lockbox_sr_d": 1.1971,
+    "defense_lockbox_mdd": 0.1541,
+    "judgement": "Defense lockbox period (2024+) shows recovery with SR=1.197 / MDD=15.41%. This is genuine OOS data (Defense factor was discovered Apr 2026, but data extends to 2026-04-30 with full daily NAV). However, 566 obs is small sample. Pre-LB SR=0.602 → Lockbox SR=1.197 ratio = 1.99x is suspicious overperformance — recent Korean LowVol regime favorable, not necessarily generalizable.",
+    "blend_lockbox_period_data": "NOT EVALUATED — blend bt_result is bi-monthly inner-join with STR_1715 sparse schedule. Only 11 lockbox obs in blend (2024-01 ~ 2025-12). Insufficient for lockbox metric.",
+    "lockbox_extension_recommendation": "DEFER — Defense alpha+optimizer fabrication issue must be remediated first. Once fixed, Forge should rerun with proper monthly cadence and audit lockbox separately."
+  },
+  "138_month_sparse_limitation_assessment": {
+    "claimed_138_months": false,
+    "actual_obs": 138,
+    "actual_basis": "BI-MONTHLY INNER-JOIN with STR_1715 sparse schedule",
+    "actual_period_years": 21.67,
+    "expected_monthly_obs_22yr": 264,
+    "obs_ratio_pct": 52.3,
+    "limitation_severity": "HIGH",
+    "mdd_complement_claim_validity": "MEDIUM-LOW",
+    "rationale": "Inner-join with STR_1715's bi-monthly schedule loses ~half of monthly observations. MDD on sparse subset (19.74% on 127 pre-LB obs) is not directly comparable to STR_1715 full 22yr MDD claim of 35.56%. Forge claim of '+4.60pp improvement' is on like-for-like sparse subset, which is mathematically valid for that subset but not for full deployment. Real STR_1715 MDD on the SAME sparse subset is 24.34% per Forge — which itself may be cherry-picked subset.",
+    "recommendation": "Governor PG2 admission requires: (1) Remediate frequency labeling — relabel as bi-monthly, recompute SR with sqrt(6); (2) Forge rerun blend with proper monthly cadence (use STR_1715's last-known weights forward-fill to align both at monthly grid, not bi-monthly inner-join); (3) Compute MDD on full 22yr blend with monthly resampled NAV; (4) Re-audit AX-001 v2 axis 2 (MDD complement) with monthly basis."
+  },
+  "challenge_flags": [
+    {
+      "flag_id": "JUDGE-FAIL-01",
+      "severity": "CRITICAL",
+      "description": "Blend 06_metrics.csv `is_official=TRUE` for Sharpe=8.22 / CAGR=799% / Sortino=18.37 / Calmar=4049 — mathematically fabricated through frequency mislabel. run_all.R line 882-883 uses frequency='daily' and annualization_factor=252 on bi-monthly 138-obs series. Charter v1.4 §9 FABRICATION_SUSPECTED + AX-002 process bypass.",
+      "remediation_path": "Forge rerun blend with: (a) frequency='monthly' + annualization_factor=12, AND (b) align STR_1715 + Defense at proper monthly grid (forward-fill STR_1715 sparse weights to monthly). build_bt_result audit must validate metric_type='backtested' with frequency match before is_official=TRUE.",
+      "ax_violated": ["AX-002"],
+      "charter_violated": ["v1.5 §13", "v1.4 §9"]
+    },
+    {
+      "flag_id": "JUDGE-FAIL-02",
+      "severity": "HIGH",
+      "description": "Turnover hard fail TO=6.43/yr > 6.0 cap (Hurdle Gate v2.2). Forge accepted infeasibility_report without remediation (option a). This means deployed schedule has 192.9bps/yr cost drag absorbed in NAV. Net IR=0.7331 still positive but breaches independent gate.",
+      "remediation_path": "Optimizer rerun with buffer-zone (rank<=30 keep) to reduce TO < 4.0/yr. EWMA alpha smoothing lambda 0.6-0.8 secondary.",
+      "ax_violated": [],
+      "charter_violated": ["§7 Cost Mandatory", "Hurdle Gate v2.2"]
+    },
+    {
+      "flag_id": "JUDGE-WARN-03",
+      "severity": "MEDIUM",
+      "description": "Blend audit 7-of-10 PASS (3 WARN: holdings absent, transaction_cost_bps=0, lookahead reference vague). Charter v1.5 §13 mandates audit FAIL → metric_type='unavailable'. Current state has WARNING but published as 'backtested is_official=TRUE'. Inconsistent.",
+      "remediation_path": "Audit upgrade WARN to FAIL when frequency mislabel detected. Require holdings reconstruction for blend (concat STR_1715 + Defense holdings 80/20 daily).",
+      "ax_violated": [],
+      "charter_violated": ["v1.5 §13"]
+    },
+    {
+      "flag_id": "JUDGE-WARN-04",
+      "severity": "MEDIUM",
+      "description": "Defense Pre-LB Hill alpha = 2.91 vs Risk package claim 1.45. Discrepancy likely because Risk used Top-60 alpha-z panel (not strategy realized returns). Documentation gap.",
+      "remediation_path": "Risk pkg should disclose Hill alpha basis (panel vs portfolio). Strategy realized returns Hill 2.91 indicates finite second moment OK at portfolio level even if panel has heavier tail.",
+      "ax_violated": [],
+      "charter_violated": []
+    },
+    {
+      "flag_id": "JUDGE-WARN-05",
+      "severity": "MEDIUM",
+      "description": "Defense single-sleeve deployment Pre-LB MDD = 52.94%. AX-005 v1.2 / AX-007 single-sleeve long-only top-20 structural concern. Multi-sleeve blend with STR_1715 (proposed remedy) currently has fabricated metrics so EXCEPTION_1 not yet validated.",
+      "remediation_path": "After JUDGE-FAIL-01 remediation, re-evaluate AX-007 EXCEPTION_1 with corrected blend metrics.",
+      "ax_violated": ["AX-007 (potential)"],
+      "charter_violated": []
+    },
+    {
+      "flag_id": "JUDGE-NOTE-06",
+      "severity": "LOW",
+      "description": "Defense Lockbox period (2024+) SR=1.197 vs Pre-LB SR=0.602 = 1.99x ratio. Recent KR LowVol regime favorable. 566 daily obs limited.",
+      "remediation_path": "Continue lockbox monitoring; decay test in 6 months.",
+      "ax_violated": [],
+      "charter_violated": []
+    }
+  ],
+  "rollback_trigger_recommendation": {
+    "applicable": false,
+    "reason": "WT-D20260429_001 has not yet reached PG2 admission. Verdict FAIL prevents PG admission, so no rollback needed. STR_1715 PG2 active state unchanged."
+  },
+  "lessons_learned": {
+    "primary_finding": "Backtest Result Contract v1.0 audit_bt_result must validate frequency-vs-data-cadence consistency, not just check that metric_type label is set. Currently audit passes if 'frequency' field is set, regardless of actual data spacing.",
+    "secondary_finding": "Inner-join blending of two strategies with different rebalance schedules is mathematically equivalent to sub-sampling and should require explicit forward-fill to common grid. Charter v1.5 §13 should add a check: blend operations must use consistent rebalance frequency or document forward-fill protocol.",
+    "tertiary_finding": "Defense alpha at SIGNAL level passed 3-axis AX-001 v2 but at PORTFOLIO level (top-20 long-only HRP deployment) carries +60% MKT beta + +56% LVOL — not pure defense. The signal-vs-portfolio honesty gap is the structural AX-007 concern.",
+    "proposed_l_code": "L-249",
+    "proposed_l_code_text": "Backtest Result Contract v1.0 audit must validate frequency-vs-cadence consistency. Frequency mislabel (declared 'daily' on bi-monthly inner-join 138-obs series) inflates Sharpe by sqrt(252/12)=4.58x and CAGR exponentially. Charter v1.5 §13 audit_bt_result function must compute median(diff(date)) and compare to declared frequency annualization_factor; mismatch triggers metric_type='unavailable' + integrity='FAIL'. Pattern: blend operations across strategies with different rebalance schedules require explicit forward-fill to common grid OR explicit relabeling to LCM frequency. WT-D20260429_001 Defense factor blend exemplar."
+  },
+  "codex_critic_round_pending": true
+}
