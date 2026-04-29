@@ -48,9 +48,10 @@
   "expected_active_return": 0.0789,
   "expected_tracking_error": 0.0945,
   "expected_information_ratio": 0.8351,
-  "turnover": 4.5731,
-  "estimated_cost": 0.0069,
-  "binding_constraints": ["max_names_20", "turnover_cap_annual_3.0_realized_breach"],
+  "turnover": 6.4259,
+  "estimated_cost": 0.0096,
+  "binding_constraints": ["max_names_20", "turnover_cap_annual_3.0_realized_breach_6.43", "turnover_cap_annual_6.0_HARD_FAIL"],
+  "infeasibility_report": {},
   "method_selected": "HRP_lambda_2.0_psi_0.3_bounds_0.15",
   "method_comparison": {
     "MVO": {
@@ -72,13 +73,13 @@
       "expected_alpha": 0.0789,
       "te": 0.0945,
       "ir": 0.8351,
-      "net_ir": 0.8142,
+      "net_ir": 0.7331,
       "sr": null,
-      "turnover": 1.3172,
-      "cost": 0.002,
+      "turnover": 6.4259,
+      "cost": 0.0096,
       "tdc_q5": 0.2143,
       "tdc_q10": 0.4815,
-      "cvar_5_monthly": -0.0644,
+      "cvar_5_monthly": -0.0699,
       "selected": true
     },
     "CVaR_LP": {
@@ -114,9 +115,22 @@
   "explanation": {
     "top_overweights": ["A002840", "A268280", "A007310", "A012750", "A000080"],
     "top_underweights": ["A030200", "A002030", "A005250", "A271560", "A215200"],
-    "main_tradeoffs": ["Walk-forward TDC q5 vs STR_1715 = 0.0000 (gate 0.30, PASS)", "Walk-forward Pearson cor vs STR_1715 = 0.0698", "Walk-forward CVaR(5%) monthly = -0.1055", "Walk-forward CAGR = 0.0953 / sd_ann = 0.1920 / Sharpe(std) = 0.5699", "Walk-forward turnover annual round-trip = 4.573", "As-of (2026-03) snapshot TDC q5 = 0.2143 (60m static panel)", "Net systematic exposure as-of: MKT=0.595 LVOL=0.558"]
+    "main_tradeoffs": ["Walk-forward TDC q5 vs STR_1715 = 0.0000 (gate 0.30, PASS)", "Walk-forward Pearson cor vs STR_1715 = 0.0729", "Walk-forward CVaR(5%) monthly = -0.0994", "Walk-forward CAGR = 0.0954 / sd_ann = 0.1844 / Sharpe(std) = 0.5864", "Walk-forward turnover annual round-trip = 6.426", "As-of (2026-03) static TDC q5 = 0.2143 (60m panel)", "As-of net systematic exposure: MKT=0.595 LVOL=0.558 SMB=-0.056 WML=0.170"]
   },
-  "challenge_flags": [],
+  "challenge_flags": [
+    {
+      "flag_id": "CF-OPT-03",
+      "severity": "HIGH",
+      "description": "Walk-forward turnover 6.426/yr > 6.0 hard fail (Hurdle Gate v2.2)",
+      "mitigation": "Add turnover penalty φ to MVO method; reduce sig_dates frequency; or relax 20-name churn."
+    },
+    {
+      "flag_id": "CF-OPT-04",
+      "severity": "INFO",
+      "description": "Walk-forward design: as-of (2026-03-31) row anchored to HRP target_weights (Charter §9). Other dates use per-date top-20 by alpha + rolling HRP/inverse_vol. Fallback distribution: anchor_as_of=1, EW=6, HRP_60m=248, inverse_vol=24",
+      "mitigation": "Forge will reconstruct daily NAV from this exact weights.csv. Optimizer-Forge consistency guaranteed."
+    }
+  ],
   "n_names": 20,
   "hhi": 0.0542,
   "min_names_enforced": true,
@@ -125,6 +139,38 @@
   "lambda_used": 2,
   "weights_csv_path": "stage_artifacts/WT-D20260429_001/weights.csv",
   "alpha_sig_dates_count": 279,
+  "weights_csv_unique_dates_count": 279,
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "turnover_realized_walk_forward_annual_rt": 6.4259,
+  "turnover_realized_per_rebalance": 0.2677,
+  "walk_forward_realized": {
+    "measurement_basis_label": "optimizer_walk_forward_simulation",
+    "production_grade": false,
+    "n_obs": 266,
+    "port_mean_monthly": 0.009,
+    "port_sd_monthly": 0.0532,
+    "port_cagr": 0.0954,
+    "port_sd_ann": 0.1844,
+    "port_sharpe_standard_ann": 0.5864,
+    "port_cvar_5_monthly": -0.0994,
+    "port_var_5_monthly": -0.0607,
+    "vs_str1715": {
+      "pearson": 0.0729,
+      "kendall_tau": 0.0256,
+      "tdc_q5": 0,
+      "tdc_q10": 0.1481,
+      "tdc_q20": 0.2037,
+      "tdc_q5_pass": true
+    },
+    "fallback_distribution": {
+      "anchor_as_of": 1,
+      "EW": 6,
+      "HRP_60m": 248,
+      "inverse_vol": 24
+    },
+    "rationale": "Walk-forward HRP (60m → 36m → inverse_vol → EW fallback) per sig_date. As-of (2026-03-31) anchored to HRP target_weights (Charter §9 consistency). Per-date top-20 by alpha_z within per-date top-60 candidates. Walk-forward TDC q5 is decisive deployment metric."
+  },
   "selected_metrics_full": {
     "n_names": 20,
     "sum_w": 1,
@@ -134,18 +180,17 @@
     "expected_alpha": 0.0789,
     "expected_te": 0.0945,
     "expected_ir": 0.8351,
-    "expected_net_ir": 0.8142,
-    "expected_turnover_annual": 1.3172,
-    "estimated_cost": 0.002,
+    "expected_net_ir": 0.7331,
+    "expected_turnover_annual": 6.4259,
+    "estimated_cost": 0.0096,
     "tdc_q5": 0.2143,
     "tdc_q10": 0.4815,
     "tdc_q20": 0.4259,
     "tdc_pearson": 0.1106,
     "tdc_kendall": 0.3403,
     "tdc_n_join": 267,
-    "cvar_5_monthly": -0.0644,
-    "var_5_monthly": -0.0457,
-    "mdd_estimate": -0.2595,
+    "cvar_5_monthly": -0.0699,
+    "var_5_monthly": -0.0522,
     "net_systematic": {
       "MKT": 0.5954,
       "SMB": -0.0564,
@@ -174,30 +219,5 @@
       "A271560": 0.035,
       "A215200": 0.0337
     }
-  },
-  "weights_csv_unique_dates_count": 276,
-  "schedule_density_ratio": 0.9892,
-  "schedule_density_pass": true,
-  "turnover_realized_walk_forward_annual_rt": 4.5731,
-  "turnover_realized_per_rebalance": 0.1905,
-  "walk_forward_realized": {
-    "measurement_basis_label": "optimizer_walk_forward_simulation",
-    "production_grade": false,
-    "n_obs": 266,
-    "port_mean_monthly": 0.0091,
-    "port_sd_monthly": 0.0554,
-    "port_cagr": 0.0953,
-    "port_sd_ann": 0.192,
-    "port_sharpe_standard_ann": 0.5699,
-    "port_cvar_5_monthly": -0.1055,
-    "vs_str1715": {
-      "pearson": 0.0698,
-      "kendall_tau": 0.0216,
-      "tdc_q5": 0,
-      "tdc_q10": 0.1111,
-      "tdc_q20": 0.1852,
-      "tdc_q5_pass": true
-    },
-    "rationale": "Realized TDC q5 from full 22Y walk-forward path. As-of (2026-03) snapshot TDC was static panel-based; walk-forward TDC is the production-relevant metric. Used by Q-Lead for deployment decision."
   }
 }
