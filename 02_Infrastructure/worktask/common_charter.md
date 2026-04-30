@@ -371,6 +371,65 @@ bt_result <- list(
 
 ---
 
+### 14. Alpha Type Branching — multi-objective 8지표 평가 분기 (v1.6, 도훈 채택 2026-04-30)
+
+**Trigger**: WT-D20260430_001 (첫 meta-allocation alpha admission cycle) Judge S6 verdict FAIL Grade C — AX-001 v2 (defense factor 용 axes) 가 meta-allocation alpha (weight schedule type)에 framework mismatch 발견. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256, lawbook `ax001_v21_meta_allocation_amendment.md`) 후속 — Charter §11 본문 통합.
+
+**Alpha Type 3분기**:
+
+```yaml
+alpha_type:
+  defense_factor:
+    description: "Ticker-level defense factor (low-vol / quality / earnings stability 등)"
+    axiom: AX-001_v2
+    evaluation_axes: 3
+    axes:
+      - axis_1: crisis_alpha (event count >= 3 in stress periods)
+      - axis_2: MDD_complement (Core 대비 절감 양수)
+      - axis_3: bad_normal_IC_ratio (>= 1.5)
+    structure_constraint: AX-005 EXCLUSION (BAB / Q07+D25 single-sleeve combo 회피) + AX-007 EXCEPTION (multi-sleeve / long-short / 50+ 분산 / ML sizing)
+  
+  meta_allocation:
+    description: "Weight schedule type alpha (regime overlay / dynamic blend) — 종목 ranking 아님"
+    axiom: AX-001_v2.1
+    evaluation_axes: 4
+    axes:
+      - axis_1: crisis_alpha_conditional (overlay 발동 시점만, 횟수 무관)
+      - axis_2: MDD_complement (Core 대비 전기간 절감 양수, ≥ 3pp 권장)
+      - axis_3: CRISIS_regime_vol_reduction (bootstrap 95% CI 상한 < 1.0)
+      - axis_4: tail_risk_metrics (Hill α / VaR_99 / ES_99 / CDaR_95 4건 중 ≥ 3 우월)
+    structure_constraint: replacement scenario 정합 (OVERRIDE_002) + AX-007 EXCEPTION_1 (multi-sleeve via regime overlay)
+    alpha_discovery_certificate_definition: "ticker-level cross-section IC 기준 부적용. lookahead-clean weight schedule + L-249 frequency 정합 + Forge realized = optimizer estimated divergence < 0.6pp 정합 시 발급 가능."
+  
+  cross_family:
+    description: "다른 economic family 간 cross-family diversifier alpha"
+    axiom: AX-001_v2 + Sequential_Admission
+    evaluation_axes: 4
+    axes:
+      - axis_1: crisis_alpha (event count >= 3)
+      - axis_2: MDD_complement
+      - axis_3: bad_normal_IC_ratio
+      - axis_4: TDC_q5_vs_existing_PG2 (< 0.30 — Sequential Admission 정합)
+    structure_constraint: economic_family 신규 진입 + cor < 0.30 vs existing book
+```
+
+**Multi-objective 8지표 평가 시 alpha type 명시 의무**:
+- `factor_specs[].factor_family`에 `defense_factor` / `meta_allocation` / `cross_family` 명시
+- Judge S6 phase에서 alpha_type 자동 detect → 해당 axiom + axes 적용
+- AX-002 process honesty 정합: alpha_type을 사후 변경하여 verdict 변경 금지
+
+**Charter §10 Alpha Discovery Certificate 분기**:
+- `defense_factor` / `cross_family`: 기존 5-cert 정의 (rank_ic ≥ 0.04 / ICIR ≥ 0.20 / Harvey t ≥ 3.0 / DSR ≥ 0.5 / parent inheritance_cor < 0.95)
+- `meta_allocation`: 별도 정의 — lookahead-clean weight schedule + L-249 frequency 정합 + Forge realized = optimizer estimated < 0.6pp + replacement scenario rules + AX-001 v2.1 axes ≥ 3 PASS
+
+**적용 시점**:
+- 즉시: 다음 alpha discovery cycle (Phase 4 cross-family WT)
+- 본 cycle (WT-D20260430_001) — Charter v1.6 발효 후 Governor 단계 정식 적용 가능 (이미 ADMIT_CONDITIONAL_WITH_WAIVER 처리, 본 §14는 영구 명문화)
+
+**상세 SOT**: `00_Lawbook/Multi_Agent/ax001_v21_meta_allocation_amendment.md` v2.1 (본 §14가 Charter 본문 정식 통합)
+
+---
+
 ## Version
 
 - **v1.0** — 2026-04-23 Session 69 Day 1 — 초기 헌장 (사용자 설계도 기반)
@@ -379,4 +438,5 @@ bt_result <- list(
 - **v1.3** — 2026-04-29 — STR_1631_SYN_05 outlier handling 4-way 검증 후 §11 Outlier Handling 표준 명문화. Variant A (winsorize 1%/99% + corp action filter) 채택. `factor_z_standard.R` single source of truth. STR_1631_SYN_06 신규 등록 (1호 적용).
 - **v1.4** — 2026-04-29 — Sharpe Ratio 표준 §12 명문화. `Sharpe = CAGR / vol` hybrid 폐기, 학술 표준 `Sharpe = mean(ER) / sd(ER) × √N` 채택 (도훈 reference Lo 2002 / Bailey-LdP 2014). `sharpe_standard.R` single source of truth. summarise_perf() patch + 모든 strategy 재산출.
 - **v1.5** — 2026-04-29 — Backtest Result Contract §13 명문화. 10-component bt_result list 표준 (trades + costs 제외). PerformanceAnalytics 자체 합성 금지. metric_type 분류 (backtested/estimated/proxy/unavailable) + L3 hard block (audit FAIL 시 official metrics 차단). `02_Infrastructure/contracts/` 5 R modules + Hook + Master Registry + Lawbook v1.0.
+- **v1.6** — 2026-04-30 — §14 Alpha Type Branching 명문화 (PD_014 motion). WT-D20260430_001 첫 meta-allocation alpha admission cycle 발견 후 AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256) Charter 본문 정식 통합. 3 alpha type (defense_factor / meta_allocation / cross_family) × 각 axiom + evaluation axes + structure constraint. alpha_discovery_certificate 정의 분기 (meta_allocation 별도). 다음 alpha discovery cycle (Phase 4 cross-family) 정합 정의.
 - 변경 시 major bump + L-code 발행 필수

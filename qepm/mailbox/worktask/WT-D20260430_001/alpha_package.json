@@ -5,7 +5,10 @@
   "forecast_horizon": "1M",
   "selection_objective": "subperiod_stability",
   "n_sig_dates": 267,
-  "sig_date_range": ["2004-01-01", "2026-03-01"],
+  "sig_date_range": [
+    "2004-01-01",
+    "2026-03-01"
+  ],
   "alpha_vector_type": "meta_allocation_weight_schedule",
   "alpha_vector_explanation": "본 Discovery WT는 STR_1715 (PG2_CORE_ALPHA 100%) blend weight 시계열 자체가 alpha source. 따라서 alpha_vector는 ticker-level α̂ 가 아니라 monthly weight schedule (Date × {weight_str1715, weight_cash}). Ticker-level field는 schema 호환을 위해 단일 synthetic key 'STR_1715_SLEEVE'로 가장 최근 weight 표기. 시계열 weight schedule은 stage_artifacts/alpha_scores.parquet 참조.",
   "alpha_vector": {
@@ -14,7 +17,7 @@
   },
   "confidence_vector": {
     "STR_1715_SLEEVE": 0.5,
-    "CASH_KRW": 1.0
+    "CASH_KRW": 1
   },
   "signal_matrix_ref": "feature_store://qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/alpha_scores.parquet",
   "factor_specs": [
@@ -79,17 +82,49 @@
     "deflated_sharpe_ratio": 0.998,
     "deflated_sharpe_ratio_method": "Bailey-Lopez de Prado (2014) DSR on 267-month S3 Sharpe = 1.6336 (annualized) / sqrt(12) = 0.4716 monthly Sharpe. n_obs = 267, n_trials = 3 (3 distinct methods: BOCPD + hyperbolic decay + BL — no grid sweep).",
     "post_neutralization_ic": null,
-    "alpha_inheritance_cor": 0.0,
+    "alpha_inheritance_cor": 0,
     "alpha_inheritance_cor_explanation": "본 WT alpha is **weight schedule** time series (meta-allocation). STR_1715의 ticker α̂는 본 WT가 수정 안 함 (read-only mandate). Therefore weight-schedule alpha 와 STR_1715 ticker α̂ 는 mathematically orthogonal. inheritance_cor = 0 by construction. Realized return correlation S1-S3 = 0.992 (S3 = w * S1, w near 1.0) is **NOT** alpha inheritance — it's mechanical weighting overlap.",
     "crisis_alpha": {
-      "GFC_2008_09_2009_03": {"s1_ret": -0.0361, "s3_ret": -0.0300, "alpha": 0.0061},
-      "FlashCrash_2010": {"s1_ret": 0.3828, "s3_ret": 0.3828, "alpha": 0.0},
-      "EuroCrisis_2011": {"s1_ret": 0.0921, "s3_ret": 0.0750, "alpha": -0.0171},
-      "ChinaShock_2015": {"s1_ret": 0.1024, "s3_ret": 0.1024, "alpha": 0.0},
-      "VolMaggedon_2018": {"s1_ret": -0.1430, "s3_ret": -0.1430, "alpha": 0.0},
-      "Covid_2020_02_04": {"s1_ret": -0.0428, "s3_ret": -0.0477, "alpha": -0.0049},
-      "Inflation_2022": {"s1_ret": -0.0587, "s3_ret": -0.0587, "alpha": 0.0},
-      "TariffTantrum_2025_04": {"s1_ret": 0.1686, "s3_ret": 0.1686, "alpha": 0.0}
+      "GFC_2008_09_2009_03": {
+        "s1_ret": -0.0361,
+        "s3_ret": -0.03,
+        "alpha": 0.0061
+      },
+      "FlashCrash_2010": {
+        "s1_ret": 0.3828,
+        "s3_ret": 0.3828,
+        "alpha": 0
+      },
+      "EuroCrisis_2011": {
+        "s1_ret": 0.0921,
+        "s3_ret": 0.075,
+        "alpha": -0.0171
+      },
+      "ChinaShock_2015": {
+        "s1_ret": 0.1024,
+        "s3_ret": 0.1024,
+        "alpha": 0
+      },
+      "VolMaggedon_2018": {
+        "s1_ret": -0.143,
+        "s3_ret": -0.143,
+        "alpha": 0
+      },
+      "Covid_2020_02_04": {
+        "s1_ret": -0.0428,
+        "s3_ret": -0.0477,
+        "alpha": -0.0049
+      },
+      "Inflation_2022": {
+        "s1_ret": -0.0587,
+        "s3_ret": -0.0587,
+        "alpha": 0
+      },
+      "TariffTantrum_2025_04": {
+        "s1_ret": 0.1686,
+        "s3_ret": 0.1686,
+        "alpha": 0
+      }
     },
     "crisis_alpha_summary": "8 stress periods analyzed. 1/8 positive crisis_alpha (GFC +61bps), 2/8 small negative (EuroCrisis -171bps, Covid -49bps), 5/8 unchanged (overlay didn't fire). Crisis_alpha modest — main protection is at MONTHLY tail events not 6-month aggregated stress.",
     "monthly_tail_protection": "Major monthly tail months caught by S3 overlay: 2020-03 (-14.07% baseline → -11.96% with 0.85 weight), 2018-10 (-13.39% → not caught, decay_signal=0.60 < 0.7 threshold), 2023-09 (-7.52% → -6.39% with 0.85 weight), 2019-07 (-6.21% → not caught). 17 deviations from S2 baseline; 5/17 negative-return months caught.",
@@ -104,8 +139,8 @@
     "max_drawdown_S3": -0.2991,
     "incremental_alpha_significance_test": {
       "method": "Newey-West HAC t-test on monthly return DIFFERENCE (S3 - S2), lag=4 / lag=12, two-sided p-value",
-      "S3_minus_S2_mean_per_month": 9.0e-05,
-      "S3_minus_S2_sd_per_month": 0.00254,
+      "S3_minus_S2_mean_per_month": 0.0001,
+      "S3_minus_S2_sd_per_month": 0.0025,
       "S3_minus_S2_NW_t_lag4": 0.558,
       "S3_minus_S2_NW_t_lag12": 0.577,
       "S3_minus_S2_p_value_lag4": 0.577,
@@ -133,7 +168,7 @@
       "sharpe_annualized": 1.616,
       "max_drawdown": -0.2991,
       "harvey_t_nw_lag4": 6.377,
-      "harvey_t_nw_lag12": 5.920,
+      "harvey_t_nw_lag12": 5.92,
       "uplift_vs_S1_sr": 0.021,
       "uplift_vs_S1_mdd_pp": 5.65
     },
@@ -144,7 +179,7 @@
       "harvey_t_nw_lag4": 6.421,
       "harvey_t_nw_lag12": 5.957,
       "uplift_vs_S2_sr": 0.018,
-      "uplift_vs_S2_mdd_pp": 0.0,
+      "uplift_vs_S2_mdd_pp": 0,
       "uplift_vs_S1_sr": 0.039,
       "uplift_vs_S1_mdd_pp": 5.65,
       "mandate_pass": "CANDIDATE",
@@ -153,10 +188,30 @@
   },
   "ablation_results_post_codex_r1": {
     "comment": "Codex R1 Concern C2 mandate. Single-pillar ablation on full 267 mo:",
-    "S2_baseline_only": {"sr": 1.616, "mdd": -0.2991, "uplift_vs_S2_sr": 0.0, "comment": "existing MRS overlay only"},
-    "S2_plus_BOCPD_only": {"sr": 1.615, "mdd": -0.2991, "uplift_vs_S2_sr": -0.001, "comment": "BOCPD 단독 효과 ZERO (변동성 절감 없음)"},
-    "S2_plus_decay_only": {"sr": 1.630, "mdd": -0.2991, "uplift_vs_S2_sr": 0.014, "comment": "decay 단독 효과 78% of full S3 uplift"},
-    "S2_plus_decay_AND_BOCPD": {"sr": 1.634, "mdd": -0.2991, "uplift_vs_S2_sr": 0.018, "comment": "S3 = full composite. BOCPD adds only +0.004 over decay-alone."},
+    "S2_baseline_only": {
+      "sr": 1.616,
+      "mdd": -0.2991,
+      "uplift_vs_S2_sr": 0,
+      "comment": "existing MRS overlay only"
+    },
+    "S2_plus_BOCPD_only": {
+      "sr": 1.615,
+      "mdd": -0.2991,
+      "uplift_vs_S2_sr": -0.001,
+      "comment": "BOCPD 단독 효과 ZERO (변동성 절감 없음)"
+    },
+    "S2_plus_decay_only": {
+      "sr": 1.63,
+      "mdd": -0.2991,
+      "uplift_vs_S2_sr": 0.014,
+      "comment": "decay 단독 효과 78% of full S3 uplift"
+    },
+    "S2_plus_decay_AND_BOCPD": {
+      "sr": 1.634,
+      "mdd": -0.2991,
+      "uplift_vs_S2_sr": 0.018,
+      "comment": "S3 = full composite. BOCPD adds only +0.004 over decay-alone."
+    },
     "ablation_finding": "Decay-pillar contributes 78% of full S3 uplift; BOCPD adds 22% only. Composite likely redundant. Recommendation: simplify to single-pillar decay in next cycle.",
     "lockbox_split_2024_01_to_2026_03_27mo": {
       "S1_baseline_no_overlay_sr": 2.993,
@@ -185,13 +240,41 @@
     "n_threshold_combos_explored_explanation": "Codex R1 Concern C3 disclosure: hyperparameter tuning during dev tested decay_strong (4 values) × decay_extreme (3) × bocpd_strong (4) × bocpd_extreme (3) × protection_levels (4) ≈ 576 combinations. Conservative DSR n_trials=64 selective subset. Plus 4 code iterations (v1/v2/v3/v4 documented in agent_metadata).",
     "dsr_recomputed_post_codex": "Time-series Harvey DSR still > 0.5 (≈ 1.0 since Harvey t = 6.42 well above sr_zero threshold). However incremental S3-S2 monthly Sharpe = 0.124, n=267, n_trials=64 → INCREMENTAL DSR < 0.5 (incremental alpha NOT significant). Honest disclosure.",
     "alternative_methods_recorded": [
-      {"name": "Pillar A: Student-t HMM (Lee 2026)", "selected": false, "reason": "Existing 3-Layer system already covers macro regime; HMM offers Granger 9-day lead but daily — monthly resolution doesn't benefit"},
-      {"name": "Pillar A: Sparse Jump Model SJM (Shu-Mulvey 2024)", "selected": false, "reason": "SJM requires per-factor regime fitting; 본 WT는 single strategy; SJM 적용 cost > benefit at 1-asset scope"},
-      {"name": "Pillar B: Recent SR comparison (raw)", "selected": false, "reason": "Was tried first — too noisy, captures ~50/50 good/bad months"},
-      {"name": "Pillar B: Hyperbolic decay (Lee 2025)", "selected": true, "reason": "Mechanism + R² goodness as confidence + directional"},
-      {"name": "Pillar C: EMVRS RL (Chen-Li-Saunders 2025)", "selected": false, "reason": "RL OC > TD empirical, but Discovery cycle 1 too complex; future variant"},
-      {"name": "Pillar C: HRP/NCO (Lopez de Prado 2016)", "selected": false, "reason": "Requires multi-asset universe; 본 WT는 2-asset (sleeve + cash)"},
-      {"name": "Pillar C: Black-Litterman augmented (selected)", "selected": true, "reason": "2-asset closed-form; existing macro overlay 보완 위한 augmentation rule"}
+      {
+        "name": "Pillar A: Student-t HMM (Lee 2026)",
+        "selected": false,
+        "reason": "Existing 3-Layer system already covers macro regime; HMM offers Granger 9-day lead but daily — monthly resolution doesn't benefit"
+      },
+      {
+        "name": "Pillar A: Sparse Jump Model SJM (Shu-Mulvey 2024)",
+        "selected": false,
+        "reason": "SJM requires per-factor regime fitting; 본 WT는 single strategy; SJM 적용 cost > benefit at 1-asset scope"
+      },
+      {
+        "name": "Pillar B: Recent SR comparison (raw)",
+        "selected": false,
+        "reason": "Was tried first — too noisy, captures ~50/50 good/bad months"
+      },
+      {
+        "name": "Pillar B: Hyperbolic decay (Lee 2025)",
+        "selected": true,
+        "reason": "Mechanism + R² goodness as confidence + directional"
+      },
+      {
+        "name": "Pillar C: EMVRS RL (Chen-Li-Saunders 2025)",
+        "selected": false,
+        "reason": "RL OC > TD empirical, but Discovery cycle 1 too complex; future variant"
+      },
+      {
+        "name": "Pillar C: HRP/NCO (Lopez de Prado 2016)",
+        "selected": false,
+        "reason": "Requires multi-asset universe; 본 WT는 2-asset (sleeve + cash)"
+      },
+      {
+        "name": "Pillar C: Black-Litterman augmented (selected)",
+        "selected": true,
+        "reason": "2-asset closed-form; existing macro overlay 보완 위한 augmentation rule"
+      }
     ],
     "rationalization_red_flags_self_check_post_codex": [
       "Pre-Codex draft contained: 'SR uplift modest (+0.018) / working on top of strong baseline' — Codex flagged. Removed/qualified in final.",
@@ -204,9 +287,31 @@
     "cost_recompute_post_codex": "17 weight changes × ~10pp avg × 15bps cost × 22yr ≈ 5.5pp cumulative drag. Annualized ≈ 25bps/yr. Cost-adjusted S3 SR may be ~1.60 instead of 1.634 (depending on cost cushion in monthly NAV). Forge backtest will measure final cost-adjusted SR."
   },
   "evaluation_windows_used_post_codex": {
-    "train_window": {"start": "2004-01-01", "end": "2023-12-31", "n": 240, "S2_SR": 1.461, "S3_SR": 1.481, "S3_minus_S2_NW_t_lag4": 0.559, "S3_minus_S2_p_value": 0.576, "comment": "Post-Codex R1 split: train SR uplift +0.019 NOT statistically significant."},
-    "lockbox_window": {"start": "2024-01-01", "end": "2026-03-01", "n": 27, "S1_SR": 2.993, "S2_SR": 2.964, "S3_SR": 2.964, "comment": "Post-Codex R1 split: lockbox null result (overlay didn't fire). Cannot validate/invalidate threshold."},
-    "validation_window": {"start": "2004-01-01", "end": "2026-03-01", "n": 267, "comment": "Original single-pass — Codex R1 Concern C1 flagged this. Now augmented with explicit train/lockbox split."},
+    "train_window": {
+      "start": "2004-01-01",
+      "end": "2023-12-31",
+      "n": 240,
+      "S2_SR": 1.461,
+      "S3_SR": 1.481,
+      "S3_minus_S2_NW_t_lag4": 0.559,
+      "S3_minus_S2_p_value": 0.576,
+      "comment": "Post-Codex R1 split: train SR uplift +0.019 NOT statistically significant."
+    },
+    "lockbox_window": {
+      "start": "2024-01-01",
+      "end": "2026-03-01",
+      "n": 27,
+      "S1_SR": 2.993,
+      "S2_SR": 2.964,
+      "S3_SR": 2.964,
+      "comment": "Post-Codex R1 split: lockbox null result (overlay didn't fire). Cannot validate/invalidate threshold."
+    },
+    "validation_window": {
+      "start": "2004-01-01",
+      "end": "2026-03-01",
+      "n": 267,
+      "comment": "Original single-pass — Codex R1 Concern C1 flagged this. Now augmented with explicit train/lockbox split."
+    },
     "next_cycle_recommendation": "12+ month paper trade post 2026-03 OR redefine train as pre-2014 + lockbox 2014-2026 to provide longer OOS evidence with multiple regime events."
   },
   "alpha_inheritance_audit": {
@@ -215,7 +320,7 @@
     "parent_alpha_modified_explanation": "STR_1715의 alpha vector + factor weights + ticker selection 일체 변경 없음. 본 WT alpha는 STR_1715 outputs (period_returns)만 input으로 사용, regime + decay + BL transformation으로 weight schedule 산출.",
     "ticker_alpha_correlation_sample": "N/A — 본 WT는 ticker-level alpha 미산출. Correlation 측정 대상 부재.",
     "weight_schedule_correlation_with_constant_1": "Always 1.0 weight 대비 본 weight schedule (0.75~1.0) 표준편차 0.097, 평균 0.969. Not a 'parent inheritance' issue — 본 WT는 fundamentally orthogonal mechanism (regime-meta-allocation).",
-    "alpha_inheritance_cor": 0.0
+    "alpha_inheritance_cor": 0
   },
   "ax_compliance_check": {
     "AX-001_v2_defense_conditional": "SCOPE_MISMATCH. Per Codex R1 Concern C4 reclassification: AX-001 v2 explicitly applies to defense FACTOR (low-beta/Q07/D25 standalone or composite), not meta-allocation overlay. 본 WT는 sleeve weight scheduler — different architectural scope. Bad_normal ratio 0.138 measured for completeness but NOT applicable as pass/fail criterion. Crisis_alpha 1/8 positive (GFC +61bps): 본 mechanism is monthly tail protection (2020-03 -14% saved 2.8pp), not 6mo regime-aggregated. AX-001 v2 NOT_APPLICABLE. (Pre-Codex draft used 'PARTIAL' — reclassified post-Codex.)",
@@ -235,9 +340,24 @@
     "C15_load_month_factors_clarified": "NOT_APPLICABLE — C15 specifically targets Factor DB 288-factor parquet. 본 WT does NOT load Factor DB. Inputs are: (1) STR_1715 period_returns CSV (downstream Forge artifact), (2) .cache/unified_regime_signal.parquet (regime_engine_daily.R output, NOT Factor DB). Codex R1 Concern C6 clarified.",
     "lookahead_detector_run_at": "2026-04-30T13:00:00+0900",
     "lookahead_detector_violations": [
-      {"check": "C1b", "line": 468, "severity": "false_positive", "rationale": "quantile() inside cat(sprintf(...)) for diagnostic log only, not used in signal construction"},
-      {"check": "C1b", "line": 472, "severity": "false_positive", "rationale": "same as 468"},
-      {"check": "C1b", "line": 631, "severity": "false_positive", "rationale": "same as 468"}
+      {
+        "check": "C1b",
+        "line": 468,
+        "severity": "false_positive",
+        "rationale": "quantile() inside cat(sprintf(...)) for diagnostic log only, not used in signal construction"
+      },
+      {
+        "check": "C1b",
+        "line": 472,
+        "severity": "false_positive",
+        "rationale": "same as 468"
+      },
+      {
+        "check": "C1b",
+        "line": 631,
+        "severity": "false_positive",
+        "rationale": "same as 468"
+      }
     ]
   },
   "challenge_flags_post_codex_r1": [
@@ -258,7 +378,10 @@
     "long_only": true,
     "max_names": 2,
     "max_names_explanation": "STR_1715_SLEEVE + CASH_KRW = 2 sleeves, well under 20 stock cap.",
-    "weight_bounds": [0.0, 1.0],
+    "weight_bounds": [
+      0,
+      1
+    ],
     "transaction_cost_bps": 15,
     "transaction_cost_bps_explanation": "Underlying STR_1715 turnover already incorporated 15bps. Weight overlay turnover ~5%/year additional cost (estimated <1bps/year drag, ignored)."
   },
@@ -284,9 +407,28 @@
     "literature_papers_collected": 42,
     "literature_papers_full_picks": 12,
     "kr_direct_empirical_papers_count": 2,
-    "tools_unavailable": ["jina_arxiv (paid 503)", "jina_ssrn (paid 503)"],
-    "tools_used": ["mcp__arxiv__search_papers", "Read", "Write", "Edit", "Bash (R execution)"],
+    "tools_unavailable": [
+      "jina_arxiv (paid 503)",
+      "jina_ssrn (paid 503)"
+    ],
+    "tools_used": [
+      "mcp__arxiv__search_papers",
+      "Read",
+      "Write",
+      "Edit",
+      "Bash (R execution)"
+    ],
     "code_iterations": 4,
     "code_iterations_explanation": "v1: BOCPD posterior weak (uniform hazard), no protection. v2: BOCPD short_run_mass, fix improved but spurious cash drags positive months. v3: directional decay_signal, conjunction rule — too restrictive, SR 1.24. v4: Existing-System-Aware Augmentation (defer to existing system, ADD when joint or extreme alpha decay) → SR 1.634, MDD -29.9% mandate pass."
+  },
+  "codex_r1_round_status": {
+    "stance": "REJECT",
+    "critical_concerns_count": 8,
+    "supporting_arguments_count": 5,
+    "unresolved_disputes_count": 5,
+    "total_audit_items": 18,
+    "audit_trail_ref": "qepm/mailbox/worktask/WT-D20260430_001/codex_critic_response_alpha.json",
+    "L_255_enforcement": "PD_015_applied_2026_04_30",
+    "honest_disclosure": "Codex Round 1 stance=REJECT critical=8 supporting=5 unresolved=5"
   }
 }
