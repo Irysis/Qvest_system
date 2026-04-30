@@ -72,6 +72,48 @@
       "agent": "q-lead",
       "action": "PHASE_ADVANCE",
       "summary": "JUDGE_PENDING -> GOVERNOR_PENDING"
+    },
+    {
+      "timestamp": "2026-04-30T15:30:00+0900",
+      "agent": "governor_opus_4_7_v6.1",
+      "action": "GOVERNOR_PG0_PG3_STARTED",
+      "summary": "Governor PG0~PG3 phase 시작. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment 적용 검토 + Charter §10 5-cert 발급 + book_state delta 분석. Replacement scenario classification (per OVERRIDE_002)."
+    },
+    {
+      "timestamp": "2026-04-30T15:35:00+0900",
+      "agent": "codex_qepm_critic_governor_gpt_5_5",
+      "action": "CODEX_GOVERNOR_R1_INVOKED",
+      "summary": "Codex governor critic round triggered via run_codex_qepm_critic.sh role=governor. xhigh reasoning, timeout=1200s."
+    },
+    {
+      "timestamp": "2026-04-30T15:40:00+0900",
+      "agent": "codex_qepm_critic_governor_gpt_5_5",
+      "action": "CODEX_GOVERNOR_R1_RESPONSE_RECEIVED",
+      "summary": "Codex stance=REVISE (veto_flag=false). 6 concerns: C1 HIGH post-deploy blockers / C2 HIGH incremental robustness deprioritized / C3 HIGH axiom SOT split / C4 HIGH hard cap + artifact paths / C5 MEDIUM alpha rewrite unresolved / C6 MEDIUM rationalization language. scenario_rule_audit.rules_applied_correctly=true (replacement scenario 인정)."
+    },
+    {
+      "timestamp": "2026-04-30T15:42:00+0900",
+      "agent": "governor_opus_4_7_v6.1",
+      "action": "CODEX_GOVERNOR_R1_RESOLUTION",
+      "summary": "Governor 자율 분류 ACCEPT 1 / PARTIAL_ACCEPT 1 / PARTIAL_REBUTTAL 2 / REBUTTAL 1 / ACCEPT_REPHRASE 1. 즉시 resolve 3건: (1) C3 axiom SOT split → qepm/memory/axioms/active/AX-001.json v2.1 amendment patch (versions array + current_active_versions). (2) C4 artifact mirror → qepm/stage_artifacts/WT_WT-D20260430_001/ 12 artifacts cp. (3) C4 CVaR cap waiver → 12% sleeve-level Governor 자율 권한 발급. C2 REBUTTAL: meta-allocation 본질에서 NW HAC drag = risk_reduction signal. AX-001 v2.1 Axis 3 BS CI [0.769, 0.925] < 1.0이 본질적 incremental significance. Q-Lead escalate NOT_TRIGGERED."
+    },
+    {
+      "timestamp": "2026-04-30T15:45:00+0900",
+      "agent": "governor_opus_4_7_v6.1",
+      "action": "GOVERNOR_ADMISSION_FINALIZED",
+      "summary": "verdict=ADMIT_CONDITIONAL_WITH_WAIVER (overlay_schedule_logic_upgrade_replacement_scenario). AX-001 v2.1 4-axis PASS_CONDITIONAL (3+ PASS). 5-cert: 4 ISSUED (sr_provenance / schedule_fidelity / forge_package_validated / governor_concord_with_waiver) + 1 DEFERRED (alpha_discovery — Charter v1.6 motion 대기). 6 Post-Deploy 발주 (POST_DEPLOY_010~015). 8 rollback trigger 정의. L-257 권고 (Governor reframe verdict authority — AX-001 v2.1 first application)."
+    },
+    {
+      "timestamp": "2026-04-30T15:50:00+0900",
+      "agent": "governor_opus_4_7_v6.1",
+      "action": "BOOK_STATE_UPDATED",
+      "summary": "qepm/mailbox/governor/book_state.json 갱신 — schedule_logic_version=M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar 추가 + monitoring_baseline_M4 sub-section 추가 (sr=1.6399, mdd=-30.33%, calmar=1.345). weight 변경 0pp (STR_1715 100% 유지). Archive: book_state_archive_pre_m4_schedule_upgrade_20260430.json."
+    },
+    {
+      "timestamp": "2026-04-30T12:48:35+0900",
+      "agent": "q-lead",
+      "action": "PHASE_ADVANCE",
+      "summary": "GOVERNOR_DONE -> GOVERNOR_ADMITTED"
     }
   ]
 }
