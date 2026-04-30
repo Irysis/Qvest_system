@@ -6,7 +6,8 @@
 
 <axioms level="0" immutable="true">
 - **AX-000**: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
-- **AX-001 v2**: 방어형 팩터는 조건부 성과로 평가한다. 전기간 SR/CAGR/MDD 기준 적용 금지 (Grade F 오판). 평가축: 위기 구간 crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio. multi-sleeve 조건부 비중.
+- **AX-001 v2**: 방어형 팩터(ticker-level defense factor)는 조건부 성과로 평가한다. 전기간 SR/CAGR/MDD 기준 적용 금지 (Grade F 오판). 평가축 3건: 위기 구간 crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio. multi-sleeve 조건부 비중.
+- **AX-001 v2.1** [META-ALLOCATION-EXEMPT, 2026-04-30 Judge motion + L-256]: meta-allocation alpha (weight schedule type — 종목 ranking 아닌 비중 overlay)는 v2의 3 axis 중 Axis 1 (crisis_alpha event count) + Axis 3 (bad/normal IC ratio) **SCOPE_MISMATCH**. 평가축 4건: (1) crisis_alpha conditional (overlay 발동 시점만, 횟수 무관) / (2) MDD complement (Core 대비 전기간 절감 양수) / (3) **CRISIS regime vol reduction** (bootstrap CI 통계 유의) / (4) Tail risk metrics (Hill α / VaR_99 / ES_99 / CDaR_95 Core 우월). AX-002 process honesty: future amendment를 현재 verdict의 PASS 조건 사용 금지 — Governor 단계 portfolio level 재평가에서만 적용. 근거: WT-D20260430_001 첫 사례.
 - **AX-002**: 하네스 내 성과만 유효하다. 프로세스 우회 = 판단의 미래참조 = C1 위반 동급.
 - **AX-003** [empirical/negative] market=KR, family=value: EP_STANDALONE + LOW_TURNOVER value standalone 실패. 근거 L-132/135.
 - **AX-004** [methodological/negative] market=KR, family=quality_profitability: GP·Cash-profitability single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite(Novy-Marx GP + Piotroski + Ohlson + Q07) + multi-sleeve 내 Q07 defense sleeve는 scope 밖. 근거 L-133/134/139.
