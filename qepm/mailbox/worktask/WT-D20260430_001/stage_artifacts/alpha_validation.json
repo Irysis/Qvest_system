@@ -1,0 +1,142 @@
+{
+  "scenarios": {
+    "s1_baseline": {
+      "sr": 1.595,
+      "mdd": -0.3556,
+      "harvey_t_nw": 6.2814,
+      "n_periods": 267,
+      "harvey_t_nw_lag12": 5.943
+    },
+    "s2_simple_mrs": {
+      "sr": 1.6161,
+      "mdd": -0.2991,
+      "harvey_t_nw": 6.3769,
+      "n_periods": 267,
+      "harvey_t_nw_lag12": 5.92
+    },
+    "s3_dynamic_blend": {
+      "sr": 1.6336,
+      "mdd": -0.2991,
+      "harvey_t_nw": 6.4207,
+      "dsr": 1,
+      "n_periods": 267,
+      "harvey_t_nw_lag12": 5.957
+    }
+  },
+  "superiority": {
+    "sr_uplift_vs_s1": 0.0386,
+    "sr_uplift_vs_s2": 0.0176,
+    "mdd_uplift_vs_s1": 0.0565,
+    "mdd_uplift_vs_s2": 0,
+    "mandate_pass_vs_s2": true
+  },
+  "subperiod": {
+    "s1": {
+      "p1": 1.8193,
+      "p2": 1.3476,
+      "p3": 1.774
+    },
+    "s3": {
+      "p1": 1.9641,
+      "p2": 1.3416,
+      "p3": 1.7993
+    }
+  },
+  "crisis_alpha": [
+    {
+      "name": "GFC",
+      "s1_ret": -0.0361,
+      "s3_ret": -0.03,
+      "alpha": 0.0061
+    },
+    {
+      "name": "FlashCrash",
+      "s1_ret": 0.3828,
+      "s3_ret": 0.3828,
+      "alpha": 0
+    },
+    {
+      "name": "EuroCrisis",
+      "s1_ret": 0.0921,
+      "s3_ret": 0.075,
+      "alpha": -0.0171
+    },
+    {
+      "name": "ChinaShock",
+      "s1_ret": 0.1024,
+      "s3_ret": 0.1024,
+      "alpha": 0
+    },
+    {
+      "name": "VolMaggedon",
+      "s1_ret": -0.143,
+      "s3_ret": -0.143,
+      "alpha": 0
+    },
+    {
+      "name": "Covid",
+      "s1_ret": -0.0428,
+      "s3_ret": -0.0477,
+      "alpha": -0.0049
+    },
+    {
+      "name": "Inflation",
+      "s1_ret": -0.0587,
+      "s3_ret": -0.0587,
+      "alpha": 0
+    },
+    {
+      "name": "TariffTantrum",
+      "s1_ret": 0.1686,
+      "s3_ret": 0.1686,
+      "alpha": 0
+    }
+  ],
+  "bad_normal": {
+    "sr_normal": 1.6374,
+    "sr_bad": 1.8635,
+    "ratio": 0.1381,
+    "good_n_months": 167,
+    "bad_n_months": 56
+  },
+  "lead_time": {
+    "stress_signals": {
+      "GFC": 61,
+      "FlashCrash": {},
+      "EuroCrisis": {},
+      "ChinaShock": 61,
+      "VolMaggedon": 30,
+      "Covid": {},
+      "Inflation": {}
+    },
+    "median_lead_days": 61
+  },
+  "pit_compliance": {
+    "C1_full_sample": "PASS — rolling 36-month decay fit only",
+    "C2_same_day_circular": "PASS — t-1 lag for regime + decay + BOCPD",
+    "C5_overlay_lag": "PASS — weight at t uses regime[t-1], bocpd[t-1], decay[≤t-1]",
+    "C9_overlay_engineering": "PASS — weight_str1715[t] = f(regime_t-1, decay_t-1, view_t-1)",
+    "C13_zscore_aligned": "N/A — no Z_Score; weight schedule alpha",
+    "C14_usable_date": "N/A — no Factor DB IC access",
+    "C15_load_month_factors": "N/A — no Factor DB factor; STR_1715 returns + cached regime only"
+  },
+  "metadata": {
+    "task_id": "WT-D20260430_001",
+    "hyperparameters": {
+      "rolling_window_months": 36,
+      "bocpd_hazard": 0.0417,
+      "bocpd_prior_var": 0.0064,
+      "warmup_months": 36,
+      "bl_tau": 0.05,
+      "bl_omega_scale": 1.5
+    },
+    "n_methods_tried": 3,
+    "method_shopping_log": {
+      "rationale": "3 pillar 각 1 method 단일 spec. No grid sweep (DSR n_trials=3)",
+      "pillar_a_method": "BOCPD (Adams-MacKay 2007 / Tsaknaki-Lillo-Mazzarisi 2024)",
+      "pillar_b_method": "Hyperbolic decay K/(1+λt) (Lee 2025)",
+      "pillar_c_method": "Black-Litterman 2-asset (Black-Litterman 1992 / Shu-Mulvey 2024)"
+    }
+  },
+  "subperiod_stability_score_s3": 0.8107
+}

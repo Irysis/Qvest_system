@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260430_001",
+  "wt_type": "discovery",
+  "hypothesis_title": "Regime-Conditional Dynamic Blending Alpha — Meta-Allocation via BOCPD + Hyperbolic Alpha Decay + Black-Litterman",
+  "as_of_date": "2026-04-30",
+  "discovered_by": "alpha_agent_opus_4_7",
+  "selected_hypothesis": {
+    "label": "DYN_BLEND_BL_BOCPD_HYP_v1",
+    "mechanism_summary": "STR_1715 (PG2 100%) blend weight를 동적으로 조절하여 alpha 생성. 3 pillar: Pillar A (BOCPD on STR_1715 monthly returns + existing 3-layer macro regime score → combined risk-off detection). Pillar B (hyperbolic alpha decay α(t)=K/(1+λt) on rolling 36-month STR_1715 excess returns → forward expected return view). Pillar C (Black-Litterman with regime prior + Pillar B view → STR_1715 vs Cash binary allocation). 본 WT의 alpha vector는 weight schedule 시계열 자체 (factor_engine_continuous label).",
+    "expected_role": "PG2_META_ALLOCATION_OVERLAY (sleeve = STR_1715 sleeve + Cash sleeve, AX-007 EXCEPTION_1 multi-sleeve via regime overlay 정합)",
+    "why_now": "STR_1715 (PG2 100% Forge realized SR 1.4625) baseline에서 단일 MRS overlay 10/20/40% cash 정태 규칙 대비 우월성 입증 가능 가설. 36-month rolling alpha decay × regime 결합은 fixed-rule 대비 dynamic optimal 우위 학술 검증 (Shu-Mulvey 2024 IR 0.4-0.5).",
+    "literature_anchors": [
+      {"id": "L1", "ref": "Hamilton 1989 Econometrica 57:357-384", "role": "Pillar A baseline MS-AR (existing infra)"},
+      {"id": "L2", "ref": "Adams-MacKay 2007 arXiv:0710.3742", "role": "Pillar A BOCPD foundation"},
+      {"id": "L3", "ref": "Tsaknaki-Lillo-Mazzarisi 2024 arXiv:2407.16376", "role": "Pillar A BOCPD AR upgrade"},
+      {"id": "L4", "ref": "Shu-Mulvey 2024 arXiv:2410.14841", "role": "Pillar A+C primary architectural template (SJM + BL)"},
+      {"id": "L5", "ref": "Lee 2026 arXiv:2601.10732", "role": "Student-t HMM > Gaussian + Granger 9d lead time"},
+      {"id": "L6", "ref": "Lee 2025 arXiv:2512.11913", "role": "Pillar B hyperbolic decay K/(1+λt) R²=0.65 mechanism"},
+      {"id": "L7", "ref": "Singha 2025 arXiv:2511.12490", "role": "Drift regime overlay validation template (1000 trials p<0.001)"},
+      {"id": "L8", "ref": "Zhang et al 2025 arXiv:2510.14986", "role": "RegimeFolio VIX classifier + sector RF/GBM"},
+      {"id": "L9", "ref": "Chen-Li-Saunders 2025 arXiv:2501.16659", "role": "EMVRS RL alternative (future revision)"},
+      {"id": "L10", "ref": "Kim et al 2025 arXiv:2503.13544 KAIST", "role": "DSL Korean academic anchor"},
+      {"id": "L11", "ref": "Kang 2026 arXiv:2603.20271 KR empirical", "role": "KR investor flow daily MI=0 → monthly horizon validate"},
+      {"id": "L_legacy_GuptaKelly", "ref": "Gupta-Kelly 2019 JFE Factor Momentum Everywhere", "role": "Pillar B legacy seed"},
+      {"id": "L_legacy_BL", "ref": "Black-Litterman 1992 Goldman", "role": "Pillar C legacy seed"},
+      {"id": "L_legacy_LdP", "ref": "Lopez de Prado 2016 JPM HRP", "role": "Pillar C legacy seed"}
+    ],
+    "kr_empirical_status": "Direct 2/12 (L10 KAIST + L11 KR investor flow). Architectural portability 11/12. Shu-Mulvey + RegimeFolio = 본 WT가 KR 1차 검증 (mandate).",
+    "ax_compliance": {
+      "AX-001_v2": "조건부 평가 만족: meta-allocation은 STR_1715 (Core_Alpha) sleeve + Cash sleeve = 2-sleeve 구조. Crisis_alpha 측정 (8 stress periods 비교). Bad/normal IC ratio 측정 (regime conditional). MDD complement vs STR_1715 100% baseline 비교.",
+      "AX-002": "Forge harness 산출 SR만 유효. 본 alpha는 weight schedule 시계열을 alpha_scores.parquet으로 저장 (Date × {weight_str1715, weight_cash}). Risk Agent가 본 weight schedule + STR_1715 returns 결합 후 risk model 생성. PIT t-1 lag 전수 검증.",
+      "AX-005_avoidance": "BAB Frazzini-Pedersen 2014 standalone 미사용 (single-sleeve long-only top20 회피). Q07+D25 single-sleeve combo도 미사용. 본 구조는 meta-layer = STR_1715 sleeve + Cash sleeve, AX-005 자연스럽게 회피.",
+      "AX-007_EXCEPTION_1": "long_only_top20 single_sleeve 회피. 본 구조는 multi-sleeve via regime overlay 정합 (STR_1715 sleeve + Cash sleeve, weight 동적 조절).",
+      "AX-008": "Verification Triangulation: Forge backtest (TBD by next agent) + Codex critique (필수, run_codex_qepm_critic.sh) + Architect 자체 검증 (lookahead_detector + audit). 3-of-3 PASS 목표."
+    },
+    "alternative_hypotheses_recorded": [
+      {"label": "DYN_BLEND_RL_EMVRS_v1", "anchor": "L9 Chen-Li-Saunders 2025", "rationale": "RL OC > TD learning empirical 우위. 단 1차 cycle 복잡도 高 → BL 우선 + RL future revision."},
+      {"label": "DYN_BLEND_REGIMEFOLIO_v1", "anchor": "L8 Zhang et al 2025", "rationale": "VIX classifier + RF/GBM sector ensemble. 단 본 WT는 STR_1715 single sleeve 대상 → regime-conditional cash overlay만 필요. Sector ensemble 미적용."},
+      {"label": "DYN_BLEND_DRIFT_REGIME_v1", "anchor": "L7 Singha 2025", "rationale": "Stock-specific drift regime. STR_1715 (Core_Alpha)에는 stock 단위 드리프트 미적용 (single-strategy weight). Future variant."}
+    ]
+  },
+  "wt_constraints_compliance": {
+    "wt_type": "discovery",
+    "expected_alpha_inheritance_cor": "0 (weight schedule alpha이므로 ticker-level α̂와 직교). STR_1715 alpha vector는 read-only (변경 금지) — 본 WT는 weight allocation alpha만.",
+    "expected_alpha_discovery_certificate": "ISSUED 후보 (mechanism citation > 50 chars, factor_specs ≥ 1, harvey_t_specs_pass_count target ≥ 1, alpha_inheritance_cor < 0.95)",
+    "graduation_criteria": {
+      "min_rank_ic": "N/A (weight schedule alpha라 cross-section IC 부재). 본 WT 평가 metric은 STR_1715 baseline 대비 (a) Forge AB SR / (b) MDD / (c) crisis_alpha / (d) bad-normal ratio 비교.",
+      "min_icir": "N/A — 대신 weight schedule이 ex-ante regime score와 상관 측정 (predictive correlation).",
+      "min_subperiod_stability": ">= 0.5 (3 subperiods 2008-14 / 2015-19 / 2020-26 weight rule 안정성)",
+      "min_harvey_t_stat": ">= 3.0 (NW HAC lag=4, weight 적용 이후 monthly excess returns Harvey t-stat)",
+      "min_deflated_sharpe_ratio": ">= 0.5 (n_trials=3 alpha generation candidates)"
+    }
+  },
+  "agent_metadata": {
+    "agent_id": "alpha_research_v1.2",
+    "model": "claude-opus-4-7-1m",
+    "started_at": "2026-04-30T13:00:00+0900",
+    "literature_scan_strands": 9,
+    "literature_papers_collected": 42,
+    "literature_papers_selected_full_picks": 12,
+    "kr_direct_empirical_papers": 2,
+    "tools_unavailable": ["jina_arxiv (paid)", "jina_ssrn (paid)"]
+  }
+}
