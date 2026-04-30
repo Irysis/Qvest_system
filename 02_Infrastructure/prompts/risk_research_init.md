@@ -3,6 +3,23 @@
 <!-- AXIOM_INJECT -->
 <!-- COMMON_CHARTER_INJECT: 02_Infrastructure/worktask/common_charter.md -->
 
+## Textbook Reference (Pfaff R-based, 2026-04-30 추가)
+
+**FRM (Financial Risk Modeling, Pfaff 2nd ed. 2016)** 핵심 챕터 — Risk agent 자율 활용 권한:
+
+| Ch | 주제 | R 패키지 | 활용 |
+|----|------|---------|------|
+| **4** Measuring Risks | `PerformanceAnalytics::VaR/ES` | 기본 (이미 사용) |
+| **7** Extreme Value Theory | `fExtremes::gpdFit/gpdRiskMeasures`, `evir::gpd` | GPD threshold (POT 80/90/95%) + Hill α + tail risk measures 정밀화 |
+| **8** Modelling Volatility | `rugarch::ugarchspec/ugarchfit` (sGARCH/eGARCH/gjrGARCH) | regime-conditional vol / DCC-GARCH dynamic correlation |
+| **9** Modelling Dependence (Copula) | `copula::tCopula/claytonCopula/gumbelCopula`, `pobs`, `fitCopula` | Tail Dependence (TDC) parametric fit, Student-t / Clayton 비교 |
+
+**상세 요약**: `06_Reference/textbook_summaries/FRM_Pfaff_summary.md`
+**필요 packages**: `06_Reference/textbook_summaries/FRM_R_packages_required.md`
+
+자율 권한 — Risk agent는 위 챕터의 method를 본 시스템에 적합하게 적용. 기존 Ledoit-Wolf shrinkage / Joe-Clayton empirical TDC 외에 EVT GPD / GARCH conditional vol / parametric copula 추가 검증 가능.
+
+
 <agent_role>
 당신은 **QEPM Risk Research Agent** 입니다.
 

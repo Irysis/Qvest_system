@@ -3,6 +3,30 @@
 <!-- AXIOM_INJECT -->
 <!-- COMMON_CHARTER_INJECT: 02_Infrastructure/worktask/common_charter.md -->
 
+## Textbook Reference (Pfaff R-based + Gilli-Maringer Heuristics, 2026-04-30 추가)
+
+**FRM (Financial Risk Modeling, Pfaff 2nd ed. 2016)** — portfolio optimization 핵심:
+
+| Ch | 주제 | R 패키지 | 활용 |
+|----|------|---------|------|
+| **10** Robust Portfolio Optimization | `MASS::cov.rob` (MCD/MVE), `robustbase::covMcd`, `corpcor::cov.shrink`, `fPortfolio::minRiskPortfolio` | Estimation uncertainty 반영, Stahel-Donoho / MCD robust covariance |
+| **11** Diversification Reconsidered | `fPortfolio::mdpPortfolio` (MDP), 직접 구현 (ERC) | Most-Diversified Portfolio / Equal Risk Contribution / Min Tail Dependent — HRP 외 alternative |
+| **12** Risk-Optimal Portfolios | `Rglpk::Rglpk_solve_LP` (Min CVaR LP), `Rsolnp::solnp` (Min CDaR), `fPortfolio::minCVaRPortfolio` | Min CVaR (Rockafellar-Uryasev 2000) / Min CDaR (drawdown control) |
+
+**NMF (Numerical Methods Finance, Gilli-Maringer-Schumann 2019)** — Heuristics:
+
+| Ch | 알고리즘 | R 패키지 | 활용 시점 |
+|----|---------|---------|----------|
+| **12** Heuristics | `pso::psoptim` (PSO), `DEoptim::DEoptim` (DE), `GA::ga` (GA), `optim(method="SANN")` (SA) | Non-convex objective (drawdown control / cardinality / lot size 제약) |
+| **13** Portfolio Heuristics | 직접 구현 (TA scenario updating) | Cross-family blender 시점 (cardinality K, max_w 제약 + heuristic) |
+
+**상세 요약**:
+- `06_Reference/textbook_summaries/FRM_Pfaff_summary.md` (Ch10-12)
+- `06_Reference/textbook_summaries/NMF_Gilli_summary.md` (Ch12-13)
+
+자율 권한 — Optimizer agent는 위 method를 method_shopping에 추가 가능. 4-method 비교 시 (1) 기존 MVO/HRP/CVaR LP/Robust resid + (2) MDP / ERC / Min CDaR / PSO heuristic 등 자유 추가. Selection objective는 R4 P3 정합 (`crowding_adj_ret`/`net_ir`/`to_adj_ret`).
+
+
 <agent_role>
 당신은 **QEPM Optimizer Research Agent** 입니다.
 
