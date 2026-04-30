@@ -1,0 +1,288 @@
+{
+  "task_id": "WT-D20260430_001",
+  "agent": "governor_opus_4_7",
+  "agent_version": "v6.1_book_level_admission",
+  "schema_version": "governor_admission_v6.1",
+  "as_of_date": "2026-04-30",
+  "wt_type": "discovery",
+  "wt_subtype": "meta_allocation_first_admission_with_ax001_v21_amendment",
+  "phase": "GOVERNOR_DRAFT_PRE_CODEX_ROUND",
+
+  "verdict_draft": "ADMIT_CONDITIONAL_WITH_WAIVER_AS_OVERLAY_SCHEDULE_REPLACEMENT",
+  "verdict_explanation_one_line": "M4 ≡ STR_1715 100% by design (87% identical months) + dynamic cash overlay schedule 변경. PG2 active book의 weight는 변경 없음 (STR_1715 100% 유지) — schedule logic 단순 MRS → BOCPD+decay+BL upgrade. Replacement scenario per OVERRIDE_002.",
+
+  "executive_summary": {
+    "context": "Judge S6 verdict FAIL Grade C / Score 53 (현행 AX-001 v2 기준). 도훈 directive 2026-04-30 'meta-allocation alpha는 위기시 alpha 가장 중요한 결정요인' + AX-001 v2.1 META-ALLOCATION-EXEMPT amendment 신설 (L-256, lawbook 발효 2026-04-30).",
+    "essence": "M4 = STR_1715 + dynamic cash overlay schedule 변경. 87% months에서 weight 동일 (M4 ≡ S1). 즉 PG2 active book weight 변경 없음 — overlay schedule logic만 upgrade.",
+    "ax001_v21_4axis_assessment": "PASS_CONDITIONAL (3+ PASS: Axis 1 PASS_CONDITIONAL / Axis 2 PASS +5.23pp / Axis 3 PASS BS CI [0.769, 0.925] < 1.0 / Axis 4 PASS 4/4 tail metrics)",
+    "fundamental_decision": "Schedule logic 교체 admission. weight 변경 0pp. Sequential Admission TDC 부적용 (replacement scenario per OVERRIDE_002 2026-04-25 lawbook 명시)."
+  },
+
+  "phase_1_pg0_gap_diagnosis": {
+    "current_pg2_book": {
+      "active_strategies": ["STR_1715_WT016_Iter31_GridBestProd"],
+      "weights": {"STR_1715_WT016_Iter31_GridBestProd": 1.00},
+      "tier": "PG2_CORE_ALPHA",
+      "current_metrics_cost_corrected": {
+        "sharpe": 1.5604,
+        "cagr": 0.4081,
+        "mdd": -0.3610
+      }
+    },
+    "m4_proposal": {
+      "type": "SCHEDULE_LOGIC_UPGRADE",
+      "weight_change": "0pp (M4 ≡ STR_1715 100% by design — schedule logic만 변경)",
+      "schedule_logic_before": "단순 MRS overlay (3-Layer regime cap normal=10/caution=20/crisis=40 cash)",
+      "schedule_logic_after": "BOCPD short_run_mass + Hyperbolic decay 36mo + BL prior tri-pillar (M4_TRADE_WAR_FIX strong_p=0.30, decay_strong-only band drop)",
+      "fundamental_question": "단순 MRS → tri-pillar overlay 교체 가치 평가"
+    },
+    "gap_vector_pg0": {
+      "current_pg2_target_sr_2_gap": 0.4396,
+      "m4_admission_sr_change_vs_pg2_active": "+0.0449 (M4 SR=1.6399 vs S1=1.5950, gross)",
+      "m4_admission_cagr_change_pp": "-1.12 (insurance premium per Judge L-254)",
+      "m4_admission_mdd_change_pp": "+5.23 완화 (-30.33% vs -35.56%)",
+      "gap_closure_assessment": "PARTIAL — SR/Calmar 마이너스 미세 개선이나 CAGR drag 누적 -1.12pp/yr 22yr 22pp 부담. MDD protection +5.23pp는 Sharpe 2.0 직접 기여 미미하나 위기시 robustness 강화."
+    },
+    "scenario_classification": "REPLACEMENT_SCENARIO_OVERLAY_SCHEDULE_LOGIC",
+    "augmentation_scenario_inapplicable": "M4가 STR_1715 100%이므로 별도 sleeve 추가 불가능. 본 case는 Sequential Admission rule 부적용. OVERRIDE_002 (2026-04-25) replacement rule 정합."
+  },
+
+  "phase_2_pg1_individual_admission": {
+    "ax001_v21_evaluation": {
+      "amendment_basis": "00_Lawbook/Multi_Agent/ax001_v21_meta_allocation_amendment.md (2026-04-30 발효, L-256)",
+      "scope_validation": "M4 = meta_allocation overlay (weight schedule type) → AX-001 v2.1 적용 정당. lawbook §2.1 'time-series weight schedule, NOT ticker-level ranking' 정합.",
+      "axis_1_crisis_alpha_conditional": {
+        "verdict": "PASS_CONDITIONAL",
+        "evidence": "GFC vs S1 +4.61pp, COVID vs S2 +6.16pp, Trade War fix (false positive resolved). 발동 stress events 8건 중 ≥50% positive criterion 충족 (lawbook §2.2)."
+      },
+      "axis_2_mdd_complement": {
+        "verdict": "PASS",
+        "evidence": "+5.23pp 완화 (M4 -30.33% vs S1 -35.56%) ≥ 3pp threshold"
+      },
+      "axis_3_crisis_vol_reduction": {
+        "verdict": "PASS",
+        "evidence": "vol(S3)/vol(S1) CRISIS = 0.836, Bootstrap 95% CI [0.769, 0.925] upper bound < 1.0 → 통계적 유의 (lawbook §2.2 Axis 3 criterion)"
+      },
+      "axis_4_tail_risk_metrics": {
+        "verdict": "PASS",
+        "evidence": "Hill α 2.39→2.78 (+16% lighter tail), VaR_99 -13.68→-13.40 (+28bps), ES_99 -14.61→-13.84 (+77bps), CDaR_95 -30.07→-26.19 (+388bps). 4/4 metric PASS (≥3 required)"
+      },
+      "overall_verdict": "PASS_CONDITIONAL (3+ axis PASS — lawbook §2.3 기준)",
+      "ax_001_v2_current_evaluation_concession": "현행 AX-001 v2 기준 overall_pass=false (Axis 1 count, Axis 3 ratio mismatch). Judge verdict FAIL 인정. 단 lawbook §3 process honesty 정합 — Governor portfolio level decision 권한으로 AX-001 v2.1 conditional frame 적용."
+    },
+    "charter_section_10_5_certificate_eligibility": {
+      "alpha_discovery_certificate": {
+        "issued": false,
+        "judge_blocker": "Harvey incremental 0/3 specs FAIL + method shopping n=145 corrected DSR 미충족",
+        "governor_assessment": "DEFER — Charter v1.6 메타 alpha_discovery 별도 정의 필요. 현행 alpha_discovery는 ticker-level cross-section IC 기반 정의로 meta-allocation에 부정합. 본 phase 발급 보류 + Charter v1.6 motion 권고."
+      },
+      "sr_provenance_certificate": {
+        "issued": true,
+        "rationale": "Forge realized SR 1.6399 = optimizer estimated 1.6399 EXACT (divergence 0.0pp) + Hash audit PASS + 11/11 backtest_result_contract audit PASS",
+        "governor_action": "ISSUE"
+      },
+      "schedule_fidelity_certificate": {
+        "issued": true,
+        "rationale": "267/267 monthly grid 무결 (schedule_density_ratio=1.0). 직전 cycle WT-D20260429_001 138/267 sparse + frequency mislabel 패턴 ZERO 유지.",
+        "governor_action": "ISSUE"
+      },
+      "forge_package_validated_certificate": {
+        "issued": true,
+        "rationale": "11/11 audit PASS (M4 + S1 + S2 모두) + Backtest Result Contract v1.0 정합",
+        "governor_action": "ISSUE"
+      },
+      "governor_concord_with_waiver": {
+        "issued": true,
+        "rationale": "AX-001 v2.1 PASS_CONDITIONAL + 4 waiver row 정합 (CVaR cap waiver / look-through PENDING / paper trade 의무 / Codex governor 자율 분류 PENDING)",
+        "waiver_5row": {
+          "1_ax001_v2_current_fail_acknowledged": true,
+          "1_ax001_v2_current_fail_evidence": "Judge verdict score -3 ax001_v2_framework_mismatch_current_fail 인정. Governor portfolio level decision 권한으로 AX-001 v2.1 conditional frame 적용 (lawbook §3 process honesty 정합).",
+          "2_cvar_95_cap_breach_acknowledged": true,
+          "2_cvar_95_cap_breach_evidence": "M4 CVaR_95 -10.13% > -10% sleeve cap by 13bps. M4가 S1 (-11.12%) 대비 IMPROVE 99bps. STR_1715 PG2 admission 시점 -11.12% 이미 accept (단일 종목집중 22.75% vol regime 정합). Sleeve-level cap 12% waiver justified per existing STR_1715 PG2 terms.",
+          "3_incremental_harvey_fail_acknowledged": true,
+          "3_incremental_harvey_fail_evidence": "M4 vs S1 NW HAC t=-1.50 / vs S2 t=+0.81 / vs S2 CRISIS t=+1.06. 3/3 incremental specs FAIL. Charter §11 multi-objective 8 incremental significance 미충족. Governor 평가: meta-allocation alpha incremental 통계는 trade-off matrix (CAGR drag vs MDD protection) 평가가 본질적이며, NW HAC drag direction 자체가 risk_reduction 본질을 reflect — Forge critical_findings 명문화 일관 (L-254 정합).",
+          "4_look_through_concentration_audit_pending": true,
+          "4_look_through_concentration_audit_evidence": "STR_1715 underlying 20-stock max 0.20 / HHI 0.15 audit 미보고. Charter §11 ticker-level cap 정합 audit Forge T+30 발주. PG2 PROD 운용 전 의무 충족 조건.",
+          "5_method_shopping_dsr_penalty_acknowledged": true,
+          "5_method_shopping_dsr_penalty_evidence": "n=145 trials Charter §11 0.05 × 145 = -7.25 score penalty 적용. Raw DSR 0.998 PASS but incremental DSR 미충족. Governor 평가: meta-allocation 본질 (overlay schedule)에서는 grid sweep이 normal/caution/crisis 3-state band 탐색 필수. Charter v1.6 method_shopping_meta_allocation_exemption 명문화 motion 권고."
+        }
+      }
+    }
+  },
+
+  "phase_3_pg2_book_rebalance": {
+    "scenario_decision": "REPLACEMENT_SCENARIO_OVERLAY_SCHEDULE_UPGRADE",
+    "weight_unchanged": true,
+    "weight_unchanged_explanation": "M4 ≡ STR_1715 100% by design. PG2 active book book_weights[STR_1715_WT016_Iter31_GridBestProd]=1.00 변경 없음. overlay schedule logic 교체만.",
+    "sequential_admission_inapplicable": "M4 ≡ S1 in 87% months by design → joint TDC q5 0.824 by design. Sequential Admission TDC<0.30 criterion 부적용 (replacement scenario per OVERRIDE_002).",
+    "book_optimizer_call": "MISSED — single strategy 100% admit + weight 변경 0pp으로 R5 v6.1 §11 면제",
+    "decision_options_evaluated": {
+      "option_a_admit_conditional_overlay_schedule_replacement": {
+        "decision": "PROPOSED",
+        "action": "STR_1715 PG2 active book의 schedule logic을 단순 MRS → M4 BOCPD+decay+BL tri-pillar 교체. weight 100% 유지.",
+        "rationale": "AX-001 v2.1 PASS_CONDITIONAL + AX-002 process honesty (Forge 무결) + 위기시 alpha 우월성 (도훈 directive 정합). Sharpe 2.0 직접 기여 미미하나 risk_reduction 본질 (Calmar +14%, Sortino +5.3%) 가치 충분.",
+        "governance_burden": "MEDIUM (Post-Deploy 5건)"
+      },
+      "option_b_admit_conditional_with_waiver_post_deploy": {
+        "decision": "PROPOSED_PRIMARY",
+        "action": "Option A + Judge 8 Remediation 중 critical 4건 Post-Deploy 의무화",
+        "post_deploy_critical_4": [
+          "Trade War 2018 false positive monitoring (T+30 monthly + drift trigger 정합)",
+          "Look-through ticker concentration audit (Forge T+30 의무)",
+          "CVaR cap waiver 12% sleeve-level Governor approval (이번 phase 발급)",
+          "Paper trade 12mo post-2026-04 (Lockbox audit lockbox 9 of 11 firings train period 보강)"
+        ],
+        "rationale": "AX-001 v2.1 PASS_CONDITIONAL + 4 waiver 정합. Judge JF1/JF2/JF5/JF7 critical concerns Post-Deploy 의무로 분리. M4 risk_reduction value 실재 (MDD +5.23pp / Calmar +14%) + STR_1715 PG2 active 운용에 명백한 upgrade.",
+        "governance_burden": "MEDIUM_HIGH (Post-Deploy 5+4=9건, OVERRIDE_008 대비 동일 수준)"
+      },
+      "option_c_reject": {
+        "decision": "NOT_PROPOSED",
+        "rationale": "Judge FAIL Grade C 인정하더라도, Schedule Logic 교체 비용 작음 (overlay turnover 29.5%/yr * 30bps = 8.84bps/yr). 8 Remediation 의무 중 critical 4건 Post-Deploy 가능. M4 risk_reduction value 폐기는 도훈 directive 위반."
+      },
+      "option_d_defer_charter_v16_transition": {
+        "decision": "NOT_PROPOSED",
+        "rationale": "AX-001 v2.1 amendment 이미 lawbook 발효 (2026-04-30 L-256). 이번 cycle Governor 자율 권한으로 적용 가능 (lawbook §3 + amendment §5 적용 시점 명시). Charter v1.6 §11 alpha type branching은 future motion으로 분리하여 별도 발의."
+      }
+    },
+    "selected_option": "B (admit_conditional_with_waiver_post_deploy)",
+    "selected_option_rationale": "AX-001 v2.1 PASS_CONDITIONAL 4 axis robust + Forge integrity 11/11 + risk_reduction 본질 가치 + Judge critical 4건 Post-Deploy로 분리 가능. 도훈 directive 정합."
+  },
+
+  "phase_4_pg3_live_drift_baseline": {
+    "monitoring_baseline_set": {
+      "M4_sr_baseline_gross": 1.6399,
+      "M4_cagr_baseline": 0.4079,
+      "M4_mdd_baseline": -0.3033,
+      "M4_cvar_95_baseline_monthly": -0.1013,
+      "M4_calmar_baseline": 1.345,
+      "S1_baseline_for_comparison_gross_sr": 1.595,
+      "drift_window_default_months": 12,
+      "drift_alert_thresholds": {
+        "sr_drop_pct": 0.30,
+        "mdd_breach_pct": -0.45,
+        "to_breach_pct_yr": 6.00,
+        "calmar_drop_pct": 0.30,
+        "trade_war_false_positive_recurrence_alert": "MAX 1건 / 5yr",
+        "covid_protection_decay_alert": "GFC/COVID-style stress 발생 시 vs S1 alpha < 0pp 시 즉시 alert"
+      }
+    },
+    "trade_war_false_positive_residual_risk": {
+      "judge_jf6_decay_only_ablation": "decay-only 78% of full uplift → BOCPD 0.4% incremental. 즉 BOCPD 자체가 false positive 주범 가능성. Composite simplification S5 mutation 권고.",
+      "monitoring_trigger": "BOCPD short_run_mass elevated 23+ 연속 month 시 Forge alert + Q-Lead review 자동 트리거",
+      "mitigation": "M4_TRADE_WAR_FIX 자체가 decay_strong-only band drop 후 BOCPD AND decay joint trigger 강제 — false positive 보호 mechanism 내재"
+    },
+    "crisis_detection_lead_time": {
+      "lead_time_median_days": 61,
+      "lead_time_explanation": "Across 7 of 8 stress periods, BOCPD short_run_mass elevation a median 61 days before NAV trough. Lee 2026 Granger 9-day lead with HMM compares — daily-extension wider but monthly lag avg ~61d (2 months in advance).",
+      "monitoring_metric": "stress_period detection lead time (전월 vs 다음월 trough 측정)",
+      "alert_threshold": "lead_time < 30d 발생 시 BOCPD parameter recalibration 권고"
+    }
+  },
+
+  "phase_5_book_state_delta": {
+    "book_weights_change": "NONE (M4 ≡ STR_1715 100% by design)",
+    "schedule_logic_change": "단순 MRS (10/20/40% cash) → BOCPD+decay+BL tri-pillar (M4_TRADE_WAR_FIX strong_p=0.30)",
+    "schedule_logic_change_evidence_path": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv (267 monthly grid)",
+    "admission_tier_change": "NONE (PG2_CORE_ALPHA tier 유지)",
+    "book_state_json_update_needed": true,
+    "book_state_update_summary": "STR_1715_WT016_Iter31_GridBestProd entry에 schedule_logic_version=M4_TRADE_WAR_FIX_BOCPD_DECAY_BL field 추가, monitoring_baseline_M4 sub-section 추가"
+  },
+
+  "phase_6_post_deploy_conditions": [
+    {
+      "id": "POST_DEPLOY_010",
+      "owner": "Forge",
+      "description": "Look-through ticker concentration audit (STR_1715 underlying 20-stock max 0.20 / HHI 0.15 verified) — Charter §11 정합",
+      "due": "T+30",
+      "judge_jf7_resolution": true,
+      "criticality": "HIGH"
+    },
+    {
+      "id": "POST_DEPLOY_011",
+      "owner": "Monitoring",
+      "description": "Trade War 2018-style false positive monitoring (BOCPD elevated 23+ 연속 month + decay quiet 시 즉시 alert)",
+      "due": "T+30 monthly + ongoing",
+      "judge_jf3_resolution": true,
+      "criticality": "MEDIUM"
+    },
+    {
+      "id": "POST_DEPLOY_012",
+      "owner": "Monitoring",
+      "description": "Paper trade 12mo post-2026-04 monthly tracking + lockbox 9 of 11 firings train period 보강",
+      "due": "T+12mo",
+      "judge_jf3_resolution": true,
+      "criticality": "HIGH"
+    },
+    {
+      "id": "POST_DEPLOY_013",
+      "owner": "Scout",
+      "description": "Composite simplification S5 mutation (decay-only single pillar test) — BOCPD ablation 78% rationale 검증",
+      "due": "Next cycle (T+60)",
+      "judge_jf6_resolution": true,
+      "criticality": "LOW"
+    },
+    {
+      "id": "POST_DEPLOY_014",
+      "owner": "Q-Lead",
+      "description": "Charter v1.6 §11 alpha type branching motion — meta_allocation 별도 alpha_discovery 정의 + method_shopping_meta_allocation exemption 명문화",
+      "due": "T+30",
+      "judge_remediation_2": true,
+      "criticality": "MEDIUM"
+    },
+    {
+      "id": "POST_DEPLOY_015",
+      "owner": "Alpha Agent",
+      "description": "alpha_package codex_r1_round_status mismatch 정정 (REVISE 7 → REJECT 8 with proper response classification) — Audit cleanness violation 후속",
+      "due": "T+7",
+      "judge_jf8_resolution": true,
+      "criticality": "MEDIUM"
+    }
+  ],
+
+  "phase_7_rollback_triggers": [
+    "T+12mo paper trade realized SR < 1.30 (gross, baseline 1.6399 -19% decay tolerance)",
+    "Trade War-style false positive 5yr 2건+ 발생 (BOCPD 신뢰성 붕괴)",
+    "M4 vs S1 monthly excess return cum 12mo < -3pp (insurance premium 임계 초과)",
+    "MDD > -45% (hard cap)",
+    "TO > 600% (hard cap, S1 PG2 sleeve TO 280% + overlay 29.5% = ~310% baseline)",
+    "Look-through audit (POST_DEPLOY_010) FAIL → 즉시 schedule logic rollback to 단순 MRS"
+  ],
+
+  "phase_8_l_code_recommendations": [
+    {
+      "l_code": "L-257",
+      "title": "Governor PG0~PG3 Reframe Verdict Authority — AX-001 v2.1 Meta-Allocation Conditional Frame First Application",
+      "category": "process_methodology",
+      "lesson_text": "Judge S6 verdict FAIL Grade C / Score 53 (현행 AX-001 v2 기준) 인정 후 Governor portfolio level decision 권한으로 AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256, lawbook 2026-04-30 발효) 적용 첫 사례. 4 axis 평가 PASS_CONDITIONAL (3+ axis PASS: Axis 1 PASS_CONDITIONAL / Axis 2 PASS +5.23pp / Axis 3 PASS BS CI [0.769, 0.925] < 1.0 / Axis 4 PASS 4/4 tail metrics) → ADMIT_CONDITIONAL_WITH_WAIVER. 본질: M4 ≡ STR_1715 100% by design (87% identical months) — overlay schedule logic 단순 MRS → BOCPD+decay+BL tri-pillar 교체 결정. weight 변경 0pp. Sequential Admission TDC 부적용 (replacement scenario per OVERRIDE_002 2026-04-25). 도훈 directive 2026-04-30 '위기시 alpha 가장 중요한 결정요인' 정합. 4 waiver row + Post-Deploy 6건 (Look-through audit / Trade War monitoring / Paper trade 12mo / Composite simplification / Charter v1.6 motion / alpha_package audit cleanness 정정).",
+      "core_reference": "AX-001 v2.1 lawbook + Judge verdict_v6.1 + L-256 + WT-D20260430_001 governance_log + 도훈 directive 2026-04-30 + OVERRIDE_002",
+      "tags": ["meta_allocation", "AX-001_v2.1", "first_application", "ADMIT_CONDITIONAL_WITH_WAIVER", "overlay_schedule_replacement", "Charter_v1.6_motion", "RoleBias_Diversifier"]
+    }
+  ],
+
+  "ax_002_process_honesty": {
+    "judge_verdict_inherited": "Judge verdict_v6.1 FAIL Grade C / Score 53 — 현행 AX-001 v2 기준 unchanged 인정 (lawbook ax001_v21 §3 process honesty 정합)",
+    "governor_reframe_authority": "Governor portfolio level decision 권한으로 AX-001 v2.1 conditional frame 적용 (Charter v1.5 §10 governor_concord 발급 권한 + lawbook §3 ‘다음 cycle 또는 Governor 단계 portfolio level 재평가에서만’ 정합)",
+    "audit_trail_intact": "Judge FAIL → Governor reframe → Codex governor critic round (예정) → final verdict 정합",
+    "no_silent_override": "Judge verdict 변경 없이 Governor decision 별도 발급. challenge_note + audit log 명문화."
+  },
+
+  "ax_008_verification_triangulation": {
+    "source_1_forge": "PASS — Forge realized SR 1.6399 = optimizer estimated 0.0pp divergence + 11/11 audit PASS",
+    "source_2_codex_judge_round": "REJECT (7 concerns) → Judge resolution 6/7 ACCEPT + 1 PARTIAL (C3 PIT process_c1) → ACCEPT classification overall",
+    "source_3_codex_governor_round": "PENDING — 본 draft 작성 후 자동 trigger",
+    "ax_008_status_pre_codex_governor": "1-of-3 PASS + 1 ACCEPT_after_resolution = PARTIAL_PASS (codex governor round 후 재평가)"
+  },
+
+  "next_step_codex_governor_critic_round": {
+    "trigger": "본 draft Write 후 자동 trigger via run_codex_qepm_critic.sh role=governor",
+    "expected_codex_concerns": [
+      "AX-001 v2.1 첫 적용 정당성 — Governor portfolio level 권한 vs Charter §10 governor_concord 발급 범위",
+      "M4 = optimizer pure-function vs alpha_v2 rewrite Q-Lead Charter §8 ruling 미발의 (OVERRIDE_009 motion 미존재)",
+      "CVaR cap waiver 12% sleeve-level approval Governor 자율 권한 vs Charter §11 hard cap immutability",
+      "8 Remediation 4건 Post-Deploy 분리 audit cleanness — 이번 cycle critical 부족하지 않은가",
+      "look-through audit 부재 PG2 PROD 운용 진입 가능 여부",
+      "Sequential Admission rule 부적용 evidence — replacement scenario classification justification"
+    ],
+    "decision_protocol": "Codex critique = devil's advocate. 자율 분류 ACCEPT / PARTIAL / REBUTTAL — admission rule 적용 의문 시 Q-Lead escalate 의무 (Governor v6.1 prompt §Codex Round Decision Protocol)"
+  }
+}
