@@ -1,0 +1,36 @@
+{
+  "task_id": "WT-P20260429_002",
+  "str_id": "STR_1715_WT016_Iter31_GridBestProd",
+  "wt_type": "deployment",
+  "as_of_date": "2026-04-30",
+  "optimization_inheritance_basis": "deployment_lineage_M4_overlay_active_production",
+  "optimization_lineage_chain": {
+    "discovery_wt": "WT-D20260427_016",
+    "discovery_optimizer": "Iter31 GridBest 5x4x4x4 hyperparameter sweep (LinearTilt strength × overlay × decay × BL)",
+    "schedule_overlay_wt": "WT-D20260430_001",
+    "schedule_overlay_method": "M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar (strong_p=0.30, decay strong-only band drop, BL views integration)",
+    "active_production_method": "STR_1715 base weights + M4 cash sleeve overlay (10/20/40% cash strong/normal/calm regime conditional, monthly rebalance)"
+  },
+  "weights_csv_basis": {
+    "source_path": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+    "copied_to": "qepm/mailbox/worktask/WT-P20260429_002/weights.csv",
+    "n_unique_dates": 267,
+    "frequency": "monthly",
+    "date_range": ["2004-01-01", "2026-03-01"],
+    "columns": ["Date", "weight_str1715", "weight_cash"],
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true
+  },
+  "constraints_enforced": {
+    "max_names": 20,
+    "long_only": true,
+    "weight_bounds": [0, 0.20],
+    "sigma_w": 1.0,
+    "universe": "KOSPI200_KOSDAQ150_intersection (STR_1715 base) + cash_KRW (M4 overlay)",
+    "liquidity_min_20d_tv_krw": 200000000,
+    "transaction_cost_bps": 15
+  },
+  "no_new_optimization_executed": true,
+  "certificate_provenance_note": "This optimization_package.json is a deployment-specific summary. No new optimization executed in WT-P20260429_002. Weight schedule = M4 overlay weights from WT-D20260430_001 (active production basis per book_state.json schedule_logic_version M4_TRADE_WAR_FIX).",
+  "generated_at": "2026-04-30T16:10:00+09:00"
+}

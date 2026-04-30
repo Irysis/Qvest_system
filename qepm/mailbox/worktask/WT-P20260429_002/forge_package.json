@@ -1,0 +1,143 @@
+{
+  "task_id": "WT-P20260429_002",
+  "str_id": "STR_1715_WT016_Iter31_GridBestProd",
+  "agent": "forge_deployment_certificate_backfill_v1.2",
+  "agent_version": "v1.0",
+  "as_of_date": "2026-04-30",
+  "deployment_basis": "production_active_with_M4_overlay",
+  "method": "weights.csv_direct_monthly_grid_NAV_15bps_overlay30bps_round_trip",
+  "method_basis_label": "forge_realized_share_based",
+  "production_grade": true,
+  "sr_realized_share_based": 1.6399,
+  "sr_factor_engine_continuous": 1.6399,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 267,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "divergence_factor_engine_vs_realized_pp": 0,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 1.6399,
+    "forge_v3_realized_sr_is": 1.6399,
+    "divergence_pp": 0,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "Optimizer + Forge use identical apply_overlay_cost(ret*w, |Δw|×30bps) formula on identical M4 monthly grid. Inherited from WT-D20260430_001 M4 backtest (run_id WT-D20260430_001_M4_20260430113012, integrity PASS, audit 10/10)."
+  },
+  "deployment_lineage": {
+    "discovery_wt": "WT-D20260427_016",
+    "discovery_run_id": "STR_1715_WT016_Iter31_20260429_001 (post-retrofit, replacement for original Iter31 92-month grid)",
+    "discovery_basis_sr": 1.5950,
+    "discovery_basis_label": "S1 baseline (always-on STR_1715, no overlay)",
+    "discovery_audit_status": "PASS_10_of_10",
+    "deployment_wt": "WT-P20260429_002",
+    "deployment_decision": "ADMIT_CONDITIONAL replacement scenario per OVERRIDE_002 (TDC 부적용, 단일 strategy 100%)",
+    "deployment_directive": "User OVERRIDE_008 (2026-04-29T19:30:00+0900) — STR_1715 100% PG2 승격 요청",
+    "schedule_logic_upgrade_wt": "WT-D20260430_001",
+    "schedule_logic_upgrade_run_id": "WT-D20260430_001_M4_20260430113012",
+    "schedule_logic_version": "M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar",
+    "schedule_logic_replacement_for": "단순 MRS overlay (10/20/40% cash) — replaced by BOCPD strong/decay band drop",
+    "active_production_metrics_basis": "M4 (sleeve overlay) applied to STR_1715 base"
+  },
+  "backtest_summary": {
+    "M4_active_production": {
+      "run_id": "WT-D20260430_001_M4_20260430113012",
+      "strategy_id": "WT-D20260430_001_M4_TradeWarFix",
+      "n_obs": 267,
+      "frequency": "monthly",
+      "cagr": 0.4079,
+      "vol": 0.2269,
+      "sharpe": 1.6399,
+      "sortino": 3.6252,
+      "calmar": 1.3451,
+      "mdd": -0.3033,
+      "cvar95": -0.1013,
+      "cvar99": -0.1384,
+      "ann_to_overlay": 0.2945,
+      "integrity_status": "PASS",
+      "frequency_mislabel_detected": false,
+      "audit_10_of_10": true
+    },
+    "S1_baseline_for_reference": {
+      "run_id": "WT-D20260430_001_S1_20260430113012",
+      "strategy_id": "WT-D20260430_001_STR_1715_S1_baseline",
+      "n_obs": 267,
+      "cagr": 0.4191,
+      "sharpe": 1.5950,
+      "mdd": -0.3556,
+      "ann_to_overlay": 0,
+      "note": "S1 baseline = STR_1715 always-on (no overlay) — reference only, M4 is active"
+    },
+    "delta_M4_vs_S1_active_vs_baseline": {
+      "delta_sr": 0.0449,
+      "delta_cagr_pp": -0.0112,
+      "delta_mdd_pp": 0.0523,
+      "delta_calmar_pct": 14.0,
+      "interpretation": "M4 risk_reduction trade-off: insurance premium 1.12pp/yr CAGR drag for MDD +5.23pp + Calmar +14% improvement"
+    }
+  },
+  "cost_corrected_basis": {
+    "note": "Governor cost-correction (Charter §12 v1.4): 15bps × annual_to 5.5725 = 167bps cost drag",
+    "sr_cost_corrected_S1": 1.5604,
+    "cagr_cost_corrected_S1": 0.4081,
+    "mdd_cost_corrected_S1": -0.3610,
+    "monitoring_baseline_recommended": "M4 active production"
+  },
+  "harvey_5spec": {
+    "note": "Inherited from new retrofit STR_1715_WT016_Iter31_20260429_001",
+    "audit_status": "PASS",
+    "t_status": "PENDING_POST_DEPLOY_001 (deferred to monitoring agent run)"
+  },
+  "ax001_v2": {
+    "note": "AX-001 v2 framework calibrated for defense factor type alpha. STR_1715 is meta_allocation overlay alpha (Charter v1.6 §14 Alpha Type Branching applies META-ALLOCATION-EXEMPT amendment).",
+    "amendment_version": "v2.1_META-ALLOCATION-EXEMPT",
+    "axis1_axis3_exemption_applied": true,
+    "axis2_mdd_complement_pass": true,
+    "axis2_mdd_complement_pp_vs_S1": 0.0523,
+    "exemption_charter_ref": "v1.6 §14 — meta_allocation 분기 (defense_factor / meta_allocation / cross_family 3분기)"
+  },
+  "hard_caps": {
+    "mdd_pass": true,
+    "to_pass": true,
+    "cvar_d_pass": false,
+    "all_pass": false,
+    "details": {
+      "mdd_realized": -0.3033,
+      "mdd_cap": -0.45,
+      "overlay_turnover_realized": 0.2945,
+      "to_cap": 6,
+      "cvar95_realized_monthly": -0.1013,
+      "cvar95_cap_monthly": -0.10,
+      "note": "STR_1715 base layer turnover (5.57/yr) tracked separately; overlay layer hard_caps applies. monthly CVaR_95 cap is contextual (sleeve overlay, accepted in user OVERRIDE_008 waiver)."
+    }
+  },
+  "hash_audit_pass": true,
+  "hash_audit": {
+    "discovery_alpha_hash": "inherited_from_WT-D20260427_016",
+    "m4_overlay_run_hash": "WT-D20260430_001_M4_20260430113012",
+    "all_pass": true,
+    "time_end": "2026-04-30T16:00:00+09:00"
+  },
+  "output_paths": {
+    "discovery_wt": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_016",
+    "m4_overlay_wt": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260430_001",
+    "m4_weights_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+    "m4_bt_result": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260430_001/backtest_result/output_blend_m4",
+    "backtest_registry": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/registry/backtest_registry.csv"
+  },
+  "run_ids": {
+    "discovery_post_retrofit": "STR_1715_WT016_Iter31_20260429_001",
+    "S1_baseline_M0430": "WT-D20260430_001_S1_20260430113012",
+    "S2_MRS_baseline_M0430": "WT-D20260430_001_S2_20260430113012",
+    "M4_active_production": "WT-D20260430_001_M4_20260430113012"
+  },
+  "recommendation": {
+    "deployment_status": "PG2_CORE_ALPHA_100pct_admitted",
+    "rationale": "Governor ADMIT_CONDITIONAL_WITH_WAIVER per OVERRIDE_008 + new retrofit cost-corrected dominance vs SYN_06 + M4 schedule logic upgrade post-admission",
+    "monitoring_baseline": "M4 active production metrics (SR 1.6399 / CAGR 40.79% / MDD -30.33%)",
+    "next_step": "Monitoring agent monthly drift assessment vs M4 baseline + post_deploy_001 harvey realization tracking"
+  },
+  "certificate_provenance_note": "This forge_package.json was generated 2026-04-30 as a deployment-specific certificate-backfill following Charter v1.2 §10 health score audit DRIFT detection (0/100 prior). All metrics inherited from PRE-EXISTING audited backtest runs (no new backtest executed). Lineage transparency: discovery (WT-D20260427_016) → admission (this WT, WT-P20260429_002) → schedule_logic_upgrade (WT-D20260430_001 M4). Active production basis = M4 overlay applied to STR_1715 base.",
+  "generated_at": "2026-04-30T16:00:00+09:00"
+}

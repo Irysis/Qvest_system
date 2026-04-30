@@ -82,7 +82,16 @@ override_blocks = [k for k in bs.keys() if k.startswith("user_override_")]
 latest_override = None
 if override_blocks:
     latest_override_key = sorted(override_blocks)[-1]
-    latest_override = bs.get(latest_override_key, {})
+    raw_override = bs.get(latest_override_key, {})
+    # user_override_log = list of dict entries (override history) → take last dict entry
+    # user_override_NNN_directive = direct dict
+    if isinstance(raw_override, list):
+        for entry in reversed(raw_override):
+            if isinstance(entry, dict):
+                latest_override = entry
+                break
+    elif isinstance(raw_override, dict):
+        latest_override = raw_override
 
 waiver_required_keys = [
     "stress_negative_acknowledged",
@@ -92,7 +101,7 @@ waiver_required_keys = [
     "to_marginal_acknowledged"
 ]
 def has_waiver_5row(override_block):
-    if not override_block:
+    if not override_block or not isinstance(override_block, dict):
         return False
     # waiver_5row 객체 또는 trade_off_accepted_by_user list 둘 다 허용
     waiver_obj = override_block.get("risk_waiver_5row") or override_block.get("waiver_5row") or {}
