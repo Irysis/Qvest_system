@@ -1,0 +1,19 @@
+{
+  "run_id": "WT-D20260430_001_M4_20260430113012",
+  "strategy_name": "WT-D20260430_001 M4 Trade War Fix",
+  "strategy_family": "Meta-Allocation (STR_1715 + Cash)",
+  "signal_description": "M4_TRADE_WAR_FIX overlay: weight_str1715[t] = 1 - 0.30 if (decay_extreme[t-1]=1 OR bocpd_extreme[t-1]=1) AND clean_S2 ; 1 - 0.30 if joint[t-1]=1 (decay_strong AND bocpd_strong); 1 - Cash_Pct_lag otherwise. Drops decay_strong-only moderate band (Trade War 2018 fix).",
+  "universe_rule": "STR_1715 (PG2 Core_Alpha 100%) + CASH_KRW (zero yield)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month-start label / prior month underlying (alpha t-1 lag)",
+  "execution_date_rule": "t+1 lag (aligned with STR_1715)",
+  "weighting_method": "M4_TRADE_WAR_FIX_strong_p_0.30 (sleeve-level meta-allocation)",
+  "max_position_weight": 1,
+  "max_leverage": 1,
+  "cash_rule": "weight_cash = 1 - weight_str1715, w_str1715 ∈ [0.4291, 1.0] (267-row schedule)",
+  "cost_model": "STR_1715 internal commission=0.0015 (15bps each side, embedded in ret_net) + overlay cost = round-trip 30bps × |Δw_t|",
+  "missing_data_rule": "STR_1715 ret_net inherits PIT lineage; weights.csv from optimizer (no NA)",
+  "risk_controls": "Σw=1 hard, w_str1715 ∈ [0.4291, 1.0], no leverage",
+  "lookahead_prevention": "C1 expanding alpha + C2 t-1 lag (decay_signal/bocpd_short_run_mass_lag) + C5 overlay t-1 (Cash_Pct_lag pre-merged) + C9 weight[t]=f(triggers[t-1]) + C13 not_applicable (no Z_Score) + C14 PIT_BY_LINEAGE (alpha_scores parquet)",
+  "survivorship_bias_control": "STR_1715 includes delisted; meta-allocation 2-asset has no security-level survivorship"
+}
