@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260430_001",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "regime_conditional_dynamic_blending_alpha_with_alpha_momentum_and_allocation_methodology",
+  "hypothesis_title": null,
+  "hypothesis_description": "리스크 오프 국면에서 STR_1715 (PG2_CORE_ALPHA 100%) blend 비중 동적 조절을 alpha source로 검증. 3 Pillar 자유 탐색: (A) 리스크오프 detection 수리통계+ML (Markov-Switching AR Hamilton 1989 / Adams-MacKay BOCPD 2007 / HMM / Kalman SSM / Transformer regime classifier / diffusion regime / conformal prediction). (B) Alpha Momentum (Gupta-Kelly 2019 JFE / Ehsani-Linnainmaa 2022 JF / Avramov-Cheng-Metzker 2023 ML caveat) — STR_1715 alpha 자체 decay 감지. (C) Dynamic Allocation (Lopez de Prado HRP/NCO / Black-Litterman regime priors / Risk Parity dynamic / RL portfolio Jiang-Xu-Liang 2017 / Buehler 2019 / Garleanu-Pedersen optimal trading 2013 / Bayesian Model Averaging / Online learning Cesa-Bianchi-Lugosi 2006 / conformal prediction allocation 2024-2026). Agent 자율 권한: 위는 starting seed. literature scan으로 추가 mechanism 발굴 + 최적 조합 자율 선정 + KR 시장 실증 paper 우선. STR_1715 기존 MRS overlay (10/20/40% cash) 대비 우월성 입증 의무. AX-005 single-sleeve long-only 회피, AX-007 EXCEPTION_1 (multi-sleeve via regime overlay) 정합 구조.",
+  "hypothesis_source": "alpha_agent_discovered",
+  "as_of_date": "2026-04-30",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_100pct_pg2_core_alpha",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": true
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
