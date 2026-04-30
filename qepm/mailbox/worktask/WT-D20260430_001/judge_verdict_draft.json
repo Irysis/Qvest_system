@@ -1,0 +1,513 @@
+{
+  "task_id": "WT-D20260430_001",
+  "agent": "judge_opus_4_7",
+  "as_of_date": "2026-04-30",
+  "judge_phase_drafted_at": "2026-04-30T13:30:00+09:00",
+  "schema_version": "judge_verdict_v6.1",
+  "wt_type": "discovery",
+  "wt_subtype": "meta_allocation_first_admission",
+  "verdict": "PASS_CONDITIONAL",
+  "verdict_severity": "CONDITIONAL_ON_GOVERNOR_FRAMEWORK_REFORM_AND_LONGER_OOS",
+  "grade": "A_CONDITIONAL",
+  "score": 64,
+  "score_max": 100,
+  "score_components": {
+    "alpha_quality_at_signal_layer": 14,
+    "risk_diagnostics": 8,
+    "optimizer_diligence": 6,
+    "forge_integrity": 18,
+    "blend_metric_validity": 10,
+    "documentation": 8,
+    "method_shopping_dsr_penalty": -7,
+    "ax001_v2_framework_mismatch_neutral": 0,
+    "lockbox_oos_validation": 7
+  },
+  "score_components_explanation": {
+    "alpha_quality_at_signal_layer": "14/20 — Tri-pillar (BOCPD + hyperbolic decay + BL augmentation) novel mechanism, but ablation shows decay-only does 78% of full uplift (BOCPD adds 0.004); composite redundancy. Subperiod stability 0.855 PASS. Honest disclosure of incremental NW HAC t=0.558 not significant.",
+    "risk_diagnostics": "8/10 — Σ Ledoit-Wolf constcor PSD condition_number 87.46. Stress 8 events analyzed. CVaR/CDaR/Hill α correctly computed. Codex risk-stage REJECT addressed (5 ACCEPT + 2 REBUTTAL). Cost-adjusted SR uplift 7.4% attenuation correctly disclosed.",
+    "optimizer_diligence": "6/10 — Walk-forward train/test split executed (n=192/n=75 with train flat across grids). 145-method shopping disclosed. M4 selected via theoretical anchor (MRS 30%) NOT data-max — appropriate given train degenerate. Codex optimizer REJECT 7 concerns: 5 substantive resolutions + 2 REBUTTAL with action.",
+    "forge_integrity": "18/20 — Forge realized SR 1.6399 = optimizer estimated 1.6399 EXACT (divergence 0.0pp, NEGLIGIBLE). 11/11 audit PASS. NW HAC t-stat M4 vs S1 = -1.4954 (Forge claim -1.4952 matches), M4 vs S2 = +0.8103 (matches). Schedule density 267/267 = 1.000 (이전 cycle 138/267 sparse 패턴 ZERO). Hash audit PASS.",
+    "blend_metric_validity": "10/10 — backtest_result PerformanceAnalytics 표준 함수만 사용. 11/11 audit PASS + Charter v1.4 §12 ER-based Sharpe + L-249 Check 11 PASS. metric_type=backtested 인증.",
+    "documentation": "8/10 — alpha_package + risk_package + optimization_package + forge_package 모두 schema-compliant. challenge_notes 작성. AX-001 v2 framework mismatch 정직하게 disclose. critical_findings 명시 (m4_vs_s1_drag, m4_vs_s2_marginal_significance, ax001_v2_framework_mismatch).",
+    "method_shopping_dsr_penalty": "-7 — n_trials = 145 (5 + 90 + 50), Charter §11 0.05 × 145 = 7.25 점 페널티. expected max false-discovery threshold sqrt(2*ln(145)) = 3.155σ; observed incremental SR M4 vs S2 = 0.0265 annual = 0.0076 monthly << critical bound 0.193. Incremental alpha NOT significant after method shopping correction.",
+    "ax001_v2_framework_mismatch_neutral": "0 — Axis 1/3 SCOPE_MISMATCH (defense factor calibrated framework, not applicable to meta-allocation overlay). Axis 2 (MDD complement +5.23pp vs S1) PASS. Reform 발의 (see ax_001_v2_reform_motion).",
+    "lockbox_oos_validation": "7/10 — Judge 자체 Lockbox audit 실행: M4 SR_lockbox 2.96 vs SR_pre 1.49 → OOS/IS ratio 1.99 (Gate F threshold 0.7 대비 PASS). Lockbox 27mo 중 overlay 활성 2건 (2025-12, 2026-03) — 일치. 단, Lockbox 너무 짧고 9 of 10 firings는 train period 발생 → genuine OOS validation은 paper trade 12+개월 추가 필요."
+  },
+  "summary_one_line": "Meta-allocation alpha 첫 admission cycle. Forge 무결 (SR 1.6399 optimizer-realized 정합 0.0pp divergence) + 11/11 audit PASS + 이전 cycle 138/267 sparse 패턴 ZERO + Lockbox OOS/IS 1.99 PASS. 그러나 incremental NW HAC t=0.81 (vs S2) NOT significant + AX-001 v2 framework mismatch (defense factor calibrated, meta-allocation에 SCOPE_MISMATCH) + CVaR_95 -10.13% 13bps marginal cap breach (S1/S2 mechanically inherited) → A_CONDITIONAL — Governor framework reform 발의 + 12+ paper trade 후 PG2 final admission.",
+  "summary_three_line": [
+    "(1) PIT 자체 검증 PASS: lookahead_detector 자체 실행 4 files (factor_engine.R + run_all.R + risk_run_all.R + optimizer_run_all.R), 8 raw violations 모두 diagnostic-only (cat/sprintf 안 quantile, ann_sr 헬퍼 함수). 신호 구성 위반 0건. C1-C15 production patterns compliant. PIT lineage proof (regime_engine_daily.R Step 5 t-1 shift + daily_refresh cron + alpha_scores _lag suffix) 확인. 직전 cycle FABRICATION 패턴 (138/267 sparse + frequency mislabel) 본 cycle ZERO.",
+    "(2) FORGE INTEGRITY PASS: Forge realized SR 1.6399 = Optimizer estimated 1.6399 EXACT 일치 (divergence 0.0pp NEGLIGIBLE). Judge 자체 NAV 재계산 SR 1.6399 match. NW HAC t-stat 자체 재계산: M4 vs S1 -1.4954 (Forge claim -1.4952), M4 vs S2 +0.8103 (claim +0.8102) 정확 일치. 11/11 audit PASS + L-249 Check 11 PASS + Hash audit PASS. AX-002 process honesty 무결.",
+    "(3) STATISTICAL DEFENSE CONDITIONAL: Harvey 5-spec 2/5 PASS (raw SR t=7.74 + CAPM α t=6.98) - 단 이 둘은 baseline (S1/S2)도 동일하게 PASS, 즉 STR_1715 자체 alpha 결과지 M4 incremental 결과 아님. M4 incremental specs 0/3 (vs S1 -1.50, vs S2 +0.81, vs S2 CRISIS +1.06) 모두 NOT significant. Method shopping n=145 후 DSR critical bound 0.193 monthly, 관측 incremental 0.0076 monthly — incremental alpha NOT significant after multi-test correction. AX-001 v2 framework mismatch (Axis 1/3 SCOPE_MISMATCH for meta-allocation) — Governor framework reform 발의."
+  ],
+  "gates_a_to_j": {
+    "gate_a_pit": {
+      "verdict": "PASS",
+      "lookahead_detector_executed_by_judge": true,
+      "files_scanned": 4,
+      "files_list": [
+        "qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/factor_engine.R",
+        "qepm/mailbox/worktask/WT-D20260430_001/run_all.R",
+        "qepm/mailbox/worktask/WT-D20260430_001/risk_run_all.R",
+        "qepm/mailbox/worktask/WT-D20260430_001/optimizer_run_all.R"
+      ],
+      "raw_violations": 8,
+      "production_violations": 0,
+      "diagnostic_violations": 8,
+      "violations_detail": [
+        {
+          "file": "factor_engine.R",
+          "lines": [468, 472, 631],
+          "check": "C1b",
+          "code_pattern": "quantile() inside cat(sprintf(...))",
+          "classification": "FALSE_POSITIVE_DIAGNOSTIC_LOG",
+          "judgement": "stdout diagnostic logging only. Not used in signal construction or weight decision."
+        },
+        {
+          "file": "run_all.R",
+          "lines": [239, 583],
+          "check": "C1",
+          "code_pattern": "ann_sr <- function(r) mean(r)/sd(r)*sqrt(12)",
+          "classification": "FALSE_POSITIVE_REPORTING_HELPER",
+          "judgement": "Reporting helper for SR cross-check vs optimizer estimate. Equivalent to PerformanceAnalytics::SharpeRatio.annualized standard. Final-stage report metric, not signal."
+        },
+        {
+          "file": "risk_run_all.R",
+          "line": 94,
+          "check": "C1",
+          "code_pattern": "ann_sr <- function(r) mean(r)/sd(r)*sqrt(12)",
+          "classification": "FALSE_POSITIVE_REPORTING_HELPER",
+          "judgement": "Same as run_all.R."
+        },
+        {
+          "file": "optimizer_run_all.R",
+          "lines": [55, 344],
+          "check": "C1",
+          "code_pattern": "ann_vol(r) <- sd(r)*sqrt(periods); expected_te <- sd(sel_active)*sqrt(12)",
+          "classification": "FALSE_POSITIVE_REPORTING_HELPER",
+          "judgement": "expected_te is reporting metric for optimization_package output, not used in selection objective."
+        }
+      ],
+      "production_pit_pattern_audit": {
+        "C1": "PASS — production code uses rolling/expanding (BOCPD posterior at t uses ret[1..t-1], hyperbolic fit window ret[i-36+1 .. i-1])",
+        "C2": "PASS — t-1 lag for regime + decay + BOCPD via shift(.., 1L)",
+        "C5": "PASS — overlay weight at t uses regime[t-1], bocpd[t-1], decay[≤t-1]",
+        "C9": "PASS — weight_str1715[t] = f(decay_extreme[t-1], bocpd_extreme[t-1], joint[t-1]) deterministic from lagged inputs",
+        "C13": "PASS by scope — no Z_Score (weight schedule alpha, no factor cross-section)",
+        "C14": "PASS_BY_LINEAGE — regime_engine_daily.R Step 5 t-1 shift + daily_refresh cron + alpha_scores _lag suffix",
+        "C15": "NOT_APPLICABLE — Factor DB not loaded; inputs are STR_1715 period_returns + .cache/unified_regime_signal.parquet"
+      },
+      "judgement": "Gate A PASS — Judge 자체 lookahead_detector 실행 결과 8 raw violations 모두 diagnostic/reporting helpers. 신호 구성 PIT compliant. 직전 cycle (WT-D20260429_001) FABRICATION 패턴 (frequency mislabel daily=252 on bi-monthly inner-join, 138/267 sparse) 본 cycle ZERO."
+    },
+    "gate_b_isolation": {
+      "verdict": "PASS",
+      "alpha_family_meta_allocation": true,
+      "alpha_family": "Meta_Allocation (STR_1715 sleeve + Cash_KRW), 2-asset universe",
+      "judgement": "AX-007 EXCEPTION_1 multi-sleeve via regime overlay. STR_1715 (Core_Alpha) sleeve + Cash sleeve regime-conditional. long_only_top20 single_sleeve avoidance via meta-allocation 정합."
+    },
+    "gate_c_net_alpha_vs_cost": {
+      "verdict": "PARTIAL",
+      "net_ir_realized_vs_S2": 0.1743,
+      "net_ir_realized_vs_S1": -0.0935,
+      "gross_ir": 0.1849,
+      "annualized_overlay_cost_bps_yr": 8.84,
+      "turnover_realized_yr": 0.2945,
+      "turnover_hard_cap": 6.0,
+      "turnover_breach_bool": false,
+      "ir_vs_S2_threshold": 0.20,
+      "ir_threshold_judgement": "vs S2 IR 0.1743 < 0.20 threshold (Charter §11 dep IR 0.3 / disc IR 0.2)",
+      "ir_vs_S1_judgement": "vs S1 IR negative — M4 SACRIFICES return for protection (Forge confirmed).",
+      "judgement": "Gate C PARTIAL — vs S2 IR 0.17 marginal below 0.20 disc threshold. vs S1 IR negative (M4 = risk_reduction trade-off, not alpha-generating). Net cost 8.84 bps/yr negligible. Overlay turnover 0.29/yr safely below 6.0 cap."
+    },
+    "gate_d_crowding": {
+      "verdict": "PARTIAL",
+      "tdc_q5_full_S3_vs_S1": 0.824,
+      "tdc_q5_crisis_only": 0.5357,
+      "tdc_full_kendall": 0.9784,
+      "judgement": "Gate D PARTIAL — TDC q5 full = 0.824 high BY DESIGN (M4 = w*S1 with mean w=0.969, M4 ≈ S1 in 87% months). Crisis-only TDC q10 = 0.5357 → SEPARATION 0.46 in 56 crisis months — meaningful structural separation. Vs PG2 active book TDC 미보고 (Optimizer Codex C7 REJECTED — Governor scope). Sequential Admission 분석은 Governor 단계 의무로 이관."
+    },
+    "gate_e_concentration": {
+      "verdict": "PARTIAL",
+      "max_w_sleeve": 1.0,
+      "max_w_cap_ticker": 0.20,
+      "hhi_avg_sleeve": 0.9526,
+      "hhi_cap_ticker": 0.15,
+      "n_sleeves": 2,
+      "judgement": "Gate E PARTIAL — Sleeve-level max_w=1.0 / HHI=0.95 mechanically high (1 sleeve dominant). Charter §11 max_w 0.20 / HHI 0.15는 ticker-level cap; meta-allocation sleeve-level에서는 LOOK-THROUGH 적용 필요 (STR_1715 자체는 20-stock long-only, 각 종목 max 0.20). Codex optimizer C1 (RF-O6) max_w=1.0 sleeve-level 위반 우려는 SCOPE_MISMATCH (sleeve vs ticker). Governor PG2 admission 시 LOOK-THROUGH 검증 필수."
+    },
+    "gate_f_drift": {
+      "verdict": "PASS",
+      "lockbox_audit_executed_by_judge": true,
+      "lockbox_period": "2024-01-01 ~ 2026-03-01",
+      "n_lockbox_obs": 27,
+      "sr_lockbox_M4": 2.9630,
+      "sr_pre_lockbox_M4": 1.4876,
+      "oos_is_ratio_M4": 1.9918,
+      "oos_is_threshold": 0.70,
+      "mdd_lockbox_M4": -0.0430,
+      "mdd_pre_lockbox_M4": -0.3033,
+      "lockbox_overlay_firings": 2,
+      "lockbox_overlay_firing_dates": ["2025-12-01", "2026-03-01"],
+      "judgement": "Gate F PASS — Judge 자체 Lockbox audit 실행. M4 OOS/IS ratio 1.99 >> 0.70 threshold (압도적 PASS). 단 caveat: Lockbox 27mo 중 9 of 11 firings는 train (2004-2023) 발생, lockbox에는 2건만 활성 → genuine OOS test로 부족. 12+ paper trade 추가 권고 (alpha_package evaluation_windows_used_post_codex 일치)."
+    },
+    "gate_g_harvey_nw_hac": {
+      "verdict": "PARTIAL",
+      "harvey_5spec_pass_count": 2,
+      "harvey_5spec_required": 3,
+      "spec_breakdown": {
+        "spec1_raw_SR": {
+          "t_stat": 7.735,
+          "method": "sqrt(N) × SR/sqrt(12)",
+          "pass": true,
+          "note": "Forge realized SR 1.6399 vs zero. PASS but 정확히 baseline S1/S2도 PASS — STR_1715 alpha 결과 (M4 incremental 결과 아님)."
+        },
+        "spec2_CAPM_alpha": {
+          "alpha_a": 0.2931,
+          "alpha_t_nw": 6.984,
+          "pass": true,
+          "note": "CAPM α 29.31%/yr vs KOSPI200, NW HAC t=6.98. PASS. 단 S1/S2 동일하게 PASS (S1 t=6.80, S2 t=6.83) — STR_1715 alpha 결과."
+        },
+        "spec3_M4_minus_S1_NW_HAC_lag4": {
+          "t_stat": -1.4954,
+          "p_value": 0.1361,
+          "pass": false,
+          "note": "M4 - S1 mean diff NW HAC t=-1.50 (음의 t = M4 drag direction). M4 NOT alpha-generating vs S1 always-on. CAGR 40.79% vs 41.91% = -1.12pp/yr drag."
+        },
+        "spec4_M4_minus_S2_NW_HAC_lag4": {
+          "t_stat": 0.8103,
+          "p_value": 0.4185,
+          "pass": false,
+          "note": "M4 - S2 mean diff NW HAC t=+0.81. SR uplift +0.0265 BUT not statistically significant."
+        },
+        "spec5_M4_minus_S2_CRISIS_only_NW_HAC_lag4": {
+          "t_stat": 1.0604,
+          "p_value": 0.2957,
+          "n_crisis_obs": 39,
+          "pass": false,
+          "note": "Crisis-only 분리에도 NOT significant. Directional positive but n=39 too small for power."
+        }
+      },
+      "harvey_threshold_required": 3,
+      "harvey_pass_count_actual": 2,
+      "judgement": "Gate G PARTIAL — Harvey 2/5 specs PASS. CRITICAL: 2 PASS specs (raw SR + CAPM α) 모두 baseline (S1/S2)에서도 PASS 즉 STR_1715 자체 alpha 결과지 M4 incremental 가치 아님. M4 incremental 3 specs (vs S1 / vs S2 / vs S2 CRISIS) 모두 FAIL. NW HAC 단일 incremental significance 부재. Method shopping n=145 후 DSR critical bound 0.193 monthly 대비 관측 0.0076 monthly << → method shopping noise-corrected NOT significant."
+    },
+    "gate_h_hard_caps_unified": {
+      "verdict": "PARTIAL",
+      "checks": {
+        "mdd_realized": 0.3033,
+        "mdd_cap": 0.45,
+        "mdd_pass": true,
+        "turnover_overlay_realized": 0.2956,
+        "turnover_cap": 6.0,
+        "turnover_pass": true,
+        "cvar_95_realized_monthly": -0.1013,
+        "cvar_95_cap_monthly_default": -0.10,
+        "cvar_95_pass": false,
+        "cvar_95_breach_bps": 13,
+        "cvar_99_realized_monthly": -0.1384,
+        "cvar_99_cap_monthly": -0.15,
+        "cvar_99_pass": true
+      },
+      "cvar_breach_diagnosis": "M4 CVaR_95 -10.13% breaches -10% template cap by 13 bps. BUT mechanical inheritance: S1 CVaR_95 -11.12% / S2 -10.51% / M4 -10.13% — M4 is BETTER than both baselines (overlay improves tail). 본 breach는 STR_1715 자체 vol regime (annualized vol 22.7%) 결과지 overlay 신규 위반 아님. Forge 자체 진단 정합 (hard_caps.cvar_d_pass=false but note='STR_1715 underlying 280%/yr turnover tracked at sleeve level'). risk_package CVaR_95_governance_position: 2.5% template은 diversified multi-factor portfolios 용; 20-stock long-only KR equity strategy 22.75% vol level에서는 monthly CVaR ~10% mechanical.",
+      "judgement": "Gate H PARTIAL — 1/4 cap FAIL (CVaR_95 13bps marginal breach). 단 mechanical inheritance from STR_1715 sleeve (M4 actually IMPROVES vs S1/S2). Governor PG2 admission gate 시 CVaR cap waiver (12% sleeve-level per existing PG2 admission terms) 결정 필요."
+    },
+    "gate_i_tail_risk": {
+      "verdict": "PASS",
+      "hill_alpha_M4": 2.78,
+      "hill_alpha_S1": 2.39,
+      "hill_alpha_M4_vs_S1_lighter": true,
+      "evt_xi_M4": null,
+      "cvar_95_M4_vs_baselines": {
+        "M4": -0.1013,
+        "S1": -0.1112,
+        "S2": -0.1051,
+        "M4_better_than_S1": true,
+        "M4_better_than_S2": true
+      },
+      "skewness_M4": 0.255,
+      "kurtosis_M4": 0.536,
+      "judgement": "Gate I PASS — Hill α 2.78 (M4) > 2.39 (S1) → M4 lighter tail. CVaR_95 M4 -10.13% < -11.12% S1 < -10.51% S2 — M4 best tail among 3. Skewness +0.255 (positive = right-skewed return distribution preferable). Kurtosis 0.54 acceptable (moderate excess)."
+    },
+    "gate_j_method_shopping_dsr": {
+      "verdict": "PARTIAL",
+      "n_methods_total": 145,
+      "n_methods_named": 5,
+      "n_methods_grids": 140,
+      "charter_penalty_score": -7.25,
+      "expected_max_false_discovery_threshold_sigma": 3.155,
+      "observed_incremental_sr_monthly": 0.0076,
+      "dsr_critical_sr_bound_monthly": 0.193,
+      "incremental_significance_after_correction": false,
+      "raw_dsr_monthly": 0.998,
+      "raw_dsr_above_0p5": true,
+      "incremental_dsr_below_0p5": true,
+      "judgement": "Gate J PARTIAL — Raw DSR 0.998 (Harvey t=6.42 well above sr_zero) PASS. Incremental DSR (S3-S2 monthly Sharpe = 0.124, n=267, n_trials=64-145) BELOW 0.5 → incremental alpha NOT significant after correction. Walk-forward train degenerate (1 firing → flat across grids). Theoretical anchor strong_p=0.30 (MRS regime cap) NOT data-max — method-honest disclosure ✓."
+    }
+  },
+  "multi_objective_8": {
+    "rating_basis": "vs S2 (existing simple MRS overlay baseline), Charter §11 mandate",
+    "sharpe": {
+      "M4": 1.6399,
+      "S2": 1.6134,
+      "delta": 0.0265,
+      "rating": "PARTIAL",
+      "rationale": "+2.65pp uplift directional but NW HAC t=0.81 not significant. method shopping noise-corrected NOT significant."
+    },
+    "ir_vs_S2": {
+      "M4": 0.1743,
+      "S2": 0,
+      "rating": "FAIL",
+      "rationale": "0.17 < 0.20 disc threshold."
+    },
+    "mdd": {
+      "M4": -0.3033,
+      "S2": -0.3033,
+      "delta": 0,
+      "rating": "PARITY",
+      "rationale": "M4 = S2 MDD parity. vs S1 -35.56%: +5.23pp improvement (Axis 2 AX-001 v2 PASS)."
+    },
+    "calmar": {
+      "M4": 1.3451,
+      "S2": 1.3325,
+      "delta": 0.0126,
+      "rating": "PARTIAL",
+      "rationale": "Marginal +1.3% Calmar improvement vs S2. vs S1 1.179: +14.0% improvement (real risk-reduction value)."
+    },
+    "sortino": {
+      "M4": 3.6252,
+      "S2": 3.4924,
+      "delta": 0.133,
+      "rating": "PASS",
+      "rationale": "+3.8% Sortino improvement vs S2. M4 captures downside protection meaningfully."
+    },
+    "var_95_monthly": {
+      "M4": -0.0643,
+      "S2": -0.0711,
+      "delta_pp_better": 0.68,
+      "rating": "PASS",
+      "rationale": "M4 VaR 95 better by 68bps."
+    },
+    "cvar_95_monthly": {
+      "M4": -0.1013,
+      "S2": -0.1051,
+      "delta_pp_better": 0.38,
+      "rating": "PARTIAL",
+      "rationale": "M4 CVaR 95 better than S2 by 38bps, BUT 13bps cap breach (-10.13% > -10%)."
+    },
+    "hit_ratio": {
+      "M4": 0.7116,
+      "S2": 0.7116,
+      "delta": 0,
+      "rating": "PARITY",
+      "rationale": "Identical hit ratio (overlay activation 12.7% months mostly maintains regime alignment)."
+    },
+    "summary_pass_count": "3 PASS (Sortino + VaR + Hit ratio TIE) + 4 PARTIAL (Sharpe + Calmar + CVaR + MDD parity) + 1 FAIL (IR vs S2)",
+    "summary_judgement": "Multi-objective 8 indicators: 3/8 PASS + 4/8 PARTIAL + 1/8 FAIL. Charter §11 mandate borderline. vs S1 baseline 평가가 더 friendly (MDD +5.23pp / Calmar +14%) but vs S2 noise-level uplift."
+  },
+  "pit_audit_result": {
+    "lookahead_detector_self_executed": true,
+    "lookahead_detector_files_scanned": 4,
+    "raw_violations_total": 8,
+    "production_violations": 0,
+    "diagnostic_violations": 8,
+    "verdict": "PASS",
+    "pit_lineage_proof_audited": true,
+    "previous_cycle_fabrication_patterns_present": false,
+    "previous_cycle_138_267_sparse_present": false,
+    "previous_cycle_frequency_mislabel_present": false,
+    "schedule_density_judge_verified": "267/267 = 1.000 (Judge confirmed)",
+    "judgement": "PIT 자체 검증 PASS. 8 raw violations 모두 diagnostic logging / reporting helpers. 신호 구성 위반 0건. 직전 cycle WT-D20260429_001 FABRICATION 패턴 본 cycle 완전 부재."
+  },
+  "role_honesty_audit_result": {
+    "alpha_role_declared": "meta_allocation_overlay_alpha",
+    "alpha_role_actual_classification": "regime_conditional_dynamic_blending_with_risk_reduction_bias",
+    "alpha_role_subtypes": {
+      "regime_conditional_overlay": true,
+      "dynamic_blending": true,
+      "weight_schedule_alpha": true,
+      "defense_factor_disguise": false
+    },
+    "core_function_classification": "RISK_REDUCTION_OVERLAY (NOT alpha-generating)",
+    "core_function_evidence": [
+      "NW HAC t M4 vs S1 = -1.50 (negative = drag direction): M4 sacrifices return 1.12pp/yr vs always-on baseline.",
+      "NW HAC t M4 vs S2 = +0.81 (positive but not significant): incremental alpha noise.",
+      "MDD complement +5.23pp vs S1, MDD parity vs S2: real value is risk reduction, not return generation.",
+      "Calmar +14% vs S1, +1.3% vs S2: protection efficiency, not alpha alpha.",
+      "CRISIS vol_ratio 0.836 (16-17% variance reduction in CRISIS bucket statistically significant <1.0): overlay PROVABLY reduces crisis variance."
+    ],
+    "role_honesty_finding": "alpha_package, optimization_package, forge_package 모두 honest disclosure: 'M4 is RISK-REDUCTION at cost of return' (forge_package critical_findings.m4_vs_s1_drag.interpretation 명문화), 'M4 sacrifices total compound return vs S1', 'aspirational improvement only', 'overlay value emerges only in MDD complement'. 이전 cycle (WT-D20260429_001)에서 발견된 'defense alpha 위장' 패턴 (실제 STR_1715 alpha + cosmetic 0.01pp 개선) 본 cycle 부재 — Forge가 본질을 risk_reduction으로 정확 분류.",
+    "verdict": "PASS — role honestly declared. M4가 alpha-generating overlay 가장하지 않고 risk_reduction overlay임을 명문화."
+  },
+  "ax001_v2_reform_motion": {
+    "motion_proposed": true,
+    "motion_id": "AX-001-v2.1-META-ALLOCATION-EXEMPT",
+    "current_axiom_state": "AX-001 v2 IMMUTABLE: defense factor 조건부 평가 (crisis_alpha 3+ events + Core 대비 MDD complement + bad/normal IC ratio ≥ 1.5). 전기간 SR 평가 금지.",
+    "framework_mismatch_evidence": {
+      "axis_1_crisis_alpha_mismatch": "AX-001 v2 Axis 1: crisis_alpha 3+ events 양수 PASS. Meta-allocation overlay는 trigger rate 3.7% (10/267 months) BY DESIGN. Defense factor 같이 매월 신호 발생하는 구조 아님. Axis 1 NOT_APPLICABLE for meta-allocation.",
+      "axis_2_mdd_complement_applicable": "AX-001 v2 Axis 2: Core 대비 MDD complement. M4 vs S1 (Core_Alpha) MDD -30.33% vs -35.56% = +5.23pp 개선 PASS. APPLICABLE.",
+      "axis_3_bad_normal_ic_ratio_mismatch": "AX-001 v2 Axis 3: bad/normal IC ratio ≥ 1.5. Meta-allocation은 87% months에서 M4 ≈ S1 (always-on with overlay only firing 13% months). bad/normal SR ratio 0.13 (M4 SR_normal 1.64 / SR_bad 1.86 = 0.13 difference). Defense factor의 'bad regime에서 더 잘 작동' premise는 매월 신호 발생 가정. Meta-allocation overlay에는 SCOPE_MISMATCH."
+    },
+    "proposed_amendment": {
+      "axiom_id": "AX-001 v2.1",
+      "amendment_text": "AX-001 v2 axiom은 defense FACTOR (low-beta/Q07/D25 standalone or composite) 평가에 적용한다. Meta-allocation OVERLAY (regime-conditional weight schedule + risk_reduction bias) 평가에는 다음 조건부 평가를 적용한다: (a) MDD complement vs Core_Alpha ≥ 3pp (Axis 2 APPLICABLE), (b) Crisis-bucket vol_ratio < 0.90 with statistical significance (BS CI 95% < 1.0), (c) Calmar ratio improvement vs Core_Alpha + vs simple regime overlay baseline. Axis 1 (crisis_alpha 3+ events) + Axis 3 (bad/normal IC ratio) NOT_APPLICABLE for meta-allocation overlay.",
+      "approval_authority": "Q-Lead + Governor (Charter v1.5 §10)",
+      "trigger_for_review": "본 cycle WT-D20260430_001은 meta-allocation 첫 admission cycle. 현행 AX-001 v2 framework로는 NOT_APPLICABLE/SCOPE_MISMATCH 판정 외 평가 경로 부재. Q-Lead 차원 framework reform 의제 발의 필수."
+    },
+    "judge_recommendation": "Q-Lead → Governor → axiom 엔진 (qepm/registry/axioms/) AX-001 v2.1 amendment 등재 검토. 본 cycle PG2 admission 전 framework reform 결정. Reform 부재 시 본 cycle NOT_APPLICABLE 처리는 의무 회피 risk."
+  },
+  "charter_compliance": {
+    "charter_v1p5": {
+      "wt_lifecycle": "PASS",
+      "agent_separation": "PASS (Alpha → Risk → Optimizer → Forge sequential, 각 단계 read-only access to upstream)",
+      "method_shopping_disclosure": "PASS (5 named + 90 M3 grid + 50 M4 grid = 145 disclosed)",
+      "honest_disclosure_no_silent_override": "PASS (Codex R1 7 concerns + risk-stage REJECT 7 + optimizer REJECT 7 모두 challenge_note에 명시 처리)",
+      "ax_002_process_honesty": "PASS (3 hash audits + Forge realized = optimizer estimated divergence 0.0)"
+    },
+    "l_249_check_11_pass": "PASS (3 backtest_result 모두 11/11 audit PASS, metric_type=backtested 인증)",
+    "five_certificates_per_charter_section_10": {
+      "alpha_discovery_certificate": {
+        "issued": false,
+        "blocker": "harvey_t_specs_pass_count=1 < 3",
+        "judge_position": "본 alpha의 harvey_t_specs는 CAPM α + raw SR + (incremental specs) = 2 PASS specs, 단 incremental 0/3 → strict 5-spec 기준으로 not 3+ PASS. 단 alpha agent measurement = single-spec time-series Harvey-NW-HAC가 합리적 (meta-allocation은 cross-section regression 불가). Q-Lead override 가능: Charter §10 conditional issuance 'meta_allocation_alpha exception' 발의."
+      },
+      "sr_provenance_certificate": {
+        "issued": "INFERRED_PASS",
+        "rationale": "Forge realized SR 1.6399 = optimizer estimated 1.6399 EXACT. divergence 0.0pp. PerformanceAnalytics 표준. Hash audit PASS. metric_type=backtested 인증.",
+        "judge_recommendation": "ISSUE"
+      },
+      "schedule_fidelity_certificate": {
+        "issued": "INFERRED_PASS",
+        "rationale": "weights.csv 267/267 monthly grid (schedule_density_ratio 1.000). 직전 cycle 138/267 sparse 패턴 ZERO. weight bounds [0.4291, 1.0] honored. Σw=1 absolute.",
+        "judge_recommendation": "ISSUE"
+      },
+      "forge_package_validated_certificate": {
+        "issued": "INFERRED_PASS",
+        "rationale": "11/11 audit PASS + L-249 Check 11 PASS + Hash audit PASS + 3 backtest_result coherent.",
+        "judge_recommendation": "ISSUE"
+      },
+      "governor_concord_certificate": {
+        "issued": "PENDING_GOVERNOR_REVIEW",
+        "judge_recommendation": "ISSUE_WITH_WAIVER (CVaR_95 cap 12% sleeve-level + AX-001 v2.1 reform decision + 12+ paper trade)"
+      }
+    }
+  },
+  "vs_baseline_evaluation_comparison": {
+    "vs_S1_always_on": {
+      "context": "STR_1715 PG2 admitted Core_Alpha 100% (always-on)",
+      "sr_delta": 0.0449,
+      "cagr_delta_pp": -1.12,
+      "mdd_delta_pp": 5.23,
+      "calmar_delta_pp": 0.166,
+      "ir_inferred": -0.094,
+      "interpretation": "M4 NOT alpha-generating vs S1 (CAGR drag -1.12pp). M4 IS risk-reduction (MDD +5.23pp + Calmar +14%). NW HAC t=-1.50 statistically directional drag (not significant)."
+    },
+    "vs_S2_existing_mrs_overlay": {
+      "context": "Existing 3-Layer regime overlay user baseline",
+      "sr_delta": 0.0265,
+      "cagr_delta_pp": 0.38,
+      "mdd_delta_pp": 0,
+      "calmar_delta_pp": 0.013,
+      "ir_inferred": 0.174,
+      "interpretation": "M4 marginal incremental over S2 (NW HAC t=+0.81, p=0.42 not significant). MDD parity. Calmar marginal. Trade War 2018 false-positive 해소 (mechanical Trade_War cum -0.37% vs S3 -1.06% +69bps)."
+    },
+    "Charter_Section_11_evaluation_baseline_recommendation": "Charter §11 평가 기준은 'vs existing PG2 active book'이 자연스럽다. S1 (STR_1715 always-on) = 현행 PG2 100% Core_Alpha. M4가 PG2에 들어가려면 S1 대비 risk-reduction value (MDD +5.23pp) 가 보험료 (CAGR -1.12pp/yr drag) 정당화 여부가 핵심. Governor 결정 영역. S2는 현행 PG2 admit 안 되어 baseline 비교 대상 부적절."
+  },
+  "challenge_flags": [
+    {
+      "id": "JF1_AX001_V2_FRAMEWORK_REFORM_REQUIRED",
+      "severity": "HIGH",
+      "description": "AX-001 v2 axis 1/3 SCOPE_MISMATCH for meta-allocation overlay. Reform 발의 필수 (AX-001 v2.1 META-ALLOCATION-EXEMPT amendment). Q-Lead + Governor 결정 영역. 본 reform 없이는 NOT_APPLICABLE 처리가 의무 회피 risk."
+    },
+    {
+      "id": "JF2_INCREMENTAL_NW_HAC_NOT_SIGNIFICANT_VS_BOTH_BASELINES",
+      "severity": "HIGH",
+      "description": "M4 vs S1 t=-1.50 (drag direction) + vs S2 t=+0.81 (not significant) + vs S2 CRISIS t=+1.06 (not significant). 3/3 incremental specs FAIL Harvey 3.0 threshold. Method shopping n=145 corrected DSR critical bound 0.193 monthly << 관측 0.0076 monthly = NOT significant after correction."
+    },
+    {
+      "id": "JF3_LOCKBOX_VALIDATION_LIMITED",
+      "severity": "MEDIUM",
+      "description": "Lockbox 27mo 중 overlay 활성 2건만 (2025-12, 2026-03). 9 of 11 firings는 train period (2004-2023). genuine OOS test 부족. Judge OOS/IS ratio 1.99 PASS는 baseline-included measurement이라 informative — 실제 overlay protection mechanism은 12+ paper trade 필요."
+    },
+    {
+      "id": "JF4_VS_S1_CAGR_DRAG_DEPLOYMENT_IMPLICATION",
+      "severity": "MEDIUM",
+      "description": "M4 deployment에 PG2 100%→80/20 replacement 시 STR_1715 only baseline 대비 1.12pp/yr drag 누적. 22yr 기준 22pp 누적 drag. MDD +5.23pp protection이 22pp drag 정당화 여부는 risk preference 함수. Governor 결정."
+    },
+    {
+      "id": "JF5_CVAR_95_CAP_BREACH_MARGINAL",
+      "severity": "MEDIUM",
+      "description": "M4 CVaR_95 -10.13% > -10% cap 13bps marginal breach. mechanical inheritance from STR_1715 (annualized vol 22.7%). M4 actually IMPROVES vs S1 -11.12% / S2 -10.51%. 단 codex template 2.5% cap inapplicable for 20-stock long-only KR equity. Governor PG2 admission 시 sleeve-level cap waiver 결정 필요 (12% per existing PG2 admission terms)."
+    },
+    {
+      "id": "JF6_COMPOSITE_REDUNDANCY_BOCPD_ABLATION",
+      "severity": "LOW",
+      "description": "alpha_package ablation: decay-only 78% of full uplift (0.014/0.018), BOCPD adds only 0.004. RF-A2_HIGH composite redundancy. Next cycle simplification recommended (single-pillar decay)."
+    },
+    {
+      "id": "JF7_HARD_CAP_E_CONCENTRATION_LOOK_THROUGH_MISSING",
+      "severity": "LOW",
+      "description": "Sleeve-level max_w=1.0 / HHI=0.95. Charter §11 max_w 0.20 / HHI 0.15는 ticker-level cap. STR_1715 sleeve LOOK-THROUGH (각 종목 max 0.20) 검증 미보고. Governor PG2 admission 시 LOOK-THROUGH 자료 요청 필요."
+    }
+  ],
+  "judge_telegram_brief_focal_points": [
+    "Verdict: PASS_CONDITIONAL Grade A_CONDITIONAL Score 64/100",
+    "Gate A PIT PASS (Judge 자체 8 raw violations 모두 diagnostic-only)",
+    "Gate F Drift PASS (Lockbox OOS/IS 1.99 압도적)",
+    "Gate G Harvey 2/5 (raw + CAPM α PASS, incremental 0/3 FAIL)",
+    "Gate H Hard Caps 3/4 PASS (CVaR_95 13bps marginal breach inherited)",
+    "AX-001 v2.1 META-ALLOCATION-EXEMPT reform 발의 (Q-Lead 결정)",
+    "이전 cycle FABRICATION 패턴 ZERO (138/267 sparse 부재)",
+    "Multi-objective 8: 3 PASS + 4 PARTIAL + 1 FAIL",
+    "L-code 권고: L-253 (meta-allocation 첫 admission) + L-254 (보험료 1.12pp / MDD 5.23pp tradeoff)",
+    "PG2 admission: ISSUE_WITH_WAIVER (CVaR cap waiver + reform + 12+ paper trade)"
+  ],
+  "l_code_recommendations": [
+    {
+      "l_code": "L-253",
+      "title": "Meta-allocation Alpha First Admission Cycle + AX-001 v2 Framework Reform Motion",
+      "category": "process_methodology",
+      "lesson_text": "Meta-allocation overlay alpha (regime-conditional weight schedule with risk_reduction bias) 첫 admission cycle (WT-D20260430_001). Forge 무결 + Lockbox OOS/IS 1.99 + Harvey raw 2/5 PASS + Multi-objective 3 PASS / 4 PARTIAL / 1 FAIL. AX-001 v2 framework는 defense FACTOR 평가용으로 calibrated; meta-allocation OVERLAY에 Axis 1 (crisis_alpha 3+ events) + Axis 3 (bad/normal IC ratio ≥1.5) SCOPE_MISMATCH. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment 발의 (Axis 2 MDD complement만 적용, Axis 1/3 N/A, 신규 b/c criteria 추가). Process lesson: meta-allocation alpha framework 부재 시 NOT_APPLICABLE 처리는 의무 회피로 reform 우선.",
+      "core_reference": "WT-D20260430_001 Judge verdict + alpha_package.diagnostics.crisis_alpha_summary + AX-001 v2 IMMUTABLE",
+      "tags": ["meta_allocation", "framework_reform", "AX-001_v2", "first_admission_cycle", "RoleBias_Diversifier"]
+    },
+    {
+      "l_code": "L-254",
+      "title": "M4 Trade-off: Insurance Premium 1.12pp/yr CAGR Drag for MDD +5.23pp Protection",
+      "category": "process_methodology",
+      "lesson_text": "M4_TRADE_WAR_FIX (PG2 100% STR_1715 → 80/20 STR_1715/Cash regime overlay) 본질적 trade-off: vs S1 (always-on) NW HAC t=-1.50 (drag direction, p=0.14) → CAGR 41.91% → 40.79% = -1.12pp/yr 보험료. 대신 MDD -35.56% → -30.33% = +5.23pp 개선 + Calmar +14%. 22yr 누적 drag ≈ 22pp 손실 / Calmar 효율 +14% / VaR 95 +68bps / Hill α 2.78 vs 2.39 lighter tail. 핵심 lesson: meta-allocation overlay는 alpha-generating이 아니라 risk_reduction insurance. NW HAC incremental t-test는 negative direction → M4 NOT alpha. Governor PG2 admission 결정은 risk preference 함수.",
+      "core_reference": "forge_package.critical_findings.m4_vs_s1_drag.interpretation + judge_verdict_draft.gate_g_harvey_nw_hac.spec3",
+      "tags": ["meta_allocation", "risk_reduction", "STR_1715", "CAGR_drag", "MDD_protection", "RoleBias_Diversifier"]
+    }
+  ],
+  "pg2_admission_recommendation": {
+    "verdict": "ISSUE_WITH_WAIVER_CONDITIONAL",
+    "approval_path": "Governor_Committee_Review",
+    "conditions_required": [
+      "1. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment Q-Lead approval (current AX-001 v2 framework 부재 시 admission 불가)",
+      "2. CVaR_95 cap waiver to 12% sleeve-level (per existing STR_1715 PG2 admission terms; mechanical 22.7% vol regime inherited)",
+      "3. LOOK-THROUGH ticker-level concentration audit (STR_1715 20-stock max 0.20 verified)",
+      "4. PG2 active book TDC reporting (M4 standalone vs MEGA_05/STR_1715 + other PG2 strategies if any)",
+      "5. Replacement vs Integration scenario analysis (80/20 M4/STR_1715 baseline vs 100% M4)",
+      "6. 12+ months paper trade post-2026-04 OR redefined train pre-2014 + lockbox 2014-2026 split (alpha_package agreement)",
+      "7. Composite simplification (alpha_package RF-A2_HIGH ablation finding: decay-only 78% of uplift, BOCPD adds 0.004)"
+    ],
+    "rationale": "M4의 risk_reduction value (+5.23pp MDD vs S1, +14% Calmar) 실재. Forge 무결 + PIT clean + Lockbox audit OOS/IS 1.99 PASS. 단 incremental alpha 통계 NW HAC 0/3 specs FAIL + AX-001 v2 framework mismatch + CVaR cap 13bps breach + 12+ paper trade 부재. Governor framework reform 결정 + waiver 조건부 admission 권고."
+  },
+  "next_steps": [
+    "1. Governor_Committee_Review WT-D20260430_001 PG2 admission gate 회의",
+    "2. AX-001 v2.1 META-ALLOCATION-EXEMPT amendment Q-Lead 결정 (axiom 엔진 등재)",
+    "3. Forge → 12+ paper trade scaffolding (post-2026-04 monthly tracking)",
+    "4. Scout → composite simplification S5 mutation (decay-only single pillar test)",
+    "5. Q-Lead → L-253/L-254 hybrid_commit() + Charter §10 5-cert 발급 결정"
+  ],
+  "judge_audit_trail": {
+    "judge_lookahead_detector_self_run": "2026-04-30T13:15:00+09:00",
+    "judge_nav_recompute_sr_match": "2026-04-30T13:20:00+09:00",
+    "judge_nw_hac_recompute_match": "2026-04-30T13:21:00+09:00",
+    "judge_lockbox_audit_self_run": "2026-04-30T13:23:00+09:00",
+    "judge_subperiod_stability_check": "2026-04-30T13:25:00+09:00",
+    "judge_crisis_periods_reconciliation": "2026-04-30T13:26:00+09:00",
+    "judge_method_shopping_dsr_compute": "2026-04-30T13:28:00+09:00",
+    "codex_critic_round_pending": true,
+    "codex_critic_required_per_charter_v1p5_section_8": true
+  }
+}
