@@ -278,10 +278,21 @@ w_prev_risk_named <- NULL
 prev_sig_date <- NULL
 
 for (i in seq_len(length(sig_dates) - 1L)) {
-  start_d <- sig_dates[i]
-  end_d   <- sig_dates[i + 1L]
+  # F-03 (L-258 hygiene 2026-04-30, Codex review): T+1 lag — sig_label vs start_d 분리
+  # sig_label: monthly grid label (sig_dates[i], 매월 1일 — 휴장 가능)
+  # start_d: 첫 영업일 (sig_label 이상 RAWDATA 첫 거래일) — 실제 매수 close 시점
+  sig_label <- sig_dates[i]
+  next_sig_label <- if (i < length(sig_dates)) sig_dates[i + 1L] else NA
+  start_d <- min(raw[Date >= sig_label]$Date)
+  if (length(start_d) == 0L || is.na(start_d) || is.infinite(start_d)) next
+  end_d <- if (!is.na(next_sig_label)) {
+    nxt <- min(raw[Date >= next_sig_label]$Date)
+    if (length(nxt) == 0L || is.na(nxt) || is.infinite(nxt)) max(raw$Date) else nxt
+  } else {
+    max(raw$Date)
+  }
 
-  panel_t <- alpha_scores[Date == start_d & !is.na(score_eff)]
+  panel_t <- alpha_scores[Date == sig_label & !is.na(score_eff)]
   if (nrow(panel_t) == 0L) next
 
   regime_i <- panel_t$regime_state[1L]

@@ -245,6 +245,176 @@ audit_bt_result <- function(bt_result) {
               "", "medium")
   }
 
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 12 (L-258 enforcement): gross_ret - cost == net_ret 실 검증
+  # ────────────────────────────────────────────────────────────────────────────
+  pr_full <- bt_result$period_returns
+  if (!is.null(pr_full) && nrow(pr_full) > 0L &&
+      all(c("ret_gross", "ret_net", "cost_ret") %in% names(pr_full))) {
+    diff_check <- pr_full$ret_gross - pr_full$cost_ret - pr_full$ret_net
+    max_abs_diff <- max(abs(diff_check), na.rm = TRUE)
+    if (is.finite(max_abs_diff) && max_abs_diff > 1e-6) {
+      add_check("cost", "cost_decomposition_consistency", "FAIL",
+                sprintf("ret_gross - cost_ret != ret_net (max |diff|=%.2e > 1e-6). Cost 차감 audit 실패.",
+                        max_abs_diff),
+                "All cost-adjusted metrics", "critical")
+    } else {
+      add_check("cost", "cost_decomposition_consistency", "PASS",
+                sprintf("ret_gross - cost_ret == ret_net (max |diff|=%.2e ≤ 1e-6, %d obs)",
+                        max_abs_diff %||% 0, nrow(pr_full)), "", "low")
+    }
+  } else {
+    add_check("cost", "cost_decomposition_consistency", "WARN",
+              "period_returns ret_gross/cost_ret/ret_net 컬럼 부재 — cost decomposition 검증 skip",
+              "Cost reproducibility", "medium")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 13 (L-258): T+1 cadence 검사 (rebalance_rule + holdings buy_close_date)
+  # ────────────────────────────────────────────────────────────────────────────
+  reb_rule <- bt_result$manifest$rebalance_rule[1] %||% ""
+  is_t1_declared <- grepl("t\\+?1|T\\+?1|first[_ ]?biz|first[_ ]?trad", reb_rule, ignore.case = TRUE)
+  hd <- bt_result$holdings
+  if (is_t1_declared) {
+    if (!is.null(hd) && nrow(hd) > 0L &&
+        all(c("date", "entry_date") %in% names(hd))) {
+      sample_dates <- unique(hd[!is.na(entry_date), .(date, entry_date)])[1:min(20L, .N)]
+      if (nrow(sample_dates) > 0L) {
+        # entry_date should be ≥ date (sig_label) — first business day after sig_label
+        violations <- sample_dates[as.Date(entry_date) < as.Date(date)]
+        if (nrow(violations) > 0L) {
+          add_check("schedule", "t_plus_1_cadence_consistency", "FAIL",
+                    sprintf("declared rebalance_rule='%s' but %d/%d sample holdings have entry_date < date (sig_label) — T+0 동작 의심",
+                            reb_rule, nrow(violations), nrow(sample_dates)),
+                    "All metrics", "high")
+        } else {
+          add_check("schedule", "t_plus_1_cadence_consistency", "PASS",
+                    sprintf("declared T+1 + entry_date ≥ date in %d sample holdings", nrow(sample_dates)),
+                    "", "low")
+        }
+      } else {
+        add_check("schedule", "t_plus_1_cadence_consistency", "WARN",
+                  "holdings entry_date 컬럼 NA — T+1 cadence 검증 skip",
+                  "schedule_fidelity", "medium")
+      }
+    } else {
+      add_check("schedule", "t_plus_1_cadence_consistency", "WARN",
+                "holdings 또는 entry_date 컬럼 부재 — T+1 cadence 검증 skip",
+                "schedule_fidelity", "medium")
+    }
+  } else {
+    add_check("schedule", "t_plus_1_cadence_consistency", "PASS",
+              sprintf("rebalance_rule='%s' (T+1 미선언, skip)", reb_rule), "", "low")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 14 (L-258): C15 path — Factor DB load 경로 검증 (factor_engine R 파일 grep)
+  # 직접 read_parquet on factor_db/* 위반 검출. PIT equivalence proof 흔적 보너스 점검.
+  # ────────────────────────────────────────────────────────────────────────────
+  factor_engine_path <- bt_result$strategy_spec$factor_engine_path[1] %||%
+                         bt_result$manifest$factor_engine_path[1] %||% ""
+  if (nzchar(factor_engine_path) && file.exists(factor_engine_path)) {
+    src_lines <- tryCatch(readLines(factor_engine_path, warn = FALSE),
+                           error = function(e) character(0))
+    direct_parquet <- grep("read_parquet\\s*\\(.*factor_db", src_lines, value = TRUE)
+    lmf_calls <- grep("load_month_factors\\s*\\(", src_lines, value = TRUE)
+    align_calls <- grep("align_factor_direction\\s*\\(", src_lines, value = TRUE)
+    pit_proof <- grep("Usable_Date|cor.*0\\.999|equiv_proof", src_lines, value = TRUE)
+
+    if (length(direct_parquet) > 0L &&
+        length(lmf_calls) == 0L && length(align_calls) == 0L) {
+      add_check("PIT", "c15_factor_db_load_path", "FAIL",
+                sprintf("factor_engine 직접 read_parquet(factor_db) 사용 (%d hits) + load_month_factors/align_factor_direction 호출 부재. C15 위반.",
+                        length(direct_parquet)),
+                "All factor-derived metrics", "high")
+    } else if (length(direct_parquet) > 0L) {
+      add_check("PIT", "c15_factor_db_load_path", "PASS_WITH_NOTES",
+                sprintf("bulk read_parquet %d hits + (lmf=%d / align=%d / pit_proof=%d) — letter 위반, spirit 정합 (PIT equivalence proof 필요)",
+                        length(direct_parquet), length(lmf_calls), length(align_calls), length(pit_proof)),
+                "", "low")
+    } else {
+      add_check("PIT", "c15_factor_db_load_path", "PASS",
+                sprintf("factor_engine 직접 read_parquet(factor_db) 부재 + lmf=%d / align=%d hits",
+                        length(lmf_calls), length(align_calls)), "", "low")
+    }
+  } else {
+    add_check("PIT", "c15_factor_db_load_path", "WARN",
+              "manifest$factor_engine_path 부재 또는 file 부재 — C15 path 검증 skip",
+              "PIT integrity", "medium")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 15 (L-258): lookahead_detector self-call (자체 PIT scan)
+  # ────────────────────────────────────────────────────────────────────────────
+  ld_path <- "02_Infrastructure/validation/lookahead_detector.R"
+  if (file.exists(ld_path) && nzchar(factor_engine_path) && file.exists(factor_engine_path)) {
+    tryCatch({
+      source(ld_path, local = TRUE)
+      if (exists("scan_lookahead", inherits = FALSE)) {
+        scan_result <- scan_lookahead(factor_engine_path)
+        prod_violations <- if (is.list(scan_result)) {
+          # 일반 lookahead_detector 결과: list(C1=integer, C2=integer, ...)
+          sum(sapply(scan_result, function(x) if (is.numeric(x)) length(x) else 0L))
+        } else 0L
+        if (prod_violations > 0L) {
+          add_check("PIT", "lookahead_detector_self_scan", "FAIL",
+                    sprintf("scan_lookahead %s production violations (factor_engine_path)",
+                            prod_violations),
+                    "All metrics", "high")
+        } else {
+          add_check("PIT", "lookahead_detector_self_scan", "PASS",
+                    "scan_lookahead 0 production violations", "", "low")
+        }
+      } else {
+        add_check("PIT", "lookahead_detector_self_scan", "WARN",
+                  "scan_lookahead 함수 부재 — lookahead self-call skip",
+                  "PIT integrity", "medium")
+      }
+    }, error = function(e) {
+      add_check("PIT", "lookahead_detector_self_scan", "WARN",
+                sprintf("lookahead_detector 호출 실패: %s", conditionMessage(e)),
+                "PIT integrity", "medium")
+    })
+  } else {
+    add_check("PIT", "lookahead_detector_self_scan", "WARN",
+              "lookahead_detector.R 또는 factor_engine_path 부재 — self-call skip",
+              "PIT integrity", "medium")
+  }
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Check 16 (L-258, F-04): nav frequency vs declared frequency 정합 검증
+  # Backtest Contract v1.0 §6 schema는 nav를 daily로 의도.
+  # nav가 monthly이면서 manifest$frequency="daily"이면 fabrication risk.
+  # ────────────────────────────────────────────────────────────────────────────
+  nav_dt <- bt_result$nav
+  if (!is.null(nav_dt) && nrow(nav_dt) >= 3L && "date" %in% names(nav_dt)) {
+    nav_dates <- sort(as.Date(nav_dt$date))
+    nav_med_diff <- as.numeric(median(diff(nav_dates), na.rm = TRUE))
+    nav_implied_freq <- if (nav_med_diff <= 5)        "daily"
+                       else if (nav_med_diff <= 10)    "weekly"
+                       else if (nav_med_diff <= 31)    "monthly"
+                       else if (nav_med_diff <= 95)    "quarterly"
+                       else                             "irregular"
+    declared_strat_freq <- bt_result$manifest$frequency[1] %||% NA
+    if (!is.na(declared_strat_freq) &&
+        tolower(declared_strat_freq) == "daily" &&
+        nav_implied_freq != "daily") {
+      add_check("frequency", "nav_cadence_label_consistency", "FAIL",
+                sprintf("nav cadence %.1f days (~%s) but manifest$frequency='daily' — Contract §6 nav daily 의도 위반 + L-249 fabrication 패턴",
+                        nav_med_diff, nav_implied_freq),
+                "Daily-derived metrics (drawdown_net, daily SR)", "high")
+    } else {
+      add_check("frequency", "nav_cadence_label_consistency", "PASS",
+                sprintf("nav median diff %.1f days (~%s), manifest$frequency='%s'",
+                        nav_med_diff, nav_implied_freq, declared_strat_freq %||% "?"),
+                "", "low")
+    }
+  } else {
+    add_check("frequency", "nav_cadence_label_consistency", "WARN",
+              "nav < 3 obs or missing date column — nav cadence check skipped",
+              "Daily-derived metrics", "medium")
+  }
+
   audit_tbl <- rbindlist(audit_rows, use.names = TRUE, fill = TRUE)
   bt_result$audit <- audit_tbl
 
