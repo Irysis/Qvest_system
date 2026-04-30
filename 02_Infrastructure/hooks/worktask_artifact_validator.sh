@@ -8,7 +8,9 @@
 # 필수 필드 누락 시 warn + log (block 아님, PostToolUse이므로)
 
 set -euo pipefail
-trap 'exit 0' ERR
+LOG="/tmp/worktask_artifact_validator.log"
+FILE_PATH=""
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -39,6 +41,11 @@ try:
         pkg = json.load(f)
 except Exception as e:
     print(f"[WARN] {fp} JSON parse fail: {e}", file=sys.stderr)
+    sys.exit(0)
+
+# Defensive: pkg는 반드시 dict (list / scalar / null이면 schema 검증 자체 부적용)
+if not isinstance(pkg, dict):
+    print(f"[WARN] {fp} top-level not dict (got {type(pkg).__name__}) — schema check skipped", file=sys.stderr)
     sys.exit(0)
 
 # package type 결정 (v6.2: forge/judge/governor 추가)

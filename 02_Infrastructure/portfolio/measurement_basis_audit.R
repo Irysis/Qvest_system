@@ -51,28 +51,90 @@ audit_book_measurement_coherence <- function(book_state_path,
     governor_dir <- dirname(book_state_path)
   }
 
-  # 각 STR의 latest WT 찾기 (governor_admission.json str_id로 매칭)
+  # v1.7 lineage-aware: generated_at timestamp 정렬 + lineage chain 추적
   find_latest_wt <- function(str_id, wt_root) {
     if (!dir.exists(wt_root)) return(NULL)
-    wt_dirs <- list.dirs(wt_root, full.names = TRUE, recursive = FALSE)
-    wt_dirs <- grep("^WT-", basename(wt_dirs), value = FALSE)
-    candidates <- list()
+    str_id_root <- sub("(_WT|_Iter|_M|_S|_v).*$", "", str_id)
+
+    primary <- list()
+    lineage <- list()
     for (wd in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
       ga_path <- file.path(wd, "governor_admission.json")
       if (!file.exists(ga_path)) next
       ga <- tryCatch(fromJSON(ga_path, simplifyVector = FALSE),
                      error = function(e) NULL)
       if (is.null(ga)) next
-      if (isTRUE(ga$str_id == str_id)) {
-        candidates[[length(candidates) + 1]] <- list(
-          wt_dir = wd,
-          generated_at = ga$generated_at %||% ""
-        )
+
+      ga_str_id <- as.character(ga$str_id %||% "")
+      gen_at <- as.character(ga$generated_at %||% "")
+      discovery_of <- paste(as.character(ga$discovery_of %||% ""),
+                            as.character(ga$wt_lifecycle$discovery_of %||% ""))
+
+      if (identical(ga_str_id, str_id)) {
+        primary[[length(primary) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
+      } else if (nchar(ga_str_id) > 0 && (grepl(str_id, ga_str_id, fixed = TRUE) ||
+                  (nchar(str_id_root) > 0 && grepl(str_id_root, ga_str_id, fixed = TRUE)))) {
+        lineage[[length(lineage) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
+      } else if (grepl(str_id, discovery_of, fixed = TRUE) ||
+                 (nchar(str_id_root) > 0 && grepl(str_id_root, discovery_of, fixed = TRUE))) {
+        lineage[[length(lineage) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
       }
     }
-    if (length(candidates) == 0) return(NULL)
-    # 단순화: 첫 번째 매치 사용 (정확한 latest 정렬은 hook 검증 부담)
-    candidates[[1]]$wt_dir
+    # primary 우선, 없으면 lineage. 동일 카테고리 내 generated_at 정렬 (latest 우선)
+    sort_by_gen_at <- function(lst) {
+      if (length(lst) <= 1) return(lst)
+      gens <- sapply(lst, function(x) x$generated_at)
+      lst[order(gens, decreasing = TRUE)]
+    }
+    primary <- sort_by_gen_at(primary)
+    lineage <- sort_by_gen_at(lineage)
+
+    if (length(primary) > 0) return(primary[[1]]$wt_dir)
+    if (length(lineage) > 0) return(lineage[[1]]$wt_dir)
+    NULL
+  }
+
+  # v1.7: lineage WT의 cert도 점수에 inherit (deployment alpha_discovery / sizing_only sr_provenance 등)
+  find_lineage_wts <- function(str_id, wt_root) {
+    if (!dir.exists(wt_root)) return(character(0))
+    str_id_root <- sub("(_WT|_Iter|_M|_S|_v).*$", "", str_id)
+    out <- character(0)
+    for (wd in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
+      ga_path <- file.path(wd, "governor_admission.json")
+      fp_path <- file.path(wd, "forge_package.json")
+      if (!file.exists(ga_path) && !file.exists(fp_path)) next
+      hit <- FALSE
+      if (file.exists(ga_path)) {
+        ga <- tryCatch(fromJSON(ga_path, simplifyVector = FALSE),
+                       error = function(e) NULL)
+        if (!is.null(ga)) {
+          ga_str <- as.character(ga$str_id %||% "")
+          dof <- paste(as.character(ga$discovery_of %||% ""),
+                       as.character(ga$wt_lifecycle$discovery_of %||% ""))
+          if (grepl(str_id, ga_str, fixed = TRUE) ||
+              grepl(str_id, dof, fixed = TRUE) ||
+              (nchar(str_id_root) > 0 &&
+                (grepl(str_id_root, ga_str, fixed = TRUE) ||
+                 grepl(str_id_root, dof, fixed = TRUE)))) {
+            hit <- TRUE
+          }
+        }
+      }
+      if (!hit && file.exists(fp_path)) {
+        fp <- tryCatch(fromJSON(fp_path, simplifyVector = FALSE),
+                        error = function(e) NULL)
+        if (!is.null(fp)) {
+          dl <- paste(unlist(fp$deployment_lineage %||% list()),
+                      unlist(fp$alpha_lineage_chain %||% list()), collapse = " ")
+          if (grepl(str_id, dl, fixed = TRUE) ||
+              (nchar(str_id_root) > 0 && grepl(str_id_root, dl, fixed = TRUE))) {
+            hit <- TRUE
+          }
+        }
+      }
+      if (hit) out <- c(out, wd)
+    }
+    unique(out)
   }
 
   per_str <- list()
@@ -81,6 +143,7 @@ audit_book_measurement_coherence <- function(book_state_path,
     wt_dir <- find_latest_wt(str_id, wt_root)
     score <- 0
     components <- list()
+    inherited_from <- list()
 
     if (is.null(wt_dir)) {
       per_str[[str_id]] <- list(
@@ -90,45 +153,78 @@ audit_book_measurement_coherence <- function(book_state_path,
       next
     }
 
-    # 1. sr_provenance_certificate (+30)
+    # v1.7 lineage WT 후보 (본 WT 외) — 누락 cert/field inherit fallback
+    lineage_wts <- setdiff(find_lineage_wts(str_id, wt_root), wt_dir)
+
+    # 1. sr_provenance_certificate (+30) — 본 WT 우선, 없으면 lineage WT inherit
     sr_cert_path <- file.path(wt_dir, "sr_provenance_certificate.json")
     if (file.exists(sr_cert_path)) {
       score <- score + 30
       components$sr_provenance_certificate <- 30
     } else {
-      components$sr_provenance_certificate <- 0
+      sr_inherit_wt <- NULL
+      for (lw in lineage_wts) {
+        if (file.exists(file.path(lw, "sr_provenance_certificate.json"))) {
+          sr_inherit_wt <- basename(lw); break
+        }
+      }
+      if (!is.null(sr_inherit_wt)) {
+        score <- score + 30
+        components$sr_provenance_certificate <- 30
+        inherited_from$sr_provenance_certificate <- sr_inherit_wt
+      } else {
+        components$sr_provenance_certificate <- 0
+      }
     }
 
-    # 2. forge_package measurement_basis_primary (+20)
+    # 2~4: forge_package fields — 본 WT 우선, 없으면 lineage WT 내 forge_package에서 inherit
     forge_path <- file.path(wt_dir, "forge_package.json")
     forge_pkg <- if (file.exists(forge_path)) {
       tryCatch(fromJSON(forge_path, simplifyVector = FALSE),
                error = function(e) NULL)
     } else NULL
+    forge_inherit_wt <- NULL
+    if (is.null(forge_pkg)) {
+      for (lw in lineage_wts) {
+        lp <- file.path(lw, "forge_package.json")
+        if (file.exists(lp)) {
+          forge_pkg <- tryCatch(fromJSON(lp, simplifyVector = FALSE),
+                                error = function(e) NULL)
+          if (!is.null(forge_pkg)) { forge_inherit_wt <- basename(lw); break }
+        }
+      }
+    }
 
     if (!is.null(forge_pkg) && isTRUE(forge_pkg$measurement_basis_primary ==
                                         "forge_realized_share_based")) {
       score <- score + 20
       components$measurement_basis_primary <- 20
+      if (!is.null(forge_inherit_wt)) {
+        inherited_from$measurement_basis_primary <- forge_inherit_wt
+      }
     } else {
       components$measurement_basis_primary <- 0
     }
 
-    # 3. schedule_density_ratio >= 0.95 (+20)
     if (!is.null(forge_pkg) && !is.null(forge_pkg$schedule_density_ratio) &&
         forge_pkg$schedule_density_ratio >= 0.95) {
       score <- score + 20
       components$schedule_density <- 20
+      if (!is.null(forge_inherit_wt)) {
+        inherited_from$schedule_density <- forge_inherit_wt
+      }
     } else {
       components$schedule_density <- 0
     }
 
-    # 4. factor_engine vs realized divergence < 0.3pp (+20)
     diverg <- forge_pkg$divergence_factor_engine_vs_realized_pp %||%
               forge_pkg$vs_factor_engine$divergence_pp %||% NA
     if (!is.na(diverg) && abs(diverg) < 0.3) {
       score <- score + 20
       components$divergence_low <- 20
+      if (!is.null(forge_inherit_wt)) {
+        inherited_from$divergence_low <- forge_inherit_wt
+      }
     } else {
       components$divergence_low <- 0
     }
@@ -147,7 +243,9 @@ audit_book_measurement_coherence <- function(book_state_path,
     tier <- if (score >= 90) "HEALTHY" else if (score >= 70) "WARNING" else "DRIFTED"
     per_str[[str_id]] <- list(
       score = score, tier = tier,
-      components = components, wt_dir = wt_dir
+      components = components, wt_dir = wt_dir,
+      lineage_inherited_from = if (length(inherited_from) > 0) inherited_from else NULL,
+      lineage_wts_audited = if (length(lineage_wts) > 0) basename(lineage_wts) else NULL
     )
     total_score <- total_score + score
   }

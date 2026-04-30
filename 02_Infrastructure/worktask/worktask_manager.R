@@ -212,7 +212,26 @@ wt_check_graduation <- function(task_id) {
   if (!dir.exists(wt_dir)) stop(sprintf("[graduation] %s 없음", task_id))
 
   req_path <- file.path(wt_dir, "request.json")
-  req <- fromJSON(req_path, simplifyVector = FALSE)
+  req <- if (file.exists(req_path)) {
+    fromJSON(req_path, simplifyVector = FALSE)
+  } else {
+    # v1.7 fallback — request.json 부재 (legacy WT) 시 governor_admission.json에서 wt_type 추론
+    ga_path_fallback <- file.path(wt_dir, "governor_admission.json")
+    if (file.exists(ga_path_fallback)) {
+      ga_fb <- tryCatch(fromJSON(ga_path_fallback, simplifyVector = FALSE),
+                        error = function(e) NULL)
+      list(
+        wt_type = if (!is.null(ga_fb)) ga_fb$wt_type %||% "unknown" else "unknown",
+        pg1_eligibility = NULL,
+        graduation_criteria = NULL,
+        legacy_fallback = TRUE
+      )
+    } else {
+      cat(sprintf("[graduation] %s — request.json + governor_admission.json 모두 부재\n", task_id))
+      return(invisible(list(pass = FALSE, reason = "no_request_or_admission",
+                            task_id = task_id)))
+    }
+  }
 
   # v1.2 Charter §10: sizing_only / hyperparameter_sweep은 graduation 자격 없음 (passive deny)
   if (req$wt_type %in% c("sizing_only", "hyperparameter_sweep")) {
@@ -223,6 +242,61 @@ wt_check_graduation <- function(task_id) {
       wt_type = req$wt_type,
       pg1_eligibility = req$pg1_eligibility,
       charter_ref = "v1.2 §10 Role Card"
+    )))
+  }
+
+  # v1.7 Charter §10: deployment WT — 4 cert (sr_provenance + schedule_fidelity +
+  # forge_package_validated + governor_concord) 자체 발급 의무 + alpha_discovery는
+  # discovery WT inherit. cert_backfill_audit.R 자동 호출 가능 (ELIGIBLE_FOR_ISSUANCE 명시 시).
+  if (req$wt_type == "deployment") {
+    cat(sprintf("=== Deployment WT Cert Check: %s ===\n", task_id))
+    governor_dir <- file.path(dirname(WT_ROOT), "governor")
+    cert_status <- list(
+      sr_provenance = file.exists(file.path(wt_dir, "sr_provenance_certificate.json")),
+      schedule_fidelity = file.exists(file.path(wt_dir, "schedule_fidelity_certificate.json")),
+      forge_package_validated = file.exists(file.path(wt_dir, "forge_package_validated_certificate.json")),
+      governor_concord = file.exists(file.path(governor_dir, "governor_concord_certificate.json")) ||
+                         file.exists(file.path(governor_dir, "governor_concord_with_waiver_certificate.json"))
+    )
+    issued_count <- sum(unlist(cert_status))
+    for (nm in names(cert_status)) {
+      cat(sprintf("  %s: %s\n", nm,
+                  if (isTRUE(cert_status[[nm]])) "ISSUED" else "MISSING"))
+    }
+    cat(sprintf("Issued: %d/4\n", issued_count))
+
+    # Governor의 ELIGIBLE_FOR_ISSUANCE 명시 확인 (cert_backfill_audit.R 자동 호출 trigger)
+    ga_path <- file.path(wt_dir, "governor_admission.json")
+    eligibility_hint <- FALSE
+    if (file.exists(ga_path)) {
+      ga <- tryCatch(fromJSON(ga_path, simplifyVector = FALSE), error = function(e) NULL)
+      if (!is.null(ga)) {
+        pg1_check <- ga$pg1_admission_check %||% list()
+        for (key in c("sr_provenance_certificate", "schedule_fidelity_certificate",
+                      "forge_package_validated_certificate")) {
+          status <- (pg1_check[[key]] %||% list())$issuance_status
+          if (!is.null(status) && grepl("ELIGIBLE", status, ignore.case = TRUE)) {
+            eligibility_hint <- TRUE; break
+          }
+        }
+      }
+    }
+
+    pass <- issued_count >= 3  # 최소 3/4 (schedule_fidelity는 weights.csv 없는 archived deployment 면제 가능)
+    if (!pass && eligibility_hint) {
+      cat("[graduation] Deployment WT cert 부족 + Governor ELIGIBLE 명시 — cert_backfill_audit.R --auto 권장\n")
+      cat(sprintf("  Rscript 02_Infrastructure/ops/cert_backfill_audit.R --target=%s --auto\n", task_id))
+    }
+
+    return(invisible(list(
+      pass = pass,
+      reason = if (pass) "deployment_cert_pass" else "deployment_cert_insufficient",
+      wt_type = "deployment",
+      cert_status = cert_status,
+      issued_count = issued_count,
+      eligibility_hint = eligibility_hint,
+      backfill_recommended = !pass && eligibility_hint,
+      charter_ref = "v1.7 §10 Role Card deployment"
     )))
   }
 
@@ -309,7 +383,11 @@ wt_check_graduation <- function(task_id) {
   invisible(result)
 }
 
-`%||%` <- function(a, b) if (!is.null(a) && !is.na(a)) a else b
+`%||%` <- function(a, b) {
+  if (is.null(a)) return(b)
+  if (is.atomic(a) && length(a) == 1 && is.na(a)) return(b)
+  a
+}
 
 # ─── WT 상태 조회 ───────────────────────────────────────
 wt_status <- function(task_id) {
@@ -603,11 +681,18 @@ wt_list <- function(include_completed = FALSE) {
   for (id in wts) {
     status_path <- file.path(WT_ROOT, id, "status.json")
     if (file.exists(status_path)) {
-      st <- fromJSON(status_path, simplifyVector = TRUE)
-      if (!include_completed && st$current_phase %in% c("COMPLETED", "ABORTED")) next
+      st <- tryCatch(fromJSON(status_path, simplifyVector = TRUE),
+                     error = function(e) NULL)
+      if (is.null(st)) next
+      # v1.7 fix — legacy WT (current_phase 없음) 호환: phase / stage 필드도 fallback
+      phase_val <- st$current_phase
+      if (is.null(phase_val) || (length(phase_val) == 1 && is.na(phase_val))) {
+        phase_val <- st$phase %||% st$stage %||% "UNKNOWN"
+      }
+      if (!include_completed && phase_val %in% c("COMPLETED", "ABORTED")) next
       type_tag <- if (grepl("^WT-D", id)) "[D]" else if (grepl("^WT-P", id)) "[P]" else "[L]"
       cat(sprintf("  %s %s | %s | updated %s\n",
-                  type_tag, id, st$current_phase, st$updated_at))
+                  type_tag, id, phase_val, st$updated_at %||% "n/a"))
     }
   }
   invisible(wts)

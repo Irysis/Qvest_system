@@ -15,7 +15,9 @@
 # Reference: STR_1715 OVERRIDE_006 사후 — alpha_inheritance_cor=1.0이 "alpha discovery"로 framing되어 PG1 통과한 사고 차단.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+LOG="/tmp/alpha_discovery_certifier.log"
+FILE_PATH=""
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
@@ -28,7 +30,7 @@ if [[ ! -f "$FILE_PATH" ]]; then echo '{"decision":"allow"}'; exit 0; fi
 
 WT_DIR=$(dirname "$FILE_PATH")
 CERT_PATH="$WT_DIR/alpha_discovery_certificate.json"
-LOG="/tmp/alpha_discovery_certifier.log"
+# LOG defined at top for trap visibility
 
 # Self-trigger 방지: 이미 certificate file 존재 시 skip
 if [[ -f "$CERT_PATH" ]]; then

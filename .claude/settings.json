@@ -361,7 +361,17 @@
         ]
       }
     ],
-    "FileChanged": [],
+    "FileChanged": [
+      {
+        "matcher": "/tmp/qmoltbot_filechanged_test_*.json",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo \"[$(date -Iseconds)] FILECHANGED_TRIGGERED matcher=test file=$CLAUDE_FILE_PATH\" >> /tmp/qmoltbot_filechanged_test.log"
+          }
+        ]
+      }
+    ],
     "TeammateIdle": [
       {
         "hooks": [

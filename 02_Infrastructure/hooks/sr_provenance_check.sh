@@ -14,7 +14,9 @@
 # Reference violation: STR_1715 Iter 31 — hurdle_result method "ProductionSchedule240m" 잔존 사고.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+LOG="/tmp/sr_provenance_check.log"
+FILE_PATH=""
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")

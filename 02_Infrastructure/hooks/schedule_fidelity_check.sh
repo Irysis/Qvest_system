@@ -13,7 +13,9 @@
 # Reference violation: STR_1715 Iter 31 — weights.csv 92 dates vs run_all.R 240 fabricated
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+LOG="/tmp/schedule_fidelity_check.log"
+FILE_PATH=""
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
@@ -35,7 +37,7 @@ if [[ "$FILE_PATH" =~ optimization_package\.json$ ]]; then
 
   if [[ -f "$WEIGHTS_CSV" && -f "$ALPHA_PKG" && ! -f "$CERT_PATH" ]]; then
     WEIGHTS_DATES=$(awk -F',' 'NR>1 {print $1}' "$WEIGHTS_CSV" 2>/dev/null | sort -u | wc -l)
-    SIG_DATES=$(python3 -c "import json; d=json.load(open('$ALPHA_PKG')); print(d.get('diagnostics',{}).get('sig_dates_count', d.get('diagnostics',{}).get('n_sig_dates', d.get('alpha_summary',{}).get('n_sig_dates', 0))))" 2>/dev/null || echo "0")
+    SIG_DATES=$(python3 -c "import json; d=json.load(open('$ALPHA_PKG')); diag=d.get('diagnostics',{}); print(diag.get('sig_dates_count', diag.get('n_sig_dates', d.get('alpha_summary',{}).get('n_sig_dates', d.get('n_sig_dates', 0)))))" 2>/dev/null || echo "0")
 
     if [[ $SIG_DATES -gt 0 && $WEIGHTS_DATES -gt 0 ]]; then
       RATIO=$(python3 -c "print(round($WEIGHTS_DATES / $SIG_DATES, 3))" 2>/dev/null || echo "0")

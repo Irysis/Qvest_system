@@ -71,13 +71,29 @@ echo "[boot] $HH_SUMMARY"
 # 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
 BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
 MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"
+MBA_TIER=""
 if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
   MBA_OUT=$(Rscript "$MBA_R" "$BS_PATH" "$PROJECT/qepm/mailbox/worktask" 2>/dev/null \
             | grep -E "(Book score:|Tier:)" | head -2 | tr '\n' ' ')
   if [ -n "$MBA_OUT" ]; then
     echo "[boot] Measurement coherence: $MBA_OUT"
+    MBA_TIER=$(echo "$MBA_OUT" | grep -oE 'Tier: [A-Z]+' | awk '{print $2}' | head -1)
   else
     echo "[boot] Measurement coherence: SKIP (no admitted_ids or audit error)"
+  fi
+fi
+
+# 7c. Layer 2 — DRIFTED/WARNING 감지 시 cert backfill audit auto 호출
+CERT_BACKFILL_R="$PROJECT/02_Infrastructure/ops/cert_backfill_audit.R"
+if [[ "$MBA_TIER" == "DRIFTED" || "$MBA_TIER" == "WARNING" ]] && [ -f "$CERT_BACKFILL_R" ]; then
+  echo "[boot] Coherence $MBA_TIER detected — cert_backfill_audit.R --auto 호출"
+  BACKFILL_OUT=$(cd "$PROJECT" && Rscript "$CERT_BACKFILL_R" --auto 2>&1)
+  ISSUED_COUNT=$(echo "$BACKFILL_OUT" | grep -c '\[ISSUED\]' || true)
+  PASS_AUTO_COUNT=$(echo "$BACKFILL_OUT" | grep -c '\[PASS_AUTO\]' || true)
+  POST_TIER=$(echo "$BACKFILL_OUT" | grep -oE 'Tier: [A-Z]+' | tail -1 | awk '{print $2}')
+  echo "[boot] Backfill: $ISSUED_COUNT cert(s) issued | $PASS_AUTO_COUNT pass_auto | post-tier: ${POST_TIER:-unknown}"
+  if [[ "$POST_TIER" != "HEALTHY" ]]; then
+    echo "[boot] WARN: tier still $POST_TIER after auto backfill — Q-Lead 수동 검토 필요 (--manual 또는 --target=)"
   fi
 fi
 

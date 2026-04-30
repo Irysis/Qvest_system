@@ -169,12 +169,14 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 
 **Role Cards by wt_type** (`alpha_research_init.md` 신규 섹션):
 
-| wt_type | Expected Output | Certificate 자동 발급 |
-|---|---|---|
-| `discovery` | 신규 alpha mechanism + factor_specs ≥ 1 + cor < 0.95 | alpha_discovery_certificate |
-| `deployment` | 검증된 alpha 직접 편성 | (graduation 통과 전제) |
-| `sizing_only` | parent inheritance audit + sizing rationale (alpha 0건이 정상) | 미발급 (정상) |
-| `hyperparameter_sweep` | parent alpha 동일 + grid sweep 결과만 | 미발급 (정상) |
+| wt_type | Expected Output | Cert 자체 발급 | Cert inherit (parent로부터) | Cert backfill 룰 |
+|---|---|---|---|---|
+| `discovery` | 신규 alpha mechanism + factor_specs ≥ 1 + cor < 0.95 | alpha_discovery + sr_provenance + schedule_fidelity + forge_package_validated | — | Forge 산출 시 Hook auto-issue. R script 산출은 cert_backfill_audit.R 호출 |
+| `deployment` | 검증된 alpha 직접 편성 + governor admission only (Forge re-run 면제) | sr_provenance + schedule_fidelity + forge_package_validated + governor_concord | alpha_discovery (discovery WT inherit) | governor_admission.pg1_admission_check.\*.issuance_status="ELIGIBLE_FOR_ISSUANCE" 명시 시 cert_backfill_audit.R --auto 자동 backfill 발동 (forge_package.json deployment-specific 작성 → Hook trigger 또는 R script 직접 발급) |
+| `sizing_only` | parent inheritance audit + sizing rationale (alpha 0건이 정상) | governor_concord | sr_provenance + schedule_fidelity (parent strategy inherit) | parent WT cert 인헤리트 룰 적용. 자체 alpha_discovery는 미발급 (정상) |
+| `hyperparameter_sweep` | parent alpha 동일 + grid sweep 결과만 | sr_provenance (자체 forge run 시) + forge_package_validated | alpha_discovery + schedule_fidelity (parent inherit) | grid 산출 후 cert_backfill_audit.R --auto OR Q-Lead 명시 호출 |
+
+**Cert backfill 자동화 (Layer 2 v1.7)**: `02_Infrastructure/ops/cert_backfill_audit.R` — book_state.json admitted_ids 순회 + WT lineage 추적 + 누락 cert 발급 조건 verify + 발급 가능 cert 자동 발급 (manual mode) 또는 ELIGIBLE 명시 cert만 (auto mode). bootstrap.sh DRIFTED 감지 시 자동 호출. governance_log RETROACTIVE_CERT_ISSUANCE 기록.
 
 **Hard Block 2건만 (System Integrity 위협)**:
 
@@ -439,4 +441,5 @@ alpha_type:
 - **v1.4** — 2026-04-29 — Sharpe Ratio 표준 §12 명문화. `Sharpe = CAGR / vol` hybrid 폐기, 학술 표준 `Sharpe = mean(ER) / sd(ER) × √N` 채택 (도훈 reference Lo 2002 / Bailey-LdP 2014). `sharpe_standard.R` single source of truth. summarise_perf() patch + 모든 strategy 재산출.
 - **v1.5** — 2026-04-29 — Backtest Result Contract §13 명문화. 10-component bt_result list 표준 (trades + costs 제외). PerformanceAnalytics 자체 합성 금지. metric_type 분류 (backtested/estimated/proxy/unavailable) + L3 hard block (audit FAIL 시 official metrics 차단). `02_Infrastructure/contracts/` 5 R modules + Hook + Master Registry + Lawbook v1.0.
 - **v1.6** — 2026-04-30 — §14 Alpha Type Branching 명문화 (PD_014 motion). WT-D20260430_001 첫 meta-allocation alpha admission cycle 발견 후 AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256) Charter 본문 정식 통합. 3 alpha type (defense_factor / meta_allocation / cross_family) × 각 axiom + evaluation axes + structure constraint. alpha_discovery_certificate 정의 분기 (meta_allocation 별도). 다음 alpha discovery cycle (Phase 4 cross-family) 정합 정의.
+- **v1.7** — 2026-04-30 Session 73 Day 3 — §10 Role Card 4종 확장 (자체 발급 cert + parent inherit + backfill 룰). STR_1715 PG2 admit 후 5 cert 부재 (DRIFTED 0/100) 사고 사후 — Charter §10 transition timing(v1.2) + deployment WT lifecycle mismatch + str_id matching gap + Hook silent fail + R script 시야 밖 5중 구조적 원인 진단. **Layer 2 추가**: `02_Infrastructure/ops/cert_backfill_audit.R` (sweep + auto-issue + lineage 추적 + governance_log RETROACTIVE_CERT_ISSUANCE 기록) + `bootstrap.sh` integration (DRIFTED/WARNING 감지 시 --auto 자동 호출). **deployment role card 명문화**: alpha_discovery는 discovery WT inherit, sr_provenance + schedule_fidelity + forge_package_validated + governor_concord 자체 발급 의무. governor_admission.pg1_admission_check.\*.issuance_status="ELIGIBLE_FOR_ISSUANCE" 명시 시 backfill auto 발동. **sizing_only / hyperparameter_sweep도 명시적 cert inheritance 룰 정의**. Hook silent fail hardening 5건 동반 (HOOK_ERR_TRAP 명시 로깅 + Python isinstance() 가드).
 - 변경 시 major bump + L-code 발행 필수
