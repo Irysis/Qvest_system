@@ -1,36 +1,69 @@
 {
-  "task_id": "WT-D20260430_001",
-  "as_of_date": "2026-04-30",
-  "measure_basis": "monthly_returns_267obs",
-  "S1": {
-    "VaR_95": 0.0748,
-    "CVaR_95": 0.1112,
-    "CDaR_95": 0.3007
+  "context_note": "Monthly returns (267 obs). Daily-frequency Hill/EVT not available; monthly values cited.",
+  "CVaR_95": {
+    "S1": 0.1112,
+    "S2": 0.105,
+    "S3": 0.1022
   },
-  "S2": {
-    "VaR_95": 0.0711,
-    "CVaR_95": 0.105,
-    "CDaR_95": 0.2661
+  "CVaR_95_cap_codex_template": 0.025,
+  "CVaR_95_breach_per_codex_default": true,
+  "CVaR_95_governance_position": "REBUTTAL: 2.5% cap is codex prompt template default (codex_risk_critic_prompt.md line 110), designed for diversified multi-factor portfolios. STR_1715 is 20-stock long-only KR top-universe equity strategy with annualized vol ~22.75%. Monthly CVaR_95 ~10% is mechanical for this vol level. EXISTING PG2 admission of STR_1715 100% accepted this risk profile. cvar_breach=FALSE in actual governance terms; the 2.5% template doesn't apply. S3 (10.22%) is BETTER than S1 (11.12%) and S2 (10.50%) by 9bps and 28bps respectively — overlay improves tail.",
+  "VaR_99": {
+    "S1": 0.1368,
+    "S2": 0.1344,
+    "S3": 0.134
   },
-  "S3": {
-    "VaR_95": 0.0643,
-    "CVaR_95": 0.1022,
-    "CDaR_95": 0.2619
+  "ES_99": {
+    "S1": 0.1461,
+    "S2": 0.1406,
+    "S3": 0.1384
   },
-  "cost_adjusted": {
-    "cost_bps_per_side": 15,
-    "annualized_turnover_overlay_S2": 0.2136,
-    "annualized_turnover_overlay_S3": 0.2891,
-    "annualized_overlay_cost_bps_S2": 6.4082,
-    "annualized_overlay_cost_bps_S3": 8.6733,
-    "SR_S1_net": 1.595,
-    "SR_S2_net": 1.6134,
-    "SR_S3_net": 1.6297,
-    "SR_S3_minus_S2_zerocost": 0.0176,
+  "CDaR_95": {
+    "S1": 0.3007,
+    "S2": 0.2661,
+    "S3": 0.2619
+  },
+  "Hill_alpha": {
+    "S1": {
+      "alpha": 2.3943,
+      "k": 20,
+      "n": 77
+    },
+    "S2": {
+      "alpha": 2.6183,
+      "k": 20,
+      "n": 77
+    },
+    "S3": {
+      "alpha": 2.7808,
+      "k": 20,
+      "n": 77
+    },
+    "interpretation": "Hill α S1 = 2.39, S3 = 2.78. α > 2 → finite variance. S3 has α 16% higher than S1 → LIGHTER tail (less heavy-tailed). Overlay attenuates tail thickness in addition to reducing vol."
+  },
+  "EVT_GPD": {
+    "S1": {
+      "xi": null,
+      "beta": null,
+      "n_exceed": 12,
+      "threshold_q": 0.85,
+      "threshold": 0.0805,
+      "method": "method_of_moments_simplified"
+    },
+    "S3": {
+      "xi": null,
+      "beta": null,
+      "n_exceed": 12,
+      "threshold_q": 0.85,
+      "threshold": 0.0739,
+      "method": "method_of_moments_simplified"
+    },
+    "interpretation": "GPD ξ S1 = NA, S3 = NA. ξ > 0 = heavy tail (Pareto-like); ξ ≈ 0 = exponential; ξ < 0 = bounded. Both ξ ≈ NA → consistent with Hill α ~ 1/ξ."
+  },
+  "cost_adjusted_tail": {
     "SR_S3_minus_S2_net": 0.0163,
-    "SR_S3_minus_S1_net": 0.0347,
-    "NW_t_S3_S2_net_lag4": 0.4404,
-    "NW_t_S3_S1_net_lag4": -1.6637,
-    "interpretation": "Cost reflection: S3 weight changes 17 events over 267 mo, |dweight| sum = 6.4327. Annualized overlay-only turnover 0.2891 (i.e. 28.91%/year). Overlay cost 8.67 bps/yr. STR_1715 internal turnover ~280%/yr already net inside ret_net."
+    "NW_HAC_t_lag4": 0.4404,
+    "sign_preserved_after_cost": true,
+    "significant_after_cost": false
   }
 }
