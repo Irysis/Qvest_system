@@ -84,9 +84,12 @@ ann_turnover <- function(weights) {
   sum(abs(w - w_prev)) / length(w) * 12
 }
 apply_cost <- function(monthly_ret, weights, bps_per_side = 15) {
+  # Round-trip cost: when |Δw| changes, both legs (sell+buy) incur bps_per_side
+  # Risk package convention: TO × 30bps (= bps_per_side × 2 round-trip).
+  # Codex C4 verified: 8.6733bps/yr / 0.2891 TO = 30 → round-trip is correct.
   w_prev <- c(weights[1], head(weights, -1))
   monthly_to <- abs(weights - w_prev)
-  cost_drag <- monthly_to * (bps_per_side / 10000)
+  cost_drag <- monthly_to * (bps_per_side * 2 / 10000)  # round-trip
   monthly_ret - cost_drag
 }
 
@@ -262,7 +265,9 @@ ms_log <- list(
   task_id = TASK_ID,
   selection_objective = "to_adj_ret",
   selection_rule = "Cost-adjusted net SR (full sample) maximization, subject to: (a) MDD >= S2 baseline (no degradation), (b) CRISIS vol_ratio < 1.0 (preserve overlay mechanism), (c) Trade War 2018-2019 cum_ret >= S2 baseline (Risk-to-Alpha C3 challenge fix). Walk-forward train/test (2004-2019 / 2020-2026) used for parameter robustness check, but train period had only 1 decay_extreme firing — train metric flat across protection levels. Therefore parameter strong_p=0.30 chosen as theoretically anchored to existing MRS regime cap (not over-tuned).",
-  candidates_tried = 5,
+  candidates_tried_named = 5,
+  candidates_tried_total_including_grids = 145,
+  candidates_tried_breakdown = "5 named methods (M1-M5) + 90 M3 grid combinations (light_p × strong_p × joint_p, monotone-constrained) + 50 M4 grid combinations = 145 total",
   walk_forward_caveat = "Train (n=192, 2004-2019) had only 1 decay_extreme firing → train objective flat across protection levels. Test (n=75, 2020-2026) had 9 firings → reflects actual signal performance. strong_p=0.30 chosen for theoretical anchor (existing MRS cash cap) rather than max train SR (which is degenerate).",
   parallel_exec = FALSE,
   n_workers = 1,
@@ -428,15 +433,32 @@ opt_pkg <- list(
   expected_metrics_metric_type = "estimated",
   expected_metrics_explanation = "All expected_* metrics are estimated from in-sample alpha_scores.parquet (267 mo). Forge backtest will produce backtested official metrics. metric_type=estimated per L-249.",
 
-  # Turnover and cost
+  # Turnover and cost (Codex C4 fix: round-trip = 15bps × 2 = 30bps per |Δw|)
   turnover = round(sel_to, 4),
-  estimated_cost_bps_yr = round(sel_cost_bps_yr, 2),
-  estimated_cost_explanation = "Annualized turnover * 15bps/side. M4 turnover 31% / yr * 15bps = 4.67bps/yr overlay cost (negligible vs STR_1715 base 280%/yr underlying turnover). Cost is one-way roundtrip from cash sleeve flips.",
+  estimated_cost_bps_yr = round(sel_to * COST_BPS_PER_SIDE * 2, 2),  # ROUND-TRIP convention (matches risk_package S3 cost)
+  estimated_cost_convention = "round_trip_30bps_per_delta_w",
+  estimated_cost_explanation = paste0("Annualized turnover * 15bps/side * 2 (round-trip). M4 turnover ", round(sel_to*100, 1), "% / yr * 30bps = ", round(sel_to * COST_BPS_PER_SIDE * 2, 2), "bps/yr overlay cost. Verified consistency: S3 turnover 0.2891 * 30bps = 8.67bps/yr matches risk_package.cost_adjusted.annualized_overlay_cost_bps_S3 = 8.67. Negligible vs STR_1715 base 280%/yr underlying turnover."),
 
   # Constraints
   binding_constraints = c("trade_war_2018_no_loss", "crisis_vol_ratio_lt_1.0"),
   binding_constraints_explanation = "Optimization binds at: (1) Trade War 2018-2019 cum_ret >= S2 baseline (forced via decay_strong-only band drop), (2) CRISIS vol_ratio < 1.0 (preserved at 0.836 by retaining decay_extreme protection). MDD constraint (>= -29.91%) non-binding (all M3/M4 candidates achieve MDD = -30.12% identical to S2/S3).",
-  infeasibility_report = NULL,
+  infeasibility_report = list(
+    cvar_95_template_breach = list(
+      reason = "Risk_package documented CVaR_95 = 10.22% breaches 2.5% codex template default cap. Optimizer inherits governance position from risk_package: 2.5% template applies to diversified multi-factor portfolios; STR_1715 100% PG2-admitted strategy at ~22.75% annualized vol mechanically has monthly CVaR_95 ~10%. NOT a new breach introduced by optimizer.",
+      violated_constraints = c("codex_optimizer_critic_template.cvar_95_cap_2.5pct"),
+      governance_position = "Inherited rebuttal from risk_package.tail_risk.CVaR_95_governance_position. STR_1715 PG2 admission accepted CVaR ~10% as Core_Alpha cost. M4 actually IMPROVES CVaR_95 from S3 0.1022 → 0.1020 (vs S1 0.1112 / S2 0.1050). M4 is BETTER tail than M2_S3.",
+      suggested_resolution = "Approve sleeve-level meta-allocation CVaR cap of 12% per existing PG2 admission terms (consistent with STR_1715 standalone vol regime). NO operator action needed at optimizer stage; Governor reviews at PG2 admission.",
+      production_grade = FALSE,
+      escalate_to = "Q-Lead + Governor (PG2 admission gate)"
+    ),
+    walk_forward_weak_train = list(
+      reason = "Train period (n=192, 2004-2019) had only 1 decay_extreme firing — insufficient for parameter discrimination. Train SR_net flat 1.5638-1.5644 across all strong_p [0.10-0.50].",
+      violated_constraints = c("walk_forward_optimizer_p_value_independence"),
+      suggested_resolution = "strong_p=0.30 chosen by theoretical anchor (existing MRS regime cap practice) rather than train-data optimization. 12+ months OOS paper trade post-2026-04 + redefined train pre-2014 / lockbox 2014-2026 split for next cycle (per alpha_package.evaluation_windows_used_post_codex.next_cycle_recommendation).",
+      production_grade = FALSE,
+      escalate_to = "Forge backtest validation"
+    )
+  ),
 
   # PIT compliance
   pit_compliance = list(
@@ -544,9 +566,14 @@ opt_pkg <- list(
       description = "This optimization is SLEEVE-LEVEL (STR_1715 + Cash) NOT TICKER-LEVEL (no 20-stock constraint applies — that constraint binds inside STR_1715 sleeve unchanged). target_weights schema fields are sleeve weights at as_of_date 2026-04-30. Forge integration: weights.csv 267-row schedule → STR_1715 base period_returns × weight_str1715[t] = NAV."
     ),
     list(
-      rf_id = "CODEX_R1_PENDING",
-      severity = "INFO",
-      description = "Codex Critic round will run automatically post-finalize. Current AX-008 status: 1-of-N triangulation (optimizer self only, alpha and risk independent re-comps already match)."
+      rf_id = "CODEX_R1_REJECT_ADDRESSED",
+      severity = "MEDIUM",
+      description = "Codex R1 stance = REJECT (7 critical concerns). 5 ACCEPT/PARTIAL + 2 REBUTTAL. See optimizer_challenge_note.md for full classification. Key resolutions: (C1 RF-O6 max_w=1.0) REBUTTAL — meta-allocation sleeve weights are NOT per-ticker weights, request.json explicitly sets weight_bounds=[0,1] for sleeve scope; (C2 alpha rewrite) PARTIAL — M4 implements alpha agent's own RF-A2 recommendation (composite redundancy → simplify), trigger inputs unchanged; (C3 method shopping count) ACCEPT — corrected to 145 total (5 named + 90 M3 grid + 50 M4 grid); (C4 cost calc) ACCEPT — corrected to round-trip 30bps × Δw; (C5 CVaR_95 10.22%) REBUTTAL — inherited from risk_package documented governance position; (C6 weights.csv schema) PARTIAL — sleeve-level schema is correct for meta_allocation_weight_schedule; (C7 PG2 active book TDC) REBUTTAL — Governor scope per Charter §8."
+    ),
+    list(
+      rf_id = "OPTIMIZER_PURE_FUNCTION_AUDIT",
+      severity = "MEDIUM",
+      description = "Codex C2 challenge: M4 changes the schedule policy (drops decay_strong moderate band, deepens extreme to 30%). Honest disclosure: this IS a policy change, not just hyperparameter tuning. Justification: alpha agent's challenge_flags.RF-A2_HIGH explicitly recommends 'simplify to single-pillar decay' and ablation showed BOCPD adds only 0.004 to S3. M4 implements this alpha-agent-acknowledged simplification. The trigger SET is unchanged (decay_extreme, bocpd_extreme, joint — all from alpha's factor_specs); only the protection-level mapping is optimized. RECOMMENDATION: if Q-Lead deems this insufficient pure-function compliance, route through Alpha for re-approval as alpha_v2."
     )
   ),
 
@@ -567,7 +594,11 @@ opt_pkg <- list(
     method_basis_label = "optimizer_walk_forward_simulation",
     production_grade = FALSE,
     method = "M4_TRADE_WAR_FIX_strong_p_0.30",
-    notes = "Walk-forward simulated schedule. Forge will run actual NAV with weights.csv. 267 monthly rows = full coverage of alpha_package.diagnostics.n_periods (267)."
+    notes = "Walk-forward simulated schedule. Forge will run actual NAV with weights.csv. 267 monthly rows = full coverage of alpha_package.diagnostics.n_periods (267).",
+    schedule_density_ratio = 1.0,
+    schedule_density_target = 0.95,
+    schedule_density_pass = TRUE,
+    schedule_density_explanation = "267 unique sig_dates / 267 alpha_package.diagnostics.n_periods = 1.0 ratio (Charter v6.3 §9 mandate met, ratio >= 0.95)."
   ),
 
   # Explanation
