@@ -143,14 +143,15 @@ When ending a productive session (strategies run, infra changed, or significant 
   - `.cache/conditional_ic_matrix.csv` → 조건부 IC 높은 팩터 우선
 - **Role Honesty Audit**: Judge가 S6에서 역할 위장 탐지 (Core/Diversifier/Defense).
 
-## 텔레그램 규칙 (Level 0 — 모든 에이전트 적용)
-1. **이모지 필수**: 모든 메시지에 맥락 이모지 포함. 텍스트만 보내기 절대 금지.
-2. **차트 필수**: 백테스트 결과 발송 시 equity_curve.png + annual_returns.png 반드시 tg_send_photo()로 첨부. 차트 없는 결과 발송 금지. 차트 없으면 generate_charts() 먼저 실행.
-3. **한글**: 모든 메시지 한글 기본.
-4. **가독성**: 줄바꿈, 섹션 구분, 들여쓰기 활용. 숫자만 나열 금지.
-5. **에이전트 태그**: 메시지 첫 줄에 [Scout]/[Forge]/[Judge]/[Q-Lead] 태그 필수.
-6. **성과 필수 포맷**: Grade/Score/SR/CAGR/MDD + 강점/약점 각 1줄.
-7. **API**: source("02_Infrastructure/telegram/telegram_notify.R") 후 tg_send() + tg_send_photo() 사용.
+## 텔레그램 규칙 (Level 0 — 모든 에이전트 적용, v5 ENFORCE 2026-04-30)
+1. **이모지 필수**: 모든 메시지에 맥락 이모지 포함 (5+).
+2. **차트 필수**: 백테스트 결과 발송 시 PNG 첨부 (`charts=c(...)` 인자).
+3. **한글**: 모든 메시지 한글 기본 + 사용자 이름 미사용 (텔레그램 제3자 채널).
+4. **가독성 v5**: **표 ncol ≤ 3** + **total_width ≤ 32** (모바일 한 줄). 줄바꿈/엔터 자동 (마침표+공백 → 엔터). 줄글 나열 금지.
+5. **에이전트 태그**: 메시지 첫 줄에 [Alpha/Risk/Optimizer/Forge/Judge/Governor/Q-Lead] 태그.
+6. **성과 필수 포맷**: 시니컬+유머 톤 (도훈 명시). 전문 용어 1줄 풀이 + 비유 + 결정 위주.
+7. **API**: `tg_agent_brief()` 단일 진입점만 (tg_send 직접 호출 금지 — Hook L3 차단).
+8. **검증 hard**: bytes ≥ 1200 / sections ≥ 4 / 표 ncol ≤ 3 / total_width ≤ 32 — 위반 시 `stop()`.
 - **Q-Lead 역할 분리**: Q-Lead는 관리·감독·브리핑만 수행. 구체적 가설 주입 금지.
   - ✅ 허용: "Grade B 중 유망한 전략 강화 방향 탐색해" (방향 제시)
   - ❌ 금지: "STR_1371의 IndMom을 Q07로 교체해" (구체적 가설 지시)

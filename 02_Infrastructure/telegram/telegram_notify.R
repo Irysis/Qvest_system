@@ -245,16 +245,32 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
 
 tg_format_table <- function(df, separator = "-",
                               max_col_width = 20L,
-                              max_total_width = 40L,
-                              auto_escape = TRUE) {
+                              max_total_width = 32L,  # v5 (2026-04-30): 40→32 모바일 강화
+                              auto_escape = TRUE,
+                              ncol_max = 3L) {       # v5: ncol max 3 강제
   if (!is.data.frame(df) || nrow(df) == 0) return("")
   cols <- names(df)
+
+  # v5 (L-260): ncol > 3 차단 → caller가 kv 또는 행 분할 사용해야 함
+  if (length(cols) > ncol_max) {
+    stop(sprintf("[tg_format_table] v5 ENFORCE: ncol=%d > %d cap. 모바일 가독성. kv 또는 long-format으로 reformat 필요.",
+                 length(cols), ncol_max))
+  }
+
+  # v5: max_col_width 자동 fit — 총 너비가 cap 넘지 않게 floor 계산
+  # 총 너비 = sum(widths) + 2 * (ncol - 1)
+  # → max width per col = floor((cap - 2*(ncol-1)) / ncol)
+  ncol_n <- length(cols)
+  auto_max_col <- as.integer(floor((max_total_width - 2L * (ncol_n - 1L)) / ncol_n))
+  if (auto_max_col < 6L) auto_max_col <- 6L  # 최소 보장
+  effective_max_col <- as.integer(min(max_col_width, auto_max_col))
+
   char_df <- as.data.frame(lapply(df, function(x) as.character(x)),
                             stringsAsFactors = FALSE)
 
-  # 1) 값 truncate (max_col_width)
+  # 1) 값 truncate (effective_max_col, v5 자동 fit)
   char_df[] <- lapply(char_df, function(vals) {
-    vapply(vals, .truncate_width, character(1), max_w = max_col_width)
+    vapply(vals, .truncate_width, character(1), max_w = effective_max_col)
   })
 
   # 1.5) HTML auto-escape (2026-04-24 v3, raw <>& 로 HTML 파싱 깨짐 방지)
@@ -272,22 +288,18 @@ tg_format_table <- function(df, separator = "-",
     char_df_escaped <- char_df
   }
 
-  # 2) CJK-aware 너비 계산 (header + truncated values)
+  # 2) CJK-aware 너비 계산 (header + truncated values, effective_max_col 적용)
   widths <- mapply(function(colname, vals) {
     header_w <- .cjk_width(colname)
     val_w <- if (length(vals) == 0) 0L else max(vapply(vals, .cjk_width, integer(1)))
-    as.integer(min(max(header_w, val_w), max_col_width))
+    as.integer(min(max(header_w, val_w), effective_max_col))
   }, cols, char_df, USE.NAMES = FALSE)
 
-  # 3) 총 폭 체크 (모바일 guard) — column 간 2-space gap
+  # 3) 총 폭 체크 (v5 ENFORCE) — > cap 시 stop()
   total_w <- sum(widths) + 2L * (length(widths) - 1L)
   if (total_w > max_total_width) {
-    msg <- sprintf("[tg_format_table] WARN mobile width %d > %d. consider fewer columns or tg_format_gate_block.",
-                   total_w, max_total_width)
-    message(msg)
-    log_f <- "/tmp/qvest_tg_table_width_warn.log"
-    tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), msg), file = log_f, append = TRUE),
-             error = function(e) NULL)
+    stop(sprintf("[tg_format_table] v5 ENFORCE: total width %d > %d cap (ncol=%d, effective_max_col=%d). 모바일 가독성 위반. kv/long-format reformat 필요.",
+                 total_w, max_total_width, ncol_n, effective_max_col))
   }
 
   # pad: 시각적 너비 기준. escape된 entity(e.g. &gt;)는 pre 렌더 시 1자 보이므로
@@ -703,6 +715,12 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'text' section heading='%s' requires body >= 50 chars (got %d). Use bullet/table for short content.",
                         heading, nchar(body_str)))
         }
+        # v5 (L-260, 2026-04-30): 자동 줄바꿈 — 마침표 + 공백 → 마침표 + 엔터.
+        # 단 이미 \n이 있는 경우 보존 (caller가 명시적으로 줄바꿈 사용한 경우).
+        # 약어 보호 (e.g., "vs." "U.S." 등은 대문자/약어 패턴).
+        body_str <- gsub("([.!?]) +([A-ZA-Za-z<])", "\\1\n\\2", body_str, perl = TRUE)
+        # 한글 문장 종결 (다. / 요. / 등.) 줄바꿈
+        body_str <- gsub("([一-鿿가-힯]+\\.) +", "\\1\n", body_str, perl = TRUE)
         body_str
       },
       "bullet" = {

@@ -1,9 +1,18 @@
 ---
 name: telegram-protocol
-description: "[ENFORCE-ONLY v4 2026-04-25] QEPM Telegram 브리핑 — 모든 agent는 tg_agent_brief() 외 직접 조립 금지 (PreToolUse[Bash] Hook 차단). 표 nrow≥2 ncol≥2 + emoji 5+ + sections 4+ + bytes ≥1200 hard validation. 직접 호출 시 stop() 발생 + Hook deny. 표/text/bullet/kv/code 5종 type 강제. Single-Dispatch + auto_escape + 모바일 guard 자동."
+description: "[ENFORCE-ONLY v5 2026-04-30] QEPM Telegram 브리핑 — 모바일 가독성 강화. 표 ncol ≤ 3 (4+ → stop) + total_width ≤ 32 (was 40, 자동 fit) + text 자동 줄바꿈 (마침표 후 엔터). 모든 agent는 tg_agent_brief() 외 직접 조립 금지 (PreToolUse[Bash] Hook 차단). 표 nrow≥2 + emoji 5+ + sections 4+ + bytes ≥1200 hard validation. 직접 호출 시 stop() 발생 + Hook deny."
 ---
 
-# Telegram Protocol v4 — ENFORCE-ONLY Single Entry Point
+# Telegram Protocol v5 — Mobile-First ENFORCE
+
+**2026-04-30 v5 강화** (사용자 명시 — 표 양식 모바일 깨짐 + 줄글 나열 가독성). v4 ENFORCE 위에 모바일 critical fix:
+
+1. **표 ncol max 3 강제** (이전 nrow≥2 ncol≥2만, max 제한 없었음). 4+ col 표는 `stop()`.
+2. **total_width 40 → 32 강화** (모바일 한 줄 ≈ 28-32자). 초과 시 `stop()` (이전 WARN log only).
+3. **`max_col_width` 자동 fit** — `floor((32 - 2*(ncol-1)) / ncol)` 자동 계산. caller가 `max_col_width=22`로 호출해도 자동 압축.
+4. **`type="text"` 자동 줄바꿈** — 마침표/물음표/느낌표 + 공백 → 마침표 + 엔터 자동. 한글 종결어미 (다. / 요. / 등.) 줄바꿈. caller가 명시 `\n`은 보존.
+
+# Telegram Protocol v5 — ENFORCE-ONLY Single Entry Point
 
 **2026-04-25 v4 ENFORCE 강화** (사용자 불만 반복: 표 양식 누락 / emoji 빠짐 / 가독성 부족). v3 description-only 한계를 극복하여 **3중 강제** 도입:
 
