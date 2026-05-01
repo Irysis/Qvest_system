@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
 ## [Unreleased — v7.0.0]
 
+### Sprint 6 — Observability Ledger
+- Added: `qepm/observability/events.jsonl` — append-only event ledger (JSONL fallback, SQLite v7.1 이연)
+- Added: `02_Infrastructure/observability/emit_event.sh` — non-blocking event emitter (Codex revised #7: 항상 exit 0)
+- Added: `02_Infrastructure/observability/wt_timeline.R` — per-WT timeline builder
+  * events / phases / certs / failures / retry_count / artifact_lineage 6-section JSON
+  * `--wt-id <ID>` 또는 `--rebuild-active-book` 두 mode
+- Added: `02_Infrastructure/observability/qvest_observe` — CLI 5 commands
+  * `wt <ID> [--phases|--failures|--certs]` — Timeline display
+  * `events --since=<TIME> [--hook=<NAME>]` — events query
+  * `stats --metric=<NAME>` — aggregated p50/p99 + decisions
+- **Changed**: `02_Infrastructure/ops/bootstrap.sh` — L7e 신규 (Active book WT timeline rebuild 자동 호출)
+
 ### Sprint 5 — Legacy Boundary
 - Added: `00_Lawbook/DEPRECATION.md` — active vs legacy 자산 inventory + EOL plan
 - Added: `02_Infrastructure/hooks/legacy_write_block.sh` — PreToolUse[Write|Edit] read-only enforcement (`_archive_v55/` + `legacy/v55/` + `_archive_4_6/`)

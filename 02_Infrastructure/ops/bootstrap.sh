@@ -97,6 +97,14 @@ if [[ "$MBA_TIER" == "DRIFTED" || "$MBA_TIER" == "WARNING" ]] && [ -f "$CERT_BAC
   fi
 fi
 
+# 7e. v7.0 Sprint 6 — Active book WT timeline rebuild (observability ledger)
+WT_TIMELINE_R="$PROJECT/02_Infrastructure/observability/wt_timeline.R"
+if [ -f "$WT_TIMELINE_R" ]; then
+  TIMELINE_OUT=$(cd "$PROJECT" && Rscript "$WT_TIMELINE_R" --rebuild-active-book 2>&1 || true)
+  TIMELINE_COUNT=$(echo "$TIMELINE_OUT" | grep -oE 'rebuilt [0-9]+' | tail -1 | awk '{print $2}')
+  echo "[boot] WT timeline rebuild: ${TIMELINE_COUNT:-0} active book WTs (qepm/observability/timelines/)"
+fi
+
 # 8. 상태 보고 (v6 — 3-agent Work Task)
 ALPHA_T=$(ls "$PROJECT"/qepm/mailbox/alpha/inbox/TODO_*.json 2>/dev/null | wc -l)
 RISK_T=$(ls "$PROJECT"/qepm/mailbox/risk/inbox/TODO_*.json 2>/dev/null | wc -l)

@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+# qvest_observe — v7.0 Sprint 6 CLI
+#
+# Subcommands:
+#   wt <WT_ID> [--phases|--failures|--certs]   — Timeline rebuild + display
+#   events --since=<TIME> [--hook=<NAME>]      — events.jsonl query
+#   stats --metric=<NAME>                       — aggregated stats
+#
+# Plan: nifty-tickling-hinton.md Sprint 6 Step 3.
+
+set -euo pipefail
+trap 'exit 0' ERR
+
+PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+TIMELINES="$PROJ_DIR/qepm/observability/timelines"
+LEDGER="$PROJ_DIR/qepm/observability/events.jsonl"
+WT_ROOT="$PROJ_DIR/qepm/mailbox/worktask"
+
+CMD="${1:-help}"
+shift || true
+
+case "$CMD" in
+  wt)
+    WT_ID="${1:-}"
+    if [ -z "$WT_ID" ]; then
+      echo "Usage: qvest_observe wt <WT_ID> [--phases|--failures|--certs]"
+      exit 1
+    fi
+    shift || true
+    SECTION="${1:-}"
+    # Always rebuild timeline
+    cd "$PROJ_DIR" && Rscript "$PROJ_DIR/02_Infrastructure/observability/wt_timeline.R" --wt-id "$WT_ID" >/dev/null 2>&1 || true
+    TL_FILE="$TIMELINES/wt_${WT_ID}.json"
+    if [ ! -f "$TL_FILE" ]; then
+      echo "[ERROR] timeline not found for $WT_ID"
+      exit 1
+    fi
+    case "$SECTION" in
+      --phases) python3 -c "import json; d=json.load(open('$TL_FILE')); print(json.dumps(d.get('phases',[]),indent=2,ensure_ascii=False))" ;;
+      --failures) python3 -c "import json; d=json.load(open('$TL_FILE')); print(json.dumps(d.get('failures',[]),indent=2,ensure_ascii=False))" ;;
+      --certs) python3 -c "import json; d=json.load(open('$TL_FILE')); print(json.dumps(d.get('certs',{}),indent=2,ensure_ascii=False))" ;;
+      *) cat "$TL_FILE" ;;
+    esac
+    ;;
+  events)
+    SINCE=""
+    HOOK=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --since=*) SINCE="${1#--since=}" ;;
+        --hook=*) HOOK="${1#--hook=}" ;;
+      esac
+      shift
+    done
+    if [ ! -f "$LEDGER" ]; then echo "[]"; exit 0; fi
+    python3 -c "
+import json, sys, datetime as dt
+since_arg = '$SINCE'
+hook_arg = '$HOOK'
+since_dt = None
+if since_arg:
+    if since_arg.endswith('h'):
+        hours = int(since_arg[:-1])
+        since_dt = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=hours)
+    elif since_arg.endswith('d'):
+        days = int(since_arg[:-1])
+        since_dt = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=days)
+matches = []
+with open('$LEDGER') as f:
+    for line in f:
+        line = line.strip()
+        if not line: continue
+        try:
+            entry = json.loads(line)
+        except Exception:
+            continue
+        if hook_arg and entry.get('hook_name', '') != hook_arg:
+            continue
+        if since_dt:
+            ts = entry.get('timestamp', '')
+            try:
+                ts_dt = dt.datetime.fromisoformat(ts.replace('Z', '+00:00'))
+                if ts_dt < since_dt: continue
+            except Exception:
+                pass
+        matches.append(entry)
+print(json.dumps(matches, indent=2, ensure_ascii=False))
+print(f'\n# {len(matches)} events matched', file=sys.stderr)
+"
+    ;;
+  stats)
+    METRIC=""
+    while [ $# -gt 0 ]; do
+      case "$1" in
+        --metric=*) METRIC="${1#--metric=}" ;;
+      esac
+      shift
+    done
+    if [ ! -f "$LEDGER" ]; then echo "{}"; exit 0; fi
+    python3 -c "
+import json
+metric = '$METRIC'
+buckets = {}
+with open('$LEDGER') as f:
+    for line in f:
+        line = line.strip()
+        if not line: continue
+        try: entry = json.loads(line)
+        except Exception: continue
+        hook = entry.get('hook_name', 'unknown')
+        latency = entry.get('latency_ms', 0)
+        decision = entry.get('decision', 'allow')
+        if hook not in buckets:
+            buckets[hook] = {'count': 0, 'latencies': [], 'decisions': {}}
+        buckets[hook]['count'] += 1
+        buckets[hook]['latencies'].append(latency)
+        d = buckets[hook]['decisions']
+        d[decision] = d.get(decision, 0) + 1
+stats = {}
+for h, b in buckets.items():
+    lat = sorted(b['latencies'])
+    n = len(lat)
+    stats[h] = {
+        'count': b['count'],
+        'p50_ms': lat[n//2] if n else 0,
+        'p99_ms': lat[int(n*0.99)] if n >= 100 else (lat[-1] if lat else 0),
+        'decisions': b['decisions']
+    }
+if metric == 'cert_issuance_latency_p99':
+    cert_hooks = {h: s for h, s in stats.items() if 'cert' in h.lower() or 'discovery' in h.lower()}
+    print(json.dumps(cert_hooks, indent=2))
+else:
+    print(json.dumps(stats, indent=2))
+"
+    ;;
+  help|--help|-h|*)
+    cat <<EOF
+qvest_observe — v7.0 Sprint 6 Observability CLI
+
+Subcommands:
+  wt <WT_ID>                       Rebuild + show full timeline
+  wt <WT_ID> --phases              Show phase transitions only
+  wt <WT_ID> --failures            Show failure reasons (codex REJECT 등)
+  wt <WT_ID> --certs               Show cert status
+  events --since=24h               Last 24h events
+  events --since=7d --hook=<NAME>  Filter by hook
+  stats                            All hook stats (count + p50 + p99 + decisions)
+  stats --metric=cert_issuance_latency_p99   Cert issuance latency p99
+EOF
+    ;;
+esac
