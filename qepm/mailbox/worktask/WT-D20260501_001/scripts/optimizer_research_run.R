@@ -708,10 +708,19 @@ setorder(best_per_method, -SR_net)
 cat("\n[best blend per method]\n"); print(best_per_method)
 
 if (nrow(feasible) == 0) {
-  # No (method, w_alpha) satisfies MDD>=-25% — note infeasibility
-  selected <- best_per_method[1]
+  # No (method, w_alpha) satisfies MDD>=-25% — apply infeasibility rule (Codex C3 ACCEPT):
+  # MDD-FIRST: minimize |MDD_gap_to_-25%|; tie-break by max SR_net.
+  # This treats P0 (MDD) > P1 (SR) per PG0 v1.0.9 priority.
+  # Search across all blends in valid w_alpha range.
+  candidates <- blend_dt[w_alpha > 0 & w_alpha <= 0.30 & !is.na(MDD_net)]
+  candidates[, mdd_gap := abs(MDD_net - (-0.25))]
+  setorder(candidates, mdd_gap, -SR_net)
+  selected <- candidates[1]
   selected_constrained <- FALSE
-  cat("[WARN] No feasible blend under MDD ≥ -25% constraint — selecting best by SR_net (infeasibility)\n")
+  cat("[INFO] No feasible blend under MDD ≥ -25%. Applying MDD-FIRST rule (Codex C3 ACCEPT):\n")
+  cat("       minimize |MDD_gap to -25%|, tie-break max SR_net.\n")
+  cat(sprintf("       Top 5 by mdd_gap:\n"))
+  print(head(candidates[, .(method, w_alpha, SR_net, MDD_net, mdd_gap)], 5))
 } else {
   selected <- feasible[1]
   selected_constrained <- TRUE
@@ -722,6 +731,97 @@ final_w_alpha <- selected$w_alpha
 cat(sprintf("\n[FINAL] method=%s w_alpha=%.2f SR_net=%.3f CAGR_net=%.3f%% MDD_net=%.3f%%\n",
             final_method, final_w_alpha, selected$SR_net,
             selected$CAGR_net*100, selected$MDD_net*100))
+
+# ─── Step 7b: Codex C6 — RF-O1 Alpha-name omission report ───
+cat("\n[Step7b] Alpha-name omission audit (Codex C6 ACCEPT) ...\n")
+omission_audit <- list()
+sched_dates <- sort(unique(results_list[[final_method]]$weights$Date))
+total_omissions <- 0
+n_dates_with_omission <- 0
+for (sd in sched_dates) {
+  sd <- as.Date(sd)
+  panel_t <- alpha_panel[sig_date == sd & !is.na(alpha_z)]
+  if (nrow(panel_t) < 20) next
+  # Top-20 by alpha_z in alpha panel
+  top20_alpha <- panel_t[order(-alpha_z)][1:20, Ticker]
+  # Picks in weights
+  w_t <- results_list[[final_method]]$weights[Date == sd]
+  picks <- w_t$Ticker
+  missing <- setdiff(top20_alpha, picks)
+  total_omissions <- total_omissions + length(missing)
+  if (length(missing) > 0) n_dates_with_omission <- n_dates_with_omission + 1
+}
+omission_summary <- list(
+  total_omissions = total_omissions,
+  n_dates_with_omission = n_dates_with_omission,
+  exclusion_reason = paste0(
+    "Walk-forward covariance estimation requires ≥36 months returns history with NA-ratio<0.4 per ticker. ",
+    "Tickers in alpha top-20 but lacking sufficient return coverage are dropped from optimization universe. ",
+    "Omission rate ", round(total_omissions / (length(sched_dates) * 20) * 100, 2),
+    "% (", total_omissions, " / ", length(sched_dates) * 20, " ticker-date slots)."),
+  excluded_categories = c("returns_NA_ratio_>40%_in_60m_window",
+                          "returns_history_<36m_at_sig_date",
+                          "ticker_not_in_me_rd_panel")
+)
+cat(sprintf("[omission] total=%d | dates_with_omission=%d / %d\n",
+            total_omissions, n_dates_with_omission, length(sched_dates)))
+
+# ─── Step 7c: Codex C1 — Liquidity audit on selected weights ───
+cat("[Step7c] Liquidity floor audit on selected weights ...\n")
+# universe at each sig_date already passed alpha agent's universe filter (LIQ ≥ 5e7 per request).
+# We re-confirm via uni_lookup membership (alpha agent applied 5e7 floor with composite filter).
+liq_audit <- list()
+sel_w <- results_list[[final_method]]$weights
+sel_w[, in_alpha_uni := mapply(function(d, t) {
+  uni <- uni_lookup[[as.character(as.Date(d))]]
+  if (is.null(uni)) NA else (t %in% uni)
+}, Date, Ticker)]
+liq_audit_summary <- list(
+  total_rows = nrow(sel_w),
+  rows_in_alpha_universe = sum(sel_w$in_alpha_uni, na.rm = TRUE),
+  rows_outside_universe = sum(!sel_w$in_alpha_uni, na.rm = TRUE),
+  pct_in_universe = round(mean(sel_w$in_alpha_uni, na.rm = TRUE) * 100, 2),
+  liquidity_floor = "alpha_agent inherited 5e7 KRW 20d TV floor; weights only chosen from alpha panel which was pre-filtered",
+  note = "Optimizer does not re-apply liquidity filter; relies on alpha_package universe gate (request.json universe_definition.liquidity_min_won_20d_avg=5e7)"
+)
+cat(sprintf("[liquidity] %.2f%% rows in alpha universe (out=%d)\n",
+            liq_audit_summary$pct_in_universe, liq_audit_summary$rows_outside_universe))
+
+# ─── Step 7d: CVaR contribution at selected w_alpha (Codex C3 ACCEPT) ───
+cat("[Step7d] CVaR contribution at selected w_alpha ...\n")
+sel_stats <- results_list[[final_method]]$stats
+sel_stats[, ym := format(sig_date, "%Y-%m")]
+sel_blend <- merge(sel_stats, str1715_ym, by = "ym", all.x = TRUE, sort = FALSE)
+sel_blend <- sel_blend[!is.na(str1715_ret)]
+sel_blend[, blend_ret_net := final_w_alpha * net_ret + (1 - final_w_alpha) * str1715_ret]
+ret_sorted <- sort(sel_blend$blend_ret_net)
+cvar95 <- mean(ret_sorted[1:max(1, floor(0.05 * length(ret_sorted)))])
+cvar99 <- mean(ret_sorted[1:max(1, floor(0.01 * length(ret_sorted)))])
+var95 <- quantile(sel_blend$blend_ret_net, 0.05, names = FALSE)
+var99 <- quantile(sel_blend$blend_ret_net, 0.01, names = FALSE)
+cvar_audit <- list(
+  blend_w_alpha = final_w_alpha,
+  n_obs = nrow(sel_blend),
+  var95_monthly = round(var95, 4),
+  var99_monthly = round(var99, 4),
+  cvar95_monthly = round(cvar95, 4),
+  cvar99_monthly = round(cvar99, 4),
+  alpha_standalone_cvar95 = round({
+    rs <- sort(sel_blend$net_ret); mean(rs[1:max(1, floor(0.05 * length(rs)))])
+  }, 4),
+  str1715_standalone_cvar95 = round({
+    rs <- sort(sel_blend$str1715_ret); mean(rs[1:max(1, floor(0.05 * length(rs)))])
+  }, 4),
+  risk_pkg_cvar95_target = -0.1026,
+  cvar_breach_vs_risk_pkg = (cvar95 < -0.1026),
+  contribution_ratio_blend_to_str1715 = round(cvar95 / {
+    rs <- sort(sel_blend$str1715_ret); mean(rs[1:max(1, floor(0.05 * length(rs)))])
+  }, 3),
+  note = "CVaR95 of blended portfolio (alpha + STR_1715) over walk-forward 219m. Risk_pkg's reported CVaR95=-0.1026 was for alpha factor-mimicking long-short. Long-only blended portfolio CVaR is different."
+)
+cat(sprintf("[cvar] blend_cvar95=%.4f / alpha_standalone=%.4f / str1715=%.4f\n",
+            cvar_audit$cvar95_monthly, cvar_audit$alpha_standalone_cvar95,
+            cvar_audit$str1715_standalone_cvar95))
 
 # ─── Step 8: Build weights.csv (multi-period schedule) ───
 cat("\n[Step8] Build weights.csv schedule (selected method) ...\n")
@@ -735,9 +835,23 @@ cat(sprintf("[weights] unique dates: %d / 219 → density %.3f\n",
 # weights.csv carries STANDALONE alpha-strategy weights.
 # Blend recipe (alpha % + STR_1715 %) recorded in optimization_package.json.
 
+# Codex C4 PARTIAL: enrich schema with as_of_date + method_selected + sig_date
+final_weights_enriched <- copy(final_weights)
+final_weights_enriched[, as_of_date := as.character(max(Date))]
+final_weights_enriched[, method_selected := final_method]
+final_weights_enriched[, blend_w_alpha := final_w_alpha]
+final_weights_enriched[, sig_date := Date]
+setcolorder(final_weights_enriched,
+            c("Date", "sig_date", "Ticker", "Weight",
+              "method_selected", "blend_w_alpha", "as_of_date"))
+
 WEIGHTS_OUT <- file.path(ART_DIR, "weights.csv")
-fwrite(final_weights, WEIGHTS_OUT)
+fwrite(final_weights_enriched, WEIGHTS_OUT)
+# Also write to mailbox dir per Codex C4 (request)
+WEIGHTS_OUT_MAILBOX <- file.path(WT_DIR, "weights.csv")
+fwrite(final_weights_enriched, WEIGHTS_OUT_MAILBOX)
 cat("[saved]", WEIGHTS_OUT, "\n")
+cat("[saved]", WEIGHTS_OUT_MAILBOX, "\n")
 
 # ─── Step 9: Validate hard constraints ───────────────────
 cat("\n[Step9] Hard constraint validation ...\n")
@@ -940,10 +1054,16 @@ opt_pkg <- list(
     note = "RF-R4 alpha factor-mimicking long-short cum=-16.12%. Long-only top-20 in GFC measured here."
   ) else NULL,
 
-  # Turnover & costs
+  # Turnover & costs (Codex C7 PARTIAL — both interpretations)
   turnover_pa = round(method_metrics[method == final_method]$turnover_pa, 3),
-  cost_pa     = round(method_metrics[method == final_method]$cost_pa, 4),
+  cost_pa_one_way = round(method_metrics[method == final_method]$cost_pa, 4),
+  cost_pa_round_trip = round(method_metrics[method == final_method]$cost_pa * 2, 4),
   cost_model_version = "v2.3_kr_retail_15bps",
+  cost_convention_note = paste0(
+    "Package convention: 'one-way' = 15bps × turnover (entry OR exit, not both). ",
+    "Round-trip = 30bps × turnover (entry + exit). KR retail spread+commission ~15bps round-trip total ",
+    "(7-8bps each side). Net metrics use one-way 15bps × turnover convention. ",
+    "If user prefers round-trip 30bps total, multiply cost_pa_one_way × 2."),
   gamma_to_penalty_used = if (final_method == "MVO_TO_g15") 0.0015 else 0.0,
 
   # Schedule fidelity (Charter §9 mandate)
