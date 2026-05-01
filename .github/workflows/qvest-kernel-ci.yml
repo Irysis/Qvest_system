@@ -194,6 +194,61 @@ jobs:
           # synthetic test: invalid alpha_package missing task_id
           echo '{"as_of_date":"2026-05-01"}' > /tmp/bad_alpha.json
           python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema alpha_package --package /tmp/bad_alpha.json && exit 1 || echo "✅ Invalid fixture rejected as expected"
+      - name: Validate examples/qvest_workflows/ (whitelist mapping)
+        run: |
+          # v7.1-lite Sprint 4.4 — examples schema validation (도훈 지적 #6)
+          python3 -c "
+          import json, jsonschema, sys
+          from pathlib import Path
+          # Whitelist file_name → schema_path (단순 stem 추론 X)
+          MAPPING = {
+              'alpha_package.json': 'packages/alpha_package_schema.json',
+              'risk_package.json': 'packages/risk_package_schema.json',
+              'optimization_package.json': 'packages/optimization_package_schema.json',
+              'forge_package.json': 'packages/forge_package_schema.json',
+              'judge_verdict.json': 'packages/judge_verdict_schema.json',
+              'governor_admission.json': 'packages/governor_admission_schema.json',
+              'alpha_discovery_certificate.json': 'certs/alpha_discovery_certificate_schema.json',
+              'sr_provenance_certificate.json': 'certs/sr_provenance_certificate_schema.json',
+              'schedule_fidelity_certificate.json': 'certs/schedule_fidelity_certificate_schema.json',
+              'forge_package_validated_certificate.json': 'certs/forge_package_validated_certificate_schema.json',
+              'governor_concord_certificate.json': 'certs/governor_concord_certificate_schema.json',
+              'governance_log.json': 'state/governance_log_schema.json',
+          }
+          # Skip list (전용 schema 없음)
+          SKIP = {'status.json', 'request.json', 'expected_timeline.json'}
+          schemas_root = Path('02_Infrastructure/schemas')
+          ex_root = Path('examples/qvest_workflows')
+          if not ex_root.is_dir():
+              print('examples/qvest_workflows/ 부재 — skip')
+              sys.exit(0)
+          fail = 0
+          validated = 0
+          skipped = 0
+          for f in ex_root.rglob('*.json'):
+              fn = f.name
+              if fn in SKIP:
+                  skipped += 1
+                  continue
+              if fn not in MAPPING:
+                  print(f'  [SKIP] {f} — no whitelist entry')
+                  skipped += 1
+                  continue
+              schema_path = schemas_root / MAPPING[fn]
+              if not schema_path.exists():
+                  print(f'  [FAIL] schema not found: {schema_path}'); fail += 1; continue
+              try:
+                  schema = json.load(open(schema_path))
+                  data = json.load(open(f))
+                  jsonschema.validate(data, schema)
+                  validated += 1
+              except jsonschema.ValidationError as e:
+                  print(f'  [FAIL] {f}: {e.message[:120]}'); fail += 1
+              except Exception as e:
+                  print(f'  [FAIL] {f}: {e}'); fail += 1
+          print(f'examples/qvest_workflows: {validated} validated / {skipped} skipped / {fail} failed')
+          sys.exit(0 if fail == 0 else 1)
+          "
 
   search_smoke:
     name: qvest_search smoke (v7.1-lite Sprint 1)
