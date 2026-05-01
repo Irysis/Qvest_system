@@ -1,0 +1,484 @@
+#==============================================================================
+# build_index.R — v7.1-lite Sprint 1.1 Unified Search Index Builder
+#
+# JSONL append-only output: qepm/observability/search_index.jsonl
+# 1 row per indexable entity. type ∈ {lcode|wt|cert|paper|axiom|registry|lawbook|critic|governance}.
+#
+# Source map:
+#   - lcode      qepm/memory/methodology_memory_v55_extensions.md (^L-\d{3} headers)
+#   - axiom      qepm/memory/axioms/active/AX-*.json
+#   - wt         qepm/mailbox/worktask/*/request.json + status.json (1 row per WT)
+#   - cert       qepm/mailbox/worktask/*/*_certificate.json
+#   - critic     qepm/mailbox/worktask/*/codex_critic_response_*.json
+#   - governance qepm/mailbox/worktask/*/governance_log.json + qepm/mailbox/governor/governance_log.json (events[] 순회)
+#   - registry   06_Registry/{strategy,idea,paper}_registry.json + strategy_grades.json
+#   - paper      04_Research/paper_notes/P*.md (front-matter title + first 500 chars)
+#   - lawbook    00_Lawbook/**/*.md (path + first 1k chars)
+#
+# Row schema:
+#   {id, type, title, body, source_path, wt_id, timestamp, tags}
+#
+# Usage:
+#   Rscript build_index.R                       # default rebuild
+#   Rscript build_index.R --dry-run             # warning summary only, no write
+#   Rscript build_index.R --include-examples    # include examples/qvest_workflows/
+#
+# Plan: v7-1-cheerful-balloon.md Sprint 1.1
+#==============================================================================
+
+suppressPackageStartupMessages({
+  library(jsonlite)
+})
+
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
+if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
+  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+}
+
+`%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
+
+OUT_PATH <- file.path(PROJ_ROOT, "qepm/observability/search_index.jsonl")
+
+args <- commandArgs(trailingOnly = TRUE)
+DRY_RUN <- "--dry-run" %in% args
+INCLUDE_EXAMPLES <- "--include-examples" %in% args
+
+# ─────────────────────────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────────────────────────
+
+source_warnings <- character()
+warn_missing <- function(label, path) {
+  source_warnings <<- c(source_warnings,
+                         sprintf("[MISSING] %s — %s", label, path))
+}
+
+emit_row <- function(rows, id, type, title, body, source_path,
+                      wt_id = NULL, timestamp = NULL, tags = list()) {
+  body_truncated <- if (nchar(body) > 4000) {
+    paste0(substr(body, 1, 4000), " ... [truncated]")
+  } else body
+  rows[[length(rows) + 1]] <- list(
+    id = id,
+    type = type,
+    title = title,
+    body = body_truncated,
+    source_path = source_path,
+    wt_id = wt_id,
+    timestamp = timestamp,
+    tags = tags
+  )
+  rows
+}
+
+# ─────────────────────────────────────────────────────────────────
+# Source extractors
+# ─────────────────────────────────────────────────────────────────
+
+build_lcode <- function() {
+  rows <- list()
+  src <- file.path(PROJ_ROOT, "qepm/memory/methodology_memory_v55_extensions.md")
+  if (!file.exists(src)) {
+    warn_missing("lcode", src)
+    return(rows)
+  }
+  lines <- readLines(src, warn = FALSE)
+  # Find ^L-\d{3} headers (e.g. "## L-249 ..." or "L-249 ...")
+  header_idx <- grep("^#{1,3}\\s*L-[0-9]{3}", lines)
+  if (length(header_idx) == 0) {
+    # Fallback: any line starting with L-NNN
+    header_idx <- grep("^L-[0-9]{3}", lines)
+  }
+  for (i in seq_along(header_idx)) {
+    start <- header_idx[i]
+    end <- if (i < length(header_idx)) header_idx[i + 1] - 1 else length(lines)
+    block <- lines[start:end]
+    title <- trimws(gsub("^#+\\s*", "", lines[start]))
+    body <- paste(block, collapse = "\n")
+    m <- regmatches(title, regexec("L-([0-9]{3})", title))
+    lcode_id <- if (length(m[[1]]) >= 2) paste0("L-", m[[1]][2]) else paste0("lcode-", i)
+    rows <- emit_row(rows, id = lcode_id, type = "lcode",
+                     title = title, body = body,
+                     source_path = "qepm/memory/methodology_memory_v55_extensions.md",
+                     tags = list("lcode"))
+  }
+  rows
+}
+
+build_axiom <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/axioms/active")
+  if (!dir.exists(dir_path)) {
+    warn_missing("axiom", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "^AX-.*\\.json$",
+                        full.names = TRUE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                      error = function(e) NULL)
+    if (is.null(data)) next
+    ax_id <- data$ax_code %||% tools::file_path_sans_ext(basename(f))
+    title <- sprintf("%s — %s", ax_id,
+                      data$summary %||% data$statement %||% "(no summary)")
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = ax_id, type = "axiom",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/axioms/active",
+                                              basename(f)),
+                     timestamp = data$promoted_at %||% data$created_at %||% NULL,
+                     tags = list("axiom",
+                                 data$status %||% "active",
+                                 data$type %||% ""))
+  }
+  rows
+}
+
+build_wt <- function() {
+  rows <- list()
+  wt_root <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
+  if (!dir.exists(wt_root)) {
+    warn_missing("wt", wt_root)
+    return(rows)
+  }
+  for (d in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
+    wt_id <- basename(d)
+    req_path <- file.path(d, "request.json")
+    sta_path <- file.path(d, "status.json")
+    title <- wt_id
+    body_parts <- c()
+    ts <- NULL
+    if (file.exists(req_path)) {
+      req <- tryCatch(fromJSON(req_path, simplifyVector = FALSE),
+                       error = function(e) NULL)
+      if (!is.null(req)) {
+        title <- sprintf("%s — %s",
+                          wt_id, req$hypothesis_title %||%
+                                  req$theme %||% "(no title)")
+        body_parts <- c(body_parts,
+                         req$hypothesis_description %||% "",
+                         req$theme %||% "")
+      }
+    }
+    if (file.exists(sta_path)) {
+      sta <- tryCatch(fromJSON(sta_path, simplifyVector = TRUE),
+                       error = function(e) NULL)
+      if (!is.null(sta)) {
+        body_parts <- c(body_parts,
+                         sprintf("phase: %s", sta$current_phase %||% "?"))
+        ts <- sta$updated_at %||% sta$created_at %||% NULL
+      }
+    }
+    body <- paste(body_parts, collapse = " | ")
+    rows <- emit_row(rows, id = wt_id, type = "wt",
+                     title = title, body = body,
+                     source_path = file.path("qepm/mailbox/worktask", wt_id),
+                     wt_id = wt_id, timestamp = ts, tags = list("wt"))
+  }
+  rows
+}
+
+build_cert <- function() {
+  rows <- list()
+  wt_root <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
+  if (!dir.exists(wt_root)) return(rows)
+  for (d in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
+    wt_id <- basename(d)
+    for (cf in list.files(d, pattern = "_certificate\\.json$",
+                           full.names = TRUE)) {
+      data <- tryCatch(fromJSON(cf, simplifyVector = FALSE),
+                        error = function(e) NULL)
+      if (is.null(data)) next
+      cert_type <- gsub("_certificate\\.json$", "", basename(cf))
+      issued <- isTRUE(data$issued)
+      title <- sprintf("[%s] %s — %s",
+                        wt_id, cert_type,
+                        if (issued) "ISSUED" else "NOT_ISSUED")
+      body <- sprintf("issued=%s reason=%s",
+                       data$issued %||% "?",
+                       data$non_issuance_reason %||% "all_pass")
+      rows <- emit_row(rows,
+                        id = sprintf("%s-%s", wt_id, cert_type),
+                        type = "cert",
+                        title = title, body = body,
+                        source_path = file.path("qepm/mailbox/worktask",
+                                                 wt_id, basename(cf)),
+                        wt_id = wt_id,
+                        timestamp = data$issued_at %||% NULL,
+                        tags = list("cert", cert_type,
+                                    if (issued) "ISSUED" else "NOT_ISSUED"))
+    }
+  }
+  rows
+}
+
+build_critic <- function() {
+  rows <- list()
+  wt_root <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
+  if (!dir.exists(wt_root)) return(rows)
+  for (d in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
+    wt_id <- basename(d)
+    for (cf in list.files(d, pattern = "^codex_critic_response_.*\\.json$",
+                           full.names = TRUE)) {
+      data <- tryCatch(fromJSON(cf, simplifyVector = FALSE),
+                        error = function(e) NULL)
+      if (is.null(data)) next
+      role <- data$agent_role %||% gsub(
+        "^codex_critic_response_(.*)\\.json$", "\\1", basename(cf))
+      stance <- data$stance %||% "?"
+      title <- sprintf("[%s] codex %s — stance=%s", wt_id, role, stance)
+      n_concerns <- length(data$critical_concerns %||% list())
+      body <- sprintf("stance=%s n_concerns=%d weakest=%s",
+                       stance, n_concerns,
+                       data$weakest_assumption %||% "")
+      rows <- emit_row(rows,
+                        id = sprintf("%s-codex-%s", wt_id, role),
+                        type = "critic",
+                        title = title, body = body,
+                        source_path = file.path("qepm/mailbox/worktask",
+                                                 wt_id, basename(cf)),
+                        wt_id = wt_id,
+                        timestamp = data$reviewed_at %||% NULL,
+                        tags = list("critic", role, stance))
+    }
+  }
+  rows
+}
+
+build_governance <- function(event_cap = 50000L) {
+  rows <- list()
+  paths <- character()
+  wt_root <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
+  if (dir.exists(wt_root)) {
+    for (d in list.dirs(wt_root, full.names = TRUE, recursive = FALSE)) {
+      gp <- file.path(d, "governance_log.json")
+      if (file.exists(gp)) paths <- c(paths, gp)
+    }
+  }
+  global_gov <- file.path(PROJ_ROOT, "qepm/mailbox/governor/governance_log.json")
+  if (file.exists(global_gov)) paths <- c(paths, global_gov)
+
+  total_events <- 0L
+  malformed <- 0L
+  for (p in paths) {
+    if (total_events >= event_cap) break
+    fsize <- file.info(p)$size
+    if (!is.na(fsize) && fsize > 100 * 1024 * 1024) {
+      # Chunk fallback (현 단계 미발동 — 100MB+ governance_log 부재)
+      next
+    }
+    data <- tryCatch(fromJSON(p, simplifyVector = FALSE),
+                      error = function(e) NULL)
+    if (is.null(data) || is.null(data$events)) next
+    is_global <- identical(p, global_gov)
+    wt_id <- if (is_global) NULL else basename(dirname(p))
+    for (e in data$events) {
+      if (total_events >= event_cap) break
+      total_events <- total_events + 1L
+      ts <- e$timestamp %||% ""
+      action <- e$action %||% "?"
+      summary <- e$summary %||% e$directive_quote %||% ""
+      tryCatch({
+        title <- sprintf("[%s] %s — %s",
+                          wt_id %||% "global", action,
+                          substr(summary, 1, 80))
+        body <- sprintf("action=%s agent=%s summary=%s",
+                         action, e$agent %||% "?", summary)
+        row_id <- sprintf("%s-event-%s",
+                           wt_id %||% "global",
+                           gsub("[^0-9]", "", ts %||% "0"))
+        if (!nzchar(row_id) || nchar(row_id) < 5) {
+          row_id <- sprintf("%s-event-%d",
+                             wt_id %||% "global", total_events)
+        }
+        rows <- emit_row(rows, id = row_id, type = "governance",
+                          title = title, body = body,
+                          source_path = sub(paste0(PROJ_ROOT, "/?"),
+                                             "", p),
+                          wt_id = wt_id,
+                          timestamp = ts,
+                          tags = list("governance", action))
+      }, error = function(err) {
+        malformed <<- malformed + 1L
+      })
+    }
+  }
+  if (malformed > 0) {
+    source_warnings <<- c(source_warnings,
+                            sprintf("[GOVERNANCE] skipped %d malformed events",
+                                    malformed))
+  }
+  attr(rows, "event_count") <- total_events
+  rows
+}
+
+build_registry <- function() {
+  rows <- list()
+  reg_dir <- file.path(PROJ_ROOT, "06_Registry")
+  if (!dir.exists(reg_dir)) {
+    warn_missing("registry", reg_dir)
+    return(rows)
+  }
+  for (rf in list.files(reg_dir, pattern = "\\.json$",
+                          full.names = TRUE)) {
+    reg_name <- tools::file_path_sans_ext(basename(rf))
+    data <- tryCatch(fromJSON(rf, simplifyVector = FALSE),
+                      error = function(e) NULL)
+    if (is.null(data)) next
+    items <- data
+    # registry는 list 또는 nested object — best-effort flatten
+    if (is.list(data) && !is.null(names(data))) {
+      candidates <- names(data)
+      # if there's a top-level "strategies" / "ideas" / "papers" key, drill
+      for (k in c("strategies", "ideas", "papers", "items", "registry")) {
+        if (k %in% candidates && is.list(data[[k]])) {
+          items <- data[[k]]
+          break
+        }
+      }
+    }
+    if (is.list(items) && length(items) > 0) {
+      for (idx in seq_along(items)) {
+        it <- items[[idx]]
+        if (!is.list(it)) next
+        item_id <- it$id %||% it$str_id %||% it$paper_id %||%
+                    it$idea_id %||% names(items)[idx] %||%
+                    sprintf("%s-%d", reg_name, idx)
+        title <- it$name %||% it$title %||% it$strategy_name %||%
+                  it$hypothesis %||% paste(reg_name, item_id)
+        body <- toJSON(it, auto_unbox = TRUE, pretty = FALSE)
+        ts <- it$created_at %||% it$updated_at %||%
+               it$registered_at %||% NULL
+        tag_list <- list("registry", reg_name)
+        if (!is.null(it$grade)) tag_list <- c(tag_list, it$grade)
+        rows <- emit_row(rows,
+                          id = sprintf("%s-%s", reg_name, item_id),
+                          type = "registry",
+                          title = title, body = body,
+                          source_path = file.path("06_Registry",
+                                                    basename(rf)),
+                          timestamp = ts,
+                          tags = tag_list)
+      }
+    }
+  }
+  rows
+}
+
+build_paper <- function() {
+  rows <- list()
+  pn_dir <- file.path(PROJ_ROOT, "04_Research/paper_notes")
+  if (!dir.exists(pn_dir)) {
+    warn_missing("paper", pn_dir)
+    return(rows)
+  }
+  for (pf in list.files(pn_dir, pattern = "^P[0-9]+.*\\.md$",
+                          full.names = TRUE, recursive = FALSE)) {
+    lines <- tryCatch(readLines(pf, warn = FALSE, n = 30),
+                       error = function(e) character())
+    title <- basename(pf)
+    for (l in lines) {
+      if (grepl("^#\\s+", l)) {
+        title <- trimws(gsub("^#+\\s*", "", l))
+        break
+      }
+    }
+    full <- tryCatch(readLines(pf, warn = FALSE),
+                      error = function(e) character())
+    body <- substr(paste(full, collapse = " "), 1, 500)
+    paper_id <- sub("^(P[0-9]+).*", "\\1", basename(pf))
+    rows <- emit_row(rows, id = paper_id, type = "paper",
+                      title = title, body = body,
+                      source_path = file.path("04_Research/paper_notes",
+                                                basename(pf)),
+                      tags = list("paper"))
+  }
+  rows
+}
+
+build_lawbook <- function() {
+  rows <- list()
+  lb_dir <- file.path(PROJ_ROOT, "00_Lawbook")
+  if (!dir.exists(lb_dir)) {
+    warn_missing("lawbook", lb_dir)
+    return(rows)
+  }
+  for (lf in list.files(lb_dir, pattern = "\\.md$",
+                          full.names = TRUE, recursive = TRUE)) {
+    rel <- sub(paste0(PROJ_ROOT, "/?"), "", lf)
+    full <- tryCatch(readLines(lf, warn = FALSE),
+                      error = function(e) character())
+    title <- basename(lf)
+    for (l in full[1:min(10, length(full))]) {
+      if (grepl("^#\\s+", l)) {
+        title <- trimws(gsub("^#+\\s*", "", l))
+        break
+      }
+    }
+    body <- substr(paste(full, collapse = " "), 1, 1000)
+    rows <- emit_row(rows,
+                      id = sprintf("lawbook-%s", tools::file_path_sans_ext(basename(lf))),
+                      type = "lawbook",
+                      title = title, body = body,
+                      source_path = rel,
+                      tags = list("lawbook"))
+  }
+  rows
+}
+
+# ─────────────────────────────────────────────────────────────────
+# Main
+# ─────────────────────────────────────────────────────────────────
+
+cat("=== build_index.R v7.1-lite Sprint 1.1 ===\n")
+cat(sprintf("PROJ_ROOT: %s\n", PROJ_ROOT))
+cat(sprintf("DRY_RUN: %s | INCLUDE_EXAMPLES: %s\n", DRY_RUN, INCLUDE_EXAMPLES))
+cat("\n")
+
+all_rows <- list()
+sources <- list(
+  list(name = "lcode", fn = build_lcode),
+  list(name = "axiom", fn = build_axiom),
+  list(name = "wt", fn = build_wt),
+  list(name = "cert", fn = build_cert),
+  list(name = "critic", fn = build_critic),
+  list(name = "governance", fn = build_governance),
+  list(name = "registry", fn = build_registry),
+  list(name = "paper", fn = build_paper),
+  list(name = "lawbook", fn = build_lawbook)
+)
+
+counts <- list()
+for (s in sources) {
+  rs <- tryCatch(s$fn(), error = function(e) {
+    source_warnings <<- c(source_warnings,
+                            sprintf("[ERROR] %s — %s",
+                                    s$name, conditionMessage(e)))
+    list()
+  })
+  counts[[s$name]] <- length(rs)
+  all_rows <- c(all_rows, rs)
+  cat(sprintf("  %s: %d rows\n", s$name, length(rs)))
+}
+
+cat(sprintf("\nTotal: %d rows\n", length(all_rows)))
+
+if (length(source_warnings) > 0) {
+  cat("\n=== WARNING SUMMARY ===\n")
+  for (w in source_warnings) cat(sprintf("  %s\n", w))
+}
+
+if (DRY_RUN) {
+  cat("\n[DRY RUN] no write\n")
+  quit(status = 0)
+}
+
+# Write JSONL
+dir.create(dirname(OUT_PATH), recursive = TRUE, showWarnings = FALSE)
+con <- file(OUT_PATH, "w", encoding = "UTF-8")
+on.exit(close(con), add = TRUE)
+for (r in all_rows) {
+  writeLines(toJSON(r, auto_unbox = TRUE, null = "null"), con)
+}
+
+cat(sprintf("\n[OK] index written: %s (%d rows)\n",
+            OUT_PATH, length(all_rows)))
