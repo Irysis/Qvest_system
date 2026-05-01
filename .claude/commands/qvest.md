@@ -279,6 +279,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ## Version
 
+- **v6.3.2** — 2026-05-01 Session 75 — **Cert Auto-Issuance Paths 명문화 + Layer 4 영구 deferred 확정**. (1) `.claude/settings.json` `hooks.FileChanged` array 영구 제거 (Layer 4 inconclusive 결론, B-3 채택). (2) 신규 `02_Infrastructure/worktask/cert_issuance_paths.md` SOT — Claude Code Write/Edit tool 경유 시 5 cert PostToolUse Hook 100% 자동 발급, Bash/Rscript/외부 editor 시 Layer 2 bootstrap sweep 사후 backfill 매트릭스 6 row + 운영 권장 패턴. E2E dry-run 6/6 PASS (alpha_discovery + sr_provenance + forge_package_validated + schedule_fidelity 4 cert auto-issue + 음의 시나리오 cert 부재 admit 차단 + Hard block fabrication label PASS) 입증 후 발행. L-267/L-268.
 - **v6.31** — 2026-04-28 — **Alpha Discovery Certification + Research Process Coherence System**. Charter v1.2 §10 (5 certificate + 1 health score + 4 role card) + Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. STR_1715 OVERRIDE_006 사후 atomic patch.
 - v6.3 — 2026-04-27 — Charter §8/§9 + sr_provenance/schedule_fidelity (L2 soft passed 한계 노출, v6.31에서 격상)
 - v6.0 — 2026-04-23 Session 69 — QEPM 3-Agent Work Task 아키텍처 도입

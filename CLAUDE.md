@@ -377,7 +377,13 @@ Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버
 - **Hard Block 2건만** (system integrity 위협): (1) `ProductionSchedule[N]m` fabrication label, (2) governor_admission.json 전무한 STR을 book_state에 admit
 - **차단은 Hook이 아니라 admission gate**: certificate 부재 시 PG1/wt_advance가 *passive deny* (예: alpha_discovery_certificate 미발급 → wt_check_graduation FAIL)
 
-**Reference**: STR_1715 OVERRIDE_006 사후 (2026-04-27) → v6.31 atomic patch (2026-04-28). L-223~L-227 5건. Charter v1.2 명문화.
+**v6.3.2 Cert Auto-Issuance Paths** (Session 75 명문화):
+- **Claude Code Write/Edit tool 경유** (Q-Lead 직접 / Agent spawn / Forge agent) → PostToolUse Hook **100% 자동 발급** (eligibility 충족 시)
+- **Bash → Rscript / 외부 editor (vim/RStudio) / Cron daemon** → Hook 시야 밖 → **Layer 2 sweep** 사후 backfill (`bootstrap.sh` L7c 자동 OR `cert_backfill_audit.R --target=WT-XXX --manual` 수동)
+- 도훈 직접 개입 시 권장 패턴: "Q, X 작성해" 형식 → Q-Lead Write tool 경유 = cert auto. 외부 editor 후 Layer 2 sweep 의무.
+- 상세 SOT: `02_Infrastructure/worktask/cert_issuance_paths.md` (6 row 발급 경로 매트릭스 + eligibility 5종 + E2E 6/6 PASS 결과)
+
+**Reference**: STR_1715 OVERRIDE_006 사후 (2026-04-27) → v6.31 atomic patch (2026-04-28). L-223~L-227 5건. Charter v1.2 명문화. Session 75 E2E dry-run 6/6 PASS → v6.3.2 (L-267/268).
 
 ---
 
