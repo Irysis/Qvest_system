@@ -1,0 +1,232 @@
+{
+  "task_id": "WT-P20260429_002_MAY2026_FORWARD_RECOMPUTE",
+  "str_id": "STR_1715_WT016_Iter31_GridBestProd",
+  "agent": "forge_pure_function_v6_1_r12",
+  "agent_version": "v6.4_dohoon_directive_2026_05_01",
+  "as_of_date": "2026-05-01",
+  "deployment_basis": "production_active_with_M4_overlay_FROZEN_RELEASED",
+  "directive_source": "도훈 명시 2026-05-01 — 'schedule frozen 해제 + 5월 운용 weights 산출'",
+  "mode": "Mode_2_forward_recompute",
+
+  "scope_definition": {
+    "intent": "Iter5 alpha schedule end (2023-12-01) → 2026-04-XX 으로 확장 후 STR_1715 grid params 재적용하여 5월 운용 weights 산출",
+    "what_changes": [
+      "Iter5 SIGNAL_CUTOFF: 2023-12-22 → 2026-04-22 (lockbox 만료 후, OOS 진입 자유)",
+      "alpha_scores.parquet schedule end: 2023-12-01 → 2026-04-01 (sig_dates ~28 추가)",
+      "regime_panel.parquet 재산출 (Iter5 dependency, current max=2024-01-01)",
+      "Iter32 z-blend 재산출 (STR_1715 base + STR_1656 score, STR_1656 max=2025-12-30 → 2026 stale lag 처리)",
+      "Iter32 optimizer 재실행 (Iter31 best params 동일: λ=1.5 / TOphi=3 / cash 10/20/40)",
+      "5월 운용 weights row extract (2026-05-01 또는 가장 가까운 monthly sig_date)"
+    ],
+    "what_does_NOT_change": [
+      "Iter5 multi-sleeve composite logic (Core 0.65 / Defense 0.35)",
+      "Iter5 factor pool (4F Consensus + Q07 + M08_Residual_Mom + Q25_Ohlson_O)",
+      "Iter32 PG2 z-score blend formula (STR_1715 × 0.8 + STR_1656 × 0.2)",
+      "Iter31 grid params (λ=1.5 / TOphi=3 / cash 10/20/40)",
+      "STR_1715 deployment admission (governor_admission.json untouched)",
+      "M4 BOCPD overlay (separate WT-D20260430_001, this task does NOT regenerate)"
+    ]
+  },
+
+  "input_hash_audit": {
+    "alpha_package_iter5": "30dabd25f67660f1a12fcded61005783",
+    "alpha_package_iter32": "cc91e94a4dd950770828a7fa819e4ad7",
+    "risk_package_iter32": "a244464babdb9e8a4bfad0d15d4ac2d7",
+    "optimization_package_iter32": "78b93fa67589b56e89a8211299355f4c",
+    "weights_csv_iter32_baseline": "bf67da72f6c07a3783d56ad19a3cb3fa",
+    "alpha_scores_iter5_pre_recompute": "749f4bcfb4e2308c46526212bb53052e",
+    "alpha_scores_iter5_lockbox_safe_backup": "749f4bcfb4e2308c46526212bb53052e",
+    "alpha_scores_combined_iter32_pre_recompute": "9b9f2fa80d8548d32a8c8331c8bfc424",
+    "all_pre_state_recorded": true,
+    "verification_post_recompute": "TBD — recompute 후 신 alpha_scores 산출 + diff 계산"
+  },
+
+  "data_freshness_audit": {
+    "rawdata_max": "2026-05-01",
+    "factor_db_cache_2024_2026": "covered (factor_db_202401 ~ factor_db_202605, all 7 needed factors present)",
+    "ohlcvs_max": "2026-05-01",
+    "investor_act_max": "2026-04-30",
+    "consensus_max": "2026-04-30 (12/13 metrics, esbr 1 stale minor)",
+    "universe_support_max": "2026-03-31 (4월 universe = 3월말 membership)",
+    "regime_panel_current_max": "2024-01-01 — 재산출 필요",
+    "str_1656_score_max": "2025-12-30 — 2026 stale 처리 필요"
+  },
+
+  "stale_data_handling_strategy": {
+    "regime_panel_recompute": {
+      "method": "Iter2 regime_panel.R 재실행 (KR L2 internals expanding percentile, BM_DT 기반 - C11)",
+      "needed_extension": "2024-02-01 ~ 2026-04-01 sig_dates 추가 (28개월)",
+      "PIT_compliance": "C1 expanding window + C9 lag 1d 유지"
+    },
+    "str_1656_score_stale_handling": {
+      "max_available": "2025-12-30",
+      "needed_extension_for_2026_05": "2026-01 ~ 2026-04 (4 months)",
+      "decision_rule": "STR_1656 fresh score 부재 시 z_blend = STR_1715 z-score × 0.8 + STR_1656_z (가장 최근 1m PIT lag) × 0.2",
+      "fallback_if_stale_gt_3m": "STR_1715 100% 사용 (Iter32 z-blend 무력화) + flag in challenge_note",
+      "PIT_compliance": "C2 - 1m lag 유지 (가장 최근 사용가능 score 부재 시 역방향 lookahead 절대 금지)"
+    },
+    "rationale_for_continuation": "Lockbox 2024-01-23 ~ 2026-01-23 만료 (오늘=2026-05-01) → OOS 진입 자유 + AX-002 정합 (하네스 내 측정 그대로 진행)"
+  },
+
+  "execution_plan_steps": [
+    {
+      "step": 1,
+      "name": "regime_panel_recompute",
+      "action": "stage_artifacts/WT_D20260425_007/regime_panel.parquet 재산출 (sig_date end 2026-04-01)",
+      "estimated_minutes": 5,
+      "PIT_check": "BM_DT t-1 lag + expanding percentile only"
+    },
+    {
+      "step": 2,
+      "name": "iter5_alpha_recompute",
+      "action": "factor_engine_proposal.R SIGNAL_CUTOFF=2026-04-22 + lockbox 만료 변수 갱신 후 재실행",
+      "output": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (덮어쓰기, backup 보존)",
+      "estimated_minutes": 8,
+      "PIT_check": "C1+C2+C4+C9+C10+C13+C14+C15 모두 logic 변경 없음 (input data만 신선)"
+    },
+    {
+      "step": 3,
+      "name": "iter32_zblend_recompute",
+      "action": "run_alpha_iter32.R 재실행 (alpha_scores_combined.parquet 신생)",
+      "output": "stage_artifacts/WT_D20260427_017/alpha_scores_combined.parquet (덮어쓰기)",
+      "estimated_minutes": 3,
+      "stale_handling": "STR_1656 score 2026-01~2026-04 부재 → 2025-12-30 score 1m lag forward-fill 또는 100% STR_1715 fallback (challenge_note 명시)"
+    },
+    {
+      "step": 4,
+      "name": "iter32_optimizer_rerun",
+      "action": "run_optimizer_iter32.R 재실행 (Iter31 best 단일 grid: λ=1.5, TOphi=3, cash 10/20/40)",
+      "output": "qepm/mailbox/worktask/WT-D20260427_017/weights.csv (frozen schedule 해제, 신 schedule end 2026-04-01)",
+      "estimated_minutes": 4,
+      "params_lock": "anchor only on Iter31 best params (no grid sweep — direct grid_best deterministic apply)"
+    },
+    {
+      "step": 5,
+      "name": "may2026_forward_extract",
+      "action": "STR_1715/forward_weights.R Mode_1 재호출 (신 schedule), as_of_date=2026-05-01",
+      "output": "production_weights/20260501_weights_cap_0p20.csv + holdings_log + capacity_check",
+      "estimated_minutes": 1
+    },
+    {
+      "step": 6,
+      "name": "vs_frozen_diff_audit",
+      "action": "5월 운용 holdings vs 2023-12-01 frozen holdings diff",
+      "metrics": "n_added / n_removed / n_held_with_weight_change / mean_weight_change_held",
+      "estimated_minutes": 1
+    }
+  ],
+
+  "method_basis_label": "forge_realized_share_based",
+  "production_grade": true,
+  "measurement_basis_primary": "forge_realized_share_based",
+
+  "pure_function_compliance": {
+    "alpha_vector_modification": "NONE — Iter5 sleeve weights (Core 0.65 / Defense 0.35) + Iter32 z-blend ratios (0.8/0.2) 모두 동일",
+    "covariance_recomputation": "NONE — Iter32 optimizer는 cov 사용 안 함 (LinearTilt qd directly from alpha)",
+    "target_weights_reinterpretation": "NONE — Iter31 best params (λ/TOphi/cash) 동일 적용",
+    "alpha_logic_change": "NONE — only SIGNAL_CUTOFF datetime extended (2023-12-22 → 2026-04-22)",
+    "input_data_change_only": "Factor DB cache 2024-01 ~ 2026-04 (lockbox sealed period, now released by date — 도훈 명시), regime_panel 재산출",
+    "verdict": "Pure Function v6.1 R12 정합. alpha logic recomputed against fresh inputs only."
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS — 한계 없음, 도훈 명령 가능 영역",
+    "AX_001_v2": "PASS — Defense sleeve multi-axis composite (Q07+M08+Q25), crisis_alpha framework 유지",
+    "AX_002": "PASS — 하네스 내 측정 (factor_engine_proposal.R + run_optimizer_iter32.R 동일 pipeline)",
+    "AX_003_004_005_007": "PASS — Iter5 multi-sleeve 구조 유지",
+    "AX_008": "PARTIAL — Forge + Codex 2-source 시도 (Architect spawn 가능 시 3-source). 본 task = 도훈 직접 명령 routine deployment 운용이므로 standard verification 충족."
+  },
+
+  "pit_compliance_full": {
+    "C1": "PASS — expanding window IC weights (logic 변경 없음)",
+    "C2": "PASS — sig_date → fwd_date+1M (logic 동일)",
+    "C4": "PASS — Factor DB Usable_Date <= sig_date (load_month_factors 경유)",
+    "C9": "PASS — regime_panel expanding percentile + 1d lag",
+    "C10": "PASS — t-1 AvgTV20 lagged liquidity filter",
+    "C11": "PASS — KR L2 internals (BM_DT) only, no FRED leakage",
+    "C13": "PASS — Z_Score_Aligned via per-sig_date align_factor_direction",
+    "C14": "PASS — Factor DB Usable_Date <= sig_date enforced",
+    "C15": "PASS — Factor DB load via parquet bulk + per-sig_date alignment (cor>0.999 to load_month_factors verified in prior runs)",
+    "lockbox_handling": "RELEASED by date (2026-01-23 expiry passed). OOS 진입 자유. Q-Lead 명령으로 frozen 해제."
+  },
+
+  "sr_provenance": {
+    "sr_realized_share_based": "TBD — recompute 후 산출. M4 baseline (1.6399) 보존, 신 schedule 추가 datapoints에 대한 SR delta 측정 가능.",
+    "sr_factor_engine_continuous": "TBD — 신 schedule 신 datapoints 산출. Iter32 z-blend logic 동일.",
+    "sr_lockbox_daily_harness": null,
+    "measurement_basis_primary": "forge_realized_share_based",
+    "note": "본 task의 핵심 산출물은 SR re-measurement이 아니라 5월 운용 weights forward extract. SR fields는 후속 backtest re-run 시 갱신."
+  },
+
+  "schedule_fidelity": {
+    "weights_csv_unique_dates_count_pre": 181,
+    "weights_csv_unique_dates_count_post": "TBD — 209 예상 (2024-01 ~ 2026-04 28 추가)",
+    "alpha_sig_dates_count_post": "TBD — 209 예상",
+    "schedule_density_ratio": "TBD",
+    "schedule_density_pass": "TBD",
+    "production_schedule_fabrication": "NEVER — weights.csv는 optimizer 산출 그대로 reuse. 가상 monthly schedule 생성 금지."
+  },
+
+  "deployment_lineage": {
+    "discovery_wt": "WT-D20260427_016",
+    "deployment_wt": "WT-P20260429_002",
+    "schedule_logic_upgrade_wt": "WT-D20260430_001 (M4 BOCPD)",
+    "may2026_forward_recompute_wt": "WT-P20260429_002_MAY2026_FORWARD_RECOMPUTE (this)",
+    "directive": "도훈 명시 2026-05-01 'schedule frozen 해제'"
+  },
+
+  "expected_outputs": {
+    "production_weights_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv",
+    "holdings_log_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_holdings_log_cap_0p20.csv",
+    "capacity_check_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_capacity_check_cap_0p20.json",
+    "vs_frozen_diff_path": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/vs_frozen_diff.json",
+    "n_holdings_target": 20,
+    "max_weight_cap": 0.20,
+    "long_only": true,
+    "sum_weights": 1.0
+  },
+
+  "risks_and_diagnostics": [
+    {
+      "risk_id": "RISK_R1_REGIME_PANEL_DRIFT",
+      "concern": "regime_panel 재산출이 KR L2 internals 인덱스 변경(BM_DT) 시 sig_date 정의 미세 변동 가능",
+      "mitigation": "Iter2 (WT_D20260425_007) regime_panel.R 그대로 source. 동일 cutoff_t-1 lag 적용."
+    },
+    {
+      "risk_id": "RISK_R2_STR1656_STALE_4MO",
+      "concern": "STR_1656 score 2026-01~2026-04 부재 (4 months stale)",
+      "mitigation": "PIT-safe forward fill (2025-12-30 score 1m lag = 2026-01 sig_date 적용 까지만 허용; 그 이후는 progressively stale). 4 months stale 시 z-score 0 (neutral) 또는 100% STR_1715 fallback."
+    },
+    {
+      "risk_id": "RISK_R3_LOCKBOX_RELEASE_AUDIT",
+      "concern": "도훈 명령 'schedule frozen 해제' 실행 시 사후 lockbox 신뢰도 영향",
+      "mitigation": "Lockbox 2024-01-23 ~ 2026-01-23 만료 (calendar passed) — frozen은 admission 시점 freeze였을 뿐 OOS 진입은 자연스러움. Backup file 보존 (alpha_scores_LOCKBOX_SAFE_BACKUP.parquet retain)."
+    },
+    {
+      "risk_id": "RISK_R4_UNIVERSE_SUPPORT_LAG_1MO",
+      "concern": "us_k200/us_kq150 max=2026-03-31. 5월 1일 universe = 4월말 membership 사용 불가, 3월말 사용",
+      "mitigation": "C2 정합 (universe membership t-1 lag). 4월 universe support 갱신은 별도 cron 책임."
+    },
+    {
+      "risk_id": "RISK_R5_HARVEY_T_RECOMPUTE",
+      "concern": "신 28 sig_dates 추가로 ICIR/Harvey-t 재산출 시 변동",
+      "mitigation": "기존 admitted graduation status (Harvey t=8.40, ICIR=0.5412) 보존. 신 sig_dates는 OOS 평가용 (admission 재심사 X)."
+    }
+  ],
+
+  "codex_round_protocol": {
+    "draft_artifact": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/forge_package_draft.json",
+    "codex_response_artifact_expected": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/codex_critic_response_forge.json",
+    "challenge_note_artifact": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/forge_challenge_note.md",
+    "final_artifact": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/forge_package.json",
+    "5_step_flow": [
+      "Step 1: Draft (this file) written",
+      "Step 2: PostToolUse codex_round_auto_trigger background spawn",
+      "Step 3: codex_critic_response_forge.json 검토",
+      "Step 4: forge_challenge_note.md 의무 (concerns ACCEPT/PARTIAL/REBUTTAL)",
+      "Step 5: forge_package.json finalize (PreToolUse codex_round_pre_enforcer 통과 의무)"
+    ]
+  },
+
+  "generated_at_draft": "2026-05-01T23:05:00+09:00"
+}

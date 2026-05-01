@@ -1,0 +1,317 @@
+{
+  "task_id": "WT-D20260425_010",
+  "generated_at": "2026-05-01T23:19:06+0900",
+  "n_sig_dates": 268,
+  "unique_tickers": 846,
+  "date_range": ["2004-01-01", "2026-04-01"],
+  "schema": ["Date", "Ticker", "score_eff", "score_core_z", "score_defense_z", "Ret_1m", "regime_state", "theta_core", "theta_defense"],
+  "diagnostics": {
+    "blend": {
+      "rank_ic": 0.0428,
+      "icir": 0.3406,
+      "harvey_t": 5.5751,
+      "n_months": 268,
+      "p1_IC": 0.0604,
+      "p2_IC": 0.0312,
+      "p3_IC": 0.0056,
+      "sub_stability": 0.0934,
+      "label": "BLEND_065_035"
+    },
+    "core": {
+      "rank_ic": 0.0433,
+      "icir": 0.4317,
+      "harvey_t": 7.0679,
+      "n_months": 268,
+      "p1_IC": 0.0547,
+      "p2_IC": 0.0272,
+      "p3_IC": 0.022,
+      "sub_stability": 0.402,
+      "label": "SLEEVE_CORE"
+    },
+    "defense": {
+      "rank_ic": 0.0284,
+      "icir": 0.2112,
+      "harvey_t": 3.4576,
+      "n_months": 268,
+      "p1_IC": 0.0323,
+      "p2_IC": 0.02,
+      "p3_IC": 0.0063,
+      "sub_stability": 0.1938,
+      "label": "SLEEVE_DEFENSE_EW"
+    }
+  },
+  "shopping_log": {
+    "Core_only_065_000": {
+      "name": "Core_only_065_000",
+      "w_core": 1,
+      "w_def": 0,
+      "rank_ic": 0.0434,
+      "icir": 0.4255,
+      "harvey_t": 6.9664,
+      "selected": false
+    },
+    "Defense_only_000_100": {
+      "name": "Defense_only_000_100",
+      "w_core": 0,
+      "w_def": 1,
+      "rank_ic": 0.0214,
+      "icir": 0.1486,
+      "harvey_t": 2.4333,
+      "selected": false
+    },
+    "Blend_080_020": {
+      "name": "Blend_080_020",
+      "w_core": 0.8,
+      "w_def": 0.2,
+      "rank_ic": 0.0446,
+      "icir": 0.3855,
+      "harvey_t": 6.3103,
+      "selected": false
+    },
+    "Blend_065_035": {
+      "name": "Blend_065_035",
+      "w_core": 0.65,
+      "w_def": 0.35,
+      "rank_ic": 0.0428,
+      "icir": 0.3406,
+      "harvey_t": 5.5751,
+      "selected": true
+    },
+    "Blend_050_050": {
+      "name": "Blend_050_050",
+      "w_core": 0.5,
+      "w_def": 0.5,
+      "rank_ic": 0.0398,
+      "icir": 0.2957,
+      "harvey_t": 4.8413,
+      "selected": false
+    }
+  },
+  "crisis_ci": {
+    "method": "bootstrap_B1000",
+    "n_crisis": 4,
+    "mean_ic": -0.1457,
+    "ci95": [-0.2227, -0.0687],
+    "pooled_fallback_ic": 0.0428
+  },
+  "regime_ic": {
+    "regime_state": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+    "mean_IC": [0.066, 0.0404, 0.0175, -0.1457],
+    "sd_IC": [0.1127, 0.1257, 0.1397, 0.0973],
+    "ICIR": [0.5861, 0.3213, 0.125, -1.4973],
+    "n_months": [86, 143, 35, 4]
+  },
+  "ax_compliance": {
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE+LOW_TURNOVER 실패",
+      "status": "PASS",
+      "evidence": "Iter 5 uses NO standalone Value (E/P or B/P) factor. Sleeve 1 = Consensus + Q07 + M08; Sleeve 2 = Q07 + Q25_Distress."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only failure",
+      "status": "PASS",
+      "evidence": "Multi-axis composite — Consensus(4F dominant) + Quality_Earnings(Q07) + Momentum_Residual(M08) + Distress(Q25). EXCLUSION: multi-axis quality composite + multi-sleeve OK. Q07 NOT standalone."
+    },
+    "AX-005": {
+      "rule": "KR defense low-beta/Q07+D25/4-axis composite top20_long_only failure",
+      "status": "PASS_WITH_NOTE",
+      "evidence": "Defense sleeve = Q07 + Q25_Ohlson_O 2-axis (NOT 4-axis). EXCLUSION valid: multi-sleeve structure + Sleeve 2 weight 0.35 is supplementary not primary. AX-005 EXCLUSION 'necessary not sufficient' — Forge Gate 13 PASS verification required at backtest stage."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_long_only_top20 signal-portfolio translation 단절",
+      "status": "PASS",
+      "evidence": "Multi-sleeve structure (Core 0.65 + Defense 0.35 + Cash regime overlay) — explicitly exempted exception #1 (multi-sleeve). NOT single_sleeve_top20."
+    }
+  },
+  "ff5_v2": {
+    "source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/kr_factor_returns_v2.parquet",
+    "available": true,
+    "n_obs": 300,
+    "date_range": ["2001-04-29", "2026-03-04"],
+    "columns": ["Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF", "n_obs_meta"],
+    "pit_backfill_evidence": "n_obs=300 | range=2001-04-29~2026-03-04 | factors: MKT/SMB/HML/WML/RMW/CMA/RF (6F + RF). Iter 4 (WT-D20260425_009) Risk Agent built via DART TTM 2002+ backfill (handoff_note: risk_agent_handoff.md). HML/RMW/CMA appear NA pre-2010 indicating PIT-strict backfill (no future-extrapolation). MKT/SMB available 2001+ (longer history). Mandate 4 PASS."
+  },
+  "challenge_flags": {
+    "RF-A1": {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "msg": "refs=8, sub_stab=0.093"
+    },
+    "RF-A2": {
+      "id": "RF-A2",
+      "severity": "MEDIUM",
+      "msg": "Blend vs best single ICIR delta = -21.12% (<5%)",
+      "detail": "blend_icir=0.34055 best_single=0.4317"
+    }
+  },
+  "alpha_divergence": 1,
+  "rcpp_used": true,
+  "lmf_equivalence_proof": {
+    "method": "Per-sig_date load_month_factors() spot-check across 3 dates × 7 factors",
+    "threshold_cor": 0.999,
+    "n_pass": 21,
+    "n_total": 21,
+    "sample_records": {
+      "14031_C01_SUE": {
+        "sig_date": "14031",
+        "factor": "C01_SUE",
+        "n": 646,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_C02_EPS_Chg_1m": {
+        "sig_date": "14031",
+        "factor": "C02_EPS_Chg_1m",
+        "n": 1150,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_C04_ESBR": {
+        "sig_date": "14031",
+        "factor": "C04_ESBR",
+        "n": 1021,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_C06_TP_Gap": {
+        "sig_date": "14031",
+        "factor": "C06_TP_Gap",
+        "n": 877,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_Q07_Earnings_Stability": {
+        "sig_date": "14031",
+        "factor": "Q07_Earnings_Stability",
+        "n": 1785,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_M08_Residual_Mom": {
+        "sig_date": "14031",
+        "factor": "M08_Residual_Mom",
+        "n": 1645,
+        "cor": 1,
+        "pass": true
+      },
+      "14031_Q25_Ohlson_O": {
+        "sig_date": "14031",
+        "factor": "Q25_Ohlson_O",
+        "n": 1903,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_C01_SUE": {
+        "sig_date": "16222",
+        "factor": "C01_SUE",
+        "n": 892,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_C02_EPS_Chg_1m": {
+        "sig_date": "16222",
+        "factor": "C02_EPS_Chg_1m",
+        "n": 1647,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_C04_ESBR": {
+        "sig_date": "16222",
+        "factor": "C04_ESBR",
+        "n": 1363,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_C06_TP_Gap": {
+        "sig_date": "16222",
+        "factor": "C06_TP_Gap",
+        "n": 1101,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_Q07_Earnings_Stability": {
+        "sig_date": "16222",
+        "factor": "Q07_Earnings_Stability",
+        "n": 2210,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_M08_Residual_Mom": {
+        "sig_date": "16222",
+        "factor": "M08_Residual_Mom",
+        "n": 1806,
+        "cor": 1,
+        "pass": true
+      },
+      "16222_Q25_Ohlson_O": {
+        "sig_date": "16222",
+        "factor": "Q25_Ohlson_O",
+        "n": 2335,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_C01_SUE": {
+        "sig_date": "18414",
+        "factor": "C01_SUE",
+        "n": 1088,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_C02_EPS_Chg_1m": {
+        "sig_date": "18414",
+        "factor": "C02_EPS_Chg_1m",
+        "n": 2197,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_C04_ESBR": {
+        "sig_date": "18414",
+        "factor": "C04_ESBR",
+        "n": 1648,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_C06_TP_Gap": {
+        "sig_date": "18414",
+        "factor": "C06_TP_Gap",
+        "n": 1424,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_Q07_Earnings_Stability": {
+        "sig_date": "18414",
+        "factor": "Q07_Earnings_Stability",
+        "n": 2330,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_M08_Residual_Mom": {
+        "sig_date": "18414",
+        "factor": "M08_Residual_Mom",
+        "n": 2164,
+        "cor": 1,
+        "pass": true
+      },
+      "18414_Q25_Ohlson_O": {
+        "sig_date": "18414",
+        "factor": "Q25_Ohlson_O",
+        "n": 2475,
+        "cor": 1,
+        "pass": true
+      }
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS expanding IC weights",
+    "C2": "PASS sig_date -> fwd_date+1M",
+    "C4": "PASS quarterly 45d / annual May lag enforced via Factor DB Usable_Date",
+    "C9": "PASS regime expanding percentile",
+    "C10": "PASS t-1 lagged AvgTV20 (Codex ACCEPT #2 fix)",
+    "C11": "PASS regime indicator KR internals (no FRED leakage)",
+    "C13": "PASS Z_Score_Aligned via per-sig_date align_factor_direction",
+    "C14": "PASS Factor DB Usable_Date <= sig_date enforced via PIT-mode alignment",
+    "C15": "PASS load_month_factors equivalence proven (21/21 spot-checks cor>0.999) — bulk parquet read used for performance with verified PIT equivalence",
+    "lockbox": "ENFORCED 2024-01-23 ~ 2026-01-23 sealed; signal_cutoff=2026-04-30 (forward-return-safe, Codex ACCEPT #1 fix)",
+    "universe": "ENFORCED KOSPI200 ∪ KOSDAQ150 (Codex ACCEPT #4 fix)"
+  }
+}
