@@ -1,0 +1,13 @@
+{
+  "events": [
+    {"timestamp": "9999-01-02T10:00:00+09:00", "agent": "q-lead", "action": "PHASE_ADVANCE", "summary": "SPEC_APPROVED -> ALPHA_DONE"},
+    {"timestamp": "9999-01-02T11:00:00+09:00", "agent": "q-lead", "action": "PHASE_ADVANCE", "summary": "ALPHA_DONE -> RISK_DONE"},
+    {"timestamp": "9999-01-02T12:00:00+09:00", "agent": "alpha_discovery_certifier", "action": "CERT_NOT_ISSUED", "summary": "alpha_discovery_certificate NOT_ISSUED — harvey_t_count 1 < 3 (passive deny)"},
+    {"timestamp": "9999-01-02T12:15:00+09:00", "agent": "q-lead", "action": "PHASE_ADVANCE", "summary": "RISK_DONE -> OPTIMIZER_DONE (alpha cert 무관 lifecycle 진행)"},
+    {"timestamp": "9999-01-02T12:45:00+09:00", "agent": "q-lead", "action": "PHASE_ADVANCE", "summary": "OPTIMIZER_DONE -> FORGE_DONE"},
+    {"timestamp": "9999-01-02T13:00:00+09:00", "agent": "sr_provenance_check", "action": "CERT_ISSUED", "summary": "sr_provenance_certificate ISSUED"},
+    {"timestamp": "9999-01-02T13:30:00+09:00", "agent": "worktask_artifact_validator", "action": "CERT_ISSUED", "summary": "forge_package_validated_certificate ISSUED"},
+    {"timestamp": "9999-01-02T14:00:00+09:00", "agent": "q-lead", "action": "PHASE_ADVANCE", "summary": "FORGE_DONE -> JUDGE_PASSED (APPROVE_CONDITIONAL)"},
+    {"timestamp": "9999-01-02T15:00:00+09:00", "agent": "governor", "action": "PHASE_ADVANCE", "summary": "JUDGE_PASSED -> GOVERNOR_REJECTED (alpha_cert_insufficient_passive_deny)"}
+  ]
+}
