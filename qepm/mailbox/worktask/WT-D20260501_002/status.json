@@ -1,6 +1,13 @@
 {
   "task_id": "WT-D20260501_002",
-  "current_phase": "SPEC_APPROVED",
-  "updated_at": "2026-05-01T11:34:12+0900",
-  "blocker": null
+  "current_phase": "ABORTED_CERT_DENIED_HONEST",
+  "updated_at": "2026-05-01T12:00:00+0900",
+  "blocker": "alpha_discovery_certificate 미발급 (passive deny). graduation gate 5/6 fail (rank_ic 0.0318 / ICIR 0.1999 / mono -0.4667 / NW-t 2.9139 / DSR 0 / subperiod 1.0만 PASS). harvey_t_specs_pass_count=0. Codex stance=REJECT (9 concerns HIGH 6 + MEDIUM 3). v6.3.3 PreToolUse hook 시뮬레이션 PASS (시스템 정상). Agent 권고: ABORT_HONEST_ALPHA_NOT_FOUND.",
+  "abort_reason": "v6.3.3 walking-forward 강제 적용 시 predecessor (WT_001) ICIR 0.2913 → 0.1999 (-31% 인플레이트 증거). composite (6 factor) ICIR 0.1999 < D43_Skewness 단독 ICIR 0.2723 (RF-A2 violation). predecessor cycle은 full-sample theta lookahead으로 alpha 인플레이트했음을 본 v2가 정량 입증.",
+  "key_finding_l_270_pending": "PIT walking-forward 강제 시 predecessor alpha -31% 인플레이트 증거. cert 시스템 4 AND 조건이 walking-forward 보장 못 함 → v6.4 cert eligibility 강화 검토 (walking_forward_attestation 추가).",
+  "aborted_at": "2026-05-01T12:00:00+0900",
+  "aborted_by": "Q-Lead (도훈 명시 베이지안 팩터 방향 전환 결정)",
+  "successor_wt": "WT-D20260501_003 (theme: bayesian_factor_design)",
+  "lessons_learned_for_l_270": "PIT_LOOKAHEAD_INFLATION_QUANTIFIED, COMPOSITE_LESS_THAN_BEST_SINGLE_RF_A2, WALKING_FORWARD_MANDATE_ESSENTIAL, CERT_4_AND_INSUFFICIENT, V6_4_PATCH_CANDIDATE",
+  "v6_3_3_validation": "PreToolUse hook 첫 자연 발동 검증 PASS (5단계 흐름 모두 작동, 4파일 모두 존재 시 allow)"
 }
