@@ -5,7 +5,19 @@ All notable changes to Qvest are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
-## [Unreleased — v7.0.0]
+## [v7.0.0] — 2026-05-01
+
+**v7.0 Hardening Release** — "문서상 규칙을 우회 불가능한 실행 계약으로 바꾸는 release"
+
+### 외부 평가 8 기준 (Codex 명시)
+- ✅ wt_advance 우회 불가 (Sprint 1)
+- ✅ hook / backfill / router cert 판정 일치 (Sprint 1)
+- ✅ CI green (Sprint 2 — yaml 작성, 실제 push 후 run)
+- ✅ package / cert / state schema validation 작동 (Sprint 3)
+- ✅ synthetic WT E2E 4개 PASS — 12/12 (Sprint 4)
+- ✅ active path에서 legacy hook 제거 (Sprint 5 — role_taxonomy_admission_gate 제거)
+- ✅ per-WT timeline 생성 가능 (Sprint 6 — wt_timeline.R + qvest_observe CLI)
+- ✅ CHANGELOG + semver 정착 (Sprint 2)
 
 ### Sprint 6 — Observability Ledger
 - Added: `qepm/observability/events.jsonl` — append-only event ledger (JSONL fallback, SQLite v7.1 이연)
