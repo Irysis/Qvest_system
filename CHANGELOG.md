@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
 ## [Unreleased — v7.0.0]
 
+### Sprint 4 — E2E Kernel Tests (12/12 PASS)
+- Added: `08_Tests/integration/test_wt_lifecycle_e2e.R` — 4 synthetic WT scenarios (Codex revised #4/#5)
+  * (1) Happy path WT-D99990101_001: 4 cert ISSUED + 6 schema VALID
+  * (2) Cert fail passive deny WT-D99990102_001: alpha NOT_ISSUED but RISK/OPT/FORGE/JUDGE 진행 → Governor REJECTED
+  * (3) PIT violation WT-D99990103_001: lookahead pattern injected → judge FAIL
+  * (4) Codex reject WT-D99990104_001: stance=REJECT + 9 HIGH critical concerns → escalate trigger MET
+- Production guard: book_state 무손상 (synthetic year 9999 admit 0건, admitted_ids 1건 retain)
+- Cleanup obligation: on.exit 4 WT 디렉토리 + temp governor dir 제거
+- 결과: 12 pass / 0 fail / 12 total ✅
+
 ### Sprint 3 — Schema Strict (14 schema)
 - Added: `02_Infrastructure/schemas/` — 14 JSON Schema Draft-07 (6 packages + 5 certs + 3 state)
 - Added: `qvest_hook_router.py validate-schema` CLI (jsonschema import)

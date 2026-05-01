@@ -1,0 +1,59 @@
+{
+  "test": "wt_lifecycle_e2e",
+  "timestamp": "2026-05-01T17:52:22+0900",
+  "pass": 12,
+  "fail": 0,
+  "total": 12,
+  "status": "ALL PASS",
+  "scenarios": ["happy_path", "cert_fail_passive_deny", "pit_violation", "codex_reject"],
+  "results": {
+    "happy_alpha_cert_issued": {
+      "status": "PASS",
+      "message": "issued=TRUE harvey_t=4 cor=0.1"
+    },
+    "happy_sr_cert_issued": {
+      "status": "PASS",
+      "message": "sr_provenance ISSUED"
+    },
+    "happy_forge_cert_issued": {
+      "status": "PASS",
+      "message": "forge_package_validated ISSUED"
+    },
+    "happy_schema_chain_valid": {
+      "status": "PASS",
+      "message": "6/6 schemas VALID"
+    },
+    "certfail_alpha_NOT_ISSUED": {
+      "status": "PASS",
+      "message": "passive deny: harvey_t_count 1 < 3"
+    },
+    "certfail_lifecycle_progresses": {
+      "status": "PASS",
+      "message": "RISK/OPT/FORGE/JUDGE 모두 작성 (alpha cert 무관)"
+    },
+    "certfail_admission_passive_deny": {
+      "status": "PASS",
+      "message": "Governor REJECTED (alpha cert 부재 → admission 자격 박탈)"
+    },
+    "pit_lookahead_pattern_detected": {
+      "status": "PASS",
+      "message": "lm(future_return ~ today_factor) injected — judge agent가 감지 의무"
+    },
+    "pit_judge_failed": {
+      "status": "PASS",
+      "message": "judge FAIL with 1 PIT violation"
+    },
+    "codex_round_complete": {
+      "status": "PASS",
+      "message": "draft + critic_response present — codex round 5단계 흐름 충족"
+    },
+    "codex_escalate_trigger_met": {
+      "status": "PASS",
+      "message": "stance=REJECT + 9 HIGH ≥ 5 threshold → Q-Lead escalate trigger MET"
+    },
+    "production_book_state_unchanged": {
+      "status": "PASS",
+      "message": "admitted_ids 무손상 (synthetic year 9999 admit 없음, 현 admit n=1)"
+    }
+  }
+}
