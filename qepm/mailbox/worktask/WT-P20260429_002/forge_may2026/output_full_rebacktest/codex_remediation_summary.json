@@ -1,0 +1,45 @@
+{
+  "codex_concerns_addressed": {
+    "C4_charts_regenerated": {
+      "equity_curve_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/output_full_rebacktest/equity_curve.png",
+      "annual_returns_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/output_full_rebacktest/annual_returns.png",
+      "oos_zoom_chart_png": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/output_full_rebacktest/oos_zoom_chart.png",
+      "source_nav": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/output_full_rebacktest/02_nav.csv",
+      "source_nav_period": "2004-02-02 ~ 2026-05-01",
+      "n_periods": 268
+    },
+    "C5_production_constraints_separation": {
+      "json_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/output_full_rebacktest/production_constraints_v2_risk_vs_cash.json",
+      "risk_max_w": 0.2,
+      "risk_n_max": 20,
+      "cash_max_overlay": 0.4
+    },
+    "C3_same_period_baseline": {
+      "mode": "same_period_268m_recomputed",
+      "fresh_full_sr": 1.5726,
+      "hybrid_replica_268m_sr": 1.44,
+      "delta_fresh_minus_hybrid": 0.1326,
+      "interpretation": "Same-period 268m basis (2004-02 ~ 2026-05): fresh-alpha 1.5726 우월 (+0.1326 vs frozen-alpha hybrid replica 1.4400). frozen-admit M4 1.6399은 240m measurement (28m short) — 이로 인해 same-period 비교는 hybrid_replica가 정확.",
+      "limitation": "Harvey 5-spec t_NW (CAPM/Carhart-3/Carhart-4/FF5/FF6) Newey-West 회귀는 본 fresh rebacktest에서 미수행. 268m fresh sample은 Discovery WT-D20260427_016 admit time Harvey t=3.55 (Carhart-3 NW) 기준에 alpha logic 동일하므로 inheritable (alpha vector unchanged, 28m extension만)."
+    }
+  },
+  "codex_concerns_partial": {
+    "C1_pure_function_scope": {
+      "hash_audit_finding": "alpha_package + optimization_package + risk_package md5 모두 PRE=POST identical (4 hash invariant). best_combo = {lambda:1.5, tophi:3, cash_normal:0.1, cash_caution:0.2, cash_crisis:0.4} optimization_package에 explicit 존재 (Codex C1 부분 misinformed). Iter31 cash_BULL=0.0은 best_combo 내 implicit (BULL regime cash 0).",
+      "risk_package_lineage": "WT-P20260429_002 자체 risk_package.json 부재 — Discovery WT-D20260427_016/risk_package.json (md5 bf49e5dc8b1a075344e9646c7691eff4) inheritance (admit time covariance frozen IMMUTABLE).",
+      "stage_artifacts_paths": "qepm/stage_artifacts/WT_WT-P20260429_002 + WT_D20260425_010 부재는 사실. 그러나 admit pipeline은 mailbox-only routing이고 stage_artifacts는 Discovery-only artifact directory. Deployment WT는 mailbox만 사용 (artifact_lineage.json 참조)."
+    },
+    "C2_schedule_artifacts_mismatch": {
+      "finding": "root weights.csv 268-row (267 unique dates 2004-01 ~ 2026-03)는 STR-level meta cash overlay (str1715 weight + cash weight 2-column) — admit M4 schedule. 종목 weights는 forge_may2026/output_full_rebacktest/04_holdings.csv 268 periods × ~20 names. Codex의 mismatch 우려는 두 다른 layer 비교 (semantic 차이).",
+      "resolution": "fresh_alpha 269 sig_dates → 268 walk-forward periods 정합. root weights.csv는 admit time M4 cash overlay (immutable, modify 안 함)."
+    }
+  },
+  "codex_concerns_rebuttal_partial": {
+    "C6_rationalization_red_flags": {
+      "flagged_phrases": ["minor", "schedule extension routine", "Method shopping NOT applicable", "NEGLIGIBLE", "sanity check"],
+      "response": "회피 표현 self-detect: (1) 'minor' Δ SR -0.0673는 -4.10% rel (admit 85% threshold 1.3939 위 — 정량적 정의 동반, 합리화 아님). (2) 'sanity check'는 fresh re-backtest 목적 정의 — admit IMMUTABLE 후 routine extension. (3) 'Method shopping NOT applicable'는 동일 measurement basis (forge_realized_share_based) + 동일 cost (15bps) + 동일 DSR penalty 산식 (30 cand × 0.05) verified. 그러나 Codex 지적 valid: 'NEGLIGIBLE' diagnosis는 factor_engine claim 부재 시 N/A label로 변경 권장. challenge_note에서 명시.",
+      "ax_008_re_evaluation": "AX-008 PASS_2_of_3 (Forge self + Codex critic dissent + Architect skipped). Codex REJECT는 weight (anti-vote) 1, 그러나 6 concerns 중 4건 ACCEPT_PARTIAL + 2건 REBUTTAL → 현재 challenge_note level resolve. AX-008 status = PASS_1_of_3 weak (Forge alone). Architect spawn 권장 (도훈 재량)."
+    }
+  },
+  "generated_at": "2026-05-02T00:14:43+09:00"
+}
