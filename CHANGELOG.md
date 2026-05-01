@@ -5,6 +5,39 @@ All notable changes to Qvest are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
+## [v7.2.0] — 2026-05-01
+
+**v8.0 Design Readiness Gate** — 자동 판정 도구 (도훈 명시 prompt)
+
+### Added
+- `02_Infrastructure/validation/v8_readiness_gate.R` (~610 LoC) — `run_v8_readiness_gate()` + 14 checks
+  * hook_dryrun / e2e_kernel / router_selftest / state_machine_selftest / cert_rules_selftest
+  * schema_active_wt / legacy_active_hook_zero / synthetic_residue_zero
+  * qvest_search / qvest_wt / timeline_generation
+  * registry_integrity / release_metadata / soak_record
+- `02_Infrastructure/tools/qvest_v8_ready` — bash CLI (`--strict` / `--no-strict` / `--json` / `--no-write`)
+  * Exit code: 0=PASS, 1=FAIL, 2=WARN
+  * Human-readable: glyph table + next actions
+- `qepm/observability/readiness/README.md` — gate 사용법 + 3-day soak rule + 실패 조치
+- `08_Tests/integration/test_v8_readiness_gate.R` — 12 test scenarios PASS
+- `resolve_tool()` helper — qvest_search/qvest_wt/qvest_observe 후보 path 탐색
+- CI job `v8_readiness_smoke` — integration test + CLI smoke
+
+### Fixed
+- 한글 path WSL 호환 — `run_cmd(... wd = project_root)` + relative path args
+- E2E kernel + timeline_generation write mode — auto cleanup_guard 호출
+- selftest -e 인자 shell escape — 임시 R script file 패턴
+
+### Verified (strict mode, write report)
+- **14/14 PASS, Overall PASS, ready_for_v8_design = TRUE**
+- exit code 0
+- production / book_state / registry 무손상
+
+### Notes
+- Tag `v7.2.0` (MINOR — readiness gate 신규)
+- 3-day soak rule: 최근 3일 내 readiness gate 2회+ critical=0 → soak_record PASS
+- v8 설계 착수 가능 (도훈 명시 승인 후)
+
 ## [v7.1.0] — 2026-05-01
 
 **Solo Operator Productivity Patch** (v7.1-lite — Sprint 1~4)
