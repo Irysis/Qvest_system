@@ -230,6 +230,34 @@ jobs:
           QVEST_SEARCH_AUTO_REBUILD=0 bash 02_Infrastructure/search/qvest_search "WT-D9999" \
             | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('count',0) == 0, f'WT-D9999 should be 0 default, got {d}'; print('WT-D9999 default exclusion OK')"
 
+  qvest_wt_smoke:
+    name: qvest_wt smoke (v7.1-lite Sprint 2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install jsonlite
+        run: Rscript -e 'install.packages("jsonlite", repos="https://cloud.r-project.org")'
+      - name: --recent 5 smoke
+        run: |
+          bash 02_Infrastructure/observability/qvest_wt --recent 5 2>&1 | tee /tmp/recent.log
+          # Should not contain WT-D9999 (default exclusion)
+          if grep -E "WT-D9999" /tmp/recent.log; then
+            echo "FAIL: synthetic WT leaked into --recent default output"; exit 1
+          fi
+      - name: --json smoke (existing WT)
+        run: |
+          # Use any existing WT
+          ANY_WT=$(ls qepm/mailbox/worktask/ | grep -vE "^WT-D9999" | head -1)
+          if [ -n "$ANY_WT" ]; then
+            bash 02_Infrastructure/observability/qvest_wt "$ANY_WT" --json | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('current_phase'), f'expected current_phase, got {d.get(\"current_phase\")}'; print(f\"WT $ANY_WT phase={d['current_phase']}\")"
+          fi
+
   duplication_audit:
     name: Duplication audit (single source)
     runs-on: ubuntu-latest

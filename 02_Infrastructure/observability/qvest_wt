@@ -1,0 +1,125 @@
+#!/usr/bin/env bash
+# qvest_wt — v7.1-lite Sprint 2 Per-WT Viewer CLI (qvest_observe wrap)
+#
+# Usage:
+#   qvest_wt <WT_ID>               full pretty-print
+#   qvest_wt <WT_ID> --certs       cert table only
+#   qvest_wt <WT_ID> --failures    codex stance + concerns
+#   qvest_wt <WT_ID> --lineage     artifact 6 chain
+#   qvest_wt <WT_ID> --json        raw passthrough
+#   qvest_wt --active              book_state.admitted_ids 1-line summary
+#   qvest_wt --recent N            status.json mtime sort top N (WT-D9999 자동 제외)
+#   qvest_wt --recent N --include-test   include WT-D9999 synthetic
+#
+# Plan: v7-1-cheerful-balloon.md Sprint 2
+
+set -euo pipefail
+trap 'exit 0' ERR
+
+PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+OBSERVE="$PROJ_DIR/02_Infrastructure/observability/qvest_observe"
+PRETTY="$PROJ_DIR/02_Infrastructure/observability/_wt_pretty.py"
+WT_ROOT="$PROJ_DIR/qepm/mailbox/worktask"
+BOOK_STATE="$PROJ_DIR/qepm/mailbox/governor/book_state.json"
+
+ARG1="${1:-}"
+INCLUDE_TEST=0
+for a in "$@"; do
+  [ "$a" = "--include-test" ] && INCLUDE_TEST=1
+done
+
+case "$ARG1" in
+  --active)
+    if [ ! -f "$BOOK_STATE" ]; then
+      echo "[ERROR] book_state not found: $BOOK_STATE" >&2
+      exit 1
+    fi
+    IDS=$(python3 -c "import json; print('\n'.join(json.load(open('$BOOK_STATE')).get('admitted_ids',[])))")
+    if [ -z "$IDS" ]; then
+      echo "(no admitted WTs)"
+      exit 0
+    fi
+    while IFS= read -r sid; do
+      [ -z "$sid" ] && continue
+      # admitted_ids는 STR ID — 매핑되는 WT 찾기 (governor_admission.str_id 일치)
+      wt_dir=""
+      for d in "$WT_ROOT"/*/; do
+        ga="$d/governor_admission.json"
+        if [ -f "$ga" ]; then
+          ga_sid=$(python3 -c "import json; print(json.load(open('$ga')).get('str_id','') or '')" 2>/dev/null)
+          if [ "$ga_sid" = "$sid" ]; then
+            wt_dir="$d"
+            break
+          fi
+        fi
+      done
+      if [ -n "$wt_dir" ]; then
+        wt_id=$(basename "$wt_dir")
+        sta=$(python3 -c "import json; d=json.load(open('$wt_dir/status.json')); print(d.get('current_phase','?'))" 2>/dev/null || echo "?")
+        echo "  $sid → $wt_id [$sta]"
+      else
+        echo "  $sid → (no governor_admission found)"
+      fi
+    done <<< "$IDS"
+    exit 0
+    ;;
+  --recent)
+    N="${2:-10}"
+    if [ ! -d "$WT_ROOT" ]; then exit 0; fi
+    # status.json mtime sort, top N
+    while IFS= read -r p; do
+      [ -z "$p" ] && continue
+      d=$(dirname "$p")
+      wt_id=$(basename "$d")
+      # WT-D9999 default 제외 (도훈 추천 #C)
+      if [ "$INCLUDE_TEST" -eq 0 ] && [[ "$wt_id" =~ ^WT-D9999 ]]; then
+        continue
+      fi
+      sta=$(python3 -c "import json; d=json.load(open('$p')); print(d.get('current_phase','?'))" 2>/dev/null || echo "?")
+      mtime=$(stat -c '%y' "$p" 2>/dev/null | cut -d'.' -f1 || echo "?")
+      echo "  $wt_id [$sta] @ $mtime"
+    done < <(find "$WT_ROOT" -maxdepth 2 -name "status.json" -printf '%T@\t%p\n' 2>/dev/null | sort -rn | cut -f2- | head -n "$N")
+    exit 0
+    ;;
+  "")
+    cat <<EOF
+Usage:
+  qvest_wt <WT_ID> [--certs|--failures|--lineage|--json]
+  qvest_wt --active
+  qvest_wt --recent N [--include-test]
+EOF
+    exit 1
+    ;;
+esac
+
+# Single WT mode
+WT_ID="$ARG1"
+shift
+SECTION=""
+JSON_MODE=0
+for a in "$@"; do
+  case "$a" in
+    --json) JSON_MODE=1 ;;
+    --include-test) ;; # already handled
+    --certs|--failures|--lineage) SECTION="$a" ;;
+  esac
+done
+
+# Get raw timeline via qvest_observe (rebuild + JSON)
+TL_JSON=$(bash "$OBSERVE" wt "$WT_ID" 2>/tmp/qvest_wt_observe_$$.log) || {
+  echo "[ERROR] qvest_observe wt $WT_ID failed" >&2
+  cat /tmp/qvest_wt_observe_$$.log >&2
+  exit 1
+}
+
+if [ "$JSON_MODE" -eq 1 ]; then
+  echo "$TL_JSON"
+  exit 0
+fi
+
+case "$SECTION" in
+  --certs)    echo "$TL_JSON" | python3 "$PRETTY" --certs ;;
+  --failures) echo "$TL_JSON" | python3 "$PRETTY" --failures ;;
+  --lineage)  echo "$TL_JSON" | python3 "$PRETTY" --lineage ;;
+  *)          echo "$TL_JSON" | python3 "$PRETTY" ;;
+esac
