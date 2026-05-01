@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/judge_verdict",
+  "title": "Judge Verdict",
+  "description": "judge final output. Plan Sprint 3 Schema #5.",
+  "type": "object",
+  "required": ["task_id", "verdict"],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$" },
+    "verdict": {
+      "type": "string",
+      "enum": ["APPROVE", "APPROVE_CONDITIONAL", "REVISE", "REJECT", "PASS", "FAIL"]
+    },
+    "gate_results": { "type": "object" },
+    "lockbox_audit_ref": { "type": "string" },
+    "codex_round_response_ref": { "type": "string" },
+    "role_honesty_audit": { "type": "object" }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/alpha_package",
+  "title": "Alpha Package",
+  "description": "alpha-research final output. Plan Sprint 3 Schema #1.",
+  "type": "object",
+  "required": ["task_id", "as_of_date", "alpha_vector", "factor_specs", "diagnostics"],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$" },
+    "as_of_date": { "type": "string", "format": "date" },
+    "alpha_vector": {
+      "oneOf": [
+        { "type": "object" },
+        { "type": "array" },
+        { "type": "string", "description": "path or ref" }
+      ]
+    },
+    "factor_specs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "factor_family": { "type": "string" },
+          "proxy": { "type": "string" },
+          "economic_rationale": { "type": "string" },
+          "formula": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "properties": {
+        "alpha_inheritance_cor": { "type": ["number", "null"] },
+        "harvey_t_specs_pass_count": { "type": "integer", "minimum": 0 },
+        "sig_dates_count": { "type": "integer", "minimum": 0 },
+        "n_sig_dates": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "hypothesis_summary": { "type": "string" },
+    "alpha_scores_ref": { "type": "string" },
+    "ax_axiom_compliance": { "type": "object" },
+    "challenge_note_ref": { "type": "string" }
+  },
+  "additionalProperties": true
+}

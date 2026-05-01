@@ -260,6 +260,65 @@ def check_transition(wt_id: str, from_phase: str, to_phase: str) -> Tuple[bool, 
 
 
 # ─────────────────────────────────────────────────────────────────
+# 6. validate_schema — JSON Schema Draft-07 validation (Sprint 3)
+# ─────────────────────────────────────────────────────────────────
+
+SCHEMAS_DIR = PROJECT_ROOT / "02_Infrastructure" / "schemas"
+
+SCHEMA_NAME_MAP = {
+    "alpha_package": "packages/alpha_package_schema.json",
+    "risk_package": "packages/risk_package_schema.json",
+    "optimization_package": "packages/optimization_package_schema.json",
+    "forge_package": "packages/forge_package_schema.json",
+    "judge_verdict": "packages/judge_verdict_schema.json",
+    "governor_admission": "packages/governor_admission_schema.json",
+    "alpha_discovery_certificate": "certs/alpha_discovery_certificate_schema.json",
+    "sr_provenance_certificate": "certs/sr_provenance_certificate_schema.json",
+    "schedule_fidelity_certificate": "certs/schedule_fidelity_certificate_schema.json",
+    "forge_package_validated_certificate": "certs/forge_package_validated_certificate_schema.json",
+    "governor_concord_certificate": "certs/governor_concord_certificate_schema.json",
+    "book_state": "state/book_state_schema.json",
+    "governance_log": "state/governance_log_schema.json",
+    "artifact_lineage": "state/artifact_lineage_schema.json",
+}
+
+
+def validate_schema(schema_name: str, package_path: str) -> Tuple[bool, str]:
+    """Validate JSON file against Draft-07 schema. Returns (valid, reason)."""
+    schema_rel = SCHEMA_NAME_MAP.get(schema_name)
+    if not schema_rel:
+        return False, f"unknown schema: {schema_name}. Known: {list(SCHEMA_NAME_MAP.keys())}"
+    schema_path = SCHEMAS_DIR / schema_rel
+    if not schema_path.exists():
+        return False, f"schema file not found: {schema_path}"
+    if not Path(package_path).exists():
+        return False, f"package not found: {package_path}"
+
+    try:
+        import jsonschema
+    except ImportError:
+        return False, "jsonschema package not installed (pip install jsonschema)"
+
+    try:
+        with open(schema_path, "r", encoding="utf-8") as f:
+            schema = json.load(f)
+        with open(package_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        return False, f"parse fail: {e}"
+
+    try:
+        jsonschema.validate(instance=data, schema=schema)
+        return True, "valid"
+    except jsonschema.ValidationError as e:
+        # truncate path + message for log readability
+        path_str = ".".join(str(p) for p in e.absolute_path) or "<root>"
+        return False, f"INVALID at '{path_str}': {e.message[:200]}"
+    except Exception as e:
+        return False, f"validate fail: {e}"
+
+
+# ─────────────────────────────────────────────────────────────────
 # CLI dispatch
 # ─────────────────────────────────────────────────────────────────
 
@@ -303,6 +362,10 @@ def main():
     elif cmd == "check-codex-round-complete":
         ok, reason = check_codex_round_complete(args.get("wt_id", ""), args.get("role", ""))
         print(json.dumps({"complete": ok, "reason": reason}))
+        sys.exit(0 if ok else 1)
+    elif cmd == "validate-schema":
+        ok, reason = validate_schema(args.get("schema", ""), args.get("package", "") or args.get("package_path", ""))
+        print(json.dumps({"valid": ok, "reason": reason}))
         sys.exit(0 if ok else 1)
     elif cmd == "selftest":
         # Selftest: load all 4 policies + classify few patterns

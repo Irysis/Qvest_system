@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/sr_provenance_certificate",
+  "title": "SR Provenance Certificate",
+  "description": "4-field SR Provenance positive cert. Plan Sprint 3 Schema #8.",
+  "type": "object",
+  "required": ["issued", "wt_id", "issued_at", "issued_by", "charter_ref"],
+  "properties": {
+    "issued": { "type": "boolean" },
+    "wt_id": { "type": "string" },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "issued_by": { "type": "string" },
+    "charter_ref": { "type": "string" },
+    "sr_realized_share_based": { "type": ["number", "null"] },
+    "measurement_basis_primary": { "type": ["string", "null"] },
+    "weights_csv_unique_dates_count": { "type": ["integer", "null"] },
+    "schedule_density_ratio": { "type": ["number", "null"] },
+    "non_issuance_reason": { "type": ["string", "null"] },
+    "remediation": { "type": ["string", "null"] }
+  },
+  "additionalProperties": true
+}

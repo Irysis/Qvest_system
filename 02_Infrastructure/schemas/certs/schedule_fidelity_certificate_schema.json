@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/schedule_fidelity_certificate",
+  "title": "Schedule Fidelity Certificate",
+  "description": "density >=0.95 OR infeasibility_report. Plan Sprint 3 Schema #9.",
+  "type": "object",
+  "required": ["issued", "wt_id", "issued_at", "issued_by", "charter_ref"],
+  "properties": {
+    "issued": { "type": "boolean" },
+    "wt_id": { "type": "string" },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "issued_by": { "type": "string" },
+    "charter_ref": { "type": "string" },
+    "weights_csv_unique_dates_count": { "type": ["integer", "null"] },
+    "alpha_sig_dates_count": { "type": ["integer", "null"] },
+    "schedule_density_ratio": { "type": ["number", "null"] },
+    "infeasibility_report_cited": { "type": ["boolean", "null"] },
+    "non_issuance_reason": { "type": ["string", "null"] },
+    "remediation": { "type": ["string", "null"] }
+  },
+  "additionalProperties": true
+}

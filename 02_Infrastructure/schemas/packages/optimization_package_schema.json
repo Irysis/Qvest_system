@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/optimization_package",
+  "title": "Optimization Package",
+  "description": "optimizer-research final output. Plan Sprint 3 Schema #3.",
+  "type": "object",
+  "required": ["task_id", "as_of_date", "method_selected", "expected_tracking_error"],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$" },
+    "as_of_date": { "type": "string", "format": "date" },
+    "method_selected": {
+      "type": "string",
+      "description": "MVO / HRP / CVaR / ERC / BL / RL / Genetic / Ensemble 등"
+    },
+    "expected_tracking_error": { "type": "number" },
+    "target_weights": { "type": "object" },
+    "schedule_fidelity": {
+      "type": "object",
+      "properties": {
+        "weights_csv_unique_dates_count": { "type": "integer", "minimum": 0 },
+        "alpha_sig_dates_count": { "type": "integer", "minimum": 0 },
+        "schedule_density_ratio": { "type": "number" },
+        "infeasibility_report": { "type": ["object", "null"] },
+        "schedule_skip_justified": { "type": ["boolean", "null"] }
+      }
+    },
+    "deploy_cutoff": { "type": "string" },
+    "method_shopping_log": { "type": ["array", "object"] },
+    "weights_csv_ref": { "type": "string" }
+  },
+  "additionalProperties": true
+}

@@ -154,6 +154,47 @@ jobs:
         run: |
           pyright --warnings 02_Infrastructure/hooks/qvest_hook_router.py 02_Infrastructure/hooks/qvest_cert_eval.py
 
+  schema_validate:
+    name: Schema validation (14 schema smoke test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install jsonschema
+        run: pip install jsonschema
+      - name: Smoke test 14 schemas (parse + structure validity)
+        run: |
+          set -e
+          python3 -c "
+          import json, sys
+          from pathlib import Path
+          schemas_dir = Path('02_Infrastructure/schemas')
+          if not schemas_dir.exists():
+              print('schemas dir not found'); sys.exit(1)
+          schemas = list(schemas_dir.rglob('*_schema.json'))
+          print(f'Found {len(schemas)} schemas')
+          if len(schemas) != 14:
+              print(f'Expected 14 schemas, got {len(schemas)}')
+              sys.exit(1)
+          import jsonschema
+          for s in schemas:
+              with open(s) as f:
+                  schema = json.load(f)
+              try:
+                  jsonschema.Draft7Validator.check_schema(schema)
+              except Exception as e:
+                  print(f'INVALID schema {s}: {e}'); sys.exit(1)
+          print('All 14 schemas valid Draft-07 ✅')
+          "
+      - name: Validate router validate-schema CLI
+        run: |
+          set -e
+          # synthetic test: invalid alpha_package missing task_id
+          echo '{"as_of_date":"2026-05-01"}' > /tmp/bad_alpha.json
+          python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema alpha_package --package /tmp/bad_alpha.json && exit 1 || echo "✅ Invalid fixture rejected as expected"
+
   duplication_audit:
     name: Duplication audit (single source)
     runs-on: ubuntu-latest

@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/governor_concord_certificate",
+  "title": "Governor Concord Certificate",
+  "description": "book_state ↔ admission match (or with_waiver). Plan Sprint 3 Schema #11.",
+  "type": "object",
+  "required": ["issued", "issued_at", "issued_by", "charter_ref"],
+  "properties": {
+    "issued": { "type": "boolean" },
+    "wt_id": { "type": "string" },
+    "issued_at": { "type": "string", "format": "date-time" },
+    "issued_by": { "type": "string" },
+    "charter_ref": { "type": "string" },
+    "concord_type": {
+      "type": "string",
+      "enum": ["match", "with_waiver_required", "with_waiver"]
+    },
+    "details": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "str_id": { "type": "string" },
+          "expected_weight": { "type": ["number", "null"] },
+          "actual_weight": { "type": ["number", "null"] },
+          "match": { "type": "boolean" },
+          "reason": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "waiver_log": {
+      "type": ["array", "null"],
+      "minItems": 0,
+      "items": {
+        "type": "object",
+        "required": ["str_id", "expected_weight", "actual_weight", "delta", "justification"]
+      }
+    },
+    "non_issuance_reason": { "type": ["string", "null"] },
+    "remediation": { "type": ["string", "null"] }
+  },
+  "additionalProperties": true
+}

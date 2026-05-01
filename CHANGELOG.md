@@ -7,7 +7,16 @@ and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
 ## [Unreleased — v7.0.0]
 
-### Sprint 2 — CI + Versioning (in progress)
+### Sprint 3 — Schema Strict (14 schema)
+- Added: `02_Infrastructure/schemas/` — 14 JSON Schema Draft-07 (6 packages + 5 certs + 3 state)
+- Added: `qvest_hook_router.py validate-schema` CLI (jsonschema import)
+- Added: `cert_rules.R::cr_validate_schema()` — router 위임 wrapper
+- Added: `state_machine.R::sm_validate_artifacts_schema()` — phase → schema 매핑
+- **Changed**: `sm_validated_advance()` — schema validation을 state transition precondition으로 통합 (waiver 없으면 invalid schema → block)
+- Added CI: `schema_validate` job — 14 schema parse + Draft-07 valid + invalid fixture rejection smoke test
+- Real WT validation 5/8 PASS (3 outdated fixture: forge sr_realized_share_based / judge verdict / governance_log events 부재)
+
+### Sprint 2 — CI + Versioning
 - Added: `.github/workflows/qvest-kernel-ci.yml` — kernel-only CI (9 jobs)
 - Added: `00_Lawbook/VERSIONING.md` — semver strict policy
 - Added: `CHANGELOG.md` — Keep a Changelog format

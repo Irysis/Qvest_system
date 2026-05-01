@@ -145,7 +145,8 @@ sm_check_waiver <- function(wt_id, waiver_field = "codex_critic_skip_waiver") {
 # 5. Validated wt_advance (worktask_manager.R 호출 가능)
 # ─────────────────────────────────────────────────────────────────
 
-sm_validated_advance <- function(wt_id, from, to, force_waiver = FALSE) {
+sm_validated_advance <- function(wt_id, from, to, force_waiver = FALSE,
+                                  validate_schema = TRUE) {
   # Step 1: Transition allowed?
   trans_result <- sm_check_transition(from, to)
   if (!trans_result$allowed) {
@@ -171,11 +172,82 @@ sm_validated_advance <- function(wt_id, from, to, force_waiver = FALSE) {
     }
   }
 
+  # Step 3: v7.0 Sprint 3 — Schema validation (state transition precondition)
+  schema_result <- list(skipped = TRUE, valid = NA, reason = "schema_validate=FALSE")
+  if (isTRUE(validate_schema) && art_result$pass) {
+    schema_result <- sm_validate_artifacts_schema(wt_id, to)
+    if (!isTRUE(schema_result$valid) && !isTRUE(schema_result$skipped)) {
+      waiver <- sm_check_waiver(wt_id, "schema_validation_waiver")
+      if (!waiver$waiver && !force_waiver) {
+        stop(sprintf("[state_machine] BLOCKED schema invalid for %s: %s",
+                     to, schema_result$reason))
+      } else {
+        message(sprintf("[state_machine] WAIVER applied for schema invalid: %s",
+                        schema_result$reason))
+      }
+    }
+  }
+
   list(advance = TRUE,
        from = from,
        to = to,
        artifacts_check = art_result,
-       transition_check = trans_result)
+       transition_check = trans_result,
+       schema_check = schema_result)
+}
+
+# ─────────────────────────────────────────────────────────────────
+# v7.0 Sprint 3 — Schema validation for required artifacts
+# ─────────────────────────────────────────────────────────────────
+
+# Map phase → (artifact_filename, schema_name)
+.SM_PHASE_SCHEMA_MAP <- list(
+  "ALPHA_DONE" = list(file = "alpha_package.json", schema = "alpha_package"),
+  "RISK_DONE" = list(file = "risk_package.json", schema = "risk_package"),
+  "OPTIMIZER_DONE" = list(file = "optimization_package.json", schema = "optimization_package"),
+  "FORGE_DONE" = list(file = "forge_package.json", schema = "forge_package"),
+  "JUDGE_PASSED" = list(file = "judge_verdict.json", schema = "judge_verdict"),
+  "JUDGE_FAILED" = list(file = "judge_verdict.json", schema = "judge_verdict"),
+  "GOVERNOR_ADMITTED" = list(file = "governor_admission.json", schema = "governor_admission"),
+  "GOVERNOR_REJECTED" = list(file = "governor_admission.json", schema = "governor_admission")
+)
+
+sm_validate_artifacts_schema <- function(wt_id, phase) {
+  spec <- .SM_PHASE_SCHEMA_MAP[[phase]]
+  if (is.null(spec)) {
+    return(list(skipped = TRUE, valid = NA, reason = sprintf("no schema mapping for phase: %s", phase)))
+  }
+  art_path <- file.path(WT_MAILBOX, wt_id, spec$file)
+  if (!file.exists(art_path)) {
+    return(list(skipped = TRUE, valid = NA, reason = sprintf("artifact missing (skipped): %s", spec$file)))
+  }
+
+  router <- file.path(PROJ_ROOT, "02_Infrastructure/hooks/qvest_hook_router.py")
+  if (!file.exists(router)) {
+    return(list(skipped = TRUE, valid = NA, reason = "router not found"))
+  }
+  out <- tryCatch(
+    system2("python3",
+            args = c(shQuote(router), "validate-schema",
+                     "--schema", spec$schema,
+                     "--package", shQuote(art_path)),
+            env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ_ROOT)),
+            stdout = TRUE, stderr = TRUE),
+    error = function(e) NULL
+  )
+  if (is.null(out) || length(out) == 0) {
+    return(list(skipped = FALSE, valid = FALSE, reason = "router invocation fail"))
+  }
+  parsed <- tryCatch(fromJSON(paste(out, collapse = "\n"), simplifyVector = TRUE),
+                     error = function(e) NULL)
+  if (is.null(parsed) || is.null(parsed$valid)) {
+    return(list(skipped = FALSE, valid = FALSE,
+                reason = sprintf("router output parse fail: %s",
+                                substring(paste(out, collapse = " "), 1, 100))))
+  }
+  list(skipped = FALSE,
+       valid = isTRUE(parsed$valid),
+       reason = parsed$reason %||% "")
 }
 
 # ─────────────────────────────────────────────────────────────────

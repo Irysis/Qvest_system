@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/governor_admission",
+  "title": "Governor Admission",
+  "description": "governor final output. Plan Sprint 3 Schema #6.",
+  "type": "object",
+  "required": ["task_id", "verdict"],
+  "properties": {
+    "task_id": { "type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$" },
+    "verdict": {
+      "type": "string",
+      "enum": ["ADMIT", "DEFER", "REJECT", "GOVERNOR_ADMITTED", "GOVERNOR_REJECTED"]
+    },
+    "str_id": { "type": "string" },
+    "wt_type": {
+      "type": "string",
+      "enum": ["discovery", "deployment", "sizing_only", "hyperparameter_sweep"]
+    },
+    "allocation_decided": { "type": "object" },
+    "scenario_identified": { "type": "string" },
+    "book_state_delta": { "type": "object" },
+    "phase_decision_pending": { "type": ["boolean", "string"] },
+    "rule_misapplication_check": { "type": "object" },
+    "pg1_admission_check": { "type": "object" },
+    "charter_compliance": { "type": "object" }
+  },
+  "additionalProperties": true
+}

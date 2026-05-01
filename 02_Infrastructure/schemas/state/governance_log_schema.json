@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/governance_log",
+  "title": "Governance Log",
+  "description": "Per-WT or global event log. Plan Sprint 3 Schema #13.",
+  "type": "object",
+  "required": ["events"],
+  "properties": {
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["timestamp", "agent", "action"],
+        "properties": {
+          "timestamp": { "type": "string", "format": "date-time" },
+          "agent": { "type": "string" },
+          "action": { "type": "string" },
+          "summary": { "type": "string" },
+          "override_id": { "type": "string" },
+          "directive_quote": { "type": "string" },
+          "waiver_5row": { "type": "object" },
+          "schedule_review_days": {
+            "type": "array",
+            "items": { "type": "integer" }
+          },
+          "charter_ref": { "type": "string" }
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

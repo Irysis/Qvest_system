@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v7.0/book_state",
+  "title": "Book State",
+  "description": "Production book state. Plan Sprint 3 Schema #12.",
+  "type": "object",
+  "required": ["admitted_ids", "book_weights"],
+  "properties": {
+    "admitted_ids": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "book_weights": {
+      "type": "object",
+      "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+    },
+    "as_of_date": { "type": "string", "format": "date" },
+    "last_updated": { "type": "string", "format": "date-time" },
+    "phase": { "type": "string" },
+    "certificate_backfill_log": { "type": "object" }
+  },
+  "additionalProperties": true
+}

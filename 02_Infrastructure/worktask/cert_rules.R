@@ -276,6 +276,43 @@ cr_check_eligibility <- function(cert_name, package_path,
 # 3. Role Card (wt_type → cert ownership)
 # ─────────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────────
+# v7.0 Sprint 3 — Schema validation wrapper (router 위임)
+# ─────────────────────────────────────────────────────────────────
+
+cr_validate_schema <- function(schema_name, package_path) {
+  router <- file.path(PROJ_ROOT, "02_Infrastructure/hooks/qvest_hook_router.py")
+  if (!file.exists(router)) {
+    return(list(valid = FALSE, reason = "router not found"))
+  }
+  # Normalize to absolute path (한글 경로 escape 회피)
+  if (!startsWith(package_path, "/")) {
+    package_path <- file.path(PROJ_ROOT, package_path)
+  }
+  if (!file.exists(package_path)) {
+    return(list(valid = FALSE, reason = sprintf("package not found: %s", package_path)))
+  }
+  out <- tryCatch(
+    system2("python3",
+            args = c(shQuote(router), "validate-schema",
+                     "--schema", schema_name,
+                     "--package", shQuote(package_path)),
+            env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ_ROOT)),
+            stdout = TRUE, stderr = TRUE),
+    error = function(e) NULL
+  )
+  if (is.null(out) || length(out) == 0) {
+    return(list(valid = FALSE, reason = "router invocation fail"))
+  }
+  parsed <- tryCatch(fromJSON(paste(out, collapse = "\n"), simplifyVector = TRUE),
+                     error = function(e) NULL)
+  if (is.null(parsed) || is.null(parsed$valid)) {
+    return(list(valid = FALSE, reason = sprintf("router output parse fail: %s",
+                                                substring(paste(out, collapse = " "), 1, 100))))
+  }
+  list(valid = isTRUE(parsed$valid), reason = parsed$reason %||% "")
+}
+
 cr_get_role_card <- function(wt_type) {
   policy <- cr_load_policy()
   card <- policy$role_card_4x5[[wt_type]]
