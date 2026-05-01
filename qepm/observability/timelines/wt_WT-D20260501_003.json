@@ -1,0 +1,194 @@
+{
+  "wt_id": "WT-D20260501_003",
+  "timeline_built_at": "2026-05-01T18:05:43+0900",
+  "current_phase": "ALPHA_RISK_DONE_HELD_BHEQ_NOT_DIVERSIFIER",
+  "events": [
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T12:12:19+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: [theme] bayesian_factor_design_pit_native (Alpha Agent 자동 발굴) | source=alpha_agent_discovered"
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T12:20:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_GENERATION_STARTED",
+      "summary": "3-Pillar Bayesian factor (BHEQ + BOCPD + BSIC) walking-forward 220 sig_dates 2008-01 → 2026-04. PIT-strict (Z_Score_Aligned only, t-1 liquidity, sequential update natural)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T12:54:44+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_GENERATION_COMPLETE",
+      "summary": "BHEQ_Pillar1 ICIR 0.3547 / NW-t 5.07 strong. BOCPD ICIR 0.006 noise. EW combined 0.077. P3 Bayesian 0.150. Best single = BHEQ alone (RF-A2 honest reframe)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T12:58:18+0900",
+      "agent": "alpha-research",
+      "action": "DRAFT_BUILT",
+      "summary": "alpha_package_draft.json built with BHEQ-only main + multi-pillar method_shopping_log transparency."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:05:48+0900",
+      "agent": "codex-qepm-critic",
+      "action": "CRITIC_RESPONSE",
+      "summary": "stance=REVISE veto=false. 9 concerns (5 HIGH, 3 MED). Independent BHEQ recompute confirms strength: DSR 0.972 / monotonicity 0.867. 2/2 concordant on alpha strength."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:07:52+0900",
+      "agent": "alpha-research",
+      "action": "CODEX_FIXES_APPLIED",
+      "summary": "C1 fix: regenerated alpha_scores.parquet with score_main=BHEQ. C3 fix: BHEQ official DSR 0.972 / monotonicity 0.903 / sub stab 1.0. C7 fix: challenge_note.md + lineage written. 5 ACCEPT + 4 REBUTTAL with academic + L-code + 정량 data."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:11:36+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PACKAGE_FINALIZED",
+      "summary": "alpha_package.json finalized. graduation_recommendation=PROCEED_WITH_RANK_IC_CAVEAT. 5/6 official BHEQ gates PASS (only rank_IC 0.0313 < 0.04 marginal)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:30:00+0900",
+      "agent": "alpha_discovery_certifier",
+      "action": "CERT_NOT_ISSUED_AUTOMATIC",
+      "summary": "alpha_discovery_certificate.json 자동 미발급. 사유: harvey_t_specs_pass_count = 1 < 3 (4 AND 조건 1건 미충족). 단 BHEQ_Pillar1 SELECTED 자체는 NW-t 5.07 강력 / BOCPD + BSIC DROPPED → 1 effective spec count. count threshold ≥ 3은 multi-factor composite 가정. single-factor 강한 alpha case 본질적 갭."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:30:00+0900",
+      "agent": "q-lead",
+      "action": "QLEAD_OVERRIDE_BORDERLINE_ACCEPT_BHEQ",
+      "summary": "도훈 명시 옵션 A (rank_IC borderline accept) 결정. cert 형식 미발급이지만 실증 강함: ICIR 0.3547 (predecessor full-sample 0.291 대비 +22% / WT_002 walking-forward 0.1999 대비 +77%) + NW-t 5.07 / DSR 0.9724 (Bailey-LdP Top 1%) / Monotonicity 0.903 / SubStab 1.0 + Codex 2/2 concordant (independent recompute DSR 0.972 + Monotonicity 0.867 매칭). rank_IC 0.0313 marginal -0.0087은 ICIR 강함의 산술적 부산물. 5/6 PASS + Codex REVISE veto=false → borderline accept 합리. predecessor와 다르게 8원칙 #5 가정 점검 통과 (1 metric marginal vs 다른 5 metric strong consistency)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T13:30:00+0900",
+      "agent": "q-lead",
+      "action": "RISK_RESEARCH_SPAWN_PLANNED",
+      "summary": "risk-research agent v6.3.3 정합 spawn. caveat 명시: cert 부재 + rank_IC marginal + ICIR/DSR strong + AX-007 회피 strategy 인계. v1.0.9 P0 MDD reduction 1순위 + STR_1715 cor 검증 + Σ honest audit."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "risk-research",
+      "action": "RISK_RESEARCH_STARTED",
+      "summary": "BHEQ alpha 수신 + Q-Lead override caveat 5건 인지. 5축 (Σ + tail + stress + crowding + style) 자율 분석 시작."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "risk-research",
+      "action": "SIGMA_METHOD_SHOPPING",
+      "summary": "5 estimator method-shopping (sample / LW shrinkage / Gerber-RMT / LW const-cor / diagonal benchmark). diagonal_only_benchmark는 primary 후보 제외 (off-diag=0). lw_constant_correlation cond=1227 (best PSD daily). factor-model BΩB+D primary (rank-controlled)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "risk-research",
+      "action": "DRAFT_BUILT",
+      "summary": "risk_package_draft.json built. 5 risk flags (RF-R2 cond / RF-R3 STR_1715 cor 0.717 / RF-R4 stress MDD GFC -38% COVID -37% / RF-R5 BHEQ blend WORSENS MDD all w / RF-STYLE RMW/HML overlap). MDD blend simulation: ALL w ∈ [0.05, 0.30] WORSEN MDD 0.44~2.76pp."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "codex-qepm-critic",
+      "action": "CRITIC_RESPONSE_RISK",
+      "summary": "stance=REJECT veto=false. 9 concerns (5 HIGH 4 MEDIUM). HIGH ≥ 5 auto-escalate trigger MET. AX-002 FAIL. PIT C2/C6/C9/C10/C11/C12 violations claimed. weakest_assumption: fixed-α 0.30 cond=1227 PSD treat as optimizer-ready Σ."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "risk-research",
+      "action": "CODEX_FIXES_APPLIED",
+      "summary": "C1 ACCEPT cond gate ≤100 (RF-R2 threshold corrected). C2 PARTIAL infeasibility report issued + α=0.30 REBUTTAL (oracle worse). C3 ACCEPT PIT-C2/C9 fix (Σ window sig_d-1 strict) + REBUTTAL C6 forward-projection diagnostic intent. C4 ACCEPT regime bootstrap CI (n<30 fallback). C5 ACCEPT RF-R4 stress MDD + REBUTTAL CVaR raw vs portfolio. C6 ACCEPT crowding hard fail + ★ key finding (BHEQ NOT MDD-mitigative). C7 ACCEPT artifact governance (path prefix + ticker_alignment_audit + risk_challenge_note.md). C8 PARTIAL n_months expansion + INHERIT C11/C12 audit. C9 INHERIT liquidity (alpha + Q-Lead). 5 ACCEPT + 4 PARTIAL/REBUTTAL with academic + L-code + 정량 3축."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:10:38+0900",
+      "agent": "risk-research",
+      "action": "RISK_PACKAGE_FINALIZED",
+      "summary": "risk_package.json finalized. Σ_primary=factor_model_BΩB+D cond=1270.5 (INFEASIBILITY REPORT issued: D/T=0.58 → cond≤100 structurally impossible without diagonal collapse). PSD min_eig=1.04e-02. 5 risk_flags (4 HIGH + 1 MED + 1 INFO). ★ STR_1715 cor 0.717 returns level (alpha-vector cor -0.012 spurious). ★ MDD blend simulation: BHEQ does NOT mitigate STR_1715 MDD — ALL w ∈ [0.05, 0.30] WORSEN MDD. v1.0.9 P0 (MDD reduction 1순위) NOT addressable by BHEQ blend alone. Optimizer/Q-Lead 결정 필요."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-01T14:30:00+0900",
+      "agent": "q-lead",
+      "action": "QLEAD_DECISION_BHEQ_HELD_OPTION_B",
+      "summary": "도훈 명시 옵션 B BHEQ 보류 결정. risk-research 결과 BHEQ는 STR_1715와 returns level cor 0.717 (n=267mo Pearson + Spearman 0.68 + lower-tail TDC 0.72 + regime Normal 0.72 / Transition 0.71 consistent) → diversifier 자격 FAIL + MDD blend simulation 모든 w∈[0.05,0.30] WORSENS MDD 0.44~2.76pp. v1.0.9 P0 (MDD 11.10pp gap) BHEQ blend로 해결 불가능. BHEQ ICIR 0.355 / NW-t 5.07 / DSR 0.972 alpha 자체는 강력 — lessons learned retain. successor direction: Iter 9 family pivot (Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional). v6.4 patch 완료 후 spawn 권장."
+    },
+    {
+      "source": "events_jsonl",
+      "timestamp": "2026-05-01T18:05:24+09:00",
+      "agent": "alpha",
+      "action": "test_event",
+      "summary": "hook=test_hook decision=allow"
+    }
+  ],
+  "phases": [],
+  "certs": {
+    "alpha_discovery": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "sr_provenance": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "schedule_fidelity": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "forge_package_validated": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "governor_concord": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    }
+  },
+  "failures": [
+    {
+      "source": "codex_critic_response_alpha.json",
+      "agent_role": "",
+      "stance": "REVISE",
+      "critical_concerns_count": 8,
+      "high_count": 5,
+      "weakest_assumption": "The package assumes that an after-the-fact BHEQ-only reframe is valid even though the referenced alpha_scores artifact, diagnostics, lineage, and hard-liquidity universe were not regenerated for that selected signal."
+    },
+    {
+      "source": "codex_critic_response_risk.json",
+      "agent_role": "",
+      "stance": "REJECT",
+      "critical_concerns_count": 9,
+      "high_count": 6,
+      "weakest_assumption": "A fixed-alpha 0.30 constant-correlation shrinkage covariance with cond=1227 can be treated as an optimizer-ready post-shrink Σ because it is PSD."
+    }
+  ],
+  "retry_count": 0,
+  "artifact_lineage": [
+    {
+      "role": "alpha",
+      "artifact_path": "qepm/mailbox/worktask/WT-D20260501_003/alpha_package.json",
+      "generated_at": "2026-05-01T13:10:57+0900",
+      "size_bytes": 29682
+    },
+    {
+      "role": "risk",
+      "artifact_path": "qepm/mailbox/worktask/WT-D20260501_003/risk_package.json",
+      "generated_at": "2026-05-01T14:10:08+0900",
+      "size_bytes": 20658
+    }
+  ]
+}
