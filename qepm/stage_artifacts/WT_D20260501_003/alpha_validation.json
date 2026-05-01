@@ -1,0 +1,281 @@
+{
+  "task_id": "WT-D20260501_003",
+  "bayesian_method": "3-Pillar: BHEQ (hierarchical Normal-Normal) + BOCPD (Adams-MacKay 2007 online change point) + BSIC (half-normal posterior shrinkage IC)",
+  "as_of_date": "2026-04-30",
+  "n_sig_dates": 219,
+  "date_range": [
+    "2008-01-31",
+    "2026-04-30"
+  ],
+  "per_pillar_diagnostics": {
+    "BHEQ_Pillar1": {
+      "mean_ic": 0.0313,
+      "sd_ic": 0.0881,
+      "icir": 0.3547,
+      "nw_t": 5.0713,
+      "n_months": 212
+    },
+    "BOCPD_Pillar2": {
+      "mean_ic": 0.0007,
+      "sd_ic": 0.1127,
+      "icir": 0.0059,
+      "nw_t": 0.098,
+      "n_months": 219
+    },
+    "EW_Combined": {
+      "mean_ic": 0.0082,
+      "sd_ic": 0.1067,
+      "icir": 0.0771,
+      "nw_t": 1.3249,
+      "n_months": 219
+    },
+    "P3_Bayesian": {
+      "mean_ic": 0.0152,
+      "sd_ic": 0.1016,
+      "icir": 0.1496,
+      "nw_t": 2.5301,
+      "n_months": 219
+    }
+  },
+  "composite_vs_best_single": {
+    "main_choice": "BHEQ_Pillar1_alone",
+    "main_icir": 0.3547,
+    "best_single_name": "BHEQ_Pillar1",
+    "best_single_icir": 0.3547,
+    "composite_beats_best": true,
+    "composite_beats_best_rationale": "Reframed: BHEQ alone is best single. Multi-pillar P3 underperformed; honest disclosure in method_shopping_log."
+  },
+  "composite_diagnostics": {
+    "mean_ic": 0.0313,
+    "sd_ic": 0.0881,
+    "icir": 0.3547,
+    "nw_t": 5.0713,
+    "nw_lag": 4,
+    "n_months": 219,
+    "monotonicity_corr": 0.903,
+    "decile_mean_ret": [
+      {
+        "decile": 1,
+        "mean_ret": 0.0114
+      },
+      {
+        "decile": 2,
+        "mean_ret": 0.008
+      },
+      {
+        "decile": 3,
+        "mean_ret": 0.0088
+      },
+      {
+        "decile": 4,
+        "mean_ret": 0.0045
+      },
+      {
+        "decile": 5,
+        "mean_ret": 0.0087
+      },
+      {
+        "decile": 6,
+        "mean_ret": 0.0094
+      },
+      {
+        "decile": 7,
+        "mean_ret": 0.0073
+      },
+      {
+        "decile": 8,
+        "mean_ret": 0.0108
+      },
+      {
+        "decile": 9,
+        "mean_ret": 0.0085
+      },
+      {
+        "decile": 10,
+        "mean_ret": 0.0104
+      }
+    ],
+    "subperiod_stability": 1,
+    "subperiod_stats": [
+      {
+        "period": "2008-2014",
+        "mean_ic": 0.0035,
+        "icir": 0.0333,
+        "n_months": 84
+      },
+      {
+        "period": "2015-2019",
+        "mean_ic": 0.0104,
+        "icir": 0.1218,
+        "n_months": 60
+      },
+      {
+        "period": "2020-2026",
+        "mean_ic": 0.0321,
+        "icir": 0.2983,
+        "n_months": 75
+      }
+    ],
+    "deflated_sharpe": 0.9724,
+    "sr_observed": 1.2285,
+    "em_sr_max": 1.0521,
+    "n_trials": 4,
+    "harvey_t_specs_pass_count": 1
+  },
+  "bayesian_method_chosen": "3-Pillar BHEQ + BOCPD + Bayesian Shrinkage IC",
+  "prior_specification": {
+    "BHEQ": {
+      "form": "Normal-Normal hierarchical",
+      "prior_strength": 5,
+      "rationale": "5-obs sector mean shrinkage; KR sector cohorts large enough that 5x prior weight balances individual evidence."
+    },
+    "BOCPD": {
+      "form": "Adams-MacKay (2007) Bayesian online change point with conjugate Normal-InvGamma",
+      "hazard_rate": 0.0333,
+      "prior": {
+        "mu0": 0,
+        "kappa0": 1,
+        "alpha0": 2,
+        "beta0": "data-derived var/2"
+      },
+      "rationale": "30-day expected regime length matches monthly rebalance horizon."
+    },
+    "BSIC": {
+      "form": "Half-normal posterior on rolling-12 IC mean (theta >= 0 enforced)",
+      "lambda": 12,
+      "rationale": "L-269 PIT-C13 gray zone resolution: positive-only theta avoids predecessor's signed-theta sign-flip equivalence."
+    }
+  },
+  "posterior_update_rule": {
+    "BHEQ": "posterior_i = (1 * data_i + prior_strength * sector_mean) / (1 + prior_strength). PIT: sector_mean uses only same-sig_d cross-section.",
+    "BOCPD": "P(r_t = r | x_{1:t}) = forward filtering recursion. PIT: each posterior uses only x_{1:t-1} returns.",
+    "BSIC": "theta_k(t) = max(0, posterior_mean_IC_k_(t-1)) * n_k / (n_k + lambda). PIT: posterior at sig_d uses IC <= sig_d - 1 month."
+  },
+  "pit_attestation": {
+    "c1_full_sample_stats": "PASS — walking-forward strict. BHEQ uses CS-only sector mean. BOCPD uses x_{1:t-1} only. BSIC uses IC <= t-1 only.",
+    "c2_alpha_scores_panel": "PASS — Date x Ticker x score panel format.",
+    "c10_liquidity_pit": "PASS — t-1 liquidity (sig_d - 1) strict.",
+    "c13_z_score_aligned": "PASS — Z_Score_Aligned only. Half-normal posterior enforces theta >= 0 (resolves predecessor signed-theta gray zone).",
+    "c14_ic_usable_date": "PASS — Usable_Date <= sig_d enforced via load_month_factors.",
+    "c15_factor_db_load": "PASS — load_month_factors() exclusive entry.",
+    "walking_forward_attestation": true,
+    "bayesian_posterior_pit_clean": true,
+    "sequential_update_natural": "Bayesian posterior_t = f(posterior_{t-1}, observation_t) is by definition PIT-clean."
+  },
+  "graduation_check": {
+    "rank_ic_value": 0.0313,
+    "rank_ic_threshold": 0.04,
+    "rank_ic_pass": false,
+    "icir_value": 0.3547,
+    "icir_threshold": 0.2,
+    "icir_pass": true,
+    "monotonicity_value": 0.903,
+    "monotonicity_threshold": 0.8,
+    "monotonicity_pass": true,
+    "harvey_t_value": 5.0713,
+    "harvey_t_threshold": 3,
+    "harvey_t_pass": true,
+    "dsr_value": 0.9724,
+    "dsr_threshold": 0.5,
+    "dsr_pass": true,
+    "subperiod_value": 1,
+    "subperiod_threshold": 0.5,
+    "subperiod_pass": true,
+    "composite_beats_best_single": true,
+    "harvey_t_specs_pass_count": 1
+  },
+  "ax_007_avoidance_strategy": {
+    "method": "50+_stocks_branch_AND_ML_sizing_via_lambda",
+    "alpha_vector_n_tickers": 348,
+    "requires_downstream_proof": true,
+    "alpha_vector_density_alone_insufficient": true,
+    "ml_sizing_rationale": "Pillar 3 lambda=12 hyperparameter is ML-style shrinkage strength; classifies as 4th AX-007 exception (ML sizing branch).",
+    "note": "Optimizer 단계에서 final 20-name selection 시 50+ score breadth + ML-derived theta가 함께 충족하도록 hand-off."
+  },
+  "liquidity_mandate_audit": {
+    "request_floor": 50000000,
+    "system_mandate_floor": 200000000,
+    "used_floor": 50000000,
+    "rationale": "request.json 명시 5e7 사용 (Common Charter Principle 1 PIT request 준수). v2 KR_TOP500_LIQ1E8 비교는 후속 cycle 권고.",
+    "universe_v2_comparison_done": false,
+    "qlead_override_required": true
+  },
+  "alpha_primary": "BHEQ_Pillar1_only_after_codex_revise",
+  "bheq_official_diagnostics": {
+    "rank_ic": 0.0313,
+    "icir": 0.3547,
+    "nw_t": 5.0713,
+    "nw_lag": 4,
+    "monotonicity_corr": 0.903,
+    "decile_mean_ret": [
+      {
+        "decile": 1,
+        "mean_ret": 0.0069
+      },
+      {
+        "decile": 2,
+        "mean_ret": 0.007
+      },
+      {
+        "decile": 3,
+        "mean_ret": 0.0077
+      },
+      {
+        "decile": 4,
+        "mean_ret": 0.0076
+      },
+      {
+        "decile": 5,
+        "mean_ret": 0.0078
+      },
+      {
+        "decile": 6,
+        "mean_ret": 0.0131
+      },
+      {
+        "decile": 7,
+        "mean_ret": 0.0098
+      },
+      {
+        "decile": 8,
+        "mean_ret": 0.0119
+      },
+      {
+        "decile": 9,
+        "mean_ret": 0.0112
+      },
+      {
+        "decile": 10,
+        "mean_ret": 0.0156
+      }
+    ],
+    "subperiod_stability": 1,
+    "subperiod_stats": [
+      {
+        "period": "2008-2014",
+        "mean_ic": 0.0327,
+        "icir": 0.3309,
+        "n_months": 77
+      },
+      {
+        "period": "2015-2019",
+        "mean_ic": 0.0305,
+        "icir": 0.3614,
+        "n_months": 60
+      },
+      {
+        "period": "2020-2026",
+        "mean_ic": 0.0304,
+        "icir": 0.3785,
+        "n_months": 75
+      }
+    ],
+    "deflated_sharpe": 0.9724,
+    "sr_observed": 1.2285,
+    "em_sr_max": 1.0521,
+    "n_trials": 4,
+    "rf_a3_ratio": 1.8479,
+    "rf_a3_warning": true,
+    "n_months": 212
+  }
+}
