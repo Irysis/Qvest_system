@@ -313,6 +313,39 @@ jobs:
             bash 02_Infrastructure/observability/qvest_wt "$ANY_WT" --json | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('current_phase'), f'expected current_phase, got {d.get(\"current_phase\")}'; print(f\"WT $ANY_WT phase={d['current_phase']}\")"
           fi
 
+  v8_readiness_smoke:
+    name: v8.0 readiness gate smoke (v7.2)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install jsonlite
+        run: Rscript -e 'install.packages("jsonlite", repos="https://cloud.r-project.org")'
+      - name: Integration test (12/12 PASS required)
+        run: Rscript 08_Tests/integration/test_v8_readiness_gate.R
+      - name: CLI --no-write smoke (PASS=0 or WARN=2 acceptable, FAIL=1 not)
+        run: |
+          set +e
+          bash 02_Infrastructure/tools/qvest_v8_ready --no-write --json > /tmp/readiness.json
+          rc=$?
+          if [ $rc -eq 1 ]; then
+            echo "v8 readiness gate FAIL (exit 1) — kernel regression detected"
+            cat /tmp/readiness.json | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          for c in d.get('checks', []):
+              if c['status'] == 'FAIL':
+                  print(f'  [{c[\"status\"]}] {c[\"id\"]}: {c[\"details\"][:80]}')
+          "
+            exit 1
+          fi
+          echo "v8 readiness exit=$rc (0=PASS, 2=WARN — both acceptable in CI)"
+
   duplication_audit:
     name: Duplication audit (single source)
     runs-on: ubuntu-latest
