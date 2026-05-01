@@ -1,0 +1,254 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest-v6.4/artifact_contract.json",
+  "title": "Qvest v6.4 WorkTask Artifact Contract",
+  "version": "1.0",
+  "issued_at": "2026-05-01T15:00:00+0900",
+  "issued_by": "Q-Lead Session 75 v6.4 Sprint 1 Phase 3",
+  "description": "WT artifact 위치 + 파일명 단일 contract. hook/agent/schema/docs가 동일 path/name 참조. Phase 4 hook router policy + Phase 7 cert rules R가 본 contract 자동 import.",
+
+  "canonical_paths": {
+    "wt_metadata_root": "qepm/mailbox/worktask/{WT_ID}/",
+    "stage_artifacts_root": "stage_artifacts/WT_{ID}/",
+    "governor_global_root": "qepm/mailbox/governor/",
+    "wt_id_pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$",
+    "wt_id_examples": ["WT-D20260501_001", "WT-P20260429_002", "WT-S20260501_001", "WT-H20260501_001"],
+    "wt_id_prefix_map": {
+      "WT-D": "discovery",
+      "WT-P": "deployment",
+      "WT-S": "sizing_only",
+      "WT-H": "hyperparameter_sweep"
+    }
+  },
+
+  "package_files": {
+    "request": {
+      "canonical_name": "request.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/request.json",
+      "owner_role": "q-lead",
+      "schema_validator": "02_Infrastructure/hooks/worktask_spec_validator.sh",
+      "required": true
+    },
+    "alpha": {
+      "canonical_name": "alpha_package.json",
+      "draft_name": "alpha_package_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/alpha_package.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/alpha_package_draft.json",
+      "owner_role": "alpha-research",
+      "cert_trigger": "alpha_discovery_certifier.sh",
+      "cert_output": "alpha_discovery_certificate.json",
+      "drift_alternates_deprecated": []
+    },
+    "risk": {
+      "canonical_name": "risk_package.json",
+      "draft_name": "risk_package_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/risk_package.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/risk_package_draft.json",
+      "owner_role": "risk-research",
+      "cert_trigger": null,
+      "cert_output": null,
+      "drift_alternates_deprecated": []
+    },
+    "optimizer": {
+      "canonical_name": "optimization_package.json",
+      "draft_name": "optimization_package_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/optimization_package.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/optimization_package_draft.json",
+      "owner_role": "optimizer-research",
+      "cert_trigger": "schedule_fidelity_check.sh",
+      "cert_output": "schedule_fidelity_certificate.json",
+      "drift_alternates_deprecated": [
+        "optimizer_package.json",
+        "optimizer_package_draft.json"
+      ],
+      "drift_note": "agent definition + spawn prompt + hook regex 확인 시 'optimizer_package' 잘못된 reference 발견 가능. canonical은 'optimization_package.json'."
+    },
+    "forge": {
+      "canonical_name": "forge_package.json",
+      "draft_name": "forge_package_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/forge_package.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/forge_package_draft.json",
+      "owner_role": "forge",
+      "cert_trigger_multiple": [
+        "sr_provenance_check.sh (cert_output: sr_provenance_certificate.json)",
+        "worktask_artifact_validator.sh (cert_output: forge_package_validated_certificate.json)"
+      ],
+      "drift_alternates_deprecated": []
+    },
+    "judge": {
+      "canonical_name": "judge_verdict.json",
+      "draft_name": "judge_verdict_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/judge_verdict.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/judge_verdict_draft.json",
+      "owner_role": "judge",
+      "cert_trigger": null,
+      "drift_alternates_deprecated": ["judge_package.json"]
+    },
+    "governor": {
+      "canonical_name": "governor_admission.json",
+      "draft_name": "governor_admission_draft.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/governor_admission.json",
+      "draft_path": "qepm/mailbox/worktask/{WT_ID}/governor_admission_draft.json",
+      "owner_role": "governor",
+      "cert_trigger_separate": "governor_concord_certifier.sh (book_state.json 변경 시 발동)",
+      "cert_output": "governor_concord_certificate.json (or _with_waiver_certificate.json)",
+      "drift_alternates_deprecated": ["governor_package.json"]
+    }
+  },
+
+  "codex_critic_round_files": {
+    "response_pattern": "codex_critic_response_{role}.json",
+    "response_path": "qepm/mailbox/worktask/{WT_ID}/codex_critic_response_{role}.json",
+    "roles": ["alpha", "risk", "optimizer", "forge", "judge", "governor"],
+    "challenge_note": {
+      "canonical_name": "challenge_note.md",
+      "path": "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+      "purpose": "All role challenge_note 통합 단일 파일 OR role-specific challenge_note_{role}.md (Phase 6 결정 권장)",
+      "drift_alternates_existing": [
+        "risk_challenge_note.md (WT-D20260501_003 사례)",
+        "optimizer_challenge_note.md (WT-D20260501_001 사례)"
+      ],
+      "drift_resolution_phase_6": "Phase 6 Codex Round v6.4 lifecycle 정합 시 role-specific {role}_challenge_note.md → canonical challenge_note.md 집계 결정"
+    }
+  },
+
+  "certificate_files": {
+    "alpha_discovery": {
+      "name": "alpha_discovery_certificate.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/alpha_discovery_certificate.json",
+      "trigger_hook": "alpha_discovery_certifier.sh",
+      "eligibility_4_AND": [
+        "diagnostics.alpha_inheritance_cor < 0.95",
+        "mechanism_cited >= 50 chars",
+        "factor_specs.length >= 1",
+        "diagnostics.harvey_t_specs_pass_count >= 3"
+      ]
+    },
+    "sr_provenance": {
+      "name": "sr_provenance_certificate.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/sr_provenance_certificate.json",
+      "trigger_hook": "sr_provenance_check.sh",
+      "eligibility_4_field": [
+        "sr_realized_share_based",
+        "measurement_basis_primary == 'forge_realized_share_based'",
+        "weights_csv_unique_dates_count",
+        "schedule_density_ratio"
+      ]
+    },
+    "schedule_fidelity": {
+      "name": "schedule_fidelity_certificate.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/schedule_fidelity_certificate.json",
+      "trigger_hook": "schedule_fidelity_check.sh",
+      "trigger_file": "optimization_package.json",
+      "eligibility": "weights_csv_unique_dates / sig_dates_count >= 0.95 OR infeasibility_report"
+    },
+    "forge_package_validated": {
+      "name": "forge_package_validated_certificate.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/forge_package_validated_certificate.json",
+      "trigger_hook": "worktask_artifact_validator.sh",
+      "eligibility_8_field": [
+        "task_id",
+        "backtest_summary",
+        "sr_realized_share_based",
+        "measurement_basis_primary",
+        "weights_csv_unique_dates_count",
+        "alpha_sig_dates_count",
+        "schedule_density_ratio",
+        "schedule_density_pass + pure_function_violation"
+      ]
+    },
+    "governor_concord": {
+      "name": "governor_concord_certificate.json",
+      "with_waiver_name": "governor_concord_with_waiver_certificate.json",
+      "path": "qepm/mailbox/governor/governor_concord_certificate.json",
+      "scope": "global (per book_state, not per WT)",
+      "trigger_hook": "governor_concord_certifier.sh",
+      "trigger_file": "qepm/mailbox/governor/book_state.json",
+      "eligibility": "admitted_ids 각 STR마다 governor_admission.json.allocation_decided[STR] 존재 + book_weights[STR] ≈ expected (|Δ| < 0.01)"
+    }
+  },
+
+  "heavy_outputs": {
+    "stage_artifacts_dir": "stage_artifacts/WT_{ID}/",
+    "alpha_outputs": [
+      "alpha_scores.parquet (Date × Ticker × score panel — single snapshot 금지, predecessor C2 fix)",
+      "alpha_validation.json"
+    ],
+    "risk_outputs": [
+      "covariance.parquet (Σ matrix)",
+      "covariance_daily_alt.parquet (alt estimator)",
+      "exposure_matrix.parquet",
+      "factor_covariance.parquet",
+      "specific_risk.parquet",
+      "regime_correlation.parquet (with bootstrap CI for n<30)",
+      "tail_risk.json",
+      "crowding_blend_simulation.csv",
+      "risk_method_shopping.json"
+    ],
+    "optimizer_outputs": [
+      "weights.csv (Date × Ticker × weight long form, schedule density >= 0.95 mandate)",
+      "blend_simulation.csv",
+      "method_metrics_standalone.csv",
+      "composite_alpha_panel.parquet"
+    ],
+    "forge_outputs": [
+      "run_all.R (entrypoint)",
+      "bt_result.rds (10-component, Backtest Result Contract v1.0)",
+      "bt_result_*.csv (10 components × CSV)",
+      "bt_result.xlsx (11-sheet)",
+      "audit_log.json"
+    ]
+  },
+
+  "lineage_files": {
+    "artifact_lineage": {
+      "name": "artifact_lineage.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/artifact_lineage.json",
+      "purpose": "R11 lineage tracking — alpha → risk → optimizer → forge 산출물 chain"
+    },
+    "governance_log": {
+      "name": "governance_log.json",
+      "path": "qepm/mailbox/worktask/{WT_ID}/governance_log.json",
+      "purpose": "WT lifecycle event log (Q-Lead override / agent action / cert issue / WT_ARCHIVED 등)"
+    },
+    "global_governance_log": {
+      "name": "governance_log.json",
+      "path": "qepm/mailbox/governor/governance_log.json",
+      "purpose": "Global cert backfill / RETROACTIVE_CERT_ISSUANCE / book_state admit 이력"
+    }
+  },
+
+  "status_file": {
+    "name": "status.json",
+    "path": "qepm/mailbox/worktask/{WT_ID}/status.json",
+    "schema": {
+      "task_id": "string (matches WT_ID)",
+      "current_phase": "enum (SPEC_APPROVED|ALPHA_DONE|RISK_DONE|OPTIMIZER_DONE|FORGE_DONE|JUDGE_PASSED|JUDGE_FAILED|GOVERNOR_ADMITTED|GOVERNOR_REJECTED|COMPLETED|ABORTED|ARCHIVED_*|ALPHA_RISK_DONE_HELD_*)",
+      "updated_at": "ISO8601 datetime",
+      "blocker": "string|null",
+      "additional_fields": "free-form (abort_reason / hold_reason / lessons_learned / successor_wt 등)"
+    }
+  },
+
+  "scripts_dir": {
+    "path": "qepm/mailbox/worktask/{WT_ID}/scripts/",
+    "purpose": "agent가 작성한 R/Python 재현 script (alpha_research_run.R / risk_research.R / optimizer_research_run.R 등)"
+  },
+
+  "hook_policy_imports": {
+    "phase_4_hook_router": "qvest_hook_router.py가 본 contract을 import해서 file path matcher 자동 생성",
+    "phase_7_cert_rules": "cert_rules.R + cert_rules.json이 본 contract의 cert eligibility를 single source로 사용",
+    "phase_8_dry_run_tests": "08_Tests/hooks/* 가 본 contract의 path pattern으로 fixture 생성"
+  },
+
+  "drift_known_resolution": {
+    "resolved_at": "Phase 3 (Sprint 1)",
+    "deprecated_pattern_examples": [
+      "optimization_package_draft.json vs optimizer_package_draft.json — canonical: optimization_package",
+      "judge_package.json vs judge_verdict.json — canonical: judge_verdict",
+      "governor_package.json vs governor_admission.json — canonical: governor_admission",
+      "challenge_note.md vs role_challenge_note.md (예: risk_challenge_note.md) — Phase 6에서 결정"
+    ],
+    "scan_command": "grep -rE 'optimizer_package|judge_package|governor_package' .claude/agents/ 02_Infrastructure/hooks/ 02_Infrastructure/prompts/"
+  }
+}

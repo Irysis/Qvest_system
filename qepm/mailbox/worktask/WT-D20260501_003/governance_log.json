@@ -104,6 +104,19 @@
       "agent": "risk-research",
       "action": "RISK_PACKAGE_FINALIZED",
       "summary": "risk_package.json finalized. Σ_primary=factor_model_BΩB+D cond=1270.5 (INFEASIBILITY REPORT issued: D/T=0.58 → cond≤100 structurally impossible without diagonal collapse). PSD min_eig=1.04e-02. 5 risk_flags (4 HIGH + 1 MED + 1 INFO). ★ STR_1715 cor 0.717 returns level (alpha-vector cor -0.012 spurious). ★ MDD blend simulation: BHEQ does NOT mitigate STR_1715 MDD — ALL w ∈ [0.05, 0.30] WORSEN MDD. v1.0.9 P0 (MDD reduction 1순위) NOT addressable by BHEQ blend alone. Optimizer/Q-Lead 결정 필요."
+    },
+    {
+      "timestamp": "2026-05-01T14:30:00+0900",
+      "agent": "q-lead",
+      "action": "QLEAD_DECISION_BHEQ_HELD_OPTION_B",
+      "summary": "도훈 명시 옵션 B BHEQ 보류 결정. risk-research 결과 BHEQ는 STR_1715와 returns level cor 0.717 (n=267mo Pearson + Spearman 0.68 + lower-tail TDC 0.72 + regime Normal 0.72 / Transition 0.71 consistent) → diversifier 자격 FAIL + MDD blend simulation 모든 w∈[0.05,0.30] WORSENS MDD 0.44~2.76pp. v1.0.9 P0 (MDD 11.10pp gap) BHEQ blend로 해결 불가능. BHEQ ICIR 0.355 / NW-t 5.07 / DSR 0.972 alpha 자체는 강력 — lessons learned retain. successor direction: Iter 9 family pivot (Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional). v6.4 patch 완료 후 spawn 권장.",
+      "key_findings_for_v6_4_patch": [
+        "alpha_vector_cor (cosine) vs returns_cor (Pearson) 구분 의무 — cert eligibility 강화 candidate",
+        "single-factor strong alpha case (harvey_t_specs_pass_count=1) cert hook 본질 갭 — alternative pass condition 필요",
+        "Bayesian PIT-native validated (walking-forward 강제임에도 ICIR 0.355)",
+        "predecessor full-sample lookahead -31% inflation 정량 증거 보존"
+      ],
+      "next_action": "Phase 2 진행 (CLAUDE.md 200~300줄 경량화 + skills/rules 5~8 신규)"
     }
   ]
 }
