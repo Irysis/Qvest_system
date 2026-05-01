@@ -425,6 +425,9 @@ wt_status <- function(task_id) {
 }
 
 # ─── WT 단계 전이 ────────────────────────────────────────
+# v7.0 Sprint 1 — sm_validated_advance() 위임 강제. transition table + artifact + waiver 검증 통과 시만 phase 변경.
+# 우회 불가: state_machine.R 미통합 phase 변경 차단.
+# Charter v1.2 §10 GOVERNOR_REJECTED → GOVERNOR_ADMITTED 케이스는 자동 force_waiver=TRUE + challenge_round 증가 + wt_log_user_override() 의무 안내.
 wt_advance <- function(task_id, new_phase, blocker = NULL) {
   wt_dir <- file.path(WT_ROOT, task_id)
   if (!dir.exists(wt_dir)) stop(sprintf("[wt_advance] %s 없음", task_id))
@@ -433,6 +436,34 @@ wt_advance <- function(task_id, new_phase, blocker = NULL) {
   status <- fromJSON(status_path, simplifyVector = TRUE)
   old_phase <- status$current_phase
 
+  # ── v7.0 Sprint 1: state_machine 위임 (single source 검증) ──
+  sm_path <- "02_Infrastructure/worktask/state_machine.R"
+  if (!exists("sm_validated_advance", mode = "function")) {
+    if (file.exists(sm_path)) {
+      source(sm_path, local = FALSE)
+    } else {
+      stop(sprintf("[wt_advance] state_machine.R 부재 — v7.0 Sprint 1 강제 위임 불가: %s", sm_path))
+    }
+  }
+
+  # GOVERNOR_REJECTED → GOVERNOR_ADMITTED는 transition table에 없음 (정당한 user override).
+  # Charter v1.2 §10 — challenge_round + waiver 5-row 의무. force_waiver=TRUE로 sm 통과.
+  override_event <- isTRUE(old_phase == "GOVERNOR_REJECTED") && isTRUE(new_phase == "GOVERNOR_ADMITTED")
+
+  # state machine 검증 — transition + artifact + waiver. 실패 시 stop().
+  sm_result <- tryCatch(
+    sm_validated_advance(
+      wt_id = task_id,
+      from = old_phase,
+      to = new_phase,
+      force_waiver = override_event
+    ),
+    error = function(e) {
+      stop(sprintf("[wt_advance] state_machine BLOCKED %s: %s -> %s | %s",
+                   task_id, old_phase, new_phase, conditionMessage(e)))
+    }
+  )
+
   status$current_phase <- new_phase
   status$updated_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   status$blocker <- blocker
@@ -440,12 +471,10 @@ wt_advance <- function(task_id, new_phase, blocker = NULL) {
   if (is.null(status$challenge_history)) status$challenge_history <- list()
 
   # v1.2 Charter §10: GOVERNOR_REJECTED → GOVERNOR_ADMITTED 직접 전이 시 challenge_round + 1 + flag
-  override_event <- FALSE
-  if (isTRUE(old_phase == "GOVERNOR_REJECTED") && isTRUE(new_phase == "GOVERNOR_ADMITTED")) {
+  if (override_event) {
     status$challenge_round <- as.integer(status$challenge_round) + 1L
     status$last_governor_override_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
-    override_event <- TRUE
-    cat(sprintf("[wt_advance] ⚠ GOVERNOR_REJECTED → GOVERNOR_ADMITTED user override. challenge_round=%d. wt_log_user_override() 호출 권장 (waiver 5-row 명시).\n",
+    cat(sprintf("[wt_advance] ⚠ GOVERNOR_REJECTED → GOVERNOR_ADMITTED user override (force_waiver=TRUE). challenge_round=%d. wt_log_user_override() 호출 의무 (waiver 5-row 명시).\n",
                 status$challenge_round))
   }
 
