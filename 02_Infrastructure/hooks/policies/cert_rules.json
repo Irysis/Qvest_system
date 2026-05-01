@@ -1,0 +1,204 @@
+{
+  "$schema": "qvest-v6.4/cert_rules.json",
+  "version": "1.0",
+  "issued_at": "2026-05-01T15:30:00+0900",
+  "description": "5 Certificate eligibility single source. PostToolUse cert hook + Layer 2 cert_backfill_audit.R 동일 사용. cert_rules.R가 본 JSON import.",
+
+  "certificates": {
+    "alpha_discovery": {
+      "name": "alpha_discovery_certificate.json",
+      "path_template": "qepm/mailbox/worktask/{WT_ID}/alpha_discovery_certificate.json",
+      "trigger_hook": "alpha_discovery_certifier.sh",
+      "trigger_event": "PostToolUse[Write|Edit]",
+      "trigger_matcher": "/alpha_package\\.json$",
+      "owner_role": "alpha-research",
+      "wt_type_applicable": ["discovery"],
+      "wt_type_inheritable": ["deployment"],
+      "wt_type_exempt": ["sizing_only", "hyperparameter_sweep"],
+      "eligibility_AND": {
+        "alpha_inheritance_cor": {
+          "field_path": "diagnostics.alpha_inheritance_cor",
+          "operator": "<",
+          "threshold": 0.95,
+          "description": "기존 admit alpha와 inheritance cor < 0.95"
+        },
+        "mechanism_cited_chars": {
+          "compute": "len(hypothesis_summary) + sum(len(factor_specs[].economic_rationale + factor_specs[].formula))",
+          "operator": ">=",
+          "threshold": 50,
+          "description": "mechanism narrative ≥ 50 chars"
+        },
+        "factor_specs_count": {
+          "field_path": "factor_specs.length",
+          "operator": ">=",
+          "threshold": 1,
+          "description": "factor specs at least 1"
+        },
+        "harvey_t_specs_pass_count": {
+          "field_path": "diagnostics.harvey_t_specs_pass_count",
+          "operator": ">=",
+          "threshold": 3,
+          "description": "Harvey t-stat hurdle 3.0 통과 spec ≥ 3 (multi-factor composite 가정)",
+          "v6_4_strengthen_candidate": "single-factor strong alpha (NW-t ≥ 4 OR ICIR ≥ 0.30 + DSR ≥ 0.7) 시 alternative pass condition 검토. WT_003 BHEQ 사례 evidence."
+        }
+      },
+      "non_issuance_action": "passive_deny (no block, certificate not issued, PG1 admission 자격 없음)",
+      "v6_4_alpha_vector_vs_returns_cor_audit": {
+        "trigger_evidence": "WT_003 risk-research finding — alpha_inheritance_cor 0.05 (vector cosine) vs returns level Pearson 0.717. cert eligibility는 vector cor만 검증 → returns cor 별도 audit 의무 검토 (Phase 7 Sprint 2)",
+        "proposed_addition": {
+          "returns_cor_pearson": {
+            "field_path": "diagnostics.returns_cor_with_admitted_book",
+            "operator": "<",
+            "threshold": 0.30,
+            "description": "alpha returns vs book admit returns level Pearson cor < 0.30 (true ortho)"
+          }
+        }
+      }
+    },
+
+    "sr_provenance": {
+      "name": "sr_provenance_certificate.json",
+      "path_template": "qepm/mailbox/worktask/{WT_ID}/sr_provenance_certificate.json",
+      "trigger_hook": "sr_provenance_check.sh",
+      "trigger_event": "PostToolUse[Write|Edit]",
+      "trigger_matcher": "/forge_package\\.json$",
+      "owner_role": "forge",
+      "wt_type_applicable": ["discovery", "deployment"],
+      "wt_type_exempt": ["sizing_only", "hyperparameter_sweep"],
+      "eligibility_4_field": {
+        "sr_realized_share_based": {
+          "field_path": "sr_realized_share_based",
+          "operator": "exists_numeric"
+        },
+        "measurement_basis_primary": {
+          "field_path": "measurement_basis_primary",
+          "operator": "==",
+          "value": "forge_realized_share_based"
+        },
+        "weights_csv_unique_dates_count": {
+          "field_path": "weights_csv_unique_dates_count",
+          "operator": "exists_int"
+        },
+        "schedule_density_ratio": {
+          "field_path": "schedule_density_ratio",
+          "operator": "exists_numeric"
+        }
+      },
+      "hard_block_pattern": "method 필드에 'ProductionSchedule[N]m' fabrication label 매치 시 decision:block (Charter §9/§10)"
+    },
+
+    "schedule_fidelity": {
+      "name": "schedule_fidelity_certificate.json",
+      "path_template": "qepm/mailbox/worktask/{WT_ID}/schedule_fidelity_certificate.json",
+      "trigger_hook": "schedule_fidelity_check.sh",
+      "trigger_event": "PostToolUse[Write|Edit]",
+      "trigger_matcher": "/optimization_package\\.json$",
+      "owner_role": "optimizer-research",
+      "eligibility_OR": {
+        "density": {
+          "compute": "weights_csv_unique_dates / sig_dates_count",
+          "operator": ">=",
+          "threshold": 0.95
+        },
+        "infeasibility_report": {
+          "field_path": "infeasibility_report OR schedule_skip_justified",
+          "operator": "exists"
+        }
+      },
+      "hard_block_pattern": "run_all.R / run_forge*.R 내 'ProductionSchedule[N]m' fabrication label 매치 시 decision:block"
+    },
+
+    "forge_package_validated": {
+      "name": "forge_package_validated_certificate.json",
+      "path_template": "qepm/mailbox/worktask/{WT_ID}/forge_package_validated_certificate.json",
+      "trigger_hook": "worktask_artifact_validator.sh",
+      "trigger_event": "PostToolUse[Write|Edit]",
+      "trigger_matcher": "/forge_package\\.json$",
+      "owner_role": "forge",
+      "eligibility_8_field": [
+        "task_id",
+        "backtest_summary",
+        "sr_realized_share_based",
+        "measurement_basis_primary",
+        "weights_csv_unique_dates_count",
+        "alpha_sig_dates_count",
+        "schedule_density_ratio",
+        "schedule_density_pass + pure_function_violation"
+      ]
+    },
+
+    "governor_concord": {
+      "name": "governor_concord_certificate.json",
+      "with_waiver_name": "governor_concord_with_waiver_certificate.json",
+      "path_template": "qepm/mailbox/governor/governor_concord_certificate.json",
+      "scope": "global (per book_state, not per WT)",
+      "trigger_hook": "governor_concord_certifier.sh",
+      "trigger_event": "PostToolUse[Write|Edit]",
+      "trigger_matcher": "/book_state\\.json$",
+      "owner_role": "governor",
+      "eligibility": {
+        "all_admitted_match": {
+          "compute": "for each str_id in book_state.admitted_ids: |governor_admission.allocation_decided[str_id] - book_weights[str_id]| < 0.01",
+          "all_match_required": true
+        },
+        "with_waiver_path": {
+          "trigger": "all_match=false but waiver_log present",
+          "waiver_log_min_rows": 5,
+          "waiver_log_required_fields": ["str_id", "expected_weight", "actual_weight", "delta", "justification"]
+        }
+      },
+      "hard_block_pattern": "book_state.admitted_ids 신규 추가하려는 str_id의 governor_admission.json 전무 시 decision:block (admission graduation bypass, Charter §10)"
+    }
+  },
+
+  "layer_2_backfill": {
+    "script": "02_Infrastructure/ops/cert_backfill_audit.R",
+    "modes": {
+      "auto": "Governor ELIGIBLE_FOR_ISSUANCE 명시 cert만 자동 발급 (default, bootstrap 호출)",
+      "manual": "모든 발급 가능 cert 강제 (Q-Lead 직접)",
+      "dry-run": "실제 발급 없이 audit만 수행"
+    },
+    "import_obligation": "본 cert_rules.json 단일 source 사용. eligibility 중복 구현 금지.",
+    "option_b_hook_bypass": "R script가 cert 파일 직접 작성 (PostToolUse hook 시야 밖). schema는 Hook과 동일.",
+    "governance_log_record": "RETROACTIVE_CERT_ISSUANCE entry 자동 기록 (qepm/mailbox/governor/governance_log.json)"
+  },
+
+  "health_score": {
+    "name": "measurement_coherence_health_score",
+    "range": [0, 100],
+    "tiers": {
+      "HEALTHY": "≥ 90",
+      "WARNING": "70~89",
+      "DRIFTED": "< 70"
+    },
+    "compute_script": "02_Infrastructure/portfolio/measurement_basis_audit.R",
+    "auto_call_on_drifted": "bootstrap.sh L7c → cert_backfill_audit.R --auto"
+  },
+
+  "role_card_4x5": {
+    "discovery": {
+      "own": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+      "inherit": [],
+      "exempt": [],
+      "optional": ["governor_concord (global)"]
+    },
+    "deployment": {
+      "own": ["sr_provenance", "schedule_fidelity", "forge_package_validated", "governor_concord"],
+      "inherit": ["alpha_discovery (from discovery_of)"],
+      "exempt": [],
+      "optional": []
+    },
+    "sizing_only": {
+      "own": ["governor_concord"],
+      "inherit": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+      "exempt": [],
+      "optional": []
+    },
+    "hyperparameter_sweep": {
+      "own": ["governor_concord"],
+      "inherit": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+      "exempt": [],
+      "optional": []
+    }
+  }
+}

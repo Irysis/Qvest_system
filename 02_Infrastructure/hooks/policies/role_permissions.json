@@ -1,0 +1,147 @@
+{
+  "$schema": "qvest-v6.4/role_permissions.json",
+  "version": "1.0",
+  "issued_at": "2026-05-01T15:30:00+0900",
+  "description": "Agent role 경계 single source. agent_role_guard.sh + qvest_hook_router.py가 본 policy import.",
+
+  "active_roles": [
+    "alpha-research",
+    "risk-research",
+    "optimizer-research",
+    "forge",
+    "judge",
+    "governor",
+    "architect",
+    "blender",
+    "execution",
+    "monitoring",
+    "q-lead"
+  ],
+
+  "permissions": {
+    "alpha-research": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/alpha_package.json",
+        "qepm/mailbox/worktask/{WT_ID}/alpha_package_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+        "qepm/mailbox/worktask/{WT_ID}/governance_log.json",
+        "qepm/mailbox/worktask/{WT_ID}/scripts/*",
+        "stage_artifacts/WT_{ID}/alpha_scores.parquet",
+        "stage_artifacts/WT_{ID}/alpha_validation.json",
+        "stage_artifacts/WT_{ID}/posterior_*.parquet",
+        "stage_artifacts/WT_{ID}/ic_history.parquet",
+        "stage_artifacts/WT_{ID}/theta_history.parquet",
+        "stage_artifacts/WT_{ID}/per_factor_ic.parquet",
+        "stage_artifacts/WT_{ID}/alpha_diagnostics_full.rds"
+      ],
+      "absolute_forbidden": [
+        "covariance matrix / Σ 계산",
+        "weights / portfolio decision",
+        "risk_package.json / optimization_package.json / forge_package.json 수정"
+      ],
+      "hook_enforce": "agent_role_guard.sh + worktask_constraint_enforcer.sh"
+    },
+    "risk-research": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/risk_package.json",
+        "qepm/mailbox/worktask/{WT_ID}/risk_package_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+        "qepm/mailbox/worktask/{WT_ID}/risk_challenge_note.md (legacy)",
+        "qepm/mailbox/worktask/{WT_ID}/governance_log.json",
+        "qepm/mailbox/worktask/{WT_ID}/scripts/*",
+        "stage_artifacts/WT_{ID}/covariance*.parquet",
+        "stage_artifacts/WT_{ID}/exposure_matrix.parquet",
+        "stage_artifacts/WT_{ID}/factor_covariance.parquet",
+        "stage_artifacts/WT_{ID}/specific_risk.parquet",
+        "stage_artifacts/WT_{ID}/regime_correlation.parquet",
+        "stage_artifacts/WT_{ID}/tail_risk.json",
+        "stage_artifacts/WT_{ID}/crowding_blend_simulation.csv",
+        "stage_artifacts/WT_{ID}/risk_method_shopping.json"
+      ],
+      "absolute_forbidden": [
+        "alpha_package.json 수정",
+        "weights / portfolio decision",
+        "optimization_package.json / forge_package.json 수정"
+      ]
+    },
+    "optimizer-research": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/optimization_package.json",
+        "qepm/mailbox/worktask/{WT_ID}/optimization_package_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/weights.csv",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+        "qepm/mailbox/worktask/{WT_ID}/optimizer_challenge_note.md (legacy)",
+        "qepm/mailbox/worktask/{WT_ID}/weight_method_selected.md",
+        "qepm/mailbox/worktask/{WT_ID}/governance_log.json",
+        "qepm/mailbox/worktask/{WT_ID}/scripts/*",
+        "stage_artifacts/WT_{ID}/weights.csv (mirror)",
+        "stage_artifacts/WT_{ID}/blend_simulation.csv",
+        "stage_artifacts/WT_{ID}/method_metrics_standalone.csv",
+        "stage_artifacts/WT_{ID}/composite_alpha_panel.parquet"
+      ],
+      "absolute_forbidden": [
+        "alpha_package.json / risk_package.json 수정",
+        "covariance / Σ 재계산",
+        "Σ 재정의"
+      ]
+    },
+    "forge": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/forge_package.json",
+        "qepm/mailbox/worktask/{WT_ID}/forge_package_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/run_all.R",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+        "qepm/mailbox/worktask/{WT_ID}/scripts/*",
+        "stage_artifacts/WT_{ID}/bt_result.rds",
+        "stage_artifacts/WT_{ID}/bt_result_*.csv",
+        "stage_artifacts/WT_{ID}/bt_result.xlsx",
+        "stage_artifacts/WT_{ID}/audit_log.json"
+      ],
+      "absolute_forbidden": [
+        "target_weights / alpha_vector / cov 수정",
+        "alpha_package.json / risk_package.json / optimization_package.json 수정 (read-only 통합)"
+      ],
+      "ax_008_triangulation": "Forge + Codex + Architect 2/3 PASS 의무"
+    },
+    "judge": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/judge_verdict.json",
+        "qepm/mailbox/worktask/{WT_ID}/judge_verdict_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md"
+      ],
+      "absolute_forbidden": [
+        "전략 설계 / 구현 / weight 결정",
+        "alpha_package.json / risk_package.json / optimization_package.json / forge_package.json 수정"
+      ],
+      "lockbox_access": "exclusive (PIT 최종 판결자)"
+    },
+    "governor": {
+      "can_write": [
+        "qepm/mailbox/worktask/{WT_ID}/governor_admission.json",
+        "qepm/mailbox/worktask/{WT_ID}/governor_admission_draft.json",
+        "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
+        "qepm/mailbox/governor/book_state.json",
+        "qepm/mailbox/governor/governance_log.json"
+      ],
+      "absolute_forbidden": [
+        "전략 설계 / 검증",
+        "alpha_package.json / risk_package.json / optimization_package.json / forge_package.json 수정"
+      ]
+    },
+    "q-lead": {
+      "can_write": [
+        "all metadata / governance_log / status.json / spawn prompts",
+        ".cache/portfolio_gap_vector.json (gap 갱신)",
+        "MEMORY.md / methodology_active.md / next_session_task.md (memory)"
+      ],
+      "absolute_forbidden": [
+        "Rscript 직접 실행 (Forge / alpha agent에 위임)",
+        "weight 결정 (Optimizer agent)",
+        "공분산 계산 (Risk agent)",
+        "Alpha/Risk/Opt 경계 침범"
+      ]
+    }
+  },
+
+  "violation_response": "Hook L3 hard block — `decision: block` + reason 명시"
+}

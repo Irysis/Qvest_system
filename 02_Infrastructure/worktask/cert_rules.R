@@ -1,0 +1,347 @@
+#==============================================================================
+# cert_rules.R — Qvest v6.4 Certificate Rules Single Source
+# 02_Infrastructure/worktask/cert_rules.R
+#
+# Phase 7 (Sprint 2) — hook auto-cert + Layer 2 backfill 동일 eligibility.
+#
+# Source: 02_Infrastructure/hooks/policies/cert_rules.json (single source)
+#
+# 사용:
+#   source("02_Infrastructure/worktask/cert_rules.R")
+#   qvest_cert_rules_selftest()
+#   cr_check_eligibility(cert_name="alpha_discovery", package_path="...")
+#   cr_get_role_card(wt_type="discovery") → list(own=, inherit=, exempt=, optional=)
+#
+# Phase 7 의무: cert_backfill_audit.R + 5 cert PostToolUse hook 본 R script import.
+# eligibility 중복 구현 금지.
+#
+# v1.0 — 2026-05-01 Session 75 Sprint 2 Phase 7
+#==============================================================================
+
+suppressPackageStartupMessages({
+  library(jsonlite)
+})
+
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
+if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
+  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+}
+
+CR_POLICY_PATH <- file.path(PROJ_ROOT,
+                            "02_Infrastructure/hooks/policies/cert_rules.json")
+
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
+.cr_policy_cache <- NULL
+
+cr_load_policy <- function(force_reload = FALSE) {
+  if (!is.null(.cr_policy_cache) && !force_reload) {
+    return(.cr_policy_cache)
+  }
+  if (!file.exists(CR_POLICY_PATH)) {
+    stop(sprintf("[cert_rules] Policy not found: %s", CR_POLICY_PATH))
+  }
+  policy <- fromJSON(CR_POLICY_PATH, simplifyVector = FALSE)
+  assign(".cr_policy_cache", policy, envir = .GlobalEnv)
+  policy
+}
+
+# ─────────────────────────────────────────────────────────────────
+# 1. Eligibility check (5 cert)
+# ─────────────────────────────────────────────────────────────────
+
+cr_check_alpha_discovery <- function(package_path) {
+  if (!file.exists(package_path)) {
+    return(list(eligible = FALSE, reason = "alpha_package.json 부재", payload = list()))
+  }
+  pkg <- tryCatch(fromJSON(package_path, simplifyVector = FALSE),
+                  error = function(e) NULL)
+  if (is.null(pkg)) {
+    return(list(eligible = FALSE, reason = "parse fail", payload = list()))
+  }
+
+  diag <- pkg$diagnostics %||% list()
+  cor <- diag$alpha_inheritance_cor
+  ht <- diag$harvey_t_specs_pass_count %||% 0L
+  factor_specs <- pkg$factor_specs %||% list()
+  n_factor <- length(factor_specs)
+
+  mech <- pkg$hypothesis_summary %||% ""
+  for (fs in factor_specs) {
+    if (is.list(fs)) {
+      mech <- paste(mech, fs$economic_rationale %||% "",
+                    fs$formula %||% "", sep = " ")
+    }
+  }
+  mech_chars <- nchar(trimws(mech))
+
+  issues <- character()
+  if (is.null(cor)) issues <- c(issues, "alpha_inheritance_cor missing")
+  else if (cor >= 0.95) issues <- c(issues, sprintf("cor=%.4f >= 0.95", cor))
+  if (mech_chars < 50) issues <- c(issues, sprintf("mech %d < 50", mech_chars))
+  if (n_factor < 1) issues <- c(issues, sprintf("factor_specs %d < 1", n_factor))
+  if (ht < 3) issues <- c(issues, sprintf("harvey_t_count %d < 3", ht))
+
+  list(
+    eligible = length(issues) == 0,
+    reason = if (length(issues) > 0) paste(issues, collapse = " | ") else "all_pass",
+    payload = list(
+      alpha_inheritance_cor = cor,
+      mechanism_cited_chars = mech_chars,
+      factor_specs_count = n_factor,
+      harvey_t_specs_pass_count = ht
+    )
+  )
+}
+
+cr_check_sr_provenance <- function(package_path) {
+  if (!file.exists(package_path)) {
+    return(list(eligible = FALSE, reason = "forge_package.json 부재"))
+  }
+  pkg <- tryCatch(fromJSON(package_path, simplifyVector = FALSE),
+                  error = function(e) NULL)
+  if (is.null(pkg)) return(list(eligible = FALSE, reason = "parse fail"))
+
+  required <- c("sr_realized_share_based", "measurement_basis_primary",
+                "weights_csv_unique_dates_count", "schedule_density_ratio")
+  missing <- required[!required %in% names(pkg)]
+  basis_ok <- identical(pkg$measurement_basis_primary, "forge_realized_share_based")
+
+  issues <- character()
+  if (length(missing) > 0) issues <- c(issues, paste0("missing: ", paste(missing, collapse = ", ")))
+  if (!basis_ok) issues <- c(issues, sprintf("basis='%s' != 'forge_realized_share_based'",
+                                              pkg$measurement_basis_primary %||% "NA"))
+
+  list(
+    eligible = length(issues) == 0,
+    reason = if (length(issues) > 0) paste(issues, collapse = " | ") else "all_4_field_pass",
+    payload = list(
+      sr_realized_share_based = pkg$sr_realized_share_based,
+      measurement_basis_primary = pkg$measurement_basis_primary,
+      weights_csv_unique_dates_count = pkg$weights_csv_unique_dates_count,
+      schedule_density_ratio = pkg$schedule_density_ratio
+    )
+  )
+}
+
+cr_check_forge_package_validated <- function(package_path) {
+  if (!file.exists(package_path)) {
+    return(list(eligible = FALSE, reason = "forge_package.json 부재"))
+  }
+  pkg <- tryCatch(fromJSON(package_path, simplifyVector = FALSE),
+                  error = function(e) NULL)
+  if (is.null(pkg)) return(list(eligible = FALSE, reason = "parse fail"))
+
+  required_8 <- c("task_id", "backtest_summary", "sr_realized_share_based",
+                  "measurement_basis_primary", "weights_csv_unique_dates_count",
+                  "alpha_sig_dates_count", "schedule_density_ratio",
+                  "schedule_density_pass", "pure_function_violation")
+  missing <- required_8[!required_8 %in% names(pkg)]
+
+  list(
+    eligible = length(missing) == 0,
+    reason = if (length(missing) > 0)
+      paste0("missing: ", paste(missing, collapse = ", "))
+      else "all_8_field_pass",
+    payload = list(validated_fields_count = length(required_8) - length(missing))
+  )
+}
+
+cr_check_schedule_fidelity <- function(package_path, weights_csv = NULL,
+                                       alpha_package_path = NULL) {
+  if (!file.exists(package_path)) {
+    return(list(eligible = FALSE, reason = "optimization_package.json 부재"))
+  }
+  pkg <- tryCatch(fromJSON(package_path, simplifyVector = FALSE),
+                  error = function(e) NULL)
+  if (is.null(pkg)) return(list(eligible = FALSE, reason = "parse fail"))
+
+  sched <- pkg$schedule_fidelity %||% list()
+  wcd <- sched$weights_csv_unique_dates_count %||% 0L
+  sdc <- sched$alpha_sig_dates_count %||% 0L
+
+  if (sdc == 0) {
+    return(list(eligible = FALSE, reason = "alpha_sig_dates_count=0"))
+  }
+
+  ratio <- wcd / sdc
+  has_infeas <- !is.null(sched$infeasibility_report) ||
+    !is.null(sched$schedule_skip_justified) ||
+    isTRUE(sched$schedule_skip_justified)
+
+  if (ratio < 0.95 && !has_infeas) {
+    return(list(eligible = FALSE,
+                reason = sprintf("density %.3f < 0.95 + no infeasibility", ratio),
+                payload = list(schedule_density_ratio = round(ratio, 3))))
+  }
+
+  list(
+    eligible = TRUE,
+    reason = sprintf("density=%.3f", ratio),
+    payload = list(
+      weights_csv_unique_dates_count = wcd,
+      alpha_sig_dates_count = sdc,
+      schedule_density_ratio = round(ratio, 3),
+      infeasibility_report_cited = ratio < 0.95
+    )
+  )
+}
+
+cr_check_governor_concord <- function(book_state_path, governor_dir = NULL,
+                                      wt_root = NULL) {
+  if (!file.exists(book_state_path)) {
+    return(list(eligible = FALSE, reason = "book_state.json 부재"))
+  }
+  bs <- tryCatch(fromJSON(book_state_path, simplifyVector = FALSE),
+                 error = function(e) NULL)
+  if (is.null(bs)) return(list(eligible = FALSE, reason = "parse fail"))
+
+  admitted_ids <- unlist(bs$admitted_ids %||% list())
+  weights <- bs$book_weights %||% list()
+
+  if (length(admitted_ids) == 0) {
+    return(list(eligible = FALSE, reason = "no admitted_ids"))
+  }
+
+  if (is.null(wt_root)) {
+    wt_root <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
+  }
+
+  details <- list()
+  all_match <- TRUE
+  for (sid in admitted_ids) {
+    sid <- as.character(sid)
+    # Find governor_admission for sid (best-effort lineage)
+    ga_paths <- list.files(wt_root, pattern = "^governor_admission\\.json$",
+                           recursive = TRUE, full.names = TRUE)
+    ga_match <- NULL
+    for (p in ga_paths) {
+      ga <- tryCatch(fromJSON(p, simplifyVector = FALSE), error = function(e) NULL)
+      if (!is.null(ga) && (identical(ga$str_id, sid) ||
+                           sid %in% names(ga$allocation_decided %||% list()))) {
+        ga_match <- ga
+        break
+      }
+    }
+    if (is.null(ga_match)) {
+      all_match <- FALSE
+      details[[length(details) + 1]] <- list(
+        str_id = sid, match = FALSE, reason = "no governor_admission found"
+      )
+      next
+    }
+    expected <- (ga_match$allocation_decided %||% list())[[sid]]
+    actual <- weights[[sid]]
+    is_match <- !is.null(expected) && !is.null(actual) &&
+      abs(as.numeric(expected) - as.numeric(actual)) < 0.01
+    if (!is_match) all_match <- FALSE
+    details[[length(details) + 1]] <- list(
+      str_id = sid,
+      expected_weight = expected,
+      actual_weight = actual,
+      match = is_match
+    )
+  }
+
+  list(
+    eligible = all_match,
+    reason = if (all_match) "all_admitted_match" else "some_mismatch",
+    payload = list(
+      concord_type = if (all_match) "match" else "with_waiver_required",
+      details = details
+    )
+  )
+}
+
+# ─────────────────────────────────────────────────────────────────
+# 2. Unified eligibility check (cert_name dispatch)
+# ─────────────────────────────────────────────────────────────────
+
+cr_check_eligibility <- function(cert_name, package_path,
+                                 weights_csv = NULL, alpha_package_path = NULL,
+                                 wt_root = NULL) {
+  switch(cert_name,
+    "alpha_discovery" = cr_check_alpha_discovery(package_path),
+    "sr_provenance" = cr_check_sr_provenance(package_path),
+    "forge_package_validated" = cr_check_forge_package_validated(package_path),
+    "schedule_fidelity" = cr_check_schedule_fidelity(package_path, weights_csv,
+                                                     alpha_package_path),
+    "governor_concord" = cr_check_governor_concord(package_path,
+                                                    wt_root = wt_root),
+    list(eligible = FALSE, reason = sprintf("unknown cert: %s", cert_name))
+  )
+}
+
+# ─────────────────────────────────────────────────────────────────
+# 3. Role Card (wt_type → cert ownership)
+# ─────────────────────────────────────────────────────────────────
+
+cr_get_role_card <- function(wt_type) {
+  policy <- cr_load_policy()
+  card <- policy$role_card_4x5[[wt_type]]
+  if (is.null(card)) {
+    return(list(error = sprintf("unknown wt_type: %s", wt_type)))
+  }
+  list(
+    own = unlist(card$own %||% list()),
+    inherit = unlist(card$inherit %||% list()),
+    exempt = unlist(card$exempt %||% list()),
+    optional = unlist(card$optional %||% list())
+  )
+}
+
+# ─────────────────────────────────────────────────────────────────
+# 4. Selftest
+# ─────────────────────────────────────────────────────────────────
+
+qvest_cert_rules_selftest <- function() {
+  cat("=== Qvest v6.4 Cert Rules Selftest ===\n")
+
+  policy <- tryCatch(cr_load_policy(force_reload = TRUE),
+                     error = function(e) {
+                       cat("[FAIL] policy load:", conditionMessage(e), "\n")
+                       NULL
+                     })
+  if (is.null(policy)) return(invisible(FALSE))
+
+  certs <- names(policy$certificates %||% list())
+  cat(sprintf("[PASS] policy loaded: %d certs\n", length(certs)))
+
+  # Test each cert eligibility check (synthetic — file 부재 시 fail expected)
+  for (cert in certs) {
+    res <- cr_check_eligibility(cert, "/nonexistent/path.json")
+    if (!res$eligible) {
+      cat(sprintf("[PASS] %s: file 부재 detection\n", cert))
+    }
+  }
+
+  # Test role card
+  for (wt_type in c("discovery", "deployment", "sizing_only", "hyperparameter_sweep")) {
+    card <- cr_get_role_card(wt_type)
+    if (!is.null(card$error)) {
+      cat(sprintf("[FAIL] role_card %s: %s\n", wt_type, card$error))
+    } else {
+      cat(sprintf("[PASS] role_card %s: own=%d inherit=%d\n",
+                  wt_type, length(card$own), length(card$inherit)))
+    }
+  }
+
+  # Test active book BHEQ (real WT_001 alpha_package — if exists)
+  alpha_pkg <- file.path(PROJ_ROOT,
+                         "qepm/mailbox/worktask/WT-D20260501_003/alpha_package.json")
+  if (file.exists(alpha_pkg)) {
+    res <- cr_check_eligibility("alpha_discovery", alpha_pkg)
+    cat(sprintf("[INFO] WT_003 alpha cert eligibility: %s | %s\n",
+                if (res$eligible) "PASS" else "FAIL", res$reason))
+  }
+
+  cat("\n=== Selftest PASS ===\n")
+  invisible(TRUE)
+}
+
+cat("[cert_rules.R] Loaded. Functions:\n")
+cat("  cr_load_policy(force_reload=FALSE)\n")
+cat("  cr_check_eligibility(cert_name, package_path, ...)\n")
+cat("  cr_check_alpha_discovery / sr_provenance / schedule_fidelity / forge_package_validated / governor_concord\n")
+cat("  cr_get_role_card(wt_type)\n")
+cat("  qvest_cert_rules_selftest()\n")

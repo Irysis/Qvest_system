@@ -1,0 +1,142 @@
+{
+  "$schema": "qvest-v6.4/state_transitions.json",
+  "version": "1.0",
+  "issued_at": "2026-05-01T15:30:00+0900",
+  "issued_by": "Q-Lead Session 75 v6.4 Sprint 2 Phase 4",
+  "description": "WorkTask phase 전이 single source. state_machine.R + qvest_hook_router.py가 본 policy import. 임의 phase jump waiver 없이 불가.",
+
+  "phases": [
+    "SPEC_APPROVED",
+    "ALPHA_DONE",
+    "RISK_DONE",
+    "OPTIMIZER_DONE",
+    "FORGE_DONE",
+    "JUDGE_PASSED",
+    "JUDGE_FAILED",
+    "GOVERNOR_ADMITTED",
+    "GOVERNOR_REJECTED",
+    "COMPLETED",
+    "ABORTED"
+  ],
+
+  "transitions": {
+    "SPEC_APPROVED": {
+      "allowed_next": ["ALPHA_DONE", "ABORTED"],
+      "actor_role": "alpha-research",
+      "required_artifacts": ["request.json"]
+    },
+    "ALPHA_DONE": {
+      "allowed_next": ["RISK_DONE", "ABORTED"],
+      "actor_role": "risk-research",
+      "required_artifacts": [
+        "alpha_package.json",
+        "challenge_note.md (or alpha-specific)",
+        "codex_critic_response_alpha.json"
+      ],
+      "optional_artifacts": ["alpha_discovery_certificate.json"],
+      "skip_cert_with_waiver": true,
+      "waiver_field": "challenge_note.md::codex_critic_skip_waiver"
+    },
+    "RISK_DONE": {
+      "allowed_next": ["OPTIMIZER_DONE", "ABORTED", "ALPHA_RISK_HELD"],
+      "actor_role": "optimizer-research",
+      "required_artifacts": [
+        "risk_package.json",
+        "challenge_note.md (or risk-specific)",
+        "codex_critic_response_risk.json",
+        "stage_artifacts/WT_{ID}/covariance.parquet"
+      ]
+    },
+    "OPTIMIZER_DONE": {
+      "allowed_next": ["FORGE_DONE", "ABORTED"],
+      "actor_role": "forge",
+      "required_artifacts": [
+        "optimization_package.json",
+        "weights.csv",
+        "challenge_note.md (or optimizer-specific)",
+        "codex_critic_response_optimizer.json"
+      ],
+      "optional_artifacts": ["schedule_fidelity_certificate.json"]
+    },
+    "FORGE_DONE": {
+      "allowed_next": ["JUDGE_PASSED", "JUDGE_FAILED", "ABORTED"],
+      "actor_role": "judge",
+      "required_artifacts": [
+        "forge_package.json",
+        "challenge_note.md (or forge-specific)",
+        "codex_critic_response_forge.json",
+        "stage_artifacts/WT_{ID}/bt_result.rds"
+      ],
+      "ax_008_triangulation_required": true,
+      "ax_008_sources": ["forge", "codex", "architect"],
+      "ax_008_pass_threshold": 2,
+      "optional_artifacts": [
+        "sr_provenance_certificate.json",
+        "forge_package_validated_certificate.json"
+      ]
+    },
+    "JUDGE_PASSED": {
+      "allowed_next": ["GOVERNOR_ADMITTED", "GOVERNOR_REJECTED", "ABORTED"],
+      "actor_role": "governor",
+      "required_artifacts": [
+        "judge_verdict.json",
+        "challenge_note.md (or judge-specific)",
+        "codex_critic_response_judge.json"
+      ]
+    },
+    "JUDGE_FAILED": {
+      "allowed_next": ["ABORTED", "FORGE_DONE"],
+      "actor_role": "q-lead OR forge (revise)",
+      "required_artifacts": [
+        "judge_verdict.json"
+      ],
+      "revise_path_allowed": true
+    },
+    "GOVERNOR_ADMITTED": {
+      "allowed_next": ["COMPLETED"],
+      "actor_role": "governor",
+      "required_artifacts": [
+        "governor_admission.json",
+        "challenge_note.md (or governor-specific)",
+        "codex_critic_response_governor.json"
+      ],
+      "side_effect": "qepm/mailbox/governor/book_state.json admit (governor_concord_certificate auto-trigger)"
+    },
+    "GOVERNOR_REJECTED": {
+      "allowed_next": ["ABORTED"],
+      "actor_role": "q-lead",
+      "required_artifacts": ["governor_admission.json"]
+    },
+    "COMPLETED": {
+      "allowed_next": [],
+      "terminal": true
+    },
+    "ABORTED": {
+      "allowed_next": [],
+      "terminal": true,
+      "required_artifacts": ["status.json::abort_reason or hold_reason"]
+    }
+  },
+
+  "auxiliary_phases": {
+    "description": "보조 phase — Q-Lead override / 보류 / archive 시 사용",
+    "phases": [
+      "ARCHIVED_REJECTED_BY_CODEX",
+      "ABORTED_CERT_DENIED_HONEST",
+      "ALPHA_RISK_DONE_HELD_*",
+      "ALPHA_DONE_QLEAD_OVERRIDE_BORDERLINE_ACCEPT"
+    ],
+    "transition_rule": "any active phase → auxiliary phase via Q-Lead waiver (governance_log entry 의무)"
+  },
+
+  "waiver_protocol": {
+    "description": "임의 phase jump 또는 cert 부재 admission 시 waiver",
+    "where": "challenge_note.md (or status.json::override_caveats)",
+    "field_name": "codex_critic_skip_waiver OR cert_critical_skip_waiver OR phase_jump_waiver",
+    "required": [
+      "사유 명시 (≥ 50 chars)",
+      "도훈 override 인용 OR Q-Lead urgent 명시",
+      "사후 Layer 2 sweep 의무 (cert_backfill_audit.R --auto)"
+    ]
+  }
+}
