@@ -145,9 +145,9 @@ check_hook_dryrun <- function(project_root, no_write = FALSE) {
 }
 
 check_e2e_kernel <- function(project_root, no_write = FALSE) {
-  e2e_path <- file.path(project_root,
-                          "08_Tests/integration/test_wt_lifecycle_e2e.R")
-  if (!file.exists(e2e_path)) {
+  e2e_rel <- "08_Tests/integration/test_wt_lifecycle_e2e.R"
+  e2e_abs <- file.path(project_root, e2e_rel)
+  if (!file.exists(e2e_abs)) {
     return(mk_check("e2e_kernel", "E2E kernel 4 시나리오",
                     "FAIL", "test_wt_lifecycle_e2e.R 부재"))
   }
@@ -167,9 +167,19 @@ check_e2e_kernel <- function(project_root, no_write = FALSE) {
   evidence <- file.path(project_root,
                          "qepm/observability/readiness/e2e_output.log")
   dir.create(dirname(evidence), recursive = TRUE, showWarnings = FALSE)
-  out <- run_cmd("Rscript", c(e2e_path), timeout_sec = 300L)
+  # Relative path + setwd(project_root) — 한글 absolute path shell escape 회피
+  out <- run_cmd("Rscript", c(e2e_rel), timeout_sec = 300L,
+                  wd = project_root)
   writeLines(paste(c(out$stdout, "---STDERR---", out$stderr),
                     collapse = "\n"), evidence)
+
+  # Always cleanup synthetic residue post-e2e (e2e 내부 cleanup이 한글 path
+  # system2로 실패할 수 있어 책임을 명확히 — gate가 직접 cleanup_guard 호출)
+  guard_rel <- "08_Tests/integration/_e2e_cleanup_guard.sh"
+  guard_abs <- file.path(project_root, guard_rel)
+  if (file.exists(guard_abs)) {
+    run_cmd("bash", c(guard_rel, "--force"), wd = project_root)
+  }
 
   # Production hash after
   after <- sapply(guard_files,
@@ -441,8 +451,8 @@ check_qvest_wt <- function(project_root, no_write = FALSE) {
 }
 
 check_timeline_generation <- function(project_root, no_write = FALSE) {
-  wt_timeline <- file.path(project_root,
-                             "02_Infrastructure/observability/wt_timeline.R")
+  wt_timeline_rel <- "02_Infrastructure/observability/wt_timeline.R"
+  wt_timeline <- file.path(project_root, wt_timeline_rel)
   if (!file.exists(wt_timeline)) {
     return(mk_check("timeline_generation", "Timeline generation",
                     "FAIL", "wt_timeline.R 부재"))
@@ -482,10 +492,11 @@ check_timeline_generation <- function(project_root, no_write = FALSE) {
                     sprintf("no --dry-run support + no_write — skip (WT=%s)", wt_id)))
   }
 
+  # Relative path + setwd(wd) — 한글 absolute path 회피
   args <- if (has_dry_run) {
-    c(wt_timeline, "--wt-id", wt_id, "--dry-run")
+    c(wt_timeline_rel, "--wt-id", wt_id, "--dry-run")
   } else {
-    c(wt_timeline, "--wt-id", wt_id)
+    c(wt_timeline_rel, "--wt-id", wt_id)
   }
   out <- run_cmd("Rscript", args, timeout_sec = 60L, wd = project_root)
   if (out$rc != 0) {

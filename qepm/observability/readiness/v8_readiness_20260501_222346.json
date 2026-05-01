@@ -1,23 +1,23 @@
 {
   "gate_id": "v8_design_readiness",
-  "ran_at": "2026-05-01T22:24:37+0900",
+  "ran_at": "2026-05-01T22:23:39+0900",
   "project_root": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
-  "overall": "PASS",
-  "ready_for_v8_design": true,
+  "overall": "FAIL",
+  "ready_for_v8_design": false,
   "checks": [
     {
       "id": "hook_dryrun",
       "name": "Hook dry-run 30/30",
       "status": "PASS",
       "details": "30 pass / 0 fail",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/08_Tests/hooks/results.json"
+      "evidence_path": "./08_Tests/hooks/results.json"
     },
     {
       "id": "e2e_kernel",
       "name": "E2E kernel 4 시나리오",
-      "status": "PASS",
-      "details": "12 pass / 0 fail (e2e+production guards)",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/observability/readiness/e2e_output.log"
+      "status": "FAIL",
+      "details": "synthetic residue 4건 (e2e cleanup guard 실패)",
+      "evidence_path": "./qepm/observability/readiness/e2e_output.log"
     },
     {
       "id": "router_selftest",
@@ -43,8 +43,8 @@
     {
       "id": "schema_active_wt",
       "name": "Active WT schema validation",
-      "status": "PASS",
-      "details": "validated=3 failed=0 ",
+      "status": "WARN",
+      "details": "validable WT 없음 (alpha_package 부재)",
       "evidence_path": null
     },
     {
@@ -52,13 +52,13 @@
       "name": "Legacy hook 등록 0건",
       "status": "PASS",
       "details": "0 hits",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.claude/settings.json"
+      "evidence_path": "./.claude/settings.json"
     },
     {
       "id": "synthetic_residue_zero",
       "name": "Synthetic WT residue 0건",
-      "status": "PASS",
-      "details": "0 residue ✅",
+      "status": "WARN",
+      "details": "4 residue: WT-D99990101_001, WT-D99990102_001, WT-D99990103_001, WT-D99990104_001",
       "evidence_path": null
     },
     {
@@ -66,14 +66,14 @@
       "name": "qvest_search CLI",
       "status": "PASS",
       "details": "path=02_Infrastructure/search/qvest_search count=3",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/search/qvest_search"
+      "evidence_path": "./02_Infrastructure/search/qvest_search"
     },
     {
       "id": "qvest_wt",
       "name": "qvest_wt CLI",
-      "status": "PASS",
-      "details": "path=02_Infrastructure/observability/qvest_wt recent=3 (synthetic 자동 제외)",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/observability/qvest_wt"
+      "status": "WARN",
+      "details": "path=02_Infrastructure/observability/qvest_wt recent=0 (synthetic 자동 제외)",
+      "evidence_path": "./02_Infrastructure/observability/qvest_wt"
     },
     {
       "id": "timeline_generation",
@@ -99,18 +99,18 @@
     {
       "id": "soak_record",
       "name": "3-day soak record",
-      "status": "PASS",
-      "details": "2 runs 최근 3일 내, critical=0",
-      "evidence_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/observability/readiness/soak_log.json"
+      "status": "WARN",
+      "details": "recent_3d=3 critical=5 (요구: recent>=2 + critical=0)",
+      "evidence_path": "./qepm/observability/readiness/soak_log.json"
     }
   ],
   "summary": {
-    "pass": 14,
-    "fail": 0,
-    "warn": 0,
+    "pass": 9,
+    "fail": 1,
+    "warn": 4,
     "skip": 0
   },
-  "next_actions": "v8.0 설계 착수 가능 — soak 3일 추가 권장",
+  "next_actions": ["v8 설계 착수 전 human 확인 의무 — 3일 내 readiness gate 2회+ critical 0 필요", "FAIL check 해소 필요: e2e_kernel"],
   "strict": false,
   "no_write": false
 }
