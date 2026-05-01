@@ -1,0 +1,21 @@
+{
+  "task_id": "WT-D99990103_001",
+  "verdict": "FAIL",
+  "gate_results": {
+    "gate_a_pit": {
+      "pass": false,
+      "violations": [
+        {"code": "C1", "pattern": "lm(future_return ~ today_factor)", "file": "alpha_synthesis.R", "severity": "CRITICAL"}
+      ],
+      "reason": "lookahead pattern detected — t시점에 t+1 returns 회귀"
+    },
+    "gate_b_isolation": "PASS",
+    "gate_c_net_alpha": "SKIP (Gate A 차단)",
+    "gate_d_crowding": "SKIP",
+    "gate_e_concentration": "SKIP",
+    "gate_f_drift": "SKIP"
+  },
+  "pit_violations": ["C1: future_return regressor in alpha_synthesis.R"],
+  "lockbox_audit_ref": "synthetic_lockbox.json",
+  "synthetic_note": "Charter Level 0 PIT C1 — 모든 다른 목표보다 우선. judge ABORT trigger."
+}

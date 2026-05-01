@@ -1,0 +1,22 @@
+{
+  "task_id": "WT-D99990103_001",
+  "as_of_date": "9999-01-03",
+  "hypothesis_summary": "Synthetic alpha with PIT C1 violation in alpha_synthesis.R — lookahead lm(future_return ~ today_factor) pattern. Judge Gate A 차단 reference fixture.",
+  "factor_specs": [
+    {
+      "name": "F1_lookahead",
+      "factor_family": "synthetic_violation",
+      "proxy": "lookahead_signal",
+      "economic_rationale": "Synthetic fixture demonstrating PIT C1 lookahead violation — production 사용 절대 금지",
+      "formula": "lm(future_return ~ today_factor) — explicitly lookahead"
+    }
+  ],
+  "diagnostics": {
+    "alpha_inheritance_cor": 0.05,
+    "harvey_t_specs_pass_count": 6,
+    "sig_dates_count": 100,
+    "n_sig_dates": 100,
+    "synthetic_warning": "alpha_package.json 자체는 valid 처럼 보이지만 alpha_synthesis.R에 lookahead — Judge가 감지"
+  },
+  "alpha_vector": {"synthetic_note": "lookahead pattern 사용한 invalid alpha"}
+}
