@@ -1,0 +1,120 @@
+=== group A: wt_advance / cr_check_ / check_*_eligibility ===
+02_Infrastructure/hooks/qvest_hook_router.py:163:# 3. check_cert_eligibility — for cert auto-issue
+02_Infrastructure/hooks/qvest_hook_router.py:184:def check_cert_eligibility(cert_name: str, package_path: str) -> dict:
+02_Infrastructure/hooks/qvest_hook_router.py:370:        result = check_cert_eligibility(args.get("cert", ""), args.get("package_path", ""))
+02_Infrastructure/ops/cert_backfill_audit.R:134:check_alpha_discovery_eligibility <- function(wt_dir) {
+02_Infrastructure/ops/cert_backfill_audit.R:186:check_sr_provenance_eligibility <- function(wt_dir) {
+02_Infrastructure/ops/cert_backfill_audit.R:222:check_schedule_fidelity_eligibility <- function(wt_dir) {
+02_Infrastructure/ops/cert_backfill_audit.R:281:check_forge_package_validated_eligibility <- function(wt_dir) {
+02_Infrastructure/ops/cert_backfill_audit.R:309:check_governor_concord_eligibility <- function(book_state_path,
+02_Infrastructure/ops/cert_backfill_audit.R:480:      alpha_discovery = check_alpha_discovery_eligibility(wt_dir),
+02_Infrastructure/ops/cert_backfill_audit.R:481:      sr_provenance = check_sr_provenance_eligibility(wt_dir),
+02_Infrastructure/ops/cert_backfill_audit.R:482:      schedule_fidelity = check_schedule_fidelity_eligibility(wt_dir),
+02_Infrastructure/ops/cert_backfill_audit.R:483:      forge_package_validated = check_forge_package_validated_eligibility(wt_dir),
+02_Infrastructure/ops/cert_backfill_audit.R:484:      governor_concord = check_governor_concord_eligibility(book_state_path,
+02_Infrastructure/prompts/alpha_research_init.md:46:**Reverse case**: `wt_type = discovery` 인데 `alpha_inheritance_cor > 0.95` 측정 결과는 **wt_type 재분류 권고** (governance_log에 reclassify_proposal entry 작성). 사용자 confirm 후 wt_advance.
+02_Infrastructure/worktask/cert_issuance_paths.md:60:- 5 cert eligibility 함수 호출 (`check_alpha_discovery_eligibility` / `check_sr_provenance_eligibility` / `check_schedule_fidelity_eligibility` / `check_forge_package_validated_eligibility` / `check_governor_concord_eligibility`)
+02_Infrastructure/worktask/cert_rules.R:12:#   cr_check_eligibility(cert_name="alpha_discovery", package_path="...")
+02_Infrastructure/worktask/cert_rules.R:53:cr_check_alpha_discovery <- function(package_path) {
+02_Infrastructure/worktask/cert_rules.R:97:cr_check_sr_provenance <- function(package_path) {
+02_Infrastructure/worktask/cert_rules.R:127:cr_check_forge_package_validated <- function(package_path) {
+02_Infrastructure/worktask/cert_rules.R:150:cr_check_schedule_fidelity <- function(package_path, weights_csv = NULL,
+02_Infrastructure/worktask/cert_rules.R:190:cr_check_governor_concord <- function(book_state_path, governor_dir = NULL,
+02_Infrastructure/worktask/cert_rules.R:260:cr_check_eligibility <- function(cert_name, package_path,
+02_Infrastructure/worktask/cert_rules.R:264:    "alpha_discovery" = cr_check_alpha_discovery(package_path),
+02_Infrastructure/worktask/cert_rules.R:265:    "sr_provenance" = cr_check_sr_provenance(package_path),
+02_Infrastructure/worktask/cert_rules.R:266:    "forge_package_validated" = cr_check_forge_package_validated(package_path),
+02_Infrastructure/worktask/cert_rules.R:267:    "schedule_fidelity" = cr_check_schedule_fidelity(package_path, weights_csv,
+02_Infrastructure/worktask/cert_rules.R:269:    "governor_concord" = cr_check_governor_concord(package_path,
+02_Infrastructure/worktask/cert_rules.R:312:    res <- cr_check_eligibility(cert, "/nonexistent/path.json")
+02_Infrastructure/worktask/cert_rules.R:333:    res <- cr_check_eligibility("alpha_discovery", alpha_pkg)
+02_Infrastructure/worktask/cert_rules.R:344:cat("  cr_check_eligibility(cert_name, package_path, ...)\n")
+02_Infrastructure/worktask/cert_rules.R:345:cat("  cr_check_alpha_discovery / sr_provenance / schedule_fidelity / forge_package_validated / governor_concord\n")
+02_Infrastructure/worktask/run_all_template.R:238:wt_advance(wt_id, "FORGE_DONE")
+02_Infrastructure/worktask/worktask_manager.R:11:#   wt_advance("WT20260423_001", "ALPHA_DONE")
+02_Infrastructure/worktask/worktask_manager.R:428:wt_advance <- function(task_id, new_phase, blocker = NULL) {
+02_Infrastructure/worktask/worktask_manager.R:430:  if (!dir.exists(wt_dir)) stop(sprintf("[wt_advance] %s 없음", task_id))
+02_Infrastructure/worktask/worktask_manager.R:448:    cat(sprintf("[wt_advance] ⚠ GOVERNOR_REJECTED → GOVERNOR_ADMITTED user override. challenge_round=%d. wt_log_user_override() 호출 권장 (waiver 5-row 명시).\n",
+02_Infrastructure/worktask/worktask_manager.R:468:  cat(sprintf("[wt_advance] %s: %s -> %s\n", task_id, old_phase, new_phase))
+02_Infrastructure/worktask/worktask_manager.R:704:cat("  wt_advance(task_id, new_phase, blocker=NULL)\n")
+02_Infrastructure/worktask/state_machine.R:5:# Phase 5 (Sprint 2) — wt_advance() transition table 강제.
+02_Infrastructure/worktask/state_machine.R:145:# 5. Validated wt_advance (worktask_manager.R 호출 가능)
+qepm/stage_artifacts/WT_WT-D20260425_005/finalize_alpha.R:3:#  1. wt_advance(ALPHA_DONE)
+qepm/stage_artifacts/WT_WT-D20260425_005/finalize_alpha.R:21:# 1. wt_advance to ALPHA_DONE
+qepm/stage_artifacts/WT_WT-D20260425_005/finalize_alpha.R:25:wt_advance("WT-D20260425_005", "ALPHA_DONE")
+qepm/stage_artifacts/WT_WT-D20260425_006/run_risk_research.R:1171:wt_advance(WT_ID, "RISK_DONE")
+qepm/stage_artifacts/WT_WT-D20260425_006/run_alpha_research.R:793:wt_advance(WT_ID, "ALPHA_DONE")
+
+=== group B: legacy refs (s0_debate / scout / cash_sleeve / legacy_v55) ===
+02_Infrastructure/hooks/cash_sleeve_validator.sh:3:# cash_sleeve_validator.sh — PostToolUse[Write] Hook (v55 Tier 3.1)
+02_Infrastructure/hooks/cash_sleeve_validator.sh:24:LOG="/tmp/cash_sleeve_validator.log"
+02_Infrastructure/hooks/cash_sleeve_validator.sh:64:    print('PASS|cash_sleeve_validator OK')
+02_Infrastructure/hooks/harness_health.sh:74:  "cash_sleeve_validator.sh"
+02_Infrastructure/hooks/unified_agent_guard.sh:9:#   3. S0 Debate: s0_debate_guard.sh로 위임 (별도 Hook 유지)
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:3:# s0_enforcer.sh — Dispatcher (Phase C3.5 split of s0_debate_enforcer.sh)
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:8:# 대체 대상: 02_Infrastructure/hooks/s0_debate_enforcer.sh (980L).
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:27:  *s0_debate_r1_*.json) DTYPE="R1" ;;
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:28:  *s0_debate_r2_*.json) DTYPE="R2" ;;
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:29:  *s0_debate_r3_*.json) DTYPE="R3" ;;
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:31:  *s0_debate_transcript*.json) echo '{}'; exit 0 ;;  # 검증 없이 통과
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:49:RESULT=$(printf '%s' "$INPUT" | python3 "$SCRIPT_DIR/state_machine.py" "$DTYPE" "$HYP_ID" 2>>/tmp/s0_debate_enforcer.log)
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:109:          > /dev/null 2>>/tmp/s0_debate_enforcer.log &
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:120:          echo "$(date +%H:%M:%S) ENFORCER: Compact factcheck hooks triggered for $HYP_ID" >> /tmp/s0_debate_enforcer.log
+02_Infrastructure/hooks/s0_enforcer/s0_enforcer.sh:122:          echo "$(date +%H:%M:%S) ENFORCER WARN: s0_record not found for $HYP_ID factcheck" >> /tmp/s0_debate_enforcer.log
+02_Infrastructure/hooks/s0_enforcer/codex_r2_trigger.sh:17:LOG="/tmp/s0_debate_enforcer.log"
+02_Infrastructure/hooks/s0_enforcer/codex_r2_trigger.sh:23:CODEX_R1_FILE="$ARTIFACTS_DIR/s0_debate_r1_codex_critic_${HYP_ID}.json"
+02_Infrastructure/hooks/s0_enforcer/codex_r2_trigger.sh:24:TRANSCRIPT_FILE="$ARTIFACTS_DIR/s0_debate_transcript_${HYP_ID}.json"
+02_Infrastructure/hooks/s0_enforcer/codex_r2_trigger.sh:37:for f in sorted(glob.glob(os.path.join(adir, f's0_debate_r1_*_{hyp}.json'))):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:17:상태 파일 스키마(/tmp/s0_debate_state_<HYP_ID>.json) 불변:
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:48:LOG_PATH = "/tmp/s0_debate_enforcer.log"
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:331:        f"> Full transcript: stage_artifacts/s0_debate_transcript_{hyp_id}.json",
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:334:    for f in sorted(glob.glob(os.path.join(artifacts_dir, f"s0_debate_r1_*_{hyp_id}.json"))):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:373:    for f in sorted(glob.glob(os.path.join(artifacts_dir, f"s0_debate_r1_*_{hyp_id}.json"))):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:404:    for f in sorted(glob.glob(os.path.join(artifacts_dir, f"s0_debate_r2_*_{hyp_id}.json"))):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:449:    for f in sorted(glob.glob(os.path.join(artifacts_dir, f"s0_debate_r2_*_{hyp_id}.json"))):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:532:    summary_path = f"/tmp/s0_debate_r1_summary_{hyp_id}.md"
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:548:            f"1. 3개 R1 결과를 stage_artifacts/s0_debate_transcript_{hyp_id}.json으로 컴파일\\n"
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:557:            f"1. 5개 R1 결과를 stage_artifacts/s0_debate_transcript_{hyp_id}.json으로 컴파일\\n"
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:655:        f"출력: stage_artifacts/s0_debate_r3_{{role}}_{hyp_id}.json"
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:680:        for f in glob.glob(os.path.join(artifacts_dir, f"s0_debate_r2_*_{hyp_id}.json")):
+02_Infrastructure/hooks/s0_enforcer/state_machine.py:783:    state_file = f"/tmp/s0_debate_state_{hyp_id}.json"
+02_Infrastructure/hooks/_archive_v55/s0_debate_enforcer.sh:2:# s0_debate_enforcer.sh — Phase C3.5 shim
+02_Infrastructure/hooks/_archive_v55/s0_debate_enforcer.sh:4:# 원본 v46 (980L)은 02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46 보존.
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:3:# s0_debate_enforcer.sh — PostToolUse[Write] Hook
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:9:#   - s0_debate_chain.sh (SubagentStop → 상태 전이 additionalContext)
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:31:  *s0_debate_r1_*.json) DTYPE="R1" ;;
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:32:  *s0_debate_r2_*.json) DTYPE="R2" ;;
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:33:  *s0_debate_r3_*.json) DTYPE="R3" ;;
+02_Infrastructure/hooks/_archive_4_6/s0_debate_enforcer.sh.v46:35:  *s0_debate_transcript*.json) DTYPE="TRANSCRIPT" ;;
+
+=== group C: telegram + hybrid ===
+02_Infrastructure/strategy_template.R:278:  # QEPM auto-commit (hybrid_commit handles R0~R4 + Registry + L-code)
+02_Infrastructure/strategy_template.R:281:      if (exists("hybrid_commit")) {
+02_Infrastructure/strategy_template.R:282:        hybrid_commit(
+02_Infrastructure/hurdle_gate.R:1619:      if (!exists("hybrid_commit") && file.exists(hybrid_mode_path)) {
+02_Infrastructure/hurdle_gate.R:1627:      if (exists("hybrid_commit")) {
+02_Infrastructure/hurdle_gate.R:1667:        hybrid_commit(strategy_name = strategy_name,
+02_Infrastructure/hurdle_gate.R:1676:        # hybrid_commit 로드 실패 → pending 마커 저장 (batch recovery 대상)
+02_Infrastructure/agents/agent_team_config.md:131:  - telegram_notify.R → tg_send(msg) 호출
+02_Infrastructure/agents/agent_team_config.md:323:│  │  결과수집 → VoE우선순위 → hybrid_commit() → Telegram              │   │
+02_Infrastructure/agents/agent_team_config.md:333:│  │ Telegram: hybrid_tg() → tg_send()                     │  │
+02_Infrastructure/agents/agent_team_config.md:336:│  hybrid_commit()   →  R0 store + R1 distill + Registry       │
+02_Infrastructure/agents/agent_team_config.md:351:6. **Q-Lead** → `hybrid_commit()` → **qepm Memory Pipeline**
+02_Infrastructure/agents/agent_team_config.md:361:7. **Q-Lead** → `hybrid_commit()` + 포트폴리오 정책 갱신 → **qepm**
+02_Infrastructure/agents/_archive/qlead_supervisor.sh:107:tg_send(sprintf('[Q-Lead] %s Monitor\nClaude:%d R:%d RAM:%s%%\nPanes: Scout+Forge+Judge+Governor',
+02_Infrastructure/data/daily_refresh.sh.bak_20260424:182:  tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
+02_Infrastructure/data/daily_refresh.sh:210:  tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
+02_Infrastructure/docs/qvest_v6_4_sot.md:205:| `qvest-telegram` | tg_agent_brief 사용법 + ENFORCE v5 규칙 |
+02_Infrastructure/docs/qvest_legacy_boundary.md:48:| `qepm/scripts/hybrid_mode.R` | retain — `hybrid_commit()` 등 R0~R6 |
+02_Infrastructure/docs/v6_compliance_checklist.md:106:- [ ] 역할: 감독 + 브리핑 + 자원 관리 + hybrid_commit
+02_Infrastructure/factor_db/factor_db_daily_phase9.R:227:  tg_send(sprintf("✅ [Q-Lead] Phase 9 완료!\n\n🔧 개선 내용:\n• Composite 8개: cross-sectional z-score 합산\n• Sector 3개: M07/M24/M31 구현\n• D28 Unlevered Beta 구현\n• Rank 팩터 3개 z-score 정규화\n\n⏱️ 소요: %.1f분",
+02_Infrastructure/factor_db/factor_db_daily_phase9b.R:180:  tg_send(sprintf("✅ [Q-Lead] Phase 9b 완료!
+02_Infrastructure/factor_db/factor_db_daily_phase9c.R:109:  tg_send(sprintf("✅ [Q-Lead] M21_Seasonality 구축 완료!\n\n📊 동월 역사적 수익률 (Heston-Sadka 2008)\n⏱️ %.1f분 | 전체 NA 팩터: %d개", total_min, all_na))
+02_Infrastructure/hooks/agent_stop_continuity_check.sh:83:    tg_send('🚨 [Stop Continuity Cap] $ALERT_MSG', parse_mode='')
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:6:# 목적: tg_send() / tg_send_rich() / tg_send_photo() 직접 호출 차단.
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:7:#       Single-Dispatch 강제 — agent는 반드시 tg_agent_brief() 단일 진입점만 사용.
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:12:#     (false positive 방지: echo/cat 내 string literal "tg_send(" 등)
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:19:#   4. 동일 페이로드 내 \btg_agent_brief\(  미존재 (tg_agent_brief 호출 시 면제)
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:64:# tg_send( standalone (not part of tg_send_rich/photo) — \b ensures boundary
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:69:    if re.search(r'\btg_send(?!_rich|_photo)\(', combined):
+02_Infrastructure/hooks/telegram_direct_call_guard.sh:70:        if "tg_send()" not in direct_calls:
