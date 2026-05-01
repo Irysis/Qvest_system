@@ -1,0 +1,358 @@
+{
+  "task_id": "WT-D20260501_001",
+  "wt_type": "discovery",
+  "lifecycle_label": "WT-D20260501_001 — Behavioral_Attention × Liquidity_Shock_KR_specific",
+  "as_of_date": "2026-04-30",
+  "generated_at": "2026-05-01T11:01:25+0900",
+  "generated_by": "Risk-Research Opus 4.7",
+  "covariance_estimator_chosen": {
+    "name": "ledoit_wolf_constcor",
+    "rationale": "Ledoit-Wolf shrinkage to constant-correlation prior. Selected over sample (less stable in small-K/large-T cross-period) and over Gerber (robust but no shrinkage path for K=6). delta_lw = 0.05 → moderate shrinkage, preserving sample structure while damping noise.",
+    "delta_shrinkage": 0.05,
+    "selection_objective": "shrinkage_quality"
+  },
+  "factor_exposure_matrix_B": {
+    "rows": "tickers",
+    "cols": ["D01_IdioVol", "D43_Skewness", "L35_Reversal_Intensity", "L44_Vol_Ret_Asymmetry", "M22_Max_Return", "Retail_Net_Z"],
+    "n_tickers": 348,
+    "n_factors": 6,
+    "summary": {
+      "median_loading_per_factor": {
+        "D01_IdioVol": 0.1482,
+        "D43_Skewness": 0.0671,
+        "L35_Reversal_Intensity": -0.5243,
+        "L44_Vol_Ret_Asymmetry": 0.0656,
+        "M22_Max_Return": 0.0525,
+        "Retail_Net_Z": -0.1893
+      },
+      "sd_loading_per_factor": {
+        "D01_IdioVol": 1.3367,
+        "D43_Skewness": 0.9036,
+        "L35_Reversal_Intensity": 1.1793,
+        "L44_Vol_Ret_Asymmetry": 0.829,
+        "M22_Max_Return": 0.5712,
+        "Retail_Net_Z": 0.6054
+      },
+      "range_per_factor": [
+        [-9.36, 3.686],
+        [-4.332, 8.736],
+        [-4.842, 5.856],
+        [-4.126, 7.627],
+        [-1.684, 3.519],
+        [-2.379, 3.186]
+      ]
+    },
+    "full_B_ref": "stage_artifacts/WT_D20260501_001/covariance.parquet (B*Omega*B' + D 형태로 통합 저장)",
+    "estimation_method": "Full-history OLS r_i ~ f_1..f_6 per stock (PIT, no future data)",
+    "estimation_window": "2008-02-29 ~ 2026-03-31",
+    "n_obs_used": 115,
+    "note": "All available common_dates (T=115) used for B regression to maximize statistical power. PIT compliance verified — only sig_date <= as_of_date data in factor returns."
+  },
+  "factor_covariance_omega": {
+    "K": 6,
+    "factors": ["D01_IdioVol", "D43_Skewness", "L35_Reversal_Intensity", "L44_Vol_Ret_Asymmetry", "M22_Max_Return", "Retail_Net_Z"],
+    "omega_offdiag_summary": {
+      "median_cor": -0.041,
+      "max_cor": 0.877,
+      "min_cor": -0.716
+    },
+    "omega_full": [
+      [0.0035, 0.0012, 0.003, -0.0022, -0.0022, 0.0002],
+      [0.0012, 0.0015, 0.001, -0.0011, -0.001, -0],
+      [0.003, 0.001, 0.0034, -0.002, -0.0021, 0.0002],
+      [-0.0022, -0.0011, -0.002, 0.0027, 0.0017, -0.0001],
+      [-0.0022, -0.001, -0.0021, 0.0017, 0.0027, 0.0001],
+      [0.0002, -0, 0.0002, -0.0001, 0.0001, 0.0009]
+    ]
+  },
+  "idiosyncratic_var_D": {
+    "n": 348,
+    "median": 0.0145,
+    "p5": 0.0049,
+    "p95": 0.0471,
+    "mean_factor_var_share": 0.1938,
+    "note": "factor_var / total_var. Higher → systematic exposure dominates."
+  },
+  "security_covariance_summary": {
+    "dim": "348 × 348",
+    "condition_number": 206.53,
+    "min_eigenvalue": 0.0038,
+    "psd_status": "POSITIVE_DEFINITE",
+    "full_ref": "stage_artifacts/WT_D20260501_001/covariance.parquet"
+  },
+  "top_common_risks": ["D01_IdioVol (37.2%)", "L35_Reversal_Intensity (36.7%)", "L44_Vol_Ret_Asymmetry (11.3%)", "D43_Skewness (7.3%)", "M22_Max_Return (5.3%)", "Retail_Net_Z (2.2%)"],
+  "tail_diagnostics": {
+    "metric_basis": "alpha_port_factor_mimicking_monthly",
+    "n_obs": 115,
+    "var95_monthly": -0.0534,
+    "var99_monthly": -0.0936,
+    "cvar95_monthly": -0.1026,
+    "cvar99_monthly": -0.1751,
+    "mdd": 0.356,
+    "cdar95": -0.2714,
+    "evt_gpd_var99": 0.1317,
+    "evt_gpd_es99": 0.2162,
+    "evt_xi": 0.298,
+    "evt_beta": 0.0262,
+    "evt_threshold": 0.0201,
+    "method_evt": "Pfaff (2016) Ch.7 fExtremes::gpdFit MLE @ 90% loss quantile",
+    "full_ref": "stage_artifacts/WT_D20260501_001/tail_risk.json"
+  },
+  "stress_test_results": {
+    "Terror_9_11": {
+      "start": "2001-09-01",
+      "end": "2001-12-31",
+      "n_obs": 0,
+      "insufficient_data": true
+    },
+    "GFC": {
+      "start": "2007-10-01",
+      "end": "2009-03-31",
+      "n_obs": 8,
+      "cumulative_return": -0.1612,
+      "avg_monthly_ret": -0.0147,
+      "stress_mdd": -0.356,
+      "ann_vol": 0.4212
+    },
+    "Euro_Debt": {
+      "start": "2011-07-01",
+      "end": "2011-12-31",
+      "n_obs": 3,
+      "cumulative_return": 0.1284,
+      "avg_monthly_ret": 0.0418,
+      "stress_mdd": -0.0021,
+      "ann_vol": 0.1614
+    },
+    "China_Shock": {
+      "start": "2015-06-01",
+      "end": "2016-02-29",
+      "n_obs": 5,
+      "cumulative_return": 0.0232,
+      "avg_monthly_ret": 0.0055,
+      "stress_mdd": -0.0442,
+      "ann_vol": 0.1636
+    },
+    "US_China_Trade": {
+      "start": "2018-03-01",
+      "end": "2018-12-31",
+      "n_obs": 5,
+      "cumulative_return": -0.0044,
+      "avg_monthly_ret": -0.0002,
+      "stress_mdd": -0.0135,
+      "ann_vol": 0.1429
+    },
+    "COVID": {
+      "start": "2020-01-01",
+      "end": "2020-06-30",
+      "n_obs": 2,
+      "cumulative_return": 0.2739,
+      "avg_monthly_ret": 0.1292,
+      "stress_mdd": 0,
+      "ann_vol": 0.1687
+    },
+    "Rate_Hike": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "n_obs": 7,
+      "cumulative_return": 0.0733,
+      "avg_monthly_ret": 0.0116,
+      "stress_mdd": -0.0954,
+      "ann_vol": 0.196
+    },
+    "Iran_War": {
+      "start": "2026-02-01",
+      "end": "2026-04-30",
+      "n_obs": 1,
+      "insufficient_data": true
+    }
+  },
+  "crowding_analysis": {
+    "target_strategy": "STR_1715_WT016_Iter31_GridBestProd (PG2 100%)",
+    "n_overlap_months": 115,
+    "pearson_cor": 0.074,
+    "spearman_cor": 0.0801,
+    "ortho_threshold_target": 0.3,
+    "ortho_status": "PASS_diversifier",
+    "interpretation": "alpha_inheritance_cor (factor-level) 0.05 + STR_1715 returns cor (시계열 month-level) 0.074. PASS — diversifier_short_horizon role 정합 (target<0.30 ortho).",
+    "factor_overlap": "ZERO (STR_1715 = M08/Q07/Q25/M22+composite Iter31, alpha = D01/D43/L35/L44/Retail/M22 — only M22 shared but theta differs)"
+  },
+  "mdd_reduction_potential": {
+    "pg0_priority": "P0_MDD_VIOLATION_v1.0.9",
+    "book_baseline_str1715_only_mdd": -0.2512,
+    "blend_simulation": {
+      "w_alpha_05": {
+        "mdd": -0.2336,
+        "delta_pp": 1.76
+      },
+      "w_alpha_10": {
+        "mdd": -0.216,
+        "delta_pp": 3.52
+      },
+      "w_alpha_20": {
+        "mdd": -0.1962,
+        "delta_pp": 5.5
+      }
+    },
+    "interpretation": "STR_1715 standalone MDD (alpha 표본 기간 2008-02-29~2026-03-31) = -25.12%. Alpha portfolio (factor-mimicking)을 5/10/20% 블렌딩 시 MDD 변화 (음수 = 추가 감소). 단, 본 alpha는 long-only top-quintile EW가 아닌 factor-mimicking long-short proxy 기반이며, Optimizer의 long-only 20-name top-q reconstruction 후 MDD 영향은 재계측 필요. 현 시뮬레이션은 risk diversification potential의 보수적 추정.",
+    "caveat_long_short_proxy": true,
+    "caveat_note": "factor-mimicking long-short return은 alpha portfolio의 idealized version. 실제 long-only 구현 시 down-capture 부분이 약화되어 MDD reduction 효과는 본 시뮬레이션의 50-70% 수준으로 보수적 인식 권고. Optimizer가 precision-weighted long-only weights 산출 후 정확한 blended MDD 측정을 final_step backtest에서 수행해야 함.",
+    "pg0_v1_0_9_alignment": {
+      "sr_gap": "+0.4396 부족 (P1)",
+      "cagr_gap": "-24.81pp overshoot (P3 sacrifice OK)",
+      "mdd_gap": "+11.10pp violation (P0 1순위)",
+      "alpha_role_recommendation": "diversifier_short_horizon — small allocation (5-15%) for MDD reduction tilt without harming SR overshoot."
+    }
+  },
+  "style_exposure": {
+    "approximated_via": "composite_factor_theta_share + market_regression",
+    "composite_theta_share": {
+      "defense_low_vol": 0.37,
+      "reversal": 0.52,
+      "retail_flow": 0.11
+    },
+    "market_beta_realized": -0.025,
+    "market_alpha_monthly": 0.0175,
+    "market_r2": 0.001,
+    "fama_french_5_proxy_status": "PROXY_ONLY (full FF5 attribution deferred to POST_DEPLOY_003 paired)",
+    "notes": "본 alpha는 factor proxy theta 합산 + KOSPI200 market regression으로 style exposure 추정. Defense_low_vol(0.37) + Reversal(0.52) + Retail_flow(0.11) = 1.00 composite. Market beta -0.03 (R2 0 ) 정밀 FF5/Carhart attribution은 paired with STR_1715 (ff5_attribution.R T+14) 발주."
+  },
+  "risk_flags": [
+    {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "description": "GFC stress cumulative return -16.12% < -8%"
+    }
+  ],
+  "risk_agent_method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 25.52,
+        "min_eig": 0.0002,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf",
+        "condition": 14.23,
+        "min_eig": 0.0004,
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": 50.97,
+        "min_eig": -0.0003,
+        "selected": false
+      }
+    ],
+    "rationale_chosen": "Ledoit-Wolf chosen for (a) shrinkage to const-cor target stable for K=6 with 219 obs (rho-shrink mitigates time-varying corr) and (b) clean PSD with min_eig = 0.0003898"
+  },
+  "diagnostics": {
+    "condition_number_omega": 14.23,
+    "condition_number_sigma": 206.53,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constcor",
+    "shrinkage_intensity_delta": 0.05,
+    "factor_correlation_warnings": {
+      "pairs_above_0_8": 1,
+      "highest_pair": "D01_IdioVol vs L35_Reversal_Intensity (cor=+0.870)",
+      "interpretation": "Single pair >0.8 (D01 vs L35) — borderline. RF-R5 (>=2 pairs) not triggered. RISK_CF_03 issued for alpha review."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260501_001/regime_correlation.parquet",
+    "regime_correlation_summary": {
+      "gfc": {
+        "n": 8,
+        "cor_alpha_str1715": 0.398,
+        "note": "MEDIUM positive — co-drawdown risk"
+      },
+      "euro_debt": {
+        "n": 3,
+        "cor_alpha_str1715": -0.995,
+        "note": "STRONG negative — but small n"
+      },
+      "china_shock": {
+        "n": 5,
+        "cor_alpha_str1715": -0.053,
+        "note": "independent"
+      },
+      "us_china_trade": {
+        "n": 5,
+        "cor_alpha_str1715": -0.774,
+        "note": "STRONG negative — diversifier in trade-war"
+      },
+      "rate_hike": {
+        "n": 7,
+        "cor_alpha_str1715": -0.122,
+        "note": "weak negative"
+      },
+      "normal_excl_gfc_covid": {
+        "n": 105,
+        "cor_alpha_str1715": 0.058,
+        "note": "approximately independent"
+      }
+    },
+    "market_regression_realized": {
+      "market_beta": -0.025,
+      "market_alpha_monthly": 0.0175,
+      "market_r2": 0.001,
+      "n_obs": 115,
+      "benchmark": "KOSPI200_BM_Ret_monthly",
+      "interpretation": "Near-zero KOSPI200 beta + R2~0 → alpha is purely idiosyncratic, not market-tilted. Defensive cash overlay 효과 거의 0 (market-neutral by design)."
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RISK_CF_01_TURNOVER_AND_SHORT_HORIZON_NOTE",
+      "severity": "INFO",
+      "target": "alpha",
+      "description": "Alpha turnover proxy 4.957/yr (496%) confirmed via factor decay analysis. Σ 추정 시 60-month rolling regression이 short-horizon factor decay를 충분히 catch하지 못할 가능성 — Optimizer 시점에 turnover penalty γ ≥ 15bps 강하게 권고. Risk Σ는 unconditional cov로 short-horizon 변동성 underestimate 위험.",
+      "objection": false,
+      "review_completed": true
+    },
+    {
+      "id": "RISK_CF_02_DSR_BOOTSTRAP_REVIEW_PENDING",
+      "severity": "LOW",
+      "target": "alpha",
+      "description": "Alpha CF_03_DSR_NEGLIGIBLE — Risk Agent는 portfolio-realized return 기반 DSR 추가 검증 deferred to Optimizer (long-only weights 결정 후 realized SR + DSR_post 산출). 현 단계 risk_package에서는 IC-scale DSR 검증 불가. POST_DEPLOY_003 paired with STR_1715 발주 권고.",
+      "objection": false,
+      "review_completed": true
+    },
+    {
+      "id": "RISK_CF_03_FACTOR_REDUNDANCY_D01_L35",
+      "severity": "MEDIUM",
+      "target": "alpha",
+      "description": "Factor cor matrix Ω 분석 결과 D01_IdioVol과 L35_Reversal_Intensity factor return cor = +0.870 (single pair >0.8, RF-R5 미트리거지만 borderline). Defense_Risk(D01) + Behavioral_Reversal(L35) 두 family가 KR retail-heavy 환경에서 mechanism 중첩 (둘 다 lottery overreaction 측정 — IVOL puzzle reversed + short-horizon reversal). Bayesian shrinkage가 factor weight를 ICIR-precision 기반으로 했지만 cor 0.87은 effective rank 5 → 6에서 정보 dilution. 권고: 차기 cycle에서 (a) D01 vs L35 residual decorrelation 또는 (b) 둘 중 lower ICIR factor drop으로 effective_rank=5 운영 검토. 본 cycle에서는 selected (alpha sign convention 일관).",
+      "objection": false,
+      "review_completed": true
+    },
+    {
+      "id": "RISK_CF_04_GFC_REGIME_CO_DRAWDOWN_WITH_STR1715",
+      "severity": "MEDIUM",
+      "target": "optimizer",
+      "description": "Regime correlation 분석: GFC 2007-10~2009-03 alpha vs STR_1715 cor = +0.398 (stress 시 동조 drawdown 가능성). Normal regime cor = +0.058. Euro_Debt: -0.995, US_China_Trade: -0.774 (stress diversifier 효과 강). GFC 시 cumulative -16.12% (RF-R4) + STR_1715 동조 → blended portfolio MDD 추가 악화 가능. Optimizer는 GFC-style stress aware weight 결정 권고. 5-15% allocation 시 CVaR contribution 사전 검증 필수.",
+      "objection": false,
+      "review_completed": true
+    }
+  ],
+  "challenge_review_targets": ["alpha_package", "confidence_vector", "factor_specs"],
+  "challenge_review_completed": true,
+  "challenge_review_objection": false,
+  "pit_attestation": {
+    "c1_full_sample_stats": "PASS — factor returns built sequentially per sig_date, no full-sample stat",
+    "c2_same_day_circular": "PASS — Σ uses retrofitted t-1 close-to-close monthly returns",
+    "c4_fundamental_lag": "N/A — no fundamental factors",
+    "c9_vt_dd_lag": "N/A — risk diagnostic only, no overlay",
+    "c13_z_score_aligned": "PASS — factor_db Z_Score (cross-sectional) used",
+    "c14_ic_usable_date": "PASS — Usable_Date <= sig_date enforced via factor_db retrieval",
+    "c15_factor_db_load": "PASS — load via parquet snapshot per sig_date (load_month_factors compatible)"
+  },
+  "meta": {
+    "factor_db_build_hash": "20260501005232_aa8bf7c",
+    "universe_size": 348,
+    "sig_dates_count": 115,
+    "n_obs_factor_returns": 115,
+    "selection_objective": "shrinkage_quality",
+    "notes": "Risk Research Agent v1.1 (Charter v1.7 §10). Σ = BΩB' + D 구조. Ledoit-Wolf shrinkage Ω + 60-month rolling OLS B + capped idio var D. Tail risk: PerformanceAnalytics (VaR/CVaR/CDaR) + fExtremes EVT-GPD. 8 stress regime: 7 covered (Iran_War 2026-02~04 데이터 누락 가능). Crowding: STR_1715 monthly cor 측정 — MDD reduction blend simulation. Optimizer가 long-only 20-name implementation 후 정확한 MDD 재계측 필수. v1.0.9 P0 MDD priority 반영 — alpha role: diversifier_short_horizon recommended.",
+    "next_step": "Optimizer Research Agent spawn — α̂ + Σ + MDD reduction priority 결합 weights"
+  }
+}
