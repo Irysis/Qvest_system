@@ -16,11 +16,23 @@
 | forge_code_guard.sh | `_archive_v55/` | v6.4 backtest_contract_audit | ARCHIVED | retain — read-only block |
 | risk_gate.sh | `_archive_v55/` | v6.4 risk-research agent + Σ shrinkage Hook | ARCHIVED | retain — read-only block |
 
-## v55 Legacy still REGISTERED in settings.json (Sprint 5 제거 대상)
+## v55 Legacy 등록/참조 제거 history
 
+### v7.0 Sprint 5 — settings.json 등록 제거
 | Hook | Replacement | Action |
 |---|---|---|
-| role_taxonomy_admission_gate | v6.4 unified_agent_guard + agent_role_guard 통합 | settings.json 제거 (Sprint 5) → 파일은 retain (Sprint 5 마지막 단계 이동) |
+| role_taxonomy_admission_gate | v6.4 unified_agent_guard + agent_role_guard 통합 | settings.json 등록 제거 (v7.0) → 파일은 retain (file 이동은 v7.1+ 이연) |
+
+### v7.1-lite Sprint 0.3 — harness_health.sh required list 제거
+| Hook | 이전 위치 | 제거 사유 |
+|---|---|---|
+| role_taxonomy_admission_gate.sh | `harness_health.sh` REQUIRED_HOOKS line 27 | settings.json 0건 등록 (v7.0 Sprint 5) — required 의무 0 |
+| cash_sleeve_validator.sh | `harness_health.sh` REQUIRED_HOOKS line 74 (Legacy 유지 섹션) | v55 strict cash sleeve audit는 v6.4 risk-research agent로 흡수 — required 의무 0 |
+
+### v7.1-lite 신규 추가
+| Hook | 위치 | 역할 |
+|---|---|---|
+| legacy_write_block.sh | `harness_health.sh` REQUIRED_HOOKS | v7.0 Sprint 5 신규 — `_archive_v55/` write 차단 |
 
 ## Active path (v6.4) — DO NOT deprecate
 

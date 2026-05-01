@@ -15,16 +15,18 @@ PASS=0
 
 echo "=== Harness Health Check (v6.1) ==="
 
-# v6.1 Required Hooks (v55 legacy archived to _archive_v55/)
+# v7.0/v7.1 Required Hooks (v55 legacy archived to _archive_v55/, v7.1-lite Sprint 0.3 동기화)
+# v55 legacy 제거: role_taxonomy_admission_gate.sh + cash_sleeve_validator.sh
+# 둘 다 .claude/settings.json 등록 0건 (v7.0 Sprint 5 cleanup) → required list에서도 제거
+# DEPRECATION.md 참조
 REQUIRED_HOOKS=(
   # Tier 1 전역
   "safety_guard.sh"
   "axiom_enforcement_hook.sh"
 
-  # Tier 2 Agent 경계
+  # Tier 2 Agent 경계 (v7.0 — role_taxonomy_admission_gate v55 legacy 제거)
   "unified_agent_guard.sh"
   "agent_role_guard.sh"
-  "role_taxonomy_admission_gate.sh"
 
   # v6.1 Work Task 순서 + 제약
   "worktask_sequence_enforcer.sh"
@@ -69,9 +71,11 @@ REQUIRED_HOOKS=(
   "auto_commit_on_stop.sh"
   "milestone_commit.sh"
 
-  # Legacy 유지 (v55 호환)
+  # Active retain (v55 호환 — _archive_v55/ 미이동, settings.json 등록 retain)
   "trail_consistency_checker.sh"
-  "cash_sleeve_validator.sh"
+
+  # v7.0 Sprint 5 신규
+  "legacy_write_block.sh"
 )
 
 for HOOK in "${REQUIRED_HOOKS[@]}"; do
