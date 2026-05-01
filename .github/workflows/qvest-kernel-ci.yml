@@ -1,0 +1,174 @@
+name: Qvest Kernel CI
+
+# v7.0 Sprint 2 — Kernel-only CI (light, no R full execution).
+# Plan: nifty-tickling-hinton.md Sprint 2.
+#
+# 9 jobs:
+#   1. hook_dry_run     — bash 08_Tests/hooks/run_all_hooks.sh (30/30)
+#   2. router_selftest  — python3 qvest_hook_router.py selftest
+#   3. cert_eval_selftest — python3 qvest_cert_eval.py selftest
+#   4. state_machine_selftest — Rscript -e 'qvest_state_machine_selftest()'
+#   5. cert_rules_selftest    — Rscript -e 'qvest_cert_rules_selftest()'
+#   6. r_syntax_parse   — parse(file=...) only (NO source, NO library load)
+#   7. shellcheck       — find hooks/*.sh | xargs shellcheck
+#   8. python_lint      — pyright on router + cert_eval (light)
+#   9. duplication_audit — eligibility logic 중복 0건 검증
+
+on:
+  push:
+    branches:
+      - master
+      - 'v7.0-*'
+      - 'v7.1-*'
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+env:
+  CLAUDE_PROJECT_DIR: ${{ github.workspace }}
+
+jobs:
+  hook_dry_run:
+    name: Hook dry-run (30 hooks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - name: Install jsonlite + data.table
+        run: Rscript -e 'install.packages(c("jsonlite","data.table"), repos="https://cloud.r-project.org")'
+      - name: Run all hooks
+        run: bash 08_Tests/hooks/run_all_hooks.sh
+
+  router_selftest:
+    name: qvest_hook_router selftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run router selftest
+        run: python3 02_Infrastructure/hooks/qvest_hook_router.py selftest
+
+  cert_eval_selftest:
+    name: qvest_cert_eval selftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Run cert_eval selftest
+        run: python3 02_Infrastructure/hooks/qvest_cert_eval.py selftest
+
+  state_machine_selftest:
+    name: state_machine selftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - name: Install jsonlite
+        run: Rscript -e 'install.packages("jsonlite", repos="https://cloud.r-project.org")'
+      - name: Run state_machine selftest
+        run: Rscript -e 'source("02_Infrastructure/worktask/state_machine.R"); ok <- qvest_state_machine_selftest(); if (!isTRUE(ok)) quit(status=1)'
+
+  cert_rules_selftest:
+    name: cert_rules selftest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - name: Install jsonlite
+        run: Rscript -e 'install.packages("jsonlite", repos="https://cloud.r-project.org")'
+      - name: Run cert_rules selftest
+        run: Rscript -e 'source("02_Infrastructure/worktask/cert_rules.R"); ok <- qvest_cert_rules_selftest(); if (!isTRUE(ok)) quit(status=1)'
+
+  r_syntax_parse:
+    name: R syntax parse check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - name: Parse all R files (NO source, NO library load)
+        run: |
+          Rscript -e '
+          # Codex CI 권고: source() 금지, parse(file=) only.
+          dirs <- c("02_Infrastructure", "08_Tests")
+          dirs <- dirs[dir.exists(dirs)]
+          files <- unlist(lapply(dirs, function(d)
+            list.files(d, pattern="\\.R$", recursive=TRUE, full.names=TRUE)))
+          fails <- character()
+          for (f in files) {
+            out <- tryCatch(parse(file=f), error=function(e) conditionMessage(e))
+            if (inherits(out, "character")) {
+              fails <- c(fails, sprintf("%s: %s", f, out))
+            }
+          }
+          cat(sprintf("Parsed %d R files, %d errors\n", length(files), length(fails)))
+          if (length(fails) > 0) {
+            for (f in fails) cat("  FAIL:", f, "\n")
+            quit(status=1)
+          }
+          '
+
+  shellcheck:
+    name: Shellcheck (hook .sh)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Run shellcheck on hooks
+        run: |
+          set -e
+          fails=0
+          for f in 02_Infrastructure/hooks/*.sh; do
+            # SC2086 quoting / SC1090 source non-constant — soft skip
+            shellcheck -e SC2086,SC1090,SC1091,SC2046,SC2155 "$f" || fails=$((fails+1))
+          done
+          if [ "$fails" -gt 0 ]; then
+            echo "Shellcheck found $fails files with issues"
+            exit 1
+          fi
+
+  python_lint:
+    name: Python lint (pyright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pyright
+        run: pip install pyright
+      - name: Run pyright on router + cert_eval (kernel only)
+        run: |
+          pyright --warnings 02_Infrastructure/hooks/qvest_hook_router.py 02_Infrastructure/hooks/qvest_cert_eval.py
+
+  duplication_audit:
+    name: Duplication audit (single source)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Eligibility logic 중복 검사
+        run: |
+          # v7.0 Sprint 1 후: cert eligibility threshold가 hook 내 inline 작성되면 안 됨.
+          # 0.95 / 50 chars / harvey_t 3 등 hardcode 금지 (cert_rules.json만).
+          set -e
+          # alpha_inheritance_cor < 0.95 hardcoded outside cert_rules.json/cert_rules.R/cert_eval.py?
+          violations=$(grep -rEn "alpha_inheritance_cor.*<.*0\.95|harvey_t.*>=.*3" 02_Infrastructure/hooks/*.sh 02_Infrastructure/hooks/*.py 2>/dev/null | grep -vE "qvest_cert_eval\.py|qvest_hook_router\.py|cert_rules\.json" || true)
+          if [ -n "$violations" ]; then
+            echo "Duplication detected (eligibility logic outside cert_rules):"
+            echo "$violations"
+            exit 1
+          fi
+          echo "✅ No duplication — single source verified"
