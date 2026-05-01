@@ -121,25 +121,20 @@ elif missing_v62:
 else:
     print(f"[OK] {fp} ({pkg_type}) schema + v6.2 mandate PASS", file=sys.stderr)
 
-# v1.2 Charter §10 Positive Certifier — forge_package 8-field PASS 시 forge_package_validated_certificate 발급
+# v7.0 Sprint 1 Charter §10 Positive Certifier — qvest_cert_eval router 위임
 if pkg_type == "forge_package" and not missing:
-    import os, datetime
+    import os, sys as _sys
     wt_dir = os.path.dirname(fp)
     cert_path = os.path.join(wt_dir, "forge_package_validated_certificate.json")
     if not os.path.exists(cert_path):
-        cert = {
-            "issued": True,
-            "wt_id": pkg.get("task_id", ""),
-            "validated_fields_count": 8,
-            "issued_at": datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
-            "issued_by": "worktask_artifact_validator.sh v1.2",
-            "charter_ref": "v1.2 §10 forge_package_validated_certificate"
-        }
         try:
-            with open(cert_path, "w") as f:
-                json.dump(cert, f, indent=2, ensure_ascii=False)
-        except Exception:
-            pass
+            _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/hooks")
+            # router 단일 source
+            from qvest_cert_eval import issue_certificate
+            issue_certificate("forge_package_validated", fp, cert_path,
+                              issued_by="worktask_artifact_validator.sh v7.0 (router 위임)")
+        except Exception as _e:
+            print(f"[WARN] cert issue 실패 fallback: {_e}", file=_sys.stderr)
 PYEOF
 
 exit 0

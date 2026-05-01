@@ -360,6 +360,60 @@ def evaluate(cert_name: str, package_path: str, **kwargs) -> dict:
     return evaluator(pkg, spec)
 
 
+def issue_certificate(cert_name: str, package_path: str, output_path: str,
+                       wt_id: Optional[str] = None,
+                       issued_by: str = "qvest_cert_eval.py v1.0") -> dict:
+    """5 cert 공통 issue helper. evaluate 결과 + metadata 합성 → output_path 저장.
+
+    Hook (.sh)는 본 함수 호출만 하면 됨. eligibility logic 보유 X.
+    Returns evaluate result dict (caller가 ISSUED/NOT_ISSUED 메시지 생성).
+    """
+    import datetime as _dt
+
+    result = evaluate(cert_name, package_path)
+    eligible = result["eligible"]
+
+    if wt_id is None:
+        try:
+            with open(package_path, "r", encoding="utf-8") as f:
+                pkg = json.load(f)
+            wt_id = pkg.get("task_id") or pkg.get("wt_id") or ""
+        except Exception:
+            wt_id = ""
+
+    cert: dict = {
+        "issued": bool(eligible),
+        "wt_id": wt_id,
+        "issued_at": _dt.datetime.now().astimezone().isoformat(timespec="seconds"),
+        "issued_by": issued_by,
+        "charter_ref": f"v1.2 §10 ({cert_name} certification)",
+        "non_issuance_reason": None if eligible else result.get("reason"),
+    }
+
+    payload = result.get("payload") or {}
+    if isinstance(payload, dict):
+        for k, v in payload.items():
+            if k not in cert:
+                cert[k] = v
+
+    if not eligible:
+        remediation_map = {
+            "alpha_discovery": "alpha agent rerun: cor < 0.95 + mechanism >= 50 chars + factor_specs >= 1 + harvey_t pass >= 3",
+            "sr_provenance": "forge agent: forge_package.json에 sr_realized_share_based + measurement_basis_primary='forge_realized_share_based' + weights_csv_unique_dates_count + schedule_density_ratio 4-field 모두 작성",
+            "forge_package_validated": "forge agent: forge_package.json 8-field 누락 보강 (task_id / backtest_summary / sr_realized_share_based / measurement_basis_primary / weights_csv_unique_dates_count / alpha_sig_dates_count / schedule_density_ratio / schedule_density_pass + pure_function_violation)",
+            "schedule_fidelity": "optimizer agent: weights_csv_unique_dates / alpha_sig_dates_count >= 0.95 OR infeasibility_report 명시",
+            "governor_concord": "governor: book_state.book_weights ↔ governor_admission.allocation_decided 일치, 또는 waiver_log 5-row 작성",
+        }
+        cert["remediation"] = remediation_map.get(cert_name, "see cert_rules.json eligibility spec")
+
+    out = Path(output_path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(cert, f, indent=2, ensure_ascii=False)
+
+    return result
+
+
 def selftest():
     """Selftest — load policy + 5 cert dispatch (file 부재 시 fail expected)."""
     policy = load_cert_policy(force_reload=True)
@@ -390,8 +444,20 @@ if __name__ == "__main__":
         result = evaluate(cert_name, pkg_path)
         print(json.dumps(result))
         sys.exit(0 if result["eligible"] else 1)
+    elif len(sys.argv) >= 5 and sys.argv[1] == "issue":
+        cert_name = sys.argv[2]
+        pkg_path = sys.argv[3]
+        out_path = sys.argv[4]
+        issued_by = sys.argv[5] if len(sys.argv) >= 6 else "qvest_cert_eval.py v1.0"
+        result = issue_certificate(cert_name, pkg_path, out_path, issued_by=issued_by)
+        print(json.dumps({
+            "issued": result["eligible"],
+            "reason": result["reason"],
+            "cert_path": out_path,
+        }))
+        sys.exit(0)
     else:
         print(json.dumps({
-            "usage": "qvest_cert_eval.py selftest | evaluate <cert_name> <package_path>"
+            "usage": "qvest_cert_eval.py selftest | evaluate <cert_name> <package_path> | issue <cert_name> <package_path> <output_path> [issued_by]"
         }))
         sys.exit(2)

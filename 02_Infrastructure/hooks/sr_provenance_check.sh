@@ -47,37 +47,15 @@ if [[ "$FILE_PATH" =~ forge_package(_phase[0-9]+)?\.json$ ]]; then
     fi
   fi
 
-  # Positive certifier (v1.2 Charter §10): 4-field 모두 존재 → sr_provenance_certificate.json 발급
+  # Positive certifier (v7.0 Sprint 1: qvest_cert_eval router 위임)
   if [[ -f "$FILE_PATH" ]]; then
     WT_DIR=$(dirname "$FILE_PATH")
     CERT_PATH="$WT_DIR/sr_provenance_certificate.json"
     if [[ ! -f "$CERT_PATH" ]]; then
-      python3 <<PYEOF 2>>/tmp/sr_provenance_certifier.log || true
-import json, datetime
-try:
-    with open("$FILE_PATH") as f:
-        pkg = json.load(f)
-except Exception:
-    raise SystemExit(0)
-required = ["sr_realized_share_based", "measurement_basis_primary",
-            "weights_csv_unique_dates_count", "schedule_density_ratio"]
-missing = [k for k in required if k not in pkg]
-basis_ok = pkg.get("measurement_basis_primary") == "forge_realized_share_based"
-if not missing and basis_ok:
-    cert = {
-        "issued": True,
-        "wt_id": pkg.get("task_id", ""),
-        "sr_realized_share_based": pkg.get("sr_realized_share_based"),
-        "measurement_basis_primary": pkg.get("measurement_basis_primary"),
-        "weights_csv_unique_dates_count": pkg.get("weights_csv_unique_dates_count"),
-        "schedule_density_ratio": pkg.get("schedule_density_ratio"),
-        "issued_at": datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
-        "issued_by": "sr_provenance_check.sh v1.2",
-        "charter_ref": "v1.2 §9/§10 SR Provenance Certificate"
-    }
-    with open("$CERT_PATH", "w") as f:
-        json.dump(cert, f, indent=2, ensure_ascii=False)
-PYEOF
+      PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+      python3 "$PROJ_DIR/02_Infrastructure/hooks/qvest_cert_eval.py" \
+        issue sr_provenance "$FILE_PATH" "$CERT_PATH" \
+        "sr_provenance_check.sh v7.0 (router 위임)" >>/tmp/sr_provenance_certifier.log 2>&1 || true
     fi
   fi
 fi
