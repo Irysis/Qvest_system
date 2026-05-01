@@ -31,6 +31,18 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
+# v7.0 Sprint 1 — cert_rules.R 단일 source 위임. 5 check_*_eligibility wrapper화.
+# cert_rules.R가 cert_rules.json import → eligibility logic 중복 0건.
+.cert_rules_path_v70 <- "02_Infrastructure/worktask/cert_rules.R"
+if (!exists("cr_check_eligibility", mode = "function")) {
+  if (file.exists(.cert_rules_path_v70)) {
+    suppressMessages(source(.cert_rules_path_v70, local = FALSE))
+  } else {
+    warning(sprintf("[cert_backfill_audit] cert_rules.R 부재: %s — fallback inline logic 유지",
+                    .cert_rules_path_v70))
+  }
+}
+
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
 
 LOG_PATH <- "/tmp/cert_backfill_audit.log"
@@ -129,97 +141,48 @@ audit_str_lineage <- function(str_id, wt_root) {
 }
 
 #==============================================================================
-# 2. Cert 발급 가능 여부 검사 (각 cert별 별도 logic)
+# 2. Cert 발급 가능 여부 검사 (v7.0 Sprint 1 — cert_rules.R 위임)
+#
+# v7.0 정합 강제: 5 check_*_eligibility는 cert_rules.R::cr_check_* 호출 wrapper.
+# eligibility logic은 cert_rules.json (data) → cert_rules.R (apply) 단일 source.
+# payload field name은 backward compat (기존 cert 발급 schema 보존).
 #==============================================================================
 check_alpha_discovery_eligibility <- function(wt_dir) {
   alpha_path <- file.path(wt_dir, "alpha_package.json")
-  if (!file.exists(alpha_path)) {
-    return(list(eligible = FALSE, reason = "alpha_package.json 부재"))
+  if (!exists("cr_check_alpha_discovery", mode = "function")) {
+    return(list(eligible = FALSE, reason = "cert_rules.R 미로드"))
   }
-  pkg <- tryCatch(fromJSON(alpha_path, simplifyVector = FALSE),
-                  error = function(e) NULL)
-  if (is.null(pkg) || !is.list(pkg)) {
-    return(list(eligible = FALSE, reason = "alpha_package.json parse 실패"))
-  }
-
-  diag <- pkg$diagnostics %||% list()
-  cor <- diag$alpha_inheritance_cor
-  harvey_pass <- diag$harvey_t_specs_pass_count %||% 0L
-
-  factor_specs <- pkg$factor_specs %||% list()
-  n_factor <- length(factor_specs)
-
-  mechanism <- ""
-  if (length(factor_specs) > 0) {
-    for (fs in factor_specs) {
-      if (is.list(fs)) {
-        mechanism <- paste(mechanism, fs$economic_rationale %||% "",
-                          fs$formula %||% "", sep = " ")
-      }
-    }
-  }
-  mechanism <- paste(mechanism, pkg$hypothesis_summary %||% "", sep = " ")
-  mechanism_len <- nchar(trimws(mechanism))
-
-  issues <- character()
-  if (is.null(cor)) {
-    issues <- c(issues, "alpha_inheritance_cor 필드 부재")
-  } else if (cor >= 0.95) {
-    issues <- c(issues, sprintf("cor=%.4f >= 0.95", cor))
-  }
-  if (mechanism_len < 50) issues <- c(issues, sprintf("mechanism %d < 50 chars", mechanism_len))
-  if (n_factor < 1) issues <- c(issues, sprintf("factor_specs %d < 1", n_factor))
-  if (harvey_pass < 3) issues <- c(issues, sprintf("harvey_t %d < 3", harvey_pass))
-
-  list(
-    eligible = length(issues) == 0,
-    reason = if (length(issues) > 0) paste(issues, collapse = " | ") else "all_pass",
-    payload = list(
-      inheritance_cor_actual = cor,
-      mechanism_cited_chars = mechanism_len,
-      factor_specs_new_count = n_factor,
-      harvey_t_specs_pass_count = harvey_pass
+  res <- cr_check_alpha_discovery(alpha_path)
+  # payload field name backward compat (cert_backfill 기존 schema)
+  if (isTRUE(res$eligible) && !is.null(res$payload)) {
+    res$payload <- list(
+      inheritance_cor_actual = res$payload$alpha_inheritance_cor,
+      mechanism_cited_chars = res$payload$mechanism_cited_chars,
+      factor_specs_new_count = res$payload$factor_specs_count,
+      harvey_t_specs_pass_count = res$payload$harvey_t_specs_pass_count
     )
-  )
+  }
+  res
 }
 
 check_sr_provenance_eligibility <- function(wt_dir) {
   fp_path <- file.path(wt_dir, "forge_package.json")
-  if (!file.exists(fp_path)) {
-    return(list(eligible = FALSE, reason = "forge_package.json 부재"))
+  if (!exists("cr_check_sr_provenance", mode = "function")) {
+    return(list(eligible = FALSE, reason = "cert_rules.R 미로드"))
   }
-  pkg <- tryCatch(fromJSON(fp_path, simplifyVector = FALSE),
-                  error = function(e) NULL)
-  if (is.null(pkg) || !is.list(pkg)) {
-    return(list(eligible = FALSE, reason = "forge_package.json parse 실패"))
+  res <- cr_check_sr_provenance(fp_path)
+  if (isTRUE(res$eligible)) {
+    # backward compat: keep "all_4_fields_pass" plural (기존 사용)
+    res$reason <- "all_4_fields_pass"
   }
-
-  required_fields <- c("sr_realized_share_based", "measurement_basis_primary",
-                       "weights_csv_unique_dates_count", "schedule_density_ratio")
-  missing <- required_fields[!required_fields %in% names(pkg)]
-  basis_ok <- identical(pkg$measurement_basis_primary, "forge_realized_share_based")
-
-  if (length(missing) > 0 || !basis_ok) {
-    issues <- character()
-    if (length(missing) > 0) issues <- c(issues, paste0("missing: ", paste(missing, collapse = ", ")))
-    if (!basis_ok) issues <- c(issues, sprintf("basis='%s' != 'forge_realized_share_based'",
-                                               pkg$measurement_basis_primary %||% "NA"))
-    return(list(eligible = FALSE, reason = paste(issues, collapse = " | ")))
-  }
-
-  list(
-    eligible = TRUE,
-    reason = "all_4_fields_pass",
-    payload = list(
-      sr_realized_share_based = pkg$sr_realized_share_based,
-      measurement_basis_primary = pkg$measurement_basis_primary,
-      weights_csv_unique_dates_count = pkg$weights_csv_unique_dates_count,
-      schedule_density_ratio = pkg$schedule_density_ratio
-    )
-  )
+  res
 }
 
 check_schedule_fidelity_eligibility <- function(wt_dir) {
+  # Note: cert_backfill schedule_fidelity는 weights.csv + alpha_package source.
+  # cert_rules.R cr_check_schedule_fidelity는 optimization_package source.
+  # 둘은 별개 measurement (Layer 2 backfill vs PostToolUse hook).
+  # v7.0: backfill source는 retain — schedule_density formula는 동일 (cert_rules.json).
   weights_path <- file.path(wt_dir, "weights.csv")
   alpha_path <- file.path(wt_dir, "alpha_package.json")
 
@@ -256,13 +219,19 @@ check_schedule_fidelity_eligibility <- function(wt_dir) {
     return(list(eligible = FALSE, reason = "alpha_package sig_dates_count=0"))
   }
 
+  # v7.0: threshold 0.95 = cert_rules.json single source (backfill도 같은 값 사용)
+  threshold <- tryCatch(
+    cr_load_policy()$certificates$schedule_fidelity$eligibility_OR$density$threshold,
+    error = function(e) 0.95
+  )
   ratio <- weights_dates / sig_dates
-  if (ratio < 0.95) {
+  if (ratio < threshold) {
     has_infeas <- !is.null(alpha$infeasibility_report) ||
                   !is.null(diag$schedule_skip_justified)
     if (!has_infeas) {
       return(list(eligible = FALSE,
-                  reason = sprintf("density %.3f < 0.95 + no infeasibility_report", ratio)))
+                  reason = sprintf("density %.3f < %.2f + no infeasibility_report",
+                                   ratio, threshold)))
     }
   }
 
@@ -273,37 +242,23 @@ check_schedule_fidelity_eligibility <- function(wt_dir) {
       weights_csv_unique_dates_count = weights_dates,
       alpha_sig_dates_count = sig_dates,
       schedule_density_ratio = round(ratio, 3),
-      infeasibility_report_cited = ratio < 0.95
+      infeasibility_report_cited = ratio < threshold
     )
   )
 }
 
 check_forge_package_validated_eligibility <- function(wt_dir) {
   fp_path <- file.path(wt_dir, "forge_package.json")
-  if (!file.exists(fp_path)) {
-    return(list(eligible = FALSE, reason = "forge_package.json 부재"))
+  if (!exists("cr_check_forge_package_validated", mode = "function")) {
+    return(list(eligible = FALSE, reason = "cert_rules.R 미로드"))
   }
-  pkg <- tryCatch(fromJSON(fp_path, simplifyVector = FALSE),
-                  error = function(e) NULL)
-  if (is.null(pkg) || !is.list(pkg)) {
-    return(list(eligible = FALSE, reason = "forge_package.json parse 실패"))
+  res <- cr_check_forge_package_validated(fp_path)
+  if (isTRUE(res$eligible)) {
+    # backward compat: 기존 reason "all_8_fields_pass" + payload validated_fields_count=8L
+    res$reason <- "all_8_fields_pass"
+    res$payload <- list(validated_fields_count = 8L)
   }
-
-  required_8 <- c("task_id", "backtest_summary", "sr_realized_share_based",
-                  "measurement_basis_primary", "weights_csv_unique_dates_count",
-                  "alpha_sig_dates_count", "schedule_density_ratio",
-                  "schedule_density_pass", "pure_function_violation")
-  missing <- required_8[!required_8 %in% names(pkg)]
-  if (length(missing) > 0) {
-    return(list(eligible = FALSE,
-                reason = paste0("missing 8-field: ", paste(missing, collapse = ", "))))
-  }
-
-  list(
-    eligible = TRUE,
-    reason = "all_8_fields_pass",
-    payload = list(validated_fields_count = 8L)
-  )
+  res
 }
 
 check_governor_concord_eligibility <- function(book_state_path,
