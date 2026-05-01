@@ -44,6 +44,15 @@
         "hooks": [
           {
             "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/\ubc14\ud0d5\\ \ud654\uba74/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/codex_round_pre_enforcer.sh\" 2>>/tmp/codex_round_pre_enforcer.log || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/\ubc14\ud0d5\\ \ud654\uba74/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/backtest_contract_audit.sh\" 2>>/tmp/backtest_contract_audit.log || true"
           }
         ]

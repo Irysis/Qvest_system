@@ -387,6 +387,39 @@ Anthropic prompt cache는 5분 TTL. 세션 토큰 비용의 핵심 절감 레버
 
 ---
 
+## v6.0 Codex Critic Round 의무 (Level 0 — 모든 agent spawn 시, Session 75 L-269 명문화)
+
+**규칙**: alpha-research / risk-research / optimizer-research / forge / judge / governor agent **모두** finalize 직전 Step N+1로 Codex Critic Round 의무. **자율 의무가 아닌 시스템 강제**.
+
+**3중 장치 (전부 갖춰져야 진짜 의무)**:
+
+1. **Q-Lead spawn prompt 표준** — agent prompt에 다음 흐름 명시 의무:
+   ```
+   {role}_package_draft.json 작성 (Write tool, _draft suffix 필수)
+   → PostToolUse[codex_round_auto_trigger.sh] background spawn (~9-15분)
+   → codex_critic_response_{role}.json 도착 대기
+   → stance/concerns 검토 + challenge_note.md 기록 (Charter §8 No Silent Override)
+   → ACCEPT/PARTIAL/REBUTTAL 분류 + spec 수정 (필요시)
+   → {role}_package.json finalize (Write tool, no _draft suffix)
+   ```
+
+2. **PostToolUse Hook auto-trigger** — `02_Infrastructure/hooks/codex_round_auto_trigger.sh`
+   - matcher: `_draft.json` suffix만 trigger (alpha_package_draft / risk_package_draft / optimization_package_draft / forge_package_draft / judge_verdict_draft / governor_admission_draft)
+   - background spawn 자동 (PID 관리 + timeout 1200s)
+
+3. **PreToolUse Hook hard block** — `02_Infrastructure/hooks/codex_round_pre_enforcer.sh` (v6.3.3 신규)
+   - matcher: `*_package.json` (no _draft) Write/Edit 시
+   - 검증: 동일 디렉토리에 `*_package_draft.json` + `codex_critic_response_*.json` 존재 여부
+   - 부재 시 **decision: block** ("Codex critic round 미완료 — _draft 작성 + critic round 후 finalize")
+
+**우회 가능 구조 회피 (L-269 lesson)**: agent definition `.claude/agents/*.md` line 22+의 "v6.0 의무 단계 영구" 명시는 documentation level. 실제 강제는 Hook (Layer 4) + Q-Lead spawn prompt (Layer 2) + Q-Lead 인지 (Layer 1) 3중 장치. Layer 4만 있을 때 (Session 75 첫 cycle) — `_draft` matcher만 trigger라 final 직접 작성 시 우회. Layer 1+2+3 모두 갖춰야 진짜 의무.
+
+**예외 정책**: 도훈 명시 override 또는 Q-Lead urgent waiver 시 challenge_note.md `codex_critic_skip_waiver` field 명시 + 사후 Layer 2 sweep `cert_backfill_audit.R --target=WT-XXX --manual` 의무.
+
+**Reference**: Session 75 본 cycle WT-D20260501_001 alpha + risk codex round 누락 사례. 4-Layer 진단 (Q-Lead 책임 70% + 시스템 결함 30%). L-269 적립.
+
+---
+
 ## Axioms (Level 0 공리 — 요약; 상세는 `_shared_prefix.md` SOT)
 모든 에이전트는 아래 공리를 전제로 작동한다. AX-code 위반 = 즉시 중단.
 
