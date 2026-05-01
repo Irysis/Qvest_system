@@ -5,6 +5,46 @@ All notable changes to Qvest are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
+## [v7.1.0] — 2026-05-01
+
+**Solo Operator Productivity Patch** (v7.1-lite — Sprint 1~4)
+
+### Added
+- `02_Infrastructure/search/build_index.R` — JSONL search index builder (1502 rows, 9 source types)
+- `02_Infrastructure/search/qvest_search` + `_query.py` — unified search CLI (AND keyword + casefold + type filter + WT-D9999 default exclusion + --no-auto-rebuild)
+- `02_Infrastructure/observability/qvest_wt` + `_wt_pretty.py` — per-WT viewer (ASCII timeline tree, --certs/--failures/--lineage/--json/--active/--recent N)
+- `00_Lawbook/INDEX.md` — single-page navigation map (119 lines, 8 sections — Active SOT / Daily CLI / Debug Map / Flow / Memory & Registry / Schemas / Examples / Tags)
+- `examples/qvest_workflows/` — 3 standard reference WTs (01 happy / 02 cert_fail / 03 pit_violation)
+- CI jobs: `search_smoke` + `qvest_wt_smoke` + `schema_validate` examples whitelist mapping
+- `qepm/observability/readiness/` — v8 design readiness gate scaffold
+
+### Changed
+- `.gitignore` — `qepm/observability/search_index.jsonl` (regenerable)
+
+### Notes
+- Tag `v7.1.0` (MINOR semver — backward compatible)
+- Display name: `Qvest v7.1.0-lite`
+- archive policy (events.jsonl rotation 90+ days) deferred to v7.2
+
+## [v7.0.1] — 2026-05-01
+
+**Residue Hardening Patch** (v7.1-lite Sprint 0)
+
+### Fixed
+- Synthetic WT 5건 cleanup (WT-D99990101_001~_004 + WT-D99999999_999) + `_e2e_cleanup_guard.sh` 4-step safe procedure
+- `cert_rules.R` 4 함수 threshold hardcode 제거 → `cert_rules.json` data layer (public API/outcome unchanged)
+- `harness_health.sh` REQUIRED_HOOKS legacy 제거 (role_taxonomy_admission_gate / cash_sleeve_validator) + DEPRECATION.md 동기화
+- `qvest_observe` error masking 완화 — `>/dev/null 2>&1 || true` triple silent 제거 → stderr log + cached fallback 명시
+
+### Added
+- `08_Tests/integration/_cert_threshold_audit.R` — R AST 기반 numeric literal 검출 (round(x,3L) integer L-suffix allow)
+- `08_Tests/integration/_e2e_cleanup_guard.sh` — `--list`/`--force`/`--check` modes
+
+### Notes
+- Tag `v7.0.1` (PATCH semver)
+- Public API + eligibility outcome 100% 보존 (kernel behavior unchanged)
+- v7.0 contract 위반 0건
+
 ## [v7.0.0] — 2026-05-01
 
 **v7.0 Hardening Release** — "문서상 규칙을 우회 불가능한 실행 계약으로 바꾸는 release"
