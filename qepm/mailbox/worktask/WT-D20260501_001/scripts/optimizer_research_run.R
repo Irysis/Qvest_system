@@ -417,13 +417,15 @@ METHODS <- list(
 # of the universe at t. Then compute weights and forward Ret_1M.
 
 # Pre-compute per-ticker monthly returns wide matrix
-ret_panel <- dcast(me_rd, Date ~ Ticker, value.var = "Ret_1M")
-setorder(ret_panel, Date)
-ret_dates <- as.Date(ret_panel$Date)
-ret_tickers <- setdiff(names(ret_panel), "Date")
-ret_mat_full <- as.matrix(ret_panel[, !"Date"])
-rownames(ret_mat_full) <- as.character(ret_dates)
-cat("[Step2] return panel:", nrow(ret_mat_full), "×", ncol(ret_mat_full), "\n")
+# me_rd has multi-Date per ym (listing artifacts) — collapse via ym key
+me_monthly <- me_rd[, .(Ret_1M = mean(Ret_1M, na.rm = TRUE)), by = .(Ticker, ym)]
+ret_panel <- dcast(me_monthly, ym ~ Ticker, value.var = "Ret_1M")
+setorder(ret_panel, ym)
+ret_yms <- ret_panel$ym  # character "YYYY-MM"
+ret_tickers <- setdiff(names(ret_panel), "ym")
+ret_mat_full <- as.matrix(ret_panel[, !"ym"])
+rownames(ret_mat_full) <- ret_yms
+cat("[Step2] return panel (monthly):", nrow(ret_mat_full), "×", ncol(ret_mat_full), "\n")
 
 # Rolling covariance estimation (Ledoit-Wolf shrinkage to constant correlation)
 ledoit_cor <- function(X, delta = 0.2) {
@@ -445,7 +447,9 @@ ledoit_cor <- function(X, delta = 0.2) {
 }
 
 # Build per-sig_date weights for each method
-WIN_MONTHS <- 60L  # 5y rolling cov
+# Use expanding window with min 36m to maximize schedule density (Charter §9 ≥ 0.95)
+WIN_MONTHS_MAX <- 60L
+WIN_MONTHS_MIN <- 36L
 
 run_method_wf <- function(method_fn, name, gamma_to = NULL) {
   prev_w <- NULL
@@ -458,11 +462,15 @@ run_method_wf <- function(method_fn, name, gamma_to = NULL) {
     if (nrow(panel_t) < 30) next
     uni_t <- panel_t$Ticker
     a_t <- setNames(panel_t$alpha, uni_t)
-    # Past returns for covariance: dates strictly before sd
-    end_idx <- which(ret_dates < sd)
-    if (length(end_idx) < WIN_MONTHS) next
+    # Past returns for covariance: ym strictly before sd's ym
+    # Use expanding window: prefer 60m, accept >= 36m for early dates (Charter §9)
+    sd_ym <- format(sd, "%Y-%m")
+    end_idx <- which(ret_yms < sd_ym)
+    if (length(end_idx) < WIN_MONTHS_MIN) next
     end_idx <- max(end_idx)
-    start_idx <- max(1, end_idx - WIN_MONTHS + 1)
+    win_use <- min(WIN_MONTHS_MAX, end_idx)  # take all available up to 60
+    win_use <- max(WIN_MONTHS_MIN, win_use)
+    start_idx <- max(1, end_idx - win_use + 1)
     R_win <- ret_mat_full[start_idx:end_idx, , drop = FALSE]
     common <- intersect(uni_t, colnames(R_win))
     if (length(common) < 30) next
@@ -591,16 +599,11 @@ cat("\n[Step5] STR_1715 blend simulation ...\n")
 str1715_pr <- fread(file.path(PROJ,
   "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv"))
 str1715_pr[, date := as.Date(date)]
-# Convert period_returns date (1st of month) to month-end sig_date (last day of that month)
-str1715_pr[, sig_date := as.Date(format(seq.Date(date, by = "1 month", length.out = 1) - 1, "%Y-%m-%d"))]
-# Actually simpler: align sig_date as month-end of date's month
-str1715_pr[, sig_date := as.Date(format(date, "%Y-%m-01"))]
-str1715_pr[, sig_date := seq.Date(sig_date, by = "1 month", length.out = 1) - 1, by = .(date)]
-# Easier — just use ym index merge
+# Use ym index for blend merge
 str1715_pr[, ym := format(date, "%Y-%m")]
 str1715_ym <- str1715_pr[, .(ym, str1715_ret = ret_net)]
 
-w_grid <- c(0.05, 0.10, 0.15, 0.20, 0.25, 0.30)
+w_grid <- c(0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.175, 0.20, 0.25, 0.30)
 blend_results <- list()
 for (nm in names(results_list)) {
   s <- results_list[[nm]]$stats
