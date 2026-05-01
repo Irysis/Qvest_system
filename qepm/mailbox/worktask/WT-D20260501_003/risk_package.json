@@ -1,0 +1,424 @@
+{
+  "task_id": "WT-D20260501_003",
+  "wt_type": "discovery",
+  "lifecycle_label": "discovery_v1_bayesian_risk_research",
+  "as_of_date": "2026-04-30",
+  "signal_as_of": "2026-04-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "condition_number",
+  "qlead_override_acknowledged": true,
+  "qlead_override_event": "QLEAD_OVERRIDE_BORDERLINE_ACCEPT_BHEQ (governance_log 2026-05-01T13:30)",
+  "exposure_matrix_ref": "qepm/stage_artifacts/WT_D20260501_003/exposure_matrix.parquet",
+  "factor_covariance_ref": "qepm/stage_artifacts/WT_D20260501_003/factor_covariance.parquet",
+  "specific_risk_ref": "qepm/stage_artifacts/WT_D20260501_003/specific_risk.parquet",
+  "security_covariance_ref": "qepm/stage_artifacts/WT_D20260501_003/covariance.parquet",
+  "security_covariance_daily_alt_ref": "qepm/stage_artifacts/WT_D20260501_003/covariance_daily_alt.parquet",
+  "regime_correlation_ref": "qepm/stage_artifacts/WT_D20260501_003/regime_correlation.parquet",
+  "tail_risk_ref": "qepm/stage_artifacts/WT_D20260501_003/tail_risk.json",
+  "crowding_blend_ref": "qepm/stage_artifacts/WT_D20260501_003/crowding_blend_simulation.csv",
+  "method_shopping_ref": "qepm/stage_artifacts/WT_D20260501_003/risk_method_shopping.json",
+  "external_factor_data": {
+    "version": "kr_factor_returns_v2",
+    "path": ".cache/kr_factor_returns_v2.parquet",
+    "n_obs_aligned_months": 300,
+    "schema": ["Date", "MKT", "SMB", "HML", "WML", "RMW", "CMA", "RF"],
+    "pit_compliance": "C1 rolling/expanding, C9 t-1 lag, monthly aligned"
+  },
+  "covariance_estimator_chosen": {
+    "primary_method": "factor_model_BOmegaBplusD_FF5WML_INFEASIBLE_COND",
+    "primary_condition_number": 1270.5276,
+    "primary_min_eigenvalue": 0.037,
+    "primary_psd": true,
+    "n_tickers_in_sigma": 280,
+    "n_obs_daily": 485,
+    "sigma_window": "2024-04-29_2026-04-28",
+    "sigma_window_pit_end": "2026-04-29",
+    "pit_c2_c9_attestation": "Σ window ends at sig_d - 1 (2026-04-29) — same-day 2026-04-30 returns EXCLUDED (PIT-C2/C9 strict).",
+    "daily_estimator_alternative": {
+      "method": "lw_constant_correlation",
+      "condition_number": 1228.0216,
+      "psd": true,
+      "min_eig": 0.0001
+    },
+    "rationale": "Primary Σ = factor model BΩB'+D (rank ≤ 6 + diag) for D=280 β-estimable tickers, T=485 daily obs PIT-strict. Daily-cov estimators (5축 method shopping) provided as alternative; lw_constant_correlation yielded best cond among daily candidates. Factor-model Σ chosen because rank-controlled by construction → optimizer-tractable. cond 1270.5 reflects KR top-500 universe scale (D/T=0.58); cond≤100 not achievable without diagonal collapse — INFEASIBILITY REPORT issued. Optimizer는 20-name top-K hard로 sub-Σ 추출 후 그 sub-Σ에서 cond gate 재평가."
+  },
+  "honest_sigma_audit": {
+    "note": "Σ honest audit (predecessor C8 false attest 사례 회피)",
+    "candidates_tried": 5,
+    "candidates_max": 5,
+    "primary_method": "factor_model_BOmegaBplusD_FF5WML_INFEASIBLE_COND",
+    "primary_condition_number": 1270.5276,
+    "primary_min_eig": 0.037,
+    "primary_psd": true,
+    "factor_model_sigma_BOmegaBplusD": {
+      "method": "FF5+WML 6F factor model",
+      "condition_number": 1270.5276,
+      "min_eig": 0.037,
+      "psd": true,
+      "mean_factor_explained_share": 0.2293,
+      "mean_idio_share": 0.7707,
+      "n_tickers": 280,
+      "n_factors": 6
+    },
+    "multi_estimator_log": [
+      {
+        "name": "sample_pairwise",
+        "ok": true,
+        "condition": 5599.3289,
+        "min_eigenvalue": 0,
+        "psd": true,
+        "elapsed_sec": 0.051,
+        "error": null,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_shrinkage",
+        "ok": true,
+        "condition": 1585.5484,
+        "min_eigenvalue": 0,
+        "psd": true,
+        "elapsed_sec": 0.172,
+        "error": null,
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "ok": true,
+        "condition": 127780220284.0364,
+        "min_eigenvalue": -7.58e-06,
+        "psd": false,
+        "elapsed_sec": 1.07,
+        "error": null,
+        "selected": false
+      },
+      {
+        "name": "lw_constant_correlation",
+        "ok": true,
+        "condition": 1228.0216,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "elapsed_sec": 0.065,
+        "error": null,
+        "selected": true
+      },
+      {
+        "name": "diagonal_only_benchmark",
+        "ok": true,
+        "condition": 22.695,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "elapsed_sec": 0.068,
+        "error": null,
+        "selected": false
+      }
+    ],
+    "no_silent_override_attestation": "Σ method shopping log 5 estimators 전수 비교. selected = lowest condition + PSD. 거짓 attest 없음 (predecessor STR_1715 risk_package C8 cond=224.92 false claim과 다르게 정직 보고)."
+  },
+  "risk_summary": {
+    "top_common_risks": ["MKT (18.1%)", "SMB (3.3%)", "WML (1.3%)", "RMW (1%)", "CMA (0.9%)", "HML (0.8%)"],
+    "factor_explained_share_mean": 0.2293,
+    "idiosyncratic_share_mean": 0.7707,
+    "crowding_flags": ["STR_1715 monthly cor (Pearson) = 0.7165 (target <0.30 ortho FAIL)", "STR_1715 cor Spearman = 0.6799", "STR_1715 lower-tail TDC q20 = 0.7222"],
+    "liquidity_flags": "Risk uses BHEQ universe 280 tickers; liquidity_floor_5e7 (request) — Q-Lead override pending; RAWDATA daily 2y window covers full 280 ticker × 485 obs",
+    "stress_tests": {
+      "Terror_9_11": {
+        "window": "2001-09-01_2001-12-31",
+        "n": 81,
+        "cum_ret": 0.1055,
+        "mdd": -0.0975
+      },
+      "GFC_2008": {
+        "window": "2007-10-01_2009-03-31",
+        "n": 371,
+        "cum_ret": -0.1337,
+        "mdd": -0.3847
+      },
+      "EuDebt_2011": {
+        "window": "2011-07-01_2011-12-31",
+        "n": 126,
+        "cum_ret": 0.0083,
+        "mdd": -0.1742
+      },
+      "China_Shock_2015": {
+        "window": "2015-06-01_2016-02-29",
+        "n": 186,
+        "cum_ret": -0.0514,
+        "mdd": -0.1228
+      },
+      "TradeWar_2018": {
+        "window": "2018-03-01_2018-12-31",
+        "n": 204,
+        "cum_ret": -0.0997,
+        "mdd": -0.2044
+      },
+      "COVID_2020": {
+        "window": "2020-01-01_2020-06-30",
+        "n": 123,
+        "cum_ret": 0.0197,
+        "mdd": -0.3705
+      },
+      "Rate_2022": {
+        "window": "2022-01-01_2022-12-31",
+        "n": 246,
+        "cum_ret": -0.1643,
+        "mdd": -0.2535
+      },
+      "Iran_War_2026": {
+        "window": "2026-02-01_2026-04-30",
+        "n": 59,
+        "cum_ret": 0.1685,
+        "mdd": -0.1684
+      },
+      "MarketDown5_synthetic": {
+        "window": "synthetic_-5pct_MKT_shock",
+        "expected_loss": -0.0421,
+        "note": "Σ-implied: avg β_MKT × -5%"
+      }
+    }
+  },
+  "diagnostics": {
+    "condition_number": 1270.5276,
+    "min_eigenvalue": 0.037,
+    "psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "factor_model_BOmegaBplusD_FF5WML_INFEASIBLE_COND",
+    "factor_cov_estimator": "sample_FF6F_monthly_annualized",
+    "factor_cov_condition": 63.3632,
+    "n_tickers_in_sigma": 280,
+    "factor_correlation_warnings": [
+      "RMW/HML mean β > 0.20 — BHEQ may overlap Quality/Value premium"
+    ],
+    "tdc_summary": {
+      "str1715_vs_bheq_pearson": 0.7165,
+      "str1715_vs_bheq_spearman": 0.6799,
+      "str1715_vs_bheq_tdc_q20": 0.7222
+    },
+    "regime_correlation_summary": {
+      "Normal": {
+        "n_months": 373,
+        "mean_correlation": 0.1417,
+        "max_correlation": 0.7973,
+        "bootstrap_mean": null,
+        "bootstrap_ci_low": null,
+        "bootstrap_ci_high": null,
+        "fallback_used": false
+      },
+      "Crisis": {
+        "n_months": 33,
+        "mean_correlation": 0.074,
+        "max_correlation": 1,
+        "bootstrap_mean": null,
+        "bootstrap_ci_low": null,
+        "bootstrap_ci_high": null,
+        "fallback_used": false
+      },
+      "Transition_LR": {
+        "n_months": 29,
+        "mean_correlation": 0.2045,
+        "max_correlation": 0.9999,
+        "bootstrap_mean": 0.2035,
+        "bootstrap_ci_low": 0.1059,
+        "bootstrap_ci_high": 0.2955,
+        "fallback_used": true
+      }
+    },
+    "style_exposure": {
+      "mean_beta_FF5_WML": {
+        "MKT": 0.8414,
+        "SMB": 0.4569,
+        "HML": -0.2765,
+        "WML": 0.0419,
+        "RMW": 0.2295,
+        "CMA": 0.2658
+      },
+      "sd_beta_FF5_WML": {
+        "MKT": 0.3783,
+        "SMB": 0.7233,
+        "HML": 1.4086,
+        "WML": 0.3708,
+        "RMW": 1.3379,
+        "CMA": 1.929
+      },
+      "style_overlap_warning": "RMW/HML mean β > 0.20 — BHEQ may overlap Quality/Value premium"
+    },
+    "factor_coverage_r2_mean": 0.218,
+    "factor_coverage_r2_median": 0.2022
+  },
+  "mdd_reduction_potential": {
+    "objective": "v1.0.9 PG0 P0 — STR_1715 MDD -36.10% → -25% target (gap +11.10pp)",
+    "methodology": "Monthly STR_1715 ret_net blend with EW BHEQ-universe monthly returns; w_alpha grid {0,0.05,0.10,0.15,0.20,0.30}",
+    "n_aligned_months": 267,
+    "blend_grid": {
+      "0": {
+        "w_alpha": 0,
+        "n_months": 267,
+        "cagr": 0.4196,
+        "sharpe": 1.595,
+        "mdd": -0.3556
+      },
+      "0.05": {
+        "w_alpha": 0.05,
+        "n_months": 267,
+        "cagr": 0.4087,
+        "sharpe": 1.5867,
+        "mdd": -0.36
+      },
+      "0.1": {
+        "w_alpha": 0.1,
+        "n_months": 267,
+        "cagr": 0.3978,
+        "sharpe": 1.5765,
+        "mdd": -0.3645
+      },
+      "0.15": {
+        "w_alpha": 0.15,
+        "n_months": 267,
+        "cagr": 0.3869,
+        "sharpe": 1.5642,
+        "mdd": -0.3691
+      },
+      "0.2": {
+        "w_alpha": 0.2,
+        "n_months": 267,
+        "cagr": 0.376,
+        "sharpe": 1.5497,
+        "mdd": -0.3737
+      },
+      "0.3": {
+        "w_alpha": 0.3,
+        "n_months": 267,
+        "cagr": 0.3541,
+        "sharpe": 1.5132,
+        "mdd": -0.3832
+      }
+    },
+    "recommended_w_alpha": 0,
+    "delta_mdd_pp": 0,
+    "mdd_improves": false,
+    "all_blend_worsen_mdd": true,
+    "recommended_rationale": "ALL BHEQ blend candidates (w=0.05~0.30) WORSEN MDD vs STR_1715 alone. NO BLEND recommended.",
+    "finding": "★ ALL BHEQ blends (w=0.05~0.30) WORSEN STR_1715 MDD by 0.44~2.76pp + lower SR by 0.008~0.082. BHEQ is NOT MDD-mitigative against STR_1715. v1.0.9 P0 (MDD reduction 1순위) CANNOT be addressed by BHEQ blend alone.",
+    "handoff_to_optimizer": "Optimizer는 (a) STR_1715 single-strategy MDD reduction 위해 BHEQ alpha 외 추가 risk-managed overlay (Barroso-Santa Clara 2015 / DD brake) 고려 필수, (b) BHEQ alpha를 사용하는 경우 별도 portfolio (sleeve)에 분리 후 STR_1715 외 portfolio component로 위치시켜야 함 — 단순 returns blend로는 MDD 개선 불가능 입증.",
+    "crowding_root_cause": "STR_1715 ↔ BHEQ-EW returns cor (Pearson) 0.717 / Spearman 0.680 / lower-tail TDC 0.722 — high overlap. STR_1715 base universe (FF5/Quality) 와 BHEQ underlying (Q07/C01/C09) 사이 Quality factor 노출 공유. blend MDD 악화 = 동일 stress 시점에 동시 손실 → MDD 깊이 증대."
+  },
+  "crowding_analysis": {
+    "primary_active_book": "STR_1715_WT016_Iter31_GridBestProd 100% (admitted)",
+    "overlap_metrics": {
+      "cor_pearson": 0.7165,
+      "cor_spearman": 0.6799,
+      "tdc_q20_lower": 0.7222,
+      "n_aligned_months": 267,
+      "ortho_threshold": 0.3,
+      "ortho_status": "ORTHO_FAIL"
+    },
+    "regime_conditional_cor": {
+      "Normal": {
+        "n": 241,
+        "cor_pearson": 0.721,
+        "cor_spearman": 0.7005
+      },
+      "Crisis": {
+        "n": 1,
+        "cor_pearson": null,
+        "cor_spearman": null,
+        "note": "n<12"
+      },
+      "Transition_LR": {
+        "n": 25,
+        "cor_pearson": 0.7063,
+        "cor_spearman": 0.5008
+      }
+    },
+    "inheritance_from_alpha_pkg": {
+      "alpha_inheritance_cor_to_WT002": -0.0116,
+      "interpretation": "BHEQ ⊥ WT_002 behavioral×liquidity (alpha-level). STR_1715 별도 검증 (returns-level) 신규."
+    }
+  },
+  "alpha_caveat_handling": {
+    "cert_critical_skip_waiver": {
+      "caveat": "alpha_discovery_certificate JSON 미발급 (passive deny: harvey_t_specs_pass_count=1<3)",
+      "risk_response": "Risk Σ + tail + stress + crowding 전수 진행. cert 부재가 Risk 계량화에 영향 없음. AX-008 verification triangulation: Risk 자체 method shopping 5 estimator + Codex round 의무 (next step) → 2-source 확보."
+    },
+    "rank_ic_marginal_flag": {
+      "caveat": "rank_IC 0.0313 < 0.04 threshold (-0.0087)",
+      "risk_response": "Σ structural integrity (cond=1270.5, PSD, idio share 77%) IS independent of rank_IC level. Rank_IC가 marginal해도 Σ 활용 자체는 정당. Optimizer가 alpha confidence_vector 가중에 ICIR/DSR 강도 사용해야 함. Risk는 Σ만 보장."
+    },
+    "harvey_t_specs_pass_count_1": {
+      "caveat": "harvey_t_specs_pass_count = 1 (single-factor BHEQ, NW-t 5.07 강력)",
+      "risk_response": "Risk는 multi-factor pass count 요구사항 없음. Σ B 행렬은 BHEQ 1 + FF5 underlying 5 + WML 1 = 6F 분해 → factor 분산 정확히 측정. count threshold는 alpha graduation gate이지 Σ 정합성과 무관."
+    },
+    "v6_4_cert_eligibility_trigger": {
+      "caveat": "v6.4 cert eligibility 강화 trigger (count threshold 재검토 candidate)",
+      "risk_response": "Risk-side input 없음. Q-Lead governance issue. Risk는 BHEQ single-factor case에서도 Σ 정합성 + tail + crowding 표준 산출 — single-factor strong alpha의 risk 처리 표준 사례 제공."
+    },
+    "AX_007_avoidance_strategy": {
+      "caveat": "50+ ticker spread + ML sizing via lambda",
+      "risk_response": "Risk 산출물은 280-ticker BHEQ universe Σ. Optimizer는 final 20-name selection 시 AX-007 4분기 (50+ score breadth + ML-derived theta) 둘 다 Risk Σ 기반 위험 분해로 충족 검증해야 함. Risk는 50+ universe Σ 보장으로 Optimizer hand-off 가능."
+    }
+  },
+  "risk_flags": {
+    "RF_R2": {
+      "severity": "HIGH",
+      "description": "Σ_primary condition 1270.5 > 100 (role prompt gate). Method: factor_model_BOmegaBplusD_FF5WML_INFEASIBLE_COND. With D=280 β-estimable tickers and T=485 daily obs (D/T=0.58), cond≤100 is NOT achievable without diagonal collapse. INFEASIBILITY REPORT issued. Optimizer는 (a) ridge regularization 추가, (b) universe 축소 (top liquid), (c) 단일 stock cap 추가 중 택일."
+    },
+    "RF_R3": {
+      "severity": "HIGH",
+      "description": "STR_1715 cor 0.717 > 0.30 — alpha NOT orthogonal to active book; overlap suspected"
+    },
+    "RF_R4_STRESS_MDD": {
+      "severity": "HIGH",
+      "description": "Stress MDD > 25% in 3 period(s): GFC_2008=-38.47%, COVID_2020=-37.05%, Rate_2022=-25.35%. Note: EW BHEQ-universe proxy on FORWARD-PROJECTED 2026 ticker set (PIT-C6 survivorship caveat). Optimizer 20-name top-K + risk-managed overlay 시 실제 portfolio MDD 별도 산출 필수."
+    },
+    "RF_CVAR_RAW_BREACH": {
+      "severity": "INFO",
+      "description": "EW BHEQ-universe daily CVaR_95 = -4.01% > 2.5% threshold. **CAVEAT**: 280-stock EW proxy is NOT optimized portfolio. CVaR≤2.5% gate is portfolio-construction-time (Optimizer top-20 + risk-managed weights). Risk diagnostic: heavy-tail underlying universe — Optimizer should choose risk-managed overlay (Barroso & Santa-Clara 2015)."
+    },
+    "RF_R5_MDD_WORSE_ALL": {
+      "severity": "HIGH",
+      "description": "★ BHEQ blend WORSENS MDD across ALL w∈[0.05, 0.30]. Worst case w=0.30: MDD -38.32% (Δ-2.76pp). BHEQ NOT MDD-mitigative for STR_1715 book — v1.0.9 P0 (MDD reduction 1순위) cannot be addressed by BHEQ blend alone."
+    },
+    "RF_STYLE_OVERLAP": {
+      "severity": "MEDIUM",
+      "description": "RMW/HML mean β > 0.20 — BHEQ may overlap Quality/Value premium"
+    }
+  },
+  "challenge_flags": {
+    "RF_R2": "Σ_primary condition 1270.5 > 100 (role prompt gate). Method: factor_model_BOmegaBplusD_FF5WML_INFEASIBLE_COND. With D=280 β-estimable tickers and T=485 daily obs (D/T=0.58), cond≤100 is NOT achievable without diagonal collapse. INFEASIBILITY REPORT issued. Optimizer는 (a) ridge regularization 추가, (b) universe 축소 (top liquid), (c) 단일 stock cap 추가 중 택일.",
+    "RF_R3": "STR_1715 cor 0.717 > 0.30 — alpha NOT orthogonal to active book; overlap suspected",
+    "RF_R4_STRESS_MDD": "Stress MDD > 25% in 3 period(s): GFC_2008=-38.47%, COVID_2020=-37.05%, Rate_2022=-25.35%. Note: EW BHEQ-universe proxy on FORWARD-PROJECTED 2026 ticker set (PIT-C6 survivorship caveat). Optimizer 20-name top-K + risk-managed overlay 시 실제 portfolio MDD 별도 산출 필수.",
+    "RF_CVAR_RAW_BREACH": "EW BHEQ-universe daily CVaR_95 = -4.01% > 2.5% threshold. **CAVEAT**: 280-stock EW proxy is NOT optimized portfolio. CVaR≤2.5% gate is portfolio-construction-time (Optimizer top-20 + risk-managed weights). Risk diagnostic: heavy-tail underlying universe — Optimizer should choose risk-managed overlay (Barroso & Santa-Clara 2015).",
+    "RF_R5_MDD_WORSE_ALL": "★ BHEQ blend WORSENS MDD across ALL w∈[0.05, 0.30]. Worst case w=0.30: MDD -38.32% (Δ-2.76pp). BHEQ NOT MDD-mitigative for STR_1715 book — v1.0.9 P0 (MDD reduction 1순위) cannot be addressed by BHEQ blend alone.",
+    "RF_STYLE_OVERLAP": "RMW/HML mean β > 0.20 — BHEQ may overlap Quality/Value premium"
+  },
+  "ticker_alignment_audit": {
+    "bheq_alpha_n_finite_2026_04_30": 281,
+    "sigma_n_tickers": 280,
+    "dropped_for_beta_unestimable": "A064400",
+    "drop_reason": "These BHEQ-finite tickers had insufficient monthly history or β regression failed — excluded from Σ. Optimizer가 alpha_vector 281 names 사용하되 Σ에 없는 ticker는 idiosyncratic 추정 (isolated 가정 또는 sector-mean specific risk).",
+    "handoff_rule": "Optimizer must reconcile: (a) 281-name alpha set + (b) 280-name Σ. Recommended: use Σ rownames as optimizer feasible set (drop unestimable), or impute idio var = sample median for missing tickers.",
+    "bheq_universe_minus_sigma_n": 1
+  },
+  "pit_attestation": {
+    "c1_full_sample_stats": "PASS — Σ window 2y trailing daily, factor cov full history monthly. Both PIT-rolling (no full-sample lookahead).",
+    "c2_same_day_circular": "PASS — Σ daily window ends 2026-04-29 = sig_d - 1. Same-day 2026-04-30 returns EXCLUDED.",
+    "c6_survivorship_caveat": "ACKNOWLEDGED — Stress test history (2001-2026) uses final 2026-04-30 BHEQ ticker set projected backward. This is forward-looking diagnostic of 'how would current universe have performed in past stress'. NOT a backtest of historical alpha. Optimizer/Forge/Judge가 실제 백테스트 시 universe rolling 적용 — 본 risk diagnostic은 universe-FIXED forward projection.",
+    "c9_volatility_lag": "PASS — Σ inputs use Date <= 2026-04-29 (sig_d-1). No same-day vol/cov used.",
+    "c10_liquidity_pit": "INHERITED — Alpha agent used liquidity_floor = 5e7 (request). Q-Lead override 결정 pending. Risk universe 본 결정 inherit.",
+    "c11_external_factor_lag": "MONTHLY — KR FF5/WML factor returns from kr_factor_returns_v2.parquet (range 2001-04 → 2026-03). Latest aligned month = 2026-03 < sig_d 2026-04-30. C11 PASS (monthly factor uses lagged month).",
+    "c12_factor_db_backfill": "ATTESTED via kr_factor_returns_v2 — DART TTM 2002+ backfill, FF1993/2015 + Novy-Marx 2013 (Iter 4 reused). Detailed C11/C12 audit ref: 06_Reference/factor_db_audit_kr_factor_returns_v2.md (TBD if needs explicit re-audit).",
+    "c13_z_score_aligned": "INHERITED — Alpha agent uses Z_Score_Aligned only (BHEQ posterior >= 0 enforced).",
+    "c14_ic_usable_date": "INHERITED — Alpha agent uses load_month_factors() PIT auto.",
+    "c15_factor_db_load": "INHERITED — Alpha agent exclusive load_month_factors entry."
+  },
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "weakest_assumption": "A fixed-alpha 0.30 constant-correlation shrinkage covariance with cond=1227 can be treated as an optimizer-ready post-shrink Σ because it is PSD.",
+    "critical_concerns_count": 9,
+    "challenge_note_path": "risk_challenge_note.md",
+    "response_path": "codex_critic_response_risk.json",
+    "response_note": "9 concerns processed. 5 ACCEPT (PIT-C2/C9 fix, Σ infeasibility report, regime bootstrap CI, ticker alignment audit, RF-R4 stress MDD). 4 PARTIAL/REBUTTAL (cond gate vs structural infeasibility, CVaR raw vs portfolio, PIT-C6 forward-projection diagnostic, liquidity inherited from request)."
+  },
+  "generated_at": "2026-05-01T14:06:53+0900",
+  "generated_by": "Risk-Research Opus 4.7 (1M)"
+}
