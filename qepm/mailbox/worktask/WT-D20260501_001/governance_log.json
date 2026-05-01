@@ -6,6 +6,42 @@
       "agent": "q-lead",
       "action": "WT_CREATED",
       "summary": "Work Task 생성: [theme] behavioral_attention_x_liquidity_shock_kr_specific (Alpha Agent 자동 발굴) | source=alpha_agent_discovered"
+    },
+    {
+      "timestamp": "2026-05-01T10:32:06+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PACKAGE_FINALIZED",
+      "summary": "alpha_package.json 작성 완료 (29 KB). PostToolUse alpha_discovery_certifier auto-fired. cert ISSUED (4 AND 조건 충족: cor 0.05 / mechanism 1863 chars / factor_specs 6 / harvey_t 6). NOTE: v6.0 Codex Critic Round 의무 단계 누락 (도훈 사후 지적, L-269)."
+    },
+    {
+      "timestamp": "2026-05-01T10:50:00+0900",
+      "agent": "risk-research",
+      "action": "RISK_PACKAGE_FINALIZED",
+      "summary": "risk_package.json 작성 완료. objection=FALSE. NOTE: v6.0 Codex Critic Round 의무 단계 누락 (도훈 사후 지적, L-269)."
+    },
+    {
+      "timestamp": "2026-05-01T11:25:00+0900",
+      "agent": "optimizer-research",
+      "action": "OPTIMIZER_PACKAGE_FINALIZED",
+      "summary": "optimization_package.json + weights.csv (4380 rows × 7 cols, 219 dates × 20 names). Method: Top_RiskAdj_AS + STR_1715 blend w_alpha=0.30. Optimizer agent는 v6.0 Codex Critic Round 의무 자율 수행 (alpha + risk와 다름). codex stance REJECT → APPROVED_WITH_PARTIAL_ACCEPT (3 ACCEPT / 5 PARTIAL / 1 REBUTTAL via optimizer_challenge_note.md). Final SR_net 1.7231 / MDD_net -28.11% / R12 No Silent Override infeasibility_report (MDD < -25% 미달성)."
+    },
+    {
+      "timestamp": "2026-05-01T11:30:00+0900",
+      "agent": "q-lead",
+      "action": "POST_HOC_CODEX_CRITIC_ROUND_LAUNCHED",
+      "summary": "도훈 지적으로 alpha + risk codex round 누락 발견 (L-269). 사후 보강 background spawn 3건 (alpha + risk + optimizer-자체수행). v6.3.3 시스템 fix 동시 진행 (CLAUDE.md + PreToolUse Hook + spawn template). commit 31ef1db."
+    },
+    {
+      "timestamp": "2026-05-01T11:30:00+0900",
+      "agent": "q-lead",
+      "action": "WT_ARCHIVED_REJECTED_BY_CODEX",
+      "summary": "도훈 명시 옵션 A 폐기 재시작 결정. 본 cycle은 26 codex concerns (HIGH 18 + CRITICAL 1 + MEDIUM 7) 사후 발견. Fundamental issues: (1) Alpha PIT-C1 full-sample theta lookahead, (2) Alpha PIT-C13 sign convention 위반, (3) Alpha AX-007 mechanism break (long-only top-20 single-sleeve), (4) Alpha Charter §8 No Silent Override 위반 (3 gate fail rationalized), (5) Alpha composite < best single factor, (6) Risk Σ cond 224.92 false attest (선언 14.2), (7) Risk PIT-C15 거짓 attest (factor_db 직접 load), (8) Optimizer C1 CRITICAL liquidity 위반 (PIT-C10), (9) alpha_scores.parquet single snapshot (no time dimension). cert 시스템 신뢰성 보호: alpha_discovery_certificate REVOKE (revoked=true). 후속 WT-D20260501_002 v6.3.3 정합 cycle 재시작 예정."
+    },
+    {
+      "timestamp": "2026-05-01T11:30:00+0900",
+      "agent": "q-lead",
+      "action": "ALPHA_DISCOVERY_CERTIFICATE_REVOKED",
+      "summary": "alpha_discovery_certificate.json revoked=true 추가 + revocation_reason + revoked_by + revoked_at + revocation_codex_concerns_summary 명시. cert 발급 시점에는 4 AND 조건 (cor / mechanism / factor_specs / harvey_t) 충족했으나, 사후 codex critic round에서 fundamental PIT + AX-007 + Charter §8 위반 발견 → cert 시스템 무결성 보호를 위해 REVOKE. 사후 REVOKE 메커니즘 첫 발동."
     }
   ]
 }

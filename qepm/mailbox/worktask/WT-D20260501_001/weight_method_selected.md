@@ -1,6 +1,6 @@
 # Weight Method Selection — WT-D20260501_001
 ## Selected Method
-**Top_EW** + STR_1715 blend (w_alpha=0.30, w_str1715=0.70)
+**Top_RiskAdj_AS** + STR_1715 blend (w_alpha=0.30, w_str1715=0.70)
 
 ## Objective
 `selection_objective = net_ir_under_mdd_constraint`
@@ -20,16 +20,16 @@
 | MinVar_TopN | 0.347 | 4.01% | -37.39% | 5.02 | 0.20 | 1.702 | -31.13% |
 | MVO_TO_g15 | 0.300 | 3.54% | -42.56% | 4.93 | 0.25 | 1.727 | -30.71% |
 
-## Why Top_EW won
-Top_EW + STR_1715 blend w_alpha=0.30 selected by net_IR under MDD ≥ -25% constraint (P0 v1.0.9). Infeasible — closest approximation.
+## Why Top_RiskAdj_AS won
+Top_RiskAdj_AS + STR_1715 blend w_alpha=0.30 selected by net_IR under MDD ≥ -25% constraint (P0 v1.0.9). Infeasible — closest approximation.
 
 ## STR_1715 Blend Trade-off
-- alpha standalone (w=1.00): SR_net=0.485 / CAGR_net=6.71% / MDD_net=-41.15%
+- alpha standalone (w=1.00): SR_net=0.406 / CAGR_net=4.87% / MDD_net=-41.31%
 - alpha 0% (STR_1715 only): SR_net (overlap window) varies; baseline MDD ~-25.12%
-- selected w_alpha=0.30: SR_net=1.753 / CAGR_net=31.60% / MDD_net=-28.87%
+- selected w_alpha=0.30: SR_net=1.723 / CAGR_net=30.83% / MDD_net=-28.11%
 
 ## RF-R4 GFC Stress (alpha component)
-- 2007-10 ~ 2009-03 (n=15): cum_net=-8.04% / mdd_net=-32.11%
+- 2007-10 ~ 2009-03 (n=15): cum_net=-13.50% / mdd_net=-28.43%
 - alpha factor-mimicking long-short was -16.12%; long-only top-20 reduces tail (long-only bias)
 
 ## Schedule Fidelity (Charter §9)
@@ -42,7 +42,7 @@ Top_EW + STR_1715 blend w_alpha=0.30 selected by net_IR under MDD ≥ -25% const
 - w_cap <= 0.20: 100%
 
 ## Infeasibility Report
-**MDD_HARD_CONSTRAINT_INFEASIBLE**: No (method, w_alpha ∈ [0.01, 0.30]) blend satisfies MDD_net >= -25% over walk-forward 2008-2026 (219 months overlap window). STR_1715 standalone over same walk-forward window already exhibits MDD_net=-32.63% (vs reported -25.12% on shorter alpha-sample window). Best alpha-blended MDD: Top_EW + w_alpha=0.30 → MDD_net=-28.87% (reduction Δpp=3.76 vs STR_1715 walk-forward standalone -32.63%).
+**MDD_HARD_CONSTRAINT_INFEASIBLE**: No (method, w_alpha ∈ [0.01, 0.30]) blend satisfies MDD_net >= -25% over walk-forward 2008-2026 (219 months overlap window). STR_1715 standalone over same walk-forward window already exhibits MDD_net=-32.63% (vs reported -25.12% on shorter alpha-sample window). Best alpha-blended MDD: Top_RiskAdj_AS + w_alpha=0.30 → MDD_net=-28.11% (reduction Δpp=4.52 vs STR_1715 walk-forward standalone -32.63%).
 Violated: MDD_le_25pct_pg0_v1.0.9_P0
 Resolution: (a) DD/VT overlay at S5 mutation stage (overlay_blend_brake) — reduces MDD ~3-5pp historically; (b) restrict deployment window to post-2010 (skip GFC) — alpha overlap MDD only -25.12%;  (c) accept higher allocation as PG2 conditional admission with overlay handoff; (d) lower w_alpha below 0.01 — infeasible since marginal MDD reduction reverses.
 
