@@ -182,87 +182,13 @@ def _get_field(data: dict, path: str):
 
 
 def check_cert_eligibility(cert_name: str, package_path: str) -> dict:
-    """Check 5 cert eligibility. Returns {eligible, reason, payload}."""
-    if not Path(package_path).exists():
-        return {"eligible": False, "reason": f"package not found: {package_path}", "payload": {}}
+    """v7.0 Sprint 1 — qvest_cert_eval (single responsibility) 위임. router는 CLI routing만."""
     try:
-        with open(package_path, "r", encoding="utf-8") as f:
-            pkg = json.load(f)
-    except Exception as e:
-        return {"eligible": False, "reason": f"parse fail: {e}", "payload": {}}
-
-    rules = load_policy("cert_rules").get("certificates", {}).get(cert_name)
-    if not rules:
-        return {"eligible": False, "reason": f"unknown cert: {cert_name}", "payload": {}}
-
-    issues = []
-    payload = {}
-
-    if cert_name == "alpha_discovery":
-        cor = _get_field(pkg, "diagnostics.alpha_inheritance_cor")
-        if cor is None:
-            issues.append("alpha_inheritance_cor missing")
-        elif cor >= 0.95:
-            issues.append(f"cor={cor:.4f} >= 0.95")
-        else:
-            payload["alpha_inheritance_cor"] = cor
-
-        factor_specs = pkg.get("factor_specs", [])
-        if not isinstance(factor_specs, list) or len(factor_specs) < 1:
-            issues.append("factor_specs < 1")
-        else:
-            payload["factor_specs_count"] = len(factor_specs)
-
-        mech = pkg.get("hypothesis_summary", "") or ""
-        for fs in factor_specs:
-            if isinstance(fs, dict):
-                mech += " " + (fs.get("economic_rationale") or "")
-                mech += " " + (fs.get("formula") or "")
-        if len(mech.strip()) < 50:
-            issues.append(f"mechanism {len(mech.strip())} < 50 chars")
-        else:
-            payload["mechanism_chars"] = len(mech.strip())
-
-        ht = _get_field(pkg, "diagnostics.harvey_t_specs_pass_count") or 0
-        if ht < 3:
-            issues.append(f"harvey_t {ht} < 3")
-        else:
-            payload["harvey_t_specs_pass_count"] = ht
-
-    elif cert_name == "sr_provenance":
-        required = ["sr_realized_share_based", "measurement_basis_primary",
-                    "weights_csv_unique_dates_count", "schedule_density_ratio"]
-        missing = [r for r in required if r not in pkg]
-        if missing:
-            issues.append(f"missing: {missing}")
-        if pkg.get("measurement_basis_primary") != "forge_realized_share_based":
-            issues.append(f"basis='{pkg.get('measurement_basis_primary')}' != 'forge_realized_share_based'")
-
-    elif cert_name == "forge_package_validated":
-        required_8 = ["task_id", "backtest_summary", "sr_realized_share_based",
-                      "measurement_basis_primary", "weights_csv_unique_dates_count",
-                      "alpha_sig_dates_count", "schedule_density_ratio",
-                      "schedule_density_pass", "pure_function_violation"]
-        missing = [r for r in required_8 if r not in pkg]
-        if missing:
-            issues.append(f"missing 8-field: {missing}")
-
-    elif cert_name == "schedule_fidelity":
-        wcd = pkg.get("schedule_fidelity", {}).get("weights_csv_unique_dates_count", 0)
-        sdc = pkg.get("schedule_fidelity", {}).get("alpha_sig_dates_count", 0)
-        if sdc > 0:
-            ratio = wcd / sdc
-            payload["schedule_density_ratio"] = round(ratio, 3)
-            if ratio < 0.95:
-                infeas = pkg.get("schedule_fidelity", {}).get("infeasibility_report")
-                if not infeas:
-                    issues.append(f"density {ratio:.3f} < 0.95 + no infeasibility")
-
-    return {
-        "eligible": len(issues) == 0,
-        "reason": "all_pass" if not issues else " | ".join(issues),
-        "payload": payload,
-    }
+        from qvest_cert_eval import evaluate as cert_evaluate
+    except ImportError:
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from qvest_cert_eval import evaluate as cert_evaluate
+    return cert_evaluate(cert_name, package_path)
 
 
 # ─────────────────────────────────────────────────────────────────
