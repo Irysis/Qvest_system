@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
 ## [Unreleased — v7.0.0]
 
+### Sprint 5 — Legacy Boundary
+- Added: `00_Lawbook/DEPRECATION.md` — active vs legacy 자산 inventory + EOL plan
+- Added: `02_Infrastructure/hooks/legacy_write_block.sh` — PreToolUse[Write|Edit] read-only enforcement (`_archive_v55/` + `legacy/v55/` + `_archive_4_6/`)
+- **Removed**: `.claude/settings.json` `role_taxonomy_admission_gate` hook 등록 (v55 legacy)
+- Added: `.claude/settings.json` `legacy_write_block` hook 등록 (PreToolUse[Write|Edit])
+- **Changed**: `.claude/commands/launch-team.md` — DEPRECATION WARNING 추가 (v6.4 `/qvest` 대체)
+- Active hook list legacy 0건 ✅
+- File 이동 (Sprint 5 마지막 step `git mv _archive_v55 → legacy/v55/`)는 v7.1로 이연 (hidden dependency 추가 audit 후)
+
 ### Sprint 4 — E2E Kernel Tests (12/12 PASS)
 - Added: `08_Tests/integration/test_wt_lifecycle_e2e.R` — 4 synthetic WT scenarios (Codex revised #4/#5)
   * (1) Happy path WT-D99990101_001: 4 cert ISSUED + 6 schema VALID
