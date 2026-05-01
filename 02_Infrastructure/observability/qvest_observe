@@ -28,11 +28,27 @@ case "$CMD" in
     fi
     shift || true
     SECTION="${1:-}"
-    # Always rebuild timeline
-    cd "$PROJ_DIR" && Rscript "$PROJ_DIR/02_Infrastructure/observability/wt_timeline.R" --wt-id "$WT_ID" >/dev/null 2>&1 || true
     TL_FILE="$TIMELINES/wt_${WT_ID}.json"
+    # v7.1-lite Sprint 0.4 — error masking 완화 (도훈 지적 #4)
+    # 이전: >/dev/null 2>&1 || true (triple silent — timeline build 실패 시 사용자 인지 불가)
+    # 이후: stderr는 명시 log file, exit code capture, build fail 시 cached fallback 안내
+    REBUILD_LOG="/tmp/qvest_observe_$$_$(date +%Y%m%d_%H%M%S).log"
+    REBUILD_RC=0
+    cd "$PROJ_DIR" && Rscript "$PROJ_DIR/02_Infrastructure/observability/wt_timeline.R" \
+        --wt-id "$WT_ID" >/dev/null 2>"$REBUILD_LOG" || REBUILD_RC=$?
+    if [ "$REBUILD_RC" -ne 0 ]; then
+      if [ -f "$TL_FILE" ]; then
+        echo "[WARN] timeline rebuild failed (rc=$REBUILD_RC). stderr: $REBUILD_LOG" >&2
+        echo "[WARN] using cached timeline ($(stat -c '%y' "$TL_FILE" 2>/dev/null || echo 'mtime unknown'))" >&2
+      else
+        echo "[ERROR] timeline rebuild failed (rc=$REBUILD_RC) and no cached timeline available" >&2
+        echo "[ERROR] stderr log: $REBUILD_LOG" >&2
+        exit 1
+      fi
+    fi
     if [ ! -f "$TL_FILE" ]; then
-      echo "[ERROR] timeline not found for $WT_ID"
+      echo "[ERROR] timeline not found for $WT_ID" >&2
+      echo "[ERROR] rebuild log: $REBUILD_LOG" >&2
       exit 1
     fi
     case "$SECTION" in
