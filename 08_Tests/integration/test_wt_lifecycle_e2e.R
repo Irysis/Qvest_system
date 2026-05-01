@@ -55,11 +55,24 @@ TEST_GOV_DIR <- tempfile("qvest_e2e_governor_")
 dir.create(TEST_GOV_DIR, recursive = TRUE, showWarnings = FALSE)
 
 # Cleanup obligation (Codex revised #4 — production governor_concord 무손상)
+# v7.1-lite Sprint 0.1: _e2e_cleanup_guard.sh --force 호출로 회귀 방지 (residue 0 강제)
 cleanup_all <- function() {
   for (wt in c("WT-D99990101_001", "WT-D99990102_001",
                "WT-D99990103_001", "WT-D99990104_001")) {
     d <- file.path(WT_ROOT, wt)
     if (dir.exists(d)) unlink(d, recursive = TRUE)
+  }
+  # v7.1-lite Sprint 0.1: post-test cleanup guard
+  guard <- "08_Tests/integration/_e2e_cleanup_guard.sh"
+  if (file.exists(guard)) {
+    out <- tryCatch(
+      system2("bash", c(guard, "--force"), stdout = TRUE, stderr = TRUE),
+      error = function(e) NULL
+    )
+    # Best-effort: log but never fail test on cleanup
+    if (!is.null(out)) {
+      cat(paste(out, collapse = "\n"), "\n", sep = "")
+    }
   }
   unlink(TEST_GOV_DIR, recursive = TRUE)
 }
