@@ -1,0 +1,30 @@
+{
+  "task_id": "WT-D99990101_001",
+  "as_of_date": "9999-01-01",
+  "hypothesis_summary": "Synthetic composite Q07 + GP + Cash-based profitability for KR universe — multi-factor diversified discovery alpha. This example fixture demonstrates the happy path cert eligibility (cor < 0.95, mechanism >= 50 chars, factor_specs >= 1, harvey_t >= 3).",
+  "factor_specs": [
+    {
+      "name": "F1_GP",
+      "factor_family": "quality_profitability",
+      "proxy": "Q01_Gross_Profitability",
+      "economic_rationale": "Novy-Marx (2013) gross profitability — long-term equity premium predictor",
+      "formula": "z(Gross_Profit / Assets)"
+    },
+    {
+      "name": "F2_Q07",
+      "factor_family": "earnings_stability",
+      "proxy": "Q07_Earnings_Stability",
+      "economic_rationale": "Earnings persistence factor — both-side crisis hedge (L-121)",
+      "formula": "z(Earnings_5y_stdev_inv)"
+    }
+  ],
+  "diagnostics": {
+    "alpha_inheritance_cor": 0.10,
+    "harvey_t_specs_pass_count": 4,
+    "sig_dates_count": 100,
+    "n_sig_dates": 100
+  },
+  "alpha_vector": {
+    "synthetic_note": "actual alpha_vector matrix omitted in example fixture"
+  }
+}
