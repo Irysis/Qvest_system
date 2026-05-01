@@ -47,7 +47,38 @@ cr_load_policy <- function(force_reload = FALSE) {
 }
 
 # ─────────────────────────────────────────────────────────────────
-# 1. Eligibility check (5 cert)
+# v7.1-lite Sprint 0.2 — Generic operator dispatch (qvest_cert_eval.py::apply_operator R port)
+# ─────────────────────────────────────────────────────────────────
+
+cr_apply_operator <- function(value, operator, threshold = NULL,
+                               expected_value = NULL) {
+  if (identical(operator, "exists")) return(!is.null(value))
+  if (identical(operator, "exists_numeric")) {
+    return(!is.null(value) && is.numeric(value) && !is.logical(value))
+  }
+  if (identical(operator, "exists_int")) {
+    return(!is.null(value) && is.numeric(value) && value == as.integer(value))
+  }
+  if (is.null(value)) return(FALSE)
+  if (operator %in% c("<", ">=", ">", "<=")) {
+    if (is.null(threshold)) return(FALSE)
+    v <- suppressWarnings(as.numeric(value))
+    t <- suppressWarnings(as.numeric(threshold))
+    if (is.na(v) || is.na(t)) return(FALSE)
+    return(switch(operator,
+      "<"  = v <  t,
+      ">=" = v >= t,
+      ">"  = v >  t,
+      "<=" = v <= t
+    ))
+  }
+  if (identical(operator, "==")) return(identical(value, expected_value))
+  if (identical(operator, "!=")) return(!identical(value, expected_value))
+  FALSE
+}
+
+# ─────────────────────────────────────────────────────────────────
+# 1. Eligibility check (5 cert) — threshold sourced from cert_rules.json
 # ─────────────────────────────────────────────────────────────────
 
 cr_check_alpha_discovery <- function(package_path) {
@@ -59,6 +90,14 @@ cr_check_alpha_discovery <- function(package_path) {
   if (is.null(pkg)) {
     return(list(eligible = FALSE, reason = "parse fail", payload = list()))
   }
+
+  # v7.1-lite Sprint 0.2 — threshold from cert_rules.json (data layer)
+  policy <- cr_load_policy()
+  rules <- policy$certificates$alpha_discovery$eligibility_AND %||% list()
+  cor_t <- rules$alpha_inheritance_cor$threshold
+  mech_t <- rules$mechanism_cited_chars$threshold
+  fs_t <- rules$factor_specs_count$threshold
+  ht_t <- rules$harvey_t_specs_pass_count$threshold
 
   diag <- pkg$diagnostics %||% list()
   cor <- diag$alpha_inheritance_cor
@@ -76,11 +115,20 @@ cr_check_alpha_discovery <- function(package_path) {
   mech_chars <- nchar(trimws(mech))
 
   issues <- character()
-  if (is.null(cor)) issues <- c(issues, "alpha_inheritance_cor missing")
-  else if (cor >= 0.95) issues <- c(issues, sprintf("cor=%.4f >= 0.95", cor))
-  if (mech_chars < 50) issues <- c(issues, sprintf("mech %d < 50", mech_chars))
-  if (n_factor < 1) issues <- c(issues, sprintf("factor_specs %d < 1", n_factor))
-  if (ht < 3) issues <- c(issues, sprintf("harvey_t_count %d < 3", ht))
+  if (is.null(cor)) {
+    issues <- c(issues, "alpha_inheritance_cor missing")
+  } else if (!cr_apply_operator(cor, "<", cor_t)) {
+    issues <- c(issues, sprintf("cor=%.4f >= %.2f", cor, cor_t))
+  }
+  if (!cr_apply_operator(mech_chars, ">=", mech_t)) {
+    issues <- c(issues, sprintf("mech %d < %d", mech_chars, as.integer(mech_t)))
+  }
+  if (!cr_apply_operator(n_factor, ">=", fs_t)) {
+    issues <- c(issues, sprintf("factor_specs %d < %d", n_factor, as.integer(fs_t)))
+  }
+  if (!cr_apply_operator(ht, ">=", ht_t)) {
+    issues <- c(issues, sprintf("harvey_t_count %d < %d", ht, as.integer(ht_t)))
+  }
 
   list(
     eligible = length(issues) == 0,
@@ -169,10 +217,15 @@ cr_check_schedule_fidelity <- function(package_path, weights_csv = NULL,
     !is.null(sched$schedule_skip_justified) ||
     isTRUE(sched$schedule_skip_justified)
 
-  if (ratio < 0.95 && !has_infeas) {
+  # v7.1-lite Sprint 0.2 — threshold from cert_rules.json (data layer)
+  policy <- cr_load_policy()
+  density_t <- policy$certificates$schedule_fidelity$eligibility_OR$density$threshold
+
+  if (!cr_apply_operator(ratio, ">=", density_t) && !has_infeas) {
     return(list(eligible = FALSE,
-                reason = sprintf("density %.3f < 0.95 + no infeasibility", ratio),
-                payload = list(schedule_density_ratio = round(ratio, 3))))
+                reason = sprintf("density %.3f < %.2f + no infeasibility",
+                                 ratio, density_t),
+                payload = list(schedule_density_ratio = round(ratio, digits = 3L))))
   }
 
   list(
@@ -181,8 +234,8 @@ cr_check_schedule_fidelity <- function(package_path, weights_csv = NULL,
     payload = list(
       weights_csv_unique_dates_count = wcd,
       alpha_sig_dates_count = sdc,
-      schedule_density_ratio = round(ratio, 3),
-      infeasibility_report_cited = ratio < 0.95
+      schedule_density_ratio = round(ratio, digits = 3L),
+      infeasibility_report_cited = !cr_apply_operator(ratio, ">=", density_t)
     )
   )
 }
