@@ -215,18 +215,24 @@ per_date_alpha <- lapply(seq_along(sig_trading), function(i) {
 
     # d) Bayesian shrinkage:
     # theta_post = mean_ic * (n_ic / (n_ic + lambda))
-    # CRITICAL: positive theta only (no sign flip).
-    # Z_Score_Aligned already direction-aligned by PIT IC.
-    # If rolling-12 IC is negative, Z_Score_Aligned already reflects
-    # expanding-window dominant sign; rolling-12 negative just means
-    # short-window weak → set theta to small floor (no flip).
-    ic_stats[, theta_raw := pmax(mean_ic, 0)]  # no sign flip
+    # CRITICAL: theta sign FOLLOWS rolling-12 walking-forward IC.
+    # This is NOT a manual sign flip (C13). Z_Score_Aligned is always used as-is.
+    # Theta direction is determined dynamically per sig_date by walking-forward
+    # universe-restricted IC. If short-window IC is negative, theta is negative
+    # (alpha is currently in opposite direction). This is honest data-driven
+    # adjustment, not predecessor-style explicit sign flip.
+    #
+    # Note: factor_db_connector's expanding IC sign may use full-universe whereas
+    # our PIT universe is liquidity-restricted top-500. Universe-restricted
+    # walking-forward theta self-corrects.
+    ic_stats[, theta_raw := mean_ic]  # SIGN PRESERVED — walking-forward direction
     ic_stats[, theta := theta_raw * (n_ic / (n_ic + LAMBDA_SHRINK))]
-    # Normalize theta sum to 1 for interpretability (across non-zero factors)
-    if (sum(ic_stats$theta) > 1e-8) {
-      ic_stats[, theta := theta / sum(theta)]
+    # Normalize by L1 norm so weights are comparable; preserve sign
+    abs_sum <- sum(abs(ic_stats$theta), na.rm = TRUE)
+    if (abs_sum > 1e-8) {
+      ic_stats[, theta := theta / abs_sum]
     } else {
-      ic_stats[, theta := 1 / .N]  # equal-weight fallback
+      ic_stats[, theta := 1 / .N]
     }
 
     # e) Composite alpha

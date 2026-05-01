@@ -252,13 +252,14 @@ graduation_check$min_dsr_pass     <- val$graduation_check$dsr_pass
 
 n_pass <- sum(unlist(graduation_check[grepl("_pass$", names(graduation_check))]))
 graduation_check$pass_count <- n_pass
-graduation_check$pass_total <- 5L
-graduation_check$graduation_recommendation <- if (n_pass >= 4) {
-  "PROCEED to Risk + Optimizer + Codex round (4+/5 PASS, marginal items honestly disclosed)"
-} else if (n_pass >= 3) {
-  "CONDITIONAL — Codex round + Q-Lead decision on whether to proceed"
+graduation_check$pass_total <- 7L  # rank_ic, icir, mono, harvey, dsr, subperiod, composite_beats_best
+graduation_check$min_composite_beats_best <- beats_best
+graduation_check$graduation_recommendation <- if (n_pass >= 6 && beats_best) {
+  "PROCEED — strong evidence; minor disclosures only"
+} else if (n_pass >= 4) {
+  "CONDITIONAL — proceed to Codex round; Q-Lead final decision"
 } else {
-  "ABORT or REVISE — too many gates failed; honest stop"
+  "REVISE_OR_ABORT — multiple hard gates failed under PIT-strict walking-forward. Predecessor's superficially passing diagnostics were artefacts of full-sample theta. Honest finding: 6-factor blend does NOT demonstrate alpha discovery under v2 PIT-strict regime. Recommendation: (a) ABORT and pivot to single-factor (D43_Skewness ICIR=0.272 strongest single) discovery + own WT, OR (b) REVISE composite design (longer rolling window / different shrinkage / cross-family residualization) and re-test."
 }
 
 # Build alpha_package
