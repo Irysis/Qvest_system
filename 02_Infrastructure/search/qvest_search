@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# qvest_search — v7.1-lite Sprint 1.2 Unified Search CLI
+#
+# Usage:
+#   qvest_search "<query>"                       all types
+#   qvest_search "<query>" --type <T>            filter type
+#   qvest_search "<query>" --recent 24h|7d|30d   time filter
+#   qvest_search --rebuild                       force re-index
+#   qvest_search --rebuild --include-examples    include examples/qvest_workflows/
+#   qvest_search --no-auto-rebuild "<query>"     skip stale check
+#
+# Stale check (default): if search_index.jsonl mtime older than any source root mtime → auto rebuild.
+# Override: --no-auto-rebuild OR QVEST_SEARCH_AUTO_REBUILD=0
+#
+# Plan: v7-1-cheerful-balloon.md Sprint 1.2
+
+set -euo pipefail
+trap 'exit 0' ERR
+
+PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+INDEX="$PROJ_DIR/qepm/observability/search_index.jsonl"
+BUILD_R="$PROJ_DIR/02_Infrastructure/search/build_index.R"
+QUERY_PY="$PROJ_DIR/02_Infrastructure/search/_query.py"
+
+SOURCE_ROOTS=(
+  "qepm/memory"
+  "qepm/mailbox/worktask"
+  "qepm/mailbox/governor"
+  "06_Registry"
+  "04_Research/paper_notes"
+  "00_Lawbook"
+)
+
+stale_check() {
+  if [ ! -f "$INDEX" ]; then return 0; fi
+  local idx_mtime
+  idx_mtime=$(stat -c '%Y' "$INDEX" 2>/dev/null || echo 0)
+  local newest=0
+  for r in "${SOURCE_ROOTS[@]}"; do
+    local p="$PROJ_DIR/$r"
+    [ -d "$p" ] || continue
+    local m
+    m=$(stat -c '%Y' "$p" 2>/dev/null || echo 0)
+    if [ "$m" -gt "$newest" ]; then newest=$m; fi
+  done
+  if [ "$newest" -gt "$idx_mtime" ]; then return 0; fi
+  return 1
+}
+
+REBUILD=0
+NO_AUTO_REBUILD=0
+INCLUDE_EXAMPLES=0
+PASS_ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --rebuild) REBUILD=1 ;;
+    --no-auto-rebuild) NO_AUTO_REBUILD=1 ;;
+    --include-examples) INCLUDE_EXAMPLES=1; PASS_ARGS+=("$arg") ;;
+    *) PASS_ARGS+=("$arg") ;;
+  esac
+done
+
+if [ "${QVEST_SEARCH_AUTO_REBUILD:-1}" = "0" ]; then
+  NO_AUTO_REBUILD=1
+fi
+
+if [ "$REBUILD" -eq 1 ]; then
+  REBUILD_ARGS=()
+  [ "$INCLUDE_EXAMPLES" -eq 1 ] && REBUILD_ARGS+=("--include-examples")
+  echo "[qvest_search] rebuilding index..." >&2
+  Rscript "$BUILD_R" "${REBUILD_ARGS[@]}" >&2
+elif [ "$NO_AUTO_REBUILD" -eq 0 ] && stale_check; then
+  REBUILD_ARGS=()
+  [ "$INCLUDE_EXAMPLES" -eq 1 ] && REBUILD_ARGS+=("--include-examples")
+  echo "[qvest_search] index stale — auto rebuild..." >&2
+  Rscript "$BUILD_R" "${REBUILD_ARGS[@]}" >&2
+elif [ "$NO_AUTO_REBUILD" -eq 1 ] && stale_check; then
+  echo "[qvest_search] WARN: index stale (--no-auto-rebuild active, results may be outdated)" >&2
+fi
+
+if [ "$REBUILD" -eq 1 ] && [ ${#PASS_ARGS[@]} -eq 0 ]; then
+  exit 0
+fi
+
+exec python3 "$QUERY_PY" "${PASS_ARGS[@]}"
