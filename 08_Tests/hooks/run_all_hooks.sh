@@ -24,7 +24,7 @@ run_test() {
   local name="$1"
   local cmd="$2"
   echo "─── Running: $name ───"
-  RESULT=$($cmd 2>&1)
+  RESULT=$(eval "$cmd" 2>&1)
   echo "$RESULT"
   echo ""
   # Extract last JSON line
@@ -33,9 +33,9 @@ run_test() {
 import json, sys
 try:
     d = json.loads(sys.stdin.read())
-    print(f"PARSED|{d.get(\"test\",\"?\")}|{d.get(\"pass\",0)}|{d.get(\"fail\",0)}|{d.get(\"total\",0)}")
+    print("PARSED|" + str(d.get("test","?")) + "|" + str(d.get("pass",0)) + "|" + str(d.get("fail",0)) + "|" + str(d.get("total",0)))
 except Exception as e:
-    print(f"PARSE_ERROR|{e}")
+    print("PARSE_ERROR|" + str(e))
 ' | while IFS='|' read -r marker test_name pass fail total; do
     if [[ "$marker" == "PARSED" ]]; then
       ALL_RESULTS+=("{\"test\":\"$test_name\",\"pass\":$pass,\"fail\":$fail,\"total\":$total}")
@@ -46,10 +46,10 @@ except Exception as e:
 }
 
 # Run all 4 tests
-run_test "codex_round_gate" "bash $TEST_DIR/test_codex_round_gate.sh"
-run_test "worktask_sequence_gate" "bash $TEST_DIR/test_worktask_sequence_gate.sh"
-run_test "agent_role_guard" "bash $TEST_DIR/test_agent_role_guard.sh"
-run_test "cert_rules" "Rscript $TEST_DIR/test_cert_rules.R"
+run_test "codex_round_gate" "bash \"$TEST_DIR/test_codex_round_gate.sh\""
+run_test "worktask_sequence_gate" "bash \"$TEST_DIR/test_worktask_sequence_gate.sh\""
+run_test "agent_role_guard" "bash \"$TEST_DIR/test_agent_role_guard.sh\""
+run_test "cert_rules" "Rscript \"$TEST_DIR/test_cert_rules.R\""
 
 # Aggregate (re-extract since subshells don't propagate)
 TOTAL_PASS=0
