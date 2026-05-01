@@ -1,0 +1,43 @@
+{
+  "strategy_id": "STR_1715",
+  "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
+  "as_of_date_requested": "2026-05-01",
+  "as_of_date_resolved": "2023-12-01",
+  "schedule_rolled_back": true,
+  "schedule_rollback_reason": "Iter5 alpha_scores schedule end (2023-12-01). Forward_recompute Mode 2 TODO Phase 1.5+.",
+  "deploy_extension_basis": "frozen weights from 2023-12-01 admitted schedule, OOS NAV measurement extends to today (Forge Pure Function v6.1 R12)",
+  "mandate": "cap_0.20",
+  "weights_source": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260427_017/weights.csv",
+  "weights_source_unique_dates": 181,
+  "weights_source_max_date": "2023-12-01",
+  "n_holdings": 21,
+  "n_holdings_excluding_cash": 20,
+  "n_holdings_effective_excluding_numerical_zero": 18,
+  "sum_weights": 1.0,
+  "max_weight": 0.1082,
+  "constraints_pass": {
+    "max_n_excl_cash": true,
+    "max_n_effective_le_20": true,
+    "long_only": true,
+    "sum1": true,
+    "bounds_0_to_0p20": true
+  },
+  "measurement_basis_primary": "forge_realized_share_based",
+  "capacity_check": {
+    "AUM_won": 10000000000,
+    "n_tickers": 21,
+    "n_breach_ADV50": 2,
+    "breach_tickers": ["A104830", "CASH"],
+    "worst_ADV_pct_excl_cash": 52.55,
+    "worst_ticker_excl_cash": "A104830",
+    "note": "CASH ADV breach is sentinel value (TradingAmt=0 → division floor). Real capacity concern: A104830 원익머트리얼즈 ADV 52.55% at AUM=10B."
+  },
+  "alias_relationship": {
+    "canonical_file": "20231201_weights_cap_0p20.csv",
+    "alias_file": "20260501_weights_cap_0p20.csv",
+    "identical_content": true,
+    "rationale": "5월 운용 forward extract — schedule end 2023-12-01 frozen weights deploy through May 2026 (29-month OOS extension)"
+  },
+  "codex_critic_skip_waiver": "deployment routine forward extract — forge_realized_share_based schedule reuse, no factor recompute, no weight decision (see forge_forward_weights_challenge_note.md in WT-P20260429_002)",
+  "notes": "Mode=schedule_recent (DEFAULT FAST). Forward_recompute (Iter5 alpha_scores 재산출) TODO Phase 1.5+ — production cron 인프라 별도 필요."
+}
