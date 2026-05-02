@@ -221,11 +221,15 @@ cat(sprintf("  sig_dates available: %d (date range: %s ~ %s)\n",
             length(sig_dates_all),
             as.character(min(sig_dates_all)), as.character(max(sig_dates_all))))
 
-# PIT lockbox enforcement
+# PIT lockbox enforcement (v7.2.1 도훈 명시: PG2 frozen 폐기 → live full)
+# OLD: sig_dates < LB_START (frozen 240m), OOS lockbox 분리 측정용
+# NEW: sig_dates_all 전체 사용 (live 268m). LB_START는 OOS 분리 metric용으로 retain.
 LB_START <- as.Date("2024-01-23")
-sig_dates <- sig_dates_all[sig_dates_all < LB_START]
-cat(sprintf("  sig_dates (pre-lockbox): %d (max: %s)\n",
+sig_dates <- sig_dates_all  # PG2 live full period
+cat(sprintf("  sig_dates (live full, NO frozen): %d (max: %s)\n",
             length(sig_dates), as.character(max(sig_dates))))
+cat(sprintf("  LB_START retained for OOS prelb/lb metric split: %s\n",
+            as.character(LB_START)))
 
 raw <- as.data.table(read_parquet(file.path(BASE_DIR, ".cache/rawdata.parquet"),
                                   col_select = c("Date", "Ticker", "Close", "Vol", "Ret")))
@@ -1119,6 +1123,131 @@ cat(sprintf("  codex_stance          = OVERRIDE_005\n"))
 cat(sprintf("  pg2_recommend         = %s\n", pg2_recommend))
 cat(sprintf("  hash_audit_pass       = %s\n", if(hash_match && w_hash_match) "TRUE" else "FALSE"))
 cat("════════════════════════════════════════════════════\n")
+
+# ─────────────────────────────────────────────────────────
+# 17.5. Backtest Result Contract v1.0 auto-update (PG2 frozen 폐기)
+# ─────────────────────────────────────────────────────────
+# v7.2.1 patch (2026-05-02 도훈 명시): PG2 도달 전략은 lockbox/frozen 적용 X.
+# 매 백테스트 종료 시 output/ 디렉토리의 bt_result.rds + 06_metrics.csv 등
+# 10-component 모두 자동 갱신 (Backtest Result Contract v1.0).
+# 03_period_returns.csv 동시 갱신 — M4 schedule overlay input 정합 유지.
+cat("\n[17.5] Backtest Result Contract auto-update (PG2 live mode)\n")
+
+bt_update_result <- tryCatch({
+  source(file.path(BASE_DIR, "02_Infrastructure/contracts/backtest_result_contract.R"))
+  source(file.path(BASE_DIR, "02_Infrastructure/contracts/audit_bt_result.R"))
+  source(file.path(BASE_DIR, "02_Infrastructure/contracts/save_bt_result.R"))
+  suppressPackageStartupMessages({library(xts)})
+
+  bt_dates <- as.Date(bt_dt$period_end)
+  monthly_ret <- bt_dt$port_ret
+  monthly_ret_gross <- bt_dt$port_ret_gross
+  weights_risk <- 1 - bt_dt$cash_pct
+
+  ret_xts <- xts(monthly_ret, order.by = bt_dates)
+  nav_net <- 100 * cumprod(1 + monthly_ret)
+  nav_gross <- 100 * cumprod(1 + monthly_ret_gross)
+
+  daily_nav_dt <- data.table(
+    Date = bt_dates,
+    NAV = nav_net,
+    NAV_gross = nav_gross,
+    cash_weight = bt_dt$cash_pct,
+    gross_exposure = weights_risk,
+    net_exposure = weights_risk,
+    leverage = weights_risk,
+    cum_cost = nav_gross - nav_net
+  )
+
+  holdings_log <- vector("list", length(bt_dates))
+  for (k in seq_along(bt_dates)) {
+    holdings_log[[k]] <- data.table(
+      Signal_Date = bt_dates[k], Exec_Date = bt_dates[k],
+      Ticker = c("STR_1715_RISK_SLEEVE", "CASH_KRW"),
+      Name = c(sprintf("STR_1715 Iter31 Risk (top%d, regime=%s)",
+                       bt_dt$n_held[k], bt_dt$regime[k]), "KRW Cash"),
+      Sector = c("Multi-Sleeve", "Cash"),
+      Weight = c(weights_risk[k], bt_dt$cash_pct[k]),
+      Score = c(NA_real_, NA_real_),
+      Price = c(NA_real_, 1.0)
+    )
+  }
+
+  bm_zero_dt <- data.table(Date = bt_dates, BM_Ret = 0)
+
+  sim_shim <- list(
+    DAILY_NAV_DT = daily_nav_dt,
+    strategy_xts = ret_xts,
+    bm_xts = xts(rep(0, length(bt_dates)), order.by = bt_dates),
+    PORTFOLIO_LOG = data.table(
+      Signal_Date = bt_dates, Exec_Date = bt_dates,
+      N_stocks = bt_dt$n_held, NAV = nav_net,
+      Turnover_Pct = bt_dt$turnover * 100
+    ),
+    HOLDINGS_LOG = holdings_log,
+    label = "STR_1715_Iter31_GridBest_live"
+  )
+
+  spec_shim <- list(
+    strategy_name = "STR_1715_Iter31_LinearTilt_Grid_Best",
+    strategy_family = "Multi-sleeve (4F Consensus + Q07 + M08 + Q25 / 2 sleeves)",
+    signal_description = paste("4F Consensus (Core) + Q07/M08/Q25 (Defense).",
+                                "Linear Tilt + Cash Overlay. PG2 live mode."),
+    universe_rule = "KR top342 + LIQ_20d >= 2e8",
+    rebalance_frequency = "monthly",
+    signal_date_rule = "month-start label / prior month underlying (lockbox release, live)",
+    execution_date_rule = "t+1 lag",
+    weighting_method = sprintf(
+      "linear_tilt_to_penalty_qd(lambda=%.2f, phi=%.0f, ub=%.2f) + cash_overlay_pct_iter31",
+      LAMBDA, TOPHI, UB_WEIGHT),
+    max_position_weight = UB_WEIGHT,
+    max_leverage = 1,
+    cash_rule = sprintf("Iter31 regime-conditional (normal=%.0f%% / caution=%.0f%% / crisis=%.0f%%)",
+                        CASH_NORMAL * 100, CASH_CAUTION * 100, CASH_CRISIS * 100),
+    cost_model = sprintf("commission=%.4f (15bps each side) + turnover-based",
+                         COMMISSION_BPS / 1e4),
+    missing_data_rule = "winsorize 1%/99% z-score (Variant A)",
+    risk_controls = sprintf("mandate cap %.2f strict (OVERRIDE_006)", UB_WEIGHT),
+    lookahead_prevention = "C1 expanding IC + C2 t-1 lag + C13 Z_Score_Aligned + C14 Usable_Date <= sig_date",
+    survivorship_bias_control = "RAWDATA full universe + delisted included"
+  )
+
+  bt <- build_bt_result(
+    sim_result = sim_shim, strategy_spec = spec_shim,
+    run_id = sprintf("STR_1715_WT016_Iter31_%s_LIVE", format(Sys.Date(), "%Y%m%d")),
+    strategy_id = "STR_1715_WT016_Iter31_GridBestProd",
+    strategy_version = "v31_live_full_period_pg2_no_frozen",
+    benchmark_id = "KOSPI200", benchmark_name = "KOSPI 200",
+    transaction_cost_bps = 15, slippage_bps = 0, risk_free_rate = 0,
+    frequency = "monthly", annualization_factor = 12,
+    universe_id = "KR_TOP342_LIQ_2E8",
+    code_version = "str_1715_run_all_v2_live_pg2",
+    created_by_agent = "Q-Lead"
+  )
+  bt <- audit_bt_result(bt)
+
+  saved <- save_bt_result(bt, OUT_DIR, save_xlsx = FALSE)
+
+  # 03_period_returns sync (M4 factor_engine input)
+  fwrite(data.table(
+    run_id = bt$manifest$run_id,
+    strategy_id = "STR_1715_WT016_Iter31_GridBestProd",
+    date = bt_dates, frequency = "monthly",
+    ret_gross = monthly_ret_gross, ret_net = monthly_ret,
+    risk_free_ret = 0, excess_ret_net = monthly_ret,
+    turnover = bt_dt$turnover, cost_ret = bt_dt$cost,
+    cash_weight = bt_dt$cash_pct, leverage = weights_risk,
+    n_holdings = bt_dt$n_held
+  ), file.path(OUT_DIR, "03_period_returns.csv"))
+
+  cat(sprintf("  bt_result saved: %d files | audit integrity=%s\n",
+              length(saved), bt$audit$integrity %||% "?"))
+  cat(sprintf("  03_period_returns.csv synced (%d months)\n", length(bt_dates)))
+  "SUCCESS"
+}, error = function(e) {
+  cat(sprintf("  bt_result update SKIPPED: %s\n", conditionMessage(e)))
+  "SKIPPED"
+})
 
 # ─────────────────────────────────────────────────────────
 # 18. Telegram notification (DISABLED 2026-05-02 도훈 명시)

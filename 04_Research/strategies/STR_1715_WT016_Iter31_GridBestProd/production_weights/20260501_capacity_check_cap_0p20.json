@@ -3,24 +3,29 @@
   "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
   "as_of_date": "2026-05-01",
   "mandate": "cap_0.20",
-  "alpha_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (May 2026 forward recompute)",
+  "alpha_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (May 2026 forward recompute) + M4 outer overlay (WT-D20260430_001)",
   "alpha_source_max_date": "2026-05-01",
-  "alpha_source_unique_dates": 269,
-  "regime_state": "CAUTION",
-  "cash_pct": 0.2,
+  "m4_overlay": {
+    "source": "WT-D20260430_001/stage_artifacts/alpha_scores.parquet (extended 2026-05-30)",
+    "weight_str1715": 1,
+    "weight_cash": 0
+  },
+  "base_regime_state": "NORMAL",
+  "base_cash_pct": 0.1,
+  "total_cash_pct": 0.1,
   "n_risk_holdings": 20,
   "n_total_lines": 21,
   "sum_weights": 1,
-  "max_weight": 0.2,
-  "min_weight": 0.0102,
+  "max_weight": 0.18,
+  "min_weight": 0,
   "measurement_basis_primary": "forge_realized_share_based",
   "capacity_check": {
     "AUM_won": 10000000000,
     "n_tickers": 20,
-    "n_breach_ADV50": 0,
-    "breach_tickers": [],
-    "worst_ADV_pct": 10.09,
-    "worst_ticker": "A053030"
+    "n_breach_ADV5": 2,
+    "breach_tickers": ["A009420", "A053030"],
+    "worst_ADV_pct": 5.9466,
+    "worst_ticker": "A009420"
   },
-  "notes": "Mode=forward_recompute. Iter5 alpha_scores SIGNAL_CUTOFF extended 2023-12-22 → 2026-04-30 (lockbox passed). regime_panel rebuilt to 2026-05-01."
+  "notes": "Mode=forward_recompute_M4_applied. STR_1715 base regime=NORMAL (fix regime, cash 10%) × M4 outer (BOCPD weak, decay 0, joint 0) weight_str1715=1.0, weight_cash=0%. Total cash = 10 % (= base cash 10% × M4 1.0 + M4 outer cash 0%)."
 }
