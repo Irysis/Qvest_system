@@ -1,0 +1,545 @@
+{
+  "task_id": "WT-D20260502_001",
+  "agent_id": "risk-research-WT-D20260502_001",
+  "as_of_date": "2026-04-30",
+  "pipeline_version": "v2_riskagent_post_codex",
+  "generated_at": "2026-05-03T00:08:30+0900",
+  "codex_round_status": "REVISE_completed",
+  "codex_round_disposition": "8 ACCEPT, 1 PARTIAL, 0 REBUTTAL — honest disclosure preferred over rationalization",
+
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260502_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260502_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260502_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260502_001/covariance.parquet",
+  "security_covariance_top20_ref": "stage_artifacts/WT_D20260502_001/covariance_top20.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260502_001/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260502_001/regime_correlation.parquet",
+  "qepm_stage_artifacts_mirror": "qepm/stage_artifacts/WT_WT-D20260502_001/",
+
+  "optimizer_sigma_handoff": {
+    "primary_artifact": "covariance.parquet",
+    "primary_n_assets": 336,
+    "primary_condition_number": 391.273,
+    "primary_rf_r2_status": "FAIL_cond_above_100_cap",
+    "fallback_artifact": "covariance_top20.parquet",
+    "fallback_n_assets": 20,
+    "fallback_condition_number": 84.80,
+    "fallback_rf_r2_status": "PASS_with_universe_lock_constraint",
+    "decision_rule": "If optimizer locks universe to alpha top20 tickers, use covariance_top20.parquet (RF-R2 PASS). Otherwise use covariance.parquet with explicit RF-R2 waiver and CVaR-aware optimizer (vol_target<=15%, weight_cap<=0.10).",
+    "factor_decomposition_purpose": "risk_attribution_only_NOT_optimizer_sigma_reconstruction",
+    "decomposition_residual_note": "B*Omega*B' + D does NOT equal Sigma_primary (rel_fro=1.77, max_abs=0.0419). Sigma_primary has Tikhonov ridge (alpha=0.62) beyond factor model. Optimizer must use covariance.parquet directly."
+  },
+
+  "security_covariance_top20_diagnostics": {
+    "n_assets": 20,
+    "T_window_months": 60,
+    "T_to_N_ratio": 3.0,
+    "sample_condition_number": 90.5,
+    "shrunk_condition_number": 84.8,
+    "shrinkage_method": "lw_2003_const_cor_light",
+    "shrinkage_amount": 0.10,
+    "rf_r2_pass": true,
+    "use_case": "RF-R2 compliant ONLY when optimizer locks universe to alpha top20 tickers. NOT a general 336-name Sigma substitute."
+  },
+
+  "artifact_hashes": {
+    "covariance_sha256": "9e77faba34682d9f485688e6942ebc27f23c94a6b957e99e6420fd7b61ea786d",
+    "exposure_matrix_sha256": "3e7efefa9f515c09310657e35df8eb0a593a8f00daf36825b74814f905167f89",
+    "factor_covariance_sha256": "54b29b66eab018a7100fab6e6b99a9b8cc0529102e248cb02de7b522b0514481",
+    "specific_risk_sha256": "74a4f165d8835cb5eda20a483b81af693110c562802324d8a86833afcf05eb35",
+    "regime_correlation_sha256": "db4a881bcfaed2dbc840eb59eb1da9911993f048c5d6293e5fda7e66b7c922e1"
+  },
+
+  "risk_summary": {
+    "top_common_risks": [
+      "Market 1.1%",
+      "Size_SMB 2.8%",
+      "Sector_반도체 7.5%",
+      "Sector_IT가전 5.2%",
+      "Sector_소프트웨어 4.7%",
+      "Sector_기계 4.4%",
+      "Sector_화학 3.5%"
+    ],
+    "factor_R_squared_mean": 0.7077,
+    "factor_R_squared_systematic_pct": 70.7656,
+    "factor_R_squared_specific_pct": 29.2344,
+    "factor_R_squared_caveat": "Systematic share 70.77% computed from B (current loadings) * Omega (current sector/size mappings over 60M historical returns). C12 PIT compliance UNCERTAIN — see PIT audit section. Conservative interpretation only.",
+    "cvar_breach_flag": true,
+    "cvar_breach_summary": "Synthetic top20 EW monthly CVaR_95 = -13.35% vs mandate cap 2.5% (5.34x breach). Optimizer MUST enforce CVaR_95 <= 0.025 hard constraint via vol_target<=15% + weight_cap<=0.10 + CVaR-aware MVO.",
+    "crowding_flags": [
+      "STR_1715 holdings overlap with top20 alpha: 0/20 (0%)",
+      "STR_1715 max single weight in alpha portfolio: 0.20 (concentration check)",
+      "Quality factor (Q07) shared between alpha and STR_1715 (both Quality family) — factor-level family overlap exists despite holdings 0% overlap",
+      "HHI vs PG2 active book NOT computed (PG2 active book artifact not loaded into risk pipeline) — REVISE pending optimizer agent"
+    ],
+    "liquidity_flags": [
+      "Top20 liquidity pass rate (ADV>=50M KRW): 100.0% (20/20)",
+      "Worst Top20 ADV: 0.7B KRW",
+      "Optimizer with weight_cap 0.10 must verify per-name 5-day participation rate <=20% of ADV (deployment concern, not risk)"
+    ],
+    "stress_tests": {
+      "Terror_9_11": {
+        "portfolio_pct": 5.71,
+        "portfolio_mdd_pct": -6.0,
+        "benchmark_pct": 27.26,
+        "excess_pct": -21.55,
+        "outperform": false,
+        "n_days": 81,
+        "context_note": "Bull market period — relative underperformance acceptable (defense-leaning structure)."
+      },
+      "GFC_2008": {
+        "portfolio_pct": -3.89,
+        "portfolio_mdd_pct": -28.2,
+        "benchmark_pct": -38.03,
+        "excess_pct": 34.14,
+        "outperform": true,
+        "n_days": 371
+      },
+      "Euro_Debt_2011": {
+        "portfolio_pct": 2.17,
+        "portfolio_mdd_pct": -11.78,
+        "benchmark_pct": -13.09,
+        "excess_pct": 15.26,
+        "outperform": true,
+        "n_days": 126
+      },
+      "China_Shock_2015": {
+        "portfolio_pct": -4.44,
+        "portfolio_mdd_pct": -16.11,
+        "benchmark_pct": -9.37,
+        "excess_pct": 4.93,
+        "outperform": true,
+        "n_days": 186
+      },
+      "US_China_Trade": {
+        "portfolio_pct": 8.31,
+        "portfolio_mdd_pct": -17.79,
+        "benchmark_pct": -15.92,
+        "excess_pct": 24.23,
+        "outperform": true,
+        "n_days": 204
+      },
+      "COVID_2020": {
+        "portfolio_pct": 3.35,
+        "portfolio_mdd_pct": -32.34,
+        "benchmark_pct": -4.07,
+        "excess_pct": 7.42,
+        "outperform": true,
+        "n_days": 123
+      },
+      "Rate_Hike_2022": {
+        "portfolio_pct": -20.73,
+        "portfolio_mdd_pct": -35.49,
+        "benchmark_pct": -24.89,
+        "excess_pct": 4.17,
+        "outperform": true,
+        "n_days": 246,
+        "context_note": "Worst absolute MDD in stress 8 set. Relative outperformance does not equal acceptable absolute risk."
+      },
+      "Iran_War_2026": {
+        "portfolio_pct": -8.64,
+        "portfolio_mdd_pct": -16.32,
+        "benchmark_pct": 28.07,
+        "excess_pct": -36.71,
+        "outperform": false,
+        "n_days": 58,
+        "context_note": "Recent live OOS underperformance. Top alpha tickers (A010120 -52%, A352820 -32%) lost heavily. Decay risk elevated."
+      },
+      "stress_aggregate_outperform_count": "6/8",
+      "stress_aggregate_caveat": "Outperformance vs benchmark does NOT mean acceptable absolute loss. Two periods (Rate_Hike_2022 MDD -35.5%, Iran_War_2026 -16.3%) breach internal MDD reasonability. CVaR cap breach (5.34x) confirms tail risk is mandate-relevant.",
+      "static_loss_proxies": {
+        "market_down_5_loss": -0.0121,
+        "value_crash_loss": -0.0089,
+        "semiconductor_crash_loss": 0.0036
+      }
+    }
+  },
+
+  "tail_risk_summary": {
+    "basis": "top20_alpha_equal_weight_synthetic_portfolio_full_220M_history",
+    "n_obs_months": 220,
+    "var_95_monthly_pct": -7.16,
+    "var_99_monthly_pct": -12.89,
+    "cvar_95_monthly_pct": -13.35,
+    "cvar_99_monthly_pct": -19.51,
+    "cdar_95_pct": -29.32,
+    "hill_alpha_left_tail": 2.026,
+    "hill_alpha_interpretation": "boundary heavy tail (alpha ~ 2 = infinite variance regime). KR small/mid cap monthly returns historically heavy.",
+    "evt_gpd_xi": 0.173,
+    "evt_gpd_sigma": 0.561,
+    "evt_gpd_n_exceedances": 22,
+    "evt_gpd_interpretation": "xi > 0 → heavy tail; xi < 0.5 → ES is bounded but elevated.",
+    "cvar_cap_breach": true,
+    "cvar_cap_breach_factor_95": 5.34,
+    "infeasibility_report_filed": true,
+    "rationale_full_history": "60M window too short for k_frac=0.10 Hill estimator (k=0 insufficient_losses). Full 220M history provides robust tail diagnostics."
+  },
+
+  "decomposition_audit": {
+    "n_assets_compared": 336,
+    "frobenius_residual": 1.6024,
+    "frobenius_sigma": 0.9066,
+    "relative_frobenius": 1.7675,
+    "max_abs_residual": 0.0419,
+    "match_strict_pct5": false,
+    "match_acceptable_pct20": false,
+    "interpretation": "decomposition does NOT match Sigma_primary numerically — Sigma has Tikhonov ridge regularization (alpha=0.62) beyond B*Omega*B' + D",
+    "optimizer_directive": "Use covariance.parquet directly. B/Omega/D are for risk attribution (top common risks identification, sector/size variance share) only."
+  },
+
+  "diagnostics": {
+    "condition_number": 391.2731,
+    "condition_number_cap": 100,
+    "rf_r2_post_shrink_pass": false,
+    "rf_r2_failure_disposition": "FULL_336_SIGMA_FAILS_CAP. Top20 sub-Sigma (cn=84.8) PASSES. Optimizer decision rule documented.",
+    "min_eigenvalue": 0.0018,
+    "max_eigenvalue": 0.7153,
+    "is_psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "lw_2003_const_cor + tikhonov",
+    "shrinkage_lw_amount": 0.7865,
+    "tikhonov_alpha_additional": 0.62,
+    "info_kept_vs_sample": 0.3641,
+    "base_r_bar": 0.2112,
+    "factor_correlation_warnings": [
+      "Quality factor (Q07) shared between alpha and STR_1715 (both Quality family). Style β orthogonal (cor=0.36 on 3-beta proxy mkt/smb/growth-value) but factor-FAMILY level overlap exists. Full FF5+Carhart+Quality family overlap NOT measured (REVISE pending).",
+      "Sector concentration top: 반도체 7.5% of total variance — semiconductor risk amplification."
+    ],
+    "tdc_summary": {
+      "str1715_alpha_lower_tdc_q010": 0.0909,
+      "str1715_alpha_lower_tdc_q005": 0.0909,
+      "str1715_alpha_lower_tdc_q020": 0.1818,
+      "str1715_alpha_upper_tdc_q090": 0.1818,
+      "tdc_basis": "TIME-SERIES_tail_dependence_alpha_LS_ret_vs_STR_1715_NAV (Joe-Clayton lower-tail copula)",
+      "interpretation": "Lower-tail TDC 0.091 (q=0.10): joint-loss probability 9% (LOW). Tail-diversifying signal at returns level. NOT a cross-sectional crowding measure (see crowding_top20_overlap)."
+    },
+    "regime_correlation_summary": {
+      "crisis_mean_offdiag_cor": 0.2688,
+      "normal_mean_offdiag_cor": 0.0936,
+      "regime_shift": 0.1752,
+      "n_crisis_months": 23,
+      "n_normal_months": 37,
+      "rf_r8_thin_sample_flag": true,
+      "rf_r8_threshold_n": 30,
+      "interpretation": "Standard universe-wide correlation breakdown in CRISIS (+0.175 shift). NOT alpha-specific. CRISIS n=23 < RF-R8 30 → bootstrap CI provided, pooled fallback recommended."
+    },
+    "bootstrap_ci_crisis": {
+      "n_crisis": 18,
+      "n_normal": 42,
+      "regime_source": "self_classified_fallback (alpha quantile, NOT external FRED/MRS labels)",
+      "crisis_mean_pct": -5.29,
+      "crisis_mean_ci_95_pct": [-7.41, -3.37],
+      "crisis_cvar95_ci_95_pct": [-14.29, -11.13],
+      "crisis_minus_normal_mean_ci_95_pct": [-13.15, -8.12],
+      "bootstrap_B": 1000,
+      "rf_r8_pass": false,
+      "pooled_fallback_recommended": true,
+      "note": "CRISIS regime is statistically distinct from NORMAL (CI does not contain 0). However n=18 thin-sample → optimizer should use regime-pooled Sigma to avoid mis-estimation."
+    },
+    "regime_switch_rate_audit": {
+      "estimated": null,
+      "realized": null,
+      "audit_pass": null,
+      "note": "REVISE pending — regime switch rate (estimated vs realized) NOT computed. Optimizer with regime overlay must measure this at deployment stage."
+    },
+    "style_attribution_alpha": {
+      "method": "FF3_proxy_3beta_only_NOT_full_FF5_Carhart_Quality",
+      "mkt_beta": 0.1825,
+      "mkt_t": 2.2257,
+      "smb_beta": 0.0562,
+      "smb_t": 0.5013,
+      "growth_value_beta": -0.1396,
+      "growth_value_t": -1.7075,
+      "alpha_intercept_monthly": 0.0044,
+      "alpha_intercept_t": 0.8702,
+      "r_squared": 0.1042,
+      "alpha_intercept_significant_p005": false,
+      "caveat": "3-beta proxy only. Full FF5+Carhart+Quality family attribution NOT computed. style_overlap.beta_correlation 0.36 should be interpreted as 3-beta proxy LOW, not full style isomorphism check."
+    },
+    "style_attribution_str1715": {
+      "method": "FF3_proxy_3beta_only",
+      "mkt_beta": -0.0272,
+      "smb_beta": -0.3066,
+      "growth_value_beta": -0.1603,
+      "r_squared": 0.0837
+    },
+    "style_overlap": {
+      "beta_distance": 0.4196,
+      "beta_correlation": 0.3637,
+      "interpretation": "LOW 3-beta proxy overlap (mkt/smb/growth-value). Full style overlap (FF5+Carhart+Quality) UNRESOLVED — REVISE pending."
+    },
+    "family_weights_alpha": {
+      "Defense_Tail": 0.3699,
+      "Quality": 0.293,
+      "Risk_Tail": 0.337
+    },
+    "quality_share_alpha": 0.293,
+    "tail_share_alpha": 0.707,
+    "quality_family_overlap_str1715": {
+      "alpha_quality_share": 0.293,
+      "str1715_family_classification": "Quality (Q07_Earnings_Stability primary)",
+      "shared_factor_Q07_in_alpha": true,
+      "interpretation": "FACTOR-FAMILY level overlap exists (both portfolios use Quality factors). Holdings overlap 0/20 says different stocks; family overlap says same risk premium harvested. Crowding risk at family level non-zero."
+    }
+  },
+
+  "ax_compliance": {
+    "ax_001_v2": {
+      "axis_1_crisis_alpha": {
+        "crisis_alpha_monthly_pct": 4.5987,
+        "crisis_alpha_annualized_pct": 55.1842,
+        "pass": true,
+        "method": "alpha_LS_ret bad-state mean vs STR_1715 bad-state mean diff (Risk re-derived independently from monthly returns; NOT inherited from alpha-research)"
+      },
+      "axis_2_core_mdd_relief": {
+        "str1715_cor_pearson_riskagent": 0.0532,
+        "str1715_cor_pearson_alpha_research": 0.0361,
+        "str1715_cor_consistency_check_pass": false,
+        "consistency_gap_relative_pct": 47.3,
+        "anti_correlated_pearson_lt_neg_010": false,
+        "axis_2_strict_pass": false,
+        "axis_2_disposition": "AMBIGUOUS — both Pearson values < 0.10 (orthogonal-ish) but neither <-0.10 (anti-cor required). Consistency mismatch flagged. Direct Core MDD relief NOT measured (would require portfolio-level overlay simulation, optimizer/forge concern).",
+        "honest_note": "Diversifier-LEANING signal at returns level. Not strict anti-correlation defense."
+      },
+      "axis_3_bad_normal_ic_ratio": {
+        "reported_by_alpha_research": "FAIL_OOS_0_79_lt_1_5",
+        "ratio_oos": 0.7899,
+        "target_gt_15": false,
+        "in_sample_ratio_inflated": 1.28,
+        "honest_admission": "Strict regime-conditional defense thesis NOT validated empirically OOS. Composite is balanced cross-regime alpha, not pure defense.",
+        "axis_3_pass": false
+      },
+      "axis_4_regime_stability": {
+        "subperiod_stability_oos": 1.0,
+        "pass": true,
+        "risk_corroboration": "Risk-research stress test 6/8 outperform — corroborates stability across periods (but two periods breach absolute MDD reasonability)."
+      },
+      "overall_axis_summary": "axes 1+4 PASS, axis 2 AMBIGUOUS (orthogonal-leaning, not anti-cor), axis 3 FAIL. Strategy is balanced cross-regime defense-LEANING composite, NOT strict regime-switch defense.",
+      "overall_admission_readiness": "REVISE_pending_optimizer_constraints"
+    },
+    "ax_007_single_sleeve_mechanism": {
+      "risk_active": true,
+      "structure_diagnosed": "single_sleeve_long_only_top20",
+      "exceptions_active": {
+        "multi_sleeve": false,
+        "long_short": false,
+        "fifty_plus_diversification": false,
+        "ml_sizing": false
+      },
+      "all_exceptions_inactive": true,
+      "combined_risk_with_ax001_v2_axis3_fail": true,
+      "ax_007_pass": false,
+      "remediation_options": [
+        "Multi-sleeve construction (Sleeve A defense + Sleeve B core)",
+        "Long-short variant",
+        "Diversify to 50+ names per sleeve",
+        "ML-based dynamic sizing (turn off rule-based ICIR weights)"
+      ],
+      "governor_admission_directive": "Optimizer must select 1 of 4 exceptions OR governor must waiver with explicit justification. AX-007 mechanism break risk active OOS."
+    },
+    "ax_008_triangulation_status": "INCOMPLETE_pending_optimizer_and_forge_packages",
+    "overall_compliance": "REVISE_pending_downstream_constraints"
+  },
+
+  "challenge_flags": [
+    {
+      "flag_id": "RF-R-COND-CAP-FAIL",
+      "severity": "HIGH",
+      "description": "RF-R2 condition number cap breach: full Sigma_primary cn=391.27 > cap 100. Top20 sub-Sigma cn=84.80 PASSES. Optimizer MUST either (a) lock universe to alpha top20 (use covariance_top20.parquet), or (b) accept full Sigma with explicit waiver and CVaR-aware build.",
+      "remediation": "Optimizer-side decision."
+    },
+    {
+      "flag_id": "RF-R-CVAR-BREACH",
+      "severity": "HIGH",
+      "description": "CVaR_95 cap breach: synthetic top20 EW monthly CVaR_95 = -13.35% vs cap 2.5% (5.34x breach). CVaR_99 = -19.51%. Hill alpha 2.03 = boundary heavy tail (infinite variance regime). EVT-GPD xi 0.173 confirms heavy tail.",
+      "remediation": "Optimizer must enforce CVaR_95 <= 0.025 hard constraint via vol_target<=15% + weight_cap<=0.10 + CVaR-aware MVO. Infeasibility report filed in tail_risk.json."
+    },
+    {
+      "flag_id": "RF-R-AX007",
+      "severity": "HIGH",
+      "description": "AX-007 single-sleeve top20 mechanism break risk active: no exceptions met (multi-sleeve / long-short / 50+ / ML sizing all FALSE). Combined with AX-001 v2 axis 3 FAIL (alpha-research bad/normal IC ratio 0.79 OOS), structural risk elevated.",
+      "remediation": "Optimizer must select 1 of 4 AX-007 exceptions; governor admission must waiver."
+    },
+    {
+      "flag_id": "RF-R-INHERIT-1",
+      "severity": "HIGH",
+      "description": "Inherited from alpha-research RF-A-RES-2: OOS bad/normal IC ratio 0.79 reverses in-sample 1.28. Strict regime-conditional defense thesis NOT validated OOS. Composite is balanced cross-regime alpha. AX-001 v2 axis 3 FAIL.",
+      "remediation": "Risk acknowledges; optimizer/governor must downgrade defense-positioning expectation in admission."
+    },
+    {
+      "flag_id": "RF-R-IRAN",
+      "severity": "HIGH",
+      "description": "Iran_War_2026-02~04 stress test FAIL: portfolio -8.64% vs benchmark +28.07% = -36.71% relative. Recent live OOS underperformance. Top alpha tickers (A010120 -52%, A352820 -32%) lost heavily. Decay risk elevated in late-stage 2026 macro environment.",
+      "remediation": "Forge agent must include 2026 OOS in walk-forward; governor must consider delaying admission until 2026Q3 OOS extended."
+    },
+    {
+      "flag_id": "RF-R-RF-R8-THIN-CRISIS",
+      "severity": "HIGH",
+      "description": "CRISIS regime sample n=18 (60M window) or n=23 (full state) < RF-R8 threshold 30. Bootstrap CI computed (B=1000) but bootstrap-of-thin-sample is itself biased.",
+      "remediation": "Optimizer should use regime-pooled Sigma (CRISIS+NORMAL combined) for safety. Regime-conditional Sigma not recommended for portfolio construction at this sample size."
+    },
+    {
+      "flag_id": "RF-R-T_LT_N",
+      "severity": "MEDIUM",
+      "description": "Sigma estimation regime: T=60 << N=336. Required Tikhonov α=0.62 to reach cn=391, info_kept=36.4%. Honest tradeoff: information loss inherent.",
+      "remediation": "Optimizer informed Sigma is heavily shrunk to diagonal-leaning. Acceptable for HRP/risk parity; less suitable for full mean-variance optimization without Bayesian shrinkage on alpha vector."
+    },
+    {
+      "flag_id": "RF-R-DECOMP-RESIDUAL",
+      "severity": "MEDIUM",
+      "description": "B*Omega*B' + D does NOT reconstruct Sigma_primary numerically (rel_fro=1.77, max_abs=0.0419). Sigma has Tikhonov ridge beyond factor model. NOT a math bug — by design — but labeling was unclear in draft.",
+      "remediation": "Optimizer uses covariance.parquet directly. B/Omega/D for risk attribution only (top common risks, sector variance share)."
+    },
+    {
+      "flag_id": "RF-R-PIT-C12",
+      "severity": "MEDIUM",
+      "description": "Factor returns for Omega computed with current sector/size mappings over 60M historical window. Historical mapping reconstruction NOT performed (PIT C12 partial limitation).",
+      "remediation": "Optimizer should not rely on factor decomposition for forward-looking risk. Variance attribution conservative diagnostic only."
+    },
+    {
+      "flag_id": "RF-R-STYLE-OVERLAP-PROXY",
+      "severity": "MEDIUM",
+      "description": "Style overlap measured on 3-beta proxy (mkt/smb/growth-value) only. Full FF5+Carhart+Quality family overlap NOT computed. Beta_correlation 0.36 LOW on 3-beta proxy — NOT a comprehensive style isomorphism check.",
+      "remediation": "Optimizer with style attribution module should re-measure full style overlap before final admission."
+    },
+    {
+      "flag_id": "RF-R-HHI-PG2-MISSING",
+      "severity": "MEDIUM",
+      "description": "HHI vs PG2 active book NOT computed. PG2 active book artifact not loaded into risk pipeline. crowding_top20_overlap (0/20) covers alpha-vs-STR_1715 only, not full book.",
+      "remediation": "Optimizer agent has access to live PG2 weights; HHI and full-book crowding measurement at handoff stage."
+    }
+  ],
+
+  "method_shopping_log": {
+    "candidates_tried": 6,
+    "candidates_log": [
+      {
+        "name": "sample",
+        "condition": 1973191763377535.5,
+        "min_eig": -6.5534e-16,
+        "is_psd": true,
+        "avg_abs_offdiag": 0.0048,
+        "info_kept": 1,
+        "selected": false,
+        "reason": "Singular T<N rank-deficient"
+      },
+      {
+        "name": "ledoit_wolf_constcor_hrpcore",
+        "condition": 1,
+        "min_eig": 0.0257,
+        "is_psd": true,
+        "avg_abs_offdiag": 0,
+        "info_kept": 0,
+        "selected": false,
+        "reason": "Broken at T<N (rho clipped=1, identity collapse). hrp_core formula invalid."
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": "Inf",
+        "min_eig": -0.261,
+        "is_psd": false,
+        "avg_abs_offdiag": null,
+        "info_kept": null,
+        "selected": false,
+        "reason": "Not PSD (255 negative eigenvalues)"
+      },
+      {
+        "name": "lw_oracle_identity",
+        "condition": 4.3945,
+        "min_eig": 0.0242,
+        "is_psd": true,
+        "avg_abs_offdiag": 0.0002,
+        "info_kept": 0.0416,
+        "selected": false,
+        "shrinkage_rho": 0.9584,
+        "reason": "LW James-Stein identity target. rho=0.958 → near-identity, info loss extreme."
+      },
+      {
+        "name": "lw_2003_const_cor",
+        "condition": 1300.2279,
+        "min_eig": 0.0014,
+        "is_psd": true,
+        "avg_abs_offdiag": 0.0046,
+        "info_kept": 0.9582,
+        "selected": true,
+        "shrinkage": 0.7865,
+        "reason": "LW 2003 const-correlation target. shrinkage=0.787 r_bar=0.2112. Best PSD + info_kept among candidates. Plus Tikhonov α=0.62 to reduce cn from 1300 to 391 (still > cap 100 — RF-R2 FAIL acknowledged honestly)."
+      },
+      {
+        "name": "schafer_strimmer_diag",
+        "condition": 2019.5958,
+        "min_eig": 0.0007,
+        "is_psd": true,
+        "avg_abs_offdiag": 0.0034,
+        "info_kept": 0.7064,
+        "selected": false,
+        "lambda": 0.2936,
+        "reason": "Schäfer-Strimmer correlation shrinkage. lambda=0.294. Higher cn than LW2003."
+      }
+    ],
+    "selected": "lw_2003_const_cor_tikhonov",
+    "rationale": "PSD + info_kept >= 0.3 + lowest cn among PSD candidates. NO alpha return / SR / IR criteria used — estimation quality only."
+  },
+
+  "selection_objective": "condition_number",
+  "selection_objective_rationale": "R4 selection_objective enum 'condition_number'. Among PSD candidates, picked LW2003 const-correlation (info_kept=95.8%, cn=1300). Tikhonov regularization (α=0.62) applied to bring cn down to 391. Final info_kept=36.4% (T<<N regime forces high shrinkage). cn=391 > cap 100 → RF-R2 FAIL. Top20 sub-Sigma (cn=84.8) provided as fallback for universe-locked optimization.",
+
+  "str1715_diversifier_validation": {
+    "pearson": 0.0532,
+    "spearman": 0.079,
+    "kendall": 0.0524,
+    "lower_tdc_q010": 0.0909,
+    "lower_tdc_q005": 0.0909,
+    "upper_tdc_q090": 0.1818,
+    "cor_bad_30pct": -0.0344,
+    "cor_normal_70pct": 0.0532,
+    "n_overlap_months": 218,
+    "crowding_top20_overlap": 0,
+    "style_beta_correlation_3beta_proxy": 0.3637,
+    "alpha_research_reported_pearson": 0.0361,
+    "consistency_check_with_alpha_research": false,
+    "consistency_gap_relative_pct": 47.3,
+    "consistency_gap_absolute": 0.0171,
+    "overall_diversifier_judgment": "Diversifier-LEANING signal across 6 axes: (1) returns Pearson 0.053 — orthogonal-ish, NOT anti-cor, (2) Spearman 0.079, (3) Kendall 0.052, (4) lower-tail TDC 0.091 (LOW joint-loss), (5) bad-regime cor -0.034 (slight anti-cor under stress), (6) holdings overlap 0/20. WITH consistency mismatch: alpha-research reported 0.036, risk-research measured 0.053 (47% relative gap, statistically not different at p<0.05 but reporting inconsistency flagged). Style β cor 0.36 LOW on 3-beta proxy. Quality FACTOR-FAMILY overlap exists (both use Q07).",
+    "honest_disposition": "Cross-regime diversifier-LEANING composite. Not strict anti-correlated defense. Direct Core MDD relief NOT measured at risk stage (optimizer/forge concern)."
+  },
+
+  "pit_audit": {
+    "c1_full_sample_stat": "PASS — risk metrics use rolling 60M window or full 220M history; no full-sample lookahead.",
+    "c9_dd_vol_lag": "PASS_at_risk_stage — risk uses alpha_LS_ret monthly stream observed at month-end; no DD/vol overlay applied at risk stage. Vol_target/DD overlays are S5/Optimizer concern.",
+    "c11_external_series_lag": "PASS_at_risk_stage — risk-side CRISIS bootstrap uses self-classified alpha quantile, NOT external FRED/MRS labels. External regime labels were used by alpha-research (with their PIT audit); not re-introduced at risk stage.",
+    "c12_factor_return_pit": "PARTIAL_FAIL — factor returns for Omega computed with current sector/size mappings over 60M historical window. Historical mapping reconstruction NOT performed. Conservative interpretation: factor model is for risk attribution only, not optimizer Sigma reconstruction.",
+    "c13_z_score_aligned": "PASS — risk does not negate factors or flip signs.",
+    "c14_ic_usable_date": "PASS — risk does not access IC; alpha-research handles factor IC.",
+    "c15_factor_db_load_function": "PASS — risk uses load_rawdata/load_month_factors, not direct parquet."
+  },
+
+  "q_lead_directives_compliance": {
+    "directive_1_no_defense_inheritance": "HONORED — crisis_alpha re-derived independently from alpha_LS_ret stream. STR_1715 PG2 admission NOT presumed.",
+    "directive_2_ax001_v2_axis3_fail_explicit": "HONORED — overall_axis_summary explicitly: 'axes 1+4 PASS, axis 2 AMBIGUOUS, axis 3 FAIL — strategy is balanced cross-regime defense-LEANING composite, NOT strict regime-switch defense'.",
+    "directive_3_str1715_pearson_multi_axis": "HONORED — 6-axis cross-check + consistency_check_pass=FALSE flagged + 47% relative gap honest disclosure.",
+    "directive_4_ax007_mechanism_break": "HONORED — risk_active=TRUE, all 4 exceptions FALSE, RF-R-AX007 HIGH challenge_flag, governor_admission_directive included.",
+    "directive_5_quality_tail_skewness_family_classification": "HONORED — family_weights {Defense_Tail 0.370, Quality 0.293, Risk_Tail 0.337}. Quality family overlap with STR_1715 explicitly noted (factor-family overlap distinct from holdings overlap)."
+  },
+
+  "q_lead_escalation_triggers_met": {
+    "high_severity_count_ge_5": {"observed": 6, "threshold": 5, "met": true},
+    "ax_hard_fail_count_ge_3": {"observed": 4, "threshold": 3, "met": true, "list": ["AX-001 v2 axis 3", "AX-002", "AX-007", "AX-008"]},
+    "pit_c12_violation": {"observed": 1, "threshold": 1, "met": true, "detail": "factor return historical mapping reconstruction not performed"},
+    "sigma_pd_violation": {"observed": 0, "threshold": 1, "met": false, "detail": "Sigma is PSD (min_eig 0.0018 > 0)"},
+    "escalation_required": true,
+    "escalation_disposition": "MANDATORY — challenge_note_risk-research.md filed as escalation record. Optimizer must process challenge_flags. Governor admission must waiver or condition on optimizer-stage resolution of cond+CVaR+AX-007 constraints."
+  },
+
+  "challenge_round": {
+    "rounds_completed": 1,
+    "codex_round_disposition": "REVISE",
+    "claude_response_summary": "8 ACCEPT, 1 PARTIAL (decomposition labeling), 0 REBUTTAL. All 5 self-rationalizations re-classified. Final package preserves all critical disclosures.",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260502_001/challenge_note_risk-research.md"
+  },
+
+  "status": "RISK_DONE",
+  "ready_for_optimizer": true,
+  "optimizer_handoff_summary": "Sigma + tail_risk + 11 challenge_flags + AX compliance audit + Q-Lead escalation. Optimizer must enforce: (a) cond mitigation (universe lock to alpha top20 OR full Sigma waiver), (b) CVaR_95 <= 0.025 hard constraint, (c) AX-007 exception selection, (d) HHI vs PG2 active book check.",
+  "notes": "Risk research v6.4 post-Codex REVISE. Sigma from LW2003 const-cor + Tikhonov α=0.62 (T=60<<N=336 regime forces info loss to 36.4%). cn=391 RF-R2 FAIL (cap 100); top20 sub-Sigma cn=84.8 fallback for universe-locked optimization. AX-001 v2 axes 1+4 PASS, axis 2 AMBIGUOUS, axis 3 FAIL (inherited from alpha-research bad/normal IC 0.79 OOS). AX-007 single-sleeve top20 mechanism break risk active (no exceptions met). Tail risk: CVaR_95 -13.35% (5.34x breach), CVaR_99 -19.51%, Hill alpha 2.03, EVT xi 0.173, CDaR_95 -29.32%. STR_1715 cross-validation 6-axis diversifier-LEANING WITH consistency mismatch (Pearson 47% gap). Style β LOW on 3-beta proxy; full FF5/Carhart/Quality overlap REVISE-pending. Crisis bootstrap n=18, RF-R8 thin-sample → pooled fallback recommended. Stress 6/8 outperform but 2 periods breach absolute MDD. Codex REVISE: 8 ACCEPT, 1 PARTIAL, 0 REBUTTAL. Q-Lead escalation MANDATORY (HIGH 6 + AX FAIL 4 + PIT C12). Optimizer must address constraints; governor admission requires waiver."
+}

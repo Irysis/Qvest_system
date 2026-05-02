@@ -1,0 +1,114 @@
+{
+  "generated_at": "2026-05-03T00:20:16+0900",
+  "task_id": "WT-D20260502_001",
+  "agent": "risk-research",
+  "basis": "top20_alpha_equal_weight_synthetic_portfolio_monthly_returns_FULL_HISTORY",
+  "n_obs_months": 220,
+  "n_obs_60M_window": 60,
+  "rationale_basis_choice": "Full 220M history used for Hill/EVT/CVaR (60M too short for k_frac=0.10 Hill estimator → insufficient_losses).",
+  "var": {
+    "var_99_monthly_pct": -14.2168,
+    "var_975_monthly_pct": -12.3474,
+    "var_95_monthly_pct": -7.9172,
+    "var_90_monthly_pct": -4.8926
+  },
+  "cvar": {
+    "cvar_99_monthly_pct": -19.5105,
+    "cvar_975_monthly_pct": -16.3258,
+    "cvar_95_monthly_pct": -13.3469,
+    "cvar_90_monthly_pct": -9.736
+  },
+  "cvar_cap_audit": {
+    "cap_cvar_95_monthly_pct": 2.5,
+    "breach_95": true,
+    "breach_factor_95": 5.34,
+    "cap_cvar_99_monthly_pct": 5,
+    "breach_99": true,
+    "breach_factor_99": 3.9,
+    "note": "CVaR cap is mandate-level (not synthetic portfolio). Optimizer will reduce position sizes to bring portfolio-level CVaR within cap."
+  },
+  "hill_estimator": {
+    "alpha_left_tail": 2.0255,
+    "k": 10,
+    "threshold": 0.0803,
+    "note": "heavy_tail",
+    "interpretation": "Hill alpha < 2 = infinite-variance tail; alpha 2-4 = heavy tail; alpha > 4 = moderate."
+  },
+  "evt_gpd": {
+    "xi_shape": 0.1726,
+    "sigma_scale": 0.5613,
+    "threshold": 0.0489,
+    "n_exceedances": 22,
+    "note": "heavy_tail",
+    "interpretation": "xi>0 → heavy tail. xi>0.5 → very heavy (CVaR explodes). xi<0 → bounded tail."
+  },
+  "cdar": {
+    "cdar_95_pct": -29.3222,
+    "cdar_99_pct": -40.2515,
+    "max_drawdown_pct": -42.6605,
+    "n_observations": 220
+  },
+  "bootstrap_ci_crisis": {
+    "n_crisis": 18,
+    "n_normal": 42,
+    "crisis_mean": -0.0529,
+    "crisis_mean_ci": [-0.0741, -0.0337],
+    "crisis_cvar95_ci": [-0.1429, -0.1113],
+    "crisis_minus_normal_mean_ci": [-0.1315, -0.0812],
+    "bootstrap_B": 1000,
+    "rf_r8_n_threshold": 30,
+    "rf_r8_pass": false,
+    "pooled_fallback_recommended": true,
+    "note": "RF-R8 thin-sample. Pooled CRISIS+NORMAL Σ recommended for downstream.",
+    "regime_source": "self_classified_fallback"
+  },
+  "decomposition_audit": {
+    "n_assets_compared": 336,
+    "frobenius_residual": 1.6024,
+    "frobenius_sigma": 0.9066,
+    "relative_frobenius": 1.7675,
+    "max_abs_residual": 0.0419,
+    "match_strict": false,
+    "match_acceptable": false,
+    "interpretation": "decomposition does NOT match Σ — Σ has ridge regularization beyond BΩB'+D"
+  },
+  "rf_flags": {
+    "rf_r2_post_shrink_cond": {
+      "observed": 391.273,
+      "cap": 100,
+      "fail": true,
+      "mitigation": "Top20 sub-Σ cond=84.8 → if optimizer locks universe to alpha top20, RF-R2 mitigated. Otherwise REVISE Σ."
+    },
+    "rf_r4_cvar": {
+      "observed": 0.1335,
+      "cap": 0.025,
+      "fail": true,
+      "mitigation": "Optimizer CVaR-aware build."
+    },
+    "rf_r6_evt": {
+      "hill_alpha": 2.0255,
+      "gpd_xi": 0.1726,
+      "heavy_tail_flag": true,
+      "note": "Heavy tail confirmed — optimizer should not assume Gaussian for tail."
+    },
+    "rf_r8_thin_sample": {
+      "crisis_n": 18,
+      "threshold": 30,
+      "fail": true,
+      "mitigation": "Pooled CRISIS+NORMAL Σ recommended; bootstrap CI provided."
+    }
+  },
+  "infeasibility_report": {
+    "trigger": "CVaR_95_cap_breach",
+    "cvar_95_observed_pct": -13.3469,
+    "cvar_95_cap_pct": 2.5,
+    "breach_factor": 5.34,
+    "recommended_actions": ["Cap individual weights below MaxWt 0.20 (e.g., 0.10 ceiling).", "Constrain optimizer with explicit CVaR_95 ≤ 0.025 hard constraint.", "Increase shrinkage or reduce universe N to allow tighter Σ + smaller positions.", "If infeasible under all relaxations: governor admission with WAIVER + Hill alpha caveat."],
+    "optimizer_handoff_decision": "PASS Σ + tail_risk.json with cvar_breach=TRUE flag. Optimizer must build CVaR-aware MVO or HRP with vol_target<=15% to bring portfolio CVaR within cap."
+  },
+  "rebuttals_or_acceptances": {
+    "codex_c2_cvar_breach": "ACCEPT — full tail metrics now reported. Optimizer must enforce CVaR cap.",
+    "codex_c3_thin_crisis": "ACCEPT — bootstrap CI + pooled fallback recommendation provided.",
+    "codex_c4_decomposition_residual": "ACCEPT — decomposition does NOT equal Σ (Tikhonov). Optimizer uses Σ directly."
+  }
+}
