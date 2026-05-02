@@ -652,6 +652,65 @@ check_soak_record <- function(project_root, no_write = FALSE,
            soak_path)
 }
 
+# v7.2.1 Sprint 6 — 15번째 check
+check_memory_health <- function(project_root, no_write = FALSE) {
+  health_script <- file.path(project_root,
+                             "02_Infrastructure/memory/memory_knowledge_health.R")
+  if (!file.exists(health_script)) {
+    return(mk_check("memory_health",
+                    "Memory Knowledge Health Gate (v7.2.1)",
+                    "FAIL", "memory_knowledge_health.R 부재"))
+  }
+  sot_path <- file.path(project_root,
+                        "qepm/memory/axioms/axiom_sot_map.json")
+  if (!file.exists(sot_path)) {
+    return(mk_check("memory_health",
+                    "Memory Knowledge Health Gate (v7.2.1)",
+                    "FAIL", "axiom_sot_map.json 부재"))
+  }
+  helper_path <- file.path(project_root,
+                           "02_Infrastructure/memory/memory_metadata_normalize.R")
+  if (!file.exists(helper_path)) {
+    return(mk_check("memory_health",
+                    "Memory Knowledge Health Gate (v7.2.1)",
+                    "FAIL", "memory_metadata_normalize.R helper 부재"))
+  }
+  if (no_write) {
+    # Read latest report only
+    report_path <- file.path(project_root,
+                             "qepm/observability/memory_health_latest.json")
+    if (!file.exists(report_path)) {
+      return(mk_check("memory_health",
+                      "Memory Knowledge Health Gate (v7.2.1)",
+                      "WARN",
+                      "memory_health_latest.json 부재 (no_write — skip rerun)"))
+    }
+    rep <- tryCatch(fromJSON(report_path, simplifyVector = TRUE),
+                    error = function(e) NULL)
+    if (is.null(rep)) {
+      return(mk_check("memory_health",
+                      "Memory Knowledge Health Gate (v7.2.1)",
+                      "WARN", "memory_health_latest parse fail"))
+    }
+    hard <- rep$summary$hard_fail_count %||% 0L
+    warn <- rep$summary$warning_count %||% 0L
+    status <- if (hard == 0) "PASS" else "FAIL"
+    return(mk_check("memory_health",
+                    "Memory Knowledge Health Gate (v7.2.1)",
+                    status,
+                    sprintf("hard=%d warn=%d (cached)", hard, warn),
+                    report_path))
+  }
+  out <- run_cmd("Rscript",
+                 c("02_Infrastructure/memory/memory_knowledge_health.R"),
+                 wd = project_root)
+  status <- if (out$rc == 0) "PASS" else "FAIL"
+  mk_check("memory_health",
+           "Memory Knowledge Health Gate (v7.2.1)",
+           status,
+           sprintf("rc=%d", out$rc))
+}
+
 # ─────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────
@@ -680,7 +739,8 @@ run_v8_readiness_gate <- function(project_root = ".",
     check_timeline_generation(project_root, no_write),
     check_registry_integrity(project_root, no_write),
     check_release_metadata(project_root, no_write, strict),
-    check_soak_record(project_root, no_write, next_actions_env)
+    check_soak_record(project_root, no_write, next_actions_env),
+    check_memory_health(project_root, no_write)
   )
 
   statuses <- sapply(checks, function(c) c$status)

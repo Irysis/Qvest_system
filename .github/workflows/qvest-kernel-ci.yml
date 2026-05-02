@@ -155,7 +155,7 @@ jobs:
           pyright --warnings 02_Infrastructure/hooks/qvest_hook_router.py 02_Infrastructure/hooks/qvest_cert_eval.py
 
   schema_validate:
-    name: Schema validation (14 schema smoke test)
+    name: Schema validation (named REQUIRED_SCHEMAS set, 15 v7.2.1)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -164,29 +164,48 @@ jobs:
           python-version: '3.11'
       - name: Install jsonschema
         run: pip install jsonschema
-      - name: Smoke test 14 schemas (parse + structure validity)
+      - name: Smoke test named REQUIRED_SCHEMAS set (parse + structure validity)
         run: |
           set -e
           python3 -c "
           import json, sys
           from pathlib import Path
+          # v7.2.1 — named set 의무 (hardcoded count 제거)
+          REQUIRED_SCHEMAS = {
+              'packages/alpha_package_schema.json',
+              'packages/risk_package_schema.json',
+              'packages/optimization_package_schema.json',
+              'packages/forge_package_schema.json',
+              'packages/judge_verdict_schema.json',
+              'packages/governor_admission_schema.json',
+              'certs/alpha_discovery_certificate_schema.json',
+              'certs/sr_provenance_certificate_schema.json',
+              'certs/schedule_fidelity_certificate_schema.json',
+              'certs/forge_package_validated_certificate_schema.json',
+              'certs/governor_concord_certificate_schema.json',
+              'state/book_state_schema.json',
+              'state/governance_log_schema.json',
+              'state/artifact_lineage_schema.json',
+              'state/axiom_schema.json',
+          }
           schemas_dir = Path('02_Infrastructure/schemas')
           if not schemas_dir.exists():
               print('schemas dir not found'); sys.exit(1)
-          schemas = list(schemas_dir.rglob('*_schema.json'))
-          print(f'Found {len(schemas)} schemas')
-          if len(schemas) != 14:
-              print(f'Expected 14 schemas, got {len(schemas)}')
-              sys.exit(1)
           import jsonschema
-          for s in schemas:
-              with open(s) as f:
-                  schema = json.load(f)
+          missing = []
+          for rel in REQUIRED_SCHEMAS:
+              p = schemas_dir / rel
+              if not p.exists():
+                  missing.append(rel); continue
               try:
+                  with open(p) as f:
+                      schema = json.load(f)
                   jsonschema.Draft7Validator.check_schema(schema)
               except Exception as e:
-                  print(f'INVALID schema {s}: {e}'); sys.exit(1)
-          print('All 14 schemas valid Draft-07 ✅')
+                  print(f'INVALID schema {p}: {e}'); sys.exit(1)
+          if missing:
+              print(f'Missing required schemas: {missing}'); sys.exit(1)
+          print(f'All {len(REQUIRED_SCHEMAS)} REQUIRED_SCHEMAS valid Draft-07 ✅')
           "
       - name: Validate router validate-schema CLI
         run: |
@@ -345,6 +364,46 @@ jobs:
             exit 1
           fi
           echo "v8 readiness exit=$rc (0=PASS, 2=WARN — both acceptable in CI)"
+
+  memory_health_smoke:
+    name: Memory Knowledge Health Gate (v7.2.1)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.5.2'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install jsonlite + jsonschema
+        run: |
+          Rscript -e 'install.packages("jsonlite", repos="https://cloud.r-project.org")'
+          pip install jsonschema
+      - name: axiom_schema validate samples
+        run: |
+          set -e
+          python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema axiom --package qepm/memory/axioms/active/AX-007.json
+          python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema axiom --package qepm/memory/axioms/active/AX-008.json
+          python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema axiom --package qepm/memory/axioms/candidates/CAND_20260417_value_negative_L-132_L-135.json
+      - name: memory_knowledge_health hard fail 0
+        run: |
+          set -e
+          Rscript 02_Infrastructure/memory/memory_knowledge_health.R
+          # rc=0 = PASS, rc=1 = FAIL (hard fail > 0)
+      - name: qvest_search smoke (lesson + axiom_candidate)
+        run: |
+          set -e
+          Rscript 02_Infrastructure/search/build_index.R
+          # lesson type
+          bash 02_Infrastructure/search/qvest_search "L-248" --type lesson \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('count',0) >= 1, f'lesson L-248 hit expected, got {d}'; print(f'lesson L-248: {d[\"count\"]} hits')"
+          # axiom_candidate type
+          bash 02_Infrastructure/search/qvest_search "value_negative" --type axiom_candidate \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); assert d.get('count',0) >= 1, f'axiom_candidate hit expected, got {d}'; print(f'axiom_candidate: {d[\"count\"]} hits')"
+          # format_result authority/axiom_class fields
+          bash 02_Infrastructure/search/qvest_search "AX-001" --type axiom \
+            | python3 -c "import json,sys; d=json.load(sys.stdin); r=d['results'][0]; assert r.get('authority') and r.get('axiom_class') and r.get('memory_kind'), f'expected enriched fields, got {r}'; print(f'AX-001 fields: authority={r[\"authority\"]} class={r[\"axiom_class\"]} kind={r[\"memory_kind\"]}')"
 
   duplication_audit:
     name: Duplication audit (single source)
