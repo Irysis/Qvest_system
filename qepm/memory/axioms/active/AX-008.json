@@ -1,0 +1,44 @@
+{
+  "schema_version": "v7.2.1_axiom_active",
+  "memory_id": "AX-008",
+  "memory_kind": "axiom_active",
+  "axiom_class": "process",
+  "authority": "high",
+  "review_policy": "q_lead_approval",
+  "enforcement_mode": "documented",
+  "axiom_id": "AX-008",
+  "id": "AX-008",
+  "name": "Verification Triangulation",
+  "type": "process",
+  "polarity": "positive",
+  "grade": "VALIDATED_PROCESS",
+  "level": 0,
+  "version": "v1.0",
+  "canonical_statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "text": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "supporting_l_codes": [
+    "L-159",
+    "L-167",
+    "L-168"
+  ],
+  "scope": {
+    "market": "all",
+    "domain": "verification",
+    "applies_to_decisions": [
+      "backtest_admission",
+      "sr_provenance",
+      "strategy_promotion",
+      "axiom_promotion"
+    ],
+    "verification_sources": ["Forge", "Codex", "Architect"],
+    "min_pass_threshold": "2 of 3"
+  },
+  "applies_to": ["Scout", "Forge", "Judge", "Governor", "Q-Lead", "Risk Manager", "Architect"],
+  "origin": "Session 67 Day 3+ L-159 (Codex empirical-first) + L-167 (Architect 진단) + L-168 (Forge re-execution). v7.2.1 (2026-05-02) JSON SOT materialize.",
+  "l_code": "L-159 + L-167 + L-168",
+  "enforcement": "Discovery WT 및 deployment 전이 시 verification source 2/3 PASS 미달 → q_lead_approval 의무. v7.3에서 hook PreToolUse hard-block 검토.",
+  "note_v7_2_1": "JSON SOT materialization only. v7.2.1에서 신규 hard-block regex 도입 X. enforcement_mode=documented. v7.3에서 advisory→block 검토.",
+  "created_at": "2026-04-21",
+  "updated_at": "2026-05-02"
+}
