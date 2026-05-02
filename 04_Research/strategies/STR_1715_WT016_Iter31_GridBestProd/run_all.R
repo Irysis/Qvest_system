@@ -105,17 +105,21 @@ opt_pkg   <- fromJSON(file.path(WT_DIR, "optimization_package.json"), simplifyVe
 best_combo  <- opt_pkg$best_combo
 LAMBDA      <- as.numeric(best_combo$lambda %||% 1.5)
 TOPHI       <- as.numeric(best_combo$tophi  %||% 3)
-CASH_NORMAL <- as.numeric(best_combo$cash_normal  %||% 0.10)
-CASH_CAUTION <- as.numeric(best_combo$cash_caution %||% 0.20)
-CASH_CRISIS  <- as.numeric(best_combo$cash_crisis  %||% 0.40)
+
+# v7.2.1 도훈 명시 (2026-05-02): Iter31 cash overlay (NORMAL/CAUTION/CRISIS = 10/20/40%)
+# DEPRECATED. Cash 결정은 M4 outer schedule (WT-D20260430_001) 단독 담당.
+# base는 risk-only top 20 portfolio. cash overlay layer 중첩 제거.
+CASH_NORMAL  <- 0.0  # deprecated — M4가 결정
+CASH_CAUTION <- 0.0
+CASH_CRISIS  <- 0.0
 CASH_BULL    <- 0.0
 
 # alpha_inheritance: cor=1.0 from STR_1701
 alpha_cor <- alpha_pkg$diagnostics$alpha_inheritance_cor %||%
              alpha_pkg$alpha_inheritance$cor_v18_vs_str1701 %||% 1.0
 
-cat(sprintf("  Best combo: λ=%.1f TOphi=%.0f Cash(BULL=%.0f%%/NORMAL=%.0f%%/CAUTION=%.0f%%/CRISIS=%.0f%%)\n",
-            LAMBDA, TOPHI, CASH_BULL*100, CASH_NORMAL*100, CASH_CAUTION*100, CASH_CRISIS*100))
+cat(sprintf("  Best combo: λ=%.1f TOphi=%.0f  [Iter31 cash overlay DEPRECATED — M4 outer 단독]\n",
+            LAMBDA, TOPHI))
 cat(sprintf("  Alpha inheritance cor=%.4f (threshold 0.95 — %s)\n",
             alpha_cor, if (alpha_cor >= 0.95) "PASS" else "FAIL"))
 
@@ -182,15 +186,12 @@ linear_tilt_to_penalty_qd <- function(alpha_t, lambda = 1.5, w_prev = NULL,
   normalize_long_only(w_out, lb = lb, ub = ub, target_sum = 1)
 }
 
-# Cash overlay — Iter 31 best combo params
+# Cash overlay — DEPRECATED (v7.2.1 도훈 명시 2026-05-02)
+# Iter31 cash overlay (NORMAL/CAUTION/CRISIS) layer 제거.
+# Cash 결정은 M4 outer schedule (WT-D20260430_001) 단독 담당.
+# base는 risk-only top 20 portfolio. cash 항상 0% 반환.
 cash_overlay_pct_iter31 <- function(regime) {
-  switch(as.character(regime),
-    "BULL"    = CASH_BULL,
-    "NORMAL"  = CASH_NORMAL,
-    "CAUTION" = CASH_CAUTION,
-    "CRISIS"  = CASH_CRISIS,
-    CASH_NORMAL   # default
-  )
+  0.0  # base layer cash 미적용 — M4 outer가 결정
 }
 
 cat(sprintf("  linear_tilt_to_penalty_qd: λ=%.1f phi=%.0f blend=%.3f toward w_prev\n",

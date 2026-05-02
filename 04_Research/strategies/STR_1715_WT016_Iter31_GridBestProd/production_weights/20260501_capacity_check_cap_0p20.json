@@ -3,20 +3,19 @@
   "iter_label": "Iter31_LinTilt_lam1.5_TOphi3_CashOverlay",
   "as_of_date": "2026-05-01",
   "mandate": "cap_0.20",
-  "alpha_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (May 2026 forward recompute) + M4 outer overlay (WT-D20260430_001)",
+  "alpha_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (live full + fix regime + M4 outer overlay)",
   "alpha_source_max_date": "2026-05-01",
+  "base_layer": "STR_1715 risk-only top 20 (Iter31 cash overlay DEPRECATED 2026-05-02 도훈 명시)",
   "m4_overlay": {
     "source": "WT-D20260430_001/stage_artifacts/alpha_scores.parquet (extended 2026-05-30)",
     "weight_str1715": 1,
     "weight_cash": 0
   },
-  "base_regime_state": "NORMAL",
-  "base_cash_pct": 0.1,
-  "total_cash_pct": 0.1,
+  "total_cash_pct": 0,
   "n_risk_holdings": 20,
-  "n_total_lines": 21,
+  "n_total_lines": 20,
   "sum_weights": 1,
-  "max_weight": 0.18,
+  "max_weight": 0.2,
   "min_weight": 0,
   "measurement_basis_primary": "forge_realized_share_based",
   "capacity_check": {
@@ -24,8 +23,8 @@
     "n_tickers": 20,
     "n_breach_ADV5": 2,
     "breach_tickers": ["A009420", "A053030"],
-    "worst_ADV_pct": 5.9466,
+    "worst_ADV_pct": 6.6073,
     "worst_ticker": "A009420"
   },
-  "notes": "Mode=forward_recompute_M4_applied. STR_1715 base regime=NORMAL (fix regime, cash 10%) × M4 outer (BOCPD weak, decay 0, joint 0) weight_str1715=1.0, weight_cash=0%. Total cash = 10 % (= base cash 10% × M4 1.0 + M4 outer cash 0%)."
+  "notes": "v7.2.1 도훈 명시 (2026-05-02): base Iter31 cash overlay 제거. M4 단독 cash 결정. 5월 M4 weight_str1715=1.0/weight_cash=0% → 5월 cash 0% (100% risk)."
 }
