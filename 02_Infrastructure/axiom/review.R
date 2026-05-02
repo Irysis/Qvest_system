@@ -5,10 +5,16 @@
 #   1) supporting_strategies의 최근 hurdle_result가 IS 대비 50% 이하로 열화
 #   2) 새 반증 실험(L-code)에서 AX 주장 기각 증거 >= 2건
 #
+# v7.2.1 Sprint 3 — Dry-Run Safety:
+#   - apply=FALSE default — active/deprecated/CLAUDE.md 0건 변경
+#   - --apply flag만 실제 변경 권한
+#   - dry-run report → review_log/dryrun/review_dryrun_YYYYMMDD.json
+#
 # Usage:
-#   source("02_Infrastructure/axiom/review.R")
-#   review_axiom("AX-003")           # 단건
-#   review_all_active_axioms()       # 전체
+#   Rscript review.R --all                # dry-run
+#   Rscript review.R --all --apply        # apply
+#   Rscript review.R AX-003               # dry-run single
+#   Rscript review.R AX-003 --apply       # apply single
 
 suppressPackageStartupMessages({
   library(jsonlite)
@@ -122,15 +128,21 @@ suppressPackageStartupMessages({
 }
 
 # ─── Deprecate 처리 ─────────────────────────────────────────────────
-.deprecate_axiom <- function(axiom_id, reason_list) {
+.deprecate_axiom <- function(axiom_id, reason_list, apply = FALSE) {
   root <- .rv_root()
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
   dep_dir <- file.path(root, "qepm", "memory", "axioms", "deprecated")
-  dir.create(dep_dir, recursive = TRUE, showWarnings = FALSE)
 
   src <- file.path(active_dir, paste0(axiom_id, ".json"))
   if (!file.exists(src)) return(FALSE)
 
+  if (!isTRUE(apply)) {
+    cat(sprintf("[review] dry-run: %s would be deprecated (reasons: %s)\n",
+                axiom_id, paste(reason_list, collapse = "; ")))
+    return(TRUE)
+  }
+
+  dir.create(dep_dir, recursive = TRUE, showWarnings = FALSE)
   axiom <- fromJSON(src, simplifyVector = FALSE)
   axiom$status <- "deprecated"
   axiom$deprecated_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
@@ -186,7 +198,7 @@ suppressPackageStartupMessages({
 }
 
 # ─── 메인 함수 ─────────────────────────────────────────────────────
-review_axiom <- function(axiom_id) {
+review_axiom <- function(axiom_id, apply = FALSE) {
   root <- .rv_root()
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
   ax_path <- file.path(active_dir, paste0(axiom_id, ".json"))
@@ -209,48 +221,91 @@ review_axiom <- function(axiom_id) {
               axiom_id, oos$reason, fal$reason))
 
   reasons <- character(0)
-  if (isTRUE(oos$degraded)) reasons <- c(reasons, paste("OOS_degraded:", oos$reason))
-  if (isTRUE(fal$falsified)) reasons <- c(reasons, paste("new_falsification:", fal$reason))
-
-  if (length(reasons) > 0L) {
-    .deprecate_axiom(axiom_id, reasons)
-    return(list(axiom_id = axiom_id, action = "deprecated", reasons = reasons))
+  if (isTRUE(oos$degraded)) {
+    reasons <- c(reasons, paste("OOS_degraded:", oos$reason))
+  }
+  if (isTRUE(fal$falsified)) {
+    reasons <- c(reasons, paste("new_falsification:", fal$reason))
   }
 
-  # 성공 — next_review 업데이트
-  axiom$promotion$last_review <- format(Sys.time(), "%Y-%m-%d")
-  axiom$promotion$next_review <- format(Sys.Date() + 90, "%Y-%m-%d")
-  write_json(axiom, ax_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
-  cat(sprintf("[review] %s — 재확인 통과, next_review=%s\n",
-              axiom_id, axiom$promotion$next_review))
-  list(axiom_id = axiom_id, action = "confirmed",
-       next_review = axiom$promotion$next_review)
+  if (length(reasons) > 0L) {
+    .deprecate_axiom(axiom_id, reasons, apply = apply)
+    return(list(axiom_id = axiom_id,
+                action = if (apply) "deprecated" else "would_deprecate",
+                reasons = reasons,
+                apply = apply))
+  }
+
+  # 성공 — next_review 업데이트 (apply=TRUE만 write)
+  if (isTRUE(apply)) {
+    axiom$promotion$last_review <- format(Sys.time(), "%Y-%m-%d")
+    axiom$promotion$next_review <- format(Sys.Date() + 90, "%Y-%m-%d")
+    write_json(axiom, ax_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+    cat(sprintf("[review] %s — 재확인 통과, next_review=%s\n",
+                axiom_id, axiom$promotion$next_review))
+    list(axiom_id = axiom_id, action = "confirmed",
+         next_review = axiom$promotion$next_review,
+         apply = TRUE)
+  } else {
+    cat(sprintf("[review] dry-run: %s — 재확인 통과 (no write)\n", axiom_id))
+    list(axiom_id = axiom_id, action = "would_confirm",
+         next_review_proposed = format(Sys.Date() + 90, "%Y-%m-%d"),
+         apply = FALSE)
+  }
 }
 
-review_all_active_axioms <- function() {
+review_all_active_axioms <- function(apply = FALSE) {
   root <- .rv_root()
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
-  files <- list.files(active_dir, pattern = "^AX-.*\\.json$", full.names = FALSE)
+  files <- list.files(active_dir,
+                      pattern = "^AX-.*\\.json$", full.names = FALSE)
   ax_ids <- sub("\\.json$", "", files)
   results <- list()
   for (id in ax_ids) {
-    r <- tryCatch(review_axiom(id), error = function(e) {
-      cat(sprintf("[review] %s 오류: %s\n", id, conditionMessage(e))); NULL
+    r <- tryCatch(review_axiom(id, apply = apply), error = function(e) {
+      cat(sprintf("[review] %s 오류: %s\n", id, conditionMessage(e)))
+      NULL
     })
     if (!is.null(r)) results[[id]] <- r
   }
-  cat(sprintf("\n[review] 완료 — %d 건 처리\n", length(results)))
+  cat(sprintf("\n[review] 완료 — %d 건 처리 (apply=%s)\n",
+              length(results), apply))
+
+  # ─── Dry-run report ─────────────────────────────────────────────
+  if (!isTRUE(apply)) {
+    dryrun_dir <- file.path(root, "qepm", "memory", "axioms",
+                            "review_log", "dryrun")
+    dir.create(dryrun_dir, recursive = TRUE, showWarnings = FALSE)
+    ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
+    out_path <- file.path(dryrun_dir, sprintf("review_dryrun_%s.json", ts))
+    report <- list(
+      schema_version = "v7.2.1_review_dryrun",
+      ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+      apply = FALSE,
+      axiom_count = length(results),
+      results = results,
+      note = paste("dry-run only — active/deprecated/CLAUDE.md 0건 변경.",
+                   "실제 변경은 --apply flag 의무.")
+    )
+    write_json(report, out_path,
+               pretty = TRUE, auto_unbox = TRUE, null = "null")
+    cat(sprintf("[review] dry-run report → %s\n", out_path))
+  }
+
   invisible(results)
 }
 
 # CLI
 if (!interactive() && length(commandArgs(trailingOnly = TRUE)) > 0) {
   .a <- commandArgs(trailingOnly = TRUE)
-  if (.a[1] == "--all") {
-    invisible(review_all_active_axioms())
+  apply <- "--apply" %in% .a
+  .a <- setdiff(.a, "--apply")
+  if (length(.a) == 0L || .a[1] == "--all") {
+    invisible(review_all_active_axioms(apply = apply))
   } else {
-    invisible(review_axiom(.a[1]))
+    invisible(review_axiom(.a[1], apply = apply))
   }
 }
 
-cat("[review] Loaded. Functions: review_axiom(ax_id) / review_all_active_axioms()\n")
+cat("[review] Loaded. Functions: review_axiom(ax_id, apply=FALSE) / review_all_active_axioms(apply=FALSE)\n")
+cat("[review] Default = dry-run. Use --apply (CLI) or apply=TRUE (R) to write.\n")
