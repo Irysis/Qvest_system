@@ -1,0 +1,155 @@
+{
+  "schema_version": "v7.2.1_axiom_sot_map",
+  "ran_at": "2026-05-02T00:00:00+09:00",
+  "purpose": "Documented active axiom (8) ↔ JSON SOT (active/*.json) ↔ derived cache 동기화 매핑. Sprint 0 baseline.",
+  "sot_definition": {
+    "primary": "qepm/memory/axioms/active/*.json",
+    "documented": ".claude/rules/axioms.md",
+    "derived_cache": ".cache/axiom_core.json (regenerated, NOT authoritative)",
+    "hard_fail_basis": "primary ↔ documented 불일치만 hard fail. derived_cache sync_status는 WARN 차원."
+  },
+  "axioms": [
+    {
+      "axiom_id": "AX-000",
+      "name": "한계란 없다",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-000.json",
+      "axiom_class": "constitutional",
+      "authority": "high",
+      "review_policy": "skip",
+      "enforcement_mode": "documented",
+      "sync_status": "FULL",
+      "cache_core_present": true
+    },
+    {
+      "axiom_id": "AX-001",
+      "name": "Defense는 조건부 성과로 평가한다",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-001.json",
+      "axiom_class": "methodological",
+      "authority": "high",
+      "review_policy": "quarterly",
+      "enforcement_mode": "block",
+      "sync_status": "FULL",
+      "cache_core_present": true,
+      "note": "axiom_enforcement_hook.sh 일부 패턴 block 실증."
+    },
+    {
+      "axiom_id": "AX-002",
+      "name": "규칙 안에서 찾아낸 성과가 진짜 성과",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-002.json",
+      "axiom_class": "process",
+      "authority": "high",
+      "review_policy": "q_lead_approval",
+      "enforcement_mode": "advisory",
+      "sync_status": "FULL",
+      "cache_core_present": true,
+      "note": "v7.3에서 advisory→block 강화 검토."
+    },
+    {
+      "axiom_id": "AX-003",
+      "name": "KR value EP_STANDALONE 실패",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-003.json",
+      "axiom_class": "empirical",
+      "authority": "high",
+      "review_policy": "quarterly",
+      "enforcement_mode": "advisory",
+      "sync_status": "DOCUMENTED_OK_CACHE_STALE",
+      "cache_core_present": false,
+      "note": "active JSON ↔ .claude/rules/axioms.md 일치. derived cache 누락 (Sprint 1 후 regenerate)."
+    },
+    {
+      "axiom_id": "AX-004",
+      "name": "KR quality_profitability single-signal long-only 실패",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-004.json",
+      "axiom_class": "methodological",
+      "authority": "high",
+      "review_policy": "quarterly",
+      "enforcement_mode": "advisory",
+      "sync_status": "DOCUMENTED_OK_CACHE_STALE",
+      "cache_core_present": false,
+      "note": "derived cache 누락."
+    },
+    {
+      "axiom_id": "AX-005",
+      "name": "KR defense top20 long-only 실패",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-005.json",
+      "axiom_class": "methodological",
+      "authority": "high",
+      "review_policy": "quarterly",
+      "enforcement_mode": "advisory",
+      "sync_status": "FULL",
+      "cache_core_present": true,
+      "version": "v1.2"
+    },
+    {
+      "axiom_id": "AX-006",
+      "name": "Pairwise TDC Conditional Cluster Role Disguise",
+      "documented_active": false,
+      "active_json_path": null,
+      "axiom_class": "methodological",
+      "authority": "medium",
+      "review_policy": "quarterly",
+      "enforcement_mode": "none",
+      "sync_status": "CANDIDATE_ONLY",
+      "cache_core_present": false,
+      "candidate_evidence_paths": [
+        "qepm/memory/axioms/review_log/AX-006_Q3_review_preparation_20260418.json",
+        "qepm/memory/axioms/review_log/AX-006_cumulative_evidence_compilation.json",
+        "qepm/memory/axioms/review_log/AX-006_candidate_pairwise_TDC_conditional_cluster_20260418.json"
+      ],
+      "note": ".claude/rules/axioms.md bullet에 없음. Q3 2026-07-17 quarterly review 예정. 5축 점수 누적 단계."
+    },
+    {
+      "axiom_id": "AX-007",
+      "name": "Single-sleeve top20 mechanism break",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-007.json",
+      "axiom_class": "methodological",
+      "authority": "high",
+      "review_policy": "quarterly",
+      "enforcement_mode": "documented",
+      "sync_status_pre_sprint1": "JSON_MISSING — needs materialization",
+      "sync_status_post_sprint1": "FULL",
+      "cache_core_present": true,
+      "candidate_evidence_paths": [
+        "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json"
+      ],
+      "note": "v7.2.1 Sprint 1에서 JSON SOT materialize. 신규 hook hard-block regex 도입 X. v7.3에서 advisory→block 검토."
+    },
+    {
+      "axiom_id": "AX-008",
+      "name": "Verification Triangulation (Forge + Codex + Architect 2/3 PASS)",
+      "documented_active": true,
+      "active_json_path": "qepm/memory/axioms/active/AX-008.json",
+      "axiom_class": "process",
+      "authority": "high",
+      "review_policy": "q_lead_approval",
+      "enforcement_mode": "documented",
+      "sync_status_pre_sprint1": "JSON_MISSING — needs materialization",
+      "sync_status_post_sprint1": "FULL",
+      "cache_core_present": true,
+      "note": "v7.2.1 Sprint 1에서 JSON SOT materialize. 신규 hook hard-block regex 도입 X. v7.3에서 advisory→block 검토."
+    }
+  ],
+  "summary": {
+    "total_documented_active": 8,
+    "total_json_active_pre_sprint1": 6,
+    "total_json_active_post_sprint1": 8,
+    "candidate_only": ["AX-006"],
+    "missing_json_axioms_pre_sprint1": ["AX-007", "AX-008"],
+    "enforcement_unverified": ["AX-002", "AX-003", "AX-004", "AX-005"],
+    "cache_core_sync_status": "STALE_PRE_SPRINT1 — bootstrap regenerate 후 FULL",
+    "cache_core_authority": "derived_cache (NOT SOT)"
+  },
+  "next_actions": [
+    "Sprint 1: AX-007.json + AX-008.json materialize (enforcement_mode=documented)",
+    "Sprint 1: 19 JSON metadata patch (memory_id/axiom_class/authority/review_policy/enforcement_mode/canonical_statement)",
+    "Sprint 1 후: bootstrap → axiom_core.json regenerate → cache_core_sync_status FULL",
+    "Sprint 5: memory_health_gate hard fail 6 + warning 6 검증"
+  ]
+}
