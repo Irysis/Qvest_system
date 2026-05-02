@@ -1121,46 +1121,35 @@ cat(sprintf("  hash_audit_pass       = %s\n", if(hash_match && w_hash_match) "TR
 cat("════════════════════════════════════════════════════\n")
 
 # ─────────────────────────────────────────────────────────
-# 18. Telegram notification
+# 18. Telegram notification (DISABLED 2026-05-02 도훈 명시)
 # ─────────────────────────────────────────────────────────
-cat("\n[18] Telegram notification\n")
-tg_result <- tryCatch({
-  source(file.path(BASE_DIR, "02_Infrastructure/telegram/telegram_notify.R"))
-
-  msg <- paste0(
-    "[Forge] STR_1715 Iter31 GridBest 240m 완료\n",
-    "─────────────────────────\n",
-    "Combo: L=1.5 / TOphi=3 / Cash(0/10/20/40%)\n\n",
-    "V31 Standalone (240m):\n",
-    sprintf("  SR=%.3f | CAGR=%.1f%% | MDD=%.1f%%\n",
-            perf_v31_combined$sr %||% NA,
-            (perf_v31_combined$cagr %||% NA)*100,
-            (perf_v31_combined$mdd %||% NA)*100),
-    sprintf("  Ann TO=%.2f | DSR_post=%.3f\n",
-            ann_to, perf_v31_combined$dsr_post %||% NA),
-    "\nPG2 Blend (V31 80% + 1656 20%):\n",
-    sprintf("  Blend SR=%.3f vs baseline=%.4f\n", blend_sr, PG2_BASELINE_SR),
-    sprintf("  Delta=%+.4f => %s\n", delta_vs_baseline, pg2_recommend),
-    "\nAX-001 v2: ", ax001_pass_count, "/4 | Harvey: ", n_pass_combined, "/5\n",
-    sprintf("OOS 24-26: SR=%.3f | Hash: %s\n",
-            perf_oos$sr %||% NA,
-            if(hash_match && w_hash_match) "PASS" else "FAIL")
-  )
-
-  tg_send(msg, parse_mode = "")
-
-  # Chart attachment
-  eq_chart <- file.path(BT_DIR, "equity_curve.png")
-  if (file.exists(eq_chart)) {
-    tg_send_photo(eq_chart, caption = sprintf(
-      "STR_1715 Iter31 Equity Curve | V31 SR=%.3f | Blend SR=%.3f | %s",
-      perf_v31_combined$sr %||% NA, blend_sr, pg2_recommend))
-  }
-  "SUCCESS"
-}, error = function(e) {
-  cat(sprintf("  Telegram error: %s\n", conditionMessage(e)))
-  "FAILED"
-})
-cat(sprintf("  Telegram: %s\n", tg_result))
+# 차트 + 메시지 자동 발송 차단. 수동 보고는 Q-Lead가 tg_agent_brief()로 처리.
+# 재활성화 필요 시: 환경변수 STR_1715_TG_ENABLE=1 설정 후 재실행.
+if (isTRUE(as.logical(Sys.getenv("STR_1715_TG_ENABLE", "FALSE")))) {
+  cat("\n[18] Telegram notification (enabled via env)\n")
+  tg_result <- tryCatch({
+    source(file.path(BASE_DIR, "02_Infrastructure/telegram/telegram_notify.R"))
+    msg <- paste0(
+      "[Forge] STR_1715 Iter31 GridBest 240m 완료\n",
+      sprintf("V31 SR=%.3f | Blend SR=%.3f | OOS SR=%.3f\n",
+              perf_v31_combined$sr %||% NA, blend_sr,
+              perf_oos$sr %||% NA)
+    )
+    tg_send(msg, parse_mode = "")
+    eq_chart <- file.path(BT_DIR, "equity_curve.png")
+    if (file.exists(eq_chart)) {
+      tg_send_photo(eq_chart, caption = sprintf(
+        "STR_1715 Iter31 Equity | V31 %.3f | %s",
+        perf_v31_combined$sr %||% NA, pg2_recommend))
+    }
+    "SUCCESS"
+  }, error = function(e) {
+    cat(sprintf("  Telegram error: %s\n", conditionMessage(e)))
+    "FAILED"
+  })
+  cat(sprintf("  Telegram: %s\n", tg_result))
+} else {
+  cat("\n[18] Telegram notification SKIPPED (auto-send disabled)\n")
+}
 
 cat("\n=== STR_1715 run_all.R COMPLETE ===\n")
