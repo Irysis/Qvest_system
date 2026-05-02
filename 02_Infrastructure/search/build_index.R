@@ -117,9 +117,11 @@ build_axiom <- function() {
     data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
                       error = function(e) NULL)
     if (is.null(data)) next
-    ax_id <- data$ax_code %||% tools::file_path_sans_ext(basename(f))
+    ax_id <- data$memory_id %||% data$axiom_id %||% data$ax_code %||%
+      tools::file_path_sans_ext(basename(f))
     title <- sprintf("%s — %s", ax_id,
-                      data$summary %||% data$statement %||% "(no summary)")
+                      data$canonical_statement %||% data$summary %||%
+                        data$statement %||% data$text %||% "(no summary)")
     body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
     rows <- emit_row(rows, id = ax_id, type = "axiom",
                      title = title, body = body,
@@ -127,8 +129,155 @@ build_axiom <- function() {
                                               basename(f)),
                      timestamp = data$promoted_at %||% data$created_at %||% NULL,
                      tags = list("axiom",
-                                 data$status %||% "active",
-                                 data$type %||% ""))
+                                 data$memory_kind %||% "axiom_active",
+                                 data$axiom_class %||% "",
+                                 data$authority %||% "high",
+                                 data$enforcement_mode %||% "",
+                                 data$status %||% "active"))
+  }
+  rows
+}
+
+# ─── v7.2.1 신규 5 type ──────────────────────────────────────────
+
+build_lesson <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/lessons")
+  if (!dir.exists(dir_path)) {
+    warn_missing("lesson", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "\\.json$", full.names = TRUE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data)) next
+    lid <- data$l_code %||% tools::file_path_sans_ext(basename(f))
+    title <- sprintf("%s — %s", lid, data$title %||% "(no title)")
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = lid, type = "lesson",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/lessons",
+                                             basename(f)),
+                     timestamp = data$timestamp %||% NULL,
+                     tags = list("lesson",
+                                 data$category %||% "",
+                                 data$grade %||% "",
+                                 "authority:low"))
+  }
+  rows
+}
+
+build_axiom_candidate <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/axioms/candidates")
+  if (!dir.exists(dir_path)) {
+    warn_missing("axiom_candidate", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "\\.json$", full.names = TRUE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data)) next
+    cid <- data$memory_id %||% data$candidate_id %||%
+      tools::file_path_sans_ext(basename(f))
+    title <- sprintf("[CAND] %s — %s", cid,
+                     data$canonical_statement %||% data$statement_draft %||%
+                       "(no statement)")
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = cid, type = "axiom_candidate",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/axioms/candidates",
+                                             basename(f)),
+                     timestamp = data$created_at %||% NULL,
+                     tags = list("axiom_candidate",
+                                 data$axiom_class %||% "",
+                                 data$status %||% "pending_5axis",
+                                 "authority:medium"))
+  }
+  rows
+}
+
+build_axiom_deprecated <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/axioms/deprecated")
+  if (!dir.exists(dir_path)) {
+    warn_missing("axiom_deprecated", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "\\.json$", full.names = TRUE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data)) next
+    did <- data$memory_id %||% data$axiom_id %||% data$candidate_id %||%
+      tools::file_path_sans_ext(basename(f))
+    title <- sprintf("[DEPRECATED] %s — %s", did,
+                     data$deprecation_reason %||% data$canonical_statement %||%
+                       "(superseded)")
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = sprintf("dep-%s", did),
+                     type = "axiom_deprecated",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/axioms/deprecated",
+                                             basename(f)),
+                     timestamp = data$deprecation_date %||%
+                       data$created_at %||% NULL,
+                     tags = list("axiom_deprecated",
+                                 "authority:retired"))
+  }
+  rows
+}
+
+build_axiom_review <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/axioms/review_log")
+  if (!dir.exists(dir_path)) {
+    warn_missing("axiom_review", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "\\.json$", full.names = TRUE,
+                       recursive = FALSE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data)) next
+    rid <- data$memory_id %||% data$axiom_id_candidate %||% data$axiom_id %||%
+      tools::file_path_sans_ext(basename(f))
+    title <- sprintf("[REVIEW] %s — %s", rid,
+                     data$purpose %||% data$status %||% "(review log)")
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = sprintf("review-%s",
+                                        tools::file_path_sans_ext(basename(f))),
+                     type = "axiom_review",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/axioms/review_log",
+                                             basename(f)),
+                     timestamp = data$created_at %||% NULL,
+                     tags = list("axiom_review",
+                                 data$status %||% "",
+                                 "authority:audit"))
+  }
+  rows
+}
+
+build_evidence_summary <- function() {
+  rows <- list()
+  dir_path <- file.path(PROJ_ROOT, "qepm/memory/evidence_summary")
+  if (!dir.exists(dir_path)) {
+    warn_missing("evidence_summary", dir_path)
+    return(rows)
+  }
+  for (f in list.files(dir_path, pattern = "\\.json$", full.names = TRUE)) {
+    data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
+                     error = function(e) NULL)
+    if (is.null(data)) next
+    eid <- tools::file_path_sans_ext(basename(f))
+    title <- sprintf("[EVIDENCE] %s", eid)
+    body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
+    rows <- emit_row(rows, id = sprintf("ev-%s", eid),
+                     type = "evidence_summary",
+                     title = title, body = body,
+                     source_path = file.path("qepm/memory/evidence_summary",
+                                             basename(f)),
+                     tags = list("evidence_summary", "authority:audit"))
   }
   rows
 }
@@ -438,6 +587,11 @@ all_rows <- list()
 sources <- list(
   list(name = "lcode", fn = build_lcode),
   list(name = "axiom", fn = build_axiom),
+  list(name = "axiom_candidate", fn = build_axiom_candidate),
+  list(name = "axiom_deprecated", fn = build_axiom_deprecated),
+  list(name = "axiom_review", fn = build_axiom_review),
+  list(name = "lesson", fn = build_lesson),
+  list(name = "evidence_summary", fn = build_evidence_summary),
   list(name = "wt", fn = build_wt),
   list(name = "cert", fn = build_cert),
   list(name = "critic", fn = build_critic),

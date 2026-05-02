@@ -88,6 +88,48 @@ def matches_query(row: dict, query_terms: list[str]) -> bool:
     return True
 
 
+def _extract_authority(row: dict) -> str | None:
+    body = row.get("body") or ""
+    if "\"authority\"" in body:
+        try:
+            data = json.loads(body)
+            v = data.get("authority")
+            if v:
+                return v
+        except Exception:
+            pass
+    for tag in row.get("tags") or []:
+        if isinstance(tag, str) and tag.startswith("authority:"):
+            return tag.split(":", 1)[1]
+    return None
+
+
+def _extract_axiom_class(row: dict) -> str | None:
+    body = row.get("body") or ""
+    if "\"axiom_class\"" in body:
+        try:
+            data = json.loads(body)
+            v = data.get("axiom_class")
+            if v:
+                return v
+        except Exception:
+            pass
+    return None
+
+
+def _extract_memory_kind(row: dict) -> str | None:
+    body = row.get("body") or ""
+    if "\"memory_kind\"" in body:
+        try:
+            data = json.loads(body)
+            v = data.get("memory_kind")
+            if v:
+                return v
+        except Exception:
+            pass
+    return None
+
+
 def format_result(row: dict, snippet_len: int = 200) -> dict:
     title = row.get("title") or ""
     body = row.get("body") or ""
@@ -100,6 +142,9 @@ def format_result(row: dict, snippet_len: int = 200) -> dict:
         "wt_id": row.get("wt_id"),
         "timestamp": row.get("timestamp"),
         "snippet": snippet.replace("\n", " "),
+        "authority": _extract_authority(row),
+        "axiom_class": _extract_axiom_class(row),
+        "memory_kind": _extract_memory_kind(row),
     }
 
 
@@ -116,7 +161,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("query", nargs="*", help="search terms (AND)")
     ap.add_argument("--type", default=None,
-                    help="filter by type (lcode|wt|cert|paper|axiom|registry|lawbook|critic|governance)")
+                    help="filter by type (lcode|wt|cert|paper|axiom|axiom_candidate|axiom_deprecated|axiom_review|lesson|evidence_summary|registry|lawbook|critic|governance)")
+    ap.add_argument("--authority", default=None,
+                    help="filter by authority (low|medium|high|retired|audit)")
+    ap.add_argument("--axiom-class", default=None,
+                    help="filter by axiom_class (constitutional|process|empirical|methodological)")
+    ap.add_argument("--memory-kind", default=None,
+                    help="filter by memory_kind (axiom_active|axiom_candidate|axiom_deprecated|lesson|review_log|evidence_summary|regime_validation)")
     ap.add_argument("--recent", default=None, help="recency filter (24h, 7d, 30d)")
     ap.add_argument("--limit", type=int, default=30, help="max results (default 30)")
     ap.add_argument("--include-examples", action="store_true",
@@ -143,6 +194,12 @@ def main():
         if args.type and row.get("type") != args.type:
             continue
         if args.query and not matches_query(row, args.query):
+            continue
+        if args.authority and _extract_authority(row) != args.authority:
+            continue
+        if args.axiom_class and _extract_axiom_class(row) != args.axiom_class:
+            continue
+        if args.memory_kind and _extract_memory_kind(row) != args.memory_kind:
             continue
         if since:
             row_ts = parse_ts(row.get("timestamp"))
