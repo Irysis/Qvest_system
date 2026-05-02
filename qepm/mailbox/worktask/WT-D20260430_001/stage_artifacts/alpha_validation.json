@@ -1,115 +1,112 @@
 {
   "scenarios": {
     "s1_baseline": {
-      "sr": 1.595,
-      "mdd": -0.3556,
-      "harvey_t_nw": 6.2814,
-      "n_periods": 267,
-      "harvey_t_nw_lag12": 5.943
+      "sr": 1.4506,
+      "mdd": -0.3442,
+      "harvey_t_nw": 5.779,
+      "n_periods": 268
     },
     "s2_simple_mrs": {
-      "sr": 1.6161,
-      "mdd": -0.2991,
-      "harvey_t_nw": 6.3769,
-      "n_periods": 267,
-      "harvey_t_nw_lag12": 5.92
+      "sr": 1.4992,
+      "mdd": -0.2615,
+      "harvey_t_nw": 5.9835,
+      "n_periods": 268
     },
     "s3_dynamic_blend": {
-      "sr": 1.6336,
-      "mdd": -0.2991,
-      "harvey_t_nw": 6.4207,
+      "sr": 1.5045,
+      "mdd": -0.2615,
+      "harvey_t_nw": 5.9903,
       "dsr": 1,
-      "n_periods": 267,
-      "harvey_t_nw_lag12": 5.957
+      "n_periods": 268
     }
   },
   "superiority": {
-    "sr_uplift_vs_s1": 0.0386,
-    "sr_uplift_vs_s2": 0.0176,
-    "mdd_uplift_vs_s1": 0.0565,
+    "sr_uplift_vs_s1": 0.0538,
+    "sr_uplift_vs_s2": 0.0053,
+    "mdd_uplift_vs_s1": 0.0827,
     "mdd_uplift_vs_s2": 0,
     "mandate_pass_vs_s2": true
   },
   "subperiod": {
     "s1": {
-      "p1": 1.8193,
-      "p2": 1.3476,
-      "p3": 1.774
+      "p1": 1.748,
+      "p2": 1.3274,
+      "p3": 1.3141
     },
     "s3": {
-      "p1": 1.9641,
-      "p2": 1.3416,
-      "p3": 1.7993
+      "p1": 1.9058,
+      "p2": 1.3247,
+      "p3": 1.3515
     }
   },
   "crisis_alpha": [
     {
       "name": "GFC",
-      "s1_ret": -0.0361,
-      "s3_ret": -0.03,
-      "alpha": 0.0061
+      "s1_ret": -0.2916,
+      "s3_ret": -0.2261,
+      "alpha": 0.0654
     },
     {
       "name": "FlashCrash",
-      "s1_ret": 0.3828,
-      "s3_ret": 0.3828,
+      "s1_ret": 0.433,
+      "s3_ret": 0.433,
       "alpha": 0
     },
     {
       "name": "EuroCrisis",
-      "s1_ret": 0.0921,
-      "s3_ret": 0.075,
-      "alpha": -0.0171
+      "s1_ret": 0.1617,
+      "s3_ret": 0.1457,
+      "alpha": -0.016
     },
     {
       "name": "ChinaShock",
-      "s1_ret": 0.1024,
-      "s3_ret": 0.1024,
+      "s1_ret": 0.0828,
+      "s3_ret": 0.0828,
       "alpha": 0
     },
     {
       "name": "VolMaggedon",
-      "s1_ret": -0.143,
-      "s3_ret": -0.143,
+      "s1_ret": -0.0957,
+      "s3_ret": -0.0957,
       "alpha": 0
     },
     {
       "name": "Covid",
-      "s1_ret": -0.0428,
-      "s3_ret": -0.0477,
-      "alpha": -0.0049
+      "s1_ret": -0.2215,
+      "s3_ret": -0.169,
+      "alpha": 0.0526
     },
     {
       "name": "Inflation",
-      "s1_ret": -0.0587,
-      "s3_ret": -0.0587,
+      "s1_ret": -0.0058,
+      "s3_ret": -0.0058,
       "alpha": 0
     },
     {
       "name": "TariffTantrum",
-      "s1_ret": 0.1686,
-      "s3_ret": 0.1686,
+      "s1_ret": -0.0329,
+      "s3_ret": -0.0329,
       "alpha": 0
     }
   ],
   "bad_normal": {
-    "sr_normal": 1.6374,
-    "sr_bad": 1.8635,
-    "ratio": 0.1381,
-    "good_n_months": 167,
+    "sr_normal": 1.6777,
+    "sr_bad": 1.6392,
+    "ratio": 0.0229,
+    "good_n_months": 171,
     "bad_n_months": 56
   },
   "lead_time": {
     "stress_signals": {
-      "GFC": 61,
-      "FlashCrash": {},
-      "EuroCrisis": {},
-      "ChinaShock": 61,
-      "VolMaggedon": 30,
-      "Covid": {},
-      "Inflation": {}
+      "GFC": 59,
+      "FlashCrash": null,
+      "EuroCrisis": null,
+      "ChinaShock": 63,
+      "VolMaggedon": 59,
+      "Covid": null,
+      "Inflation": null
     },
-    "median_lead_days": 61
+    "median_lead_days": 59
   },
   "pit_compliance": {
     "C1_full_sample": "PASS — rolling 36-month decay fit only",
@@ -137,6 +134,5 @@
       "pillar_b_method": "Hyperbolic decay K/(1+λt) (Lee 2025)",
       "pillar_c_method": "Black-Litterman 2-asset (Black-Litterman 1992 / Shu-Mulvey 2024)"
     }
-  },
-  "subperiod_stability_score_s3": 0.8107
+  }
 }
