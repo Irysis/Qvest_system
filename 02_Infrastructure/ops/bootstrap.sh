@@ -138,7 +138,8 @@ if [ -f "$WT_TIMELINE_R" ]; then
 fi
 
 # 7d. v7.2.1 — v8 Readiness Gate (read-only, --no-write production 무손상)
-#     14 check 중 e2e_kernel + timeline_generation은 no-write 시 SKIP 정상 (12 PASS + 2 SKIP 기대값)
+#     15 check 중 e2e_kernel + timeline_generation은 no-write 시 SKIP 정상 (13 PASS + 2 SKIP 기대값)
+#     memory_health check은 cached memory_health_latest.json read
 QV8_CLI="$PROJECT/02_Infrastructure/tools/qvest_v8_ready"
 if [ -f "$QV8_CLI" ]; then
   V8_JSON=$(bash "$QV8_CLI" --no-write --json 2>/dev/null || echo "{}")
@@ -146,7 +147,7 @@ if [ -f "$QV8_CLI" ]; then
   V8_PASS=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('pass','?'))" 2>/dev/null || echo "?")
   V8_FAIL=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('fail','?'))" 2>/dev/null || echo "?")
   V8_SKIP=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('skip','?'))" 2>/dev/null || echo "?")
-  echo "[boot] v8 readiness (--no-write): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상)"
+  echo "[boot] v8 readiness (--no-write, 15 check): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
   if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
     echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
   fi

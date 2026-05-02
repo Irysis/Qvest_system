@@ -6,18 +6,18 @@ v7.0 Hardening + v7.1-lite 패치 완료 후, v8.0 설계 착수 전 자동 판�
 
 ## 목적
 
-v8.0은 자기진화형 연구 OS 단계. 설계 착수 전 v7.x kernel + observability + legacy 격리가 안정적이어야. 이 gate는 14 check를 자동 실행해서 PASS/FAIL/WARN 판정.
+v8.0은 자기진화형 연구 OS 단계. 설계 착수 전 v7.x kernel + observability + legacy 격리가 안정적이어야. 이 gate는 15 check를 자동 실행해서 PASS/FAIL/WARN 판정.
 
 ## v8 설계 착수 조건
 
 다음 조건 모두 충족 시 `ready_for_v8_design = true`:
 
-1. **strict mode**: 14 check 모두 PASS
+1. **strict mode**: 15 check 모두 PASS
 2. **non-strict mode**: FAIL 0건 + WARN 허용 (단 critical check는 strict 필수)
 3. **3-day soak**: 최근 3일 내 readiness gate 2회 이상 실행 + critical_failure_count = 0
 4. **Human 확인**: v8 설계 착수 전 도훈 명시 승인
 
-## 14 Checks
+## 15 Checks
 
 | ID | 의미 | 도구 |
 |---|---|---|
@@ -35,6 +35,7 @@ v8.0은 자기진화형 연구 OS 단계. 설계 착수 전 v7.x kernel + observ
 | registry_integrity | strategy_registry.json + book_state parse OK | jsonlite |
 | release_metadata | v7.0.1 + v7.1.0 tag + CHANGELOG | git tag + grep |
 | soak_record | 3-day soak 2회+ critical 0 | qepm/observability/readiness/soak_log.json |
+| **memory_health** (v7.2.1) | Memory Knowledge Health hard=0 + warn count | `02_Infrastructure/memory/memory_knowledge_health.R` (no_write 시 `qepm/observability/memory_health_latest.json` cached read) |
 
 ## PASS / FAIL / WARN 의미
 
