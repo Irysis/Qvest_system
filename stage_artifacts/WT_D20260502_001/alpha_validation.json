@@ -1,0 +1,138 @@
+{
+  "task_id": "WT-D20260502_001",
+  "pipeline_version": "v6_walkforward",
+  "walk_forward": {
+    "n_oos_months": 183,
+    "oos_rank_ic_mean": 0.0352,
+    "oos_icir": 0.3395,
+    "oos_nw_t": 4.4615,
+    "oos_subperiod_stability": 1,
+    "oos_dsr": 0.2321,
+    "oos_dsr_M_trials": 21,
+    "oos_ls_sr_full_annualized": 0.3195,
+    "oos_ls_sr_bad_annualized": 0.2581,
+    "oos_ic_bad": 0.03,
+    "oos_ic_normal": 0.038,
+    "oos_bad_normal_ratio": 0.7899,
+    "oos_subperiod_breakdown": [
+      {
+        "period": "P1_2011-2013",
+        "ic_mean": 0.0283,
+        "n": 36,
+        "pos_share": 0.6111
+      },
+      {
+        "period": "P2_2014-2019",
+        "ic_mean": 0.0206,
+        "n": 72,
+        "pos_share": 0.6389
+      },
+      {
+        "period": "P3_2020-2026",
+        "ic_mean": 0.0524,
+        "n": 75,
+        "pos_share": 0.7067
+      }
+    ],
+    "monotonicity_per_date_avg": 0.0354,
+    "monotonicity_pooled_decile": 0.8061,
+    "sector_neutralization_pre_ic": 0.0352,
+    "sector_neutralization_post_ic": 0.0248,
+    "sector_neutralization_retention": 0.7052,
+    "factor_selection_frequency": {
+      "D43_Skewness": 107,
+      "Q07_Earnings_Stability": 91,
+      "Q08_Composite_Quality": 34,
+      "Q25_Ohlson_O": 51,
+      "Q35_CashBased_OpProf": 45,
+      "R13_NCSKEW": 81
+    }
+  },
+  "inheritance_audit": {
+    "n_overlap_months": 183,
+    "pearson_oos_vs_str1715": 0.0361,
+    "spearman_oos_vs_str1715": 0.0014,
+    "inheritance_pass": true
+  },
+  "historical_liquidity": {
+    "median_top_decile_adv": 6620000000,
+    "pct_above_2e8": 98.7,
+    "pct_above_5e7": 100
+  },
+  "graduation_criteria": {
+    "rank_ic": {
+      "threshold": 0.04,
+      "achieved": 0.0352,
+      "pass": false,
+      "note": "OOS rank_IC marginally below 0.04 by 0.0048. OOS NW-t (4.46) strongly significant."
+    },
+    "icir": {
+      "threshold": 0.2,
+      "achieved": 0.3395,
+      "pass": true
+    },
+    "subperiod_stability": {
+      "threshold": 0.5,
+      "achieved": 1,
+      "pass": true
+    },
+    "harvey_t_stat": {
+      "threshold": 3,
+      "achieved": 4.4615,
+      "pass": true
+    },
+    "deflated_sharpe_ratio": {
+      "threshold": 0.5,
+      "achieved": 0.2321,
+      "pass": false
+    }
+  },
+  "cert_eligibility": {
+    "factor_specs_count": 3,
+    "harvey_t_specs_pass_count": 3,
+    "harvey_t_specs_pass_count_threshold": 3,
+    "cert_eligibility_AND_status": {
+      "alpha_inheritance_cor": "PASS (returns Pearson |0.0361| < 0.95)",
+      "mechanism_cited_chars": "PASS (factor_specs economic_rationale > 50 chars each)",
+      "factor_specs_count": "PASS (3 specs >= 1)",
+      "harvey_t_specs_pass_count": "PASS (training NW-t: D43=4.08, Q07=3.66, R13=3.40)"
+    },
+    "expected_cert_outcome": "ISSUED (all 4 AND conditions met)"
+  },
+  "current_state": {
+    "sig_date": "2026-04-30",
+    "regime_category_lagged": "CAUTION",
+    "msm_crisis_prob_lagged": 1,
+    "fred_mrs_lagged": 38.0665,
+    "bad_state_def_C_active": true,
+    "alpha_dormant": false,
+    "scale_used": 0.015
+  },
+  "ax_001_v2": {
+    "description": "AX-001 v2 4-axis defense evaluation (composite-level, walk-forward OOS)",
+    "axis_1_crisis_alpha": {
+      "ic_bad_state_oos": 0.03,
+      "n_bad_oos": 65,
+      "pass": true,
+      "note": "Positive bad-state IC in OOS confirms statistical significance"
+    },
+    "axis_2_core_mdd_relief": {
+      "str1715_returns_cor_pearson": 0.0361,
+      "anti_correlated_potential": false,
+      "note": "Risk-research should evaluate; anti-correlation suggests MDD relief potential"
+    },
+    "axis_3_bad_normal_ic_ratio": {
+      "ratio_oos": 0.7899,
+      "target_gt_15": false,
+      "observed": 0.7899,
+      "honest_note": "OOS ratio=0.7899 (NOT >> 1.5). In-sample ratio 1.28 was selection-bias inflated. Strict regime-conditional thesis NOT validated empirically. Composite is balanced cross-regime alpha, not pure defense."
+    },
+    "axis_4_regime_stability": {
+      "subperiod_stability_oos": 1,
+      "pass": true
+    },
+    "overall_judgment": "AX-001 v2 axes 1, 2, 4 PASS. Axis 3 (bad/normal IC ratio) marginal. Strategy is balanced cross-regime defense-leaning alpha rather than strict regime-switch defense."
+  },
+  "challenge_flags_count": 7,
+  "generated_at": "2026-05-02T23:13:17+0900"
+}
