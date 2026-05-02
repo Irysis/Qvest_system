@@ -219,7 +219,9 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 부팅 직후 체크리스트 (v6.31 갱신)
+## 부팅 직후 체크리스트 (v7.2.1 갱신 — 9 → 13건)
+
+### v6.x 베이스 (9건)
 
 1. ✅ `02_Infrastructure/worktask/` 존재 확인
 2. ✅ Agent registry에 `alpha-research`, `risk-research`, `optimizer-research` 등록 확인
@@ -231,12 +233,24 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 8. ✅ `02_Infrastructure/hooks/_archive_v55/` 폐기 Hook 6종 archive 확인
 9. ✅ Git tag `pre-qepm-3agent-migration` 존재 (rollback 지점)
 
+### v7.2.1 신규 (4건)
+
+10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=≤6 info=N`). HARD ≥1 이면 즉시 중단. 출력: `qepm/observability/memory_health_latest.json`
+11. ✅ **Axiom SOT 3축 동기화** 부트 메시지 확인 (`[boot] Axioms: active=N candidates=M (sot_map documented=8: documented=3 / block=1 / advisory=4)`). primary (`active/AX-*.json`) ↔ documented (`.claude/rules/axioms.md`) 8:8 일치 = `memory_knowledge_health.R` HARD 3 PASS
+12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write): PASS — pass=12 fail=0 skip=2`). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상
+13. ✅ **Cache_core sync** 부트 메시지 확인 (`[boot] Cache_core: FULL (8)` 또는 `STALE (n vs 8 — derived cache, WARN only)`). STALE은 hard fail 아님 (axiom_sot_map.json sot_definition.hard_fail_basis = primary↔documented만)
+
 체크 실패 시 → `next_session_task.md` 참조 + 복구.
 
 **v6.31 Health Score Tier 의미**:
 - **Healthy ≥ 90**: 모든 active book strategy가 5 certificate 보유 + divergence < 0.3pp
 - **Warning 70~89**: 일부 certificate 누락 또는 divergence 0.3~0.6pp
 - **Drifted < 70**: certificate 다수 부재 또는 fabrication 의심 (Charter §9 SIGNIFICANT_DRAG / FABRICATION_SUSPECTED)
+
+**v7.2.1 Memory Knowledge Health 의미**:
+- **HARD 6**: active axiom JSON parse / 필수 metadata 6 fields / sot_map active↔documented 일치 / dep+active duplicate / review --all dry-run 안전 / promote helper selftest
+- **WARN 6**: L-code outliers / stale candidate 90+d / review_log schema variants / external memory indexed (INFO 격하) / enforcement claim ↔ hook 강제력 / regime_validation parse + cache_core STALE
+- HARD ≥1 = bootstrap 중단 후 Q-Lead 즉시 수정. WARN은 정보 표시만 (현재 baseline: warn=3 정상)
 
 ---
 
@@ -279,6 +293,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ## Version
 
+- **v7.2.1-boot** — 2026-05-02 Session 76 — **부팅 시퀸스 v7.2.1 자원 11항 통합**. bootstrap.sh Step 4 교체 (`memory_knowledge_health.R` foreground hard 6 + warning 6) + Step 4b 신규 (`memory_metadata_normalize.R` selftest 2/2) + Step 4c 신규 (`lcode_corpus_rebuild.R` 백그라운드, 4 source 통합) + Step 7d 신규 (`qvest_v8_ready --no-write --json` 12/14 PASS + 2 SKIP 정상) + Step 8 확장 (axiom sot_map 기반 documented_active count + enforcement_mode 분류 documented/block/advisory + cache_core sync 표시). 부팅 직후 체크리스트 9 → 13건 확장. baseline: HARD 0 / WARN 3 / INFO 1 PASS.
 - **v6.3.3** — 2026-05-01 Session 75 — **v6.0 Codex Critic Round 의무 3중 장치 영구 정착**. 본 cycle WT-D20260501_001 alpha+risk codex round 누락 (도훈 지적) → 4-Layer 진단 (Q-Lead 인지 40% + spawn prompt 30% + agent 자율 무시 15% + Hook regex 갭 15%). 3중 장치 fix: (A) `CLAUDE.md` Level 0 `## v6.0 Codex Critic Round 의무` 신규 명문화 / (B) PreToolUse Hook `codex_round_pre_enforcer.sh` 신규 (130 LoC, final {role}_package.json 작성 시 _draft + critic_response 부재 block + waiver via challenge_note.md) / (C) `qlead_spawn_template.md` 신규 (5단계 흐름 + Self-Check + 6 role 적용 대상). settings.json PreToolUse Hook 17→18. 사후 alpha+risk codex round background spawn. L-269 적립.
 - **v6.3.2** — 2026-05-01 Session 75 — **Cert Auto-Issuance Paths 명문화 + Layer 4 영구 deferred 확정**. (1) `.claude/settings.json` `hooks.FileChanged` array 영구 제거 (Layer 4 inconclusive 결론, B-3 채택). (2) 신규 `02_Infrastructure/worktask/cert_issuance_paths.md` SOT — Claude Code Write/Edit tool 경유 시 5 cert PostToolUse Hook 100% 자동 발급, Bash/Rscript/외부 editor 시 Layer 2 bootstrap sweep 사후 backfill 매트릭스 6 row + 운영 권장 패턴. E2E dry-run 6/6 PASS (alpha_discovery + sr_provenance + forge_package_validated + schedule_fidelity 4 cert auto-issue + 음의 시나리오 cert 부재 admit 차단 + Hard block fabrication label PASS) 입증 후 발행. L-267/L-268.
 - **v6.31** — 2026-04-28 — **Alpha Discovery Certification + Research Process Coherence System**. Charter v1.2 §10 (5 certificate + 1 health score + 4 role card) + Positive Hook 패러다임 (Opus 4.7 정합) + hard block 2건 한정. STR_1715 OVERRIDE_006 사후 atomic patch.
