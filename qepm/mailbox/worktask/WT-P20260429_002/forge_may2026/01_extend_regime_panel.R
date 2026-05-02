@@ -72,8 +72,24 @@ build_regime_features <- function(me) {
   win_60 <- BM_DT[Date <= me & Date >  me - 90]
   if (nrow(win_60) < 30L) return(NULL)
   rv60 <- sd(win_60[[bm_ret_col]], na.rm = TRUE) * sqrt(252)
-  win_21 <- BM_DT[Date <= me & Date > me - 35]
-  ret_1m <- if (nrow(win_21) >= 5L) prod(1 + win_21[[bm_ret_col]], na.rm = TRUE) - 1 else NA_real_
+
+  # ---- ret_1m FIX (도훈 지적, v7.2.1 patch): 전전월말 → 전월말 close-to-close ----
+  # OLD (잘못된 정의): win_21 = (me-35, me]  → 35 cal day rolling, 월 경계 무시.
+  #   문제: me=2026-04-30일 때 win에 3/27, 3/30, 3/31 등 전월 말일 데이터 포함.
+  #   3/31 -4.26% 폭락 + 4/1 +8.44% 반등이 같은 win에 들어가 상쇄 → +22.53% (왜곡).
+  # NEW (월간 리밸런싱 정합): me close ÷ prev_month_end close - 1
+  #   = BM_Close[me] / BM_Close[직전 월의 max(Date)] - 1
+  #   = 4월 한 달 순수 수익률 (월간 리밸런싱 시점 정의에 부합).
+  me_close_row <- BM_DT[Date == me]
+  me_close <- if (nrow(me_close_row) >= 1L) me_close_row[["BM_Close"]][1L] else NA_real_
+  me_ym <- format(me, "%Y-%m")
+  prev_me <- BM_DT[format(Date, "%Y-%m") != me_ym & Date < me, max(Date)]
+  prev_close_row <- BM_DT[Date == prev_me]
+  prev_close <- if (nrow(prev_close_row) >= 1L) prev_close_row[["BM_Close"]][1L] else NA_real_
+  ret_1m <- if (!is.na(me_close) && !is.na(prev_close) && prev_close > 0) {
+    me_close / prev_close - 1
+  } else NA_real_
+
   win_252 <- BM_DT[Date <= me & Date > me - 380]
   if (nrow(win_252) < 20L) {
     dd_12m <- NA_real_
