@@ -33,6 +33,36 @@
         },
         "response_file": "qepm/mailbox/worktask/WT-D20260502_001/codex_critic_response_alpha-research.json"
       }
+    },
+    {
+      "timestamp": "2026-05-02T23:31:42+09:00",
+      "event_type": "QLEAD_DECISION_HYBRID_C_CONTINUE_WITH_TITLE_REVISION",
+      "actor": "q-lead",
+      "decision": "C_HYBRID",
+      "rationale": "Alpha agent honest reporting: 원래 가설 (defense regime-conditional) NOT validated in walk-forward OOS (bad/normal IC ratio 0.79 reversed from in-sample 1.28, AX-001 v2 axis 3 FAIL). 그러나 발견 alpha는 다른 측면에서 valid: cor STR_1715 returns 0.036 TRUE diversifier (L-270 returns level cor 0.717 사례 학습 적용), ICIR 0.34 PASS, NW-t 4.46 Harvey 통과, stability 1.0, monotonicity 0.806, sector-neutral 70.5% retention, harvey_t_count=3 cert ISSUED expected. 약점 — rank_IC OOS 0.0352 < 0.04 (-12%), DSR M=21 honest 0.232 < 0.5 strict. Q-Lead 결정: cert 4 AND 충족 (PG1 unblocked from cert system) + diversifier 가치 진짜 → risk + optimizer + forge cascade 진행 후 portfolio-level SR로 최종 판단. graduation criteria (DSR/rank_IC) 적용은 governor 단계 책임. statistical-defense.md '허들 하향 금지' 정합 — alpha 단계 abort vs governor 단계 deny는 다른 layer.",
+      "title_revision": {
+        "original": "Macro Regime-Conditional Profitability Defense — Bad-Regime Crisis Alpha Activation",
+        "revised": "Cross-Regime Quality + Tail-Skewness Composite (TRUE Diversifier vs STR_1715, walk-forward auto-selected D43+R13+Q07)",
+        "reason": "Walk-forward OOS bad/normal IC ratio reversal — defense thesis invalidated, but cross-regime balanced + true diversifier alpha discovered. 정직 명세 (8원칙 #4 구체적, 5금지 자기합리화 회피)."
+      },
+      "deferred_decisions": {
+        "rank_ic_waiver": "OOS 0.0352 < 0.04 graduation threshold. Defer to governor PG1 admission decision.",
+        "dsr_waiver": "M=21 honest DSR 0.232 < 0.5. statistical-defense.md strict — governor 단계 admission deny 사유 가능. 그러나 alpha 단계 abort 사유 아님 (cert 4 AND 충족)."
+      },
+      "next_agent_directives": {
+        "risk-research": [
+          "alpha is balanced cross-regime, NOT regime-switching defense — covariance + tail estimation에 defense assumption inheritance 금지",
+          "AX-001 v2 axis 3 (bad/normal IC ratio) FAIL 명시",
+          "STR_1715 returns Pearson cor 0.036 (TRUE diversifier) — TDC + crowding 측정 시 활용",
+          "AX-007 single-sleeve top20 mechanism break 위험 검증 (4 예외 적용 가능 여부)"
+        ]
+      },
+      "axiom_compliance": {
+        "AX-000": "한계 없음 — 진행 결정은 가설 abort가 아닌 cascade 검증",
+        "AX-001_v2": "axis 3 FAIL이지만 axis 1/2/4 검증은 risk + governor 단계로 위임",
+        "AX-002": "프로세스 우회 X — cert 4 AND 충족 후 정상 cascade",
+        "AX-008": "Verification Triangulation — Forge + Codex + Architect 2/3 PASS는 governor 단계 cert audit"
+      }
     }
   ]
 }
