@@ -4,7 +4,10 @@
   "type": "methodological",
   "polarity": "negative",
   "statement_draft": "[방법론 실패 규칙 CANDIDATE 2/3] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 2 supporting cases 현재 확정: L-160 (STR_1683 Distress+Calmar Defense, IC 0.22 ICIR 1.88), L-165 (STR_1685 Multi-Source Defense Anchor, ICIR 0.7371~0.9368). L-161 (STR_1684 KR momentum inverse)는 **separate track** (AX_CAND_kr_momentum_inverse). 3rd member 축적 대기 — H_1689 v3/H_1692 v2/H_1693 S1 결과에 따라 trigger 가능.",
-  "supporting_l_codes": ["L-160", "L-165"],
+  "supporting_l_codes": [
+    "L-160",
+    "L-165"
+  ],
   "scope_draft": {
     "market": "KR",
     "factor_family": "defense_primary (Signal-Portfolio Translation Failure pattern)",
@@ -20,15 +23,22 @@
       "long-short structure (market-neutral, beta-neutral) — scope 밖",
       "L-161 STR_1684 KR momentum inverse: separate AX_CAND_kr_momentum_inverse track, **본 family 멤버 아님** (team-lead 2026-04-19 정정)"
     ],
-    "tags": ["SIGNAL_PORTFOLIO_TRANSLATION_FAILURE", "ICIR_HIGH_MDD_CATASTROPHIC", "LONG_ONLY_CONCENTRATION_TRAP"]
+    "tags": [
+      "SIGNAL_PORTFOLIO_TRANSLATION_FAILURE",
+      "ICIR_HIGH_MDD_CATASTROPHIC",
+      "LONG_ONLY_CONCENTRATION_TRAP"
+    ]
   },
   "evidence_draft": {
     "independent_l_codes": 2,
     "l_160_initiator": "STR_1683 H_1682 Distress+Calmar Defense. IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 60/40 MDD 94.66/SR -0.242, V2 50/50 MDD 95.63/SR -0.291, V3 Q25-only MDD 67.27/SR 0.009, V4 R16-only MDD 91.62/SR -0.206 (all Hard Fail).",
     "l_165_2nd_member": "STR_1685 H_1690 Multi-Source Defense Anchor. V1 ICIR 0.7371 + V2 ICIR 0.9368 + V3 ICIR 0.7778 positive → V1 MDD 94.69 SR -0.29, V2 MDD 84.70 SR -0.17, V3 MDD 77.21 SR 0.52, V4 MDD 87.66 SR -0.14 (all Grade F).",
     "independent_strategies": 2,
-    "strategies": ["STR_1683_H_1682_distress_calmar_defense", "STR_1685_H_1690_multi_source_defense_anchor"],
-    "effect_direction_consistency": 1.0,
+    "strategies": [
+      "STR_1683_H_1682_distress_calmar_defense",
+      "STR_1685_H_1690_multi_source_defense_anchor"
+    ],
+    "effect_direction_consistency": 1,
     "trigger_status_final": "**2/3 TRIGGER** — 3rd member 대기 중 (Session 68 Day 2~3 H_1689 v3/H_1692 v2/H_1693 S6 verdict 예상 timing).",
     "note": "L-160 + L-165 = 2 supporting L-codes + 2 independent strategies + 2 cases 방향 일관. 공식 AX 승격은 3 supporting L-codes 조건 미달 → promote.R 보류."
   },
@@ -37,7 +47,7 @@
       {
         "description": "STR_1683 H_1682 Distress+Calmar Defense 4 variants — IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 MDD 94.66 SR -0.242, V2 MDD 95.63 SR -0.291, V3 MDD 67.27 SR 0.009, V4 MDD 91.62 SR -0.206 (all Hard Fail)",
         "result": "reproduced_failure",
-        "effect_retained": 0.90,
+        "effect_retained": 0.9,
         "mdd": 0.9466,
         "cagr": "negative",
         "note": "signal quality 강력함에도 portfolio 수익화 전면 실패. L-160 initiator (original Signal-Portfolio Translation Failure case)."
@@ -64,7 +74,7 @@
   },
   "oos_validation_draft": {
     "oos_months": "N/A (both strategies S1 complete, Hard Fail pre-S6/OOS)",
-    "oos_effect_vs_is": 0.0,
+    "oos_effect_vs_is": 0,
     "calculation_method": "2 strategies 전수 Hard Fail (in-sample 단계에서 이미 실패)",
     "note": "Translation failure는 in-sample backtest에서 발견 가능한 structural pattern."
   },
@@ -92,18 +102,18 @@
     "alternative": "향후 Defense family or Core_Secondary family top-20 long-only 구조적 실패 case"
   },
   "team_lead_5axis_preliminary_assessment_previous": {
-    "I_independence": 0.80,
-    "R_rigor": 1.00,
+    "I_independence": 0.8,
+    "R_rigor": 1,
     "F_falsification": 0.85,
-    "E_external": 0.70,
-    "M_mechanism": 0.80,
+    "E_external": 0.7,
+    "M_mechanism": 0.8,
     "weighted_total_preliminary": 0.83,
     "status": "suspended_pending_3rd_member"
   },
   "governor_promote_attempt_history": {
     "attempt_1_2026_04_19_12_52": {
       "weighted_actual": 0.65,
-      "threshold": 0.80,
+      "threshold": 0.8,
       "result": "FAIL",
       "root_cause": "lcode_corpus grade 필드 문제 (L-160/L-161 INFRASTRUCTURE, L-165 미등록). 또한 supporting L-codes에 L-161 잘못 포함된 상태였음",
       "review_log": "qepm/memory/axioms/review_log/AX-PENDING_CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165_20260419_125205.json",
@@ -116,5 +126,12 @@
   "created_by": "Governor (team-lead correction 2026-04-19)",
   "approved_by": "team-lead (2026-04-19 Judge custodian 3건 판정 + promote 보류 지시)",
   "supersedes": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165.json (L-161 잘못 포함 → deprecated 이동)",
-  "revision_note": "team-lead 2026-04-19 14:00 정정 수용: (1) L-161은 separate track AX_CAND_kr_momentum_inverse, 본 family 멤버 아님, (2) 현재 2/3 TRIGGER 상태 유지, (3) promote.R 실행 보류, (4) 3rd member 축적 시 즉시 promote 재개, (5) H_1693은 AX-005 EXCLUSION 시도 — 성공 시 3rd member 회피."
+  "revision_note": "team-lead 2026-04-19 14:00 정정 수용: (1) L-161은 separate track AX_CAND_kr_momentum_inverse, 본 family 멤버 아님, (2) 현재 2/3 TRIGGER 상태 유지, (3) promote.R 실행 보류, (4) 3rd member 축적 시 즉시 promote 재개, (5) H_1693은 AX-005 EXCLUSION 시도 — 성공 시 3rd member 회피.",
+  "memory_id": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_pending_3rd",
+  "canonical_statement": "[방법론 실패 규칙 CANDIDATE 2/3] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 2 supporting cases 현재 확정: L-160 (STR_1683 Distress+Calmar Defense, IC 0.22 ICIR 1.88), L-165 (STR_1685 Multi-Source Defense Anchor, ICIR 0.7371~0.9368). L-161 (STR_1684 KR momentum inverse)는 **separate track** (AX_CAND_kr_momentum_inverse). 3rd member 축적 대기 — H_1689 v3/H_1692 v2/H_1693 S1 결과에 따라 trigger 가능.",
+  "memory_kind": "axiom_deprecated",
+  "axiom_class": "methodological",
+  "authority": "retired",
+  "review_policy": "retired",
+  "enforcement_mode": "none"
 }

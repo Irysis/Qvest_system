@@ -414,6 +414,20 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   )
 
   out_path <- file.path(active_dir, paste0(ax_id, ".json"))
+
+  # ─── v7.2.1 metadata normalize (객체 dry-run, scoring logic 변경 X) ───
+  source(file.path(.px_root(),
+                   "02_Infrastructure/memory/memory_metadata_normalize.R"))
+  axiom <- normalize_axiom_metadata(
+    axiom = axiom,
+    axiom_class = candidate$type %||% "methodological",
+    memory_kind = "axiom_active",
+    authority = "high",
+    review_policy = "quarterly",
+    enforcement_mode = "documented",
+    write = FALSE
+  )
+
   write_json(axiom, out_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
   cat(sprintf("[promote] 승격 → %s\n", out_path))
   out_path

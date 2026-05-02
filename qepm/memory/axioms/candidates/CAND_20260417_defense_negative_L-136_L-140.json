@@ -4,27 +4,53 @@
   "type": "methodological",
   "polarity": "negative",
   "statement_draft": "[방법론 실패 규칙] KR defense standalone long-only low-beta (BAB Frazzini-Pedersen 2014) 또는 Q07+D25 single-sleeve combo는 구조적 실패. (1) BAB 2020년대 이후 ETF 유입으로 약화, (2) D25+Q07 CAGR 2.59% 정상구간 기회비용 과대. EXCLUSION: multi-sleeve portfolio 내 defense sleeve(STR_1679 Core+Def, STR_905 3-sleeve 등)는 AX-001에 따라 조건부 성과로 평가, scope 밖. Governor STR_1439(SR 1.532, MDD 19.17%, novelty 10)도 scope 밖.",
-  "supporting_l_codes": ["L-136", "L-140"],
+  "supporting_l_codes": [
+    "L-136",
+    "L-140"
+  ],
   "scope_draft": {
     "market": "KR",
     "factor_family": "defense",
     "regime": null,
     "mode": "standalone_long_only_low_beta_or_low_CAGR",
-    "construction_types": ["BAB_standalone", "Q07_D25_single_sleeve_combo"],
+    "construction_types": [
+      "BAB_standalone",
+      "Q07_D25_single_sleeve_combo"
+    ],
     "exclusion": "defense sleeve within multi-sleeve portfolio (STR_1679 Core+Def, STR_905 3-sleeve). AX-001: Defense는 조건부 성과로 평가. STR_1439(SR 1.532, novelty 10, defensive but multi-factor structure)는 scope 밖."
   },
   "evidence_draft": {
     "independent_l_codes": 2,
     "independent_strategies": 2,
-    "strategies": ["STR_1662_defense_D25_Q07", "STR_1642_lowbeta_3f"],
-    "effect_direction_consistency": 1.0,
+    "strategies": [
+      "STR_1662_defense_D25_Q07",
+      "STR_1642_lowbeta_3f"
+    ],
+    "effect_direction_consistency": 1,
     "note": "2건 모두 standalone mode. BAB 및 D25+Q07 combo 방어 부적합 확인."
   },
   "falsification_draft": {
     "attempts": [
-      {"description": "STR_1662 D25(Accounting Beta)+Q07(Earnings Stability) standalone combo — MDD 10.2% 방어 달성하나 CAGR 2.59% LOW_CAGR_BAR(<5%) 미달", "result": "reproduced_failure", "effect_retained": 0.65, "mdd": 0.102, "cagr": 0.0259, "note": "정상구간 기회비용 과대, defense sleeve CAGR 최소 5% 미달"},
-      {"description": "STR_1642 LowBeta 3F standalone (Frazzini&Pedersen 2014 BAB) — OOS retention -0.35/-0.02, recent 3Y SR 0.28/-0.035 alpha decay", "result": "reproduced_failure", "effect_retained": 0.35, "note": "BAB KR 2020년대 구조적 약화"},
-      {"description": "role_honesty_STR_1662a: honest=false (declared core_alpha but 0/0/0 score, ambiguous=true)", "result": "role_dishonesty_confirmed", "effect_retained": 0.8, "source": "stage_artifacts/role_honesty_STR_1662a.json"}
+      {
+        "description": "STR_1662 D25(Accounting Beta)+Q07(Earnings Stability) standalone combo — MDD 10.2% 방어 달성하나 CAGR 2.59% LOW_CAGR_BAR(<5%) 미달",
+        "result": "reproduced_failure",
+        "effect_retained": 0.65,
+        "mdd": 0.102,
+        "cagr": 0.0259,
+        "note": "정상구간 기회비용 과대, defense sleeve CAGR 최소 5% 미달"
+      },
+      {
+        "description": "STR_1642 LowBeta 3F standalone (Frazzini&Pedersen 2014 BAB) — OOS retention -0.35/-0.02, recent 3Y SR 0.28/-0.035 alpha decay",
+        "result": "reproduced_failure",
+        "effect_retained": 0.35,
+        "note": "BAB KR 2020년대 구조적 약화"
+      },
+      {
+        "description": "role_honesty_STR_1662a: honest=false (declared core_alpha but 0/0/0 score, ambiguous=true)",
+        "result": "role_dishonesty_confirmed",
+        "effect_retained": 0.8,
+        "source": "stage_artifacts/role_honesty_STR_1662a.json"
+      }
     ],
     "exception_counter": {
       "reproduced_success_exception": 0,
@@ -57,5 +83,12 @@
   "created_at": "2026-04-17T05:27:45+00:00",
   "enriched_at": "2026-04-17T16:00:00+00:00",
   "enriched_by": "judge_scope_restricted_v2",
-  "revision_note": "AX-005 v1 (scope too broad) deprecated 2026-04-17. Re-enrich with scope limited to standalone/single-sleeve modes + explicit exclusion for multi-sleeve portfolios (STR_1679, STR_1439, STR_905)."
+  "revision_note": "AX-005 v1 (scope too broad) deprecated 2026-04-17. Re-enrich with scope limited to standalone/single-sleeve modes + explicit exclusion for multi-sleeve portfolios (STR_1679, STR_1439, STR_905).",
+  "memory_id": "CAND_20260417_defense_negative_L-136_L-140",
+  "canonical_statement": "[방법론 실패 규칙] KR defense standalone long-only low-beta (BAB Frazzini-Pedersen 2014) 또는 Q07+D25 single-sleeve combo는 구조적 실패. (1) BAB 2020년대 이후 ETF 유입으로 약화, (2) D25+Q07 CAGR 2.59% 정상구간 기회비용 과대. EXCLUSION: multi-sleeve portfolio 내 defense sleeve(STR_1679 Core+Def, STR_905 3-sleeve 등)는 AX-001에 따라 조건부 성과로 평가, scope 밖. Governor STR_1439(SR 1.532, MDD 19.17%, novelty 10)도 scope 밖.",
+  "memory_kind": "axiom_candidate",
+  "axiom_class": "methodological",
+  "authority": "medium",
+  "review_policy": "quarterly",
+  "enforcement_mode": "none"
 }

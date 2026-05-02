@@ -4,7 +4,11 @@
   "type": "methodological",
   "polarity": "negative",
   "statement_draft": "[방법론 실패 규칙] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 3 supporting cases (L-160 STR_1683 Distress+Calmar Defense IC 0.22 ICIR 1.88, L-161 STR_1684 KR momentum inverse ICIR -0.187 CAPM beta 1.0007, L-165 STR_1685 Multi-Source Defense Anchor ICIR 0.7371~0.9368) 모두 4-variant all Hard Fail (MDD 60-95%, CAGR negative). EXCLUSION: (a) multi-sleeve 내 sleeve 구조 (20종목 이하 sub-sleeve + 전체 multi-sleeve portfolio) scope 밖, (b) long-short structure scope 밖. 범위: market=KR, universe=top-20_long-only, family=defense_or_core_secondary.",
-  "supporting_l_codes": ["L-160", "L-161", "L-165"],
+  "supporting_l_codes": [
+    "L-160",
+    "L-161",
+    "L-165"
+  ],
   "scope_draft": {
     "market": "KR",
     "factor_family": "defense_or_core_secondary (Signal-Portfolio Translation Failure pattern)",
@@ -21,7 +25,11 @@
       "long-short structure (market-neutral, beta-neutral) — scope 밖",
       "non-defense/non-core_secondary family (diversifier, ML, cash_allocation) — 3 case 추가 축적 필요"
     ],
-    "tags": ["SIGNAL_PORTFOLIO_TRANSLATION_FAILURE", "ICIR_HIGH_MDD_CATASTROPHIC", "LONG_ONLY_CONCENTRATION_TRAP"]
+    "tags": [
+      "SIGNAL_PORTFOLIO_TRANSLATION_FAILURE",
+      "ICIR_HIGH_MDD_CATASTROPHIC",
+      "LONG_ONLY_CONCENTRATION_TRAP"
+    ]
   },
   "evidence_draft": {
     "independent_l_codes": 3,
@@ -29,8 +37,12 @@
     "l_161_2nd_member": "STR_1684 H_1688 Residual Momentum baseline. ICIR -0.187 (Fix 1 scale invariance 동일 후) + CAPM beta 1.0007 residualization 실패 + KR momentum inverse structural. Hypothesis A Rouwenhorst 1999 + Asness 2013 primary.",
     "l_165_3rd_member": "STR_1685 H_1690 Multi-Source Defense Anchor. V1 ICIR 0.7371 + V2 ICIR 0.9368 + V3 ICIR 0.7778 positive → V1 MDD 94.69 SR -0.29, V2 MDD 84.70 SR -0.17, V3 MDD 77.21 SR 0.52, V4 MDD 87.66 SR -0.14 (all Grade F).",
     "independent_strategies": 3,
-    "strategies": ["STR_1683_H_1682_distress_calmar_defense", "STR_1684_H_1688_residual_momentum_baseline", "STR_1685_H_1690_multi_source_defense_anchor"],
-    "effect_direction_consistency": 1.0,
+    "strategies": [
+      "STR_1683_H_1682_distress_calmar_defense",
+      "STR_1684_H_1688_residual_momentum_baseline",
+      "STR_1685_H_1690_multi_source_defense_anchor"
+    ],
+    "effect_direction_consistency": 1,
     "note": "3 supporting L-codes + 3 independent strategies + 3 failures 방향 일관 (all Hard Fail / ICIR high or signal strong + portfolio catastrophic failure). 충분 evidence 누적."
   },
   "falsification_draft": {
@@ -38,7 +50,7 @@
       {
         "description": "STR_1683 H_1682 Distress+Calmar Defense 4 variants — IC 0.22 + ICIR 1.88 + FM t-stat strong → V1 MDD 94.66 SR -0.242, V2 MDD 95.63 SR -0.291, V3 MDD 67.27 SR 0.009, V4 MDD 91.62 SR -0.206 (all Hard Fail)",
         "result": "reproduced_failure",
-        "effect_retained": 0.90,
+        "effect_retained": 0.9,
         "mdd": 0.9466,
         "cagr": "negative",
         "note": "signal quality 강력함에도 portfolio 수익화 전면 실패. L-160 initiator (original Signal-Portfolio Translation Failure case)."
@@ -71,7 +83,7 @@
   },
   "oos_validation_draft": {
     "oos_months": "N/A (all 3 strategies S1 complete, Hard Fail pre-S6/OOS)",
-    "oos_effect_vs_is": 0.0,
+    "oos_effect_vs_is": 0,
     "calculation_method": "3 strategies 전수 Hard Fail (in-sample 단계에서 이미 실패) → OOS extension 불가. 단 translation failure는 in-sample backtest 단계에서 발견되므로 OOS 의존성 없음.",
     "note": "Translation failure는 in-sample backtest에서 발견 가능한 structural pattern. OOS 검증 불필요 (신호 강도 vs portfolio 성과 불일치가 즉시 관찰)."
   },
@@ -92,11 +104,11 @@
   "cluster_members_count": 3,
   "trigger_status": "3_of_3_TRIGGER_MET (ready for promotion)",
   "team_lead_5axis_preliminary_assessment": {
-    "I_independence": 0.80,
-    "R_rigor": 1.00,
+    "I_independence": 0.8,
+    "R_rigor": 1,
     "F_falsification": 0.85,
-    "E_external": 0.70,
-    "M_mechanism": 0.80,
+    "E_external": 0.7,
+    "M_mechanism": 0.8,
     "weighted_total_preliminary": 0.83,
     "methodological_weights": "I=0.15 R=0.20 F=0.30 E=0.15 M=0.20",
     "computation": "0.15*0.80 + 0.20*1.00 + 0.30*0.85 + 0.15*0.70 + 0.20*0.80 = 0.12 + 0.20 + 0.255 + 0.105 + 0.16 = 0.84 (표시 0.83, rounding 허용)",
@@ -109,5 +121,12 @@
   "approved_by": "team-lead (2026-04-19 decision 4 APPROVE + custodian decision 3건)",
   "judge_custodian_verdict": "APPROVE (MEMORY.md 13:05 entry + team-lead 13:XX 수신 transcript)",
   "supersedes": "CAND_20260419_signal_portfolio_translation_failure_L-125_L-160_L-165 (L-125 명칭 제거, L-161 편입)",
-  "revision_note": "team-lead 정정 수용: (1) L-125 명칭 제거 (Logistic regression 무관), (2) L-161 편입 (STR_1684 KR momentum inverse), (3) 3 supporting L-codes 확정 L-160+L-161+L-165, (4) 3/3 TRIGGER MET 상태, (5) 5축 예비 평가 0.83 (AX-003/AX-004/AX-005 comparable). promote_to_axiom() 실행 준비 완료."
+  "revision_note": "team-lead 정정 수용: (1) L-125 명칭 제거 (Logistic regression 무관), (2) L-161 편입 (STR_1684 KR momentum inverse), (3) 3 supporting L-codes 확정 L-160+L-161+L-165, (4) 3/3 TRIGGER MET 상태, (5) 5축 예비 평가 0.83 (AX-003/AX-004/AX-005 comparable). promote_to_axiom() 실행 준비 완료.",
+  "memory_id": "CAND_20260419_signal_portfolio_translation_failure_L-160_L-161_L-165",
+  "canonical_statement": "[방법론 실패 규칙] Signal-Portfolio Translation Failure family (L-160 initiator) — 한국시장 top-20 long-only 집중 portfolio 구조에서 신호 품질(IC/ICIR/FM t-stat)이 강력함에도 portfolio 수익화 실패하는 구조적 패턴. 3 supporting cases (L-160 STR_1683 Distress+Calmar Defense IC 0.22 ICIR 1.88, L-161 STR_1684 KR momentum inverse ICIR -0.187 CAPM beta 1.0007, L-165 STR_1685 Multi-Source Defense Anchor ICIR 0.7371~0.9368) 모두 4-variant all Hard Fail (MDD 60-95%, CAGR negative). EXCLUSION: (a) multi-sleeve 내 sleeve 구조 (20종목 이하 sub-sleeve + 전체 multi-sleeve portfolio) scope 밖, (b) long-short structure scope 밖. 범위: market=KR, universe=top-20_long-only, family=defense_or_core_secondary.",
+  "memory_kind": "axiom_deprecated",
+  "axiom_class": "methodological",
+  "authority": "retired",
+  "review_policy": "retired",
+  "enforcement_mode": "none"
 }

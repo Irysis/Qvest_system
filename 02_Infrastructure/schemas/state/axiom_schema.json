@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "qvest://schemas/state/axiom_schema.json",
+  "title": "Qvest Axiom Schema (v7.2.1)",
+  "description": "axiom_active / axiom_candidate / axiom_deprecated 통합 schema. Legacy field (id/name/text/grade) retain — 신규 필드는 additive only.",
+  "type": "object",
+  "required": [
+    "memory_id",
+    "memory_kind",
+    "axiom_class",
+    "authority",
+    "review_policy",
+    "enforcement_mode",
+    "canonical_statement"
+  ],
+  "properties": {
+    "memory_id": {
+      "type": "string",
+      "description": "Canonical id (axiom_id 또는 candidate_id). Fallback chain: memory_id → axiom_id → id → candidate_id."
+    },
+    "memory_kind": {
+      "type": "string",
+      "enum": [
+        "axiom_active",
+        "axiom_candidate",
+        "axiom_deprecated"
+      ],
+      "description": "Memory layer 분류. lesson/review_log/evidence_summary/regime_validation은 본 schema scope X (별도 schema)."
+    },
+    "axiom_class": {
+      "type": "string",
+      "enum": [
+        "constitutional",
+        "process",
+        "empirical",
+        "methodological"
+      ]
+    },
+    "authority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "retired",
+        "audit"
+      ]
+    },
+    "review_policy": {
+      "type": "string",
+      "enum": [
+        "skip",
+        "q_lead_approval",
+        "quarterly",
+        "retired"
+      ]
+    },
+    "enforcement_mode": {
+      "type": "string",
+      "enum": [
+        "documented",
+        "advisory",
+        "block",
+        "none"
+      ],
+      "description": "실제 hook/action 강제 수준. n/a 사용 X — candidate/deprecated는 'none'."
+    },
+    "canonical_statement": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Authoritative statement. Fallback chain: canonical_statement → statement → text → statement_draft."
+    },
+    "supersedes": {
+      "type": ["string", "array", "null"],
+      "items": {"type": "string"},
+      "description": "Optional: superseded predecessor memory_id (string or array for multi-supersede)."
+    },
+    "superseded_by": {
+      "type": ["string", "array", "null"],
+      "items": {"type": "string"},
+      "description": "Optional: this memory has been superseded by another."
+    },
+    "id": {"type": "string", "description": "Legacy field (axiom_active). Retained for backward compat."},
+    "axiom_id": {"type": "string", "description": "Legacy field. Retained for backward compat."},
+    "candidate_id": {"type": "string", "description": "Legacy field (axiom_candidate). Retained for backward compat."},
+    "name": {"type": "string"},
+    "text": {"type": "string"},
+    "statement": {"type": "string"},
+    "statement_draft": {"type": "string"},
+    "grade": {"type": "string"},
+    "type": {"type": "string"},
+    "polarity": {"type": "string"},
+    "level": {"type": "integer"},
+    "version": {"type": ["string", "integer"]},
+    "origin": {"type": "string"},
+    "l_code": {"type": "string"},
+    "supporting_l_codes": {"type": "array", "items": {"type": "string"}},
+    "applies_to": {"type": "array", "items": {"type": "string"}},
+    "scope": {"type": ["object", "string", "null"]},
+    "scope_draft": {"type": ["object", "null"]},
+    "evidence": {"type": ["object", "null"]},
+    "evidence_draft": {"type": ["object", "null"]},
+    "falsification": {"type": ["object", "null"]},
+    "falsification_draft": {"type": ["object", "null"]},
+    "mechanism": {"type": ["object", "null"]},
+    "mechanism_draft": {"type": ["object", "null"]},
+    "oos_validation": {"type": ["object", "null"]},
+    "oos_validation_draft": {"type": ["object", "null"]},
+    "promotion": {"type": ["object", "null"]},
+    "enforcement": {"type": "string"},
+    "schema_version": {"type": "string"},
+    "cluster_members_count": {"type": "integer"},
+    "status": {"type": "string"},
+    "created_at": {"type": "string"},
+    "updated_at": {"type": "string"},
+    "note": {"type": "string"},
+    "note_v7_2_1": {"type": "string"},
+    "deprecation_reason": {"type": "string"},
+    "deprecation_date": {"type": "string"}
+  },
+  "oneOf": [
+    {
+      "properties": {
+        "memory_kind": {"const": "axiom_active"},
+        "authority": {"enum": ["high"]},
+        "enforcement_mode": {"enum": ["documented", "advisory", "block"]}
+      }
+    },
+    {
+      "properties": {
+        "memory_kind": {"const": "axiom_candidate"},
+        "authority": {"enum": ["medium"]},
+        "enforcement_mode": {"enum": ["none"]}
+      }
+    },
+    {
+      "properties": {
+        "memory_kind": {"const": "axiom_deprecated"},
+        "authority": {"enum": ["retired"]},
+        "review_policy": {"enum": ["retired"]},
+        "enforcement_mode": {"enum": ["none"]}
+      }
+    }
+  ],
+  "additionalProperties": true
+}

@@ -280,6 +280,7 @@ SCHEMA_NAME_MAP = {
     "book_state": "state/book_state_schema.json",
     "governance_log": "state/governance_log_schema.json",
     "artifact_lineage": "state/artifact_lineage_schema.json",
+    "axiom": "state/axiom_schema.json",
 }
 
 
