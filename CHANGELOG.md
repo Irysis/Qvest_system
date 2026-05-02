@@ -5,6 +5,50 @@ All notable changes to Qvest are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
+## [v7.2.1] — 2026-05-02
+
+**Memory Knowledge Hardening Patch** — Memory layer SOT/enforcement/safety 정합화 (도훈 audit-revised v6 plan, 32 critical 모두 반영)
+
+### Added
+- `qepm/memory/README.md` — 지식 계층 (Lv0~Lv3) + Authority + axiom_class + Lifecycle + SOT reconciliation
+- `qepm/observability/memory_inventory.json` — counts snapshot (active 8, candidates 5, deprecated 6, review_log 24, lessons 3, evidence 233, regime 10)
+- `qepm/memory/axioms/axiom_sot_map.json` — 9 axiom 매핑 (8 documented active + AX-006 candidate-only with 3 evidence_paths)
+- `02_Infrastructure/schemas/state/axiom_schema.json` — Draft-07, oneOf for active/candidate/deprecated, enforcement_mode enum 4값 (documented|advisory|block|none)
+- `qepm/memory/axioms/active/AX-007.json` — Single-sleeve top20 mechanism break (enforcement_mode=documented)
+- `qepm/memory/axioms/active/AX-008.json` — Verification Triangulation (enforcement_mode=documented)
+- `02_Infrastructure/memory/memory_metadata_normalize.R` — promote helper (객체+파일+dry-run + fallback chain)
+- `02_Infrastructure/memory/lcode_corpus_rebuild.R` — 4 source 통합 (lcodes list-of-objects 유지)
+- `02_Infrastructure/memory/memory_knowledge_health.R` — Hard fail 6 + Warning 6 (external INFO 격하)
+- CI `memory_health_smoke` job — axiom_schema validate + health hard fail 0 + qvest_search smoke
+- v8_readiness_gate `check_memory_health` — 15번째 check
+
+### Changed
+- `02_Infrastructure/hooks/qvest_hook_router.py::SCHEMA_NAME_MAP` — `"axiom"` alias 추가
+- `02_Infrastructure/search/build_index.R` — 5 type 추가 (lesson, axiom_candidate, axiom_deprecated, axiom_review, evidence_summary)
+- `02_Infrastructure/search/_query.py::format_result()` — authority/axiom_class/memory_kind 노출 + 신규 filter
+- `02_Infrastructure/axiom/review.R` — apply=FALSE default, --apply flag 의무, review_log/dryrun/ 하위 분리
+- `02_Infrastructure/axiom/promote.R` — normalize_axiom_metadata helper 호출 1줄 (scoring logic 변경 X)
+- `02_Infrastructure/validation/v8_readiness_gate.R` — schema count hardcode 제거 + memory_health 15번째 check
+- `.github/workflows/qvest-kernel-ci.yml::schema_validate` — named REQUIRED_SCHEMAS set (15)
+- `.claude/rules/axioms.md` — SOT 정의 명시 + .cache/axiom_core.json "derived cache" 격하
+- 19 JSON metadata patch (active 6 + candidates 5 + deprecated 6 + 신규 active 2)
+
+### Behavior unchanged (v7.3 분리)
+- AX-007/008 신규 hook hard-block regex 도입 X (enforcement_mode=documented)
+- AX-002~005 advisory 유지 (block 강화는 v7.3)
+- promote.R scoring algorithm 변경 X
+- 14 기존 schema 변경 X (axiom_schema 추가만)
+- lcodes list-of-objects 구조 retain (promote.R:44 + review.R:43 호환성 critical)
+
+### Verification
+- 15/15 v8_readiness_gate (PASS=13, SKIP=2)
+- memory_health hard fail 0 (warnings 3 정상)
+- promote helper selftest 2/2 PASS (fallback chain + hard fail)
+- lcode_corpus rebuild 38 → 237 unique L-codes (max L-272)
+- 19 JSON metadata router validate-schema PASS
+
+---
+
 ## [v7.2.0] — 2026-05-01
 
 **v8.0 Design Readiness Gate** — 자동 판정 도구 (도훈 명시 prompt)

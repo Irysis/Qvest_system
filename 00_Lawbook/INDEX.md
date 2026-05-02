@@ -1,7 +1,7 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-v7.1-lite Sprint 3 (2026-05-01).
+v7.2.1 Memory Hardening (2026-05-02).
 
 ---
 
@@ -79,13 +79,19 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 ## 5. Memory & Registry
 
+- `qepm/memory/README.md` — v7.2.1 Memory layer SOT/lifecycle 정의 (지식 계층 + Authority + axiom_class)
 - `qepm/memory/methodology_memory_v55_extensions.md` — L-001~L-249+ (active L-codes, qvest_search type=lcode)
 - `qepm/memory/methodology_memory.md` — DEPRECATED (L-000~L-129 archive)
-- `qepm/memory/axioms/active/AX-*.json` — 6 immutable axioms (qvest_search type=axiom)
+- `qepm/memory/axioms/active/AX-*.json` — 8 axioms v7.2.1 (000~005, 007, 008 — AX-006 candidate-only)
+- `qepm/memory/axioms/axiom_sot_map.json` — Documented ↔ JSON 매핑 (8 documented + AX-006 evidence_paths)
+- `qepm/memory/lessons/L-*.json` — active lessons (qvest_search type=lesson)
+- `qepm/memory/evidence_summary/*.json` — 233 factor evidence (qvest_search type=evidence_summary)
 - `06_Registry/strategy_registry.json` — 600+ strategies + grades (242KB)
 - `06_Registry/idea_registry.json` / `paper_registry.json` / `strategy_grades.json`
 - `04_Research/paper_notes/P*.md` — 203 paper notes (qvest_search type=paper)
-- `qepm/observability/events.jsonl` — append-only event ledger (retain, archive policy v7.2 deferred)
+- `qepm/observability/events.jsonl` — append-only event ledger (retain)
+- `qepm/observability/memory_inventory.json` — counts snapshot (v7.2.1)
+- `qepm/observability/memory_health_latest.json` — Memory Health Gate latest
 - `qepm/observability/timelines/wt_*.json` — per-WT timeline cache (regenerable)
 - `qepm/observability/search_index.jsonl` — search index (gitignore, regenerable)
 
@@ -93,7 +99,7 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 - `02_Infrastructure/schemas/packages/` — 6 (alpha/risk/optimization/forge/judge_verdict/governor_admission)
 - `02_Infrastructure/schemas/certs/` — 5 (alpha_discovery/sr_provenance/schedule_fidelity/forge_package_validated/governor_concord)
-- `02_Infrastructure/schemas/state/` — 3 (book_state/governance_log/artifact_lineage)
+- `02_Infrastructure/schemas/state/` — 4 (book_state/governance_log/artifact_lineage/axiom v7.2.1)
 - 검증: `python3 02_Infrastructure/hooks/qvest_hook_router.py validate-schema --schema <name> --package <path>`
 
 ## 7. Examples + Tests
@@ -111,6 +117,8 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 - `v7.0.0` — Hardening Release (kernel unification + CI + 14 schema + E2E + legacy + observability)
 - `v7.0.1` — Residue Hardening Patch (synthetic cleanup + cert refactor + harness_health sync + error masking)
 - `v7.1.0-lite` — Solo Operator Productivity Patch (qvest_search + qvest_wt + INDEX + examples)
+- `v7.2.0` — v8.0 Design Readiness Gate (14 checks + soak rule + JSON CLI)
+- `v7.2.1` — Memory Knowledge Hardening (axiom_schema + AX-007/008 materialize + lcode_corpus + memory_health 6+6 + 15 readiness)
 
 ## Maintenance
 
