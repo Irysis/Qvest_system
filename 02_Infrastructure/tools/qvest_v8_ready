@@ -76,7 +76,10 @@ for c in d.get('checks', []):
     print(f\"  {glyph} {c['id']:<28} [{c['status']}] {c['details'][:80]}\")
 print()
 print('Next actions:')
-for a in d.get('next_actions', []):
+na = d.get('next_actions', [])
+if isinstance(na, str):
+    na = [na]
+for a in na:
     print(f'  - {a}')
 report = d.get('report_paths', {})
 if report:

@@ -773,7 +773,7 @@ run_v8_readiness_gate <- function(project_root = ".",
     ready_for_v8_design = ready,
     checks = checks,
     summary = list(pass = pass, fail = fail, warn = warn, skip = skip),
-    next_actions = next_actions,
+    next_actions = I(as.character(next_actions)),  # I() forces JSON array even at length 1 (auto_unbox=TRUE 회피 — Python iterate 시 글자별 split 방지)
     strict = strict,
     no_write = no_write
   )
