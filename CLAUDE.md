@@ -2,16 +2,20 @@
 
 ## Active Version
 
-**Qvest v6.4 — Harness Kernel Stabilization**
+**Qvest v7.2.1 — Memory Knowledge Hardening**
 
-**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v6_4_sot.md`
+**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → **v7.2.1** (현재 active)
+**Branch**: `v7.1-hardening` (lite 패치 발행 branch, master 동기화 daily_push)
+
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v7_2_1_sot.md`
+**전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
 본 CLAUDE.md는 헌법만. 절차는 `.claude/skills/`, 룰은 `.claude/rules/`, 강제는 `02_Infrastructure/hooks/`, 역할은 `.claude/agents/`.
 
 ---
 
-## Active Path (v6.4)
+## Active Path (v7.2.1, lifecycle은 v6.4와 동일)
 
 ```
 WorkTask → alpha-research → risk-research → optimizer-research → forge → judge → governor
@@ -244,22 +248,36 @@ TeamCreate teammate 4인 (Scout / Forge / Judge / Governor) Q-Lead 세션 spawn.
 
 ---
 
-## v6.4 Patch Sprint Status
+## Release Status (v6.4.0 → v7.2.1)
 
-- ✅ Sprint 0 (Phase 0): 안전장치 4-층 (git tag pre-v6.4-migration + memory tar + mailbox tar + WT snapshot)
-- ✅ Sprint 1 Phase 1: SOT docs 2건 (qvest_v6_4_sot.md + qvest_legacy_boundary.md)
-- 🔄 Sprint 1 Phase 2: CLAUDE.md 경량화 (현 작업)
-- ⏳ Sprint 1 Phase 3: artifact_contract.json (다음 단계)
-- ⏳ Sprint 2 (Phase 4~7): Hook Kernel + State Machine + Codex Round v6.4 + Cert (후속 세션)
-- ⏳ Sprint 3 (Phase 8~9): Dry-run Tests + Subagent/Skill 재배치 + E2E (후속)
+| Release | 일자 | 핵심 |
+|---|---|---|
+| ✅ **v6.4.0** | 2026-05-01 | Harness Kernel Stabilization. Sprint 0+1+2+3 9-phase. Codex 3중 장치 + 5 Cert + State Machine. |
+| ✅ **v7.0.0** | 2026-05-02 | Hardening 7 sprint. "검증 가능한 소프트웨어 커널" — 우회 불가능한 실행 계약. 14 schema + sm_validated_advance + events.jsonl + qvest_observe + legacy_write_block. E2E 12/12 PASS. |
+| ✅ **v7.0.1** | 2026-05-02 | 도훈 흠 4건 fix (synthetic cleanup / cert_rules data layer / harness_health hook 제거 / qvest_observe error masking). |
+| ✅ **v7.1.0-lite** | 2026-05-02 | Solo Operator productivity 5 sprint (qvest_search + qvest_wt + INDEX.md + 3 workflow examples). 15 atomic commits. |
+| ✅ **v7.2.0** | 2026-05-02 | v8 readiness gate 14-check write mode strict PASS + CHANGELOG + 3-day soak. |
+| ✅ **v7.2.1** | 2026-05-02 | Memory Knowledge Hardening. Axiom JSON SOT (8 active) + memory_health 12-check (hard 6 + warn 6) + 15 readiness + auto-push hook. 도훈 audit 32 critical 모두 반영. |
 
-Plan: `/home/quant/.claude/plans/nifty-tickling-hinton.md`
+**검증 (v7.2.1 strict run, 2026-05-02 17:22:55)**: 30/30 hooks PASS · 15/15 readiness · memory_health hard 0 · 19 JSON validate-schema PASS.
+
+**v8 후속 (이연)**:
+- v7.3: AX-002/003/004/005 advisory → block 강화 / AX-007/008 hook hard-block 검토 / timeline_e2e check 추가 (15→16)
+- v7.x ext: SQLite event DB (현 JSONL fallback) / Daily brief Telegram SLO / Dashboard Shiny UI / legacy file 이동
+
+Plan (v6.4): `/home/quant/.claude/plans/nifty-tickling-hinton.md`
 
 ---
 
 ## 변경 이력
 
-- **v6.4 Sprint 1** — 2026-05-01 Session 75 — Active SOT 단일화 + CLAUDE.md 경량화 (436 → ~270 lines) + skills/rules 8 신규
+- **v7.2.1** — 2026-05-02 Session 76 — Memory Knowledge Hardening release (도훈 audit 32 critical 반영). Axiom JSON SOT (active 8건) + memory_health 12-check + 15 readiness + auto-push Stop hook. CLAUDE.md Active Version 슬롯 v6.4 → v7.2.1 full sync (옵션 B), 신규 SOT `qvest_v7_2_1_sot.md` 발행. L-273~L-275.
+- **v7.2.0** — 2026-05-02 — v8 readiness gate 14 check write mode strict PASS + CHANGELOG v7.2.0 entry + 3-day soak.
+- **v7.1.0-lite** — 2026-05-02 — Solo Operator productivity (qvest_search + qvest_wt + INDEX.md + 3 examples). 15 atomic commits.
+- **v7.0.1** — 2026-05-02 — Hardening patch (도훈 흠 4건 fix).
+- **v7.0.0** — 2026-05-02 — Hardening 7 sprint release. "검증 가능한 소프트웨어 커널" 패러다임 (Codex 외부 평가 "SW 아키텍처 약함" → 우회 불가능한 실행 계약). L-272.
+- **v6.4.0** — 2026-05-01 Session 75 — Harness Kernel Stabilization release. Sprint 0+1+2+3 9-phase. Codex 3중 장치 + 5 Cert + State Machine + dry-run 30/30 + E2E 10/10. L-269~L-271.
+- **v6.4 Sprint 1** — 2026-05-01 Session 75 — Active SOT 단일화 + CLAUDE.md 경량화 (436 → ~270 lines) + skills/rules 8 신규.
 - **v6.3.3** — 2026-05-01 — v6.0 Codex Critic Round 3중 장치 영구 정착 (L-269)
 - **v6.3.2** — 2026-05-01 — Cert Auto-Issuance Paths 명문화 + Layer 4 deferred
 - **v6.31** — 2026-04-28 — Charter v1.2 §10 Certification System
