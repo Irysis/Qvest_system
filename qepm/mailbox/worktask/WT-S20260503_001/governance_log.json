@@ -92,6 +92,81 @@
         "schedule_density": 1.0,
         "weights_dates": 269
       }
+    },
+    {
+      "ts": "2026-05-04T02:35:00+0900",
+      "event": "JUDGE_PASSED_PHASE_ADVANCE",
+      "by": "judge agent (Q-Lead spawn, background)",
+      "details": "judge_verdict_draft.json -> Codex Round 1 stance=REVISE (5 critical concerns C1-C5, 176s response NOT timeout) -> Round 2 amendments addressing all 5 (PARTIAL_ACCEPT+REBUTTAL C1, PARTIAL_ACCEPT C2, ACCEPT C3/C4/C5) -> judge_verdict.json final + defense_like_evaluation.json + ax008_stance_tally.json + judge_challenge_note.md. sm_validated_advance(FORGE_DONE -> JUDGE_PASSED) PASS.",
+      "judge_decision_verdict": "MONITORING_ONLY (Plan §12 4-class)",
+      "judge_decision_recommended_action": "KEEP",
+      "ax_001_v2_strict_pass_count": 0,
+      "ax_001_v2_partial_pass_count": 2,
+      "ax_001_v2_marginal_fail_count": 1,
+      "ax_001_v2_fail_count": 1,
+      "best_lro_variant_mdd_pp_vs_m4": "+0.42pp (M4+LRO_cash, only positive of 4)",
+      "ax_008_tally": "3/3 substantive recorded (mandatory artifact). admission_gate NOT triggered (MONITORING_ONLY)."
+    },
+    {
+      "ts": "2026-05-04T02:27:00+0900",
+      "event": "CODEX_ROUND_1_GOVERNOR_REVISE",
+      "details": "4 critical concerns. C1_AX008_TALLY_OVERCOUNT(HIGH, ACCEPT — phrasing 분리 substantive_count vs independent_triangulation_PASS_count_for_admission_gate) / C2_HARVEY_LOCKBOX_NA_WAIVER_TOO_BROAD(HIGH, PARTIAL_ACCEPT — future_promotion_blocker_list 5-block 추가) / C3_ALPHA_ARTIFACT_LINEAGE_PATH_MISMATCH(MEDIUM, ACCEPT — alpha_artifact_lineage_explicit field 추가) / C4_TURNOVER_COST_MARGIN_UNDERDISCLOSED(LOW, ACCEPT — residual_risk_monitoring_explicit field 추가). Codex supports MONITORING_ONLY direction explicitly. veto_flag=false.",
+      "stance": "REVISE",
+      "veto_flag": false,
+      "weakest_assumption_codex": "MONITORING_ONLY recommendation_only status lets governor close WT while treating AX-008/Harvey/DSR/lockbox/artifact-lineage gaps as non-triggered rather than unresolved future-promotion blockers.",
+      "supporting_arguments_codex": [
+        "Governor correctly mirrors Judge 11-field handoff",
+        "Weights real 269-date schedule 2004-01-01 to 2026-05-01, 20 names per date, long-only, sum=1, max 0.20",
+        "covariance.parquet 18x18 PSD condition 34.45 ≤ 100",
+        "No LRO variant satisfies AX-001 v2 deployment-grade defense; best MDD improvement +0.42pp"
+      ]
+    },
+    {
+      "ts": "2026-05-04T02:32:00+0900",
+      "event": "GOVERNOR_REJECTED_PHASE_ADVANCE",
+      "by": "governor agent (Q-Lead spawn, background)",
+      "details": "governor_admission_draft.json 11-field complete -> Codex Round 1 REVISE 4 concerns -> Round 2 amendments (C1 ACCEPT phrasing 분리 / C2 PARTIAL_ACCEPT future_promotion_blocker_list 5-block / C3 ACCEPT alpha_artifact_lineage_explicit / C4 ACCEPT residual_risk_monitoring_explicit) -> governor_admission.json final 11-field intact + audit + lineage + future_promotion_blocker_list + axiom_assertions.",
+      "verdict": "MONITORING_ONLY",
+      "RECOMMENDED_ACTION": "KEEP",
+      "STR_1715_ALPHA_STATUS": "UNCHANGED",
+      "LATENT_RISK_STATE_2026_05": "HighRisk_persistent_3_month",
+      "PRIMARY_RISK_ANCHOR": "MKT_lower_tail_dependence_0.65 + L219_Semi_AI_IT_HW_56pct_saturation",
+      "promotion_wt_required": false,
+      "governor_concord_status": "DEFERRED_TO_PROMOTION_WT (failure 아님)",
+      "book_state_write_count": 0,
+      "book_state_md5sum_unchanged": "6ee7406544d12f083764a8baf8c6ad81 (pre + post identical)",
+      "str_1715_directory_write_count": 0,
+      "production_weights_overlay_dir_created_count": 0,
+      "governor_concord_certificate_issuance_count": 0,
+      "ax_compliance": "AX-000 PRESERVED, AX-001 v2 NOT_SATISFIED for deployment (MONITORING role only directionally consistent), AX-002 PASS (SHA + production_protection), AX-008 TALLY_RECORDED_AS_MANDATORY (independent_triangulation_PASS_count_for_admission_gate=0; admission gate NOT triggered for MONITORING_ONLY)"
+    },
+    {
+      "ts": "2026-05-04T02:33:00+0900",
+      "event": "LRO_DEPLOYMENT_OUTCOME",
+      "by": "governor agent",
+      "outcome": "MONITORING_ONLY",
+      "recommended_action": "KEEP (STR_1715 100% PG2 with M4 schedule UNCHANGED)",
+      "best_lro_variant_finding": "M4+LRO_cash MDD pp vs M4 baseline +0.42pp (only positive of 4 LRO variants), CAGR cost -1.52pp, bad/normal vol ratio 1.48x — directionally positive but below Plan §12 CONDITIONAL_PASS 1pp threshold and PASS 3pp threshold",
+      "lri_predictive_power_confirmed": "1.46-1.71x HighRisk fwd 1M vol amplification vs Normal; 1.51x ES95 amplification — supports MONITORING role only",
+      "mdd_gap_to_target": "STR_1715 -7.05pp gap to -25% MDD target NOT closed by any LRO variant",
+      "next_iteration_path": "Iter 9 family pivot (Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional) per L-270 — judge tertiary_recommendation",
+      "lro_mon_dashboard_optional_recommendation": "Q-Lead may spawn separate read-only observability WT for LRO_mon Mode A (no weight intervention)",
+      "future_promotion_wt_blocker_list": [
+        "Harvey t_NW > 3.0 with multi-testing penalty (Harvey 2016 RFS)",
+        "DSR post-penalty (Bailey & Lopez de Prado 2014)",
+        "Baseline Harvey symmetric computation",
+        "Lockbox split evidence (residualized series IS/OOS partition seal + lro_params_frozen sha 3-source verify)",
+        "AX-008 PASS≥2 independent triangulation (separate architect spawn or Codex PASS/APPROVE_CONDITIONAL, not self-validation paths)"
+      ]
+    },
+    {
+      "ts": "2026-05-04T02:33:30+0900",
+      "event": "ABORTED_PHASE_ADVANCE",
+      "by": "governor agent",
+      "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+      "details": "GOVERNOR_REJECTED -> ABORTED (state_transitions.json::GOVERNOR_REJECTED.allowed_next=[ABORTED]). controlled non-production closure with recommendation_package_complete=true (Plan §11 Phase 6 + 4차 정정 F1). 연구 실패 X. STR_1715 100% PG2 unchanged. governor_concord cert DEFERRED_TO_PROMOTION_WT (no promotion trigger).",
+      "production_book_state_write": false,
+      "promotion_wt_spawn_count": 0
     }
   ]
 }

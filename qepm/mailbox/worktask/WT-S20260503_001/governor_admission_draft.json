@@ -1,0 +1,161 @@
+{
+  "task_id": "WT-S20260503_001",
+  "package_kind": "governor_admission",
+  "wt_kind": "recommendation_only",
+  "wt_type": "sizing_only",
+  "parent_wt": "WT-P20260429_002",
+  "as_of_date": "2026-05-03",
+  "agent": "governor",
+  "round": 1,
+  "draft_revision": "draft",
+  "schema_version": "v1.0_lro_governor_recommendation_only",
+
+  "_field_inventory_11": [
+    "recommendation_only",
+    "book_state_write",
+    "governor_concord_status",
+    "promotion_wt_required",
+    "verdict",
+    "STR_1715_ALPHA_STATUS",
+    "LATENT_RISK_STATE",
+    "PRIMARY_RISK_ANCHOR",
+    "RECOMMENDED_ACTION",
+    "recommendation_package_complete",
+    "abort_reason"
+  ],
+
+  "recommendation_only": true,
+  "book_state_write": false,
+  "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+  "promotion_wt_required": false,
+  "verdict": "MONITORING_ONLY",
+  "STR_1715_ALPHA_STATUS": "UNCHANGED",
+  "LATENT_RISK_STATE": "HighRisk_persistent_3_month",
+  "PRIMARY_RISK_ANCHOR": "MKT_lower_tail_dependence_0.65 + L219_Semi_AI_IT_HW_56pct_saturation",
+  "RECOMMENDED_ACTION": "KEEP",
+  "recommendation_package_complete": true,
+  "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+
+  "verdict_enum_one_of": ["RECOMMENDATION_ONLY_PASS", "RECOMMENDATION_ONLY_CONDITIONAL", "MONITORING_ONLY", "FAIL"],
+  "RECOMMENDED_ACTION_enum_one_of": ["KEEP", "CAP_TIGHTEN", "CASH_OVERLAY"],
+
+  "rationale": {
+    "summary": "STR_1715_LRO_v0.1 — recommendation_only WT closure (governor verdict MONITORING_ONLY mirrors judge_decision). LRO 4 defense-like variants (LRO_cap / LRO_cash / M4+LRO_cap / M4+LRO_cash) evaluated under AX-001 v2 3-tuple vs forge_recomputed_M4 baseline. Best variant M4+LRO_cash MDD improvement +0.42pp — below Plan §12 CONDITIONAL_PASS 1pp threshold and PASS 3pp threshold. LRI predictive power CONFIRMED (1.46-1.71× HighRisk fwd 1M vol amplification, 1.51× ES95 amplification) — supports MONITORING role only, NOT deployment-grade defense intervention. STR_1715 100% PG2 with M4 schedule UNCHANGED. governor_concord cert DEFERRED to future promotion WT (none triggered).",
+
+    "judge_handoff_alignment": "Governor verdict matches judge_decision.verdict=MONITORING_ONLY exactly (judge_verdict.judge_recommendations.phase_6_governor_handoff.expected_governor_admission_11_field cross-verified field-by-field). RECOMMENDED_ACTION=KEEP per judge primary_recommendation. promotion_wt_required=false per judge phase_6_governor_handoff.",
+
+    "ax_001_v2_summary": "ax_001_v2_strict_pass_count=0, partial_pass_count=2, marginal_fail_count=1, fail_count=1. M4+LRO_cash best (+0.42pp MDD vs M4, 1.48× bad/normal vol ratio) — directional but below threshold. NOT SATISFIED for any variant as deployment-grade defense.",
+
+    "ax_008_summary": "tally_3_entry_recorded=true (forge=self_validated, codex=REVISE_round_1_addressed_via_round_2, architect=self_cross_check_by_judge). substantive_count=3. admission_gate NOT TRIGGERED (MONITORING_ONLY ≠ PASS/CONDITIONAL_PASS/promotion). Tally recording is the mandatory artifact per Plan §7+§9+§11+§12.",
+
+    "lri_state_2026_05_evidence": "judge_verdict.judge_recommendations.phase_6_governor_handoff.LATENT_RISK_STATE_2026_05='HighRisk_persistent_3_month'. risk_package LRI 4-state (Normal/Crowded/HighRisk/Extreme) IS-frozen quantile thresholds. PRIMARY_RISK_ANCHOR = MKT_lower_tail_dependence 0.65 + Semi/AI/IT_HW saturation 56% (L-219). LRO_mon (Mode A — no weight intervention) suggested as monitoring dashboard (read-only observability) per judge secondary_recommendation."
+  },
+
+  "state_machine_transition": {
+    "incoming_phase": "JUDGE_PASSED",
+    "target_phase_step_1": "GOVERNOR_REJECTED",
+    "target_phase_step_2": "ABORTED",
+    "policy_compliance": "state_transitions.json::JUDGE_PASSED.allowed_next=[GOVERNOR_ADMITTED, GOVERNOR_REJECTED, ABORTED] + GOVERNOR_REJECTED.allowed_next=[ABORTED]. Both transitions valid.",
+    "controlled_non_production_closure": "GOVERNOR_REJECTED → ABORTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT (Plan §11 Phase 6 + 4차 정정 F1 + 8차 BLOCKER 1)."
+  },
+
+  "production_protection_audit": {
+    "book_state_write_count": 0,
+    "book_state_md5sum_pre": "6ee7406544d12f083764a8baf8c6ad81",
+    "book_state_mtime_pre_unix": 1777532809,
+    "str_1715_directory_write_count": 0,
+    "production_weights_overlay_dir_created_count": 0,
+    "promotion_wt_spawn_count": 0,
+    "governor_concord_certificate_issuance_count": 0,
+    "governor_concord_status_explicit": "DEFERRED_TO_PROMOTION_WT (Plan §1 own certs row + 3차 F1 정정: failure 아님, sizing_only role_card own cert pending by design)"
+  },
+
+  "judge_handoff_inheritance": {
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260503_001/judge_verdict.json",
+    "judge_decision_verdict": "MONITORING_ONLY",
+    "judge_primary_recommendation": "KEEP",
+    "judge_RECOMMENDED_ACTION": "KEEP",
+    "judge_STR_1715_ALPHA_STATUS": "UNCHANGED",
+    "judge_LATENT_RISK_STATE_2026_05": "HighRisk_persistent_3_month",
+    "judge_PRIMARY_RISK_ANCHOR": "MKT_lower_tail_dependence_0.65 + L219_Semi_AI_IT_HW_56pct_saturation",
+    "judge_promotion_wt_required": false,
+    "governor_field_match_judge_handoff": "11/11 fields match judge phase_6_governor_handoff.expected_governor_admission_11_field exactly"
+  },
+
+  "lro_variant_summary_for_governance_log": {
+    "n_strategies_evaluated": 7,
+    "n_lro_variants": 4,
+    "best_variant": "M4+LRO_cash",
+    "best_variant_mdd_pp_vs_m4_baseline": "+0.42pp (only positive of 4)",
+    "best_variant_cagr_cost_vs_m4": "-1.52pp (CAGR 0.4163 vs M4 0.4315)",
+    "best_variant_bad_normal_vol_ratio": "1.48x (best of 4 LRO variants)",
+    "lri_state_predictive_power_confirmed": "1.46-1.71x fwd 1M vol amplification HighRisk vs Normal; 1.51x ES95 amplification (judge_verdict::decision_rule_matrix + defense_like_evaluation::evaluation::M4+LRO_cash::tuple_3)",
+    "core_baseline_decision_basis": "forge_recomputed_M4 (CAGR 0.4315 / Sharpe 1.5855 / MDD -0.3295) — NOT L-274 (L-274 frozen reference for transparency only per Plan §5 #8)"
+  },
+
+  "next_steps_post_abort": {
+    "production_state": "STR_1715 100% PG2 with M4 schedule UNCHANGED (no weight modification, no overlay deployment)",
+    "lro_mon_dashboard_optional": "Q-Lead may spawn separate read-only observability WT for LRO_mon (Mode A — no weight intervention) — judge secondary_recommendation",
+    "mdd_gap_path_reconsideration": "STR_1715 -7.05pp MDD gap to -25% target NOT closed by any LRO variant. AX-001 v2 next iteration: defense / crisis_alpha family pivot (Iter 9 — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional) per L-270 — judge tertiary_recommendation",
+    "promotion_wt_status": "no promotion WT trigger (promotion_wt_required=false). governor_concord cert remains DEFERRED. If future LRO refinement WT achieves verdict=PASS or CONDITIONAL_PASS, promotion WT must be spawned and Harvey t_NW + DSR post-penalty appended at that admission gate (Plan §11+§12 + judge agent v6.1 Statistical Defense)"
+  },
+
+  "axiom_assertions": {
+    "AX_000_no_limits": {
+      "verdict": "PRESERVED — LRO recommendation_only closure does not invalidate AX-000. -7.05pp MDD gap path not closed; alternate paths exist (Iter 9 family pivot per L-270)."
+    },
+    "AX_001_v2_defense_conditional": {
+      "applied_to_4_variants": ["LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+      "core_baseline": "forge_recomputed_M4 (Plan §1 baseline_decision_basis honored — L-274 NOT used as gate)",
+      "best_variant": "M4+LRO_cash partial",
+      "verdict": "NOT SATISFIED for deployment; LRI predictive power supports MONITORING role only — directionally consistent with governor verdict MONITORING_ONLY"
+    },
+    "AX_002_process_honesty": {
+      "lro_params_frozen_sha": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8 (3-source matched: risk + optimizer + forge)",
+      "is_endpoint_2024_06_30_freeze": "PASS (oos_modification_count=0)",
+      "production_protection": "STR_1715 directory write count = 0 + book_state_write count = 0",
+      "verdict": "PASS"
+    },
+    "AX_008_triangulation": {
+      "tally_3_entry_recorded": true,
+      "tally_summary": "forge=self_validated, codex=REVISE_round_1_addressed_via_round_2, architect=self_cross_check_by_judge",
+      "substantive_count": 3,
+      "admission_gate_applicability": "NOT TRIGGERED (MONITORING_ONLY verdict). PASS≥2 admission gate skip per Plan §7+§9+§11+§12 design — tally recording is the mandatory artifact, NOT an attempt to hide weak triangulation. Codex Round 1 substantive REVISE addressed via Round 2 amendments quantitatively.",
+      "verdict": "TALLY_RECORDED_AS_MANDATORY"
+    }
+  },
+
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/alpha_package.json (inherited_alpha_stub)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/risk_package.json (Round 2 final)",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json (Round 2 final)",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/forge_package.json (Round 1 final)",
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260503_001/judge_verdict.json (Round 2 final)",
+    "ax008_stance_tally_ref": "qepm/mailbox/worktask/WT-S20260503_001/ax008_stance_tally.json",
+    "defense_like_evaluation_ref": "qepm/mailbox/worktask/WT-S20260503_001/defense_like_evaluation.json",
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260503_001/",
+    "outputs": [
+      "qepm/mailbox/worktask/WT-S20260503_001/governor_admission.json (this file final, after Codex Round)",
+      "qepm/mailbox/worktask/WT-S20260503_001/governor_challenge_note.md",
+      "qepm/mailbox/worktask/WT-S20260503_001/codex_critic_response_governor.json"
+    ]
+  },
+
+  "codex_round_pending": {
+    "stage": "draft phase",
+    "critic_response_path_expected": "qepm/mailbox/worktask/WT-S20260503_001/codex_critic_response_governor.json",
+    "challenge_note_path_expected": "qepm/mailbox/worktask/WT-S20260503_001/governor_challenge_note.md",
+    "final_path_expected": "qepm/mailbox/worktask/WT-S20260503_001/governor_admission.json (no _draft suffix)",
+    "concerns_to_anticipate_likely": [
+      "C1 — recommendation_only governor_admission must NOT modify book_state.json or trigger governor_concord cert",
+      "C2 — governor verdict must match judge_decision.verdict (MONITORING_ONLY) without rationalization or downgrade",
+      "C3 — RECOMMENDED_ACTION must come from {KEEP, CAP_TIGHTEN, CASH_OVERLAY}; KEEP supported by judge primary_recommendation",
+      "C4 — abort_reason must explicitly = RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE per Plan §12 + 4차 F1",
+      "C5 — promotion_wt_required must be false (judge_handoff explicit) — not a hidden trigger",
+      "C6 — state machine transition JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED policy compliance"
+    ]
+  },
+
+  "created_by": "governor agent (Q-Lead spawn, background)",
+  "created_at": "2026-05-04T02:50:00+0900"
+}
