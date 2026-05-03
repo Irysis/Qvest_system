@@ -81,6 +81,19 @@ Forge 단계 verify_hash 의무. 다르면 schedule_fidelity FAIL.
 
 ---
 
-## 6. 결론
+## 6. detect_lookahead 자동 scan 결과
 
-**PIT C1~C15 위반 0건 + 자기합리화 패턴 0건**. risk_package_draft.json 작성 적격.
+`02_Infrastructure/validation/lookahead_detector.R::detect_lookahead()` 두 스크립트 모두 CLEAN.
+
+| 파일 | lines | violations |
+|---|---|---|
+| `_logs/01_single_rebalance_debug.R` | 563 | 0 |
+| `_logs/02_rolling_268m.R` | 810 | 0 |
+
+**Total: 1373 lines scanned, 0 lookahead patterns detected.**
+
+---
+
+## 7. 결론
+
+**PIT C1~C15 위반 0건 + 자기합리화 패턴 0건 + detect_lookahead CLEAN**. risk_package_draft.json 작성 적격.
