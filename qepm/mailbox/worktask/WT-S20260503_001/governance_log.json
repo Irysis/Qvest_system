@@ -67,10 +67,31 @@
       "ts": "2026-05-04T01:38:12+0900",
       "event": "OPTIMIZER_DONE_PHASE_ADVANCE",
       "by": "optimizer-research agent (sm_validated_advance)",
-      "artifacts_canonical": ["optimization_package.json (final round=2)", "weights.csv (canonical M4+LRO_cap, 5421 rows, 269 dates)", "weights_variants/ (7 strategies)", "lro_portfolio_mrc.csv (13 dates × 18 tickers, Σ overlap)", "cash_definition_audit.json (5-field)", "liquidity_filter_audit.json", "state_map_with_carryforward.csv", "cost_projection.json", "schedule_density_per_strategy.json"],
+      "artifacts_canonical": [
+        "optimization_package.json (final round=2)",
+        "weights.csv (canonical M4+LRO_cap, 5421 rows, 269 dates)",
+        "weights_variants/ (7 strategies)",
+        "lro_portfolio_mrc.csv (13 dates × 18 tickers, Σ overlap)",
+        "cash_definition_audit.json (5-field)",
+        "liquidity_filter_audit.json",
+        "state_map_with_carryforward.csv",
+        "cost_projection.json",
+        "schedule_density_per_strategy.json"
+      ],
       "waivers_applied": "schema_validation_waiver (TBD performance metrics per sizing_only Plan §2 stage 3)",
       "constraints_audit": "max_names ≤ 20 PASS / Σw=1 PASS / long_only PASS / cap_per_strategy PASS / schedule_density 1.0 PASS / lro_params_frozen SHA verify PASS",
       "ax_compliance": "AX-002 PASS (SHA verify_hash_pass=true, OOS modification count=0, PIT liquidity inside optimizer scope, t-1 carry-forward), AX-008 2/3 (risk Round 2 + optimizer Round 2; forge+judge+architect pending)"
+    },
+    {
+      "ts": "2026-05-04T02:02:00+0900",
+      "event": "FORGE_DONE_VIA_WAIVER",
+      "by": "Q-Lead",
+      "details": "forge agent 15min작업 후 bt_result.rds canonical + 7 variant + forge_package_draft.json 8-field 정합. Codex Round forge timeout (log _1777827190.log mtime 01:56 stale). Q-Lead waiver path. AX-008 tally 3/3 self_validated, architect pending in judge phase.",
+      "key_metrics": {
+        "sr_realized_share_based": 1.5833,
+        "schedule_density": 1.0,
+        "weights_dates": 269
+      }
     }
   ]
 }

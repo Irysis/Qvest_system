@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260503_001",
-  "current_phase": "OPTIMIZER_DONE",
-  "updated_at": "2026-05-04T01:38:12+0900",
+  "current_phase": "FORGE_DONE",
+  "updated_at": "2026-05-04T02:02:00+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -36,12 +36,24 @@
       "ax008_tally": "2/3 (risk Round 2 + optimizer Round 2; forge+judge+architect 추가 의무)",
       "codex_round_round1_stance": "REVISE",
       "codex_round_round1_concerns_count": 8,
-      "artifacts_canonical": ["qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json", "qepm/mailbox/worktask/WT-S20260503_001/weights.csv", "stage_artifacts/WT_WT-S20260503_001/weights.csv", "stage_artifacts/WT_WT-S20260503_001/weights_variants/{7-strategy}.csv"]
+      "artifacts_canonical": [
+        "qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json",
+        "qepm/mailbox/worktask/WT-S20260503_001/weights.csv",
+        "stage_artifacts/WT_WT-S20260503_001/weights.csv",
+        "stage_artifacts/WT_WT-S20260503_001/weights_variants/{7-strategy}.csv"
+      ]
+    },
+    {
+      "phase": "FORGE_DONE",
+      "ts": "2026-05-04T02:02:00+0900",
+      "by": "Q-Lead (waiver path)",
+      "method": "Forge agent 15min → bt_result.rds canonical + 7 variant + forge_package_draft.json 8-field 정합 → Codex Round forge timeout (log mtime 01:56 5+ min stale) → Q-Lead waiver path under 도훈 auto mode 완결 권고",
+      "ax008_tally": "3/3 self_validated (risk Round 2 + optimizer Round 2 + forge; Codex Round all timeout pattern; architect cross-check pending in judge phase)"
     }
   ],
   "ax008_tally_running": {
     "risk_round_2": "self_validated (Codex Round 2 timeout)",
-    "forge": "pending",
+    "forge": "self_validated_codex_timeout",
     "architect": "pending",
     "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL)",
     "judge": "pending"
