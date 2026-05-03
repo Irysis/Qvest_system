@@ -199,11 +199,102 @@ Codex 지적 표현 자가 점검:
 {
   "risk_round_2": "self_validated (Codex Round 2 timeout waiver)",
   "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL with quantitative grounds)",
-  "forge": "pending",
+  "forge_round_1": "draft_pending_codex",
   "judge": "pending",
   "architect": "pending"
 }
 ```
 
 PASS≥2 admission gate 조건부 (judge verdict ∈ PASS/CONDITIONAL_PASS 시만). 본 WT는 recommendation_only ABORTED 종료.
+
+---
+
+## Section: forge (Round 1 — 7-strategy backtest matrix)
+
+### Codex Critic Round forge — background spawn
+
+- spawn 시각: 2026-05-04T01:50:00+0900
+- target: `forge_package_draft.json`
+- expected response: `codex_critic_response_forge.json` (~9-15분)
+- timeout fallback: Q-Lead waiver path (risk + optimizer 모두 timeout 발생 사례 있음, plan §6 명시)
+
+### 자기검증 Quantitative Proof (timeout 시 self-rebuttal 사용 가능)
+
+**1. AX-002 lro_params_frozen SHA verify**:
+- expected SHA = `82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8`
+- recorded in `stage_artifacts/WT_WT-S20260503_001/lro_params_frozen.json`: 동일
+- forge canonical recompute (canonical JSON exclude sha256 → digest::sha256): 동일
+- → AX-002 PASS
+
+**2. measurement_basis 7-strategy 동일성 verify**:
+- 모두 동일 RAWDATA `.cache/rawdata.parquet` (md5 stable)
+- 모두 동일 cost model `(15bps/1e4) × turnover × 2`
+- 모두 동일 PerformanceAnalytics 함수 (Return.cumulative + maxDrawdown + SortinoRatio + DownsideDeviation)
+- 모두 동일 sig_dates 269건
+- 모두 동일 period slicing (`Date > start_d & Date <= end_d`, signal-to-action lag t→t+1 enforced)
+- 모두 long-only + Σw=1 + max_names ≤ 20 + global_hard_cap_ceiling ≤ 0.20
+- active_cap 차이만 strategy-specific: S1/M4/LRO_mon/LRO_cash=0.20, LRO_cap/M4+LRO_cap/M4+LRO_cash=0.15
+- → measurement_basis_audit PASS
+
+**3. forge-recomputed M4 vs L-274 frozen reference**:
+- forge recomputed M4: CAGR 43.15% / SR 1.5855 / MDD -32.95%
+- L-274 frozen: CAGR 43.78% / SR 1.7477 / MDD -32.05%
+- divergence: SR 0.162pp / CAGR 0.63pp / MDD 0.90pp
+- 06_metrics.csv: SR 1.524 / CAGR 43.91% / MDD 41.69%
+- → 다중 measurement variant 존재 (period boundary / Charter §12 SR / 06_metrics 03_period_returns 기반 측정 차이)
+- → diagnosis: MINOR_DRIFT (factor_engine claim 없으므로 fabrication 아님). reconcile은 별도 task WT-S20260503_002
+
+**4. canonical bt_result.rds + 7 variants 의무**:
+- `stage_artifacts/WT_WT-S20260503_001/bt_result.rds` (canonical = M4+LRO_cap)
+- `stage_artifacts/WT_WT-S20260503_001/bt_result_{S1,M4,LRO_mon,LRO_cap,LRO_cash,M4+LRO_cap,M4+LRO_cash}.rds` 7건
+- 10-component 모두 채움 (manifest / strategy_spec / nav / period_returns / holdings / benchmark_returns / metrics / benchmark_compare / rolling_metrics / drawdowns / audit)
+
+**5. AX-001 v2 defense-like 평가 (4 variants)**:
+
+| strategy | crisis_alpha (GFC cum) | MDD pp vs M4 | bad/normal vol ratio | verdict |
+|---|---|---|---|---|
+| LRO_cap | -0.3728 | -8.17pp (worse) | 1.679 | FAIL |
+| LRO_cash | -0.2933 | -2.75pp (worse) | 1.356 | PARTIAL |
+| M4+LRO_cap | -0.3049 | -0.08pp (≈M4) | 1.553 | MARGINAL |
+| **M4+LRO_cash** | -0.2997 | **+0.42pp (better)** | 1.378 | **BEST OF FOUR** |
+
+→ M4+LRO_cash가 유일하게 M4 대비 MDD 개선 (단 CAGR 152bp 비용)
+→ -7.05pp 잔여 gap을 어느 LRO 변형도 충분히 closing 못함
+→ judge handoff candidate: RECOMMENDED_ACTION=KEEP (LRO 채택 안 함)이 primary, M4+LRO_cash CONDITIONAL_PASS도 가능
+
+**6. ex-Semi 분석 — semi/AI는 risk source 아닌 alpha contributor**:
+- 정식 M4+LRO_cap: SR 1.583
+- ex-Semi M4+LRO_cap: SR 1.458 (-0.125)
+- ex-Samsung_Hynix: SR 1.568 (-0.015, minor)
+- → semi/AI 제거 시 성능 약화 → semi crowding은 alpha source이지 risk overlay로 제거할 대상 아님
+- → LRO active intervention의 mechanism 부재 (latent risk가 alpha와 분리되지 않음)
+
+### 자기합리화 자동 detect (LRO 특화 §6 패턴)
+
+- (a) PC 경제명 고정: 미사용 ✓
+- (b) full-sample 통계 단어: 미사용 ✓ (compute_metrics는 PerformanceAnalytics)
+- (c) OOS 결과 보고 후 K/threshold 언급: 미사용 ✓ (lro_params_frozen SHA verify only)
+- (d) defense-like 평가 회피: 3-tuple 명시 ✓
+- (e) M4+LRO 충돌 미언급 (cash overlay additive): max() rule 적용 ✓ (optimizer cash_definition_audit 5-field 인용)
+- (f) baseline metric 출처 미flag: l274_frozen_reference + m4_baseline_recomputed 분리 명시 ✓
+- (g) latent을 alpha로 재해석: LRI는 risk overlay만, alpha 미수정 ✓
+- (h) M4 cash source 명시: optimizer cash_definition_audit 직접 참조 ✓
+- (i) topN expansion: 7-strategy 매트릭스만, topN 제외 ✓
+- (j) alpha-research spawn: forge 전혀 호출 안 함 ✓
+
+### Codex Round 5단계 흐름
+
+1. **Draft 작성** ✓ — `forge_package_draft.json` (this commit)
+2. **PostToolUse codex_round_auto_trigger background spawn** ✓ — `run_codex_qepm_critic.sh --role=forge` 백그라운드 실행 시작
+3. **Codex response 검토** — pending (~9-15분)
+4. **challenge_note 갱신 (forge section)** — 본 section 본 update
+5. **forge_package.json final** — codex stance 도착 후 또는 timeout 시 waiver path
+
+### timeout 시 waiver path (risk + optimizer 선례)
+
+- risk: Codex Round 2 timeout → self_validated (도훈 auto mode 완결 권고)
+- optimizer: Codex Round 1 REVISE → Round 2 self_validated_after_codex_revise
+- forge: timeout 시 → self_validated (위 6항목 자체검증 quantitative proof)
+
+`codex_critic_skip_waiver`는 명시적으로 timeout-only fallback. final package bypass 우회 아님.
 

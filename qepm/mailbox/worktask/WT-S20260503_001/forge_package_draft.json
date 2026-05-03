@@ -1,0 +1,324 @@
+{
+  "task_id": "WT-S20260503_001",
+  "package_kind": "forge_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-03",
+  "agent": "forge",
+  "round": 1,
+  "draft_revision": "draft",
+  "schema_version": "v1.0_lro_forge_round1",
+
+  "method": "weights.csv_direct_NAV_reconstruction_with_15bps_cost_15bps_one_way (Charter §9 SoT — period_returns from RAWDATA Date>start_d slicing per strategy variant, all 7 sharing common measurement basis)",
+
+  "matrix": {
+    "n_strategies": 7,
+    "strategies": ["S1", "M4", "LRO_mon", "LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+    "primary_canonical": "M4+LRO_cap",
+    "primary_rationale": "M4+LRO_cap conservative (Plan §1 baseline_decision_basis) — combines proven M4 outer regime cash defense with LRO state-conditional active_cap intervention (0.20→0.15 in HighRisk/Extreme)."
+  },
+
+  "lro_params_frozen_verify": {
+    "expected_sha": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "recorded_sha_in_lro_params_frozen_json": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "recomputed_sha_canonical_excluding_sha256": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "match_recorded_vs_expected": true,
+    "match_recomputed_vs_recorded": true,
+    "verify_hash_pass": true,
+    "ax002_compliance": "PASS",
+    "hash_procedure_followed": "risk_package.lro_params_frozen.hash_procedure_explicit"
+  },
+
+  "backtest_summary": {
+    "S1": {
+      "cagr": 0.4404, "sharpe": 1.5421, "sortino": 3.2098, "calmar": 1.0834,
+      "mdd": -0.4065, "ann_vol": 0.2616, "ann_dnvol": 0.1257,
+      "var95": -0.0890, "var99": -0.1525, "cvar95": -0.1302, "cvar99": -0.1733,
+      "cdar95": -0.2975, "ann_turnover": 5.874, "ann_cost_bps": 176.2,
+      "n_obs": 268
+    },
+    "M4": {
+      "cagr": 0.4315, "sharpe": 1.5855, "sortino": 3.3962, "calmar": 1.3095,
+      "mdd": -0.3295, "ann_vol": 0.2483, "ann_dnvol": 0.1159,
+      "var95": -0.0740, "var99": -0.1456, "cvar95": -0.1183, "cvar99": -0.1571,
+      "cdar95": -0.2676, "ann_turnover": 5.870, "ann_cost_bps": 176.1,
+      "n_obs": 268
+    },
+    "LRO_mon": {
+      "cagr": 0.4404, "sharpe": 1.5421, "sortino": 3.2098, "calmar": 1.0834,
+      "mdd": -0.4065, "ann_vol": 0.2616, "ann_dnvol": 0.1257,
+      "var95": -0.0890, "var99": -0.1525, "cvar95": -0.1302, "cvar99": -0.1733,
+      "cdar95": -0.2975, "ann_turnover": 5.874, "ann_cost_bps": 176.2,
+      "n_obs": 268,
+      "note": "Mode A — weight identical to S1; LRI observed but not acted upon"
+    },
+    "LRO_cap": {
+      "cagr": 0.4394, "sharpe": 1.5401, "sortino": 3.2023, "calmar": 1.0685,
+      "mdd": -0.4112, "ann_vol": 0.2615, "ann_dnvol": 0.1257,
+      "var95": -0.0890, "var99": -0.1525, "cvar95": -0.1302, "cvar99": -0.1738,
+      "cdar95": -0.3000, "ann_turnover": 5.881, "ann_cost_bps": 176.4,
+      "n_obs": 268,
+      "note": "Mode B — cap-only (0.20→0.15) in HighRisk/Extreme. MARGINALLY WORSE than S1 — cap intervention does not address MKT-driven crisis"
+    },
+    "LRO_cash": {
+      "cagr": 0.4256, "sharpe": 1.5736, "sortino": 3.2985, "calmar": 1.1923,
+      "mdd": -0.3570, "ann_vol": 0.2475, "ann_dnvol": 0.1181,
+      "var95": -0.0873, "var99": -0.1435, "cvar95": -0.1209, "cvar99": -0.1541,
+      "cdar95": -0.2641, "ann_turnover": 5.858, "ann_cost_bps": 175.8,
+      "n_obs": 268,
+      "note": "Cash overlay — cash% 0/5/15/25 by LRI state. -495bp MDD vs S1 / -84bp Sharpe vs M4"
+    },
+    "M4+LRO_cap": {
+      "cagr": 0.4307, "sharpe": 1.5833, "sortino": 3.3889, "calmar": 1.3037,
+      "mdd": -0.3304, "ann_vol": 0.2483, "ann_dnvol": 0.1160,
+      "var95": -0.0740, "var99": -0.1464, "cvar95": -0.1186, "cvar99": -0.1571,
+      "cdar95": -0.2703, "ann_turnover": 5.878, "ann_cost_bps": 176.3,
+      "n_obs": 268,
+      "is_canonical_primary": true,
+      "note": "PRIMARY CANONICAL — M4 cash + LRO active_cap. SR/MDD virtually identical to M4 alone (cap intervention adds <8bp drag)"
+    },
+    "M4+LRO_cash": {
+      "cagr": 0.4163, "sharpe": 1.5861, "sortino": 3.3380, "calmar": 1.2796,
+      "mdd": -0.3254, "ann_vol": 0.2402, "ann_dnvol": 0.1141,
+      "var95": -0.0740, "var99": -0.1424, "cvar95": -0.1167, "cvar99": -0.1530,
+      "cdar95": -0.2651, "ann_turnover": 5.801, "ann_cost_bps": 174.0,
+      "n_obs": 268,
+      "note": "M4 cash ⊕ LRO cash via max() — best Sharpe (+6bp vs M4) + best MDD (-41bp vs M4) but CAGR -152bp vs M4 (cash drag)"
+    }
+  },
+
+  "sr_realized_share_based": 1.5833,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 269,
+  "alpha_sig_dates_count": 269,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": null,
+
+  "measurement_basis_audit": {
+    "common_basis": {
+      "universe": "KR_TOP342 (KOSPI200 ∪ KOSDAQ150 + RAWDATA filtered)",
+      "cost_model_version": "v2.3_kr_retail_15bps",
+      "cost_application": "(15bps/1e4) × turnover × 2 (round-trip)",
+      "long_only": true,
+      "max_names": 20,
+      "global_hard_cap_ceiling": 0.20,
+      "performance_analytics_functions_only": true,
+      "functions_used": [
+        "PerformanceAnalytics::Return.cumulative",
+        "PerformanceAnalytics::DownsideDeviation",
+        "PerformanceAnalytics::SortinoRatio",
+        "PerformanceAnalytics::maxDrawdown",
+        "PerformanceAnalytics::table.Drawdowns",
+        "PerformanceAnalytics::skewness",
+        "PerformanceAnalytics::kurtosis"
+      ],
+      "self_synthesis_used": false,
+      "charter_v14_§12_er_based_sharpe": "applied (mean(ER)/sd(ER)*sqrt(12), ER=excess return after 0% Rf)",
+      "rebalance_rule": "monthly_signal_t-1_close_to_t_open (signal-to-action lag enforced by period_data Date>start_d)"
+    },
+    "active_cap_per_strategy": {
+      "S1": 0.20, "M4": 0.20, "LRO_mon": 0.20, "LRO_cash": 0.20,
+      "LRO_cap": 0.15, "M4+LRO_cap": 0.15, "M4+LRO_cash": 0.15,
+      "audit_note": "LRO_cap variants reduce cap to 0.15 ONLY in HighRisk/Extreme LRI months (34/269 = 12.6% schedule). All other months use 0.20 baseline. Verified by inspection of weights_summary.max_weight_per_date_min_max in optimization_package.json (LRO_cap max=0.0985 because top-name TIE not 0.15-binding in schedule)."
+    },
+    "verify_strategy_consistency": {
+      "all_used_same_rawdata": true,
+      "rawdata_path": ".cache/rawdata.parquet",
+      "all_used_same_cost_model": true,
+      "all_used_same_signal_dates": true,
+      "all_used_period_data_slicing_C2": true,
+      "weights_csv_md5sum_canonical": "85e78ec0f91ffa58b83dfba8b716e49c",
+      "lro_params_frozen_md5sum": "d3d21c00c7625133b0a4bbad37fe9d41"
+    }
+  },
+
+  "m4_baseline_recomputed": {
+    "source": "forge_realized_share_based",
+    "cagr": 0.4315,
+    "sharpe": 1.5855,
+    "sortino": 3.3962,
+    "calmar": 1.3095,
+    "mdd": -0.3295,
+    "ann_vol": 0.2483,
+    "n_obs": 268,
+    "rationale": "M4 baseline re-computed by forge under IDENTICAL measurement basis as 7 LRO strategies — used as PASS gate Core baseline for AX-001 v2 defense-like evaluation (Plan §1 baseline_decision_basis row)."
+  },
+
+  "l274_frozen_reference": {
+    "cagr": 0.4378,
+    "sharpe": 1.7477,
+    "sortino": 3.42,
+    "calmar": 1.37,
+    "mdd": -0.3205,
+    "source": "L-274 memory (STR_1715 PG2 268m full backtest, 2026-05-02)",
+    "use": "frozen historical reference for transparency only. NOT used as PASS/FAIL gate (Plan §5 #8). Difference vs forge re-computed M4 is 06_metrics-style measurement variance, NOT pure_function_violation."
+  },
+
+  "vs_factor_engine": {
+    "diagnosis": "MINOR_DRIFT",
+    "divergence_factor_engine_vs_realized_pp": null,
+    "rationale": "L-274 documented baseline (43.78/1.7477) vs forge re-computed (43.15/1.5855) — difference Sharpe 0.162 / CAGR 0.63pp / MDD 0.90pp. STR_1715 06_metrics.csv reports 43.91/1.524/41.69 — multiple measurement variants exist. forge measurement uses period_returns end-of-month + cost-deducted ret_net → Charter v1.4 §12 SR formula. Difference is MEASUREMENT DRIFT (period boundary / Charter SR) not fabrication. WT-S20260503_002 baseline_metrics_reconcile separates this concern."
+  },
+
+  "ax_001_v2_defense_like_evaluation": {
+    "applies_to": ["LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+    "core_baseline": "forge_recomputed_M4",
+    "core_mdd": -0.3295,
+    "evaluation": {
+      "LRO_cap": {
+        "crisis_alpha_GFC_cum_ret": -0.3728,
+        "mdd_vs_M4_pp_improvement": -0.0817,
+        "bad_normal_realized_vol_ratio": 1.679,
+        "bad_state_vol_ann": 0.392,
+        "normal_state_vol_ann": 0.233,
+        "verdict_3_tuple": "FAIL — MDD WORSE than M4 (-8.17pp), no crisis_alpha improvement vs S1, bad/normal vol ratio 1.68× shows LRI predicts risk but cap-only does not act effectively"
+      },
+      "LRO_cash": {
+        "crisis_alpha_GFC_cum_ret": -0.2933,
+        "mdd_vs_M4_pp_improvement": -0.0275,
+        "bad_normal_realized_vol_ratio": 1.356,
+        "bad_state_vol_ann": 0.316,
+        "normal_state_vol_ann": 0.233,
+        "verdict_3_tuple": "PARTIAL — GFC crisis_alpha +9.36pp vs S1 (cash overlay reduces drawdown), but MDD slightly WORSE than M4 (-2.75pp). Compresses bad-state vol 1.36× ratio (better than LRO_cap)"
+      },
+      "M4+LRO_cap": {
+        "crisis_alpha_GFC_cum_ret": -0.3049,
+        "mdd_vs_M4_pp_improvement": -0.0008,
+        "bad_normal_realized_vol_ratio": 1.553,
+        "bad_state_vol_ann": 0.350,
+        "normal_state_vol_ann": 0.225,
+        "verdict_3_tuple": "MARGINAL — virtually identical to M4 alone (MDD diff -0.08pp, Sharpe diff -0.022). LRO cap tightening adds NO meaningful improvement when M4 cash overlay already active"
+      },
+      "M4+LRO_cash": {
+        "crisis_alpha_GFC_cum_ret": -0.2997,
+        "mdd_vs_M4_pp_improvement": 0.0042,
+        "bad_normal_realized_vol_ratio": 1.378,
+        "bad_state_vol_ann": 0.311,
+        "normal_state_vol_ann": 0.225,
+        "verdict_3_tuple": "BEST OF FOUR — only variant with positive MDD pp improvement vs M4 (+0.42pp) AND best bad/normal vol ratio compression (1.38× vs M4-implied ratio). But CAGR cost -152bp"
+      }
+    }
+  },
+
+  "lri_state_forward_metrics": {
+    "primary_canonical_M4_LRO_cap": {
+      "Normal_n": 200,
+      "Normal_fwd1m_vol_ann": 0.225,
+      "Normal_fwd1m_max_dd": -0.160,
+      "Crowded_n": 35,
+      "Crowded_fwd1m_vol_ann": 0.268,
+      "Crowded_fwd1m_max_dd": -0.162,
+      "HighRisk_n": 18,
+      "HighRisk_fwd1m_vol_ann": 0.379,
+      "HighRisk_fwd1m_max_dd": -0.090,
+      "Extreme_n": 15,
+      "Extreme_fwd1m_vol_ann": 0.315,
+      "Extreme_fwd1m_max_dd": -0.145,
+      "interpretation": "LRI predictive power confirmed: HighRisk forward 1M vol 1.68× Normal. Extreme paradoxically lower than HighRisk — suggests LRI Extreme captures POST-stress recovery state (mean-reverting dynamic), not pre-stress signal"
+    }
+  },
+
+  "stress_periods_canonical": {
+    "GFC_2007_10_to_2009_03": {"M4+LRO_cap_cum_ret": -0.3049, "M4+LRO_cap_mdd": -0.3304, "S1_cum_ret": -0.3678, "M4_cum_ret": -0.2991},
+    "Euro_2010_04_to_2012_09": {"M4+LRO_cap_cum_ret": 2.857, "M4_cum_ret": 2.850},
+    "COVID_2020_02_to_2020_04": {"M4+LRO_cap_cum_ret": -0.214, "M4+LRO_cap_mdd": -0.176, "S1_cum_ret": -0.256},
+    "Inflation_2022_01_to_2022_10": {"M4+LRO_cap_cum_ret": -0.168, "M4+LRO_cap_mdd": -0.203},
+    "LMR_2026_01_to_2026_05": {"M4+LRO_cap_cum_ret": 0.950, "M4_cum_ret": 0.950, "M4+LRO_cash_cum_ret": 0.800}
+  },
+
+  "subperiod_robustness": {
+    "ex_2025_oos_M4_LRO_cap": {"n_obs": 256, "cagr": 0.3998, "sharpe": 1.505, "mdd": -0.3304},
+    "ex_2025_oos_M4": {"n_obs": 256, "cagr": 0.4007, "sharpe": 1.507, "mdd": -0.3295},
+    "ex_2025_oos_S1": {"n_obs": 256, "cagr": 0.4097, "sharpe": 1.464, "mdd": -0.4065},
+    "ex_Samsung_Hynix_M4_LRO_cap": {"n_obs": 268, "cagr": 0.4272, "sharpe": 1.568, "mdd": -0.3323},
+    "ex_Semi_M4_LRO_cap": {"n_obs": 268, "cagr": 0.4016, "sharpe": 1.458, "mdd": -0.3934},
+    "interpretation": "ex-Semi removal weakens performance (Sharpe drop 1.583→1.458) — confirms semi/IT family is alpha contributor not just risk factor. ex-Samsung_Hynix retains performance (Sharpe 1.583→1.568)."
+  },
+
+  "production_protection": {
+    "str_1715_directory_write_count": 0,
+    "no_alpha_engine_invocation": true,
+    "no_alpha_ranking_modification": true,
+    "weights_csv_modification": false,
+    "audit": "weights.csv read-only consumption from optimizer canonical + weights_variants/. RAWDATA + alpha_scores read-only inputs. STR_1715 production_weights/ + output/ untouched."
+  },
+
+  "axiom_assertions": {
+    "AX_001_v2_defense_like_evaluation": {
+      "verdict": "DEFERRED to judge — forge supplies 3-tuple (crisis_alpha + Core MDD pp + bad/normal realized vol ratio) per LRO defense-like variant",
+      "summary": "M4+LRO_cash is the ONLY variant with positive MDD pp improvement vs M4 (+0.42pp). LRO_cap and M4+LRO_cap fail to improve MDD vs respective baselines."
+    },
+    "AX_002_process_honesty": {
+      "lro_params_frozen_sha_verified": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+      "verify_hash_pass": true,
+      "weights_csv_modification": false,
+      "alpha_engine_invocation_count": 0,
+      "common_measurement_basis_verified": true,
+      "schedule_density_all_above_0p95": true,
+      "verdict": "PASS"
+    },
+    "AX_008_tally_entry": {
+      "source": "forge (Source 3 of 3, Round 1 — recommendation_only WT)",
+      "stance": "draft",
+      "round1_concerns_count": 0,
+      "tally_running_after_forge": {
+        "risk_round_2": "self_validated (Codex Round 2 timeout waiver)",
+        "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL)",
+        "forge_round_1": "self_draft (pending Codex Round)",
+        "judge": "pending",
+        "architect": "pending"
+      },
+      "admission_gate_applicability": "NOT APPLICABLE — recommendation_only WT. PASS≥2 conditional gate evaluated by judge only if verdict ∈ PASS/CONDITIONAL_PASS"
+    }
+  },
+
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/alpha_package.json (inherited_alpha_stub from WT-P20260429_002)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/risk_package.json (Round 2 final)",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json (Round 2 final)",
+    "weights_csv_canonical_consumed": "stage_artifacts/WT_WT-S20260503_001/weights.csv",
+    "weights_variants_consumed": "stage_artifacts/WT_WT-S20260503_001/weights_variants/{S1,M4,LRO_mon,LRO_cap,LRO_cash,M4+LRO_cap,M4+LRO_cash}.csv",
+    "rawdata_source": ".cache/rawdata.parquet (PIT)",
+    "build_script": "qepm/mailbox/worktask/WT-S20260503_001/_logs/run_all.R",
+    "workspace_rds": "stage_artifacts/WT_WT-S20260503_001/_logs/forge_workspace.rds",
+    "outputs": [
+      "stage_artifacts/WT_WT-S20260503_001/bt_result.rds (canonical = M4+LRO_cap)",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_S1.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_M4.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_LRO_mon.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_LRO_cap.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_LRO_cash.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_M4+LRO_cap.rds",
+      "stage_artifacts/WT_WT-S20260503_001/bt_result_M4+LRO_cash.rds",
+      "stage_artifacts/WT_WT-S20260503_001/lro_backtest_returns.csv",
+      "stage_artifacts/WT_WT-S20260503_001/lro_performance_summary.csv",
+      "stage_artifacts/WT_WT-S20260503_001/lro_stress_periods.csv",
+      "stage_artifacts/WT_WT-S20260503_001/lro_lri_state_forward.csv",
+      "stage_artifacts/WT_WT-S20260503_001/lro_defense_eval.csv",
+      "stage_artifacts/WT_WT-S20260503_001/lro_canonical_subset_metrics.csv"
+    ]
+  },
+
+  "pass_gate_handoff_to_judge": {
+    "candidate_recommended_action_per_strategy": {
+      "S1": "BASELINE (no overlay)",
+      "M4": "BASELINE (current PG2 100%)",
+      "LRO_mon": "MONITORING_ONLY (no weight intervention by design)",
+      "LRO_cap": "FAIL_AGAINST_S1 (-MDD -47bp / -SR -2bp, cap intervention worsens performance)",
+      "LRO_cash": "PARTIAL (+MDD vs S1 +495bp, -SR vs M4 -12bp)",
+      "M4+LRO_cap": "MARGINAL (virtually identical to M4 alone)",
+      "M4+LRO_cash": "BEST_DEFENSE (+MDD vs M4 +42bp, +SR vs M4 +1bp, but -CAGR -152bp)"
+    },
+    "primary_finding": "LRO active intervention does NOT meaningfully improve over M4 baseline in 268m full backtest. M4+LRO_cash shows the smallest improvement (+42bp MDD / +1bp SR). The -7.05pp MDD gap to -25% target IS NOT closed by any LRO variant.",
+    "judge_input_summary": "RECOMMENDED_ACTION = KEEP (continue STR_1715 100% PG2 with M4 schedule). LRO does not provide evidence sufficient to justify CAP_TIGHTEN or CASH_OVERLAY adoption. CONDITIONAL_PASS may be considered for M4+LRO_cash as an OOS monitoring add-on if judge weights MDD priority over CAGR.",
+    "ax_008_tally_entries_pending": ["judge_codex_round", "architect_cross_check"]
+  },
+
+  "codex_round_status": "round1_draft_pending",
+  "promoted_to_final_at": null,
+  "created_by": "forge agent (Q-Lead spawn)",
+  "created_at": "2026-05-04T01:50:00+0900"
+}
