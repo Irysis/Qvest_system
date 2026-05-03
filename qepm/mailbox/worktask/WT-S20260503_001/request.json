@@ -1,0 +1,164 @@
+{
+  "task_id": "WT-S20260503_001",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "hypothesis_title": "STR_1715_LRO_v0.1 — Latent Risk Overlay (recommendation_only)",
+  "hypothesis_description": "STR_1715 PG2 100% live (CAGR 43.78% / SR 1.7477 / MDD -32.05%, L-274). MDD 목표 -25% 대비 -7.05pp 초과가 진짜 잔여 gap. LRO = PCA/statistical factor를 alpha factor가 아닌 risk overlay로 사용 — hidden common risk + crowding + subspace drift 측정 후 weight 보수화 (cap tightening / cash overlay). STR_1715 alpha engine + ranking 무손상 (sizing_only). 7-strategy backtest matrix (S1/M4/LRO_mon/LRO_cap/LRO_cash/M4+LRO_cap/M4+LRO_cash) 비교. recommendation_only WT — book_state 변경 X, governor_concord cert는 promotion WT로 이연.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-03",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "inherit_certs": [
+    "alpha_discovery",
+    "sr_provenance",
+    "schedule_fidelity",
+    "forge_package_validated"
+  ],
+  "exempt_certs": ["alpha_discovery"],
+  "deferred_certs": ["governor_concord"],
+  "deferred_to": "promotion_wt",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_100",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 200000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "true"
+  },
+  "hard_constraints": {
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "weight_sum": 1.0,
+    "long_only": true,
+    "global_hard_cap_ceiling": 0.20
+  },
+  "active_cap_per_strategy": {
+    "S1": 0.20,
+    "M4": 0.20,
+    "LRO_mon": 0.20,
+    "LRO_cash": 0.20,
+    "LRO_cap": 0.15,
+    "M4+LRO_cap": 0.15,
+    "M4+LRO_cash": 0.15
+  },
+  "matrix": {
+    "n_strategies": 7,
+    "strategies": ["S1", "M4", "LRO_mon", "LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+    "excluded": ["LRO_topN", "QV_DEF"],
+    "exclusion_reasons": {
+      "LRO_topN": "max_names ≤ 20 hard constraint 충돌. 별도 promotion WT (max_names waiver 협의)로 분리",
+      "QV_DEF": "도훈 명시 제외 — 본 WT 범위 외"
+    }
+  },
+  "baseline": {
+    "frozen_reference": {
+      "source": "L-274 메모리",
+      "cagr": 0.4378,
+      "sharpe": 1.7477,
+      "mdd": -0.3205,
+      "purpose": "역사적 보존만, PASS gate 사용 X"
+    },
+    "decision_basis": {
+      "source": "Forge 재산출 M4",
+      "purpose": "LRO 7 strategy와 동일 measurement basis (universe/cost/PA 함수/global hard cap ≤0.20 + strategy-specific active_cap audit). PASS/FAIL gate reference"
+    },
+    "_06_metrics_csv_diff": {
+      "values": "CAGR 43.91% / SR 1.524",
+      "reconcile_task": "WT-S20260503_002 baseline_metrics_reconcile",
+      "lro_decision_impact": "none — 별도 분리"
+    }
+  },
+  "lro_method_spec": {
+    "residualization": {
+      "windows": [252, 504],
+      "known_factors": ["MKT_KR", "SIZE_KR", "VALUE_KR", "MOM_KR", "QUALITY_KR", "LOWVOL_KR"],
+      "controls": ["sector_dummy_11"]
+    },
+    "pca": {
+      "K_candidates": [3, 5, 8],
+      "K_freeze": "IS-fixed, OOS unchanged",
+      "compare": ["covariance", "correlation"]
+    },
+    "alignment": {
+      "method": "Orthogonal Procrustes",
+      "B_ref_freeze": "IS 종점 1회 추정"
+    },
+    "anchors": {
+      "n": 10,
+      "list": ["Market", "Size", "Value", "Momentum", "Quality", "LowRisk", "Semi_AI", "Bio", "Energy_Cyclical", "Revision"],
+      "purpose": "label only — PC에 경제명 고정 금지"
+    },
+    "lri_index": {
+      "weights": {
+        "Z_LFC": 0.25,
+        "Z_LHHI": 0.20,
+        "Z_D": 0.20,
+        "Z_ARS_Revision": 0.15,
+        "Z_ARS_Momentum": 0.10,
+        "Z_Top3MRC": 0.10
+      },
+      "states": {
+        "Normal": "< q0.80 IS",
+        "Crowded": "q0.80~q0.90",
+        "HighRisk": "q0.90~q0.95",
+        "Extreme": "≥ q0.95"
+      },
+      "hysteresis": {"entry": "q0.80", "exit": "q0.65"},
+      "z_score_method": "expanding median/MAD, burn_in_min_obs=24m"
+    }
+  },
+  "overlay_modes": {
+    "Mode_A_monitoring": "weight 무변경",
+    "Mode_B_cap_tightening": "0.20 → 0.15 단독 (topN 제외)",
+    "Mode_C_M4_LRO_combined": "M4 + LRO. cash overlay 시 max(M4_cash, LRO_cash) 단일 규칙 (additive 금지)"
+  },
+  "decision_rule": {
+    "PASS": "CAGR ≥ 16% + MDD M4 대비 -3.0pp 또는 ≤ -25% + crisis vol ratio ≤ 0.90 + top5DD 3+ 개선 + SR 악화 ≤ 0.10 + turnover +20% 이내 + cost +50bps 이내 + Top3MRC 감소 + LRI extreme freq 감소 + ex-2025 OOS 무붕괴",
+    "CONDITIONAL_PASS": "CAGR ≥ 16% + MDD 1~3pp 개선 + crisis vol 개선 약함 + alpha damage 제한",
+    "MONITORING_ONLY": "LRI risk 설명력 OK + trading overlay alpha damage 큼",
+    "FAIL": "CAGR < 16% OR MDD/crisis vol/tail 개선 없음 OR turnover/cost만 증가 OR LRI high state 무관"
+  },
+  "axiom_constraints": {
+    "AX-000": "한계 없음, MDD -25% 달성 가능 가정",
+    "AX-001_v2": "defense-like 4종 (LRO_cap/LRO_cash/M4+LRO_cap/M4+LRO_cash) crisis_alpha + Core MDD pp + bad/normal realized risk ratio by LRI state 3-tuple 의무",
+    "AX-002": "lro_params_frozen SHA 동결, OOS K/threshold 변경 금지",
+    "AX-008": "Forge bt_result + Codex stance + Architect cross-check 3-source. tally 3-entry 기록 의무 (모든 verdict). PASS≥2 gate는 PASS/CONDITIONAL_PASS/promotion trigger 시에만"
+  },
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "judge_failed_path": "judge package 자체 생성 불가 시만 (governor phase 미실행)"
+  },
+  "production_protection": {
+    "str_1715_directory": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/",
+    "write_count_required": 0,
+    "audit": "post-cycle write count = 0 verify"
+  },
+  "active_sot": {
+    "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
+    "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
+  },
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "created_at": "2026-05-04T00:00:00+0900",
+  "created_by": "Q-Lead"
+}

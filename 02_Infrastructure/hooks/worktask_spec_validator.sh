@@ -5,7 +5,7 @@
 # 목적: qepm/mailbox/worktask/WT*/request.json 쓰기 시 schema 검증
 #
 # 검증 항목:
-#   - task_id 형식 (^WT[0-9]{8}_[0-9]{3}$)
+#   - task_id 형식 (^WT(-[DPSH])?[0-9]{8}_[0-9]{3}$ — backward-compat: 옛 WT12345678_001 + 신 WT-D12345678_001 둘 다)
 #   - universe_definition.label allowed list
 #   - hard_constraints.max_names ≤ 20
 #   - data_lag_rules 필수 필드 4종
@@ -34,7 +34,7 @@ errs = []
 
 # task_id 형식
 tid = req.get("task_id", "")
-if not re.match(r'^WT[0-9]{8}_[0-9]{3}$', tid):
+if not re.match(r'^WT(-[DPSH])?[0-9]{8}_[0-9]{3}$', tid):
     errs.append(f"task_id format invalid: {tid}")
 
 # universe
