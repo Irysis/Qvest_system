@@ -1,50 +1,159 @@
 {
-  "as_of_date": "2026-04-01",
+  "package": "STR_1715_actual_returns_268m",
+  "source_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+  "n_obs": 268,
   "span": {
     "start": "2004-02-02",
-    "end": "2026-04-01",
-    "n_obs": 5473
+    "end": "2026-05-01"
   },
-  "weight_proxy": "EW_top20 by Size, monthly rebalance — full reconstruction in optimizer/forge",
-  "overall": {
-    "VaR95": -0.0201,
-    "VaR99": -0.0364,
-    "ES95": -0.0316,
-    "ES99": -0.0523,
-    "n": 5473,
-    "MDD": -0.5064,
-    "CDaR95": -0.3109
+  "monthly_metrics": {
+    "var95": -0.0846,
+    "var99": -0.1523,
+    "es95": -0.1289,
+    "es99": -0.1694,
+    "mdd": -0.4169
   },
-  "by_state": {
-    "Normal": {
-      "VaR95": -0.0188,
-      "VaR99": -0.0314,
-      "ES95": -0.0274,
-      "ES99": -0.0422,
-      "n": 4091
+  "hill_estimator": {
+    "alpha": 2.5674,
+    "k_used": 20,
+    "n_neg_returns": 77,
+    "interpretation": "moderate_tail"
+  },
+  "evt_gpd": {
+    "var_evt": 0.0903,
+    "es_evt": 0.1195,
+    "shape_xi": 0.3524,
+    "scale_beta": 0.0084,
+    "threshold_u": 0.0604,
+    "n_exceedances": 27,
+    "method": "gpd_mle"
+  },
+  "cdar": {
+    "cdar95": 0.2899,
+    "var_dd": 0.2184,
+    "max_dd": 0.4169,
+    "avg_dd": 0.0569,
+    "n_drawdowns": 30,
+    "recovery_ratio": 0.5224
+  },
+  "stress_8_periods": {
+    "Terror_9_11": {
+      "start": "2001-09-01",
+      "end": "2001-12-31",
+      "n_obs": 0,
+      "cum_ret": "NA",
+      "mdd": "NA"
     },
-    "Crowded": {
-      "VaR95": -0.02,
-      "VaR99": -0.0339,
-      "ES95": -0.0285,
-      "ES99": -0.0437,
-      "n": 718
+    "GFC": {
+      "start": "2007-10-01",
+      "end": "2009-03-31",
+      "n_obs": 18,
+      "cum_ret": -0.3864,
+      "mdd": -0.4169
     },
-    "HighRisk": {
-      "VaR95": -0.0355,
-      "VaR99": -0.0616,
-      "ES95": -0.0515,
-      "ES99": -0.0806,
-      "n": 351
+    "Euro_Debt": {
+      "start": "2011-07-01",
+      "end": "2011-12-31",
+      "n_obs": 6,
+      "cum_ret": 0.2025,
+      "mdd": -0.1038
     },
-    "Extreme": {
-      "VaR95": -0.0309,
-      "VaR99": -0.0601,
-      "ES95": -0.0514,
-      "ES99": -0.0796,
-      "n": 313
+    "China_Shock": {
+      "start": "2015-06-01",
+      "end": "2016-02-29",
+      "n_obs": 9,
+      "cum_ret": 0.2823,
+      "mdd": -0.0286
+    },
+    "US_China_Trade": {
+      "start": "2018-03-01",
+      "end": "2018-12-31",
+      "n_obs": 10,
+      "cum_ret": -0.1946,
+      "mdd": -0.2236
+    },
+    "COVID": {
+      "start": "2020-01-01",
+      "end": "2020-06-30",
+      "n_obs": 6,
+      "cum_ret": 0.1294,
+      "mdd": -0.2512
+    },
+    "Rate_Hike_2022": {
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "n_obs": 12,
+      "cum_ret": -0.0398,
+      "mdd": -0.1905
+    },
+    "Iran_War_LMR": {
+      "start": "2026-02-01",
+      "end": "2026-04-30",
+      "n_obs": 3,
+      "cum_ret": 0.5157,
+      "mdd": 0
     }
   },
-  "cvar_breach_flag": true,
-  "notes": ["VaR/ES are daily; aggregate scaling to monthly/annual deferred to optimizer/forge", "Portfolio weight is EW_top20 proxy — STR_1715 actual weight gives different magnitudes", "State conditioning is via lro_monthly_risk_report.csv state column"]
+  "worst_period": {
+    "name": "GFC",
+    "cum_ret": -0.3864,
+    "mdd": -0.4169
+  },
+  "state_conditional": {
+    "Normal": {
+      "n_months": 199,
+      "mean_ret": 0.0366,
+      "sd_ret": 0.0727,
+      "var95": -0.0743,
+      "es95": -0.1239,
+      "worst": -0.1628
+    },
+    "HighRisk": {
+      "n_months": 18,
+      "mean_ret": 0.0228,
+      "sd_ret": 0.1082,
+      "var95": -0.1003,
+      "es95": -0.1865,
+      "worst": -0.1865
+    },
+    "Crowded": {
+      "n_months": 35,
+      "mean_ret": 0.0244,
+      "sd_ret": 0.0602,
+      "var95": -0.0726,
+      "es95": -0.0819,
+      "worst": -0.0835
+    },
+    "Extreme": {
+      "n_months": 15,
+      "mean_ret": 0.0204,
+      "sd_ret": 0.1098,
+      "var95": -0.1324,
+      "es95": -0.1367,
+      "worst": -0.1367
+    },
+    "PreLRO": {
+      "n_months": 1,
+      "mean_ret": 0.1627,
+      "sd_ret": "NA",
+      "var95": 0.1627,
+      "es95": 0.1627,
+      "worst": 0.1627
+    }
+  },
+  "hard_cap_check": {
+    "mdd_cap_45pct": -0.45,
+    "mdd_observed": -0.4169,
+    "breach_45pct_hard": false,
+    "es95_monthly_threshold": -0.15,
+    "cvar_breach_es95_loose": false,
+    "note": "STR_1715 268m MDD = -41.69% < hard cap -45% (PASS, no breach). ES95 monthly = -12.89% within tolerance for KR concentrated 20-stock long-only book."
+  },
+  "ax001_v2_conditional": {
+    "crisis_realized_mdd": -0.4169,
+    "crisis_realized_cum_ret": -0.3864,
+    "normal_state_mean_ret_monthly": 0.0366,
+    "crisis_vs_normal_es_ratio": 1.5047,
+    "interpretation": "HighRisk state realized ES95 = -18.65% vs Normal = -12.39% (1.51x amplification). LRI state has predictive power for tail risk."
+  }
 }

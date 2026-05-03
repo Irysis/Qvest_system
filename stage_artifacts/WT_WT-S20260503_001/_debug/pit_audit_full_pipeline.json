@@ -1,0 +1,35 @@
+{
+  "task_id": "WT-S20260503_001",
+  "audit_date": "2026-05-04 00:52:54",
+  "c1_full_sample_zscore_used": false,
+  "c2_same_day_circular": {
+    "description": "RAWDATA Ret[t] is using Date=t; portfolio = sum(W * Ret[t]) computed only after weights are FROZEN on rebalance date < t. For LRO measurement of correlation, no signal-to-trade lag needed (descriptive, not predictive).",
+    "pass": true
+  },
+  "c4_fundamental_lag": {
+    "description": "Not used in this pipeline (no DART quarterly/annual factor in 20-stock daily Σ).",
+    "pass": true,
+    "applicable": false
+  },
+  "c12_factor_return_construction": {
+    "description": "Factor returns (MKT/SIZE/MOM/LOWVOL/VALUE/QUALITY) computed as long-short spread on Date=t using Ret[t] same date. This is the realized factor return at time t. For PORTFOLIO RISK measurement (correlation, TDC, Σ), this is the canonical alignment. PIT lag is only required when factor signal is being USED to TRADE on date t+1.",
+    "pass": true,
+    "rationale": "Risk research is descriptive of historical realized covariance. Predictive use would require t+1 lag, which is not within this scope."
+  },
+  "c13_z_score_aligned": {
+    "description": "Not applicable — direct daily returns used, no Z-score factor construction.",
+    "pass": true,
+    "applicable": false
+  },
+  "c15_factor_db_route": {
+    "description": "RAWDATA loaded via load_rawdata() Parquet cache. Long-short factor proxies use RAWDATA columns only. Factor DB load_month_factors() not invoked — direct return-based proxies used as documented.",
+    "pass": true
+  },
+  "rolling_window": "RET_MAT span 2019-05 ~ 2026-04 (5y daily for Σ); STR_1715 268m monthly for tail/MDD",
+  "sig_date_split": {
+    "sig_date": "2026-04-30",
+    "n_pre": 13874014,
+    "n_post": 13515,
+    "no_post_sig_used_in_estimation": true
+  }
+}

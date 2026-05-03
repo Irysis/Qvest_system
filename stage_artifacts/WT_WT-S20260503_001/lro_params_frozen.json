@@ -1,0 +1,44 @@
+{
+  "task_id": "WT-S20260503_001",
+  "K": 5,
+  "residualization_window_days": 252,
+  "pca_method": "covariance",
+  "is_endpoint": "2024-06-30",
+  "B_ref_path": "stage_artifacts/WT_WT-S20260503_001/B_ref.parquet",
+  "B_ref_dim": [440, 5],
+  "B_ref_lambda": [0.0083, 0.0074, 0.0067, 0.0066, 0.0066],
+  "threshold_quantiles": {
+    "q065": 0.399,
+    "q080": 0.67,
+    "q090": 1.205,
+    "q095": 1.628
+  },
+  "hysteresis": {
+    "entry": "q0.80",
+    "exit": "q0.65"
+  },
+  "lri_weights": {
+    "Z_LFC": 0.25,
+    "Z_LHHI": 0.2,
+    "Z_D": 0.2,
+    "Z_ARS_Revision": 0.15,
+    "Z_ARS_Momentum": 0.1,
+    "Z_Top3MRC": 0.1
+  },
+  "z_score_method": "expanding_median_MAD_min_obs_24m",
+  "burn_in_min_obs_months": 24,
+  "weight_set": "STR_1715_actual_production_2026-05-01_cap0p20",
+  "weight_set_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv",
+  "sigma_method_selected": "ledoit_wolf",
+  "sigma_shrinkage_intensity_lw": 0.1112,
+  "hash_procedure": {
+    "step1": "Build dict EXCLUDING sha256 field",
+    "step2": "Canonical JSON: jsonlite::toJSON(dict, auto_unbox=TRUE, pretty=FALSE), no embedded sha256",
+    "step3": "sha256(canonical_bytes) using digest::digest(serialize=FALSE)",
+    "step4": "Append sha256 to dict, write final JSON",
+    "forge_verify": "Read JSON, remove sha256 field, recompute sha256 on canonical, compare"
+  },
+  "frozen_at": "2026-05-04 00:52:54",
+  "ax002_enforcement": "Forge MUST verify same SHA via hash_procedure",
+  "sha256": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8"
+}
