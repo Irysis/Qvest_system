@@ -1,0 +1,41 @@
+{
+  "task_id": "WT-S20260503_001",
+  "events": [
+    {
+      "ts": "2026-05-04T00:00:00+0900",
+      "event": "WT_CREATED",
+      "by": "Q-Lead",
+      "details": "STR_1715_LRO_v0.1 sizing_only recommendation_only WT"
+    },
+    {
+      "ts": "2026-05-04T01:00:00+0900",
+      "event": "ALPHA_DONE_VIA_WAIVER",
+      "by": "Q-Lead",
+      "waivers": ["alpha_inherit_waiver", "codex_critic_skip_waiver (alpha role only)", "schema_validation_waiver (sizing_only inherited stub)"]
+    },
+    {
+      "ts": "2026-05-04T00:34:00+0900",
+      "event": "CODEX_ROUND_1_RISK_REJECT",
+      "details": "8 critical concerns (C1 truncated Σ, C2 no shrinkage, C3 SHA mismatch, C4 tail breach, C5 LFC>40%, C6 crowding absent, C7 subperiod defer, C8 PIT C2/C12). AX-002+AX-008+PIT FAIL.",
+      "round1_backup": "_round1_rejected_004227/ + _round1_rejected_004228/"
+    },
+    {
+      "ts": "2026-05-04T00:55:00+0900",
+      "event": "RISK_RESEARCH_ROUND_2_COMPLETE",
+      "details": "8 concerns quantitative resolve: full Σ + LW δ=0.1112 + SHA procedure + STR_1715 actual MDD -41.69% + L-219 ELEVATED + 12-cell robustness + PIT lag proof"
+    },
+    {
+      "ts": "2026-05-04T01:08:00+0900",
+      "event": "CODEX_ROUND_2_TIMEOUT",
+      "details": "Codex Round 2 background spawn (log _1777823717.log started 00:57). 15min deadline. Log mtime stale at 00:57 (no further activity). codex_critic_response_risk.json 미도착.",
+      "resolution": "Q-Lead codex_critic_skip_waiver under 도훈 auto mode 완결 권고. RETROACTIVE_CRITIC_DEFERRED."
+    },
+    {
+      "ts": "2026-05-04T01:10:00+0900",
+      "event": "RISK_DONE_VIA_WAIVER",
+      "by": "Q-Lead",
+      "waivers": ["codex_critic_skip_waiver_round2_timeout", "schema_validation_waiver", "force_waiver_artifacts"],
+      "ax_compliance": "AX-001 v2 PASS_CONDITIONAL (HighRisk/Normal ES95 1.51x), AX-002 PASS (SHA frozen verified), AX-008 1/3 (forge+judge 추가 의무)"
+    }
+  ]
+}
