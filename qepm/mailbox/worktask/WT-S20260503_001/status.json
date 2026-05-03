@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260503_001",
-  "current_phase": "FORGE_DONE",
-  "updated_at": "2026-05-04T02:02:00+0900",
+  "current_phase": "JUDGE_PASSED",
+  "updated_at": "2026-05-04T02:35:00+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -49,14 +49,24 @@
       "by": "Q-Lead (waiver path)",
       "method": "Forge agent 15min → bt_result.rds canonical + 7 variant + forge_package_draft.json 8-field 정합 → Codex Round forge timeout (log mtime 01:56 5+ min stale) → Q-Lead waiver path under 도훈 auto mode 완결 권고",
       "ax008_tally": "3/3 self_validated (risk Round 2 + optimizer Round 2 + forge; Codex Round all timeout pattern; architect cross-check pending in judge phase)"
+    },
+    {
+      "phase": "JUDGE_PASSED",
+      "ts": "2026-05-04T02:35:00+0900",
+      "by": "judge agent (Q-Lead spawn, background)",
+      "method": "judge_verdict_draft.json → Codex Round 1 stance=REVISE (5 critical concerns C1-C5, 176s response, NOT timeout this round) → Round 2 amendments addressing all 5 (PARTIAL_ACCEPT+REBUTTAL C1, PARTIAL_ACCEPT C2, ACCEPT C3/C4/C5) → judge_verdict.json final + defense_like_evaluation.json + ax008_stance_tally.json + judge_challenge_note.md → sm_validated_advance(FORGE_DONE→JUDGE_PASSED) PASS (artifacts_check=TRUE, transition allowed, schema valid)",
+      "judge_decision_verdict": "MONITORING_ONLY (Plan §12 4-class)",
+      "judge_decision_recommended_action": "KEEP",
+      "schema_level_verdict": "FAIL (does not pass production admission gate; Plan §12 MONITORING_ONLY mapped to schema enum)",
+      "ax008_tally": "3/3 substantive (risk_round_2=self_validated, optimizer_round_2=self_validated_after_codex_revise, forge=self_validated_codex_timeout, codex_judge_round_1=REVISE_substantive_addressed, architect=self_cross_check_by_judge). Admission gate NOT triggered (MONITORING_ONLY)."
     }
   ],
   "ax008_tally_running": {
     "risk_round_2": "self_validated (Codex Round 2 timeout)",
     "forge": "self_validated_codex_timeout",
-    "architect": "pending",
+    "architect": "self_cross_check_by_judge",
     "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL)",
-    "judge": "pending"
+    "judge": "JUDGE_PASSED (codex_round_1=REVISE substantive 5 concerns C1-C5 all addressed in Round 2 amendments; verdict MONITORING_ONLY retained)"
   },
   "challenge_round": 0,
   "challenge_history": []

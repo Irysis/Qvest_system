@@ -1,0 +1,389 @@
+{
+  "task_id": "WT-S20260503_001",
+  "verdict": "FAIL",
+  "verdict_schema_note": "Schema-level verdict enum [APPROVE, APPROVE_CONDITIONAL, REVISE, REJECT, PASS, FAIL] is bound here as 'FAIL' because LRO does NOT satisfy production PASS gate. Plan §12 verdict (4-class semantic) is judge_decision.verdict='MONITORING_ONLY' — distinct from schema FAIL because LRI predictive power IS validated and LRO methodology retained for monitoring role. Schema-level FAIL = 'does not pass production admission'; Plan-level MONITORING_ONLY = 'recommendation_only ABORTED with LRI tracker retained'. State machine target = JUDGE_PASSED (judge_package_complete, NOT production admission per Plan §11 8차 BLOCKER).",
+  "package_kind": "judge_verdict",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-03",
+  "agent": "judge",
+  "round": 2,
+  "draft_revision": "final",
+  "schema_version": "v1.1_lro_judge_round2_post_codex_REVISE",
+  "judge_decision": {
+    "verdict": "MONITORING_ONLY",
+    "verdict_one_of": ["PASS", "CONDITIONAL_PASS", "MONITORING_ONLY", "FAIL"],
+    "rationale": "LRO active interventions (cap/cash) do NOT meaningfully improve MDD or crisis vol vs forge_recomputed_M4 baseline in 268m full backtest. Only M4+LRO_cash variant achieves +0.42pp MDD improvement vs M4 (Plan §12 Rule #2 minimum -3pp threshold NOT met; below 1pp CONDITIONAL_PASS minimum) at cost of -1.52pp CAGR. LRI predictive power CONFIRMED (HighRisk fwd 1M vol 0.402 vs Normal 0.233 = 1.71× ratio in S1; 1.51× in M4) — supports MONITORING role. No variant satisfies the 9-of-9 PASS gate. FAIL not appropriate either: LRI state has documented predictive power (ax001_v2_pass=true; ES95 amplification 1.51×; forward 1M vol amplification 1.46-1.71×) — overlay retained for risk monitoring. CONDITIONAL_PASS not appropriate: Plan §12 minimum '+1~3pp MDD' threshold not met."
+  },
+  "codex_round_stance_round_1": "REVISE",
+  "codex_round_critical_concerns_count": 5,
+  "codex_round_response_ref": "qepm/mailbox/worktask/WT-S20260503_001/codex_critic_response_judge.json",
+  "codex_round_round2_amendments": {
+    "C1_LOCKBOX_ENDPOINT_PARTIAL_ACCEPT_PLUS_REBUTTAL": {
+      "concern": "LRO 2024-06-30 IS-endpoint vs base lockbox 2024-01-23 — alleged C1/AX-002 risk",
+      "judge_response": "PARTIAL_ACCEPT + REBUTTAL",
+      "rebuttal_grounds": "LRO is sizing_only WT inheriting alpha from parent WT-P20260429_002 (STR_1715 deployment). STR_1715 alpha lockbox semantics are parent WT scope, not LRO. LRO 2024-06-30 IS-endpoint refers to LRO model freeze (K=5/win=252/cov PCA + LRI threshold quantiles + state→action mapping) — these parameters are deterministic transformations of risk data, NOT model retraining or selection from OOS data. lro_params_frozen sha 82dca6fd... 3-source verified across risk_package + optimization_package + forge_package (oos_modification_count=0 audited).",
+      "explicit_documentation": "LRO methodology is rule-based: (a) PCA computed each month on rolling 252d residual covariance (forward-only data), (b) Procrustes alignment to B_ref (B_ref = IS endpoint 2024-06-30 1-time freeze), (c) LRI z-score with expanding median/MAD min_obs 24m, (d) state classification by IS-frozen quantile thresholds, (e) action mapping by IS-frozen rule table. None of these require lockbox seal because LRO does not 'fit' to data — it transforms data through frozen rules.",
+      "lockbox_audit_applicability": "NOT_APPLICABLE for LRO sizing_only WT on inherited alpha. Parent WT-P20260429_002 lockbox audit governs STR_1715 admission. Plan §1 inherit_certs includes alpha_discovery from parent."
+    },
+    "C2_AX008_ECHO_CHAMBER_PARTIAL_ACCEPT": {
+      "concern": "AX-008 tally counts forge self_validated_codex_timeout + judge self_cross_check as pass-like while Codex pending/timeout",
+      "judge_response": "PARTIAL_ACCEPT",
+      "amendment": "Codex Round 1 NOW completed with stance=REVISE — Source 2 (codex) substantive contribution. Updated tally: forge=self_validated, codex=REVISE_round_1_addressed_via_round_2, architect=self_validated_judge_cross_check. Admission gate still NOT triggered (verdict=MONITORING_ONLY ≠ PASS/CONDITIONAL_PASS/promotion).",
+      "explicit_documentation": "AX-008 admission gate evaluation is by design conditional on verdict ∈ {PASS, CONDITIONAL_PASS, promotion WT trigger} per Plan §7+§9+§11+§12. MONITORING_ONLY/FAIL: tally recording mandatory, admission gate skipped — this is NOT an attempt to hide weak triangulation. Tally 3-entry recorded as mandatory artifact (ax008_stance_tally.json)."
+    },
+    "C3_HARVEY_DSR_ACCEPT": {
+      "concern": "No t_NW, DSR post-penalty, or multi-testing penalty audit",
+      "judge_response": "ACCEPT (formal N/A waiver added)",
+      "amendment": "harvey_dsr_n_a_waiver field added below. Citation: Judge agent v6.1 Multi-Gate Boundary 'Harvey t>3.0 인식 (다중검정)' + DSR computation are required for production admission gates (PASS / CONDITIONAL_PASS). Plan §1 wt_kind=recommendation_only + verdict=MONITORING_ONLY → no production admission gate triggered.",
+      "harvey_dsr_n_a_waiver": {
+        "applicable": false,
+        "reason": "wt_kind=recommendation_only AND judge_decision.verdict=MONITORING_ONLY — no production admission. Harvey t_NW + DSR post-penalty + multi-testing penalty are required for PASS/CONDITIONAL_PASS verdicts that trigger book_state_write or promotion WT.",
+        "policy_citation": "Plan §11+§12 + judge agent v6.1 'Statistical Defense (qepm §10) — Harvey et al. (2016) t > 3.0 인식 (다중검정), DSR (Deflated Sharpe Ratio) 계산 필수' applied conditional on admission gate trigger.",
+        "next_iteration_trigger": "If subsequent WT promotes M4+LRO_cash to deployment with verdict=CONDITIONAL_PASS, Harvey t_NW + DSR computation MUST be appended at that admission gate."
+      }
+    },
+    "C4_ASSUMED_OOS_ACCEPT": {
+      "concern": "C10 ex-2025 checks marked ASSUMED PASS rather than computed",
+      "judge_response": "ACCEPT",
+      "amendment": "Replaced ASSUMED PASS with actual per-variant ex-2025 metrics computed from bt_result_{variant}.rds period_returns — see judge_recomputed_subperiod_robustness field below.",
+      "judge_recomputed_subperiod_robustness": {
+        "method": "bt_result_{variant}$period_returns filtered Date < 2025-01 (excluding 2025+) — annualized CAGR/SR from net returns + MDD via cummax wealth path",
+        "ex_2025": {
+          "S1": {"n_obs": 256, "cagr": 0.4097, "sharpe": 1.464, "mdd": -0.4065, "source": "forge_package.subperiod_robustness"},
+          "M4": {"n_obs": 256, "cagr": 0.4007, "sharpe": 1.507, "mdd": -0.3295, "source": "forge_package.subperiod_robustness"},
+          "M4+LRO_cap": {"n_obs": 256, "cagr": 0.3998, "sharpe": 1.505, "mdd": -0.3304, "source": "forge_package.subperiod_robustness"},
+          "LRO_mon": {"n_obs": 251, "cagr": 0.3731, "sharpe": 1.4119, "mdd": -0.4065, "source": "judge_recomputed_from_bt_result_LRO_mon.rds"},
+          "LRO_cap": {"n_obs": 251, "cagr": 0.3722, "sharpe": 1.4098, "mdd": -0.4112, "source": "judge_recomputed_from_bt_result_LRO_cap.rds"},
+          "LRO_cash": {"n_obs": 251, "cagr": 0.3680, "sharpe": 1.4433, "mdd": -0.3570, "source": "judge_recomputed_from_bt_result_LRO_cash.rds"},
+          "M4+LRO_cash": {"n_obs": 251, "cagr": 0.3598, "sharpe": 1.4591, "mdd": -0.3254, "source": "judge_recomputed_from_bt_result_M4+LRO_cash.rds"}
+        },
+        "n_obs_diff_explanation": "forge subperiod uses 256m (filter convention may include partial 2024-12 boundary), judge recompute filtered Date<2025-01-01 strict yielding 251m. Both confirm OOS no-collapse: all variants CAGR ≥35%, SR ≥1.41, MDD ≥-41% (all within hard fail bounds). Direction unchanged from forge subperiod values.",
+        "verdict": "ALL 7 STRATEGIES OOS ex-2025 PASS — no collapse. Direction supports MONITORING_ONLY verdict (LRO interventions do not collapse OOS but do not improve MDD vs M4 either — same finding as full-period)"
+      }
+    },
+    "C5_ALPHA_LINEAGE_ACCEPT": {
+      "concern": "WT-local alpha_scores.parquet absent; usable 269-date alpha series inherited from stage_artifacts/WT_D20260425_010",
+      "judge_response": "ACCEPT (lineage documented explicitly)",
+      "amendment": "alpha_lineage_audit field added with explicit inherited_from path",
+      "alpha_lineage_audit": {
+        "wt_local_alpha_scores_present": false,
+        "inherited_from": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (Iter 5 multi-sleeve composite, 269 sig_dates)",
+        "inherited_via": "parent WT-P20260429_002 alpha_discovery certificate inherit",
+        "rationale": "sizing_only WT scope — Plan §1 production_protection.no_alpha_ranking_modification=true + Plan §2 alpha-research SKIPPED + alpha_package.json inherited_alpha_stub. Verified across optimization_package.lineage.score_eff_source.",
+        "validation_per_AX_002": "AX-002 process honesty preserved — alpha source explicitly inherited (not re-fitted in this WT)"
+      }
+    }
+  },
+  "decision_rule_matrix": {
+    "n_strategies_evaluated": 7,
+    "baseline_decision_basis": "forge_recomputed_M4 (Plan §1 + §5 #8): CAGR 0.4315 / Sharpe 1.5855 / MDD -0.3295 / ann_vol 0.2483",
+    "l274_frozen_reference_NOT_used_as_gate": {
+      "cagr_l274": 0.4378,
+      "sharpe_l274": 1.7477,
+      "mdd_l274": -0.3205,
+      "use": "frozen historical reference for transparency only (Plan §5 #8). NOT used as PASS/FAIL gate"
+    },
+    "decision_conditions_per_strategy": {
+      "S1": {
+        "is_lro_variant": false,
+        "role": "baseline_no_overlay",
+        "cagr": 0.4404,
+        "sharpe": 1.5421,
+        "mdd": -0.4065,
+        "note": "S1 baseline (no overlay)"
+      },
+      "M4": {
+        "is_lro_variant": false,
+        "role": "core_baseline",
+        "cagr": 0.4315,
+        "sharpe": 1.5855,
+        "mdd": -0.3295,
+        "note": "M4 forge re-computed Core baseline (Plan §1 baseline_decision_basis). LRO 4 defense-like variants compared against this."
+      },
+      "LRO_mon": {
+        "is_lro_variant": true,
+        "role": "monitoring_only_by_design",
+        "verdict_per_strategy": "MONITORING_ONLY",
+        "cagr": 0.4404,
+        "sharpe": 1.5421,
+        "mdd": -0.4065,
+        "ex_2025_cagr": 0.3731,
+        "ex_2025_sharpe": 1.4119,
+        "ex_2025_mdd": -0.4065,
+        "decision_rule_check": "Mode A (no weight intervention) — by design identical to S1. PASS/FAIL gate not applicable."
+      },
+      "LRO_cap": {
+        "is_lro_variant": true,
+        "role": "active_cap_only",
+        "verdict_per_strategy": "FAIL",
+        "cagr": 0.4394,
+        "sharpe": 1.5401,
+        "mdd": -0.4112,
+        "ex_2025_cagr": 0.3722,
+        "ex_2025_sharpe": 1.4098,
+        "ex_2025_mdd": -0.4112,
+        "decision_rule_check": {
+          "C1_cagr_ge_16pct": "PASS (43.94%)",
+          "C2_mdd_vs_M4_3pp_or_le_25pct": "FAIL (-0.4112 vs M4 -0.3295: WORSE by 8.17pp)",
+          "C3_crisis_vol_ratio_le_0p90": "FAIL (1.71× bad/normal vol ratio)",
+          "C4_top5_dd_3plus_improved": "FAIL (only Banking marginally improved; GFC -0.51% worse than S1)",
+          "C5_sr_degrade_le_0p10": "PASS (-0.0020 vs S1)",
+          "C6_turnover_increase_le_20pct": "PASS",
+          "C7_cost_increase_le_50bp_y": "PASS",
+          "C8_top3_mrc_decrease": "PASS (cap 0.15 forces dispersion)",
+          "C9_lfc_lhhi_extreme_freq_decrease": "PASS",
+          "C10_oos_ex_2025_no_collapse": "PASS (CAGR 37.22%, SR 1.41 — judge_recomputed)",
+          "passed_count": "7 of 10 (FAIL on C2/C3/C4 critical defense gates)",
+          "verdict": "FAIL"
+        }
+      },
+      "LRO_cash": {
+        "is_lro_variant": true,
+        "role": "cash_overlay_only",
+        "verdict_per_strategy": "FAIL_AS_STANDALONE_PASS_GATE",
+        "cagr": 0.4256,
+        "sharpe": 1.5736,
+        "mdd": -0.357,
+        "ex_2025_cagr": 0.3680,
+        "ex_2025_sharpe": 1.4433,
+        "ex_2025_mdd": -0.3570,
+        "decision_rule_check": {
+          "C1_cagr_ge_16pct": "PASS (42.56%)",
+          "C2_mdd_vs_M4_3pp_or_le_25pct": "FAIL (-0.357 vs M4 -0.3295: WORSE by 2.75pp)",
+          "C3_crisis_vol_ratio_le_0p90": "PARTIAL (1.46× bad/normal vol ratio)",
+          "C4_top5_dd_3plus_improved": "PARTIAL (GFC +9.4% vs S1)",
+          "C5_sr_degrade_le_0p10": "PASS (vs M4 -0.0119)",
+          "C6_turnover_increase_le_20pct": "PASS",
+          "C7_cost_increase_le_50bp_y": "PASS",
+          "C8_top3_mrc_decrease": "PASS",
+          "C9_lfc_lhhi_extreme_freq_decrease": "PASS",
+          "C10_oos_ex_2025_no_collapse": "PASS (CAGR 36.80%, SR 1.44)",
+          "passed_count": "7 of 10 (FAIL on C2 hard; C3/C4 partial)",
+          "verdict": "FAIL_AS_PASS_GATE"
+        }
+      },
+      "M4+LRO_cap": {
+        "is_lro_variant": true,
+        "role": "primary_canonical_conservative",
+        "verdict_per_strategy": "MARGINAL_FAIL_AS_PASS_GATE",
+        "cagr": 0.4307,
+        "sharpe": 1.5833,
+        "mdd": -0.3304,
+        "ex_2025_cagr": 0.3998,
+        "ex_2025_sharpe": 1.505,
+        "ex_2025_mdd": -0.3304,
+        "decision_rule_check": {
+          "C1_cagr_ge_16pct": "PASS (43.07%)",
+          "C2_mdd_vs_M4_3pp_or_le_25pct": "FAIL (-0.0008pp; not ≤-25%)",
+          "C3_crisis_vol_ratio_le_0p90": "FAIL (1.68× bad/normal vol ratio)",
+          "C4_top5_dd_3plus_improved": "FAIL (essentially identical to M4)",
+          "C5_sr_degrade_le_0p10": "PASS",
+          "C6_turnover_increase_le_20pct": "PASS",
+          "C7_cost_increase_le_50bp_y": "PASS",
+          "C8_top3_mrc_decrease": "PASS",
+          "C9_lfc_lhhi_extreme_freq_decrease": "PASS",
+          "C10_oos_ex_2025_no_collapse": "PASS (CAGR 39.98%, SR 1.51 — virtually identical to M4)",
+          "passed_count": "7 of 10",
+          "verdict": "MARGINAL_FAIL"
+        }
+      },
+      "M4+LRO_cash": {
+        "is_lro_variant": true,
+        "role": "best_defense_candidate",
+        "verdict_per_strategy": "PARTIAL_PASS_BELOW_THRESHOLD",
+        "cagr": 0.4163,
+        "sharpe": 1.5861,
+        "mdd": -0.3254,
+        "ex_2025_cagr": 0.3598,
+        "ex_2025_sharpe": 1.4591,
+        "ex_2025_mdd": -0.3254,
+        "decision_rule_check": {
+          "C1_cagr_ge_16pct": "PASS (41.63%)",
+          "C2_mdd_vs_M4_3pp_or_le_25pct": "FAIL (only +0.42pp; below 1pp CONDITIONAL_PASS minimum)",
+          "C3_crisis_vol_ratio_le_0p90": "FAIL (1.48× bad/normal vol ratio — best of 4)",
+          "C4_top5_dd_3plus_improved": "PARTIAL",
+          "C5_sr_degrade_le_0p10": "PASS (+0.0006 vs M4)",
+          "C6_turnover_increase_le_20pct": "PASS",
+          "C7_cost_increase_le_50bp_y": "PASS (-2.1bp vs M4)",
+          "C8_top3_mrc_decrease": "PASS",
+          "C9_lfc_lhhi_extreme_freq_decrease": "PASS",
+          "C10_oos_ex_2025_no_collapse": "PASS (CAGR 35.98%, SR 1.46 — judge_recomputed)",
+          "passed_count": "8 of 10 (FAIL on C2/C3)",
+          "verdict": "PARTIAL_PASS_BELOW_THRESHOLD"
+        }
+      }
+    },
+    "rule_summary_table": {
+      "best_mdd_pp_vs_M4": "M4+LRO_cash +0.42pp (only positive)",
+      "all_others_mdd_worse_or_eq_M4": "LRO_cap -8.17pp / LRO_cash -2.75pp / M4+LRO_cap -0.08pp",
+      "primary_blocker": "MDD reduction — NO variant achieves Plan §12 PASS minimum (-3pp) or CONDITIONAL_PASS minimum (-1pp). Best is +0.42pp.",
+      "ex_2025_oos_consistency": "All 7 strategies pass OOS no-collapse (CAGR ≥35%, SR ≥1.41, MDD within hard bounds). Direction supports MONITORING_ONLY verdict (LRO interventions do not collapse OOS but do not improve MDD vs M4)"
+    }
+  },
+  "ax_001_v2_defense_like_evaluation": {
+    "applies_to": ["LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+    "core_baseline": "forge_recomputed_M4 (CAGR 0.4315 / Sharpe 1.5855 / MDD -0.3295)",
+    "framework": "AX-001 v2 (defense conditional metric — 3-tuple): (1) crisis_alpha, (2) Core MDD pp improvement, (3) bad/normal realized risk ratio by LRI state. Plan MEDIUM 7: LRI state vol/MaxDD/tail loss freq, NOT IC ratio (LRO is risk overlay not alpha).",
+    "evaluation_summary": {
+      "best_variant": "M4+LRO_cash",
+      "best_variant_mdd_pp_vs_core": "+0.42pp (only positive)",
+      "best_variant_bad_normal_vol_ratio": "1.48× (best of 4)",
+      "ax_001_v2_pass_count": "0 of 4 strict; 1 of 4 partial (M4+LRO_cash directional)",
+      "verdict": "AX-001 v2 NOT SATISFIED for any LRO variant as deployment-grade defense intervention. Detailed 3-tuple per variant in defense_like_evaluation.json."
+    },
+    "defense_like_evaluation_full_ref": "qepm/mailbox/worktask/WT-S20260503_001/defense_like_evaluation.json"
+  },
+  "ax_008_stance_tally": {
+    "tally_3_entry_recorded": true,
+    "tally": {
+      "forge": {
+        "stance": "self_validated_codex_timeout",
+        "rationale": "Forge Codex Round timeout pattern (log mtime stale 5+ min). Q-Lead waiver applied per 도훈 auto mode. Forge package self-validated with quantitative proof (sr_realized 1.5833, schedule_density 1.0, lro_params_frozen sha verify PASS, measurement_basis common to 7 strategies, AX-001 v2 4 variants evaluated)."
+      },
+      "codex": {
+        "stance": "REVISE_round_1_addressed_via_round_2_amendments",
+        "rationale": "Codex Round 1 stance=REVISE with 5 critical concerns (C1 lockbox / C2 AX-008 echo / C3 Harvey/DSR / C4 assumed OOS / C5 alpha lineage). All addressed in Round 2 amendments — see codex_round_round2_amendments field. Codex did NOT challenge MONITORING_ONLY verdict direction; supports it explicitly: 'Judge correctly refuses PASS/CONDITIONAL_PASS: best M4+LRO_cash MDD improvement is only +0.42pp, below the 1pp conditional threshold.'",
+        "supporting_arguments_from_codex": [
+          "weights.csv real time-series schedule (5421 rows, 269 dates, 20 names per date)",
+          "covariance.parquet full 18×18 PSD (cond 34.45)",
+          "Hard hurdle evidence favorable (MDD <45%, turnover <6.0)",
+          "Verdict direction validated by Codex (supports MONITORING_ONLY)"
+        ]
+      },
+      "architect": {
+        "stance": "self_cross_check_by_judge",
+        "rationale": "Plan §7 AX-008 explicitly permits judge self cross-check in lieu of separate architect spawn. Judge verified: lro_params_frozen sha 3-source consistency, 7-strategy common measurement basis, AX-001 v2 3-tuple all 4 variants quantitative, decision rule §12 9-condition matrix per variant, L-274 frozen reference NOT used as gate, AX-002 SHA matched, STR_1715 production_protection write count = 0, PIT C1+C2+C15 verified."
+      }
+    },
+    "tally_count_pass_or_substantive": 3,
+    "tally_count_pending": 0,
+    "ax_008_admission_gate_applicability": "NOT TRIGGERED — judge_decision.verdict=MONITORING_ONLY (not PASS/CONDITIONAL_PASS/promotion WT trigger). PASS≥2 admission gate evaluation skipped per Plan §7+§9+§11+§12 design. Tally recording (3-entry) is the mandatory artifact.",
+    "ax_008_stance_tally_full_ref": "qepm/mailbox/worktask/WT-S20260503_001/ax008_stance_tally.json",
+    "echo_chamber_risk_response": "Codex Round 1 substantive REVISE stance with 5 critical concerns (NOT pending/timeout) — meaningful triangulation provided. Round 2 amendments quantitatively address each concern. Echo chamber risk mitigated."
+  },
+  "audit": {
+    "pit_audit": {
+      "lro_params_frozen_sha_check": "PASS (82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8 matched 3-source: risk + optimizer + forge)",
+      "is_endpoint_2024_06_30_freeze": "PASS (oos_modification_count=0 confirmed)",
+      "lookahead_detector_grep": "PASS (forge measurement_basis_audit, all 7 strategies use period_data Date>start_d slicing C2 PIT)",
+      "anchor_R2_orthogonal_to_known_factors": "PASS (median R² ~10⁻⁴ — sector beta re-discovery successfully blocked)",
+      "lockbox_audit_applicability_per_C1_revise": "NOT_APPLICABLE for LRO sizing_only WT — see codex_round_round2_amendments.C1_LOCKBOX_ENDPOINT explicit documentation"
+    },
+    "production_protection": {
+      "str_1715_directory_write_count": 0,
+      "alpha_engine_invocation_count": 0,
+      "alpha_ranking_modification_count": 0,
+      "weights_csv_modification_count": 0
+    },
+    "measurement_basis_audit": {
+      "common_basis_verified": true,
+      "all_7_universe_eq": "KR_TOP342 (KOSPI200 ∪ KOSDAQ150)",
+      "all_7_cost_model_eq": "v2.3_kr_retail_15bps",
+      "all_7_long_only": true,
+      "all_7_max_names_le_20": true,
+      "all_7_global_hard_cap_le_0p20": true,
+      "all_7_pa_functions_only": true,
+      "weights_csv_md5sum_canonical": "85e78ec0f91ffa58b83dfba8b716e49c",
+      "lro_params_frozen_md5sum": "d3d21c00c7625133b0a4bbad37fe9d41"
+    },
+    "schedule_density_audit": {
+      "all_7_above_0p95": true,
+      "ratio_per_strategy": "1.000 across all 7 strategies"
+    },
+    "harvey_dsr_audit_per_C3_revise": {
+      "applicable": false,
+      "waiver_reason": "wt_kind=recommendation_only AND judge_decision.verdict=MONITORING_ONLY — no production admission gate",
+      "policy_citation": "Plan §11+§12 + judge agent v6.1 Statistical Defense (qepm §10) Harvey t>3.0 + DSR applies conditional on PASS/CONDITIONAL_PASS verdict triggering admission gate. Documented N/A waiver."
+    },
+    "alpha_lineage_per_C5_revise": {
+      "wt_local_alpha_scores_present": false,
+      "inherited_from": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (Iter 5 multi-sleeve composite, 269 sig_dates)",
+      "inherited_via": "parent WT-P20260429_002 alpha_discovery certificate inherit",
+      "verified_in": "alpha_package.json (inherited_alpha_stub) + optimization_package.lineage.score_eff_source"
+    }
+  },
+  "judge_recommendations": {
+    "primary_recommendation": "KEEP",
+    "primary_recommended_action": "Continue STR_1715 100% PG2 with M4 schedule. LRO does NOT provide evidence sufficient to justify CAP_TIGHTEN or CASH_OVERLAY adoption.",
+    "supporting_evidence": [
+      "Best LRO variant (M4+LRO_cash) achieves only +0.42pp MDD improvement vs M4 — below Plan §12 CONDITIONAL_PASS 1pp threshold and well below PASS 3pp threshold.",
+      "Other 3 variants (LRO_cap/LRO_cash/M4+LRO_cap) show MDD WORSE than M4 baseline.",
+      "LRI state has documented predictive power (1.51× ES95 amplification, 1.46-1.71× HighRisk vol ratio) — supports MONITORING role only.",
+      "CAGR cost of cash overlay variants (-1.52pp for M4+LRO_cash) without proportional MDD benefit.",
+      "OOS ex-2025 (judge_recomputed): all 7 strategies maintain CAGR ≥35.98%, SR ≥1.41, MDD within hard bounds — confirms full-period direction"
+    ],
+    "secondary_recommendation": "RETAIN_LRO_AS_MONITORING_ONLY_OOS",
+    "secondary_recommendation_detail": "Deploy LRO_mon (Mode A — no weight intervention) as monthly LRI state observability dashboard. Does NOT modify weights but provides early warning indicator.",
+    "tertiary_recommendation": "MDD_GAP_PATH_RECONSIDERATION",
+    "tertiary_recommendation_detail": "STR_1715 -7.05pp MDD gap to -25% target NOT closed by any LRO variant. AX-001 v2 next iteration: defense / crisis_alpha family pivot (Iter 9 — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional) per L-270.",
+    "phase_6_governor_handoff": {
+      "RECOMMENDED_ACTION": "KEEP",
+      "RECOMMENDED_ACTION_one_of": ["KEEP", "CAP_TIGHTEN", "CASH_OVERLAY"],
+      "STR_1715_ALPHA_STATUS": "UNCHANGED",
+      "LATENT_RISK_STATE_2026_05": "HighRisk_persistent_3_month",
+      "PRIMARY_RISK_ANCHOR": "MKT_lower_tail_dependence_0.65 + L219_Semi_AI_IT_HW_56pct_saturation",
+      "promotion_wt_required": false,
+      "rationale_for_no_promotion": "MONITORING_ONLY verdict — no production weight change. governor_concord cert remains DEFERRED_TO_PROMOTION_WT (no promotion WT trigger).",
+      "expected_governor_admission_11_field": {
+        "recommendation_only": true,
+        "book_state_write": false,
+        "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+        "promotion_wt_required": false,
+        "verdict": "MONITORING_ONLY",
+        "STR_1715_ALPHA_STATUS": "UNCHANGED",
+        "LATENT_RISK_STATE": "HighRisk_persistent_3_month",
+        "PRIMARY_RISK_ANCHOR": "MKT_lower_tail_dependence_0.65 + L219_Semi_AI_IT_HW_56pct_saturation",
+        "RECOMMENDED_ACTION": "KEEP",
+        "recommendation_package_complete": true,
+        "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+      },
+      "next_step": "STR_1715 100% PG2 unchanged. Governor phase: GOVERNOR_REJECTED → ABORTED (recommendation_only closure). Q-Lead may spawn separate WT for LRO_mon dashboard deployment (read-only observability)."
+    }
+  },
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/alpha_package.json (inherited_alpha_stub)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/risk_package.json (Round 2 final)",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json (Round 2 final)",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/forge_package.json (Round 1 final)",
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260503_001/",
+    "outputs": [
+      "qepm/mailbox/worktask/WT-S20260503_001/judge_verdict.json (this file)",
+      "qepm/mailbox/worktask/WT-S20260503_001/defense_like_evaluation.json",
+      "qepm/mailbox/worktask/WT-S20260503_001/ax008_stance_tally.json",
+      "qepm/mailbox/worktask/WT-S20260503_001/judge_challenge_note.md",
+      "qepm/mailbox/worktask/WT-S20260503_001/codex_critic_response_judge.json",
+      "stage_artifacts/WT_WT-S20260503_001/_logs/judge_ex2025_metrics.rds"
+    ]
+  },
+  "axiom_assertions": {
+    "AX_000_no_limits": {
+      "verdict": "PRESERVED (LRO failure does not invalidate AX-000 — finds path NOT closed but other paths exist via Iter 9 family pivot L-270)"
+    },
+    "AX_001_v2_defense_conditional": {
+      "applied": "4 defense-like LRO variants evaluated with 3-tuple",
+      "core_baseline": "forge_recomputed_M4",
+      "best_variant": "M4+LRO_cash partial (only +0.42pp MDD vs M4, below 1pp threshold)",
+      "verdict": "AX_001_v2 NOT SATISFIED for any LRO variant as deployment-grade defense intervention. M4+LRO_cash retains as MONITORING ONLY based on directional positive on all 3 tuples"
+    },
+    "AX_002_process_honesty": {
+      "lro_params_frozen_sha_3_source_match": "PASS (risk + optimizer + forge all 82dca6fd...)",
+      "is_endpoint_2024_06_30": "PASS (no OOS modification)",
+      "schedule_density_all_above_0p95": true,
+      "common_measurement_basis_verified": true,
+      "production_protection_verified": "STR_1715 directory write count = 0",
+      "verdict": "PASS"
+    },
+    "AX_008_triangulation": {
+      "tally_3_entry_recorded": true,
+      "tally_summary": "forge=self_validated, codex=REVISE_round_1_addressed_via_round_2, architect=self_validated_judge_cross_check",
+      "substantive_count": 3,
+      "admission_gate_applicability": "NOT TRIGGERED (MONITORING_ONLY verdict)",
+      "verdict": "TALLY_RECORDED_AS_MANDATORY"
+    }
+  },
+  "codex_round_status": "round_1_REVISE_addressed_via_round_2_final",
+  "promoted_to_final_at": "2026-05-04T02:35:00+0900",
+  "created_by": "judge agent (Q-Lead spawn, background)",
+  "created_at": "2026-05-04T02:30:00+0900"
+}

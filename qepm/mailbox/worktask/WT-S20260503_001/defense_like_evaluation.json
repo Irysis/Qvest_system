@@ -1,0 +1,202 @@
+{
+  "task_id": "WT-S20260503_001",
+  "as_of_date": "2026-05-03",
+  "agent": "judge",
+  "axiom": "AX-001 v2 (defense conditional metric)",
+  "framework": "3-tuple per defense-like variant: (1) crisis_alpha across stress periods; (2) Core MDD pp improvement vs forge_recomputed_M4; (3) bad/normal realized risk ratio by LRI state — replacing IC ratio per Plan MEDIUM 7 (LRO is risk overlay not alpha)",
+  "core_baseline": {
+    "name": "forge_recomputed_M4",
+    "cagr": 0.4315,
+    "sharpe": 1.5855,
+    "mdd": -0.3295,
+    "ann_vol": 0.2483,
+    "rationale": "M4 baseline re-computed by forge under IDENTICAL measurement basis as 7 LRO strategies — used as PASS gate Core baseline (Plan §1 baseline_decision_basis)"
+  },
+  "frozen_reference_l274_NOT_used_as_gate": {
+    "cagr": 0.4378,
+    "sharpe": 1.7477,
+    "mdd": -0.3205,
+    "use": "frozen historical reference for transparency only (Plan §5 #8). NOT used as PASS/FAIL gate"
+  },
+  "evaluation": {
+    "LRO_cap": {
+      "tuple_1_crisis_alpha": {
+        "GFC_cum_ret": -0.3728,
+        "GFC_mdd": -0.4112,
+        "Euro_cum_ret": 2.9474,
+        "China_VS_cum_ret": 0.3069,
+        "Brexit_cum_ret": 0.1856,
+        "COVID_cum_ret": -0.2564,
+        "COVID_mdd": -0.2167,
+        "Inflation_cum_ret": -0.1680,
+        "Inflation_mdd": -0.2034,
+        "Banking_cum_ret": 0.0019,
+        "LMR_cum_ret": 1.0009,
+        "vs_S1_GFC_pp": -0.51,
+        "vs_M4_GFC_pp": -7.37,
+        "interpretation": "GFC drawdown WORSE than M4 baseline (-7.37pp) — cap intervention does not address MKT-driven crisis (TDC_MKT 0.65). Other stress periods nearly identical to S1."
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": -0.0817,
+        "interpretation": "MDD WORSE by 8.17pp vs Core baseline. FAIL.",
+        "axis_verdict": "FAIL"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_LRI_state_fwd1m_vol": {
+          "Normal_n": 200,
+          "Normal_vol_ann": 0.2334,
+          "Crowded_vol_ann": 0.2743,
+          "HighRisk_vol_ann": 0.3988,
+          "Extreme_vol_ann": 0.3837,
+          "ratio_HighRisk_Normal": 1.709,
+          "ratio_Crowded_Normal": 1.175,
+          "ratio_Extreme_Normal": 1.644
+        },
+        "by_LRI_state_fwd1m_max_dd": {
+          "Normal_max_dd": -0.1603,
+          "Crowded_max_dd": -0.1622,
+          "HighRisk_max_dd": -0.1065,
+          "Extreme_max_dd": -0.1990
+        },
+        "by_LRI_state_fwd3m_max_dd": {
+          "Normal_max_dd": -0.2167,
+          "Crowded_max_dd": -0.1622,
+          "HighRisk_max_dd": -0.1393,
+          "Extreme_max_dd": -0.2762
+        },
+        "interpretation": "LRI predictive on vol axis (1.71× HighRisk amplification). Max DD paradoxically less severe in HighRisk than Normal — LRO_cap fails to use this LRI signal effectively (no compression).",
+        "axis_verdict": "FAIL (LRI predictive but LRO_cap intervention does not act effectively — bad-state vol >0.90 ratio)"
+      },
+      "verdict_3_tuple": "FAIL — All 3 axes fail or degrade vs Core baseline. cap-only intervention does not improve MDD vs M4."
+    },
+    "LRO_cash": {
+      "tuple_1_crisis_alpha": {
+        "GFC_cum_ret": -0.2933,
+        "GFC_mdd": -0.3283,
+        "vs_S1_GFC_pp": 7.44,
+        "vs_M4_GFC_pp": 0.58,
+        "Euro_cum_ret": 2.8541,
+        "COVID_cum_ret": -0.2564,
+        "Inflation_cum_ret": -0.1600,
+        "LMR_cum_ret": 0.8360,
+        "interpretation": "Cash overlay during GFC reduces drawdown +7.4pp vs S1 (no overlay) and +0.6pp vs M4. LMR period -16.4pp due to cash drag during recovery (cash 25% in HighRisk persistent state)."
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": -0.0275,
+        "interpretation": "MDD WORSE by 2.75pp vs Core M4 baseline. cash overlay alone cannot beat M4 outer regime cash schedule which is already optimized.",
+        "axis_verdict": "FAIL (slightly worse)"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_LRI_state_fwd1m_vol": {
+          "Normal_vol_ann": 0.2334,
+          "Crowded_vol_ann": 0.2601,
+          "HighRisk_vol_ann": 0.3418,
+          "Extreme_vol_ann": 0.2860,
+          "ratio_HighRisk_Normal": 1.464,
+          "ratio_Crowded_Normal": 1.114,
+          "ratio_Extreme_Normal": 1.225
+        },
+        "by_LRI_state_fwd1m_max_dd": {
+          "Normal_max_dd": -0.1603,
+          "Crowded_max_dd": -0.1541,
+          "HighRisk_max_dd": -0.0908,
+          "Extreme_max_dd": -0.1480
+        },
+        "interpretation": "Cash overlay compresses bad-state vol from 1.71× (LRO_cap) to 1.46× — best of single-overlay variants. Max DD compression best for HighRisk (-0.091 vs -0.160 Normal).",
+        "axis_verdict": "PARTIAL (HighRisk vol >0.90 but compressed substantially; max DD compression real)"
+      },
+      "verdict_3_tuple": "PARTIAL — GFC crisis_alpha real (+7.4pp vs S1). MDD slightly WORSE than M4 (-2.75pp). Compresses bad-state vol but not below 0.90 threshold."
+    },
+    "M4+LRO_cap": {
+      "tuple_1_crisis_alpha": {
+        "GFC_cum_ret": -0.3049,
+        "GFC_mdd": -0.3304,
+        "vs_M4_GFC_pp": -0.58,
+        "Euro_cum_ret": 2.8574,
+        "COVID_cum_ret": -0.2140,
+        "Inflation_cum_ret": -0.1680,
+        "LMR_cum_ret": 0.9497,
+        "interpretation": "Stress periods virtually identical to M4 baseline. Cap intervention does not contribute additional defense when M4 cash already active."
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": -0.0008,
+        "interpretation": "MDD virtually identical to M4 (-0.08pp). Cap intervention adds NO measurable improvement.",
+        "axis_verdict": "MARGINAL_FAIL"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_LRI_state_fwd1m_vol": {
+          "Normal_vol_ann": 0.2254,
+          "Crowded_vol_ann": 0.2679,
+          "HighRisk_vol_ann": 0.3794,
+          "Extreme_vol_ann": 0.3151,
+          "ratio_HighRisk_Normal": 1.683,
+          "ratio_Crowded_Normal": 1.188,
+          "ratio_Extreme_Normal": 1.397
+        },
+        "by_LRI_state_fwd1m_max_dd": {
+          "Normal_max_dd": -0.1603,
+          "Crowded_max_dd": -0.1622,
+          "HighRisk_max_dd": -0.0904,
+          "Extreme_max_dd": -0.1453
+        },
+        "interpretation": "Virtually identical to M4 alone. cap layer adds no compression because M4 cash already active in similar months.",
+        "axis_verdict": "MARGINAL (HighRisk vol 1.68× still >0.90)"
+      },
+      "verdict_3_tuple": "MARGINAL — virtually identical to M4 alone (MDD diff -0.08pp, Sharpe diff -0.022). LRO cap tightening adds NO meaningful improvement."
+    },
+    "M4+LRO_cash": {
+      "tuple_1_crisis_alpha": {
+        "GFC_cum_ret": -0.2997,
+        "GFC_mdd": -0.3254,
+        "vs_M4_GFC_pp": -0.06,
+        "Euro_cum_ret": 2.8330,
+        "COVID_cum_ret": -0.2140,
+        "Inflation_cum_ret": -0.1600,
+        "LMR_cum_ret": 0.8004,
+        "interpretation": "GFC nearly equal M4. Inflation +0.8pp better than M4. LMR -15pp due to cash drag (LRI HighRisk persistent forces 25% cash through recovery)."
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": 0.0042,
+        "interpretation": "MDD IMPROVEMENT +0.42pp vs Core M4 baseline — only positive variant of the 4. Below Plan §12 CONDITIONAL_PASS 1pp threshold.",
+        "axis_verdict": "PARTIAL (positive but below 1pp threshold)"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_LRI_state_fwd1m_vol": {
+          "Normal_vol_ann": 0.2254,
+          "Crowded_vol_ann": 0.2552,
+          "HighRisk_vol_ann": 0.3334,
+          "Extreme_vol_ann": 0.2835,
+          "ratio_HighRisk_Normal": 1.479,
+          "ratio_Crowded_Normal": 1.132,
+          "ratio_Extreme_Normal": 1.257
+        },
+        "by_LRI_state_fwd1m_max_dd": {
+          "Normal_max_dd": -0.1603,
+          "Crowded_max_dd": -0.1541,
+          "HighRisk_max_dd": -0.0904,
+          "Extreme_max_dd": -0.1447
+        },
+        "interpretation": "Best of 4: bad-state vol compressed to 1.48× (4-tuple best). Max DD compression equal to M4+LRO_cap.",
+        "axis_verdict": "PARTIAL (HighRisk vol >0.90 but best compression of 4 variants)"
+      },
+      "verdict_3_tuple": "BEST OF FOUR — only variant with positive MDD pp improvement vs M4 (+0.42pp) AND best bad/normal vol ratio compression (1.48×). But CAGR cost -1.52pp, MDD improvement below 1pp threshold."
+    }
+  },
+  "summary": {
+    "n_variants_evaluated": 4,
+    "ax_001_v2_strict_pass_count": 0,
+    "ax_001_v2_partial_pass_count": 2,
+    "ax_001_v2_marginal_fail_count": 1,
+    "ax_001_v2_fail_count": 1,
+    "best_variant": "M4+LRO_cash",
+    "best_variant_summary": "Only variant with positive MDD improvement (+0.42pp) and best bad-state vol compression (1.48×). But improvement magnitude below Plan §12 CONDITIONAL_PASS 1pp threshold, and cash drag costs CAGR -1.52pp.",
+    "axiom_verdict": "AX-001 v2 NOT SATISFIED for any LRO variant as deployment-grade defense intervention. LRI state has documented predictive power (1.46-1.71× vol amplification) — supports MONITORING role only. Recommend KEEP STR_1715 100% PG2 with M4 schedule unchanged."
+  },
+  "lineage": {
+    "source_data": "stage_artifacts/WT_WT-S20260503_001/lro_defense_eval.csv + lro_lri_state_forward.csv + lro_stress_periods.csv",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/forge_package.json",
+    "core_baseline_source": "forge_package.m4_baseline_recomputed (Plan §1 baseline_decision_basis)"
+  },
+  "created_by": "judge agent (background, Q-Lead spawn)",
+  "created_at": "2026-05-04T02:30:00+0900"
+}
