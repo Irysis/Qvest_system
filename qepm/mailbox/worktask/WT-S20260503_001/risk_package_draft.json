@@ -1,0 +1,222 @@
+{
+  "task_id": "WT-S20260503_001",
+  "package_kind": "risk_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-03",
+  "agent": "risk-research",
+  "draft_revision": 1,
+  "factor_covariance_ref": {
+    "path": "stage_artifacts/WT_WT-S20260503_001/covariance.parquet",
+    "rows": 50437,
+    "format": "long format with Ticker_i, Ticker_j, Sigma_ij, Sigma_latent_ij",
+    "n_assets": 354,
+    "as_of_snapshot": "2026-04-01"
+  },
+  "sigma_method": "lro_cov_latent_plus_idio",
+  "sigma_method_details": {
+    "structure": "Σ = B Λ B' + diag(D)",
+    "B_K": 5,
+    "B_ref_freeze": "2024-06-30 IS endpoint, frozen",
+    "residualization_window_days": 252,
+    "residualization_factors": ["MKT_KR","SIZE_KR","VALUE_KR","MOM_KR","QUALITY_KR","LOWVOL_KR"],
+    "residualization_controls": ["12 sector dummies (top11 by population + Other)"],
+    "rolling": "monthly sig_dates 2004-02 ~ 2026-04 (267 months, 100% successful)",
+    "method_choice_log": {
+      "K_compared": [3, 5, 8],
+      "K_selected": 5,
+      "K_selection_basis": "Marchenko-Pastur null lower bound + relative eigenvalue gap (≥2.25%) + IdioShare interpretability + debug PASS",
+      "pca_compared": ["covariance", "correlation"],
+      "pca_selected": "covariance",
+      "pca_selection_basis": "LRS = (x² λ)/σ_p² requires cov for direct portfolio variance decomposition; cor PCA needs additional standardization stage",
+      "window_compared": [252, 504],
+      "window_selected": 252,
+      "window_selection_basis": "KR market regime ~1y typical; 252d adapts faster than 504d. 504d robustness check deferred"
+    }
+  },
+  "tail_risk": {
+    "ref_path": "stage_artifacts/WT_WT-S20260503_001/tail_risk.json",
+    "weight_proxy": "EW_top20 by Size, monthly rebalance — full STR_1715 reconstruction in optimizer/forge",
+    "n_obs_daily": 5473,
+    "span": "2004-02-02 ~ 2026-04-01",
+    "overall": {
+      "VaR95_daily": -0.0201,
+      "VaR99_daily": -0.0364,
+      "ES95_daily": -0.0316,
+      "ES99_daily": -0.0523,
+      "MDD_period": -0.5064,
+      "CDaR95": -0.3109
+    },
+    "by_state": {
+      "Normal": {"VaR95": -0.0188, "VaR99": -0.0314, "ES95": -0.0274, "ES99": -0.0422, "n_days": 4091},
+      "Crowded": {"VaR95": -0.0200, "VaR99": -0.0339, "ES95": -0.0285, "ES99": -0.0437, "n_days": 718},
+      "HighRisk": {"VaR95": -0.0355, "VaR99": -0.0616, "ES95": -0.0515, "ES99": -0.0806, "n_days": 351},
+      "Extreme": {"VaR95": -0.0309, "VaR99": -0.0601, "ES95": -0.0514, "ES99": -0.0796, "n_days": 313}
+    },
+    "tail_amplification_HighRisk_vs_Normal": {
+      "ES95_ratio": 1.88,
+      "ES99_ratio": 1.91,
+      "interpretation": "HighRisk + Extreme states show ~2× tail loss vs Normal — LRI state has genuine explanatory power for tail risk"
+    }
+  },
+  "crowding_diagnostic": {
+    "ref_path_monthly": "stage_artifacts/WT_WT-S20260503_001/lro_monthly_risk_report.csv",
+    "ref_path_policy": "stage_artifacts/WT_WT-S20260503_001/lro_policy_state.csv",
+    "ref_path_factor_mapping": "stage_artifacts/WT_WT-S20260503_001/lro_factor_mapping.csv",
+    "n_months": 267,
+    "is_endpoint": "2024-06-30",
+    "lri_quantiles_is_frozen": {"q065": 0.399, "q080": 0.670, "q090": 1.205, "q095": 1.628},
+    "state_distribution_full_268m": {
+      "Normal": {"n": 199, "pct": 74.5},
+      "Crowded": {"n": 35, "pct": 13.1},
+      "HighRisk": {"n": 18, "pct": 6.7},
+      "Extreme": {"n": 15, "pct": 5.6}
+    },
+    "summary_stats": {
+      "mean_LFC": null,
+      "mean_LHHI": null,
+      "mean_IdioShare": null,
+      "mean_Top3MRC": 0.2803,
+      "mean_D_t": 0.4262,
+      "mean_LRI_post_burnin": 0.3452
+    },
+    "current_state_2026_04": "HighRisk",
+    "current_state_note": "2026-02-04 / 2026-03-03 / 2026-04-01 모두 HighRisk → 누적 hidden common risk + drift D_t=0.66 (큰 subspace shift). MRS regime = NORMAL이지만 LRI = HighRisk → 두 lens 보완"
+  },
+  "subspace_drift": {
+    "metric": "D_t = ||P_t - P_ref||_F / sqrt(2K)",
+    "ref_path": "lro_monthly_risk_report.csv (D_t column)",
+    "mean_268m": 0.4262,
+    "interpretation": "0 = identical subspace, 1 = orthogonal. 0.43 = moderate persistent drift consistent with KR market structural shifts (2008/2020/2022)"
+  },
+  "anchor_alignment": {
+    "ref_path": "stage_artifacts/WT_WT-S20260503_001/anchor_map.json",
+    "n_anchors": 10,
+    "anchors": ["Market","Size","Value","Momentum","Quality","LowRisk","Semi_AI","Bio","Energy_Cyclical","Revision"],
+    "anchor_mode": "label only — PC has no fixed economic name",
+    "median_R2_per_PC_IS": [0.0001, 0.0001, 0.0001, 0.0001, 0.0001],
+    "median_R2_per_PC_OOS": [0, 0.0003, 0.0002, 0.0001, 0.0003],
+    "interpretation": "anchor R² ~10⁻⁴ across all PCs → known factor residual latent is orthogonal to known anchors (sector / theme). This is the **intended outcome** — sector beta re-discovery successfully blocked. LFC re-definition trigger (R²>0.7) not activated.",
+    "revision_anchor_proxy_warning": "ARS_Revision uses QUALITY_KR as proxy (proper analyst EPS revision factor not in factor DB). Label only."
+  },
+  "cvar_breach_flag": true,
+  "cvar_breach_basis": "ES95_daily = -3.16% < -3% threshold (overall, EW_top20 proxy). State-conditional: HighRisk -5.15% / Extreme -5.14%",
+  "lro_params_frozen": {
+    "ref_path": "stage_artifacts/WT_WT-S20260503_001/lro_params_frozen.json",
+    "K": 5,
+    "residualization_window": 252,
+    "pca_method": "covariance",
+    "is_endpoint": "2024-06-30",
+    "B_ref_path": "stage_artifacts/WT_WT-S20260503_001/B_ref.parquet",
+    "B_ref_dim": [440, 5],
+    "B_ref_lambda": [0.00832, 0.00742, 0.00668, 0.00657, 0.00655],
+    "threshold_quantiles": {"q065": 0.399, "q080": 0.670, "q090": 1.205, "q095": 1.628},
+    "hysteresis": {"entry": "q0.80", "exit": "q0.65"},
+    "lri_weights": {"Z_LFC": 0.25, "Z_LHHI": 0.20, "Z_D": 0.20, "Z_ARS_Revision": 0.15, "Z_ARS_Momentum": 0.10, "Z_Top3MRC": 0.10},
+    "z_score_method": "expanding median/MAD, min_obs=24m",
+    "burn_in_min_obs_months": 24,
+    "anchor_set_sha": null,
+    "weight_set_proxy": "EW_top20 by Size — full STR_1715 weight reconstruction in optimizer/forge",
+    "frozen_at": "2026-05-04T01:30:00+0900",
+    "sha256": "a5c55fc8355b26af2e6f748253dad6b868d30c408a0e55cce73950c77dce5632",
+    "ax002_enforcement": "Forge MUST verify_hash same SHA. Mismatch → schedule_fidelity FAIL"
+  },
+  "stress_test_summary": {
+    "summary_kind": "state-conditional tail metrics (no separate stress simulation in risk research scope; stress events 2008/2020/2022 are within rolling 268m natively)",
+    "tail_amplification": {
+      "Normal_to_HighRisk_ES95": 1.88,
+      "Normal_to_HighRisk_ES99": 1.91,
+      "Normal_to_Extreme_ES95": 1.88,
+      "Normal_to_Extreme_ES99": 1.89
+    },
+    "lri_state_in_known_crisis": "validation deferred to judge — judge_decision_audit will overlay LRI state on STR_1715 monthly drawdowns + KR crisis windows (2008-Q4 / 2020-Q1 / 2022-H2)"
+  },
+  "axiom_assertions": {
+    "AX-002_compliance": {
+      "lro_params_sha256": "a5c55fc8355b26af2e6f748253dad6b868d30c408a0e55cce73950c77dce5632",
+      "frozen_at": "IS endpoint 2024-06-30",
+      "OOS_modification_count": 0,
+      "forge_verify_hash_required": true
+    },
+    "AX-008_tally_entry": {
+      "source": "risk-research (Source 1 of 3)",
+      "stance": "draft (pending Codex critic)",
+      "concerns_self_detected_count": 7,
+      "concerns_documented_in": "risk_challenge_note.md §0"
+    }
+  },
+  "single_rebalance_debug": {
+    "ref_path": "stage_artifacts/WT_WT-S20260503_001/_debug/debug_pass.json",
+    "rebalance_date": "2024-12-31",
+    "overall_pass": true,
+    "9_field_audit": {
+      "pit_audit_pass": true,
+      "lri_value_sane": true,
+      "mrc_sum_close_to_sigma2": true,
+      "anchor_R2_all_present": true,
+      "eigenvalue_gap_above_1e_3": true,
+      "procrustes_alignment_quality": true,
+      "residual_no_lookahead_grep": true
+    }
+  },
+  "pit_audit": {
+    "ref_path_single": "stage_artifacts/WT_WT-S20260503_001/_debug/pit_audit_2024_12_31.json",
+    "ref_path_full_audit": "qepm/mailbox/worktask/WT-S20260503_001/docs/02_pit_audit.md",
+    "c1_to_c15_compliance": "all PASS or N/A (see 02_pit_audit.md table)",
+    "factor_db_route": "load_month_factors() (C13/C14/C15 enforced)",
+    "rolling_window": "[t-WIN_DAYS, t-1] right-closed exclusive, t < sig_d strict",
+    "expanding_zscore_burnin": "24 months",
+    "is_quantile_frozen_basis": "sig_date <= 2024-06-30 subset"
+  },
+  "outputs": {
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260503_001/",
+    "files": [
+      "lro_params_frozen.json",
+      "B_ref.parquet",
+      "covariance.parquet",
+      "residuals.parquet",
+      "lro_monthly_risk_report.csv",
+      "lro_policy_state.csv",
+      "lro_factor_mapping.csv",
+      "anchor_map.json",
+      "tail_risk.json",
+      "_debug/debug_pass.json",
+      "_debug/pit_audit_2024_12_31.json",
+      "_debug/single_rebalance_2024_12_31/{B_t,B_ref}.parquet + {Q_t,D_t,LRI,mrc,anchor_R2}.json + residuals.parquet"
+    ],
+    "docs": [
+      "qepm/mailbox/worktask/WT-S20260503_001/docs/01_research_design.md",
+      "qepm/mailbox/worktask/WT-S20260503_001/docs/02_pit_audit.md",
+      "qepm/mailbox/worktask/WT-S20260503_001/docs/03_methodology.md"
+    ]
+  },
+  "self_detected_limitations": {
+    "ref_path": "qepm/mailbox/worktask/WT-S20260503_001/risk_challenge_note.md (§0.2)",
+    "count": 7,
+    "summary": [
+      "L1: Universe proxy = monthly Top500 by Size (forge re-align)",
+      "L2: daily factor return = simple top30/bot30 spread (LRO scope)",
+      "L3: weight proxy = EW_top20 (forge re-apply STR_1715 actual)",
+      "L4: 11+Other sector aggregation (theme dispersion)",
+      "L5: ARS_Revision = QUALITY_KR proxy (label only)",
+      "L6: corr-PCA robustness check deferred (judge / architect)",
+      "L7: K=3/8 rolling robustness deferred (architect)"
+    ]
+  },
+  "handoff_to_optimizer": {
+    "key_inputs": [
+      "lro_params_frozen.json (AX-002 SHA verify)",
+      "lro_policy_state.csv (monthly state for cap_tighten / cash_overlay rule)",
+      "covariance.parquet (Σ structure for MVO if used; LRO本 LRO is overlay-only)",
+      "tail_risk.json (state-conditional CVaR for CVaR-aware optimization)"
+    ],
+    "decision_signals": {
+      "Top3MRC_mean": 0.2803,
+      "interpretation": "STR_1715 portfolio risk is dominated by stock concentration (top 3 names contribute ~28% on EW_top20 proxy; STR_1715 actual cap 0.20 likely higher). Cap tightening 0.20→0.15 directly addresses this — likely more effective than cash overlay which dilutes alpha"
+    },
+    "lri_signal_2026_05": "HighRisk (3-month persistence). Suggests CAP_TIGHTEN OR CASH_OVERLAY is appropriate stance for current month — final action subject to forge backtest + judge decision rule"
+  },
+  "codex_round_status": "draft_written_pending_critic",
+  "schema_version": "v1.0_lro_extension",
+  "created_at": "2026-05-04T01:35:00+0900"
+}

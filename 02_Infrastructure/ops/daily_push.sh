@@ -73,5 +73,12 @@ for BRANCH in $(git for-each-ref --format='%(refname:short)' refs/heads/); do
   fi
 done
 
+# 2026-05-04 patch: tag push 추가 (이전 v7.0~v7.2.1 tags origin 미push 갭 해소)
+if git push origin --tags >> "$LOG" 2>&1; then
+  echo "$TS TAGS_PUSH_OK" >> "$LOG"
+else
+  echo "$TS TAGS_PUSH_FAIL — 다음 날 재시도" >> "$LOG"
+fi
+
 echo "$TS DAILY_PUSH_SUMMARY ok=$TOTAL_OK new=$TOTAL_NEW up=$TOTAL_UP fail=$TOTAL_FAIL" >> "$LOG"
 exit 0

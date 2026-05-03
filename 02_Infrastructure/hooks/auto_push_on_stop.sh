@@ -92,6 +92,13 @@ else
   fi
 fi
 
+# 2026-05-04 patch: tag push 추가 (이전 v7.0~v7.2.1 tags origin 미push 갭 해소)
+if git push origin --tags >> "$LOG" 2>&1; then
+  echo "$TS TAGS_PUSH_OK" >> "$LOG"
+else
+  echo "$TS TAGS_PUSH_FAIL" >> "$LOG"
+fi
+
 MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 exit 0
