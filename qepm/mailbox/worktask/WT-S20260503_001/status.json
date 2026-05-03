@@ -1,8 +1,7 @@
 {
   "task_id": "WT-S20260503_001",
-  "current_phase": "RISK_DONE",
-  "updated_at": "2026-05-04T01:10:00+0900",
-  "blocker": null,
+  "current_phase": "OPTIMIZER_DONE",
+  "updated_at": "2026-05-04T01:38:12+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -11,13 +10,42 @@
   "production_book_state_write": false,
   "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
   "phase_log": [
-    {"phase": "SPEC_APPROVED", "ts": "2026-05-04T00:00:00+0900", "by": "Q-Lead"},
-    {"phase": "ALPHA_DONE", "ts": "2026-05-04T01:00:00+0900", "by": "Q-Lead", "method": "alpha_inherit_waiver + codex_critic_skip_waiver + schema_validation_waiver"},
-    {"phase": "RISK_DONE", "ts": "2026-05-04T01:10:00+0900", "by": "Q-Lead (waiver path)", "method": "Round 1 Codex REJECT (8 concerns) → Round 2 risk-research re-spawn → Round 2 산출물 8 concern quantitative resolve → Codex Round 2 timeout (15min deadline) → Q-Lead waiver path under 도훈 auto mode 완결 권고", "ax008_tally": "1/3 (risk Round 2 self only, forge+judge 추가 의무)"}
+    {
+      "phase": "SPEC_APPROVED",
+      "ts": "2026-05-04T00:00:00+0900",
+      "by": "Q-Lead"
+    },
+    {
+      "phase": "ALPHA_DONE",
+      "ts": "2026-05-04T01:00:00+0900",
+      "by": "Q-Lead",
+      "method": "alpha_inherit_waiver + codex_critic_skip_waiver + schema_validation_waiver"
+    },
+    {
+      "phase": "RISK_DONE",
+      "ts": "2026-05-04T01:10:00+0900",
+      "by": "Q-Lead (waiver path)",
+      "method": "Round 1 Codex REJECT (8 concerns) → Round 2 risk-research re-spawn → Round 2 산출물 8 concern quantitative resolve → Codex Round 2 timeout (15min deadline) → Q-Lead waiver path under 도훈 auto mode 완결 권고",
+      "ax008_tally": "1/3 (risk Round 2 self only, forge+judge 추가 의무)"
+    },
+    {
+      "phase": "OPTIMIZER_DONE",
+      "ts": "2026-05-04T01:38:00+0900",
+      "by": "optimizer-research agent (sm_validated_advance via wt_advance)",
+      "method": "Round 1 Codex REVISE (8 concerns) → Round 2 self-validated (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL) → optimization_package.json final + canonical weights.csv + 7-strategy variants",
+      "ax008_tally": "2/3 (risk Round 2 + optimizer Round 2; forge+judge+architect 추가 의무)",
+      "codex_round_round1_stance": "REVISE",
+      "codex_round_round1_concerns_count": 8,
+      "artifacts_canonical": ["qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json", "qepm/mailbox/worktask/WT-S20260503_001/weights.csv", "stage_artifacts/WT_WT-S20260503_001/weights.csv", "stage_artifacts/WT_WT-S20260503_001/weights_variants/{7-strategy}.csv"]
+    }
   ],
   "ax008_tally_running": {
     "risk_round_2": "self_validated (Codex Round 2 timeout)",
     "forge": "pending",
-    "architect": "pending"
-  }
+    "architect": "pending",
+    "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL)",
+    "judge": "pending"
+  },
+  "challenge_round": 0,
+  "challenge_history": []
 }

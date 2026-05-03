@@ -1,0 +1,306 @@
+{
+  "task_id": "WT-S20260503_001",
+  "package_kind": "optimization_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-03",
+  "agent": "optimizer-research",
+  "round": 1,
+  "schema_version": "v1.0_lro_overlay",
+  "draft_revision": "draft",
+  "method_selected": "LRO_overlay_state_conditional",
+  "selection_objective": "crowding_adj_ret",
+  "selection_rationale": "LRO is a risk overlay (Mode A monitor / Mode B cap tighten / Mode C cap+cash). Method selection is the overlay rule itself, not a portfolio optimizer choice. STR_1715 alpha ranking + tilt-to-prev mechanism (λ=1.5 TOphi=3 top20) is inherited unchanged. The overlay applies state-conditional active_cap (0.20→0.15 in HighRisk/Extreme) and/or cash overlay (max(M4_cash, LRO_cash) single rule). Selection objective is crowding_adj_ret (LRI HighRisk state shows 1.51× ES95 amplification per risk_package — predictive crowding signal).",
+  "lro_params_frozen_sha": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+  "lro_params_frozen_verify": {
+    "expected_sha_from_risk_package": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "recorded_sha_in_lro_params_frozen_json": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "recomputed_sha_canonical_excluding_sha256": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+    "match_recorded_vs_expected": true,
+    "match_recomputed_vs_recorded": true,
+    "verify_hash_pass": true,
+    "ax002_compliance": "PASS"
+  },
+  "matrix": {
+    "n_strategies": 7,
+    "strategies": ["S1", "M4", "LRO_mon", "LRO_cap", "LRO_cash", "M4+LRO_cap", "M4+LRO_cash"],
+    "primary_canonical": "M4+LRO_cap",
+    "primary_rationale": "M4+LRO_cap conservative — current production M4 cash schedule + LRO state-conditional cap tightening. Combines proven M4 outer regime defense with LRO active intervention (cap 0.20→0.15) during HighRisk/Extreme LRI states only."
+  },
+  "active_cap_per_strategy": {
+    "S1": 0.20,
+    "M4": 0.20,
+    "LRO_mon": 0.20,
+    "LRO_cash": 0.20,
+    "LRO_cap": 0.15,
+    "M4+LRO_cap": 0.15,
+    "M4+LRO_cash": 0.15,
+    "note": "Strategy-specific active_cap. Hard ceiling = 0.20 (universe-wide). LRO active intervention reduces cap to 0.15 only in HighRisk/Extreme LRI months (33/269 months = 12.3%)."
+  },
+  "global_hard_cap_ceiling": 0.20,
+  "lri_state_action_mapping_frozen": {
+    "frozen_at_is_endpoint": "2024-06-30",
+    "oos_modification_count": 0,
+    "rule_table": [
+      {"state": "Normal",   "active_cap_for_LRO_cap": 0.20, "lro_cash_pct": 0.00},
+      {"state": "Crowded",  "active_cap_for_LRO_cap": 0.20, "lro_cash_pct": 0.05},
+      {"state": "HighRisk", "active_cap_for_LRO_cap": 0.15, "lro_cash_pct": 0.15},
+      {"state": "Extreme",  "active_cap_for_LRO_cap": 0.15, "lro_cash_pct": 0.25}
+    ],
+    "missing_ym_default": "Normal (2004-01, 2026-05 — outside lro_policy_state coverage 267m)",
+    "cash_combination_rule_for_M4_LRO_cash": "max(M4_cash, LRO_cash) — single rule, additive forbidden"
+  },
+  "weights_csv_canonical_ref": "stage_artifacts/WT_WT-S20260503_001/weights.csv",
+  "weights_variants_dir": "stage_artifacts/WT_WT-S20260503_001/weights_variants/",
+  "weights_summary": {
+    "reference_alpha_sig_dates_count": 269,
+    "per_strategy": {
+      "S1": {
+        "rows": 5380,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0985, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.0000,
+        "cash_active_dates": 0,
+        "avg_monthly_turnover": 0.4866,
+        "avg_annual_turnover": 5.84
+      },
+      "M4": {
+        "rows": 5421,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0663, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.2059,
+        "cash_active_dates": 41,
+        "avg_monthly_turnover": 0.4861,
+        "avg_annual_turnover": 5.83
+      },
+      "LRO_mon": {
+        "rows": 5380,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0985, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.0000,
+        "cash_active_dates": 0,
+        "avg_monthly_turnover": 0.4866,
+        "avg_annual_turnover": 5.84,
+        "note": "Monitoring-only — weight identical to S1; LRI is observed but not acted upon. Used to measure LRO informational value vs intervention cost"
+      },
+      "LRO_cap": {
+        "rows": 5380,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0985, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.0000,
+        "cash_active_dates": 0,
+        "avg_monthly_turnover": 0.4871,
+        "avg_annual_turnover": 5.85,
+        "note": "Mode B — cap tightening only. cap 0.20→0.15 in HighRisk/Extreme LRI months (33/269)"
+      },
+      "LRO_cash": {
+        "rows": 5448,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0770, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.1206,
+        "cash_active_dates": 68,
+        "avg_monthly_turnover": 0.4856,
+        "avg_annual_turnover": 5.83,
+        "note": "Cash overlay only. cash_pct: Normal=0/Crowded=5/HighRisk=15/Extreme=25%. Active in 68/269 months (Crowded+HighRisk+Extreme)"
+      },
+      "M4+LRO_cap": {
+        "rows": 5421,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0644, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.2059,
+        "cash_active_dates": 41,
+        "avg_monthly_turnover": 0.4868,
+        "avg_annual_turnover": 5.84,
+        "is_canonical_primary": true,
+        "note": "Mode C primary — M4 cash + LRO cap. Conservative combination"
+      },
+      "M4+LRO_cash": {
+        "rows": 5470,
+        "unique_dates": 269,
+        "schedule_density_ratio": 1.0000,
+        "n_names_per_date_min_max": [20, 20],
+        "max_weight_per_date_min_max": [0.0663, 0.2000],
+        "sum_weight_per_date_min_max": [1.0000, 1.0000],
+        "avg_cash_pct": 0.1559,
+        "cash_active_dates": 90,
+        "avg_monthly_turnover": 0.4801,
+        "avg_annual_turnover": 5.76,
+        "note": "Mode C alt — M4 + LRO cash combined via max(M4, LRO) single rule. cap=0.20 (no LRO cap). Cash active 90/269 months"
+      }
+    }
+  },
+  "schedule_density_audit": {
+    "reference_alpha_sig_dates": 269,
+    "all_strategies_ratio_above_0p95": true,
+    "per_strategy_ratio": {
+      "S1": 1.0000,
+      "M4": 1.0000,
+      "LRO_mon": 1.0000,
+      "LRO_cap": 1.0000,
+      "LRO_cash": 1.0000,
+      "M4+LRO_cap": 1.0000,
+      "M4+LRO_cash": 1.0000
+    },
+    "infeasibility_report_required": false,
+    "note": "All strategies preserve 269 sig_dates (alpha_scores reference). Charter §9 schedule fidelity mandate satisfied."
+  },
+  "cash_definition": {
+    "audit_ref": "stage_artifacts/WT_WT-S20260503_001/cash_definition_audit.json",
+    "rule": "max(M4_cash, LRO_cash) — single rule, additive forbidden",
+    "source": "column",
+    "m4_cash_value_summary": {
+      "min": 0.0,
+      "max": 0.5709,
+      "mean": 0.0316,
+      "n_nonzero_months": 41,
+      "source_column": "weight_cash in qepm/stage_artifacts/WT_WT-D20260430_001/alpha_scores.parquet"
+    },
+    "lro_cash_value_summary": {
+      "min": 0.0,
+      "max": 0.25,
+      "distinct_values": [0.00, 0.05, 0.15, 0.25],
+      "n_nonzero_months": 68,
+      "source": "LRI state -> cash mapping (frozen IS endpoint 2024-06-30)"
+    },
+    "applied_cash_value_summary_for_M4_LRO_cash": {
+      "min": 0.0,
+      "max": 0.5709,
+      "mean": 0.1559,
+      "n_nonzero_months": 90,
+      "rule": "max(M4_cash, LRO_cash) per month"
+    },
+    "cash_inferred_flag": false,
+    "rationale": "M4 weight_cash column directly available in alpha_scores.parquet (no holdings_infer fallback needed)"
+  },
+  "constraints_audit": {
+    "max_names_le_20": "PASS (all dates × all strategies = 20 active names)",
+    "weight_sum_eq_1": "PASS (all dates Σw = 1.0000 ± 1e-9)",
+    "long_only": "PASS (min weight ≥ 0)",
+    "weight_bounds": "PASS (all max_w ≤ 0.20 strict)",
+    "global_hard_cap_ceiling": "PASS (≤ 0.20 universe-wide)",
+    "active_cap_per_strategy_audit": "PASS (S1/M4/LRO_mon/LRO_cash max_w ≤ 0.20 / LRO_cap/M4+LRO_cap/M4+LRO_cash max_w ≤ 0.15 in HighRisk/Extreme months, ≤ 0.20 otherwise)",
+    "infeasibility_report": null
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "selection_objective": "crowding_adj_ret",
+    "method_log": [
+      {"name": "Mode_A_monitoring", "label": "LRO_mon", "selected": false, "rationale": "no weight intervention — informational baseline only"},
+      {"name": "Mode_B_cap_tightening", "label": "LRO_cap", "selected": false, "rationale": "cap-only intervention; tests whether name-concentration is the binding risk"},
+      {"name": "Mode_C_combined", "label": "M4+LRO_cap (canonical), M4+LRO_cash, LRO_cash", "selected": true, "rationale": "M4+LRO_cap as canonical primary: combines proven M4 outer regime cash defense + LRO state-conditional active_cap intervention. STR_1715 alpha ranking inherited unchanged (sizing_only WT)."}
+    ],
+    "non_classical_methods_evaluated": "MVO/HRP/CVaR/ERC/BL not applicable — STR_1715 alpha is non-Σ-aware ranking system (linear_tilt_qd over score_eff). LRO is sizing overlay layer above STR_1715, not a portfolio optimizer replacement.",
+    "parallel_exec": false,
+    "n_workers": 1,
+    "rationale_for_non_parallel": "7 strategies are deterministic transformations of 2 base portfolio sequences (cap_020 + cap_lro). Each strategy = base × cash overlay. Total compute < 5s. Parallelization unnecessary."
+  },
+  "expected_metrics_disclaimer": {
+    "active_return_pct": "TBD — forge backtest computes",
+    "tracking_error_pct": "TBD — forge backtest computes",
+    "information_ratio": "TBD — forge backtest computes",
+    "sharpe_ratio": "TBD — forge backtest computes",
+    "rationale": "Optimizer is sizing_only; expected metrics are not computed in optimizer scope. Forge agent's PerformanceAnalytics-based bt_result is the canonical performance source (Backtest Contract v1.0)."
+  },
+  "binding_constraints": [
+    "weight_bounds_top_in_HighRisk_Extreme_months (cap reduction 0.20→0.15 binds top names in 33 months)"
+  ],
+  "lro_portfolio_mrc_ref": "stage_artifacts/WT_WT-S20260503_001/lro_portfolio_mrc.csv",
+  "lro_portfolio_mrc_summary": {
+    "rows": 114,
+    "unique_dates_with_mrc": 13,
+    "rationale_for_partial_coverage": "Σ from risk_package is single-snapshot (LW shrinkage 5y daily 2019-05~2026-04, 18 active tickers). MRC computed only for sig_dates where canonical weights overlap with Σ tickers (recent OOS period). Forge will compute full-period MRC if needed via rolling Σ."
+  },
+  "explanation": {
+    "top_overweights_2026_05_canonical": [
+      {"ticker": "A010950", "name": "S-Oil",          "weight": "≤0.15 (cap-binding in HighRisk)"},
+      {"ticker": "A050890", "name": "쏠리드",          "weight": "≤0.15 (cap-binding in HighRisk)"},
+      {"ticker": "A009420", "name": "한올바이오파마", "weight": "0.15 (rank 3)"}
+    ],
+    "main_tradeoffs_canonical_M4_LRO_cap": [
+      "STR_1715 alpha ranking unchanged (sizing_only)",
+      "M4 cash schedule preserved — production parity for non-LRO regime defense",
+      "LRO active_cap reduces top-name concentration only in HighRisk/Extreme LRI months (33/269 = 12.3% schedule)",
+      "Top3 share reduces in HighRisk months (cap 0.15 forces redistribution to lower-ranked names)",
+      "Turnover impact ~0.0007 monthly (~0.84% annualized) vs M4 baseline — minimal"
+    ],
+    "rationale_for_LRO_cash_combination": "max(M4_cash, LRO_cash) prevents double-counting cash: if M4 already prescribes 30% cash for regime stress, LRO HighRisk's 15% does not stack additively (would reach 45%). The max() rule keeps cash at 30% (M4-driven) in that month. In months where LRI says HighRisk but M4 says no regime stress, LRO 15% activates."
+  },
+  "challenge_flags": [
+    "RF-O2_INFORMATIONAL: avg_monthly_turnover 0.486 across all strategies — turnover is alpha-driven (not LRO-driven). Annual ~5.8 well below 600% hard fail threshold",
+    "RF-O3_INFORMATIONAL: LRO interventions are infrequent (33/269=12.3% cap, 68/269=25.3% cash). Forge backtest will reveal whether intervention drag dominates intervention benefit"
+  ],
+  "infeasibility_report": null,
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/alpha_package.json (inherited_alpha_stub from WT-P20260429_002)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260503_001/risk_package.json (Round 2 final)",
+    "request_ref": "qepm/mailbox/worktask/WT-S20260503_001/request.json",
+    "score_eff_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (Iter 5 multi-sleeve composite, 269 sig_dates)",
+    "m4_schedule_source": "qepm/stage_artifacts/WT_WT-D20260430_001/alpha_scores.parquet (M4 outer overlay, 267m weight_str1715/weight_cash)",
+    "lro_policy_state_source": "stage_artifacts/WT_WT-S20260503_001/lro_policy_state.csv (267m LRI + 4-state)",
+    "covariance_source": "stage_artifacts/WT_WT-S20260503_001/covariance.parquet (LW shrinkage Σ, 18×18)",
+    "build_script": "stage_artifacts/WT_WT-S20260503_001/_logs/04_optimizer_build.R",
+    "workspace_rds": "stage_artifacts/WT_WT-S20260503_001/_logs/optimizer_workspace.rds"
+  },
+  "axiom_assertions": {
+    "AX_001_v2_defense_like_evaluation": "DEFERRED to judge — LRO_cap / LRO_cash / M4+LRO_cap / M4+LRO_cash are 4 defense-like variants. judge applies 3-tuple (crisis_alpha + Core MDD pp improvement + bad/normal realized risk ratio by LRI state).",
+    "AX_002_process_honesty": {
+      "lro_params_frozen_sha": "82dca6fd93eccc7274d3c5c82c1d768b8ab89ff2c46675ccd75b396a11aef4b8",
+      "verify_hash_pass": true,
+      "oos_K_threshold_modification_count": 0,
+      "active_cap_audit": "S1/M4/LRO_mon/LRO_cash=0.20, LRO_cap/M4+LRO_cap/M4+LRO_cash=0.15 strictly enforced",
+      "schedule_density_all_above_0p95": true,
+      "verdict": "PASS"
+    },
+    "AX_008_tally_entry": {
+      "source": "optimizer-research (Source 1 of 3 for optimizer round, draft pending Codex)",
+      "stance": "draft (pending codex_critic_response_optimizer.json)",
+      "concerns_self_audited": [
+        "LRO_mon being identical to S1 by design (Mode A — informational baseline). Variant tracking justified by judge phase comparison.",
+        "Turnover ~5.8× annual is alpha-driven (TOphi=3 blend mechanism); LRO overlay adds <1% on top. Within 600% hard fail.",
+        "MRC computed for 13 dates only (Σ window overlap). Forge to extend with rolling Σ if desired.",
+        "cash combination rule = max() — explicitly NOT additive (Charter §9 honesty)."
+      ]
+    }
+  },
+  "production_protection": {
+    "str_1715_directory_write_count": 0,
+    "no_alpha_engine_invocation": true,
+    "no_alpha_ranking_modification": true,
+    "no_factor_db_modification": true,
+    "audit": "alpha_scores.parquet + lro_policy_state.csv + M4 schedule + Σ all read-only inputs"
+  },
+  "self_detected_remaining_limitations": {
+    "L1_2026_05_state_default_normal": "lro_policy_state.csv coverage ends 2026-04-01. 2026-05 sig_date defaults to Normal state (no cap/cash intervention). risk_package.handoff_to_optimizer.lri_signal_2026_05 says 'HighRisk persistent (3-month)' — judge/forge should consider treating 2026-05 as HighRisk for current-month action recommendation.",
+    "L2_score_eff_269_vs_268": "alpha_scores has 269 sig_dates (2004-01 ~ 2026-05) but STR_1715 production output 03_period_returns has 268 monthly periods. Off-by-one likely due to first-period initialization (i=0 to N-1 in run_all.R). Forge should align via consistent walk-forward indexing.",
+    "L3_MRC_partial_coverage_13_dates": "Σ from risk_package is point-in-time 5y window. MRC reported for 13 recent dates only. For full-period MRC, forge would need rolling Σ — outside optimizer scope.",
+    "L4_liquidity_filter_omitted_in_reconstruction": "STR_1715 run_all.R applies PIT 30d liquidity filter (LIQ_THRESHOLD=2e8). Optimizer reconstruction here uses raw top20 by score_eff without liquidity filter. Forge will re-apply liquidity in backtest. Impact: some sig_dates may have slightly different ticker selection (~1-2 names) when liquidity binds. Alpha ranking is preserved.",
+    "L5_LRO_mon_eq_S1_by_design": "Mode A monitoring = no weight intervention. LRO_mon and S1 are identical at the weight level. The distinction is purely for forge backtest variant tracking + judge phase comparative analysis (does observing LRI without acting beat acting on LRI?)."
+  },
+  "deploy_cutoff": {
+    "train_cutoff": "2024-06-30 (LRO IS endpoint, K=5 win=252 cov frozen)",
+    "deploy_cutoff": "open-ended (live extension via M4 outer + LRI rule)",
+    "weights_csv_extends_to": "2026-05-01 (alpha_scores last sig_date)",
+    "rationale": "LRO is rule-based (no model retraining). Frozen LRI state mapping at IS endpoint is applied OOS without parameter modification (AX-002)."
+  },
+  "codex_round_status": "pending_optimizer_round",
+  "created_at": "2026-05-04T01:18:00+0900",
+  "created_by": "optimizer-research agent (Q-Lead spawn)"
+}

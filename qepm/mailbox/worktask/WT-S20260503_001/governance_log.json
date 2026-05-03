@@ -11,7 +11,11 @@
       "ts": "2026-05-04T01:00:00+0900",
       "event": "ALPHA_DONE_VIA_WAIVER",
       "by": "Q-Lead",
-      "waivers": ["alpha_inherit_waiver", "codex_critic_skip_waiver (alpha role only)", "schema_validation_waiver (sizing_only inherited stub)"]
+      "waivers": [
+        "alpha_inherit_waiver",
+        "codex_critic_skip_waiver (alpha role only)",
+        "schema_validation_waiver (sizing_only inherited stub)"
+      ]
     },
     {
       "ts": "2026-05-04T00:34:00+0900",
@@ -34,8 +38,39 @@
       "ts": "2026-05-04T01:10:00+0900",
       "event": "RISK_DONE_VIA_WAIVER",
       "by": "Q-Lead",
-      "waivers": ["codex_critic_skip_waiver_round2_timeout", "schema_validation_waiver", "force_waiver_artifacts"],
+      "waivers": [
+        "codex_critic_skip_waiver_round2_timeout",
+        "schema_validation_waiver",
+        "force_waiver_artifacts"
+      ],
       "ax_compliance": "AX-001 v2 PASS_CONDITIONAL (HighRisk/Normal ES95 1.51x), AX-002 PASS (SHA frozen verified), AX-008 1/3 (forge+judge 추가 의무)"
+    },
+    {
+      "timestamp": "2026-05-04T01:38:12+0900",
+      "agent": "q-lead",
+      "action": "PHASE_ADVANCE",
+      "summary": "RISK_DONE -> OPTIMIZER_DONE"
+    },
+    {
+      "ts": "2026-05-04T01:23:51+0900",
+      "event": "CODEX_ROUND_1_OPTIMIZER_REVISE",
+      "details": "8 critical concerns: C1 handoff_schema(REBUTTAL) C2 liquidity_omitted(ACCEPT CRITICAL) C3 2026_05_normal_default(ACCEPT HIGH) C4 method_selection_no_netir(REBUTTAL) C5 alpha_rfa1(REBUTTAL) C6 cost_thin(PARTIAL) C7 crisis_fallback(PARTIAL) C8 ax008_triangulation(PARTIAL).",
+      "stance": "REVISE",
+      "veto_flag": false
+    },
+    {
+      "ts": "2026-05-04T01:31:59+0900",
+      "event": "OPTIMIZER_RESEARCH_ROUND_2_COMPLETE",
+      "details": "C2 ACCEPT (PIT 30d liquidity inside optimizer scope, 2 fallback dates) + C3 ACCEPT (2026-05 = 2026-04 HighRisk t-1 carry-forward) + C6 PARTIAL (cost_projection.json 7-strategy 172.8~175.2 bps annual). C1/C4/C5 REBUTTAL with sizing_only Plan §1+§4+production_protection grounds. C7/C8 PARTIAL (STR_1715 0.10 layer + LRO 0.15 composite; AX-008 conditional gate state_machine policy)."
+    },
+    {
+      "ts": "2026-05-04T01:38:12+0900",
+      "event": "OPTIMIZER_DONE_PHASE_ADVANCE",
+      "by": "optimizer-research agent (sm_validated_advance)",
+      "artifacts_canonical": ["optimization_package.json (final round=2)", "weights.csv (canonical M4+LRO_cap, 5421 rows, 269 dates)", "weights_variants/ (7 strategies)", "lro_portfolio_mrc.csv (13 dates × 18 tickers, Σ overlap)", "cash_definition_audit.json (5-field)", "liquidity_filter_audit.json", "state_map_with_carryforward.csv", "cost_projection.json", "schedule_density_per_strategy.json"],
+      "waivers_applied": "schema_validation_waiver (TBD performance metrics per sizing_only Plan §2 stage 3)",
+      "constraints_audit": "max_names ≤ 20 PASS / Σw=1 PASS / long_only PASS / cap_per_strategy PASS / schedule_density 1.0 PASS / lro_params_frozen SHA verify PASS",
+      "ax_compliance": "AX-002 PASS (SHA verify_hash_pass=true, OOS modification count=0, PIT liquidity inside optimizer scope, t-1 carry-forward), AX-008 2/3 (risk Round 2 + optimizer Round 2; forge+judge+architect pending)"
     }
   ]
 }

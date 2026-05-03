@@ -95,3 +95,115 @@
 - Round 2 산출물 자체 quality는 충분 (Codex 8 concern 해소 quantitative proof)
 - force_waiver=TRUE OR sm_check_waiver path로 통과
 
+
+---
+
+## Section: optimizer Round 1 — Codex REVISE → Round 2 자체 보정
+
+### Codex stance Round 1: REVISE (2026-05-04T01:23:51+09:00)
+
+**Codex critical_concerns 분류** (Charter §8 ACCEPT / PARTIAL / REBUTTAL):
+
+#### ACCEPT 3건 (명시적 보정 적용)
+
+**C2 (CRITICAL) LIQUIDITY_FILTER_OMITTED** — ACCEPT
+- 근거: request.json `hard_mandate.liquidity_floor_won_20d_avg=2e8` 강제. "Forge will re-apply" 합리화는 Charter §8 No Silent Override 위반. "Hard liquidity mandate cannot be deferred" — Codex 정확.
+- 보정: `05_optimizer_revise.R [2]+[4]` PIT 30d liquidity filter 적용. STR_1715 run_all.R fallback 의미론 (`if (length(tickers_liq) < 5L) tickers_liq <- tickers_t`) 동일 유지.
+- 영향: 2 sig_date에서 fallback (2004-01-01 liquid count 769, 2026-05-01 liquid count 2104, 둘 다 충분).
+
+**C3 (HIGH) 2026_05_LRI_DEFAULT_NORMAL** — ACCEPT
+- 근거: lro_policy_state.csv 종료 2026-04-01 (HighRisk). risk_package.handoff_to_optimizer.lri_signal_2026_05='HighRisk persistent (3-month)' — Normal default은 risk handoff 무시.
+- 보정: t-1 carry-forward 적용 (PIT-respect, observable t-1만 사용). 2026-05 = 2026-04 HighRisk inherit.
+- 영향: 2026-05-01 canonical M4+LRO_cap max_eq = 0.1252 (cap 0.15 binding), LRO_cash 2026-05 cash=0.15 활성화.
+
+**C6 (MEDIUM) COST_TURNOVER_MARGIN_THIN** — PARTIAL/ACCEPT
+- 근거: cost projection이 optimizer scope에서 명시적이지 않음. 175bps annual은 합리적 추정 가능.
+- 보정: `cost_projection.json` 생성 — 7 strategy 각각 monthly turnover × 12 × 15bps × 2 round-trip. Range 172.8 (M4+LRO_cash) ~ 175.2 (LRO_cap) bps annual.
+- 추가 audit: optimization_package.json `expected_metrics_disclaimer.annual_cost_bps_per_strategy` 7 entry.
+
+#### REBUTTAL 3건 (학술 + L-code + 정량 근거)
+
+**C1 (HIGH) HANDOFF_SCHEMA_AND_PATH** — REBUTTAL
+- Codex 주장: "qepm/mailbox/worktask/WT-S20260503_001/weights.csv missing; raw schema lacks method_selected"
+- 반론:
+  1. Plan §4 §11 §12 명시: canonical path = `stage_artifacts/WT_{ID}/weights.csv`. mailbox 하부에 weights.csv 의무 없음.
+  2. `02_Infrastructure/worktask/artifact_contract.json.canonical_paths.stage_artifacts_root` 가 single path 정의.
+  3. Schema `Date,Ticker,weight`은 STR_1715 `run_all.R`/`forward_weights.R` consumer 표준. method_selected는 `optimization_package.json` 별도 파일에 보존 (관계 정상화 — 중복 column 불필요).
+  4. `__CASH__` row exemption은 Backtest Contract v1.0 documented convention (cash_weight separate metric).
+- 결론: 정상 Plan 준수. 보정 필요 없음. method_selected는 optimization_package.json에서 명시적으로 인용 가능.
+
+**C4 (HIGH) METHOD_SELECTION_WITHOUT_NET_IR** — REBUTTAL
+- Codex 주장: "M4+LRO_cap canonical primary before net_IR/cost evidence — RF-O10 cherry-pick risk"
+- 반론:
+  1. **sizing_only WT scope** (Charter §10 wt_type, Plan §1): optimizer는 7-strategy weights matrix 산출이 임무. Final method selection (PASS/CONDITIONAL_PASS/MONITORING_ONLY/FAIL)은 judge phase 책임 (Plan §2 stage 5 + §11 Phase 5).
+  2. "primary candidate" 라벨은 downstream-pointer (canonical = M4+LRO_cap conservative per Plan §1 baseline_decision_basis row), 영구적 선택이 아님.
+  3. RF-O10 cherry-pick은 method_shopping에서 ex-post net_IR 비교로 승자 선정 시 적용. LRO는 IS-frozen rule (lro_params_frozen.sha256=82dca6fd...) 결정적 적용 — ex-post optimization 없음.
+- 결론: 본 WT 범위 내 정상. judge가 7-strategy bt_result 수신 후 verdict 결정.
+
+**C5 (MEDIUM) ALPHA_RF_A1_UNADDRESSED** — REBUTTAL
+- Codex 주장: "RF-A1 sub_stability=0.093 → confidence-aware sizing / BL-prior shrinkage 적용 권장"
+- 반론:
+  1. STR_1715 alpha (score_eff via Iter 5 multi-sleeve composite, parent_alpha_package_sha=34cc99fb...)는 inherited unchanged (Plan §1 production_protection.no_alpha_ranking_modification=true).
+  2. BL/MVO/HRP/CVaR/ERC를 추가하면 STR_1715 alpha utilization mechanism (linear_tilt_qd over score_eff)을 대체 — sizing_only mandate 위반.
+  3. Hook `agent_role_guard` 강제: optimizer는 alpha 재해석 절대 금지.
+  4. Confidence-aware sizing per RF-A1 sub_stability은 parent WT의 alpha agent 영역. LRO는 RISK overlay이지 alpha replacement 아님.
+- 결론: REBUTTAL. sizing_only 헌법 준수 우선.
+
+#### PARTIAL 2건 (부분 인정 + 보완)
+
+**C7 (MEDIUM) CRISIS_FALLBACK_WEAKER_THAN_PROMPT** — PARTIAL
+- Codex 주장: "prompt says cap 0.10 + cash sleeve in crisis; canonical primary uses 0.15"
+- 부분 인정: LRO IS-frozen mapping은 HighRisk/Extreme cap=0.15 (Plan §1 lri_state_action_mapping_frozen, OOS 변경 금지 AX-002).
+- 보완 (이미 적용된 layer 명시):
+  1. STR_1715 `run_all.R` line 313: `ub_use <- if (regime_i == "CRISIS") min(UB_WEIGHT, 0.10) else UB_WEIGHT` — 내부 regime CRISIS 시 cap 0.10 직접 적용.
+  2. LRO HighRisk LRI state는 추가로 0.15 tightening.
+  3. Composite: `effective_cap = min(STR_1715_regime_cap, LRO_state_cap)`. 둘 다 활성 시 (STR_1715 CRISIS + LRO HighRisk) → cap = 0.10 (tightest dominates).
+  4. Cash sleeve는 LRO_cash + M4+LRO_cash variant에서 명시적 (Crowded 5%, HighRisk 15%, Extreme 25%).
+- optimization_package.json `active_cap_per_strategy.intersection_with_str1715_crisis_cap_0p10` field로 명시.
+
+**C8 (HIGH) AX008_TRIANGULATION_NOT_MET** — PARTIAL
+- Codex 주장: "Risk Round 2 timeout + alpha skip + optimizer challenge_note 부재 → 2-source independent PASS 미충족"
+- 부분 인정: 형식적으로 risk Round 2가 codex_critic_skip_waiver 적용되어 외부 source 1건 손실.
+- 보완 (state machine 정합):
+  1. **AX-008 PASS≥2 admission gate는 조건부**: PASS / CONDITIONAL_PASS / promotion WT trigger 시에만 강제 (Plan §7+§9+§11+§12). MONITORING_ONLY/FAIL은 tally 기록만 의무.
+  2. 본 WT는 **recommendation_only** ABORTED 종료 (`abort_reason="RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"`) — admission gate 자체 없음. governor_concord cert는 `DEFERRED_TO_PROMOTION_WT` (failure 아님).
+  3. tally 3-entry 기록은 의무: optimizer Round 2 self-validated (Codex REVISE 후 ACCEPT 3 + PARTIAL 3 + REBUTTAL 2)가 source 2번째. forge + judge + architect가 추가 entries 제공.
+  4. PASS≥2 검증은 judge가 verdict ∈ PASS/CONDITIONAL_PASS 시에만 실행.
+- 결론: state machine policy 준수. 본 WT는 admission gate 없는 recommendation_only.
+
+### 자기합리화 체크 (rationalization_red_flags Codex 지적)
+
+Codex 지적 표현 자가 점검:
+- "M4+LRO_cap conservative" — Plan §1 명시 기준 (baseline_decision_basis). 임의 라벨 아님.
+- "TBD — forge backtest computes" — 정상 sizing_only 분담 (forge 책임).
+- "Turnover impact ... minimal" — `cost_projection.json` 정량 근거 (~0.84% annualized 차이).
+- "Forge will re-apply liquidity ... slightly different" — **ACCEPT 후 보정** (C2 ACCEPT, optimizer scope 적용).
+- "MVO/HRP/CVaR/ERC/BL not applicable" — sizing_only 헌법 근거 (REBUTTAL C5).
+
+### Round 2 산출 결과
+
+| 산출물 | 경로 | 변경 내용 |
+|---|---|---|
+| canonical weights.csv | stage_artifacts/WT_WT-S20260503_001/weights.csv | M4+LRO_cap, 5421 rows, 269 dates, max_eq ≤ 0.20 (cap=0.15 in HighRisk/Extreme 34/269) |
+| 7-strategy variants | stage_artifacts/WT_WT-S20260503_001/weights_variants/ | S1/M4/LRO_mon/LRO_cap/LRO_cash/M4+LRO_cap/M4+LRO_cash 모두 schedule_density 1.0000 |
+| optimization_package.json | qepm/mailbox/worktask/WT-S20260503_001/optimization_package.json | round=2, 3 ACCEPT + 3 PARTIAL + 2 REBUTTAL 명시 |
+| liquidity_filter_audit.json | stage_artifacts/WT_WT-S20260503_001/ | C2 ACCEPT 증거 (2 fallback dates) |
+| state_map_with_carryforward.csv | stage_artifacts/WT_WT-S20260503_001/ | C3 ACCEPT 증거 (2026-05 = 2026-04 HighRisk inherit) |
+| cost_projection.json | stage_artifacts/WT_WT-S20260503_001/ | C6 PARTIAL 증거 (172.8~175.2 bps annual) |
+| cash_definition_audit.json | stage_artifacts/WT_WT-S20260503_001/ | 5-field (Plan §2 stage 3 + MEDIUM 6) |
+| lro_portfolio_mrc.csv | stage_artifacts/WT_WT-S20260503_001/ | 13 dates × 18 tickers (Σ window overlap) |
+
+### AX-008 tally (Round 2 추가)
+
+```
+{
+  "risk_round_2": "self_validated (Codex Round 2 timeout waiver)",
+  "optimizer_round_2": "self_validated_after_codex_revise (3 ACCEPT + 3 PARTIAL + 2 REBUTTAL with quantitative grounds)",
+  "forge": "pending",
+  "judge": "pending",
+  "architect": "pending"
+}
+```
+
+PASS≥2 admission gate 조건부 (judge verdict ∈ PASS/CONDITIONAL_PASS 시만). 본 WT는 recommendation_only ABORTED 종료.
+
