@@ -1,0 +1,38 @@
+{
+  "K": 5,
+  "residualization_window": 252,
+  "pca_method": "covariance",
+  "is_endpoint": "2024-06-30",
+  "threshold_quantiles": {
+    "Normal": "< q0.80",
+    "Crowded": "q0.80~q0.90",
+    "HighRisk": "q0.90~q0.95",
+    "Extreme": ">= q0.95",
+    "hysteresis_entry": "q0.80",
+    "hysteresis_exit": "q0.65"
+  },
+  "lri_weights": {
+    "Z_LFC": 0.25,
+    "Z_LHHI": 0.2,
+    "Z_D": 0.2,
+    "Z_ARS_Revision": 0.15,
+    "Z_ARS_Momentum": 0.1,
+    "Z_Top3MRC": 0.1
+  },
+  "z_score_method": "expanding median/MAD, min_obs=24m",
+  "burn_in_min_obs": 24,
+  "anchors": ["Market", "Size", "Value", "Momentum", "Quality", "LowRisk", "Semi_AI", "Bio", "Energy_Cyclical", "Revision"],
+  "known_factors": ["MKT_KR", "SIZE_KR", "VALUE_KR", "MOM_KR", "QUALITY_KR", "LOWVOL_KR"],
+  "factor_mapping": {
+    "MKT_KR": ["MK01_CAPM_Beta", "D02_Beta", "D12_Beta_126d"],
+    "SIZE_KR": "L26_Log_MktCap",
+    "VALUE_KR": ["V01_BM", "V02_EP"],
+    "MOM_KR": "M01_Mom_12_1",
+    "QUALITY_KR": ["Q01_GPA", "Q02_ROE", "Q03_ROA", "Q07_Earnings_Stability"],
+    "LOWVOL_KR": ["R01_VaR_95", "R02_VaR_99", "D02_Beta"]
+  },
+  "weight_set_proxy": "STR_1715 production_weights/20231201 + EW_top20 fallback",
+  "universe": "KOSPI200_KOSDAQ150_intersection (Top500 by Size)",
+  "frozen_at": "2026-05-04 00:19:51.601477",
+  "sha256": "a5c55fc8355b26af2e6f748253dad6b868d30c408a0e55cce73950c77dce5632"
+}
