@@ -11,7 +11,15 @@
   "agent_model": "claude-opus-4-7",
   "as_of_date": "2026-05-04",
   "generated_at": "2026-05-04T19:04:00+09:00",
-  "verdict_status": "FINALIZED_POST_PREREQ_PASS",
+  "finalized_at": "2026-05-04T19:08:00+09:00",
+  "verdict_status": "FINALIZED_POST_CODEX",
+  "codex_round_status": "COMPLETED_REJECT_DISPOSITION_APPLIED",
+  "codex_response_arrived_at": "2026-05-04T20:05:00+09:00",
+  "codex_stance": "REJECT",
+  "codex_veto_flag": false,
+  "codex_concerns_count": {"HIGH": 4, "MEDIUM": 2},
+  "codex_self_disposition": "1_ACCEPT_IMMEDIATE + 1_ACCEPT_TIMELINE + 4_PARTIAL_REBUTTAL_OR_PARTIAL_ACCEPT (per governor_challenge_note.md L-269 Charter §8 No Silent Override)",
+  "codex_disposition_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_challenge_note.md",
   "verdict": "ADMIT",
   "admission_tier": "PG2_CORE_ALPHA",
   "admission_scenario": "scenario_A_overlay_admission_str1715_to_str1715_ar_threshold_100pct",
@@ -178,6 +186,24 @@
       "forge_package_validated"
     ]
   },
+  "ar_overlay_layering_semantics": "AR_β_t_layered_on_M4_blended_PG2_ret_net_sequentially_per_forge_v2_posthoc (mathematical: r_S1 = β_t · r_PG2_M4; not_replacement_of_M4)",
+  "parent_artifacts_inheritance": {
+    "promotion_wt_no_new_backtest": true,
+    "parent_wt_id": "WT-S20260504_007",
+    "inherit_from_paths": [
+      "qepm/mailbox/worktask/WT-S20260504_007/weights.csv",
+      "qepm/stage_artifacts/WT_WT-S20260504_007/alpha_scores.parquet",
+      "qepm/stage_artifacts/WT_WT-S20260504_007/covariance.parquet",
+      "qepm/mailbox/worktask/WT-S20260504_007/03_period_returns.csv (M4-blended PG2 ret_net)"
+    ],
+    "wt_p_local_artifact_index_due": "POST_DEPLOY_AR_009 T+1 (artifact_lineage.json)"
+  },
+  "high_concerns_status_revised_per_codex_g1": {
+    "architect_high_concerns_status": "numerical_reproduction_passed_promotion_blockers_acknowledged_post_deploy",
+    "concern_1_baseline_mismatch": "RESOLVED (263m apples-to-apples valid)",
+    "concern_2_layered_semantics": "RESOLVED (β·ret_net = AR overlay sequentially on top of M4 — see ar_overlay_layering_semantics field)",
+    "promotion_blockers_post_deploy_tracking": ["POST_DEPLOY_AR_006 Architect T+30 live trade reconciliation"]
+  },
   "deploy_post_conditions": [
     {
       "id": "POST_DEPLOY_AR_001",
@@ -212,8 +238,38 @@
     {
       "id": "POST_DEPLOY_AR_006",
       "owner": "Architect",
-      "description": "Live trade reconciliation T+30: realized vs predicted AR overlay metrics divergence ≤ 1pp",
+      "description": "Live trade reconciliation T+30: realized vs predicted AR overlay metrics divergence ≤ 1pp (per Codex G1)",
       "due": "T+30"
+    },
+    {
+      "id": "POST_DEPLOY_AR_007",
+      "owner": "Q-Lead",
+      "description": "TO cap policy amendment motion (Charter §11 hard constraint hierarchy clarification + replacement marginal evaluation rule formalize) — per Codex G2 PARTIAL_ACCEPT_USER_AUTHORITY",
+      "due": "T+30"
+    },
+    {
+      "id": "POST_DEPLOY_AR_008",
+      "owner": "Forge",
+      "description": "Live β_t · M4_realized recompute vs draft post-hoc divergence ≤ 5bps tolerance — per Codex G3 PARTIAL_REBUTTAL semantics validation",
+      "due": "T+14"
+    },
+    {
+      "id": "POST_DEPLOY_AR_009",
+      "owner": "Forge",
+      "description": "WT-P artifact pointer index `artifact_lineage.json` (WT-P → WT-S20260504_007 → WT-D20260430_001 chain) — per Codex G4 ACCEPT_IMMEDIATE_RESOLVED",
+      "due": "T+1"
+    },
+    {
+      "id": "POST_DEPLOY_AR_010",
+      "owner": "Forge",
+      "description": "Harvey 5-spec re-test with official KR FF5 source (KCMI dataset if available) — per Codex G5 PARTIAL_REBUTTAL proxy upgrade",
+      "due": "T+90"
+    },
+    {
+      "id": "POST_DEPLOY_AR_011",
+      "owner": "Forge",
+      "description": "Pre-LB / Lockbox / Combined 3-way reporting + Pre-LB only AR validation (S1 metric ≥ Combined 70% retention) — per Codex G6 ACCEPT_TIMELINE",
+      "due": "T+14"
     }
   ],
   "rollback_conditions": [

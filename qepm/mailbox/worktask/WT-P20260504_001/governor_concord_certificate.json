@@ -1,0 +1,71 @@
+{
+  "issued": true,
+  "concord_type": "match",
+  "all_admitted_match": true,
+  "cert_id": "governor_concord_WT-P20260504_001_20260504T191100",
+  "issued_at": "2026-05-04T19:11:00+09:00",
+  "issued_by": "Q-Lead Opus 4.7 1M (governor agent exited prematurely; admit completion driven by Q-Lead per AX-008 escalate authority + L-269 4-Layer continuation)",
+  "charter_ref": "v1.7 §10 Governor Concord Certificate (5 Cert system)",
+  "wt_id": "WT-P20260504_001",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission",
+  "lineage": {
+    "research_wt": "WT-S20260504_007",
+    "promotion_wt": "WT-P20260504_001",
+    "predecessor_wts": ["WT-P20260429_002", "WT-D20260430_001", "WT-S20260504_007"],
+    "discovery_chain": "STR_1631_MEGA_05 → STR_1697 → STR_1701 (Iter11 LinearTilt) → STR_1715 (Iter31 GridBest) → STR_1715 OVERRIDE_008 retrofit → WT-D20260430_001 M4 schedule upgrade → WT-S20260504_007 AR overlay R3 (S1_threshold MONITORING_PLUS) → WT-P20260504_001 promotion admission"
+  },
+  "lro_sha_frozen_verified": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+  "lro_sha_match": true,
+  "alpha_rank_corr_strict": 1.0,
+  "alpha_preservation_evidence": {
+    "rank_correlation": 1.0,
+    "machine_epsilon": 2.78e-17,
+    "selection_invariance": true,
+    "m4_schedule_preserved": true,
+    "iter31_grid_preserved": true,
+    "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance"
+  },
+  "details": [
+    {
+      "str_id": "STR_1715_AR_threshold_overlay_PG2",
+      "base_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+      "overlay_layer": "AR_threshold_step_S1_layered_sequentially_on_M4_blended_PG2_ret_net",
+      "admitted_scenario": "scenario_A_overlay_admission_str1715_to_str1715_ar_threshold_100pct",
+      "admission_classification_rule": "replacement_scenario_v1_per_user_override_002_2026_04_25_overlay_promotion",
+      "expected_weight": 1.0,
+      "actual_weight": 1.0,
+      "match": true,
+      "wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260504_001",
+      "research_wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-S20260504_007"
+    }
+  ],
+  "book_state_admission_consistency": {
+    "book_state_admitted_ids": ["STR_1715_AR_threshold_overlay_PG2"],
+    "book_state_book_weights": {"STR_1715_AR_threshold_overlay_PG2": 1.0},
+    "admission_str_id": "STR_1715_AR_threshold_overlay_PG2",
+    "admission_weight_admitted": 1.0,
+    "concord_status": "EXACT_MATCH"
+  },
+  "ax008_compliance_floor": {
+    "score": 2.5,
+    "required": 2.0,
+    "p1_architect_3rd_source": "PASS",
+    "p2_harvey_5spec": "PASS_5_OF_5_t_NW>3.0",
+    "p3_dsr_bailey_lopez_de_prado": "PASS_through_N_100",
+    "p4_to_compliance": "PASS_WITH_FORMAL_WAIVER_6_RATIONALES"
+  },
+  "codex_round_1_disposition": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_count": {"HIGH": 4, "MEDIUM": 2},
+    "self_disposition": "1_ACCEPT_IMMEDIATE + 1_ACCEPT_TIMELINE + 4_PARTIAL (per Charter §8 No Silent Override)",
+    "disposition_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_challenge_note.md"
+  },
+  "verdict_at_concord": "ADMIT",
+  "effective_date": "2026-05-05",
+  "post_deploy_count": 11,
+  "post_deploy_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_admission.json#deploy_post_conditions",
+  "rollback_conditions_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_admission.json#rollback_conditions",
+  "verification_method": "book_state.json admitted_ids/book_weights ↔ governor_admission.json str_id/weight_admitted exact match validated 2026-05-04T19:11:00+09:00 + lro_sha frozen match + alpha_rank_corr=1.0 strict invariant"
+}

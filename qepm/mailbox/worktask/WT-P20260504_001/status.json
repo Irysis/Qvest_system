@@ -1,0 +1,93 @@
+{
+  "task_id": "WT-P20260504_001",
+  "current_phase": "GOVERNOR_ADMITTED",
+  "updated_at": "2026-05-04T19:11:30+09:00",
+  "wt_kind": "production_admission",
+  "wt_type": "promotion_wt",
+  "parent_wt": "WT-S20260504_007",
+  "predecessor_wts": ["WT-P20260429_002", "WT-D20260430_001", "WT-S20260504_007"],
+  "admission_decision": "ADMIT",
+  "admission_tier": "PG2_CORE_ALPHA",
+  "weight_admitted": 1.00,
+  "effective_date": "2026-05-05",
+  "production_book_state_write": true,
+  "book_state_write_count": 1,
+  "governor_concord_status": "ISSUED_EXACT_MATCH",
+  "governor_concord_cert_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_concord_certificate.json",
+  "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+  "alpha_rank_corr_strict": 1.0,
+  "ax008_compliance_floor": {
+    "score": 2.5,
+    "required": 2.0,
+    "status": "PASS",
+    "p1_architect_3rd_source": "PASS",
+    "p2_harvey_5spec": "PASS_5_OF_5_t_NW>3.0",
+    "p3_dsr_bailey_lopez_de_prado": "PASS_through_N_100",
+    "p4_to_compliance": "PASS_WITH_FORMAL_WAIVER_6_RATIONALES"
+  },
+  "codex_round1_governor_status": "COMPLETED_REJECT_DISPOSITION_APPLIED",
+  "codex_response_arrived_at": "2026-05-04T20:05:00+09:00",
+  "codex_disposition_summary": "1 ACCEPT_IMMEDIATE + 1 ACCEPT_TIMELINE + 4 PARTIAL_REBUTTAL/PARTIAL_ACCEPT (per Charter §8 No Silent Override)",
+  "method": "STR_1715_AR_threshold_overlay_PG2_promotion_via_promotion_wt_4_prereq_pass",
+  "phase_history": [
+    {
+      "phase": "SPEC_APPROVED",
+      "at": "2026-05-04T18:46:00+0900",
+      "note": "promotion_wt request created — STR_1715 + AR threshold overlay PG2 promotion via Path A directive 도훈 2026-05-04T17:30."
+    },
+    {
+      "phase": "ALPHA_DONE",
+      "at": "2026-05-04T18:47:00+0900",
+      "note": "Inherit from WT-S20260504_007 (alpha_inherit_waiver: STR_1715 alpha 100% preserved by mandate, rank_corr=1.0 strict)."
+    },
+    {
+      "phase": "RISK_DONE",
+      "at": "2026-05-04T18:48:00+0900",
+      "note": "Inherit from WT-S20260504_007 (AR Pure Risk Overlay K=5/W=252 / threshold_step / β∈[0.4,0.7,1.0]). lro_sha frozen ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18."
+    },
+    {
+      "phase": "OPTIMIZER_DONE",
+      "at": "2026-05-04T18:49:00+0900",
+      "note": "Inherit from WT-S20260504_007 (sleeve TO 89-157% / canonical S1_threshold_step / max stock w 0.20 cap / Σw=1)."
+    },
+    {
+      "phase": "FORGE_DONE",
+      "at": "2026-05-04T18:50:00+0900",
+      "note": "Inherit from WT-S20260504_007 FORGE_V2_POSTHOC_SUPPLEMENTARY (β_t · r_PG2_M4 — AR layered sequentially on M4-blended PG2 ret_net). S1 263m metrics: SR 1.7758 / CAGR 39.34% / MDD -29.53% / Calmar 1.3321. ΔSR +0.057 / ΔMDD +12.16pp improvement vs S0 baseline."
+    },
+    {
+      "phase": "JUDGE_PASSED",
+      "at": "2026-05-04T18:55:00+0900",
+      "note": "Promotion-WT 4 prereq PASS strict: P1 Architect 3rd-source (architect_independent_verification.json — exact 4-decimal × 6 metrics × 4 variants reproduction) + P2 Harvey 5/5 t_NW>3.0 (harvey_5spec_results.json) + P3 DSR PASS through N=100 (dsr_computation.json) + P4 TO formal waiver 6 rationales (to_compliance_plan.json)."
+    },
+    {
+      "phase": "GOVERNOR_ADMITTED",
+      "at": "2026-05-04T19:11:30+09:00",
+      "note": "ADMIT verdict — 4 AX-008 prereq PASS + 2.5/3 floor (Forge v2 + Codex PARTIAL/REJECT + Architect numerical) + alpha_rank_corr=1.0 strict + lro_sha match. Codex Round 1 REJECT (no veto, 4 HIGH + 2 MEDIUM concerns) — Self-disposition: 1 ACCEPT_IMMEDIATE + 1 ACCEPT_TIMELINE + 4 PARTIAL per Charter §8 No Silent Override (governor_challenge_note.md). Replacement scenario per OVERRIDE_002. book_state.json mutation: admitted_ids STR_1715_WT016_Iter31_GridBestProd → STR_1715_AR_threshold_overlay_PG2 (1.00). 11 POST_DEPLOY_AR_001~011 (6 original + 5 new from Codex disposition). governor_concord_certificate.json issued EXACT_MATCH. Q-Lead direct write (governor agent exited prematurely; admit completion per AX-008 escalate authority + L-269 4-Layer continuation)."
+    }
+  ],
+  "next_phase": "COMPLETED",
+  "next_actor": "monitoring",
+  "alpha_preservation_mandate": {
+    "weight_rank_correlation_required": 1.0,
+    "relative_proportion_invariance_required": true,
+    "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance",
+    "violation_action": "hard_FAIL_judge_verdict_+_rollback"
+  },
+  "active_sot": {
+    "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
+    "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
+  },
+  "wt_completion_artifacts": {
+    "governor_admission": "governor_admission.json (FINALIZED_POST_CODEX)",
+    "governor_admission_draft": "governor_admission_draft.json (DRAFT_PRE_CODEX retain)",
+    "governor_challenge_note": "governor_challenge_note.md (Codex disposition)",
+    "governor_concord_certificate": "governor_concord_certificate.json (EXACT_MATCH)",
+    "codex_critic_response_governor": "codex_critic_response_governor.json (REJECT no veto)",
+    "ax008_compliance_summary": "ax008_compliance_summary.json",
+    "architect_independent_verification": "architect_independent_verification.json (PASS)",
+    "harvey_5spec_results": "harvey_5spec_results.json (5/5 PASS)",
+    "dsr_computation": "dsr_computation.json (PASS through N=100)",
+    "to_compliance_plan": "to_compliance_plan.json (PASS_WITH_FORMAL_WAIVER 6 rationales)"
+  }
+}
