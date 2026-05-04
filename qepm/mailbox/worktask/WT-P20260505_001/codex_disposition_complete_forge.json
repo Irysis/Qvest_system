@@ -1,0 +1,56 @@
+{
+  "task_id": "WT-P20260505_001",
+  "agent": "forge",
+  "codex_round": 1,
+  "codex_stance_received": "REJECT",
+  "codex_critical_concerns_count": 8,
+  "severity_HIGH": 5,
+  "severity_MEDIUM": 3,
+  "disposition_per_concern": {
+    "C1_HIGH_harvey_5spec": {
+      "disposition": "ACCEPT_PARTIAL",
+      "artifact": "preliminary_capm_summary.json",
+      "note": "CAPM done; full 5-spec is Judge phase per Charter v1.4 Section 10 Gate 8"
+    },
+    "C2_HIGH_dsr_penalty": {
+      "disposition": "ACCEPT",
+      "artifact": "dsr_penalty_consistency.json",
+      "note": "DSR linear penalty 0.50 SR points applied to all 5 strategies; selection stability preserved"
+    },
+    "C3_HIGH_lockbox_marker": {
+      "disposition": "ACCEPT_with_REBUTTAL_of_admission_implication",
+      "artifact": "equity_curves_5_strategy_v2_with_lockbox.png",
+      "note": "promotion_wt inherits STR_1715 PG2 Lockbox cert; marker now visible on chart"
+    },
+    "C4_HIGH_2026_05_tsmom_gap": {
+      "disposition": "REBUTTAL_with_documentation",
+      "artifact": "2026_05_tsmom_data_gap.json",
+      "note": "Sigma_w=1.0 confirmed; only RETURN treatment is conservative zero-fill"
+    },
+    "C5_HIGH_max_names_global": {
+      "disposition": "ACCEPT_AS_DOCUMENTED",
+      "note": "Q-Lead disambiguation #1 + optimization_package infeasibility_report; Governor decision"
+    },
+    "C6_MEDIUM_alpha_md5_missing": {
+      "disposition": "ACCEPT",
+      "artifact": "hash_audit_complete.json"
+    },
+    "C7_MEDIUM_turnover_inconsistency": {
+      "disposition": "REBUTTAL_with_clarification",
+      "artifact": "turnover_three_concepts_clarification.json"
+    },
+    "C8_MEDIUM_path_lineage": {
+      "disposition": "REBUTTAL",
+      "note": "Charter Section 11 stage_artifact dual-path is by design"
+    }
+  },
+  "rationalization_red_flags_addressed": 4,
+  "q_lead_escalation_triggered": true,
+  "q_lead_escalation_reason": "HIGH severity >= 5 (5 of 8 concerns)",
+  "ax_002_post_disposition": "PASS_with_documentation",
+  "ax_007_post_disposition": "EXEMPT (multi-sleeve exception)",
+  "ax_008_post_disposition": "PARTIAL — Architect PASS_PARTIAL + Forge CONDITIONAL_PASS (post-disposition); Codex Forge REJECT pending Judge review",
+  "artifacts_added": ["hash_audit_complete.json", "dsr_penalty_consistency.json", "preliminary_capm_summary.json", "2026_05_tsmom_data_gap.json", "turnover_three_concepts_clarification.json", "equity_curves_5_strategy_v2_with_lockbox.png"],
+  "pass_status": "CONDITIONAL_PASS_pending_governor_decision_on_C5_global_max_names_interpretation",
+  "generated_at": "2026-05-05T04:22:42+09:00"
+}

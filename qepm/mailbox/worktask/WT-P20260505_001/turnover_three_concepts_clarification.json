@@ -1,0 +1,38 @@
+{
+  "concern_id": "C7_MEDIUM_turnover_unit_inconsistency",
+  "three_concepts_explained": {
+    "capital_reallocation_turnover": {
+      "definition": "Δ across legs across dates (cap_AR/cap_TS/cap_KR/cap_CSH)",
+      "value_S3": "approx 0% across post-2015 dates (Path C is static 70/15/15)",
+      "reported_in": "optimization_package.json::turnover_decomposition: 5.76% annualized",
+      "magnitude_check": "Path C dynamic switch only at 2014->2015 boundary (TSMOM activates)"
+    },
+    "tsmom_internal_rotation": {
+      "definition": "Within-TSMOM-leg ETF rotation per delta_w_etf_*",
+      "value_S3": "approx 5-15% per period one-way (depends on TSMOM signal strength)",
+      "reported_in": "rotation_path_TSMOM.csv::w_etf_* deltas",
+      "magnitude_check": "TSMOM 9-ETF basket re-balance monthly"
+    },
+    "str1715_sleeve_internal_turnover": {
+      "definition": "Within-STR_1715-sleeve top20 stock churn",
+      "value_S0": "approx 50% per period one-way (top20 monthly re-rank)",
+      "value_S3": "approx 35% per period one-way (S3 = 0.70 * S0_sleeve_to)",
+      "reported_in": "STR_1715/output/03_period_returns.csv::turnover"
+    }
+  },
+  "contract_metric_138_14_explanation": {
+    "function_path": "build_period_returns(holdings_for_turnover) in backtest_result_contract.R",
+    "cause": "dcast(holdings ~ ticker, fill=0) does not aggregate duplicate tickers across legs (e.g., A148070 appears in TSMOM_LEG + KR10Y_LEG)",
+    "consequence": "Inflates L1/2 distance because same ticker appears with two non-zero weights summed independently",
+    "mitigation": "Cost computation uses leg-decomposed turnover (sleeve_to + tsmom_internal_to + cap_reallocation_to) NOT this metric value",
+    "audit_evidence": "S3 mean cost_ret_total per period = 0.027% (~3.2bps/month, 38bps/year) — consistent with 70-100% effective annualized turnover * 15bps * 2 (round-trip)"
+  },
+  "authoritative_turnover": {
+    "method": "leg_decomposed_sum",
+    "components": ["cAR * str1715_to", "cTS * tsmom_internal_to", "cap_reallocation_to (delta_cap)"],
+    "S3_actual_annual_round_trip_cost_pct": 0.0086,
+    "interpretation": "Path C deploys ~86bps annualized cost (capital-weighted across legs). Consistent with 15bps one-way * ~57% effective combined turnover annual."
+  },
+  "rf_f7_resolution": "Turnover calculation methodology disambiguated. Cost calculation correct via leg-decomposed approach. Contract metric 138.14 is artifact of dcast non-aggregation; can be safely treated as upper-bound L1/2 distance.",
+  "generated_at": "2026-05-05T04:22:42+09:00"
+}

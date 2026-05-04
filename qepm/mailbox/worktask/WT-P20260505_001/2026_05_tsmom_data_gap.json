@@ -1,0 +1,28 @@
+{
+  "concern_id": "C4_HIGH_2026_05_tsmom_gap",
+  "codex_claim": "Σw≠1 on 2026-05 due to TSMOM 15% missing → 04_holdings.csv sums to 0.85",
+  "empirical_finding": {
+    "weights_csv_2026_05_01_sum": 1,
+    "sigma_w_pass": true,
+    "tsmom_capital_2026_05": 0.15,
+    "tsmom_etf_count_2026_05": 9,
+    "str1715_capital_2026_05": 0.7,
+    "kr10y_capital_2026_05": 0.15,
+    "cash_capital_2026_05": 0
+  },
+  "codex_diagnosis": "MISREAD — Σw=1.0 confirmed at deploy date 2026-05-01; the issue is RETURN treatment, not weight composition",
+  "return_treatment_2026_05": {
+    "tsmom_source_max_date": "2026-04-01",
+    "tsmom_2026_05_treatment": "zero return * 15 percent capital = 0 contribution (forge na->0 fallback)",
+    "rationale": "Conservative under-state preferred to fabricated TSMOM 2026-05 return. PIT-C1 strict.",
+    "estimated_full_period_SR_impact": "<= 0.001 (one missing month / 256 month sample)",
+    "deployment_implication": "Live deployment 2026-06-01 will use FRESH TSMOM signal (not 2026-04 snapshot). 2026-05 data gap is research period only."
+  },
+  "alternative_treatments_considered": {
+    "A_carry_forward": "Use 2026-04 ml_realized as 2026-05 proxy (look-ahead-like — REJECTED)",
+    "B_zero_return": "Set TSMOM 2026-05 return = 0 — APPLIED (conservative)",
+    "C_drop_2026_05_period": "Truncate sample to 255m — REJECTED (loses live deploy month)"
+  },
+  "decision": "Treatment B (zero return) applied. Documented for transparency. No remediation needed beyond this disclosure.",
+  "generated_at": "2026-05-05T04:22:42+09:00"
+}

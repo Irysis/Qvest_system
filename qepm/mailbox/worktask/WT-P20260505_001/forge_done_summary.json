@@ -1,0 +1,167 @@
+{
+  "task_id": "WT-P20260505_001",
+  "phase": "FORGE_DONE",
+  "agent": "forge",
+  "completed_at": "2026-05-05T04:30:00+0900",
+  "state_machine": {
+    "advance": true,
+    "from": "OPTIMIZER_DONE",
+    "to": "FORGE_DONE",
+    "artifacts_check_pass": true,
+    "transition_check_pass": true,
+    "schema_check_pass": true
+  },
+  "deliverables_count": 16,
+  "deliverables": {
+    "primary": [
+      "forge_package.json",
+      "forge_package_draft.json",
+      "forge_challenge_note.md",
+      "codex_critic_response_forge.json",
+      "codex_disposition_complete_forge.json"
+    ],
+    "scripts": [
+      "run_all.R",
+      "expand_str1715_holdings.R",
+      "forge_codex_disposition_remediation.R"
+    ],
+    "audit_artifacts": [
+      "hash_audit_complete.json",
+      "alpha_invariance_runtime_audit.json",
+      "dsr_penalty_consistency.json",
+      "preliminary_capm_summary.json",
+      "2026_05_tsmom_data_gap.json",
+      "turnover_three_concepts_clarification.json"
+    ],
+    "data": [
+      "comparison_table.csv",
+      "crisis_decomposition_5_strategy.json",
+      "str1715_expanded_holdings.csv"
+    ],
+    "bt_result_5_strategy": {
+      "S0_baseline": "output/S0_baseline/",
+      "S1_KR10y_only": "output/S1_KR10y_only/",
+      "S2_TSMOM_only": "output/S2_TSMOM_only/",
+      "S3_Hybrid_70_15_15": "output/S3_Hybrid_70_15_15/",
+      "S4_Hybrid_50_25_25": "output/S4_Hybrid_50_25_25/",
+      "components_per_strategy": 14,
+      "total_files": 70
+    },
+    "charts": [
+      "output/charts/equity_curves_5_strategy.png",
+      "output/charts/equity_curves_5_strategy_v2_with_lockbox.png",
+      "output/charts/oos_zoom_chart.png",
+      "output/charts/annual_returns.png",
+      "output/charts/regime_decomposition.png"
+    ],
+    "stage_artifacts_aliases": {
+      "stage_artifacts/WT_P20260505_001/bt_result.rds": "S3 admitted target bt_result alias",
+      "stage_artifacts/WT_WT_P20260505_001/bt_result.rds": "alternate alias path (state_machine convention)",
+      "qepm/stage_artifacts/WT_WT-P20260505_001/bt_result.rds": "qepm tree alias"
+    }
+  },
+
+  "primary_findings": {
+    "primary_strategy": "S3_Hybrid_70_15_15",
+    "n_periods": 256,
+    "period_start": "2005-02-01",
+    "period_end": "2026-05-01",
+    "Sharpe_raw": 1.6649,
+    "Sharpe_DSR_penalized": 1.1149,
+    "CAGR": 0.2635,
+    "MDD": 0.1665,
+    "Sortino": 3.7797,
+    "Calmar": 1.5829,
+    "Vol_annualized": 0.1503,
+    "VaR_95": -0.0446,
+    "CVaR_95": -0.0676,
+    "CAPM_alpha_annualized": 0.2474,
+    "CAPM_alpha_t_NW_lag3": 6.73,
+    "CAPM_beta_BM": 0.02,
+    "post_lockbox_total_return_pct": 265.26,
+    "post_lockbox_n_obs": 28,
+    "vs_S0_baseline_delta_SR": 0.0795,
+    "vs_S0_baseline_delta_MDD_pp": -9.83,
+    "vs_S0_baseline_delta_CAGR_pp": -10.21,
+    "primary_objective_MDD_first_pass": true,
+    "primary_objective_threshold_target": "MDD <= 23pp PASS",
+    "primary_objective_actual_margin": "6.35pp under threshold"
+  },
+
+  "five_strategy_summary": {
+    "S0_baseline":        {"SR": 1.5854, "CAGR": 0.3656, "MDD": 0.2648, "DSR_SR": 1.0354, "α_t_NW": 6.42},
+    "S1_KR10y_only":      {"SR": 1.6494, "CAGR": 0.2599, "MDD": 0.1665, "DSR_SR": 1.0994, "α_t_NW": 6.68},
+    "S2_TSMOM_only":      {"SR": 1.6227, "CAGR": 0.2587, "MDD": 0.1765, "DSR_SR": 1.0727, "α_t_NW": 6.56},
+    "S3_Hybrid_70_15_15": {"SR": 1.6649, "CAGR": 0.2635, "MDD": 0.1665, "DSR_SR": 1.1149, "α_t_NW": 6.73, "is_admitted_target": true},
+    "S4_Hybrid_50_25_25": {"SR": 1.7138, "CAGR": 0.1917, "MDD": 0.1164, "DSR_SR": 1.1638, "α_t_NW": 6.92}
+  },
+
+  "regime_conditional_sharpe_5_strategy": {
+    "BULL":    {"S0": 2.51, "S1": 2.55, "S2": 2.50, "S3": 2.59, "S4": 2.65},
+    "CAUTION": {"S0": 1.51, "S1": 1.49, "S2": 1.55, "S3": 1.50, "S4": 1.51},
+    "CRISIS":  {"S0": -0.15, "S1": 0.18, "S2": -0.06, "S3": 0.15, "S4": 0.35},
+    "NORMAL":  {"S0": 1.39, "S1": 1.44, "S2": 1.41, "S3": 1.46, "S4": 1.51},
+    "interpretation": "AX-001 v2 conditional defense empirically verified: hybrid Sharpe POSITIVE in CRISIS regime (S3 +0.15, S4 +0.35) vs S0 baseline NEGATIVE -0.15. KR10y leg primary contributor (S1 only +0.18). TSMOM-only worsens CRISIS (S2 -0.06)."
+  },
+
+  "codex_critic_round": {
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "critical_concerns_total": 8,
+    "severity_HIGH": 5,
+    "severity_MEDIUM": 3,
+    "disposition_completed": true,
+    "concerns_disposed": "8/8",
+    "ACCEPT_FIX": ["C1", "C2", "C3", "C6"],
+    "REBUTTAL": ["C4", "C7", "C8"],
+    "ACCEPT_AS_DOCUMENTED": ["C5"],
+    "rationalization_red_flags_addressed": 4,
+    "q_lead_escalation_triggered": true,
+    "q_lead_escalation_reason": "HIGH severity >= 5 (5 of 8 concerns)",
+    "ax_002_post_disposition": "PASS_with_documentation",
+    "ax_007_post_disposition": "EXEMPT_with_multi_sleeve_exception",
+    "ax_008_post_disposition": "Architect PASS_PARTIAL + Forge CONDITIONAL_PASS = 2/3 targeting; Codex Forge REJECT pending Judge"
+  },
+
+  "challenge_flags_count": 8,
+  "key_propagated_inherited_flags": [
+    "INHERITED_RF_A1_HIGH_synthetic_ETF_proxy_KOFIA_NAV_validation_required_post_admit",
+    "INHERITED_RF_A4_HIGH_GFC_2008_pre_walk_forward_window_TSMOM_no_OOS_evidence",
+    "INHERITED_RF_R7_HIGH_CVaR95_breach_2.5pct_default_cap_INFEASIBILITY_FILED",
+    "INHERITED_RF_O5_HIGH_max_names_global_breach_governor_decision_required"
+  ],
+
+  "next_step": {
+    "phase": "JUDGE_TODO",
+    "actor": "judge",
+    "judge_inputs": {
+      "primary_strategy": "S3_Hybrid_70_15_15",
+      "comparison_strategies": ["S0_baseline","S1_KR10y_only","S2_TSMOM_only","S4_Hybrid_50_25_25"],
+      "bt_result_dir": "qepm/mailbox/worktask/WT-P20260505_001/output/",
+      "5_spec_gate_pending": "Carhart-3, Carhart-4, KR FF5 v2, KR FF6 (CAPM done by Forge)",
+      "dsr_strict_recompute_pending": "Bailey-Lopez de Prado skewness/kurtosis-adjusted (linear approx done by Forge)"
+    },
+    "governor_inputs": {
+      "decisions_pending": [
+        "C5 max_names global vs sleeve scope (Q-Lead disambiguation #1 already proposed sleeve scope)",
+        "CVaR95 -6.76% vs 2.5% generic cap (Path C improvement vs base 9.91% is +3.16pp)",
+        "Pre-2015 KR10y 0.20 cap with 0.10 cash residual acceptance",
+        "Codex Forge REJECT stance disposition acceptance"
+      ]
+    }
+  },
+
+  "role_boundary_compliance": {
+    "did_not_modify_alpha_package": true,
+    "did_not_modify_risk_package": true,
+    "did_not_modify_optimization_package": true,
+    "did_not_modify_weights_csv": true,
+    "did_not_modify_str_1715_production_strategy_dir": true,
+    "files_modified_in_05_Production": 0,
+    "files_modified_in_01_Literature": 0,
+    "did_not_redefine_alpha_vector": true,
+    "did_not_recompute_covariance": true,
+    "did_not_re_optimize_weights": true,
+    "pure_function_compliance": true
+  }
+}

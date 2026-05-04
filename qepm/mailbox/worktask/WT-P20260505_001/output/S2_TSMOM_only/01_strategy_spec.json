@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-P20260505_001_S2_TSMOM_only_20260505_040620",
+  "strategy_id": "S2_TSMOM_only",
+  "strategy_name": "WT-P20260505_001 S2_TSMOM_only",
+  "strategy_family": "hybrid_overlay_path_C",
+  "signal_description": "STR_1715 Iter31 PG2 base + TSMOM 9-ETF rotation + KR_10y bond ETF carry",
+  "universe_rule": "STR_1715 sleeve top20 + 9 TSMOM ETF basket + KODEX KTB10Y A148070 + CASH",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end",
+  "execution_date_rule": "next_trading_day_open",
+  "weighting_method": "static_capital_0.7_0.3_0_0",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "residual_to_cash_when_KR10y_or_TSMOM_unavailable",
+  "cost_model": "v2.3_kr_retail_15bps",
+  "missing_data_rule": "drop",
+  "risk_controls": "TSMOM 30pct single-ETF cap + KR10y 20pct per-name cap (Codex C2)",
+  "lookahead_prevention": "C1-C15 strict; PIT signals; t+1 execution",
+  "survivorship_bias_control": "STR_1715 sleeve PG2 frozen + ETF universe constructible at PIT"
+}
