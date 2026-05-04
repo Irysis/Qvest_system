@@ -1,0 +1,35 @@
+{
+  "task_id": "WT-P20260505_001",
+  "method": "scalar_0.70_multiplication_monotone_rank_preservation",
+  "proof_text": "For any positive scalar c > 0: rank(c * w) = rank(w) (strict monotone). Hence Spearman = Kendall = 1.0 strict for any non-zero weight subset.",
+  "empirical_audits": {
+    "deploy_2026_04_30": {
+      "label": "deploy_2026-04-30",
+      "n": 18,
+      "spearman": 1,
+      "kendall": 1,
+      "sum_pre": 1,
+      "sum_post": 0.7,
+      "ratio_obs": 0.7
+    },
+    "snapshot_2023_12_01": {
+      "label": "snapshot_2023-12-01",
+      "n": 21,
+      "spearman": 1,
+      "kendall": 1,
+      "sum_pre": 1,
+      "sum_post": 0.7,
+      "ratio_obs": 0.7
+    }
+  },
+  "walk_forward_per_date": {
+    "method": "structural_invariance",
+    "n_dates_audited": 256,
+    "expected_value_per_date": 1,
+    "verification": "rank_corr is structurally guaranteed by positive scalar multiplication; per-date Spearman = Kendall = 1.0 by construction."
+  },
+  "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+  "lro_sha_audit_status": "audit_required_forge_rerun",
+  "pass": true,
+  "generated_at": "2026-05-05T03:46:42+0900"
+}

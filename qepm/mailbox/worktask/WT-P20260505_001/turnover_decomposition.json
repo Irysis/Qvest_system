@@ -1,0 +1,55 @@
+{
+  "task_id": "WT-P20260505_001",
+  "capital_weights": {
+    "STR_1715": 0.7,
+    "TSMOM": 0.15,
+    "KR_10y": 0.15
+  },
+  "source_breakdown": {
+    "STR_1715_base": {
+      "to_pct_yr": 7.5,
+      "to_round_trip": true,
+      "provenance": "inherited_from_PG2_admission_WT-P20260504_001",
+      "note": "PG2 admission backtest reports ~750% annualized round-trip TO. Frozen — Optimizer does not re-derive."
+    },
+    "TSMOM_overlay": {
+      "to_pct_yr": 3.3627,
+      "to_round_trip": true,
+      "formula": "12 × mean(monthly_one_way_TO) × 2 (round-trip)",
+      "n_monthly_samples": 135,
+      "mean_one_way_monthly": 0.1401,
+      "provenance": "tsmom_cap (post-RF-R8 30% cap redistribution)",
+      "note": "Internal TSMOM rebalance frequency monthly. WT-009 cost_breakdown 50bps annualized inside ml_realized_net consistent."
+    },
+    "KR_10y_overlay": {
+      "to_pct_yr": 0.05,
+      "to_round_trip": true,
+      "provenance": "static_long_carry_KODEX_KTB10Y_minimal_drift",
+      "note": "Single ETF passive long. TO ≈ 5%/yr (initial allocation + occasional drift correction)."
+    }
+  },
+  "hybrid_capital_weighted_to": {
+    "formula": "W_STR × TO_base + W_TSMOM × TO_TSMOM + W_KR10y × TO_KR10y",
+    "value_pct_yr_round_trip": 5.7619,
+    "cost_units_clarification": {
+      "to_pct_yr_round_trip": 5.7619,
+      "to_pct_yr_one_way": 2.881,
+      "cost_15bps_per_one_way_trade": true,
+      "cost_pct_yr": 0.0086,
+      "formula_explicit": "(TO_one_way_pct_yr) × 15bps × 2_sides = TO_round_trip × 15bps × 1; same numeric result if TO is round-trip and we apply 15bps once",
+      "role_checklist_alternative": {
+        "formula": "turnover * 15bps * 2 (assuming turnover is one-way)",
+        "result_if_TO_is_one_way": 0.0173,
+        "result_if_TO_is_round_trip": 0.0086,
+        "package_uses": "TO_round_trip × 15bps (numerical equivalence to one-way × 30bps round-trip)",
+        "codex_C6_resolution": "5.7578 is ROUND-TRIP/yr; cost = 5.7578 × 0.0015 = 0.864%/yr applied as fee per round-trip transaction. NOT 1.73%."
+      }
+    }
+  },
+  "charter_section_9_compliance": {
+    "formula": "round-trip ×2 (NOT ×12)",
+    "annualization_basis": "12 monthly samples per year",
+    "iter_3_violation_avoided": true
+  },
+  "generated_at": "2026-05-05T03:46:42+0900"
+}
