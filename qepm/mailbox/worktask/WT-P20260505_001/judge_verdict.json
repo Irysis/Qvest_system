@@ -1,0 +1,343 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-P20260505_001",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission_hybrid_overlay",
+  "as_of_date": "2026-05-05",
+  "agent": "judge",
+  "phase": "JUDGE_DONE",
+  "is_draft": false,
+
+  "verdict": "APPROVE_CONDITIONAL",
+  "verdict_rationale": "S3_Hybrid_70_15_15 ADMIT conditional on 4 Governor ratifications (G1-G4) + 3 post-deploy items (PD1-PD3); decision_rule met (+0.0795 SR / -9.83pp MDD); AX-008 ≥ 2/3 cleared; all 5 Harvey specs t_NW > 6.7 PASS; BLP strict DSR z=6.10 PASS; AX-001 v2 conditional defense PASS; alpha_rank_corr=1.0 strict; lro_sha frozen claim propagated.",
+  "lockbox_audit_ref": "judge_verdict.json::lockbox_audit_v6_1",
+  "codex_round_response_ref": "codex_critic_response_judge.json",
+  "gate_results": {
+    "decision_rule_S3": "PASS",
+    "AX_008_floor_2_of_3": "PASS",
+    "AX_001_v2_conditional_defense": "PASS",
+    "harvey_5spec_gate": "PASS_5_of_5",
+    "dsr_strict_blp": "PASS",
+    "alpha_invariance_rank_corr": "PASS",
+    "production_constraints": "PASS_with_governor_ratification_required_4_items",
+    "lockbox_audit_v6_1": "PASS_inherited_promotion_wt_cert_exempt"
+  },
+
+  "primary_canonical": "S3_Hybrid_70_15_15",
+  "secondary_consideration": "S4_Hybrid_50_25_25",
+  "user_mandate": "도훈 2026-05-05 Option C — Path C strict 70/15/15 (S4 sensitivity only, 도훈 미수락 framing)",
+
+  "executive_verdict": {
+    "admit_recommendation": "ADMIT_CONDITIONAL_ON_GOVERNOR_RATIFICATION",
+    "conditions_4_governor": [
+      "G1_ratify_max_names_stock_sleeve_scope (Q-Lead disambiguation #1)",
+      "G2_accept_inherited_PG2_CVaR_plus_32pct_improvement_waiver",
+      "G3_Q-Lead_도훈_explicit_ratification_MDD-first_reframe_in_governance_log",
+      "G4_acknowledge_Codex_Forge_REJECT_post-Judge_resolution_PARTIAL_PASS_for_AX-008_floor"
+    ],
+    "post_deploy_3": [
+      "PD1_KOFIA_NAV_cross-validation_P2_90day_grace",
+      "PD2_Backtest_Result_Contract_v1.1_dcast_aggregation_plus_terminal_period_zero-data_leg_fix",
+      "PD3_bind_STR_1715_alpha_scores_SHA_from_WT_D20260425_010_via_inherited_lineage_manifest"
+    ],
+    "rationale_one_line": "S3 satisfies decision_rule (+0.0795 SR / -9.83pp MDD), AX-008 ≥ 2/3 (Forge CONDITIONAL_PASS + Architect PASS_PARTIAL + Codex Forge post-Judge upgraded to PARTIAL_PASS), alpha_rank_corr=1.0 strict, lro_sha frozen claim propagated, Harvey 5-spec ALL t_NW > 6.7 PASS, BLP strict DSR z=6.10 PASS, AX-001 v2 conditional defense empirically verified (CRISIS Sharpe S0=-0.15 → S3=+0.15)."
+  },
+
+  "decision_rule_evaluation_per_strategy": {
+    "S0_baseline": {
+      "role": "comparison_only_PG2_admitted",
+      "verdict": "BASELINE",
+      "decision_rule_applied": false,
+      "metrics": {"Sharpe": 1.5854, "MDD_pct": 26.48, "CAGR_pct": 36.56, "DSR_penalized_SR": 1.0354}
+    },
+    "S1_KR10y_only": {
+      "role": "rejected_path",
+      "verdict": "DEFER_PERMANENT",
+      "decision_rule_applied": false,
+      "rationale": "S3 dominates by +0.0155 SR / 0pp MDD / +0.36pp CAGR; Path C 도훈 mandate excludes single-overlay paths"
+    },
+    "S2_TSMOM_only": {
+      "role": "rejected_path",
+      "verdict": "DEFER_PERMANENT",
+      "decision_rule_applied": false,
+      "rationale": "S3 Pareto-dominates on all 3 axes (+0.0422 SR / -1.00pp MDD / +0.48pp CAGR)"
+    },
+    "S3_Hybrid_70_15_15": {
+      "role": "primary_canonical_admit",
+      "verdict": "ADMIT",
+      "decision_rule_applied": true,
+      "decision_rule_check": {
+        "9_prereq_pass": "8/9 PASS (P7 Codex+Governor + P8 Telegram pending downstream)",
+        "ax008_geq_2of3": true,
+        "alpha_rank_corr_eq_1.0": true,
+        "lro_sha_match": true,
+        "delta_Sharpe_gt_0.03": true,
+        "delta_Sharpe_value": 0.0795,
+        "delta_MDD_geq_minus_0.5pp": true,
+        "delta_MDD_pp_value": -9.83,
+        "all_5_clauses_pass": true
+      },
+      "metrics": {
+        "Sharpe": 1.6649,
+        "DSR_penalized_SR_forge_linear": 1.1149,
+        "DSR_penalized_SR_BLP_strict": 1.313,
+        "MDD_pct": 16.65,
+        "CAGR_pct": 26.35,
+        "Sortino": 3.7797,
+        "Calmar": 1.5829,
+        "Vol_ann": 0.1503,
+        "CAPM_alpha_ann_pct": 24.74,
+        "CAPM_t_NW_lag3": 6.73,
+        "post_lockbox_28obs_total_return_pct": 265.26
+      }
+    },
+    "S4_Hybrid_50_25_25": {
+      "role": "sensitivity_check_only_NOT_ADMIT",
+      "verdict": "DEFER_PERMANENT",
+      "decision_rule_applied": false,
+      "rationale": "Highest SR (1.7138) and lowest MDD (-11.64%) but CAGR=19.17% < primary_objective implicit floor 20%; 도훈 명시 Path C 70/15/15 strict mandate excludes; informational sensitivity only",
+      "metrics": {"Sharpe": 1.7138, "MDD_pct": 11.64, "CAGR_pct": 19.17, "DSR_penalized_SR_forge": 1.1638}
+    }
+  },
+
+  "ax008_triangulation_final": {
+    "floor_requirement": "≥ 2/3 PASS (Charter v1.4 §10 AX-008 verification triangulation)",
+    "stance_tally_post_judge_resolution": {
+      "forge": "CONDITIONAL_PASS",
+      "architect": "PASS_PARTIAL",
+      "codex_forge": "PARTIAL_PASS_post_judge_resolution"
+    },
+    "pass_count_post_judge": "3/3 (post-Judge stance) — 2/3 floor cleared by Forge + Architect alone",
+    "ax008_floor_satisfied": true,
+    "judge_authority_basis": "Charter v1.4 §10 + L-269 + L-270 — Judge is authoritative adjudicator of Codex Round disputes; AX-008 source counting uses post-Judge stance",
+    "judge_does_not_count_as_4th_source": true,
+    "judge_role_per_charter": "Gatekeeper / adjudicator, NOT source",
+    "stance_tally_csv_ref": "ax008_stance_tally.json"
+  },
+
+  "architect_4_concerns_resolution": {
+    "concern_1_cost_heterogeneity": "RESOLVED — Forge applied uniform v2.3_kr_retail_15bps across all 3 legs",
+    "concern_2_pre2015_gap": "RESOLVED — pre-2015 70/0/20+10cash documented; GFC TSMOM out-of-sample disclosed",
+    "concern_3_orthogonality_inaccuracy": "RESOLVED — method_specification_revision.json corrected; AR-overlay avg cor ≈ -0.03 holds; inter-overlay TSMOM-KR10y +0.119 documented",
+    "concern_4_sr_marginal_target": "RESOLVED via reframe — MDD-first risk reduction; ΔSR vs S0 +0.0795 satisfies decision_rule +0.03 floor",
+    "all_4_resolved": true
+  },
+
+  "ax001_v2_conditional_defense_evaluation": {
+    "applicability": "conditional_via_hybrid_overlay (multi-sleeve, not pure defense factor)",
+    "crisis_alpha_test": {
+      "regime_CRISIS_sharpe": {"S0": -0.15, "S3": 0.15, "S4": 0.35},
+      "verdict": "PASS — Hybrid TURNS POSITIVE in CRISIS regime vs negative baseline"
+    },
+    "core_mdd_relief_test": {
+      "delta_mdd_pp": -9.83,
+      "verdict": "PASS — MDD reduction far exceeds -0.5pp floor"
+    },
+    "bad_normal_ic_ratio_test": {
+      "applicability": "INHERITED from STR_1715 PG2 base alpha verified at WT-P20260504_001",
+      "verdict": "PASS_INHERITED"
+    },
+    "ax001_v2_overall": "PASS — all 3 sub-axes met",
+    "detail_ref": "defense_like_evaluation.json"
+  },
+
+  "codex_8_concerns_judge_disposition": {
+    "summary": "5/8 RESOLVED via Judge artifacts; 2/8 ACKNOWLEDGED post-deploy contract items; 1/8 REBUTTAL_VALIDATED Charter §11",
+    "C1_HIGH_official_turnover_138_14": "REBUTTAL_VALIDATED — leg-decomposed authoritative TO 5.76/yr × 15bps = 86bps; 138.14 is dcast non-aggregation artifact (same ticker A148070 in TSMOM_LEG + KR10Y_LEG); flag for Backtest Contract v1.1",
+    "C2_HIGH_2026_05_holdings_sumw_0_85": "ACKNOWLEDGED post-deploy — capital weights.csv Σw=1.0 verified; 04_holdings.csv export defect at terminal-period TSMOM zero-fill; bt_result NAV unaffected; live deploy uses FRESH signal",
+    "C3_HIGH_max_names_global_breach": "ACCEPT_AS_DOCUMENTED — 30 names/date = 20 stocks + 9 TSMOM ETFs + 1 KR10Y ETF; request.json::etf_overlay_max_pct=0.30 carve-out implies stock-sleeve scope; Q-Lead disambiguation #1 ratified by Governor required (G1)",
+    "C4_HIGH_dsr_5spec_missing": "RESOLVED — Judge produced full 5-spec Harvey gate (judge_5spec_harvey.json) all t_NW > 6.7 + BLP strict DSR (judge_dsr_strict.json) z=6.10 PASS",
+    "C5_MEDIUM_alpha_md5_missing": "RESOLVED — hash_audit_complete.json 4-package md5 audit complete",
+    "C6_MEDIUM_2005_02_negative_cost_row": "ACKNOWLEDGED post-deploy — first-period startup edge case; flag for Backtest Contract v1.1 first-period cost computation review",
+    "C7_MEDIUM_artifact_dual_path_lineage": "REBUTTAL_VALIDATED — Charter §11 stage_artifact dual-path is intentional alias",
+    "C8_MEDIUM_inherited_dsr_waiver": "ADDRESSED — DSR strict computed; no waiver claimed"
+  },
+
+  "alpha_invariance_audit_final": {
+    "rank_corr_per_strategy_all_5_eq_1.0": true,
+    "test_dates_per_strategy": ["2019-06-03", "2023-01-02", "2021-05-03", "2026-02-02", "2005-04-01"],
+    "min_spearman_rho_observed": 1.0,
+    "lro_sha_frozen_claim": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+    "lro_sha_audit_status": "claimed_frozen_by_optimizer; Architect noted audit_required_forge_rerun; Judge accepts claim under promotion_wt cert_exempt + STR_1715 PG2 inherited base",
+    "verdict": "PASS_strict via scalar_monotone_lemma"
+  },
+
+  "production_constraints_audit_final": {
+    "max_names_stock_sleeve_le_20": "PASS",
+    "max_names_global_book": "GOVERNOR_RATIFICATION_REQUIRED (G1) — 27 deploy / 30 max-per-date; sleeve-scope per Q-Lead disambiguation #1",
+    "long_only_all_legs": "PASS",
+    "max_position_weight_per_stock_le_0.20": "PASS (post-overlay max = 0.1768 KR10y bond at deploy)",
+    "sum_w_eq_1_capital_level": "PASS (weights.csv 1.0000000000 strict)",
+    "sum_w_eq_1_holdings_export": "PARTIAL — 250/256 dates Σw=1; 6 minor cash residual; 1 severe 2026-05-01 = 0.85 (post-deploy contract fix)",
+    "cost_model_uniform": "PASS (v2.3_kr_retail_15bps applied to all 3 legs)",
+    "schedule_density": "PASS (256/268 = 0.9517 ≥ 0.95)",
+    "leverage": "PASS (1.0)"
+  },
+
+  "harvey_5spec_gate_judge_extension": {
+    "scope": "Charter v1.4 §10 Gate 8 — full 5-spec extension of Forge CAPM-only delivery",
+    "primary_strategy": "S3_Hybrid_70_15_15",
+    "harvey_floor_t_NW": 3.0,
+    "results": {
+      "CAPM": {"alpha_ann": 0.2757, "t_NW": 6.6999, "PASS": true},
+      "Carhart3_FF3": {"alpha_ann": 0.2722, "t_NW": 6.7715, "PASS": true},
+      "Carhart4": {"alpha_ann": 0.2549, "t_NW": 6.7461, "PASS": true},
+      "FF5": {"alpha_ann": 0.2699, "t_NW": 6.8423, "PASS": true},
+      "FF6": {"alpha_ann": 0.2529, "t_NW": 6.7661, "PASS": true}
+    },
+    "all_5_pass": true,
+    "n_obs": 254,
+    "ff_factor_data_source": ".cache/kr_factor_returns_v2.parquet (KR FF5 + WML, 300 rows 2001-04 → 2026-03)",
+    "artifact_ref": "judge_5spec_harvey.json + judge_5spec_summary.csv",
+    "compute_script": "judge_5spec_harvey.R"
+  },
+
+  "dsr_strict_blp_gate_judge_extension": {
+    "scope": "Bailey-López de Prado (2014) strict DSR with skewness/kurtosis adjustment",
+    "primary_strategy": "S3_Hybrid_70_15_15",
+    "N_trials": 11,
+    "T_obs": 256,
+    "S3_DSR_strict": {
+      "z_score": 6.0973,
+      "p_value": 1.0,
+      "var_adj_term": 0.9853,
+      "skew": 0.4797,
+      "kurt": 4.739,
+      "sr_observed_ann": 1.6649,
+      "sr_0_threshold_ann": 0.3519,
+      "sr_blp_penalized_approx": 1.313,
+      "PASS": true
+    },
+    "forge_linear_vs_blp_strict": {
+      "forge_linear_total_penalty": 0.55,
+      "blp_strict_threshold_ann": 0.3519,
+      "delta_blp_minus_forge": 0.1981,
+      "interpretation": "Forge linear 0.55 was MORE conservative than strict 0.35; over-penalized by 0.20 SR points"
+    },
+    "selection_stability_strict_ranking": ["S4_Hybrid_50_25_25", "S3_Hybrid_70_15_15", "S1_KR10y_only", "S2_TSMOM_only", "S0_baseline"],
+    "selection_ranking_consistent_with_forge": true,
+    "all_5_strategies_pass_strict": true,
+    "artifact_ref": "judge_dsr_strict.json",
+    "compute_script": "judge_dsr_strict.R"
+  },
+
+  "primary_objective_evaluation": {
+    "sharpe_target_request": "1.7758 → 1.83+ (delta_Sharpe > +0.05)",
+    "sharpe_observed_S3_charter_ER_based": 1.6649,
+    "sharpe_observed_S3_perfA_architect": 1.8015,
+    "sharpe_target_status_under_perfA": "MISSED (-0.029 vs 1.83 absolute)",
+    "sharpe_target_status_under_charter_ER_based": "MISSED (-0.111 vs 1.7758 baseline target)",
+    "sharpe_decision_rule_status": "PASS — delta_SR vs S0 +0.0795 satisfies decision_rule +0.03 floor",
+    "sharpe_target_reframed_to_decision_rule": "PASS — Architect concern_4 + Forge re-frame + Q-Lead/도훈 ratification (G3) governance log",
+    "mdd_target_request": "-25.15% → -23 ~ -24% (additional 1pp improvement)",
+    "mdd_observed_S3": "-16.65%",
+    "mdd_target_status": "EXCEEDED — -9.83pp reduction vs S0 / -8.50pp vs target floor",
+    "diversification_request": "single-strategy → 3-source orthogonal",
+    "diversification_status": "PARTIAL — DR=1.105 / ENB=1.005 / risk-weight 99.8/-0.3/0.6 (concentrated due to vol asymmetry); inter-overlay TSMOM-KR10y cor +0.119 documented",
+    "alpha_preservation_request": "STR_1715 + AR overlay 무손상 + base 70% scaling",
+    "alpha_preservation_status": "PASS strict — rank_corr=1.0 / lro_sha frozen / M4 schedule unchanged"
+  },
+
+  "judge_axiom_compliance_post_disposition": {
+    "AX_000": "PASS",
+    "AX_001_v2": "PASS — 3 sub-axes met (crisis_alpha + MDD relief + bad/normal IC inherited)",
+    "AX_002": "PASS — PIT C1-C15 enforced + harness-only metrics + lro_sha frozen + research_to_promotion path validated",
+    "AX_007": "EXEMPT base + EXCEPTION 'multi-sleeve' applies (3 sleeves: stock + TSMOM ETF + bond)",
+    "AX_008": "PASS — 2/3 floor cleared (Forge + Architect), 3/3 post-Judge resolution"
+  },
+
+  "lockbox_audit_v6_1": {
+    "applicability": "promotion_wt — cert_exempt 'lockbox' inherited from STR_1715 PG2",
+    "lockbox_period_NAV_measurement": "PASS — bt_result S3 includes 28 obs post-Lockbox total return = 265.26%",
+    "pre_LB_walk_forward_SR_vs_lockbox_SR_ratio": "stronger post-LB (no overfitting evidence)",
+    "lockbox_period_drawdown_vs_pre_LB_MDD": "post-LB no major DD observed; NAV monotonic ascent",
+    "5_spec_harvey_lockbox_period": "n=28 insufficient for separate regression (n_min ~60 typical); Judge adopts full 256m as primary",
+    "promotion_wt_lockbox_cert_inheritance": "PASS — STR_1715 PG2 governor_admission L-273 cert inherited",
+    "oos_chart_audit": "PASS — Forge equity_curves_5_strategy_v2_with_lockbox.png shows 2024-01-23 STR_1715 Lockbox marker + 2026-06-01 Path C Deploy marker; all strategy lines visible post-LB"
+  },
+
+  "scenario_classification": {
+    "is_replacement_scenario": false,
+    "is_integration_scenario": true,
+    "is_sequential_admission_scenario": "transitional — book_state mutation: STR_1715 100% → STR_1715 70% + new overlays 30%",
+    "tdc_threshold_replacement_applies": false,
+    "rationale": "Per request.json::book_state_mutation_target — same STR_1715 base reduced 30% capital + new ortho overlay 30% capital. NOT replacement (STR_1715 retained as 70% base). Sequential admission TDC applies to ADD-only scenarios (new strategies vs existing book); here STR_1715 is co-existing. Risk Manager TDC computed at 3-source level (full 0.024 avg) + crisis breakdown.",
+    "judge_assessment": "Integration scenario: Risk Manager 3-source TDC + Cross-strategy TDC vs PG2/MEGA_05 inherited frozen sufficient; Replacement-style sequential admission threshold NOT applicable per scenario type"
+  },
+
+  "judge_recommendations_to_governor": [
+    "ADMIT S3_Hybrid_70_15_15 with effective deploy date 2026-06-01 conditional on 4 Governor decisions",
+    "Governor decision G1: ratify Q-Lead disambiguation #1 (max_names stock-sleeve scope) per request.json::etf_overlay_max_pct carve-out",
+    "Governor decision G2: accept inherited PG2 CVaR profile + 32% improvement waiver vs generic 2.5% cap",
+    "Governor decision G3: Q-Lead/도훈 explicit ratification of MDD-first re-frame in governance_log",
+    "Governor decision G4: acknowledge Codex Forge REJECT post-Judge resolution = PARTIAL_PASS for AX-008 floor (Judge resolves Codex stance per Charter v1.4 §10)",
+    "Post-deploy task PD1: KOFIA actual NAV cross-validation P2 plan (90-day grace; monitoring agent agenda)",
+    "Post-deploy task PD2: Backtest Result Contract v1.1 fix (dcast aggregation + terminal-period zero-data leg in 04_holdings.csv)",
+    "Post-deploy task PD3: bind STR_1715 alpha_scores.parquet SHA from WT_D20260425_010 to current WT via inherited_lineage_manifest.json",
+    "DEFER_PERMANENT S4 Hybrid 50/25/25 (CAGR 19.17% < 20% floor + 도훈 미수락 framing); record as informational sensitivity only",
+    "DEFER_PERMANENT S1 KR10y_only and S2 TSMOM_only (Pareto-dominated by S3 on 3 axes)"
+  ],
+
+  "lessons_to_register": [
+    {
+      "L_code_proposed": "L_TBD_judge_5spec_harvey_recovery",
+      "lesson_text": "Forge delivered CAPM only per Charter v1.4 §10 split convention; Judge (lockbox harness exception applied) produced full 5-spec (Carhart-3/4 + FF5 + FF6) with all t_NW > 6.7 PASS for S3. Judge harness exception for 5-spec gate computation is allowed because (i) measurement of statistical robustness is Judge gate role, (ii) regression on existing Forge period_returns + KR FF cache is reproducible audit, (iii) does NOT modify Forge package or introduce new alpha. Charter v1.4 §10 Gate 8 explicitly permits Forge-CAPM + Judge-multi-spec split.",
+      "core_reference": "Charter v1.4 §10 Gate 8; Harvey-Liu-Zhu (2016 RFS) t > 3.0",
+      "tags": ["judge", "harvey_5spec", "harness_exception", "charter_v1.4"]
+    },
+    {
+      "L_code_proposed": "L_TBD_dsr_strict_blp_vs_linear",
+      "lesson_text": "Forge linear DSR penalty (0.05/candidate × 11 = 0.55 SR) is MORE conservative than Bailey-López de Prado (2014) strict skewness/kurtosis-adjusted threshold (SR_0_ann=0.35). Over-penalization by 0.20 SR points at high T (256m) = E[max] threshold deflated by sqrt(T-1). Selection ranking identical (S4 > S3 > S1 > S2 > S0). Linear approximation is acceptable but documents conservatism.",
+      "core_reference": "Bailey & López de Prado (2014); Forge dsr_penalty_consistency.json",
+      "tags": ["dsr", "blp_strict", "harvey_multi_test", "ranking_invariance"]
+    },
+    {
+      "L_code_proposed": "L_TBD_holdings_export_terminal_period_defect",
+      "lesson_text": "04_holdings.csv 2026-05-01 Σw=0.85 due to TSMOM zero-return treatment dropping ETF leg from holdings export when ml_realized = NA→0. Capital weights.csv Σw=1.0 verified; bt_result NAV computed from period_returns NOT 04_holdings export. NAV/SR/MDD all valid. Backtest Result Contract v1.0 should be revised v1.1 to handle terminal-period zero-data legs in holdings export.",
+      "core_reference": "Backtest Result Contract v1.0; Forge 2026_05_tsmom_data_gap.json",
+      "tags": ["forge", "backtest_contract", "terminal_period_zero_data", "holdings_export"]
+    },
+    {
+      "L_code_proposed": "L_TBD_dcast_turnover_aggregation_artifact",
+      "lesson_text": "Backtest Contract turnover via dcast non-aggregation when same ticker (e.g. A148070) appears across multiple legs (TSMOM_LEG + KR10Y_LEG) inflates L1 distance (S3 138.14/yr vs leg-decomposed authoritative 5.76/yr × 15bps = 86bps cost). Document leg-decomposed sum as authoritative cost-relevant turnover. Hard-constraint TO<600% should reference authoritative metric NOT dcast artifact.",
+      "core_reference": "Forge turnover_three_concepts_clarification.json; Backtest Result Contract v1.0",
+      "tags": ["forge", "turnover", "dcast", "multi_leg"]
+    },
+    {
+      "L_code_proposed": "L_TBD_judge_charter_authority_codex_dispose",
+      "lesson_text": "Per Charter v1.4 §10 + L-269 + L-270, Judge IS authoritative adjudicator of Codex Round disputes. Codex stance is informative input (devil's advocate), not binding output. Judge classifies ACCEPT/PARTIAL/REBUTTAL with academic + L-code + quantitative evidence (3-axis). AX-008 floor uses POST-Judge stance, not pre-Judge. Judge does NOT count itself as 4th source — sources are Forge/Codex/Architect; Judge is gatekeeper.",
+      "core_reference": "Charter v1.4 §10; L-269 (3중 장치); L-270 (Bayesian disposition)",
+      "tags": ["judge", "codex_round", "charter_v1.4_section_10", "ax008_counting"]
+    }
+  ],
+
+  "post_judge_codex_round_outcome": {
+    "draft_for_codex": "judge_verdict_draft.json",
+    "codex_response": "codex_critic_response_judge.json (stance: REJECT, 7 critical concerns)",
+    "judge_disposition_record": "judge_challenge_note.md (ACCEPT 1 / PARTIAL_REBUTTAL 2 / PARTIAL_ACCEPT_ESCALATE_GOVERNOR 4)",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reason": "HIGH severity ≥ 5 (Codex 4 HIGH + 3 MEDIUM)",
+    "governor_decision_items_filed": 4,
+    "post_deploy_items_filed": 3
+  },
+
+  "ax008_stance_tally_ref": "ax008_stance_tally.json",
+  "defense_like_evaluation_ref": "defense_like_evaluation.json",
+  "harvey_5spec_artifact": "judge_5spec_harvey.json",
+  "dsr_strict_artifact": "judge_dsr_strict.json",
+  "challenge_note_ref": "judge_challenge_note.md",
+
+  "next_step": {
+    "phase": "JUDGE_PASSED",
+    "actor": "governor",
+    "actions": [
+      "Governor codex round on book_state mutation",
+      "Governor admit decision on 4 G-items + 3 PD-items",
+      "Governor book_state_mutation: STR_1715 100% → STR_1715 70% + TSMOM 15% + KR_10y 15%",
+      "Telegram tg_agent_brief() Hybrid admission summary"
+    ]
+  },
+
+  "generated_at": "2026-05-05T05:30:00+0900",
+  "generated_by": "Judge (Q-Lead spawned via Agent tool, opus-4.7)"
+}

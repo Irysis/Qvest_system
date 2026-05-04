@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-P20260505_001",
+  "scope": "AX-001 v2 conditional defense evaluation — Hybrid 70/15/15 Path C",
+  "applicability_assessment": {
+    "is_pure_defense_factor": false,
+    "is_multi_sleeve_with_defense_function": true,
+    "rationale": "Hybrid is NOT a pure defense factor; it is a multi-sleeve overlay (70% AR-on-M4 base + 15% TSMOM ETF rotation + 15% KR 10y bond ETF). KR_10y bond leg has crisis hedge function (flight-to-quality); TSMOM has trend-based switching; combined achieves conditional defense behavior. AX-001 v2 conditional metric applies to crisis_alpha + Core MDD relief sub-axes; bad/normal IC ratio is alpha-side property inherited from STR_1715 PG2 base."
+  },
+
+  "ax001_v2_3_sub_axes_evaluation": {
+    "sub_axis_1_crisis_alpha": {
+      "definition": "Does strategy generate POSITIVE alpha in CRISIS regime (vs negative or zero)?",
+      "regime_conditional_sharpe_S0_baseline": -0.15,
+      "regime_conditional_sharpe_S3_hybrid": 0.15,
+      "regime_conditional_sharpe_S4_sensitivity": 0.35,
+      "delta_S3_vs_S0_pp": 0.30,
+      "delta_S4_vs_S0_pp": 0.50,
+      "verdict": "PASS — Hybrid TURNS POSITIVE in CRISIS regime vs negative baseline (empirical conditional defense behavior)",
+      "evidence_artifact": "forge_package.json::comparative_analysis.regime_conditional_sharpe + crisis_decomposition_5_strategy.json"
+    },
+    "sub_axis_2_core_mdd_relief": {
+      "definition": "Does strategy reduce MDD vs Core baseline?",
+      "S0_baseline_mdd_pct": 26.48,
+      "S3_hybrid_mdd_pct": 16.65,
+      "delta_mdd_pp": -9.83,
+      "floor_pp": -0.5,
+      "margin_above_floor_pp": -9.33,
+      "verdict": "PASS — MDD reduction far exceeds -0.5pp decision_rule floor"
+    },
+    "sub_axis_3_bad_normal_ic_ratio": {
+      "definition": "Does alpha signal have bad-regime IC ≥ normal-regime IC ratio threshold?",
+      "applicability": "ALPHA-SIDE INHERITED from STR_1715 PG2 base",
+      "verification_basis": "WT-P20260504_001 governor_admission L-273 — STR_1715 PG2 alpha_scores already verified at admission",
+      "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+      "verdict": "PASS_INHERITED — promotion_wt cert_exempt['alpha_discovery'] applies; alpha was previously gated"
+    }
+  },
+
+  "crisis_decomposition_evidence": {
+    "GFC_2008_2009_n11": {
+      "S0_cum_ret_net": 0.0341,
+      "S3_cum_ret_net": 0.0477,
+      "delta_S3_vs_S0": 0.0136,
+      "S0_max_dd_in_window": -0.1227,
+      "S3_max_dd_in_window": -0.0693,
+      "interpretation": "S3 captures KR10y flight-to-quality (TSMOM=0 pre-2015); GFC hedge purely bond-based",
+      "AX_001_v2_pass": true
+    },
+    "Vol2018_Q4_n4": {
+      "S0_cum_ret_net": -0.1577,
+      "S3_cum_ret_net": -0.1039,
+      "delta_S3_vs_S0": 0.0538,
+      "S0_max_dd_in_window": -0.1657,
+      "S3_max_dd_in_window": -0.1124,
+      "interpretation": "All 3 legs active; both TSMOM + KR10y attenuate DD",
+      "AX_001_v2_pass": true
+    },
+    "COVID_2020_acute_n5": {
+      "S0_cum_ret_net": -0.0748,
+      "S3_cum_ret_net": -0.048,
+      "delta_S3_vs_S0": 0.0268,
+      "S0_max_dd_in_window": -0.1239,
+      "S3_max_dd_in_window": -0.0897,
+      "interpretation": "KR10y hedge dominant; TSMOM modest but nonzero; STR_1715-TSMOM cor 0.752 acute breakdown documented (RF-A3 inherited)",
+      "AX_001_v2_pass": true,
+      "caveat": "5m acute window — n_obs small; bootstrap CI in crisis_bootstrap_ci.json"
+    },
+    "Stagflation_2022_n12": {
+      "S0_cum_ret_net": -0.048,
+      "S3_cum_ret_net": -0.0447,
+      "delta_S3_vs_S0": 0.0033,
+      "S0_max_dd_in_window": -0.158,
+      "S3_max_dd_in_window": -0.1122,
+      "interpretation": "All 3 legs active; KR10y bleeds (-8.6%) but TSMOM positive partial offset; modest improvement",
+      "AX_001_v2_pass": "PARTIAL — modest cum_ret improvement; meaningful MDD relief"
+    }
+  },
+
+  "diversification_finding": {
+    "DR": 1.105237,
+    "DR_threshold": 1.05,
+    "DR_pass": true,
+    "ENB": 1.004918,
+    "ENB_misleading_note": "ENB sensitive to single dominant contributor; with 99.8% risk concentration ENB → 1.0; use DR for benefit measurement",
+    "risk_pct_contribution": {
+      "STR_1715_pct": 99.75,
+      "KR_10y_pct": -0.34,
+      "TSMOM_pct": 0.59
+    },
+    "capital_weight_risk_weight_gap": "70% / 99.8% — STR_1715 vol=21% is 3.7× KR10y vol=5.8% / 4.7× TSMOM vol=4.5%; concentrated by structural design (Path C 도훈 명시 preserves PG2 risk profile)",
+    "interpretation": "Diversification benefit comes from -0.122 STR-KR10y negative cor (reduces portfolio variance ~10% vs weighted-sum vols)"
+  },
+
+  "tail_risk_finding": {
+    "hybrid_CVaR95_monthly": -0.0676,
+    "str1715_alone_CVaR95_monthly": -0.0991,
+    "hybrid_improvement_vs_base": -0.0316,
+    "relative_improvement_pct": 32,
+    "hybrid_Hill_alpha": 3.203,
+    "hybrid_GPD_xi": 0.0256,
+    "interpretation": "Tail behavior IMPROVES vs base by 32%; Hill α > 3 (moderate fat-tail not extreme)"
+  },
+
+  "ax001_v2_overall_verdict": {
+    "sub_axis_1_crisis_alpha": "PASS",
+    "sub_axis_2_core_mdd_relief": "PASS",
+    "sub_axis_3_bad_normal_ic_ratio": "PASS_INHERITED",
+    "all_3_pass": true,
+    "ax001_v2_compliance": "PASS"
+  },
+
+  "stance_against_legacy_defense_failures": {
+    "AX_005_v1.2_kr_defense_top20_long_only": {
+      "applicability_to_hybrid": "EXCLUSION applies — Hybrid is multi-sleeve (3 legs: stocks + ETF basket + bond ETF), NOT single-sleeve top20 KR equity long-only",
+      "judge_finding": "AX-005 v1.2 EXCLUSION 'multi-sleeve' explicitly applies; no defense single-sleeve violation"
+    },
+    "AX_007_top20_mechanism_break": {
+      "applicability_to_hybrid": "EXCLUSION applies — exception 'multi-sleeve' (3 sleeves)",
+      "judge_finding": "Hybrid does not violate AX-007 mechanism break; exception 4 ('multi-sleeve' OR 'long-short' OR '50+ 분산' OR 'ML sizing') applies (qualifies for both 'multi-sleeve' and 'ML sizing' for TSMOM rotation)"
+    }
+  },
+
+  "generated_at": "2026-05-05T05:30:00+0900",
+  "generated_by": "Judge"
+}
