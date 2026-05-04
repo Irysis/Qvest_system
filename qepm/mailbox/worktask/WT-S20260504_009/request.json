@@ -1,0 +1,92 @@
+{
+  "task_id": "WT-S20260504_009",
+  "wt_type": "research_wt",
+  "wt_kind": "exploratory_research_no_book_state_write",
+  "hypothesis_title": "ML-driven Multi-Asset KR ETF Rotation — 30% cash residual 직교 alpha source (long-only + ETF only + ML)",
+  "hypothesis_description": "도훈 명시 (2026-05-04): WT-008 KR 10년 국채 정석 답이라 비정석 후보 재요청. 추가 제약: long-only / 선물 X / ETF 풀만 / ML 가능. 핵심 통찰: KR ETF 정적 비중은 cor 높거나 cost 큼 → ML이 직교성의 source. ML이 regime + timing 결정으로 rotation decision 자체가 STR_1715 alpha와 다른 정보 set. Universe: 9 KR ETFs (KODEX 200 broad equity + KODEX 국고채10년 + TIGER 미국S&P + KODEX 골드 hedged + KODEX 미국채10년 hedged + KODEX 200미국채혼합 multi-asset + KODEX 한국부동산리츠 + KODEX 200 저변동성 + TIGER 단기통안채). Model: XGBoost or LSTM regime classifier with cor penalty. AX-007 exception path 'ML sizing' 자동 활용. 학술 anchor: Gu-Kelly-Xiu (2020 RFS) empirical asset pricing via ML / Avramov-Cheng-Metzker (2021 RAS) ML asset pricing / Andrew Lo (2004) adaptive markets / Moody-Saffell (2001 RFS) reinforcement learning trading.",
+  "hypothesis_source": "user_decision_2026-05-04_redirected_from_WT_008",
+  "as_of_date": "2026-05-04",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "parent_wt": "WT-P20260504_001",
+  "predecessor_wts": ["WT-S20260504_007", "WT-P20260504_001", "WT-S20260504_008"],
+  "method": "ml_multi_asset_etf_rotation_orthogonal_alpha",
+  "method_specification": {
+    "research_question": "30% cash residual을 ML-driven KR ETF rotation으로 대체할 때 직교성 (cor < 0.30) + crisis hedge + Harvey t_NW > 3.0 + DSR PASS (multiple testing) 모두 충족 가능한가?",
+    "etf_pool": [
+      {"name": "KODEX_200", "ticker": "A069500", "asset_class": "KR_broad_equity"},
+      {"name": "KODEX_KTB10Y", "ticker": "A148070", "asset_class": "KR_bond_10y"},
+      {"name": "TIGER_SP500_FX_HEDGED", "ticker": "A143850", "asset_class": "USD_equity_hedged"},
+      {"name": "KODEX_GOLD_HEDGED", "ticker": "A132030", "asset_class": "commodity_gold_hedged"},
+      {"name": "KODEX_UST10Y_HEDGED", "ticker": "A308620", "asset_class": "USD_bond_hedged"},
+      {"name": "KODEX_200_UST_BLEND", "ticker": "A284430", "asset_class": "multi_asset"},
+      {"name": "KODEX_KR_REIT", "ticker": "A329200", "asset_class": "real_estate"},
+      {"name": "KODEX_200_LOW_VOL", "ticker": "A229200", "asset_class": "defensive_equity"},
+      {"name": "TIGER_KIS_SHORT_TERM", "ticker": "A157450", "asset_class": "cash_equivalent"}
+    ],
+    "ml_architecture": {
+      "primary_model": "XGBoost regime classifier + factor timing predictor",
+      "alternative_model": "LSTM time-series predictor with attention",
+      "input_features": [
+        "macro: FRED VIX, US 10y, USD/KRW, oil, copper",
+        "kr_market: KOSPI200 returns, VKOSPI level, KOSPI volume, KRW yield curve",
+        "cross_asset: 9 ETF trailing returns + volatility",
+        "regime: M4 schedule weight + AR_t value (information from STR_1715 base)",
+        "calendar: month-of-year, year-end seasonality"
+      ],
+      "output": "softmax allocation weights over 9 ETFs (sum=1)",
+      "training_loss": "weighted = forecast_accuracy_loss + lambda * cor_penalty(rotation_return, STR_1715_AR_M4) + mu * vol_penalty",
+      "cor_penalty_lambda": "tunable, target cor < 0.30",
+      "ml_validation": "walk-forward expanding window, no full-sample fitting (PIT C1)"
+    },
+    "evaluation_axis": {
+      "orthogonality_strict": "cor(rotation_t, STR_1715_AR_M4_t) < 0.30 strict, OOS verified",
+      "crisis_behavior": "GFC + COVID + Stagflation rotation positive return OR KOSPI200 outperform",
+      "kr_availability": "9 ETF tickers existence + AUM > 100B KRW + tracking error < 30bps",
+      "cost": "ER avg + bid-ask + tracking < 50bps/yr",
+      "ml_robustness": "OOS Sharpe > 0.5, walk-forward stable across 3+ sub-periods",
+      "harvey_t_nw": "regression of rotation_return on STR_1715 + macro factors, t_NW > 3.0",
+      "dsr_pass": "Bailey-Lopez de Prado DSR > 0 + p < 0.05 (n=8 trials in cycle)"
+    }
+  },
+  "universe_definition": {"label": "KOSPI200_KOSDAQ150_intersection", "liquidity_min_won_20d_avg": 200000000, "max_names_total": 500},
+  "extended_universe_alternative_assets": ["A069500", "A148070", "A143850", "A132030", "A308620", "A284430", "A329200", "A229200", "A157450"],
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {"fundamental": "quarterly 45d", "fundamental_annual": "annual May", "price": "t-1 close", "investor_flow": "t-1 settlement", "macro": "t-1 FRED", "ic_history": "Usable_Date <= sig_date"},
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_AR_threshold_overlay_PG2 (effective 2026-05-05)",
+  "user_constraints_explicit": {
+    "long_bias_only": true,
+    "no_futures": true,
+    "etf_pool_allowed": true,
+    "ml_allowed": true,
+    "cross_market_allowed": "for ETF pool inclusion (USD equity hedged ETF traded on KR exchange)",
+    "rationale": "도훈 2026-05-04 19:50 명시"
+  },
+  "hard_mandate": {"pit_enforcement": "C1-C15 all enforced", "liquidity_floor_won_20d_avg": 200000000, "long_only_mandate": "true"},
+  "hard_constraints": {"max_names": 20, "weight_bounds": [0, 0.20], "weight_sum": 1.0, "long_only": true, "global_hard_cap_ceiling": 0.20, "cash_replacement_max_pct": 0.30, "etf_pool_size": 9},
+  "primary_objective": {
+    "sr_boost": "STR_1715_AR_threshold_overlay_PG2 (1.7758) + 30% rotation alpha → 1.85+ (delta_Sharpe > +0.07)",
+    "diversification": "single-strategy → 2-source (alpha + rotation alpha)",
+    "alpha_preservation": "STR_1715 + AR overlay 무손상 mandate 유지",
+    "ax007_path": "ML sizing exception 활용"
+  },
+  "decision_rule": {
+    "PASS": "직교성 cor < 0.30 + Harvey t_NW > 3.0 + DSR PASS + crisis hedge + KR 가용 + cost < 50bps + ML walk-forward stable",
+    "CONDITIONAL_PASS": "5/7 axis PASS + 2 marginal flagged for monitoring",
+    "FAIL": "직교성 위반 OR Harvey FAIL OR DSR FAIL OR ML overfit detected"
+  },
+  "axiom_constraints": {"AX-000": "limits_dont_exist", "AX-002": "PIT enforced + research_only no book_state write", "AX-007": "EXCEPTION 'ML sizing' path 활용", "AX-008": "Forge + Codex + Architect 2/3 PASS"},
+  "state_machine_path": {"expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED", "abort_reason_planned": "RESEARCH_ONLY_CLOSED_NO_BOOK_STATE_WRITE"},
+  "production_protection": {"str_1715_directory": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/", "write_count_required": 0, "ar_overlay_params": "lro_sha frozen unchanged"},
+  "production_book_state_write": false,
+  "deferred_certs": ["governor_concord"],
+  "deferred_to": "follow-up promotion WT (if PASS)",
+  "active_sot": {"architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md", "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"},
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "round": "post_admit_research_ml_etf_rotation",
+  "user_decision": "도훈 2026-05-04 19:50 — long-only + ETF + ML 제약. 비정석 직교 alpha source 리서치",
+  "fallback_strategy": "WT-S20260504_008 KR 10년 국채 보관 (정석 fallback)",
+  "created_at": "2026-05-04T19:55:00+0900",
+  "created_by": "Q-Lead"
+}
