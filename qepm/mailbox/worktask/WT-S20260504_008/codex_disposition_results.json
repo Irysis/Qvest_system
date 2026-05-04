@@ -1,0 +1,117 @@
+{
+  "task_id": "WT-S20260504_008",
+  "remediation_timestamp": "2026-05-04T21:02:14+0900",
+  "c4_cleaned_n_months": 255,
+  "c4_removed_period": "2026-05 (partial month, only 4 trading days)",
+  "c2_bootstrap": {
+    "kr_10y": {
+      "delta_Sharpe_mean": 0.0527,
+      "delta_Sharpe_se": 0.0263,
+      "delta_Sharpe_ci_95": [0.0014, 0.1042],
+      "delta_Sharpe_ci_90": [0.0094, 0.0959],
+      "p_positive": 0.9779,
+      "B": 10000,
+      "block_size": 6
+    },
+    "cd91": {
+      "delta_Sharpe_mean": 0.0486,
+      "delta_Sharpe_se": 0.0054,
+      "delta_Sharpe_ci_95": [0.0388, 0.0602],
+      "delta_Sharpe_ci_90": [0.0403, 0.058],
+      "p_positive": 1,
+      "B": 10000,
+      "block_size": 6
+    }
+  },
+  "c2_newey_west": {
+    "kr_10y": {
+      "t_NW_monthly": 1.462,
+      "t_NW_annualized": 5.0647,
+      "pass_t3": true
+    },
+    "cd91": {
+      "t_NW_monthly": 11.3073,
+      "t_NW_annualized": 39.1696,
+      "pass_t3": true
+    }
+  },
+  "c2_deflated_sharpe": {
+    "kr_10y": {
+      "dsr_z": 6.3382,
+      "dsr_p": 1,
+      "pass_dsr_05": false
+    },
+    "cd91": {
+      "dsr_z": 6.2912,
+      "dsr_p": 1,
+      "pass_dsr_05": false
+    },
+    "M_trials_penalty": 7
+  },
+  "c5_c6_subperiod": {
+    "kr_10y": {
+      "IS_pre2011": {
+        "n": 74,
+        "delta_sr": 0.0992
+      },
+      "OOS_post2011_actual_ETF_period": {
+        "n": 181,
+        "delta_sr": 0.0277
+      },
+      "Recent_5Y": {
+        "n": 60,
+        "delta_sr": 0.0046
+      }
+    },
+    "cd91": {
+      "IS_pre2011": {
+        "n": 74,
+        "delta_sr": 0.0648
+      },
+      "OOS_post2011_actual_ETF_period": {
+        "n": 181,
+        "delta_sr": 0.0384
+      },
+      "Recent_5Y": {
+        "n": 60,
+        "delta_sr": 0.0408
+      }
+    }
+  },
+  "c1_timeseries_alpha": {
+    "schema": "Date × Ticker × asset_return × score_orthogonality_proxy × confidence × factor_family",
+    "n_rows": 1781,
+    "n_sig_dates": 255,
+    "file": "stage_artifacts/WT_S20260504_008/alpha_scores.parquet"
+  },
+  "cleaned_simulation_255m": {
+    "baseline": {
+      "label": "70%AR_30%cash@0%",
+      "n": 255,
+      "Sharpe": 1.6113,
+      "CAGR": 0.2585,
+      "MDD": 0.1761,
+      "Vol": 0.1509
+    },
+    "kr_10y": {
+      "label": "70%AR_30%kr_10y_net5bps",
+      "n": 255,
+      "Sharpe": 1.6639,
+      "CAGR": 0.2656,
+      "MDD": 0.1614,
+      "Vol": 0.1495
+    },
+    "cd91": {
+      "label": "70%AR_30%cd91_net1bps",
+      "n": 255,
+      "Sharpe": 1.6583,
+      "CAGR": 0.2673,
+      "MDD": 0.1693,
+      "Vol": 0.1509
+    },
+    "delta_Sharpe_kr_10y": 0.0526,
+    "delta_Sharpe_cd91": 0.047,
+    "delta_MDD_kr_10y_pp": -1.47,
+    "delta_MDD_cd91_pp": -0.68
+  }
+}

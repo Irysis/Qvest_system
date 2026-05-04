@@ -1,0 +1,205 @@
+{
+  "_template_note": "This is a working template. Will be promoted to alpha_package.json after Codex Critic Round disposition lands. Schema-compliant per 02_Infrastructure/worktask/schema.json.",
+  "task_id": "WT-S20260504_008",
+  "as_of_date": "2026-05-04",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "alpha_vector": {
+    "KODEX_KTB10Y_A148070": 0.0524,
+    "MMF_CD91_PROXY": 0.0151,
+    "KODEX_USD_A261240": -0.0364,
+    "KODEX_GOLD_A132030_KRW_HEDGED": -0.0097,
+    "KODEX_LOW_VOL_A229200": 0.0116,
+    "SYNTHETIC_CTA_4ASSET_TSM": 0.0304,
+    "VKOSPI_LONG_PROXY": -0.7274
+  },
+  "confidence_vector": {
+    "KODEX_KTB10Y_A148070": 0.85,
+    "MMF_CD91_PROXY": 0.95,
+    "KODEX_USD_A261240": 0.65,
+    "KODEX_GOLD_A132030_KRW_HEDGED": 0.55,
+    "KODEX_LOW_VOL_A229200": 0.45,
+    "SYNTHETIC_CTA_4ASSET_TSM": 0.40,
+    "VKOSPI_LONG_PROXY": 0.10
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_S20260504_008/alpha_scores.parquet",
+  "alpha_definition_note": "alpha_vector entries = expected Sharpe boost (delta_Sharpe vs 70%AR+30%cash@0% baseline) for the 30% cash residual replacement decision in STR_1715_AR_threshold_overlay_PG2 deployment. NOT individual stock alpha — wt_type=research_wt (asset-level orthogonal cash replacement candidate evaluation). confidence_vector reflects proxy fidelity vs actual ETF return path.",
+  "factor_specs": [
+    {
+      "factor_family": "Duration_Premium",
+      "proxy": "KR_Gov10Y_synthetic_via_8yr_modified_duration",
+      "formula": "ret_t = -8 * (yield_t - yield_t_lag)/100 + (yield_t_lag/12)/100",
+      "lag_rule": "month-end yield (PIT t-1)",
+      "winsorization": "n/a (rate level)",
+      "neutralization": "none",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.85,
+      "references": [
+        "Cieslak & Povala (2015) Review of Asset Studies",
+        "Campbell-Sunderam-Viceira (2017)",
+        "Korea Treasury Risk Premium Lim-Choi (2013)"
+      ]
+    },
+    {
+      "factor_family": "Risk_Free_Carry",
+      "proxy": "KR_CD91_monthly_carry_yield_div_12",
+      "formula": "ret_t = (CD91_yield_lag / 12) / 100",
+      "lag_rule": "previous month yield = next month return (PIT t-1)",
+      "winsorization": "n/a",
+      "neutralization": "none",
+      "economic_rationale": "structural",
+      "weight_theta": 0.10,
+      "references": [
+        "Korea Bank ECOS CD91 historical series",
+        "BoK Monetary Policy Quarterly (2026)"
+      ]
+    },
+    {
+      "factor_family": "FX_Carry_Reversal",
+      "proxy": "KRW_USD_spot_change_eom",
+      "formula": "ret_t = KRW_USD_eom_t / KRW_USD_eom_t_lag - 1",
+      "lag_rule": "month-end spot t-1",
+      "winsorization": "n/a",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.0,
+      "references": [
+        "Lustig-Roussanov-Verdelhan (2011) RFS",
+        "Brunnermeier-Nagel-Pedersen (2008) Carry Trade Crash"
+      ]
+    },
+    {
+      "factor_family": "Safe_Haven_Commodity",
+      "proxy": "synthetic_gold_via_KRW_VIX_DGS10_composite",
+      "formula": "ret_t = 0.5 * krw_chg + 0.05 * dvix_pct - 0.005 * d_dgs10",
+      "lag_rule": "all inputs t-1 PIT",
+      "winsorization": "n/a",
+      "neutralization": "none",
+      "economic_rationale": "risk_premium",
+      "weight_theta": 0.0,
+      "references": [
+        "Erb & Harvey (2006) FAJ",
+        "Baur & McDermott (2010) JBF"
+      ]
+    },
+    {
+      "factor_family": "Low_Volatility_Equity",
+      "proxy": "KOSPI200_bottom_30pct_vol_decile_EW",
+      "formula": "rolling_12m_std_per_ticker; bottom_30pct_eqweight; PIT lag",
+      "lag_rule": "vol_12m_lag = shift(vol_12m, 1L) per ticker",
+      "winsorization": "none (vol is bounded)",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.0,
+      "references": [
+        "Frazzini & Pedersen (2014) JFE — Betting Against Beta",
+        "Blitz-Vliet (2007) JPM"
+      ]
+    },
+    {
+      "factor_family": "Time_Series_Momentum",
+      "proxy": "synthetic_TSM_4asset_basket_long_only",
+      "formula": "long when prior 12M cum return > 0; equal-weight (KRW/Bond/KOSPI200/Gold)",
+      "lag_rule": "12M cumulative return PIT lag",
+      "winsorization": "n/a",
+      "neutralization": "none",
+      "economic_rationale": "behavioral",
+      "weight_theta": 0.0,
+      "references": [
+        "Asness-Moskowitz-Pedersen (2013) JFE"
+      ]
+    },
+    {
+      "factor_family": "Implied_Volatility_Long",
+      "proxy": "VIXCLS_eom_change_with_contango_haircut",
+      "formula": "ret_t = (vix_eom / vix_eom_lag - 1) * 0.5 - 0.030",
+      "lag_rule": "VIX month-end PIT t-1",
+      "winsorization": "n/a",
+      "neutralization": "none",
+      "economic_rationale": "structural",
+      "weight_theta": 0.0,
+      "references": [
+        "Carr-Wu (2009) RFS — Variance Risk Premium"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0,
+    "icir": 0.0,
+    "monotonicity": 0.0,
+    "subperiod_stability": 0.65,
+    "turnover_proxy": 1.20,
+    "harvey_t_stat": 1.05,
+    "harvey_t_specs_pass_count": 0,
+    "deflated_sharpe_ratio": 0.45,
+    "post_neutralization_ic": 0.0,
+    "alpha_inheritance_cor": 0.0,
+    "_diagnostics_note": "Asset-level evaluation, NOT factor-IC. rank_ic/icir/monotonicity = 0 by construction (no decile ranking). subperiod_stability=0.65 from kr_10y crisis cor (-0.20) being more negative than full-sample (-0.14). harvey_t_stat=1.05 = delta_Sharpe(0.0524) / SE(0.05) — NOT significant. DSR=0.45 estimated for top candidate (kr_10y) with 7 trials penalty. alpha_inheritance_cor=0 (asset-level, no parent strategy). turnover_proxy=1.20 = 30% notional rebalance × 4x quarterly approximation.",
+    "candidate_evaluation": {
+      "n_candidates": 7,
+      "n_axis_4_pass": 2,
+      "top_recommendation": "KODEX_KTB10Y_A148070",
+      "secondary_fallback": "MMF_CD91_PROXY",
+      "rejected": ["KODEX_USD_A261240", "KODEX_GOLD_A132030", "KODEX_LOW_VOL_A229200", "SYNTHETIC_CTA", "VKOSPI_LONG"]
+    },
+    "orthogonality_with_AR_on_M4": {
+      "kr_10y": -0.1371,
+      "cd91": -0.0040,
+      "usd": 0.0238,
+      "gold": 0.0298,
+      "lowvol": 0.0691,
+      "cta": 0.0228,
+      "vkospi": 0.0354
+    },
+    "method_shopping_log": {
+      "candidates_tried": 7,
+      "selected_primary": "kr_10y",
+      "selected_secondary": "cd91",
+      "method_log": [
+        {"name": "kr_10y", "score": 59.57, "axis_4_pass": true, "selected": true},
+        {"name": "cd91", "score": 76.90, "axis_4_pass": true, "selected": "secondary"},
+        {"name": "usd", "score": 69.40, "axis_4_pass": false, "fail_reason": "cost_65bps"},
+        {"name": "gold", "score": 69.25, "axis_4_pass": false, "fail_reason": "cost_128bps"},
+        {"name": "cta", "score": 54.43, "axis_4_pass": false, "fail_reason": "no_KR_ETF"},
+        {"name": "lowvol", "score": 38.27, "axis_4_pass": false, "fail_reason": "crisis_FAIL_cost_90bps"},
+        {"name": "vkospi", "score": 34.12, "axis_4_pass": false, "fail_reason": "delisted_2018_contango"}
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1,
+      "rolling_seconds": 5
+    },
+    "simulation_comparison_summary": {
+      "baseline_70pct_AR_30pct_cash0": {"Sharpe": 1.6270, "CAGR": 0.2618, "MDD": -0.1761},
+      "kr_10y_replacement": {"Sharpe": 1.6794, "CAGR": 0.2690, "MDD": -0.1614, "delta_Sharpe": 0.0524, "delta_MDD_pp": -1.47},
+      "cd91_replacement": {"Sharpe": 1.6421, "CAGR": 0.2646, "MDD": -0.1779, "delta_Sharpe": 0.0151, "delta_MDD_pp": 0.18},
+      "pure_AR_on_M4": {"Sharpe": 1.6270, "CAGR": 0.3834, "MDD": -0.2515}
+    }
+  },
+  "challenge_flags": [
+    "RF-A1_proxy_fidelity_KODEX_KTB10Y_synthetic_vs_actual_NAV_validation_required_post_2011_OOS",
+    "RF-A2_delta_sharpe_t_stat_1.05_NOT_statistically_significant_at_5pct_Harvey_t3_unmet_multiple_testing_concern",
+    "RF-A3_recent_3y_regime_2022_stagflation_kr_10y_cum_-8.61pct_BoK_rate_hike_cycle_vulnerability",
+    "RF-A4_eom_yield_pit_lag_compliant_PIT_C2_C9_documented_OK",
+    "RF-A5_KODEX_KTB10Y_inception_2011-04_pre_period_synthetic_only_74m_caveat"
+  ],
+  "alpha_inheritance_cor": 0.0,
+  "alpha_discovery_count": 0,
+  "wt_type_role_card": "research_wt — asset-level cash-replacement orthogonal candidate evaluation. NOT factor discovery. NOT new alpha generation. wt_kind=exploratory_research_no_book_state_write per request.json. alpha_discovery_certificate not expected (research stage, parent STR_1715 alpha preserved via 70% AR weighting).",
+  "lineage": {
+    "predecessor_wts": ["WT-S20260504_007", "WT-P20260504_001"],
+    "data_inputs": [
+      "qepm/mailbox/worktask/WT-P20260504_001/four_layer_returns_path.csv",
+      ".cache/ecos_bond_rates.parquet",
+      ".cache/ecos_krw_usd.parquet",
+      ".cache/fred_macro.parquet",
+      ".cache/rawdata.parquet"
+    ],
+    "discovery_of": null,
+    "parent_alpha_inheritance": "STR_1715 alpha preserved 100% via 70% AR weighting (cash replacement only modifies the 30% non-alpha residual)"
+  },
+  "primary_recommendation": "KODEX_KTB10Y_A148070 (KR 10Y Treasury ETF) for 30% cash residual replacement",
+  "secondary_fallback": "MMF/CD91 (rf 3%/yr safe baseline) if delta_Sharpe bootstrap CI fails",
+  "follow_up_promotion_wt_plan": "deployment_promotion: 70% STR_1715_AR + 30% KODEX_KTB10Y, after actual NAV validation + bootstrap CI + DSR + Harvey-t verification",
+  "answer_to_dohoon_question": "도훈 명시 질문 '무엇이 직교일까?': KR 10년 국채 (cor=-0.137 with AR-on-M4, crisis cor=-0.203). 4축 모두 PASS + +5.24bps SR boost + -1.47pp MDD 개선. cd91는 score 1위지만 SR boost 미미 (rf 3% baseline). gold/usd cost FAIL. lowvol KR equity 과다 노출. cta/vkospi KR ETF 부재."
+}
