@@ -52,6 +52,7 @@ SA_DIR   <- file.path(BASE_DIR, "stage_artifacts", paste0("WT_", WT_ID))
 OUT_DIR  <- SA_DIR
 LOG_DIR  <- file.path(OUT_DIR, "_forge_logs")
 CHART_DIR <- file.path(OUT_DIR, "charts")
+dir.create(SA_DIR, showWarnings=FALSE, recursive=TRUE)
 dir.create(LOG_DIR, showWarnings=FALSE, recursive=TRUE)
 dir.create(CHART_DIR, showWarnings=FALSE, recursive=TRUE)
 
