@@ -1,0 +1,363 @@
+{
+  "task_id": "WT-S20260504_002",
+  "package_kind": "governor_admission",
+  "wt_kind": "recommendation_only",
+  "wt_type": "sizing_only",
+  "parent_wt": "WT-P20260429_002",
+  "as_of_date": "2026-05-04",
+  "agent": "governor",
+  "round": 1,
+  "draft_revision": "final",
+  "schema_version": "v1.1_dcc_governor_round1_final_recommendation_only_post_codex_skip_waiver",
+  "method": "DCC_GARCH_Vol_Target",
+  "_field_inventory_11": [
+    "recommendation_only",
+    "book_state_write",
+    "governor_concord_status",
+    "promotion_wt_required",
+    "verdict",
+    "STR_1715_ALPHA_STATUS",
+    "LATENT_RISK_STATE",
+    "PRIMARY_RISK_ANCHOR",
+    "RECOMMENDED_ACTION",
+    "recommendation_package_complete",
+    "abort_reason"
+  ],
+  "recommendation_only": true,
+  "book_state_write": false,
+  "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+  "promotion_wt_required": false,
+  "verdict": "MONITORING_ONLY",
+  "STR_1715_ALPHA_STATUS": "UNCHANGED",
+  "LATENT_RISK_STATE": "DCC_GARCH_alpha_beta_0p9421_stationary_928_daily_slices_PSD_verified_Engle_Sheppard_portmanteau_41p18pct_pairs_reject_CCC_at_5pct_max_condition_240p87_WARN",
+  "PRIMARY_RISK_ANCHOR": "L274_M4_only_baseline_dominates_M4+DCC_VolTarget_MDD_minus_1p34pp_WORSE + lockbox_17m_M4DCC_vs_S1_minus_177pp_cumulative_alpha_surrender + forward_May_2026_cash_58p06pct_largest_in_268m_deployment_risk + deflated_SR_1p08_below_L274_reference_1p75",
+  "RECOMMENDED_ACTION": "KEEP",
+  "recommendation_package_complete": true,
+  "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+  "verdict_enum_one_of": [
+    "RECOMMENDATION_ONLY_PASS",
+    "RECOMMENDATION_ONLY_CONDITIONAL",
+    "MONITORING_ONLY",
+    "FAIL"
+  ],
+  "RECOMMENDED_ACTION_enum_one_of": [
+    "KEEP",
+    "CAP_TIGHTEN",
+    "CASH_OVERLAY"
+  ],
+  "verdict_state_semantic_mapping": {
+    "package_verdict_strategy_action": "MONITORING_ONLY",
+    "admission_equivalent_verdict": "REJECTED_RECOMMENDATION_ONLY_NO_BOOK_STATE_WRITE",
+    "state_machine_transition": "JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "closure_classification": "controlled_non_production_closure (NOT production_admission_failure — alpha + production stay intact, DCC sizing overlay rejected as M4-relative no-value-add and alpha-surrender-positive)",
+    "downstream_automation_clarity": "package_verdict=MONITORING_ONLY tells action=KEEP STR_1715 PG2 M4. admission_equivalent=REJECTED tells admission gate not satisfied. state=GOVERNOR_REJECTED→ABORTED tells lifecycle terminal. Three layers describe distinct semantic axes (per WT-S20260504_003 C4 precedent)."
+  },
+  "package_complete_semantics": {
+    "recommendation_package_complete_meaning": "closure-completeness for recommendation_only WT lifecycle artifacts (10 mandatory: alpha_package_inherit_ref + alpha_package + risk_package + optimization_package + forge_package + judge_verdict + governor_admission + 4 challenge_notes). NOT verification-closure for production admission.",
+    "verification_closure_status": "NOT_VERIFICATION_CLOSED",
+    "independent_triangulation_PASS_count_for_admission_gate": 0,
+    "ax_008_admission_gate_status": "NOT_TRIGGERED (verdict=MONITORING_ONLY)",
+    "two_pillar_phrasing": "Pillar 1: package artifacts complete (10/10). Pillar 2: verification closure status NOT_VERIFICATION_CLOSED (0 independent PASS for admission gate purposes — judge AX-008 tally records 2/3 conditional PASS for MONITORING_ONLY classification, NOT for promotion). Future promotion WT MUST achieve Pillar 2 via future_promotion_blocker_list before book_state mutation.",
+    "lro_round1_c1_amendment_precedent": "WT-S20260503_001 governor_admission Round 2 C1_AX008_TALLY_OVERCOUNT_ACCEPT + WT-S20260504_003 governor_admission Round 2 C1_AX008_PACKAGE_COMPLETE_AMBIGUITY_HIGH_ACCEPT — same phrasing precision applied here pre-emptively in draft."
+  },
+  "rationale": {
+    "summary": "WT-S20260504_002 DCC_GARCH_Vol_Target — recommendation_only WT closure (governor verdict MONITORING_ONLY mirrors judge_decision). DCC structural mechanism strong: Engle-Sheppard portmanteau 41.18% pairs reject CCC at 5%, alpha+beta 0.9421 stationary, all 928 daily slices PSD verified, Harvey-t 6.76 PASS robust. CAGR floor PASS (29.31% ≥ 20%) + Sortino PASS (2.73 ≥ 1.0) + vol -22.7% vs S1 PASS + top5DD 3+ improvement vs S1 PASS + crisis_alpha 3/3 PASS (GFC +9.45pp / COVID +7.58pp / 2022 +3.38pp). BUT M4-relative MDD axis BINDING FAIL: M4+DCC MDD -33.39% vs L-274 M4-only -32.05% = -1.34pp WORSE (DCC overlay degraded production basis). Lockbox 17m M4+DCC underperforms S1 by -177pp cumulative (DCC up-scales cash precisely when alpha is concentrated in trending vol = AX-001 v2 alpha surrender +1.55pp/month CRISIS state drag). Forward May 2026 sizing cash 58.06% largest in 268m sample (RF-F3-LAYER-A-FORWARD-EXTREME). Deflated SR (DSR penalty 0.35, 7 candidates) = 1.08 < L-274 reference 1.75 — DCC does NOT improve upon production after multi-test correction. STR_1715 100% PG2 (M4 schedule) UNCHANGED. governor_concord cert DEFERRED to future promotion WT (none triggered). Cross-WT pattern: WT-001 PCA MONITORING_ONLY + WT-003 HMM MONITORING_ONLY + WT-002 DCC MONITORING_ONLY + WT-004 RMT — sleeve-level statistical sizing overlay paradigm structurally limited at this alpha (4-WT confirm).",
+    "judge_handoff_alignment": "Governor verdict matches judge_decision.verdict=MONITORING_ONLY exactly. RECOMMENDED_ACTION=KEEP per judge primary objective failure pattern (M4-relative MDD axis BINDING FAIL + alpha surrender lockbox -177pp + forward 2026 cash 58% deployment risk). promotion_wt_required=false per judge recommendation_to_governor. abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE per request.json::state_machine_path::abort_reason_planned + plan §1 WT-002 + state_transitions.json canonical.",
+    "ax_001_v2_summary": "ax_001_v2_pass_full_3tuple=false, partial_pass_2of3=true (judge defense_like_evaluation.json verdict). 3-tuple: Tuple 1 crisis_alpha PASS 3/3 (GFC +9.45pp / COVID +7.58pp / 2022 +3.38pp); Tuple 2 MDD vs Core MIXED (vs S1 PASS +8.30pp / vs L-274 M4-only Core FAIL -1.34pp WORSE — Core baseline Plan §3 = production basis = L-274 M4-only); Tuple 3 bad/normal realized risk ratio FAIL (S1 CRISIS realized +3.19%/m vs M4+DCC +1.64%/m = 1.55pp/m alpha surrender drag, compounds to -14.64pp annual CAGR drag dominantly driven by CRISIS state). NOT SATISFIED for deployment-grade defense — DCC defends crisis at cost of CRISIS alpha surrender, M4 already provides better-targeted alpha-aware regime cash, adding DCC layer overpays for marginal MDD.",
+    "ax_008_summary": "tally_3_entry_recorded=true mandatory under Plan §3+§7+§9 admission-gate-not-triggered design (judge_decision.verdict=MONITORING_ONLY). Tally entries: forge=PASS_CONDITIONAL_via_self_audit (Codex REJECT round 2 waiver via challenge_note rebuttal), codex=REJECT_round_1_addressed_via_judge_independent_verification (Codex C1-C7 substantive but Codex agrees with judge on M4-relative axis FAIL conclusion — directional alignment), architect=NOT_INVOKED (sizing_only WT scope per Plan §7 explicit permission for judge self-cross-check; no 3rd-party architect spawn). independent_triangulation_PASS_count_for_admission_gate=0 — recorded for tally completeness only, NOT a claim of PASS≥2 independence per LRO Round 1 C1 amendment precedent + WT-S20260504_003 governor C1 ACCEPT precedent. Judge ax_008_tally documents 2/3 conditional PASS for MONITORING_ONLY closure (not for promotion).",
+    "dcc_statistical_quality_confirmed": "Engle-Sheppard portmanteau 41.18% pairs reject CCC at 5% (multivariate dependence varies in time — DCC justified over CCC). DCC(1,1) alpha+beta=0.9421 < 1 stationary. 928 daily covariance slices all PSD (min_eig 0.0001~0.001). Harvey-t 6.76 (Lo 2002 approximation) >> 3.0 threshold. Statistical mechanism real and robust.",
+    "dcc_action_mapping_redundant_with_M4_alpha_aware": "Vol target 15% σ_p annual + scale_rule w_t = w_alpha * (target / forecast_sigma_p) + cash_bridge. Empirical evidence: DCC overlay on top of M4 deterministic schedule produces -1.34pp MDD WORSE vs M4 alone (M4 alone MDD -32.05% vs M4+DCC -33.39%) and -4.64pp CAGR drag (M4 alone CAGR 43.78% per L-274 vs M4+DCC 29.31%). M4 schedule is alpha-aware regime cash (BOCPD+decay+BL tri-pillar) which already captures crisis floor; DCC vol-target adds non-alpha-aware cash on top, surrendering alpha during high-vol bull regimes (lockbox 17m -177pp cumulative S1 vs M4+DCC).",
+    "post_lb_oos_alpha_surrender_evidence_descriptive_only": "lockbox_audit::M4DCC_lockbox_cum=82.88% vs S1_lockbox_cum=259.99% = -177.11pp cumulative gap over 17 months (2025-01 ~ 2026-05) in strong-bull KR market regime. DCC mean cash 28.3% throughout lockbox period. NO Harvey robustness PASS implied (Harvey/DSR judge-side computed: 6.76 >> 3.0 PASS, but DSR post-7-candidate penalty 0.35 → deflated 1.08 < L-274 1.75 reference). Lockbox 17m language descriptive evidence of DCC alpha surrender in bull regime — NOT a robustness claim for promotion."
+  },
+  "codex_round_stance_round_1": "SKIPPED_BY_WAIVER (codex_critic_skip_waiver applied per dapper-dragon plan §4 LRO Round 1 verified path)",
+  "codex_round_critical_concerns_count": 0,
+  "codex_round_response_ref": "qepm/mailbox/worktask/WT-S20260504_002/codex_critic_response_governor.json (SKIPPED_BY_WAIVER stub)",
+  "codex_round_directional_agreement": null,
+  "codex_round_directional_agreement_quote": "N/A — codex_critic_skip_waiver applied. Verification rationale: judge_codex (codex_critic_response_judge.json) substantive engagement already completed at judge phase + judge agent ADDRESSES C1-C7 via independent verification and reaches SAME conclusion as Codex (M4-relative axis BINDS, M4+DCC FAILS). Per dapper-dragon plan §4 LRO Round 1 verified pattern + Q-Lead waiver path explicit per challenge_note codex_critic_skip_waiver convention.",
+  "codex_round_waiver_basis": {
+    "waiver_field": "challenge_note.md::codex_critic_skip_waiver",
+    "waiver_rationale_per_plan_section_4": "dapper-dragon plan §4 explicitly states '∗∗Codex Round timeout 시∗∗: waiver path (challenge_note codex_critic_skip_waiver + 자체검증 quantitative proof)'. WT-002 Codex critic response timeout pattern matches LRO Round 1 verified precedent. Q-Lead override authority per Plan §4.",
+    "self_audit_quantitative_proof": {
+      "judge_independent_verification_match": "Forge LB SR 4.6766 = Judge SR 4.6766 (17m slice 2025-01~2026-05); Forge LB MDD -3.27% = Judge -3.27%; cum 1.8288 = Judge 1.8288 (judge_verdict.json::pure_function_compliance::judge_independent_lockbox_recompute_match=PASS).",
+      "ax_002_pure_function_md5_match": "10 hashes Pre==Post: optimization_package, risk_package, weights canonical/S1/DCC/M4DCC, parent weights/period_returns/benchmark/holdings (judge_verdict.json::pure_function_compliance::md5_freeze_start_vs_end=PASS).",
+      "lro_sha_self_verify": "lro_params_frozen.json n_files_hashed=10, sha256 freeze timestamp 2026-05-04T09:00:14 (judge::pure_function_compliance::lro_sha256_self_verify=PASS).",
+      "harvey_t_dsr_judge_computed": "Harvey-t 6.76 (Lo 2002 approx, N=268m) >> 3.0 threshold; DSR penalty 0.35 (7 candidates) → deflated SR 1.08 < L-274 1.75 reference. Judge supplies robustness numerics that forge package omitted."
+    },
+    "codex_judge_substantive_engagement_already_present": "codex_critic_response_judge.json contains REJECT stance with C1-C7 critical concerns substantively engaged (forge package). Judge response ADDRESSES all 7 (judge_verdict.json::consensus_concerns JC-1~JC-7) and reaches SAME conclusion as Codex on M4-relative MDD axis FAIL → MONITORING_ONLY. Governor inherits this substantive engagement chain per ax_008_tally rationale.",
+    "alpha_inherit_waiver_chain_documented": "alpha_package_inherit_ref.json + alpha_package.json::inherited_alpha_stub 6-field + challenge_note.md alpha_inherit_waiver + codex_critic_skip_waiver + schema_validation_waiver (per Plan §4 verified pattern)."
+  },
+  "concerns_disposition_pre_emptive_lro_precedent": {
+    "C1_AX008_PACKAGE_COMPLETE_AMBIGUITY_pre_addressed": "package_complete_semantics field with two-pillar phrasing: Pillar 1 artifacts complete 10/10, Pillar 2 verification_closure_status=NOT_VERIFICATION_CLOSED + independent_triangulation_PASS_count_for_admission_gate=0. recommendation_package_complete=true scope explicitly bounded to lifecycle artifact closure NOT verification closure (LRO Round 1 + WT-S20260504_003 precedent).",
+    "C2_ARTIFACT_PROVENANCE_pre_addressed": "artifact_lineage_normalization field below — canonical weights sha + alpha_package inheritance via inherit_ref.json (per judge alpha_package_hash_audit WARN disposition: 'alpha_package_inherit_ref.json is the actual sizing_only inheritance artifact; parent_alpha_package_sha 34cc99fb captured in request.json'). PIT-C15 alpha time-series verification: inherited from STR_1715 PG2 NOT WT-local-verified (sizing_only role_card design). No silent substitution.",
+    "C3_HARVEY_DSR_LOCKBOX_LANGUAGE_pre_addressed": "harvey_dsr_audit field below — judge-side computed (6.76 PASS / DSR 1.08) explicitly within this WT scope. Lockbox 17m descriptive evidence NOT robustness PASS claim. n=17 marginal language not used (judge supplied numerics). future_promotion_blocker_list reinforces.",
+    "C4_VERDICT_STATE_SEMANTIC_MAPPING_pre_addressed": "verdict_state_semantic_mapping field above — explicit 3-axis disambiguation (package_verdict_strategy_action / admission_equivalent_verdict / state_machine_transition + closure_classification controlled_non_production_closure). Downstream automation clarity per WT-S20260504_003 C4 precedent."
+  },
+  "state_machine_transition": {
+    "incoming_phase": "JUDGE_PASSED",
+    "target_phase_step_1": "GOVERNOR_REJECTED",
+    "target_phase_step_2": "ABORTED",
+    "policy_compliance": "state_transitions.json::JUDGE_PASSED.allowed_next=[GOVERNOR_ADMITTED, GOVERNOR_REJECTED, ABORTED] + GOVERNOR_REJECTED.allowed_next=[ABORTED]. Both transitions valid.",
+    "controlled_non_production_closure": "GOVERNOR_REJECTED → ABORTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT (Plan §6 + Plan §10 + LRO Round 1 + WT-001/003 precedent)."
+  },
+  "production_protection_audit": {
+    "book_state_write_count": 0,
+    "book_state_md5sum_pre_governor_phase": "6ee7406544d12f083764a8baf8c6ad81",
+    "book_state_mtime_pre_unix": 1777532809,
+    "book_state_md5sum_at_final_write_target": "VERIFIED_UNCHANGED_AT_GOVERNOR_FINAL_WRITE",
+    "str_1715_directory_write_count": 0,
+    "production_weights_overlay_dir_created_count": 0,
+    "promotion_wt_spawn_count": 0,
+    "governor_concord_certificate_issuance_count": 0,
+    "governor_concord_status_explicit": "DEFERRED_TO_PROMOTION_WT (Plan §10 own certs deferred + recommendation_only sizing_only role_card own cert pending by design)"
+  },
+  "judge_handoff_inheritance": {
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_002/judge_verdict.json",
+    "judge_decision_verdict": "MONITORING_ONLY",
+    "judge_primary_recommendation": "KEEP_STR_1715_PG2_M4",
+    "judge_RECOMMENDED_ACTION_inferred": "KEEP",
+    "judge_STR_1715_ALPHA_STATUS_inferred": "UNCHANGED",
+    "judge_promotion_wt_required": false,
+    "judge_ax_008_admission_gate_applicability": "NOT TRIGGERED",
+    "judge_q_lead_escalate_flag": true,
+    "judge_q_lead_escalate_reasons_inherited": [
+      "MDD vs L-274 M4-only baseline (-1.34pp WORSE) BINDING failure on M4-relative axis (request.json primary_objective)",
+      "Lockbox 17m M4+DCC underperforms S1 by -177pp cumulative — DCC structurally surrenders alpha in trending bull regimes (compounds AX-001 v2 alpha surrender concern)",
+      "Forward May 2026 sizing cash 58.06% largest in 268m sample — deployment risk if KR market continues bull (RF-F3 + RF-O-LAYER-A-FORWARD-EXTREME)",
+      "Deflated SR 1.08 (7 candidates DSR penalty 0.35) below L-274 production reference 1.75 — DCC does not improve upon STR_1715 PG2 production after multi-test correction",
+      "Cross-WT pattern: PCA + DCC + HMM all return MONITORING_ONLY with M4 dominance — sleeve-level statistical sizing overlay paradigm structurally limited; potential pivot to AX-007 exception 2 (long-short) or Iter 9 family pivot (Defense / Crisis Alpha new alpha source per L-270)",
+      "L-274 memory ↔ STR_1715 production discrepancy persisting (SR 1.7477 memory vs 1.5234 production vs 1.5068 Forge S1 in this WT) — Q-Lead reconciliation required (3 WT cumulative flag)"
+    ]
+  },
+  "ax_008_tally_recommendation_only_scope": {
+    "tally_3_entry_recorded": true,
+    "tally": {
+      "forge": "PASS_CONDITIONAL_via_self_audit (Codex Round 1 REJECT C1-C7 → round 2 challenge_note rebuttal waiver + judge independent verification supplies omitted Harvey-t/DSR numerics)",
+      "codex": "REJECT_round_1_C1_C7_addressed_via_judge_independent_verification (Codex agrees with judge on M4-relative axis FAIL conclusion — directional alignment despite REJECT stance on forge package quality)",
+      "architect": "NOT_INVOKED (sizing_only WT scope; Plan §7 explicit permission for judge self-cross-check via independent recompute; no 3rd-party architect spawn)"
+    },
+    "independent_triangulation_PASS_count_for_admission_gate": 0,
+    "tally_recording_purpose": "mandatory artifact under Plan §3+§7+§9 admission-gate-not-triggered design (post WT-S20260504_003 governor C1 ACCEPT phrasing precision). NOT a claim of PASS≥2 independence — the 3 entries are tally records, not independent PASS sources. LRO Round 1 + WT-S20260504_003 C1 amendment precedent applied pre-emptively in draft.",
+    "ax_008_admission_gate_applicability": "NOT TRIGGERED — judge_decision.verdict=MONITORING_ONLY (not PASS/CONDITIONAL_PASS/promotion WT trigger). PASS≥2 admission gate evaluation skipped per design.",
+    "judge_ax_008_2of3_conditional_pass_for_monitoring_only": "Judge ax_008_tally_entry (judge_verdict.json line 260-265) records 2/3 conditional PASS via Forge + Codex+Judge agreement on M4-relative axis FAIL → suffices for MONITORING_ONLY closure NOT for promotion. Governor inherits this characterization.",
+    "future_promotion_wt_triangulation_requirement": "Per LRO Round 1 future_promotion_blocker_list block_5 + WT-S20260504_003 governor C1 reinforcement: separate architect spawn (not judge self-check), Codex Round PASS or APPROVE_CONDITIONAL stance for forge AND for governor (not REJECT/SKIPPED), and forge bt with Codex Round substantive engagement (not timeout/skip_waiver)."
+  },
+  "future_promotion_blocker_list": {
+    "block_1_harvey_t_nw": "Harvey t_NW (Newey-West HAC) > 3.0 with multi-testing penalty applied. Current judge-supplied: Lo (2002) approximation t=6.76 PASS but NW HAC not computed. CITATION: Harvey et al. (2016, RFS) + judge agent v6.1 Statistical Defense (qepm §10). Future promotion WT MUST compute NW HAC.",
+    "block_2_dsr_post_penalty": "DSR (Deflated Sharpe Ratio) post-penalty computation — current judge-supplied: 7 candidates × 0.05 = 0.35 penalty → deflated 1.08. Future promotion WT MUST account for cross-WT 5 statistical models tested (PCA + DCC + HMM + RMT + Factor Beta Hedge) cumulative penalty. CITATION: Bailey & Lopez de Prado (2014).",
+    "block_3_baseline_harvey_status": "Baseline (STR_1715 / forge_recomputed_M4) Harvey t status: forge S1 t=7.84 (Lo approx), L-274 reference t=Memory not computed. Promotion WT MUST compute baseline Harvey t_NW + DSR for symmetric comparison.",
+    "block_4_lockbox_split_evidence": "DCC sizing_only inherited alpha makes lockbox NOT_APPLICABLE per current WT (judge_lockbox_harness_used=false with rationale — Forge schedule_density_ratio=1.0 confirms DCC walk-forward predictions extend through 2026-05-01). Promotion WT producing book_state-mutating DCC overlay MUST produce lockbox split evidence (DCC params SHA-frozen + IS/OOS partition seal).",
+    "block_5_independent_triangulation": "AX-008 PASS≥2 independent triangulation per LRO Round 1 + WT-S20260504_003 C1 reinforcement — separate architect spawn, Codex Round PASS/APPROVE_CONDITIONAL stance for forge AND governor (not REJECT/SKIPPED), forge bt with Codex Round substantive engagement.",
+    "block_6_dcc_independent_crisis_protection_vs_M4_only": "Future DCC refinement WT must demonstrate DCC-independent MDD protection > +1pp vs L-274 M4-only baseline (currently DCC overlay degrades M4-only MDD by -1.34pp). Otherwise DCC overlay is alpha-surrender-positive without MDD compensation.",
+    "block_7_alpha_surrender_conditional_gate_design": "Future DCC promotion WT must include alpha-quality conditional gate: only engage DCC vol scaling when realized alpha drag < threshold. Current full-period DCC application surrenders -1.55pp/m CRISIS state alpha + lockbox -177pp bull-regime gap. Conditional engagement (post-bear regime confirmation only) or σ_p target relaxation 15%→25% (less aggressive cash) required.",
+    "block_8_artifact_provenance_normalization": "Future promotion WT must (a) align canonical weights sha to single canonical reference; (b) explicitly archive or label SUPERSEDED stale optimizer interim metrics; (c) provide WT-local alpha_scores.parquet OR explicit parent alpha hash/date inheritance reference (not just inherited_alpha_stub); (d) include alpha_package.json in forge hash list (Codex C6 concern)."
+  },
+  "dcc_variant_summary_for_governance_log": {
+    "n_strategies_evaluated": 3,
+    "n_dcc_variants": 2,
+    "best_dcc_variant": "M4+DCC_VolTarget (canonical_max_cash_combined)",
+    "best_dcc_variant_mdd_pp_vs_m4_baseline_L274": "-1.34pp (WORSE — DCC overlay degraded M4-only MDD)",
+    "best_dcc_variant_mdd_pp_vs_S1_BASE_RAW": "+8.30pp (better vs no-overlay baseline — but S1 is lower bar; M4-relative axis BINDING per request.json primary_objective)",
+    "best_dcc_variant_cagr_cost_vs_L274_M4_only": "-14.47pp (CAGR 29.31% vs L-274 M4-only 43.78%)",
+    "best_dcc_variant_vol_pp_vs_S1": "-22.7% (PASS — vol target -20% threshold met)",
+    "best_dcc_variant_sortino": 2.7282,
+    "best_dcc_variant_calmar": 0.878,
+    "best_dcc_variant_harvey_t_lo_approx": 6.7617,
+    "best_dcc_variant_dsr_deflated_post_7_candidates": 1.0808,
+    "dcc_state_predictive_power_confirmed": "Engle-Sheppard portmanteau 41.18% pairs reject CCC at 5% (multivariate dependence varies in time, DCC justified). DCC(1,1) alpha+beta=0.9421 stationary. 928 daily slices PSD verified. Statistical mechanism real and robust.",
+    "dcc_action_mapping_redundant_with_M4_alpha_aware": "Vol target 15% σ_p annual + cash bridge produces -1.34pp MDD WORSE vs M4 alone + -14.47pp CAGR drag — empirical evidence DCC overlay is alpha-surrender-positive without MDD compensation vs M4 deterministic alpha-aware schedule",
+    "core_baseline_decision_basis": "L-274 M4-only baseline (production basis per Plan §3 baseline_decision_basis + request.json primary_objective M4-relative axis BINDING) — not S1 BASE_RAW",
+    "L274_reconciliation_persisting_flag": "L-274 memory SR 1.7477/MDD -32.05% vs production directory SR 1.5234/MDD -41.69% vs Forge S1 1.5068/-41.69% — 3 WT cumulative flag (LRO Round 1 + WT-003 + WT-002), Q-Lead reconciliation required"
+  },
+  "next_steps_post_abort": {
+    "production_state": "STR_1715 100% PG2 with M4 schedule UNCHANGED (no weight modification, no overlay deployment, book_state.json untouched, STR_1715 directory write count = 0)",
+    "dcc_monitoring_dashboard_optional": "Q-Lead may spawn separate read-only observability WT for DCC σ_p forecast tracker (Mode A — no weight intervention). DCC alpha+beta + 5-day rolling correlation + portfolio σ_p forecast useful as risk monitoring signals.",
+    "mdd_gap_path_reconsideration": "STR_1715 -7.05pp MDD gap to -25% target NOT closed by DCC overlay. Cross-WT pattern (4 WT MONITORING_ONLY: PCA + DCC + HMM + RMT pending) suggests sleeve-level statistical sizing overlay structurally limited at this alpha. Path forward per L-270 + judge AX_000: (1) DCC + alpha-quality conditional gate (engage only when drag < threshold), (2) DCC σ_p target relaxation 15%→25%, (3) crisis-conditional DCC engagement (post-bear regime confirmation only), (4) AX-007 exception path: multi-sleeve / 50+ universe / ML sizing / long-short, (5) Iter 9 family pivot (Defense / Crisis Alpha new alpha source — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional)",
+    "promotion_wt_status": "no promotion WT trigger (promotion_wt_required=false). governor_concord cert remains DEFERRED. If future DCC refinement WT achieves verdict=PASS or CONDITIONAL_PASS with alpha-conditional gate, promotion WT must satisfy future_promotion_blocker_list (8 blocks above) before admission gate fires.",
+    "cross_wt_aggregate_decision_pending": "WT-002 verdict completes Batch A (PCA + DCC). Cross-WT compare aggregating WT-001 PCA / WT-002 DCC / WT-003 HMM / WT-004 RMT / WT-005 Factor_Beta_Hedge will guide final best-path selection per Plan §5 + §6. Current 4-WT pattern suggests sleeve-level overlay paradigm structurally limited."
+  },
+  "axiom_assertions": {
+    "AX_000_no_limits": {
+      "verdict": "PRESERVED — DCC recommendation_only closure does not invalidate AX-000. -7.05pp MDD gap path not closed via DCC overlay; alternate paths exist (Iter 9 family pivot per L-270 + cross-WT statistical model 5-way still pending best path + DCC alpha-conditional gate refinement)."
+    },
+    "AX_001_v2_defense_conditional": {
+      "applied_to_3_strategies": [
+        "S1_baseline_BASE_RAW",
+        "DCC_VolTarget_alone",
+        "M4+DCC_VolTarget"
+      ],
+      "core_baseline": "L-274 M4-only (Plan §3 baseline_decision_basis + request.json primary_objective M4-relative axis BINDING)",
+      "best_variant": "M4+DCC_VolTarget (still PARTIAL_DEFENSE_LIKE only on Tuple 1 crisis_alpha + Tuple 2 vs S1 PASS but Tuple 2 vs L-274 M4-only Core FAIL + Tuple 3 alpha surrender FAIL)",
+      "verdict": "PARTIAL_DEFENSE_LIKE — DCC structural mechanism real (Engle-Sheppard PASS + 3/3 crisis alpha) but action mapping (full-period vol-target cash overlay) redundant with M4 alpha-aware schedule + alpha surrender +1.55pp/m CRISIS state. Tuple 2 vs L-274 Core BINDING FAIL → not deployment-grade defense."
+    },
+    "AX_002_process_honesty": {
+      "dcc_params_sha_frozen": "lro_params_frozen.json n_files_hashed=10 sha256 freeze 2026-05-04T09:00:14",
+      "walk_forward_re_estimation_during_backtest": "true (PIT-clean train data 1..t-1 only, 928 daily slices DCC two-step QML expanding-window refit, NOT OOS re-estimation per AX-002)",
+      "production_protection": "STR_1715 directory write count = 0 + book_state_write count = 0 + book_state md5sum 6ee7406544d12f083764a8baf8c6ad81 unchanged",
+      "alpha_lineage_explicit": "wt_local_alpha_scores_present=false (sizing_only role_card design) + inherited_from STR_1715 PG2 documented (parent_alpha_package_sha 34cc99fb captured request.json) + PIT-C15 inherited not WT-local-verified explicit",
+      "judge_independent_lockbox_recompute_match": "PASS (Forge LB SR 4.6766 = Judge SR 4.6766; LB MDD -3.27% = Judge -3.27%; cum 1.8288 = Judge 1.8288 on 17m slice 2025-01~2026-05)",
+      "verdict": "PASS"
+    },
+    "AX_005_v1_2": {
+      "applicability": "Top-20 long-only KR universe constraint observed (max_n_per_date=18 active stocks in 5월 + cash); DCC sleeve sizing does not break AX-007 single_sleeve mechanism break threshold (still 20-stock single sleeve + cash overlay)",
+      "verdict": "PASS"
+    },
+    "AX_007_exception_clause_3_ml_sizing": {
+      "applicability": "PASS — DCC is statistical sizing overlay on existing top20 sleeve (STR_1715 PG2). Sleeve-level w∈[0,1] + sum=1 + cash-as-rf-proxy. Inherited 20-name + 0.20 cap from parent.",
+      "verdict": "exception_clause_3_ml_sizing satisfies AX-007 single_sleeve_long_only_top20 carve-out",
+      "mechanism_break_acknowledged": "본 WT 내 mechanism break 한계 명시 (single_sleeve_long_only_top20 + DCC vol-target alpha surrender confirmed in lockbox 17m -177pp). Future hypothesis: multi-sleeve DCC (defensive sleeve + alpha sleeve with conditional DCC application) or ML-sized cash bridge required for AX-007 exception path."
+    },
+    "AX_008_triangulation_recommendation_only_scope": {
+      "tally_3_entry_recorded": true,
+      "independent_triangulation_PASS_count_for_admission_gate": 0,
+      "admission_gate_applicability": "NOT TRIGGERED (MONITORING_ONLY verdict). Tally recording is mandatory artifact, NOT independent triangulation claim per LRO Round 1 + WT-S20260504_003 C1 amendment precedent applied pre-emptively in draft.",
+      "future_promotion_wt_blocker_list": "future_promotion_blocker_list field — 8 blocks (Harvey t_NW / DSR post-penalty / baseline Harvey symmetric / lockbox split / independent triangulation / DCC independent crisis protection / alpha-conditional gate design / artifact provenance normalization)",
+      "verdict": "TALLY_RECORDED_AS_MANDATORY (not independent PASS≥2 for promotion)"
+    }
+  },
+  "audit": {
+    "pit_audit": {
+      "dcc_params_sha_check": "PASS (lro_params_frozen.json n_files_hashed=10 sha256 freeze 2026-05-04T09:00:14)",
+      "walk_forward_train_data_1_to_t_minus_1": "PASS (judge cross-check confirmed 928 daily slices DCC two-step QML expanding-window refit, NOT OOS re-estimation per AX-002)",
+      "lookahead_detector_grep": "PASS (judge_verdict.json::harness_pit_audit::lookahead_detector_self_scan=PASS)",
+      "lockbox_audit_applicability": "NOT_APPLICABLE for DCC sizing_only WT (judge_lockbox_harness_used=false with rationale — Forge schedule_density_ratio=1.0 confirms DCC walk-forward predictions extend through 2026-05-01 last_pit_clean_date). Future-promotion blocker block_4 added.",
+      "covariance_condition_audit_warn_disposition": "Codex C5 reports max condition 240.87 with 13 dates above 100. Judge interpretation: WARN-level structural property of DCC dynamic correlation under heavy-tail KR-equity returns; operational σ_p forecast uses last slice (RC=43.08) — binding inference. Historical max not violation. Governor inherits judge WARN disposition."
+    },
+    "production_protection": {
+      "str_1715_directory_write_count": 0,
+      "alpha_engine_invocation_count": 0,
+      "alpha_ranking_modification_count": 0,
+      "weights_csv_modification_count": 0,
+      "book_state_json_modification_count": 0,
+      "book_state_md5sum_pre": "6ee7406544d12f083764a8baf8c6ad81",
+      "book_state_mtime_pre_unix": 1777532809,
+      "production_weights_overlay_dir_created_count": 0
+    },
+    "measurement_basis_audit": {
+      "common_basis_verified": true,
+      "all_3_universe_eq": "KOSPI200_KOSDAQ150_intersection (sleeve inherited from parent STR_1715)",
+      "all_3_cost_model_eq": "v2.3_kr_retail_15bps + sleeve overlay 15bps × |Δw_str|",
+      "all_3_long_only": true,
+      "all_3_max_names_le_20": true,
+      "all_3_global_hard_cap_le_0p20": true,
+      "all_3_pa_functions_only": true,
+      "dcc_params_frozen_sha256_ref": "lro_params_frozen.json (10 files hashed including DCC alpha+beta+intercept)"
+    },
+    "schedule_density_audit": {
+      "all_3_above_0p95": true,
+      "ratio_per_strategy": "1.000 across 3 strategies (S1 / DCC_VolTarget_alone / M4+DCC_VolTarget)"
+    },
+    "harvey_dsr_audit": {
+      "applicable_for_this_wt_promotion_gate": false,
+      "waiver_reason": "wt_kind=recommendation_only AND judge_decision.verdict=MONITORING_ONLY — no production admission gate triggered.",
+      "judge_supplied_lo_2002_approximation": {
+        "M4_DCC_VolTarget_t": 6.7617,
+        "DCC_VolTarget_alone_t": 6.523,
+        "S1_baseline_t": 7.8368,
+        "harvey_t_threshold_3p0": "PASS_ALL (all >> 3.0; statistical significance robust)",
+        "method_note": "Lo (2002) approximation t = SR_ann * sqrt(N/12), N=268 monthly. NW HAC not computed."
+      },
+      "judge_supplied_dsr_post_penalty": {
+        "candidates_tried": 7,
+        "candidates_log": "4 risk Σ candidates (sample, Ledoit-Wolf, RMT, DCC) + 3 optimizer variants (S1, DCC alone, M4+DCC)",
+        "dsr_penalty_per_candidate": 0.05,
+        "total_dsr_penalty": 0.35,
+        "deflated_sharpe_estimate_M4_DCC": 1.0808,
+        "deflated_sharpe_estimate_S1": 1.3083,
+        "L274_reference_unsubject": "1.75 (production basis, not subject to this WT's penalty)",
+        "interpretation": "After multi-test correction, deflated M4+DCC SR 1.08 above 1.0 floor but FAR below L-274 1.75 reference. DCC does NOT improve upon STR_1715 PG2 production after multi-test correction."
+      },
+      "robustness_pass_claim_in_this_wt": "NONE for promotion gate purposes",
+      "post_lb_n17_robustness_implication_removed": true,
+      "future_promotion_wt_blocker_status": "Harvey t_NW + DSR post-penalty (cumulative 5 statistical models) + baseline Harvey symmetric MUST be supplied at any subsequent promotion WT admission gate (codified in future_promotion_blocker_list blocks 1/2/3).",
+      "policy_citation": "Plan §3 + Charter v1.4 §10 + judge agent v6.1 Statistical Defense (qepm §10 + Harvey 2016 RFS + Bailey & Lopez de Prado 2014). LRO Round 1 + WT-S20260504_003 precedent."
+    },
+    "alpha_lineage_audit": {
+      "wt_local_alpha_scores_present": false,
+      "inherited_from": "STR_1715 PG2 score-composite (parent WT-P20260429_002 alpha_discovery cert inherit)",
+      "inherited_via": "alpha_package_inherit_ref.json + alpha_package.json::inherited_alpha_stub 6-field",
+      "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984 (captured in request.json::parent_alpha_package_sha)",
+      "pit_c15_alpha_time_series_verification": "inherited from parent WT-P20260429_002, NOT WT-local-verified (sizing_only role_card design — no new alpha generation)",
+      "no_silent_substitution_verified": true,
+      "verified_in": "alpha_package.json + alpha_package_inherit_ref.json + risk_package.json::lineage + optimization_package.json::lineage + forge_package.json::lineage + judge_verdict.json::pure_function_compliance::alpha_package_hash_audit::WARN disposition (alpha_package_inherit_ref.json is the actual sizing_only inheritance artifact)",
+      "judge_alpha_package_hash_audit_warn_disposition": "Codex C6 noted alpha_package.json absent from forge hash list. Judge interpretation accepted by governor: alpha_package_inherit_ref.json is the actual sizing_only inheritance artifact; parent_alpha_package_sha 34cc99fb captured in request.json; forge inherits via measurement_basis_audit::parent_production_basis L-274 reference. Procedural-completeness WARN, not Pure Function violation. Future promotion WT blocker block_8 codifies remediation."
+    },
+    "artifact_lineage_normalization": {
+      "canonical_weights_path": "stage_artifacts/WT_WT-S20260504_002/weights.csv (Forge final canonical)",
+      "canonical_forge_mdd": -0.3339,
+      "L274_M4_only_reference_mdd": -0.3205,
+      "M4_DCC_minus_L274_pp": -1.34,
+      "S1_BASE_RAW_baseline_mdd": -0.4169,
+      "M4_DCC_minus_S1_pp": 8.3,
+      "future_promotion_wt_archive_obligation": "future_promotion_blocker_list block_8 (artifact provenance normalization required)"
+    },
+    "concentration_audit_inherited_from_judge": {
+      "max_w": 0.2,
+      "stock_hhi": 0.12,
+      "sector_hhi": 0.2292,
+      "semiconductor_concentration": 0.3316,
+      "L219_family_check": "ELEVATED (Semi 33.16% + IT_HW 23.0% = 56.16% in active book). Risk_package RF-R3 flag MEDIUM severity.",
+      "L219_blocking": false,
+      "rationale": "L-219 family saturation flag is sub-family threshold crossed, NOT an absolute admission blocker. STR_1715 production lineage (L-274) already operates at this concentration. PG2 admit precedent accepts. Sleeve-layer DCC sizing does not change underlying ticker concentration. Inherited from judge_verdict.json::concentration_audit."
+    },
+    "drift_tolerance_audit_inherited_from_judge": {
+      "oos_is_ratio_lockbox_vs_pre_lb_M4DCC": 3.7054,
+      "threshold": 0.7,
+      "pass": true,
+      "interpretation": "Lockbox SR 4.68 vs Pre-LB SR 1.26 (ratio 3.71) above 0.7 threshold — no overfitting evidence. However ratio dominated by 2025 KR market strength (S1 ratio 4.01 similar), not strategy-specific OOS validation. Lockbox absolute SR 4.68 below S1 5.87 → strategy underperforms in lockbox period. Inherited from judge_verdict.json::drift_tolerance_audit."
+    },
+    "turnover_audit_inherited_from_judge": {
+      "S1_baseline_one_way_annual": 0.0,
+      "DCC_VolTarget_alone_one_way_annual": 0.1408,
+      "M4_DCC_VolTarget_one_way_annual": 0.2295,
+      "hard_cap_one_way": 6.0,
+      "all_within_bounds": true
+    },
+    "L274_reconciliation_pending": {
+      "memory_value": "SR 1.7477 / CAGR 0.4378 / MDD -0.3205 (memory carry text 2026-05-02 next_session_task L-274)",
+      "production_06_metrics_csv": "SR 1.5234 / CAGR 0.4391 / MDD -0.4169 (STR_1715 production directory)",
+      "forge_S1_no_overlay": "SR 1.5068 / CAGR 0.4318 / MDD -0.4169 (this WT forge re-computation)",
+      "discrepancy_flag": "Q-Lead reconciliation pending (consistent with LRO Round 1 + WT-S20260504_003 same flag, persisting unresolved across 3 WTs cumulative)",
+      "use_in_this_wt": "L-274 frozen historical reference used as M4-relative axis BINDING gate per request.json::primary_objective + Plan §3. forge_M4_baseline_recomputed authoritative for in-sample 268m audit."
+    }
+  },
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260504_002/alpha_package.json (inherited_alpha_stub 6-field)",
+    "alpha_package_inherit_ref": "qepm/mailbox/worktask/WT-S20260504_002/alpha_package_inherit_ref.json",
+    "alpha_inherited_from": "STR_1715 PG2 score-composite (parent WT-P20260429_002 alpha_discovery cert inherit)",
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260504_002/risk_package.json (Round 2 final post codex_critic_skip_waiver Q-Lead override)",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260504_002/optimization_package.json (Round 2 final post codex_critic_skip_waiver Q-Lead override)",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260504_002/forge_package.json (Round 1 final post codex_critic_response_forge REJECT C1-C7 → round 2 challenge_note rebuttal waiver)",
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_002/judge_verdict.json (Round 1 final, codex_critic_response_judge REJECT C1-C7 substantively addressed via independent verification + ax_008_tally 2/3 conditional PASS for MONITORING_ONLY)",
+    "ax008_stance_tally_ref": "qepm/mailbox/worktask/WT-S20260504_002/ax008_stance_tally.json",
+    "defense_like_evaluation_ref": "qepm/mailbox/worktask/WT-S20260504_002/defense_like_evaluation.json",
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260504_002/ (DCC risk infrastructure: covariance.parquet 928 daily slices / weights.csv canonical / lro_params_frozen.json 10-file SHA freeze / bt_result.rds + 3 variants)",
+    "wt_local_alpha_scores_present": false,
+    "outputs": [
+      "qepm/mailbox/worktask/WT-S20260504_002/governor_admission_draft.json (this file Round 1 draft)",
+      "qepm/mailbox/worktask/WT-S20260504_002/codex_critic_response_governor.json (Round 1 stance SKIPPED_BY_WAIVER per Plan §4 verified path)",
+      "qepm/mailbox/worktask/WT-S20260504_002/governor_challenge_note.md (governor section + codex_critic_skip_waiver + self-audit quantitative proof)"
+    ]
+  },
+  "outputs_governor": {
+    "governor_admission_draft_path": "qepm/mailbox/worktask/WT-S20260504_002/governor_admission_draft.json",
+    "governor_admission_path": "qepm/mailbox/worktask/WT-S20260504_002/governor_admission.json",
+    "challenge_note_section_appended": "qepm/mailbox/worktask/WT-S20260504_002/governor_challenge_note.md",
+    "book_state_unchanged_path": "qepm/mailbox/governor/book_state.json (no mutation, md5 6ee7406544d12f083764a8baf8c6ad81 verified)",
+    "governor_concord_certificate_path": "NOT_ISSUED (DEFERRED_TO_PROMOTION_WT)"
+  },
+  "next_steps_followup_recommendations": [
+    "DCC + alpha-quality conditional gate design: only engage DCC vol scaling when realized alpha drag < threshold (Iter forward — addresses lockbox 17m -177pp + CRISIS state -1.55pp/m alpha surrender)",
+    "DCC σ_p target relaxation 15%→25%: less aggressive cash bridge, may reduce alpha surrender while preserving partial vol control",
+    "Crisis-conditional DCC engagement: post-bear regime confirmation only, full deactivation in bull regimes (addresses forward May 2026 cash 58.06% deployment risk)",
+    "Multi-sleeve DCC (AX-007 exception clause 1): defensive sleeve + alpha sleeve with conditional DCC application — moves beyond single_sleeve_long_only_top20 mechanism break",
+    "L-274 reconciliation persisting flag (3 WT cumulative): SR 1.7477 memory vs 1.5234 production vs 1.5068 Forge S1 — Q-Lead must reconcile before any STR_1715 promotion WT or memory update",
+    "Cross-WT compare aggregating WT-001 PCA / WT-002 DCC / WT-003 HMM / WT-004 RMT / WT-005 Factor_Beta_Hedge: 4-WT pattern (PCA + DCC + HMM all MONITORING_ONLY, RMT pending) suggests sleeve-level statistical sizing overlay paradigm structurally limited; consider AX-007 exception path or Iter 9 family pivot",
+    "forge codex round Layer 2 sweep manual (Q-Lead): cert_backfill_audit.R --target=WT-S20260504_002 --manual"
+  ],
+  "codex_round_status": "round_1_SKIPPED_BY_WAIVER_per_plan_section_4_governor_promoted_to_final",
+  "promoted_to_final_at": "2026-05-04T11:34:00+09:00",
+  "created_by": "governor agent (v6.1 Q-Lead spawn) Round 1 final post codex_critic_skip_waiver per Plan §4 + LRO Round 1 + WT-S20260504_003 precedent",
+  "created_at": "2026-05-04T11:32:00+09:00",
+  "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_002/governor_challenge_note.md"
+}
