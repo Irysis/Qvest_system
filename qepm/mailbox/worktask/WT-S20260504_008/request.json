@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-S20260504_008",
+  "wt_type": "research_wt",
+  "wt_kind": "exploratory_research_no_book_state_write",
+  "hypothesis_title": "30% AR overlay cash residual 직교 자산 대체 리서치 — STR_1715_AR_threshold_overlay_PG2 alpha와 무엇이 직교한가",
+  "hypothesis_description": "도훈 명시 (2026-05-04 19:30): WT-P20260504_001 admit 후 5월 운용 30% cash residual을 0% 수익 보유 대신 STR_1715 alpha와 직교한 risk premium source로 대체할 가능성 리서치. 평가 4축: (1) 직교성 cor < 0.30. (2) 위기 risk-off behavior (GFC + COVID + Stagflation positive return). (3) KR 시장 가용성 (ETF / instrument). (4) Cost (ER + bid-ask + tracking). 학술 anchor: Cieslak-Povala (2015 RAS) bond-equity correlation / Erb-Harvey (2006 FAJ) commodity / Baur-McDermott (2010 JBF) gold safe haven / Frazzini-Pedersen (2014 JFE) BAB low-vol / Asness-Moskowitz-Pedersen (2013 JFE) time series momentum.",
+  "hypothesis_source": "user_decision_2026-05-04",
+  "as_of_date": "2026-05-04",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "parent_wt": "WT-P20260504_001",
+  "predecessor_wts": ["WT-S20260504_007", "WT-P20260504_001"],
+  "method": "orthogonal_cash_replacement_research",
+  "method_specification": {
+    "research_question": "30% cash residual을 무엇으로 대체할 때 SR boost (현재 gap 0.2242) + 직교성 (cor < 0.30) + 위기 hedge + KR 가용성 4축 PASS 가능한가?",
+    "candidate_assets": [
+      {"name": "KR 10년 국채 ETF", "instrument": "KODEX_KTB10Y_A148070", "anchor": "Cieslak-Povala 2015"},
+      {"name": "금 ETF", "instrument": "KODEX_GOLD_A132030", "anchor": "Erb-Harvey 2006 / Baur-McDermott 2010"},
+      {"name": "USD ETF", "instrument": "KODEX_USD_A261240", "anchor": "KRW carry reversal"},
+      {"name": "저변동성 KR equity", "instrument": "KODEX_LOW_VOL_A229200", "anchor": "Frazzini-Pedersen 2014 BAB"},
+      {"name": "단기 IRP/MMF", "instrument": "KR_91d_CD_proxy", "anchor": "rf baseline"},
+      {"name": "Macro Trend / CTA", "instrument": "synthetic_TS_momentum", "anchor": "Asness-Moskowitz-Pedersen 2013"},
+      {"name": "VKOSPI long ETF", "instrument": "TBD", "anchor": "implied vol direct hedge"}
+    ],
+    "evaluation_axis": {
+      "orthogonality": "cor(asset_t, STR_1715_AR_M4_t) < 0.30 strict",
+      "crisis_behavior": "GFC + COVID + Stagflation mean return > 0 또는 KOSPI200 outperform",
+      "kr_availability": "ETF/futures liquidity > 100M KRW/day avg",
+      "cost": "ER + bid-ask + tracking error < 50bps/yr"
+    }
+  },
+  "universe_definition": {"label": "KOSPI200_KOSDAQ150_intersection", "liquidity_min_won_20d_avg": 200000000, "max_names_total": 500},
+  "extended_universe_alternative_assets": ["KODEX_KTB10Y_A148070", "KODEX_GOLD_A132030", "KODEX_USD_A261240", "KODEX_LOW_VOL_A229200", "KR_91d_CD_proxy", "VKOSPI_long_TBD"],
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {"fundamental": "quarterly 45d", "fundamental_annual": "annual May", "price": "t-1 close", "investor_flow": "t-1 settlement", "macro": "t-1 FRED", "ic_history": "Usable_Date <= sig_date"},
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_AR_threshold_overlay_PG2 (effective 2026-05-05)",
+  "hard_mandate": {"pit_enforcement": "C1-C15 all enforced", "liquidity_floor_won_20d_avg": 200000000, "mandate_restrictions": {"no_short_legal_kr": true, "no_cross_market": true, "kr_domestic_only": true}, "long_only_mandate": "true"},
+  "hard_constraints": {"max_names": 20, "weight_bounds": [0, 0.20], "weight_sum": 1.0, "long_only": true, "global_hard_cap_ceiling": 0.20, "cash_replacement_max_pct": 0.30},
+  "primary_objective": {
+    "sr_boost_target": "1.7758 → 1.85+ via orthogonal cash replacement",
+    "diversification_enhancement": "single-strategy → 2-asset 구조 with orthogonal source",
+    "alpha_preservation": "STR_1715 alpha + AR overlay 무손상 mandate 유지"
+  },
+  "decision_rule": {
+    "PASS_PER_CANDIDATE": "직교성 cor<0.30 + 위기 risk-off + KR 가용 + cost<50bps",
+    "RESEARCH_OUTPUT": "후보별 평가 표 + recommend top 1~2 + simulation comparison + 후속 promotion WT plan"
+  },
+  "axiom_constraints": {"AX-000": "limits_dont_exist", "AX-002": "PIT enforced + research_only no book_state write", "AX-007": "EXEMPT — research stage"},
+  "state_machine_path": {"expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED", "abort_reason_planned": "RESEARCH_ONLY_CLOSED_NO_BOOK_STATE_WRITE"},
+  "production_protection": {"str_1715_directory": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/", "write_count_required": 0, "ar_overlay_params": "lro_sha ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18 frozen"},
+  "production_book_state_write": false,
+  "deferred_certs": ["governor_concord"],
+  "deferred_to": "follow-up promotion WT (if PASS)",
+  "active_sot": {"architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md", "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"},
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "round": "post_admit_research_orthogonal_cash_replacement",
+  "user_decision": "도훈 2026-05-04 19:30 명시 — 무엇이 직교일까 리서치 시작",
+  "created_at": "2026-05-04T19:35:00+0900",
+  "created_by": "Q-Lead"
+}
