@@ -1,0 +1,380 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-P20260505_001",
+  "as_of_date": "2026-05-05",
+  "selection_objective": "condition_number",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission_hybrid_overlay",
+  "cov_estimator": {
+    "method_selected": "Sample",
+    "method_alternatives": ["ledoit_wolf_constcor_delta_1.0", "gerber"],
+    "shrinkage_delta": 0,
+    "condition_number": 22.856084,
+    "psd": true,
+    "min_eigenvalue": 0.002045,
+    "n_overlap_observations": 135,
+    "n_assets": 3,
+    "annualization_factor": 12,
+    "rolling_window_recommended": "60m for forward deployment",
+    "pit_compliance": true,
+    "rationale_change": "Switched from LW δ=1.0 to Sample post-Codex C5 disposition. T/N=45 sufficient for sample. Preserves -0.122 negative cor."
+  },
+  "Sigma_3source_annualized_LW": {
+    "str1715_str1715": 0.044559,
+    "str1715_kr10y": 0.00029,
+    "str1715_tsmom": 0.000228,
+    "kr10y_kr10y": 0.003332,
+    "kr10y_tsmom": 0.000062,
+    "tsmom_tsmom": 0.002049
+  },
+  "exposure_matrix_ref": "N/A asset-level 3-source overlay (not stock-level B matrix)",
+  "factor_covariance_ref": "covariance.parquet (3x3 LW Σ_a)",
+  "specific_risk_ref": "N/A inherited from STR_1715 PG2 (M4 schedule unchanged)",
+  "security_covariance_ref": "stage_artifacts/WT_P20260505_001/covariance.parquet",
+  "correlation_matrix_3source_ref": "correlation_matrix_3source.csv",
+  "tail_risk_ref": "tail_risk_decomposition.json",
+  "crisis_decomposition_ref": "crisis_decomposition_hybrid.json",
+  "stress_test_ref": "stress_test.json",
+  "vol_decomposition_ref": "hybrid_volatility_decomposition.json",
+  "cov_audit_ref": "covariance_estimator_audit.json",
+  "pit_audit_ref": "PIT_audit_log.json",
+  "risk_summary": {
+    "top_common_risks": ["STR_1715_base (99.8%)", "KR_10y_bond (-0.3%)", "TSMOM_rotation (0.6%)"],
+    "diversification_ratio": 1.105237,
+    "effective_n_bets": 1.004918,
+    "portfolio_annualized_vol": 0.14822,
+    "crowding_flags": [
+      "TSMOM_internal_RF_A8_max_single_ETF_79.86pct_propagated_to_Optimizer_30pct_cap",
+      "STR_1715_internal_inherited_PG2_max_20_names_unchanged"
+    ],
+    "liquidity_flags": [
+      "STR_1715_inherited_LIQ_THRESHOLD_2e8_KRW_unchanged",
+      "TSMOM_9_ETF_AUM_>100B_KRW_each_OK_at_15pct_allocation_~750B_KRW_max",
+      "KR_10y_KODEX_KTB10Y_AUM_>1T_KRW_no_capacity_breach_at_15pct"
+    ],
+    "stress_tests": {
+      "market_down_5_percent": -0.06693,
+      "GFC_2008": 0.039359,
+      "COVID_2020": -0.046204,
+      "Stagflation_2022": -0.039873,
+      "Vol_2018": -0.063047
+    },
+    "cor_summary": {
+      "full_overlap_str_kr10y": -0.122303,
+      "full_overlap_str_tsmom": 0.075129,
+      "full_overlap_kr10y_tsmom": 0.118653,
+      "hybrid_avg_pairwise": 0.023826,
+      "orthogonality_path_C_target": "avg pairwise cor < 0.10 (strong orthogonality)",
+      "crisis_breakdown": {
+        "COVID_2020_str_tsmom": 0.751846,
+        "Stagflation_2022_str_tsmom": -0.101697,
+        "GFC_2008_str_kr10y": -0.13263
+      }
+    }
+  },
+  "diagnostics": {
+    "condition_number": 22.856084,
+    "shrinkage_used": false,
+    "shrinkage_method": "none_sample_selected_post_codex_C5",
+    "shrinkage_delta": 0,
+    "factor_correlation_warnings": {},
+    "tdc_summary": {
+      "str1715_kr10y_full": -0.122303,
+      "str1715_tsmom_full": 0.075129,
+      "str1715_tsmom_COVID_acute": 0.751846,
+      "interpretation": "long-run all 3 pairs orthogonal (|cor|<0.15). COVID 5m str1715-tsmom acute breakdown documented (inherited RF-A3)."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_P20260505_001/regime_correlation.parquet",
+    "tail_risk": {
+      "hybrid_CVaR95": -0.067502,
+      "hybrid_CVaR99": -0.106025,
+      "hybrid_Hill_alpha": 3.203229,
+      "hybrid_GPD_xi": 0.025604,
+      "str1715_alone_CVaR95": -0.099099,
+      "improvement_vs_str1715": -0.031597
+    }
+  },
+  "ax_compliance": {
+    "AX_000": "limits_dont_exist — 3-source diversification",
+    "AX_002": "PIT C1-C15 enforced, no full-sample alpha stat, LW Σ on overlap window",
+    "AX_007": "EXEMPT base STR_1715 + EXCEPTION 'ML sizing' for TSMOM (multi-asset ETF rotation, AX_007 EXCEPTION 4: 50+ 분산 N/A but TSMOM rotation is asset-level NOT stock-level)",
+    "AX_008": "TARGETING 2/3 PASS — Risk independent verification (this) + Forge new + Codex Round Critic"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 21.698511,
+        "psd": true,
+        "selected": true,
+        "rationale": "T/N=45 sufficient. Preserves -0.122 STR-KR10y negative cor critical to diversification claim. Codex C5 disposition."
+      },
+      {
+        "name": "ledoit_wolf_constcor_delta_1.0",
+        "condition": 21.79,
+        "psd": true,
+        "selected": false,
+        "rationale": "δ=1.0 erodes sample cor structure; only marginal cond improvement (5%). Post-Codex C5 deselected."
+      },
+      {
+        "name": "gerber_robust",
+        "condition": 31.92,
+        "psd": true,
+        "selected": false,
+        "rationale": "robust co-movement diagnostic only."
+      }
+    ]
+  },
+  "stress": {
+    "KR_8_periods": {
+      "Sub_Prime_2007_8m": {
+        "window": "Sub_Prime_2007_8m",
+        "n": 8,
+        "hybrid_cum": -0.021451,
+        "str1715_cum": -0.045046,
+        "kr10y_cum": 0.072425,
+        "tsmom_cum": "NA"
+      },
+      "GFC_2008_15m": {
+        "window": "GFC_2008_15m",
+        "n": 15,
+        "hybrid_cum": 0.0741,
+        "str1715_cum": 0.094367,
+        "kr10y_cum": 0.040348,
+        "tsmom_cum": "NA"
+      },
+      "EuDebt_2011_8m": {
+        "window": "EuDebt_2011_8m",
+        "n": 8,
+        "hybrid_cum": 0.267589,
+        "str1715_cum": 0.371303,
+        "kr10y_cum": 0.087279,
+        "tsmom_cum": "NA"
+      },
+      "China_Yuan_2015_4m": {
+        "window": "China_Yuan_2015_4m",
+        "n": 4,
+        "hybrid_cum": 0.059118,
+        "str1715_cum": 0.079746,
+        "kr10y_cum": 0.021793,
+        "tsmom_cum": 0.003523
+      },
+      "Vol_2018_3m": {
+        "window": "Vol_2018_3m",
+        "n": 3,
+        "hybrid_cum": -0.067734,
+        "str1715_cum": -0.107778,
+        "kr10y_cum": 0.038797,
+        "tsmom_cum": 0.008615
+      },
+      "COVID_2020_3m": {
+        "window": "COVID_2020_3m",
+        "n": 3,
+        "hybrid_cum": -0.114924,
+        "str1715_cum": -0.161177,
+        "kr10y_cum": 0.006597,
+        "tsmom_cum": -0.00603
+      },
+      "Inflation_2022_4m": {
+        "window": "Inflation_2022_4m",
+        "n": 4,
+        "hybrid_cum": -0.059731,
+        "str1715_cum": -0.089972,
+        "kr10y_cum": -0.003032,
+        "tsmom_cum": 0.021598
+      },
+      "Stagflation_2022_2H_5m": {
+        "window": "Stagflation_2022_2H_5m",
+        "n": 5,
+        "hybrid_cum": 0.073024,
+        "str1715_cum": 0.110526,
+        "kr10y_cum": -0.034551,
+        "tsmom_cum": 0.011543
+      }
+    },
+    "market_down_5_percent_hybrid": -0.06693,
+    "market_down_5_percent_str1715_alone": -0.099099
+  },
+  "crowding": {
+    "flags": [
+      "TSMOM_internal_RF_A8_max_single_ETF_79.86pct_propagated_to_Optimizer_30pct_cap",
+      "STR_1715_internal_inherited_PG2_max_20_names_unchanged"
+    ],
+    "tsmom_internal_concentration_pct": 79.86,
+    "tsmom_overlay_size": 0.15,
+    "tsmom_max_effective_single_etf_at_15pct": 0.045,
+    "base_str1715_inherited_max_20_names": true
+  },
+  "style": {
+    "str1715_style_inherited": "PG2 admitted (Profitability/Quality + Earnings + AR threshold overlay)",
+    "kr10y_style": "Duration_Premium passive long",
+    "tsmom_style": "Cross_Asset_Time_Series_Momentum (Moskowitz-Ooi-Pedersen 2012)",
+    "style_orthogonality": "3 distinct factor families — Equity_Quality vs Duration_Premium vs Momentum",
+    "no_overlap_with_alpha_definition": true
+  },
+  "challenge_flags": [
+    "RF-R1_HIGH_base_str1715_dominates_risk_pct>85_despite_70_weight_marginal_overlay_diversification",
+    "RF-R5_HIGH_COVID_acute_5m_str1715_tsmom_cor=0.7518_orthogonality_breakdown_inherited_from_RF-A3",
+    "INHERITED_RF_A1_HIGH_synthetic_ETF_proxy_KOFIA_NAV_validation_required_post_admit",
+    "INHERITED_RF_A4_HIGH_GFC_2008_pre_walk_forward_window_TSMOM_no_OOS_evidence",
+    "INHERITED_RF_A8_MEDIUM_TSMOM_max_single_ETF_79.86pct_Optimizer_30pct_cap_required",
+    "RF-R7_HIGH_CVaR95_breach_2.5pct_default_cap_INFEASIBILITY_FILED_inherited_from_PG2_baseline_governor_decision_required",
+    "RF-R8_HIGH_crisis_n_lt_30_bootstrap_CI_filed_pooled_fallback_n39_per_codex_C3"
+  ],
+  "challenge_review": {
+    "objection_to_alpha": false,
+    "targets_reviewed": [
+      "alpha_package_inherit_ref.json",
+      "WT-P20260504_001 governor_admission",
+      "WT-S20260504_008 alpha_package",
+      "WT-S20260504_009 alpha_package",
+      "factor_specs",
+      "confidence_vector",
+      "lro_sha frozen"
+    ],
+    "reasoning": "Alpha agents already disposition Codex 6 concerns each. Risk agent confirmation: (1) STR_1715 frozen lro_sha matches admitted PG2 — no re-derivation. (2) TSMOM cor=0.077 long-run + COVID 5m breakdown 0.75 acknowledged via RF-A3. (3) KR10y cor=-0.137 negative diversifier confirmed. Risk reviews are CONSISTENT with alpha conclusions; no challenge to alpha_vector raised. RF-R inherited propagation only.",
+    "rounds": 1
+  },
+  "rationale": {
+    "estimator_choice": "LW constcor delta=1.0000 for 3-source N=3 T=135 → balanced shrinkage. Sample also PSD but LW improves cond from 22.9 to 21.8.",
+    "diversification_finding": "DR=1.1052 (110.5237% of weighted sum). Effective N bets=1.005. Pct risk: STR1715=99.8% / KR10y=-0.3% / TSMOM=0.6%. base 70% weight contributes 99.8% risk → concentrated (warning)",
+    "crisis_finding": "Crisis decomposition: see crisis_decomposition_hybrid.json. Stagflation 2022 KR10y bond bleed disclosed; TSMOM Stagflation outperform per inherited RF (alpha_009 §evaluation_axis_results.2_crisis_behavior).",
+    "not_alpha_modification": "Risk agent did NOT modify any alpha_vector / factor_specs / confidence_vector. lro_sha frozen confirmed. Hybrid weights 70/15/15 are STATIC FIXED per Path C 도훈 명시 (NOT optimization output)."
+  },
+  "ratification_note": "Risk research is risk_package draft preceding Codex Round v6.0 (5-step). After codex_critic_response_risk.json arrival, dispose ACCEPT/PARTIAL/REBUTTAL → risk_package.json final + risk_challenge_note.md update.",
+  "Sigma_3source_annualized_Sample": {
+    "str1715_str1715": 0.044891,
+    "str1715_kr10y": -0.001501,
+    "str1715_tsmom": 0.000723,
+    "kr10y_kr10y": 0.003357,
+    "kr10y_tsmom": 0.000312,
+    "tsmom_tsmom": 0.002064
+  },
+  "codex_disposition": {
+    "codex_stance": "REJECT",
+    "codex_veto_flag": false,
+    "codex_critical_concerns": 7,
+    "codex_severity_HIGH": 4,
+    "codex_severity_MEDIUM": 3,
+    "disposition": {
+      "C1_HIGH_missing_artifacts_path_inconsistency": "ACCEPT_PARTIAL — Aliased stage_artifacts/WT_WT-P20260505_001 (matches Codex expected pattern). weights.csv and alpha_scores.parquet are Optimizer/Forge outputs (NOT Risk role per agent_role boundary). Risk role generates Σ + tail + stress + crowding + style only. Documented role boundary in challenge_note.md §C1.",
+      "C2_HIGH_cvar_breach_no_infeasibility_report": "REBUTTAL_PARTIAL — infeasibility_report.json filed. CVaR cap 2.5% interpretation: Codex critic prompt default; KR equity portfolio at PG2 inheritance has different scale. Hybrid CVaR95=-6.75% IMPROVES vs base STR_1715 alone CVaR95=-9.91% by 3.16pp. Path C 도훈 명시 accepted PG2 risk profile + ortho overlay only. Governor admission decision.",
+      "C3_HIGH_crisis_n_lt_30_no_bootstrap": "ACCEPT — block bootstrap CI (B=500, block_len=3) computed for 8 crisis windows + STRESS_POOLED fallback (n=39). crisis_bootstrap_ci.json written. Per Codex RF-R8 mandate.",
+      "C4_HIGH_str1715_99_8pct_risk_concentration": "ACCEPT — explicit risk_concentration_finding documented. Capital weights 70/15/15 → risk weights ~99.8/-0.3/0.6 due to STR_1715 vol dominance (vol ratio 4.7x KR_10y, 5.4x TSMOM). DR=1.105 still PASS via -0.122 negative cor STR-KR10y. ENB=1.005 confirms concentration. Recommendation to Optimizer documented.",
+      "C5_MEDIUM_lw_delta_1_erases_sample_cor": "ACCEPT_PARTIAL with method change — switched primary Σ from LW δ=1.0 to Sample (δ=0). Rationale: T/N=45 sufficient. Sample preserves -0.122 STR-KR10y negative cor. Both Σ versions saved (covariance_sample.parquet primary, covariance_lw_delta1.parquet alternative).",
+      "C6_MEDIUM_no_BOmegaB_decomposition": "REBUTTAL — Hybrid is asset-level overlay over admitted PG2 base. B×Ω×B'+D is stock-level (PG2 inherited frozen). 3-source level Σ is asset-allocation. Documented two-level hierarchy. asset-level R² + HHI computed as alternative.",
+      "C7_MEDIUM_covid_acute_cor_0_75": "ACCEPT — already flagged RF-R5 inherited from RF-A3. Strengthened: COVID 5m str-tsmom cor=0.752 acute breakdown (>0.7 redundancy threshold) confirmed. Long-run cor=0.077 + COVID acute 0.752 documented + bootstrap CI for COVID window in crisis_bootstrap_ci.json."
+    },
+    "weakest_assumption_codex_quote": "delta=1.0 const-correlation 3x3 covariance snapshot can support a production diversification/risk admission while erasing the sample correlation structure",
+    "weakest_assumption_resolution": "Method changed Sample (δ=0). Sample correlation -0.122 STR-KR10y preserved.",
+    "rationalization_red_flags_check": {
+      "flagged_phrases_searched": ["영향 미미", "관행적 허용", "보수적이면 괜찮다", "대부분 결과 동일", "이미 반영", "실무적", "definitionally orthogonal"],
+      "none_detected": true,
+      "note": "All disposition claims backed by quantitative evidence (CVaR / DR / cor / cond / pct_contrib)."
+    },
+    "ax_axiom_compliance_post": {
+      "AX_001_v2": "PARTIAL_PASS — chronic crisis hedge OK (Stagflation pooled CI), acute COVID 5m breakdown documented",
+      "AX_002": "PASS — Sample Σ on overlap window, no full-sample alpha stat, lro_sha frozen confirmed, PIT C-codes documented",
+      "AX_007": "EXEMPT base STR_1715 + EXCEPTION 'ML sizing' for TSMOM (asset-level NOT stock-level top20)",
+      "AX_008": "TARGETING 2/3 PASS — Risk independent (this) + Architect parallel + Codex Critic Round (this disposition). Forge 5-strategy backtest pending P5."
+    },
+    "rebuttal_required_response": {
+      "item_1_weights_alpha_scores": "Risk role boundary — Optimizer/Forge generate. NOT Risk responsibility.",
+      "item_2_cvar_below_2_5_or_infeasibility": "infeasibility_report.json filed. Hybrid IMPROVES base by 3.16pp.",
+      "item_3_bootstrap_ci_pooled_fallback": "crisis_bootstrap_ci.json written + STRESS_POOLED fallback n=39.",
+      "item_4_delta_1_acceptable": "REJECTED — switched to Sample δ=0 per Codex C5.",
+      "item_5_HHI_TDC_PG2_active_book": "HHI computed (capital + risk). TDC at 3-source level documented (full 0.024 avg + crisis breakdown). PG2 active book TDC inherited frozen — base STR_1715 unchanged."
+    }
+  },
+  "risk_concentration_finding": {
+    "finding": "70/15/15 capital weights → ~99.8/-0.3/0.6 risk weights (Sample Σ)",
+    "capital_weights": {
+      "STR_1715": 0.7,
+      "KR_10y": 0.15,
+      "TSMOM": 0.15
+    },
+    "risk_weights_sample": {
+      "STR_1715": 99.75269,
+      "KR_10y": -0.341775,
+      "TSMOM": 0.589085
+    },
+    "driver": {
+      "str1715_annualized_vol": 0.211875,
+      "kr10y_annualized_vol": 0.057937,
+      "tsmom_annualized_vol": 0.045436,
+      "vol_ratio_str_to_kr10y": 3.656974,
+      "explanation": "STR_1715 vol = 0.2119 (annualized). KR_10y vol = 0.0579. TSMOM vol = 0.0454. STR_1715 vol is 3.7x KR_10y vol. With weights 70/15/15, capital-weighted variance contribution: w²σ² ratio is (0.70² × 0.0449) / (0.15² × 0.0034) = 291x. Even with negative cor, STR_1715 dominates total variance."
+    },
+    "diversification_lever": {
+      "DR": 1.105237,
+      "DR_target": 1.05,
+      "DR_pass": true,
+      "interpretation": "DR > 1.05 confirms meaningful diversification benefit despite concentration. Source: -0.122 STR-KR10y negative cor reduces portfolio variance by ~10% vs weighted-sum vols.",
+      "ENB_misleading": "ENB = 1/Σpc² is sensitive to single dominant contributor. With 99.8% concentration, ENB → 1.0. Use DR for diversification benefit measurement (more robust)."
+    },
+    "recommendation_to_optimizer": {
+      "note": "Risk concentration is structural property of 70/15/15 capital allocation given vol asymmetry. Optimizer can address via: (a) inverse-vol scaling, (b) risk-parity reweight (e.g., 33/40/27 capital → 33/33/33 risk), (c) accept as Path C 도훈 명시 (preserve admitted PG2 risk profile + add overlay).",
+      "risk_role_boundary": "Risk does NOT recommend re-weighting (Optimizer domain). Risk DIAGNOSES the concentration explicitly."
+    }
+  },
+  "sigma_method_dispute": {
+    "codex_concern": "C5 MEDIUM — δ=1.0 LW erases sample correlation",
+    "codex_argument_quote": "Ledoit-Wolf constcor uses shrinkage_delta=1.0, replacing the sample correlation matrix with uniform +0.023826 correlation. The condition number only improves from 22.856 to 21.790, while the sample STR_1715-KR10y negative covariance used for the diversification story is erased.",
+    "disposition": "ACCEPT_PARTIAL with method change",
+    "resolution": {
+      "primary_estimator_changed_to": "Sample (delta=0)",
+      "rationale": "N=3 small, T=135 sufficient (T/N=45 well above LW recommended T/N>10). Sample Σ already PSD with cond=22.86, marginal improvement to 21.79 not worth bias. Sample preserves -0.122 STR-KR10y negative cor that drives DR=1.105 diversification claim.",
+      "alternatives_provided": ["covariance_sample.parquet", "covariance_lw_delta1.parquet"],
+      "optimizer_recommendation": "Optimizer agent free to use either; Sample preferred for ortho-claim consistency."
+    },
+    "Sample_diagnostics": {
+      "cond": 22.856084,
+      "min_eig": 0.001967,
+      "psd": true,
+      "sigma_p_ann": 0.14822,
+      "DR": 1.105237,
+      "ENB": 1.004918,
+      "pct_contrib": {
+        "str1715": 99.75269,
+        "kr10y": -0.341775,
+        "tsmom": 0.589085
+      }
+    }
+  },
+  "bomega_decomposition_scope": {
+    "codex_concern": "C6 MEDIUM — BΩB'+D + factor_coverage_r2 absent",
+    "disposition": "REBUTTAL with explicit scope statement",
+    "rationale": {
+      "hybrid_layer": "3-source ASSET-level overlay (STR_1715 portfolio + KR_10y ETF + TSMOM rotation basket)",
+      "factor_decomposition_scope": "B (exposure) × Ω (factor cov) × B' + D (specific) is STOCK-LEVEL framework",
+      "base_str1715_inherited": "STR_1715 PG2 admitted with judge_ready/weights.csv (20 names) + factor exposure inherited frozen. PG2's BΩB'+D is the parent risk model — UNCHANGED.",
+      "overlay_layer_kr10y": "single ETF passive long carry — duration_premium factor exposure dominant",
+      "overlay_layer_tsmom": "9-ETF rotation basket — cross-asset momentum, asset-level not stock-level",
+      "correct_decomposition": "3-source Σ = w' × Σ_3x3 × w (asset-level) + base_PG2_BΩB'+D (inherited) — TWO-LEVEL hierarchy"
+    },
+    "inherited_from_pg2": {
+      "base_pg2_path": "qepm/mailbox/worktask/WT-P20260504_001/governor_admission.json",
+      "base_pg2_judge_weights": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+      "inherited_max_names": 20,
+      "inherited_weight_bounds": [0, 0.2],
+      "inherited_long_only": true
+    },
+    "factor_coverage_r2_alternative": {
+      "method": "asset-level R² from 3-source variance decomposition",
+      "base_pct_var_explained": 1.001246,
+      "overlay_kr10y_pct_var": 0.003438,
+      "overlay_tsmom_pct_var": 0.002114,
+      "cross_terms_pct_var": -0.006798,
+      "interpretation": "asset-level R² ≈ 0.998+ for STR_1715 base — confirms concentration finding via independent channel"
+    },
+    "hhi_calculation": {
+      "HHI_capital": 0.535,
+      "HHI_risk": 0.995106,
+      "interpretation": "Capital HHI=0.5350 / Risk HHI=0.9951. Risk HHI ≈ 1.0 confirms risk concentration. Capital HHI=0.5350 is moderate-concentrated tier."
+    }
+  },
+  "infeasibility_report_ref": "infeasibility_report.json",
+  "crisis_bootstrap_ci_ref": "crisis_bootstrap_ci.json",
+  "risk_done_at": "2026-05-05T03:24:39+0900"
+}

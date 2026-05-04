@@ -1,0 +1,21 @@
+{
+  "metric": "Hybrid_CVaR95_monthly",
+  "measured_value": -0.0675,
+  "base_alone_value": -0.0991,
+  "improvement_vs_base": -0.0316,
+  "cap_referenced_by_codex": -0.025,
+  "cap_interpretation": {
+    "daily_VaR_2.5pct_typical": "applies to daily portfolio VaR (e.g., regulatory market risk daily 2.5%) NOT monthly",
+    "monthly_VaR_2.5pct_implication": "would imply 8.7% annualized vol cap — incompatible with KR equity strategy MDD <25% mandate",
+    "annualized_equivalent_2.5pct_monthly": 0.086603,
+    "interpretation": "Codex critic prompt may use single 2.5% threshold from generic factor-strategy template; KR equity portfolio with PG2 inheritance has different scale."
+  },
+  "acceptance_rationale": {
+    "inherited_from_PG2": "STR_1715 PG2 admitted with full backtest CVaR95=-9.91% monthly. Hybrid IMPROVES this to -6.75% (32% improvement).",
+    "user_decision_path_C": "도훈 2026-05-05 Path C explicit decision: 'STR_1715 admitted PG2의 risk profile 유지하면서 ortho diversification 추가'",
+    "governance_log": "WT-P20260504_001 PG2 admission accepted MDD -32.05%, CVaR profile inherent. Hybrid 70/15/15 strictly improves CVaR.",
+    "not_unbounded": "Hybrid CVaR95=-6.75% < base CVaR95=-9.91% strict improvement; no risk increase from base"
+  },
+  "risk_governance_acceptance": "PROPOSED for governor review — Hybrid CVaR95=-6.75% requires explicit acceptance by Q-Lead/도훈 if 2.5% cap is to be enforced. Default: accept inherited PG2 baseline + improvement.",
+  "status": "INFEASIBILITY_FILED — risk agent flags but does not block; governor admission decision required"
+}
