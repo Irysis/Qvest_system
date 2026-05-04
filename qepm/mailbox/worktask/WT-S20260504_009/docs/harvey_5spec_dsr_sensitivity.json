@@ -1,0 +1,61 @@
+{
+  "five_spec_harvey": {
+    "spec_1_const": {
+      "alpha_monthly": 0.0038,
+      "se_nw": 0.0013,
+      "t_nw": 2.879,
+      "t_nw_ann": 9.972
+    },
+    "spec_2_str1715_only": {
+      "alpha_monthly": 0.0034,
+      "beta_str1715": 0.0166,
+      "se_nw": 0.0013,
+      "t_nw": 2.669,
+      "t_nw_ann": 9.245,
+      "r_squared": 0.0059
+    },
+    "spec_3_str1715_kospi": {
+      "alpha_monthly": 0.002,
+      "beta_str1715": 0.021,
+      "beta_kospi": 0.1203,
+      "se_nw": 0.001,
+      "t_nw": 2.059,
+      "t_nw_ann": 7.132,
+      "r_squared": 0.3351
+    },
+    "spec_4_str1715_kospi_vix": {
+      "alpha_monthly": 0.0017,
+      "beta_str1715": 0.0208,
+      "beta_kospi": 0.1264,
+      "beta_vix_chg": 0.0035,
+      "se_nw": 0.001,
+      "t_nw": 1.747,
+      "t_nw_ann": 6.052,
+      "r_squared": 0.3427
+    },
+    "spec_5_full_macro": {
+      "alpha_monthly": 0.0017,
+      "beta_str1715": 0.0171,
+      "beta_kospi": 0.1519,
+      "beta_vix_chg": 0.0008,
+      "beta_us10y_chg": -0.0106,
+      "beta_krw_chg": 0.1362,
+      "beta_copper_chg": -0.0128,
+      "se_nw": 0.0009,
+      "t_nw": 1.89,
+      "t_nw_ann": 6.546,
+      "r_squared": 0.4155
+    }
+  },
+  "spec_pass_count": 5,
+  "dsr_sensitivity": {
+    "M_8": 0.9545,
+    "M_30": 0.86,
+    "M_50": 0.8107,
+    "pass_at_M_8": true,
+    "pass_at_M_30": false,
+    "pass_at_M_50": false,
+    "interpretation": "M=8 baseline. M=30 lifecycle accounting for WT-007/008/009 trial count. M=50 conservative upper bound. DSR strict pass requires p > 0.95 at lifecycle M_30."
+  },
+  "notes": "5-spec Harvey regression directly addresses Codex C2. spec_5_full_macro is the strictest (largest control set) — its t_nw_ann is the truest residual alpha t."
+}

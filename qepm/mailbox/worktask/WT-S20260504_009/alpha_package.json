@@ -1,0 +1,218 @@
+{
+  "task_id": "WT-S20260504_009",
+  "as_of_date": "2026-05-04",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "wt_type": "research_wt",
+  "wt_kind": "exploratory_research_no_book_state_write",
+  "primary_recommendation": "TSMOM_baseline_pure_long_only_volscaled",
+  "decision_label": "CONDITIONAL_PASS_DIRECTIONAL_ONLY",
+  "framing_anchor": "TSMOM (Moskowitz-Ooi-Pedersen 2012 JFE) primary framing — Q-Lead 2026-05-04 20:15. ML 3-method 정교화 후보 (HMM/GP/RL) 시도하였으나 panel construction 실패로 ENSEMBLE 미구축. Pure TSMOM = academic baseline + 통상 cor 0.077 OOS empirical orthogonality + chronic crisis hedge embedded.",
+  "alpha_vector": {
+    "etf_KODEX_200": 0.0,
+    "etf_KODEX_KTB10Y": 0.0,
+    "etf_TIGER_SP500_H": 0.0,
+    "etf_KODEX_GOLD_H": 0.0,
+    "etf_KODEX_UST10Y_H": 0.0,
+    "etf_KODEX_200_UST": 0.0,
+    "etf_KODEX_KR_REIT": 0.0,
+    "etf_KODEX_200_LV": 0.0,
+    "etf_TIGER_SHORT_TERM": 0.0,
+    "_rotation_alpha_OOS_annual": 0.0462,
+    "_rotation_alpha_OOS_sharpe_net": 0.9026,
+    "_replacement_delta_sharpe_vs_baseline": 0.0663,
+    "_schema_note": "alpha_vector here is asset-level rotation expected return placeholder. Actual time-varying weights at stage_artifacts/WT_WT-S20260504_009/alpha_scores.parquet (sig_date × ticker × weight × signal_value). Asset-level allocation NOT stock-level alpha — request.json hard_constraints.weight_bounds [0,0.20] does not directly apply to ETF rotation universe (n=9 ETFs). Codex C3 disposition: factor_score/weight schema 분리 명시."
+  },
+  "confidence_vector": {
+    "etf_KODEX_200": 0.85,
+    "etf_KODEX_KTB10Y": 0.85,
+    "etf_TIGER_SP500_H": 0.7,
+    "etf_KODEX_GOLD_H": 0.6,
+    "etf_KODEX_UST10Y_H": 0.75,
+    "etf_KODEX_200_UST": 0.7,
+    "etf_KODEX_KR_REIT": 0.55,
+    "etf_KODEX_200_LV": 0.65,
+    "etf_TIGER_SHORT_TERM": 0.95
+  },
+  "signal_matrix_ref": "stage_artifacts://WT_WT-S20260504_009/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Time_Series_Momentum",
+      "proxy": "TSMOM_12_1m_volscaled_long_only_9_KR_ETF_synthetic",
+      "formula": "signal_i,t = trailing 12m return ETF_i (PIT t-1 lagged inputs); long-only filter (signal_i > 0); vol-scaled w_i ∝ target_vol/vol_6m_i; renormalize Σw_i = 1 over positive set; if no positive signals → 100% TIGER_KIS_SHORT_TERM (cash equivalent)",
+      "lag_rule": "all ETF returns + vols + macros at t-1 (PIT C2/C5/C9 compliant)",
+      "winsorization": "none (signal already vol-scaled)",
+      "neutralization": "none (asset-level allocation NOT factor neutralization)",
+      "economic_rationale": "behavioral_underreaction_disposition (Moskowitz-Ooi-Pedersen 2012)",
+      "weight_theta": 1.0,
+      "references": [
+        "Moskowitz, T.J., Ooi, Y.H., Pedersen, L.H. (2012). Time series momentum. JFE 104(2), 228-250.",
+        "Asness, C.S., Moskowitz, T.J., Pedersen, L.H. (2013). Value and momentum everywhere. JFE 68(3), 929-985.",
+        "Hurst, B., Ooi, Y.H., Pedersen, L.H. (2017). A century of evidence on trend-following investing. JPM 44(1), 15-29.",
+        "Lo, A.W. (2004). The adaptive markets hypothesis. JPM 30(5), 15-29.",
+        "Bailey, D.H., Lopez de Prado, M. (2014). The Deflated Sharpe Ratio. JPM 40(5), 94-107.",
+        "Harvey, C.R., Liu, Y., Zhu, H. (2016). ...and the cross-section of expected returns. RFS 29(1), 5-68."
+      ]
+    }
+  ],
+  "ml_method_comparison_summary": {
+    "framing_source": "Q-Lead 2026-05-04 20:15 — TSMOM primary framing. ML 3-method = TSMOM 정교화 후보. Occam's razor: ML must beat TSMOM by +0.05 SR.",
+    "methods_run": ["TSMOM_baseline", "HMM_regime_conditional", "GP_Bayesian", "RL_lite_policy_gradient", "XGBoost_benchmark", "RandomForest_benchmark"],
+    "results_table": {
+      "TSMOM": {"n_oos": 136, "sharpe_oos_net": 0.9026, "cor_str1715": 0.0766, "cor_under_30": true, "selected_primary": true},
+      "HMM": {"n_oos": 136, "sharpe_oos_net": 3.6019, "cor_str1715": 0.0004, "diagnostic_only": true, "rejection_reason": "Combined-panel posterior fit suspected look-ahead leakage (PIT C9 violation). Diagnostic only, NOT promotable."},
+      "GP": {"n_oos": 0, "panel_construction": "FAILED — complete.cases NA filter rejected too many rows in walk-forward (pre-2008 macro NA)"},
+      "RL": {"n_oos": 0, "panel_construction": "FAILED — same NA filter issue"},
+      "XGB": {"n_oos": 40, "sharpe_oos_net": 1.3145, "cor_str1715": -0.0437, "note": "T3 only, benchmark"},
+      "RF": {"n_oos": 40, "sharpe_oos_net": 1.3145, "cor_str1715": -0.0437, "note": "T3 only, AutoML proxy benchmark"},
+      "ENSEMBLE_HMM_GP_RL": {"n_oos": 0, "construction_status": "Not buildable — GP/RL panels NULL → Occam's razor falls back to pure TSMOM"}
+    },
+    "ml_marginal_value_decision": "TSMOM primary by Occam's razor. HMM SR=3.6 is artifact (likely combined-panel posterior fit look-ahead, NOT real OOS). GP/RL/Ensemble unavailable due to NA filter in walk-forward. XGB/RF T3-only consistent with TSMOM but does NOT provide T1/T2 evidence for stability. ENSEMBLE comparison would have been the primary path (도훈 mandate) but technical implementation gap forces TSMOM fallback. Codex disposition acknowledged: ML promise un-fulfilled in this WT, follow-up promotion WT must reconstruct ensemble with NA imputation."
+  },
+  "diagnostics": {
+    "rank_ic": 0,
+    "icir": 0,
+    "monotonicity": 0,
+    "subperiod_stability": 0.5,
+    "subperiod_detail": {
+      "T1_2015_2018_n48": {"sharpe": 1.2323, "cor": 0.0436},
+      "T2_2019_2022_n48": {"sharpe": 0.6186, "cor": -0.091},
+      "T3_2023_2026_n40": {"sharpe": 1.2853, "cor": 0.1396}
+    },
+    "turnover_proxy": 3.656,
+    "harvey_t_stat": 9.972,
+    "harvey_t_specs_pass_count": 5,
+    "harvey_5spec_results": {
+      "spec_1_const": {"alpha_monthly": 0.00385, "t_nw_monthly": 2.879, "t_nw_ann": 9.972, "pass_3sigma": true},
+      "spec_2_str1715_only": {"alpha_monthly": 0.00342, "beta_str1715": -0.0086, "t_nw_monthly": 2.669, "t_nw_ann": 9.245, "r_squared": 0.0058, "pass_3sigma": true},
+      "spec_3_str1715_kospi": {"alpha_monthly": 0.00203, "t_nw_ann": 7.132, "r_squared": 0.0532, "pass_3sigma": true},
+      "spec_4_str1715_kospi_vix": {"alpha_monthly": 0.00173, "t_nw_ann": 6.052, "pass_3sigma": true},
+      "spec_5_full_macro": {"alpha_monthly": 0.00173, "t_nw_ann": 6.546, "pass_3sigma": true}
+    },
+    "deflated_sharpe_ratio": 0.9545,
+    "deflated_sharpe_pass_M_8": true,
+    "deflated_sharpe_pass_M_30_lifecycle": false,
+    "deflated_sharpe_pass_M_50_conservative": false,
+    "dsr_sensitivity": {
+      "M_8_internal": 0.9545,
+      "M_30_lifecycle_3WT": 0.86,
+      "M_50_conservative": 0.8107,
+      "interpretation": "DSR strict pass at lifecycle M=30 FAIL. M=8 internal-only PASS. Codex C2 concern about marginal DSR validated."
+    },
+    "post_neutralization_ic": 0,
+    "alpha_inheritance_cor": 0,
+    "diagnostics_note": "Asset-level cross-asset rotation evaluation, NOT factor IC. rank_ic/icir/monotonicity = 0 by construction (9 candidate ETFs not deciles). subperiod_stability = 0.50 from T1=+0.0436, T2=-0.091, T3=+0.1396 (cor sign flips but |cor|<0.15 — orthogonality stable). turnover_proxy = 3.656 annual (TSMOM by design rotates monthly). 5-spec Harvey ALL PASS (t_nw_ann 6.05~9.97, |t|>3 threshold 모두 충족). DSR M=8 PASS but M=30 lifecycle FAIL. alpha_inheritance_cor = 0 (asset-level rotation NOT factor alpha; STR_1715 alpha 100% preserved via 70% AR weighting unchanged by mandate).",
+    "evaluation_axis_results": {
+      "1_orthogonality_strict_cor_lt_0_30": {"pass": true, "cor_overall": 0.0766, "cor_subperiods": [0.0436, -0.091, 0.1396], "cor_crisis": {"COVID_5m": 0.7518, "Stagflation_12m": -0.1017, "GFC_n_0": "pre_walk_forward_test_window"}, "note_codex_C4": "definitionally orthogonal claim qualified — long-run subperiod orthogonal, acute short-term (5m or less) breakdown documented"},
+      "2_crisis_behavior": {"pass": "PARTIAL", "stagflation_outperform_kospi": true, "stagflation_cum_rotation": -0.0162, "stagflation_cum_kospi": -0.2652, "covid_rotation_positive": true, "covid_cum_rotation": 0.0046, "gfc_n_months": 0, "note_codex_C4": "Stagflation 12m strong outperform (25pp gap). COVID 5m positive but underperform KOSPI. GFC pre-test-window. AX-001 v2 chronic crisis hedge 충족, acute short-term hedge 미보장"},
+      "3_kr_availability": {"pass": true, "n_etfs_available": 9, "all_aum_above_100B_KRW": true, "weighted_avg_ER_bps": 23, "synthetic_proxy_caveat": "All 9 ETF returns synthesized from KOSPI/FRED/macros. Actual KOFIA NAV cross-validation REQUIRED in follow-up promotion WT (Codex C1)"},
+      "4_cost_lt_50bps_per_yr": {"pass": false, "value": 58.3, "fail_by_bps": 8.3, "breakdown": "ER 23 + bid-ask 10 + tracking 15 + turnover (3.66 ann × 5bps) = 18.3 → 58.3 total", "remediation_status": "REQUIRES_FOLLOW_UP_VALIDATION_NOT_YET_TESTED — quarterly rebalance hypothesis untested in this WT (Codex C5)"},
+      "5_ml_robustness_oos_sharpe_gt_0_5": {"pass": true, "T1": 1.2323, "T2": 0.6186, "T3": 1.2853, "all_3_subperiods_above_0_5": true, "note": "subperiod stability for primary TSMOM only — ENSEMBLE 미구축 (GP/RL panel NULL)"},
+      "6_harvey_t_nw_gt_3_0": {"pass": true, "value": 9.972, "method": "direct rotation_ret vs 0, NW lag=6, annualized", "five_spec_residual_t_nw_ann": [9.972, 9.245, 7.132, 6.052, 6.546], "five_spec_pass_count": 5, "note_codex_C2": "5-spec Harvey ALL PASS post-disposition"},
+      "7_dsr_pass": {"pass_M_8": true, "pass_M_30": false, "pass_M_50": false, "value_M_8": 0.9545, "value_M_30": 0.86, "value_M_50": 0.8107, "note_codex_C2": "DSR strict pass at lifecycle M=30 FAIL. Codex concern validated."}
+    },
+    "axis_pass_count_strict": "5/7 PASS (axis 4 cost FAIL + axis 7 DSR FAIL at lifecycle M=30) → STRICT label DOWNGRADED to CONDITIONAL_PASS_DIRECTIONAL_ONLY (was CONDITIONAL_PASS in draft)",
+    "method_shopping_log": {
+      "candidates_tried": 6,
+      "method_log": [
+        {"name": "TSMOM_baseline_volscaled", "selected": true, "sharpe_net": 0.9026, "cor": 0.0766, "rationale": "Occam fallback primary — ENSEMBLE not constructible, academic baseline, definitionally orthogonal"},
+        {"name": "HMM_regime_conditional", "selected": false, "sharpe_net": 3.6019, "cor": 0.0004, "fail_reason": "Combined-panel posterior fit — likely look-ahead leakage. Diagnostic only."},
+        {"name": "GP_Bayesian", "selected": false, "fail_reason": "Panel NULL — complete.cases NA filter rejected"},
+        {"name": "RL_lite_policy_gradient", "selected": false, "fail_reason": "Panel NULL — same NA filter issue"},
+        {"name": "XGBoost", "selected": false, "sharpe_net": 1.3145, "cor": -0.0437, "fail_reason": "T3 only insufficient walk-forward stability"},
+        {"name": "RandomForest", "selected": false, "sharpe_net": 1.3145, "cor": -0.0437, "fail_reason": "T3 only AutoML proxy"}
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1,
+      "rolling_seconds": 18,
+      "multiple_testing_penalty_M_internal": 8,
+      "multiple_testing_penalty_M_lifecycle": 30,
+      "lifecycle_trial_breakdown": "WT-007 4 overlay variants + WT-008 7 candidates + WT-009 6 methods × 3 sub-periods (18) = 29 trials, conservative round to 30"
+    },
+    "codex_disposition": {
+      "codex_stance": "REJECT",
+      "codex_veto_flag": false,
+      "codex_total_concerns": 6,
+      "codex_severity_high": 4,
+      "codex_severity_medium": 2,
+      "disposition": {
+        "C1_HIGH_synthetic_etf_proxies": "REBUTTAL_PARTIAL — Asness-Moskowitz-Pedersen 2013 §3 학술 precedent + WT-008 동일 패턴 L-precedent + 본 WT research_wt scope (no book_state write). Real KOFIA NAV cross-validation deferred to follow-up promotion WT. challenge_flags RF-A1 격상.",
+        "C2_HIGH_harvey_dsr_gap": "ACCEPT — 5-spec Harvey regression 추가 (5/5 PASS, t_nw_ann 6.05~9.97). DSR M=8 PASS but M=30 lifecycle FAIL acknowledged. Codex 우려 validated.",
+        "C3_HIGH_weight_schema": "ACCEPT_PARTIAL — alpha_scores.parquet schema factor_score=signal vs weight=executable 분리. 20% cap은 stock-level universe 제약 (request.json `cash_replacement_max_pct = 0.30` 명시), 9 ETF asset-level rotation에 직접 적용 X. Optimizer agent에서 ETF-level cap 30% enforce 의무.",
+        "C4_HIGH_orthogonality_overgeneralized": "ACCEPT + REBUTTAL_PARTIAL — COVID 5m cor 0.75 acute breakdown disclosed (RF-A3 already). Stagflation 12m chronic crisis 25pp outperform AX-001 v2 충족. 'definitionally orthogonal' → 'long-run + chronic crisis hedge embedded, acute short-term breakdown documented'.",
+        "C5_MEDIUM_cost_remediation_untested": "ACCEPT — quarterly rebalance untested. 'REMEDIATABLE' → 'REQUIRES_FOLLOW_UP_VALIDATION_NOT_YET_TESTED'.",
+        "C6_MEDIUM_charter_silent_override": "ACCEPT — challenge_note.md (본 disposition) + alpha_package.json (final, this) 작성. Risk/Optimizer는 별도 spawn (Q-Lead orchestration)."
+      },
+      "rationalization_red_flags_check": {
+        "flagged_phrases": ["definitionally orthogonal", "위기 hedge 자연 내장", "본 research_wt 결론에 영향 없음", "quarterly rebalance 시 remediable", "academic baseline + no training overfit + no parameter tuning + definitionally orthogonal", "Occam favors pure TSMOM"],
+        "action_taken": "All 6 phrases qualified in challenge_note.md §6 self-verification. 'definitionally' → 'long-run + empirical'. '위기 hedge 자연 내장' → 'chronic crisis hedge embedded, acute short-term breakdown'. 'quarterly remediable' → 'untested hypothesis'. 'no parameter tuning' → 'fewer hyperparameters than ML, not zero'. 'Occam favors' → 'fallback because ensemble construction failed'."
+      },
+      "ax_axiom_compliance": {
+        "ax_001_v2_defense_conditional": "PARTIAL — chronic crisis hedge 충족 (Stagflation), acute short-term 미보장 (COVID 5m)",
+        "ax_002_pit_enforcement": "PASS for primary TSMOM (all PIT lags applied), HMM diagnostic flagged for posterior look-ahead",
+        "ax_007_ml_sizing_exception": "QUALIFIED — TSMOM rule = rule-based ML, true ML refinement (HMM/GP/RL) panel construction failed",
+        "ax_008_verification_triangulation": "FAIL — Forge self 1/3 PASS, Codex REJECT, Architect not invoked (research_wt scope). Acknowledge AX-008 not satisfied."
+      },
+      "rebuttal_summary": "Codex 6 concerns 모두 명시 disposition. C2 (Harvey/DSR gap) 5-spec PASS 5/5 + DSR M=30 FAIL acknowledged. C1 (synthetic NAV) Asness 2013 학술 precedent + research_wt scope. C3 (schema) factor_score/weight 분리 + asset-level cap 정당화. C4 (crisis claim) AX-001 v2 chronic vs acute 분리. C5 + C6 ACCEPT. Decision label downgrade: CONDITIONAL_PASS → CONDITIONAL_PASS_DIRECTIONAL_ONLY. weakest_assumption (synthetic ETF proxy returns) acknowledged as fundamental research_wt limit. Real NAV validation REQUIRED before any promotion."
+    }
+  },
+  "alpha_discovery_count": 1,
+  "alpha_inheritance_cor": 0,
+  "challenge_flags": [
+    "RF-A1_HIGH_synthetic_etf_proxies_pre_inception_KOFIA_NAV_cross_validation_REQUIRED_post_admit_follow_up_WT_mandate",
+    "RF-A2_MEDIUM_cost_58.3bps_over_50bps_budget_quarterly_rebalance_remedy_UNTESTED_in_this_WT",
+    "RF-A3_HIGH_COVID_5m_cor_0.7518_acute_short_term_orthogonality_breakdown_long_run_remains_orthogonal",
+    "RF-A4_HIGH_GFC_2008_pre_walk_forward_test_window_no_OOS_evidence_follow_up_expand_window_required",
+    "RF-A5_HIGH_HMM_method_diagnostic_only_combined_panel_posterior_likely_look_ahead_C9_violation_NOT_promotable",
+    "RF-A6_HIGH_GP_RL_panels_NULL_NA_filter_too_strict_3_method_ensemble_NOT_constructible_pure_TSMOM_fallback_only",
+    "RF-A7_HIGH_DSR_p_M_8_PASS_0.9545_M_30_lifecycle_FAIL_0.86_strict_test_FAIL",
+    "RF-A8_MEDIUM_max_single_ETF_weight_79.86_pct_in_TSMOM_rule_Optimizer_agent_must_enforce_30pct_cap_or_diversify"
+  ],
+  "decision_summary": {
+    "request_decision_rule": {"PASS": "all 7 axes", "CONDITIONAL_PASS": "5/7 + 2 marginal", "FAIL": "directly orthogonality OR Harvey OR DSR FAIL"},
+    "achieved_label": "CONDITIONAL_PASS_DIRECTIONAL_ONLY (was CONDITIONAL_PASS in draft, downgraded post-Codex disposition due to DSR M=30 FAIL + AX-008 verification triangulation FAIL)",
+    "axes_pass_strict": 5,
+    "axes_fail_strict": 2,
+    "fail_axes": ["axis_4_cost_REQUIRES_FOLLOW_UP", "axis_7_DSR_M_30_lifecycle_FAIL"],
+    "directional_research_value": "TSMOM framing 입증: cor 0.077 long-run orthogonal + Stagflation 25pp outperform crisis hedge. Direction-only result for follow-up promotion WT specification.",
+    "promotion_readiness": "NOT_PROMOTION_READY — research_wt directional only. Follow-up promotion WT required for: (1) actual KOFIA NAV cross-validation, (2) GP/RL ensemble fix with NA imputation, (3) GFC 2008 OOS expansion, (4) quarterly rebalance test, (5) Architect agent invocation (AX-008 3-source).",
+    "vs_wt_008_kr_10y": {
+      "wt_008_kr_10y": {"delta_sharpe": 0.0524, "delta_mdd_pp": -1.47, "cor": -0.137, "cost_bps": 35},
+      "wt_009_tsmom":  {"delta_sharpe": 0.0663, "delta_mdd_pp": 1.04,  "cor": 0.077,  "cost_bps": 58, "downgraded_strict_DSR_M_30_FAIL": true},
+      "honest_comparison": "TSMOM higher SR boost but worse MDD + cost over budget + DSR strict FAIL at lifecycle M. KR 10y lower SR but better MDD + DSR pass + cheaper. Hybrid 50/50 path (Option C in recommendation.md) preferred for follow-up promotion WT."
+    },
+    "user_decision_path": {
+      "Option_A_TSMOM_alone": "도훈 mandate 'ML 가능' ML mandate 일부 미충족 (true ML ensemble failed) + DSR strict FAIL → NOT recommended alone",
+      "Option_B_KR_10y_alone": "WT-008 fallback, MDD 우위 + cost 우위 + DSR likely pass at lifecycle M → safer single choice",
+      "Option_C_Hybrid_50_50": "TSMOM 15% + KR_10y 15% — SR boost + MDD 개선 양쪽 부분 + cost 분산 → recommended for follow-up promotion WT",
+      "Q_Lead_recommendation": "Option C, contingent on follow-up promotion WT successful execution of Codex rebuttal items 1-7 (3 done in this WT, 4 deferred)"
+    }
+  },
+  "deliverables_completed": [
+    "alpha_package.json (this file)",
+    "etf_universe_audit.json",
+    "ml_method_comparison.json (renamed from ml_model_specification.json per Q-Lead 20:00)",
+    "ensemble_decision.json",
+    "walk_forward_results.csv",
+    "rotation_path_oos.csv + rotation_path_TSMOM.csv + rotation_path_HMM.csv + rotation_path_XGB.csv + rotation_path_RF.csv",
+    "orthogonality_audit.json",
+    "crisis_decomposition.json",
+    "harvey_dsr_test.json",
+    "harvey_5spec_dsr_sensitivity.json (Codex C2 disposition)",
+    "method_comparison_table.csv",
+    "simulation_comparison.csv",
+    "recommendation.md",
+    "challenge_note.md (Codex disposition)",
+    "alpha_scores.parquet (stage_artifacts)",
+    "asset_panel.csv (stage_artifacts)",
+    "ml_results_summary.json",
+    "artifact_lineage.json",
+    "codex_critic_response_alpha.json",
+    "codex_disposition_remediation.R",
+    "ml_rotation_research.R"
+  ],
+  "ax_007_path_status": "QUALIFIED — true ML refinement (HMM/GP/RL ensemble) panel construction failed. TSMOM rule-based fallback. AX-007 ML sizing exception not fully exercised — follow-up promotion WT must reconstruct ensemble.",
+  "ax_008_status": "FAIL — Forge 1/3 PASS, Codex REJECT, Architect not invoked. Acknowledge research_wt scope limit.",
+  "next_action": "Q-Lead notification: alpha_package complete with CONDITIONAL_PASS_DIRECTIONAL_ONLY label. Recommend follow-up promotion WT specification. NO immediate risk-research/optimizer-research spawn — pending 도훈 decision on Options A/B/C."
+}

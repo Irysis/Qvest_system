@@ -1,0 +1,101 @@
+=== WT-S20260504_009 — TSMOM-based ETF Rotation + ML Refinement ===
+Started: 2026-05-04 21:46:30 
+Framing (도훈 2026-05-04 20:15): TSMOM (Moskowitz-Ooi-Pedersen 2012, Asness-Moskowitz-Pedersen 2013)
+  Cross-section (STR_1715) vs Time-series (TSMOM) = 정의상 직교
+  Long-only TSMOM rule = 위기 hedge 자연 내장
+Pure TSMOM baseline + 3-method ML refinement (HMM + GP + RL) + benchmarks (XGB + RF)
+
+STR_1715 ref: 255 months
+
+ test_T1  test_T2  test_T3 train_T1 
+      48       48       40      119 
+Feature count: 73 
+
+
+=== Walk-forward T1: train n=119, test n=48 ===
+  TSMOM (baseline)...
+  HMM...
+converged at iteration 92 with logLik: 181.4288 
+converged at iteration 42 with logLik: 280.4765 
+  GP...
+  RL...
+  XGB...
+  RF...
+
+=== Walk-forward T2: train n=167, test n=48 ===
+  TSMOM (baseline)...
+  HMM...
+converged at iteration 42 with logLik: 280.4765 
+converged at iteration 50 with logLik: 346.6308 
+  GP...
+  RL...
+  XGB...
+  RF...
+
+=== Walk-forward T3: train n=215, test n=40 ===
+  TSMOM (baseline)...
+  HMM...
+converged at iteration 50 with logLik: 346.6308 
+converged at iteration 63 with logLik: 386.1432 
+  GP...
+  RL...
+  XGB...
+  RF...
+   method n_oos annual_ret_pct sharpe_oos_gross sharpe_oos_net cor_str1715
+   <char> <int>          <num>            <num>          <num>       <num>
+1:  TSMOM   136           4.62           1.0122         0.9026      0.0766
+2:    HMM   136           3.02           4.3162         3.6019      0.0004
+3:    XGB    40          17.55           1.3531         1.3145     -0.0437
+4:     RF    40          17.55           1.3531         1.3145     -0.0437
+   cor_under_30
+         <lgcl>
+1:         TRUE
+2:         TRUE
+3:         TRUE
+4:         TRUE
+   method period n_months  sharpe     cor
+   <char> <char>    <int>   <num>   <num>
+1:  TSMOM     T1       48  1.2323  0.0436
+2:  TSMOM     T2       48  0.6186 -0.0910
+3:  TSMOM     T3       40  1.2853  0.1396
+4:    HMM     T1       48  8.4432 -0.4326
+5:    HMM     T2       48  2.6690 -0.2391
+6:    HMM     T3       40 15.7994 -0.0903
+7:    XGB     T3       40  1.3531 -0.0437
+8:     RF     T3       40  1.3531 -0.0437
+
+=== Occam's razor decision ===
+  TSMOM   : SR_net = 0.9026, cor = 0.0766, n = 136
+  ENSEMBLE: SR_net = NA, cor = NA, n = 0
+  → Primary: TSMOM baseline (Occam favors simpler — ML marginal NA < 0.05 threshold)
+Primary method: TSMOM_baseline_pure 
+Primary OOS Sharpe (net): 0.9026 
+        crisis n_months cum_rotation      cum_ar   cum_kospi
+        <char>    <int>        <num>       <num>       <num>
+1:         GFC        0           NA          NA          NA
+2:       COVID        5  0.004574524 -0.07136544  0.01006046
+3: Stagflation       12 -0.016224822 -0.03878494 -0.26524349
+   rotation_outperform_kospi rotation_positive
+                      <lgcl>            <lgcl>
+1:                        NA                NA
+2:                     FALSE              TRUE
+3:                      TRUE             FALSE
+
+Harvey t_NW:
+  Residual t_nw_ann: 0 
+  Direct t_nw_ann:   9.972 
+DSR p: 0.9545  PASS: TRUE 
+Turnover ann: 3.66  Cost ann (bps): 58.3 
+                scenario        SR       CAGR         MDD
+                  <char>     <num>      <num>       <num>
+1:    70%AR + 30%cash 0% 1.4589353 0.22559510 -0.17605406
+2: 70%AR + 30%MLrotation 1.5252740 0.24028803 -0.16566323
+3: 100%AR (pure scaling) 1.4589353 0.32789331 -0.25147868
+4:  100%MLrotation alone 0.9026177 0.04090473 -0.09943158
+Delta_SR = +0.0663 / Delta_MDD_pp = +1.04
+
+=== ALL ARTIFACTS WRITTEN ===
+DOCS: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-S20260504_009/docs 
+STAGE: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_WT-S20260504_009 
+
+=== DONE ===

@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-S20260504_009",
+  "framing": "Q-Lead 2026-05-04 20:15: 30% cash residual의 답 = Cross-Asset Time-Series Momentum (TSMOM) on KR ETF Universe. 학술 anchor: Moskowitz-Ooi-Pedersen (2012 JFE) + Asness-Moskowitz-Pedersen (2013 JFE). 정의상 직교 (cross-section vs time-series) + 위기 hedge 자연 내장 (long-only TSMOM).",
+  "rationale": "Q-Lead 2026-05-04 20:00: XGBoost primary 편향 제거. Q-Lead 2026-05-04 20:15: Pure TSMOM baseline 의무 + ML 3-method 정교화 framing. ML must beat TSMOM by marginal Sharpe +0.05 OR cor improvement to justify complexity (Occam's razor).",
+  "baseline_tsmom": {
+    "name": "Pure TSMOM 12-1m vol-scaled long-only (Moskowitz-Ooi-Pedersen 2012 §3.3)",
+    "rule": "signal_i,t = trailing 12m return of ETF_i (PIT t-1, skip last month). w_i > 0 only if signal_i > 0. Vol-scaled w_i ∝ target_vol / vol_i. All-cash if no positive signals. Σw_i = 1.",
+    "target_vol_ann": 0.1,
+    "long_only_compliance": true,
+    "no_training_required": true,
+    "references": ["Moskowitz, T.J., Ooi, Y.H., Pedersen, L.H. (2012). Time series momentum. JFE 104(2), 228-250.", "Asness, C.S., Moskowitz, T.J., Pedersen, L.H. (2013). Value and momentum everywhere. JFE 68(3), 929-985.", "Hurst, B., Ooi, Y.H., Pedersen, L.H. (2017). A century of evidence on trend-following investing. JPM 44(1), 15-29."]
+  },
+  "methods_compared": {
+    "HMM": {
+      "name": "HMM regime-conditional ensemble (Hamilton 1989, Ang-Bekaert 2002)",
+      "rationale": "STR_1715 M4 (trend) + AR (concentration) regime conditional 구조와 자연 결합. 2-state HMM on KOSPI 월간 ret → state-conditional Sharpe-weighted softmax allocation",
+      "hyperparameters": {
+        "n_states": 2,
+        "observation_distribution": "gaussian",
+        "allocation_per_state": "softmax(per_state_sharpe, tau=0.3)",
+        "pit_compliance": "regime_state_lag (PIT t-1)"
+      },
+      "strengths": ["regime structure 명시", "small data (~120 obs/state) 충분", "interpretable", "STR_1715 M4 자연 결합"],
+      "weaknesses": ["2-state oversimplification", "non-stationary regime risk", "linear allocation within state"]
+    },
+    "GP": {
+      "name": "Gaussian Process Bayesian per-ETF (kernlab gausspr)",
+      "rationale": "small data n=312 월간 obs에서 uncertainty quantification 필수. GP posterior mean/sd → Bayesian Sharpe (mean/sd) → softmax",
+      "hyperparameters": {
+        "kernel": "rbfdot",
+        "sigma": 0.05,
+        "scaled": true,
+        "variance_model": true,
+        "allocation": "softmax(mean/sd, tau=0.5)"
+      },
+      "strengths": ["uncertainty-aware", "non-parametric flexible", "natural Bayesian Sharpe", "robust to small data"],
+      "weaknesses": ["kernel choice sensitive", "O(n^3) scaling", "isotropic kernel may miss interactions"]
+    },
+    "RL": {
+      "name": "Direct Policy Gradient with custom cor-penalty reward (REINFORCE-lite)",
+      "rationale": "Cross-asset rotation = policy learning본질. cor penalty가 reward에 자연 통합. Sharpe 직접 최대화 + cor 직접 최소화",
+      "hyperparameters": {
+        "architecture": "linear softmax policy theta = K x (nF+1)",
+        "reward": "Sharpe_ann - lambda * |cor| * 5",
+        "lambda_cor": 0.3,
+        "optim_method": "L-BFGS-B",
+        "max_iter": 80
+      },
+      "strengths": ["direct policy + cor penalty in objective", "allocation 본질 정합", "differentiable", "no separate prediction step"],
+      "weaknesses": ["local optima risk", "requires careful initialization", "linear policy capacity limited"]
+    }
+  },
+  "benchmarks": {
+    "XGBoost": {
+      "rationale": "tabular per-ETF prediction baseline (도훈 명시 primary 아님 — 단지 비교용)",
+      "hyperparameters": {
+        "eta": 0.05,
+        "max_depth": 4,
+        "nrounds": 200,
+        "subsample": 0.7
+      }
+    },
+    "RandomForest": {
+      "rationale": "AutoML proxy for variance comparison",
+      "hyperparameters": {
+        "num_trees": 200,
+        "mtry": "floor(sqrt(p))",
+        "min_node_size": 5
+      }
+    }
+  },
+  "ensemble_decision": {
+    "primary": "ENSEMBLE_HMM_GP_RL — equal weight (1/3 each)",
+    "rationale": "3 methods address complementary aspects: HMM (regime), GP (uncertainty), RL (direct policy + cor). Equal weighting avoids hyper-meta-search on weighting scheme (which itself would inflate DSR multiple-testing penalty).",
+    "fallback": "If primary cor > 0.30: use HMM only (lowest cor expected from regime structure)"
+  },
+  "walk_forward_splits": {
+    "T1": {
+      "train": "2005-02 to 2014-12",
+      "test": "2015-01 to 2018-12"
+    },
+    "T2": {
+      "train": "2005-02 to 2018-12",
+      "test": "2019-01 to 2022-12"
+    },
+    "T3": {
+      "train": "2005-02 to 2022-12",
+      "test": "2023-01 to 2026-04"
+    }
+  },
+  "feature_count": 73,
+  "feature_categories": {
+    "macro_lag": 12,
+    "macro_change_lag": 12,
+    "etf_lag": 9,
+    "etf_3m_lag": 9,
+    "etf_vol_6m_lag": 9,
+    "calendar": 2,
+    "str1715_info_lag": 2
+  },
+  "pit_compliance": "All features lagged t-1; no full-sample stats; walk-forward expanding window only",
+  "ml_marginal_value_check": {
+    "baseline_tsmom_sharpe_net": 0.9026,
+    "baseline_tsmom_cor": 0.0766,
+    "ensemble_sharpe_net": null,
+    "ensemble_cor": null,
+    "delta_sharpe_ml_minus_tsmom": null,
+    "ml_beats_tsmom": false,
+    "decision": "Occam favors pure TSMOM (ML marginal value not proven)"
+  }
+}
