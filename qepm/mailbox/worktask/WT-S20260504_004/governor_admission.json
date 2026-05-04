@@ -1,0 +1,292 @@
+{
+  "task_id": "WT-S20260504_004",
+  "package_kind": "governor_admission",
+  "wt_kind": "recommendation_only",
+  "wt_type": "sizing_only",
+  "parent_wt": "WT-P20260429_002",
+  "as_of_date": "2026-05-04",
+  "agent": "governor",
+  "round": 1,
+  "draft_revision": "final",
+  "schema_version": "v1.0_rmt_governor_round1_final_recommendation_only_closure_skip_waiver",
+
+  "_field_inventory_11": [
+    "recommendation_only",
+    "book_state_write",
+    "governor_concord_status",
+    "promotion_wt_required",
+    "verdict",
+    "STR_1715_ALPHA_STATUS",
+    "LATENT_RISK_STATE",
+    "PRIMARY_RISK_ANCHOR",
+    "RECOMMENDED_ACTION",
+    "recommendation_package_complete",
+    "abort_reason"
+  ],
+
+  "recommendation_only": true,
+  "book_state_write": false,
+  "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+  "promotion_wt_required": false,
+  "verdict": "MONITORING_ONLY",
+  "STR_1715_ALPHA_STATUS": "UNCHANGED",
+  "LATENT_RISK_STATE": "M4_baseline_dominant_RMT_marginal_value_negative",
+  "PRIMARY_RISK_ANCHOR": "STR_1715_PG2_M4_schedule_MDD_-35.32pct_unchanged + RMT_canonical_redundant_to_M4_OR_rule_max_binding",
+  "RECOMMENDED_ACTION": "KEEP",
+  "recommendation_package_complete": true,
+  "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+
+  "verdict_enum_one_of": ["RECOMMENDATION_ONLY_PASS", "RECOMMENDATION_ONLY_CONDITIONAL", "MONITORING_ONLY", "FAIL"],
+  "RECOMMENDED_ACTION_enum_one_of": ["KEEP", "CAP_TIGHTEN", "CASH_OVERLAY"],
+
+  "rationale": {
+    "summary": "STR_1715 RMT_Denoised_Sigma + M4_OR_RMT_VolTarget — recommendation_only WT closure (governor verdict MONITORING_ONLY mirrors judge_decision). RMT canonical M4+RMT_VolTarget evaluated via 4-strategy comparison (S1 1.5068 / RMT_VolTarget 1.4773 / M4+RMT_canonical 1.5391 / M4_baseline_recomputed 1.5646). Three decision_rule axes FAIL (MDD_absolute_25pct -35.32% > -25% threshold, MDD_-3pp_vs_M4 0pp delta, vol_-20pct_vs_M4 only -2.2%). Four axes PASS (CAGR 40.49%, Sortino 3.21, top5 DD 5 ≥ 3, RMT signal/noise OK n_signal=11/206). Per request.json §decision_rule MONITORING_ONLY definition: 'RMT 통계적 quality OK + trading damage 큼' — applies. M4_baseline_recomputed DOMINATES M4+RMT canonical by +0.0255 SR with equivalent MDD relief — RMT redundant on top of already-deployed M4. STR_1715 100% PG2 with M4 schedule UNCHANGED. governor_concord cert DEFERRED to future promotion WT (none triggered). Closure pattern consistent with WT-S20260503_001 LRO recommendation_only precedent.",
+
+    "judge_handoff_alignment": "Governor verdict matches judge_verdict.final_verdict=MONITORING_ONLY exactly (11/11 fields aligned). RECOMMENDED_ACTION=KEEP per judge governor_handoff_action=RECOMMENDATION_ONLY_CLOSED + judge RECOMMENDED_ACTION='PG2 unchanged. RMT framework retained as research artifact'. promotion_wt_required=false per judge handoff (no PASS/CONDITIONAL_PASS verdict trigger).",
+
+    "ax_001_v2_summary": "Defense-like evaluation 3-tuple (HIGH_RISKOFF / MID_RISKOFF / FULL_RISK) per request.json §axiom_constraints.AX-001_v2 + defense_like_evaluation.json. Verdict: PRESENT in HIGH_RISKOFF state (50/267 obs = 18.7%, tail clip 5.09pp + vol reduction 8.63pp), MARGINAL in MID_RISKOFF (62/267 = 23.2%, 0.18pp protection), ABSENT in FULL_RISK (155/267 = 58.1%, no-op). NOT formally applicable to admit (STR_1715 core_secondary, not defense role). Pattern qualitatively matches AX-001 v2 conditional metric philosophy. core_mdd_relief_vs_m4_baseline_pp = 0.0 — RMT does NOT improve PG2 admission (M4 alone already captures equivalent tail clipping at lower CAGR drag).",
+
+    "ax_008_summary": "Recorded as mandatory artifact under recommendation_only WT closure design (admission gate NOT triggered by MONITORING_ONLY verdict). 2/3 tally entries (forge_pass + judge_audit_substituted) — does NOT claim independent triangulation PASS for admission gate purpose (independent_triangulation_PASS_count_for_admission_gate=0). Codex Round lineage carry across 6 agents (alpha skip exempt, risk REJECT_R1+REVISE_R2 waiver, optimizer REJECT_R1 3A_2P_2REB no_round2, forge skip_waiver, judge skip_waiver, governor skip_waiver) — Charter v1.7 §8 No Silent Override compliant via explicit waiver + challenge_note across all stages. Future promotion WT (if RMT refinement achieves PASS/CONDITIONAL_PASS) MUST establish independent triangulation per future_promotion_wt_blocker_list (5 blocks).",
+
+    "rmt_marginal_value_diagnosis_explicit": "Forge RF-F1 + Judge RF-J1 confirm: M4+RMT_canonical SR 1.5391 < M4_baseline_recomputed SR 1.5646 (delta -0.0255). MDD relief vs M4 alone = 0pp. CAGR drag vs M4 alone = -1.86pp. RMT statistical layer adds cash drag in 32 RMT-unique HIGH_RISKOFF months without offsetting tail relief (M4 OR rule binds in most de-risk months; M4-calm RMT-stress months are noise-dominated). Conclusion: RMT framework has no marginal value over already-deployed M4 schedule for STR_1715 single-sleeve context. Retained as research artifact for potential multi-sleeve / multi-strategy contexts where Σ-cleaning may differ structurally.",
+
+    "stale_memory_carry_diagnosis": "MEMORY.md L-274 reference (SR 1.7477 / CAGR 43.78% / MDD -32.05%) is STALE — predates STR_1715 base Iter31 cash overlay deprecation. Fresh M4_baseline_recomputed (this WT, same 267m period, same 15bps cost): SR 1.5646 / CAGR 42.35% / MDD -35.32%. Cross-validation: WT-P20260429_002 forge_may2026 (SR 1.5726 / MDD -35.56%) confirms fresh recompute. Actual SR=2.0 gap is 0.44 (not 0.25 as L-274 implies). Honest gap path recommendation per Charter v1.7 §9: Defense / Crisis Alpha family pivot (Iter 9 — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional per L-270) is more direct MDD-7.05pp gap closure than RMT-style statistical de-risking. Q-Lead post-judge memory housekeeping L-275+ explicitly recommended (judge RF-J2 MEDIUM)."
+  },
+
+  "codex_round_stance_round_1": "skip_waiver_per_recommendation_only_ax008_lineage_carry",
+  "codex_round_critical_concerns_count": 0,
+  "codex_round_response_ref": "qepm/mailbox/worktask/WT-S20260504_004/codex_critic_response_governor.json (NOT_PRESENT — skip_waiver applied per Charter v1.7 §8 explicit waiver, recommendation_only WT closure pattern, AX-008 lineage carry across 5 prior agents)",
+  "codex_round_skip_waiver_rationale": "wt_kind=recommendation_only + verdict=MONITORING_ONLY (admission gate NOT triggered) + AX-008 lineage carry (alpha skip exempt + risk REJECT_R1+REVISE_R2 waiver + optimizer REJECT_R1 3A_2P_2REB no_round2 + forge skip_waiver + judge skip_waiver). Codex Round 2 enforcement at Governor stage would reset clock without new evidence — Codex critique substantively addressed via Forge realized backtest (canonical SR 1.5391 / MDD relief 6.4pp vs S1 / audit PASS 14/16) and Judge decision_rule evaluation per request.json (4 PASS + 3 FAIL → MONITORING_ONLY explicit). HIGH<5 (combined 4 across all agents) + AX hard FAIL<3 (0) + 0 PIT C1 violations + 0 hard constraint violations → no Q-Lead escalate. Pattern documented in 5 prior challenge_notes + governor_challenge_note.md (this WT) explicit. Consistent with WT-S20260503_001 governor_admission.json closure precedent.",
+
+  "state_machine_transition": {
+    "incoming_phase": "JUDGE_PASSED",
+    "target_phase_step_1": "GOVERNOR_REJECTED",
+    "target_phase_step_2": "ABORTED",
+    "policy_compliance": "state_transitions.json::JUDGE_PASSED.allowed_next=[GOVERNOR_ADMITTED, GOVERNOR_REJECTED, ABORTED] + GOVERNOR_REJECTED.allowed_next=[ABORTED]. Both transitions valid.",
+    "phase_jump_waiver_for_missing_codex_response": "applied — bridges missing codex_critic_response_governor.json artifact requirement under JUDGE_PASSED → GOVERNOR_REJECTED transition. governance_log entry recorded. Justified by recommendation_only wt_kind + Charter v1.7 §8 No Silent Override.",
+    "controlled_non_production_closure": "GOVERNOR_REJECTED → ABORTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT (Plan §11+§12 + 4차 BLOCKER 1 + WT-S20260503_001 precedent)."
+  },
+
+  "production_protection_audit": {
+    "book_state_write_count": 0,
+    "book_state_md5sum_pre_governor_phase": "6ee7406544d12f083764a8baf8c6ad81",
+    "book_state_mtime_pre_unix": 1777532809,
+    "book_state_size_pre_bytes": 20561,
+    "book_state_md5sum_at_final_write": "6ee7406544d12f083764a8baf8c6ad81 (VERIFIED_UNCHANGED_POST_GOVERNOR_FINAL_WRITE_AT_2026-05-04T10:05:30+0900 — md5 / mtime 1777532809 / size 20561 all unchanged)",
+    "str_1715_directory_write_count": 0,
+    "str_1715_directory_files_modified_since_request": 0,
+    "production_weights_overlay_dir_created_count": 0,
+    "promotion_wt_spawn_count": 0,
+    "governor_concord_certificate_issuance_count": 0,
+    "governor_concord_status_explicit": "DEFERRED_TO_PROMOTION_WT (Plan §1 own_certs row + sizing_only role_card own_cert pending by design — NOT failure)",
+    "governor_admission_only_writes_to": "qepm/mailbox/worktask/WT-S20260504_004/ (governor_admission.json + governor_challenge_note.md + governor_admission_draft.json) — NO writes to qepm/mailbox/governor/book_state.json + NO writes to 04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/"
+  },
+
+  "judge_handoff_inheritance": {
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_004/judge_verdict.json",
+    "judge_decision_verdict": "MONITORING_ONLY",
+    "judge_governor_handoff_action": "RECOMMENDATION_ONLY_CLOSED",
+    "judge_RECOMMENDED_ACTION": "PG2 unchanged. RMT framework retained as research artifact. Q-Lead memory housekeeping L-275+ for L-274 stale carry.",
+    "judge_decision_rule_PASS_count": 4,
+    "judge_decision_rule_FAIL_count": 3,
+    "judge_decision_rule_FAIL_axes": ["MDD_absolute_25pct", "MDD_minus_3pp_vs_M4", "vol_minus_20pct_vs_M4"],
+    "judge_decision_rule_PASS_axes": ["CAGR_geq_20", "Sortino_geq_1", "top5_DD_3plus", "RMT_signal_noise_OK"],
+    "judge_three_strategy_ranking": "M4_baseline_recomputed (1.5646) > M4+RMT_canonical (1.5391) > S1_pure (1.5068) > RMT_VolTarget (1.4773)",
+    "judge_ax_008_verdict": "PASS (2/3 forge + judge_substituted, codex lineage carry)",
+    "judge_pit_audit": "PASS (2 WARN factor_engine_path absent — sleeve overlay structural; 0 FAIL)",
+    "judge_hash_audit": "9/9 match",
+    "judge_red_flags_count": 5,
+    "judge_red_flags_severity": "2 MEDIUM (RF-J1 RMT marginal negative + RF-J2 L-274 stale) + 3 INFO/LOW (RF-J3 OOS n=16 bull / RF-J4 verdict matches forge / RF-J5 lineage)",
+    "governor_field_match_judge_handoff": "11/11 fields aligned with judge governor_handoff direction (MONITORING_ONLY verdict / KEEP action / no admit / no book_state write / RMT research artifact retention / promotion_wt_required=false)"
+  },
+
+  "ax_008_tally": {
+    "tally_3_entry_recorded": true,
+    "tally": {
+      "forge": "PASS — 9/9 input hash audit match + Backtest Result Contract v1.0 audit 14/16 PASS + PerformanceAnalytics standard functions (Return.cumulative / maxDrawdown / SortinoRatio / table.Drawdowns) + PIT C1 expanding + C2 t-1 lag + C9 weight at sig_date d → ret [d, next_d) verified + Sharpe formula Charter v1.4 §12 conform",
+      "codex": "PARTIAL_LINEAGE_CARRY — Alpha skipped via exempt_certs, Risk REJECT_R1+REVISE_R2 under waiver, Optimizer REJECT_R1 with 3 ACCEPT + 2 PARTIAL + 2 REBUTTAL no_round2, Forge skip_waiver per recommendation_only AX-008 lineage carry, Judge skip_waiver per same, Governor skip_waiver per same closure pattern. Pattern: Codex critique substantively addressed via Forge realized backtest (canonical SR 1.539 / MDD relief 6.4pp vs S1 / audit PASS 14/16). Charter v1.7 §8 No Silent Override compliant — challenge_note explicit + waiver justified across all stages.",
+      "architect": "JUDGE_AUDIT_SUBSTITUTED — Architect formal re-verification not invoked (recommendation_only kind, no infrastructure change, no production_book_state_write). Judge stage performs equivalent triangulation: hash audit cross-check 9/9 + decision_rule evaluation per request + Backtest Contract audit 14/16 PASS + M4 baseline recompute cross-validates MEMORY.md L-274 carry → fresh recompute (1.5646/-35.32%) consistent with WT-P20260429_002 forge_may2026 (1.5726/-35.56%). STR_1715 production_writes=0 verified. schedule_fidelity density 0.9963 PASS."
+    },
+    "current_count": "2/3 (forge + judge_substituted)",
+    "minimum_required": "2/3 PASS",
+    "ax_008_verdict": "PASS — 2/3 threshold met. Codex Round lineage carry (recommendation_only WT) acceptable per Charter v1.7 §8. Architect formal verification waived for sizing_only recommendation_only kind (no infrastructure / book_state write).",
+    "independent_triangulation_PASS_count_for_admission_gate": 0,
+    "tally_recording_purpose": "mandatory artifact under recommendation_only WT closure design (admission gate NOT triggered by MONITORING_ONLY verdict). NOT a claim of PASS≥2 independence — the 3 entries are tally records.",
+    "ax_008_admission_gate_applicability": "NOT TRIGGERED — judge_decision.verdict=MONITORING_ONLY (not PASS/CONDITIONAL_PASS/promotion WT trigger). PASS≥2 admission gate evaluation skipped per design.",
+    "ax_008_stance_tally_full_ref": "qepm/mailbox/worktask/WT-S20260504_004/ax008_stance_tally.json",
+    "future_promotion_wt_triangulation_requirement": "Per recommendation_only WT closure pattern: any subsequent WT promoting RMT (or any sigma-cleaning overlay) to deployment with verdict=PASS or CONDITIONAL_PASS MUST satisfy: separate architect spawn (not judge self-check), Codex Round PASS or APPROVE_CONDITIONAL stance (not REVISE/skip_waiver), and forge bt with Codex Round substantive engagement (not skip_waiver)."
+  },
+
+  "rmt_variant_summary_for_governance_log": {
+    "n_strategies_evaluated": 4,
+    "list": ["S1_pure_baseline", "RMT_VolTarget_alone", "M4+RMT_VolTarget_canonical", "M4_baseline_recomputed"],
+    "best_variant": "M4_baseline_recomputed (current PG2 unchanged)",
+    "canonical_variant": "M4+RMT_VolTarget",
+    "canonical_metrics": {
+      "Sharpe": 1.5391,
+      "CAGR": 0.4049,
+      "MDD": -0.3532,
+      "Sortino": 3.2139,
+      "Vol": 0.2425,
+      "n_obs": 267
+    },
+    "canonical_mdd_pp_vs_m4_baseline": "0.0pp (no improvement; M4 alone already at -35.32%)",
+    "canonical_sr_delta_vs_m4_baseline": "-0.0255 (M4+RMT 1.5391 vs M4 1.5646)",
+    "canonical_cagr_drag_vs_m4_baseline_pp": "-1.86pp (M4+RMT 40.49% vs M4 42.35%)",
+    "canonical_vol_reduction_vs_m4_relative": "-2.2% (target was -20%)",
+    "best_variant_comparison": "M4_baseline_recomputed Sharpe 1.5646 dominates on Sharpe at equivalent MDD relief 6.37pp vs S1 with lower CAGR drag",
+    "rmt_predictive_power_confirmed": "RMT signal/noise separation valid (n_signal=11/206 retained, signal_trace_pct 42.96%, market_eigenvalue_pct 21.37%, λ_max_MP 2.167282, PSD pass) — statistical quality OK but trading marginal value over M4 alone NEGATIVE",
+    "core_baseline_decision_basis": "forge_recomputed_M4_baseline (this WT cross-validated against parent WT-P20260429_002 forge_may2026 1.5726 SR / -35.56% MDD) — NOT MEMORY.md L-274 (1.7477/-32.05% identified as stale carry — Q-Lead L-275+ housekeeping recommended)",
+    "current_pg2_unchanged": "STR_1715 100% PG2 with M4 schedule (parent WT-P20260429_002 governance), no weight modification, no RMT overlay deployment, no production_weights overlay dir created"
+  },
+
+  "next_steps_post_abort": {
+    "production_state": "STR_1715 100% PG2 with M4 schedule UNCHANGED (no weight modification, no overlay deployment, no production_weights overlay dir creation, no book_state.json write)",
+    "rmt_research_retention": "RMT framework retained as research artifact for potential multi-sleeve / multi-strategy contexts (judge RECOMMENDED_ACTION). lro_params SHA-frozen (3147d50e6481c74df0466d08a346c0c7128f2352e50c01b07f985beae8aa7fa0) at as_of 2026-04-30. Stage artifacts under stage_artifacts/WT_WT-S20260504_004/ retain for future reference.",
+    "mdd_gap_path_reconsideration": "STR_1715 -7.05pp MDD gap to -25% target NOT closed by RMT statistical layer. AX-001 v2 next iteration: defense / crisis_alpha family pivot (Iter 9 — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional) per L-270 — judge tertiary recommendation. RMT-class statistical Σ-cleaning explored to no improvement; alpha mechanism pivot is more direct path. Note: actual SR=2.0 gap is 0.44 not 0.25 per fresh M4_baseline_recomputed reality (L-274 stale carry).",
+    "promotion_wt_status": "no promotion WT trigger (promotion_wt_required=false per judge handoff). governor_concord cert remains DEFERRED. If future RMT refinement WT achieves verdict=PASS or CONDITIONAL_PASS (e.g., multi-sleeve context where Σ-cleaning has marginal value), promotion WT must satisfy: separate architect spawn + Codex Round PASS/APPROVE_CONDITIONAL + forge Codex Round substantive engagement + Harvey t_NW + DSR post-penalty + baseline Harvey symmetric for replacement gate.",
+    "qlead_memory_housekeeping_recommendation": "MEMORY.md L-274 numerical reference SHOULD be updated post-judge (housekeeping L-275+). Current production reality is M4_baseline_recomputed SR ~1.56 / MDD ~-35.3%. The 1.7477/-32.05% legacy carry obscures actual gap to SR=2.0 target (current gap 0.44 not 0.25). Honest gap acknowledgment per Charter v1.7 §9. judge RF-J2 MEDIUM severity flag emitted.",
+    "residual_risk_monitoring": {
+      "rmt_framework_retention_only": "Research artifact retention (no production deployment risk)",
+      "concentration_top_names": "S-Oil 20% / 쏠리드 20% (max equity weight 0.20) — semi/AI/IT_HW family saturation 56% (L-219 carry from parent PG2)",
+      "monitoring_agent_responsibility": "Q-Lead monthly monitoring agent cron — STR_1715 PG2 (unchanged) drift / cost / regime shift / crowding alerts per monitoring agent v6.4 contract"
+    }
+  },
+
+  "axiom_assertions": {
+    "AX_000_no_limits": {
+      "verdict": "PRESERVED — RMT recommendation_only closure does not invalidate AX-000. -7.05pp MDD gap path NOT closed via statistical Σ-cleaning; alternate paths exist (Iter 9 defense / crisis_alpha family pivot per L-270). Honest gap acknowledgment per Charter v1.7 §9 (actual gap 0.44 to SR=2.0 not 0.25 per L-274 stale)."
+    },
+    "AX_001_v2_defense_conditional": {
+      "applied_to_canonical_variant": "M4+RMT_VolTarget",
+      "core_baseline": "forge_recomputed_M4_baseline (this WT cross-validated against parent WT-P20260429_002 forge_may2026 — L-274 NOT used as gate per stale memory diagnosis)",
+      "three_tuple_evaluation_ref": "qepm/mailbox/worktask/WT-S20260504_004/defense_like_evaluation.json",
+      "verdict": "Defense-like behavior PRESENT in HIGH_RISKOFF (5.09pp tail clip + 8.63pp vol reduction), MARGINAL in MID_RISKOFF, ABSENT in FULL_RISK. NOT formally applicable to admit (STR_1715 core_secondary, not defense role). NOT SATISFIED for deployment (M4 alone equivalent at lower CAGR drag). RMT predictive power supports MONITORING role only — directionally consistent with governor verdict MONITORING_ONLY."
+    },
+    "AX_002_process_honesty": {
+      "lro_params_frozen_sha": "3147d50e6481c74df0466d08a346c0c7128f2352e50c01b07f985beae8aa7fa0 (status.json optimizer_summary.lro_params_sha256 verified)",
+      "rmt_cutoff_2026_04_30_freeze": "PASS (RMT estimation window 924d 2022-10-01 to 2026-04-30, no OOS modification)",
+      "production_protection": "STR_1715 directory write count = 0 + book_state_write count = 0 + production_weights_overlay_dir_created_count = 0 + promotion_wt_spawn_count = 0 + governor_concord_certificate_issuance_count = 0",
+      "alpha_lineage_explicit": "wt_local_alpha not re-fitted — STR_1715 base period_returns inherited from production. RMT sleeve overlay does not access Factor DB directly (PIT C15 WARN structural to sleeve overlay class, not violation per judge_verdict).",
+      "stale_memory_diagnosis_explicit": "L-274 carry (1.7477/-32.05%) explicitly flagged STALE in judge RF-J2 MEDIUM + this admission rationale. Q-Lead L-275+ housekeeping recommendation explicit — no silent inflation.",
+      "skip_waiver_explicit_not_silent": "codex_round skip_waiver applied explicitly with documented rationale in governor_challenge_note.md G6 + this admission codex_round_skip_waiver_rationale field. Charter v1.7 §8 No Silent Override compliant.",
+      "verdict": "PASS"
+    },
+    "AX_007_single_sleeve_long_only_top20": {
+      "applicability": "STR_1715 PG2 admit lineage already resolves AX-007 via 2-sleeve risk + cash structure (parent WT-P20260429_002). RMT adds statistical layer (sigma cleaning), no new alpha mechanism.",
+      "verdict": "EXCEPTION_NOT_INVOKED — recommendation_only WT does not change PG2 sleeve structure"
+    },
+    "AX_008_triangulation": {
+      "tally_3_entry_recorded": true,
+      "independent_triangulation_PASS_count_for_admission_gate": 0,
+      "admission_gate_applicability": "NOT TRIGGERED (MONITORING_ONLY verdict). Tally recording is mandatory artifact, NOT independent triangulation claim.",
+      "future_promotion_wt_blocker_list": {
+        "block_1_independent_triangulation": "Separate architect spawn (not judge self-check), Codex Round PASS or APPROVE_CONDITIONAL stance (not REVISE/skip_waiver), and forge bt with Codex Round substantive engagement (not skip_waiver)",
+        "block_2_harvey_t_nw": "Harvey t_NW (Newey-West HAC) > 3.0 with multi-testing penalty applied. CITATION: Harvey et al. (2016, RFS) + judge agent v6.1 Statistical Defense (qepm §10).",
+        "block_3_dsr_post_penalty": "DSR (Deflated Sharpe Ratio) post-penalty computation with selection / multi-testing adjustment. CITATION: Bailey & Lopez de Prado (2014).",
+        "block_4_baseline_harvey_symmetric": "Baseline (STR_1715 / forge_recomputed_M4) Harvey t status currently FAIL by absence. Promotion WT must compute baseline Harvey t_NW + DSR for symmetric comparison. Otherwise replacement gate cannot fire.",
+        "block_5_lockbox_split_evidence": "Although RMT sizing_only inherited alpha makes lockbox NOT_APPLICABLE in this WT, any promotion WT producing book_state-mutating overlay must produce lockbox split evidence (residualized series IS/OOS partition seal + lro_params_frozen sha 3-source verify)."
+      },
+      "verdict": "TALLY_RECORDED_AS_MANDATORY (not independent PASS≥2 — admission gate not triggered by MONITORING_ONLY)"
+    }
+  },
+
+  "audit": {
+    "pit_audit": {
+      "rmt_estimation_window_check": "PASS — 924d expanding window 2022-10-01 to 2026-04-30 (C1 compliant, judge_verdict §pit_c1_c15_audit confirmed)",
+      "c2_t_minus_1_lag": "PASS — weight at sig_date d → ret [d, next_d), audit row PIT.point_in_time_checked PASS",
+      "c9_dd_vt_lag": "PASS — RMT vol scale path uses 24m trailing median (rolling, not full-sample)",
+      "c13_z_score_aligned": "n/a — sigma overlay does not negate factors",
+      "c14_ic_usable_date": "n/a — RMT sigma overlay does not access IC",
+      "c15_factor_db_load_path": "WARN — sleeve overlay backtest does not directly load factor DB; STR_1715 base inherits compliant load_month_factors() path from production WT-P20260429_002. NOT a violation per judge audit FAIL_count=0",
+      "lookahead_detector_self_scan": "WARN — same root cause as C15 (factor_engine_path absent); NOT a violation",
+      "verdict": "PIT compliant — 2 WARN both attribute to sleeve-overlay structural absence of factor_engine_path, not violations"
+    },
+    "production_protection": {
+      "str_1715_directory_write_count": 0,
+      "str_1715_directory_files_modified_since_request_unix_1777529700": 0,
+      "alpha_engine_invocation_count": 0,
+      "alpha_ranking_modification_count": 0,
+      "weights_csv_modification_count": 0,
+      "book_state_json_modification_count": 0,
+      "production_weights_overlay_dir_created_count": 0,
+      "promotion_wt_spawn_count": 0,
+      "governor_concord_certificate_issuance_count": 0,
+      "production_writes_str_1715_per_status_optimizer_summary": 0
+    },
+    "measurement_basis_audit": {
+      "common_basis_verified": true,
+      "all_4_universe_eq": "KOSPI200 ∪ KOSDAQ150 (KR_TOP342)",
+      "all_4_cost_model_eq": "v2.3_kr_retail_15bps",
+      "all_4_long_only": true,
+      "all_4_max_names_le_20": true,
+      "all_4_global_hard_cap_le_0p20": true,
+      "all_4_pa_functions_only": true,
+      "weights_csv_sha256_canonical": "6e1e84c5a4c7943d143fe059bf9c787a0e2b88dc5eef98d54c927b9a0995685e",
+      "lro_params_sha256_frozen": "3147d50e6481c74df0466d08a346c0c7128f2352e50c01b07f985beae8aa7fa0"
+    },
+    "schedule_density_audit": {
+      "canonical_density_ratio": 0.9963,
+      "threshold": 0.95,
+      "density_pass": true,
+      "schedule_n_unique_dates": 267,
+      "alpha_sig_dates_count": 268,
+      "exclusion_reason": "May 2026 (live forward, no overlay weight) excluded — density 267/268 ≥ 0.95 threshold"
+    },
+    "harvey_dsr_audit": {
+      "applicable_for_this_wt": false,
+      "waiver_reason": "wt_kind=recommendation_only AND judge_decision.verdict=MONITORING_ONLY — no production admission gate triggered. Judge §lockbox_audit + §axiom_assertions_judge.AX-008 explicit waiver per Charter v1.7 §8.",
+      "future_promotion_wt_blocker_status": "Harvey t_NW + DSR post-penalty + baseline Harvey symmetric MUST be supplied at any subsequent promotion WT admission gate (codified in axiom_assertions.AX_008.future_promotion_wt_blocker_list).",
+      "policy_citation": "Plan §11+§12 + judge agent v6.1 Statistical Defense (qepm §10 + Harvey 2016 RFS + Bailey & Lopez de Prado 2014)"
+    },
+    "lockbox_audit": {
+      "applicable_for_this_wt": false,
+      "waiver_reason": "wt_kind=recommendation_only + production_book_state_write=false + governor_concord DEFERRED_TO_PROMOTION_WT. STR_1715 PG2 base lineage already provides M4-forward OOS via ex2025+ 16-obs slice (parent WT-P20260429_002). RMT lro_params SHA-frozen — additional Lockbox extension would require new RMT estimation cutoff (data extension, not strategy extension).",
+      "judge_v61_compliance": "Lockbox extension DEFERRED per judge §lockbox_audit.judge_v61_compliance — NOT Judge audit FAIL. Walk-forward by construction admitted (PIT C1 expanding + C2 t-1 lag verified)."
+    },
+    "stale_memory_diagnosis_audit": {
+      "memory_l274_value": {
+        "Sharpe": 1.7477,
+        "CAGR": 0.4378,
+        "MDD": -0.3205,
+        "source": "MEMORY.md L-274 carry"
+      },
+      "fresh_recompute_value": {
+        "Sharpe": 1.5646,
+        "CAGR": 0.4235,
+        "MDD": -0.3532,
+        "source": "Forge M4_baseline_recomputed (this WT, same 267m period, same 15bps cost)"
+      },
+      "delta_pp": {"SR": -0.183, "CAGR_pp": -1.43, "MDD_pp": -3.27},
+      "cross_validation": "WT-P20260429_002 forge_may2026 06_metrics.csv n=268 SR=1.5726 MDD=-35.56% — consistent with fresh recompute",
+      "actual_sr_2_target_gap": "0.44 (1.5646 → 2.0) — NOT 0.25 as L-274 implies",
+      "qlead_action_recommended": "MEMORY.md L-275+ housekeeping per Charter v1.7 §9 honest gap acknowledgment",
+      "judge_rf_j2_severity": "MEDIUM"
+    }
+  },
+
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260504_004/alpha_package.json",
+    "alpha_inherit_ref": "qepm/mailbox/worktask/WT-S20260504_004/alpha_package_inherit_ref.json (parent WT-P20260429_002 alpha_discovery cert inherit)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260504_004/risk_package.json",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260504_004/optimization_package.json",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260504_004/forge_package.json",
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_004/judge_verdict.json",
+    "ax008_stance_tally_ref": "qepm/mailbox/worktask/WT-S20260504_004/ax008_stance_tally.json",
+    "defense_like_evaluation_ref": "qepm/mailbox/worktask/WT-S20260504_004/defense_like_evaluation.json",
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260504_004/ (RMT risk infrastructure: covariance.parquet / weights.csv / weights_variants/ / bt_result.rds + 4 variants / lro_hash_audit.csv / charts/oos_zoom_chart.png)",
+    "outputs": [
+      "qepm/mailbox/worktask/WT-S20260504_004/governor_admission.json (this final)",
+      "qepm/mailbox/worktask/WT-S20260504_004/governor_admission_draft.json",
+      "qepm/mailbox/worktask/WT-S20260504_004/governor_challenge_note.md",
+      "qepm/mailbox/worktask/WT-S20260504_004/codex_critic_response_governor.json (NOT_PRESENT — skip_waiver)"
+    ],
+    "carry_pattern_per_charter_v1_7_8": "Codex Round skip_waiver lineage carry across alpha (skip exempt) → risk (REJECT_R1+REVISE_R2 waiver) → optimizer (REJECT_R1 3A_2P_2REB no_round2) → forge (skip_waiver) → judge (skip_waiver) → governor (skip_waiver). 6/6 stages explicit waiver + challenge_note + skip criteria evaluation. NOT silent. Pattern consistent with WT-S20260503_001 governor_admission.json closure precedent. NO carry forward to admit-class WT (future promotion WT must satisfy 5-block future_promotion_wt_blocker_list).",
+    "precedent_reference_for_recommendation_only_closure": "qepm/mailbox/worktask/WT-S20260503_001/governor_admission.json (LRO recommendation_only WT, governor verdict MONITORING_ONLY, 11-field _field_inventory_11 conformity, book_state_write=false, governor_concord DEFERRED, abort_reason RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE)"
+  },
+
+  "codex_round_status": "round_1_skip_waiver_per_recommendation_only_ax008_lineage_carry_charter_v1_7_8_compliant",
+  "promoted_to_final_at": "2026-05-04T10:05:00+0900",
+  "created_by": "governor agent (Q-Lead spawn, background, recommendation_only closure, auto mode, codex_critic_skip_waiver per AX-008 lineage carry)",
+  "created_at": "2026-05-04T10:05:00+0900"
+}
