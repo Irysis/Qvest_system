@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-S20260504_006_S1_20260504",
+  "strategy_id": "WT-S20260504_006_S1",
+  "strategy_name": "IPCA Latent Hedge (Round 2) — S1",
+  "strategy_family": "statistical_factor_hedge_ipca",
+  "signal_description": "STR_1715 Iter5 alpha + Iter31 weighting + IPCA characteristics-instrumented latent factor hedge (β_i,t = Γ_β z_i,t, Kelly-Pruitt-Su 2020 JFE)",
+  "universe_rule": "KOSPI200 ∪ KOSDAQ150 (intersection), liquidity ≥ 2e8 KRW 20d avg",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "first_calendar_day_of_month",
+  "execution_date_rule": "next_trading_day_after_signal",
+  "weighting_method": "linear_tilt_to_penalty (λ=1.5, φ=3, ub=0.20) [+ IPCA hedge QP for IPCA variants]",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "no_cash",
+  "cost_model": "v2.3_kr_retail_15bps (one-way)",
+  "missing_data_rule": "skip_ticker (forward-fill price within ticker)",
+  "risk_controls": "IPCA latent factor exposure constraint (γ=1000, eps_diag=0.0001, K=5, L=12)",
+  "lookahead_prevention": "PIT C1-C15 enforced via load_month_factors + Z_Score_Aligned. Codex C2 ACCEPTED: Gamma_beta IS-frozen 2024-06-30; OOS bona-fide period = 2024-07~2026-05.",
+  "survivorship_bias_control": "RAWDATA includes delisted; weights from optimizer based on point-in-time alpha"
+}
