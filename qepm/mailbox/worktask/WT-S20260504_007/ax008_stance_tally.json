@@ -1,0 +1,117 @@
+{
+  "task_id": "WT-S20260504_007",
+  "ax_axiom": "AX-008 Verification Triangulation",
+  "axiom_text": "Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수.",
+  "round": "Round_3_pure_alpha_preserving_overlay",
+  "predecessor_wt": "WT-S20260504_006 (IPCA Latent Hedge MONITORING_ONLY)",
+  "minimum_pass_sources_required": 2,
+  "tally_entries": [
+    {
+      "source": "alpha (inherited)",
+      "round": "inherited_from_parent",
+      "stance": "INHERITED_PASS",
+      "rationale": "alpha_inherited=true, parent_alpha_package_sha=34cc99fb..., no_new_alpha=true, cert_exempt=alpha_discovery (sizing_only WT). STR_1715 PG2 admit (L-274) production reference로 alpha_lineage 신뢰.",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_007/alpha_package_inherit_ref.json",
+      "codex_round_status": "inherited_no_new_codex_required",
+      "counts_as_pass_source_for_AX_008": false,
+      "judge_disposition": "INHERITED_NOT_NEW_PASS_FOR_TRIANGULATION"
+    },
+    {
+      "source": "risk-research",
+      "round": 1,
+      "stance": "PASS_WITH_WAIVER",
+      "rationale": "AR Pure Risk Overlay K=5/W=252 selected with documented Kritzman 2011 default rationale + KR universe diagnostics + 268m AR/eigenvalue/β paths emitted + alpha invariance mathematical proof + LRO SHA frozen ad3d44417b... Codex round 1 spawn waiver pre-emptively invoked per LRO Round 1 + WT-001~006 cumulative pattern (50%+ codex timeout).",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_007/challenge_note.md (Section: risk Round 3)",
+      "codex_round_status": "skip_waiver_pre_emptive_per_LRO_pattern",
+      "counts_as_pass_source_for_AX_008": false,
+      "judge_disposition": "WAIVER_NOT_FORGE_INDEPENDENT_RECON"
+    },
+    {
+      "source": "optimizer-research",
+      "round": 1,
+      "stance": "PASS_classified_response",
+      "rationale": "AR Pure Risk Overlay sizing_only — 4 variants (S0_baseline + S1_threshold + S2_linear + S3_sigmoid) × 268 dates × 19 rows = 5092 rows stock-level weights.csv emitted. Hard constraints PASS (max_names=20, weight_bounds [0, 0.20], Σw=1, long_only). Schedule density 1.0. Sleeve-only TO 9-16% (under 600 cap when measured isolated). Codex round 1 stance REJECT no veto (4 FIXED_v2 + 2 REBUTTAL + 1 PARTIAL).",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_007/optimizer_challenge_note.md",
+      "codex_round_status": "round1_REJECT_4_FIXED_2_REBUTTAL_1_PARTIAL",
+      "counts_as_pass_source_for_AX_008": false,
+      "judge_disposition": "OPTIMIZER_NOT_INDEPENDENT_FORGE_VERIFICATION"
+    },
+    {
+      "source": "Forge_v2_posthoc_supplementary",
+      "role": "forge_measurement_3rd_source",
+      "round": "v2_posthoc_after_v1_static_snapshot_diagnosis",
+      "stance": "PASS_FORGE_MEASUREMENT_MATH_EQUIVALENT",
+      "rationale": "Q-Lead post-hoc baseline correction applies β_t directly to STR_1715 PG2 ret_net (03_period_returns.csv). Reproduces L-274 SR within 0.029 (1.7186 vs 1.7477; 263m vs 268m offset). Mathematically equivalent for Pure Risk Overlay paradigm: r_overlay,t = β_{t-1} · Σ_i w_PG2,i,t · r_i,t = scalar identity. Closed-form proof of metric equivalence under scalar β; no future leakage; AR_t computed strictly t-1 close.",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_007/forge_package_v2_posthoc_supplementary.json + posthoc_overlay_result.json + posthoc_summary.csv",
+      "evidence_summary": [
+        "Reproduces L-274 SR within 0.029 (period offset rounding)",
+        "Alpha invariance mathematical proof + 268/268 runtime audit S1 + S3 (0 violations)",
+        "PIT compliance: AR_t from t-1 close strictly; β_t applied at t open",
+        "263m walk-forward 2004-02 to 2026-05",
+        "PerformanceAnalytics standard functions (table.AnnualizedReturns + maxDrawdown + SortinoRatio + CalmarRatio)",
+        "hard_constraints (PURE_OVERLAY_INHERITED_FROM_PG2): max_names=20, [0,0.20], Σw=1, long-only PASS"
+      ],
+      "counts_as_pass_source_for_AX_008": true,
+      "judge_disposition": "ACCEPT_AS_INDEPENDENT_PASS_SOURCE_FOR_METRICS_NOT_FOR_FULL_PURE_FUNCTION_RECON"
+    },
+    {
+      "source": "Forge_v1_static_snapshot_baseline",
+      "role": "forge_measurement_v1_diagnosed",
+      "round": "v1_failed_baseline",
+      "stance": "FAIL_BASELINE_INVALID",
+      "rationale": "Forge v1 used static May-2026 18-stock snapshot held constant 268m → reproduces neither STR_1715 PG2 walk-forward nor M4 cash overlay → S0 CAGR 19.56%/SR 0.85/MDD -55.86% vs L-274 actual 43.78%/1.7477/-32.05% (~24pp/0.87 SR divergence). Diagnosed and superseded by v2 posthoc.",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_007/forge_package.json (v1 retained as evidence)",
+      "evidence_summary": [
+        "S0 CAGR 19.56% / SR 0.85 / MDD -55.86% diverges from L-274 by ~24pp/0.87",
+        "weights.csv 268 dates but only 1 unique non-cash stock-weight profile (single-snapshot disguised as walk-forward; Codex C1)",
+        "alpha_scores.parquet schema violation: 268 rows with Date/weight_str1715/weight_cash/note instead of Date×Ticker×score_* (Codex C2)",
+        "8 tickers weighted before first RAWDATA date = 836 invalid weighted rows (Codex C3)"
+      ],
+      "counts_as_pass_source_for_AX_008": false,
+      "judge_disposition": "REJECT_BASELINE_INVALID_SUPERSEDED_BY_V2_POSTHOC"
+    },
+    {
+      "source": "Codex_GPT5.5_qepm_critic_round1_judge_critic",
+      "role": "codex_critic_review_judge_phase",
+      "round": 1,
+      "stance": "REJECT_round1_THEN_PARTIAL_BY_JUDGE_DISPOSITION",
+      "rationale": "Codex Round 1 stance REJECT with 7 concerns (4 HIGH J1/J2/J3/J4 + 3 MED J5/J6/J7); gate_verdict_audit all FAIL gates 0~6; verification_triangulation.ax_008_status=FAIL; agree_with_claude=false; echo_chamber_risk=HIGH. Judge Self-disposition (judge_challenge_note.md) per Charter §8: 5 ACCEPT (J1 AX-008 floor + J3 Harvey absent + J4 turnover breach + J5 lockbox subdecomp + J7 stage_artifacts) + 2 PARTIAL_REBUTTAL (J2 math equivalence ACCEPT but artifact GAP + J6 AR not defense factor REBUTTAL but crisis-state decomp PARTIAL). Verdict downgraded CONDITIONAL_PASS → MONITORING_PLUS. Codex's REJECT cannot be unilaterally upgraded to PASS by Judge reinterpretation; counted as PARTIAL (0.5).",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_007/codex_critic_response_judge.json",
+      "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_007/judge_challenge_note.md",
+      "evidence_summary": [
+        "7 critical concerns: J1 AX-008 1.5/3 floor (HIGH), J2 posthoc vs Pure Function (HIGH), J3 Harvey 5-spec absent (HIGH), J4 turnover hard cap breach (HIGH), J5 lockbox subdecomp missing (MED), J6 AX-001 v2 tail relevance (MED), J7 stage_artifacts gaps (MED)",
+        "Codex weakest_assumption: 'Q-Lead posthoc beta-scaling of aggregate STR_1715 monthly returns is mathematically equivalent to PIT-compliant stock-level Forge-validated walk-forward overlay'",
+        "Judge disposition: 5 ACCEPT + 2 PARTIAL_REBUTTAL",
+        "Q-Lead escalate triggered (per AX-008 1.5/3 below 2.0 floor)"
+      ],
+      "counts_as_pass_source_for_AX_008": false,
+      "counts_as_partial_pass_source": true,
+      "partial_credit_value": 0.5,
+      "judge_disposition": "PARTIAL_PASS_NOT_FULL_PASS"
+    },
+    {
+      "source": "Architect",
+      "role": "third_source_independent_verification",
+      "round": "not_invoked",
+      "stance": "NOT_INVOKED",
+      "rationale": "Architect 3rd-source verification not invoked for recommendation_only WT in 6 prior trials (WT-001~006); inherits same waiver pattern. Promotion-WT mandate.",
+      "artifact_path": "n/a",
+      "counts_as_pass_source_for_AX_008": false,
+      "judge_disposition": "NOT_INVOKED_PROMOTION_WT_MANDATE_DEFERRED"
+    }
+  ],
+  "axiom_pass_count_summary": {
+    "Forge_v2_posthoc_PASS": 1.0,
+    "Codex_PARTIAL": 0.5,
+    "Architect_NOT_INVOKED": 0.0,
+    "total_pass_score": 1.5,
+    "minimum_required": 2.0,
+    "axiom_pass_status": "FAIL_BELOW_FLOOR",
+    "judge_action_taken": "Q-Lead_escalate_triggered (per AX-008 process); verdict downgraded CONDITIONAL_PASS → MONITORING_PLUS; promotion-WT must invoke Architect"
+  },
+  "ax_008_overall_status": "FAIL_PARTIAL_1.5_OF_3",
+  "ax_008_judge_action": "MONITORING_PLUS verdict registered; recommendation-only artifact retain; book_state mutation deferred (no admission write); promotion to production sizing requires future WT with Architect 3rd-source PASS + Codex 2nd round PASS",
+  "as_of_date": "2026-05-04",
+  "created_at": "2026-05-04T17:45:00+09:00",
+  "created_by": "judge_agent_opus_4_7"
+}

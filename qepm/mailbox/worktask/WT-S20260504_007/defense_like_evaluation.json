@@ -1,0 +1,101 @@
+{
+  "task_id": "WT-S20260504_007",
+  "evaluation_axis": "AX-001 v2 EXEMPT_FROM_AXIOM (pure overlay, NOT defense factor) + Codex_J6_PARTIAL_REBUTTAL crisis-state realized return decomposition supplement",
+  "axiom_applicability": "EXEMPT",
+  "exemption_rationale": "AX-001 v2 axiom_text (qepm/memory/axioms/active/AX-001.json): '방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio).' Absorption Ratio is NOT a defense-style alpha factor. It is a statistical systemic-risk indicator (Kritzman-Page-Turkington 2011 FAJ §3) used as scalar gross-exposure modulator. No factor signal, no factor exposure, no IC. The conditional-performance evaluation framework (crisis_alpha + bad/normal IC ratio) does not directly apply to a scalar β overlay.",
+  "codex_j6_partial_rebuttal": {
+    "stance": "PARTIAL_REBUTTAL",
+    "rebuttal_portion": "AR overlay is not a defense factor — AX-001 v2 axiom semantically does not apply. REBUTTAL of full AX-001 v2 application.",
+    "accept_portion": "Codex's underlying methodological concern (verdict's central claim is tail/MDD relief therefore crisis-state conditional decomposition should be reported) is valid. ACCEPT supplemental crisis decomposition.",
+    "supplemental_action": "Crisis-state realized cumulative returns computed for S0/S1/S2/S3 across 4 stress windows (GFC / Vol_2018Q4 / COVID / Stagflation_2022) using posthoc β · r identity. Full results below."
+  },
+  "crisis_state_realized_returns_decomposition": {
+    "method": "cum_ret(β_lag · r_PG2) per crisis window; β_lag = β_{t-1} (PIT); cum returns multiplicative compound",
+    "data_source": {
+      "STR_1715_PG2_returns": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv (ret_net column)",
+      "beta_t_mapping": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv (3 mappings × 268 dates)",
+      "beta_lag_construction": "shift(β, 1, fill=1.0) — same 1-period lag as posthoc_overlay_apply.R lines 38-40"
+    },
+    "GFC_2008_09_to_2009_03": {
+      "n_months": 7,
+      "n_months_with_beta_signal": 7,
+      "avg_beta_threshold": 0.486,
+      "avg_beta_linear": 0.078,
+      "avg_beta_sigmoid": 0.134,
+      "S0_baseline_cum_ret": -0.3696,
+      "S1_threshold_cum_ret": -0.1483,
+      "S2_linear_cum_ret": 0.0108,
+      "S3_sigmoid_cum_ret": -0.0468,
+      "S1_threshold_alpha_pp_vs_S0": 22.13,
+      "S2_linear_alpha_pp_vs_S0": 38.04,
+      "S3_sigmoid_alpha_pp_vs_S0": 32.28,
+      "verdict": "AR_OVERLAY_TAIL_DEFENSE_VALIDATED — All 3 variants deliver substantial GFC defense; S1_threshold cuts cum loss from -36.96% to -14.83% (+22.13pp alpha) without modifying alpha composition. AR signal correctly de-risked during GFC systemic concentration (avg_β_threshold=0.486 ⇒ ~half cash exposure)."
+    },
+    "Vol_2018Q4": {
+      "n_months": 3,
+      "n_months_with_beta_signal": 3,
+      "avg_beta_threshold": 1.0,
+      "avg_beta_linear": 0.579,
+      "avg_beta_sigmoid": 0.448,
+      "S0_baseline_cum_ret": -0.1078,
+      "S1_threshold_cum_ret": -0.1078,
+      "S2_linear_cum_ret": -0.0726,
+      "S3_sigmoid_cum_ret": -0.0521,
+      "S1_threshold_alpha_pp_vs_S0": 0.0,
+      "S2_linear_alpha_pp_vs_S0": 3.52,
+      "S3_sigmoid_alpha_pp_vs_S0": 5.57,
+      "verdict": "AR_OVERLAY_VOL_2018Q4_BORDERLINE — S1 threshold β=1.0 (no de-risk) suggests AR_t did not exceed q90 trigger during this idiosyncratic KR drawdown. S2/S3 (continuous mappings) provide marginal defense. As predicted in challenge_note risk Section, single-cell idiosyncratic episode is a structural limitation of systemic-risk indicator."
+    },
+    "COVID_2020_02_to_2020_04": {
+      "n_months": 3,
+      "n_months_with_beta_signal": 3,
+      "avg_beta_threshold": 0.9,
+      "avg_beta_linear": 0.296,
+      "avg_beta_sigmoid": 0.339,
+      "S0_baseline_cum_ret": -0.2512,
+      "S1_threshold_cum_ret": -0.2087,
+      "S2_linear_cum_ret": -0.0570,
+      "S3_sigmoid_cum_ret": -0.0808,
+      "S1_threshold_alpha_pp_vs_S0": 4.25,
+      "S2_linear_alpha_pp_vs_S0": 19.42,
+      "S3_sigmoid_alpha_pp_vs_S0": 17.04,
+      "verdict": "AR_OVERLAY_COVID_DEFENSE_VALIDATED — S1 threshold β_avg 0.9 (mild de-risk) +4.25pp; S2/S3 continuous mappings achieve +19.4/+17.0pp. Continuous mappings react faster to COVID-onset systemic concentration spike than discrete threshold."
+    },
+    "Stagflation_2022_01_to_2022_10": {
+      "n_months": 10,
+      "n_months_with_beta_signal": 10,
+      "avg_beta_threshold": 0.79,
+      "avg_beta_linear": 0.224,
+      "avg_beta_sigmoid": 0.299,
+      "S0_baseline_cum_ret": -0.1197,
+      "S1_threshold_cum_ret": -0.0955,
+      "S2_linear_cum_ret": -0.0238,
+      "S3_sigmoid_cum_ret": -0.0401,
+      "S1_threshold_alpha_pp_vs_S0": 2.42,
+      "S2_linear_alpha_pp_vs_S0": 9.58,
+      "S3_sigmoid_alpha_pp_vs_S0": 7.96,
+      "verdict": "AR_OVERLAY_STAGFLATION_DEFENSE_VALIDATED — S1 +2.42pp marginal; S2/S3 +9.6/+8.0pp. AR signal correctly elevated during 2022 inflation-rate spike + KR dollar weakening."
+    }
+  },
+  "crisis_alpha_summary": {
+    "metric": "tail_defense_alpha = sum across 4 crises of (overlay_cum_ret - S0_cum_ret) in pp",
+    "S1_threshold_total_tail_alpha_pp": 28.80,
+    "S2_linear_total_tail_alpha_pp": 70.56,
+    "S3_sigmoid_total_tail_alpha_pp": 62.85,
+    "interpretation": "S1 threshold provides robust GFC defense (+22pp) + COVID defense (+4pp) + Stagflation defense (+2pp) with no Vol_2018Q4 trigger. S2/S3 continuous mappings provide stronger crisis defense at cost of normal-regime SR (degraded -0.19/-0.17). S1 threshold is the optimal trade-off (Sharpe IMPROVED + GFC defense substantial)."
+  },
+  "ax_001_v2_conditional_metrics_pseudo_application": {
+    "note": "AR is not a factor; below are pseudo-conditional metrics for completeness per Codex J6 PARTIAL.",
+    "crisis_alpha_validated": true,
+    "core_relative_mdd_completion": "S0 -41.69% → S1 -29.53% (+12.16pp); S3 -19.74% (+21.95pp); both substantial improvements",
+    "bad_normal_ic_ratio_n_a": "AR is not an IC-style signal; not applicable",
+    "core_secondary_role_classification": "tail_overlay_secondary (NOT primary alpha contributor; gross-exposure scalar only)"
+  },
+  "axiom_assertion": "AX-001_v2_EXEMPT_FROM_AXIOM_AS_PURE_OVERLAY_NOT_DEFENSE_FACTOR + supplemental_crisis_decomposition_documented_per_Codex_J6_PARTIAL",
+  "judge_disposition": "PARTIAL_REBUTTAL_DOCUMENTED — AX-001 v2 not applicable to scalar β overlay; supplemental crisis-state realized returns nevertheless emit as evidence of tail-defense mechanism",
+  "evidence_path_judge": "qepm/mailbox/worktask/WT-S20260504_007/defense_like_evaluation.json (this file)",
+  "raw_decomposition_evidence_path": "/tmp/crisis_decomp.json (computed by judge)",
+  "as_of_date": "2026-05-04",
+  "created_at": "2026-05-04T17:50:00+09:00",
+  "created_by": "judge_agent_opus_4_7"
+}

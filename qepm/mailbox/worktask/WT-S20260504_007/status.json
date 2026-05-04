@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_007",
-  "current_phase": "FORGE_DONE",
-  "updated_at": "2026-05-04T16:41:34+09:00",
+  "current_phase": "JUDGE_PASSED",
+  "updated_at": "2026-05-04T17:55:00+09:00",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -43,6 +43,16 @@
       "phase": "FORGE_DONE",
       "at": "2026-05-04T16:41:34+09:00",
       "note": "4 variants backtested. Primary canonical=S0_baseline. Pure Function PASS (hash audit start=end). LRO SHA match. Alpha invariance 0 VIOLATION across all 4 variants. S0 SR=0.8469 / CAGR=0.1956 / MDD=0.5586. Decision: NONE of 3 overlay variants PASS request.json criteria (CAGR floor 20% violated). Same-period delta vs S0: S1 -3.21pp CAGR for -18.79pp MDD; S2 -9.59pp/-28.36pp; S3 -10.76pp/-32.87pp. Codex: skip_waiver_invoked_per_LRO_pattern."
+    },
+    {
+      "phase": "FORGE_V2_POSTHOC_SUPPLEMENTARY",
+      "at": "2026-05-04T17:05:00+09:00",
+      "note": "Q-Lead post-hoc baseline correction (Forge v1 used static May-2026 snapshot — invalid baseline). Apply β_t · r_PG2,t directly to STR_1715 PG2 ret_net (03_period_returns.csv). Mathematically equivalent for Pure Risk Overlay. Reproduces L-274 SR within 0.029. S0 CAGR 45.64% / SR 1.7186 / MDD -41.69%. S1_threshold_step CAGR 39.34% / SR 1.7758 IMPROVED / MDD -29.53% (-12.16pp). S3_sigmoid CAGR 21.24% / SR 1.5479 / MDD -19.74% PASS absolute -25%."
+    },
+    {
+      "phase": "JUDGE_PASSED",
+      "at": "2026-05-04T17:55:00+09:00",
+      "note": "Judge verdict MONITORING_PLUS for S1_threshold + S3_sigmoid; MONITORING_ONLY for S2_linear. Codex Round 1 REJECT (4 HIGH + 3 MED) Self-disposition: 5 ACCEPT + 2 PARTIAL_REBUTTAL per Charter §8 No Silent Override. Verdict downgraded CONDITIONAL_PASS → MONITORING_PLUS due to: (1) AX-008 1.5/3 below 2.0 floor (Forge v2 PASS + Codex PARTIAL + Architect NOT_INVOKED); (2) Harvey 5-spec absent + DSR not rigorous; (3) total turnover 759%/yr breach hurdle 600%/yr cap. WT-007 differentiator: First overlay across 7 trials to deliver Sharpe IMPROVEMENT (+0.0572 S1) + MDD reduction (-12.16pp S1) + alpha rank correlation == 1.0 strict (mathematical+runtime 268/268). Recommendation_only artifact retain; book_state mutation deferred. Promotion-WT must invoke Architect 3rd-source + full Harvey 5-spec + lockbox-only subdecomp + total-turnover compliance."
     }
   ],
   "alpha_preservation_mandate": {
@@ -51,8 +61,16 @@
     "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance",
     "violation_action": "hard_FAIL_judge_verdict"
   },
-  "next_phase": "JUDGE_PASSED",
-  "next_actor": "judge",
+  "next_phase": "GOVERNOR_REJECTED",
+  "next_actor": "governor",
+  "judge_verdict_classification": "MONITORING_PLUS",
+  "judge_per_variant_verdict": {
+    "S1_threshold_step": "MONITORING_PLUS",
+    "S2_linear_band": "MONITORING_ONLY",
+    "S3_sigmoid_smooth": "MONITORING_PLUS_TAIL_OPTIMIZED"
+  },
+  "ax_008_status_at_judge": "FAIL_PARTIAL_1.5_OF_3",
+  "codex_round1_judge_status": "COMPLETED_REJECT_DISPOSITION_APPLIED",
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"

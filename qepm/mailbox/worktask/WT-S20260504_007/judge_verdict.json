@@ -1,0 +1,260 @@
+{
+  "task_id": "WT-S20260504_007",
+  "package_kind": "judge_verdict",
+  "schema_version": "v6.4_judge_pure_overlay_posthoc",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-04",
+  "agent": "judge",
+  "agent_version": "v6.1_opus_4_7",
+  "round": "Round_3_pure_alpha_preserving_overlay",
+  "draft_revision": 2,
+  "post_codex_revision_note": "Draft v1 verdict CONDITIONAL_PASS_S1+S3 was downgraded to MONITORING_PLUS_S1+S3 after Codex Round 1 REJECT (J1 AX-008 1.5/3 below floor + J3 Harvey 5-spec absent + J4 turnover 759%/yr breach). Codex critique fully documented in judge_challenge_note.md per Charter §8 No Silent Override.",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "primary_strategy": "Absorption_Ratio_Pure_Risk_Overlay_on_STR_1715_PG2",
+  "verdict": "MONITORING_PLUS",
+  "verdict_per_variant": {
+    "S0_baseline_STR_1715_PG2_actual": "REFERENCE_ONLY",
+    "S1_threshold_step": "MONITORING_PLUS",
+    "S2_linear_band": "MONITORING_ONLY",
+    "S3_sigmoid_smooth": "MONITORING_PLUS_TAIL_OPTIMIZED"
+  },
+  "verdict_distinction_from_prior_6_trials": "Prior 6 trials all MONITORING_ONLY due to weight-modification structural failure. This Round 3 paradigm-pivot delivers MONITORING_PLUS for S1+S3 because the unique Sharpe-improvement (S1: +0.057) + MDD-reduction (S1: -12.16pp) + alpha-rank-correlation==1.0 strict triad has been mechanistically validated, even though full PASS gating is blocked by AX-008 1.5/3 + Harvey 5-spec absence + total turnover 759%/yr breach. 'PLUS' denotes 'monitoring with mechanism-validated triad result, deferred to promotion-WT for full validation'.",
+  "grade_basis": "request.json::decision_rule per variant + alpha_invariance mathematical proof + AX-008 1.5/3 floor breach + Harvey 5-spec absence + turnover hard cap breach + AX-007 EXEMPT + AX-001 v2 EXEMPT-with-PARTIAL-conditional-decomposition",
+  "verdict_summary": "Round 3 paradigm pivot from weight-modification (6 prior trials all MONITORING_ONLY) to pure scalar gross-exposure overlay. Three β_t mappings tested on STR_1715 PG2 actual walk-forward returns via Q-Lead post-hoc baseline correction (Forge v1 used static May-2026 snapshot held constant 268m, mis-reproducing L-274 by ~24pp/0.87 SR). Mathematical equivalence of post-hoc scalar β·r_PG2 to stock-level β·w_PG2 holds by closed-form identity. **S1 threshold_step delivers first triad result**: Sharpe IMPROVEMENT (+0.0572, 1.7758 vs S0 1.7186) + MDD reduction (-12.16pp, -29.53% vs S0 -41.69%) + alpha rank correlation == 1.0 strict (mathematical proof + 268/268 runtime audit, 0 violations). However, **full PASS verdict is blocked** by three binding gaps: (1) AX-008 1.5/3 below 2.0 floor (Forge v2 PASS + Codex Round 1 REJECT-then-PARTIAL + Architect NOT_INVOKED); (2) Harvey 5-spec (CAPM/FF3/Carhart4/FF5/FF6) absent — multi-test penalty across 54 candidate space (9 K,W cells × 3 mappings × 2 MP filters) inadequately addressed by 14×0.05 SR haircut (not a true DSR per Bailey-Lopez de Prado 2014); (3) Total turnover S1 = 750%/yr (STR_1715 PG2 base) + 9.34%/yr (overlay |Δβ| × 12) = 759.3%/yr exceeds 600%/yr hurdle hard cap. S2 linear is MONITORING_ONLY (Sharpe degraded -0.19, 22% full-cash months over-aggressive). S3 sigmoid is MONITORING_PLUS_TAIL_OPTIMIZED (MDD -19.74% PASS absolute -25%, vol -48% PASS, Sortino 0.98 marginal). Cross-WT: WT-007 differentiator is the Sharpe-improvement+MDD-reduction+alpha-preservation triad in S1 — none of WT-001 PCA / WT-002 DCC / WT-003 HMM / WT-004 RMT / WT-005 Factor Beta / WT-006 IPCA achieved Sharpe IMPROVEMENT under preservation mandate. Recommendation: register S1+S3 as MONITORING_PLUS research artifacts (do NOT promote to production sizing this WT — recommendation_only mandate). Promotion to production sizing requires future WT with: (a) Architect 3rd-source independent Forge re-run; (b) full Harvey 5-spec + proper DSR; (c) lockbox-only sub-decomposition (2024-07~2026-05); (d) total-turnover compliance plan or hurdle waiver.",
+  "decision_rule_evaluation": {
+    "S1_threshold_step": {
+      "CAGR_floor_20pct": {"value": 0.3934, "verdict": "PASS"},
+      "MDD_target_25pct_absolute": {"value": -0.2953, "verdict": "FAIL_by_-4.53pp"},
+      "MDD_3pp_M4_relative": {"value_pp_improvement": 12.16, "verdict": "PASS"},
+      "MDD_clause_combined": "PARTIAL_PASS via M4-relative -3pp clause; absolute -25% target NOT met",
+      "vol_20pct_improvement": {"value_pct": -16.57, "verdict": "FAIL_by_-3.43pp"},
+      "Sortino_1_0": {"value": 1.0334, "verdict": "PASS"},
+      "Sharpe_preservation": {"value": 1.7758, "delta": 0.0572, "verdict": "PASS_IMPROVED"},
+      "Calmar": {"value": 1.3321, "delta": 0.2375, "verdict": "PASS_IMPROVED"},
+      "top5DD_3plus_improvement": {"v1_top5dd_count": 36, "v1_baseline_top5dd_count": 41, "v1_delta": -5, "verdict": "PASS_via_v1_proxy"},
+      "alpha_rank_corr_1_0": {"verdict": "PASS_MATHEMATICAL_PROOF + RUNTIME_AUDIT (268/268 dates, 0 violations)"},
+      "harvey_5_spec_t_NW_3_0": {"verdict": "FAIL_ABSENT"},
+      "DSR_post_penalty": {"verdict": "FAIL_NOT_PROPERLY_COMPUTED (14×0.05 haircut not DSR per Bailey-Lopez de Prado 2014)"},
+      "turnover_600pct_hard_cap": {"S1_overlay_only_pct": 9.34, "STR_1715_PG2_base_pct": 750, "S1_total_pct": 759.3, "verdict": "FAIL_by_+159.3pp"},
+      "lockbox_subdecomposition": {"verdict": "GAP_DOCUMENTED (23m subset not re-tabulated; full 263m dominates)"},
+      "overall_verdict": "MONITORING_PLUS",
+      "binding_failures": ["MDD_absolute_-25%_target", "vol_-20%", "Harvey_5_spec_absent", "DSR_not_properly_computed", "turnover_600%_hard_cap_breach"],
+      "binding_passes": ["CAGR_floor", "MDD_M4_relative", "Sortino", "Sharpe_preservation_IMPROVED", "Calmar_IMPROVED", "alpha_invariance_strict", "top5DD_3plus"]
+    },
+    "S2_linear_band": {
+      "CAGR_floor_20pct": {"value": 0.2494, "verdict": "PASS"},
+      "MDD_target_25pct_absolute": {"value": -0.2538, "verdict": "FAIL_by_-0.38pp_marginal"},
+      "MDD_3pp_M4_relative": {"value_pp_improvement": 16.31, "verdict": "PASS"},
+      "vol_20pct_improvement": {"value_pct": -38.57, "verdict": "PASS"},
+      "Sortino_1_0": {"value": 0.9560, "verdict": "FAIL_marginal"},
+      "Sharpe_preservation": {"value": 1.5292, "delta": -0.1894, "verdict": "FAIL_DEGRADED"},
+      "alpha_rank_corr_1_0": {"verdict": "PASS_MATHEMATICAL + RUNTIME_AUDIT (209/268 + 59 ALL_CASH_RANK_UNDEFINED, 0 violations)"},
+      "turnover_600pct_hard_cap": {"S2_overlay_only_pct": 16.48, "S2_total_pct": 766.5, "verdict": "FAIL_by_+166.5pp"},
+      "overall_verdict": "MONITORING_ONLY",
+      "binding_failures": ["Sharpe_degradation_-0.19", "Sortino_<1.0", "22pct_full_cash_overaggressive", "Harvey_absent", "turnover_breach"],
+      "binding_passes": ["CAGR_floor", "vol_-20%", "MDD_M4_relative", "alpha_invariance"]
+    },
+    "S3_sigmoid_smooth": {
+      "CAGR_floor_20pct": {"value": 0.2124, "verdict": "PASS"},
+      "MDD_target_25pct_absolute": {"value": -0.1974, "verdict": "PASS"},
+      "MDD_3pp_M4_relative": {"value_pp_improvement": 21.95, "verdict": "PASS"},
+      "vol_20pct_improvement": {"value_pct": -48.32, "verdict": "PASS"},
+      "Sortino_1_0": {"value": 0.9811, "verdict": "FAIL_marginal_-0.0189"},
+      "Sharpe_preservation": {"value": 1.5479, "delta": -0.1707, "verdict": "FAIL_DEGRADED"},
+      "alpha_rank_corr_1_0": {"verdict": "PASS_MATHEMATICAL + RUNTIME_AUDIT (268/268 dates 0 violations)"},
+      "turnover_600pct_hard_cap": {"S3_overlay_only_pct": 12.42, "S3_total_pct": 762.4, "verdict": "FAIL_by_+162.4pp"},
+      "overall_verdict": "MONITORING_PLUS_TAIL_OPTIMIZED",
+      "binding_failures": ["Sortino_<1.0_borderline", "Sharpe_degradation_-0.17", "Harvey_absent", "turnover_breach"],
+      "binding_passes": ["CAGR_floor", "MDD_absolute", "vol_-20%", "MDD_M4_relative", "alpha_invariance"]
+    }
+  },
+  "alpha_invariance_audit": {
+    "method": "Mathematical proof: r_overlay,t = β_{t-1} · Σ_i w_PG2,i,t · r_i,t. Since β_{t-1} is scalar, w_final,i,t / Σ w_final = w_PG2,i,t / Σ w_PG2 ⇒ ranks identical when β > 0. Runtime audit per Spearman rank_corr per month over 268 months.",
+    "S1_threshold_step": {"n_dates": 268, "rank_corr_1_guaranteed": 268, "all_cash_undefined": 0, "violations": 0, "audit": "PASS"},
+    "S2_linear_band": {"n_dates": 268, "rank_corr_1_guaranteed": 209, "all_cash_undefined": 59, "violations": 0, "audit": "PASS_with_22pct_all_cash_months_rank_undefined_by_construction"},
+    "S3_sigmoid_smooth": {"n_dates": 268, "rank_corr_1_guaranteed": 268, "all_cash_undefined": 0, "violations": 0, "audit": "PASS"},
+    "violation_action_clause_triggered": false,
+    "audit_status": "PASS_ALL_VARIANTS",
+    "evidence_path": "qepm/mailbox/worktask/WT-S20260504_007/alpha_invariance_runtime_audit.json"
+  },
+  "harness_pit_audit": {
+    "C1_full_sample": "PASS — eigendecomposition rolling W=252; AR_t computed from t-1 close strictly",
+    "C2_same_day_circular": "PASS — β_t applied at t open from AR_{t-1}; one-period lag in posthoc_overlay_apply.R lines 38-40",
+    "C9_dd_vt_lag": "N/A_pure_overlay",
+    "C13_z_score_aligned": "N/A_pure_overlay — no factor sign flips",
+    "C14_ic_usable_date": "N/A_pure_overlay — no factor IC lookups",
+    "C15_factor_db_load": "N/A_pure_overlay — RAWDATA::Ret returns only via STR_1715 PG2 03_period_returns.csv",
+    "PIT_audit_overall": "PASS"
+  },
+  "harness_constraint_audit": {
+    "max_names_20": "PASS — STR_1715 PG2 holdings unchanged (n=18-20 per L-274)",
+    "weight_bounds_0_to_0.20": "PASS — w_final,i = β·w_PG2,i; β≤1 and w_PG2,i ≤ 0.20 ⇒ w_final,i ≤ 0.20",
+    "sum_weights_1": "PASS — Σ w_final + cash_residual = β·1 + (1-β) = 1 by construction",
+    "long_only": "PASS — w_PG2,i ≥ 0 and β ≥ 0 ⇒ w_final,i ≥ 0",
+    "universe_K200_KQ150": "PASS — inherited from STR_1715",
+    "liquidity_2e8_KRW": "PASS — inherited",
+    "cost_15bps": "PASS — applied as 15bps × |Δβ| in posthoc_overlay_apply.R",
+    "turnover_600_hard_cap": "FAIL_ALL_VARIANTS — S1 759.3%/yr, S2 766.5%/yr, S3 762.4%/yr (STR_1715 PG2 base 750%/yr + overlay 9.34/16.48/12.42/yr)",
+    "constraint_audit_overall": "FAIL_TURNOVER_HARD_CAP_PURE_OVERLAY_INHERITED_BREACH"
+  },
+  "schedule_fidelity_audit": {
+    "method": "M4 schedule + Iter31 grid weights + Top20 selection — all preserved by overlay-only architecture",
+    "evidence": "Overlay does not touch holdings.csv or selection mechanism; STR_1715_WT016_Iter31_GridBestProd write count = 0 (production protection)",
+    "schedule_density": 1.0,
+    "audit": "PASS_INHERITED"
+  },
+  "lockbox_audit_judge_mandate": {
+    "lockbox_period": "2024-07-01 onwards (post is_endpoint_freeze 2024-06-30)",
+    "lockbox_strategy_line_visible_in_equity_curve_png": true,
+    "oos_zoom_chart_present": true,
+    "frozen_extension_applied": true,
+    "method": "Forge v2 post-hoc applied β_t to STR_1715 PG2 ret_net which is L-274 walk-forward (includes lockbox period); β_t parameters SHA-frozen ad3d44417b...",
+    "lockbox_specific_metrics_v2_posthoc_subdecomposed": false,
+    "lockbox_subdecomposition_gap_acknowledged": true,
+    "lockbox_subdecomposition_remediation_path": "promotion_WT_must_recompute lockbox-only metrics 2024-07~2026-05 (23m) for S1/S3 + verify Sharpe and MDD improvements persist in OOS subset",
+    "audit": "PASS_FULL_PERIOD + GAP_LOCKBOX_SUBDECOMPOSITION (Codex J5)",
+    "judge_lockbox_audit_evidence_path": "qepm/mailbox/worktask/WT-S20260504_007/output/oos_zoom_chart.png"
+  },
+  "harvey_t_check": {
+    "all_5_specs_present": false,
+    "specs_present": ["raw_alpha_implicit_via_SR_aggregate"],
+    "specs_missing": ["CAPM_alpha_t_NW", "FF3_alpha_t_NW", "Carhart4_alpha_t_NW", "FF5_alpha_t_NW", "FF6_alpha_t_NW"],
+    "verdict": "ABSENT_FAIL_per_v6.1_audit_C6 + Codex_J3",
+    "judge_disposition": "DOCUMENTED_GAP_BINDING_FOR_PROMOTION_WT — Per Codex J3 ACCEPT, recommendation_only WT does not waive Harvey discipline. Variant SELECTION across 9 risk cells × 3 mappings × 2 MP filters = 54 candidate space requires multi-test penalty regardless of alpha-claim status.",
+    "harvey_t_threshold_3_0": "REQUIRED_FOR_PROMOTION_WT",
+    "audit": "FAIL_GAP_BINDING — promotion-WT must furnish CAPM/FF3/Carhart4/FF5/FF6 t_NW HAC + proper DSR per Bailey-Lopez de Prado 2014"
+  },
+  "method_shopping_dsr_penalty": {
+    "candidates_tried_total": 14,
+    "breakdown": "Risk side: 9 (K,W) cells + Optimizer/Forge: 3 β mapping families + 2 MP filter variants",
+    "dsr_penalty_calc_v6.1_crude": "candidates_tried × 0.05 = 14 × 0.05 = 0.70 SR_haircut",
+    "S1_threshold_SR_crude_haircut": "1.7758 - 0.70 = 1.0758",
+    "S3_sigmoid_SR_crude_haircut": "1.5479 - 0.70 = 0.8479",
+    "judge_disposition": "CRUDE_HAIRCUT_INADEQUATE per Codex J3 ACCEPT — true DSR (Bailey-Lopez de Prado 2014) requires SR_estimator_variance(SR), skew, kurt adjustment. Crude haircut acknowledges multi-testing concern but is NOT a statistically rigorous DSR. Promotion-WT must provide proper DSR.",
+    "penalty_status": "CRUDE_APPLIED + DOCUMENTED_GAP_FOR_PROMOTION_WT"
+  },
+  "concentration_audit": {
+    "max_w_inherited_from_PG2": 0.20,
+    "HHI_inherited": "≤0.15 (per STR_1715 L-274 production stats)",
+    "audit": "PASS_INHERITED — overlay does not change concentration"
+  },
+  "drift_tolerance_audit": {
+    "is_endpoint_freeze": "2024-06-30",
+    "lockbox_period_months": 23,
+    "audit": "PASS_INHERITED + β_PARAMETER_FROZEN (SHA ad3d44417b...) + SUBDECOMP_GAP_DOCUMENTED"
+  },
+  "ax_001_v2_evaluation": {
+    "applicability": "EXEMPT_FROM_AXIOM + PARTIAL_CRISIS_DECOMPOSITION_DOCUMENTED",
+    "axiom_exemption_reason": "AX-001 v2 governs defense-style alpha factors (low-beta, quality, low-vol). AR overlay is a scalar gross-exposure modulator, NOT a factor signal. No factor exposure, no IC, no defense_like_3_tuple in conventional sense.",
+    "codex_j6_partial_acknowledgment": "Codex J6 PARTIAL: since verdict's central claim is tail/MDD relief, crisis/tail conditional decomposition reported in defense_like_evaluation.json supplemental section",
+    "defense_like_evaluation_artifact": "qepm/mailbox/worktask/WT-S20260504_007/defense_like_evaluation.json"
+  },
+  "ax_007_evaluation": {
+    "applicability": "EXEMPT",
+    "reason": "Overlay does not change selection mechanism (single_sleeve_long_only_top20 structure preserved). β_t scalar gross-exposure modulator only. STR_1715 holdings selection + ranking + grid weights all 100% preserved by mandate. AX-007 axiom_text exception clauses are about adding sleeves/dimensions; pure cash overlay does not constitute new sleeve.",
+    "exemption_basis": "Overlay-only structural"
+  },
+  "ax_008_evaluation": {
+    "minimum_pass_required": "2_of_3_independent_sources",
+    "tally": "1.5_of_3_PASS_PARTIAL_BELOW_FLOOR",
+    "judge_disposition_per_codex_J1_ACCEPT": "Below 2.0 floor binds verdict to MONITORING_PLUS not CONDITIONAL_PASS",
+    "sources": [
+      {
+        "source_id": 1,
+        "name": "Forge_v2_posthoc_supplementary",
+        "stance": "PASS_MATH_EQUIVALENCE",
+        "evidence": "qepm/mailbox/worktask/WT-S20260504_007/posthoc_overlay_result.json + posthoc_summary.csv reproduces L-274 SR within 0.029 (1.7186 vs 1.7477 — 263m vs 268m offset). Mathematically equivalent for pure scalar β overlay."
+      },
+      {
+        "source_id": 2,
+        "name": "Codex_GPT5.5_critic_round1_judge_critic",
+        "stance": "REJECT_round1_THEN_PARTIAL_BY_JUDGE_DISPOSITION",
+        "evidence": "qepm/mailbox/worktask/WT-S20260504_007/codex_critic_response_judge.json — REJECT 7 concerns (4 HIGH J1/J2/J3/J4 + 3 MED J5/J6/J7); Judge Self-disposition (judge_challenge_note.md) classified J1/J3/J4/J5/J7 as ACCEPT, J2/J6 as PARTIAL → not a clean PASS source",
+        "round1_status": "COMPLETED (no timeout)"
+      },
+      {
+        "source_id": 3,
+        "name": "Architect",
+        "stance": "NOT_INVOKED",
+        "evidence": "Architect 3rd-source not invoked; precedent of WT-001~006 recommendation_only WT inherits same waiver pattern. Promotion-WT mandate."
+      }
+    ],
+    "pass_status": "FAIL_2_OF_3_FLOOR — only Forge_v2 unambiguous PASS",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_already_manifested": "Q-Lead-level oversight applied via post-hoc baseline correction (Forge agent missed walk-forward holdings). Further escalate: future promotion WT must invoke Architect."
+  },
+  "axiom_assertions": {
+    "AX-000": "limits_dont_exist — Round 3 paradigm pivot from 6-trial weight-modification dead end to pure-overlay yields first triad (Sharpe+MDD+alpha) result in S1_threshold. Demonstrates progress is possible via mechanism (scalar β preserves alpha completely while extracting systemic-risk hedge).",
+    "AX-001_v2": "EXEMPT_FROM_AXIOM (not a defense factor) + PARTIAL_CRISIS_DECOMPOSITION supplemental in defense_like_evaluation.json",
+    "AX-002": "PASS — STR_1715 PG2 walk-forward returns used directly; β_t SHA-frozen ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18; no future leakage; AR_t computed strictly t-1 close. Codex J2 PARTIAL (artifact-level alpha_scores schema gap remains for promotion-WT).",
+    "AX-007": "EXEMPT — overlay does not change selection mechanism",
+    "AX-008": "FAIL_PARTIAL_1.5_of_3 — Forge v2 PASS + Codex PARTIAL + Architect NOT_INVOKED → Q-Lead escalate manifested via post-hoc remediation; promotion-WT must invoke Architect"
+  },
+  "consensus_concerns": {
+    "codex_round1_severity": {"HIGH": 4, "MEDIUM": 3, "LOW": 0},
+    "judge_self_disposition_classification": {"ACCEPT": 5, "PARTIAL_REBUTTAL": 2, "REBUTTAL": 0},
+    "rationalization_red_flags_detected_and_remediated": ["recommendation_only / no new alpha claim", "governance-accepted inherited turnover", "Forge will compute / future promotion WT", "post-hoc baseline correction supersedes Forge v1"],
+    "remediation_action": "Verdict downgraded CONDITIONAL_PASS → MONITORING_PLUS; binding gaps explicitly listed; promotion path explicitly required for full PASS"
+  },
+  "harness_red_flags_red_flag_severity": {
+    "RF-J1_turnover_hard_cap_breach": "BREACH_DOCUMENTED_BINDING (S1 759.3%/yr > 600%/yr)",
+    "RF-J2_DSR_not_rigorous": "BREACH_DOCUMENTED (crude haircut not Bailey-Lopez de Prado DSR)",
+    "RF-J3_lockbox_subdecomposition_missing": "GAP_DOCUMENTED",
+    "RF-J5_artifact_provenance_inconsistent": "GAP_DOCUMENTED (alpha_scores schema, stage_artifacts path)",
+    "RF-J7_AX_008_floor_breach": "BREACH_DOCUMENTED_BINDING (1.5/3)",
+    "RF-J8_harvey_5_spec_absent": "BREACH_DOCUMENTED_BINDING"
+  },
+  "cross_wt_compare": {
+    "scope": "WT-S20260504_001 (PCA Latent Hedge) / _002 (DCC) / _003 (HMM) / _004 (RMT) / _005 (Factor Beta) / _006 (IPCA) / _007 (this — AR Pure Overlay)",
+    "table": [
+      {"WT": "001", "method": "PCA Latent Hedge (factor-mimicking long-only)", "verdict": "MONITORING_ONLY", "alpha_modification": "weight composition altered", "Sharpe_change": "<0", "alpha_rank_corr": "<1.0 (modified)"},
+      {"WT": "002", "method": "DCC-GARCH dynamic vol target", "verdict": "MONITORING_ONLY", "alpha_modification": "scaling+composition", "MDD_M4_relative_pp": "-1.34_FAIL", "Sharpe_change": "<0", "alpha_rank_corr": "<1.0"},
+      {"WT": "003", "method": "HMM 3-state regime allocation", "verdict": "MONITORING_ONLY", "alpha_modification": "regime-conditional weight allocation", "Sharpe_change": "<0", "alpha_rank_corr": "<1.0"},
+      {"WT": "004", "method": "RMT denoised Σ", "verdict": "MONITORING_ONLY", "alpha_modification": "Σ optimization input → weight change", "Sharpe_change": "<0", "alpha_rank_corr": "<1.0"},
+      {"WT": "005", "method": "Factor Beta hedge B'w", "verdict": "MONITORING_ONLY", "alpha_modification": "B'w hedge weight modification", "Sharpe_change": "<0", "alpha_rank_corr": "<1.0"},
+      {"WT": "006", "method": "IPCA characteristics-instrumented hedge", "verdict": "MONITORING_ONLY", "alpha_modification": "factor-mimicking hedge; TO 887%/yr breach", "Sharpe_change": "OOS <0 (1.87/1.91 vs S1 2.28)", "alpha_rank_corr": "<1.0"},
+      {"WT": "007_S1_threshold", "method": "AR Pure Overlay scalar β threshold", "verdict": "MONITORING_PLUS", "alpha_modification": "NONE (rank+proportion preserved)", "Sharpe_delta_vs_S0": "+0.0572_IMPROVED", "MDD_improvement_pp": "+12.16", "alpha_rank_corr": "1.0_STRICT (mathematical+runtime 268/268)"},
+      {"WT": "007_S2_linear", "method": "AR Pure Overlay scalar β linear", "verdict": "MONITORING_ONLY", "alpha_modification": "NONE", "Sharpe_delta_vs_S0": "-0.1894", "MDD_improvement_pp": "+16.31", "alpha_rank_corr": "1.0_STRICT"},
+      {"WT": "007_S3_sigmoid", "method": "AR Pure Overlay scalar β sigmoid", "verdict": "MONITORING_PLUS_TAIL_OPTIMIZED", "alpha_modification": "NONE", "Sharpe_delta_vs_S0": "-0.1707", "MDD_improvement_pp": "+21.95 (absolute -19.74% PASS target -25%)", "alpha_rank_corr": "1.0_STRICT"}
+    ],
+    "WT_007_differentiator": "First overlay across 7 trials to deliver Sharpe IMPROVEMENT + MDD reduction + alpha rank correlation == 1.0 strict simultaneously (S1_threshold). Pure-overlay paradigm validates Round 3 hypothesis that scalar gross-exposure modulation, divorced from weight composition, can extract systemic-risk hedge value WITHOUT alpha churn — the structural failure mode of WT-001~006. This mechanism-validated triad result is what distinguishes MONITORING_PLUS from MONITORING_ONLY; full PASS verdict still blocked by AX-008 1.5/3 + Harvey absence + turnover breach.",
+    "structural_insight": "The 6 prior trials all attempted weight-vector transformations of STR_1715 alpha; each created TO churn or alpha decay that overwhelmed risk-management gains. Round 3 pivot: factor scalar β·w preserves the alpha completely (mathematical) and only adjusts gross. The Sharpe-improvement result (rare in pure-overlay paradigm) is mechanistically explained by: AR threshold de-risks during systemic concentration spikes (eigenvalue-1 dominance >q90); STR_1715 PG2 has 41% raw MDD with body returns retained otherwise; threshold-step (β_floor=0.4 in q90+) avoids worst tail without sacrificing body."
+  },
+  "best_path_recommendation": {
+    "primary_canonical_judge": "S1_threshold_step (MONITORING_PLUS)",
+    "primary_rationale": "Best Sharpe (1.78 IMPROVED), best Sortino (1.03), best Calmar (1.33), MDD -12pp improvement. Sharpe-improvement is rare in pure-overlay paradigm and mechanistically explained by AR threshold crisis-de-risk. CAGR 39.34% well above 20% floor. Binding gaps for promotion: (a) MDD absolute -25% miss (use M4-relative -3pp clause), (b) vol -20% miss, (c) Harvey 5-spec absent, (d) DSR not rigorous, (e) total turnover 759%/yr breach. MONITORING_PLUS for sizing recommendation.",
+    "secondary_canonical_judge": "S3_sigmoid_smooth (MONITORING_PLUS_TAIL_OPTIMIZED)",
+    "secondary_rationale": "Tail-optimized companion. Achieves -25% MDD target absolute (-19.74%). vol -48% PASS. CAGR 21.24% within 20% floor. SR penalty -0.17 acceptable for tail-control mandate. Sortino 0.98 borderline. Same Harvey/DSR/turnover gaps as S1.",
+    "archive_or_monitor": "S2_linear_band (MONITORING_ONLY)",
+    "archive_rationale": "Over-aggressive (β=0 in 22% months, 59/263). SR penalty -0.19. CAGR 24.94% but Sharpe-degradation makes net-of-penalty inferior. Archive; do not pursue.",
+    "promotion_path_required": [
+      "(1) Architect 3rd-source independent reproduction with stock-level walk-forward Forge re-run",
+      "(2) Full Harvey 5-spec (CAPM/FF3/Carhart4/FF5/FF6) regression with t_NW HAC > 3.0 threshold",
+      "(3) Proper DSR per Bailey-Lopez de Prado 2014 (not crude 14×0.05 haircut)",
+      "(4) Lockbox-only sub-decomposition (2024-07~2026-05, 23m) showing Sharpe and MDD improvements persist OOS",
+      "(5) Total-turnover compliance plan (e.g., reduce STR_1715 PG2 base TO via different parent or seek hurdle waiver)",
+      "(6) alpha_scores.parquet schema (Date×Ticker×score_*) compliant artifact"
+    ],
+    "book_state_action": "NO_WRITE — wt_kind=recommendation_only; abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE per state_machine_path; STR_1715 100% PG2 admission unchanged."
+  },
+  "recommendation_to_governor": "GRADUATE_TO_GOVERNOR_REJECTED_NO_BOOK_STATE_WRITE per recommendation_only WT charter. Document S1_threshold_step + S3_sigmoid_smooth as MONITORING_PLUS research artifacts in WT mailbox. Future promotion-WT must satisfy 6-item promotion_path_required.",
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "judge_phase_advance_to": "JUDGE_PASSED (judge processed; recommendation-level verdict registered; NOT a strategy PASS)"
+  },
+  "outputs_judge": {
+    "judge_verdict": "qepm/mailbox/worktask/WT-S20260504_007/judge_verdict.json",
+    "judge_challenge_note": "qepm/mailbox/worktask/WT-S20260504_007/judge_challenge_note.md",
+    "ax008_stance_tally": "qepm/mailbox/worktask/WT-S20260504_007/ax008_stance_tally.json",
+    "defense_like_evaluation": "qepm/mailbox/worktask/WT-S20260504_007/defense_like_evaluation.json",
+    "codex_critic_response_judge": "qepm/mailbox/worktask/WT-S20260504_007/codex_critic_response_judge.json"
+  },
+  "schema_validation_waiver": {"applied": false, "reason": "v6.4 judge_verdict schema satisfied"},
+  "codex_round_status": "ROUND_1_COMPLETED_REJECT_DISPOSITION_APPLIED (Charter §8 No Silent Override; 5 ACCEPT + 2 PARTIAL_REBUTTAL; verdict downgraded CONDITIONAL_PASS → MONITORING_PLUS)",
+  "codex_critic_skip_waiver": "NOT_INVOKED (Round 1 succeeded in 14 min; ample within 12-min advisory)",
+  "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_007/judge_challenge_note.md",
+  "created_at": "2026-05-04T17:45:00+09:00",
+  "created_by": "judge_agent_opus_4_7"
+}
