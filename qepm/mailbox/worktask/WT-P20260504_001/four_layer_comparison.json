@@ -1,0 +1,120 @@
+{
+  "task_id": "WT-P20260504_001",
+  "comparison_kind": "4_layer_actual_backtest_no_frozen",
+  "n_months": 256,
+  "period": "2005-02-01 to 2026-05-01",
+  "layers": {
+    "Original": {
+      "label": "STR_1715 raw walk-forward (no overlay)",
+      "reconstruction": "ret_orig = ret_net / (1 - cash_weight)",
+      "metrics": {
+        "layer": "Original",
+        "CAGR": 0.4464,
+        "Vol": 0.2649,
+        "Sharpe": 1.6854,
+        "MDD": -0.4169,
+        "Sortino": 0.9187,
+        "Calmar": 1.0706
+      }
+    },
+    "MRS": {
+      "label": "Simple 4-state cash 0/10/20/40 by trailing 12m BM",
+      "reconstruction": "ret_MRS = (1 - mrs_cash_lag) * ret_orig",
+      "metrics": {
+        "layer": "MRS",
+        "CAGR": 0.3993,
+        "Vol": 0.2385,
+        "Sharpe": 1.6743,
+        "MDD": -0.3804,
+        "Sortino": 0.9198,
+        "Calmar": 1.0498
+      }
+    },
+    "M4": {
+      "label": "M4 BOCPD+decay+BL tri-pillar (current PG2)",
+      "source": "ret_net direct",
+      "metrics": {
+        "layer": "M4",
+        "CAGR": 0.4383,
+        "Vol": 0.2481,
+        "Sharpe": 1.767,
+        "MDD": -0.3532,
+        "Sortino": 0.9868,
+        "Calmar": 1.2411
+      }
+    },
+    "AR_on_M4": {
+      "label": "AR threshold on top of M4 (newly admitted)",
+      "reconstruction": "β · ret_M4 - cost",
+      "metrics": {
+        "layer": "AR_on_M4",
+        "CAGR": 0.3834,
+        "Vol": 0.2159,
+        "Sharpe": 1.7758,
+        "MDD": -0.2515,
+        "Sortino": 1.051,
+        "Calmar": 1.5245
+      }
+    },
+    "AR_on_Original": {
+      "label": "AR threshold on Original (M4 replaced)",
+      "reconstruction": "β · ret_orig - cost",
+      "metrics": {
+        "layer": "AR_on_Orig",
+        "CAGR": 0.3873,
+        "Vol": 0.2207,
+        "Sharpe": 1.7554,
+        "MDD": -0.2953,
+        "Sortino": 1.0173,
+        "Calmar": 1.3116
+      }
+    }
+  },
+  "delta_vs_Original": [
+    {
+      "layer": "2_MRS_simple_cash_4state",
+      "delta_CAGR_pp": -4.71,
+      "delta_Vol_pp": -2.64,
+      "delta_Sharpe": -0.0111,
+      "delta_MDD_pp": 3.65,
+      "delta_Sortino": 0.0011,
+      "delta_Calmar": -0.0208
+    },
+    {
+      "layer": "3_M4_BOCPD_decay_BL",
+      "delta_CAGR_pp": -0.81,
+      "delta_Vol_pp": -1.68,
+      "delta_Sharpe": 0.0816,
+      "delta_MDD_pp": 6.37,
+      "delta_Sortino": 0.0681,
+      "delta_Calmar": 0.1705
+    },
+    {
+      "layer": "4_AR_on_M4_threshold_S1",
+      "delta_CAGR_pp": -6.3,
+      "delta_Vol_pp": -4.9,
+      "delta_Sharpe": 0.0904,
+      "delta_MDD_pp": 16.54,
+      "delta_Sortino": 0.1323,
+      "delta_Calmar": 0.4539
+    },
+    {
+      "layer": "5_AR_on_Original_no_M4",
+      "delta_CAGR_pp": -5.91,
+      "delta_Vol_pp": -4.42,
+      "delta_Sharpe": 0.07,
+      "delta_MDD_pp": 12.16,
+      "delta_Sortino": 0.0986,
+      "delta_Calmar": 0.241
+    }
+  ],
+  "caveats": [
+    "Original reconstruction assumes risk-sleeve return is intra-month constant; for months with cash_weight > 0 this is a linear inverse",
+    "MRS uses simple 4-state regime (bm_12m thresholds 10/0/-10) — older v53 era convention, not the current M4 algorithm",
+    "M4 = current PG2 production schedule (BOCPD+decay+BL)",
+    "AR overlay = newly admitted (Round 3 WT-007/WT-P20260504_001)",
+    "Cost: 15bps round-trip applied for AR overlay only (M4/MRS already in ret_net)",
+    "Period excludes 13m warmup (12m MRS regime + 1m β lag)"
+  ],
+  "created_at": "2026-05-04T20:07:21+09:00"
+}
