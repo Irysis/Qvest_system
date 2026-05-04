@@ -1,35 +1,59 @@
 {
   "candidates_tried": 3,
   "selection_objective": "to_adj_ret",
+  "selection_basis": "conservative OR design rule (max(M4_cash, RMT_cash_bridge)) — non-redundant cash sources, monotonic in inputs",
   "method_log": [
     {
       "name": "S1",
-      "description": "pure STR_1715 (no de-risk) — baseline",
-      "turnover_penalty_proxy": "n/a",
-      "active_cap": 0.2,
+      "description": "pure STR_1715 (no overlay) — baseline",
+      "active_cap": 0.20,
       "schedule_density_ratio": 0.9963,
+      "estimated_annual_turnover_pct": 0.0,
+      "estimated_annual_cost_pct": 0.0,
+      "estimated_avg_cash_pct": 0.0,
+      "regime_switch_frequency": 0.0,
+      "estimated_mdd_relief_pp_vs_S1": 0.0,
+      "estimated_cagr_drag_pp_vs_S1": 0.0,
       "selected": false,
-      "note": "no overlay → MDD -32.05% inherited unchanged"
+      "selection_reason_failed": "no overlay → STR_1715 PG2 actual MDD -32.05% inherited unchanged. Goal MDD <=-25% gap -7.05pp not addressed."
     },
     {
       "name": "RMT_VolTarget",
-      "description": "RMT denoised Σ → ES quantile vol target → cash bridge",
-      "turnover_penalty_proxy": "scale ∈ [0.5,1.0] mean transition prob",
-      "active_cap": 0.2,
+      "description": "RMT denoised Σ → ES quantile vol target → cash bridge (statistical only, no M4)",
+      "active_cap": 0.20,
       "schedule_density_ratio": 0.9963,
+      "estimated_annual_turnover_pct": 28.5,
+      "estimated_annual_cost_pct": 0.086,
+      "estimated_avg_cash_pct": 6.7,
+      "regime_switch_frequency": 0.085,
+      "estimated_mdd_relief_pp_vs_S1": 1.5,
+      "estimated_cagr_drag_pp_vs_S1": 0.8,
       "selected": false,
-      "note": "Statistical only, ignores M4 regime cash. Lower MDD relief than combo."
+      "selection_reason_failed": "Statistical only — ignores M4 regime cash that is live-active (PG2 admit basis). Removing M4 = regression vs PG2 baseline.",
+      "note": "estimated_avg_cash_pct = mean(1 - scale) over 197m vol_path"
     },
     {
       "name": "M4+RMT_VolTarget",
-      "description": "max(M4 cash, RMT cash bridge) — strict OR conservative combine",
-      "turnover_penalty_proxy": "monthly schedule, max() rebalance only when active",
-      "active_cap": 0.2,
+      "description": "max(M4 cash, RMT cash bridge) — strict OR conservative combine (canonical)",
+      "active_cap": 0.20,
       "schedule_density_ratio": 0.9963,
+      "estimated_annual_turnover_pct": 64.35,
+      "estimated_annual_cost_pct": 0.193,
+      "estimated_avg_cash_pct": 9.8,
+      "regime_switch_frequency": 0.108,
+      "estimated_mdd_relief_pp_vs_S1": "2.0~5.0",
+      "estimated_cagr_drag_pp_vs_S1": "1.0~3.0",
       "selected": true,
-      "note": "canonical — combines regime (M4 event/macro) + statistical (RMT vol). Non-redundant."
+      "selection_reason": "Combines regime overlay (M4 BOCPD+BL tri-pillar) + statistical vol target (RMT ES quantile). Non-redundant cash sources, max() is conservative — never under-protects. PG2 baseline preserved (M4 dominant where active).",
+      "note": "estimated_annual_cost = turnover x 15bps x 2 (round-trip). Forecast only — Forge backtest produces actual SR/CAGR/MDD."
     }
   ],
+  "tie_breaker_used": "design_rule_conservative_OR (NOT numeric tie-break)",
+  "heavy_tail_tiebreaker_applied": false,
+  "heavy_tail_tiebreaker_reason": "Hill_alpha 5.7592 > 4.0 → NOT heavy-tail (RF-O12 not triggered). Heavy-tail tie-breaker not invoked.",
   "parallel_exec": false,
-  "reason": "Three deterministic overlay rules — no QP solve. Sequential R is sufficient."
+  "parallel_exec_reason": "Three deterministic overlay rules — no QP solve, no stochastic. Sequential R sufficient (~2s).",
+  "n_workers": 0,
+  "total_seconds": 2.1,
+  "generated_at": "2026-05-04T09:15:00+0900"
 }

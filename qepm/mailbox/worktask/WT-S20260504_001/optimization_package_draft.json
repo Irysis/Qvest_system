@@ -38,7 +38,13 @@
       "weight_bounds": [0, 0.2],
       "max_names": 20
     },
-    "b_ref_imputation": "Names absent from B_ref get B_i=0 (neutral imputation). Worst-case bound also reported in lro_portfolio_mrc.csv."
+    "b_ref_imputation": {
+      "method": "conservative_median",
+      "definition": "For names absent from B_ref (~20% of book at 2026-05-01), imputed B_i,k = sign(median(B_ref[,k])) * median(|B_ref[,k]|). This forces absent names to bear at least median magnitude hedge cost in QP, preventing the QP from exploiting B_i=0 as a free-rider corner solution.",
+      "codex_c2_addressed": true,
+      "neutral_zero_lfc_diag": 0.0007,
+      "conservative_median_lfc": 0.0013
+    }
   },
   "schedule_density": {
     "parent_alpha_sig_dates": 269,
@@ -48,23 +54,23 @@
     "pass": true
   },
   "lfc_at_2026_05_01": {
-    "S1_baseline": 0.0007,
-    "PCA_Hedge": 0.0001,
+    "S1_baseline": 0.0013,
+    "PCA_Hedge": 0.0002,
     "PCA_Hedge_x": {
-      "PC1": -0.0027,
-      "PC2": 0.0008,
-      "PC3": -0.0081,
-      "PC4": -0.0024,
-      "PC5": -0.0028
+      "PC1": 0.004,
+      "PC2": -0.0013,
+      "PC3": -0.014,
+      "PC4": 0.0017,
+      "PC5": 0.0002
     },
     "S1_x": {
-      "PC1": -0.0021,
-      "PC2": 0.01,
-      "PC3": -0.0246,
-      "PC4": -0.0017,
-      "PC5": -0.0036
+      "PC1": 0.0029,
+      "PC2": 0.0162,
+      "PC3": -0.0312,
+      "PC4": 0.0033,
+      "PC5": 0.0034
     },
-    "reduction_pct": 88.01,
+    "reduction_pct": 82.82,
     "b_ref_overlap_pct": 80
   },
   "constraint_audit": {
@@ -92,7 +98,7 @@
       "sum_max": 1,
       "cap_violations": 0,
       "sum_violations": 0,
-      "max_sum_deviation": 4.5518e-06
+      "max_sum_deviation": 4.5629e-06
     },
     "M4+PCA_Hedge": {
       "label": "M4+PCA_Hedge",
@@ -105,7 +111,7 @@
       "sum_max": 1,
       "cap_violations": 0,
       "sum_violations": 0,
-      "max_sum_deviation": 3.8368e-06
+      "max_sum_deviation": 3.6503e-06
     }
   },
   "hard_constraints_pass": {
@@ -170,6 +176,6 @@
     "transaction_cost": "v2.3_kr_retail_15bps",
     "benchmark": "KOSPI200_total_return"
   },
-  "created_at": "2026-05-04T09:14:24+0900",
+  "created_at": "2026-05-04T09:18:14+0900",
   "created_by": "optimizer-research-agent (background, dapper-dragon plan §1 WT-001)"
 }

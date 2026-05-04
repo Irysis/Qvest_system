@@ -36,11 +36,13 @@ s.t. Σw = 1
 
 ### Multi-strategy comparison (recommendation_only side-by-side for Forge)
 
-| # | Strategy | LFC@2026-05-01 | Cap | Cash overlay | Note |
+| # | Strategy | LFC@2026-05-01 (cons_median) | Cap | Cash overlay | Note |
 |---|---|---|---|---|---|
-| 1 | S1 baseline | 0.000727 | 0.20 | none | Iter31 reproduce |
-| 2 | PCA_Hedge | 0.000087 | 0.20 | none | structural hedge only |
-| 3 | **M4+PCA_Hedge** | **0.000087** (sleeve) | 0.20 | M4 BOCPD regime | **canonical** |
+| 1 | S1 baseline | 0.001263 | 0.20 | none | Iter31 reproduce |
+| 2 | PCA_Hedge | 0.000217 | 0.20 | none | structural hedge only |
+| 3 | **M4+PCA_Hedge** | **0.000217** (sleeve) | 0.20 | M4 BOCPD regime | **canonical** |
+
+LFC reduction PCA_Hedge vs S1: **−82.8%** (γ=1000, conservative_median imputation).
 
 ### Why M4+PCA_Hedge canonical
 
@@ -63,9 +65,19 @@ s.t. Σw = 1
 - schedule_density: **1.0000** (≥ 0.95 threshold) — RF-O9 PASS
 - No infeasibility encountered → no `infeasibility_report` field
 
-### B_ref coverage diagnostic (Codex C2 risk concern)
+### B_ref coverage diagnostic + Codex C2 fix (conservative imputation)
 
-At 2026-05-01: B_ref overlap 16/20 names (80%). 4 names absent from B_ref (universe drift since 2024-06-30 IS endpoint) → imputed B_i = 0 (neutral assumption). Worst-case bound documented in `lro_portfolio_mrc.csv` for Forge sensitivity test if needed.
+At 2026-05-01: B_ref overlap 16/20 names (80%). 4 names absent from B_ref (universe drift since 2024-06-30 IS endpoint).
+
+**First-pass neutral imputation B_i=0 found buggy**: QP exploited zero hedge cost on absent names (concentrating weight there as free-rider). Codex risk-side concern C2 (`The weakest low-LFC claim uses B_ref overlap of only 14/18 names and 68.92% portfolio weight; four active names carry 31.08% weight outside B_ref...`) directly addresses this.
+
+**Fix — conservative_median imputation**: absent names get B_i,k = sign(median(B_ref[,k])) * median(|B_ref[,k]|). This:
+1. Forces absent names to bear median-magnitude hedge cost in QP (no free-ride)
+2. Re-measures S1 baseline LFC 0.000727 → 0.001263 (more honest)
+3. Reduces PCA_Hedge benefit to 82.8% (vs neutral-zero 88%) — more credible
+4. lro_portfolio_mrc.csv now shows weights spread across hits + misses (no concentration on absent names)
+
+Worst-case bound (q90 magnitude) also implementable via `impute_method='worst_case_q90'`.
 
 ### AX-002 enforcement
 

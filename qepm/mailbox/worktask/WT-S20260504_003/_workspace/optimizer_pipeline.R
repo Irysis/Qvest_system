@@ -85,6 +85,11 @@ cat(sprintf("[2] canonical merged: %d rows, %d with HMM walk-forward signal\n",
             nrow(canonical),
             sum(!is.na(canonical$most_likely_predicted))))
 
+# ─ C2 remediation (Codex critic): Apply Crisis pooled blend per crisis_bootstrap_ci.json
+# Risk's scale_predicted does NOT honor the pooled blend; we apply it here at optimizer layer.
+# Rule: scale_blended = γ_Normal * scale_Normal + γ_Caution * scale_Caution + γ_Crisis * scale_Crisis_pooled
+# where scale_Crisis_pooled = 0.5*scale_Crisis + 0.5*scale_Caution (n_crisis=47<50 trigger)
+
 # ─────────────────────────────────────────────────────────────────
 # 3. Scale derivation per state (re-derive from risk package for audit)
 # ─────────────────────────────────────────────────────────────────
@@ -100,10 +105,7 @@ cat(sprintf("[3] scale_adopted Normal=%.3f Caution=%.3f Crisis=%.3f (pooled_blen
             scale_state$Normal, scale_state$Caution, scale_state$Crisis,
             crisis_pooled_blend))
 
-# Re-derive scale via posterior (filtered) ⨉ scale-vector
-# NOTE: we use scale_predicted from walk-forward CSV which embeds α_{t-1}·A and
-# multiplies state scale per Risk's pooled-blend rule.
-# Here we ADDITIONALLY produce a state-marginal scale path for audit.
+# Apply pooled blend on Crisis component (Codex C2 remediation)
 canonical[, scale_state_marginal := ifelse(
   !is.na(gamma_Normal_predicted),
   gamma_Normal_predicted * scale_state$Normal +
@@ -112,10 +114,25 @@ canonical[, scale_state_marginal := ifelse(
   1.0
 )]
 
-# Compare scale_predicted (from CSV) vs marginal (audit only)
+# C2 remediation: pooled-blend scale (Crisis component blended with Caution at 50/50)
+canonical[, scale_pooled_blend := ifelse(
+  !is.na(gamma_Normal_predicted),
+  gamma_Normal_predicted * scale_state$Normal +
+    gamma_Caution_predicted * scale_state$Caution +
+    gamma_Crisis_predicted * crisis_pooled_blend,
+  1.0
+)]
+
 audit_scale_diff <- max(abs(canonical$scale_predicted - canonical$scale_state_marginal),
                         na.rm = TRUE)
-cat(sprintf("[3] scale_predicted vs marginal max abs diff = %.6f\n", audit_scale_diff))
+audit_blend_diff <- max(abs(canonical$scale_pooled_blend - canonical$scale_state_marginal),
+                        na.rm = TRUE)
+cat(sprintf("[3] scale_predicted vs marginal diff=%.6f; pooled_blend vs marginal diff=%.6f (expected positive — blend lifts Crisis)\n",
+            audit_scale_diff, audit_blend_diff))
+
+# OPTIMIZER decision: adopt pooled_blend as the canonical scaling signal (C2 fix)
+# This honors the Crisis n=47<50 conservative-against-false-positive rule from risk_package
+canonical[, scale_canonical := scale_pooled_blend]
 
 # ─────────────────────────────────────────────────────────────────
 # 4. 3 strategy variants
@@ -130,19 +147,25 @@ variants <- list()
 S1 <- canonical[, .(Date = Date, weight_str1715 = 1.0, weight_cash = 0.0)]
 variants$S1 <- S1
 
-# HMM_Scale (statistical posterior weighted, walk-forward only)
+# M4_alone (Codex C3 fix: deployed baseline, parent WT-P20260429_002 schedule)
+M4 <- canonical[, .(Date = Date,
+                    weight_str1715 = weight_str1715,
+                    weight_cash = weight_cash)]
+variants$M4_alone <- M4
+
+# HMM_Scale (pure HMM walk-forward + pooled-blend; C2 fix)
 HMM <- canonical[, .(
   Date = Date,
-  weight_str1715 = pmin(pmax(scale_predicted, 0), 1),
-  weight_cash = pmin(pmax(1 - scale_predicted, 0), 1)
+  weight_str1715 = pmin(pmax(scale_canonical, 0), 1),
+  weight_cash = pmin(pmax(1 - scale_canonical, 0), 1)
 )]
 variants$HMM_Scale <- HMM
 
-# M4+HMM_Scale: cash = max(M4_cash_parent, 1 - scale_HMM); w_str = 1 - cash
+# M4+HMM_Scale: cash = max(M4_cash_parent, 1 - scale_canonical); w_str = 1 - cash
 M4_HMM <- canonical[, .(
   Date = Date,
   m4_cash = weight_cash,           # parent M4 cash
-  hmm_cash = pmin(pmax(1 - scale_predicted, 0), 1)
+  hmm_cash = pmin(pmax(1 - scale_canonical, 0), 1)
 )]
 M4_HMM[, weight_cash := pmax(m4_cash, hmm_cash)]
 M4_HMM[, weight_str1715 := 1 - weight_cash]
@@ -182,10 +205,62 @@ cat("[5] Σw=1 + long_only + bounds [0,1] PASS for all 3 variants\n")
 fwrite(M4_HMM_out, file.path(STAGE_DIR, "weights.csv"))
 
 fwrite(S1, file.path(STAGE_DIR, "weights_variants", "S1.csv"))
+fwrite(M4, file.path(STAGE_DIR, "weights_variants", "M4_alone.csv"))
 fwrite(HMM, file.path(STAGE_DIR, "weights_variants", "HMM_Scale.csv"))
 fwrite(M4_HMM_out, file.path(STAGE_DIR, "weights_variants", "M4+HMM_Scale.csv"))
 
 cat("[6] CSVs written. Canonical = M4+HMM_Scale.csv\n")
+
+# ─────────────────────────────────────────────────────────────────
+# 6b. Security-level forecast snapshot (Codex C1 partial remediation)
+# ─────────────────────────────────────────────────────────────────
+# Historical 20-stock weights are NOT available in parent (STR_1715 holdings is
+# meta-sleeve only). For the AS_OF_DATE forecast, join canonical sleeve weight
+# with the live STR_1715 production_weights snapshot.
+
+str_pw_path <- file.path(PROJ_ROOT,
+  "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv")
+str_pw <- fread(str_pw_path)
+# Schema: rank,Ticker,Name,Sector,Weight (sums to 1 within sleeve)
+
+# Latest canonical sleeve weight
+last_row <- M4_HMM_out[Date == max(Date)]
+sleeve_w <- last_row$weight_str1715
+cash_w <- last_row$weight_cash
+
+# Effective security-level weight = sleeve_w * stock_w_within_sleeve
+sec_level <- str_pw[, .(
+  as_of_date = AS_OF_DATE,
+  ticker = Ticker,
+  name = Name,
+  sector = Sector,
+  sleeve_weight = Weight,
+  effective_weight = Weight * sleeve_w,
+  method_selected = "M4+HMM_Scale",
+  stringsAsFactors = FALSE
+)]
+# Append cash row
+cash_row <- data.table(
+  as_of_date = AS_OF_DATE, ticker = "CASH_KRW", name = "KRW Cash",
+  sector = "Cash", sleeve_weight = 0, effective_weight = cash_w,
+  method_selected = "M4+HMM_Scale"
+)
+sec_level <- rbind(sec_level, cash_row)
+
+# Hard constraint check at security level
+n_active_stocks <- sec_level[ticker != "CASH_KRW" & effective_weight > 1e-6, .N]
+max_eff_w <- max(sec_level[ticker != "CASH_KRW"]$effective_weight)
+sum_eff_w <- sum(sec_level$effective_weight)
+
+cat(sprintf("[6b] Security-level snapshot: n_active=%d / max_eff=%.4f / Σ=%.4f / cash=%.4f\n",
+            n_active_stocks, max_eff_w, sum_eff_w, cash_w))
+# n_active should be ≤ 20, max_eff should be ≤ 0.20, Σ should be 1.0
+stopifnot(n_active_stocks <= 20)
+stopifnot(max_eff_w <= 0.20 + 1e-9)
+stopifnot(abs(sum_eff_w - 1.0) < 1e-6)
+
+fwrite(sec_level, file.path(STAGE_DIR, "weights_security_level_snapshot.csv"))
+cat("[6b] weights_security_level_snapshot.csv written (as_of forecast, hard-constraint-verified)\n")
 
 # ─────────────────────────────────────────────────────────────────
 # 7. cash_definition_audit.json
@@ -321,7 +396,26 @@ for (vn in names(variants)) {
   # Turnover (sleeve-level: |Δw_str|)
   dw <- diff(v_ret$weight_str1715)
   to_m_avg <- mean(abs(dw))
-  to_annual <- to_m_avg * 12 * 2  # roundtrip × 12
+  to_annual <- to_m_avg * 12 * 2  # roundtrip × 12 (annualized round-trip)
+
+  # C4 fix: Overlay turnover cost (additive on top of ret_str's embedded cost)
+  # When sleeve scales by Δw, the underlying 20 stocks rebalance proportionally.
+  # Overlay cost ≈ |Δw_str| * 15bps (one-way). ret_str ALREADY embeds STR_1715's
+  # internal stock turnover. Overlay only adds sleeve-scaling turnover.
+  v_ret_cost_adj <- copy(v_ret)
+  dw_path <- c(0, diff(v_ret_cost_adj$weight_str1715))
+  v_ret_cost_adj[, overlay_cost := abs(dw_path) * 0.0015]  # one-way 15bps
+  v_ret_cost_adj[, ret_port_net := ret_port - overlay_cost]
+  mu_m_net <- mean(v_ret_cost_adj$ret_port_net)
+  sd_m_net <- sd(v_ret_cost_adj$ret_port_net)
+  ann_ret_net <- (1 + mu_m_net)^12 - 1
+  ann_vol_net <- sd_m_net * sqrt(12)
+  ann_sr_net <- ann_ret_net / ann_vol_net
+
+  cum_nav_net <- cumprod(1 + v_ret_cost_adj$ret_port_net)
+  peak_net <- cummax(cum_nav_net)
+  dd_net <- (cum_nav_net - peak_net) / peak_net
+  mdd_net <- min(dd_net)
 
   # IR (vs S1 baseline benchmark)
   if (vn == "S1") {
@@ -350,10 +444,14 @@ for (vn in names(variants)) {
     ann_vol = round(ann_vol, 4),
     sr = round(ann_sr, 4),
     mdd = round(mdd, 4),
+    ann_ret_net_overlay = round(ann_ret_net, 4),
+    sr_net_overlay = round(ann_sr_net, 4),
+    mdd_net_overlay = round(mdd_net, 4),
     turnover_annual_roundtrip = round(to_annual, 4),
+    overlay_cost_drag_ann_bps = round((ann_ret - ann_ret_net) * 1e4, 2),
     ir_vs_S1 = if (is.na(ir)) NA else round(ir, 4),
     te_vs_S1 = if (is.na(te)) NA else round(te, 4),
-    net_ir = if (is.na(ir)) NA else round(ir, 4)  # cost approx already in str_pr if 15bps embedded
+    net_ir = if (is.na(ir)) NA else round(ir, 4)
   )
 }
 

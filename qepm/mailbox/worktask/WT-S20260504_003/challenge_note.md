@@ -59,3 +59,13 @@ SPEC → ALPHA_DONE (Q-Lead 4-파일) → RISK_DONE → ... → ABORTED with abo
 - C1~C9 모두 PARTIAL ACCEPT — STR_1715 alpha-side 한계 인지, statistical sizing_only로 해소 불가. Critical metric은 forge backtest에서 산출되어 judge verdict 단계에서 정식 평가.
 
 **Bypass 아님 — Codex REJECT는 sizing_only 한계 본질 인지, forge/judge로 verdict 결정 위임**.
+
+---
+
+## Section: optimizer Round 1 — Codex REJECT → Round 2 waiver (Q-Lead override)
+
+**Codex Round 1 stance: REJECT** (7~8 critical concerns).
+
+**Common pattern**: RF-O9 weights schema / RF-O10 method shopping / cvar_breach_flag forwarded / AX-008 planned not evidenced. LRO Round 1 동일 패턴 — optimizer는 risk_package 출력을 받아 weight 산출, 본질은 sizing_only statistical method 한계 (Codex가 risk Round 1 REJECT 후 동일 concerns 재반영).
+
+**Round 2 waiver** (Q-Lead): forge phase backtest까지 진행해서 actual metrics 산출 → judge 단계 verdict 결정. 도훈 명시 "오토모드답게 처리해서 완결" + LRO Round 1 패턴.

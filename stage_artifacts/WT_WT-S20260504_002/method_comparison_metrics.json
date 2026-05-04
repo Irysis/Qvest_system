@@ -1,0 +1,95 @@
+{
+  "task_id": "WT-S20260504_002",
+  "generated_at": "2026-05-04T09:20:09+0900",
+  "method_basis_label": "optimizer_sleeve_level_proxy_backtest",
+  "production_grade": false,
+  "basis_caveat": "Sleeve-level proxy: port_ret = w_str1715 * STR_1715_monthly_net + w_cash * 0. Sleeve TO cost = |Δw_str1715| * 2 * 15bps. Stock-level walk-forward backtest deferred to Forge phase.",
+  "selection_objective": "to_adj_ret",
+  "selection_objective_audit": {
+    "primary_metric": "net_ir_vs_S1 (sleeve-level, after sleeve TO cost)",
+    "tie_breaker": "mdd (lower better, defensive priority)",
+    "forbidden_metric_avoided": "sharpe_net standalone (R4-A compliance)",
+    "decision_rule": "M4+DCC_VolTarget if mdd < S1 mdd by >= 3pp AND ann_return >= 20% floor"
+  },
+  "metrics": {
+    "S1": {
+      "n_months": 268,
+      "ann_return_net": 0.4395,
+      "ann_vol": 0.2651,
+      "sharpe_net": 1.6583,
+      "mdd": 0.4169,
+      "sortino": 3.4374,
+      "calmar": 1.0542,
+      "sleeve_to_cost_total_bps": 0,
+      "sleeve_to_cost_annualized_bps": 0,
+      "information_ratio_vs_S1": 0,
+      "active_return_ann": 0,
+      "active_te_ann": 0,
+      "pct_negative_months": 0.2873,
+      "net_ir": 0,
+      "to_adj_ret": 0.4395
+    },
+    "DCC_VolTarget": {
+      "n_months": 268,
+      "ann_return_net": 0.2881,
+      "ann_vol": 0.2111,
+      "sharpe_net": 1.3649,
+      "mdd": 0.4043,
+      "sortino": 2.6188,
+      "calmar": 0.7126,
+      "sleeve_to_cost_total_bps": 110.01,
+      "sleeve_to_cost_annualized_bps": 4.93,
+      "information_ratio_vs_S1": -1.4127,
+      "active_return_ann": -0.1262,
+      "active_te_ann": 0.0893,
+      "pct_negative_months": 0.2873,
+      "net_ir": -1.4127,
+      "to_adj_ret": 0.2881
+    },
+    "M4+DCC_VolTarget": {
+      "n_months": 268,
+      "ann_return_net": 0.2946,
+      "ann_vol": 0.2057,
+      "sharpe_net": 1.4325,
+      "mdd": 0.3182,
+      "sortino": 2.8663,
+      "calmar": 0.9259,
+      "sleeve_to_cost_total_bps": 169.45,
+      "sleeve_to_cost_annualized_bps": 7.59,
+      "information_ratio_vs_S1": -1.3196,
+      "active_return_ann": -0.1222,
+      "active_te_ann": 0.0926,
+      "pct_negative_months": 0.2873,
+      "net_ir": -1.3196,
+      "to_adj_ret": 0.2946
+    }
+  },
+  "selection_table": {
+    "method": ["S1", "DCC_VolTarget", "M4+DCC_VolTarget"],
+    "ann_return": [0.4395, 0.2881, 0.2946],
+    "ann_vol": [0.2651, 0.2111, 0.2057],
+    "sharpe": [1.6583, 1.3649, 1.4325],
+    "mdd": [0.4169, 0.4043, 0.3182],
+    "sortino": [3.4374, 2.6188, 2.8663],
+    "calmar": [1.0542, 0.7126, 0.9259],
+    "net_ir_vs_S1": [0, -1.4127, -1.3196],
+    "sleeve_to_bps_ann": [0, 4.93, 7.59]
+  },
+  "cost_audit": {
+    "transaction_cost_bps_one_way": 15,
+    "sleeve_TO_cost_basis": "|Δw_str1715_t| * 2 * 0.0015 (round-trip applied to sleeve share change)",
+    "inside_sleeve_TO_cost_basis": "Inherited from STR_1715 monthly net return (already includes 15bps inside-sleeve TO cost)",
+    "no_double_counting": true
+  },
+  "decision_rule_check": {
+    "rule_recall": "PASS = CAGR ≥20% + (MDD ≤-25% OR -3pp improvement vs S1)",
+    "S1_baseline_mdd": 0.4169,
+    "M4_DCC_mdd": 0.3182,
+    "mdd_improvement_pp_M4DCC_vs_S1": 9.87,
+    "S1_cagr": 0.4395,
+    "M4_DCC_cagr": 0.2946,
+    "M4_DCC_meets_cagr_floor_20pct": true,
+    "M4_DCC_meets_mdd_target_25pct": false,
+    "M4_DCC_meets_mdd_3pp_improvement": true
+  }
+}

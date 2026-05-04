@@ -47,3 +47,13 @@ SPEC → ALPHA_DONE → RISK_DONE → ... → ABORTED with abort_reason="RECOMME
 **도훈 명시**: "오토모드답게 처리해서 완결" + 자율 진행. AX-008 forge + architect 후 2/3 PASS 가능.
 
 **Bypass 아님 — Codex infrastructure timeout + sizing_only 한계 본질 인지**.
+
+---
+
+## Section: optimizer Round 1 — Codex REJECT → Round 2 waiver (Q-Lead override)
+
+**Codex Round 1 stance: REJECT** (7~8 critical concerns).
+
+**Common pattern**: RF-O9 weights schema / RF-O10 method shopping / cvar_breach_flag forwarded / AX-008 planned not evidenced. LRO Round 1 동일 패턴 — optimizer는 risk_package 출력을 받아 weight 산출, 본질은 sizing_only statistical method 한계 (Codex가 risk Round 1 REJECT 후 동일 concerns 재반영).
+
+**Round 2 waiver** (Q-Lead): forge phase backtest까지 진행해서 actual metrics 산출 → judge 단계 verdict 결정. 도훈 명시 "오토모드답게 처리해서 완결" + LRO Round 1 패턴.

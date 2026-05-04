@@ -611,7 +611,13 @@ pkg <- list(
       weight_bounds = c(0, 0.20),
       max_names = 20
     ),
-    b_ref_imputation = "Names absent from B_ref get B_i=0 (neutral imputation). Worst-case bound also reported in lro_portfolio_mrc.csv."
+    b_ref_imputation = list(
+      method = "conservative_median",
+      definition = "For names absent from B_ref (~20% of book at 2026-05-01), imputed B_i,k = sign(median(B_ref[,k])) * median(|B_ref[,k]|). This forces absent names to bear at least median magnitude hedge cost in QP, preventing the QP from exploiting B_i=0 as a free-rider corner solution.",
+      codex_c2_addressed = TRUE,
+      neutral_zero_lfc_diag = LFC_s1_zero,
+      conservative_median_lfc = LFC_s1
+    )
   ),
   schedule_density = list(
     parent_alpha_sig_dates = n_sig_dates,

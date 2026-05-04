@@ -6,11 +6,17 @@
 
 **3-strategy walk-forward matrix** (269 sig_dates, 2004-01-01 ~ 2026-05-01):
 
-| Strategy | Method | LFC@2026-05-01 | Hedge effect |
+| Strategy | Method | LFC@2026-05-01 (cons_median impute) | Hedge effect |
 |---|---|---|---|
-| S1 | STR_1715 Iter31 baseline (linear_tilt λ=1.5, φ=3, cap 0.20, no hedge) | 0.000727 | (reference) |
-| PCA_Hedge | QP min ½γ\|\|B'w\|\|² − α'w + ε\|\|w\|\|², γ=1000, cap 0.20, max_names 20 | 0.000087 | **−88.0%** vs S1 |
-| M4+PCA_Hedge | M4 cash overlay (BOCPD regime) × PCA_Hedge risk sleeve | 0.000087 (sleeve) | canonical primary |
+| S1 | STR_1715 Iter31 baseline (linear_tilt λ=1.5, φ=3, cap 0.20, no hedge) | 0.001263 | (reference) |
+| PCA_Hedge | QP min ½γ\|\|B'w\|\|² − α'w + ε\|\|w\|\|², γ=1000, cap 0.20, max_names 20 | 0.000217 | **−82.8%** vs S1 |
+| M4+PCA_Hedge | M4 cash overlay (BOCPD regime) × PCA_Hedge risk sleeve | 0.000217 (sleeve) | canonical primary |
+
+**B_ref imputation update (Codex C2 risk-side concern materially addressed)**:
+First-pass implementation used neutral B_i=0 for absent names (4/20 at 2026-05-01). This created a free-rider exploit — QP concentrated weight on absent names since they had zero hedge cost. **Fixed**: `conservative_median` imputation — absent names imputed with `sign(median(B_ref[,k])) * median(|B_ref[,k]|)` per PC, forcing them to bear at least median magnitude hedge cost. Two consequences:
+- S1 LFC re-measured 0.000727 → 0.001263 (more honest with absent-name latent exposure)
+- PCA_Hedge LFC 0.000087 → 0.000217 (still strong reduction; QP now spreads weight across hits AND misses rather than free-riding misses)
+- LFC reduction 88% → **82.8%** (more credible)
 
 **γ calibration sweep** (8 values, recorded in `method_shopping.json`):
 - γ ≤ 10: alpha dominates QP (LFC worse than S1)
