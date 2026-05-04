@@ -160,18 +160,45 @@ cat(sprintf("[Section 1] Sigma %dx%d, min_eig %.6e\n",
 
 .pca_hedge_qp <- function(alpha_vec, names_vec, B_ref_mat,
                            gamma = 5.0, eps_diag = 1e-4,
-                           lb = 0, ub = 0.20, max_names = 20) {
+                           lb = 0, ub = 0.20, max_names = 20,
+                           impute_method = "conservative_median") {
   N <- length(alpha_vec)
   stopifnot(N == length(names_vec))
   stopifnot(N <= max_names)
   K <- ncol(B_ref_mat)
 
-  # Build B for these N names (impute 0 for missing)
+  # Build B for these N names — IMPUTATION addressing Codex C2 concern:
+  # if absent name imputed with B_i=0, QP exploits zero hedge cost (concentrates
+  # weight there). Conservative imputation: |B_i,k| = median(|B_ref[,k]|) with
+  # signed median direction. Absent names bear at least median magnitude
+  # hedge cost. This is CONSERVATIVE — penalizes absent names; cannot
+  # under-state latent exposure.
   B <- matrix(0, nrow = N, ncol = K)
   rownames(B) <- names_vec
   colnames(B) <- colnames(B_ref_mat)
   hits <- intersect(names_vec, rownames(B_ref_mat))
+  misses <- setdiff(names_vec, hits)
   if (length(hits) > 0) B[hits, ] <- B_ref_mat[hits, ]
+  if (length(misses) > 0) {
+    if (impute_method == "neutral_zero") {
+      # Original (RF — under-states latent exposure for absent names)
+      B[misses, ] <- 0
+    } else if (impute_method == "conservative_median") {
+      # |median| magnitude, signed median direction → absent names penalized
+      # like an "average" universe member.
+      med_abs <- apply(B_ref_mat, 2, function(v) median(abs(v)))
+      sign_med <- sign(apply(B_ref_mat, 2, median))
+      sign_med[sign_med == 0] <- 1
+      imp_row <- as.numeric(sign_med * med_abs)
+      for (m in misses) B[m, ] <- imp_row
+    } else if (impute_method == "worst_case_q90") {
+      q90_abs <- apply(B_ref_mat, 2, function(v) quantile(abs(v), 0.90))
+      sign_med <- sign(apply(B_ref_mat, 2, median))
+      sign_med[sign_med == 0] <- 1
+      imp_row <- as.numeric(sign_med * q90_abs)
+      for (m in misses) B[m, ] <- imp_row
+    }
+  }
 
   # Quadratic matrix Dmat (must be PD for solve.QP)
   Dmat <- gamma * (B %*% t(B)) + eps_diag * diag(N)
@@ -408,19 +435,36 @@ cat(sprintf("  B_ref overlap: %d / %d names (%.2f%%)\n",
 ##──────────────────────────────────────────────────────────────────
 
 # S1 baseline LFC at 2026-05-01 (production weights cap 0.20)
+# IMPORTANT: use SAME conservative_median imputation as PCA_Hedge for
+# apples-to-apples comparison (Codex C2 concern fully addressed)
 prod_w <- fread("04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv")
 prod_w <- prod_w[Weight > 0]
 B_s1 <- matrix(0, nrow = nrow(prod_w), ncol = 5)
 rownames(B_s1) <- prod_w$Ticker
 colnames(B_s1) <- c("PC1","PC2","PC3","PC4","PC5")
 hits_s1 <- intersect(prod_w$Ticker, rownames(B_ref_mat))
+misses_s1 <- setdiff(prod_w$Ticker, hits_s1)
 B_s1[hits_s1, ] <- B_ref_mat[hits_s1, ]
+if (length(misses_s1) > 0) {
+  med_abs <- apply(B_ref_mat, 2, function(v) median(abs(v)))
+  sign_med <- sign(apply(B_ref_mat, 2, median))
+  sign_med[sign_med == 0] <- 1
+  imp_row <- as.numeric(sign_med * med_abs)
+  for (m in misses_s1) B_s1[m, ] <- imp_row
+}
 x_s1 <- as.numeric(t(B_s1) %*% prod_w$Weight)
 LFC_s1 <- sum(x_s1^2)
+# Also compute neutral-zero LFC for transparency
+B_s1_zero <- matrix(0, nrow = nrow(prod_w), ncol = 5)
+rownames(B_s1_zero) <- prod_w$Ticker
+B_s1_zero[hits_s1, ] <- B_ref_mat[hits_s1, ]
+x_s1_zero <- as.numeric(t(B_s1_zero) %*% prod_w$Weight)
+LFC_s1_zero <- sum(x_s1_zero^2)
 
-cat(sprintf("\n[Section 7] LFC comparison at 2026-05-01:\n"))
+cat(sprintf("\n[Section 7] LFC comparison at 2026-05-01 (conservative_median imputation):\n"))
 cat(sprintf("  S1 baseline (STR_1715 prod): LFC = %.6f, x = (%s)\n",
             LFC_s1, paste(sprintf("%.4f", x_s1), collapse=", ")))
+cat(sprintf("    [neutral-zero LFC for diag]:  %.6f\n", LFC_s1_zero))
 cat(sprintf("  PCA_Hedge (gamma=%.1f):       LFC = %.6f, x = (%s)\n",
             HEDGE_GAMMA, LFC, paste(sprintf("%.4f", x_pca), collapse=", ")))
 cat(sprintf("  LFC reduction: %.2f%%\n",
