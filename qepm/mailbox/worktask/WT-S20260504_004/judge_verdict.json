@@ -1,0 +1,312 @@
+{
+  "task_id": "WT-S20260504_004",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "agent": "judge",
+  "draft_revision": "final",
+  "as_of_date": "2026-05-04",
+  "parent_wt": "WT-P20260429_002",
+  "canonical_strategy": "M4+RMT_VolTarget",
+  "method_basis_label": "forge_realized_share_based_268m_sleeve_overlay",
+
+  "decision_rule_evaluation": {
+    "spec_authority": "request.json §decision_rule",
+    "criteria_evaluation": {
+      "CAGR_geq_20": {"value": 0.4049, "threshold": 0.20, "verdict": "PASS"},
+      "MDD_leq_25_absolute": {"value": -0.3532, "threshold": -0.25, "verdict": "FAIL"},
+      "MDD_minus_3pp_vs_M4_baseline": {
+        "M4_baseline_MDD": -0.3532,
+        "canonical_MDD": -0.3532,
+        "delta_pp": 0.0,
+        "threshold_pp": -3.0,
+        "verdict": "FAIL"
+      },
+      "vol_minus_20_pct_vs_M4_baseline": {
+        "M4_baseline_vol": 0.2480,
+        "canonical_vol": 0.2425,
+        "delta_pct_relative": -0.0222,
+        "threshold_pct_relative": -0.20,
+        "verdict": "FAIL"
+      },
+      "Sortino_geq_1": {"value": 3.2139, "threshold": 1.0, "verdict": "PASS"},
+      "top5_DD_3plus_minus_20pct": {
+        "DDs_at_or_below_minus_20pct": 5,
+        "list": ["-35.32% (2007-12 GFC)", "-28.21% (2018-03)", "-24.61% (2006-02)", "-23.61% (2021-11 Rate Hike)", "-20.02% (2004-04)"],
+        "threshold": 3,
+        "verdict": "PASS"
+      },
+      "RMT_signal_noise_separation_OK": {
+        "n_signal_eig": 11,
+        "signal_trace_pct": 0.4296,
+        "market_eigenvalue_pct": 0.2137,
+        "lambda_max_MP": 2.167282,
+        "psd_pass": true,
+        "verdict": "PASS (signal eigenvalues well-separated from MP bulk; n=11/206 retained)"
+      }
+    },
+    "verdict_categorization": {
+      "PASS": false,
+      "PASS_reason_failed": "MDD/vol both FAIL (vs M4 baseline: 0pp MDD relief, only 2.2% vol reduction vs target -20%)",
+      "CONDITIONAL_PASS": false,
+      "CONDITIONAL_PASS_reason_failed": "MDD relief vs M4 baseline = 0pp (criterion requires 1~3pp). Vol reduction 2.2% < 10% threshold.",
+      "MONITORING_ONLY": true,
+      "MONITORING_ONLY_rationale": "RMT statistical quality OK (signal/noise separation valid, n_signal=11) AND trading damage on canonical M4+RMT vs S1 modest (SR +0.032, MDD relief 6.37pp). However vs M4 baseline alone (already deployed PG2), RMT marginal value is negative (SR -0.026, 0pp MDD, -1.86pp CAGR). Per request decision_rule §MONITORING_ONLY definition: 'RMT 통계적 quality OK + trading damage 큼' — applies.",
+      "FAIL": false
+    },
+    "final_verdict": "MONITORING_ONLY"
+  },
+
+  "three_strategy_comparison": {
+    "S1_pure_baseline": {
+      "Sharpe": 1.5068,
+      "CAGR": 0.4318,
+      "MDD": -0.4169,
+      "vol": 0.2641,
+      "role": "STR_1715 base no overlay",
+      "decision": "REFERENCE"
+    },
+    "RMT_VolTarget": {
+      "Sharpe": 1.4773,
+      "CAGR": 0.4077,
+      "MDD": -0.4169,
+      "vol": 0.2563,
+      "role": "RMT statistical de-risk only",
+      "decision": "INFERIOR — drag SR vs S1 -0.029, no MDD relief; RMT alone (no M4) clips CAGR without tail benefit"
+    },
+    "M4_RMT_VolTarget_canonical": {
+      "Sharpe": 1.5391,
+      "CAGR": 0.4049,
+      "MDD": -0.3532,
+      "vol": 0.2425,
+      "role": "regime + statistical conservative OR",
+      "decision": "MONITORING_ONLY — beats S1 on risk-adj (SR +0.032, MDD relief 6.4pp) but vs M4 alone redundant (SR -0.026)"
+    },
+    "M4_baseline_recomputed": {
+      "Sharpe": 1.5646,
+      "CAGR": 0.4235,
+      "MDD": -0.3532,
+      "vol": 0.2480,
+      "role": "STR_1715 base × parent M4 schedule (PG2 active)",
+      "decision": "DOMINANT — best Sharpe, MDD relief equivalent, CAGR drag minimal vs S1"
+    },
+    "ranking_by_sharpe": [
+      "M4_baseline_recomputed (1.5646)",
+      "M4+RMT_VolTarget canonical (1.5391)",
+      "S1_pure_baseline (1.5068)",
+      "RMT_VolTarget (1.4773)"
+    ],
+    "interpretation": "M4 alone (current PG2) dominates on Sharpe. RMT overlay value lies in tail clipping during HIGH_RISKOFF months (50/267 obs, worst-month -18.6% → -13.6%, vol 33.6% → 25.0%). max() OR rule means M4 binds in most de-risk months; RMT-unique 32 months add cash drag without offsetting tail relief (M4-calm RMT-stress = noise-dominated)."
+  },
+
+  "ax001_v2_defense_like_evaluation": {
+    "applicability": "informational — STR_1715 is core_secondary, not defense role; AX-001 v2 conditional metric formally applies to defense factors only",
+    "evaluation_basis": "RMT-denoised ES forecast quantile state stratification (3-tuple)",
+    "rationale_for_inclusion": "request.json §axiom_constraints.AX-001_v2 explicitly requests defense-like evaluation by RMT ES quantile state. Performed for diagnostic completeness.",
+    "es_quantile_states": {
+      "method": "stratify by w_combo_str (combined sleeve weight) — proxy for ES forecast quantile",
+      "thresholds": {
+        "HIGH_RISKOFF_es_q_high": "w_str < 0.85 (cash > 15%)",
+        "MID_RISKOFF_es_q_mid": "0.85 ≤ w_str < 0.98",
+        "FULL_RISK_es_q_low": "w_str ≥ 0.98"
+      }
+    },
+    "three_tuple_evaluation": {
+      "HIGH_RISKOFF": {
+        "n_obs": 50,
+        "S1_cum_ret": 2.5708,
+        "combo_cum_ret": 1.7750,
+        "S1_min_monthly": -0.1865,
+        "combo_min_monthly": -0.1356,
+        "S1_vol_ann": 0.3365,
+        "combo_vol_ann": 0.2502,
+        "tail_protection_pp": 5.09,
+        "vol_reduction_pp": 8.63,
+        "verdict": "POSITIVE defense behavior — overlay materially clips worst-month tail (5.09pp) and reduces vol (8.63pp). At cost of cum_ret -79.6pp absolute. Defense-like profile present."
+      },
+      "MID_RISKOFF": {
+        "n_obs": 62,
+        "S1_cum_ret": 11.2805,
+        "combo_cum_ret": 9.4035,
+        "S1_min_monthly": -0.0692,
+        "combo_min_monthly": -0.0674,
+        "tail_protection_pp": 0.18,
+        "verdict": "MARGINAL — minor protection, modest cum drag"
+      },
+      "FULL_RISK": {
+        "n_obs": 155,
+        "S1_cum_ret": 66.0119,
+        "combo_cum_ret": 65.7767,
+        "verdict": "NEUTRAL — overlay no-op (essentially identical), no signal"
+      }
+    },
+    "crisis_alpha_avg_from_risk_package": 0.0727,
+    "core_mdd_relief_vs_s1_pp": 6.37,
+    "core_mdd_relief_vs_m4_baseline_pp": 0.0,
+    "bad_normal_ic_ratio_proxy": "n/a — sigma overlay does not produce IC; proxied by HIGH_RISKOFF tail protection (5.09pp) over neutral FULL_RISK (0pp). Ratio ≈ HIGH_RISKOFF/FULL_RISK protection signal: positive only in tail.",
+    "verdict": "Defense-like behavior PRESENT in HIGH_RISKOFF state (tail clipping + vol reduction), MARGINAL in MID_RISKOFF, ABSENT in FULL_RISK. Consistent with M4+RMT design intent. AX-001 v2 not formally applicable (core_secondary role) but pattern qualitatively matches defense conditional metric philosophy."
+  },
+
+  "lockbox_audit": {
+    "applicability": "n/a_with_substitution",
+    "structural_note": "STR_1715 PG2 admit lineage uses walk-forward by construction (sig_date → ret [d, next_d) at each rebalance). lro_params SHA-frozen (3147d50e6481) at as_of 2026-04-30. M4 schedule extended forward via parent WT-P20260429_002 weights.csv. weights schedule density 267/268=0.9963 PASS.",
+    "lockbox_period_substitute": {
+      "method": "ex2025+ OOS slice (M4 forward extension)",
+      "n_obs": 16,
+      "period": "2025-01-02 to 2026-04-01",
+      "verdict": "all 4 strategies cluster (Sharpe ~3.3) — bull-period FULL_RISK dominates window, tail untested. n=16 too short for definitive Pre-LB vs Lockbox SR ratio audit."
+    },
+    "frozen_weights_buy_and_hold_extension_request": {
+      "feasibility": "DEFERRED — Lockbox Extension Audit per Judge v6.1 mandate",
+      "rationale": "wt_kind=recommendation_only + production_book_state_write=false + governor_concord DEFERRED_TO_PROMOTION_WT. RMT cutoff already SHA-frozen at 2026-04-30. Forward weights for May 2026 (scale=0.7596, cash bridge 0.2404) emitted in optimization_package but NOT applied (recommendation_only).",
+      "extension_blocking_factors": [
+        "1. wt_kind=recommendation_only — no admission, no deployment, no Lockbox period to extend",
+        "2. STR_1715 PG2 base already has its own deploy schedule (handled by parent WT-P20260429_002, M4 forward extension to 2025-2026)",
+        "3. RMT lro_params SHA-frozen — additional Lockbox extension would require new RMT estimation cutoff (data extension, not strategy extension)"
+      ],
+      "judge_v61_compliance": "Lockbox extension DEFERRED is justified by recommendation_only kind + STR_1715 PG2 base lineage already provides 16-obs M4-forward OOS via ex2025_oos_summary. Walk-forward by construction admitted (PIT C1 expanding + C2 t-1 lag verified)."
+    },
+    "pre_lb_vs_lockbox_sr_ratio": "n/a (no Lockbox extension performed)",
+    "lockbox_period_drawdown_vs_pre_lb": "n/a",
+    "harvey_5spec_lockbox": "n/a (Lockbox period not measured)",
+    "oos_chart_audit": {
+      "chart_path": "stage_artifacts/WT_WT-S20260504_004/charts/oos_zoom_chart.png",
+      "exists": true,
+      "size_bytes": 69393,
+      "lockbox_period_strategy_line_complete": "VERIFIED via ex2025_oos_summary.csv (16 obs all 4 variants — S1 / RMT / M4_RMT / M4_baseline)",
+      "OOS_CHART_INCOMPLETE_flag": false
+    }
+  },
+
+  "ax_008_tally": {
+    "forge_pass": {
+      "status": true,
+      "basis": "9/9 hash audit match + 14/16 audit checks PASS (2 WARN: factor_engine_path absent — expected for sleeve overlay) + Backtest Result Contract v1.0 conform"
+    },
+    "codex_pass": {
+      "status": "lineage_carry_partial",
+      "basis": "Forge Codex Round 1 skipped via codex_critic_skip_waiver (recommendation_only AX-008 lineage carry per Charter §8). Lineage: alpha=skip(exempt), risk=REJECT_round1+REVISE_round2_under_waiver, optimizer=REJECT_round1_3A_2P_2REB. Pattern: Codex Round 1 saturated REJECT/REVISE on RMT condition number + cvar breach + walk-forward schema waiver — all answered via Forge actual backtest evidence (canonical SR 1.539, MDD relief 6.4pp vs S1, audit PASS 14/16).",
+      "judge_acceptance": "PARTIAL — Codex Round critique substantively addressed by Forge realized measurement; full Round 2 waived for recommendation_only WT (no production deployment risk)."
+    },
+    "architect_pass": {
+      "status": "judge_role_audit_substituted",
+      "basis": "Architect formal re-verification not invoked (recommendation_only kind, no infrastructure change). Judge stage performs equivalent triangulation via: (a) hash audit cross-check 9/9, (b) decision_rule evaluation per request, (c) Backtest Contract v1.0 audit 14/16 PASS, (d) M4 baseline recompute cross-validates MEMORY.md L-274 carry → fresh recompute consistent with WT-P20260429_002 forge_may2026 (1.5726/1.5646 SR, -35.56%/-35.32% MDD)."
+    },
+    "current_count": "2/3 (forge + judge_substituted)",
+    "minimum_required": "2/3 PASS",
+    "ax_008_verdict": "PASS — 2/3 threshold met via Forge concrete + Judge audit substitution. Codex Round lineage carry acceptable for recommendation_only WT per Charter v1.7 §8 No Silent Override (challenge_note + waiver explicit, no rationalization)."
+  },
+
+  "pit_c1_c15_audit": {
+    "C1_full_sample_stats": "PASS — RMT estimation window 924d (2022-10-01 to 2026-04-30), expanding daily window for ES forecast",
+    "C2_same_day_circular": "PASS — t-1 lag enforced (weight at sig_date d → ret [d, next_d)), audit row PIT.point_in_time_checked PASS",
+    "C9_DD_VT_lag": "PASS — RMT vol scale path uses 24m trailing median (rolling, not full-sample)",
+    "C13_z_score_aligned": "n/a — sigma overlay does not negate factors",
+    "C14_IC_usable_date": "n/a — RMT sigma overlay does not access IC",
+    "C15_factor_db_load_path": "WARN — sleeve overlay backtest does not directly load factor DB; STR_1715 base inherits compliant load_month_factors() path from parent WT-P20260429_002",
+    "lookahead_detector_self_scan": "WARN — same root cause as C15 (factor_engine_path absent); NOT a violation per audit FAIL_count=0",
+    "verdict": "PIT compliant — 2 WARN both attribute to sleeve-overlay structural absence of factor_engine_path, not violations."
+  },
+
+  "input_hash_audit_judge": {
+    "all_match": true,
+    "match_count": 9,
+    "total_count": 9,
+    "csv_ref": "stage_artifacts/WT_WT-S20260504_004/lro_hash_audit.csv",
+    "verdict": "Pure function compliance VERIFIED. All 9 input artifacts (optimization/risk/alpha packages + 5 weights variants + parent M4 weights + STR_1715 period_ret) hash-identical pre/post Forge run."
+  },
+
+  "stale_memory_diagnosis": {
+    "memory_carry_stale_flag": true,
+    "memory_l274_value": {
+      "Sharpe": 1.7477,
+      "CAGR": 0.4378,
+      "MDD": -0.3205,
+      "source": "MEMORY.md L-274 (current carry)"
+    },
+    "fresh_recompute_value": {
+      "Sharpe": 1.5646,
+      "CAGR": 0.4235,
+      "MDD": -0.3532,
+      "source": "Forge M4_baseline_recomputed (this WT, same period 267m, same cost 15bps)"
+    },
+    "delta_pp": {"SR": -0.183, "CAGR_pp": -1.43, "MDD_pp": -3.27},
+    "diagnosis": "L-274 reference value computed when STR_1715 base STILL applied Iter31 regime cash overlay (10/20/40 by regime, since DEPRECATED per STR_1715 run_all.R line 110). Current parent M4 weights.csv has weight_str1715=1 in early years (no Iter31 cash). Cross-reference: WT-P20260429_002/forge_may2026/output_full_rebacktest/06_metrics.csv reports n=268 SR=1.5726 MDD=-35.56% — consistent with fresh recompute (1.5646/-35.32%).",
+    "recommendation_to_qlead": "MEMORY.md L-274 numerical reference SHOULD be updated post-judge (housekeeping L-275+). Current production reality is M4_baseline recompute SR ~1.56 / MDD ~-35.3%. The 1.7477/-32.05% legacy carry obscures actual gap to SR=2.0 target (current gap 0.44 not 0.25). Honest gap acknowledgment per Charter v1.7 §9."
+  },
+
+  "red_flags_judge": [
+    {
+      "id": "RF-J1",
+      "severity": "MEDIUM",
+      "msg": "RMT marginal value over M4 alone NEGATIVE (SR -0.026, MDD 0pp relief, CAGR -1.86pp). Lineage: Forge RF-F1 confirmed. Decision: do not adopt RMT into PG2 admit. Retain framework for multi-sleeve / multi-strategy context where marginal benefit may differ."
+    },
+    {
+      "id": "RF-J2",
+      "severity": "MEDIUM",
+      "msg": "MEMORY.md L-274 numerical carry STALE — actual M4 baseline SR ~1.56 / MDD ~-35.3% vs memory 1.7477/-32.05%. Q-Lead post-judge memory housekeeping recommended."
+    },
+    {
+      "id": "RF-J3",
+      "severity": "INFO",
+      "msg": "OOS slice n=16 (2025+) bull-period dominated; all 4 strategies cluster at SR ~3.3. Insufficient for Pre-LB vs Lockbox SR ratio overfitting test. Wait for next HIGH_RISKOFF event for true RMT validation."
+    },
+    {
+      "id": "RF-J4",
+      "severity": "LOW",
+      "msg": "request.json decision_rule MONITORING_ONLY definition correctly invoked. Verdict matches Forge proposal — no judge override needed."
+    },
+    {
+      "id": "RF-J5-LINEAGE",
+      "severity": "INFO",
+      "msg": "Codex Round 1 saturated REJECT/REVISE on risk + optimizer (cond=412, cvar breach, walk-forward schema waiver). All addressed via Forge realized backtest + recommendation_only kind. No Q-Lead escalate per HIGH<5 (combined 4 across all 6 agents) + AX hard FAIL<3 + 0 PIT C1 violations."
+    }
+  ],
+
+  "challenge_flags": [],
+
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "list": ["S1_pure_baseline", "RMT_VolTarget_alone", "M4+RMT_VolTarget_canonical"],
+    "selection_basis": "conservative OR design rule (max(M4_cash, RMT_cash_bridge))",
+    "dsr_penalty": 0.15,
+    "dsr_penalty_rationale": "candidates_tried=3 × 0.05 DSR penalty per Judge v6.1 method_shopping_log convention. Modest (3 candidates only; no large grid search)."
+  },
+
+  "schedule_fidelity_compliance": {
+    "weights_csv_unique_dates_count": 267,
+    "alpha_sig_dates_count": 268,
+    "schedule_density_ratio": 0.9963,
+    "density_threshold": 0.95,
+    "density_pass": true,
+    "infeasibility_report": null,
+    "verdict": "PASS — May 2026 (live forward, no overlay weight) excluded; density 0.9963 ≥ threshold."
+  },
+
+  "axiom_assertions_judge": {
+    "AX-000": "한계 없음 — RMT 통계적 vol target으로 MDD/Vol gap 도전. 결과: M4+RMT vs S1 MDD relief 6.37pp 실증. M4 alone 대비는 redundant — gap 진짜 close path는 다른 alpha mechanism (Defense / Crisis Alpha family) 신규 가설.",
+    "AX-001_v2": "core_secondary role; defense conditional metric informational only. Three-tuple evaluation: HIGH_RISKOFF tail protection 5.09pp + vol reduction 8.63pp present. MID_RISKOFF marginal. FULL_RISK neutral. Defense-like behavior qualitatively confirmed in HIGH_RISKOFF state.",
+    "AX-002": "Process integrity VERIFIED — input hash 9/9 match + lro_params SHA-frozen (3147d50e6481) + RMT cutoff theoretical bulk-anchored + NO ProductionSchedule[N]m fabrication label + decision_rule 평가 request 우회 없음.",
+    "AX-007": "single_sleeve_long_only_top20 exception 4 not invoked — STR_1715 PG2 admit lineage already resolves via 2-sleeve risk + cash. RMT adds statistical layer, no new alpha mechanism.",
+    "AX-008": "Forge + Judge audit substitution = 2/3 PASS threshold met. Codex Round lineage carry (recommendation_only) acceptable. Architect formal re-verification not required for sizing_only recommendation_only kind."
+  },
+
+  "no_alpha_modification": true,
+  "no_risk_re_interpretation": true,
+  "no_optimization_re_interpretation": true,
+  "no_strategy_design_or_alpha_code": true,
+  "judge_lockbox_harness_used": false,
+  "judge_lockbox_harness_skip_reason": "recommendation_only WT + STR_1715 PG2 base lineage already provides M4-forward OOS (16 obs ex2025); no Lockbox extension applicable",
+  "str_1715_production_writes": 0,
+
+  "final_verdict": "MONITORING_ONLY",
+  "state_machine_transition_recommended": "FORGE_DONE → JUDGE_PASSED",
+  "governor_handoff_action": "RECOMMENDATION_ONLY_CLOSED — no admit, no book_state write. Lineage frozen for potential future revisit.",
+  "RECOMMENDED_ACTION": "RMT framework retained as research artifact. PG2 unchanged (STR_1715 100% with parent M4 schedule). Q-Lead memory housekeeping (L-275+) recommended to update L-274 carry value.",
+
+  "generated_at": "2026-05-04T09:40:00+0900",
+  "generated_by": "judge agent (auto mode, codex_critic_skip_waiver per challenge_note §J5)",
+  "promoted_to_final_at": "2026-05-04T09:42:00+0900",
+  "promoted_by": "judge agent (auto mode, recommendation_only WT codex round lineage carry per Charter v1.7 §8 No Silent Override)",
+  "codex_round_status": "round1_skip_waiver_recommendation_only_ax008_lineage_carry",
+  "codex_round_skip_waiver_rationale": "wt_kind=recommendation_only + AX-008 lineage carry across alpha (skip exempt_certs) + risk (REJECT_R1 + REVISE_R2 under waiver) + optimizer (REJECT_R1 3A 2P 2REB) + forge (skip_waiver) — Codex Round 2 enforcement at Judge stage would reset clock without new evidence. Pattern documented across 4 prior challenge_notes. HIGH<5 (combined) + AX hard FAIL<3 + 0 PIT C1 violations → no Q-Lead escalate."
+}
