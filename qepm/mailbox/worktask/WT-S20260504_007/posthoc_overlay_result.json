@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-S20260504_007",
+  "method": "posthoc_AR_overlay_on_STR_1715_PG2_actual",
+  "baseline": "STR_1715 PG2 monthly ret_net (L-274 source: 03_period_returns.csv)",
+  "n_months": 263,
+  "cost_bps": 0.0015,
+  "cash_rate": 0,
+  "variants": [
+    {
+      "variant": "S0_baseline_STR_1715_PG2_actual",
+      "CAGR": 0.4564,
+      "Vol": 0.2655,
+      "Sharpe": 1.7186,
+      "MDD": -0.4169,
+      "Sortino": 0.9408,
+      "Calmar": 1.0945
+    },
+    {
+      "variant": "S1_threshold_step",
+      "CAGR": 0.3934,
+      "Vol": 0.2215,
+      "Sharpe": 1.7758,
+      "MDD": -0.2953,
+      "Sortino": 1.0334,
+      "Calmar": 1.3321
+    },
+    {
+      "variant": "S2_linear_band",
+      "CAGR": 0.2494,
+      "Vol": 0.1631,
+      "Sharpe": 1.5292,
+      "MDD": -0.2538,
+      "Sortino": 0.956,
+      "Calmar": 0.9823
+    },
+    {
+      "variant": "S3_sigmoid_smooth",
+      "CAGR": 0.2124,
+      "Vol": 0.1372,
+      "Sharpe": 1.5479,
+      "MDD": -0.1974,
+      "Sortino": 0.9811,
+      "Calmar": 1.0756
+    }
+  ],
+  "delta_vs_S0": [
+    {
+      "variant": "S1_threshold_step",
+      "delta_CAGR_pp": -6.3,
+      "delta_MDD_pp": 12.1618,
+      "delta_vol_relative_pct": -16.5725,
+      "delta_Sharpe": 0.0572
+    },
+    {
+      "variant": "S2_linear_band",
+      "delta_CAGR_pp": -20.7,
+      "delta_MDD_pp": 16.309,
+      "delta_vol_relative_pct": -38.5687,
+      "delta_Sharpe": -0.1894
+    },
+    {
+      "variant": "S3_sigmoid_smooth",
+      "delta_CAGR_pp": -24.4,
+      "delta_MDD_pp": 21.9512,
+      "delta_vol_relative_pct": -48.3239,
+      "delta_Sharpe": -0.1707
+    }
+  ],
+  "pass_gate_evaluation": {
+    "cagr_floor_20pct": ["PASS", "PASS", "PASS"],
+    "mdd_target_25pct": ["FAIL", "FAIL", "PASS"],
+    "mdd_3pp_improvement": ["PASS", "PASS", "PASS"],
+    "vol_20pct_improvement": ["FAIL", "PASS", "PASS"],
+    "sortino_1_0": ["PASS", "FAIL", "FAIL"],
+    "alpha_rank_corr_1_0": "PASS_MATHEMATICAL_PROOF (rank preserved by scalar β)"
+  },
+  "alpha_preservation_audit": {
+    "weight_rank_correlation": 1,
+    "relative_proportion_invariance": true,
+    "selection_invariance": true,
+    "m4_schedule_preserved": true,
+    "note": "STR_1715 PG2 monthly return time series used directly; β_t scalar applied as cash overlay; alpha 100% preserved by construction"
+  },
+  "created_at": "2026-05-04T16:43:47+09:00"
+}

@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-S20260504_007_S2_linear_FORGE",
+  "strategy_id": "WT-S20260504_007_S2_linear",
+  "strategy_name": "AR_Pure_Overlay_S2_linear",
+  "strategy_family": "STR_1715 (multi-sleeve) + Absorption Ratio overlay (sizing_only)",
+  "signal_description": "STR_1715 weight ranking + relative proportions PRESERVED (alpha invariance); AR_t (Kritzman-Page-Turkington 2011 K=5 W=252) → β_t ∈ [0,1] gross exposure modulator. Variant: S2_linear",
+  "universe_rule": "KOSPI200_KOSDAQ150_intersection + LIQ_20d >= 2e8",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month-start label / prior month underlying",
+  "execution_date_rule": "t+1 lag (start_d = first trading day >= sig_date)",
+  "weighting_method": "STR_1715 base × β_t (alpha-preserving overlay)",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "AR overlay variant: S2_linear (β floor depends on mapping)",
+  "cost_model": "commission=0.0015 one-way (15bps)",
+  "missing_data_rule": "STR_1715 inherited",
+  "risk_controls": "AR-driven β reduces gross exposure during high systemic risk",
+  "lookahead_prevention": "C1/C2/C9: AR_t computed strictly t-1 close; β_t applied at t open",
+  "survivorship_bias_control": "RAWDATA full universe + delisted included"
+}

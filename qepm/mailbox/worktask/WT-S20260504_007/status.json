@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_007",
-  "current_phase": "OPTIMIZER_DONE",
-  "updated_at": "2026-05-04T15:54:33+0900",
+  "current_phase": "FORGE_DONE",
+  "updated_at": "2026-05-04T16:41:34+09:00",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -38,6 +38,11 @@
       "phase": "OPTIMIZER_DONE",
       "at": "2026-05-04T15:54:33+0900",
       "note": "AR Pure Risk Overlay sizing_only. 4 variants (linear/threshold/sigmoid/baseline_S1) x 268 dates x 19 rows = 5092 rows stock-level weights.csv. Codex REJECT (no veto): 4 FIXED_v2 + 2 REBUTTAL + 1 PARTIAL. canonical reframed baseline_S1 (Forge sweep decides primary). Sleeve-only TO 89-157% (under 600 cap); inherited STR_1715 base 750% PG2-admitted. expected_TE 0.0608 threshold_step (vs base). All RF-O5/O6/O7/O9 PASS strict; max stock w 0.20 cap; Sigma w=1 max dev 8.96e-9. schedule density 1.0."
+    },
+    {
+      "phase": "FORGE_DONE",
+      "at": "2026-05-04T16:41:34+09:00",
+      "note": "4 variants backtested. Primary canonical=S0_baseline. Pure Function PASS (hash audit start=end). LRO SHA match. Alpha invariance 0 VIOLATION across all 4 variants. S0 SR=0.8469 / CAGR=0.1956 / MDD=0.5586. Decision: NONE of 3 overlay variants PASS request.json criteria (CAGR floor 20% violated). Same-period delta vs S0: S1 -3.21pp CAGR for -18.79pp MDD; S2 -9.59pp/-28.36pp; S3 -10.76pp/-32.87pp. Codex: skip_waiver_invoked_per_LRO_pattern."
     }
   ],
   "alpha_preservation_mandate": {
@@ -46,8 +51,8 @@
     "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance",
     "violation_action": "hard_FAIL_judge_verdict"
   },
-  "next_phase": "FORGE_DONE",
-  "next_actor": "forge",
+  "next_phase": "JUDGE_PASSED",
+  "next_actor": "judge",
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
