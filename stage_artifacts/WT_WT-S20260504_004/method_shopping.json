@@ -1,0 +1,35 @@
+{
+  "candidates_tried": 3,
+  "selection_objective": "to_adj_ret",
+  "method_log": [
+    {
+      "name": "S1",
+      "description": "pure STR_1715 (no de-risk) — baseline",
+      "turnover_penalty_proxy": "n/a",
+      "active_cap": 0.2,
+      "schedule_density_ratio": 0.9963,
+      "selected": false,
+      "note": "no overlay → MDD -32.05% inherited unchanged"
+    },
+    {
+      "name": "RMT_VolTarget",
+      "description": "RMT denoised Σ → ES quantile vol target → cash bridge",
+      "turnover_penalty_proxy": "scale ∈ [0.5,1.0] mean transition prob",
+      "active_cap": 0.2,
+      "schedule_density_ratio": 0.9963,
+      "selected": false,
+      "note": "Statistical only, ignores M4 regime cash. Lower MDD relief than combo."
+    },
+    {
+      "name": "M4+RMT_VolTarget",
+      "description": "max(M4 cash, RMT cash bridge) — strict OR conservative combine",
+      "turnover_penalty_proxy": "monthly schedule, max() rebalance only when active",
+      "active_cap": 0.2,
+      "schedule_density_ratio": 0.9963,
+      "selected": true,
+      "note": "canonical — combines regime (M4 event/macro) + statistical (RMT vol). Non-redundant."
+    }
+  ],
+  "parallel_exec": false,
+  "reason": "Three deterministic overlay rules — no QP solve. Sequential R is sufficient."
+}

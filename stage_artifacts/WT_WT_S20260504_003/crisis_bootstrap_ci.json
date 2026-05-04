@@ -1,0 +1,43 @@
+{
+  "task_id": "WT-S20260504_003",
+  "state": "Crisis",
+  "n_obs": 47,
+  "B_resamples": 2000,
+  "ann_return": {
+    "lo": -0.0171,
+    "hi": 0.7363,
+    "mean": 0.3594,
+    "sd": 0.1944
+  },
+  "ann_vol": {
+    "lo": 0.3261,
+    "hi": 0.459,
+    "mean": 0.3929,
+    "sd": 0.0348
+  },
+  "ann_sharpe": {
+    "lo": -0.0413,
+    "hi": 1.9061,
+    "mean": 0.9133,
+    "sd": 0.4963
+  },
+  "monthly_VaR_95": {
+    "lo": 0.0887,
+    "hi": 0.1794,
+    "mean": 0.1433,
+    "sd": 0.024
+  },
+  "monthly_CVaR_95": {
+    "lo": 0.1126,
+    "hi": 0.1865,
+    "mean": 0.1603,
+    "sd": 0.0181
+  },
+  "pooled_fallback_recommendation": {
+    "rationale": "Crisis n=47 yields sharpe CI width ~ 1.0+. For sizing decisions, recommend 0.5x posterior weight blend with Caution-state when Crisis is < 20 obs",
+    "blend_rule": "if state_t == Crisis & n_state < 50: scale_t = 0.5*scale_Crisis + 0.5*scale_Caution",
+    "current_n": 47,
+    "blend_active": true,
+    "blended_scale_Crisis": 0.647
+  }
+}

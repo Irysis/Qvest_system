@@ -1,0 +1,46 @@
+{
+  "candidates_tried": 3,
+  "parallel_exec": false,
+  "total_seconds": 0.542,
+  "method_log": [
+    {
+      "name": "S1_baseline_Iter31",
+      "params": {
+        "lambda": 1.5,
+        "phi": 3,
+        "ub": 0.2
+      },
+      "LFC_2026_05_01": 0.0007,
+      "selected": false,
+      "note": "STR_1715 PG2 100% production reproduce. No hedge."
+    },
+    {
+      "name": "PCA_Hedge",
+      "params": {
+        "gamma": 5,
+        "eps_diag": 0.0001,
+        "ub": 0.2,
+        "max_names": 20
+      },
+      "LFC_2026_05_01": 0.0019,
+      "LFC_reduction_pct": -157,
+      "selected": false,
+      "note": "Statistical factor hedge. STR_1715 alpha input. recommendation_only side-by-side."
+    },
+    {
+      "name": "M4+PCA_Hedge",
+      "params": {
+        "gamma": 5,
+        "m4_cash_layer": "BOCPD_regime"
+      },
+      "selected": true,
+      "note": "Canonical primary. M4 cash overlay × PCA hedge risk sleeve. recommendation_only."
+    },
+    {
+      "name": "Selected",
+      "reason": "M4+PCA_Hedge canonical (M4 retains downside protection + PCA hedge structurally reduces dominant latent factor exposure).",
+      "selection_objective": "to_adj_ret_with_lfc_reduction",
+      "note": "Forge to backtest 3-strategy matrix and compare actual MDD/vol/CAGR."
+    }
+  ]
+}

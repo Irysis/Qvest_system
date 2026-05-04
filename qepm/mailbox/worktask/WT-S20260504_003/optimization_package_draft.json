@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-S20260504_003",
+  "package_kind": "optimization_package_hmm_regime",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "agent": "optimizer-research",
+  "produced_at": "2026-05-04T09:12:18+0900",
+  "as_of_date": "2026-05-04",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "hmm_params_sha256": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567",
+  "weights_csv_sha256": "eb0e56cd2a49b363f901d31c15abb1c34d271f3dfac9b9b5a56c1faa6b0be388",
+  "method_summary": {
+    "framework": "HMM 3-state regime-conditional sleeve scaling (sizing-only overlay on STR_1715 PG2)",
+    "primary_signal": "scale_predicted (walk-forward forward-filter, PIT-clean from hmm_posterior_path_walkforward.csv)",
+    "canonical_strategy": "M4+HMM_Scale",
+    "canonical_rule": "w_cash_t = max(M4_parent_cash_t, 1 - scale_HMM_walkforward_t); w_str_t = 1 - w_cash_t",
+    "pre_walkforward_handling": "scale_HMM=1.0 pre-2009-03 (no PIT signal); M4 cash alone applies",
+    "selection_objective": "crowding_adj_ret",
+    "selection_objective_rationale": "Sizing overlay's value = MDD/vol reduction without alpha distortion. Net-IR vs S1 baseline ≥ 0 + MDD reduction = primary criterion."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "S1_baseline",
+        "ann_ret": 0.479,
+        "sr": 1.8099,
+        "mdd": -0.4169,
+        "turnover_annual_roundtrip": 0,
+        "selected": false,
+        "rationale": "Constant w_str=1.0 baseline (no overlay); reference for IR computation"
+      },
+      {
+        "name": "HMM_Scale",
+        "ann_ret": 0.3922,
+        "sr": 1.6667,
+        "mdd": -0.4043,
+        "turnover_annual_roundtrip": 0.5096,
+        "ir_vs_S1": -0.9607,
+        "selected": false,
+        "rationale": "Pure HMM walk-forward scaling; no M4 cash overlay; reference for additivity audit"
+      },
+      {
+        "name": "M4+HMM_Scale",
+        "ann_ret": 0.4052,
+        "sr": 1.7758,
+        "mdd": -0.3021,
+        "turnover_annual_roundtrip": 0.8115,
+        "ir_vs_S1": -0.755,
+        "selected": true,
+        "rationale": "Canonical: combines deployed M4 schedule + HMM walk-forward scaling via max(cash) rule (no double-counting)"
+      }
+    ],
+    "parallel_exec": false,
+    "n_workers": 1
+  },
+  "method_selected": "M4+HMM_Scale",
+  "method_selected_rationale": "WT spec mandates HMM_Regime + M4 already deployed (parent WT-P20260429_002). Combined max-cash rule retains both signals without stacking, and provides the primary canonical target_weights handoff to Forge.",
+  "selection_objective": "crowding_adj_ret",
+  "target_weights_summary": {
+    "n_unique_dates": 267,
+    "n_parent_dates": 267,
+    "schedule_density_ratio": 1,
+    "schedule_density_pass": true,
+    "columns": ["Date", "weight_str1715", "weight_cash"],
+    "date_range": ["2004-01-01", "2026-03-01"],
+    "mean_weight_str": 0.8935,
+    "mean_weight_cash": 0.1065,
+    "max_weight_cash": 0.5709,
+    "n_cash_active_periods": 217
+  },
+  "active_weights_basis": "active = w_canonical - w_S1_baseline (sleeve-level deviation from constant 100% allocation)",
+  "expected_active_return": -0.0738,
+  "expected_tracking_error": 0.0698,
+  "expected_information_ratio": -0.755,
+  "turnover": 0.8115,
+  "estimated_cost": 0.0012,
+  "binding_constraints": [],
+  "infeasibility_report": {},
+  "hard_constraints_audit": {
+    "long_only": true,
+    "sigma_w_eq_1": true,
+    "weight_str_in_unit": true,
+    "weight_cash_in_unit": true,
+    "underlying_str1715_max_w_inherited": "0.20 (from parent admit; not re-optimized in this sizing-only WT)",
+    "max_names_inherited": "20 stocks (STR_1715 internal, unchanged)"
+  },
+  "hmm_walkforward_provenance": {
+    "csv_path": "stage_artifacts/WT_WT-S20260504_003/hmm_posterior_path_walkforward.csv",
+    "n_valid_predictions": 207,
+    "min_train_obs": 60,
+    "first_pit_clean_date": "2009-03-02",
+    "last_pit_clean_date": "2026-05-01",
+    "pre_walkforward_baseline_scale": 1
+  },
+  "cash_definition_audit_ref": "stage_artifacts/WT_WT-S20260504_003/cash_definition_audit.json",
+  "lro_portfolio_mrc_ref": "stage_artifacts/WT_WT-S20260504_003/lro_portfolio_mrc.csv",
+  "weights_csv_ref": "stage_artifacts/WT_WT-S20260504_003/weights.csv",
+  "weights_variants_ref": {
+    "S1": "stage_artifacts/WT_WT-S20260504_003/weights_variants/S1.csv",
+    "HMM_Scale": "stage_artifacts/WT_WT-S20260504_003/weights_variants/HMM_Scale.csv",
+    "M4+HMM_Scale": "stage_artifacts/WT_WT-S20260504_003/weights_variants/M4+HMM_Scale.csv"
+  },
+  "axiom_assertions": {
+    "AX-000": "한계 없음 — 통계적 sizing 결정 (no fixed cash %)",
+    "AX-001_v2": "Sleeve-level vol/MDD reduction recommendation. Mean cash 0.106, max cash 0.571, n_cash_active=217. Crisis pooled-blend honored (n=47<50).",
+    "AX-002": "HMM params SHA-frozen (sha256=7f6d4a42b8cfb49d). Walk-forward forward-filter only — verified via hmm_posterior_path_walkforward.csv. Smoothed posterior NOT used for sizing.",
+    "AX-007": "exception_clause_3_ml_sizing — HMM is statistical sizing overlay on existing top20 sleeve (STR_1715 PG2). No new factor signals. Sleeve-level w∈[0,1].",
+    "AX-008": "Verification triangulation pending: this Optimizer package = source 1. Forge will re-fit + re-backtest (source 2). Codex critic round = source 3. Need 2/3 PASS."
+  },
+  "challenge_flags": [],
+  "explanation": {
+    "top_overweights": "Sleeve-level only — STR_1715 internal stock weights inherited from parent (S-Oil 20%, 쏠리드 20%, 한올바이오 13.1%, 리노공업 7.6%, 삼성전자 7.3%)",
+    "top_underweights": "N/A at sleeve level",
+    "main_tradeoffs": ["M4 deployed cash schedule preserved (max-cash rule does not weaken existing deployment)", "HMM walk-forward scale_predicted adds Crisis-state de-risk signal beyond M4", "Pre-2009-03 period inherits M4 schedule alone (no PIT-clean HMM signal)"]
+  },
+  "forge_handoff": {
+    "primary_input": "weights.csv (M4+HMM_Scale canonical)",
+    "variants_for_audit": ["S1", "HMM_Scale"],
+    "inheritance": {
+      "str_1715_internal_weights": "INHERITED_FROM_STR_1715 PG2 (parent admit 2026-05-02)",
+      "cost_model": "v2.3_kr_retail_15bps",
+      "universe": "KOSPI200_KOSDAQ150_intersection (parent universe unchanged)"
+    },
+    "expected_metrics_target": {
+      "cagr_floor": 0.2,
+      "mdd_target": "≤ -25% OR M4 대비 -3pp 개선",
+      "vol_target": "M4 대비 -20% 개선"
+    }
+  },
+  "draft_revision": "v1",
+  "draft_status": "_draft suffix retained until Codex critic round complete"
+}

@@ -1,0 +1,31 @@
+{
+  "task_id": "WT-S20260504_004",
+  "as_of_date": "2026-05-04",
+  "cash_definitions": {
+    "M4_cash": {
+      "source": "WT-P20260429_002 / WT-D20260430_001",
+      "method": "M4 regime-conditional schedule (strong/normal/calm 10/20/40% pillars + BOCPD decay + BL tri-pillar)",
+      "role": "regime overlay (event/macro driven, BL prior conditioning)",
+      "n_unique_dates": 267
+    },
+    "RMT_cash_bridge": {
+      "source": "stage_artifacts/WT_WT-S20260504_004/vol_scale_path.csv",
+      "method": "1 - scale, scale = ES_target / ES_current (capped [0.5, 1.0])",
+      "role": "statistical vol-target overlay (RMT-cleaned ES quantile, no fixed % rule)",
+      "n_unique_dates": 197,
+      "es_target_apr_2026": 0.1534,
+      "es_current_apr_2026": 0.1722,
+      "scale_apr_2026": 0.7596,
+      "cash_bridge_apr_2026": 0.2404
+    }
+  },
+  "combined_rule": "weight_cash = max(M4_cash, RMT_cash_bridge); weight_str1715 = 1 - weight_cash",
+  "conservativeness_argument": "max() is conservative — never under-protects. Two cash sources are non-redundant (M4 = regime/event, RMT = statistical vol). Strict OR.",
+  "cash_yield_assumption": "0% (cash bridge does not earn — STR_1715 retail KR convention)",
+  "active_cap": {
+    "S1": 0.2,
+    "RMT_VolTarget": 0.2,
+    "M4+RMT_VolTarget": 0.2
+  },
+  "generated_at": "2026-05-04T09:10:15+0900"
+}

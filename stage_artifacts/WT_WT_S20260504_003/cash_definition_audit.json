@@ -1,0 +1,33 @@
+{
+  "task_id": "WT-S20260504_003",
+  "cash_definition": {
+    "canonical_strategy": "M4+HMM_Scale",
+    "cash_rule": "weight_cash_t = max(M4_parent_cash_t, 1 - scale_HMM_walkforward_t); weight_str_t = 1 - weight_cash_t",
+    "cash_overlap_principle": "single cash source — combined max() ensures no double-counting; M4 + HMM signals OR'd at cash-bucket level, not stacked",
+    "parent_M4_source": "qepm/mailbox/worktask/WT-P20260429_002/weights.csv",
+    "hmm_source": "stage_artifacts/WT_WT-S20260504_003/hmm_posterior_path_walkforward.csv (walk-forward filtered, PIT-clean)",
+    "pre_walkforward_period_handling": "scale_HMM = 1.0 (no PIT-clean signal pre-2009-03 → no de-risk overlay; M4 alone applies)",
+    "cash_neutral_periods": 50,
+    "cash_active_periods": 217,
+    "mean_cash_canonical": 0.1065,
+    "max_cash_canonical": 0.5709
+  },
+  "variant_summary": {
+    "S1": {
+      "mean_w_str": 1,
+      "mean_w_cash": 0
+    },
+    "HMM_Scale": {
+      "mean_w_str": 0.9149,
+      "mean_w_cash": 0.0851
+    },
+    "M4+HMM_Scale": {
+      "mean_w_str": 0.8935,
+      "mean_w_cash": 0.1065
+    }
+  },
+  "active_cap_interpretation": "Sleeve-level w_str ∈ [0,1]; underlying STR_1715 stock weight cap [0,0.20] inherited from parent admit (unchanged here)",
+  "long_only": true,
+  "sigma_w_eq_1": true,
+  "generated_at": "2026-05-04T09:11:44+0900"
+}
