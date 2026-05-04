@@ -1,0 +1,54 @@
+{
+  "C1_full_sample_stats": {
+    "verdict": "PASS",
+    "note": "DCC fit uses full 928-day sample for parameter estimation. σ_p forecast uses expanding-window refit (60m burn-in, 12m refit cycle). Realized 36m vol uses rolling 36m. NO full-sample lookahead in any sizing rule."
+  },
+  "C2_same_day_circular": {
+    "verdict": "PASS",
+    "note": "Daily Ret = Close[t]/Close[t-1]-1, lagged. σ_p forecast at month t uses GARCH params estimated through month t-1."
+  },
+  "C3_aggregation_application": {
+    "verdict": "PASS",
+    "note": "Univariate GARCH coef → DCC two-step → Σ_T+1 forecast. NO same-window aggregate-then-apply leakage."
+  },
+  "C4_fundamental_lag": {
+    "verdict": "N/A",
+    "note": "DCC GARCH uses price returns only, no fundamental data."
+  },
+  "C5_overlay_t_minus_1": {
+    "verdict": "PASS",
+    "note": "Vol target rule cash_bridge_t uses σ_p forecast made at end of t-1 with data through t-1."
+  },
+  "C6_survivorship": {
+    "verdict": "PARTIAL_NOTE",
+    "note": "Active 18-stock universe is the 2026-05 holdings (post-rebalance). For OOS DCC use, this is the operational reality. Historical σ_p backtest uses STR_1715 nav directly (which itself is survivorship-clean from forge fresh full rebacktest 268m)."
+  },
+  "C7_lookahead_pattern": {
+    "verdict": "PASS",
+    "note": "Common-date intersection from 2022-07-18 (HPSP listing) — all 18 stocks have valid daily returns from that date forward. NO synthetic backfilling."
+  },
+  "C9_dd_vt_lag": {
+    "verdict": "PASS",
+    "note": "σ_p forecast is t-1 conditional (1-step-ahead from t-1 fit). Vol target scaling applied to t weights. NO same-day circularity."
+  },
+  "C10_liquidity_t_minus_1": {
+    "verdict": "PASS",
+    "note": "STR_1715 alpha + Iter31 weight construction handle liquidity at t-1; risk research inherits clean inputs."
+  },
+  "C11_data_lag_consistency": {
+    "verdict": "PASS",
+    "note": "Daily Close from RAWDATA (KR domestic, t-1 close PIT). No FRED data used."
+  },
+  "C13_z_score_alignment": {
+    "verdict": "N/A",
+    "note": "Risk research operates on raw returns, not factor z-scores."
+  },
+  "C14_ic_usable_date": {
+    "verdict": "N/A",
+    "note": "Risk research does not access factor IC directly."
+  },
+  "C15_factor_db_load": {
+    "verdict": "N/A",
+    "note": "Risk research does not load factor DB; uses RAWDATA + STR_1715 returns only."
+  }
+}

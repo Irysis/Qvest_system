@@ -121,19 +121,38 @@ if (!dcc_stationary) {
 # ─── Engle-Sheppard test for DCC vs constant correlation (LRT proxy) ─────
 # Use likelihood ratio against multivariate normal with constant cov
 # (rmgarch does not expose Engle-Sheppard directly; we approximate via LR)
-ll_dcc <- likelihood(dcc_fit)
-# Constant-correlation null: standardized residuals correlation
-std_res <- residuals(dcc_fit, standardize = TRUE)
-const_cor <- cor(std_res)
-# Log-likelihood under constant correlation MVT-norm with same univariate sigmas:
-# Approx LR: chi-squared 2 d.f. (alpha=beta=0)
-# We compute likelihood of MVN with constant R using residuals
-mu_vec <- colMeans(std_res)
-S_const <- cov(std_res)
-ll_const <- sum(mvtnorm::dmvnorm(std_res, mean = mu_vec, sigma = S_const, log = TRUE))
-LR_stat <- 2 * (ll_dcc - ll_const)
-LR_pval <- pchisq(LR_stat, df = 2, lower.tail = FALSE)
-cat(sprintf("[Step 2] Engle-Sheppard proxy LR test: LR=%.2f, p=%.4f\n", LR_stat, LR_pval))
+ll_dcc <- as.numeric(likelihood(dcc_fit))
+# Engle-Sheppard (2001) test for constant-conditional-correlation null:
+# Under H0 (CCC), standardized residual cross-products z_i,t × z_j,t should be iid.
+# Box-Pierce portmanteau test on each pair's cross-product series
+# (lag=5), Bonferroni-aggregated.
+raw_res <- as.matrix(residuals(dcc_fit))
+sigma_uni <- as.matrix(sigma(dcc_fit))
+std_res <- raw_res / sigma_uni
+
+n_pairs <- K * (K - 1L) / 2L
+LB_stats <- numeric(n_pairs)
+LB_pvals <- numeric(n_pairs)
+idx <- 0L
+for (i in seq_len(K - 1L)) {
+  for (j in seq.int(i + 1L, K)) {
+    idx <- idx + 1L
+    cross <- std_res[, i] * std_res[, j]
+    bt <- tryCatch(Box.test(cross, lag = 5L, type = "Box-Pierce"),
+                   error = function(e) NULL)
+    if (!is.null(bt)) {
+      LB_stats[idx] <- as.numeric(bt$statistic)
+      LB_pvals[idx] <- as.numeric(bt$p.value)
+    } else {
+      LB_pvals[idx] <- NA_real_
+    }
+  }
+}
+pct_pairs_sig <- mean(LB_pvals < 0.05, na.rm = TRUE)
+median_LB <- median(LB_stats, na.rm = TRUE)
+es_decision <- if (pct_pairs_sig > 0.20) "DCC_preferred_over_CCC" else "CCC_acceptable"
+cat(sprintf("[Step 2] Engle-Sheppard portmanteau (cross-products, lag=5): %.1f%% pairs reject CCC at 5%%, median Q=%.2f -> %s\n",
+            pct_pairs_sig * 100, median_LB, es_decision))
 
 # ─── Time-varying covariance Σ_t ──────────────────────────────────────────
 H_array <- rcov(dcc_fit)  # K x K x T
@@ -216,12 +235,16 @@ write_json(dcc_params, file.path(SA, "dcc_params.json"),
 
 dcc_diag <- list(
   log_lik = as.numeric(ll_dcc),
-  log_lik_constant_corr = as.numeric(ll_const),
   AIC = as.numeric(-2 * ll_dcc + 2 * length(dcc_coef)),
   BIC = as.numeric(-2 * ll_dcc + log(T) * length(dcc_coef)),
-  engle_sheppard_proxy_LR = as.numeric(LR_stat),
-  engle_sheppard_proxy_pvalue = as.numeric(LR_pval),
-  engle_sheppard_proxy_decision = if (LR_pval < 0.05) "REJECT_constant_corr_DCC_preferred" else "DCC_not_significantly_better",
+  engle_sheppard_test = list(
+    method = "Box-Pierce portmanteau on z_i × z_j cross-products, lag=5",
+    n_pairs = n_pairs,
+    pct_pairs_reject_CCC_at_5pct = as.numeric(pct_pairs_sig),
+    median_Q_stat = as.numeric(median_LB),
+    decision = es_decision,
+    interpretation = "If >20% of pairs reject CCC, dynamic correlation is preferred (DCC justified)."
+  ),
   dcc_alpha_plus_beta = dcc_persistence,
   stationarity_pass = dcc_stationary,
   psd_pass = psd_pass,

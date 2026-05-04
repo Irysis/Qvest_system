@@ -1,0 +1,142 @@
+{
+  "source": "STR_1715 268m monthly net returns",
+  "T_months": 268,
+  "date_range": {
+    "start": "2004-02-02",
+    "end": "2026-05-01"
+  },
+  "full_sample": {
+    "var_95_historical": -0.0846,
+    "var_99_historical": -0.1523,
+    "es_95_historical": -0.1289,
+    "es_99_historical": -0.1694,
+    "mdd_full": 0.4169,
+    "sortino": 0.9116,
+    "calmar": 1.0542,
+    "annualized_vol": 0.2651
+  },
+  "evt_gpd": {
+    "threshold_pct": 0.9,
+    "threshold_value": 0.0604,
+    "xi": -0.3026,
+    "beta": 0.0541,
+    "n_excesses": 27,
+    "shape_se": 0.2836
+  },
+  "hill": {
+    "k": 26,
+    "alpha": 2.1279,
+    "interpretation": "alpha < 4 = heavy tails, alpha < 2 = no finite variance"
+  },
+  "stress_periods": [
+    {
+      "name": "Terror_9_11",
+      "start": "2001-09-01",
+      "end": "2001-12-31",
+      "n_obs": 0,
+      "cum_ret": "NA",
+      "mdd": "NA",
+      "note": "out_of_sample_or_too_few_obs"
+    },
+    {
+      "name": "GFC",
+      "start": "2007-10-01",
+      "end": "2009-03-31",
+      "n_obs": 18,
+      "cum_ret": -0.3864,
+      "mdd": 0.4169,
+      "worst_month": -0.1865
+    },
+    {
+      "name": "Euro_Debt",
+      "start": "2011-07-01",
+      "end": "2011-12-31",
+      "n_obs": 6,
+      "cum_ret": 0.2025,
+      "mdd": 0.1038,
+      "worst_month": -0.0545
+    },
+    {
+      "name": "China_Shock",
+      "start": "2015-06-01",
+      "end": "2016-02-29",
+      "n_obs": 9,
+      "cum_ret": 0.2823,
+      "mdd": 0.0286,
+      "worst_month": -0.0178
+    },
+    {
+      "name": "US_China_Trade",
+      "start": "2018-03-01",
+      "end": "2018-12-31",
+      "n_obs": 10,
+      "cum_ret": -0.1946,
+      "mdd": 0.2236,
+      "worst_month": -0.1487
+    },
+    {
+      "name": "COVID",
+      "start": "2020-01-01",
+      "end": "2020-06-30",
+      "n_obs": 6,
+      "cum_ret": 0.1294,
+      "mdd": 0.2512,
+      "worst_month": -0.1591
+    },
+    {
+      "name": "Rate_Hike",
+      "start": "2022-01-01",
+      "end": "2022-12-31",
+      "n_obs": 12,
+      "cum_ret": -0.0398,
+      "mdd": 0.1905,
+      "worst_month": -0.149
+    },
+    {
+      "name": "Iran_War_2026",
+      "start": "2026-02-01",
+      "end": "2026-04-30",
+      "n_obs": 3,
+      "cum_ret": 0.5157,
+      "mdd": -0,
+      "worst_month": 0.0376
+    }
+  ],
+  "ax_001_v2_conditional_metric": {
+    "state_definition": "DCC σ_p_annual_forecast quantile: BULL <= 33%, NORMAL 33-67%, CRISIS >= 67%",
+    "by_state": [
+      {
+        "regime_state": "CRISIS",
+        "n": 76,
+        "realized_ret_mean": 0.0466,
+        "realized_ret_sd": 0.2506,
+        "realized_mdd_proxy": 0.1305,
+        "pct_negative_months": 0.2105
+      },
+      {
+        "regime_state": "BULL",
+        "n": 72,
+        "realized_ret_mean": 0.0427,
+        "realized_ret_sd": 0.2782,
+        "realized_mdd_proxy": 0.1591,
+        "pct_negative_months": 0.2639
+      },
+      {
+        "regime_state": "NORMAL",
+        "n": 60,
+        "realized_ret_mean": 0.0171,
+        "realized_ret_sd": 0.1838,
+        "realized_mdd_proxy": 0.149,
+        "pct_negative_months": 0.35
+      }
+    ],
+    "bad_normal_realized_risk_ratio": 1.3635,
+    "interpretation": "bad/normal > 1 expected (CRISIS = high vol). Question is whether bad-state realized return remains tolerable per AX-001 v2."
+  },
+  "cvar_breach_flag": false,
+  "policy_thresholds": {
+    "cvar_breach_threshold": -0.2,
+    "mdd_target_pp": -0.25,
+    "cagr_floor": 0.2
+  }
+}

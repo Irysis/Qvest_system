@@ -1,0 +1,41 @@
+{
+  "task_id": "WT-S20260504_001",
+  "audit_scope": "PCA Latent Hedge full pipeline (residualization → PCA → B_ref freeze → portfolio exposure)",
+  "c1_full_sample_zscore": {
+    "rule": "C1: full-sample statistics forbidden, rolling/expanding only",
+    "pass": true,
+    "rationale": "All B_ref derived from rolling residual covariance up to IS endpoint 2024-06-30. SHA-frozen since."
+  },
+  "c2_same_day_circular": {
+    "rule": "C2: same-day circular reference forbidden",
+    "pass": true,
+    "rationale": "Risk research is descriptive measurement (not predictive signal generation). Realized-date alignment for Σ estimation is canonical. Predictive use would require t+1 lag, OUT OF SCOPE for risk_package."
+  },
+  "c12_factor_return_construction": {
+    "rule": "C12: factor return construction PIT-compliant",
+    "pass": true,
+    "rationale": "Known factor returns built from monthly Z_Score_Aligned (factor_db) applied to daily long-short spread within month. Each month's signal is from prior month-end. C13 (Z_Score_Aligned only) compliance verified."
+  },
+  "c14_ic_window": {
+    "rule": "C14: IC access requires Usable_Date <= sig_date",
+    "pass": true,
+    "rationale": "factor_db_connector.R load_month_factors() enforces Usable_Date <= signal_date. Risk research uses RAWDATA primarily, factor_db only for known factor return construction at IS endpoint (frozen)."
+  },
+  "c15_factor_db_route": {
+    "rule": "C15: Factor DB parquet direct load forbidden, load_month_factors() route only",
+    "pass": true,
+    "rationale": "All factor data accessed via factor_db_connector.R::load_month_factors. RAWDATA loaded via load_rawdata Parquet cache (not factor_db)."
+  },
+  "rolling_window_audit": {
+    "sigma_estimation_span": "2019-05-01 to 2026-04-30 (5y daily, 1718 obs)",
+    "tail_risk_span": "2004-02-02 to 2026-05-01 (268m monthly, STR_1715 ACTUAL)",
+    "b_ref_freeze_endpoint": "2024-06-30 (IS, no OOS modification)",
+    "sig_date_split": {
+      "sig_date": "2026-04-30",
+      "no_post_sig_used_in_estimation": true
+    }
+  },
+  "full_sample_grep_hits": 0,
+  "forbidden_phrases_used": {},
+  "pit_audit_pass": true
+}

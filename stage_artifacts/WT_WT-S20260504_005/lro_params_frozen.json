@@ -1,0 +1,62 @@
+{
+  "task_id": "WT-S20260504_005",
+  "generated_at": "2026-05-04T09:00:39+0900",
+  "pca": {
+    "method": "SVD",
+    "K": 5,
+    "is_frozen_at": "2024-06-30",
+    "var_explained": [
+      0.1753,
+      0.0274,
+      0.0154,
+      0.0145,
+      0.0107
+    ],
+    "cumulative_var": 0.2434,
+    "sha256_factor_returns": "837a6141f89dd2739a79123c3a9f66df7b9343a4fa009a2b768f870fed43be33"
+  },
+  "cross_sectional_regression": {
+    "type": "rolling_OLS_per_stock",
+    "window_daily": 252,
+    "method": "OLS .lm.fit (intercept + K factors)",
+    "sha256_loadings": "9e9784f723fd665a5cf1ac4a52914c9faa7e11b643c5640528cf689830242fcc"
+  },
+  "crisis_prone": {
+    "method": "lowest_mean_rank_across_6_crises",
+    "crisis_prone_k": 1,
+    "crisis_prone_label": "F1",
+    "crises": {
+      "EM_2004": {
+        "start": "2004-04-01",
+        "end": "2004-08-31",
+        "label": "EM-2004"
+      },
+      "COMMODITY_2006": {
+        "start": "2006-05-01",
+        "end": "2006-08-31",
+        "label": "2006-원자재"
+      },
+      "GFC_2007_09": {
+        "start": "2007-10-01",
+        "end": "2009-03-31",
+        "label": "GFC 2007-09"
+      },
+      "COVID_2020": {
+        "start": "2020-02-01",
+        "end": "2020-04-30",
+        "label": "COVID 2020"
+      },
+      "FED_2022": {
+        "start": "2022-01-01",
+        "end": "2022-10-31",
+        "label": "2022-Fed"
+      },
+      "IRAN_LMR_2026": {
+        "start": "2026-04-01",
+        "end": "2026-05-04",
+        "label": "Iran-LMR 2026"
+      }
+    }
+  },
+  "ax002_compliance": "factor_set + crisis_prone_k SHA-frozen at IS cutoff. OOS no re-selection."
+}

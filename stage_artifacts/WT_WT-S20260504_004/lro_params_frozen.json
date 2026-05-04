@@ -1,0 +1,30 @@
+{
+  "task_id": "WT-S20260504_004",
+  "as_of_date": "2026-04-30",
+  "rmt": {
+    "method": "Marchenko-Pastur eigenvalue threshold",
+    "T_obs": 924,
+    "N": 206,
+    "q_ratio": 4.4854,
+    "lambda_max_MP": 2.167282,
+    "noise_treatment": "flatten to bulk mean, trace renormalized",
+    "n_signal_eig_frozen": 11,
+    "n_noise_eig_frozen": 195
+  },
+  "es_target": {
+    "derivation": "24-month trailing median of rolling ES95_monthly_param (statistical, NOT fixed %)",
+    "horizon": "monthly",
+    "quantile": 0.95,
+    "sample_target_value_apr_2026": 0.15344
+  },
+  "vol_scale": {
+    "rule": "scale = ES_target / ES_current, capped [0.5, 1.0] (de-risk only, no leverage)",
+    "cash_bridge_role": "1 - scale → cash overlay redistribution"
+  },
+  "universe": {
+    "label": "STR_1715_universe_top200_liquid",
+    "n_active": 18,
+    "n_universe": 206,
+    "liquidity_floor_won_20d_avg": 200000000
+  }
+}

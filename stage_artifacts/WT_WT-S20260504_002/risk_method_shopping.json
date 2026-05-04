@@ -1,0 +1,35 @@
+{
+  "candidates_tried": 4,
+  "selection_objective": "stress_robust",
+  "method_log": [
+    {
+      "name": "sample",
+      "condition": 12.08,
+      "min_eig": 0.0002,
+      "psd_pass": true,
+      "selected": false
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "condition": 11.1,
+      "min_eig": 0.0002,
+      "psd_pass": true,
+      "selected": false
+    },
+    {
+      "name": "rmt_marchenko_pastur",
+      "condition": 9.99,
+      "min_eig": 0.0003,
+      "psd_pass": true,
+      "selected": false
+    },
+    {
+      "name": "dcc_garch_last_slice",
+      "condition": 43.08,
+      "min_eig": 0.0001,
+      "psd_pass": true,
+      "selected": true
+    }
+  ],
+  "selection_rationale": "DCC-GARCH chosen per user mandate (Engle 2002). Statistical justification: (1) Engle-Sheppard proxy LR strongly prefers dynamic over constant correlation; (2) PSD verified across all 928 daily slices; (3) alpha+beta=0.9421 < 1 stationarity OK; (4) all 18 univariate GARCH converged. Sample / LW / RMT computed for transparency comparison only."
+}

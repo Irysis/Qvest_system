@@ -1,0 +1,37 @@
+{
+  "candidates_tried": 3,
+  "method_log": [
+    {
+      "name": "sample",
+      "condition": 377.29,
+      "min_eig": 0.00005374,
+      "n": 206,
+      "t": 924,
+      "selected": false,
+      "reason": "noise-dominated; expected unstable cond"
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "condition": 63.93,
+      "shrinkage": 0.1984,
+      "min_eig": 0.0001293,
+      "n": 66,
+      "t": 924,
+      "selected": false,
+      "reason": "shrinkage stabilizes but shrinks signal eig too; benchmark only"
+    },
+    {
+      "name": "rmt_denoised",
+      "condition": 411.88,
+      "min_eig": 0.00014253,
+      "n_signal_eig": 11,
+      "n_noise_eig": 195,
+      "lambda_max_MP": 2.167282,
+      "n": 206,
+      "t": 924,
+      "selected": true,
+      "reason": "MP threshold preserves signal, flattens noise; theoretical bulk-anchored"
+    }
+  ],
+  "selection_objective": "shrinkage_quality"
+}

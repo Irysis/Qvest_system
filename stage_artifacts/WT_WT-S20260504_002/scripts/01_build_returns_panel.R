@@ -74,6 +74,8 @@ write_parquet(str_returns, file.path(SA, "str1715_monthly_returns.parquet"))
 # ─── Diagnostics ───────────────────────────────────────────────────────────
 diag <- list(
   step = "01_build_returns_panel",
+  status = if (nrow(ret_wide_daily) >= 252L && nrow(ret_wide_daily) > 0L &&
+               nrow(str_returns) >= 268L) "PASS" else "WARN",
   active_18 = ACTIVE_18,
   daily_T = nrow(ret_wide_daily),
   daily_K = ncol(ret_wide_daily) - 1L,

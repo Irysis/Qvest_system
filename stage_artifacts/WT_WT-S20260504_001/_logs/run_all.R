@@ -502,93 +502,103 @@ cat("  tail_risk.json saved\n")
 cat("  HARD CAP CHECK: MDD =", round(mdd, 4), "vs -0.45 cap → BREACH =", (mdd < -0.45), "\n")
 
 #==============================================================================
-# STEP 4: Latent Factor Exposures (268m monthly using STR_1715 actual weights × B_ref)
+# STEP 4: Latent Factor Exposures
+#
+# Two-tier output:
+#   (a) Universe-level 268m monthly LFC diagnostic (inherited from Round 1
+#       lro_monthly_risk_report.csv — universe size proxy of STR_1715 portfolio).
+#   (b) Portfolio-level point exposure at 2026-05-01 (STR_1715 actual cap_0p20
+#       production weights × B_ref).
+#
+# Note: STR_1715 04_holdings.csv only has sleeve-level rollup (STR_1715_RISK_SLEEVE
+# / CASH_KRW); stock-level monthly history is not available and would require
+# re-running STR_1715 alpha pipeline (out of risk research scope). The 2026-05-01
+# point exposure is the single canonical "as_of" portfolio latent factor exposure
+# for forge handoff. The 268m universe-level series is the diagnostic for tail
+# regime identification.
 #==============================================================================
-cat("\n[Step 4] Monthly latent factor exposures (B_ref' × STR_1715 actual weights)...\n")
+cat("\n[Step 4] Latent factor exposures (universe 268m + portfolio 2026-05-01)...\n")
 
-# B_ref from Round 1 has n_universe rows × K cols.
-# STR_1715 production weights are 20 names; intersect with B_ref tickers.
 b_ref_mat <- as.matrix(b_ref[, -1, with = FALSE])
 rownames(b_ref_mat) <- b_ref$Ticker
 K_pca <- ncol(b_ref_mat)
 cat("  B_ref:", nrow(b_ref_mat), "tickers x", K_pca, "PCs\n")
 
-# For 268m monthly latent exposures, we use STR_1715 holdings timeseries
-# (04_holdings.csv) as month-end weight history.
-hold_path <- file.path(PROJECT_ROOT,
-                       "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd",
-                       "output/04_holdings.csv")
-hold <- fread(hold_path)
-hold[, date := as.Date(date)]
-hold_dates <- sort(unique(hold$date))
-cat("  STR_1715 holdings months:", length(hold_dates), "\n")
+# (a) Universe-level 268m monthly diagnostic (inherited from Round 1)
+mr_path <- file.path(ROUND1_DIR, "lro_monthly_risk_report.csv")
+if (file.exists(mr_path)) {
+  mr <- fread(mr_path)
+  exp_dt <- mr[, .(date = sig_date,
+                   LFC, LHHI, IdioShare, Top3MRC, D_t,
+                   LRS_PC1, LRS_PC2, LRS_PC3, LRS_PC4, LRS_PC5,
+                   sigma_p2, n_universe, state)]
+  fwrite(exp_dt, file.path(ART_DIR, "latent_factor_exposures.csv"))
+  cat("  latent_factor_exposures.csv saved (universe 268m, n =", nrow(exp_dt),
+      ", source: lro_monthly_risk_report.csv inherited)\n")
 
-# Compute x_t = B_ref' w_t for each month
-exposure_rows <- list()
-dom_rows <- list()
-for (d in seq_along(hold_dates)) {
-  this_date <- hold_dates[d]
-  sub <- hold[date == this_date, .(ticker, target_weight)]
-  sub <- sub[!is.na(target_weight) & target_weight > 0]
-  if (nrow(sub) == 0L) next
-  in_b <- sub[ticker %in% rownames(b_ref_mat)]
-  if (nrow(in_b) == 0L) {
-    exposure_rows[[d]] <- data.table(date = this_date, n_overlap = 0L,
-                                      n_active = nrow(sub),
-                                      coverage_pct = 0.0,
-                                      x1 = NA_real_, x2 = NA_real_, x3 = NA_real_,
-                                      x4 = NA_real_, x5 = NA_real_,
-                                      LFC = NA_real_, LHHI = NA_real_)
-    next
-  }
-  w_vec <- numeric(nrow(b_ref_mat))
-  names(w_vec) <- rownames(b_ref_mat)
-  w_vec[in_b$ticker] <- in_b$target_weight
-  cov_w <- sum(w_vec)
-  if (cov_w > 0) w_vec <- w_vec / cov_w  # renormalize
-  x <- as.numeric(t(b_ref_mat) %*% w_vec)
-  abs_x <- abs(x)
-  lfc <- max(abs_x)
-  # LHHI: normalize to share, sum of squares
-  shares <- abs_x / sum(abs_x)
-  lhhi <- sum(shares^2)
-  exposure_rows[[d]] <- data.table(
-    date = this_date,
-    n_overlap = nrow(in_b),
-    n_active = nrow(sub),
-    coverage_pct = round(cov_w, 4),
-    x1 = round(x[1], 6), x2 = round(x[2], 6), x3 = round(x[3], 6),
-    x4 = round(x[4], 6), x5 = round(x[5], 6),
-    LFC = round(lfc, 4),
-    LHHI = round(lhhi, 4)
-  )
-  dom_rows[[d]] <- data.table(
-    date = this_date,
-    dominant_pc = paste0("PC", which.max(abs_x)),
-    LFC = round(lfc, 4),
-    LHHI = round(lhhi, 4),
-    coverage_pct = round(cov_w, 4)
-  )
+  # Dominant PC per month (max LRS)
+  lrs_cols <- paste0("LRS_PC", 1:K_pca)
+  dom_rows <- mr[, .(date = sig_date, LFC, LHHI, IdioShare, sigma_p2)]
+  lrs_mat <- as.matrix(mr[, ..lrs_cols])
+  dom_rows[, dominant_pc := paste0("PC", apply(lrs_mat, 1, which.max))]
+  fwrite(dom_rows, file.path(ART_DIR, "dominant_factor_concentration.csv"))
+  cat("  dominant_factor_concentration.csv saved (", nrow(dom_rows), "rows)\n")
+
+  n_lfc_above_40 <- sum(exp_dt$LFC > 0.40, na.rm = TRUE)
+  mean_lfc <- mean(exp_dt$LFC, na.rm = TRUE)
+  median_lfc <- median(exp_dt$LFC, na.rm = TRUE)
+  cat("  LFC>40% epochs (universe diagnostic):", n_lfc_above_40, "/", nrow(exp_dt), "\n")
+  cat("  mean LFC =", round(mean_lfc, 4), "/ median =", round(median_lfc, 4), "\n")
+  dom_table <- table(dom_rows$dominant_pc)
+  cat("  dominant PC distribution:", paste(names(dom_table), as.numeric(dom_table), sep = "=", collapse = " / "), "\n")
+} else {
+  cat("  WARN: Round 1 lro_monthly_risk_report.csv not found\n")
+  exp_dt <- data.table()
+  dom_rows <- data.table()
+  n_lfc_above_40 <- NA_integer_
+  mean_lfc <- NA_real_
+  median_lfc <- NA_real_
+  dom_table <- list()
 }
-exp_dt <- rbindlist(exposure_rows, fill = TRUE)
-dom_dt <- rbindlist(dom_rows, fill = TRUE)
-fwrite(exp_dt, file.path(ART_DIR, "latent_factor_exposures.csv"))
-fwrite(dom_dt, file.path(ART_DIR, "dominant_factor_concentration.csv"))
-cat("  latent_factor_exposures.csv saved (", nrow(exp_dt), "rows)\n")
-cat("  dominant_factor_concentration.csv saved (", nrow(dom_dt), "rows)\n")
 
-# Summary stats
-n_lfc_above_40 <- sum(exp_dt$LFC > 0.40, na.rm = TRUE)
-mean_lfc <- mean(exp_dt$LFC, na.rm = TRUE)
-median_lfc <- median(exp_dt$LFC, na.rm = TRUE)
-mean_cov <- mean(exp_dt$coverage_pct, na.rm = TRUE)
-cat("  LFC>40% epochs (universe-level diagnostic):", n_lfc_above_40, "/", nrow(exp_dt), "\n")
-cat("  mean LFC =", round(mean_lfc, 4), "/ median =", round(median_lfc, 4), "\n")
-cat("  mean coverage_pct (B_ref ∩ active weights) =", round(mean_cov, 4), "\n")
+# (b) Portfolio-level point exposure at 2026-05-01 (STR_1715 actual production)
+# Build full universe weight vector aligned to B_ref rows
+w_full <- numeric(nrow(b_ref_mat))
+names(w_full) <- rownames(b_ref_mat)
+common_b <- intersect(common_tickers, rownames(b_ref_mat))
+w_full[common_b] <- active_weights[common_b]
+cov_b <- sum(w_full)
+if (cov_b > 0) w_full <- w_full / cov_b  # renormalize on B_ref-overlap
 
-# Dominant PC distribution
-dom_table <- table(dom_dt$dominant_pc)
-cat("  dominant PC distribution:", paste(names(dom_table), as.numeric(dom_table), sep = "=", collapse = " / "), "\n")
+x_curr <- as.numeric(t(b_ref_mat) %*% w_full)
+abs_x_curr <- abs(x_curr)
+lfc_curr <- max(abs_x_curr)
+shares_curr <- abs_x_curr / sum(abs_x_curr)
+lhhi_curr <- sum(shares_curr^2)
+dom_pc_curr <- paste0("PC", which.max(abs_x_curr))
+
+# Append to dominant_factor_concentration.csv as latest portfolio row
+portfolio_2026_05 <- data.table(
+  as_of_date = as.Date("2026-05-01"),
+  weight_basis = "STR_1715_actual_production_2026-05-01_cap0p20",
+  n_overlap_b_ref = length(common_b),
+  n_active = length(common_tickers),
+  coverage_pct = round(cov_b, 4),
+  x1 = round(x_curr[1], 6), x2 = round(x_curr[2], 6),
+  x3 = round(x_curr[3], 6), x4 = round(x_curr[4], 6),
+  x5 = round(x_curr[5], 6),
+  LFC = round(lfc_curr, 4),
+  LHHI = round(lhhi_curr, 4),
+  dominant_pc = dom_pc_curr
+)
+fwrite(portfolio_2026_05, file.path(ART_DIR, "portfolio_latent_exposure_2026_05_01.csv"))
+cat("  portfolio_latent_exposure_2026_05_01.csv saved\n")
+cat("    coverage_pct =", round(cov_b, 4), "/ overlap =", length(common_b), "\n")
+cat("    x =", paste(round(x_curr, 4), collapse = " / "), "\n")
+cat("    LFC =", round(lfc_curr, 4), "/ LHHI =", round(lhhi_curr, 4),
+    "/ dominant =", dom_pc_curr, "\n")
+
+mean_cov <- mean(exp_dt$IdioShare, na.rm = TRUE)  # universe diagnostic context
 
 #==============================================================================
 # STEP 5: Regime correlation (4-state)
@@ -670,28 +680,34 @@ if (!sha_match) {
 #==============================================================================
 cat("\n[Step 7] debug_pass.json gate (9-field overall_pass)...\n")
 
-# Use first month with valid LFC as single-rebalance reference
-exp_valid <- exp_dt[!is.na(LFC) & coverage_pct > 0]
-ref_row <- exp_valid[date == max(date)]  # most recent month
+# Use most recent universe-level LFC + portfolio 2026-05-01 LFC as references
+exp_valid <- exp_dt[!is.na(LFC) & is.finite(LFC) & LFC > 0]
+last_universe_lfc <- if (nrow(exp_valid) > 0) tail(exp_valid$LFC, 1) else NA_real_
+last_universe_date <- if (nrow(exp_valid) > 0) tail(exp_valid$date, 1) else NA
 
 # 9 gate fields
 debug_pass <- list(
-  rebalance_date = as.character(ref_row$date[1]),
+  rebalance_date = as.character(last_universe_date),
+  portfolio_as_of_date = "2026-05-01",
+  portfolio_LFC = round(lfc_curr, 4),
+  universe_LFC_last = if (is.na(last_universe_lfc)) NA_real_ else round(last_universe_lfc, 4),
   pit_audit_pass = TRUE,  # B_ref frozen at IS endpoint 2024-06-30, all subsequent dates use frozen B
-  lri_value_sane = is.finite(ref_row$LFC[1]) && ref_row$LFC[1] >= 0,
+  lri_value_sane = (is.finite(lfc_curr) && lfc_curr > 0 && lfc_curr <= 1) &&
+                    (is.finite(last_universe_lfc) && last_universe_lfc > 0),
   mrc_sum_close_to_sigma2 = TRUE,  # verified in Round 1, B_ref reused
   anchor_R2_all_present = (length(anchor_map$anchors) == 10L),
   eigenvalue_gap_above_1e_3 = (au_lw$cond > 1),  # cond > 1 implies gap > 0
   procrustes_alignment_quality = TRUE,  # B_ref is identity reference (frozen)
   residual_no_lookahead_grep = TRUE,  # window strictly < SIG_DATE in Round 1 logic
   sha_self_verify_match = sha_match,
+  hardcap_check_pass = !(mdd < -0.45),
   overall_pass = NA
 )
 debug_pass$overall_pass <- all(unlist(debug_pass[c(
   "pit_audit_pass", "lri_value_sane", "mrc_sum_close_to_sigma2",
   "anchor_R2_all_present", "eigenvalue_gap_above_1e_3",
   "procrustes_alignment_quality", "residual_no_lookahead_grep",
-  "sha_self_verify_match"
+  "sha_self_verify_match", "hardcap_check_pass"
 )]))
 
 write_json(debug_pass, file.path(ART_DEBUG, "debug_pass.json"),
@@ -825,9 +841,14 @@ summary_stats <- list(
   n_lfc_above_40 = n_lfc_above_40,
   mean_lfc = round(mean_lfc, 4),
   median_lfc = round(median_lfc, 4),
-  mean_coverage_pct = round(mean_cov, 4),
+  mean_coverage_pct_idio = round(mean_cov, 4),
   n_268m = nrow(exp_dt),
   dominant_pc_table = as.list(dom_table),
+  portfolio_lfc_2026_05 = round(lfc_curr, 4),
+  portfolio_lhhi_2026_05 = round(lhhi_curr, 4),
+  portfolio_dominant_pc_2026_05 = dom_pc_curr,
+  portfolio_n_overlap_b_ref = length(common_b),
+  portfolio_x = round(x_curr, 4),
   sha = sha,
   sha_match = sha_match,
   debug_overall_pass = debug_pass$overall_pass,

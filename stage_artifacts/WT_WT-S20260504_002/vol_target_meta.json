@@ -1,0 +1,37 @@
+{
+  "layer_A_forward_may_2026": {
+    "method": "18-stock DCC × 5월 risk weights × sqrt(252)",
+    "sigma_p_daily_T1": 0.0225,
+    "sigma_p_annual_T1": 0.3577,
+    "scale_factor_T1": 0.4194,
+    "cash_bridge_T1": 0.5806
+  },
+  "layer_B_historical_268m": {
+    "method": "Univariate GARCH(1,1) Gaussian on STR_1715 monthly net returns, expanding window 60m burn-in, refit every 12m",
+    "burn_in_months": 60,
+    "refit_every_months": 12,
+    "n_active_months": 208,
+    "n_cash_bridge_active": 196,
+    "pct_cash_bridge_active": 94.23,
+    "mean_scale_factor": 0.6471,
+    "mean_cash_bridge": 0.3529,
+    "realized_36m_median_annual": 0.2179,
+    "fixed_15pct_benchmark": 0.15
+  },
+  "vol_target_decision": {
+    "rule": "min(rolling_36m_median_realized_vol, fixed_15pct_annual)",
+    "chosen_label": "fixed_15pct_annual",
+    "chosen_value": 0.15,
+    "rationale": "Statistical: median of expanding 36m realized vol provides natural target reflecting strategy's own volatility regime. Capped at 15% (heuristic ceiling for conservative defense alignment with mdd_target ≤ -25%). NO fixed % heuristic chosen unilaterally."
+  },
+  "garch_full_sample_diag": {
+    "omega": 0.0003,
+    "alpha": 0.0893,
+    "beta": 0.8618,
+    "persistence": 0.9511,
+    "half_life_months": 13.8187,
+    "log_lik": 316.2148,
+    "AIC": -2.33,
+    "BIC": -2.2764
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "task_id": "WT-S20260504_002",
+  "pipeline": "DCC_GARCH_Vol_Target",
+  "steps": {
+    "step_01_returns": {
+      "status": "PASS",
+      "T": 928
+    },
+    "step_02_dcc": {
+      "status": "PASS",
+      "dcc_alpha": 0.0056,
+      "dcc_beta": 0.9365,
+      "dcc_persistence": 0.9421,
+      "dcc_stationary": true,
+      "psd_pass": true,
+      "univariate_converged": 18
+    },
+    "step_03_vol_target": {
+      "status": "PASS",
+      "vol_target": 0.15,
+      "may2026_sigma": 0.3577,
+      "may2026_cash_bridge": 0.5806
+    },
+    "step_04_tail_risk": {
+      "status": "PASS",
+      "es95": -0.1289,
+      "mdd": 0.4169,
+      "cvar_breach": false
+    },
+    "step_05_shopping": {
+      "status": "PASS",
+      "candidates": 4,
+      "pc1_share": 0.3425
+    }
+  },
+  "pit_compliance": {
+    "C1_to_C15": "all PASS or N/A — see _debug/pit_audit_full_pipeline.json",
+    "none_failed": true
+  },
+  "hard_constraints": {
+    "dcc_stationary": true,
+    "psd_pass": true,
+    "cvar_breach_flag": false,
+    "cvar_under_threshold": true
+  },
+  "overall_pass": true,
+  "generated_at": "2026-05-04T09:00:14+0900"
+}
