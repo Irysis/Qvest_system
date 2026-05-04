@@ -1,0 +1,80 @@
+{
+  "K_latent": 5,
+  "L_characteristics": 12,
+  "characteristics_used": ["L26_Log_MktCap", "V01_BM", "V02_EP", "M01_Mom_12_1", "M02_Mom_6_1", "Q01_GPA", "Q02_ROE", "Q03_ROA", "Q07_Earnings_Stability", "D02_Beta", "R01_VaR_95", "L02_Turnover"],
+  "alpha_restriction": "restricted_alpha_zero",
+  "estimation": {
+    "method": "alternating_least_squares",
+    "n_restarts": 5,
+    "best_restart_idx": 5,
+    "best_loss": 0.024,
+    "best_iter": 13,
+    "converged": true,
+    "tol": 1e-06,
+    "max_iter": 200,
+    "panel_T_months": 59,
+    "panel_n_obs_total": 99384
+  },
+  "fit": {
+    "R2": 0.1206,
+    "LL": 44353.67,
+    "AIC": -87997.3399,
+    "BIC": -84622.4449,
+    "sigma2_hat": 0.024,
+    "n_params": 355
+  },
+  "per_LF_explained_variance_share": [
+    0.3326,
+    0.5437,
+    0.0761,
+    0.0089,
+    0.0387
+  ],
+  "Gamma_beta_top_loadings": [
+    {
+      "LF": "LF1",
+      "top_chars": ["Q02_ROE", "R01_VaR_95", "L26_Log_MktCap"],
+      "loadings": [0.7714, -0.3948, -0.2918]
+    },
+    {
+      "LF": "LF2",
+      "top_chars": ["Q02_ROE", "Q03_ROA", "R01_VaR_95"],
+      "loadings": [-0.6045, -0.4192, -0.3954]
+    },
+    {
+      "LF": "LF3",
+      "top_chars": ["L02_Turnover", "L26_Log_MktCap", "D02_Beta"],
+      "loadings": [0.5909, -0.4558, -0.3807]
+    },
+    {
+      "LF": "LF4",
+      "top_chars": ["D02_Beta", "L02_Turnover", "R01_VaR_95"],
+      "loadings": [-0.7027, -0.5167, 0.2986]
+    },
+    {
+      "LF": "LF5",
+      "top_chars": ["M01_Mom_12_1", "L26_Log_MktCap", "D02_Beta"],
+      "loadings": [0.5239, 0.5238, -0.5031]
+    }
+  ],
+  "Sigma_IPCA_audit": {
+    "n_assets": 18,
+    "min_eigenvalue": 0,
+    "max_eigenvalue": 0.0065,
+    "condition_number": 399.6368,
+    "PSD": true,
+    "method_label": "ipca_K5_L12_restricted_alpha0_LWdiagShrunk",
+    "shrinkage_to_diag_delta": 0.0148,
+    "shrinkage_target": "diag(Sigma_IPCA)",
+    "shrinkage_rationale": "Initial Σ_IPCA cond=866 > 500 (RF-R2 trigger). LW-style bisection to diagonal target until cond<500. Off-diagonal common-factor structure preserved at (1-δ) weight."
+  },
+  "estimation_window": {
+    "panel_start": "2021-05-31",
+    "panel_end": "2026-03-31",
+    "sigma_daily_start": "2021-05-01",
+    "sigma_daily_end": "2026-04-30",
+    "sigma_daily_T": 1222
+  },
+  "is_endpoint_freeze": "2024-06-30",
+  "ax002_note": "Γ_β + F SHA-frozen at as_of=2026-04-30 + 2024-06-30 IS freeze documented in lro_params_frozen.json"
+}
