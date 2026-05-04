@@ -568,18 +568,19 @@ audit_one <- function(dt, label) {
   } else {
     # Build wide matrix
     w_wide <- dcast(dt, as_of_date ~ Ticker, value.var = "Weight", fill = 0)
-    # Per-date one-way turnover = sum(|w_t - w_{t-1}|) / 2 (long-only no-trade
-    # at sleeve level). Annualize: monthly × 12 if monthly.
+    # Turnover: sum(|w_t - w_{t-1}|) per rebalance is round-trip (both
+    # buy + sell counted). One-way = round-trip / 2. Annual one-way
+    # = mean monthly one-way × 12. STR_1715 convention. 600% hard cap
+    # = annual one-way 6.0.
     n_d <- nrow(w_wide)
-    to_per <- numeric(n_d - 1)
+    to_round_trip <- numeric(n_d - 1)
     for (i in 2:n_d) {
       r1 <- as.numeric(w_wide[i-1, -1])
       r2 <- as.numeric(w_wide[i, -1])
-      to_per[i-1] <- sum(abs(r2 - r1)) / 2
+      to_round_trip[i-1] <- sum(abs(r2 - r1))
     }
-    # Average monthly one-way turnover × 12 = annual one-way
-    # round-trip ×2 (buy + sell)
-    turnover_annual <- mean(to_per) * 12 * 2
+    # Annual one-way turnover (STR_1715 convention)
+    turnover_annual <- mean(to_round_trip) / 2 * 12
   }
   list(
     label = label,
@@ -593,7 +594,8 @@ audit_one <- function(dt, label) {
     cap_violations = sum(by_d$maxw > 0.20 + 1e-8),
     sum_violations = sum(abs(by_d$total - 1) > 1e-5),
     max_sum_deviation = max(abs(by_d$total - 1)),
-    turnover_annual_round_trip = turnover_annual
+    turnover_annual_one_way = turnover_annual,
+    turnover_hard_cap_600pct_pass = (turnover_annual <= 6.0)
   )
 }
 
@@ -603,10 +605,11 @@ audits <- list(
   `M4+PCA_Hedge` = audit_one(M4PCA_dt, "M4+PCA_Hedge")
 )
 for (a in audits) {
-  cat(sprintf("\n[%s] dates=%d n_max=%d over20=%d max_w=%.4f cap_viol=%d sum_viol=%d to_ann=%.3f\n",
+  cat(sprintf("\n[%s] dates=%d n_max=%d over20=%d max_w=%.4f cap_viol=%d sum_viol=%d to_oneway=%.3f hardcap=%s\n",
               a$label, a$n_dates, a$max_n_per_date, a$over20, a$max_w,
               a$cap_violations, a$sum_violations,
-              a$turnover_annual_round_trip))
+              a$turnover_annual_one_way,
+              ifelse(a$turnover_hard_cap_600pct_pass, "PASS", "FAIL")))
 }
 
 ##──────────────────────────────────────────────────────────────────

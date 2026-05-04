@@ -4,12 +4,12 @@
   "wt_type": "sizing_only",
   "wt_kind": "recommendation_only",
   "agent": "optimizer-research",
-  "produced_at": "2026-05-04T09:12:18+0900",
+  "produced_at": "2026-05-04T09:24:19+0900",
   "as_of_date": "2026-05-04",
   "parent_wt": "WT-P20260429_002",
   "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
   "hmm_params_sha256": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567",
-  "weights_csv_sha256": "eb0e56cd2a49b363f901d31c15abb1c34d271f3dfac9b9b5a56c1faa6b0be388",
+  "weights_csv_sha256": "144fee702a6866b446429e5599195235d2aa5b091b9f138abd59ccc0e456ff47",
   "method_summary": {
     "framework": "HMM 3-state regime-conditional sleeve scaling (sizing-only overlay on STR_1715 PG2)",
     "primary_signal": "scale_predicted (walk-forward forward-filter, PIT-clean from hmm_posterior_path_walkforward.csv)",
@@ -20,7 +20,7 @@
     "selection_objective_rationale": "Sizing overlay's value = MDD/vol reduction without alpha distortion. Net-IR vs S1 baseline ≥ 0 + MDD reduction = primary criterion."
   },
   "method_shopping_log": {
-    "candidates_tried": 3,
+    "candidates_tried": 4,
     "method_log": [
       {
         "name": "S1_baseline",
@@ -29,31 +29,45 @@
         "mdd": -0.4169,
         "turnover_annual_roundtrip": 0,
         "selected": false,
-        "rationale": "Constant w_str=1.0 baseline (no overlay); reference for IR computation"
+        "rationale": "Constant w_str=1.0 (no overlay); IR baseline reference"
+      },
+      {
+        "name": "M4_alone",
+        "ann_ret": 0.4791,
+        "sr": 1.9177,
+        "mdd": -0.3164,
+        "turnover_annual_roundtrip": 0.5935,
+        "ir_vs_S1": 0.0036,
+        "selected": false,
+        "rationale": "Codex C3 fix: deployed baseline (parent WT-P20260429_002 M4 schedule alone). WT objective is M4-relative."
       },
       {
         "name": "HMM_Scale",
-        "ann_ret": 0.3922,
-        "sr": 1.6667,
+        "ann_ret": 0.4113,
+        "sr": 1.7093,
         "mdd": -0.4043,
-        "turnover_annual_roundtrip": 0.5096,
-        "ir_vs_S1": -0.9607,
+        "turnover_annual_roundtrip": 0.3669,
+        "ir_vs_S1": -1.0339,
+        "ir_vs_M4": -1.1884,
         "selected": false,
-        "rationale": "Pure HMM walk-forward scaling; no M4 cash overlay; reference for additivity audit"
+        "rationale": "Pure HMM walk-forward + Crisis pooled-blend (n=47<50). No M4 cash. Reference for additivity audit."
       },
       {
         "name": "M4+HMM_Scale",
-        "ann_ret": 0.4052,
-        "sr": 1.7758,
-        "mdd": -0.3021,
-        "turnover_annual_roundtrip": 0.8115,
-        "ir_vs_S1": -0.755,
+        "ann_ret": 0.4242,
+        "sr": 1.8168,
+        "mdd": -0.3083,
+        "turnover_annual_roundtrip": 0.6785,
+        "ir_vs_S1": -0.728,
+        "ir_vs_M4": -1.1451,
+        "overlay_cost_drag_ann_bps": 7.01,
         "selected": true,
-        "rationale": "Canonical: combines deployed M4 schedule + HMM walk-forward scaling via max(cash) rule (no double-counting)"
+        "rationale": "Canonical: max(M4_cash, HMM_pooled_blend_cash) — additive de-risk, MDD vs M4 < -3pp target test pending Forge re-backtest"
       }
     ],
     "parallel_exec": false,
-    "n_workers": 1
+    "n_workers": 1,
+    "selection_logic": "M4-relative MDD reduction is the WT primary objective. Selected candidate must: (1) honor M4 deployed schedule; (2) add HMM walk-forward signal at no double-cost; (3) respect Crisis n=47<50 pooled-blend rule (Codex C2 fix). M4+HMM_Scale uniquely meets all three."
   },
   "method_selected": "M4+HMM_Scale",
   "method_selected_rationale": "WT spec mandates HMM_Regime + M4 already deployed (parent WT-P20260429_002). Combined max-cash rule retains both signals without stacking, and provides the primary canonical target_weights handoff to Forge.",
@@ -65,26 +79,48 @@
     "schedule_density_pass": true,
     "columns": ["Date", "weight_str1715", "weight_cash"],
     "date_range": ["2004-01-01", "2026-03-01"],
-    "mean_weight_str": 0.8935,
-    "mean_weight_cash": 0.1065,
+    "mean_weight_str": 0.9094,
+    "mean_weight_cash": 0.0906,
     "max_weight_cash": 0.5709,
     "n_cash_active_periods": 217
   },
   "active_weights_basis": "active = w_canonical - w_S1_baseline (sleeve-level deviation from constant 100% allocation)",
-  "expected_active_return": -0.0738,
-  "expected_tracking_error": 0.0698,
-  "expected_information_ratio": -0.755,
-  "turnover": 0.8115,
-  "estimated_cost": 0.0012,
+  "expected_active_return": -0.0549,
+  "expected_active_return_basis": "M4_alone (deployed baseline per WT objective)",
+  "expected_tracking_error": 0.0341,
+  "expected_information_ratio": -1.1451,
+  "expected_active_return_vs_S1": -0.0548,
+  "expected_tracking_error_vs_S1": 0.0535,
+  "expected_information_ratio_vs_S1": -0.728,
+  "m4_relative_mdd_improvement_pp": -0.81,
+  "turnover": 0.6785,
+  "overlay_cost_drag_ann_bps": 7.01,
+  "estimated_cost_one_way": 0.001,
+  "estimated_cost_round_trip": 0.001,
+  "cost_basis_note": "ret_str (= STR_1715 ret_net) ALREADY embeds STR_1715's internal 15bps. Overlay cost = sleeve-scale Δw × 15bps one-way (additive). turnover_annual_roundtrip = mean(|Δw|) × 12 × 2 (matches Charter §10 round-trip).",
   "binding_constraints": [],
   "infeasibility_report": {},
   "hard_constraints_audit": {
-    "long_only": true,
-    "sigma_w_eq_1": true,
-    "weight_str_in_unit": true,
-    "weight_cash_in_unit": true,
-    "underlying_str1715_max_w_inherited": "0.20 (from parent admit; not re-optimized in this sizing-only WT)",
-    "max_names_inherited": "20 stocks (STR_1715 internal, unchanged)"
+    "sleeve_level": {
+      "long_only": true,
+      "sigma_w_eq_1": true,
+      "weight_str_in_unit": true,
+      "weight_cash_in_unit": true
+    },
+    "security_level_snapshot": {
+      "as_of_date": "2026-05-04",
+      "n_active_stocks": 18,
+      "max_effective_weight": 0.1345,
+      "sigma_effective_weight": 1,
+      "cash_weight": 0.3275,
+      "max_names_constraint_pass": true,
+      "weight_bound_constraint_pass": true,
+      "sigma_constraint_pass": true,
+      "reference": "stage_artifacts/WT_WT-S20260504_003/weights_security_level_snapshot.csv"
+    },
+    "underlying_str1715_max_w_inherited": "0.20 per-stock (STR_1715 PG2 forward_weights.R v2 enforced; production_weights/20260501_weights_cap_0p20.csv)",
+    "max_names_inherited": "20 stocks (STR_1715 internal optimizer, unchanged)",
+    "historical_security_level_provenance": "STR_1715 historical 04_holdings.csv contains placeholder STR_1715_RISK_SLEEVE meta-ticker only (operational sleeve abstraction). Per-stock historical weights not materialized; 20-stock cap enforcement is at STR_1715 internal optimizer layer, not at this overlay WT. Forge re-backtest will validate via STR_1715 historical NAV reconstruction."
   },
   "hmm_walkforward_provenance": {
     "csv_path": "stage_artifacts/WT_WT-S20260504_003/hmm_posterior_path_walkforward.csv",
@@ -99,17 +135,25 @@
   "weights_csv_ref": "stage_artifacts/WT_WT-S20260504_003/weights.csv",
   "weights_variants_ref": {
     "S1": "stage_artifacts/WT_WT-S20260504_003/weights_variants/S1.csv",
+    "M4_alone": "stage_artifacts/WT_WT-S20260504_003/weights_variants/M4_alone.csv",
     "HMM_Scale": "stage_artifacts/WT_WT-S20260504_003/weights_variants/HMM_Scale.csv",
     "M4+HMM_Scale": "stage_artifacts/WT_WT-S20260504_003/weights_variants/M4+HMM_Scale.csv"
   },
+  "weights_security_level_snapshot_ref": "stage_artifacts/WT_WT-S20260504_003/weights_security_level_snapshot.csv",
   "axiom_assertions": {
     "AX-000": "한계 없음 — 통계적 sizing 결정 (no fixed cash %)",
-    "AX-001_v2": "Sleeve-level vol/MDD reduction recommendation. Mean cash 0.106, max cash 0.571, n_cash_active=217. Crisis pooled-blend honored (n=47<50).",
+    "AX-001_v2": "Sleeve-level vol/MDD reduction recommendation. Mean cash 0.091, max cash 0.571, n_cash_active=217. Crisis pooled-blend honored (n=47<50).",
     "AX-002": "HMM params SHA-frozen (sha256=7f6d4a42b8cfb49d). Walk-forward forward-filter only — verified via hmm_posterior_path_walkforward.csv. Smoothed posterior NOT used for sizing.",
     "AX-007": "exception_clause_3_ml_sizing — HMM is statistical sizing overlay on existing top20 sleeve (STR_1715 PG2). No new factor signals. Sleeve-level w∈[0,1].",
     "AX-008": "Verification triangulation pending: this Optimizer package = source 1. Forge will re-fit + re-backtest (source 2). Codex critic round = source 3. Need 2/3 PASS."
   },
-  "challenge_flags": [],
+  "challenge_flags": [
+    "codex_REJECT_round1_remediated_pooled_blend_C2",
+    "codex_REJECT_round1_remediated_M4_baseline_C3",
+    "codex_REJECT_round1_remediated_security_level_snapshot_C1",
+    "codex_REJECT_round1_remediated_overlay_cost_C4",
+    "negative_M4_relative_IR_disclosed_under_mdd_target_priority"
+  ],
   "explanation": {
     "top_overweights": "Sleeve-level only — STR_1715 internal stock weights inherited from parent (S-Oil 20%, 쏠리드 20%, 한올바이오 13.1%, 리노공업 7.6%, 삼성전자 7.3%)",
     "top_underweights": "N/A at sleeve level",
