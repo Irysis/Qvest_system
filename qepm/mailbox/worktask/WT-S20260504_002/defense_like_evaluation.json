@@ -1,0 +1,122 @@
+{
+  "task_id": "WT-S20260504_002",
+  "evaluation_axis": "AX-001 v2 — defense-like 3-tuple by regime_proxy (BULL/CAUTION/CRISIS via w_cash_active) + 3-crisis absolute date window cumulative",
+  "primary_strategy": "M4+DCC_VolTarget",
+  "reference_strategy_S1": "S1 (parent alpha baseline, no overlay)",
+  "reference_strategy_L274": "L-274 STR_1715 PG2 (M4-only active production)",
+  "dcc_alone_strategy": "DCC_VolTarget (alone, no M4)",
+  "regime_proxy_method": "w_cash_active threshold: BULL <0.10, CAUTION 0.10-0.30, CRISIS >0.30",
+  "regime_proxy_caveat": "Self-fulfilling proxy artifact: CRISIS state defined by cash bridge engaged. ES95 small in CRISIS reflects engaged cash, not pure mechanism. Use crisis_alpha (absolute date window) as cleaner test.",
+  "states_metrics_M4_DCC": {
+    "BULL": {
+      "n": 62,
+      "mean_ret": 0.02358,
+      "ann_ret": 0.2830,
+      "ann_vol": 0.2961,
+      "sr": 0.9559,
+      "es95": -0.1535,
+      "worst": -0.1628,
+      "mdd": -0.3085
+    },
+    "CAUTION": {
+      "n": 65,
+      "mean_ret": 0.03819,
+      "ann_ret": 0.4582,
+      "ann_vol": 0.2328,
+      "sr": 1.9685,
+      "es95": -0.1199,
+      "worst": -0.1364,
+      "mdd": -0.2332
+    },
+    "CRISIS": {
+      "n": 141,
+      "mean_ret": 0.01641,
+      "ann_ret": 0.1969,
+      "ann_vol": 0.1236,
+      "sr": 1.5931,
+      "es95": -0.0578,
+      "worst": -0.1013,
+      "mdd": -0.1360
+    }
+  },
+  "states_metrics_S1_same_proxy": {
+    "BULL": {
+      "n": 62,
+      "mean_ret": 0.02362,
+      "ann_ret": 0.2834,
+      "ann_vol": 0.2960,
+      "sr": 0.9574,
+      "mdd": -0.3074
+    },
+    "CAUTION": {
+      "n": 65,
+      "mean_ret": 0.04693,
+      "ann_ret": 0.5631,
+      "ann_vol": 0.2997,
+      "sr": 1.8790,
+      "mdd": -0.2977
+    },
+    "CRISIS": {
+      "n": 141,
+      "mean_ret": 0.03194,
+      "ann_ret": 0.3833,
+      "ann_vol": 0.2306,
+      "sr": 1.6618,
+      "mdd": -0.2359
+    }
+  },
+  "alpha_surrender_per_regime": {
+    "BULL_S1_minus_M4DCC_pp": 0.003,
+    "CAUTION_S1_minus_M4DCC_pp": 0.875,
+    "CRISIS_S1_minus_M4DCC_pp": 1.553,
+    "interpretation": "M4+DCC surrenders 1.55pp/month CRISIS realized return vs S1. CAUTION surrender 0.88pp/month. BULL surrender negligible (DCC inactive in BULL low-vol). Cumulative compound drag over 141 CRISIS months = ~14pp annualized (consistent with M4+DCC CAGR 29.31% vs S1 43.95% = -14.64pp gap)."
+  },
+  "crisis_alpha_absolute_date_window": {
+    "GFC_2008_09_to_2009_03": {
+      "S1_cum": -0.3696,
+      "DCC_alone_cum": -0.3183,
+      "M4_DCC_cum": -0.2751,
+      "alpha_M4DCC_vs_S1_pp": 9.45,
+      "alpha_DCC_alone_vs_S1_pp": 5.13
+    },
+    "COVID_2020_02_to_2020_04": {
+      "S1_cum": -0.2512,
+      "DCC_alone_cum": -0.1811,
+      "M4_DCC_cum": -0.1753,
+      "alpha_M4DCC_vs_S1_pp": 7.58,
+      "alpha_DCC_alone_vs_S1_pp": 7.01
+    },
+    "KR_BEAR_2022_full_year": {
+      "S1_cum": -0.0398,
+      "DCC_alone_cum": -0.0061,
+      "M4_DCC_cum": -0.0061,
+      "alpha_M4DCC_vs_S1_pp": 3.38,
+      "alpha_DCC_alone_vs_S1_pp": 3.38
+    },
+    "verdict": "POSITIVE 3/3 crises (GFC + COVID + 2022). DCC-GARCH defensive mechanism confirmed strong via absolute date windows."
+  },
+  "mdd_vs_core": {
+    "S1_mdd": -0.4169,
+    "M4_DCC_mdd": -0.3339,
+    "DCC_alone_mdd": -0.4043,
+    "L274_M4_only_mdd": -0.3205,
+    "M4_DCC_minus_S1_pp": 8.30,
+    "M4_DCC_minus_L274_M4_only_pp": -1.34,
+    "interpretation": "vs S1 (no overlay) PASS by 8.30pp. vs L-274 M4-only (production basis) FAIL by -1.34pp (DCC degraded M4-only MDD). Decision rule axis is M4-relative per request.json primary_objective — FAIL on binding axis."
+  },
+  "bad_normal_es95_ratio": {
+    "CRISIS_es95": -0.0578,
+    "BULL_es95": -0.1535,
+    "ratio_CRISIS_BULL": 0.3766,
+    "interpretation_proxy_artifact": "CRISIS ES95 SMALLER (less negative) than BULL because CRISIS state has cash bridge engaged. Self-fulfilling proxy artifact, not pure mechanism evidence."
+  },
+  "ax001_v2_verdict": "PARTIAL_DEFENSE_LIKE",
+  "verdict_components": {
+    "crisis_alpha_at_least_one_positive": true,
+    "crisis_alpha_3_of_3_positive": true,
+    "mdd_improvement_vs_S1": true,
+    "mdd_improvement_vs_L274_M4_only": false,
+    "alpha_surrender_per_month_CRISIS": false
+  },
+  "score": "1.5 / 3 axes PASS (crisis_alpha 3/3 PASS + mdd vs core MIXED 1/2 + alpha surrender FAIL)"
+}
