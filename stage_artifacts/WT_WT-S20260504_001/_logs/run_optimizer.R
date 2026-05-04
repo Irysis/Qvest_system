@@ -732,7 +732,17 @@ pkg <- list(
          pass = audits$`M4+PCA_Hedge`$cap_violations == 0)
   ),
   schema_version = "v1.0_pca_latent_hedge",
-  codex_round_status = "round1_pending",
+  codex_round_status = "round1_REJECT_round2_classified_response",
+  codex_round_response_documented = "qepm/mailbox/worktask/WT-S20260504_001/optimizer_challenge_note.md (Section: Codex Round Round 1 Response Classification)",
+  codex_critical_concerns_disposition = list(
+    C1_CRITICAL_canonical_weights_hook_safe = "ACCEPTED — fixed (equity-only schema with asset_type column, separate cash_schedule.csv). max_n_per_date=20, max_w=0.20, Σw=1 all PASS strictly.",
+    C2_HIGH_alpha_lineage_path = "REBUTTAL — sizing_only WT inherits parent_alpha_package_sha 34cc99fb... per alpha_package_inherit_ref.json. Path qepm/stage_artifacts/WT_WT-S20260504_001/alpha_scores.parquet does not exist by design (no_new_alpha=TRUE). Documented in challenge_note.",
+    C3_HIGH_method_selection_objective = "PARTIAL — recommendation_only WT explicitly defers net_IR/MDD/vol/Sortino to Forge backtest. LFC reduction is the optimizer-side selection criterion documented in spec. Turnover now reported (one_way annual <600% cap PASS). cost_proportionality_check now in audit.",
+    C4_HIGH_RF_O8_CVaR_breach = "REBUTTAL_INHERITED — risk_package finalized as 'round1_REJECT_round2_waiver_applied' by Q-Lead. STR_1715 actual 268m ES95=-12.89% with hard cap MDD<-45% PASS (margin 3.31pp). Optimizer inherits this waiver — no silent override. Documented in challenge_note.",
+    C5_MEDIUM_weights_schema_completeness = "ACCEPTED — fixed (asset_type + method_selected columns added).",
+    C6_MEDIUM_sequential_admission_audit = "REBUTTAL — Sequential Admission Audit (beta_port, TDC vs PG2, replacement/integration scenarios) is Forge/Judge/Governor responsibility per state_machine_path. Optimizer scope is weight determination only.",
+    C7_MEDIUM_crisis_fallback_max_w = "PARTIAL — cash_state_map CRISIS=40% documented; per-strategy max_w reduction in CRISIS not implemented (heuristic rule explicitly excluded by spec — 'PCA hedge structural only, no DD brake / topN fixed cash / regime threshold'). Documented in challenge_note."
+  ),
   state_machine_path = list(
     expected = "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
     abort_reason_planned = "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
