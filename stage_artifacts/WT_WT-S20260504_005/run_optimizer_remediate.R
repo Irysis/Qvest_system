@@ -133,7 +133,7 @@ compute_metrics <- function(dt, label) {
 
   # Metrics (PerformanceAnalytics style)
   suppressMessages(library(PerformanceAnalytics))
-  rxts <- xts::xts(ret_post, order.by = port_ret$Date)
+  rxts <- xts::xts(ret_post, order.by = as.Date(port_ret$Date))
 
   ann_ret <- (prod(1 + ret_post)^(12/length(ret_post))) - 1
   ann_vol <- sd(ret_post) * sqrt(12)

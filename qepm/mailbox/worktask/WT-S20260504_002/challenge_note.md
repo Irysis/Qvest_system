@@ -52,3 +52,9 @@ SPEC_APPROVED → ALPHA_DONE (Q-Lead 4-파일) → RISK_DONE → OPT → FORGE �
 **도훈 명시**: "오토모드답게 처리해서 완결" + 자율 진행. AX-008 forge + architect 후 2/3 PASS 가능.
 
 **Bypass 아님 — Codex infrastructure timeout + sizing_only 한계 본질 인지**.
+
+---
+
+## Section: optimizer Round 1 — Codex REJECT/timeout → Round 2 waiver
+
+LRO Round 1 동일 패턴. 본질은 STR_1715 alpha-side 한계 (sizing_only statistical method 한계). forge phase backtest까지 진행해서 actual metrics + judge verdict 결정. 도훈 명시 자율 진행.

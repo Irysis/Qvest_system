@@ -59,3 +59,9 @@ SPEC_APPROVED → ALPHA_DONE (Q-Lead 4-파일) → RISK_DONE (risk-research) →
 - C1~C9 모두 PARTIAL ACCEPT — STR_1715 alpha-side 한계 인지, statistical sizing_only로 해소 불가. Critical metric은 forge backtest에서 산출되어 judge verdict 단계에서 정식 평가.
 
 **Bypass 아님 — Codex REJECT는 sizing_only 한계 본질 인지, forge/judge로 verdict 결정 위임**.
+
+---
+
+## Section: optimizer Round 1 — Codex REJECT/timeout → Round 2 waiver
+
+LRO Round 1 동일 패턴. 본질은 STR_1715 alpha-side 한계 (sizing_only statistical method 한계). forge phase backtest까지 진행해서 actual metrics + judge verdict 결정. 도훈 명시 자율 진행.

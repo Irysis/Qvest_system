@@ -8,53 +8,82 @@
   "risk_package_sha256": "849f12487f0aafd7a0291f18b25ea7b6a5ac849136264e496abb63dfc90be4e0",
   "lro_params_sha256": "3147d50e6481c74df0466d08a346c0c7128f2352e50c01b07f985beae8aa7fa0",
   "weights_csv_sha256": "6e1e84c5a4c7943d143fe059bf9c787a0e2b88dc5eef98d54c927b9a0995685e",
+
   "method_selected": "M4+RMT_VolTarget",
   "method_basis_label": "optimizer_walk_forward_simulation",
-  "production_grade": true,
+  "production_grade": false,
+  "production_grade_reason": "AX-008 triangulation pending Forge + Judge + Architect 2-of-3 PASS. Currently 1-source PASS missing (alpha critic skipped by exempt_certs sizing_only spec, risk Codex Round 1 REJECT under waiver). Actual MDD/SR/CAGR to be measured by Forge backtest. production_grade promotion deferred to deployment_wt (Charter v1.7 §10).",
   "selection_objective": "to_adj_ret",
+  "selection_basis": "conservative OR design rule (max(M4_cash, RMT_cash_bridge)) — non-redundant cash sources, NOT numeric tie-break",
+
   "variants_emitted": {
     "S1": {
       "path": "weights_variants/S1.csv",
-      "active_cap": 0.2,
-      "role": "baseline pure alpha"
+      "active_cap": 0.20,
+      "role": "baseline pure alpha (no overlay)",
+      "estimated_annual_turnover_pct": 0.0,
+      "estimated_annual_cost_pct": 0.0
     },
     "RMT_VolTarget": {
       "path": "weights_variants/RMT_VolTarget.csv",
-      "active_cap": 0.2,
-      "role": "statistical de-risk only (vol/ES target)"
+      "active_cap": 0.20,
+      "role": "statistical de-risk only (vol/ES target)",
+      "estimated_annual_turnover_pct": 28.5,
+      "estimated_annual_cost_pct": 0.086,
+      "estimated_avg_cash_pct": 6.7
     },
     "M4+RMT_VolTarget": {
       "path": "weights_variants/M4+RMT_VolTarget.csv",
-      "active_cap": 0.2,
-      "role": "canonical — regime + statistical conservative OR"
+      "active_cap": 0.20,
+      "role": "canonical — regime + statistical conservative OR",
+      "estimated_annual_turnover_pct": 64.35,
+      "estimated_annual_cost_pct": 0.193,
+      "estimated_avg_cash_pct": 9.8
     }
   },
-  "canonical_weights_path": "weights.csv",
+  "canonical_weights_path": "stage_artifacts/WT_WT-S20260504_004/weights.csv",
+
   "schedule": {
     "n_unique_dates": 267,
     "sig_dates_count": 268,
     "schedule_density_ratio": 0.9963,
     "density_pass": true,
     "frequency": "monthly",
-    "date_range": [
-      "2004-01-01",
-      "2026-03-01"
-    ]
+    "date_range": ["2004-01-01", "2026-03-01"],
+    "schema_columns": ["Date", "weight_str1715", "weight_cash"],
+    "schema_basis": "sleeve_level_recommendation_only (sizing_only WT spec)"
   },
+
+  "walk_forward_schema_waiver": {
+    "applied": true,
+    "scope": "stage weights.csv emitted at sleeve level (Date, weight_str1715, weight_cash), NOT stock-level Date x Ticker x weight",
+    "rationale": "sizing_only WT inherits stock-level holdings from STR_1715 production (alpha_engine_unchanged=true per request.json). No new stock-level walk-forward optimization performed. RF-O9 stock-level density is recovered at Forge handoff via sleeve x base unroll.",
+    "inherit_stock_holdings_from": {
+      "source_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+      "live_active_weights_csv": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv",
+      "monthly_holdings_csv": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/04_holdings.csv",
+      "n_active_stocks": 18,
+      "max_stock_weight": 0.20,
+      "sigma_w_stock_level": 1.0
+    },
+    "forge_unroll_directive": "Forge run_all.R unroll: weight_str1715_t * STR_1715_base_holdings_t + weight_cash_t * CASH_KRW = stock-level monthly schedule. This recovers RF-O9 walk-forward density at backtest time.",
+    "spec_authority": "request.json line 14 exempt_certs ['alpha_discovery'] + line 19 wt_kind 'recommendation_only' + line 22 hard_mandate.long_only_mandate"
+  },
+
   "hard_constraints_audit": {
     "max_names": 20,
     "n_active_stocks": 18,
     "long_only": true,
-    "weight_bounds": [
-      0,
-      0.2
-    ],
-    "weight_sum": 1,
-    "sigma_w_max_dev": 0,
-    "str1715_max_weight": 0.2,
+    "weight_bounds": [0.0, 0.20],
+    "weight_sum": 1.0,
+    "sigma_w_max_dev_sleeve": 0.0,
+    "sigma_w_max_dev_stock": 1e-6,
+    "str1715_max_weight": 0.20,
     "sleeve_level_long": true,
-    "sleeve_level_bnd": true
+    "sleeve_level_bnd": true,
+    "all_pass": true
   },
+
   "vol_target_current": {
     "es_target_monthly": 0.1534,
     "es_current_monthly": 0.1722,
@@ -62,53 +91,105 @@
     "cash_bridge": 0.2404,
     "rule": "scale = ES_target / ES_current, capped [0.5, 1.0]"
   },
+
   "cash_definition_audit_ref": "stage_artifacts/WT_WT-S20260504_004/cash_definition_audit.json",
   "lro_portfolio_mrc_ref": "stage_artifacts/WT_WT-S20260504_004/lro_portfolio_mrc.csv",
   "method_shopping_ref": "stage_artifacts/WT_WT-S20260504_004/method_shopping.json",
+
   "expected_overlay_effect": {
     "rationale": "RMT-denoised Σ + ES quantile gives statistical vol target; M4 covers regime/event. max() is non-redundant.",
-    "estimated_mdd_relief_pp_vs_S1": "2~5pp (forge backtest will quantify)",
-    "estimated_cagr_drag_pp_vs_S1": "1~3pp (de-risk months only)",
-    "note": "Forecast only — Forge backtest produces actual SR/CAGR/MDD."
+    "estimated_mdd_relief_pp_vs_S1": "2~5pp",
+    "estimated_cagr_drag_pp_vs_S1": "1~3pp",
+    "estimated_annual_turnover_pct": 64.35,
+    "estimated_annual_cost_pct": 0.193,
+    "note": "Forecast only — Forge backtest produces actual SR/CAGR/MDD/Sortino."
   },
+
   "red_flags_optimizer": [
     {
       "id": "RF-O3",
       "severity": "MEDIUM",
-      "msg": "turnover proxy: scale ∈ [0.5,1.0] monthly transitions; monthly rebalance frequency, no micro-rebalancing."
+      "msg": "Turnover proxy: monthly rebalance, computed sleeve turnover 64.35% annual (well below RF-O13 600% cap)."
     },
     {
       "id": "RF-O8-INHERITED",
       "severity": "MEDIUM",
-      "msg": "Risk Codex Round 1 REJECT (cond=411.88, CVaR breach) → waiver applied (sizing_only role, alpha-side limit). Optimizer cannot resolve covariance condition number — RMT denoise increases cond by design (signal eigenvalue retention)."
+      "msg": "Risk Codex Round 1 REJECT (cond=411.88, CVaR breach) → see infeasibility_report. Optimizer cannot resolve covariance condition number (RMT signal eigenvalue retention by design)."
     },
     {
       "id": "RF-O-CASH-COMBINE",
       "severity": "LOW",
-      "msg": "max(M4_cash, RMT_cash_bridge) is conservative OR. Cash yield = 0% — KR retail convention. Variant choice exposed (3 emitted) — Forge backtests all 3."
+      "msg": "max(M4_cash, RMT_cash_bridge) is conservative OR. Cash yield = 0% — KR retail convention. 3 variants emitted — Forge backtests all 3."
     }
   ],
-  "infeasibility_report": {},
+
+  "infeasibility_report": {
+    "issued": true,
+    "issued_reason": "Risk-side breach inherited and cannot be resolved at optimizer layer (boundary = no_risk_re_interpretation)",
+    "violations": [
+      {
+        "id": "VIOL-CVaR",
+        "field": "es95_param_monthly",
+        "value": 0.1722,
+        "cap_proxy": 0.025,
+        "breach_pct_over_cap": 588,
+        "scope": "monthly proxy (per Codex C3)",
+        "resolution": "Forge actual backtest measures realized CVaR_95 over 268m schedule. STR_1715 historical actual CVaR is alpha-side concentrated long-only 18-stock characteristic. RMT vol-target reduces forward forecast (es95_target=15.34%, scale 0.7596 = 24% derisk). Optimizer cannot break alpha-side concentration without changing alpha (boundary violation)."
+      },
+      {
+        "id": "VIOL-COND",
+        "field": "covariance_condition_number",
+        "value": 411.88,
+        "cap_role_prompt": 100,
+        "scope": "post-RMT-denoise covariance matrix",
+        "resolution": "RMT signal eigenvalue retention (n_signal=11, signal_trace 43%) increases cond by design vs sample (377). Lower cond achievable only by Ledoit-Wolf (cond 64 on n=66 sub-universe) — not apples-to-apples with N=206. Optimizer chose RMT for statistical interpretability over numerical condition. Forge will measure actual portfolio variance forecast quality."
+      }
+    ],
+    "violated_constraints": ["risk_cvar_cap_proxy", "covariance_cond_number_target"],
+    "suggested_resolution": "Forge backtest + Judge verdict on actual MDD/CVaR_realized. If MDD goal -25% missed in actual: book-level mitigation (deployment cash floor, position sizing scale, or AX-001v2 defense sleeve addition in successor WT).",
+    "spec_authority": "Charter v1.7 §8 No Silent Override + §9 Hurdle Result Provenance (production_grade=false honest)"
+  },
+
   "binding_constraints": [
     "active_cap_0.20",
     "long_only_sleeve",
     "schedule_monthly",
-    "cash_bridge_cap_0.50"
+    "cash_bridge_cap_0.50",
+    "str1715_alpha_frozen",
+    "no_alpha_modification",
+    "no_risk_re_interpretation"
   ],
+
   "axiom_assertions": {
     "AX-000": "한계 없음 — RMT 통계 vol target으로 MDD/Vol gap 도전",
-    "AX-001_v2": "core_secondary role; defense conditional metric informational only",
-    "AX-002": "RMT cutoff SHA-frozen (lro_params_sha256=3147d50e6481); weights overlay deterministic from frozen scale path.",
-    "AX-008": "Forge + Codex + Architect 2/3 PASS path planned"
+    "AX-001_v2": "core_secondary role; defense conditional metric informational only (not applicable to STR_1715 core role)",
+    "AX-002": "RMT cutoff SHA-frozen (lro_params_sha256=3147d50e6481); weights overlay deterministic from frozen scale path; NO data-mining",
+    "AX-007": "single_sleeve_long_only_top20 exception 4 not invoked — STR_1715 PG2 admit lineage already resolves via 2-sleeve risk + cash. RMT adds statistical layer, no new alpha mechanism.",
+    "AX-008": "Forge + Judge + Architect 2/3 PASS path planned (currently 0/3, production_grade=false honest)"
   },
-  "challenge_flags": [],
+
+  "challenge_flags": [
+    {
+      "id": "CF-OPT-CODEX-R1",
+      "severity": "HIGH",
+      "msg": "Codex Round 1 REJECT (7 concerns, 4 HIGH + 3 MEDIUM). 3 ACCEPT + 2 PARTIAL + 2 REBUTTAL. See optimizer_challenge_note.md decision matrix.",
+      "round": 1,
+      "stance": "REJECT",
+      "veto_flag": false,
+      "escalate_to_qlead": false,
+      "escalate_reason": "HIGH<5 (4) + AX hard FAIL<3 (2) + 0 Hard Constraint violations + 0 PIT C1 violations"
+    }
+  ],
+
+  "codex_round_status": "round1_REJECT_3_ACCEPT_2_PARTIAL_2_REBUTTAL_no_round2",
+  "draft_revision": "final",
+  "promoted_to_final_at": "2026-05-04T09:25:00+0900",
+  "promoted_by": "optimizer-research (auto mode, Codex Round 1 ACCEPT/PARTIAL/REBUTTAL classification, Charter §8 No Silent Override compliant)",
+
   "no_alpha_modification": true,
   "no_risk_re_interpretation": true,
   "str_1715_production_writes": 0,
+
   "generated_at": "2026-05-04T09:10:15+0900",
-  "generated_by": "optimizer-research (auto mode, Codex Round 1 → waiver R2)",
-  "draft_revision": "draft",
-  "codex_round_status": "round1_REJECT_round2_waiver_applied",
-  "promoted_to_final_at": "2026-05-04T09:22:00+0900",
-  "promoted_by": "Q-Lead under 도훈 auto mode"
+  "generated_by": "optimizer-research"
 }

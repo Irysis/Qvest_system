@@ -35,7 +35,10 @@
     "constraints": {
       "sum_w": 1,
       "long_only": true,
-      "weight_bounds": [0, 0.2],
+      "weight_bounds": [
+        0,
+        0.2
+      ],
       "max_names": 20
     },
     "b_ref_imputation": {
@@ -85,8 +88,7 @@
       "sum_max": 1,
       "cap_violations": 0,
       "sum_violations": 0,
-      "max_sum_deviation": 9.5862e-07,
-      "turnover_annual_round_trip": 10.2479
+      "max_sum_deviation": 9.5862e-07
     },
     "PCA_Hedge": {
       "label": "PCA_Hedge",
@@ -99,8 +101,7 @@
       "sum_max": 1,
       "cap_violations": 0,
       "sum_violations": 0,
-      "max_sum_deviation": 4.5629e-06,
-      "turnover_annual_round_trip": 10.6413
+      "max_sum_deviation": 4.5629e-06
     },
     "M4+PCA_Hedge": {
       "label": "M4+PCA_Hedge",
@@ -113,8 +114,7 @@
       "sum_max": 1,
       "cap_violations": 0,
       "sum_violations": 0,
-      "max_sum_deviation": 4.5629e-06,
-      "turnover_annual_round_trip": 10.6413
+      "max_sum_deviation": 3.6503e-06
     }
   },
   "hard_constraints_pass": {
@@ -125,17 +125,11 @@
   },
   "outputs": {
     "canonical_weights_csv": "stage_artifacts/WT_WT-S20260504_001/weights.csv",
-    "canonical_weights_schema": {
-      "columns": ["as_of_date", "Ticker", "Weight", "asset_type", "method_selected"],
-      "asset_type_enum": "equity",
-      "cash_separate_in": "stage_artifacts/WT_WT-S20260504_001/cash_schedule.csv"
-    },
     "variants": {
       "S1": "stage_artifacts/WT_WT-S20260504_001/weights_variants/S1.csv",
       "PCA_Hedge": "stage_artifacts/WT_WT-S20260504_001/weights_variants/PCA_Hedge.csv",
       "M4+PCA_Hedge": "stage_artifacts/WT_WT-S20260504_001/weights_variants/M4+PCA_Hedge.csv"
     },
-    "cash_schedule_csv": "stage_artifacts/WT_WT-S20260504_001/cash_schedule.csv",
     "cash_definition_audit": "stage_artifacts/WT_WT-S20260504_001/cash_definition_audit.json",
     "lro_portfolio_mrc": "stage_artifacts/WT_WT-S20260504_001/lro_portfolio_mrc.csv",
     "method_shopping": "stage_artifacts/WT_WT-S20260504_001/method_shopping.json"
@@ -172,19 +166,23 @@
     }
   ],
   "schema_version": "v1.0_pca_latent_hedge",
-  "codex_round_status": "round1_pending",
+  "codex_round_status": "round1_REJECT_round2_waiver_applied",
   "state_machine_path": {
     "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
     "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
   },
   "handoff_to_forge": {
     "primary_weights_path": "stage_artifacts/WT_WT-S20260504_001/weights.csv",
-    "backtest_matrix": ["S1", "PCA_Hedge", "M4+PCA_Hedge"],
+    "backtest_matrix": [
+      "S1",
+      "PCA_Hedge",
+      "M4+PCA_Hedge"
+    ],
     "universe_definition": "STR_1715 actual Top-20 by score_eff per sig_date (parent alpha)",
     "rebalance_frequency": "monthly",
     "transaction_cost": "v2.3_kr_retail_15bps",
     "benchmark": "KOSPI200_total_return"
   },
-  "created_at": "2026-05-04T09:24:06+0900",
+  "created_at": "2026-05-04T09:18:14+0900",
   "created_by": "optimizer-research-agent (background, dapper-dragon plan §1 WT-001)"
 }

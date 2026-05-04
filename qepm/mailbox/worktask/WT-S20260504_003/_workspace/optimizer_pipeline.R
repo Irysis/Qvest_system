@@ -236,8 +236,7 @@ sec_level <- str_pw[, .(
   sector = Sector,
   sleeve_weight = Weight,
   effective_weight = Weight * sleeve_w,
-  method_selected = "M4+HMM_Scale",
-  stringsAsFactors = FALSE
+  method_selected = "M4+HMM_Scale"
 )]
 # Append cash row
 cash_row <- data.table(
@@ -417,25 +416,38 @@ for (vn in names(variants)) {
   dd_net <- (cum_nav_net - peak_net) / peak_net
   mdd_net <- min(dd_net)
 
-  # IR (vs S1 baseline benchmark)
-  if (vn == "S1") {
-    ir <- NA
-    te <- NA
-  } else {
-    s1_v <- variants$S1
-    s1_ym <- copy(s1_v)
-    s1_ym[, ym := as.yearmon(Date)]
-    s1_ret <- merge(s1_ym[, .(ym, weight_str1715)],
+  # Compute IR vs both S1 and M4_alone baselines
+  compute_active <- function(v_ret_in, baseline_v) {
+    bv <- copy(baseline_v)
+    bv[, ym := as.yearmon(Date)]
+    bv_ret <- merge(bv[, .(ym, weight_str1715)],
                     canon_ym[, .(ym, ret_str)], by = "ym", all.x = TRUE)
-    s1_ret[, ret_port := weight_str1715 * ret_str]
-    s1_ret <- s1_ret[!is.na(ret_port)]
-    common_ym <- intersect(v_ret$ym, s1_ret$ym)
-    v_aln <- v_ret[ym %in% common_ym, .(ym, ret_port)]
-    s1_aln <- s1_ret[ym %in% common_ym, .(ym, ret_port_s1 = ret_port)]
-    aln <- merge(v_aln, s1_aln, by = "ym")
-    aln[, active := ret_port - ret_port_s1]
-    te <- sd(aln$active) * sqrt(12)
-    ir <- mean(aln$active) * 12 / te
+    bv_ret[, ret_port := weight_str1715 * ret_str]
+    bv_ret <- bv_ret[!is.na(ret_port)]
+    common_ym <- intersect(v_ret_in$ym, bv_ret$ym)
+    v_aln <- v_ret_in[ym %in% common_ym, .(ym, ret_port)]
+    b_aln <- bv_ret[ym %in% common_ym, .(ym, ret_port_b = ret_port)]
+    aln <- merge(v_aln, b_aln, by = "ym")
+    aln[, active := ret_port - ret_port_b]
+    list(te = sd(aln$active) * sqrt(12),
+         ir = mean(aln$active) * 12 / (sd(aln$active) * sqrt(12)),
+         active_ret_ann = mean(aln$active) * 12)
+  }
+
+  if (vn == "S1") {
+    ir <- NA; te <- NA
+    ir_vs_M4 <- NA; te_vs_M4 <- NA; active_vs_M4 <- NA
+  } else {
+    s1_active <- compute_active(v_ret, variants$S1)
+    te <- s1_active$te; ir <- s1_active$ir
+    if (vn == "M4_alone") {
+      ir_vs_M4 <- 0; te_vs_M4 <- 0; active_vs_M4 <- 0
+    } else {
+      m4_active <- compute_active(v_ret, variants$M4_alone)
+      te_vs_M4 <- m4_active$te
+      ir_vs_M4 <- m4_active$ir
+      active_vs_M4 <- m4_active$active_ret_ann
+    }
   }
 
   method_metrics[[vn]] <- list(
@@ -451,17 +463,24 @@ for (vn in names(variants)) {
     overlay_cost_drag_ann_bps = round((ann_ret - ann_ret_net) * 1e4, 2),
     ir_vs_S1 = if (is.na(ir)) NA else round(ir, 4),
     te_vs_S1 = if (is.na(te)) NA else round(te, 4),
-    net_ir = if (is.na(ir)) NA else round(ir, 4)
+    ir_vs_M4 = if (is.na(ir_vs_M4)) NA else round(ir_vs_M4, 4),
+    te_vs_M4 = if (is.na(te_vs_M4)) NA else round(te_vs_M4, 4),
+    active_ret_vs_M4_ann = if (is.na(active_vs_M4)) NA else round(active_vs_M4, 4),
+    net_ir = if (is.na(ir_vs_M4)) NA else round(ir_vs_M4, 4)  # WT objective is M4-relative
   )
 }
 
 cat("[10] Method comparison:\n")
 for (vn in names(method_metrics)) {
   m <- method_metrics[[vn]]
-  cat(sprintf("    %s: SR=%.3f MDD=%.3f TO_ann=%.3f IR=%s\n",
-              vn, m$sr %||% NA_real_, m$mdd %||% NA_real_,
+  ir_m4 <- m$ir_vs_M4 %||% NA
+  cat(sprintf("    %s: SR=%.3f SR_net=%.3f MDD=%.3f MDD_net=%.3f TO=%.3f IR_S1=%s IR_M4=%s OvCost=%.1fbp\n",
+              vn, m$sr %||% NA_real_, m$sr_net_overlay %||% NA_real_,
+              m$mdd %||% NA_real_, m$mdd_net_overlay %||% NA_real_,
               m$turnover_annual_roundtrip %||% NA_real_,
-              if (is.null(m$ir_vs_S1) || is.na(m$ir_vs_S1)) "NA" else sprintf("%.3f", m$ir_vs_S1)))
+              if (is.null(m$ir_vs_S1) || is.na(m$ir_vs_S1)) "NA" else sprintf("%.3f", m$ir_vs_S1),
+              if (is.na(ir_m4)) "NA" else sprintf("%.3f", ir_m4),
+              m$overlay_cost_drag_ann_bps %||% 0))
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -497,28 +516,38 @@ opt_pkg_draft <- list(
   ),
 
   method_shopping_log = list(
-    candidates_tried = 3L,
+    candidates_tried = 4L,
     method_log = list(
       list(name = "S1_baseline", ann_ret = method_metrics$S1$ann_ret,
            sr = method_metrics$S1$sr, mdd = method_metrics$S1$mdd,
            turnover_annual_roundtrip = method_metrics$S1$turnover_annual_roundtrip,
            selected = FALSE,
-           rationale = "Constant w_str=1.0 baseline (no overlay); reference for IR computation"),
+           rationale = "Constant w_str=1.0 (no overlay); IR baseline reference"),
+      list(name = "M4_alone", ann_ret = method_metrics$M4_alone$ann_ret,
+           sr = method_metrics$M4_alone$sr, mdd = method_metrics$M4_alone$mdd,
+           turnover_annual_roundtrip = method_metrics$M4_alone$turnover_annual_roundtrip,
+           ir_vs_S1 = method_metrics$M4_alone$ir_vs_S1,
+           selected = FALSE,
+           rationale = "Codex C3 fix: deployed baseline (parent WT-P20260429_002 M4 schedule alone). WT objective is M4-relative."),
       list(name = "HMM_Scale", ann_ret = method_metrics$HMM_Scale$ann_ret,
            sr = method_metrics$HMM_Scale$sr, mdd = method_metrics$HMM_Scale$mdd,
            turnover_annual_roundtrip = method_metrics$HMM_Scale$turnover_annual_roundtrip,
            ir_vs_S1 = method_metrics$HMM_Scale$ir_vs_S1,
+           ir_vs_M4 = method_metrics$HMM_Scale$ir_vs_M4,
            selected = FALSE,
-           rationale = "Pure HMM walk-forward scaling; no M4 cash overlay; reference for additivity audit"),
+           rationale = "Pure HMM walk-forward + Crisis pooled-blend (n=47<50). No M4 cash. Reference for additivity audit."),
       list(name = "M4+HMM_Scale", ann_ret = method_metrics$`M4+HMM_Scale`$ann_ret,
            sr = method_metrics$`M4+HMM_Scale`$sr, mdd = method_metrics$`M4+HMM_Scale`$mdd,
            turnover_annual_roundtrip = method_metrics$`M4+HMM_Scale`$turnover_annual_roundtrip,
            ir_vs_S1 = method_metrics$`M4+HMM_Scale`$ir_vs_S1,
+           ir_vs_M4 = method_metrics$`M4+HMM_Scale`$ir_vs_M4,
+           overlay_cost_drag_ann_bps = method_metrics$`M4+HMM_Scale`$overlay_cost_drag_ann_bps,
            selected = TRUE,
-           rationale = "Canonical: combines deployed M4 schedule + HMM walk-forward scaling via max(cash) rule (no double-counting)")
+           rationale = "Canonical: max(M4_cash, HMM_pooled_blend_cash) — additive de-risk, MDD vs M4 < -3pp target test pending Forge re-backtest")
     ),
     parallel_exec = FALSE,
-    n_workers = 1L
+    n_workers = 1L,
+    selection_logic = "M4-relative MDD reduction is the WT primary objective. Selected candidate must: (1) honor M4 deployed schedule; (2) add HMM walk-forward signal at no double-cost; (3) respect Crisis n=47<50 pooled-blend rule (Codex C2 fix). M4+HMM_Scale uniquely meets all three."
   ),
 
   method_selected = "M4+HMM_Scale",
@@ -543,23 +572,50 @@ opt_pkg_draft <- list(
   active_weights_basis = "active = w_canonical - w_S1_baseline (sleeve-level deviation from constant 100% allocation)",
 
   expected_active_return = round((method_metrics$`M4+HMM_Scale`$ann_ret %||% 0) -
+                                  (method_metrics$M4_alone$ann_ret %||% 0), 4),
+  expected_active_return_basis = "M4_alone (deployed baseline per WT objective)",
+  expected_tracking_error = method_metrics$`M4+HMM_Scale`$te_vs_M4,
+  expected_information_ratio = method_metrics$`M4+HMM_Scale`$ir_vs_M4,
+
+  expected_active_return_vs_S1 = round((method_metrics$`M4+HMM_Scale`$ann_ret %||% 0) -
                                   (method_metrics$S1$ann_ret %||% 0), 4),
-  expected_tracking_error = method_metrics$`M4+HMM_Scale`$te_vs_S1,
-  expected_information_ratio = method_metrics$`M4+HMM_Scale`$ir_vs_S1,
+  expected_tracking_error_vs_S1 = method_metrics$`M4+HMM_Scale`$te_vs_S1,
+  expected_information_ratio_vs_S1 = method_metrics$`M4+HMM_Scale`$ir_vs_S1,
+
+  m4_relative_mdd_improvement_pp = round(
+    (method_metrics$M4_alone$mdd - method_metrics$`M4+HMM_Scale`$mdd) * 100, 2
+  ),  # positive means canonical has SHALLOWER MDD than M4 alone
 
   turnover = method_metrics$`M4+HMM_Scale`$turnover_annual_roundtrip,
-  estimated_cost = round(method_metrics$`M4+HMM_Scale`$turnover_annual_roundtrip * 0.0015, 5),
+  overlay_cost_drag_ann_bps = method_metrics$`M4+HMM_Scale`$overlay_cost_drag_ann_bps,
+  estimated_cost_one_way = round(method_metrics$`M4+HMM_Scale`$turnover_annual_roundtrip * 0.0015, 5),
+  estimated_cost_round_trip = round(method_metrics$`M4+HMM_Scale`$turnover_annual_roundtrip * 0.0015, 5),
+  cost_basis_note = "ret_str (= STR_1715 ret_net) ALREADY embeds STR_1715's internal 15bps. Overlay cost = sleeve-scale Δw × 15bps one-way (additive). turnover_annual_roundtrip = mean(|Δw|) × 12 × 2 (matches Charter §10 round-trip).",
 
   binding_constraints = list(),  # sleeve-level no per-name bound binding
   infeasibility_report = NULL,
 
   hard_constraints_audit = list(
-    long_only = TRUE,
-    sigma_w_eq_1 = TRUE,
-    weight_str_in_unit = TRUE,
-    weight_cash_in_unit = TRUE,
-    underlying_str1715_max_w_inherited = "0.20 (from parent admit; not re-optimized in this sizing-only WT)",
-    max_names_inherited = "20 stocks (STR_1715 internal, unchanged)"
+    sleeve_level = list(
+      long_only = TRUE,
+      sigma_w_eq_1 = TRUE,
+      weight_str_in_unit = TRUE,
+      weight_cash_in_unit = TRUE
+    ),
+    security_level_snapshot = list(
+      as_of_date = AS_OF_DATE,
+      n_active_stocks = n_active_stocks,
+      max_effective_weight = round(max_eff_w, 6),
+      sigma_effective_weight = round(sum_eff_w, 6),
+      cash_weight = round(cash_w, 6),
+      max_names_constraint_pass = n_active_stocks <= 20,
+      weight_bound_constraint_pass = max_eff_w <= 0.20 + 1e-9,
+      sigma_constraint_pass = abs(sum_eff_w - 1.0) < 1e-6,
+      reference = "stage_artifacts/WT_WT-S20260504_003/weights_security_level_snapshot.csv"
+    ),
+    underlying_str1715_max_w_inherited = "0.20 per-stock (STR_1715 PG2 forward_weights.R v2 enforced; production_weights/20260501_weights_cap_0p20.csv)",
+    max_names_inherited = "20 stocks (STR_1715 internal optimizer, unchanged)",
+    historical_security_level_provenance = "STR_1715 historical 04_holdings.csv contains placeholder STR_1715_RISK_SLEEVE meta-ticker only (operational sleeve abstraction). Per-stock historical weights not materialized; 20-stock cap enforcement is at STR_1715 internal optimizer layer, not at this overlay WT. Forge re-backtest will validate via STR_1715 historical NAV reconstruction."
   ),
 
   hmm_walkforward_provenance = list(
@@ -576,9 +632,11 @@ opt_pkg_draft <- list(
   weights_csv_ref = "stage_artifacts/WT_WT-S20260504_003/weights.csv",
   weights_variants_ref = list(
     S1 = "stage_artifacts/WT_WT-S20260504_003/weights_variants/S1.csv",
+    M4_alone = "stage_artifacts/WT_WT-S20260504_003/weights_variants/M4_alone.csv",
     HMM_Scale = "stage_artifacts/WT_WT-S20260504_003/weights_variants/HMM_Scale.csv",
     `M4+HMM_Scale` = "stage_artifacts/WT_WT-S20260504_003/weights_variants/M4+HMM_Scale.csv"
   ),
+  weights_security_level_snapshot_ref = "stage_artifacts/WT_WT-S20260504_003/weights_security_level_snapshot.csv",
 
   axiom_assertions = list(
     `AX-000` = "한계 없음 — 통계적 sizing 결정 (no fixed cash %)",
@@ -590,7 +648,13 @@ opt_pkg_draft <- list(
     `AX-008` = "Verification triangulation pending: this Optimizer package = source 1. Forge will re-fit + re-backtest (source 2). Codex critic round = source 3. Need 2/3 PASS."
   ),
 
-  challenge_flags = list(),
+  challenge_flags = list(
+    "codex_REJECT_round1_remediated_pooled_blend_C2",
+    "codex_REJECT_round1_remediated_M4_baseline_C3",
+    "codex_REJECT_round1_remediated_security_level_snapshot_C1",
+    "codex_REJECT_round1_remediated_overlay_cost_C4",
+    "negative_M4_relative_IR_disclosed_under_mdd_target_priority"
+  ),
 
   explanation = list(
     top_overweights = "Sleeve-level only — STR_1715 internal stock weights inherited from parent (S-Oil 20%, 쏠리드 20%, 한올바이오 13.1%, 리노공업 7.6%, 삼성전자 7.3%)",

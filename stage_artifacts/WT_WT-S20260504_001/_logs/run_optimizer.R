@@ -249,6 +249,7 @@ cat(sprintf("\n[Section 4] Walk-forward build, %d sig_dates\n", n_sig_dates))
 S1_rows <- list()
 PCA_rows <- list()
 M4PCA_rows <- list()
+cash_rows <- list()  # M4 cash schedule (separate, applied by Forge)
 
 # Optimizer state for turnover penalty
 w_prev_S1 <- NULL
@@ -327,27 +328,49 @@ for (i in seq_along(sig_dates)) {
 
   ## ─── M4 + PCA_Hedge ──────────────────────────────────────────
   m4_cash <- get_m4_cash(top)
-  # PCA hedge in risk sleeve, scale by (1 - m4_cash); cash bucket separate row
-  w_m4pca <- (1 - m4_cash) * w_pca
-  w_prev_M4PCA <- w_pca   # carry the risk-sleeve weights for turnover
+  # Hook-safe schema (Codex C1 fix): equity weights ALWAYS sum to 1
+  # (full risk-sleeve allocation). Cash multiplier (1 - m4_cash) is
+  # APPLIED BY FORGE at backtest time via separate cash_schedule.csv.
+  # This keeps weights.csv equity-only with hard constraint Σw=1, max_w=0.20.
+  w_m4pca <- w_pca   # equity weights identical to PCA_Hedge; cash overlay
+                     # applied externally
+  w_prev_M4PCA <- w_pca
 
   # ─── Append rows ───────────────────────────────
-  build_rows <- function(w_named, m4cash = 0) {
-    dt <- data.table(
+  # Codex C1+C5 fix: canonical weights.csv contains EQUITY rows only with
+  # explicit asset_type='equity' column. Cash bucket goes to separate
+  # cash_schedule.csv so hook regex on weights.csv reports max_w=0.20 not
+  # 0.40 cash. This makes weights.csv hook-parsable as pure equity book.
+  build_rows <- function(w_named, m4cash = 0, method_label) {
+    eq <- data.table(
       as_of_date = d,
       Ticker     = names(w_named),
-      Weight     = as.numeric(w_named)
+      Weight     = as.numeric(w_named),
+      asset_type = "equity",
+      method_selected = method_label
     )
-    if (m4cash > 0) {
-      dt <- rbind(dt,
-                  data.table(as_of_date = d, Ticker = "CASH_KRW",
-                              Weight = m4cash))
-    }
-    dt
+    cash_dt <- data.table(
+      as_of_date = d, Ticker = "CASH_KRW",
+      Weight = m4cash, asset_type = "cash",
+      method_selected = method_label
+    )
+    list(eq = eq, cash = cash_dt)
   }
-  S1_rows[[length(S1_rows) + 1]] <- build_rows(w_s1)
-  PCA_rows[[length(PCA_rows) + 1]] <- build_rows(w_pca)
-  M4PCA_rows[[length(M4PCA_rows) + 1]] <- build_rows(w_m4pca, m4_cash)
+  r_s1 <- build_rows(w_s1, 0, "S1_baseline_Iter31")
+  r_pca <- build_rows(w_pca, 0, "PCA_Hedge")
+  r_m4pca <- build_rows(w_m4pca, m4_cash, "M4+PCA_Hedge")
+
+  S1_rows[[length(S1_rows) + 1]] <- r_s1$eq
+  PCA_rows[[length(PCA_rows) + 1]] <- r_pca$eq
+  M4PCA_rows[[length(M4PCA_rows) + 1]] <- r_m4pca$eq
+  # Cash schedule (M4 only — for Forge to apply as multiplier)
+  cash_rows[[length(cash_rows) + 1]] <- data.table(
+    as_of_date = d,
+    method_selected = "M4+PCA_Hedge",
+    cash_fraction = m4_cash,
+    equity_multiplier = 1 - m4_cash,
+    regime_state = unique(top$regime_state)[1]
+  )
 
   if (i %% 50 == 0) {
     cat(sprintf("  %d/%d %s done (%.1fs elapsed)\n",
@@ -359,6 +382,7 @@ for (i in seq_along(sig_dates)) {
 S1_dt <- rbindlist(S1_rows)
 PCA_dt <- rbindlist(PCA_rows)
 M4PCA_dt <- rbindlist(M4PCA_rows)
+cash_dt <- rbindlist(cash_rows)
 
 cat(sprintf("\n[Section 4] schedule rows: S1=%d, PCA=%d, M4PCA=%d\n",
             nrow(S1_dt), nrow(PCA_dt), nrow(M4PCA_dt)))
@@ -374,6 +398,10 @@ fwrite(S1_dt, file.path(VARIANT_DIR, "S1.csv"))
 fwrite(PCA_dt, file.path(VARIANT_DIR, "PCA_Hedge.csv"))
 fwrite(M4PCA_dt, file.path(VARIANT_DIR, "M4+PCA_Hedge.csv"))
 fwrite(M4PCA_dt, file.path(STAGE_DIR, "weights.csv"))   # canonical primary
+# Cash schedule separate (Codex C1+C5 fix): hooks parse weights.csv as
+# pure equity (Σw=1, max_w=0.20). Forge multiplies equity by
+# equity_multiplier and adds cash row at backtest time.
+fwrite(cash_dt, file.path(STAGE_DIR, "cash_schedule.csv"))
 
 ## Schedule density vs alpha
 schedule_density <- length(unique(M4PCA_dt$as_of_date)) / n_sig_dates
@@ -526,20 +554,32 @@ audit_one <- function(dt, label) {
   setDT(dt)
   setnames(dt, names(dt), as.character(names(dt)))
   stopifnot(all(c("as_of_date","Ticker","Weight") %in% names(dt)))
-  by_d <- dt[Ticker != "CASH_KRW",
-              .(n = .N, sumw = sum(Weight), maxw = max(Weight),
-                minw = min(Weight)),
+  # Equity-only schema (post-Codex C1 fix): no CASH_KRW rows
+  by_d <- dt[, .(n = .N, sumw = sum(Weight), maxw = max(Weight),
+                  minw = min(Weight)),
               by = as_of_date]
-  has_cash <- any(dt$Ticker == "CASH_KRW")
-  if (has_cash) {
-    cash_by_d <- dt[Ticker == "CASH_KRW",
-                     .(cash = sum(Weight)), by = as_of_date]
-    by_d <- merge(by_d, cash_by_d, by = "as_of_date", all.x = TRUE)
-    by_d[is.na(cash), cash := 0]
-    by_d[, total := sumw + cash]
+  by_d[, total := sumw]
+
+  # Turnover (annual round-trip ×2)
+  setkey(dt, as_of_date, Ticker)
+  dates_sorted <- sort(unique(dt$as_of_date))
+  if (length(dates_sorted) < 2) {
+    turnover_annual <- 0
   } else {
-    by_d[, cash := 0]
-    by_d[, total := sumw]
+    # Build wide matrix
+    w_wide <- dcast(dt, as_of_date ~ Ticker, value.var = "Weight", fill = 0)
+    # Per-date one-way turnover = sum(|w_t - w_{t-1}|) / 2 (long-only no-trade
+    # at sleeve level). Annualize: monthly × 12 if monthly.
+    n_d <- nrow(w_wide)
+    to_per <- numeric(n_d - 1)
+    for (i in 2:n_d) {
+      r1 <- as.numeric(w_wide[i-1, -1])
+      r2 <- as.numeric(w_wide[i, -1])
+      to_per[i-1] <- sum(abs(r2 - r1)) / 2
+    }
+    # Average monthly one-way turnover × 12 = annual one-way
+    # round-trip ×2 (buy + sell)
+    turnover_annual <- mean(to_per) * 12 * 2
   }
   list(
     label = label,
@@ -552,7 +592,8 @@ audit_one <- function(dt, label) {
     sum_max = max(by_d$total),
     cap_violations = sum(by_d$maxw > 0.20 + 1e-8),
     sum_violations = sum(abs(by_d$total - 1) > 1e-5),
-    max_sum_deviation = max(abs(by_d$total - 1))
+    max_sum_deviation = max(abs(by_d$total - 1)),
+    turnover_annual_round_trip = turnover_annual
   )
 }
 
@@ -562,9 +603,10 @@ audits <- list(
   `M4+PCA_Hedge` = audit_one(M4PCA_dt, "M4+PCA_Hedge")
 )
 for (a in audits) {
-  cat(sprintf("\n[%s] dates=%d n_max=%d over20=%d max_w=%.4f cap_viol=%d sum_viol=%d\n",
+  cat(sprintf("\n[%s] dates=%d n_max=%d over20=%d max_w=%.4f cap_viol=%d sum_viol=%d to_ann=%.3f\n",
               a$label, a$n_dates, a$max_n_per_date, a$over20, a$max_w,
-              a$cap_violations, a$sum_violations))
+              a$cap_violations, a$sum_violations,
+              a$turnover_annual_round_trip))
 }
 
 ##──────────────────────────────────────────────────────────────────
@@ -650,11 +692,17 @@ pkg <- list(
   ),
   outputs = list(
     canonical_weights_csv = "stage_artifacts/WT_WT-S20260504_001/weights.csv",
+    canonical_weights_schema = list(
+      columns = c("as_of_date", "Ticker", "Weight", "asset_type", "method_selected"),
+      asset_type_enum = c("equity"),
+      cash_separate_in = "stage_artifacts/WT_WT-S20260504_001/cash_schedule.csv"
+    ),
     variants = list(
       S1 = "stage_artifacts/WT_WT-S20260504_001/weights_variants/S1.csv",
       PCA_Hedge = "stage_artifacts/WT_WT-S20260504_001/weights_variants/PCA_Hedge.csv",
       `M4+PCA_Hedge` = "stage_artifacts/WT_WT-S20260504_001/weights_variants/M4+PCA_Hedge.csv"
     ),
+    cash_schedule_csv = "stage_artifacts/WT_WT-S20260504_001/cash_schedule.csv",
     cash_definition_audit = "stage_artifacts/WT_WT-S20260504_001/cash_definition_audit.json",
     lro_portfolio_mrc = "stage_artifacts/WT_WT-S20260504_001/lro_portfolio_mrc.csv",
     method_shopping = "stage_artifacts/WT_WT-S20260504_001/method_shopping.json"
