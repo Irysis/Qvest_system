@@ -640,5 +640,95 @@
       "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md §4+§5+§6+§9+§10",
       "controlled_non_production_closure_attestation": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT per Charter v1.7 §8 No Silent Override + Plan §6 Manual book_state mutation reserved for 도훈 only."
     }
+  ],
+  "recommendation_only_wt_closures": [
+    {
+      "timestamp": "2026-05-04T10:30:00+0900",
+      "action": "RECOMMENDATION_ONLY_WT_CLOSURE",
+      "task_id": "WT-S20260504_003",
+      "wt_kind": "recommendation_only",
+      "wt_type": "sizing_only",
+      "method": "HMM_Regime",
+      "parent_wt": "WT-P20260429_002",
+      "verdict": "MONITORING_ONLY",
+      "admission_equivalent_verdict": "REJECTED_RECOMMENDATION_ONLY_NO_BOOK_STATE_WRITE",
+      "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+      "state_machine_path": "JUDGE_PASSED -> GOVERNOR_REJECTED -> ABORTED",
+      "book_state_write_count": 0,
+      "str_1715_directory_write_count": 0,
+      "promotion_wt_spawn_count": 0,
+      "governor_concord_certificate_issuance_count": 0,
+      "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+      "book_state_md5sum_pre": "6ee7406544d12f083764a8baf8c6ad81",
+      "book_state_md5sum_post": "6ee7406544d12f083764a8baf8c6ad81",
+      "book_state_unchanged_verified": true,
+      "codex_round_governor": {
+        "stance": "APPROVE_CONDITIONAL",
+        "critical_concerns_count": 4,
+        "high_severity_count": 1,
+        "medium_severity_count": 2,
+        "low_severity_count": 1,
+        "directional_agreement": true,
+        "round2_amendments": "C1 ACCEPT (package_complete_semantics two-pillar) + C2 ACCEPT (artifact_lineage_normalization) + C3 ACCEPT (Harvey/DSR FAIL_BY_ABSENCE explicit) + C4 ACCEPT (verdict_state_semantic_mapping 3-axis)"
+      },
+      "codex_round_full_chain": {
+        "alpha": "SKIPPED_BY_WAIVER (sizing_only Q-Lead 4-file pattern)",
+        "risk": "REJECT_round_1_resolved_via_waiver_round_2_walkforward_path_added",
+        "optimizer": "REJECT_round_1_remediated_4ACCEPT_2PARTIAL_2REBUTTAL_1NOTE",
+        "forge": "PENDING_BACKGROUND_round2_skip_waiver_applied",
+        "judge": "forge_round1_REVISE_substantive_judge_round1_skip_waiver",
+        "governor": "APPROVE_CONDITIONAL_round1_addressed_via_round2_amendments"
+      },
+      "ax_001_v2_verdict": "FAIL_DEFENSE_LIKE",
+      "ax_008_tally_count_substantive": 3,
+      "ax_008_independent_triangulation_PASS_count_for_admission_gate": 0,
+      "ax_008_admission_gate_applicability": "NOT TRIGGERED",
+      "q_lead_escalate_flag": true,
+      "q_lead_escalate_reasons": [
+        "L-274 memory <-> STR_1715 production discrepancy (SR 1.7477 vs 1.5234 vs 1.5068) persisting unresolved across LRO Round 1 + WT-003",
+        "HMM overlay no value-add vs M4_baseline (MDD 0pp + CAGR drag -4.17pp) confirms LRO Round 1 hypothesis: M4 deterministic schedule dominates statistical sizing overlays at sleeve level",
+        "Cross-WT pattern: if PCA + DCC + HMM all return MONITORING_ONLY with M4 dominance, suggests sleeve-level statistical sizing overlay paradigm structurally limited; potential pivot to stock-level (WT-005 Factor_Beta_Hedge) or AX-007 exception 2 (long-short) or Iter 9 family pivot per L-270"
+      ],
+      "key_metrics": {
+        "M4_baseline_recomputed": {
+          "CAGR": 0.4229,
+          "Sharpe": 1.5628,
+          "MDD": -0.3551,
+          "Sortino": 3.3159,
+          "ann_vol": 0.248,
+          "annual_turnover": 0.2945,
+          "avg_cash": 0.0333
+        },
+        "M4_HMM_Scale_canonical": {
+          "CAGR": 0.3811,
+          "Sharpe": 1.5168,
+          "MDD": -0.3551,
+          "Sortino": 3.0855,
+          "ann_vol": 0.2332,
+          "annual_turnover": 0.3367,
+          "avg_cash": 0.0906
+        },
+        "vs_M4_base": {
+          "cagr_pp": -4.17,
+          "sharpe_delta": -0.046,
+          "sortino_delta": -0.23,
+          "mdd_pp": 0.0,
+          "vol_pp": -1.49,
+          "turnover_pp": 4.22,
+          "avg_cash_pp": 5.74
+        }
+      },
+      "next_steps": {
+        "production_state": "STR_1715 100% PG2 with M4 schedule UNCHANGED",
+        "cross_wt_aggregate": "WT-001 PCA + WT-002 DCC + WT-003 HMM (this) + WT-004 RMT + WT-005 Factor_Beta_Hedge cross-WT compare per Plan §5+§6",
+        "mdd_gap_path_alternatives": "Iter 9 family pivot (Defense / Crisis Alpha) per L-270 if cross-WT all 5 confirm sleeve-level overlay limitation"
+      },
+      "lineage": {
+        "governor_admission_ref": "qepm/mailbox/worktask/WT-S20260504_003/governor_admission.json",
+        "governor_challenge_note_ref": "qepm/mailbox/worktask/WT-S20260504_003/governor_challenge_note.md",
+        "codex_critic_response_governor_ref": "qepm/mailbox/worktask/WT-S20260504_003/codex_critic_response_governor.json",
+        "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_003/judge_verdict.json"
+      }
+    }
   ]
 }

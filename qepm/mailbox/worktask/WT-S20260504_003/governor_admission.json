@@ -1,0 +1,349 @@
+{
+  "task_id": "WT-S20260504_003",
+  "package_kind": "governor_admission",
+  "wt_kind": "recommendation_only",
+  "wt_type": "sizing_only",
+  "parent_wt": "WT-P20260429_002",
+  "as_of_date": "2026-05-04",
+  "agent": "governor",
+  "round": 2,
+  "draft_revision": "final",
+  "schema_version": "v1.1_hmm_governor_round2_post_codex_APPROVE_CONDITIONAL",
+  "method": "HMM_Regime",
+
+  "_field_inventory_11": [
+    "recommendation_only",
+    "book_state_write",
+    "governor_concord_status",
+    "promotion_wt_required",
+    "verdict",
+    "STR_1715_ALPHA_STATUS",
+    "LATENT_RISK_STATE",
+    "PRIMARY_RISK_ANCHOR",
+    "RECOMMENDED_ACTION",
+    "recommendation_package_complete",
+    "abort_reason"
+  ],
+
+  "recommendation_only": true,
+  "book_state_write": false,
+  "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+  "promotion_wt_required": false,
+  "verdict": "MONITORING_ONLY",
+  "STR_1715_ALPHA_STATUS": "UNCHANGED",
+  "LATENT_RISK_STATE": "HMM_3state_walkforward_Normal_dominant_Caution_persistent_Crisis_intermittent",
+  "PRIMARY_RISK_ANCHOR": "M4_baseline_dominates_M4+HMM_canonical_zero_independent_MDD_protection_in_GFC_or_COVID + post_LB_OOS_28m_CAGR_drag_-25pp",
+  "RECOMMENDED_ACTION": "KEEP",
+  "recommendation_package_complete": true,
+  "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+
+  "verdict_enum_one_of": ["RECOMMENDATION_ONLY_PASS", "RECOMMENDATION_ONLY_CONDITIONAL", "MONITORING_ONLY", "FAIL"],
+  "RECOMMENDED_ACTION_enum_one_of": ["KEEP", "CAP_TIGHTEN", "CASH_OVERLAY"],
+
+  "verdict_state_semantic_mapping_per_C4_accept": {
+    "package_verdict_strategy_action": "MONITORING_ONLY",
+    "admission_equivalent_verdict": "REJECTED_RECOMMENDATION_ONLY_NO_BOOK_STATE_WRITE",
+    "state_machine_transition": "JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "closure_classification": "controlled_non_production_closure (NOT production_admission_failure — alpha + production stay intact, sizing overlay rejected as no-value-add)",
+    "downstream_automation_clarity": "package_verdict=MONITORING_ONLY tells action=KEEP STR_1715 PG2 M4. admission_equivalent=REJECTED tells admission gate not satisfied. state=GOVERNOR_REJECTED→ABORTED tells lifecycle terminal. These three layers do NOT conflict — they describe distinct semantic axes."
+  },
+
+  "package_complete_semantics_per_C1_accept": {
+    "recommendation_package_complete_meaning": "closure-completeness for recommendation_only WT lifecycle artifacts (10 mandatory: alpha_package + risk_package + optimization_package + forge_package + judge_verdict + governor_admission + 4 challenge_notes). NOT verification-closure for production admission.",
+    "verification_closure_status": "NOT_VERIFICATION_CLOSED",
+    "independent_triangulation_PASS_count_for_admission_gate": 0,
+    "ax_008_admission_gate_status": "NOT_TRIGGERED (verdict=MONITORING_ONLY)",
+    "two_pillar_phrasing": "Pillar 1: package artifacts complete (10/10). Pillar 2: verification closure status NOT_VERIFICATION_CLOSED (0 independent PASS). Future promotion WT MUST achieve Pillar 2 via future_promotion_blocker_list satisfaction before book_state mutation.",
+    "lro_round1_c1_amendment_precedent": "WT-S20260503_001 governor_admission Round 2 C1_AX008_TALLY_OVERCOUNT_ACCEPT — same phrasing precision applied here."
+  },
+
+  "rationale": {
+    "summary": "WT-S20260504_003 HMM_Regime — recommendation_only WT closure (governor verdict MONITORING_ONLY mirrors judge_decision). HMM 3-state {Normal/Caution/Crisis} latent regime model walk-forward Baum-Welch EM converged (LL=-972.87 / AIC=2046 / BIC=2225 / 6/6 restart, state_conditional vol_ratio_crisis_vs_normal=1.564 > 1.5x AX-001 v2 threshold). 통계 quality OK BUT trading damage 큼: M4_baseline_recomputed (SR 1.5628 / CAGR 0.4229 / MDD -0.3551) DOMINATES M4+HMM_Scale canonical (SR 1.5168 / CAGR 0.3811 / MDD -0.3551) — HMM overlay 0pp MDD improvement vs M4 alone with -4.17pp CAGR drag. AX-001 v2 3-tuple FAIL_DEFENSE_LIKE: Crisis-state vol reduction -4.49pp + GFC 2008 HMM independent +0.0pp + COVID 2020 +0.02pp + Rate 2022 +0.98pp (only 1/5 top5DD improved). Per request.json::primary_objective MDD ≤-25%/M4-3pp + Vol -20% FAIL. STR_1715 100% PG2 (M4 schedule) UNCHANGED. governor_concord cert DEFERRED to future promotion WT (none triggered). Codex Round 2 APPROVE_CONDITIONAL with 4 concerns (1 HIGH + 2 MEDIUM + 1 LOW) all addressed via Round 2 amendments — directional agreement on MONITORING_ONLY confirmed.",
+
+    "judge_handoff_alignment": "Governor verdict matches judge_decision.verdict=MONITORING_ONLY exactly. RECOMMENDED_ACTION=KEEP per judge primary objective failure pattern (HMM_overlay_zero_independent_crisis_protection + post_LB_OOS_28m_HMM_drag_CAGR_-25pp). promotion_wt_required=false per judge implications_for_governor.",
+
+    "ax_001_v2_summary": "ax_001_v2_strict_pass_count=0, partial_pass_count=0, fail_count=2 (HMM_Scale + M4+HMM_Scale). 3-tuple framework (crisis_alpha + Core MDD pp + bad/normal realized risk ratio by HMM regime state): Tuple 1 Crisis SR delta vs M4 -0.155 (FAIL); Tuple 2 MDD pp vs Core 0pp (FAIL — primary objective); Tuple 3 vol_ratio_crisis_vs_normal=1.564 PASS but state_action mapping (cash overlay scale_per_state) redundant with M4. NOT SATISFIED for any variant as deployment-grade defense.",
+
+    "ax_008_summary_round_2_corrected_per_C1_accept": "tally_3_entry_recorded=true is mandatory artifact under Plan §3+§7+§9 admission-gate-not-triggered design (judge_verdict=MONITORING_ONLY). Tally entries: forge=self_validated_codex_skip_waiver (Codex spawn pending background; parent Optimizer round2_waiver precedent same WT) + codex=REVISE_round_1_addressed_via_judge_round2_amendments (Codex DOES support MONITORING_ONLY direction explicitly — directional_agreement field) + architect=self_cross_check_by_judge (Plan §7 explicit permission; not 3rd-party architect spawn). independent_triangulation_PASS_count_for_admission_gate=0 — recorded for tally completeness only, NOT a claim of PASS≥2 independence per LRO Round 1 C1 amendment precedent + Codex governor Round 1 C1 reinforcement.",
+
+    "hmm_regime_predictive_power": "HMM walk-forward regime classification predictive (vol_ratio_crisis_vs_normal=1.564 > 1.5x AX-001 v2 threshold) but action mapping (cash overlay scale_per_state Normal=1.0/Caution=0.7/Crisis=0.4) redundant with M4 deterministic schedule. State persistence Normal=17.2m / Caution=10m / Crisis=7.65m — non-degenerate state-space, not collapsed.",
+
+    "post_lb_oos_drag_evidence_descriptive_only_per_C3_accept": "lockbox_audit::post_LB_metrics descriptive divergence: M4+HMM (n=28, CAGR 0.911) vs M4_baseline (n=28, CAGR 1.157) — HMM cash drag costs ~25pp CAGR in OOS bull regime. **NO Harvey robustness PASS implied** (Harvey/DSR FAIL_BY_ABSENCE for both candidates). n=28 marginal language explicitly REMOVED from Round 2."
+  },
+
+  "codex_round_stance_round_1": "APPROVE_CONDITIONAL",
+  "codex_round_critical_concerns_count": 4,
+  "codex_round_response_ref": "qepm/mailbox/worktask/WT-S20260504_003/codex_critic_response_governor.json",
+  "codex_round_directional_agreement": true,
+  "codex_round_directional_agreement_quote": "KEEP / MONITORING_ONLY / no book_state_write is directionally correct: Forge evidence shows M4_baseline dominates M4+HMM on CAGR and Sharpe with identical MDD. Conditional approval requires tightening provenance and verification language because AX-008, Harvey/DSR, alpha lineage, and artifact-path issues are not independently closed.",
+
+  "codex_round_round2_amendments": {
+    "C1_AX008_PACKAGE_COMPLETE_AMBIGUITY_HIGH_ACCEPT": {
+      "concern": "AX-008 remains unresolved for any future admission: forge is self_validated via skip waiver, codex is REVISE not PASS, and architect is judge self_cross_check. Governor is transparent that independent PASS count is 0, but recommendation_package_complete=true can still be misread as verification closure.",
+      "ax_cite": "AX-008|AX-002|RF-G8",
+      "severity": "HIGH",
+      "governor_response": "ACCEPT",
+      "amendment": "package_complete_semantics_per_C1_accept field added with two-pillar phrasing (Pillar 1: artifacts complete 10/10; Pillar 2: verification_closure_status NOT_VERIFICATION_CLOSED, independent_triangulation_PASS_count_for_admission_gate=0). recommendation_package_complete=true scope explicitly bounded to lifecycle artifact closure, NOT verification closure for production admission.",
+      "lro_precedent": "WT-S20260503_001 governor_admission Round 2 C1_AX008_TALLY_OVERCOUNT_ACCEPT — same phrasing precision applied"
+    },
+    "C2_ARTIFACT_PROVENANCE_MEDIUM_ACCEPT": {
+      "concern": "Artifact provenance is messy: user-specified qepm/stage_artifacts/WT_WT-S20260504_003 is absent, alpha_scores.parquet is absent at both requested and canonical WT-local paths, and stage_artifacts/WT_WT_S20260504_003 contains stale weights sha eb0e56 while canonical weights sha is 144fee. weight_method_selected.md also preserves obsolete optimizer metrics (-30.2% MDD) contradicted by Forge final (-35.51%).",
+      "ax_cite": "PIT-C1|PIT-C15|AX-002|AX-008",
+      "severity": "MEDIUM",
+      "governor_response": "ACCEPT",
+      "amendment": "artifact_lineage_normalization field added below — canonical weights.csv sha 144fee... documented + stale eb0e56... explicitly SUPERSEDED + stale optimizer interim MDD (-30.2%) explicitly SUPERSEDED by Forge canonical (-35.51%) + alpha_scores.parquet WT-local absence acknowledged + parent inheritance documented + PIT-C15 alpha time-series verification explicit (inherited from STR_1715 PG2 not WT-local-verified).",
+      "artifact_lineage_normalization": {
+        "canonical_weights_sha": "144fee... (Forge final weights.csv canonical reference)",
+        "stale_weights_sha_superseded": "eb0e56... (interim optimizer-stage stale weights — SUPERSEDED + DO NOT USE for verdict)",
+        "canonical_forge_mdd": -0.3551,
+        "stale_optimizer_interim_mdd_superseded": -0.302,
+        "stale_optimizer_interim_source": "weight_method_selected.md (interim — SUPERSEDED by Forge canonical)",
+        "alpha_scores_parquet_wt_local_present": false,
+        "alpha_inherited_from": "STR_1715 PG2 score-composite (parent WT-P20260429_002 alpha_discovery cert inherit)",
+        "alpha_inherited_via": "alpha_package_inherit_ref.json + alpha_package.json::inherited_alpha_stub 6-field",
+        "pit_c15_alpha_time_series_verification": "inherited from parent WT-P20260429_002, NOT WT-local-verified (sizing_only role_card design — no new alpha generation)",
+        "no_silent_substitution_verified": true,
+        "verification_paths": [
+          "alpha_package.json::inherited_alpha_stub",
+          "risk_package.json::lineage::alpha_score_source",
+          "optimization_package.json::lineage::score_eff_source",
+          "forge_package.json::lineage::alpha_inherited",
+          "judge_verdict.json::audit::alpha_lineage",
+          "ax008_stance_tally.json::tally::architect"
+        ]
+      }
+    },
+    "C3_HARVEY_DSR_LOCKBOX_LANGUAGE_MEDIUM_ACCEPT": {
+      "concern": "Harvey/DSR is absent for both M4_baseline and M4+HMM. Governor correctly blocks future promotion on Harvey/DSR, but final package should avoid any robustness implication from lockbox harvey_threshold_pass=true or n=28 marginal language unless 5-spec t_NW and DSR are computed.",
+      "ax_cite": "AX-002|AX-008|RF-G6",
+      "severity": "MEDIUM",
+      "governor_response": "ACCEPT",
+      "amendment": "rationale.post_lb_oos_drag_evidence_descriptive_only_per_C3_accept explicitly notes 'NO Harvey robustness PASS implied' + n=28 marginal language REMOVED. audit.harvey_dsr_audit_per_C3_accept field below explicitly labels FAIL_BY_ABSENCE for both baseline + canonical. Lockbox post_LB metrics retained as descriptive HMM cash drag evidence (CAGR 0.911 vs 1.157 25pp delta) NOT robustness PASS. future_promotion_blocker_list block_1/2/3 reinforced with explicit FAIL_BY_ABSENCE notation.",
+      "harvey_dsr_status_explicit": {
+        "M4_baseline_harvey_t_nw": "FAIL_BY_ABSENCE (not computed)",
+        "M4_baseline_dsr_post_penalty": "FAIL_BY_ABSENCE (not computed)",
+        "M4_HMM_Scale_harvey_t_nw": "FAIL_BY_ABSENCE (not computed)",
+        "M4_HMM_Scale_dsr_post_penalty": "FAIL_BY_ABSENCE (not computed)",
+        "robustness_pass_claim_in_this_wt": "NONE",
+        "post_lb_n28_robustness_implication_removed": true,
+        "future_promotion_wt_compute_obligation": "future_promotion_blocker_list block_1 (Harvey t_NW) + block_2 (DSR) + block_3 (baseline symmetric)"
+      }
+    },
+    "C4_VERDICT_STATE_SEMANTIC_MAPPING_LOW_ACCEPT": {
+      "concern": "Verdict/state semantics need one explicit mapping: package verdict MONITORING_ONLY, admission-equivalent REJECTED, and state transition GOVERNOR_REJECTED→ABORTED. Without that mapping, downstream automation could confuse non-production closure with production admission failure.",
+      "ax_cite": "RF-G8|AX-002",
+      "severity": "LOW",
+      "governor_response": "ACCEPT",
+      "amendment": "verdict_state_semantic_mapping_per_C4_accept field added with explicit 3-axis semantic disambiguation: (a) package_verdict_strategy_action=MONITORING_ONLY (strategy action axis); (b) admission_equivalent_verdict=REJECTED_RECOMMENDATION_ONLY_NO_BOOK_STATE_WRITE (admission gate axis); (c) state_machine_transition=GOVERNOR_REJECTED → ABORTED (lifecycle axis). Plus closure_classification distinguishes 'controlled_non_production_closure' from 'production_admission_failure'."
+    }
+  },
+
+  "state_machine_transition": {
+    "incoming_phase": "JUDGE_PASSED",
+    "target_phase_step_1": "GOVERNOR_REJECTED",
+    "target_phase_step_2": "ABORTED",
+    "policy_compliance": "state_transitions.json::JUDGE_PASSED.allowed_next=[GOVERNOR_ADMITTED, GOVERNOR_REJECTED, ABORTED] + GOVERNOR_REJECTED.allowed_next=[ABORTED]. Both transitions valid.",
+    "controlled_non_production_closure": "GOVERNOR_REJECTED → ABORTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT (Plan §6 + Plan §10 + LRO Round 1 precedent at WT-S20260503_001)."
+  },
+
+  "production_protection_audit": {
+    "book_state_write_count": 0,
+    "book_state_md5sum_pre_governor_phase": "6ee7406544d12f083764a8baf8c6ad81",
+    "book_state_mtime_pre_unix": 1777532809,
+    "book_state_md5sum_at_final_write_target": "VERIFIED_UNCHANGED_AT_GOVERNOR_FINAL_WRITE",
+    "str_1715_directory_write_count": 0,
+    "production_weights_overlay_dir_created_count": 0,
+    "promotion_wt_spawn_count": 0,
+    "governor_concord_certificate_issuance_count": 0,
+    "governor_concord_status_explicit": "DEFERRED_TO_PROMOTION_WT (Plan §10 own certs deferred + recommendation_only sizing_only role_card own cert pending by design)"
+  },
+
+  "judge_handoff_inheritance": {
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_003/judge_verdict.json",
+    "judge_decision_verdict": "MONITORING_ONLY",
+    "judge_primary_recommendation": "KEEP_STR_1715_PG2_M4",
+    "judge_RECOMMENDED_ACTION_inferred": "KEEP",
+    "judge_STR_1715_ALPHA_STATUS_inferred": "UNCHANGED",
+    "judge_promotion_wt_required": false,
+    "judge_ax_008_admission_gate_applicability": "NOT TRIGGERED",
+    "judge_q_lead_escalate_flag": true,
+    "judge_q_lead_escalate_reasons_inherited": [
+      "L-274 memory ↔ STR_1715 production discrepancy (SR 1.7477 memory vs 1.5234 production vs 1.5068 Forge S1) — persisting unresolved across LRO Round 1 + WT-003 HMM. Q-Lead reconciliation required.",
+      "HMM overlay no value-add vs M4_baseline (MDD 0pp + CAGR drag -4.17pp) — confirms LRO Round 1 hypothesis: M4 deterministic schedule dominates statistical sizing overlays at sleeve level",
+      "Codex Round 1 hash integrity drift (forge_package_draft sha mismatch with current weights.csv) — forge audit log convention needs pre/post hash discipline for AX-008 source 2 PASS",
+      "Cross-WT pattern: if PCA + DCC + HMM all return MONITORING_ONLY with M4 dominance, suggests sleeve-level statistical sizing overlay paradigm structurally limited; potential pivot to stock-level (Factor Beta Hedge WT-005) or AX-007 exception 2 (long-short) or Iter 9 family pivot (Defense / Crisis Alpha new alpha source)"
+    ]
+  },
+
+  "ax_008_tally_post_round_2_per_C1_accept": {
+    "tally_3_entry_recorded": true,
+    "tally": {
+      "forge": "self_validated_codex_skip_waiver (Codex spawn pending background; parent Optimizer round2_waiver precedent same WT)",
+      "codex": "REVISE_round_1_4HIGH_2MEDIUM_1LOW_judge_round2_response_substantive (Codex supports MONITORING_ONLY direction explicitly per directional_agreement field)",
+      "architect": "self_cross_check_by_judge (Plan §7 explicit permission; not 3rd-party architect spawn)"
+    },
+    "independent_triangulation_PASS_count_for_admission_gate": 0,
+    "tally_recording_purpose": "mandatory artifact under Plan §3+§7+§9 admission-gate-not-triggered design (post-Codex governor C1 ACCEPT phrasing precision). NOT a claim of PASS≥2 independence — the 3 entries are tally records, not independent PASS sources. LRO Round 1 C1 amendment precedent applied.",
+    "ax_008_admission_gate_applicability": "NOT TRIGGERED — judge_decision.verdict=MONITORING_ONLY (not PASS/CONDITIONAL_PASS/promotion WT trigger). PASS≥2 admission gate evaluation skipped per design.",
+    "ax_008_stance_tally_full_ref": "qepm/mailbox/worktask/WT-S20260504_003/ax008_stance_tally.json",
+    "future_promotion_wt_triangulation_requirement": "Per LRO Round 1 future_promotion_blocker_list block_5 precedent + governor C1 reinforcement: separate architect spawn (not judge self-check), Codex Round PASS or APPROVE_CONDITIONAL stance for forge AND for governor (not REVISE), and forge bt with Codex Round substantive engagement (not timeout/skip_waiver)."
+  },
+
+  "future_promotion_blocker_list": {
+    "block_1_harvey_t_nw": "Harvey t_NW (Newey-West HAC) > 3.0 with multi-testing penalty applied. CITATION: Harvey et al. (2016, RFS) + judge agent v6.1 Statistical Defense (qepm §10). M4_baseline + M4+HMM_Scale current status: FAIL_BY_ABSENCE.",
+    "block_2_dsr_post_penalty": "DSR (Deflated Sharpe Ratio) post-penalty computation with selection / multi-testing adjustment (candidates_tried adjusted for cross-WT 5 statistical models tested). CITATION: Bailey & Lopez de Prado (2014). M4_baseline + M4+HMM_Scale current status: FAIL_BY_ABSENCE.",
+    "block_3_baseline_harvey_status": "Baseline (STR_1715 / forge_recomputed_M4) Harvey t status currently FAIL_BY_ABSENCE. Promotion WT must compute baseline Harvey t_NW + DSR for symmetric comparison. Otherwise replacement gate cannot fire.",
+    "block_4_lockbox_split_evidence": "Although HMM sizing_only inherited alpha makes lockbox NOT_APPLICABLE in this WT (lockbox_audit::judge_lockbox_harness_used=false with rationale — Forge schedule_density_ratio=1.0 confirms HMM walk-forward predictions extend through 2026-05-01 last_pit_clean_date), any promotion WT producing book_state-mutating overlay must produce lockbox split evidence (HMM params SHA-frozen sha256=7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567 3-source verify + IS/OOS partition seal).",
+    "block_5_independent_triangulation": "AX-008 PASS≥2 independent triangulation per LRO Round 1 C1 amendment precedent + governor C1 reinforcement — separate architect spawn (not judge self-check), Codex Round PASS/APPROVE_CONDITIONAL stance for forge AND governor (not REVISE), forge bt with Codex Round substantive engagement (not timeout/skip_waiver).",
+    "block_6_hmm_independent_crisis_protection": "Future HMM refinement WT must demonstrate HMM-independent crisis MDD protection > +1pp vs M4_baseline in GFC 2008 OR COVID 2020 OR Rate 2022 (currently 0pp + 0.02pp + 0.98pp respectively — only Rate 2022 marginal). Otherwise HMM overlay is redundant with M4 deterministic schedule per current evidence.",
+    "block_7_artifact_provenance_normalization_per_C2": "Future promotion WT must (a) align canonical weights sha to single canonical reference (no stale interim sha co-existing); (b) explicitly archive or label SUPERSEDED stale optimizer interim metrics (e.g., weight_method_selected.md MDD -30.2% superseded by Forge canonical -35.51%); (c) provide WT-local alpha_scores.parquet OR explicit parent alpha hash/date inheritance reference (not just inherited_alpha_stub)."
+  },
+
+  "hmm_variant_summary_for_governance_log": {
+    "n_strategies_evaluated": 4,
+    "n_hmm_variants": 2,
+    "best_hmm_variant": "M4+HMM_Scale (canonical_combined_max_cash)",
+    "best_hmm_variant_mdd_pp_vs_m4_baseline": "0pp (no improvement)",
+    "best_hmm_variant_cagr_cost_vs_m4": "-4.17pp (CAGR 0.3811 vs M4 0.4229)",
+    "best_hmm_variant_vol_pp_vs_m4": "-1.49pp (target -20% / actual -6%)",
+    "best_hmm_variant_sortino_delta": "-0.23 (Sortino 3.0855 vs M4 3.3159)",
+    "hmm_state_predictive_power_confirmed": "vol_ratio_crisis_vs_normal=1.564 > 1.5x AX-001 v2 threshold (PASS); state persistence non-degenerate Normal=17.2m / Caution=10m / Crisis=7.65m; 6/6 restart convergence; LL=-972.87 / AIC=2046 / BIC=2225",
+    "hmm_state_action_mapping_redundant_with_M4": "scale_per_state Normal=1.0/Caution=0.7/Crisis=0.4 produces 0pp MDD improvement vs M4 cash schedule which already captures crisis floor — empirical evidence of overlay redundancy",
+    "core_baseline_decision_basis": "forge_M4_baseline_recomputed (CAGR 0.4229 / Sharpe 1.5628 / MDD -0.3551) — NOT L-274 (L-274 frozen reference for transparency only per Plan §3 + LRO Round 1 precedent — discrepancy flagged for Q-Lead reconciliation)"
+  },
+
+  "next_steps_post_abort": {
+    "production_state": "STR_1715 100% PG2 with M4 schedule UNCHANGED (no weight modification, no overlay deployment)",
+    "hmm_monitoring_dashboard_optional": "Q-Lead may spawn separate read-only observability WT for HMM regime tracker (Mode A — no weight intervention). HMM_state_freq + state_conditional vol ratios useful as risk monitoring signals.",
+    "mdd_gap_path_reconsideration": "STR_1715 -7.05pp MDD gap to -25% target NOT closed by HMM overlay. Cross-WT pattern (LRO Round 1 + WT-003 HMM) suggests sleeve-level statistical sizing overlay structurally limited at this alpha. AX-001 v2 next iteration: defense / crisis_alpha family pivot (Iter 9 — Growth × Investor_Flow / Skewness × CFO accrual / Macro × Profitability conditional) per L-270 — judge q_lead_escalate_reason_4 cross-WT pivot suggestion",
+    "promotion_wt_status": "no promotion WT trigger (promotion_wt_required=false). governor_concord cert remains DEFERRED. If future HMM refinement WT achieves verdict=PASS or CONDITIONAL_PASS, promotion WT must satisfy future_promotion_blocker_list (7 blocks above) before admission gate fires.",
+    "cross_wt_aggregate_decision_pending": "WT-003 verdict completes Batch B (HMM + RMT). Cross-WT compare aggregating WT-001 PCA / WT-002 DCC / WT-003 HMM / WT-004 RMT / WT-005 Factor_Beta_Hedge will guide final best-path selection per Plan §5 + §6."
+  },
+
+  "axiom_assertions": {
+    "AX_000_no_limits": {
+      "verdict": "PRESERVED — HMM recommendation_only closure does not invalidate AX-000. -7.05pp MDD gap path not closed; alternate paths exist (Iter 9 family pivot per L-270 + cross-WT statistical model 5-way still pending best path)."
+    },
+    "AX_001_v2_defense_conditional": {
+      "applied_to_2_variants": ["HMM_Scale", "M4+HMM_Scale"],
+      "core_baseline": "forge_recomputed_M4 (Plan §3 baseline_decision_basis honored — L-274 NOT used as gate)",
+      "best_variant": "M4+HMM_Scale (still FAIL on Tuple 2 MDD pp)",
+      "verdict": "FAIL_DEFENSE_LIKE — HMM regime classification predictive (Tuple 3 PASS) but action mapping (cash overlay) redundant with M4. Tuple 1 (Crisis SR delta -0.155) and Tuple 2 (MDD 0pp delta) FAIL."
+    },
+    "AX_002_process_honesty": {
+      "hmm_params_sha_frozen": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567 (3-source matched: risk + optimizer + forge)",
+      "walk_forward_re_estimation_during_backtest": "true (PIT-clean train data 1..t-1 only, NOT OOS re-estimation per AX-002)",
+      "production_protection": "STR_1715 directory write count = 0 + book_state_write count = 0",
+      "alpha_lineage_explicit_per_C2_amendment": "wt_local_alpha_scores_present=false + inherited_from STR_1715 PG2 documented + PIT-C15 inherited not WT-local-verified explicit",
+      "verdict": "PASS"
+    },
+    "AX_007_exception_clause_3_ml_sizing": {
+      "applicability": "PASS — HMM is statistical sizing overlay on existing top20 sleeve (STR_1715 PG2). Sleeve-level w∈[0,1] + sum=1 + cash-as-rf-proxy. Inherited 20-name + 0.20 cap from parent.",
+      "verdict": "exception_clause_3_ml_sizing satisfies AX-007 single_sleeve_long_only_top20 carve-out"
+    },
+    "AX_008_triangulation_post_round_2": {
+      "tally_3_entry_recorded": true,
+      "independent_triangulation_PASS_count_for_admission_gate": 0,
+      "admission_gate_applicability": "NOT TRIGGERED (MONITORING_ONLY verdict). Tally recording is mandatory artifact, NOT independent triangulation claim per LRO Round 1 C1 amendment precedent + governor Round 1 C1 reinforcement.",
+      "future_promotion_wt_blocker_list": "future_promotion_blocker_list field — 7 blocks (Harvey t_NW / DSR post-penalty / baseline Harvey symmetric / lockbox split / independent triangulation / HMM independent crisis protection / artifact provenance normalization)",
+      "verdict": "TALLY_RECORDED_AS_MANDATORY (not independent PASS≥2)"
+    }
+  },
+
+  "audit": {
+    "pit_audit": {
+      "hmm_params_sha_check": "PASS (7f6d4a42... matched 3-source: risk + optimizer + forge)",
+      "walk_forward_train_data_1_to_t_minus_1": "PASS (judge cross-check confirmed walk-forward forward-filter only, NOT OOS re-estimation)",
+      "lookahead_detector_grep": "PASS (forge measurement_basis_audit, all 4 strategies use period_data Date>start_d slicing C2 PIT)",
+      "lockbox_audit_applicability": "NOT_APPLICABLE for HMM sizing_only WT (judge_lockbox_harness_used=false with rationale — Forge schedule_density_ratio=1.0 confirms HMM walk-forward predictions extend through 2026-05-01 last_pit_clean_date). Future-promotion blocker block_4 added."
+    },
+    "production_protection": {
+      "str_1715_directory_write_count": 0,
+      "alpha_engine_invocation_count": 0,
+      "alpha_ranking_modification_count": 0,
+      "weights_csv_modification_count": 0,
+      "book_state_json_modification_count": 0,
+      "production_weights_overlay_dir_created_count": 0
+    },
+    "measurement_basis_audit": {
+      "common_basis_verified": true,
+      "all_4_universe_eq": "KOSPI200_KOSDAQ150_intersection",
+      "all_4_cost_model_eq": "v2.3_kr_retail_15bps + sleeve overlay 15bps × |Δw_str|",
+      "all_4_long_only": true,
+      "all_4_max_names_le_20": true,
+      "all_4_global_hard_cap_le_0p20": true,
+      "all_4_pa_functions_only": true,
+      "hmm_params_frozen_sha256": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567"
+    },
+    "schedule_density_audit": {
+      "all_4_above_0p95": true,
+      "ratio_per_strategy": "1.000 across 4 strategies (S1 / HMM_Scale / M4+HMM_Scale / M4_baseline_recomputed)"
+    },
+    "harvey_dsr_audit_per_C3_accept": {
+      "applicable_for_this_wt": false,
+      "waiver_reason": "wt_kind=recommendation_only AND judge_decision.verdict=MONITORING_ONLY — no production admission gate triggered.",
+      "M4_baseline_harvey_t_nw": "FAIL_BY_ABSENCE",
+      "M4_baseline_dsr_post_penalty": "FAIL_BY_ABSENCE",
+      "M4_HMM_Scale_harvey_t_nw": "FAIL_BY_ABSENCE",
+      "M4_HMM_Scale_dsr_post_penalty": "FAIL_BY_ABSENCE",
+      "robustness_pass_claim_in_this_wt": "NONE",
+      "post_lb_n28_robustness_implication_removed": true,
+      "future_promotion_wt_blocker_status": "Harvey t_NW + DSR post-penalty + baseline Harvey symmetric MUST be supplied at any subsequent promotion WT admission gate (codified in future_promotion_blocker_list blocks 1/2/3).",
+      "policy_citation": "Plan §3 + Charter v1.4 §10 + judge agent v6.1 Statistical Defense (qepm §10 + Harvey 2016 RFS + Bailey & Lopez de Prado 2014). LRO Round 1 precedent."
+    },
+    "alpha_lineage_per_C2_accept": {
+      "wt_local_alpha_scores_present": false,
+      "inherited_from": "STR_1715 PG2 score-composite (parent WT-P20260429_002 alpha_discovery cert inherit)",
+      "inherited_via": "alpha_package_inherit_ref.json + alpha_package.json::inherited_alpha_stub 6-field",
+      "pit_c15_alpha_time_series_verification": "inherited from parent WT-P20260429_002, NOT WT-local-verified (sizing_only role_card design — no new alpha generation)",
+      "no_silent_substitution_verified": true,
+      "verified_in": "alpha_package.json + risk_package.json::lineage + optimization_package.json::lineage + forge_package.json::lineage + judge_verdict.json::audit + ax008_stance_tally.json::tally::architect"
+    },
+    "artifact_lineage_normalization_per_C2_accept": {
+      "canonical_weights_sha_prefix": "144fee...",
+      "stale_weights_sha_superseded": "eb0e56...",
+      "canonical_forge_mdd": -0.3551,
+      "stale_optimizer_interim_mdd_superseded": -0.302,
+      "stale_optimizer_interim_source_marked_superseded": "weight_method_selected.md (interim — SUPERSEDED by Forge canonical bt_result.rds)",
+      "future_promotion_wt_archive_obligation": "future_promotion_blocker_list block_7 (artifact provenance normalization required)"
+    },
+    "turnover_audit": {
+      "M4_baseline_one_way_annual": 0.2945,
+      "HMM_Scale_one_way_annual": 0.1821,
+      "M4_HMM_Scale_one_way_annual": 0.3367,
+      "S1_baseline_one_way_annual": 0.0,
+      "hard_cap_one_way": 6.0,
+      "all_within_bounds": true
+    },
+    "L274_reconciliation_pending": {
+      "memory_value": "SR 1.7477 / CAGR 0.4378 / MDD -0.3205 (memory carry text 2026-05-02 next_session_task L-274)",
+      "production_06_metrics_csv": "SR 1.5234 / CAGR 0.4391 / MDD -0.4169 (STR_1715 production directory)",
+      "forge_S1_no_overlay": "SR 1.5068 / CAGR 0.4318 / MDD -0.4169 (this WT forge re-computation)",
+      "discrepancy_flag": "Q-Lead reconciliation pending (consistent with LRO Round 1 same flag, persisting unresolved across 2 WTs)",
+      "use_in_this_wt": "L-274 frozen historical reference NOT used as PASS/FAIL gate. forge_M4_baseline_recomputed authoritative per Plan §3."
+    }
+  },
+
+  "lineage": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-S20260504_003/alpha_package.json (inherited_alpha_stub 6-field)",
+    "alpha_inherited_from": "STR_1715 PG2 score-composite (parent WT-P20260429_002 alpha_discovery cert inherit)",
+    "risk_package_ref": "qepm/mailbox/worktask/WT-S20260504_003/risk_package.json (Round 2 final post codex_critic_skip_waiver Q-Lead override)",
+    "optimization_package_ref": "qepm/mailbox/worktask/WT-S20260504_003/optimization_package.json (Round 2 final post codex_critic_skip_waiver Q-Lead override)",
+    "forge_package_ref": "qepm/mailbox/worktask/WT-S20260504_003/forge_package.json (Round 1 final post codex_critic_skip_waiver waiver applied)",
+    "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_003/judge_verdict.json (Round 1 final post forge_round1_REVISE substantive amendments)",
+    "ax008_stance_tally_ref": "qepm/mailbox/worktask/WT-S20260504_003/ax008_stance_tally.json",
+    "defense_like_evaluation_ref": "qepm/mailbox/worktask/WT-S20260504_003/defense_like_evaluation.json",
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260504_003/ (HMM risk infrastructure: covariance.parquet / weights.csv / hmm_params_frozen / bt_result.rds + 4 variants)",
+    "wt_local_alpha_scores_present": false,
+    "outputs": [
+      "qepm/mailbox/worktask/WT-S20260504_003/governor_admission.json (this file final Round 2)",
+      "qepm/mailbox/worktask/WT-S20260504_003/governor_challenge_note.md",
+      "qepm/mailbox/worktask/WT-S20260504_003/codex_critic_response_governor.json (Codex Round 1 stance APPROVE_CONDITIONAL)"
+    ]
+  },
+
+  "codex_round_status": "round_1_APPROVE_CONDITIONAL_addressed_via_round_2_final",
+  "promoted_to_final_at": "2026-05-04T10:25:00+09:00",
+  "created_by": "governor agent (v6.1 Q-Lead spawn) Round 2 final post-Codex APPROVE_CONDITIONAL",
+  "created_at": "2026-05-04T10:25:00+09:00"
+}

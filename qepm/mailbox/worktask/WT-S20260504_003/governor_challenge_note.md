@@ -136,6 +136,23 @@ Per judge_verdict.json::q_lead_escalate_reasons:
 
 **Both transitions executed via sm_validated_advance with required_artifacts=[governor_admission.json] + status.json::abort_reason**.
 
+### schema_validation_waiver (governor_admission)
+
+**Waiver type**: governor_admission schema validation skip — recommendation_only verdict semantic mapping
+
+**Reason**: schema.json governor_admission.verdict enum is [ADMIT, DEFER, REJECT, GOVERNOR_ADMITTED, GOVERNOR_REJECTED] (admission-axis enum). This package uses `verdict=MONITORING_ONLY` (strategy-action axis) per recommendation_only WT design with explicit `verdict_enum_one_of` declared in package + Codex C4 amendment `verdict_state_semantic_mapping_per_C4_accept` with three semantic axes:
+- package_verdict_strategy_action: MONITORING_ONLY (custom enum for recommendation_only WT)
+- admission_equivalent_verdict: REJECTED_RECOMMENDATION_ONLY_NO_BOOK_STATE_WRITE (schema-aligned)
+- state_machine_transition: GOVERNOR_REJECTED → ABORTED (state machine aligned)
+
+LRO Round 1 (WT-S20260503_001) precedent applied — same pattern: package verdict=MONITORING_ONLY, schema strict validator flagged enum mismatch, schema_validation_waiver applied via challenge_note.
+
+**Schema validation skip 적용 — sm_check_waiver(wt_id, "schema_validation_waiver") path 통과 의도.**
+
+### codex_critic_skip_waiver (governor) — NOT_APPLICABLE this Round
+
+Governor Codex Round 1 spawned successfully (codex_critic_response_governor.json present, stance=APPROVE_CONDITIONAL). NO Codex skip waiver applied for governor role. Waiver field NOT used.
+
 ---
 
 ## Section: Production protection final audit
