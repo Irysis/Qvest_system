@@ -1,0 +1,87 @@
+{
+  "task_id": "WT-P20260505_001",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission_hybrid_overlay",
+  "hypothesis_title": "STR_1715_AR_threshold_overlay_PG2 70% + TSMOM ETF rotation 15% + KR 10y 국채 ETF 15% Hybrid promotion (Path C 도훈 명시)",
+  "hypothesis_description": "도훈 2026-05-05 Option C 선택 — 두 직교 source 보완 결합. WT-008 KR 10y 국채 (cor=-0.137, MDD -1.47pp 개선, cost 35bps) + WT-009 TSMOM ETF rotation (cor=0.077, SR +0.066 boost, cost 58bps) 두 직교 source의 강점을 hybrid로 결합. 직교성 평균 cor ~-0.03 (강한 직교) + 위기 hedge 두 종류 결합 (flight-to-quality + trend-based switch) + 학술 정합 풍부 (Cieslak-Povala 2015 bond + Moskowitz-Ooi-Pedersen 2012 TSMOM = managed futures + bond hybrid 60/40 paradigm).",
+  "hypothesis_source": "user_decision_2026-05-05_path_C_hybrid",
+  "as_of_date": "2026-05-05",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "parent_wt": "WT-P20260504_001",
+  "predecessor_wts": ["WT-S20260504_007", "WT-P20260504_001", "WT-S20260504_008", "WT-S20260504_009"],
+  "inherit_certs": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+  "method": "hybrid_overlay_70_15_15_three_layer_orthogonal_combination",
+  "method_specification": {
+    "base_strategy": "STR_1715_AR_threshold_overlay_PG2 (admitted WT-P20260504_001, effective 2026-05-05)",
+    "base_allocation": 0.70,
+    "overlay_layer_2_tsmom_etf_rotation": {
+      "allocation": 0.15,
+      "method": "Cross-Asset Time-Series Momentum 12-1m vol-scaled long-only",
+      "academic_anchor": "Moskowitz-Ooi-Pedersen (2012 JFE) + Asness-Moskowitz-Pedersen (2013 JFE)",
+      "etf_pool": ["A069500", "A148070", "A143850", "A132030", "A308620", "A284430", "A329200", "A229200", "A157450"],
+      "rule": "signal_i,t = sign(R_i,t-12) · |R_i,t-12|^β; long if positive else 0; vol-scale to target 12% annualized",
+      "max_single_etf_weight_within_15pct": 0.30,
+      "lro_provenance": "WT-S20260504_009 alpha_package + alpha_scores.parquet (1224 rows = 136 sig_dates × 9 ETFs)"
+    },
+    "overlay_layer_3_kr_10y_bond_etf": {
+      "allocation": 0.15,
+      "method": "KR 10y 국채 ETF passive long-only",
+      "academic_anchor": "Cieslak-Povala (2015 RAS) bond-equity correlation regime-conditional",
+      "etf_ticker": "A148070 (KODEX 국고채10년)",
+      "lro_provenance": "WT-S20260504_008 candidate evaluation primary + KOFIA NAV validation pending"
+    },
+    "final_allocation_composition": "0.70 · w_STR_1715_AR_threshold + 0.15 · w_TSMOM_pos_signal + 0.15 · {KR_10y_bond_ETF: 1.0}",
+    "alpha_preservation_mandate": {
+      "str_1715_ranking_relative_proportion_invariant": "rank_corr(w_STR1715_pre, w_STR1715_post · 0.70) = 1.0 strict",
+      "ar_threshold_overlay_unchanged": "lro_sha ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18 frozen",
+      "m4_schedule_unchanged": "WT-D20260430_001/judge_ready/weights.csv reference"
+    }
+  },
+  "universe_definition": {"label": "KOSPI200_KOSDAQ150_intersection", "liquidity_min_won_20d_avg": 200000000, "max_names_total": 500},
+  "extended_universe_alternative_assets": ["A069500", "A148070", "A143850", "A132030", "A308620", "A284430", "A329200", "A229200", "A157450"],
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {"fundamental": "quarterly 45d", "fundamental_annual": "annual May", "price": "t-1 close", "investor_flow": "t-1 settlement", "macro": "t-1 FRED", "ic_history": "Usable_Date <= sig_date"},
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_AR_threshold_overlay_PG2 (effective 2026-05-05, 70% risk + 30% cash)",
+  "target_portfolio": "STR_1715_AR_threshold_overlay_PG2 70% + TSMOM ETF 15% + KR 10y bond ETF 15%",
+  "hard_mandate": {"pit_enforcement": "C1-C15 all enforced", "liquidity_floor_won_20d_avg": 200000000, "mandate_restrictions": {"no_short_legal_kr": true, "no_cross_market": false, "kr_domestic_only": false, "rationale_cross_market": "ETF pool inclusion (USD-hedged equity/bond ETF traded on KR exchange)"}, "long_only_mandate": "true"},
+  "hard_constraints": {"max_names": 20, "weight_bounds": [0, 0.20], "weight_sum": 1.0, "long_only": true, "global_hard_cap_ceiling": 0.20, "etf_overlay_max_pct": 0.30, "tsmom_max_single_etf_weight": 0.30},
+  "promotion_prerequisites": {
+    "P1_architect_3rd_source": {"status": "PENDING", "description": "Architect agent independent verification of Hybrid 70/15/15 simulation + alpha invariance audit (rank_corr=1.0) + KOFIA NAV cross-validation plan", "expected_artifact": "architect_independent_verification.json"},
+    "P2_kofia_nav_validation_plan": {"status": "PENDING", "description": "KR 10y bond ETF (A148070) + 9 ETF universe KOFIA actual NAV cross-validation. Synthetic proxy → 실 ETF NAV bootstrap CI 재산출. WT-009 RF-A1 HIGH 해소 의무.", "expected_artifact": "kofia_nav_validation_plan.json"},
+    "P3_optimizer_30_cap_constraint": {"status": "PENDING", "description": "TSMOM single ETF 79.86% breach (WT-009 RF-A8) → Optimizer 30% cap rebalance + ETF universe weight constraint", "expected_artifact": "optimization_package.json"},
+    "P4_risk_manager_correlation_tail_audit": {"status": "PENDING", "description": "Hybrid 3-source correlation matrix (STR_1715 / TSMOM / KR 10y) + tail risk (CVaR/CDaR) + crisis decomposition", "expected_artifact": "risk_package.json"},
+    "P5_forge_5_strategy_backtest": {"status": "PENDING", "description": "5-strategy backtest 256m: S0 baseline AR-on-M4 100%, S1 KR_10y 70/30, S2 TSMOM 70/30, S3 Hybrid 70/15/15, S4 Hybrid 50/25/25 sensitivity", "expected_artifact": "forge_package.json"},
+    "P6_judge_verdict": {"status": "PENDING", "description": "Verdict per primary_objective + AX-008 triangulation (Forge + Codex + Architect 2/3 PASS)", "expected_artifact": "judge_verdict.json"},
+    "P7_codex_round_governor": {"status": "PENDING", "description": "Codex Critic Round + Governor admit + book_state mutation (admitted_id update)", "expected_artifact": "governor_admission.json + book_state_mutation"},
+    "P8_telegram_brief": {"status": "PENDING", "description": "Hybrid admission summary + 9-step prereq results + Path C realization", "expected_artifact": "tg_agent_brief() ok=TRUE"},
+    "P9_post_deploy_monitoring": {"status": "PENDING", "description": "11 POST_DEPLOY items extension to Hybrid (TSMOM TO + KR 10y tracking error + cor drift quarterly + KOFIA actual NAV ongoing audit)", "expected_artifact": "post_deploy_monitoring_plan.json"}
+  },
+  "axiom_compliance": {
+    "AX-000": "limits_dont_exist — Hybrid path C realizes ortho diversification",
+    "AX-001_v2": "N/A pure overlay no defense factor",
+    "AX-002": "PIT enforced + lro_sha frozen + research_to_promotion path validated",
+    "AX-007": "EXEMPT base + EXCEPTION 'ML sizing' for TSMOM (multi-asset ETF rotation)",
+    "AX-008": "TARGETING 2/3 PASS — Forge new + Codex Round + Architect 3rd-source"
+  },
+  "primary_objective": {
+    "sharpe_target": "1.7758 → 1.83+ (delta_Sharpe > +0.05 over baseline)",
+    "mdd_target": "-25.15% → -23 ~ -24% (additional 1pp improvement)",
+    "diversification": "single-strategy → 3-source orthogonal combination",
+    "alpha_preservation": "STR_1715 + AR overlay 무손상 mandate 유지 + base 70% scaling만"
+  },
+  "decision_rule": {
+    "ADMIT": "9 prereq PASS + AX-008 ≥ 2/3 + alpha_rank_corr=1.0 strict + lro_sha match + ΔSharpe > +0.03 + ΔMDD ≥ -0.5pp improvement",
+    "DEFER": "Any prereq FAIL or AX-008 < 2/3 → governance log + 30-day re-cycle",
+    "REJECT": "Hybrid simulation contradicts WT-008 + WT-009 individual results by > 1pp on any metric"
+  },
+  "production_book_state_write": true,
+  "book_state_mutation_target": "STR_1715_AR_threshold_overlay_PG2 100% → STR_1715_AR_threshold_overlay_PG2 70% + TSMOM_ETF_rotation 15% + KR_10y_bond_ETF 15%",
+  "active_sot": {"architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md", "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"},
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "round": "promotion_path_C_hybrid_three_source",
+  "user_decision": "도훈 2026-05-05 Option C — Hybrid 15+15% promotion via 9 prereq",
+  "created_at": "2026-05-05T08:00:00+0900",
+  "created_by": "Q-Lead"
+}
