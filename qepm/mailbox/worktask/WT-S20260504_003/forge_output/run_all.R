@@ -132,29 +132,32 @@ run_strategy <- function(weights_csv_path, strategy_name, run_id) {
   stopifnot(all(w$w_cash >= 0 & w$w_cash <= 1))
 
   # Align with str_ret execution_date
-  # signal_date i → execution_date == nth ret after warm-up
-  # str_ret has 268 rows (2004-02-02 .. 2026-05-01).
-  # weights has 267 rows (2004-01-01 .. 2026-03-01).
-  # We treat str_ret row i+1 (i = 1..267) as paired with weights row i.
-  # str_ret row 1 (2004-02-02) is warm-up: no weight applied (skip in match).
+  # weights has 267 rows (signal_date 2004-01-01 .. 2026-03-01, month-start).
+  # str_ret has 268 rows (exec_date 2004-02-02 .. 2026-05-01).
+  # Convention:
+  #   weight signal_date 2004-01-01 → first execution_date 2004-02-02 (str_ret row 1)
+  #   weight signal_date 2004-02-01 → next execution_date 2004-03-02 (str_ret row 2)
+  #   ...
+  #   weight signal_date 2026-03-01 → execution_date 2026-04-01 (str_ret row 267)
+  #   str_ret row 268 (2026-05-01) has no signal in weights — DROP
+  #
+  # ⇒ Pair: weights row i ↔ str_ret row i, for i = 1..267.
 
   if (nrow(w) != nrow(str_ret) - 1) {
     stop(sprintf("[run_strategy] weight rows %d != str_ret rows %d - 1",
                  nrow(w), nrow(str_ret)))
   }
 
-  # Effective return per period at execution_date i+1:
-  # ret_eff[i] = w_str[i] * ret_str[i+1] + w_cash[i] * 0 - cost[i]
-  # cost[i] = 15bps * |w_str[i] - w_str[i-1]|, w_str[0] := 1 (S1 baseline initial)
   COST_BPS <- 0.0015  # 15bps one-way
   w_str_lag <- c(1.0, head(w$w_str, -1))  # initial w_str=1.0 for cost on first transition
   delta_w <- abs(w$w_str - w_str_lag)
   cost_seq <- COST_BPS * delta_w   # net additional cost at sleeve transition
 
-  # str_ret aligned: rows 2..268 (execution_date) paired with weights rows 1..267
-  exec_dates <- str_ret$date[2:nrow(str_ret)]
-  ret_str_aligned <- str_ret$ret_net[2:nrow(str_ret)]
-  ret_str_gross_aligned <- str_ret$ret_gross[2:nrow(str_ret)]
+  # str_ret aligned: rows 1..267 (execution_date) paired with weights rows 1..267.
+  # Last str_ret row (2026-05-01) is dropped (no preceding weight signal in optimizer schedule).
+  exec_dates <- str_ret$date[1:nrow(w)]
+  ret_str_aligned <- str_ret$ret_net[1:nrow(w)]
+  ret_str_gross_aligned <- str_ret$ret_gross[1:nrow(w)]
 
   ret_eff_net <- w$w_str * ret_str_aligned - cost_seq
   ret_eff_gross <- w$w_str * ret_str_gross_aligned  # gross excludes our overlay cost
@@ -502,12 +505,21 @@ bt_M4HMM <- run_strategy(
   paste0("WT-S20260504_003_M4HMM_", RUN_TS)
 )
 
+## M4 baseline recomputed (parent WT-P20260429_002 weights.csv replayed via Forge)
+## This is the L-274 reference re-measured on identical universe / cost / period.
+bt_M4 <- run_strategy(
+  file.path(PROJECT_ROOT, "qepm/mailbox/worktask/WT-P20260429_002/weights.csv"),
+  "M4_baseline_recomputed",
+  paste0("WT-S20260504_003_M4Base_", RUN_TS)
+)
+
 ## --- 8. Save bt_result.rds ---------------------------------------------------
 saveRDS(bt_S1,    file.path(STAGE_DIR, "bt_result_S1.rds"))
 saveRDS(bt_HMM,   file.path(STAGE_DIR, "bt_result_HMM_Scale.rds"))
 saveRDS(bt_M4HMM, file.path(STAGE_DIR, "bt_result_M4+HMM_Scale.rds"))
+saveRDS(bt_M4,    file.path(STAGE_DIR, "bt_result_M4_baseline_recomputed.rds"))
 saveRDS(bt_M4HMM, file.path(STAGE_DIR, "bt_result.rds"))  # canonical
-cat(sprintf("\n[saved] bt_result_*.rds  (canonical = M4+HMM_Scale)\n"))
+cat(sprintf("\n[saved] bt_result_*.rds  (canonical = M4+HMM_Scale; +M4_baseline_recomputed)\n"))
 
 ## --- 9. Save bt_result CSVs (10-component) for canonical ---------------------
 out_csv_dir <- file.path(OUT_DIR)
@@ -524,14 +536,16 @@ fwrite(bt_M4HMM$drawdowns,         file.path(out_csv_dir, "09_drawdowns.csv"))
 fwrite(bt_M4HMM$audit,             file.path(out_csv_dir, "10_audit.csv"))
 cat(sprintf("[saved] 10-component CSVs to %s/\n", out_csv_dir))
 
-## --- 10. lro_backtest_returns.csv (3-strategy 268m) --------------------------
+## --- 10. lro_backtest_returns.csv (4-strategy 267m) --------------------------
 lro_returns <- merge(
   bt_S1$period_returns[, .(date, S1 = ret_net)],
   bt_HMM$period_returns[, .(date, HMM_Scale = ret_net)], by = "date")
 lro_returns <- merge(lro_returns,
   bt_M4HMM$period_returns[, .(date, `M4+HMM_Scale` = ret_net)], by = "date")
+lro_returns <- merge(lro_returns,
+  bt_M4$period_returns[, .(date, M4_baseline_recomputed = ret_net)], by = "date")
 fwrite(lro_returns, file.path(STAGE_DIR, "lro_backtest_returns.csv"))
-cat(sprintf("[saved] lro_backtest_returns.csv (%d rows)\n", nrow(lro_returns)))
+cat(sprintf("[saved] lro_backtest_returns.csv (%d rows × 4 strategies)\n", nrow(lro_returns)))
 
 ## --- 11. lro_performance_summary.csv (3 strategies × metrics) ----------------
 extract_metric <- function(bt, name) {
@@ -540,63 +554,21 @@ extract_metric <- function(bt, name) {
   v[1]
 }
 
-perf_summary <- data.table(
-  strategy = c("S1", "HMM_Scale", "M4+HMM_Scale"),
-  CAGR = c(extract_metric(bt_S1, "CAGR"),
-           extract_metric(bt_HMM, "CAGR"),
-           extract_metric(bt_M4HMM, "CAGR")),
-  Sharpe = c(extract_metric(bt_S1, "Sharpe"),
-             extract_metric(bt_HMM, "Sharpe"),
-             extract_metric(bt_M4HMM, "Sharpe")),
-  Sortino = c(extract_metric(bt_S1, "Sortino"),
-              extract_metric(bt_HMM, "Sortino"),
-              extract_metric(bt_M4HMM, "Sortino")),
-  Calmar = c(extract_metric(bt_S1, "Calmar"),
-             extract_metric(bt_HMM, "Calmar"),
-             extract_metric(bt_M4HMM, "Calmar")),
-  MDD = c(extract_metric(bt_S1, "MDD"),
-          extract_metric(bt_HMM, "MDD"),
-          extract_metric(bt_M4HMM, "MDD")),
-  Ann_Vol = c(extract_metric(bt_S1, "Annualized_Volatility"),
-              extract_metric(bt_HMM, "Annualized_Volatility"),
-              extract_metric(bt_M4HMM, "Annualized_Volatility")),
-  Downside_Vol = c(extract_metric(bt_S1, "Downside_Volatility"),
-                   extract_metric(bt_HMM, "Downside_Volatility"),
-                   extract_metric(bt_M4HMM, "Downside_Volatility")),
-  CVaR_95 = c(extract_metric(bt_S1, "CVaR_95"),
-              extract_metric(bt_HMM, "CVaR_95"),
-              extract_metric(bt_M4HMM, "CVaR_95")),
-  CVaR_99 = c(extract_metric(bt_S1, "CVaR_99"),
-              extract_metric(bt_HMM, "CVaR_99"),
-              extract_metric(bt_M4HMM, "CVaR_99")),
-  VaR_95 = c(extract_metric(bt_S1, "VaR_95"),
-             extract_metric(bt_HMM, "VaR_95"),
-             extract_metric(bt_M4HMM, "VaR_95")),
-  VaR_99 = c(extract_metric(bt_S1, "VaR_99"),
-             extract_metric(bt_HMM, "VaR_99"),
-             extract_metric(bt_M4HMM, "VaR_99")),
-  Skewness = c(extract_metric(bt_S1, "Skewness"),
-               extract_metric(bt_HMM, "Skewness"),
-               extract_metric(bt_M4HMM, "Skewness")),
-  Kurtosis = c(extract_metric(bt_S1, "Kurtosis"),
-               extract_metric(bt_HMM, "Kurtosis"),
-               extract_metric(bt_M4HMM, "Kurtosis")),
-  Annual_Turnover = c(extract_metric(bt_S1, "Annualized_Turnover"),
-                      extract_metric(bt_HMM, "Annualized_Turnover"),
-                      extract_metric(bt_M4HMM, "Annualized_Turnover")),
-  Avg_Cash = c(extract_metric(bt_S1, "Average_Cash_Weight"),
-               extract_metric(bt_HMM, "Average_Cash_Weight"),
-               extract_metric(bt_M4HMM, "Average_Cash_Weight")),
-  Total_Return = c(extract_metric(bt_S1, "Total_Return"),
-                   extract_metric(bt_HMM, "Total_Return"),
-                   extract_metric(bt_M4HMM, "Total_Return")),
-  Max_DD_Months = c(extract_metric(bt_S1, "Max_DD_Duration_Months"),
-                    extract_metric(bt_HMM, "Max_DD_Duration_Months"),
-                    extract_metric(bt_M4HMM, "Max_DD_Duration_Months")),
-  audit_status = c(bt_S1$manifest$integrity_status,
-                   bt_HMM$manifest$integrity_status,
-                   bt_M4HMM$manifest$integrity_status)
-)
+bt_list <- list(S1 = bt_S1, HMM_Scale = bt_HMM, `M4+HMM_Scale` = bt_M4HMM,
+                M4_baseline_recomputed = bt_M4)
+metric_names <- c("CAGR","Sharpe","Sortino","Calmar","MDD","Annualized_Volatility",
+                  "Downside_Volatility","CVaR_95","CVaR_99","VaR_95","VaR_99",
+                  "Skewness","Kurtosis","Annualized_Turnover","Average_Cash_Weight",
+                  "Total_Return","Max_DD_Duration_Months")
+perf_summary <- data.table(strategy = names(bt_list))
+for (m in metric_names) {
+  perf_summary[[m]] <- sapply(bt_list, function(b) extract_metric(b, m))
+}
+perf_summary[, audit_status := sapply(bt_list, function(b) b$manifest$integrity_status)]
+setnames(perf_summary,
+  c("Annualized_Volatility","Downside_Volatility","Annualized_Turnover",
+    "Average_Cash_Weight","Max_DD_Duration_Months"),
+  c("Ann_Vol","Downside_Vol","Annual_Turnover","Avg_Cash","Max_DD_Months"))
 fwrite(perf_summary, file.path(STAGE_DIR, "lro_performance_summary.csv"))
 cat("\n[lro_performance_summary]\n"); print(perf_summary)
 
@@ -638,11 +610,8 @@ post_LB_metrics <- function(bt) {
   )
 }
 
-slice_summary <- list(
-  S1 = list(pre_LB = pre_LB_metrics(bt_S1), post_LB = post_LB_metrics(bt_S1)),
-  HMM_Scale = list(pre_LB = pre_LB_metrics(bt_HMM), post_LB = post_LB_metrics(bt_HMM)),
-  `M4+HMM_Scale` = list(pre_LB = pre_LB_metrics(bt_M4HMM), post_LB = post_LB_metrics(bt_M4HMM))
-)
+slice_summary <- lapply(bt_list, function(b) list(pre_LB = pre_LB_metrics(b),
+                                                    post_LB = post_LB_metrics(b)))
 
 ## (b) HMM regime-state forward vol (Crisis vs Normal vol ratio per state)
 ## Match exec_dates with HMM walkforward predicted state
@@ -661,8 +630,8 @@ hmm_match[, exec_date := c(tail(str_ret$date, -1), NA)[match(signal_date, head(s
 ## Clean fallback if NA: use signal_date as approx
 hmm_match[is.na(exec_date), exec_date := signal_date]
 regime_perf <- list()
-for (sname in c("S1", "HMM_Scale", "M4+HMM_Scale")) {
-  bt <- switch(sname, "S1" = bt_S1, "HMM_Scale" = bt_HMM, "M4+HMM_Scale" = bt_M4HMM)
+for (sname in names(bt_list)) {
+  bt <- bt_list[[sname]]
   pr <- bt$period_returns[, .(date, ret_net)]
   joined <- merge(pr, hmm_match[, .(date = exec_date, regime_state)], by = "date", all.x = TRUE)
   for (st in c("Normal", "Caution", "Crisis")) {
@@ -691,8 +660,8 @@ crisis_periods <- list(
   Rate_2022 = c(as.Date("2022-08-01"), as.Date("2022-12-31"))
 )
 crisis_perf <- list()
-for (sname in c("S1", "HMM_Scale", "M4+HMM_Scale")) {
-  bt <- switch(sname, "S1" = bt_S1, "HMM_Scale" = bt_HMM, "M4+HMM_Scale" = bt_M4HMM)
+for (sname in names(bt_list)) {
+  bt <- bt_list[[sname]]
   for (cn in names(crisis_periods)) {
     rng <- crisis_periods[[cn]]
     sub <- bt$period_returns[date >= rng[1] & date <= rng[2]]
@@ -712,8 +681,8 @@ cat("\n[crisis_perf]\n"); print(crisis_perf_dt)
 
 ## --- 13. Top-5 drawdowns table ----------------------------------------------
 top5_dd <- list()
-for (sname in c("S1", "HMM_Scale", "M4+HMM_Scale")) {
-  bt <- switch(sname, "S1" = bt_S1, "HMM_Scale" = bt_HMM, "M4+HMM_Scale" = bt_M4HMM)
+for (sname in names(bt_list)) {
+  bt <- bt_list[[sname]]
   dd <- bt$drawdowns
   if (nrow(dd) >= 1) {
     top <- head(dd[order(drawdown_depth)], 5)
@@ -729,20 +698,26 @@ cat("\n[top5_dd]\n"); print(top5_dd_dt)
 png_path <- file.path(OUT_DIR, "equity_curve.png")
 png(png_path, width = 1400, height = 800)
 par(mfrow = c(2, 1), mar = c(4, 4, 3, 1))
-plot(bt_S1$nav$date, bt_S1$nav$nav_net, type = "l", lwd = 2, col = "black",
-  log = "y", xlab = "Date", ylab = "NAV (log)", main = "WT-S20260504_003 — 3-Strategy Equity Curve")
-lines(bt_HMM$nav$date, bt_HMM$nav$nav_net, lwd = 2, col = "blue")
-lines(bt_M4HMM$nav$date, bt_M4HMM$nav$nav_net, lwd = 2, col = "red")
+strat_colors <- c("S1" = "black", "HMM_Scale" = "blue", "M4+HMM_Scale" = "red",
+                  "M4_baseline_recomputed" = "darkgreen")
+yr <- range(c(bt_S1$nav$nav_net, bt_HMM$nav$nav_net, bt_M4HMM$nav$nav_net, bt_M4$nav$nav_net))
+plot(bt_S1$nav$date, bt_S1$nav$nav_net, type = "l", lwd = 2, col = strat_colors["S1"],
+  log = "y", ylim = yr, xlab = "Date", ylab = "NAV (log)",
+  main = "WT-S20260504_003 — 4-Strategy Equity Curve")
+lines(bt_HMM$nav$date,   bt_HMM$nav$nav_net,   lwd = 2, col = strat_colors["HMM_Scale"])
+lines(bt_M4HMM$nav$date, bt_M4HMM$nav$nav_net, lwd = 2, col = strat_colors["M4+HMM_Scale"])
+lines(bt_M4$nav$date,    bt_M4$nav$nav_net,    lwd = 2, col = strat_colors["M4_baseline_recomputed"], lty = 2)
 abline(v = cutoff_LB, col = "gray", lty = 2)
 legend("topleft",
-  legend = c("S1 baseline", "HMM_Scale", "M4+HMM_Scale (canonical)"),
-  col = c("black", "blue", "red"), lwd = 2)
+  legend = c("S1 baseline", "HMM_Scale", "M4+HMM_Scale (canonical)", "M4_baseline_recomputed"),
+  col = strat_colors, lwd = 2, lty = c(1,1,1,2))
 
 ## drawdown panel
-plot(bt_S1$nav$date, bt_S1$nav$drawdown_net, type = "l", lwd = 2, col = "black",
+plot(bt_S1$nav$date, bt_S1$nav$drawdown_net, type = "l", lwd = 2, col = strat_colors["S1"],
   xlab = "Date", ylab = "Drawdown", main = "Drawdown comparison")
-lines(bt_HMM$nav$date, bt_HMM$nav$drawdown_net, lwd = 2, col = "blue")
-lines(bt_M4HMM$nav$date, bt_M4HMM$nav$drawdown_net, lwd = 2, col = "red")
+lines(bt_HMM$nav$date,   bt_HMM$nav$drawdown_net,   lwd = 2, col = strat_colors["HMM_Scale"])
+lines(bt_M4HMM$nav$date, bt_M4HMM$nav$drawdown_net, lwd = 2, col = strat_colors["M4+HMM_Scale"])
+lines(bt_M4$nav$date,    bt_M4$nav$drawdown_net,    lwd = 2, col = strat_colors["M4_baseline_recomputed"], lty = 2)
 abline(h = 0, col = "gray")
 abline(v = cutoff_LB, col = "gray", lty = 2)
 dev.off()
@@ -756,16 +731,17 @@ yearly_ret <- function(bt) {
   pr[, year := format(date, "%Y")]
   pr[, .(annual_ret = prod(1 + ret_net) - 1), by = year]
 }
-y_S1 <- yearly_ret(bt_S1); y_S1[, strat := "S1"]
-y_HMM <- yearly_ret(bt_HMM); y_HMM[, strat := "HMM_Scale"]
-y_M4HMM <- yearly_ret(bt_M4HMM); y_M4HMM[, strat := "M4+HMM_Scale"]
-y_all <- rbind(y_S1, y_HMM, y_M4HMM)
+y_all <- rbindlist(lapply(names(bt_list), function(s) {
+  y <- yearly_ret(bt_list[[s]]); y[, strat := s]; y
+}), fill = TRUE)
 y_w <- dcast(y_all, year ~ strat, value.var = "annual_ret")
-y_mat <- as.matrix(y_w[, !"year"])
+strat_order <- c("S1","HMM_Scale","M4+HMM_Scale","M4_baseline_recomputed")
+strat_order <- intersect(strat_order, names(y_w))
+y_mat <- as.matrix(y_w[, ..strat_order])
 rownames(y_mat) <- y_w$year
 barplot(t(y_mat), beside = TRUE,
-  col = c("black", "blue", "red"),
-  legend.text = c("S1", "HMM_Scale", "M4+HMM_Scale"),
+  col = strat_colors[strat_order],
+  legend.text = strat_order,
   main = "Annual returns by strategy",
   ylab = "Annual return", xlab = "Year",
   args.legend = list(x = "topleft"))
@@ -776,47 +752,47 @@ cat(sprintf("[saved] %s\n", ann_path))
 ## --- 16. oos_zoom_chart.png (post-LB cutoff zoom) ---------------------------
 oos_path <- file.path(OUT_DIR, "oos_zoom_chart.png")
 png(oos_path, width = 1400, height = 800)
-oos_S1 <- bt_S1$nav[date >= cutoff_LB]
-oos_HMM <- bt_HMM$nav[date >= cutoff_LB]
-oos_M4HMM <- bt_M4HMM$nav[date >= cutoff_LB]
-# Re-base to 1.0 at cutoff
+oos_navs <- lapply(bt_list, function(b) b$nav[date >= cutoff_LB])
 rebase <- function(nav_dt) nav_dt$nav_net / nav_dt$nav_net[1]
-plot(oos_S1$date, rebase(oos_S1), type = "l", lwd = 2, col = "black",
-  ylim = range(c(rebase(oos_S1), rebase(oos_HMM), rebase(oos_M4HMM))),
+y_lim <- range(unlist(lapply(oos_navs, rebase)))
+plot(oos_navs[[1]]$date, rebase(oos_navs[[1]]), type = "l", lwd = 2,
+  col = strat_colors[names(bt_list)[1]], ylim = y_lim,
   xlab = "Date", ylab = "NAV (rebased to 1.0 at 2024-01-01)",
-  main = "OOS zoom (post-2024-01) — 3-strategy comparison")
-lines(oos_HMM$date, rebase(oos_HMM), lwd = 2, col = "blue")
-lines(oos_M4HMM$date, rebase(oos_M4HMM), lwd = 2, col = "red")
+  main = "OOS zoom (post-2024-01) — 4-strategy comparison")
+for (i in 2:length(oos_navs)) {
+  lines(oos_navs[[i]]$date, rebase(oos_navs[[i]]), lwd = 2,
+    col = strat_colors[names(bt_list)[i]],
+    lty = if (names(bt_list)[i] == "M4_baseline_recomputed") 2 else 1)
+}
 abline(h = 1, col = "gray", lty = 3)
 legend("topleft",
-  legend = c("S1 baseline", "HMM_Scale", "M4+HMM_Scale"),
-  col = c("black", "blue", "red"), lwd = 2)
+  legend = names(bt_list),
+  col = strat_colors[names(bt_list)], lwd = 2,
+  lty = ifelse(names(bt_list) == "M4_baseline_recomputed", 2, 1))
 dev.off()
 cat(sprintf("[saved] %s\n", oos_path))
 
 ## --- 17. regime_decomposition.png ------------------------------------------
 reg_path <- file.path(OUT_DIR, "regime_decomposition.png")
 png(reg_path, width = 1400, height = 800)
-# regime_perf_dt: strategy / regime / n_obs / mean_ret / vol_ann / SR
 if (nrow(regime_perf_dt) > 0) {
   par(mfrow = c(1, 2), mar = c(5, 4, 3, 1))
-  # SR bar
   sr_w <- dcast(regime_perf_dt, regime ~ strategy, value.var = "SR")
-  sr_mat <- as.matrix(sr_w[, !"regime"])
+  s_order <- intersect(names(bt_list), names(sr_w))
+  sr_mat <- as.matrix(sr_w[, ..s_order])
   rownames(sr_mat) <- sr_w$regime
   barplot(t(sr_mat), beside = TRUE,
-    col = c("black", "blue", "red"),
-    legend.text = c("S1", "HMM_Scale", "M4+HMM_Scale"),
+    col = strat_colors[s_order],
+    legend.text = s_order,
     main = "SR by HMM regime", ylab = "Sharpe (annualized)",
     args.legend = list(x = "topleft"))
   abline(h = 0)
-  # Vol bar
   vol_w <- dcast(regime_perf_dt, regime ~ strategy, value.var = "vol_ann")
-  vol_mat <- as.matrix(vol_w[, !"regime"])
+  vol_mat <- as.matrix(vol_w[, ..s_order])
   rownames(vol_mat) <- vol_w$regime
   barplot(t(vol_mat), beside = TRUE,
-    col = c("black", "blue", "red"),
-    legend.text = c("S1", "HMM_Scale", "M4+HMM_Scale"),
+    col = strat_colors[s_order],
+    legend.text = s_order,
     main = "Vol_ann by HMM regime", ylab = "Vol (annualized)",
     args.legend = list(x = "topleft"))
   abline(h = 0)

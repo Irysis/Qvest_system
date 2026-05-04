@@ -139,100 +139,99 @@ cat(sprintf("  Benchmark: %d rows\n", nrow(bm)))
 cat("\n[3] Share-based daily NAV reconstruction (PerformanceAnalytics standard)\n")
 
 reconstruct_nav <- function(weights_dt, label, raw_dt) {
+  ## CORRECTED Pure Function v6.1 R12:
+  ## - weight_total (= "weight" col post-normalization) is the FINAL dollar-allocation per Ticker
+  ## - sum(weight_total) == 1.0 across all rows including any synthetic CASH_KRW
+  ## - DO NOT re-apply cash_pct dilution; it's already embedded
+  ## - CASH_KRW row → cash sleeve with 0% return
+
   setorder(weights_dt, Date, Ticker)
   sig_dates <- sort(unique(weights_dt$Date))
-
   trading_dates <- sort(unique(raw_dt$Date))
 
-  # Initialize NAV = 1
   nav_init <- 1.0
   nav_log <- list()
   monthly_log <- list()
-  shares_state <- NULL  # list(shares=named numeric, cash_amt, period_end_NAV)
-
-  prev_w_actual <- NULL  # end-of-period actual weights (for turnover)
+  prev_nav <- nav_init
+  prev_w_actual <- NULL
 
   for (i in seq_along(sig_dates)) {
     sig_d <- sig_dates[i]
 
-    # start_d = first trading day >= sig_d
-    start_d <- min(trading_dates[trading_dates >= sig_d])
-    if (is.infinite(start_d) || is.na(start_d)) next
+    start_d_set <- trading_dates[trading_dates >= sig_d]
+    if (length(start_d_set) == 0L) next
+    start_d <- start_d_set[1L]
 
-    # end_d = trading day before next sig_date OR last trading date for last period
     if (i < length(sig_dates)) {
       next_sig <- sig_dates[i+1L]
       tdays_next <- trading_dates[trading_dates >= next_sig]
-      if (length(tdays_next) == 0L) {
-        end_d <- max(trading_dates)
-      } else {
-        end_d <- tdays_next[1L]  # first trading day of next sig period (rebalance day)
-      }
+      end_d <- if (length(tdays_next) == 0L) max(trading_dates) else tdays_next[1L]
     } else {
-      # final period: 30 calendar days forward OR last trading day
       end_d <- min(max(trading_dates), start_d + 30L)
     }
 
-    # NAV at start (prior to rebalance)
-    nav_start <- if (is.null(shares_state)) nav_init else shares_state$nav_at_start_d
+    panel <- weights_dt[Date == sig_d & weight > 0]
+    if (nrow(panel) == 0L) next
 
-    panel <- weights_dt[Date == sig_d]
-    panel <- panel[Ticker != "CASH" & weight > 0]
+    cash_pct_recorded <- panel$cash_pct[1L]
+    if (is.null(cash_pct_recorded) || is.na(cash_pct_recorded)) cash_pct_recorded <- 0
 
-    cash_pct <- panel$cash_pct[1L]
-    if (is.null(cash_pct) || is.na(cash_pct)) cash_pct <- 0
+    # Identify CASH proxy rows (Ticker == "CASH_KRW" or "CASH")
+    cash_mask <- panel$Ticker %in% c("CASH_KRW", "CASH")
+    cash_alloc_in_weights <- sum(panel$weight[cash_mask])
+    risk_panel <- panel[!cash_mask]
+    sum_risk_w <- sum(risk_panel$weight)
 
-    # Effective weights: panel$weight already represents risk_weight; sum should be (1 - cash_pct)
-    # But for safety, normalize panel weights to sum (1-cash_pct), record cash_pct as cash slot
-    sum_panel_w <- sum(panel$weight, na.rm=TRUE)
-    if (sum_panel_w <= 1e-12) {
-      # full cash period — skip (NAV stays flat)
-      next
-    }
-    # do NOT renormalize — optimizer-output weights are authoritative; cash is residual
-    # If cash + sum_panel_w deviates from 1.0, log but proceed
-    deviation <- abs(1 - (cash_pct + sum_panel_w))
-    if (deviation > 0.01) {
-      cat(sprintf("  [%s sig=%s] cash+risk dev=%.4f (cash=%.4f risk=%.4f) — proceed AS-IS\n",
-                  label, as.character(sig_d), deviation, cash_pct, sum_panel_w))
+    # Sanity: total should ~= 1.0
+    total_w <- sum(panel$weight)
+    if (abs(total_w - 1) > 0.05) {
+      cat(sprintf("  [%s sig=%s] sum(weight)=%.4f deviation>5%% — proceed but log\n",
+                  label, as.character(sig_d), total_w))
     }
 
-    # Get start_d Close prices
-    raw_start <- raw_dt[Date == start_d & Ticker %in% panel$Ticker, .(Ticker, Close_start = Close)]
-    panel_m <- merge(panel, raw_start, by="Ticker", all.x=TRUE)
+    nav_start <- prev_nav
+
+    # Get start_d Close prices for risk tickers
+    raw_start <- raw_dt[Date == start_d & Ticker %in% risk_panel$Ticker,
+                       .(Ticker, Close_start = Close)]
+    panel_m <- merge(risk_panel, raw_start, by="Ticker", all.x=TRUE)
     panel_m <- panel_m[!is.na(Close_start) & Close_start > 0]
-    if (nrow(panel_m) < 5) {
+    if (nrow(panel_m) < 1L) {
+      # All-cash period
+      monthly_log[[i]] <- data.table(
+        sig_date=sig_d, start_d=start_d, end_d=end_d,
+        nav_start=nav_start, nav_end=nav_start, port_ret=0,
+        n_held=0L, cash_pct=cash_pct_recorded,
+        regime=panel$regime[1L] %||% NA_character_,
+        turnover_one_way=0, cost_pct=0, strategy=label)
       next
     }
 
-    # Renormalize within available tickers (preserve original cash_pct)
-    actual_risk_alloc <- sum(panel_m$weight)
-    if (actual_risk_alloc <= 1e-12) next
-    # rescale to fill original (1-cash_pct) — partial unavailability would dilute; we preserve cash_pct
-    # Take risk weights as-is, scale to fill (1-cash_pct):
-    panel_m[, w_eff := weight / actual_risk_alloc * (1 - cash_pct)]
+    # Available risk allocation may be < sum_risk_w (some tickers have no Close_start price)
+    available_risk_w <- sum(panel_m$weight)
+    # CASH effective = recorded cash_alloc + (sum_risk_w - available_risk_w)
+    cash_eff <- cash_alloc_in_weights + (sum_risk_w - available_risk_w)
 
-    # Turnover cost (vs prev_w_actual, including CASH)
+    # Turnover cost (vs prev_w_actual)
     if (is.null(prev_w_actual)) {
-      turnover_one_way <- 1.0  # initial entry
+      turnover_one_way <- 1.0
     } else {
       all_names <- union(c(panel_m$Ticker, "CASH"), names(prev_w_actual))
       w_now <- setNames(rep(0, length(all_names)), all_names)
       w_prv <- setNames(rep(0, length(all_names)), all_names)
-      w_now[panel_m$Ticker] <- panel_m$w_eff
-      w_now["CASH"] <- cash_pct
+      w_now[panel_m$Ticker] <- panel_m$weight
+      w_now["CASH"] <- cash_eff
       w_prv[names(prev_w_actual)] <- prev_w_actual
       turnover_one_way <- sum(abs(w_now - w_prv)) / 2
     }
-    cost_pct <- (COMMISSION_BPS / 1e4) * turnover_one_way * 2  # round-trip applies as 2x one-way
+    cost_pct <- (COMMISSION_BPS / 1e4) * turnover_one_way * 2
     nav_after_cost <- nav_start * (1 - cost_pct)
 
-    # Compute shares: invest nav_after_cost × w_eff into each Ticker at Close_start
-    panel_m[, dollars := nav_after_cost * w_eff]
+    # Allocate dollars per Ticker (using weight_total AS-IS)
+    panel_m[, dollars := nav_after_cost * weight]
     panel_m[, shares := dollars / Close_start]
-    cash_amt <- nav_after_cost * cash_pct
+    cash_amt <- nav_after_cost * cash_eff
 
-    # Daily NAV path through period
     period_days <- trading_dates[trading_dates >= start_d & trading_dates <= end_d]
     if (length(period_days) == 0) next
 
@@ -240,36 +239,35 @@ reconstruct_nav <- function(weights_dt, label, raw_dt) {
                         .(Date, Ticker, Close)]
     setkey(raw_period, Date, Ticker)
 
-    # Forward-fill missing prices per Ticker (delisting / suspension handling)
-    tickers_held <- panel_m$Ticker
     daily_nav <- data.table(Date = period_days, NAV = NA_real_, port_pos_value = NA_real_)
+    last_known_price <- setNames(panel_m$Close_start, panel_m$Ticker)
+
     for (k in seq_along(period_days)) {
       d_k <- period_days[k]
       prices_k <- raw_period[Date == d_k]
-      m_k <- merge(panel_m[, .(Ticker, shares)], prices_k[, .(Ticker, Close)], by="Ticker", all.x=TRUE)
-      # Forward-fill: use last valid price up to d_k for missing
-      missing_t <- m_k[is.na(Close), Ticker]
-      if (length(missing_t) > 0) {
-        for (mt in missing_t) {
-          last_p <- raw_dt[Ticker == mt & Date <= d_k, .(Date, Close)][order(-Date)][1L, Close]
-          if (length(last_p) > 0 && !is.na(last_p)) m_k[Ticker == mt, Close := last_p]
+      m_k <- merge(panel_m[, .(Ticker, shares)],
+                   prices_k[, .(Ticker, Close)], by="Ticker", all.x=TRUE)
+      # forward-fill missing
+      for (idx_t in seq_len(nrow(m_k))) {
+        if (is.na(m_k$Close[idx_t])) {
+          m_k$Close[idx_t] <- last_known_price[m_k$Ticker[idx_t]]
+        } else {
+          last_known_price[m_k$Ticker[idx_t]] <- m_k$Close[idx_t]
         }
       }
-      m_k[is.na(Close), Close := 0]  # if truly delisted no recovery
+      m_k[is.na(Close), Close := 0]
       pos_val <- sum(m_k$shares * m_k$Close, na.rm=TRUE)
       daily_nav[k, port_pos_value := pos_val]
       daily_nav[k, NAV := pos_val + cash_amt]
     }
 
-    # End-of-period actual weights (for turnover at next rebalance)
     nav_eop <- daily_nav$NAV[length(daily_nav$NAV)]
     final_prices <- raw_period[Date == period_days[length(period_days)]]
-    m_eop <- merge(panel_m[, .(Ticker, shares)], final_prices[, .(Ticker, Close)], by="Ticker", all.x=TRUE)
-    missing_t <- m_eop[is.na(Close), Ticker]
-    if (length(missing_t) > 0) {
-      for (mt in missing_t) {
-        last_p <- raw_dt[Ticker == mt & Date <= period_days[length(period_days)], .(Date, Close)][order(-Date)][1L, Close]
-        if (length(last_p) > 0 && !is.na(last_p)) m_eop[Ticker == mt, Close := last_p]
+    m_eop <- merge(panel_m[, .(Ticker, shares)],
+                   final_prices[, .(Ticker, Close)], by="Ticker", all.x=TRUE)
+    for (idx_t in seq_len(nrow(m_eop))) {
+      if (is.na(m_eop$Close[idx_t])) {
+        m_eop$Close[idx_t] <- last_known_price[m_eop$Ticker[idx_t]]
       }
     }
     m_eop[is.na(Close), Close := 0]
@@ -277,34 +275,24 @@ reconstruct_nav <- function(weights_dt, label, raw_dt) {
     m_eop[, w_actual := val / nav_eop]
     prev_w_actual <- c(setNames(m_eop$w_actual, m_eop$Ticker), CASH = cash_amt / nav_eop)
 
-    # Monthly return = nav_eop / nav_start - 1 (gross of cost; cost_pct already deducted at start)
     port_ret_net <- nav_eop / nav_start - 1
 
     monthly_log[[i]] <- data.table(
-      sig_date = sig_d,
-      start_d = start_d,
-      end_d = period_days[length(period_days)],
-      nav_start = nav_start,
-      nav_end = nav_eop,
-      port_ret = port_ret_net,
-      n_held = nrow(panel_m),
-      cash_pct = cash_pct,
+      sig_date = sig_d, start_d = start_d, end_d = period_days[length(period_days)],
+      nav_start = nav_start, nav_end = nav_eop,
+      port_ret = port_ret_net, n_held = nrow(panel_m),
+      cash_pct = cash_eff,
       regime = panel$regime[1L] %||% NA_character_,
-      turnover_one_way = turnover_one_way,
-      cost_pct = cost_pct,
+      turnover_one_way = turnover_one_way, cost_pct = cost_pct,
       strategy = label
     )
-
     nav_log[[i]] <- daily_nav[, strategy := label]
-
-    # Carry NAV to next period start
-    shares_state <- list(nav_at_start_d = nav_eop)
+    prev_nav <- nav_eop
   }
 
   monthly_dt <- rbindlist(monthly_log, use.names=TRUE, fill=TRUE)
   daily_nav_dt <- rbindlist(nav_log, use.names=TRUE, fill=TRUE)
   setorder(daily_nav_dt, Date)
-  # de-duplicate dates (rebalance day appears in both periods — keep last for continuity)
   daily_nav_dt <- daily_nav_dt[!duplicated(Date, fromLast=TRUE)]
 
   list(monthly = monthly_dt, daily_nav = daily_nav_dt)
