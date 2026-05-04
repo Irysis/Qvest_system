@@ -1,14 +1,14 @@
 {
   "task_id": "WT-S20260504_007",
-  "current_phase": "RISK_DONE",
-  "updated_at": "2026-05-04T15:28:14+0900",
+  "current_phase": "OPTIMIZER_DONE",
+  "updated_at": "2026-05-04T15:54:33+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
   "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
   "production_book_state_write": false,
   "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
-  "method": "Absorption_Ratio_Overlay",
+  "method": "Absorption_Ratio_Pure_Risk_Overlay_Forge_sweep_decides",
   "round": "Round_3_pure_alpha_preserving_overlay",
   "predecessor_wts": [
     "WT-S20260504_001",
@@ -33,6 +33,11 @@
       "phase": "RISK_DONE",
       "at": "2026-05-04T15:28:14+0900",
       "note": "AR Pure Risk Overlay K=5/W=252. β_t 3 variants emitted. STR_1715 alpha 100% preserved (rank_corr=1.0 mathematically guaranteed). 11 artifacts. SHA256=ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18. codex_critic_skip_waiver pre-emptive."
+    },
+    {
+      "phase": "OPTIMIZER_DONE",
+      "at": "2026-05-04T15:54:33+0900",
+      "note": "AR Pure Risk Overlay sizing_only. 4 variants (linear/threshold/sigmoid/baseline_S1) x 268 dates x 19 rows = 5092 rows stock-level weights.csv. Codex REJECT (no veto): 4 FIXED_v2 + 2 REBUTTAL + 1 PARTIAL. canonical reframed baseline_S1 (Forge sweep decides primary). Sleeve-only TO 89-157% (under 600 cap); inherited STR_1715 base 750% PG2-admitted. expected_TE 0.0608 threshold_step (vs base). All RF-O5/O6/O7/O9 PASS strict; max stock w 0.20 cap; Sigma w=1 max dev 8.96e-9. schedule density 1.0."
     }
   ],
   "alpha_preservation_mandate": {
@@ -41,8 +46,8 @@
     "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance",
     "violation_action": "hard_FAIL_judge_verdict"
   },
-  "next_phase": "OPTIMIZER_DONE",
-  "next_actor": "optimizer-research",
+  "next_phase": "FORGE_DONE",
+  "next_actor": "forge",
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
