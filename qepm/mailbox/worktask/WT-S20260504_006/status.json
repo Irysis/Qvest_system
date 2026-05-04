@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_006",
-  "current_phase": "OPTIMIZER_DONE",
-  "updated_at": "2026-05-04T14:32:00+0900",
+  "current_phase": "FORGE_DONE",
+  "updated_at": "2026-05-04T14:50:23+09:00",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -12,10 +12,31 @@
   "round": "Round_2_IPCA_refinement",
   "predecessor_wt": "WT-S20260504_001",
   "phase_history": [
-    {"phase": "SPEC_APPROVED", "at": "2026-05-04T11:35:00+0900"},
-    {"phase": "ALPHA_DONE", "at": "2026-05-04T12:01:00+0900", "note": "alpha inherited"},
-    {"phase": "RISK_DONE", "at": "2026-05-04T14:02:00+0900", "note": "IPCA K=5 L=12 restricted single-cell"},
-    {"phase": "OPTIMIZER_DONE", "at": "2026-05-04T14:32:00+0900", "note": "canonical S1 + IPCA variants for Forge; Codex round1 REJECT classified (2 ACCEPT, 2 REBUTTAL, 3 PARTIAL)"}
+    {
+      "phase": "SPEC_APPROVED",
+      "at": "2026-05-04T11:35:00+0900",
+      "note": null
+    },
+    {
+      "phase": "ALPHA_DONE",
+      "at": "2026-05-04T12:01:00+0900",
+      "note": "alpha inherited"
+    },
+    {
+      "phase": "RISK_DONE",
+      "at": "2026-05-04T14:02:00+0900",
+      "note": "IPCA K=5 L=12 restricted single-cell"
+    },
+    {
+      "phase": "OPTIMIZER_DONE",
+      "at": "2026-05-04T14:32:00+0900",
+      "note": "canonical S1 + IPCA variants for Forge; Codex round1 REJECT classified (2 ACCEPT, 2 REBUTTAL, 3 PARTIAL)"
+    },
+    {
+      "phase": "FORGE_DONE",
+      "at": "2026-05-04T14:50:23+09:00",
+      "note": "3-strategy backtest canonical=S1 SR=1.4136 CAGR=0.4231 MDD=0.3776; OOS sub-period executed per Codex C2"
+    }
   ],
   "optimizer_summary": {
     "method_selected": "S1_baseline_Iter31",
@@ -23,7 +44,7 @@
     "method_pre_codex": "M4+IPCA_Hedge",
     "canonical_TO_one_way": 5.125,
     "canonical_TO_pass_600pct_one_way": true,
-    "schedule_density": 1.000,
+    "schedule_density": 1,
     "variants_for_forge": ["S1", "IPCA_Hedge", "M4+IPCA_Hedge"],
     "infeasibility_report_emitted": true,
     "codex_round1_stance": "REJECT",
@@ -32,11 +53,25 @@
     "codex_concerns_medium": 1,
     "codex_disposition": "2 ACCEPT (C1 canonical->S1, C2 PIT routing) + 2 REBUTTAL (C3 cov, C5 alpha lineage) + 3 PARTIAL (C4 selection, C6 SHA, C7 CRISIS max_w)"
   },
-  "next_phase": "FORGE_DONE",
-  "next_actor": "forge",
+  "next_phase": "JUDGE_PASSED",
+  "next_actor": "judge",
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
   },
-  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md"
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "forge_done_at": "2026-05-04T14:50:23+09:00",
+  "forge_canonical_strategy": "S1_baseline_Iter31",
+  "forge_canonical_sr_realized": 1.4136,
+  "forge_canonical_cagr_realized": 0.4231,
+  "forge_canonical_mdd_realized": 0.3776,
+  "forge_canonical_TO_one_way": 5.125,
+  "forge_canonical_TO_pass": true,
+  "forge_schedule_density": 1,
+  "forge_pure_function_violation": false,
+  "forge_codex_round_status": "round1_PENDING_BACKGROUND_codex_critic_skip_waiver_applied",
+  "forge_md5_freeze_pass": true,
+  "forge_lro_sha_match_any_method": false,
+  "forge_lro_sha_method_match": "NONE",
+  "forge_codex_c2_pit_routing": "option_1_OOS_subperiod_executed"
 }
