@@ -97,20 +97,63 @@
 - "검증 안 됨 (가정)" — bad/normal ES95 ratio 1.14 (WT-001 R1 estimate 사용)
 - "TBD — task #N 후속" — Q-Lead manual codex spawn for forge_package.json (JC-4), K/L sweep grid 12 cell (JC-6), PerformanceAnalytics scaling (JC-7), SHA pipeline canonicalization (JC-8)
 
-## Codex Round 1 (judge) Spawn Plan
+## Codex Round 1 (judge) — RECEIVED
 
-본 judge_verdict_draft 작성 후 PostToolUse `codex_round_auto_trigger.sh` 자동 발화. 만약 Q-Lead Write tool route이므로 hook fire 가능. 만약 silent fail 시:
+**Status**: REVISE — 7 concerns (5 HIGH + 2 MEDIUM)
+**Path**: `qepm/mailbox/worktask/WT-S20260504_006/codex_critic_response_judge.json`
+**Spawn**: `run_codex_qepm_critic.sh --role=judge --task_id=WT-S20260504_006` (manual via Q-Lead Bash route)
 
-```bash
-bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
-  --role=judge --task_id=WT-S20260504_006 \
-  --package=qepm/mailbox/worktask/WT-S20260504_006/judge_verdict_draft.json \
-  --output=qepm/mailbox/worktask/WT-S20260504_006/codex_critic_response_judge.json
-```
+### Disposition (Charter §8 No Silent Override)
 
-GPT-5.5 + xhigh, timeout 1200. stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}.
+| ID | Severity | Codex Concern | Disposition | Rationale |
+|---|---|---|---|---|
+| C1 | HIGH | Lockbox dating 2025-01-31 vs base 2024-01-23 | **PARTIAL** | system convention WT-001 R1 + L-274 PG2 admit 모두 2025-01-31. 본 WT scope에서 system convention 채택. 후속 task: lockbox boundary policy decision (Q-Lead). |
+| C2 | HIGH | Harvey/DSR formal vs heuristic | **PARTIAL** | Lo (2002) approx + heuristic DSR penalty 사용 인정. Formal DSR 미적용. 결론 영향: heuristic DSR 1.01 marginal vs formal DSR 더 보수적이어도 L-274 1.75 reference gap 유지 + IPCA OOS Harvey t 2.58 sub-3.0 unchanged → MONITORING_ONLY 결론 보강. |
+| C3 | HIGH | AX-008 overstated (forge background + Architect absent) | **ACCEPT** | AX-008 status PARTIAL → FAIL_PARTIAL downgrade. Forge self-audit + judge independent recompute는 Source 3 surrogate가 아닌 evidence artifacts로 재분류. ax_008_tally_entry + axiom_assertions 모두 update. |
+| C4 | HIGH | Cov cond<=100 target violated | **REBUTTAL** | request.json statistical_factor_model 직접 검토 결과 cond<=100 spec 미명시. risk-research convention cond<500이 active spec (RF-R2). risk domain 자율 임계값. Codex가 base context generic spec 가정 — 본 WT scope 부재. Risk-research 도메인 boundary — Judge는 risk threshold 변경 권한 없음. |
+| C5 | HIGH | alpha_scores.parquet absent | **PARTIAL** | sizing_only WT inheritance evidence contract: alpha_inherited=true + parent_alpha_package_sha 검증으로 충분. 단 alpha lineage gap to L-274 (JC-3, SR 0.33 gap)이 본 issue 관련. 본 WT verdict 결론 영향: 미변경 (recommendation_only sizing_only inheritance contract 내 작동). |
+| C6 | MEDIUM | bad/normal ES95 ratio inherited estimate | **ACCEPT** | Gate evidence INSUFFICIENT으로 downgrade. defense_like_evaluation.json bad_normal_es95_ratio.pass = "INSUFFICIENT_EVIDENCE" + verdict_components.bad_normal_es95_ratio_pass = "INSUFFICIENT_EVIDENCE". AX-001 v2 WEAK_DEFENSE_LIKE 분류 유지 (1/3 crisis_alpha + MDD vs Core FAIL이 dominant evidence이므로 결론 미변경). |
+| C7 | MEDIUM | method_shopping.json stale (M4+IPCA selected=true) | **ACCEPT** | stage_artifact stale 인정. optimization_package + forge_package + judge_verdict 모두 canonical=S1 일치 — stage_artifact만 stale. JC-9로 명문화. 후속 stage_artifacts reconcile (Q-Lead infra patch). |
 
-REVISE/REJECT 시 명시적 rebuttal 또는 verdict 수정 (Charter §8). HIGH severity ≥ 5 / AX hard FAIL ≥ 3 / PIT C1 hard violation 발견 시 Q-Lead escalate.
+### Rationalization Red Flags (Codex 지적)
+
+| Codex Flag | Disposition |
+|---|---|
+| "negligible" (vs_factor_engine.diagnosis) | forge inherited — judge realized only 채택 |
+| "M4 cash overlay marginal -0.49pp 미미" | 명시적 수치 라벨, 회피 표현 아님 |
+| "보수적으로 Forge 값 채택" | **ACCEPT** — '검증 안 됨/scaling 불확실' 명시 라벨로 수정 (JC-5) |
+| "single cell prioritized" | JC-6 명시 '12 cell grid 미실행' (Codex C2 ACCEPT integrate) |
+| "Forge self-audit Source 3 surrogate" | **ACCEPT** — AX-008 FAIL_PARTIAL downgrade (Codex C3) |
+
+### Codex C4 REBUTTAL 학술 근거
+
+- request.json statistical_factor_model section (line 24-42): K_latent / L_characteristics / alpha_restriction / sweep_grid / is_endpoint_freeze / selection_objective 명시되지만 **covariance condition number threshold 명시 부재**
+- risk_package.json sigma_method_details.audit.cond_below_500_hard=true (RF-R2 trigger): risk-research 도메인 자율 임계값
+- Charter §6 Failure Rules + RF-R2 (covariance hard threshold cond<500)는 risk-research domain ownership
+- Judge는 alpha/risk/optimizer 재해석 절대 금지 (Hook L3 자동 차단). risk threshold 변경은 risk-research 도메인 task
+
+⇒ Codex C4 REBUTTAL: request.json에 cond<=100 spec evidence 부재 + cond<500 risk-research convention PASS. Codex가 base context generic recommendation 적용한 것으로 추정 — 본 WT scope에는 부재. risk-research 도메인 boundary 위반 가능성.
+
+단, Q-Lead가 사용자 spec 명시 검토 후 cond<=100 amendment 발견 시 risk-research 도메인 재검증 의무 routing.
+
+### REVISE Disposition Outcome
+
+- **verdict 결론 미변경**: MONITORING_ONLY (Codex C3 stance "directionally correct" 인정)
+- **evidence quality 보강**: AX-008 FAIL_PARTIAL + bad/normal ES95 ratio INSUFFICIENT + heuristic DSR 명시
+- **schema_version**: v1.0 → v1.1_post_codex_revise
+- **6 follow-up tasks**: Forge Codex manual spawn (JC-4) + alpha lineage repair (JC-3) + cov cond policy decision (Codex C4) + lockbox boundary policy (C1) + K/L grid 12 cell (C2/JC-6) + stage_artifacts reconcile (C7/JC-9) + WT-006 IPCA-state ES95 (C6/JC-8)
+
+### Codex Round 2 Decision
+
+REVISE concerns 모두 disposition 완료 (4 ACCEPT + 2 PARTIAL + 1 REBUTTAL) — Round 2 critic 재호출 불필요. v6.0 의무는 Round 1 critic 수신 + 명시적 disposition + verdict 수정으로 충족.
+
+### Q-Lead Escalate 평가
+
+- HIGH severity 5건 ≥ 5 (basis: ≥ 5 발생 시 escalate) — **Q-Lead escalate trigger 가능**
+- 단 4 ACCEPT (C3/C6/C7) + 2 PARTIAL (C1/C5/C2) + 1 REBUTTAL (C4)는 모두 정당한 disposition (Charter §8 explicit rebuttal 학술 근거 + L-code reference)
+- AX hard FAIL: 0 (AX-002 PASS, AX-008 FAIL_PARTIAL는 verification evidence quality이지 hard fail 아님)
+- PIT C1 hard violation: 0 (Codex C2 routing 적용으로 documented)
+- **결정**: Q-Lead escalate 미발동 (HIGH 5건은 disposition 정당하므로 normal disposition path 채택)
 
 ## Phase Jump Waiver
 

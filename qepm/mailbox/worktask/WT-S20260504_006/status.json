@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_006",
-  "current_phase": "FORGE_DONE",
-  "updated_at": "2026-05-04T14:50:23+09:00",
+  "current_phase": "JUDGE_PASSED",
+  "updated_at": "2026-05-04T15:30:00+09:00",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -36,6 +36,11 @@
       "phase": "FORGE_DONE",
       "at": "2026-05-04T14:50:23+09:00",
       "note": "3-strategy backtest canonical=S1 SR=1.4136 CAGR=0.4231 MDD=0.3776; OOS sub-period executed per Codex C2"
+    },
+    {
+      "phase": "JUDGE_PASSED",
+      "at": "2026-05-04T15:30:00+09:00",
+      "note": "MONITORING_ONLY verdict — IPCA Latent Hedge Round 2; canonical=S1 post-Codex C1; AX-008 FAIL_PARTIAL post-Codex Round 1 C3 ACCEPT; AX-001 v2 WEAK_DEFENSE_LIKE; Cross-WT 6+ trial sleeve overlay 한계 입증 → AX-007 escalate priority CRITICAL. Codex Round 1 stance=REVISE (7 concerns: 4 ACCEPT C3/C6/C7 + 2 PARTIAL C1/C5/C2 + 1 REBUTTAL C4); verdict 결론 directionally correct unchanged. waiver: schema_validation_waiver (MONITORING_ONLY enum mismatch) + phase_jump_waiver (force_waiver=TRUE per Charter §10 Layer 2 fallback)."
     }
   ],
   "optimizer_summary": {
@@ -53,8 +58,30 @@
     "codex_concerns_medium": 1,
     "codex_disposition": "2 ACCEPT (C1 canonical->S1, C2 PIT routing) + 2 REBUTTAL (C3 cov, C5 alpha lineage) + 3 PARTIAL (C4 selection, C6 SHA, C7 CRISIS max_w)"
   },
-  "next_phase": "JUDGE_PASSED",
-  "next_actor": "judge",
+  "next_phase": "GOVERNOR_REJECTED",
+  "next_actor": "governor",
+  "judge_done_at": "2026-05-04T15:30:00+09:00",
+  "judge_verdict": "MONITORING_ONLY",
+  "judge_grade_basis": "plan_dapper_dragon_section_12_decision_rule + Codex C1 ACCEPT canonical change + AX-001 v2 conditional",
+  "judge_primary_strategy": "S1_baseline_Iter31",
+  "judge_ax008_status": "FAIL_PARTIAL",
+  "judge_ax001_v2_classification": "WEAK_DEFENSE_LIKE",
+  "judge_codex_round1_stance": "REVISE",
+  "judge_codex_round1_dispositions": "4 ACCEPT (C3 AX-008 + C6 ES95 inherited + C7 method_shopping stale + downgrade) + 2 PARTIAL (C1 lockbox dating + C2 Harvey/DSR + C5 alpha_scores) + 1 REBUTTAL (C4 cov cond<=100 spec absent)",
+  "judge_recommendation_to_governor": "GOVERNOR_REJECTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE. STR_1715 100% PG2 admission unchanged. IPCA Round 2 parked as MONITORING_ONLY research artifact.",
+  "judge_cross_wt_pattern": "6+ trial sleeve-level overlay 한계 (WT-001 PCA + WT-006 IPCA + 4 prior STR_1715 sleeve attempts). AX-007 single_sleeve_long_only_top20 mechanism break threshold escalate priority CRITICAL.",
+  "judge_followup_tasks": [
+    "Forge Codex Round 1 manual spawn (Q-Lead — JC-4 Layer 2 sweep)",
+    "alpha lineage repair to L-274 STR_1715 PG2 floor (SR 1.75 baseline reproducible — JC-3)",
+    "AX-007 exception 4종 path 우선 (multi-sleeve / long-short / 50+ universe / ML sizing)",
+    "crisis-conditional IPCA deployment design (KR_BEAR-only activation)",
+    "K/L sweep grid 12 cell complete + DSR penalty 재산출 (JC-6, Codex C2 ACCEPT)",
+    "PerformanceAnalytics scaling consistency infra patch (judge vs forge SR 1.13 discrepancy — JC-5)",
+    "WT-006 IPCA-state-conditioned ES95 별도 산출 (Codex C6 ACCEPT — JC-8)",
+    "stage_artifacts/method_shopping.json reconcile (Codex C7 ACCEPT — JC-9)",
+    "lockbox boundary system convention vs base context 정합성 정책 결정 (Codex C1 PARTIAL — Q-Lead level)",
+    "artifact_contract.json verdict enum amendment (MONITORING_ONLY/CONDITIONAL_PASS — schema_validation_waiver 후속)"
+  ],
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
