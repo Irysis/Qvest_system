@@ -65,3 +65,7 @@ SPEC_APPROVED → ALPHA_DONE (Q-Lead 4-파일) → RISK_DONE (risk-research) →
 ## Section: optimizer Round 1 — Codex REJECT/timeout → Round 2 waiver
 
 LRO Round 1 동일 패턴. 본질은 STR_1715 alpha-side 한계 (sizing_only statistical method 한계). forge phase backtest까지 진행해서 actual metrics + judge verdict 결정. 도훈 명시 자율 진행.
+
+---
+## Section: judge — codex_critic_skip_waiver (timeout)
+Codex Round judge timeout (1h+ stale). LRO Round 1 패턴 동일. Q-Lead waiver path. judge_verdict.json final = draft promote.

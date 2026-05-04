@@ -1,0 +1,229 @@
+{
+  "task_id": "WT-S20260504_001",
+  "package_kind": "judge_verdict",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-04",
+  "agent": "judge",
+  "round": 1,
+  "draft_revision": "draft",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "primary_strategy": "M4+PCA_Hedge",
+  "verdict": "MONITORING_ONLY",
+  "grade_basis": "plan_dapper_dragon_section_12_decision_rule",
+  "verdict_summary": "PCA Latent Hedge structural mechanism validated (LFC reduction 82.8% point / 42% mean 268m, GFC crisis alpha +9pp via PCA_Hedge alone), but 268m walk-forward trading metrics fail MDD/vol improvement targets vs S1 and M4 baselines. Recommended: continue research (statistical quality strong) but do NOT promote to production sizing. Documented as MONITORING_ONLY recommendation; book_state mutation deferred.",
+  "decision_rule_evaluation": {
+    "spec_source": "request.json decision_rule + dapper-dragon plan §12",
+    "primary_metrics_M4_PCA_Hedge": {
+      "cagr": 0.4367,
+      "sharpe": 1.4594,
+      "mdd": -0.4267,
+      "ann_vol": 0.2767,
+      "sortino": 3.4104,
+      "calmar": 1.0235
+    },
+    "comparison_baselines": {
+      "S1_baseline": {"cagr": 0.4231, "sharpe": 1.4136, "mdd": -0.3776, "vol": 0.2793},
+      "M4_baseline_recomputed": {"cagr": 0.4052, "sharpe": 1.4329, "mdd": -0.3644, "vol": 0.2638},
+      "PCA_Hedge_alone": {"cagr": 0.4588, "sharpe": 1.4442, "mdd": -0.4419, "vol": 0.2934},
+      "L274_STR_1715_PG2_ref": {"cagr": 0.4378, "sharpe": 1.7477, "mdd": -0.3205}
+    },
+    "checks": {
+      "cagr_floor_20pct": {"required": ">= 0.20", "actual": 0.4367, "pass": true},
+      "mdd_strict_le_25pct": {"required": "<= 0.25 abs", "actual": 0.4267, "pass": false},
+      "mdd_vs_m4_baseline_minus_3pp": {"required": ">= 3pp better", "actual_pp": -6.23, "pass": false},
+      "mdd_vs_s1_baseline_minus_3pp": {"required": ">= 3pp better", "actual_pp": -4.91, "pass": false},
+      "vol_vs_m4_baseline_minus_20pct": {"required": "<= -0.20 ratio", "actual_ratio": 0.0489, "pass": false},
+      "vol_vs_m4_baseline_minus_10pct": {"required": "<= -0.10 ratio", "actual_ratio": 0.0489, "pass": false},
+      "sortino_ge_1": {"required": ">= 1.0", "actual": 3.4104, "pass": true}
+    },
+    "verdict_logic": "CAGR PASS + Sortino PASS, but MDD all 3 paths FAIL (strict + vs M4 -3pp + vs S1 -3pp), vol 4.9% WORSE than M4 baseline (FAIL both -20% and -10% targets). Decision: MONITORING_ONLY (model quality OK, trading damage exceeds tolerance)."
+  },
+  "lockbox_audit_judge_mandate": {
+    "lockbox_extension_assessed": true,
+    "lockbox_period_metrics_available": true,
+    "lockbox_period": "2025-01-31 ~ 2026-05-04 (n=17 months)",
+    "lockbox_metrics_M4_PCA_Hedge": {"sharpe": 2.5337, "cagr_annualized": 1.5798, "cum_ret": 2.8289, "mdd": -0.0385},
+    "lockbox_metrics_PCA_Hedge_alone": {"sharpe": 2.4258, "cum_ret": 3.1986, "mdd": -0.0522},
+    "lockbox_metrics_S1_baseline": {"sharpe": 2.4041, "cum_ret": 2.7375, "mdd": -0.0617},
+    "pre_lockbox_metrics_M4_PCA_Hedge": {"sharpe": 1.3787, "cagr": 0.3811, "mdd": -0.4267, "n_obs": 252},
+    "pre_lb_vs_lockbox_sr_ratio": 1.838,
+    "pre_lb_vs_lockbox_sr_ratio_interpretation": "Lockbox SR > Pre-LB SR (ratio 1.84) = NO overfitting evidence in F-shape. Lockbox period 2025 KR market strength (KOSPI200 strong uptrend) likely amplifies; not strategy-specific overfitting.",
+    "oos_chart_audit": {
+      "chart_path": "qepm/mailbox/worktask/WT-S20260504_001/output/oos_zoom_chart.png",
+      "lockbox_period_strategy_lines_visible": true,
+      "all_3_strategies_extended_through_2026_05": true,
+      "incomplete_flag": false
+    },
+    "judge_lockbox_harness_used": false,
+    "judge_lockbox_harness_skip_rationale": "Forge already produced lockbox-period weights schedule extending through 2026-05-04 via walk-forward (269/269 sig_dates, schedule_density 1.0). Direct verification of period_returns lockbox slice n=17 confirms forge-reported lockbox SR=2.5337 / MDD=-3.85% (judge independent recompute matches). Frozen-weights buy-and-hold extension not required because walk-forward already covers the period."
+  },
+  "harvey_t_check": {
+    "spec": "Harvey-Liu-Zhu (2016) t > 3.0 threshold (multiple testing aware)",
+    "method_used": "Lo (2002) approx: t = SR_ann * sqrt(N/12), N=269 monthly obs",
+    "M4_PCA_Hedge_t": 6.91,
+    "PCA_Hedge_alone_t": 6.84,
+    "S1_baseline_t": 6.69,
+    "harvey_t_threshold_3p0": "PASS_ALL (all >> 3.0; statistical significance robust)",
+    "candidates_tried": 8,
+    "method_shopping_log_path": "stage_artifacts/WT_WT-S20260504_001/method_shopping.json",
+    "dsr_penalty_estimate": "candidates_tried 8 * 0.05 = 0.40 SR equivalent penalty. Even with deflation, M4+PCA_Hedge SR 1.46 - 0.40 = 1.06 still meaningful, but L-274 reference 1.75 gap remains."
+  },
+  "ax_001_v2_evaluation": {
+    "verdict": "PARTIAL_DEFENSE_LIKE",
+    "evaluation_path": "qepm/mailbox/worktask/WT-S20260504_001/defense_like_evaluation.json",
+    "summary_3_tuple": {
+      "crisis_alpha_check": {
+        "GFC_2008_2009_M4_PCA_minus_S1_pp": 6.64,
+        "PCA_Hedge_alone_GFC_minus_S1_pp": 9.02,
+        "COVID_2020Q1_M4_PCA_minus_S1_pp": -6.23,
+        "KR_BEAR_2022_M4_PCA_minus_S1_pp": 6.33,
+        "verdict": "POSITIVE 2/3 crises (GFC + 2022 bear); COVID negative (M4 cash overlay timing miss)"
+      },
+      "mdd_vs_core_check": {
+        "S1_full_period_mdd": -0.3776,
+        "M4_PCA_Hedge_full_period_mdd": -0.4267,
+        "M4_PCA_minus_S1_mdd_pp": -4.91,
+        "verdict": "WORSE — M4+PCA hedge ADDS MDD vs S1 over 268m, despite GFC defense"
+      },
+      "bad_normal_es95_ratio": {
+        "definition": "M4+PCA ES95 in HighRisk LFC state / Normal state",
+        "highrisk_es95": -0.1244,
+        "normal_es95": -0.1087,
+        "crowded_es95": -0.1393,
+        "ratio": 1.144,
+        "interpretation": "ratio > 1.0: HighRisk LFC state DOES predict bigger tail (defense activation justification confirmed). PCA hedge mechanism well-grounded."
+      }
+    },
+    "ax001_v2_pass_full_3tuple": false,
+    "ax001_v2_partial_pass_2of3": true,
+    "rationale": "Crisis alpha 2/3 PASS + bad/normal ES95 ratio PASS (mechanism justified) but MDD vs Core FAIL on 268m walk-forward. Defense mechanism is real (GFC/2022 evidence) but does not translate to 268m MDD reduction — likely because COVID hedge miss + high-beta Korean retail Top-20 universe baseline characteristics dominate."
+  },
+  "ax_008_tally_entry": {
+    "source": "judge (Source 3 of 3, after risk + optimizer + forge — though forge_codex round was background-PENDING)",
+    "round": 1,
+    "stance": "MONITORING_ONLY",
+    "concerns_resolved": "lockbox audit judge-side independent verification PASS, AX-001 v2 partial defense-like, Harvey-t robust",
+    "remaining_concerns": [
+      "MDD trade-off vs M4 baseline (-6.23pp worse) - PCA hedge adds variance instead of reducing it on 268m",
+      "L-274 SR gap 0.29 (1.46 vs 1.75) - alpha lineage divergence vs production STR_1715",
+      "Forge codex critic background PENDING (deferred Layer 2 sweep)"
+    ]
+  },
+  "harness_pit_audit": {
+    "c1_full_sample_zscore": "PASS (rolling/expanding only; load_month_factors enforced)",
+    "c2_same_day_circular": "PASS (descriptive sigma + walk-forward weights)",
+    "c14_ic_window": "PASS (Usable_Date <= sig_date)",
+    "c15_factor_db_route": "PASS (load_month_factors only; no direct parquet read)",
+    "lookahead_detector_self_scan": "WARN — bt_result audit row 16 documented; manifest$factor_engine_path not declared (Forge integration path)",
+    "c15_factor_db_load_path_audit": "WARN — bt_result audit row 15 documented; manifest$factor_engine_path declared as Q-Lead/Forge contract, route documented in optimizer_challenge_note",
+    "overall_pit_pass": "PASS_WITH_2_WARN (PIT C1/C2/C14/C15 hard checks PASS; only manifest path declarations are WARN-level, not violations)"
+  },
+  "harness_constraint_audit": {
+    "max_names_le_20": "PASS (max_n_per_date=20, over20=0 across 3 strategies × 269 dates)",
+    "weight_bounds_0_to_0_20": "PASS (max_w=0.20, min_w=0)",
+    "sum_w_eq_1": "PASS (max deviation 4.6e-6, far below 1e-3 tolerance)",
+    "long_only": "PASS (cap_violations=0)",
+    "turnover_le_600pct_annual": "PASS (S1: 512%, PCA: 532%, M4+PCA: 532%)",
+    "production_directory_writes": "PASS (count = 0 verified by production_directory_audit.json)"
+  },
+  "schedule_fidelity_audit": {
+    "weights_unique_dates": 269,
+    "alpha_sig_dates": 269,
+    "ratio": 1.0,
+    "threshold": 0.95,
+    "pass": true,
+    "no_topN_reselection": true,
+    "weights_used_as_is": true
+  },
+  "pure_function_compliance": {
+    "md5_freeze_start_vs_end": "PASS (risk + optimization + lro_frozen all match)",
+    "lro_sha256_self_verify": "PASS (6a48a719025f9bb3e80cc5099250a077dbe20602eed2095cc82e3bad932700a1 expected = recomputed)",
+    "judge_independent_lockbox_recompute_match": "PASS (forge SR 2.5337 = judge SR 2.5337 on lockbox slice; cum_ret 2.8289 match)"
+  },
+  "concentration_audit": {
+    "max_w": 0.20,
+    "hhi_estimate_at_2026_05_01": 0.0712,
+    "L219_family_check": "ELEVATED (Semi+IT_HW 56% in active book; risk_package documented as Round 1 inheritance)",
+    "L219_blocking": false,
+    "rationale": "L-219 family saturation flag is sub-family threshold (50%) crossed, NOT an absolute admission blocker. STR_1715 production lineage already operates at this concentration. PG2 admit precedent (L-274) accepts."
+  },
+  "drift_tolerance_audit": {
+    "oos_is_ratio_lockbox_vs_pre_lb": 1.838,
+    "threshold": 0.7,
+    "pass": true,
+    "interpretation": "Lockbox SR 2.53 vs Pre-LB SR 1.38 (ratio 1.84) — strong OOS overperformance. Likely 2025 KR market strength contribution; not strategy overfitting per se (PCA hedge alone shows similar ratio 1.77 + S1 baseline 1.80, all 3 strategies extend beyond pre-LB SR similarly)."
+  },
+  "method_shopping_dsr_penalty": {
+    "candidates_tried": 8,
+    "candidates_log": "stage_artifacts/WT_WT-S20260504_001/method_shopping.json (γ sweep 8 values)",
+    "dsr_penalty_per_candidate": 0.05,
+    "total_dsr_penalty": 0.40,
+    "deflated_sharpe_estimate_M4_PCA": 1.0594,
+    "deflation_interpretation": "After multiple-test penalty, deflated SR ~1.06 still above typical 1.0 threshold. Further conservatism: SR-with-penalty 1.06 vs L-274 STR_1715 reference 1.75 indicates PCA Latent Hedge does not improve upon STR_1715 production after multi-test correction."
+  },
+  "consensus_concerns": [
+    {
+      "id": "JC-1",
+      "severity": "HIGH",
+      "concern": "MDD trade-off — M4+PCA_Hedge adds 6.23pp MDD vs M4 baseline + 4.91pp vs S1 over 268m walk-forward, despite GFC defense (+6.64pp) and 2022 bear defense (+6.33pp). Net MDD worsening from COVID hedge miss + high-beta Top20 universe characteristics.",
+      "disposition": "Accept as defining limitation. Not a hard violation but precludes PASS grade per spec decision_rule."
+    },
+    {
+      "id": "JC-2",
+      "severity": "HIGH",
+      "concern": "L-274 SR reference gap 0.29 (forge SR 1.46 vs L-274 STR_1715 PG2 1.75). Alpha lineage divergence — forge baseline S1 (SR 1.41) does not reproduce STR_1715 production (SR 1.75) on same 268m horizon. Indicates parent_alpha 34cc99fb... is not identical to STR_1715 production weights pipeline (STR_1715 PG2 admit L-274 uses full F1+F2+F3+F4 4-layer system).",
+      "disposition": "Diagnostic flag for follow-up Q-Lead session. Does NOT invalidate this WT verdict — the 3-strategy comparison within this WT (S1 vs PCA_Hedge vs M4+PCA_Hedge) uses identical alpha source so internal comparison is valid."
+    },
+    {
+      "id": "JC-3",
+      "severity": "MEDIUM",
+      "concern": "Lockbox period (2025-01 ~ 2026-05) only 17 months. Pre-LB vs LB ratio 1.84 reflects 2025 KR market strength rather than strategy-specific OOS validation.",
+      "disposition": "Acknowledged. Sample size small for OOS-only inference; full-period 268m metrics carry primary weight."
+    },
+    {
+      "id": "JC-4",
+      "severity": "MEDIUM",
+      "concern": "Forge Codex Critic Round was 'background PENDING' (PostToolUse hook silent on Bash Rscript route). Layer 2 sweep deferred; AX-008 tally has only 2/3 sources fully Codex-reviewed (risk + optimizer; forge waiver applied).",
+      "disposition": "Acknowledged per dapper-dragon plan §1 WT-001 background mode + recommendation_only WT charter. Forge package self-audit + Judge independent verification serves as Source 3 surrogate. Q-Lead follow-up: manual codex spawn for forge_package.json post-MONITORING_ONLY admission."
+    },
+    {
+      "id": "JC-5",
+      "severity": "LOW",
+      "concern": "PCA_Hedge_alone variant achieves higher CAGR (45.88%) than M4+PCA_Hedge primary (43.67%) but worse MDD (-44.19% vs -42.67%). Risk-return Pareto suggests M4 cash overlay does add modest defense.",
+      "disposition": "Statistical observation; M4 cash overlay value confirmed as +0.06% MDD reduction relative to PCA_Hedge alone; consistent with L-274 STR_1715 M4 documentation."
+    }
+  ],
+  "harness_red_flags_red_flag_severity": "MEDIUM (statistical mechanism strong, trading metrics fail PASS criteria, no PIT/AX hard violations)",
+  "outputs_judge": {
+    "judge_verdict_path": "qepm/mailbox/worktask/WT-S20260504_001/judge_verdict.json",
+    "defense_like_evaluation_path": "qepm/mailbox/worktask/WT-S20260504_001/defense_like_evaluation.json",
+    "ax008_stance_tally_path": "qepm/mailbox/worktask/WT-S20260504_001/ax008_stance_tally.json",
+    "judge_challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_001/judge_challenge_note.md"
+  },
+  "axiom_assertions": {
+    "AX_000": "한계 없음. PCA Latent Hedge structural mechanism real but on STR_1715 baseline parent_alpha does not produce trading-level MDD/vol improvement. Path forward: 1) repair alpha lineage gap to L-274 STR_1715 production (SR 1.75 floor) before applying PCA hedge, 2) test PCA hedge on diversified 50-stock universe (AX-007 exception path), 3) measure crisis-only conditional deployment (PCA_Hedge alone GFC -4.69% is structurally important).",
+    "AX_001_v2": "PARTIAL_DEFENSE_LIKE — 2/3 crisis_alpha + ratio (HighRisk/Normal ES95 1.14) PASS + MDD vs Core FAIL.",
+    "AX_002": "PASS — pure function compliance + lro SHA self-match + judge independent recompute matches forge claim.",
+    "AX_005_v1.2": "Top-20 long-only KR universe constraint observed; PCA hedge does not break the AX-007 single_sleeve mechanism break threshold (still 20-stock single sleeve).",
+    "AX_007": "Acknowledged: this WT remains within single_sleeve_long_only_top20 structure. Mechanism break risk persists. Future hypothesis: multi-sleeve PCA hedge (L-274 STR_1715 multi-sleeve) or ML sizing path required for full mechanism resolution.",
+    "AX_008_tally_entry_judge": {
+      "source": "judge",
+      "stance": "MONITORING_ONLY",
+      "rationale": "3 sources (risk PASS_CONDITIONAL + optimizer PASS_CONDITIONAL + forge background-PENDING-via-self-audit + judge MONITORING_ONLY) — 2/3 PASS_CONDITIONAL minimum threshold met for non-promotion, but NOT for production sizing recommendation.",
+      "verification_triangulation_status": "Forge + Codex (deferred) + Architect (not invoked) — only 1 hard source (Forge), 2 soft sources (risk/optimizer self-audit). AX-008 minimum 2/3 NOT firmly met for promotion. Judge accepts MONITORING_ONLY classification."
+    }
+  },
+  "recommendation_to_governor": "GOVERNOR_REJECTED with abort_reason=RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE. STR_1715 100% PG2 admission unchanged. PCA Latent Hedge parked as MONITORING_ONLY research artifact. Followup tasks: (1) alpha-lineage repair to L-274 floor, (2) PCA hedge on multi-sleeve / 50+ universe, (3) crisis-conditional deployment design.",
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "judge_advance_call": "sm_validated_advance('JUDGE_PASSED')"
+  },
+  "schema_version": "v1.0_pca_latent_hedge_judge",
+  "codex_round_status": "round1_DRAFT_pending_codex_critic_response",
+  "created_at": "2026-05-04T09:50:00+09:00",
+  "created_by": "judge-agent (background, dapper-dragon plan §1 WT-001)",
+  "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_001/judge_challenge_note.md"
+}
