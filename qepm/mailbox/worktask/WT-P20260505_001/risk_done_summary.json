@@ -1,0 +1,120 @@
+{
+  "task_id": "WT-P20260505_001",
+  "phase": "RISK_DONE",
+  "agent": "risk-research",
+  "completed_at": "2026-05-05T03:30:00+0900",
+  "state_machine": {
+    "advance": true,
+    "from": "ALPHA_DONE",
+    "to": "RISK_DONE",
+    "artifacts_check_pass": true,
+    "transition_check_pass": true,
+    "schema_check_pass": true
+  },
+  "deliverables": {
+    "risk_package_json": "qepm/mailbox/worktask/WT-P20260505_001/risk_package.json",
+    "correlation_matrix_3source_csv": "qepm/mailbox/worktask/WT-P20260505_001/correlation_matrix_3source.csv",
+    "tail_risk_decomposition_json": "qepm/mailbox/worktask/WT-P20260505_001/tail_risk_decomposition.json",
+    "crisis_decomposition_hybrid_json": "qepm/mailbox/worktask/WT-P20260505_001/crisis_decomposition_hybrid.json",
+    "stress_test_json": "qepm/mailbox/worktask/WT-P20260505_001/stress_test.json",
+    "hybrid_volatility_decomposition_json": "qepm/mailbox/worktask/WT-P20260505_001/hybrid_volatility_decomposition.json",
+    "covariance_estimator_audit_json": "qepm/mailbox/worktask/WT-P20260505_001/covariance_estimator_audit.json",
+    "PIT_audit_log_json": "qepm/mailbox/worktask/WT-P20260505_001/PIT_audit_log.json",
+    "stage_covariance_parquet": "stage_artifacts/WT_WT_P20260505_001/covariance.parquet (state_machine convention)",
+    "stage_covariance_alias": "stage_artifacts/WT_P20260505_001/covariance.parquet (aliased)",
+    "stage_regime_correlation_parquet": "stage_artifacts/WT_P20260505_001/regime_correlation.parquet"
+  },
+  "additional_artifacts_post_codex": {
+    "risk_package_draft_json": "qepm/mailbox/worktask/WT-P20260505_001/risk_package_draft.json",
+    "codex_critic_response_risk_json": "qepm/mailbox/worktask/WT-P20260505_001/codex_critic_response_risk.json",
+    "codex_disposition_remediation_R": "qepm/mailbox/worktask/WT-P20260505_001/codex_disposition_remediation.R",
+    "risk_challenge_note_md": "qepm/mailbox/worktask/WT-P20260505_001/risk_challenge_note.md",
+    "infeasibility_report_json": "qepm/mailbox/worktask/WT-P20260505_001/infeasibility_report.json",
+    "crisis_bootstrap_ci_json": "qepm/mailbox/worktask/WT-P20260505_001/crisis_bootstrap_ci.json",
+    "covariance_lw_delta1_parquet_alternative": "stage_artifacts/WT_P20260505_001/covariance_lw_delta1.parquet"
+  },
+  "primary_findings": {
+    "Sigma_method_selected": "Sample (delta=0)",
+    "Sigma_condition_number": 22.86,
+    "Sigma_PSD": true,
+    "Sigma_min_eigenvalue": 0.001967,
+    "Sigma_T_over_N": 45,
+    "hybrid_annualized_vol": 0.1482,
+    "diversification_ratio": 1.1052,
+    "DR_pass_threshold_1.05": true,
+    "effective_n_bets": 1.005,
+    "concentration_warning": "STR_1715 base contributes 99.8% of risk despite 70% capital weight (vol asymmetry)",
+    "hybrid_CVaR95_monthly": -0.0675,
+    "base_CVaR95_monthly": -0.0991,
+    "hybrid_CVaR_improvement_pp": 3.16,
+    "hybrid_Hill_alpha": 3.20,
+    "hybrid_GPD_xi": 0.026,
+    "long_run_correlations": {
+      "STR_KR10y": -0.122,
+      "STR_TSMOM": 0.075,
+      "KR10y_TSMOM": 0.119
+    },
+    "crisis_correlation_breakdown": {
+      "COVID_5m_STR_TSMOM": 0.752,
+      "Stagflation_12m_STR_KR10y": -0.484,
+      "GFC_2008_2src_STR_KR10y": -0.133
+    }
+  },
+  "codex_critic_round": {
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "critical_concerns": 7,
+    "severity_HIGH": 4,
+    "severity_MEDIUM": 3,
+    "disposition_completed": true,
+    "concerns_disposed": "7/7",
+    "method_changes": ["Sigma estimator: LW delta=1.0 -> Sample delta=0 (preserves -0.122 negative cor STR-KR10y)"],
+    "infeasibility_filed": true,
+    "bootstrap_ci_added": true,
+    "rationalization_red_flags_detected": 0,
+    "weakest_assumption_resolution": "Method changed to Sample. Sample correlation -0.122 STR-KR10y preserved.",
+    "ax_002_post_disposition": "PASS",
+    "ax_007_post_disposition": "EXEMPT_with_TSMOM_exception",
+    "ax_008_post_disposition": "TARGETING_2_of_3_PASS"
+  },
+  "challenge_flags_count": 7,
+  "key_propagated_inherited_flags": [
+    "INHERITED_RF_A1_HIGH_synthetic_ETF_proxy_KOFIA_NAV_validation_required_post_admit",
+    "INHERITED_RF_A4_HIGH_GFC_2008_pre_walk_forward_window_TSMOM_no_OOS_evidence",
+    "INHERITED_RF_A8_MEDIUM_TSMOM_max_single_ETF_79.86pct_Optimizer_30pct_cap_required"
+  ],
+  "new_risk_flags": [
+    "RF-R1_HIGH_base_str1715_dominates_risk_pct_99_8_despite_70_capital_weight",
+    "RF-R5_HIGH_COVID_5m_acute_str_tsmom_cor_0.7518",
+    "RF-R7_HIGH_CVaR95_breach_2.5pct_default_cap_INFEASIBILITY_FILED",
+    "RF-R8_HIGH_crisis_n_lt_30_bootstrap_CI_filed_pooled_fallback"
+  ],
+  "next_step": {
+    "phase": "OPTIMIZER_DONE",
+    "actor": "optimizer-research",
+    "delegated_decisions": [
+      "Risk concentration (C4) — accept Path C as-is OR risk-parity reweight (Optimizer choice)",
+      "TSMOM 30% cap enforcement (P3 prereq, inherited RF-A8)",
+      "Use Sample Sigma primary OR LW delta=1.0 alternative (both saved)"
+    ],
+    "downstream_inputs": {
+      "Sigma_primary": "stage_artifacts/WT_WT_P20260505_001/covariance.parquet (Sample)",
+      "Sigma_alternative": "stage_artifacts/WT_P20260505_001/covariance_lw_delta1.parquet",
+      "alpha_inherit": "qepm/mailbox/worktask/WT-P20260505_001/alpha_package_inherit_ref.json",
+      "individual_alphas": [
+        "qepm/mailbox/worktask/WT-P20260504_001/governor_admission.json",
+        "qepm/mailbox/worktask/WT-S20260504_008/alpha_package.json",
+        "qepm/mailbox/worktask/WT-S20260504_009/alpha_package.json"
+      ]
+    }
+  },
+  "role_boundary_compliance": {
+    "did_not_modify_alpha_vector": true,
+    "did_not_modify_factor_specs": true,
+    "did_not_modify_confidence_vector": true,
+    "did_not_recommend_weights": true,
+    "did_not_judge_strategy_quality": true,
+    "lro_sha_frozen_confirmed": true,
+    "production_strategy_dir_write_count": 0
+  }
+}
