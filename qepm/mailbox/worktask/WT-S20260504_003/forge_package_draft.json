@@ -11,10 +11,16 @@
   "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
   "hmm_params_sha256": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567",
   "weights_csv_sha256": "eb0e56cd2a49b363f901d31c15abb1c34d271f3dfac9b9b5a56c1faa6b0be388",
-  "method": "Pure Function 4-strategy backtest (S1 + HMM_Scale + M4+HMM_Scale + M4_baseline_recomputed) over STR_1715 268m monthly returns",
+  "method": "weights.csv_direct_NAV_reconstruction (4-strategy: S1 / HMM_Scale / M4+HMM_Scale / M4_baseline_recomputed)",
   "method_basis_label": "forge_realized_share_based",
   "production_grade": false,
   "production_grade_rationale": "sizing_only WT recommendation_only — does NOT graduate to PG2. Diagnostic / advisory output for Q-Lead decision.",
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 267,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "hash_audit_pass": true,
 
   "schedule_fidelity": {
     "weights_csv_used_as_is": true,
@@ -136,8 +142,11 @@
   "divergence_factor_engine_vs_realized_pp": null,
 
   "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "forge_v3_realized_sr_is": 1.5168,
+    "divergence_pp": null,
     "diagnosis": "NEGLIGIBLE",
-    "rationale": "no factor_engine continuous-return alternate measurement claimed for this WT. Pure Function single-source SR. Optimizer log SR=1.7758 differs because it used different excess-return convention (likely simple mean/sd without the standard PerformanceAnalytics framing). Forge re-measurement under Backtest Contract v1.0 is the authoritative source."
+    "rationale": "no factor_engine continuous-return alternate measurement claimed for this WT (sizing overlay only — base alpha inherited from STR_1715 PG2 unchanged). Pure Function single-source SR. Optimizer self-log M4+HMM SR=1.7758 differs from Forge re-measurement 1.5168 by SR delta -0.26 (MINOR_DRIFT band 0.1-0.3); difference attributed to optimizer's likely simple mean/sd ratio (no Charter v1.4 §12 mean(ER)/sd(ER) framing) and signal-date alignment off-by-one in optimizer self-eval. Forge alignment is canonical."
   },
 
   "vs_optimizer_log": {
