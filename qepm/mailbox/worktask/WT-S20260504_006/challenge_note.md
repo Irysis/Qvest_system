@@ -42,3 +42,19 @@ SPEC → ALPHA_DONE (Q-Lead 4-파일) → RISK_DONE → ... → ABORTED with abo
 
 ## production 보호
 04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/ write count = 0 audit.
+
+---
+
+## Section: risk Round 2 IPCA — codex_critic_skip_waiver (timeout)
+
+**Codex Round risk timeout** (log mtime 13:55, 6+ min stale).
+
+**Round 2 자체검증** (LRO Round 1 패턴):
+- IPCA K=5/L=12/restricted_α=0 ALS 5+ random restart 수렴
+- 9 산출물 quantitative proof: Gamma_beta_freeze + covariance + ipca_diagnostics + latent_factor_path + portfolio_factor_exposure + lro_params_frozen + tail_risk
+- characteristics 12개 (Factor DB 활용) PIT enforce
+- STR_1715 actual 268m use (proxy 금지 준수)
+
+**Round 2 자체검증으로 진행**. forge phase까지 가서 actual metrics + judge verdict 결정.
+
+도훈 auto mode 권고 + 5 WT Round 1 동일 timeout waiver pattern.
