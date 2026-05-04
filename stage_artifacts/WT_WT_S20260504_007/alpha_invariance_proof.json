@@ -1,0 +1,123 @@
+{
+  "task_id": "WT-S20260504_007",
+  "proof_type": "Alpha Invariance Mathematical + Empirical",
+  "operation": "w_final,t = β_t · w_STR1715,t  with cash residual = 1 - β_t",
+  "mathematical_proof": {
+    "statement": "For β_t > 0 scalar: rank_corr(w_STR1715, w_final / sum(w_final)) = 1 exactly",
+    "derivation": "w_final,t / sum(w_final,t) = (β_t · w_STR1715,t) / (β_t · sum(w_STR1715,t)) = w_STR1715,t / sum(w_STR1715,t).  β_t scalar > 0 multiplication preserves ordering (rank).  Identical post-renormalize ⇒ Spearman rank corr = 1 strict.",
+    "edge_case": "β_t = 0 ⇒ w_final = 0 ⇒ cash 100%. No alpha exposure (selection irrelevant). Acceptable: cash residual = 1 by mandate."
+  },
+  "empirical_verification": {
+    "weight_basis": "STR_1715 production_weights/20260501_weights_cap_0p20.csv (n_active=20)",
+    "sum_w_orig": 0.99999999104,
+    "weight_range": [0.001345578597, 0.2],
+    "test_results_per_beta": {
+      "0": {
+        "beta": 0,
+        "sum_w_final": 0,
+        "cash_residual": 1,
+        "rank_corr": null,
+        "relative_proportion_invariance": null,
+        "max_abs_diff_renormalized": null
+      },
+      "0.001": {
+        "beta": 0.001,
+        "sum_w_final": 0.00099999999104,
+        "cash_residual": 0.99900000001,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 2.7755575616e-17
+      },
+      "0.05": {
+        "beta": 0.05,
+        "sum_w_final": 0.049999999552,
+        "cash_residual": 0.95000000045,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 1.3877787808e-17
+      },
+      "0.1": {
+        "beta": 0.1,
+        "sum_w_final": 0.099999999104,
+        "cash_residual": 0.9000000009,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 1.3877787808e-17
+      },
+      "0.4": {
+        "beta": 0.4,
+        "sum_w_final": 0.39999999642,
+        "cash_residual": 0.60000000358,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 1.3877787808e-17
+      },
+      "0.7": {
+        "beta": 0.7,
+        "sum_w_final": 0.69999999373,
+        "cash_residual": 0.30000000627,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 1.3877787808e-17
+      },
+      "0.95": {
+        "beta": 0.95,
+        "sum_w_final": 0.94999999149,
+        "cash_residual": 0.050000008514,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 1.3877787808e-17
+      },
+      "1": {
+        "beta": 1,
+        "sum_w_final": 0.99999999104,
+        "cash_residual": 8.9619276444e-09,
+        "rank_corr": 1,
+        "relative_proportion_invariance": true,
+        "max_abs_diff_renormalized": 0
+      }
+    },
+    "variant_audit": [
+      {
+        "variant": "beta_linear",
+        "n_valid": 263,
+        "n_zero": 59,
+        "n_full_alpha": 84,
+        "n_partial": 120,
+        "beta_mean": 0.5372,
+        "rank_corr_at_beta_mean": 1
+      },
+      {
+        "variant": "beta_threshold",
+        "n_valid": 263,
+        "n_zero": 0,
+        "n_full_alpha": 166,
+        "n_partial": 97,
+        "beta_mean": 0.8551,
+        "rank_corr_at_beta_mean": 1
+      },
+      {
+        "variant": "beta_sigmoid",
+        "n_valid": 263,
+        "n_zero": 0,
+        "n_full_alpha": 0,
+        "n_partial": 263,
+        "beta_mean": 0.4771,
+        "rank_corr_at_beta_mean": 1
+      }
+    ]
+  },
+  "preservation_audit": {
+    "weight_rank_correlation_required": 1,
+    "weight_rank_correlation_achieved": "1.0 strict for all β > 0 (mathematically guaranteed)",
+    "relative_proportion_invariance_required": true,
+    "relative_proportion_invariance_achieved": true,
+    "max_abs_diff_renormalized": "< 1e-10 for all β > 0 test cases",
+    "selection_invariance_required": true,
+    "selection_invariance_achieved": "TRUE — ticker set unchanged (no add/remove)",
+    "m4_schedule_preservation_required": true,
+    "m4_schedule_preservation_achieved": "TRUE — overlay does not touch rebalance schedule",
+    "iter31_grid_preservation_required": true,
+    "iter31_grid_preservation_achieved": "TRUE — Iter31 weights are inputs to overlay; not modified"
+  }
+}

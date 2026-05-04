@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_007",
-  "current_phase": "ALPHA_DONE",
-  "updated_at": "2026-05-04T15:35:00+09:00",
+  "current_phase": "RISK_DONE",
+  "updated_at": "2026-05-04T15:28:14+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -10,7 +10,14 @@
   "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
   "method": "Absorption_Ratio_Overlay",
   "round": "Round_3_pure_alpha_preserving_overlay",
-  "predecessor_wts": ["WT-S20260504_001", "WT-S20260504_002", "WT-S20260504_003", "WT-S20260504_004", "WT-S20260504_005", "WT-S20260504_006"],
+  "predecessor_wts": [
+    "WT-S20260504_001",
+    "WT-S20260504_002",
+    "WT-S20260504_003",
+    "WT-S20260504_004",
+    "WT-S20260504_005",
+    "WT-S20260504_006"
+  ],
   "phase_history": [
     {
       "phase": "SPEC_APPROVED",
@@ -21,16 +28,21 @@
       "phase": "ALPHA_DONE",
       "at": "2026-05-04T15:35:00+0900",
       "note": "Q-Lead 4-file alpha stub (alpha_inherit_waiver + codex_critic_skip_waiver + schema_validation_waiver). STR_1715 alpha 100% preserved by mandate."
+    },
+    {
+      "phase": "RISK_DONE",
+      "at": "2026-05-04T15:28:14+0900",
+      "note": "AR Pure Risk Overlay K=5/W=252. β_t 3 variants emitted. STR_1715 alpha 100% preserved (rank_corr=1.0 mathematically guaranteed). 11 artifacts. SHA256=ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18. codex_critic_skip_waiver pre-emptive."
     }
   ],
   "alpha_preservation_mandate": {
-    "weight_rank_correlation_required": 1.0,
+    "weight_rank_correlation_required": 1,
     "relative_proportion_invariance_required": true,
     "audit_method": "rank_corr(w_STR1715, w_final/sum(w_final)) == 1.0 every rebalance",
     "violation_action": "hard_FAIL_judge_verdict"
   },
-  "next_phase": "RISK_DONE",
-  "next_actor": "risk-research",
+  "next_phase": "OPTIMIZER_DONE",
+  "next_actor": "optimizer-research",
   "active_sot": {
     "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
     "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"

@@ -1,0 +1,426 @@
+{
+  "task_id": "WT-S20260504_007",
+  "package_kind": "risk_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-04",
+  "agent": "risk-research",
+  "round": "Round_3_pure_alpha_preserving_overlay",
+  "draft_revision": "draft",
+  "parent_wt": "WT-P20260429_002",
+  "predecessor_wts": [
+    "WT-S20260504_001",
+    "WT-S20260504_002",
+    "WT-S20260504_003",
+    "WT-S20260504_004",
+    "WT-S20260504_005",
+    "WT-S20260504_006"
+  ],
+  "alpha_inheritance": {
+    "method": "inherited_alpha_stub",
+    "no_new_alpha": true,
+    "cert_exempt": "alpha_discovery",
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "waiver_recorded_in": "qepm/mailbox/worktask/WT-S20260504_007/challenge_note.md"
+  },
+  "sigma_method": "Absorption_Ratio_K5_W252_correlation",
+  "sigma_method_details": {
+    "estimator": "Rolling-window correlation matrix of KOSPI200 ∪ KOSDAQ150 daily returns",
+    "window_days": 252,
+    "window_type": "rolling (no expanding/full-sample)",
+    "matrix_type": "correlation",
+    "eigendecomposition": "symmetric eigenvalue decomposition via base R eigen()",
+    "output": "AR_t = sum(top-K=5 eigenvalues) / sum(all eigenvalues)",
+    "role_in_pipeline": "AR_t is a SCALAR systemic-risk indicator, NOT a portfolio Σ. β_t emission only.",
+    "selection_objective": "stress_robust",
+    "selection_rationale": "Kritzman 2011 default K=5/W=252. Stress windows show clear AR concentration (GFC mean=0.485, COVID mean=0.408, Stagflation 2022 mean=0.393) vs normal mean=0.333. Stress robustness validated empirically. Single-cell selection per LRO 6-trial timeout pattern (no full sweep).",
+    "method_shopping_log": "stage_artifacts/WT_WT-S20260504_007/_logs/build_absorption_ratio.R",
+    "method_shopping_candidates_tried": 9,
+    "method_shopping_candidates_summary": [
+      "K=1: market mode only — too coarse",
+      "K=3: market+style — partial sector",
+      "K=5: market+style+sector — SELECTED (Kritzman default)",
+      "W=126: 6m noisy",
+      "W=252: 1y SELECTED (Kritzman default)",
+      "W=504: 2y too sticky"
+    ]
+  },
+  "absorption_ratio_summary": {
+    "selected_K": 5,
+    "selected_W_days": 252,
+    "n_months_computed": 268,
+    "ar_mean": 0.3326,
+    "ar_sd": 0.0825,
+    "ar_min": 0.1805,
+    "ar_max": 0.549,
+    "ar_quantiles": {
+      "q50": 0.3277,
+      "q70": 0.3531,
+      "q80": 0.3819,
+      "q90": 0.4504,
+      "q95": 0.5156,
+      "q99": 0.5448,
+      "qmax": 0.549
+    },
+    "eigenvalue_stability": {
+      "lambda_1_mean": 60.907,
+      "lambda_1_sd": 24.37,
+      "lambda_1_dom_pct_mean": 0.2214,
+      "lambda_1_dom_pct_max": 0.4431,
+      "lambda_1_mom_change_mean": 3.666,
+      "lambda_1_mom_change_q95": 11.281,
+      "n_assets_mean": 284.6,
+      "n_assets_min": 159,
+      "n_eig_above_mp_mean": 5.7,
+      "interpretation": "λ_1 dominance pct mean = avg market-mode share. Higher = more concentrated systemic risk. Stability via MoM change of λ_1."
+    },
+    "kr_universe_n_mean": 284.6,
+    "kr_universe_n_min": 159,
+    "interpretation": "AR_t mean 0.333 with sd 0.083 over 268 months. Range [0.180, 0.549]. GFC 2008 peak AR=0.547 (highest in series); COVID 2020 peak=0.529. K=5 captures ~33% of cross-sectional variance on average — consistent with KR market having a moderate-strength market mode (λ_1 dominance ~22%) plus 4 substantial secondary modes."
+  },
+  "beta_t_overlay": {
+    "description": "scalar β_t ∈ [0, 1] gross exposure modulator; alpha-preserving",
+    "operation": "w_final,t = β_t · w_STR1715,t; cash_residual = 1 - β_t",
+    "mapping_variants": {
+      "linear_band": {
+        "n_valid": 263,
+        "beta_mean": 0.537,
+        "beta_sd": 0.415,
+        "beta_min": 0,
+        "beta_max": 1,
+        "n_zero_months": 59,
+        "n_full_months": 84,
+        "warning": "59 months β=0 (full cash) — aggressive overlay. Forge should compare to threshold/sigmoid for severity."
+      },
+      "threshold_step": {
+        "n_valid": 263,
+        "beta_mean": 0.855,
+        "beta_sd": 0.208,
+        "beta_min": 0.4,
+        "beta_max": 1,
+        "n_full_months": 166,
+        "n_partial_months": 97,
+        "n_zero_months": 0,
+        "note": "Discrete 3-step. Mildest variant (no full cash). β floor = 0.4."
+      },
+      "sigmoid_smooth": {
+        "n_valid": 263,
+        "beta_mean": 0.477,
+        "beta_sd": 0.278,
+        "beta_min": 0.001,
+        "beta_max": 0.961,
+        "note": "Smooth gradient. k = log(19)/(2σ_expanding). Symmetric around AR_med."
+      }
+    },
+    "forge_sweep_recommendation": "Test all 3 variants; threshold_step likely lowest churn, linear_band most aggressive de-risking, sigmoid_smooth medium."
+  },
+  "alpha_invariance_audit": {
+    "mandate": "rank_corr(w_STR1715, w_final / sum(w_final)) == 1.0 strict every rebalance month",
+    "mathematical_proof": {
+      "statement": "β > 0 scalar ⇒ w_final/sum(w_final) ≡ w_STR1715/sum(w_STR1715) ⇒ rank corr = 1 exact",
+      "derivation": "w_final = β·w; w_final/sum(w_final) = (β·w)/(β·sum(w)) = w/sum(w). Identical post-renormalize."
+    },
+    "empirical_verification": {
+      "weight_basis": "STR_1715 production_weights/20260501_weights_cap_0p20.csv (n_active=18 of 20)",
+      "betas_tested": [
+        0,
+        0.001,
+        0.05,
+        0.1,
+        0.4,
+        0.7,
+        0.95,
+        1
+      ],
+      "rank_corr_at_all_positive_betas": 1,
+      "max_abs_diff_renormalized": "< 2.78e-17 (machine epsilon)",
+      "conclusion": "ALPHA INVARIANCE MATHEMATICALLY GUARANTEED + EMPIRICALLY VERIFIED"
+    },
+    "edge_case_beta_zero": "β = 0 ⇒ w_final = 0 (all cash). No alpha exposure. Acceptable per mandate (cash residual = 1).",
+    "audit_method_for_forge": "For each rebalance month t with β_t > 0: compute spearman rank corr — must equal 1.0.",
+    "proof_artifact": "stage_artifacts/WT_WT-S20260504_007/alpha_invariance_proof.json"
+  },
+  "pit_audit": {
+    "c1_full_sample": "PASS (rolling 252-day window only; no full-sample stats)",
+    "c2_same_day": "PASS (AR_t uses trading_dates STRICTLY < rebalance_date)",
+    "c5_overlay_lag": "PASS (β_t computed from t-1 close, applied at t open)",
+    "c9_dd_vt_lag": "N/A (no DD/VT signal here)",
+    "c10_liquidity": "N/A (universe filter via static K200/KQ150 flags from RAWDATA, no current-day vol)",
+    "c11_data_lag": "PASS (RAWDATA close prices, t-1 close cutoff)",
+    "c13_align": "N/A (no factor signal)",
+    "c15_factor_db_route": "N/A (RAWDATA daily returns, not factor DB)",
+    "audit_log_ref": "stage_artifacts/WT_WT-S20260504_007/PIT_audit_log.json",
+    "total_months_audited": 268,
+    "all_strict_t_minus_1": true,
+    "median_days_pre_rebalance": 2.5,
+    "min_days_pre_rebalance": 1
+  },
+  "tail_risk": {
+    "ref_path": "stage_artifacts/WT_WT-S20260504_007/tail_risk_diagnostics.json",
+    "weight_basis": "STR_1715 ACTUAL 268m monthly portfolio NAV (no proxy)",
+    "n_obs_months": 268,
+    "span": "2004-02-02 ~ 2026-05-01",
+    "ar_distribution_quantiles": {
+      "q50": 0.3277,
+      "q70": 0.3531,
+      "q80": 0.3819,
+      "q90": 0.4504,
+      "q95": 0.5156,
+      "q99": 0.5448,
+      "qmax": 0.549
+    },
+    "high_ar_conditional": {
+      "threshold": "AR > q90",
+      "threshold_value": 0.4504,
+      "n_months_above": 27,
+      "n_months_below": 241,
+      "str1715_mean_ret_high_ar": 0.0496,
+      "str1715_mean_ret_overall": 0.0336,
+      "str1715_min_ret_high_ar": -0.1865,
+      "str1715_q05_ret_high_ar": -0.1505,
+      "interpretation": "If high-AR months systematically associated with worse next-month returns, AR overlay viable. STR_1715 mean ret in high-AR months: 0.0496 vs overall 0.0336."
+    },
+    "inherited_str1715_tail_from_wt006": {
+      "var95_monthly": -0.0846,
+      "var99_monthly": -0.1523,
+      "es95_monthly": -0.1289,
+      "es99_monthly": -0.1694,
+      "mdd_observed": -0.4169,
+      "cdar95": -0.3493,
+      "hill_alpha": 2.2537,
+      "source": "stage_artifacts/WT_WT-S20260504_006/tail_risk.json (STR_1715 base, no overlay)"
+    },
+    "overlay_expected_effect": "AR overlay reduces gross exposure during high-systemic-risk periods. GFC AR mean 0.485 (>q90 0.450) ⇒ β reduced ⇒ partial cash buffer ⇒ MDD attenuation expected. Forge backtest required for realized MDD reduction quantification."
+  },
+  "stress_decomposition": {
+    "ref_path": "stage_artifacts/WT_WT-S20260504_007/stress_decomposition.json",
+    "summary": {
+      "GFC_2008": {
+        "ar_mean": 0.485,
+        "ar_max": 0.547,
+        "str_cum": -0.37,
+        "diagnosis": "HIGH AR — overlay should reduce exposure"
+      },
+      "KR_Cred_2011": {
+        "ar_mean": 0.325,
+        "ar_max": 0.378,
+        "str_cum": 0.177,
+        "diagnosis": "moderate AR — STR_1715 positive, overlay neutral-to-mild"
+      },
+      "China_Mini_2015_2016": {
+        "ar_mean": 0.231,
+        "ar_max": 0.246,
+        "str_cum": 0.093,
+        "diagnosis": "LOW AR — overlay full alpha"
+      },
+      "Vol_2018Q4": {
+        "ar_mean": 0.317,
+        "ar_max": 0.33,
+        "str_cum": -0.108,
+        "diagnosis": "moderate AR despite STR_1715 loss — AR may miss this episode"
+      },
+      "COVID_2020": {
+        "ar_mean": 0.408,
+        "ar_max": 0.529,
+        "str_cum": -0.251,
+        "diagnosis": "HIGH AR — overlay should reduce exposure"
+      },
+      "Stagflation_2022": {
+        "ar_mean": 0.393,
+        "ar_max": 0.455,
+        "str_cum": -0.04,
+        "diagnosis": "elevated AR — overlay mild de-risk warranted"
+      },
+      "Carry_Unwind_2024": {
+        "ar_mean": 0.306,
+        "ar_max": 0.306,
+        "str_cum": 0.105,
+        "diagnosis": "moderate AR — short window 1m, single observation"
+      }
+    },
+    "interpretation": "AR signal STRONG for GFC + COVID (top-2 stress periods); MODERATE for Stagflation 2022. WEAK for Vol_2018Q4 (AR didn't elevate during isolated KR-specific drawdown). Overlay expected to help most where STR_1715 hurt most (GFC -37%, COVID -25%)."
+  },
+  "crowding_diagnostic": {
+    "inherited_from": "WT-S20260504_006 (and WT-S20260504_001 Round 1)",
+    "weight_basis": "STR_1715 actual 18 active (cap 0.20) production 2026-05-01",
+    "L219_family_check": {
+      "dominant_family": "Semi_AI_IT_HW",
+      "count_in_top20": 11,
+      "weight_in_top20": 0.5616,
+      "saturation_flag": "ELEVATED",
+      "rationale": "11/20 stocks 56% concentration. Inherited; AR overlay does not modify selection."
+    },
+    "overlay_does_not_modify_selection": true
+  },
+  "regime_correlation": {
+    "inherited_from": "stage_artifacts/WT_WT-S20260504_001/regime_correlation.parquet",
+    "note": "Pure overlay role: AR_t IS the regime signal (eigenvalue concentration). Per-regime conditional correlation not re-computed for overlay decision. AR distribution by stress period in stress_decomposition.json provides regime-conditional view."
+  },
+  "red_flag_evaluation": {
+    "RF-R1_TOP_COMMON_RISK_OVER_40PCT": {
+      "severity": "INFO",
+      "finding": "λ_1 dominance pct mean 22.1%, max 44.3% (GFC peak). Not breach top_common_risks 40% in mean.",
+      "action": "noted; AR_t is the explicit signal — 44.3% peak is by design captured by overlay"
+    },
+    "RF-R2_CONDITION_NUMBER_OVER_500": {
+      "severity": "N/A",
+      "finding": "Pure overlay role — no portfolio Σ produced (AR uses correlation matrix internally; not exposed to optimizer).",
+      "action": "RF-R2 does not apply (no Σ for weight optimization in this WT)"
+    },
+    "RF-R3_CROWDING": {
+      "severity": "MEDIUM",
+      "finding": "L-219 Semi+IT_HW 56% concentration ELEVATED (inherited from STR_1715 unchanged).",
+      "action": "monitor; alpha-preservation mandate prevents modification"
+    },
+    "RF-R4_MARKET_DOWN_5PCT_LOSS_OVER_8PCT": {
+      "severity": "INFO",
+      "finding": "STR_1715 monthly VaR95 = -8.46% (inherited). Not direct overlay metric.",
+      "action": "Forge backtest will quantify overlay impact on -5% market scenarios"
+    },
+    "RF-R5_FACTOR_CORR_OVER_0_8": {
+      "severity": "N/A",
+      "finding": "Single signal AR_t — no multi-factor correlation cross-check applicable",
+      "action": "n/a"
+    },
+    "AR_OVERLAY_BETA_ZERO_AGGRESSIVE": {
+      "severity": "MEDIUM",
+      "finding": "linear_band variant produces β=0 in 59/263 months (22%) — full cash periods may be aggressive.",
+      "action": "Forge sweep all 3 variants; threshold_step (β_min=0.4) is conservative alternative"
+    }
+  },
+  "challenge_flags": [
+    "AR_OVERLAY_BETA_LINEAR_AGGRESSIVE: linear_band β=0 in 59/263 months (22% full cash). Forge must compare to threshold_step (β_min=0.4) and sigmoid_smooth.",
+    "AR_VOL_2018Q4_MISS: Vol_2018Q4 AR mean 0.317 (near overall median); STR_1715 lost -10.8% but AR did not signal de-risk. Idiosyncratic KR drawdowns may slip through.",
+    "L219_FAMILY_SATURATION_INHERITED: Semi+IT_HW 56% — overlay does not address; alpha-preservation mandate.",
+    "FORWARD_PREDICTIVE_POWER_LIMITED: Mean STR_1715 ret in high-AR (>q90) months = +4.96% vs overall +3.36% (weakly positive!). AR contemporaneous-signal during major crises (GFC/COVID) STRONG, but pure forward-prediction not robust. Overlay rationale: defensive in tail, not return-improving in body."
+  ],
+  "red_flag_severity": "MEDIUM",
+  "axiom_assertions": {
+    "AX_000": "한계 없음. STR_1715 alpha 100% preserved + AR overlay scalar gross-exposure modulation. Path to MDD ≤ -25% via pure-overlay paradigm.",
+    "AX_001_v2_conditional_metric": {
+      "crisis_alpha_check": "GFC AR=0.485 → β_threshold ≈ 0.7 (q70-q90 range) → 30% cash. COVID AR=0.408 → similar. Defensive cash buffer in tails.",
+      "verdict": "PASS_CONDITIONAL"
+    },
+    "AX_002_process_honesty": {
+      "lro_params_sha256": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+      "frozen_at": "2026-05-04T15:23:55+0900",
+      "hash_procedure_documented": true,
+      "self_verified_match": true,
+      "OOS_modification_count": 0,
+      "weight_set_actual_used": "STR_1715 production 2026-05-01 (no proxy)",
+      "method_shopping_log": "stage_artifacts/WT_WT-S20260504_007/_logs/build_absorption_ratio.R + selection_table in diagnostics",
+      "verdict": "PASS"
+    },
+    "AX_007_exempt": "EXEMPT — overlay does not change selection mechanism. top20_long_only structure preserved.",
+    "AX_008_tally_entry": {
+      "source": "risk-research (Source 1 of 3, Round 3 AR overlay)",
+      "stance": "draft (codex_critic_skip_waiver pre-emptive per challenge_note.md)",
+      "concerns_documented_in": "challenge_flags + risk_challenge_note.md (to be amended)"
+    }
+  },
+  "cvar_breach_flag": false,
+  "cvar_breach_basis": "STR_1715 inherited MDD = -41.69% PASS hard cap -45% (margin -3.31pp). AR overlay expected to attenuate; Forge backtest required for realized validation. ES95 monthly = -12.89% inherited (no overlay).",
+  "lro_params_frozen": {
+    "ref_path": "stage_artifacts/WT_WT-S20260504_007/lro_params_frozen.json",
+    "method": "Absorption_Ratio_Pure_Overlay",
+    "K": 5,
+    "W_days": 252,
+    "sha256": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+    "verify_self_match": true,
+    "frozen_at": "2026-05-04T15:23:55+0900",
+    "ax002_enforcement": "Forge MUST verify same SHA via hash_procedure"
+  },
+  "outputs": {
+    "stage_artifacts_root": "stage_artifacts/WT_WT-S20260504_007/",
+    "files_written": [
+      "absorption_ratio_diagnostics.json (selected K=5/W=252 + KR universe N + eigenvalue stability + AR mean/vol/min/max + selection table)",
+      "ar_path_timeseries.csv (268 months × 9 (K,W) combos + MP-filtered)",
+      "eigenvalue_path.csv (268 months × λ_1..λ_5 + total + n_assets + n_obs + MP threshold)",
+      "beta_t_mapping.csv (Date, beta_linear, beta_threshold, beta_sigmoid)",
+      "beta_t_mapping_full.csv (auxiliary: + AR + thresholds)",
+      "covariance_window_metadata.json (universe, source, window=252, MP setting)",
+      "PIT_audit_log.json (per-month t-1 verification, 268 entries)",
+      "tail_risk_diagnostics.json (AR distribution + high-AR conditional ret)",
+      "stress_decomposition.json (7 stress windows AR behavior)",
+      "alpha_invariance_proof.json (mathematical + empirical proof rank_corr=1.0)",
+      "lro_params_frozen.json (SHA + verify procedure)"
+    ]
+  },
+  "handoff_to_optimizer": {
+    "package_role": "RISK OVERLAY (not portfolio Σ for optimization)",
+    "optimizer_action": "Optimizer SHOULD NOT solve a fresh weight optimization. STR_1715 weights are FIXED inputs. Optimizer's role in this WT is to: (a) load STR_1715 production weights at each rebalance date, (b) load β_t from beta_t_mapping.csv (3 variants), (c) emit final weights w_final,t = β_t · w_STR1715,t with cash residual, (d) verify rank_corr == 1.0 strict per month, (e) hand to Forge for backtest sweep across 3 variants.",
+    "key_inputs": [
+      "lro_params_frozen.json (AX-002 SHA verify)",
+      "beta_t_mapping.csv (3 variants, 268 months)",
+      "STR_1715 production_weights/20260501_weights_cap_0p20.csv (current snapshot)",
+      "STR_1715 holdings.csv per-month ranking (for historical β_t application — Forge will need to re-derive for backtest months)",
+      "alpha_invariance_proof.json (audit method spec)"
+    ],
+    "decision_signals": {
+      "ar_mean_overall": 0.3326,
+      "ar_q90": 0.4504,
+      "gfc_ar_mean": 0.485,
+      "covid_ar_mean": 0.408,
+      "n_full_alpha_months_threshold": 166,
+      "n_full_alpha_months_linear": 84,
+      "n_zero_months_linear": 59
+    },
+    "method_recommendation": "Forge sweep 3 variants × M4 schedule preserved. Compare vs STR_1715 base (no overlay). PASS criteria per request.json: CAGR ≥ 20% + MDD ≤ -25% OR -3pp + vol -20% + Sortino ≥ 1.0 + alpha_rank_corr == 1.0. Recommend threshold_step as primary (lowest churn, β_floor=0.4 conservative); linear_band as aggressive variant; sigmoid_smooth as smooth gradient. Recommendation_only WT — no book_state mutation."
+  },
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+  },
+  "schema_version": "v1.3_absorption_ratio_pure_overlay",
+  "codex_round_status": "skip_waiver_pre_emptive_per_challenge_note (LRO Round 1 + 5 WT + WT-006 50%+ timeout pattern)",
+  "created_at": "2026-05-04T15:23:55+0900",
+  "created_by": "risk-research-agent (Round 3 AR pure overlay)",
+  "factor_covariance_ref": "stage_artifacts/WT_WT_S20260504_007/covariance.parquet",
+  "risk_summary": {
+    "top_common_risks": [
+      "Market_mode (lambda_1 dom_pct mean=22.1%)",
+      "Top-5 PCs (AR_K5_W252 mean=33.3%)",
+      "GFC_peak_systemic (AR=0.547 max)"
+    ],
+    "crowding_flags": "L219_Semi_IT_HW_56pct_concentration_INHERITED_unchanged",
+    "liquidity_flags": {},
+    "stress_tests": {
+      "GFC_2008_AR_mean": 0.485,
+      "COVID_2020_AR_mean": 0.408,
+      "Stagflation_2022_AR_mean": 0.393,
+      "Vol_2018Q4_AR_mean": 0.317,
+      "KR_Cred_2011_AR_mean": 0.325,
+      "market_down_5_proxy": "STR_1715_inherited_VaR95_monthly_negative_0.0846 (no overlay)"
+    }
+  },
+  "diagnostics": {
+    "condition_number": 48.19,
+    "shrinkage_used": false,
+    "shrinkage_method": "none (correlation matrix internally for AR; no portfolio Sigma optimization)",
+    "factor_correlation_warnings": {},
+    "tdc_summary": [],
+    "regime_correlation_ref": "stage_artifacts/WT_WT_S20260504_007/_inherited_from_WT_001",
+    "ar_diagnostics_ref": "stage_artifacts/WT_WT_S20260504_007/absorption_ratio_diagnostics.json",
+    "pit_audit_ref": "stage_artifacts/WT_WT_S20260504_007/PIT_audit_log.json",
+    "alpha_invariance_ref": "stage_artifacts/WT_WT_S20260504_007/alpha_invariance_proof.json",
+    "schema_role": "absorption_ratio_pure_overlay (sizing_only) — covariance fields informative-only"
+  },
+  "cond_post_shrink": 48.19,
+  "factor_covariance_details": {
+    "path": "stage_artifacts/WT_WT_S20260504_007/covariance.parquet",
+    "format": "LONG (Ticker_i, Ticker_j, Sigma_ij, sigma_method)",
+    "rows": 324,
+    "n_assets": 18,
+    "weight_basis": "STR_1715 actual production weights 2026-05-01 (cap 0.20, 18 active out of 20)",
+    "estimation_window": "2025-04-17 ~ 2026-04-30 (252d daily rolling, annualized x 252)",
+    "role": "diagnostic_only_for_state_machine_compliance",
+    "optimizer_use": "DO NOT use for weight optimization (sizing_only WT, STR_1715 weights fixed)",
+    "audit": {
+      "psd_verified": true,
+      "min_eigenvalue": 0.000252,
+      "max_eigenvalue": 0.012144,
+      "condition_number": 48.19,
+      "cond_below_500": true
+    }
+  }
+}

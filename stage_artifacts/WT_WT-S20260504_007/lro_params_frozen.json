@@ -1,0 +1,44 @@
+{
+  "task_id": "WT-S20260504_007",
+  "method": "Absorption_Ratio_Pure_Overlay",
+  "selected_K": 5,
+  "selected_W_days": 252,
+  "mapping_variants_for_forge_sweep": {
+    "linear_band": {
+      "formula": "β_t = clip(1 - (AR_t - AR_lo) / (AR_hi - AR_lo), 0, 1)",
+      "ar_lo_quantile": 0.3,
+      "ar_hi_quantile": 0.85,
+      "percentile_window": "expanding"
+    },
+    "threshold_step": {
+      "formula": "β_t = 1.0 if AR_t < q70; 0.7 if AR_t < q90; 0.4 otherwise",
+      "q_lo": 0.7,
+      "q_hi": 0.9,
+      "step_levels": [1, 0.7, 0.4],
+      "percentile_window": "expanding"
+    },
+    "sigmoid_smooth": {
+      "formula": "β_t = 1 / (1 + exp(k · (AR_t - AR_med))) with k = log(19) / (2·sd_expanding)",
+      "ar_med_quantile": 0.5,
+      "k_calibration": "k = log(19)/(2σ) — maps AR_med ± 2σ to β ≈ [0.05, 0.95]",
+      "percentile_window": "expanding"
+    }
+  },
+  "marchenko_pastur_filter": "OFF in default (informative variant AR_K5_W252_MP available)",
+  "is_endpoint_freeze": "2024-06-30",
+  "weight_set": "STR_1715_actual_production_2026-05-01_cap0p20",
+  "weight_set_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/production_weights/20260501_weights_cap_0p20.csv",
+  "PIT_strict": true,
+  "ar_t_window_end_rule": "trading_dates < rebalance_date (t-1 close cutoff)",
+  "beta_t_application_rule": "applied at rebalance_date open",
+  "alpha_preservation_mandate": {
+    "rank_corr_required": 1,
+    "operation": "w_final,t = β_t · w_STR1715,t",
+    "cash_residual": "1 - β_t (sum(w_final,t) ≤ 1; 1 - sum = cash)",
+    "mathematical_invariance": "β > 0 scalar ⇒ rank preserved exactly (Spearman = 1.0)",
+    "empirical_max_diff_renormalized": "< 1e-10 (machine epsilon)"
+  },
+  "frozen_at": "2026-05-04T15:23:55+0900",
+  "sha256": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+  "verify_self_match": true
+}
