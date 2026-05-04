@@ -1,0 +1,315 @@
+{
+  "task_id": "WT-S20260504_006",
+  "package_kind": "optimization_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-01",
+  "agent": "optimizer-research",
+  "round": 2,
+  "round_label": "Round_2_IPCA_refinement",
+  "predecessor_wt": "WT-S20260504_001 (PCA Latent Hedge MONITORING_ONLY)",
+  "draft_revision": "final",
+  "parent_wt": "WT-P20260429_002",
+  "inheritance": {
+    "alpha_inherited": true,
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "risk_inherited": "WT-S20260504_006/risk_package.json (IPCA K=5 L=12 restricted_alpha_zero LWdiagShrunk)",
+    "no_new_alpha": true,
+    "alpha_engine_unchanged": true
+  },
+  "lro_params_verify": {
+    "expected_sha256": "258222cd396a8ae44f058129a8356034c9d19da71b0f9de74c48af8d18644c53",
+    "recomputed_sha256": "09e3d2ce2ad6abf9bb47e1d92cb1ff3cc8ac1ae09e866d2d5e2e016c605a26f0",
+    "sha_match": false,
+    "methods_tested": 5,
+    "method_a_canonical": "jsonlite::toJSON(auto_unbox=TRUE, pretty=FALSE) -> digest(charToRaw, sha256, serialize=FALSE)",
+    "method_a_result": "09e3d2ce2ad6abf9bb47e1d92cb1ff3cc8ac1ae09e866d2d5e2e016c605a26f0",
+    "method_b_string_input": "09e3d2ce2ad6abf9bb47e1d92cb1ff3cc8ac1ae09e866d2d5e2e016c605a26f0",
+    "method_c_no_unbox": "c302163f41946fa3362444405c58457a835d93bdee20bac8dc6c7d832fdbadce",
+    "method_d_sorted_keys": "137f0a2008ee60f9f22aa7eb682a466438deeca28a72f665c95d4b932f245473",
+    "method_e_raw_lines": "6745ce89c504765646de950b9a316f3c86a73b7a3948718d4200e7b837c49c71",
+    "ipca_artifact_files_unchanged_since_freeze": true,
+    "Gamma_beta_freeze_path": "stage_artifacts/WT_WT-S20260504_006/Gamma_beta_freeze.parquet",
+    "ax002_responsibility_routing": "Forge MUST verify SHA per documented hash_procedure. If Forge also fails self-match, Q-Lead to fix risk-research SHA pipeline canonicalization (likely jsonlite version or whitespace flag difference).",
+    "rebuttal_per_codex_C6": "PARTIAL — discrepancy documented transparently in optimizer_challenge_note Section 3 (5-method test, none match). Indirect verification via parquet file mtime stability (Gamma_beta/F_t/cov files unchanged since 2026-05-04T13:48:42 freeze). NOT a silent override — flagged as RF-AX2 MEDIUM and routed to Forge for triangulation."
+  },
+  "method_selected": "S1_baseline_Iter31",
+  "method_selected_changed_post_codex": true,
+  "method_selected_change_rationale": "Per Codex C1 CRITICAL ACCEPT: 'transparency != approval'. M4+IPCA_Hedge breaches Charter §8 hard cap (TO 887%/yr > 600%/yr cap). Cannot designate as canonical. Switched canonical to S1 (TO 512%/yr PASS). IPCA_Hedge and M4+IPCA_Hedge remain in variants/ for Forge comparison backtest — not canonical.",
+  "selection_objective": "to_adj_ret",
+  "selection_objective_explanation": "to_adj_ret = turnover-adjusted return. Canonical S1 selected because IPCA_Hedge variants generate 887%/yr one-way TO = 266bps/yr realized cost, which on a recommendation_only WT must be Forge-measured net of 15bps cost. S1 baseline is the only TO-feasible canonical (5.125 = 512%/yr PASS Charter §8). IPCA variants forwarded to Forge for to_adj_ret realized comparison.",
+  "method_shopping_path": "stage_artifacts/WT_WT-S20260504_006/method_shopping.json",
+  "active_cap_per_strategy": {
+    "S1": 0.20,
+    "IPCA_Hedge": 0.20,
+    "M4+IPCA_Hedge": 0.20
+  },
+  "hedge_params": {
+    "gamma": 1000,
+    "eps_diag": 0.0001,
+    "phi_to": 0,
+    "phi_to_sweep_done": true,
+    "phi_to_sweep_path": "stage_artifacts/WT_WT-S20260504_006/_logs/phi_to_sweep.json",
+    "phi_to_finding": "TO penalty STRUCTURALLY INEFFECTIVE — sweep phi in {0,1,3,10,30,100,300,1000,3000,10000} reduces one-way TO from 887% only to 720% at phi=10000 with LFC reduction degrading from 53% to 45%. 600% one-way cap UNREACHABLE under STR_1715 alpha basket churn (~750%/yr from membership rotation alone).",
+    "objective_function": "max alpha'w - (gamma/2) ||B_t' w||^2 - (eps/2) ||w||^2 subject to sum(w)=1, 0<=w<=0.20, max_names<=20",
+    "constraints": {
+      "sum_w": 1,
+      "long_only": true,
+      "weight_bounds": [0, 0.20],
+      "max_names": 20
+    },
+    "key_difference_vs_WT_001": {
+      "WT_001_PCA": "B_ref single 5xN static loadings (sample PCA, time-invariant). Same 9 stocks consistently identified as hedge.",
+      "WT_006_IPCA": "beta_i,t = Gamma_beta' z_i,t (12 chars x 5 latent, characteristics-instrumented). beta_i,t TIME-VARYING — different stocks identified each month based on Z_t state. Higher TO but more responsive.",
+      "academic_reference": "Kelly-Pruitt-Su (2020 JFE) Section 3.4 restricted-alpha — characteristics-instrumented PCA generalizes static PCA when firm characteristics evolve."
+    },
+    "z_imputation": {
+      "method": "cross_sectional_median_per_factor",
+      "rationale": "Stocks missing characteristic Z values imputed with cross-sectional median from full factor_db universe (not basket-restricted to avoid bias). Documented in build_ipca_optimizer.R lines 161~167."
+    }
+  },
+  "schedule_density": {
+    "parent_alpha_sig_dates": 269,
+    "weights_unique_dates": 269,
+    "ratio": 1.0,
+    "threshold": 0.95,
+    "pass": true
+  },
+  "lfc_at_2026_05_01": {
+    "S1_baseline_LFC": 3.249,
+    "IPCA_Hedge_LFC": 1.001,
+    "reduction_pct_endpoint": 69.19,
+    "panel_mean_reduction_pct": 53.33,
+    "panel_median_reduction_pct": 55.02,
+    "WT_001_PCA_endpoint_reduction_for_comparison": 82.82,
+    "interpretation": "IPCA endpoint reduction 69% vs PCA's 82% — IPCA hedge LESS aggressive at endpoint (time-varying beta makes some basket stocks naturally less correlated with latent space). Panel mean 53% reduction is comparable to PCA's per-month behavior."
+  },
+  "constraint_audit": {
+    "S1": {
+      "label": "S1_baseline_Iter31",
+      "n_dates": 269,
+      "max_n_per_date": 20,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 1.000,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 9.59e-07,
+      "turnover_annual_one_way": 5.125,
+      "turnover_annual_round_trip": 10.249,
+      "turnover_hard_cap_600pct_one_way_pass": true,
+      "turnover_hard_cap_600pct_round_trip_pass": false,
+      "round_trip_breach_explanation": "Charter §8 cap is 600%/yr one-way (= 1200%/yr round-trip). One-way 512% PASSES. Round-trip cap interpretation depends on convention; one-way 600% is the standard."
+    },
+    "IPCA_Hedge": {
+      "label": "IPCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 11,
+      "max_active_per_date": 8,
+      "median_active_per_date": 6,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 1.000,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 2.22e-16,
+      "turnover_annual_one_way": 8.866,
+      "turnover_annual_round_trip": 17.731,
+      "turnover_hard_cap_600pct_one_way_pass": false,
+      "turnover_hard_cap_600pct_round_trip_pass": false,
+      "turnover_breach_explanation": "Structural breach inherited from STR_1715 basket churn (~750%/yr) + IPCA beta_t variation (~130%/yr extra). See infeasibility_report Section 4 in challenge_note."
+    },
+    "M4_IPCA_Hedge": {
+      "label": "M4+IPCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 10,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 0.6,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation_from_equity_multiplier": 0.0,
+      "note_sum_lt_1": "Cash overlay reduces equity sum to {0.6, 0.8, 1.0} based on regime state {CRISIS, CAUTION, NORMAL/BULL}. Cash residual recorded in cash_schedule.csv (sum_w_equity + cash_fraction = 1)."
+    }
+  },
+  "hard_constraints_pass_canonical": {
+    "max_names_le_20": true,
+    "long_only": true,
+    "cap_0p20": true,
+    "sum_eq_1_equity_plus_cash": true,
+    "turnover_le_600pct_one_way": true,
+    "note": "All hard constraints PASS for canonical S1. IPCA_Hedge and M4+IPCA_Hedge are DEMOTED to non-canonical variants for Forge comparison only. See infeasibility_report for IPCA_Hedge TO breach (Codex C1 ACCEPT)."
+  },
+  "infeasibility_report": {
+    "constraint_violated": "turnover_annual_one_way <= 6.0 (Charter §8 hard cap 600%/yr one-way)",
+    "strategy_in_breach": "IPCA_Hedge (8.866 = 887%/yr one-way) and M4+IPCA_Hedge (same underlying — M4 only adjusts cash %, not stock weights)",
+    "strategy_passing": "S1_baseline_Iter31 (5.125 = 512%/yr one-way, under cap) — DESIGNATED CANONICAL post-Codex",
+    "inherited_from": "STR_1715 parent alpha basket rotation. Decomposition: 750%/yr from membership churn (11/20 stocks rotate monthly per STR_1715 alpha) + 130%/yr from IPCA QP within-basket reweight churn = 880%/yr one-way.",
+    "structural_diagnosis": {
+      "membership_churn_one_way_pct_of_yr": 750,
+      "within_basket_reweight_one_way_pct_of_yr": 130,
+      "total_one_way_pct_of_yr": 880,
+      "minimum_achievable_one_way_pct_of_yr_at_phi_max": 720,
+      "minimum_achievable_strategy": "phi_TO=10000 (effectively freeze weights)",
+      "minimum_achievable_LFC_reduction_at_phi_max_pct": 45,
+      "tradeoff": "Higher phi_TO marginally reduces TO (887% -> 720%) but also reduces LFC reduction (53% -> 45%). 600% cap STRUCTURALLY UNREACHABLE under STR_1715 parent alpha schedule."
+    },
+    "no_silent_override": true,
+    "documented_in_challenge_note": "qepm/mailbox/worktask/WT-S20260504_006/optimizer_challenge_note.md (Section 4: Infeasibility Report)",
+    "forge_responsibility": "Forge backtests all 3 variants (S1 / IPCA_Hedge / M4+IPCA_Hedge), measures realized 15bps x 8.87/yr x 2 = 266bps/yr cost impact, computes net-of-cost SR/MDD/CAGR for each. Per Charter §6 Failure Rules, IPCA_Hedge net performance must beat S1 by >=266bps/yr to justify TO breach."
+  },
+  "codex_round": {
+    "round": 1,
+    "stance": "REJECT",
+    "veto_flag": false,
+    "model": "gpt-5.5",
+    "weakest_assumption": "A single 2026-frozen IPCA Gamma_beta can be used across the 2004-2026 backtest because Z_t changes monthly.",
+    "concerns_count": 7,
+    "concerns_critical": 2,
+    "concerns_high": 4,
+    "concerns_medium": 1,
+    "response_path": "qepm/mailbox/worktask/WT-S20260504_006/codex_critic_response_optimizer.json",
+    "audit_log": "/tmp/codex_qepm_critic_WT-S20260504_006_optimizer_1777872075.log",
+    "classification": {
+      "C1_CRITICAL_TO_breach_canonical_violation": "ACCEPTED — Codex right that 'transparency != approval'. Selecting a hard-cap-breaching method as canonical contradicts Charter §8. CHANGED canonical to S1 (TO PASS); IPCA_Hedge demoted to non-canonical variant for Forge comparison.",
+      "C2_CRITICAL_PIT_C1_lookahead_frozen_Gamma_beta": "ACCEPTED — Genuine PIT C1 lookahead: Gamma_beta trained on 2021-05 ~ 2024-06 IS panel applied to 2004-2026 walk-forward weights. RESOLUTION: (a) Restate scope as endpoint-only deployment (only 2026-05-01 weights are PG2-relevant). (b) Forge backtest scope CONSTRAINED to OOS sub-period 2024-07 ~ 2026-05 (where Gamma_beta is genuinely OOS). (c) For 22-year backtest, Forge MUST re-estimate Gamma_beta rolling (out of optimizer scope, requires risk-research re-run). DOCUMENTED in handoff_to_forge.forge_responsibilities.",
+      "C3_HIGH_cov_cond_399_vs_target_100": "REBUTTAL_DEFER — risk-research's domain. risk_package.json sigma_method_details.audit.cond_below_500_hard explicitly defines cond < 500 as the hard threshold (RF-R2). 399 PASSES that. Optimizer doesn't redefine risk thresholds. If hard cap is cond <= 100, that's a risk-research spec change (pre-shrinkage cond was 866 -> diag-shrinkage to 400; further shrinkage to 100 would erase IPCA off-diagonal structure).",
+      "C4_HIGH_method_selection_LFC_not_net_IR": "PARTIAL — sizing_only recommendation_only WT explicitly defers SR/MDD/CAGR to Forge per spec request.json line 44 decision_rule. LFC reduction is the optimizer-side metric. However Codex right that 266bps/yr cost is real and ignored — RESOLUTION: changed canonical to S1 (no extra hedge cost); IPCA variants for Forge net-of-cost comparison.",
+      "C5_HIGH_alpha_scores_parquet_absent": "REBUTTAL — sizing_only WT inherits via alpha_package_inherit_ref.json (path: parent WT-P20260429_002/alpha_package.json, sha 34cc99fb...). alpha_scores.parquet absent BY DESIGN (no_new_alpha=TRUE). Same architecture as WT-001 where Codex previous round accepted REBUTTAL. S1 weights = STR_1715 linear_tilt lambda=1.5 phi=3 output, which IS the parent alpha realized portfolio (not a proxy — it's the actual alpha output).",
+      "C6_HIGH_lro_params_SHA_mismatch": "PARTIAL — Documented in challenge_note Section 3 (5 canonical encodings tested, none match risk-research's published value). Indirect verification: parquet artifacts unchanged since freeze (mtime stable). Routed to Forge for cryptographic triangulation. NOT silent override.",
+      "C7_MEDIUM_CRISIS_max_w_contraction_missing": "PARTIAL — same as WT-001 (cash overlay yes, max_w contraction no). Spec excludes heuristic rules ('PCA hedge structural only, no DD brake / topN fixed cash / regime threshold'). M4 cash overlay is the regime-conditional defense; max_w contraction would require explicit Q-Lead spec amendment."
+    },
+    "rebuttal_summary": {
+      "rebuttals_made": ["C5 alpha lineage path", "C3 cov cond threshold (risk-side spec)"],
+      "accepts_made": ["C1 method_selected->S1", "C2 endpoint-only routing + Forge OOS sub-period scope"],
+      "partials_made": ["C4 selection objective", "C6 SHA forge-triangulation", "C7 CRISIS max_w (no spec amendment)"]
+    },
+    "rationalization_red_flags_observed": [
+      "Codex flagged 'Forge to measure realized cost impact' as rationalization. PARTIAL accept: per Charter §6 Failure Rules + sizing_only recommendation_only WT spec, deferring net-of-cost evaluation to Forge IS the routing protocol. But changing canonical to S1 also removes the rationalization frame entirely — IPCA_Hedge is now an alternative for Forge to evaluate, not the canonical-but-infeasible method.",
+      "Codex flagged 'penalty has negligible effect <100bps'. PARTIAL accept: documented sweep result transparently. phi=10000 reduces TO 887% -> 720%, still over cap — accurate description, not rationalization."
+    ]
+  },
+  "outputs": {
+    "canonical_weights_csv": "stage_artifacts/WT_WT-S20260504_006/weights.csv",
+    "canonical_strategy": "S1_baseline_Iter31",
+    "canonical_weights_schema": {
+      "columns": ["as_of_date", "Ticker", "Weight", "asset_type", "method_selected"],
+      "asset_type_enum": "equity",
+      "cash_separate_in": "stage_artifacts/WT_WT-S20260504_006/cash_schedule.csv"
+    },
+    "variants": {
+      "S1": "stage_artifacts/WT_WT-S20260504_006/weights_variants/S1.csv",
+      "IPCA_Hedge": "stage_artifacts/WT_WT-S20260504_006/weights_variants/IPCA_Hedge.csv",
+      "M4+IPCA_Hedge": "stage_artifacts/WT_WT-S20260504_006/weights_variants/M4+IPCA_Hedge.csv"
+    },
+    "cash_schedule_csv": "stage_artifacts/WT_WT-S20260504_006/cash_schedule.csv",
+    "cash_definition_audit": "stage_artifacts/WT_WT-S20260504_006/cash_definition_audit.json",
+    "lro_portfolio_mrc": "stage_artifacts/WT_WT-S20260504_006/lro_portfolio_mrc.csv",
+    "method_shopping": "stage_artifacts/WT_WT-S20260504_006/method_shopping.json",
+    "audit_summary": "stage_artifacts/WT_WT-S20260504_006/_logs/audit_summary.json",
+    "phi_to_sweep_log": "stage_artifacts/WT_WT-S20260504_006/_logs/phi_to_sweep.json",
+    "build_script": "stage_artifacts/WT_WT-S20260504_006/_logs/build_ipca_optimizer.R"
+  },
+  "axiom_assertions": {
+    "AX_000": "한계 없음. IPCA refinement attempted to break MDD-TO tradeoff via time-varying beta_t. RESULT: TO breach + PIT C1 routing = canonical demoted to S1. Forge to measure OOS sub-period (2024-07~2026-05) IPCA performance.",
+    "AX_001_v2_conditional_metric": "IPCA hedge crisis_alpha to be measured by Forge stress sub-period MDD vs S1 baseline. Codex claimed FAIL — REJECT: Codex pre-judges before Forge measurement (recommendation_only WT defers).",
+    "AX_002_process_honesty": {
+      "lro_params_sha_optimizer_self_match": false,
+      "lro_params_sha_match_concern_documented": true,
+      "schedule_density_threshold": 0.95,
+      "schedule_density_actual": 1.0,
+      "schedule_density_pass": true,
+      "no_silent_constraint_relaxation": true,
+      "infeasibility_report_emitted": true,
+      "method_shopping_log_documented": true,
+      "canonical_changed_post_codex_documented": true,
+      "codex_classification_table_documented": true
+    },
+    "AX_008_tally_entry": {
+      "source": "optimizer-research (Source 3 of 3, Round 2 IPCA refinement)",
+      "stance": "APPROVE_CONDITIONAL with Codex reclassification (canonical->S1)",
+      "concerns_documented_in": "qepm/mailbox/worktask/WT-S20260504_006/optimizer_challenge_note.md",
+      "ax008_tally_status": "1 PASS (optimizer canonical S1 hard constraints all PASS) of 3 sources required (alpha skipped, risk timeout-waiver, optimizer this) — needs Forge as Source 3 verifier"
+    }
+  },
+  "red_flags": [
+    {"id": "RF-O5", "check": "max_names <= 20 (canonical S1)", "pass": true},
+    {"id": "RF-O6", "check": "|sum(weights) - 1| < 0.001 (canonical S1)", "pass": true},
+    {"id": "RF-O7", "check": "0 <= weights <= 0.20 (canonical S1)", "pass": true},
+    {"id": "RF-O8", "severity": "HIGH", "check": "turnover_one_way <= 6.0 (canonical S1)", "pass": true, "value": 5.125, "note": "Canonical S1 PASSES. Variants IPCA_Hedge/M4+IPCA_Hedge BREACH (8.866) — see infeasibility_report; non-canonical for Forge comparison only."},
+    {"id": "RF-O9", "check": "schedule_density >= 0.95 (multi-snapshot walk-forward)", "pass": true, "value": 1.0},
+    {"id": "RF-AX2", "severity": "MEDIUM", "check": "lro_params_frozen sha256 self-match", "pass": false, "explanation": "Optimizer-side recompute does not match risk-research published SHA. 5 canonical encodings tested. Forge to triangulate. Indirect verification: parquet mtime stability."},
+    {"id": "RF-PIT-C1", "severity": "HIGH", "check": "PIT C1 — frozen Gamma_beta trained 2021-2024 applied across 2004-2026 walk-forward", "pass": false, "explanation": "Codex C2 ACCEPTED — Forge backtest scope must be CONSTRAINED to OOS sub-period 2024-07 ~ 2026-05 OR Forge re-estimates Gamma_beta rolling. Documented in handoff_to_forge."}
+  ],
+  "schema_version": "v1.2_ipca_K5_L12_canonical_S1_post_codex_reclassification",
+  "codex_round_status": "round1_REJECT_round2_classified_canonical_S1_demote_IPCA_to_variant",
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED -> ALPHA_DONE -> RISK_DONE -> OPTIMIZER_DONE -> FORGE_DONE -> JUDGE_PASSED -> GOVERNOR_REJECTED -> ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+  },
+  "handoff_to_forge": {
+    "primary_weights_path": "stage_artifacts/WT_WT-S20260504_006/weights.csv",
+    "primary_strategy": "S1_baseline_Iter31 (canonical, TO-passing)",
+    "backtest_matrix": ["S1", "IPCA_Hedge", "M4+IPCA_Hedge"],
+    "universe_definition": "STR_1715 actual Top-20 by score_eff per sig_date (parent alpha, inherited via WT-001 S1 schedule)",
+    "rebalance_frequency": "monthly",
+    "transaction_cost": "v2.3_kr_retail_15bps",
+    "benchmark": "KOSPI200_total_return",
+    "scope_constraint_per_codex_C2": {
+      "issue": "Gamma_beta trained 2021-05 ~ 2024-06 IS panel applied across 2004-2026 walk-forward = PIT C1 forward-looking on 2004-2020 dates",
+      "resolution_options": {
+        "option_1_OOS_subperiod": {
+          "description": "Restrict Forge backtest to 2024-07-01 ~ 2026-05-01 (genuinely OOS for Gamma_beta)",
+          "n_months": 23,
+          "advantage": "Bona fide OOS measurement for IPCA_Hedge / M4+IPCA_Hedge",
+          "disadvantage": "Limited statistical power (23 months)"
+        },
+        "option_2_endpoint_only": {
+          "description": "Endpoint-only deployment: only 2026-05-01 weights matter for PG2 sizing recommendation. No 22-year backtest claim.",
+          "n_months": 1,
+          "advantage": "Pure recommendation_only — full PIT compliance",
+          "disadvantage": "No statistical validation of MDD-improvement hypothesis"
+        },
+        "option_3_rolling_Gamma_beta_reestimation": {
+          "description": "Forge requests risk-research re-run with rolling Gamma_beta re-estimation (re-fit at each sig_date using only data up to t-1)",
+          "n_months": "subject to risk-research's minimum panel requirement (~24 months)",
+          "advantage": "Full 22-year backtest with PIT compliance",
+          "disadvantage": "Out of optimizer scope; requires new risk-research WT cycle"
+        }
+      },
+      "recommended_route": "option_1 (OOS sub-period 2024-07 ~ 2026-05) for primary IPCA evaluation. Canonical S1 backtest can use full 22-year with no PIT issue."
+    },
+    "key_comparison_targets": {
+      "WT_001_PCA_round_1_full_period_MDD": -0.4267,
+      "WT_001_PCA_round_1_full_period_MONITORING_ONLY_reason": "MDD worsened to -42.67% despite TO PASS",
+      "STR_1715_baseline_M4_only_full_period_MDD": -0.3205,
+      "WT_006_IPCA_round_2_OOS_subperiod_MDD_target": "<= -0.30 (improvement vs PCA -42.67% AND vs M4 baseline -32.05%) — measured on OOS 2024-07 ~ 2026-05",
+      "decision_rule": "Per request.json — PASS requires CAGR >=20% + MDD <=-25% OR -3pp + vol -20% + Sortino >=1.0 + IPCA explained_variance reasonable + alpha_misspecification not rejected. APPLIED TO OOS SUB-PERIOD IF OPTION 1 ROUTE."
+    },
+    "forge_responsibilities": [
+      "Verify lro_params_frozen.sha256 via own hash_procedure (resolve optimizer/risk discrepancy — Codex C6 routing)",
+      "Backtest 3 strategies. Decide between option_1 / option_2 / option_3 per Codex C2 PIT routing.",
+      "Compute net-of-cost SR/CAGR/MDD/Sortino for all 3",
+      "Measure actual cost impact of 887%/yr TO breach on IPCA_Hedge (15bps x 8.87 x 2 = 266bps/yr)",
+      "Compare WT-006 IPCA M4+ vs WT-001 PCA M4+ vs STR_1715 baseline (M4 only)",
+      "Apply Charter §6 Failure Rules: if IPCA net-of-cost performance >= S1 baseline + 266bps/yr threshold, TO breach justified by hedge value; otherwise IPCA_Hedge variant FAIL"
+    ]
+  },
+  "ax008_tally": {
+    "source_1_alpha": "INHERITED (no new alpha; sha 34cc99fb verified via parent_alpha_package_sha)",
+    "source_2_risk": "DRAFT_FINAL (round1_timeout_waiver_applied, IPCA single-cell K5_L12_restricted)",
+    "source_3_optimizer": "FINAL (this package, canonical S1 + IPCA variants for Forge)",
+    "source_4_forge_pending": "TBD",
+    "ax008_status": "Optimizer source 3 PASS conditional. Forge source 4 required for 2/3+ Verification Triangulation. Per Charter §6, Forge is the next decision gate."
+  },
+  "created_at": "2026-05-04T14:14:00+0900",
+  "created_by": "optimizer-research-agent (background, dapper-dragon plan §3 WT-006 IPCA refinement)",
+  "promoted_to_final_at": "2026-05-04T14:30:00+0900",
+  "promoted_by": "optimizer-research-agent (post-codex-classification with canonical change)"
+}

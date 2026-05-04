@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_006",
-  "current_phase": "RISK_DONE",
-  "updated_at": "2026-05-04T14:02:00+0900",
+  "current_phase": "OPTIMIZER_DONE",
+  "updated_at": "2026-05-04T14:32:00+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -9,6 +9,34 @@
   "production_book_state_write": false,
   "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
   "method": "IPCA_Instrumented_PCA",
-  "round": "Round_2_PCA_refinement",
-  "predecessor_wt": "WT-S20260504_001"
+  "round": "Round_2_IPCA_refinement",
+  "predecessor_wt": "WT-S20260504_001",
+  "phase_history": [
+    {"phase": "SPEC_APPROVED", "at": "2026-05-04T11:35:00+0900"},
+    {"phase": "ALPHA_DONE", "at": "2026-05-04T12:01:00+0900", "note": "alpha inherited"},
+    {"phase": "RISK_DONE", "at": "2026-05-04T14:02:00+0900", "note": "IPCA K=5 L=12 restricted single-cell"},
+    {"phase": "OPTIMIZER_DONE", "at": "2026-05-04T14:32:00+0900", "note": "canonical S1 + IPCA variants for Forge; Codex round1 REJECT classified (2 ACCEPT, 2 REBUTTAL, 3 PARTIAL)"}
+  ],
+  "optimizer_summary": {
+    "method_selected": "S1_baseline_Iter31",
+    "method_changed_post_codex": true,
+    "method_pre_codex": "M4+IPCA_Hedge",
+    "canonical_TO_one_way": 5.125,
+    "canonical_TO_pass_600pct_one_way": true,
+    "schedule_density": 1.000,
+    "variants_for_forge": ["S1", "IPCA_Hedge", "M4+IPCA_Hedge"],
+    "infeasibility_report_emitted": true,
+    "codex_round1_stance": "REJECT",
+    "codex_concerns_critical": 2,
+    "codex_concerns_high": 4,
+    "codex_concerns_medium": 1,
+    "codex_disposition": "2 ACCEPT (C1 canonical->S1, C2 PIT routing) + 2 REBUTTAL (C3 cov, C5 alpha lineage) + 3 PARTIAL (C4 selection, C6 SHA, C7 CRISIS max_w)"
+  },
+  "next_phase": "FORGE_DONE",
+  "next_actor": "forge",
+  "active_sot": {
+    "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
+    "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
+  },
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md"
 }

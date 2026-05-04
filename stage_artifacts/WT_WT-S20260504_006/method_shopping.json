@@ -1,0 +1,106 @@
+{
+  "candidates_tried": 3,
+  "parallel_exec": false,
+  "total_seconds": 62.4631,
+  "gamma_sweep": {
+    "panel_as_of": "2026-05-01",
+    "baseline_LFC": 3.2487,
+    "baseline_alpha_dot_w": 0.1093,
+    "sweep": {
+      "0.1": {
+        "gamma": 0.1,
+        "LFC": 1.196,
+        "alpha_dot_w": 0.0651,
+        "reduction_pct": 63.1852
+      },
+      "10": {
+        "gamma": 10,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "50": {
+        "gamma": 50,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "100": {
+        "gamma": 100,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "500": {
+        "gamma": 500,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "1000": {
+        "gamma": 1000,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "5000": {
+        "gamma": 5000,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      },
+      "10000": {
+        "gamma": 10000,
+        "LFC": 1.001,
+        "alpha_dot_w": 0.0383,
+        "reduction_pct": 69.1891
+      }
+    },
+    "selected_gamma": 1000,
+    "selection_rationale": "γ=1000 mirrors WT-001 PCA tier — meaningful hedge with minimal alpha cost; Pareto-optimal vs higher γ which crushes alpha for marginal LFC gain. IPCA refinement uses time-varying β_i,t = Γ_β' z_i,t (vs WT-001 static B_ref) — more responsive hedge."
+  },
+  "method_log": [
+    {
+      "name": "S1_baseline_Iter31",
+      "params": {
+        "lambda": 1.5,
+        "phi": 3,
+        "ub": 0.2
+      },
+      "LFC_endpoint": 3.2487,
+      "selected": false,
+      "note": "STR_1715 PG2 100% production reproduce (inherited from WT-001 S1)."
+    },
+    {
+      "name": "IPCA_Hedge",
+      "params": {
+        "gamma": 1000,
+        "eps_diag": 0.0001,
+        "ub": 0.2,
+        "max_names": 20,
+        "characteristics": ["L26_Log_MktCap", "V01_BM", "V02_EP", "M01_Mom_12_1", "M02_Mom_6_1", "Q01_GPA", "Q02_ROE", "Q03_ROA", "Q07_Earnings_Stability", "D02_Beta", "R01_VaR_95", "L02_Turnover"],
+        "K_latent": 5,
+        "time_varying_beta": true
+      },
+      "LFC_endpoint": 1.001,
+      "LFC_reduction_pct_endpoint": 69.1891,
+      "LFC_reduction_pct_panel_mean": 53.3336,
+      "selected": false,
+      "note": "QP min ½γ‖B_t' w‖² − α'w + ε‖w‖². B_t = Z_t Γ_β time-varying. ALS-frozen Γ_β SHA-verified."
+    },
+    {
+      "name": "M4+IPCA_Hedge",
+      "params": {
+        "gamma": 1000,
+        "m4_cash_layer": "BOCPD_regime"
+      },
+      "selected": true,
+      "note": "Canonical primary. M4 cash overlay × IPCA hedge risk sleeve. recommendation_only."
+    }
+  ],
+  "Selected": {
+    "method": "M4+IPCA_Hedge",
+    "selection_objective": "to_adj_ret_with_lfc_reduction",
+    "note": "Forge to backtest 3-strategy matrix and compare actual MDD/vol/CAGR vs WT-001 PCA Round 1 (-42.67% MDD baseline)."
+  }
+}

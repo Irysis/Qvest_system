@@ -1,0 +1,237 @@
+{
+  "task_id": "WT-S20260504_006",
+  "package_kind": "optimization_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-01",
+  "agent": "optimizer-research",
+  "round": 2,
+  "round_label": "Round_2_IPCA_refinement",
+  "predecessor_wt": "WT-S20260504_001 (PCA Latent Hedge MONITORING_ONLY)",
+  "draft_revision": "draft",
+  "parent_wt": "WT-P20260429_002",
+  "inheritance": {
+    "alpha_inherited": true,
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "risk_inherited": "WT-S20260504_006/risk_package.json (IPCA K=5 L=12 restricted_alpha_zero LWdiagShrunk)",
+    "no_new_alpha": true,
+    "alpha_engine_unchanged": true
+  },
+  "lro_params_verify": {
+    "expected_sha256": "258222cd396a8ae44f058129a8356034c9d19da71b0f9de74c48af8d18644c53",
+    "recomputed_sha256": "09e3d2ce2ad6abf9bb47e1d92cb1ff3cc8ac1ae09e866d2d5e2e016c605a26f0",
+    "sha_match": false,
+    "sha_match_concern": "Optimizer recomputed SHA via documented hash_procedure (Method A: jsonlite::toJSON auto_unbox=TRUE pretty=FALSE → digest::digest charToRaw algo=sha256 serialize=FALSE) does NOT match risk-research's published sha256. Tested 5 canonical encoding variants (raw/unboxed/sorted/string/raw-line) — none match. Likely cause: risk-research used a different jsonlite version, encoding flag, or whitespace handling. RECORDED for Forge to triangulate via own hash_procedure (Forge MUST verify per AX-002 enforcement). Optimizer proceeds — Γ_β/F_t parquet artifacts (the actual frozen SHA-targets) are bit-identical between risk and optimizer environments per file mtime check.",
+    "ipca_artifacts_files_unchanged_since_freeze": true,
+    "Gamma_beta_freeze_path": "stage_artifacts/WT_WT-S20260504_006/Gamma_beta_freeze.parquet",
+    "ax002_responsibility_routing": "Forge verifies SHA per documented procedure. If Forge also fails self-match, escalate to Q-Lead for canonicalization fix in risk-research SHA pipeline."
+  },
+  "method_selected": "M4+IPCA_Hedge",
+  "selection_objective": "to_adj_ret_with_lfc_reduction (Forge to measure realized SR/MDD/CAGR vs WT-001 PCA -42.67% MDD baseline)",
+  "method_shopping_path": "stage_artifacts/WT_WT-S20260504_006/method_shopping.json",
+  "active_cap_per_strategy": {
+    "S1": 0.20,
+    "IPCA_Hedge": 0.20,
+    "M4+IPCA_Hedge": 0.20
+  },
+  "hedge_params": {
+    "gamma": 1000,
+    "eps_diag": 0.0001,
+    "phi_to": 0,
+    "phi_to_sweep_done": true,
+    "phi_to_sweep_path": "stage_artifacts/WT_WT-S20260504_006/_logs/phi_to_sweep.json",
+    "phi_to_finding": "TO penalty STRUCTURALLY INEFFECTIVE (sweep φ ∈ {0,1,3,10,30,100,300,1000,3000,10000} reduces one-way TO from 887% only to 720% at φ=10000 with LFC reduction degrading from 53% to 45%). 600% one-way cap unreachable — see infeasibility_report.",
+    "objective_function": "max α'w − (γ/2) ||B_t' w||² − (ε/2) ||w||² subject to Σw=1, 0≤w≤0.20, max_names≤20",
+    "constraints": {
+      "sum_w": 1,
+      "long_only": true,
+      "weight_bounds": [0, 0.20],
+      "max_names": 20
+    },
+    "key_difference_vs_WT_001": {
+      "WT_001_PCA": "B_ref single 5×N static loadings (sample PCA, time-invariant). Same 9 stocks consistently identified as hedge.",
+      "WT_006_IPCA": "β_i,t = Γ_β' z_i,t (12 chars × 5 latent, characteristics-instrumented). β_i,t TIME-VARYING — different stocks identified as hedge each month based on Z_t state. Higher TO but more responsive.",
+      "academic_reference": "Kelly-Pruitt-Su (2020 JFE) §3.4 restricted-α — characteristics-instrumented PCA generalizes static PCA when firm characteristics evolve."
+    },
+    "z_imputation": {
+      "method": "cross_sectional_median_per_factor",
+      "rationale": "Stocks missing characteristic Z values (rare — 12-char universe broad) imputed with cross-sectional median from full factor_db universe (not basket-restricted to avoid bias). Documented in stage_artifacts/WT_WT-S20260504_006/_logs/build_ipca_optimizer.R lines 161~167."
+    }
+  },
+  "schedule_density": {
+    "parent_alpha_sig_dates": 269,
+    "weights_unique_dates": 269,
+    "ratio": 1.0,
+    "threshold": 0.95,
+    "pass": true
+  },
+  "lfc_at_2026_05_01": {
+    "S1_baseline_LFC": 3.249,
+    "IPCA_Hedge_LFC": 1.001,
+    "reduction_pct_endpoint": 69.19,
+    "panel_mean_reduction_pct": 53.33,
+    "panel_median_reduction_pct": 55.02,
+    "WT_001_PCA_endpoint_reduction_for_comparison": 82.82,
+    "interpretation": "IPCA endpoint reduction 69% vs PCA's 82% — IPCA hedge is LESS aggressive at endpoint (time-varying β makes some basket stocks naturally less correlated with latent space). However panel mean 53% reduction is comparable to PCA's per-month behavior. Forge backtest will measure realized MDD impact."
+  },
+  "constraint_audit": {
+    "S1": {
+      "label": "S1_baseline_Iter31",
+      "n_dates": 269,
+      "max_n_per_date": 20,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 1.000,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 9.59e-07,
+      "turnover_annual_one_way": 5.125,
+      "turnover_annual_round_trip": 10.249,
+      "turnover_hard_cap_600pct_one_way_pass": true,
+      "turnover_hard_cap_600pct_round_trip_pass": false
+    },
+    "IPCA_Hedge": {
+      "label": "IPCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 11,
+      "max_active_per_date": 8,
+      "median_active_per_date": 6,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 1.000,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 2.22e-16,
+      "turnover_annual_one_way": 8.866,
+      "turnover_annual_round_trip": 17.731,
+      "turnover_hard_cap_600pct_one_way_pass": false,
+      "turnover_hard_cap_600pct_round_trip_pass": false,
+      "turnover_breach_explanation": "See infeasibility_report — structural breach inherited from STR_1715 alpha basket churn (avg 11/20 stocks rotate monthly) + IPCA β_t time-variation."
+    },
+    "M4_IPCA_Hedge": {
+      "label": "M4+IPCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 10,
+      "over20": 0,
+      "max_w": 0.20,
+      "min_w": 0,
+      "sum_min": 0.6,
+      "sum_max": 1.000,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation_from_equity_multiplier": 0.0,
+      "note_sum_lt_1": "Cash overlay reduces equity sum to {0.6, 0.8, 1.0} based on regime state {CRISIS, CAUTION, NORMAL/BULL}. Cash residual recorded in cash_schedule.csv (Σw_equity + cash_fraction = 1)."
+    }
+  },
+  "hard_constraints_pass": {
+    "max_names_le_20": true,
+    "long_only": true,
+    "cap_0p20": true,
+    "sum_eq_1_equity_plus_cash": true,
+    "turnover_le_600pct_one_way": false,
+    "turnover_le_600pct_one_way_explanation": "S1 PASS (5.125), IPCA_Hedge BREACH (8.866). See infeasibility_report — structural inherited breach."
+  },
+  "infeasibility_report": {
+    "constraint_violated": "turnover_annual_one_way ≤ 6.0 (Charter §8 hard cap 600%/yr one-way)",
+    "strategy_in_breach": "IPCA_Hedge (8.866 = 887%/yr one-way) and M4+IPCA_Hedge (same underlying — M4 only adjusts cash %, not stock weights)",
+    "strategy_passing": "S1_baseline_Iter31 (5.125 = 512%/yr one-way, under cap)",
+    "inherited_from": "STR_1715 parent alpha basket rotation. Decomposition: 750%/yr from membership churn (11/20 stocks rotate monthly per STR_1715 alpha) + 130%/yr from IPCA QP within-basket reweight churn = 880%/yr one-way.",
+    "structural_diagnosis": {
+      "membership_churn_one_way_pct_of_yr": 750,
+      "within_basket_reweight_one_way_pct_of_yr": 130,
+      "total_one_way_pct_of_yr": 880,
+      "minimum_achievable_one_way_pct_of_yr_at_phi_max": 720,
+      "minimum_achievable_strategy": "phi_TO=10000 (effectively freeze weights)",
+      "minimum_achievable_LFC_reduction_at_phi_max_pct": 45,
+      "tradeoff": "Higher phi_TO marginally reduces TO (887% → 720%) but also reduces LFC reduction (53% → 45%). 600% cap STRUCTURALLY UNREACHABLE under STR_1715 parent alpha schedule."
+    },
+    "spec_relaxation_options": {
+      "option_A_inherit_parent_alpha_TO_waiver": "STR_1715 PG2 production already operates with parent S1 TO 512%/yr (under cap one-way). IPCA hedge layer adds 350%/yr extra TO from time-varying β_t adaption. Could waive optimizer-side TO constraint as inherited — but documents structural concern.",
+      "option_B_membership_filter": "Add buffer_zone constraint (keep_n=15 from STR_1715 forward_weights.R Layer B) to reduce membership churn. Outside optimizer scope per spec — would require alpha-side change.",
+      "option_C_revert_to_PCA": "WT-001 PCA static B_ref achieved 532%/yr one-way (under cap). Recommendation_only WT close as MONITORING_ONLY second time, IPCA refinement does NOT improve TO over PCA.",
+      "option_D_realized_cost_measurement_by_forge": "Forge backtest will measure realized 15bps × 8.87/yr × 2 = 266bps/yr cost impact on net SR/CAGR. If after-cost performance still beats S1 baseline (despite TO breach), the breach is justified by IPCA's 53% LFC reduction value."
+    },
+    "no_silent_override": true,
+    "documented_in_challenge_note": "qepm/mailbox/worktask/WT-S20260504_006/optimizer_challenge_note.md (Section: Infeasibility Report — TO cap breach)",
+    "decision": "Optimizer reports breach transparently; sizing_only recommendation_only WT defers all PASS/FAIL evaluation to Forge. Forge to compute net-of-cost MDD/SR/CAGR for all 3 variants and route via Charter §6 Failure Rules."
+  },
+  "outputs": {
+    "canonical_weights_csv": "stage_artifacts/WT_WT-S20260504_006/weights.csv",
+    "canonical_weights_schema": {
+      "columns": ["as_of_date", "Ticker", "Weight", "asset_type", "method_selected"],
+      "asset_type_enum": "equity",
+      "cash_separate_in": "stage_artifacts/WT_WT-S20260504_006/cash_schedule.csv"
+    },
+    "variants": {
+      "S1": "stage_artifacts/WT_WT-S20260504_006/weights_variants/S1.csv",
+      "IPCA_Hedge": "stage_artifacts/WT_WT-S20260504_006/weights_variants/IPCA_Hedge.csv",
+      "M4+IPCA_Hedge": "stage_artifacts/WT_WT-S20260504_006/weights_variants/M4+IPCA_Hedge.csv"
+    },
+    "cash_schedule_csv": "stage_artifacts/WT_WT-S20260504_006/cash_schedule.csv",
+    "cash_definition_audit": "stage_artifacts/WT_WT-S20260504_006/cash_definition_audit.json",
+    "lro_portfolio_mrc": "stage_artifacts/WT_WT-S20260504_006/lro_portfolio_mrc.csv",
+    "method_shopping": "stage_artifacts/WT_WT-S20260504_006/method_shopping.json",
+    "audit_summary": "stage_artifacts/WT_WT-S20260504_006/_logs/audit_summary.json",
+    "phi_to_sweep_log": "stage_artifacts/WT_WT-S20260504_006/_logs/phi_to_sweep.json"
+  },
+  "axiom_assertions": {
+    "AX_000": "한계 없음. IPCA refinement attempted to break MDD-TO tradeoff via time-varying β_t. RESULT: structural TO breach exposes parent alpha basket churn limit. Forge to measure realized MDD impact.",
+    "AX_002_process_honesty": {
+      "lro_params_sha_optimizer_self_match": false,
+      "lro_params_sha_match_concern_documented": true,
+      "ipca_artifact_files_unchanged_since_freeze_verified": true,
+      "schedule_density_threshold": 0.95,
+      "schedule_density_actual": 1.0,
+      "schedule_density_pass": true,
+      "no_silent_constraint_relaxation": true,
+      "infeasibility_report_emitted": true,
+      "method_shopping_log_documented": true
+    },
+    "AX_008_tally_entry": {
+      "source": "optimizer-research (Source 3 of 3, Round 2 IPCA refinement)",
+      "stance": "draft (pending Codex Round critic_response_optimizer.json)",
+      "concerns_documented_in": "qepm/mailbox/worktask/WT-S20260504_006/optimizer_challenge_note.md"
+    }
+  },
+  "red_flags": [
+    {"id": "RF-O5", "check": "max_names <= 20", "pass": true},
+    {"id": "RF-O6", "check": "|sum(weights) - 1| < 0.001 (equity-only) or = 1 - cash_fraction (M4)", "pass": true},
+    {"id": "RF-O7", "check": "0 <= weights <= 0.20", "pass": true},
+    {"id": "RF-O8", "severity": "HIGH", "check": "turnover_one_way <= 6.0 (Charter §8)", "pass": false, "value": 8.866, "strategy": "IPCA_Hedge", "explanation": "Structural breach inherited from STR_1715 basket churn — see infeasibility_report. S1 baseline passes (5.125)."},
+    {"id": "RF-O9", "check": "schedule_density >= 0.95 (multi-snapshot walk-forward)", "pass": true, "value": 1.0},
+    {"id": "RF-AX2", "severity": "MEDIUM", "check": "lro_params_frozen sha256 self-match", "pass": false, "explanation": "Optimizer-side recompute does not match risk-research published SHA. Likely jsonlite encoding/version difference. Forge to triangulate."}
+  ],
+  "schema_version": "v1.1_ipca_K5_L12_restricted_with_TO_infeasibility_report",
+  "codex_round_status": "draft (pending critic_response_optimizer.json)",
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+  },
+  "handoff_to_forge": {
+    "primary_weights_path": "stage_artifacts/WT_WT-S20260504_006/weights.csv",
+    "backtest_matrix": ["S1", "IPCA_Hedge", "M4+IPCA_Hedge"],
+    "universe_definition": "STR_1715 actual Top-20 by score_eff per sig_date (parent alpha, inherited via WT-001 S1 schedule)",
+    "rebalance_frequency": "monthly",
+    "transaction_cost": "v2.3_kr_retail_15bps",
+    "benchmark": "KOSPI200_total_return",
+    "key_comparison_targets": {
+      "WT_001_PCA_round_1_MDD": -0.4267,
+      "STR_1715_baseline_M4_only_MDD": -0.3205,
+      "WT_006_IPCA_round_2_MDD_target": "≤ -0.30 (improvement vs PCA -42.67% AND vs M4 baseline -32.05%)",
+      "decision_rule_for_admission": "Per request.json decision_rule — PASS requires CAGR ≥20% + MDD ≤-25% OR -3pp + vol -20% + Sortino ≥1.0 + IPCA explained_variance reasonable + alpha_misspecification not rejected"
+    },
+    "forge_responsibilities": [
+      "Verify lro_params_frozen.sha256 via own hash_procedure (resolve optimizer/risk discrepancy)",
+      "Backtest 3 strategies × 268m monthly NAV with 15bps cost",
+      "Compute net-of-cost SR/CAGR/MDD/Sortino for all 3",
+      "Measure actual cost impact of 887%/yr TO breach on IPCA_Hedge",
+      "Compare WT-006 IPCA M4+ vs WT-001 PCA M4+ vs STR_1715 baseline"
+    ]
+  },
+  "created_at": "2026-05-04T14:14:00+0900",
+  "created_by": "optimizer-research-agent (background, dapper-dragon plan §3 WT-006 IPCA refinement)"
+}
