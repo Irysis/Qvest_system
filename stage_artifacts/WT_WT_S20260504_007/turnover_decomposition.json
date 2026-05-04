@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-S20260504_007",
+  "method": "Sleeve-level β_t variation TO",
+  "formula": "TO_overlay,t = |β_t - β_{t-1}| × Σ|w_STR1715| = |Δβ_t| × 1 (since Σw_STR1715=1)",
+  "per_variant": {
+    "linear_band": {
+      "n_obs": 267,
+      "mean_abs_delta_beta": 0.0654,
+      "median_abs_delta_beta": 0.0051,
+      "sum_abs_delta_beta": 17.4626,
+      "annualized_sleeve_to_one_way": 0.7848,
+      "annualized_sleeve_to_round_trip": 1.5697,
+      "n_zero_change": 129,
+      "n_max_change": 0,
+      "note": "Sleeve-level TO from β_t variation. STR_1715 base intra-sleeve TO is INHERITED unchanged (overlay does not modify ranking). Total TO = base STR_1715 TO + overlay sleeve TO. Forge backtest replicates."
+    },
+    "threshold_step": {
+      "n_obs": 267,
+      "mean_abs_delta_beta": 0.0371,
+      "median_abs_delta_beta": 0,
+      "sum_abs_delta_beta": 9.9,
+      "annualized_sleeve_to_one_way": 0.4449,
+      "annualized_sleeve_to_round_trip": 0.8899,
+      "n_zero_change": 236,
+      "n_max_change": 0,
+      "note": "Sleeve-level TO from β_t variation. STR_1715 base intra-sleeve TO is INHERITED unchanged (overlay does not modify ranking). Total TO = base STR_1715 TO + overlay sleeve TO. Forge backtest replicates."
+    },
+    "sigmoid_smooth": {
+      "n_obs": 267,
+      "mean_abs_delta_beta": 0.0493,
+      "median_abs_delta_beta": 0.0208,
+      "sum_abs_delta_beta": 13.161,
+      "annualized_sleeve_to_one_way": 0.5915,
+      "annualized_sleeve_to_round_trip": 1.183,
+      "n_zero_change": 4,
+      "n_max_change": 0,
+      "note": "Sleeve-level TO from β_t variation. STR_1715 base intra-sleeve TO is INHERITED unchanged (overlay does not modify ranking). Total TO = base STR_1715 TO + overlay sleeve TO. Forge backtest replicates."
+    }
+  },
+  "str1715_base_to_inherited": {
+    "note": "STR_1715 base TO unchanged by overlay. Forge will compute total realized TO = base + sleeve overlay.",
+    "base_intra_sleeve_to_pct_annualized": "INHERITED_UNCHANGED",
+    "source": "STR_1715 06_metrics.csv table.AnnualizedReturns(Turnover) within run_all.R bt_result"
+  },
+  "total_to_estimate": "Forge run_all.R total = base STR_1715 TO (~750%/yr historical Iter31) + overlay sleeve TO above (annualized round-trip)",
+  "ax002_round_trip_formula": "annualized_sleeve_to_round_trip = mean(|Δβ|) × 12 × 2  [×12 monthly + ×2 round-trip]; NOT ×12 alone (Iter 3 violation pattern)"
+}

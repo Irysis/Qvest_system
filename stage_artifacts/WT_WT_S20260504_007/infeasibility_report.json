@@ -1,0 +1,12 @@
+{
+  "task_id": "WT-S20260504_007",
+  "status": "NONE",
+  "reason": "Pure scalar overlay 0 ≤ β_t ≤ 1 always feasible. Σw_final = β · 1 + (1-β) · 1 = 1 (cash residual). All bounds [0, 0.20] satisfied: max(w_STR1715) = 0.20 × β ≤ 0.20. Long-only preserved (β ≥ 0). max_names ≤ 20 (snapshot 18 active + CASH). No constraint binding except (a) hard sum=1 trivially via cash, (b) hard long-only trivially via β≥0, (c) bounds top trivially via β≤1.",
+  "ax_007_exempt": "Selection mechanism unchanged (top20_long_only structure preserved). overlay does not change selection.",
+  "hard_constraints_check": {
+    "max_names": "PASS (18 stocks + CASH ≤ 20)",
+    "long_only": "PASS (β ≥ 0 ⇒ all w ≥ 0)",
+    "weight_bounds_top": "PASS (max_w = 0.20 × β ≤ 0.20; equality at β=1)",
+    "weight_sum": "PASS (β + (1-β) = 1 by construction)"
+  }
+}
