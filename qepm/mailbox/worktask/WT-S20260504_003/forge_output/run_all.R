@@ -158,6 +158,9 @@ run_strategy <- function(weights_csv_path, strategy_name, run_id) {
 
   ret_eff_net <- w$w_str * ret_str_aligned - cost_seq
   ret_eff_gross <- w$w_str * ret_str_gross_aligned  # gross excludes our overlay cost
+  ## cost_ret = ret_gross - ret_net (Backtest Contract v1.0 Check 12 invariant)
+  ## breakdown: STR_1715 internal cost (proportional to w_str) + sleeve-overlay cost
+  cost_ret_full <- ret_eff_gross - ret_eff_net
 
   # Build period_returns table directly (frequency=monthly)
   pr_dt <- data.table(
@@ -170,7 +173,7 @@ run_strategy <- function(weights_csv_path, strategy_name, run_id) {
     risk_free_ret = 0,
     excess_ret_net = ret_eff_net,
     turnover = delta_w,  # sleeve-level weight transition magnitude (signal turnover)
-    cost_ret = cost_seq,
+    cost_ret = cost_ret_full,
     cash_weight = w$w_cash,
     leverage = 1,
     n_holdings = 20L  # STR_1715 internal top20 inherited
@@ -643,18 +646,31 @@ slice_summary <- list(
 
 ## (b) HMM regime-state forward vol (Crisis vs Normal vol ratio per state)
 ## Match exec_dates with HMM walkforward predicted state
-hmm_match <- hmm_wf[, .(date = as.Date(date), state = most_likely_predicted, scale = scale_predicted)]
+## NOTE: weights signal_dates (1st of month) vs str_ret exec_dates (next-month execution).
+## hmm_wf$date is signal_date convention. Map: hmm_wf row i ↔ str_ret row i+1.
+hmm_match <- hmm_wf[, .(signal_date = as.Date(date),
+                         regime_state = most_likely_predicted,
+                         scale = scale_predicted)]
+## Build a date-shifted join key: each hmm row aligns with NEXT month's exec_date
+hmm_match[, exec_date := str_ret$date[match(signal_date, c(NA, head(str_ret$date, -1)))]]
+## Simpler: weights w$signal_date[i] applies to str_ret$date[i+1].
+## We set exec_date_i = str_ret$date[match(signal_date_i, weights$signal_date) + 1]
+## but easier: just shift hmm_match by 1 row to align with exec_dates.
+setorder(hmm_match, signal_date)
+hmm_match[, exec_date := c(tail(str_ret$date, -1), NA)[match(signal_date, head(str_ret$date, -1))]]
+## Clean fallback if NA: use signal_date as approx
+hmm_match[is.na(exec_date), exec_date := signal_date]
 regime_perf <- list()
 for (sname in c("S1", "HMM_Scale", "M4+HMM_Scale")) {
   bt <- switch(sname, "S1" = bt_S1, "HMM_Scale" = bt_HMM, "M4+HMM_Scale" = bt_M4HMM)
   pr <- bt$period_returns[, .(date, ret_net)]
-  joined <- merge(pr, hmm_match, by = "date", all.x = TRUE)
-  for (state in c("Normal", "Caution", "Crisis")) {
-    sub <- joined[state == ..state & !is.na(ret_net)]
+  joined <- merge(pr, hmm_match[, .(date = exec_date, regime_state)], by = "date", all.x = TRUE)
+  for (st in c("Normal", "Caution", "Crisis")) {
+    sub <- joined[regime_state == st & !is.na(ret_net)]
     if (nrow(sub) >= 6) {
       regime_perf[[length(regime_perf) + 1]] <- data.table(
         strategy = sname,
-        regime = state,
+        regime = st,
         n_obs = nrow(sub),
         mean_ret = mean(sub$ret_net),
         vol_ann = sd(sub$ret_net) * sqrt(12),

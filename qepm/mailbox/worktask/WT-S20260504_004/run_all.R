@@ -216,13 +216,15 @@ fwrite(returns_long, file.path(OUTDIR, "lro_backtest_returns.csv"))
 # ───────────────────────────────────────────────────────────────────────────
 # 5. Vol regime stratification (forward analysis)
 # ───────────────────────────────────────────────────────────────────────────
-# Stratify by RMT vol scale (lro_params_frozen, statistical regime):
-#   HIGH_VOL: scale < 0.75 (cash bridge > 25%) — RMT signal de-risk
-#   MID_VOL : 0.75 <= scale < 0.95
-#   LOW_VOL : scale >= 0.95 (essentially full risk)
-ovl[, rmt_scale := w_rmt_str]   # RMT pure scale
-ovl[, vol_regime := fifelse(rmt_scale < 0.75, "HIGH_VOL",
-                       fifelse(rmt_scale < 0.95, "MID_VOL", "LOW_VOL"))]
+# Stratify by combined sleeve allocation (M4+RMT canonical regime view):
+#   HIGH_RISKOFF: weight_str1715 < 0.85 (cash > 15%) — high de-risk months (M4 or RMT)
+#   MID_RISKOFF : 0.85 <= weight_str1715 < 0.98 (mild de-risk)
+#   FULL_RISK   : weight_str1715 >= 0.98 (essentially no de-risk)
+# Note: vol_scale_path.csv ∈ [0.7589, 1.0] (RMT only); M4 schedule cash up to ~0.30 (parent).
+# Combined w_combo_str captures both. Use as canonical stratifier.
+ovl[, rmt_scale := w_rmt_str]
+ovl[, vol_regime := fifelse(w_combo_str < 0.85, "HIGH_RISKOFF",
+                       fifelse(w_combo_str < 0.98, "MID_RISKOFF", "FULL_RISK"))]
 regime_table <- ovl[, .(
   n_obs = .N,
   S1_cum_ret      = prod(1 + ret_S1) - 1,
