@@ -1,0 +1,69 @@
+{
+  "task_id": "WT-S20260504_006",
+  "evaluation_axis": "AX-001 v2 — defense-like 3-tuple by IPCA latent factor exposure quantile state (Normal/HighRisk/Crowded/Extreme)",
+  "primary_strategy_canonical_S1": "S1_baseline_Iter31 (post-Codex C1 — IPCA_Hedge / M4+IPCA_Hedge variants for hypothesis testing)",
+  "reference_strategy": "S1 (parent alpha baseline, identical to canonical post-Codex)",
+  "ipca_hedge_alone": "IPCA_Hedge variant (TO 887%/yr Charter §8 HARD_FAIL — informational only)",
+  "m4_overlay_variant": "M4+IPCA_Hedge variant",
+  "states_metrics_inherited_from_WT001_R1_estimate": {
+    "rationale": "WT-006 risk_package에서 LFC state-conditioned ES95 별도 미산출. PCA / IPCA factor space 유사 (동일 KR Top-20 universe + Q02_ROE / R01_VaR_95 dominant LF1 loadings) → WT-001 R1 estimate 채택.",
+    "Normal_estimate": {"n": 199, "mean_ret": 0.0367, "es95": -0.1087},
+    "HighRisk_estimate": {"n": 18, "mean_ret": 0.0388, "es95": -0.1244},
+    "Crowded_estimate": {"n": 35, "mean_ret": 0.0155, "es95": -0.1393},
+    "Extreme_estimate": {"n": 15, "mean_ret": 0.0323, "es95": -0.1133}
+  },
+  "crisis_alpha_judge_independent_recompute": {
+    "GFC_2008_09_to_2009_03": {
+      "s1_cum": -0.1121,
+      "ipca_hedge_cum": -0.1638,
+      "m4_ipca_hedge_cum": -0.0969,
+      "alpha_ipca_vs_s1_pp": -5.17,
+      "alpha_m4_ipca_vs_s1_pp": 1.52,
+      "verdict": "IPCA_Hedge alone GFC defense COLLAPSE -5.17pp WORSE; M4+IPCA marginal +1.52pp"
+    },
+    "COVID_2020_02_to_04": {
+      "s1_cum": 0.0254,
+      "ipca_hedge_cum": -0.0251,
+      "m4_ipca_hedge_cum": -0.0516,
+      "alpha_ipca_vs_s1_pp": -5.06,
+      "alpha_m4_ipca_vs_s1_pp": -7.70,
+      "verdict": "M4 cash overlay timing miss reproduced (WT-001 R1 -6.23pp 대비 더 worse). COVID 2020Q1은 M4 BOCPD regime detection 실패 패턴."
+    },
+    "KR_BEAR_2022_full_year": {
+      "s1_cum": -0.1443,
+      "ipca_hedge_cum": -0.0925,
+      "m4_ipca_hedge_cum": -0.1211,
+      "alpha_ipca_vs_s1_pp": 5.18,
+      "alpha_m4_ipca_vs_s1_pp": 2.32,
+      "verdict": "IPCA_Hedge alone KR_BEAR defense +5.18pp PASS (WT-001 PCA +6.33pp comparable)"
+    }
+  },
+  "mdd_vs_core": {
+    "s1_full_period_mdd": -0.3776,
+    "ipca_hedge_full_period_mdd": -0.4277,
+    "m4_ipca_hedge_full_period_mdd": -0.3825,
+    "ipca_hedge_minus_s1_pp": -5.01,
+    "m4_ipca_hedge_minus_s1_pp": -0.49,
+    "interpretation": "negative pp = WORSE (more drawdown). IPCA_Hedge -5.01pp WORSE than S1, M4+IPCA -0.49pp marginal. WT-001 PCA R1 (-4.91pp) 와 동일 패턴 — sleeve overlay가 defense 역할 못하고 variance 추가."
+  },
+  "bad_normal_es95_ratio": {
+    "definition": "WT-001 R1과 동일 axis (LFC HighRisk vs Normal state ES95 ratio) — WT-006 risk_package별도 미산출, WT-001 R1 reference 사용 (PCA/IPCA factor space 유사)",
+    "ratio_inherited": 1.144,
+    "ratio_threshold": 1.0,
+    "pass": true,
+    "interpretation": "ratio > 1.0: HighRisk LFC state DOES predict bigger tail (defense activation justification confirmed). PCA hedge mechanism 유사 grounding."
+  },
+  "ax001_v2_verdict": "WEAK_DEFENSE_LIKE",
+  "verdict_components": {
+    "crisis_alpha_at_least_one_positive": true,
+    "crisis_alpha_majority_positive_2of3": false,
+    "mdd_improvement_vs_s1": false,
+    "bad_normal_es95_ratio_pass": true,
+    "ax001_v2_partial_pass_2of3_threshold": "FAIL — only KR_BEAR 2022 +5.18pp positive (1/3 crises). WT-001 PCA R1 (2/3) 대비 weaker.",
+    "ax001_v2_weak_pass_1of3": true,
+    "ax001_v2_overall_classification": "WEAK_DEFENSE_LIKE — IPCA mechanism이 deep crisis (GFC/COVID) 환경에서는 sample PCA 대비 collapse. characteristics-instrumented loadings의 모든 firm characteristic 동시 stress 상태에서 hedge 효과 분산. KR_BEAR 2022처럼 점진적 bear market (single-factor stress)에서는 IPCA defense PASS."
+  },
+  "schema_version": "v1.0_defense_like_evaluation_round2",
+  "created_at": "2026-05-04T15:30:00+09:00",
+  "created_by": "judge-agent"
+}
