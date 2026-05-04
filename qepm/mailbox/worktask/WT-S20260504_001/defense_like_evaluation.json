@@ -1,41 +1,67 @@
 {
   "task_id": "WT-S20260504_001",
-  "evaluation_axis": "AX-001 v2 — defense-like 3-tuple by latent factor exposure quantile state",
+  "evaluation_axis": "AX-001 v2 — defense-like 3-tuple by universe LFC state (Normal/HighRisk/Crowded/Extreme)",
   "primary_strategy": "M4+PCA_Hedge",
   "reference_strategy": "S1 (parent alpha baseline)",
-  "state_definitions": "LFC tercile (high/normal/low LFC quantile state)",
+  "pca_hedge_alone": "PCA_Hedge",
   "states_metrics": {
-    "HighRisk_LFC": {
-      "n": [],
-      "mean_ret": [],
-      "es95": [],
-      "worst": []
-    },
     "Normal": {
-      "n": [],
-      "mean_ret": [],
-      "es95": [],
-      "worst": []
+      "n": 199,
+      "mean_ret": 0.0367,
+      "es95": -0.1087,
+      "worst": -0.1296
     },
-    "Low": {
-      "n": [],
-      "mean_ret": [],
-      "es95": [],
-      "worst": []
+    "HighRisk": {
+      "n": 18,
+      "mean_ret": 0.0388,
+      "es95": -0.1244,
+      "worst": -0.1244
+    },
+    "Crowded": {
+      "n": 35,
+      "mean_ret": 0.0155,
+      "es95": -0.1393,
+      "worst": -0.1434
+    },
+    "Extreme": {
+      "n": 15,
+      "mean_ret": 0.0323,
+      "es95": -0.1133,
+      "worst": -0.1133
     }
   },
-  "crisis_alpha_GFC": {
-    "period": "2008-09 ~ 2009-03",
-    "m4_pca_cum_ret": -0.0708,
-    "s1_cum_ret": -0.1371,
-    "crisis_alpha": 0.0664
+  "crisis_alpha": {
+    "GFC_2008_2009": {
+      "s1_cum": -0.1371,
+      "pca_cum": -0.0469,
+      "m4_pca_cum": -0.0708,
+      "alpha_m4_vs_s1": 0.0664,
+      "alpha_pca_vs_s1": 0.0902
+    },
+    "COVID_2020Q1": {
+      "s1_cum": -0.0106,
+      "m4_pca_cum": -0.0729,
+      "alpha": -0.0623
+    },
+    "KR_BEAR_2022": {
+      "s1_cum": -0.1692,
+      "m4_pca_cum": -0.1059,
+      "alpha": 0.0633
+    }
   },
   "mdd_vs_core": {
-    "m4_pca_mdd": -0.4267,
     "s1_mdd": -0.3776,
-    "mdd_improvement_pp": -0.0491,
-    "interpretation": "M4+PCA BETTER MDD"
+    "pca_hedge_mdd": -0.4419,
+    "m4_pca_mdd": -0.4267,
+    "m4_pca_minus_s1_pp": -0.0491,
+    "pca_minus_s1_pp": -0.0643,
+    "interpretation": "negative pp = better; positive pp = worse than S1 baseline"
   },
-  "bad_normal_es_ratio": [],
-  "ax001_v2_verdict": null
+  "bad_normal_es95_ratio": 1.1557,
+  "bad_normal_es95_interpretation": "ratio < 1.0 expected: HighRisk LFC state should predict bigger tail (defense activation justified)",
+  "ax001_v2_verdict": "PARTIAL_DEFENSE_LIKE",
+  "verdict_components": {
+    "crisis_alpha_at_least_one_positive": true,
+    "mdd_improvement_vs_s1": false
+  }
 }

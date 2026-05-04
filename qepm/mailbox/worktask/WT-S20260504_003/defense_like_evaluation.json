@@ -1,0 +1,139 @@
+{
+  "task_id": "WT-S20260504_003",
+  "as_of_date": "2026-05-04",
+  "agent": "judge",
+  "axiom": "AX-001 v2 (defense conditional metric)",
+  "framework": "3-tuple per defense-like variant: (1) crisis_alpha across HMM regime states + stress periods; (2) Core MDD pp improvement vs forge_recomputed_M4_baseline; (3) bad/normal realized risk ratio by HMM regime probability state — replacing IC ratio per AX-001 v2 (HMM is statistical regime overlay, not alpha generator)",
+  "core_baseline": {
+    "name": "forge_M4_baseline_recomputed",
+    "cagr": 0.4229,
+    "sharpe": 1.5628,
+    "mdd": -0.3551,
+    "ann_vol": 0.2480,
+    "sortino": 3.3159,
+    "calmar": 1.1907,
+    "annual_turnover": 0.2945,
+    "avg_cash": 0.0333,
+    "rationale": "M4 baseline re-computed by Forge under IDENTICAL measurement basis as HMM-overlay variants — used as PASS gate Core baseline (request.json::primary_objective + plan §3)"
+  },
+  "frozen_reference_l274_NOT_used_as_gate": {
+    "cagr": 0.4378,
+    "sharpe": 1.7477,
+    "mdd": -0.3205,
+    "use": "frozen historical reference (memory carry text 2026-05-02 next_session_task L-274). NOT used as PASS/FAIL gate. Discrepancy with STR_1715 production 06_metrics.csv (Sharpe 1.5234 / CAGR 0.4391 / MDD -0.4169) flagged for Q-Lead reconciliation."
+  },
+  "evaluation": {
+    "HMM_Scale": {
+      "description": "STR_1715 × HMM walk-forward scale_predicted (no M4 cash). Pre-2009-03 default scale=1.0.",
+      "tuple_1_crisis_alpha": {
+        "GFC_2008_cum_ret": -0.1001,
+        "GFC_2008_mdd": -0.3696,
+        "COVID_2020_cum_ret": -0.2500,
+        "COVID_2020_mdd": -0.2500,
+        "Rate_2022_cum_ret": 0.1387,
+        "Rate_2022_mdd": -0.0402,
+        "vs_S1_GFC_pp": -17.50,
+        "vs_M4base_GFC_pp": -16.08,
+        "interpretation": "GFC HMM_Scale cum_ret -10.0% vs S1 +7.5% (-17.5pp degradation) — HMM standalone WORSENED GFC outcome. COVID similar (-25.0% vs S1 -25.1%, no improvement). Rate_2022 modest -1.0pp DD reduction (only positive crisis result).",
+        "axis_verdict": "FAIL"
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": -6.18,
+        "interpretation": "MDD -41.69% vs Core -35.51%; HMM_Scale MDD WORSE by 6.18pp vs Core baseline. FAIL.",
+        "axis_verdict": "FAIL"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_HMM_regime_state_realized_vol": {
+          "Normal_n": 129,
+          "Normal_vol_ann": 0.2204,
+          "Caution_n": 54,
+          "Caution_vol_ann": 0.2127,
+          "Crisis_n": 22,
+          "Crisis_vol_ann": 0.1815,
+          "ratio_Crisis_Normal": 0.823,
+          "ratio_Caution_Normal": 0.965
+        },
+        "by_HMM_regime_state_SR": {
+          "Normal_SR": 1.5175,
+          "Caution_SR": 1.9523,
+          "Crisis_SR": 3.2474
+        },
+        "interpretation": "Crisis-state realized vol REDUCED to 18.15% vs Normal 22.04% (ratio 0.82) — HMM scale-down working at vol axis. Crisis SR 3.25 vs S1 3.22 (negligible delta — HMM only matches S1 Crisis SR). MDD overall remains -41.69% (no MDD reduction). LRI-style predictive value LIMITED (in-sample crisis already low vol).",
+        "axis_verdict": "PARTIAL_PASS (vol reduction working but no MDD or SR amplification)"
+      },
+      "verdict_3_tuple": "FAIL — Tuple 1 GFC degradation -17.5pp + Tuple 2 MDD -6.18pp WORSE + Tuple 3 partial pass insufficient. HMM standalone underperforms Core in 2 of 3 axes."
+    },
+    "M4+HMM_Scale": {
+      "description": "Canonical: w_cash = max(M4_parent_cash, 1 - HMM_walkforward_scale); combined max-cash rule.",
+      "tuple_1_crisis_alpha": {
+        "GFC_2008_cum_ret": 0.0010,
+        "GFC_2008_mdd": -0.2990,
+        "COVID_2020_cum_ret": -0.1914,
+        "COVID_2020_mdd": -0.1914,
+        "Rate_2022_cum_ret": 0.1387,
+        "Rate_2022_mdd": -0.0402,
+        "vs_S1_GFC_pp": -7.40,
+        "vs_M4base_GFC_pp": -6.00,
+        "interpretation": "GFC cum_ret +0.10% vs S1 +7.5% (-7.4pp degradation, but positive vs HMM_Scale alone). GFC MDD -29.90% vs S1 -36.96% improved 7.06pp BUT identical to M4_baseline (M4 already captures GFC floor). COVID MDD -19.14% vs S1 -25.12% improved 5.98pp BUT identical to M4_baseline (-19.16%). Rate_2022 1pp DD reduction vs M4 alone — only crisis where HMM adds independent value.",
+        "axis_verdict": "FAIL_VS_M4 (M4 alone provides equivalent crisis protection in GFC + COVID; HMM marginal improvement only in Rate_2022)"
+      },
+      "tuple_2_mdd_pp_vs_core": {
+        "value_pp": 0.00,
+        "interpretation": "MDD -35.51% vs Core -35.51%. EXACT zero improvement vs M4 alone. FAIL primary objective (request.json: ≤ -25% absolute OR M4 대비 -3pp; neither met).",
+        "axis_verdict": "FAIL"
+      },
+      "tuple_3_bad_normal_realized_risk_ratio": {
+        "by_HMM_regime_state_realized_vol": {
+          "Normal_n": 129,
+          "Normal_vol_ann": 0.2089,
+          "Caution_n": 54,
+          "Caution_vol_ann": 0.2123,
+          "Crisis_n": 22,
+          "Crisis_vol_ann": 0.1811,
+          "ratio_Crisis_Normal": 0.867,
+          "ratio_Caution_Normal": 1.016
+        },
+        "by_HMM_regime_state_SR": {
+          "Normal_SR": 1.5999,
+          "Caution_SR": 1.9442,
+          "Crisis_SR": 3.2472
+        },
+        "vs_M4_baseline": {
+          "M4base_Normal_vol_ann": 0.2109,
+          "M4base_Caution_vol_ann": 0.2580,
+          "M4base_Crisis_vol_ann": 0.2260,
+          "M4base_Crisis_SR": 3.4022,
+          "delta_Crisis_vol_pp": -4.49,
+          "delta_Crisis_SR": -0.155,
+          "delta_Caution_vol_pp": -4.57
+        },
+        "interpretation": "Crisis-state vol -4.49pp reduction vs M4_baseline (HMM adds modest crisis vol shaving). However Crisis SR DROPS -0.155 vs M4_baseline (3.40 → 3.25) — HMM cash drag exceeds vol benefit. Caution-state vol -4.57pp reduction is positive. Normal-state slightly degraded (vol -0.20pp / SR -0.006).",
+        "axis_verdict": "PARTIAL_PASS (vol axis ok, but SR cost exceeds vol benefit at Crisis)"
+      },
+      "verdict_3_tuple": "FAIL — Tuple 2 MDD 0pp delta vs M4 (PRIMARY objective FAIL) + Tuple 1 M4 already captures crisis floor (HMM zero independent value-add in GFC + COVID) + Tuple 3 PARTIAL but insufficient. Combined: HMM overlay adds turnover + cash drag without commensurate risk reduction."
+    }
+  },
+  "summary": {
+    "n_variants_evaluated": 2,
+    "n_variants_3_tuple_PASS": 0,
+    "n_variants_3_tuple_PARTIAL": 0,
+    "n_variants_3_tuple_FAIL": 2,
+    "core_baseline_dominates": true,
+    "core_dominance_axes": [
+      "Tuple 2 MDD (M4_baseline -35.51% identical to M4+HMM canonical, + 6.18pp better than HMM_Scale alone)",
+      "Tuple 1 GFC + COVID (M4 captures crisis floor without HMM)",
+      "CAGR (M4_baseline 42.29% > M4+HMM canonical 38.11% by 4.17pp)",
+      "Sharpe (M4_baseline 1.5628 > M4+HMM canonical 1.5168)",
+      "Sortino (3.3159 vs 3.0855)"
+    ],
+    "core_dominance_axes_negative_for_HMM": [
+      "Crisis-state vol reduction (HMM -4.49pp better than M4 alone — only positive HMM contribution)"
+    ],
+    "ax_001_v2_verdict": "FAIL_DEFENSE_LIKE — Both HMM-overlay variants fail to satisfy AX-001 v2 conditional defense criteria when measured against M4_baseline_recomputed Core. M4 alone already delivers 99% of the crisis protection HMM claims to add.",
+    "recommendation": "Recommend M4_baseline retention (status quo, parent WT-P20260429_002). Do NOT deploy HMM_Scale or M4+HMM_Scale overlay. HMM walk-forward signal predictive value confirmed (Crisis vol identification working) but action mapping (cash overlay) overlaps M4 deterministic schedule and adds turnover drag.",
+    "alignment_with_LRO_Round_1": "Consistent with WT-S20260503_001 verdict pattern — LRO sizing overlay also showed M4_baseline dominance with marginal +0.42pp MDD improvement. HMM Round 2 result: 0pp MDD improvement vs M4. Both confirm: M4 deterministic cash schedule has captured most of the addressable Crisis-state risk; statistical sizing overlays operating on inherited STR_1715 alpha do not substantially reduce MDD beyond M4."
+  },
+  "draft_revision": "v1_judge_round1",
+  "produced_at": "2026-05-04T09:50:00+09:00",
+  "produced_by": "judge agent (auto mode 도훈 명시 자율 진행)"
+}
