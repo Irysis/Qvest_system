@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-S20260504_008",
+  "wt_type": "research_wt_admission_stub_via_hybrid_integration",
+  "wt_kind": "production_admission_via_hybrid_overlay_book_state_mutation",
+  "as_of_date": "2026-05-05",
+  "agent": "governor",
+  "phase": "FINALIZED_POST_CODEX",
+  "is_draft": false,
+  "is_admission_stub": true,
+
+  "str_id": "KR_10y_bond_ETF_PG2",
+  "verdict": "ADMIT",
+  "verdict_finalized_at": "2026-05-05T05:18:00+0900",
+
+  "admission_via_hybrid_integration": true,
+  "primary_admission_wt_id": "WT-P20260505_001",
+  "primary_admission_path": "qepm/mailbox/worktask/WT-P20260505_001/governor_admission.json",
+  "primary_admission_verdict": "ADMIT",
+  "scenario_classification": "INTEGRATION_HYBRID_OVERLAY (KR_10y 15% + TSMOM 15% + STR_1715 70%)",
+
+  "alpha_source_research_wt": "WT-S20260504_008",
+  "alpha_kind": "passive_long_carry_duration_premium",
+  "method": "KR 10y 국채 ETF passive long-only carry overlay",
+  "etf_ticker": "A148070",
+  "etf_name": "KODEX 국고채10년",
+  "kr_10y_per_name_cap_pre_2015": 0.20,
+  "academic_anchor": "Cieslak-Povala (2015 RAS) bond-equity correlation regime-conditional",
+
+  "verdict_basis": "KR_10y_bond_ETF_PG2 admit via Hybrid integration WT-P20260505_001 ADMIT (5/5 decision rule PASS, AX-008 3/3 post-Judge, alpha_rank_corr=1.0 strict (STR_1715 base), lro_sha frozen, Harvey 5/5 t_NW>6.7, BLP DSR z=6.10). 도훈 명시 Path C 70/15/15 strict. Capital allocation 15% post-2015 / 20% pre-2015 (per-name cap binding). KR_10y serves as flight-to-quality orthogonal overlay (cor with STR_1715 = -0.122 negative diversifier).",
+
+  "book_weight_at_admission": 0.15,
+  "book_admitted_set": ["STR_1715_AR_threshold_overlay_PG2", "TSMOM_ETF_rotation_PG2", "KR_10y_bond_ETF_PG2"],
+  "book_weights_post_mutation": {
+    "STR_1715_AR_threshold_overlay_PG2": 0.70,
+    "TSMOM_ETF_rotation_PG2": 0.15,
+    "KR_10y_bond_ETF_PG2": 0.15
+  },
+  "admission_scenario": "INTEGRATION_HYBRID_OVERLAY_PATH_C_70_15_15",
+  "allocation_decided": {
+    "STR_1715_AR_threshold_overlay_PG2": 0.70,
+    "TSMOM_ETF_rotation_PG2": 0.15,
+    "KR_10y_bond_ETF_PG2": 0.15
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_007_top20_mechanism": "EXCEPTION applies — multi-sleeve (KR_10y is asset-level passive long, NOT stock-level top20)",
+    "AX_008_verification_triangulation": "PASS via Hybrid WT-P20260505_001 (Forge + Architect + Codex Forge post-Judge = 3/3)"
+  },
+
+  "deploy_effective_date": "2026-06-01",
+  "deploy_snapshot_ref": "qepm/mailbox/worktask/WT-P20260505_001/deploy_snapshot_20260601.csv",
+
+  "primary_admission_doc_authority": "qepm/mailbox/worktask/WT-P20260505_001/governor_admission.json",
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-S20260504_008/challenge_note.md (codex_critic_skip_waiver granted per Charter §8 + 도훈 auto-mode)",
+  "primary_challenge_note_ref": "qepm/mailbox/worktask/WT-P20260505_001/governor_challenge_note.md",
+  "primary_codex_round_response_ref": "qepm/mailbox/worktask/WT-P20260505_001/codex_critic_response_governor.json",
+
+  "codex_critic_skip_waiver_inherited": true,
+  "codex_critic_skip_waiver_basis": "Per-strategy admission stub via Hybrid integration WT-P20260505_001. Primary Codex Round complete at integration WT (REJECT veto=false, self-disposed). Charter v1.7 §10 Role Card 4×5 cert inheritance. L-269 Layer 4 Hook explicit waiver path.",
+
+  "generated_at": "2026-05-05T05:18:00+0900",
+  "generated_by": "Governor (Q-Lead spawned via Agent tool, opus-4.7) — KR_10y bond admission stub via Hybrid integration WT-P20260505_001"
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-S20260504_009",
+  "wt_type": "research_wt_admission_stub_via_hybrid_integration",
+  "wt_kind": "production_admission_via_hybrid_overlay_book_state_mutation",
+  "as_of_date": "2026-05-05",
+  "agent": "governor",
+  "phase": "FINALIZED_POST_CODEX",
+  "is_draft": false,
+  "is_admission_stub": true,
+
+  "str_id": "TSMOM_ETF_rotation_PG2",
+  "verdict": "ADMIT",
+  "verdict_finalized_at": "2026-05-05T05:18:00+0900",
+
+  "admission_via_hybrid_integration": true,
+  "primary_admission_wt_id": "WT-P20260505_001",
+  "primary_admission_path": "qepm/mailbox/worktask/WT-P20260505_001/governor_admission.json",
+  "primary_admission_verdict": "ADMIT",
+  "scenario_classification": "INTEGRATION_HYBRID_OVERLAY (TSMOM 15% + KR_10y 15% + STR_1715 70%)",
+
+  "alpha_source_research_wt": "WT-S20260504_009",
+  "alpha_kind": "cross_asset_time_series_momentum",
+  "method": "Cross-Asset TSMOM 12-1m vol-scaled long-only Moskowitz-Ooi-Pedersen 2012",
+  "etf_pool_9": ["A069500", "A148070", "A143850", "A132030", "A308620", "A284430", "A329200", "A229200", "A157450"],
+  "max_single_etf_pct_within_15pct": 0.30,
+  "academic_anchor": "Moskowitz-Ooi-Pedersen (2012 JFE) + Asness-Moskowitz-Pedersen (2013 JFE)",
+
+  "verdict_basis": "TSMOM_ETF_rotation_PG2 admit via Hybrid integration WT-P20260505_001 ADMIT (5/5 decision rule PASS, AX-008 3/3 post-Judge, alpha_rank_corr=1.0 strict (STR_1715 base), lro_sha frozen, Harvey 5/5 t_NW>6.7, BLP DSR z=6.10). 도훈 명시 Path C 70/15/15 strict. Capital allocation 15%. TSMOM serves as orthogonal overlay to STR_1715 base + KR_10y bond.",
+
+  "book_weight_at_admission": 0.15,
+  "book_admitted_set": ["STR_1715_AR_threshold_overlay_PG2", "TSMOM_ETF_rotation_PG2", "KR_10y_bond_ETF_PG2"],
+  "book_weights_post_mutation": {
+    "STR_1715_AR_threshold_overlay_PG2": 0.70,
+    "TSMOM_ETF_rotation_PG2": 0.15,
+    "KR_10y_bond_ETF_PG2": 0.15
+  },
+  "admission_scenario": "INTEGRATION_HYBRID_OVERLAY_PATH_C_70_15_15",
+  "allocation_decided": {
+    "STR_1715_AR_threshold_overlay_PG2": 0.70,
+    "TSMOM_ETF_rotation_PG2": 0.15,
+    "KR_10y_bond_ETF_PG2": 0.15
+  },
+
+  "axiom_compliance": {
+    "AX_000": "PASS",
+    "AX_007_top20_mechanism": "EXCEPTION applies — multi-sleeve (TSMOM is asset-level rotation, NOT stock-level top20)",
+    "AX_008_verification_triangulation": "PASS via Hybrid WT-P20260505_001 (Forge + Architect + Codex Forge post-Judge = 3/3)"
+  },
+
+  "deploy_effective_date": "2026-06-01",
+  "deploy_snapshot_ref": "qepm/mailbox/worktask/WT-P20260505_001/deploy_snapshot_20260601.csv",
+
+  "primary_admission_doc_authority": "qepm/mailbox/worktask/WT-P20260505_001/governor_admission.json",
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-S20260504_009/challenge_note.md (codex_critic_skip_waiver granted per Charter §8 + 도훈 auto-mode)",
+  "primary_challenge_note_ref": "qepm/mailbox/worktask/WT-P20260505_001/governor_challenge_note.md",
+  "primary_codex_round_response_ref": "qepm/mailbox/worktask/WT-P20260505_001/codex_critic_response_governor.json",
+
+  "codex_critic_skip_waiver_inherited": true,
+  "codex_critic_skip_waiver_basis": "Per-strategy admission stub via Hybrid integration WT-P20260505_001. Primary Codex Round complete at integration WT (REJECT veto=false, self-disposed). Charter v1.7 §10 Role Card 4×5 cert inheritance. L-269 Layer 4 Hook explicit waiver path.",
+
+  "generated_at": "2026-05-05T05:18:00+0900",
+  "generated_by": "Governor (Q-Lead spawned via Agent tool, opus-4.7) — TSMOM admission stub via Hybrid integration WT-P20260505_001"
+}

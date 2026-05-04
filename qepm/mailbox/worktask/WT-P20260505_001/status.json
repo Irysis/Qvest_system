@@ -1,0 +1,118 @@
+{
+  "task_id": "WT-P20260505_001",
+  "current_phase": "GOVERNOR_ADMITTED",
+  "updated_at": "2026-05-05T05:23:00+09:00",
+  "wt_kind": "production_admission_hybrid_overlay",
+  "wt_type": "promotion_wt",
+  "parent_wt": "WT-P20260504_001",
+  "predecessor_wts": ["WT-S20260504_007", "WT-P20260504_001", "WT-S20260504_008", "WT-S20260504_009"],
+  "admission_decision": "ADMIT",
+  "admission_tier": "PG2_HYBRID_INTEGRATION_3_SOURCE",
+  "scenario_classification": "INTEGRATION_HYBRID_OVERLAY",
+  "primary_strategy": "S3_Hybrid_70_15_15",
+  "user_mandate": "도훈 2026-05-05 Option C — Path C strict 70/15/15",
+  "weight_admitted_book_state": {
+    "STR_1715_AR_threshold_overlay_PG2": 0.70,
+    "TSMOM_ETF_rotation_PG2": 0.15,
+    "KR_10y_bond_ETF_PG2": 0.15
+  },
+  "effective_date": "2026-06-01",
+  "production_book_state_write": true,
+  "book_state_write_count": 1,
+  "governor_concord_status": "ISSUED_EXACT_MATCH",
+  "governor_concord_cert_path": "qepm/mailbox/governor/governor_concord_certificate.json",
+  "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+  "alpha_rank_corr_strict_str_1715": 1.0,
+  "scalar_c_str_1715": 0.70,
+  "ax008_compliance_floor": {
+    "score": 3.0,
+    "required": 2.0,
+    "status": "PASS",
+    "post_judge_stance": "Forge CONDITIONAL_PASS + Architect PASS_PARTIAL + Codex Forge PARTIAL_PASS_post_judge = 3/3"
+  },
+  "codex_round_governor_status": "COMPLETED_REJECT_DISPOSITION_APPLIED",
+  "codex_response_arrived_at": "2026-05-05T05:02:08+09:00",
+  "codex_disposition_summary": "PARTIAL_REBUTTAL 1 (GOV-C1 integration scenario rule) + ACCEPT_TIMELINE 2 (GOV-C2 PD2 + GOV-C3 PD3) + RATIFY_FORMAL_AMENDMENT 2 (GOV-C4 G1 + GOV-C5 G3) + RATIFY_FORMAL_WAIVER 1 (GOV-C6 G2) + ACCEPT_AS_DOCUMENTED 1 (GOV-C7) per Charter §8 No Silent Override (governor_challenge_note.md)",
+  "q_lead_escalate_triggered": false,
+  "method": "Hybrid_70_15_15_admission_via_promotion_wt_INTEGRATION_scenario_with_3_source_orthogonal_overlay",
+  "metrics_S3_admitted_256m": {
+    "Sharpe_charter_v1_4": 1.6649,
+    "DSR_penalized_SR_BLP": 1.313,
+    "MDD_pct": 16.65,
+    "CAGR_pct": 26.35,
+    "Sortino": 3.7797,
+    "Calmar": 1.5829,
+    "Vol_annualized": 0.1503
+  },
+  "delta_vs_S0_baseline_256m": {
+    "delta_Sharpe": 0.0795,
+    "delta_MDD_pp_improvement": -9.83,
+    "delta_CAGR_pp": -10.21
+  },
+  "mdd_mandate_first_pass_since_project_inception": true,
+  "harvey_5spec_pass_count": 5,
+  "harvey_t_nw_min": 6.6999,
+  "harvey_t_nw_max": 6.8423,
+  "dsr_blp_z_score": 6.0973,
+  "phase_history": [
+    {
+      "phase": "SPEC_APPROVED",
+      "at": "2026-05-05T03:00:00+0900",
+      "note": "promotion_wt request.json created — Hybrid 70/15/15 promotion via 9 prereq P1-P9. 도훈 2026-05-05 Option C path."
+    },
+    {
+      "phase": "ALPHA_DONE",
+      "at": "2026-05-05T03:09:00+0900",
+      "note": "alpha_package_inherit_ref.json — 4 cert inheritance from STR_1715 PG2 base + WT-S20260504_008 KR_10y + WT-S20260504_009 TSMOM. lro_sha frozen ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18 + alpha_rank_corr=1.0 strict mandate. No new alpha engine."
+    },
+    {
+      "phase": "RISK_DONE",
+      "at": "2026-05-05T03:24:39+0900",
+      "note": "risk_package.json — Sample Σ_3x3 cond=22.86 PSD + DR=1.105 + ENB=1.005 + TDC 3-source pairwise avg 0.024 + tail risk CVaR95 -6.75% / Hill α 3.20 / GPD ξ 0.026 + 8 KR stress periods + crowding (TSMOM 79.86% propagated to 30% cap). Codex disposition 7 concerns (4 HIGH + 3 MEDIUM)."
+    },
+    {
+      "phase": "OPTIMIZER_DONE",
+      "at": "2026-05-05T03:46:42+0900",
+      "note": "optimization_package.json — Path C 70/15/15 static capital allocator + RF-R8 30% cap + 4 infeasibility filings (CVaR / max_names / pre-2015 max_w / sleeve token forge_handoff). Codex disposition 8 concerns. 4 G ratifications pending Governor."
+    },
+    {
+      "phase": "FORGE_DONE",
+      "at": "2026-05-05T04:25:00+0900",
+      "note": "forge_package.json — 5-strategy backtest 256m uniform 15bps. S3 SR 1.6649 / CAGR 26.35% / MDD 16.65% / DSR_penalized_SR 1.1149 / CAPM α 24.74%/yr t_NW 6.73. vs S0 baseline ΔSR +0.0795 / ΔMDD -9.83pp. CRISIS regime Sharpe S0=-0.15 → S3=+0.15 (AX-001 v2 conditional defense empirical PASS). Codex 8 concerns disposition (5 HIGH + 3 MEDIUM)."
+    },
+    {
+      "phase": "JUDGE_PASSED",
+      "at": "2026-05-05T04:55:00+0900",
+      "note": "judge_verdict.json — APPROVE_CONDITIONAL S3 ADMIT primary canonical (5/5 decision rule PASS + AX-008 ≥ 2/3 PASS + Harvey 5/5 t_NW>6.7 PASS + BLP DSR z=6.10 PASS + AX-001 v2 conditional defense PASS + alpha_rank_corr=1.0 strict + lro_sha frozen). 4 G ratifications + 3 PD post-deploy items pending Governor. Codex disposition REJECT 7 concerns self-disposed."
+    },
+    {
+      "phase": "GOVERNOR_ADMITTED",
+      "at": "2026-05-05T05:23:00+09:00",
+      "note": "ADMIT verdict — Codex Governor REJECT (veto=false, 4 HIGH + 3 MEDIUM) self-disposed per Charter §8 No Silent Override (governor_challenge_note.md). 4 G ratifications RATIFY_FORMAL_AMENDMENT + RATIFY_FORMAL_WAIVER + ACKNOWLEDGE per Judge resolution. 3 PD post-deploy items binding (PD1 KOFIA T+90 / PD2 Backtest Contract v1.1 T+30 / PD3 alpha_scores SHA T+7). book_state.json mutation: admitted_ids 1→3 [STR_1715_AR_threshold_overlay_PG2 0.70 + TSMOM_ETF_rotation_PG2 0.15 + KR_10y_bond_ETF_PG2 0.15]. governor_concord_certificate.json issued (all_admitted_match=true). Per-strategy admission stubs at WT-S20260504_008/009 with codex_critic_skip_waiver per Charter §8."
+    }
+  ],
+  "next_phase": "COMPLETED",
+  "next_actor": "monitoring",
+  "alpha_preservation_mandate": {
+    "rank_correlation_str_1715_required": 1.0,
+    "scalar_c_str_1715": 0.70,
+    "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+    "m4_schedule_unchanged": true,
+    "violation_action": "hard_FAIL_judge_verdict_rollback_to_WT_P20260504_001"
+  },
+  "post_deploy_items_3": {
+    "PD1_KOFIA_NAV_validation": {"owner": "Monitoring", "due": "T+90", "status": "PENDING"},
+    "PD2_backtest_contract_v1_1_fix": {"owner": "Forge", "due": "T+30", "status": "PENDING"},
+    "PD3_str_1715_alpha_scores_sha_lineage_manifest_bind": {"owner": "Q-Lead", "due": "T+7", "status": "PENDING"}
+  },
+  "active_sot": {
+    "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
+    "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
+  },
+  "lawbook_ref": "Charter v1.4 §10 + Charter v1.4 §11 + Backtest Result Contract v1.0 + L-269 + L-270 + L-274 + integration_scenario_v1",
+  "lessons_l_code_candidates_pending_q_lead_review": [
+    "L-279_hybrid_pg2_admit_3source_orthogonal",
+    "L-280_ortho_cash_replacement_path_C_directive",
+    "L-281_cross_asset_tsmom_kr_10y_bond_layered_overlay_paradigm"
+  ]
+}
