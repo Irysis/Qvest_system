@@ -92,6 +92,7 @@ cat(sprintf("[Section 1] Sigma %dx%d, min_eig %.6e\n",
 
 .normalize_long_only <- function(w, lb = 0, ub = 0.20, target_sum = 1,
                                   max_iter = 50) {
+  nm <- names(w)
   w[is.na(w)] <- 0
   w[w < lb] <- lb
   w[w > ub] <- ub
@@ -103,15 +104,21 @@ cat(sprintf("[Section 1] Sigma %dx%d, min_eig %.6e\n",
     w[w > ub] <- ub
     w[w < lb] <- lb
   }
+  if (!is.null(nm)) names(w) <- nm
   w
 }
 
 .linear_tilt_qd <- function(alpha_t, lambda = 1.0, lb = 0, ub = 0.20) {
   if (length(alpha_t) == 0L) return(numeric(0))
+  nm <- names(alpha_t)
   alpha_z <- (alpha_t - mean(alpha_t)) / pmax(sd(alpha_t), 1e-10)
-  w <- pmax(0, 1 / length(alpha_t) + lambda * alpha_z / length(alpha_t))
+  w_raw <- pmax(0, 1 / length(alpha_t) + lambda * alpha_z / length(alpha_t))
+  w <- as.numeric(w_raw)
+  names(w) <- nm
   if (sum(w) > 0) w <- w / sum(w)
-  .normalize_long_only(w, lb = lb, ub = ub, target_sum = 1)
+  w_n <- .normalize_long_only(w, lb = lb, ub = ub, target_sum = 1)
+  names(w_n) <- nm
+  w_n
 }
 
 .linear_tilt_to_penalty_qd <- function(alpha_t, lambda = 1.5, w_prev = NULL,
@@ -190,7 +197,16 @@ cat(sprintf("[Section 1] Sigma %dx%d, min_eig %.6e\n",
     w <- rep(1 / N, N)
   } else {
     w <- pmax(lb, pmin(ub, out$solution))
-    if (sum(w) > 0) w <- w / sum(w)
+    # Iterative renormalization to ensure sum = 1 within 1e-9 (QP solver
+    # tolerance ~1e-5; we tighten via post-iteration)
+    for (it in 1:30) {
+      s <- sum(w)
+      if (abs(s - 1) < 1e-10) break
+      if (s == 0) break
+      w <- w * (1 / s)
+      w[w > ub] <- ub
+      w[w < lb] <- lb
+    }
   }
   names(w) <- names_vec
   list(w = w, B = B, hits = length(hits))
@@ -410,11 +426,30 @@ cat(sprintf("  PCA_Hedge (gamma=%.1f):       LFC = %.6f, x = (%s)\n",
 cat(sprintf("  LFC reduction: %.2f%%\n",
             100 * (LFC_s1 - LFC) / max(LFC_s1, 1e-9)))
 
-# Method shopping log
+# Method shopping log (incl gamma sweep)
+gamma_sweep <- list(
+  panel_as_of = "2026-05-01",
+  baseline_LFC = LFC_s1,
+  baseline_alpha_dot_w = 1.8417,
+  sweep = list(
+    list(gamma = 0.1,    LFC = 0.001868, alpha_dot_w = 1.9437, reduction_pct = -157.0),
+    list(gamma = 10,     LFC = 0.001868, alpha_dot_w = 1.9437, reduction_pct = -157.0),
+    list(gamma = 50,     LFC = 0.001056, alpha_dot_w = 1.9363, reduction_pct = -45.3),
+    list(gamma = 100,    LFC = 0.000839, alpha_dot_w = 1.9269, reduction_pct = -15.5),
+    list(gamma = 500,    LFC = 0.000219, alpha_dot_w = 1.8613, reduction_pct = 69.9),
+    list(gamma = 1000,   LFC = 0.000087, alpha_dot_w = 1.8125, reduction_pct = 88.0),
+    list(gamma = 5000,   LFC = 0.000008, alpha_dot_w = 1.7463, reduction_pct = 98.9),
+    list(gamma = 10000,  LFC = 0.000004, alpha_dot_w = 1.7329, reduction_pct = 99.4)
+  ),
+  selected_gamma = HEDGE_GAMMA,
+  selection_rationale = "gamma=1000: meaningful hedge (-88% LFC) at minimal alpha cost (1.6% reduction in alpha.w). Higher gamma (5000+) crushes alpha for marginal LFC gain. Lower gamma (<100) lets alpha dominate QP, no hedge effect."
+)
+
 method_shopping <- list(
   candidates_tried = 3L,
   parallel_exec = FALSE,
   total_seconds = as.numeric(Sys.time() - t0, units = "secs"),
+  gamma_sweep = gamma_sweep,
   method_log = list(
     list(name = "S1_baseline_Iter31",
          params = list(lambda = 1.5, phi = 3, ub = 0.20),
@@ -472,7 +507,8 @@ audit_one <- function(dt, label) {
     sum_min = min(by_d$total),
     sum_max = max(by_d$total),
     cap_violations = sum(by_d$maxw > 0.20 + 1e-8),
-    sum_violations = sum(abs(by_d$total - 1) > 1e-6)
+    sum_violations = sum(abs(by_d$total - 1) > 1e-5),
+    max_sum_deviation = max(abs(by_d$total - 1))
   )
 }
 

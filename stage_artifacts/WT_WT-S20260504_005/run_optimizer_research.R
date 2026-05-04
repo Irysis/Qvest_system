@@ -263,9 +263,11 @@ write_json(cash_audit, file.path(art, "cash_definition_audit.json"),
 
 # ── lro_portfolio_mrc.csv (Marginal Risk Contribution per F-factor, M4 primary) ─
 # MRC_k = β_p,k * Var(F_k) / sum_k(β_p,k^2 * Var(F_k))
-factor_var <- read_parquet(file.path(art, "factor_covariance.parquet"))
-fc <- as.matrix(factor_var[, factor_cols, with = FALSE])
-fvars <- diag(fc)
+fc_long <- as.data.table(read_parquet(file.path(art, "factor_covariance.parquet")))
+fvars <- sapply(factor_cols, function(fk) {
+  fc_long[row_factor == fk & col_factor == fk, cov_daily]
+})
+names(fvars) <- factor_cols
 
 mrc_rows <- list()
 for (i in 1:nrow(diag_dt)) {

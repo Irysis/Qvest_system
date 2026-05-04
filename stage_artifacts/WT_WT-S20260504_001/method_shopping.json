@@ -1,7 +1,64 @@
 {
   "candidates_tried": 3,
   "parallel_exec": false,
-  "total_seconds": 0.542,
+  "total_seconds": 0.5181,
+  "gamma_sweep": {
+    "panel_as_of": "2026-05-01",
+    "baseline_LFC": 0.0007,
+    "baseline_alpha_dot_w": 1.8417,
+    "sweep": [
+      {
+        "gamma": 0.1,
+        "LFC": 0.0019,
+        "alpha_dot_w": 1.9437,
+        "reduction_pct": -157
+      },
+      {
+        "gamma": 10,
+        "LFC": 0.0019,
+        "alpha_dot_w": 1.9437,
+        "reduction_pct": -157
+      },
+      {
+        "gamma": 50,
+        "LFC": 0.0011,
+        "alpha_dot_w": 1.9363,
+        "reduction_pct": -45.3
+      },
+      {
+        "gamma": 100,
+        "LFC": 0.0008,
+        "alpha_dot_w": 1.9269,
+        "reduction_pct": -15.5
+      },
+      {
+        "gamma": 500,
+        "LFC": 0.0002,
+        "alpha_dot_w": 1.8613,
+        "reduction_pct": 69.9
+      },
+      {
+        "gamma": 1000,
+        "LFC": 0.0001,
+        "alpha_dot_w": 1.8125,
+        "reduction_pct": 88
+      },
+      {
+        "gamma": 5000,
+        "LFC": 8e-06,
+        "alpha_dot_w": 1.7463,
+        "reduction_pct": 98.9
+      },
+      {
+        "gamma": 10000,
+        "LFC": 4e-06,
+        "alpha_dot_w": 1.7329,
+        "reduction_pct": 99.4
+      }
+    ],
+    "selected_gamma": 1000,
+    "selection_rationale": "gamma=1000: meaningful hedge (-88% LFC) at minimal alpha cost (1.6% reduction in alpha.w). Higher gamma (5000+) crushes alpha for marginal LFC gain. Lower gamma (<100) lets alpha dominate QP, no hedge effect."
+  },
   "method_log": [
     {
       "name": "S1_baseline_Iter31",
@@ -17,20 +74,20 @@
     {
       "name": "PCA_Hedge",
       "params": {
-        "gamma": 5,
+        "gamma": 1000,
         "eps_diag": 0.0001,
         "ub": 0.2,
         "max_names": 20
       },
-      "LFC_2026_05_01": 0.0019,
-      "LFC_reduction_pct": -157,
+      "LFC_2026_05_01": 0.0001,
+      "LFC_reduction_pct": 88.01,
       "selected": false,
       "note": "Statistical factor hedge. STR_1715 alpha input. recommendation_only side-by-side."
     },
     {
       "name": "M4+PCA_Hedge",
       "params": {
-        "gamma": 5,
+        "gamma": 1000,
         "m4_cash_layer": "BOCPD_regime"
       },
       "selected": true,

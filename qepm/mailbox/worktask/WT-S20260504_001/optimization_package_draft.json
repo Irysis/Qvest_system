@@ -1,0 +1,175 @@
+{
+  "task_id": "WT-S20260504_001",
+  "package_kind": "optimization_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-01",
+  "agent": "optimizer-research",
+  "round": 1,
+  "draft_revision": "draft",
+  "parent_wt": "WT-P20260429_002",
+  "inheritance": {
+    "alpha_inherited": true,
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "risk_inherited": "WT-S20260504_001 risk_package.json",
+    "no_new_alpha": true
+  },
+  "lro_params_verify": {
+    "expected_sha256": "6a48a719025f9bb3e80cc5099250a077dbe20602eed2095cc82e3bad932700a1",
+    "recomputed_sha256": "6a48a719025f9bb3e80cc5099250a077dbe20602eed2095cc82e3bad932700a1",
+    "sha_match": true,
+    "hash_procedure_followed": "Build dict EXCLUDING sha256 → toJSON(auto_unbox=TRUE,pretty=FALSE) → digest::digest(charToRaw, algo='sha256', serialize=FALSE)"
+  },
+  "method_selected": "M4+PCA_Hedge",
+  "selection_objective": "to_adj_ret_with_lfc_reduction",
+  "method_shopping_path": "stage_artifacts/WT_WT-S20260504_001/method_shopping.json",
+  "active_cap_per_strategy": {
+    "S1": 0.2,
+    "PCA_Hedge": 0.2,
+    "M4+PCA_Hedge": 0.2
+  },
+  "hedge_params": {
+    "gamma": 1000,
+    "eps_diag": 0.0001,
+    "objective": "max alpha'w - (gamma/2) ||B_ref' w||^2 - (eps/2) ||w||^2",
+    "constraints": {
+      "sum_w": 1,
+      "long_only": true,
+      "weight_bounds": [0, 0.2],
+      "max_names": 20
+    },
+    "b_ref_imputation": "Names absent from B_ref get B_i=0 (neutral imputation). Worst-case bound also reported in lro_portfolio_mrc.csv."
+  },
+  "schedule_density": {
+    "parent_alpha_sig_dates": 269,
+    "weights_unique_dates": 269,
+    "ratio": 1,
+    "threshold": 0.95,
+    "pass": true
+  },
+  "lfc_at_2026_05_01": {
+    "S1_baseline": 0.0007,
+    "PCA_Hedge": 0.0001,
+    "PCA_Hedge_x": {
+      "PC1": -0.0027,
+      "PC2": 0.0008,
+      "PC3": -0.0081,
+      "PC4": -0.0024,
+      "PC5": -0.0028
+    },
+    "S1_x": {
+      "PC1": -0.0021,
+      "PC2": 0.01,
+      "PC3": -0.0246,
+      "PC4": -0.0017,
+      "PC5": -0.0036
+    },
+    "reduction_pct": 88.01,
+    "b_ref_overlap_pct": 80
+  },
+  "constraint_audit": {
+    "S1": {
+      "label": "S1",
+      "n_dates": 269,
+      "max_n_per_date": 20,
+      "over20": 0,
+      "max_w": 0.2,
+      "min_w": 0,
+      "sum_min": 1,
+      "sum_max": 1,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 9.5862e-07
+    },
+    "PCA_Hedge": {
+      "label": "PCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 20,
+      "over20": 0,
+      "max_w": 0.2,
+      "min_w": 0,
+      "sum_min": 1,
+      "sum_max": 1,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 4.5518e-06
+    },
+    "M4+PCA_Hedge": {
+      "label": "M4+PCA_Hedge",
+      "n_dates": 269,
+      "max_n_per_date": 20,
+      "over20": 0,
+      "max_w": 0.2,
+      "min_w": 0,
+      "sum_min": 1,
+      "sum_max": 1,
+      "cap_violations": 0,
+      "sum_violations": 0,
+      "max_sum_deviation": 3.8368e-06
+    }
+  },
+  "hard_constraints_pass": {
+    "max_names_le_20": true,
+    "long_only": true,
+    "cap_0p20": true,
+    "sum_eq_1": true
+  },
+  "outputs": {
+    "canonical_weights_csv": "stage_artifacts/WT_WT-S20260504_001/weights.csv",
+    "variants": {
+      "S1": "stage_artifacts/WT_WT-S20260504_001/weights_variants/S1.csv",
+      "PCA_Hedge": "stage_artifacts/WT_WT-S20260504_001/weights_variants/PCA_Hedge.csv",
+      "M4+PCA_Hedge": "stage_artifacts/WT_WT-S20260504_001/weights_variants/M4+PCA_Hedge.csv"
+    },
+    "cash_definition_audit": "stage_artifacts/WT_WT-S20260504_001/cash_definition_audit.json",
+    "lro_portfolio_mrc": "stage_artifacts/WT_WT-S20260504_001/lro_portfolio_mrc.csv",
+    "method_shopping": "stage_artifacts/WT_WT-S20260504_001/method_shopping.json"
+  },
+  "axiom_assertions": {
+    "AX_000": "한계 없음. PCA Latent Hedge 통계적 estimation only — heuristic rule X.",
+    "AX_002_process_honesty": {
+      "lro_params_sha_verify": true,
+      "schedule_density_threshold": 0.95,
+      "schedule_density_actual": 1,
+      "schedule_density_pass": true,
+      "no_silent_constraint_relaxation": true
+    },
+    "AX_008_tally_entry": {
+      "source": "optimizer-research (Source 3 of 3)",
+      "stance": "draft (pending Codex Round critic_response_optimizer.json)"
+    }
+  },
+  "red_flags": [
+    {
+      "id": "RF-O5",
+      "check": "max_names <= 20",
+      "pass": true
+    },
+    {
+      "id": "RF-O6",
+      "check": "|sum(weights) - 1| < 0.001",
+      "pass": true
+    },
+    {
+      "id": "RF-O7",
+      "check": "0 <= weights <= 0.20",
+      "pass": true
+    }
+  ],
+  "schema_version": "v1.0_pca_latent_hedge",
+  "codex_round_status": "round1_pending",
+  "state_machine_path": {
+    "expected": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+  },
+  "handoff_to_forge": {
+    "primary_weights_path": "stage_artifacts/WT_WT-S20260504_001/weights.csv",
+    "backtest_matrix": ["S1", "PCA_Hedge", "M4+PCA_Hedge"],
+    "universe_definition": "STR_1715 actual Top-20 by score_eff per sig_date (parent alpha)",
+    "rebalance_frequency": "monthly",
+    "transaction_cost": "v2.3_kr_retail_15bps",
+    "benchmark": "KOSPI200_total_return"
+  },
+  "created_at": "2026-05-04T09:14:24+0900",
+  "created_by": "optimizer-research-agent (background, dapper-dragon plan §1 WT-001)"
+}

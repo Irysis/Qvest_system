@@ -1,0 +1,161 @@
+{
+  "task_id": "WT-S20260504_005",
+  "as_of_date": "2026-05-04",
+  "signal_as_of": "2026-05-01",
+  "forecast_horizon": "1M",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "parent_risk_package_sha_factor_loadings": "9e9784f723fd665a5cf1ac4a52914c9faa7e11b643c5640528cf689830242fcc",
+  "parent_risk_package_sha_factor_returns": "837a6141f89dd2739a79123c3a9f66df7b9343a4fa009a2b768f870fed43be33",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "method_selected": "M4+FactorBeta_Hedge",
+  "method_basis_label": "optimizer_walk_forward_simulation",
+  "production_grade": false,
+  "selection_objective": "stress_robust",
+  "weight_method": {
+    "name": "QP_min_beta_F1_plus_iter31_regime_cash",
+    "formulation": "min_w  beta_weight*(B[,F1]'w)^2 + lambda*||w - w_anchor||^2 + psi_to*||w - w_prev||^2",
+    "constraints": {
+      "long_only": true,
+      "sum_eq_1": true,
+      "weight_bounds": [0, 0.2],
+      "max_names": 20,
+      "cash_overlay": "iter31_regime_dependent (BULL/NORMAL/CAUTION/CRISIS = 0/10/20/40 pct)"
+    },
+    "hyperparams": {
+      "beta_weight": 200,
+      "lambda": 1.5,
+      "psi_to": 0.5,
+      "ub_weight": 0.2,
+      "cash_iter31": {
+        "BULL": 0,
+        "NORMAL": 0.1,
+        "CAUTION": 0.2,
+        "CRISIS": 0.4
+      }
+    }
+  },
+  "beta_p_F1_summary": {
+    "n_dates": 269,
+    "crisis_prone_factor": "F1",
+    "mean_abs_beta_S1": 0.0556,
+    "mean_abs_beta_FactorBeta_Hedge": 0.0223,
+    "mean_abs_beta_M4_FactorBeta_Hedge": 0.0205,
+    "reduction_pct_FH_vs_S1": 59.94,
+    "reduction_pct_M4_vs_S1": 63.22,
+    "range_M4": [-0.0679, 0.0001],
+    "median_M4": -0.0188
+  },
+  "schedule": {
+    "n_dates": 269,
+    "sig_dates_count": 269,
+    "schedule_density_ratio": 1,
+    "rebalance_frequency": "monthly",
+    "range_dates": ["2004-01-01", "2026-05-01"],
+    "deploy_cutoff": "2026-05-01"
+  },
+  "weights_artifacts": {
+    "canonical": "stage_artifacts/WT_WT-S20260504_005/weights.csv",
+    "S1": "stage_artifacts/WT_WT-S20260504_005/weights_variants/S1.csv",
+    "FactorBeta_Hedge": "stage_artifacts/WT_WT-S20260504_005/weights_variants/FactorBeta_Hedge.csv",
+    "M4_FactorBeta_Hedge": "stage_artifacts/WT_WT-S20260504_005/weights_variants/M4+FactorBeta_Hedge.csv",
+    "cash_definition_audit": "stage_artifacts/WT_WT-S20260504_005/cash_definition_audit.json",
+    "lro_portfolio_mrc": "stage_artifacts/WT_WT-S20260504_005/lro_portfolio_mrc.csv"
+  },
+  "hard_constraints_validation": {
+    "max_names_le_20": true,
+    "long_only": true,
+    "weight_bounds_0_to_0p20": true,
+    "sum_eq_1": true,
+    "universe_KOSPI200_KOSDAQ150": true,
+    "liquidity_floor_2e8_inherited_from_str1715": true
+  },
+  "ax_compliance": {
+    "AX_000": "no limits — Factor_Beta_Hedge sizing-only explored under hard constraints",
+    "AX_001_v2": "defense-like assessment via crisis-prone factor exposure neutralization (F1 minDD-rank 6/6)",
+    "AX_002": "iter31_best_params + crisis_prone_k SHA-frozen via parent forge_package + lro_params_frozen.json (sha256_loadings=9e9784f723fd665a...). STR_1715 alpha ranking unchanged.",
+    "AX_007": "sizing_only WT — NOT single_sleeve_long_only_top20 alpha generation. STR_1715 score_eff inherited as alpha INPUT.",
+    "AX_008": "Forge + Codex + Architect 2/3 PASS — Codex Critic Round mandatory next."
+  },
+  "inheritance_meta": {
+    "parent_alpha_no_modify": true,
+    "str_1715_alpha_ranking_unchanged": true,
+    "score_eff_unchanged": true,
+    "regime_state_unchanged": true,
+    "cash_overlay_iter31_inherited": true,
+    "str_1715_production_dir_writes": 0
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "parallel_exec": false,
+    "selection_objective": "stress_robust",
+    "methods": [
+      {
+        "name": "S1",
+        "type": "alpha_proportional_baseline",
+        "mean_abs_beta_F1": 0.0556,
+        "beta_reduction_vs_S1_pct": 0,
+        "selected": false,
+        "rationale": "STR_1715 actual baseline (no hedge). Reference for β reduction measurement."
+      },
+      {
+        "name": "FactorBeta_Hedge",
+        "type": "QP_min_beta_F1_squared",
+        "mean_abs_beta_F1": 0.0223,
+        "beta_reduction_vs_S1_pct": 59.94,
+        "selected": false,
+        "rationale": "Pure factor beta hedge (no M4 cash). Reduces |β_p,F1| via QP allocating against F1 loading."
+      },
+      {
+        "name": "M4+FactorBeta_Hedge",
+        "type": "QP_min_beta_F1_plus_iter31_regime_cash",
+        "mean_abs_beta_F1": 0.0205,
+        "beta_reduction_vs_S1_pct": 63.22,
+        "selected": true,
+        "rationale": "Canonical primary: combines QP factor-beta hedge with iter31 regime cash overlay (BULL=0/NORMAL=10/CAUTION=20/CRISIS=40). Inherits STR_1715 production-active M4 schedule."
+      }
+    ],
+    "spec_constraint": "Task spec mandates 3-strategy comparison (S1 / FactorBeta_Hedge / M4+FactorBeta_Hedge). active_cap=0.20 all variants."
+  },
+  "selection_objective_record": {
+    "metric": "mean_abs_beta_F1_minimization",
+    "chosen": "M4+FactorBeta_Hedge",
+    "reasoning": "Combines QP factor-beta hedge with iter31 production-active regime cash overlay. Achieves both factor-beta attenuation AND regime-conditional dilution. S1 baseline kept for measurement reference; FactorBeta_Hedge alone (no cash) kept as ablation."
+  },
+  "binding_constraints": [
+    "long_only",
+    "weight_cap_0p20",
+    "max_names_20",
+    "sum_eq_1"
+  ],
+  "infeasibility_report": {},
+  "challenge_flags": [
+    {
+      "severity": "MEDIUM",
+      "flag": "single_factor_only_F1",
+      "detail": "Hedge minimizes only β_p,F1 (crisis-prone PC). β on F2-F5 not directly controlled — by-product of QP. lro_portfolio_mrc.csv records full β path."
+    },
+    {
+      "severity": "LOW",
+      "flag": "spec_bound_method_shopping",
+      "detail": "Task spec WT-S20260504_005 prescribes 3-variant comparison (S1 / FactorBeta_Hedge / M4+FactorBeta_Hedge). Method shopping bounded by spec — no MVO/HRP/CVaR/ERC alternatives explored. Aligns with parent risk_package method_shopping_log.candidates_tried=1 for PCA."
+    },
+    {
+      "severity": "LOW",
+      "flag": "anchor_dependency_str1715_baseline",
+      "detail": "QP anchor w_anchor = STR_1715 alpha-proportional weights. Hedge is ranking-preserving by construction. Recommendation_only WT — production weight not modified."
+    }
+  ],
+  "codex_round": {
+    "status": "PENDING_DRAFT",
+    "draft_path": "qepm/mailbox/worktask/WT-S20260504_005/optimization_package_draft.json",
+    "expected_critic_path": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_optimizer.json",
+    "expected_challenge_note": "qepm/mailbox/worktask/WT-S20260504_005/optimizer_challenge_note.md"
+  },
+  "finalize_meta": {
+    "created_at": "2026-05-04T09:13:08+0900",
+    "created_by": "optimizer-research_agent",
+    "state_machine_target": "OPTIMIZER_DONE"
+  }
+}

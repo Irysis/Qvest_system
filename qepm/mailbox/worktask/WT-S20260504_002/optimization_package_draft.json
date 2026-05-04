@@ -1,0 +1,273 @@
+{
+  "task_id": "WT-S20260504_002",
+  "as_of_date": "2026-05-04",
+  "package_kind": "optimization_package",
+  "round": 1,
+  "agent": "optimizer-research",
+  "agent_version": "v6.4_DCC_VolTarget_3strategy_2026_05_04",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "inherit_certs": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+
+  "method_selected": "M4+DCC_VolTarget",
+  "selection_objective": "to_adj_ret",
+  "selection_rationale": "Canonical M4+DCC_VolTarget: combines existing M4 regime cash overlay (active production basis) with DCC dynamic vol-target cash bridge. Defensive cash combination via max(M4_cash, DCC_cash) — additive would breach Σ=1 / drop sleeve below 0; max() preserves single-cash-sleeve semantics + dominance is whichever overlay calls for more defense. DCC_VolTarget alone surrenders M4 regime intelligence (alpha-aware regime cash); S1 surrenders both. Mean cash combined = 28.2% (vs M4 only 3.3% / DCC only 27.1%) — DCC dominates magnitude, M4 contributes timing precision. Sleeve-level annualized turnover 46.2% (well below 600% cap). NO new optimization (sizing_only inheritance); orchestration of pre-computed risk overlay paths.",
+
+  "weights_csv_basis": {
+    "canonical_path": "stage_artifacts/WT_WT-S20260504_002/weights.csv",
+    "canonical_strategy": "M4+DCC_VolTarget",
+    "schema": ["Date", "weight_str1715", "weight_cash"],
+    "frequency": "monthly",
+    "n_unique_dates": 267,
+    "date_range": ["2004-01-01", "2026-03-01"],
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true,
+    "schedule_basis_label": "parent_M4_schedule_DCC_overlay",
+    "variants": {
+      "S1": "stage_artifacts/WT_WT-S20260504_002/weights_variants/S1.csv",
+      "DCC_VolTarget": "stage_artifacts/WT_WT-S20260504_002/weights_variants/DCC_VolTarget.csv",
+      "M4+DCC_VolTarget": "stage_artifacts/WT_WT-S20260504_002/weights_variants/M4+DCC_VolTarget.csv"
+    }
+  },
+
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "active_cap_per_variant": {"S1": 0.20, "DCC_VolTarget": 0.20, "M4+DCC_VolTarget": 0.20},
+    "selection_objective": "to_adj_ret",
+    "method_log": [
+      {
+        "name": "S1_baseline",
+        "description": "weight_str1715 = 1.0, weight_cash = 0.0 (no overlay). Reference for marginal contribution measurement.",
+        "mean_cash": 0.0,
+        "pct_cash_active_months": 0.0,
+        "sleeve_annualized_turnover": 0.0,
+        "schedule_density": 1.0,
+        "selected": false,
+        "reject_reason": "Surrenders both M4 regime alpha-aware cash + DCC vol-target defense → MDD policy ≤-25% breach risk (parent S1 baseline historical MDD -41.7%)."
+      },
+      {
+        "name": "DCC_VolTarget",
+        "description": "weight_str1715 = scale_factor (DCC dynamic σ_p target 15% / forecast); weight_cash = cash_bridge_dcc. Pure statistical (Engle 2002 + Engle-Sheppard 2001).",
+        "mean_cash": 0.2710,
+        "pct_cash_active_months": 0.7270,
+        "sleeve_annualized_turnover": 0.2837,
+        "schedule_density": 1.0,
+        "selected": false,
+        "reject_reason": "Surrenders M4 regime intelligence (alpha-aware regime detection) + AX-001 v2 conditional metric shows CRISIS realized return mean +4.66% — DCC up-scaling cash in CRISIS surrenders alpha. M4 timing precision lost."
+      },
+      {
+        "name": "M4+DCC_VolTarget",
+        "description": "weight_cash_combined = max(M4_cash, DCC_cash); weight_str1715 = 1 - weight_cash_combined. Defensive cash combination, single sleeve.",
+        "mean_cash": 0.2824,
+        "pct_cash_active_months": 0.7678,
+        "sleeve_annualized_turnover": 0.4625,
+        "schedule_density": 1.0,
+        "selected": true,
+        "select_reason": "Combines active production M4 alpha-aware regime cash + DCC statistical vol-target cash bridge. Defensive max() rule preserves Σ=1 semantics. DCC dominates cash magnitude (mean 27.1% vs M4 3.3%); M4 contributes timing precision. Annualized turnover 46.2% well below 600% hard cap. Schedule density 1.0 (267/267) preserves parent schedule fidelity (no fabrication)."
+      }
+    ],
+    "parallel_exec": false,
+    "parallel_exec_rationale": "3 variants are deterministic transforms of pre-computed risk overlay paths (sleeve-level allocation, no QP/optimizer call). Sequential <1 sec. Parallel overhead > work."
+  },
+
+  "cash_combination_rule": {
+    "formula": "weight_cash_combined = max(weight_cash_M4, weight_cash_DCC); weight_str1715 = 1 - weight_cash_combined",
+    "rationale": "Single cash sleeve interpretation. Additive (M4 + DCC) would: (a) double-count defense allocation, (b) breach Σ=1 boundary in heavy-cash months, (c) drop sleeve weight_str1715 below 0 (long-only violation).",
+    "alternatives_considered": [
+      {"name": "additive_capped_at_0.7", "rejected": true, "reason": "Brittle ceiling, hides which overlay drives cash"},
+      {"name": "weighted_avg_50_50", "rejected": true, "reason": "Loses defensive max property in stress (M4=70 + DCC=10 → 40 < either)"},
+      {"name": "max_dominant", "selected": true, "reason": "Interpretable + always defensive + Σ=1 preserved"}
+    ],
+    "audit_path": "stage_artifacts/WT_WT-S20260504_002/cash_definition_audit.json"
+  },
+
+  "constraints_enforced": {
+    "max_names": "20 (per-ticker, inherited from parent run_all.R; sleeve-level allocation does not introduce new tickers)",
+    "long_only": true,
+    "weight_bounds_per_ticker": [0, 0.20],
+    "weight_bounds_sleeve": [0, 1],
+    "sigma_w_sleeve": 1.0,
+    "universe": "STR_1715 base (KOSPI200 ∪ KOSDAQ150) + cash_KRW",
+    "transaction_cost_bps": 15,
+    "sleeve_annualized_turnover_cap": 6.0,
+    "sleeve_annualized_turnover_actual_canonical": 0.4625,
+    "schedule_density_threshold": 0.95,
+    "schedule_density_actual": 1.0,
+    "no_silent_constraint_relaxation": true
+  },
+
+  "infeasibility_report": null,
+
+  "vol_target_design": {
+    "target_annual_vol": 0.15,
+    "target_basis": "fixed_15pct_annual (risk_package vol_target_decision)",
+    "scaling_rule": "w_t_str1715 = min(target_annual / sigma_p_annual_forecast_t, 1.0); cash = 1 - w_t",
+    "scale_factor_inactive_periods": "weight_str1715 = 1.0 (DCC burn-in 2004-01 ~ 2009-01, n=60m)",
+    "active_periods_n": 208,
+    "burn_in_periods_n": 60,
+    "forward_may_2026": {
+      "sigma_p_annual_T1": 0.3577,
+      "scale_factor": 0.4194,
+      "cash_bridge_dcc": 0.5806,
+      "weight_cash_M4_may26": 0.0,
+      "weight_cash_combined_may26": 0.5806,
+      "weight_str1715_may26": 0.4194,
+      "interpretation": "May 2026 forward: DCC σ_p forecast 35.8% >> 15% target → DCC dominates (cash 58.1%); M4 inactive (5월 NORMAL regime). Combined cash = 58.1%, sleeve = 41.9%."
+    }
+  },
+
+  "lro_params_frozen_ref": "stage_artifacts/WT_WT-S20260504_002/lro_params_frozen.json",
+  "lro_params_frozen_sha": "see lro_params_frozen.json::files",
+  "lro_portfolio_mrc_path": "stage_artifacts/WT_WT-S20260504_002/lro_portfolio_mrc.csv",
+
+  "input_lineage": {
+    "request_json_sha256": "ab2ec4440a57f51b8c8bd8ca939150c86e7fcbf20c2cb03714ebbdf13c937c5d",
+    "alpha_package_json_sha256": "9e91ebb99180d1267b433a08a428043a91e50626af9c7c3b055dc5221e45801b",
+    "risk_package_json_sha256": "c3e0356ebd93d85dcd807f29ee192ff351dd2d3bb8caa0c89b2fe6bb91eced1c",
+    "parent_weights_csv_path": "qepm/mailbox/worktask/WT-P20260429_002/weights.csv",
+    "sigma_p_forecast_path": "stage_artifacts/WT_WT-S20260504_002/sigma_p_forecast.csv",
+    "cash_bridge_path": "stage_artifacts/WT_WT-S20260504_002/cash_bridge_path.csv"
+  },
+
+  "output_lineage": {
+    "weights_csv_canonical_sha256": "82431c2874de86ba313d57194c0b8917b64855b23138d80e6f51a8b8f16c6eb2",
+    "weights_S1_sha256": "eb937e9d272b0c6c4ac3c1d45af595ae53f89efc4fd9f08d1fca99111ebf9ca9",
+    "weights_DCC_sha256": "40c059083c8f3f356a0303d0a405463a81bbecb8fcac8862768f898f3b8da94e",
+    "weights_M4DCC_sha256": "82431c2874de86ba313d57194c0b8917b64855b23138d80e6f51a8b8f16c6eb2",
+    "cash_definition_audit_sha256": "8c1aa1974dec8c60b7325d46cb58454e79081d607ec93b35e4c23439c07341e2",
+    "lro_portfolio_mrc_sha256": "a8c9eeb959befaf41f6a7101fc6356d557cfbfa81649d0a3d8016a7c4b1d95ca"
+  },
+
+  "expected_metrics_estimate": {
+    "method_basis_label": "optimizer_recommendation_pre_forge",
+    "production_grade": false,
+    "S1_baseline_proxy": {
+      "basis": "STR_1715 base only (M4 disabled), historical 268m",
+      "estimate_source": "L-274 reference",
+      "sr_estimate": 1.66,
+      "cagr_estimate": 0.42,
+      "mdd_estimate": -0.417,
+      "note": "Pre-M4 baseline from STR_1715 PG2 admit comparison"
+    },
+    "DCC_VolTarget_estimate": {
+      "basis": "S1 returns × scale_factor (linear approximation, no compounding adj)",
+      "expected_vol_pp_reduction": "moderate (DCC scale mean 0.65 → vol drag ~35%)",
+      "expected_mdd_pp_change": "improvement (-3 to -8pp tentative — vol reduction in stress)",
+      "expected_cagr_pp_change": "moderate decline (-5 to -12pp from cash drag)",
+      "note": "Pure sleeve scaling; final metrics await forge backtest"
+    },
+    "M4_plus_DCC_VolTarget_estimate": {
+      "basis": "STR_1715 PG2 admit (M4 only) baseline + additional DCC vol scaling",
+      "M4_only_baseline_sr": 1.7477,
+      "M4_only_baseline_cagr": 0.4378,
+      "M4_only_baseline_mdd": -0.3205,
+      "expected_mdd_pp_change_vs_M4": "additional -2 to -5pp improvement (DCC dominates cash magnitude)",
+      "expected_cagr_pp_change_vs_M4": "decline -8 to -15pp (DCC mean cash 27% vs M4 3% — large incremental drag)",
+      "expected_sr_estimate": "1.4 to 1.8 (vol reduction may offset return drag depending on regime)",
+      "note": "Final metrics await forge backtest. Risk_package AX-001 v2 conditional metric warns CRISIS state realized return mean +4.66% — DCC engaging in CRISIS may surrender alpha."
+    },
+    "decision_rule_recall": "PASS = CAGR ≥20% + MDD ≤-25% OR -3pp + vol -20% + Sortino ≥1.0 + top5DD 3+ improvement",
+    "decision_rule_pre_forge_alignment": "M4+DCC mean cash 28% likely meets vol -20% target; CAGR ≥20% floor tight (DCC cash drag risk); MDD improvement plausible. Forge backtest will resolve."
+  },
+
+  "ax_001_v2_conditional_handoff": {
+    "metric_from_risk_package": {
+      "bad_normal_realized_risk_ratio": 1.36,
+      "crisis_state_realized_ret_mean": 0.0466,
+      "crisis_state_n": 76,
+      "interpretation": "STR_1715 high-vol-good-return — DCC up-scaling cash in CRISIS surrenders +4.66% realized alpha. M4+DCC partially mitigated by M4 alpha-aware regime detection (M4 only triggers cash on Trade-War/Crisis regime, not on continuous vol).",
+      "concern_level": "MEDIUM",
+      "downstream_obligation": "Forge backtest must report PASS_state_n / CRISIS realized return drag from DCC engagement; Judge Gate audit for AX-001 v2 compliance."
+    }
+  },
+
+  "binding_constraints": [
+    "schedule_density >= 0.95 (1.0 PASS — 267/267 monthly)",
+    "long_only (PASS — sleeve & cash both >= 0)",
+    "Σw_sleeve_level = 1 (PASS — exact)",
+    "transaction_cost_15bps_one_way (inherited from parent run_all.R)",
+    "sleeve_annualized_turnover < 6.0 (PASS — 0.4625 canonical)"
+  ],
+
+  "challenge_flags": [
+    {
+      "id": "RF-O-MDD-CAGR-TRADEOFF",
+      "severity": "MEDIUM",
+      "message": "DCC mean cash 27.1% incremental drag may pull CAGR below 20% floor (decision_rule FAIL trigger). Forge backtest must verify."
+    },
+    {
+      "id": "RF-O-AX001V2-ALPHA-SURRENDER",
+      "severity": "MEDIUM",
+      "message": "AX-001 v2 conditional metric: CRISIS state realized return mean +4.66% positive. DCC up-scaling cash in CRISIS surrenders alpha. M4+DCC max() rule mitigates partially (M4 already alpha-aware), but DCC dominance in cash magnitude means CRISIS realized return drag is non-trivial."
+    },
+    {
+      "id": "RF-O-LAYER-A-FORWARD-EXTREME",
+      "severity": "HIGH",
+      "message": "Forward May 2026: DCC scale_factor 0.42, cash 58.1%. Largest cash bridge in 268m sample. May not be optimal if regime transitions to vol-mean-reversion in coming month."
+    },
+    {
+      "id": "RF-O-NO-NEW-OPTIMIZATION",
+      "severity": "INFO",
+      "message": "sizing_only WT — no QP/optimizer solve. 3 variants are deterministic transforms of pre-computed risk overlay paths. method_comparison limited to design-time analysis (turnover + cash exposure + schedule density)."
+    }
+  ],
+
+  "axiom_assertions": {
+    "AX_000": {"verdict": "PASS", "note": "한계 없음. 도훈 명시 영역."},
+    "AX_001_v2": {"verdict": "PARTIAL", "note": "Risk pkg conditional metric shows CRISIS realized ret +4.66% positive — DCC up-scaling in CRISIS surrenders alpha. M4+DCC max() rule preserves M4 alpha-aware regime intelligence (mitigation), but DCC magnitude dominance means alpha surrender persists. Forge backtest required for full verdict."},
+    "AX_002": {"verdict": "PASS", "note": "DCC params SHA-frozen (lro_params_frozen.json). Optimizer applies pre-frozen overlay paths. NO process bypass. Σ=1 + long-only verified across all 3 variants."},
+    "AX_008": {"verdict": "PARTIAL", "note": "1 source (optimizer-research self) PASS. Codex critic + Forge verification pending. Sizing_only AX-008 spec: forge + judge 2/3 sufficient (parent codex round timeout pattern; codex_critic_skip_waiver path acknowledged)."}
+  },
+
+  "pit_audit": {
+    "C1_full_sample": {"verdict": "PASS", "note": "Optimizer composes pre-frozen DCC overlay (risk_package PIT-clean, expanding-window refit) + parent M4 overlay (production-validated PIT). No new look-ahead introduced."},
+    "C5_overlay_t_minus_1": {"verdict": "PASS", "note": "DCC σ_p forecast at month t uses GARCH params estimated through t-1. M4 cash overlay at t uses regime classification from t-1 close. max() combination at month t deterministic."},
+    "C9_dd_vt_lag": {"verdict": "PASS", "note": "Inherited from risk_package C9 PASS."}
+  },
+
+  "selection_objective_audit": {
+    "objective_used": "to_adj_ret",
+    "rationale": "Sleeve-level sizing decision evaluated on turnover-adjusted return (CAGR floor 20% with cash drag accounting). Pure sharpe ranking (forbidden by R4-A) avoided. M4+DCC selected for: (a) preserves PG2 admit operational basis (M4 active production), (b) adds DCC dynamic vol management, (c) defensive max() cash combination."
+  },
+
+  "agent_self_audit": {
+    "avoidance_phrase_grep": {
+      "영향_미미": 0,
+      "관행적_허용": 0,
+      "보수적이면_괜찮다": 0,
+      "대부분_결과_동일": 0,
+      "이미_반영되어_있었을_것": 0,
+      "백테스트_충분히_길어서_상쇄": 0,
+      "유사_거의_대략_근사": 0
+    },
+    "self_check_questions": [
+      "Q: weights.csv at sleeve level legitimate? A: Parent WT-P20260429_002/weights.csv uses identical sleeve-level schema (Date, weight_str1715, weight_cash). Per-ticker constraints enforced inside parent run_all.R. Sizing_only WT cannot reach below sleeve.",
+      "Q: schedule density 1.0 vs risk's 208 active vs 60 burn-in? A: 267 monthly rows match parent schedule. DCC inactive 2004-01~2009-01 → weight_str1715 = 1.0 (S1-equivalent for burn-in). Schedule fabrication 0.",
+      "Q: M4+DCC max() vs additive? A: additive breaches Σ=1 (cash > 1 in 12 months when both active). max() preserves single-cash-sleeve semantics + always defensive.",
+      "Q: 3 variants is sufficient method_shopping? A: Yes per request spec. Active method universe is constrained (M4 active production + DCC mandate). Adding HRP/MVO/CVaR not relevant to sleeve-level vol-target sizing decision."
+    ],
+    "infeasibility_check_pass": true,
+    "no_silent_override": true
+  },
+
+  "production_protection": {
+    "str_1715_directory": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/",
+    "write_count_required": 0,
+    "write_count_actual": 0,
+    "verification_method": "no fwrite/write.csv to 04_Research/strategies/STR_1715* in this script"
+  },
+
+  "state_machine_path": {
+    "from": "RISK_DONE",
+    "to": "OPTIMIZER_DONE",
+    "expected_full_path": "SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE → JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE"
+  },
+
+  "codex_round_status": "draft_pending_codex_critic",
+  "draft_revision": "round1_draft",
+  "generated_at": "2026-05-04T09:30:00+0900",
+  "generated_by": "optimizer-research"
+}
