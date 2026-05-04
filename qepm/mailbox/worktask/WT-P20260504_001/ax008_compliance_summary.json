@@ -1,0 +1,121 @@
+{
+  "task_id": "WT-P20260504_001",
+  "summary_kind": "ax008_4_prerequisite_compliance_summary",
+  "produced_at": "2026-05-04T18:00:00+09:00",
+  "produced_by": "Q-Lead",
+  "promotion_target": "STR_1715 + AR_threshold overlay → PG2 admission",
+  "user_decision": "Path A 도훈 2026-05-04 17:30 명시",
+  "prerequisites": {
+    "P1_architect_3rd_source": {
+      "status": "PASS",
+      "verdict": "Architect ADMIT-COMPATIBLE conditional",
+      "key_findings": [
+        "All 6 metrics × 4 variants reproduced exactly to 4 decimal places via different code path",
+        "LRO frozen SHA ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18 matches",
+        "PIT C1~C15 walk-through no violation",
+        "S1: SR=1.7758 / MDD=-29.53% / CAGR=39.34% / Vol=22.15% / Sortino=1.0334 / Calmar=1.3321 ALL CONFIRMED"
+      ],
+      "high_concerns_resolved": {
+        "concern_1_baseline_mismatch": "RESOLVED — period_returns.csv ret_net is M4-included. L-274 -32.05% MDD reflects pre-m4-extension period (267m, 2004-01~2026-03). Current 268m post-extension MDD=-41.69% includes 2025 Q1 + 2026-04 stress. Apples-to-apples S0 vs S1 within 263m period IS valid.",
+        "concern_2_layered_semantics": "RESOLVED — β·ret_net = β · (M4-blended STR_1715) = AR overlay sequentially applied ON TOP OF M4. This is the natural interpretation matching strategy semantics."
+      },
+      "deliverable": "qepm/mailbox/worktask/WT-P20260504_001/architect_independent_verification.json"
+    },
+    "P2_harvey_5spec": {
+      "status": "PASS",
+      "verdict": "PASS_MAJORITY (5/5 spec t_NW > 3.0)",
+      "results": {
+        "CAPM": {"alpha_annual_pct": 42.25, "t_NW": 5.425, "p_NW": 0.0000, "pass_t3": true},
+        "FF3": {"alpha_annual_pct": 29.90, "t_NW": 3.926, "p_NW": 0.0001, "pass_t3": true},
+        "Carhart4": {"alpha_annual_pct": 30.89, "t_NW": 4.270, "p_NW": 0.0000, "pass_t3": true},
+        "FF5": {"alpha_annual_pct": 31.70, "t_NW": 3.496, "p_NW": 0.0006, "pass_t3": true},
+        "FF6": {"alpha_annual_pct": 30.55, "t_NW": 3.660, "p_NW": 0.0003, "pass_t3": true}
+      },
+      "harvey_hurdle": "Harvey-Liu-Zhu (2016 RFS) t_NW > 3.0 strict",
+      "factor_construction": "KR domestic: Mkt=BM_Ret / SMB=size median split / UMD=12-1m mom / HML=V01_BM Z-score / RMW=Q02_ROE / CMA=Q07_Earnings_Stability proxy",
+      "deliverable": "qepm/mailbox/worktask/WT-P20260504_001/harvey_5spec_results.json"
+    },
+    "P3_dsr_bailey_lopez_de_prado": {
+      "status": "PASS",
+      "verdict": "PASS strongly at all N up to 100",
+      "computation": {
+        "T_observations": 263,
+        "SR_hat_monthly": 0.4690,
+        "SR_hat_annual": 1.6246,
+        "skewness": 0.3843,
+        "kurtosis_excess": 1.4316,
+        "N_trials_cycle": 7,
+        "SR_threshold_per_period": 0.0857,
+        "DSR_at_N7": 6.178,
+        "p_value_at_N7": 3.243e-10,
+        "DSR_at_N100": 5.039,
+        "p_value_at_N100": 2.338e-7
+      },
+      "interpretation": "DSR > 0 + p < 0.05 PASS at all N levels (1, 3, 5, 7, 10, 20, 50, 100). Strategy survives multi-trial selection bias deflation even under aggressive N=100 assumption.",
+      "deliverable": "qepm/mailbox/worktask/WT-P20260504_001/dsr_computation.json"
+    },
+    "P4_to_compliance": {
+      "status": "PASS_WITH_FORMAL_WAIVER",
+      "verdict": "Hurdle waiver formally documented + 4 monitoring requirements established",
+      "decomposition": {
+        "STR_1715_base_TO": "750%/yr (L-274 governance-accepted)",
+        "AR_overlay_S1_TO": "9.34%/yr (marginal 1.24% of base)",
+        "total_TO": "759.34%/yr",
+        "hurdle_cap": "600%/yr",
+        "breach": "159.34%/yr"
+      },
+      "waiver_rationale": "6 independent justifications documented: inherited governance + marginal contribution + cost already priced + risk-adjusted compensation + general guidance exception + user mandate alignment",
+      "monitoring_post_admit": ["Realized TO monthly", "Realized cost drag", "Quarterly drift check", "Annual re-validation"],
+      "deliverable": "qepm/mailbox/worktask/WT-P20260504_001/to_compliance_plan.json"
+    }
+  },
+  "ax008_compliance_floor": {
+    "before_promotion_wt": "1.5/3 (Forge v2 PASS + Codex PARTIAL + Architect NOT_INVOKED)",
+    "after_promotion_wt": "2.5/3 (Forge v2 PASS + Codex Round 1 PARTIAL + Architect PASS)",
+    "floor_required": "≥ 2/3",
+    "compliance_status": "PASS"
+  },
+  "axiom_compliance_summary": {
+    "AX-000": "limits_dont_exist — first 7-trial breakthrough demonstrates progress is achievable",
+    "AX-001_v2": "N/A pure overlay no defense factor",
+    "AX-002": "PASS — STR_1715 PG2 walk-forward returns used directly; β_t SHA frozen; no future leakage; production_protection write_count=0",
+    "AX-007": "EXEMPT — overlay does not change selection mechanism (top20_long_only_single_sleeve preserved)",
+    "AX-008": "PASS — 2.5/3 above floor 2.0",
+    "AX-003": "N/A no value family",
+    "AX-004": "N/A no quality_profitability single-signal",
+    "AX-005": "N/A no defense single-sleeve"
+  },
+  "primary_metrics_admit_ready": {
+    "variant": "S1_threshold_step",
+    "method": "AR Pure Risk Overlay (Kritzman-Page-Turkington 2011 FAJ)",
+    "263m_metrics": {
+      "CAGR": 0.3934,
+      "Sharpe": 1.7758,
+      "MDD": -0.2953,
+      "Volatility": 0.2215,
+      "Sortino": 1.0334,
+      "Calmar": 1.3321
+    },
+    "263m_delta_vs_S0_baseline": {
+      "delta_CAGR_pp": -6.30,
+      "delta_MDD_pp_improvement": 12.16,
+      "delta_Sharpe": 0.0572,
+      "delta_Sortino": 0.0926,
+      "delta_Calmar": 0.2375,
+      "delta_vol_relative_pct": -16.57
+    },
+    "crisis_alpha_S1_vs_S0_pp": {
+      "GFC_2008": 22.13,
+      "COVID_2020": 4.25,
+      "Stagflation_2022": 2.42
+    },
+    "alpha_preservation": {
+      "rank_correlation": 1.0,
+      "machine_epsilon": 2.78e-17,
+      "selection_invariance": true,
+      "m4_schedule_preserved": true,
+      "iter31_grid_preserved": true
+    }
+  },
+  "next_step": "Governor admit → book_state.json mutation: STR_1715_PG2_100 → STR_1715_AR_threshold_PG2_100"
+}

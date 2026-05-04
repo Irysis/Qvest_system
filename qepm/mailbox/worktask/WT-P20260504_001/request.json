@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-P20260504_001",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission",
+  "hypothesis_title": "STR_1715 + AR_threshold_step Risk Overlay — promotion to PG2 admission",
+  "hypothesis_description": "WT-S20260504_007 Round 3 AR Pure Overlay verdict MONITORING_PLUS (S1_threshold_step). 7-trial 첫 Sharpe IMPROVED + MDD -12pp + alpha 100% preserved triad 달성. 도훈 명시 mandate (1715 alpha 보존 + 리스크만 관리) 4/4 PASS. AX-008 1.5/3 below floor → promotion_wt에서 4 prerequisite (Architect 3rd-source / Harvey 5-spec / DSR / TO compliance) 충족 후 admit.",
+  "hypothesis_source": "user_decision_path_A_2026-05-04",
+  "as_of_date": "2026-05-04",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "parent_wt": "WT-S20260504_007",
+  "predecessor_wts": ["WT-P20260429_002", "WT-S20260504_007"],
+  "inherit_certs": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+  "method": "AR_threshold_step_overlay_on_STR_1715_PG2",
+  "method_specification": {
+    "base_strategy": "STR_1715_WT016_Iter31_GridBestProd PG2 (M4 schedule + walk-forward selection + Top20 + Iter31 grid)",
+    "overlay_layer": "AR_t (Kritzman-Page-Turkington 2011 FAJ) → β_t threshold_step mapping",
+    "ar_params": {"K": 5, "window_days": 252, "universe": "KOSPI200_KOSDAQ150_intersection", "PIT": "t-1 close strict"},
+    "beta_mapping": "β=1.0 if AR<q70 else β=0.7 if AR<q90 else β=0.4",
+    "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18"
+  },
+  "universe_definition": {"label": "KOSPI200_KOSDAQ150_intersection", "liquidity_min_won_20d_avg": 200000000, "max_names_total": 500},
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {"fundamental": "quarterly 45d", "fundamental_annual": "annual May", "price": "t-1 close", "investor_flow": "t-1 settlement", "macro": "t-1 FRED", "ic_history": "Usable_Date <= sig_date"},
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1715_100_PG2",
+  "target_portfolio": "STR_1715_AR_threshold_overlay_PG2",
+  "hard_mandate": {"pit_enforcement": "C1-C15 all enforced", "liquidity_floor_won_20d_avg": 200000000, "mandate_restrictions": {"no_short_legal_kr": true, "no_cross_market": true, "kr_domestic_only": true}, "long_only_mandate": "true"},
+  "hard_constraints": {"max_names": 20, "weight_bounds": [0, 0.20], "weight_sum": 1.0, "long_only": true, "global_hard_cap_ceiling": 0.20},
+  "ax008_prerequisites": {
+    "P1_architect_3rd_source": {
+      "status": "PENDING",
+      "description": "Architect agent independent re-run of AR overlay with STR_1715 PG2 walk-forward holdings (NOT static snapshot). Verify post-hoc result reproducibility within 0.5pp tolerance.",
+      "expected_artifact": "architect_independent_verification.json"
+    },
+    "P2_harvey_5spec": {
+      "status": "PENDING",
+      "description": "Harvey-Liu-Zhu (2016) 5-spec t_NW HAC > 3.0: CAPM / FF3 / Carhart4 / FF5 / FF6. Newey-West HAC standard error. Multi-test deflation.",
+      "expected_artifact": "harvey_5spec_results.json"
+    },
+    "P3_dsr_bailey_lopez_de_prado": {
+      "status": "PENDING",
+      "description": "Bailey-Lopez de Prado (2014) Deflated Sharpe Ratio with n=7 multi-trial selection bias deflation. DSR > 0 + p < 0.05 PASS.",
+      "expected_artifact": "dsr_computation.json"
+    },
+    "P4_to_compliance": {
+      "status": "PENDING",
+      "description": "Total turnover 759.3%/yr breach 600%/yr hard cap. Three options: (a) STR_1715 base churn reduction / (b) hurdle waiver formal / (c) Lockbox-only deployment. Decision required.",
+      "expected_artifact": "to_compliance_plan.json"
+    }
+  },
+  "ax_compliance": {
+    "AX-000": "limits_dont_exist — promotion path activated",
+    "AX-001_v2": "N/A pure overlay no defense factor",
+    "AX-002": "PIT C1-C15 enforced; lro_sha frozen; production_protection STR_1715 read-only",
+    "AX-007": "EXEMPT — overlay does not change selection mechanism",
+    "AX-008": "TARGETING 2/3 PASS — Forge v2 PASS + Codex re-run + Architect 3rd-source"
+  },
+  "primary_objective": {
+    "mdd_target": "≤-29.53% (S1 measured)",
+    "annual_vol_target": "22.15% (S1 measured)",
+    "cagr_floor": "≥39.34% (S1 measured)",
+    "sharpe_target": "≥1.7758 (S1 measured)",
+    "alpha_preservation": "rank_corr == 1.0 strict"
+  },
+  "decision_rule": {
+    "ADMIT": "All 4 prereq PASS + AX-008 ≥ 2/3 + alpha_rank_corr=1.0 + lro_sha match",
+    "DEFER": "Any prereq FAIL or AX-008 < 2/3 → governance log + 30-day re-cycle",
+    "REJECT": "Architect 3rd-source contradicts post-hoc by > 1pp on any metric → method invalidated"
+  },
+  "production_book_state_write": true,
+  "book_state_mutation_target": "STR_1715_PG2_100 → STR_1715_AR_threshold_PG2_100",
+  "active_sot": {
+    "architecture": "02_Infrastructure/docs/qvest_v6_4_sot.md",
+    "operational_layer": "02_Infrastructure/docs/qvest_v7_2_1_sot.md"
+  },
+  "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md",
+  "round": "promotion_path_A",
+  "user_decision": "도훈 2026-05-04 17:30 Path A 선택 — S1_threshold promotion via 4 prereq",
+  "created_at": "2026-05-04T17:35:00+0900",
+  "created_by": "Q-Lead"
+}

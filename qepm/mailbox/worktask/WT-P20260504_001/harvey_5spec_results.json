@@ -1,0 +1,80 @@
+{
+  "task_id": "WT-P20260504_001",
+  "prereq": "P2_harvey_5spec",
+  "variant_under_test": "S1_threshold_step",
+  "n_months": 263,
+  "factor_construction_method": "KR-domestic constructed from RAWDATA (Mkt=BM_Ret/SMB=size median split/UMD=mom_12_1) + Factor DB monthly Z (HML=V01_BM, RMW=Q02_ROE, CMA=Q07_Earnings_Stability proxy)",
+  "hurdle": "Harvey-Liu-Zhu (2016 RFS) t_NW > 3.0",
+  "results": [
+    {
+      "spec": "CAPM",
+      "n_obs": 263,
+      "alpha_monthly": 0.0298,
+      "alpha_annual": 0.4225,
+      "se_NW": 0.0055,
+      "t_NW": 5.4249,
+      "p_NW": 1.3225e-07,
+      "r_squared": 0.0003,
+      "pass_t3": true
+    },
+    {
+      "spec": "FF3",
+      "n_obs": 263,
+      "alpha_monthly": 0.022,
+      "alpha_annual": 0.299,
+      "se_NW": 0.0056,
+      "t_NW": 3.9262,
+      "p_NW": 0.0001,
+      "r_squared": 0.0247,
+      "pass_t3": true
+    },
+    {
+      "spec": "Carhart4",
+      "n_obs": 263,
+      "alpha_monthly": 0.0227,
+      "alpha_annual": 0.3089,
+      "se_NW": 0.0053,
+      "t_NW": 4.2697,
+      "p_NW": 0,
+      "r_squared": 0.0405,
+      "pass_t3": true
+    },
+    {
+      "spec": "FF5",
+      "n_obs": 263,
+      "alpha_monthly": 0.0232,
+      "alpha_annual": 0.317,
+      "se_NW": 0.0066,
+      "t_NW": 3.4964,
+      "p_NW": 0.0006,
+      "r_squared": 0.0273,
+      "pass_t3": true
+    },
+    {
+      "spec": "FF6",
+      "n_obs": 263,
+      "alpha_monthly": 0.0225,
+      "alpha_annual": 0.3055,
+      "se_NW": 0.0061,
+      "t_NW": 3.6597,
+      "p_NW": 0.0003,
+      "r_squared": 0.0443,
+      "pass_t3": true
+    }
+  ],
+  "summary": {
+    "n_pass_t3": 5,
+    "n_total": 5,
+    "pass_rate": 1,
+    "verdict": "PASS_MAJORITY"
+  },
+  "caveats": [
+    "RMW proxied by Q02_ROE (true RMW requires gross profit / book equity from DART; available but not constructed in this run)",
+    "CMA proxied by Q07_Earnings_Stability (true CMA requires asset growth; alternative proxy)",
+    "HML uses V01_BM Z-score; matches Fama-French BM definition closely",
+    "UMD uses 12-1m momentum constructed from RAWDATA returns",
+    "Newey-West lag selected automatically by sandwich::NeweyWest() default",
+    "Multi-test deflation: 5 specs tested → BH or Bonferroni adjustment recommended in companion DSR"
+  ],
+  "created_at": "2026-05-04T18:53:33+09:00"
+}
