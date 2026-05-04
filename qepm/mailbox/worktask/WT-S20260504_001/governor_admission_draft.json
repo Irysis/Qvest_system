@@ -1,0 +1,149 @@
+{
+  "task_id": "WT-S20260504_001",
+  "package_kind": "governor_admission_draft",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-04",
+  "agent": "governor",
+  "round": 1,
+  "draft_revision": "draft",
+  "parent_wt": "WT-P20260429_002",
+  "primary_strategy": "M4+PCA_Hedge",
+  "verdict": "GOVERNOR_REJECTED",
+  "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+
+  "11_field_recommendation_only_contract": {
+    "recommendation_only": true,
+    "book_state_write": false,
+    "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+    "promotion_wt_required": false,
+    "verdict": "GOVERNOR_REJECTED",
+    "verdict_reason_code": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "judge_verdict_alignment": "MONITORING_ONLY (judge) → GOVERNOR_REJECTED (governor) — non-promotion verdicts aligned. recommendation_only WT는 verdict path: book_state mutation 금지 → judge MONITORING_ONLY = governor REJECTED equivalent",
+    "5_status_summary": {
+      "alpha_status": "INHERITED_STUB (sizing_only exempt, parent STR_1715 alpha lineage)",
+      "risk_status": "PASS_CONDITIONAL_via_self_audit (Codex Round 1 REJECT → Q-Lead waiver Round 2)",
+      "optimizer_status": "PASS_CONDITIONAL_via_self_audit (Codex Round 1 REJECT → Q-Lead waiver Round 2)",
+      "forge_status": "PASS_with_codex_pending_waiver (forge_codex_round_status=round1_PENDING_BACKGROUND, Layer 2 sweep deferred)",
+      "judge_status": "MONITORING_ONLY (CAGR floor PASS, Sortino PASS, MDD/vol improvement targets FAIL)"
+    },
+    "recommendation_package_complete": true,
+    "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "abort_reason_code_canonical": "state_transitions.json::ABORTED.required_artifacts::abort_reason"
+  },
+
+  "decision_basis": {
+    "judge_verdict_inherited": "MONITORING_ONLY",
+    "decision_rule_evaluated": {
+      "cagr_floor_20pct": "PASS (43.67% >> 20%)",
+      "mdd_strict_le_25pct": "FAIL (-42.67% > -25%)",
+      "mdd_vs_m4_baseline_minus_3pp": "FAIL (-6.23pp WORSE)",
+      "mdd_vs_s1_baseline_minus_3pp": "FAIL (-4.91pp WORSE)",
+      "vol_vs_m4_minus_20pct": "FAIL (+4.89% WORSE)",
+      "vol_vs_m4_minus_10pct": "FAIL (+4.89% WORSE)",
+      "sortino_ge_1": "PASS (3.41 >> 1.0)",
+      "harvey_t_robust": "FAIL (Lo approx only, no NW HAC, no actual DSR, codex_judge CJ-2)",
+      "ax_001_v2_full_3tuple": "FAIL (PARTIAL only — crisis 2/3 + bad/normal ratio PASS, MDD vs Core FAIL)",
+      "ax_008_triangulation": "FAIL_per_codex (codex_judge CJ-3 echo-chamber risk HIGH, only 1 hard source forge — but recommendation_only WT는 promotion-blocking이 아님)"
+    },
+    "non_promotion_verdict": "MDD primary FAIL + vol improvement FAIL + AX-001 v2 partial only → MONITORING_ONLY judge → governor REJECTED",
+    "alpha_lineage_gap_diagnostic": "L-274 STR_1715 PG2 reference SR 1.75 vs M4+PCA_Hedge SR 1.46 (gap 0.29). parent_alpha_package_sha 34cc99fb는 STR_1715 production 4-layer F1+F2+F3+F4와 동일하지 않음. 이는 본 WT 내부 3-strategy 비교(S1 vs PCA_Hedge vs M4+PCA_Hedge)의 valid를 손상시키지 않으나, 후속 promotion WT 설계 시 alpha lineage repair 우선"
+  },
+
+  "book_state_protection": {
+    "book_state_path": "qepm/mailbox/governor/book_state.json",
+    "current_admit_state_unchanged": "STR_1715 100% PG2 (M4 schedule, L-274) — 변경 없음",
+    "admitted_ids_delta": [],
+    "weights_delta": {},
+    "production_directory_writes_count": 0,
+    "production_directory_audit_path": "STR_1715_WT016_Iter31_GridBestProd/ untouched",
+    "governor_concord_certificate_action": "NOT_ISSUED (DEFERRED_TO_PROMOTION_WT). recommendation_only WT는 book_state mutation 부재 → cert eligibility trigger 없음. 다음 promotion WT 시 발급",
+    "rationale": "recommendation_only WT 본질 — research artifact 산출 + book_state read-only. PCA Latent Hedge는 MONITORING_ONLY artifact로 parking, STR_1715 100% PG2 운용 unchanged"
+  },
+
+  "scenario_identified": "RECOMMENDATION_ONLY_NON_PROMOTION_ABORT",
+
+  "rule_misapplication_check": {
+    "is_replacement_scenario": false,
+    "is_sequential_admission_scenario": false,
+    "rationale": "wt_kind=recommendation_only → book_state mutation 부재 → Sequential Admission TDC < 0.30 / family overlap rule 무관. Replacement 룰도 무관 (STR_1715 대체 시도 아님). codex_judge scenario_rule_audit 일치: 'RF-J6 is not the primary failure, the issue is downstream JUDGE_PASSED/AX-008 signaling, not direct RF-J6 threshold misuse'",
+    "applied_rule": "recommendation_only_abort (book_state read-only contract)",
+    "applied_rule_source": "request.json::wt_kind + dapper-dragon plan §1 WT-001 + state_transitions.json::JUDGE_PASSED.allowed_next=[GOVERNOR_REJECTED,...]",
+    "v6_1_replacement_vs_sequential_clarification": "본 WT는 sizing_only + recommendation_only — 두 룰 어느 쪽도 미적용. governor 룰 매트릭스 (CLAUDE.md governor.md::Replacement vs Sequential Admission)에서 제3 path: NON_MUTATION_RECOMMENDATION_ONLY"
+  },
+
+  "pg1_admission_check": {
+    "pg1_eligible": false,
+    "pg1_eligibility_reason": "wt_kind=recommendation_only, no book_state mutation requested. sizing_only role_card_4x5 own=[governor_concord], inherit=[alpha_discovery, sr_provenance, schedule_fidelity, forge_package_validated] — but recommendation_only override → governor_concord deferred",
+    "alpha_discovery_certificate_status": "INHERITED_EXEMPT_OVERRIDE (request.json::exempt_certs=['alpha_discovery'] + sizing_only)",
+    "graduation_blocked_reasons": [
+      "wt_kind=recommendation_only — promotion path 명시 차단 (request.json::deferred_to=promotion_wt)",
+      "judge MONITORING_ONLY → CAGR PASS but MDD/vol primary objective FAIL",
+      "Codex AX-008 echo-chamber FAIL (CJ-3): risk REJECT + optimizer REJECT + forge PENDING — independent triangulation 부족"
+    ]
+  },
+
+  "charter_compliance": {
+    "charter_v1_7_section_10": "role_card_4x5 sizing_only exempt + recommendation_only override 적용",
+    "ax_002_pure_function": "PASS (judge independent recompute matches forge SR 2.5337 lockbox slice + lro SHA self-match)",
+    "ax_007_single_sleeve_acknowledgement": "본 WT는 single_sleeve_long_only_top20 mechanism 내 — 후속 multi-sleeve / 50+ universe / ML sizing path 검토 필요 (judge_verdict::axiom_assertions::AX_000 follow-up)",
+    "no_silent_override": "Codex Round 1 REJECT (risk + optimizer + judge) 명시 기록 challenge_note.md (alpha/risk/optimizer/judge sections). Forge codex round PENDING → Layer 2 sweep deferred (codex_round_skip_waiver applied per dapper-dragon plan §1 background mode)",
+    "production_protection_audit": "STR_1715 directory write count = 0 verified (request.json::production_protection)"
+  },
+
+  "codex_judge_critique_disposition": {
+    "judge_codex_stance": "REJECT (codex_critic_response_judge.json)",
+    "judge_codex_critical_concerns_count": 7,
+    "governor_disposition": "ACCEPT_DIRECTIONAL_CONSERVATIVE",
+    "governor_disposition_rationale": "Codex judge stance_rationale 명시: 'MONITORING_ONLY/non-promotion is directionally conservative'. Codex 비판의 7 concerns (CJ-1~CJ-7)은 judge의 gate audit overstating에 집중되어 있으나, governor 결정 본질 (book_state 미변경 + REJECT + DEFERRED)은 Codex가 요구하는 conservative path와 일치. 즉 governor 결정은 Codex 비판을 우회하지 않고 정합 — book_state protection이 codex가 요구한 'reduce immediate operational blast radius'와 동치 (codex supporting_arguments[3])",
+    "concerns_disposition_mapping": {
+      "CJ-1_lockbox_boundary": "ACKNOWLEDGED — non-blocking for governor (lockbox boundary 정의는 judge/forge phase issue, governor는 verdict 파이프라인 후행). Q-Lead follow-up 필요",
+      "CJ-2_harvey_dsr_heuristic": "ACKNOWLEDGED — judge robust statistics 강화 의무는 다음 promotion WT (recommendation_only WT 면제 path 가능)",
+      "CJ-3_ax_008_echo_chamber": "PARTIAL_REBUTTAL — recommendation_only WT는 AX-008 2/3 promotion threshold 동일 적용 대상 아님. book_state mutation 부재 = AX-008 enforcement scope 외. 다만 promotion WT 시 AX-008 firm 2/3 수립 의무",
+      "CJ-4_ax_001_partial_to_pass": "ACCEPT — AX-001 v2 PARTIAL은 PASS 표기 금지. governor도 PARTIAL_DEFENSE_LIKE (verdict_reason MDD vs Core FAIL 명시)",
+      "CJ-5_alpha_scores_artifact_path": "ACKNOWLEDGED — judge artifact path consistency Q-Lead follow-up",
+      "CJ-6_method_shopping_inconsistency": "ACKNOWLEDGED — risk/optimizer method shopping 표준화 다음 WT cycle 의무",
+      "CJ-7_cvar_tail_waiver": "ACKNOWLEDGED — formal tail waiver artifact 미생성. recommendation_only WT closure 시점 deferred 정당화"
+    },
+    "rebuttal_q_lead_escalate_required": false,
+    "rebuttal_q_lead_escalate_rationale": "본 WT는 recommendation_only로 closed (no book_state mutation, no promotion). Codex 비판의 7 concerns은 promotion-blocking severity가 아니며 (codex 자체 stance: 'non-promotion conclusion can stand'), Q-Lead escalate path 미발동. Codex가 명시한 'audit basis cannot stand'은 다음 promotion WT 설계 의무로 이관"
+  },
+
+  "next_steps_followup_recommendations": [
+    "alpha-lineage 복구: parent_alpha_package_sha 34cc99fb → STR_1715 production 4-layer (F1+F2+F3+F4) 동기 확보 후 재시도 (judge consensus_concerns JC-2)",
+    "AX-007 single_sleeve mechanism break 우회: multi-sleeve PCA hedge 또는 50+ universe / ML sizing path 설계 (judge_verdict::axiom_assertions::AX_000)",
+    "crisis-conditional deployment: PCA_Hedge_alone GFC -4.69pp 우월성 활용 — full-period 적용 X, regime-conditional only path",
+    "Codex judge 7 concerns 정식 해소: NW HAC Harvey-t + DSR + 5-spec regression + lockbox boundary unification (다음 promotion WT 의무)",
+    "forge codex round Layer 2 sweep manual (Q-Lead): cert_backfill_audit.R --target=WT-S20260504_001 --manual"
+  ],
+
+  "outputs_governor": {
+    "governor_admission_path": "qepm/mailbox/worktask/WT-S20260504_001/governor_admission.json",
+    "governor_admission_draft_path": "qepm/mailbox/worktask/WT-S20260504_001/governor_admission_draft.json",
+    "challenge_note_section_appended": "qepm/mailbox/worktask/WT-S20260504_001/challenge_note.md (governor section)",
+    "book_state_unchanged_path": "qepm/mailbox/governor/book_state.json (no mutation)",
+    "governor_concord_certificate_path": "NOT_ISSUED (DEFERRED_TO_PROMOTION_WT)"
+  },
+
+  "axiom_assertions": {
+    "AX_000": "한계 없음. PCA Latent Hedge 통계적 mechanism real (GFC +9pp / 2022 bear +6.3pp / bad-to-normal ES95 ratio 1.14) but 268m walk-forward MDD/vol trade-off failure. 다음 promotion WT는 alpha lineage 복구 + multi-sleeve / 50+ / ML sizing path 검토",
+    "AX_002_pure_function": "PASS — book_state.json 미변경, production directory write 0, judge independent recompute match",
+    "AX_007_single_sleeve_acknowledged": "본 WT 내 mechanism break 한계 명시 (single_sleeve_long_only_top20)",
+    "AX_008_triangulation_recommendation_only_scope": "AX-008 2/3 promotion threshold는 recommendation_only WT 적용 외 — book_state mutation 부재 시 enforcement scope 외. promotion WT 시 firm 2/3 의무"
+  },
+
+  "state_machine_path": {
+    "expected": "JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED",
+    "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "advance_calls_planned": [
+      "sm_validated_advance(wt_id='WT-S20260504_001', from='JUDGE_PASSED', to='GOVERNOR_REJECTED')",
+      "sm_validated_advance(wt_id='WT-S20260504_001', from='GOVERNOR_REJECTED', to='ABORTED')"
+    ]
+  },
+
+  "schema_version": "v1.0_governor_admission_recommendation_only",
+  "codex_round_status": "round1_DRAFT_pending_codex_critic_response",
+  "created_at": "2026-05-04T11:10:00+09:00",
+  "created_by": "governor-agent (background, dapper-dragon plan §1 WT-001)",
+  "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_001/challenge_note.md"
+}
