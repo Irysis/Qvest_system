@@ -1,0 +1,60 @@
+{
+  "task_id": "WT-S20260504_005",
+  "agent": "governor",
+  "round": 1,
+  "stance": "SKIPPED_BY_WAIVER",
+  "stub_kind": "codex_critic_skip_waiver_lineage_carry",
+  "skip_basis": {
+    "wt_kind": "recommendation_only",
+    "verdict": "MONITORING_ONLY",
+    "admission_gate_triggered": false,
+    "ax_008_lineage_carry_5_prior_agents": {
+      "alpha": "exempt_certs_alpha_discovery_inherited_from_parent_WT-P20260429_002",
+      "risk": "REJECT_round1_TIMEOUT_round2_waiver_applied (codex_critic_response_risk.json absent — round1_timeout)",
+      "optimizer": "REJECT_round1 with 5 ACCEPT + 1 PARTIAL + 1 REBUTTAL no_round2 (codex_critic_response_optimizer.json present + optimizer_challenge_note.md addresses 7 critical concerns)",
+      "forge": "skip_waiver_per_recommendation_only_AX_008_lineage_carry (forge_package codex_round_status=round1_PENDING_round2_waiver_applied)",
+      "judge": "REVISE_round1 with 5 ACCEPT + 2 PARTIAL_ACCEPT + 0 REBUTTAL (codex_critic_response_judge.json present + judge_challenge_note.md addresses 7 critical concerns 4 HIGH + 3 MEDIUM)"
+    },
+    "qlead_dohoon_override": "Plan §4+§5+§6 자율 vs Manual + auto mode 완결 + LRO Round 1 + WT-S20260504_004 RMT precedent",
+    "skip_criteria_evaluation": {
+      "HIGH_severity_ge_5_combined": "NO (4 HIGH from judge codex < 5 threshold)",
+      "AX_hard_FAIL_ge_3": "NO (1 hard FAIL: AX-001 v2 FAIL_DEFENSE_LIKE; AX-008 INSUFFICIENT is soft not hard FAIL)",
+      "PIT_C1_hard_violation": "NO (judge Gate_A_PIT_C1_C15 PASS_WITH_HYGIENE_NOTE)",
+      "hard_constraint_violations": "NO (max_names_le_20 / long_only / weight_bounds_0_to_0p20 / sum_eq_1 all true per forge audit)",
+      "replacement_vs_sequential_admission_rule_mismatch": "N/A (recommendation_only WT, no admission rule applied)",
+      "lockbox_structurally_unavailable_DEFERRED_auto_decision": "N/A (lockbox NOT_APPLICABLE for sizing_only / recommendation_only per Judge v6.1)"
+    }
+  },
+  "stance_enum_one_of": ["APPROVE", "APPROVE_CONDITIONAL", "REVISE", "REJECT", "SKIPPED_BY_WAIVER"],
+  "critical_concerns_count": 0,
+  "high_severity_count": 0,
+  "medium_severity_count": 0,
+  "low_severity_count": 0,
+  "weakest_assumption": "Codex Round absent on governor stage relies on lineage carry from 5 prior agents + Plan §6 자율 vs Manual design. For recommendation_only WT closure with admission gate NOT TRIGGERED, this is rationally consistent but introduces lineage carry risk for any successor deployment WT — mitigated by future_promotion_blocker_list block_5 (independent triangulation PASS≥2 via separate architect spawn or Codex APPROVE_CONDITIONAL stance) requiring re-establishment for any future PASS/CONDITIONAL_PASS verdict.",
+  "rebuttal_grounds_for_skip": {
+    "academic_citation_1": "Charter v1.7 §8 No Silent Override permits explicit waiver with documented rationale + skip criteria evaluation",
+    "academic_citation_2": "Charter v1.7 §10 Codex Round Triggers — recommendation_only WT closure + verdict=MONITORING_ONLY (admission gate NOT triggered) does not require Codex Round when AX-008 lineage carry from 5 prior agents documented",
+    "L_code_anchor_1": "WT-S20260503_001 governor_admission.json LRO Round 2 final precedent — Codex Round 1 REVISE addressed via amendments, no Round 2 needed for recommendation_only closure",
+    "L_code_anchor_2": "WT-S20260504_004 RMT governor_admission_draft.json — codex_critic_skip_waiver_pending_post_draft_codex_response_or_lineage_carry pattern",
+    "quantitative_data_3_axis": [
+      "axis_1_HIGH_severity: 4 HIGH (judge codex C1 RF-J1 hard gate + C2 AX-008 overstated + C4 Harvey not verified + C5 R² silent override) ALL ACCEPT in judge_challenge_note + recorded in judge_verdict.gate_verdicts dual disposition. Governor inherits via judge_handoff_inheritance.judge_verdict_dual_disposition with verbatim 5-field reproduction. < 5 threshold.",
+      "axis_2_AX_hard_FAIL: 1 hard FAIL (AX-001 v2 FAIL_DEFENSE_LIKE per CRISIS regime SR -0.160 < S1 +0.018 per judge ax_001_v2_defense_like_evaluation). AX-008 INSUFFICIENT_PASS_SOURCES is soft (1/2 minimum) not hard FAIL. AX-002 PASS_WITH_HONESTY_NOTE (silent 0.005 borderline_tol exposed but admission rejected anyway). AX-007 ACTIVATED documented (single_sleeve mechanism break empirical). AX-005 not applicable. AX-000 PRESERVED. < 3 threshold.",
+      "axis_3_PIT_C1: 0 hard violation (judge Gate_A_PIT_C1_C15 PASS_WITH_HYGIENE_NOTE — 7 PIT codes verified C1/C2/C9/C10/C11/C13/C14 all PASS; IRAN_LMR_2026 PARTIAL_ACCEPT with 5/5 invariance rebuttal lro_params_frozen sha 9e9784f7... SHA-frozen at IS cutoff 2024-06-30 OOS via projection only no refit). Hygiene flag for crisis_prone_factor_id artifact split is for successor deployment_wt, NOT block for recommendation_only closure."
+    ]
+  },
+  "lineage_carry_post_judge": {
+    "judge_codex_response": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_judge.json (REVISE round 1, 7 concerns 4 HIGH + 3 MEDIUM, all addressed via judge_challenge_note 5 ACCEPT + 2 PARTIAL_ACCEPT)",
+    "optimizer_codex_response": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_optimizer.json (REJECT round 1, 7 concerns, all addressed via optimizer_challenge_note 5 ACCEPT + 1 PARTIAL + 1 REBUTTAL + cost_post_metrics block + infeasibility_report 2 violations)",
+    "alpha_codex_response": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_alpha.json (SKIPPED_BY_WAIVER stub — exempt_certs alpha_discovery inherited)",
+    "risk_codex_response": "ABSENT — risk_package codex_round_status=round1_timeout_round2_waiver_applied per Q-Lead",
+    "forge_codex_response": "ABSENT — forge_package codex_round_status=round1_PENDING_round2_waiver_applied per Q-Lead under 도훈 auto mode + LRO Round 1 pattern"
+  },
+  "post_skip_actions_required": [
+    "Layer 2 sweep: Rscript 02_Infrastructure/ops/cert_backfill_audit.R --auto (bootstrap auto) — confirms governor_concord cert DEFERRED_TO_PROMOTION_WT (no cert to backfill)",
+    "Q-Lead Telegram brief: 11-field verify + state_machine_transition recorded per Plan §10",
+    "Q-Lead post-judge memory housekeeping L-275+: factor_beta_hedge marginal value diagnosis, AX-007 single_sleeve mechanism break empirical observation, methodology_active.md update"
+  ],
+  "promoted_to_final_at": "2026-05-04T10:00:00+0900",
+  "created_by": "governor agent (Q-Lead spawn, background, auto mode skip_waiver lineage carry)",
+  "created_at": "2026-05-04T10:00:00+0900"
+}

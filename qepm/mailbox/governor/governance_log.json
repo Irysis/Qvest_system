@@ -575,5 +575,70 @@
         }
       }
     }
+  ],
+  "recommendation_only_closures": [
+    {
+      "timestamp": "2026-05-04T10:05:00+0900",
+      "action": "RECOMMENDATION_ONLY_CLOSURE",
+      "task_id": "WT-S20260504_005",
+      "wt_kind": "recommendation_only",
+      "wt_type": "sizing_only",
+      "parent_wt": "WT-P20260429_002",
+      "method": "Factor_Beta_Hedge_M4_Iter31_Cash",
+      "judge_decision": "MONITORING_ONLY",
+      "judge_dual_disposition": {
+        "spec_decision_rule": "MONITORING_ONLY",
+        "hard_gate_audit": "FAIL_RF-J1_TURNOVER_AND_HURDLE_HARD_MDD_POST_COST",
+        "ax_001_v2": "FAIL_DEFENSE_LIKE",
+        "ax_008": "INSUFFICIENT_PASS_SOURCES_1_OF_2",
+        "harvey": "NOT_VERIFIED"
+      },
+      "governor_verdict": "MONITORING_ONLY",
+      "governor_RECOMMENDED_ACTION": "KEEP",
+      "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
+      "book_state_write_count": 0,
+      "book_state_md5_pre": "6ee7406544d12f083764a8baf8c6ad81",
+      "book_state_md5_post": "6ee7406544d12f083764a8baf8c6ad81",
+      "book_state_invariant_verified": true,
+      "state_machine_transitions": [
+        "JUDGE_PASSED→GOVERNOR_REJECTED",
+        "GOVERNOR_REJECTED→ABORTED"
+      ],
+      "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+      "codex_round_governor_status": "round1_skip_waiver_lineage_carry_per_recommendation_only_AX_008",
+      "qlead_escalate_triggered": false,
+      "successor_wt_required": true,
+      "successor_wt_paths": [
+        "quarterly_rebalance (716% TO → 240%)",
+        "CVaR-LP (Pflug-Romisch 2007)",
+        "HRP+CDaR (Pfaff Ch12 + Lopez de Prado 2012)",
+        "alpha_turnover_penalty_EWMA_Kalman",
+        "F2-F5 latent factor hedge",
+        "harvey_t_panel.json + crisis_prone_factor_id_5crises.json + AX-008 PASS≥2"
+      ],
+      "axiom_summary": {
+        "AX_000": "PRESERVED",
+        "AX_001_v2": "FAIL_DEFENSE_LIKE (CRISIS regime SR -0.160 vs S1 +0.018)",
+        "AX_002": "PASS_WITH_HONESTY_NOTE (silent 0.005 borderline_tol exposed in R²<0.30 strict gate FAIL)",
+        "AX_005": "NOT_APPLICABLE",
+        "AX_007": "ACTIVATED (single_sleeve_long_only_top20 mechanism break empirical, framework retained for AX-007 exception 4 paths)",
+        "AX_008": "INSUFFICIENT_PASS_SOURCES_1_OF_2_MINIMUM (forge=PASS only; codex_optimizer/judge=addressed-not-PASS; codex_risk=TIMEOUT)"
+      },
+      "lineage_artifacts": [
+        "qepm/mailbox/worktask/WT-S20260504_005/governor_admission.json",
+        "qepm/mailbox/worktask/WT-S20260504_005/governor_admission_draft.json",
+        "qepm/mailbox/worktask/WT-S20260504_005/governor_challenge_note.md",
+        "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_governor.json",
+        "qepm/mailbox/worktask/WT-S20260504_005/status.json",
+        "qepm/mailbox/worktask/WT-S20260504_005/judge_verdict.json",
+        "qepm/mailbox/worktask/WT-S20260504_005/forge_package.json"
+      ],
+      "precedent_pattern_carry": [
+        "WT-S20260503_001 (LRO Round 1 recommendation_only closure)",
+        "WT-S20260504_004 (RMT Round 1 recommendation_only closure draft)"
+      ],
+      "plan_ref": "/home/quant/.claude/plans/qvest-v7-2-1-execution-prompt-dapper-dragon.md §4+§5+§6+§9+§10",
+      "controlled_non_production_closure_attestation": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE + recommendation_package_complete=true is NOT research failure; it is controlled non-production closure for recommendation_only WT per Charter v1.7 §8 No Silent Override + Plan §6 Manual book_state mutation reserved for 도훈 only."
+    }
   ]
 }
