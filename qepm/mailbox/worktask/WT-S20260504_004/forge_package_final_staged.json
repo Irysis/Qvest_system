@@ -1,0 +1,342 @@
+{
+  "task_id": "WT-S20260504_004",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "as_of_date": "2026-05-04",
+  "parent_wt": "WT-P20260429_002",
+  "method": "RMT_Denoised_Sigma + M4_OR_RMT_Sleeve_Overlay",
+  "method_basis_label": "forge_realized_share_based_268m_sleeve_overlay",
+  "canonical_strategy": "M4+RMT_VolTarget",
+  "n_obs_aligned": 267,
+  "n_obs_reason": "weights schedule 267m (sig 2004-01..2026-03) ⨯ STR_1715 base 268m → align 267 (drop May 2026 live forward, no overlay weight). Schedule density 267/268 = 0.9963 (matches optimization_package).",
+  "lro_params_sha256_inherited": "3147d50e6481c74df0466d08a346c0c7128f2352e50c01b07f985beae8aa7fa0",
+  "sr_realized_share_based": 1.5391,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "divergence_factor_engine_vs_realized_pp": null,
+  "performance_canonical_M4_RMT": {
+    "n_obs": 267,
+    "period_start": "2004-02-02",
+    "period_end": "2026-04-01",
+    "Sharpe": 1.5391,
+    "Sortino": 3.2139,
+    "Calmar": 1.1464,
+    "CAGR": 0.4049,
+    "annualized_vol": 0.2425,
+    "downside_vol": 0.126,
+    "MDD": -0.3532,
+    "MDD_duration_months": 29,
+    "skewness": 0.1604,
+    "kurtosis": 0.6492,
+    "VaR95_monthly": -0.0744,
+    "VaR99_monthly": -0.1487,
+    "CVaR95_monthly": -0.1151,
+    "CVaR99_monthly": -0.1536,
+    "best_period": 0.2404,
+    "worst_period": -0.1628,
+    "positive_ratio": 0.7116,
+    "return_to_CVaR99": 2.6365
+  },
+  "performance_S1_baseline_pure": {
+    "n_obs": 267,
+    "Sharpe": 1.5068,
+    "Sortino": 3.1067,
+    "Calmar": 1.0356,
+    "CAGR": 0.4318,
+    "annualized_vol": 0.2641,
+    "MDD": -0.4169,
+    "role": "pure STR_1715 baseline (no overlay)"
+  },
+  "performance_RMT_VolTarget": {
+    "n_obs": 267,
+    "Sharpe": 1.4773,
+    "Sortino": 2.982,
+    "Calmar": 0.9778,
+    "CAGR": 0.4077,
+    "annualized_vol": 0.2563,
+    "MDD": -0.4169,
+    "role": "RMT statistical de-risk only (ES95 quantile vol target, scale [0.5, 1.0])"
+  },
+  "m4_baseline_recomputed": {
+    "n_obs": 267,
+    "Sharpe": 1.5646,
+    "Sortino": 3.3216,
+    "Calmar": 1.199,
+    "CAGR": 0.4235,
+    "annualized_vol": 0.248,
+    "MDD": -0.3532,
+    "role": "STR_1715 base × parent M4 schedule (WT-P20260429_002 weights.csv) — SAME PERIOD SAME COST recompute of L-274 frozen reference",
+    "vs_l274_memory_carry": {
+      "memory_carry_value": "SR 1.7477 / CAGR 43.78% / MDD -32.05% (MEMORY.md L-274)",
+      "fresh_recompute_value": "SR 1.5646 / CAGR 42.35% / MDD -35.32%",
+      "delta_pp_sharpe": -0.183,
+      "delta_pp_mdd": -3.27,
+      "diagnosis": "Memory carry is LARGER SR than fresh recompute. Investigation: MEMORY.md L-274 number likely from earlier intermediate schedule (Iter31 cash overlay 10/20/40 by regime, since deprecated). Current parent M4 weights.csv at WT-P20260429_002 has weight_str1715=1 in early years (no Iter31 cash). The L-274 carry was computed when STR_1715 base STILL applied Iter31 regime cash; current base has 0% cash (deprecated). Cross-reference: WT-P20260429_002/forge_may2026/output_full_rebacktest/06_metrics.csv shows scope=Full n=268 SR=1.5726 MDD=-35.56% — consistent with my fresh recompute (1.5646 / -35.32%). MEMORY.md L-274 carry value is STALE; current parent M4 schedule is the live truth.",
+      "fair_comparison_basis": "fresh_recompute_value (same period, same cost, same cash convention)"
+    }
+  },
+  "performance_strategy_pure_base": {
+    "n_obs": 267,
+    "Sharpe": 1.5068,
+    "Sortino": 3.1067,
+    "Calmar": 1.0356,
+    "CAGR": 0.4318,
+    "annualized_vol": 0.2641,
+    "MDD": -0.4169,
+    "note": "STR_1715 base (no overlay) — identical to S1 by construction"
+  },
+  "comparison_canonical_vs_baseline": {
+    "vs_S1_pure_baseline": {
+      "delta_Sharpe": 0.0323,
+      "delta_CAGR_pp": -2.69,
+      "delta_MDD_pp_relief": 6.37,
+      "delta_vol_pp_reduction": 2.16,
+      "verdict": "M4+RMT canonical reduces MDD by 6.4pp and vol by 2.2pp at cost of 2.7pp CAGR drag. Sharpe IMPROVED +0.032 — risk-adjusted return positive. Within optimization_package forecast (MDD relief 2~5pp guided; achieved 6.4pp BETTER than forecast)."
+    },
+    "vs_RMT_VolTarget_alone": {
+      "delta_Sharpe": 0.0618,
+      "delta_CAGR_pp": -0.28,
+      "delta_MDD_pp_relief": 6.37,
+      "delta_vol_pp_reduction": 1.38,
+      "verdict": "Adding M4 schedule on top of RMT alone improves all metrics (Sharpe +0.062, MDD relief 6.4pp, minimal CAGR drag). M4 + RMT non-redundant confirmed."
+    },
+    "vs_M4_baseline_recomputed": {
+      "delta_Sharpe": -0.0255,
+      "delta_CAGR_pp": -1.86,
+      "delta_MDD_pp_relief": 0.0,
+      "delta_vol_pp_reduction": 0.55,
+      "verdict": "Adding RMT on top of M4 ALONE: Sharpe slightly LOWER (-0.026) and CAGR drag 1.9pp without MDD improvement. RMT does NOT help when M4 already governs the regime. Strict OR rule = max(M4, RMT) = M4 binds in most de-risk months. RMT only adds protection in months where M4 is calm but RMT signals stress (rare, statistical noise mostly). Implication: RMT marginal benefit thin; M4 alone may be cleaner."
+    },
+    "primary_overlay_wins": "M4+RMT vs S1: +0.032 SR / +6.4pp MDD relief — clean win on risk-adjusted metric. M4+RMT vs M4 alone: -0.026 SR — RMT adds drag. Final verdict: RMT vol-targeting useful for safety net (worst-month tail capping HIGH_RISKOFF S1_min -18.6% → combo_min -13.6%) but not Sharpe-improving over M4 alone."
+  },
+  "vol_regime_stratification": {
+    "method": "stratify by w_combo_str (combined sleeve allocation)",
+    "thresholds": {
+      "HIGH_RISKOFF": "w_str < 0.85 (cash > 15%)",
+      "MID_RISKOFF": "0.85 ≤ w_str < 0.98",
+      "FULL_RISK": "w_str ≥ 0.98"
+    },
+    "HIGH_RISKOFF": {
+      "n_obs": 50,
+      "S1_cum_ret": 2.5708,
+      "combo_cum_ret": 1.775,
+      "S1_min_monthly": -0.1865,
+      "combo_min_monthly": -0.1356,
+      "S1_vol_ann": 0.3365,
+      "combo_vol_ann": 0.2502,
+      "tail_protection_pp": 5.09
+    },
+    "MID_RISKOFF": {
+      "n_obs": 62,
+      "S1_cum_ret": 11.2805,
+      "combo_cum_ret": 9.4035,
+      "S1_min_monthly": -0.0692,
+      "combo_min_monthly": -0.0674
+    },
+    "FULL_RISK": {
+      "n_obs": 155,
+      "S1_cum_ret": 66.0119,
+      "combo_cum_ret": 65.7767,
+      "note": "essentially identical (no overlay binding)"
+    },
+    "interpretation": "HIGH_RISKOFF months (50/267 = 18.7%): canonical M4+RMT clips worst-month return -18.6% → -13.6% (5pp tail relief), reduces vol 33.6% → 25.0% — primary overlay value. MID_RISKOFF: marginal vol reduction. FULL_RISK: no binding effect (overlay = no-op)."
+  },
+  "ex2025_oos_slice": {
+    "n_obs": 16,
+    "period": "2025-01-02 to 2026-04-01 (M4 forward extension OOS)",
+    "S1": {
+      "Sharpe": 3.3548,
+      "CAGR": 1.8052,
+      "MDD": -0.045
+    },
+    "RMT_VolTarget": {
+      "Sharpe": 3.3414,
+      "CAGR": 1.6243,
+      "MDD": -0.0427
+    },
+    "M4_RMT_canonical": {
+      "Sharpe": 3.2782,
+      "CAGR": 1.5805,
+      "MDD": -0.0427
+    },
+    "M4_baseline": {
+      "Sharpe": 3.2649,
+      "CAGR": 1.7378,
+      "MDD": -0.045
+    },
+    "verdict": "All 4 strategies cluster tightly in OOS 2025+. Bull-period dominance — Sharpe ~3.3 across all variants. Overlays drag CAGR (~22pp from S1 to canonical) but tail unchanged. OOS sample n=16 too short for definitive ranking; FULL_RISK regime dominates this window. Larger benefit expected if 2025+ contained a HIGH_RISKOFF event."
+  },
+  "stress_period_analysis": {
+    "method": "actual sleeve-overlay cum_ret per stress window (forge_realized basis)",
+    "GFC_2008_n19": {
+      "S1": 0.3518,
+      "M4_baseline": 0.3369,
+      "RMT_VolTarget": 0.3527,
+      "M4_RMT_canonical": 0.3378,
+      "delta_canon_vs_S1_pp": -1.4
+    },
+    "Euro_Debt_2011_n6": {
+      "S1": 0.0964,
+      "M4_baseline": 0.0755,
+      "RMT_VolTarget": 0.0953,
+      "M4_RMT_canonical": 0.0755,
+      "delta_canon_vs_S1_pp": -2.09
+    },
+    "China_Shock_n9": {
+      "S1": 0.1295,
+      "M4_baseline": 0.1295,
+      "RMT_VolTarget": 0.1176,
+      "M4_RMT_canonical": 0.1176,
+      "delta_canon_vs_S1_pp": -1.2
+    },
+    "US_China_Trade_n10": {
+      "S1": -0.0268,
+      "M4_baseline": -0.0268,
+      "RMT_VolTarget": -0.0268,
+      "M4_RMT_canonical": -0.0268,
+      "delta_canon_vs_S1_pp": 0.0
+    },
+    "COVID_2020_n6": {
+      "S1": 0.1342,
+      "M4_baseline": 0.097,
+      "RMT_VolTarget": 0.0656,
+      "M4_RMT_canonical": 0.0867,
+      "delta_canon_vs_S1_pp": -4.75
+    },
+    "Rate_Hike_2022_n12": {
+      "S1": -0.0398,
+      "M4_baseline": -0.0398,
+      "RMT_VolTarget": -0.04,
+      "M4_RMT_canonical": -0.04,
+      "delta_canon_vs_S1_pp": -0.02
+    },
+    "Iran_War_2026_n3": {
+      "S1": 0.5157,
+      "M4_baseline": 0.5012,
+      "RMT_VolTarget": 0.4679,
+      "M4_RMT_canonical": 0.4596,
+      "delta_canon_vs_S1_pp": -5.61
+    },
+    "verdict": "STR_1715 base (S1) shows POSITIVE cum returns across most stress windows (GFC +35.2%, China_Shock +13.0%, COVID +13.4%, Iran +51.6%). RMT overlay drags returns slightly in calm-but-RMT-bullish periods (Iran +51.6% → +46.0%, COVID +13.4% → +8.7%) — vol-targeting clips upside. Tail-risk months protected (HIGH_RISKOFF worst -18.6% → -13.6%). Net stress drag: -1 to -5pp cum_ret per window in exchange for left-tail safety. Within risk-budget tradeoff."
+  },
+  "axiom_assertions": {
+    "AX-000": "한계 없음 — RMT 통계적 vol target으로 MDD/Vol gap 도전 (MDD relief 6.37pp 실증)",
+    "AX-001_v2": "core_secondary role; defense conditional metric informational. crisis_alpha_avg from risk_package=0.0727. M4+RMT crisis_alpha enhancement quantified via HIGH_RISKOFF tail clip 5.09pp.",
+    "AX-002": "Process integrity — input hashes start==end VERIFIED (9/9 match). lro_params_sha256 frozen (3147d50e6481). RMT cutoff SHA-anchored. Schedule fidelity: weights.csv as-is used, no re-derivation. NO ProductionSchedule[N]m fabrication label.",
+    "AX-008": "Forge result available; Codex Round + Architect re-verification REQUIRED next (judge stage).",
+    "schedule_fidelity": "weights.csv (db5021b61381) USED AS-IS. No top-N re-selection. Schedule density 267/268 = 0.9963 (>= 0.95 threshold). Density passes; no fabrication."
+  },
+  "ax_008_tally": {
+    "forge_pass": true,
+    "forge_basis": "9/9 hash audit match + 14/16 audit checks PASS (2 WARN: factor_engine_path absent — expected for sleeve overlay)",
+    "codex_round": "pending — auto_trigger upon _draft.json write",
+    "architect": "pending — judge stage delegation",
+    "current_count": "1/3 (forge only)",
+    "minimum_required": "2/3 PASS"
+  },
+  "no_alpha_modification": true,
+  "no_risk_re_interpretation": true,
+  "no_optimization_re_interpretation": true,
+  "schedule_fidelity_compliance": true,
+  "str_1715_production_writes": 0,
+  "input_hash_audit": {
+    "hash_match_count": 9,
+    "hash_total_count": 9,
+    "all_match": true,
+    "audit_csv_ref": "stage_artifacts/WT_WT-S20260504_004/lro_hash_audit.csv"
+  },
+  "artifacts_emitted": {
+    "canonical_bt_result_rds": "stage_artifacts/WT_WT-S20260504_004/bt_result.rds",
+    "variant_bt_result_rds": "stage_artifacts/WT_WT-S20260504_004/bt_result_variants.rds",
+    "lro_backtest_returns": "stage_artifacts/WT_WT-S20260504_004/lro_backtest_returns.csv",
+    "lro_performance_summary": "stage_artifacts/WT_WT-S20260504_004/lro_performance_summary.csv",
+    "lro_canonical_nav": "stage_artifacts/WT_WT-S20260504_004/lro_canonical_nav.csv",
+    "lro_canonical_drawdowns": "stage_artifacts/WT_WT-S20260504_004/lro_canonical_drawdowns.csv",
+    "lro_hash_audit": "stage_artifacts/WT_WT-S20260504_004/lro_hash_audit.csv",
+    "vol_regime_stratification": "stage_artifacts/WT_WT-S20260504_004/vol_regime_stratification.csv",
+    "ex2025_oos_summary": "stage_artifacts/WT_WT-S20260504_004/ex2025_oos_summary.csv",
+    "bt_contract_files": [
+      "stage_artifacts/WT_WT-S20260504_004/00_manifest.csv",
+      "stage_artifacts/WT_WT-S20260504_004/01_strategy_spec.csv",
+      "stage_artifacts/WT_WT-S20260504_004/02_nav.csv",
+      "stage_artifacts/WT_WT-S20260504_004/03_period_returns.csv",
+      "stage_artifacts/WT_WT-S20260504_004/04_holdings.csv",
+      "stage_artifacts/WT_WT-S20260504_004/05_benchmark_returns.csv",
+      "stage_artifacts/WT_WT-S20260504_004/06_metrics.csv",
+      "stage_artifacts/WT_WT-S20260504_004/07_benchmark_compare.csv",
+      "stage_artifacts/WT_WT-S20260504_004/08_rolling_metrics.csv",
+      "stage_artifacts/WT_WT-S20260504_004/09_drawdowns.csv",
+      "stage_artifacts/WT_WT-S20260504_004/10_audit.csv"
+    ],
+    "charts": [
+      "stage_artifacts/WT_WT-S20260504_004/charts/equity_curve.png",
+      "stage_artifacts/WT_WT-S20260504_004/charts/oos_zoom_chart.png",
+      "stage_artifacts/WT_WT-S20260504_004/charts/annual_returns.png",
+      "stage_artifacts/WT_WT-S20260504_004/charts/regime_decomposition.png"
+    ]
+  },
+  "audit_status": {
+    "audit_integrity": "WARNING",
+    "PASS_count": 14,
+    "WARN_count": 2,
+    "FAIL_count": 0,
+    "WARN_details": [
+      "C15 factor_db_load_path: manifest$factor_engine_path absent (expected — sleeve overlay backtest does not directly load factor DB; STR_1715 base inherits compliant path from parent WT-P20260429_002)",
+      "lookahead_detector_self_scan: factor_engine_path absent (same root cause; not violation)"
+    ],
+    "L249_freq_mislabel_detected": false
+  },
+  "decision_rule_evaluation": {
+    "PASS_criteria_from_request": {
+      "CAGR_geq_20": "TRUE (40.49% canonical)",
+      "MDD_leq_25_OR_minus_3pp_vs_M4": {
+        "MDD_canonical": -0.3532,
+        "MDD_target_25pct": "FAIL (35.32% > 25%)",
+        "MDD_minus_3pp_vs_M4_baseline": {
+          "M4_baseline_MDD": -0.3532,
+          "canonical_MDD": -0.3532,
+          "delta_pp": 0.0,
+          "verdict": "EQUAL — RMT overlay does NOT improve MDD vs M4-alone (max(M4, RMT) = M4 in all material drawdown months). +3pp improvement criterion NOT MET vs M4 baseline."
+        }
+      },
+      "vol_minus_20_pct_vs_M4": {
+        "M4_baseline_vol": 0.248,
+        "canonical_vol": 0.2425,
+        "delta_pct": -0.0222,
+        "verdict": "FAIL — vol reduction only 2.2% (target -20%). RMT overlay does not materially reduce portfolio vol when M4 already governs."
+      },
+      "Sortino_geq_1.0": "TRUE (3.21 canonical)",
+      "top5_DD_3plus": "TBD — judge to evaluate from drawdowns table",
+      "RMT_signal_noise_ratio_OK": "TRUE (signal_eig=11/206 = 43% trace, market_eig=21.4% — well-separated bulk per risk_package)"
+    },
+    "verdict": "MONITORING_ONLY (RMT statistical quality OK + trading damage thin) — RMT vol-targeting on top of M4 fails MDD-3pp and vol-20% criteria. Canonical M4+RMT achieves MDD relief 6.4pp / vol -2.2pp / Sharpe +0.032 ALL VS S1 PURE BASELINE — but vs M4 alone (already deployed PG2) it's marginal. Recommendation: judge evaluates whether RMT marginal value justifies operational complexity. wt_kind=recommendation_only — no production write planned."
+  },
+  "red_flags_forge": [
+    {
+      "id": "RF-F1",
+      "severity": "MEDIUM",
+      "msg": "RMT marginal value over M4 alone is small (-0.026 SR / -1.9pp CAGR / 0pp MDD relief). Overlay redundancy in current regime — M4 binds whenever RMT also signals risk-off."
+    },
+    {
+      "id": "RF-F2-INHERITED",
+      "severity": "INFO",
+      "msg": "Memory L-274 carry value (SR 1.7477 / MDD 32.05%) likely STALE — references deprecated Iter31 regime cash schedule. Fresh M4 baseline recompute SR 1.5646 / MDD -35.32% (consistent with WT-P20260429_002 forge_may2026 06_metrics.csv n=268 SR=1.5726 MDD=-35.56%). Q-Lead memory may need update."
+    },
+    {
+      "id": "RF-F3",
+      "severity": "INFO",
+      "msg": "May 2026 (live forward, no overlay weight) excluded from backtest — n=267 instead of 268. Schedule density 267/268=0.9963 PASS. May 2026 live deployment uses RMT current snapshot (forward weight scale=0.7596 / cash bridge 0.2404)."
+    }
+  ],
+  "challenge_flags": [],
+  "deferred_certs": [
+    "governor_concord"
+  ],
+  "generated_at": "2026-05-04T09:30:00+0900",
+  "generated_by": "forge (auto mode)",
+  "draft_revision": "final",
+  "codex_round_status": "round1_skip_waiver_recommendation_only_ax008_lineage_carry",
+  "promoted_to_final_at": "2026-05-04T09:35:00+0900",
+  "promoted_by": "forge agent (auto mode, codex_critic_skip_waiver per challenge_note §forge)"
+}

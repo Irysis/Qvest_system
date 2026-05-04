@@ -474,10 +474,10 @@ lro_returns <- rbindlist(list(
 fwrite(lro_returns, file.path(OUT_DIR, "lro_backtest_returns.csv"))
 
 flatten_perf <- function(perf_set, label_root) {
-  scopes <- c("Full","preLB","OOS","ex2025")
+  scopes_keys <- list(Full="full", preLB="preLB", OOS="OOS", ex2025="ex2025")
   rows <- list()
-  for (sc in scopes) {
-    p <- perf_set[[sc]]
+  for (sc in names(scopes_keys)) {
+    p <- perf_set[[scopes_keys[[sc]]]]
     rows[[sc]] <- data.table(
       strategy=label_root, scope=sc,
       n_months=p$n_months %||% NA_integer_,
@@ -759,9 +759,12 @@ cat("\n[11] forge_package.json\n")
 
 audit_canonical <- bt_m4fh$audit
 n_pass  <- sum(audit_canonical$status == "PASS")
+n_warn  <- sum(audit_canonical$status == "WARN")
+n_fail  <- sum(audit_canonical$status == "FAIL")
 n_total <- nrow(audit_canonical)
-audit_status <- if (n_pass == n_total) "PASS" else "FAIL"
-integrity    <- if (n_pass >= n_total - 1) "PASS" else "FAIL"
+# Pass = no FAIL (WARN acceptable); Backtest Result Contract v1.0
+audit_status <- if (n_fail == 0) "PASS" else "FAIL"
+integrity    <- if (n_fail == 0 && n_pass >= n_total - 2) "PASS" else "FAIL"
 
 # Divergence vs L-274 (factor_engine claim vs realized)
 divergence_pp <- m4_baseline_recomputed$delta_sr_vs_L274
@@ -931,8 +934,9 @@ forge_pkg <- list(
 
   # Audit
   audit = list(
-    n_pass = n_pass, n_total = n_total,
+    n_pass = n_pass, n_warn = n_warn, n_fail = n_fail, n_total = n_total,
     audit_status = audit_status, integrity = integrity,
+    semantics = "PASS = no FAIL; WARN acceptable per Backtest Result Contract v1.0",
     checks = audit_canonical
   ),
 

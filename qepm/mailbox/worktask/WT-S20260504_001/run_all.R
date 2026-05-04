@@ -158,10 +158,25 @@ cat(sprintf("[M4 schedule] rows=%d range=%s~%s mean(w_cash)=%.4f n(w_cash>0)=%d\
             mean(M4$weight_cash), sum(M4$weight_cash > 0)))
 
 # ─── 3. Apply M4 overlay to M4+PCA variant ───────────────────────────────────
-W_M4P_overlay <- copy(W_M4P)
-W_M4P_overlay <- merge(W_M4P_overlay, M4, by = "Date", all.x = TRUE)
+# Note: PCA sig_dates are first-of-calendar-month while M4 dates are first
+# trading day of month. Use rolling join to snap PCA sig_date to most recent
+# M4 date <= sig_date (PIT-safe, no future leak).
+M4_join <- copy(M4); setkey(M4_join, Date)
+W_M4P_overlay <- copy(W_M4P); setkey(W_M4P_overlay, Date, Ticker)
+# rolling join: per (Date), find latest M4 row with M4_Date <= Date
+W_M4P_overlay[, M4_Date := Date]
+overlay_lookup <- M4_join[W_M4P_overlay[, .(Date = unique(Date))],
+                          on = "Date", roll = TRUE]
+overlay_lookup <- overlay_lookup[, .(Date, weight_str1715, weight_cash)]
+overlay_lookup[is.na(weight_str1715), weight_str1715 := 1]
+overlay_lookup[is.na(weight_cash),    weight_cash    := 0]
+W_M4P_overlay[, M4_Date := NULL]
+W_M4P_overlay <- merge(W_M4P_overlay, overlay_lookup, by = "Date", all.x = TRUE)
 W_M4P_overlay[is.na(weight_str1715), weight_str1715 := 1]
 W_M4P_overlay[is.na(weight_cash),    weight_cash    := 0]
+cat(sprintf("[M4 overlay rolling-join] PCA sig_dates with M4 cash>0: %d / %d\n",
+            uniqueN(W_M4P_overlay[weight_cash > 0, Date]),
+            uniqueN(W_M4P_overlay$Date)))
 W_M4P_overlay[, Weight := Weight * weight_str1715]
 # CASH 행은 Date 별로 weight_cash 추가
 cash_rows <- unique(W_M4P_overlay[weight_cash > 1e-8,
@@ -577,8 +592,14 @@ fwrite(OOS_2025, file.path(WT_OUT, "oos_2025_slice.csv"))
 cat("\n=== ex-2025 OOS slice ===\n"); print(OOS_2025)
 
 # ─── 11. M4 baseline (M4-only on STR_1715 baseline, no PCA hedge) recompute ──
-# Apply M4 cash overlay to W_S1 to recompute "M4 baseline" comparison
-W_S1_M4 <- merge(W_S1, M4, by = "Date", all.x = TRUE)
+# Apply M4 cash overlay to W_S1 (rolling join — PIT-safe)
+W_S1_M4 <- copy(W_S1); setkey(W_S1_M4, Date, Ticker)
+overlay_lookup_S1 <- M4_join[W_S1_M4[, .(Date = unique(Date))],
+                              on = "Date", roll = TRUE][,
+                              .(Date, weight_str1715, weight_cash)]
+overlay_lookup_S1[is.na(weight_str1715), weight_str1715 := 1]
+overlay_lookup_S1[is.na(weight_cash),    weight_cash    := 0]
+W_S1_M4 <- merge(W_S1_M4, overlay_lookup_S1, by = "Date", all.x = TRUE)
 W_S1_M4[is.na(weight_str1715), weight_str1715 := 1]
 W_S1_M4[is.na(weight_cash),    weight_cash    := 0]
 W_S1_M4[, Weight := Weight * weight_str1715]
@@ -762,8 +783,33 @@ sr_realized <- pri_metrics$Sharpe
 cagr_pri    <- pri_metrics$CAGR
 mdd_pri     <- pri_metrics$MDD
 
+# Schedule density per schema
+weights_unique_dates_pri <- uniqueN(W_M4P_final$Date)
+alpha_sig_dates_pri      <- 269L  # parent alpha sig_dates from optimizer report
+schedule_density_ratio_pri <- weights_unique_dates_pri / alpha_sig_dates_pri
+
 forge_package <- list(
+  ## ── schema.json forge_package required fields (10) ──
   task_id = WT_ID,
+  as_of_date = "2026-05-01",
+  method = "weights.csv_direct_NAV_reconstruction (share-based daily, 15bps one-way, monthly rebalance)",
+  sr_realized_share_based         = round(as.numeric(sr_realized), 4),
+  measurement_basis_primary       = "forge_realized_share_based",
+  weights_csv_unique_dates_count  = weights_unique_dates_pri,
+  alpha_sig_dates_count           = alpha_sig_dates_pri,
+  schedule_density_ratio          = round(schedule_density_ratio_pri, 6),
+  schedule_density_pass           = schedule_density_ratio_pri >= 0.95,
+  pure_function_violation         = FALSE,  # weights.csv used as-is, no top-N reselection
+  ## ── schema.json optional fields ──
+  sr_factor_engine_continuous     = NULL,
+  sr_lockbox_daily_harness        = NULL,
+  divergence_factor_engine_vs_realized_pp = NULL,
+  vs_factor_engine = list(
+    diagnosis = "NEGLIGIBLE",
+    rationale = "No factor_engine continuous Sharpe claim. Realized-only share-based measurement per Charter §8/§9."
+  ),
+  hash_audit_pass = lro_sha_match && all_match,
+  ## ── 추가 의미 필드 (schema-허용) ──
   package_kind = "forge_package",
   wt_type = "sizing_only",
   wt_kind = "recommendation_only",
@@ -784,14 +830,6 @@ forge_package <- list(
     end_date   = as.character(max(BT_M4P$period_returns$date)),
     n_months   = nrow(BT_M4P$period_returns)
   ),
-  ## ── 8 mandatory forge_package fields ──
-  sr_realized_share_based         = round(as.numeric(sr_realized), 4),
-  sr_factor_engine_continuous     = NA,
-  sr_lockbox_daily_harness        = NA,
-  measurement_basis_primary       = "forge_realized_share_based",
-  divergence_factor_engine_vs_realized_pp = NA,
-  vs_factor_engine = list(diagnosis = "NEGLIGIBLE",
-                           rationale = "No factor_engine continuous Sharpe claim. Realized-only measurement per Charter §8."),
   cagr_realized                   = round(as.numeric(cagr_pri), 4),
   mdd_realized                    = round(as.numeric(mdd_pri), 4),
   ## ─────────────────────────────────────
