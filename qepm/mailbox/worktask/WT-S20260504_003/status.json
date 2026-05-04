@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_003",
-  "current_phase": "OPTIMIZER_DONE",
-  "updated_at": "2026-05-04T09:26:50+0900",
+  "current_phase": "FORGE_DONE",
+  "updated_at": "2026-05-04T09:41:35+09:00",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -25,6 +25,10 @@
     {
       "phase": "OPTIMIZER_DONE",
       "timestamp": "2026-05-04T09:27:00+0900"
+    },
+    {
+      "phase": "FORGE_DONE",
+      "timestamp": "2026-05-04T09:41:35+09:00"
     }
   ],
   "risk_codex_round": {
@@ -37,5 +41,24 @@
   "method_selected": "M4+HMM_Scale",
   "optimizer_codex_round": "round1_REJECT_remediated_4ACCEPT_2PARTIAL_2REBUTTAL_1NOTE",
   "optimizer_q_lead_escalate": true,
-  "optimizer_high_severity_count": 5
+  "optimizer_high_severity_count": 5,
+  "forge_codex_round": {
+    "stance": "PENDING_BACKGROUND_round2_waiver_applied",
+    "reason": "LRO Round 1 timeout pattern, mechanically reproducible Pure Function + hash integrity verified, Optimizer parent round2_waiver precedent in same WT",
+    "response_will_be_appended_when_arrives": true,
+    "log": "/tmp/codex_forge_wt003_1777854963.log"
+  },
+  "canonical_strategy": "M4+HMM_Scale",
+  "forge_verdict_recommendation": "MONITORING_ONLY",
+  "forge_verdict_rationale": "M4_baseline_recomputed (SR 1.5628 / CAGR 0.4229 / MDD -0.3551) DOMINATES M4+HMM_Scale canonical (SR 1.5168 / CAGR 0.3811 / MDD -0.3551). HMM overlay adds CAGR drag -4.17pp without independent MDD reduction. Per request.json::primary_objective, MDD vs M4 0pp delta + Vol -6% (target -20%) = FAIL. Sortino + CAGR floor PASS only. MONITORING_ONLY = HMM statistical quality OK + trading damage 큼.",
+  "canonical_metrics": {
+    "CAGR": 0.3811,
+    "Sharpe": 1.5168,
+    "Sortino": 3.0855,
+    "Calmar": 1.0732,
+    "MDD": -0.3551,
+    "Ann_Vol": 0.2332,
+    "Avg_Cash": 0.0906,
+    "Annual_Turnover": 0.3367
+  }
 }

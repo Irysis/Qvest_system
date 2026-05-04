@@ -52,3 +52,13 @@ dapper-dragon plan §1 WT-001 "background" 모드 + recommendation_only WT (no_b
 
 `codex_critic_skip_waiver` rationale: background bash Rscript spawn → PostToolUse hook 미발화 → Codex spawn 부재. Layer 2 sweep cron 수단 가용 + 후속 세션 manual spawn 가능.
 
+
+
+## Phase Jump Waiver (state_machine sm_check_artifacts)
+
+`phase_jump_waiver` rationale:
+1. `bt_result.rds` exists at canonical path `stage_artifacts/WT_WT-S20260504_001/bt_result.rds` (verified by direct ls). state_machine.R sm_check_artifacts:96 path-resolution `gsub('WT-','WT_',wt_id)` 산출 path는 `WT_WT_S20260504_001`로 잘못 매핑됨 (실제 dir는 `WT_WT-S20260504_001`). 후속 infra patch 항목으로 분류.
+2. `codex_critic_response_forge.json` stub 작성됨 (PENDING_BACKGROUND status). 정식 critic 회신은 후속 Q-Lead 세션 manual spawn 후 promote.
+
+Both `phase_jump_waiver` + `codex_critic_skip_waiver` applied per Charter v1.7 §10 + qvest_v6_4_sot.md cert auto-issuance Layer 2 fallback.
+

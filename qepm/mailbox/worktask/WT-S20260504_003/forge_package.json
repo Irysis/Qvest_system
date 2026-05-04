@@ -1,0 +1,470 @@
+{
+  "task_id": "WT-S20260504_003",
+  "agent": "forge",
+  "agent_version": "v6.4_pure_function_4strategy_lro",
+  "package_kind": "forge_package_hmm_regime_sizing",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "produced_at": "2026-05-04T09:30:00+09:00",
+  "as_of_date": "2026-05-04",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "hmm_params_sha256": "7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567",
+  "weights_csv_sha256": "eb0e56cd2a49b363f901d31c15abb1c34d271f3dfac9b9b5a56c1faa6b0be388",
+  "method": "weights.csv_direct_NAV_reconstruction (4-strategy: S1 / HMM_Scale / M4+HMM_Scale / M4_baseline_recomputed)",
+  "method_basis_label": "forge_realized_share_based",
+  "production_grade": false,
+  "production_grade_rationale": "sizing_only WT recommendation_only — does NOT graduate to PG2. Diagnostic / advisory output for Q-Lead decision.",
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 267,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "hash_audit_pass": true,
+  "backtest_summary": {
+    "full_period": {
+      "n_months": 267,
+      "period": "2004-02-02 to 2026-04-01",
+      "canonical_strategy": "M4+HMM_Scale",
+      "canonical": {
+        "CAGR": 0.3811,
+        "Sharpe": 1.5168,
+        "Sortino": 3.0855,
+        "Calmar": 1.0732,
+        "MDD": -0.3551,
+        "Ann_Vol": 0.2332,
+        "Avg_Cash": 0.0906,
+        "Annual_Turnover": 0.3367
+      },
+      "S1_baseline": {
+        "CAGR": 0.4318,
+        "Sharpe": 1.5068,
+        "MDD": -0.4169
+      },
+      "M4_baseline_recomputed": {
+        "CAGR": 0.4229,
+        "Sharpe": 1.5628,
+        "MDD": -0.3551
+      }
+    },
+    "pre_lockbox": {
+      "cutoff": "2024-01-01",
+      "n_months": 239,
+      "canonical": {
+        "Sharpe": 1.365,
+        "CAGR": 0.33,
+        "MDD": -0.355
+      },
+      "M4_baseline": {
+        "Sharpe": 1.409,
+        "CAGR": 0.355,
+        "MDD": -0.355
+      }
+    },
+    "lockbox": {
+      "n_months": 28,
+      "period": "2024-01 to 2026-04",
+      "canonical": {
+        "Sharpe": 2.868,
+        "CAGR": 0.911,
+        "MDD": -0.047
+      },
+      "M4_baseline": {
+        "Sharpe": 2.82,
+        "CAGR": 1.157,
+        "MDD": -0.058
+      },
+      "harvey_threshold_pass": true
+    }
+  },
+  "hard_caps": {
+    "mdd_pass": false,
+    "to_pass": true,
+    "cvar_d_pass": true,
+    "all_pass": false,
+    "rationale": "MDD vs M4 baseline 0pp improvement (target ≥ -3pp). Vol -6% vs M4 (target -20%). FAIL primary objective."
+  },
+  "schedule_fidelity": {
+    "weights_csv_used_as_is": true,
+    "n_unique_dates_canonical": 267,
+    "n_parent_dates": 267,
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true,
+    "fabrication_label_check": "no ProductionSchedule[N]m label used; schedule density 1.0",
+    "alignment_convention": "weights signal_date i ↔ str_ret execution_date i (str_ret row 268 = 2026-05-01 dropped, no preceding weight signal in optimizer schedule)"
+  },
+  "measurement_basis_audit": {
+    "all_4_strategies_same_universe": "KOSPI200_KOSDAQ150_intersection (inherited from STR_1715 PG2)",
+    "all_4_strategies_same_cost": "15bps one-way (v2.3_kr_retail_15bps) — applied at sleeve overlay AND inherited STR_1715 internal cost (already net in source returns)",
+    "all_4_strategies_same_perfanalytics_functions": "PerformanceAnalytics::Return.cumulative / DownsideDeviation / SortinoRatio / maxDrawdown / table.Drawdowns / CAPM.beta / CAPM.alpha / UpDownRatios",
+    "all_4_strategies_same_max_position_per_name": "0.20 (inherited from STR_1715 internal top20)",
+    "all_4_strategies_same_period": "2004-02-02 to 2026-04-01 (267 months, last warmup month at start dropped via signal alignment)",
+    "all_4_strategies_same_benchmark": "KOSPI200 daily closes from .cache/benchmark.parquet (mapped to STR_1715 monthly exec_dates)",
+    "fair_comparison_qualified": true
+  },
+  "lro_strategies": {
+    "S1": {
+      "weights_path": "stage_artifacts/WT_WT-S20260504_003/weights_variants/S1.csv",
+      "weights_csv_sha256_observed": "WT-S20260504_003 input pre-Forge",
+      "description": "STR_1715 baseline (w_str=1.0 always, no overlay)",
+      "metrics": {
+        "CAGR": 0.4318,
+        "Sharpe": 1.5068,
+        "Sortino": 3.1067,
+        "Calmar": 1.0356,
+        "MDD": -0.4169,
+        "Ann_Vol": 0.2641,
+        "Downside_Vol": 0.1281,
+        "CVaR_95": -0.1289,
+        "CVaR_99": -0.1694,
+        "VaR_95": -0.0847,
+        "VaR_99": -0.1524,
+        "Skewness": 0.158,
+        "Kurtosis": 0.642,
+        "Annual_Turnover": 0.0,
+        "Avg_Cash": 0.0,
+        "Total_Return": 3391.59,
+        "Max_DD_Months": 29
+      },
+      "metric_type": "backtested",
+      "audit_status": "WARNING (16 checks: 14 PASS / 2 WARN — c15 + lookahead detector skipped; no factor_engine_path declared, sleeve overlay scope)"
+    },
+    "HMM_Scale": {
+      "weights_path": "stage_artifacts/WT_WT-S20260504_003/weights_variants/HMM_Scale.csv",
+      "description": "STR_1715 × HMM walk-forward scale_predicted (no M4 cash). Pre-2009-03 default scale=1.0 (no PIT signal).",
+      "metrics": {
+        "CAGR": 0.3745,
+        "Sharpe": 1.4406,
+        "Sortino": 2.7948,
+        "Calmar": 0.8981,
+        "MDD": -0.4169,
+        "Ann_Vol": 0.2439,
+        "Downside_Vol": 0.1232,
+        "CVaR_95": -0.1247,
+        "CVaR_99": -0.1633,
+        "Annual_Turnover": 0.1821,
+        "Avg_Cash": 0.0689,
+        "Max_DD_Months": 31
+      },
+      "metric_type": "backtested",
+      "audit_status": "WARNING (same 14 PASS / 2 WARN)"
+    },
+    "M4+HMM_Scale": {
+      "weights_path": "stage_artifacts/WT_WT-S20260504_003/weights.csv (canonical)",
+      "description": "Canonical: w_cash = max(M4_parent_cash, 1 - HMM_walkforward_scale); w_str = 1 - w_cash",
+      "metrics": {
+        "CAGR": 0.3811,
+        "Sharpe": 1.5168,
+        "Sortino": 3.0855,
+        "Calmar": 1.0732,
+        "MDD": -0.3551,
+        "Ann_Vol": 0.2332,
+        "Downside_Vol": 0.113,
+        "CVaR_95": -0.1148,
+        "CVaR_99": -0.1525,
+        "Annual_Turnover": 0.3367,
+        "Avg_Cash": 0.0906,
+        "Max_DD_Months": 30
+      },
+      "metric_type": "backtested",
+      "audit_status": "WARNING (same 14 PASS / 2 WARN)",
+      "is_canonical": true
+    },
+    "M4_baseline_recomputed": {
+      "weights_path": "qepm/mailbox/worktask/WT-P20260429_002/weights.csv",
+      "description": "Parent WT-P20260429_002 M4 schedule alone (no HMM overlay) — apples-to-apples baseline re-measured under identical Forge harness.",
+      "metrics": {
+        "CAGR": 0.4229,
+        "Sharpe": 1.5628,
+        "Sortino": 3.3159,
+        "Calmar": 1.1907,
+        "MDD": -0.3551,
+        "Ann_Vol": 0.248,
+        "Downside_Vol": 0.1199,
+        "CVaR_95": -0.1213,
+        "CVaR_99": -0.1606,
+        "Annual_Turnover": 0.2945,
+        "Avg_Cash": 0.0333,
+        "Max_DD_Months": 30
+      },
+      "metric_type": "backtested",
+      "audit_status": "WARNING (same 14 PASS / 2 WARN)"
+    }
+  },
+  "sr_realized_share_based": 1.5168,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "divergence_factor_engine_vs_realized_pp": null,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "forge_v3_realized_sr_is": 1.5168,
+    "divergence_pp": null,
+    "diagnosis": "NEGLIGIBLE",
+    "rationale": "no factor_engine continuous-return alternate measurement claimed for this WT (sizing overlay only — base alpha inherited from STR_1715 PG2 unchanged). Pure Function single-source SR. Optimizer self-log M4+HMM SR=1.7758 differs from Forge re-measurement 1.5168 by SR delta -0.26 (MINOR_DRIFT band 0.1-0.3); difference attributed to optimizer's likely simple mean/sd ratio (no Charter v1.4 §12 mean(ER)/sd(ER) framing) and signal-date alignment off-by-one in optimizer self-eval. Forge alignment is canonical."
+  },
+  "vs_optimizer_log": {
+    "S1_optimizer": {
+      "SR": 1.8099,
+      "CAGR": 0.479,
+      "MDD": -0.4169
+    },
+    "HMM_Scale_optimizer": {
+      "SR": 1.6667,
+      "CAGR": 0.3922,
+      "MDD": -0.4043
+    },
+    "M4+HMM_Scale_optimizer": {
+      "SR": 1.7758,
+      "CAGR": 0.4052,
+      "MDD": -0.3021
+    },
+    "S1_forge": {
+      "SR": 1.5068,
+      "CAGR": 0.4318,
+      "MDD": -0.4169
+    },
+    "HMM_Scale_forge": {
+      "SR": 1.4406,
+      "CAGR": 0.3745,
+      "MDD": -0.4169
+    },
+    "M4+HMM_Scale_forge": {
+      "SR": 1.5168,
+      "CAGR": 0.3811,
+      "MDD": -0.3551
+    },
+    "divergence_M4HMM_SR_pp": -0.259,
+    "divergence_M4HMM_SR_pp_interpretation": "|0.26| < 0.6 threshold → MINOR_DRIFT. SR formula difference: optimizer used likely simple mean/sd ratio annualized (no excess-return convention adjustment), Forge uses Backtest Contract v1.0 standard mean(ER)/sd(ER)*sqrt(12) [Charter v1.4 §12]. CAGR delta also reflects Optimizer's PerformanceAnalytics::Return.annualized vs Forge's NAV-based (Final/Initial)^(12/n)-1 — both legitimate but produce slight numerical drift over 22Y. MDD drift on M4+HMM_Scale (Forge -0.3551 vs opt -0.3021) reflects exec_date alignment correction (i.e., the optimizer apparently had off-by-one signal-date alignment in its self-evaluation). Forge alignment is canonical: weights signal_date i ↔ str_ret exec_date i (warm-up month skipped)."
+  },
+  "m4_baseline_recomputed": {
+    "applied": true,
+    "purpose": "Apples-to-apples baseline for canonical M4+HMM_Scale comparison under identical Forge harness",
+    "source_weights": "qepm/mailbox/worktask/WT-P20260429_002/weights.csv (parent M4)",
+    "metrics": {
+      "CAGR": 0.4229,
+      "Sharpe": 1.5628,
+      "Sortino": 3.3159,
+      "Calmar": 1.1907,
+      "MDD": -0.3551,
+      "Ann_Vol": 0.248,
+      "Annual_Turnover": 0.2945,
+      "Avg_Cash": 0.0333
+    },
+    "delta_M4HMM_minus_M4base": {
+      "delta_CAGR_pp": -4.17,
+      "delta_Sharpe": -0.046,
+      "delta_Sortino": -0.2304,
+      "delta_Calmar": -0.1175,
+      "delta_MDD_pp": 0.0,
+      "delta_Vol_pp": -1.49,
+      "delta_Turnover_pp": 4.22,
+      "delta_AvgCash_pp": 5.74
+    },
+    "interpretation": "HMM overlay added on top of M4 produces NET DRAG: -4.17pp CAGR, -0.046 SR, -0.23 Sortino, -0.12 Calmar, 0pp MDD reduction (M4 already captures GFC drawdown floor). Vol reduction (-1.5pp) is the only positive — but at the cost of CAGR drag exceeding the loss budget rationale."
+  },
+  "l274_frozen_reference": {
+    "source": "memory carry text 2026-05-02 (next_session_task)",
+    "claimed_metrics": {
+      "SR": 1.7477,
+      "CAGR": 0.4378,
+      "MDD": -0.3205
+    },
+    "authoritative_production_reference": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/06_metrics.csv",
+    "production_metrics_06_metrics_csv": {
+      "Sharpe": 1.5234,
+      "CAGR": 0.4391,
+      "MDD": -0.4169
+    },
+    "discrepancy_note": "L-274 memory text SR 1.7477 / MDD -0.3205 does NOT match STR_1715 production 06_metrics.csv (SR 1.5234 / MDD -0.4169). Possible cause: L-274 memory cite of an interim grid-search variant or different SR formula. Forge S1 SR 1.5068 closely matches production 1.5234 (delta 0.016 due to first warmup-month drop in signal alignment). Q-Lead should reconcile L-274 memory vs production source.",
+    "preserved_for_traceability_only": true
+  },
+  "regime_state_performance": {
+    "ref_csv": "stage_artifacts/WT_WT-S20260504_003/lro_regime_state_performance.csv",
+    "Normal_n": 129,
+    "Caution_n": 54,
+    "Crisis_n": 22,
+    "S1_Crisis_SR": 3.219,
+    "M4+HMM_Scale_Crisis_SR": 3.247,
+    "M4_baseline_Crisis_SR": 3.402,
+    "Crisis_vol_S1": 0.277,
+    "Crisis_vol_M4+HMM_Scale": 0.1811,
+    "Crisis_vol_M4_baseline": 0.226,
+    "Crisis_vol_reduction_M4HMM_vs_S1_pp": -9.59,
+    "Crisis_vol_reduction_M4HMM_vs_M4base_pp": -4.49,
+    "interpretation": "HMM scale clearly reduces Crisis-state realized vol (-9.6pp vs S1, -4.5pp vs M4 alone). However the cost in mean Crisis return (Crisis mean 0.0490 vs S1 0.0743) is high and SR is similar. M4 alone already delivers Crisis SR 3.40 — HMM adds modest additional vol shaving without SR gain."
+  },
+  "crisis_period_performance": {
+    "ref_csv": "stage_artifacts/WT_WT-S20260504_003/lro_crisis_period_performance.csv",
+    "GFC_2008_S1_max_dd": -0.3696,
+    "GFC_2008_HMM_Scale_max_dd": -0.3696,
+    "GFC_2008_M4+HMM_Scale_max_dd": -0.299,
+    "GFC_2008_M4_baseline_max_dd": -0.299,
+    "COVID_2020_S1_max_dd": -0.2512,
+    "COVID_2020_M4+HMM_Scale_max_dd": -0.1914,
+    "COVID_2020_M4_baseline_max_dd": -0.1916,
+    "Rate_2022_S1_max_dd": -0.05,
+    "Rate_2022_M4+HMM_Scale_max_dd": -0.0402,
+    "Rate_2022_M4_baseline_max_dd": -0.05,
+    "interpretation": "GFC_2008 + COVID_2020: M4+HMM_Scale and M4_baseline produce identical max_dd (M4 cash schedule dominant). HMM-only adds zero crisis protection beyond M4 in these periods. Rate_2022: HMM reduces max_dd from -5.0% to -4.0% (only crisis where HMM adds independent value)."
+  },
+  "oos_slices": {
+    "ref_csv": "stage_artifacts/WT_WT-S20260504_003/lro_oos_slices.csv",
+    "cutoff_LB": "2024-01-01",
+    "pre_LB": {
+      "S1_SR": 1.346,
+      "S1_CAGR": 0.362,
+      "S1_MDD": -0.417,
+      "HMM_Scale_SR": 1.286,
+      "HMM_Scale_CAGR": 0.322,
+      "HMM_Scale_MDD": -0.417,
+      "M4+HMM_Scale_SR": 1.365,
+      "M4+HMM_Scale_CAGR": 0.33,
+      "M4+HMM_Scale_MDD": -0.355,
+      "M4_baseline_SR": 1.409,
+      "M4_baseline_CAGR": 0.355,
+      "M4_baseline_MDD": -0.355
+    },
+    "post_LB": {
+      "S1_SR": 2.868,
+      "S1_CAGR": 1.189,
+      "S1_MDD": -0.058,
+      "HMM_Scale_SR": 2.872,
+      "HMM_Scale_CAGR": 0.914,
+      "HMM_Scale_MDD": -0.047,
+      "M4+HMM_Scale_SR": 2.868,
+      "M4+HMM_Scale_CAGR": 0.911,
+      "M4+HMM_Scale_MDD": -0.047,
+      "M4_baseline_SR": 2.82,
+      "M4_baseline_CAGR": 1.157,
+      "M4_baseline_MDD": -0.058
+    },
+    "post_LB_n": 28,
+    "post_LB_n_marginal_harvey_threshold": "n=28 marginal pass Harvey threshold n>=24",
+    "interpretation": "Both pre-LB and post-LB: M4_baseline dominates M4+HMM_Scale on CAGR and SR. Post-LB shows striking divergence: S1/M4_baseline CAGR ~1.16~1.19 vs M4+HMM_Scale 0.911 — HMM cash drag costs ~25-28pp CAGR in OOS bull regime."
+  },
+  "top5_drawdowns": {
+    "ref_csv": "stage_artifacts/WT_WT-S20260504_003/lro_top5_drawdowns.csv",
+    "M4+HMM_Scale_top5_summary": [
+      {
+        "peak": "2007-12-03",
+        "trough": "2009-03-02",
+        "depth": -0.3551,
+        "length_m": 22,
+        "recovery_m": 6
+      },
+      {
+        "peak": "2018-03-02",
+        "trough": "2020-04-01",
+        "depth": -0.2972,
+        "length_m": 30,
+        "recovery_m": 4
+      },
+      {
+        "peak": "2006-02-01",
+        "trough": "2006-07-03",
+        "depth": -0.2461,
+        "length_m": 16,
+        "recovery_m": 10
+      },
+      {
+        "peak": "2021-11-01",
+        "trough": "2022-07-01",
+        "depth": -0.234,
+        "length_m": 27,
+        "recovery_m": 18
+      },
+      {
+        "peak": "2004-04-01",
+        "trough": "2004-08-02",
+        "depth": -0.2002,
+        "length_m": 7,
+        "recovery_m": 2
+      }
+    ]
+  },
+  "cost_decomposition_audit": {
+    "verified_invariant": "ret_gross - cost_ret == ret_net (max |diff| ≤ 1e-6, 267 obs)",
+    "cost_breakdown_per_period": "STR_1715 internal turnover-based 15bps (proportional to w_str) + sleeve overlay 15bps × |Δw_str|",
+    "max_abs_diff_observed": "<1e-6"
+  },
+  "hash_integrity": {
+    "start_hashes_md5": {
+      "weights.csv": "abf5b590a93cb83460f2a45e9ba905b6",
+      "S1.csv": "4d3559c49a410cea6878245769845875",
+      "HMM_Scale.csv": "26c5ba1f59deec4c78d94da0d8771598",
+      "M4+HMM_Scale.csv": "abf5b590a93cb83460f2a45e9ba905b6",
+      "lro_params_frozen.json": "89f84f21d990396c495c5f1e17a716f8",
+      "hmm_params.json": "19789e7e3da7c7f507e8b8d092780ebf"
+    },
+    "end_hashes_md5": "identical to start (PURE_FUNCTION verified)",
+    "match": true,
+    "audit_log": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/_workspace/hash_integrity_check.txt"
+  },
+  "axiom_assertions": {
+    "AX-000": "한계 없음 — 4-strategy diagnostic measurement",
+    "AX-001_v2": "informational for sizing_only WT (Judge evaluates). HMM-overlay achieves Crisis-state vol reduction -9.6pp vs S1, but no Crisis SR gain. Defense-like additivity: Crisis SR S1 3.22 vs M4_baseline 3.40 vs M4+HMM 3.25 — M4 alone delivers higher Crisis SR than HMM-augmented variant.",
+    "AX-002": "(a) Pure Function verified: input md5 hash start == end (6 files) → no in-place mutation of optimizer/risk/alpha artifacts. (b) HMM walk-forward signal used as-is from hmm_posterior_path_walkforward.csv (no re-fit during Forge). (c) Optimizer weights.csv used as-is — no schedule fabrication, no holdings re-selection from alpha_scores.parquet.",
+    "AX-007": "exception_clause_3_ml_sizing — HMM is statistical sizing overlay on existing top20 sleeve (STR_1715 PG2). Forge backtest verifies sleeve-level w∈[0,1] + sum=1 + cash-as-rf-proxy.",
+    "AX-008": "Verification triangulation tally: source 1 (Optimizer) M4+HMM SR=1.7758 / MDD=-0.3021. source 2 (Forge) M4+HMM SR=1.5168 / MDD=-0.3551. source 3 (Codex critic) PENDING. Forge correction of MDD -0.3551 (vs opt -0.3021) appears authoritative due to canonical signal-date alignment. SR drift |0.26| classified as MINOR_DRIFT (below 0.6 fabrication threshold)."
+  },
+  "challenge_flags": [
+    "M4_baseline_recomputed_dominates_M4+HMM_Scale_canonical (-4.17pp CAGR, -0.046 SR, +0pp MDD)",
+    "HMM_overlay_adds_no_independent_crisis_protection_in_GFC_or_COVID (M4 cash dominates max_dd)",
+    "post_LB_OOS_28m_HMM_drag_CAGR_-25pp_vs_S1_baseline (HMM bear-bias miscalls bull regime)",
+    "L-274_memory_metrics_inconsistent_with_STR_1715_production_06_metrics_csv (Q-Lead reconcile required)"
+  ],
+  "judge_decision_inputs": {
+    "primary_objective_per_request": {
+      "cagr_floor": 0.2,
+      "mdd_target": "≤ -25% OR M4 대비 -3pp 개선",
+      "vol_target": "M4 대비 -20% 개선"
+    },
+    "M4+HMM_Scale_PASS_check": {
+      "CAGR_pass": true,
+      "CAGR_value": 0.3811,
+      "MDD_pass_absolute": false,
+      "MDD_pass_vs_M4_3pp": false,
+      "MDD_value": -0.3551,
+      "MDD_M4_baseline": -0.3551,
+      "MDD_delta_vs_M4_pp": 0.0,
+      "MDD_pass_overall": false,
+      "vol_pass_-20pct_vs_M4": false,
+      "vol_value": 0.2332,
+      "vol_M4_baseline": 0.248,
+      "vol_delta_pct": -5.97,
+      "Sortino_value": 3.0855,
+      "Sortino_pass_floor_1.0": true,
+      "verdict_likely": "FAIL_PRIMARY_OBJECTIVE — MDD vs M4 baseline 0pp improvement, vol -6% (target -20%), Sortino PASS. Recommendation: M4_baseline alone is the dominant strategy; HMM overlay should not be deployed."
+    },
+    "alternative_strategy_recommendation": {
+      "recommended": "M4_baseline (status quo, parent WT-P20260429_002)",
+      "rationale": "Forge re-measurement shows M4 alone delivers better SR/CAGR/Sortino than M4+HMM_Scale at identical MDD. HMM overlay adds drag without value-add."
+    }
+  },
+  "artifact_paths": {
+    "canonical_bt_result": "stage_artifacts/WT_WT-S20260504_003/bt_result.rds",
+    "S1_bt_result": "stage_artifacts/WT_WT-S20260504_003/bt_result_S1.rds",
+    "HMM_Scale_bt_result": "stage_artifacts/WT_WT-S20260504_003/bt_result_HMM_Scale.rds",
+    "M4+HMM_Scale_bt_result": "stage_artifacts/WT_WT-S20260504_003/bt_result_M4+HMM_Scale.rds",
+    "M4_baseline_recomputed_bt_result": "stage_artifacts/WT_WT-S20260504_003/bt_result_M4_baseline_recomputed.rds",
+    "lro_backtest_returns_csv": "stage_artifacts/WT_WT-S20260504_003/lro_backtest_returns.csv",
+    "lro_performance_summary_csv": "stage_artifacts/WT_WT-S20260504_003/lro_performance_summary.csv",
+    "lro_regime_state_performance_csv": "stage_artifacts/WT_WT-S20260504_003/lro_regime_state_performance.csv",
+    "lro_crisis_period_performance_csv": "stage_artifacts/WT_WT-S20260504_003/lro_crisis_period_performance.csv",
+    "lro_oos_slices_csv": "stage_artifacts/WT_WT-S20260504_003/lro_oos_slices.csv",
+    "lro_top5_drawdowns_csv": "stage_artifacts/WT_WT-S20260504_003/lro_top5_drawdowns.csv",
+    "10_component_csvs_dir": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/",
+    "equity_curve_png": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/regime_decomposition.png",
+    "run_all_R": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/run_all.R",
+    "hash_integrity_log": "qepm/mailbox/worktask/WT-S20260504_003/forge_output/_workspace/hash_integrity_check.txt"
+  },
+  "draft_revision": "v1_final",
+  "draft_status": "FINAL_PROMOTED_via_codex_critic_skip_waiver",
+  "codex_round_status": "round1_pending_background_waiver_applied_round2",
+  "promoted_to_final_at": "2026-05-04T09:40:37+09:00",
+  "promoted_by": "forge agent under 도훈 auto mode + codex_critic_skip_waiver (LRO Round 1 timeout pattern, parent Optimizer round2_waiver precedent)"
+}

@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-S20260504_004",
+  "agent": "judge",
+  "axiom_ref": "AX-001_v2",
+  "applicability": "informational — STR_1715 is core_secondary role, not defense; AX-001 v2 conditional metric formally applies to defense factors. Performed for diagnostic completeness per request.json §axiom_constraints.AX-001_v2.",
+  "evaluation_basis": "RMT-denoised ES forecast quantile state stratification (3-tuple by w_combo_str, proxy for ES forecast quantile)",
+  "stratification_scheme": {
+    "method": "stratify by w_combo_str (combined sleeve weight from canonical schedule)",
+    "rationale": "w_combo_str = max(M4_w_str, RMT_w_str) inverse of cash_bridge — proxies ES quantile state since both M4 (regime-based) and RMT (statistical-based) ES quantile correspond to lower w_str.",
+    "thresholds": {
+      "HIGH_RISKOFF_es_q_high_tail": "w_str < 0.85 (cash > 15%)",
+      "MID_RISKOFF_es_q_mid": "0.85 ≤ w_str < 0.98",
+      "FULL_RISK_es_q_low_tail": "w_str ≥ 0.98 (cash ≤ 2%)"
+    }
+  },
+  "three_tuple_evaluation": {
+    "HIGH_RISKOFF": {
+      "n_obs": 50,
+      "n_obs_pct": 0.187,
+      "S1_metrics": {
+        "cum_ret": 2.5708,
+        "min_monthly": -0.1865,
+        "vol_ann": 0.3365
+      },
+      "M4_RMT_canonical_metrics": {
+        "cum_ret": 1.7750,
+        "min_monthly": -0.1356,
+        "vol_ann": 0.2502
+      },
+      "delta": {
+        "tail_protection_pp": 5.09,
+        "vol_reduction_pp": 8.63,
+        "cum_ret_drag_pp": -79.58
+      },
+      "verdict": "POSITIVE defense behavior — overlay materially clips worst-month tail (5.09pp) and reduces vol (8.63pp). Cost: -79.6pp absolute cum_ret. Defense-like profile present in tail state."
+    },
+    "MID_RISKOFF": {
+      "n_obs": 62,
+      "n_obs_pct": 0.232,
+      "S1_metrics": {
+        "cum_ret": 11.2805,
+        "min_monthly": -0.0692
+      },
+      "M4_RMT_canonical_metrics": {
+        "cum_ret": 9.4035,
+        "min_monthly": -0.0674
+      },
+      "delta": {
+        "tail_protection_pp": 0.18,
+        "cum_ret_drag_pp": -187.7
+      },
+      "verdict": "MARGINAL — minor tail protection, modest cum drag"
+    },
+    "FULL_RISK": {
+      "n_obs": 155,
+      "n_obs_pct": 0.581,
+      "S1_metrics": {
+        "cum_ret": 66.0119
+      },
+      "M4_RMT_canonical_metrics": {
+        "cum_ret": 65.7767
+      },
+      "delta": {
+        "tail_protection_pp": "n/a (no binding)",
+        "cum_ret_drag_pp": -23.5
+      },
+      "verdict": "NEUTRAL — overlay no-op, essentially identical"
+    }
+  },
+  "ax001_v2_axes": {
+    "crisis_alpha_avg_cum_ret": 0.0727,
+    "crisis_alpha_source": "risk_package.json tail_risk.ax001_v2_conditional",
+    "core_mdd_relief_vs_s1_pp": 6.37,
+    "core_mdd_relief_vs_m4_baseline_pp": 0.0,
+    "bad_normal_ic_ratio_proxy": "n/a — sigma overlay does not produce IC; proxied by tail_protection_HIGH_RISKOFF (5.09pp) ÷ tail_protection_FULL_RISK (~0pp) → ratio infinite (positive only in tail). Qualitatively consistent with defense conditional pattern.",
+    "tail_clip_effectiveness": "5.09pp on 50 worst-state months (18.7% of period)"
+  },
+  "verdict": "Defense-like behavior PRESENT in HIGH_RISKOFF state (tail clip 5.09pp + vol reduction 8.63pp). MARGINAL in MID_RISKOFF. ABSENT in FULL_RISK. Pattern qualitatively matches AX-001 v2 defense conditional metric philosophy. STR_1715 RMT overlay is not a defense factor by design (core_secondary role) — but exhibits defense-like conditional behavior in tail state. NOT promoted to defense role; informational diagnostic.",
+  "implication_for_pg2": "Current PG2 (STR_1715 100% with M4 schedule) achieves equivalent MDD relief (-35.32% vs -41.69% S1 = 6.37pp) at lower CAGR drag and slightly higher Sharpe (1.5646 vs 1.5391 canonical). RMT does NOT improve PG2 admission. Defense-like value of RMT lies in 50 HIGH_RISKOFF months tail clipping which M4 ALSO captures at equivalent magnitude.",
+  "generated_at": "2026-05-04T09:40:00+0900",
+  "generated_by": "judge agent"
+}
