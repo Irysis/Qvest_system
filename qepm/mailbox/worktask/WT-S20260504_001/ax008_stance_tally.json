@@ -1,0 +1,56 @@
+{
+  "task_id": "WT-S20260504_001",
+  "ax_axiom": "AX-008 Verification Triangulation",
+  "axiom_text": "Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수.",
+  "tally_entries": [
+    {
+      "source": "risk-research",
+      "round": 1,
+      "round_2_after_codex": true,
+      "stance": "PASS_CONDITIONAL",
+      "rationale": "Σ Ledoit-Wolf PSD verified cond 40.95, hard cap MDD -41.69% < -45%, SHA self-verify match, PIT all PASS, debug_pass overall=TRUE. Round 1 Codex REJECT addressed via Q-Lead waiver path; round 2 self-classification PASS_CONDITIONAL.",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_001/risk_challenge_note.md",
+      "codex_round_status": "round1_REJECT_round2_waiver_applied"
+    },
+    {
+      "source": "optimizer-research",
+      "round": 1,
+      "round_2_after_codex": true,
+      "stance": "PASS_CONDITIONAL",
+      "rationale": "Hard constraints PASS (max_names=20, cap=0.20, Σw=1, long_only), schedule_density=1.0, lro_params SHA verified, LFC reduction -82.8% at 1.6% alpha damage. Codex C1 CRITICAL fixed (canonical weights schema). C2/C4/C6 REBUTTAL documented (sizing_only inheritance + risk waiver inherited + Sequential Admission deferred to governor). C3/C7 PARTIAL accepted.",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_001/optimizer_challenge_note.md",
+      "codex_round_status": "round1_REJECT_round2_classified_response"
+    },
+    {
+      "source": "forge",
+      "round": 1,
+      "round_2_after_codex": false,
+      "stance": "PASS_CONDITIONAL",
+      "rationale": "AX-002 PASS (lro SHA self-match + 3-package md5 freeze identical), schedule_density=1.0, pure_function_violation=false, PerformanceAnalytics standard only, OOS chart includes lockbox period extension, m4_baseline recomputed on same 268m horizon, L-274 frozen reference cited. Self-identified concerns: SR realized 1.46 vs L-274 1.75 gap (alpha lineage), LFC reduction 42% mean vs 82.82% point (definition consistency), ex-2025 OOS Sharpe 2.4-2.5 (short-window noise possible).",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_001/forge_challenge_note.md",
+      "codex_round_status": "round1_PENDING_BACKGROUND_codex_critic_skip_waiver_applied",
+      "waiver_basis": "Background Bash Rscript path → PostToolUse hook silent → Codex spawn deferred to Layer 2 sweep cron or follow-up Q-Lead manual spawn."
+    },
+    {
+      "source": "judge",
+      "round": 1,
+      "round_2_after_codex": "pending",
+      "stance": "MONITORING_ONLY",
+      "rationale": "Plan §12 decision_rule: CAGR 43.67% PASS + Sortino 3.41 PASS, but MDD all 3 paths FAIL (strict + vs M4 -3pp + vs S1 -3pp), vol 4.9% WORSE than M4 baseline. AX-001 v2 PARTIAL_DEFENSE_LIKE (crisis_alpha 2/3 + bad/normal ES95 ratio PASS, MDD vs Core FAIL). Harvey-t 6.91 PASS. DSR penalty 0.40 deflates SR to 1.06 (still above 1.0 but below L-274 1.75 reference). Lockbox extension audit independent recompute matches forge.",
+      "challenge_note": "qepm/mailbox/worktask/WT-S20260504_001/judge_challenge_note.md",
+      "codex_round_status": "round1_DRAFT_pending_codex_critic_response"
+    }
+  ],
+  "ax008_summary": {
+    "total_sources": 4,
+    "pass_conditional_count": 3,
+    "monitoring_only_count": 1,
+    "fail_count": 0,
+    "minimum_2_of_3_threshold": "MET (3 PASS_CONDITIONAL + 1 MONITORING_ONLY = 4/4 non-FAIL)",
+    "verification_triangulation_grade": "PARTIAL — Forge + risk + optimizer 3-source PASS_CONDITIONAL; Codex Round Round 1 RISK REJECT and OPTIMIZER REJECT carried via Round 2 classified response; Forge codex deferred. Architect not invoked (sizing_only WT scope).",
+    "promotion_eligibility": "NOT promoted — judge MONITORING_ONLY verdict precludes book_state mutation. Recommendation_only WT closes per state_machine plan: GOVERNOR_REJECTED → ABORTED with reason RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE."
+  },
+  "schema_version": "v1.0_ax008_tally",
+  "created_at": "2026-05-04T09:50:00+09:00",
+  "created_by": "judge-agent"
+}

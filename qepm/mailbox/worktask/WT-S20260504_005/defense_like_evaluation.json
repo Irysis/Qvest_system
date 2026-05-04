@@ -1,0 +1,163 @@
+{
+  "task_id": "WT-S20260504_005",
+  "evaluation_basis": "AX-001_v2_defense_like_3_tuple",
+  "as_of_date": "2026-05-04",
+  "core_reference_strategy": "L-274_STR_1715_PG2_M4_BOCPD",
+  "core_reference_metrics": {
+    "SR": 1.7477,
+    "CAGR": 0.4378,
+    "MDD": -0.3205,
+    "n_periods": 268
+  },
+  "evaluation_method": {
+    "tuple_axes": [
+      "crisis_alpha (regime_CRISIS SR + CAGR + MDD across n=11 stress periods)",
+      "Core_MDD_pp_improvement (M4_FH minus S1 baseline)",
+      "bad_normal_realized_SR_ratio (regime_CRISIS / regime_NORMAL)"
+    ],
+    "axiom_anchor": "AX-001_v2_IMMUTABLE: 방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지.",
+    "regime_n_periods_basis": "lro_performance_summary.csv regime breakdown (BULL=85, NORMAL=146, CAUTION=27, CRISIS=11)"
+  },
+  "per_strategy_evaluation": {
+    "S1": {
+      "label": "STR_1715 alpha-proportional baseline (no hedge)",
+      "post_cost_full_period_metrics": {
+        "SR": 0.8146,
+        "CAGR": 0.2096,
+        "MDD": -0.4801
+      },
+      "tuple_axis_1_crisis_alpha": {
+        "regime_CRISIS_SR": 0.0178,
+        "regime_CRISIS_CAGR": -0.0254,
+        "regime_CRISIS_MDD": -0.1842,
+        "regime_CRISIS_n": 11,
+        "interpretation": "near-zero in deep CRISIS; -2.54% CAGR drag"
+      },
+      "tuple_axis_2_core_mdd_improvement": "BASELINE",
+      "tuple_axis_3_bad_normal_ratio": {
+        "regime_NORMAL_SR": 1.2197,
+        "regime_CAUTION_SR": 0.9346,
+        "regime_CRISIS_SR": 0.0178,
+        "regime_BULL_SR": 2.0246,
+        "ratio_caution_normal": 0.766,
+        "ratio_crisis_normal": 0.015,
+        "interpretation": "high regime sensitivity baseline, CRISIS near zero alpha"
+      },
+      "verdict": "BASELINE_REFERENCE"
+    },
+    "FactorBeta_Hedge": {
+      "label": "QP min |β_p,F1|^2 hedge (no M4 cash overlay)",
+      "post_cost_full_period_metrics": {
+        "SR": 0.7811,
+        "CAGR": 0.1923,
+        "MDD": -0.475,
+        "net_IR_vs_S1": -0.1631
+      },
+      "tuple_axis_1_crisis_alpha": {
+        "regime_CRISIS_SR": -0.1231,
+        "regime_CRISIS_CAGR": -0.0728,
+        "regime_CRISIS_MDD": -0.217,
+        "regime_CRISIS_n": 11,
+        "delta_vs_S1_SR": -0.1409,
+        "delta_vs_S1_CAGR_pp": -0.0474,
+        "delta_vs_S1_MDD_pp": -0.0328,
+        "interpretation": "WORSE — CRISIS SR -0.14, CAGR -4.74pp, MDD -3.28pp"
+      },
+      "tuple_axis_2_core_mdd_improvement": {
+        "delta_pp_vs_S1": 0.0051,
+        "interpretation": "minimal -0.51pp improvement vs target -3pp"
+      },
+      "tuple_axis_3_bad_normal_ratio": {
+        "regime_NORMAL_SR": 1.049,
+        "regime_CAUTION_SR": 1.1631,
+        "regime_CRISIS_SR": -0.1231,
+        "regime_BULL_SR": 1.7937,
+        "ratio_caution_normal": 1.109,
+        "ratio_crisis_normal": -0.117,
+        "interpretation": "improved CAUTION (+0.34) but DETERIORATED CRISIS (-0.14) — worst-tail makes regime defense net-negative"
+      },
+      "verdict": "FAIL_AX_001_v2",
+      "fail_reasons": [
+        "CRISIS regime SR turns negative (-0.123) from S1 baseline (+0.018)",
+        "MDD pp improvement only -0.51pp vs spec -3pp target",
+        "bad/normal CRISIS ratio = -0.117 (negative; defense not delivered in deep stress)"
+      ]
+    },
+    "M4_FactorBeta_Hedge_canonical": {
+      "label": "QP min |β_p,F1|^2 hedge + iter31 regime cash overlay (BULL=0/NORMAL=10/CAUTION=20/CRISIS=40)",
+      "post_cost_full_period_metrics": {
+        "SR": 0.7787,
+        "CAGR": 0.1733,
+        "MDD": -0.4626,
+        "net_IR_vs_S1": -0.3664
+      },
+      "pre_cost_full_period_metrics": {
+        "SR": 1.2459,
+        "CAGR": 0.2913,
+        "MDD": -0.3994
+      },
+      "tuple_axis_1_crisis_alpha": {
+        "regime_CRISIS_SR": -0.1599,
+        "regime_CRISIS_CAGR": -0.0416,
+        "regime_CRISIS_MDD": -0.136,
+        "regime_CRISIS_n": 11,
+        "delta_vs_S1_SR": -0.1777,
+        "delta_vs_S1_CAGR_pp": -0.0162,
+        "delta_vs_S1_MDD_pp": 0.0482,
+        "interpretation": "WORSE on SR (-0.18), BETTER on CRISIS MDD (-13.6% vs -18.42% = +4.82pp tail improvement) — cash overlay reduces deep-stress drawdown but does not restore alpha"
+      },
+      "tuple_axis_2_core_mdd_improvement": {
+        "delta_pp_vs_S1_post_cost": 0.0175,
+        "delta_pp_vs_S1_pre_cost": 0.0667,
+        "delta_vs_L274_reference_pp": -0.0789,
+        "interpretation": "post-cost MDD improvement -1.75pp short of spec -3pp target. Pre-cost -6.67pp would have met target but post-cost is the binding measurement basis. M4+FH MDD -39.94% pre-cost is WORSE than L-274 reference MDD -32.05% (delta -7.89pp)."
+      },
+      "tuple_axis_3_bad_normal_ratio": {
+        "regime_NORMAL_SR": 1.0441,
+        "regime_CAUTION_SR": 1.1552,
+        "regime_CRISIS_SR": -0.1599,
+        "regime_BULL_SR": 1.7921,
+        "ratio_caution_normal": 1.106,
+        "ratio_crisis_normal": -0.153,
+        "interpretation": "regime cash overlay reduces vol in NORMAL/CAUTION but does not save CRISIS SR (negative -0.16). Hedge does NOT provide tail protection in deepest stress."
+      },
+      "verdict": "FAIL_AX_001_v2",
+      "fail_reasons": [
+        "CRISIS SR -0.160 < S1 baseline +0.018 — hedge underperforms in worst regime by 0.18 SR pp",
+        "MDD improvement post-cost only -1.75pp (spec target -3pp)",
+        "bad/normal SR ratio negative in CRISIS — hedge does not provide tail protection",
+        "Method substitution disclosure: L-274 reference uses M4 BOCPD; current run uses iter31 static cash schema. ~50% of -0.50 SR delta vs L-274 attributable to hedge weight redistribution; ~50% to BOCPD vs static substitution."
+      ]
+    }
+  },
+  "overall_ax_001_v2_verdict": "FAIL_DEFENSE_LIKE",
+  "overall_verdict_rationale": "Hedge does not produce defense-like regime asymmetry. Across all 3 tuple axes:\n  (1) crisis_alpha: hedge variants WORSEN CRISIS regime SR (S1 +0.018 → FH -0.123 → M4+FH -0.160)\n  (2) Core MDD pp improvement: post-cost only -0.51pp (FH) and -1.75pp (M4+FH) vs spec -3pp target; pre-cost -7.89pp WORSE than L-274 reference\n  (3) bad/normal ratio: CAUTION ratio improves but CRISIS ratio TURNS NEGATIVE (-0.117 FH / -0.153 M4+FH)\nThe CAUTION-regime improvement is real (+0.22 SR FH, +0.22 M4+FH vs S1 baseline) but is dominated by CRISIS deterioration in AX-001 v2 conditional evaluation. AX-001 v2 explicitly requires bad/normal IC (or SR by analogy) ratio to demonstrate defense — a negative CRISIS ratio invalidates the defense claim.",
+  "method_substitution_disclosure": {
+    "L_274_reference_uses": "M4 BOCPD trigger logic",
+    "current_run_uses": "iter31 static cash overlay (BULL=0/NORMAL=10/CAUTION=20/CRISIS=40)",
+    "scope_constraint": "spec WT-S20260504_005 limited to 3-variant comparison with iter31; BOCPD trigger logic out of scope",
+    "delta_attribution_estimate_SR_pp": {
+      "factor_beta_hedge_redistribution": -0.30,
+      "BOCPD_vs_static_regime_substitution": -0.20,
+      "total_vs_L274": -0.50
+    },
+    "honesty_attestation": "Approximate decomposition; not a measurement-isolating ablation. Documented in forge_package m4_baseline_recomputed.fair_comparison_attestation."
+  },
+  "successor_wt_axis_targeting": {
+    "primary_axis_to_address": "tuple_axis_1_crisis_alpha (CRISIS regime SR must not deteriorate vs baseline)",
+    "secondary_axis_to_address": "tuple_axis_2_core_mdd_improvement (pp improvement must reach -3pp post-cost)",
+    "tertiary_axis_to_address": "tuple_axis_3_bad_normal_ratio (CRISIS/NORMAL ratio must stay positive)",
+    "academic_paths": [
+      "Pflug-Romisch CVaR-LP (direct CVaR_95 control, sidesteps β proxy)",
+      "FRM Pfaff Ch12 Min CDaR (drawdown-direct allocation)",
+      "Bailey-López de Prado HRP+CDaR (cluster-aware drawdown allocation)",
+      "Multi-factor F1+F2 hedge (F2 has 6/6 stress positive, may complement F1 negative)",
+      "Brandt parametric portfolio policies with turnover-aware utility"
+    ]
+  },
+  "lro_performance_summary_source": "stage_artifacts/WT_WT-S20260504_005/lro_performance_summary.csv",
+  "finalize_meta": {
+    "created_at": "2026-05-04T09:45:00+0900",
+    "created_by": "judge_agent_v6_1"
+  }
+}

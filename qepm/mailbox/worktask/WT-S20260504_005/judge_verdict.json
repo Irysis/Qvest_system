@@ -1,0 +1,495 @@
+{
+  "task_id": "WT-S20260504_005",
+  "agent": "judge_v6_1_multi_gate_validator",
+  "agent_version": "v6.4_factor_beta_hedge_judge_2026_05_04",
+  "as_of_date": "2026-05-04",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "parent_risk_package_sha_loadings": "9e9784f723fd665a5cf1ac4a52914c9faa7e11b643c5640528cf689830242fcc",
+  "parent_risk_package_sha_returns": "837a6141f89dd2739a79123c3a9f66df7b9343a4fa009a2b768f870fed43be33",
+  "judge_decision": "MONITORING_ONLY",
+  "judge_decision_basis_label": "post_cost_decision_rule_15bps_one_way_with_hard_gate_failure_audit",
+  "production_grade_recommended": false,
+  "promotion_to_PG2_recommended": false,
+  "book_state_write_recommended": false,
+  "successor_wt_required": true,
+  "draft_revision": "FINAL_round1_codex_remediation_complete",
+
+  "verdict_dual_disposition": {
+    "spec_decision_rule_verdict": "MONITORING_ONLY",
+    "hard_gate_audit_outcome": "FAIL_RF-J1_TURNOVER_AND_HURDLE_HARD_MDD_POST_COST",
+    "ax_001_v2_outcome": "FAIL_DEFENSE_LIKE",
+    "ax_008_outcome": "INSUFFICIENT_PASS_SOURCES_1_OF_2_MINIMUM",
+    "harvey_outcome": "NOT_VERIFIED_NO_NEWEY_WEST_NO_FF_REGRESSION",
+    "production_recommendation": "REJECT_PROMOTION_FOR_PG2",
+    "rationale": "MONITORING_ONLY is the spec verdict_classification per request.json decision_rule MONITORING_ONLY clause (factor regression quality OK + trading damage 큼). This coexists honestly with hard gate FAILs because the WT is recommendation_only and does not modify production weights. Hard gate FAILs (RF-J1 turnover 746%>600%, post-cost MDD -46.26%>-45%, AX-008 insufficient, Harvey unverified) prevent any future promotion attempt without successor remediation. The substantive conclusion (no production change) is preserved while gate audit is now honest about what failed."
+  },
+
+  "spec_decision_rule_evaluation": {
+    "rule_text_PASS": "CAGR ≥20% + MDD ≤-25% OR M4 대비 -3pp + vol -20% + Sortino ≥1.0 + top5DD 3+ + factor R² OK",
+    "rule_text_CONDITIONAL_PASS": "CAGR ≥20% + MDD 1~3pp + vol -10%",
+    "rule_text_MONITORING_ONLY": "factor regression quality OK + trading damage 큼",
+    "rule_text_FAIL": "CAGR <20% OR MDD/vol 개선 없음 OR factor identification 불안정",
+
+    "evaluation_per_strategy": {
+      "S1": {
+        "post_cost_CAGR": 0.2096,
+        "post_cost_SR": 0.8146,
+        "post_cost_MDD": -0.4801,
+        "vol": 0.2574,
+        "sortino": 1.0246,
+        "matched_rule": "BASELINE_REFERENCE",
+        "verdict": "ELIGIBLE_REFERENCE_ONLY",
+        "note": "STR_1715 alpha-proportional baseline post-cost. Reference for delta evaluation."
+      },
+      "FactorBeta_Hedge": {
+        "post_cost_CAGR": 0.1923,
+        "post_cost_SR": 0.7811,
+        "post_cost_MDD": -0.475,
+        "vol": 0.2462,
+        "sortino": 0.8833,
+        "net_IR_vs_S1": -0.1631,
+        "vs_S1_CAGR_pp": -0.0173,
+        "vs_S1_MDD_pp": 0.0051,
+        "vs_S1_vol_pct_change": -0.0435,
+        "matched_rule": "FAIL",
+        "verdict": "FAIL",
+        "fail_reasons": [
+          "post_cost CAGR 19.23% < 20% spec floor",
+          "MDD -47.50% > -25% target AND only -0.51pp delta vs S1 (target -3pp)",
+          "vol -4.35% delta vs S1 < -20% target",
+          "net IR vs S1 = -0.163 (hedge degrades risk-adjusted return)"
+        ]
+      },
+      "M4+FactorBeta_Hedge_canonical": {
+        "post_cost_CAGR": 0.1733,
+        "post_cost_SR": 0.7787,
+        "post_cost_MDD": -0.4626,
+        "vol": 0.2226,
+        "sortino": 0.8807,
+        "net_IR_vs_S1": -0.3664,
+        "vs_S1_CAGR_pp": -0.0363,
+        "vs_S1_MDD_pp": 0.0175,
+        "vs_S1_vol_pct_change": -0.1352,
+        "matched_rule": "FAIL_BY_CAGR_FLOOR_BUT_MONITORING_BY_TRADING_DAMAGE_CLAUSE",
+        "verdict": "MONITORING_ONLY",
+        "verdict_path": "PASS=FAIL (CAGR 17.33% < 20%) → CONDITIONAL_PASS=FAIL (CAGR floor) → MONITORING_ONLY=MATCH (factor regression qualitative OK + net_IR -0.37 trading damage)",
+        "monitoring_only_reasons": [
+          "factor regression R²=0.299 qualitatively OK for MONITORING_ONLY clause (5/5 crisis F1 invariance, K=5 PCA variance partition consistent)",
+          "factor identification F1 stable 6/6 → 5/5 invariance (IRAN-LMR removal)",
+          "post-cost trading damage substantial: net IR -0.37 vs S1, +32pp annual turnover",
+          "MDD improvement -1.75pp short of -3pp spec target",
+          "vol improvement -13.52% short of -20% spec target",
+          "CAGR shortfall 2.67pp below 20% floor — hedge erodes alpha disproportionate to risk reduction"
+        ]
+      }
+    },
+    "final_decision_per_canonical": "MONITORING_ONLY"
+  },
+
+  "post_cost_metrics_table": {
+    "cost_basis": "v2.3_kr_retail_15bps one-way",
+    "n_periods": 269,
+    "rows": [
+      {"strategy": "S1", "SR": 0.8146, "CAGR": 0.2096, "MDD": -0.4801, "Vol": 0.2574, "Sortino": 1.0246, "Calmar": 0.4367, "ann_TO": 7.1395, "ann_cost_pct": 0.0107, "win_rate": 0.5688, "net_IR_vs_S1": null},
+      {"strategy": "FactorBeta_Hedge", "SR": 0.7811, "CAGR": 0.1923, "MDD": -0.475, "Vol": 0.2462, "Sortino": 0.8833, "Calmar": 0.4049, "ann_TO": 7.7582, "ann_cost_pct": 0.0116, "win_rate": 0.6059, "net_IR_vs_S1": -0.1631},
+      {"strategy": "M4+FactorBeta_Hedge", "SR": 0.7787, "CAGR": 0.1733, "MDD": -0.4626, "Vol": 0.2226, "Sortino": 0.8807, "Calmar": 0.3747, "ann_TO": 7.4611, "ann_cost_pct": 0.0112, "win_rate": 0.6059, "net_IR_vs_S1": -0.3664}
+    ]
+  },
+
+  "gate_verdicts": {
+    "Gate_A_PIT_C1_C15": {
+      "status": "PASS_WITH_HYGIENE_NOTE",
+      "evidence": [
+        "C1 walk-forward only — PCA IS-frozen 2024-06-30, OOS via projection (forge_package pit_compliance.C1_walk_forward_only=true)",
+        "C2 t-1 lag — sig vs start_d separation verified",
+        "C9 weight at sig_date — verified",
+        "C10 liquidity inherited from STR_1715",
+        "C11 regime PIT — iter31 cash overlay regime tag at sig_date",
+        "C13 no flip — Z_Score_Aligned via score_eff",
+        "C14 Usable_Date <= sig_date"
+      ],
+      "iran_lmr_pit_concern": {
+        "codex_optimizer_C6_severity": "HIGH",
+        "codex_judge_C3_severity": "HIGH",
+        "judge_disposition": "PARTIAL_ACCEPT",
+        "outcome_invariance": "ACCEPT_REBUTTAL_5_OF_5_STILL_VALID — F1 selection by minDD rank=1 across all 6 historical crises; removing IRAN_LMR_2026, the remaining 5 (EM_2004, COMMODITY_2006, GFC_2007_09, COVID_2020, FED_2022) ALL still rank F1 worst. k_crisis=F1 IS invariant to IRAN_LMR_2026 inclusion.",
+        "artifact_hygiene": "ACCEPT_PARTIAL_REQUIRE_SUCCESSOR_WT_TO_RE_ISOLATE — crisis_prone_factor_id.json mixes pre-2026-05-01 historical labeling with post-2026-05-01 verification window. For deployment WT, artifact must be split into crisis_prone_factor_id_5crises.json (pre-deploy, used in selection) and crisis_prone_factor_id_iran_appended.json (post-deploy verification only).",
+        "rebuttal_quantitative_evidence": "5/5 invariance: F1 minDD rank=1 in EM_2004, COMMODITY_2006, GFC_2007_09, COVID_2020, FED_2022 (verified against crisis_prone_factor_id.json::worst_by_minDD_per_crisis).",
+        "rebuttal_sha_evidence": "lro_params_frozen.json sha256_loadings = 9e9784f7... SHA-frozen at IS cutoff 2024-06-30; PCA fit at 2024-06-30; OOS factor returns = projection only (no refit).",
+        "successor_wt_requirement": "deployment_wt must re-isolate crisis_prone_factor_id artifact. For recommendation_only WT, hygiene flagged but does not block closure."
+      }
+    },
+    "Gate_B_Selection_Test_Isolation": {
+      "status": "PASS",
+      "evidence": [
+        "Walk-forward 269 sig_dates 2004-01 to 2026-05",
+        "alpha ranking inherited from STR_1715 (parent_alpha_package_sha SHA-locked)",
+        "lockbox_access_count_non_judge: 0 (judge phase only)",
+        "factor_set + crisis_prone_k SHA-frozen via lro_params_frozen.json",
+        "method_shopping_log.candidates_tried = 1 (PCA only) — DSR penalty 0.05 minimal"
+      ]
+    },
+    "Gate_C_Net_Alpha_vs_Cost": {
+      "status": "FAIL",
+      "evidence": [
+        "M4+FactorBeta_Hedge net_IR vs S1 = -0.366 (negative; hedge erodes risk-adjusted return)",
+        "FactorBeta_Hedge net_IR vs S1 = -0.163",
+        "Both hedge variants produce post-cost CAGR < S1 baseline post-cost (M4 17.33% vs S1 20.96%)",
+        "+62pp annual turnover (FH vs S1) costs ~1.7pp CAGR with only -1.75pp MDD improvement"
+      ],
+      "judge_note": "CORE failure axis. Hedge math correctly reduces |β_p,F1| 63% but the QP weight perturbation away from alpha-anchor degrades alpha capture more than it reduces tail."
+    },
+    "Gate_D_Crowding_Stress": {
+      "status": "MONITORING_ONLY",
+      "evidence": [
+        "Survival across crisis windows (CRISIS regime n=11): S1 SR 0.018 / FH SR -0.123 / M4+FH SR -0.160 — hedge WORSENS crisis SR",
+        "CAUTION regime (n=27): S1 SR 0.935 / FH SR 1.163 / M4+FH SR 1.155 — hedge HELPS in caution",
+        "Per-regime survival count for hedge ≥ S1: 1/4 (CAUTION only) — fails standard 3/4 threshold",
+        "Spec WT-S20260504_005 decision_rule does not require crowding survival; this is per-regime diagnostic"
+      ]
+    },
+    "Gate_E_Concentration": {
+      "status": "PASS",
+      "evidence": [
+        "max_w (risk asset) = 0.20 (cap binding for top names)",
+        "n_names ≤ 20 (parent inherited)",
+        "long-only Σw=1 verified (cash convention v2)",
+        "CASH_KRW reaches 40% in CRISIS regime — interpreted as cash-overlay sleeve, not subject to per-name 0.20 cap. Successor deployment_wt must encode cash_exempt_from_per_name_cap=true flag explicitly."
+      ]
+    },
+    "Gate_F_Drift_Tolerance": {
+      "status": "PASS",
+      "evidence": [
+        "OOS (n=29 post 2024-06-30 PCA-IS-cutoff): M4+FH SR 2.1729 / CAGR 51.14% / MDD -7.13%",
+        "preLB (n=240): M4+FH SR 1.1499 / CAGR 26.70% / MDD -39.94%",
+        "OOS-IS SR ratio = 2.1729 / 1.1499 = 1.890 — substantially above 0.7 threshold",
+        "ex2025 (n=251): M4+FH SR 1.1599 — consistent with full-sample, no 2025-specific anomaly"
+      ],
+      "measurement_basis": "forge_realized_share_based same-period reconstruction (NOT lockbox harness). Acceptable for sizing-only / recommendation_only scope per Judge v6.1 §Lockbox Audit conditional applicability — full lockbox harness reserved for deployment WT."
+    },
+    "Gate_Hurdle_Hard_v2_2": {
+      "status": "FAIL",
+      "rule_text": "Hurdle Gate v2.2 hard fail: MDD > 45% OR Turnover > 600%",
+      "evidence": [
+        "Turnover M4+FH = 746.11% annual one-way > 600% hard cap → FAIL",
+        "Turnover S1 = 716.61%, FH = 778.71% — all variants breach hard cap",
+        "Post-cost MDD M4+FH = -46.26% > 45% threshold → FAIL",
+        "Pre-cost forge MDD M4+FH = -39.94% < 45% (PASS pre-cost only)",
+        "Authoritative basis declared: post-cost (matches realized investor experience). Successor WT must reduce TO and improve post-cost MDD."
+      ],
+      "codex_judge_C1_disposition": "ACCEPT — hard gates absolute; recommendation_only does not permit downgrade",
+      "judge_note": "Hard gate FAIL is a separate output from spec verdict_classification. MONITORING_ONLY closure is the spec advisory outcome; hard gate FAIL prevents any future promotion path without successor remediation. Both outputs recorded honestly per Charter v1.7 §8 No Silent Override."
+    },
+    "Gate_FactorRegression_R2_strict": {
+      "status": "FAIL",
+      "rule_text": "Cross-sectional regression R²_mean ≥ 0.30 strict target (no tolerance permitted post-hoc per AX-002)",
+      "evidence": [
+        "regression_diagnostics.json: R2_distribution.mean = 0.2988 < 0.30 strict",
+        "run_risk_research.log: R2_mean_geq_0_3 = FALSE; Overall pass = FALSE",
+        "_debug/debug_pass.json: applied 0.005 borderline_tol → pass=true (AX-002 silent threshold override)",
+        "Codex C5 ACCEPT — Judge enforces strict gate FAIL"
+      ],
+      "codex_judge_C5_disposition": "ACCEPT — silent threshold override exposed",
+      "judge_note": "Strict gate FAIL on R²<0.30. Spec MONITORING_ONLY clause uses softer 'factor regression quality OK' language which captures qualitative aspects (5/5 crisis F1 invariance, K=5 PCA variance partition consistent). Strict gate FAIL recorded; spec MONITORING_ONLY clause MATCH on qualitative quality. Dual disposition explicit."
+    },
+    "Gate_Harvey_t3": {
+      "status": "INSUFFICIENT_EVIDENCE_NOT_VERIFIED",
+      "rule_text": "Harvey et al. (2016) t > 3.0 multi-test awareness; required artifact: Newey-West t for CAPM/Carhart-4/FF-5/FF-6 regression",
+      "evidence_present": [
+        "DSR pre-cost values from forge: S1 4.59 / FH 3.91 / M4+FH 4.14 (DSR_post with 1.5 penalty)",
+        "Method shopping log: 4 candidates total (1 PCA + 3 hedge variants); 0.05 × 4 = 0.20 minor DSR adjustment"
+      ],
+      "evidence_missing": [
+        "harvey_t_panel.json with Newey-West t-stat artifact",
+        "FF5/FF6 regression of M4+FactorBeta_Hedge returns vs Fama-French factors",
+        "Post-cost DSR_post computed (only inferred ≈ 1.5)"
+      ],
+      "codex_judge_C4_disposition": "ACCEPT — gate marked INSUFFICIENT_EVIDENCE",
+      "judge_note": "Harvey threshold t > 3.0 cannot be claimed PASS without Newey-West; cannot be claimed FAIL without computation. Spec MONITORING_ONLY decision_rule does not require Harvey-t verification — it requires CAGR floor + MDD pp + vol pp + Sortino + top5DD + factor R². Gate marked NOT_VERIFIED to honestly disclose missing artifact. Successor deployment_wt MUST produce harvey_t_panel.json."
+    }
+  },
+
+  "ax_001_v2_defense_like_evaluation": {
+    "rule_text": "defense-like 평가 — crisis_alpha + Core MDD pp + bad/normal realized risk ratio by crisis-prone factor exposure quantile",
+    "core_reference": "L-274 STR_1715 PG2 M4 BOCPD admit (SR 1.7477 / CAGR 43.78% / MDD -32.05% — already production)",
+    "evaluation_method": "3-tuple per strategy: (a) crisis_alpha_8_windows, (b) Core MDD pp improvement, (c) bad/normal realized SR ratio by F1-exposure quantile",
+
+    "per_strategy_3_tuple": {
+      "S1": {
+        "crisis_alpha": {
+          "n_crisis_periods_in_backtest": 11,
+          "regime_CRISIS_SR": 0.0178,
+          "regime_CRISIS_CAGR": -0.0254,
+          "regime_CRISIS_MDD": -0.1842,
+          "interpretation": "near-zero in deep CRISIS regime; -2.54% CAGR drag"
+        },
+        "core_mdd_improvement_pp": "BASELINE",
+        "bad_normal_ratio": {
+          "regime_NORMAL_SR": 1.2197,
+          "regime_CAUTION_SR": 0.9346,
+          "regime_CRISIS_SR": 0.0178,
+          "ratio_caution_normal": 0.766,
+          "ratio_crisis_normal": 0.015,
+          "interpretation": "high regime sensitivity baseline, CRISIS near zero alpha"
+        },
+        "verdict": "BASELINE_REFERENCE"
+      },
+      "FactorBeta_Hedge": {
+        "crisis_alpha": {
+          "regime_CRISIS_SR": -0.1231,
+          "regime_CRISIS_CAGR": -0.0728,
+          "regime_CRISIS_MDD": -0.217,
+          "delta_vs_S1": "WORSE — CRISIS SR -0.14, CAGR -4.74pp, MDD -3.28pp"
+        },
+        "core_mdd_improvement_pp": 0.0051,
+        "bad_normal_ratio": {
+          "regime_NORMAL_SR": 1.049,
+          "regime_CAUTION_SR": 1.1631,
+          "regime_CRISIS_SR": -0.1231,
+          "ratio_caution_normal": 1.109,
+          "ratio_crisis_normal": -0.117,
+          "interpretation": "improved CAUTION but DETERIORATED CRISIS — worst-tail makes regime defense net-negative"
+        },
+        "verdict": "FAIL_AX_001_v2"
+      },
+      "M4_FactorBeta_Hedge": {
+        "crisis_alpha": {
+          "regime_CRISIS_SR": -0.1599,
+          "regime_CRISIS_CAGR": -0.0416,
+          "regime_CRISIS_MDD": -0.136,
+          "delta_vs_S1": "WORSE on SR (-0.18 pp), BETTER on CRISIS MDD (-13.6% vs -18.42%)"
+        },
+        "core_mdd_improvement_pp_post_cost": 0.0175,
+        "core_mdd_improvement_pp_pre_cost": 0.0667,
+        "bad_normal_ratio": {
+          "regime_NORMAL_SR": 1.0441,
+          "regime_CAUTION_SR": 1.1552,
+          "regime_CRISIS_SR": -0.1599,
+          "ratio_caution_normal": 1.106,
+          "ratio_crisis_normal": -0.153,
+          "interpretation": "regime cash overlay reduces vol in NORMAL/CAUTION but does not save CRISIS SR (negative)"
+        },
+        "verdict": "FAIL_AX_001_v2",
+        "fail_reasons": [
+          "CRISIS SR -0.160 < S1 baseline +0.018 — hedge underperforms in worst regime",
+          "MDD improvement post-cost only -1.75pp (target -3pp per spec)",
+          "bad/normal SR ratio negative in CRISIS — hedge does not provide tail protection in deepest stress"
+        ]
+      }
+    },
+
+    "ax_001_v2_overall_verdict": "FAIL_DEFENSE_LIKE — Hedge does not produce defense-like regime asymmetry. CRISIS regime SR DETERIORATES from S1 baseline +0.018 to M4+FH -0.160. MDD improvement post-cost (-1.75pp) below spec target -3pp. CAUTION regime is the only regime where hedge adds value (+0.22 SR vs S1) but CRISIS deterioration dominates AX-001 v2 conditional evaluation. Core_reference L-274 (STR_1715 production) provides MDD -32.05% baseline; M4+FactorBeta_Hedge same-period reconstructed MDD -39.94% (pre-cost) is WORSE than L-274 — partly a measurement basis effect (forge realized share-based vs forge L-274 BOCPD production NAV reconstruction).",
+
+    "method_substitution_disclosure": {
+      "issue": "L-274 reference uses M4 BOCPD; current run uses iter31 static cash overlay (BULL=0/NORMAL=10/CAUTION=20/CRISIS=40)",
+      "delta_attribution_estimate": {
+        "factor_beta_hedge_redistribution_pp_SR": -0.30,
+        "BOCPD_vs_static_regime_substitution_pp_SR": -0.20,
+        "total_pp_SR": -0.50
+      },
+      "honesty_attestation": "Approximate decomposition; not a measurement-isolating ablation. The spec was scope-bound to 3-variant comparison with iter31 cash; BOCPD trigger logic was not in WT scope. Documented in forge_package m4_baseline_recomputed.fair_comparison_attestation."
+    }
+  },
+
+  "ax_008_triangulation_tally": {
+    "minimum_sources_required": 2,
+    "sources": [
+      {
+        "name": "claude_forge_pure_function_v6_1_r12",
+        "stance": "PASS_FORGE_MEASUREMENT",
+        "artifact": "qepm/mailbox/worktask/WT-S20260504_005/forge_package.json",
+        "evidence_summary": "10/11 audit checks PASS (1 WARN ann_TO=7.49). Hash boundary PASS. Pure function v6.1 R12 PASS. n_periods=269. Share-based NAV reconstruction. Integrity=PASS. audit_status=FAIL is technical (1 WARN counted as fail).",
+        "counts_as_pass_source": true
+      },
+      {
+        "name": "codex_gpt55_optimizer_critic",
+        "stance": "REJECT_round1_ADDRESSED_via_remediation",
+        "artifact": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_optimizer.json + optimizer_challenge_note.md",
+        "evidence_summary": "7 critical concerns. 5 ACCEPT + 1 PARTIAL + 1 REBUTTAL. Optimizer self-downgraded to MONITORING_ONLY in response. REJECT stance addressed but cannot count as PASS.",
+        "counts_as_pass_source": false
+      },
+      {
+        "name": "codex_gpt55_judge_critic",
+        "stance": "REVISE_round1_ADDRESSED_via_remediation",
+        "artifact": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_judge.json + judge_challenge_note.md",
+        "evidence_summary": "7 critical concerns (4 HIGH, 3 MEDIUM). 5 ACCEPT + 2 PARTIAL_ACCEPT. Gate audit revised: hard FAIL on RF-J1 turnover + post-cost MDD; Harvey gate INSUFFICIENT_EVIDENCE; AX-008 marked INSUFFICIENT_PASS_SOURCES. REVISE addressed but cannot count as PASS.",
+        "counts_as_pass_source": false
+      },
+      {
+        "name": "codex_gpt55_risk_critic",
+        "stance": "TIMEOUT_WAIVER",
+        "artifact": "(none — risk_package.json codex_round_status=round1_timeout_round2_waiver_applied)",
+        "evidence_summary": "Risk Codex round timed out, Round 2 waiver applied per Q-Lead. Cannot count as source.",
+        "counts_as_pass_source": false
+      },
+      {
+        "name": "architect_review",
+        "stance": "NOT_INVOKED",
+        "artifact": null,
+        "evidence_summary": "Architect not invoked for this sizing-only WT.",
+        "counts_as_pass_source": false
+      },
+      {
+        "name": "judge_self",
+        "stance": "CANNOT_SELF_COUNT",
+        "artifact": "this judge_verdict.json",
+        "evidence_summary": "Judge cannot self-count toward AX-008 triangulation per Charter v1.7 §10.",
+        "counts_as_pass_source": false
+      }
+    ],
+    "tally_pass_sources": 1,
+    "ax_008_status": "INSUFFICIENT_PASS_SOURCES_1_OF_2_MINIMUM",
+    "tally_threshold_met": false,
+    "judge_disposition_of_codex_C2": "ACCEPT — judge cannot self-count; Codex stances ADDRESSED-but-not-PASS do not contribute to AX-008 PASS tally. Risk Codex timeout waiver is not a PASS source.",
+    "implication": "For RECOMMENDATION_ONLY closure, AX-008 PASS is not required — request.json explicitly defers governor_concord cert to promotion_wt. Successor deployment_wt MUST achieve formal AX-008 PASS via Architect invocation OR independent Codex re-evaluation post-remediation."
+  },
+
+  "harvey_t_3_sigma_check": {
+    "status": "INSUFFICIENT_EVIDENCE_NOT_VERIFIED",
+    "rule": "Harvey et al. (2016) t > 3.0 awareness for multi-test discovery",
+    "candidates_tried_method_shopping_total": 4,
+    "candidates_breakdown": {
+      "risk_PCA_method_only": 1,
+      "optimizer_3_variants": 3,
+      "compound_multi_test_count": 4
+    },
+    "applicability": "WEAK_APPLICABILITY for sizing-only WT inheriting alpha (no new alpha discovery). However Harvey standard requires verification artifact per Codex C4.",
+    "DSR_pre_cost": "DSR_post values from forge: S1 4.59 / FH 3.91 / M4+FH 4.14 (with 1.5 penalty for 30-candidate basis from L-274 reference). All above DSR_post 1.0 threshold pre-cost.",
+    "post_cost_DSR_estimate": "post-cost SR 0.7787 → DSR_raw_post_cost ≈ ~3.0 → DSR_post (penalty ~0.2 for 4 candidates) ≈ ~2.8 — INFERRED not artifact-backed",
+    "evidence_missing": [
+      "harvey_t_panel.json with Newey-West t-stat artifact",
+      "FF5/FF6 regression of M4+FactorBeta_Hedge returns vs Fama-French factors",
+      "Post-cost DSR_post computed exactly (only inferred)"
+    ],
+    "codex_judge_C4_disposition": "ACCEPT",
+    "successor_wt_requirement": "deployment_wt MUST produce harvey_t_panel.json with Newey-West t per CAPM/Carhart-4/FF-5/FF-6 regression"
+  },
+
+  "rationalization_audit_judge_self": {
+    "scanned_phrases": ["미미", "관행적", "보수적이면", "대부분 결과 동일", "이미 반영", "실무적", "영향 미미", "sizing_only로 해소 불가", "이 정도면", "ALREADY_NEUTRAL", "borderline-pass", "spec frozen"],
+    "judge_self_scan_result": "PASS_AFTER_REMEDIATION — initial draft contained 'borderline-acceptable' (replaced with explicit dual disposition); remaining flagged phrases are inherited from upstream artifacts (debug_pass.json, optimizer challenge_note) and exposed honestly in challenge_note.",
+    "negative_findings_explicit": [
+      "Hedge WORSENS post-cost CAGR (S1 20.96% → M4 17.33%, -3.63pp delta)",
+      "Hedge WORSENS CRISIS regime SR (S1 +0.018 → M4 -0.160)",
+      "Hedge MDD improvement post-cost only -1.75pp (target -3pp)",
+      "Net IR vs S1 = -0.366 (negative; hedge adds turnover cost without commensurate alpha)",
+      "AX-001 v2 defense-like assessment FAILS — bad/normal CRISIS ratio worsens",
+      "RF-J1 hard gate FAIL — turnover 746% > 600% cap",
+      "Hurdle Hard MDD post-cost FAIL — -46.26% > -45% threshold",
+      "AX-008 INSUFFICIENT — 1/2 minimum PASS sources",
+      "Harvey gate NOT_VERIFIED — no Newey-West / FF5/FF6 artifact",
+      "R² strict 0.30 threshold FAIL — silent 0.005 tolerance override exposed"
+    ]
+  },
+
+  "lockbox_audit": {
+    "lockbox_access_required": false,
+    "lockbox_audit_status": "NOT_APPLICABLE_RECOMMENDATION_ONLY",
+    "lockbox_audit_rationale": "wt_kind=recommendation_only — production weights NOT modified. Lockbox extension audit (Judge v6.1 mandate) applies to deployment WTs admitting to PG2/PG3. This WT explicitly defers governor_concord cert to promotion_wt. No production strategy admission decided. Production STR_1715 lockbox is already covered under WT-P20260429_002 (parent) admit.",
+    "judge_lockbox_harness_invoked": false,
+    "harness_skip_justification": "Per Judge v6.1 Mandate Core: Lockbox audit is mandatory for WTs admitting to production. WT-S20260504_005 is recommendation_only and does NOT modify production weights (str_1715_production_dir_writes=0).",
+    "gate_F_basis_disclosure": "OOS metrics in Gate_F_Drift_Tolerance sourced from forge_realized_share_based same-period reconstruction, NOT from lockbox harness. Acceptable for recommendation_only WT scope. Successor deployment_wt that proposes alternative methodology (CVaR_LP / HRP+CDaR / quarterly rebalance) will require full Judge Lockbox Harness Audit per Judge v6.1.",
+    "codex_judge_C6_disposition": "ACCEPT — clarification added"
+  },
+
+  "artifact_evidence_provenance": {
+    "alpha_source": "INHERITED via parent_alpha_package_sha 34cc99fb... → score_eff via STR_1715 production forge_may2026/alpha_scores_extended.parquet",
+    "alpha_scores_local_artifact": "ABSENT_BY_DESIGN_INHERITED_REF_ONLY",
+    "alpha_inheritance_path": "qepm/mailbox/worktask/WT-S20260504_005/alpha_package.json + alpha_package_inherit_ref.json → qepm/mailbox/worktask/WT-P20260429_002/alpha_package.json (SHA-locked)",
+    "factor_loadings_artifact": "stage_artifacts/WT_WT-S20260504_005/factor_loadings_B.parquet (SHA 9e9784f7...)",
+    "factor_returns_artifact": "stage_artifacts/WT_WT-S20260504_005/factor_returns.parquet (SHA 837a6141...)",
+    "weights_canonical": "stage_artifacts/WT_WT-S20260504_005/weights.csv (SHA 57c0407...)",
+    "bt_result_canonical": "stage_artifacts/WT_WT-S20260504_005/bt_result.rds",
+    "codex_judge_C7_disposition": "PARTIAL_ACCEPT — inheritance path now explicit"
+  },
+
+  "successor_wt_recommendations": {
+    "RECOMMENDED_NEXT_WT_KIND": "deployment_wt OR sizing_only with reduced rebalance frequency",
+    "academic_anchors": [
+      "Pflug & Römisch (2007) CVaR-LP linear programming",
+      "FRM Pfaff Ch12 Min CDaR (Conditional Drawdown at Risk) optimizer",
+      "Bailey & López de Prado (2012) Hierarchical Risk Parity HRP+CDaR composite",
+      "Brandt et al. (2009) Parametric portfolio policies — turnover-aware",
+      "Boudt et al. (2020) Robust portfolio with shrinkage estimators",
+      "Harvey et al. (2016) — Newey-West t with multi-test correction (Harvey gate)",
+      "Fama-French (2015) FF5 + Carhart (1997) momentum (Harvey gate FF regression)"
+    ],
+    "specific_paths": [
+      "(a) Reduce rebalance frequency: monthly → quarterly. Annual TO 716% → ~240% (3× reduction). Cost from 1.07% → ~0.36%, recovers ~0.7pp CAGR. Addresses RF-J1 hard FAIL.",
+      "(b) CVaR-LP optimizer (Pflug-Romisch): explicit min CVaR_95 constraint at -0.10. Replaces β_F1 minimization. Addresses RF-O8 inherited CVaR breach.",
+      "(c) HRP+CDaR composite (Pfaff Ch12 + López de Prado): hierarchical clustering + drawdown-aware allocation. Addresses post-cost MDD hard fail.",
+      "(d) Add explicit turnover penalty in alpha generation (parent STR_1715 successor): persistent score_eff via EWMA / Kalman filter to reduce monthly rotation.",
+      "(e) Explore latent factor F2-F5 hedge inclusion: spec WT-S20260504_005 limited to F1; F2-only or F1+F2 combined hedge could shift trade-off (subject to crisis-prone ID stability).",
+      "(f) Required artifact: harvey_t_panel.json with Newey-West t per CAPM/Carhart-4/FF-5/FF-6 regression",
+      "(g) Required artifact: crisis_prone_factor_id_5crises.json (pre-deploy isolation)",
+      "(h) AX-008 establish 2-source PASS via Architect invocation OR re-Codex post-remediation"
+    ],
+    "do_NOT_pursue": [
+      "Direct hedge intensity scaling (β_weight 200 → higher) — would worsen turnover cost",
+      "Single-sleeve hedge as defense layer — AX-007 mechanism break in single_sleeve_long_only_top20 (L-160/165/166)"
+    ]
+  },
+
+  "judge_decision_summary": {
+    "verdict": "MONITORING_ONLY",
+    "verdict_rank": 3,
+    "verdict_options": ["PASS", "CONDITIONAL_PASS", "MONITORING_ONLY", "FAIL"],
+    "rank_1_PASS": "FAIL (CAGR 17.33% < 20% spec floor; vol -13.5% < -20% target; net IR negative)",
+    "rank_2_CONDITIONAL_PASS": "FAIL (same CAGR floor failure)",
+    "rank_3_MONITORING_ONLY": "MATCH (factor regression qualitative OK; F1 6/6 → 5/5 invariance holds; trading damage net_IR=-0.37 substantial)",
+    "rank_4_FAIL": "DOES_NOT_MATCH (factor identification stable, walk-forward valid)",
+    "production_admission": "DENIED",
+    "book_state_write": "DENIED",
+    "PG2_admission": "DENIED",
+    "successor_wt": "RECOMMENDED — CVaR_LP / HRP+CDaR / quarterly rebalance / multi-factor F1+F2 hedge",
+    "hard_gate_audit_summary": "FAIL (RF-J1 turnover 746%>600%; Hurdle Hard post-cost MDD -46.26%>-45%; R²<0.30 strict; AX-008 1/2 sources; Harvey not verified)"
+  },
+
+  "graduation_recommendation_to_governor": {
+    "RECOMMENDED_ACTION": "REJECT_PROMOTION_FOR_PG2",
+    "reason": "MONITORING_ONLY verdict — hedge sizing layer empirically degrades risk-adjusted return (net IR -0.37) and AX-001 v2 defense-like CRISIS regime SR test fails. Hard gates FAIL on RF-J1 turnover (746%>600%) and post-cost MDD (-46.26%>-45%). AX-008 INSUFFICIENT_PASS_SOURCES. Harvey NOT_VERIFIED. Inherited turnover/CVaR breaches not resolved by sizing-only WT. WT-S20260504_005 closes as recommendation_only; current STR_1715 production weights unchanged.",
+    "book_state_write_required": false,
+    "abort_reason_per_spec": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "expected_next_state": "JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED (per request.json state_machine_path)",
+    "advisory_findings_archived": true,
+    "successor_wt_required_for_alpha_gap_pursuit": true,
+    "successor_wt_minimum_artifacts_required": [
+      "harvey_t_panel.json (Newey-West + FF5/FF6)",
+      "crisis_prone_factor_id_5crises.json (pre-deploy isolation)",
+      "lockbox harness 결과 (frozen weights buy-and-hold OOS extension)",
+      "AX-008 2/3 PASS via Architect or independent Codex"
+    ]
+  },
+
+  "codex_round_summary": {
+    "rounds_executed": 1,
+    "draft_artifact": "qepm/mailbox/worktask/WT-S20260504_005/judge_verdict_draft.json",
+    "codex_response_artifact": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_judge.json",
+    "challenge_note_artifact": "qepm/mailbox/worktask/WT-S20260504_005/judge_challenge_note.md",
+    "codex_stance": "REVISE",
+    "codex_severity_high_count": 4,
+    "codex_severity_medium_count": 3,
+    "concerns_disposition": {
+      "ACCEPT": ["C1_RF_J1_hard_gate", "C2_AX_008_overstated", "C4_Harvey_not_verified", "C5_R2_silent_override", "C6_lockbox_gate_F_basis"],
+      "PARTIAL_ACCEPT": ["C3_PIT_IRAN_LMR", "C7_alpha_scores_substitution"],
+      "REBUTTAL": []
+    },
+    "weakest_assumption_addressed": "Codex weakest_assumption: 'recommendation_only/no book-state write lets the judge downgrade hard gate failures into MONITORING_ONLY JUDGE_PASSED'. Addressed via dual disposition: spec verdict_classification = MONITORING_ONLY (advisory) AND hard gates separately marked FAIL. Both recorded honestly per Charter v1.7 §8.",
+    "q_lead_escalate_triggered": false,
+    "q_lead_escalate_threshold": "HIGH severity ≥5 OR AX axiom hard FAIL ≥3 OR PIT C1 hard violation",
+    "q_lead_escalate_evaluation": "4 HIGH < 5 threshold; AX-008 INSUFFICIENT (axiom soft, not hard FAIL); AX-001 v2 FAIL (1 axiom); 0 PIT C1 hard violation. Within autonomous Judge Codex Round 1 disposition. No escalation."
+  },
+
+  "finalize_meta": {
+    "created_at": "2026-05-04T09:35:00+0900",
+    "revised_at": "2026-05-04T09:45:00+0900",
+    "created_by": "judge_agent",
+    "state_machine_target": "JUDGE_PASSED",
+    "draft_revision": "FINAL_round1_codex_remediation_complete",
+    "promoted_to_final_at": "2026-05-04T09:45:00+0900",
+    "promoted_by": "judge_agent autonomous (Codex Round 1 REVISE addressed via challenge_note + 5 ACCEPT + 2 PARTIAL_ACCEPT)"
+  }
+}

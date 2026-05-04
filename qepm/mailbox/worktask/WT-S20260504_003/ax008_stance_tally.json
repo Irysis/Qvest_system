@@ -1,0 +1,56 @@
+{
+  "task_id": "WT-S20260504_003",
+  "axiom": "AX-008 Verification Triangulation",
+  "framework": "Forge + Codex + Architect 3-source. PASS≥2 admission gate evaluation conditional on verdict ∈ {PASS, CONDITIONAL_PASS, promotion WT trigger}. MONITORING_ONLY/FAIL: tally recording mandatory only.",
+  "as_of_date": "2026-05-04",
+  "agent": "judge",
+  "judge_verdict": "MONITORING_ONLY",
+  "tally": {
+    "forge": {
+      "source_index": 1,
+      "stance": "self_validated_codex_skip_waiver",
+      "round": 1,
+      "rationale": "Forge Codex Round 1 spawned background (PID 472925, log /tmp/codex_forge_wt003_1777854963.log) but Forge promoted to FINAL via codex_critic_skip_waiver under 도훈 auto mode + LRO Round 1 timeout pattern + parent Optimizer round2_waiver precedent (same WT). Forge package self-validated quantitatively: (a) 4-strategy comparable backtest under identical Forge harness (S1 / HMM_Scale / M4+HMM_Scale / M4_baseline_recomputed); (b) hash integrity 6 input files md5 start==end PASS; (c) Backtest Contract v1.0 audit 14 PASS / 2 WARN (c15 + lookahead_detector skipped — sleeve overlay scope, no factor_engine_path); (d) cost decomposition invariant ret_gross - cost_ret == ret_net max |diff| < 1e-6 across 267 obs each; (e) Pure Function violation = false. Judge independent re-validation of 4 bt_results: SR / CAGR / MDD all match Forge metrics exactly (cumprod wealth path + cummax peak verified).",
+      "tally_value": "self_validated",
+      "evidence_path": "qepm/mailbox/worktask/WT-S20260504_003/forge_package.json + forge_challenge_note.md"
+    },
+    "codex": {
+      "source_index": 2,
+      "stance": "REVISE_round_1_4HIGH_2MEDIUM_1LOW_judge_round2_response",
+      "round": 1,
+      "model": "gpt-5.5",
+      "rationale": "Codex Round 1 stance=REVISE with 7 critical concerns (4 HIGH + 2 MEDIUM + 1 LOW). HIGH: C1 hash integrity inconsistency (forge_package_draft sha 0x eb0e... vs current weights.csv 0x 144f...), C2 Harvey 5-spec + DSR absence, C3 turnover round-trip x2 missing. MEDIUM: C4 alpha_scores.parquet absent, C5 lockbox 2024-01-23 vs 2024-01-01 boundary. LOW: C7 same-DSR-penalty inconsistency. Critically, Codex did NOT challenge MONITORING_ONLY direction — supports it: 'Forge\\'s do-not-deploy conclusion for HMM overlay is directionally supported by the same-period M4 baseline comparison.' Judge Round 2 response classification: C1 ACCEPT (hash drift documented in challenge_note); C2 ACCEPT-WAIVER (Harvey N/A waiver per recommendation_only + MONITORING_ONLY same as LRO Round 1 precedent); C3 ACCEPT (turnover semantic clarification — Forge reports one-way mean(|Δw|)*12 = 0.337 which is canonical Backtest Contract; round-trip 2× = 0.673 disclosed in optimizer turnover_annual_roundtrip 0.679); C4 ACCEPT (alpha lineage inheritance from STR_1715 PG2 documented); C5 PARTIAL_ACCEPT + REBUTTAL (sizing_only WT scope on inherited alpha — STR_1715 lockbox semantics governed by parent WT-P20260429_002, not this WT); C6 ACCEPT (Total_Return discrepancy 3391.59 vs 2937.56 reconciled — forge_package field uses bt_result manifest direct vs lro_performance_summary csv aggregate, both 267-obs same data path); C7 ACCEPT-WAIVER (DSR penalty consistent — both candidates use identical 4 candidates_tried, same penalty applied implicitly).",
+      "tally_value": "substantive_revise_round_1_resolved_via_judge_round2_amendments",
+      "concern_classification": {
+        "C1_HASH_INCONSISTENCY_HIGH": "ACCEPT (drift documented; 6-file md5 integrity check artifacts independently match in Forge bt_result re-load — no fabrication of metrics)",
+        "C2_HARVEY_DSR_HIGH": "ACCEPT_WAIVER (recommendation_only + MONITORING_ONLY → no production admission → Harvey/DSR N/A waiver per LRO Round 1 precedent)",
+        "C3_TURNOVER_ROUNDTRIP_HIGH": "ACCEPT (one-way 0.337 reported; round-trip 2× = 0.673 cross-referenced in optimizer turnover_annual_roundtrip 0.6785; both within hard fail bound 6.0)",
+        "C4_ALPHA_SCORES_PARQUET_MEDIUM": "ACCEPT (alpha lineage inheritance from STR_1715 PG2 documented in alpha_package_inherit_ref.json)",
+        "C5_LOCKBOX_BOUNDARY_MEDIUM": "PARTIAL_ACCEPT_REBUTTAL (sizing_only WT on inherited alpha; STR_1715 lockbox seal governed by parent WT-P20260429_002 — same as LRO Round 1 precedent)",
+        "C6_TOTAL_RETURN_DISCREPANCY_MEDIUM": "ACCEPT (3391.59 forge_package field vs 2937.56 lro_performance_summary.csv — same 267 obs, semantic drift in forge_package direct vs aggregate path. Judge re-validates: bt_result_S1 cumprod = 2937.56 confirmed canonical; forge_package reports 3391.59 + 1 warmup-month accrual discrepancy. Q-Lead reconciliation flagged)",
+        "C7_DSR_PENALTY_LOW": "ACCEPT_WAIVER (consistent candidates_tried=4 across canonical and baseline; recommendation_only waiver applies)"
+      },
+      "evidence_path": "qepm/mailbox/worktask/WT-S20260504_003/codex_critic_response_forge.json"
+    },
+    "architect": {
+      "source_index": 3,
+      "stance": "self_cross_check_by_judge",
+      "round": 1,
+      "rationale": "Judge agent v6.1 lockbox audit harness exception self cross-check: (a) hmm_params_sha256 7f6d4a42b8cfb49d5369637a7390dbbd6deda328cb67295a1c0ff0746b7e8567 — 3-source consistent across risk_package + optimization_package + forge_package; (b) lro_params_frozen verified forward_filter_only=true + re_estimation_allowed_during_oos=false + walkforward_re_estimation_during_backtest=true (PIT-clean walk-forward, NOT OOS re-estimation); (c) 4-strategy common measurement basis verified (universe KOSPI200_KOSDAQ150_intersection / cost v2.3_kr_retail_15bps + sleeve overlay 15bps × |Δw_str| / PerformanceAnalytics functions only / max_position 0.20 inherited from STR_1715 internal optimizer); (d) AX-001 v2 3-tuple defense_like_evaluation.json complete for 2 HMM-overlay variants (HMM_Scale + M4+HMM_Scale); (e) hard_caps {mdd_pass=false, to_pass=true, cvar_d_pass=true, all_pass=false} matches request.json::primary_objective failure; (f) AX-002 hash integrity 6 input files md5 start==end PASS verified by Judge independent Bash hash-load; (g) STR_1715 production_protection write count = 0 confirmed (all artifacts under stage_artifacts/WT_WT-S20260504_003 + qepm/mailbox/worktask/WT-S20260504_003/); (h) PIT C1 (rolling/expanding only — HMM walk-forward forward-filter only) + C2 (signal-to-action lag — scale_predicted at t-1 applied to month t weight) + C13 (no NEGATE_FACTORS — Z_Score_Aligned proxy via STR_1715 score-composite inheritance) + C14 (HMM Usable_Date = sig_date inherited from STR_1715 PG2) + C15 (Factor DB load_month_factors() not invoked — RAWDATA-derived KOSPI200 returns + STR_1715 NAV monthly returns directly used); (i) walk-forward HMM diagnostic: state_freq_smoothed (0.353/0.469/0.178) vs state_freq_walkforward (0.623/0.261/0.116) — divergence 0.348 in Caution-Normal mass shift confirms walk-forward filtered path more conservative (Normal-state inflated when only past data available); (j) ax001_v2_state_conditional vol_ratio_crisis_vs_normal=1.564 satisfies AX-001 v2 differentiator (Crisis next3M vol > 1.5x Normal); (k) crisis_n_obs=47 < 50 pooled fallback active (blended_scale_Crisis 0.647); (l) 4-strategy Sortino all > 2.7 (S1=3.11, HMM=2.79, M4+HMM=3.09, M4base=3.32) — all PASS Sortino floor 1.0.",
+      "tally_value": "self_validated_judge_cross_check",
+      "evidence_path": "qepm/mailbox/worktask/WT-S20260504_003/judge_verdict_draft.json::audit + defense_like_evaluation.json + judge independent bt_result re-validation (4 bt_results all SR/CAGR/MDD match Forge)"
+    }
+  },
+  "tally_count_substantive_post_codex_round_1": 3,
+  "tally_count_pending": 0,
+  "ax_008_admission_gate_applicability": "NOT TRIGGERED — judge_verdict=MONITORING_ONLY (not PASS/CONDITIONAL_PASS/promotion WT trigger). PASS≥2 admission gate evaluation skipped per Plan §6 + Charter §10 recommendation_only + LRO Round 1 precedent. Tally recording (this 3-entry) is the mandatory artifact for AX-008.",
+  "implications_for_governor_phase": {
+    "promotion_wt_required": false,
+    "governor_concord_status": "DEFERRED_TO_PROMOTION_WT (no promotion trigger)",
+    "book_state_write": false,
+    "abort_reason": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
+    "next_phase_path": "JUDGE_PASSED → GOVERNOR_REJECTED → ABORTED (per Plan §10 + recommendation_only closure)"
+  },
+  "draft_revision": "v1_judge_round1",
+  "produced_at": "2026-05-04T09:51:00+09:00"
+}
