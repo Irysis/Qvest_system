@@ -1,0 +1,129 @@
+{
+  "task_id": "WT-S20260504_005",
+  "axiom_basis": "AX-008_Verification_Triangulation_minimum_2_of_3_independent_PASS",
+  "axiom_text": "Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수",
+  "as_of_date": "2026-05-04",
+  "minimum_pass_sources_required": 2,
+  "tally_by_source": [
+    {
+      "source_id": 1,
+      "name": "claude_forge_pure_function_v6_1_r12_factor_beta_hedge",
+      "role": "forge_measurement_3rd_source",
+      "stance": "PASS_FORGE_MEASUREMENT",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_005/forge_package.json",
+      "artifact_sha": "(forge_package start_hashes/end_hashes match overall=true)",
+      "evidence_summary": [
+        "10/11 audit checks PASS (1 WARN ann_TO=7.49 → audit_status=FAIL technical, integrity=PASS)",
+        "Hash boundary PASS — start_hashes == end_hashes for alpha/risk/opt/weights/s1/fh/m4fh",
+        "Pure function v6.1 R12 PASS — alpha/cov/weights all unmodified",
+        "n_periods=269 walk-forward 2004-01 to 2026-05",
+        "share-based NAV reconstruction (PerformanceAnalytics standard)",
+        "PIT compliance: C1/C2/C9/C10/C11/C13/C14 all PASS",
+        "hard_constraints_validation: max 20, long-only, [0,0.20], Σw=1, KOSPI200∪KOSDAQ150, 2e8 KRW liquidity, 15bps cost — all PASS"
+      ],
+      "counts_as_pass_source": true,
+      "judge_disposition": "ACCEPT_AS_INDEPENDENT_PASS_SOURCE"
+    },
+    {
+      "source_id": 2,
+      "name": "codex_gpt55_optimizer_critic_round1",
+      "role": "codex_critic_review_optimizer_phase",
+      "stance": "REJECT_round1_ADDRESSED_via_remediation",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_optimizer.json",
+      "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_005/optimizer_challenge_note.md",
+      "evidence_summary": [
+        "7 critical concerns raised: C1 RF-O13 turnover, C2 cash accounting, C3 RF-O8 CVaR, C4 selection objective, C5 alpha-weight Spearman 0.153, C6 PIT IRAN_LMR, C7 AX-008",
+        "Resolution: 5 ACCEPT + 1 PARTIAL + 1 REBUTTAL",
+        "Optimizer self-downgraded to MONITORING_ONLY in response (verdict_classification updated)",
+        "REJECT stance was substantively addressed but the REJECT itself stands"
+      ],
+      "counts_as_pass_source": false,
+      "judge_disposition": "REJECT_ADDRESSED_NOT_PASS — Codex round 1 stance is REJECT (not PASS); the REJECT was constructively addressed but cannot be re-classified as PASS without a Codex round 2 PASS response."
+    },
+    {
+      "source_id": 3,
+      "name": "codex_gpt55_judge_critic_round1",
+      "role": "codex_critic_review_judge_phase_this_round",
+      "stance": "REVISE_round1_ADDRESSED_via_remediation",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_judge.json",
+      "challenge_note_path": "qepm/mailbox/worktask/WT-S20260504_005/judge_challenge_note.md",
+      "evidence_summary": [
+        "7 critical concerns raised (4 HIGH, 3 MEDIUM)",
+        "Resolution: 5 ACCEPT + 2 PARTIAL_ACCEPT",
+        "Gate audit revised in judge_verdict.json: hard FAIL on RF-J1 turnover + post-cost MDD; Harvey gate INSUFFICIENT_EVIDENCE; AX-008 self-marked INSUFFICIENT_PASS_SOURCES; R² strict 0.30 silent override exposed",
+        "REVISE stance addressed but cannot count as PASS"
+      ],
+      "counts_as_pass_source": false,
+      "judge_disposition": "REVISE_ADDRESSED_NOT_PASS — same logic as Source 2"
+    },
+    {
+      "source_id": 4,
+      "name": "codex_gpt55_risk_critic",
+      "role": "codex_critic_review_risk_phase",
+      "stance": "TIMEOUT_WAIVER_APPLIED",
+      "artifact_path": "(none — risk_package.json codex_round_status=round1_timeout_round2_waiver_applied)",
+      "evidence_summary": [
+        "Risk Codex round timed out",
+        "Round 2 waiver applied per Q-Lead under Charter §8 exception clause",
+        "Per Charter §8 No Silent Override: waiver does NOT count as PASS source"
+      ],
+      "counts_as_pass_source": false,
+      "judge_disposition": "WAIVER_NOT_PASS — Codex absent due to timeout; cannot contribute to AX-008 PASS tally"
+    },
+    {
+      "source_id": 5,
+      "name": "architect_review",
+      "role": "architect_3rd_source_optional",
+      "stance": "NOT_INVOKED",
+      "artifact_path": null,
+      "evidence_summary": ["Architect not invoked for this sizing-only WT (out of scope per request.json)"],
+      "counts_as_pass_source": false,
+      "judge_disposition": "NOT_AVAILABLE"
+    },
+    {
+      "source_id": 6,
+      "name": "judge_v6_1_self_evaluation",
+      "role": "judge_phase_internal",
+      "stance": "MONITORING_ONLY_VERDICT_PASS",
+      "artifact_path": "qepm/mailbox/worktask/WT-S20260504_005/judge_verdict.json",
+      "evidence_summary": [
+        "Independent gate audit: Gate A/B PASS, Gate C FAIL (net alpha < cost), Gate D MONITORING_ONLY, Gate E PASS, Gate F PASS",
+        "Hard gate: Hurdle Hard FAIL (turnover 746%>600%, post-cost MDD -46.26%>-45%)",
+        "Factor regression strict R² FAIL (0.299<0.30)",
+        "AX-001 v2 FAIL (CRISIS regime SR deterioration)",
+        "Spec verdict_classification: MONITORING_ONLY"
+      ],
+      "counts_as_pass_source": false,
+      "judge_disposition": "CANNOT_SELF_COUNT — Charter v1.7 §10 prohibits judge self-counting toward AX-008 triangulation"
+    }
+  ],
+  "tally_pass_source_count": 1,
+  "tally_addressed_not_pass_count": 2,
+  "tally_waiver_count": 1,
+  "tally_not_invoked_count": 1,
+  "tally_self_count": 1,
+  "ax_008_status": "INSUFFICIENT_PASS_SOURCES_1_OF_2_MINIMUM",
+  "tally_threshold_met": false,
+  "tally_threshold_gap": -1,
+  "judge_disposition_summary": "Per Charter v1.7 §10 + .claude/rules/codex-round.md AX-008 minimum 2-source independent PASS requirement: only 1 source (Forge measurement) qualifies as PASS. Two Codex critic rounds (optimizer + judge) returned REJECT/REVISE which were constructively addressed via challenge_notes, but stance remediation does not promote REJECT/REVISE to PASS without a Codex round 2 PASS response. Risk Codex timeout waiver does not count. Architect not invoked. Judge cannot self-count.",
+  "scope_implication": {
+    "for_recommendation_only_WT": "AX-008 PASS not strictly required for closure. request.json explicitly defers governor_concord cert to promotion_wt. WT closes as advisory.",
+    "for_deployment_WT_successor": "MUST achieve formal AX-008 2/3 PASS via Architect invocation OR independent Codex re-evaluation post-remediation OR Codex Round 2 PASS response from optimizer/judge critic"
+  },
+  "codex_round_attempt_history": {
+    "alpha_phase": "SKIPPED_BY_WAIVER (sizing_only inherited alpha)",
+    "risk_phase": "TIMEOUT_round1_waiver_applied",
+    "optimizer_phase": "REJECT_round1_constructively_addressed_via_optimizer_challenge_note",
+    "judge_phase": "REVISE_round1_constructively_addressed_via_judge_challenge_note (this round)",
+    "architect_phase": "NOT_INVOKED"
+  },
+  "successor_wt_path_for_ax008_compliance": [
+    "(a) Invoke Architect review (independent 3rd source)",
+    "(b) Re-run Codex critic post-remediation (Round 2) for optimizer or judge critic, expecting PASS or APPROVE_CONDITIONAL stance",
+    "(c) Add Forge re-measurement on alternative methodology (CVaR_LP / HRP+CDaR) as independent secondary forge source"
+  ],
+  "finalize_meta": {
+    "created_at": "2026-05-04T09:45:00+0900",
+    "created_by": "judge_agent_v6_1"
+  }
+}
