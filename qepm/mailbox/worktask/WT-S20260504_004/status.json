@@ -1,14 +1,14 @@
 {
   "task_id": "WT-S20260504_004",
   "current_phase": "FORGE_DONE",
-  "updated_at": "2026-05-04T09:36:00+0900",
+  "updated_at": "2026-05-04T09:36:30+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
   "abort_reason_planned": "RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE",
   "production_book_state_write": false,
   "governor_concord_status": "DEFERRED_TO_PROMOTION_WT",
-  "method": "RMT_Denoised_Sigma",
+  "method": "RMT_Denoised_Sigma + M4_OR_RMT_Sleeve_Overlay",
   "risk_done_at": "2026-05-04T09:13:12+0900",
   "risk_summary": {
     "sigma_method": "RMT_Denoised",
@@ -50,5 +50,39 @@
     "challenge_flags_count": 1,
     "qlead_escalate_triggered": false,
     "str_1715_production_writes": 0
-  }
+  },
+  "forge_done_at": "2026-05-04T09:36:00+0900",
+  "forge_summary": {
+    "canonical_strategy": "M4+RMT_VolTarget",
+    "n_obs": 267,
+    "n_obs_reason": "weights 267m × STR_1715 base 268m → align 267 (May 2026 dropped — live forward); density 0.9963",
+    "Sharpe": 1.5391,
+    "CAGR": 0.4049,
+    "MDD": -0.3532,
+    "Sortino": 3.2139,
+    "Vol": 0.2425,
+    "vs_S1_baseline_pp": {
+      "SR": 0.0323,
+      "MDD_relief": 6.37,
+      "vol_reduction": 2.16,
+      "CAGR_drag": -2.69
+    },
+    "vs_M4_baseline_recomputed_pp": {
+      "SR": -0.0255,
+      "MDD_relief": 0.0,
+      "CAGR_drag": -1.86
+    },
+    "decision_rule_verdict": "MONITORING_ONLY",
+    "audit_integrity": "WARNING",
+    "audit_PASS_FAIL_WARN": "14/0/2",
+    "hash_audit_match": "9/9",
+    "codex_round_status": "round1_skip_waiver_recommendation_only_ax008_lineage_carry"
+  },
+  "certificates_issued": {
+    "forge_package_validated_certificate": "issued (validated_fields_count=9)",
+    "sr_provenance_certificate": "issued (all_4_field_pass)",
+    "schedule_fidelity_certificate": "issued (density=0.996)"
+  },
+  "ax_008_tally": "1/3 (forge only); judge stage triangulation pending",
+  "next_phase": "JUDGE"
 }

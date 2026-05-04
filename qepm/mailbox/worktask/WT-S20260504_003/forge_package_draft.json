@@ -22,6 +22,55 @@
   "pure_function_violation": false,
   "hash_audit_pass": true,
 
+  "backtest_summary": {
+    "full_period": {
+      "n_months": 267,
+      "period": "2004-02-02 to 2026-04-01",
+      "canonical_strategy": "M4+HMM_Scale",
+      "canonical": {
+        "CAGR": 0.3811,
+        "Sharpe": 1.5168,
+        "Sortino": 3.0855,
+        "Calmar": 1.0732,
+        "MDD": -0.3551,
+        "Ann_Vol": 0.2332,
+        "Avg_Cash": 0.0906,
+        "Annual_Turnover": 0.3367
+      },
+      "S1_baseline": {
+        "CAGR": 0.4318,
+        "Sharpe": 1.5068,
+        "MDD": -0.4169
+      },
+      "M4_baseline_recomputed": {
+        "CAGR": 0.4229,
+        "Sharpe": 1.5628,
+        "MDD": -0.3551
+      }
+    },
+    "pre_lockbox": {
+      "cutoff": "2024-01-01",
+      "n_months": 239,
+      "canonical": {"Sharpe": 1.365, "CAGR": 0.330, "MDD": -0.355},
+      "M4_baseline": {"Sharpe": 1.409, "CAGR": 0.355, "MDD": -0.355}
+    },
+    "lockbox": {
+      "n_months": 28,
+      "period": "2024-01 to 2026-04",
+      "canonical": {"Sharpe": 2.868, "CAGR": 0.911, "MDD": -0.047},
+      "M4_baseline": {"Sharpe": 2.820, "CAGR": 1.157, "MDD": -0.058},
+      "harvey_threshold_pass": true
+    }
+  },
+
+  "hard_caps": {
+    "mdd_pass": false,
+    "to_pass": true,
+    "cvar_d_pass": true,
+    "all_pass": false,
+    "rationale": "MDD vs M4 baseline 0pp improvement (target ≥ -3pp). Vol -6% vs M4 (target -20%). FAIL primary objective."
+  },
+
   "schedule_fidelity": {
     "weights_csv_used_as_is": true,
     "n_unique_dates_canonical": 267,
