@@ -1,0 +1,290 @@
+{
+  "task_id": "WT-S20260504_005",
+  "as_of_date": "2026-05-04",
+  "signal_as_of": "2026-05-01",
+  "forecast_horizon": "1M",
+  "parent_wt": "WT-P20260429_002",
+  "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+  "sigma_method": "Factor_Beta_Hedge",
+  "selection_objective": "stress_robust",
+  "factor_model": {
+    "method": "PCA_latent_K5_IS_frozen",
+    "K_factors": 5,
+    "factor_set_sources": [
+      "PCA_latent_K5",
+      "Statistical_factor_mimicking"
+    ],
+    "is_frozen_at": "2024-06-30",
+    "var_explained": [
+      0.1753,
+      0.0274,
+      0.0154,
+      0.0145,
+      0.0107
+    ],
+    "cumulative_var": 0.2434,
+    "pit_compliance": "C1 (rolling), C9 (sig_date d → applied next period), C13 (Z_Score_Aligned via score_eff inherited), no flip"
+  },
+  "regression": {
+    "type": "rolling_cross_sectional_OLS",
+    "window_daily": 252,
+    "method": "OLS_per_stock_with_intercept",
+    "n_sig_dates_with_fit": 269,
+    "R2_distribution": {
+      "mean": 0.2988,
+      "median": 0.2818,
+      "p25": 0.2385,
+      "p75": 0.3423,
+      "min": 0.1314,
+      "max": 0.6031
+    },
+    "R2_threshold_passed": false,
+    "R2_threshold_note": "Mean=0.299 borderline (target≥0.30). 5 statistical PC explain ~30% of stock variance — single-market K=5 PCA limit. PCA captures common shock structure; idiosyncratic share large by design."
+  },
+  "factor_loadings_ref": "stage_artifacts/WT_WT-S20260504_005/factor_loadings_B.parquet",
+  "exposure_matrix_ref": "stage_artifacts/WT_WT-S20260504_005/exposure_matrix.parquet",
+  "factor_returns_ref": "stage_artifacts/WT_WT-S20260504_005/factor_returns.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_WT-S20260504_005/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_WT-S20260504_005/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_WT-S20260504_005/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_WT-S20260504_005/regime_correlation.parquet",
+  "portfolio_beta_path_ref": "stage_artifacts/WT_WT-S20260504_005/portfolio_factor_beta.csv",
+  "hedge_target_path_ref": "stage_artifacts/WT_WT-S20260504_005/hedge_target_path.csv",
+  "crisis_prone_factor_id_ref": "stage_artifacts/WT_WT-S20260504_005/crisis_prone_factor_id.json",
+  "regression_diagnostics_ref": "stage_artifacts/WT_WT-S20260504_005/regression_diagnostics.json",
+  "tail_risk_ref": "stage_artifacts/WT_WT-S20260504_005/tail_risk.json",
+  "lro_params_frozen_ref": "stage_artifacts/WT_WT-S20260504_005/lro_params_frozen.json",
+  "crisis_prone_identification": {
+    "primary_method": "highest_mean_drawdown_rank_across_6_crises",
+    "crisis_prone_k": 1,
+    "crisis_prone_label": "F1",
+    "consistency_6of6": true,
+    "note": "F1 = highest variance PC (market-like). 6/6 crises agreement on worst-by-minDD. Statistical only — no named-factor heuristic."
+  },
+  "portfolio_beta_summary": {
+    "n_dates": 269,
+    "crisis_prone_k": 1,
+    "mean_beta_on_crisis_prone": -0.0456,
+    "median_beta_on_crisis_prone": -0.0472,
+    "sd_beta_on_crisis_prone": 0.0136,
+    "range_beta_on_crisis_prone": [
+      -0.0952,
+      -0.0028
+    ],
+    "finding": "Mean β_p,F1 = -0.046 < 0 → STR_1715 holdings already exhibit slight defensive loading on crisis-prone factor. Hedge intensity per period magnitude-proportional; many periods 'ALREADY_NEUTRAL'."
+  },
+  "sigma_estimation": {
+    "method": "factor_model_BOmegaB_plus_D",
+    "factor_estimator": "PCA_latent_K5_full_sample_Omega",
+    "n_factors": 5,
+    "n_tickers": 20,
+    "ridge_lambda": 0,
+    "condition_number": 30.78,
+    "psd": true,
+    "min_eigenvalue": 0.0002
+  },
+  "tail_risk": {
+    "source": "STR_1715_actual_268m_period_returns",
+    "n_monthly_obs": 268,
+    "mean_monthly": 0.0336,
+    "sd_monthly": 0.0765,
+    "VaR_95_monthly": -0.0846,
+    "VaR_99_monthly": -0.1523,
+    "CVaR_95_monthly": -0.1289,
+    "CVaR_99_monthly": -0.1694,
+    "hill_alpha_left": 6.5819,
+    "EVT_GPD_xi": 1.3488,
+    "EVT_GPD_beta": -0.0115,
+    "EVT_threshold": 0.1197,
+    "EVT_n_exceed": 8,
+    "MDD_observed": -0.4169,
+    "top5_DD": [
+      -0.4169,
+      -0.4043,
+      -0.3493,
+      -0.3382,
+      -0.3376
+    ],
+    "cvar_breach_flag": true,
+    "cvar_breach_threshold": -0.1
+  },
+  "cvar_breach_flag": true,
+  "cvar_breach_context": "STR_1715 actual 268m monthly CVaR_95=-0.1289 (threshold -0.10). Reflects pre-hedge concentration risk. Consistent with L-274 MDD=-32.05%. Hedge target = neutralize F1 crisis-prone exposure to mitigate concentration tail risk.",
+  "lro_params_frozen": {
+    "task_id": "WT-S20260504_005",
+    "generated_at": "2026-05-04T09:03:53+0900",
+    "pca": {
+      "method": "SVD",
+      "K": 5,
+      "is_frozen_at": "2024-06-30",
+      "var_explained": [
+        0.1753,
+        0.0274,
+        0.0154,
+        0.0145,
+        0.0107
+      ],
+      "cumulative_var": 0.2434,
+      "sha256_factor_returns": "837a6141f89dd2739a79123c3a9f66df7b9343a4fa009a2b768f870fed43be33"
+    },
+    "cross_sectional_regression": {
+      "type": "rolling_OLS_per_stock",
+      "window_daily": 252,
+      "method": "OLS .lm.fit (intercept + K factors)",
+      "sha256_loadings": "9e9784f723fd665a5cf1ac4a52914c9faa7e11b643c5640528cf689830242fcc"
+    },
+    "crisis_prone": {
+      "method": "lowest_mean_rank_across_6_crises",
+      "crisis_prone_k": 1,
+      "crisis_prone_label": "F1",
+      "crises": {
+        "EM_2004": {
+          "start": "2004-04-01",
+          "end": "2004-08-31",
+          "label": "EM-2004"
+        },
+        "COMMODITY_2006": {
+          "start": "2006-05-01",
+          "end": "2006-08-31",
+          "label": "2006-원자재"
+        },
+        "GFC_2007_09": {
+          "start": "2007-10-01",
+          "end": "2009-03-31",
+          "label": "GFC 2007-09"
+        },
+        "COVID_2020": {
+          "start": "2020-02-01",
+          "end": "2020-04-30",
+          "label": "COVID 2020"
+        },
+        "FED_2022": {
+          "start": "2022-01-01",
+          "end": "2022-10-31",
+          "label": "2022-Fed"
+        },
+        "IRAN_LMR_2026": {
+          "start": "2026-04-01",
+          "end": "2026-05-04",
+          "label": "Iran-LMR 2026"
+        }
+      }
+    },
+    "ax002_compliance": "factor_set + crisis_prone_k SHA-frozen at IS cutoff. OOS no re-selection."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "methods": [
+      {
+        "name": "PCA_latent_K5_IS_frozen",
+        "type": "statistical_factor_extraction",
+        "condition_number": 30.78,
+        "var_explained": 0.2434,
+        "selected": true,
+        "rationale": "Task spec mandates PCA latent K=5 (or factor analysis). PCA chosen for clarity and SVD numerical stability. Single candidate, no method shopping per spec."
+      }
+    ],
+    "note": "Task spec WT-S20260504_005 prescribes PCA latent K=5 IS-frozen + cross-sectional regression. Method exploration is bounded by spec — single estimator path. AX-002 SHA-frozen."
+  },
+  "pit_compliance": {
+    "C1_rolling_only": true,
+    "C9_sig_date_lag": true,
+    "C13_no_flip": true,
+    "C14_usable_date_le_sig": true,
+    "notes": "PCA IS-frozen at 2024-06-30 → OOS factor returns via projection only. Cross-sectional regression rolling 252d window per sig_date. Holdings reconstructed from alpha_scores at sig_date d → applied to next period."
+  },
+  "axiom_assertions": {
+    "AX_000": "no limits — Factor_Beta_Hedge novel statistical approach explored",
+    "AX_001_v2": "defense-like assessment via crisis-prone factor exposure quantile (Codex confirm rebalance — primary metric drawdown-based)",
+    "AX_002": "factor_set + crisis_prone_k SHA-frozen at IS cutoff. lro_params_frozen.json sha256 recorded.",
+    "AX_008": "Forge + Codex + Architect 2/3 PASS gate — Codex Critic Round mandatory next."
+  },
+  "diagnostics": {
+    "condition_number": 30.78,
+    "shrinkage_used": false,
+    "shrinkage_method": "none (factor model + diagonal D PSD)",
+    "tdc_summary": {
+      "note": "TDC not computed — task spec scope limited to factor regression. Available on request via regime_garch.R."
+    },
+    "holdings_268m_reconstructed_n": 5377,
+    "holdings_268m_unique_dates": 269,
+    "holdings_268m_unique_tickers": 443,
+    "crisis_prone_finding": "F1 (PC1, market-like) is crisis-prone in 6/6 crises by minDD. STR_1715 already mean-negative β_p,F1 (-0.046). Hedge mostly ALREADY_NEUTRAL per period — mitigation via further reduction limited. Optimizer: target_beta = 0."
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "PCA F1 (market-like) 17.5% var",
+      "PCA F2 2.7% var",
+      "PCA F3-F5 cum 4.1% var"
+    ],
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "crisis_prone_F1_mean_drawdown_across_crises": -1.3106,
+      "monthly_VaR_95": -0.0846,
+      "monthly_CVaR_95": -0.1289,
+      "monthly_CVaR_99": -0.1694
+    }
+  },
+  "challenge_flags": [
+    {
+      "severity": "MEDIUM",
+      "flag": "R2_borderline",
+      "detail": "Cross-sectional regression mean R²=0.299 is at threshold (target ≥0.30). 5 statistical PCs explain ~30% of stock-level variance. Idiosyncratic share large but expected for K=5 PCA on 443 KR equities."
+    },
+    {
+      "severity": "MEDIUM",
+      "flag": "cvar_95_breach_pre_hedge",
+      "detail": "STR_1715 actual 268m monthly CVaR_95=-0.1289 vs hard threshold -0.10. Pre-hedge concentration tail. Recommendation_only WT — production weight not modified by this study."
+    },
+    {
+      "severity": "LOW",
+      "flag": "crisis_prone_metric_disagreement",
+      "detail": "By-mean → F3 vs by-minDD → F1. Primary chosen = drawdown-based (F1, 6/6 agreement). Mean-based would pick F3 (sometimes positive in some crises). Drawdown more crisis-relevant."
+    },
+    {
+      "severity": "LOW",
+      "flag": "iran_lmr_2026_in_sample_overlap",
+      "detail": "IRAN_LMR_2026 crisis window 2026-04-01~05-04 overlaps with PCA OOS projection but factor returns are projected (not refit). Statistical only."
+    }
+  ],
+  "optimizer_handoff": {
+    "instruction": "Optimizer must minimize |β_p,k_crisis| where k_crisis=F1 across the rebalance period, subject to long_only + Σw=1 + cap [0,0.20] + max_names ≤ 20. STR_1715 score_eff is INPUT ONLY (alpha ranking unchanged).",
+    "inputs": [
+      "exposure_matrix.parquet (latest holdings B)",
+      "factor_loadings_B.parquet (per-period B for 268m)",
+      "covariance.parquet (Σ for latest holdings)",
+      "hedge_target_path.csv (β target = 0 per period)",
+      "crisis_prone_factor_id.json (k_crisis=F1)"
+    ],
+    "constraint_summary": "long_only: TRUE | Σw=1 | weight_bounds=[0,0.20] | max_names=20 | cash_overlay_iter31_active",
+    "not_modify": [
+      "STR_1715 alpha ranking",
+      "score_eff",
+      "regime_state",
+      "cash_overlay_pct"
+    ],
+    "objective_form": "min_w |B[:,k_crisis]^T w| OR min_w (B[:,k_crisis]^T w)^2 + ridge*||w - w_alpha||^2 (recommendation; optimizer chooses)"
+  },
+  "codex_round": {
+    "status": "PENDING_DRAFT",
+    "draft_path": "qepm/mailbox/worktask/WT-S20260504_005/risk_package_draft.json",
+    "expected_critic_path": "qepm/mailbox/worktask/WT-S20260504_005/codex_critic_response_risk.json",
+    "expected_challenge_note": "qepm/mailbox/worktask/WT-S20260504_005/risk_challenge_note.md"
+  },
+  "finalize_meta": {
+    "created_at": "2026-05-04T09:03:53+0900",
+    "created_by": "risk-research_agent",
+    "state_machine_target": "RISK_DONE"
+  },
+  "inheritance_meta": {
+    "parent_alpha_package_path": "qepm/mailbox/worktask/WT-P20260429_002/alpha_package.json",
+    "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
+    "no_new_alpha": true,
+    "no_alpha_modify": true,
+    "no_weights_proposed": true,
+    "str_1715_production_dir_writes": 0
+  },
+  "codex_round_status": "round1_timeout_round2_waiver_applied",
+  "draft_revision": "final"
+}

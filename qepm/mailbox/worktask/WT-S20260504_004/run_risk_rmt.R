@@ -669,12 +669,42 @@ risk_package <- list(
   ),
   diagnostics = list(
     condition_number = round(cond_d, 2),
+    condition_number_role_prompt_gate = 100L,
+    condition_number_role_prompt_gate_breach = isTRUE(cond_d > 100),
+    condition_number_explanation = paste0(
+      sprintf("cond=%.2f driven by market eigenmode λ_1=%.2f ≈ %.1f%% trace. ",
+              cond_d, max(vals), 100*snr$market_signal_ratio),
+      "This is STRUCTURAL (market factor exists in equity returns), not estimator artifact. ",
+      sprintf("RMT-denoised cond > LW-shrunk (%.2f) because RMT preserves dominant market eigenmode. ", cond_lw),
+      "Optimizer use: RMT for risk DECOMPOSITION; LW for matrix INVERSION."
+    ),
     min_eigenvalue = round(min_eig_d, 8),
     psd_pass = isTRUE(min_eig_d > 0),
     shrinkage_used = FALSE,
     shrinkage_method = "rmt_eigenvalue_threshold",
     selection_objective = "shrinkage_quality",
-    method_shopping_ref = "stage_artifacts/WT_WT-S20260504_004/risk_method_shopping.json"
+    method_shopping_ref = "stage_artifacts/WT_WT-S20260504_004/risk_method_shopping.json",
+    alternative_estimator_for_optimizer = list(
+      name = "ledoit_wolf_constcor",
+      condition_number = round(cond_lw, 2),
+      min_eigenvalue = round(min_eig_lw, 8),
+      shrinkage_intensity = round(lw_res$shrink %||% NA_real_, 4),
+      note = "Reported for optimizer transparency. LW lower cond operationally preferable for variance / inversion. RMT remains spec-mandated sigma_method=RMT_Denoised."
+    ),
+    regime_correlation_ref = "stage_artifacts/WT_WT-S20260504_004/regime_correlation.parquet",
+    regime_correlation_summary_ref = "stage_artifacts/WT_WT-S20260504_004/regime_correlation_summary.csv",
+    regime_correlation_summary = if (file.exists(file.path(SAGE, "regime_correlation_summary.csv"))) {
+      rcs <- fread(file.path(SAGE, "regime_correlation_summary.csv"))
+      rl <- as.list(setNames(round(rcs$avg_corr, 4), paste0(rcs$regime, "_avg_corr")))
+      rl$obs_counts <- as.list(setNames(rcs$n_pairs, rcs$regime))
+      rl$pit_compliance <- "C9 t-1 lagged regime labels; rawdata capped at as_of 2026-04-30"
+      norm_v <- rcs[regime == "NORMAL", avg_corr]
+      cris_v <- rcs[regime == "CRISIS", avg_corr]
+      if (length(norm_v) == 1 && length(cris_v) == 1 && norm_v > 0) {
+        rl$CRISIS_vs_NORMAL_uplift_pct <- round(cris_v / norm_v - 1, 4)
+      }
+      rl
+    } else NULL
   ),
   lro_params_frozen_ref = "stage_artifacts/WT_WT-S20260504_004/lro_params_frozen.json",
   lro_params_sha256 = lro_sha,

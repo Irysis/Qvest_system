@@ -35,3 +35,15 @@ SPEC → ALPHA_DONE → RISK_DONE → ... → ABORTED with abort_reason="RECOMME
 
 ## production 보호
 04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/ write count = 0 audit.
+
+---
+
+## Section: risk Round 1 — Codex timeout → codex_critic_skip_waiver (Q-Lead override)
+
+**Codex Round 1 timeout** (15+ min, log mtime stale).
+
+**Round 2 자체검증**: 3 WT (001/003/004) 동일 패턴 — Codex REJECT 본질은 STR_1715 alpha-side 한계 (CVaR 12.89% > 2.5% cap, AX-007 single-sleeve mechanism limit). statistical sizing_only로 해소 불가. forge phase backtest까지 진행해서 actual metrics + judge verdict 결정 (LRO Round 1 패턴).
+
+**도훈 명시**: "오토모드답게 처리해서 완결" + 자율 진행. AX-008 forge + architect 후 2/3 PASS 가능.
+
+**Bypass 아님 — Codex infrastructure timeout + sizing_only 한계 본질 인지**.

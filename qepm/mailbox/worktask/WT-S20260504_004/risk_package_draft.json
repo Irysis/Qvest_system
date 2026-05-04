@@ -148,7 +148,7 @@
     "condition_number": 411.88,
     "condition_number_role_prompt_gate": 100,
     "condition_number_role_prompt_gate_breach": true,
-    "condition_number_explanation": "cond=411.88 driven by market eigenmode λ_1=44 ≈ 21.4%% trace. This is STRUCTURAL (market factor exists in equity returns), not an estimator artifact. RMT-denoised cond is HIGHER than LW-shrunk (162.38) because RMT preserves the dominant market eigenmode rather than shrinking it toward constant-correlation prior. For optimizer use: RMT_Denoised provides risk DECOMPOSITION (signal/noise interpretability); for matrix INVERSION (e.g., MVO), LW or hybrid RMT+LW recommended.",
+    "condition_number_explanation": "cond=411.88 driven by market eigenmode λ_1=44.03 ≈ 21.4% trace. This is STRUCTURAL (market factor exists in equity returns), not estimator artifact. RMT-denoised cond > LW-shrunk (162.38) because RMT preserves dominant market eigenmode. Optimizer use: RMT for risk DECOMPOSITION; LW for matrix INVERSION.",
     "min_eigenvalue": 0.00014253,
     "psd_pass": true,
     "shrinkage_used": false,
@@ -160,18 +160,25 @@
       "condition_number": 162.38,
       "min_eigenvalue": 0.00010689,
       "shrinkage_intensity": 0.1863,
-      "note": "Reported for optimizer transparency. LW lower cond is operationally preferable for portfolio variance / inversion. RMT remains the spec-mandated method for sigma_method=RMT_Denoised."
+      "note": "Reported for optimizer transparency. LW lower cond operationally preferable for variance / inversion. RMT remains spec-mandated sigma_method=RMT_Denoised."
     },
     "regime_correlation_ref": "stage_artifacts/WT_WT-S20260504_004/regime_correlation.parquet",
+    "regime_correlation_summary_ref": "stage_artifacts/WT_WT-S20260504_004/regime_correlation_summary.csv",
     "regime_correlation_summary": {
       "BULL_avg_corr": 0.1423,
-      "NORMAL_avg_corr": 0.1474,
-      "CAUTION_avg_corr": 0.2,
       "BEAR_avg_corr": 0.2118,
+      "NORMAL_avg_corr": 0.1474,
       "CRISIS_avg_corr": 0.2647,
-      "CRISIS_vs_NORMAL_uplift_pct": 0.796,
-      "obs_counts": {"BULL": 3239, "NORMAL": 3291, "CAUTION": 1711, "BEAR": 2347, "CRISIS": 636},
-      "interpretation": "PIT C9 t-1 lagged regime labels (Codex C5 fix). CRISIS regime average pairwise correlation 0.265 vs NORMAL 0.147 → +79.6% uplift. Diversification breakdown in CRISIS confirmed empirically. Optimizer may use CRISIS-conditional Σ for stress-aware sizing."
+      "CAUTION_avg_corr": 0.2,
+      "obs_counts": {
+        "BULL": 306,
+        "BEAR": 306,
+        "NORMAL": 306,
+        "CRISIS": 306,
+        "CAUTION": 306
+      },
+      "pit_compliance": "C9 t-1 lagged regime labels; rawdata capped at as_of 2026-04-30",
+      "CRISIS_vs_NORMAL_uplift_pct": 0.796
     }
   },
   "lro_params_frozen_ref": "stage_artifacts/WT_WT-S20260504_004/lro_params_frozen.json",
@@ -203,5 +210,5 @@
   "no_alpha_modification": true,
   "no_weight_decision": true,
   "str_1715_production_writes": 0,
-  "generated_at": "2026-05-04T09:07:01+0900"
+  "generated_at": "2026-05-04T09:08:24+0900"
 }
