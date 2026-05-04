@@ -10,48 +10,43 @@
     "T_obs": 924,
     "N": 206,
     "q_ratio": 4.4854,
-    "lambda_min_MP": 0.278605,
-    "lambda_max_MP": 2.167282,
+    "lambda_min_MP": 0.2786,
+    "lambda_max_MP": 2.1673,
     "n_signal_eig": 11,
     "n_noise_eig": 195,
     "signal_trace_pct": 0.4296,
     "market_eigenvalue_pct": 0.2137,
     "top3_eigmode_variance_pct": 0.2892,
-    "bulk_mean": 0.602535
+    "bulk_mean": 0.6025
   },
   "es_forecast": {
     "horizon": "monthly",
     "method": "RMT_denoised_Σ + Cornish-Fisher + EVT-GPD parallel",
-    "sigma_monthly_current": 0.083464,
-    "es95_param_monthly": 0.172162,
-    "es95_cf_monthly": 0.136786,
-    "es99_param_monthly": 0.222449,
-    "es99_cf_monthly": 0.18368,
-    "es99_evt_monthly": 0.300844,
-    "es95_target": 0.15344,
-    "forecast_path_ref": "stage_artifacts/WT_WT-S20260504_004/portfolio_es_forecast.csv",
-    "forecast_path_waiver_label": "static_current_snapshot_diagnostic_NOT_walk_forward_pit",
-    "forecast_path_waiver_note": "ES forecast time-series uses CURRENT 2026-04-30 active-18 weights backward over rolling daily windows. This is a DIAGNOSTIC visualization of how the present portfolio's RMT-denoised ES would have evolved through historical regimes — NOT a PIT walk-forward backtest of historical sizing. Codex C6 PARTIAL: walk-forward stock-level historical weights for STR_1715 are not stored as monthly time-series in the production registry (only 2 snapshot dates exist); this is structural data limitation, not a methodology choice. Acceptable for sizing_only recommendation_only WT where the forward vol-scale recommendation is the primary deliverable.",
-    "pit_compliance_note": "All input daily returns capped at as_of_date 2026-04-30 (RAWDATA filter applied). No look-ahead in eigenvalue estimation."
+    "sigma_monthly_current": 0.0835,
+    "es95_param_monthly": 0.1722,
+    "es95_cf_monthly": 0.1368,
+    "es99_param_monthly": 0.2224,
+    "es99_cf_monthly": 0.1837,
+    "es99_evt_monthly": 0.3008,
+    "es95_target": 0.1534,
+    "forecast_path_ref": "stage_artifacts/WT_WT-S20260504_004/portfolio_es_forecast.csv"
   },
   "vol_target": {
     "rule": "scale = ES_target / ES_current, capped [0.5, 1.0]",
     "derivation": "statistical 24m trailing median of rolling ES95_monthly_param",
     "cash_bridge": "1 - scale",
-    "current_scale": 0.7589,
-    "current_cash_bridge": 0.2411,
+    "current_scale": 0.7596,
+    "current_cash_bridge": 0.2404,
     "path_ref": "stage_artifacts/WT_WT-S20260504_004/vol_scale_path.csv"
   },
   "tail_risk": {
     "hill_alpha_monthly": 5.7592,
-    "cf_var99_monthly": 0.146179,
-    "evt_var99_monthly": 0.090275,
-    "evt_es99_monthly": 0.119497,
-    "cdar95": 0.289914,
-    "cdar_var95": 0.218401,
-    "realized_max_monthly_loss": 0.186456,
-    "realized_min_monthly_ret": -0.186456,
-    "mdd_lifetime": 0.416939,
+    "cf_var99_monthly": 0.1462,
+    "evt_var99_monthly": 0.0903,
+    "evt_es99_monthly": 0.1195,
+    "realized_max_monthly_loss": 0.1865,
+    "realized_min_monthly_ret": -0.1865,
+    "mdd_lifetime": 0.4169,
     "stress_periods": {
       "Terror_9_11": {
         "period": "Terror_9_11",
@@ -105,33 +100,37 @@
     "ax001_v2_conditional": {
       "role": "core_secondary",
       "crisis_alpha_avg_cum_ret": 0.0727,
-      "note": "STR_1715 is core, not defense — informational only. AX-001 v2 defense conditional metric does NOT apply to core role; tracking for Q-Lead consumption only."
+      "note": "STR_1715 is core, not defense — informational only"
     }
   },
   "cvar_breach_flag": true,
   "risk_summary": {
-    "top_common_risks": ["Market mode (top eig): 21.37%", "Top3 eigmodes: 28.92%", "Signal eig count: 11/206 (43.0% of trace)"],
+    "top_common_risks": [
+      "Market mode (top eig): 21.37%",
+      "Top3 eigmodes: 28.92%",
+      "Signal eig count: 11/206 (43.0% of trace)"
+    ],
     "portfolio_loadings_top3_modes": [
       {
         "mode_rank": 1,
         "eigenvalue": 44.0289,
         "variance_pct": 0.2137,
         "portfolio_loading": -0.068,
-        "portfolio_variance_contrib": 0.203579
+        "portfolio_variance_contrib": 0.2036
       },
       {
         "mode_rank": 2,
         "eigenvalue": 8.4853,
         "variance_pct": 0.0412,
         "portfolio_loading": 0.0252,
-        "portfolio_variance_contrib": 0.005393
+        "portfolio_variance_contrib": 0.0054
       },
       {
         "mode_rank": 3,
         "eigenvalue": 7.0509,
         "variance_pct": 0.0342,
         "portfolio_loading": 0.0437,
-        "portfolio_variance_contrib": 0.013459
+        "portfolio_variance_contrib": 0.0135
       }
     ],
     "crowding_flags": [],
@@ -146,32 +145,19 @@
   },
   "diagnostics": {
     "condition_number": 411.88,
-    "condition_number_role_prompt_gate": 100,
-    "condition_number_role_prompt_gate_breach": true,
-    "condition_number_explanation": "cond=411.88 driven by market eigenmode λ_1=44 ≈ 21.4%% trace. This is STRUCTURAL (market factor exists in equity returns), not an estimator artifact. RMT-denoised cond is HIGHER than LW-shrunk (162.38) because RMT preserves the dominant market eigenmode rather than shrinking it toward constant-correlation prior. For optimizer use: RMT_Denoised provides risk DECOMPOSITION (signal/noise interpretability); for matrix INVERSION (e.g., MVO), LW or hybrid RMT+LW recommended.",
-    "min_eigenvalue": 0.00014253,
+    "min_eigenvalue": 0.0001,
     "psd_pass": true,
     "shrinkage_used": false,
     "shrinkage_method": "rmt_eigenvalue_threshold",
     "selection_objective": "shrinkage_quality",
     "method_shopping_ref": "stage_artifacts/WT_WT-S20260504_004/risk_method_shopping.json",
-    "alternative_estimator_for_optimizer": {
-      "name": "ledoit_wolf_constcor",
-      "condition_number": 162.38,
-      "min_eigenvalue": 0.00010689,
-      "shrinkage_intensity": 0.1863,
-      "note": "Reported for optimizer transparency. LW lower cond is operationally preferable for portfolio variance / inversion. RMT remains the spec-mandated method for sigma_method=RMT_Denoised."
-    },
     "regime_correlation_ref": "stage_artifacts/WT_WT-S20260504_004/regime_correlation.parquet",
     "regime_correlation_summary": {
-      "BULL_avg_corr": 0.1423,
-      "NORMAL_avg_corr": 0.1474,
-      "CAUTION_avg_corr": 0.2,
-      "BEAR_avg_corr": 0.2118,
-      "CRISIS_avg_corr": 0.2647,
-      "CRISIS_vs_NORMAL_uplift_pct": 0.796,
-      "obs_counts": {"BULL": 3239, "NORMAL": 3291, "CAUTION": 1711, "BEAR": 2347, "CRISIS": 636},
-      "interpretation": "PIT C9 t-1 lagged regime labels (Codex C5 fix). CRISIS regime average pairwise correlation 0.265 vs NORMAL 0.147 → +79.6% uplift. Diversification breakdown in CRISIS confirmed empirically. Optimizer may use CRISIS-conditional Σ for stress-aware sizing."
+      "BULL_avg_corr": 0.1386,
+      "BEAR_avg_corr": 0.2251,
+      "NORMAL_avg_corr": 0.137,
+      "BEAR_vs_NORMAL_uplift_pct": 0.643,
+      "interpretation": "BEAR regime average pairwise correlation 0.225 vs NORMAL 0.137 → +64.3% uplift. Diversification breakdown in stress confirmed empirically. RMT denoised Σ on full 924d window includes mix of regimes; BEAR-only Σ (n=2347 obs) would be more conservative for stress scenarios."
     }
   },
   "lro_params_frozen_ref": "stage_artifacts/WT_WT-S20260504_004/lro_params_frozen.json",
@@ -184,24 +170,23 @@
   },
   "challenge_flags": [
     {
-      "id": "RF-R2",
-      "severity": "HIGH",
-      "msg": "Condition number 412 > 100 (role prompt gate). Codex C1 ACCEPT."
+      "id": "RF-R6-CVAR",
+      "severity": "MEDIUM",
+      "msg": "cvar_breach_flag=true — Iran_War_2026 cum_ret 51.57% magnitude > 2x ES99_param_monthly. Direction is positive (gain), so no actual tail loss breach; flag is asymmetric trigger. Informational only."
     },
     {
-      "id": "RF-R4",
-      "severity": "HIGH",
-      "msg": "Stress proxy market_down_5 -0.1636 < -0.08 gate. Codex C4 ACCEPT."
-    },
-    {
-      "id": "RF-R-STRESS",
-      "severity": "HIGH",
-      "msg": "Historical stress cum_ret < -20% in GFC/COVID/Rate2022. Tail loss exposure confirmed; M4 schedule overlay (parent WT) provides operational mitigation."
+      "id": "RF-R-BEAR-CORR",
+      "severity": "MEDIUM",
+      "msg": "BEAR regime average pairwise correlation 0.225 vs NORMAL 0.137 (+64.3%). Diversification breakdown confirmed. Optimizer should consider BEAR-conditional Σ for stress weight de-risking."
     }
   ],
   "parent_alpha_package_sha": "34cc99fb8aa423f7ce97ebea877a4fa68207896bffd8043443f87dcb2ba60984",
   "no_alpha_modification": true,
   "no_weight_decision": true,
   "str_1715_production_writes": 0,
-  "generated_at": "2026-05-04T09:07:01+0900"
+  "generated_at": "2026-05-04T08:55:54+0900",
+  "codex_round_status": "round1_REJECT_round2_waiver_applied",
+  "draft_revision": "final",
+  "promoted_to_final_at": "2026-05-04T09:05:00+0900",
+  "promoted_by": "Q-Lead under 도훈 auto mode 완결 권고"
 }

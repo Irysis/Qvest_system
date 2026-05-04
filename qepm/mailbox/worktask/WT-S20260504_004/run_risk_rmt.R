@@ -23,6 +23,8 @@ dir.create(DBG,  recursive = TRUE, showWarnings = FALSE)
 
 cat("[run_risk_rmt] start | WT=", WT, "\n", sep="")
 
+`%||%` <- function(a, b) if (is.null(a) || (length(a) == 1 && is.na(a))) b else a
+
 # ───────────────────────────────────────────────────────────────────────────
 # 1. STR_1715 weights (18 active) + parent backtest period_returns (268 mo)
 # ───────────────────────────────────────────────────────────────────────────
@@ -48,8 +50,9 @@ cat(sprintf("[Step 1] STR_1715 monthly returns n=%d range=[%s, %s]\n",
 RAW <- read_parquet(file.path(PROJ, ".cache/rawdata.parquet"))
 setDT(RAW)
 
-# 924 trading-day window ending at as_of_date
+# PIT: cap at as_of_date 2026-04-30 (NOT current 2026-05-04)
 as_of  <- as.Date("2026-04-30")
+RAW <- RAW[Date <= as_of]
 window_end   <- as_of
 window_start <- as_of - 1500  # buffer
 
@@ -198,36 +201,36 @@ cat("[Step 5] covariance.parquet written\n")
 # ───────────────────────────────────────────────────────────────────────────
 # 6. Method shopping log — Sample / Ledoit-Wolf / RMT denoised
 # ───────────────────────────────────────────────────────────────────────────
-# LW shrinkage (constant correlation target)
+# LW shrinkage (constant correlation target) — VECTORIZED phi (Codex C2 fix)
 lw_shrink <- function(Y) {
   n <- nrow(Y); p <- ncol(Y)
   S <- cov(Y, use="pairwise.complete.obs")
-  s <- sqrt(diag(S))
+  s <- sqrt(pmax(diag(S), 1e-12))
   R <- S / outer(s, s)
   rbar <- (sum(R) - p) / (p * (p - 1))
   F_target <- rbar * outer(s, s); diag(F_target) <- diag(S)
-  # phi: var(s_ij)
+  # phi vectorized: phi = sum over (i,j) of var(Yc[,i] * Yc[,j]) / n
   Yc <- scale(Y, center=TRUE, scale=FALSE)
   Yc[is.na(Yc)] <- 0
-  phi <- 0
-  for (i in seq_len(p)) for (j in seq_len(p)) {
-    yij <- Yc[, i] * Yc[, j]
-    phi <- phi + var(yij) / n
-  }
+  # Use the formula phi_ij = (1/n) * sum_t (Yc[t,i] Yc[t,j] - S[i,j])^2
+  S_full <- crossprod(Yc) / n  # MLE cov
+  Y2sq <- crossprod(Yc^2, Yc^2) / n  # E[(Y_i Y_j)^2 vec → (Y2_i)' Y2_j /n]
+  phi_mat <- Y2sq - S_full^2
+  phi <- sum(phi_mat)
   gamma_ <- sum((F_target - S)^2)
-  alpha_ <- max(0, min(1, phi / max(gamma_, 1e-12)))
+  alpha_ <- max(0, min(1, (phi / n) / max(gamma_, 1e-12)))
   S_lw <- alpha_ * F_target + (1 - alpha_) * S
   list(Sigma = S_lw, shrink = alpha_)
 }
 
-# To control compute, run LW on a sub-universe (active 18 + top 50 — to avoid O(N^2) phi loop blow-up)
-sub_idx <- union(active_in, head(adv_dt[order(-avg_dv)]$Ticker, 50))
-sub_idx <- intersect(sub_idx, colnames(ret_mat))
-ret_sub <- ret_mat[, sub_idx, drop=FALSE]
-lw_res <- tryCatch(lw_shrink(ret_sub), error=function(e) list(Sigma=cov(ret_sub), shrink=NA))
-Sigma_lw_sub <- lw_res$Sigma
-cond_lw <- kappa(Sigma_lw_sub, exact=FALSE)
-min_eig_lw <- min(eigen(Sigma_lw_sub, symmetric=TRUE, only.values=TRUE)$values)
+# APPLES-TO-APPLES: run LW on full N=206 (Codex C2 fix)
+ret_full <- ret_mat
+lw_res <- tryCatch(lw_shrink(ret_full), error=function(e) list(Sigma=cov(ret_full), shrink=NA))
+Sigma_lw_full <- lw_res$Sigma
+cond_lw <- kappa(Sigma_lw_full, exact=FALSE)
+min_eig_lw <- min(eigen(Sigma_lw_full, symmetric=TRUE, only.values=TRUE)$values)
+cat(sprintf("[LW full] N=%d cond=%.2f min_eig=%.4e shrink=%.4f\n",
+            ncol(ret_full), cond_lw, min_eig_lw, lw_res$shrink %||% NA_real_))
 
 # Sample condition on full
 cond_sample_full <- kappa(Sigma_sample, exact=FALSE)
@@ -238,19 +241,20 @@ method_shop <- list(
   method_log = list(
     list(name = "sample",            condition = round(cond_sample_full, 2),
          min_eig = round(min_eig_sample, 8), n = N, t = T_obs, selected = FALSE,
-         reason = "noise-dominated; expected unstable cond"),
+         reason = "noise-dominated; benchmark"),
     list(name = "ledoit_wolf_constcor", condition = round(cond_lw, 2),
          shrinkage = round(lw_res$shrink, 4),
-         min_eig = round(min_eig_lw, 8), n = ncol(ret_sub), t = T_obs, selected = FALSE,
-         reason = "shrinkage stabilizes but shrinks signal eig too; benchmark only"),
+         min_eig = round(min_eig_lw, 8), n = ncol(ret_full), t = T_obs, selected = FALSE,
+         reason = sprintf("Apples-to-apples N=%d (Codex C2 fix). Shrinkage stabilizes cond but biases eigenstructure toward constant-correlation prior, masking factor signal. RMT-denoised preserves signal eigenmodes by theoretical MP threshold.", ncol(ret_full))),
     list(name = "rmt_denoised",      condition = round(cond_d, 2),
          min_eig = round(min_eig_d, 8),
          n_signal_eig = n_signal, n_noise_eig = n_noise,
          lambda_max_MP = round(lambda_max_MP, 6),
          n = N, t = T_obs, selected = TRUE,
-         reason = "MP threshold preserves signal, flattens noise; theoretical bulk-anchored")
+         reason = "MP threshold preserves signal eigenmodes (11 retained), flattens noise (195 absorbed to bulk mean); theoretical bulk-anchored, no data-mined cutoff. cond=411.88 reflects market eigenmode (λ_1=44 ≈ 21% trace) which is structural, NOT estimator artifact. Optimizer should use RMT for risk decomposition + LW or shrinkage for portfolio variance forecast where condition number matters operationally.")
   ),
-  selection_objective = "shrinkage_quality"  # estimation quality (NOT alpha return)
+  selection_objective = "shrinkage_quality",  # estimation quality (NOT alpha return)
+  selection_objective_note = "Per role prompt v6.1 R4: estimator chosen for theoretical foundation (Laloux 1999 / Bouchaud 2009) and signal preservation, not alpha-return optimization."
 )
 write_json(method_shop, file.path(SAGE, "risk_method_shopping.json"),
            pretty = TRUE, auto_unbox = TRUE, digits = 8)
@@ -426,8 +430,6 @@ hill_alpha <- if (length(sorted) > k) {
   k / sum(log(sorted[1:k] / sorted[k+1]))
 } else NA_real_
 
-# Define %||% before using
-`%||%` <- function(a, b) if (is.null(a) || (length(a) == 1 && is.na(a))) b else a
 # EVT-GPD on monthly returns (helpers return lists)
 evt_m_obj <- tryCatch(compute_evt_var(str_ret, p = 0.99, threshold_q = 0.90, min_tail_n = 20L),
                        error = function(e) list(var_evt = NA_real_, es_evt = NA_real_))
@@ -474,11 +476,20 @@ bad_periods <- c("GFC_2008", "Euro_Debt_2011", "China_Shock", "US_China_Trade",
 crisis_rets <- sapply(bad_periods, function(p) stress_results[[p]]$cum_ret)
 crisis_alpha_avg <- mean(crisis_rets, na.rm = TRUE)
 
+# CDaR95 (Conditional Drawdown at Risk) — Codex C8 fix
+nav_pa <- 100 * cumprod(1 + str_ret)
+cdar_obj <- tryCatch(compute_cdar(nav_pa, alpha = 0.95),
+                      error = function(e) list(cdar = NA_real_, var_dd = NA_real_))
+cdar95 <- as.numeric(cdar_obj$cdar %||% NA_real_)
+cdar_var <- as.numeric(cdar_obj$var_dd %||% NA_real_)
+
 tail_risk <- list(
   hill_alpha_monthly = round(hill_alpha, 4),
   cf_var99_monthly   = round(cf_m, 6),
   evt_var99_monthly  = round(as.numeric(evt_m), 6),
   evt_es99_monthly   = round(as.numeric(evt_es_m), 6),
+  cdar95 = round(cdar95, 6),
+  cdar_var95 = round(cdar_var, 6),
   realized_max_monthly_loss = round(max(losses_m, na.rm=TRUE), 6),
   realized_min_monthly_ret  = round(min(str_ret, na.rm=TRUE), 6),
   mdd_lifetime = round(as.numeric(maxDrawdown(str_xts)), 6),
@@ -486,7 +497,7 @@ tail_risk <- list(
   ax001_v2_conditional = list(
     role = "core_secondary",
     crisis_alpha_avg_cum_ret = round(crisis_alpha_avg, 4),
-    note = "STR_1715 is core, not defense — informational only"
+    note = "STR_1715 is core, not defense — informational only. AX-001 v2 defense conditional metric does NOT apply to core role; tracking for Q-Lead consumption only."
   )
 )
 write_json(tail_risk, file.path(SAGE, "tail_risk.json"),
@@ -624,7 +635,10 @@ risk_package <- list(
     es99_cf_monthly = round(es99_cf_monthly, 6),
     es99_evt_monthly = round(es_evt_monthly, 6),
     es95_target = round(tail(fc_dt$es95_target, 1), 6),
-    forecast_path_ref = "stage_artifacts/WT_WT-S20260504_004/portfolio_es_forecast.csv"
+    forecast_path_ref = "stage_artifacts/WT_WT-S20260504_004/portfolio_es_forecast.csv",
+    forecast_path_waiver_label = "static_current_snapshot_diagnostic_NOT_walk_forward_pit",
+    forecast_path_waiver_note = "ES forecast time-series uses CURRENT 2026-04-30 active-18 weights backward over rolling daily windows. This is a DIAGNOSTIC visualization of how the present portfolio's RMT-denoised ES would have evolved through historical regimes — NOT a PIT walk-forward backtest of historical sizing. Codex C6 PARTIAL: walk-forward stock-level historical weights for STR_1715 are not stored as monthly time-series in the production registry (only 2 snapshot dates exist); this is structural data limitation, not a methodology choice. Acceptable for sizing_only recommendation_only WT where the forward vol-scale recommendation is the primary deliverable.",
+    pit_compliance_note = "All input daily returns capped at as_of_date 2026-04-30 (RAWDATA filter applied). No look-ahead in eigenvalue estimation."
   ),
   vol_target = list(
     rule = "scale = ES_target / ES_current, capped [0.5, 1.0]",
@@ -678,19 +692,32 @@ risk_package <- list(
   generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
 )
 
-# Red flag detection
+# Red flag detection (C1 fix: cond>100 from role prompt, NOT 500)
 if (snr$market_signal_ratio > 0.40)
   risk_package$challenge_flags <- c(risk_package$challenge_flags,
     list(list(id="RF-R1", severity="HIGH",
               msg=sprintf("Market mode = %.1f%% > 40%% (concentration risk)", 100*snr$market_signal_ratio))))
-if (cond_d > 500)
+if (cond_d > 100)
   risk_package$challenge_flags <- c(risk_package$challenge_flags,
     list(list(id="RF-R2", severity="HIGH",
-              msg=sprintf("Condition number %.0f > 500", cond_d))))
+              msg=sprintf("Condition number %.0f > 100 (role prompt gate). Codex C1 ACCEPT.", cond_d))))
 if (n_signal < 3)
   risk_package$challenge_flags <- c(risk_package$challenge_flags,
     list(list(id="RF-R-RMT", severity="HIGH",
               msg=sprintf("Signal eigenvalue count %d < 3 (insufficient factor structure)", n_signal))))
+# RF-R4 explicit: parametric monthly market_down_5 < -8% gate
+mdn5 <- -1.96 * port_sd_monthly  # ~95% one-tail
+if (mdn5 < -0.08)
+  risk_package$challenge_flags <- c(risk_package$challenge_flags,
+    list(list(id="RF-R4", severity="HIGH",
+              msg=sprintf("Stress proxy market_down_5 %.4f < -0.08 gate. Codex C4 ACCEPT.", mdn5))))
+# RF-R3 crowding-style stress
+if (any(c(stress_results$GFC_2008$cum_ret %||% 0,
+           stress_results$COVID_2020$cum_ret %||% 0,
+           stress_results$Rate_Hike_2022$cum_ret %||% 0) < -0.20))
+  risk_package$challenge_flags <- c(risk_package$challenge_flags,
+    list(list(id="RF-R-STRESS", severity="HIGH",
+              msg="Historical stress cum_ret < -20% in GFC/COVID/Rate2022. Tail loss exposure confirmed; M4 schedule overlay (parent WT) provides operational mitigation.")))
 
 # Write DRAFT first (Codex Round Hook 5-step flow)
 draft_path <- file.path(MBOX, "risk_package_draft.json")

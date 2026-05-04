@@ -8,17 +8,17 @@
       "n": 206,
       "t": 924,
       "selected": false,
-      "reason": "noise-dominated; expected unstable cond"
+      "reason": "noise-dominated; benchmark"
     },
     {
       "name": "ledoit_wolf_constcor",
-      "condition": 63.93,
-      "shrinkage": 0.1984,
-      "min_eig": 0.0001293,
-      "n": 66,
+      "condition": 162.38,
+      "shrinkage": 0.1863,
+      "min_eig": 0.00010689,
+      "n": 206,
       "t": 924,
       "selected": false,
-      "reason": "shrinkage stabilizes but shrinks signal eig too; benchmark only"
+      "reason": "Apples-to-apples N=206 (Codex C2 fix). Shrinkage stabilizes cond but biases eigenstructure toward constant-correlation prior, masking factor signal. RMT-denoised preserves signal eigenmodes by theoretical MP threshold."
     },
     {
       "name": "rmt_denoised",
@@ -30,8 +30,9 @@
       "n": 206,
       "t": 924,
       "selected": true,
-      "reason": "MP threshold preserves signal, flattens noise; theoretical bulk-anchored"
+      "reason": "MP threshold preserves signal eigenmodes (11 retained), flattens noise (195 absorbed to bulk mean); theoretical bulk-anchored, no data-mined cutoff. cond=411.88 reflects market eigenmode (λ_1=44 ≈ 21% trace) which is structural, NOT estimator artifact. Optimizer should use RMT for risk decomposition + LW or shrinkage for portfolio variance forecast where condition number matters operationally."
     }
   ],
-  "selection_objective": "shrinkage_quality"
+  "selection_objective": "shrinkage_quality",
+  "selection_objective_note": "Per role prompt v6.1 R4: estimator chosen for theoretical foundation (Laloux 1999 / Bouchaud 2009) and signal preservation, not alpha-return optimization."
 }
