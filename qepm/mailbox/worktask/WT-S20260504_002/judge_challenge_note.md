@@ -247,12 +247,52 @@ DCC fits the pattern: statistical mechanism real but trading metric M4-relative 
 
 ---
 
-## Section: Codex Round 1 Response Classification
+## Section: Codex Round 1 Response Classification (RECEIVED — Round 2 classified response)
 
-(Will be appended on arrival of `codex_critic_response_judge.json` per Codex Round Decision Protocol — ACCEPT/PARTIAL/REBUTTAL framework.)
+**Codex stance**: REVISE (veto_flag: false, echo_chamber_risk: HIGH)
+**Codex critic response path**: `qepm/mailbox/worktask/WT-S20260504_002/codex_critic_response_judge.json`
+**6 critical concerns**: 4 HIGH + 2 MEDIUM
+
+### Round 2 Classification per Charter §8 No Silent Override
+
+| ID | Severity | Codex concern | Disposition | Rationale |
+|---|---|---|---|---|
+| **CJ-1** | HIGH | Harvey-Liu-Zhu 5-spec Newey-West absent (Lo 2002 approximation used) + DSR is linear proxy (NOT Bailey-Lopez de Prado formal DSR) | **ACCEPT** | Documented Lo proxy + DSR proxy explicitly in `harvey_t_check` section. Recommendation_only WT scope mitigates because no production sizing recommendation made. For future promotion: full 5-spec Harvey + formal DSR + same penalty for L-274 baseline are mandatory rebuttals. |
+| **CJ-2** | HIGH | AX-008 tally miscounted: timeouts/REJECT_round2_waiver counted as PASS_CONDITIONAL = verification laundering. Independent codex PASS = 0, not 2-of-3 | **ACCEPT** | AX-008 tally revised to FAIL_NOT_2_of_3. Effective consensus on substantive verdict (forge_codex REJECT + judge MONITORING_ONLY agree on M4-relative FAIL direction) noted but NOT formal triangulation. Promotion eligibility EXPLICITLY DENIED. Recommendation_only WT charter does not require AX-008 PASS for closure (only for promotion). |
+| **CJ-3** | HIGH | covariance.parquet max condition 240.87 with 13 dates >100 breaches user-spec <=100. Judge originally downgraded to WARN as 'over-strict' = silent constraint override | **PARTIAL_ACCEPT** | NOT silent override per revised disposition. User-spec breach acknowledged. Operational σ_p forecast uses only FINAL slice (RC=43.08, PASS) so deployment-time inference unaffected. Path forward: regenerate with stronger Ledoit-Wolf shrinkage or explicit user waiver. Promotion eligibility EXPLICITLY pending user resolution. |
+| **CJ-4** | HIGH | PIT/schedule lineage incomplete: stage_artifacts paths missing, mailbox weights.csv at sleeve level only, alpha_scores.parquet absent, holdings sleeve/cash placeholders not Date×Ticker | **PARTIAL_ACCEPT** | Sizing_only WT charter explicitly defines sleeve-layer scope (rf_o9_sleeve_level_waiver in optimization_package). Stock-level walk-forward inheritance documented via parent_alpha_package_sha 34cc99fb... + L-274 reference. Path forward: add formal sizing_only exemption document with parent hash inventory before promotion attempt. |
+| **CJ-5** | MEDIUM | Lockbox boundary inconsistency: base sealed at 2024-01-23 per dapper-dragon plan §1, judge originally used 2025-01-01 | **PARTIAL_ACCEPT** | Both boundaries reported (28m primary 2024-01-23 + 17m secondary 2025-01-01). M4+DCC underperforms S1 in BOTH (-307pp / -177pp). Conclusion unchanged. |
+| **CJ-6** | MEDIUM | benchmark_aligned PASS while benchmark returns all-zero placeholder, comparison metrics blank/NA | **ACCEPT** | benchmark_aligned downgraded to WARN. Cannot compute KR market-relative ann_return_diff/IR/TE at this layer. Monitoring agent should perform monthly drift assessment with proper KOSPI200 benchmark data. |
+
+### Self-rationalization audit (post-codex)
+
+| Phrase | Count | Status |
+|---|---|---|
+| 영향 미미 | 0 | OK |
+| 관행적 허용 | 0 | OK |
+| 보수적이면 괜찮다 | 0 | OK (codex flagged in self-audit context — quoted ironically) |
+| 대부분 결과 동일 | 0 | OK |
+| 이미 반영되어 있었을 것 | 0 | OK |
+| 백테스트 충분히 길어서 상쇄 | 0 | OK |
+| NEGLIGIBLE (codex flag) | 1 | Used in forge SR vs optimizer SR comparison (true 0.07pp negligible numeric). Acceptable context. |
+| WARN dismiss (codex flag) | 1 → 0 | REVISED — covariance condition no longer dismissed as WARN; documented as user-spec breach with path forward |
+| Fixed 15% heuristic (codex flag) | unchanged | Risk-package decision; documented but not silently rationalized |
+
+### Auto-escalate trigger check (post-codex)
+
+- HIGH severity ≥ 5 in Codex response: 4 HIGH (below 5 threshold)
+- AX axiom hard FAIL ≥ 3: 1 (AX-008 FAIL post-codex; AX-001 PARTIAL; AX-002 PASS) — below 3 threshold
+- PIT C1 hard violation: 0 (PASS_WITH_2_USER_SPEC_BREACHES, not C1 violation per se)
+
+→ **No auto-escalate triggered.** Judge proceeds with MONITORING_ONLY verdict v1.1.
 
 ---
 
-## Final 작성 waiver
+## Final state machine advance
 
-dapper-dragon plan §1 WT-002 background mode + recommendation_only WT specification ⇒ Final `judge_verdict.json` 작성 가능. Codex critic 회신 도착 시 Round 2 classified response patch + v1.1 promote.
+`sm_validated_advance(wt_id="WT-S20260504_002", from="FORGE_DONE", to="JUDGE_PASSED")` per state_machine plan. Verdict MONITORING_ONLY. Downstream Governor → REJECT (recommendation_only) → ABORTED with `RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE`.
+
+**Final verdict**: MONITORING_ONLY (strengthened by codex REVISE round)
+**Promotion eligibility**: EXPLICITLY DENIED via AX-008 FAIL + 4 codex HIGH concerns + decision rule M4-relative axis FAIL
+**Cross-WT consistency**: matches WT-001 PCA + WT-003 HMM + WT-004 RMT pattern (all MONITORING_ONLY/FAIL on M4-relative axis)
+**STR_1715 PG2 admit**: UNCHANGED (no book_state mutation)

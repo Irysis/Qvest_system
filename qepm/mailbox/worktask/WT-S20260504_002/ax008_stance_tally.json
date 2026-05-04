@@ -43,22 +43,35 @@
     {
       "source": "judge",
       "round": 1,
-      "round_2_after_codex": "pending",
+      "round_2_after_codex": true,
       "stance": "MONITORING_ONLY",
-      "rationale": "Plan §12 decision_rule: CAGR 29.31% PASS + Sortino 2.73 PASS + Vol vs S1 -22.7% PASS + top5DD PASS, but MDD strict 33.39% FAIL + MDD vs L-274 M4-only baseline FAIL by -1.34pp (BINDING axis per request.json primary_objective). AX-001 v2 PARTIAL_DEFENSE_LIKE (crisis_alpha 3/3 PASS + bad/normal alpha surrender FAIL + MDD vs Core MIXED). Harvey-t 6.76 PASS. DSR penalty 0.35 deflates SR to 1.08 (above 1.0 floor, below L-274 1.75 reference). Lockbox 17m: M4+DCC underperforms S1 by -177pp cumulative (alpha surrender in trending bull regime).",
+      "rationale_post_codex": "Plan §12 decision_rule: CAGR 29.31% PASS + Sortino 2.73 PASS + Vol vs S1 -22.7% PASS + top5DD PASS, but MDD strict 33.39% FAIL + MDD vs L-274 M4-only baseline FAIL by -1.34pp (BINDING axis). AX-001 v2 PARTIAL_DEFENSE_LIKE (crisis_alpha 3/3 PASS + alpha surrender FAIL + MDD vs Core MIXED). Lo (2002) approximation t=6.76 (NOT formal Harvey 5-spec; codex CJ-1 ACCEPT). DSR proxy 0.35 deflates SR to 1.08 (NOT formal DSR; codex CJ-1 ACCEPT). Lockbox 28m: M4+DCC underperforms S1 by -307pp cumulative.",
       "challenge_note": "qepm/mailbox/worktask/WT-S20260504_002/judge_challenge_note.md",
-      "codex_round_status": "round1_DRAFT_pending_codex_critic_response"
+      "codex_round_status": "round1_REVISE_round2_classified_response_complete",
+      "codex_critic_response_path": "qepm/mailbox/worktask/WT-S20260504_002/codex_critic_response_judge.json",
+      "codex_concerns": [
+        "CJ-1 HIGH: Harvey 5-spec absent + DSR not formal — ACCEPT",
+        "CJ-2 HIGH: AX-008 miscount (verification laundering) — ACCEPT",
+        "CJ-3 HIGH: covariance condition 240.87 max breaches user-spec <=100 — PARTIAL_ACCEPT",
+        "CJ-4 HIGH: PIT schedule lineage incomplete (sleeve only) — PARTIAL_ACCEPT",
+        "CJ-5 MED: lockbox boundary 2024-01-23 vs 2025-01-01 — PARTIAL_ACCEPT",
+        "CJ-6 MED: benchmark_aligned PASS while NA — ACCEPT"
+      ]
     }
   ],
-  "ax008_summary": {
+  "ax008_summary_post_codex_revision": {
     "total_sources": 4,
-    "pass_conditional_count": 3,
+    "codex_responses_received": 4,
+    "codex_independent_pass_count": 0,
+    "codex_reject_count": 2,
+    "codex_revise_count": 1,
+    "codex_timeout_count": 1,
+    "fail_count_overall": 0,
     "monitoring_only_count": 1,
-    "fail_count": 0,
-    "minimum_2_of_3_threshold": "MET (3 PASS_CONDITIONAL + 1 MONITORING_ONLY = 4/4 non-FAIL)",
-    "verification_triangulation_grade": "PARTIAL — Forge + Risk + Optimizer 3-source PASS_CONDITIONAL; Codex Round Round 1 RISK timeout + OPTIMIZER REJECT + FORGE REJECT all carried via Round 2 waiver/classified response. Architect not invoked (sizing_only WT scope per dapper-dragon plan). Judge independent verification serves as 4th validation layer.",
-    "promotion_eligibility": "NOT promoted — judge MONITORING_ONLY verdict precludes book_state mutation. Recommendation_only WT closes per state_machine plan: GOVERNOR_REJECTED → ABORTED with reason RECOMMENDATION_ONLY_CLOSED_NO_BOOK_STATE_WRITE.",
-    "judge_codex_agreement_axis": "Both Judge and Forge-Codex agree on M4-relative axis FAIL. Codex stance REJECT vs Judge MONITORING_ONLY differ in degree but agree on binding decision rule violation. AX-008 effective consensus achieved on substantive verdict logic."
+    "minimum_2_of_3_threshold": "NOT_MET — codex CJ-2 ACCEPT applied. Independent codex PASS sources: 0. Effective consensus on substantive verdict (forge_codex + judge agree on M4-relative axis FAIL): 2 sources via direction agreement, but NOT formal AX-008 PASS triangulation.",
+    "verification_triangulation_grade": "FAIL — codex CJ-2 ACCEPT applied. Forge + Codex + Architect: 0 independent codex PASS. Architect not invoked. Effective directional consensus on M4-relative axis FAIL (forge_codex REJECT + judge MONITORING_ONLY agree non-promotion direction).",
+    "promotion_eligibility": "EXPLICITLY DENIED — AX-008 FAIL + 4 codex HIGH concerns + decision rule M4-relative axis FAIL. Recommendation_only WT charter does not require AX-008 PASS for closure (only for promotion). MONITORING_ONLY verdict UNCHANGED but strengthened, not weakened, by codex critique.",
+    "judge_codex_agreement_axis": "Both forge_codex (REJECT) and judge (MONITORING_ONLY) agree on M4-relative axis FAIL substantive conclusion. Codex judge round REVISE applied 6 substantive corrections (4 ACCEPT + 2 PARTIAL). Verdict robust under critique."
   },
   "schema_version": "v1.0_ax008_tally_dcc",
   "created_at": "2026-05-04T11:30:00+09:00",
