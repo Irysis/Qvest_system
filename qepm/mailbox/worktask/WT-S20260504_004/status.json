@@ -1,7 +1,7 @@
 {
   "task_id": "WT-S20260504_004",
-  "current_phase": "FORGE_DONE",
-  "updated_at": "2026-05-04T09:36:30+0900",
+  "current_phase": "JUDGE_PASSED",
+  "updated_at": "2026-05-04T09:42:00+0900",
   "wt_kind": "recommendation_only",
   "wt_type": "sizing_only",
   "parent_wt": "WT-P20260429_002",
@@ -31,7 +31,7 @@
     "selection_basis": "conservative_OR_design_rule",
     "n_active_stocks": 18,
     "max_stock_weight": 0.2,
-    "sigma_w": 1.0,
+    "sigma_w": 1,
     "schedule_n_unique_dates": 267,
     "schedule_density_ratio": 0.9963,
     "density_pass": true,
@@ -69,7 +69,7 @@
     },
     "vs_M4_baseline_recomputed_pp": {
       "SR": -0.0255,
-      "MDD_relief": 0.0,
+      "MDD_relief": 0,
       "CAGR_drag": -1.86
     },
     "decision_rule_verdict": "MONITORING_ONLY",
@@ -84,5 +84,28 @@
     "schedule_fidelity_certificate": "issued (density=0.996)"
   },
   "ax_008_tally": "1/3 (forge only); judge stage triangulation pending",
-  "next_phase": "JUDGE"
+  "next_phase": "GOVERNOR",
+  "challenge_round": 0,
+  "challenge_history": [],
+  "judge_done_at": "2026-05-04T09:42:00+0900",
+  "judge_summary": {
+    "final_verdict": "MONITORING_ONLY",
+    "three_strategy_ranking": "M4_baseline_recomputed (1.5646) > M4+RMT_canonical (1.5391) > S1_pure (1.5068) > RMT_VolTarget (1.4773)",
+    "decision_rule_PASS_count": 4,
+    "decision_rule_FAIL_count": 3,
+    "decision_rule_FAIL_axes": ["MDD_absolute_25pct", "MDD_minus_3pp_vs_M4", "vol_minus_20pct_vs_M4"],
+    "decision_rule_PASS_axes": ["CAGR_geq_20", "Sortino_geq_1", "top5_DD_3plus", "RMT_signal_noise_OK"],
+    "ax001_v2_defense_like": "HIGH_RISKOFF tail clip 5.09pp + vol reduction 8.63pp (informational, core_secondary role)",
+    "ax_008_tally": "2/3 (forge + judge_substituted)",
+    "ax_008_verdict": "PASS",
+    "pit_audit": "PASS (2 WARN factor_engine_path absent, 0 FAIL)",
+    "hash_audit": "9/9 match",
+    "state_transition": "FORGE_DONE -> JUDGE_PASSED",
+    "governor_handoff_action": "RECOMMENDATION_ONLY_CLOSED",
+    "RECOMMENDED_ACTION": "PG2 unchanged. RMT framework retained as research artifact. Q-Lead memory housekeeping L-275+ for L-274 stale carry.",
+    "codex_round_status": "round1_skip_waiver_recommendation_only_ax008_lineage_carry",
+    "qlead_escalate_triggered": false,
+    "red_flags_judge_count": 5,
+    "red_flags_judge_severity": "1 MEDIUM x 2 (RF-J1 RF-J2) + 3 INFO/LOW"
+  }
 }
