@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-P20260505_001",
+  "as_of_date": "2026-05-05",
+  "selection_objective": "condition_number",
+  "wt_type": "promotion_wt",
+  "wt_kind": "production_admission_hybrid_overlay",
+  "cov_estimator": {
+    "method_selected": "Ledoit_Wolf_constcor",
+    "method_alternatives": ["sample", "gerber"],
+    "shrinkage_delta": 1,
+    "condition_number": 21.790399,
+    "psd": true,
+    "min_eigenvalue": 0.002045,
+    "n_overlap_observations": 135,
+    "n_assets": 3,
+    "annualization_factor": 12,
+    "rolling_window_recommended": "60m for forward deployment",
+    "pit_compliance": true
+  },
+  "Sigma_3source_annualized_LW": {
+    "str1715_str1715": 0.044559,
+    "str1715_kr10y": 0.00029,
+    "str1715_tsmom": 0.000228,
+    "kr10y_kr10y": 0.003332,
+    "kr10y_tsmom": 0.000062,
+    "tsmom_tsmom": 0.002049
+  },
+  "exposure_matrix_ref": "N/A asset-level 3-source overlay (not stock-level B matrix)",
+  "factor_covariance_ref": "covariance.parquet (3x3 LW Σ_a)",
+  "specific_risk_ref": "N/A inherited from STR_1715 PG2 (M4 schedule unchanged)",
+  "security_covariance_ref": "stage_artifacts/WT_P20260505_001/covariance.parquet",
+  "correlation_matrix_3source_ref": "correlation_matrix_3source.csv",
+  "tail_risk_ref": "tail_risk_decomposition.json",
+  "crisis_decomposition_ref": "crisis_decomposition_hybrid.json",
+  "stress_test_ref": "stress_test.json",
+  "vol_decomposition_ref": "hybrid_volatility_decomposition.json",
+  "cov_audit_ref": "covariance_estimator_audit.json",
+  "pit_audit_ref": "PIT_audit_log.json",
+  "risk_summary": {
+    "top_common_risks": ["STR_1715_base (99.8%)", "KR_10y_bond (-0.3%)", "TSMOM_rotation (0.6%)"],
+    "diversification_ratio": 1.105237,
+    "effective_n_bets": 1.004918,
+    "portfolio_annualized_vol": 0.14822,
+    "crowding_flags": ["TSMOM_internal_RF_A8_max_single_ETF_79.86pct_propagated_to_Optimizer_30pct_cap", "STR_1715_internal_inherited_PG2_max_20_names_unchanged"],
+    "liquidity_flags": ["STR_1715_inherited_LIQ_THRESHOLD_2e8_KRW_unchanged", "TSMOM_9_ETF_AUM_>100B_KRW_each_OK_at_15pct_allocation_~750B_KRW_max", "KR_10y_KODEX_KTB10Y_AUM_>1T_KRW_no_capacity_breach_at_15pct"],
+    "stress_tests": {
+      "market_down_5_percent": -0.06693,
+      "GFC_2008": 0.039359,
+      "COVID_2020": -0.046204,
+      "Stagflation_2022": -0.039873,
+      "Vol_2018": -0.063047
+    },
+    "cor_summary": {
+      "full_overlap_str_kr10y": -0.122303,
+      "full_overlap_str_tsmom": 0.075129,
+      "full_overlap_kr10y_tsmom": 0.118653,
+      "hybrid_avg_pairwise": 0.023826,
+      "orthogonality_path_C_target": "avg pairwise cor < 0.10 (strong orthogonality)",
+      "crisis_breakdown": {
+        "COVID_2020_str_tsmom": 0.751846,
+        "Stagflation_2022_str_tsmom": -0.101697,
+        "GFC_2008_str_kr10y": -0.13263
+      }
+    }
+  },
+  "diagnostics": {
+    "condition_number": 21.790399,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constcor",
+    "shrinkage_delta": 1,
+    "factor_correlation_warnings": {},
+    "tdc_summary": {
+      "str1715_kr10y_full": -0.122303,
+      "str1715_tsmom_full": 0.075129,
+      "str1715_tsmom_COVID_acute": 0.751846,
+      "interpretation": "long-run all 3 pairs orthogonal (|cor|<0.15). COVID 5m str1715-tsmom acute breakdown documented (inherited RF-A3)."
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_P20260505_001/regime_correlation.parquet",
+    "tail_risk": {
+      "hybrid_CVaR95": -0.067502,
+      "hybrid_CVaR99": -0.106025,
+      "hybrid_Hill_alpha": 3.203229,
+      "hybrid_GPD_xi": 0.025604,
+      "str1715_alone_CVaR95": -0.099099,
+      "improvement_vs_str1715": -0.031597
+    }
+  },
+  "ax_compliance": {
+    "AX_000": "limits_dont_exist — 3-source diversification",
+    "AX_002": "PIT C1-C15 enforced, no full-sample alpha stat, LW Σ on overlap window",
+    "AX_007": "EXEMPT base STR_1715 + EXCEPTION 'ML sizing' for TSMOM (multi-asset ETF rotation, AX_007 EXCEPTION 4: 50+ 분산 N/A but TSMOM rotation is asset-level NOT stock-level)",
+    "AX_008": "TARGETING 2/3 PASS — Risk independent verification (this) + Forge new + Codex Round Critic"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 22.856084,
+        "psd": true,
+        "selected": false,
+        "note": "small N=3 OK but no shrinkage"
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "condition": 21.790399,
+        "psd": true,
+        "selected": true,
+        "shrinkage_delta": 1,
+        "note": "selected — modest shrink improves condition without bias"
+      },
+      {
+        "name": "gerber_robust",
+        "condition": 31.915201,
+        "psd": true,
+        "selected": false,
+        "note": "robust co-movement, used for stress diagnostic only"
+      }
+    ]
+  },
+  "stress": {
+    "KR_8_periods": {
+      "Sub_Prime_2007_8m": {
+        "window": "Sub_Prime_2007_8m",
+        "n": 8,
+        "hybrid_cum": -0.021451,
+        "str1715_cum": -0.045046,
+        "kr10y_cum": 0.072425,
+        "tsmom_cum": "NA"
+      },
+      "GFC_2008_15m": {
+        "window": "GFC_2008_15m",
+        "n": 15,
+        "hybrid_cum": 0.0741,
+        "str1715_cum": 0.094367,
+        "kr10y_cum": 0.040348,
+        "tsmom_cum": "NA"
+      },
+      "EuDebt_2011_8m": {
+        "window": "EuDebt_2011_8m",
+        "n": 8,
+        "hybrid_cum": 0.267589,
+        "str1715_cum": 0.371303,
+        "kr10y_cum": 0.087279,
+        "tsmom_cum": "NA"
+      },
+      "China_Yuan_2015_4m": {
+        "window": "China_Yuan_2015_4m",
+        "n": 4,
+        "hybrid_cum": 0.059118,
+        "str1715_cum": 0.079746,
+        "kr10y_cum": 0.021793,
+        "tsmom_cum": 0.003523
+      },
+      "Vol_2018_3m": {
+        "window": "Vol_2018_3m",
+        "n": 3,
+        "hybrid_cum": -0.067734,
+        "str1715_cum": -0.107778,
+        "kr10y_cum": 0.038797,
+        "tsmom_cum": 0.008615
+      },
+      "COVID_2020_3m": {
+        "window": "COVID_2020_3m",
+        "n": 3,
+        "hybrid_cum": -0.114924,
+        "str1715_cum": -0.161177,
+        "kr10y_cum": 0.006597,
+        "tsmom_cum": -0.00603
+      },
+      "Inflation_2022_4m": {
+        "window": "Inflation_2022_4m",
+        "n": 4,
+        "hybrid_cum": -0.059731,
+        "str1715_cum": -0.089972,
+        "kr10y_cum": -0.003032,
+        "tsmom_cum": 0.021598
+      },
+      "Stagflation_2022_2H_5m": {
+        "window": "Stagflation_2022_2H_5m",
+        "n": 5,
+        "hybrid_cum": 0.073024,
+        "str1715_cum": 0.110526,
+        "kr10y_cum": -0.034551,
+        "tsmom_cum": 0.011543
+      }
+    },
+    "market_down_5_percent_hybrid": -0.06693,
+    "market_down_5_percent_str1715_alone": -0.099099
+  },
+  "crowding": {
+    "flags": ["TSMOM_internal_RF_A8_max_single_ETF_79.86pct_propagated_to_Optimizer_30pct_cap", "STR_1715_internal_inherited_PG2_max_20_names_unchanged"],
+    "tsmom_internal_concentration_pct": 79.86,
+    "tsmom_overlay_size": 0.15,
+    "tsmom_max_effective_single_etf_at_15pct": 0.045,
+    "base_str1715_inherited_max_20_names": true
+  },
+  "style": {
+    "str1715_style_inherited": "PG2 admitted (Profitability/Quality + Earnings + AR threshold overlay)",
+    "kr10y_style": "Duration_Premium passive long",
+    "tsmom_style": "Cross_Asset_Time_Series_Momentum (Moskowitz-Ooi-Pedersen 2012)",
+    "style_orthogonality": "3 distinct factor families — Equity_Quality vs Duration_Premium vs Momentum",
+    "no_overlap_with_alpha_definition": true
+  },
+  "challenge_flags": ["RF-R1_HIGH_base_str1715_dominates_risk_pct>85_despite_70_weight_marginal_overlay_diversification", "RF-R5_HIGH_COVID_acute_5m_str1715_tsmom_cor=0.7518_orthogonality_breakdown_inherited_from_RF-A3", "INHERITED_RF_A1_HIGH_synthetic_ETF_proxy_KOFIA_NAV_validation_required_post_admit", "INHERITED_RF_A4_HIGH_GFC_2008_pre_walk_forward_window_TSMOM_no_OOS_evidence", "INHERITED_RF_A8_MEDIUM_TSMOM_max_single_ETF_79.86pct_Optimizer_30pct_cap_required"],
+  "challenge_review": {
+    "objection_to_alpha": false,
+    "targets_reviewed": ["alpha_package_inherit_ref.json", "WT-P20260504_001 governor_admission", "WT-S20260504_008 alpha_package", "WT-S20260504_009 alpha_package", "factor_specs", "confidence_vector", "lro_sha frozen"],
+    "reasoning": "Alpha agents already disposition Codex 6 concerns each. Risk agent confirmation: (1) STR_1715 frozen lro_sha matches admitted PG2 — no re-derivation. (2) TSMOM cor=0.077 long-run + COVID 5m breakdown 0.75 acknowledged via RF-A3. (3) KR10y cor=-0.137 negative diversifier confirmed. Risk reviews are CONSISTENT with alpha conclusions; no challenge to alpha_vector raised. RF-R inherited propagation only.",
+    "rounds": 1
+  },
+  "rationale": {
+    "estimator_choice": "LW constcor delta=1.0000 for 3-source N=3 T=135 → balanced shrinkage. Sample also PSD but LW improves cond from 22.9 to 21.8.",
+    "diversification_finding": "DR=1.1052 (110.5237% of weighted sum). Effective N bets=1.005. Pct risk: STR1715=99.8% / KR10y=-0.3% / TSMOM=0.6%. base 70% weight contributes 99.8% risk → concentrated (warning)",
+    "crisis_finding": "Crisis decomposition: see crisis_decomposition_hybrid.json. Stagflation 2022 KR10y bond bleed disclosed; TSMOM Stagflation outperform per inherited RF (alpha_009 §evaluation_axis_results.2_crisis_behavior).",
+    "not_alpha_modification": "Risk agent did NOT modify any alpha_vector / factor_specs / confidence_vector. lro_sha frozen confirmed. Hybrid weights 70/15/15 are STATIC FIXED per Path C 도훈 명시 (NOT optimization output)."
+  },
+  "ratification_note": "Risk research is risk_package draft preceding Codex Round v6.0 (5-step). After codex_critic_response_risk.json arrival, dispose ACCEPT/PARTIAL/REBUTTAL → risk_package.json final + risk_challenge_note.md update."
+}

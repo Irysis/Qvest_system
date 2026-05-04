@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-P20260505_001",
+  "artifact_kind": "kofia_nav_validation_plan",
+  "prereq_status": "P2_PENDING",
+  "purpose": "Resolve WT-009 RF-A1 HIGH (synthetic ETF proxy → real KOFIA NAV cross-validation) before Hybrid 70/15/15 admission",
+  "scope": {
+    "tickers": [
+      {"ticker": "A069500", "name": "KODEX 200", "asset_class": "KR equity", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A148070", "name": "KODEX 국고채10년", "asset_class": "KR bond 10y", "use_in_hybrid": "KR_10y_bond_ETF leg (15%) + TSMOM universe"},
+      {"ticker": "A143850", "name": "TIGER S&P500 H", "asset_class": "US equity hedged", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A132030", "name": "KODEX GOLD H", "asset_class": "Gold hedged", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A308620", "name": "KODEX UST10Y H", "asset_class": "US 10y bond hedged", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A284430", "name": "KODEX 200 UST", "asset_class": "KR-US blended", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A329200", "name": "KODEX KR REIT", "asset_class": "KR REIT", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A229200", "name": "KODEX 200 LV", "asset_class": "KR equity low-vol", "use_in_hybrid": "TSMOM universe"},
+      {"ticker": "A157450", "name": "TIGER 단기통안채 (short-term)", "asset_class": "KR cash equivalent", "use_in_hybrid": "TSMOM universe (zero-signal fallback)"}
+    ],
+    "n_tickers": 9
+  },
+  "current_state": {
+    "WT_008_KR_10y_proxy": {
+      "method": "ECOS yield series → bond duration approximation",
+      "formula": "ret_proxy = -duration_yrs * Δyield/100 + (yield_lag/12)/100",
+      "source": "qepm/mailbox/worktask/WT-S20260504_008/cash_replacement_analysis.R lines 79-91",
+      "known_limitations": [
+        "Duration assumed constant 8 yr (actual KTB10Y ETF mod duration varies 6-9)",
+        "Carry computed from prev-month yield (not actual coupon flow)",
+        "No tracking error against actual KODEX 국고채10년 NAV",
+        "Bid-ask spread not modeled"
+      ]
+    },
+    "WT_009_TSMOM_synthetic_universe": {
+      "method": "Synthetic ETF returns built from underlying components (RAWDATA stocks for low-vol, FRED for gold/UST, ECOS for KR rates, etc.)",
+      "source": "qepm/mailbox/worktask/WT-S20260504_009/ml_rotation_research.R + docs/etf_universe_audit.json",
+      "rf_flag": "RF-A1 HIGH — synthetic proxies not cross-validated against KOFIA actual ETF NAVs"
+    }
+  },
+  "validation_protocol": {
+    "step_1_data_acquisition": {
+      "source": "KOFIA (Korea Financial Investment Association) ETF NAV daily series",
+      "url_pattern": "https://www.kofia.or.kr/wpge/m_98/etpfund/etpfundlist.do (or KOFIA OpenAPI)",
+      "alternative_source": "KRX ETF (한국거래소) daily quote API",
+      "fields_required": ["date", "ticker", "nav_close", "nav_high", "nav_low", "share_outstanding", "aum_won"],
+      "period": "2015-01-02 to 2026-04-30 (joint 135m anchored on TSMOM live period)",
+      "frequency": "daily NAV (will be aggregated to month-end PIT)"
+    },
+    "step_2_cross_validation_metrics": {
+      "monthly_correlation": {
+        "threshold": ">= 0.85",
+        "method": "cor(synthetic_proxy_monthly_ret, kofia_nav_monthly_ret, use='pairwise.complete.obs')",
+        "fail_action": "BLOCK admission. Investigate proxy method or replace with KOFIA NAV directly."
+      },
+      "tracking_error_annualized": {
+        "threshold": "<= 1.5%",
+        "method": "sd(synthetic_ret - kofia_nav_ret) * sqrt(12)",
+        "fail_action": "Document deviation; if 1.5-3.0% → CONDITIONAL with uplift in cost; if > 3.0% BLOCK"
+      },
+      "cumulative_return_divergence": {
+        "threshold": "<= 5pp absolute over 135m",
+        "method": "abs(cum_synthetic - cum_kofia)",
+        "fail_action": "Investigate dividend treatment; PIT alignment; share split adjustments"
+      },
+      "drawdown_alignment": {
+        "threshold": "max |MDD_proxy - MDD_kofia| <= 1.5pp",
+        "fail_action": "FLAG for risk-research review of tail risk implications"
+      }
+    },
+    "step_3_hybrid_re_simulation": {
+      "purpose": "Re-run Hybrid 70/15/15 with KOFIA NAV inputs (replacing synthetic proxy)",
+      "metrics_to_compute": ["SR_PerfA", "SR_manual", "MDD", "CAGR", "Vol", "Sortino", "Calmar"],
+      "comparison_baseline": "Architect synthetic-proxy Hybrid (this WT) — delta tolerance ±0.05 SR / ±1pp MDD / ±0.5pp CAGR",
+      "out_of_tolerance_action": "BLOCK admission until proxy improvement OR adopt KOFIA NAV directly"
+    },
+    "step_4_bootstrap_ci": {
+      "method": "Stationary block bootstrap (Politis-Romano 1994) with block_size = sqrt(n) ≈ 12 months",
+      "n_iter": 10000,
+      "ci_level": 0.95,
+      "metrics_with_ci": ["Hybrid_SR_PerfA", "Hybrid_MDD", "delta_SR_vs_AR_only"],
+      "admission_criterion": "lower 95% CI bound for Hybrid_SR_PerfA must NOT span baseline AR_on_M4 SR (1.7758) — i.e. Hybrid SR_lower_CI > 1.5 indicates stability"
+    }
+  },
+  "deliverables": [
+    {"path": "qepm/mailbox/worktask/WT-P20260505_001/kofia_nav_data.parquet", "kind": "raw KOFIA NAV"},
+    {"path": "qepm/mailbox/worktask/WT-P20260505_001/kofia_validation_results.json", "kind": "validation metrics + pass/fail per ticker"},
+    {"path": "qepm/mailbox/worktask/WT-P20260505_001/hybrid_backtest_kofia_nav.csv", "kind": "Hybrid 70/15/15 returns using KOFIA NAV"},
+    {"path": "qepm/mailbox/worktask/WT-P20260505_001/bootstrap_ci.json", "kind": "block bootstrap 10000-iter CI"}
+  ],
+  "responsibility": {
+    "data_acquisition": "Forge (P5)",
+    "validation_execution": "Forge (P5)",
+    "verdict_review": "Risk Manager (P4) + Architect (re-verify if KOFIA NAV materially changes Hybrid metrics)",
+    "go_no_go_decision": "Q-Lead + Governor (P7)"
+  },
+  "estimated_runtime": "~2-4 hours (KOFIA daily pull + monthly aggregation + 9 ETF cross-validation + bootstrap 10000-iter)",
+  "blocking_status_for_admission": "P2 must PASS before P7 governor admission. P3/P4/P5/P6 may run in parallel but must all consume KOFIA-validated inputs (not synthetic)",
+  "remediation_paths": {
+    "scenario_A_all_pass": "Hybrid synthetic proxy validated. Proceed to P3-P7. Document KOFIA NAV as reference.",
+    "scenario_B_partial_fail": "1-2 tickers fail tolerance. Replace failing tickers with KOFIA NAV in Hybrid backtest. Document delta vs synthetic.",
+    "scenario_C_systemic_fail": "3+ tickers fail OR Hybrid SR delta > 0.10. BLOCK admission. Re-architect TSMOM universe with KOFIA NAV first.",
+    "scenario_D_KR_10y_only": "If KR 10y (A148070) passes but TSMOM universe fails systemically: fallback to AR70_KR30 alone (drop TSMOM 15% → 70/30 KR10y bond replacement). Re-cycle as separate WT."
+  },
+  "lineage": {
+    "blocked_by": [],
+    "blocks": ["P3_optimizer_30_cap_constraint", "P4_risk_manager_correlation_tail_audit", "P5_forge_5_strategy_backtest", "P6_judge_verdict", "P7_codex_round_governor"],
+    "predecessor_concerns": ["WT-S20260504_009 RF-A1 HIGH (synthetic ETF universe not cross-validated)"]
+  },
+  "created_by": "Architect",
+  "created_at": "2026-05-05T03:30:00+0900"
+}

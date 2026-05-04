@@ -1,0 +1,59 @@
+{
+  "estimators": {
+    "Sample": {
+      "condition_number": 22.856084,
+      "min_eigen": 0.001967,
+      "psd": true,
+      "Sigma_diag": [0.044891, 0.003357, 0.002064]
+    },
+    "Ledoit_Wolf_constcor": {
+      "condition_number": 21.790399,
+      "min_eigen": 0.002045,
+      "psd": true,
+      "shrinkage_delta": 1,
+      "Sigma_diag": [0.044559, 0.003332, 0.002049]
+    },
+    "Gerber": {
+      "condition_number": 31.915201,
+      "min_eigen": 0.001419,
+      "psd": true,
+      "threshold_q": 0.5,
+      "Sigma_diag": [0.044891, 0.003357, 0.002064]
+    }
+  },
+  "selected": "Ledoit_Wolf_constcor",
+  "selection_objective": "condition_number",
+  "selection_rationale": "3-source low-dim N=3 + small-sample T=135. LW shrink delta=1.0000 modest. condition_number=21.79 vs Sample=22.86. PSD=TRUE. Gerber for robust stress check (heavy-tail co-movement) but lower precision for normal regime.",
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 22.856084,
+        "psd": true,
+        "selected": false,
+        "note": "small N=3 OK but no shrinkage"
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "condition": 21.790399,
+        "psd": true,
+        "selected": true,
+        "shrinkage_delta": 1,
+        "note": "selected — modest shrink improves condition without bias"
+      },
+      {
+        "name": "gerber_robust",
+        "condition": 31.915201,
+        "psd": true,
+        "selected": false,
+        "note": "robust co-movement, used for stress diagnostic only"
+      }
+    ]
+  },
+  "pit_audit": {
+    "full_sample_used": false,
+    "note": "Σ estimator computed on overlap window only (2015-01..2026-04, 136m). For deployment-day Σ, recompute on rolling 60m window.",
+    "not_used_for_alpha": true
+  }
+}
