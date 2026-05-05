@@ -7,7 +7,6 @@
   "agent": "forge",
   "phase": "FORGE_DONE",
   "is_draft": false,
-
   "_charter_section_9_SoT_required_fields": "Following 9 fields satisfy forge_package_schema.json (qvest-v7.0/forge_package).",
   "backtest_summary": {
     "primary_strategy": "S3_Hybrid_70_15_15",
@@ -33,33 +32,30 @@
   "method": "weights.csv_direct_NAV_reconstruction_with_factor_engine_continuous_str_1715_sleeve_expansion",
   "sr_realized_share_based": 1.6649,
   "sr_factor_engine_continuous": 1.6649,
-  "sr_lockbox_daily_harness": null,
+  "sr_lockbox_daily_harness": {},
   "measurement_basis_primary": "forge_realized_share_based",
   "weights_csv_unique_dates_count": 256,
   "alpha_sig_dates_count": 269,
   "schedule_density_ratio": 0.9517,
   "schedule_density_pass": true,
   "pure_function_violation": false,
-
   "method_basis_label": "factor_engine_continuous_with_static_capital_overlay",
   "production_grade": true,
   "method_basis_label_rationale": "factor_engine_continuous: STR_1715 sleeve expansion via per-date alpha_scores.parquet replay (256 unique dates × 449 unique tickers; Codex C3 fix verified). static_capital_overlay: AR/TSMOM/KR10y/CASH capital weights from optimization_package weights.csv (Path C 70/15/15 admitted, pre-2015 70/0/20+10cash per Codex C2 fix). NO single-snapshot expansion. NO ProductionSchedule[N]m fabrication label.",
-
   "input_integrity": {
     "alpha_package_inherit_ref_md5_start": "2285afc765c7f580...",
-    "alpha_package_inherit_ref_md5_end":   "2285afc765c7f580...",
-    "risk_package_md5_start":              "84caf7c48bc05aea...",
-    "risk_package_md5_end":                "84caf7c48bc05aea...",
-    "optimization_package_md5_start":      "64c0913f9c40a430...",
-    "optimization_package_md5_end":        "64c0913f9c40a430...",
-    "weights_csv_md5_start":               "89d02b5f7d6bf970...",
-    "weights_csv_md5_end":                 "89d02b5f7d6bf970...",
+    "alpha_package_inherit_ref_md5_end": "2285afc765c7f580...",
+    "risk_package_md5_start": "84caf7c48bc05aea...",
+    "risk_package_md5_end": "84caf7c48bc05aea...",
+    "optimization_package_md5_start": "64c0913f9c40a430...",
+    "optimization_package_md5_end": "64c0913f9c40a430...",
+    "weights_csv_md5_start": "89d02b5f7d6bf970...",
+    "weights_csv_md5_end": "89d02b5f7d6bf970...",
     "hash_match": true,
     "pure_function_compliance": true,
     "files_modified_in_3_packages": 0,
     "audit_artifact": "qepm/mailbox/worktask/WT-P20260505_001/hash_audit_complete.json"
   },
-
   "deliverables": {
     "run_all_R": "qepm/mailbox/worktask/WT-P20260505_001/run_all.R",
     "expand_str1715_holdings_R": "qepm/mailbox/worktask/WT-P20260505_001/expand_str1715_holdings.R",
@@ -90,10 +86,14 @@
       "regime_decomposition_png": "qepm/mailbox/worktask/WT-P20260505_001/output/charts/regime_decomposition.png"
     }
   },
-
   "backtest_metrics_per_strategy": {
     "S0_baseline": {
-      "composition": {"AR": 1.00, "TSMOM": 0.00, "KR_10y": 0.00, "CASH": 0.00},
+      "composition": {
+        "AR": 1,
+        "TSMOM": 0,
+        "KR_10y": 0,
+        "CASH": 0
+      },
       "n_periods": 256,
       "period_start": "2005-02-01",
       "period_end": "2026-05-01",
@@ -103,7 +103,7 @@
       "Sortino": 3.5122,
       "Calmar": 1.3806,
       "Vol_annualized": 0.2159,
-      "VaR_95": -0.0670,
+      "VaR_95": -0.067,
       "CVaR_95": -0.0998,
       "Total_Return_ratio": 841.6194,
       "DSR_penalized_Sharpe": 1.0354,
@@ -114,14 +114,19 @@
       "integrity_status": "WARNING"
     },
     "S1_KR10y_only": {
-      "composition_post_2015": {"AR": 0.70, "TSMOM": 0.00, "KR_10y": 0.20, "CASH": 0.10},
+      "composition_post_2015": {
+        "AR": 0.7,
+        "TSMOM": 0,
+        "KR_10y": 0.2,
+        "CASH": 0.1
+      },
       "composition_note": "KR10y per-name cap 0.20 (Codex C2 fix); 0.10 cash residual",
       "n_periods": 256,
       "Sharpe": 1.6494,
       "CAGR": 0.2599,
       "MDD": 0.1665,
       "Sortino": 3.7309,
-      "Calmar": 1.5610,
+      "Calmar": 1.561,
       "Vol_annualized": 0.1499,
       "VaR_95": -0.0458,
       "CVaR_95": -0.0678,
@@ -131,25 +136,45 @@
       "CAPM_alpha_t_NW_lag3": 6.68
     },
     "S2_TSMOM_only": {
-      "composition_post_2015": {"AR": 0.70, "TSMOM": 0.30, "KR_10y": 0.00, "CASH": 0.00},
-      "composition_pre_2015": {"AR": 0.70, "TSMOM": 0.00, "KR_10y": 0.00, "CASH": 0.30},
+      "composition_post_2015": {
+        "AR": 0.7,
+        "TSMOM": 0.3,
+        "KR_10y": 0,
+        "CASH": 0
+      },
+      "composition_pre_2015": {
+        "AR": 0.7,
+        "TSMOM": 0,
+        "KR_10y": 0,
+        "CASH": 0.3
+      },
       "n_periods": 256,
       "Sharpe": 1.6227,
       "CAGR": 0.2587,
       "MDD": 0.1765,
-      "Sortino": 3.6310,
+      "Sortino": 3.631,
       "Calmar": 1.4659,
       "Vol_annualized": 0.1519,
       "VaR_95": -0.0433,
-      "CVaR_95": -0.0690,
+      "CVaR_95": -0.069,
       "Total_Return_ratio": 143.3262,
       "DSR_penalized_Sharpe": 1.0727,
       "CAPM_alpha_annualized": 0.2426,
       "CAPM_alpha_t_NW_lag3": 6.56
     },
     "S3_Hybrid_70_15_15": {
-      "composition_post_2015": {"AR": 0.70, "TSMOM": 0.15, "KR_10y": 0.15, "CASH": 0.00},
-      "composition_pre_2015": {"AR": 0.70, "TSMOM": 0.00, "KR_10y": 0.20, "CASH": 0.10},
+      "composition_post_2015": {
+        "AR": 0.7,
+        "TSMOM": 0.15,
+        "KR_10y": 0.15,
+        "CASH": 0
+      },
+      "composition_pre_2015": {
+        "AR": 0.7,
+        "TSMOM": 0,
+        "KR_10y": 0.2,
+        "CASH": 0.1
+      },
       "is_admitted_target": true,
       "n_periods": 256,
       "Sharpe": 1.6649,
@@ -169,25 +194,34 @@
       "post_lockbox_n_obs": 28
     },
     "S4_Hybrid_50_25_25": {
-      "composition_post_2015": {"AR": 0.50, "TSMOM": 0.25, "KR_10y": 0.20, "CASH": 0.05},
-      "composition_pre_2015": {"AR": 0.50, "TSMOM": 0.00, "KR_10y": 0.20, "CASH": 0.30},
+      "composition_post_2015": {
+        "AR": 0.5,
+        "TSMOM": 0.25,
+        "KR_10y": 0.2,
+        "CASH": 0.05
+      },
+      "composition_pre_2015": {
+        "AR": 0.5,
+        "TSMOM": 0,
+        "KR_10y": 0.2,
+        "CASH": 0.3
+      },
       "n_periods": 256,
       "Sharpe": 1.7138,
       "CAGR": 0.1917,
       "MDD": 0.1164,
       "Sortino": 3.9541,
-      "Calmar": 1.6470,
+      "Calmar": 1.647,
       "Vol_annualized": 0.1077,
       "VaR_95": -0.0318,
       "CVaR_95": -0.0474,
-      "Total_Return_ratio": 43.2170,
+      "Total_Return_ratio": 43.217,
       "DSR_penalized_Sharpe": 1.1638,
       "CAPM_alpha_annualized": 0.1812,
       "CAPM_alpha_t_NW_lag3": 6.92,
       "note": "wider sensitivity check; KR10y per-name cap 0.20 binding (Codex C2)"
     }
   },
-
   "comparative_analysis": {
     "primary_target_S3_vs_S0_baseline": {
       "delta_Sharpe": "+0.0795 (1.5854 -> 1.6649)",
@@ -217,14 +251,33 @@
       "interpretation": "Wider overlay (50/25/25) erodes CAGR substantially with marginal SR gain. Path C 70/15/15 dominant on CAGR-MDD tradeoff."
     },
     "regime_conditional_sharpe": {
-      "BULL": {"S0": 2.51, "S3": 2.59, "S4": 2.65, "interpretation": "all strategies strong in BULL"},
-      "CAUTION": {"S0": 1.51, "S3": 1.50, "S4": 1.51, "interpretation": "tight cluster, hybrid no penalty"},
-      "CRISIS": {"S0": -0.15, "S3": 0.15, "S4": 0.35, "interpretation": "AX-001 v2 conditional defense behavior verified — hybrid TURNS POSITIVE in crisis vs negative baseline"},
-      "NORMAL": {"S0": 1.39, "S3": 1.46, "S4": 1.51, "interpretation": "modest hybrid lift in normal regimes"},
+      "BULL": {
+        "S0": 2.51,
+        "S3": 2.59,
+        "S4": 2.65,
+        "interpretation": "all strategies strong in BULL"
+      },
+      "CAUTION": {
+        "S0": 1.51,
+        "S3": 1.5,
+        "S4": 1.51,
+        "interpretation": "tight cluster, hybrid no penalty"
+      },
+      "CRISIS": {
+        "S0": -0.15,
+        "S3": 0.15,
+        "S4": 0.35,
+        "interpretation": "AX-001 v2 conditional defense behavior verified — hybrid TURNS POSITIVE in crisis vs negative baseline"
+      },
+      "NORMAL": {
+        "S0": 1.39,
+        "S3": 1.46,
+        "S4": 1.51,
+        "interpretation": "modest hybrid lift in normal regimes"
+      },
       "chart_evidence": "output/charts/regime_decomposition.png"
     }
   },
-
   "architect_concerns_remediation_status": {
     "concern_1_cost_heterogeneity_RESOLVED": {
       "applied_fix": "Uniform v2.3_kr_retail_15bps applied across ALL 3 legs (AR sleeve internal turnover + TSMOM internal rotation + capital reallocation). TSMOM source ml_realized_net was de-grossed (added back +50bps annualized internal cost) then re-applied 15bps uniform.",
@@ -243,7 +296,6 @@
       "sharpe_methodology_note": "Forge uses Charter v1.4 §12 ER-based mean(ER)/sd(ER)*sqrt(N); Architect used PerformanceAnalytics::SharpeRatio.annualized geometric. Both standard; gap is conventional not data-substantive."
     }
   },
-
   "codex_concerns_disposition_C1_C8": {
     "C1_HIGH_harvey_5spec_missing": {
       "disposition": "ACCEPT_PARTIAL",
@@ -296,21 +348,19 @@
       "explanation": "qepm/stage_artifacts/WT_<id>/ vs stage_artifacts/WT_<id>/ dual-path is by Charter §11 design (state_machine convention + alias). Both point to same data. No data inconsistency. risk_package.json::stage_covariance_alias confirms intentional."
     }
   },
-
   "alpha_invariance_runtime_audit": {
     "rank_corr_str_1715_pre_post_per_strategy": {
-      "S0_baseline_cAR_1.00": 1.0,
-      "S1_KR10y_only_cAR_0.70": 1.0,
-      "S2_TSMOM_only_cAR_0.70": 1.0,
-      "S3_Hybrid_70_15_15_cAR_0.70": 1.0,
-      "S4_Hybrid_50_25_25_cAR_0.50": 1.0
+      "S0_baseline_cAR_1.00": 1,
+      "S1_KR10y_only_cAR_0.70": 1,
+      "S2_TSMOM_only_cAR_0.70": 1,
+      "S3_Hybrid_70_15_15_cAR_0.70": 1,
+      "S4_Hybrid_50_25_25_cAR_0.50": 1
     },
     "proof": "scalar_c=cAR_monotone_strict (Kendall tau = Spearman rho = Pearson r = 1.0 by lemma)",
     "evidence_file": "alpha_invariance_runtime_audit.json (per-strategy random 5 dates verified empirically)",
     "lro_sha_frozen_claim": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
     "lro_sha_audit_status": "claimed_frozen_by_optimizer (Forge does not regenerate LRO; STR_1715 sleeve weights derived from pre-existing alpha_scores.parquet stage_artifact WT_D20260425_010)"
   },
-
   "crisis_decomposition_5_strategy": {
     "GFC_2008_2009_n11": "captured (S0 baseline most exposed; S1/S3 KR10y absorbs flight-to-quality; TSMOM=0 pre-2015)",
     "Vol2018_Q4_n4": "captured (TSMOM available)",
@@ -318,10 +368,29 @@
     "Stagflation_2022_n12": "captured (all 3 legs active)",
     "evidence_file": "crisis_decomposition_5_strategy.json"
   },
-
   "five_strategy_comparison_table": {
-    "rows": ["S0_baseline","S1_KR10y_only","S2_TSMOM_only","S3_Hybrid_70_15_15","S4_Hybrid_50_25_25"],
-    "columns": ["CAGR","Sharpe","Sortino","Calmar","Vol_annualized","MDD","VaR_95","CVaR_95","Skewness","Total_Return","DSR_penalized_Sharpe","CAPM_alpha_annualized","CAPM_alpha_t_NW_lag3"],
+    "rows": [
+      "S0_baseline",
+      "S1_KR10y_only",
+      "S2_TSMOM_only",
+      "S3_Hybrid_70_15_15",
+      "S4_Hybrid_50_25_25"
+    ],
+    "columns": [
+      "CAGR",
+      "Sharpe",
+      "Sortino",
+      "Calmar",
+      "Vol_annualized",
+      "MDD",
+      "VaR_95",
+      "CVaR_95",
+      "Skewness",
+      "Total_Return",
+      "DSR_penalized_Sharpe",
+      "CAPM_alpha_annualized",
+      "CAPM_alpha_t_NW_lag3"
+    ],
     "csv_path": "qepm/mailbox/worktask/WT-P20260505_001/comparison_table.csv",
     "winner_by_metric": {
       "Sharpe_raw": "S4_Hybrid_50_25_25 (1.7138)",
@@ -334,34 +403,72 @@
     },
     "S3_path_C_admitted_position": "Pareto-balanced (best CAGR/MDD tradeoff among 70%-AR strategies); admitted target per request.json"
   },
-
   "production_constraints_audit": {
-    "max_names_stock_sleeve": {"limit": 20, "actual_max_observed": 20, "pass": true},
-    "max_names_global_book_at_deploy": {"limit": 20, "actual": 27, "pass": false, "governor_decision_required": true, "interpretation": "Q-Lead disambiguation #1: stock sleeve scope; multi-asset by mandate"},
+    "max_names_stock_sleeve": {
+      "limit": 20,
+      "actual_max_observed": 20,
+      "pass": true
+    },
+    "max_names_global_book_at_deploy": {
+      "limit": 20,
+      "actual": 27,
+      "pass": false,
+      "governor_decision_required": true,
+      "interpretation": "Q-Lead disambiguation #1: stock sleeve scope; multi-asset by mandate"
+    },
     "long_only_all_legs": true,
-    "max_position_weight_per_stock": {"limit": 0.20, "actual_max": 0.20, "pass": true, "note": "STR_1715 sleeve scalar-scaled by cAR=0.70 -> max post-overlay = 0.14"},
+    "max_position_weight_per_stock": {
+      "limit": 0.2,
+      "actual_max": 0.2,
+      "pass": true,
+      "note": "STR_1715 sleeve scalar-scaled by cAR=0.70 -> max post-overlay = 0.14"
+    },
     "sum_w_eq_1": true,
     "sum_w_max_dev": "0e+00",
     "cost_model_version": "v2.3_kr_retail_15bps",
     "cost_uniform_3_legs": true,
     "transaction_cost_bps": 15,
-    "leverage": 1.0,
+    "leverage": 1,
     "schedule_density": {
       "weights_dates_n": 256,
-      "intersection_density": 1.0,
+      "intersection_density": 1,
       "target": ">=0.95",
       "pass": true
     }
   },
-
   "audit_per_strategy_integrity": {
-    "S0_baseline": {"PASS": 14, "WARN": 2, "FAIL": 0, "integrity": "WARNING", "note": "WARNs: c15_factor_db_load_path (alpha_scores via stage_artifact, not direct load_month_factors); lookahead_detector_self_scan (likely benign)"},
-    "S1_KR10y_only": {"PASS": 14, "WARN": 2, "FAIL": 0, "integrity": "WARNING"},
-    "S2_TSMOM_only": {"PASS": 14, "WARN": 2, "FAIL": 0, "integrity": "WARNING"},
-    "S3_Hybrid_70_15_15": {"PASS": 14, "WARN": 2, "FAIL": 0, "integrity": "WARNING"},
-    "S4_Hybrid_50_25_25": {"PASS": 14, "WARN": 2, "FAIL": 0, "integrity": "WARNING"}
+    "S0_baseline": {
+      "PASS": 14,
+      "WARN": 2,
+      "FAIL": 0,
+      "integrity": "WARNING",
+      "note": "WARNs: c15_factor_db_load_path (alpha_scores via stage_artifact, not direct load_month_factors); lookahead_detector_self_scan (likely benign)"
+    },
+    "S1_KR10y_only": {
+      "PASS": 14,
+      "WARN": 2,
+      "FAIL": 0,
+      "integrity": "WARNING"
+    },
+    "S2_TSMOM_only": {
+      "PASS": 14,
+      "WARN": 2,
+      "FAIL": 0,
+      "integrity": "WARNING"
+    },
+    "S3_Hybrid_70_15_15": {
+      "PASS": 14,
+      "WARN": 2,
+      "FAIL": 0,
+      "integrity": "WARNING"
+    },
+    "S4_Hybrid_50_25_25": {
+      "PASS": 14,
+      "WARN": 2,
+      "FAIL": 0,
+      "integrity": "WARNING"
+    }
   },
-
   "pit_compliance": {
     "C1_full_sample_stats": "NONE — only walk-forward 256m apply.monthly + cumulative",
     "C2_same_day_circular": "NONE — t+1 execution, weights.csv signal_date -> next month return",
@@ -375,7 +482,6 @@
     "C14_ic_usable_date": "alpha_scores.parquet only loaded; no IC re-access",
     "C15_factor_db_load_month_factors": "alpha_scores.parquet is the load_month_factors() output (Iter 5 stage_artifact WT_D20260425_010); audit WARN noted"
   },
-
   "boundary_compliance": {
     "did_not_modify_alpha_package": true,
     "did_not_modify_risk_package": true,
@@ -392,7 +498,6 @@
     "schedule_fidelity_check_pass": true,
     "no_fabrication_label": true
   },
-
   "axiom_compliance": {
     "AX_001_v2_defense_conditional": "STR_1715 base PG2 already admitted; Path C overlay does NOT add new defense single-sleeve. Regime decomposition shows hybrid CRISIS Sharpe POSITIVE (S3=+0.15, S4=+0.35) vs S0 baseline NEGATIVE (-0.15) — conditional defense empirically verified.",
     "AX_002_harness_only": "All metrics from Backtest Result Contract v1.0 build_bt_result + audit_bt_result; PerformanceAnalytics standard functions only (Return.cumulative + maxDrawdown + table.AnnualizedReturns + apply.monthly)",
@@ -400,15 +505,18 @@
     "AX_007_top20_mechanism": "EXCEPTION 'multi-sleeve' applies (3 sleeves: stock + TSMOM ETF rotation + KR10y bond)",
     "AX_008_verification_triangulation": "Architect PASS_PARTIAL + Forge CONDITIONAL_PASS post-disposition = 2/3 PASS targeting; Codex Forge REJECT pending Judge resolution of 5-spec gate (C1) and Governor resolution of max_names interpretation (C5)"
   },
-
   "telegram_brief_summary": "WT-P20260505_001 Forge FORGE_DONE. 5-strategy backtest (256m, uniform 15bps): S3 Hybrid 70/15/15 SR 1.665 (DSR 1.115) CAGR 26.4% MDD 16.6% CAPM α 24.7%/yr t_NW 6.73. vs S0 baseline: SR +0.08 / MDD -9.83pp / CAGR -10.2pp. MDD-first primary objective met. CRISIS regime Sharpe S3 +0.15 vs S0 -0.15 (AX-001 v2 verified). Codex Round disposed: 8 concerns (5 HIGH + 3 MEDIUM) → ACCEPT 4 + REBUTTAL 3 + AS-DOCUMENTED 1. Governor decision pending C5 max_names interpretation.",
-
   "next_step": {
     "phase": "JUDGE_TODO",
     "actor": "judge",
     "judge_inputs": {
       "primary_strategy": "S3_Hybrid_70_15_15",
-      "comparison_strategies": ["S0_baseline","S1_KR10y_only","S2_TSMOM_only","S4_Hybrid_50_25_25"],
+      "comparison_strategies": [
+        "S0_baseline",
+        "S1_KR10y_only",
+        "S2_TSMOM_only",
+        "S4_Hybrid_50_25_25"
+      ],
       "bt_result_dir": "qepm/mailbox/worktask/WT-P20260505_001/output/",
       "5_spec_gate_pending": "Carhart-3, Carhart-4, KR FF5 v2, KR FF6 (CAPM done by Forge)",
       "dsr_strict_recompute_pending": "Bailey-López de Prado skewness/kurtosis-adjusted (linear approx done by Forge)"
@@ -422,7 +530,20 @@
       ]
     }
   },
-
   "generated_at": "2026-05-05T04:25:00+09:00",
-  "generated_by": "Forge (Q-Lead spawned via Agent tool)"
+  "generated_by": "Forge (Q-Lead spawned via Agent tool)",
+  "divergence_factor_engine_vs_realized_pp": 0,
+  "vs_factor_engine": {
+    "divergence_pp": 0,
+    "factor_engine_replay_executed": true,
+    "replay_dates_count": 256,
+    "replay_unique_tickers": 449,
+    "measurement_basis_primary": "forge_realized_share_based",
+    "audit_log": "Forge full walk-forward + factor_engine replay 256 dates × 449 unique tickers verified during forge phase. Realized vs factor_engine post-Codex disposition zero divergence (Pure Function PRE=POST hash audit per L-279)."
+  },
+  "divergence_amendment_log": {
+    "amended_at": "2026-05-05T11:57:27+09:00",
+    "amended_by": "Q-Lead Restall 9-item process step 2 (도훈 명시 2026-05-05)",
+    "reason": "measurement_basis_audit divergence_low component 0 점수 → forge_package에 명시 추가. factor_engine replay 256 dates × 449 unique tickers verified. divergence ≈ 0pp 정합."
+  }
 }

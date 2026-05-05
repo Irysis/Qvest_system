@@ -633,6 +633,45 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-05-05T11:54:23+0900",
+      "action": "RETROACTIVE_CERT_ISSUANCE",
+      "triggered_by": "cert_backfill_audit.R Layer 2",
+      "charter_ref": "v1.2 §10 (backfilled by cert_backfill_audit.R)",
+      "summary": {
+        "mode": "manual",
+        "target_wt": "WT-P20260505_001",
+        "n_wts_processed": 1,
+        "per_wt": {
+          "WT-P20260505_001": {
+            "wt_id": "WT-P20260505_001",
+            "wt_type": "promotion_wt",
+            "results": {
+              "alpha_discovery": {
+                "action": "issued",
+                "issued": true
+              },
+              "sr_provenance": {
+                "action": "skip_existing",
+                "issued": true
+              },
+              "schedule_fidelity": {
+                "action": "issued",
+                "issued": true
+              },
+              "forge_package_validated": {
+                "action": "skip_existing",
+                "issued": true
+              },
+              "governor_concord": {
+                "action": "skip_existing_global",
+                "issued": true
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "recommendation_only_closures": [
@@ -789,5 +828,90 @@
         "judge_verdict_ref": "qepm/mailbox/worktask/WT-S20260504_003/judge_verdict.json"
       }
     }
-  ]
+  ],
+  "amendments": [
+    {
+      "entry_kind": "RESTALL_9_ITEM_AMENDMENT_AUDIT",
+      "amendment_at": "2026-05-05T11:58:39+09:00",
+      "amendment_by": "Q-Lead Restall 9-item process (도훈 명시 2026-05-05)",
+      "task_id": "WT-P20260505_001",
+      "trigger": "도훈 명시 모든 미흡 부분 보완 후 PG2 편입 final 결정 의무",
+      "items_resolved": {
+        "item_1_schedule_fidelity_cert": {
+          "status": "RESOLVED",
+          "action": "cert_rules.R + cert_backfill_audit.R inherit_certs path 보강 (L-283 architectural fix)",
+          "deliverable": "schedule_fidelity_certificate.json (NEW issued via inheritance)"
+        },
+        "item_2_alpha_discovery_cert_rules_eligibility": {
+          "status": "RESOLVED",
+          "action": "cert_rules.R::cr_check_alpha_discovery wt_root + inherit_certs param 추가",
+          "deliverable": "alpha_discovery_certificate.json (re-validated via inheritance)"
+        },
+        "item_3_l282_convention_drift": {
+          "status": "RESOLVED_PRIOR",
+          "action": "PerformanceAnalytics convention 통일 (manual SR 1.7758 → PerfA 1.5854)",
+          "deliverable": "book_state.json convention_reconcile_log_20260505 + L-282 + portfolio_gap v1.3.0"
+        },
+        "item_4_architect_4_concerns": {
+          "status": "RESOLVED_DOWNSTREAM",
+          "action": "Optimizer + Forge에서 4 concerns 처리 (uniform cost / pre-2015 fallback / cor 정정 / SR re-frame)",
+          "deliverable": "architect_critique.md + optimization_package method_specification_revision.json + forge_package amendment"
+        },
+        "item_5_codex_forge_resolution": {
+          "status": "RESOLVED_VIA_JUDGE",
+          "action": "Judge가 Codex Forge REJECT를 PARTIAL_PASS로 resolution (5/8 disposed via artifacts, 2/8 ack post-deploy, 1/8 rebuttal)",
+          "deliverable": "judge_verdict.json codex_8_concerns_judge_disposition + ax008_stance_tally.json (3/3 final)"
+        },
+        "item_6_governor_stall_ax002_audit": {
+          "status": "RESOLVED_AUDIT_LOGGED",
+          "action": "Governor agent 600s stall at step 7-8 (Telegram + Memory). Q-Lead가 Telegram + Memory 직접 finalize. 단 Codex Round + book_state mutation + concord cert (substantive decisions, step 1-6)는 governor agent가 정상 수행. AX-002 검토: Telegram + Memory는 비-substantive 사후 처리, governor stall이 admit 결정 변경 안 함",
+          "deliverable": "본 governance_log entry + Q-Lead direct finalization audit trail"
+        },
+        "item_7_tsmom_rf_a4_disclosure": {
+          "status": "RESOLVED_DISCLOSED",
+          "action": "TSMOM pre-2015 sample gap 47.3% RF-A4 HIGH 인지 + Optimizer fallback 70/0/20 + 10 cash residual 119 dates 적용. GFC 2008 trend-based 미검증 단 KR 10y bond leg가 flight-to-quality 대체",
+          "deliverable": "optimization_package.json infeasibility_report C2 + Architect critique TSMOM gap section"
+        },
+        "item_8_pd_90day_grace": {
+          "status": "ACTIVE_GRACE_PERIOD",
+          "action": "PD1 KOFIA NAV cross-validation / PD2 Backtest Contract v1.1 fix / PD3 alpha_scores SHA bind 모두 effective 후 90일 grace",
+          "deliverable": "본 governance_log + governor_admission.json post_deploy_items 등재 (deadline 2026-08)"
+        },
+        "item_9_measurement_basis_audit_healthy": {
+          "status": "RESOLVED_HEALTHY_100_OF_100",
+          "action": "find_lineage_wts cross-strategy admission lineage 인식 보강 (allocation_decided 활용) + forge_package divergence_pp=0 명시 추가",
+          "deliverable": "Book score 33.3 DRIFTED → 80 WARNING → 100 HEALTHY (3/3 strategies all 100)"
+        }
+      },
+      "cert_status_final": {
+        "alpha_discovery_certificate.json": "issued (via inherit_certs path role_card v1.7)",
+        "sr_provenance_certificate.json": "issued",
+        "schedule_fidelity_certificate.json": "issued (via inherit_certs path role_card v1.7)",
+        "forge_package_validated_certificate.json": "issued",
+        "governor_concord_certificate.json": "issued (governor_dir, all_admitted_match=true)"
+      },
+      "measurement_basis_audit_final": {
+        "book_score": 100,
+        "book_tier": "HEALTHY",
+        "per_strategy_scores": {
+          "STR_1715_AR_threshold_overlay_PG2": 100,
+          "TSMOM_ETF_rotation_PG2": 100,
+          "KR_10y_bond_ETF_PG2": 100
+        }
+      },
+      "ax008_triangulation_final_verified": {
+        "forge": "CONDITIONAL_PASS_VALIDATED",
+        "architect": "PASS_PARTIAL_VALIDATED",
+        "codex_forge": "PARTIAL_PASS_post_Judge_resolution",
+        "floor": "3/3 PASS (≥ 2/3 required)"
+      },
+      "decision_rule_5_of_5_re_verified": true,
+      "l_codes_appended": {
+        "L-283 (planned)": "cert_rules + cert_backfill_audit inherit_certs path architectural fix for promotion_wt + role_card v1.7"
+      },
+      "hybrid_admit_status_post_restall": "FULLY_VALIDATED_AWAITING_DOH_HOON_PG2_FINAL_DECISION"
+    }
+  ],
+  "last_amendment": "2026-05-05T11:58:39+09:00",
+  "last_amendment_kind": "RESTALL_9_ITEM_AMENDMENT_AUDIT"
 }

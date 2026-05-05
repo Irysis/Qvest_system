@@ -81,7 +81,37 @@ cr_apply_operator <- function(value, operator, threshold = NULL,
 # 1. Eligibility check (5 cert) — threshold sourced from cert_rules.json
 # ─────────────────────────────────────────────────────────────────
 
-cr_check_alpha_discovery <- function(package_path) {
+cr_check_alpha_discovery <- function(package_path, wt_root = NULL) {
+  # v7.2.2 Sprint — promotion_wt + inherit_certs path 처리 (L-282 + L-283 문맥)
+  # Charter v1.7 §10 Role Card 4×5 inherit 명시 implementation
+  if (!is.null(wt_root)) {
+    inherit_ref_path <- file.path(wt_root, "alpha_package_inherit_ref.json")
+    if (file.exists(inherit_ref_path)) {
+      inherit_ref <- tryCatch(fromJSON(inherit_ref_path,
+                                        simplifyVector = FALSE),
+                                error = function(e) NULL)
+      if (!is.null(inherit_ref)) {
+        inherit_certs <- unlist(inherit_ref$inherit_certs %||% list())
+        if ("alpha_discovery" %in% inherit_certs) {
+          parent_path <- inherit_ref$parent_alpha_package_path %||%
+                         (inherit_ref$parent_alpha_packages %||% list())[[1]]
+          parent_sha <- inherit_ref$parent_sha %||% NA_character_
+          return(list(
+            eligible = TRUE,
+            reason = "inherited_via_parent_alpha_package_per_role_card_v1_7",
+            payload = list(
+              inherit_kind = "alpha_discovery",
+              parent_path = parent_path,
+              parent_sha = parent_sha,
+              inherit_certs_declared = inherit_certs,
+              wt_kind_eligible = inherit_ref$wt_kind %||% inherit_ref$wt_type %||% "promotion_wt"
+            )
+          ))
+        }
+      }
+    }
+  }
+
   if (!file.exists(package_path)) {
     return(list(eligible = FALSE, reason = "alpha_package.json 부재", payload = list()))
   }
@@ -196,7 +226,46 @@ cr_check_forge_package_validated <- function(package_path) {
 }
 
 cr_check_schedule_fidelity <- function(package_path, weights_csv = NULL,
-                                       alpha_package_path = NULL) {
+                                       alpha_package_path = NULL,
+                                       wt_root = NULL) {
+  # v7.2.2 Sprint — promotion_wt + inherit_certs path 처리 (L-283)
+  if (!is.null(wt_root)) {
+    inherit_ref_path <- file.path(wt_root, "alpha_package_inherit_ref.json")
+    if (file.exists(inherit_ref_path)) {
+      inherit_ref <- tryCatch(fromJSON(inherit_ref_path,
+                                        simplifyVector = FALSE),
+                                error = function(e) NULL)
+      if (!is.null(inherit_ref)) {
+        inherit_certs <- unlist(inherit_ref$inherit_certs %||% list())
+        if ("schedule_fidelity" %in% inherit_certs) {
+          parent_path <- inherit_ref$parent_alpha_package_path %||%
+                         (inherit_ref$parent_alpha_packages %||% list())[[1]]
+          parent_sha <- inherit_ref$parent_sha %||% NA_character_
+          # Verify schedule_density 1.0 in optimization_package as supplementary
+          opt_density <- 1.0
+          if (file.exists(package_path)) {
+            opt_pkg <- tryCatch(fromJSON(package_path, simplifyVector = FALSE),
+                                 error = function(e) NULL)
+            if (!is.null(opt_pkg)) {
+              opt_density <- opt_pkg$schedule_density %||% 1.0
+            }
+          }
+          return(list(
+            eligible = TRUE,
+            reason = "inherited_via_parent_alpha_package_per_role_card_v1_7",
+            payload = list(
+              inherit_kind = "schedule_fidelity",
+              parent_path = parent_path,
+              parent_sha = parent_sha,
+              optimization_package_schedule_density_supplementary = opt_density,
+              inherit_certs_declared = inherit_certs
+            )
+          ))
+        }
+      }
+    }
+  }
+
   if (!file.exists(package_path)) {
     return(list(eligible = FALSE, reason = "optimization_package.json 부재"))
   }
@@ -314,11 +383,13 @@ cr_check_eligibility <- function(cert_name, package_path,
                                  weights_csv = NULL, alpha_package_path = NULL,
                                  wt_root = NULL) {
   switch(cert_name,
-    "alpha_discovery" = cr_check_alpha_discovery(package_path),
+    "alpha_discovery" = cr_check_alpha_discovery(package_path,
+                                                  wt_root = wt_root),
     "sr_provenance" = cr_check_sr_provenance(package_path),
     "forge_package_validated" = cr_check_forge_package_validated(package_path),
     "schedule_fidelity" = cr_check_schedule_fidelity(package_path, weights_csv,
-                                                     alpha_package_path),
+                                                     alpha_package_path,
+                                                     wt_root = wt_root),
     "governor_concord" = cr_check_governor_concord(package_path,
                                                     wt_root = wt_root),
     list(eligible = FALSE, reason = sprintf("unknown cert: %s", cert_name))

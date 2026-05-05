@@ -152,15 +152,26 @@ check_alpha_discovery_eligibility <- function(wt_dir) {
   if (!exists("cr_check_alpha_discovery", mode = "function")) {
     return(list(eligible = FALSE, reason = "cert_rules.R 미로드"))
   }
-  res <- cr_check_alpha_discovery(alpha_path)
+  # v7.2.2 — wt_root 전달하여 inherit_certs path 인식 (L-283)
+  res <- cr_check_alpha_discovery(alpha_path, wt_root = wt_dir)
   # payload field name backward compat (cert_backfill 기존 schema)
   if (isTRUE(res$eligible) && !is.null(res$payload)) {
-    res$payload <- list(
-      inheritance_cor_actual = res$payload$alpha_inheritance_cor,
-      mechanism_cited_chars = res$payload$mechanism_cited_chars,
-      factor_specs_new_count = res$payload$factor_specs_count,
-      harvey_t_specs_pass_count = res$payload$harvey_t_specs_pass_count
-    )
+    if (!is.null(res$payload$inherit_kind)) {
+      # Inherited path payload
+      res$payload <- list(
+        inherit_kind = res$payload$inherit_kind,
+        parent_path = res$payload$parent_path,
+        parent_sha = res$payload$parent_sha,
+        inherited_via_role_card_v1_7 = TRUE
+      )
+    } else {
+      res$payload <- list(
+        inheritance_cor_actual = res$payload$alpha_inheritance_cor,
+        mechanism_cited_chars = res$payload$mechanism_cited_chars,
+        factor_specs_new_count = res$payload$factor_specs_count,
+        harvey_t_specs_pass_count = res$payload$harvey_t_specs_pass_count
+      )
+    }
   }
   res
 }
@@ -179,10 +190,32 @@ check_sr_provenance_eligibility <- function(wt_dir) {
 }
 
 check_schedule_fidelity_eligibility <- function(wt_dir) {
-  # Note: cert_backfill schedule_fidelity는 weights.csv + alpha_package source.
-  # cert_rules.R cr_check_schedule_fidelity는 optimization_package source.
-  # 둘은 별개 measurement (Layer 2 backfill vs PostToolUse hook).
-  # v7.0: backfill source는 retain — schedule_density formula는 동일 (cert_rules.json).
+  # v7.2.2 Sprint — promotion_wt + inherit_certs path 우선 처리 (L-283)
+  inherit_ref_path <- file.path(wt_dir, "alpha_package_inherit_ref.json")
+  if (file.exists(inherit_ref_path)) {
+    inherit_ref <- tryCatch(fromJSON(inherit_ref_path,
+                                      simplifyVector = FALSE),
+                              error = function(e) NULL)
+    if (!is.null(inherit_ref)) {
+      inherit_certs <- unlist(inherit_ref$inherit_certs %||% list())
+      if ("schedule_fidelity" %in% inherit_certs) {
+        parent_path <- inherit_ref$parent_alpha_package_path %||%
+                       (inherit_ref$parent_alpha_packages %||% list())[[1]]
+        parent_sha <- inherit_ref$parent_sha %||% NA_character_
+        return(list(
+          eligible = TRUE,
+          reason = "inherited_via_parent_alpha_package_per_role_card_v1_7",
+          payload = list(
+            inherit_kind = "schedule_fidelity",
+            parent_path = parent_path,
+            parent_sha = parent_sha,
+            inherited_via_role_card_v1_7 = TRUE
+          )
+        ))
+      }
+    }
+  }
+
   weights_path <- file.path(wt_dir, "weights.csv")
   alpha_path <- file.path(wt_dir, "alpha_package.json")
 

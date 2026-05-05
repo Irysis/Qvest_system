@@ -111,8 +111,12 @@ audit_book_measurement_coherence <- function(book_state_path,
           ga_str <- as.character(ga$str_id %||% "")
           dof <- paste(as.character(ga$discovery_of %||% ""),
                        as.character(ga$wt_lifecycle$discovery_of %||% ""))
+          # v7.2.2 — promotion_wt cross-strategy lineage (L-283)
+          allocation <- ga$allocation_decided %||% list()
+          alloc_match <- str_id %in% names(allocation)
           if (grepl(str_id, ga_str, fixed = TRUE) ||
               grepl(str_id, dof, fixed = TRUE) ||
+              alloc_match ||
               (nchar(str_id_root) > 0 &&
                 (grepl(str_id_root, ga_str, fixed = TRUE) ||
                  grepl(str_id_root, dof, fixed = TRUE)))) {
