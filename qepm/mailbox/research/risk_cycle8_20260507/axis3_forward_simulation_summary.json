@@ -1,0 +1,88 @@
+{
+  "description": "Forward Bayesian decay simulation with empirical posterior + Hybrid joint",
+  "current_sr_60m": {
+    "AR": 1.6709,
+    "TSMOM": 0.5921,
+    "KR10y": 0.0706,
+    "Hybrid": 1.7122
+  },
+  "current_sr_full": {
+    "AR": 1.6063,
+    "TSMOM": 0.8688,
+    "KR10y": 0.6163,
+    "Hybrid": 1.507
+  },
+  "weights_hybrid": {
+    "AR": 0.7,
+    "TSMOM": 0.15,
+    "KR10y": 0.15
+  },
+  "half_life_lambda_monthly": {
+    "AR": 0.0037,
+    "TSMOM": 0.0108,
+    "KR10y": 0.0044
+  },
+  "half_life_months_per_source": [189.4966, 64.2358, 159.2318],
+  "forward_horizons_months": [12, 24, 36, 60],
+  "hybrid_forward_distribution": [
+    {
+      "horizon_months": 12,
+      "weighted_sum": 1.2075,
+      "sigma_w": [
+        [0.7283]
+      ],
+      "hybrid_sr_60m_now": 1.7122,
+      "hybrid_sr_h_forward": 1.6579,
+      "hybrid_decay_pct": 0.0317
+    },
+    {
+      "horizon_months": 24,
+      "weighted_sum": 1.1494,
+      "sigma_w": [
+        [0.7283]
+      ],
+      "hybrid_sr_60m_now": 1.7122,
+      "hybrid_sr_h_forward": 1.5782,
+      "hybrid_decay_pct": 0.0783
+    },
+    {
+      "horizon_months": 36,
+      "weighted_sum": 1.0946,
+      "sigma_w": [
+        [0.7283]
+      ],
+      "hybrid_sr_60m_now": 1.7122,
+      "hybrid_sr_h_forward": 1.5029,
+      "hybrid_decay_pct": 0.1222
+    },
+    {
+      "horizon_months": 60,
+      "weighted_sum": 0.9938,
+      "sigma_w": [
+        [0.7283]
+      ],
+      "hybrid_sr_60m_now": 1.7122,
+      "hybrid_sr_h_forward": 1.3645,
+      "hybrid_decay_pct": 0.2031
+    }
+  ],
+  "bayesian_posterior_decay": {
+    "mu": 0.4401,
+    "sigma": 0.0795,
+    "ci_95_lower": 0.2843,
+    "ci_95_upper": 0.5959
+  },
+  "alert_thresholds_acceleration": {
+    "description": "Decay accelerate alert if rolling 60m SR drops faster than posterior expectation",
+    "posterior_decay_mu": 0.4401,
+    "posterior_decay_sigma": 0.0795,
+    "ar_threshold_warning": 1.3032,
+    "ar_threshold_critical": 0.9355,
+    "tsmom_threshold_warning": 0.4618,
+    "tsmom_threshold_critical": 0.3315,
+    "kr10y_threshold_warning": 0.0551,
+    "kr10y_threshold_critical": 0.0395,
+    "alert_reversal_AR_p0_001": "Cycle 7 AR MK tau -0.27 p<0.001 → 12m forward must show SR_60m > 1.50 to reject decay (1σ posterior)"
+  },
+  "citations": ["Stambaugh-Yu-Yuan 2015 RFS Mispricing Factors anomaly decay", "McElreath 2020 Statistical Rethinking ch.3 Bayesian update", "Gelman et al. 2013 BDA3 ch.2 normal-normal conjugate", "Chordia-Subrahmanyam-Tong 2014 JFE post-publication decay", "Hwang-Rubesam 2024 momentum disappearance", "Moskowitz-Ooi-Pedersen 2012 JFE TSMOM 14-year"]
+}
