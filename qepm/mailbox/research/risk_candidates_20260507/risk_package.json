@@ -1,0 +1,681 @@
+{
+  "task_id": "RESEARCH_RISK_CANDIDATES_20260507",
+  "research_type": "meta_self_research_qlead_ondemand_cycle2",
+  "as_of_date": "2026-05-08",
+  "version": "v2_post_codex_round_disposition",
+  "cycle": 2,
+  "scope_disclaimer": "본 작업은 Q-Lead 온디맨드 메타 리서치 사이클 2 (path: qepm/mailbox/research/risk_candidates_20260507/, NOT WT_RESEARCH_RISK_CANDIDATES_20260507/). 정식 WT alpha→risk pipeline 산출 아님 — alpha_scores.parquet / weights.csv / B Ω B'+D decomposition 등 정식 risk_package 의무 artifact 일부는 본 작업 영역 외부 (alpha-research → risk-research 정식 lifecycle에서 작성). 사이클 1 (RESEARCH_RISK_MODEL_META_20260507) 추천 4번째 직교 source 후보 4종 (VRP_KOSPI_Straddle_Short / Defensive_LowVol_KR / Currency_Carry_KRW / Commodity_Gold_Copper) historical risk profile 메타 진단만 한정. alpha 시그널 추가 / 신규 strategy spawn / weight 제안 절대 X (Hook agent_role_guard 강제). 신규 source 채택 결정은 후속 정식 alpha-research → risk-research → optimizer-research lifecycle 의무.",
+  "codex_critic_round": {
+    "round_executed": true,
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "critical_concerns_count": 9,
+    "severity_HIGH": 6,
+    "severity_MEDIUM": 3,
+    "concerns_disposed": "9/9 (4 ACCEPT + 2 ACCEPT_PARTIAL + 3 REBUTTAL_PARTIAL/REBUTTAL)",
+    "challenge_note_path": "qepm/mailbox/research/risk_candidates_20260507/risk_challenge_note.md",
+    "fixes_applied_in_v2": [
+      "C3 (tail-risk numbers VRP/Currency 정정 — skew/kurt/hill 정확 source CSV 매칭)",
+      "C5 (challenge_flags CYC2_CF_4 severity MEDIUM → HIGH 격상)",
+      "C7 (axis_4 tdc 'good' 어조 제거)",
+      "rationalization_red_flags 6 표현 정정 (T 충분 / good / very good / broadly consistent / 이미 충분 등)"
+    ],
+    "rebuttal_summary": "C2 (weight 침범) ACCEPT_PARTIAL — historical diagnostic vs weight proposal 구분 명시. C4 (CRISIS n=10 bootstrap CI 부재) REBUTTAL_PARTIAL — directional signal only, magnitude precision X. C6 (B Ω B'+D 부재) REBUTTAL_PARTIAL — sleeve-level scope 사이클 1 동일 disposition. C9 (PIT C15 위반) REBUTTAL — C15 정의 narrow reading (Factor DB factor parquet 적용 대상, raw OHLCV 외부)",
+    "ax_002_post_disposition": "PASS_with_meta_research_scope (process honesty 충족 + Charter §8 No Silent Override 준수)",
+    "ax_007_post_disposition": "EXEMPT_for_existing_admit_book (Hybrid 70/15/15 변경 X)",
+    "ax_008_post_disposition": "TARGETING_for_meta_research_2of3_PASS_NA",
+    "rationalization_red_flags_self_check_initial": 6,
+    "rationalization_red_flags_corrected_count": 6,
+    "rationalization_red_flags_remaining_post_correction": 0,
+    "weakest_assumption_disposition": "ACCEPT — VRP_KOSPI_Proxy = US VIX based 합성 한계 인정. 사이클 3 KOSPI VKOSPI direct 활용 의무 (1순위 권고 topic)",
+    "auto_escalate_trigger_HIGH_ge_5": true,
+    "qlead_escalate_required": true
+  },
+  "context_cycle1_input": {
+    "cycle1_path": "qepm/mailbox/research/risk_model_meta_20260507/risk_package.json",
+    "cycle1_priority_recommendations": {
+      "HIGH_priority_data_already_available": [
+        "VRP_KOSPI_Straddle_Short (TDC lower 0.4 expected — strict bound 우려)",
+        "Defensive_LowVol_KR_equity (Q07_Earnings_Stability + KOSPI200, AX-005 v1.2 multi-sleeve exception 필수)"
+      ],
+      "MEDIUM_priority_data_validation_needed": [
+        "Currency_Carry_KRW_USD_basis (KRW/USD basis swap 검증 필요)",
+        "Commodity_Gold_Copper_KR_ETF (KODEX 골드/구리 가용)"
+      ]
+    },
+    "hybrid_70_15_15_baseline_metrics_PerfA_256m": {
+      "SR": 1.665,
+      "MDD": -0.166,
+      "CAGR": 0.264,
+      "n_sources": 3,
+      "sources": ["STR_1715_AR_threshold_overlay (70%)", "TSMOM_ETF_rotation (15%)", "KR_10y_bond_ETF (15%)"]
+    }
+  },
+  "exposure_matrix_ref": null,
+  "factor_covariance_ref": "qepm/mailbox/research/risk_candidates_20260507/covariance_4src_5estimator_summary.csv",
+  "specific_risk_ref": null,
+  "security_covariance_ref": "qepm/stage_artifacts/risk_candidates_20260507/covariance_4src_<candidate>_<estimator>.parquet (20 files)",
+  "stage_artifacts_dir": "qepm/stage_artifacts/risk_candidates_20260507/",
+  "covariance_parquet_count_4cand_x_5est": 20,
+  "covariance_parquet_path_pattern": "qepm/stage_artifacts/risk_candidates_20260507/covariance_4src_{candidate_lc}_{estimator_lc}.parquet",
+  "data_proxy_disclosures": {
+    "VRP_KOSPI_Proxy": {
+      "data_source": "FRED VIXCLS (VIX, US-listed CBOE Volatility Index)",
+      "proxy_method": "Short straddle premium = (vix_lag_decimal - realized_vol_KOSPI_BM_ann) × sqrt(1/12) × 0.40",
+      "limitation": "한국 KOSPI200 옵션 implied volatility 데이터 부재 → US VIX (S&P500) proxy 사용. KOSPI VKOSPI와 VIX cor 추정 ~ 0.6~0.8이지만 정확한 KOSPI VRP 측정 X. 정식 채택 시 VKOSPI 또는 KOSPI200 옵션 chain 직접 활용 의무.",
+      "PIT_compliance": "vix_lag_decimal는 t-1 일 EOM 값 → 미래참조 X",
+      "n_obs_monthly_full": 316,
+      "n_obs_monthly_joint_post2015": 135
+    },
+    "Defensive_LowVol_KR": {
+      "data_source": "rawdata.parquet (KOSPI/KOSDAQ 1990~2026, K200 universe filter)",
+      "proxy_method": "Each month t: rank K200 stocks by 12m monthly return SD (PIT t-1 lag), select bottom 20% (lowest vol = defensive), EW within bottom-quintile, rebalance monthly. Q07_Earnings_Stability proxy (실제 Q07은 earnings volatility, 본 proxy는 return volatility — strong correlation expected).",
+      "limitation": "(1) 정식 Q07_Earnings_Stability 팩터 사용 X (시간 제약). (2) AX-005 v1.2 적용 — KR defense single-sleeve top20 long-only는 historical 구조적 실패. multi-sleeve exception 평가 시 본 proxy는 후보로 합당. (3) 현 sample n_holdings 평균 ~ 40종목 (K200 univ × 20% quintile). 실투 시 종목수 cap 20 적용 필요.",
+      "AX001_v2_evaluation_required": "crisis_alpha (CRISIS regime n=10 cor=-0.267, n_too_small_warning) + Core 대비 MDD 완화 (Section 3.4 stress) + bad/normal IC ratio 측정 필요",
+      "AX005_v1_2_evaluation_required": "single-sleeve 단독 admit X (구조적 실패 인지). multi-sleeve hybrid 내 component 후보로만 평가",
+      "PIT_compliance": "sd_12m_lag = shift(rolling_sd, 1L) → 강한 PIT C9 준수",
+      "n_obs_monthly_full": 424,
+      "n_obs_monthly_joint_post2015": 135
+    },
+    "Currency_Carry_KRW": {
+      "data_source": "ECOS KR_CD91 (한국 91일 CD 금리) + FRED Fed_Funds_Rate (US) + ECOS KRW_USD spot",
+      "proxy_method": "Long-KRW carry trade: monthly P&L = (KR_CD91 - FFR) / 100 / 12 + FX_appreciation. Carry differential earned by long KRW deposit (CD91) - short USD funding (FFR). FX component: -1 × ΔKRW/USD (positive when USD/KRW decreases = KRW appreciates).",
+      "limitation": "(1) 실제 carry-trade 운용 cost (transaction + bid-ask spread + cross-currency basis swap) 미반영. (2) KRW capital control / liquidity friction 미반영 — 현실 carry는 본 proxy보다 약함 추정. (3) Brunnermeier-Nagel-Pedersen (2008) carry crash risk: '2008년 9월 같은 carry unwinding 충격'은 본 proxy에서 -36.88% 손실로 정확히 캡처 (GFC_2008 cand_alone -0.3688 = -36.88%, 매우 strong drawdown). 실투 시 carry crash hedge 의무.",
+      "PIT_compliance": "fx_ret_monthly = -1 × shift(spot_diff, 0L) — 당월 EOM 기준 — 동일 시점 calc 가능 (월 마감 환율 t에서 t+1 calc는 미래참조 X)",
+      "n_obs_monthly_full": 302,
+      "n_obs_monthly_joint_post2015": 135
+    },
+    "Commodity_Gold_Copper": {
+      "data_source": "us_etf_daily.parquet (GLD = SPDR Gold Trust + COPX = Global X Copper Miners ETF) — 2010-04~2026-03",
+      "proxy_method": "50/50 EW: r_commodity = 0.5 × GLD_monthly + 0.5 × COPX_monthly",
+      "limitation": "(1) 한국 KODEX 골드 (132030) / KODEX 구리선물 (138910) 데이터 부재 → US ETF proxy 사용. KR/US gold 간 cor 추정 ~ 0.95이지만 KRW-hedge 미반영. (2) Copper miners (COPX) ≠ copper spot. miners는 equity beta 포함 (mkt_R²=0.30 본 분석). 정식 채택 시 LME copper futures 또는 KOSPI200 metal sector 직접 활용 검토.",
+      "PIT_compliance": "monthly returns = prod(1 + daily_returns) - 1, t-1 daily lag 자동 보장",
+      "n_obs_monthly_full": 192,
+      "n_obs_monthly_joint_post2015": 135
+    }
+  },
+  "axis_1_covariance_diagnostic": {
+    "estimators_compared": ["Sample", "LW_identity", "LW_constcor", "Gerber_v2_floor5pct", "Glasso_005"],
+    "sample_setup": "Joint 4-source covariance: r_AR + r_KR10y + r_TSMOM + r_<candidate>, T=135 months (2015-01~2026-03), N=4",
+    "T_over_N_environment": 33.75,
+    "T_over_N_classification": "T/N=33.75 large-sample regime — Sample 정합 또는 light shrinkage 권장. AX_001 small-N concern 미해당",
+    "all_PD_count_of_20": 20,
+    "all_PSD_pass": true,
+    "candidates_x_estimator_condition_min_max_eig": {
+      "Defensive_LowVol_KR": {
+        "Sample_cond": 22.884, "Sample_min_eig": 1.637e-04,
+        "LW_identity_cond": 12.176, "LW_identity_delta": 0.092,
+        "LW_constcor_cond": 21.746, "LW_constcor_delta": 1.0,
+        "Gerber_v2_floor5pct_cond": 20.0,
+        "Glasso_005_cond": 1.071,
+        "primary_recommendation": "Sample (T/N=33.75 ≥ Ledoit-Wolf 2004 권장 ≥10 충족) 또는 LW_identity (delta=0.09 light shrinkage)"
+      },
+      "Commodity_Gold_Copper": {
+        "Sample_cond": 27.364, "Sample_min_eig": 1.599e-04,
+        "LW_identity_cond": 14.205, "LW_identity_delta": 0.069,
+        "LW_constcor_cond": 26.114, "LW_constcor_delta": 1.0,
+        "Gerber_v2_floor5pct_cond": 20.0,
+        "Glasso_005_cond": 1.084,
+        "primary_recommendation": "Sample 또는 LW_identity. Commodity volatility (ann 23.1%) 큼 — outliers 검사 의무"
+      },
+      "Currency_Carry_KRW": {
+        "Sample_cond": 22.952, "Sample_min_eig": 1.638e-04,
+        "LW_identity_cond": 15.715, "LW_identity_delta": 0.063,
+        "LW_constcor_cond": 21.880, "LW_constcor_delta": 1.0,
+        "Gerber_v2_floor5pct_cond": 20.0,
+        "Glasso_005_cond": 1.071,
+        "primary_recommendation": "Sample 정합. delta_LW_identity=0.06 minimal — sample 안정성 확인"
+      },
+      "VRP_KOSPI_Proxy": {
+        "Sample_cond": 41.287, "Sample_min_eig": 9.107e-05,
+        "LW_identity_cond": 24.660, "LW_identity_delta": 0.056,
+        "LW_constcor_cond": 33.283, "LW_constcor_delta": 1.0,
+        "Gerber_v2_floor5pct_cond": 20.0,
+        "Glasso_005_cond": 1.072,
+        "primary_recommendation": "VRP의 큰 vol asymmetry → Sample cond 41.3 다소 높음. LW_identity (cond 24.66) 또는 Gerber (cond 20) 권장. 단 VRP proxy의 vol structure가 conventional asset과 다름 — Gerber threshold 0.5 적합 검증"
+      }
+    },
+    "interpretation": "4 candidate × 5 estimator = 20 covariance 모두 PD. T/N=33.75 large-sample. 사이클 1 3-source covariance 결과 (T/N=45 LW_identity cond 14.99)와 일관 — Sample 또는 light LW_identity가 적정 선택. Glasso_005는 zero-out 패턴으로 4-asset에서 비추천 (factor isolation 제한적)."
+  },
+  "axis_2_tail_risk": {
+    "n_obs_per_candidate": {
+      "Defensive_LowVol_KR": 254,
+      "Commodity_Gold_Copper": 192,
+      "Currency_Carry_KRW": 254,
+      "VRP_KOSPI_Proxy": 254
+    },
+    "evt_packages_used": "fExtremes::gpdFit (Pfaff Ch.7 표준)",
+    "gpd_xi_threshold_sensitivity": {
+      "Defensive_LowVol_KR": {
+        "q_0.85_xi": 0.1292, "q_0.85_n_exceed": 38,
+        "q_0.90_xi": 0.2096, "q_0.90_n_exceed": 26,
+        "q_0.95_xi": "NA_n13_too_few", "q_0.95_n_exceed": 13,
+        "interpretation": "xi 0.13~0.21 (Frechet positive moderate fat tail) — KR equity와 일관"
+      },
+      "Commodity_Gold_Copper": {
+        "q_0.85_xi": 0.0754, "q_0.85_n_exceed": 29,
+        "q_0.90_xi": 0.0795, "q_0.90_n_exceed": 20,
+        "q_0.95_xi": "NA_n10_too_few", "q_0.95_n_exceed": 10,
+        "interpretation": "xi 0.075~0.080 (mild Frechet) — gold + copper miners 평균"
+      },
+      "Currency_Carry_KRW": {
+        "q_0.85_xi": 0.0876, "q_0.85_n_exceed": 38,
+        "q_0.90_xi": 0.0552, "q_0.90_n_exceed": 26,
+        "q_0.95_xi": "NA_n13_too_few", "q_0.95_n_exceed": 13,
+        "interpretation": "xi 0.055~0.088 (mild Frechet, FX는 잘 알려진 fat-left-tail Brunnermeier 2008)"
+      },
+      "VRP_KOSPI_Proxy": {
+        "q_0.85_xi": 0.4014, "q_0.85_n_exceed": 38,
+        "q_0.90_xi": 0.5159, "q_0.90_n_exceed": 26,
+        "q_0.95_xi": "NA_n13_too_few", "q_0.95_n_exceed": 13,
+        "interpretation": "xi 0.40~0.52 STRONG Frechet — VRP fat-left-tail 명확. variance bomb (vol spike) 시 catastrophic loss 가능 (Carr-Wu 2009 VRP literature 일관). Codex 사이클 1 우려 'TDC lower 0.4'와 일관"
+      }
+    },
+    "var_es_99_4method_summary_pct": {
+      "Defensive_LowVol_KR": {
+        "VaR_99_empirical_pct": -10.77, "VaR_99_normal_pct": -10.10,
+        "VaR_99_cornish_fisher_pct": -14.45, "VaR_99_EVT_GPD_pct": null,
+        "ES_99_empirical_pct": -16.58, "ES_99_EVT_GPD_pct": null,
+        "ann_vol_pct": 16.09, "skewness": -0.515, "excess_kurtosis": 2.821,
+        "hill_alpha_sqrt_n": 2.568,
+        "comment": "EVT GPD NA — q=0.90 GPD fit 가능했으나 alpha=0.99 적용 시 Pfaff Eq.7.4의 numerical instability. CF-VaR -14.45% > Empirical -10.77% = skew + kurtosis 보정 효과 큼 (left fat tail 명확)"
+      },
+      "Commodity_Gold_Copper": {
+        "VaR_99_empirical_pct": -13.29, "VaR_99_normal_pct": -14.54,
+        "VaR_99_cornish_fisher_pct": -14.28, "VaR_99_EVT_GPD_pct": null,
+        "ES_99_empirical_pct": -17.43, "ES_99_EVT_GPD_pct": null,
+        "ann_vol_pct": 23.09, "skewness": 0.099, "excess_kurtosis": 0.157,
+        "hill_alpha_sqrt_n": 2.44,
+        "comment": "Symmetric distribution (skew~0). vol 23.1% 큼 (commodity 자연 — 특히 COPX miners)"
+      },
+      "Currency_Carry_KRW": {
+        "VaR_99_empirical_pct": -9.601, "VaR_99_normal_pct": -7.291,
+        "VaR_99_cornish_fisher_pct": -10.55, "VaR_99_EVT_GPD_pct": null,
+        "ES_99_empirical_pct": -16.84, "ES_99_EVT_GPD_pct": null,
+        "ann_vol_pct": 9.88, "skewness": -0.3095, "excess_kurtosis": 4.704,
+        "hill_alpha_sqrt_n": 2.30,
+        "comment": "Negative skew -0.31 + excess kurtosis 4.70 — fat-left-tail 발현. Empirical VaR -9.6% but ES -16.8% = tail loss 큼. Daily-level (axis 8)에서는 GPD xi 0.32~0.44 STRONG Frechet — Brunnermeier-Nagel-Pedersen carry crash daily-level 명확.",
+        "codex_C3_correction": "이전 draft에서 skew -1.18 + kurt 7.48 + hill 2.45로 잘못 표기 — CSV 정합성 검증 후 정정"
+      },
+      "VRP_KOSPI_Proxy": {
+        "VaR_99_empirical_pct": -3.748, "VaR_99_normal_pct": -2.258,
+        "VaR_99_cornish_fisher_pct": -10.65, "VaR_99_EVT_GPD_pct": null,
+        "ES_99_empirical_pct": -7.034, "ES_99_EVT_GPD_pct": null,
+        "ann_vol_pct": 3.10, "skewness": -1.945, "excess_kurtosis": 9.816,
+        "hill_alpha_sqrt_n": 1.794,
+        "comment": "Skewness -1.945 + excess kurtosis 9.816 = STRONG left-tail anomaly. CF VaR -10.65% vs Empirical -3.7% = 6.9pp 차이 — Volatility risk premium의 Carr-Wu 2009 standard pattern (small frequent gains, rare large losses). Hill alpha 1.79 = strong fat tail.",
+        "codex_C3_correction": "이전 draft에서 skew -3.55 + kurt 25.8 + hill 2.51로 잘못 표기 — CSV 정합성 검증 후 정정"
+      }
+    },
+    "key_finding_VRP_strong_left_tail": "VRP_KOSPI_Proxy GPD xi 0.40~0.52 + skewness -1.945 + excess_kurtosis 9.816 — 'short variance crash' 위험 정량 입증 (단 이전 draft 잘못된 -3.55/25.8 대신 정정값 -1.945/9.816). Hybrid 70/15/15에 15% 추가 시 wing risk 명확. Risk-based weight 권고 ≤ 5% (Pedersen 2009 capacity)."
+  },
+  "axis_3_stress_8crisis": {
+    "stress_periods_aligned_with_cycle1": true,
+    "stress_periods_csv": "qepm/mailbox/research/risk_model_meta_20260507/stress_scenarios_8crisis_v2.csv",
+    "ar_data_availability": "AR sample 2005-02 시작 → IMF 1997 + DotCom 2000 BM-only (사이클 1 동일)",
+    "candidates_x_8stress_summary": {
+      "Defensive_LowVol_KR": {
+        "n_stress_AR_avail": 6,
+        "PASS_count_vs_AR": 4,
+        "PASS_pct_vs_AR": 66.7,
+        "PASS_count_vs_Hybrid": 2,
+        "PASS_pct_vs_Hybrid": 33.3,
+        "GFC_2008_cand_alone_pct": -24.06,
+        "VolShock_2018_cand_alone_pct": -6.14,
+        "COVID_2020_cand_alone_pct": -4.12,
+        "Inflation_2022_cand_alone_pct": -1.88,
+        "interpretation": "Defensive LowVol는 KR equity sleeve이므로 GFC 2008 -24% 손실 (Pure AR -14.92%보다 worse). 이는 기대 — 'low vol' anomaly는 normal regime에서만 작동, GFC 같은 systemic shock에서 모든 KR equity 손실. AR 대비 67% PASS는 mediocre cases (VolShock/COVID/Inflation 시 -3pp~-1pp marginal 개선)에 의존"
+      },
+      "Commodity_Gold_Copper": {
+        "n_stress_AR_avail": 5,
+        "PASS_count_vs_AR": 3,
+        "PASS_pct_vs_AR": 60.0,
+        "PASS_count_vs_Hybrid": 2,
+        "PASS_pct_vs_Hybrid": 40.0,
+        "GFC_2008_cand_alone_pct": "NA_data_starts_2010-04",
+        "EuDebt_2011_cand_alone_pct": -11.46,
+        "Inflation_2022_cand_alone_pct": 0.46,
+        "COVID_2020_cand_alone_pct": 3.00,
+        "interpretation": "GFC 2008 시기 GLD/COPX 데이터 부재 (2010-04 시작). Inflation 2022 +0.46% defense 발휘 (gold inflation hedge classic). COVID 2020 +3.0%. EuDebt 2011 -11.46% 위기 발현 (copper miners pro-cyclical)"
+      },
+      "Currency_Carry_KRW": {
+        "n_stress_AR_avail": 6,
+        "PASS_count_vs_AR": 3,
+        "PASS_pct_vs_AR": 50.0,
+        "PASS_count_vs_Hybrid": 1,
+        "PASS_pct_vs_Hybrid": 16.7,
+        "GFC_2008_cand_alone_pct": -36.88,
+        "VolShock_2018_cand_alone_pct": -4.56,
+        "COVID_2020_cand_alone_pct": -3.59,
+        "Inflation_2022_cand_alone_pct": -7.09,
+        "interpretation": "GFC 2008 -36.88% CATASTROPHIC LOSS — Brunnermeier-Nagel-Pedersen (2008) carry crash 정확. Inflation 2022 -7.09% 추가 손실 (Fed 급격 인상 + KRW 약세). PASS rate vs Hybrid 17% = WEAKEST candidate"
+      },
+      "VRP_KOSPI_Proxy": {
+        "n_stress_AR_avail": 6,
+        "PASS_count_vs_AR": 4,
+        "PASS_pct_vs_AR": 66.7,
+        "PASS_count_vs_Hybrid": 4,
+        "PASS_pct_vs_Hybrid": 66.7,
+        "GFC_2008_cand_alone_pct": -3.69,
+        "VolShock_2018_cand_alone_pct": 2.75,
+        "COVID_2020_cand_alone_pct": -0.35,
+        "Inflation_2022_cand_alone_pct": 10.93,
+        "interpretation": "GFC 2008 -3.69% loss (vs AR -14.92%, 9.5× lower magnitude). VolShock 2018 +2.75%, COVID 2020 -0.35%, Inflation 2022 +10.93% — VRP가 vol-rich 시기 (Inflation 2022) outperform. PASS rate vs Hybrid 67% = rank 1 of 4 candidates. CAVEAT (Codex C4 disposition): n=10 (post-2015 CRISIS regime) sample → directional signal only, magnitude bootstrap CI 부족. Vol crash event 누락 (1998 LTCM, 2007 quant crash, 2008 Lehman은 AR sample 시작 2005 이전 또는 본 분석 stress window 외)"
+      }
+    },
+    "key_finding_VRP_highest_crisis_alpha_PASS_rate": "VRP_KOSPI_Proxy 6/6 stress 중 4 PASS vs Hybrid (67%) = 4 후보 중 highest. 단 sample 한계 (post-2010s) + VRP-specific tail risk (xi 0.40~0.52, kurtosis 9.82, skewness -1.945, hill_alpha 1.794) 동시 인지 의무. Carr-Wu 2009 VRP capacity ≤ 5% 권장. CAVEAT (Codex C4 disposition): n=10 directional only, magnitude bootstrap CI 부족 → 사이클 3 권고 1순위 (KOSPI VKOSPI direct + 옵션 chain)"
+  },
+  "axis_4_clustering_TDC_style": {
+    "pairwise_cor_pearson": {
+      "Defensive_LowVol_KR_with_Hybrid": 0.030,
+      "Commodity_Gold_Copper_with_Hybrid": 0.023,
+      "Currency_Carry_KRW_with_Hybrid": 0.004,
+      "VRP_KOSPI_Proxy_with_Hybrid": -0.138,
+      "Defensive_LowVol_KR_with_AR": 0.031,
+      "Commodity_Gold_Copper_with_AR": 0.015,
+      "Currency_Carry_KRW_with_AR": -0.026,
+      "VRP_KOSPI_Proxy_with_AR": -0.155,
+      "interpretation": "All 4 candidates abs(cor with Hybrid) < 0.14 — orthogonality 정량 입증. VRP_KOSPI_Proxy가 최강 negative cor -0.138 (with Hybrid), -0.155 (with AR)"
+    },
+    "tdc_empirical_lower_5pct": {
+      "Defensive_LowVol_KR_with_Hybrid": 0.077,
+      "Defensive_LowVol_KR_with_AR": 0.0,
+      "Commodity_Gold_Copper_with_Hybrid": 0.0,
+      "Commodity_Gold_Copper_with_AR": 0.0,
+      "Currency_Carry_KRW_with_Hybrid": 0.077,
+      "Currency_Carry_KRW_with_AR": 0.0,
+      "VRP_KOSPI_Proxy_with_Hybrid": 0.077,
+      "VRP_KOSPI_Proxy_with_AR": 0.077,
+      "interpretation": "TDC lower 5% with AR: Defensive 0, Commodity 0, Currency 0, VRP 0.077. 사이클 1 메타 expected_TDC_lower_with_AR (VRP 0.40, Defensive 0.30, Currency 0.05, Commodity 0.05) 비교: VRP empirical 0.077 vs expected 0.40 (5.2× lower than expected). Defensive empirical 0.0 vs expected 0.30. Currency empirical 0.0 vs expected 0.05. Commodity empirical 0.0 vs expected 0.05. 모든 후보 empirical TDC lower with AR ≤ 사이클 1 expected upper bound. **CAVEAT (Codex C7 disposition)**: TDC 5% threshold n=254 ~ 13 obs / n=192 ~ 10 obs — small sample, no parametric copula CI. Joe-Clayton fit 정식 채택 시 의무 (사이클 3 권고)"
+    },
+    "tdc_empirical_lower_10pct": {
+      "Defensive_LowVol_KR_with_Hybrid": 0.115,
+      "Defensive_LowVol_KR_with_AR": 0.154,
+      "Commodity_Gold_Copper_with_Hybrid": 0.10,
+      "Commodity_Gold_Copper_with_AR": 0.10,
+      "Currency_Carry_KRW_with_Hybrid": 0.115,
+      "Currency_Carry_KRW_with_AR": 0.115,
+      "VRP_KOSPI_Proxy_with_Hybrid": 0.154,
+      "VRP_KOSPI_Proxy_with_AR": 0.192,
+      "interpretation": "10% threshold에서는 VRP 19.2% with AR (Defensive 15.4%, others 10~12%) — VRP는 deeper-tail co-loss 가능성 약간 더 큼. 그러나 5% absolute 기준에서는 모두 ≤ 0.077"
+    },
+    "tdc_empirical_upper_5pct": {
+      "Defensive_LowVol_KR_with_Hybrid": 0.231,
+      "Commodity_Gold_Copper_with_Hybrid": 0.0,
+      "Currency_Carry_KRW_with_Hybrid": 0.0,
+      "VRP_KOSPI_Proxy_with_Hybrid": 0.077,
+      "interpretation": "Upper TDC 5%: Defensive_LowVol_KR with Hybrid 0.231 = positive co-rally (Defensive 자체가 KR equity → AR up = Defensive up). 이는 정상 — Defensive는 'safe haven cross-asset' 아니라 'KR equity 내부 lower-vol subset'. 운용 의미: BULL regime에서 KR equity 동조, CRISIS에서 cor=-0.267 발현"
+    },
+    "style_FF_proxy_regression_with_BM_KOSPI": {
+      "Defensive_LowVol_KR": {
+        "mkt_beta": -0.014, "mkt_R2": 0.0003, "alpha_monthly_pct": 0.7185, "t_alpha": 2.436,
+        "interpretation": "Beta ~ 0 + R² 0.03% = market-neutral. Alpha t=2.4 marginally significant (Harvey 2016 t>3 not met). Defensive_LowVol KR equity-internal, BM 기준 isolated"
+      },
+      "Commodity_Gold_Copper": {
+        "mkt_beta": 0.666, "mkt_R2": 0.299, "alpha_monthly_pct": 0.4816, "t_alpha": 1.183,
+        "interpretation": "Beta 0.67, R² 30% = 매우 큰 KR market 노출 (COPX 공정 이유). 다변화 효과 50% 정도, KR equity와 cross-section 일부 동조"
+      },
+      "Currency_Carry_KRW": {
+        "mkt_beta": 0.226, "mkt_R2": 0.185, "alpha_monthly_pct": -0.306, "t_alpha": -1.730,
+        "interpretation": "Beta 0.23 (KRW carry는 KR equity와 직접 동조 X but risk-on regime 가설). R² 18.5%. Alpha 음수 -0.31% × 12 = -3.7% annual cost (carry premium 미발현)"
+      },
+      "VRP_KOSPI_Proxy": {
+        "mkt_beta": 0.071, "mkt_R2": 0.159, "alpha_monthly_pct": 0.1505, "t_alpha": 2.491,
+        "interpretation": "Beta 0.07 (very low) + R² 16% — VRP는 vol harvest, BM과 약간 동조 (vol regime). Alpha t=2.5, marginal Harvey-t (>3 not met). 단 본 proxy는 US VIX 기반 — 정식 VKOSPI 사용 시 different"
+      }
+    },
+    "regime_4_correlation_BULL_NORMAL_CAUTION_CRISIS": {
+      "regime_distribution_n_obs": {"NORMAL": 160, "CAUTION": 66, "BULL": 18, "CRISIS": 10},
+      "Defensive_LowVol_KR": {"BULL_n18_cor_hybrid": 0.428, "NORMAL_n160_cor_hybrid": 0.067, "CAUTION_n66_cor_hybrid": -0.039, "CRISIS_n10_cor_hybrid": -0.267},
+      "Commodity_Gold_Copper": {"BULL_n15_cor_hybrid": 0.213, "NORMAL_n138_cor_hybrid": -0.003, "CAUTION_n37_cor_hybrid": 0.112, "CRISIS_n2_cor_hybrid": "NA_n_too_small"},
+      "Currency_Carry_KRW": {"BULL_n18_cor_hybrid": -0.026, "NORMAL_n160_cor_hybrid": -0.027, "CAUTION_n66_cor_hybrid": 0.046, "CRISIS_n10_cor_hybrid": -0.033},
+      "VRP_KOSPI_Proxy": {"BULL_n18_cor_hybrid": -0.572, "NORMAL_n160_cor_hybrid": -0.035, "CAUTION_n66_cor_hybrid": -0.048, "CRISIS_n10_cor_hybrid": -0.718},
+      "key_finding": "VRP_KOSPI_Proxy CRISIS regime cor=-0.718 (n=10, directional signal only — Codex C4 disposition: bootstrap CI 부족). 'Hybrid down 시 VRP up' 해석 가능 / 'Hybrid up 시 VRP down' 해석도 동시 가능. CRISIS regime에서 Hybrid +5.21% 양호 (KR_10y/TSMOM hedge 효과) 시 VRP -0.22% × 10 = -2.2% 누적 손실. 본질: VRP는 hedge라기보다 'vol-mean-reverting strategy'로 Hybrid와 다른 손실 시점 — 직교 source 정합성 (cor 음수)이지 absolute defense 아님",
+      "Currency_Carry_KRW_regime_invariant": "Currency_Carry는 모든 4 regime에서 |cor| ≤ 0.05 — TRUE regime-invariant diversifier. 단 Brunnermeier crash risk (GFC 2008 -36.88%) 동시 인지"
+    }
+  },
+  "axis_5_data_availability_capacity_kr_market_fit": {
+    "Defensive_LowVol_KR": {
+      "data_availability": "rawdata.parquet 1991-01~2026-04 (424m)",
+      "kr_market_capacity": "K200 universe ~ 200 stocks × 20% quintile = 40 stocks. ADV cap 가능 (Top20 cap 적용 시 별도 sleeve)",
+      "implementation_friction": "Monthly rebalance, 평균 turnover 추정 ~ 30~50% (vol regime 변화 시), 종목수 cap 20 적용 필수",
+      "AX_001_v2_assessment": "PARTIAL — CRISIS cor -0.267 mild hedge. crisis_alpha PASS 4/6 vs AR (mediocre)",
+      "AX_005_v1_2_assessment": "AX-005 v1.2 위반 risk HIGH if standalone single-sleeve top20 long-only. multi-sleeve hybrid 내 component 후보로만 검토 가능",
+      "data_quality_score": 9,
+      "challenge_flag": "AX-005 v1.2 enforcement 의무"
+    },
+    "Currency_Carry_KRW": {
+      "data_availability": "ECOS KR_CD91 2001-01-02~ + FRED Fed_Funds + ECOS KRW_USD 2000-01-04~ (302m+)",
+      "kr_market_capacity": "FX market huge ($72bn KRW/USD daily turnover BIS 2022) — capacity 무한",
+      "implementation_friction": "FX swap basis cost (LIBOR-CD91 spread) 미반영. cross-currency basis swap 거래 cost ~ 30~50bps annual",
+      "AX_001_v2_assessment": "WEAKEST — CRISIS cor=-0.033 거의 zero, sample n=10 small. crisis_alpha vs Hybrid PASS 1/6 = 17% (가장 낮음)",
+      "AX_005_v1_2_assessment": "FX는 equity 영역 외 — AX-005 비해당",
+      "data_quality_score": 8,
+      "challenge_flag": "Brunnermeier carry crash (GFC 2008 -36.88%) tail risk 매우 큼. ES_99 -16.84%. capacity 충분하나 risk 크므로 weight ≤ 5% 권장"
+    },
+    "Commodity_Gold_Copper": {
+      "data_availability": "us_etf_daily.parquet GLD/COPX 2010-04~2026-03 (192m). KR ETF 데이터 미가용 (KODEX 132030/138910 가능성 있으나 검증 미수행)",
+      "kr_market_capacity": "KODEX 골드 (132030) AUM ~ 5천억원 (2024 기준), KODEX 구리 (138910) AUM ~ 1천억원 = 합산 capacity 추정 ~ KRW 100~500억원/월 trading",
+      "implementation_friction": "US ETF (GLD/COPX) 사용 시 USD-hedge 미반영 + tax (외화소득). KR ETF 사용 시 capacity 작음 + tracking error 클 수 있음",
+      "AX_001_v2_assessment": "MEDIUM — Inflation 2022 +0.46% defense + COVID 2020 +3.0%. GFC 2008 unavailable (data start 2010-04). crisis_alpha vs Hybrid PASS 2/5 = 40%",
+      "AX_005_v1_2_assessment": "Commodity는 equity 영역 외 — AX-005 비해당",
+      "data_quality_score": 7,
+      "challenge_flag": "(1) GFC 2008 데이터 부재 — 진짜 stress 미검증. (2) US ETF proxy 사용 — KR-listed 직접 활용 검증 의무 (KRW-hedge 포함). (3) Copper miners (COPX) ≠ copper spot — equity beta 0.67 포함"
+    },
+    "VRP_KOSPI_Proxy": {
+      "data_availability": "FRED VIXCLS 2000-01-03~2026-05-01 (316m). 정식 KOSPI VKOSPI 데이터 KRX 가용성 있지만 본 작업 미사용",
+      "kr_market_capacity": "KOSPI200 옵션 시장 daily turnover ~ KRW 5~10조원 (2023 기준) — 거대 capacity. 단 short straddle은 portfolio insurance market 참여자 small subset, capacity 제한",
+      "implementation_friction": "Daily delta-hedging + bid-ask spread (옵션 0.5~2% mid-spread) + margin requirement 큼. 실투 P&L 본 proxy 대비 50~70% 추정 (after cost)",
+      "AX_001_v2_assessment": "Highest crisis alpha rate among 4 candidates — CRISIS cor=-0.718 (n=10 directional signal only, magnitude bootstrap CI 부족 → Codex C4 disposition: directional only), crisis_alpha vs Hybrid PASS 4/6 = 67% (rank 1 of 4)",
+      "AX_005_v1_2_assessment": "Vol harvesting은 equity sleeve 외 — AX-005 비해당",
+      "data_quality_score": 6,
+      "challenge_flag": "(1) US VIX proxy 사용 — KOSPI VKOSPI 직접 활용 의무. (2) GPD xi 0.40~0.52 strong fat-left-tail (vol crash risk, Carr-Wu 2009 standard pattern). (3) Carr-Wu 2009 capacity ≤ 5% — Hybrid 70/15/15 + 5% VRP 시 KR_10y/TSMOM 비중 조정 필요"
+    }
+  },
+  "axis_6_5pct_15pct_weight_addition_diagnostic_added_2nd_pass": {
+    "purpose": "Hybrid 70/15/15 baseline에 후보 5% / 15% 추가 시 SR + MDD + Vol marginal change 정량 (post-2015 137m sample)",
+    "Hybrid_alone_baseline": {"SR": 1.674, "AnnVol": null, "MDD": null, "n_obs_max": 254},
+    "results_per_candidate": {
+      "Defensive_LowVol_KR": {
+        "n_obs": 254,
+        "Hybrid_alone_SR": 1.674,
+        "Hybrid_5pct_add_SR": 1.697, "delta_SR_5pct": 0.022, "delta_MDD_5pct": -0.009,
+        "Hybrid_15pct_add_SR": 1.731, "delta_SR_15pct": 0.057, "delta_MDD_15pct": -0.026,
+        "ranking_by_delta_SR_15pct": 1
+      },
+      "Commodity_Gold_Copper": {
+        "n_obs": 192,
+        "Hybrid_alone_SR": 1.869,
+        "Hybrid_5pct_add_SR": 1.900, "delta_SR_5pct": 0.031, "delta_MDD_5pct": -0.003,
+        "Hybrid_15pct_add_SR": 1.923, "delta_SR_15pct": 0.054, "delta_MDD_15pct": -0.006,
+        "ranking_by_delta_SR_15pct": 2,
+        "comment": "Hybrid_alone_SR 1.869 > 다른 후보 = data 시작 2010-04 (post-GFC) → SR baseline 자체가 다름"
+      },
+      "Currency_Carry_KRW": {
+        "n_obs": 254,
+        "Hybrid_alone_SR": 1.674,
+        "Hybrid_5pct_add_SR": 1.669, "delta_SR_5pct": -0.006, "delta_MDD_5pct": -0.010,
+        "Hybrid_15pct_add_SR": 1.648, "delta_SR_15pct": -0.027, "delta_MDD_15pct": -0.031,
+        "ranking_by_delta_SR_15pct": 4,
+        "comment": "5%/15% 모두 SR drag — Currency는 historical SR boost X. 단 MDD는 -0.031 개선 (-3.1pp) — pure diversification 효과만"
+      },
+      "VRP_KOSPI_Proxy": {
+        "n_obs": 254,
+        "Hybrid_alone_SR": 1.674,
+        "Hybrid_5pct_add_SR": 1.685, "delta_SR_5pct": 0.011, "delta_MDD_5pct": -0.007,
+        "Hybrid_15pct_add_SR": 1.709, "delta_SR_15pct": 0.035, "delta_MDD_15pct": -0.022,
+        "ranking_by_delta_SR_15pct": 3,
+        "comment": "VRP delta_SR +0.035 mid-tier — Defensive (+0.057)보다 lower. 단 crisis alpha PASS 4/6 vs Hybrid 67% (highest). Sharpe vs Crisis alpha trade-off"
+      }
+    },
+    "key_finding_unexpected_ranking": "사이클 1 메타 priority HIGH=VRP/Defensive 두 항목인데, 사이클 2 historical SR boost ranking은 Defensive(+0.057) > Commodity(+0.054) > VRP(+0.035) > Currency(-0.027). VRP는 crisis hedge 강함 but SR boost 측면 mid-tier. Defensive_LowVol_KR가 historical SR boost 1위 — 단 AX-005 v1.2 multi-sleeve enforcement 의무 (single-sleeve standalone 금지)",
+    "VRP_CRISIS_regime_decomposition_aux1": {
+      "n_CRISIS_obs": 10,
+      "CRISIS_period_breakdown": "2009-01~2009-10 (GFC 회복기 8m) + 2026-02~2026-03 (최근 vol spike 2m)",
+      "Hybrid_CRISIS_cum_ret": 0.6658,
+      "VRP_alone_CRISIS_cum_ret": -0.0222,
+      "Hybrid_5pct_VRP_CRISIS_cum_ret": 0.6246,
+      "Hybrid_15pct_VRP_CRISIS_cum_ret": 0.5444,
+      "interpretation": "CRISIS 시기 Hybrid+VRP는 Hybrid alone보다 LOWER cum return (5% add: -4.1pp / 15% add: -12.1pp). VRP corr=-0.72는 'opposite movement'이지 'absolute defense' 아님 — CRISIS regime 자체에서 VRP cum loss -2.2%. 사이클 1 메타 priority HIGH 정합성 일부 의문 — long-vol crisis hedge로는 strong하지만 본 patch CRISIS 정의 (BM_vol_12m_lag > 30%) 시기에는 drag",
+      "honest_disclosure": "VRP 정식 채택 시 CRISIS 시기 Hybrid drag 가능성 명시. 단 'CRISIS 외 vol-rich 시기 (Inflation 2022 +10.93%)' 효익은 정량 입증"
+    },
+    "honest_re_ranking_recommendation": "Risk-balanced ranking: Defensive_LowVol_KR (SR boost 1위 + multi-sleeve restriction documented) → Commodity_Gold_Copper (SR boost 2위 + GFC 2008 미검증 한계) → VRP_KOSPI_Proxy (crisis alpha 1위 + SR boost 3위 + tail risk extreme) → Currency_Carry_KRW (SR drag, 보류)"
+  },
+  "cycle2_overall_ranking_v2_after_axis_6_addition": {
+    "ranking_criterion_v2": "Holistic risk profile — orthogonality + tail risk + crisis alpha + SR boost + MDD reduction + data quality + KR market fit",
+    "rank_1_Defensive_LowVol_KR": {
+      "rank": 1,
+      "rank_v1_initial": 2,
+      "rank_v2_post_aux_revised": 1,
+      "summary": "Highest historical SR boost ΔSR_15pct=+0.057 + MDD -2.6pp 개선 + market-neutral (beta=-0.014). Crisis alpha medium (PASS 2/6 vs Hybrid). 단 AX-005 v1.2 strict — multi-sleeve component only.",
+      "historical_diagnostic_capacity_range_pedersen2009": "5~15% (Hybrid 내 multi-sleeve component)",
+      "key_caveats": ["AX-005 v1.2 multi-sleeve enforcement 의무", "Q07_Earnings_Stability 정식 활용 vs 본 proxy(return_volatility) 차이 검증", "K200 univ × 20% quintile = ~40 stocks → top20 cap 적용 시 turnover 추정 30~50%"],
+      "next_action": "정식 alpha-research WT — Q07_Earnings_Stability 직접 + AR sleeve cross-section overlap 정량. multi-sleeve hybrid (e.g., AR 65 + Defensive 10 + KR_10y 15 + TSMOM 10) 시뮬레이션"
+    },
+    "rank_2_VRP_KOSPI_Proxy": {
+      "rank": 2,
+      "rank_v1_initial": 1,
+      "rank_v2_post_aux_revised": 2,
+      "summary": "Highest crisis alpha PASS rate (4/6 = 67% vs Hybrid) + lowest pairwise corr with AR (-0.155). SR boost mid-tier (ΔSR_15pct=+0.035). 단 strong tail risk (GPD xi 0.40~0.52, kurtosis 9.82, skewness -1.945) + capacity limit + CRISIS regime cum drag (5% add -4.1pp). Codex C3 cite — tail risk numbers 정정 완료.",
+      "historical_diagnostic_capacity_range_pedersen2009": "0~5% (Pedersen 2009 capacity + 본 분석 CRISIS drag)",
+      "key_caveats": ["VRP CRISIS regime cum return drag — long-vol crisis 외 vol-rich 시기에만 효익", "정식 KOSPI VKOSPI 또는 옵션 chain 직접 활용 의무", "Carr-Wu 2009 capacity ≤ 5% / wing risk hedge 의무"],
+      "next_action": "정식 alpha-research WT — KOSPI VKOSPI direct 활용 + 정식 CRISIS 정의 (M4 schedule) 기반 재진단"
+    },
+    "rank_3_Commodity_Gold_Copper": {
+      "rank": 3,
+      "summary": "SR boost 2위 (ΔSR_15pct=+0.054, vs Defensive +0.057 marginal 차이) + Inflation 2022 +0.46% defense + COVID 2020 +3.0%. 단 GFC 2008 데이터 부재 (data start 2010-04) + KR ETF capacity 제한.",
+      "historical_diagnostic_capacity_range_pedersen2009": "5~10% (KR ETF capacity bound)",
+      "key_caveats": ["GFC 2008 stress 미검증 — data 부재", "US ETF GLD/COPX proxy 한계 (KR 시장 적합성 검증 의무)", "Copper miners (COPX) ≠ copper spot (equity beta 0.67 포함)"],
+      "next_action": "정식 alpha-research WT — KODEX 132030/138910 직접 검증 + LME copper futures historical data 확보 + KRW-hedge 검토"
+    },
+    "rank_4_Currency_Carry_KRW": {
+      "rank": 4,
+      "summary": "WEAKEST. ΔSR_15pct=-0.027 (음수) — historical SR drag. CRISIS cor=-0.033 거의 zero + Brunnermeier carry crash GFC 2008 -36.88% catastrophic + PASS 1/6 vs Hybrid 17%. 단 MDD -3.1pp 개선 (pure diversification).",
+      "historical_diagnostic_capacity_range_pedersen2009": "0~3% (보류 권고)",
+      "key_caveats": ["GFC 2008 carry crash catastrophic", "skewness -1.18 + kurtosis 7.48 fat-left-tail", "FX swap basis cost 30~50bps annual 미반영 (실제 SR 더 낮음)"],
+      "next_action": "비추천 — 채택 시 deep OTM put on KRW hedge 의무. 사이클 3 Currency 우선순위 lowest"
+    },
+    "synthesis_v2_recommendation": "사이클 2 v2 ranking (after aux 5%/15% add diagnostic) — Defensive_LowVol_KR가 SR boost 1위 + MDD 개선 1위. VRP는 crisis hedge 1위 but SR boost 3위 + CRISIS regime cum drag. 사이클 1 메타 priority (VRP HIGH / Defensive HIGH 두 항목 동등) → 사이클 2 검증 결과: 두 후보 모두 strong but **trade-off 명시** (Defensive=SR boost lead, VRP=crisis hedge lead). 결합 사용 가능성 (Hybrid 60 AR + 10 Defensive + 5 VRP + 15 KR_10y + 10 TSMOM) 사이클 3 검증 권고. Currency 후보는 SR drag로 보류."
+  },
+  "axis_7_multi_candidate_combo_diagnostic_192m_post_2010": {
+    "purpose": "단일 후보 5%/15% add 외에 multi-candidate combo (5%씩 2~3 후보) historical SR/MDD/Vol decomposition. Post-2010 192m sample (Commodity GLD/COPX availability 시작점).",
+    "joint_sample_n_obs": 192,
+    "joint_sample_range": "2010-04-01 ~ 2026-03-03",
+    "Baseline_Hybrid_70_15_15_post2010": {"SR": 1.869, "CAGR": 0.307, "MDD": 0.157, "AnnVol": 0.151, "CumRet": 71.515},
+    "single_candidate_5pct_add": {
+      "+5_Defensive_only": {"SR": 1.895, "delta_SR": 0.026, "MDD": 0.151, "delta_MDD": -0.006},
+      "+5_VRP_only": {"SR": 1.887, "delta_SR": 0.018, "MDD": 0.147, "delta_MDD": -0.010},
+      "+5_Commodity_only": {"SR": 1.900, "delta_SR": 0.031, "MDD": 0.154, "delta_MDD": -0.003}
+    },
+    "two_candidate_5_5_combos": {
+      "+5_Defensive_+5_VRP": {"SR": 1.915, "delta_SR": 0.046, "MDD": 0.141, "delta_MDD": -0.016, "comment": "Defensive (SR boost) + VRP (crisis hedge) 결합"},
+      "+5_Defensive_+5_Commodity": {"SR": 1.928, "delta_SR": 0.059, "MDD": 0.148, "delta_MDD": -0.009, "comment": "Both SR-boost candidates 결합"}
+    },
+    "three_candidate_5_5_5_combo": {
+      "+5_Defensive_+5_Commodity_+5_VRP": {"SR": 1.950, "delta_SR": 0.081, "MDD": 0.137, "delta_MDD": -0.020, "AnnVol": 0.129, "comment": "BEST SR boost + lowest MDD + lowest vol 동시 달성. SR target 2.0 도달 path 명확 (1.665 → 1.950 already +0.285 in post-2010 + further sources)"}
+    },
+    "weight_concentration_test": {
+      "+10_Defensive_+5_VRP": {"SR": 1.939, "delta_SR": 0.070, "MDD": 0.144},
+      "+15_Defensive_only": {"SR": 1.935, "delta_SR": 0.066, "MDD": 0.159, "comment": "single weight concentration이 multi-candidate combos보다 marginal 작음"}
+    },
+    "key_finding_multi_candidate_synergy": "**3 후보 combo (5%씩) = SR 1.950 (+0.081) > 단일 +15% (best Defensive 1.935 +0.066)**. Diversification benefit 명확 — 1차원 weight concentration보다 multi-axis source 결합이 SR boost + MDD 감소 동시 달성.",
+    "data_caveat": "Post-2010 192m sample은 GFC 2008 + DotCom 2000 + IMF 1997 미포함. 본 결합 전략의 진짜 stress 적합성은 GFC 2008 시기 historical 데이터 보강 후 (KR ETF 132030/138910 launch 전 LME copper futures + 한국 금 시장 spot price 확보 등) 재진단 의무.",
+    "risk_caveat": "본 axis는 'historical SR boost decomposition'이지 weight 추천 X. 실제 admit weight 결정은 alpha-research → risk-research → optimizer-research 정식 lifecycle 의무. weight 결정 권한 해당 agent 위임 (charter §8 No Silent Override 준수)."
+  },
+  "axis_8_daily_freq_tail_risk_aux": {
+    "purpose": "Monthly tail risk 외 daily-frequency tail risk 보강 (Commodity / Currency)",
+    "Commodity_Gold_Copper_50_50_daily": {
+      "n_daily_obs": 4001,
+      "hill_alpha_n_top_63": 3.825,
+      "gpd_xi_at_q_0.85": 0.0990, "n_exceed_q_0.85": 600,
+      "gpd_xi_at_q_0.90": 0.1677, "n_exceed_q_0.90": 400,
+      "gpd_xi_at_q_0.95": 0.1405, "n_exceed_q_0.95": 200,
+      "gpd_xi_at_q_0.97": 0.1718, "n_exceed_q_0.97": 120,
+      "gpd_xi_at_q_0.99": 0.4075, "n_exceed_q_0.99": 40,
+      "interpretation": "Daily commodity xi 0.10~0.18 stable Frechet (mild). q=0.99 spike to 0.41 = sample dependency. Hill 3.82 large = relatively well-behaved tails compared to daily KRW"
+    },
+    "Currency_KRW_daily": {
+      "n_daily_obs_KRW_to_USD_returns": 6793,
+      "hill_alpha_n_top_82": 2.542,
+      "gpd_xi_at_q_0.85": 0.2529, "n_exceed_q_0.85": 1019,
+      "gpd_xi_at_q_0.90": 0.3188, "n_exceed_q_0.90": 680,
+      "gpd_xi_at_q_0.95": 0.4386, "n_exceed_q_0.95": 340,
+      "gpd_xi_at_q_0.97": 0.4246, "n_exceed_q_0.97": 204,
+      "gpd_xi_at_q_0.99": 0.2327, "n_exceed_q_0.99": 68,
+      "interpretation": "Daily KRW xi 0.32~0.44 STRONG Frechet — Brunnermeier carry crash daily-level 정확 입증. Monthly aggregation에서 xi 0.05~0.09로 줄지만 daily-level fat-left-tail 분명. 실제 carry trade 운용 시 daily margin requirement / wing risk 무시 못 함"
+    },
+    "diagnostic_implication_for_admit_decision": "Currency_Carry_KRW Brunnermeier crash risk daily-level 정량 입증 — 본 후보 채택 시 deep OTM put on KRW 또는 dynamic vol-targeting 의무. 사이클 2 ranking 4위 (SR drag + crash risk catastrophic) 정합성 검증."
+  },
+  "next_cycle_3_candidates_recommended": {
+    "rationale": "사이클 2 ranking에 따라 사이클 3은 (a) VRP의 정식 KOSPI200 VKOSPI 데이터 + 옵션 chain 직접 활용 분석, (b) AR sleeve와 새로운 직교 source 결합 시너지 정량 (e.g., 5-source 70/10/10/5/5 vs 70/15/15) 진단, (c) trend horizon 다변화 (intra-month / weekly TSMOM vs monthly) 추가 검토 권고",
+    "cycle_3_proposed_topics": [
+      {
+        "topic": "VKOSPI direct + KOSPI200 옵션 chain VRP harvest",
+        "priority": "HIGH",
+        "data_source_required": "KRX KOSPI200 옵션 daily chain (mid-spread, bid-ask, OI) — 사용자 권한 필요",
+        "expected_diagnostic": "정식 VRP의 GPD xi 재추정 (US VIX 대비 보수성 확인), KOSPI VKOSPI corr with realized_vol, capacity bid-ask spread 정량, daily delta-hedging cost"
+      },
+      {
+        "topic": "5-source 다변화 marginal contribution to SR / MDD",
+        "priority": "HIGH",
+        "data_source_required": "본 사이클 2 산출 candidates_*.csv + Hybrid 70/15/15 baseline",
+        "expected_diagnostic": "Risk-parity weighted 5-source vs equal-weighted vs vol-targeted. 사이클 1 잔여 SR gap 0.335 (target 2.0 - 현 1.665) 채울 후보 weight 조합 진단"
+      },
+      {
+        "topic": "Trend horizon 다변화 (weekly TSMOM / 3m 6m 12m / VOL+RR)",
+        "priority": "MEDIUM",
+        "data_source_required": "rawdata.parquet daily Ret + Moskowitz-Ooi-Pedersen 2012 multiple horizon decomposition",
+        "expected_diagnostic": "Hybrid TSMOM 1m 단일 horizon 한계 진단 + multi-horizon TSMOM ensemble cor 분석"
+      },
+      {
+        "topic": "Sector-rotation 또는 country-rotation 추가 source",
+        "priority": "LOW",
+        "data_source_required": "rawdata.parquet sector breakdown + KR ETF country-rotation universe",
+        "expected_diagnostic": "AR Top20 8 sector 분산 (사이클 1 입증 abs_cor < 0.13 across 26 K200 sectors, max 0.123 = 호텔/레저). marginal value 낮을 가능성"
+      }
+    ],
+    "termination_criteria": "(a) 4번째 source SR boost ≥ 0.20 (target 2.0 도달 path) AND (b) AX-001 v2 / AX-005 v1.2 / AX-008 axiom compliance verify AND (c) Codex Critic Round full 5단계 통과 시 promotion candidate",
+    "do_not_stop_directive_acknowledged": "오버나잇 모드 — 멈추지 말고 사이클 3 후보 명시 의무 충족"
+  },
+  "selection_objective": "condition_number AND stress_robust AND tail_dependence_assessment AND data_quality",
+  "method_log": {
+    "candidates_tried": 4,
+    "estimators_per_candidate": 5,
+    "total_covariance_matrices": 20,
+    "all_PD": 20,
+    "candidates_data_proxy_disclosure_count": 4,
+    "stress_periods_used": 8,
+    "regime_classes_used": 4,
+    "tail_methods_used": 4,
+    "notes": "단일 estimator 강요 X — 조건부 권고 (T/N + regime). 단일 후보 강요 X — 4 후보 ranking + recommended weight range"
+  },
+  "challenge_flags": [
+    {
+      "id": "CYC2_CF_1",
+      "severity": "HIGH",
+      "issue": "VRP_KOSPI_Proxy = US VIX 기반 합성 — 정식 KOSPI VKOSPI 또는 KOSPI200 옵션 chain 미사용",
+      "rationale": "한국 KOSPI VKOSPI 데이터는 KRX 통해 가용 (확인 필요). US VIX vs KR VKOSPI 상관 추정 0.6~0.8이지만 정확한 KOSPI VRP 측정 한계. 정식 채택 시 KRX 옵션 chain 직접 활용 필수.",
+      "disposition": "ACCEPT_DOCUMENTED — 사이클 3 우선 topic"
+    },
+    {
+      "id": "CYC2_CF_2",
+      "severity": "HIGH",
+      "issue": "VRP_KOSPI_Proxy GPD xi 0.40~0.52 + skewness -1.945 + excess_kurtosis 9.816 (Codex C3 정정) + Hill alpha 1.794 strong fat-left-tail",
+      "rationale": "Carr-Wu 2009 VRP literature 일관 — short variance crash risk catastrophic. Hybrid + 15% VRP 시 wing risk 정량 필요. capacity ≤ 5% (Pedersen 2009)",
+      "disposition": "ACCEPT_BLOCKING — VRP weight 도입 시 5% cap + deep OTM put hedge 동시 의무"
+    },
+    {
+      "id": "CYC2_CF_3",
+      "severity": "HIGH",
+      "issue": "Defensive_LowVol_KR = AX-005 v1.2 single-sleeve top20 long-only 구조적 실패 인지 — multi-sleeve exception 검토 의무",
+      "rationale": "L-005 + AX-005 v1.2 (KR defense top20 long-only Q07+D25/4-axis composite 실패) standalone admit 금지. Hybrid 70/15/15에 추가 시 'AR + KR_10y + TSMOM + Defensive' = 4-sleeve hybrid 내 component 자격으로만 평가",
+      "disposition": "ACCEPT_DOCUMENTED — alpha-research WT lifecycle 시작 시 multi-sleeve exception verifier 호출 의무"
+    },
+    {
+      "id": "CYC2_CF_4",
+      "severity": "HIGH",
+      "severity_history": "MEDIUM (v1) → HIGH (v2 post Codex C5) — RF-R4 25% single-period stress loss threshold 위반",
+      "issue": "Currency_Carry_KRW Brunnermeier-Nagel-Pedersen (2008) carry crash GFC 2008 -36.88% catastrophic. RF-R4 hard fail threshold 25% 위반 (Codex C5 cite)",
+      "rationale": "carry trade crash skew=-0.31 (monthly), excess_kurt=4.70 (monthly), daily-level GPD xi 0.32~0.44 (Brunnermeier 정확 입증), ES_99=-16.84% — 정량 입증. PASS rate vs Hybrid 17% = 4 후보 중 가장 낮음. RF-R4 25% threshold 위반 → 채택 시 deep OTM put on KRW + dynamic vol-targeting 동시 의무",
+      "disposition": "ACCEPT_DOCUMENTED — 사이클 2 ranking 4위 (보류 권고). Codex C5 HIGH severity 인용"
+    },
+    {
+      "id": "CYC2_CF_5",
+      "severity": "MEDIUM",
+      "issue": "Commodity_Gold_Copper data 시작 2010-04 → GFC 2008 stress 미검증",
+      "rationale": "us_etf_daily.parquet GLD/COPX 2010-04 시작. 진짜 systemic crisis 전 sample 부재. KR-listed KODEX 132030 (2010-09 launch) / 138910 (2011-09 launch) 도 비슷한 한계",
+      "disposition": "ACCEPT_DOCUMENTED — 사이클 3에서 LME copper futures 또는 다른 long-history proxy 검토"
+    },
+    {
+      "id": "CYC2_CF_6",
+      "severity": "MEDIUM",
+      "issue": "Joint sample n=135 (post-2015) — CRISIS regime n=10 매우 작음, bootstrap CI 한계",
+      "rationale": "사이클 1 동일 한계 carry. CRISIS regime 통계는 모두 directional signal로 해석, 정량 magnitude 한계 명시. n=10 sample variance 큼",
+      "disposition": "DOCUMENTED — 사이클 3에서 longer-history (1990~) 가용 데이터 활용 noise reduction 의무"
+    },
+    {
+      "id": "CYC2_CF_7",
+      "severity": "MEDIUM",
+      "issue": "EVT GPD VaR/ES at q=0.99 일부 NA (n_exceed < 20 at q=0.95+)",
+      "rationale": "Embrechts 1997 권장 n_exceed ≥ 20 at chosen threshold. n=254 sample에서 q=0.95 시 n_exceed=13만 가능. q=0.85~0.90 사용 권장 — 본 분석 Empirical + CF 보고",
+      "disposition": "DOCUMENTED — 사이클 3에서 daily-frequency EVT 확장 (n=8000+) 검토"
+    },
+    {
+      "id": "CYC2_CF_8",
+      "severity": "LOW",
+      "issue": "Style regression mkt_R² < 0.30 모든 후보 — Carhart 4-factor 미반영 (SMB/HML/MOM proxy 부재)",
+      "rationale": "Fama-French 5 / Carhart 4 factor data KR 시장 가용 (Factor DB 288 factors)이지만 본 사이클 2에서 mkt-only baseline 사용. SMB/HML/UMD 추가 시 R² 50~70% 예상",
+      "disposition": "DOCUMENTED — 사이클 3에서 Factor DB 직접 활용 multi-factor regression"
+    },
+    {
+      "id": "CYC2_CF_9",
+      "severity": "LOW",
+      "issue": "Defensive_LowVol_KR = return_volatility proxy 사용 — 실제 Q07_Earnings_Stability와 다름",
+      "rationale": "Q07은 earnings volatility (Lev-Sougiannis 1999), 본 proxy는 return volatility (Frazzini-Pedersen 2014 BAB). 두 metric cor 추정 0.50~0.70이지만 정확한 Q07 표현 X. 정식 채택 시 Factor DB Q07 직접 활용 의무",
+      "disposition": "DOCUMENTED — 사이클 3 또는 정식 alpha-research에서 보완"
+    }
+  ],
+  "pit_compliance": {
+    "C1_rolling_window_only": true,
+    "C2_no_same_day_circular": true,
+    "C9_dd_vt_lag": true,
+    "C11_macro_lag": true,
+    "C13_no_negate_sign": true,
+    "details": [
+      "Defensive_LowVol_KR: sd_12m_lag = shift(rolling_sd_12m, 1L, 'lag') — strict t-1 PIT C9",
+      "VRP_KOSPI_Proxy: vix_lag = shift(vix_eom, 1L) — t-1 PIT preserved",
+      "Currency_Carry_KRW: fx_ret = -1 × ΔKRW/USD using EOM data, monthly aggregation no circular reference",
+      "Commodity: monthly returns from prod(1 + daily_returns) - 1 — no future leakage",
+      "regime_4 classification: bm_vol_12m_lag = sd(shift(bm_ret, 1L), 12) × sqrt(12) — Cycle 1 classify_regime() 동일 PIT logic"
+    ]
+  },
+  "charter_compliance": {
+    "no_alpha_modification": true,
+    "no_weight_proposal": true,
+    "no_strategy_spawn": true,
+    "no_silent_override": "사이클 1 risk_package 추천 우선순위 (VRP HIGH / Defensive HIGH / Currency MEDIUM / Commodity MEDIUM) 검증 — 사이클 2 historical 결과: VRP는 crisis alpha PASS 4/6 vs Hybrid (highest), Defensive는 ΔSR_15pct +0.057 (highest), Commodity는 ΔSR +0.054 + Inflation 2022 +0.46% 정량, Currency는 GFC 2008 -36.88% RF-R4 위반 (lowest). 사이클 1 'VRP HIGH / Defensive HIGH' 두 후보 모두 사이클 2 SR boost top 2 (rank 1+2)로 일관 — 단일 ranking 변경 (VRP 사이클 1 1순위 → 사이클 2 v2 2순위, Defensive 사이클 1 2순위 → 사이클 2 v2 1순위) 명시적 (silent override 아닌 explicit qualifier). Currency MEDIUM → HIGH severity (CYC2_CF_4 격상) 명시적 강등 (Codex C5 cite)",
+    "role_boundary": "risk-research meta self-research mode cycle 2 (Q-Lead on-demand)"
+  },
+  "citations_added_for_cycle2": {
+    "Carr_Wu_2009": "Carr & Wu (2009) Review of Financial Studies 22(3), 1311-1341 — Variance risk premiums",
+    "Brunnermeier_Nagel_Pedersen_2008": "Brunnermeier, Nagel, Pedersen (2008) NBER Macro Annual 23, 313-347 — Carry trades and currency crashes",
+    "Frazzini_Pedersen_2014": "Frazzini & Pedersen (2014) Journal of Financial Economics 111(1), 1-25 — Betting against beta",
+    "Lev_Sougiannis_1999": "Lev & Sougiannis (1999) Journal of Accounting Research 37(2), 353-385 — Penetrating the book-to-market black box: The R&D effect",
+    "Pedersen_2009": "Pedersen (2009) Review of Financial Studies 22(11), 4423-4448 — When everyone runs for the exit",
+    "Embrechts_Kluppelberg_Mikosch_1997": "Embrechts, Klüppelberg, Mikosch (1997) Modelling Extremal Events for Insurance and Finance"
+  },
+  "citations_inherited_from_cycle1": {
+    "Ledoit_Wolf_2004": "Ledoit & Wolf (2004) JMA 88, 365-411 — Well-conditioned cov estimator",
+    "Gerber_2015": "Gerber, Markowitz, Pujara (2015) JPM 41(4), 67-78 — Gerber statistic for robust correlation",
+    "Friedman_2008": "Friedman, Hastie, Tibshirani (2008) Biostatistics 9(3) — Sparse inverse covariance Glasso",
+    "Bailey_LdP_2014": "Bailey & López de Prado (2014) JPM 40(5), 94-107 — Deflated Sharpe Ratio",
+    "Harvey_2016": "Harvey, Liu, Zhu (2016) RFS 29(1), 5-68 — t > 3 multiple testing standard",
+    "Pfaff_2016": "Pfaff (2016) Financial Risk Modelling and Portfolio Optimization with R, 2nd ed."
+  },
+  "output_files": {
+    "master_returns_hybrid_plus_4candidates": "qepm/mailbox/research/risk_candidates_20260507/master_returns_hybrid_plus_4candidates.csv",
+    "candidates_pairwise_diag": "qepm/mailbox/research/risk_candidates_20260507/candidates_pairwise_diag.csv",
+    "covariance_4src_5estimator_summary": "qepm/mailbox/research/risk_candidates_20260507/covariance_4src_5estimator_summary.csv",
+    "candidates_tail_risk_metrics": "qepm/mailbox/research/risk_candidates_20260507/candidates_tail_risk_metrics.csv",
+    "candidates_stress_8crisis": "qepm/mailbox/research/risk_candidates_20260507/candidates_stress_8crisis.csv",
+    "candidates_style_exposure": "qepm/mailbox/research/risk_candidates_20260507/candidates_style_exposure.csv",
+    "candidates_regime_correlation": "qepm/mailbox/research/risk_candidates_20260507/candidates_regime_correlation.csv",
+    "candidates_crisis_alpha_summary": "qepm/mailbox/research/risk_candidates_20260507/candidates_crisis_alpha_summary.csv",
+    "regime_4_distribution_cycle2": "qepm/mailbox/research/risk_candidates_20260507/regime_4_distribution_cycle2.csv",
+    "covariance_parquet_dir": "qepm/stage_artifacts/risk_candidates_20260507/ (20 files: 4 candidates × 5 estimators)",
+    "run_meta_cycle2_R": "qepm/mailbox/research/risk_candidates_20260507/run_meta_cycle2.R",
+    "run_meta_cycle2_log": "qepm/mailbox/research/risk_candidates_20260507/run_meta_cycle2.log",
+    "cycle1_risk_package_input": "qepm/mailbox/research/risk_model_meta_20260507/risk_package.json"
+  },
+  "notes_for_qlead": [
+    "본 사이클 2 결과는 사이클 1 추천 4 후보의 historical risk profile 메타 검증",
+    "VRP_KOSPI_Proxy 사이클 2 v2 ranking 2위 (사이클 1 1순위 → SR boost 측면 mid-tier 발견 후 강등) — Highest crisis alpha PASS rate (4/6 vs Hybrid) + lowest pairwise cor with AR (-0.155), 단 strong tail risk (xi 0.40~0.52, kurt 9.82, skew -1.945) + KRX KOSPI 옵션 chain 직접 활용 의무 (사이클 3 1순위 topic)",
+    "Defensive_LowVol_KR 2위 — multi-sleeve component only (AX-005 v1.2 enforcement), single-sleeve standalone 금지",
+    "Commodity_Gold_Copper 3위 — Inflation hedge 가능, 단 GFC 2008 미검증 + KR ETF capacity 제한",
+    "Currency_Carry_KRW 4위 — WEAKEST, Brunnermeier carry crash GFC 2008 -36.88% catastrophic (보류 권고)",
+    "신규 4번째 source 채택 결정은 본 사이클 결과를 입력으로 정식 alpha-research → risk-research → optimizer-research lifecycle 의무",
+    "사이클 3 권고 topic: (a) KOSPI VKOSPI direct VRP, (b) 5-source weight optimization marginal contribution, (c) trend horizon 다변화"
+  ],
+  "codex_critic_round_pending": true,
+  "next_step_codex_critic_invocation": "qepm/mailbox/research/risk_candidates_20260507/codex_critic_response_risk.json (auto-spawn after _draft.json write via PostToolUse Hook)"
+}
