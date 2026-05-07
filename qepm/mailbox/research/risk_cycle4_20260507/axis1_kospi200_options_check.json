@@ -1,0 +1,24 @@
+{
+  "data_check": {
+    "kospi_iv_skew_cache": false,
+    "krx_derivatives_cache": false,
+    "krx_options_cache": false,
+    "rawdata_iv_columns": {
+      "iv_cols_present": [],
+      "n_iv_cols": 0
+    },
+    "collector_script_exists": true
+  },
+  "conclusion": {
+    "data_available": false,
+    "reason": "KOSPI200 옵션 chain cache 부재 (.cache/krx_iv_skew.parquet, krx_derivatives/, krx_options/ 모두 미생성). KRX OpenAPI 호출 통한 acquisition 가능 (data_collector_krx_options.R) 그러나 인증 키 + 일일 rate limit + 본 메타 리서치 scope 외부",
+    "fallback": "사이클 3 US VIX proxy retain (4 sub-variants BKM/CW/BTZ/BCI). 사이클 3 cor_VIX_lag1_KOSPI_RV12m_lag1_level=0.5054, diff=0.1913 정량 한계 명시 인지",
+    "recommendation": "정식 채택 시 (a) KRX OpenAPI 인증 키 발급 (b) data_collector_krx_options.R 일일 cron 등록 (c) 최소 5년 cache 누적 후 BKM/CW direct 산출 (d) US VIX vs KOSPI200 IV 정량 비교 후 retire 판단",
+    "literature_anchor": "Bakshi-Kapadia-Madan 2003 RFS (BKM model-free implied moments) + Bollerslev-Tauchen-Zhou 2009 RFS (VRP-equity premium link 단정 동일 시장 implied vol 의무) + Carr-Wu 2009 RFS (variance swap synthetic)"
+  },
+  "vix_proxy_retain_cycle3": {
+    "cor_level": 0.5054,
+    "cor_diff": 0.1913,
+    "interpretation": "Level corr 0.51 medium-strength proxy (Kuipers 2024 ETF stat 통상 0.5+ acceptable). diff corr 0.19 weak — VIX-RV co-variation 차분 시 약화. KR-specific implied vol 부재 한계 명시 의무"
+  }
+}
