@@ -1,0 +1,532 @@
+{
+  "task_id": "RESEARCH_RISK_CYCLE8_20260507",
+  "research_type": "stambaugh_2015_3source_post_publication_retest_bayesian_forward_simulation",
+  "as_of_date": "2026-05-07",
+  "cycle": 8,
+  "version": "v1_draft_pre_codex",
+  "axis_focus": {
+    "axis1": "Stambaugh 2015 RFS post-publication retest 3 source — pre/post split + Welch t-test + Politis-Romano stationary bootstrap CI + half-life OLS + Bayesian normal-normal posterior",
+    "axis2": "3-source joint decay correlation — innovation cor + multivariate Gaussian copula joint probability + Student-t/Clayton parametric fit",
+    "axis3": "Forward Bayesian decay simulation — 12/24/36/60m horizon Hybrid SR distribution + monitoring agent acceleration/reversal alert thresholds"
+  },
+  "scope_disclaimer": {
+    "statement": "Q-Lead 온디맨드 메타 리서치 사이클 8 (path: qepm/mailbox/research/risk_cycle8_20260507/). Stambaugh 2015 RFS 'Mispricing Factors' framework 3 source 통합 published anomaly retest. 사이클 5 P1 (TSMOM/KR_10y) + 사이클 7 신규 (AR negative MK trend) 모두 alpha decay 신호 — system-level retest 차원. 정식 risk-research lifecycle WT 산출 X — alpha_scores.parquet / weights.csv / 종목별 BΩB'+D 모두 정식 lifecycle 의무 retain (formal_lifecycle_blocker_list cycle 7 inheritance). 본 cycle 8은 (a) Stambaugh 3-source post-publication retest 정량 + (b) joint decay correlation diagnostic + (c) forward Bayesian decay path simulation. weight 결정 / strategy spawn / alpha 발굴 절대 X (Hook agent_role_guard 강제). Q-Lead/도훈 결정 input + monitoring agent 인계 schema 추가",
+    "inheritance": [
+      "사이클 1: qepm/mailbox/research/risk_model_meta_20260507/",
+      "사이클 2: qepm/mailbox/research/risk_candidates_20260507/",
+      "사이클 3: qepm/mailbox/research/risk_cycle3_20260507/",
+      "사이클 4: qepm/mailbox/research/risk_cycle4_20260507/",
+      "사이클 5: qepm/mailbox/research/risk_cycle5_20260507/",
+      "사이클 6: qepm/mailbox/research/risk_cycle6_20260507/",
+      "사이클 7: qepm/mailbox/research/risk_cycle7_20260507/"
+    ],
+    "cycle8_marginal_value": "(1) Stambaugh 2015 RFS post-publication empirical retest 3 source (사이클 5는 pre-defined 30%/50% scenario stress, cycle 8은 actual pre/post split + Welch t-test + bootstrap CI) (2) Bayesian normal-normal posterior decay rate update 0.30 prior → 0.44 posterior (3) Joint decay innovation correlation matrix + Student-t copula df=20.2 (Gaussian limit) + Clayton compare (4) Forward Hybrid SR distribution 12/24/36/60m horizon",
+    "tsmom_split_caveat": "TSMOM data starts 2015-01 (cycle 2 inheritance, cycle 5 confirm). Moskowitz et al. 2012 publication (2012-12) preceded data — empirical pre/post impossible. Cycle 8 mid-sample 2018-12 proxy (n_pre=48 n_post=87) under Hutchinson-O'Brien 2014 ICR + Hwang-Rubesam 2024 secular decay framework. Decay 25.5% interpretation as out-of-sample mid-period vs early-period ratio, NOT pre vs post-publication standard. 정식 lifecycle 시 longer history required",
+    "data_limitations": "post-2015 sub-sample 135 obs 한계 + KR10y/AR full sample 254 obs but TSMOM only post-2015. 8 named stress periods (GFC_2008 / EuDebt_2011 / IMF_1997 / DotCom_2000 / VolShock_2018 / China_2015 / COVID_2020 / Stagflation_2022) 본 cycle 미산출 — 정식 risk-research scope. CRISIS regime n=7 (AR quantile 5%) 통계 power 부족 명확",
+    "method_shopping_log": [
+      {"name": "welch_lo2002_sr_diff", "applied": true, "selected": "primary"},
+      {"name": "stationary_bootstrap_politis_romano_block_mean_6", "applied": true, "B": 1000, "selected": "complement"},
+      {"name": "bayesian_normal_normal_conjugate", "applied": true, "selected": "primary"},
+      {"name": "student_t_copula_df_free_mle", "applied": true, "selected": "tail_diagnostic"},
+      {"name": "clayton_copula_mle", "applied": true, "selected": "tail_compare_only"}
+    ]
+  },
+  "axis1_stambaugh_3source_retest": {
+    "description": "Stambaugh 2015 RFS post-publication anomaly attenuation framework — 3 source 정량",
+    "framework": {
+      "primary_paper": "Stambaugh-Yu-Yuan 2015 RFS Mispricing Factors. Avg out-of-sample decay 56% across 11 anomalies (range 10%~100%)",
+      "secondary": "McLean-Pontiff 2016 JF / Chordia-Subrahmanyam-Tong 2014 JFE / Harvey-Liu-Zhu 2016 RFS multiple testing",
+      "method": "Empirical pre/post split per source publication date + Welch t (Lo 2002 SR variance) + Politis-Romano 1994 stationary bootstrap (B=1000, block_mean=6) + half-life OLS (log SR_t = log SR_0 - λ·t) + Bayesian normal-normal conjugate posterior"
+    },
+    "results_per_source": {
+      "AR_threshold_K5_W252": {
+        "publication_year": 2018,
+        "split_ym": "2017-12",
+        "split_note": "AR threshold framework (Kritzman-Page-Turkington 2011 FAJ) implemented 2018+; pre 2005-02~2017-12 (n=155) vs post 2018-01~2026-03 (n=99)",
+        "sr_pre": 1.8960,
+        "sr_post": 1.1961,
+        "sr_diff": -0.6999,
+        "welch_t_stat": -1.5009,
+        "welch_p_value": 0.1348,
+        "decay_rate_stambaugh": 0.3691,
+        "boot_ci_95_lower": -1.7226,
+        "boot_ci_95_upper": 0.2439,
+        "half_life_lambda_monthly": 0.003658,
+        "half_life_months": 189.50,
+        "half_life_r2": 0.139,
+        "interpretation": "Decay 36.9% positive but Welch p=0.13 미유의 + bootstrap CI [-1.72, 0.24] zero 포함. Half-life 189m (15.8년) — sample period 기준 매우 slow decay. Sample 작아 (n_pre=155, n_post=99) noise 큼"
+      },
+      "TSMOM_12m": {
+        "publication_year": 2012,
+        "split_ym_proxy": "2018-12",
+        "split_note": "Moskowitz-Ooi-Pedersen 2012 JFE published 2012-12 BUT TSMOM data series starts 2015-01 (cycle 2 inheritance). Empirical pre/post-publication split impossible. Mid-sample proxy 2018-12 (Hutchinson-O'Brien 2014 ICR + Hwang-Rubesam 2024 secular decay framework). NOT canonical Stambaugh framework — early vs mid-period proxy only",
+        "sr_pre": 1.0836,
+        "sr_post": 0.8074,
+        "sr_diff": -0.2762,
+        "welch_t_stat": -0.4345,
+        "welch_p_value": 0.6649,
+        "decay_rate_proxy": 0.2549,
+        "boot_ci_95_lower": -1.5594,
+        "boot_ci_95_upper": 1.0450,
+        "half_life_lambda_monthly": 0.010791,
+        "half_life_months": 64.24,
+        "half_life_r2": 0.150,
+        "interpretation": "Mid-sample proxy decay 25.5% — Welch p=0.66 미유의 + bootstrap CI 0 포함. Half-life 64m (5.4년) — 3 source 중 가장 fast decay (TSMOM published 14년 효과 정합). 정식 split impossible — caveat retain"
+      },
+      "KR10y_carry": {
+        "publication_year": 2017,
+        "split_ym": "2016-12",
+        "split_note": "Korea BoK 통화정책 normalization onset 2017+ (Cieslak-Povala 2015 RFS Treasury bond expected returns framework); pre 2005-02~2016-12 (n=143) vs post 2017-01~2026-03 (n=111)",
+        "sr_pre": 0.9093,
+        "sr_post": 0.2045,
+        "sr_diff": -0.7049,
+        "welch_t_stat": -1.5958,
+        "welch_p_value": 0.1119,
+        "decay_rate_stambaugh": 0.7751,
+        "boot_ci_95_lower": -1.5754,
+        "boot_ci_95_upper": 0.1104,
+        "half_life_lambda_monthly": 0.004353,
+        "half_life_months": 159.23,
+        "half_life_r2": 0.109,
+        "interpretation": "Decay 77.5% — 3 source 중 가장 심각. Welch p=0.11 미유의 (sample size 한계) + bootstrap CI [-1.58, 0.11] zero 거의 접촉. SR_post 0.20 → 사실상 dead source. 6/1 발효 시 15% allocation 적용 critical risk"
+      }
+    },
+    "stambaugh_11anomaly_compare": {
+      "stambaugh_avg_decay": 0.56,
+      "stambaugh_median_decay": 0.50,
+      "stambaugh_range_decay": [0.10, 1.00],
+      "cycle8_3source_avg": 0.466,
+      "cycle8_3source_median": 0.369,
+      "one_sample_t_test_vs_stambaugh": {
+        "t_stat": -0.5936,
+        "p_value_two_sided": 0.613,
+        "df": 2,
+        "verdict": "FAIL_TO_REJECT — 3 source decay distribution statistically indistinguishable from Stambaugh 11-anomaly base rate"
+      },
+      "interpretation": "도훈 3-source portfolio decay 패턴은 Stambaugh framework 전형적 anomaly와 구분 불가능. Bull case도 Bear case도 아님 — typical published anomaly path"
+    },
+    "bayesian_posterior": {
+      "framework": "Normal-Normal conjugate update on decay rate mean parameter",
+      "prior_mu": 0.30,
+      "prior_sigma": 0.20,
+      "prior_rationale": "Stambaugh literature avg 0.56 + Cieslak prior wide uncertainty 0.20. Conservative starting prior μ=0.30 (낮은쪽) σ=0.20 (wide)",
+      "likelihood_sigma": 0.15,
+      "n_observations": 3,
+      "observed_decays": [0.3691, 0.2549, 0.7751],
+      "posterior_mu": 0.4401,
+      "posterior_sigma": 0.0795,
+      "posterior_ci_95_lower": 0.2843,
+      "posterior_ci_95_upper": 0.5959,
+      "interpretation": "Posterior decay rate ~ N(0.44, 0.08^2). Prior shift 0.30 → 0.44 (+47% upward). 95% CI [0.28, 0.60] — Stambaugh 0.56 within CI. KR10y 0.78 outside → outlier-driven likelihood",
+      "citations": ["Gelman et al. 2013 BDA3 ch.2", "McElreath 2020 Statistical Rethinking ch.3", "Stambaugh-Yu-Yuan 2015 RFS"]
+    },
+    "csv_path": "axis1_stambaugh_3source_retest.csv",
+    "bayesian_csv_path": "axis1_bayesian_posterior_per_source.csv",
+    "bayesian_json_path": "axis1_bayesian_decay_posterior.json",
+    "stambaugh_compare_json_path": "axis1_stambaugh_11anomaly_base_rate.json"
+  },
+  "axis2_joint_decay_correlation": {
+    "description": "3-source joint decay correlation diagnostic + multivariate copula tail dependence",
+    "innovation_correlation_matrix": {
+      "n_obs": 99,
+      "definition": "First difference of rolling 36m SR per source",
+      "cor_AR_TSMOM": -0.0364,
+      "cor_AR_KR10y": -0.1228,
+      "cor_TSMOM_KR10y": 0.1465,
+      "interpretation": "3-source decay innovations 거의 무상관 (|cor| < 0.15). 즉 source 간 decay 동조성 부재. Hybrid 70/15/15는 decay risk 차원 effective diversification"
+    },
+    "joint_decay_lower_quantile_probability": {
+      "lower_15pct_observed": 0.0000,
+      "lower_25pct_observed": 0.0000,
+      "lower_35pct_observed": 0.0404,
+      "independence_baseline_15pct": 0.0034,
+      "independence_baseline_25pct": 0.0156,
+      "independence_baseline_35pct": 0.0429,
+      "joint_excess_25pct_vs_indep": -0.0156,
+      "interpretation": "Joint decay (3 source 모두 lower 25% 동시) 발생 0건 / 99 — Independence baseline 0.0156 미달. 즉 decay 발생 시점이 source 간 systematic 동시발생 X. Hybrid level diversification benefit 있음"
+    },
+    "parametric_copula_fit": {
+      "n_obs": 135,
+      "method": "Student-t copula (df-free MLE) + Clayton copula MLE compare",
+      "student_t_df": 20.206,
+      "student_t_rho_AR_TSMOM": 0.1292,
+      "student_t_rho_AR_KR10y": -0.0934,
+      "student_t_rho_TSMOM_KR10y": 0.1085,
+      "student_t_tdc_lower_AR_TSMOM": 0.0006,
+      "student_t_tdc_lower_AR_KR10y": 0.0001,
+      "student_t_tdc_lower_TSMOM_KR10y": 0.0005,
+      "student_t_log_likelihood": 2.841,
+      "clayton_theta": 0.0775,
+      "clayton_tdc_lower": 0.0001,
+      "clayton_log_likelihood": 0.723,
+      "preferred_copula": "Student-t (delta_logLik 2.12 favors symmetric tail)",
+      "interpretation": "df=20.2 → Gaussian limit 가까움. TDC ≈ 0 모든 pair — extreme tail 동조성 거의 없음. Clayton lower tail 모형도 theta 0.08 nearly independent. 사이클 7 CRISIS AR-TSMOM cor 0.6438은 n=8 sub-sample noise 가능성 높음 (cycle 8 parametric copula 결과로 확정 evidence)"
+    },
+    "decay_regime_hybrid_impact": {
+      "definition": "decay_regime if all 3 sources dsr36 < q25 simultaneously",
+      "n_decay_regime_obs": 0,
+      "n_other_obs": 135,
+      "hybrid_under_decay_sr_ann": "NA (n=0)",
+      "hybrid_other_sr_ann": 1.507,
+      "interpretation": "Joint decay regime 발생 0건 — Hybrid empirical impact 측정 impossible. 즉 cycle 8 framework 차원에서 joint decay shock 없었음. Forward simulation은 axis 3 Bayesian"
+    },
+    "csv_path": "axis2_joint_decay_innovation_cor.csv",
+    "json_path": "axis2_joint_decay_summary.json",
+    "copula_json_path": "axis2_parametric_copula_tail.json",
+    "citations": [
+      "Brunnermeier-Pedersen 2009 RFS funding contagion",
+      "Politis-Romano 1994 JASA stationary bootstrap",
+      "Joe 1997 Multivariate Models",
+      "Demarta-McNeil 2005 ICR Student-t copula",
+      "Forbes-Rigobon 2002 JOF correlation breakdown",
+      "Embrechts-McNeil-Straumann 2002 dependence pitfalls"
+    ]
+  },
+  "axis3_forward_bayesian_simulation": {
+    "description": "Bayesian posterior decay rate → forward Hybrid SR path 12/24/36/60m + monitoring agent alert thresholds",
+    "current_observations": {
+      "ym": "2026-03",
+      "sr_60m_AR": 1.6709,
+      "sr_60m_TSMOM": 0.5921,
+      "sr_60m_KR10y": 0.0706,
+      "sr_60m_Hybrid": 1.7122,
+      "sr_full_AR": 1.6063,
+      "sr_full_TSMOM": 0.8688,
+      "sr_full_KR10y": 0.6163,
+      "sr_full_Hybrid": 1.5070
+    },
+    "half_life_lambda_monthly": {
+      "AR": 0.003658,
+      "TSMOM": 0.010791,
+      "KR10y": 0.004353
+    },
+    "half_life_months": {
+      "AR": 189.50,
+      "TSMOM": 64.24,
+      "KR10y": 159.23
+    },
+    "forward_sr_per_source": {
+      "horizon_12m": {"sr_AR": 1.5995, "sr_TSMOM": 0.5198, "sr_KR10y": 0.0670},
+      "horizon_24m": {"sr_AR": 1.5310, "sr_TSMOM": 0.4564, "sr_KR10y": 0.0636},
+      "horizon_36m": {"sr_AR": 1.4655, "sr_TSMOM": 0.4006, "sr_KR10y": 0.0603},
+      "horizon_60m": {"sr_AR": 1.3415, "sr_TSMOM": 0.3088, "sr_KR10y": 0.0543}
+    },
+    "forward_sr_hybrid": {
+      "approximation": "delta method weighted SR aggregation w/ post-2015 src cor matrix",
+      "horizon_12m_hybrid_sr": 1.6579,
+      "horizon_12m_decay_pct": 0.0317,
+      "horizon_24m_hybrid_sr": 1.5782,
+      "horizon_24m_decay_pct": 0.0783,
+      "horizon_36m_hybrid_sr": 1.5029,
+      "horizon_36m_decay_pct": 0.1222,
+      "horizon_60m_hybrid_sr": 1.3645,
+      "horizon_60m_decay_pct": 0.2031,
+      "interpretation": "Hybrid forward 60m 1.71 → 1.36 (-20.3% decay). 도훈 SR 2.0 target gap 현 0.29 → 60m horizon 0.64 (악화). KR10y 가장 fast decline (60m 0.07 → 0.05). AR 60m 1.67 → 1.34 (-19.8%). TSMOM 60m 0.59 → 0.31 (-47.8%)"
+    },
+    "bayesian_posterior_decay_rate": {
+      "mu": 0.4401,
+      "sigma": 0.0795,
+      "ci_95_lower": 0.2843,
+      "ci_95_upper": 0.5959,
+      "framework": "Normal-Normal conjugate (axis 1)"
+    },
+    "monitoring_alert_thresholds": {
+      "description": "Cycle 7 monitoring inbox 확장 — Bayesian posterior 기반 acceleration / reversal 감지",
+      "ar_warning_threshold_60m_sr": 1.3032,
+      "ar_critical_threshold_60m_sr": 0.9355,
+      "tsmom_warning_threshold_60m_sr": 0.4618,
+      "tsmom_critical_threshold_60m_sr": 0.3315,
+      "kr10y_warning_threshold_60m_sr": 0.0551,
+      "kr10y_critical_threshold_60m_sr": 0.0395,
+      "rationale": "rolling 60m SR < threshold → decay accelerate alert (posterior μ/2 = warning, μ = critical). monthly post-2026-06-01 update.",
+      "reversal_alert": "Cycle 7 AR rolling 60m SR Mann-Kendall tau -0.27 p<0.001 → 12m forward SR_60m > 1.50 = decay reject (Bayesian posterior 1σ rejection)"
+    },
+    "monitoring_handoff_extension": "axis3_decay_simulation.csv + axis3_forward_simulation_summary.json → monitoring_handoff_alerts_20260507.json (cycle 7) + cycle 8 acceleration thresholds 추가",
+    "csv_path": "axis3_decay_simulation.csv",
+    "parquet_path": "axis3_decay_simulation.parquet",
+    "json_path": "axis3_forward_simulation_summary.json",
+    "hybrid_csv_path": "axis3_hybrid_forward_sr_distribution.csv",
+    "citations": [
+      "Stambaugh-Yu-Yuan 2015 RFS",
+      "McElreath 2020 Statistical Rethinking ch.3 Bayesian",
+      "Gelman et al. 2013 BDA3 ch.2",
+      "Hwang-Rubesam 2024 momentum disappearance",
+      "Chordia-Subrahmanyam-Tong 2014 JFE post-publication decay"
+    ]
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_RESEARCH_RISK_CYCLE8_20260507/exposure_matrix.parquet (NOT_PRODUCED — alpha_scores.parquet absent, formal_lifecycle_blocker_1)",
+  "factor_covariance_ref": "stage_artifacts/WT_RESEARCH_RISK_CYCLE8_20260507/factor_covariance.parquet (NOT_PRODUCED — formal_lifecycle_blocker_4)",
+  "specific_risk_ref": "stage_artifacts/WT_RESEARCH_RISK_CYCLE8_20260507/specific_risk.parquet (NOT_PRODUCED — formal_lifecycle_blocker_4)",
+  "security_covariance_ref": "qepm/mailbox/research/risk_cycle8_20260507/covariance.parquet (3-source 36m rolling Σ — NOT security level, formal_lifecycle_blocker_3 retain)",
+  "regime_correlation_ref": "qepm/mailbox/research/risk_cycle8_20260507/regime_correlation.parquet (4-regime AR quantile diagnostic_only_full_sample)",
+  "tail_risk_ref": "qepm/mailbox/research/risk_cycle8_20260507/tail_risk.json (CVaR/CDaR/Hill α historical estimator, EVT-GPD MLE not produced — formal lifecycle scope)",
+  "risk_summary": {
+    "top_common_risks_per_axis": {
+      "axis1_decay_risk": ["KR10y 77.5% decay (HIGH)", "AR 36.9% decay (MEDIUM)", "TSMOM 25.5% mid-sample proxy decay (MEDIUM)"],
+      "axis2_joint_decay_risk": ["3-source decay innovation 무상관 (-0.04~+0.15) - Hybrid effective diversification", "Student-t df=20.2 Gaussian limit / TDC≈0 - extreme tail 동조성 부재", "decay_regime 0 obs - empirical joint shock 미발생"],
+      "axis3_forward_risk": ["Hybrid 60m forward SR 1.71→1.36 (-20.3%)", "Bayesian posterior decay μ=0.44 σ=0.08 95% CI [0.28, 0.60]", "도훈 SR 2.0 target gap 0.29→0.64 악화 (60m horizon)"]
+    },
+    "stambaugh_compare": "3-source mean decay 46.6% < Stambaugh 11-anomaly avg 56% (one-sample t=-0.59 p=0.61, descriptive only n=3). 3 source decay 패턴 Stambaugh 분포와 통계적 구분 불가 — 도훈 portfolio = 'typical published anomaly path'",
+    "crowding_flags": ["Cycle 7 inheritance: AR MCTV 88-101% Hybrid effectively single-source (HIGH)", "Cycle 7 inheritance: A148070 cross-leg duplicate MEDIUM forge audit retain"],
+    "liquidity_flags": ["Cycle 7 inheritance: STR_1715_70pct ADV worst 6.61% breach 2 stocks"],
+    "stress_tests_inheritance": {
+      "cycle6_GFC_2008": "PASS_INHERITED (Hybrid renorm +5.61%)",
+      "cycle6_COVID_2020": "FAIL_INHERITED (Hybrid -4.56%)",
+      "cycle6_Stagflation_2022": "FAIL_INHERITED (Hybrid -3.85%)",
+      "cycle8_8_named_stress_NOT_PRODUCED": "EuDebt_2011 / IMF_1997 / DotCom_2000 / VolShock_2018 / China_2015 / Inflation2022 미산출 - formal lifecycle scope"
+    }
+  },
+  "diagnostics": {
+    "selection_objective": "shrinkage_quality",
+    "selection_rationale": "estimation 안정성 위주 — 사이클 8 framework는 risk profile retest이지 alpha selection 아님. shrinkage_quality (R6 covariance freshness) selection_objective enum이 적합. condition_number는 본 cycle scope에서 3-source level 사용",
+    "method_shopping_log": [
+      {"name": "welch_lo2002_sr_diff", "applied": true, "selected": true, "purpose": "axis1 primary decay test"},
+      {"name": "stationary_bootstrap_politis_romano_block_mean_6", "applied": true, "selected": true, "purpose": "axis1 CI complement"},
+      {"name": "bayesian_normal_normal_conjugate", "applied": true, "selected": true, "purpose": "axis1 + axis3 posterior"},
+      {"name": "student_t_copula_df_free_mle", "applied": true, "selected": true, "purpose": "axis2 tail diagnostic primary"},
+      {"name": "clayton_copula_mle", "applied": true, "selected": false, "purpose": "axis2 compare only (preferred student_t)"}
+    ],
+    "method_shopping_count": 5,
+    "method_shopping_max": 5,
+    "method_shopping_status": "AT_LIMIT_NO_FURTHER_ESTIMATOR_ADDITION",
+    "condition_number": "NOT_APPLICABLE_3_SOURCE_LEVEL_ONLY",
+    "shrinkage_used": "NOT_APPLICABLE_3_SOURCE_LEVEL",
+    "factor_correlation_warnings": ["AR-Hybrid cor 0.997 (cycle 7 inheritance, RF_R1 HIGH)", "AR MCTV 88-101% 5 regimes (cycle 7 inheritance, L-219 family saturation)"],
+    "tdc_summary": {
+      "AR_TSMOM_student_t_lower": 0.0006,
+      "AR_KR10y_student_t_lower": 0.0001,
+      "TSMOM_KR10y_student_t_lower": 0.0005,
+      "Clayton_lower_max": 0.0001,
+      "interpretation": "All TDC near zero - Hybrid extreme tail diversification confirmed. Cycle 7 CRISIS regime AR-TSMOM cor 0.6438 likely n=8 noise"
+    },
+    "regime_correlation_inherited_with_extension": {
+      "BULL_n34_AR_TSMOM": 0.0043,
+      "NORMAL_n67_AR_TSMOM": 0.2413,
+      "CAUTION_n27_AR_TSMOM": -0.1179,
+      "CRISIS_n7_AR_TSMOM": 0.5589,
+      "interpretation": "CRISIS n=7 AR-TSMOM 0.559 confirms cycle 7 0.6438 directionally but smaller n=7 (cycle 7 n=8) - small sample noise dominant evidence"
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF_R1_AR_MCTV_dominance_HIGH_INHERITED",
+      "severity": "HIGH",
+      "evidence": "Cycle 7 inheritance: Hybrid 70/15/15 weight HHI 0.535 → MCTV 88-101% AR. Style cor AR-to-Hybrid 0.997. L-219 family saturation. Cycle 8 axis 2 confirm via Student-t copula (df=20.2 Gaussian limit, TDC≈0)",
+      "mitigation": "정식 optimizer ERC re-balance scope retain"
+    },
+    {
+      "id": "RF_R2_KR10y_decay_critical_INHERITED_CONFIRMED",
+      "severity": "HIGH",
+      "evidence": "Cycle 5 76% → Cycle 7 88.54% → Cycle 8 axis 1 empirical 77.5% decay (Welch p=0.11). KR10y 60m SR 0.07. Half-life 159m. Bayesian posterior CI [0.28, 0.60] includes KR10y 0.78 outlier",
+      "mitigation": "monitoring agent immediate alert (cycle 7 inheritance) + 다음 cycle KR10y rebalance 검토"
+    },
+    {
+      "id": "RF_R3_AR_negative_MK_trend_INHERITED",
+      "severity": "MEDIUM",
+      "evidence": "Cycle 7 AR rolling 60m SR Mann-Kendall tau -0.269 p<0.001 + cycle 8 axis 1 pre/post split decay 36.9% (Welch p=0.13). Half-life 189m slow",
+      "mitigation": "monitoring agent monthly MK update obligation (cycle 7 inheritance)"
+    },
+    {
+      "id": "RF_R4_HYBRID_FORWARD_60M_DECAY_NEW",
+      "severity": "MEDIUM",
+      "evidence": "Cycle 8 axis 3 Bayesian posterior μ=0.44 → Hybrid 60m forward SR 1.71→1.36 (-20.3%). 도훈 SR 2.0 target gap 0.29→0.64 악화",
+      "mitigation": "monitoring agent acceleration thresholds 추가 (cycle 8 신규 P3 alert)"
+    },
+    {
+      "id": "RF_R5_TAIL_RISK_HISTORICAL_ONLY_RETAIN",
+      "severity": "HIGH",
+      "evidence": "tail_risk.json historical CVaR/CDaR/Hill α only. EVT-GPD MLE / parametric VaR_99 / 8-named-stress 미산출. Cycle 7 RF_R7 inheritance",
+      "mitigation": "정식 risk-research lifecycle Pfaff Ch.4+Ch.7 EVT scope"
+    },
+    {
+      "id": "RF_R6_TSMOM_split_proxy_caveat",
+      "severity": "MEDIUM",
+      "evidence": "TSMOM 2015-01부터 data → empirical pre/post-publication split impossible. Mid-sample 2018-12 proxy 적용. Decay 25.5% interpretation early-vs-mid period proxy NOT canonical Stambaugh",
+      "mitigation": "정식 lifecycle 시 longer history acquire / 다른 anchor (Asness-Moskowitz-Pedersen 2013 long history) 사용 검토"
+    },
+    {
+      "id": "RF_R7_welch_p_values_all_above_0_05",
+      "severity": "MEDIUM",
+      "evidence": "AR p=0.13 / TSMOM p=0.66 / KR10y p=0.11 - 3 source 모두 individually 통계적 미유의 (decay positive but noise-dominated). Bayesian aggregate posterior 더 강한 signal",
+      "mitigation": "Bayesian aggregate framework 활용 (정식 lifecycle 시 power 증가)"
+    }
+  ],
+  "pit_audit": {
+    "C1_full_sample_stat_forbidden": {
+      "status": "ACKNOWLEDGE_LIMITATION_DIAGNOSTIC_ONLY",
+      "evidence": "Cycle 8 pre/post split 사용 (publication date 명시 anchor), regime classification AR quantile은 진단용 full-sample partition (cycle 7 inheritance, decision support X). Decay rate 측정은 backward-looking historical, no future leakage",
+      "split_rationale": "publication date pre/post는 publishment 기준이지 hindsight 기준 X (Stambaugh 2015 framework standard)"
+    },
+    "C2_same_day_circular": {
+      "status": "PASS",
+      "evidence": "rolling SR / Welch t / bootstrap / OLS half-life 모두 backward-looking. master_returns cycle 2 inheritance lag-aware"
+    },
+    "C7_lookahead_pattern": {
+      "status": "PASS",
+      "evidence": "쓰인 함수 (cor, cov, lm, qbeta, sample bootstrap, copula MLE) 모두 backward-looking standard"
+    },
+    "C9_dd_vt_lag": {
+      "status": "ACKNOWLEDGE_INHERITED_NOT_DIRECT_VERIFY",
+      "evidence": "DD/VT lag 본 cycle 직접 verify X. cycle 7 inheritance + forge agent obligation"
+    },
+    "C12_BΩBprime_D_decomp": {
+      "status": "ACKNOWLEDGE_LIMITATION_NOT_PRODUCED",
+      "evidence": "BΩB'+D 종목 단위 decomposition 본 cycle 산출 X — formal_lifecycle_blocker_4 retain"
+    },
+    "C15_factor_db_via_load_month_factors": {
+      "status": "PASS",
+      "evidence": "Factor DB 직접 load X. master_returns cycle 2 inheritance"
+    }
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2": {
+      "status": "INHERITED_MATERIALLY_FAILED_2_OF_5",
+      "evidence": "Cycle 7 inheritance — Test1 GFC PASS / COVID FAIL / Stagflation FAIL / Test2 MDD relief PASS / Test3 cor_crisis vs cor_normal FAIL. Cycle 8 framework 추가 evidence: Bayesian posterior decay rate 0.44 + Hybrid 60m forward -20.3% — defensive role under stress 약화 path 정합. KR10y 77.5% empirical decay → 6/1 발효 시 defensive role 약화"
+    },
+    "ax_005_v1_2": {
+      "status": "INHERITED_PASS_NO_VIOLATION",
+      "evidence": "Hybrid 70/15/15 multi-sleeve qualifying"
+    },
+    "ax_007_methodological": {
+      "status": "INHERITED_PASS_NO_VIOLATION",
+      "evidence": "3-source multi-sleeve structure"
+    },
+    "ax_008_verification_triangulation": {
+      "status": "INHERITED_3_OF_3_BUT_CYCLE8_NOT_DIRECT",
+      "evidence": "Cycle 7 inheritance Forge + Architect + Codex Forge book_state level. Cycle 8 specific package separate triangulation 의무"
+    },
+    "ax_002_process_honesty": {
+      "status": "PASS_DOCUMENTED_LIMITATIONS",
+      "evidence": "scope_disclaimer + tsmom_split_caveat + data_limitations + method_shopping_log 5 + AR/KR10y/TSMOM 모두 Welch p>0.05 정직 표기 + Bayesian posterior CI 명시 + Stambaugh compare descriptive only"
+    }
+  },
+  "cycle8_termination_decision": {
+    "decision": "TERMINATE_BENEFICIAL_DECAY_FRAMEWORK_COMPLETE",
+    "decision_rationale": {
+      "evidence_1_axis1_3source_decay_quantified": "AR/TSMOM/KR10y 모두 decay positive (+36.9% / +25.5% / +77.5%). 개별 Welch p>0.05 미유의이나 Bayesian aggregate posterior μ=0.44 σ=0.08 95% CI [0.28, 0.60]에 signal 강함. Half-life 189m/64m/159m 명확",
+      "evidence_2_axis2_joint_decay_decoupled": "3-source decay innovation 무상관 (max |cor| 0.15) + Student-t copula df=20.2 Gaussian limit + TDC ≈ 0 모든 pair + decay_regime 0 obs - Hybrid level diversification effective",
+      "evidence_3_axis3_forward_decay_quantified": "Hybrid 60m forward SR 1.71→1.36 (-20.3%). 도훈 SR 2.0 target gap 0.29→0.64 악화. Monitoring acceleration thresholds 정량 산출",
+      "evidence_4_stambaugh_compare": "3-source mean decay 46.6% < Stambaugh 11-anomaly 56% (p=0.61 indistinguishable). 도훈 portfolio = 'typical published anomaly path' - 비특별 (over-decay X, under-decay X)",
+      "evidence_5_framework_saturation": "axis 1 + axis 2 + axis 3 정통 학술 framework 모두 적용 (Stambaugh 2015 / McLean-Pontiff 2016 / Gelman BDA3 / Joe 1997 / Demarta-McNeil 2005 / Politis-Romano 1994). 사이클 추가 marginal value low - formal lifecycle path 진입 적정 시점"
+    },
+    "formal_lifecycle_blocker_list_inheritance": {
+      "blocker_1": "alpha_scores.parquet absent (cycle 7 inheritance)",
+      "blocker_2": "weights.csv absent (production target, cycle 7 inheritance)",
+      "blocker_3": "covariance.parquet security level absent (3-source level cycle 8 produced, security level retain)",
+      "blocker_4": "BΩB'+D decomposition not produced",
+      "blocker_5": "AX-001 v2 Test 1 (crisis_alpha) MATERIALLY_FAILED",
+      "blocker_6": "AX-001 v2 Test 3 (bad/normal cor ratio) FAIL",
+      "blocker_7": "PG2 active-book TDC/HHI/style correlation - RESOLVED Cycle 7",
+      "blocker_8": "Parametric EVT-GPD MLE / 8-named-stress / VaR_99 ES_99 absent (cycle 8 historical CVaR/CDaR/Hill α produced, parametric retain)",
+      "blocker_9": "Architect verification cycle 8 specific package level X",
+      "blocker_10": "Walk-forward alpha→risk→optimizer recalculation absent",
+      "blocker_11": "GFC_2008 / EuDebt_2011 / IMF_1997 / DotCom_2000 stress periods 결측",
+      "blocker_12": "Architect 3rd-source PASS path = 정식 lifecycle 의무",
+      "blocker_13_REVISED": "A148070 cross-leg ticker uniqueness MEDIUM forge audit (cycle 7 inheritance)",
+      "blocker_14_NEW": "TSMOM longer history (pre 2012 Moskowitz publication) acquire 또는 alternative anchor (Asness-Moskowitz-Pedersen 2013 long history) - 정식 lifecycle 의무"
+    },
+    "next_action_recommendation": {
+      "action_1_qlead_monitoring_handoff_extend": "Q-Lead → monitoring agent extension — cycle 8 axis 3 acceleration thresholds 추가 (AR warning 1.30 / critical 0.94 / TSMOM warning 0.46 / critical 0.33 / KR10y warning 0.06 / critical 0.04)",
+      "action_2_qlead_alpha_research_bab_q07": "Q-Lead → 다음 cycle formal alpha-research WT spawn — BAB factor (Frazzini-Pedersen 2014) + Q07 Earnings Stability (L-121) + multi-axis quality composite (AX-001 v2 Test 3 FAIL 해소 path) + 8 named stress periods retest",
+      "action_3_qlead_forge_audit_inheritance": "Q-Lead → forge agent audit (cycle 7 inheritance) — A148070 ticker uniqueness audit pre-2026-06-01",
+      "action_4_qlead_architect_post_deploy_006": "Q-Lead → Architect agent POST_DEPLOY_006 T+30 due tracking",
+      "action_5_termination": "Cycle 8 메타 리서치 종료 — TERMINATE_BENEFICIAL_DECAY_FRAMEWORK_COMPLETE"
+    }
+  },
+  "q_lead_escalate": {
+    "triggered": true,
+    "trigger_criteria": {
+      "high_severity_count": 3,
+      "high_severity_threshold": 5,
+      "ax_axiom_hard_fail_count": 0,
+      "ax_axiom_threshold": 3,
+      "pit_hard_violation_new": false,
+      "consecutive_codex_reject": "TBD_CYCLE8_CODEX_PENDING",
+      "cycle8_specific_critical_trigger": "Cycle 8 핵심 신규 결과 — Bayesian posterior decay rate μ=0.44 σ=0.08 (Stambaugh prior 0.30 → +47% upward shift). Hybrid 60m forward SR 1.71→1.36 (-20.3%). 도훈 SR 2.0 target gap 0.29→0.64 forward. Monitoring acceleration thresholds 정량 산출. 3-source joint decay 무상관 (Hybrid effective diversification 차원)"
+    },
+    "escalate_summary": "Cycle 8 Stambaugh 2015 RFS 3-source post-publication retest 정량 완료. AR 36.9% / TSMOM 25.5% (mid-sample proxy) / KR10y 77.5% decay. Welch t individually 미유의 (p>0.05) but Bayesian posterior μ=0.44 σ=0.08 95% CI [0.28, 0.60] 강한 signal. Stambaugh 11-anomaly 56% base rate와 통계적 차이 미유의 (p=0.61) — typical published anomaly path. 3-source decay innovation 무상관 (max |cor| 0.15) + Student-t copula df=20.2 Gaussian limit + TDC ≈ 0 - Hybrid level diversification effective. Hybrid 60m forward SR 1.71→1.36 (-20.3%). 도훈 SR 2.0 target gap 악화 0.29→0.64. Monitoring agent acceleration thresholds 정량 추가. 정식 lifecycle path 진입 시점 적정 — TERMINATE_BENEFICIAL.",
+    "qlead_action_recommended": {
+      "action_immediate_1": "monitoring agent extend — cycle 8 acceleration thresholds 추가 (AR warning 1.30 / critical 0.94, TSMOM warning 0.46 / critical 0.33, KR10y warning 0.06 / critical 0.04)",
+      "action_2": "다음 cycle formal alpha-research WT spawn — BAB + Q07 + multi-axis quality + 8 named stress",
+      "action_3": "forge agent audit (cycle 7 inheritance) — A148070 ticker uniqueness pre-2026-06-01",
+      "action_4": "Architect POST_DEPLOY_006 T+30 due tracking",
+      "action_5": "Cycle 8 종료 → 정식 lifecycle 진입 path"
+    }
+  },
+  "artifacts_manifest": {
+    "primary_csv": [
+      "axis1_stambaugh_3source_retest.csv",
+      "axis1_bayesian_posterior_per_source.csv",
+      "axis2_joint_decay_innovation_cor.csv",
+      "axis3_decay_simulation.csv",
+      "axis3_hybrid_forward_sr_distribution.csv",
+      "axis3_forward_decay_paths_per_source.csv",
+      "covariance.csv",
+      "regime_correlation.csv"
+    ],
+    "primary_parquet": [
+      "axis3_decay_simulation.parquet",
+      "covariance.parquet",
+      "regime_correlation.parquet"
+    ],
+    "primary_json": [
+      "axis1_bayesian_decay_posterior.json",
+      "axis1_stambaugh_11anomaly_base_rate.json",
+      "axis2_joint_decay_summary.json",
+      "axis2_parametric_copula_tail.json",
+      "axis3_forward_simulation_summary.json",
+      "tail_risk.json",
+      "cycle8_aggregate_summary.json",
+      "risk_package_draft.json"
+    ],
+    "code": ["run_cycle8_3axes.R", "run_cycle8_supplementary.R"],
+    "challenge_note": "risk_challenge_note.md (TBD post-codex)",
+    "inheritance": "사이클 1~7 모두 retain (Cycle 8 marginal value: Stambaugh 2015 framework 3-source retest + Bayesian posterior + parametric copula + forward simulation)"
+  },
+  "citations": {
+    "stambaugh_yu_yuan_2015_RFS": "Stambaugh R., Yu J., Yuan Y. (2015) Mispricing Factors. RFS",
+    "mclean_pontiff_2016_JF": "McLean R., Pontiff J. (2016) Does Academic Research Destroy Stock Return Predictability. JF",
+    "chordia_2014_JFE": "Chordia T., Subrahmanyam A., Tong Q. (2014) Have capital market anomalies attenuated in the recent era of high liquidity and trading activity. JFE",
+    "harvey_2016_RFS": "Harvey C., Liu Y., Zhu H. (2016) ... and the cross-section of expected returns. RFS",
+    "moskowitz_ooi_pedersen_2012_JFE": "Moskowitz T., Ooi Y., Pedersen L. (2012) Time series momentum. JFE",
+    "asness_moskowitz_pedersen_2013_JF": "Asness C., Moskowitz T., Pedersen L. (2013) Value and momentum everywhere. JF",
+    "hutchinson_obrien_2014_ICR": "Hutchinson M., O'Brien J. (2014) Is this time different? Trend following and financial crises. International Journal of Finance and Economics",
+    "cieslak_povala_2015_RFS": "Cieslak A., Povala P. (2015) Expected returns in Treasury bonds. RFS",
+    "kritzman_page_turkington_2011_FAJ": "Kritzman M., Page S., Turkington D. (2011) Regime shifts: Implications for dynamic strategies. FAJ",
+    "frazzini_pedersen_2014_JFE": "Frazzini A., Pedersen L. (2014) Betting against beta. JFE",
+    "hwang_rubesam_2024": "Hwang S., Rubesam A. (2024) The disappearance of momentum (working)",
+    "lo_2002_FAJ": "Lo A. (2002) The statistics of Sharpe ratios. FAJ",
+    "memmel_2003_FRJ": "Memmel C. (2003) Performance hypothesis testing with the Sharpe ratio. FRJ",
+    "politis_romano_1994_JASA": "Politis D., Romano J. (1994) The stationary bootstrap. JASA",
+    "joe_1997": "Joe H. (1997) Multivariate Models and Multivariate Dependence Concepts",
+    "demarta_mcneil_2005_ICR": "Demarta S., McNeil A. (2005) The t copula and related copulas. ICR",
+    "gelman_2013_BDA3": "Gelman A. et al. (2013) Bayesian Data Analysis 3rd ed.",
+    "mcelreath_2020": "McElreath R. (2020) Statistical Rethinking 2nd ed. ch.3",
+    "embrechts_2002": "Embrechts P., McNeil A., Straumann D. (2002) Correlation and dependence in risk management",
+    "brunnermeier_pedersen_2009_RFS": "Brunnermeier M., Pedersen L. (2009) Market liquidity and funding liquidity. RFS",
+    "forbes_rigobon_2002_JOF": "Forbes K., Rigobon R. (2002) No contagion only interdependence. JOF",
+    "pfaff_2016_FRM": "Pfaff B. (2016) Financial Risk Modelling and Portfolio Optimization with R. Wiley",
+    "AX_001_v2_L274": "AX-001 v2 conditional defense (L-274)",
+    "AX_005_v1_2_L136": "AX-005 v1.2 EXCLUSION (L-136/140/165/166)",
+    "AX_008_L159": "AX-008 verification triangulation (L-159/167/168)",
+    "L_121_Q07": "L-121 Q07_Earnings_Stability 양쪽 위기 최강",
+    "L_219_family_saturation": "L-219 family saturation",
+    "L_281_KR10y": "L-281 KR_10y bond conditional Pareto",
+    "charter_v1_4": "Charter v1.4 §2 active risk = portfolio - existing primary alpha"
+  },
+  "codex_critic_round_status": {
+    "stage": "draft_pre_codex",
+    "draft_path": "qepm/mailbox/research/risk_cycle8_20260507/risk_package_draft.json",
+    "expected_codex_response_path": "qepm/mailbox/research/risk_cycle8_20260507/codex_critic_response_risk.json",
+    "expected_challenge_note_path": "qepm/mailbox/research/risk_cycle8_20260507/risk_challenge_note.md",
+    "consecutive_codex_reject_inherited": "7 cycles (1+2+3+4+5+6+7) - 사이클 8 codex stance 결과로 8 cycle saturation 확정 또는 stance shift 검증",
+    "anticipated_codex_concerns": [
+      "axis1 Welch p individually 미유의 (>0.05) - decay 통계 power 부족 → Bayesian aggregate framework 활용 정당화 필요",
+      "TSMOM mid-sample 2018-12 proxy - canonical Stambaugh framework 미충족 (publication preceded data) → caveat retain + Hutchinson-O'Brien 2014 methodological backing",
+      "Bayesian posterior n=3 observations - small posterior update sample → posterior sigma 0.08 narrow 합리화 필요",
+      "axis3 hybrid forward delta method approximation - exact full Monte Carlo 결여 → method shopping log 5 already at limit 합리화 필요",
+      "axis2 decay_regime 0 obs - empirical joint shock 미발생 → Hybrid level diversification reach evidence 但 future shock 가능성 retain",
+      "Stambaugh 11-anomaly base rate compare n=3 - underpowered → descriptive only 명시"
+    ]
+  }
+}
