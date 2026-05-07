@@ -1,0 +1,56 @@
+{
+  "axis": "axis_5_regime_shift_conditional_response",
+  "empirical_transition_matrix_csv": "axis5_transition_matrix.csv",
+  "stationary_distribution": {
+    "BULL": 0.3058,
+    "NORMAL": 0.2916,
+    "CAUTION": 0.3056,
+    "CRISIS": 0.097
+  },
+  "empirical_distribution": {
+    "BULL": 0.3037,
+    "NORMAL": 0.2963,
+    "CAUTION": 0.3037,
+    "CRISIS": 0.0963
+  },
+  "per_regime_hybrid_csv": "axis5_per_regime_hybrid.csv",
+  "per_regime_sources_csv": "axis5_per_regime_sources.csv",
+  "initial_state_2026_03": "BULL",
+  "markov_forward_state_probs_csv": "axis5_markov_forward_state_probs.csv",
+  "markov_cum_ret_csv": "axis5_markov_cum_ret.csv",
+  "ax_001_v2_check": {
+    "test1_crisis_alpha": {
+      "kr10y_crisis": 0.0038,
+      "ar_crisis": -0.0766,
+      "kr10y_normal": -0.0005,
+      "kr10y_caution": 0.001,
+      "pass": true,
+      "rationale": "CRISIS regime KR10y mean monthly: 0.0038. AR CRISIS mean: -0.0766. KR10y CRISIS positive = crisis_alpha PASS"
+    },
+    "test2_mdd_relief": {
+      "mdd_AR_100pct": -0.2515,
+      "mdd_AR70_cash30_currentMay": -0.1761,
+      "mdd_Hybrid_70_15_15": -0.1569,
+      "hybrid_vs_AR100_relief_pp": -9.4599,
+      "hybrid_vs_AR70cash30_relief_pp": -1.9174,
+      "pass": true,
+      "rationale": "Hybrid MDD < AR pure MDD 시 PASS"
+    },
+    "test3_bad_normal_ratio": {
+      "cor_crisis": -0.4849,
+      "cor_caution": -0.3024,
+      "cor_normal": -0.4774,
+      "cor_bull": -0.2486,
+      "bad_lt_normal": true,
+      "rationale": "bad regime (CRISIS) cor with AR should be < normal regime cor (defensive role)"
+    },
+    "overall_pass": true
+  },
+  "scenario_stress_json": "axis5_scenario_stress.json",
+  "alert_thresholds": {
+    "crisis_persist_warning_h_lt_3": 0.3,
+    "cum_ret_neg_warning_h12": 0.2,
+    "rationale": "12m horizon에서 P(CRISIS) > 30% OR P(cum_ret<0) > 20% 시 monitoring agent alert"
+  },
+  "citations": ["Hamilton 1989 ECMA Markov regime", "AX-001 v2 conditional defense L-274", "L-281 KR_10y bond conditional Pareto"]
+}
