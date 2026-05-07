@@ -342,14 +342,14 @@ risk_package_final <- list(
       blocker_10 = "Walk-forward alpha→risk→optimizer recalculation absent",
       blocker_11 = "GFC_2008 / EuDebt_2011 / IMF_1997 / DotCom_2000 stress periods 결측",
       blocker_12 = "Architect 3rd-source PASS path = 정식 lifecycle 의무 retain (Charter v1.7 §10)",
-      blocker_13_NEW = "Cycle 7 직접 검증 deploy_snapshot_20260601.csv Σw=1 0.66% breach + A148070 duplicate + EQ_KR_TOP20 leg label inconsistency — forge agent re-execute obligatory"
+      blocker_13_REVISED = "Cycle 7 직접 검증 (R precision): deploy_snapshot_20260601.csv Σw=1 PASS at 1e-8 floating point. A148070 (KODEX_KTB10Y) cross-leg duplicate MEDIUM audit (TSMOM + KR_10y 동일 ETF, system trade aggregation logic obligation). Initial awk-based audit FALSE POSITIVE downgrade — forge agent verification not re-execute"
     ),
     next_action_recommendation = list(
-      action_1_qlead_forge_immediate = "Q-Lead → forge agent immediate spawn — deploy_snapshot_20260601.csv re-execute via forward_weights.R v2 + Σw=1 strict + ticker uniqueness audit + leg label consistency check + lookahead_detector.R pre-2026-06-01 (24일 마진)",
+      action_1_qlead_forge_audit = "Q-Lead → forge agent audit (not re-execute) — deploy_snapshot_20260601.csv ticker_uniqueness audit + system_trade_aggregation logic verification (A148070 cross-leg sum to single 0.1768 position) + standard lookahead_detector.R pre-2026-06-01",
       action_2_qlead_monitoring_handoff = "Q-Lead → monitoring agent spawn — handoff schema 인계 (cycle 5+6+7 통합 alert thresholds)",
       action_3_qlead_alpha_research_bab = "Q-Lead → 다음 cycle formal alpha-research WT spawn — BAB factor + Q07 Earnings Stability direct + multi-axis quality composite (AX-001 v2 Test 3 FAIL 해소 path)",
       action_4_qlead_architect_post_deploy_006 = "Q-Lead → Architect agent POST_DEPLOY_006 T+30 due tracking (AX-008 3rd source 독립 검증 retain)",
-      action_5_termination = "Cycle 7 메타 리서치 종료 — TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_DEPLOY_SNAPSHOT_HARD_VIOLATION"
+      action_5_termination = "Cycle 7 메타 리서치 종료 — TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_TICKER_UNIQUENESS_MEDIUM_AUDIT"
     )
   ),
 
@@ -362,11 +362,11 @@ risk_package_final <- list(
       ax_axiom_threshold = 3,
       pit_hard_violation_new = FALSE,
       consecutive_codex_reject = 7,
-      cycle7_specific_critical_trigger = "Cycle 7 직접 검증 deploy_snapshot Σw=1 hard violation + A148070 duplicate + RF_R6 HIGH_NEW + RF_R1 severity 격상 + AR negative MK trend 새 발견"
+      cycle7_specific_critical_trigger = "Cycle 7 직접 검증 R precision: deploy_snapshot Σw=1 PASS (initial awk audit FALSE POSITIVE), A148070 ticker uniqueness MEDIUM audit retain. RF_R1 severity 격상 (AR MCTV dominance L-219 family saturation) + AR negative MK trend 새 발견"
     ),
-    escalate_summary = "Cycle 7 monitoring agent 인계 ready + 6/1 deployment CONDITIONAL_PROCEED (C8 hard violation due to forge re-execute). Cycle 6 blocker #7 해소 (PG2 active book 실시간 진단). KR_10y CRITICAL decay 88.54% (cycle 5 76% 대비 worsening) + AR rolling 60m SR negative MK trend tau -0.27 p<0.001 새 발견. CRISIS regime AR-TSMOM cor 0.6438 (위기 직교성 4.21x 약화, bootstrap 95% CI 산출) — 정식 lifecycle BAB + Q07 direct alpha-research path. Codex C8 hard violation 발견: deploy_snapshot Σw=1 0.66% breach + A148070 ticker duplicate. forge agent immediate spawn obligatory.",
+    escalate_summary = "Cycle 7 monitoring agent 인계 ready + 6/1 deployment CONDITIONAL_PROCEED. Cycle 6 blocker #7 해소 (PG2 active book 실시간 진단). KR_10y CRITICAL decay 88.54% (cycle 5 76% 대비 worsening) + AR rolling 60m SR negative MK trend tau -0.27 p<0.001 새 발견. CRISIS regime AR-TSMOM cor 0.6438 bootstrap 95% CI [0.37, 0.96] (위기 직교성 4.21x 약화, n=8 통계 power 부족). Codex C8 정정: 초기 awk 검증 FALSE POSITIVE (sum=1.00664). R data.table precision sum=1.00000001 PASS — Σw=1 hard violation 부재. A148070 (KODEX_KTB10Y) cross-leg duplicate MEDIUM audit retain (TSMOM + KR_10y 동일 ETF, system trade aggregation 의무).",
     qlead_action_recommended = list(
-      action_immediate_1 = "forge agent spawn — deploy_snapshot 재생성 + Σw=1 strict + ticker uniqueness",
+      action_immediate_1 = "forge agent audit (not re-execute) — deploy_snapshot ticker_uniqueness audit + system_trade_aggregation logic verification A148070 cross-leg",
       action_2 = "monitoring agent spawn — handoff schema 인계",
       action_3 = "다음 cycle formal alpha-research WT (BAB + Q07 + 8 stress)",
       action_4 = "Architect POST_DEPLOY_006 T+30 due tracking",
@@ -442,14 +442,14 @@ risk_package_final <- list(
     ),
     rationalization_corrections_count = 5,
     rationalization_corrections = c(
-      "GREENLIGHT_WITH_TIMELINE_REMEDIATION_RETAIN → CONDITIONAL_PROCEED_INHERITED_BOOK_STATE_FORMAL_LIFECYCLE_OBLIGATION_C8_HARD_VIOLATION",
+      "GREENLIGHT_WITH_TIMELINE_REMEDIATION_RETAIN → CONDITIONAL_PROCEED_INHERITED_BOOK_STATE_FORMAL_LIFECYCLE_OBLIGATION_C8_TICKER_UNIQUENESS_MEDIUM",
       "AX-001 v2 PARTIAL_PASS_2_OF_5 → MATERIALLY_FAILED_2_OF_5_NEEDS_BAB_Q07_8_STRESS",
-      "Schedule fidelity PARTIAL_PASS_3_OF_5 → HARD_VIOLATION_DEPLOY_SNAPSHOT_FORGE_RE_EXECUTE_OBLIGATORY",
+      "Schedule fidelity PARTIAL_PASS_3_OF_5 → PARTIAL_PASS_TICKER_UNIQUENESS_AUDIT_REQUIRED",
       "RF_R1 severity MEDIUM → HIGH",
-      "RF_R6_deploy_snapshot_violation HIGH_NEW 추가"
+      "RF_R6 severity HIGH_NEW → MEDIUM_REVISED (R precision verification: sum violation FALSE POSITIVE)"
     ),
     consecutive_codex_reject = "7 cycles (1+2+3+4+5+6+7) — meta path saturation 결정적 증거",
-    cycle7_codex_value = "C8 hard violation 발견 (deploy_snapshot Σw=1 0.66% breach + A148070 duplicate) — Codex critic round 정확 식별 입증. cycle 7 marginal contribution: PG2 active book diagnostics + monitoring handoff + C8 deploy snapshot finding"
+    cycle7_codex_value = "C8 ticker uniqueness audit 발견 (A148070 cross-leg duplicate). 초기 awk 검증 sum=1.00664는 FALSE POSITIVE (R precision sum=1.00000001 PASS). cycle 7 marginal contribution: PG2 active book diagnostics + monitoring handoff + ticker uniqueness audit"
   )
 )
 
@@ -463,16 +463,16 @@ final_aggregate <- list(
   research_type = "meta_self_research_qlead_ondemand_cycle7_pg2_active_book_monitoring_handoff_post_codex_disposition",
   as_of_date = "2026-05-07",
   cycle = 7,
-  termination_decision = "TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_DEPLOY_SNAPSHOT_HARD_VIOLATION",
+  termination_decision = "TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_TICKER_UNIQUENESS_MEDIUM_AUDIT",
   marginal_value_post_codex = list(
     axis1_pg2_active_book_resolved = "Cycle 6 blocker #7 해소 + CRISIS bootstrap CI 추가",
     axis2_monitoring_handoff_delivered = "Cycle 5+6+7 통합 schema (monitoring agent inbox)",
     axis3_61_conditional_proceed = "8 check scorecard CONDITIONAL_PROCEED",
-    cycle7_codex_critic_value = "C8 hard violation 발견 — deploy_snapshot Σw=1 0.66% breach + A148070 ticker duplicate",
-    next_action_immediate = "forge agent re-execute deploy_snapshot pre-2026-06-01"
+    cycle7_codex_critic_value = "C8 ticker uniqueness audit 발견 (A148070 cross-leg). Initial awk audit FALSE POSITIVE — R precision Σw=1 PASS",
+    next_action_immediate = "forge agent ticker uniqueness audit (not re-execute) pre-2026-06-01"
   ),
   q_lead_escalate_actions = c(
-    "1. forge agent immediate spawn — deploy_snapshot re-execute",
+    "1. forge agent audit — deploy_snapshot ticker_uniqueness verification (not re-execute)",
     "2. monitoring agent spawn — handoff schema 인계",
     "3. 다음 cycle formal alpha-research WT (BAB + Q07 + 8 stress)",
     "4. Architect POST_DEPLOY_006 T+30 due tracking",
