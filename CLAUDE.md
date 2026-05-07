@@ -73,7 +73,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - **Codex Critic Round 의무**: `.claude/rules/codex-round.md` (모든 agent spawn 시 5단계 흐름, 우회 시 PreToolUse Hook block)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)
-- **Telegram v5 ENFORCE**: `.claude/skills/qvest-telegram/SKILL.md` (`tg_agent_brief()` 단일 진입점)
+- **Telegram v6 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 자동, 표준 4섹션 권장)
 - **Caching Discipline**: `.claude/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
 - **Harness Engineering (Hooks Tier 1~6)**: `.claude/rules/harness.md`
 - **Factor DB + Forge 자원**: `.claude/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
@@ -212,7 +212,7 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 |---|---|
 | `qvest-worktask` | WorkTask lifecycle 절차 (CLAUDE.md에서 이동) |
 | `qvest-codex-round` | Codex Critic Round 5단계 흐름 |
-| `qvest-telegram` | tg_agent_brief() 사용법 + v5 ENFORCE |
+| `qvest-telegram` | 텔레그램 단일 SOT (v6) — 양식 / 약어 풀이 / Hook 정책 / caller 예시 통합 |
 | (Phase 9 추가 예정) | qvest-hook-debug / qvest-cert-paths |
 
 ### Rules (`.claude/rules/`) — Level 0 헌법 보강

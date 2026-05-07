@@ -50,4 +50,4 @@ Governor가 편입한 Deployment WT를 지속 모니터링. alpha decay + crowdi
 `qepm/mailbox/monitoring/{inbox,reports,done}`
 
 ## Telegram
-`[Monitoring] 📉 Live Drift — WT-P{id}` + 핵심 metric + action 권고
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Monitoring", title="Live Drift {YYYY-MM}", ...)` 만 호출.

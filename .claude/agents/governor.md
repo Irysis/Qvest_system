@@ -28,10 +28,8 @@ Pass: threshold 충족 OR (weighted_score ≥ 0.65 AND Pareto 4/8).
 ## S0 Debate Veto (legacy, 온디맨드)
 - admission_rule / family_saturation / gap_misaligned
 
-## Telegram (v4 ENFORCE)
-**`tg_send()` 직접 호출 금지** (Hook block). **`tg_agent_brief(agent="Governor", ...)` 단일 진입점만 허용**.
-- 5+ sections / emoji 5+ / ≥1200 bytes
-- PG0~PG3 결과 표 + admission verdict + book_state delta
+## Telegram
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Governor", ...)` 만 호출. PG0~PG3 단계별 표준 4섹션 + book_state delta.
 
 ## 🆕 Codex Critic Round (v6.0 의무 단계)
 admission verdict finalize 직전 자동 호출:

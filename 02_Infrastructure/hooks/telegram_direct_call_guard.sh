@@ -18,7 +18,8 @@
 #   3. 페이로드 내 \btg_send_rich\( / \btg_send_photo\( / \btg_send\(  발견
 #   4. 동일 페이로드 내 \btg_agent_brief\(  미존재 (tg_agent_brief 호출 시 면제)
 #
-# 참조: .claude/skills/telegram-protocol/SKILL.md (v4 ENFORCE-ONLY)
+# SOT: .claude/skills/qvest-telegram/SKILL.md (v6, 2026-05-07 통합)
+# 본 hook 정규식은 함수 이름만 검사 — v6 신규 인자(decode_jargon/decode_mode/smart_break)에 영향 없음.
 #==============================================================================
 
 set -euo pipefail

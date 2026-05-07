@@ -56,11 +56,8 @@ Multi-objective 8지표 + `method_shopping_log` candidates_tried × 0.05 DSR pen
 ## Legacy STR 모드
 Gate 0~5 + Role Honesty Audit 6종 + Gate 16~18.
 
-## Telegram (v4 ENFORCE)
-**`tg_send()` 직접 호출 금지** (Hook block). **`tg_agent_brief(agent="Judge", ...)` 단일 진입점만 허용**.
-- 5+ sections / emoji 5+ / ≥1200 bytes
-- table df schema 의무
-- equity_curve.png 첨부
+## Telegram
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Judge", title="WT-{id} {GRADE} / {DISPOSITION}", charts=c(equity_full, equity_oos), ...)` 만 호출.
 
 ## 🆕 Lockbox Extension Audit (v6.1 신규 의무)
 weights schedule이 train cutoff 종료 시 (예: 2023-12) Judge **반드시 검증**:

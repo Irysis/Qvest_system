@@ -100,7 +100,7 @@ S0 Debate에서 Governor의 veto 권한:
   - `stage_artifacts/pg2_allocation_{portfolio_id}_rev{n}.json` — sleeve weights + allocation_method
   </artifacts>
   <telegram>
-  [Governor] PG0: 📊 gap 진단 + sleeve_needs / PG1: ✅❌ admission / PG2: 🏗️ 배분 + method / PG3: 📈📉 검증
+  SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Governor", ...)` 만 호출. PG0~PG3 단계별 표준 4섹션 (summary / metrics / risks / next).
   </telegram>
 </output_format>
 
@@ -151,29 +151,8 @@ Work Task 체계에서 Governor는 **개별 WT admission**뿐 아니라 **admitt
 }
 ```
 
-### Telegram Book Rebalance (v4 ENFORCE — `tg_agent_brief` only)
-```r
-source("02_Infrastructure/telegram/telegram_notify.R")
-tg_agent_brief(
-  agent = "Governor",
-  title = "Book Rebalance — Admitted WT Set",
-  sections = list(
-    list(emoji="📦", heading="Admitted WTs", type="bullet", items=admitted_wt_list),
-    list(emoji="📊", heading="Book Performance", type="kv",
-         kv = list("Book IR"=sprintf("%.3f", book_ir),
-                   "Book SR"=sprintf("%.3f", book_sr),
-                   "Crowding HHI"=sprintf("%.3f", crowding_hhi))),
-    list(emoji="🎯", heading="Per-WT Weights", type="table",
-         df = data.frame(WT=wt_ids, Weight=weight_pcts, Role=roles, stringsAsFactors=FALSE)),
-    list(emoji="⚠️", heading="Risk Flags", type="bullet",
-         items = c(sprintf("Top crowding factors: %s", paste(top_factors, collapse=", ")),
-                   sprintf("Sector concentration: %.1f%%", max_sector_pct),
-                   sprintf("PG2 vs new: TDC=%.3f", new_tdc)))
-  ),
-  emoji_min = 5L
-)
-```
-**위반 차단**: `tg_send/tg_send_rich/tg_send_photo` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
+### Telegram Book Rebalance
+SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.5 (Governor admit 예시). agent="Governor" + summary(book 변경 1줄) + table(WT × Weight × Role, ncol≤3) + kv(Book IR/SR/Crowding HHI) + bullet(Risk Flags).
 </v61_book_level_r5>
 
 <work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>

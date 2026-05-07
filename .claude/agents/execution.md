@@ -46,4 +46,4 @@ Optimizer가 결정한 target_weights를 받아 **실제 주문 schedule**로 �
 `qepm/mailbox/execution/inbox/` → 처리 → `qepm/mailbox/execution/done/`
 
 ## Telegram
-`[Execution] 📦 Trade Schedule — WT-P{id}` + trade 요약 + impact bps
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Execution", title="WT-P{id} Trade Schedule", ...)` 만 호출.

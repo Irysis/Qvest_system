@@ -64,10 +64,7 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
   - `hurdle_result.json` (백테스트 후)
   </artifacts>
   <telegram>
-  v4 ENFORCE — `tg_agent_brief(agent="Forge", ...)` 단일 호출만. 차트는 `charts = c("equity_curve.png", "annual_returns.png")` 인자 사용.
-  Sections (≥4): table(Grade/Score/SR/CAGR/MDD/IR) + text(강점 ≥50자) + bullet(약점 ≥3건) + kv(메타 ≥3개).
-  `tg_send_photo()` / `tg_send_rich()` / `tg_send()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
-  상세: `_shared_prefix.md::telegram_protocol` v4 + `.claude/skills/telegram-protocol/SKILL.md`.
+  SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge", title="WT-{id} {grade}", sections=...)` 만 호출. 차트는 `charts=c("equity_curve.png", "annual_returns.png")` 인자. 표준 4섹션(summary/metrics/risks/next) 권장.
   </telegram>
 </output_format>
 

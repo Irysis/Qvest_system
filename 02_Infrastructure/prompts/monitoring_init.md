@@ -90,16 +90,11 @@ if (cov_cache_regime != current_regime) flag_alerts(wt_id, "regime_shift")
 </output_schema>
 
 <telegram>
-[Monitoring] 📉 Live Drift — {YYYY-MM}
-━━━━━━━━━━━━━━━━━
-📦 감시 WTs: {N}건
-🎯 α realized/predicted: book avg {ratio}
-📊 TE realized/predicted: book avg {ratio}
-⚠️ Alert count: {total} (signal_decay {n1} / risk_under {n2} / overcrowd {n3} / regime_shift {n4})
-🚨 Worst WT: {wt_id} ({alert_count}종 alert)
-
-Action 권고:
-{action_list}
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Monitoring", title="Live Drift {YYYY-MM}", sections=...)` 만 호출. 권장 4섹션:
+- 📌 summary (감시 WT 수 + drift 종합 1줄)
+- 📊 kv (α realized/predicted ratio / TE realized/predicted ratio)
+- 🚨 table (Alert 분류: signal_decay / risk_under / overcrowd / regime_shift)
+- ➡️ bullet (Action 권고)
 </telegram>
 
 <execution_modes>

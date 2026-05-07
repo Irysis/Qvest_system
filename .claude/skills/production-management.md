@@ -37,7 +37,12 @@ current_dd <- (peak_nav - current_nav) / peak_nav
 3. 나머지 30% 현금 보유
 4. 텔레그램 알림 발송
 ```r
-tg_send("[Q-Lead] \u26A0\uFE0F CRISIS 전환: 인버스 30% + 캐시 30% 실행")
+tg_agent_brief(agent = "Q-Lead", title = "CRISIS 전환 실행",
+  sections = list(
+    list(type = "summary",
+         body = "시장 국면 점수 50+ 3일 연속. 인버스 30% + 현금 30% 즉시 실행."),
+    list(type = "kv", emoji = "\U0001F6A8", heading = "변경",
+         kv = list("주식 매도" = "60%", "KODEX 인버스" = "30%", "현금" = "30%")))
 ```
 
 **Crisis → Normal (MRS < 20, 5일 연속)**
@@ -64,9 +69,13 @@ source(file.path(INFRA_DIR, "portfolio/pm_run.R"))
 pm_result <- pm_run("STR_1631_VDplus")
 ```
 2. 매매안 검토: 종목 수, 회전율, 이상 종목
-3. 텔레그램으로 매매안 발송
+3. 텔레그램으로 매매안 발송 (SOT: `.claude/skills/qvest-telegram/SKILL.md`)
 ```r
-tg_send(format_trade_list(pm_result))
+tg_agent_brief(agent = "Q-Lead", title = "격월 매매안",
+  sections = list(
+    list(type = "summary", body = format_trade_summary_oneline(pm_result)),
+    list(type = "table", emoji = "📊", heading = "매매안",
+         df = format_trade_df(pm_result, ncol_max = 3))))
 ```
 
 **D+1 (월초 첫 거래일)**

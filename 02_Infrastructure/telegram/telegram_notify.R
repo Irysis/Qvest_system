@@ -2,19 +2,22 @@
 # Quant Module — Telegram Notification Module
 # telegram_notify.R
 #
-# Functions:
-#   tg_send(msg)                          — plain HTML message
-#   tg_strategy_result(name, hurdle)      — result + score breakdown
-#   tg_strategy_result_with_chart(...)    — above + equity + annual charts
-#   tg_pass_analysis(name, output_dir)    — PASS 전략 팩터 분석 요약
-#   tg_dart_progress(done, total)         — DART 수집 진행률
-#   tg_dart_complete(ok, empty, fail)     — DART 완료 알림
-#   tg_paper_analyzed(id, title, idea)    — 논문 분석 완료
-#   tg_briefing(content, slot)            — 단순 브리핑
-#   tg_full_briefing(slot)                — 전체 브리핑 (전략+리서치+차트)
-#   tg_error(strategy_name, error_msg)    — 오류 알림
-#   tg_send_photo(path, caption)          — 사진 전송
-#   tg_send_document(path, caption)       — 파일 전송
+# SOT: .claude/skills/qvest-telegram/SKILL.md (v6, 2026-05-07)
+#   - 양식 / 약어 풀이 / Hook 정책 / caller 예시
+#   - 본 파일 .TG_CONFIG list와 SKILL.md §3 매직 상수 1:1 동기화 의무
+#   - 규칙 변경 시 SKILL.md 먼저 수정, R 동기화. 역방향 금지.
+#
+# Public API (caller 진입점):
+#   tg_agent_brief(agent, title, sections, ...)    — 단일 진입점 ⭐
+#   tg_send_photo(path, caption)                   — 사진 (tg_agent_brief charts= 권장)
+#
+# Internal helpers (caller 직접 호출 금지 — Hook telegram_direct_call_guard.sh 차단):
+#   tg_send / tg_send_rich / tg_format_table / tg_decode_jargon
+#   tg_text_smart_break / tg_format_summary
+#
+# Legacy (retain, 신규 caller 사용 금지):
+#   tg_strategy_result_with_chart / tg_pass_analysis
+#   tg_full_briefing / tg_regime_briefing
 #==============================================================================
 
 suppressPackageStartupMessages(library(httr))
@@ -53,6 +56,25 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 }
 .TG_BASE       <- sprintf("https://api.telegram.org/bot%s", .TG_TOKEN)
 .TG_API        <- paste0(.TG_BASE, "/sendMessage")
+
+# ─── SOT 매직 상수 (.claude/skills/qvest-telegram/SKILL.md §3와 1:1 동기화) ───
+# v6 (2026-05-07): 가독성 개편. v5 강제값 완화 (1200→400, 4→2, 50→30, 3→2).
+# 변경 시 SKILL.md §3 표 먼저 수정하고 본 list 동기화. 역방향 금지.
+.TG_CONFIG <- list(
+  MIN_BYTES        = 400L,    # 메시지 최소 바이트 (skeleton 차단)
+  MIN_SECTIONS     = 2L,      # 비어있지 않은 섹션 최소 수
+  TEXT_MIN         = 30L,     # text body 최소 자수
+  BULLET_MIN       = 2L,      # bullet 항목 최소 수
+  KV_MIN           = 2L,      # kv 항목 최소 수
+  MAX_NCOL         = 3L,      # table 최대 열 수 (모바일)
+  MAX_TOTAL_WIDTH  = 32L,     # table 합산 폭 상한 (CJK 2칸)
+  MAX_COL_WIDTH    = 20L,     # table 개별 열 상한
+  EMOJI_MIN        = 5L,      # 메시지당 emoji 최소
+  SUMMARY_MIN      = 20L,     # summary type 최소 자수 (1줄 헤드라인)
+  SUMMARY_MAX      = 200L,    # summary type 최대 자수
+  CODE_MIN         = 20L,     # code body 최소 자수
+  TABLE_NROW_MIN   = 2L       # table nrow 최소
+)
 
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 
@@ -244,16 +266,16 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
 }
 
 tg_format_table <- function(df, separator = "-",
-                              max_col_width = 20L,
-                              max_total_width = 32L,  # v5 (2026-04-30): 40→32 모바일 강화
+                              max_col_width = .TG_CONFIG$MAX_COL_WIDTH,
+                              max_total_width = .TG_CONFIG$MAX_TOTAL_WIDTH,
                               auto_escape = TRUE,
-                              ncol_max = 3L) {       # v5: ncol max 3 강제
+                              ncol_max = .TG_CONFIG$MAX_NCOL) {
   if (!is.data.frame(df) || nrow(df) == 0) return("")
   cols <- names(df)
 
-  # v5 (L-260): ncol > 3 차단 → caller가 kv 또는 행 분할 사용해야 함
+  # v6 SOT (.TG_CONFIG$MAX_NCOL): ncol 초과 시 차단. caller가 kv 또는 행 분할 사용.
   if (length(cols) > ncol_max) {
-    stop(sprintf("[tg_format_table] v5 ENFORCE: ncol=%d > %d cap. 모바일 가독성. kv 또는 long-format으로 reformat 필요.",
+    stop(sprintf("[tg_format_table] v6 SOT: ncol=%d > %d cap. 모바일 가독성. kv 또는 long-format으로 reformat 필요.",
                  length(cols), ncol_max))
   }
 
@@ -295,10 +317,10 @@ tg_format_table <- function(df, separator = "-",
     as.integer(min(max(header_w, val_w), effective_max_col))
   }, cols, char_df, USE.NAMES = FALSE)
 
-  # 3) 총 폭 체크 (v5 ENFORCE) — > cap 시 stop()
+  # 3) 총 폭 체크 (v6 SOT .TG_CONFIG$MAX_TOTAL_WIDTH) — cap 초과 시 stop()
   total_w <- sum(widths) + 2L * (length(widths) - 1L)
   if (total_w > max_total_width) {
-    stop(sprintf("[tg_format_table] v5 ENFORCE: total width %d > %d cap (ncol=%d, effective_max_col=%d). 모바일 가독성 위반. kv/long-format reformat 필요.",
+    stop(sprintf("[tg_format_table] v6 SOT: total width %d > %d cap (ncol=%d, effective_max_col=%d). 모바일 가독성 위반. kv/long-format reformat 필요.",
                  total_w, max_total_width, ncol_n, effective_max_col))
   }
 
@@ -595,16 +617,171 @@ tg_emoji_verdict <- function(verdicts) {
   }, character(1))
 }
 
+# ─── v6 SOT 약어 풀이 사전 (.claude/skills/qvest-telegram/SKILL.md §5와 동기화) ───
+# 정통 한글 퀀트 용어 (Harvey 2016 / Lopez de Prado 표기 한글화).
+# 변경 시 SKILL.md §5 표 먼저 수정하고 본 list 동기화.
+.JARGON_DICT <- list(
+  # 내부 식별자 (long pattern 먼저 — overlap 방지)
+  list(pattern = "WT-D[0-9]{8}_[0-9]{3}",  ko = "발견형 작업"),
+  list(pattern = "WT-P[0-9]{8}_[0-9]{3}",  ko = "운용형 작업"),
+  list(pattern = "STR_[0-9]{4}",            ko = "전략"),
+  list(pattern = "AX-[0-9]{3}",             ko = "공리"),
+  list(pattern = "L-[0-9]{2,4}",            ko = "교훈"),
+  list(pattern = "RF-[A-Z][0-9]+",          ko = "위험신호"),
+  list(pattern = "\\bPG[0-3]\\b",           ko = "운용단계"),
+
+  # 계량 지표 (정통 한글)
+  list(pattern = "\\bICIR\\b",              ko = "정보계수 안정성"),
+  list(pattern = "\\bCAGR\\b",              ko = "연복리수익률"),
+  list(pattern = "\\bMDD\\b",               ko = "최대낙폭"),
+  list(pattern = "\\bDSR\\b",               ko = "디플레이티드 샤프"),
+  list(pattern = "\\bSR\\b",                ko = "샤프지수"),
+  list(pattern = "\\bIC\\b",                ko = "정보계수"),
+  list(pattern = "Harvey[- ]?t\\b",         ko = "다중검정 t값"),
+  list(pattern = "\\bt_NW\\b",              ko = "Newey-West t값"),
+  list(pattern = "Bailey[- ]?LdP\\b",       ko = "Lopez de Prado 검정"),
+  list(pattern = "\\bTDC\\b",               ko = "꼬리 의존성"),
+  list(pattern = "\\bMRS\\b",               ko = "시장 국면 점수"),
+  list(pattern = "\\bSUE\\b",               ko = "표준화 어닝 서프라이즈"),
+  list(pattern = "\\bESBR\\b",              ko = "이익 변경률"),
+  list(pattern = "\\bADV\\b",               ko = "평균 거래대금"),
+  list(pattern = "\\bFF[35]\\b",            ko = "Fama-French 팩터"),
+  list(pattern = "\\bBAB\\b",               ko = "베타 차익거래"),
+  list(pattern = "\\bBM_Ret\\b",            ko = "벤치마크 수익률"),
+  list(pattern = "\\bOOS\\b",               ko = "표본 외 검증")
+)
+
+# tg_decode_jargon: SKILL.md §5 정책 — 약어 첫 등장 1회 한글 풀이 (default)
+#  mode "inline_first": 본문 첫 등장에 "약어 (한글)" 부착 (이후는 그대로)
+#  mode "footer":       본문 미변환 + 등장 약어 합쳐 footer 부착
+#  mode "off":          변환 없음 (정통 보고서)
+tg_decode_jargon <- function(text, mode = c("inline_first", "footer", "off")) {
+  mode <- match.arg(mode)
+  if (mode == "off" || !is.character(text) || length(text) != 1 || !nzchar(text)) return(text)
+
+  # <pre>...</pre> 블록 보호 (마스킹 후 복원)
+  pre_pattern <- "<pre>[\\s\\S]*?</pre>"
+  pre_locs <- gregexpr(pre_pattern, text, perl = TRUE)[[1]]
+  pre_blocks <- character(0)
+  if (pre_locs[1] != -1) {
+    pre_blocks <- regmatches(text, gregexpr(pre_pattern, text, perl = TRUE))[[1]]
+    for (i in seq_along(pre_blocks)) {
+      text <- sub(pre_blocks[i], sprintf("PRE%d", i), text, fixed = TRUE)
+    }
+  }
+
+  if (mode == "inline_first") {
+    for (entry in .JARGON_DICT) {
+      m <- regexpr(entry$pattern, text, perl = TRUE)
+      if (m > 0) {
+        start <- as.integer(m)
+        len   <- attr(m, "match.length")
+        end   <- start + len - 1L
+        tail  <- substr(text, end + 1L, min(end + 40L, nchar(text)))
+        # 이미 직후 괄호로 한글 풀이가 있으면 skip
+        already <- grepl("^\\s*\\([가-힣].*\\)", tail, perl = TRUE)
+        if (!already) {
+          matched <- substr(text, start, end)
+          repl    <- sprintf("%s (%s)", matched, entry$ko)
+          text <- paste0(substr(text, 1L, start - 1L),
+                          repl,
+                          substr(text, end + 1L, nchar(text)))
+        }
+      }
+    }
+  } else if (mode == "footer") {
+    found_pairs <- character(0)
+    for (entry in .JARGON_DICT) {
+      m <- regexpr(entry$pattern, text, perl = TRUE)
+      if (m > 0) {
+        start <- as.integer(m)
+        end   <- start + attr(m, "match.length") - 1L
+        label <- substr(text, start, end)
+        # 일반화 short label 추출 (e.g., WT-D20260504_001 → WT-D / STR_1715 → STR_)
+        short <- if (grepl("^WT-", label)) substr(label, 1, 4)
+                  else if (grepl("^STR_", label)) "STR_"
+                  else if (grepl("^AX-", label)) "AX-"
+                  else if (grepl("^L-", label)) "L-"
+                  else if (grepl("^RF-", label)) "RF-"
+                  else label
+        pair <- sprintf("%s=%s", short, entry$ko)
+        if (!pair %in% found_pairs) found_pairs <- c(found_pairs, pair)
+      }
+    }
+    if (length(found_pairs) > 0) {
+      footer_str <- paste0("\U0001F4DA 약어: ", paste(found_pairs, collapse = " / "))
+      text <- paste(text, footer_str, sep = "\n\n")
+    }
+  }
+
+  # <pre> 복원
+  if (length(pre_blocks) > 0) {
+    for (i in seq_along(pre_blocks)) {
+      text <- sub(sprintf("PRE%d", i), pre_blocks[i], text, fixed = TRUE)
+    }
+  }
+  text
+}
+
+# tg_text_smart_break: SKILL.md §2 원칙 6 — 개조식 자동 줄바꿈
+# 마침표/감탄/물음표 + space, 한국어 종결어미, " / ", " → ", "; " 분리.
+# <pre> 블록 보존.
+tg_text_smart_break <- function(text) {
+  if (!is.character(text) || length(text) != 1 || !nzchar(text)) return(text)
+
+  pre_pattern <- "<pre>[\\s\\S]*?</pre>"
+  pre_locs <- gregexpr(pre_pattern, text, perl = TRUE)[[1]]
+  pre_blocks <- character(0)
+  if (pre_locs[1] != -1) {
+    pre_blocks <- regmatches(text, gregexpr(pre_pattern, text, perl = TRUE))[[1]]
+    for (i in seq_along(pre_blocks)) {
+      text <- sub(pre_blocks[i], sprintf("PRE%d", i), text, fixed = TRUE)
+    }
+  }
+
+  # 1) 마침표/감탄/물음표 + space + 비공백 → \n (한글/숫자/영문 통합)
+  text <- gsub("([.!?]) +(?=\\S)", "\\1\n", text, perl = TRUE)
+  # 2) " / " → "\n  • " (개조식 bullet)
+  text <- gsub(" / ", "\n  • ", text, fixed = TRUE)
+  # 3) " → " → "\n  → "
+  text <- gsub(" → ", "\n  → ", text, fixed = TRUE)
+  # 4) "; " (세미콜론) → \n
+  text <- gsub("; +", "\n", text, perl = TRUE)
+
+  # <pre> 복원
+  if (length(pre_blocks) > 0) {
+    for (i in seq_along(pre_blocks)) {
+      text <- sub(sprintf("PRE%d", i), pre_blocks[i], text, fixed = TRUE)
+    }
+  }
+  text
+}
+
+# tg_format_summary: summary section type 단일 helper (1줄 헤드라인)
+tg_format_summary <- function(text, emoji = "\U0001F4CC") {
+  if (!is.character(text) || length(text) != 1) stop("[tg_format_summary] single string required")
+  n <- nchar(text)
+  if (n < .TG_CONFIG$SUMMARY_MIN || n > .TG_CONFIG$SUMMARY_MAX) {
+    stop(sprintf("[tg_format_summary] body must be [%d, %d] chars (got %d). 1줄 헤드라인용.",
+                  .TG_CONFIG$SUMMARY_MIN, .TG_CONFIG$SUMMARY_MAX, n))
+  }
+  sprintf("%s <b>%s</b>", emoji, tg_html_escape(text))
+}
+
 tg_agent_brief <- function(agent,
                              title,
                              sections = list(),
                              as_of = format(Sys.Date(), "%Y-%m-%d"),
                              charts = NULL,
                              footer = NULL,
-                             emoji_min = 5L,
+                             emoji_min = .TG_CONFIG$EMOJI_MIN,
                              dry_run = FALSE,
                              force = FALSE,
-                             lock_scope = NULL) {
+                             lock_scope = NULL,
+                             # ─── v6 SOT (2026-05-07) — SKILL.md §5/§6 동기화 ───
+                             decode_jargon = TRUE,
+                             decode_mode = "inline_first",  # inline_first / footer / off
+                             smart_break = TRUE) {
 
   # ── 0. Single-Dispatch lock (2026-04-24 v2, 물리적 강제) ─────────────────────
   # 같은 agent + title prefix 중복 호출 차단. Forge 2번 발송 사례 방지.
@@ -646,8 +823,8 @@ tg_agent_brief <- function(agent,
   }
   agent_emoji <- .AGENT_EMOJI_MAP[[agent]]
 
-  # 제목은 auto_sanitize에서 escape되므로 raw 허용
-  hdr <- sprintf("%s <b>[%s] %s</b>\n📅 as_of %s",
+  # v6 SOT 헤더 단순화 — `🎯 Q-Lead · 제목\n📅 2026-XX-XX`
+  hdr <- sprintf("%s <b>%s · %s</b>\n\U0001F4C5 %s",
                  agent_emoji, agent, title, as_of)
 
   # ── 2. 섹션 렌더 ─────────────────────────────────────────────────────────────
@@ -694,9 +871,9 @@ tg_agent_brief <- function(agent,
       type,
       "table" = {
         if (!is.data.frame(s$df)) stop("[tg_agent_brief] 'table' section requires df (data.frame)")
-        if (nrow(s$df) < 2L) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires nrow >= 2 (got %d). Single-row tables look broken on mobile.",
-                                            heading, nrow(s$df)))
-        if (ncol(s$df) < 2L) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires ncol >= 2 (got %d). Single-col tables = bullet list (use type='bullet' instead).",
+        if (nrow(s$df) < .TG_CONFIG$TABLE_NROW_MIN) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires nrow >= %d (got %d). 1행 표는 모바일에서 붕괴.",
+                                            heading, .TG_CONFIG$TABLE_NROW_MIN, nrow(s$df)))
+        if (ncol(s$df) < 2L) stop(sprintf("[tg_agent_brief] 'table' section heading='%s' requires ncol >= 2 (got %d). 1열 = bullet 권장 (type='bullet').",
                                             heading, ncol(s$df)))
         max_col <- s$max_col_width %||% 18L
         tbl <- tg_format_table(s$df, max_col_width = as.integer(max_col),
@@ -711,36 +888,37 @@ tg_agent_brief <- function(agent,
         # plain text — auto_sanitize이 <>& 처리.
         # <b> <code> <pre> 유효 태그는 caller가 직접 사용 가능.
         body_str <- as.character(s$body %||% "")
-        if (nchar(body_str) < 50L) {
-          stop(sprintf("[tg_agent_brief] 'text' section heading='%s' requires body >= 50 chars (got %d). Use bullet/table for short content.",
-                        heading, nchar(body_str)))
+        if (nchar(body_str) < .TG_CONFIG$TEXT_MIN) {
+          stop(sprintf("[tg_agent_brief] 'text' section heading='%s' requires body >= %d chars (got %d). 짧으면 'summary' / 'bullet' / 'kv' 사용.",
+                        heading, .TG_CONFIG$TEXT_MIN, nchar(body_str)))
         }
-        # v5 (L-260, 2026-04-30): 자동 줄바꿈 — 마침표 + 공백 → 마침표 + 엔터.
-        # 단 이미 \n이 있는 경우 보존 (caller가 명시적으로 줄바꿈 사용한 경우).
-        # 약어 보호 (e.g., "vs." "U.S." 등은 대문자/약어 패턴).
-        body_str <- gsub("([.!?]) +([A-ZA-Za-z<])", "\\1\n\\2", body_str, perl = TRUE)
-        # 한글 문장 종결 (다. / 요. / 등.) 줄바꿈
-        body_str <- gsub("([一-鿿가-힯]+\\.) +", "\\1\n", body_str, perl = TRUE)
+        # v6 SOT — tg_text_smart_break() 통합 줄바꿈 (마침표/슬래시/화살표/한국어 종결)
+        if (isTRUE(smart_break)) body_str <- tg_text_smart_break(body_str)
         body_str
+      },
+      "summary" = {
+        # v6 SOT 신규 — 1줄 헤드라인 (tg_format_summary helper)
+        body_str <- as.character(s$body %||% "")
+        emoji_lead <- s$emoji %||% "\U0001F4CC"  # 📌
+        tg_format_summary(body_str, emoji = emoji_lead)
       },
       "bullet" = {
         items <- s$items %||% character(0)
-        if (length(items) < 3L) {
-          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' requires items >= 3 (got %d). Use text type for 1-2 items.",
-                        heading, length(items)))
+        if (length(items) < .TG_CONFIG$BULLET_MIN) {
+          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' requires items >= %d (got %d). 1개면 'summary' / 'text' 사용.",
+                        heading, .TG_CONFIG$BULLET_MIN, length(items)))
         }
         paste0("  • ", tg_html_escape(items), collapse = "\n")
       },
       "kv" = {
-        # Key-value pairs (new in v3.1, 2026-04-25 enforce strengthening)
         kv <- s$kv
         if (!is.list(kv) || is.null(names(kv)) || any(!nzchar(names(kv)))) {
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires named list (kv = list(key1='val1', ...)).",
                         heading))
         }
-        if (length(kv) < 3L) {
-          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires length(kv) >= 3 (got %d).",
-                        heading, length(kv)))
+        if (length(kv) < .TG_CONFIG$KV_MIN) {
+          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires length(kv) >= %d (got %d).",
+                        heading, .TG_CONFIG$KV_MIN, length(kv)))
         }
         kv_lines <- vapply(seq_along(kv), function(i) {
           sprintf("  • <b>%s</b>: %s",
@@ -750,15 +928,14 @@ tg_agent_brief <- function(agent,
         paste(kv_lines, collapse = "\n")
       },
       "code" = {
-        # Multi-line code block
         code_str <- as.character(s$body %||% "")
-        if (nchar(code_str) < 20L) {
-          stop(sprintf("[tg_agent_brief] 'code' section heading='%s' requires body >= 20 chars (got %d).",
-                        heading, nchar(code_str)))
+        if (nchar(code_str) < .TG_CONFIG$CODE_MIN) {
+          stop(sprintf("[tg_agent_brief] 'code' section heading='%s' requires body >= %d chars (got %d).",
+                        heading, .TG_CONFIG$CODE_MIN, nchar(code_str)))
         }
         paste0("<pre>", tg_html_escape(code_str), "</pre>")
       },
-      stop(sprintf("[tg_agent_brief] Unknown section type '%s'. Allowed: table / text / bullet / kv / code.", type))
+      stop(sprintf("[tg_agent_brief] Unknown section type '%s'. v6 SOT 6종: summary / text / bullet / kv / table / code.", type))
     )
     if (nzchar(head_line)) paste(head_line, body, sep = "\n") else body
   }, character(1))
@@ -769,6 +946,11 @@ tg_agent_brief <- function(agent,
 
   msg <- paste(parts, collapse = "\n\n")
 
+  # ── 3.5. v6 SOT 약어 풀이 (default inline_first, 첫 등장 1회) ─────────────────
+  if (isTRUE(decode_jargon) && decode_mode != "off") {
+    msg <- tg_decode_jargon(msg, mode = decode_mode)
+  }
+
   # ── 4. Width/bytes 사전 체크 (Telegram 4096 bytes 제한) ──────────────────────
   msg_bytes <- nchar(msg, type = "bytes")
   if (msg_bytes > 4000) {
@@ -776,27 +958,33 @@ tg_agent_brief <- function(agent,
                     msg_bytes))
   }
 
-  # ── 4.5. Empty / Skeleton guard (2026-04-25 v4, ENFORCE-ONLY threshold 상향) ──
-  # Pilot 6 Alpha 115 bytes + Pilot 6 Risk 475 bytes + WT-005 Optimizer 477 bytes 사례.
-  # v4 변경 (2026-04-25): MIN_BYTES 800→1200, MIN_SECTIONS 3→4, 검증 fail = stop()
-  #                        (silent return 제거, force=TRUE만 우회 허용).
+  # ── 4.5. Empty / Skeleton guard (v6 SOT, .TG_CONFIG 참조) ─────────────────
+  # 사례: Pilot 6 Alpha 115 bytes / Risk 475 bytes / WT-005 Optimizer 477 bytes (v4 1200 상향).
+  # v6 (2026-05-07): MIN_BYTES 1200→400, MIN_SECTIONS 4→2 (간결 허용). force=TRUE 우회.
+  # SKILL.md §3와 .TG_CONFIG 1:1 동기화 의무.
   n_sections_nonempty <- sum(vapply(sections, function(s) {
     if (length(s) == 0) return(FALSE)
     body <- s$body %||% ""
     items <- s$items %||% character(0)
     kv <- s$kv
-    has_df <- is.data.frame(s$df) && nrow(s$df) >= 2L && ncol(s$df) >= 2L
-    has_body <- is.character(body) && length(body) == 1 && nchar(body) >= 50L
-    has_items <- length(items) >= 3L
-    has_kv <- is.list(kv) && length(kv) >= 3L && !is.null(names(kv))
-    has_df || has_body || has_items || has_kv
+    type <- s$type %||% "text"
+    has_df <- is.data.frame(s$df) && nrow(s$df) >= .TG_CONFIG$TABLE_NROW_MIN && ncol(s$df) >= 2L
+    has_body_text <- type == "text" && is.character(body) &&
+                      length(body) == 1 && nchar(body) >= .TG_CONFIG$TEXT_MIN
+    has_body_summary <- type == "summary" && is.character(body) &&
+                        length(body) == 1 && nchar(body) >= .TG_CONFIG$SUMMARY_MIN
+    has_body_code <- type == "code" && is.character(body) &&
+                      length(body) == 1 && nchar(body) >= .TG_CONFIG$CODE_MIN
+    has_items <- length(items) >= .TG_CONFIG$BULLET_MIN
+    has_kv <- is.list(kv) && length(kv) >= .TG_CONFIG$KV_MIN && !is.null(names(kv))
+    has_df || has_body_text || has_body_summary || has_body_code || has_items || has_kv
   }, logical(1)))
 
-  MIN_BYTES <- 1200L
-  MIN_SECTIONS <- 4L
-  if (msg_bytes < MIN_BYTES || n_sections_nonempty < MIN_SECTIONS) {
-    err_msg <- sprintf("[tg_agent_brief] BLOCKED skeleton brief. agent=%s bytes=%d (min %d) nonempty_sections=%d (min %d). Provide >=%d sections with df(nrow>=2,ncol>=2) / body(>=50 chars) / items(>=3) / kv(>=3 named).",
-                        agent, msg_bytes, MIN_BYTES, n_sections_nonempty, MIN_SECTIONS, MIN_SECTIONS)
+  if (msg_bytes < .TG_CONFIG$MIN_BYTES || n_sections_nonempty < .TG_CONFIG$MIN_SECTIONS) {
+    err_msg <- sprintf("[tg_agent_brief] BLOCKED skeleton brief. agent=%s bytes=%d (min %d) nonempty_sections=%d (min %d). v6 SOT: summary(>=%d 자) / text(>=%d 자) / bullet(>=%d) / kv(>=%d) / table(nrow>=%d,ncol>=2) 중 %d개 이상.",
+                        agent, msg_bytes, .TG_CONFIG$MIN_BYTES, n_sections_nonempty, .TG_CONFIG$MIN_SECTIONS,
+                        .TG_CONFIG$SUMMARY_MIN, .TG_CONFIG$TEXT_MIN, .TG_CONFIG$BULLET_MIN, .TG_CONFIG$KV_MIN,
+                        .TG_CONFIG$TABLE_NROW_MIN, .TG_CONFIG$MIN_SECTIONS)
     log_f <- "/tmp/qvest_tg_skeleton_warn.log"
     tryCatch(cat(sprintf("%s %s\n%s\n---\n", format(Sys.time()), err_msg, msg),
                   file = log_f, append = TRUE),

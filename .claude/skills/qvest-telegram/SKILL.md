@@ -1,116 +1,323 @@
 ---
 name: qvest-telegram
-description: QEPM Telegram 브리핑 v5 ENFORCE 모바일 가독성. tg_agent_brief() 단일 진입점. 직접 호출 금지 (PreToolUse Hook 차단).
+description: Qvest 텔레그램 발송의 유일한 규칙(SOT). 양식 / 약어 풀이 / Hook 정책 / caller 예시 통합. tg_agent_brief() 단일 진입점만 허용 (직접 호출 시 PreToolUse Hook 차단).
 ---
 
-# Qvest Telegram Skill
+# Qvest Telegram Skill — v6 SOT (단일 규칙)
 
-**v5 ENFORCE 발효**: 2026-04-30 (L-260) / Session 75 v6.4 skill 분리
+**발효**: 2026-05-07 / 본 파일은 텔레그램 양식의 **유일한 SOT**.
+**계보**: v3 → v4 → v5 ENFORCE (2026-04-30, L-260) → **v6 SOT** (가독성 + 단일화).
 
-## 7대 규칙 (Level 0)
+---
 
-1. **이모지 필수**: 모든 메시지에 맥락 이모지 5+ 포함
-2. **차트 필수**: 백테스트 결과 발송 시 PNG 첨부 (`charts=c(...)` 인자)
-3. **한글**: 모든 메시지 한글 기본 + 사용자 이름 미사용 (텔레그램 제3자 채널)
-4. **가독성 v5**:
-   - **표 ncol ≤ 3** + **total_width ≤ 32** (모바일 한 줄)
-   - 줄바꿈/엔터 자동 (마침표 + 공백 → 엔터)
-   - 줄글 나열 금지
-5. **에이전트 태그**: 메시지 첫 줄에 `[Alpha/Risk/Optimizer/Forge/Judge/Governor/Q-Lead]` 태그
-6. **성과 필수 포맷**: 시니컬 + 유머 톤 (도훈 명시). 전문 용어 1줄 풀이 + 비유 + 결정 위주
-7. **API**: `tg_agent_brief()` 단일 진입점만 (`tg_send` 직접 호출 금지 — Hook L3 차단)
+## §1 SOT 선언 (중요)
 
-## Hard Validation (`tg_agent_brief()` 자체 stop())
+본 파일이 **Qvest 텔레그램의 유일한 규칙서**.
 
-- `bytes ≥ 1200`
-- `sections ≥ 4`
-- 표 `ncol ≤ 3`
-- 표 `total_width ≤ 32`
+- R 구현 (`02_Infrastructure/telegram/telegram_notify.R`) → 본 파일 §3 매직 상수와 1:1 동기화
+- 모든 caller (agent / prompt / command / strategy R script) → 본 파일 §7 예시 참조
+- 분산된 텔레그램 가이드 모두 폐기. 다른 파일은 본 파일 1줄 reference만.
 
-위반 시 `stop()` 발생 + Hook deny.
+규칙 변경 시 본 파일을 먼저 수정하고 R `.TG_CONFIG`를 동기화. 역방향(R 먼저 수정) 금지.
 
-## Section Type 5종
+---
 
-| type | 의무 |
+## §2 6대 원칙 (도훈 피드백 2026-05-07)
+
+텔레그램 채널(`-1003850915447`) 외부 구독자가 명료하게 읽을 수 있도록.
+
+| # | 원칙 | 구현 |
+|---|---|---|
+| 1 | **간결** | 줄글 우겨넣기 금지. 문장 짧게 끊기. `MIN_BYTES=400` 충족이면 OK |
+| 2 | **약어 최소** | 본문에서 직접 한글로 풀어 쓰기. 불가피한 약어는 `tg_decode_jargon()` 자동 풀이 |
+| 3 | **정통 한글 퀀트 용어** | "샤프지수 / 최대낙폭 / 연복리수익률 / 정보계수 / 다중검정 t값" 등 (Harvey 2016, Lopez de Prado 표기 한글화) |
+| 4 | **한글 중심** | 헤딩·본문·결정 문장 한글. 영어는 변수명 / 메트릭 약어 / 출처(논문명)에 한정 |
+| 5 | **이모지 활용** | 메시지당 ≥5개 (`EMOJI_MIN`). 섹션마다 1개 의미 emoji + 강조 emoji |
+| 6 | **개조식 + 줄바꿈** | 한 문장 한 줄. `tg_text_smart_break()`가 마침표·슬래시·화살표·종결어미에서 자동 줄바꿈 |
+
+---
+
+## §3 Hard Validation (`.TG_CONFIG` 매직 상수)
+
+R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기화.
+
+| Key | 값 | 의미 |
+|---|---|---|
+| `MIN_BYTES` | **400** | 메시지 최소 바이트 (skeleton 차단). v5 1200 → v6 400 (간결 허용) |
+| `MIN_SECTIONS` | **2** | 비어있지 않은 섹션 최소 수. v5 4 → v6 2 (padding 제거) |
+| `TEXT_MIN` | **30** | `text` body 최소 자수. v5 50 → v6 30 |
+| `BULLET_MIN` | **2** | `bullet` 항목 최소 수. v5 3 → v6 2 |
+| `KV_MIN` | **2** | `kv` 항목 최소 수. v5 3 → v6 2 |
+| `MAX_NCOL` | **3** | `table` 최대 열 수 (모바일 가독). v5 retain |
+| `MAX_TOTAL_WIDTH` | **32** | `table` 합산 폭 상한 (CJK 2칸 계산). v5 retain |
+| `EMOJI_MIN` | **5** | 메시지당 emoji 최소 개수. v5 retain |
+| `SUMMARY_MIN` | **20** | `summary` type 최소 자수 (신규) |
+| `SUMMARY_MAX` | **200** | `summary` type 최대 자수 — 1줄 유지 (신규) |
+
+위반 시 `tg_agent_brief()` 자체에서 `stop()`. `force=TRUE` 만 명시 우회.
+
+---
+
+## §4 Section Type 6종
+
+| type | 의무 | 용도 |
+|---|---|---|
+| `summary` ⭐ 신규 | 자수 [`SUMMARY_MIN`, `SUMMARY_MAX`] | 1줄 헤드라인 (heading 없이 굵은 1줄) |
+| `text` | body ≥ `TEXT_MIN` 자 | 단락 narrative. `smart_break` 자동 적용 |
+| `bullet` | items ≥ `BULLET_MIN` | 결정 / 리스크 / 다음 액션 (개조식) |
+| `kv` | named list ≥ `KV_MIN` | 핵심 수치 (메트릭) |
+| `table` | nrow ≥ 2, ncol ≥ 2, ncol ≤ `MAX_NCOL`, 폭 ≤ `MAX_TOTAL_WIDTH` | 비교 (≤3 컬럼) |
+| `code` | body ≥ 20 자 | 명령어 / 출력 발췌 |
+
+---
+
+## §5 약어 풀이 사전 (`tg_decode_jargon()` 자동 적용)
+
+`tg_agent_brief()`는 default `decode_jargon=TRUE` `decode_mode="inline_first"`. 본문 첫 등장 시 1회 한글 풀이를 괄호로 부착, 이후는 그대로.
+
+### 내부 식별자
+
+| 약어 | 한글 |
 |---|---|
-| `text` | body ≥ 50자 |
-| `bullet` | items ≥ 3 |
-| `kv` | named list 길이 ≥ 3 |
-| `table` | df nrow ≥ 2 + ncol ≥ 2 + ncol ≤ 3 |
-| `code` | body ≥ 20자 |
+| `WT-D{8자리숫자}_{3자리}` | 발견형 작업 (Discovery) |
+| `WT-P{8자리숫자}_{3자리}` | 운용형 작업 (Promotion) |
+| `STR_{4자리}` | 전략 |
+| `AX-{3자리}` | 공리 |
+| `L-{2~4자리}` | 교훈 코드 |
+| `RF-{알파벳}{숫자}` | 위험신호 |
+| `PG{0~3}` | 운용단계 |
 
-## 이모지 자동 추천 (heading 키워드)
+### 계량 지표 (정통 한글 — Harvey 2016 / Lopez de Prado)
 
-- risk / 리스크 / flag → 🚩
-- challenge / 반론 → ⚔️
-- stress / 위기 / regime / crisis → 🌪️
-- alert / 경보 / alarm → 🚨
-- insight / 핵심 / 발견 / finding → 💡
-- method / 방법 / 비교 / covariance → 🔬
-- hedge / overlay / beta / β → 🛡️
-- config / 설정 / 제약 / option → 🎛️
-- performance / 성과 / SR / CAGR / MDD → 📈
-- integration / 통합 / mapping → 🔗
-- new / latest / 최신 → ✨
-- reference / 참조 / 논문 → 📚
-- shortlist / ranking / top → 🏆
+| 약어 | 한글 |
+|---|---|
+| `SR` | 샤프지수 |
+| `MDD` | 최대낙폭 |
+| `CAGR` | 연복리수익률 |
+| `IC` | 정보계수 |
+| `ICIR` | 정보계수 안정성 |
+| `DSR` | 디플레이티드 샤프 |
+| `Harvey-t` / `Harvey t` | 다중검정 t값 |
+| `t_NW` | Newey-West t값 |
+| `Bailey-LdP` | Lopez de Prado 검정 |
+| `TDC` | 꼬리 의존성 |
+| `MRS` | 시장 국면 점수 |
+| `SUE` | 표준화 어닝 서프라이즈 |
+| `ESBR` | 이익 변경률 |
+| `ADV` | 평균 거래대금 |
+| `Σ` | 공분산 |
+| `FF3` / `FF5` | Fama-French 3/5 팩터 |
+| `BAB` | 베타 차익거래 |
+| `BM_Ret` | 벤치마크 수익률 |
+| `OOS` | 표본 외 검증 |
+| `t_NW` | Newey-West t값 |
 
-(default: 📊)
+### Mode
 
-## 사용 예
+- `"inline_first"` (default) — 본문 첫 등장에 `약어 (한글)` 부착
+- `"footer"` — 본문 미변환 + footer에 `📚 약어: WT-D=발견형 작업 / SR=샤프지수 / ...` 합성
+- `"off"` — 변환 없음 (정통 퀀트 보고서 mode)
+
+본문에 이미 한글 풀이가 있으면 lookback 정규식으로 중복 보호.
+
+---
+
+## §6 표준 4섹션 (권장)
+
+핵심 알림은 다음 4섹션 순서를 권장 (강제 X — `MIN_SECTIONS=2`만 만족이면 자유).
+
+| 순서 | type | emoji | 내용 |
+|---|---|---|---|
+| 1 | `summary` | 📌 | 1줄 헤드라인 (도훈이 모바일에서 첫 5초에 인지) |
+| 2 | `kv` 또는 `table` | 📊 | 핵심 수치 (3~5개) |
+| 3 | `bullet` | 🚩 | 리스크 / 주의 (≥2) |
+| 4 | `bullet` | ➡️ | 다음 액션 (≥2) |
+
+---
+
+## §7 caller 예시 (6종)
+
+### 7.1 간결 알림 (380~500 bytes)
 
 ```r
 source("02_Infrastructure/telegram/telegram_notify.R")
 
-sections <- list(
-  list(
-    heading = "성과 요약",
-    type = "kv",
-    emoji = "📈",
-    kv = list("SR" = 1.55, "CAGR" = "30.8%", "MDD" = "-28.1%")
-  ),
-  list(
-    heading = "Risk Flags",
-    type = "table",
-    df = data.frame(Flag = c("RF-R3", "RF-R5"), Sev = c("HIGH", "HIGH")),
-    max_col_width = 18L
-  ),
-  list(
-    heading = "분석",
-    type = "text",
-    body = "BHEQ alpha-vector cor 0.05 vs returns level 0.717. predecessor full-sample lookahead -31% inflation 정량 증거 확보. v6.4 cert eligibility 강화 candidate. (50+ 자)"
-  ),
-  list(
-    heading = "결정",
-    type = "bullet",
-    items = c("BHEQ 보류", "Iter 9 family pivot", "v6.4 patch 진행")
+tg_agent_brief(
+  agent = "Q-Lead",
+  title = "PG2 운용 변경 안내",
+  sections = list(
+    list(type = "summary",
+         body = "운용형 작업 PG2 70/15/15 도훈 승인. 6월 1일 발효."),
+    list(type = "kv", emoji = "📊", heading = "핵심 수치",
+         kv = list("샤프지수" = 1.665,
+                   "최대낙폭" = "-16.6%",
+                   "연복리수익률" = "26.4%"))
   )
 )
-
-result <- tg_agent_brief(
-  agent = "Q-Lead",
-  title = "Session N 종합",
-  sections = sections,
-  footer = "📚 SOT links",
-  emoji_min = 5L,
-  force = FALSE
-)
-# result$ok == TRUE / bytes 1200~4000 / ok=TRUE 검증
 ```
 
-## Single-Dispatch Lock
+### 7.2 Forge 백테스트 결과
 
-같은 agent + title prefix 중복 호출 차단 (Forge 2번 발송 사례 방지).
-- `lock_scope` NULL이면 자동: `agent + WT-id` 또는 `agent + title 첫 40자`
-- `force=TRUE` 로 override 가능
+```r
+tg_agent_brief(
+  agent = "Forge",
+  title = "WT-D20260504_001 백테스트 완료",
+  sections = list(
+    list(type = "summary", emoji = "📌",
+         body = "STR_1715 AR 임계값 오버레이 268개월 워크포워드 완료."),
+    list(type = "table", emoji = "📊", heading = "기간별 성과",
+         df = data.frame(
+           기간   = c("훈련", "검증", "전체"),
+           샤프   = c("1.78", "1.62", "1.67"),
+           낙폭   = c("-22%", "-31%", "-25%")
+         )),
+    list(type = "bullet", emoji = "🚩", heading = "주의",
+         items = c("회전율 614% 한도 600% 초과 6개월",
+                   "검증구간 샤프 0.16 하락")),
+    list(type = "bullet", emoji = "➡️", heading = "다음",
+         items = c("Judge 전이",
+                   "AR 임계값 0.4172 / 0.4502 lockbox 봉인"))
+  ),
+  charts = c("stage_artifacts/WT-D20260504_001/equity_curve.png")
+)
+```
 
-## 채널
+### 7.3 Risk 공분산 진단
 
-- Bot: `@quant12323413245_bot`
-- Channel: `-1003850915447`
+```r
+tg_agent_brief(
+  agent = "Risk",
+  title = "WT-D20260504_001 Σ + 헷지 완료",
+  sections = list(
+    list(type = "summary",
+         body = "Ledoit-Wolf 공분산 + 꼬리위험 진단 완료. 정상."),
+    list(type = "table", emoji = "🔬", heading = "추정기 비교",
+         df = data.frame(
+           추정기   = c("샘플", "Ledoit", "Gerber"),
+           조건수   = c("248", "11", "128"),
+           추천     = c("X", "✅", "△")
+         )),
+    list(type = "bullet", emoji = "🛡️", heading = "헷지 권고",
+         items = c("팩터 베타 0.92 정상",
+                   "꼬리 의존성 0.27 (임계 0.30 미만)",
+                   "스트레스 시나리오 -18% 통과"))
+  )
+)
+```
+
+### 7.4 Judge Gate 판정
+
+```r
+tg_agent_brief(
+  agent = "Judge",
+  title = "WT-D20260504_001 GRADE_A / ADMIT",
+  sections = list(
+    list(type = "summary",
+         body = "Gate 0~5 모두 PASS. 등급 A 판정. 운용 단계 승격 권고."),
+    list(type = "kv", emoji = "⚖️", heading = "Gate 결과",
+         kv = list("PIT C1~C15" = "PASS",
+                   "다중검정 t값" = "6.70",
+                   "디플레이티드 샤프" = "z=6.10")),
+    list(type = "bullet", emoji = "🚩", heading = "잔존 위험",
+         items = c("회전율 614% 모니터링 필요",
+                   "AR 임계값 봉인 검증 후 발효"))
+  )
+)
+```
+
+### 7.5 Governor admit
+
+```r
+tg_agent_brief(
+  agent = "Governor",
+  title = "WT-P20260505_001 PG2 ADMIT",
+  sections = list(
+    list(type = "summary",
+         body = "Hybrid 70/15/15 PG2 ADMIT. 6월 1일 운용 발효."),
+    list(type = "table", emoji = "👑", heading = "Book 변경",
+         df = data.frame(
+           구분     = c("이전", "이후"),
+           전략수   = c("1", "3"),
+           구성     = c("STR_1715 100%", "70/15/15")
+         )),
+    list(type = "bullet", emoji = "➡️", heading = "발효 일정",
+         items = c("5월: 위험자산 70 + 현금 30 (M4 정상)",
+                   "6월 1일: STR_1715 70 + TSMOM 15 + 국채 15"))
+  )
+)
+```
+
+### 7.6 Q-Lead 종합 (풍부 1500+ bytes)
+
+```r
+tg_agent_brief(
+  agent = "Q-Lead",
+  title = "Session 76 Hybrid PG2 정착 완료",
+  sections = list(
+    list(type = "summary",
+         body = "9-step 사이클 완주. Restall 9-item 모두 통과. 운용 발효."),
+    list(type = "kv", emoji = "📊", heading = "성과 (256개월)",
+         kv = list("샤프지수"     = "1.665 (+0.08)",
+                   "최대낙폭"     = "-16.6% (-9.83pp)",
+                   "연복리수익률" = "26.4%")),
+    list(type = "text", emoji = "💡", heading = "본질 통찰",
+         body = "단일 직교 source는 Pareto 일면적이라 두 source 결합 시너지가 핵심. 60/40 + managed futures hybrid 패러다임 진화."),
+    list(type = "bullet", emoji = "🚩", heading = "잔여 P0",
+         items = c("샤프지수 목표 2.0 vs 실측 1.665, 격차 0.335",
+                   "4번째 직교 source 다음 사이클 탐색")),
+    list(type = "bullet", emoji = "➡️", heading = "다음 단계",
+         items = c("6월 1일 70/15/15 발효",
+                   "9-Day grace PD1~PD3 모니터링",
+                   "메모리 L-284 적립"))
+  ),
+  footer = "📚 SOT: docs/qvest_v7_2_1_sot.md"
+)
+```
+
+---
+
+## 부록 A — Hook 정책
+
+`02_Infrastructure/hooks/telegram_direct_call_guard.sh` (PreToolUse[Bash]):
+
+| 차단 대상 | 우회 |
+|---|---|
+| `tg_send(...)` 직접 호출 | tg_agent_brief 동시 호출 시 허용 |
+| `tg_send_rich(...)` 직접 호출 | 동일 |
+| `tg_send_photo(...)` 직접 호출 | 동일 |
+
+→ 모든 agent / prompt / strategy script는 **`tg_agent_brief()` 만** 호출.
+
+---
+
+## 부록 B — Single-Dispatch Lock
+
+같은 `agent + WT-id`(또는 title 첫 40자) 중복 발송 차단.
+
+- `lock_scope=NULL` default → 자동 scope 생성
+- `force=TRUE` → 우회 (수동 재전송 명시)
+- Lock 파일: `/tmp/qvest_tg_lock_<scope>.lock`
+
+---
+
+## 부록 C — 채널 / 봇
+
+| 항목 | 값 |
+|---|---|
+| Bot | `@quant12323413245_bot` |
+| Channel | `-1003850915447` |
+| Personal DM fallback | `1355291682` |
+| 자격증명 | `.env` `TG_BOT_TOKEN`, `TG_CHAT_ID`, `TG_PERSONAL_CHAT_ID` |
+
+---
 
 ## 참조
 
-- `02_Infrastructure/telegram/telegram_notify.R::tg_agent_brief()` (line 598+)
-- `tg_format_table()` (mobile fit auto-truncate)
-- L-260 (v5 enforce 사례)
+| 자원 | 경로 |
+|---|---|
+| R 구현 SOT | `02_Infrastructure/telegram/telegram_notify.R::tg_agent_brief()` (line 598+) |
+| 약어 사전 | 동상 `::tg_decode_jargon()` |
+| Smart break | 동상 `::tg_text_smart_break()` |
+| Hook | `02_Infrastructure/hooks/telegram_direct_call_guard.sh` |
+| Body archive (디버깅) | `/tmp/qvest_tg_body_ARCHIVE/` |
+| L-260 (v5 enforce 경위) | `methodology_active.md` |

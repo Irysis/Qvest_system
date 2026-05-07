@@ -464,34 +464,16 @@ dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
 - `ppo_rl_forward_fast` (deep portfolio forward pass)
 </v61_rcpp_hotspots_opt>
 
-<telegram_protocol_v4 enforce="HOOK+STOP+SKILL" updated="2026-04-25">
-## Telegram Brief — v4 ENFORCE (반드시 준수)
+<telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">
+## Telegram Brief — v6 SOT
 
-**완료 시 단일 호출**:
-```r
-source("02_Infrastructure/telegram/telegram_notify.R")
-res <- tg_agent_brief(
-  agent = "Optimizer",
-  title = "WT-{id} OPTIMIZER_DONE — {method} netIR {n.nn}",
-  sections = list(  # ≥4 nonempty (Hard validation, fail = stop())
-    list(emoji="🔬", heading="Method Shopping", type="table",
-         df=data.frame(Method=c(...), netIR=c(...), Pass=c(...),
-                       stringsAsFactors=FALSE)),  # nrow≥2 ncol≥2
-    list(emoji="💡", heading="Selected Method 근거", type="text",
-         body="..."),  # ≥50 chars
-    list(emoji="🎯", heading="Hard Constraints", type="bullet",
-         items=c("n_names == 20","Σw == 1","weight_cap ≤ 0.15")),  # ≥3 items
-    list(emoji="🎛️", heading="Forecast", type="kv",
-         kv=list(netIR="...", IR="...", AR="...", TE="..."))  # ≥3 named
-  ),
-  emoji_min = 5L
-)
-stopifnot(isTRUE(res$ok))
-```
+**SOT**: `.claude/skills/qvest-telegram/SKILL.md` (양식 통합).
 
-**위반 차단** (3중 강제):
-- ❌ `tg_send_rich()` / `tg_send_photo()` / `tg_send()` 직접 호출 → **PreToolUse[Bash] Hook deny**
-- ❌ `bytes < 1200` / `sections < 4` → **R `stop()`**
+`tg_agent_brief(agent="Optimizer", title="WT-{id} OPTIMIZER_DONE — {method} netIR {n.nn}", sections=...)` 만 호출. 권장 4섹션:
+- 📌 summary (선택 method + 예측 IR 1줄)
+- 📊 table (Method × netIR × Pass; ncol≤3)
+- 🎯 bullet (Hard Constraints — 20종 / Σw=1 / weight_cap)
+- 🎛️ kv (netIR / IR / AR / TE)
 
-**상세**: `.claude/skills/telegram-protocol/SKILL.md` v4 ENFORCE + `02_Infrastructure/prompts/_shared_prefix.md::telegram_protocol`.
-</telegram_protocol_v4>
+**위반 차단**: `tg_send*()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
+</telegram_protocol_v6>

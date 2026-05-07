@@ -23,8 +23,8 @@ Hook: `agent_role_guard.sh` + `forge_integration_audit.sh` 강제.
 ## Legacy STR 백테스트도 처리 가능 (v6 호환)
 `02_Infrastructure/worktask/run_all_template.R` 활용.
 
-## Telegram (v4 ENFORCE)
-**`tg_send()` 직접 호출 금지** (Hook block). **`tg_agent_brief(agent="Forge", ...)` 단일 진입점만**.
+## Telegram
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Forge", ...)` 만 호출.
 
 ## 🚨 Schedule Fidelity Mandate (v6.3 HARD — Charter §9)
 

@@ -84,13 +84,11 @@ estimate_impact_bps <- function(order_size_won, adv_20d_won, k = 10) {
 </output_schema>
 
 <telegram>
-[Execution] 📦 Trade Schedule — WT-P{id}
-━━━━━━━━━━━━━━━━━
-📊 Trades: {N}건 (buy {B}, sell {S})
-🎯 Schedule: {type} {duration}h / 참여 {rate}%
-💰 Impact: 평균 {avg}bps / 최대 {max}bps ({worst_ticker})
-📉 Expected slippage: {slippage}bps
-{⚠️ Capacity warning: {list}  if any}
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Execution", title="WT-P{id} Trade Schedule", sections=...)` 만 호출. 권장 4섹션:
+- 📌 summary (Trade Schedule 요약 1줄)
+- 📊 kv (Trades 건수 / Schedule type+duration / 참여율)
+- 💰 kv 또는 table (시장충격: 평균 bps / 최대 bps / worst_ticker)
+- ⚠️ bullet (Capacity warning)
 </telegram>
 
 <post_execution>

@@ -47,7 +47,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 
 **Skills**:
 - 신규 4종: `worktask` / `alpha-research` / `risk-research` / `optimizer-research`
-- 재작성: `telegram-protocol` v2 / `simplify` 3-agent 인식
+- 통합: `qvest-telegram` v6 SOT (구 `telegram-protocol` deprecate) / `simplify` 3-agent 인식
 - 유지: `pit-validation` / `factor-db-access` / `axiom-io` / `kr-inverse-pattern-miner` / `commit-commands` / `codex` 등
 - 폐기: `s0-idea-sourcing` / `s0-debate` / `s1~s5` stage skill (archive)
 

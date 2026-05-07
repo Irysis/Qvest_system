@@ -537,36 +537,16 @@ dsr <- bootstrap_dsr_fast(returns, n_trials = 100L, B = 1000L)
 - Factor DB 로드: `arrow::read_parquet` (C++) 이미 최적.
 </v61_rcpp_hotspots>
 
-<telegram_protocol_v4 enforce="HOOK+STOP+SKILL" updated="2026-04-25">
-## Telegram Brief — v4 ENFORCE (반드시 준수)
+<telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">
+## Telegram Brief — v6 SOT
 
-**완료 시 단일 호출**:
-```r
-source("02_Infrastructure/telegram/telegram_notify.R")
-res <- tg_agent_brief(
-  agent = "Alpha",
-  title = "WT-{id} ALPHA_DONE — {short summary}",
-  sections = list(  # ≥4 nonempty (Hard validation, fail = stop())
-    list(emoji="📊", heading="Alpha Diagnostics", type="table",
-         df=data.frame(Metric=c("ICIR","rank_IC","Harvey_t","Subperiod"),
-                       Value=c("0.20","0.03","3.30","3/3"),
-                       stringsAsFactors=FALSE)),  # nrow≥2 ncol≥2
-    list(emoji="💡", heading="핵심 발견", type="text",
-         body="..."),  # ≥50 chars
-    list(emoji="🚩", heading="Challenge Flags", type="bullet",
-         items=c("...","...","...")),  # ≥3 items
-    list(emoji="🎛️", heading="메타", type="kv",
-         kv=list(WT_ID="...", Phase="ALPHA_DONE", Slots="A/B/C"))  # ≥3 named
-  ),
-  emoji_min = 5L
-)
-stopifnot(isTRUE(res$ok))
-```
+**SOT**: `.claude/skills/qvest-telegram/SKILL.md` (양식·약어 풀이·예시 6종 통합).
 
-**위반 차단** (3중 강제):
-- ❌ `tg_send_rich()` / `tg_send_photo()` / `tg_send()` 직접 호출 → **PreToolUse[Bash] Hook deny**
-- ❌ `bytes < 1200` / `sections < 4` / `nrow(df) < 2` / `ncol(df) < 2` → **R `stop()`**
-- ❌ `length(items) < 3` / `nchar(body) < 50` → **R `stop()`**
+`tg_agent_brief(agent="Alpha", title="WT-{id} ALPHA_DONE — {short summary}", sections=...)` 만 호출. 권장 4섹션:
+- 📌 summary (1줄 헤드라인)
+- 📊 table 또는 kv (정보계수 안정성 / rank_IC / 다중검정 t값 / 부기간 안정성)
+- 🚩 bullet (Challenge Flags)
+- ➡️ bullet (다음 단계)
 
-**상세**: `.claude/skills/telegram-protocol/SKILL.md` v4 ENFORCE + `02_Infrastructure/prompts/_shared_prefix.md::telegram_protocol`.
-</telegram_protocol_v4>
+**위반 차단**: `tg_send*()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop(). MIN_BYTES=400 / MIN_SECTIONS=2 floor 자동 검사.
+</telegram_protocol_v6>
