@@ -435,10 +435,11 @@ risk_package_final <- list(
     codex_concerns_count = 9,
     codex_severity_distribution = list(HIGH = 7, MEDIUM = 2),
     disposition_summary = list(
-      ACCEPT = c("C1", "C2", "C6", "C7", "C8"),
-      PARTIAL_REBUTTAL = c("C3", "C4", "C9"),
+      ACCEPT = c("C1", "C2", "C6", "C7"),
+      PARTIAL_REBUTTAL = c("C3", "C4", "C8", "C9"),
       PARTIAL_ACCEPT = c("C5"),
-      REBUTTAL_only = c()
+      REBUTTAL_only = c(),
+      self_correction_C8 = "ACCEPT_HARD_VIOLATION → PARTIAL_REBUTTAL (initial awk audit FALSE POSITIVE → R precision verification: Σw=1 PASS at 1e-8 floating point)"
     ),
     rationalization_corrections_count = 5,
     rationalization_corrections = c(

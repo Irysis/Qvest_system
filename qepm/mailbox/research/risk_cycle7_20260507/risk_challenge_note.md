@@ -251,25 +251,30 @@
 
 → **Q-Lead escalate triggered** (HIGH ≥ 5 + AX-001 v2 MATERIALLY_FAILED + ticker uniqueness audit + AR negative MK trend new)
 
-## 주요 변경 사항 (final risk_package.json)
+## 주요 변경 사항 (final risk_package.json, post-correction)
 
-1. cycle7_termination_decision label: `TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_61_DEPLOYMENT_GREENLIGHT` → **`TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_DEPLOY_SNAPSHOT_HARD_VIOLATION`**
+1. cycle7_termination_decision label: `TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_61_DEPLOYMENT_GREENLIGHT` → **`TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_FORMAL_LIFECYCLE_BLOCKERS_INHERITED_C8_TICKER_UNIQUENESS_MEDIUM_AUDIT`**
 2. ax_001_v2 verdict: PARTIAL_PASS_2_OF_5 → **MATERIALLY_FAILED_2_OF_5_NEEDS_BAB_Q07_8_STRESS**
-3. axis 3 deployment_readiness Schedule fidelity verdict: PARTIAL_PASS_3_OF_5 → **HARD_VIOLATION_DEPLOY_SNAPSHOT_FORGE_RE_EXECUTE_OBLIGATORY**
-4. 6/1 deployment verdict: GREENLIGHT → **CONDITIONAL_PROCEED_INHERITED_BOOK_STATE_FORMAL_LIFECYCLE_OBLIGATION_C8_HARD_VIOLATION_FORGE_RE_EXECUTE_OBLIGATORY**
+3. axis 3 deployment_readiness Schedule fidelity verdict: PARTIAL_PASS_3_OF_5 → **PARTIAL_PASS_TICKER_UNIQUENESS_AUDIT_REQUIRED_NOT_HARD_VIOLATION**
+4. 6/1 deployment verdict: GREENLIGHT → **CONDITIONAL_PROCEED_INHERITED_BOOK_STATE_FORMAL_LIFECYCLE_OBLIGATION_C8_TICKER_UNIQUENESS_MEDIUM_AUDIT_FORGE_VERIFY_NOT_REEXECUTE**
 5. RF_R1 severity: MEDIUM → **HIGH** (AR MCTV dominance L-219 family saturation)
-6. RF_R6_deploy_snapshot_violation **HIGH NEW** 추가
-7. formal_lifecycle_blocker_list 13 blockers (cycle 6 12 blockers + cycle 7 #13 deploy snapshot violation)
-8. q_lead_escalate.triggered = TRUE + escalate_summary 강화
-9. Cycle 7 bootstrap CI for CRISIS AR-TSMOM cor 추가 산출 (next iteration)
+6. RF_R6 severity HIGH_NEW → **MEDIUM_REVISED** (sum violation FALSE POSITIVE → ticker uniqueness audit retain)
+7. formal_lifecycle_blocker_list 13 blockers (cycle 6 12 + cycle 7 #13 ticker uniqueness audit revised)
+8. q_lead_escalate.triggered = TRUE + escalate_summary 정정 (FALSE POSITIVE 인정)
+9. Cycle 7 bootstrap CI for CRISIS AR-TSMOM cor 95% [0.3741, 0.9586] 산출 — n=8 통계 power 부족 명확
 
-## 6/1 발효 cumulative status
+**자기 정정 사례 (audit honesty per AX-002 + L-247)**:
+- 초기 awk-based deploy_snapshot audit (sum=1.00664 보고) → R data.table precision 재검증 (sum=1.00000001 = PASS at 1e-8 floating point)
+- 단일 도구 검증 risk 입증 + 재검증 의무 본인이 수행
+- C8 disposition: ACCEPT_HARD_VIOLATION → PARTIAL_REBUTTAL 변경 (Σw=1 hard PASS / ticker uniqueness MEDIUM audit retain)
 
-- 즉시 처리 의무: forge agent deploy_snapshot 재실행 + Σw=1 strict audit + A148070 duplicate resolution
+## 6/1 발효 cumulative status (post-correction)
+
+- forge agent **audit (not re-execute)** — deploy_snapshot ticker uniqueness verification + system_trade_aggregation logic (A148070 cross-leg → single position 0.1768 sum aggregation)
 - AX-001 v2: BAB + Q07 direct + 8 stress periods integration (정식 alpha-research WT 의무)
 - monitoring agent: cycle 7 schema 인계 (KR_10y CRITICAL + AR negative MK trend 신규 alert)
 - Architect POST_DEPLOY_006: AX-008 3rd source 독립 검증 T+30 due retain
 
 ---
 
-**Charter §8 No Silent Override 정합. 9 concerns 자율 분류 (ACCEPT 5 + PARTIAL_REBUTTAL 3 + PARTIAL_ACCEPT 1) — REBUTTAL only 0건. 학술 + L-code + 정량 3축 모든 PARTIAL에 명시.**
+**Charter §8 No Silent Override 정합. 9 concerns 자율 분류 post-correction (ACCEPT 4 + PARTIAL_REBUTTAL 4 + PARTIAL_ACCEPT 1) — REBUTTAL only 0건. 학술 + L-code + 정량 3축 모든 PARTIAL에 명시. 자기 정정 사례 1건 명시 (C8 awk FALSE POSITIVE → R precision PASS).**
