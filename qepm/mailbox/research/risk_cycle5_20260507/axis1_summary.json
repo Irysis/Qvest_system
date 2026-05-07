@@ -1,0 +1,36 @@
+{
+  "axis": "axis_1_realized_vs_predicted_forward_mc",
+  "baseline": {
+    "sample_period": "2015-01-01_to_2026-03-01",
+    "n_obs": 135,
+    "monthly_mean": 0.0186,
+    "monthly_sd": 0.0428,
+    "ann_alpha": 0.2234,
+    "ann_vol": 0.1482,
+    "sr_post2015": 1.507,
+    "sr_256m_l284": 1.665
+  },
+  "methodology": {
+    "bootstrap_type": "Politis-Romano stationary bootstrap",
+    "block_length_mean": 12,
+    "n_trials": 2000,
+    "horizons": [1, 3, 6, 12],
+    "citation": "Politis-Romano 1994 JASA"
+  },
+  "alert_thresholds": {
+    "mild_drift_lower": 0.7,
+    "mild_drift_upper": 1.3,
+    "material_drift_lower": 0.5,
+    "material_drift_upper": 1.5,
+    "severe_drift_lower": 0.5,
+    "severe_drift_upper": 1.5,
+    "rationale": "Charter §2 Realized vs Predicted convention. Forward simulation의 P(severe drift) > 25% 시 monitoring agent 사전 alert 권장"
+  },
+  "pr_severe_drift_by_horizon": {
+    "h1m": 0.7835,
+    "h3m": 0.699,
+    "h6m": 0.73,
+    "h12m": 0.6475
+  },
+  "results_csv": "axis1_realized_vs_predicted_mc.csv"
+}
