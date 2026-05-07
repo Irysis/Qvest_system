@@ -1,0 +1,55 @@
+[2026-05-07 23:35:50] [PATCH_V5] === PATCH V5 (Codex disposition fix) START === 
+[2026-05-07 23:35:50] [PATCH_V5] --- C1 fix: 5-estimator covariance .parquet 저장 --- 
+[2026-05-07 23:35:50] [PATCH_V5] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_sample.parquet (2.1 KB) 
+[2026-05-07 23:35:50] [PATCH_V5] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_identity.parquet (2.1 KB) 
+[2026-05-07 23:35:50] [PATCH_V5] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_constcor.parquet (2.1 KB) 
+[2026-05-07 23:35:50] [PATCH_V5] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_gerber_v2_floor5pct.parquet (2.1 KB) 
+[2026-05-07 23:35:50] [PATCH_V5] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_glasso_005.parquet (2.1 KB) 
+[2026-05-07 23:35:50] [PATCH_V5] === Covariance 5-estimator summary (3-source 137m) === 
+             estimator cond_num      min_eig  is_pd   delta_lw
+                <char>    <num>        <num> <lgcl>      <num>
+1:              Sample 22.85608 0.0001639138   TRUE         NA
+2:         LW_identity 14.99683 0.0002401373   TRUE 0.06178696
+3:         LW_constcor 21.79040 0.0001716904   TRUE 1.00000000
+4: Gerber_v2_floor5pct 20.00000 0.0001886857   TRUE         NA
+5:          Glasso_005 21.74534 0.0001720336   TRUE         NA
+[2026-05-07 23:35:50] [PATCH_V5] Primary covariance saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/stage_artifacts/risk_model_meta_20260507/covariance_primary.parquet 
+[2026-05-07 23:35:50] [PATCH_V5] --- C5 fix: IMF 1997 + DotCom 2000 BM-only stress --- 
+There were 20 warnings (use warnings() to see them)
+[2026-05-07 23:35:56] [PATCH_V5] === 8-Crisis Stress Scenario (BM + AR + Hybrid) === 
+             period      start        end n_months_bm bm_total_pct bm_mdd_pct
+             <char>     <Date>     <Date>       <int>        <num>      <num>
+1:         IMF_1997 1997-07-01 1998-06-30          12   -60.037564  60.037564
+2:      DotCom_2000 2000-03-01 2001-12-31          22   -16.258239  44.284155
+3:         GFC_2008 2007-10-01 2009-03-31          18   -38.028647  48.517810
+4:      EuDebt_2011 2011-07-01 2011-12-31           6   -13.088557  17.042860
+5: China_Shock_2015 2015-06-01 2016-02-29           9    -9.369207   9.586722
+6:    VolShock_2018 2018-02-01 2018-12-31          11   -20.472558  20.914801
+7:       COVID_2020 2020-01-01 2020-06-30           6    -4.065215  20.159078
+8:   Inflation_2022 2022-01-01 2022-12-31          12   -24.893792  27.611036
+   ar_available ar_total_pct hybrid_total_pct ar_mdd_pct hybrid_mdd_pct
+         <lgcl>        <num>            <num>      <num>          <num>
+1:        FALSE           NA               NA         NA             NA
+2:        FALSE           NA               NA         NA             NA
+3:         TRUE   -14.919538       -9.3153651  16.833281       10.94937
+4:         TRUE    11.955052       10.7856902  10.382877        8.00304
+5:         TRUE    28.227355       20.4820170   2.858802        1.73269
+6:         TRUE   -11.124891       -6.1839445  22.355099       14.81352
+7:         TRUE    -1.930048       -0.5633595  16.117657       11.46025
+8:         TRUE    -3.878494       -3.8527060  15.405770       10.92795
+   crisis_alpha_pp
+             <num>
+1:              NA
+2:              NA
+3:      5.60417267
+4:     -1.16936158
+5:     -7.74533794
+6:      4.94094682
+7:      1.36668858
+8:      0.02578823
+[2026-05-07 23:35:56] [PATCH_V5] --- C7 fix: PIT-strict universe re-selection --- 
+[2026-05-07 23:36:00] [PATCH_V5] Number of PIT train_end candidates: 61 
+Error in UseMethod("months") : 
+  no applicable method for 'months' applied to an object of class "c('integer', 'numeric')"
+Calls: months
+Execution halted

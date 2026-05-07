@@ -1,0 +1,155 @@
+[2026-05-07 23:22:15] [PATCH_V2] === PATCH V2 START === 
+[2026-05-07 23:22:15] [PATCH_V2] --- Patch v2 A: KOSPI top30 sub-period (train_end based) --- 
+[2026-05-07 23:22:24] [PATCH_V2] KOSPI top30 matrix: 163 × 30 
+[2026-05-07 23:22:30] [PATCH_V2] === KOSPI top30 OOS Forecast Performance (V2) === 
+             estimator n_windows median_cond_num p95_cond_num median_frob_err
+                <char>     <int>           <num>        <num>           <num>
+1: Gerber_v2_floor5pct        44       20.000000    20.000000      0.07524336
+2: Gerber_v2_floor1pct        44      100.000000   100.000000      0.07659432
+3:         LW_constcor        44       22.900071    28.525499      0.07986893
+4:              Sample        44      170.283673   255.229342      0.07995312
+5:         LW_identity        44       14.270090    28.516199      0.08668127
+6:          Glasso_005        44        5.956583     7.081596      0.10580470
+   p95_frob_err median_stein_loss pct_pd
+          <num>             <num>  <num>
+1:   0.08220438          26.39972    100
+2:   0.08336852          96.43447    100
+3:   0.08640627          20.34298    100
+4:   0.08742342          53.50040    100
+5:   0.09277290          23.00080    100
+6:   0.10942619          33.34101    100
+[2026-05-07 23:22:30] [PATCH_V2] === Sub-period OOS Performance (V2, train_end based) === 
+              estimator            period n_windows median_cond_num
+                 <char>            <char>     <int>           <num>
+ 1: Gerber_v2_floor5pct Period2_2015_2018        32       20.000000
+ 2:         LW_constcor Period2_2015_2018        32       20.706002
+ 3: Gerber_v2_floor1pct Period2_2015_2018        32      100.000000
+ 4:              Sample Period2_2015_2018        32      156.693673
+ 5:         LW_identity Period2_2015_2018        32       14.050419
+ 6:          Glasso_005 Period2_2015_2018        32        5.709113
+ 7: Gerber_v2_floor5pct Period3_2019_2022        12       20.000000
+ 8: Gerber_v2_floor1pct Period3_2019_2022        12      100.000000
+ 9:         LW_constcor Period3_2019_2022        12       27.597258
+10:              Sample Period3_2019_2022        12      228.388530
+11:         LW_identity Period3_2019_2022        12       15.580653
+12:          Glasso_005 Period3_2019_2022        12        6.755920
+    median_frob_err median_stein_loss pct_pd
+              <num>             <num>  <num>
+ 1:      0.07363682          27.59524    100
+ 2:      0.07442245          20.19399    100
+ 3:      0.07483764          97.26146    100
+ 4:      0.07574817          51.09960    100
+ 5:      0.07984662          23.06125    100
+ 6:      0.09408561          33.17563    100
+ 7:      0.07541232          25.16844    100
+ 8:      0.07689195          93.30756    100
+ 9:      0.08108089          20.84991    100
+10:      0.08144969          60.35935    100
+11:      0.08848780          22.07809    100
+12:      0.10794836          33.73256    100
+[2026-05-07 23:22:30] [PATCH_V2] --- Patch v2 B: Sector distribution 정정 --- 
+[2026-05-07 23:22:30] [PATCH_V2] deploy_snapshot: 30 rows 
+[2026-05-07 23:22:30] [PATCH_V2] Columns: as_of_date, ticker, name, sector, asset_class, leg_source, weight_within_leg, weight_final 
+[2026-05-07 23:22:30] [PATCH_V2] === AR Top20 Sector Distribution (실 운용 6/1 effective) === 
+          sector count total_weight
+          <char> <int>        <num>
+1:        반도체     9   0.23212456
+2:    IT하드웨어     2   0.16099938
+3:        에너지     1   0.14000000
+4:      건강관리     3   0.10135772
+5:          조선     1   0.04908016
+6: 건설,건축관련     1   0.01549628
+7:    필수소비재     1   0.00094191
+8:    소프트웨어     2   0.00000000
+[2026-05-07 23:22:31] [PATCH_V2] === KOSPI200 Top30 Sector Distribution (static lookup) === 
+              Sector     N
+              <char> <int>
+ 1:           자동차     3
+ 2:             화학     3
+ 3:             은행     3
+ 4:             보험     2
+ 5:           반도체     2
+ 6:       디스플레이     2
+ 7:           에너지     2
+ 8:       통신서비스     2
+ 9:       필수소비재     2
+10:       소프트웨어     2
+11:             철강     1
+12:       IT하드웨어     1
+13:         유틸리티     1
+14:      비철,목재등     1
+15:             조선     1
+16:           IT가전     1
+17: 화장품,의류,완구     1
+[2026-05-07 23:22:31] [PATCH_V2] AR top20 unique sectors: 8 (에너지, IT하드웨어, 건강관리, 반도체, 조선, 건설,건축관련, 필수소비재, 소프트웨어) 
+[2026-05-07 23:22:31] [PATCH_V2] TSMOM ETF pool (9): A069500, A148070, A143850, A132030, A308620, A284430, A329200, A229200, A157450 
+[2026-05-07 23:22:31] [PATCH_V2] --- Patch v2 C: CRISIS bootstrap CI --- 
+[2026-05-07 23:22:31] [PATCH_V2] CRISIS × 3-source joint sample: 2 months 
+[2026-05-07 23:22:31] [PATCH_V2] CRISIS sample 부족 - bootstrap 생략 
+[2026-05-07 23:22:31] [PATCH_V2] --- Patch v2 D: Hybrid 70/15/15 CRISIS 진단 --- 
+[2026-05-07 23:22:31] [PATCH_V2] === Hybrid 70/15/15 by Regime === 
+   regime_4     n mean_monthly sd_monthly    cum_ret  min_monthly max_monthly
+     <char> <int>        <num>      <num>      <num>        <num>       <num>
+1:     BULL    18   0.03097102 0.04649167  0.7026172 -0.062308445   0.1659168
+2:  CAUTION    63   0.00720203 0.04196411  0.4891581 -0.126551784   0.1736021
+3:   CRISIS    10   0.05209407 0.05519943  0.6419272  0.002972769   0.1714318
+4:   NORMAL   151   0.02353217 0.04356445 28.3023343 -0.102528220   0.1848837
+        cvar_95
+          <num>
+1: -0.062308445
+2: -0.082047516
+3:  0.002972769
+4: -0.062797583
+[2026-05-07 23:22:31] [PATCH_V2] === Hybrid Sharpe by Regime (90% bootstrap CI) === 
+    regime     n sr_observed sr_ci90_low sr_ci90_high
+    <char> <int>       <num>       <num>        <num>
+1: CAUTION    63   0.5945214 -0.06845882     1.359027
+2:  NORMAL   151   1.8712007  1.42178844     2.368600
+3:    BULL    18   2.3076560  1.16762430     4.388770
+4:  CRISIS    10   3.2692215  2.42733606     5.357891
+[2026-05-07 23:22:31] [PATCH_V2] --- Patch v2 E: 4th orthogonal source empirical risk profile --- 
+[2026-05-07 23:22:32] [PATCH_V2] Sector portfolios available: 26 sectors × 437 months 
+[2026-05-07 23:22:32] [PATCH_V2] Sector × Hybrid match: 254 months 
+[2026-05-07 23:22:32] [PATCH_V2] === Sector portfolios — correlation with Hybrid (sorted ascending) === 
+              Sector cor_with_Hybrid n_obs_complete
+              <char>           <num>          <int>
+ 1:             조선   -0.0659580323            254
+ 2:         건강관리   -0.0493186667            254
+ 3:       IT하드웨어   -0.0379346684            254
+ 4:           에너지   -0.0361637929            254
+ 5:      미디어,교육   -0.0114482589            254
+ 6:             기계   -0.0023359120            254
+ 7:             증권    0.0007356048            254
+ 8:           반도체    0.0022423194            254
+ 9:       통신서비스    0.0025656948            254
+10:             운송    0.0040477956            254
+11:       디스플레이    0.0079539265            254
+12:      상사,자본재    0.0132164163            254
+13:       소프트웨어    0.0132431495            254
+14:             철강    0.0216945631            254
+15:           IT가전    0.0237823141            254
+16:       필수소비재    0.0296573881            254
+17:             은행    0.0448781343            254
+18:             화학    0.0489071608            254
+19:      비철,목재등    0.0657583990            254
+20:       소매(유통)    0.0677425333            254
+21:             보험    0.0678550904            254
+22:         유틸리티    0.0847506436            254
+23:           자동차    0.0915704734            254
+24: 화장품,의류,완구    0.1021388021            254
+25:    건설,건축관련    0.1033101457            254
+26:  호텔,레저서비스    0.1226009874            254
+              Sector cor_with_Hybrid n_obs_complete
+              <char>           <num>          <int>
+[2026-05-07 23:22:32] [PATCH_V2] === Top 5 lowest-correlation sectors with Hybrid === 
+[2026-05-07 23:22:32] [PATCH_V2] (meta diagnostic — alpha 추가 X, strategy 제안 X — risk profile 진단 only) 
+        Sector cor_with_Hybrid n_obs_complete
+        <char>           <num>          <int>
+1:        조선     -0.06595803            254
+2:    건강관리     -0.04931867            254
+3:  IT하드웨어     -0.03793467            254
+4:      에너지     -0.03616379            254
+5: 미디어,교육     -0.01144826            254
+[2026-05-07 23:22:32] [PATCH_V2] --- Patch v2 F: Hybrid CRISIS tail fit --- 
+[2026-05-07 23:22:32] [PATCH_V2] Hybrid CRISIS sample 부족 
+[2026-05-07 23:22:32] [PATCH_V2] === PATCH V2 COMPLETE === 

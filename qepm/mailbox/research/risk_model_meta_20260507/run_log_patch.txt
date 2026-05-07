@@ -1,0 +1,91 @@
+[2026-05-07 23:19:11] [PATCH] === PATCH RUN START === 
+[2026-05-07 23:19:11] [PATCH] --- Patch 1B: KOSPI top30 universe 재선정 --- 
+[2026-05-07 23:19:21] [PATCH] RAWDATA total rows: 13892932 
+[2026-05-07 23:19:21] [PATCH] K200=1 rows: 1766563 
+[2026-05-07 23:19:22] [PATCH] K200 monthly window 2010~2024: 36190 rows 
+[2026-05-07 23:19:22] [PATCH] Tickers with >=80% coverage: 122 
+[2026-05-07 23:19:22] [PATCH] Top 30 large-cap covered: A005930, A000660, A005380, A005490, A035420 ... 
+[2026-05-07 23:19:22] [PATCH] KOSPI top30 monthly matrix raw: 180 × 30 
+[2026-05-07 23:19:22] [PATCH] Tickers passing 80% non-NA: 30 
+[2026-05-07 23:19:22] [PATCH] After complete-case (rows × cols): 163 × 30 
+[2026-05-07 23:19:22] [PATCH] Rolling windows possible: 44 (need >= 5) 
+[2026-05-07 23:19:23] [PATCH]   rolling 4/44 (9%) elapsed 0.5s 
+[2026-05-07 23:19:23] [PATCH]   rolling 8/44 (18%) elapsed 0.8s 
+[2026-05-07 23:19:23] [PATCH]   rolling 12/44 (27%) elapsed 1.1s 
+[2026-05-07 23:19:24] [PATCH]   rolling 16/44 (36%) elapsed 1.4s 
+[2026-05-07 23:19:22] [PATCH]   rolling 20/44 (45%) elapsed -0.7s 
+[2026-05-07 23:19:22] [PATCH]   rolling 24/44 (55%) elapsed -0.4s 
+[2026-05-07 23:19:22] [PATCH]   rolling 28/44 (64%) elapsed -0.1s 
+[2026-05-07 23:19:22] [PATCH]   rolling 32/44 (73%) elapsed 0.2s 
+[2026-05-07 23:19:23] [PATCH]   rolling 36/44 (82%) elapsed 0.5s 
+[2026-05-07 23:19:23] [PATCH]   rolling 40/44 (91%) elapsed 1.0s 
+[2026-05-07 23:19:24] [PATCH]   rolling 44/44 (100%) elapsed 1.3s 
+[2026-05-07 23:19:24] [PATCH] === KOSPI top30 OOS Forecast Performance (PATCHED) === 
+     estimator n_windows median_cond_num p95_cond_num median_frob_err
+        <char>     <int>           <num>        <num>           <num>
+1:   Gerber_05        44    5.443106e+06 6.616077e+06      0.07692762
+2: LW_constcor        44    2.290007e+01 2.852550e+01      0.07986893
+3:      Sample        44    1.702837e+02 2.552293e+02      0.07995312
+4: LW_identity        44    1.427009e+01 2.851620e+01      0.08668127
+5:  Glasso_005        44    5.956583e+00 7.081596e+00      0.10580470
+   p95_frob_err median_stein_loss pct_pd
+          <num>             <num>  <num>
+1:   0.08364964      2.213910e+06      0
+2:   0.08640627      2.034298e+01    100
+3:   0.08742342      5.350040e+01    100
+4:   0.09277290      2.300080e+01    100
+5:   0.10942619      3.334101e+01    100
+[2026-05-07 23:19:24] [PATCH] --- Sub-period stratification --- 
+[2026-05-07 23:19:24] [PATCH] === Sub-period OOS Performance === 
+     estimator       period n_windows median_cond_num median_frob_err
+        <char>       <char>     <int>           <num>           <num>
+1:   Gerber_05 Recent_2020+        44    5.443106e+06      0.07692762
+2: LW_constcor Recent_2020+        44    2.290007e+01      0.07986893
+3:      Sample Recent_2020+        44    1.702837e+02      0.07995312
+4: LW_identity Recent_2020+        44    1.427009e+01      0.08668127
+5:  Glasso_005 Recent_2020+        44    5.956583e+00      0.10580470
+   median_stein_loss
+               <num>
+1:      2.213910e+06
+2:      2.034298e+01
+3:      5.350040e+01
+4:      2.300080e+01
+5:      3.334101e+01
+[2026-05-07 23:19:24] [PATCH] --- Patch 3: regime_4 fix via YM key --- 
+[2026-05-07 23:19:24] [PATCH] BM monthly: 437 obs 
+[2026-05-07 23:19:24] [PATCH] ret_dt with bm_ret: 254 obs (non-NA bm_ret: 254) 
+[2026-05-07 23:19:24] [PATCH] === 4-Regime distribution (PATCHED) === 
+   regime_4     N
+     <char> <int>
+1:   NORMAL   151
+2:  CAUTION    63
+3:     BULL    18
+4:     <NA>    12
+5:   CRISIS    10
+[2026-05-07 23:19:24] [PATCH] 3-source × regime sample: 135 months 
+[2026-05-07 23:19:24] [PATCH] === Regime-conditional correlation (3-source, PATCHED) === 
+    regime n_months cor_AR_KR10y cor_AR_TSMOM cor_KR10y_TSMOM
+    <char>    <int>        <num>        <num>           <num>
+1:  NORMAL       91   -0.0902197  0.116989972      0.16447885
+2:    BULL       13   -0.1073329 -0.113779080     -0.34683795
+3: CAUTION       29   -0.2613110 -0.007800462     -0.05159668
+[2026-05-07 23:19:24] [PATCH] --- Patch 4: Crowding 보강 (Sector-level) --- 
+[2026-05-07 23:19:24] [PATCH] deploy_snapshot 가용: 30 rows, columns: as_of_date,ticker,name,sector,asset_class,leg_source,weight_within_leg,weight_final 
+   as_of_date  ticker           name     sector asset_class     leg_source
+       <IDat>  <char>         <char>     <char>      <char>         <char>
+1: 2026-06-01 A010950          S-Oil     에너지 EQ_KR_TOP20 STR_1715_70pct
+2: 2026-06-01 A050890         쏠리드 IT하드웨어 EQ_KR_TOP20 STR_1715_70pct
+3: 2026-06-01 A009420 한올바이오파마   건강관리 EQ_KR_TOP20 STR_1715_70pct
+   weight_within_leg weight_final
+               <num>        <num>
+1:         0.2000000    0.1400000
+2:         0.2000000    0.1400000
+3:         0.1309049    0.0916334
+[2026-05-07 23:19:24] [PATCH] === Top 30 KOSPI200 Sector distribution === 
+             Sector     N
+             <char> <int>
+1:           반도체     1
+2:      비철,목재등     1
+3:             화학     1
+4: 화장품,의류,완구     1
+[2026-05-07 23:19:24] [PATCH] === PATCH RUN COMPLETE === 

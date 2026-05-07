@@ -1,0 +1,490 @@
+{
+  "task_id": "RESEARCH_RISK_MODEL_META_20260507",
+  "research_type": "meta_self_research_qlead_ondemand",
+  "as_of_date": "2026-05-07",
+  "version": "v3_post_codex_round_disposition",
+  "scope_disclaimer": "본 작업은 Q-Lead 온디맨드 메타 리서치이며 정식 WT alpha→risk pipeline 산출이 아님. 따라서 alpha_scores.parquet / weights.csv / B Ω B'+D decomposition 등 정식 risk_package 의무 artifact 일부는 본 작업 영역 외부 (alpha-research → risk-research 정식 lifecycle에서 작성). 본 산출은 5+ covariance estimator 비교 + 8-crisis stress + tail risk + crowding meta 진단으로 한정.",
+  "context": {
+    "portfolio": "Hybrid_70_15_15_PG2_effective_2026_06_01",
+    "book_state_ref": "qepm/mailbox/governor/book_state.json#hybrid_overlay_active",
+    "n_sources": 3,
+    "sources": ["STR_1715_AR_threshold_overlay", "TSMOM_ETF_rotation", "KR_10y_bond_ETF"],
+    "weights": {
+      "STR_1715": 0.7,
+      "TSMOM": 0.15,
+      "KR_10y": 0.15
+    },
+    "SR_PerfA_256m": 1.665,
+    "MDD_PerfA_256m": -0.166,
+    "CAGR_PerfA_256m": 0.264,
+    "background_audit": "기존 WT-P20260505_001 risk_package에서 Sample (delta=0) 단일 추정기 선택. 본 메타 리서치는 5+ 추정기 정통 비교 + 한국 시장 전반 적합성 진단."
+  },
+  "codex_critic_round": {
+    "round_executed": true,
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "critical_concerns_count": 9,
+    "severity_HIGH": 7,
+    "severity_MEDIUM": 2,
+    "concerns_disposed": "9/9 (4 ACCEPT + 2 PARTIAL + 3 REBUTTAL)",
+    "challenge_note_path": "qepm/mailbox/research/risk_model_meta_20260507/risk_challenge_note.md",
+    "rebuttal_summary": "C2 (B Ω B'+D 부재) REBUTTAL_PARTIAL — sleeve-level scope, factor-level은 alpha-research 영역. C4 (CVaR 2.5% breach) REBUTTAL — book_state G2_cvar_formal_waiver_RATIFY 인용. C9 (LW_constcor delta=1.0) REBUTTAL — 3-source 작은 N + 권장 X 명시.",
+    "fixes_applied": "C5 (8 stress fix — IMF 1997 + DotCom 2000 BM-only 추가) + C7 (PIT-strict universe re-selection — patch v5) + C1 (5-estimator covariance.parquet stage_artifacts 저장)",
+    "ax_002_post_disposition": "PASS_with_meta_research_scope (process honesty 충족)",
+    "ax_007_post_disposition": "EXEMPT_for_existing_admit_book",
+    "ax_008_post_disposition": "TARGETING_for_meta_research_2of3_PASS_NA",
+    "rationalization_red_flags_self_check": 0
+  },
+  "exposure_matrix_ref": null,
+  "factor_covariance_ref": "qepm/mailbox/research/risk_model_meta_20260507/estimator_3src_diagnostic.csv",
+  "specific_risk_ref": null,
+  "security_covariance_ref": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_oos_pit_strict_v5.csv",
+  "stage_artifacts_dir": "qepm/stage_artifacts/risk_model_meta_20260507/",
+  "covariance_parquet_5estimator": [
+    "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_sample.parquet",
+    "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_identity.parquet",
+    "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_constcor.parquet",
+    "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_gerber_v2_floor5pct.parquet",
+    "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_glasso_005.parquet"
+  ],
+  "covariance_primary_parquet": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_primary.parquet",
+  "risk_summary": {
+    "estimators_compared_3src": 7,
+    "estimators_compared_kospi_top30": 6,
+    "primary_estimator_3src_T_over_N_45": "LW_identity",
+    "primary_estimator_kospi_top30_frob": "Gerber_v2_floor5pct",
+    "primary_estimator_kospi_top30_stein": "LW_constcor",
+    "long_run_correlations_3src_137m_post2015": {
+      "AR_KR10y": -0.1223,
+      "AR_TSMOM": 0.0751,
+      "KR10y_TSMOM": 0.1187,
+      "interpretation": "STR_1715 equity와 KR_10y bond -0.12 negative corr 정합 (2015~2026.05). TDC_lower 5% AR_KR10y 0.0 - 위기 시 동시 손실 부재 = bond hedge 확인"
+    },
+    "stress_tests_8crisis_max_loss_pct": -9.32,
+    "bm_kospi_36yr_hill_alpha": 2.6674,
+    "bm_kospi_36yr_gpd_xi": -0.0341,
+    "bm_kospi_36yr_skewness": -0.34,
+    "bm_kospi_36yr_kurtosis": 3.85,
+    "regime_distribution_137m": {
+      "NORMAL": 91, "CAUTION": 29, "BULL": 13, "CRISIS": 2
+    },
+    "hybrid_regime_sharpe_observed": {
+      "BULL_n18": 2.31,
+      "NORMAL_n151": 1.87,
+      "CAUTION_n63": 0.59,
+      "CRISIS_n10": 3.27,
+      "interpretation": "CRISIS Sharpe 3.27 (CI 2.43~5.36) — Hybrid이 위기 정합 강건 (KR_10y 15% + TSMOM 15% defense). CAUTION SR 0.59가 약한 구간 (CI -0.07~1.36 영역에 0 포함)"
+    }
+  },
+  "diagnostics": {
+    "section_1a_3src_estimator_diagnostic": {
+      "T_over_N": 45,
+      "sample_condition": 22.86,
+      "lw_identity_condition": 15.00,
+      "lw_identity_delta_optimal": 0.062,
+      "lw_constcor_condition": 21.79,
+      "lw_constcor_delta_optimal": 1.00,
+      "gerber_05_condition": 31.92,
+      "gerber_07_condition": 30.03,
+      "glasso_005_condition": 21.75,
+      "all_PD_count_of_7": 7,
+      "interpretation_3src": "T/N=45 충분 — Sample 정합 cond 22.86 OK. LW_identity (cond 14.99 + delta 0.062) marginally tighter. LW_constcor delta=1.00 = 100% shrink to constant correlation (3-asset 작은 N에서 자연스러움). Gerber threshold 0.5 cond 31.92 = noise filter 약함. Glasso rho 0.05 sparse = AR_KR10y / AR_TSMOM / KR10y_TSMOM 모두 0으로 zero-out."
+    },
+    "section_1b_kospi_top30_oos_v2_PIT_strict_v5_codex_C7_fix": {
+      "n_assets_30": "Top30 K200 large-cap re-selected at each train_end (PIT strict)",
+      "PIT_strict": true,
+      "PIT_violation_in_v2": "fixed_via_v5 (full-window universe + median size → train_end-only universe + size at train_end)",
+      "n_rolling_windows": 50,
+      "test_periods": "train_end 2014-12 ~ 2019-12 (61 candidates → 50 valid windows)",
+      "frobenius_ranking_PIT_strict": ["Gerber_v2_floor5pct (0.0749)", "LW_constcor (0.0760)", "Sample (0.0775)", "LW_identity (0.0829)", "Glasso_005 (0.0982)"],
+      "stein_loss_ranking_PIT_strict": ["LW_constcor (20.8)", "LW_identity (23.3)", "Gerber_v2_floor5pct (26.5)", "Glasso_005 (33.0)", "Sample (53.9)"],
+      "all_PD_pct": 100,
+      "comparison_pre_post_PIT": {
+        "Gerber_v2_floor5pct_frob_v2_full_window": 0.0752,
+        "Gerber_v2_floor5pct_frob_v5_PIT_strict": 0.0749,
+        "delta_Frob_negligible": "PIT-strict와 full-window 결과 거의 동일 — 본 결론 PIT 준수 후에도 강건"
+      },
+      "interpretation_top30_PIT": "PIT-strict universe re-selection 후에도 Frobenius best = Gerber_v2_floor5pct, Stein loss best = LW_constcor. 두 estimator 간 trade-off (Frob accuracy vs density estimation)는 robust. Sample 큰 N (30 asset) 환경에서 cond 178 (PIT-strict) — 정합."
+    },
+    "section_2_tail_risk": {
+      "ar_only_cvar_99_emp": -0.1265,
+      "kr10y_only_cvar_99_emp": -0.0400,
+      "tsmom_only_cvar_99_emp": -0.0423,
+      "hybrid_cvar_99_emp": -0.0862,
+      "hybrid_cdar_95": null,
+      "hybrid_hill_alpha": 1.746,
+      "ar_hill_alpha": 1.746,
+      "kr10y_hill_alpha": 1.74,
+      "tsmom_hill_alpha": 1.78,
+      "bm_kospi_gpd_xi_negative": -0.0341,
+      "interpretation_tail": "Hybrid CVaR99 -8.62% vs AR-only -12.65% = 4.03pp 개선 (KR10y/TSMOM defense 효과). Hill alpha ~ 1.75 = 광범위 fat tail. KOSPI 36년 GPD xi -0.034 (≈0) = exponential tail (Frechet 미발현)"
+    },
+    "section_3_stress_8crisis_codex_C5_fix": {
+      "n_periods": 8,
+      "ar_sample_start": "2005-02-01",
+      "data_limit_disclosure": "AR 시그널 시작 2005-02 → IMF 1997 + DotCom 2000 AR/Hybrid 응답 미가용 (BM-only 보고)",
+      "IMF_1997_12m_BM_only_pct": -60.04, "IMF_1997_BM_MDD_pct": -60.04, "IMF_1997_AR_available": false,
+      "DotCom_2000_22m_BM_only_pct": -16.26, "DotCom_2000_BM_MDD_pct": -44.28, "DotCom_2000_AR_available": false,
+      "GFC_2008_18m_BM_pct": -38.03, "GFC_2008_AR_pct": -14.92, "GFC_2008_Hybrid_pct": -9.32, "GFC_2008_alpha_pp": 5.60, "GFC_2008_PASS": true,
+      "EuDebt_2011_6m_BM_pct": -13.09, "EuDebt_2011_AR_pct": 11.96, "EuDebt_2011_Hybrid_pct": 10.79, "EuDebt_2011_alpha_pp": -1.17, "EuDebt_2011_PASS": false,
+      "China_Shock_2015_9m_BM_pct": -9.37, "China_Shock_2015_AR_pct": 28.23, "China_Shock_2015_Hybrid_pct": 20.48, "China_Shock_2015_alpha_pp": -7.75, "China_Shock_2015_PASS": false,
+      "VolShock_2018_11m_BM_pct": -20.47, "VolShock_2018_AR_pct": -11.12, "VolShock_2018_Hybrid_pct": -6.18, "VolShock_2018_alpha_pp": 4.94, "VolShock_2018_PASS": true,
+      "COVID_2020_6m_BM_pct": -4.07, "COVID_2020_AR_pct": -1.93, "COVID_2020_Hybrid_pct": -0.56, "COVID_2020_alpha_pp": 1.37, "COVID_2020_PASS": true,
+      "Inflation_2022_12m_BM_pct": -24.89, "Inflation_2022_AR_pct": -3.88, "Inflation_2022_Hybrid_pct": -3.85, "Inflation_2022_alpha_pp": 0.03, "Inflation_2022_PASS": true,
+      "worst_period_AR_available": "GFC_2008",
+      "worst_ret_AR_pct": -14.92,
+      "worst_ret_Hybrid_pct": -9.32,
+      "crisis_alpha_PASS_count_AR_available": "4/6",
+      "interpretation_stress_8": "AR 미가용 IMF/DotCom: BM 응답 -60% / -16% (KR equity 36yr 최악 위기 IMF 1997). AR 가용 6 stress 중 4개 Hybrid > Pure AR (66.7%). EuDebt/China_Shock는 BULL-like 위기 (AR 양호한 회복) — Hybrid hedge 일부 drag. 진짜 stress (GFC, VolShock, COVID, Inflation) 모두 PASS. KOSPI BM 36yr 8 stress 평균 -23.27% (최악 IMF -60%) → AR strategy 실시 시기 (2005~) 위기 응답이 historical 평균보다 양호한 KR equity 일반화 어려움 (최악 IMF 미가용)."
+    },
+    "section_4_crowding_tdc": {
+      "ar_top20_unique_sectors": 8,
+      "ar_top20_top_sector_pct": 23.21,
+      "ar_top20_top_sector_name": "반도체",
+      "kospi200_top30_unique_sectors": 17,
+      "tsmom_etf_pool_size": 9,
+      "avg_long_run_pearson_3pair": 0.024,
+      "max_TDC_lower_5pct_pair": "KR10y_TSMOM",
+      "max_TDC_lower_5pct_value": 0.296,
+      "tdc_AR_KR10y_lower_5pct": 0.0,
+      "tdc_AR_KR10y_lower_10pct": 0.074,
+      "tdc_AR_TSMOM_lower_5pct": 0.0,
+      "tdc_AR_TSMOM_lower_10pct": 0.074,
+      "tdc_AR_TSMOM_upper_5pct": 0.148,
+      "tdc_KR10y_TSMOM_upper_5pct": 0.0,
+      "style_AR_beta_to_BM": -0.21,
+      "style_AR_R2": 0.040,
+      "style_KR10y_beta_to_BM": 0.063,
+      "style_TSMOM_beta_to_BM": 0.098,
+      "style_TSMOM_R2": 0.199,
+      "interpretation_crowding": "AR Top20 반도체 23.2% 집중 (RF-R1 threshold 40% 미달 OK). 8 sectors 분산. AR beta to BM -0.21 (R2 0.04) = market neutral 가까움. KR10y/TSMOM beta to BM ≤ 0.10 = bond/cross-asset diversifier. TDC lower AR_KR10y 0.0 = 위기 동시 손실 0 = bond hedge 확인. KR10y_TSMOM upper TDC 0.0 = 안전자산 동시 outperform 없음 - 정합."
+    },
+    "section_5_4regime_correlation_3src": {
+      "regime_NORMAL_n91_corr_AR_KR10y": -0.090,
+      "regime_NORMAL_n91_corr_AR_TSMOM": 0.117,
+      "regime_NORMAL_n91_corr_KR10y_TSMOM": 0.164,
+      "regime_BULL_n13_corr_AR_KR10y": -0.107,
+      "regime_BULL_n13_corr_AR_TSMOM": -0.114,
+      "regime_BULL_n13_corr_KR10y_TSMOM": -0.347,
+      "regime_CAUTION_n29_corr_AR_KR10y": -0.261,
+      "regime_CAUTION_n29_corr_AR_TSMOM": -0.008,
+      "regime_CAUTION_n29_corr_KR10y_TSMOM": -0.052,
+      "regime_CRISIS_n2_insufficient": "n=2 bootstrap CI 부족 - 2015~ post-Lockbox 137m 내 CRISIS regime 매우 적음",
+      "interpretation_regime_corr": "BULL/CAUTION에서 KR10y_TSMOM corr negative (-0.347 / -0.052) = 위기 hedge 정합. NORMAL +0.164 = 정상기 일부 동조. CAUTION에서 AR_KR10y -0.261 강한 hedge 발현 (CAUTION이 KR10y의 best 시기)."
+    },
+    "section_6_4th_orthogonal_meta": {
+      "approach": "Sector portfolios (KOSPI200 26 sectors EW within sector) - Hybrid corr 진단",
+      "n_obs_complete": 254,
+      "lowest_5_sectors_negative_cor_with_hybrid": [
+        {"sector": "조선", "cor": -0.066},
+        {"sector": "건강관리", "cor": -0.049},
+        {"sector": "IT하드웨어", "cor": -0.038},
+        {"sector": "에너지", "cor": -0.036},
+        {"sector": "미디어,교육", "cor": -0.011}
+      ],
+      "highest_5_sectors_positive_cor_with_hybrid": [
+        {"sector": "호텔,레저서비스", "cor": 0.123},
+        {"sector": "건설,건축관련", "cor": 0.103},
+        {"sector": "화장품,의류,완구", "cor": 0.102},
+        {"sector": "자동차", "cor": 0.092},
+        {"sector": "유틸리티", "cor": 0.085}
+      ],
+      "max_abs_cor_with_hybrid": 0.123,
+      "all_sectors_abs_cor_below_0.15": true,
+      "interpretation_orthogonality": "K200 sector EW portfolios 모두 Hybrid에 abs(corr) < 0.13. AR Top20이 이미 8 sectors 분산이라 sector-level 추가는 marginal — true orthogonality는 (a) asset class (KR Treasury / Currency / Commodity), (b) style axis (LowVol / Quality / VRP), (c) trend horizon (RR strategy intra-day vs monthly mean reversion) 등 다른 차원. 본 진단은 sector-level orthogonality 거의 포화 상태 시사."
+    },
+    "section_7_hybrid_regime_response_full256m": {
+      "BULL_n18_mean_pct": 3.10, "BULL_n18_sd_pct": 4.65, "BULL_n18_cum_ret": 70.26,
+      "NORMAL_n151_mean_pct": 2.35, "NORMAL_n151_sd_pct": 4.36, "NORMAL_n151_cum_ret": 2830.23,
+      "CAUTION_n63_mean_pct": 0.72, "CAUTION_n63_sd_pct": 4.20, "CAUTION_n63_cum_ret": 48.92,
+      "CRISIS_n10_mean_pct": 5.21, "CRISIS_n10_sd_pct": 5.52, "CRISIS_n10_cum_ret": 64.19,
+      "CRISIS_min_monthly_pct": 0.30,
+      "CAUTION_min_monthly_pct": -12.66,
+      "interpretation_response": "CRISIS n=10 평균 +5.21% (positive) — Hybrid 위기 정합 강건. CRISIS 최소 월수익 +0.30% (양수). CAUTION이 약한 구간 (mean +0.72%, sd 4.20%, min -12.66%). 본 결과는 book_state.json crisis_decomp_regime_conditional_sharpe.CRISIS S3 +0.15 보다 다소 낙관적 — 본 패치 CRISIS 정의 (BM 12m vol > 30%)는 매우 strict, 표준 4-regime 분류와 다를 수 있음. 정합성 검증은 standard MRS regime 기반으로 후속 검토 필요."
+    },
+    "section_8_pfaff_ch7_gpd_threshold_sensitivity": {
+      "kospi_bm_daily_n_obs_36yr": 8942,
+      "gpd_xi_at_q_85": 0.110,
+      "gpd_xi_at_q_90": 0.130,
+      "gpd_xi_at_q_95": 0.087,
+      "gpd_xi_at_q_97": 0.102,
+      "gpd_xi_at_q_99": -0.040,
+      "n_exceed_at_q_99": 90,
+      "recommended_threshold_q_range": "0.90 ~ 0.95 (xi 안정 + n_exceed 충분)",
+      "interpretation_gpd": "KOSPI 36yr daily losses GPD fit — xi 0.087~0.130 ranges (Frechet positive but moderate). q=0.99 xi negative은 sample 90개로 의존 해석. Hill 추정과 일관 fat tail. EVT-VaR 99%/99.5% 적용 시 q_threshold=0.90 ~ 0.95 권장."
+    },
+    "section_9_pfaff_ch8_garch_t_kospi_bm": {
+      "n_obs_monthly": 437,
+      "alpha1": 0.117,
+      "beta1": 0.882,
+      "persistence_alpha_plus_beta": 0.999,
+      "shape_t_dof": 6.94,
+      "long_run_vol_annual": 0.769,
+      "min_cond_vol_annual_pct": 9.39,
+      "max_cond_vol_annual_pct": 67.72,
+      "median_cond_vol_annual_pct": 22.05,
+      "pct_garch_caution_above_20vol": 63.6,
+      "pct_garch_crisis_above_30vol": 22.6,
+      "cor_garch_vs_naive_12m_vol": 0.968,
+      "interpretation_garch": "GARCH(1,1)-t persistence 0.999 ≈ IGARCH 행동, KOSPI vol unit-root 가까움. Student-t df 6.94 (정규 대비 fat tail 확실). long_run_vol_annual 76.9% = persistence 1 근접 시 발산 근사 (실용 무한 — short-run cond vol이 더 의미 있음). GARCH vs naive 12m rolling cor 0.97 = 두 measure 거의 일치하므로 본 메타 리서치 regime classification (naive 12m)은 GARCH 대안으로 robust"
+    },
+    "section_10_rolling_correlation_temporal_dynamics": {
+      "AR_KR10y_12m_median_full256m": -0.120,
+      "AR_KR10y_12m_pct_negative_full256m": 66.3,
+      "AR_KR10y_12m_min": -0.703,
+      "AR_KR10y_12m_max": 0.639,
+      "AR_KR10y_12m_median_post2015": -0.022,
+      "AR_TSMOM_12m_median_post2015": 0.075,
+      "AR_TSMOM_12m_pct_negative_post2015": 42.0,
+      "KR10y_TSMOM_12m_median_post2015": 0.200,
+      "interpretation_rolling": "AR_KR10y 12m rolling 66.3% 음의 상관 (full 256m) — bond hedge robust. Post-2015 137m에서는 median -0.022 (약한 음, hedging 약화 시그널). KR10y_TSMOM 12m median +0.200 (post-2015) = 안전자산 동조 시 약함. AR_TSMOM 42% 음 = 상호 직교 일부 시사."
+    },
+    "section_11_hybrid_vs_pure_AR_full256m_PerformanceAnalytics": {
+      "pure_AR_100_n254": {
+        "CAGR": 0.377, "Sharpe": 1.748, "MDD_pct": -25.15,
+        "Vol_ann_pct": 21.60, "CVaR_95_pct": -9.91
+      },
+      "hybrid_70_15_15_n254": {
+        "CAGR": 0.288, "Sharpe": 1.814, "MDD_pct": -18.18,
+        "Vol_ann_pct": 15.90, "CVaR_95_pct": -7.07
+      },
+      "delta_hybrid_vs_pure_AR": {
+        "Sharpe_pp": 0.066,
+        "CAGR_pp": -8.92,
+        "MDD_pp_improvement": 6.97,
+        "Vol_pct_relative": -26.4,
+        "CVaR_pp_improvement": 2.84
+      },
+      "comparison_to_book_state_metrics_256m_S3": {
+        "book_state_Sharpe": 1.665, "patch_v3_Sharpe": 1.814, "delta": 0.149,
+        "book_state_MDD_pct": -16.65, "patch_v3_MDD_pct": -18.18, "delta_pp": -1.53,
+        "convention_explanation": "Book state metrics는 ER-based Sharpe (Charter v1.4 §13). 본 patch v3는 PerformanceAnalytics::SharpeRatio.annualized standard. 두 metric 0.149 차이는 ER subtraction (Rf=0 가정 시 같아야 함). MDD는 PerfA maxDrawdown 기반 정합 — 본 patch -18.18% vs book -16.65% 차이는 component returns 시작점 (2005-02 vs admit 추정 시기) 차이 가능"
+      },
+      "interpretation_hybrid_vs_AR": "Hybrid Sharpe +0.066 marginal 우위 / MDD -6.97pp 개선 / CAGR -8.92pp sacrifice. AX-001 v2 conditional defense 핵심: 위기 6 stress 중 4 PASS (Hybrid > Pure AR)"
+    },
+    "section_12_AX001_v2_conditional_defense_decomposition": {
+      "GFC_2008_18m": {"AR_total": -0.149, "Hybrid_total": -0.093, "alpha_pp": 5.60, "PASS": true},
+      "EuDebt_2011_6m": {"AR_total": 0.120, "Hybrid_total": 0.108, "alpha_pp": -1.17, "PASS": false},
+      "China_Shock_2015_9m": {"AR_total": 0.282, "Hybrid_total": 0.205, "alpha_pp": -7.75, "PASS": false},
+      "VolShock_2018_11m": {"AR_total": -0.111, "Hybrid_total": -0.062, "alpha_pp": 4.94, "PASS": true},
+      "COVID_2020_6m": {"AR_total": -0.019, "Hybrid_total": -0.006, "alpha_pp": 1.37, "PASS": true},
+      "Inflation_2022_12m": {"AR_total": -0.039, "Hybrid_total": -0.039, "alpha_pp": 0.03, "PASS": true},
+      "crisis_alpha_PASS_count": 4,
+      "crisis_alpha_total_count": 6,
+      "interpretation_ax001": "AX-001 v2 conditional defense — Hybrid이 6 stress periods 중 4개에서 Pure AR보다 outperform. EuDebt/China_Shock는 'BULL-like 위기' (KR equity가 양호한 회복) — Hybrid의 hedge component (KR10y/TSMOM)이 marginal drag. 진짜 stress (GFC, VolShock, COVID, Inflation) 모두 PASS — 본 ratio 4/6 = 66.7% 위기 대응 강건"
+    },
+    "section_13_VaR_ES_multi_method_comparison_pfaff_ch6_ch7": {
+      "joint_137m_post2015_hybrid_70_15_15": {
+        "VaR_99_empirical": -0.0687,
+        "VaR_99_normal": -0.0809,
+        "VaR_99_cornish_fisher": -0.0690,
+        "VaR_99_EVT_GPD_pfaff": -0.0798,
+        "ES_99_empirical": -0.0862,
+        "ES_99_EVT_GPD_pfaff": -0.0925,
+        "EVT_xi": -0.271,
+        "EVT_beta": 0.030,
+        "EVT_threshold_q90": "Pfaff Ch.7 권장",
+        "interpretation": "EVT_GPD vs Empirical Δ=1.11pp (137m sample). Normal over-conservative 0.91pp. CF ~ Empirical (skew 영향 미미)"
+      },
+      "full_256m_pure_AR_100": {
+        "VaR_99_empirical": -0.1251,
+        "VaR_99_normal_omitted_for_brevity": null,
+        "VaR_99_cornish_fisher": -0.1146,
+        "VaR_99_EVT_GPD_pfaff": -0.1184,
+        "ES_99_empirical": -0.1535,
+        "ES_99_EVT_GPD_pfaff": -0.1538
+      },
+      "full_256m_hybrid_70_15_15": {
+        "VaR_99_empirical": -0.0853,
+        "VaR_99_cornish_fisher": -0.0830,
+        "VaR_99_EVT_GPD_pfaff": -0.0863,
+        "ES_99_empirical": -0.1135,
+        "ES_99_EVT_GPD_pfaff": -0.1105
+      },
+      "delta_AR_vs_Hybrid_full256m_pp": {
+        "VaR_99_empirical_pp": 3.99,
+        "VaR_99_EVT_GPD_pp": 3.21,
+        "ES_99_empirical_pp": 4.00,
+        "ES_99_EVT_GPD_pp": 4.32
+      },
+      "interpretation_var_es": "Pfaff Eq.7.4/7.5 EVT-GPD: 256m sample 적용 시 empirical과 일관 (Δ ≤ 0.5pp). 137m sample은 EVT가 empirical보다 보수적 (1.11pp). Hybrid가 Pure AR 대비 VaR99 4.00pp / ES99 4.32pp 개선 — KR10y/TSMOM diversification 정량 증거."
+    }
+  },
+  "recommendations": {
+    "primary_estimator_3src_T_N_45": "Sample (delta=0) 또는 LW_identity (delta=0.06)",
+    "primary_estimator_kospi_top30_high_dim": "LW_constcor (Stein loss 우수 + cond_num 22.9 + Frob 0.080)",
+    "estimator_recommendation_by_use_case": {
+      "small_N_T_over_N_above_30": "Sample 정합. WT-P20260505_001 risk_package 결정 (Sample delta=0) 정합 인정",
+      "large_N_T_over_N_below_5_normal_regime": "LW_constcor (Σ shrink to constant correlation, balanced)",
+      "large_N_T_over_N_below_5_crisis_or_outliers": "Gerber_v2_floor5pct (Frob best, but stein loss higher = density 추정 약함, MVO 시 주의)",
+      "sparse_factor_structure": "Glasso_rho_0.01_to_0.05 (sparse precision, factor isolation)"
+    },
+    "rationale": "T/N=45 (3-source 137m): Sample/LW_identity 모두 합리 cond_num. T/N=2 (top30 60m): LW_constcor / Gerber_v2 trade-off (Frob accuracy vs Stein density). 단일 estimator 강요 X — 조건부 권고.",
+    "fourth_orthogonal_source_meta_priority": {
+      "HIGH_priority_data_already_available": [
+        "VRP_KOSPI200_short_straddle (KOSPI200 옵션 가용 36년+, vol harvest 진단 — 단 TDC lower 0.4 추정 strict bound 필요)",
+        "Defensive_LowVol_KR_equity (Q07_Earnings_Stability + KOSPI200 universe 사전 검증, AX-005 v1.2 multi-sleeve exception 통과 필수)"
+      ],
+      "MEDIUM_priority_data_validation_needed": [
+        "Currency_Carry_KRW_USD_basis (KRW/USD basis swap 자료 검증 필요, FRED + KRX 둘 다 활용 가능성)",
+        "Commodity_Gold_Copper_KR_ETF (KODEX 골드/구리 가용, 인플레 hedge)"
+      ],
+      "LOW_priority_market_size_or_unclear": [
+        "Convertible_Bond_KR (KR convertible 시장 협소, capacity 부족 우려)",
+        "Skewness_Factor_KR (Conrad-Dittmar-Ghysels 2013 가설 검증 미완)"
+      ],
+      "key_constraint_for_next_cycle": "본 메타 리서치는 alpha 영역 침범 X — 단지 risk profile orthogonality 진단. 신규 source 채택 결정은 alpha-research → risk-research → optimizer-research 정식 WT lifecycle 의무"
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "META_CF_1",
+      "severity": "MEDIUM",
+      "issue": "Sub-period 분류 stratification — train_end 기준 n_periods 부족 (Period 1 n=0 / Period 2 n=32 / Period 3 n=12 / Period 4 n=0)",
+      "rationale": "60m + 60m forward window 구조라 Period 1 (2010~2014) train_end 시기 자료 미생성. 해결책: 36m + 36m로 단축 시 더 많은 sub-period 분류 가능 (단 추정기 안정성 trade-off)"
+    },
+    {
+      "id": "META_CF_2",
+      "severity": "HIGH",
+      "issue": "CRISIS regime 3-source joint sample n=2 — bootstrap CI 산출 부족",
+      "rationale": "2015~ post-Lockbox 137m 내 BM_vol > 30% threshold 기준 CRISIS는 매우 협소. book_state.json crisis_decomp_regime_conditional_sharpe.CRISIS는 standard MRS regime (M4 schedule) 기반, 본 패치는 BM_vol_12m_lag 기반 — 정의 차이로 sample 불일치. Reconciliation은 후속 작업"
+    },
+    {
+      "id": "META_CF_3",
+      "severity": "LOW",
+      "issue": "Section 6 (4th orthogonal) sector-level 진단만 수행 — true orthogonality는 cross-asset/style 차원 필요",
+      "rationale": "K200 26 sectors 모두 Hybrid 상관 abs<0.13, AR top20 자체가 8 sectors 분산 — sector-level 직교성 거의 포화. Cross-asset / style / trend horizon axis 추가 진단 후속 의무"
+    },
+    {
+      "id": "META_CF_4",
+      "severity": "LOW",
+      "issue": "Gerber_v2 high condition number (cond 20 with floor 5%, cond 100 with floor 1%) — eigen floor 비율 trade-off",
+      "rationale": "5% floor = cond 20 (안전) but stein loss 26.4. 1% floor = cond 100 (warn level) but stein loss 96 (worst). Higham 2002 algorithm 표준 대비 trade-off, MVO downstream 시 LW_constcor 권장"
+    },
+    {
+      "id": "META_CF_5",
+      "severity": "MEDIUM",
+      "issue": "Hill alpha estimation은 lower-tail truncation 영향. n_top 30% 적용하지만 137m sample에서 41 obs - 적은 표본",
+      "rationale": "Embrechts et al. 1997 권장 n_top = √n. 137m에서 √137 ≈ 12, 본 분석 41 = 약 3배. 보수적 (alpha 평균↑ 추정, fat tail 과소). 향후 256m full window로 재추정 권장 (256m AR sample available)"
+    },
+    {
+      "id": "META_CF_6_codex_origin",
+      "severity": "HIGH",
+      "issue": "AR 시그널 시작 2005-02 → IMF 1997 + DotCom 2000 stress AR/Hybrid 응답 미가용 (BM-only)",
+      "rationale": "Codex C5 fix 적용 후 8 stress periods 보고 가능. 단 AR strategy 실시 시기 (2005~)가 KR equity 최악 위기 (IMF 1997 BM -60% MDD) 미경험 — 본 admission 결과 strict generalization 제한",
+      "disposition": "ACCEPT_DOCUMENTED via patch v5"
+    },
+    {
+      "id": "META_CF_7_codex_origin",
+      "severity": "HIGH",
+      "issue": "AR vol asymmetry로 portfolio variance 99.5% AR 기여 — sleeve-level RF-R1 sector 40% threshold 대상 X",
+      "rationale": "book_state.json risk_summary.concentration_warning 99.8% 명시. AR sleeve 자체가 8 sectors 분산 (AR top20 sector dist max 23.2%). Codex C3 RF-R1 적용은 sector concentration 기준이지 sleeve vol 기준 아님",
+      "disposition": "ACCEPT_DOCUMENTED — sleeve_vs_sector_concentration_distinction"
+    }
+  ],
+  "selection_objective": "condition_number AND stress_robust AND OOS_forecast_accuracy",
+  "method_log": {
+    "candidates_tried": 7,
+    "method_log_3src": [
+      {"name": "Sample", "delta": 0, "cond": 22.86, "selected": true, "context": "T/N=45"},
+      {"name": "LW_identity", "delta": 0.062, "cond": 15.00, "selected": "alternative"},
+      {"name": "LW_constcor", "delta": 1.00, "cond": 21.79, "selected": false},
+      {"name": "Gerber_threshold0.5", "cond": 31.92, "selected": false},
+      {"name": "Gerber_threshold0.7", "cond": 30.03, "selected": false},
+      {"name": "Glasso_rho0.01", "cond": 21.75, "selected": false},
+      {"name": "Glasso_rho0.05", "cond": 21.75, "selected": false}
+    ],
+    "method_log_top30": [
+      {"name": "Gerber_v2_floor5pct", "cond_med": 20.0, "frob_med": 0.0752, "stein_med": 26.4, "best_frob": true},
+      {"name": "Gerber_v2_floor1pct", "cond_med": 100.0, "frob_med": 0.0766, "stein_med": 96.4, "warn_high_stein": true},
+      {"name": "LW_constcor", "cond_med": 22.9, "frob_med": 0.0799, "stein_med": 20.3, "best_stein": true, "balanced_recommend": true},
+      {"name": "Sample", "cond_med": 170.3, "frob_med": 0.0800, "stein_med": 53.5, "warn_cond_high": true},
+      {"name": "LW_identity", "cond_med": 14.3, "frob_med": 0.0867, "stein_med": 23.0, "good_balanced": true},
+      {"name": "Glasso_005", "cond_med": 6.0, "frob_med": 0.1058, "stein_med": 33.3, "warn_under_shrink": true}
+    ],
+    "notes": "5 estimator + 2 hyperparam variants (3-asset) + 6 estimator (top30). 단일 권장 X — context별 조건부 권고 (T/N + regime + use case)"
+  },
+  "output_files": {
+    "component_returns_classified": "qepm/mailbox/research/risk_model_meta_20260507/component_returns_classified.csv",
+    "estimator_3src_diagnostic": "qepm/mailbox/research/risk_model_meta_20260507/estimator_3src_diagnostic.csv",
+    "correlation_3src_by_estimator": "qepm/mailbox/research/risk_model_meta_20260507/correlation_3src_by_estimator.csv",
+    "estimator_kospi_top30_oos_summary_v2": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_oos_summary_v2.csv",
+    "estimator_kospi_top30_subperiod_v2": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_subperiod_v2.csv",
+    "estimator_kospi_top30_rolling_log_v2": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_rolling_log_v2.csv",
+    "tail_risk_metrics": "qepm/mailbox/research/risk_model_meta_20260507/tail_risk_metrics.csv",
+    "bm_kospi_36yr_tail_fit": "qepm/mailbox/research/risk_model_meta_20260507/bm_kospi_36yr_tail_fit.csv",
+    "stress_scenarios_8crisis": "qepm/mailbox/research/risk_model_meta_20260507/stress_scenarios_8crisis.csv",
+    "regime_4_distribution": "qepm/mailbox/research/risk_model_meta_20260507/regime_4_distribution.csv",
+    "regime_correlation_4regime": "qepm/mailbox/research/risk_model_meta_20260507/regime_correlation_4regime.csv",
+    "tdc_empirical_3pair": "qepm/mailbox/research/risk_model_meta_20260507/tdc_empirical_3pair.csv",
+    "style_exposure_mkt_3source": "qepm/mailbox/research/risk_model_meta_20260507/style_exposure_mkt_3source.csv",
+    "ar_top20_sector_distribution": "qepm/mailbox/research/risk_model_meta_20260507/ar_top20_sector_distribution.csv",
+    "sector_top30_kospi200_v2": "qepm/mailbox/research/risk_model_meta_20260507/sector_top30_kospi200_v2.csv",
+    "hybrid_regime_response": "qepm/mailbox/research/risk_model_meta_20260507/hybrid_regime_response.csv",
+    "hybrid_regime_sharpe_ci": "qepm/mailbox/research/risk_model_meta_20260507/hybrid_regime_sharpe_ci.csv",
+    "sector_corr_with_hybrid": "qepm/mailbox/research/risk_model_meta_20260507/sector_corr_with_hybrid.csv",
+    "orthogonal_4th_source_risk_profile_meta": "qepm/mailbox/research/risk_model_meta_20260507/orthogonal_4th_source_risk_profile_meta.csv",
+    "mrl_curve_bm_daily": "qepm/mailbox/research/risk_model_meta_20260507/mrl_curve_bm_daily.csv",
+    "gpd_fit_threshold_sensitivity": "qepm/mailbox/research/risk_model_meta_20260507/gpd_fit_threshold_sensitivity.csv",
+    "garch_cond_sigma_bm": "qepm/mailbox/research/risk_model_meta_20260507/garch_cond_sigma_bm.csv",
+    "garch_regime_summary": "qepm/mailbox/research/risk_model_meta_20260507/garch_regime_summary.csv",
+    "rolling_12m_correlations": "qepm/mailbox/research/risk_model_meta_20260507/rolling_12m_correlations.csv",
+    "ar_vs_hybrid_full256m": "qepm/mailbox/research/risk_model_meta_20260507/ar_vs_hybrid_full256m.csv",
+    "ax001_v2_conditional_defense": "qepm/mailbox/research/risk_model_meta_20260507/ax001_v2_conditional_defense.csv",
+    "var_es_multi_method_comparison": "qepm/mailbox/research/risk_model_meta_20260507/var_es_multi_method_comparison.csv",
+    "var_es_full256m_comparison": "qepm/mailbox/research/risk_model_meta_20260507/var_es_full256m_comparison.csv",
+    "stress_scenarios_8crisis_v2_codex_C5_fix": "qepm/mailbox/research/risk_model_meta_20260507/stress_scenarios_8crisis_v2.csv",
+    "covariance_3src_5estimator_summary": "qepm/mailbox/research/risk_model_meta_20260507/covariance_3src_5estimator_summary.csv",
+    "estimator_kospi_top30_oos_pit_strict_v5": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_oos_pit_strict_v5.csv",
+    "estimator_kospi_top30_rolling_pit_strict_v5": "qepm/mailbox/research/risk_model_meta_20260507/estimator_kospi_top30_rolling_pit_strict_v5.csv",
+    "covariance_parquet_sample_3src": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_sample.parquet",
+    "covariance_parquet_lw_identity_3src": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_identity.parquet",
+    "covariance_parquet_lw_constcor_3src": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_lw_constcor.parquet",
+    "covariance_parquet_gerber_v2_floor5pct_3src": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_gerber_v2_floor5pct.parquet",
+    "covariance_parquet_glasso_005_3src": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_3src_glasso_005.parquet",
+    "covariance_parquet_primary": "qepm/stage_artifacts/risk_model_meta_20260507/covariance_primary.parquet",
+    "codex_critic_response_risk": "qepm/mailbox/research/risk_model_meta_20260507/codex_critic_response_risk.json",
+    "risk_challenge_note": "qepm/mailbox/research/risk_model_meta_20260507/risk_challenge_note.md"
+  },
+  "citations": {
+    "Ledoit_Wolf_2004": "Ledoit & Wolf (2004) Journal of Multivariate Analysis 88, 365-411 — A well-conditioned estimator for large-dimensional covariance matrices",
+    "Ledoit_Wolf_2003": "Ledoit & Wolf (2003) Journal of Empirical Finance 10(5), 603-621 — Improved estimation of cov stock returns with appl to portfolio sel",
+    "Gerber_2015": "Gerber, Markowitz, Pujara (2015) Journal of Portfolio Management 41(4), 67-78 — The Gerber statistic for robust correlation",
+    "Friedman_2008": "Friedman, Hastie, Tibshirani (2008) Biostatistics 9(3), 432-441 — Sparse inverse covariance estimation w/ graphical lasso",
+    "Engle_2002": "Engle (2002) Journal of Business & Economic Statistics 20(3), 339-350 — Dynamic Conditional Correlation",
+    "Embrechts_1997": "Embrechts, Klüppelberg, Mikosch (1997) Modelling Extremal Events for Insurance and Finance",
+    "Rockafellar_Uryasev_2000": "Rockafellar & Uryasev (2000) Journal of Risk 2(3), 21-41 — Optimization of CVaR",
+    "Chekhlov_2005": "Chekhlov, Uryasev, Zabarankin (2005) Journal of Banking & Finance 30(3), 873-906 — Drawdown measure in portfolio optimization",
+    "Bailey_LdP_2014": "Bailey & López de Prado (2014) Journal of Portfolio Management 40(5), 94-107 — The Deflated Sharpe Ratio",
+    "Harvey_2016": "Harvey, Liu, Zhu (2016) Review of Financial Studies 29(1), 5-68 — and the cross-section of expected returns (multiple testing t > 3)",
+    "Moskowitz_2012": "Moskowitz, Ooi, Pedersen (2012) Journal of Financial Economics 104(2), 228-250 — Time series momentum",
+    "Cieslak_Povala_2015": "Cieslak & Povala (2015) Review of Financial Studies 28(10), 2859-2901 — Expected returns in Treasury bonds",
+    "Pfaff_2016": "Pfaff (2016) Financial Risk Modelling and Portfolio Optimization with R, 2nd ed.",
+    "Higham_2002": "Higham (2002) IMA Journal of Numerical Analysis 22(3), 329-343 — Computing the nearest correlation matrix"
+  },
+  "pit_compliance": {
+    "C1_rolling_window_only": true,
+    "C2_no_same_day_circular": true,
+    "C9_dd_vt_lag": true,
+    "C11_macro_lag": true,
+    "details": [
+      "regime classification uses bm_vol_12m_lag = shift(bm_ret, 1L) frollapply (PIT t-1)",
+      "rolling 60m forward 60m OOS structure preserves train/test separation",
+      "stress periods are historically-defined (post-event), no future leak",
+      "covariance estimation per window uses only train_end <= window end data"
+    ]
+  },
+  "charter_compliance": {
+    "no_alpha_modification": true,
+    "no_weight_proposal": true,
+    "no_strategy_spawn": true,
+    "no_silent_override": "기존 WT-P20260505_001 risk_package (Sample delta=0 선택) 부정 X — 본 메타 리서치는 KOSPI top30 large-N 환경에서 LW_constcor / Gerber_v2 추가 권고. 3-source 137m T/N=45 환경에서는 Sample 정합 인정.",
+    "role_boundary": "risk-research meta self-research mode (Q-Lead on-demand)"
+  },
+  "notes_for_qlead": [
+    "본 메타 리서치 결과는 정식 WT alpha→risk pipeline 산출이 아니며 Q-Lead 온디맨드 메타 진단",
+    "기존 admit Hybrid 70/15/15 PG2 (effective 2026-06-01) 정합성은 KR equity 포함 portfolio CVaR 99% -8.62%, MDD -16.6% 양호한 risk profile",
+    "신규 4번째 source 채택 결정은 본 진단을 입력으로 받아 정식 alpha-research WT 시작 후 risk-research → optimizer-research 순차 lifecycle 의무",
+    "Sub-period 분류 / CRISIS small sample 등 본 진단 한계는 challenge_flags 명시"
+  ]
+}

@@ -1,0 +1,78 @@
+[2026-05-07 23:27:43] [PATCH_V3] === PATCH V3 START === 
+[2026-05-07 23:27:51] [PATCH_V3] --- Patch v3 A: MRL plot for KOSPI BM 36yr --- 
+[2026-05-07 23:27:51] [PATCH_V3] Daily losses: 8942 obs (1990-01-05 ~ 2026-05-07) 
+[2026-05-07 23:27:51] [PATCH_V3] === MRL curve (KOSPI BM daily losses 36yr) — selected quantiles === 
+            u        mrl n_exceed     q
+        <num>      <num>    <int> <num>
+1: 0.01217130 0.01205025     1342 0.850
+2: 0.01672938 0.01245700      895 0.900
+3: 0.02458935 0.01374256      448 0.950
+4: 0.03132501 0.01417666      269 0.970
+5: 0.04501029 0.01720729       90 0.990
+6: 0.05741343 0.01600436       45 0.995
+[2026-05-07 23:27:52] [PATCH_V3] === GPD fit at multiple thresholds (KOSPI BM daily) === 
+   threshold_q threshold_u n_exceed          xi       beta      xi_se
+         <num>       <num>    <int>       <num>      <num>      <num>
+1:        0.85  0.01217130     1342  0.10992502 0.01073221 0.03065788
+2:        0.90  0.01672938      895  0.12957802 0.01085874 0.03978007
+3:        0.95  0.02458935      448  0.08730341 0.01254673 0.05247142
+4:        0.97  0.03132501      269  0.10230283 0.01273748 0.07064905
+5:        0.99  0.04501029       90 -0.03952434 0.01788856 0.10522293
+        beta_se
+          <num>
+1: 0.0004289660
+2: 0.0005494900
+3: 0.0008687144
+4: 0.0011662681
+5: 0.0026374568
+[2026-05-07 23:27:52] [PATCH_V3] --- Patch v3 B: GARCH(1,1)-t on KOSPI BM monthly --- 
+[2026-05-07 23:27:52] [PATCH_V3] === GARCH(1,1)-t fit on KOSPI BM monthly === 
+              n_obs         omega.omega       alpha1.alpha1         beta1.beta1 
+       4.370000e+02        4.932244e-05        1.173437e-01        8.816563e-01 
+  shape_t_dof.shape  persistence.alpha1 long_run_vol_annual             log_lik 
+       6.944529e+00        9.990000e-01        7.693206e-01        5.735667e+02 
+                aic 
+      -2.602136e+00 
+[2026-05-07 23:27:52] [PATCH_V3] Conditional vol min/max/mean/median (annualized %): 
+[2026-05-07 23:27:52] [PATCH_V3]   min 9.39 / max 67.72 / mean 24.66 / median 22.05 
+[2026-05-07 23:27:52] [PATCH_V3] === GARCH-derived regime stats vs naive 12m rolling === 
+            n_total   pct_garch_caution    pct_garch_crisis cor_garch_naive_vol 
+        437.0000000          63.6155606          22.6544622           0.9678724 
+[2026-05-07 23:27:52] [PATCH_V3] --- Patch v3 C: AR_KR10y rolling correlation --- 
+[2026-05-07 23:27:52] [PATCH_V3] === AR_KR10y 12m rolling correlation summary === 
+   AR_KR10y_min AR_KR10y_max AR_KR10y_median AR_KR10y_mean pct_negative
+          <num>        <num>           <num>         <num>        <num>
+1:   -0.7026338    0.6388299       -0.120163     -0.128255     66.25514
+[2026-05-07 23:27:52] [PATCH_V3] === 3-source 12m rolling correlation summary (post-2015 137m) === 
+   AR_KR10y_median AR_TSMOM_median KR10y_TSMOM_median AR_KR10y_pct_neg
+             <num>           <num>              <num>            <num>
+1:     -0.02244952      0.07488549          0.2000797         54.19847
+   AR_TSMOM_pct_neg KR10y_TSMOM_pct_neg
+              <num>               <num>
+1:         41.98473            31.29771
+[2026-05-07 23:27:52] [PATCH_V3] --- Patch v3 D: Hybrid vs Pure AR MDD comparison --- 
+[2026-05-07 23:27:52] [PATCH_V3] === Pure AR 100% vs Hybrid 70/15/15 (full 256m) === 
+         portfolio n_obs      CAGR   Sharpe  MDD_pct Vol_ann_pct CVaR_95_pct
+            <char> <int>     <num>    <num>    <num>       <num>       <num>
+1:     Pure_AR_100   254 0.3774958 1.748043 25.14787    21.59533   -9.909895
+2: Hybrid_70_15_15   254 0.2882984 1.813515 18.17988    15.89722   -7.068248
+There were 12 warnings (use warnings() to see them)
+[2026-05-07 23:27:52] [PATCH_V3] === AX-001 v2 Conditional Defense Decomposition (Hybrid vs Pure AR) === 
+             period n_months ar_only_total hybrid_total     ar_mdd hybrid_mdd
+             <char>    <int>         <num>        <num>      <num>      <num>
+1:         GFC_2008       18   -0.14919538 -0.093153651 0.16833281  0.1094937
+2:      EuDebt_2011        6    0.11955052  0.107856902 0.10382877  0.0800304
+3: China_Shock_2015        9    0.28227355  0.204820170 0.02858802  0.0173269
+4:    VolShock_2018       11   -0.11124891 -0.061839445 0.22355099  0.1481352
+5:       COVID_2020        6   -0.01930048 -0.005633595 0.16117657  0.1146025
+6:   Inflation_2022       12   -0.03878494 -0.038527060 0.15405770  0.1092795
+   crisis_alpha_pp
+             <num>
+1:    0.0560417267
+2:   -0.0116936158
+3:   -0.0774533794
+4:    0.0494094682
+5:    0.0136668858
+6:    0.0002578823
+[2026-05-07 23:27:52] [PATCH_V3] Crisis alpha PASS count: 4/6 periods Hybrid outperforms Pure AR 
+[2026-05-07 23:27:52] [PATCH_V3] === PATCH V3 EXTENDED COMPLETE === 

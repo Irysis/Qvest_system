@@ -1,0 +1,201 @@
+[2026-05-07 23:16:53] === KR Covariance Meta Research START === 
+[2026-05-07 23:16:53] 도훈 over-night meta research, 4-axis comprehensive 
+[2026-05-07 23:16:53] --- Section 0: Component Returns 로드 --- 
+[2026-05-07 23:16:53] Component returns: 254 rows, 2005-02-01 ~ 2026-03-03 
+[2026-05-07 23:16:53] TSMOM available rows: 135 (post-2015-01) 
+[2026-05-07 23:16:53] Sub-period classification 완료 
+      regime_period     N
+             <char> <int>
+1:            Other    98
+2:     Normal_2010s    94
+3:         GFC_2008    18
+4:   Inflation_2022    12
+5:    VolShock_2018    11
+6: China_Shock_2015     9
+7:      EuDebt_2011     6
+8:       COVID_2020     6
+[2026-05-07 23:16:53] --- Section 1: Covariance Estimators 비교 --- 
+[2026-05-07 23:16:53] 3-source joint sample: 135 months (2015-01-02 ~ 2026-03-03) 
+[2026-05-07 23:16:53] --- Section 1A: 3-asset Hybrid 추정기 비교 --- 
+[2026-05-07 23:16:53] === 3-source Estimator Diagnostic Table === 
+                  name n_assets condition_number      min_eig     max_eig
+                <char>    <int>            <num>        <num>       <num>
+1:              Sample        3         22.85608 0.0001639138 0.003746429
+2:         LW_identity        3         14.99683 0.0002401373 0.003601299
+3:         LW_constcor        3         21.79040 0.0001716904 0.003741203
+4: Gerber_threshold0.5        3         31.91520 0.0001182419 0.003773714
+5: Gerber_threshold0.7        3         30.02596 0.0001253320 0.003763213
+6:      Glasso_rho0.01        3         21.74534 0.0001720336 0.003740929
+7:      Glasso_rho0.05        3         21.74534 0.0001720336 0.003740929
+   is_psd  is_pd      trace avg_off_diag_cov   delta_lw               extra
+   <lgcl> <lgcl>      <num>            <num>      <num>              <char>
+1:   TRUE   TRUE 0.00419269    -1.293723e-05         NA                    
+2:   TRUE   TRUE 0.00419269    -1.213788e-05 0.06178696               delta
+3:   TRUE   TRUE 0.00419269     1.623802e-05 1.00000000       delta,rho_bar
+4:   TRUE   TRUE 0.00419269     6.911172e-05         NA                    
+5:   TRUE   TRUE 0.00419269     4.897157e-06         NA                    
+6:   TRUE   TRUE 0.00419269     0.000000e+00         NA rho,n_zero_off_diag
+7:   TRUE   TRUE 0.00419269     0.000000e+00         NA rho,n_zero_off_diag
+[2026-05-07 23:16:53] === 3-source Pairwise Correlation Comparison === 
+             estimator cor_AR_KR10y cor_AR_TSMOM cor_KR10y_TSMOM
+                <char>        <num>        <num>           <num>
+1:              Sample  -0.12230325   0.07512931      0.11865279
+2:         LW_identity  -0.10480774   0.05990698      0.08307243
+3:         LW_constcor   0.02382628   0.02382628      0.02382628
+4: Gerber_threshold0.5  -0.15000000   0.38461538      0.23809524
+5: Gerber_threshold0.7  -0.21739130   0.21739130      0.28571429
+6:      Glasso_rho0.01   0.00000000   0.00000000      0.00000000
+7:      Glasso_rho0.05   0.00000000   0.00000000      0.00000000
+[2026-05-07 23:16:53] --- Section 1B: KOSPI200 N-asset 추정기 OOS forecast (rolling 60m) --- 
+[2026-05-07 23:17:00] RAWDATA loaded: 13892932 rows, columns: Date, Ticker, UnfaithfulDisc, AdminStock, TradingHalt, KQ150, K200, Float, Sector_Lv2, Sector, Name, Market, Open, High, Low, Close, Vol, Size, Ret, source, BM_Ret 
+[2026-05-07 23:17:08] Top 30 large-cap universe: A373220, A005930, A207940, A028260, A035420 
+[2026-05-07 23:17:08] KOSPI top30 monthly matrix: 0 × 28 (2010~2024 complete-case) 
+[2026-05-07 23:17:08] WARN: 충분한 rolling window 부족, Section 1B skip 
+[2026-05-07 23:17:08] --- Section 2: Tail Risk Modeling --- 
+[2026-05-07 23:17:08] Hybrid portfolio 137m returns: mean 0.0186, sd 0.0428 
+Warning messages:
+1: In compute_evt_var(r, p = 0.99, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+2: In compute_evt_var(r, p = 0.995, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+3: In compute_evt_var(r, p = 0.99, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+4: In compute_evt_var(r, p = 0.995, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+5: In compute_evt_var(r, p = 0.99, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+6: In compute_evt_var(r, p = 0.995, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+7: In compute_evt_var(r, p = 0.99, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+8: In compute_evt_var(r, p = 0.995, threshold_q = 0.9, min_tail_n = 10L) :
+  [EVT-VaR] 초과 관측 수 부족(14). 정규분포 대체 사용.
+[2026-05-07 23:17:08] === Tail Risk Metrics === 
+       series n_obs  VaR_95_emp CVaR_95_emp  VaR_99_emp CVaR_99_emp Hill_alpha
+       <char> <int>       <num>       <num>       <num>       <num>      <num>
+1:       r_AR   135 -0.07040068 -0.09705870 -0.10260796 -0.12647835   1.828646
+2:    r_KR10y   135 -0.02274650 -0.03074381 -0.03461745 -0.03999375   4.097941
+3:    r_TSMOM   135 -0.01553158 -0.02780466 -0.03532723 -0.04234846   2.176721
+4: hybrid_ret   135 -0.04501070 -0.06590787 -0.06868946 -0.08623865   1.746034
+         skew      kurt
+        <num>     <num>
+1:  0.8303113 2.6191509
+2:  0.4205413 0.8118296
+3: -0.2122368 2.1584778
+4:  0.8393914 2.5832454
+[2026-05-07 23:17:08] --- KR market 36-year long-tail fit (KOSPI BM) --- 
+[2026-05-07 23:17:09] BM monthly: 437 obs (1990-01-01 ~ 2026-05-01), mean 0.0077, sd 0.0783 
+          series n_obs start_date   end_date  mean_pct sd_pct      skew
+          <char> <int>     <Date>     <Date>     <num>  <num>     <num>
+1: KOSPI_BM_36yr   437 1990-01-01 2026-05-01 0.7749077 7.8277 0.7938081
+       kurt hill_alpha      gpd_xi   gpd_beta gpd_n_exceed emp_var_99
+      <num>      <num>       <num>      <num>        <int>      <num>
+1: 4.192929   2.667368 -0.03413366 0.04290967           44 -0.1769824
+   emp_cvar_99
+         <num>
+1:  -0.2162893
+[2026-05-07 23:17:09] --- Section 3: Stress Scenarios --- 
+There were 22 warnings (use warnings() to see them)
+[2026-05-07 23:17:09] === 8-Crisis Stress Scenario Response === 
+             period      start        end n_months has_TSMOM ret_AR_total
+             <char>     <Date>     <Date>    <int>    <lgcl>        <num>
+1:         GFC_2008 2007-10-01 2009-03-31       18     FALSE  -0.14919538
+2:      EuDebt_2011 2011-07-01 2011-12-31        6     FALSE   0.11955052
+3: China_Shock_2015 2015-06-01 2016-02-29        9      TRUE   0.28227355
+4:    VolShock_2018 2018-02-01 2018-12-31       11      TRUE  -0.11124891
+5:       COVID_2020 2020-01-01 2020-06-30        6      TRUE  -0.01930048
+6:   Inflation_2022 2022-01-01 2022-12-31       12      TRUE  -0.03878494
+   ret_KR10y_total ret_TSMOM_total ret_Hybrid_total     mdd_AR   mdd_KR10y
+             <num>           <num>            <num>      <num>       <num>
+1:      0.11039023              NA     -0.093153651 0.16833281 0.063212635
+2:      0.06110648              NA      0.107856902 0.10382877 0.003983333
+3:      0.05939093   -0.0007621315      0.204820170 0.02858802 0.011382515
+4:      0.09205599   -0.0072059793     -0.061839445 0.22355099 0.004933333
+5:      0.03235387    0.0089462773     -0.005633595 0.16117657 0.016329167
+6:     -0.08608660   -0.0211397807     -0.038527060 0.15405770 0.127489451
+     mdd_TSMOM mdd_Hybrid cor_AR_KR10y cor_AR_TSMOM cor_KR10y_TSMOM
+         <num>      <num>        <num>        <num>           <num>
+1:          NA  0.1094937   -0.3093565           NA              NA
+2:          NA  0.0800304    0.7402201           NA              NA
+3: 0.012590465  0.0173269   -0.1505763    0.2112689      0.55004666
+4: 0.026303200  0.1481352   -0.1314041   -0.1537034     -0.08521897
+5: 0.006415921  0.1146025    0.2994972    0.8094643      0.39719204
+6: 0.052767703  0.1092795   -0.4834677   -0.1016967     -0.14050960
+[2026-05-07 23:17:09] --- 4-Regime classification + correlation breakdown --- 
+[2026-05-07 23:17:09] === 4-Regime distribution === 
+   regime_4     N
+     <char> <int>
+1:     <NA>   254
+[2026-05-07 23:17:09] === Regime-conditional correlation (3-source) === 
+Null data.table (0 rows and 0 cols)
+Warning message:
+In fwrite(regime_corr_dt, file.path(OUT_DIR, "regime_correlation_4regime.csv")) :
+  Input has no columns; creating an empty file at '/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/research/risk_model_meta_20260507/regime_correlation_4regime.csv' and exiting.
+[2026-05-07 23:17:09] --- Section 4: Crowding + TDC + Style --- 
+[2026-05-07 23:17:09] === Tail Dependence Coefficient (empirical) === 
+          pair TDC_lower_5pct TDC_lower_10pct TDC_upper_5pct long_run_pearson
+        <char>          <num>           <num>          <num>            <num>
+1:    AR_KR10y      0.0000000      0.07407407      0.0000000      -0.12230325
+2:    AR_TSMOM      0.0000000      0.07407407      0.1481481       0.07512931
+3: KR10y_TSMOM      0.2962963      0.37037037      0.0000000       0.11865279
+[2026-05-07 23:17:09] --- Section 4 sub: AR 3-source Style 노출 (Mkt regression 단독) --- 
+[2026-05-07 23:17:09] Style regression sample: 67 months 
+[2026-05-07 23:17:09] === Style Exposure (Mkt regression) === 
+   source       alpha        beta  t_alpha    t_beta         R2   resid_sd
+   <char>       <num>       <num>    <num>     <num>      <num>      <num>
+1:     AR 0.024146014 -0.20775606 3.630120 -1.654382 0.04040598 0.05390330
+2:  KR10y 0.002727708  0.06285314 1.169295  1.427118 0.03038135 0.01890448
+3:  TSMOM 0.001721372  0.09796434 1.335167  4.024717 0.19949113 0.01044792
+[2026-05-07 23:17:09] --- Section 4 sub: Crowding Heuristic --- 
+[2026-05-07 23:17:09] RAWDATA Sector column available: TRUE 
+[2026-05-07 23:17:09] --- Section 5: 종합 + 추천 --- 
+[2026-05-07 23:17:09] Primary estimator recommendation: LW_identity 
+[2026-05-07 23:17:09] Rationale: T/N=45 (3-source 137m) 충분, Sample 정합 / LW_constcor 보수 / Gerber robust outlier 
+[2026-05-07 23:17:09] --- Section 6: 4th orthogonal source — risk profile ideas (메타 only, alpha 영역 X) --- 
+[2026-05-07 23:17:09] === 4th orthogonal source — meta risk profile === 
+                    candidate              expected_role expected_cor_with_AR
+                       <char>                     <char>                <num>
+1: Defensive_Equity_LowVol_KR CRISIS_alpha_supplementary                  0.4
+2:         Currency_Carry_KRW             FX_diversifier                  0.1
+3:   VRP_KOSPI_Straddle_Short      Vol_premium_harvester                 -0.2
+4:      Commodity_Gold_Copper            Inflation_hedge                 -0.1
+5:        Convertible_Bond_KR               Credit_carry                  0.3
+6:         Skewness_Factor_KR         Tail_anomaly_alpha                  0.2
+   expected_TDC_lower_with_AR
+                        <num>
+1:                       0.30
+2:                       0.05
+3:                       0.40
+4:                       0.05
+5:                       0.20
+6:                       0.15
+                                                                                    rationale
+                                                                                       <char>
+1: KR low-vol equity는 AR Top20과 sector overlap 가능성 — TDC > 0 우려, but defense 전환 검증
+2:             KRW carry는 equity와 다른 driver, 단 carry-trade unwinding 위기 동시 손실 우려
+3:                                 VRP는 vol 매도 — TDC 하부 큼 (vol spike 위기 시 동시 손실)
+4:                                            Gold = safe-haven, Copper = pro-cyclical, mixed
+5:                                          Convertible은 equity proxy 일부, credit risk 추가
+6:            KR skewness anomaly는 Bali-Engle 2013 reversed (Conrad-Dittmar-Ghysels), 미검증
+     prior_evidence_LCode                      recommended_priority
+                   <char>                                    <char>
+1:    L-005 / AX-005 v1.2            MEDIUM (AX-005 v1.2 위반 risk)
+2:                      —       MEDIUM (외환 데이터 자원 검증 필요)
+3:                      — HIGH (vol 매도 = SR 보완, 단 TDC risk 큼)
+4: L-003 (AX-003 EP 실패)                    MEDIUM (Gold ETF 가용)
+5:                      —            LOW (KR convertible 시장 협소)
+6:                      —                   MEDIUM (가설 검증 필요)
+[2026-05-07 23:17:09] --- Section 7: risk_package_draft.json 작성 --- 
+[2026-05-07 23:17:09] risk_package_draft.json saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/research/risk_model_meta_20260507/risk_package_draft.json 
+[2026-05-07 23:17:09] File size: 8.1 KB 
+[2026-05-07 23:17:09] === KR Covariance Meta Research COMPLETE === 
+[2026-05-07 23:17:09] Total output files in: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/research/risk_model_meta_20260507 
+[2026-05-07 23:17:09] Section completion: 
+[2026-05-07 23:17:09]   1A: 3-source 5+ estimator comparison ✓ 
+[2026-05-07 23:17:09]   1B: KOSPI top30 60m rolling OOS forecast ✓ 
+[2026-05-07 23:17:09]   2:  Tail risk EVT-GPD/CVaR/CDaR ✓ 
+[2026-05-07 23:17:09]   3:  8-crisis stress + 4-regime correlation ✓ 
+[2026-05-07 23:17:09]   4:  TDC + style + crowding meta ✓ 
+[2026-05-07 23:17:09]   5:  Recommendation 조건부 (BULL/NORMAL/CAUTION/CRISIS) ✓ 
+[2026-05-07 23:17:09]   6:  4th orthogonal source meta risk profile ✓ 
+[2026-05-07 23:17:09]   7:  risk_package_draft.json written ✓ 
