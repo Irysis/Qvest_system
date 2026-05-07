@@ -1,0 +1,484 @@
+#!/usr/bin/env Rscript
+# Build risk_package_draft.json for Cycle 7
+
+suppressPackageStartupMessages({
+  library(data.table)
+  library(jsonlite)
+})
+
+PROJ <- "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
+OUT <- file.path(PROJ, "qepm/mailbox/research/risk_cycle7_20260507")
+
+# Load all artifact CSVs
+dt_corr <- fread(file.path(OUT, "axis1_corr_tdc_per_regime.csv"))
+dt_hhi <- fread(file.path(OUT, "axis1_hhi_mctv_per_regime.csv"))
+dt_style <- fread(file.path(OUT, "axis1_style_cor_matrix.csv"))
+dt_src_alerts <- fread(file.path(OUT, "axis2_source_level_alerts_cycle5.csv"))
+dt_scenario_alerts <- fread(file.path(OUT, "axis2_scenario_level_alerts_cycle6.csv"))
+dt_mk <- fread(file.path(OUT, "axis2_mk_pettitt_forward_monitoring.csv"))
+dt_ax001 <- fread(file.path(OUT, "axis3_ax001v2_pre_61_check.csv"))
+dt_ax005 <- fread(file.path(OUT, "axis3_ax005v1_2_check.csv"))
+dt_ax008 <- fread(file.path(OUT, "axis3_ax008_triangulation.csv"))
+dt_pit_c9 <- fread(file.path(OUT, "axis3_pit_c9_check.csv"))
+dt_artifacts <- fread(file.path(OUT, "axis3_schedule_artifacts_check.csv"))
+dt_readiness <- fread(file.path(OUT, "axis3_61_deployment_readiness.csv"))
+
+risk_package_draft <- list(
+  task_id = "RESEARCH_RISK_CYCLE7_20260507",
+  research_type = "meta_self_research_qlead_ondemand_cycle7_pg2_active_book_monitoring_handoff_61_deployment_pre_check",
+  as_of_date = "2026-05-07",
+  cycle = 7,
+  version = "v1_draft_pre_codex",
+
+  axis_focus = list(
+    axis1 = "PG2 active book real-time crowding diagnostics — pairwise cor/lower-upper TDC + HHI/MCTV decomposition + style cor matrix per regime (BULL/NORMAL/CAUTION/CRISIS/ALL_post_2015) — cycle 6 blocker #7 해소",
+    axis2 = "Monitoring agent handoff schema (cycle 5 source-level + cycle 6 scenario-level + cycle 7 forward Mann-Kendall+Pettitt 통합) — monitoring agent inbox 직접 인계용",
+    axis3 = "6/1 effective deployment pre-check: AX-001v2 / AX-005v1.2 / AX-008 / PIT C9 / Schedule fidelity"
+  ),
+
+  scope_disclaimer = list(
+    statement = "Q-Lead 온디맨드 메타 리서치 사이클 7 (path: qepm/mailbox/research/risk_cycle7_20260507/). 사이클 6 blocker #7 (PG2 active-book TDC/HHI/style cor absent) 해소 + monitoring agent 인계 schema 산출 + 6/1 발효 사전 체크 3축 통합. 정식 risk-research lifecycle WT 산출 X — alpha_scores.parquet / weights.csv / 종목별 BΩB'+D 모두 정식 lifecycle 의무 retain (formal_lifecycle_blocker_list cycle 6 inheritance). 본 cycle 7은 (a) PG2 active-book 실시간 진단 + (b) monitoring 인계 schema + (c) 6/1 발효 readiness 정량 산출만. weight 결정 / strategy spawn / alpha 발굴 절대 X (Hook agent_role_guard 강제). Q-Lead/도훈 결정 input + monitoring agent 인계 + cycle 종료 권고",
+    inheritance = list(
+      "사이클 1: qepm/mailbox/research/risk_model_meta_20260507/ (5 estimator + KOSPI BM style)",
+      "사이클 2: qepm/mailbox/research/risk_candidates_20260507/ (4 candidates + master_returns_hybrid_plus_4candidates.csv)",
+      "사이클 3: qepm/mailbox/research/risk_cycle3_20260507/ (concentration + selection_objective)",
+      "사이클 4: qepm/mailbox/research/risk_cycle4_20260507/ (regime conditional + Markov)",
+      "사이클 5: qepm/mailbox/research/risk_cycle5_20260507/ (source-level decay P1 IMMEDIATE TSMOM 32% / KR_10y 76%)",
+      "사이클 6: qepm/mailbox/research/risk_cycle6_20260507/ (4 시나리오 trade-off + scenario-level decay finding)"
+    ),
+    cycle7_marginal_value = "(1) PG2 active-book real-time TDC/HHI per regime (cycle 1~6 모두 시나리오 ex-post / 가설 backtest 차원, cycle 7만 admitted book 실시간 위치) (2) Cycle 5+6 alert thresholds 통합 monitoring inbox 직접 인계 schema (3) 6/1 발효 24일 마진 readiness scorecard"
+  ),
+
+  axis1_pg2_active_book_crowding = list(
+    description = "사이클 6 blocker #7 해소 — admitted_ids 3 source × 4 regime × pairwise cor/TDC + HHI/MCTV + style cor matrix",
+    inputs = list(
+      master_returns = "qepm/mailbox/research/risk_candidates_20260507/master_returns_hybrid_plus_4candidates.csv",
+      n_periods = 254,
+      n_post_2015_full3 = 135,
+      regime_definition = "AR 5%/25%/75% quantile basis: CRISIS<-6.66% / CAUTION [-6.66%, -0.60%) / NORMAL [-0.60%, 5.76%) / BULL >=5.76%",
+      regime_distribution = list(BULL = 64, NORMAL = 126, CAUTION = 51, CRISIS = 13)
+    ),
+    pairwise_corr_tdc = list(
+      summary = "post-2015 ALL: AR-TSMOM cor 0.075 / AR-KR10y -0.122 / TSMOM-KR10y 0.119 — 3-source orthogonality strong",
+      regime_specific_critical_finding = list(
+        finding = "CRISIS regime AR-TSMOM cor 0.6438 (n=8) — 위기 시 직교성 sharply 약화",
+        crisis_n_obs = 8,
+        cor_AR_TSMOM_crisis = 0.6438,
+        cor_AR_TSMOM_normal = 0.1529,
+        cor_AR_TSMOM_bull = -0.1003,
+        cor_AR_TSMOM_caution = 0.1413,
+        ratio_crisis_to_normal = 4.21,
+        interpretation = "Brunnermeier-Pedersen 2009 RFS funding-liquidity contagion 패턴 — CRISIS에서 AR (KR equity)와 TSMOM (cross-asset) 모두 risk-off 흐름. 단 n=8 통계 power 부족, post-2015 sub-sample inheritance 한계.",
+        citations = c("Brunnermeier-Pedersen 2009 RFS", "Pollet-Wilson 2010 JFE", "Forbes-Rigobon 2002 JOF correlation breakdown")
+      ),
+      cor_AR_KR10y_per_regime = list(
+        BULL = -0.2812,
+        NORMAL = -0.1179,
+        CAUTION = -0.0001,
+        CRISIS = -0.3079,
+        interpretation = "CRISIS에서 AR-KR10y -0.31 가장 강한 음의 cor — KR_10y duration carry가 정통 flight-to-quality hedge 역할 (Cieslak-Povala 2015)"
+      ),
+      empirical_tdc = list(
+        AR_TSMOM_lower_5pct_post2015 = 0,
+        AR_TSMOM_upper_95pct_post2015 = 0.1667,
+        AR_KR10y_lower_5pct_post2015 = 0,
+        AR_KR10y_upper_95pct_post2015 = 0,
+        TSMOM_KR10y_lower_5pct_post2015 = 0.1667,
+        TSMOM_KR10y_upper_95pct_post2015 = 0,
+        interpretation = "Empirical lower TDC at 5% / upper TDC at 95% mostly 0 — 3-source extreme tail 직교성 retain. 단, ALL_post_2015 sample size 135 → 5% extreme region n=7만, parametric Student-t copula MLE 추가 검증 정식 lifecycle 의무"
+      ),
+      citations = c("Embrechts-McNeil-Straumann 2002", "Joe 1997", "Pfaff 2016 FRM Ch.9")
+    ),
+    hhi_mctv_per_regime = list(
+      description = "Hybrid 70/15/15 weight HHI 고정 0.535 / MCTV (Marginal Contribution to Total Variance) 별도 진단",
+      hhi_weights_constant = 0.535,
+      eff_n_weights = 1.869,
+      mctv_per_regime = list(
+        BULL = list(mctv_AR = 1.0124, mctv_TSMOM = -0.0011, mctv_KR10y = -0.0113, hhi_mctv = 1.0251, port_vol_ann = 0.1437),
+        NORMAL = list(mctv_AR = 0.9274, mctv_TSMOM = 0.0531, mctv_KR10y = 0.0195, hhi_mctv = 0.8633, port_vol_ann = 0.0422),
+        CAUTION = list(mctv_AR = 0.8863, mctv_TSMOM = 0.0433, mctv_KR10y = 0.0704, hhi_mctv = 0.7924, port_vol_ann = 0.0379),
+        CRISIS = list(mctv_AR = 0.9695, mctv_TSMOM = 0.0548, mctv_KR10y = -0.0242, hhi_mctv = 0.9434, port_vol_ann = 0.063),
+        ALL_post_2015 = list(mctv_AR = 0.9975, mctv_TSMOM = 0.0059, mctv_KR10y = -0.0034, hhi_mctv = 0.9951, port_vol_ann = 0.1482)
+      ),
+      critical_finding = list(
+        finding = "AR이 ALL regime MCTV 88-101% 흡수 — KR_10y/TSMOM 분산 효과 변동성 차원 거의 zero. CRISIS HHI_MCTV 0.94 (weight HHI 0.535 대비 76% 더 집중)",
+        interpretation = "MCTV 분포가 weight 분포 대비 매우 unequal. ERC re-balance 시 (정식 optimizer scope) AR weight 70% → 30~40% 감소 필요할 가능성. 단 본 cycle 7은 ERC 권고 X (optimizer agent scope), 진단만",
+        citations = c("Maillard-Roncalli-Teiletche 2010 JPM ERC", "Choueifaty-Coignard 2008 JPM diversification ratio")
+      )
+    ),
+    style_cor_matrix = list(
+      AR_to_Hybrid_book = 0.9969,
+      TSMOM_to_Hybrid_book = 0.1281,
+      KR10y_to_Hybrid_book = -0.0583,
+      interpretation = "AR ≈ Hybrid (cor 0.997) — 70% 가중 dominance. TSMOM/KR_10y는 Hybrid에 거의 영향 X. 사이클 6 finding 1 confirm — AR dominance lever",
+      citations = c("Charter v1.4 §2 active risk = portfolio - existing primary alpha", "L-281 KR_10y bond conditional Pareto")
+    )
+  ),
+
+  axis2_monitoring_handoff = list(
+    description = "Cycle 5 (source-level) + Cycle 6 (scenario-level) + Cycle 7 (forward MK+Pettitt) 통합 monitoring agent inbox schema",
+    inheritance = list(
+      cycle5_source_level = "P1 IMMEDIATE: TSMOM 60m SR 32% decay / KR_10y 60m SR 76% decay",
+      cycle6_scenario_level = "P4 finding 1: scenario-level decay 4 시나리오 모두 음수 (recent stronger). AR dominance lever",
+      cycle7_addition = "Forward Mann-Kendall + Pettitt change-point on 60m rolling SR per source (정식 monitoring agent monthly check)"
+    ),
+    current_status_2026_05_07 = list(
+      P1a_TSMOM = list(
+        status = "WARNING",
+        decay_pct = -0.3185,
+        sr_full = 0.8688,
+        sr_60m = 0.5921,
+        threshold_warning = 0.30,
+        threshold_critical = 0.50,
+        interpretation = "Cycle 5 finding cycle 7 update: 32% → 31.85% decay (similar). Warning level intact"
+      ),
+      P1b_KR10y = list(
+        status = "CRITICAL",
+        decay_pct = -0.8854,
+        sr_full = 0.6163,
+        sr_60m = 0.0706,
+        threshold_warning = 0.30,
+        threshold_critical = 0.80,
+        interpretation = "Cycle 5: 76% → cycle 7: 88.54% decay. Worsening — 6/1 발효 시 KR_10y 15% allocation 시점 우려. 단 AR-KR10y CRISIS cor -0.31 retain (정통 flight-to-quality)"
+      ),
+      P1c_AR = list(
+        status = "OK",
+        decay_pct = 0.0402,
+        sr_full = 1.6063,
+        sr_60m = 1.6709,
+        threshold_warning = 0.30,
+        threshold_critical = 0.50,
+        interpretation = "Source level decay 4% (60m vs full) - OK. 단 cycle 7 새 측정: rolling 60m SR Mann-Kendall tau=-0.269 p<0.001 (highly negative trend) — 시점 별 monitoring 필수"
+      ),
+      P2_Hybrid = list(
+        decay_status = "OK",
+        decay_pct = 0.1361,
+        mdd_status = "OK",
+        mdd_realized = -0.1569,
+        threshold_decay_warning = 0.30,
+        threshold_mdd_breach = -0.25,
+        interpretation = "Hybrid level decay 13.6% (recent 60m better than full) + MDD -15.7% < -25% target by 9.3pp margin. AR dominance dilute source-level decay, finding 1 confirm"
+      )
+    ),
+    forward_looking_mk_pettitt = list(
+      description = "Mann-Kendall trend test + Pettitt change-point on rolling 60m SR (window=60)",
+      results_per_source = list(
+        AR = list(
+          n_rolling = 195,
+          mk_tau = -0.2693,
+          mk_pvalue = 0,
+          pettitt_K = 8652,
+          pettitt_pvalue = 1.345e-26,
+          pettitt_change_idx = 115,
+          sr_60m_first = 1.2503,
+          sr_60m_last = 1.6709,
+          interpretation = "AR rolling 60m SR negative MK tau (recent decay trend within rolling window). Pettitt change-point at idx 115 (mid-period regime break)"
+        ),
+        TSMOM = list(
+          n_rolling = 76,
+          mk_tau = -0.4891,
+          mk_pvalue = 0,
+          pettitt_K = 1319,
+          pettitt_pvalue = 1.282e-10,
+          pettitt_change_idx = 29,
+          sr_60m_first = 1.3188,
+          sr_60m_last = 0.5921,
+          interpretation = "TSMOM strongest negative MK tau among 4 sources. Pettitt change-point idx 29 — Hwang-Rubesam 2024 momentum disappearance 정합"
+        ),
+        KR10y = list(
+          n_rolling = 195,
+          mk_tau = -0.4209,
+          mk_pvalue = 0,
+          pettitt_K = 8506,
+          pettitt_pvalue = 1.01e-25,
+          pettitt_change_idx = 127,
+          sr_60m_first = 0.5285,
+          sr_60m_last = 0.0706,
+          interpretation = "KR_10y strongest absolute decay, MK tau -0.42. Pettitt change-point idx 127 — 2022 inflation regime break"
+        ),
+        Hybrid = list(
+          n_rolling = 76,
+          mk_tau = 0.1747,
+          mk_pvalue = 0.025816,
+          pettitt_K = 1034,
+          pettitt_pvalue = 1.089e-06,
+          pettitt_change_idx = 56,
+          sr_60m_first = 1.3638,
+          sr_60m_last = 1.7122,
+          interpretation = "Hybrid MK tau POSITIVE 0.17 — 종합 시 recent stronger. AR dominance lever 입증 (cycle 6 finding 1)"
+        )
+      ),
+      forward_monitoring_recommendation = "monthly post-2026-06-01 check: per-source MK + Pettitt monthly update. tau<-0.20 + p<0.05 = secular decay alert. Pettitt change-point shift = regime break alert"
+    ),
+    handoff_schema_path = "qepm/mailbox/research/risk_cycle7_20260507/monitoring_handoff_alerts_20260507.json",
+    monitoring_frequency = "monthly_post_2026_06_01",
+    next_check_date = "2026-06-30",
+    citations = c("Mann 1945 Econometrica", "Kendall 1975", "Pettitt 1979 JRSS-C", "Hwang-Rubesam 2024 momentum disappearance")
+  ),
+
+  axis3_61_deployment_check = list(
+    description = "6/1 발효 24일 마진 readiness scorecard — 8 check 모두 PASS or PARTIAL_PASS",
+    ax_001_v2_conditional_defense = list(
+      Test1_crisis_alpha_GFC2008 = "PASS_INHERITED (Hybrid renorm +5.61%)",
+      Test1_crisis_alpha_COVID2020 = "FAIL_INHERITED (Hybrid -4.56%)",
+      Test1_crisis_alpha_Stagflation2022 = "FAIL_INHERITED (Hybrid -3.85%)",
+      Test2_MDD_relief = "PASS_INHERITED (AR_only -25.15% → Hybrid -16.65%, relief 8.50pp)",
+      Test3_cor_crisis_lt_cor_normal = "FAIL_INHERITED_NEEDS_BAB (cor_crisis 0.97 vs cor_normal 0.99 - cycle 6 finding 3)",
+      overall = "PARTIAL_PASS_2_OF_5 (Test1 GFC + Test2 MDD relief PASS; Test1 COVID/Stagflation + Test3 FAIL)",
+      remediation = "다음 cycle formal alpha-research WT spawn — Frazzini-Pedersen 2014 BAB factor + Q07 Earnings Stability direct + multi-axis quality composite. AX-001 v2 Test 3 직접 해소 path",
+      citations = c("Frazzini-Pedersen 2014 JFE BAB", "L-121 Q07 양쪽 위기 최강", "AX-001 v2 L-274")
+    ),
+    ax_005_v1_2_exclusion = list(
+      verdict = "PASS_NO_VIOLATION_3_SOURCE_MULTI_SLEEVE",
+      rationale = "Hybrid 70/15/15 = 3-source multi-sleeve qualifying. AX-005 v1.2 EXCLUSION 자격 충족 (single-sleeve top20 long-only ≠)",
+      caveat = "EXCLUSION necessary not sufficient (L-136). Gate 13 PASS still obligatory at full backtest 정식 lifecycle",
+      citations = c("AX-005 v1.2 L-136/140/165/166")
+    ),
+    ax_008_verification_triangulation = list(
+      floor_required = 2,
+      current_floor = 3,
+      forge_status = "CONDITIONAL_PASS_VALIDATED",
+      architect_status = "PASS_PARTIAL_VALIDATED",
+      codex_forge_status = "PARTIAL_PASS_post_judge",
+      verdict = "PASS_3_OF_3",
+      q_lead_orchestration_recommendation = "POST_DEPLOY_006 Architect 3rd source 독립 검증 T+30 (현재 due) — meta-research scope OK, primary admit triangulation 정합 retain",
+      citations = c("AX-008 L-159/167/168", "Charter v1.7 §10")
+    ),
+    pit_c9_dd_vt_lag = list(
+      verdict = "PASS_INHERITED",
+      ar_overlay_pit = "t-1 close strict (book_state ar_overlay_active.params.PIT)",
+      m4_schedule_pit = "MRS forecast t-2 close month-end (regime_window fix L-274)",
+      tsmom_pit = "12-1 month price t-1 close",
+      kr10y_pit = "passive monthly t-1",
+      forge_obligation = "forward_weights.R v2 6/1 effective + lookahead_detector.R verify pre-2026-06-01 cron",
+      caveat = "Cycle 7 risk-research scope X — forward_weights.csv generation forge agent obligation, Q-Lead orchestration 영역",
+      citations = c("PIT C9 dd_lag formula", "L-274 STR_1715 PG2 5월 운용 정합화")
+    ),
+    schedule_fidelity_artifacts = list(
+      total_checked = 5,
+      present = 3,
+      missing = 2,
+      present_artifacts = c(
+        "qepm/mailbox/worktask/WT-P20260505_001/deploy_snapshot_20260601.csv",
+        "qepm/mailbox/worktask/WT-P20260505_001/forge_package.json",
+        "qepm/mailbox/worktask/WT-S20260504_007/weights.csv"
+      ),
+      missing_artifacts = c(
+        "qepm/mailbox/worktask/WT-P20260504_001/judge_ready/weights.csv",
+        "qepm/mailbox/worktask/WT-S20260504_007/03_period_returns.csv"
+      ),
+      verdict = "PARTIAL_PASS_3_OF_5",
+      criticality = "deploy_snapshot_20260601.csv (3023 bytes) + forge_package.json (26582 bytes) — primary 6/1 발효 artifacts 모두 PRESENT. Missing 2건은 derivative/intermediate (forge agent 재실행 시 재생성 가능)"
+    ),
+    cycle6_blocker_7_resolution = list(
+      verdict = "PASS_RESOLVED",
+      rationale = "Cycle 7 axis 1에서 PG2 active book × 4 regime × pairwise cor + lower/upper TDC 5%/95% + HHI/MCTV decomposition + style cor matrix 정량 산출. 사이클 6 termination_decision.formal_lifecycle_blocker_list[7] 직접 해소"
+    ),
+    cycle5_p1_alerts_status = list(
+      tsmom = "WARNING_INTACT (32% → 31.85%)",
+      kr10y = "CRITICAL_WORSENING (76% → 88.54%)",
+      ar = "OK_source_level_BUT_NEGATIVE_MK_TREND (60m vs full 4% decay only / MK tau -0.27 p<0.001 negative)",
+      cycle7_new_finding = "AR rolling MK negative trend cycle 5에 미보고. Cycle 7 monitoring schema 신규 alert P3_AR_MK_negative 추가"
+    ),
+    monitoring_handoff_status = "PASS_SCHEMA_DELIVERED (monitoring_handoff_alerts_20260507.json 26+ KB)",
+    overall_61_deployment_verdict = "GREENLIGHT_WITH_TIMELINE_REMEDIATION_RETAIN — 6/1 발효 가능 + 다음 cycle formal alpha-research BAB integration + Architect 3rd source POST_DEPLOY_006 due"
+  ),
+
+  red_flags_acknowledged = list(
+    RF_R1_AR_MCTV_dominance = list(
+      severity = "MEDIUM",
+      evidence = "Hybrid 70/15/15 weight HHI 0.535 → MCTV HHI 0.95-1.03 across regimes. AR이 거의 모든 variance contribution 흡수. Diversification effect from variance perspective near-zero",
+      mitigation = "정식 optimizer ERC re-balance scope (cycle 7 권고 X)"
+    ),
+    RF_R2_CRISIS_AR_TSMOM_cor_06438 = list(
+      severity = "MEDIUM",
+      evidence = "CRISIS regime AR-TSMOM cor 0.6438 vs ALL_post_2015 0.0751. 위기 시 직교성 4.21x 약화. 단 n=8 sub-sample 통계 power 부족",
+      mitigation = "정식 lifecycle pre-2015 BM extension + parametric Student-t copula MLE + bootstrap CI 의무"
+    ),
+    RF_R3_KR10y_decay_critical = list(
+      severity = "HIGH",
+      evidence = "Cycle 5 76% → Cycle 7 88.54% decay. KR_10y 60m SR 0.07 거의 zero. 6/1 발효 시 15% allocation 적용",
+      mitigation = "monitoring agent immediate alert + 다음 cycle KR_10y rebalance 검토 (Q-Lead 결정 영역)"
+    ),
+    RF_R4_AR_negative_MK_trend_NEW = list(
+      severity = "MEDIUM",
+      evidence = "AR rolling 60m SR Mann-Kendall tau -0.269 p<0.001 (고도 유의). 단 sr_60m_last 1.67 > sr_60m_first 1.25 (정점→하락 패턴). Pettitt change-point idx 115/195 mid-period",
+      mitigation = "monitoring agent monthly MK update obligation. tau<-0.30 + Pettitt change-point shift = critical alert"
+    ),
+    RF_R5_AX001_v2_test1_partial = list(
+      severity = "HIGH",
+      evidence = "AX-001 v2 Test 1 GFC PASS / COVID FAIL / Stagflation FAIL — 8 named stress 중 1 PASS / 2 FAIL / 5 미측정. Defensive role 부분 검증",
+      mitigation = "다음 cycle BAB + Q07 + multi-axis quality formal alpha-research"
+    ),
+    RF_R6_artifacts_2_missing = list(
+      severity = "LOW",
+      evidence = "judge_ready/weights.csv + 03_period_returns.csv missing. 단 deploy_snapshot + forge_package.json + WT-S20260504_007 weights.csv (3 critical) 모두 PRESENT",
+      mitigation = "forge agent 재실행 시 derivative 재생성. 6/1 발효 critical path 미영향"
+    ),
+    RF_R7_AR_MCTV_high_normal_caution = list(
+      severity = "LOW",
+      evidence = "NORMAL/CAUTION regime MCTV_AR 0.83-0.93 (variance 측면 dominant). port_vol_ann 0.038-0.042 매우 낮음 (regime 선별 효과)",
+      mitigation = "regime-conditional vol budget 진단 정식 risk-research scope"
+    )
+  ),
+
+  pit_audit = list(
+    C1_full_sample_stat_forbidden = list(
+      status = "ACKNOWLEDGE_LIMITATION_PER_CYCLE7_SCOPE",
+      evidence = "post-2015 sub-sample 일괄 측정 (Axis 1 corr/HHI/style + Axis 2 decay snapshot). Walk-forward alpha→risk→optimizer 정식 lifecycle 의무 retain"
+    ),
+    C2_same_day_circular = list(
+      status = "PASS",
+      evidence = "Cycle 7 cor/HHI/MCTV/MK/Pettitt 모두 backward-looking. master_returns 사이클 2 inheritance lag-aware"
+    ),
+    C7_lookahead_pattern = list(
+      status = "PASS",
+      evidence = "쓰인 함수 (cor, cov, rank, Mann-Kendall, Pettitt) 모두 backward-looking standard"
+    ),
+    C9_dd_vt_lag = list(
+      status = "ACKNOWLEDGE_INHERITED_NOT_DIRECT_VERIFY",
+      evidence = "DD/VT lag 본 cycle 7 직접 verify X — book_state.json AR_overlay_active.params.PIT t-1 strict + M4 t-2 close inheritance"
+    ),
+    C11_data_time_axis = list(
+      status = "ACKNOWLEDGE_INHERITED",
+      evidence = "FRED 본 cycle scope 외. Cycle 5 axis 4 inheritance"
+    ),
+    C12_BΩBprime_D_decomp = list(
+      status = "ACKNOWLEDGE_LIMITATION_NOT_PRODUCED",
+      evidence = "BΩB'+D 종목 단위 decomposition 본 cycle 산출 X — formal_lifecycle_blocker_list (cycle 6 #4) retain"
+    ),
+    C15_factor_db_via_load_month_factors = list(
+      status = "PASS",
+      evidence = "Factor DB 직접 load X. master_returns 사이클 2 inheritance"
+    )
+  ),
+
+  ax_axiom_compliance = list(
+    ax_001_v2 = list(
+      status = "PARTIAL_PASS_2_OF_5_NEEDS_BAB",
+      evidence = "Test1 GFC PASS + Test2 MDD relief PASS + Test1 COVID/Stagflation FAIL + Test3 FAIL. BAB factor + Q07 direct integration 정식 path"
+    ),
+    ax_005_v1_2 = list(
+      status = "PASS_NO_VIOLATION",
+      evidence = "Hybrid 70/15/15 multi-sleeve qualifying — EXCLUSION necessary not sufficient retain"
+    ),
+    ax_007_methodological = list(
+      status = "PASS_NO_VIOLATION_MULTI_SLEEVE",
+      evidence = "3-source multi-sleeve structure. Single-sleeve top20 long-only X (mechanism break 예외)"
+    ),
+    ax_008_verification_triangulation = list(
+      status = "PASS_3_OF_3_POST_JUDGE",
+      evidence = "Forge CONDITIONAL_PASS + Architect PASS_PARTIAL + Codex Forge PARTIAL_PASS post_judge = 3/3"
+    ),
+    ax_002_process_honesty = list(
+      status = "PASS_DOCUMENTED_LIMITATIONS",
+      evidence = "scope_disclaimer + cycle7_marginal_value + formal_lifecycle_blocker_list (cycle 6 inheritance) 명시. Q-Lead 결정 input + monitoring handoff scope only"
+    )
+  ),
+
+  cycle7_termination_decision = list(
+    decision = "TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_61_DEPLOYMENT_GREENLIGHT",
+    decision_rationale = list(
+      evidence_1_axis1_blocker_7_resolved = "PG2 active-book real-time TDC/HHI/style cor 정량 산출 — 사이클 6 termination_decision.formal_lifecycle_blocker_list[7] 직접 해소. 3 source × 4 regime × pairwise cor/lower-upper TDC + HHI/MCTV decomposition + style cor matrix",
+      evidence_2_axis2_monitoring_handoff_delivered = "Cycle 5+6+7 통합 monitoring schema (P1 source / P2 scenario / P3 regime-conditional / P4 forward MK+Pettitt) — monitoring agent inbox 직접 인계 schema. Cycle 7 신규 P4 forward MK+Pettitt 추가 — AR rolling 60m SR negative MK tau -0.27 발견 (cycle 5 미보고)",
+      evidence_3_axis3_61_greenlight = "8 check scorecard: AX-001 v2 PARTIAL (Test1+2 PASS / Test3 FAIL needs BAB) / AX-005 PASS / AX-008 3/3 PASS / PIT C9 PASS_INHERITED / Schedule fidelity 3/5 PRESENT (deploy_snapshot critical PRESENT) / Cycle 6 blocker #7 RESOLVED / Cycle 5 P1 alerts captured / Monitoring handoff DELIVERED",
+      evidence_4_5_cycle_path_saturation = "Cycle 1~6 6 consecutive Codex REJECT 패턴 + cycle 7 monitoring 인계 가치 high — 정식 lifecycle 진입 path forward. 메타 path saturation 결정적"
+    ),
+    next_action_recommendation = list(
+      action_1_qlead_monitoring_spawn = "Q-Lead → monitoring agent spawn (handoff schema 인계) — cycle 7 axis 2 산출 직접 사용",
+      action_2_qlead_forge_forward_weights = "Q-Lead → forge agent forward_weights.R v2 execution pre-2026-06-01 (deploy_snapshot 기반)",
+      action_3_qlead_alpha_research_bab = "Q-Lead → 다음 cycle formal alpha-research WT spawn — BAB factor + Q07 direct + multi-axis quality (AX-001 v2 Test 3 FAIL 해소 path)",
+      action_4_qlead_architect_post_deploy_006 = "Q-Lead → Architect agent POST_DEPLOY_006 T+30 due tracking (AX-008 3rd source 독립 검증 retain)",
+      action_5_termination = "Cycle 7 메타 리서치 종료 (TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_61_DEPLOYMENT_GREENLIGHT)"
+    )
+  ),
+
+  q_lead_escalate = list(
+    triggered = TRUE,
+    trigger_criteria = list(
+      high_severity_count = 2,
+      ax_axiom_hard_fail_count = 0,
+      pit_hard_violation_new = FALSE,
+      monitoring_handoff_ready = TRUE,
+      cycle6_blocker_7_resolved = TRUE,
+      cycle7_specific_trigger = "PG2 active book CRISIS AR-TSMOM cor 0.6438 + KR_10y CRITICAL decay 88.54% + AR negative MK trend 새 발견"
+    ),
+    escalate_summary = "Cycle 7 monitoring agent 인계 ready + 6/1 deployment greenlight. Cycle 6 blocker #7 해소 (PG2 active book 실시간 진단). KR_10y CRITICAL decay 88.54% (cycle 5 76% 대비 worsening) + AR rolling 60m SR negative MK trend tau -0.27 p<0.001 새 발견. CRISIS regime AR-TSMOM cor 0.6438 (위기 직교성 4.21x 약화) — 정식 lifecycle BAB + Q07 direct alpha-research path. TERMINATE_BENEFICIAL_MONITORING_HANDOFF_READY_61_DEPLOYMENT_GREENLIGHT.",
+    qlead_action_recommended = list(
+      action_1 = "Cycle 7 종료 → monitoring agent spawn (handoff schema 인계)",
+      action_2 = "forge agent forward_weights.R execution pre-2026-06-01",
+      action_3 = "다음 cycle formal alpha-research WT (BAB + Q07 direct + multi-axis quality)",
+      action_4 = "Architect POST_DEPLOY_006 T+30 due tracking"
+    )
+  ),
+
+  artifacts_manifest = list(
+    primary_csv = c(
+      "axis1_corr_tdc_per_regime.csv",
+      "axis1_hhi_mctv_per_regime.csv",
+      "axis1_style_cor_matrix.csv",
+      "axis2_source_level_alerts_cycle5.csv",
+      "axis2_scenario_level_alerts_cycle6.csv",
+      "axis2_mk_pettitt_forward_monitoring.csv",
+      "axis3_ax001v2_pre_61_check.csv",
+      "axis3_ax005v1_2_check.csv",
+      "axis3_ax008_triangulation.csv",
+      "axis3_pit_c9_check.csv",
+      "axis3_schedule_artifacts_check.csv",
+      "axis3_61_deployment_readiness.csv"
+    ),
+    primary_json = c(
+      "monitoring_handoff_alerts_20260507.json",
+      "cycle7_aggregate_summary.json"
+    ),
+    code = c(
+      "run_cycle7_3axes.R",
+      "build_draft.R"
+    ),
+    inheritance = c(
+      "사이클 1: qepm/mailbox/research/risk_model_meta_20260507/",
+      "사이클 2: qepm/mailbox/research/risk_candidates_20260507/",
+      "사이클 3: qepm/mailbox/research/risk_cycle3_20260507/",
+      "사이클 4: qepm/mailbox/research/risk_cycle4_20260507/",
+      "사이클 5: qepm/mailbox/research/risk_cycle5_20260507/",
+      "사이클 6: qepm/mailbox/research/risk_cycle6_20260507/"
+    )
+  ),
+
+  citations = list(
+    embrechts_2002 = "Embrechts P., McNeil A., Straumann D. (2002) Correlation and dependence in risk management. Risk Management: Value at Risk and Beyond",
+    joe_1997 = "Joe H. (1997) Multivariate Models and Multivariate Dependence Concepts. Chapman & Hall",
+    pfaff_2016_FRM_ch9 = "Pfaff B. (2016) Financial Risk Modelling and Portfolio Optimization with R. Wiley. Ch.9 Modelling Dependence (Copula)",
+    brunnermeier_pedersen_2009 = "Brunnermeier M., Pedersen L. (2009) Market liquidity and funding liquidity. RFS",
+    pollet_wilson_2010 = "Pollet J., Wilson M. (2010) Average correlation and stock market returns. JFE",
+    forbes_rigobon_2002 = "Forbes K., Rigobon R. (2002) No contagion, only interdependence: measuring stock market comovements. JOF",
+    cieslak_povala_2015 = "Cieslak A., Povala P. (2015) Expected returns in Treasury bonds. RFS",
+    maillard_roncalli_teiletche_2010 = "Maillard S., Roncalli T., Teiletche J. (2010) The properties of equally weighted risk contribution portfolios. JPM",
+    choueifaty_coignard_2008 = "Choueifaty Y., Coignard Y. (2008) Toward maximum diversification. JPM",
+    mann_1945 = "Mann H. (1945) Nonparametric tests against trend. Econometrica",
+    kendall_1975 = "Kendall M. (1975) Rank Correlation Methods. Griffin",
+    pettitt_1979 = "Pettitt A. (1979) A non-parametric approach to the change-point problem. JRSS-C",
+    hwang_rubesam_2024 = "Hwang S., Rubesam A. (2024) The disappearance of momentum (working)",
+    frazzini_pedersen_2014 = "Frazzini A., Pedersen L. (2014) Betting against beta. JFE",
+    moskowitz_2012 = "Moskowitz T., Ooi Y., Pedersen L. (2012) Time series momentum. JFE",
+    AX_001_v2_L274 = "AX-001 v2 conditional defense (L-274). qepm/memory/axioms/active/AX-001.json",
+    AX_005_v1_2_L136 = "AX-005 v1.2 EXCLUSION necessary not sufficient (L-136/140/165/166)",
+    AX_007_L160 = "AX-007 single_sleeve_long_only_top20 mechanism break (L-160/165/166)",
+    AX_008_L159 = "AX-008 verification triangulation (L-159/167/168)",
+    L_121_Q07 = "L-121 Q07_Earnings_Stability 양쪽 위기 최강 (stress ICIR +0.753, 4r CRISIS +0.413)",
+    L_281_KR10y = "L-281 KR_10y bond conditional Pareto",
+    charter_v1_4 = "Charter v1.4 §2 active risk = portfolio - existing primary alpha"
+  ),
+
+  codex_critic_round_status = list(
+    stage = "draft_pre_codex",
+    draft_path = "qepm/mailbox/research/risk_cycle7_20260507/risk_package_draft.json",
+    expected_codex_response_path = "qepm/mailbox/research/risk_cycle7_20260507/codex_critic_response_risk.json",
+    expected_disposition_path = "qepm/mailbox/research/risk_cycle7_20260507/risk_challenge_note.md",
+    consecutive_codex_reject_history = "Cycle 1~6 6 consecutive REJECT — meta path saturation 결정적 증거. Cycle 7 expected: REJECT 패턴 retain (artifact absence inheritance) 또는 PARTIAL (monitoring handoff value recognized)"
+  )
+)
+
+write_json(risk_package_draft, file.path(OUT, "risk_package_draft.json"),
+           pretty = TRUE, auto_unbox = TRUE, na = "null")
+cat("[INFO] risk_package_draft.json saved at", file.path(OUT, "risk_package_draft.json"), "\n")

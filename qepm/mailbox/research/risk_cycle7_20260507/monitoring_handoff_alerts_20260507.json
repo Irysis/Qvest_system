@@ -1,0 +1,159 @@
+{
+  "schema_version": "v1.0",
+  "handoff_date": "2026-05-07",
+  "effective_date": "2026-06-01",
+  "source": "risk_research_cycle7_aggregate",
+  "inheritance": [
+    "cycle5: source-level decay",
+    "cycle6: scenario-level trade-off"
+  ],
+  "alert_categories": {
+    "P1_source_level": {
+      "description": "Individual source SR decay (60m vs full sample)",
+      "alerts": {
+        "P1a_TSMOM": {
+          "source": "TSMOM_ETF_rotation_PG2",
+          "metric": "60m_rolling_SR_decay_pct",
+          "threshold_warning": 0.3,
+          "threshold_critical": 0.5,
+          "current_status": "WARNING",
+          "current_value": -0.3185,
+          "current_sr_full": 0.8688,
+          "current_sr_60m": 0.5921,
+          "rationale": "Cycle 5 inheritance: TSMOM 32% decay (KR empirical 256m). monitoring monthly check obligation"
+        },
+        "P1b_KR10y": {
+          "source": "KR_10y_bond_ETF_PG2",
+          "metric": "60m_rolling_SR_decay_pct",
+          "threshold_warning": 0.3,
+          "threshold_critical": 0.8,
+          "current_status": "CRITICAL",
+          "current_value": -0.8854,
+          "current_sr_full": 0.6163,
+          "current_sr_60m": 0.0706,
+          "rationale": "Cycle 5: KR_10y 76% decay - longest duration carry, 2022 inflation regime impact"
+        },
+        "P1c_AR": {
+          "source": "STR_1715_AR_threshold_overlay_PG2",
+          "metric": "60m_rolling_SR_decay_pct",
+          "threshold_warning": 0.3,
+          "threshold_critical": 0.5,
+          "current_status": "OK",
+          "current_value": 0.0402,
+          "rationale": "Primary alpha source - decay critical for entire book"
+        }
+      }
+    },
+    "P2_scenario_level": {
+      "description": "Hybrid 70/15/15 portfolio-level decay (cycle 6 finding 1: scenario-level dilutes source)",
+      "alerts": {
+        "P2_Hybrid": {
+          "metric": "Hybrid_60m_SR_decay_pct",
+          "threshold_warning": 0.3,
+          "threshold_critical": 0.5,
+          "current_status": "OK",
+          "current_decay_pct": 0.1361
+        },
+        "P2_MDD_breach": {
+          "metric": "Hybrid_realized_MDD_post_2015",
+          "threshold_breach": -0.25,
+          "current_status": "OK",
+          "current_mdd": -0.1569,
+          "rationale": "Charter target MDD < 25%. 6/1 발효 후 monthly check"
+        }
+      }
+    },
+    "P3_regime_conditional": {
+      "description": "BULL/NORMAL/CAUTION/CRISIS 별 TE drift / α realized vs predicted",
+      "alerts": {
+        "P3_TE_drift": {
+          "metric": "tracking_error_drift_per_regime_post_admit",
+          "threshold_pct": 0.2,
+          "rationale": "AX-001 v2 conditional defense - regime별 TE 20%+ deviation = strategy decay signal"
+        },
+        "P3_alpha_drift": {
+          "metric": "realized_alpha_minus_predicted_alpha_per_regime",
+          "threshold_pp_warning": 5,
+          "threshold_pp_critical": 10,
+          "rationale": "Cycle 1 inheritance: AR alpha 2.41% vs KOSPI BM. monthly drift > 10pp = critical decay"
+        }
+      }
+    },
+    "P4_forward_looking": {
+      "description": "Mann-Kendall + Pettitt change-point on rolling 60m SR",
+      "alerts": {
+        "P4_MK_test": {
+          "metric": "Mann_Kendall_tau_negative_significant",
+          "threshold_pvalue": 0.05,
+          "threshold_tau_negative": -0.2,
+          "current_status_per_source": [
+            [
+              {
+                "source": "AR",
+                "n_rolling": 195,
+                "mk_tau": -0.2693,
+                "mk_pvalue": 0,
+                "pettitt_K": 8652,
+                "pettitt_pvalue": 1.345e-26,
+                "pettitt_change_idx": 115,
+                "sr_60m_first": 1.2503,
+                "sr_60m_last": 1.6709,
+                "sr_decay_pct": 0.3364
+              }
+            ],
+            [
+              {
+                "source": "TSMOM",
+                "n_rolling": 76,
+                "mk_tau": -0.4891,
+                "mk_pvalue": 0,
+                "pettitt_K": 1319,
+                "pettitt_pvalue": 1.282e-10,
+                "pettitt_change_idx": 29,
+                "sr_60m_first": 1.3188,
+                "sr_60m_last": 0.5921,
+                "sr_decay_pct": -0.5511
+              }
+            ],
+            [
+              {
+                "source": "KR10y",
+                "n_rolling": 195,
+                "mk_tau": -0.4209,
+                "mk_pvalue": 0,
+                "pettitt_K": 8506,
+                "pettitt_pvalue": 1.01e-25,
+                "pettitt_change_idx": 127,
+                "sr_60m_first": 0.5285,
+                "sr_60m_last": 0.0706,
+                "sr_decay_pct": -0.8664
+              }
+            ],
+            [
+              {
+                "source": "Hybrid",
+                "n_rolling": 76,
+                "mk_tau": 0.1747,
+                "mk_pvalue": 0.0258,
+                "pettitt_K": 1034,
+                "pettitt_pvalue": 1.089e-06,
+                "pettitt_change_idx": 56,
+                "sr_60m_first": 1.3638,
+                "sr_60m_last": 1.7122,
+                "sr_decay_pct": 0.2555
+              }
+            ]
+          ],
+          "rationale": "Negative tau + pvalue<0.05 = secular SR decay signal. Pettitt change-point identifies regime break"
+        }
+      }
+    }
+  },
+  "monitoring_frequency": "monthly_post_2026_06_01",
+  "next_check_date": "2026-06-30",
+  "handoff_artifacts": [
+    "axis2_source_level_alerts_cycle5.csv",
+    "axis2_scenario_level_alerts_cycle6.csv",
+    "axis2_mk_pettitt_forward_monitoring.csv"
+  ]
+}
