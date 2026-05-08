@@ -1,0 +1,397 @@
+{
+  "task_id": "WT-D20260508_001",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-08",
+  "forecast_horizon": "1M",
+  "alpha_vector": {
+    "VRP_KOSPI_TS_OVERLAY": 0.0192
+  },
+  "confidence_vector": {
+    "VRP_KOSPI_TS_OVERLAY": 1
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260508_001/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "VRP_VolatilityRiskPremium",
+      "proxy": "vrp_ret_lag1",
+      "formula": "r_vrp[t-1] (lagged VRP signal monthly return)",
+      "lag_rule": "t-1 month-end (PIT)",
+      "winsorization": "none",
+      "neutralization": "single-asset overlay (no cross-section)",
+      "economic_rationale": "Direct VRP signal — Bollerslev-Tauchen-Zhou 2009 RFS theoretical predictor",
+      "weight_theta": 0,
+      "references": [
+        "Bollerslev-Tauchen-Zhou 2009 RFS",
+        "Carr-Wu 2009 RFS",
+        "Bakshi-Kapadia-Madan 2003 RFS"
+      ],
+      "source": "external_research_inheritance_cycle2_master_returns",
+      "selection_objective": "rank_ic",
+      "diagnostics": {
+        "ic": -0.0661,
+        "icir": -0.8561,
+        "t_NW": -8.1259,
+        "n": 207,
+        "sub_stab": 1,
+        "pred_autocor": 0.2529
+      }
+    },
+    {
+      "factor_family": "VRP_VolatilityRiskPremium",
+      "proxy": "vrp_3m_lag1",
+      "formula": "rolling 3m mean of r_vrp at t-1 (smoothed)",
+      "lag_rule": "t-1 month-end (PIT)",
+      "winsorization": "none",
+      "neutralization": "single-asset overlay (no cross-section)",
+      "economic_rationale": "Smoothed VRP — noise reduction while preserving regime signal (Carr-Wu 2009)",
+      "weight_theta": 0,
+      "references": [
+        "Bollerslev-Tauchen-Zhou 2009 RFS",
+        "Carr-Wu 2009 RFS",
+        "Bakshi-Kapadia-Madan 2003 RFS"
+      ],
+      "source": "external_research_inheritance_cycle2_master_returns",
+      "selection_objective": "rank_ic",
+      "diagnostics": {
+        "ic": 0.0342,
+        "icir": 0.272,
+        "t_NW": 2.5587,
+        "n": 207,
+        "sub_stab": 0.3333,
+        "pred_autocor": 0.8204
+      }
+    },
+    {
+      "factor_family": "VRP_VolatilityRiskPremium",
+      "proxy": "vrp_innov_z",
+      "formula": "z-score of (12m sum_t-1 - 12m sum_t-2), expanding 48m",
+      "lag_rule": "t-1 month-end (PIT)",
+      "winsorization": "none",
+      "neutralization": "single-asset overlay (no cross-section)",
+      "economic_rationale": "VRP innovation (Δ vrp_idx) — reduces autocorrelation, isolates new VRP information (Bakshi-Kapadia-Madan 2003)",
+      "weight_theta": 1,
+      "references": [
+        "Bollerslev-Tauchen-Zhou 2009 RFS",
+        "Carr-Wu 2009 RFS",
+        "Bakshi-Kapadia-Madan 2003 RFS"
+      ],
+      "source": "external_research_inheritance_cycle2_master_returns",
+      "selection_objective": "rank_ic",
+      "diagnostics": {
+        "ic": -0.0735,
+        "icir": -0.6993,
+        "t_NW": -6.6994,
+        "n": 207,
+        "sub_stab": 1,
+        "pred_autocor": 0.2051
+      }
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": -0.0735,
+    "icir": -0.6993,
+    "monotonicity": {},
+    "subperiod_stability": 1,
+    "turnover_proxy": 5.6505,
+    "harvey_t_stat": -9.1709,
+    "harvey_t_NW": -6.6994,
+    "deflated_sharpe_ratio": -1.4707,
+    "post_neutralization_ic": -0.0735,
+    "n_obs": 207,
+    "ic_p1_2008_2014": -0.054,
+    "ic_p2_2015_2019": -0.001,
+    "ic_p3_2020_2026": -0.1596,
+    "spec_count": 3,
+    "harvey_t_specs_pass_count": 2,
+    "pred_autocor_lag1": 0.2051,
+    "rank_ic_sign": "negative",
+    "operational_alpha_pass": false,
+    "net_sr_vs_naive": -2.1589
+  },
+  "ml_comparison": {
+    "method": "XGBoost_VRP_only",
+    "n_folds": 5,
+    "n_test": 166,
+    "sr_annual_gross": 1.6278,
+    "sr_annual_net": 1.6147,
+    "turnover_ann": 0.8727,
+    "rank_ic_oos": -0.0863,
+    "features": [
+      "vrp_ret_lag1",
+      "vrp_3m_lag1",
+      "vrp_innov_z"
+    ]
+  },
+  "classical_baseline": {
+    "method": "sign_flip_innov_z_AR_target",
+    "sr_gross": 0.3505,
+    "sr_net": 0.2734,
+    "turnover_ann": 5.6505
+  },
+  "naive_baseline": {
+    "method": "naive_AR_hold",
+    "sr_annual": 1.7313
+  },
+  "selection_objective": "rank_ic",
+  "alpha_inheritance_cor": {},
+  "candidates_tried": 9,
+  "method_log": [
+    {
+      "name": "ret_predicts_AR",
+      "rank_ic": -0.0661,
+      "icir": -0.8561,
+      "t_NW": -8.1259,
+      "dsr": 2.6094,
+      "ls_sr_net": 0.6163,
+      "sub_stab": 1,
+      "selected": false
+    },
+    {
+      "name": "ret_predicts_Hybrid",
+      "rank_ic": -0.0622,
+      "icir": -0.8649,
+      "t_NW": -8.2051,
+      "dsr": 2.8591,
+      "ls_sr_net": 0.6579,
+      "sub_stab": 1,
+      "selected": false
+    },
+    {
+      "name": "ret_predicts_KR10y",
+      "rank_ic": -0.064,
+      "icir": -0.7488,
+      "t_NW": -7.0574,
+      "dsr": 1.059,
+      "ls_sr_net": 0.0748,
+      "sub_stab": 1,
+      "selected": false
+    },
+    {
+      "name": "3m_predicts_AR",
+      "rank_ic": 0.0342,
+      "icir": 0.272,
+      "t_NW": 2.5587,
+      "dsr": 3.744,
+      "ls_sr_net": 0.9942,
+      "sub_stab": 0.3333,
+      "selected": false
+    },
+    {
+      "name": "3m_predicts_Hybrid",
+      "rank_ic": 0.026,
+      "icir": 0.2873,
+      "t_NW": 2.7027,
+      "dsr": 3.9227,
+      "ls_sr_net": 1.0199,
+      "sub_stab": 0.3333,
+      "selected": false
+    },
+    {
+      "name": "3m_predicts_KR10y",
+      "rank_ic": -0.1023,
+      "icir": -0.5571,
+      "t_NW": -5.2679,
+      "dsr": -0.5739,
+      "ls_sr_net": -0.1886,
+      "sub_stab": 1,
+      "selected": false
+    },
+    {
+      "name": "innov_z_predicts_AR",
+      "rank_ic": -0.0735,
+      "icir": -0.6993,
+      "t_NW": -6.6994,
+      "dsr": -1.4707,
+      "ls_sr_net": -0.4276,
+      "sub_stab": 1,
+      "selected": true
+    },
+    {
+      "name": "innov_z_predicts_Hybrid",
+      "rank_ic": -0.0775,
+      "icir": -0.7459,
+      "t_NW": -7.1224,
+      "dsr": -1.4305,
+      "ls_sr_net": -0.4458,
+      "sub_stab": 1,
+      "selected": false
+    },
+    {
+      "name": "innov_z_predicts_KR10y",
+      "rank_ic": -0.0903,
+      "icir": -0.7914,
+      "t_NW": -7.5203,
+      "dsr": -0.6083,
+      "ls_sr_net": -0.4138,
+      "sub_stab": 1,
+      "selected": false
+    }
+  ],
+  "challenge_flags": [
+    {
+      "id": "RF-A3",
+      "severity": "HIGH",
+      "msg": "recent 3Y IC -0.16 > overall * 1.5 (over-fit suspicion)"
+    },
+    {
+      "id": "EMPIRICAL_FAIL_OPERATIONAL",
+      "severity": "HIGH",
+      "msg": "Best spec LS SR_net = -0.43 < 0 — alpha cost-absorbed despite t_NW = 6.70"
+    },
+    {
+      "id": "ML_FAKE_ALPHA",
+      "severity": "HIGH",
+      "msg": "XGBoost SR 1.62 is naive long bias (95.8% positive predictions, mean P&L identical to naive AR hold)"
+    },
+    {
+      "id": "DISCOVERY_INSUFFICIENT",
+      "severity": "HIGH",
+      "msg": "VRP signal academically valid as TS predictor of equity weakness but operationally not tradable in KR + 15bps cost. Discovery insufficient for PG2 admit."
+    },
+    {
+      "id": "L_228_CONSISTENCY",
+      "severity": "MEDIUM",
+      "msg": "Result consistent with L-228 (KR top universe alpha discovery limit) — VRP overlay also fails despite different family"
+    },
+    {
+      "id": "VKOSPI_DIRECT_NEEDED",
+      "severity": "MEDIUM",
+      "msg": "VRP signal uses US VIX^2 - SPX RV proxy. KOSPI VKOSPI direct fetch via KRX OpenAPI is critical follow-up — may yield stronger localized signal"
+    }
+  ],
+  "rcpp_used": false,
+  "parallel_exec": false,
+  "hypothesis_source": "alpha_agent_discovered",
+  "hypothesis_title": "VRP_KOSPI_TS overlay — 4th orthogonal alpha source for SR 2.0 path",
+  "hypothesis_description_short": "VRP innovation predicts forward equity weakness (Bollerslev-Tauchen-Zhou 2009 RFS). Empirical t_NW -6.70 + sub_stab 1.0 STRONG SIGN CONSISTENCY.  BUT LS SR_net -0.43 — cost (15bps × 5.65 TO × 2 = 17bps/m) absorbs all signal. Operational alpha for PG2 admit FAIL.  ML XGBoost SR 1.62 = naive long bias (95.8% positive pred, fake alpha identified).  Honest discovery insufficient. Recommend follow-up: VKOSPI direct fetch + lower-turnover signal design + Defensive_LowVol_KR multi-sleeve EXCLUSION path (AX-005 v1.2).",
+  "v_history_summary": {
+    "v1": "IC 0.957 = autocorr (rejected by self-audit)",
+    "v2": "predictor autocor 0.968 inflated, sub_stab 0.333, ML feature leakage (rejected)",
+    "v3": "rigorous correction — low-autocor predictors, VRP-only ML, cost-aware net SR"
+  },
+  "caveats": [
+    "VRP_KOSPI_Proxy = US VIX^2 - SPX RV proxy (cycle 1 caveat). KOSPI VKOSPI direct fetch deferred to follow-up WT (KRX OpenAPI acquisition).",
+    "n_obs ~ 215m post-2008-03 (vrp_innov_z 48m burn-in). IMF 1997 / DotCom 2000 unavailable.",
+    "Single-asset overlay alpha (VRP signal applied to AR or Hybrid book level).",
+    "Net SR = gross - 15bps × turnover_ann × 2 (round-trip).",
+    "Predictor autocor still moderate (vrp_3m_lag1 ~ 0.6) — interpret t_NW conservatively.",
+    "v1/v2 self-audit failures honest disclosure for AX-002 process integrity."
+  ],
+  "empirical_disposition": {
+    "status": "DISCOVERY_FAIL_REJECTED_AGENT_AGREES_CODEX",
+    "rationale": "Sign-aware graduation_check FAIL (4/5 fail: rank_ic / ICIR / Harvey-t / DSR all sign-fail; only sub_stab PASS). LS SR_net = -0.43 (15bps × TO 5.65 absorbs all signal). ML XGBoost SR 1.62 = naive long bias 95.8% positive predictions (fake alpha). CRISIS regime cor(r_vrp, r_AR) = +0.51 (anti-hedge confirmed, cycle 7 inheritance). Codex REJECT (5 HIGH concerns, AX-002 contradiction now fixed). VRP_KOSPI_TS_OVERLAY hypothesis academically valid but operationally TERMINATE in KR + 15bps cost environment.",
+    "graduation_proper_check": {
+      "rank_ic_magnitude": 0.0735,
+      "rank_ic_magnitude_pass": true,
+      "rank_ic_sign_aligned": "NEGATIVE — predictor inversely correlated with target",
+      "icir_magnitude": 0.6993,
+      "icir_magnitude_pass": true,
+      "icir_sign_aligned": "NEGATIVE — consistent with IC sign",
+      "sub_stab": 1,
+      "sub_stab_pass": true,
+      "harvey_t_NW_magnitude": 6.6994,
+      "harvey_t_NW_magnitude_pass": true,
+      "dsr": -1.4707,
+      "dsr_pass": false,
+      "operational_alpha_test_ls_sr_net": -0.4276,
+      "operational_alpha_test_pass": false,
+      "cls_sr_net": 0.2734,
+      "naive_sr": 1.7313,
+      "naive_dominates": true,
+      "overall_pass": false
+    },
+    "ml_disposition": {
+      "sr_net": 1.6147,
+      "naive_sr": 1.7313,
+      "n_positive_pred": "159/166 (95.8%)",
+      "interpretation": "ML predictions 95.8% positive → essentially naive r_AR long bias. ML mean(sign(pred)*y) = 0.02715 vs naive mean(y) = 0.02718 (identical). Not alpha discovery.",
+      "fake_alpha_identified": true
+    }
+  },
+  "next_step_recommendations": {
+    "primary_recommendation": "TERMINATE current VRP overlay attempt; pivot to alternative 4th source",
+    "alternative_paths": [
+      {
+        "name": "VKOSPI_direct_KRX_OpenAPI",
+        "desc": "KRX OpenAPI VKOSPI + IV skew direct fetch (data_collector_krx_options.R infra exists). Replace US VIX proxy. May yield localized signal with lower cost path.",
+        "priority": "HIGH"
+      },
+      {
+        "name": "Defensive_LowVol_KR_multi_sleeve",
+        "desc": "AX-005 v1.2 EXCLUSION-required (single-sleeve top20 standalone failed L-136/140/165/166). Multi-sleeve (e.g., 50/30/20 split) Q07 + low-beta + drawdown-conditional with crisis_alpha test. Cycle 2 cor_hybrid 0.030 (low) but crisis_alpha 33% only.",
+        "priority": "MEDIUM"
+      },
+      {
+        "name": "Commodity_Gold_Copper_KR_ETF",
+        "desc": "KODEX 골드/구리 ETF allocation. Cycle 2 cor_hybrid 0.023 (low) crisis_alpha 40%. Inflation hedge orthogonal source.",
+        "priority": "MEDIUM"
+      },
+      {
+        "name": "VRP_signal_lower_turnover_redesign",
+        "desc": "Reduce sign-flip frequency: use 6m persistence threshold (sign change requires |z| > 1.5 for 2+ months). Cuts TO from 5.65 to ~1.5, may bring net SR positive.",
+        "priority": "MEDIUM_RESEARCH"
+      }
+    ],
+    "termination_decision_rationale": "VRP overlay cycle 2 historical SR ~0.5 ALREADY weak (cycle 1 risk meta inheritance). v3 rigorous diagnostics confirm: theoretical predictor strength + operational tradability gap. Continue current VRP path = expected wasted compute. Pivot mandate."
+  },
+  "codex_round": {
+    "round_executed": true,
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "critical_concerns_count": 8,
+    "severity_HIGH_count": 5,
+    "severity_MEDIUM_count": 3,
+    "weakest_assumption": "A US VIX/SPX-derived, sign-inverted single overlay can be treated as a KR market alpha vector for the KOSPI200/KOSDAQ150 optimizer despite no VKOSPI validation, negative signed diagnostics, and no per-name scores.",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260508_001/challenge_note_alpha-research.md",
+    "disposition_summary": {
+      "ACCEPT": ["C1 PIT-C13 sign governance", "C5 AX-002 contradiction (immediate fix applied)"],
+      "PARTIAL": ["C2 L-484 portfolio-level overlay (escalate)", "C3 L-454 VKOSPI deferred (caveat)", "C4 RF-A6 method_log existing", "C6 PIT-C15 narrow reading"],
+      "REBUTTAL": ["C7 AX-008 alpha first stage normal", "C8 RF-A2 single best selection rationale"]
+    },
+    "ax_002_post_disposition": "PASS_with_C5_fix_applied",
+    "ax_007_post_disposition": "FAIL_partial — overlay ticker no exception match",
+    "ax_008_post_disposition": "TARGETING_alpha_first_stage_normal",
+    "rationalization_red_flags_self_check": 0,
+    "agent_agree_with_codex_majority": true,
+    "qlead_escalate_required": true,
+    "qlead_escalate_trigger": "HIGH severity concerns >= 5 (auto)"
+  },
+  "operational_decision": {
+    "finalize_label": "DISCOVERY_FAIL_REJECTED",
+    "graduation_pass_signed": false,
+    "pg2_admit_eligibility": "NOT_ELIGIBLE",
+    "next_action": "TERMINATE_CURRENT_VRP_ATTEMPT_PIVOT_MANDATE",
+    "qlead_decision_required": true,
+    "pivot_recommendations": [
+      {
+        "priority": 1,
+        "name": "VKOSPI_direct_via_KRX_OpenAPI",
+        "desc": "KRX OpenAPI direct fetch (data_collector_krx_options.R + krx_derivatives_collector.R 인프라 가용). cycle 1/2 caveat 해소. localized signal expected stronger cor_AR + crisis_alpha.",
+        "estimated_effort": "data fetch ~3-5h + 1 alpha-research WT cycle"
+      },
+      {
+        "priority": 2,
+        "name": "Defensive_LowVol_KR_multi_sleeve_EXCLUSION",
+        "desc": "AX-005 v1.2 multi-sleeve EXCLUSION (single-sleeve top20 standalone fail L-136/140/165/166). 50/30/20 split Q07 + low-beta + drawdown-conditional.",
+        "estimated_effort": "1 alpha-research WT cycle, infrastructure existing"
+      },
+      {
+        "priority": 3,
+        "name": "Commodity_Gold_Copper_KR_ETF",
+        "desc": "KODEX 골드/구리 ETF allocation (cycle 2 cor_hybrid 0.023 + crisis_alpha 40%). 인플레 hedge orthogonal.",
+        "estimated_effort": "1 alpha-research WT cycle"
+      },
+      {
+        "priority": "parallel",
+        "name": "VRP_signal_lower_turnover_redesign",
+        "desc": "Sign-flip 6m persistence threshold (|z|>1.5 for 2+ months). TO 5.65 → ~1.5. 단 CRISIS anti-hedge cor +0.51 본질 제약 retain.",
+        "estimated_effort": "research only, low priority"
+      }
+    ],
+    "q_lead_escalate_summary": "본 WT 4번째 직교 source 정식 발굴 path 1차 시도 honest empirical FAIL. v1/v2/v3 self-audit cycle + Codex REJECT 정합. Path C 권고 (VKOSPI direct 1순위 + Defensive multi-sleeve 2순위). 본 WT는 DISCOVERY_FAIL 종결 + 후속 WT spawn 의무."
+  },
+  "alpha_geometry": "portfolio_level_overlay",
+  "per_name_alpha_matrix_required": false,
+  "method_shopping_log_ref": "alpha_validation.json::spec_diagnostics (9 specs inline)",
+  "pipeline_stage": "alpha_first_emission_pre_risk_optimizer"
+}

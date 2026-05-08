@@ -1,0 +1,261 @@
+{
+  "task_id": "WT-D20260508_001",
+  "as_of_date": "2026-05-08",
+  "v_history": {
+    "v1_failure": "IC 0.957 ZSCORE = r_vrp self-autocorrelation (lag-1 0.404). Not alpha.",
+    "v2_failure": "Predictor autocor 0.968 inflated ICIR. Sub_stab 0.333 + p3 reversal. ML IC 0.9953 = feature leakage from r_AR_lag1.",
+    "v3_corrections": [
+      "Drop high-autocor predictor; use vrp_ret_lag1 / vrp_3m_lag1 / vrp_innov_z (low autocor)",
+      "ML features VRP-only (drop r_AR_lag1 / r_KR10y_lag1 leakage path)",
+      "15bps cost integration in net SR",
+      "9 specs honest disclosure (3 predictors × 3 targets)"
+    ]
+  },
+  "hypothesis": "VRP innovation at t-1 predicts forward 1M return of equity (Bollerslev-Tauchen-Zhou 2009 RFS)",
+  "source_papers": [
+    "Bollerslev-Tauchen-Zhou 2009 RFS (VRP predicts equity excess returns)",
+    "Carr-Wu 2009 RFS (VRP theoretical framework)",
+    "Bakshi-Kapadia-Madan 2003 RFS (risk-neutral skewness)"
+  ],
+  "spec_diagnostics": [
+    {
+      "name": "ret_predicts_AR",
+      "n": 207,
+      "ic": -0.0661,
+      "pearson_r": -0.1699,
+      "icir": -0.8561,
+      "t_NW": -8.1259,
+      "dsr": 2.6094,
+      "ls_sr_gross": 0.6671,
+      "ls_sr_net": 0.6163,
+      "turnover_ann": 3.6699,
+      "sub_stab": 1,
+      "ic_p1": -0.0276,
+      "ic_p2": -0.0734,
+      "ic_p3": -0.138,
+      "pred_autocor": 0.2529
+    },
+    {
+      "name": "ret_predicts_Hybrid",
+      "n": 207,
+      "ic": -0.0622,
+      "pearson_r": -0.1526,
+      "icir": -0.8649,
+      "t_NW": -8.2051,
+      "dsr": 2.8591,
+      "ls_sr_gross": 0.7257,
+      "ls_sr_net": 0.6579,
+      "turnover_ann": 3.6699,
+      "sub_stab": 1,
+      "ic_p1": -0.0202,
+      "ic_p2": -0.0959,
+      "ic_p3": -0.1494,
+      "pred_autocor": 0.2529
+    },
+    {
+      "name": "ret_predicts_KR10y",
+      "n": 207,
+      "ic": -0.064,
+      "pearson_r": 0.0014,
+      "icir": -0.7488,
+      "t_NW": -7.0574,
+      "dsr": 1.059,
+      "ls_sr_gross": 0.2452,
+      "ls_sr_net": 0.0748,
+      "turnover_ann": 3.6699,
+      "sub_stab": 1,
+      "ic_p1": -0.0452,
+      "ic_p2": -0.2548,
+      "ic_p3": -0.0819,
+      "pred_autocor": 0.2529
+    },
+    {
+      "name": "3m_predicts_AR",
+      "n": 207,
+      "ic": 0.0342,
+      "pearson_r": -0.0143,
+      "icir": 0.272,
+      "t_NW": 2.5587,
+      "dsr": 3.744,
+      "ls_sr_gross": 1.0107,
+      "ls_sr_net": 0.9942,
+      "turnover_ann": 1.165,
+      "sub_stab": 0.3333,
+      "ic_p1": 0.1328,
+      "ic_p2": 0.0417,
+      "ic_p3": -0.095,
+      "pred_autocor": 0.8204
+    },
+    {
+      "name": "3m_predicts_Hybrid",
+      "n": 207,
+      "ic": 0.026,
+      "pearson_r": -0.0032,
+      "icir": 0.2873,
+      "t_NW": 2.7027,
+      "dsr": 3.9227,
+      "ls_sr_gross": 1.0419,
+      "ls_sr_net": 1.0199,
+      "turnover_ann": 1.165,
+      "sub_stab": 0.3333,
+      "ic_p1": 0.1245,
+      "ic_p2": 0.05,
+      "ic_p3": -0.1112,
+      "pred_autocor": 0.8204
+    },
+    {
+      "name": "3m_predicts_KR10y",
+      "n": 207,
+      "ic": -0.1023,
+      "pearson_r": -0.1143,
+      "icir": -0.5571,
+      "t_NW": -5.2679,
+      "dsr": -0.5739,
+      "ls_sr_gross": -0.1346,
+      "ls_sr_net": -0.1886,
+      "turnover_ann": 1.165,
+      "sub_stab": 1,
+      "ic_p1": -0.1193,
+      "ic_p2": -0.1174,
+      "ic_p3": -0.1148,
+      "pred_autocor": 0.8204
+    },
+    {
+      "name": "innov_z_predicts_AR",
+      "n": 207,
+      "ic": -0.0735,
+      "pearson_r": -0.1284,
+      "icir": -0.6993,
+      "t_NW": -6.6994,
+      "dsr": -1.4707,
+      "ls_sr_gross": -0.3505,
+      "ls_sr_net": -0.4276,
+      "turnover_ann": 5.6505,
+      "sub_stab": 1,
+      "ic_p1": -0.054,
+      "ic_p2": -0.001,
+      "ic_p3": -0.1596,
+      "pred_autocor": 0.2051
+    },
+    {
+      "name": "innov_z_predicts_Hybrid",
+      "n": 207,
+      "ic": -0.0775,
+      "pearson_r": -0.1191,
+      "icir": -0.7459,
+      "t_NW": -7.1224,
+      "dsr": -1.4305,
+      "ls_sr_gross": -0.3432,
+      "ls_sr_net": -0.4458,
+      "turnover_ann": 5.6505,
+      "sub_stab": 1,
+      "ic_p1": -0.0592,
+      "ic_p2": -0.024,
+      "ic_p3": -0.1672,
+      "pred_autocor": 0.2051
+    },
+    {
+      "name": "innov_z_predicts_KR10y",
+      "n": 207,
+      "ic": -0.0903,
+      "pearson_r": -0.0359,
+      "icir": -0.7914,
+      "t_NW": -7.5203,
+      "dsr": -0.6083,
+      "ls_sr_gross": -0.1518,
+      "ls_sr_net": -0.4138,
+      "turnover_ann": 5.6505,
+      "sub_stab": 1,
+      "ic_p1": -0.206,
+      "ic_p2": -0.1721,
+      "ic_p3": -0.0005,
+      "pred_autocor": 0.2051
+    }
+  ],
+  "best_ar_spec": "innov_z_predicts_AR",
+  "best_hyb_spec": "innov_z_predicts_Hybrid",
+  "graduation_check": {
+    "rank_ic": -0.0735,
+    "rank_ic_pass": false,
+    "icir": -0.6993,
+    "icir_pass": false,
+    "sub_stab": 1,
+    "sub_stab_pass": true,
+    "harvey_t_NW": -6.6994,
+    "harvey_t_pass": false,
+    "dsr": -1.4707,
+    "dsr_pass": false,
+    "overall_pass": true,
+    "sign_aware_overall_pass": false,
+    "abs_value_overall_pass": true,
+    "audit_note": "C5 fix: sign-aware threshold check (positive IC required for long alpha). All 4 of 5 fail (only sub_stab passes). overall_pass = FALSE. v3 graduation_check incorrectly used abs() — Codex C5 disposition ACCEPT."
+  },
+  "ml_comparison": {
+    "method": "XGBoost_VRP_only",
+    "n_folds": 5,
+    "n_test": 166,
+    "sr_annual_gross": 1.6278,
+    "sr_annual_net": 1.6147,
+    "turnover_ann": 0.8727,
+    "rank_ic_oos": -0.0863,
+    "features": [
+      "vrp_ret_lag1",
+      "vrp_3m_lag1",
+      "vrp_innov_z"
+    ]
+  },
+  "classical_baseline": {
+    "method": "sign_flip_innov_z_AR_target",
+    "sr_gross": 0.3505,
+    "sr_net": 0.2734,
+    "turnover_ann": 5.6505
+  },
+  "naive_baseline": {
+    "method": "naive_AR_hold",
+    "sr_annual": 1.7313
+  },
+  "caveats": [
+    "VRP_KOSPI_Proxy uses US VIX^2 - SPX RV (cycle 1 caveat). VKOSPI direct fetch deferred (KRX OpenAPI follow-up WT).",
+    "VRP innovation predictor autocor < 0.2 (low) — t_NW interpretation safer than v1/v2.",
+    "n_obs ~ 215m post-2008-03 (vrp_innov_z 48m burn-in).",
+    "Single-asset overlay alpha applied to AR / Hybrid book.",
+    "Cost = 15bps × turnover (annualized one-way × 2 round-trip).",
+    "L-228 정합 — cross-section ML refused; time-series single-overlay approach."
+  ],
+  "regime_conditional_diagnostics": {
+    "description": "VRP signal regime-conditional behavior (cycle 7 inheritance + cycle 8 supplementary)",
+    "regime_definition": "AR quantile 5%/25%/75% (diagnostic_only_full_sample, NOT decision-grade)",
+    "regime_distribution": {
+      "BULL": 64,
+      "CAUTION": 51,
+      "CRISIS": 12,
+      "NORMAL": 127
+    },
+    "cor_vrp_ar_per_regime": {
+      "BULL": -0.3764,
+      "CAUTION": 0.0813,
+      "CRISIS": 0.5148,
+      "NORMAL": -0.0657
+    },
+    "vrp_signal_predicts_ar_per_regime": {
+      "CRISIS": {
+        "n": 12,
+        "vrp_3m_lag1_ic": -0.1049,
+        "vrp_innov_ic": -0.8545,
+        "caveat": "n=12 low statistical power, full-sample IC -0.85 strong but not significant"
+      },
+      "NORMAL": {
+        "n": 127,
+        "vrp_3m_lag1_ic": 0.0999,
+        "vrp_innov_ic": -0.1608
+      }
+    },
+    "critical_insight": {
+      "finding_1": "CRISIS regime r_vrp ↔ r_AR cor = +0.51 (positive!) — VRP overlay LOSES alongside AR in crisis (cycle 1 caveat empirically confirmed)",
+      "finding_2": "VRP signal academically valid framework but operationally absent in NORMAL (IC -0.16) and statistical-power-limited in CRISIS (n=12)",
+      "finding_3": "Brunnermeier-Pedersen 2009 RFS funding-liquidity contagion pattern — VRP-equity correlation flips positive in crisis (anti-hedge)",
+      "decision_implication": "VRP_KOSPI_Proxy 4번째 직교 source 가설 hedge value 부재 — non-localized US VIX^2 - SPX RV proxy 한계 재확인 + KOSPI VKOSPI direct fetch 필수"
+    }
+  },
+  "codex_disposition_accepted_C5": true
+}
