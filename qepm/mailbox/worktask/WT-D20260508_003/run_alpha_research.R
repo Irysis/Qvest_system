@@ -673,7 +673,7 @@ fwd_out <- asof_dt[, .(Ticker, yearmonth, Date,
 write_parquet(fwd_out, file.path(STAGE_DIR, "forward_2026_05_predictions.parquet"))
 
 # Also save full alpha_scores parquet (entire history)
-all_scores <- stock_eom[valid_for_alpha,
+all_scores <- stock_eom[valid_for_alpha == TRUE,
                         .(Ticker, yearmonth, Date, fwd_ret,
                           alpha_BKM = alpha_BKM_sn, alpha_CW = alpha_CW_sn,
                           alpha_BTZ = alpha_BTZ_sn, alpha_BCI = alpha_BCI_sn,
@@ -691,7 +691,7 @@ cat("\n[Step 10] ML XGBoost CUDA + classical baseline → external Python script
 cat("  See: run_ml_comparison.py (executed after R script)\n")
 
 # Save ML inputs: features + target panel
-ml_panel <- stock_eom[valid_for_alpha & !is.na(fwd_ret) & !is.na(alpha_F5),
+ml_panel <- stock_eom[valid_for_alpha == TRUE & !is.na(fwd_ret) & !is.na(alpha_F5),
                       .(Ticker, yearmonth, Date, fwd_ret,
                         beta_BKM, beta_CW, beta_BTZ, beta_BCI,
                         alpha_BKM_sn, alpha_CW_sn, alpha_BTZ_sn, alpha_BCI_sn,
