@@ -297,6 +297,13 @@ build_mlp <- function(input_dim) {
   )(input_dim)
 }
 
+# WT_001 v4 lesson: MLP via R torch CPU caused bus error in optim_adam$step()
+# (caught bus error, address 0x..., cause 'non-existent physical address')
+# at iteration ~24 of 136 test months. WSL2 + libtorch CPU build instability.
+# DECISION: Disable MLP for v5+ runs. Use 4-method ensemble (Ridge/EN/XGB/RF).
+# Future: full torch reinstall + CUDA build for proper GPU acceleration.
+USE_MLP <- FALSE  # disabled due to torch CPU bus error (WSL2 instability)
+
 predict_one_month <- function(test_ym, panel, all_features, target_col = "Ret_residual",
                               mlp_epochs = 20L) {
   train_data <- panel[YM < (test_ym - 31)]
