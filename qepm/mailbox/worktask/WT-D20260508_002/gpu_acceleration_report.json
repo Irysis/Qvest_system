@@ -1,0 +1,107 @@
+{
+  "task_id": "WT-D20260508_002",
+  "phase": "v5_phase2_gpu_ml",
+  "generated_at": "2026-05-08T12:11:59.705792",
+  "device": "cuda",
+  "gpu_name": "NVIDIA GeForce RTX 4080 SUPER",
+  "gpu_vram_gb": 17.17,
+  "torch_version": "2.6.0+cu124",
+  "torch_cuda_available": true,
+  "xgboost_version": "3.2.0",
+  "models_trained": [
+    "mlp_gpu",
+    "xgb_gpu",
+    "xgb_cpu_bench",
+    "ridge",
+    "enet",
+    "rf"
+  ],
+  "per_model_summary": {
+    "mlp_gpu": {
+      "n_folds": 125,
+      "mean_train_secs_per_fold": 0.3629981098175049,
+      "total_train_secs": 45.37476372718811
+    },
+    "xgb_gpu": {
+      "n_folds": 125,
+      "mean_train_secs_per_fold": 0.3889269256591797,
+      "total_train_secs": 48.61586570739746
+    },
+    "ridge": {
+      "n_folds": 125,
+      "mean_train_secs_per_fold": 1.7006859951019286,
+      "total_train_secs": 212.5857493877411
+    },
+    "enet": {
+      "n_folds": 125,
+      "mean_train_secs_per_fold": 0.6100194721221924,
+      "total_train_secs": 76.25243401527405
+    },
+    "rf": {
+      "n_folds": 125,
+      "mean_train_secs_per_fold": 2.4459815826416014,
+      "total_train_secs": 305.7476978302002
+    }
+  },
+  "xgb_cpu_vs_gpu_benchmark": [
+    {
+      "fold": 1,
+      "ym": "2016-01-01",
+      "cpu_secs": 0.12154626846313477,
+      "gpu_secs": 0.3629317283630371,
+      "speedup": 0.3349011920543723
+    },
+    {
+      "fold": 21,
+      "ym": "2017-09-01",
+      "cpu_secs": 0.1509075164794922,
+      "gpu_secs": 0.3082702159881592,
+      "speedup": 0.4895299923664653
+    },
+    {
+      "fold": 41,
+      "ym": "2019-05-01",
+      "cpu_secs": 0.18427705764770508,
+      "gpu_secs": 0.4253106117248535,
+      "speedup": 0.4332764162652014
+    },
+    {
+      "fold": 61,
+      "ym": "2021-01-01",
+      "cpu_secs": 0.2133011817932129,
+      "gpu_secs": 0.4080359935760498,
+      "speedup": 0.5227508973505736
+    },
+    {
+      "fold": 81,
+      "ym": "2022-09-01",
+      "cpu_secs": 0.2638399600982666,
+      "gpu_secs": 0.51361083984375,
+      "speedup": 0.513696245543672
+    },
+    {
+      "fold": 101,
+      "ym": "2024-05-01",
+      "cpu_secs": 0.30597949028015137,
+      "gpu_secs": 0.4179508686065674,
+      "speedup": 0.7320943997563053
+    },
+    {
+      "fold": 121,
+      "ym": "2026-01-01",
+      "cpu_secs": 0.3614528179168701,
+      "gpu_secs": 0.46060705184936523,
+      "speedup": 0.7847314027555921
+    }
+  ],
+  "mlp_torch_real": true,
+  "mlp_arch": "[P, 64, 16, 1]",
+  "v4_vs_v5_comparison": {
+    "v4_mlp": "DISABLED (polynomial-EN substitute due to torch CPU bus error WSL2)",
+    "v5_mlp": "REAL torch GPU MLP on NVIDIA GeForce RTX 4080 SUPER",
+    "v4_xgb": "tree_method=hist CPU (device=cuda WARNING fallback)",
+    "v5_xgb": "device='cuda' GPU",
+    "v4_total_ml_minutes": 48
+  },
+  "v5_total_train_secs_sum_per_fold": 688.5765106678009
+}

@@ -1,0 +1,205 @@
+{
+  "task_id": "WT-D20260508_002",
+  "reference": "Bailey-Lopez de Prado 2014 J Portfolio Management 'Pseudo-Mathematics & Financial Charlatanism'",
+  "formula": "DSR = ((SR_obs - E[SR_max]) * sqrt(T-1)) / sqrt(1 - skew*SR_obs + (kurt-1)/4 * SR_obs^2)",
+  "expected_max_sr_formula": "sqrt(2*log(N)) - (Euler-Mascheroni adjustment)",
+  "n_trials_views": {
+    "view_a_lenient_n_trials_7": "7 model specs only (5 base + 2 ensemble). Most lenient — assumes factor preselection is data-driven not search.",
+    "view_b_internal_cv_n_trials_40": "7 specs + 33 internal CV trials (Ridge 13α + EN 20α). Standard view per Lopez de Prado 2020 ML for AM Ch 8.",
+    "view_c_strict_n_trials_560": "80 factor universe × 7 specs = 560. Most strict — counts factor preselect as multiple-testing."
+  },
+  "per_model_dsr": {
+    "pred_ridge": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -22.4116,
+        "sr": -0.0442,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.7327,
+        "kurt": 4.905,
+        "T": 124,
+        "deflation": -1.9898
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -28.4252,
+        "sr": -0.0442,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.7327,
+        "kurt": 4.905,
+        "T": 124,
+        "deflation": -2.5237
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -36.6757,
+        "sr": -0.0442,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.7327,
+        "kurt": 4.905,
+        "T": 124,
+        "deflation": -3.2562
+      }
+    },
+    "pred_enet": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -22.5779,
+        "sr": -0.0557,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.6534,
+        "kurt": 4.746,
+        "T": 124,
+        "deflation": -2.0014
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -28.6011,
+        "sr": -0.0557,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.6534,
+        "kurt": 4.746,
+        "T": 124,
+        "deflation": -2.5353
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -36.8647,
+        "sr": -0.0557,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.6534,
+        "kurt": 4.746,
+        "T": 124,
+        "deflation": -3.2678
+      }
+    },
+    "pred_xgb": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -21.7182,
+        "sr": -0.0098,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.2995,
+        "kurt": 3.3268,
+        "T": 124,
+        "deflation": -1.9554
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -27.6481,
+        "sr": -0.0098,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.2995,
+        "kurt": 3.3268,
+        "T": 124,
+        "deflation": -2.4893
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -35.7838,
+        "sr": -0.0098,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.2995,
+        "kurt": 3.3268,
+        "T": 124,
+        "deflation": -3.2219
+      }
+    },
+    "pred_rf": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -22.2481,
+        "sr": -0.0606,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.0342,
+        "kurt": 3.4447,
+        "T": 124,
+        "deflation": -2.0062
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -28.1689,
+        "sr": -0.0606,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.0342,
+        "kurt": 3.4447,
+        "T": 124,
+        "deflation": -2.5401
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -36.2922,
+        "sr": -0.0606,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.0342,
+        "kurt": 3.4447,
+        "T": 124,
+        "deflation": -3.2726
+      }
+    },
+    "pred_mlp": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -21.9314,
+        "sr": -0.0243,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.3375,
+        "kurt": 5.3474,
+        "T": 124,
+        "deflation": -1.97
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -27.8753,
+        "sr": -0.0243,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.3375,
+        "kurt": 5.3474,
+        "T": 124,
+        "deflation": -2.5039
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -36.0302,
+        "sr": -0.0243,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.3375,
+        "kurt": 5.3474,
+        "T": 124,
+        "deflation": -3.2364
+      }
+    },
+    "pred_ens": {
+      "view_a_lenient_n_trials_7": {
+        "dsr": -22.1921,
+        "sr": -0.0379,
+        "expected_max_sr": 1.9456,
+        "n_trials": 7,
+        "skew": -0.4909,
+        "kurt": 4.3602,
+        "T": 124,
+        "deflation": -1.9835
+      },
+      "view_b_internal_cv_n_trials_40": {
+        "dsr": -28.1656,
+        "sr": -0.0379,
+        "expected_max_sr": 2.4795,
+        "n_trials": 40,
+        "skew": -0.4909,
+        "kurt": 4.3602,
+        "T": 124,
+        "deflation": -2.5174
+      },
+      "view_c_strict_n_trials_560": {
+        "dsr": -36.3611,
+        "sr": -0.0379,
+        "expected_max_sr": 3.2121,
+        "n_trials": 560,
+        "skew": -0.4909,
+        "kurt": 4.3602,
+        "T": 124,
+        "deflation": -3.2499
+      }
+    }
+  }
+}

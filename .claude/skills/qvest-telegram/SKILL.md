@@ -41,20 +41,32 @@ description: Qvest 텔레그램 발송의 유일한 규칙(SOT). 양식 / 약어
 
 R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기화.
 
+**v6.1 (2026-05-08)**: 모바일 짤림 강제 — text/bullet/kv 상한선 추가 + table ncol 2 default.
+
 | Key | 값 | 의미 |
 |---|---|---|
-| `MIN_BYTES` | **400** | 메시지 최소 바이트 (skeleton 차단). v5 1200 → v6 400 (간결 허용) |
-| `MIN_SECTIONS` | **2** | 비어있지 않은 섹션 최소 수. v5 4 → v6 2 (padding 제거) |
-| `TEXT_MIN` | **30** | `text` body 최소 자수. v5 50 → v6 30 |
-| `BULLET_MIN` | **2** | `bullet` 항목 최소 수. v5 3 → v6 2 |
-| `KV_MIN` | **2** | `kv` 항목 최소 수. v5 3 → v6 2 |
-| `MAX_NCOL` | **3** | `table` 최대 열 수 (모바일 가독). v5 retain |
-| `MAX_TOTAL_WIDTH` | **32** | `table` 합산 폭 상한 (CJK 2칸 계산). v5 retain |
-| `EMOJI_MIN` | **5** | 메시지당 emoji 최소 개수. v5 retain |
-| `SUMMARY_MIN` | **20** | `summary` type 최소 자수 (신규) |
-| `SUMMARY_MAX` | **200** | `summary` type 최대 자수 — 1줄 유지 (신규) |
+| `MIN_BYTES` | **400** | 메시지 최소 바이트 (skeleton 차단) |
+| `MIN_SECTIONS` | **2** | 비어있지 않은 섹션 최소 수 |
+| `TEXT_MIN` | **30** | `text` body 최소 자수 |
+| `TEXT_MAX` | **220** ⭐ v6.1 | `text` body **최대 자수** (모바일 가독). 초과 시 bullet 분할 의무 |
+| `BULLET_MIN` | **2** | `bullet` 항목 최소 수 |
+| `BULLET_ITEM_MAX` | **80** ⭐ v6.1 | `bullet` 한 항목 **최대 자수** (모바일 한 줄) |
+| `KV_MIN` | **2** | `kv` 항목 최소 수 |
+| `KV_VALUE_MAX` | **60** ⭐ v6.1 | `kv` 값 **최대 자수** (key 별도 짧게 4~6자 권장) |
+| `MAX_NCOL` | **2** ⭐ v6.1 | `table` 최대 열 (v6 3 → v6.1 2, 모바일 짤림 방지) |
+| `MAX_TOTAL_WIDTH` | **28** ⭐ v6.1 | `table` 합산 폭 (v6 32 → v6.1 28) |
+| `MAX_COL_WIDTH` | **13** ⭐ v6.1 | `table` 개별 열 (v6 20 → v6.1 13) |
+| `EMOJI_MIN` | **5** | 메시지당 emoji 최소 개수 |
+| `SUMMARY_MIN` | **20** | `summary` type 최소 자수 (1줄 헤드라인) |
+| `SUMMARY_MAX` | **100** ⭐ v6.1 | `summary` 최대 (v6 200 → v6.1 100, 1줄 의무) |
 
 위반 시 `tg_agent_brief()` 자체에서 `stop()`. `force=TRUE` 만 명시 우회.
+
+**v6.1 핵심 의무 (caller mandate)**:
+- 표 사용 최소화 → `kv` 또는 `bullet` 우선
+- 표 사용 시 ncol=2, 한글 column header 4~6자
+- bullet 한 항목 80자 이하 (학술 인용 + 정량 + L-code 모두 한 줄에 X — 분할 의무)
+- text 220자 초과 시 bullet 분할 (long 섹션 X)
 
 ---
 

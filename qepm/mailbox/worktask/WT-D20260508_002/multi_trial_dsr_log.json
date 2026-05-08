@@ -1,0 +1,65 @@
+{
+  "task_id": "WT-D20260508_002",
+  "purpose": "Multi-trial Bailey-Lopez de Prado DSR haircut input",
+  "factor_universe": {
+    "method": "PIT-rolling top-80 by coverage at each sig_date",
+    "n_factors_union_across_sig_dates": 137,
+    "n_factors_persistent_>=95%_sig_dates": "see v5_factor_universe_stability.parquet"
+  },
+  "models_evaluated": [
+    "ridge",
+    "enet",
+    "xgb_gpu",
+    "rf",
+    "mlp_gpu",
+    "pred_ens",
+    "pred_ens_secneutral"
+  ],
+  "n_models": 7,
+  "hyperparameter_grid_per_model": {
+    "ridge": {
+      "alphas_grid": "logspace(-3, 3, 13)",
+      "cv_folds": 5
+    },
+    "enet": {
+      "l1_ratio": 0.5,
+      "n_alphas": 20,
+      "cv_folds": 5,
+      "max_iter": 5000
+    },
+    "xgb_gpu": {
+      "n_rounds": 100,
+      "max_depth": 4,
+      "eta": 0.05,
+      "subsample": 0.7,
+      "colsample_bytree": 0.5
+    },
+    "rf": {
+      "n_estimators": 200,
+      "max_features": "sqrt",
+      "min_samples_leaf": 50
+    },
+    "mlp_gpu": {
+      "epochs": 20,
+      "batch_size": 2048,
+      "lr": 0.001,
+      "wd": 0.0001,
+      "arch": "[P, 64, 16, 1]",
+      "dropout": 0.3
+    }
+  },
+  "n_internal_cv_trials": {
+    "ridge": 13,
+    "enet": 20,
+    "xgb_gpu": 1,
+    "rf": 1,
+    "mlp_gpu": 1
+  },
+  "n_trials_total_estimate": {
+    "method_a_independent_specs": 7,
+    "method_b_with_factor_preselect": 560,
+    "method_c_with_internal_cv": 38,
+    "primary_for_dsr": 40
+  },
+  "rationale_for_n_trials": "Per Lopez de Prado 2020 ML for Asset Managers Ch 8: n_trials = distinct DSR-eligible specs. Factor preselect via PIT-rolling top-80 is data-driven not hyperparameter search \u2192 does not multiply n_trials in same way grid search does. Internal CV (Ridge 13\u03b1, EN 20\u03b1) = bona fide multi-trial. Primary n_trials = 7 (model specs) + 33 (CV grid) = 40 (single-step view) or 7 (multi-step view). Both reported in DSR computation."
+}

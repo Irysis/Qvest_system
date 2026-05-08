@@ -59,19 +59,23 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 
 # ─── SOT 매직 상수 (.claude/skills/qvest-telegram/SKILL.md §3와 1:1 동기화) ───
 # v6 (2026-05-07): 가독성 개편. v5 강제값 완화 (1200→400, 4→2, 50→30, 3→2).
+# v6.1 (2026-05-08): 모바일 짤림 강제 — text/bullet/kv 상한선 추가, ncol 2 default.
 # 변경 시 SKILL.md §3 표 먼저 수정하고 본 list 동기화. 역방향 금지.
 .TG_CONFIG <- list(
   MIN_BYTES        = 400L,    # 메시지 최소 바이트 (skeleton 차단)
   MIN_SECTIONS     = 2L,      # 비어있지 않은 섹션 최소 수
   TEXT_MIN         = 30L,     # text body 최소 자수
+  TEXT_MAX         = 220L,    # v6.1 신규 — text body 최대 자수 (모바일 가독)
   BULLET_MIN       = 2L,      # bullet 항목 최소 수
+  BULLET_ITEM_MAX  = 80L,     # v6.1 신규 — bullet 한 항목 최대 자수
   KV_MIN           = 2L,      # kv 항목 최소 수
-  MAX_NCOL         = 3L,      # table 최대 열 수 (모바일)
-  MAX_TOTAL_WIDTH  = 32L,     # table 합산 폭 상한 (CJK 2칸)
-  MAX_COL_WIDTH    = 20L,     # table 개별 열 상한
+  KV_VALUE_MAX     = 60L,     # v6.1 신규 — kv 값 최대 자수
+  MAX_NCOL         = 2L,      # v6.1 — table 최대 열 (3→2 강화, 모바일 짤림 방지)
+  MAX_TOTAL_WIDTH  = 28L,     # v6.1 — table 합산 폭 (32→28 강화)
+  MAX_COL_WIDTH    = 13L,     # v6.1 — table 개별 열 (20→13 강화)
   EMOJI_MIN        = 5L,      # 메시지당 emoji 최소
   SUMMARY_MIN      = 20L,     # summary type 최소 자수 (1줄 헤드라인)
-  SUMMARY_MAX      = 200L,    # summary type 최대 자수
+  SUMMARY_MAX      = 100L,    # v6.1 — summary 최대 (200→100 강화, 1줄 의무)
   CODE_MIN         = 20L,     # code body 최소 자수
   TABLE_NROW_MIN   = 2L       # table nrow 최소
 )
@@ -886,13 +890,18 @@ tg_agent_brief <- function(agent,
       },
       "text" = {
         # plain text — auto_sanitize이 <>& 처리.
-        # <b> <code> <pre> 유효 태그는 caller가 직접 사용 가능.
         body_str <- as.character(s$body %||% "")
-        if (nchar(body_str) < .TG_CONFIG$TEXT_MIN) {
+        n_chars <- nchar(body_str)
+        if (n_chars < .TG_CONFIG$TEXT_MIN) {
           stop(sprintf("[tg_agent_brief] 'text' section heading='%s' requires body >= %d chars (got %d). 짧으면 'summary' / 'bullet' / 'kv' 사용.",
-                        heading, .TG_CONFIG$TEXT_MIN, nchar(body_str)))
+                        heading, .TG_CONFIG$TEXT_MIN, n_chars))
         }
-        # v6 SOT — tg_text_smart_break() 통합 줄바꿈 (마침표/슬래시/화살표/한국어 종결)
+        # v6.1 SOT — TEXT_MAX 강제 (모바일 짤림 방지)
+        if (n_chars > .TG_CONFIG$TEXT_MAX) {
+          stop(sprintf("[tg_agent_brief] 'text' section heading='%s' body %d chars > %d max. 분할: bullet (≤%d 자/항목) 또는 별도 섹션.",
+                        heading, n_chars, .TG_CONFIG$TEXT_MAX, .TG_CONFIG$BULLET_ITEM_MAX))
+        }
+        # v6 SOT — tg_text_smart_break() 통합 줄바꿈
         if (isTRUE(smart_break)) body_str <- tg_text_smart_break(body_str)
         body_str
       },
@@ -908,6 +917,12 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' requires items >= %d (got %d). 1개면 'summary' / 'text' 사용.",
                         heading, .TG_CONFIG$BULLET_MIN, length(items)))
         }
+        # v6.1 SOT — BULLET_ITEM_MAX 강제 (모바일 한 줄)
+        too_long <- which(nchar(as.character(items)) > .TG_CONFIG$BULLET_ITEM_MAX)
+        if (length(too_long) > 0) {
+          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s > %d 자 max. 분할 또는 축약 의무.",
+                        heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
+        }
         paste0("  • ", tg_html_escape(items), collapse = "\n")
       },
       "kv" = {
@@ -920,10 +935,17 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires length(kv) >= %d (got %d).",
                         heading, .TG_CONFIG$KV_MIN, length(kv)))
         }
+        # v6.1 SOT — KV_VALUE_MAX 강제
+        kv_vals <- vapply(kv, as.character, character(1))
+        too_long <- which(nchar(kv_vals) > .TG_CONFIG$KV_VALUE_MAX)
+        if (length(too_long) > 0) {
+          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' values %s > %d 자 max. 축약 의무.",
+                        heading, paste(names(kv)[too_long], collapse=","), .TG_CONFIG$KV_VALUE_MAX))
+        }
         kv_lines <- vapply(seq_along(kv), function(i) {
           sprintf("  • <b>%s</b>: %s",
                   tg_html_escape(names(kv)[i]),
-                  tg_html_escape(as.character(kv[[i]])))
+                  tg_html_escape(kv_vals[i]))
         }, character(1))
         paste(kv_lines, collapse = "\n")
       },
