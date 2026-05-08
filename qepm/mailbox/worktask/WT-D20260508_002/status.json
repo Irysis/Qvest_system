@@ -1,14 +1,72 @@
 {
   "task_id": "WT-D20260508_002",
-  "current_phase": "ALPHA_FAIL_POST_CODEX_REJECT",
-  "updated_at": "2026-05-08T11:45:36+0900",
-  "blocker": "CODEX_REJECT_5_HARD_VIOLATIONS_PIT_C1_C2_C10_HURDLE_DSR",
-  "empirical_pre_codex": {
-    "op_pass": true,
-    "rank_ic": 0.2909,
-    "icir": 2.4361,
-    "harvey_t_NW": 17.4,
-    "note": "apparent strong PASS pre-Codex; rejected post-critic for PIT/Hurdle/DSR violations"
+  "current_phase": "ALPHA_V5_FINAL_POST_CODEX_REJECT_GOVERNANCE_REMEDIATED",
+  "updated_at": "2026-05-08T12:37:13+0900",
+  "v_history": {
+    "v1": "alpha_package_draft 미산출 (작업 미완)",
+    "v2": "alpha_package_draft 미산출 (작업 미완)",
+    "v3": "Real STR_1715 + Z_aligned + MLP + China features. dcast 125M OOM",
+    "v4": "Codex REJECT 8 concerns. IC 0.291 LOOKAHEAD-INFLATED",
+    "v5": "Codex 8 concerns full remediation + GPU venv. IC 0.0193 PIT-proper. Codex REJECT 7 concerns post-fix. alpha_vector NULLIFIED + no_deploy_flag=TRUE"
   },
-  "final_disposition": "DISCOVERY_FAIL_HONEST_NO_ADMIT"
+  "v5_metrics_pit_proper": {
+    "best_model": "pred_xgb",
+    "rank_ic": 0.0193,
+    "icir": 0.1895,
+    "harvey_t_NW": 1.4499,
+    "sub_stab_3period": 0.6667,
+    "monotonicity_decile": 0.6121,
+    "max20_sr_net_ann": -0.034,
+    "max20_to_ann": 10.6,
+    "dsr_strict_n560": -35.7838,
+    "dsr_cv_n40": -27.65,
+    "dsr_lenient_n7": -21.72,
+    "rf_a3_recent_3y_concentration_flag": true,
+    "rf_a4_pred_xgb_sector_neutral_retention_pct": 90.9
+  },
+  "codex_round_v5": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "critical_concerns_count": 7,
+    "auto_escalate_triggered": false,
+    "remediation_summary": "5 ACCEPT + 2 PARTIAL + 0 REBUTTAL. alpha_vector nullified to NA + confidence 0 + no_deploy_flag=TRUE. Sector-neutral pred_xgb computed. RF-A3 informational documented. artifact scope = alpha-only WT documented."
+  },
+  "ax_axiom_status_v5": {
+    "AX_002_rationalization_grep": "PASS (0 hits in alpha_package.json, 3 explicit-label uses in challenge_note)",
+    "AX_007_ml_sizing_exception": "TARGETING_FAIL (max-20 TO 10.60 mechanism break, empirical)",
+    "AX_008_verification_triangulation": "2/3 (alpha agent + Codex Round; Architect deferred to deployment WT)"
+  },
+  "empirical_disposition_v5": {
+    "status": "DISCOVERY_FAIL_HONEST_PIT_PROPER",
+    "finalize_label": "DISCOVERY_FAIL_HONEST_PIT_PROPER_POST_CODEX_REJECT_GOVERNANCE_REMEDIATED",
+    "pg2_admit_eligibility": "NOT_ELIGIBLE_HONEST_FAIL",
+    "next_action": "TERMINATE_PIVOT_TO_4TH_SOURCE_VIA_DIFFERENT_MECHANISM",
+    "qlead_decision_required": true,
+    "recommended_next_paths": [
+      "Crisis-conditional defense (AX-001 v2 IC ratio + crisis_alpha)",
+      "Macro-residual long-horizon (FRED/ECOS x KOSPI), low TO 설계",
+      "RL state-space + economic restriction (Avramov 2023)",
+      "Alternative-data sentiment (kr-news embeddings, retail flow)",
+      "Multi-frequency ensemble (daily-monthly bridge + regime conditioning)"
+    ]
+  },
+  "telegram_v5_brief_sent": "1539 bytes ok=TRUE 2026-05-08T12:37:13",
+  "artifacts_final_paths": {
+    "alpha_package_final": "qepm/mailbox/worktask/WT-D20260508_002/alpha_package.json",
+    "alpha_package_draft": "qepm/mailbox/worktask/WT-D20260508_002/alpha_package_v5_draft.json",
+    "alpha_validation": "qepm/mailbox/worktask/WT-D20260508_002/alpha_validation_v5.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260508_002/challenge_note_v5.md",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260508_002/codex_critic_response_alpha_v5.json",
+    "sig_date_lineage": "qepm/mailbox/worktask/WT-D20260508_002/sig_date_window_lineage.json",
+    "gpu_acceleration_report": "qepm/mailbox/worktask/WT-D20260508_002/gpu_acceleration_report.json",
+    "dsr_strict": "qepm/mailbox/worktask/WT-D20260508_002/dsr_strict_bailey_ldp.json",
+    "multi_trial_dsr_log": "qepm/mailbox/worktask/WT-D20260508_002/multi_trial_dsr_log.json",
+    "forward_2026_05": "qepm/mailbox/worktask/WT-D20260508_002/forward_2026_05_predictions.parquet",
+    "artifact_lineage": "qepm/mailbox/worktask/WT-D20260508_002/artifact_lineage.json",
+    "alpha_scores_v5": "stage_artifacts/WT_D20260508_002/alpha_scores_v5.parquet",
+    "predictions_v5": "stage_artifacts/WT_D20260508_002/predictions_v5_all_models.parquet",
+    "predictions_v5_secneutral": "stage_artifacts/WT_D20260508_002/predictions_v5_sector_neutral.parquet",
+    "factor_universe_stability": "stage_artifacts/WT_D20260508_002/v5_factor_universe_stability.parquet",
+    "phase1_panels_dir": "stage_artifacts/WT_D20260508_002/v5_phase1_features/"
+  }
 }

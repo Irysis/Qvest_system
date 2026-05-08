@@ -29,42 +29,42 @@ sec_summary <- list(
   body = "v5 PIT-proper FAIL Honest. v4 IC 0.291 -> 0.0193 (lookahead 93% 입증)"
 )
 
-# 📊 kv — 핵심 지표 v4 vs v5 (값 ≤60자)
+# 📊 kv — 핵심 지표 v4 vs v5 (값 ≤60자, named list format)
 sec_kv <- list(
   type = "kv",
-  items = list(
-    list(key = "IC", value = "0.2910 -> 0.0193 (FAIL gate 0.04)"),
-    list(key = "ICIR", value = "2.44 -> 0.19 (FAIL gate 0.20)"),
-    list(key = "Harvey-t", value = "17.40 -> 1.45 (FAIL gate 3.0)"),
-    list(key = "DSR", value = "17.76 -> -35.78 (N=560 strict)"),
-    list(key = "max20 SR", value = "-0.034 net, TO 10.6 (hurdle FAIL)"),
-    list(key = "GPU", value = "torch+xgb CUDA 4080S, 48m -> 12m"),
-    list(key = "Codex v5", value = sprintf("%s (%d concerns)", codex_stance, codex_concerns))
+  kv = list(
+    "IC" = "0.291 -> 0.019 (gate 0.04 FAIL)",
+    "ICIR" = "2.44 -> 0.19 (gate 0.20 FAIL)",
+    "Harvey-t" = "17.40 -> 1.45 (gate 3.0 FAIL)",
+    "DSR" = "17.76 -> -35.78 (N=560)",
+    "max20 SR" = "-0.034 net, TO 10.6 hurdle FAIL",
+    "GPU" = "torch+xgb CUDA 4080S, 48m -> 12m",
+    "Codex" = sprintf("%s (%d concerns)", codex_stance, codex_concerns)
   )
 )
 
 # 🚩 bullet — Codex 8 concerns 6 path remediation 결과 (각 ≤80자)
 sec_remedied <- list(
   type = "bullet",
-  emoji = ifelse(grepl("APPROVE", codex_stance), "✅", "🚩"),
-  items = list(
+  items = c(
     "Codex 6 path remediation 모두 적용 — IC 폭락이 C1 lookahead 진단 입증",
     "PIT-rolling factor universe 137 union, 46 persistent (>=95% sig_dates)",
     "max-20 hard sim TO 10.6 -> 6.0 hurdle FAIL, top-quintile 폐기 정정",
-    "Bailey-LdP 3 view DSR 모두 catastrophic (-21.7 / -28.4 / -35.8)",
-    "GPU REAL: torch MLP + xgb CUDA RTX 4080 SUPER, v4 polynomial-EN 정정"
+    "Bailey-LdP 3 view DSR 모두 catastrophic (-21.7/-28.4/-35.8)",
+    "GPU REAL: torch MLP + xgb CUDA RTX 4080S, v4 polynomial-EN 정정",
+    "Codex v5 REJECT 7 concerns: 5 ACCEPT + 2 PARTIAL, alpha_vector NA",
+    "no_deploy_flag=TRUE 강제, AX-002 grep 0건, AX-008 2/3 (alpha+Codex)"
   )
 )
 
 # ➡️ bullet — pivot 후속 priorities (각 ≤80자)
 sec_next <- list(
   type = "bullet",
-  emoji = "➡️",
-  items = list(
+  items = c(
     "Pivot 4th source: crisis-conditional defense (AX-001 v2 IC ratio)",
     "또는 macro-residual long-horizon (FRED/ECOS x KOSPI), low TO 설계",
     "또는 RL state-space + economic restriction (Avramov 2023)",
-    "alpha_package_v5 final + challenge_note_v5.md + Q-Lead 의사결정 대기"
+    "alpha_package.json final + challenge_note_v5.md + Q-Lead 의사결정 대기"
   )
 )
 
@@ -74,7 +74,7 @@ tg_agent_brief(
   agent = "Alpha",
   title = "WT-D20260508_002 v5 ALPHA_DONE — DISCOVERY_FAIL_HONEST_PIT_PROPER",
   sections = sections,
-  scope = "WT-D20260508_002_v5"
+  lock_scope = "Alpha_WT-D20260508_002_v5"
 )
 
 cat("Telegram v5 brief sent\n")
