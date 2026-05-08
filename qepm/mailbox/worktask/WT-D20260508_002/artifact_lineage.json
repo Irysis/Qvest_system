@@ -1,0 +1,99 @@
+{
+  "task_id": "WT-D20260508_002",
+  "wt_type": "discovery",
+  "lineage_format_version": "v6.1_R11_manual_post_hoc_fallback",
+  "creation_reason": "v4 lineage_utils.R build_lineage_entry FAIL ('cannot open the connection' — qepm/mailbox/worktask/... relative path mismatch). Manual lineage record per Codex C7 PARTIAL ACCEPT.",
+  "entries": [
+    {
+      "package_type": "alpha_package_draft",
+      "method_selected": "pred_ens",
+      "input_hashes": {
+        "rawdata_parquet": ".cache/rawdata.parquet (mtime not captured due to lineage_utils FAIL)",
+        "factor_db_files": ".cache/factor_db/factor_db_*.parquet (220 monthly files, 2008-2026)",
+        "str1715_bt_result": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/bt_result.rds"
+      },
+      "output_artifacts": [
+        "qepm/mailbox/worktask/WT-D20260508_002/alpha_package_draft.json",
+        "qepm/mailbox/worktask/WT-D20260508_002/alpha_validation.json",
+        "stage_artifacts/WT_D20260508_002/alpha_scores.parquet",
+        "stage_artifacts/WT_D20260508_002/predictions_all_models.csv"
+      ],
+      "code_path": "qepm/mailbox/worktask/WT-D20260508_002/run_alpha_research_v4.R",
+      "code_lines_of_code": 770,
+      "ml_method_summary": "5 effective models (Ridge / ElasticNet / XGBoost / RandomForest / Polynomial Ridge degree-2 substitute) + Ensemble. MLP claim REVOKED (USE_MLP=FALSE WSL2 torch bus error).",
+      "compute_time_minutes": 47.97,
+      "compute_device": "16-core CPU (RTX 4080 SUPER GPU unavailable — R xgboost CPU-only build, R torch CUDA absent)",
+      "panel_summary": {
+        "rows": 72272,
+        "months": 219,
+        "test_months": 136,
+        "feature_count": 81,
+        "test_period": ["2015-01-01", "2026-04-01"],
+        "median_stocks_per_month": 348
+      },
+      "git_state": "uncaptured_lineage_utils_fail",
+      "r_env": "R 4.x + tidyverse + data.table + xgboost 3.2.0 + ranger + glmnet + sandwich + lmtest + torch (CPU build) + jsonlite",
+      "timestamp": "2026-05-08T11:30:00+0900",
+      "agent_id": "alpha-research"
+    },
+    {
+      "package_type": "codex_critic_response",
+      "method_selected": "GPT-5.5_xhigh_devils_advocate",
+      "input_hashes": {
+        "alpha_package_draft": "qepm/mailbox/worktask/WT-D20260508_002/alpha_package_draft.json",
+        "qepm_codex_base_context": "02_Infrastructure/prompts/qepm_codex_base_context.md",
+        "codex_alpha_critic_prompt": "02_Infrastructure/prompts/codex_alpha_critic_prompt.md"
+      },
+      "output_artifacts": [
+        "qepm/mailbox/worktask/WT-D20260508_002/codex_critic_response_alpha.json"
+      ],
+      "audit_log": "/tmp/codex_qepm_critic_WT-D20260508_002_alpha_1778207709.log",
+      "stance": "REJECT",
+      "critical_concerns_count": 8,
+      "severity_HIGH_count": 4,
+      "severity_MEDIUM_count": 4,
+      "rationalization_red_flags_count": 3,
+      "ax_008_status": "FAIL",
+      "verdict_timestamp": "2026-05-08T11:38:04+0900",
+      "compute_time_minutes": "approximately 8 (background spawn ~9-15 min budget)",
+      "agent_id": "codex_qepm_critic"
+    },
+    {
+      "package_type": "alpha_package_final",
+      "method_selected": "post_codex_disposition_final",
+      "input_hashes": {
+        "alpha_package_draft": "qepm/mailbox/worktask/WT-D20260508_002/alpha_package_draft.json",
+        "codex_critic_response_alpha": "qepm/mailbox/worktask/WT-D20260508_002/codex_critic_response_alpha.json",
+        "challenge_note_alpha-research": "qepm/mailbox/worktask/WT-D20260508_002/challenge_note_alpha-research.md"
+      },
+      "output_artifacts": [
+        "qepm/mailbox/worktask/WT-D20260508_002/alpha_package.json"
+      ],
+      "code_path": "qepm/mailbox/worktask/WT-D20260508_002/build_alpha_package_final.R",
+      "agent_disposition": "DISCOVERY_FAIL_REJECTED_AGENT_AGREES_CODEX",
+      "agent_agree_with_codex_majority": true,
+      "agent_agree_with_codex_full_8_concerns": true,
+      "rebuttal_count": 0,
+      "accept_high_count": 4,
+      "accept_medium_count": 4,
+      "qlead_escalate_required": true,
+      "qlead_escalate_triggers": [
+        "AX_axiom_hard_FAIL_count_3 (AX-002 + AX-007 + AX-008)",
+        "PIT_C1_violation_found (C1 + C2)"
+      ],
+      "timestamp": "2026-05-08T11:50:00+0900",
+      "agent_id": "alpha-research"
+    }
+  ],
+  "wt_overall_status": "DISCOVERY_FAIL_REJECTED_AGENT_AGREES_CODEX",
+  "qlead_decision_required": true,
+  "next_action_recommended": "TERMINATE_CURRENT_ATTEMPT_PIT_REWORK_v5_OR_PIVOT_MANDATE",
+  "pivot_priorities": [
+    "1. PIT_rework_v5_ml_residual",
+    "2. VKOSPI_direct_via_KRX_OpenAPI (carry from WT_001)",
+    "3. Defensive_LowVol_KR_multi_sleeve_EXCLUSION",
+    "4. Commodity_Gold_Copper_KR_ETF",
+    "5. IPCA_latent_factor_Kelly_Pruitt_Su_2019_JFE"
+  ],
+  "wt_001_to_wt_002_pattern_observation": "Both WT_001 (VRP overlay) and WT_002 (ML residual cross-section) achieved apparent empirical PASS in pre-Codex stage (WT_001 IC 0.957 / WT_002 IC 0.291), then post-Codex REJECT for process violations (WT_001 sign mismatch + ML feature leakage / WT_002 PIT factor pre-selection + universe same-month + TO hard fail + DSR multi-trial). Pattern: KR top universe alpha discovery has structural difficulty achieving simultaneous empirical strength + process integrity. L-228 candidate empirical pattern reinforced."
+}
