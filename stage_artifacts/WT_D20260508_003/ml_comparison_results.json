@@ -1,0 +1,115 @@
+{
+  "ml_methods": [
+    "XGBoost_GPU_hist_CUDA",
+    "XGBoost_CPU_hist",
+    "OLS_Fama_MacBeth_baseline"
+  ],
+  "data_split": {
+    "train_2008_2014": 22674,
+    "validation_2015_2019": 19635,
+    "lockbox_2020_2026_04": 25007,
+    "policy": "R2 Window Isolation HARD: lockbox NOT used for selection, reported separately"
+  },
+  "feature_cols": [
+    "beta_BKM",
+    "beta_CW",
+    "beta_BTZ",
+    "beta_BCI",
+    "alpha_BKM_sn",
+    "alpha_CW_sn",
+    "alpha_BTZ_sn",
+    "alpha_BCI_sn",
+    "alpha_F5"
+  ],
+  "n_features": 9,
+  "xgboost_gpu": {
+    "validation_mean_monthly_ic": -0.0077,
+    "validation_icir": -0.1147,
+    "validation_n_months": 60,
+    "validation_pos_pred_pct": 0.9947,
+    "validation_naive_long_bias_detected": true,
+    "lockbox_mean_monthly_ic": 0.0122,
+    "lockbox_icir": 0.1881,
+    "lockbox_pos_pred_pct": 0.9986,
+    "lockbox_naive_long_bias_detected": true
+  },
+  "fama_macbeth_baseline": {
+    "validation_mean_monthly_ic": 0.0252,
+    "validation_icir": 0.1746,
+    "fm_avg_coefs": [
+      0.008126228904315877,
+      -0.0021534863997713614,
+      -0.003461224538368167,
+      0.0008613945599087023,
+      -0.004491633895196677,
+      0.00017719203895659571,
+      -0.009025785450377565,
+      0.00017719203895656498,
+      -0.011300201643896973,
+      -0.004992900754090401
+    ],
+    "fm_feature_names": [
+      "intercept",
+      "beta_BKM",
+      "beta_CW",
+      "beta_BTZ",
+      "beta_BCI",
+      "alpha_BKM_sn",
+      "alpha_CW_sn",
+      "alpha_BTZ_sn",
+      "alpha_BCI_sn",
+      "alpha_F5"
+    ]
+  },
+  "ml_vs_classical": {
+    "xgb_validation_ic_minus_fm_ic": -0.033,
+    "winner": "OLS_Fama_MacBeth_baseline",
+    "verdict": "Classical baseline >= ML — no ML uplift, simpler model preferred"
+  },
+  "wt_001_trap_redetection": {
+    "feature_leakage_features_at_risk": 0,
+    "naive_long_bias_xgb_validation_pct": 0.9947,
+    "naive_long_bias_xgb_lockbox_pct": 0.9986,
+    "naive_long_bias_threshold": 0.7,
+    "trap_status": "WT_001-LIKE NAIVE LONG BIAS DETECTED — INVESTIGATE"
+  },
+  "time_series_cv": {
+    "method": "TimeSeriesSplit (Lopez de Prado 2020 simple TSCV)",
+    "n_splits": 5,
+    "fold_details": [
+      {
+        "fold": 1,
+        "n_train": 7054,
+        "n_test": 7051,
+        "pooled_ic": -0.0044
+      },
+      {
+        "fold": 2,
+        "n_train": 14105,
+        "n_test": 7051,
+        "pooled_ic": -0.0014
+      },
+      {
+        "fold": 3,
+        "n_train": 21156,
+        "n_test": 7051,
+        "pooled_ic": -0.0065
+      },
+      {
+        "fold": 4,
+        "n_train": 28207,
+        "n_test": 7051,
+        "pooled_ic": 0.0099
+      },
+      {
+        "fold": 5,
+        "n_train": 35258,
+        "n_test": 7051,
+        "pooled_ic": -0.0236
+      }
+    ],
+    "mean_pooled_ic": -0.0052,
+    "std_pooled_ic": 0.0108,
+    "stability_assessment": "STABLE"
+  }
+}
