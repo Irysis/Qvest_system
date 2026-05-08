@@ -1,0 +1,129 @@
+{
+  "task_id": "WT-D20260508_002",
+  "diagnostics_per_model": {
+    "pred_ridge": {
+      "model": "pred_ridge",
+      "rank_ic": 0.2493,
+      "icir": 2.0854,
+      "t_NW": 13.6487,
+      "sub_stab": 1,
+      "ls_sr_gross": 5.8084,
+      "dsr": 15.9095,
+      "long_sr_gross": 2.3365,
+      "long_sr_net": 2.2524,
+      "turnover_ann": 7.3331,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.2877
+    },
+    "pred_enet": {
+      "model": "pred_enet",
+      "rank_ic": 0.2729,
+      "icir": 2.1364,
+      "t_NW": 14.3258,
+      "sub_stab": 1,
+      "ls_sr_gross": 5.8299,
+      "dsr": 15.2669,
+      "long_sr_gross": 2.4921,
+      "long_sr_net": 2.4069,
+      "turnover_ann": 7.7614,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.3093
+    },
+    "pred_xgb": {
+      "model": "pred_xgb",
+      "rank_ic": 0.2572,
+      "icir": 2.1108,
+      "t_NW": 15.6898,
+      "sub_stab": 1,
+      "ls_sr_gross": 5.8869,
+      "dsr": 17.251,
+      "long_sr_gross": 2.2801,
+      "long_sr_net": 2.1934,
+      "turnover_ann": 8.0457,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.2116
+    },
+    "pred_rf": {
+      "model": "pred_rf",
+      "rank_ic": 0.2403,
+      "icir": 1.8335,
+      "t_NW": 12.3859,
+      "sub_stab": 1,
+      "ls_sr_gross": 5.6309,
+      "dsr": 16.6481,
+      "long_sr_gross": 2.1789,
+      "long_sr_net": 2.0875,
+      "turnover_ann": 8.3155,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.2181
+    },
+    "pred_mlp": {
+      "model": "pred_mlp",
+      "rank_ic": 0.1123,
+      "icir": 0.8468,
+      "t_NW": 11.1934,
+      "sub_stab": 1,
+      "ls_sr_gross": 2.7436,
+      "dsr": 9.2036,
+      "long_sr_gross": 0.7643,
+      "long_sr_net": 0.6783,
+      "turnover_ann": 7.3961,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.107
+    },
+    "pred_ens": {
+      "model": "pred_ens",
+      "rank_ic": 0.2909,
+      "icir": 2.4361,
+      "t_NW": 17.3969,
+      "sub_stab": 1,
+      "ls_sr_gross": 6.7545,
+      "dsr": 17.7583,
+      "long_sr_gross": 2.5366,
+      "long_sr_net": 2.448,
+      "turnover_ann": 8.0518,
+      "naive_sr": -0.0126,
+      "n_months": 136,
+      "pos_pred_frac": 0.4633
+    }
+  },
+  "predictor_autocors": {
+    "median": 0.8649,
+    "mean": 0.7949,
+    "high_autocor_count_above_0p95": 20,
+    "high_autocor_count_above_0p80": 48,
+    "n_factors_examined": 75
+  },
+  "cv_method": "rolling_expanding_window_purged_1m_simplified_cpcv",
+  "panel_meta": {
+    "rows": 72272,
+    "months": 219,
+    "test_months": 136,
+    "feature_count": 81
+  },
+  "gpu_diagnostic": {
+    "hardware_present": true,
+    "hardware_name": "NVIDIA GeForce RTX 4080 SUPER",
+    "torch_cuda_available": false,
+    "torch_cudnn_available": false,
+    "torch_loaded_in_session": true,
+    "torch_install_state": "ok",
+    "xgboost_gpu_runtime": "fallback_to_cpu_observed",
+    "decision": "CPU_FALLBACK_HONEST_NO_GPU_ACCELERATION_THIS_SESSION",
+    "rationale": "RTX 4080 SUPER 14.4GB free verified, but R 패키지 CUDA 바인딩 부재. torch::cuda_is_available()=FALSE, libtorch_cuda.so 미설치 (CPU build only). XGBoost device='cuda' 시 'Device is changed from GPU to CPU' WARNING. 결과 산출 의무 우선 — 16-core CPU + 6 ML method + Chinese-author features."
+  },
+  "ml_methods_used": [
+    "Ridge (glmnet alpha=0, lambda.1se)",
+    "ElasticNet (glmnet alpha=0.5)",
+    "XGBoost (tree_method=hist, CPU; GPU device unavailable)",
+    "RandomForest (ranger 200 trees, mtry=sqrt(p))",
+    "Polynomial-EN (degree-2 + top-10 interactions on univariate-IC top features; replaced torch MLP after WSL2 bus error)",
+    "Ensemble (cross-section z-score mean of 5 base predictions)"
+  ],
+  "chinese_author_features_used": "q_ROE"
+}
