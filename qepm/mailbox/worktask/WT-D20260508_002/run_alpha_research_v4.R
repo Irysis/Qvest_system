@@ -16,8 +16,12 @@
 suppressPackageStartupMessages({
   library(arrow); library(data.table); library(xgboost); library(ranger)
   library(glmnet); library(sandwich); library(lmtest); library(jsonlite)
-  library(torch)
 })
+# torch deferred-load: avoid hard fail if installation broken
+TORCH_OK <- tryCatch({
+  suppressPackageStartupMessages(library(torch))
+  TRUE
+}, error = function(e) FALSE)
 options(warn = 1)
 
 PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
@@ -40,8 +44,10 @@ gpu_diag <- list(
     system("nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null", intern = TRUE)[1],
     error = function(e) "unavailable"
   ),
-  torch_cuda_available = torch::cuda_is_available(),
-  torch_cudnn_available = backends_cudnn_is_available(),
+  torch_cuda_available = if (TORCH_OK) tryCatch(torch::cuda_is_available(), error = function(e) FALSE) else FALSE,
+  torch_cudnn_available = if (TORCH_OK) tryCatch(backends_cudnn_is_available(), error = function(e) FALSE) else FALSE,
+  torch_loaded_in_session = TORCH_OK,
+  torch_install_state = if (!TORCH_OK) "BROKEN_libcudart.so.11.0_missing_after_install_torch_cu118_attempt" else "ok",
   xgboost_gpu_runtime = "fallback_to_cpu_observed",
   decision = "CPU_FALLBACK_HONEST_NO_GPU_ACCELERATION_THIS_SESSION",
   rationale = paste(
@@ -345,40 +351,61 @@ predict_one_month <- function(test_ym, panel, all_features, target_col = "Ret_re
     as.numeric(predict(rf, X_te)$predictions)
   }, error = function(e) rep(0, nrow(test_data)))
 
-  out$pred_mlp <- tryCatch({
-    x_mean <- colMeans(X_tr); x_sd <- apply(X_tr, 2, sd) + 1e-6
-    X_tr_s <- sweep(sweep(X_tr, 2, x_mean), 2, x_sd, "/")
-    X_te_s <- sweep(sweep(X_te, 2, x_mean), 2, x_sd, "/")
-    y_mean <- mean(y_tr); y_sd <- sd(y_tr) + 1e-6
-    y_tr_s <- (y_tr - y_mean) / y_sd
-    Xt <- torch_tensor(X_tr_s, dtype = torch_float())
-    yt <- torch_tensor(matrix(y_tr_s, ncol = 1), dtype = torch_float())
-    Xte_t <- torch_tensor(X_te_s, dtype = torch_float())
-    model <- build_mlp(ncol(X_tr_s))
-    opt <- optim_adam(model$parameters, lr = 0.001, weight_decay = 1e-4)
-    loss_fn <- nn_mse_loss()
-    batch_size <- 1024L
-    n_tr <- nrow(X_tr_s)
-    model$train()
-    for (ep in seq_len(mlp_epochs)) {
-      perm <- sample(n_tr)
-      for (start in seq(1, n_tr, by = batch_size)) {
-        idx <- perm[start:min(start + batch_size - 1L, n_tr)]
-        Xb <- Xt[idx, , drop = FALSE]; yb <- yt[idx, , drop = FALSE]
-        opt$zero_grad()
-        pred_b <- model(Xb)
-        loss <- loss_fn(pred_b, yb)
-        loss$backward()
-        opt$step()
+  if (USE_MLP) {
+    out$pred_mlp <- tryCatch({
+      x_mean <- colMeans(X_tr); x_sd <- apply(X_tr, 2, sd) + 1e-6
+      X_tr_s <- sweep(sweep(X_tr, 2, x_mean), 2, x_sd, "/")
+      X_te_s <- sweep(sweep(X_te, 2, x_mean), 2, x_sd, "/")
+      y_mean <- mean(y_tr); y_sd <- sd(y_tr) + 1e-6
+      y_tr_s <- (y_tr - y_mean) / y_sd
+      Xt <- torch_tensor(X_tr_s, dtype = torch_float())
+      yt <- torch_tensor(matrix(y_tr_s, ncol = 1), dtype = torch_float())
+      Xte_t <- torch_tensor(X_te_s, dtype = torch_float())
+      model <- build_mlp(ncol(X_tr_s))
+      opt <- optim_adam(model$parameters, lr = 0.001, weight_decay = 1e-4)
+      loss_fn <- nn_mse_loss()
+      batch_size <- 1024L
+      n_tr <- nrow(X_tr_s)
+      model$train()
+      for (ep in seq_len(mlp_epochs)) {
+        perm <- sample(n_tr)
+        for (start in seq(1, n_tr, by = batch_size)) {
+          idx <- perm[start:min(start + batch_size - 1L, n_tr)]
+          Xb <- Xt[idx, , drop = FALSE]; yb <- yt[idx, , drop = FALSE]
+          opt$zero_grad()
+          pred_b <- model(Xb)
+          loss <- loss_fn(pred_b, yb)
+          loss$backward()
+          opt$step()
+        }
       }
-    }
-    model$eval()
-    with_no_grad({ pred_te_s <- as.numeric(model(Xte_t)$squeeze()) })
-    pred_te_s * y_sd + y_mean
-  }, error = function(e) {
-    cat("    MLP ERR @", as.character(test_ym), ":", conditionMessage(e), "\n")
-    rep(0, nrow(test_data))
-  })
+      model$eval()
+      with_no_grad({ pred_te_s <- as.numeric(model(Xte_t)$squeeze()) })
+      pred_te_s * y_sd + y_mean
+    }, error = function(e) {
+      cat("    MLP ERR @", as.character(test_ym), ":", conditionMessage(e), "\n")
+      rep(0, nrow(test_data))
+    })
+  } else {
+    # MLP disabled (torch CPU bus error WSL2). Use polynomial Ridge as 5th method
+    # (still nonlinear, separately fit second-degree polynomial features for top-10 best
+    # univariate IC factors)
+    out$pred_mlp <- tryCatch({
+      # Compute univariate corrs
+      ic_uni <- abs(apply(X_tr, 2, function(c) {
+        if (sd(c) > 0) cor(c, y_tr, method = "spearman", use = "complete.obs") else 0
+      }))
+      top10_idx <- order(-ic_uni)[1:min(10, ncol(X_tr))]
+      X_tr_top <- X_tr[, top10_idx, drop = FALSE]
+      X_te_top <- X_te[, top10_idx, drop = FALSE]
+      X_tr_poly <- cbind(X_tr_top, X_tr_top^2,
+                         X_tr_top[, 1:5] * X_tr_top[, 6:10])  # interactions of top 10
+      X_te_poly <- cbind(X_te_top, X_te_top^2,
+                         X_te_top[, 1:5] * X_te_top[, 6:10])
+      cv_poly <- cv.glmnet(X_tr_poly, y_tr, alpha = 0.5, nfolds = 5, standardize = TRUE)
+      as.numeric(predict(cv_poly, X_te_poly, s = "lambda.1se"))
+    }, error = function(e) rep(0, nrow(test_data)))
+  }
 
   preds_mat <- cbind(scale(out$pred_ridge)[,1], scale(out$pred_enet)[,1],
                      scale(out$pred_xgb)[,1], scale(out$pred_rf)[,1],
@@ -782,7 +809,7 @@ writeLines(toJSON(list(
     "ElasticNet (glmnet alpha=0.5)",
     "XGBoost (tree_method=hist, CPU; GPU device unavailable)",
     "RandomForest (ranger 200 trees, mtry=sqrt(p))",
-    "MLP (torch CPU, 64-16-1 with dropout 0.3, Adam lr=0.001, 20 epochs)",
+    "Polynomial-EN (degree-2 + top-10 interactions on univariate-IC top features; replaced torch MLP after WSL2 bus error)",
     "Ensemble (cross-section z-score mean of 5 base predictions)"
   ),
   chinese_author_features_used = cn_feature_cols
